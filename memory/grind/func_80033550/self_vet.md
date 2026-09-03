@@ -1,92 +1,49 @@
-# SELF-VET — func_80033550
+# SELF-VET — func_80033550  (s16b, 2026-09-03, solver modality)
 
-Diff surface: `src/code6cac_b.c` only. `INCLUDE_ASM("asm/funcs", func_80033550);`
-replaced by a file-scope `typedef struct { s32 word0; s32 word1; s32 word2; } Word3;`
-(plus a two-line explanatory comment) and the function body. No header change, no
-`.claude/rules/`, `engine/`, `tools/`, `Makefile` or `*.ld` touched. No inline asm, no
-register pins, no scheduling barriers, no `volatile`, no `/* FAKE */` construct.
+Written for the INTEGRATION-HANDOFF form banked in candidate.c (canonical
+aggregate-merge spelling). NOT a candidate-ready submission: the fix cannot be
+staged from a grind session because it edits include/code6cac.h,
+undefined_syms_auto.txt and named_syms.txt. The vet is written now so the
+landing session / Judge inherits it complete.
 
-CONSTRUCTS: (1) file-scope `typedef struct {s32 word0; s32 word1; s32 word2;} Word3;`
-(2) `for (i = 0; i < 6; i++) { if (flagbyte == 0) break; }` search loop
-(3) `if (i == 6) return;` early exit
-(4) `*(&D_800A3918 + i) = 1;` flag store
-(5) `*(Word3 *)((u8 *)&D_80107850 + i * 12) = *(Word3 *)arg0;` — 12-byte struct assignment
+CONSTRUCTS: (1) canonical aggregate declaration `typedef struct { s32 x, y, z; } LeafPos; extern LeafPos D_80107850[6];` in include/code6cac.h replacing three per-word `extern s32` splat scalars, with the per-word symbols deleted from undefined_syms_auto.txt and named_syms.txt; (2) parameter retyped `s32 *arg0` -> `LeafPos *arg0`; (3) `D_80107850[i] = *arg0;` (struct assignment); (4) `*(&D_800A3918 + i)` byte-flag indexing (pre-existing in every banked form since s1, unchanged).
 
-## T1 semantic purpose
-(1) The typedef names the 12-byte record type the function copies; it is the type of
-statement (5)'s operands and cannot be removed without removing the copy.
-(2)-(4) are the function's logic: find the first free slot in the 6-entry flag table,
-bail out when the table is full, mark the slot used.
-(5) IS the observable effect of the function — it copies 12 bytes from the caller's
-record into slot `i` of the table. Deleting it deletes the function's output.
-No construct in the diff is byte-neutral-but-present: every statement writes memory
-that the caller can observe, and the typedef is load-bearing for the statement that
-does. Nothing here exists "to move a register".
+## T1 semantic purpose: Every construct is load-bearing. (1) declares the actual storage layout the original binary uses — six 12-byte records, proven by func_800335D8's `addiu $s2,$s2,0xC` table walk; (2) gives the parameter the type the call site actually passes (a pointer to one such record); (3) IS the function's whole semantic payload — copy the caller's record into the free slot; deleting any of them changes what the function does. Nothing here is behaviour-neutral decoration.
+## T2 human-programmer: Yes — this is the form a human writing the original would produce. A programmer with the spec ("find the first free leaf slot, mark it used, store the caller's position record there") writes a record type, an array of six, and `table[i] = *src;`. The three-scalar-load/three-scalar-store spelling the ledger ground for fifteen sessions is the LESS natural form; it exists only as an artifact of splat inventing one C symbol per word.
+## T3 GCC-internals justification: The GCC mechanism (block-move expansion keeping the source address live, which grows hard_reg_conflicts[72] so find_reg pass-0 lands on $a3) EXPLAINS why the natural form matches, but it is not the reason the construct is written this way. The program logic alone justifies every line: a 12-byte record table indexed by slot, assigned from the caller's record. No construct is present that the semantics do not already require, and nothing is shaped to a pass's internals.
+## T4 permuter/search provenance: No permuter, no automated search. The form came from reading asm/funcs/func_800335D8.s (stride-12 base-register walk) and named_syms.txt:1556 (committed 12-byte-stride census row) — i.e. from the object model, not from a spelling search. It passes detectors because there is nothing to detect, not because a detector missed a spelling.
+## T5 family check: The declaration merge is squarely the sanctioned "per-word splat symbol -> aggregate merge" family (owner ruling 2026-08-17), claimed below with all five prongs satisfied. The rest (a struct assignment, a retyped parameter, an array subscript) is ordinary C and belongs to no coercion family. Explicitly NOT present: the BANNED per-use byte-pointer pun `*(Word3 *)(((u8 *)(&D_80107850)) + i * 12) = *(Word3 *) arg0;` — that spelling is what this form replaces, and the reason it is replaced is precisely that it dodged prongs (c) and (d) of this family.
+## T6 naming-announces-intent: No pad/dummy/unused/spill/slack names anywhere. `LeafPos`, `x/y/z`, `arg0`, `i` — all name real values. Every declared entity is read and written.
 
-## T2 human-programmer
-Yes, straightforwardly. Given the spec "find a free slot in a 6-entry table, mark it
-in use, store the caller's 3-word record there", a human writes exactly this: a linear
-search with `break`, a full-table early return, a flag store, and a record assignment.
-The only thing a reader might ask about is the pointer arithmetic + cast in (5), and
-the answer is ordinary decomp hygiene: splat exported the table as scalar
-`extern s32 D_80107850`, so the record type is applied at the use site rather than by
-re-typing a shared header symbol. (Re-typing the header would be the aggregate-merge
-family and would need base-register/stride evidence — deliberately NOT done.)
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: per-word splat symbol -> aggregate merge (owner ruling 2026-08-17)
+  SCOPE: "two or more splat-invented `D_<addr>` scalars may be replaced by a single aggregate declaration."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:238
+  PRONGS:
+    (a) object model established by evidence independent of and predating this
+        session: named_syms.txt:1556 (committed naming census — "12-byte stride
+        per leaf, 6 entries = 72-byte position array") and base-register stride
+        indexing in the original binary at asm/funcs/func_800335D8.s
+        (&D_80107850 -> $s2, `addiu $s2,$s2,0xC` per iteration, six iterations
+        bounded by D_800A391E = D_800A3918+6).
+    (b) the merged declaration reflects that documented shape: a 6-entry table
+        of 12-byte records, `extern LeafPos D_80107850[6];`. The stride is
+        carried by the type, not by a magic number — the use site is
+        `D_80107850[i]`, with no `i * 12` anywhere.
+    (c) complete: D_80107854 and D_80107858 are removed from include/code6cac.h,
+        from undefined_syms_auto.txt:995-996 and from named_syms.txt:2562-2563,
+        leaving exactly one C handle per storage location. Measured: full build
+        still links and SHA1s to the oracle with all three deletions applied.
+    (d) spelled at the canonical declaration in the shared header
+        (include/code6cac.h), never TU-local, no per-use pointer pun.
+    (e) byte-neutral for every other consumer: the only other reader of the
+        table (func_800335D8) is still INCLUDE_ASM and untouched; no C consumer
+        of the per-word symbols exists (grep, this session); `verify-oracle`
+        build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+        Layer-2 cheat-reviewer still owed at landing time.
 
-## T3 GCC-internals justification
-The CONSTRUCT is not justified by GCC internals — statement (5) is justified by the
-function's semantics (copy the record). GCC internals appear only in the ledger's
-EXPLANATION of why this spelling reaches the target bytes when three scalar
-load/store pairs did not (the MIPS block-move expansion keeps the source address
-register live across all three loads, so hard_reg_conflicts[72] becomes {2,3,4,5,6}
-and find_reg's pass-0 scan lands on $a3). That is an after-the-fact mechanism
-account of an ordinary C statement, not a construct whose only reason for existing is
-a compiler pass. Remove the mechanism story and statement (5) is still exactly the C
-you would write; remove statement (5) and the function no longer does its job. There
-is no "lever" here, nothing named `pad`/`dummy`/`_spill`, and no construct that a
-simpler C form could replace while keeping the semantics.
-
-## T4 permuter/search provenance
-None. No permuter run in this session. The form came from reading the target's
-instruction pattern (three `lw` from one base followed by three `sw` to consecutive
-offsets of one symbol) and recognising it as a 12-byte aggregate copy, then measuring
-the resulting `find_reg` inputs with `BB2_FINDREG_DEBUG=72`. It is not a spelling that
-passes detectors by accident; it would pass a reviewer who had never heard of the
-detectors.
-
-## T5 family check
-No forbidden family applies, and no sanctioned-exception family is claimed. Checked
-against the catalog line by line: no register-asm pin, no hardcoded-`$N` asm, no
-scheduling barrier, no aliasing move, no volatile coercion in any spelling, no unused
-local array or frame coercion, no dead param assign, no dead conditional store, no
-empty-body `if`, no `if (1)`, no dead goto label pad, no DImode chain, no goto-end
-accumulator, no param-local alias declaration-order trick, no opaque `s32 one = 1;`,
-no lowercase `asm(...)`, no build-time asm rewriting, no `asm("sym")` rename, no
-redundant width cast, no linker-script rodata reorder. The diff contains only
-statements with observable effects. In particular the previous ledger frontier
-(manufacturing a byte-free register occupant via dead locals / duplicated arms /
-chain-extenders) was ABANDONED, not respelled — the conflict set arrives from the
-real semantics of an aggregate copy.
-
-## T6 naming-announces-intent
-`Word3`, `word0/word1/word2`, `i`, `arg0`. `Word3` is a neutral structural name for a
-three-word record (deliberately not a semantic claim — [[names-require-evidence]]);
-its members are read and written by the copy. No `pad`, `dummy`, `unused`, `spill`,
-`slack`, `tail`, `_buf`, `_frame_pad`. No declaration whose only uses are discards,
-address-of, or nothing.
-
-SANCTIONED-FAMILY-CLAIMS: none — the diff is ordinary C and claims no exception
-family. (Consequently no `/* FAKE */` annotation is required or present; the
-prior candidate's sanctioned `do { ... } while (0)` wrap was DELETED by this form.)
-
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct in the diff.
-
-## Verification actually run this session (not claimed, measured)
-- `& tools/wteng.ps1 main sandbox func_80033550 --disable all` ->
-  `"score": 0, "target_insns": 34, "build_insns": 34, "rules_dropped": 0`
-- `& tools/wteng.ps1 main build` (full clean-driver build) ->
-  `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, `MATCH`
-- `& tools/wteng.ps1 main verify-oracle` -> `"build_matches": true`
-- Linked-ELF disassembly of 0x80033550..0x800335D4 compared word-for-word against
-  `asm/funcs/func_80033550.s`: all 34 instructions identical
-  (`tmp/grind/func_80033550/s16/linked_disasm.txt`).
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. The aggregate-merge family does
+not mandate a /* FAKE */ annotation (it is a declaration-correctness family, not
+a last-resort codegen lever), and this form contains no dead store, no wrap, no
+constant holder, no alias and no pad. The `do { } while (0)` wrap the previous
+candidate carried is deleted along with the scalar-triple tail.

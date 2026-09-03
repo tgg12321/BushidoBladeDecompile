@@ -1024,3 +1024,61 @@ foreclosure at all, it was an unexamined premise shared by every foreclosure.
 Corollary: splat's per-word `D_8010xxxx` names are not evidence of three objects
 ([[splat-symbol-names-are-not-evidence]]) in the TAIL of a function any more than they
 are in its data model.
+
+## s16b (2026-09-03, solver) — the RA frontier is retired; the residual was a declaration bug
+
+H16b.1 — CONFIRMED. "Expressing the tail as a canonical 12-byte aggregate
+assignment against a MERGED array declaration (`extern LeafPos D_80107850[6];`
+in include/code6cac.h) — no cast, no `i * 12` — produces the target's 34
+instructions exactly." Probe: applied header merge + body, `sandbox --disable
+all` = 0/34/34/0 rules; `verify-oracle` build_sha1 == oracle. Mechanism: GCC
+2.7.2's MIPS block-move expansion emits all three loads before all three stores
+and keeps the source address register live across the pattern, so pseudo 72 no
+longer dies at the third load; `hard_reg_conflicts[72]` becomes {2,3,4,5,6,29}
+and find_reg's pass-0 scan (global.c:996-1001) lands on $a3.
+
+H16b.2 — CONFIRMED. "The merge can be made COMPLETE (prong (c)) without
+disturbing the build." Probe: additionally deleted D_80107854/D_80107858 from
+undefined_syms_auto.txt:995-996 and the `_plus_4`/`_plus_8` rows from
+named_syms.txt:2562-2563; `verify-oracle` still build_matches true. (The
+per-word symbols are referenced only by asm/funcs/func_80033550.s, which the C
+replaces, and by the unbuilt whole-text asm/6CAC.s.)
+
+RETIRED, not killed — the entire s14/s15 RA frontier:
+  * `regs_someone_prefers[72]` origination hunt,
+  * local-alloc `combine_regs` coalescing to seat a no-op occupant at $a2,
+  * "substitute an existing instruction to seat a fifth register".
+All three were searches for a byte-free way to grow `hard_reg_conflicts[72]`
+INSIDE the scalar-triple chassis. The conflict set is now produced by the
+function's real semantics, so the search space they lived in no longer exists.
+They should not be re-opened; if the merge is ever refused on policy grounds
+they become live again, in that order.
+
+OPEN (procedural, not technical): the fix touches include/code6cac.h,
+undefined_syms_auto.txt and named_syms.txt. A grind session may not stage those,
+so the landing needs a driver scope grant per [[integration-handoff-self-serve]].
+Everything else — bytes, oracle, family prongs, self-vet — is done and banked.
+
+## [s16] Expressing the tail as a canonical 12-byte aggregate assignment against a MERGED array declaration (extern LeafPos D_80107850[6]; in include/code6cac.h) - no cast, no i*12 magic stride - reproduces the target's 34 instructions exactly and matches the oracle.
+- mechanism: GCC 2.7.2's MIPS block-move expansion emits all three loads before all three stores and keeps the source address register live across the whole pattern, so pseudo 72 stops dying at the third load; hard_reg_conflicts[72] goes {2,3,4,29} -> {2,3,4,5,6,29} and find_reg's pass-0 scan (global.c:996-1001) skips $v0,$v1,$a0,$a1,$a2 and lands on $a3, the target seat, at unchanged instruction count.
+- probe: Applied header merge (include/code6cac.h:478-480 -> typedef LeafPos + extern LeafPos D_80107850[6];) plus body void func_80033550(LeafPos *arg0) { ... D_80107850[i] = *arg0; } at src/code6cac_b.c:2873; ran sandbox --disable all and verify-oracle.
+- result: sandbox func_80033550 --disable all = score 0, target_insns 34, build_insns 34, rules_dropped 0; verify-oracle build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, build_matches true. Pure C, zero cheat-asm, zero FAKE constructs, no do-while(0) wrap.
+- verdict: CONFIRMED
+
+## [s16] The aggregate merge can be made COMPLETE in the sense prong (c) requires - both per-word symbols removed from C, from the splat symbol config and from the naming census - without disturbing the build.
+- mechanism: D_80107854 / D_80107858 are referenced only by asm/funcs/func_80033550.s (which the C body replaces) and by the unbuilt whole-text asm/6CAC.s; the Makefile links -T undefined_syms_auto.txt -T named_syms.txt, so deleting the rows removes the last C-side handles while leaving exactly one handle (D_80107850) per storage location.
+- probe: Deleted undefined_syms_auto.txt:995-996 and named_syms.txt:2562-2563 (g_leaf_position_table_plus_4 / _plus_8) on top of the header merge and re-ran verify-oracle; then git-checkout-restored all three files in the same session.
+- result: verify-oracle build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true. Prong (c) is executable and byte-neutral, not merely assertable. Diff banked at tmp/grind/func_80033550/s16/integration_surfaces.patch.
+- verdict: CONFIRMED
+
+## [s16] The banned per-use byte-pointer pun form is not required for the match: the same bytes are produced by the canonical declaration merge, so the pun's only effect was to make the object-model claim at a use site instead of at the declaration.
+- mechanism: Both spellings expand to the same movstrsi block move; the difference is purely where the record type is declared, which is exactly what prongs (b), (c) and (d) of the 2026-08-17 aggregate-merge family regulate (.claude/rules/no-new-park-categories.md:238).
+- probe: Measured the canonical-merge form this session (score 0, oracle SHA1) with no cast and no i*12 anywhere in the C; compared against the banked s16a pun form now filed at memory/grind/func_80033550/rejected/s16-per-use-byte-pointer-cast-layer1-FAIL-aggregate-merge-prongs-c-d-0.c.
+- result: Identical bytes from the sanctioned spelling. The banned construct stays banned and must never be resubmitted; the merge is the authorized route to the same match.
+- verdict: CONFIRMED
+
+## [s16] The s14/s15 register-allocation frontier for this function (regs_someone_prefers[72] origination, local-alloc combine_regs coalescing at $a2, and substituting an existing instruction to seat a fifth register) does not need to be searched, because those searches all presuppose the scalar-triple tail that this session replaced.
+- mechanism: All three were programs for manufacturing a byte-free occupant of $a1/$a2 to grow hard_reg_conflicts[72] inside a fixed body shape. With the tail written as the aggregate copy the function actually performs, the conflict set is produced by the real semantics, so the quantity those searches were trying to synthesize already exists.
+- probe: BB2_FINDREG_DEBUG comparison inherited from s16a and re-confirmed by the byte result this session: scalar-triple conflicts {2,3,4,29} -> first free 5 ($a1); struct-copy conflicts {2,3,4,5,6,29} -> first free 7 ($a3), both at 34 instructions.
+- result: Frontier RETIRED as moot rather than killed by measurement - recorded that way in hypotheses.md so it is not re-opened. If the merge were ever refused on policy grounds those three axes become live again, in that order.
+- verdict: CONFIRMED

@@ -39,3 +39,6 @@ special_camera_get_rot_dir include/code6cac.h
 # func_800861BC: pipeline scope grant 2026-09-02 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 func_800861BC include/sound.h
+# func_80033550: pipeline scope grant 2026-09-03 (judge ESCALATE integration-handoff,
+# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
+func_80033550 include/code6cac.h undefined_syms_auto.txt named_syms.txt

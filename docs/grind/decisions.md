@@ -21578,3 +21578,137 @@ queue advances. The best pure-C form (distance 3) remains at
 ## 2026-09-03 14:34 — func_80033550 — layer-1 review — **FAIL**
 
 The winning insight (express the tail as a struct copy so GCC's block-move expansion produces the RA conflict set the ledger spent 15 sessions failing to manufacture) is genuine and well-evidenced, but the chosen SPELLING merges three separately-declared splat symbols (D_80107850/854/858) into one 12-byte record via a per-use byte-pointer cast instead of a canonical declaration merge -- exactly the construct the 2026-08-17 'per-word splat symbol -> aggregate merge' family exists to gate, and it fails that family's own prongs (c) and (d).
+
+## 2026-09-03 — func_80033550 (src/code6cac_b.c) — **INTEGRATION HANDOFF (bytes proven; blocked only on scope)**
+
+Not an endgame lock and not an exhaustion claim. The honest bytes are PROVEN
+this session in a spelling that carries a sanctioned family with all prongs
+satisfied; the only thing missing is permission to edit three files a grind
+session may not stage. Per [[integration-handoff-self-serve]] (owner ruling
+2026-08-19) this is a pipeline-executable disposition — the driver widens
+`scope_allow.txt` for the named paths and the function STAYS ACTIVE for the next
+session to land through the full normal gates.
+
+**Measured this session (grind s16b, solver modality), with the edits applied:**
+- `sandbox func_80033550 --disable all` → `score 0, target_insns 34,
+  build_insns 34, rules_dropped 0`
+- `verify-oracle` → `build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa`,
+  `build_matches true` (== oracle)
+- Re-measured a second time with the per-word symbols additionally deleted from
+  `undefined_syms_auto.txt` and `named_syms.txt` (family prong (c)
+  completeness): `verify-oracle` still `build_matches true`.
+- Pure C. Zero cheat-asm, zero `/* FAKE */` constructs, zero dead locals, no
+  `do { } while (0)` wrap (the previous candidate's wrap is deleted).
+
+**The finding.** Fifteen sessions hunted a byte-free register occupant to grow
+`hard_reg_conflicts[72]` so `find_reg`'s pass-0 scan (global.c:996-1001) would
+skip $a1/$a2 and seat the arg0 pointer in $a3. The arithmetic was right; the
+premise was not. The tail is a 12-byte AGGREGATE COPY, not three scalar
+load/store pairs. GCC 2.7.2's MIPS block-move expansion emits all three loads
+before all three stores and keeps the source address register live across the
+pattern, so pseudo 72 stops dying at the third load:
+`conflicts {2,3,4,29} → {2,3,4,5,6,29}`, pass-0 first free `5 ($a1) → 7 ($a3)`,
+at unchanged instruction count.
+
+**Why the previous session's form was correctly FAILed, and what changed.**
+s16a spelled the aggregate as a per-use byte-pointer pun
+(`*(Word3 *)(((u8 *)(&D_80107850)) + i * 12) = *(Word3 *) arg0;`), now a
+`banned_constructs` entry. That dodges the "per-word splat symbol → aggregate
+merge" family (.claude/rules/no-new-park-categories.md:238) at prongs (b), (c)
+and (d). This session does the merge properly:
+- **(a)** object model established by evidence independent of and predating any
+  byte-chasing: `named_syms.txt:1556` committed census row
+  `g_leaf_position_table = 0x80107850; /* 12-byte stride per leaf, 6 entries =
+  72-byte position array */` (with `:2562-2563` recording the other two as
+  "+4 from"/"+8 from"), PLUS base-register stride indexing in the original
+  binary in a different function — `asm/funcs/func_800335D8.s` loads
+  `&D_80107850` into `$s2` (0x800335EC/F0) and walks it with
+  `addiu $s2, $s2, 0xC` (0x80033704), six iterations, in lockstep with the
+  `D_800A3918` flag array bounded by `D_800A391E` = base+6.
+- **(b)** declaration reflects that shape: `extern LeafPos D_80107850[6];`, a
+  6-entry table of 12-byte records; the stride lives in the type, and the magic
+  `i * 12` disappears from the C entirely (`D_80107850[i] = *arg0;`).
+- **(c)** complete: both per-word symbols removed from C, from
+  `undefined_syms_auto.txt` and from `named_syms.txt` — measured, still oracle.
+- **(d)** spelled at the canonical declaration in `include/code6cac.h`; not
+  TU-local; no per-use pointer pun.
+- **(e)** byte-neutral for every other consumer (the only other reader,
+  func_800335D8, is still INCLUDE_ASM; no C consumer of the per-word symbols
+  exists); layer-2 cheat-reviewer still owed at landing.
+
+**The blocker (the entire remaining work).** A grind session may touch only its
+own `src/*.c`, `memory/grind/<func>/` and `tmp/`. The sanctioned spelling
+requires:
+1. `include/code6cac.h:478-480` — replace the three `extern s32` per-word
+   declarations with the `LeafPos` typedef + `extern LeafPos D_80107850[6];`
+2. `undefined_syms_auto.txt:995-996` — delete `D_80107854` / `D_80107858`
+3. `named_syms.txt:2562-2563` — delete `g_leaf_position_table_plus_4` /
+   `_plus_8`
+4. `src/code6cac_b.c:2873` — replace `INCLUDE_ASM` with the banked body
+All three surfaces are inside the classes `add-scope-allow` may grant (shared
+headers, root-level `*.txt`, excluding the denylist); none is on the
+severe-blocker list.
+
+**Artifacts.** Exact surface diff:
+`tmp/grind/func_80033550/s16/integration_surfaces.patch`. Body + full rationale:
+`memory/grind/func_80033550/candidate.c`. Six-test vet with the family prongs
+answered: `memory/grind/func_80033550/self_vet.md`. Measurement log:
+`tmp/grind/func_80033550/s16/`.
+
+**Supersedes.** The 2026-07-22 and 2026-08-20 endgame-lock dispositions
+(REFUSED / OWNER-ACCEPTED INCOMPLETE) and the 2026-09-02 foreclosure-window
+reset for this function are all superseded by a pure-C byte match. The
+`banned_constructs` entry for the per-use pun stays in force — it is not needed
+and must not be resubmitted; the merge is the authorized spelling.
+
+**Tree state.** Every out-of-scope file edited for measurement was restored via
+`git checkout` in-session; `src/code6cac_b.c` is back to
+`INCLUDE_ASM("asm/funcs", func_80033550);` per [[asm-until-matched]]. This
+session leaves no dirt.
+
+## 2026-09-03 14:57 — func_80033550 — ruling: INTEGRATION HANDOFF filed for func_80033550 : docs/grind/decisions.md 2026-09-03 — **ESCALATE**
+
+INTEGRATION HANDOFF for func_80033550 is SOUND. The work is complete, the bytes are proven, and the only blocker is a commit surface a grind session may not stage. This is exactly the disposition .claude/rules/integration-handoff-self-serve.md (owner ruling 2026-08-19) makes pipeline-executable.
+
+WHAT WAS BUILT (in plain terms). Fifteen sessions treated this function's tail as three separate word-sized stores into three separate global variables. That was wrong about the original program. The three globals are not three variables: they are the first three words of one 12-byte record, and the tail is a single record copy - 'store the caller's position record into the free slot'. The split into three variables was invented by splat, the tool that carves the original binary into named pieces; it has no basis in the original code. Writing the declaration the way the original program actually laid the data out (a table of six 12-byte records) makes the compiler produce the target's exact instructions on its own, because a record copy keeps the source pointer alive across the whole copy in a way three separate stores do not. No trick, no annotation, no dead code: the natural spelling of the real object model matches.
+
+WHAT I VERIFIED MYSELF (not taken from the session's claims):
+1. Bytes. tmp/grind/func_80033550/s16/sandbox_final.json reads score 0, target_insns 34, build_insns 34, rules_dropped 0; build_final.txt reads sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want == oracle, MATCH. I did not stop at the logs: I compared the session's linked disassembly (linked_disasm.txt) instruction-by-instruction against the target asm/funcs/func_80033550.s. All 34 instructions are identical, including the four that fifteen sessions could not move - the entry 'move a3,a0' and the three lw's based on $a3.
+2. Prong (a) - object model independent of and PREDATING the byte-chasing. named_syms.txt:1556 carries the census row g_leaf_position_table = 0x80107850 with the comment '12-byte stride per leaf, 6 entries = 72-byte position array'. git log -L on that line dates it to commit e44dcd95, 2026-05-17 - two months before this function's grind opened (state.json created 2026-07-21). Corroborated in the ORIGINAL BINARY by a different function: asm/funcs/func_800335D8.s loads &D_80107850 into $s2 (0x800335EC/F0) and walks the table with 'addiu $s2,$s2,0xC' (line 83, 0x80033704). The 12-byte record is a fact about the game, not a convenience for this match.
+3. Prong (b). The declaration is 'extern LeafPos D_80107850[6];' with LeafPos = {s32 x,y,z} - records where the evidence shows records, stride carried by the type. The magic 'i * 12' the family rule explicitly disqualifies is absent; the use site is 'D_80107850[i] = *arg0;'.
+4. Prong (c) completeness and its risk. The patch (tmp/grind/func_80033550/s16/integration_surfaces.patch) deletes the per-word symbols from include/code6cac.h, undefined_syms_auto.txt:995-996 and named_syms.txt:2562-2563. I checked what else could reference them: grep over src/ and include/ finds no consumer; grep over asm/ finds only func_80033550.s (which the C body replaces) and asm/6CAC.s, which the Makefile assembles but bb2.ld never links (bb2.ld lists build/asm/header.o and build/asm/funcs/save_vc_ctrl.o only). Linker-script symbol definitions that nothing references emit no bytes, so the deletions are byte-neutral by construction as well as by the session's second measurement.
+5. Surface completeness. func_80033550 is INCLUDE_ASM'd inside the code6cac_b.c translation unit, not linked as a standalone object, so no bb2.ld edit is needed - the three named paths plus the session's own src/code6cac_b.c are the whole surface. All three are in add-scope-allow's permitted classes (include/*.h and root-level *.txt) and none is on the denylist.
+6. Not the banned construct. The banned_constructs entry is the per-use byte-pointer pun '*(Word3 *)(((u8 *)(&D_80107850)) + i*12) = *(Word3 *)arg0;', correctly FAILed at 14:34 today for dodging prongs (c) and (d). The banked form is a different construct, not a respelling of it: the merge happens once at the canonical declaration in the shared header, the per-word symbols are deleted everywhere, and no cast or stride constant appears at the use site. That is the family's prescribed spelling, and it is the exact defect the earlier FAIL named. No unban is requested and none is needed - the pun stays banned.
+7. Six-test check on the C text itself. Every construct is load-bearing (T1); the form is what a programmer writes from the spec, and the scalar-triple spelling is the unnatural one (T2); the GCC block-move mechanism explains the match but the program logic alone justifies each line (T3); provenance is the object model, not a permuter search (T4); the declaration merge sits in the 2026-08-17 sanctioned family with all five prongs verified above, and the rest is ordinary C (T5); no intent-announcing names (T6). Zero cheat-asm, zero FAKE constructs, zero dead locals, and the previous candidate's do-while(0) wrap is gone. The '*(&D_800A3918 + i)' byte-flag indexing is pre-existing project idiom present in every banked form since s1 and is not part of this change.
+
+WHY ESCALATE AND NOT PASS. The work is sound but I do not merge it: the fix cannot be staged from a grind session's surface. The grant the driver executes is a scope widening for include/code6cac.h, undefined_syms_auto.txt and named_syms.txt. The function STAYS ACTIVE and the next session lands the fix through every normal gate - driver sandbox-0 re-verify, scope check, layer-1, Judge, full-build SHA1 - and the still-owed layer-2 cheat-reviewer. Widening scope widens no standard.
+
+This supersedes the 2026-07-22 and 2026-08-20 endgame-lock dispositions and the 2026-09-02 foreclosure reset for this function: a pure-C byte match retires an exhaustion finding outright.
+
+## 2026-09-03 — func_80033550 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-03)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+INTEGRATION HANDOFF for func_80033550 is SOUND. The work is complete, the bytes are proven, and the only blocker is a commit surface a grind session may not stage. This is exactly the disposition .claude/rules/integration-handoff-self-serve.md (owner ruling 2026-08-19) makes pipeline-executable.
+
+WHAT WAS BUILT (in plain terms). Fifteen sessions treated this function's tail as three separate word-sized stores into three separate global variables. That was wrong about the original program. The three globals are not three variables: they are the first three words of one 12-byte record, and the tail is a single record copy - 'store the caller's position record into the free slot'. The split into three variables was invented by splat, the tool that carves the original binary into named pieces; it has no basis in the original code. Writing the declaration the way the original program actually laid the data out (a table of six 12-byte records) makes the compiler produce the target's exact instructions on its own, because a record copy keeps the source pointer alive across the whole copy in a way three separate stores do not. No trick, no annotation, no dead code: the natural spelling of the real object model matches.
+
+WHAT I VERIFIED MYSELF (not taken from the session's claims):
+1. Bytes. tmp/grind/func_80033550/s16/sandbox_final.json reads score 0, target_insns 34, build_insns 34, rules_dropped 0; build_final.txt reads sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want == oracle, MATCH. I did not stop at the logs: I compared the session's linked disassembly (linked_disasm.txt) instruction-by-instruction against the target asm/funcs/func_80033550.s. All 34 instructions are identical, including the four that fifteen sessions could not move - the entry 'move a3,a0' and the three lw's based on $a3.
+2. Prong (a) - object model independent of and PREDATING the byte-chasing. named_syms.txt:1556 carries the census row g_leaf_position_table = 0x80107850 with the comment '12-byte stride per leaf, 6 entries = 72-byte position array'. git log -L on that line dates it to commit e44dcd95, 2026-05-17 - two months before this function's grind opened (state.json created 2026-07-21). Corroborated in the ORIGINAL BINARY by a different function: asm/funcs/func_800335D8.s loads &D_80107850 into $s2 (0x800335EC/F0) and walks the table with 'addiu $s2,$s2,0xC' (line 83, 0x80033704). The 12-byte record is a fact about the game, not a convenience for this match.
+3. Prong (b). The declaration is 'extern LeafPos D_80107850[6];' with LeafPos = {s32 x,y,z} - records where the evidence shows records, stride carried by the type. The magic 'i * 12' the family rule explicitly disqualifies is absent; the use site is 'D_80107850[i] = *arg0;'.
+4. Prong (c) completeness and its risk. The patch (tmp/grind/func_80033550/s16/integration_surfaces.patch) deletes the per-word symbols from include/code6cac.h, undefined_syms_auto.txt:995-996 and named_syms.txt:2562-2563. I checked what else could reference them: grep over src/ and include/ finds no consumer; grep over asm/ finds only func_80033550.s (which the C body replaces) and asm/6CAC.s, which the Makefile assembles but bb2.ld never links (bb2.ld lists build/asm/header.o and build/asm/funcs/save_vc_ctrl.o only). Linker-script symbol definitions that nothing references emit no bytes, so the deletions are byte-neutral by construction as well as by the session's second measurement.
+5. Surface completeness. func_80033550 is INCLUDE_ASM'd inside the code6cac_b.c translation unit, not linked as a standalone object, so no bb2.ld edit is needed - the three named paths plus the session's own src/code6cac_b.c are the whole surface. All three are in add-scope-allow's permitted classes (include/*.h and root-level *.txt) and none is on the denylist.
+6. Not the banned construct. The banned_constructs entry is the per-use byte-pointer pun '*(Word3 *)(((u8 *)(&D_80107850)) + i*12) = *(Word3 *)arg0;', correctly FAILed at 14:34 today for dodging prongs (c) and (d). The banked form is a different construct, not a respelling of it: the merge happens once at the canonical declaration in the shared header, the per-word symbols are deleted everywhere, and no cast or stride constant appears at the use site. That is the family's prescribed spelling, and it is the exact defect the earlier FAIL named. No unban is requested and none is needed - the pun stays banned.
+7. Six-test check on the C text itself. Every construct is load-bearing (T1); the form is what a programmer writes from the spec, and the scalar-triple spelling is the unnatural one (T2); the GCC block-move mechanism explains the match but the program logic alone justifies each line (T3); provenance is the object model, not a permuter search (T4); the declaration merge sits in the 2026-08-17 sanctioned family with all five prongs verified above, and the rest is ordinary C (T5); no intent-announcing names (T6). Zero cheat-asm, zero FAKE constructs, zero dead locals, and the previous candidate's do-while(0) wrap is gone. The '*(&D_800A3918 + i)' byte-flag indexing is pre-existing project idiom present in every banked form since s1 and is not part of this change.
+
+WHY ESCALATE AND NOT PASS. The work is sound but I do not merge it: the fix cannot be staged from a grind session's surface. The grant the driver executes is a scope widening for include/code6cac.h, undefined_syms_auto.txt and named_syms.txt. The function STAYS ACTIVE and the next session lands the fix through every normal gate - driver sandbox-0 re-verify, scope check, layer-1, Judge, full-build SHA1 - and the still-owed layer-2 cheat-reviewer. Widening scope widens no standard.
+
+This supersedes the 2026-07-22 and 2026-08-20 endgame-lock dispositions and the 2026-09-02 foreclosure reset for this function: a pure-C byte match retires an exhaustion finding outright.
+
+**Constraint recorded for any future session:** Land EXACTLY the banked form: the canonical aggregate declaration in include/code6cac.h plus deletion of D_80107854/D_80107858 from undefined_syms_auto.txt and named_syms.txt (prong (c) completeness is mandatory - a header-only merge leaving the per-word symbols in the splat configs is NOT the authorized spelling), and the candidate.c body verbatim. The banned per-use byte-pointer pun stays banned and must not reappear in any form.

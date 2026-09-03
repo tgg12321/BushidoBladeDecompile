@@ -1,8 +1,8 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 15,
- "current_modality": "synthesis",
+ "session_count": 16,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -93,28 +93,31 @@
    "floor": 4,
    "modality": "synthesis",
    "headline": "s14 synthesis: floor re-measured 4 (34/34, 0 rules); the ledger's find_reg model CORRECTED by first-ever direct instrumentation of pseudo 72 - selection is a two-pass scan plus a preference-override b"
+  },
+  {
+   "session": 16,
+   "floor": 0,
+   "modality": "solver",
+   "headline": "INTEGRATION HANDOFF: sandbox 0/34/34/0-rules and full-build SHA1 == oracle in the SANCTIONED aggregate-merge spelling (not the banned pun); blocked only on scope for include/code6cac.h + undefined_sym"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "regs_someone_prefers[72] can be driven to include $a1 and $a2 at exactly 34 instructions, which seats the pointer in $a3 with zero instruction cost.",
-   "mechanism": "find_reg pass 0 (global.c:996-1001) excludes hard_reg_conflicts | ~regs_used_so_far | regs_someone_prefers; regs_used_so_far already contains every call-clobbered reg (global.c:365-367), so with the measured conflicts {2,3,4,29} a someone_prefers of {5,6} makes the first free bit 7 = $a3. Preferences emit no instructions. The bit pattern is not hypothetical: func_80027438 in the same TU shows someone_prefers {5,6} in this session's dump. Bottleneck is origination: prune_preferences (global.c:881-931) fills the set only from allocnos that conflict with 72 AND sit lower in allocno_order, and set_preference (global.c:1671-1716) can only name $a1/$a2 if they appear as literal hard regs in pre-RA RTL (this function has no calls and one param) or as a local-alloc seat.",
-   "next_probe": "Instrument the origination side instead of guessing spellings: dump every single_set in the pre-RA RTL (the .greg/.lreg stage) for the baseline and check the claim that the offset-0 load is the ONLY SET whose src's first operand is a re-seatable pseudo. If a second one exists, that is the carrier; re-point it and re-read BB2_FINDREG_DEBUG=72 for someone_prefers. Reject on the dump, not the sandbox score."
+   "hypothesis": "Landing the banked form is purely mechanical once scope is widened to include/code6cac.h, undefined_syms_auto.txt and named_syms.txt.",
+   "mechanism": "The four edits are already written and byte-verified; tmp/grind/func_80033550/s16/integration_surfaces.patch is the exact diff for the three surface files and memory/grind/func_80033550/candidate.c carries the body.",
+   "next_probe": "Apply the patch + body, re-run sandbox --disable all (expect 0/34/34/0) and verify-oracle (expect oracle SHA1), then layer-1 + layer-2 cheat-reviewer on the merge under the 2026-08-17 aggregate-merge family with the prongs already answered in memory/grind/func_80033550/self_vet.md."
   },
   {
-   "hypothesis": "A local-alloc quantity can occupy $a2 across the pointer's live range while emitting nothing, via local-alloc.c combine_regs coalescing plus final.c no-op-move deletion.",
-   "mechanism": "The target needs an occupant at $a2 that emits no instruction. cross_jump (jump2) is the only post-local-alloc deletion channel the ledger examined and it is closed (s12 at both real branch sites; Judge FAIL 2026-07-21 for invented arms). Unexamined: local-alloc merges copy-related pseudos into ONE quantity, after which the connecting copy is reg-to-same-reg and is deleted by final.c's no-op move deletion (the same final.c:1800 path s6 cited) - the merged quantity still holds its hard reg across the union of both live ranges.",
-   "next_probe": "Write a plain assignment between two real locals (ordinary C, no FAKE family needed if the value is real), confirm in the .lreg dump that combine_regs put both pseudos in one quantity, confirm in the objdump that the move is gone, then read BB2_FINDREG_DEBUG=72 to see whether the quantity's seat entered hard_reg_conflicts[72]. Measure insn count first: the probe is only interesting at 34."
-  },
-  {
-   "hypothesis": "A rederived shape that SUBSTITUTES an existing instruction (rather than adding one) can occupy a fifth register at 34 instructions.",
-   "mechanism": "s11's 1:1 correspondence shows all 34 target slots are spoken for and 30 are already byte-identical, so any added occupant must replace an existing insn with one that both does that insn's job and holds an extra register. s14 supplies the acceptance test as a one-compile dump read rather than a sandbox cycle.",
-   "next_probe": "Acceptance test BEFORE building: the shape must emit exactly 34 instructions AND show, under BB2_FINDREG_DEBUG on the pointer's pseudo, either conflicts superset-of {2,3,4,5,6} or someone_prefers superset-of {5,6}. Anything that adds a 35th slot is rejected without a sandbox run."
+   "hypothesis": "The same per-word-splat-scalar mis-declaration may be the real residual on other stalled functions whose ledgers describe an unreachable register seat around a run of consecutive D_<addr> stores.",
+   "mechanism": "Splat invents one C symbol per word, which forces a scalar-triple spelling; the scalar spelling makes the source pointer die early and starves hard_reg_conflicts, producing exactly the 'byte-free occupant needed' shape that endgame-lock ledgers describe.",
+   "next_probe": "Grep the endgame-lock foreclosure entries for functions whose tail stores 2+ consecutive D_<addr> words from one base pointer, and check named_syms.txt for a committed stride/record census row on that base before spending RA sessions on them."
   }
  ],
  "judge_constraints": [
   "duplicated-statement-into-arms applies ONLY to control-flow arms the function's real logic already contains; inventing a branch (any opaque/no-semantic-content condition, merged away or not) to carry duplicated statements is a cheat by spelling - do not respell it (nested arms, 3-arm, computed conds); channel (f) via manufactured branches is closed; draft the OWNER-ESCALATION entry per endgame-lock-disposition citing the s1-s7 ledger.",
-  "LAYER-1 CHEAT-REVIEWER FAIL: The winning insight (express the tail as a struct copy so GCC's block-move expansion produces the RA conflict set the ledger spent 15 sessions failing to manufacture) is genuine and well-evidenced, but the chosen SPELLING merges three separately-declared splat symbols (D_80107850/854/858) into one 12-byte record via a per-use byte-pointer cast instead of a canonical declaration merge -- exactly the construct the 2026-08-17 'per-word splat symbol -> aggregate merge' family exists to gate, and it fails that family's own prongs (c) and (d). Next action: Do not commit "
+  "LAYER-1 CHEAT-REVIEWER FAIL: The winning insight (express the tail as a struct copy so GCC's block-move expansion produces the RA conflict set the ledger spent 15 sessions failing to manufacture) is genuine and well-evidenced, but the chosen SPELLING merges three separately-declared splat symbols (D_80107850/854/858) into one 12-byte record via a per-use byte-pointer cast instead of a canonical declaration merge -- exactly the construct the 2026-08-17 'per-word splat symbol -> aggregate merge' family exists to gate, and it fails that family's own prongs (c) and (d). Next action: Do not commit ",
+  "Land EXACTLY the banked form: the canonical aggregate declaration in include/code6cac.h plus deletion of D_80107854/D_80107858 from undefined_syms_auto.txt and named_syms.txt (prong (c) completeness is mandatory - a header-only merge leaving the per-word symbols in the splat configs is NOT the authorized spelling), and the candidate.c body verbatim. The banned per-use byte-pointer pun stays banned and must not reappear in any form.",
+  "integration-handoff EXECUTED (pipeline, 2026-09-03): scope grant: func_80033550 include/code6cac.h undefined_syms_auto.txt named_syms.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
  "origin": "queue",
  "created": "2026-07-21T01:10:44.133966+00:00",
