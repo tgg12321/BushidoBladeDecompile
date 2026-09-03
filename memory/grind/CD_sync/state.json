@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 109,
- "current_modality": "forensics",
+ "session_count": 110,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -663,23 +663,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics: reg_n_refs is built by flow.c BEFORE combine (toplev.c:2983 vs 3004), so the s108 refs-lift frontier was well-posed - but all six byte-level spellings are intercepted, four by the front end"
+  },
+  {
+   "session": 110,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Rederive re-frames the endgame: the honest-chassis 15 is ~13 points of ONE global.c allocno seating decision plus the known 2-insn pair, and the closing condition is now numeric (live_length(tbl_125c)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The a0/v1 exchange can be won on the find_free_reg arm instead of the qty_compare_1 arm: giving the t0-shift qty a hard-register copy-suggestion of $a0 (or the arg5-value qty one of $v1) makes find_free_reg take the suggested seat regardless of allocation order, leaving the 3333/3333 tie and the target emission order both untouched.",
-   "mechanism": "local-alloc.c's block_alloc records qty_phys_sugg / qty_phys_copy_sugg whenever a pseudo is copied to or from a hard register while live, and find_free_reg prefers a suggested register over the plain free-register walk. This session measured both contested qtys entering find_free_reg with nsugg=0 ncopysugg=0 - the arm is entirely unexercised at this site - while blk=0 qty=0 of the same function shows nsugg=1 sugg=2, proving the mechanism fires under this chassis. This is a DIFFERENT axis from every priority/order probe in 108 sessions of ledger: it does not need refs, birth, death or LUID to move.",
-   "next_probe": "On the g3 base, enumerate C spellings that put one of the two contested values into a hard-register copy while live - e.g. reassigning which window expression supplies debug_printf's 4th argument (passed in $a3) versus the stack-passed 5th, or routing one value through a call/return position - and for each read the block=3 SUGGDBG-QTY line for ncopysugg/nsugg/copysugg/sugg and the SUGGDBG-FFR used mask. Accept only a form where a contested qty shows a non-empty sugg list AND build_insns stays 160, then score it."
+   "hypothesis": "On the honest chassis the seating can be won by shortening tbl_125c's live length below 114 and idx_1495's below 76 while holding build_insns at 160 - a bar no probe has yet been scored against, because s102 measured its six structural probes against the three-times-stricter livelen<44 derived from h5's pri of 675.",
+   "mechanism": "global.c allocno_compare priority = floor_log2(nrefs)*nrefs*size/live_length*10000; with nrefs pinned at the target's 3 and 2, and mode/result pinned at 263/253, pri(tbl_125c)>263 requires live_length<114 and pri(idx_1495)>263 requires live_length<76. reg_live_length is accumulated in flow.c (increment sites flow.c:1685 and flow.c:2087) once per insn per block-propagation pass, so a pseudo live across re-propagated loop blocks accumulates roughly double - which is exactly the 148/144 the honest form shows against mode's 76.",
+   "next_probe": "Re-run s102's P2/P3/P4/P5/P7 structural forms AND new partial-shortening spellings (e.g. splitting tbl_125c's live range with a second same-value local read only in the debug window, or moving idx_1495's initialisation to just before the CheckCallback arm) on the honest base, and for each read the ALLOCDBG ord=11..15 block from tmp/grind/CD_sync/s110/cap.py before scoring. ACCEPT anything landing tbl_125c in 264..932 and idx_1495 in 264..pri(tbl_125c) at build_insns 160; s102's P4 (prologue-last, masked 17, build 160, no insn delta) is the closest known form and its ALLOCDBG table was never captured."
   },
   {
-   "hypothesis": "The qty_size term of qty_compare_1 (unprobed in 109 sessions) can break the 3333/3333 tie: a size-2 quantity scores 6666 with refs unchanged, and combine_regs can raise qty_size for an EXISTING qty (the 'if (usize < ssize)' branch at local-alloc.c:1935-1946) without a DImode value ever being emitted.",
-   "mechanism": "qty_size enters the priority numerator directly. It is set from the qty's mode at creation but is RAISED in combine_regs when a wider pseudo is tied into an existing qty, with a paired reg_offset fixup, so the tie itself can be byte-neutral. Every prior probe in this ledger moved refs, birth, death or LUID; size has never been measured.",
-   "next_probe": "Enumerate spellings that tie a wider-mode pseudo into the arg5-value qty (e.g. a same-storage view of the loaded word through a wider type at a point where the value is already dead) and read qty_size / chgsize off the block=3 SUGGDBG-QTY line; reject anything whose build_insns leaves 160."
+   "hypothesis": "The seating can be won from the other side by pushing mode and result BELOW the pointers instead of lifting the pointers above them - an arm no session has probed (every prior probe raised a pointer's refs or shortened its life).",
+   "mechanism": "mode/result sit at pri 263/253 purely because a parameter's minimum nrefs is 2 (incoming-copy set + single use) at live lengths 76/79. Any C spelling that lengthens a parameter's counted live range past ~145 drops it under idx_1495's 138 without touching the pointers at all, and unlike the pointer side it cannot cost prologue instructions, since the parameter copies are already emitted.",
+   "next_probe": "Enumerate spellings that change where the parameters' live ranges are counted - reading a0/a1 through an early-declared local, moving the `if (a0 != 0)` test into a different arm of the temp==2/temp==5 dispatch, routing `result` through `dst` alone so the `a1 != 0` test reads dst - and for each read the ALLOCDBG ord=11..15 block. ACCEPT only a form where mode and result both fall below 202 while build_insns stays 160."
   },
   {
    "hypothesis": "A matched libcd bios.c body for CD_sync appears upstream in psyz / sozud psy-q-decomp, closing the function by provenance instead of by search.",
-   "mechanism": "BB2 links Sony's prebuilt PsyQ BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md: all 1,526 .text words masked-identical), so a matched upstream body IS the original source shape.",
-   "next_probe": "Re-fetch Xeeynamo/psyz decomp/src/libcd/bios.c and check whether line ~94 is still INCLUDE_ASM for CD_sync (it was, as of s105 2026-08-25)."
+   "mechanism": "BB2 links Sony's prebuilt PsyQ BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md: all 1,526 .text words masked-identical), so a matched upstream body IS the original source shape. s110 additionally establishes what that body must look like at the RTL level: a goto-shaped poll (loop_depth 1 throughout, no LICM) with all three address pointers as explicit fn-scope locals.",
+   "next_probe": "Re-fetch Xeeynamo/psyz decomp/src/libcd/bios.c and check whether CD_sync is still INCLUDE_ASM (it was as of s105 2026-08-25); if a body exists, port it onto the goto chassis and read its ALLOCDBG ord=11..15 block before scoring."
   }
  ],
  "judge_constraints": [
@@ -715,6 +721,22 @@
    "measured_on": "g3 order-perfect base (memory/grind/CD_sync/rejected/s108_g3_arg5_first_regexchange.c), control 6/160, build_insns 160, rules_dropped 0; FAKE chain-extender on idx_1495 and the pp pointer-alias both p",
    "predicate_cite": "",
    "result": "KILLED for all six; zero probes at or below the g3 control of 6, and not one moved qty_n_refs off 2. Two interceptors me"
+  },
+  {
+   "session": 110,
+   "statement": "Dropping the fn-scope pointer locals idx_1495, idx_1494 and tbl_125c lets loop.c re-create them as loop-invariant hoists in the function prologue with the short live lengths the target seating needs.",
+   "kill_scope": "instance",
+   "measured_on": "honest chassis (memory/grind/CD_sync/rejected/s110_honest_idx1495_sreg_permutation_15.c, control 15/160, rules_dropped 0); pp pointer-alias FAKE present, h5 chain-extender absent",
+   "predicate_cite": "",
+   "result": "KILLED for all three: v1 masked=18 build_insns=157, v2 masked=34 build=159, v3 masked=38 build=156. No dropped pointer i"
+  },
+  {
+   "session": 110,
+   "statement": "Writing the outer poll as a real while (1) loop turns on flow.c's loop_depth weighting of reg_n_refs and loop.c's invariant hoisting, reproducing the target's allocno priority ordering on an honest ch",
+   "kill_scope": "instance",
+   "measured_on": "honest chassis (control 15/160) and its symbol-ref derivative; pp pointer-alias FAKE present, h5 chain-extender absent; build_insns 165/164 vs target 160",
+   "predicate_cite": "",
+   "result": "KILLED for both: v4 masked=41 build_insns=165, v5 masked=37 build_insns=164. The weighting is real and measured (v5: idx"
   }
  ]
 }

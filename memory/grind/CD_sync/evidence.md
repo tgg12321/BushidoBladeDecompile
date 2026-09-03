@@ -2097,3 +2097,32 @@ carrier-masked, and the ledger floor of 2 is current, not historical.
 - [s109] The SUGGDBG-FFR lines show both contested qtys enter find_free_reg with ncopysugg=0 nsugg=0, i.e. NEITHER carries a hard-register suggestion - so the suggestion arm of find_free_reg is completely unexercised at this site, while other CD_sync blocks (blk=0 qty=0 nsugg=1 sugg=2) show the mechanism does fire elsewhere in this same function.
 
 - [s109] Chassis re-audit: candidate.c re-scores 2/160 on the current chassis; its two FAKE units cost 13 and 15 points individually and 28 jointly when ablated, so the recorded floor is current and un-masked.
+
+## s110 (rederive) - the honest-chassis residual is a global-allocno seating problem, quantified
+
+- [s110] The honest chassis (`idx_1495 = idx_1494 + 1;`, no cross-symbol chain-extender) scores 15/160 with build_insns 160 and rules_dropped 0. A full objdump-vs-target instruction walk (tmp/grind/CD_sync/s110/odiff.py) shows it is structurally identical to the target at every one of the 160 slots except (a) a permutation of the four callee-saved seats {s3,s4,s5,s6} and (b) the long-known slot-54/55 order swap. So ~13 of the 15 points are ONE decision in global.c, not a scheduler residual.
+- [s110] ALLOCDBG (BB2_ALLOC_DEBUG=1, hook at tools/gcc-2.7.2/global.c:605) side by side:
+  - h5 / masked 2 (target seating): idx_1494 pri=933 -> $s2; tbl_125c nrefs=5 len=148 pri=675 -> $s3; idx_1495 nrefs=2 len=72 pri=277 -> $s4; mode nrefs=2 len=76 pri=263 -> $s5; result nrefs=2 len=79 pri=253 -> $s6.
+  - honest / masked 15: idx_1494 933 -> $s2; mode 263 -> $s3; result 253 -> $s4; tbl_125c nrefs=3 len=148 pri=202 -> $s5; idx_1495 nrefs=2 len=144 pri=138 -> $s6.
+- [s110] THE CLOSING CONDITION, stated numerically for the first time: on the honest chassis the function seats correctly iff `933 > pri(tbl_125c) > pri(idx_1495) > 263`. mode and result are pinned at 263/253 (a parameter's minimum nrefs is 2 and this body has no loop-depth weighting). Holding the TARGET'S OWN ref counts (tbl_125c 3, idx_1495 2 - both read directly off asm/funcs/CD_sync.s: $s3 appears 3x, $s4 2x), the condition reduces to two live-length inequalities: **live_length(tbl_125c) < 114 and live_length(idx_1495) < 76**, at build_insns 160. Present values are 148 and 144.
+- [s110] This is a strictly WEAKER bar than the one s102 measured its six livelen-shortening probes against. s102 derived "need livelen<44" from the h5 pri of 675; the real requirement is only pri>263 for tbl_125c (livelen<114) and pri>263 for idx_1495 (livelen<76). No probe has yet been scored against the relaxed bar.
+- [s110] The h5 chain-extender is now understood as a DOUBLE lever, which explains why 15 sessions of single-axis honest respellings all measured exactly 15: it simultaneously (i) lifts tbl_125c from 3 to 5 refs, crossing the floor_log2 boundary (202 -> 675) and (ii) halves idx_1495's live length (144 -> 72; 138 -> 277). An honest replacement has to reproduce BOTH effects, or reproduce the seating some third way.
+- [s110] loop.c performs NO invariant hoisting in this function: the outer poll is a goto loop with no NOTE_INSN_LOOP_BEG. Dropping any of the three pointer locals therefore loses its prologue lui/addiu outright (v1 -3 insns/18, v2 -1/34, v3 -4/38) instead of being re-created as a preheader hoist.
+- [s110] Making the outer poll a real `while (1)` DOES turn on flow.c's `reg_n_refs += loop_depth` weighting (measured: idx_1494 7 -> 12 refs, mode/result 2 -> 3), but it lifts the parameters as fast as the pointers and costs +4/+5 instructions with two allocnos left unallocated. Since the target's own ref counts are the UNWEIGHTED ones, the original compile also saw loop_depth 1 - the goto chassis is provenance-correct and the structured-while reading of the PsyQ bios.c source is closed.
+- [s110] Tooling written this session and reusable: tmp/grind/CD_sync/s110/splice.py (splice any body file into src/system.c over the INCLUDE_ASM marker), cap.py/cap.sh (instrumented-cc1 capture with arbitrary BB2_* env hooks), odiff.py (objdump the sandbox object and walk it against asm/funcs/CD_sync.s slot by slot), run.sh + run.ps1 (splice -> ALLOCDBG -> sandbox score in one call per variant).
+
+- [s110] Chassis re-measured this session: memory/grind/CD_sync/candidate.c applied to src/system.c scores 2/160, build_insns 160, rules_dropped 0 - the ledger floor reproduced, chassis unchanged since s109.
+
+- [s110] The honest respelling idx_1495 = idx_1494 + 1 scores 15/160 with build_insns 160 (no instruction-count penalty at all): the entire 15 is register naming plus one 2-insn order swap.
+
+- [s110] ALLOCDBG h5 vs honest, verbatim: h5 ord=11..15 = p77(933,$s2) p79 nrefs5 len148(675,$s3) p78 nrefs2 len72(277,$s4) p72 mode(263,$s5) p73 result(253,$s6); honest ord=11..15 = p77(933,$s2) p72 mode(263,$s3) p73 result(253,$s4) p79 nrefs3 len148(202,$s5) p78 nrefs2 len144(138,$s6).
+
+- [s110] Numeric closing condition for the honest chassis, established this session: live_length(tbl_125c) < 114 and live_length(idx_1495) < 76, with nrefs held at the target's own 3 and 2, at build_insns 160. s102's six livelen probes were all judged against livelen<44, a bar three times stricter than what the seating actually requires.
+
+- [s110] The h5 chain-extender is a double lever (tbl_125c 3->5 refs crossing the floor_log2 4-ref boundary, AND idx_1495 live length 144->72); that is the mechanical reason 15 sessions of single-axis honest respellings all measured exactly 15.
+
+- [s110] loop.c performs no invariant hoisting anywhere in CD_sync: the outer poll is a goto loop, so there is no NOTE_INSN_LOOP_BEG and loop_depth is 1 for every insn - which also means every reg_n_refs in this function is a raw mention count.
+
+- [s110] Target ref counts read directly off asm/funcs/CD_sync.s: $s2 (&Intr) 7, $s3 (CD_intstr) 3, $s4 (&Intr+1) 2, $s5 (mode) 2, $s6 (result) 2 - identical to the honest chassis's counts, confirming the honest form has the right refs and only the wrong live lengths.
+
+- [s110] The upstream-provenance frontier item was not advanced this session (no network fetch attempted); tmp/closer/sotn_bios.c's CD_sync body remains the only in-hand reference C and its structured-while shape is now measured to cost +4/+5 instructions here.
