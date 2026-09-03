@@ -1,0 +1,47 @@
+{
+ "func": "func_8003A728",
+ "file": "code6cac_c_mid",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 3,
+   "modality": "recon",
+   "headline": "recon: clean pure-C draft 38 -> 3 (s32 c0lo, multi-set lh staging, u16 loads into buf8); last 3 = sched1 lbu placement, mechanism proven (v3b gets exact order, moves residual to a 24-insn RA seat rota"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "With the v3b dependence shape (flag read into packed), the packed->v0 / hi16->a0 seats can be recovered by keeping hi16 a global-alloc pseudo (as in v2, where it wins a0) or by changing where hi16 is born relative to the in-place hash chain",
+   "mechanism": "global.c find_reg numeric order with regs_used_so_far pass-0 skip; local-alloc qty priority (floor_log2(refs)*refs*size/length) decides the block-1 caller-saved seats",
+   "next_probe": "measure v3b variants: hi16 computed before `packed` is assembled / before D_800A3698 store; hi16 declared as the sibling-style separate `a0` variable read twice; then run tools/ra_solver/extract.py + inverse.py on block 1 with goal {packed: v0, hi16: a0}"
+  },
+  {
+   "hypothesis": "A sched_solver perturb pinned to block 1 (--block, pass 1) yields a luid/luid_move vector that reaches the target order WITHOUT the flag-into-packed reuse, keeping v2's allocation",
+   "mechanism": "sched.c rank_for_schedule LUID tie-breaks and the T-3 stall condition; the model is exact on this TU",
+   "next_probe": "perturb.py tmp/sched_solver_work/code6cac_c_mid.sched.json --func func_8003A728 --pass 1 --block <block1 id> --goal-before <or uid>:<lbu uid> --atoms luid,luid_move --depth 2 on the v2 state"
+  },
+  {
+   "hypothesis": "The flag-into-packed reuse (v3b) is classifiable as ordinary scratch-variable C given sibling func_8003A5A0's style; otherwise it is the staged-value-reused-variable family and needs the FAKE annotation + lever exhaustion",
+   "mechanism": "policy: staged-value-reused-variable.md (real value, immediately used, existing dead local)",
+   "next_probe": "once bytes match, grep docs/reference/sotn-construct-index.md for flag-into-scratch precedent before writing self_vet.md; if none, emit ruling-request"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "On the v3b chassis, respelling the hash chain as compound `^=` steps (v4a) or as a single `packed = (...) & 0xFFFF` step (v4b) restores the packed->v0 / hi16->a0 seats",
+   "kill_scope": "instance",
+   "measured_on": "post-migration main chassis, -mel, no rules; v3b body with buf8 reuse + multi-set t staging + flag-into-packed present, no FAKE annotations",
+   "predicate_cite": "",
+   "result": "24 and 26 \u2014 seats unchanged (packed a0, hi16 v1)"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-02T23:27:09.180641+00:00"
+}
