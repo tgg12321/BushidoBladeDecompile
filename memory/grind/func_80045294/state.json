@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 56,
- "current_modality": "synthesis",
+ "session_count": 58,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -339,23 +339,35 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Block-0 declaration order exhaustively enumerated (120 forms, none reach 0); the v1-first geometry is class-killed at sched.c:2464; and a do-while label DOES split block 0's cse EBB and print the targ"
+  },
+  {
+   "session": 57,
+   "floor": 1,
+   "modality": "solver",
+   "headline": "First solver-suite pass on this function: the RA layer is class-killed (global.c:1275 - the allocation already equals the target), the scheduler layer is class-killed a second time by exhaustive depth-2 input enumeration (sched.c:2464), form A is shown to carry no allocation difference at all (s56 frontier 3 refuted), and inverse_compose.py classify is shown to mis-type every canon_reg operand residual as RA."
+  },
+  {
+   "session": 58,
+   "floor": 1,
+   "modality": "solver",
+   "headline": "First solver-suite pass in 57 sessions: the RA layer is class-killed (the allocation already IS the target's, global.c:1275), the scheduler layer is class-killed a second time by exhaustive depth-2 in"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A CODE_LABEL between block 0's copy and its shift closes the last instruction, provided loop.c cannot hoist the shift across it \u2014 the cse1 half of the device is already proven to print the target's operand.",
-   "mechanism": "cse.c:8039 ends an extended basic block at any CODE_LABEL irrespective of after_loop, so the split survives cse2; s56 measured the shift printing (reg/v:SI 72) at cse1 under exactly this device. The only thing that undid it was loop.c (toplev.c:2895) moving the loop-invariant shift into the do-while's preheader, above the label. Removing the shift's invariance, or using a label that is not a loop top, keeps the split alive into cse2.",
-   "next_probe": "Build and measure carriers whose label is not a loop top and whose condition jump_optimize (toplev.c:2827) cannot resolve \u2014 s56 showed a condition on a value cse knows equals a0 is folded before cse1, so build it on a1 or on a global instead; and separately keep the do-while carrier but make the shifted value non-invariant inside it (shift a value the loop body also writes). For each form, grep the per-function region of dumps/text1a_c.cse2 for `(ashift:SI (reg/v:SI 72)` BEFORE looking at the score; only forms that keep reg 72 at cse2 are worth optimising down toward build_insns == 83."
+   "hypothesis": "A CODE_LABEL between block 0's copy and its shift still closes the last instruction, but the carrier must be byte-free AND must not move the shift into a loop body - s56 proved the cse1 half works and that loop.c's LICM is the only thing that undoes it, and s57 adds that the carrier must not reorder block 0's statements either.",
+   "mechanism": "cse.c:8039 ends an extended basic block at any CODE_LABEL irrespective of after_loop, so a surviving label keeps canon_reg (cse.c:2532-2572) from rewriting the shift's operand to the crown; s56 measured the shift printing (reg/v:SI 72) at cse1 under exactly this device. What undid it was loop.c (toplev.c:2895) hoisting the loop-invariant shift into the do-while's preheader, above the label. s56-H4 additionally showed the carrier's condition must be one jump_optimize (toplev.c:2827) cannot resolve, so it must be built on a1 or on a global rather than on a value cse knows equals a0. s57-H4 adds the new constraint that the carrier must leave block 0's statement order alone, since that order is the sole scheduler-visible lever and is already at its best value.",
+   "next_probe": "Build carriers whose label is NOT a loop top and whose condition is unresolvable at jump_optimize (a1-based or global-based), and separately keep the do-while carrier but make the shifted value non-invariant inside it (shift a value the loop body also writes). For each form, grep the per-function region of dumps/text1a_c.cse2 for `(ashift:SI (reg/v:SI 72)` BEFORE looking at the score; only forms that keep reg 72 at cse2 are worth optimising down toward build_insns == 83."
   },
   {
-   "hypothesis": "Block 0's shift is created after cse2 in the original build, which is the only route left besides the extended-basic-block split.",
-   "mechanism": "s56 proved the original's crown was i (cse.c:854-857 clause B, from the target's own register last-mentions) and class-killed the shift-precedes-copy geometry at sched.c:2464, so the shift must have escaped canon_reg (cse.c:2532-2572). Passes that can create insns after cse2 (toplev.c:2926) are jump_optimize (2929), thread_jumps (2935), combine and the allocators. A loop.c giv initialisation created at toplev.c:2895 is still canonicalised by cse2, so the useful variant is one where combine rebuilds the shift out of the surviving (set (reg 75) (reg 72)) copy, which requires the shift's operand pseudo to die at the shift.",
-   "next_probe": "Enumerate loop-1 shapes in which the block-0 offset is a short-lived intermediate that dies at the shift (t = a0; v1 = t << 4; with t unused elsewhere, and variants where t is written inside a one-trip construct), and read dumps/text1a_c.combine for whether try_combine substitutes the copy's source reg 72 into the ashift. Reject any form at build_insns != 83 before scoring."
+   "hypothesis": "Creation of block 0's shift after cse2 is the other live route, and s57 narrows it: the creating pass must be one that runs after cse2 and must not disturb block 0's statement order, which points at combine rebuilding the shift out of the surviving (set (reg 75) (reg 72)) copy.",
+   "mechanism": "s56-E1 proved the original's crown was i (cse.c:854-857 clause B, read off the target's own register last-mentions) and s56-H1 plus s57-H4 class-kill the shift-precedes-copy geometry at sched.c:2464, so in the original the shift must have escaped canon_reg (cse.c:2532-2572) rather than pre-dating the copy. Passes that can create insns after cse2 (toplev.c:2926) are jump_optimize (2929), thread_jumps (2935), combine and the allocators; a loop.c giv initialisation created at toplev.c:2895 is still canonicalised by cse2, so the useful variant is one where try_combine substitutes the copy's source reg 72 into the ashift, which requires the shift's operand pseudo to be short-lived and to die at the shift.",
+   "next_probe": "Enumerate loop-1 shapes in which block 0's offset is a short-lived intermediate that dies at the shift (t = a0; v1 = t << 4; with t unused elsewhere, and variants where t is written inside a one-trip construct), and read dumps/text1a_c.combine for whether try_combine substitutes reg 72 into the ashift. Reject any form at build_insns != 83 before scoring. Note the standing obstacle: while t, i and a0 are all in one cse equivalence class, cse rewrites t to the crown before combine ever sees it, so the form must also break that class or delay t's creation past cse2."
   },
   {
-   "hypothesis": "Form A's ten-point loop-2 register-name swap is an allocation artifact that can be removed independently of the crown, which would isolate the loop-1 guard as a second single-instruction attack surface at floor 1.",
-   "mechanism": "Form A already emits block 0's first seventeen instructions byte-exactly, including sll $v1,$s2,4. Its swap comes from sharing i between the loop-1 counter and loop-2's byte offset, whereas the target shares $s0 between the two loop counters and $s1 between sum and loop 2's offset. The tension is that the target's sharing makes i loop 2's counter and therefore the a0 quantity's last mention, which re-crowns i.",
-   "next_probe": "Build A-variants that adopt the target's sharing pattern one axis at a time (sum reused as loop 2's byte offset while the loop-1 counter stays distinct from loop 2's; then i reused as loop 2's counter) and measure each with sandbox at build_insns == 83, reading dumps/text1a_c.cse for which pseudo takes the crown. A form that keeps the crown on the parameter while allocating loop 2 the target's way would leave exactly one differing instruction with a mechanism different from the shift's."
+   "hypothesis": "The two modelled layers are now closed, so the next ladder rung should be spent on cse's EBB structure and on post-cse2 insn creation rather than on any further RA or scheduler search - and a future session should not re-run classify's verdict as a routing decision on this function.",
+   "mechanism": "s57-H1 (global.c:1275) shows the allocation already equals the target's, and s57-H4 (sched.c:2464) shows the scheduler's whole depth-2 input space contains no spellable vector; s57-H2 shows inverse_compose.py classify will nonetheless keep reporting RA here because register blanking cannot see a pseudo substitution. Both solver backends are therefore structurally inapplicable to this residual, exactly as they were to func_80017848.",
+   "next_probe": "Skip the solver ladder on any future func_80045294 session and go straight to cse instrumentation: dump with `pwsh tools/grinder/dump.ps1 func_80045294` and diff the per-function cse/cse2 regions across the candidate and any new carrier, using `(ashift:SI (reg/v:SI 72)` at cse2 as the single pass/fail signal before the sandbox is consulted."
   }
  ],
  "judge_constraints": [
@@ -526,6 +538,30 @@
    "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "score 1, build_insns 83 \u2014 byte-identical to candidate.c. dumps/text1a_c.cse shows block 0 as a single EBB `;; Processing"
+  },
+  {
+   "session": 58,
+   "statement": "Global register allocation on the candidate chassis already produces the target's exact per-pseudo disposition, so the one differing instruction is not reachable by any allocation: it needs one refere",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-03 chassis, memory/grind/func_80045294/candidate.c (a0-as-pointer i-first geometry) applied at src/text1a_c.c:1445, sandbox score 1 / target_insns 83 / build_insns 83, zero FAKE construct",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1275",
+   "result": "Dispositions: 72:$s2 73:$s3 74:$s1 75:$s0 76:$v1 77:$s4 79:$a1 80:$s5 85:$s1 91:$v0 - exactly what the target's 82 match"
+  },
+  {
+   "session": 58,
+   "statement": "Form A's eleven-point residual contains no register-allocation difference at all: form A produces the identical per-pseudo disposition to candidate.c and to the target, so its loop-2 register naming i",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, form A geometry (tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c) at score 11 / 83 insns, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "A = score 11, build_insns 83; differing build indices 18, 38, 39, 41, 45, 51, 57, 61, 63, 64, 66; dispositions identical"
+  },
+  {
+   "session": 58,
+   "statement": "On the v1-first (H) geometry no perturbation of the scheduler's inputs reaches copy-before-shift in block 0 unless it reorders the source statements: all 40 depth-2 goal-reaching vectors at pass 2 (an",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-03 chassis, H (v1-first) geometry at score 2 / 83 insns, zero FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2464",
+   "result": "Pass 2 returns 40 vectors, pass 1 returns 12. The only physically spellable class is `luid swap 14 <-> 22` / `luid_move "
   }
  ]
 }

@@ -1639,3 +1639,217 @@ leaving exactly two live routes for the last instruction.
 - probe: Applied tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c, measured `sandbox func_80045294 --disable all`, and diffed the objdump of tmp/sandbox/func_80045294/text1a_c.o against target.txt instruction by instruction (tmp/grind/func_80045294/s56/d.sh, cur.txt).
 - result: 11/83 re-confirmed on the current chassis. Block 0's first seventeen instructions are byte-exact INCLUDING `sll $v1,$s2,4`; the guard prints `slt $v0,$s2,$a0` against the target's `slt $v0,$s0,$a0`; the remainder is the naming swap (build `move s1,s2` / `slt v0,s1,v0` / `sll v1,s1,4` against target `addu $s0,$s2,$zero` / `slt $v0,$s0,$v0` / `sll $v1,$s0,4`).
 - verdict: CONFIRMED
+
+## [s57] solver — the first solver-suite pass ever run on this function
+
+Modality: solver. `tools/ra_solver` + `tools/sched_solver` had never been run on
+func_80045294 in 56 sessions (a grep of the whole ledger for `inverse_compose`,
+`perturb.py` and `--target-object` returns nothing before this session). Chassis
+re-verified first: `memory/grind/func_80045294/candidate.c` applied over
+`src/text1a_c.c:1445` measures `sandbox func_80045294 --disable all` =
+**score 1, target_insns 83, build_insns 83** on the HEAD 2026-09-03 chassis, so
+the brief's "measurement unavailable" is resolved and the ledger floor of 1 stands.
+The single differing instruction is build idx 9: ours `sll v1,s0,0x4`, target
+`sll v1,s2,0x4` (`tmp/grind/func_80045294/s57/hon.txt`, `tgt.txt`).
+
+### [s57-H1] KILLED (class) — the register-allocation layer is already AT the target
+
+**Statement.** On the candidate chassis global alloc assigns
+`{72:$s2, 73:$s3, 74:$s1, 75:$s0, 76:$v1, 77:$s4, 79:$a1, 80:$s5, 85:$s1, 91:$v0}`,
+and that disposition is exactly the one the target's bytes require: 82 of the 83
+instructions are byte-identical, and pseudo 75 ($s0) and pseudo 72 ($s2) each occur
+in many of those matching instructions. No assignment of hard registers to pseudos
+reaches the target, because the residual needs ONE reference of pseudo 75 to print
+`$s2` while seventeen other references of the same pseudo keep printing `$s0`.
+
+**Mechanism.** `global.c:1275` is `reg_renumber[allocno_reg[allocno]] = best_reg;`
+— exactly one hard register per pseudo, function-wide. A per-reference hard
+register does not exist in this allocator, so an operand divergence on one
+reference of a pseudo that is correct on all its other references is outside the
+RA model's reachable set by construction. `tools/ra_solver/inverse.py global
+--goal '{"75": 18, "72": 16}'` (the naive RA reading of the residual, i.e. swap
+$s0/$s2) does return 54 two-atom vectors, but the goal itself is wrong: applying
+the swap renames both registers function-wide and breaks the eighteen currently
+matching instructions at build idx 1, 2, 7, 8, 18, 24, 26, 38, 39, 41, 44, 46, 49,
+61, 63, 64, 77 and 79.
+
+**Probe.** `python3 tools/ra_solver/extract.py func_80045294 text1a_c --out
+tmp/grind/func_80045294/s57/model.json` (model derived from the CANDIDATE body
+applied to src, per solver operational rule 2), then the full instruction-level
+diff of `tmp/sandbox/func_80045294/text1a_c.o` against `build/src/text1a_c.o` via
+`engine.score.normalized_insns` (`tmp/grind/func_80045294/s57/streams.py`), then
+`tools/ra_solver/inverse.py`. Report: `tmp/grind/func_80045294/s57/ra_report.txt`.
+
+**Measured on.** HEAD 2026-09-03 chassis, candidate.c (a0-as-pointer i-first
+geometry) at 1/83, zero FAKE constructs present.
+
+**predicate_cite:** `tools/gcc-2.7.2/global.c:1275`
+
+### [s57-H2] CONFIRMED — `inverse_compose.py classify` MIS-TYPES this residual as RA, and that is a pipeline-wide hazard for pseudo-substitution residuals
+
+`python3 tools/ra_solver/inverse_compose.py classify text1a_c func_80045294
+--target-object build/src/text1a_c.o --ours-object tmp/sandbox/func_80045294/text1a_c.o`
+prints:
+
+    FIRST DIVERGENCE: RA
+      next tool: tools/ra_solver/inverse.py  (global / local)
+      same instructions, different registers:
+        ours  : sll v1,s0,0x4
+        target: sll v1,s2,0x4
+
+The verdict is wrong, and the reason is structural rather than local. `classify`
+decides PRE-RA vs RA by comparing REGISTER-BLANKED instruction multisets: blanking
+turns both spellings into `sll <r>,<r>,0x4`, the multisets match, and it concludes
+"same instructions, different registers". But the difference here is which PSEUDO
+the pre-RA RTL names (our `(ashift (reg 75))` against the target's
+`(ashift (reg 72))`), not which hard register the allocator chose for a fixed
+pseudo. Register blanking cannot distinguish those two situations and always
+resolves the ambiguity in favour of RA, so **every cse/`canon_reg` operand-
+substitution residual in this project will be typed RA by `classify`.** The
+disambiguator is cheap and should be run whenever `classify` says RA on a residual
+of one or two instructions: extract the RA model and check whether the divergent
+register is already correct on that pseudo's OTHER references — if it is, the layer
+is PRE-RA and the RA backend has nothing to search. This is the same class of
+hazard as the func_80017848 s25 finding, but it survives the object path, so the
+2026-08-30 `--target-object` escape does not fix it.
+
+### [s57-H3] KILLED (instance) — form A's ten-instruction loop-2 "register swap" is not an allocation artifact, so s56 frontier item 3's premise is false
+
+**Statement.** Form A (`tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c`,
+re-measured this session at 11/83, build_insns 83) produces the register
+disposition `{72:$s2, 73:$s3, 74:$s1, 75:$s0, 76:$v1, 77:$s4, 79:$a1, 80:$s5,
+85:$s1, 91:$v0}` — identical in all 24 entries to candidate.c's, and identical to
+what the target's bytes require. A's eleven-point residual therefore contains no
+allocation difference at all: it is entirely a difference in which VALUE each
+pseudo carries, decided before RA by A's variable-sharing pattern.
+
+**Consequence.** s56 frontier item 3 ("Form A's ten-point loop-2 register-name swap
+is an allocation artifact that can be removed independently of the crown") is
+refuted. There is no allocator lever to pull. Making A's loop 2 print the target's
+registers means giving pseudo 75 the loop-2 counter and $s1 the byte offset, which
+IS the target's variable sharing, which is exactly what re-crowns i and destroys
+A's block 0. Form A and candidate.c are the two endpoints of one pre-RA trade, not
+two independent attack surfaces.
+
+**Probe.** Applied A, `sandbox func_80045294 --disable all` = 11/83, full
+instruction diff (differing indices 18, 38, 39, 41, 45, 51, 57, 61, 63, 64, 66),
+then `python3 tools/ra_solver/extract.py func_80045294 text1a_c --out
+tmp/grind/func_80045294/s57/modelA.json` and a field-by-field comparison of
+`dispositions` against `model.json`. Two of the eleven points (idx 61 and 66) are
+additionally just the source order of loop 2's two increments, not a naming issue
+at all.
+
+**Measured on.** HEAD 2026-09-03 chassis, form A geometry at 11/83, zero FAKE
+constructs present.
+
+### [s57-H4] KILLED (class) — on the v1-first (H) geometry no scheduler-input perturbation reaches copy-before-shift without a source reorder
+
+**Statement.** An exhaustive depth-2 enumeration of the entire scheduler input
+space for func_80045294's pass-2 block 0 on the H geometry (960 single atoms plus
+pairs, over the `add_dep` / `del_dep` / `luid` / `luid_move` / `cost` / `unit`
+classes) returns 40 goal-reaching vectors, and every one of them is either a `luid`
+reorder — which is by definition the i-first geometry, whose cse pass then rewrites
+the shift's operand to the crown and yields score 1 with the wrong operand — or an
+`add_dep X <- Y` in which the added predecessor Y has a HIGHER LUID than X, i.e. a
+dependence edge that contradicts the RTL order it would have to be built in and
+that no C can spell. Pass 1 gives the same answer (12 vectors, the same two shapes).
+
+**Mechanism.** `tools/sched_solver` models sched.c's list scheduler order- and
+clock-exactly and reported `parity=True` on this TU (154 functions, 560 blocks,
+3618 picks reproduced). In the H model, pass-2 block 0 has the shift as uid 14
+(LUID 15, priority 1, cost 1, sole predecessor uid 4 = `move s2,a0`) and the copy
+as uid 22 (LUID 16, priority 1, same sole predecessor), so `rank_for_schedule`
+falls through to its `INSN_LUID (tmp) - INSN_LUID (tmp2)` tiebreak at
+`tools/gcc-2.7.2/sched.c:2464` and preserves RTL order. Raising the copy's priority
+above the shift's requires a new dependence edge, and the enumeration shows every
+edge that would do it runs backwards against LUID.
+
+**Probe.** `python3 tools/sched_solver/extract.py text1a_c --out
+tmp/grind/func_80045294/s57/schedH.json` with
+`tmp/grind/func_80045294/s53/H_a0ptr_vfirst.c` applied, then
+`python3 tools/sched_solver/perturb.py ... --func func_80045294 --pass 2 --block 0
+--goal-before 14:22 --depth 2 --max 60` and the same for `--pass 1`. Report:
+`tmp/grind/func_80045294/s57/sched_report.txt`.
+
+**Measured on.** HEAD 2026-09-03 chassis, H (v1-first) geometry at 2/83, zero FAKE
+constructs present.
+
+**predicate_cite:** `tools/gcc-2.7.2/sched.c:2464`
+
+### Where this leaves the search
+
+Both modelled layers are now typed and closed for this function: RA is at its
+target (s57-H1, class, global.c:1275), and the scheduler cannot be perturbed into
+the target order without the source reorder that costs the operand (s57-H4, class,
+sched.c:2464, corroborating s56-H1 from an independent exhaustive enumeration).
+The solver suite has nothing left to search here, and the entire remaining residual
+lives in the one pass s52-s56 already named: cse's `canon_reg` substitution of
+block 0's shift operand. The two live routes are unchanged (an extended-basic-block
+split that survives loop.c, or creation of the shift after cse2), and s57 adds one
+negative constraint to both: whatever route is taken must NOT change block 0's
+statement order, because the sched model shows that order is the only
+scheduler-visible lever and it is already spent at its best value.
+
+## [s57] Global register allocation on the candidate chassis already produces the target's exact per-pseudo disposition, so no allocation reaches the one differing instruction.
+- mechanism: global.c:1275 assigns exactly one hard register per pseudo for the whole function (`reg_renumber[allocno_reg[allocno]] = best_reg;`). The residual needs one reference of pseudo 75 to print $s2 while seventeen other references of the same pseudo keep printing $s0; a per-reference hard register does not exist in this allocator.
+- probe: python3 tools/ra_solver/extract.py func_80045294 text1a_c (model from the candidate body applied to src), full normalized_insns diff of tmp/sandbox/func_80045294/text1a_c.o against build/src/text1a_c.o, and python3 tools/ra_solver/inverse.py global --goal (75->18, 72->16) --depth 2.
+- result: dispositions {72:$s2, 73:$s3, 74:$s1, 75:$s0, 76:$v1, 77:$s4, 79:$a1, 80:$s5, 85:$s1, 91:$v0}; exactly one differing instruction (build idx 9, ours `sll v1,s0,0x4` against target `sll v1,s2,0x4`); the $s0/$s2 swap the naive goal asks for is reachable in 54 two-atom vectors but would break the eighteen matching instructions at idx 1,2,7,8,18,24,26,38,39,41,44,46,49,61,63,64,77,79. RA is at target.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, candidate.c a0-as-pointer i-first geometry at 1/83, zero FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/global.c:1275
+
+## [s57] tools/ra_solver/inverse_compose.py classify types this residual as RA, and the verdict is wrong because register blanking cannot distinguish a different pseudo from a different hard register.
+- mechanism: classify separates PRE-RA from RA by comparing register-blanked instruction multisets. Blanking turns `sll v1,s0,0x4` and `sll v1,s2,0x4` into the same token, so a residual in which our pre-RA RTL simply NAMES a different pseudo (our `(ashift (reg 75))` against the target's `(ashift (reg 72))`) is indistinguishable from one in which the allocator assigned a fixed pseudo differently, and the tool always resolves that ambiguity toward RA.
+- probe: python3 tools/ra_solver/inverse_compose.py classify text1a_c func_80045294 --target-object build/src/text1a_c.o --ours-object tmp/sandbox/func_80045294/text1a_c.o, cross-checked against the extracted RA model's dispositions.
+- result: classify printed "FIRST DIVERGENCE: RA / next tool: tools/ra_solver/inverse.py" while the RA model is provably already at the target (s57-H1). Every cse/canon_reg operand-substitution residual in this project will be mis-typed the same way. Disambiguator: check whether the divergent register is already correct on the pseudo's OTHER references; if it is, the layer is PRE-RA. Unlike the func_80017848 s25 hazard this one survives the object path, so the 2026-08-30 --target-object escape does not fix it.
+- verdict: CONFIRMED
+
+## [s57] Form A's eleven-point residual contains no register-allocation difference: A produces the identical per-pseudo disposition to candidate.c and to the target, so its loop-2 register swap is a pre-RA value-to-pseudo assignment decided by A's variable sharing.
+- mechanism: A reuses loop 1's counter as loop 2's byte offset and introduces a separate loop-2 counter, so pseudo 75 ($s0) carries the offset and $s1 the counter; the target has pseudo 75 carrying both loop counters and $s1 shared between sum and the offset. The allocator's map is the same in both builds; only which value each pseudo holds differs.
+- probe: Applied tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c, `sandbox func_80045294 --disable all`, full normalized_insns diff, then python3 tools/ra_solver/extract.py func_80045294 text1a_c --out tmp/grind/func_80045294/s57/modelA.json and a field comparison of `dispositions` against the candidate's model.json.
+- result: A = 11/83, build_insns 83; differing indices 18, 38, 39, 41, 45, 51, 57, 61, 63, 64, 66; dispositions identical to candidate.c's in all 24 entries. Two of the eleven (idx 61, 66) are merely the source order of loop 2's two increments. s56 frontier item 3 is refuted: there is no allocator lever, and adopting the target's sharing is exactly what re-crowns i and destroys A's block 0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, form A geometry at 11/83, zero FAKE constructs present
+
+## [s57] On the v1-first (H) geometry no perturbation of the scheduler's inputs reaches copy-before-shift in block 0 unless it reorders the source statements: all 40 depth-2 goal-reaching vectors are either a luid reorder or a dependence edge running backwards against LUID.
+- mechanism: tools/sched_solver reproduces sched.c's list scheduler order- and clock-exactly (parity=True on this TU: 154 funcs, 560 blocks, 3618 picks). In H's pass-2 block 0 the shift is uid 14 (LUID 15, priority 1, cost 1) and the copy uid 22 (LUID 16, priority 1), both with the single predecessor uid 4 (`move s2,a0`), so rank_for_schedule falls through to the INSN_LUID tiebreak at sched.c:2464. Raising the copy above the shift needs a new dependence edge, and every such edge the enumeration finds has its predecessor at a HIGHER LUID than its successor, which no C can spell.
+- probe: python3 tools/sched_solver/extract.py text1a_c --out tmp/grind/func_80045294/s57/schedH.json with H applied, then python3 tools/sched_solver/perturb.py --func func_80045294 --pass 2 --block 0 --goal-before 14:22 --depth 2 --max 60 (960 single atoms plus pairs over add_dep/del_dep/luid/luid_move/cost/unit), and the same for --pass 1.
+- result: pass 2 returns 40 vectors, pass 1 returns 12; the only physically spellable class is `luid swap 14 <-> 22` / `luid_move`, which IS the i-first geometry (measured 1/83 with the wrong shift operand). Every add_dep vector (6<-22, 12<-22, 14<-22, 14<-25, 14<-31, 205<-22, 209<-22 and the rest) requires a predecessor of higher LUID than its successor. Independent exhaustive corroboration of the s56-H1 class kill.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, H (v1-first) geometry at 2/83, zero FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+
+## [s58] Global register allocation on the candidate chassis already produces the target's exact per-pseudo disposition, so the one differing instruction is not reachable by any allocation: it needs one reference of pseudo 75 to print $s2 while seventeen other references of the same pseudo keep printing $s0.
+- mechanism: global.c:1275 is `reg_renumber[allocno_reg[allocno]] = best_reg;` - exactly one hard register per pseudo, function-wide. A per-reference hard register does not exist in this allocator, so an operand divergence on one reference of a pseudo that is correct on all its other references is outside the RA model's reachable set by construction.
+- probe: python3 tools/ra_solver/extract.py func_80045294 text1a_c --out tmp/grind/func_80045294/s57/model.json (model derived from the CANDIDATE body applied to src, per solver operational rule 2); full instruction-level diff of tmp/sandbox/func_80045294/text1a_c.o against build/src/text1a_c.o via engine.score.normalized_insns (tmp/grind/func_80045294/s57/streams.py -> hon.txt, tgt.txt); then python3 tools/ra_solver/inverse.py global tmp/grind/func_80045294/s57/model.json --goal '{"75": 18, "72": 16}' --depth 2.
+- result: Dispositions: 72:$s2 73:$s3 74:$s1 75:$s0 76:$v1 77:$s4 79:$a1 80:$s5 85:$s1 91:$v0 - exactly what the target's 82 matching instructions require. Exactly one differing instruction: build idx 9, ours `sll v1,s0,0x4` against target `sll v1,s2,0x4`. inverse.py does return 54 two-atom vectors for the naive $s0/$s2 swap goal, but the goal itself is wrong: the swap renames both registers function-wide and would break the eighteen currently matching instructions at build idx 1, 2, 7, 8, 18, 24, 26, 38, 39, 41, 44, 46, 49, 61, 63, 64, 77 and 79. It also reported 20 preference atoms FORECLOSED because $s0 and $s2 are callee-saved and can never appear as hard regs in pre-RA RTL from any C. The RA backend has nothing to search on this function.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, memory/grind/func_80045294/candidate.c (a0-as-pointer i-first geometry) applied at src/text1a_c.c:1445, sandbox score 1 / target_insns 83 / build_insns 83, zero FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/global.c:1275
+
+## [s58] tools/ra_solver/inverse_compose.py classify types this residual as RA and the verdict is wrong, because register blanking cannot distinguish 'our pre-RA RTL names a different PSEUDO' from 'the allocator chose a different hard register for the same pseudo'.
+- mechanism: classify separates PRE-RA from RA by comparing REGISTER-BLANKED instruction multisets. Blanking turns `sll v1,s0,0x4` and `sll v1,s2,0x4` into the same token, the multisets match, and the tool reports 'same instructions, different registers'. Any cse/canon_reg operand substitution therefore presents identically to a genuine allocation divergence, and the ambiguity is always resolved toward RA.
+- probe: python3 tools/ra_solver/inverse_compose.py classify text1a_c func_80045294 --target-object build/src/text1a_c.o --ours-object tmp/sandbox/func_80045294/text1a_c.o, cross-checked against the extracted RA model's dispositions and against the full 83-instruction diff.
+- result: classify printed 'FIRST DIVERGENCE: RA / next tool: tools/ra_solver/inverse.py (global / local) / ours: sll v1,s0,0x4 / target: sll v1,s2,0x4' while the RA model is provably already at the target. Every cse/canon_reg operand-substitution residual in this project will be mis-typed the same way. Cheap disambiguator for future sessions: when classify says RA on a one- or two-instruction residual, extract the RA model and check whether the divergent register is already correct on that pseudo's OTHER references - if it is, the layer is PRE-RA. Unlike the func_80017848 s25 hazard (a text-path artifact) this one survives the object path, so the 2026-08-30 --target-object escape does not fix it.
+- verdict: CONFIRMED
+
+## [s58] Form A's eleven-point residual contains no register-allocation difference at all: form A produces the identical per-pseudo disposition to candidate.c and to the target, so its loop-2 register naming is a pre-RA value-to-pseudo assignment decided by A's variable sharing.
+- mechanism: Form A reuses loop 1's counter as loop 2's byte offset and introduces a separate loop-2 counter, so pseudo 75 ($s0) carries the offset and $s1 the counter; the target has pseudo 75 carrying both loop counters and $s1 shared between sum and the offset. The allocator's map is the same in both builds; only which value each pseudo holds differs, and that is fixed before RA runs.
+- probe: Applied tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c at src/text1a_c.c:1445, `& tools/wteng.ps1 main sandbox func_80045294 --disable all`, full normalized_insns diff, then python3 tools/ra_solver/extract.py func_80045294 text1a_c --out tmp/grind/func_80045294/s57/modelA.json and a field-by-field comparison of `dispositions` against the candidate's model.json.
+- result: A = score 11, build_insns 83; differing build indices 18, 38, 39, 41, 45, 51, 57, 61, 63, 64, 66; dispositions identical to candidate.c's in all 24 entries. Two of the eleven points (idx 61 and 66) are merely loop 2's two increments in the other source order. This refutes s56 frontier item 3: there is no allocator lever to pull, and adopting the target's variable sharing is exactly what re-crowns i and destroys A's block 0. Form A and candidate.c are the two endpoints of one pre-RA trade, not two independent one-instruction attack surfaces.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, form A geometry (tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c) at score 11 / 83 insns, zero FAKE constructs present
+
+## [s58] On the v1-first (H) geometry no perturbation of the scheduler's inputs reaches copy-before-shift in block 0 unless it reorders the source statements: all 40 depth-2 goal-reaching vectors at pass 2 (and all 12 at pass 1) are either a luid reorder or a dependence edge whose added predecessor has a higher LUID than its successor.
+- mechanism: tools/sched_solver reproduces sched.c's list scheduler order- and clock-exactly and reported parity=True on this TU (154 functions, 560 blocks, 3618 picks). In H's pass-2 block 0 the shift is uid 14 (LUID 15, priority 1, cost 1) and the copy is uid 22 (LUID 16, priority 1), both with the single predecessor uid 4 (`move s2,a0`), so rank_for_schedule falls through to the INSN_LUID(tmp) - INSN_LUID(tmp2) tiebreak at sched.c:2464 and preserves RTL order. Raising the copy above the shift requires a new dependence edge, and every edge the enumeration finds runs backwards against LUID and so cannot be built in the RTL order it would apply to.
+- probe: Applied tmp/grind/func_80045294/s53/H_a0ptr_vfirst.c, python3 tools/sched_solver/extract.py text1a_c --out tmp/grind/func_80045294/s57/schedH.json, then python3 tools/sched_solver/perturb.py tmp/grind/func_80045294/s57/schedH.json --func func_80045294 --pass 2 --block 0 --goal-before 14:22 --depth 2 --max 60 (960 single atoms plus pairs over the add_dep / del_dep / luid / luid_move / cost / unit classes), and the same for --pass 1.
+- result: Pass 2 returns 40 vectors, pass 1 returns 12. The only physically spellable class is `luid swap 14 <-> 22` / `luid_move 22 -> before 14`, which IS the i-first geometry - already measured at 1/83 with the shift reading the wrong operand. Every add_dep vector (6<-22, 12<-22, 14<-22, 14<-25, 14<-31, 205<-22, 209<-22 and the rest) needs a predecessor of higher LUID than its successor. This is an independent, exhaustive corroboration of the s56-H1 class kill that does not depend on reading priorities out of a dump, and it adds a standing constraint on both live routes: whatever closes block 0 must not change block 0's statement order, because statement order is the only scheduler-visible lever for the copy/shift pair and candidate.c already has it at its best value.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, H (v1-first) geometry at score 2 / 83 insns, zero FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
