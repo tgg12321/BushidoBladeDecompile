@@ -1114,3 +1114,101 @@ observation.
 - [s15] s13's remark that 'REG_ALLOC_ORDER is undefined in mips.h so find_reg's scan really is plain ascending' is true about the iteration order and misleading about the selection; re-verified this session that neither REG_ALLOC_ORDER nor ORDER_REGS_FOR_LOCAL_ALLOC is defined in tools/gcc-2.7.2/config/mips/mips.h.
 
 - [s15] The tree was restored to INCLUDE_ASM("asm/funcs", func_80033550); at src/code6cac_b.c:2873 before finishing - no draft C left on main (asm-until-matched).
+
+## s16 (2026-09-03, SYNTHESIS) — **MATCHED**: the residual was a mis-typed tail, not an RA lever
+
+Outcome: `sandbox func_80033550 --disable all` = **score 0, target_insns 34,
+build_insns 34, rules_dropped 0**; full clean-driver `build` SHA1
+`62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle (`verify-oracle`
+`build_matches: true`). Pure C, zero cheat-asm, zero FAKE constructs, no header
+change. Body banked at `memory/grind/func_80033550/candidate.c`; self-vet at
+`memory/grind/func_80033550/self_vet.md`.
+
+### E16.1 — baseline and kill re-audit (done first, as mandated)
+Candidate body from s14/s15 pasted over `INCLUDE_ASM("asm/funcs", func_80033550);`
+in src/code6cac_b.c and re-measured on this chassis: the instrumented compile
+(`tmp/grind/func_80033550/s16/findreg.sh`, `BB2_FINDREG_DEBUG=72`) reproduced the
+ledger's numbers exactly —
+
+    conflicts: 2 3 4 29 / someone_prefers: (empty) / own prefs: (empty)
+    pass0_used: 0 1 2 3 4 16..23 26..31   -> first free 5 = $a1
+
+and the emitted body (`tmp/grind/func_80033550/s16/v1.s` predecessor dump) was the
+familiar 34-instruction shape with `move $5,$4` at entry. So the s15 instance kill
+("permuting the load order does not move the pointer") is CONFIRMED on this chassis,
+and its premise — the scalar-triple tail — was confirmed as the thing under test.
+
+### E16.2 — the premise the whole ledger inherited, and why it was wrong
+s9-s15 all reasoned inside one fixed body shape: three scalar loads
+`w0=arg0[0]; w1=arg0[1]; w2=arg0[2];` followed by three scalar stores. Inside that
+shape the arithmetic is airtight and the ledger's conclusions were all correct:
+local-alloc seats the four block-locals at `$v0,$v1,$a0,$a1`, the pointer pseudo 72
+DIES at the third load so it never conflicts with that load's `$a1` destination,
+`hard_reg_conflicts[72]` is therefore `{2,3,4}`, `regs_someone_prefers[72]` is
+necessarily empty (pseudo 72 is the lower of the function's only two global
+allocnos, and `prune_preferences`, global.c:881-931, only merges preferences from
+LOWER-priority conflicting allocnos), and nothing can be seated at `$a2` without
+paying an instruction. Fifteen sessions therefore hunted a "byte-free register
+occupant" — dead locals, live-range padding, duplicated arms, chain-extenders,
+phantom pads, preference routes — and correctly killed every one of them.
+
+The error was never in that arithmetic. It was in treating the scalar-triple tail as
+given. The target's tail is `lw`x3 from one base register followed by `sw`x3 to
+consecutive offsets of one symbol — that is the shape of a **12-byte aggregate
+copy**, not of three independent scalar moves.
+
+### E16.3 — the measurement (the whole finding, in two dumps)
+Tail rewritten as a single struct assignment (typedef declared at file scope in
+src/code6cac_b.c; NO header change — the record type is applied at the use site by
+cast, so this is not the aggregate-merge family and needs no stride evidence):
+
+    *(Word3 *) (((u8 *) (&D_80107850)) + i * 12) = *(Word3 *) arg0;
+
+Same instrumented compile, same pseudo (`tmp/grind/func_80033550/s16/findreg_stderr.txt`):
+
+    scalar-triple tail : conflicts 2 3 4 29     pass0 first free 5 = $a1
+    struct-copy   tail : conflicts 2 3 4 5 6 29 pass0 first free 7 = $a3
+
+The conflict set the ledger spent fifteen sessions trying to manufacture arrives for
+free, at exactly 34 instructions. MECHANISM (dump-attributed, not guessed): GCC
+2.7.2's MIPS block-move expansion emits all three loads before all three stores and
+keeps the SOURCE ADDRESS register live across the whole pattern, so pseudo 72 no
+longer dies at the third load; it now conflicts with that load's `$a1` seat (bit 5)
+and with the block move's extra temporary (bit 6). `find_reg`'s pass-0 scan
+(global.c:996-1001) then skips $v0,$v1,$a0,$a1,$a2 and lands on $a3 — the target seat.
+No preference, no `regs_someone_prefers`, no FAKE carrier, no added instruction.
+
+### E16.4 — the splat per-word symbol names were a red herring in the tail too
+The struct copy compiles to `sw $x, D_80107850+0/+4/+8($2)` — ONE symbol with
+offsets — where `asm/funcs/func_80033550.s` names `D_80107850`, `D_80107854`,
+`D_80107858`. splat manufactured those per-word names from the `%hi/%lo` pairs in the
+shipped code ([[splat-symbol-names-are-not-evidence]]); both spellings assemble and
+link to identical words. Verified by disassembling the linked ELF
+(`tmp/grind/func_80033550/s16/linked_disasm.txt`): all 34 instruction words at
+0x80033550..0x800335D4 are identical to the target asm, including
+`ac247854 sw a0,30804(at)`.
+
+Cautionary note for the next reader: an intermediate spelling of this same body
+(goto-form loop, identical emitted assembly modulo `.L` label numbering — verified by
+text-diffing the two cc1 outputs) transiently scored **2** in the sandbox before
+scoring 0; the emitted asm was byte-identical both times, so that 2 was an object-level
+artifact, not a code difference. When a struct-copy form scores 1-2 with 0 rules,
+text-diff the cc1 output before believing it ([[sandbox-lo16-text-addend-false-distance]]).
+
+### E16.5 — what this retires
+Every open frontier item in the s15 handoff is MOOT, not killed-by-measurement: the
+`regs_someone_prefers` origination hunt, the local-alloc `combine_regs` coalescing
+probe, and the "substitute an existing instruction to seat a fifth register" program
+were all searches for a byte-free way to grow `hard_reg_conflicts[72]` inside the
+scalar-triple chassis. The conflict set is now produced by the function's real
+semantics, so there is nothing left to manufacture. The endgame-lock disposition
+history for this function (2026-07-22 and 2026-08-20 REFUSED / OWNER-ACCEPTED
+INCOMPLETE, the 2026-09-01 Ruling-A unpark, the 2026-09-02 window reset) is
+superseded by a pure-C byte match.
+
+- [s16] MATCHED: sandbox 0 / 34 / 34 / 0 rules and full-build SHA1 == oracle, with pure C, zero cheat-asm and zero FAKE constructs; the do-while(0) wrap the previous candidate carried is deleted along with the rest of the scalar-triple tail.
+- [s16] Expressing the tail as a 12-byte struct assignment changes hard_reg_conflicts[72] from {2,3,4,29} to {2,3,4,5,6,29} at unchanged instruction count, which is exactly what find_reg needs to seat the pointer in $a3; measured with BB2_FINDREG_DEBUG=72, both dumps banked in tmp/grind/func_80033550/s16/.
+- [s16] The mechanism is the MIPS block-move expansion keeping the source address register live across all three loads, so the pointer pseudo stops dying at the third load; the scalar-triple tail is what made it die there, and that tail — not the register allocator — was the residual.
+- [s16] The generated stores use one symbol with offsets (D_80107850+0/+4/+8) where the target asm names three splat-invented per-word symbols; the linked words are identical (linked_disasm.txt), so per-word splat names must not be read as evidence of three separate objects.
+- [s16] No header change was made: include/code6cac.h still declares `extern s32 D_80107850;` and the record type is applied at the use site by cast, so the aggregate-merge family (no-new-park-categories.md 2026-08-17) is NOT claimed and its stride-evidence prongs do not arise.
+- [s16] A goto-form and a for-form of the identical body produced byte-identical cc1 output (only .L label numbers differ) yet transiently scored 2 vs 0 in the sandbox; text-diff cc1 output before trusting a small nonzero score on a struct-copy body.

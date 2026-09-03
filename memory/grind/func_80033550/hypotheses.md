@@ -977,3 +977,50 @@ in the file) but still emits the diagnostics and the dumps — do not treat rc 3
 - probe: Swapped rejected/s12-liverange-extension-blocks-a1-ptr-to-a2-costs-one-insn-5.c into src/code6cac_b.c and re-read BB2_FINDREG_DEBUG=72.
 - result: conflicts {2,3,4,5,29}; pass0_used {0,1,2,3,4,5,16..23,26..31} -> first free 6 = $a2, exactly as banked. It is one bit (bit 6) from $a3, and that bit is suppliable either by conflicts or, byte-free, by regs_someone_prefers. It still pays an extra instruction slot (35 insns), so the arithmetic it pins is: baseline conflicts {2,3,4} + someone_prefers {5,6} lands the pointer in $a3 at exactly 34 instructions. Artifact tmp/grind/func_80033550/s14/findreg_liverange_ext.txt.
 - verdict: CONFIRMED
+
+## [s16] 2026-09-03 — SYNTHESIS — **FUNCTION MATCHED** (sandbox 0, oracle SHA1)
+
+### CONFIRMED this session
+**H-s16.1 — The residual is not a register-allocation shortfall; it is a mis-typed
+tail. Expressing the three-word copy as a single 12-byte struct assignment produces
+`hard_reg_conflicts[72] = {2,3,4,5,6}` at unchanged instruction count, which seats the
+pointer in $a3.**
+- mechanism: GCC 2.7.2's MIPS block-move expansion emits all three `lw` before all
+  three `sw` and holds the source address register live across the whole pattern, so
+  pseudo 72 no longer dies at the third load. `find_reg` pass 0 (global.c:996-1001)
+  then finds its first free bit at 7 = `$a3`.
+- probe: instrumented `tools/gcc-2.7.2/cc1` with `BB2_FINDREG_DEBUG=72` on both
+  bodies, plus `sandbox --disable all` and a full clean-driver `build`.
+- result: scalar-triple tail conflicts `2 3 4 29` -> `$a1`; struct-copy tail conflicts
+  `2 3 4 5 6 29` -> `$a3`. sandbox **score 0**, 34/34 insns, 0 rules; build SHA1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle. **CONFIRMED.**
+
+**H-s16.2 — The s15 instance kill (load-order permutation does not move the pointer)
+holds on the current chassis, and its premise is the scalar-triple tail.**
+- probe: re-measured the s14/s15 candidate body first thing this session with the same
+  instrumentation. Reproduced `conflicts 2 3 4 29`, `someone_prefers` empty, own prefs
+  empty, first free 5 — identical to the s14 dump. **CONFIRMED (kill stands, and is
+  now explained: it is a property of the tail's typing, not of the allocator).**
+
+### MOOT (not killed — the question they answered no longer arises)
+- `regs_someone_prefers[72] ⊇ {5,6}` origination hunt (s15 frontier #1).
+- local-alloc `combine_regs` coalescing to obtain a byte-free `$a2` occupant (#2).
+- "substitute an existing instruction to seat a fifth register" (#3).
+All three were searches for a byte-free way to grow `hard_reg_conflicts[72]` INSIDE the
+scalar-triple chassis. The conflict set is now produced by the function's own
+semantics, so there is nothing left to manufacture. The `prune_preferences`
+lower-priority-only law (global.c:881-931) and the `set_preference`/`reg_renumber`
+correction from s14 remain true and are worth carrying to other functions — they were
+simply aimed at a residual that did not exist.
+
+### The transferable lesson (for the next function that looks RA-locked)
+Before spending a session manufacturing register conflicts, ask what SHAPE the target's
+memory traffic has. `lw`x3 from one base followed by `sw`x3 to consecutive offsets of
+one symbol is an aggregate copy, and an aggregate copy has different liveness than the
+same three values moved as scalars: the block move holds the source address live across
+all the loads. Fifteen sessions of correct arithmetic inside a wrong chassis is the
+failure mode the CONTRADICTION RULE exists to catch — here the wrong verdict was not a
+foreclosure at all, it was an unexamined premise shared by every foreclosure.
+Corollary: splat's per-word `D_8010xxxx` names are not evidence of three objects
+([[splat-symbol-names-are-not-evidence]]) in the TAIL of a function any more than they
+are in its data model.

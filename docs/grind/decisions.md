@@ -21574,3 +21574,7 @@ description is superseded by the migration, not by any change to this function.
 Both gates fail. Foreclosed silently under the 2026-07-27 standing ruling; the
 queue advances. The best pure-C form (distance 3) remains at
 `memory/grind/func_80017848/candidate.c` with its full derivation in the header.
+
+## 2026-09-03 14:34 — func_80033550 — layer-1 review — **FAIL**
+
+The winning insight (express the tail as a struct copy so GCC's block-move expansion produces the RA conflict set the ledger spent 15 sessions failing to manufacture) is genuine and well-evidenced, but the chosen SPELLING merges three separately-declared splat symbols (D_80107850/854/858) into one 12-byte record via a per-use byte-pointer cast instead of a canonical declaration merge -- exactly the construct the 2026-08-17 'per-word splat symbol -> aggregate merge' family exists to gate, and it fails that family's own prongs (c) and (d).
