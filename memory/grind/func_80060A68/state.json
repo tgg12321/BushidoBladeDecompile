@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 13,
- "current_modality": "escalation",
+ "session_count": 14,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -81,23 +81,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Owner Ruling A probes executed: the inverse.py hang is a one-line permutations bug (not superlinearity), the finished search enumerates the complete local-alloc seat-escape set for the first time, and"
+  },
+  {
+   "session": 14,
+   "floor": 2,
+   "modality": "solver",
+   "headline": "Solver session overturns the campaign's central negative: a THREE-load body (W5) whose slots 0-23 are byte-identical to target, including the slot-11 lw $a1,0x10($v1), is reachable in ordinary C at 66"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An honest early consumer of *(s32 *)(outer + 0x10) exists on the CALL side of the halfword-copy block \u2014 i.e. the original TU spelled the +4 read together with the call's second argument, which would give p10 a fourth reference for free and satisfy refs=4 without adding an instruction.",
-   "mechanism": "temp_a1 is the call's second argument and lands in $a1; target's early lw sits 17 slots above its consumer and in the argument register. A call-side derivation would place the reference inside the existing argument setup rather than adding one, which is the only shape that escapes the s13 self-cancellation arithmetic.",
-   "next_probe": "Rederive the halfword-copy block from the call-argument side and read the matched C of the sibling cluster (func_80060B70, func_80061250, func_80061658, func_80061710 \u2014 the last now COMPLETED-C) for the same lw/lhu 17-slot geometry. Only a reference that costs zero instructions can move this seat."
+   "hypothesis": "W5's remaining 5 instructions (slots 24-29) are a second instance of the same seat/priority arithmetic that the $a1 seat solved: the +2 read's value must land in $a0 rather than $v0, and its 0x1A store must be deferred past the D_800A3478 gp store.",
+   "mechanism": "Same local-alloc first-fit priority law (local-alloc.c:1649-1685): the +2 read's quantity is short-lived, therefore high-priority, therefore seated early into $v0. Lengthening its live range by moving its CONSUMER (the 0x1A store) later should push it to the end of the allocation order and into $a0, exactly as moving the +4 read's consumer did for pseudo 75.",
+   "next_probe": "Re-extract QTYDBG with W5 applied (src is left at HEAD - use s14/apply.py with s14/bodies/W5.c), identify the +2 read's quantity and its span/priority, then sweep the 0x1A-store position (temp2 as a named local, written inline, and with the D_800A3478 store interleaved) looking for the $a0 seat at 66 instructions."
   },
   {
-   "hypothesis": "Hoisting the `len(base) <= 6` guard out of the permutations loop in tools/ra_solver/inverse.py:484 unblocks the ALLOC_ORDER atom class project-wide, and other functions' 'inverse.py local hung' records are the same bug rather than genuine model limits.",
-   "mechanism": "The generator is evaluated before the guard, so every block with more than ~10 quantities is unanalysable in local mode today. The ledgers of any function whose RA residual was declared underived by a killed inverse.py run inherit a false negative.",
-   "next_probe": "Operator/tooling lane: hoist the guard (or cap the permutation class by priority-adjacent swaps), keep `engine test` green, then re-run the local backend for every function whose ledger records a killed inverse.py local run."
+   "hypothesis": "The idx read being hoisted into the +2 read's load-delay slot at 25 is what displaces target's addiu $v0,$v1,0x18 from that slot, and it is steerable by giving that delay slot a competitor rather than by moving idx (every idx move measured this session costs an instruction).",
+   "mechanism": "sched2 fills the load-delay slot after lhu v0,2(a0) with the highest-priority ready insn; in target that insn is the D_800A3478 address computation, in W5 it is the idx load.",
+   "next_probe": "tools/sched_solver: re-extract with W5 applied and run perturb.py --pass 2 --block 0 --goal-before <idx-read>:<addiu> --atoms luid,luid_move at depth 1 and then depth 2 (allow more than 15 minutes for depth 2), then spell the top vector and measure it."
   },
   {
-   "hypothesis": "inverse.py local's forward model is not faithful on blocks with non-contiguous live ranges, so its verdicts elsewhere may be systematically off by one register seat.",
-   "mechanism": "_alloc builds `used` from plain interval overlap over [birth, death), while local-alloc uses qty_conflict bitmaps that admit holes; the model therefore over-approximates conflicts and allocates too high (measured here: 9 of 23 seats wrong, always upward for the contested quantities).",
-   "next_probe": "Add a baseline-vs-QTYDBG fidelity check to the local backend's report header (operator lane) so a mismatched model announces itself instead of being spent as evidence; re-audit any ledger conclusion that rests on an unvalidated local-mode verdict."
+   "hypothesis": "The two dispositions filed for this function (docs/grind/decisions.md 2026-08-30 and 2026-09-01) rest on a mechanism claim that is now measured false, so their foreclosure grounds no longer hold and the next session should grind the W5 chassis rather than re-open the disposition question.",
+   "mechanism": "Both entries state that target needs 'a load that is BOTH unshared (three loads) AND early-in-$a1 - the one combination the law excludes at 66 instructions', and that closing the function 'REQUIRES a C variable assigned more than once'. W5 exhibits that exact combination at 66 instructions in ordinary C with no multiply-assigned variable.",
+   "next_probe": "No probe needed; the record correction is banked in memory/grind/func_80060A68/hypotheses.md (H-s14-1 and H-s14-6) and in candidate.c's s14 header, and the body itself is banked at memory/grind/func_80060A68/rejected/s14-W5-three-loads-early-a1-slot11-slots0-23-target-identical-score5.c."
   }
  ],
  "judge_constraints": [
@@ -120,5 +126,39 @@
  "created": "2026-08-19T12:58:09.910403+00:00",
  "exhaustion_base": 13,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.403898+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.403898+00:00",
+ "kills": [
+  {
+   "session": 14,
+   "statement": "The birthing_insn_p LAUNCH_PRIORITY bump is what singles out the +4 read's address load, so closing the function requires a C variable assigned more than once (the s6 mechanism the 2026-08-19 / 08-30 ",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis (src/text1b.c at cbb3fbdd with P2A0 / W5 spliced), zero FAKE constructs in any body measured this session",
+   "predicate_cite": "",
+   "result": "Every one of the 44 observations carries maxpri = 2130706433 = 0x7F000001, and birth=1 on all 34 REG-destination insns ("
+  },
+  {
+   "session": 14,
+   "statement": "The target's early slot-11 lw $a1,0x10($v1) cannot coexist with three independent lw ?,0x10($v1) loads at 66 instructions in a body carrying no multiply-assigned carrier (the 'law' recorded in candida",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with W5 spliced into src/text1b.c; zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "W5 measures 5 / build 66 / target 66 with three 0x10 loads, and its slots 0-23 are byte-identical to target INCLUDING lw"
+  },
+  {
+   "session": 14,
+   "statement": "The source position of the p10 = *(s32 *)(outer + 0x10); statement steers that load's sched1 placement.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, nine bodies, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "Every column is constant - 4/66, 5/67, 8/68 respectively - so the p10 statement's own position is codegen-inert here and"
+  },
+  {
+   "session": 14,
+   "statement": "A single spellable statement move lifts the +4 pointer's load from slot 24 to target's slot 11 in sched2 on the $a1-seated P2A1 chassis.",
+   "kill_scope": "instance",
+   "measured_on": "P2A1 chassis (3 loads, $a1 seat, 67 insns), sched_solver model text1b pass 2 block 0, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "No single atom reaches either goal. (The depth-2 run was started and stopped inconclusive after 15 minutes - it is an op"
+  }
+ ]
 }

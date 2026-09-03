@@ -2154,3 +2154,86 @@ packet. The honest outcome is `progress` with the kills banked and the item ACTI
 - [s13] Foreclosure record filed this session at docs/grind/decisions.md:18515 with both gates' evidence, the enumerated escape set, the exhaustion count (13 sessions, 6 modalities, 76 banked rejected forms) and four named re-activation triggers.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=13
+
+## s14 (2026-09-03) — solver modality
+
+**Chassis.** `candidate.c` re-measured on today's HEAD: sandbox `--disable all` =
+**score 2 / build 66 / target 66, rules_dropped 0**. NOTE for the next session:
+`tmp/grind/func_80060A68/s12/text1b.c.HEAD` is STALE (src/text1b.c gained C bodies for
+func_80057CC8 and func_800645B0 since s12); use `tmp/grind/func_80060A68/s14/text1b.c.HEAD`
++ `s14/apply.py`. Also: `bash tools/wsl.sh` does NOT work from inside a PowerShell tool
+call on this host (`wsl: command not found`); the working recipe is the Bash tool calling
+`pwsh -NoProfile -Command "& tools/wteng.ps1 main sandbox ..."`, which is what
+`s14/sweep.sh` does.
+
+**Typed classification of both chassis (tools/ra_solver/goal_from_tgt.py classify).**
+  - candidate.c (2 loads, score 2): `FIRST DIVERGENCE: PRE-RA`, `ours only: nop x1 /
+    target only: lw #,16(#) x1`. No model applies — the residual is a missing instruction.
+  - d8/P2A0 (3 loads, score 4): `FIRST DIVERGENCE: RA`, `$v0 -> $a1 x2`. The entire
+    residual of the 3-load family is one register seat inside a modelled pass.
+  This is the single most useful orientation fact of the session: the 3-load chassis is
+  the one the solver stack can reason about, and its residual is two registers.
+
+**The sched1 LAUNCH_PRIORITY census (kills the necessity argument behind the escalation).**
+`tools/sched_solver/extract.py text1b` on the P2A0 body, block 0 of func_80060A68 pass 1:
+44 insns, 44 `adjust_priority` observations, and `maxpri` is 2130706433 (0x7F000001)
+on all of them. `birth` is 1 for the 34 REG-destination insns and 0 for the 10
+MEM-destination stores (22 29 36 46 53 66 69 78 81 123) — i.e. `birthing_insn_p` bumps
+every load and every arithmetic insn in this block, not just the contested one. The three
+0xC loads (25/32/42), the +0 and +2 pointer loads (49/59), all three copy loads
+(27/34/44) and the halfword reads (51/56/61) are bumped and STILL land in target's exact
+positions. A bumped insn is picked the instant it becomes ready, and it becomes ready when
+its consumer is picked — so the discriminator is the consumer's position, which is
+ordinary spellable C, not `reg_n_sets`.
+
+**The $a1 seat, measured in both directions (QTYDBG/FFR, `local_extract.py --suggest`).**
+p10 = pseudo 75 in every 3-load body. Priority is
+floor_log2(refs)*refs*size*10000/(death-birth), first-fit ascending, ties on ascending qty
+number (local-alloc.c:1649-1685 / 1563-1580).
+  | body | temp_a1 read position | qty | birth-death | refs | span | pri | alloc call | got |
+  |---|---|---|---|---|---|---|---|---|
+  | P2A0 (=d8) | right after the 0x18 store | 10 | 34-38 | 2 | 4 | 5000 | 19/25 | 2 = $v0 |
+  | P2A1 | after the 0x1A store | 11 | 36-46 | 2 | 10 | 2000 | 24/25 | **5 = $a1** |
+At call #24 the quantities holding $v0 (qty9/qty10) and $a0 (qty8/qty12) across [36,46]
+are already seated, so first-fit is forced past {$v0,$v1,$a0}. The seat is bought by
+LOWERING the priority, which a statement move does for free; s13's escape set was solved
+for the opposite goal ($a0, pri >= 5000) and every candidate there had to ADD a reference,
+which inflates the span it divides by. Artifacts: s14/qtydbg_d8.txt, s14/qtydbg_P2A1.txt.
+
+**The 3x3 position sweep (p10 statement x temp_a1 read).** Scores are constant down each
+p10 column, so the p10 statement's own position is codegen-inert:
+  P0A0 P1A0 P2A0 = 4 / 66 (3 loads, $v0 seat)
+  P0A1 P1A1 P2A1 = 5 / 67 (3 loads, $a1 seat, one nop at slot 21)
+  P0A2 P1A2 P2A2 = 8 / 68
+**The A1 dressing sweep (V1..V6)**, moving the D_800A3478 / D_800A347C / idx statements
+around the $a1-seated body: V1 (gp D_800A3478 store after the 0x1A store) and V3 (same,
+temp2 read written inline) both reach **66 insns with three loads and no nop, score 6**,
+but lose the $a1 seat back to $a0; V2 8/68, V4 7/67, V5 7/67, V6 8/67. Banked:
+rejected/s14-gp3478-store-after-1A-3loads-66insns-no-nop-but-a0-seat-score6.c.
+The A1 family's two remaining defects are now separable and both are one slot each:
+(i) the +2 pointer load must fill the +0 read's load-delay slot (target slot 22) instead
+of falling after the `sh` — V1/V3 show this is achievable at 66 insns; (ii) the +4
+pointer load must sit at target slot 11 instead of 24 — unachieved.
+
+**sched2 search on the $a1-seated chassis.** `perturb.py --func func_80060A68 --pass 2
+--block 0 --atoms luid,luid_move --depth 1` (2970 atoms, model order-exact on the
+baseline) finds NO single statement move that lifts insn 39 (the +4 pointer load) above
+insn 27 (`--goal-before 27:39`), and none that lifts insn 56 (the +2 pointer load) above
+insn 53 (`--goal-before 53:56`). In P2A1's pass-2 stream the two loads sit at stream
+indices 18 and 19 (slots 23 and 24); target wants slot 22 and slot 11.
+
+- [s14] candidate.c re-measured on today's HEAD: sandbox --disable all = score 2 / build 66 / target 66, rules_dropped 0.
+
+- [s14] tools/ra_solver/goal_from_tgt.py classify types the two chassis differently and decisively: candidate.c (2 loads) = FIRST DIVERGENCE PRE-RA ('ours only: nop x1 / target only: lw #,16(#) x1'), i.e. no model applies; the 3-load body = FIRST DIVERGENCE RA with the whole residual printed as '$v0 -> $a1 x2'. The 3-load family, not the floor-2 2-load body, is the chassis the solver stack can reason about.
+
+- [s14] sched1 adjpri census, block 0, 3-load body: 44 insns, 44 observations, maxpri = 0x7F000001 on all of them; birth=1 on the 34 REG-dest insns, birth=0 only on the 10 MEM-dest stores. The LAUNCH_PRIORITY bump is the norm in this block, not a property of the contested load.
+
+- [s14] local-alloc seat arithmetic for pseudo 75 measured in both directions: span 4 -> pri 5000 -> allocation call 19/25 -> $v0; span 10 -> pri 2000 -> allocation call 24/25 -> $a1. The seat is bought by LOWERING the priority (a statement move), not by raising it (which needs an added reference that inflates the span it divides by).
+
+- [s14] Body W5 = 5 / build 66 / target 66, three 0x10 loads, slots 0-23 byte-identical to target including the slot-11 lw $a1,0x10($v1). Two ordinary statement moves off d8; no invented local, no multiply-assigned variable, no dead code, no volatile, no asm.
+
+- [s14] W5's residual is exactly slots 24-29: ours 'lhu v0,2(a0) / lhu a0,0(v1) / sh v0,26(v1) / addiu v0,v1,24 / sw v0,0(gp) / lhu a1,4(a1)' vs target 'lhu a0,2(a0) / addiu v0,v1,24 / sw v0,%gp(D_800A3478) / sh a0,26(v1) / lhu a1,4(a1) / lhu a0,0(v1)'.
+
+- [s14] Dressing sweep around the $a1-seated family (18 bodies measured this session): X2/X3/X5/X6 = 5/66, V1/V3 = 6/66 (66 insns and no nop, but the seat falls back to $a0), W1 and P2A1 = 5/67, Y3 = 7/67, Y1/Y2/Y7 = 8/67, Y6 = 10/68, Y5 = 11/68. Every attempt to restore target's apparent D_800A3478-store position (between the +2 read and the 0x1A store) costs the instruction back.
+
+- [s14] Tooling notes for the next session: tmp/grind/func_80060A68/s12/text1b.c.HEAD is STALE (src/text1b.c gained C bodies for func_80057CC8 and func_800645B0 since s12); use tmp/grind/func_80060A68/s14/text1b.c.HEAD with s14/apply.py. 'bash tools/wsl.sh' fails from inside a PowerShell tool call on this host ('wsl: command not found'); the working sweep recipe is the Bash tool calling pwsh -NoProfile -Command "& tools/wteng.ps1 main sandbox ..." (see tmp/grind/func_80060A68/s14/sweep.sh).

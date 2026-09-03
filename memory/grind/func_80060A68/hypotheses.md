@@ -1452,3 +1452,122 @@ dump plus local-alloc.c:1649-1685 is the load-bearing evidence.
 - probe: python3 tools/scan_hand_coded.py --single func_80060A68 on today's HEAD (artifact s13/scan_hand_coded.txt); family review of candidate.c.
 - result: Gate (a) FAILS: tier=LOW, score 1/8, S4 only ('6 loads in 8-insn window @ insn 9'). Gate (b) FAILS: candidate.c carries no coercion construct, so no family exists for which a precedent could be cited, and the one family that could have lifted refs honestly is foreclosed structurally.
 - verdict: CONFIRMED
+
+## s14 (2026-09-03) — solver modality
+
+Chassis re-measured first: `candidate.c` = **2 / 66 / 66** on today's HEAD (src/text1b.c
+has moved on — func_80057CC8 and func_800645B0 are now C bodies — so the s12 HEAD copy at
+tmp/grind/func_80060A68/s12/text1b.c.HEAD is stale; s14 re-cut it as s14/text1b.c.HEAD).
+
+**H-s14-1 (CONFIRMED — and it invalidates the mechanism the whole 2026-08-19 escalation
+rests on).** "The `birthing_insn_p` LAUNCH_PRIORITY bump is what singles out copy 2's /
+the +4 read's address load, so closing the function requires a multiply-set carrier."
+FALSE as stated. The instrumented sched1 dump for the 3-load body lists an `adjpri`
+observation for **every one of the 44 insns of block 0**, and **every insn with a REG
+destination — 34 of 44 — carries `maxpri = 2130706433 = 0x7F000001` (LAUNCH_PRIORITY)**.
+`birth: 0` occurs only on the ten insns whose SET_DEST is a MEM (the stores), where
+birthing_insn_p returns at the `GET_CODE (SET_DEST (pat)) == REG` test. The three 0xC
+loads (25, 32, 42), the other two 0x10 loads (49, 59), every copy load (27, 34, 44) and
+the halfword reads (51, 56, 61) are bumped exactly as insn 39 is — and all of them land
+in target's own positions. Bumpedness is therefore shared by the insns that MATCH, so it
+cannot be the discriminator between our stream and target's. What actually decides where
+a bumped insn lands is its READY TIME: a bumped insn is picked the instant it becomes
+ready, and it becomes ready when its CONSUMER is picked. The consumer's position is
+ordinary spellable C. Artifact: tmp/grind/func_80060A68/s14/sched_block0_pass1.txt.
+
+**H-s14-2 (CONFIRMED, and it re-opens the seat axis s11/s12/s13 declared closed).**
+"The +4 pointer can be seated in $a1 — target's register — in a THREE-load body by
+ordinary statement order." Measured both directions with QTYDBG/FFR ground truth:
+  - d8 / P2A0 (`temp_a1 = *(u16 *)(p10 + 4);` immediately after the 0x18 store):
+    reg75 = qty10, birth 34 death 38, refs 2, span 4 -> pri 20000/4 = **5000** ->
+    allocation call #19 of 25; the only already-allocated overlapping quantity is qty0
+    ($v1), so first-fit gives **$v0**. Score 4 / 66.
+  - P2A1 (the same read moved AFTER the 0x1A store): reg75 = qty11, birth 36 death 46,
+    refs 2, span 10 -> pri 20000/10 = **2000** -> allocation call #24 of 25; by then
+    qty9/qty10 hold $v0 and qty8/qty12 hold $a0 across [36,46], so first-fit is forced
+    past {$v0,$v1,$a0} and gives **$a1**. Score 5 / 67.
+  s13's escape arithmetic was run in the wrong direction: it asked how to RAISE
+  pri(p10) to 5000 to win $a0, and every reference lift self-cancels against the span it
+  inflates. The seat this function needs is $a1, which wants pri LOW — and lowering it is
+  free, because it is a statement move, not an added reference. Banked at
+  rejected/s14-temp_a1-read-late-3loads-plus-a1-seat-nop-at-21-score5-67insns.c.
+
+**H-s14-3 (KILLED, instance).** "The source position of the `p10 = *(s32 *)(outer +
+0x10);` statement steers the load's sched1 placement." Full 3x3 sweep (p10 before copy 1
+/ copy 2 / copy 3) x (temp_a1 read early / after the 0x1A store / after the idx read):
+every column is constant — 4/66, 5/67, 8/68 respectively — i.e. the p10 statement's
+position is completely codegen-inert and only the CONSUMER's position moves anything.
+Bodies at tmp/grind/func_80060A68/s14/bodies/P{0,1,2}A{0,1,2}.c.
+
+**H-s14-4 (KILLED, instance).** "A single spellable statement move (LUID atom) in sched2
+lifts the +4 pointer's load from slot 24 to target's slot 11 on the $a1-seated (P2A1)
+chassis." `perturb.py --pass 2 --block 0 --goal-before 27:39 --atoms luid,luid_move
+--depth 1` searched all 2970 single atoms: none reaches the goal. The same run for the
++2 pointer load's delay-slot goal (`--goal-before 53:56`) is likewise empty at depth 1.
+
+**H-s14-5 (KILLED, instance).** "The classifier's `PRE-RA` verdict on candidate.c means
+the residual is unmodelled." It is modelled — on the RIGHT chassis. `goal_from_tgt.py
+classify` returns PRE-RA for candidate.c only because that body has 2 loads and a nop
+where target has 3 loads (`ours only: nop x1 / target only: lw #,16(#) x1`), but on the
+3-load body (P2A0/d8) the same classifier returns **FIRST DIVERGENCE: RA, `$v0 -> $a1
+x2`** — a two-register substitution inside a modelled pass. The 3-load family, not the
+2-load floor-2 body, is the chassis the solver stack can actually reason about.
+
+**H-s14-6 (CONFIRMED — the session's headline; it overturns the campaign's central
+negative).** "The target's early `lw $a1,0x10($v1)` at slot 11, together with three
+independent 0x10 loads, is reachable in ordinary C at 66 instructions." REACHED.
+Body W5 (`memory/grind/func_80060A68/rejected/s14-W5-three-loads-early-a1-slot11-
+slots0-23-target-identical-score5.c`) measures **5 / build 66 / target 66** and its
+**slots 0-23 are byte-identical to target**, including the slot-11 `lw $a1,0x10($v1)`.
+It carries no invented local, no second write to any variable, no dead code, no
+volatile, no asm — only two statement moves off the d8 body: (1) `temp_a1 =
+*(u16 *)(p10 + 4);` after the 0x1A store (buys the $a1 seat, H-s14-2), and (2) `idx =
+*(u16 *)outer;` before the D_800A3478 store (buys back the instruction that (1) costs).
+This directly contradicts the 2026-08-19 / 2026-08-30 / 2026-09-01 records, all of which
+state that target needs "a load that is BOTH unshared (three loads) AND early-in-$a1 —
+the one combination the law excludes at 66 instructions" and that closing the function
+"REQUIRES a C variable assigned more than once". Both claims are now measured false.
+The residual is 5 instructions in slots 24-29 and is a different problem from the one
+the campaign has been working: the +2 read must land in $a0 rather than $v0, its 0x1A
+store must be deferred past the D_800A3478 gp store, and the idx read must fall to slot
+29 instead of being hoisted into the +2 read's load-delay slot at 25.
+Neighbours measured this session: X2/X3/X5/X6 = 5/66 (same class), V1/V3 = 6/66,
+W1/P2A1 = 5/67, Y3 = 7/67, Y1/Y2/Y7 = 8/67, Y6 = 10/68, Y5 = 11/68.
+
+## [s14] The birthing_insn_p LAUNCH_PRIORITY bump is what singles out the +4 read's address load, so closing the function requires a C variable assigned more than once (the s6 mechanism the 2026-08-19 / 08-30 / 09-01 records rest on).
+- mechanism: sched.c:2504-2535 returns reg_n_sets[dest]==1 whenever the dest is live, and adjust_priority then raises the insn to LAUNCH_PRIORITY 0x7F000001 (sched.c:187), so a bumped insn is picked the instant it is ready and is emitted as late as possible.
+- probe: tools/sched_solver/extract.py text1b on the 3-load body; read blocks[0].adjpri for func_80060A68 pass 1 (44 insns, 44 observations).
+- result: Every one of the 44 observations carries maxpri = 2130706433 = 0x7F000001, and birth=1 on all 34 REG-destination insns (birth=0 only on the 10 MEM-destination stores 22 29 36 46 53 66 69 78 81 123). The three 0xC loads (25/32/42), the +0 and +2 pointer loads (49/59), the three copy loads (27/34/44) and the halfword reads (51/56/61) are bumped exactly as insn 39 is, and every one of them lands in target's own stream position. Bumpedness is shared by the insns that MATCH, so it does not discriminate our stream from target's; what decides a bumped insn's placement is its ready time, i.e. where its CONSUMER sits, which is ordinary spellable C. Confirmed constructively below: moving the consumer produced target's own slot-11 load with no multiply-set carrier anywhere in the body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis (src/text1b.c at cbb3fbdd with P2A0 / W5 spliced), zero FAKE constructs in any body measured this session
+
+## [s14] The +4 pointer quantity can be seated in $a1 - target's register - in a three-load body by ordinary statement order alone.
+- mechanism: local-alloc priority = floor_log2(refs)*refs*size*10000/(death-birth) with first-fit ascending allocation (local-alloc.c:1649-1685 / 1563-1580). Lengthening the live range LOWERS the priority, which pushes the quantity to the end of the allocation order, by which time the quantities holding $v0 and $a0 across its span are already seated and first-fit is forced into $a1.
+- probe: QTYDBG/FFR tables via tools/ra_solver/local_extract.py text1b --func func_80060A68 --suggest, taken on two bodies that differ only in the position of the statement temp_a1 = *(u16 *)(p10 + 4);.
+- result: d8/P2A0 (read early): pseudo 75 = qty10, birth 34 death 38, refs 2, span 4, pri 5000, allocation call 19 of 25, got $v0. P2A1 (read after the 0x1A store): pseudo 75 = qty11, birth 36 death 46, refs 2, span 10, pri 2000, allocation call 24 of 25, got $a1. s13's escape set was solved for the opposite goal ($a0, pri >= 5000), where every candidate had to ADD a reference and the added instruction inflated the span the priority divides by; the seat this function actually needs wants pri LOW, and lowering it is free.
+- verdict: CONFIRMED
+
+## [s14] The target's early slot-11 lw $a1,0x10($v1) cannot coexist with three independent lw ?,0x10($v1) loads at 66 instructions in a body carrying no multiply-assigned carrier (the 'law' recorded in candidate.c's s12 header and in the 2026-08-30 and 2026-09-01 decisions.md entries).
+- mechanism: Claimed conservation: three loads implies each load has exactly one consumer implies the +4 load is pinned adjacent to its consumer.
+- probe: Built body W5 = d8 with two statement moves (the temp_a1 read placed after the 0x1A store; the idx read placed before the D_800A3478 store), measured it with sandbox --disable all, and diffed its disassembly slot-by-slot against asm/funcs/func_80060A68.s.
+- result: W5 measures 5 / build 66 / target 66 with three 0x10 loads, and its slots 0-23 are byte-identical to target INCLUDING lw $a1,0x10($v1) at slot 11 and lw $a0,0x10($v1) at slots 19 and 22. It contains no invented local, no second write to any variable, no dead code, no volatile and no asm. Four sibling spellings (X2/X3/X5/X6) reproduce the same 5/66. The residual is now 5 instructions confined to slots 24-29.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis with W5 spliced into src/text1b.c; zero FAKE constructs present
+
+## [s14] The source position of the p10 = *(s32 *)(outer + 0x10); statement steers that load's sched1 placement.
+- mechanism: LUID order feeds rank_for_schedule's final tie-break (LUID descending among equal-priority ready insns), so a statement move should change where the load lands.
+- probe: Full 3x3 sweep: p10 before copy 1 / copy 2 / copy 3, crossed with the temp_a1 read early / after the 0x1A store / after the idx read (bodies P0A0..P2A2).
+- result: Every column is constant - 4/66, 5/67, 8/68 respectively - so the p10 statement's own position is codegen-inert here and only the CONSUMER's position moves anything.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, nine bodies, zero FAKE constructs
+
+## [s14] A single spellable statement move lifts the +4 pointer's load from slot 24 to target's slot 11 in sched2 on the $a1-seated P2A1 chassis.
+- mechanism: sched2 runs post-reload with adjust_priority disabled, so the order is decided by priority, dependence class and LUID alone; a luid / luid_move atom is exactly an ordinary source-statement move.
+- probe: tools/sched_solver/perturb.py --func func_80060A68 --pass 2 --block 0 --atoms luid,luid_move --depth 1, goals 27:39 (the +4 pointer load) and 53:56 (the +2 pointer load into the load-delay slot); the model is order-exact on the baseline and 2970 atoms were searched for each goal.
+- result: No single atom reaches either goal. (The depth-2 run was started and stopped inconclusive after 15 minutes - it is an operator-lane re-run, not a verdict.) The slot-11 load was nevertheless reached by a TWO-statement move on a different chassis (W5), which is consistent with the depth-1 emptiness rather than contradicted by it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: P2A1 chassis (3 loads, $a1 seat, 67 insns), sched_solver model text1b pass 2 block 0, zero FAKE constructs

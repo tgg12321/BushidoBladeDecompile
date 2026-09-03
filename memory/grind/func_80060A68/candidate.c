@@ -1,3 +1,16 @@
+/* [s14 2026-09-03 - solver modality.  BODY UNCHANGED, re-measured 2 / 66 / 66 on
+ * today HEAD.  READ THIS BEFORE SPENDING ANOTHER SESSION ON THIS BODY.]
+ *
+ * THIS 2-LOAD BODY IS NO LONGER THE FRONTIER.  goal_from_tgt.py classify types its
+ * residual PRE-RA (ours a nop, target a lw #,16(#)) - unmodellable.  The 3-load family
+ * types RA, and s14 reached a 3-load body, W5, whose SLOTS 0-23 ARE BYTE-IDENTICAL TO
+ * TARGET including the slot-11 early-a1 0x10 pointer load that the 2026-08-19/08-30/09-01
+ * records all call unreachable without a multiply-set carrier.  W5 is ordinary C (two
+ * statement moves, no invented local, no second write to anything) and measures 5/66;
+ * its whole residual is slots 24-29.  See
+ * rejected/s14-W5-three-loads-early-a1-slot11-slots0-23-target-identical-score5.c and
+ * hypotheses.md H-s14-1..6.  candidate.c is retained only because 2 < 5 by the metric.
+ */
 /* [s13 2026-09-01 - escalation/disposition, owner Ruling A reopen.  BODY UNCHANGED,
  * re-measured 2 / 66 / 66 on today's HEAD.  s13 finished the local-alloc order search
  * that s12 could not run (inverse.py atoms() hangs on itertools.permutations over 23
