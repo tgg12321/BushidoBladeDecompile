@@ -2206,3 +2206,79 @@ callee-saved-seat permutation is decided.
 - [s111] At the pinned doubled live lengths no integer nrefs pair produces the target order: idx_1495 at nrefs 3 gives 208 (below mode's 263) and at nrefs 4 gives 555 (above a tbl_125c lifted to nrefs 4 = 540). A refs-lift on both pointers therefore cannot seat this function on the honest chassis; idx_1495 has to lose its doubling.
 
 - [s111] Mandated kill re-audit: candidate.c re-splices at 2/160, rules_dropped 0 on the current chassis; tools/fake_ablate.py gives keep-all 2/160, drop chain-extender 15/159, drop pp alias 17/161, drop both 30/160 - the recorded floor is current and both FAKE units remain load-bearing and super-additive.
+
+## s112 (structural) - the REG_EQUIV note is denial-able in ordinary C; the residual is now one allocno
+
+- [s112] CHASSIS: `memory/grind/CD_sync/candidate.c` re-measured on HEAD this session at
+  score 2 / build_insns 160 / rules_dropped 0. The dispatch brief reported the HEAD floor
+  as "measurement unavailable"; it is 2, unchanged, and the ledger's spelling conclusions
+  are chassis-valid.
+- [s112] PASS ATTRIBUTION, named exactly. The REG_EQUAL note that becomes the REG_EQUIV
+  that doubles reg_live_length at local-alloc.c:1064 is written by `cse_insn`, at
+  **cse.c:6923-6934**, under the gate `n_sets == 1 && src_const && GET_CODE (dest) == REG
+  && GET_CODE (src_const) != REG`. `src_const` is filled at cse.c:6484-6507: first from the
+  hash-table equivalence class, then from `CONSTANT_P (src_folded)`. Confirmed by the insn
+  ladder on h0: insn 24 / 27 / 30 (the tbl_125c, idx_1494 and idx_1495 sets) carry NO notes
+  in `.rtl` and `.jump`, and carry `REG_EQUAL` from `.cse` onward.
+- [s112] The three constant-address pointer pseudos in CD_sync are p79 tbl_125c
+  (`REG_EQUIV (symbol_ref "D_800A125C")`), p77 idx_1494 (`REG_EQUIV (symbol_ref
+  "D_800A1494")`) and p78 idx_1495 (`REG_EQUIV (const (plus (symbol_ref "D_800A1494")
+  (const_int 1)))`). Only p78's note depends on cse's value table: its source is
+  `(plus p77 1)`, which folds to a constant only while p77's constant is still in the
+  table. p79's and p77's sources are bare symbol_refs, i.e. `CONSTANT_P (src_folded)` is
+  true independent of the table, so their notes are unconditional.
+- [s112] THE FINDING. Moving `idx_1495 = idx_1494 + 1;` out of the prologue and into the
+  `success:` block - which dominates the pointer's only use (`*idx_1495` in the poll
+  callback), because the do_timeout path always returns -1 - puts the set behind a cse
+  extended-block boundary, denies the note, and leaves p78's live length at its raw 75.
+  Measured: **score 15, build_insns 160, rules_dropped 0**, p78 pri 138 -> 266, seat
+  $s6 -> $s3, with the `addiu $s4,$s2,1` prologue instruction still emitted. Banked as
+  `memory/grind/CD_sync/rejected/s112_HONEST_BASE_1495_success_block_note_denied_15.c`
+  (NOT a dead form - it is the new honest base for the next session).
+- [s112] This is HALF of what the owner-refused h5 cross-symbol chain-extender was buying.
+  The banked floor-2 form's ALLOCDBG, re-read this session, is 933 / 675 (p79 nrefs=5) /
+  277 (p78, livelen 72, note ABSENT) / 263 / 253. h5's two levers were (a) deny p78's note
+  and (b) lift p79's refs 3 -> 5. Lever (a) is now reproduced in ordinary C with no FAKE
+  construct and no instruction cost.
+- [s112] Placement cannot help p79. Four relocations measured, the note present in every
+  one: loop top on the n1 base 20 / 157; loop top on the n3 base 20 / 157 (livelen 40,
+  pri 750, hardreg $s0); immediately before the timeout branch 20 / 157 (identical);
+  top of the do_timeout block 22 / 158 (p79 leaves the global allocno list entirely and
+  becomes block-local). The priority band is reachable by shortening the live range, but
+  global.c's find_reg walks free hard registers in ascending order, so a short-lived
+  tbl allocno is seated at $s0, not the target's $s3. **tbl_125c has to stay long-lived
+  AND high-priority, which only a note denial or a refs lift can deliver.**
+- [s112] Two refs-lift carriers measured inert on the n3 base, both 15 / 160 with p79's
+  ALLOCDBG row (nrefs=3 livelen=148 pri=202) bit-identical to control: a cross-cse-block
+  reg-reg handle copy (`u8 *tb8 = (u8 *)tbl_125c;` at the outer loop top, consumed by the
+  first table access) and a self-difference re-association of the second table address.
+  A copy redistributes references between two pseudos and never adds one; the
+  re-association folds at cse. Since combine's LOG_LINKS are basic-block-local, a 4th
+  mention of p79 that combine can fold must live in the SAME basic block as the two table
+  reads (the do_timeout window) and be a real, non-redundant address-forming insn.
+- [s112] Aggregate-merge probe, negative: `asm/funcs/CD_sync.s:66-68` loads the third
+  debug_printf argument with its OWN `lui $at,%hi(D_800A11DC)` / `lw $a2,%lo(D_800A11DC)($at)`
+  pair, NOT off $s3. There is therefore no base-register evidence that D_800A11DC and
+  D_800A125C are one aggregate, so the aggregate-merge family's prong (a) fails here and
+  a third $s3-relative table access cannot be justified that way.
+- [s112] Artifacts: `tmp/grind/CD_sync/s112/` - run.ps1 (splice + sandbox + ALLOCDBG +
+  .lreg note grep driver), gen.py / gen2.py / gen3.py (variant generators), notes.sh
+  (the one-grep REG_EQUIV verdict), cap.py/cap.sh/prep.sh, and the per-variant
+  `<tag>.{c,s,stderr,rtl,jump,cse,loop,cse2,flow,combine,lreg,greg,sched,sched2,jump2,dbr}`
+  dump sets for h0, cand, n1-n4, m1-m3, t1, t2.
+
+- [s112] CHASSIS: memory/grind/CD_sync/candidate.c re-measured on HEAD this session at score 2 / build_insns 160 / rules_dropped 0 (the dispatch brief reported the HEAD floor as unavailable); the ledger's chassis-relative conclusions remain valid.
+
+- [s112] PASS ATTRIBUTION (dump-read, not guessed): the REG_EQUAL note that becomes the REG_EQUIV driving local-alloc.c:1064's reg_live_length doubling is written by cse_insn at cse.c:6923-6934. Insns 24/27/30 (the tbl_125c, idx_1494 and idx_1495 sets) carry no notes in h0.rtl and h0.jump and carry REG_EQUAL from h0.cse onward.
+
+- [s112] CD_sync's three constant-address pointer pseudos are p79 tbl_125c REG_EQUIV (symbol_ref D_800A125C), p77 idx_1494 REG_EQUIV (symbol_ref D_800A1494) and p78 idx_1495 REG_EQUIV (const (plus (symbol_ref D_800A1494) 1)). Only p78's note depends on cse's value table, because only its source is a (plus reg const) that has to be folded; the other two sources are bare symbol_refs and are CONSTANT_P unconditionally.
+
+- [s112] NEW HONEST BASE: idx_1495's init placed in the success block scores 15 / build_insns 160 / rules_dropped 0 with the note denied, p78 pri 138 -> 266 and seat $s6 -> $s3, and the target's prologue addiu $s4,$s2,1 still emitted. Banked as memory/grind/CD_sync/rejected/s112_HONEST_BASE_1495_success_block_note_denied_15.c - this file is the next session's starting chassis, not a dead form.
+
+- [s112] The banked floor-2 (h5) form's ALLOCDBG is 933 / 675 (p79 nrefs=5 livelen=148) / 277 (p78 livelen 72, REG_EQUIV ABSENT) / 263 / 253, so the owner-refused cross-symbol chain-extender was doing exactly two things: denying p78's note and lifting p79's refs 3 -> 5. The first is now reproduced in ordinary C at no instruction cost.
+
+- [s112] tbl_125c relocation measured four ways, note present in all: loop top on n1 20/157, loop top on n3 20/157 (livelen 40 pri 750 seated at $s0), before the timeout branch 20/157, top of do_timeout 22/158 (allocno becomes block-local). Shortening its live range reaches the priority band but forfeits the $s3 seat, because global.c find_reg walks free hard registers in ascending order.
+
+- [s112] Two byte-neutral refs-lift carriers measured inert on the n3 base (both 15/160, p79 row bit-identical to control): a cross-cse-block reg-reg handle copy, and a self-difference re-association of the second table address. Copies redistribute references between pseudos, they do not add them.
+
+- [s112] AGGREGATE-MERGE PROBE NEGATIVE: asm/funcs/CD_sync.s:66-68 loads the third debug_printf argument through its own lui $at,%hi(D_800A11DC) / lw $a2,%lo(D_800A11DC)($at) pair, not off $s3, so there is no base-register evidence that D_800A11DC and D_800A125C are one aggregate and the aggregate-merge family's prong (a) fails for this pair.
