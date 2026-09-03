@@ -1,3 +1,45 @@
+/* [s19 2026-09-03 - structural modality.  BODY UNCHANGED (still the E2 body, re-measured
+ * 2 / build 66 / target 66 on today's HEAD, and reproduced independently as D2 through the
+ * s19 generator).  The s19 header is prepended; every earlier header below is intact.]
+ *
+ * WHAT s19 ADDS.  71 ordinary-C bodies, no FAKE construct anywhere.
+ *
+ * (1) THIS BODY IS ONE INSTRUCTION FROM A BYTE MATCH, AND THE SLOT IS ALREADY FREE.  A
+ *     slot-for-slot diff against asm/funcs/func_80060A68.s shows this body IS target
+ *     except in two adjacent places: target's slot 23 `lw $a0,0x10($v1)` is a `nop` here,
+ *     and the `lhu $a0,0x2(...)` at slot 25 therefore reads $a1 (p10's register) instead
+ *     of $a0.  Both register seats, the addiu/gp-store pair inside the +2 value's window
+ *     and the entire tail are already target's.  The cause is a single cse merge: nothing
+ *     separates `temp2 = *(u16 *)(*(s32 *)(outer + 0x10) + 2);` from
+ *     `p10 = *(s32 *)(outer + 0x10);`, so the third load never exists.  Because the slot
+ *     the missing load belongs in is a load-delay nop, restoring the third read costs ZERO
+ *     instructions - a separator between those two statements that adds no instruction and
+ *     relocates no load turns this body into a match.
+ *
+ * (2) A NEW FREE SEPARATOR EXISTS, BUT ONLY ONE.  Splitting the 0x18 halfword store off
+ *     its read (temp0 = *(u16 *)(*(s32 *)(outer + 0x10) + 0); ... *(u16 *)(outer + 0x18) =
+ *     temp0;) is byte-neutral when the halves stay adjacent (control X1 = 5 / 66, identical
+ *     to the unsplit U2) and its detached `sh` is a free non-gp cse separator.  Spending it
+ *     on the +2-read-to-p10-read gap gives X2 = 4 / build 65 / target 66 - target's entire
+ *     stream minus exactly one instruction - but opens the +0/+2 gap instead.  There are two
+ *     gaps and one free separator.
+ *
+ * (3) THE SEPARATOR INVENTORY IS NOW COMPLETE AND PRICED.  0x1A is barred by R2+R4; 0x1C
+ *     needs S6 adjacent to P, which removes R3's donor; the three copies cost one load-delay
+ *     nop by every route measured (whole-statement move - s18; named pointer intermediate so
+ *     only the store moves - P1-PC, 12 bodies, all 67, and P3 shows the pc load SINKING to
+ *     slot 22 with a nop at 26; hoisting a halfword read above the copy block - N/R, 24
+ *     bodies, 12-17, the hoisted load takes slot 11-16 in $a0; hoisting the p10 read above
+ *     the copy block - Q, 12 bodies, 67 with the p10 load at 24-25; putting the halfword
+ *     block before the copy block - G, 10 bodies, 15-21); and the D_800F10D0 zero-store
+ *     restores the third load but drags its five-instruction address computation with it
+ *     (D1/D3/D5/D6, 15-19 at 65).
+ *
+ * (4) NEXT ATTACK IS NOT ANOTHER STORE PLACEMENT.  Either break the cse equivalence of two
+ *     *(s32 *)(outer + 0x10) reads without adding an instruction, or find a second $v0 donor
+ *     so R2's window no longer needs a gp store - which would free the 0x1A store to act as
+ *     the second separator.
+ */
 /* [s18 2026-09-03 - rederive modality.  BODY UNCHANGED (still the E2 body, re-measured
  * 2 / build 66 / target 66 on today's HEAD).  The s18 header is prepended; every earlier
  * header below is intact.]

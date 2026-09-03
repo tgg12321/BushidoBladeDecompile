@@ -2704,3 +2704,125 @@ sweep.sh, dis.sh, bodies/).
 - [s18] U2 (C1,C2,C3,S1,S3i,P,S4,S5,S6,S7,S8) reproduces target's exact three-load geometry (11 $a1, 19 $a0, 22 $a0) at 66 instructions with NO temp2 local at all, because a fused read+store is a free cse separator; s16's 'temp2 is load-bearing' was measured on bodies that also deleted p10 and does not hold when p10 is kept.
 
 - [s18] Three ordinary-C bodies now each hold a different two-thirds of the residual at 66 instructions: E2 (both register seats and target's 25/26/27 group, two loads, score 2), K7/U2 (all three loads in target's slots and registers, +2 value in $v0, score 5), Y1 (slots 0-20 exact, slot-11 $a1 load, +2 load pinned at 26, score 5).
+
+
+## [s19 2026-09-03 - structural modality] The floor-2 body is ONE instruction from a match, and the cse-separator inventory is now complete and fully priced
+
+### 0. Mandated chassis / kill re-audit
+`sandbox func_80060A68 --disable all` on today's HEAD with the s14 apply harness:
+CU2 (= s18's U2) = **5 / build 66 / target 66**, loads at 11 ($a1) / 19 ($a0) / 22 ($a0);
+CE2 (= candidate.c's E2 body) = **2 / build 66 / target 66**, loads at 11 ($a1) / 19 ($a0);
+D2 (an independent re-spelling of E2 through the s19 generator) = **2 / 66**, identical.
+All reproduce the s15-s18 records instruction-for-instruction, so the chassis has not moved.
+None of the 71 bodies measured this session carries a FAKE construct, so `tools/fake_ablate.py`
+has nothing to ablate and every s15-s18 instance kill remains chassis-current.
+(Slot numbers in this section are 1-based against `asm/funcs/func_80060A68.s` lines 2-68; the
+s19 sweep harness prints them 1-based too, so they read one higher than the s15-s18 0-based notes.)
+
+### 1. THE FLOOR-2 BODY'S ENTIRE RESIDUAL IS ONE MISSING INSTRUCTION, AND IT FITS IN AN EXISTING NOP
+A slot-for-slot disassembly diff of E2 against target (`tmp/grind/func_80060A68/s19/E2.dis`,
+`cmp.sh`) shows the two bodies are identical everywhere except two adjacent places:
+
+| slot | target | E2 |
+|---|---|---|
+| 23 | `lw $a0,0x10($v1)` | `nop` |
+| 25 | `lhu $a0,0x2($a0)` | `lhu $a0,0x2($a1)` |
+
+E2's +2 read is cse-merged with the `p10` read (nothing separates `temp2 = *(u16 *)(*(s32 *)
+(outer + 0x10) + 2);` from `p10 = *(s32 *)(outer + 0x10);` in its statement order), so the
+third `lw` never exists and the +2 halfword is read through `$a1`, p10's register.  Everything
+else - both register seats, the addiu/gp-store pair inside the +2 value's window, the whole
+tail - is already target's.  **The slot the missing load belongs in is currently a load-delay
+`nop`, so restoring the third read costs ZERO instructions: a separator between the +2 read and
+the p10 read that adds no instruction and moves no load turns the floor-2 body into a byte
+match.**  This is the first time the residual has been localized to a single instruction with
+an already-free slot to put it in.
+
+### 2. New lever: the 0x18 halfword store SPLIT off its read (`temp0`) is byte-neutral and is a free separator
+`S1a = temp0 = *(u16 *)(*(s32 *)(outer + 0x10) + 0);` / `S1b = *(u16 *)(outer + 0x18) = temp0;`.
+Control X1 (`CC,S1a,S1b,S3i,P,S4,S5,S6,S7,S8`) = 5 / 66 with loads 11/19/22 - byte-identical to
+the unsplit U2, so the split itself costs nothing when the halves stay adjacent.  Detached, the
+`sh 0x18` is a free non-gp cse separator - the one thing the copy store was being paid a
+load-delay nop for in s18.
+
+**X2 = `C1,C2,C3, S1a, S2, S1b, P, S5, S3, S4, S6, S7, S8` = 4 / build 65 / target 66** is
+target's entire instruction stream MINUS EXACTLY ONE INSTRUCTION: its slots line up one-for-one
+with target's except that target's third `lw $a0,0x10($v1)` is absent (the +0 read and the +2
+read are now the merged pair, since S1b moved out of the gap between them), plus the resulting
+one-slot shift and a single 28/29 swap.  This is the smallest instruction-count residual in the
+campaign: every previous class was 66 with wrong seats or 67 with an extra nop.  X2 and E2 are
+the same defect seen from two sides - one free separator short, in a body that has a free slot
+for the load that separator would create.
+
+### 3. The cse-separator inventory is now COMPLETE and every member is priced
+Two read gaps must each carry a store (R1); R2 pushes the 0x1A store downstream of a gp store
+and R4 puts every 0x10 read upstream of it, so the 0x1A store can never be a separator.  What
+remains, with this session's measured price:
+
+* **0x18 store (fused S1, or split S1a/S1b)** - free, but covers exactly ONE gap.  Using it for
+  the second gap opens the first (X2/X3/X6/X8: 65 instructions, 4-7).
+* **0x1C store (S8)** - needs `temp_a1` hence `S6` immediately after `P`, which removes R3's
+  donor window and drops p10 to $v0 (s18 Z family, 9-11).
+* **a copy store, whole statement moved** - one load-delay nop, 67 instructions (s18 M/W/T, 47
+  bodies).
+* **a copy store, only the store moved via a named pointer intermediate** (`pc = *(s32 *)(outer
+  + 0xC); ... *(s32 *)(outer + 0x28) = *(s32 *)(pc + 8);`) - **new this session, P1-PC, 12
+  bodies, ALL 67 instructions, 9-14**.  The pointer local does not decouple the copy's load from
+  its store: P3's `pc` load SINKS to slot 22 with its use at 25 and pays a nop at 26, exactly
+  the price of moving the whole statement.  P3/P6 do hold the slot-12 $a1 load with three loads.
+* **a copy store reached by hoisting a 0x10 read above the copy block** (N1-NC, R1-RC, 24
+  bodies) - dead: the hoisted read's own load is emitted at slot 11-16 in $a0, taking the
+  seat target gives p10; 12-17 at 65-67.  R1 (`S1a,C1,C2,C3,S2,S1b,P,S5,S3,S6,S4,S7,S8`) has all
+  three loads at 66 instructions and still scores 14 for that reason.
+* **the copy stores reached by hoisting the p10 read above the copy block** (Q1-QC, 12 bodies) -
+  three loads, but 67 instructions and the p10 load at slot 24-25, 4-8.
+* **the copy stores reached by putting the whole halfword block BEFORE the copy block**
+  (G1-GA, 10 bodies) - three loads restored, but the halfword loads hoist to slots 10-11 and the
+  copy block collapses: 15-21 at 66-67.
+* **the `D_800F10D0` zero-store** - the last store in the function that had never been priced.
+  Moved down into the gap (D1/D3/D5/D6) it DOES restore the third load, but its five-instruction
+  address computation moves with it, the body drops to 65 instructions and the head geometry is
+  destroyed: 15-19.  Control D2 (store left at the top) = 2 / 66 = E2.
+
+Every store the function owns has now been measured in the second-gap role on this chassis.
+
+Artifacts: `tmp/grind/func_80060A68/s19/` (71 bodies + disassemblies, gen19.py, genX/genN/genQ/
+genR/genP/genG/genD.py, sweep.sh, dis.sh, cmp.sh, target.txt).
+
+- [s19] Chassis re-audit: CU2 = 5 / build 66 / target 66 and CE2 = 2 / 66 on today's HEAD, instruction-for-instruction identical to the s15-s18 records; 71 s19 bodies, zero FAKE constructs, nothing for fake_ablate.py to ablate.
+
+- [s19] The floor-2 body's whole residual is ONE instruction: a slot-for-slot diff shows E2 == target except that target's third `lw $a0,0x10($v1)` is a `nop` in E2 and the following `lhu $a0,0x2(...)` therefore reads $a1 (p10's register) instead of $a0. The missing load's slot is already a load-delay nop, so a separator that restores the third read at zero instruction cost would be a byte match.
+
+- [s19] Splitting the 0x18 halfword store off its read (temp0 = read; ... *(u16 *)(outer + 0x18) = temp0;) is byte-neutral when the halves stay adjacent (control X1 = 5 / 66, identical to the unsplit U2) and gives one FREE non-gp cse separator - the thing s18's copy-store separator was paying a load-delay nop for.
+
+- [s19] X2 (C1,C2,C3,S1a,S2,S1b,P,S5,S3,S4,S6,S7,S8) = 4 / build 65 / target 66 is target's entire stream minus exactly one instruction (the third lw of *(s32 *)(outer + 0x10)); the split 0x18 store covers the +2-read-to-p10-read gap for free, which leaves the +0/+2 gap unseparated.
+
+- [s19] The two read gaps cannot both be covered for free from the existing statement inventory as measured on this chassis: the 0x18 store covers exactly one, the 0x1A store is barred by R2+R4, and the 0x1C store needs S6 adjacent to P which removes R3's donor.
+
+- [s19] Writing a copy through a named pointer intermediate so only its store moves (pc = *(s32 *)(outer + 0xC); ... *(s32 *)(outer + 0x28) = *(s32 *)(pc + 8);) does NOT decouple the copy's load from its store: across P1-PC (12 bodies) every body is 67 instructions, and P3's pc load sinks to slot 22 with its deref at 25 and a nop at 26 - the same load-delay nop the whole-statement move pays.
+
+- [s19] Hoisting a 0x10 halfword read above the copy block to borrow a copy store as the free separator is dead across 24 bodies (N1-NC, R1-RC): the hoisted read's load is emitted at slot 11-16 in $a0, taking the seat target gives p10; R1 has all three loads at 66 instructions and still scores 14.
+
+- [s19] Hoisting the p10 read above the copy block (Q1-QC, 12 bodies) gives three loads but 67 instructions with the p10 load at slot 24-25 (4-8); putting the whole halfword block before the copy block (G1-GA, 10 bodies) restores three loads but hoists the halfword loads to slots 10-11 (15-21).
+
+- [s19] The D_800F10D0 zero-store - the last store in the function never priced as a cse separator - does restore the third load when moved into the gap (D1/D3/D5/D6) but drags its five-instruction address computation with it, leaving 65 instructions and a destroyed head at 15-19; control D2 with the store left at the top reproduces E2 exactly at 2 / 66.
+
+- [s19] Chassis re-audit (mandated): CU2 = 5 / build 66 / target 66 with loads at 11 ($a1) / 19 ($a0) / 22 ($a0), CE2 = 2 / build 66 / target 66, and an independent re-spelling of the same body (D2) = 2 / 66 on today's HEAD - instruction-for-instruction identical to the s15-s18 records. None of the 71 bodies measured this session carries a FAKE construct, so tools/fake_ablate.py had nothing to ablate and the s15-s18 instance kills remain chassis-current.
+
+- [s19] The floor-2 body (E2, memory/grind/func_80060A68/candidate.c) is target except at two adjacent slots: target's slot 23 lw $a0,0x10($v1) is a nop in E2, and the lhu $a0,0x2(...) at slot 25 reads $a1 (p10's register) instead of $a0. Both register seats, the addiu/gp-store pair inside the +2 value's window and the entire tail are already correct.
+
+- [s19] Because the missing third load's slot is an existing load-delay nop, restoring the +2/p10 read separation costs ZERO instructions - the match condition is now a single free cse separator, not an instruction-count problem.
+
+- [s19] Splitting the 0x18 halfword store off its read is byte-neutral when the halves stay adjacent: control X1 = 5 / 66 with loads 11/19/22, byte-identical to the unsplit U2.
+
+- [s19] X2 (C1,C2,C3,S1a,S2,S1b,P,S5,S3,S4,S6,S7,S8) = 4 / build 65 / target 66 is target's entire instruction stream minus exactly one instruction (the third lw of *(s32 *)(outer + 0x10)) - the smallest instruction-count residual recorded in this campaign.
+
+- [s19] There are two read gaps and exactly one free separator: the 0x18 store covers whichever gap it is spent on and opens the other (X2/X3/X6/X8 at 65 instructions, 4-7).
+
+- [s19] The cse-separator inventory is now complete and every member is priced in the second-gap role: 0x18 (free, one gap only), 0x1A (barred by R2+R4), 0x1C (needs S6 adjacent to P, which removes R3's donor - s18 Z family), the three copies (one load-delay nop by every route: whole move s18, named pointer intermediate P1-PC all 67, read hoisting N/R 12-17, block reorder G 15-21), and the D_800F10D0 zero-store (restores the load but costs the head geometry, 15-19 at 65).
+
+- [s19] A named pointer intermediate does not decouple a copy's load from its store under GCC 2.7.2 here: P3's pc load sinks to slot 22 with its deref at 25 and pays a nop at 26, exactly the price of moving the whole copy statement - which closes s18's frontier item 1 (seating the moved copy's pointer in $a0).
+
+- [s19] Whichever 0x10 halfword read is hoisted above the copy block has its own load emitted at slot 11-16 in $a0, taking the seat target gives p10 (N/R, 24 bodies); the copy stores are therefore not usable as a free separator by moving a read to them.
+
+- [s19] src/text1b.c was restored to HEAD at the end of the session; the only dirty file is metrics/events.jsonl.
