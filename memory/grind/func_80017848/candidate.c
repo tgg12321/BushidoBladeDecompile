@@ -882,3 +882,27 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * 120 / 123 / 123 insns. Do NOT re-derive the while-shape. See evidence.md
  * E-s28-1..E-s28-5.
  */
+/* [s30 REDERIVE ADDENDUM — body unchanged, still 3, re-measured 127/127 this
+ * session as cell BASE.]  s30 closed the rederive modality's three legs.
+ * (1) INLINE HELPERS: integrate.c — the last of the seven reg-reg-copy producers
+ * in the s28 census never exercised by this function — was built three ways
+ * (static inline helper carrying the loop body / the base computation / the guard
+ * too) and scores 42/45/30 at 136-137 build insns.  GCC 2.7.2 -O2 really does
+ * inline them (no `jal` in the stream), but no arg copy survives into the
+ * preheader, and each callee costs ~4 insns of return-value materialisation
+ * (`j <inline-return>` + `addiu v0,zero,1` + a caller test) where target has one
+ * `beq $v0,$s3` into the shared return-0 block.
+ * (2) STRUCT TYPING: the real 0x40-byte record / 0x10-byte link types priced at
+ * 34/7/14/7 — a uniform +4 over the equivalent u8* spelling; the fully indexed
+ * form loses 4 instructions to cse folding reads the target keeps.
+ * (3) SIBLING TRANSPLANT: the (index<<4)+links+field idiom exists nowhere else in
+ * ings.c/ings2.c; obj_CalcOffset (src/ings.c:693) has the same geometry, is
+ * matched, and is NOT called from here — it does confirm the author's idiom is
+ * explicit shift arithmetic over a byte base, which this body already uses.
+ * Two further inputs were proved inert on BOTH chassis: declaration block-scope
+ * (cell I = 3, cell J = 14) and the source order of the two preheader definitions
+ * (cell K = 14).  The cell-E four-seat permutation therefore does not move for
+ * declaration scope or write order, which sharpens the standing frontier: the
+ * perturbation that reaches target's seats has to come from inside the modelled
+ * local-alloc/global-alloc inputs, not from source presentation.
+ */

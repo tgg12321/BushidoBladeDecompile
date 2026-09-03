@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 29,
- "current_modality": "forensics",
+ "session_count": 30,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -177,18 +177,24 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "Floor holds at 3 (127/127); reload1.c - the last unmeasured copy producer - is closed by measurement (reload emits 0 insns here), and the residual is retyped: the s23 exact-stream form re-measures 14 "
+  },
+  {
+   "session": 30,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "Floor re-measured at 3 (127/127); the rederive modality is closed on all three legs - integrate.c (the last unmeasured copy producer in the s28 census) is killed by measurement at three inline-helper "
   }
  ],
  "frontier": [
   {
    "hypothesis": "Cell E's four seat divergences (p $a1->$a0, sh $a0->$a1, copy $v0->$a3, lnk $a1->$a2) are reachable by a modelled perturbation of local-alloc/global-alloc's inputs, and inverse.py will name the C lever that produces it.",
-   "mechanism": "The residual is now typed RA on an instruction-for-instruction identical 127-insn stream (E-s29-5), which is exactly the input the solver suite was built for; the forward models are validated and inverse.py ranks minimal input perturbations that reach a given goal assignment and maps each to a C technique.",
-   "next_probe": "Apply tmp/grind/func_80017848/s29/body_E.c, run tools/ra_solver/extract.py to produce the model.json for func_80017848 on that chassis, then python3 tools/ra_solver/inverse.py local (and global) <model.json> --goal with the target seats (pointer -> $a0/4, shift -> $a1/5, copy -> $a3/7, links -> $a2/6) --depth 2 --top 8. A NEGATIVE result is first-class: it means the seating is decided outside the modelled inputs and the next move is ALLOCDBG instrumentation of local-alloc's suggested-register pass on this chassis, not another spelling."
+   "mechanism": "The residual is typed RA on an instruction-for-instruction identical 127-insn stream (E-s29-5), which is exactly the input the solver suite was built for. s30 removes two whole classes of cheap source-side explanation for the permutation - declaration scope (E-s30-4) and source write order (E-s30-5) - both measured inert, so the remaining explanation must live in the modelled inputs (live-range shape, reg_n_refs, preference edges), which is precisely what inverse.py searches.",
+   "next_probe": "Apply tmp/grind/func_80017848/s30/body_J.c or the s29 body_E.c, run tools/ra_solver/extract.py to produce model.json for func_80017848 on that chassis, then python3 tools/ra_solver/inverse.py local (and global) <model.json> --goal with the target seats (pointer -> $a0/4, shift -> $a1/5, copy -> $a3/7, links -> $a2/6) --depth 2 --top 8. A NEGATIVE result is first-class: it means the seating is decided outside the modelled inputs and the next move is ALLOCDBG instrumentation of local-alloc's suggested-register pass, not another spelling."
   },
   {
    "hypothesis": "There is a spelling of combine escape 2 (combine.c:914-917) whose intervening set of p does NOT extend a value's live range into the loop body, which would buy both copies without the seat displacement cell E pays.",
-   "mechanism": "use_crosses_set_p only requires that the pseudo used in the copy's SOURCE be assigned between the copy and the base add. Cell E satisfies it with the links load because links is the only other preheader value, but any assignment to p whose result dies inside the preheader would satisfy it equally while leaving p's live range short and the loop body reading a separate links pseudo at $a2.",
-   "next_probe": "Price cells that reuse p for a preheader-local value instead of for links: (i) p reused to hold the base itself (q = p; p = (u8 *)(sh + (s32)q); loop reads p as base) - note this makes i3 SET i2dest's source, so check whether combine.c:1458's dead_or_set_p still fires; (ii) p reused to hold the loop-2 bound so the guard's own load assigns p; (iii) p reused as the loop counter carrier. Each must be measured for BOTH the copy's presence and the seat map, not just the score."
+   "mechanism": "use_crosses_set_p only requires that the pseudo used in the copy's SOURCE be assigned between the copy and the base add. Cell E satisfies it with the links load because links is the only other preheader value, but any assignment to p whose result dies inside the preheader would satisfy it equally while leaving p's live range short and the loop body reading a separate links pseudo at $a2. s30 rules out the cheapest decoys (scope, order) without touching this axis.",
+   "next_probe": "Price cells that reuse p for a preheader-local value instead of for links: (i) p reused to hold the base itself (q = p; p = (u8 *)(sh + (s32)q); loop reads p as base) - note this makes i3 SET i2dest's source, so check whether combine.c:1458's dead_or_set_p still fires and whether an intervening links load is enough to keep it alive; (ii) p reused to hold the loop-2 bound so the guard's own load assigns p; (iii) p reused as the loop counter carrier. Each must be measured for BOTH the copy's presence and the seat map, not just the score."
   },
   {
    "hypothesis": "Escape 1 (a downstream second use of loop 2's copy) has an unpriced site inside loop 2's guard's own taken arm, above the copy, that costs less than the banked minimum of 6.",
@@ -262,6 +268,46 @@
    "measured_on": "chassis A (tmp/grind/func_80017848/s29/ings.orig.c plus the cell E body), floor-3 chassis, no FAKE constructs",
    "predicate_cite": "",
    "result": "14 at 127/127, and the diff carries no opcode, no offset and no operand-count difference anywhere in the 127 instruction"
+  },
+  {
+   "session": 30,
+   "statement": "Expanding either scan loop from a static inline helper makes integrate.c's inline-argument copy survive into the preheader as target's addu $a3, $a0, $zero, at three spellings (helper carries the loop",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor), floor-3 chassis re-measured this session at 127/127, no FAKE constructs in any cell",
+   "predicate_cite": "",
+   "result": "F = 42 at 137 build insns, G = 45 at 136, H = 30 at 136, against a 127-insn target - all three OVERSHOOT. Inlining genui"
+  },
+  {
+   "session": 30,
+   "statement": "Writing the function against the real record and link struct types (a 0x40-byte record array at ctx+0xC, a 0x10-byte link array at ctx+0x10) instead of the u8 * plus literal-offset idiom reaches the f",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (candidate.c over the src/ings.c:719 anchor), floor-3 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "A (fresh indexed re-reads at every use) = 34 at 123 build insns - struct indexing lets cse fold four loads the target ke"
+  },
+  {
+   "session": 30,
+   "statement": "Declaring q, lnk and base in the loop blocks that use them, rather than in the function-scope declaration list, perturbs local-alloc's allocno ordering enough to move the four-seat permutation of the ",
+   "kill_scope": "instance",
+   "measured_on": "both the candidate chassis (score 3) and the cell-E exact-instruction-stream chassis (score 14), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "I = 3 at 127/127, tying the baseline candidate exactly; J = 14 at 127/127, tying cell E exactly. Inert on both chassis. "
+  },
+  {
+   "session": 30,
+   "statement": "Writing sh = slot_a << 6 before p = *(u8 **)(ctx + 0xC) on the exact-instruction-stream chassis restores the target's p and sh seats ($a0 for the pointer, $a1 for the shift).",
+   "kill_scope": "instance",
+   "measured_on": "cell-E exact-instruction-stream chassis (score 14, 127/127), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "14 at 127/127 - identical score and instruction count to cell E. The p/sh seat swap is not driven by the order in which "
+  },
+  {
+   "session": 30,
+   "statement": "Another function in the ings translation units shares this function's link-lookup idiom and can be transplanted as the author's own spelling.",
+   "kill_scope": "instance",
+   "measured_on": "committed HEAD src tree, read-only census, no build",
+   "predicate_cite": "",
+   "result": "The (index << 4) + links + field idiom appears nowhere else in either file - the only hits are this function's own two l"
   }
  ]
 }

@@ -2579,3 +2579,125 @@ where the banked table already put it. **KILLED.**
 - probe: End-to-end read of combine.c:880-1030 and combine.c:1440-1470 to enumerate every escape, plus flow.c:2075-2110's LOG_LINK gate, cross-checked against cell E's measured exact stream and cell A's measured copy collapse.
 - result: The candidate spends escape 1 on loop 1 (p = q in the exit tail as the downstream second use), which materialises as addu a0,a3,zero where target has lw a0,12(s2) - that IS the standing 3-point residual. Cell E spends escape 2 on both loops and reaches the exact stream, but reusing p for the links pointer makes the links value live across the whole loop body, so p is seated at $a1 while the short-lived shift takes $a0, the reverse of target which keeps links in its own pseudo at $a2. The escape and the seating are coupled through one source decision, which is the precise thing the next session has to break.
 - verdict: CONFIRMED
+
+## s30 (rederive, 2026-09-03)
+
+- **H-s30-1 (KILLED, instance).** Statement: expanding either scan loop from a
+  `static inline` helper makes integrate.c's inline-argument copy survive into the
+  preheader as target's `addu $a3, $a0, $zero`, at three spellings (loop body only /
+  helper computes the base / helper carries the guard too).
+  Mechanism: `integrate.c` is the last of the seven emit_move_insn/gen_move_insn
+  producers in the s28 census (loop.c 14, reload1.c 13, unroll.c 9, jump.c 7,
+  integrate.c 2, cse.c 1, flow.c 1) that no form of this function had ever exercised;
+  `expand_inline_function` copies actual arguments into the callee's parameter
+  pseudos, and such a copy sits exactly in the preheader position.
+  Probe: cells F/G/H, `tmp/grind/func_80017848/s30/body_{F,G,H}.c`, measured through
+  cells.ps1 on the candidate chassis.
+  Result: 42 (137 build insns) / 45 (136) / 30 (136). All three overshoot the
+  127-insn target. Inlining did happen (no `jal` to the helper anywhere in
+  `tmp/grind/func_80017848/s30/H_diff.txt`), and the preheader of the best cell
+  carries `sll v0,s4,6` / `addu a0,v0,v1` with no reg-reg copy at all. The +9/+10 is
+  return-value materialisation: each inlined callee emits `j <inline-return>` +
+  `addiu $v0,$zero,1` on its hit path plus a caller-side test, where the target has
+  a single `beq $v0,$s3,.L800178AC` into the shared `return 0` block.
+  Verdict: KILLED. kill_scope: instance.
+  measured_on: candidate chassis (memory/grind/func_80017848/candidate.c applied over
+  the src/ings.c:719 INCLUDE_ASM anchor), floor-3 chassis, no FAKE constructs.
+
+- **H-s30-2 (KILLED, instance).** Statement: writing the function against the real
+  record/link struct types (a 0x40-byte record array at `ctx+0xC`, a 0x10-byte link
+  array at `ctx+0x10`) instead of the `u8 *` + literal-offset idiom reaches the floor,
+  at four spellings.
+  Mechanism: struct member access and array indexing feed a different address
+  expression tree to cse/combine than explicit `(shift + (s32)ptr + literal)`
+  arithmetic, so the redundant-load folding and the base-add association can differ.
+  Probe: cells A/B/C/D, `tmp/grind/func_80017848/s30/body_{A,B,C,D}.c`.
+  Result: A = 34 at 123 build insns (indexed re-reads let cse fold four loads the
+  target keeps, so the build is 4 instructions SHORT), B = 7 at 127, C = 14 at 127,
+  D = 7 at 127. Struct typing is a uniform +4 over the equivalent `u8 *` spelling.
+  Verdict: KILLED. kill_scope: instance.
+  measured_on: candidate chassis, floor-3 chassis, no FAKE constructs.
+
+- **H-s30-3 (KILLED, instance).** Statement: declaring `q`, `lnk` and `base` in the
+  loop blocks that use them, rather than in the function-scope declaration list,
+  perturbs local-alloc's allocno ordering enough to move the four-seat permutation of
+  the exact-instruction-stream form.
+  Mechanism: block-head declarations change the order in which pseudos are created
+  during expand, which is the ordering local-alloc's `allocno_order` inherits.
+  Probe: cell I (candidate shape, block-scoped) and cell J (the s23/s29
+  exact-instruction-stream form, block-scoped),
+  `tmp/grind/func_80017848/s30/body_{I,J}.c`.
+  Result: I = 3 at 127/127, tying the baseline exactly; J = 14 at 127/127, tying cell
+  E exactly. Inert on both chassis. Extends the s11 declaration-ORDER-inert finding to
+  declaration SCOPE.
+  Verdict: KILLED. kill_scope: instance.
+  measured_on: candidate chassis and the cell-E exact-stream chassis, floor-3 and
+  score-14 respectively, no FAKE constructs.
+
+- **H-s30-4 (KILLED, instance).** Statement: writing `sh = slot_a << 6;` before
+  `p = *(u8 **)(ctx + 0xC);` on the exact-instruction-stream chassis restores the
+  target's p/sh seats ($a0 for the pointer, $a1 for the shift).
+  Mechanism: the target loads the pointer first and shifts second, and the seat
+  divergence is exactly a p<->sh swap, so source write order was the cheapest
+  candidate input perturbation for it.
+  Probe: cell K = cell E with the two preheader definitions swapped,
+  `tmp/grind/func_80017848/s30/body_K.c`.
+  Result: 14 at 127/127 — bit-identical score and insn count to cell E. The seat swap
+  is not driven by source write order.
+  Verdict: KILLED. kill_scope: instance.
+  measured_on: cell-E exact-stream chassis (score 14), no FAKE constructs.
+
+- **H-s30-5 (KILLED, instance).** Statement: another function in the ings translation
+  units shares this function's link-lookup idiom and can be transplanted as the
+  author's own spelling.
+  Mechanism: sibling transplant is the third leg of the rederive modality; a matched
+  sibling would fix the idiom empirically instead of by inference.
+  Probe: `grep -n "<< 4)" src/ings.c src/ings2.c` plus a read of the surrounding
+  matched functions.
+  Result: the idiom appears nowhere else; the only adjacent matched helper with the
+  same geometry is `obj_CalcOffset(a0, a1) { return (a0 << 6) + (a1 << 4); }`
+  (src/ings.c:693), which func_80017848 does not call (the target listing has no
+  `jal` other than math_Distance3D). It does corroborate that the author's idiom is
+  explicit shift arithmetic over a byte base, i.e. what the candidate already uses.
+  Verdict: KILLED. kill_scope: instance.
+  measured_on: committed HEAD src tree, read-only census, no build.
+
+## [s30] Expanding either scan loop from a static inline helper makes integrate.c's inline-argument copy survive into the preheader as target's addu $a3, $a0, $zero, at three spellings (helper carries the loop body only / helper computes the base itself / helper carries the guard too).
+- mechanism: integrate.c is the last of the seven emit_move_insn/gen_move_insn producers in the s28 census (loop.c 14, reload1.c 13, unroll.c 9, jump.c 7, integrate.c 2, cse.c 1, flow.c 1) that no form of this function had ever exercised; expand_inline_function copies actual arguments into the callee's parameter pseudos, and such a copy lands exactly in the preheader position where target carries its unexplained reg-reg copy.
+- probe: Cells F/G/H (tmp/grind/func_80017848/s30/body_F.c, body_G.c, body_H.c) applied over the src/ings.c:719 INCLUDE_ASM anchor and measured with `sandbox func_80017848 --disable all` through tmp/grind/func_80017848/s30/cells.ps1; cell H additionally disassembled and diffed against the target listing into tmp/grind/func_80017848/s30/H_diff.txt.
+- result: F = 42 at 137 build insns, G = 45 at 136, H = 30 at 136, against a 127-insn target - all three OVERSHOOT. Inlining genuinely happened (no jal to either helper anywhere in the emitted stream), so this is a real measurement of integrate.c and not a failed inline. No preheader copy is bought: cell H's preheader is `sll v0,s4,6` / `addu a0,v0,v1` with no `addu a3,a0,zero` at all, i.e. combine substitutes integrate's arg copy exactly as it substitutes a source-level one. The +9/+10 insn overshoot is located and is per-callee return-value materialisation: each inlined helper emits `j <inline-return>` + `addiu $v0,$zero,1` on its hit path plus a caller-side test, where the target has a single `beq $v0,$s3,.L800178AC` branching straight into the shared return-0 block, and jump.c does not cross-jump that back together.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate chassis (memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor), floor-3 chassis re-measured this session at 127/127, no FAKE constructs in any cell
+
+## [s30] Writing the function against the real record and link struct types (a 0x40-byte record array at ctx+0xC, a 0x10-byte link array at ctx+0x10) instead of the u8 * plus literal-offset idiom reaches the floor, at four spellings.
+- mechanism: Struct member access and array indexing feed a different address expression tree to cse and combine than explicit (shift + (s32)ptr + literal) arithmetic, so redundant-load folding and base-add association can differ - a structurally different C shape rather than a tweak of the current one.
+- probe: Cells A/B/C/D (tmp/grind/func_80017848/s30/body_A.c ... body_D.c), typedefs IngRec { s32 unk0[6]; s32 f18; s32 na; s32 nb; u8 la[8]; u8 lb[8]; s32 unk34[3]; } and IngLink { s32 dist; u16 b; s16 a; s32 dist3; s32 owner; }, measured through cells.ps1 on the candidate chassis.
+- result: A (fresh indexed re-reads at every use) = 34 at 123 build insns - struct indexing lets cse fold four loads the target keeps, so the build is 4 instructions SHORT of the 127-insn target; B (struct types over the candidate's proven preheader shape) = 7 at 127; C (B plus a symmetric q re-read in loop 2) = 14 at 127; D (u8 * scaffolding with struct-typed base/lnkp only inside the loop bodies) = 7 at 127. Struct typing is a uniform +4 over the equivalent u8 * spelling on this chassis and never reaches the floor.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate chassis (candidate.c over the src/ings.c:719 anchor), floor-3 chassis, no FAKE constructs
+
+## [s30] Declaring q, lnk and base in the loop blocks that use them, rather than in the function-scope declaration list, perturbs local-alloc's allocno ordering enough to move the four-seat permutation of the exact-instruction-stream form.
+- mechanism: C89 block-head declarations change the order in which pseudos are created during expand, and that creation order is what local-alloc's allocno ordering inherits; the cell-E residual is a pure register-seat permutation, so pseudo ordering was the cheapest untried source-side input to it.
+- probe: Cell I (candidate shape with q/lnk/base block-scoped) and cell J (the s23/s29 exact-instruction-stream form with q/base block-scoped), tmp/grind/func_80017848/s30/body_I.c and body_J.c, measured through cells.ps1.
+- result: I = 3 at 127/127, tying the baseline candidate exactly; J = 14 at 127/127, tying cell E exactly. Inert on both chassis. This extends the s11 declaration-ORDER-inert finding to declaration SCOPE.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: both the candidate chassis (score 3) and the cell-E exact-instruction-stream chassis (score 14), no FAKE constructs
+
+## [s30] Writing sh = slot_a << 6 before p = *(u8 **)(ctx + 0xC) on the exact-instruction-stream chassis restores the target's p and sh seats ($a0 for the pointer, $a1 for the shift).
+- mechanism: The target loads the pointer first and shifts second, and two of cell E's four seat divergences are exactly a p<->sh swap, so the source write order of the two preheader definitions was the most direct candidate perturbation for that pair.
+- probe: Cell K = cell E with the two preheader definitions swapped (tmp/grind/func_80017848/s30/body_K.c), measured through cells.ps1.
+- result: 14 at 127/127 - identical score and instruction count to cell E. The p/sh seat swap is not driven by the order in which the two values are written in the source.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: cell-E exact-instruction-stream chassis (score 14, 127/127), no FAKE constructs
+
+## [s30] Another function in the ings translation units shares this function's link-lookup idiom and can be transplanted as the author's own spelling.
+- mechanism: Sibling transplant is the third leg of the rederive modality; a matched sibling would fix the source idiom empirically rather than by inference from the target listing.
+- probe: grep -n "<< 4)" src/ings.c src/ings2.c plus a read of the surrounding matched functions, and a check of the target listing for calls.
+- result: The (index << 4) + links + field idiom appears nowhere else in either file - the only hits are this function's own two loops and its tail store. The single adjacent matched helper with the same geometry is obj_CalcOffset(a0, a1) { return (a0 << 6) + (a1 << 4); } at src/ings.c:693, and func_80017848 does not call it (the target listing's only jal is math_Distance3D). It does corroborate that the author's idiom is explicit shift arithmetic over a byte base, which is what the candidate already uses.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: committed HEAD src tree, read-only census, no build

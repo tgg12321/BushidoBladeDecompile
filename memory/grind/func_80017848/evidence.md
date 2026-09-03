@@ -3633,3 +3633,108 @@ everywhere it has been sited.
 - [s29] rejected/s23_crosses_set_p_reused_as_links_both_loops_exact_insn_stream_costs_14.c re-measures 14 at 127/127 with ZERO opcode/offset/operand-count differences - the entire residual is four register seats, repeated once per loop: p $a0->$a1, sh $a1->$a0, copy $a3->$v0, lnk $a2->$a1.
 
 - [s29] inverse_compose.py classify on cell E prints FIRST DIVERGENCE: RA / next tool: tools/ra_solver/inverse.py (global / local) and lists exactly those four pairs; the func_80045294-s57 mis-typing hazard is excluded by its own disambiguator (every reference of each pseudo carries the wrong seat, so it is not an operand substitution).
+
+## s30 (rederive, 2026-09-03)
+
+- **E-s30-0 CHASSIS.** `sandbox func_80017848 --disable all` with
+  `memory/grind/func_80017848/candidate.c` applied over the `src/ings.c:719`
+  INCLUDE_ASM anchor = **3**, 127 target insns / 127 build insns, scorable. The
+  dispatch brief reported "measurement unavailable" for the HEAD floor; the ledger
+  floor of 3 is re-confirmed by direct measurement this session. Every score below
+  is on that same chassis, measured through
+  `tmp/grind/func_80017848/s30/cells.ps1` (the s29 harness, repointed at s30).
+
+- **E-s30-1 INTEGRATE.C — THE LAST UNMEASURED COPY PRODUCER — IS CLOSED BY
+  MEASUREMENT.** The s28 census (E-s28-1) enumerated every reg-reg-copy producer in
+  this compiler by emit_move_insn/gen_move_insn call-site count and left
+  `integrate.c` (2 sites) unmeasured because no form of this function had ever used
+  an inlined callee. This session built that form three ways and measured all three.
+  A `static inline` helper carrying the scan loop is genuinely inlined by GCC 2.7.2
+  at `-O2` (verified in the emitted stream: `tmp/grind/func_80017848/s30/H_diff.txt`
+  contains no `jal` to the helper), but inlining does not plant a surviving
+  preheader copy and it COSTS instructions:
+  | cell | shape | score | build insns |
+  |---|---|---|---|
+  | F | helper takes the already-computed `base` + `lnk`, loop body only | 42 | 137 |
+  | G | helper takes `(sh, p, lnk, slot_b)` and computes `base` itself | 45 | 136 |
+  | H | helper carries the guard AND the loop, called unconditionally | 30 | 136 |
+  All three OVERSHOOT the 127-insn target by 9-10. The overshoot is located in
+  `H_diff.txt`: each inlined callee materialises its return value and its inline
+  return label, so the target's single `beq $v0,$s3,.L800178AC` (hit -> branch
+  straight into the shared `return 0` block) becomes, per helper, a
+  `j <inline-return>` + `addiu $v0,$zero,1` pair plus the caller-side test. Nothing
+  in jump.c cross-jumps that back together. Cell H's preheader also shows the copy
+  is NOT bought: it emits `sll v0,s4,6` / `addu a0,v0,v1` with no `addu a3,a0,zero`
+  anywhere, i.e. integrate.c's two move sites produce no surviving arg copy here
+  (combine substitutes it exactly as it does for a source-level copy).
+
+- **E-s30-2 STRUCT-TYPED REDERIVATION PRICED (new family, never in the bank).** The
+  records at `ctx+0xC` are a 0x40-byte array (`s32 unk0[6]; s32 f18; s32 na; s32 nb;
+  u8 la[8]; u8 lb[8]; s32 unk34[3]`) and the links at `ctx+0x10` are a 0x10-byte
+  array (`s32 dist; u16 b; s16 a; s32 dist3; s32 owner`); writing the function
+  against those types instead of the `u8 *` + literal-offset idiom is a structurally
+  different C shape. Measured: A (fresh `(*(IngRec **)(ctx+0xC))[slot_a]` reads at
+  every use) = **34** at 123 insns — struct indexing lets cse fold four reads the
+  target keeps, so the build LOSES 4 instructions; B (struct types over the
+  candidate's proven preheader shape) = **7** at 127; C (B plus a symmetric `q`
+  re-read in loop 2) = **14** at 127; D (`u8 *` scaffolding with struct-typed
+  `base`/`lnkp` only inside the loop bodies) = **7** at 127. Struct typing is
+  therefore a uniform +4 over the equivalent `u8 *` spelling on this chassis and
+  never reaches the floor.
+
+- **E-s30-3 SIBLING-IDIOM CENSUS IS NEGATIVE.** No other function in `src/ings.c` or
+  `src/ings2.c` contains the `(index << 4) + links + field` link-lookup idiom
+  (`grep -n "<< 4)"` returns only this function's two loops and its own tail store).
+  The one adjacent matched helper that touches the same geometry is
+  `obj_CalcOffset(a0, a1) { return (a0 << 6) + (a1 << 4); }` at src/ings.c:693 — it
+  confirms the author's own idiom is explicit shift arithmetic over a byte base
+  (which is what the candidate already uses) and it is NOT called from
+  func_80017848 (no `jal` in the target listing), so there is no sibling to
+  transplant.
+
+- **E-s30-4 DECLARATION BLOCK-SCOPE IS INERT ON BOTH CHASSIS.** Moving `q`, `lnk`
+  and `base` out of the function-scope declaration list and into the loop blocks
+  they are used in (C89 block-head declarations) changes nothing: cell I (candidate
+  shape, block-scoped) = **3** at 127/127, tying the baseline exactly; cell J (the
+  s23/s29 exact-instruction-stream form, block-scoped) = **14** at 127/127, tying
+  cell E exactly. This extends the s11 "declaration ORDER is inert" finding to
+  declaration SCOPE, and it matters for the live frontier: block scope does not
+  perturb local-alloc's allocno ordering enough to move the four-seat permutation.
+
+- **E-s30-5 SOURCE ORDER OF THE TWO PREHEADER DEFS IS ALSO INERT ON THE EXACT
+  STREAM.** Cell K = cell E with `sh = slot_a << 6;` written BEFORE
+  `p = *(u8 **)(ctx + 0xC);` (target loads the pointer first, then shifts; the seat
+  divergence is exactly p<->sh) = **14** at 127/127, identical to E. The p/sh seat
+  swap is therefore not driven by the order in which the two values are written in
+  the source.
+
+- [s30] Chassis re-measured: candidate.c applied = 3, 127/127, scorable. Ledger floor 3 confirmed; the brief's "measurement unavailable" is resolved.
+- [s30] integrate.c (the last of the 7 copy-producers from the s28 census to be measured) does not plant a surviving preheader copy: three static-inline-helper spellings score 42/45/30 at 136-137 build insns against a 127-insn target, and the inlined stream carries no `addu a3,a0,zero`.
+- [s30] The inline-helper overshoot is mechanical and per-callee: return-value materialisation (`j <inline-return>` + `addiu v0,zero,1`) plus the caller-side test replaces target's single `beq v0,s3,<shared return 0>`; jump.c does not cross-jump it away.
+- [s30] Struct-typed rederivation (0x40-byte record array + 0x10-byte link array) priced for the first time: 34 (fresh indexed reads, 123 insns - cse folds 4 reads target keeps), 7, 14, 7. Uniform +4 over the equivalent u8* spelling.
+- [s30] Sibling-transplant axis closed: the (index<<4)+links+field idiom appears nowhere else in ings.c/ings2.c; the only adjacent matched helper with the same geometry is obj_CalcOffset (src/ings.c:693) and func_80017848 does not call it.
+- [s30] Declaration block-scope is inert: cell I (candidate, block-scoped) = 3 at 127/127; cell J (exact-stream form, block-scoped) = 14 at 127/127. Extends the s11 decl-ORDER-inert finding to decl SCOPE.
+- [s30] Writing the shift before the pointer read on the exact-stream chassis (cell K) = 14 at 127/127, identical to cell E: the p<->sh seat swap is not driven by source write order.
+- [s30] 10 new forms banked to memory/grind/func_80017848/rejected/ (201 total). src/ings.c restored to its committed INCLUDE_ASM state.
+
+- [s30] Chassis re-measured this session: sandbox func_80017848 --disable all with memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor = 3, target_insns 127, build_insns 127, scorable. The dispatch brief's 'measurement unavailable' for the HEAD floor is resolved; the ledger floor of 3 stands.
+
+- [s30] integrate.c, the last of the seven reg-reg-copy producers in the s28 census never exercised by this function, is now closed by measurement: three static-inline-helper spellings score 42/45/30 at 136-137 build insns and none of them plants a surviving preheader copy.
+
+- [s30] GCC 2.7.2 at -O2 does inline a `static inline` helper here - tmp/grind/func_80017848/s30/H_diff.txt contains no jal to either helper - so the inline-helper measurements are a real test of integrate.c rather than a failed inline.
+
+- [s30] The inline-helper overshoot is mechanical and per-callee: return-value materialisation (`j <inline-return>` + `addiu $v0,$zero,1`) plus a caller-side test replaces target's single `beq $v0,$s3,.L800178AC` into the shared return-0 block; jump.c does not cross-jump it away. Any future multi-block rederivation that routes the two hit paths through a returned flag pays the same ~4 insns per site.
+
+- [s30] Struct-typed rederivation priced for the first time (new family, not previously in the rejected bank): IngRec is 0x40 bytes (s32 unk0[6]; s32 f18; s32 na; s32 nb; u8 la[8]; u8 lb[8]; s32 unk34[3]) and IngLink is 0x10 (s32 dist; u16 b; s16 a; s32 dist3; s32 owner). Scores 34 (123 insns), 7, 14, 7 - a uniform +4 over the equivalent u8 * spelling.
+
+- [s30] The fully indexed struct form LOSES instructions (123 vs 127): struct indexing lets cse fold four ctx+0xC re-reads that the target keeps, which is the same failure mode as the s28 while-form (LICM hoisting the loop bound the target reloads).
+
+- [s30] Sibling-transplant axis closed: the (index<<4)+links+field idiom exists nowhere else in src/ings.c or src/ings2.c; the only adjacent matched helper with the same geometry is obj_CalcOffset (src/ings.c:693) and this function does not call it.
+
+- [s30] Declaration block-scope is inert on both chassis (cell I = 3 at 127/127, cell J = 14 at 127/127), extending the s11 declaration-ORDER-inert finding to declaration SCOPE.
+
+- [s30] Source write order of the two preheader definitions is inert on the exact-stream chassis (cell K = 14 at 127/127, identical to cell E), so the p<->sh seat swap is not a write-order effect.
+
+- [s30] Taken together, E-s30-4 and E-s30-5 sharpen the standing frontier: the cell-E four-seat permutation does not move for declaration scope or source write order, so the perturbation that reaches target's seats has to come from inside the modelled local-alloc/global-alloc inputs (live-range shape, reference counts, preference edges) rather than from source presentation.
+
+- [s30] 10 new disproven forms banked to memory/grind/func_80017848/rejected/ (201 total). src/ings.c was restored to its committed INCLUDE_ASM state; the working tree carries only ledger edits under memory/grind/func_80017848/.
