@@ -3032,3 +3032,197 @@ All s31 cell scores are banked in `tmp/grind/func_80017848/s31/scores.txt`.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus body_SYM.c, floor-3 chassis, no FAKE constructs
+
+## [s33] MANDATED KILL RE-AUDIT: cell AK, the instance kill whose form sat closest to the target, still measures 14 on the current chassis with no FAKE construct present anywhere in the tree.
+- mechanism: The candidate carries no FAKE construct, so tools/fake_ablate.py has
+  nothing to ablate; the re-audit is therefore a plain chassis re-measurement of the
+  three reference forms. AK is the closest form by instruction stream (127/127,
+  instruction-for-instruction identical to the target listing, residual = a
+  four-register permutation); BASE is the closest by score; SYM is the closest by
+  exit-tail shape.
+- probe: tmp/grind/func_80017848/s33/cells.ps1 BASE,AK,SYM (the s32 harness
+  re-pointed at s33), each cell applied over the HEAD src/ings.c:719 INCLUDE_ASM
+  anchor and scored with sandbox func_80017848 --disable all.
+- result: BASE = 3 (127/127), AK = 14 (127/127), SYM = 4 (127/126) - all three
+  reproduce their banked scores exactly. The chassis has not moved since s32 and the
+  s31/s32 verdicts on AK stand as measured.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the three cell bodies,
+  floor-3 chassis, no FAKE constructs anywhere in the tree
+
+## [s33] Loop 2's guard can be given the same two-step invalidation loop 1 already uses (t = sh2 + (s32)p; t = *(s32 *)(t + 0x20);) at zero byte cost, which removes the guard's available sh2 + p value and is the precondition for a surviving preheader copy at target's position.
+- mechanism: In the candidate, loop 1's guard is written as a two-step through t, so
+  the pseudo holding sh + p is overwritten by the load and cse can no longer supply
+  that value to loop 1's preheader base add - which is why loop 1's addu a0,a1,a3 is
+  a real add instead of a cse copy. Loop 2's guard in the candidate is a single
+  inline expression, so its sh2 + p pseudo stays available and any preheader base add
+  that reads a value cse knows to equal p is folded away. Making loop 2 symmetric was
+  expected to be byte-neutral because target's loop-2 guard has exactly loop 1's
+  shape (addu v0,a1,a0 / lw v0,0x20(v0)).
+- probe: Twelve cells. D2-D9 write the two-step REUSING loop 1's t; H1-H6 write it
+  with a fresh s32 t2. Both families crossed with the loop-2 preheader spelled as a
+  fresh *(u8 **)(ctx + 0xC) read, as q2 = p, and as slots = p, over both the BASE
+  exit tail (p = q;) and the SYM exit tail (p = *(u8 **)(ctx + 0xC);). Scores in
+  tmp/grind/func_80017848/s33/scores.txt; H4's disassembly diff taken with
+  s33/dis.sh.
+- result: The two-step is FREE with a fresh variable and CATASTROPHIC when it reuses
+  loop 1's. H4 (BASE exit tail + t2 two-step + a named fresh read) scores 3 at
+  127/127 with a disassembly residual that is the SAME three instructions as the
+  candidate's, i.e. it is a second, independent score-3 chassis whose loop-2 guard add
+  is invalidated. D8, the identical cell with t reused instead of t2, scores 36 at
+  127/127 - a +33 whole-function seat rotation, the same signature s31's cells N1/N2
+  produced when one pointer/shift pair was shared across both loops. Every other
+  t-reusing cell (D2-D7, D9) sits at 30. Banked: H4 as
+  memory/grind/func_80017848/candidate_alt_h4_t2_twostep_3.c, D8 as
+  rejected/s33_l2_two_step_guard_reusing_t_seat_rotation_costs_36.c.
+- verdict: CONFIRMED
+
+## [s33] Replacing loop 2's preheader *(u8 **)(ctx + 0xC) read with a plain reg-reg copy from a variable already holding that value buys target's addu a3,a0,zero at zero instruction cost.
+- mechanism: Target's loop-2 preheader is addu a3,a0,zero / lw a2,0x10(s2) /
+  addu a0,a1,a3 - a use-once copy feeding the base add. The candidate emits
+  lw v0,0xC(s2) there because .L8001791C has two predecessors and starts a new cse
+  extended basic block (cse.c:8039, while (p && GET_CODE (p) != CODE_LABEL)), so the
+  redundant load cannot be folded to a copy. Writing the copy explicitly in C was
+  expected to put the right instruction in the right place.
+- probe: Nine cells, crossing the copy's SOURCE (p, slots, loop 1's shared q) with
+  the guard shape (inline guard = F1/F2/F3, G1/G2/G3; t2 two-step = H1/H3/H5/H6) and
+  both exit tails, plus F4/D4/D9 which add a post-loop p = q2; second use.
+- result: EVERY spelling LOSES the instruction. With the inline guard the build drops
+  to 124-125 insns (F1/F2/F3/F4 = 9 at 124; G1/G2/G3 = 8 at 125): the copy is
+  substituted away by combine AND the base add is then folded onto the guard's still
+  available sh2 + p, costing two instructions. With the t2 two-step the base add
+  survives but the copy still dies (H1/H5 = 6 at 125, H3/H6 = 5 at 126). The source
+  of the copy is irrelevant - p, slots and the shared q are exactly equal at every
+  score. The control is decisive: G4 and H4, identical cells whose preheader keeps the
+  fresh read but binds it to a named local q2, score 3 at 127/127, so the named local
+  itself is inert and the whole delta is the copy dying.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the nine cell bodies,
+  floor-3 chassis, no FAKE constructs
+
+## [s33] A post-loop second use of loop 2's copy destination (p = q2; after loop 2) preserves the copy through combine the way loop 1's p = q; does, and the ledger's banked 19-22 price for post-loop second-use sites is a chassis artefact.
+- mechanism: combine keeps a copy whose destination is still live past the insn it
+  would be substituted into (added_sets_2 = ! dead_or_set_p (i3, i2dest),
+  combine.c:1458). Loop 1's copy is bought exactly that way by the candidate's p = q;
+  exit tail, and the symmetric statement after loop 2 should buy loop 2's.
+- probe: Cells F4 (SYM exit tail) and D4/D9 (t-two-step chassis), each identical to
+  its no-second-use sibling except for a trailing p = q2; inside loop 2's arm.
+- result: F4 scores 9 at 124 build insns - byte-for-byte the same as F1, its sibling
+  WITHOUT the second use. D4 = D3 = 30 at 125 and D9 = D7 = 30 at 126. The second use
+  is not merely too expensive here, it does not exist: p is dead after loop 2 (the
+  tail re-reads *(u8 **)(ctx + 0xC) from scratch for math_Distance3D, rec_a and
+  rec_b), so the store is removed by DCE before combine ever sees a second reference.
+  Any post-loop second use of loop 2's copy must therefore write a variable the tail
+  actually reads, and the tail's reads all sit in a post-call extended basic block
+  where target spends real lw instructions. Banked as
+  rejected/s33_l2_post_loop_second_use_is_dce_removed_costs_9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus cells F1/F4/D3/D4/D7/D9,
+  floor-3 chassis, no FAKE constructs
+
+## [s33] The combine.c:914 use_crosses_set_p escape must clobber p (the record pointer) between the copy and the base add, so its cost is fixed at cell AK's four-register permutation.
+- mechanism: s31/s32 spelled the escape only one way - reuse p to hold the links
+  pointer - and concluded the escape is dead because that merges the record pointer
+  and the links pointer into one pseudo while target seats them in $a0 and $a2. The
+  escape's actual requirement is weaker: it only needs SOME register of the copy's
+  SOURCE to be set between i2 and i3, and the copy's source can be any variable that
+  provably holds *(u8 **)(ctx + 0xC) at that point.
+- probe: Cells J1/J2/J3/J4 on the H4 chassis and K1/K3/K4/K5/K6 on the BASE chassis.
+  J2/K1 spell the copy as q2 = slots; slots = *(u8 **)(ctx + 0x10); with loop 2's
+  body reading slots as the links pointer - i.e. the merge partner is the top-guard
+  record pointer, not p. J3 is the AK spelling re-measured on H4. J1 is the control
+  with the copy but no clobber. J4 hoists loop 2's links into loop 1's lnk.
+  Disassembly diffs for J2 and K1 via s33/dis.sh.
+- result: The escape works with slots and is CHEAPER than with p: J2 = 10 and K1 = 10,
+  both at 127/127, against J3/AK = 14. The control J1 (copy, no clobber) is 10 at 126
+  - one instruction short, confirming the clobber is what buys the copy and not the
+  naming. K1's diff shows target's addu a3,a0,zero present in BOTH preheaders and the
+  entire residual being a four-link seat chain: slots $v1->$a2, loop-1 lnk $a2->$a3,
+  loop-1 q $a3->$t0, loop-2 copy $a3->$v0 (plus the candidate's own exit-tail
+  instruction). The chain is rooted in one fact - reading slots in loop 2's preheader
+  keeps it live from the top guard all the way through loop 1, and the register it
+  then takes ($a2) is the one target spends on loop 1's links. So the escape's price
+  is not a constant: it is the seat distance between the merge partner's two roles,
+  and slots is 4 points cheaper than p. It is still not free, because every candidate
+  merge partner is a variable target seats somewhere other than $a2 in its first role.
+  Declaration order over the merged variable is exactly inert (K3/K4/K5/K6 all 10),
+  re-confirming the s11/s12/s32 inertness sweeps on this chassis. Banked as
+  rejected/s33_l2_slots_reused_as_links_use_crosses_set_p_costs_10.c and
+  rejected/s33_l2_slots_merge_on_sym_exit_tail_costs_10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the nine cell bodies,
+  floor-3 chassis, no FAKE constructs
+
+## [s33] Loop 1's exit tail can be made to emit target's lw a0,0xC(s2) by writing it as a fresh *(u8 **)(ctx + 0xC) read instead of the candidate's p = q;.
+- mechanism: cse's extended basic block provably ends at any CODE_LABEL (cse.c:8039,
+  while (p && GET_CODE (p) != CODE_LABEL)), and loop 1's body starts at a
+  two-predecessor label, so the exit tail sits in a fresh EBB whose memory table and
+  register equivalences have both been cleared. A redundant *(u8 **)(ctx + 0xC) read
+  there therefore ought to survive as a real load, which is exactly what target spends
+  an instruction on.
+- probe: Cell H4 - the BASE body with loop 1's exit tail rewritten as
+  p = *(u8 **)(ctx + 0xC); (the SYM spelling) and loop 2 given the free t2 two-step
+  guard - scored and then disassembly-diffed with s33/dis.sh.
+- result: H4 scores 3 at 127/127 and its diff is the SAME three instructions as the
+  candidate's: the exit tail still comes out as addu a0,a3,zero, a copy of loop 1's q,
+  not as lw a0,0xC(s2). The fresh-read spelling and the p = q; spelling CONVERGE - so
+  as long as loop 1's preheader carries a live copy of the pointer, the exit tail is a
+  register copy regardless of how the C is written, and the cse-EBB argument above
+  does not predict the observed code. That is the single sharpest open contradiction
+  on this function: target has BOTH the preheader copy AND a real reload two blocks
+  later, and no measured form has produced both. The fresh -da dumps for H4 are in
+  tmp/grind/func_80017848/dumps/ and have not been read.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus cells BASE/SYM/H4,
+  floor-3 chassis, no FAKE constructs
+
+## [s33] Cell AK, the instance kill whose form sits closest to the target instruction stream, still measures 14 on the current chassis, and BASE/SYM still measure 3/4.
+- mechanism: Mandated kill re-audit. The candidate carries no FAKE construct anywhere in the tree, so tools/fake_ablate.py has nothing to ablate; the re-audit is a plain chassis re-measurement of the three reference forms (AK = closest by instruction stream, BASE = closest by score, SYM = closest by exit-tail shape).
+- probe: tmp/grind/func_80017848/s33/cells.ps1 BASE,AK,SYM - the s32 harness re-pointed at s33 - each cell applied over the HEAD src/ings.c:719 INCLUDE_ASM anchor and scored with `sandbox func_80017848 --disable all`.
+- result: BASE = 3 (127/127), AK = 14 (127/127), SYM = 4 (127/126). All three reproduce their banked scores exactly; the chassis has not moved since s32 and the s31/s32 verdicts on AK stand as measured. No FAKE carrier occupied any pseudo in any of the three forms.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the three cell bodies, floor-3 chassis, no FAKE constructs anywhere in the tree
+
+## [s33] Loop 2's guard can be given the same two-step invalidation loop 1 already uses (t = sh2 + (s32)p; t = *(s32 *)(t + 0x20);) at zero byte cost, removing the guard's available sh2 + p value.
+- mechanism: Loop 1's guard is written as a two-step through t, so the pseudo holding sh + p is overwritten by the load and cse can no longer supply that value to loop 1's preheader base add - which is why loop 1's `addu a0,a1,a3` is a real add rather than a cse copy. Loop 2's guard in the candidate is one inline expression, so its sh2 + p pseudo stays available and any preheader base add reading a value cse knows equals p is folded away. Target's loop-2 guard has exactly loop 1's shape (addu v0,a1,a0 / lw v0,0x20(v0)).
+- probe: Twelve cells: D2-D9 write the two-step REUSING loop 1's t; H1-H6 write it with a fresh s32 t2. Crossed with the loop-2 preheader spelled as a fresh *(u8 **)(ctx + 0xC) read, as q2 = p, and as slots = p, over both the BASE exit tail (p = q;) and the SYM exit tail. Scores in tmp/grind/func_80017848/s33/scores.txt; H4 disassembly-diffed with s33/dis.sh.
+- result: The two-step is FREE with a fresh variable and catastrophic when it reuses loop 1's. H4 (BASE exit tail + t2 two-step + named fresh read) scores 3 at 127/127 with a residual that is the SAME three instructions as the candidate's - a second, independent score-3 chassis whose loop-2 guard add is invalidated. D8, the identical cell with t reused instead of t2, scores 36 at 127/127: a +33 whole-function seat rotation, the same signature s31's N1/N2 produced for a shared pointer/shift pair. Every other t-reusing cell (D2-D7, D9) sits at 30. H4 banked as memory/grind/func_80017848/candidate_alt_h4_t2_twostep_3.c; D8 as rejected/s33_l2_two_step_guard_reusing_t_seat_rotation_costs_36.c.
+- verdict: CONFIRMED
+
+## [s33] Replacing loop 2's preheader *(u8 **)(ctx + 0xC) read with a plain reg-reg copy from a variable already holding that value buys target's addu a3,a0,zero at zero instruction cost.
+- mechanism: Target's loop-2 preheader is addu a3,a0,zero / lw a2,0x10(s2) / addu a0,a1,a3 - a use-once copy feeding the base add. The candidate emits lw v0,0xC(s2) there because .L8001791C has two predecessors and starts a new cse extended basic block (cse.c:8039, `while (p && GET_CODE (p) != CODE_LABEL)`), so the redundant load cannot be folded into a copy; writing the copy explicitly in C was expected to place the right instruction directly.
+- probe: Nine cells crossing the copy's SOURCE (p, slots, loop 1's shared q) with the guard shape (inline guard = F1/F2/F3 and G1/G2/G3; t2 two-step = H1/H3/H5/H6) and both exit tails, plus the F4/D4/D9 second-use siblings.
+- result: Every spelling LOSES the instruction. With the inline guard the build drops to 124-125 insns (F1/F2/F3/F4 = 9 at 124; G1/G2/G3 = 8 at 125) because the copy is substituted away by combine AND the base add is then folded onto the guard's still-available sh2 + p - two instructions lost. With the t2 two-step the base add survives but the copy still dies (H1/H5 = 6 at 125; H3/H6 = 5 at 126). The copy's source is irrelevant: p, slots and the shared q score identically. The control is decisive - G4 and H4, identical cells whose preheader keeps the fresh read bound to a named local q2, score 3 at 127/127, so the named local is inert and the whole delta is the copy dying. Banked as rejected/s33_l2_preheader_plain_copy_loses_two_insns_costs_9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the nine cell bodies, floor-3 chassis, no FAKE constructs
+
+## [s33] A post-loop second use of loop 2's copy destination (p = q2; after loop 2) preserves the copy through combine the way loop 1's p = q; does.
+- mechanism: combine keeps a copy whose destination is still live past the insn it would be substituted into (added_sets_2 = ! dead_or_set_p (i3, i2dest), combine.c:1458). Loop 1's copy is bought exactly that way by the candidate's p = q; exit tail, so the symmetric statement after loop 2 should buy loop 2's.
+- probe: Cells F4 (SYM exit tail) and D4/D9 (t-two-step chassis), each identical to its no-second-use sibling except for a trailing p = q2; inside loop 2's arm.
+- result: F4 scores 9 at 124 build insns - byte-for-byte the same as F1, its sibling WITHOUT the second use. D4 = D3 = 30 at 125 and D9 = D7 = 30 at 126. The second use is not merely expensive here, it does not exist: p is dead after loop 2 (the tail re-reads *(u8 **)(ctx + 0xC) from scratch for math_Distance3D, rec_a and rec_b), so the store is removed by DCE before combine sees a second reference. Any post-loop second use must write a variable the tail actually reads, and every tail read sits in a post-call extended basic block where target spends a real lw. Banked as rejected/s33_l2_post_loop_second_use_is_dce_removed_costs_9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus cells F1/F4/D3/D4/D7/D9, floor-3 chassis, no FAKE constructs
+
+## [s33] The combine.c:914 use_crosses_set_p escape must clobber p (the record pointer) between the copy and the base add, so its cost is fixed at cell AK's four-register permutation.
+- mechanism: s31/s32 spelled the escape one way only - reuse p to hold the links pointer - and concluded it was dead because that merges the record pointer and the links pointer into one pseudo while target seats them in $a0 and $a2. The escape's actual requirement is weaker: it needs SOME register of the copy's SOURCE to be set between i2 and i3, and the source may be any variable that provably holds *(u8 **)(ctx + 0xC) at that point.
+- probe: Cells J1/J2/J3/J4 on the H4 chassis and K1/K3/K4/K5/K6 on the BASE chassis. J2/K1 spell the copy as q2 = slots; slots = *(u8 **)(ctx + 0x10); with loop 2's body reading slots as the links pointer - the merge partner is the top-guard record pointer, not p. J3 re-measures the AK spelling on H4; J1 is the control (copy, no clobber); J4 hoists loop 2's links into loop 1's lnk. Disassembly diffs for J2 and K1 via s33/dis.sh.
+- result: The escape works with slots and is CHEAPER than with p: J2 = 10 and K1 = 10, both at 127/127, against J3/AK = 14 and J4 = 12. The control J1 (same copy, no clobber) is 10 at 126 - one instruction short - confirming the clobber, not the naming, buys the copy. K1's diff shows target's addu a3,a0,zero present in BOTH preheaders, with the entire residual a four-link seat chain: slots $v1->$a2, loop-1 lnk $a2->$a3, loop-1 q $a3->$t0, loop-2 copy $a3->$v0. The chain is rooted in one fact - reading slots in loop 2's preheader keeps it live from the top guard through loop 1, and the register it then takes ($a2) is the one target spends on loop 1's links. So the escape's price is the seat distance between the merge partner's two roles, not a constant; a partner whose first-role register were $a2 would be free, and no variable in this function has that property. Declaration order over the merged variable is exactly inert (K3/K4/K5/K6 all 10). Banked as rejected/s33_l2_slots_reused_as_links_use_crosses_set_p_costs_10.c and rejected/s33_l2_slots_merge_on_sym_exit_tail_costs_10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the nine cell bodies, floor-3 chassis, no FAKE constructs
+
+## [s33] Loop 1's exit tail can be made to emit target's lw a0,0xC(s2) by writing it as a fresh *(u8 **)(ctx + 0xC) read instead of the candidate's p = q;.
+- mechanism: cse's extended basic block ends at any CODE_LABEL (cse.c:8039, `while (p && GET_CODE (p) != CODE_LABEL)`), and loop 1's body starts at a two-predecessor label, so the exit tail sits in a fresh EBB whose memory table and register equivalences have both been cleared. A redundant *(u8 **)(ctx + 0xC) read there ought to survive as a real load - exactly what target spends an instruction on.
+- probe: Cell H4 - the BASE body with loop 1's exit tail rewritten as p = *(u8 **)(ctx + 0xC); (the SYM spelling) and loop 2 given the free t2 two-step guard - scored and disassembly-diffed with s33/dis.sh.
+- result: H4 scores 3 at 127/127 and its diff is the SAME three instructions as the candidate's: the exit tail still comes out as addu a0,a3,zero, a copy of loop 1's q, not lw a0,0xC(s2). The fresh-read spelling and the p = q; spelling CONVERGE, so while loop 1's preheader carries a live copy of the pointer the exit tail is a register copy however the C is written, and the cse-EBB argument above does not predict the observed code. This is the sharpest open contradiction on the function: target carries BOTH the preheader copy and a real reload two blocks later, and no measured form in 33 sessions has produced both. Fresh -da dumps for the H4 chassis are in tmp/grind/func_80017848/dumps/ and are unread.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus cells BASE/SYM/H4, floor-3 chassis, no FAKE constructs

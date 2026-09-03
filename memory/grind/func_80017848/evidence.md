@@ -3954,3 +3954,67 @@ orderings (S, S2, Z1, Z2, Z3): 8-40, never 127 instructions.
 - [s32] Naming / declaration-order / base-destination inertness re-confirmed on the new escape-#9 chassis: AA = AH (q declared before p) = AG (base merged into slots) = AB (p and q roles swapped) = 36, exactly.
 
 - [s32] The s12 symmetric chassis re-measures at 4 (127/126) and its dump shows loop 1's preheader load is ELIMINATED rather than folded to a copy, while loop 2's is a genuine lw because cse's table is flushed at the loop-2 join label - so s12's written account of the wall is superseded.
+
+## [s33] structural sweep - 30 cells over the loop-2 preheader/guard axis
+
+- [s33] Chassis re-audit: BASE (candidate.c) = 3 at 127/127, AK = 14 at 127/127,
+  SYM = 4 at 127/126, all reproducing their banked scores. No FAKE construct exists
+  anywhere in the tree, so fake_ablate.py has nothing to ablate.
+- [s33] E-s33-1: the loop-2 guard two-step (t = sh2 + (s32)p; t = *(s32*)(t+0x20);)
+  is BYTE-NEUTRAL when written with a fresh s32 (H4 = 3 at 127/127, residual
+  identical to the candidate's three instructions) and costs +33 when it reuses
+  loop 1's t (D8 = 36 at 127/127). Variable reuse across the two guards produces the
+  same whole-function counter/base seat rotation s31 measured for a shared
+  pointer/shift pair. H4 is banked as candidate_alt_h4_t2_twostep_3.c and is a
+  second, independent score-3 chassis in which loop 2's guard add is INVALIDATED -
+  the precondition for a preheader base add that survives cse.
+- [s33] E-s33-2: a plain reg-reg copy in loop 2's preheader is never free. Nine
+  spellings (copy source p / slots / shared q; inline guard vs t2 two-step; both exit
+  tails) all lose the instruction: 124 insns with the inline guard (the copy dies AND
+  the base add folds onto the guard's available sh2+p) and 125-126 with the two-step
+  (base add survives, copy still dies). Naming the fresh read into a local q2 is
+  exactly inert (G4 = H4 = 3 at 127/127).
+- [s33] E-s33-3: p is DEAD after loop 2 in every chassis - the tail re-reads
+  *(u8**)(ctx+0xC) for math_Distance3D, rec_a and rec_b - so a post-loop p = q2;
+  second use is removed by DCE before combine runs. F4 is byte-identical to F1 (9 at
+  124), D4 to D3 (30 at 125), D9 to D7 (30 at 126). The ledger's 19-22 price for
+  post-loop second-use sites described sites that WRITE something the tail reads;
+  the plain p = q2 site is not merely expensive, it is a no-op.
+- [s33] E-s33-4: combine.c:914's use_crosses_set_p escape is NOT tied to clobbering
+  p. Any variable that provably holds *(u8**)(ctx+0xC) can be the copy's source and
+  then be re-assigned to the links pointer. Using slots (the top-guard record
+  pointer) instead of p buys BOTH preheader copies at zero instruction cost for
+  score 10 at 127/127 (J2 on the SYM tail, K1 on the BASE tail) against AK/J3's 14.
+  Control J1 (same copy, no clobber) = 10 at 126. The residual is a four-link seat
+  chain caused by slots staying live from the top guard through loop 1: slots
+  ->, loop-1 lnk ->, loop-1 q ->, loop-2 copy ->. The
+  escape's price is therefore the seat distance between the merge partner's two
+  roles, not a fixed constant - a partner whose first-role register is  would be
+  free, and none of the function's variables has that property.
+- [s33] E-s33-5: declaration order over the merged variable is exactly inert
+  (K3/K4/K5/K6 all 10), re-confirming s11/s12/s32 on this chassis.
+- [s33] E-s33-6: OPEN CONTRADICTION. Loop 1's exit tail written as a fresh
+  *(u8**)(ctx+0xC) read (H4) and written as p = q; (BASE) CONVERGE to the same
+  addu a0,a3,zero, even though cse's extended basic block provably ends at the
+  loop-body CODE_LABEL (cse.c:8039) and the exit tail therefore sits in a fresh EBB
+  with a cleared memory table. Target has BOTH the preheader copy and a real
+  lw a0,0xC(s2) reload; no measured form in 33 sessions has produced both. Fresh -da
+  dumps for the H4 chassis are in tmp/grind/func_80017848/dumps/ and are UNREAD.
+
+- [s33] Chassis re-audit reproduces every reference score: BASE (candidate.c) = 3 at 127/127, AK = 14 at 127/127, SYM = 4 at 127/126. No FAKE construct exists anywhere in the tree, so fake_ablate.py has nothing to ablate.
+
+- [s33] The loop-2 guard two-step is BYTE-NEUTRAL with a fresh s32 (H4 = 3 at 127/127, residual identical to the candidate's three instructions) and costs +33 when it reuses loop 1's t (D8 = 36). H4 is a second, independent score-3 chassis in which loop 2's guard add is invalidated - the precondition for a preheader base add that survives cse - and it is banked as memory/grind/func_80017848/candidate_alt_h4_t2_twostep_3.c.
+
+- [s33] A plain reg-reg copy in loop 2's preheader is never free: nine spellings (source p / slots / shared q, inline guard vs t2 two-step, both exit tails) land at 124-126 build insns against a 127-insn target. With the inline guard TWO instructions are lost, because the copy dies in combine and the base add is then folded onto the guard's still-available sh2 + p.
+
+- [s33] Naming loop 2's fresh preheader read into a local (q2) is exactly inert: G4 = BASE = 3 and H4 = 3, both 127/127.
+
+- [s33] p is DEAD after loop 2 on every chassis, so a post-loop p = q2; second use is DCE'd before combine runs - F4 is byte-identical to F1, D4 to D3, D9 to D7. The ledger's 19-22 price for post-loop second-use sites applies only to sites that write a variable the tail actually reads.
+
+- [s33] combine.c:914's use_crosses_set_p escape does NOT require clobbering p. Clobbering slots (the top-guard record pointer) instead buys BOTH preheader copies at zero instruction cost: J2 = 10 and K1 = 10 at 127/127 against AK/J3 = 14, with control J1 (copy, no clobber) at 10/126. The escape's price is the seat distance between the merge partner's two roles, not a constant.
+
+- [s33] K1's residual is a four-link seat chain rooted in slots staying live from the top guard through loop 1: slots $v1->$a2, loop-1 lnk $a2->$a3, loop-1 q $a3->$t0, loop-2 copy $a3->$v0.
+
+- [s33] Declaration order over the merged variable is exactly inert on this chassis (K3/K4/K5/K6 all 10), re-confirming the s11/s12/s32 inertness sweeps.
+
+- [s33] OPEN CONTRADICTION: loop 1's exit tail written as a fresh *(u8 **)(ctx + 0xC) read and written as p = q; converge to the same addu a0,a3,zero, even though cse's EBB provably ends at the loop-body CODE_LABEL (cse.c:8039) and the exit tail sits in a fresh EBB with a cleared memory table. Target carries both the preheader copy and a real lw a0,0xC(s2) reload; no measured form has produced both.
