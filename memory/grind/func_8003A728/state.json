@@ -1,7 +1,7 @@
 {
  "func": "func_8003A728",
  "file": "code6cac_c_mid",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 3,
    "modality": "structural",
    "headline": "Floor still 3 but the shape is new: every block-1 register seat now matches the target and only the D_800A3916 lbu slot (3 insns) remains; s1's whole 24-insn rotation family is explained by one predic"
+  },
+  {
+   "session": 3,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "Floor still 3; read the sched1 trace directly and closed the block-1 dependence space - all five ways to stall T-3 are now measured dead, and the only register-consistent one is blocked by local-alloc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The sched1 T-3 stall can be reached by removing the memory-unit blockage rather than by making the ior unready - e.g. by changing what occupies the memory unit at T-2/T-3, or by a spelling in which the D_800A3698 store (insn 48) is the T-3 candidate instead of the ior.",
-   "mechanism": "sched.c:1200-1240 actual_hazard_this_instance: a load issued immediately before a store on the memory unit costs max(1, bmax(load)=2 - bmax(store)=1 + 1) = 2 cycles, which is the only reason the flag lbu loses T-3 despite higher INSN_PRIORITY and larger INSN_LUID.",
-   "next_probe": "Re-dump with the instrumented cc1 (tools/gcc-2.7.2/cc1) under BB2_RANK_DEBUG=1 to print the T-3 ready list and the rank decisions for insns 58/65/48 on the w3 state, and confirm whether insn 48 is also blocked at T-3; then decide whether an extra block-1 instruction (or one fewer) changes the unit occupancy."
+   "hypothesis": "The residual is now a pure RA question with a fully specified goal: on the z0/v3b shape (correct instruction order, 24 seat insns) make global_alloc give reg 74 - a pseudo with two disjoint live ranges and 12 references in block 1 - the $v0 seat, i.e. ensure no block-1 local quantity holds $v0 across 74's span.",
+   "mechanism": "local_alloc (local-alloc.c:471) runs first and can only be denied a register by removing the quantity or by changing its conflict set; global_alloc's find_reg then picks from what is left. The solver models both passes exactly, so this is a REACHABLE/FORECLOSED question rather than a spelling search.",
+   "next_probe": "Run tools/ra_solver/extract.py on code6cac_c_mid, then inverse.py / inverse_compose.py classify pinned to block 1 of the z0 body with the goal {74: $v0, 75: $a0}, and enumerate which live-range / quantity configurations are REACHABLE; spell only those. z0 is banked at rejected/flag-into-packed-2-deaths-forces-global-alloc-24.c and regenerable from tmp/grind/func_8003A728/s3/z0.c."
   },
   {
-   "hypothesis": "A block-1 shape in which the value stored to D_800A369C reaches the store through a pseudo distinct from hi16 AND hi16 is not the flag carrier - i.e. a fourth flag-carrier arrangement not covered by the measured trichotomy - could give both the anti-dependence and the a0 seat.",
-   "mechanism": "The trichotomy killed this session is exhaustive only for block-1 shapes containing exactly the current instruction set; adding or removing one insn changes both the local-alloc qty landscape (local-alloc.c:1565-1600 find_free_reg order) and the sched1 ready sets.",
-   "next_probe": "Run tools/ra_solver/extract.py + inverse.py on the w3 state pinned to block 1 with the goal {packed: v0, hi16: a0, flag: v0} to enumerate which pseudo-count/live-range configurations are REACHABLE, then spell only the reachable ones."
+   "hypothesis": "Changing the block-1 INSN SET (one more or one fewer instruction), rather than the dependence carrier, changes either the T-2 ready list or the local-quantity ordering and opens the stall.",
+   "mechanism": "The five-arrangement closure and the T-2 pin are both statements about the CURRENT insn set of block 1; sched.c's ready lists and local-alloc.c's quantity order are both functions of that set. s2 measured that moving one statement (`hi16 = D_800A37C4 << 16;`) alone spans 14/10/6/3/14, so the block is highly sensitive to its own composition.",
+   "next_probe": "Enumerate legitimate re-associations of the packed expression and of the two `D_800A3698` / `D_800A369C` stores that add or remove exactly one block-1 insn (e.g. hoisting the `buf8 & 0xFFFF` sub-expression into an explicit local that the later `func_8003A6FC` arms also read - the target computes it once into $s2 - or splitting the `(vsync << 31) | (D_800A3730 << 30)` pair), and measure each with sandbox; re-read the .sched trace whenever the T-2 ready list changes."
   },
   {
-   "hypothesis": "The buf8 low-half reuse carried since s1 (writing the (u16)D_800A3698 / (u16)D_800A36D0 loads into the existing call-crossing buf8 local) needs its family decided before any candidate-ready submission; the new `flag` local, the in-place ior and the statement ordering are ordinary C and need nothing.",
-   "mechanism": "Policy: the reuse is either ordinary scratch-variable C (sibling func_8003A5A0 in the same TU uses the same step-wise scratch idiom) or the staged-value-reused-variable family, which requires a FAKE annotation plus lever exhaustion.",
-   "next_probe": "Grep docs/reference/sotn-construct-index.md for a low-half-load-into-an-existing-call-crossing-local precedent before writing self_vet.md; if the census is negative, emit ruling-request rather than a submission."
+   "hypothesis": "The buf8 low-half reuse carried since s1 (writing the `(u16)D_800A3698` / `(u16)D_800A36D0` loads into the existing call-crossing `buf8` local) still needs its family decided before any candidate-ready submission; every other construct in the candidate is ordinary C.",
+   "mechanism": "Policy, not codegen: the reuse is either ordinary step-wise scratch-variable C (the matched sibling func_8003A5A0 in the same TU uses the same idiom) or the staged-value-reused-variable family, which mandates a /* FAKE */ annotation plus documented lever exhaustion.",
+   "next_probe": "Grep docs/reference/sotn-construct-index.md for a low-half-load-written-into-an-existing-call-crossing-local precedent (PSX/untagged entries only) BEFORE writing self_vet.md; if the census comes back negative, emit ruling-request rather than a submission."
   }
  ],
  "judge_constraints": [],
@@ -60,6 +66,38 @@
    "measured_on": "HEAD chassis 9de438a2, -mel, no rules; w3 body (fresh `flag` local, in-place ior on hi16, hi16 statement between the D_800A3698 store and the first hash step) with buf8 reuse and multi-set t staging p",
    "predicate_cite": "",
    "result": "24, 24, 24 / 6, 10 / 6, 10, 10, 10 respectively - none reaches 0 and none beats w3's 3."
+  },
+  {
+   "session": 3,
+   "statement": "The s2 frontier's fourth flag-carrier arrangement - ior destination `packed`, flag read into `hi16` - produces the sched1 T-3 anti-dependence AND keeps the a0 seat for the or destination.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 1c8fa981 chassis, -mel, no rules; w3 body with the buf8 low-half reuse and the multi-set s32 t staging; no FAKE constructs present in the measured diff",
+   "predicate_cite": "",
+   "result": "y6 = 10, y5 = 6 (w3 baseline 3). The anti-dependence and the schedule are right, but pseudo 75 now has to serve `sll a0,"
+  },
+  {
+   "session": 3,
+   "statement": "An OUTPUT dependence - reusing the hash or's own destination local as the flag carrier - empties the T-3 ready list without disturbing either hash pseudo.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 1c8fa981 chassis, -mel, no rules; w3 body with the buf8 low-half reuse and the multi-set s32 t staging; no FAKE constructs present in the measured diff",
+   "predicate_cite": "",
+   "result": "6, and 201 emitted insns instead of 200. The dependence fires, but insn 61 (the store) reads that same pseudo, so 61 als"
+  },
+  {
+   "session": 3,
+   "statement": "The s2 frontier's first item - reach the T-3 slot by changing what occupies the memory unit at T-2/T-3 rather than by making the ior unready - is available to some spelling of block 1.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 1c8fa981 chassis, -mel, no rules; w3 body, instrumented cc1 dump; no FAKE constructs present in the measured diff",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2685",
+   "result": "The trace prints `;; ready list at T-2: 61 (2), now 61` - the D_800A369C store is the only insn ready at T-2, so nothing"
+  },
+  {
+   "session": 3,
+   "statement": "Freeing $v0 for the twice-dying flag carrier by removing the competing block-1 local quantities lets global_alloc give reg 74 the target's $v0 seat on the v3b/z0 shape.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 1c8fa981 chassis, -mel, no rules; z0 (v3b) and w3 bodies with the buf8 low-half reuse and the multi-set s32 t staging; no FAKE constructs present in the measured diff",
+   "predicate_cite": "",
+   "result": "z10 = z11 = z13 = zt3 = zt4 = 24, byte-identical to the z0 control - combine re-collapses the named temporaries so the q"
   }
  ],
  "ladder_skip": 0,

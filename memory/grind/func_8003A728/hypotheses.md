@@ -174,3 +174,107 @@ x4 24, v9a 6, v7b 10, v8c 6, v6a 10, v6c 10, x2 10.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 9de438a2, -mel, no rules; w3 body (fresh `flag` local, in-place ior on hi16, hi16 statement between the D_800A3698 store and the first hash step) with buf8 reuse and multi-set t staging present, no FAKE annotations
+
+## s3 (2026-09-02, structural) — floor 3 (unchanged); block-1 dependence space closed
+
+### H-s3-1 — the s2 frontier's "fourth flag-carrier arrangement" (or-dest = packed, flag into hi16) gives the T-3 stall AND the a0 seat — KILLED (instance)
+Mechanism (as proposed by s2): the trichotomy is exhaustive only for block-1 shapes that route the
+stored value through hi16; making the ior write `packed` and the flag land in `hi16` gives the
+anti-dependence (58 reads hi16, 65 writes it) without the store reading the carrier.
+Probe: y6 = `packed = packed & 0xFFFF; packed = hi16 | packed; D_800A369C = packed;
+hi16 = D_800A3916; if (hi16 != 0)`, `sandbox --disable all`.
+Result: 10. The anti-dependence is there and the schedule is right, but pseudo 75 now spans the
+`sll a0,a0,0x10` (which wants $a0, the target's hi16 seat) and the `beqz` (which wants $v0, the
+target's flag seat); one pseudo cannot hold two seats, so block 1 re-rotates. Companion form y5
+(or-dest packed, FRESH flag, no anti-dep) = 6 with `or v0,v0,a0` operand order wrong.
+Verdict: KILLED. kill_scope instance; measured on HEAD 1c8fa981, -mel, no rules, w3 chassis, no
+FAKE constructs present.
+
+### H-s3-2 — an OUTPUT dependence (the ior's dest reused as the flag carrier) empties the T-3 ready list without touching either hash pseudo — KILLED (instance)
+Mechanism: sched.c adds a dependence 58 -> 65 for an output (write-after-write) as well as for an
+anti (write-after-read), so reusing the ior's own destination for the flag read makes 58 unready at
+T-3 while leaving hi16 and packed untouched.
+Probe: y1 = `flag = hi16 | packed; D_800A369C = flag; flag = D_800A3916; if (flag != 0)`.
+Result: 6, and 201 insns instead of 200. The dependence works, but insn 61 (the store) READS the
+same pseudo, so 61 also becomes a dependent of 65 and is pushed below it: the emitted order is
+`or a0,a0,v0 / lui at / sw a0,0(at) / lbu a0 / nop / beqz a0` — the load leaves the block tail and
+maspsx adds a load-delay nop. Any output-dependence spelling has this property, because the store
+must read the ior's destination by definition.
+Verdict: KILLED. kill_scope instance; measured on HEAD 1c8fa981, -mel, no rules, w3 chassis, no
+FAKE constructs present.
+
+### H-s3-3 — the sched1 T-3 blockage can be dodged by changing what occupies the memory unit at T-2/T-3 (s2 frontier item 1) — KILLED (class)
+Mechanism proposed by s2: if the insn at T-2 were not a store, the load-after-store blockage would
+not apply and the flag lbu would win T-3 on priority (it carries 0x7f000001 vs the ior's 2).
+Probe: instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SCHED_DEBUG=1 over the w3 source; read the
+block-1 trace in the .sched dump and the SCHEDDBG BLOCKAGE/SELBLOCK lines in s3/sched_debug.txt.
+Result: the trace prints `;; ready list at T-2: 61 (2), now 61` — the D_800A369C store is the ONLY
+insn ready at T-2, so no spelling can put a different insn there without also emitting that insn
+between the sw and the beqz (which the target text does not contain). The blockage itself is a
+machine-description constant, not a source property: mips.md:153-161 gives the memory unit ready
+delay 2 for a load and 1 for a store, the blockage function returns 2 in the load-after-store
+direction only, and actual_hazard therefore returns cost 1 for ANY load offered at T-3 after a
+store at T-2 (`SCHEDDBG BLOCKAGE unit=0 clock=3 raw_tick=5 adj_tick=4 maxb=3 exec=65 last=61`).
+Verdict: KILLED. kill_scope class; predicate tools/gcc-2.7.2/sched.c:2685
+(`if ((cost = actual_hazard (insn_unit (insn), insn, clock, 0)) != 0)` — the ready insn is queued
+whenever the unit hazard is non-zero). measured on HEAD 1c8fa981, -mel, no rules, w3 chassis, no
+FAKE constructs present.
+
+### H-s3-4 — freeing $v0 for the (globally allocated) flag-carrying `packed` by removing the competing block-1 local quantities — KILLED (instance)
+Mechanism: local_alloc runs before global_alloc and hands $v0 to the first block-1 local quantity
+it processes; if the two `sra` temporaries were multi-set pseudos (two REG_DEAD notes) they would
+be excluded from local allocation too, leaving $v0 free for reg 74, whose 12 references make it the
+highest-priority allocno in the block.
+Probe: on the z0 (v3b) chassis — z10 (one shared named `h` for both sra results), z11 (two distinct
+named temps), z13 (`h` also reused as the ior destination), zt3/zt4 (one sra result staged through
+the existing multi-block `t` local), zt/zt2 (both staged through `t`).
+Result: z10 = z11 = z13 = zt3 = zt4 = 24, byte-identical to z0; combine re-collapses the named
+temporaries so the quantity landscape is unchanged. zt = 33 and zt2 = 21 are worse because reusing
+`t` for the hash also perturbs the `& 0xF` staging sites in the later arms. z12 (the same shared
+temp on the w3 fresh-flag chassis) = 12, i.e. the construct is not even byte-neutral there.
+Verdict: KILLED. kill_scope instance; measured on HEAD 1c8fa981, -mel, no rules, z0/w3 chassis, no
+FAKE constructs present.
+
+### Standing structural picture after s3
+w3 (floor 3) is the no-dependence branch: correct seats everywhere, ior at T-3, lbu at T-4.
+z0/v3b (24) is the dependence branch: correct ORDER, and its register geometry is the target's own
+(the target uses $v0 for the hash accumulator and for the flag), but the carrier pseudo has two
+REG_DEAD notes and so is refused a local-alloc quantity (local-alloc.c:471) and reaches
+global_alloc after $v0 is taken. Every arrangement between those two poles is now measured.
+The untried axes are (i) changing the block-1 INSN SET so that either the ready list at T-2 or the
+local-quantity ordering differs, and (ii) the ra_solver/inverse route: enumerate which
+{packed:$v0, hi16:$a0, flag:$v0} configurations are REACHABLE for a twice-dying carrier, instead of
+guessing spellings.
+
+## [s3] The s2 frontier's fourth flag-carrier arrangement - ior destination `packed`, flag read into `hi16` - produces the sched1 T-3 anti-dependence AND keeps the a0 seat for the or destination.
+- mechanism: sched.c adds a dependence 58 -> 65 when the load writes a pseudo the ior reads (REG_DEP_ANTI); routing the stored value through `packed` instead of `hi16` was supposed to keep insn 61 (the store) from also depending on the load, so the lbu would not be pushed past the store.
+- probe: y6 = `packed = packed & 0xFFFF; packed = hi16 | packed; D_800A369C = packed; hi16 = D_800A3916; if (hi16 != 0)` applied to src/code6cac_c_mid.c, `sandbox func_8003A728 --disable all`; companion control y5 (same shape with a FRESH flag local).
+- result: y6 = 10, y5 = 6 (w3 baseline 3). The anti-dependence and the schedule are right, but pseudo 75 now has to serve `sll a0,a0,0x10` (the target's hi16 seat, $a0) and the `beqz` (the target's flag seat, $v0) at once, so block 1 re-rotates. Banked as rejected/frontier-4th-arrangement-or-dest-packed-flag-into-hi16-10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1c8fa981 chassis, -mel, no rules; w3 body with the buf8 low-half reuse and the multi-set s32 t staging; no FAKE constructs present in the measured diff
+
+## [s3] An OUTPUT dependence - reusing the hash or's own destination local as the flag carrier - empties the T-3 ready list without disturbing either hash pseudo.
+- mechanism: sched.c creates a dependence 58 -> 65 for a write-after-write just as it does for a write-after-read, so the ior becomes unready until the flag load is scheduled, while `hi16` and `packed` keep their single live ranges and their local-alloc quantities.
+- probe: y1 = `flag = hi16 | packed; D_800A369C = flag; flag = D_800A3916; if (flag != 0)`, `sandbox func_8003A728 --disable all` plus tools/pairdiff.py.
+- result: 6, and 201 emitted insns instead of 200. The dependence fires, but insn 61 (the store) reads that same pseudo, so 61 also becomes a dependent of the load and is scheduled below it: the emitted tail is `or a0,a0,v0 / lui at / sw a0,0(at) / lbu a0 / nop / beqz a0`. The store must read the ior's destination by definition, so this coupling is inherent to the output-dependence spelling. Banked as rejected/output-dep-or-dest-reused-for-flag-lbu-past-store-201insns-6.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1c8fa981 chassis, -mel, no rules; w3 body with the buf8 low-half reuse and the multi-set s32 t staging; no FAKE constructs present in the measured diff
+
+## [s3] The s2 frontier's first item - reach the T-3 slot by changing what occupies the memory unit at T-2/T-3 rather than by making the ior unready - is available to some spelling of block 1.
+- mechanism: s2 hypothesised that if the insn at T-2 were not a store, the load-after-store blockage would not apply and the flag lbu (INSN_PRIORITY 0x7f000001, larger LUID) would take T-3 on rank, giving the target text with w3's already-correct seats.
+- probe: Ran the instrumented cc1 (tools/gcc-2.7.2/cc1) over the TU with BB2_SCHED_DEBUG=1 (tmp/grind/func_8003A728/s3/dbg.sh) and read the block-1 schedule trace in the .sched dump plus the SCHEDDBG BLOCKAGE / SELBLOCK lines in tmp/grind/func_8003A728/s3/sched_debug.txt.
+- result: The trace prints `;; ready list at T-2: 61 (2), now 61` - the D_800A369C store is the only insn ready at T-2, so nothing else can occupy that slot without also being emitted between the sw and the beqz, which the target text does not contain. The blockage is a machine-description constant, not a source property: mips.md:153-161 gives the memory unit a ready delay of 2 for a load and 1 for a store, the blockage function returns 2 only in the load-after-store direction, and the dump shows `SCHEDDBG BLOCKAGE unit=0 clock=3 raw_tick=5 adj_tick=4 maxb=3 exec=65 last=61` -> `SELBLOCK clock=3 insn=65 unit=0 cost=1`. Any load offered at T-3 behind a store at T-2 is queued.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 1c8fa981 chassis, -mel, no rules; w3 body, instrumented cc1 dump; no FAKE constructs present in the measured diff
+- predicate_cite: tools/gcc-2.7.2/sched.c:2685
+
+## [s3] Freeing $v0 for the twice-dying flag carrier by removing the competing block-1 local quantities lets global_alloc give reg 74 the target's $v0 seat on the v3b/z0 shape.
+- mechanism: local_alloc runs before global_alloc and hands $v0 to the first block-1 local quantity it processes (the two `sra` results); making those temporaries multi-set pseudos gives them two REG_DEAD notes, excluding them from local allocation too, so $v0 would still be free when global_alloc reaches reg 74 - the highest-priority allocno in the block with 12 references.
+- probe: On the z0 (v3b) chassis: z10 (one shared named `h` for both sra results), z11 (two distinct named temps), z13 (`h` also reused as the ior destination), zt3/zt4 (one sra result staged through the existing multi-block `t` local), zt/zt2 (both staged through `t`), plus z12 (the same construct on the w3 fresh-flag chassis). All measured with `sandbox --disable all`; z0's .lreg/.greg dumped for the disposition read.
+- result: z10 = z11 = z13 = zt3 = zt4 = 24, byte-identical to the z0 control - combine re-collapses the named temporaries so the quantity landscape does not move. zt = 33 and zt2 = 21 are worse (reusing `t` for the hash perturbs the `& 0xF` staging sites in the later arms). z12 = 12, so the construct is not even byte-neutral on the w3 chassis. The dumps confirm the mechanism it was meant to defeat: .lreg says "Register 74 used 12 times across 12 insns in block 1; dies in 2 places" and the .greg dispositions are `74 in 4` ($a0) / `75 in 3` ($v1).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1c8fa981 chassis, -mel, no rules; z0 (v3b) and w3 bodies with the buf8 low-half reuse and the multi-set s32 t staging; no FAKE constructs present in the measured diff

@@ -15,14 +15,7 @@
  *      which is what puts `lhu a0` early and `sll a0,a0,0x10` before `sra v1,v0,0x10`.
  * Constructs still carried from s1: s32 c0lo; multi-set s32 t staging for the &0xF loads; the
  * u16 low-half loads written into the existing buf8 local (variable reuse -> FAKE decision at
- * candidate time). `flag`, `hi16 |= packed` and the statement order are ordinary C.
- *
- * s3 (2026-09-02, structural) KEPT this body unchanged at 3 and closed the block-1 dependence
- * space around it: the sched1 trace was read directly from the instrumented cc1, the store to
- * D_800A369C is the ONLY insn ready at T-2 so the flag lbu can never occupy T-3 (memory-unit
- * load-after-store hazard, sched.c:2685 + mips.md:153-161), and all five ways of making the hash
- * `or` unready at T-3 (anti dep on packed / on hi16 in three placements, output dep on the or's
- * dest) are now measured dead. See evidence.md s3 for the table. */
+ * candidate time). `flag`, `hi16 |= packed` and the statement order are ordinary C. */
 void func_8003A728(s32 a0) {
     s32 buf8;
     s32 packed;
@@ -42,8 +35,8 @@ void func_8003A728(s32 a0) {
         packed = packed ^ (packed >> 16);
         packed = packed ^ (hi16 >> 16);
         packed = packed & 0xFFFF;
-        hi16 = hi16 | packed;
-        D_800A369C = hi16;
+        packed = hi16 | packed;
+        D_800A369C = packed;
         flag = D_800A3916;
 
         if (flag != 0) {

@@ -199,3 +199,126 @@ blockage itself rather than the readiness of 58.
 - [s2] The two never-used 's32 v0; s32 v1;' locals inherited from s1's drafts are byte-neutral (v3b 24 == v5a 24) and have been dropped from the candidate as hygiene.
 
 - [s2] The statement position of 'hi16 = D_800A37C4 << 16;' alone spans 14 / 10 / 6 / 3 / 14 across five placements - the strongest single structural lever measured in block 1.
+
+
+## s3 (2026-09-02, structural) - chassis: HEAD (1c8fa981), -mel, no rules; w3 re-measured 3, chassis UNCHANGED
+
+### What this session did
+s2 left a "trichotomy" argument that was exhaustive only by assertion. s3 replaced it with a
+DIRECT READING of the sched1 decision (instrumented cc1, BB2_SCHED_DEBUG=1) and then closed the
+dependence space by construction. The floor is still 3 (w3 remains the candidate), but the block-1
+residual is now a closed enumeration rather than an argument, and the exact GCC predicate that
+blocks the only register-consistent shape is identified and cited.
+
+### The sched1 trace, verbatim (tmp/grind/func_8003A728/s3/code6cac_c_mid.sched, block 1)
+
+    ;; ready list at T-1: 68 (7fffff53), now 68        <- beqz
+    ;; ready list at T-2: 61 (2), now 61               <- sw D_800A369C  (ONLY insn ready)
+    ;; launching 65 before 61 with no stalls at T-3
+    ;; ready list at T-3: 58 (2) 65 (7f000001)
+    ;; blocking insn 65 for 1 cycles, now 58           <- the lbu is queued, the ior takes T-3
+    ;; launching 65 before 58 with no stalls at T-4
+    ;; ready list at T-4: 56 (2) 65 (7f000001), now 65 56
+
+and the hazard arithmetic behind "blocking insn 65", from the instrumented build
+(tmp/grind/func_8003A728/s3/sched_debug.txt):
+
+    SCHEDDBG BLOCKAGE unit=0 clock=3 raw_tick=5 adj_tick=4 maxb=3 exec=65 last=61
+    SCHEDDBG SELBLOCK clock=3 insn=65 unit=0 cost=1
+
+i.e. after the STORE issued at clock 2 the memory unit tick is 2 + max_blockage(3) = 5; the
+load-after-store blockage function returns 2, so adj_tick = 5 + 2 - 3 = 4 > clock 3 and
+actual_hazard (sched.c:2685) returns cost 1. mips.md:153-161 is the source of the asymmetry: the
+memory unit ready delay is 2 for a load (r3000) and 1 for a store, and only the load-after-store
+direction produces a non-zero blockage. Nothing about the SOURCE changes this: the flag read is a
+byte load and the D_800A369C write is a store, so the pair is fixed.
+
+### Consequence: the target text is reachable ONLY through a T-3 stall
+Backward list scheduling emits in decreasing clock. beqz is forced to T-1 and insn 61 is the ONLY
+insn ready at T-2 (the trace shows a one-element ready list), so the store is pinned at T-2. The
+load can therefore never occupy T-3. The target text (or / lbu / lui+sw / beqz) is consistent with
+exactly one schedule: T-5=58 (or), T-4=65 (lbu), T-3=STALL, T-2=61 (sw), T-1=68 (beqz). A stall at
+T-3 requires the ready list at T-3 to be EMPTY, i.e. insn 58 must not be ready, i.e. 65 must be a
+DEPENDENT of 58 (in the backward sense of sched.c an insn is ready only once every insn that
+depends on it has been scheduled). 58 is an `or` reg-reg with no function unit, so it can never be
+blocked; only a dependence can hold it back.
+
+### The dependence space, closed by construction (not by assertion)
+65 is a load with no register inputs, so a dependence 58 -> 65 can only be:
+  (a) ANTI - 65 writes a pseudo that 58 READS. 58 reads exactly two pseudos, hi16 and packed.
+  (b) OUTPUT - 65 writes the DEST of 58.
+and the additional constraint is that insn 61 (the store) must NOT also read the pseudo 65 writes,
+otherwise 61 becomes a dependent of 65 too, 61 is pushed below the lbu, and the lbu lands AFTER the
+store (maspsx then inserts a load-delay nop, 201 insns). With the store reading the dest of 58,
+that leaves exactly five arrangements, ALL now measured on this chassis:
+
+| # | shape | carrier | score | why it fails |
+|---|---|---|---|---|
+| 1 | `hi16 = hi16 \| packed; D_800A369C = hi16; packed = D_800A3916;` (v3b/z0) | packed (anti) | 24 | order EXACT; packed gets two REG_DEAD notes -> local-alloc.c:471 -> global_alloc -> a0 |
+| 2 | `T = hi16 \| packed; D_800A369C = T; hi16 = D_800A3916;` (v6a/x2) | hi16 (anti) | 6-10 | order exact; pseudo 75 would need a0 (hi16 uses) AND v0 (flag use) at once |
+| 3 | `hi16 = hi16 \| packed; D_800A369C = hi16; hi16 = D_800A3916;` (v7b/v9a) | hi16 (anti), store reads it too | 6-10 | lbu pushed past the store, +nop |
+| 4 | `packed = hi16 \| packed; D_800A369C = packed; hi16 = D_800A3916;` (s3 y6) | hi16 (anti), or-dest = packed | 10 | same one-pseudo-two-seats conflict as #2 |
+| 5 | `flag = hi16 \| packed; D_800A369C = flag; flag = D_800A3916;` (s3 y1) | or-dest (OUTPUT) | 6 | the store reads the or-dest, so 61 depends on 65: lbu emitted AFTER the sw, +nop, 201 insns |
+
+Arrangements 4 and 5 are new this session and are exactly the "fourth arrangement" the s2 frontier
+asked for; both are now dead. For this insn set there is no sixth carrier.
+
+### Why arrangement 1 (the only register-CONSISTENT one) resists spelling
+Arrangement 1 is the shape whose register geometry AGREES with the target: the target really does
+use $v0 for both the hash accumulator and the flag (`andi v0,v0,0xffff` ... `lbu v0,0(gp)` ...
+`beqz v0`), so packed and the flag sharing one seat is what the target bytes show. The failure is
+purely allocator ordering, measured this session on the z0 dumps:
+  * .lreg: "Register 74 used 12 times across 12 insns in block 1; dies in 2 places" - two disjoint
+    live ranges, so the `reg_n_deaths[i] == 1` conjunct at tools/gcc-2.7.2/local-alloc.c:471 fails
+    and reg 74 never becomes a local quantity.
+  * .greg dispositions: 74 in 4 (a0), 75 in 3 (v1). local_alloc runs FIRST and hands $v0 to the
+    first block-1 local quantity it processes (the sra temps) and $v1 to hi16; by the time
+    global_alloc reaches reg 74 (12 refs, the highest-priority allocno in the block) $v0 is already
+    conflicted across the whole of 74's span, so 74 takes $a0 and the 24-insn rotation follows.
+  * The obvious counter-lever - remove the competing block-1 local quantities so $v0 is free at
+    global_alloc time - was measured and is INERT: naming the two sra results (z10, z11, z13) and
+    staging one of them through the existing multi-block `t` local (zt3, zt4) reproduce 24
+    byte-for-byte, because combine re-collapses the named temps and the qty landscape does not
+    move. Staging BOTH sra results through `t` (zt 33, zt2 21) is strictly worse - it perturbs the
+    `& 0xF` staging sites in the later arms.
+
+### s3 measurement table (all `sandbox --disable all`, forms in tmp/grind/func_8003A728/s3/)
+| form | score | shape |
+|---|---|---|
+| w3 (candidate) | 3 | re-measured, chassis unchanged |
+| y1 | 6 | or-dest `flag` reused for the flag read (OUTPUT dep) - 201 insns, lbu after the sw |
+| y2 | 25 | `packed = hi16 \| packed; D_800A369C = packed; packed = D_800A3916;` |
+| y3 | 5 | `D_800A369C = hi16 \| packed;` with no named or-dest + fresh flag |
+| y5 | 6 | or-dest `packed`, fresh flag - `or v0,v0,a0` operands swapped |
+| y6 | 10 | or-dest `packed`, flag into hi16 (the s2 frontier fourth arrangement) |
+| z0 | 24 | v3b re-spelled on the w3 chassis (control) |
+| z10/z11/z13 | 24 | named / shared / or-dest-shared sra temps - byte-neutral on z0 |
+| z12 | 12 | named shared sra temp on the w3 (fresh-flag) chassis - NOT neutral there |
+| zt/zt2 | 33/21 | both sra results staged through the existing `t` local |
+| zt3/zt4 | 24 | one sra result staged through `t` - byte-neutral on z0 |
+
+- [s3] Chassis re-measured unchanged at dispatch: w3 = 3, residual still exactly three insns (lbu one slot early + beqz reg).
+- [s3] The sched1 blockage is now READ, not inferred: SCHEDDBG BLOCKAGE unit=0 clock=3 raw_tick=5 adj_tick=4 maxb=3 exec=65 last=61 -> actual_hazard (sched.c:2685) cost 1. mips.md:153-161 gives the memory unit ready delay 2 for a load and 1 for a store, so only load-after-store blocks.
+- [s3] Insn 61 (sw D_800A369C) is the ONLY insn ready at T-2 (";; ready list at T-2: 61 (2), now 61"), so the store is pinned immediately before the branch and the flag load cannot occupy T-3; the target text is reachable only via an empty ready list at T-3.
+- [s3] The dependence space that can empty the T-3 ready list is closed for this insn set: 65 has no register inputs, so only an ANTI dep on one of the two pseudos 58 reads (hi16, packed) or an OUTPUT dep on the dest of 58 can do it, and the store must not read the same pseudo. All five resulting arrangements are measured (24 / 6-10 / 6-10 / 10 / 6).
+- [s3] Arrangement 1 (v3b/z0, flag into packed) is the only one whose register geometry agrees with the target bytes ($v0 carries both the hash accumulator and the flag there); its failure is allocator ORDERING - reg 74 has two REG_DEAD notes, fails local-alloc.c:471, and global_alloc reaches it after local_alloc has already given $v0 to a block-1 local quantity.
+- [s3] Removing the competing block-1 local quantities does not free $v0: naming the sra temps (z10/z11/z13) or staging one through the multi-block `t` (zt3/zt4) is byte-identical to z0 at 24 because combine re-collapses them; staging both (zt 33, zt2 21) damages the later `& 0xF` sites.
+- [s3] Tooling note for the next session: `wsl.exe bash tmp/grind/func_8003A728/s3/dbg.sh` runs the instrumented cc1 (tools/gcc-2.7.2/cc1) over the TU with BB2_SCHED_DEBUG=1 into s3/sched_debug.txt plus a full -da dump set; `wsl.exe bash tmp/grind/func_8003A728/s3/meas.sh` prints the pairdiff. `tools/wsl.sh` does NOT work from the Bash tool on this host (no wsl on PATH there) - call `wsl.exe bash <script>` from PowerShell instead, and apply bodies with s3/apply.py (latin-1, sentinel-delimited).
+
+- [s3] Chassis re-measured unchanged at dispatch: memory/grind/func_8003A728/candidate.c (w3) scores 3 and the residual is still exactly three insns - `lbu v1,0(gp)` one slot before the `or a0,a0,v0` instead of after it, plus the resulting `beqz v1` vs `beqz v0`.
+
+- [s3] The sched1 decision is now READ rather than inferred. Block-1 trace: T-1 = 68 (beqz), T-2 = 61 (sw D_800A369C, the ONLY insn ready), T-3 ready = {58 (pri 2), 65 (pri 0x7f000001)} with `;; blocking insn 65 for 1 cycles, now 58`, T-4 = 65. The instrumented build prints the arithmetic: SCHEDDBG BLOCKAGE unit=0 clock=3 raw_tick=5 adj_tick=4 maxb=3 exec=65 last=61, SELBLOCK cost=1.
+
+- [s3] mips.md:153-161 is the source of the asymmetry: the `memory` function unit has ready delay 2 for a load on r3000 and 1 for a store, and only the load-after-store direction yields a non-zero blockage - so no source spelling can let the flag lbu sit at T-3 behind the D_800A369C store.
+
+- [s3] Because the store is pinned at T-2 and the load is blocked at T-3, the target text (or / lbu / lui+sw / beqz) is consistent with exactly one schedule: T-5 = or, T-4 = lbu, T-3 = STALL, T-2 = sw, T-1 = beqz. A stall requires an EMPTY ready list at T-3, i.e. insn 58 must not be ready, i.e. the lbu must be a dependent of the ior.
+
+- [s3] The flag load has no register inputs, so the only dependences that can make the ior unready are an ANTI dep on one of the two pseudos the ior reads (hi16, packed) or an OUTPUT dep on the ior's destination - and the store must not read that same pseudo. That yields exactly five arrangements and all five are now measured: 24 (v3b/z0, carrier packed), 6-10 (v6a/x2, carrier hi16 with a fresh or-dest), 6-10 (v7b/v9a, carrier hi16 in place), 10 (s3 y6, or-dest packed + carrier hi16), 6 (s3 y1, output dep on the or-dest).
+
+- [s3] Arrangement 1 (v3b/z0) is the only one whose register geometry agrees with the target's own bytes - the target uses $v0 for the hash accumulator (`andi v0,v0,0xffff`) AND for the flag (`lbu v0,0(gp)`, `beqz v0`) - and it already reproduces the target's instruction ORDER exactly. Its 24-insn residual is pure allocator ordering.
+
+- [s3] z0 dumps pin that ordering: .lreg reports reg 74 (packed) with two REG_DEAD notes, which fails the `reg_n_deaths[i] == 1` conjunct at tools/gcc-2.7.2/local-alloc.c:471, so 74 never becomes a local quantity; .greg then shows `74 in 4` ($a0) and `75 in 3` ($v1) because local_alloc has already given $v0 to a block-1 local temp spanning 74's range.
+
+- [s3] Naming or re-staging the block-1 `sra` temporaries does not change that landscape - z10/z11/z13/zt3/zt4 are byte-identical to z0 at 24 because combine re-collapses them - so the counter-lever of freeing $v0 before global_alloc is not reachable by temp spelling alone.
+
+- [s3] Tooling for the next session: `wsl.exe bash tmp/grind/func_8003A728/s3/dbg.sh` runs the instrumented cc1 with BB2_SCHED_DEBUG=1 and writes s3/sched_debug.txt plus a full -da dump set; `wsl.exe bash tmp/grind/func_8003A728/s3/meas.sh` prints the pairdiff; s3/apply.py swaps a body file into src/code6cac_c_mid.c (latin-1, sentinel-delimited). `bash tools/wsl.sh` does NOT work from the Bash tool on this host - wsl is not on that PATH; call wsl.exe from PowerShell.
