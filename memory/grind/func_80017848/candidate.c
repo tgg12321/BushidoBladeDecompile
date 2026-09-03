@@ -930,3 +930,34 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * variable (one pseudo, one hard register) while target seats them at $a0 and
  * $a2.  See tmp/grind/func_80017848/s31/goal_E_report.txt.
  */
+/* [s32 STRUCTURAL ADDENDUM - body unchanged, still 3, re-measured this session
+ * as cell BASE on a clean tree (127/127).]  s32 answered the s31 frontier's
+ * first question with dumps instead of inference and found two previously
+ * unused combine escapes; neither beats this body, but the wall is now
+ * described mechanically rather than statistically.
+ *   - PASS ATTRIBUTION SETTLED.  A use-once reg-reg copy is deleted by COMBINE,
+ *     not by jump.c / flow.c / reload.  Cell R's copy is insn 162 in ings.cse2
+ *     and absent from ings.combine; loop 1's copy (insn 83) survives there only
+ *     because this body's `p = q;` tail gives it a second use.
+ *   - ESCAPE #8 (new): flow.c:2102 builds a LOG_LINK only when the next use is
+ *     in the SAME basic block, so a copy defined in the guard block and used in
+ *     the preheader block is invisible to combine and survives with ONE use at
+ *     zero cost.  First use-once surviving copy ever measured here (cell S).
+ *     Dead for position: the copy must sit before the `blez`, and with the
+ *     guard's `sh + p` still available cse eats the preheader's base add.
+ *   - ESCAPE #9: combine.c:914's `use_crosses_set_p` refusal, bought for free by
+ *     writing the links read as `p = *(u8 **)(ctx + 0x10);` (variable reuse), so
+ *     the insn between the copy and the base add sets the copy's source.  This
+ *     is s23's construct re-derived from the combine source.  Cell AK
+ *     (rejected/s32_both_loops_p_reused_as_links_inline_l2_guard_costs_14.c)
+ *     builds 127/127 INSTRUCTION-FOR-INSTRUCTION IDENTICAL to target across the
+ *     whole function - both preheader copies, both exit tails - with nothing
+ *     left but the register permutation a0<->a1 (p/sh), a3->v0 (q), a2->a1
+ *     (links).  It stays dead for s31's reason: the escape merges the record
+ *     and links pointers into one pseudo, so target's a0/a2 split is not an
+ *     allocation this RTL admits.
+ *   - cse.c:826 make_regs_eqv is the C-level handle on WHICH register a folded
+ *     copy leaves behind (evidence.md E-s32-3); it is what promotes a copy
+ *     destination first mentioned before the cse block start to canonical, and
+ *     outside cells S/Z it is still unexploited.
+ */

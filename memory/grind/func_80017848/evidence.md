@@ -3847,3 +3847,110 @@ everywhere it has been sited.
 - [s31] Target's copy is USE-ONCE: $a3 is written once and read once in each loop and appears nowhere else except the prologue's addu $s3,$a3,$zero, and loop 1's exit tail reloads the pointer (lw $a0,0xC($s2)) instead of copying $a3. Escape 1 needs the copy's destination live past the base add, so target cannot be using escape 1 - the candidate matches loop 1's bytes for the wrong reason.
 
 - [s31] The two emit_move_insn/gen_move_insn producers from the s28 census that no session has read end-to-end for this function, and that no measured form has exercised, are jump.c (7 sites) and flow.c (1 site). loop.c (s28), reload1.c (s29) and integrate.c (s30) are already closed by measurement.
+
+## [s32] STRUCTURAL — the copy-survival question is answered by measurement, and
+## the FIRST use-once surviving copy in 32 sessions was produced (two ways)
+
+Chassis: HEAD `src/ings.c:719` INCLUDE_ASM anchor with the cell body pasted in;
+`candidate.c` (the s9 V1 body) re-measured **3 at 127/127** at the top of the
+session, so the floor is unchanged and every number below is floor-3-relative.
+No FAKE constructs in any cell. All cell bodies, the score table and the two
+RTL-insn digests are in `tmp/grind/func_80017848/s32/`.
+
+### E-s32-1. PASS ATTRIBUTION, SETTLED: combine deletes the use-once copy.
+The s31 frontier's first item asked whether target's preheader copy is emitted
+by `jump.c` (7 emit_move_insn sites) or `flow.c` (1) rather than surviving
+combine. It is neither, and the question is now closed by a dump rather than by
+reading those files. Cell R (`tmp/.../s32/body_R.c`) spells loop 2's preheader
+as an explicit `q = p;` with a single downstream use. In
+`tmp/grind/func_80017848/dumps/ings.cse2` the copy is present as
+`(insn 162 ... (set (reg/v:SI 80) (reg/v:SI 79)))`; in `ings.combine` insn 162
+is gone while loop 1's copy (insn 83, the one the candidate buys with the
+`p = q` second use) is still there. **Every pass up to and including cse2 keeps
+a use-once reg-reg copy; combine is what removes it.** The two digests are
+banked as `s32/S_cse2_insns.txt` and `s32/S_combine_insns.txt`.
+
+### E-s32-2. WHY the redundant preheader load usually never becomes a copy.
+On the s12 symmetric chassis (re-measured this session at 4, 127/126) loop 1's
+preheader `q = *(u8 **)(ctx + 0xC);` does not survive as a copy at all: cse
+substitutes the already-loaded pseudo into the base add and `cse_main`'s
+closing `delete_trivially_dead_insns` removes the now-dead set, so `ings.cse2`
+shows the base add reading `reg79` (p) directly with no copy insn anywhere.
+Loop 2's redundant load, by contrast, is NOT folded — cse's table is flushed at
+the loop-2 guard's join label (`code_label 143`), so `mem[ctx+12]` is not an
+available expression there and the load survives as the `lw v0,12(s2)` that is
+one of the candidate's three residual instructions.
+
+### E-s32-3. THE CANONICALISATION RULE (cse.c:826 `make_regs_eqv`).
+Which register a folded copy leaves behind is decided by `qty_first_reg`, and
+`make_regs_eqv` promotes the NEW register to canonical only when
+`(uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start)`
+AND `uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`
+(tools/gcc-2.7.2/cse.c:840-855). This is the C-level handle on "does the base
+add read `p` or read the copy's destination": the copy's destination must be a
+variable that is already mentioned before the current cse block starts (or
+lives past its end) AND whose last mention is later than `p`'s. Measured
+directly: in cell S the copy destination `q` (first mentioned back in loop 1)
+IS promoted, and `ings.cse2` insn 154 shows the loop-2 GUARD add itself
+rewritten to read `reg80` (q) instead of `reg79` (p).
+
+### E-s32-4. ESCAPE #8 — a missing LOG_LINK, i.e. combine never sees the copy.
+`flow.c:2102` builds a LOG_LINK from a set to its next use only
+`if (y && (BLOCK_NUM (y) == blocknum) ...)`. A copy whose destination's next use
+is in a DIFFERENT basic block therefore has no LOG_LINK, combine never tries the
+substitution, and the copy survives with a SINGLE use and at ZERO instruction
+cost. This is not one of the seven `can_combine_p` refusal paths s17 enumerated
+— it is upstream of `can_combine_p` entirely. Demonstrated in cell S: `q = p;`
+written in loop 2's GUARD block with its only use (the base add) in the
+preheader block leaves `(insn 165 (set (reg/v:SI 81) (reg:SI 109)))` alive in
+`ings.combine`. First measured instance of a use-once surviving copy in this
+function's 32 sessions.
+
+### E-s32-5. ESCAPE #9 — `use_crosses_set_p`, at zero cost, via variable reuse.
+`can_combine_p` refuses when `! all_adjacent && use_crosses_set_p (src, INSN_CUID (insn))`
+(combine.c:914 + combine.c:10107): if any register of the copy's SOURCE is set
+between the copy and i3, the substitution is rejected. Target's preheader is
+already non-adjacent — `lw a2,0x10(s2)` sits between the copy and the base add
+— so the only missing ingredient is for that intervening insn to write `p`.
+Spelling the links read as `p = *(u8 **)(ctx + 0x10);` (ordinary variable reuse,
+zero extra instructions) does exactly that. This is the same construct s23
+banked as `crosses_set_p_reused_as_links_both_loops`; s32 re-derived it from the
+combine source and re-measured it, and it is the only mechanism that produces
+target's instruction stream.
+
+### E-s32-6. THE EXACT-INSTRUCTION-STREAM FORM, RE-MEASURED (cell AK = 14).
+`tmp/.../s32/body_AK.c` — both loops on escape #9, loop-1 guard on the `t`
+two-step, loop-2 guard inline — builds **127 instructions against target's 127
+and is instruction-for-instruction identical to target across the whole
+function**, including BOTH `addu a3,a0,zero` preheader copies and BOTH
+`lw a0,12(s2)` / `sll a1,s4,6` exit tails. The complete residual is a register
+permutation: target `a0`(p)->build `a1`, `a1`(sh)->`a0`, `a3`(q)->`v0`,
+`a2`(links)->`a1`. Score 14. This confirms s31's cell-E reading from an
+independent construction and re-confirms its verdict: because escape #9 puts the
+record pointer and the links pointer in ONE pseudo, target's `a0`/`a2` split is
+not an allocation this RTL admits, whatever the allocator does.
+
+### E-s32-7. Escape #8 and target's instruction ORDER are incompatible.
+Escape #8 requires the copy's def and its use to be in different basic blocks.
+At flow time the loop preheader is one block ending at the loop-top label, so
+the only way to separate them is to put the copy in the GUARD block — which
+emits it BEFORE the `blez`, where target emits it after. Measured across five
+orderings (S, S2, Z1, Z2, Z3): 8-40, never 127 instructions.
+
+- [s32] Floor re-measured at 3 (127 target insns / 127 build insns, scorable) with memory/grind/func_80017848/candidate.c applied to the HEAD INCLUDE_ASM anchor; src/ings.c restored to HEAD at end of session.
+
+- [s32] PASS ATTRIBUTION, dump-proven, closing the s31 frontier's first item: a use-once reg-reg copy in this function is deleted by COMBINE. Cell R's copy is insn 162 in tmp/grind/func_80017848/dumps/ings.cse2 and absent from ings.combine; loop 1's copy (insn 83) survives combine only because the candidate's p = q exit tail gives it a second use. jump.c's seven emit_move_insn sites and flow.c's one are not involved.
+
+- [s32] ESCAPE #8, new and not among the seven can_combine_p refusal paths s17 enumerated: flow.c:2102 builds a LOG_LINK from a set to its next use only if that use is in the same basic block, so a copy whose next use is in a different basic block is invisible to combine and survives with a SINGLE use at zero instruction cost. Measured in cell S: (insn 165 (set (reg/v:SI 81) (reg:SI 109))) is alive in ings.combine.
+
+- [s32] ESCAPE #8 is incompatible with target's instruction ORDER: the copy must sit in the guard block (before the blez) for the LOG_LINK to be missing, while target emits it after. Five orderings measured (S 14, S2 14, Z1 8, Z2 40, Z3 40), all at 124-125 insns.
+
+- [s32] ESCAPE #9 (combine.c:914 use_crosses_set_p, bought free by writing the links read as p = *(u8 **)(ctx + 0x10)) reproduces target's instruction stream EXACTLY: cell AK is 127/127 and instruction-for-instruction identical to asm/funcs/func_80017848.s across the whole function, both preheader copies and both exit tails included. Residual is purely a register permutation (a0 and a1 swapped for p/sh, a3->v0 for q, a2->a1 for links), score 14 - the same four seat divergences s31 recorded for cell E, reached independently.
+
+- [s32] Escape #9's structural cost is the pseudo merge: the record pointer and the links pointer become ONE pseudo, so target's a0/a2 split is not an allocation this RTL admits, which re-confirms s31's empty goal derivation from the C side. Control AC - links kept in their own local, base computed into p - does not trip the refusal and loses both copies (4 at 125).
+
+- [s32] cse.c:826 make_regs_eqv is the C-level handle on WHICH register a folded copy leaves behind: the new register becomes canonical only when (uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start) AND uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]] (cse.c:840-855). Measured live in cell S, where the promoted q rewrote the loop-2 GUARD add itself (ings.cse2 insn 154 reads reg80, not reg79).
+
+- [s32] Naming / declaration-order / base-destination inertness re-confirmed on the new escape-#9 chassis: AA = AH (q declared before p) = AG (base merged into slots) = AB (p and q roles swapped) = 36, exactly.
+
+- [s32] The s12 symmetric chassis re-measures at 4 (127/126) and its dump shows loop 1's preheader load is ELIMINATED rather than folded to a copy, while loop 2's is a genuine lw because cse's table is flushed at the loop-2 join label - so s12's written account of the wall is superseded.
