@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 50,
+ "session_count": 51,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -303,23 +303,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Block-0 residual fully attributed (sched.c LUID tiebreak coupled to a cse ref-count collapse), and a NEW equal-floor chassis found whose entire residual is two swapped sll operands with prologue sched"
+  },
+  {
+   "session": 51,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "sched1 measured (the shift/copy order is the source order at BOTH scheduler passes), and jump.c:577 forecloses every dead-reference spelling of the 'lengthen a0's last use' lever the s50 frontier name"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the s50 chassis (rejected/s50-i-first-a0ref-in-loop2-preheader.c) the whole function reduces to ONE question: can block 0's `a0 << 4` read a0 while sitting after `i = a0`? If it can, block 0 is byte-exact and only the loop-2 operand remains, giving a floor of 1 or 0.",
-   "mechanism": "cse.c:842-857 makes i canonical only when BOTH (a) i's live range leaves the cse EBB and (b) uid_cuid[regno_last_uid[i]] > uid_cuid[regno_last_uid[a0]]. s48 already measured the obvious attack on (b) -- a distinct loop-2 counter j, which shortens i's last use -- and it costs the instruction count (80 insns, score 37, on BOTH chassis). The untried direction is to LENGTHEN a0's last use past i's rather than shorten i's, or to attack clause (a) by shrinking the first cse EBB (currently insns 2..36, bounded by loop 1's top label) so that i's live range no longer leaves it.",
-   "next_probe": "Apply rejected/s50-i-first-a0ref-in-loop2-preheader.c, dump .cse, and confirm which of clauses (a)/(b) is true for the {a0, i} quantity in the FIRST EBB on this chassis. Then enumerate only spellings that move an EBB boundary: loop 1 written so its top label falls after the shift, an `if`/comma/statement grouping that extends the first EBB past loop 1, or any real a0 read reachable at or after loop 2's termination test. Reject on build_insns != 83 before spending a sandbox run."
+   "hypothesis": "The last unmeasured leg of cse.c:849-857 is clause (1): if block 0's cse EBB ended AFTER i's last reference, i would fail the `uid_cuid[regno_last_uid[new]] > cse_basic_block_end` test, a0 would stay qty_first_reg, and the i-first chassis would keep `sll $v1,$s2,4` -- a byte match, since s50 already proved i-first reproduces the target's whole block-0 schedule and allocation.",
+   "mechanism": "cse's EBB for block 0 is `;; Processing block from 2 to 37` (dumps_B/text1a_c.cse); it stops at loop 1's top label, which has two predecessors. i's last reference is in loop 2, far beyond 37. The disjunct's other half (`uid_cuid[regno_first_uid[new]] < cse_basic_block_start`) is already false in block 0 because the EBB starts at the function head, so clause (1) rests entirely on where the EBB ends. Crucially the preheader EBB (`from 71 to 110`) satisfies clause (1) via the OTHER disjunct, so an EBB-boundary attack changes block 0 WITHOUT disturbing the preheader -- unlike every clause-(2) attack, which is global and flips both shifts together.",
+   "next_probe": "Read cse_end_of_basic_block in tools/gcc-2.7.2/cse.c and enumerate exactly what makes it stop at insn 37 (label uses / follow_jumps / skip_blocks), then enumerate ONLY source spellings that move that boundary: loop 1 written so its top label falls later or is single-predecessor, an if/comma/statement grouping that extends the first EBB past loop 1, or a loop-1 shape whose backedge target is not a shared label. Confirm each candidate by grepping the `;; Processing block from` lines in the .cse dump BEFORE spending a sandbox run, and reject anything at build_insns != 83."
   },
   {
-   "hypothesis": "The loop-2 operand alone is removable on the s50 chassis -- a0's fourth reference can be paid by some construct in the loop-2 preheader other than the shift, leaving `sll $v1,$s0,4` correct there and a 1-instruction residual.",
-   "mechanism": "a0's fourth reference only has to be an a0 read in a cse EBB where the a0/i equivalence is not live, i.e. anywhere before the loop-2 preheader's `i = a0`. It does not have to be the shift. s50 measured the guard spelling (`if (a0 < D_800A33AC)`) and it costs an instruction because the target's `slt` reads $s0; but the preheader also contains the `ptr` and `idx` initialisations, either of which could in principle be spelled off a0 and re-merge to the same bytes.",
-   "next_probe": "On the s50 chassis, enumerate a0-spellings of the loop-2 preheader's `ptr = (s32 *)((u8 *)&D_800EED14 + v1)` and `idx = v1` (e.g. `idx = a0 << 4` ahead of `i = a0` with `v1 = i << 4` after it, or `ptr` formed from a0) and keep only those at build_insns == 83; check the .greg allocation order still shows 72(a0) ahead of s4/s5 before spending a sandbox run."
+   "hypothesis": "The two complementary score-2 forms can still be merged: some third spelling gets candidate.c's correct `sll` operands AND the s50 chassis's correct block-0 schedule.",
+   "mechanism": "After s51 the merge needs exactly one thing: an RTL insn stream in which the shift's LUID exceeds `i = a0`'s (scheduler side, now closed at both passes -- so this must come from the SOURCE order) while cse still leaves the shift's operand rtx as a0. Every clause-(2) route is now measured dead: shorten i's last use (allocation collapse, 80 insns), lift a0's reg_n_refs (fixes the allocation only, +1 insn), lengthen a0's last use (jump.c:577, this session). Only clause (1) is left, which is frontier item 1.",
+   "next_probe": "Treat frontier item 1 as the merge probe -- it is the same experiment. If an EBB-boundary spelling exists at build_insns == 83, dump .cse and check that block 0's ashift still reads reg 72 while the loop-2 preheader's still reads the i pseudo; that combination is the byte match."
   },
   {
-   "hypothesis": "The two complementary score-2 forms can be merged: some third spelling gets candidate.c's correct sll operands AND the s50 chassis's correct block-0 schedule, which would be a byte match.",
-   "mechanism": "The two requirements are contradictory only through the single cse canonicalisation at cse.c:855. Every other target property is now simultaneously reachable -- s50 demonstrated the target prologue schedule and the target allocation coexisting in one build. The merge therefore needs exactly one thing that no session has produced: an RTL insn stream in which the shift insn follows `i = a0` (LUID) while its operand rtx is still a0.",
-   "next_probe": "Search for a construct that produces the shift insn AFTER cse has run, so canon_reg never sees it -- e.g. an induction-variable initial value that loop.c emits into a preheader, or a `combine`-formed shift whose operands were fixed pre-cse. Read tmp/grind/func_80045294/s50/dumps_base/text1a_c.loop and .combine to see which insns in block 0 are created after cse at all; if none can be, that closes the merge by construction and the s50 chassis's 2 is the informed floor."
+   "hypothesis": "A construct that creates block 0's shift insn AFTER cse has run (so canon_reg never sees its operand) would satisfy both sides simultaneously without touching either cse clause.",
+   "mechanism": "cse only rewrites operands of insns it walks. An insn materialised later -- a loop.c-emitted preheader initial value for an induction variable, or a combine-formed shift whose operands were fixed pre-cse -- would carry a0 into sched2 with a high LUID. Note cse RUNS TWICE (a .cse2 dump exists), so any such insn must also survive cse2's canonicalisation, which re-establishes the same quantity from the same `i = a0` copy.",
+   "next_probe": "Read tmp/grind/func_80045294/s51/dumps_cand/text1a_c.loop and .combine for block 0 and list which of its insns are CREATED after cse at all; then check the same insns in .cse2. If none of block 0's insns can be created post-cse, and cse2 re-canonicalises anything that could be, that closes the merge by construction and the informed floor is 2."
   }
  ],
  "judge_constraints": [
@@ -346,6 +352,22 @@
    "measured_on": "HEAD 2026-09-03 chassis, both the i-first and v1-first block-0 heads, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "I_a0shift_in_guard score=5 insns=84; B_a0shift_in_guard score=27 insns=84. Both exceed the target's 83 instructions, so "
+  },
+  {
+   "session": 51,
+   "statement": "A DEAD C-level reference to a0 placed after i's last reference raises uid_cuid[regno_last_uid[a0]] and so falsifies cse.c:855's clause (2), letting a0 stay qty_first_reg for block 0's shift on the i-f",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-03 chassis (candidate.c 2/83 and rejected/s50-i-first-a0ref-in-loop2-preheader.c 2/83 both re-measured this session), i-first block-0 head; four un-annotated dead-local variants plus one ",
+   "predicate_cite": "jump.c:577",
+   "result": "All four placements measure score=11 build_insns=83, byte-identical to the control -- zero effect anywhere. The dumps gi"
+  },
+  {
+   "session": 51,
+   "statement": "s48's attribution of the distinct-loop-2-counter form's three missing instructions to a hoisted `lw %gp_rel(D_800A33AC)` is correct.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, i-first block-0 head with a distinct loop-2 counter `j`, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "The load is NOT hoisted -- it is still inside loop 2 in the 80-instruction build. What actually happens is an allocation"
   }
  ]
 }

@@ -1136,3 +1136,119 @@ first cse EBB so that clause (a) of make_regs_eqv fails.
 - [s50] NEW equal-floor chassis: i-first block 0 plus loop-2 preheader respelled `v1 = a0 << 4; i = a0;` gives score=2 / 83 with a residual of exactly two `sll` operands (idx 9 and idx 41, swapped relative to the target) and a byte-exact prologue schedule, callee-save allocation and stack frame. Banked at memory/grind/func_80045294/rejected/s50-i-first-a0ref-in-loop2-preheader.c.
 
 - [s50] src/text1a_c.c was restored to HEAD at end of session; git status shows only the two ledger files, the new rejected/ form, and metrics/events.jsonl modified. candidate.c is unchanged and remains the best form (tied at 2 with the new chassis).
+
+## s51 (rederive) -- 2026-09-03
+
+### Chassis re-measurement (kill re-audit)
+Both banked score-2 forms re-measured on today's HEAD with `sandbox
+func_80045294 --disable all`:
+  memory/grind/func_80045294/candidate.c                       score=2  insns=83
+  rejected/s50-i-first-a0ref-in-loop2-preheader.c              score=2  insns=83
+The chassis is unchanged from s50; every s50 conclusion is still chassis-valid.
+No FAKE construct is present in either form, so `fake_ablate.py` has nothing to
+ablate; the ablation leg of the re-audit is vacuous for this function. The
+closest instance kill (s50-H3, guard-on-a0 at 84 insns) was not re-run because
+this session measured a strictly stronger statement about the same lever family
+(see the jump.c:577 result below), which covers it.
+
+### The distinct-loop-2-counter kill re-attributed (s48's 3 deleted insns)
+`rejected/h1-separate-second-loop-counter.c` re-measured: score=37 insns=80,
+reproducing s48 exactly. This session disassembled the sandbox object and
+diffed it against asm/funcs/func_80045294.s (tmp/grind/func_80045294/s51/
+build_disasm.txt + cmp.py). s48's attribution ("lets loop 2's `lw D_800A33AC`
+hoist out of the loop") is WRONG. What actually happens: with two separate
+counter pseudos, loop 1's counter no longer has to survive the two calls, so
+GCC leaves it in the incoming `$a0` (`addiu a0,a0,1` at build idx 22) and needs
+no `move $s0,$s2` copy in block 0 at all; a0 is copied once to `$s1`
+(`move s1,a0`, idx 2), the count lands in `$a1`, and one callee-save
+(`$s5`) drops out of the frame entirely -- the frame shrinks from 0x30 to 0x28.
+The 3 missing instructions are the deleted block-0 copy plus the `$s5`
+save/restore pair, not a hoisted load. This matters for the model: the SINGLE
+shared counter is load-bearing precisely because one pseudo spanning block 0 to
+loop 2 is what forces a callee-save allocation and the `move $s0,$s2` copy the
+target has.
+
+### sched1 closes the scheduler side (new)
+The instrumented cc1 (tools/gcc-2.7.2/cc1) was run with BB2_PRIO_DEBUG and
+BB2_RANK_DEBUG over the candidate.c chassis; dumps in
+tmp/grind/func_80045294/s51/dumps_cand/ (sched_debug.txt = raw stderr,
+9336 PRIODBG + 1873 RANKDBG lines).
+  * sched2 block 0 ("from 197 to 32") reproduces the s50 trace: all block-0
+    insns priority 1 except 28 and 31 (priority 2, each fed by an `lw`), the
+    deciding tie at T-9 is `22 (1) 14 (1) 12 (1) 6 (1), now 22 14 12 6` with
+    last_scheduled_insn = 199 (`sw $ra`). Emission order first->last is
+    197,207,4,205,6,209,12,14,211,22,199,201,203,19,25,28,31,32; the target
+    wants ...12,211,22,14,199..., i.e. exactly the 2-insn residual.
+  * sched1 block 0 ("from 4 to 32") -- NEW this session -- has the identical
+    structure: at T-6 the ready list is `22 (1) 14 (1) 12 (1)` sorting to
+    `22 14 12`, so sched1 also emits the shift BEFORE the copy and hands sched2
+    the source order unchanged.
+  This closes the one route left open by s50: sched1 cannot pre-reorder the
+  pair so that sched2's re-assigned LUIDs favour the shift.
+  Raising the shift's INSN_PRIORITY to 2 is structurally unavailable --
+  sched.c:1497's `priority(pred) + insn_cost(pred) - 1` is flat over latency-1
+  chains, so priority 2 requires a LOAD predecessor, and `a0 << 4` reads a
+  parameter. Lowering `i = a0`'s class below 3 (rank_for_schedule,
+  sched.c:2429-2441) requires it to be a cost>1 predecessor of the
+  last_scheduled `sw`, which a reg-reg move cannot be.
+
+### jump.c:577 forecloses every DEAD-reference spelling of the lever (new)
+The s50 frontier named "LENGTHEN a0's last use past i's" as the untried
+direction on the cse side. Measured this session at four placements of a dead
+`dead = a0;` on the i-first chassis -- after block 0's shift, in the loop-2
+preheader after both calls, inside loop 2's body tail, and as the function's
+last statement -- every one scores 11 at 83 instructions, byte-identical to the
+no-dead-reference control (tmp/grind/func_80045294/s51/C_ifirst_plain.c).
+The dumps for the last-statement variant (dumps_B/) show the cause:
+  * .rtl (pre-cse) carries it: `(insn 191 188 193 (set (reg/v:SI 74)
+    (reg/v:SI 72)))`, the function's final insn, reg 74 = the dead local,
+    reg 72 = a0.
+  * .jump has `(insn 188 186 193 ...)` -- insn 191 is already deleted.
+  * .cse still shows `(insn 18 ... (set (reg/v:SI 77) (ashift:SI
+    (reg/v:SI 76) (const_int 4))))`, i.e. block 0's shift rewritten from a0
+    (reg 72) to i (reg 76) exactly as in the control.
+The deleter is tools/gcc-2.7.2/jump.c:568-584: when jump_optimize is called
+with `after_regscan` (which is how toplev calls it before cse) it deletes any
+insn whose SET_DEST is a pseudo satisfying
+`regno_first_uid[dest] == INSN_UID (insn) && regno_last_note_uid[dest] ==
+INSN_UID (insn)` -- every set-once/never-read pseudo. So a dead a0 reference is
+gone before the pass that would read regno_last_uid[a0] ever runs.
+The complement is measured: with a LIVE destination (`i = a0;` as the tail
+statement) the predicate at jump.c:577 does not fire, the store survives into
+the bytes, and the build is 84 instructions / score 27
+(rejected/s51-deadstore-i-eq-a0-tail.c). jump.c:577 therefore partitions tail
+a0 references into exactly two cases -- dead destination (deleted pre-cse, zero
+effect) and live destination (costs an instruction) -- and there is no third.
+
+### Where the function stands after s51
+The residual is one coupled decision with both sides now carrying a file:line
+predicate and a measurement:
+  (A) block 0 must emit `move $s0,$s2` before `sll $v1,$s2,4`
+      <=> the SOURCE must write `i = a0` before `v1 = a0 << 4`
+      (sched.c:2461-2463; both scheduler passes measured this session).
+  (B) block 0's shift must read a0's register
+      <=> cse must keep reg 72 as qty_first_reg (cse.c:855).
+Under (A) the copy precedes the shift, and reg 75/76 (i) wins qty_first_reg
+because its last reference (loop 2) postdates a0's. The three routes to invert
+that are now each measured dead with a named predicate: shorten i's last
+reference (deletes the block-0 copy and a callee-save pair -- 80 insns, s48 and
+re-attributed here), lift a0's reg_n_refs (fixes the ALLOCATION only, s49 v1,
+and costs an instruction), and lengthen a0's last reference (jump.c:577, this
+session). The remaining unmeasured direction is clause (1) of cse.c:849-853 --
+shrinking block 0's cse EBB (`;; Processing block from 2 to 37` in
+dumps_B/text1a_c.cse) so that i's live range no longer leaves it -- which is
+what the frontier below points at.
+
+- [s51] Chassis re-audit: memory/grind/func_80045294/candidate.c and rejected/s50-i-first-a0ref-in-loop2-preheader.c BOTH re-measure score=2 build_insns=83 on today's HEAD, so every s50 conclusion is still chassis-valid. Neither form carries a FAKE construct, so the fake_ablate leg of the kill re-audit is vacuous for this function.
+
+- [s51] The instrumented cc1 is tools/gcc-2.7.2/cc1, but engine.buildconfig.CC1 points at tools/gcc-2.7.2/build/cc1 -- a dump script that uses B.CC1 silently gets the UNinstrumented compiler and produces no BB2_*_DEBUG output. tmp/grind/func_80045294/s51/dump.sh hardcodes the instrumented path.
+
+- [s51] sched1 and sched2 make the same decision in block 0: sched1 T-6 `ready list: 22 (1) 14 (1) 12 (1), now 22 14 12`; sched2 T-9 `ready list: 22 (1) 14 (1) 12 (1) 6 (1), now 22 14 12 6`. Both pick insn 22 (`i = a0`) over insn 14 (the shift) on the INSN_LUID tiebreak alone, so the emitted order of the pair is the source order at every scheduling opportunity.
+
+- [s51] Insn 14's INSN_PRIORITY cannot exceed 1: sched.c:1497 subtracts one from each predecessor contribution, so a chain of latency-1 insns is flat, and the only way to reach 2 is a predecessor with insn_cost 2 (a load). `v1 = a0 << 4` reads a parameter, so no load can feed it without adding an instruction.
+
+- [s51] jump.c:568-584 deletes every set-once/never-read pseudo BEFORE cse runs (predicate at jump.c:577). Verified against dumps: the dead store is present in .rtl as insn 191 and absent in .jump, and .cse still canonicalises block 0's shift from reg 72 (a0) to reg 76 (i).
+
+- [s51] The distinct-loop-2-counter form's 80-instruction shape is an allocation collapse (loop 1's counter stays in $a0, block 0's copy vanishes, the $s5 save/restore pair drops, frame 0x30 -> 0x28), not a hoisted gp-rel load -- correcting the s48 record.
+
+- [s51] cse EBB bounds on the i-first chassis (dumps_B/text1a_c.cse): `;; Processing block from 2 to 37` (block 0 + guard), `from 39 to 65` (loop 1), `from 71 to 110` (loop-2 preheader). Block 0's EBB ends at 37, so clause (1) of cse.c:849-853 is satisfied for i via `uid_cuid[regno_last_uid[i]] > cse_basic_block_end` and NOT via the first_uid disjunct -- while the preheader EBB satisfies it via the OTHER disjunct.
