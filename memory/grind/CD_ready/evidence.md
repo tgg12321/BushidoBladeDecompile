@@ -3057,3 +3057,109 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s75] qty_compare (local-alloc.c:1540-1560, the next_qty<=3 path) has no quantity-number tie-break unlike qty_compare_1 (local-alloc.c:1683), but the hand-rolled exchange sequence leaves qty_order at the identity permutation on ties, so it is not a lever.
 
 - [s75] Twelve new rejected forms banked (253 total) and two new progress bases saved (r3 and the no-pp-hoist q9). candidate.c is unchanged as a body and remains the floor at 2/179/0; only its header gained the s75 summary.
+
+## s76 (synthesis, 2026-09-03) - measured facts
+
+- [s76] Chassis re-verified live BEFORE any probe: `memory/grind/CD_ready/candidate.c` = score 2 /
+  build 179 / target 179 / rules 0; `progress/s75-r3-nested-note-refs-flip-seats-block3-order-exact-5.c`
+  = 5/179/0. No drift from s72-s75. Harness: `tmp/grind/CD_ready/s76/one.ps1` (splice + sandbox +
+  leave the .o for a diff), `tmp/grind/CD_ready/s76/sched.sh` + `run_sched.sh` (instrumented cc1 with
+  BB2_SCHED_DEBUG, per-variant block-3 extraction). 13 forms measured, all at build 179 /
+  rules_dropped 0. `src/system.c` verified clean by `git status --porcelain` after every batch.
+
+- [s76] **THE FLOOR BODY'S ENTIRE RESIDUAL, WRITTEN OUT INSTRUCTION BY INSTRUCTION** (first time it
+  is on record as a full objdump-vs-target listing rather than a summary). Target block-3 slots
+  51-67 hold two structurally identical four-insn chains, B = the `*(s32 *)t0` printf argument and
+  A = the `arg5` stack argument:
+    51 `lbu $a0,0($s2)` [B]   52 `lbu $v0,1($s2)` [A]   53/54 `la/lw $a1,D_800F19C0`
+    55 `sll $v0,$v0,2` [A]    56 `addu $v0,$v0,$s5` [A] 57 `sll $a0,$a0,2` [B]
+    58 `lw $v1,0($v0)` [A]    59/60 `lui/lbu $v0,D_800A11D5`  61 `addu $a0,$a0,$s5` [B]
+    62 `sll $v0,$v0,2`        63 `sw $v1,0x10($sp)` [A]  64/65/66 `lui/addu/lw $a2,D_800A11DC`
+    67 `lw $a3,0($a0)` [B]
+  The floor body emits every one of these with the TARGET'S REGISTERS and differs only by
+  transposing slots 56 and 57 (`sll $a0,$a0,2` before `addu $v0,$v0,$s5`). Both seats are correct;
+  the residual is one adjacent swap of two independent ALU insns.
+
+- [s76] **NEW PASS-LEVEL RUNG, NEVER EXAMINED IN 75 SESSIONS: sched.c's `adjust_priority` /
+  `birthing_insn_p`.** Read from the block-3 BB2_SCHED_DEBUG dump of the floor body
+  (tmp/grind/CD_ready/s76/candidate.sched.txt, pass=1 block=3): the contested pair is insn 106
+  (the B shift, luid 6) against insn 120 (the A addu, luid 12), and at clock 13 the ready list is
+  `[ 120(p=2130706433,l=12) 106(p=2130706433,l=6) 141(p=1,l=22) ]`. Their nominal priorities are
+  both 2; the value 2130706433 is `max_priority`, applied by `adjust_priority`
+  (tools/gcc-2.7.2/sched.c:2571-2590) to any ready insn with zero REG_DEAD notes whose pattern is
+  `birthing`. `birthing_insn_p` (sched.c:2504-2528) returns `reg_n_sets[REGNO (SET_DEST (pat))] == 1`.
+  So the s69 record ("the class rung ties 3/3 and sched.c falls through to INSN_LUID") is correct
+  but incomplete: the pair only REACHES the LUID rung because BOTH insns are boosted to
+  max_priority, and the boost is C-controllable - it disappears the moment the destination pseudo
+  has more than one set in the function.
+
+- [s76] **CONFIRMED, and this is the session's real result: de-boosting insn 120 reproduces the
+  TARGET'S EXACT block-3 emission order with NO loop note at all.** Form b2
+  (`status = v0 + (s32)tbl_125c; arg5 = *(s32 *)status;`, i.e. the arg5 address carried in an
+  existing multi-set local). Its dump (tmp/grind/CD_ready/s76/b2.sched.txt) shows
+  `ADJPRI insn=120 deaths=0 birth=0` where the floor body shows `birth=1`, and the pick stream
+  flips exactly as predicted - `PICK clock=13 picked=106`, `PICK clock=14 picked=120` against the
+  floor's 13:120 / 14:106 - giving the emission sequence 99, 115, 142, 117, 120, 106, 123, 129, 111
+  = B.lbu, A.lbu, `lw $a1`, A.sll, A.addu, B.sll, A.lw, lbu, B.addu, the target's order
+  instruction for instruction. This is the SECOND independent route to the order-perfect emission
+  (the first is s69's g06, which reorders the C statements) and the first that needs neither a
+  statement reorder nor a `do {} while (0)`.
+  Saved as `progress/s76-b2-birth-deboost-target-block3-order-no-loop-note-12.c` (score 12).
+
+- [s76] KILLED (instance): every C spelling of the de-boost measured this session pays more than
+  the order is worth, because the only carriers that survive to flow.c with `reg_n_sets > 1` are
+  variables that ALSO leave block 3, so the arg5-address pseudo stops being a local quantity and
+  global-alloc seats it in a callee-saved or argument register. Scores: a1 (address into `v0`,
+  `v0 = v0 + (s32)tbl_125c`) 15; a3 (same with `v0 +=`) 15; b1 (`cnt`) 16; b2 (`status`) 12;
+  b3 (`i`) 29; c1 (`arg5` holds its own address, which de-boosts the lw as well) 9; c4 (a block-local
+  `a5a` replacing the whole `v0` staging, 3 sets) 6; c6 (`a5a` with two REAL sets, the t0 deref
+  staged early into `t0`) 11; c9 (same with a fresh `t0v`) 10. b2's diff shows the cost precisely:
+  `addu $s0,$v0,$s5` and `lw $a0,0($s0)` - the address in $s0 instead of $v0.
+
+- [s76] CONTROLS, both byte-identical to the floor at 2/179/0: c3 (`a5a = v0; a5a = a5a + (s32)tbl_125c;`)
+  and c5 (`a5a = (s32)tbl_125c; a5a = v0 + a5a;`). A first set that is a plain COPY is propagated
+  away before flow.c runs, so `reg_n_sets` returns to 1 and the boost survives. This is the exact
+  mirror of s69's k01 result (`delete_noop_moves` runs before `reg_n_refs` is accumulated): a
+  de-boost carrier must have two sets that both SURVIVE to flow.c, which is why every working
+  spelling this session had to route a real value through the carrier.
+
+- [s76] Control a5 (the B shift routed through `cnt`, i.e. de-boosting insn 106 instead of 120)
+  scores 8. With both insns unboosted the comparison returns to INSN_LUID, which still favours
+  insn 120 (luid 12 > luid 6), so the order does not flip - confirming the attribution: it is
+  120's boost specifically, not "a boost", that pins the transposition.
+
+- [s76] THE COUPLING, now stated exactly. The target's block-3 order needs B.lbu BEFORE A.lbu
+  (slots 51/52) and A.addu BEFORE B.sll (slots 56/57). Both pairs are decided by INSN_LUID on the
+  floor body, and LUID is the RTL stream order, so a spelling that reverses the two chains
+  wholesale flips BOTH pairs and can never satisfy the target. The floor body satisfies the lbu
+  pair and fails the ALU pair; the s75 r3 base satisfies the ALU pair and fails the lbu pair
+  (its dump shows the lbu order there is decided by unit BLOCKAGE, not by LUID:
+  `BLOCKAGE unit=0 clock=19 ... exec=106 last=99`). The two routes that satisfy BOTH - s69's g06
+  (interleaved statement order) and s76's b2 (birth de-boost) - do so by splitting chain B, and
+  both then lose on the local-alloc seats.
+
+- [s76] The mandated KILL RE-AUDIT could not be executed with `tools/fake_ablate.py` on the
+  closest-to-target non-floor form: the r3 body's 11 FAKE units include three nested
+  `do {} while (0)` wraps and two staging lines whose removal is not semantics-preserving, and
+  67 of the 68 grid variants fail to build (`ERR None`), the 68th scoring 179. Dump:
+  tmp/grind/CD_ready/s76/r3_ablate.txt. Both closest-to-target forms were instead re-measured LIVE
+  on the current chassis at the top of the session (candidate.c 2/179/0, r3 5/179/0), and the
+  s73/s74 ablation grids on candidate.c and r6 remain the closest executable evidence.
+
+- [s76] Chassis re-verified live before any probe: candidate.c = 2/179/0, progress/s75-r3-nested-note-refs-flip-seats-block3-order-exact-5.c = 5/179/0. No drift from s72-s75. src/system.c verified clean by git status --porcelain after every batch, and candidate.c re-scored at 2/179/0 after its header edit.
+
+- [s76] The floor body's residual is now on record as a full instruction listing: it emits every one of target slots 51-67 with the TARGET'S REGISTERS and differs only by transposing slots 56 and 57 (sll $a0,$a0,2 before addu $v0,$v0,$s5). Both contested seats are already correct on this body; the residual is one adjacent swap of two independent ALU insns.
+
+- [s76] NEW pass-level rung, never examined in 75 sessions: sched.c's adjust_priority (2571-2590) raises a ready insn with zero REG_DEAD notes to max_priority when birthing_insn_p (2504-2528) holds, and that predicate is reg_n_sets[SET_DEST]==1. Both contested insns are boosted, which is WHY the comparison reaches the INSN_LUID rung s69 recorded.
+
+- [s76] b2 (arg5 address carried in the existing multi-set local 'status') emits the target's exact block-3 order with NO loop note - the third independent route to order-perfection after g06 and r3, and the only one needing neither a statement reorder nor a do-while(0). Saved as progress/s76-b2-birth-deboost-target-block3-order-no-loop-note-12.c.
+
+- [s76] A de-boost carrier needs two sets that BOTH survive to flow.c: c3 and c5 (copy-initialised carriers) are byte-identical to the floor at 2/179/0 because the copy is propagated away, the mirror of s69's delete_noop_moves result for same-value re-stores.
+
+- [s76] Control a5 (de-boosting insn 106 rather than 120) scores 8: with both insns unboosted the comparison returns to INSN_LUID and 120 (luid 12) still beats 106 (luid 6), so the order does not flip. Attribution is on insn 120's boost specifically.
+
+- [s76] The coupling is exact: the target needs B.lbu before A.lbu AND A.addu before B.sll, both INSN_LUID ties, so no wholesale reversal of the two chains can satisfy both. On r3 the lbu order is decided by a functional-unit BLOCKAGE rather than by LUID.
+
+- [s76] Every qty_compare_1 input for the seat half is now measured across s70-s76: refs move only with loop_depth (a note), span and quantity number are pinned by the target's own emission order (birth order), and qty_size costs an instruction (s72's DImode kill at 181 insns).
+
+- [s76] 13 forms measured this session, all at build 179 / rules_dropped 0; 11 new rejected forms banked (264 total) and one new progress base saved. candidate.c is unchanged as a body and remains the floor at 2/179/0; only its header gained the s76 summary.

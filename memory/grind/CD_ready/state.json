@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 75,
+ "session_count": 76,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -459,23 +459,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Parity theorem for the do-while(0) refs lever derived and measured: the [11..12] region (wrap the printf statement only, a2 index + t0 address hoisted) at nesting depth 3 flips BOTH contested local-al"
+  },
+  {
+   "session": 76,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Synthesis: the floor body's whole residual is one adjacent ALU transposition with every seat already correct, and a NEW pass-level rung (sched.c birthing_insn_p / adjust_priority) reproduces the targe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the r3 base, reg98 (the t0 variable) can be brought back to $a0 by removing hard reg 4 from its global-alloc conflict set - i.e. by making its live range and the t0 shift temp's non-overlapping again, exactly as they are on the floor body - without giving up the refs asymmetry that now seats the arg5 value at $v1.",
-   "mechanism": "r3's .greg reads ';; 98 conflicts: ... 2 3 4 5 6 29' and ';; 98 preferences: 7', with '106 in 4' (the shift temp) and '98 in 7'. global.c's find_reg consults preferences before the lowest-free scan but cannot use a conflicting reg at all, so $a0 is excluded outright. On the floor body reg98 dies at the shift and is reborn at the address addu, so the two share $a0. Something the call-wrap note does to reg98's liveness (most likely the note insn's blanket anti-dependences at sched.c:2075-2103 lengthening reg98's range past the shift) creates the overlap.",
-   "next_probe": "Splice r3 and diff its .lreg/.flow reg98 live range against the floor body's (tmp/grind/CD_ready/s75/r3.lreg is already dumped; dump candidate.c's with pwsh tools/grinder/dump.ps1 CD_ready). Identify the insn at which reg98 stays live past the shift on r3 and does not on the floor body, then spell C forms that restore the death - e.g. computing the t0 address from a value that is not reg98 itself, or moving the a2-index hoist so the note's anti-dependence lands elsewhere. Any form that keeps QTYDBG's 'reg97 got=3 / shift-temp got=4' while making .greg print '98 in 4' scores about 2 on the seats and leaves only the lbu pair."
+   "hypothesis": "A de-boost carrier whose two surviving sets are BOTH inside the do_timeout block, both feeding real printf arguments, removes insn 120's birth boost without moving the arg5-address pseudo out of local-alloc - giving the target's order (proven by b2) on a body whose seats are still the floor's.",
+   "mechanism": "birthing_insn_p needs reg_n_sets>1 on the SET_DEST pseudo (sched.c:2504-2528); local-alloc keeps a pseudo as a local quantity only while all its references sit in one basic block. b1/b2/b3 satisfied the first and broke the second (the carrier also lives in another block, so global-alloc seats it at $s0/$a3); c3/c5 kept it local but their first set was a copy that cse/flow propagated away; c6/c9 kept it local with two real sets but staged the t0 deref early, moving 'lw $a3' off slot 67.",
+   "next_probe": "Spell a carrier whose first set is a value block 3 ALREADY computes and consumes in place - the D_800A11DC[D_800A11D5] index chain is the obvious one (idx = D_800A11D5; ... idx = v0 + (s32)tbl_125c; arg5 = *(s32 *)idx; with the a2 argument taken from the first value). Verify with BB2_SCHED_DEBUG that 'ADJPRI insn=120 ... birth=0' and 'PICK clock=13 picked=106' before reading the score, and check the .lreg/.greg dumps to confirm the carrier is still a local quantity rather than in the global allocno list."
   },
   {
-   "hypothesis": "r3's transposed leading lbu pair is an INSN_PRIORITY difference, not an INSN_LUID one, and it is caused by the call-wrap note sitting between the t0 chain's load (lw $a3, inside the region) and the arg5 chain's load (lw $v1, outside it), which gives the arg5 lbu one extra load-latency increment.",
-   "mechanism": "sched.c:1497 computes priority(pred) + insn_cost - 1, so only load edges (cost 2) increment. In the floor body both chains carry exactly one load above their lbu and the two lbu's tie at the same priority, breaking on INSN_LUID in the t0 byte's favour. On r3 the t0 chain's lw sits below the note so its increment is absorbed into the max with the note insn's priority, while the arg5 chain's lw sits above it and keeps its own +1.",
-   "next_probe": "Splice r3 and dump BB2_PRIO_DEBUG/BB2_RANK_DEBUG for block 3 with tmp/grind/CD_ready/s72/prio.sh, reading the final_pri of the two lbu insns directly rather than inferring it (s74 corrected an earlier priority shorthand this way). If they differ by exactly 1, look for a spelling that adds a load-latency edge above the t0 lbu inside region 1 without adding an instruction, or that removes one from the arg5 side; if they TIE, the cause is elsewhere and the twelve inert permutations already rule out LUID."
+   "hypothesis": "On the r3 base (score 5, block-3 order target-exact from slot 53) the transposed leading lbu pair is a readiness-time artefact, not a tie, and it closes by making the arg5 chain's sll (insn 108) schedule one clock earlier so insn 106 re-enters the ready list alongside insn 99.",
+   "mechanism": "r3's dump shows 99 picked at clock 18 with 106 absent from that ready list and 'BLOCKAGE unit=0 clock=19 raw_tick=21 adj_tick=19 maxb=3 exec=106 last=99' - 106 became ready only after its single dependent 108 was picked at clock 17 and then missed the memory unit's issue slot. On the floor body the analogous pair are both ready at clock 17 and the LUID tie resolves correctly. So r3's lbu residual is a two-clock readiness gap, a different rung from every LUID probe s61-s75 ran.",
+   "next_probe": "Dump BB2_SCHED_DEBUG for r3 variants that shorten the arg5 chain's tail by one dependence step (or lengthen the t0 chain's), reading the clock at which insn 106 enters the ready list rather than the score. If 106 and 99 can be made ready in the same clock the pair reverts to a LUID tie, which r3's RTL order already resolves in the target's favour - that alone is 2 of r3's 5 points, and would leave only reg98's $a3 seat."
   },
   {
-   "hypothesis": "A permuter campaign seeded from r3 (score 5, block-3 order target-exact, both local seats already correct) finds the last spelling by search; no campaign in 75 sessions has been seeded from a body whose only residual is one global-alloc seat plus one scheduler tie.",
-   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats across the whole block. r3's residual is two independent, precisely localised facts, and the permuter's statement-reordering and variable-splitting passes act on exactly the RTL-position inputs that both facts depend on. candidate.c (floor 2) remains the second seed worth running.",
-   "next_probe": "Build a FRESH workspace mirroring engine/buildconfig.py's flags exactly (the existing tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1). Validate the scorer reproduces 5 for r3 and 2 for candidate.c before launching, then run fresh-seed windows with 'python3 tools/permuter_campaign.py wait --dir <ws>', harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
+   "hypothesis": "A permuter campaign seeded from r3 (score 5) and from b2 (score 12, order-perfect without a note) finds the last spelling by search; no campaign in 76 sessions has been seeded from a body whose residual is two independently root-caused facts.",
+   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats across the whole block. r3's residual is one global-alloc seat plus one scheduler readiness gap, and b2's is one local-alloc seat set; the permuter's statement-reordering and variable-splitting passes act on exactly the RTL-position and reg_n_sets inputs both facts depend on.",
+   "next_probe": "Build a FRESH workspace mirroring engine/buildconfig.py's flags exactly (the tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1). Validate the scorer reproduces 5 for r3, 12 for b2 and 2 for candidate.c before launching, then run fresh-seed windows with 'python3 tools/permuter_campaign.py wait --dir <ws>', harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
   }
  ],
  "judge_constraints": [
@@ -689,6 +695,22 @@
    "measured_on": "source-level check against tools/gcc-2.7.2/local-alloc.c on the HEAD chassis 2026-09-03; no FAKE construct involved.",
    "predicate_cite": "",
    "result": "Identity permutation either way, so reducing block 3 to three quantities buys nothing by this route. s73 had already mea"
+  },
+  {
+   "session": 76,
+   "statement": "On the floor body, giving the arg5-address pseudo a second surviving set removes insn 120's adjust_priority max_priority boost, so insn 106 wins the clock-13 pick and block 3 emits in the target's ord",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0 and r3 at 5/179/0 immediately before the batch, and candidate.c again at 2/179/0 after its header edit. All nine forms and three contro",
+   "predicate_cite": "",
+   "result": "The ORDER PREMISE IS CONFIRMED: b2's dump prints 'ADJPRI insn=120 deaths=0 birth=0' where the floor prints birth=1, and "
+  },
+  {
+   "session": 76,
+   "statement": "The mandated kill re-audit of the closest-to-target non-floor form (r3, score 5) can be executed with tools/fake_ablate.py on the current chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, r3 with its full 11-unit FAKE set present; the tool's own unit-dropping is what fails, not a scoring result.",
+   "predicate_cite": "",
+   "result": "KILLED as a procedure on this body: r3's 11 FAKE units include three nested do-while(0) wraps and two staging lines whos"
   }
  ]
 }

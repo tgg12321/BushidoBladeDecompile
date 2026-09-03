@@ -3000,3 +3000,102 @@ live before any probe: candidate.c 2/179/0, g06 6/179/0.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: source-level check against tools/gcc-2.7.2/local-alloc.c on the HEAD chassis 2026-09-03; no FAKE construct involved.
+
+## s76 (synthesis, 2026-09-03)
+
+### The merged attack, restated from 76 sessions of measurement
+
+The residual has exactly two halves and they are coupled through ONE variable, the relative
+position of the two printf-argument chains in the RTL stream:
+
+  * ORDER half. Target block-3 slots 51-67 interleave chain B (`*(s32 *)t0`, the $a3 argument) and
+    chain A (`arg5`, the stack argument) as B.lbu, A.lbu, A.sll, A.addu, B.sll, A.lw, ..., B.addu,
+    ..., B.lw. Both contested pairs (the lbus at 51/52 and the ALU pair at 56/57) are INSN_LUID
+    ties, so any wholesale reversal of the two chains flips both and cannot reach the target.
+  * SEAT half. On any body that emits the target's order, local-alloc's qty_compare_1 sees the two
+    contested quantities at refs 4 / span 6 / size 1 each - an exact tie - and breaks it on
+    quantity number, which birth order (= the target's own emission order) pins in the t0 shift
+    temp's favour. The target needs the arg5 value allocated FIRST (it takes $v1, the second-choice
+    register in MIPS REG_ALLOC_ORDER after $v0; the t0 temp then takes $a0).
+
+Three routes to the order half are now on record: s69's g06 (interleave the C statements), s75's
+r3 (a nested `do {} while (0)` in the [11..12] parity region) and s76's b2 (remove insn 120's
+`birthing_insn_p` boost). All three cost the seats. Every qty_compare_1 input is now measured:
+refs move only with loop_depth (i.e. only with a note, s70/s71), span and quantity number are
+pinned by the target's own order, and size costs an instruction (s72's DImode kill). That is why
+the seat half only ever yields to a note, and why r3 - the only body where both seats are correct
+AND the order is target-exact from slot 53 - is the live frontier.
+
+### h76-1 KILLED (instance). The `birthing_insn_p` de-boost of insn 120.
+
+statement: On the floor body, giving the arg5-address pseudo more than one set in the function
+removes insn 120's `adjust_priority` max_priority boost, so insn 106 wins the clock-13 pick and
+block 3 emits in the target's order.
+mechanism: sched.c:2504-2528 `birthing_insn_p` returns `reg_n_sets[REGNO (SET_DEST (pat))] == 1`;
+sched.c:2571-2590 `adjust_priority` raises a zero-REG_DEAD ready insn to `max_priority` only when
+that predicate holds. On the floor body both insn 106 (the B shift temp, single-set) and insn 120
+(the anonymous A address temp, single-set) are boosted, so rank_for_schedule falls through class
+to INSN_LUID and 120 (luid 12) is picked before 106 (luid 6), emitting them in the wrong order.
+probe: nine carriers measured - a1/a3 (`v0`), b1 (`cnt`), b2 (`status`), b3 (`i`), c1 (`arg5`),
+c4 (a block-local `a5a` replacing the v0 staging), c6/c9 (`a5a` with two real sets and the t0
+deref staged early). Controls c3/c5 (copy-initialised carrier) and a5 (de-boost insn 106 instead).
+result: The ORDER PREMISE IS CONFIRMED - b2's dump prints `ADJPRI insn=120 deaths=0 birth=0`
+and `PICK clock=13 picked=106 / clock=14 picked=120`, and its emission is the target's order
+instruction for instruction, with no loop note anywhere. The FORM is killed on cost: every carrier
+that keeps two sets alive to flow.c is a variable that also leaves block 3, so the address pseudo
+leaves local-alloc and global-alloc seats it in $s0/$a3/$a0 instead of $v0. Scores 15/15/16/12/29/
+9/6/11/10 against the floor's 2. c3/c5 are byte-identical to the floor (a copy first-set is
+propagated away before flow.c, exactly as s69's k01 found for `delete_noop_moves`), and a5 = 8
+(with both insns unboosted the tie returns to LUID and 120 still wins), which fixes the attribution
+on 120's boost specifically.
+verdict: KILLED, kill_scope instance.
+
+### h76-2 CONFIRMED. The two contested pairs are one coupled LUID variable.
+
+statement: The lbu pair (target slots 51/52) and the ALU pair (56/57) are both INSN_LUID ties on
+the floor body, resolved in opposite directions by the same chain-order fact, so no monolithic
+reordering of the two chains can satisfy both.
+mechanism: rank_for_schedule ties on priority and class for both pairs (RANKDBG prints val=0
+throughout, s69), leaving INSN_LUID = RTL stream position. Chain B precedes chain A in the floor
+body's RTL, which gives B.lbu the earlier emission (correct) and B.sll the earlier emission
+(wrong). Reversing the chains fixes 56/57 and breaks 51/52.
+probe: read both bodies' block-3 BB2_SCHED_DEBUG dumps side by side (candidate.sched.txt,
+s75-r3-...sched.txt), mapping every insn uid to its luid, its dependence chain and its emitted slot.
+result: CONFIRMED and it explains the 76-session see-saw. It also explains r3: there the chains ARE
+reversed, and its lbu order is no longer even a tie - insn 106 (the A lbu) misses the clock-18
+ready list on a functional-unit BLOCKAGE and issues at 19, emitting first. The two routes that
+break the coupling (g06, b2) do it by splitting chain B rather than moving it, which is why both
+survive the lbu pair and only lose the seats.
+
+### The next rung, and why it is now well-posed
+
+A de-boost carrier that satisfies all three conditions at once has not yet been spelled:
+(i) two sets that both survive to flow.c (no plain copies - c3/c5), (ii) both sets inside the
+do_timeout block so the pseudo stays a local-alloc quantity (b1/b2/b3 fail here), (iii) the
+existing emission of the block otherwise untouched (c6/c9 fail here, because staging the t0 deref
+early moves `lw $a3` off slot 67). The obvious unexplored shape is a carrier whose two surviving
+sets are BOTH inside block 3 and both feed real printf arguments - e.g. one variable used for the
+`D_800A11DC[D_800A11D5]` index chain and then for the arg5 address, which would keep every
+existing insn and add none.
+
+## [s76] On the floor body, giving the arg5-address pseudo a second surviving set removes insn 120's adjust_priority max_priority boost, so insn 106 wins the clock-13 pick and block 3 emits in the target's order at no cost.
+- mechanism: tools/gcc-2.7.2/sched.c:2504-2528 birthing_insn_p returns reg_n_sets[REGNO(SET_DEST(pat))]==1, and sched.c:2571-2590 adjust_priority raises a zero-REG_DEAD ready insn to max_priority only when that predicate holds. On the floor body BOTH insn 106 (the t0 shift temp) and insn 120 (the anonymous arg5-address temp) are single-set and boosted to 2130706433, so rank_for_schedule ties on priority and on class and falls through to INSN_LUID, where 120 (luid 12) is picked before 106 (luid 6) and the two are emitted in the wrong order.
+- probe: Nine de-boost carriers spliced into candidate.c and scored with the cheat-invisible sandbox: a1/a3 (address into v0), b1 (cnt), b2 (status), b3 (i), c1 (arg5 holds its own address), c4 (a block-local a5a replacing the whole v0 staging), c6/c9 (a5a with two real sets, the t0 deref staged early). Controls: c3/c5 (copy-initialised carrier) and a5 (de-boost insn 106 instead of 120). BB2_SCHED_DEBUG block-3 dumps taken for candidate.c, r3 and b2.
+- result: The ORDER PREMISE IS CONFIRMED: b2's dump prints 'ADJPRI insn=120 deaths=0 birth=0' where the floor prints birth=1, and its pick stream flips exactly as predicted (PICK clock=13 picked=106, clock=14 picked=120 against the floor's 13:120 / 14:106), giving the emission sequence 99,115,142,117,120,106,123,129,111 = the target's block-3 order instruction for instruction, with no loop note anywhere. The FORM is killed on cost: the only carriers whose two sets both survive to flow.c are variables that also leave block 3, so the arg5-address pseudo stops being a local-alloc quantity and global-alloc seats it in $s0/$a3 (b2's diff shows 'addu $s0,$v0,$s5' and 'lw $a0,0($s0)'). Scores 15/15/16/12/29/9/6/11/10 against the floor's 2. Controls c3 and c5 are BYTE-IDENTICAL to the floor at 2/179/0 - a plain copy first-set is propagated away before flow.c, the exact mirror of s69's delete_noop_moves finding - and a5 measures 8, since with both insns unboosted the comparison returns to INSN_LUID and 120 still wins, which pins the attribution on insn 120's boost specifically.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0 and r3 at 5/179/0 immediately before the batch, and candidate.c again at 2/179/0 after its header edit. All nine forms and three controls carry the floor body's full inherited 8-unit FAKE set (the tbl_125c do-while(0) wrap, the pp pointer-alias, the two v0 staging lines, the new_var/new_var3 constant holders and the three idx_1496 wraps) except where the spelling replaces the v0 staging (c4).
+
+## [s76] The lbu pair at target slots 51/52 and the ALU pair at slots 56/57 are both INSN_LUID ties on the floor body, resolved in opposite directions by the same chain-order fact.
+- mechanism: rank_for_schedule ties on priority and on class for both pairs (RANKDBG prints val=0 throughout, s69), leaving INSN_LUID = RTL stream position as the deciding rung. Chain B (the *(s32 *)t0 argument) precedes chain A (arg5) in the floor body's RTL, which gives B.lbu the earlier emission (correct against the target) and B.sll the earlier emission (wrong against the target).
+- probe: Read the block-3 BB2_SCHED_DEBUG dumps of candidate.c and of the s75 r3 base side by side, mapping every insn uid to its luid, its dependence chain and its emitted objdump slot, then diffed both bodies against asm/funcs/CD_ready.s slot by slot.
+- result: CONFIRMED. The floor body satisfies the lbu pair and fails the ALU pair; r3 satisfies the ALU pair and fails the lbu pair, and on r3 the lbu order is no longer even a tie - insn 106 misses the clock-18 ready list on a functional-unit blockage ('BLOCKAGE unit=0 clock=19 ... exec=106 last=99') and issues at 19. This is the mechanism behind the anti-correlation sessions s61-s67 kept measuring: a wholesale reversal of the two chains flips both pairs at once. The three routes that satisfy both pairs (s69's g06 statement interleave, s75's r3 note, s76's b2 de-boost) all SPLIT chain B rather than moving it, and all three then lose the local-alloc seats.
+- verdict: CONFIRMED
+
+## [s76] The mandated kill re-audit of the closest-to-target non-floor form (r3, score 5) can be executed with tools/fake_ablate.py on the current chassis.
+- mechanism: fake_ablate drops each FAKE unit and each subset and re-scores, which is how s73 and s74 re-audited candidate.c and r6.
+- probe: python3 tools/fake_ablate.py --func CD_ready --file system --candidate progress/s75-r3-nested-note-refs-flip-seats-block3-order-exact-5.c --max-variants 68.
+- result: KILLED as a procedure on this body: r3's 11 FAKE units include three nested do-while(0) wraps and two staging lines whose removal is not semantics-preserving, so 67 of the 68 grid variants fail to build ('ERR None') and the 68th scores 179. Both closest-to-target forms were instead re-measured LIVE at the top of the session (candidate.c 2/179/0, r3 5/179/0) and no drift from s72-s75 was found; the s73/s74 ablation grids on candidate.c and r6 remain the closest executable evidence. Dump: tmp/grind/CD_ready/s76/r3_ablate.txt.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03, r3 with its full 11-unit FAKE set present; the tool's own unit-dropping is what fails, not a scoring result.

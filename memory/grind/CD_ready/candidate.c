@@ -1,3 +1,39 @@
+/* s76 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s76 identified
+ * and measured a pass-level rung no session in 75 had looked at, and wrote the residual out
+ * instruction by instruction. What a future session inherits:
+ *   1. THE RESIDUAL, FULLY LISTED. This body emits every one of target slots 51-67 with the
+ *      TARGET'S REGISTERS and differs only by transposing slots 56 and 57 - it emits
+ *      `sll $a0,$a0,2` (the t0 shift) before `addu $v0,$v0,$s5` (the arg5 address add), where the
+ *      target has them the other way round. Both seats are already correct on this body; the whole
+ *      residual is one adjacent swap of two independent ALU insns.
+ *   2. NEW RUNG: sched.c `adjust_priority` / `birthing_insn_p` (sched.c:2504-2528, 2571-2590).
+ *      The contested pair (insn 106, luid 6, vs insn 120, luid 12) has nominal priority 2 each,
+ *      but BOTH are raised to max_priority because `birthing_insn_p` holds -
+ *      `reg_n_sets[SET_DEST] == 1`. That boost is what pushes the comparison down to the INSN_LUID
+ *      rung s69 recorded. It is C-controllable: give the destination pseudo a second surviving set
+ *      and the boost disappears.
+ *   3. CONFIRMED: de-boosting insn 120 emits the TARGET'S EXACT block-3 order with NO loop note.
+ *      Form b2 (`status = v0 + (s32)tbl_125c; arg5 = *(s32 *)status;`) prints
+ *      `ADJPRI insn=120 deaths=0 birth=0` and `PICK clock=13 picked=106 / 14 picked=120`, giving
+ *      the target's sequence instruction for instruction. Saved as
+ *      progress/s76-b2-birth-deboost-target-block3-order-no-loop-note-12.c. This is the third
+ *      independent route to the order-perfect emission (after s69's g06 and s75's r3) and the only
+ *      one needing neither a statement reorder nor a do-while(0).
+ *   4. KILLED (instance): every de-boost carrier spelled so far. A carrier with two SURVIVING sets
+ *      has to be a variable that also leaves block 3, so the arg5-address pseudo leaves local-alloc
+ *      and global-alloc seats it in $s0/$a3 (b2's diff: `addu $s0,$v0,$s5`). Scores a1 15, a3 15,
+ *      b1 16, b2 12, b3 29, c1 9, c4 6, c6 11, c9 10. Controls c3/c5 (copy first-set) are
+ *      BYTE-IDENTICAL to this body - a plain copy is propagated away before flow.c, the mirror of
+ *      s69's delete_noop_moves finding - and a5 (de-boosting insn 106 instead) is 8, which pins the
+ *      attribution on insn 120's boost specifically.
+ *   5. THE COUPLING, stated exactly: the lbu pair (slots 51/52) and the ALU pair (56/57) are BOTH
+ *      INSN_LUID ties resolved by the same chain-order fact in opposite directions, so no
+ *      wholesale reversal of the two chains can satisfy both. The routes that satisfy both (g06,
+ *      b2, r3) all SPLIT chain B, and all three then lose the local-alloc seats.
+ * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
+ * idx_1496) - documented below and moot while the floor is 2.
+ */
 /* s75 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live at 2/179/0 at the start of s75, with the g06 order-perfect base at 6/179/0).
  * The session's result is a NEW BASE, not a new floor - read it before spending a probe:
