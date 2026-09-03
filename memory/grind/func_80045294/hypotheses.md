@@ -1921,3 +1921,44 @@ sliced per pass into `tmp/grind/func_80045294/s59/dumps_{C,J,L}/fn.<pass>`:
 - probe: python3 tools/loop_movables.py --func func_80045294 --file text1a_c --dumps tmp/grind/func_80045294/s59/dumps_L, banked at tmp/grind/func_80045294/s59/loop_movables_L.txt.
 - result: Carrier loop insns 17..33: insn_count=3, loop_has_call=False, threshold=122; insn 21 (regno 76, the shift) scores 122*1*40 = 4880 >= 3 and insn 26 (regno 80) scores 119*1*1 = 119 >= 3, both `moved`. Putting a call in the carrier only halves the threshold to 61, still far above 3. The lever that survives is a second store to v1 inside the carrier whose consecutive set-chain is NOT itself invariant — a second store sourced from a constant, a global load or another invariant local satisfies consec_sets_invariant_p and the movable survives, so the second store must read a value the carrier itself writes.
 - verdict: CONFIRMED
+
+## [s60] escalation — the last live frontier measured, then disposition
+
+### [s60] The frontier-1 carrier (a conditional whose branch only combine can fold) is genuinely byte-free on this chassis: the compare, the branch, the CODE_LABEL and the guarded store are all gone by jump2, leaving build_insns at 83.
+- mechanism: `if (((a0 << 4) & 0xF) != 0) { sum = 1; }` placed between block 0's copy (`i = a0;`) and its shift (`v1 = a0 << 4;`). Neither jump.c's condition folding nor cse's `fold_rtx` derives that `(and (ashift x 4) 15)` is always zero, so the branch and its CODE_LABEL survive jump1, cse1, loop.c and cse2 — exactly the survival profile s59's frontier 1 predicted. combine's `nonzero_bits` then proves the `and` is zero, the compare folds to a constant, and the post-combine jump pass deletes the branch, the now-unreachable guarded store and the unreferenced label.
+- probe: built as `tmp/grind/func_80045294/s60/C_ifmask_carrier.c` (banked at `rejected/s60-combine-folded-if-carrier-byte-free-but-score-5.c`) over the split-declaration baseline, and scored with `sandbox func_80045294 --disable all`.
+- result: **build_insns = 83, target_insns = 83, score = 5.** The zero-cost half of the frontier-1 prediction is CONFIRMED — a surviving-through-cse2, deleted-by-jump2 CODE_LABEL is buildable from C at no instruction cost, which is the first byte-free extended-basic-block splitter found in 60 sessions. The closing half is refuted: splitting cse's extended block at that point does not print the target's block-0 shift operand; it moves the residual from one instruction to five. verdict: KILLED (instance).
+- kill_scope: instance. measured_on: HEAD 2026-09-03 chassis (`candidate.c` = score 1 / 83 insns), a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present.
+
+### [s60] Frontier 2's `n_times_set` lever against the LICM hoist is buildable but not free: a second store to the shift's destination inside the carrier survives to the output and costs exactly one instruction.
+- mechanism: `scan_loop` admits a movable only when `n_times_set[dest] == 1` or `consec_sets_invariant_p` succeeds (loop.c:705-709). Writing `v1` inside the carrier and again immediately after raises `n_times_set[v1]` to 2, which is what s59's frontier 2 asked for.
+- probe: `tmp/grind/func_80045294/s60/D_ifmask_v1dest.c` (banked at `rejected/s60-ifmask-carrier-second-v1-store-costs-one-insn.c`) — same carrier as above with the body changed from `sum = 1;` to `v1 = 1;`.
+- result: **build_insns = 84, target_insns = 83, score = 2.** The extra store is NOT deleted with the rest of the dead block (the second store's destination is live out of the carrier's join, so flow.c keeps it), so the n_times_set lever cannot be paid for at 83 instructions in this shape. verdict: KILLED (instance).
+- kill_scope: instance. measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present.
+
+### [s60] Kill re-audit: the s56 declaration-order class kill still holds unchanged on today's chassis, and no instance kill in this ledger was ever measured under FAKE occlusion.
+- mechanism: the mandated re-audit (an instance kill measured while a FAKE carrier occupied the target pseudo is not a kill).
+- probe: `tools/fake_ablate.py --func func_80045294 --file text1a_c --candidate memory/grind/func_80045294/candidate.c`, plus a fresh scoring of the split-declaration rewrite of block 0 (`tmp/grind/func_80045294/s60/B_splitdecl.c`, banked at `rejected/s60-splitdecl-baseline-still-score-1.c`).
+- result: `fake_ablate` reports "no FAKE-annotated constructs found" — `candidate.c` carries zero FAKE constructs, so every banked kill on this function was measured on an unoccluded chassis and none is void for that reason. The split-declaration baseline re-measures at **score 1 / 83 insns**, identical to the six score-1 forms s56's 120-form enumeration found, so that kill is intact on the current chassis. verdict: CONFIRMED.
+
+## [s60] A carrier whose branch only combine can fold (`if (((a0 << 4) & 0xF) != 0) { sum = 1; }`) placed between block 0's copy and its shift is byte-free on this chassis but does not print the target's block-0 shift operand: it builds at 83 instructions and scores 5.
+- mechanism: Neither jump.c's condition folding nor cse's fold_rtx derives that (and (ashift x 4) 15) is always zero, so the compare, the branch and the CODE_LABEL survive jump1, cse1, loop.c and cse2 - exactly the survival profile s59's frontier 1 required. combine's nonzero_bits then proves the and is zero, the compare folds to a constant, and the post-combine jump pass deletes the branch, the unreachable guarded store and the unreferenced label, leaving build_insns unchanged.
+- probe: Built tmp/grind/func_80045294/s60/C_ifmask_carrier.c over the split-declaration baseline and scored it with `sandbox func_80045294 --disable all`.
+- result: build_insns 83, target_insns 83, score 5 (baseline candidate.c = score 1 / 83). The zero-cost half of the frontier-1 prediction is confirmed - this is the first byte-free extended-basic-block splitter found in 60 sessions - and the closing half is refuted: splitting cse's extended block at that point makes the residual worse, from one instruction to five. The construct is also auto-reject class (dead-conditional-store / empty-body if), so it is banked as a measurement in rejected/, never as a candidate.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis (candidate.c = score 1 / 83 insns), a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present
+
+## [s60] Frontier 2's n_times_set lever against the LICM hoist is buildable but costs one instruction: writing the shift's destination a second time inside the carrier body yields 84 instructions and score 2.
+- mechanism: scan_loop admits a movable only when n_times_set[dest] == 1 or consec_sets_invariant_p succeeds (loop.c:705-709), so a second store to v1 inside the carrier is what s59's frontier 2 asked for; but the second store's destination is live out of the carrier's join, so flow.c keeps it after the dead block is deleted.
+- probe: Built tmp/grind/func_80045294/s60/D_ifmask_v1dest.c (same carrier, body changed from `sum = 1;` to `v1 = 1;`) and scored it with `sandbox func_80045294 --disable all`.
+- result: build_insns 84, target_insns 83, score 2. The extra store is not deleted with the rest of the dead block, so this lever cannot be paid for at 83 instructions in this shape.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present
+
+## [s60] The mandated kill re-audit finds no void kills: candidate.c carries zero FAKE constructs so nothing in this ledger was measured under FAKE occlusion, and the s56 declaration-order result re-measures identically on today's chassis.
+- mechanism: An instance kill measured while a FAKE carrier occupied the target pseudo is not a kill (func_8002EA24 s8); the re-audit tests both the chassis and the FAKE state.
+- probe: `python3 tools/fake_ablate.py --func func_80045294 --file text1a_c --candidate memory/grind/func_80045294/candidate.c`, plus a fresh build+score of the split-declaration rewrite of block 0 (tmp/grind/func_80045294/s60/B_splitdecl.c).
+- result: fake_ablate reports 'no FAKE-annotated constructs found in memory/grind/func_80045294/candidate.c; nothing to ablate'. The split-declaration baseline scores 1 at 83 insns, matching the six score-1 forms in s56's 120-form enumeration, so that kill is intact on the current chassis.
+- verdict: CONFIRMED

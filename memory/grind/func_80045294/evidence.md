@@ -1984,3 +1984,74 @@ because it makes i loop 2's counter and therefore the quantity's last mention.
 - [s59] MIPS defines no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so global allocation walks hard registers 0,1,2,...,31; a pseudo that crosses no call therefore lands on a low call-clobbered register long before any $s register.
 
 - [s59] src/text1a_c.c was restored to HEAD at the end of the session; the working tree carries only the two ledger files and metrics/events.jsonl.
+
+## [s60] escalation — chassis re-measurement, frontier-1 closure, gate evidence
+
+**Chassis (re-measured this session, do not quote older numbers).** `memory/grind/func_80045294/candidate.c`
+pasted over the `INCLUDE_ASM("asm/funcs", func_80045294);` line at `src/text1a_c.c:1445` gives
+`sandbox func_80045294 --disable all` -> **score 1, target_insns 83, build_insns 83, rules_dropped 0,
+cheat_asm_stripped 19 (all of them belonging to other functions in the TU)**. The candidate carries
+**zero FAKE constructs** (`grep -c FAKE` = 0, and `tools/fake_ablate.py` reports nothing to ablate).
+`src/text1a_c.c` was restored to `INCLUDE_ASM` before the session ended; the working tree is clean.
+
+**The residual, restated.** One instruction: block 0's `sll` reads the copy pseudo (75, the `i = a0`
+result) where the target reads the parameter pseudo (72). s53-s59 established this is a single per-EBB
+cse canonical register serving two uses that need opposite registers, that the RA layer already
+produces the target's exact per-pseudo disposition (global.c:1275), and that the scheduler layer is
+class-killed by exhaustive depth-2 input enumeration (sched.c:2464).
+
+**Frontier 1 measured and closed (the session's main result).** s59 left one live lever: a carrier
+whose CODE_LABEL survives BOTH cse passes and whose branch is folded away only after combine, which
+would split the extended basic block at zero instruction cost. That carrier was built
+(`if (((a0 << 4) & 0xF) != 0) { sum = 1; }`, between block 0's copy and its shift) and it works
+mechanically exactly as predicted: **build_insns stays at 83** — the compare, the branch, the label
+and the guarded store are all deleted after combine's `nonzero_bits` proves the mask is zero. This is
+the first byte-free extended-basic-block splitter found in 60 sessions. It does not close the
+function: **score 5**, worse than the score-1 candidate. The `n_times_set` variant of frontier 2
+(`{ v1 = 1; }` as the carrier body) builds at **84 instructions, score 2** — the second store is live
+out of the join and survives flow.c, so that lever cannot be bought at 83 instructions.
+
+**Both carrier shapes are auto-reject class regardless of the measurement.** A fabricated always-false
+conditional with a dead body is "dead-conditional-store" / "empty-body `if (cond) { }` dead-read" in the
+forbidden-family catalog, and the frozen sanctioned-family list is owner-only to extend. They are banked
+in `rejected/` as measurements, not as candidates.
+
+**Gate (a) — canonical-asm.** `python3 tools/scan_hand_coded.py --single func_80045294` ->
+**tier=LOW, score=0/8**. Every signal negative: S1 0 multu/mflo pairs, S2 no empty-body branches,
+S3 83 insns with 7 spills and 11 distinct regs, S4 max load burst 3 in any 8-insn window, S5 no
+high-similarity siblings (jaccard < 0.5), S6 no BIOS jumptable pattern, S7 every callee-save use has
+its `$sp` save, S8 no redundant mask-before-shift. Gate (a) FAILS, consistent with the 2026-07-20
+owner ruling that already refused canonical-asm for this function.
+
+**Gate (b) — SOTN-master precedent for the closing construct.** `docs/reference/sotn-construct-index.md`
+(commit `aa53500226ee84be763f3e8702b27de06456b3a7`, 1911 files scanned) carries an `empty_if` class with
+17 hits, 8 of them PSX/GCC-2.7.2 (untagged): `src/dra/cd.c:536` (`if (!g_Cd.D_80137F74 &&
+!g_Cd.D_80137F74) {`, a fabricated tautological empty conditional), `src/st/st0/cutscene.c:203`
+(`if (prim && prim) { // !FAKE`), `src/dra/5D5BC.c:771`, `src/maria/pl_steps.c:119` and `:789`,
+`src/ric/pl_steps.c:125`, `:160` and `:868`. So an in-hand precedent for the SHAPE exists and is cited
+here for the record — **but it is moot for this function**, because the construct was actually built and
+measured this session and does not reach 0 (score 5 at 83 insns; the second-store variant score 2 at 84).
+There is no construct, sanctioned or otherwise, in hand that closes func_80045294.
+
+**What holds the byte-match.** Nothing. HEAD ships `INCLUDE_ASM("asm/funcs", func_80045294);` with zero
+rules and zero cheat constructs (the 2026-08-19 asm-until-matched migration and the 2026-08-25
+rules-to-zero milestone). This is not a bytes-proven-but-blocked integration handoff; there is no
+matching C form in hand.
+
+**Exhaustion.** 60 sessions; 8 distinct modalities (structural 12, rederive 12, forensics 11,
+permuter 10, synthesis 8, escalation 3, solver 2, recon 1); 74 banked rejected forms; 24 recorded kills
+(10 class kills with predicate citations at cse.c:6871-6902, sched.c:2464, global.c:1275, global.c:972,
+loop.c:705-709 and cse_end_of_basic_block). Floor went 2 -> 1 at s52 and has been flat at 1 for eight
+sessions across structural, synthesis, solver, forensics and escalation.
+
+- [s60] Chassis re-measured this session: candidate.c pasted over src/text1a_c.c:1445 gives sandbox score 1, target_insns 83, build_insns 83, rules_dropped 0, cheat_asm_stripped 19 (all belonging to other functions in the TU). src/text1a_c.c was restored to INCLUDE_ASM and the working tree carries only ledger/docs changes.
+
+- [s60] Gate (a) canonical-asm FAILS: tools/scan_hand_coded.py --single func_80045294 -> tier=LOW, score=0/8, all eight signals negative (S1 0 multu/mflo pairs, S2 no empty-body branches, S3 83 insns / 7 spills / 11 distinct regs, S4 max load burst 3 in any 8-insn window, S5 no high-similarity siblings, S6 no BIOS jumptable pattern, S7 all callee-save uses have their $sp save, S8 no redundant mask-before-shift). This re-confirms the 2026-07-20 owner ruling that already refused canonical-asm here.
+
+- [s60] Gate (b) precedent: docs/reference/sotn-construct-index.md (commit aa53500226ee84be763f3e8702b27de06456b3a7) carries an empty_if class of 17 hits, 8 of them PSX/GCC-2.7.2 - src/dra/cd.c:536, src/st/st0/cutscene.c:203, src/dra/5D5BC.c:771, src/maria/pl_steps.c:119 and :789, src/ric/pl_steps.c:125, :160 and :868. The precedent for the SHAPE exists and is cited for borderline-logging, but it is moot here: the construct was built and measured this session and scores 5, not 0.
+
+- [s60] Nothing holds a byte-match for this function. HEAD ships INCLUDE_ASM("asm/funcs", func_80045294); with zero rules and zero cheat constructs (asm-until-matched 2026-08-19, rules-to-zero 2026-08-25), so this is not a bytes-proven-but-blocked integration handoff - there is no matching C form in hand at all.
+
+- [s60] Exhaustion: 60 sessions across 8 distinct modalities (structural 12, rederive 12, forensics 11, permuter 10, synthesis 8, escalation 3, solver 2, recon 1); 74 banked rejected forms; 24 recorded kills of which 10 are predicate-cited class kills (cse.c:6871-6902, sched.c:2464, global.c:1275, global.c:972, loop.c:705-709, cse_end_of_basic_block). Floor moved 2 -> 1 at s52 and has been flat at 1 for eight sessions across five modalities.
+
+- [s60] Foreclosure record filed this session at docs/grind/decisions.md:21298, titled '## 2026-09-03 - func_80045294 (saTan0Init, src/text1a_c.c) - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**'.

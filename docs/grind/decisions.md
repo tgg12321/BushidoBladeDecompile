@@ -21294,3 +21294,77 @@ surfaced to the owner and no packet exists. The two AND-gates remain the unchang
 STANDARD. The function stays INCLUDE_ASM on main; re-activation triggers are a new owner
 class grant covering the residual, a toolchain-fidelity finding, or an explicit owner
 `queue unpark`.
+
+## 2026-09-03 — func_80045294 (saTan0Init, src/text1a_c.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Filed by grind session 60 (mandated modality `escalation`) as a proof-of-foreclosure record under the
+owner's standing auto-ruling (`.claude/rules/endgame-lock-disposition.md`, 2026-07-27) and the silent-
+foreclosure mechanics of the 2026-08-31 ruling (`.claude/rules/ordinary-c-judge-decidable.md`). This is
+a record, not a question: nothing is addressed to or pending on the owner.
+
+**Honest floor (re-measured this session, not quoted from the ledger).** `memory/grind/func_80045294/candidate.c`
+pasted over `INCLUDE_ASM("asm/funcs", func_80045294);` at `src/text1a_c.c:1445` gives
+`sandbox func_80045294 --disable all` -> **score 1, target_insns 83, build_insns 83, rules_dropped 0**.
+The candidate carries **zero FAKE constructs** and zero cheat-asm; `tools/fake_ablate.py` confirms there is
+nothing to ablate, so no banked kill on this function was ever measured under FAKE occlusion. Floor 1 is
+<= 5, so the 2026-07-27 standing ruling is this residual's subject.
+
+**The residual.** A single instruction: block 0's `sll` reads the copy pseudo (75, the `i = a0` result)
+where the target reads the parameter pseudo (72). It is one per-EBB cse canonical register serving two uses
+that require opposite registers.
+
+**Gate (a) — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single func_80045294` ->
+**tier=LOW, score=0/8**, every signal negative (S1 0 multu/mflo pairs, S2 no empty-body branches, S3 83
+insns / 7 spills / 11 distinct regs, S4 max load burst 3, S5 no high-similarity siblings, S6 no BIOS
+jumptable pattern, S7 all callee-save uses have their `$sp` save, S8 no redundant mask-before-shift). This
+re-confirms the owner's 2026-07-20 ruling, which already refused canonical-asm for this function.
+
+**Gate (b) — in-hand SOTN-master precedent for a closing construct: PASSES for the SHAPE, MOOT in fact.**
+`docs/reference/sotn-construct-index.md` (commit `aa53500226ee84be763f3e8702b27de06456b3a7`) carries an
+`empty_if` class with 17 hits, 8 of them PSX/GCC-2.7.2 — notably `src/dra/cd.c:536`
+(`if (!g_Cd.D_80137F74 && !g_Cd.D_80137F74) {`) and `src/st/st0/cutscene.c:203` (`if (prim && prim) { // !FAKE`).
+The citation is recorded so the driver can borderline-log it. It changes nothing here, because session 60
+**built and measured** that construct rather than arguing about it: the fabricated conditional
+`if (((a0 << 4) & 0xF) != 0) { sum = 1; }`, placed between block 0's copy and its shift, is genuinely
+byte-free (**build_insns 83**, the compare/branch/label/guarded store all deleted once combine's
+`nonzero_bits` proves the mask zero) and it **scores 5, not 0**. The `n_times_set` variant against the LICM
+hoist (`{ v1 = 1; }` body) builds at **84 instructions, score 2**. No construct in hand — sanctioned,
+borderline or forbidden — closes this function. Both carriers are banked as measurements in
+`memory/grind/func_80045294/rejected/`, never as candidates; a fabricated always-false conditional with a
+dead body is "dead-conditional-store" / "empty-body `if (cond) { }` dead-read" in the forbidden-family
+catalog and the frozen list is owner-only to extend.
+
+**What holds the byte-match: nothing.** HEAD ships `INCLUDE_ASM("asm/funcs", func_80045294);` with zero rules
+and zero cheat constructs (asm-until-matched migration 2026-08-19; rules-to-zero milestone 2026-08-25). This
+is NOT a bytes-proven-but-blocked integration handoff — there is no matching C form in hand at all.
+
+**Exhaustion.** 60 sessions; 8 distinct modalities (structural 12, rederive 12, forensics 11, permuter 10,
+synthesis 8, escalation 3, solver 2, recon 1); 74 banked rejected forms; 24 recorded kills of which 10 are
+predicate-cited class kills — cse.c:6871-6902 (crown invalidation), sched.c:2464 (both scheduler passes, by
+exhaustive depth-2 input enumeration), global.c:1275 (the allocation already IS the target's), global.c:972
+(the call-clobbered path that prices every distinct-loop-2-counter form at three instructions), loop.c:705-709
+(the LICM movable admission test) and `cse_end_of_basic_block` (CODE_LABEL / NOTE_INSN_LOOP_END /
+NOTE_INSN_SETJMP are the only extended-block terminators). The floor moved 2 -> 1 at s52 and has been flat at 1
+for eight consecutive sessions across five distinct modalities. Session 60 closed the last two live frontier
+entries with measurements; the frontier is now empty of sanctioned levers.
+
+**Evidence pointers.** Ledger `memory/grind/func_80045294/{evidence.md,hypotheses.md,candidate.c,state.json,rejected/}`
+(session-60 entries at the tail of evidence.md and hypotheses.md); artifacts `tmp/grind/func_80045294/s60/`
+(`B_splitdecl.c`, `C_ifmask_carrier.c`, `D_ifmask_v1dest.c`); banked forms
+`rejected/s60-combine-folded-if-carrier-byte-free-but-score-5.c`,
+`rejected/s60-ifmask-carrier-second-v1-store-costs-one-insn.c`,
+`rejected/s60-splitdecl-baseline-still-score-1.c`. Prior records for this function at 2026-07-19 (escalation
+filed), 2026-07-20 (owner ruling, option b REFUSED), 2026-08-25, 2026-08-30 and 2026-09-02 (foreclosure
+mechanics / exhaustion-window reset).
+
+**Disposition.** `src/text1a_c.c` stays at `INCLUDE_ASM("asm/funcs", func_80045294);` on main with zero rules
+and zero cheat constructs; the best honest pure-C form remains `memory/grind/func_80045294/candidate.c` at
+sandbox score 1 / 83 insns. FORECLOSED silently; nothing is surfaced to the owner and nothing waits on one.
+
+**Re-activation triggers.** (1) An owner class grant extending the frozen family list to fabricated
+always-false conditionals would NOT by itself help — the construct is measured at score 5 — but a grant plus a
+different carrier PLACEMENT is now cheap to search, because session 60 proved a byte-free cse-EBB splitter is
+constructible from C on this chassis (83 insns) and only its position was tested. (2) Any toolchain or chassis
+change that alters block 0's pre-cse insn set, or that gives cse a source-level way to keep the parameter
+pseudo as the extended block's canonical register. (3) A future cse-level lever that invalidates the crown
+without the cse.c:6871-6902 path.

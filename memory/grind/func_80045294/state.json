@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 59,
- "current_modality": "forensics",
+ "session_count": 60,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -357,23 +357,24 @@
    "floor": 1,
    "modality": "forensics",
    "headline": "Forensics reframes the residual: a CODE_LABEL between block 0's copy and its shift makes cse1 print BOTH target operands at once (shift on reg 72, loop-1 guard on reg 75), so the 'one crown, two oppos"
+  },
+  {
+   "session": 60,
+   "floor": 1,
+   "modality": "escalation",
+   "headline": "Escalation disposition: both endgame gates evaluated (scan_hand_coded LOW 0/8; SOTN empty_if precedent exists but is moot) and the last two live frontiers closed by measurement - the frontier-1 carrie"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A carrier whose CODE_LABEL survives BOTH cse passes and whose branch is folded away only after combine would give the target's shift operand and the target's guard operand simultaneously at zero net instructions, because the split places both consumers in a class-free extended block (measured this session at cse1) and nothing after cse2 re-canonicalises them.",
-   "mechanism": "cse_end_of_basic_block ends an extended block only at a CODE_LABEL (plus NOTE_INSN_LOOP_END while after_loop is zero, and NOTE_INSN_SETJMP), and jump_optimize deletes a label with no live branch reference before cse ever sees it \u2014 so the branch must be unfoldable by jump.c, cse1, loop.c and cse2, and foldable afterwards. combine's nonzero_bits can prove that (and (ashift x 4) 15) is zero, which neither jump.c nor cse's fold_rtx derives, and the post-combine jump pass then deletes the dead branch and the unreferenced label.",
-   "next_probe": "Build carriers of the shape `do { v1 = a0 << 4; } while (v1 & 0xF);` and `if (((a0 << 4) & 0xF) != 0) { ... }` variants, and for each one grep the per-function slices in order: fn.cse and fn.cse2 for `(ashift:SI (reg/v:SI 72)` AND `(lt:SI (reg/v:SI 75)` (both must be present), then fn.combine and fn.jump2 for the disappearance of the carrier's compare and branch. Only forms that hold both operands through cse2 are worth scoring, and only forms at build_insns == 83 are worth sandboxing."
+   "hypothesis": "A byte-free cse extended-basic-block splitter IS constructible from C on this chassis and only one placement of it has been tested, so if the frozen family list is ever extended to fabricated always-false conditionals the remaining search is over carrier POSITION rather than carrier existence.",
+   "mechanism": "combine's nonzero_bits folds (and (ashift x 4) 15) to zero only after cse2 has already run, so the CODE_LABEL survives both cse passes and the post-combine jump pass then deletes the compare, the branch, the guarded store and the label - measured at build_insns 83.",
+   "next_probe": "Under such a grant, sweep the carrier across every statement boundary in block 0 and in loop 1's preheader (not just between the copy and the shift), scoring only forms that build at 83 instructions. Without the grant, do not build these: they are auto-reject class."
   },
   {
-   "hypothesis": "The LICM hoist that undoes the label carrier can only be stopped through n_times_set: a second store to the shift's destination inside the carrier whose consecutive set-chain is not itself loop-invariant.",
-   "mechanism": "scan_loop admits a movable only when n_times_set[dest] == 1 or consec_sets_invariant_p succeeds (loop.c:705-709). tools/loop_movables.py measured the carrier's shift at 122*1*40 = 4880 >= 3 on the middle disjunct of loop.c:1626-1631, so the arithmetic terms cannot be moved; and a second store sourced from a constant, a global load or another invariant local keeps consec_sets_invariant_p true and the movable alive.",
-   "next_probe": "Enumerate carriers in which v1 is written twice with the second source depending on a value the carrier body itself writes (for example a second local written inside the carrier and then shifted, or a store/reload pair through an already-needed local), re-run tools/loop_movables.py on each and require the shift's row to disappear from the movable table before anything is scored. If no such chain can be built without adding an instruction, that closes the loop-carrier shape and leaves only the combine-folded-branch carrier of frontier 1."
-  },
-  {
-   "hypothesis": "The distinct-loop-2-counter family is closed at 83 instructions and should not be re-entered: its 3-instruction deficit is the call-clobbered allocation path, and the only role that keeps the loop-1 counter alive across the calls is loop 2's idx, which forces the $s0/$s1 register-name swap that form A already pays 10 points for.",
-   "mechanism": "global.c:972 (allocno_calls_crossed == 0 selects fixed_reg_set, opening the whole call-clobbered file) plus the target's own register layout, which needs the loop-1 counter in $s0 and idx in $s1 \u2014 two hard registers that a single shared pseudo cannot occupy.",
-   "next_probe": "Do not re-derive this family. If a future session wants to revisit it, the one open sub-question is whether a copy preference (global.c's hard_reg_copy_preferences) can pull a non-call-crossing loop-1 counter onto $s0 without a live range change; check dumps_J/fn.greg's allocno ordering first, and abandon the line if the preference sets are empty."
+   "hypothesis": "The distinct-loop-2-counter family remains closed at 83 instructions and should not be re-entered.",
+   "mechanism": "global.c:972 - the loop-1 counter pseudo crosses no call, so find_reg takes the call-clobbered path and gives it $a0, freeing a callee-saved pair and turning block 0's copy into a redundant reload that is gone by jump2; three instructions lost every time.",
+   "next_probe": "Do not re-derive. The single open sub-question is whether a hard_reg_copy_preference can pull a non-call-crossing loop-1 counter onto $s0 without a live-range change; check dumps_J/fn.greg's allocno ordering first and abandon the line if the preference sets are empty."
   }
  ],
  "judge_constraints": [
@@ -576,6 +577,22 @@
    "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer geometry, zero FAKE constructs present",
    "predicate_cite": "tools/gcc-2.7.2/global.c:972",
    "result": "dumps_J/fn.greg shows `(insn 15 12 17 (set (reg/v:SI 4 a0) (reg/v:SI 18 s2)))` where dumps_C/fn.greg shows `(set (reg/v:"
+  },
+  {
+   "session": 60,
+   "statement": "A carrier whose branch only combine can fold (`if (((a0 << 4) & 0xF) != 0) { sum = 1; }`) placed between block 0's copy and its shift is byte-free on this chassis but does not print the target's block",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis (candidate.c = score 1 / 83 insns), a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "build_insns 83, target_insns 83, score 5 (baseline candidate.c = score 1 / 83). The zero-cost half of the frontier-1 pre"
+  },
+  {
+   "session": 60,
+   "statement": "Frontier 2's n_times_set lever against the LICM hoist is buildable but costs one instruction: writing the shift's destination a second time inside the carrier body yields 84 instructions and score 2.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "build_insns 84, target_insns 83, score 2. The extra store is not deleted with the rest of the dead block, so this lever "
   }
  ]
 }
