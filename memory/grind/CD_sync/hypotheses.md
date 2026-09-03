@@ -2119,3 +2119,126 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: g1 duplicated-arms honest base (memory/grind/CD_sync/rejected/s114_HONEST_BASE_dup_arms_13.c), control 13/160, rules_dropped 0; no FAKE constructs present except the inherited pp pointer alias and the arm duplication itself
+
+## s115 — FRONTIER RESET (synthesis)
+
+The seat equation that has driven this ledger since s110 is **CLOSED**. On the
+duplicated-arms chassis, `rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c` ("j1")
+scores **3 / build_insns 160 / rules_dropped 0** with every callee-saved pseudo in its
+target seat (p80 $s1 / p77 $s2 / p79 $s3 / p78 $s4 / p72 $s5 / p73 $s6), carrying ONE FAKE
+construct (the `pp` pointer alias) and NOT the owner-refused cross-symbol chain-extender.
+The residual is two independent defects, and the next ladder pass should work them
+separately. Everything below is stated against j1, not against candidate.c or n3.
+
+### F1 (highest value) — retire the 1-point seat trade
+**Statement.** p78 (`idx_1495`) can be given the priority it needs in the band (208, 531)
+without routing one of the do_timeout block's two index reads through it, so that both
+reads keep the target's `lbu 0($s2)` / `lbu 1($s2)` form.
+**Mechanism.** Two arithmetic openings exist, both read off
+`tools/gcc-2.7.2/global.c:612-616` (`pri = floor_log2(nrefs)*nrefs/livelen*10000`) with p78
+initialised in the prologue at livelen 184 (doubled) or 92 (undoubled):
+  (a) **note ON, 4 refs** -> 8*10000/184 = 434. j1 buys this with the `*idx_1495` read (1
+      instruction). Any OTHER pair of byte-neutral references to `idx_1495` does the same
+      job for free. The un-probed carrier is the poll region: the `status & 4` callback arm
+      is the only other place `idx_1495` is mentioned, and duplicated-statement-into-arms
+      has now been measured byte-neutral TWICE on this function.
+  (b) **note DENIED, 2 refs** -> 2*10000/92 = 217, which is in band (it must clear p72's
+      208 and stay under p79's 531). This needs the prologue init to escape
+      `update_equiv_regs`, whose only C-reachable gates are `single_set == 0`
+      (local-alloc.c:979), `reg_n_sets != 1` (:1020) and "no CONSTANT_P REG_EQUAL"
+      (:1030). s113 measured the second-live-set route at a fixed +2 instructions FOR
+      tbl_125c; it has never been measured for idx_1495, whose init is an `addiu` off an
+      already-live register rather than a `lui/addiu` pair — the +2 cost may not transfer.
+**Next probe.** (b) first, it is one edit: on j1, restore `ix = idx_1494[1];` in both copies,
+keep the prologue `idx_1495 = idx_1494 + 1;`, and add a second genuinely-live set of
+`idx_1495` reached through the outer loop's back edge (the placement family s113 catalogued
+as c1/d1/d2/d3 for tbl_125c). Accept only build_insns 160 with the `.lreg` note grep showing
+NO `REG_EQUIV (const (plus (symbol_ref D_800A1494) 1))`; read the ALLOCDBG table before
+spending a sandbox run and require pri(p78) in (208, 531) with p77 back at 9 refs — note
+that p77 at 9 refs is 1421 and then ALSO needs the i1 split-init on `saved` (2 instructions),
+so (b) only pays if the second set is free. If it is not, go to (a).
+
+### F2 — the `sll a0,a0,0x2` / `addu v0,v0,s3` pair-swap, re-opened on the NEW chassis
+**Statement.** The 2-point pair-swap at normalized indices 54/55 is a property of the
+duplicated-arms chassis's schedule, not the theorem-locked h5-basin residual that s6-s93
+ground for sixty sessions.
+**Mechanism.** Every prior forensic result on this pair (s6 qty_compare_1, s25 SCHEDDBG
+block=3, s43 LUID renumbering, s51 LUID 8-vs-12, s70 ready-list dispatch, s93 POLL-region
+structural axis) was measured on the h5 or n3 chassis, where the do_timeout region is a
+SINGLE block reached by two branches. On j1 the region exists as two copies through
+`flow`/`sched1` and is re-merged only by `jump2 find_cross_jump`, so the block boundaries,
+the LUID numbering and the ready-list contents at the decisive clock are all different
+objects. The banked "mechanism-locked" verdicts are chassis-relative and do not transfer.
+**Next probe.** Run `tools/sched_solver` (order- and clock-exact, both passes) on j1's
+`.sched`/`.sched2` dumps for the block containing indices 50-60, and classify the 54/55
+inversion with `tools/ra_solver/inverse_compose.py classify` before writing any C. k1/k2
+(source-order permutation of the two address chains and of the two byte reads) are already
+dead at 7/160, so the lever must come from the solver's ranked vectors, not from statement
+shuffling.
+
+### F3 — re-audit candidate.c against j1
+**Statement.** The floor-2 form's two FAKE units (cross-symbol chain-extender + pp alias)
+are buying seat effects that j1 now obtains structurally, so at least one of them is
+redundant on the j1 chassis and the composite may reach 0-1.
+**Mechanism.** candidate.c's chain-extender exists to deny p78's REG_EQUIV note (s105/s111);
+j1 reaches p78's correct seat WITH the note, via 4 references. The two levers therefore
+target the same pseudo by different routes and have never been measured together.
+**Next probe.** Splice j1 + candidate.c's `idx_1495` chain-extender line (measurement only —
+the cross-symbol idiom is owner-REFUSED for submission, 2026-07-20, so a 0 here is a
+diagnostic, not a candidate), and separately j1 + the i1 split-init. Record both ALLOCDBG
+tables. If j1 + chain-extender reaches 0, the exact instruction the chain-extender is worth
+on the closed-seat chassis is named, and F1 inherits a precise target.
+
+## [s115] candidate.c still measures 2/160 on HEAD and both of its FAKE units are still load-bearing and super-additive (mandated kill re-audit).
+- mechanism: tools/fake_ablate.py recompiles the candidate with each FAKE unit removed and re-scores; a unit whose removal does not move the score is inert.
+- probe: bash tools/wsl.sh 'source .venv/bin/activate && python3 tools/fake_ablate.py --func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c'
+- result: keep-all 2/160, drop chain-extender 15/159, drop pp alias 17/161, drop both 30/160 - bit-identical to s111/s114. Also learned: fake_ablate must run under WSL with the venv active; from PowerShell every variant reports ERR.
+- verdict: CONFIRMED
+
+## [s115] The global.c allocno priority printed by ALLOCDBG is floor_log2(nrefs)*nrefs/livelen*10000*size, not a loop-depth-weighted reference count.
+- mechanism: The instrumented printf at tools/gcc-2.7.2/global.c:612-616 computes the value it prints; reading it removes the need to infer a weighting model from ratios.
+- probe: Read tools/gcc-2.7.2/global.c:604-616 and check the formula against every ALLOCDBG row measured this session (g1 p77 9 refs/190 = 1421, p79 5/188 = 531, p80 2/21 = 952; i1 p80 4/22 = 3636; j1 p78 4/184 = 434).
+- result: Exact on all rows. This retires s114-E5's 'the duplication adds about 13 weighted refs to p77' model and replaces every remaining seat question with integer arithmetic; the decisive structure is the floor_log2 cliffs at nrefs 3->4 (3->8) and 7->8 (14->24).
+- verdict: CONFIRMED
+
+## [s115] Hoisting both do_timeout index reads to the loop top - the only program point that dominates both timeout arms - shares them between the duplicated arms and lands the s-register seats without materialising extra instructions.
+- mechanism: jump2 find_cross_jump re-merges the duplicated arms after flow and global have already counted the references, so ref inflation is pre-jump2 and byte-neutrality is post-jump2; the hoist was expected to remove the duplicate references while the loads stayed where the target puts them.
+- probe: h1 = g1 with t0/ix read at the loop top and only the table math + printf + tail duplicated; spliced at src/system.c:376 and scored with sandbox CD_sync --disable all, ALLOCDBG captured.
+- result: score 15, build_insns 159, rules_dropped 0. Ref counts land exactly as predicted (p77 back to 7 refs / pri 752, tbl at 5 refs / 543) and all five s-register seats are correct, but the hoisted reads become unconditional loop-top lbu instructions, the emitted code is one instruction short of the target, and 124 index-wise instructions differ. Banked rejected/s115_h1_hoisted_idx_reads_loop_top_15.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: g1 duplicated-arms base (memory/grind/CD_sync/rejected/s114_HONEST_BASE_dup_arms_13.c), control 13/160 rules_dropped 0; FAKE state = the pp pointer alias present, no chain-extender
+
+## [s115] Splitting the saved computation into saved = *D_800A147C; saved = saved & 3; raises p80 from 2 references to 4 and seats all six callee-saved pseudos at their target registers.
+- mechanism: The second set is genuinely consumed so it survives delete_dead_from_cse to reg_scan; pri(p80) goes from 2*10000/21 = 952 to 8*10000/22 = 3636, clearing p77's 1421 and taking $s1 first, after which find_reg hands $s2..$s6 to p77/p79/p78/p72/p73 in priority order.
+- probe: i1 = g1 with the split-init; sandbox CD_sync --disable all plus the ALLOCDBG table and tmp/grind/CD_sync/s115/adiff.py (new difflib-aligned normalized diff).
+- result: score 6, build_insns 160, rules_dropped 0, seats p80 $s1 / p77 $s2 / p79 $s3 / p78 $s4 / p72 $s5 / p73 $s6 - the first fully correct seat vector in 115 sessions. adiff decomposes the 6 into three independent 2-point defects: idx_1495's addiu emitted in the success block instead of the prologue, the sll/addu pair-swap, and the split-init's own cost (the target keeps the loaded byte in a separate $v0 pseudo). Banked rejected/s115_i1_split_init_saved_all_seats_6.c.
+- verdict: CONFIRMED
+
+## [s115] A dead self-assign saved = saved; adds references to p80 that survive to flow, in either of the two placements tested (immediately after the initial set, and immediately before the store).
+- mechanism: dead-store-fake-exception carriers are supposed to inflate reg_n_refs before local-alloc; the counter-mechanism is delete_dead_from_cse removing the dead set before the reg_scan at toplev.c:2925, which s111 already measured for multi-set spellings of tbl_125c.
+- probe: i2 (self-assign before the store) and i3 (self-assign after the set), both spliced on the g1 base and ALLOCDBG-captured.
+- result: Both score 13/160/0 with p80's ALLOCDBG row bit-identical to the g1 control (2 refs / livelen 21 / pri 952). The self-assign leaves no trace by local-alloc time. i4 (mask moved to the store) scores 18/158. Banked rejected/s115_i2_saved_self_assign_inert_13.c, s115_i3_saved_self_assign_early_inert_13.c, s115_i4_mask_at_store_18.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: g1 duplicated-arms base, control 13/160 rules_dropped 0; FAKE state = pp pointer alias present plus the self-assign under test, no chain-extender
+
+## [s115] Moving the idx_1495 init back to the prologue on the i1 chassis re-attaches its CONSTANT_P REG_EQUIV note and collapses its priority below the two parameters.
+- mechanism: cse.c:6923 writes a REG_EQUAL note holding const (plus (symbol_ref D_800A1494) 1); update_equiv_regs converts it to REG_EQUIV and doubles reg_live_length at local-alloc.c:1064, taking p78 from livelen 92 to 184 at 2 references, i.e. pri 217 -> 108.
+- probe: i5 = i1 with idx_1495 = idx_1494 + 1 moved from the success block to the prologue; ALLOCDBG plus the .lreg note grep (tmp/grind/CD_sync/s115/notes.sh).
+- result: score 13/160/0; the note is present in the dump and p78 lands at pri 108 / $s6 while mode and result take $s4 and $s5. Confirms s112 and g2, and fixes the band p78 must reach with a prologue init at (208, 531) - i.e. exactly 4 references with the note on, or 2 references with the note denied. Banked rejected/s115_i5_idx1495_prologue_note_collapse_13.c.
+- verdict: CONFIRMED
+
+## [s115] Restoring the prologue idx_1495 init and spelling the do_timeout block's second index read as *idx_1495 in both duplicated copies moves both halves of the remaining gate at once and seats every callee-saved pseudo correctly.
+- mechanism: The edit removes two references from p77 (9 -> 7, pri 1421 -> 736, back under p80's 952) and adds two to p78 (2 -> 4, pri 108 -> 434, inside the (208, 531) band) in a single change, because the two pseudos share the reference being re-routed; the floor_log2 factor is what makes a two-reference move worth a 3.3x priority swing.
+- probe: j1 = g1 + prologue idx_1495 + ix = *idx_1495 in both copies; sandbox CD_sync --disable all, ALLOCDBG table, adiff.py residual decomposition.
+- result: score 3, build_insns 160, rules_dropped 0. Seats: p80 $s1 (952), p77 $s2 (736), p79 $s3 (531), p78 $s4 (434), p72 $s5 (208), p73 $s6 (202) - all six correct. Residual is exactly three instructions: lbu v0,0(s4) where the target has lbu v0,1(s2) (the seat trade), plus the sll a0,a0,0x2 / addu v0,v0,s3 pair-swap at indices 54/55. j1 carries ONE FAKE construct (the pp pointer alias, measured load-bearing at +6 by rejected/s115_m1_pp_alias_dropped_9.c) and does NOT need the owner-refused cross-symbol chain-extender that candidate.c's floor-2 form depends on. Banked rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c.
+- verdict: CONFIRMED
+
+## [s115] Permuting the source order of the two address chains, or of the two byte reads, inside the duplicated do_timeout block moves the 54/55 sll/addu pair toward the target order.
+- mechanism: The target emits the ix chain (sll, addu) before the t0 chain's sll; the natural reading is that emission order follows statement order in the block, so writing the ix chain first should reproduce it.
+- probe: k1 (ix chain first) and k2 (k1 plus the two byte reads swapped), both on the j1 base.
+- result: Both score 7/160 against j1's 3 - the permutation costs four points rather than saving two. Statement order inside the block is not the lever for this pair on the duplicated-arms chassis. Banked rejected/s115_k1_chain_order_swap_7.c, s115_k2_read_order_swap_7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: j1 duplicated-arms base (memory/grind/CD_sync/rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c), control 3/160 rules_dropped 0; FAKE state = pp pointer alias present, no chain-extender

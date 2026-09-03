@@ -2518,3 +2518,160 @@ dump sets.
 - [s114] Moving the idx_1495 init off the success block does not change p77's weighted refs at all (g2 p77 row bit-identical) and re-attaches p78's REG_EQUIV note; the success-block placement stays mandatory.
 
 - [s114] local-alloc.c update_equiv_regs has exactly three C-reachable denial gates for the reg_live_length doubling at local-alloc.c:1064: single_set(insn) == 0 (local-alloc.c:979), reg_n_sets != 1 (local-alloc.c:1020), and no CONSTANT_P REG_EQUAL note (local-alloc.c:1030). The fourth, reg_live_length < 0, is set only for pseudos live across setjmp (flow.c:1260) and is unreachable here.
+
+## s115 — synthesis (the seat equation is CLOSED: all six callee-saved seats land; residual 3)
+
+### [s115-C] Chassis + mandated kill re-audit
+`tools/fake_ablate.py --func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c`
+(run under WSL — the PowerShell invocation returns `ERR` for every variant because the
+compile driver needs the venv; use `bash tools/wsl.sh 'source .venv/bin/activate && ...'`)
+reproduces s111/s114 exactly: **keep-all 2/160, drop chain-extender 15/159, drop pp alias
+17/161, drop both 30/160**. Floor is 2; both FAKE units still load-bearing and
+super-additive. The g1 duplicated-arms honest base re-measured **13 / 160 / 0** with its
+s114 ALLOCDBG rows bit-identical, so every s114 conclusion holds on the current chassis.
+
+### [s115-E1] The priority formula is `floor_log2(nrefs) * nrefs / livelen * 10000 * size`
+Read directly off the instrumented printf (`tools/gcc-2.7.2/global.c:612-616`). This
+retires the ledger's "loop-depth-weighted reg_n_refs W" model (s114-E5's "the duplication
+adds ~13 weighted refs to p77"): the printed `nrefs` IS `allocno_n_refs`, and the apparent
+multiplier is the `floor_log2` factor. Consequences, all arithmetic and all verified:
+- nrefs 2 -> factor 2; 3 -> 3; **4 -> 8**; 5 -> 10; 6 -> 12; **7 -> 14**; **8 -> 24**; 9 -> 27.
+- The nrefs 7->8 step is a cliff (14 -> 24); 3->4 is another (3 -> 8).
+- g1: p77 9 refs -> 27*10000/190 = 1421; p79 5 -> 10*10000/188 = 531; p80 2 -> 2*10000/21 = 952.
+Every remaining seat question is now integer arithmetic on (nrefs, livelen).
+
+### [s115-E2] p77's ref count is structural on the duplicated-arms chassis
+`idx_1494` carries five references that are each pinned to a target instruction using `$s2`
+(the prologue set, `addiu $s4,$s2,1`, the callback `lbu $a0,0($s2)`, the tail
+`lbu $v0,0($s2)`, the tail `sb $v0,0($s2)`), plus two per duplicated copy of the do_timeout
+block. On g1 that is 5 + 2*2 = 9, and the only free variable is how many of the block's two
+byte reads are spelled off `idx_1494`. Since pri(p77) must land in (531, 952) to sit below
+p80, floor_log2(n)*n must be <= 18 at livelen 190, so **p77 must have 5, 6 or 7 references** —
+i.e. at most ONE of the two block reads may go through `idx_1494`.
+
+### [s115-E3] KILLED (instance): the reads cannot be shared by hoisting them above the arms
+**h1** = g1 with `t0 = idx_1494[0]; ix = idx_1494[1];` hoisted to the loop top (the only
+program point dominating both timeout arms) and only the table math + printf + tail
+duplicated. It does exactly what s114's frontier predicted for the ref counts — p77 falls
+back to 7 (752 at livelen 186), p79 keeps 5 (543) — and **all five s-register seats land**.
+But the hoisted reads become two loop-top `lbu`s and the block loses them: **score 15,
+build_insns 159** (one short of target). Banked
+`rejected/s115_h1_hoisted_idx_reads_loop_top_15.c`. The shared-prefix idea is spent: the two
+arms have no common dominator inside the timeout path, so "share the reads" can only mean
+"execute them on every loop iteration".
+
+### [s115-E4] CONFIRMED: split-init of `saved` lifts p80 over p77 and lands all six seats
+**i1** = g1 with `saved = (*D_800A147C) & 3;` split into `saved = *D_800A147C; saved =
+saved & 3;` (ordinary C, [[split-init-accumulation-sanctioned]]). p80 goes 2 refs -> 4
+(livelen 21 -> 22), pri 952 -> **3636**, and the full seat vector becomes correct for the
+first time in the ledger's history:
+
+| pseudo | what | nrefs | livelen | pri | seat | target |
+|---|---|---|---|---|---|---|
+| p80 | saved | 4 | 22 | 3636 | $s1 | $s1 OK |
+| p77 | idx_1494 | 9 | 190 | 1421 | $s2 | $s2 OK |
+| p79 | tbl_125c | 5 | 188 | 531 | $s3 | $s3 OK |
+| p78 | idx_1495 | 2 | 95 | 210 | $s4 | $s4 OK |
+| p72 | mode | 2 | 96 | 208 | $s5 | $s5 OK |
+| p73 | result | 2 | 99 | 202 | $s6 | $s6 OK |
+
+**score 6 / build_insns 160 / rules_dropped 0**, and the alignment-aware diff
+(`tmp/grind/CD_sync/s115/adiff.py`) resolves it into three independent 2-point defects:
+(a) `addiu s4,s2,1` emitted at index 74 (success block) instead of 17 (prologue);
+(b) the `sll a0,a0,0x2` / `addu v0,v0,s3` pair-swap at 54/55;
+(c) `lbu s1,0(v0)` + `andi s1,s1,0x3` instead of `lbu v0,0(v0)` + `andi s1,v0,0x3` — the
+split-init's own cost, because the target keeps the loaded byte in a separate `$v0` pseudo.
+Banked `rejected/s115_i1_split_init_saved_all_seats_6.c`.
+
+### [s115-E5] KILLED (instance): a dead self-assign cannot lift p80
+`saved = saved;` inserted before the store (**i2**) and immediately after the set (**i3**)
+both score **13 / 160 / 0** with p80's ALLOCDBG row bit-identical to g1 (2 / 21 / 952) — the
+self-assign is deleted by `delete_dead_from_cse` before `reg_scan`, exactly as s111 measured
+for the multi-set spellings of tbl_125c. The dead-store FAKE family is INERT as a p80
+refs-lift carrier here; only a set whose value is genuinely consumed survives to `flow`.
+**i4** (mask moved to the store, `*D_800A147C = saved & 3;`) scores 18 / 158.
+
+### [s115-E6] THE RESULT: j1 — score 3, all six seats, one FAKE construct
+The i1 landscape exposed the last two defects as one shared problem: `idx_1495`'s init must
+sit in the PROLOGUE (target index 17), but a prologue `idx_1495 = idx_1494 + 1;` takes a
+`const (plus (symbol_ref D_800A1494) 1)` REG_EQUIV note, doubles to livelen 184 and collapses
+to pri 108 (**i5**, score 13, note verified in the `.lreg` dump). With the note ON, the band
+(208, 531) needs `floor_log2(n)*n` in (3.8, 9.8) — i.e. **exactly 4 references**.
+
+**j1** buys p78's two extra references and p77's two-reference reduction with ONE edit:
+spell the block's second index read `ix = *idx_1495;` instead of `ix = idx_1494[1];`, in both
+duplicated copies, with the init back in the prologue. Both halves of the gate move at once:
+
+| pseudo | nrefs | livelen | pri | seat | target |
+|---|---|---|---|---|---|
+| p80 saved | 2 | 21 | 952 | $s1 | $s1 OK |
+| p77 idx_1494 | 7 | 190 | 736 | $s2 | $s2 OK |
+| p79 tbl_125c | 5 | 188 | 531 | $s3 | $s3 OK |
+| p78 idx_1495 | 4 | 184 | 434 | $s4 | $s4 OK |
+| p72 mode | 2 | 96 | 208 | $s5 | $s5 OK |
+| p73 result | 2 | 99 | 202 | $s6 | $s6 OK |
+
+**score 3 / build_insns 160 / rules_dropped 0**, and because p77 is back at 7 refs the
+split-init is no longer needed (i1's defect (c) disappears). The complete residual is:
+
+    replace  T50 `lbu v0,1(s2)`   ->  O50 `lbu v0,0(s4)`    (1 pt: the seat trade)
+    insert   O54 `sll a0,a0,0x2`
+    delete   T55 `sll a0,a0,0x2`                            (2 pts: the pair-swap)
+
+Banked `rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c`. **j1 carries exactly ONE FAKE
+construct — the `pp = (void **)&D_800F19C0;` pointer alias, measured load-bearing (dropping
+it costs +6: `rejected/s115_m1_pp_alias_dropped_9.c` scores 9)** — plus the
+duplicated-statement-into-arms device. It does NOT carry the owner-refused cross-symbol
+chain-extender that candidate.c's floor-2 form depends on, so it is a strictly better
+PROVENANCE base at one point higher score.
+
+### [s115-E7] The 1-point seat trade is an exact exchange, not an accident
+`l1` (roles swapped: `t0 = idx_1495[-1]; ix = idx_1494[1];`) also scores **3** — the wrong
+instruction just moves from index 50 to index 49. Whichever of the two block reads is routed
+through `idx_1495` pays exactly one instruction, because the target loads BOTH index bytes
+off `$s2` (`lbu $a0,0($s2)` / `lbu $v0,1($s2)`, asm/funcs/CD_sync.s:58-59) while the
+allocator needs p78 to own two of those references. The exchange rate is fixed: one emitted
+instruction buys two references on p78 and removes two from p77.
+
+### [s115-E8] KILLED (instance): source-order permutation of the two address chains
+`k1` (compute the `ix` chain before the `t0` chain, matching the target's emission order)
+and `k2` (k1 + the two byte reads swapped) both score **7 / 160** — worse than j1's 3. The
+54/55 pair-swap does not respond to statement order inside the block on this chassis.
+
+### [s115-A] Artifacts
+`tmp/grind/CD_sync/s115/` — splice.py / cap.py / notes.sh / drive.ps1 (copied from s114 and
+re-pointed), **adiff.py** (new: difflib-aligned normalized diff — the tool that decomposed
+i1's 6 into three independent defects; s108's `ndiff.py` index-wise diff reports a
+whole-function shift for a single inserted/deleted instruction), and the variant sources
+g1/h1/i1..i5/j1/j2/k1/k2/l1/m1.c with their full `-da` dump sets and ALLOCDBG stderr.
+
+- [s115] global.c's allocno priority is `floor_log2(allocno_n_refs) * allocno_n_refs / allocno_live_length * 10000 * allocno_size` (tools/gcc-2.7.2/global.c:612-616, read off the instrumented printf). The ledger's "loop-depth-weighted refs" model from s114 is wrong: the printed nrefs IS the count and floor_log2 supplies the apparent multiplier. Cliffs at nrefs 3->4 (3->8) and 7->8 (14->24).
+- [s115] fake_ablate.py must be run under WSL with the venv activated; invoked from PowerShell it reports ERR for every variant.
+- [s115] h1 (both index reads hoisted to the loop top, only the table math duplicated) lands all five s-register seats but scores 15/159 - the reads become unconditional loop-top lbus. The two timeout arms have no common dominator inside the timeout path, so sharing the reads between the arms has no zero-cost spelling.
+- [s115] Split-init of `saved` (`saved = *D_800A147C; saved = saved & 3;`) lifts p80 from 2 refs/952 to 4 refs/3636 and seats all six callee-saved pseudos correctly (i1, score 6/160). Its own cost is 2 instructions because the target keeps the loaded byte in a separate $v0 pseudo.
+- [s115] A dead self-assign `saved = saved;` is deleted before reg_scan and leaves p80's ALLOCDBG row bit-identical in both placements tested (i2/i3, 13/160) - the dead-store FAKE family is inert as a refs-lift carrier on this chassis.
+- [s115] j1 = g1 + idx_1495 init restored to the prologue + the block's second index read spelled `*idx_1495` in both duplicated copies: score 3 / build_insns 160 / rules_dropped 0, with p80 $s1 / p77 $s2 / p79 $s3 / p78 $s4 / p72 $s5 / p73 $s6 all matching the target. Residual = 1 pt `lbu v0,0(s4)` vs `lbu v0,1(s2)` plus the 2-pt sll/addu pair-swap at 54/55.
+- [s115] j1 carries ONE FAKE construct (the pp pointer alias, load-bearing: dropping it costs +6) and does NOT need the owner-refused cross-symbol chain-extender that candidate.c's floor-2 form depends on.
+- [s115] Routing either one of the block's two index reads through idx_1495 costs exactly one emitted instruction and is an exact exchange - it adds 2 refs to p78 and removes 2 from p77 (l1 scores 3 with the roles swapped, the wrong insn moving from index 50 to 49).
+- [s115] Reordering the two address chains in the block (k1) or the two byte reads (k2) scores 7 - the 54/55 pair-swap does not respond to source statement order on the duplicated-arms chassis.
+- [s115] tmp/grind/CD_sync/s115/adiff.py is the alignment-aware (difflib) normalized diff; use it instead of s108's ndiff.py whenever build_insns differs from 160 or an insn is inserted/deleted.
+
+- [s115] global.c's allocno priority is floor_log2(allocno_n_refs)*allocno_n_refs/allocno_live_length*10000*allocno_size (tools/gcc-2.7.2/global.c:612-616); the ALLOCDBG nrefs column IS the reference count and the floor_log2 factor supplies the apparent multiplier the ledger had been modelling as loop-depth weighting.
+
+- [s115] The floor_log2 cliffs at nrefs 3->4 (factor 3 -> 8) and 7->8 (14 -> 24) are what make two-reference moves decisive; every seat question on this function is now integer arithmetic on (nrefs, livelen).
+
+- [s115] j1 (memory/grind/CD_sync/rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c) scores 3 / build_insns 160 / rules_dropped 0 with p80 $s1, p77 $s2, p79 $s3, p78 $s4, p72 $s5, p73 $s6 - the first form in 115 sessions with every callee-saved seat correct, and it needs only the pp pointer alias, not the owner-refused cross-symbol chain-extender.
+
+- [s115] j1's complete residual, from the new alignment-aware diff: replace index 50 lbu v0,1(s2) with lbu v0,0(s4) (1 point), and the sll a0,a0,0x2 / addu v0,v0,s3 inversion at indices 54/55 (2 points).
+
+- [s115] Routing either one of the block's two index reads through idx_1495 costs exactly one emitted instruction and is an exact exchange - two references onto p78, two off p77 (l1, with the pointer roles swapped, also scores 3 with the wrong instruction at index 49 instead of 50).
+
+- [s115] idx_1494 carries five references that are each pinned to a target instruction using $s2 (prologue set, addiu $s4,$s2,1, callback lbu 0($s2), tail lbu 0($s2), tail sb 0($s2)); with two more per duplicated copy of the do_timeout block p77 is 9 refs unless a block read is re-routed, and pri(p77) must sit in (531, 952), i.e. at most 7 references.
+
+- [s115] The two timeout arms have no common dominator inside the timeout path, so sharing the block's index reads between the duplicated copies necessarily moves them onto the loop's fall-through path (h1, 15/159).
+
+- [s115] The dead-store FAKE family is inert as a refs-lift carrier on this function: saved = saved; is removed by delete_dead_from_cse before reg_scan in both placements tested, leaving the ALLOCDBG row bit-identical.
+
+- [s115] candidate.c re-measured at 2/160/0 with the fake_ablate matrix bit-identical to s111/s114; tools/fake_ablate.py must be run under WSL with the venv activated (from PowerShell every variant reports ERR).
+
+- [s115] tmp/grind/CD_sync/s115/adiff.py is the new alignment-aware (difflib) normalized diff and is what decomposed i1's score of 6 into three independent 2-point defects; s108's index-wise ndiff.py reports a whole-function shift whenever a single instruction is inserted or deleted.
