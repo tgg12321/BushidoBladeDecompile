@@ -1310,3 +1310,160 @@ best of the three corners.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-03 chassis, base-carrier variant of the a0-as-pointer geometry, zero FAKE constructs present
+
+## [s55] synthesis — the residual is now ONE named pass (cse2) and ONE named predicate (cse.c:8039)
+
+**Chassis check.** `candidate.c` applied to `src/text1a_c.c` measures
+`sandbox func_80045294 --disable all` = **score 1, target_insns 83, build_insns 83**
+on the HEAD 2026-09-03 chassis. Floor confirmed at 1; the whole residual is still
+instruction idx 9: target `sll $v1,$s2,4`, build `sll $v1,$s0,4`.
+
+**Kill re-audit (mandated).** `tools/fake_ablate.py --func func_80045294 --file
+text1a_c --candidate memory/grind/func_80045294/candidate.c` reports "no
+FAKE-annotated constructs found ... nothing to ablate", and every instance kill in
+the s52-s54 block already records `measured_on: HEAD 2026-09-03 chassis ... zero
+FAKE constructs present` — i.e. the same chassis measured above, with no FAKE
+carrier that could have masked a lever. Nothing in the kill ledger is
+FAKE-contaminated. The closest-to-target instance kill (s53 "four loop-1
+control-flow spellings all measure 1/83") was re-measured directly:
+`R1_while_loop1.c` (loop 1 respelled as a `while` loop, everything else
+`candidate.c`) = **score 1, insns 83** — the kill stands unchanged on the current
+chassis.
+
+**CORRECTION to the s54 model.** s54 recorded "the crown test is global
+(`regno_last_uid`)". That is only half of it. `make_regs_eqv`
+(tools/gcc-2.7.2/cse.c:842-857) crowns the copy destination only when BOTH hold:
+
+  (A) `uid_cuid[regno_last_uid[new]] > cse_basic_block_end`
+      OR `uid_cuid[regno_first_uid[new]] < cse_basic_block_start`   — EBB-RELATIVE
+  (B) `uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]` — global
+
+More importantly, canonicalisation itself is per-EBB: `cse_main` resets the
+quantity table at every extended-basic-block boundary, so **if block 0's copy
+`i = a0` and block 0's shift `v1 = a0 << 4` sit in DIFFERENT EBBs, no equivalence
+exists when the shift is processed and the shift keeps the parameter pseudo** —
+without any crown flip, and therefore without disturbing the loop-2 preheader
+(which needs the opposite crown). The s53/s54 framing ("one crown per EBB, so the
+two operands are deadlocked") is correct only for insns that share an EBB; it does
+not forbid splitting the EBB, and that direction had never been probed.
+
+**MEASURED: the EBB split works at cse1.** `cse_end_of_basic_block`
+(cse.c:8039-8058) ends an EBB at the first `CODE_LABEL`, and — only when
+`after_loop == 0` — also at a `NOTE_INSN_LOOP_END`. A `do { i = a0; } while (0);`
+emits exactly that note between the copy and the shift at zero instruction cost.
+`B1_dowhile_after_copy.c`:
+
+  * `dumps/text1a_c.cse` (cse1 output): block 0's shift is
+    `(ashift:SI (reg/v:SI 72) ...)` — **reg 72 is the parameter pseudo**. This is
+    the first time in 55 sessions that the target's shift operand has been
+    produced on the copy-before-shift chassis.
+  * `dumps/text1a_c.cse2`: the SAME insn is back to `(ashift:SI (reg/v:SI 75) ...)`
+    (reg 75 = loop 1's counter).
+  * final: score 6, insns 83; `sll v1,s0,0x4` in the emitted code, plus a 3-insn
+    prologue rotation (`sw ra/s5/s4` hoisted ahead of `sw s0` / `move s0,s2` /
+    `sll`).
+
+**Why cse2 undoes it.** `toplev.c:2926` calls `cse_main (insns, max_reg_num (), 1,
+cse2_dump_file)` — the third argument is `after_loop = 1`, which makes
+cse.c:8055-8058 skip the `NOTE_INSN_LOOP_END` break. cse2's EBB for block 0
+therefore spans the copy and the shift again, re-establishes the equivalence, and
+`canon_reg` rewrites the shift's operand back to the crown (reg 75). cse2 is not
+optional here: `-O2` sets `flag_rerun_cse_after_loop`.
+
+**The closed-form statement of the residual (supersedes the s54 three-route model).**
+For the target's two operands to print, block 0's copy and block 0's shift must be
+in different cse EBBs at BOTH cse passes. At cse2 the only EBB terminator that
+survives is a `CODE_LABEL` (cse.c:8039; the LOOP_END and SETJMP breaks are gated by
+`!after_loop` and by `NOTE_INSN_SETJMP` respectively). Flipping (B) globally cannot
+help, because (A) is true for the loop counter in both block 0's EBB and the
+loop-2 preheader's EBB, so a single global (B) decides both and they need opposite
+answers — this is the same wall s53 form A hit (11/83), now with a code-level
+predicate instead of an empirical one. Hence:
+
+  **The whole function reduces to: produce a `CODE_LABEL` between block 0's
+  `i = a0` and block 0's `a0 << 4` that costs zero instructions and survives
+  `jump_optimize`.**
+
+That is a much narrower target than "an insn created after cse". It also explains
+every prior result: the four loop-1 respellings (s53) and every declaration-order
+permutation (s50) all leave the copy and shift adjacent inside one EBB, so none of
+them could ever have moved idx 9.
+
+### Frontier (reset, strongest first)
+
+1. **A zero-instruction CODE_LABEL between the copy and the shift.**
+   `jump_optimize` deletes a label as soon as `LABEL_NUSES` reaches 0 and deletes a
+   jump whose target is the next insn, so the naive `goto`/`break` shapes collapse
+   in the same pass (and the dead-goto label-pad spelling is a FORBIDDEN family —
+   this must be a label a real construct needs). Next probe: read
+   `tools/gcc-2.7.2/jump.c` label/jump deletion predicates end to end and
+   enumerate which ordinary-C constructs leave a surviving `CODE_LABEL` with no
+   emitted instruction — candidates to enumerate and measure: a one-case `switch`,
+   a `do { ... } while (cond)` whose exit label is referenced by a `break` that
+   jump.c cannot fold to a jump-to-next, and any shape where loop 1 own top label
+   can be made to precede the shift while the shift still lands before the guard
+   branch. Verify each in `dumps/text1a_c.cse2` (look for `(ashift:SI (reg/v:SI
+   72)` in block 0) BEFORE looking at the score, and reject anything at
+   `build_insns != 83`.
+
+2. **Make cse2 crown flip by changing what `reg_scan` sees after loop.c.**
+   `toplev.c:2925` re-runs `reg_scan` on the POST-LOOP RTL immediately before cse2,
+   so cse2 clause (B) is evaluated on last-use positions that loop.c may have
+   moved. If loop.c strength reduction / biv elimination made loop 2 counter
+   (reg 75) die before the pointer pseudo (reg 72), cse2 would crown reg 72 and
+   block 0's shift would keep the parameter. The cost is that the loop-2 preheader
+   shift then flips the wrong way, so this is only worth measuring in combination
+   with a cse1-side split (frontier 1) that protects the preheader. Next probe:
+   diff `regno_last_uid` for regs 72/75 between `dumps/text1a_c.loop` and
+   `dumps/text1a_c.cse2` on candidate.c, then try loop-2 shapes (pointer-compare
+   exit test, idx merged into the pointer) that push reg 75 last use earlier.
+
+3. **Re-open the block-0 prologue rotation that B1 exposed.** B1 shows the
+   `sw ra / sw s5 / sw s4` cluster can be moved ahead of `sw s0 / move s0,s2 / sll`
+   by a source-level change that adds no instructions. That is a free 3-insn
+   scheduling degree of freedom in block 0 nobody has catalogued. If a future form
+   fixes idx 9 but rotates the prologue the way B1 did, this is the knob that pays
+   it back. Next probe: bisect which part of B1 (the split declarations, the
+   do-while notes, or the LUID renumbering) causes the rotation, using
+   `B0_control_splitdecl.c` (score 1, so NOT the declarations) as the control.
+
+## [s55] A `do { i = a0; } while (0);` wrap of block 0's copy splits cse extended basic block at `NOTE_INSN_LOOP_END`, so cse1 leaves block 0's shift reading the parameter pseudo, but `cse_main` second call re-merges the block and rewrites the operand back.
+- mechanism: `cse_end_of_basic_block` (tools/gcc-2.7.2/cse.c:8039-8058) terminates an EBB at a `CODE_LABEL` and, when `after_loop == 0`, also at a `NOTE_INSN_LOOP_END`; `cse_main` clears the quantity table at each EBB boundary, so a copy and a later shift in different EBBs share no equivalence and `canon_reg` cannot rewrite the shift operand. `toplev.c:2926` runs `cse_main (..., 1, cse2_dump_file)` with `after_loop = 1`, which disables the LOOP_END break.
+- probe: `tmp/grind/func_80045294/s55/B1_dowhile_after_copy.c` (candidate.c with split declarations and `do { i = a0; } while (0);` between `sum = 0;` and `v1 = a0 << 4;`) measured with `sandbox func_80045294 --disable all`; control `B0_control_splitdecl.c` (identical but with a plain `i = a0;`) measured to isolate the declaration restructure; `pwsh tools/grinder/dump.ps1 func_80045294` read at `.cse` and `.cse2`.
+- result: control B0 = score 1, insns 83 (the split-declaration restructure is byte-neutral). B1 = score 6, insns 83. `.cse` shows block 0's shift as `(ashift:SI (reg/v:SI 72) (const_int 4))` — the parameter pseudo, i.e. the target operand — proving the EBB split works and the crown never gets a chance to act. `.cse2` shows the same insn as `(ashift:SI (reg/v:SI 75) ...)`, and the emitted code is `sll v1,s0,0x4`. The extra 5 points over the control are a 3-insn prologue rotation (`sw ra/s5/s4` hoisted ahead of `sw s0`/`move s0,s2`/`sll`) plus the unchanged idx-9 operand.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present (the do-while(0) was measured un-annotated as a probe and is banked as rejected, not proposed)
+
+## [s55] s53 kill of loop-1 control-flow respellings still holds on the current chassis.
+- mechanism: re-audit mandated by the driver (floor flat 3 sessions, instance kills present). `tools/fake_ablate.py` reports no FAKE-annotated constructs in candidate.c, so no banked kill can have been masked by a FAKE carrier occupying a target pseudo.
+- probe: `tmp/grind/func_80045294/s55/R1_while_loop1.c` (loop 1 respelled `while (i < count) { ... }`, everything else candidate.c) measured with `sandbox func_80045294 --disable all`.
+- result: score 1, insns 83 — identical to candidate.c, same idx-9 residual. The s53 conclusion is re-confirmed, and the s55 model explains it: a control-flow respelling of loop 1 never inserts an EBB boundary between block 0's copy and block 0's shift, so it cannot touch idx 9.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present
+
+## [s55] A do { i = a0; } while (0); wrap of block 0's copy splits cse's extended basic block at NOTE_INSN_LOOP_END, so cse1 leaves block 0's shift reading the parameter pseudo, but cse_main's second call re-merges the block and rewrites the operand back to the loop counter.
+- mechanism: cse_end_of_basic_block (tools/gcc-2.7.2/cse.c:8039-8058) terminates an extended basic block at a CODE_LABEL and, when after_loop == 0, also at a NOTE_INSN_LOOP_END. cse_main clears the quantity table at each EBB boundary, so a copy and a later shift sitting in different EBBs share no equivalence and canon_reg cannot rewrite the shift's operand. toplev.c:2926 runs cse_main (insns, max_reg_num (), 1, cse2_dump_file) with after_loop = 1, which disables the LOOP_END break; -O2 (Makefile:35) enables that second run via flag_rerun_cse_after_loop.
+- probe: tmp/grind/func_80045294/s55/B1_dowhile_after_copy.c (candidate.c with the six block-0 locals declared uninitialised and assigned in the same order, plus do { i = a0; } while (0); between sum = 0; and v1 = a0 << 4;) measured with `sandbox func_80045294 --disable all`; control tmp/grind/func_80045294/s55/B0_control_splitdecl.c (identical but with a plain i = a0;) measured to isolate the declaration restructure; `pwsh tools/grinder/dump.ps1 func_80045294` read at .cse and .cse2 and banked as s55/B1.cse and s55/B1.cse2.
+- result: Control B0 = score 1, insns 83 — the split-declaration restructure is byte-neutral, so every difference belongs to the do-while. B1 = score 6, insns 83. B1.cse shows block 0's shift as (ashift:SI (reg/v:SI 72) (const_int 4)) — reg 72 is the parameter pseudo, i.e. the operand the target prints as sll $v1,$s2,4. That is the first time in 55 sessions the target's shift operand has been produced on the copy-before-shift chassis, and it is produced with no crown flip, so the loop-2 preheader is undisturbed. B1.cse2 shows the same insn back at (ashift:SI (reg/v:SI 75) ...), and the emitted code is sll v1,s0,0x4. The 5 extra score points over the control are a 3-insn prologue rotation (sw ra/s5/s4 hoisted ahead of sw s0 / move s0,s2 / sll) plus the unchanged idx-9 operand.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis (candidate.c = score 1, insns 83), a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present; the do-while(0) was measured un-annotated as a probe and is banked as a rejected form, not proposed
+
+## [s55] No NOTE-based extended-basic-block split of block 0 survives the second cse pass, because cse_end_of_basic_block only honours the NOTE_INSN_LOOP_END terminator when after_loop is zero and cse_main's second invocation passes after_loop = 1; only a CODE_LABEL terminates an EBB in both passes.
+- mechanism: cse.c:8054-8056 guards the NOTE_INSN_LOOP_END break with `! after_loop`; cse.c:8060-8062 guards the only other note-based break on NOTE_INSN_SETJMP, which this function cannot reach (no setjmp). The unconditional terminator is the loop header itself, cse.c:8039, `while (p && GET_CODE (p) != CODE_LABEL)`.
+- probe: Read tools/gcc-2.7.2/cse.c:8008-8110 and tools/gcc-2.7.2/toplev.c:2865, 2918-2931 end to end; confirmed empirically by the B1 .cse vs .cse2 dump pair above, where the identical insn carries reg 72 after cse1 and reg 75 after cse2 with no intervening source change.
+- result: The residual reduces to a single requirement: a CODE_LABEL between block 0's copy (i = a0) and block 0's shift (a0 << 4) that costs zero instructions and survives jump_optimize's label/jump deletion. Note-based devices (any do/while/for wrapper) are excluded as a family by the after_loop guard, independent of spelling or nesting.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present; source-read of cse.c/toplev.c plus the B1 .cse/.cse2 dump pair
+- predicate_cite: tools/gcc-2.7.2/cse.c:8055
+
+## [s55] s53's kill of loop-1 control-flow respellings still holds on the current chassis: respelling loop 1 as a while loop measures 1/83 with the identical idx-9 residual.
+- mechanism: Driver-mandated kill re-audit (floor flat 3 sessions, instance kills present). tools/fake_ablate.py reports no FAKE-annotated constructs in candidate.c, so no banked kill can have been masked by a FAKE carrier occupying a target pseudo; and the s52-s54 instance kills are all recorded on this same HEAD 2026-09-03 chassis.
+- probe: `python3 tools/fake_ablate.py --func func_80045294 --file text1a_c --candidate memory/grind/func_80045294/candidate.c` (WSL), then tmp/grind/func_80045294/s55/R1_while_loop1.c (loop 1 respelled `while (i < count) { ... }`, everything else candidate.c) measured with `sandbox func_80045294 --disable all`.
+- result: fake_ablate: 'no FAKE-annotated constructs found in memory/grind/func_80045294/candidate.c; nothing to ablate'. R1 = score 1, insns 83 — identical to candidate.c. The s55 model explains why: a control-flow respelling of loop 1 never inserts an EBB boundary between block 0's copy and block 0's shift, so it cannot touch idx 9.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present

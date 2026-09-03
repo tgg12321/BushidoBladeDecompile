@@ -1620,3 +1620,100 @@ Banked as a chassis, not a lever.
 - [s54] Reusing the parameter pseudo for D_800A33AC with a fresh `base` carrier keeps the frame at 0x30 and the build at 83 instructions (score 6), confirming the target's `lw $a0, %gp_rel(D_800A33AC)($gp)` allocation is reproducible in C, but it does not move block 0's crown.
 
 - [s54] Neither candidate.c nor any form measured this session carries a FAKE construct, so the tools/fake_ablate.py leg of the kill re-audit stays vacuous for this function (as recorded in s51-s53).
+
+## s55 (synthesis) — cse EBB structure is a lever, and cse2 is the only remaining blocker
+
+Measurements (all `sandbox func_80045294 --disable all`, HEAD 2026-09-03 chassis,
+`src/text1a_c.c` with the candidate body pasted over the `INCLUDE_ASM` line at
+src/text1a_c.c:1445):
+
+| form | score | build_insns | note |
+|---|---|---|---|
+| `memory/grind/func_80045294/candidate.c` | 1 | 83 | chassis confirmation; residual = idx 9 `sll $v1,$s2,4` vs `sll $v1,$s0,4` |
+| `s55/B0_control_splitdecl.c` | 1 | 83 | candidate.c with all six block-0 locals declared uninitialised and assigned in the same order — byte-neutral control |
+| `s55/B1_dowhile_after_copy.c` | 6 | 83 | B0 plus `do { i = a0; } while (0);` around block 0's copy |
+| `s55/R1_while_loop1.c` | 1 | 83 | candidate.c with loop 1 respelled as a `while` loop (s53 kill re-audit) |
+
+`tools/fake_ablate.py --func func_80045294 --file text1a_c --candidate
+memory/grind/func_80045294/candidate.c` → "no FAKE-annotated constructs found ...
+nothing to ablate". The kill ledger's s52-s54 instance kills are all recorded on
+this same chassis with zero FAKE constructs, so none of them is FAKE-contaminated.
+
+### GCC source facts established this session (read, not inferred)
+
+* `tools/gcc-2.7.2/cse.c:842-857` — `make_regs_eqv`'s crown test is a conjunction
+  of an **EBB-relative** clause (`uid_cuid[regno_last_uid[new]] >
+  cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start`)
+  and a **global** clause (`uid_cuid[regno_last_uid[new]] >
+  uid_cuid[regno_last_uid[firstr]]`). s54's ledger entry described the test as
+  purely global; that is corrected here.
+* `tools/gcc-2.7.2/cse.c:8039` — `cse_end_of_basic_block` scans
+  `while (p && GET_CODE (p) != CODE_LABEL)`: **any** code label terminates the
+  extended basic block, irrespective of `LABEL_NUSES`.
+* `tools/gcc-2.7.2/cse.c:8055-8058` — the EBB also terminates at a
+  `NOTE_INSN_LOOP_END`, but **only when `after_loop` is 0**.
+* `tools/gcc-2.7.2/cse.c:8060-8063` — and at a `NOTE_INSN_SETJMP` (not reachable
+  from this function).
+* `tools/gcc-2.7.2/toplev.c:2865` — cse1: `cse_main (insns, ..., 0, cse_dump_file)`
+  (`after_loop = 0`).
+* `tools/gcc-2.7.2/toplev.c:2922-2929` — `reg_scan` is re-run on the post-loop RTL,
+  then cse2: `cse_main (insns, max_reg_num (), 1, cse2_dump_file)`
+  (`after_loop = 1`). Guarded by `flag_rerun_cse_after_loop`, which `-O2` sets
+  (Makefile:35 `CC_FLAGS := -O2 ...`).
+
+### The dump evidence for B1
+
+`pwsh tools/grinder/dump.ps1 func_80045294` with B1 in `src/`, copies banked at
+`tmp/grind/func_80045294/s55/B1.cse` and `s55/B1.cse2`:
+
+* `B1.cse` (cse1 output), block 0: `(ashift:SI (reg/v:SI 72) (const_int 4))` —
+  reg 72 is the parameter pseudo, which is the operand the target prints
+  (`sll $v1,$s2,4`). The `do { } while (0)` shows up as
+  `(note 15 ... NOTE_INSN_LOOP_BEG)` / `(note 20 ... NOTE_INSN_LOOP_CONT)` /
+  `(note 27 ... NOTE_INSN_LOOP_END)` immediately before it, with no `code_label`
+  and no emitted insn.
+* `B1.cse2` (cse2 output), same insn: `(ashift:SI (reg/v:SI 75) (const_int 4))` —
+  reg 75 is loop 1's counter. cse2's `after_loop = 1` ignores the LOOP_END note,
+  re-merges block 0 into one EBB, re-derives the equivalence from the surviving
+  `i = a0` copy, and `canon_reg` rewrites the operand back.
+* Emitted B1 block 0 (via `mipsel-linux-gnu-objdump -d` on
+  `tmp/sandbox/func_80045294/text1a_c.o`, banked at `s55/B1.txt`):
+  `sw ra,40 / sw s5,36 / sw s4,32 / sw s0,16 / move s0,s2 / sll v1,s0,0x4`
+  against the target's
+  `sw s0,16 / move s0,s2 / sll v1,s2,0x4 / sw ra,40 / sw s5,36 / sw s4,32`
+  — six positions differ, which is exactly the score of 6.
+
+### What this means for the search
+
+The idx-9 residual is now attributable to a single pass invocation
+(`toplev.c:2926`) and a single predicate (`cse.c:8039`). Two operands of one cse
+quantity can print two registers if and only if the two insns are in different
+EBBs at both cse passes, and at cse2 the only surviving EBB terminator is a
+`CODE_LABEL`. The next session's whole job is to find an ordinary-C construct that
+puts a zero-instruction, jump_optimize-surviving `CODE_LABEL` between block 0's
+`i = a0` and block 0's `a0 << 4`.
+
+Artifacts: `tmp/grind/func_80045294/s55/{B0_control_splitdecl.c,
+B1_dowhile_after_copy.c,R1_while_loop1.c,B1.cse,B1.cse2,B1.txt,target.txt,
+apply.py,dis.sh}`; rejected form banked at
+`memory/grind/func_80045294/rejected/s55-dowhile0-split-undone-by-cse2.c`.
+
+- [s55] Chassis re-confirmed: memory/grind/func_80045294/candidate.c pasted over the INCLUDE_ASM line at src/text1a_c.c:1445 gives `sandbox func_80045294 --disable all` = score 1, target_insns 83, build_insns 83. Residual is instruction idx 9 only: target `sll $v1,$s2,4`, build `sll $v1,$s0,4`.
+
+- [s55] CORRECTION to the s54 ledger model: make_regs_eqv's crown test (tools/gcc-2.7.2/cse.c:842-857) is NOT purely global. It is a conjunction of an EBB-relative clause (uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start) and a global clause (uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]).
+
+- [s55] More decisive than the crown test: cse canonicalisation is per-EBB. cse_main clears the quantity table at each extended-basic-block boundary, so two references to one quantity that sit in DIFFERENT EBBs can print DIFFERENT registers with no crown flip at all. The s53/s54 'one crown per EBB so the two operands are deadlocked' framing holds only for insns sharing an EBB and never considered splitting it.
+
+- [s55] tools/gcc-2.7.2/cse.c:8039 — cse_end_of_basic_block scans `while (p && GET_CODE (p) != CODE_LABEL)`: ANY code label ends the EBB regardless of LABEL_NUSES.
+
+- [s55] tools/gcc-2.7.2/cse.c:8054-8056 — the EBB also ends at NOTE_INSN_LOOP_END, but only when after_loop == 0. tools/gcc-2.7.2/toplev.c:2865 runs cse1 with after_loop = 0; toplev.c:2926 runs cse2 with after_loop = 1. -O2 (Makefile:35) enables cse2 via flag_rerun_cse_after_loop, and toplev.c:2925 re-runs reg_scan on post-loop RTL immediately before it.
+
+- [s55] MEASURED (new): with `do { i = a0; } while (0);` between block 0's copy and its shift, dumps/text1a_c.cse shows block 0's shift as (ashift:SI (reg/v:SI 72) (const_int 4)) — the parameter pseudo, the target's operand — and dumps/text1a_c.cse2 shows the same insn as (ashift:SI (reg/v:SI 75) ...). The lever fires at cse1 and is undone by cse2 alone.
+
+- [s55] The do-while(0) costs zero instructions (B1 build_insns = 83 = target) and its control (same split declarations, plain assignment) measures score 1, so the construct is instruction-neutral; its 5 extra score points are a 3-insn prologue rotation plus the unchanged idx-9 operand.
+
+- [s55] B1 emitted block 0: sw ra,40 / sw s5,36 / sw s4,32 / sw s0,16 / move s0,s2 / sll v1,s0,0x4, against the target's sw s0,16 / move s0,s2 / sll v1,s2,0x4 / sw ra,40 / sw s5,36 / sw s4,32. This exposes a previously uncatalogued free 3-insn scheduling degree of freedom in block 0's prologue cluster.
+
+- [s55] Closed-form restatement of the residual: the target's two operands require block 0's copy and block 0's shift to be in different cse EBBs at BOTH cse passes; at cse2 the only surviving EBB terminator is a CODE_LABEL. Flipping the global crown clause instead cannot work, because clause (A) is true for the loop counter in both block 0's EBB and the loop-2 preheader's EBB, so one global comparison decides both and they need opposite answers — the same wall s53's form A measured at 11/83, now with a code-level predicate.
+
+- [s55] Kill re-audit discharged: tools/fake_ablate.py finds no FAKE-annotated constructs in candidate.c (nothing to ablate), and the closest-to-target instance kill (s53's loop-1 control-flow respellings) re-measures at score 1, insns 83 on the current chassis.
