@@ -2810,3 +2810,106 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s73] Mandated kill re-audit discharged: the full 38-row fake_ablate grid on the floor body reproduces keep-all at 2/179 and every other subset is worse; no FAKE carrier is masking a lever.
 
 - [s73] Harness: bash tools/wsl.sh works from the Bash tool but not from the PowerShell tool (wsl: command not found, exit 127), while tools/wteng.ps1 only works from PowerShell - a splice/sandbox/objdump cycle must alternate tools.
+
+## s74 (synthesis, 2026-09-03) - measured facts
+
+- [s74] Chassis re-verified live BEFORE any probe, four bases in one batch:
+  `memory/grind/CD_ready/candidate.c` = score 2 / build 179 / target 179 / rules 0;
+  `progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c` = 6/179/0;
+  `progress/s73-r6-multiblock-carrier-arg5-value-takes-v1-uncontested-5.c` = 5/179/0;
+  `progress/s67-y02-seats-correct-base.c` = 6/179/0. No drift from the s73 numbers.
+  `git status --porcelain src/system.c` clean after every batch (splice harness restores).
+
+- [s74] MANDATED KILL RE-AUDIT discharged on the CLOSEST-TO-TARGET instance kill that had never
+  been ablated - s73's globalized-carrier form r6 (score 5), whose kill statement was "once the
+  carrier is multi-block the statement-order lever goes inert". Full 38-row `tools/fake_ablate.py`
+  grid on the CURRENT chassis (`tmp/grind/CD_ready/s74/abl.sh`, log in the session transcript):
+  keep-all reproduces 5/179 exactly and NO subset of the 8 inherited FAKE units improves on it
+  (next best is drop-00010000 at 5/178, one instruction short because removing `v0 <<= 2;` changes
+  the arg5 address semantically - the same non-lever s73 recorded on the floor body; every other
+  subset is 10 or worse, up to 61 for drop-all). In particular drop-10000000 (removing the
+  sanctioned tbl_125c do-while(0) around block 3) costs 8 points on r6, so the wrap is load-bearing
+  on the globalized body too. **No inherited FAKE carrier was masking the order lever on r6; the
+  s73 kill stands as measured.**
+
+- [s74] THE sched1 DEPENDENCE GRAPH AND PICK STREAM FOR BLOCK 3 ARE NOW READ OUT IN FULL
+  (tmp/grind/CD_ready/s69/cand.sched.txt, floor body, pass 1 block 3 at line 7218). The pass-1
+  PICK stream reversed = sched1's OUTPUT order, and it is
+  `91 93 99 115 141 117 106 120 122 128 111 137 133 143 145 139 147 152 165 167`
+  i.e. index 2 `lbu` t0 byte, 3 `lbu` arg5 index, 4 `lw *pp`, 5 `sll` arg5 index, 6 `sll` t0,
+  7 `addu` arg5 addr, 8 `lw` arg5 value, 9 `lbu` D_800A11D5, 10 `addu` t0, 11 `sw 0x10($sp)`,
+  12 `sll` a2 index, 13 `lw $a2`, 14 `lw $a3`. That is EXACTLY the emitted slot order, so on this
+  function sched1's output order and sched2's emission order coincide instruction-for-instruction
+  in block 3 - the premise the s69-s73 closed form rests on ("every qty_compare_1 input except
+  refs is pinned by the target's instruction sequence") is now measured, not assumed.
+  Priorities in the same dump: insn 137 (the `sw` of arg5) carries pri=3, insns 106/111/117/120/
+  122/133 carry pri=2, 99/115/128/139/141 carry pri=1 - correcting the s72 shorthand that "all six
+  are 2" (137 is 3, and it is the arg5-value quantity's DEATH).
+
+- [s74] BLOCK 3's PSEUDO MAP READ OFF THE .lreg DUMP FOR THE FIRST TIME
+  (tmp/grind/CD_ready/s74/g06dump/system.lreg, g06 base). `reg/v 98` is the C variable `t0`,
+  `reg/v 74` is `v0`, `reg/v 81` is `tbl_125c`. The chain is
+  `insn 102: reg98 = idx_1494[0]` / `insn 117: reg104 = reg98 << 2` (REG_DEAD reg98) /
+  `insn 122: reg98 = reg104 + reg81` (REG_DEAD reg104) / `insn 145: $a3 = mem(reg98)`.
+  So the contested "t0 shift temp" is **reg104, a compiler-created intermediate between two SETS
+  of the user variable reg98**, and reg98 itself has two sets/two deaths inside the block, which
+  is why local-alloc skips it and global-alloc seats it at `$a0` (the s66 reading, now confirmed
+  from RTL). The arg5 value is `reg97` (`insn 113: reg97 = mem(reg102)` -> `insn 137: sw`).
+
+- [s74] **KILLED (instance): moving the multi-death boundary one link DOWN the t0 chain.** The
+  synthesis hypothesis was that if the ADDRESS link is given a fresh single-death local
+  (`taddr = (s32)((u8 *)tbl_125c + t0);`) then reg98 keeps its two sets (still global-allocated,
+  still `$a0`), the shift result lands in reg98 rather than in a contested local quantity, and the
+  arg5 value is left uncontested at `$v1` - i.e. the s73 r6 outcome WITHOUT globalizing across
+  basic blocks and therefore without spending the statement-order lever. Ten variants measured,
+  all at build 179 / rules 0: on the g06 order m1 (fresh `s32 taddr`) 9, m2 (pointer-typed
+  `s32 *taddr`) 9, m3 (`t0 = t0 << 2` spelling) 8, m6 (BOTH links fresh) 9; on the floor order
+  n0 9, n1 (address statement moved after the arg5 load) 9, n4 (arg5 load moved between the two
+  links) 9. **The result is 9 on every statement order tried** - the axis is order-invariant,
+  exactly like s73's multi-block carriers, and it is 7 points worse than the floor.
+
+- [s74] THE MECHANISM, read from global-alloc (`tmp/grind/CD_ready/s74/n0.greg`): once the address
+  link is a separate local, the t0 variable's allocno joins the 18-allocno global list and its
+  conflict set CONTAINS hard reg 4 - `;; 118 conflicts: 72 73 76 77 78 81 82 83 118 4 5 29` - so
+  `$a0` is excluded outright and it is seated at `$v0` (`118 in 2`). This unifies with s73: EVERY
+  route that pushes the t0 chain out of local-alloc - multi-block carrier (s73: `$s0` / `$a3`) or
+  multi-death boundary shift (s74: `$v0`) - loses `$a0`, because the value's live range then
+  conflicts with the `$a0` uses around it instead of being seated last by local-alloc.
+
+- [s74] **NEW AND UNEXPLORED RUNG, read from the same dump: global.c keeps HARD-REGISTER
+  PREFERENCES and this function has live ones.** The n0 `.greg` header prints
+  `;; 74 preferences: 2` and `;; 86 preferences: 5` - the `v0` variable prefers `$v0` because its
+  value arrives as a function return value, and reg86 prefers `$a1` because it is copied into
+  printf's second argument. Preferences are consulted by `find_reg` BEFORE the plain
+  lowest-free-hard-reg scan, which is the direct answer to the s73 frontier's open mechanical
+  question ("why did the call-free `cnt` carrier land `$a3` rather than `$a0`?"): it had neither a
+  preference for 4 nor a free 4. No session in 74 has attempted to CREATE a `$a0` preference for
+  the t0 chain. This is the first pass-level lever identified above local-alloc's qty_compare_1
+  since s71's suggestion pass.
+
+- [s74] Two controls worth banking. (a) `m5` - putting the SHIFT (rather than the address) in a
+  fresh local on the g06 base is byte-IDENTICAL to g06 (6/179/0), confirming the s71/s72
+  canonicalisation invariance extends to this respelling. (b) `n5` - adding an unused
+  `s32 taddr;` declaration to the floor body and changing nothing else scores 2/179/0, i.e. an
+  unreferenced scalar local is completely inert here (it contributes no mention to flow.c and no
+  quantity to local-alloc), so declaration count is not a lever on this function.
+  (c) `n3` - the s69 `g05` geometry (arg5 address split out and hoisted above the t0 shift)
+  re-measured on the FLOOR body instead of the g06 base scores 7, against 15 on g06.
+
+- [s74] Chassis re-verified live before any probe, four bases in one batch: candidate.c 2/179/0, progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c 6/179/0, progress/s73-r6-multiblock-carrier-arg5-value-takes-v1-uncontested-5.c 5/179/0, progress/s67-y02-seats-correct-base.c 6/179/0. No drift from s73. src/system.c verified clean by git status --porcelain after every batch.
+
+- [s74] The mandated kill re-audit was run on r6 (score 5), the closest-to-target instance kill that had never been ablated; s73 had ablated only the floor body. Keep-all reproduces 5/179 and no FAKE subset improves it, so the s73 order-lever kill is not carrier-masked.
+
+- [s74] sched1's block-3 output order for the floor body, read from the pass-1 PICK stream in reverse, is instruction-for-instruction the emitted order. This is the first direct measurement of the premise the whole s69-s73 closed form rests on, and it holds.
+
+- [s74] The .lreg pseudo map for block 3 is now on record: reg/v 98 = the C variable t0 (two sets, two deaths, skipped by local-alloc, seated $a0 by global-alloc), reg104 = the contested shift intermediate between those two sets, reg97 = the arg5 value, reg/v 74 = v0, reg/v 81 = tbl_125c.
+
+- [s74] Insn 137 (the arg5 sw, the arg5-value quantity's death) has sched priority 3, not 2 - a correction to the s72 shorthand that all six insns in the contested window carry final_pri=2.
+
+- [s74] KILLED at 9, order-invariantly: putting the t0 ADDRESS link in a fresh single-death local (m1/m2/m3/m6 on g06, n0/n1/n4 on the floor order). Control m5 (the SHIFT in a fresh local) is byte-identical to g06, and control n5 (an unused scalar declaration) is byte-identical to the floor.
+
+- [s74] Unifying mechanism across s73 and s74: three distinct routes push the t0 chain out of local-alloc - multi-block carrier crossing calls ($s0), call-free multi-block carrier ($a3), multi-death boundary shift ($v0) - and none of them reaches $a0, because global-alloc computes the conflict set over the whole live range and the surrounding $a0 uses land in it (n0.greg: ';; 118 conflicts: ... 4 5 29').
+
+- [s74] The s69 g05 geometry (arg5 address split out and hoisted above the t0 shift) re-measured on the FLOOR body scores 7, against 15 on the g06 base - the geometry is base-sensitive and the floor-body number was not previously on record.
+
+- [s74] NEW: global.c hard-reg preferences are live on CD_ready (';; 74 preferences: 2', ';; 86 preferences: 5'). No session in 74 has attempted to create an $a0 preference for the t0 chain; this is the first pass-level rung identified above local-alloc's qty_compare_1 since s71's suggestion pass.

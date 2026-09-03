@@ -1,3 +1,40 @@
+/* s74 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live at the start of s74 together with three side bases: candidate.c 2/179/0,
+ * g06 6/179/0, s73's r6 5/179/0, s67's y02 6/179/0 - no drift). What a future session inherits:
+ *   1. KILL RE-AUDIT (mandated) DISCHARGED on the closest-to-target instance kill that had never
+ *      been ablated - s73's globalized-carrier r6 (score 5). The full 38-row fake_ablate grid on
+ *      the current chassis reproduces keep-all at 5/179 and no subset improves it; the sanctioned
+ *      tbl_125c wrap costs 8 points to remove even on the globalized body. s73's kill stands.
+ *   2. CONFIRMED, and it closes the last unmeasured assumption of the s69-s73 closed form: sched1's
+ *      OUTPUT order and sched2's EMISSION order are the same sequence in block 3. The pass-1 PICK
+ *      stream reversed is 91 93 99 115 141 117 106 120 122 128 111 137 133 143 145 139 ... which is
+ *      the emitted slot order instruction-for-instruction. Spans and quantity numbers really are
+ *      pinned by the target's emitted order; they are not merely assumed to be.
+ *   3. THE .lreg PSEUDO MAP, read for the first time: `reg/v 98` is the C variable `t0` and the
+ *      contested "t0 shift temp" is `reg104`, a compiler intermediate BETWEEN two sets of reg98
+ *      (insn 117 reg104 = reg98<<2, insn 122 reg98 = reg104 + reg81). reg98 has two deaths in the
+ *      block, so local-alloc skips it and global-alloc seats it at $a0.
+ *   4. KILLED (instance): moving that multi-death boundary one link DOWN - address into a fresh
+ *      single-death local, shift written back into `t0` - which was predicted to free the arg5
+ *      value to $v1 WITHOUT globalizing across basic blocks (and so without spending the
+ *      statement-order lever that s73's carriers spent). Ten variants: m1 9, m2 9, m3 8, m6 9,
+ *      n0 9, n1 9, n4 9, n2 10, n3 7. It scores 9 on EVERY statement order - order-invariant, and
+ *      7 worse than the floor. Controls: m5 (shift in a fresh local) is byte-identical to g06, and
+ *      n5 (an unused `s32 taddr;` and nothing else) is byte-identical to the floor, so an
+ *      unreferenced scalar local is inert here.
+ *   5. THE UNIFYING MECHANISM, from n0's .greg: once the t0 chain leaves local-alloc its allocno
+ *      conflict set CONTAINS hard reg 4 (`;; 118 conflicts: ... 4 5 29`) and it is seated at $v0
+ *      (`118 in 2`). With s73 that is three routes out of local-alloc - multi-block carrier ($s0 /
+ *      $a3), multi-death boundary shift ($v0) - and none of them reaches $a0.
+ *   6. NEW FRONTIER RUNG, from the same dump: global.c keeps HARD-REG PREFERENCES and this
+ *      function has live ones - `;; 74 preferences: 2` (the `v0` variable, value arrives as a
+ *      return value in $v0) and `;; 86 preferences: 5` (copied into printf's $a1). That answers
+ *      s73's open question (the call-free `cnt` carrier took $a3 because it had no preference for
+ *      4 and 4 was not free) and names an untried lever: give the t0 chain's allocno an $a0
+ *      preference. Unprobed in 74 sessions.
+ * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
+ * idx_1496) - documented below and moot while the floor is 2.
+ */
 /* s73 UPDATE (2026-09-03, structural). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live at the start of s73: score 2, build 179, target 179, rules_dropped 0; the g06
  * order-perfect base re-verified at 6/179/0 in the same batch). Read hypotheses.md s73 before
