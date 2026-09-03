@@ -476,3 +476,37 @@ own numbering drifted; trust the scratch-directory names.)
 - [s17] src/text1b.c is left at INCLUDE_ASM("asm/funcs", func_800645B0); the tree is scope-clean apart from metrics/events.jsonl.
 
 - [s17] memory/grind/func_800645B0/self_vet.md was rewritten: it had been vetting the now-banned do-while(0) construct, and a stale vet asserting a banned family is an active hazard for the next session.
+
+- [s18] Chassis re-measured FIRST on this session's tree, honest `sandbox func_800645B0 --disable all`: the SB body (memory/grind/func_800645B0/candidate.c) pasted over the INCLUDE_ASM line = score 1, target_insns 78, build_insns 78, rules_dropped 0. The floor of 1 is current; 30 measurements were taken this session and none went below it.
+
+- [s18] NEW CHASSIS FAMILY (the session's main product): the *3 sum expressed as a MULTIPLICATION or as a parenthesised subexpression gives the addu a compiler temp as its expansion target, which defeats optabs.c:412-419's `target == op1` commutative swap and emits the target's operand order at stream index 20 -- WITHOUT declaring the extra local the WD chassis needed. `idx = idx * 12;` = 3/78, `idx = (idx2 + idx) * 4;` = 3/78, both with the WD loop-head residual (11/12/65) and nothing else.
+
+- [s18] `idx = (idx2 + idx) << 2;` (and its twin `idx = (idx * 3) << 2;`) is the first form ever measured on this function with EVERY ONE OF THE 78 OPCODES AND EVERY POSITION EXACT while carrying only the target's own seven locals: index 20, the inner-loop head (11/12) and the back-edge delay slot (65) are simultaneously correct. Its 12/78 residual is entirely register naming (idx=$s1/idx2=$s0 where the target swaps them; the sum temp gets $v1 where the target coalesces it into $s0; the D_800A347C load cascades to $a0). Structurally this is very likely the original source shape: the target's $s0 chain (idx -> sum -> byte offset) is one C variable written twice with a coalesced temp in between.
+
+- [s18] DUMP-PROVEN (not inferred): on the `idx = idx * 12;` build, tmp/grind/func_800645B0/dumps/text1b.sched line 40551 onwards shows pseudo 74 (`idx`) set exactly once (insn 38, `74 = 72 + 73`), with the sum and the shift in temps 86/87 carrying REG_EQUAL `mult 74 * 12`. reg_n_sets[74] == 1 is what arms sched.c:2526 birthing_insn_p, so the loop-head half of the residual is a pure function of the WRITE COUNT on `idx` -- confirmed across four chassis (SB 2 sets/head correct, a2 1 set/head wrong, n4 1 set/head wrong, a1 2 sets/head correct).
+
+- [s18] Declaration order is now closed on the a1 chassis too: seven permutations of the seven locals (idx/idx2 swapped, both to the front, both to the back, full reversal) are byte-identical at 12/78. s17 had closed it on WD, h and k; the chassis with the exact opcode stream behaves the same way.
+
+- [s18] Borrowing `idx` for a post-call value costs exactly two register names on the multiplication chassis as well (b1 masked-random borrow = 2/78 at the h chassis' foreclosed 55/58 pair; b2 OR-result borrow = 2/78 at 59/60; both borrows together = 4/78). Three independent chassis now agree, and the reason is structural: `idx` is live across `jal rand` in the target's own stream (jal 18, `sll $s1,$s0,1` in the delay slot 19, `addu $s0,$s1,$s0` 20), so it must be callee-saved, while every value the target computes after that call sits in a caller-saved seat.
+
+- [s18] The "pure array-subscript" shape -- `idx` never overwritten, both strides left to the compiler -- ADDS instructions: `idx * 12` + `idx * 2` = 85 build insns (+7, 44/78), the same with `idx2` kept for the halfword store = 82 (+4, 36/78), `(idx * 3) << 2` + `idx * 2` = 80 (+2, 14/78). cse.c does not unify the `idx << 1` inside synth_mult's *12 expansion with a separately written *2, so the source must stage the shared shift as `idx2` for the stream to reach 78 insns at all.
+
+- [s18] src/text1b.c was restored to HEAD at the end of the session; main still carries INCLUDE_ASM("asm/funcs", func_800645B0). No engine/tools/rules/Makefile/*.ld files were touched, no commits were made, and no permuter campaign was launched.
+
+- [s18] All four second-set carriers for pseudo 74 are now measured and priced on one chassis: masked random 2/78, D_800A3444 OR result 2/78, byte-offset write-back 12/78, pre-loop constant 1 staged through idx 16/78 (this last one survives cse/DCE at zero instruction cost but rotates the whole idx chain's seat). No fifth carrier exists in the function's dataflow, so a further spelling search for a second write to idx has nothing left to find.
+
+- [s18] Floor re-measured first thing this session: the SB body (memory/grind/func_800645B0/candidate.c) pasted over the INCLUDE_ASM line gives sandbox func_800645B0 --disable all = score 1, target_insns 78, build_insns 78, rules_dropped 0. The ledger floor of 1 is current on today's tree.
+
+- [s18] The three word-store targets D_800F0D78 / D_800F0D7C / videoDec are one 12-byte record, so `idx = idx * 12;` is the natural source spelling of the byte offset -- and it is also the spelling that fixes stream index 20 (3/78, WD loop-head residual, 78 insns).
+
+- [s18] `idx = (idx2 + idx) << 2;` is the first form ever measured on this function where all 78 opcodes AND all 78 positions are exact while using only the target's own seven locals; its 12/78 residual is entirely register naming, and it is very likely the original source shape (the target's $s0 chain idx -> sum -> byte offset is one C variable written twice with a coalesced temp in between).
+
+- [s18] Dump-proven, not inferred: tmp/grind/func_800645B0/dumps/text1b.sched (func_800645B0 at line 40551) shows pseudo 74 set exactly once on the a2 build, with the sum and shift in temps 86/87 carrying REG_EQUAL mult 74*12 -- this is what arms sched.c:2526 birthing_insn_p and costs the loop head.
+
+- [s18] Declaration order is now closed on the a1 chassis as well (seven permutations byte-identical at 12/78), extending s17's kill from WD/h/k onto the chassis with the exact opcode stream.
+
+- [s18] Any borrow of idx costs exactly two register names on three independent chassis, because idx is live across jal rand in the target's own stream and must therefore be callee-saved while the target's post-call values live in caller-saved seats.
+
+- [s18] The pure array-subscript shape (idx never overwritten, both strides derived by the compiler) ADDS 2 to 7 instructions: cse does not unify synth_mult's internal idx<<1 with a separately written idx*2.
+
+- [s18] src/text1b.c was restored to HEAD at end of session; main still carries INCLUDE_ASM("asm/funcs", func_800645B0). No engine/tools/rules/Makefile/*.ld files touched, no commits, no permuter campaign launched (nothing left running).

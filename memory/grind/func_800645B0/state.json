@@ -1,7 +1,7 @@
 {
  "func": "func_800645B0",
  "file": "text1b",
- "session_count": 17,
+ "session_count": 18,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -105,23 +105,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor stays 1 (SB re-measured); three structural axes killed with 22 measurements, and the ledger repaired -- candidate.c had been left holding the layer-1-FAILed, now-BANNED do-while(0) body under a "
+  },
+  {
+   "session": 18,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "New chassis family found: the *3 sum spelled as a multiplication or parenthesised subexpression fixes the operand order with NO extra local (3/78), and `idx = (idx2 + idx) << 2;` reaches 12/78 with al"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The h chassis (2/78, every opcode and position exact) closes if the `rand() & 7` value can be kept out of `idx`'s callee-saved seat while leaving the schedule intact.",
-   "mechanism": "s16 typed this FORECLOSED at the RA stage (global.c:897 prune_preferences plus a hard conflict with $v0); inverse.py's NEGATIVE bounds itself to mechanisms outside the modelled inputs and names qty_phys_copy_sugg / qty_phys_sugg (reported-not-scored today) and reload's spill-retry as the only remaining candidates. s17b adds that it is not a declaration-order tie either.",
-   "next_probe": "Extend the ra_solver instrumentation to SCORE the local-alloc suggested-register pass (currently reported only), then re-run inverse on tmp/grind/func_800645B0/s16/h.model.json with goal {\"74\":2}. A tooling task, not a spelling search -- the spelling search over borrowed values is closed by H70, the ordering search by H76."
+   "hypothesis": "The a1 chassis (`idx = (idx2 + idx) << 2;`, 12/78, every opcode and position exact) closes if local-alloc can be made to seat idx in $s0 / idx2 in $s1 and coalesce the sum temp into idx's seat, as the target does.",
+   "mechanism": "Pure RA outcome: the opcode stream and schedule are already exact, so nothing but quantity priority and preference ranking separates a1 from 0/78. Declaration order (7 permutations) and the earlier chassis' orderings are measured inert, so this is the suggested-register / coalescing ranking, not a pseudo-number tie.",
+   "next_probe": "Build the a1 model for tools/ra_solver (inverse_compose.py classify text1b func_800645B0 with --target-object build/src/text1b.o against the a1 sandbox object) and run inverse.py with the goal idx->$s0, idx2->$s1, sum-temp->$s0. a1 is a better solver subject than the previously modelled h/k forms because its only divergence class is registers and its pseudo population matches the target's variable set."
   },
   {
-   "hypothesis": "The k chassis (12/78, every opcode exact) closes if RA can be made to coalesce the sum's destination into `idx`'s seat and swap `idx`/`idx2` between $s0 and $s1.",
-   "mechanism": "The two allocnos do not conflict (idx is dead across the sum), so the assignment is feasible in principle -- an allocation-order outcome, not a legality one. s17b measured four declaration permutations at 12/78, so it is not a pseudo-number tie.",
-   "next_probe": "Only worth spending after frontier item 1's instrumentation exists; model and goal are banked at tmp/grind/func_800645B0/s16/k.model.json and k.goal.json."
+   "hypothesis": "The h/b1 chassis (2/78) closes if the masked-random value can be kept out of idx's callee-saved seat while leaving the schedule intact.",
+   "mechanism": "s16 typed this FORECLOSED at the RA stage (global.c:897 prune_preferences plus a hard conflict with $v0); s17 showed it is not a declaration-order tie, and s18 reproduced the identical foreclosed pair on the multiplication chassis, so the seat is chassis-independent.",
+   "next_probe": "Unchanged from s17: extend the ra_solver instrumentation to SCORE the local-alloc suggested-register pass (currently reported only), then re-run inverse on tmp/grind/func_800645B0/s16/h.model.json with goal {\"74\":2}. A tooling task, not a spelling search."
   },
   {
-   "hypothesis": "The remaining question on this function is a POLICY one, not a codegen one: a 0/78 body over ordinary C plus one claimed-sanctioned device exists and is banned.",
-   "mechanism": "The WD chassis plus a single-level do-while(0) wrap measures 0/78 and builds to the oracle SHA1 (verified by the previous session), but layer-1 ruled the wrap the fourth respelling of this function's own banned scheduler-tie-steer construct, and the driver now rejects it mechanically.",
-   "next_probe": "Nothing to grind on this item. If a future owner ruling ever scopes the do-while(0) family to cover this function's scheduler-tie mechanism, the form is banked and ready at rejected/do-while0-wrap-scores-0-but-layer1-FAIL-banned-construct.c. Do NOT re-submit it before such a ruling."
+   "hypothesis": "A second surviving RTL set of idx that is neither a byte-offset write-back nor a borrow of a post-call value would hold the operand order and the loop head at zero register cost.",
+   "mechanism": "sched.c:2526 needs only reg_n_sets[74] > 1 anywhere in the function; the set must survive cse.c (not a pseudo-to-pseudo copy, s15) and combine.c (not a hardreg call-return copy, s15). Every value in the function's dataflow has now been tried in that role: the masked random (2/78), the OR result (2/78), the byte offset (12/78) and the pre-loop constant 1 (16/78).",
+   "next_probe": "This axis is spent at the source level -- do not re-derive another spelling of a second write to idx. The next lever is the a1 RA model on frontier item 1; if that is also foreclosed, the honest disposition record for this function should note that all four second-set carriers are measured and priced."
   }
  ],
  "judge_constraints": [
@@ -172,6 +178,38 @@
    "measured_on": "WD chassis, 3/78 control, no added FAKE constructs",
    "predicate_cite": "",
    "result": "10/78 at 80 build insns (control 3/78 at 78). GCC drops the target's `slti $v0,$a0,0x4` and emits a compare/branch pair "
+  },
+  {
+   "session": 18,
+   "statement": "On the a1 chassis (`idx = (idx2 + idx) << 2;`, all 78 opcodes and positions exact) the surviving register-seat rotation can be moved by permuting the local declarations.",
+   "kill_scope": "instance",
+   "measured_on": "a1 chassis (`idx = (idx2 + idx) << 2;`), 12/78 control at 78 build insns; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse",
+   "predicate_cite": "",
+   "result": "All seven measure 12/78 at 78 build insns, byte-identical to the a1 control. Not one instruction and not one register mo"
+  },
+  {
+   "session": 18,
+   "statement": "On the multiplication chassis a borrow of idx for a post-call value costs fewer than the two register names it costs on the WD/h chassis.",
+   "kill_scope": "instance",
+   "measured_on": "a2 (`idx = idx * 12;`) and a5 chassis, 3/78 controls at 78 build insns; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse",
+   "predicate_cite": "",
+   "result": "b1 2/78 with the residual EXACTLY the h chassis' foreclosed pair (55 `andi $s0,$v0,7`, 58 `sh $s0` vs the target's $v0);"
+  },
+  {
+   "session": 18,
+   "statement": "Leaving idx untouched and letting the compiler derive both strides (idx * 12 for the word stores, idx * 2 for the halfword store) reproduces the target's shared sll/addu/sll chain.",
+   "kill_scope": "instance",
+   "measured_on": "SB-derived chassis with the offset arithmetic rewritten, 78-insn control; no added FAKE constructs",
+   "predicate_cite": "",
+   "result": "n1 44/78 at 85 build insns (+7), n2 36/78 at 82 (+4), n3 14/78 at 80 (+2). cse does not unify the two stride expansions,"
+  },
+  {
+   "session": 18,
+   "statement": "The pre-loop `D_800F10EC = 1;` store written as `idx = 1; D_800F10EC = idx;` gives pseudo 74 a second surviving set at zero instruction cost, holding the operand order and the loop head together.",
+   "kill_scope": "instance",
+   "measured_on": "a2 chassis (`idx = idx * 12;`), 3/78 control at 78 build insns; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse",
+   "predicate_cite": "",
+   "result": "16/78 at 78 build insns. The set does survive (no instruction added, and the loop-head residual is gone), but staging th"
   }
  ]
 }

@@ -2322,3 +2322,103 @@ device, and every structural axis this session could name is now measured dead.
 - probe: Direct read of tools/gcc-2.7.2/loop.c:640-790 and tools/gcc-2.7.2/sched.c:2480-2600, cross-checked against the already-banked s9c measurements XD 12/80 and XG 12/80 (single-set const-1 carriers).
 - result: Confirmed by reading, and consistent with every single-set const-1 measurement in the bank. Recorded so no session re-opens H66 hoping loop.c has an unexplored precondition: it has three more, and the function's own control flow pins all three.
 - verdict: CONFIRMED
+
+## [s18] Expressing the *3 sum through a MULTIPLICATION or a parenthesised subexpression makes the addu's expansion target a temp, which emits the target's operand order (`addu $s0,$s1,$s0`) without any extra named local.
+- mechanism: optabs.c:412-419 swaps the operands of a commutative binop when the expansion `target` rtx IS `op1`. Writing `idx = idx2 + idx;` makes target == op1 == pseudo 74, so the swap always fires and we emit `addu $s0,$s0,$s1`. Routing the add through expand_mult (`idx = idx * 12;`, `idx = (idx2 + idx) * 4;`) or through a parenthesised subexpression (`idx = (idx2 + idx) << 2;`) gives the add a fresh temp as its target, target != op1, no swap. This is the WD chassis' fresh-destination effect obtained WITHOUT declaring a fresh local, and `idx * 12` is the natural spelling of the byte offset into a 12-byte-stride struct array (D_800F0D78 / D_800F0D7C / videoDec are one 3-word record).
+- probe: tmp/grind/func_800645B0/s18 v1..v4, a1..a5, honest `sandbox func_800645B0 --disable all` on each, plus insn-for-insn diffs (s18/diff.py) of the cheat-stripped objects.
+- result: `idx = idx * 12;` (a2) and `idx = (idx2 + idx) * 4;` (a5) both measure 3/78 at 78 insns with index 20 EXACT and the residual reduced to the WD loop-head signature (11/12 swapped, 65). `idx = (idx2 + idx) << 2;` (a1) and `idx = (idx * 3) << 2;` (a3) measure 12/78 at 78 insns with EVERY OPCODE AND POSITION EXACT. `idx = idx * 3;`, `idx += idx2;`, `idx *= 3;` all stay at 1/78 (the SB floor) because the outer operation still targets `idx` directly. Banked: rejected/mul12-byte-offset-temp-dest-loses-loop-head.c.
+- verdict: CONFIRMED
+
+## [s18] The loop-head half of the residual is decided ONLY by the number of RTL sets on pseudo 74 (`idx`), independently of whether the offset arithmetic is spelled as a statement, a subexpression, or a multiplication.
+- mechanism: sched.c:2505-2537 birthing_insn_p returns `reg_n_sets[i] == 1` for a live destination, and reg_n_sets is a whole-function count computed after cse/combine. Dump-proven on the a2 build (tmp/grind/func_800645B0/dumps/text1b.sched, func_800645B0 at line 40551): insn 38 sets pseudo 74 to `72 + 73` (i + j), the sum and the shift land in temps 86 and 87 (REG_EQUAL `mult 74 * 12`) and are propagated into the three stores, so 74 is set exactly once, adjust_priority lifts the loop-top addu to max_priority, it is picked first in the backward list schedule and therefore emitted below the const-1 `li`.
+- probe: Four chassis measured against the same control: SB (sum written into idx, 2 sets) 1/78 loop head CORRECT; a2/a5 (sum in a temp, 1 set) 3/78 loop head WRONG; n4 (offsets inline, idx never rewritten, 1 set) 3/78 loop head WRONG; a1/a3 (sum in a temp but the <<2 written back into idx, 2 sets) 12/78 loop head CORRECT.
+- result: The write count on `idx` predicts the loop-head half in all four chassis with no exception. Statement-vs-subexpression spelling is irrelevant; only the set count matters. Banked: rejected/inline-sum-shift-idx-untouched-loses-loop-head.c.
+- verdict: CONFIRMED
+
+## [s18] On the a1 chassis (`idx = (idx2 + idx) << 2;`, all 78 opcodes and positions exact) the surviving residual is a register-seat rotation that declaration order can move.
+- mechanism: local_alloc orders quantities by priority with ties broken in qty order, which follows pseudo number, which follows declaration order; the a1 chassis has a different pseudo population from WD/h/k (one compiler temp for the sum, no named `wid`), so s17's declaration-order kill did not cover it.
+- probe: Seven declaration permutations of the seven locals (s18 a1p1..a1p7: idx/idx2 swapped, both moved to the front, both moved to the back, full reversal), honest sandbox on each.
+- result: All seven measure 12/78 at 78 build insns, byte-identical to the a1 control. The seats are priority/conflict outcomes, not pseudo-number ties -- the same verdict s17 reached on WD, h and k, now extended to the chassis whose opcode stream is exact. The residual is idx=$s1 / idx2=$s0 (target swaps them) and the sum temp taking $v1 where the target coalesces it into $s0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a1 chassis (`idx = (idx2 + idx) << 2;`), 12/78 control, 78 build insns; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse
+
+## [s18] On the multiplication chassis a borrow of `idx` for a post-call value costs fewer than the two register names it costs on the WD/h chassis.
+- mechanism: `idx` is live across `jal rand` (the target's own stream proves it: jal at 18, `sll $s1,$s0,1` in the delay slot at 19, `addu $s0,$s1,$s0` at 20), so its allocno must be callee-saved; every value the target computes after that call sits in a caller-saved seat ($v0 for the masked random, $v1 for the D_800A3444 OR). global.c:897 prune_preferences then forecloses the $v0 preference (s16).
+- probe: a2 chassis plus a second real write to `idx`: b1 (the masked random feeding the halfword store), b2 (the OR result feeding the D_800A3444 store), b3 (same borrow on the a5 chassis), b4 (both borrows at once). Honest sandbox plus insn-for-insn diffs.
+- result: b1 2/78 with the residual EXACTLY the h chassis' foreclosed pair (55 `andi $s0,$v0,7` / 58 `sh $s0` vs the target's $v0); b3 identical; b2 2/78 at the OR instead (59/60, $s0 vs $v1); b4 4/78 -- the two borrows are additive. Three chassis now agree that a borrow recovers the loop head and costs exactly two register names. Banked: rejected/mul12-chassis-and7-borrow-hits-the-foreclosed-v0-seat.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a2 (`idx = idx * 12;`) and a5 chassis, 3/78 controls; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse
+
+## [s18] Leaving `idx` untouched and letting the compiler derive both strides (`idx * 12` for the word stores, `idx * 2` for the halfword store) reproduces the target's shared sll/addu/sll chain.
+- mechanism: The target computes `$s1 = idx << 1` once and reuses it both as the *3 addend and as the halfword-store offset. If the source asks for `idx * 12` and `idx * 2` independently, cse.c would have to unify the `idx << 1` that synth_mult emits inside the *12 expansion with the separate *2 expansion.
+- probe: n1 (`idx * 12` + `idx * 2`, the `idx2` local deleted), n2 (`idx * 12` with `idx2` kept for the halfword store), n3 (`(idx * 3) << 2` + `idx * 2`), honest sandbox.
+- result: n1 44/78 at 85 build insns (+7), n2 36/78 at 82 (+4), n3 14/78 at 80 (+2). cse does not unify the two stride expansions, so the arithmetic is materialised twice. The shared `idx << 1` must be staged by the source (as `idx2`) for the stream to reach 78 insns at all. Banked: rejected/compiler-derived-strides-idx-untouched-costs-seven-insns.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: SB-derived chassis with the offset arithmetic rewritten, 78-insn control; no added FAKE constructs
+
+## [s18] The three-way tension that defines this function's residual, stated exactly (the inheritance line for the next session)
+- mechanism: (1) optabs.c:412-419 -- an `addu` whose destination is the same rtx as its second addend always has its operands swapped, so the target's `addu $s0,$s1,$s0` is not emitted when the sum is written straight into `idx`; (2) sched.c:2526 -- if the sum therefore goes to a temp, `idx` is left with one RTL set and the loop-top addu is lifted to max_priority, losing the inner-loop head and the back-edge delay slot; (3) the only ways measured to give `idx` a second surviving set are a byte-offset write-back (a1: costs a register-seat rotation, 12/78) or a borrow of a post-call value (b1/b2/h: costs exactly two register names, 2/78, the seat foreclosed at global.c:897).
+- probe: 30 honest sandbox measurements this session across five chassis families plus one instrumented-cc1 dump set on the a2 build.
+- result: All three cells of the tension are now measured on chassis that carry the target's exact variable set (no invented locals): 1/78 (SB), 3/78 (a2/a5/n4), 12/78 (a1/a3), 2/78 (b1/b2/b3). The cell not reached by any measured spelling is a second surviving set of `idx` that is neither a byte-offset write-back nor a borrow; the function's own dataflow offers no further value to write there, so the next lever is the RA-stage instrumentation named on the standing frontier rather than a further spelling search.
+- verdict: CONFIRMED
+
+## [s18] The pre-loop `D_800F10EC = 1;` store written as `idx = 1; D_800F10EC = idx;` gives pseudo 74 a second surviving set at zero instruction cost, holding the operand order and the loop head together.
+- mechanism: sched.c:2526 needs only reg_n_sets[74] > 1 anywhere in the function, and a constant set outside both loops does not lengthen idx's live range inside them. The open question was survival: s15 proved pseudo-to-pseudo copies die in cse.c and hardreg call-return copies die in combine.c, but a CONST_INT set had never been tried in that role on this function.
+- probe: s18 c1_const1_via_idx -- the a2 chassis (`idx = idx * 12;`, 3/78 control) with the pre-loop constant staged through idx; honest sandbox.
+- result: 16/78 at 78 build insns. The set survives (no instruction added, loop-head residual gone), but staging the constant through idx pushes the whole idx chain into a different seat and costs far more register names than the three it saved. This prices the LAST available second-set carrier: masked random 2/78, OR result 2/78, byte offset 12/78, pre-loop constant 16/78. The axis is spent at the source level.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a2 chassis (`idx = idx * 12;`), 3/78 control at 78 build insns; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse
+
+## [s18] Expressing the *3 sum through a multiplication or a parenthesised subexpression makes the addu's expansion target a compiler temp, which emits the target's operand order at stream index 20 without declaring any extra named local.
+- mechanism: optabs.c:412-419 swaps a commutative binop's operands whenever the expansion target rtx IS op1. `idx = idx2 + idx;` makes target == op1 == pseudo 74, so the swap always fires. Routing the add through expand_mult (`idx = idx * 12;`, `idx = (idx2 + idx) * 4;`) or through a parenthesised subexpression (`idx = (idx2 + idx) << 2;`) gives the add a fresh temp as its target, so target != op1 and no swap happens.
+- probe: tmp/grind/func_800645B0/s18 variants v1-v4, a1-a5; honest `sandbox func_800645B0 --disable all` on each plus insn-for-insn diffs of the cheat-stripped objects with s18/diff.py.
+- result: a2 (`idx = idx * 12;`) and a5 (`idx = (idx2 + idx) * 4;`) both 3/78 at 78 build insns with index 20 EXACT and the residual reduced to the WD loop-head signature (11/12 swapped, 65). a1 (`idx = (idx2 + idx) << 2;`) and a3 (`(idx * 3) << 2`) 12/78 at 78 insns with every opcode and every position exact. v1/v2/v3 (`idx * 3`, `+=`, `*=`) stay at the 1/78 SB floor because the outer operation still targets idx directly.
+- verdict: CONFIRMED
+
+## [s18] The loop-head half of the residual is decided only by the number of surviving RTL sets on pseudo 74 (idx), regardless of whether the offset arithmetic is spelled as a statement, a subexpression, or a multiplication.
+- mechanism: sched.c:2505-2537 birthing_insn_p returns reg_n_sets[i] == 1 for a live destination, and adjust_priority then lifts that insn to max_priority so the backward list scheduler emits it below the const-1 li. reg_n_sets is a whole-function count taken after cse/combine.
+- probe: Instrumented-cc1 dump set on the a2 build (pwsh tools/grinder/dump.ps1 func_800645B0), read at tmp/grind/func_800645B0/dumps/text1b.sched line 40551 onwards; cross-checked against four chassis measured the same session.
+- result: The dump shows pseudo 74 set exactly once (insn 38, `74 = 72 + 73`) with the sum and shift in temps 86/87 carrying REG_EQUAL `mult 74 * 12`. Write count predicts the loop head in all four chassis: SB (2 sets) head correct at 1/78; a2/a5 (1 set) head wrong at 3/78; n4 (1 set) head wrong at 3/78; a1/a3 (2 sets) head correct at 12/78.
+- verdict: CONFIRMED
+
+## [s18] On the a1 chassis (`idx = (idx2 + idx) << 2;`, all 78 opcodes and positions exact) the surviving register-seat rotation can be moved by permuting the local declarations.
+- mechanism: local_alloc orders quantities by priority with ties broken in qty order, which follows pseudo number, which follows declaration order; a1 has a different pseudo population from WD/h/k (a compiler temp for the sum, no named wid), so s17's declaration-order kill did not cover it.
+- probe: Seven declaration permutations of the seven locals (s18 a1p1-a1p7: idx/idx2 swapped, both to the front, both to the back, full reversal), honest sandbox on each.
+- result: All seven measure 12/78 at 78 build insns, byte-identical to the a1 control. Not one instruction and not one register moved. The residual (idx=$s1/idx2=$s0 where the target swaps them; the sum temp taking $v1 where the target coalesces it into $s0) is a priority/conflict outcome, not a pseudo-number tie.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a1 chassis (`idx = (idx2 + idx) << 2;`), 12/78 control at 78 build insns; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse
+
+## [s18] On the multiplication chassis a borrow of idx for a post-call value costs fewer than the two register names it costs on the WD/h chassis.
+- mechanism: idx is live across `jal rand` in the target's own stream (jal at 18, `sll $s1,$s0,1` in the delay slot at 19, `addu $s0,$s1,$s0` at 20), so its allocno must be callee-saved, while every value the target computes after that call sits in a caller-saved seat ($v0 for the masked random, $v1 for the D_800A3444 OR); global.c:897 prune_preferences forecloses the $v0 preference (s16).
+- probe: a2 chassis plus a second real write to idx: b1 (masked random feeding the halfword store), b2 (OR result feeding the D_800A3444 store), b3 (same borrow on a5), b4 (both borrows). Honest sandbox plus insn-for-insn diffs.
+- result: b1 2/78 with the residual EXACTLY the h chassis' foreclosed pair (55 `andi $s0,$v0,7`, 58 `sh $s0` vs the target's $v0); b3 identical; b2 2/78 at the OR instead (59/60, $s0 vs $v1); b4 4/78, the two borrows additive. Three independent chassis now agree the cost is exactly two register names.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a2 (`idx = idx * 12;`) and a5 chassis, 3/78 controls at 78 build insns; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse
+
+## [s18] Leaving idx untouched and letting the compiler derive both strides (idx * 12 for the word stores, idx * 2 for the halfword store) reproduces the target's shared sll/addu/sll chain.
+- mechanism: The target computes `$s1 = idx << 1` once and reuses it both as the *3 addend and as the halfword-store offset; the source shape would require cse.c to unify the `idx << 1` that synth_mult emits inside the *12 expansion with a separately written *2.
+- probe: n1 (`idx * 12` + `idx * 2`, idx2 deleted), n2 (`idx * 12` with idx2 kept for the halfword store), n3 (`(idx * 3) << 2` + `idx * 2`), honest sandbox on each.
+- result: n1 44/78 at 85 build insns (+7), n2 36/78 at 82 (+4), n3 14/78 at 80 (+2). cse does not unify the two stride expansions, so the arithmetic is materialised twice; the shared shift must be staged by the source as idx2 for the stream to reach 78 insns at all.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: SB-derived chassis with the offset arithmetic rewritten, 78-insn control; no added FAKE constructs
+
+## [s18] The residual is a three-way tension whose three reachable cells are now all measured on chassis carrying only the target's own seven locals.
+- mechanism: (1) optabs.c:412-419 means an addu whose destination is the same rtx as its second addend has its operands swapped, so the target's `addu $s0,$s1,$s0` is not emitted when the sum is written straight into idx; (2) sched.c:2526 means that if the sum goes to a temp instead, idx keeps one RTL set and the loop-top addu is lifted, losing the inner-loop head and the back-edge delay slot; (3) the only measured ways to give idx a second surviving set are a byte-offset write-back (a1, costs a seat rotation) or a borrow of a post-call value (b1/b2/h, costs two register names at a seat s16 typed foreclosed at global.c:897).
+- probe: 30 honest sandbox measurements this session across five chassis families, plus one instrumented-cc1 dump set on the a2 build.
+- result: Cells measured: 1/78 (SB, sum into idx), 3/78 (a2/a5/n4, sum in a temp), 12/78 (a1/a3, temp sum plus byte-offset write-back), 2/78 (b1/b2/b3, temp sum plus a borrow). No spelling reached a second surviving set of idx that is neither a write-back nor a borrow, and the function's dataflow offers no further value to write there.
+- verdict: CONFIRMED
+
+## [s18] The pre-loop `D_800F10EC = 1;` store written as `idx = 1; D_800F10EC = idx;` gives pseudo 74 a second surviving set at zero instruction cost, holding the operand order and the loop head together.
+- mechanism: sched.c:2526 needs only reg_n_sets[74] > 1 anywhere in the function, and a constant set outside both loops does not lengthen idx's live range inside them; the question was whether cse/DCE would delete it the way it deletes pseudo-to-pseudo copies (s15).
+- probe: s18 c1_const1_via_idx: the a2 chassis (`idx = idx * 12;`, 3/78 control) with the pre-loop constant staged through idx. Honest `sandbox func_800645B0 --disable all`.
+- result: 16/78 at 78 build insns. The set does survive (no instruction added, and the loop-head residual is gone), but staging the constant through idx forces the whole idx chain into a different seat and costs far more in register names than the 3 it saved. Strictly worse than every borrow measured this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a2 chassis (`idx = idx * 12;`), 3/78 control at 78 build insns; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse

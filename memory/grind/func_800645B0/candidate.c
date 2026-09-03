@@ -26,6 +26,16 @@
  * session: SB 1/78, WD 3/78, h (second real write `idx = rand() & 7`) 2/78,
  * k (byte offset routed through `idx`) 12/78.
  *
+ * SESSION 18 (structural) re-measured this body at 1 / 78 on today's tree and
+ * mapped the residual's full geometry.  The *3 sum spelled as a multiplication
+ * or a parenthesised subexpression (`idx = idx * 12;`, `idx = (idx2 + idx) * 4;`)
+ * fixes index 20 with NO extra local (3 / 78, WD loop-head residual), and
+ * `idx = (idx2 + idx) << 2;` reaches 12 / 78 with every one of the 78 opcodes and
+ * every position exact -- the first form on this function to hold the operand
+ * order, the inner-loop head and the delay slot at once using only the target's
+ * own seven locals; its residual is purely register seats.  Those forms are all
+ * banked under rejected/.  This SB body remains the floor because it is the only
+ * one at 1.
  * Sixteen sessions of banked negatives (53 rejected forms), the RA-seat
  * foreclosure verdicts and the loop.c / optabs.c / sched.c mechanism proofs are
  * in evidence.md + hypotheses.md.  Read them before proposing anything.
