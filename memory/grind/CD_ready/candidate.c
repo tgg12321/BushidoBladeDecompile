@@ -1,3 +1,45 @@
+/* s72 UPDATE (2026-09-03, structural). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s72 executed
+ * both open pass-level items of the s71 frontier and both are now discharged. What a future
+ * session inherits:
+ *   1. THE RESIDUAL IS NOW ONE NUMBER. The floor body's and the order-perfect g06 base's block-3
+ *      quantity tables differ in exactly one respect - the t0-chain quantity's SPAN, 8 here and 6
+ *      there. Span 8 gives it qty_compare_1 priority 1.0000, so it is allocated LAST and takes
+ *      $a0 (correct); span 6 gives 1.3333, an exact tie with the arg5 value that
+ *      local-alloc.c:1683 breaks on quantity number in its favour, so it takes $v1 (wrong). The
+ *      target's own instruction order is what shortens it, by moving the t0 shift one slot later.
+ *      Both tables are written out in hypotheses.md s72.
+ *   2. KILLED: the SUGGESTION PASS route (s71's frontier item 1). It is REAL and reachable - this
+ *      session produced the first non-empty copysugg in 72 sessions: naming printf's Nth argument
+ *      in a fresh local makes GCC emit `move $aN, pseudo`, combine_regs records copysugg=$aN and
+ *      local-alloc.c:1507-1526 seats that quantity before qty_compare_1 runs at all (measured for
+ *      arguments 2/3/4 -> $a1/$a2/$a3). It does not reach THIS pair: the only hard registers in
+ *      block 3 are printf's $a0-$a3, and the target seats the two contested values at $a0 and $v1
+ *      - $a0 carries only a constant address that never occupies a pseudo, and $v1 is not an
+ *      argument register. Scores 10 / 16 / 11.
+ *   3. KILLED: qty_size (s71's frontier item 2). `long long arg5` builds 181 instructions against
+ *      the target's 179. Every qty_compare_1 input is now measured: refs, span, quantity number,
+ *      size.
+ *   4. KILLED, with the dump: sched2's INSN_PRIORITY rung. All six insns in the contested window
+ *      carry final_pri=2. sched.c:1497 adds `insn_cost - 1` per edge, so an ALU-to-ALU edge
+ *      contributes zero and only a load-latency edge increments; each chain has exactly one load
+ *      above the tied pair. Raising the arg5 chain to priority 3 needs a SECOND load above it,
+ *      i.e. loading tbl_125c inside block 3 instead of inheriting it in $s5 - one extra insn.
+ *   5. KILLED: single-assignment splitting of the t0 chain (so combine_regs ties it into one long
+ *      quantity). It works mechanically - gm1's chain is one quantity, birth 18 death 32 - but
+ *      refs scale with the chain exactly as the span does, so priority goes UP (refs 12 / span 14
+ *      = 2.5714 against the split form's 1.3333). Chain-combining can never lower a priority here.
+ *   6. KILLED (invariance extended, 24 measurements): operand commutation, u32 type narrowing,
+ *      declaration-order swap, plain-integer address arithmetic, `&arr[i]` and `[0]` spellings are
+ *      all byte-identical on BOTH bases. Commuting the arg5 address expression is the only one
+ *      that changes bytes and it changes exactly one - the emitted `addu` operands commute too.
+ *   7. Read at local-alloc.c:1176: `if (GET_CODE (insn) != NOTE) insn_number++;`. A loop NOTE does
+ *      not advance insn_number and therefore cannot move a span directly - every span change
+ *      s67-s71 measured came from sched1 re-ordering, which is why the note lever always paid the
+ *      order cost.
+ * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
+ * idx_1496) - documented below and moot while the floor is 2.
+ */
 /* s71 UPDATE (2026-09-03, rederive). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s71 closed the
  * s70 frontier's first two items and opened a pass-level one. What a future session inherits:

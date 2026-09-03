@@ -2609,3 +2609,78 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s71] [s71] NEW PASS-LEVEL FRONTIER read from the compiler: block_alloc seats every quantity carrying a hard-register suggestion in a separate pass (local-alloc.c:1507-1526) BEFORE qty_compare_1 is consulted (local-alloc.c:1560-1569). Suggestions come only from combine_regs (local-alloc.c:1856-1885), reached for any insn with an `=` output operand 0 and a REG input operand when one of the two is a hard register. All four block-3 quantities print copysugg= EMPTY; reg97's set is a load with a MEM operand 1 and its death is a store with a MEM operand 0, so as currently spelled neither insn can give it one.
 
 - [s71] [s71] Harness note for future sessions: tmp/grind/CD_ready/s71/qtyrun.sh must be run through WSL with the venv active. Invoked from Git-Bash the Windows python cannot spawn the splice/cc1 chain and dies with WinError 2 inside splice.py, with no useful message.
+
+## s72 (structural, 2026-09-03) — measured facts
+
+- [s72] Baselines re-verified live on the HEAD chassis BEFORE any probe: `memory/grind/CD_ready/candidate.c`
+  = score 2, build 179, target 179, rules_dropped 0; `progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c`
+  = 6/179/0. Harness: `tmp/grind/CD_ready/s72/measure.ps1` (splice + cheat-invisible sandbox),
+  `tmp/grind/CD_ready/s72/qtyrun.sh` (BB2_QTY_DEBUG/BB2_SUGG_DEBUG block-3 extraction),
+  `tmp/grind/CD_ready/s72/prio.sh` (BB2_PRIO_DEBUG/BB2_RANK_DEBUG, new this session).
+- [s72] The g06 residual, read instruction-for-instruction (tmp/grind/CD_ready/s61/show.py 44 70):
+  the emitted SEQUENCE is the target's for the whole block; the six differing instructions are a
+  pure two-register swap. The t0 address chain (`lbu` 51, `sll` 57, `addu` 61, `lw $a3` 67) is in
+  $v1 where the target uses $a0, and the arg5 value (`lw` 58, `sw 0x10($sp)` 63) is in $a0 where the
+  target uses $v1. Nothing else in 179 instructions differs.
+- [s72] The floor body's block-3 local-alloc quantity table, recorded for the first time:
+  qty0 reg102 birth 16 death 24 refs 4 size 1 -> got $a0; qty1 reg104 18-20 refs 4 -> $v0;
+  qty2 reg97 20-26 refs 4 -> $v1; qty3 reg110 22-30 refs 8 -> $v0; ALLOC order 1, 3, 2, 0.
+  Against g06's 16-20 / 18-24 / 20-26 / 22-30 with ALLOC order 3, 0, 1, 2. The ONLY structural
+  difference is the t0-chain quantity's span, 8 on the floor body and 6 on the order-perfect base.
+  At span 8 its qty_compare_1 priority is 1.0000 and it is allocated last (taking $a0, correct);
+  at span 6 it is 1.3333, an exact tie with the arg5 value, broken on quantity number in its favour
+  (taking $v1, wrong).
+- [s72] FIRST non-empty `copysugg` on this function in 72 sessions. Naming printf's Nth argument in
+  a fresh local makes GCC compute the value into a pseudo and then emit `move $aN, pseudo`;
+  combine_regs (local-alloc.c:1856-1885) records that as a copy suggestion and local-alloc.c:1507-1526
+  seats the quantity in the suggestion pass, ahead of qty_compare_1 entirely. Measured:
+  4th argument -> `copysugg=7,` ($a3), got 7 (tmp/grind/CD_ready/s72/gj.qty.txt, score 11);
+  2nd argument -> `copysugg=5,` ($a1), got 5 (q2.qty.txt, score 10);
+  3rd argument -> `copysugg=6,` ($a2), got 6 (q3.qty.txt, score 16).
+- [s72] The suggestion pass cannot reach either contested quantity. The only hard registers in
+  block 3 are printf's $a0-$a3; a C spelling can create a suggestion of $a1, $a2 or $a3 (argument
+  values that pass through a pseudo), but the target seats the two contested values at $a0 and $v1.
+  $a0 in this block carries only `la $a0, D_800161C8` — a constant address that never occupies a
+  pseudo — and $v1 is not an argument register. When the $a3 suggestion IS created for the t0 value
+  it propagates back up the whole chain (`lbu $a3,0($s2)` … `lw $a3,0($a3)`) and the block re-orders.
+- [s72] qty_size is not reachable byte-neutrally: `long long arg5` (with `(s32)arg5` at the call)
+  builds 181 instructions against the target's 179 and scores 19. All four qty_compare_1 inputs are
+  now measured on this function: refs, span, quantity number, size.
+- [s72] sched2 INSN_PRIORITY, read from tmp/grind/CD_ready/s72/cand.prio.txt: insns 106, 111, 117,
+  120, 122 and 128 ALL carry final_pri=2. sched.c:1497 computes
+  `priority(pred) + insn_cost - 1`, so an ALU-to-ALU edge contributes zero and only a load-latency
+  edge (cost 2) increments. Each chain has exactly one load above the contested pair
+  (`insn=106 pred=99 cost=2`, `insn=117 pred=115 cost=2`). Breaking the priority rung needs a second
+  load above the arg5 chain — i.e. loading `tbl_125c` inside block 3 rather than inheriting it live
+  in $s5 — which costs an instruction.
+- [s72] local-alloc.c:1176 reads `if (GET_CODE (insn) != NOTE) insn_number++;`. Loop notes therefore
+  do not advance insn_number and cannot change a quantity's birth/death/span directly. Every span
+  change measured in s67-s71 came from sched1 re-ordering caused by the note acting as a region
+  boundary — which is the structural reason the note lever has always paid the order cost.
+- [s72] Chain-combining raises priority, it does not lower it. For a k-insn single-assignment chain
+  combined into one quantity, qty_n_refs = 2*k*depth and the span = 2*k, so
+  pri = floor_log2(2*k*depth) * depth — monotonically increasing in k. Measured: gm1's combined
+  quantity is refs 12 / span 14 (pri 2.5714) against the split form's refs 4 / span 6 (pri 1.3333).
+- [s72] Byte-neutral respelling invariance extended (24 measurements): operand commutation, u32
+  type narrowing, declaration-order swap, plain-integer address arithmetic, `&arr[i]` address
+  spelling and `[0]` deref spelling are all byte-identical on both bases. Commuting the arg5
+  address expression is the only respelling that changes bytes at all, and it changes exactly one:
+  the emitted `addu` operands commute with it.
+
+- [s72] Baselines re-verified live on the HEAD chassis before any probe: memory/grind/CD_ready/candidate.c = 2/179/0 and progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c = 6/179/0.
+
+- [s72] The g06 residual read instruction-for-instruction: the emitted sequence is the target's for the whole block and the six differing instructions are a pure two-register swap - the t0 address chain (lbu 51, sll 57, addu 61, lw $a3 67) sits in $v1 where the target uses $a0, and the arg5 value (lw 58, sw 0x10($sp) 63) sits in $a0 where the target uses $v1.
+
+- [s72] First non-empty copysugg on CD_ready in 72 sessions: naming printf's 2nd/3rd/4th argument in a fresh local yields copysugg=$a1/$a2/$a3 respectively and seats that quantity in the local-alloc suggestion pass ahead of qty_compare_1.
+
+- [s72] The suggestion pass cannot reach either contested quantity: the only hard registers in block 3 are printf's $a0-$a3; $a0 carries only a constant address that never occupies a pseudo and $v1 is not an argument register, and those two are exactly the seats the target needs.
+
+- [s72] All four qty_compare_1 inputs are now measured on this function - refs, span, quantity number and size. qty_size is unreachable at 179 insns (DImode carrier builds 181).
+
+- [s72] sched2 INSN_PRIORITY for insns 106, 111, 117, 120, 122 and 128 is uniformly 2; sched.c:1497's 'insn_cost - 1' makes ALU-to-ALU edges contribute zero, so only a second load above the arg5 chain could break the priority rung, and that costs an instruction.
+
+- [s72] Chain-combining raises qty_compare_1 priority rather than lowering it: for a k-insn combined chain refs = 2*k*depth and span = 2*k, so pri = floor_log2(2*k*depth)*depth is monotonically increasing in k (measured: refs 12 / span 14 = 2.5714 versus refs 4 / span 6 = 1.3333).
+
+- [s72] local-alloc.c:1176 does not advance insn_number over NOTEs, so a do-while(0) can never move a quantity's span directly; every span change s67-s71 observed came from the note acting as a sched1 region boundary.
+
+- [s72] Byte-neutral respelling invariance extended by 24 measurements: operand commutation, u32 type narrowing, declaration-order swap, plain-integer address arithmetic, &arr[i] and [0] spellings are all byte-identical on both bases; commuting the arg5 address expression is the only respelling that changes bytes, and it changes exactly one instruction.
