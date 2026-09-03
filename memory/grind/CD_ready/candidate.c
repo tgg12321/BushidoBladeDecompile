@@ -1,3 +1,38 @@
+/* s75 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live at 2/179/0 at the start of s75, with the g06 order-perfect base at 6/179/0).
+ * The session's result is a NEW BASE, not a new floor - read it before spending a probe:
+ *   1. PARITY THEOREM for the do-while(0) refs lever. In the target's block-3 order the two tied
+ *      quantities' mentions interleave t0 sll (7), arg5 lw (8), t0 addu (10), arg5 sw (12), so a
+ *      note pair moves the qty_compare_1 tie only when its region covers an ODD number of one
+ *      quantity's mentions. Exactly four contiguous regions favour the arg5 value: [8..9], [8..12],
+ *      [11..12], [12..12]. [7..10] favours the t0 temp. Everything else is symmetric and inert.
+ *   2. The [8..9]/[8..12] half is DEAD: a note between the two `t0` statements changes reg98's
+ *      death count, so the t0 variable itself enters local-alloc as one refs-12 span-22 quantity
+ *      (pri 1.636) and beats the arg5 value outright. Scores 11/12/11/11/11. This is the root
+ *      cause of s66's "the t0 chain collapses" note.
+ *   3. The [11..12] half WORKS. Wrapping ONLY the debug_printf statement, with `a2i = D_800A11D5;`
+ *      and `t0 = (s32)((u8 *)tbl_125c + t0);` hoisted above it, puts the arg5 `sw` (and nothing of
+ *      the t0 chain) at depth 2+n, so arg5 refs = 4+n and its priority is floor_log2(4+n)*(4+n)/10
+ *      against the t0 temp's 8/6 = 1.3333 -- 1.000 at n=1, 1.200 at n=2, 1.400 at n=3. At n=3 the
+ *      ALLOC order flips and BOTH contested seats come out at the target's registers for the first
+ *      time in 75 sessions on an order-perfect-derived body (arg5 value -> $v1, t0 shift temp ->
+ *      $a0). Adding the `a1v = (s32)*pp;` hoist restores the D_800F19C0 argument load to slots
+ *      53/54, and the result -- progress/s75-r3-nested-note-refs-flip-seats-block3-order-exact-5.c,
+ *      score 5 -- emits block 3 instruction-for-instruction like the target from slot 53 to 67.
+ *   4. r3's WHOLE residual is five instructions with two causes: the two leading lbu's are
+ *      transposed (slots 51/52), and reg98 (the `t0` variable, global-allocated) sits at $a3
+ *      instead of $a0, costing slots 57/61/67. `.greg` names the mechanism exactly:
+ *      `;; 98 preferences: 7` and `;; 98 conflicts: ... 2 3 4 5 6 29` -- hard reg 4 is in reg98's
+ *      conflict set BECAUSE local-alloc seated the shift temp there (`106 in 4`), so find_reg falls
+ *      through to the $a3 preference recorded from `lw $a3, 0(reg98)`. On THIS floor body reg98 and
+ *      the shift temp share $a0. Winning the local seat and sharing $a0 are coupled through that
+ *      conflict, and that coupling is the next session's target.
+ *   5. KILLED on r3 (instance): twelve dependence-respecting permutations of the pre-wrap statements
+ *      all score exactly 5 (u07 alone 15), and three t0-chain respellings score 11/7/7. Neither the
+ *      lbu order nor reg98's seat responds to statement order or to t0 spelling.
+ *   6. KILLED (instance): the w/x/y boundary family (wrap opening above the arg5 load) wins the arg5
+ *      seat at n=1 but the shift temp is then allocated after it and loses $a0 (gets $a2): 5/5/14/19.
+ */
 /* s74 UPDATE (2026-09-03, synthesis). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live at the start of s74 together with three side bases: candidate.c 2/179/0,
  * g06 6/179/0, s73's r6 5/179/0, s67's y02 6/179/0 - no drift). What a future session inherits:

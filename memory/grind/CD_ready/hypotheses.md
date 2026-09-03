@@ -2847,3 +2847,156 @@ live before any probe: candidate.c 2/179/0, g06 6/179/0.
 - probe: The ';; Function CD_ready' header of tmp/grind/CD_ready/s74/n0.greg, produced by tmp/grind/CD_ready/run_dump.sh with the n0 body spliced.
 - result: The header prints ';; 74 preferences: 2' - the v0 variable, whose value arrives as a function return in $v0 - and ';; 86 preferences: 5' - a pseudo copied into printf's $a1 argument. Preferences therefore exist and are populated here. This answers the s73 frontier's open mechanical question directly: the call-free cnt carrier landed $a3 rather than $a0 because it carried no preference for hard reg 4 and 4 was not free in its conflict scan.
 - verdict: CONFIRMED
+
+## [s75] A `do {} while (0)` can break the qty_compare_1 tie only when its region covers an ODD number of one contested quantity's mentions (the parity theorem)
+- mechanism: `flow.c` weights `REG_N_REFS` by `loop_depth`, and a do-while(0) emits a real
+  NOTE_INSN_LOOP_BEG/END pair, so every mention inside the pair is counted at depth+1. In the
+  target's block-3 order the contested mentions interleave t0 `sll` (7), arg5 `lw` (8), t0 `addu`
+  (10), arg5 `sw` (12); a contiguous note region therefore shifts both quantities equally unless one
+  of its two boundaries falls strictly between a quantity's own two mentions and the other's does
+  not. `local-alloc.c:1683` (`qty_compare_1`) then compares `floor_log2(refs)*refs*size/span`.
+- probe: enumerate every contiguous region of the target order, classify by parity, and measure one
+  representative of each qualifying class - [8..9] and [8..12] (note between the two `t0`
+  statements), [11..12] and [12..12] (note between the arg5 load and the arg5 store).
+- result: CONFIRMED and exhaustive. Exactly four regions favour the arg5 value; [7..10] favours the
+  t0 temp; all others are symmetric. The two families behave completely differently, which is why
+  s66's undifferentiated twelve-placement sweep bottomed at 8.
+- verdict: CONFIRMED
+
+## [s75] The [8..9] / [8..8] family (note between the two `t0` statements) is dead because the note changes reg98's death count and collapses the t0 chain into a single local quantity
+- mechanism: `local-alloc.c:1170-1180` admits a pseudo to `block_alloc` only when its whole life is
+  in the block with a single death. `reg98` (the C variable `t0`) normally has two sets and two
+  deaths in block 3 and is skipped, leaving the compiler-created SHIFT TEMP as the contested
+  quantity. A loop note cut between the two sets changes that, and reg98 enters local-alloc as one
+  long quantity (birth 10, death 32, refs 12, priority 1.636) that beats the arg5 value outright.
+- probe: p1 (`{arg5 = *a5a; a2i = D_800A11D5;}`), p2 (`{arg5 = *a5a;}`), p3 ([8..10]), p4 (double
+  wrap), p6 (t0 shift first), each spliced and scored, p1 additionally dumped with
+  BB2_QTY_DEBUG/BB2_SUGG_DEBUG.
+- result: 11 / 12 / 11 / 11 / 11 against the floor's 2 and the order-perfect base's 6. p1's quantity
+  table shows the collapse directly.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0 and the g06
+  order-perfect base at 6/179/0 immediately beforehand; all forms carry the floor body's full
+  inherited FAKE set plus the probe wrap.
+
+## [s75] The [11..12] family (wrap the `debug_printf` statement only, a2 index and t0 address hoisted above it) DOES flip both contested seats to the target's registers, at nesting depth 3
+- mechanism: with the a2 index and the t0 address hoisted out, the wrap's region contains the arg5
+  `sw` but neither `t0` mention, so `qty_n_refs` for the arg5 value goes 4 -> 4+n while the t0 shift
+  temp stays at 4. The note also stretches the arg5 value's span from 6 to 10, so its
+  `qty_compare_1` priority is `floor_log2(4+n)*(4+n)/10` against the t0 temp's `8/6 = 1.3333`:
+  1.000 at n=1, 1.200 at n=2, 1.400 at n=3.
+- probe: q1 (n=1), q5 (n=2), q9 (n=3), q10 (n=4), q11 (n=5) scored, with QTYDBG dumps on q1, q5 and
+  q9 read BEFORE the scores.
+- result: CONFIRMED. Refs measure 5 / 6 / 7 as predicted, and the ALLOC order flips at exactly n=3,
+  where q9 records `ord=2 qty=2 reg1=97 refs=7 got=3` (arg5 value at $v1) and
+  `ord=3 qty=1 reg1=105 refs=4 got=4` (t0 shift temp at $a0) - both the target's seats. Scores
+  10 / 10 / 5 / 5 / 5.
+- verdict: CONFIRMED
+
+## [s75] Hoisting the `*pp` load out of the call wrap restores the D_800F19C0 argument load to slots 53/54 and makes block 3's emission order target-exact from slot 53 to slot 67
+- mechanism: with the wrap around the call, the `*pp` dereference is part of the call's argument
+  evaluation and lands inside the note region, which is what s66's w01 observed as "the note
+  displaces the expand_call argument load". Naming it in a local (`a1v = (s32)*pp;`) above the wrap
+  moves the load into the pre-note region; it acquires `copysugg=5` and is seated at $a1 by
+  local-alloc's suggestion pass (`local-alloc.c:1507-1526`), which is the target's register anyway.
+- probe: r2..r6 (nest 2..6 with the s32-typed hoist) and rv3/rv4 (void*-typed hoist) scored;
+  r3 disassembled against the target with tmp/grind/CD_ready/s63/show.py.
+- result: CONFIRMED. r3 = 5/179/0 and slots 53-67 match the target instruction-for-instruction.
+- verdict: CONFIRMED
+
+## [s75] On the r3 base the remaining 5 points are the two leading `lbu`s being transposed plus reg98 seated at $a3, and neither responds to region-1 statement order
+- mechanism: `.greg` records `;; 98 preferences: 7` and
+  `;; 98 conflicts: 72 73 74 76 77 78 81 98 2 3 4 5 6 29`. Hard reg 4 ($a0) is in reg98's conflict
+  set because local-alloc has seated the t0 shift temp there (`106 in 4`); `find_reg` therefore
+  cannot give reg98 $a0 and falls to its preference, hard reg 7, recorded from the
+  `lw $a3, 0(reg98)` argument load. On the floor body reg98 and the shift temp share $a0.
+- probe: twelve dependence-respecting permutations of the pre-wrap statements (u01-u12), plus three
+  t0-chain respellings on the r3 base (z1 the 4th argument named in a local, z2 pointer-typed
+  address, z3 t0 folded to one expression).
+- result: u01-u06 and u08-u12 all score exactly 5 (u07, the a2 index above the arg5 load, 15);
+  z1 11, z2 7, z3 7. The `lbu` order and reg98's seat are both invariant under the statement order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03; r3 re-verified live at 5/179/0 in the same batch, with the
+  floor body's full inherited FAKE set plus the three-level probe wrap present.
+
+## [s75] Moving the note boundary above the arg5 load (the w/x/y series) wins the arg5 seat one nesting level sooner but loses $a0 for the t0 shift temp
+- mechanism: with the boundary immediately before `arg5 = *(s32 *)a5a;` both arg5 mentions sit at
+  depth 2+n and the t0 `addu` joins them, so arg5 refs = 2*(2+n) against the t0 temp's 4+n. The arg5
+  value is then allocated first and takes $v1, but the shift temp - now refs 5, span 8 - is
+  allocated after it and `find_free_reg` no longer has $a0 available for it.
+- probe: w1-w4, x1-x4 (the `a1v` hoist moved after the t0 shift), y1-y2 (the t0 address before the
+  a2 index), scored; w1 dumped with BB2_QTY_DEBUG.
+- result: w1 5, w2 5, w3 14, w4 19, x1 5, x2 5, x3 14, x4 19, y1 5, y2 5. w1's table reads
+  `qty=3 reg1=97 refs=6 got=3` (arg5 at $v1, correct) and `qty=2 reg1=106 refs=5 got=6` (the shift
+  temp at $a2, wrong).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03; candidate.c 2/179/0 and g06 6/179/0 re-verified live in the
+  same session, with the floor body's full inherited FAKE set plus the probe wrap.
+
+## [s75] `qty_compare`'s missing quantity-number tie-break (the next_qty <= 3 path) is not a lever
+- mechanism: `local-alloc.c:1540-1560` sorts blocks of at most three quantities with a hand-rolled
+  exchange sequence driven by `qty_compare`, which returns 0 on a priority tie, whereas the qsort
+  path uses `qty_compare_1` (local-alloc.c:1683) which breaks ties on quantity number.
+- probe: source read plus a hand simulation of the three-element exchange sequence on an all-tie
+  input.
+- result: the exchange sequence leaves `qty_order` at the identity permutation on ties, which is
+  exactly what the number tie-break produces, so reducing block 3 to three quantities cannot flip
+  the contested pair by this route. (s73 already measured the only C route to three quantities - a
+  multi-block carrier - at best 5.)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: source-level check against tools/gcc-2.7.2/local-alloc.c on the HEAD chassis
+  2026-09-03; no FAKE construct involved.
+
+## [s75] A do-while(0) note pair moves the 1.3333-vs-1.3333 qty_compare_1 tie only when its region covers an ODD number of one contested quantity's mentions and an even number of the other's; enumerating the target's block-3 order, exactly four contiguous regions favour the arg5 value ([8..9], [8..12], [11..12], [12..12]) and one ([7..10]) favours the t0 shift temp.
+- mechanism: flow.c weights REG_N_REFS by loop_depth and a do-while(0) emits a real NOTE_INSN_LOOP_BEG/END pair, so every mention inside the pair counts at depth+1. In the target's order the mentions interleave t0 sll (7), arg5 lw (8), t0 addu (10), arg5 sw (12), so a contiguous region shifts both quantities equally unless exactly one of its boundaries falls strictly between one quantity's own two mentions. local-alloc.c:1683 then compares floor_log2(refs)*refs*size/span.
+- probe: Enumerate every contiguous region of the target's emitted block-3 order, classify by parity, and measure one representative of every qualifying class: p1/p2/p3/p4/p6 for the [8..9]/[8..8]/[8..10] shapes, q1/q5/q9/q10/q11 for [11..12], w/x/y series for the arg5-load-inclusive shape.
+- result: CONFIRMED and exhaustive. The two qualifying families behave completely differently, which is why s66's undifferentiated twelve-placement wrap sweep bottomed at 8 and read as a dead lever: it never separated the note-between-the-t0-statements case from the note-around-the-call case.
+- verdict: CONFIRMED
+
+## [s75] The [11..12] geometry - a do-while(0) containing ONLY the debug_printf statement, with the a2 index and the t0 address hoisted above it - raises the arg5 value's qty_n_refs from 4 to 4+n while leaving the t0 shift temp at 4, and at n=3 the local-alloc allocation order flips so the arg5 value takes $v1 and the t0 shift temp takes $a0, both the target's seats.
+- mechanism: Base loop depth in block 3 is 2 (the goto-loop back edge plus the sanctioned tbl_125c wrap). The wrap's region contains the arg5 sw and neither t0 mention, so arg5 refs = 4+n. The note also stretches the arg5 value's span from 6 to 10, so its qty_compare_1 priority is floor_log2(4+n)*(4+n)/10 against the t0 temp's 8/6 = 1.3333: 1.000 at n=1, 1.200 at n=2, 1.400 at n=3.
+- probe: q1 (n=1), q5 (n=2), q9 (n=3), q10 (n=4), q11 (n=5) spliced and scored, with BB2_QTY_DEBUG/BB2_SUGG_DEBUG dumps on q1, q5 and q9 read before the scores.
+- result: CONFIRMED. Measured refs 5 / 6 / 7 exactly as the depth arithmetic predicts, and the ALLOC record flips at n=3: q9 prints 'ord=2 qty=2 reg1=97 refs=7 got=3' (arg5 value at $v1) and 'ord=3 qty=1 reg1=105 refs=4 got=4' (t0 shift temp at $a0). Scores 10 / 10 / 5 / 5 / 5. First time in 75 sessions that both contested seats are the target's on a body derived from the order-perfect base, with no globalized carrier and without spending the statement-order lever.
+- verdict: CONFIRMED
+
+## [s75] Hoisting the *pp dereference out of the call wrap into a named local restores the D_800F19C0 argument load to slots 53/54 and makes block 3's emission order match the target instruction-for-instruction from slot 53 through slot 67, giving a new base (r3) at score 5.
+- mechanism: With the wrap around the call, the *pp dereference is part of the call's argument evaluation and falls inside the note region - the displacement s66 recorded for its w01 placement. Naming it above the wrap moves the load into the pre-note region, where it acquires copysugg=5 and is seated at $a1 by local-alloc's suggestion pass (local-alloc.c:1507-1526), which is the target's register anyway.
+- probe: r2..r6 (nest 2..6, s32-typed hoist) and rv3/rv4 (void*-typed hoist) scored; r3 disassembled against the target with tmp/grind/CD_ready/s63/show.py over slots 49-68.
+- result: CONFIRMED. r3 = 5/179/0. The whole arg5 chain, the D_800A11D5 chain, the sw 0x10($sp), the a2 load and both la pairs are byte-exact; the five remaining diffs are slots 51/52 (the two leading lbu's transposed) and 57/61/67 (reg98 seated at $a3 instead of $a0).
+- verdict: CONFIRMED
+
+## [s75] Placing the note between the two t0 statements ([8..9], [8..8] and [8..10] wraps) changes reg98's death count so that the t0 variable itself enters local-alloc as one refs-12 span-22 quantity that beats the arg5 value, and all five forms measure 11 or 12.
+- mechanism: local-alloc.c:1170-1180 admits a pseudo to block_alloc only when its whole life is in the block with a single death. reg98 (the C variable t0) normally has two sets and two deaths in block 3 and is skipped, leaving the compiler-created shift temp as the contested quantity. Cutting the RTL between those two sets with a loop note changes that, and reg98 enters as a birth-10 death-32 refs-12 quantity at priority 1.636.
+- probe: p1 (wrap = arg5 load + a2 index), p2 (arg5 load only), p3 (arg5 load + a2 index + t0 address), p4 (double-wrapped p1), p6 (same with the t0 shift first) spliced and scored; p1 additionally dumped with BB2_QTY_DEBUG.
+- result: 11 / 12 / 11 / 11 / 11 against the floor's 2 and the order-perfect base's 6. p1's quantity table shows the collapse directly (qty0 reg1=98 birth=10 death=32 refs=12). This reproduces and root-causes s66's 'the t0 chain collapses into one merged quantity' remark for the load-only wraps.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0 and the g06 order-perfect base at 6/179/0 immediately beforehand; every form carries the floor body's full inherited 8-unit FAKE set plus the probe wrap.
+
+## [s75] Moving the note boundary above the arg5 load (the w/x/y series) wins the arg5 value's $v1 seat one nesting level sooner but the t0 shift temp is then allocated after it and gets $a2 instead of $a0; best score 5, no better than r3.
+- mechanism: With the boundary immediately before the arg5 load both arg5 mentions sit at depth 2+n and the t0 addu joins them, so arg5 refs = 2*(2+n) against the t0 temp's 4+n. The arg5 value sorts first and takes $v1, but find_free_reg no longer has $a0 available for the shift temp when its turn comes.
+- probe: w1-w4 (a1v hoisted before the t0 shift), x1-x4 (a1v hoisted after it), y1-y2 (t0 address before the a2 index) spliced and scored; w1 dumped with BB2_QTY_DEBUG.
+- result: w1 5, w2 5, w3 14, w4 19, x1 5, x2 5, x3 14, x4 19, y1 5, y2 5. w1's table reads qty=3 reg1=97 refs=6 span=8 got=3 (arg5 at $v1, correct) and qty=2 reg1=106 refs=5 span=8 got=6 (the shift temp at $a2, wrong).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03; candidate.c 2/179/0 and g06 6/179/0 re-verified live in the same session; forms carry the floor body's full inherited FAKE set plus the probe wrap.
+
+## [s75] On the r3 base neither the transposed leading lbu pair nor reg98's $a3 seat responds to pre-wrap statement order or to the t0 chain's spelling: twelve dependence-respecting permutations all score exactly 5 and three t0 respellings score 11, 7 and 7.
+- mechanism: .greg records ';; 98 preferences: 7' and ';; 98 conflicts: 72 73 74 76 77 78 81 98 2 3 4 5 6 29' with '98 in 7' in the dispositions. Hard reg 4 ($a0) is in reg98's conflict set because local-alloc has already seated the t0 shift temp there ('106 in 4') and the two now overlap, so find_reg cannot give reg98 $a0 and falls through to the preference recorded from the lw $a3, 0(reg98) argument load. On the floor body reg98 and the shift temp share $a0.
+- probe: u01-u12 (twelve permutations of the ten pre-wrap statements respecting the data dependences) plus z1 (4th printf argument named in a local hoisted above the wrap), z2 (pointer-typed t0 address), z3 (t0 folded to a single expression, one set instead of two), all spliced and scored; r3's .greg and .lreg dumped with tools/grinder/dump.ps1.
+- result: u01-u06 and u08-u12 all 5, u07 (a2 index above the arg5 load) 15; z1 11, z2 7, z3 7. The lbu order and reg98's seat are both invariant under everything tried this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-03; r3 re-verified live at 5/179/0 in the same batch, carrying the floor body's full inherited FAKE set plus the three-level probe wrap.
+
+## [s75] qty_compare's missing quantity-number tie-break on the next_qty <= 3 path cannot flip the contested pair, because the hand-rolled three-element exchange sequence leaves qty_order at the identity permutation on ties - the same result the number tie-break gives.
+- mechanism: local-alloc.c:1540-1560 sorts blocks of at most three quantities with a hand-rolled exchange sequence driven by qty_compare, which returns 0 on a priority tie, whereas the qsort path uses qty_compare_1 (local-alloc.c:1683) which breaks ties on quantity number. The exchanges fire only on a strictly positive comparison.
+- probe: Source read of tools/gcc-2.7.2/local-alloc.c:1425-1600 and 1620-1700 plus a hand simulation of the three-element exchange sequence on an all-tie input.
+- result: Identity permutation either way, so reducing block 3 to three quantities buys nothing by this route. s73 had already measured the only C route to three quantities (a multi-block carrier) at best 5, and this closes the remaining reason to revisit it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: source-level check against tools/gcc-2.7.2/local-alloc.c on the HEAD chassis 2026-09-03; no FAKE construct involved.
