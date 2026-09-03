@@ -1,44 +1,49 @@
-/* func_800645B0 (src/text1b.c) -- BEST HONEST FORM.  The "SB" chassis.
- * Honest distance 1 / 78 (target_insns 78, build_insns 78, rules_dropped 0),
- * RE-MEASURED in grind session s17b (2026-09-02, structural modality) on the
- * current tree with `sandbox func_800645B0 --disable all`.  Ordinary C: zero
- * cheat-asm, zero pins, zero dead stores, one sanctioned FAKE (the `val`
- * variable-reuse that denies loop.c the const-1 hoist).
+/* func_800645B0 (src/text1b.c) -- MATCHING FORM.  Honest distance 0 / 78
+ * (target_insns 78, build_insns 78, rules_dropped 0, zero cheat-asm), and the
+ * full clean-driver build SHA1 == the oracle 62efab4f73f992798c43e8c730aa43baa10bb4fa,
+ * both measured in grind session s19 (2026-09-02, synthesis modality) with this
+ * exact body in src/text1b.c.
  *
- * WHY THIS AND NOT THE 0/78 BODY.  The previous session's distance-0 body (the
- * WD chassis plus a `do { idx = i + j; } while (0);` wrap) was FAILED by the
- * layer-1 cheat-reviewer and the wrap is now on this function's mechanically
- * enforced BANNED list.  It is preserved, with the full FAIL reasoning, at
- * rejected/do-while0-wrap-scores-0-but-layer1-FAIL-banned-construct.c.  Do not
- * restore it: the driver discards a candidate-ready that re-declares it before
- * the Judge is ever spawned.
+ * WHAT CLOSED IT.  Two independent changes off the s18 frontier, neither of
+ * which had been combined before:
  *
- * THE ONE REMAINING INSTRUCTION.  Stream index 20: we emit `addu $s0,$s0,$s1`
- * where the target has `addu $s0,$s1,$s0`.  optabs.c `expand_binop`
- * (tools/gcc-2.7.2/optabs.c:398-421) swaps a commutative operand pair whenever
- * the expansion target IS op1, so both `idx = idx2 + idx;` and
- * `idx = idx + idx2;` emit the same swapped order.  Emitting the target's order
- * requires the sum's destination pseudo to be distinct from both operands --
- * the "WD" chassis (`wid = idx2 + idx;`), which is ordinary C and fixes index
- * 20, but then loses the inner-loop head (indices 11/12) and the back-edge
- * delay slot (65) to sched.c's `birthing_insn_p` max-priority lift on the
- * loop-top `addu`, because `wid` leaves `idx` single-set.  Measured this
- * session: SB 1/78, WD 3/78, h (second real write `idx = rand() & 7`) 2/78,
- * k (byte offset routed through `idx`) 12/78.
+ *  1. `idx = idx * 12;` (the s18 "a2" chassis).  The *3 word index written as
+ *     `idx = idx2 + idx;` can never emit the target's `addu $s0,$s1,$s0`,
+ *     because optabs.c expand_binop (tools/gcc-2.7.2/optabs.c:409-420) swaps a
+ *     commutative binop's operands whenever the expansion target rtx IS op1 --
+ *     and for `idx = <anything> + idx` the target rtx is idx.  Routing the add
+ *     through expand_mult gives it a fresh temp as its target, so no swap
+ *     happens and stream index 20 is exact.  `idx * 12` is also the natural
+ *     spelling: D_800F0D78 / D_800F0D7C / videoDec are one 3-word record, so
+ *     the byte offset for slot `idx` is idx * 12, and `idx2 = idx << 1` is the
+ *     halfword record's byte offset.  On its own this chassis measured 3/78:
+ *     it lost the inner-loop head (stream 11/12) and the back-edge delay slot
+ *     (65), because with the sum in a temp `idx` is left single-set and
+ *     sched.c birthing_insn_p (sched.c:2526) lifts the loop-top addu to
+ *     max_priority.
  *
- * SESSION 18 (structural) re-measured this body at 1 / 78 on today's tree and
- * mapped the residual's full geometry.  The *3 sum spelled as a multiplication
- * or a parenthesised subexpression (`idx = idx * 12;`, `idx = (idx2 + idx) * 4;`)
- * fixes index 20 with NO extra local (3 / 78, WD loop-head residual), and
- * `idx = (idx2 + idx) << 2;` reaches 12 / 78 with every one of the 78 opcodes and
- * every position exact -- the first form on this function to hold the operand
- * order, the inner-loop head and the delay slot at once using only the target's
- * own seven locals; its residual is purely register seats.  Those forms are all
- * banked under rejected/.  This SB body remains the floor because it is the only
- * one at 1.
- * Sixteen sessions of banked negatives (53 rejected forms), the RA-seat
- * foreclosure verdicts and the loop.c / optabs.c / sched.c mechanism proofs are
- * in evidence.md + hypotheses.md.  Read them before proposing anything.
+ *  2. The const-1 LICM-defeat carrier moved from `val` to `last`.  Sessions
+ *     1-18 all carried the loop-invariant `1` in `val`; that defeats loop.c's
+ *     hoist either way (both locals are set in two basic blocks of the loop, so
+ *     count_loop_regs_set at loop.c:3040 marks them may_not_move), but it also
+ *     decides WHICH of the two scratch locals is block-local and therefore
+ *     handled by local-alloc rather than global-alloc.  With `last` carrying
+ *     the constant, `val` is confined to the D_800A3444 read-modify-write
+ *     inside the `if`, and the whole allocation -- including the loop head and
+ *     the delay slot the a2 chassis had lost -- lands exactly on the target.
+ *     Measured this session: a2 + `val` carrier = 3/78, a2 + `last` carrier =
+ *     0/78.  The same carrier swap also closes two other chassis to 0/78 (the
+ *     s17 WD fresh-dest chassis, and WD with the byte offset folded into
+ *     `wid`), so the lever is chassis-independent; this body is the one that
+ *     needs no invented local at all -- it uses only the target's own seven.
+ *
+ * CONSTRUCTS.  One FAKE-annotated construct: the const-1 staged through `last`
+ * (sanctioned family: .claude/rules/defeat-licm-hoist-var-reuse.md, borrow
+ * gated by .claude/rules/staged-value-reused-variable.md).  Everything else is
+ * ordinary C: the byte-offset multiply, the halfword shift, and the
+ * read-modify-write through `val` (layer-1 ruled the RMW spelling legitimate on
+ * 2026-08-12).  No dead stores, no wraps, no statement reordering, no invented
+ * locals, no pins, no asm.  Self-vet: memory/grind/func_800645B0/self_vet.md.
  */
 s32 func_800645B0(void) {
     s32 i;
@@ -52,15 +57,26 @@ s32 func_800645B0(void) {
     for (i = 0; i < 0xF; i += 4) {
         for (j = 0; j < 4; j++) {
             idx = i + j;
-            val = 1;
-            mask = val << idx;
+            /* FAKE: the shift's constant 1 is staged through `last`, the
+             * scratch local that holds each rand() result below (its previous
+             * value is dead here -- the last read of it is the `last & 7` of
+             * the preceding iteration).  mechanism: GCC 2.7.2 loop.c
+             * count_loop_regs_set (loop.c:3040) marks a register set in two
+             * basic blocks of the loop `may_not_move`, so scan_loop never
+             * admits the const-1 as a movable and move_movables cannot hoist
+             * it; written with a single-set carrier the `li` is hoisted into a
+             * fresh callee-save and the function costs two extra instructions
+             * (measured 12/80).  lever-exhaustion:
+             * memory/grind/func_800645B0/hypotheses.md, sessions s1-s19. */
+            last = 1;
+            mask = last << idx;
             if (!(D_800A3444 & mask)) {
                 idx2 = idx << 1;
                 last = rand();
-                idx = idx2 + idx;
-                *((s32 *)(((s32)(&D_800F0D78)) + (idx << 2))) = (((s32 *)D_800A347C)[0] + (last & 0xFF)) - 0x7F;
-                *((s32 *)(((s32)(&D_800F0D7C)) + (idx << 2))) = (((s32 *)D_800A347C)[1] + (rand() & 0xFF)) - 0x7F;
-                *((s32 *)(((s32)(&videoDec)) + (idx << 2))) = (((s32 *)D_800A347C)[2] + (rand() & 0xFF)) - 0x7F;
+                idx = idx * 12;
+                *((s32 *)(((s32)(&D_800F0D78)) + idx)) = (((s32 *)D_800A347C)[0] + (last & 0xFF)) - 0x7F;
+                *((s32 *)(((s32)(&D_800F0D7C)) + idx)) = (((s32 *)D_800A347C)[1] + (rand() & 0xFF)) - 0x7F;
+                *((s32 *)(((s32)(&videoDec)) + idx)) = (((s32 *)D_800A347C)[2] + (rand() & 0xFF)) - 0x7F;
                 last = rand();
                 val = D_800A3444;
                 *((s16 *)(((s32)(&D_800F0BCC)) + idx2)) = last & 7;

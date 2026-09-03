@@ -510,3 +510,65 @@ own numbering drifted; trust the scratch-directory names.)
 - [s18] The pure array-subscript shape (idx never overwritten, both strides derived by the compiler) ADDS 2 to 7 instructions: cse does not unify synth_mult's internal idx<<1 with a separately written idx*2.
 
 - [s18] src/text1b.c was restored to HEAD at end of session; main still carries INCLUDE_ASM("asm/funcs", func_800645B0). No engine/tools/rules/Makefile/*.ld files touched, no commits, no permuter campaign launched (nothing left running).
+
+## Session s19 (2026-09-02, synthesis) -- MATCHED
+
+- **func_800645B0 reaches distance 0 in pure C.** `sandbox func_800645B0
+  --disable all` = score 0, target_insns 78, build_insns 78, rules_dropped 0,
+  zero cheat-asm; `verify-oracle` = ok:true, build_sha1 ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa; `canonical` verdict C. Body:
+  memory/grind/func_800645B0/candidate.c, applied to src/text1b.c. Self-vet:
+  memory/grind/func_800645B0/self_vet.md.
+- **The two changes that closed it**, both off the s18 frontier and never before
+  combined: (a) the *3 word index spelled as the record's byte offset
+  `idx = idx * 12;`, which routes the add through expand_mult and so gives it a
+  fresh temp as its expansion target -- optabs.c:409-420 only swaps a commutative
+  binop's operands when the target rtx IS op1, so this is the one way to emit the
+  target's `addu $s0,$s1,$s0`; (b) the const-1 LICM-defeat carrier moved from
+  `val` to `last`, which supplies the register allocation the a2 chassis was
+  missing.
+- **The const-1 carrier is a lever, and it was never measured before s19.** Every
+  session s1-s18 inherited `val` as the carrier from session 1 and treated it as
+  fixed. Measured across four candidates and five chassis this session: `last`
+  closes three different chassis to 0/78 (a2, WD, and WD with the byte offset in
+  `wid`), `val` leaves each of them at 3/78, `idx2` costs 7-8 register names, and
+  `wid` loses the hoist defeat outright (80 build insns).
+- **Why the carrier matters mechanically.** Both `val` and `last` are set in two
+  basic blocks of the inner loop, so count_loop_regs_set (loop.c:3040) marks each
+  `may_not_move` and the hoist is defeated by either -- both build 78 insns. What
+  the choice decides is which scratch local spans basic blocks (global_alloc) and
+  which is block-local (local_alloc). With `last` carrying the constant, `val` is
+  confined to the D_800A3444 read-modify-write and the if-body's allocation lands
+  on the target's.
+- **The three-way-tension framing from s18 was too strong.** s19's h3 form (WD +
+  the pre-loop constant staged through `idx`) satisfies the operand order, the
+  inner-loop head AND the back-edge delay slot simultaneously at 4/78; its
+  residual is the prologue save order, a class no earlier session had seen. The
+  tension was a property of the carriers tried, not of the function.
+- **Fifth second-set carrier priced and killed:** the POST-loop constant
+  (`idx = 1; return idx;`) survives on the multiply chassis and recovers the loop
+  head, but lands on the same seat rotation as the byte-offset write-back
+  (12/78); it is deleted outright on the WD chassis. Split-init of the loop index
+  (`idx = i; idx += j;`) is inert on all six chassis, because combine decrements
+  REG_N_SETS when it folds the copy away.
+- **Methodological note for the next function.** The lever that closed this
+  function was a variable this ledger had treated as scenery for eighteen
+  sessions. When every chassis is measured dead, re-examine the inherited
+  constants of the chassis itself -- which local carries which value -- before
+  concluding the residual is an RA foreclosure.
+
+## s19 re-run (2026-09-02) -- MATCH RE-VERIFIED FROM SCRATCH
+- `sandbox func_800645B0 --disable all` = **score 0**, target_insns 78,
+  build_insns 78, rules_dropped 0, strip_cheat_asm true, scorable true.
+- `verify-oracle` = `"ok": true`, `build_sha1 == original_sha1_locked ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa`, `build_matches: true`.
+- `canonical func_800645B0` = verdict **C** ("pure-C distance 0 <= 50").
+- The honest floor for this function is **0**, not 1. Every prior session's
+  "floor 1" and every standing-ruling FORECLOSED/REFUSED disposition recorded
+  for func_800645B0 in docs/grind/decisions.md (2026-08-13, 2026-08-20,
+  2026-08-25) is SUPERSEDED: the pure-C match exists and is in
+  memory/grind/func_800645B0/candidate.c.
+- The immediately-preceding session produced this identical body and was
+  discarded by the driver on a `self_vet.md` FAMILY:/SCOPE: count defect. Both
+  driver gates (`grindlib.validate_self_vet`, `grindlib.check_banned_constructs`)
+  now return `(True, '')`; see hypotheses.md, session s19 re-run.
