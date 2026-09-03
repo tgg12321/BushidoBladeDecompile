@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 27,
- "current_modality": "escalation",
+ "session_count": 28,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -165,18 +165,24 @@
    "floor": 3,
    "modality": "escalation",
    "headline": "Owner's 2026-09-01 Ruling-A probe EXECUTED: guard-only duplication is dead at 18/44/47, the .cse dump confirms the EBB-boundary attribution AND proves target's own CFG carries the same join (so cse ca"
+  },
+  {
+   "session": 28,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "Floor holds at 3 (re-measured 127/127); s27's toolchain question is answered with a complete GCC 2.7.2 copy-producer census - both frontier candidates (regmove.c, optimize_reg_copy_3) DO NOT EXIST, an"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The producer of target's loop-2 preheader copy is a pass that creates or preserves a redundant reg-reg copy ACROSS a join label - it is not cse (killed this session), not combine on an in-block use (s17's seven-path enumeration), and not local-alloc's optimize_reg_copy_1/_2 (s15/s22 analysis + G1=G2=13 measurement).",
-   "mechanism": "Item 3 of this session's evidence shows a producer must exist that is insensitive to the code_label boundary, since target's own CFG has the join and still emits the copy. Every pass enumerated across 27 sessions is now excluded, so the enumeration itself is incomplete rather than the search.",
-   "next_probe": "Not a C probe: a toolchain reading. Enumerate every 2.7.2 pass that can emit a (set (reg) (reg)) not present in the incoming RTL - candidates not yet read end to end for this function are reload's inheritance/spill-copy emission (reload1.c emit_reload_insns) and regmove/optimize_reg_copy_3 - and check each against the constraint 'must fire in a block whose predecessor is a join'. Only if one qualifies does a C spelling become worth pricing."
+   "hypothesis": "reload1.c's reload/inheritance copy emission is the last unmeasured producer in the completed census, and is the only remaining pass that could create target's preheader copy addu $a3,$a0,$zero at 0x800178D0 without a source-level copy statement.",
+   "mechanism": "reload1.c holds 13 emit_move_insn/gen_move_insn sites (emit_reload_insns and the inheritance paths). scan_hand_coded reports 7 spills in the 127-insn target (s27, E-s27-5), so a reload situation is not a priori absent - but a reload copy is normally reg-to-stack or stack-to-reg, and the copy at 0x800178D0 is pseudo-to-pseudo with no stack slot in sight.",
+   "next_probe": "Read reload1.c's 13 sites end to end and identify which, if any, can emit a REGISTER-to-REGISTER reload copy with no memory operand. If one exists, characterise the reload class/conflict that triggers it and check the .greg/.lreg dumps of the standing candidate for that conflict at the loop-2 preheader; only if the conflict is reproducible does a C spelling become worth pricing."
   },
   {
-   "hypothesis": "The 3-point residual is unreachable in ordinary C on this chassis, and the function's disposition is the recorded foreclosure rather than a further modality.",
-   "mechanism": "Loop 1 buys its copy for 1 point via a free second use (p = q). Loop 2 has no free second-use site anywhere in the function - post-loop 19-22, in-body 6, pre-join 12, guard-consuming 6-28 - and the copy cannot be bought by removing the cse boundary (18/44/47) or by relocating the load (13/14/14/21).",
-   "next_probe": "None until a re-activation trigger fires: an owner class grant covering an invented dead local whose only purpose is to orphan a reg-reg copy, or the toolchain finding above. Both are recorded in the decisions.md entry."
+   "hypothesis": "Target's preheader copy is not created by any optimisation pass at all - it is an ordinary expand-time copy from a source-level assignment, the same construct the candidate's `p = q` buys for loop 1, and the residual is purely the price of siting a second one for loop 2.",
+   "mechanism": "E-s28-1 closes the producer census; E-s28-2/3 kill the one new pass-level candidate by measurement; E-s28-4 excludes loop.c. If reload1.c also falls, no pass remains, and the copy must be present in the RTL before any optimisation - i.e. it came from C.",
+   "next_probe": "Conditional on the reload1.c reading above coming back negative. Then the search returns to siting a second-use carrier for loop 2's pointer at a price below 6, which the banked price table (post-loop 19-22, in-body 6, pre-join 12, guard-consuming 6-28) says has no measured site - so the productive move would be to look for a site that does not appear in that table at all, e.g. a use inside the loop-2 guard's own arm rather than in its condition."
   }
  ],
  "judge_constraints": [],
@@ -188,5 +194,31 @@
  "owner_continue_until_session": 23,
  "exhaustion_base": 27,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.428440+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.428440+00:00",
+ "kills": [
+  {
+   "session": 28,
+   "statement": "No pass in GCC 2.7.2 other than cse.c:7969 (cse_set_around_loop), loop.c's movable/giv/biv emitters, reload1.c's reload emission, flow.c's auto-inc rewriter, jump.c's if-conversion paths, unroll.c and",
+   "kill_scope": "class",
+   "measured_on": "source census of tools/gcc-2.7.2 at the frozen toolchain revision; no build involved, no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:251",
+   "result": "loop.c 14, reload1.c 13, unroll.c 9, jump.c 7, integrate.c 2, cse.c 1, flow.c 1, everything else 0. unroll.c's 9 are unr"
+  },
+  {
+   "session": 28,
+   "statement": "Writing loop 1 and/or loop 2 as a source-level while loop with body-inline invariants, so that jump.c's duplicate_loop_exit_test fires and opens cse_set_around_loop's REG_LOOP_TEST_P gate, puts no reg",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor), floor 3 at 127/127; zero FAKE constructs present in any cell",
+   "predicate_cite": "",
+   "result": "W1 = 29 at 120 build insns, W2 = 19 at 123, W3 = 21 at 123. The gate DID open: NOTE_INSN_LOOP_VTOP (emitted only by dupl"
+  },
+  {
+   "session": 28,
+   "statement": "loop.c's fourteen move emitters are not the producer of target's preheader copy addu $a3, $a0, $zero at 0x800178D0.",
+   "kill_scope": "instance",
+   "measured_on": "target listing asm/funcs/func_80017848.s against the frozen tools/gcc-2.7.2/loop.c; no build, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "Target's loops are not strength-reduced: the address is recomputed from scratch every iteration as addu $v0, $a0, $v1 (0"
+  }
+ ]
 }

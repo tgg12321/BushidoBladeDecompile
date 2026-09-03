@@ -3366,3 +3366,158 @@ Correction 1). Both gates FAIL.
 - [s27] 7 new disproven forms banked under memory/grind/func_80017848/rejected/ (185 total). src/ings.c was restored to its committed INCLUDE_ASM state; the working tree carries only ledger + docs/grind edits.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=27
+
+## s28 (forensics, 2026-09-03) — the frontier's toolchain reading, DONE: the complete
+## GCC 2.7.2 census of reg-reg-copy PRODUCERS, plus the one live candidate measured dead
+
+s27's frontier posed a toolchain question rather than a C probe: *"Enumerate every
+2.7.2 pass that can emit a `(set (reg) (reg))` not present in the incoming RTL —
+candidates not yet read end to end are reload's inheritance/spill-copy emission
+(reload1.c emit_reload_insns) and regmove/optimize_reg_copy_3 — and check each against
+the constraint 'must fire in a block whose predecessor is a join'."* That enumeration is
+now complete, one of its two named candidates does not exist in this compiler, and the
+one genuinely new producer it turned up was built in C and measured.
+
+### E-s28-0 — chassis re-measurement (quote THIS floor)
+`sandbox func_80017848 --disable all` with `memory/grind/func_80017848/candidate.c`
+applied over the `INCLUDE_ASM` anchor at src/ings.c:719: **score 3, target_insns 127,
+build_insns 127, scorable true, rules_dropped 0** (cheat_asm_stripped 2, all belonging
+to other functions in ings.c). Floor unchanged at 3.
+
+### E-s28-1 — the COMPLETE census of copy-emitting passes in tools/gcc-2.7.2
+Mechanical count of `emit_move_insn` / `gen_move_insn` call sites per pass file:
+
+| file | sites | reachable for this function? |
+|---|---|---|
+| loop.c | 14 | YES — but every site is a movable/giv/biv emitter (see E-s28-4) |
+| jump.c | 7 | 5 are if-conversion/`temp2` paths; the loop-relevant one is `duplicate_loop_exit_test` |
+| cse.c | **1** (cse.c:7969, in `cse_set_around_loop`) | gated on REG_LOOP_TEST_P — see E-s28-2 |
+| reload1.c | 13 | reload only; requires a spill/inheritance situation |
+| flow.c | 1 (flow.c:2239) | auto-inc address rewriting; MIPS has no auto-inc |
+| unroll.c | 9 | UNREACHABLE — `-funroll-loops` is not in `CC_FLAGS` (Makefile:35) |
+| integrate.c | 2 | inlining only; this function inlines nothing |
+| combine.c, local-alloc.c, global.c, reload.c, reorg.c, sched.c, stupid.c, caller-save.c | **0** | cannot create a copy at all |
+
+**Both of the frontier's named candidates are eliminated at the file level:**
+`regmove.c` **does not exist in GCC 2.7.2** (`ls tools/gcc-2.7.2/r*.c` returns only
+real.c, recog.c, reg-stack.c, regclass.c, reload.c, reload1.c, reorg.c, rtl.c,
+rtlanal.c), and `optimize_reg_copy_3` **does not exist** — local-alloc.c declares only
+`optimize_reg_copy_1` (local-alloc.c:251 / :700) and `_2` (:252 / :874), and the file
+contains zero `emit_move_insn`/`gen_move_insn` call sites. Those routines rewrite and
+delete existing copies; they cannot create one. The s27 frontier's "not yet read" list
+is therefore closed: only `reload1.c` survives as an unmeasured producer, and it needs a
+spill this copy site does not have.
+
+### E-s28-2 — the ONE new producer the census turned up, and its exact source-side gate
+`cse_set_around_loop` (cse.c:7909-7975) is cse's only copy emitter. At cse.c:7969 it
+does `emit_insn_after (gen_move_insn (src_elt->exp, SET_DEST (set)), p)` where `p` is an
+insn **before `loop_start`** — i.e. it plants a reg-reg copy in the loop PREHEADER,
+which is exactly target's `addu $a3, $a0, $zero` position, and it does so via a backward
+scan that STARTS inside the preheader and is merely bounded by a CODE_LABEL — so unlike
+cse's EBB scan it is NOT foreclosed by the join label that s27 proved target itself
+carries. It is the first producer found in 28 sessions that satisfies the frontier's
+"must work across a join" constraint.
+
+Its gate is a single bit: `REG_LOOP_TEST_P (src_elt->exp)` (cse.c:7933). Across the
+whole compiler that bit is SET in exactly one place — `jump.c:2253`, inside
+`duplicate_loop_exit_test` (jump.c:2163). And `duplicate_loop_exit_test` is called from
+exactly one place, `jump_optimize` at jump.c:626, under the guard (jump.c:620-625):
+
+    if (after_regscan && GET_CODE (insn) == NOTE
+        && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
+        && (temp1 = next_nonnote_insn (insn)) != 0
+        && simplejump_p (temp1))
+
+**That is the pass-input enumeration result.** A `NOTE_INSN_LOOP_BEG` immediately
+followed by an unconditional jump is the RTL that `while (cond) { ... }` / `for (...)`
+expands to (the jump-to-the-bottom-test). The candidate's loops are written PRE-ROTATED
+as `if (cond) { do { ... } while (cond); }`, which never emits that simplejump — so on
+the candidate chassis `duplicate_loop_exit_test` never fires, `REG_LOOP_TEST_P` is never
+set, and cse's only copy emitter is structurally unreachable. The source-side input
+shape that changes what the pass sees is *the loop's syntactic form*, nothing else.
+
+### E-s28-3 — the while-form built and measured: producer FIRES, copy does NOT appear
+Three cells on the candidate chassis, loops rewritten as `while` with the invariants
+(links pointer, base address, bound) read inline in the body so loop.c's LICM feeds the
+post-guard preheader:
+
+| cell | shape | score | build insns |
+|---|---|---|---|
+| W1 | BOTH loops as `while`, invariants inline in the body | **29** | 120 |
+| W2 | loop 2 only as `while` (loop 1 keeps the candidate's byte-exact do-while) | **19** | 123 |
+| W3 | loop 1 only as `while` (loop 2 keeps the candidate's do-while) | **21** | 123 |
+
+`pwsh tools/grinder/dump.ps1 -Func func_80017848` on W1 confirms the producer's gate
+opened: `NOTE_INSN_LOOP_VTOP` — emitted only by `duplicate_loop_exit_test`
+("Mark the exit code as the virtual top of the converted loop", jump.c) — is present for
+BOTH loops in `tmp/grind/func_80017848/dumps/ings.jump` (notes 319 and 328), and the
+duplicated guards carry the freshly-mapped pseudos the pass's `reg_map`/`replace_regs`
+creates (loop 1: regs 160/162/163 at insns 312/314/315; loop 2: regs 164/165/167/168 at
+insns 320/321/323/324), distinct from the in-loop pseudos 101/99 and 118/115. So the
+rotation fired exactly as read.
+
+**But no copy is emitted.** The dumps show `cse_set_around_loop` planting nothing:
+loop 1's preheader in `ings.loop` is
+`(insn 335 (set (reg 101) (plus (reg 84) (reg 79))))` /
+`(insn 336 (set (reg 107) (mem (reg 72 + 16))))` /
+`(insn 337 (set (reg 99) (mem (reg 101 + 28))))` — three LICM hoists, zero reg-reg
+copies — and loop 2's preheader is the same shape (insns 331/332/333/334). The
+while-form also COSTS instructions rather than adding them: LICM hoists the loop BOUND
+load out (insn 337 / insn 334), which target does not do — target reloads it every
+iteration (`lw $v0, 0x1C($a0)` at 0x80017900) — leaving the build at 120/123 insns
+against a 127-insn target. **KILLED at three spellings.** Banked as
+`rejected/s28_both_loops_while_licm_preheader_costs_29.c`,
+`rejected/s28_loop2_while_licm_preheader_costs_19.c`,
+`rejected/s28_loop1_while_licm_preheader_costs_21.c`.
+
+### E-s28-4 — why loop.c's 14 emitters cannot be target's producer either
+Read end to end this session. Two families, both excluded by target's own asm:
+(a) the movable path, `emit_move_insn (m->set_dest, m->set_src)` at loop.c:1702, only
+runs when `m->move_insn` is set, which loop.c:657-670 sets only when the invariant
+carries a `REG_EQUIV` note or a CONSTANT `REG_EQUAL` note — the source is then that
+note's expression, never an arbitrary pseudo, so it cannot produce `a3 = a0`;
+(b) the strength-reduction emitters (loop.c:3940, 3948, 3972, 4065, 5868, 5891, 6098)
+all require a giv/biv to have been created. Target's loops are NOT strength-reduced:
+the address is recomputed from scratch every iteration as `addu $v0, $a0, $v1`
+(0x800178DC in the preheader, 0x80017910 in the bottom delay slot) with the index `$v1`
+incremented separately by `addiu $v1, $v1, 0x1` — there is no incremented address
+register anywhere in the listing, which is the signature strength reduction would leave.
+
+### E-s28-5 — what this leaves
+After E-s28-1..4 the census is closed with exactly ONE producer still unmeasured for
+this function: `reload1.c`'s reload/inheritance copy emission (13 sites), which requires
+a spill. `scan_hand_coded --single` reports 7 spills in the 127-insn target
+(s27, E-s27-5), so the possibility is not zero, but the copy at 0x800178D0 sits between
+two values that are both live in hard registers across it and no stack slot is involved.
+The honest reading of the whole census is that target's preheader copy is not *created*
+by any pass: it is an ordinary expand-time copy from the source — the same thing the
+candidate's `p = q` buys for loop 1 — and the 3-point residual remains the price of
+buying that copy a second time for loop 2, which the banked price table puts at 6-28
+everywhere it has been sited.
+
+- [s28] Floor re-measured: 3 at 127/127 with candidate.c applied. Unchanged.
+- [s28] Complete census of GCC 2.7.2 reg-reg-copy producers banked (E-s28-1). regmove.c and optimize_reg_copy_3 DO NOT EXIST in this compiler; local-alloc.c has ZERO move-emitting call sites; unroll.c's 9 sites are unreachable without -funroll-loops (Makefile:35). Only reload1.c remains unmeasured, and it needs a spill this copy site does not have.
+- [s28] NEW producer found and its source-side gate identified: cse_set_around_loop (cse.c:7909, emitter at cse.c:7969) plants a reg-reg copy in the PREHEADER and is not foreclosed by a join label. Gate = REG_LOOP_TEST_P, set only at jump.c:2253 in duplicate_loop_exit_test, called only at jump.c:626 when NOTE_INSN_LOOP_BEG is immediately followed by a simplejump — i.e. only for a source-level `while`/`for` loop, never for the candidate's pre-rotated `if + do/while`.
+- [s28] The while-form was built and measured: W1 (both loops) = 29 / 120 insns, W2 (loop 2 only) = 19 / 123, W3 (loop 1 only) = 21 / 123. duplicate_loop_exit_test DID fire (NOTE_INSN_LOOP_VTOP at notes 319 and 328 in ings.jump; remapped guard pseudos 160-163 and 164-168), but cse_set_around_loop emitted no copy and LICM hoisted the loop bound out of the loop, which target does not do (target reloads it at 0x80017900). All three cells LOSE instructions against the 127-insn target.
+- [s28] loop.c's 14 emitters excluded by reading: the movable path (loop.c:1702) needs REG_EQUIV/constant-REG_EQUAL and so cannot emit a pseudo-to-pseudo copy; the seven giv/biv emitters need strength reduction, and target's loops are demonstrably not strength-reduced (address recomputed as `addu $v0,$a0,$v1` each iteration at 0x800178DC/0x80017910, index incremented separately by `addiu $v1,$v1,1`).
+- [s28] src/ings.c restored to its committed INCLUDE_ASM state; tree changes are ledger + rejected forms only.
+
+- [s28] Floor re-measured this session with memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor: sandbox func_80017848 --disable all = score 3, target_insns 127, build_insns 127, scorable true, rules_dropped 0 (cheat_asm_stripped 2, all belonging to other functions in ings.c). Unchanged from s25/s26/s27.
+
+- [s28] Complete census of reg-reg-copy producers in tools/gcc-2.7.2 by emit_move_insn/gen_move_insn call-site count: loop.c 14, reload1.c 13, unroll.c 9, jump.c 7, integrate.c 2, cse.c 1, flow.c 1; combine.c, local-alloc.c, global.c, reload.c, reorg.c, sched.c, stupid.c and caller-save.c all 0.
+
+- [s28] Both producers the s27 frontier named as unread are eliminated at the file level: regmove.c does not exist in GCC 2.7.2 (ls tools/gcc-2.7.2/r*.c returns only real.c, recog.c, reg-stack.c, regclass.c, reload.c, reload1.c, reorg.c, rtl.c, rtlanal.c), and optimize_reg_copy_3 does not exist - local-alloc.c declares only _1 (:251/:700) and _2 (:252/:874) and contains zero move-emitting call sites.
+
+- [s28] NEW producer identified: cse_set_around_loop (cse.c:7909-7975) emits emit_insn_after (gen_move_insn (src_elt->exp, SET_DEST (set)), p) at cse.c:7969 with p before loop_start - a reg-reg copy planted in the loop PREHEADER, exactly target's addu $a3,$a0,$zero position, via a backward scan that starts inside the preheader and so is NOT foreclosed by the join label s27 proved target carries. It is the first producer in 28 sessions to satisfy the frontier's across-a-join constraint.
+
+- [s28] Its source-side gate is a single bit: REG_LOOP_TEST_P (cse.c:7933), set in exactly one place in the whole compiler - jump.c:2253 inside duplicate_loop_exit_test (jump.c:2163) - which is called from exactly one place, jump.c:626, only when a NOTE_INSN_LOOP_BEG is immediately followed by a simplejump (jump.c:620-625). That is the RTL a source-level while/for loop expands to; the candidate's pre-rotated if + do/while never emits it, so cse's only copy emitter is structurally unreachable on the candidate chassis.
+
+- [s28] While-form cells measured on the candidate chassis: W1 (both loops as while, invariants inline in the body) = 29 at 120 build insns; W2 (loop 2 only) = 19 at 123; W3 (loop 1 only) = 21 at 123. All three LOSE instructions against the 127-insn target.
+
+- [s28] Dump-confirmed that the gate opened and the copy still did not appear: NOTE_INSN_LOOP_VTOP (emitted only by duplicate_loop_exit_test) is present for both loops in tmp/grind/func_80017848/dumps/ings.jump as notes 319 and 328, and the duplicated guards carry the pass's remapped pseudos (loop 1: 160/162/163 at insns 312/314/315; loop 2: 164/165/167/168 at insns 320/321/323/324) distinct from the in-loop pseudos 101/99 and 118/115. In ings.loop both preheaders hold only LICM hoists - loop 1 insns 335/336/337, loop 2 insns 331/332/333/334 - with no reg-reg copy.
+
+- [s28] The while-form's instruction loss is located: LICM hoists the loop BOUND load into the preheader (insn 337 for loop 1, insn 334 for loop 2), which target does not do - target reloads the bound every iteration at 0x80017900 (lw $v0, 0x1C($a0)).
+
+- [s28] loop.c's fourteen emitters excluded by reading: the movable path at loop.c:1702 requires m->move_insn, which loop.c:657-670 sets only for a REG_EQUIV or constant-REG_EQUAL invariant, so its emitted source is the note's expression and never an arbitrary pseudo; the seven giv/biv emitters (3940, 3948, 3972, 4065, 5868, 5891, 6098) require strength reduction, and target's loops are demonstrably not strength-reduced (address recomputed as addu $v0,$a0,$v1 at 0x800178DC and 0x80017910, index incremented separately by addiu $v1,$v1,1 at 0x800178FC).
+
+- [s28] 3 new disproven forms banked under memory/grind/func_80017848/rejected/ (188 total). src/ings.c was restored to its committed INCLUDE_ASM state; the working tree carries only ledger edits under memory/grind/func_80017848/.

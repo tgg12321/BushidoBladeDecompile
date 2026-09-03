@@ -863,3 +863,22 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * exists to seek a precedent for (no C form at distance 0 in 27 sessions).  Disposed
  * under the owner's standing ruling (2026-07-27) — see docs/grind/decisions.md.
  */
+/* [s28 FORENSICS ADDENDUM - body unchanged, still 3, re-measured 127/127 this
+ * session with this file applied over the src/ings.c:719 INCLUDE_ASM anchor.]
+ * s27 left a toolchain question rather than a C probe: which GCC 2.7.2 pass can
+ * emit a (set (reg) (reg)) that is not in the incoming RTL, across a join label?
+ * s28 answered it with a complete emit_move_insn/gen_move_insn call-site census.
+ * regmove.c and optimize_reg_copy_3 DO NOT EXIST in this compiler; local-alloc.c,
+ * combine.c, global.c, reload.c, reorg.c, sched.c and caller-save.c have ZERO
+ * move-emitting sites. The one new producer found - cse_set_around_loop, emitter
+ * at cse.c:7969 - plants its copy in the PREHEADER and is not foreclosed by a
+ * join, but its REG_LOOP_TEST_P gate (cse.c:7933) is opened only by jump.c:2253
+ * inside duplicate_loop_exit_test, which jump.c:626 runs only when a
+ * NOTE_INSN_LOOP_BEG is immediately followed by a simplejump - i.e. only for a
+ * source-level `while`/`for` loop, never for the pre-rotated `if + do/while`
+ * shape this body uses. Rewriting the loops as `while` opens that gate (the
+ * .jump dump shows NOTE_INSN_LOOP_VTOP for both loops) but emits no copy and
+ * lets LICM hoist the loop bound out, which target does not do: 29 / 19 / 21 at
+ * 120 / 123 / 123 insns. Do NOT re-derive the while-shape. See evidence.md
+ * E-s28-1..E-s28-5.
+ */
