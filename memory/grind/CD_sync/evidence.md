@@ -2675,3 +2675,55 @@ g1/h1/i1..i5/j1/j2/k1/k2/l1/m1.c with their full `-da` dump sets and ALLOCDBG st
 - [s115] candidate.c re-measured at 2/160/0 with the fake_ablate matrix bit-identical to s111/s114; tools/fake_ablate.py must be run under WSL with the venv activated (from PowerShell every variant reports ERR).
 
 - [s115] tmp/grind/CD_sync/s115/adiff.py is the new alignment-aware (difflib) normalized diff and is what decomposed i1's score of 6 into three independent 2-point defects; s108's index-wise ndiff.py reports a whole-function shift whenever a single instruction is inserted or deleted.
+
+
+## s116 (escalation modality - the F2 rung, worked under the owner's 2026-09-02 window reset)
+
+- [s116] CHASSIS RE-VALIDATION. j1 (rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c) re-splices at
+  src/system.c:376 and re-measures 3 / build_insns 160 / rules_dropped 0 with the s115 ALLOCDBG seat
+  vector reproduced bit-for-bit (p80 $s1 952, p77 $s2 736, p79 $s3 531, p78 $s4 434, p72 $s5 208,
+  p73 $s6 202) and the same three REG_EQUIV notes in the .lreg dump. The ledger floor of 2 still belongs
+  to candidate.c, which needs the owner-REFUSED cross-symbol chain-extender; j1 at 3 is the best form in
+  a submittable family.
+- [s116] j1's residual, decomposed by tmp/grind/CD_sync/s116/adiff.py: exactly three points - index 50
+  `lbu v0,0(s4)` where the target has `lbu v0,1(s2)` (the 1-point seat trade), and `sll a0,a0,0x2`
+  emitted at index 54 instead of 55 (the 2-point pair inversion).
+- [s116] THE PAIR INVERSION IS DEAD. `ix <<= 2; ix += (s32)tbl_125c; arg5 = *(s32 *)ix;` in place of
+  `ix <<= 2; arg5 = *(s32 *)(ix + (s32)tbl_125c);` makes sched1 emit the target's exact order. Measured
+  three ways (h1, e3, k1), each 7/160/0, each with an adiff that is index-for-index equal to the target
+  everywhere except the six-point register exchange below. The sixty sessions of forensic verdicts on
+  this pair (s6 qty_compare_1, s25 SCHEDDBG block=3, s43/s51 LUID renumbering, s70 ready-list dispatch,
+  s93 POLL-region axis) were all measured on the h5/n3 chassis and do NOT transfer to the
+  duplicated-arms chassis - the s115 F2 frontier statement is now CONFIRMED rather than hypothesised.
+- [s116] THE NEW WALL, stated precisely. With the order fixed, the block's residual is a two-way
+  local-alloc exchange worth six points: our t0 chain takes $v1 and arg5 takes $a0, the target has
+  $a0 and $v1 (adiff indices 49, 55, 56, 59, 61, 65). Nothing about the six callee-saved seats moves -
+  the ALLOCDBG table is bit-identical across j1/e1/e2/e3/e9 - so this is purely the ranking of
+  block-local quantities inside local-alloc: QTY_CMP_PRI = floor_log2(refs)*refs*size*10000/(death-birth),
+  with find_reg walking hard regs in ascending number order because tools/gcc-2.7.2/config/mips/mips.h
+  defines no REG_ALLOC_ORDER ($v0=2 < $v1=3 < $a0=4). arg5 must be ranked ABOVE the t0 chain to take
+  $v1; today it is ranked below.
+- [s116] The two self-reuse chains are load-bearing for the entire block shape. Every spelling that
+  breaks either of them - a separate address local (h4/n2/n4), a named intermediate for the scale or
+  the add (f2/h2/h3), array indexing with no locals (m2/m3/m4), or folding the t0 address into the call
+  (f1) - scores 15/160, i.e. loses the block wholesale. f3 (arg5 address in its own local) is the only
+  intermediate at 8. This is the constraint that makes the obvious reference-count levers unavailable:
+  every measured way of changing either chain's reference count also destroys the chain.
+- [s116] Endgame gate (a) re-run for the record: HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns),
+  identical to s107 (artifact tmp/grind/CD_sync/s116/scan_hand_coded.txt). S4 and S5 fire; S1/S2/S6 do not.
+- [s116] Tooling: tmp/grind/CD_sync/s116/ carries splice.py / cap.py / drive.ps1 / notes.sh / adiff.py
+  (the s115 harness re-pathed) plus the .c/.stderr/.lreg/.sched/.s captures for every variant named above.
+
+- [s116] j1 re-splices and re-measures 3 / build_insns 160 / rules_dropped 0 on the current chassis, with the s115 ALLOCDBG seat vector reproduced bit-for-bit (p80 $s1 952, p77 $s2 736, p79 $s3 531, p78 $s4 434, p72 $s5 208, p73 $s6 202) and the same three REG_EQUIV notes in the .lreg dump.
+
+- [s116] j1's residual decomposes to exactly three points: index 50 lbu v0,0(s4) against the target's lbu v0,1(s2) (the 1-point seat trade), and sll a0,a0,0x2 emitted at index 54 instead of 55 (the 2-point pair inversion).
+
+- [s116] Splitting the arg5 address into the ix variable (ix <<= 2; ix += (s32)tbl_125c; arg5 = *(s32 *)ix;) makes sched1 emit the target's exact order - measured on three independent bases (h1, e3, k1), all 7/160/0. The sixty sessions of forensic verdicts on this pair (s6 qty_compare_1, s25 SCHEDDBG block=3, s43/s51 LUID renumbering, s70 ready-list dispatch, s93 POLL-region axis) were all taken on the h5/n3 chassis and do not transfer to the duplicated-arms chassis.
+
+- [s116] With the order fixed, the block's whole residual is a two-way local-alloc exchange worth six points (adiff indices 49, 55, 56, 59, 61, 65): our t0 chain takes $v1 and arg5 takes $a0, the target has $a0 and $v1. The callee-saved seats never move - the ALLOCDBG table is bit-identical across j1/e1/e2/e3/e9.
+
+- [s116] The governing arithmetic is local-alloc's QTY_CMP_PRI = floor_log2(refs)*refs*size*10000/(death-birth) with find_reg walking hard registers in ascending number order; tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so $v0=2 < $v1=3 < $a0=4 and the higher-ranked quantity wins the lower register. arg5 must outrank the t0 chain to take $v1.
+
+- [s116] Both self-reuse chains are load-bearing for the block's whole shape: a separate address local (h4/n2/n4), a named intermediate for the scale or the add (f2/h2/h3), array indexing with no locals (m2/m3/m4), or folding the t0 address into the call (f1) all score 15/160. f3 at 8 is the only intermediate. This is why the obvious reference-count levers are unavailable today.
+
+- [s116] Gate evidence for a future disposition: scan_hand_coded tier=LOW 2/8 (unchanged since s107), and the SOTN-precedent census for the closing construct came back negative in s98/s106 - both endgame-lock AND-gates therefore stand FAILED. No foreclosure record was filed this session because the owner's 2026-09-02 ruling re-activated CD_sync with the exhaustion window RESET and directed the ladder be worked from its next rung, and that rung (F2) produced a CONFIRMED lever that removed a residual sixty sessions had ruled locked. The axis is not exhausted: the wall named this session (block-local quantity ranking inside local-alloc) has never been attacked.

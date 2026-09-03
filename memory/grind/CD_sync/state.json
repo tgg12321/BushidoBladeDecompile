@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 115,
- "current_modality": "synthesis",
+ "session_count": 116,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -699,23 +699,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Seat equation CLOSED: j1 (duplicated arms + prologue idx_1495 + *idx_1495 block read) scores 3/160 with all six callee-saved pseudos in their target seats and only ONE FAKE construct; residual is a 1-"
+  },
+  {
+   "session": 116,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "The 54/55 sll/addu pair inversion - the residual sixty sessions called theorem-locked - is DEAD: three C spellings on the j1 chassis emit the target's exact order; the remaining wall is a newly-named,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "p78 can reach the (208, 531) band with the prologue init while BOTH do_timeout index reads keep the target's lbu 0($s2) / lbu 1($s2) form, retiring j1's 1-point seat trade.",
-   "mechanism": "Two arithmetic openings off global.c:612-616 with p78 initialised in the prologue: (a) note ON with 4 references -> 8*10000/184 = 434, which any byte-neutral pair of extra idx_1495 mentions supplies (duplicated-statement-into-arms is now measured byte-neutral twice on this function, and the status&4 callback arm is the only other site that mentions idx_1495); (b) note DENIED with 2 references -> 2*10000/92 = 217, which clears p72's 208 and stays under p79's 531. s113 priced the second-live-set denial at a fixed +2 instructions for tbl_125c, but idx_1495's init is a single addiu off an already-live register rather than a lui/addiu pair, so that cost may not transfer.",
-   "next_probe": "On j1, restore ix = idx_1494[1]; in both copies, keep the prologue idx_1495 = idx_1494 + 1;, and add a second genuinely-live set of idx_1495 reached through the outer loop's back edge (s113's c1/d1/d2/d3 placement family). Accept only build_insns 160 with the .lreg note grep (tmp/grind/CD_sync/s115/notes.sh) showing NO REG_EQUIV const (plus (symbol_ref D_800A1494) 1), and read the ALLOCDBG table before spending a sandbox run: p77 returns to 9 refs / 1421, so route (b) only pays if the second set is free AND the i1 split-init is not needed. If either fails, switch to route (a)."
+   "hypothesis": "arg5's block-local quantity can be ranked above the t0 chain's on the h1 base - giving arg5 $v1 and the t0 chain $a0 - without breaking either self-reuse chain, which would take h1 from 7 to 1.",
+   "mechanism": "local-alloc QTY_CMP_PRI = floor_log2(refs)*refs*size*10000/(death-birth); find_reg walks hard regs ascending (no REG_ALLOC_ORDER in mips.h). Today the t0 chain (4 references, born at the lbu at index 49, dying at lw a3 at index 65) outranks arg5 (2 references, born at lw v1 at 56, dying at sw at 61). arg5 at 3 references would be floor_log2(3)*3*10000/5 = 6000 and the t0 chain at 3 references would be 1*3*10000/16 = 1875 - either side of the inversion suffices. Every reference-count edit measured in s116 also broke a self-reuse chain and cost 8 points; the un-probed shapes are ones that add or remove a reference WITHOUT introducing a new named local: a duplicated-statement-into-arms carrier placed inside the do_timeout block itself, and sub-word or re-associated spellings of the existing statements.",
+   "next_probe": "On h1 (7/160, order already correct), enumerate reference-count edits that keep both `t0 *= 4; t0 = (s32)((u8 *)tbl_125c + t0);` and `ix <<= 2; ix += (s32)tbl_125c; arg5 = *(s32 *)ix;` textually intact. Before spending a sandbox run, read the .lreg dump for the block and count the actual qty births/deaths/references for the t0 and arg5 quantities - s116 inferred these from the emitted registers, never read them, and the model predicted the target's own allocation incorrectly, so the first task is to reconcile the model against h1's dump."
   },
   {
-   "hypothesis": "The 2-point sll a0,a0,0x2 / addu v0,v0,s3 inversion at indices 54/55 is a property of the duplicated-arms chassis's schedule, not the theorem-locked h5-basin residual that s6-s93 ground for sixty sessions.",
-   "mechanism": "Every prior forensic verdict on this pair (s6 qty_compare_1, s25 SCHEDDBG block=3, s43 LUID renumbering, s51 LUID 8-vs-12, s70 ready-list dispatch, s93 POLL-region structural axis) was measured on the h5 or n3 chassis, where the do_timeout region is a single block reached by two branches. On j1 the region exists as two copies through flow and sched1 and is re-merged only by jump2 find_cross_jump, so the block boundaries, the LUID numbering and the ready-list contents at the decisive clock are different objects; the banked mechanism-locked verdicts are chassis-relative and do not transfer.",
-   "next_probe": "Run tools/sched_solver (order- and clock-exact, both passes) on j1's .sched/.sched2 dumps for the block holding normalized indices 50-60, then classify the 54/55 inversion with tools/ra_solver/inverse_compose.py classify before writing any C. Source-order permutation is already dead (k1/k2 at 7/160), so the lever must come from the solver's ranked C-lever vectors."
+   "hypothesis": "The sched1 tie at the contested clock can be broken by INSN_PRIORITY rather than by INSN_LUID, which would deliver the target order on the j1 emission order and therefore WITHOUT the six-point register exchange - taking j1 from 3 to 1.",
+   "mechanism": "rank_for_schedule compares INSN_PRIORITY first and only falls through to INSN_LUID on a tie. The two chains are tied because [sll a0][addu a0][lw a3][jal] and [addu v0][lw v1][sw][jal] have equal-cost paths. If the arg5 chain's path cost were one unit longer - or the t0 chain's one shorter - addu v0 would win the clock on j1's emission order, where the registers are already correct.",
+   "next_probe": "Run tools/sched_solver (order- and clock-exact, both passes) on j1's and h1's .sched dumps for the block holding normalized indices 49-66 and read out the two INSN_PRIORITY values and the exact insn_cost of each dependence link; then ask tools/ra_solver/inverse_compose.py classify for the C-lever vectors that change one path cost without changing the emitted insn set. s116 did not run either solver - this is the F2 frontier's original prescription, still un-executed."
   },
   {
-   "hypothesis": "candidate.c's two FAKE units target the same pseudo that j1 now seats structurally, so at least one is redundant on the j1 chassis and the composite may reach 0 or 1.",
-   "mechanism": "The cross-symbol chain-extender exists to deny p78's REG_EQUIV note (s105/s111); j1 reaches p78's correct seat WITH the note, via four references. The two levers therefore attack the same pseudo by different routes and have never been measured on the same chassis.",
-   "next_probe": "Splice j1 plus candidate.c's idx_1495 chain-extender line - measurement only, since the cross-symbol idiom is owner-REFUSED for submission (2026-07-20), so a 0 here is a diagnostic that names exactly what the chain-extender is worth on the closed-seat chassis, not a candidate. Separately splice j1 plus the i1 split-init (already measured as j2 at 5/160). Record both ALLOCDBG tables."
+   "hypothesis": "The 1-point seat trade (index 50: our lbu v0,0(s4) against the target's lbu v0,1(s2)) can be retired on the duplicated-arms chassis by denying p78's REG_EQUIV note so that a 2-reference idx_1495 still reaches the (208, 531) band.",
+   "mechanism": "Restoring ix = idx_1494[1] in both duplicated copies moves two references from p78 to p77: p78 falls to 2 references (108 with the note on, 217 with it denied - in band) and p77 rises to 9 references (1421), which then outranks p80's 952 and steals $s1. s112's success-block placement denies the note at zero instruction cost on the n3 chassis but has never been measured on the duplicated-arms chassis; p80 would additionally need to clear 1421, which the i1 split-init does at 3636 for 2 instructions, or a 3-reference p80 would do at 1428 for less if a byte-neutral third reference exists.",
+   "next_probe": "On j1, restore ix = idx_1494[1] in both copies, move the idx_1495 initialisation into the success block (the s112 n3 placement), and read the ALLOCDBG table plus the .lreg note grep (tmp/grind/CD_sync/s116/notes.sh) BEFORE scoring: accept only build_insns 160 with no REG_EQUIV const (plus (symbol_ref D_800A1494) 1) and pri(p78) in (208, 531). If p77 at 1421 then outranks p80, measure the cheapest p80 lift that reaches 1429 rather than reaching for i1's split-init."
   }
  ],
  "judge_constraints": [
@@ -863,6 +869,22 @@
    "measured_on": "j1 duplicated-arms base (memory/grind/CD_sync/rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c), control 3/160 rules_dropped 0; FAKE state = pp pointer alias present, no chain-extender",
    "predicate_cite": "",
    "result": "Both score 7/160 against j1's 3 - the permutation costs four points rather than saving two. Statement order inside the b"
+  },
+  {
+   "session": 116,
+   "statement": "The schedule fix can be decoupled from the local-alloc hard-register exchange it arrives with, giving the do_timeout block the target's insn order and j1's register names at the same time, by re-ranki",
+   "kill_scope": "instance",
+   "measured_on": "j1 duplicated-arms base (memory/grind/CD_sync/rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c), control re-measured this session at 3/160 rules_dropped 0 with the s115 ALLOCDBG seat vector reprodu",
+   "predicate_cite": "",
+   "result": "None of the sixteen decoupled them. Every spelling that keeps both self-reuse chains intact (t0 *= 4; t0 = (s32)((u8 *)t"
+  },
+  {
+   "session": 116,
+   "statement": "Endgame-lock gate (a) for CD_sync: tools/scan_hand_coded.py --single CD_sync returns a STRONG tier, which would put the function on the canonical-asm grant path.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD asm/funcs/CD_sync.s, 160 insns, no candidate spliced",
+   "predicate_cite": "",
+   "result": "HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns) - only S4 (four loads in an 8-insn window at insn 49) and S5 (one ap"
   }
  ]
 }

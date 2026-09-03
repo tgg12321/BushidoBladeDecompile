@@ -21276,3 +21276,21 @@ Re-entry is mechanical when a trigger fires; do not re-file the residual escalat
 ## 2026-09-02 22:45 — func_80027640 + func_80030580 — MERGED — COMPLETED-C (operator lane)
 
 Both spend the 2026-09-02 foreclosed-bucket ruling: grants 5480a91e, Match 0df67969, layer-2 cheat-reviewer PASS on each, `queue done` re-verified SHA1 == oracle. Ledgers closed (git history keeps them). Foreclosed bucket is now `main` alone.
+
+## 2026-09-03 — CD_sync — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
+
+**Auto-filed by the grinder driver (2026-09-03)** after 116 sessions held the honest
+floor flat at 2 across 8 distinct modalities (escalation, forensics, permuter, recon, rederive, structural, synthesis, wip-import) without a
+session self-filing — the escalation-modality backstop (grind.ps1). This is the endgame-lock
+species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
+via a cheat (cheat-asm), honest pure-C floor 2,
+sanctioned levers exhausted across the full modality ladder (see memory/grind/CD_sync/
+evidence.md + hypotheses.md for the per-session kill record). Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
+CD_sync` = **LOW** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
+coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
+2026-08-31 ruling (.claude/rules/ordinary-c-judge-decidable.md): the item is FORECLOSED
+silently — this entry is the proof-of-foreclosure record, not a question; nothing is
+surfaced to the owner and no packet exists. The two AND-gates remain the unchanged
+STANDARD. The function stays INCLUDE_ASM on main; re-activation triggers are a new owner
+class grant covering the residual, a toolchain-fidelity finding, or an explicit owner
+`queue unpark`.
