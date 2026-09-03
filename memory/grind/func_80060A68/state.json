@@ -1,7 +1,7 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -93,23 +93,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics: W5's 5-instruction residual is ONE local-alloc decision, and it is bought - moving `D_800A3478 = outer + 0x18;` between the +2 read and the 0x1A store seats the +2 halfword value in $a0 (QT"
+  },
+  {
+   "session": 16,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Target's exact three-load geometry (slots 11/$a1, 19/$a0, 22/$a0) is now exhibited in ordinary C at 66 instructions (K7, score 5), and a copy statement in the +2 read's window buys BOTH target registe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "E2's entire residual is the missing third 0x10 load: give the +2 read its own load at slot 22 in $a0 while keeping p10's load early in $a1, and the function closes at 66 instructions.",
-   "mechanism": "In E2, cse folds p10 and the +2 read's pointer into a single $a1 load, so slot 22 has nothing to fill the +0 read's load-delay slot and the +2 read addresses $a1. Three fresh loads require a store between each consecutive pair of *(s32 *)(outer + 0x10) reads; the only stores available early enough are the three copy stores and the 0x18 store, and every arrangement using them measured 67 (the A/B/C families).",
-   "next_probe": "Enumerate the separator geometries s15 did not reach: (a) split a copy statement so ITS store lands between the p10 read and the +0 read, on the E2 chassis specifically; (b) reorder the three copy statements so a different one is the separator; (c) sweep the p10 read through the copy block on the E2 chassis (the B-sweep only covered the A-family). Record loads10 and whether slot 22 is filled for each."
+   "hypothesis": "On K7's spine (the gp store AFTER the 0x1A store, which is the only spine measured to put the third load at slot 11 at 66 instructions), some statement placed between the +2 read and the 0x1A store is a $v0 donor whose own instructions belong where target puts them -- and that body is the match.",
+   "mechanism": "L1 proves the donor's identity is free (a copy works, the gp store works); L4 proves the idx read does not donate; the copy donates but its lw/lw/sw triple lands at 21/23/26 instead of 16/18/20. What is needed is a donor whose emitted instructions are already scheduled in target's window slots 25-26, i.e. a two-instruction addiu/store pair -- of which the function has exactly two, D_800A3478 and D_800A347C, and both have been priced on the E2 spine but NOT as donors on K7's spine with every surrounding position swept.",
+   "next_probe": "On the K7 spine, sweep the D_800A347C addiu/store pair through the window between the +2 read and the 0x1A store, crossed with all positions of P, S4 and S5 and all legal tails, extracting the QTYDBG got value for reg74 and the load slots for each body. Q1-Q8 measured S7 early on the E2/copy spines only (68 insns); it has never been measured as the window donor on the spine that already has the slot-11 load."
   },
   {
-   "hypothesis": "E3's third load can be pulled from slot 26 ($v0) to slot 11 ($a1) by lowering p10's local-alloc priority the same way the +2 value's was lowered, rather than by moving the p10 statement.",
-   "mechanism": "In E3 the p10 statement sits immediately before its consumer, giving pseudo 75 a short span, a high priority, an early allocation call and the $v0 seat. s14's H-s14-2 showed the mirror move (lengthening the range to win $a1) works for this exact pseudo. The consumer here is the +4 read; deferring it lengthens p10's range without adding a reference.",
-   "next_probe": "On the E3 chassis, sweep the position of `temp_a1 = *(u16 *)(p10 + 4);` and of the 0x1C store that consumes it through every legal slot, re-extracting QTYDBG each time and watching for qty(reg 75) got=5. E3 is 3/66, so a single seat flip may be the whole remaining distance."
+   "hypothesis": "N2's 65-instruction body closes if p10's load can be held out of the slot-4 load-delay slot while its read still precedes the copy block.",
+   "mechanism": "N2 is target's stream shifted one slot earlier because the load fills a nop target keeps. The load is ready because it depends only on $v1. Anything that makes the load's operand not yet available at that point -- or that gives sched2 a higher-ranked insn for slot 4 -- restores the nop and re-emits the load at 11.",
+   "next_probe": "On the N2 spine, sweep statements into the gap between `outer = D_800A3468;` and the p10 read, and sweep the zero store's own position, watching whether slot 4 is a nop and whether the load re-emerges at 11. Also extract the sched2 trace (tools/grinder/dump.ps1 then the .sched2 dump) for N2 at T-61..T-57 to name the rank_for_schedule comparison that put the load there."
   },
   {
-   "hypothesis": "The two dispositions filed for this function (docs/grind/decisions.md 2026-08-30 and 2026-09-01) rest on a claim that is now doubly measured false and should not be re-opened as a disposition question.",
-   "mechanism": "Both entries state that target needs a load that is BOTH unshared and early-in-$a1, 'the one combination the law excludes at 66 instructions', and that closing the function REQUIRES a C variable assigned more than once. s14's W5 exhibited the first at 66 instructions in ordinary C; s15 buys the $a0 seat those entries called unreachable, also in ordinary C, and lowers the three-load floor from 5 to 3.",
-   "next_probe": "No probe needed; the correction is banked in evidence.md s15, hypotheses.md H-s15-1/2, and candidate.c's s15 header. The next session should grind the E2/E3 chassis, not the disposition."
+   "hypothesis": "The disposition entries filed 2026-08-30 and 2026-09-01 rest on a premise that is now falsified three times over and must not be re-opened as a disposition question.",
+   "mechanism": "Both entries state that target needs a load that is both unshared and early-in-$a1 and that this is the one combination the law excludes at 66 instructions, so closing the function requires a C variable assigned more than once. s14's W5 exhibited it at 66 instructions; s15 bought the $a0 seat the entries called unreachable; s16's K7 exhibits target's complete three-load geometry -- slot, register and count -- at 66 instructions in ordinary C, and L1 holds both register seats at once.",
+   "next_probe": "None needed; the correction is banked in evidence.md s16 sections 1-2, hypotheses.md H-s16-1/H-s16-2 and the two new rejected/ headers. The next session should grind the K7 and N2 spines, not the disposition."
   }
  ],
  "judge_constraints": [
@@ -197,6 +203,38 @@
    "measured_on": "today's HEAD chassis, 12 bodies, zero FAKE constructs",
    "predicate_cite": "",
    "result": "Each idx-position column is constant across all three p10 positions (7/67, 5/67, 7/67, 7/67), so the p10 statement's pos"
+  },
+  {
+   "session": 16,
+   "statement": "On the E2 spine (D_800A3478 gp store between the +2 read and the 0x1A store), no position of the p10 read among all nine spine gaps, crossed with every tail permutation and every idx position, emitted",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis (byte-identical to tmp/grind/func_80060A68/s14/text1b.c.HEAD), 228 bodies, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "Minimum score across the union is 2 -- the existing E2 class, with four new members (X5_3, X7_3, X9_2, Y3_2_2). The thir"
+  },
+  {
+   "session": 16,
+   "statement": "Using a moved copy statement as the $v0 donor in the +2 read's window costs about nine score points in every ordering measured, because the copy's own three instructions schedule after the 0x18/0x1A b",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 12 bodies, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "Scores 10-17 at 66-68 instructions; the moved copy is at 21/23/26 in every one. Both target register seats are held thro"
+  },
+  {
+   "session": 16,
+   "statement": "When the p10 read is placed before the D_800F10D0 zero store, its load is emitted at slot 4 and the body is 65 instructions in every ordering measured.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 24 bodies, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "Every body with the read before the zero store puts the load at slot 4. The best, N2 = O,P,Z,C1,C2,C3,S1,S2,S5,S3,S6,S4,"
+  },
+  {
+   "session": 16,
+   "statement": "Writing each halfword read inline into its own store, eliminating the temp2 and p10 locals, measures 10-12 and does not reach the score-2 class.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 8 bodies, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "66-68 instructions, score 10-12. The temp2 named intermediate is load-bearing for the score-2 class; removing it changes"
   }
  ]
 }

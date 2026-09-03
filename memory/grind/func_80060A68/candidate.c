@@ -1,3 +1,33 @@
+/* [s16 2026-09-03 - forensics modality.  BODY UNCHANGED (still the E2 body, 2 / build 66 /
+ * target 66); the s16 header below is prepended, the s15 header that follows is intact.
+ *
+ * WHAT s16 ADDS.  Three findings, none of which moved the floor:
+ *
+ * (1) The two halves of the residual are now each exhibited SEPARATELY at 66 instructions
+ *     in ordinary C.  E2 (this body) has target's register seats and target's
+ *     25/26/27 addiu / sw %gp(D_800A3478) / sh 0x1A group but only two 0x10 loads.  K7
+ *     (rejected/s16-K7-...) has TARGET'S EXACT THREE-LOAD GEOMETRY - lw $a1,0x10($v1) at
+ *     slot 11, lw $a0,0x10($v1) at 19 and 22 - and its whole residual is that the +2
+ *     halfword value seats in $v0 (QTYDBG reg74 ord 5 got=2).
+ *
+ * (2) s15's mechanism claim is CORRECTED.  The $a0 seat does NOT require
+ *     `D_800A3478 = outer + 0x18;` inside the +2 read's range; it requires ANY short-lived
+ *     high-priority $v0 pseudo there.  rejected/s16-L1-... moves the third COPY statement
+ *     into that window instead and carries BOTH target seats at once (reg74 got=4,
+ *     reg75 got=5) with three loads at 66 instructions - the first body in the campaign to
+ *     do so.  It costs 9 points elsewhere because the moved copy's own three instructions
+ *     schedule at 21/23/26 rather than target's 16/18/20.
+ *
+ * (3) The E2 spine was swept EXHAUSTIVELY: 228 bodies, all ordinary C
+ *     (tmp/grind/func_80060A68/s16/{xsweep,ysweep}.log).  Not one produced target's load
+ *     geometry [11,19,22].  On the spine that has the gp store inside the +2 read's range,
+ *     the third load lands at slot 4 (65 insns), at slot 26/27 (66 insns), or the body
+ *     costs 67 - never slot 11.
+ *
+ * NEXT.  The lead is K7's spine (gp store AFTER the 0x1A store), where the load geometry
+ * is already target's: find a $v0 donor for the +2 read's window whose own instructions
+ * belong where target puts them.  See hypotheses.md H-s16-1..4.
+ */
 /* [s15 2026-09-03 - forensics modality.  BODY REPLACED: candidate.c is now the E2 body.
  * Still 2 / build 66 / target 66, but a DIFFERENT and much closer score-2 class; the
  * s7..s14 body is preserved at rejected/s14-candidate-2load-a1-plus0-read-score2.c.]

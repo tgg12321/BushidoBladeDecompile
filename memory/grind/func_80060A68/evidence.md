@@ -2348,3 +2348,136 @@ Its residual is that the third load is emitted at slot 26 in $v0 (`lw $v0,0x10($
 - [s15] sched2 forensic cause of that instruction (tmp/grind/func_80060A68/s15/V4.sched2.trace): ';; ready list at T-30: 39 (3)' - the list holds only p10's load, which is forced into that slot and spent as the +2 pointer's delay-slot filler; W5's trace shows the same insn lingering from T-26 down past T-39 because the 0x18 store keeps the list non-empty.
 
 - [s15] All ~70 bodies measured this session are ordinary C: no invented local, no variable written twice, no dead code, no volatile, no asm, no FAKE construct of any kind.
+
+## s16 (2026-09-03) - forensics modality
+
+Chassis re-check first (mandatory kill re-audit): HEAD `src/text1b.c` is byte-identical to
+`tmp/grind/func_80060A68/s14/text1b.c.HEAD`, and the two closest banked forms re-measure
+unchanged on it - **E2 = 2 / build 66 / target 66 (two 0x10 loads)** and
+**E3 = 3 / build 66 / target 66 (three loads)**. Every one of the ~270 bodies measured this
+session is ordinary C: no invented local, no variable written twice, no dead code, no
+volatile, no asm, no FAKE construct anywhere - so no ablation was applicable and the s15
+instance kills stand as measured.
+
+Statement labels are s15's: C1/C2/C3 = the three 0x20/0x24/0x28 copies; S1 = the 0x18 store
+of the +0 halfword; S2 = `temp2 = *(u16 *)(*(s32 *)(outer + 0x10) + 2);`; S3 = the 0x1A
+store; S4 = `idx = *(u16 *)outer;`; S5 = `D_800A3478 = outer + 0x18;`;
+S6 = `temp_a1 = *(u16 *)(p10 + 4);`; S7 = `D_800A347C = outer + 0x20;`; S8 = the 0x1C store;
+P = `p10 = *(s32 *)(outer + 0x10);`; O = `outer = D_800A3468;`; Z = the D_800F10D0 zero
+store.
+
+### 1. Target's exact three-load geometry is REACHABLE in ordinary C at 66 instructions.
+
+`K7` = C1,C2,C3, S1, S2, S3, P, S4, S5, S6, S7, S8 (the gp store AFTER the 0x1A store)
+measures **5 / build 66 / target 66** and emits
+
+    slot 11  lw $a1,0x10($v1)      slot 19  lw $a0,0x10($v1)      slot 22  lw $a0,0x10($v1)
+
+which is target's load multiset in target's slots, register for register. This is the first
+time the campaign has had it at 66 instructions; s14's W5 and the s15 A/B/C families either
+missed a slot or cost 67. K7's entire residual is the +2 halfword value's seat -
+`tools/ra_solver/local_extract.py` QTYDBG gives qty11 / reg74, birth 36, death 38, refs 2,
+allocation order 5 of 25, **got=2 ($v0)** where target needs $a0 - plus the tail order that
+follows from it (the idx read hoisted into slot 25 and the addiu / sw %gp pair pushed to
+27/28 instead of target's 25/26). `L4` (S4 moved into the +2 read's window on the same
+spine) is the same 5 / 66 with the same got=2, so the idx read is not a $v0 donor.
+
+Banked: `rejected/s16-K7-target-load-geometry-11-19-22-but-plus2-value-seats-v0-score5.c`.
+
+### 2. s15's $a0-seat mechanism is CORRECTED: the gp store is not required, only a donor.
+
+s15 recorded that the +2 value's $a0 seat is bought by placing `D_800A3478 = outer + 0x18;`
+between the +2 read and the 0x1A store. The measured mechanism is more general and s15's
+statement is one instance of it: what buys the seat is ANY statement in that window whose
+RTL creates a short-lived, maximal-priority pseudo that takes $v0 first
+(local-alloc.c:1649-1685 priority, 1563-1580 first-fit).
+
+`L1` = C1,C2, S1, S2, **C3**, S3, P, S4, S5, S6, S7, S8 - the third COPY statement moved into
+the window, gp store left after the 0x1A store - carries **both** target seats at once:
+QTYDBG reg74 birth 34 death 38 **got=4 ($a0)** AND reg75 (p10) birth 40 death 48
+**got=5 ($a1)**, with three 0x10 loads at 66 instructions. It is the first body in the
+campaign to hold both seats simultaneously. It measures 11 because the moved copy's own
+three instructions schedule at 21/23/26 instead of target's 16/18/20; the eleven variants
+L2, L3, L8 (which copy is moved) and V1, V2, V5, V6, V7, V8, V9, VA (P / S4 / S5 / S7
+positions around it) measure 10-17.
+
+Banked: `rejected/s16-L1-both-target-seats-but-moved-copy-schedules-late-score11.c`.
+
+### 3. The E2 spine was swept exhaustively - 228 bodies, no target load geometry.
+
+Spine [O, Z, C1, C2, C3, S1, S2, S5, S3] (i.e. the gp store INSIDE the +2 read's range,
+which is what buys E2/E3 their seats and target's 25/26/27 group):
+
+* **X sweep (108 bodies)** - P inserted at each of the 9 spine gaps x 12 tail permutations
+  of {S4,S6,S7,S8} with S6 before S8. Log: `tmp/grind/func_80060A68/s16/xsweep.log`.
+* **Y sweep (120 bodies)** - P at the 4 copy-region gaps x S4 at all 10 gaps x 3 tail
+  permutations of {S6,S7,S8}. Log: `tmp/grind/func_80060A68/s16/ysweep.log`.
+
+Best score in the union is 2 (the E2 class: X5_3, X7_3, X9_2, Y3_2_2 are new members).
+**Not one of the 228 emits the third load at slot 11.** On this spine the third 0x10 load
+lands at slot 4 (when P precedes the zero store; 65 instructions), at slot 26 or 27 (when P
+follows the 0x1A store; 66 instructions), or the body costs 67 instructions.
+
+### 4. A new one-instruction-SHORT class: N2, 65 instructions, score 2.
+
+`N2` = O, **P**, Z, C1,C2,C3, S1, S2, S5, S3, S6, S4, S7, S8 - the p10 read placed before
+the D_800F10D0 zero store - is target's stream exactly, except that p10's
+`lw $a1,0x10($v1)` is spent filling the load-delay slot after `lhu $v0,0x0($v1)` (our slot
+4), which target leaves as a nop; everything from slot 5 on is target shifted one slot
+earlier, including target's 25/26/27 group, and the body is 65 instructions. The load
+depends only on $v1, so it is unconditionally ready at the top of the block; N1, N5, N7, N8
+and every X1_* / X2_* row keep it at slot 4.
+
+Banked: `rejected/s16-N2-p10-read-before-zero-store-load-fills-target-nop-65insns-score2.c`.
+
+### 5. Three more spellings priced and closed.
+
+* **Fully inlined reads** (no `temp2`, no `p10`; each halfword read written inline into its
+  own store, so the three reads are separated by their own stores) - R1-R8, 8 bodies,
+  66-68 instructions, **score 10-12**. The `temp2` named intermediate is load-bearing.
+* **`D_800A347C = outer + 0x20;` moved early** as the cse separator or as the $v0 donor -
+  Q1-Q8 (8 bodies) measure 68 instructions / score 8, and L5 measures 67 / score 7. This
+  reproduces s15's H-family result on two further geometries.
+* **S6 or S8 used as the $v0 donor in the window** - Z1-ZA, 10 bodies, score 6-14.
+
+- [s16] Chassis re-audit: HEAD src/text1b.c is byte-identical to s14's saved copy; E2 re-measures 2 / build 66 / target 66 and E3 re-measures 3 / build 66 / target 66; all ~270 s16 bodies are FAKE-free so no ablation applied.
+
+- [s16] K7 (C1,C2,C3,S1,S2,S3,P,S4,S5,S6,S7,S8) measures 5 / build 66 / target 66 and reproduces TARGET'S EXACT THREE-LOAD GEOMETRY: lw $a1,0x10($v1) at slot 11, lw $a0,0x10($v1) at slots 19 and 22.
+
+- [s16] K7's entire residual is one seat: QTYDBG qty11 / reg74 (the +2 halfword value) birth 36 death 38 refs 2 order 5 of 25 got=2 ($v0), where target needs $a0; the tail order (idx at 25, addiu/sw-gp at 27/28) follows from it.
+
+- [s16] L4 (idx moved into the +2 read's window on K7's spine) is also 5 / 66 with reg74 got=2 - the idx read is not a $v0 donor.
+
+- [s16] L1 (third copy statement moved into the +2 read's window, gp store left after the 0x1A store) carries BOTH target seats simultaneously - reg74 got=4 ($a0) and reg75 got=5 ($a1) - with three loads at 66 instructions; it is the first body in the campaign to do so, and it measures 11 only because the moved copy schedules at 21/23/26 instead of target's 16/18/20.
+
+- [s16] CORRECTION to s15: the +2 value's $a0 seat does not require `D_800A3478 = outer + 0x18;` inside its range; any statement creating a short-lived maximal-priority $v0 pseudo there buys it (local-alloc.c:1649-1685 / 1563-1580). s15's finding is an instance of that mechanism, not the mechanism.
+
+- [s16] Exhaustive sweep of the E2 spine [O,Z,C1,C2,C3,S1,S2,S5,S3]: 228 ordinary-C bodies (X: P at all 9 gaps x 12 tail perms; Y: P at 4 copy-region gaps x S4 at 10 gaps x 3 tail perms). Minimum score 2; not one emits the third 0x10 load at slot 11.
+
+- [s16] N2 (p10 read placed before the D_800F10D0 zero store) is 2 / build 65 / target 66 - target's whole stream with p10's load spent on the slot-4 load-delay nop that target keeps, so the body is one instruction short.
+
+- [s16] Fully-inlined halfword reads (no temp2, no p10) measure 10-12 across R1-R8; the temp2 named intermediate is load-bearing for the current score-2 class.
+
+- [s16] D_800A347C moved early measures 67-68 instructions / score 7-8 across Q1-Q8 and L5, reproducing s15's H-family result on two further geometries; S6/S8 as the window donor measures 6-14 across Z1-ZA.
+
+- [s16] Chassis re-audit: HEAD src/text1b.c is byte-identical to tmp/grind/func_80060A68/s14/text1b.c.HEAD; E2 re-measures 2 / build 66 / target 66 and E3 re-measures 3 / build 66 / target 66; every s16 body is FAKE-free so no ablation applied.
+
+- [s16] K7 (C1,C2,C3,S1,S2,S3,P,S4,S5,S6,S7,S8) measures 5 / build 66 / target 66 and reproduces target's exact three-load geometry: lw $a1,0x10($v1) at slot 11, lw $a0,0x10($v1) at slots 19 and 22.
+
+- [s16] K7's entire residual is one local-alloc seat: QTYDBG qty11 / reg74 (the +2 halfword value) birth 36 death 38 refs 2 order 5 of 25 got=2 ($v0) where target needs $a0; the tail order (idx at 25, addiu / sw %gp at 27/28) follows from it.
+
+- [s16] L4 (idx moved into the +2 read's window on K7's spine) is also 5 / 66 with reg74 got=2, so the idx read is not a $v0 donor.
+
+- [s16] L1 (third copy statement moved into the +2 read's window, gp store left after the 0x1A store) carries BOTH target seats simultaneously -- reg74 got=4 ($a0) and reg75 got=5 ($a1) -- with three loads at 66 instructions; the first body in the campaign to do so.
+
+- [s16] CORRECTION to s15: the +2 value's $a0 seat does not require `D_800A3478 = outer + 0x18;` inside its range; any statement creating a short-lived maximal-priority $v0 pseudo there buys it (local-alloc.c:1649-1685 priority, 1563-1580 first-fit). s15's finding is an instance of that mechanism, not the mechanism.
+
+- [s16] Exhaustive sweep of the E2 spine [O,Z,C1,C2,C3,S1,S2,S5,S3]: 228 ordinary-C bodies (X: P at all 9 gaps x 12 tail perms; Y: P at 4 copy-region gaps x S4 at 10 gaps x 3 tail perms). Minimum score 2; not one emits the third 0x10 load at slot 11.
+
+- [s16] N2 (p10 read placed before the D_800F10D0 zero store) is 2 / build 65 / target 66 -- target's whole stream with p10's load spent on the slot-4 load-delay nop that target keeps, so the body is one instruction short.
+
+- [s16] Fully-inlined halfword reads (no temp2, no p10) measure 10-12 across R1-R8; the temp2 named intermediate is load-bearing for the current score-2 class.
+
+- [s16] D_800A347C moved early measures 67-68 instructions / score 7-8 across Q1-Q8 and L5, reproducing s15's H-family result on two further geometries; S6 or S8 used as the window donor measures 6-14 across Z1-ZA.
+
+- [s16] The function's residual is now bracketed by two ordinary-C bodies that each hold one half of it at 66 instructions: E2/candidate.c holds both register seats and target's 25/26/27 group but only two loads; K7 holds all three loads in target's slots and registers but seats the +2 value in $v0.
