@@ -1080,5 +1080,123 @@ class TestGrantRescan(unittest.TestCase):
         self.assertIn("(no bans affected)", buf2.getvalue())
 
 
+class TestForeclosureMechanics(unittest.TestCase):
+    """Owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): an unpark
+    resets the exhaustion window; standing-ruling foreclosure is scoped to the
+    endgame-lock floor (<= ENDGAME_LOCK_MAX_FLOOR); a spent probe is progress."""
+    MODS6 = ["structural", "permuter", "synthesis", "solver", "forensics", "rederive"]
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def hist(self, floors, mods=None, base=None):
+        mods = mods or self.MODS6
+        st = {"session_count": len(floors), "floor_history": [
+            {"session": i + 1, "floor": f, "modality": mods[i % len(mods)]}
+            for i, f in enumerate(floors)]}
+        if base is not None:
+            st["exhaustion_base"] = base
+        return st
+
+    # Ruling 1 — the window restarts at exhaustion_base
+    def test_unpark_base_hides_prior_flat_history(self):
+        st = self.hist([3] * 8, base=8)
+        self.assertNotEqual(G.assign_modality(8, st), "escalation")
+
+    def test_fresh_window_after_base_escalates_again(self):
+        st = self.hist([3] * 16, base=8)
+        self.assertEqual(G.assign_modality(16, st), "escalation")
+
+    def test_partial_window_after_base_keeps_grinding(self):
+        st = self.hist([3] * 15, base=8)
+        self.assertNotEqual(G.assign_modality(15, st), "escalation")
+
+    def test_sync_unpark_stamps_base_once(self):
+        G.init_ledger(self.root, "func_U", "s")
+        st = G.load_state(self.root, "func_U")
+        st["session_count"] = 9
+        st["floor_history"] = [{"session": i + 1, "floor": 2, "modality": self.MODS6[i % 6]}
+                               for i in range(9)]
+        G.save_state(self.root, "func_U", st)
+        os.makedirs(os.path.join(self.root, "engine"), exist_ok=True)
+        with open(os.path.join(self.root, "engine", "queue.json"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            json.dump({"items": [{"func": "func_U", "status": "active", "file": "s",
+                                  "distance": 2, "verdict": "C",
+                                  "unpark_reason": "owner ruling 2026-09-02: probe X"}]}, f)
+        self.assertTrue(G.sync_unpark(self.root, "func_U"))
+        st = G.load_state(self.root, "func_U")
+        self.assertEqual(st["exhaustion_base"], 9)
+        self.assertEqual(st["last_unpark_reason"], "owner ruling 2026-09-02: probe X")
+        self.assertNotEqual(G.assign_modality(9, st), "escalation")
+        # idempotent: the same reason never re-stamps (a later session must not
+        # keep pushing the base forward)
+        st["session_count"] = 12
+        G.save_state(self.root, "func_U", st)
+        self.assertFalse(G.sync_unpark(self.root, "func_U"))
+        self.assertEqual(G.load_state(self.root, "func_U")["exhaustion_base"], 9)
+
+    def test_sync_unpark_without_directive_is_noop(self):
+        G.init_ledger(self.root, "func_V", "s")
+        os.makedirs(os.path.join(self.root, "engine"), exist_ok=True)
+        with open(os.path.join(self.root, "engine", "queue.json"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            json.dump({"items": [{"func": "func_V", "status": "active", "file": "s",
+                                  "distance": 2, "verdict": "C"}]}, f)
+        self.assertFalse(G.sync_unpark(self.root, "func_V"))
+        self.assertNotIn("exhaustion_base", G.load_state(self.root, "func_V"))
+
+    # Ruling 2 — floor > ENDGAME_LOCK_MAX_FLOOR needs a second full ladder cycle
+    def test_wide_floor_does_not_escalate_at_eight(self):
+        st = self.hist([G.ENDGAME_LOCK_MAX_FLOOR + 1] * 8)
+        self.assertNotEqual(G.assign_modality(8, st), "escalation")
+
+    def test_wide_floor_escalates_after_two_cycles(self):
+        n = G.ESCALATION_FLAT_SESSIONS_WIDE
+        st = self.hist([15] * n)
+        self.assertEqual(G.assign_modality(n, st), "escalation")
+
+    def test_wide_floor_needs_six_modalities(self):
+        n = G.ESCALATION_FLAT_SESSIONS_WIDE
+        st = self.hist([15] * n, mods=["structural", "permuter", "forensics", "rederive"])
+        self.assertNotEqual(G.assign_modality(n, st), "escalation")
+
+    def test_endgame_floor_keeps_eight_session_trigger(self):
+        st = self.hist([G.ENDGAME_LOCK_MAX_FLOOR] * 8)
+        self.assertEqual(G.assign_modality(8, st), "escalation")
+
+    def test_autoescalate_title_follows_floor_scope(self):
+        os.makedirs(os.path.join(self.root, "docs", "grind"), exist_ok=True)
+        open(os.path.join(self.root, "docs", "grind", "decisions.md"), "w").close()
+        G.init_ledger(self.root, "func_W", "s")
+        st = G.load_state(self.root, "func_W")
+        st["floor_history"] = [{"session": 1, "floor": 15, "modality": "structural"}]
+        G.save_state(self.root, "func_W", st)
+        ref = G.autoescalate(self.root, "func_W", "s", "LOW", 0, "2026-09-02")
+        self.assertIn("LADDER EXHAUSTED (non-endgame residual, floor 15)", ref)
+        self.assertNotIn("RESOLVED BY STANDING RULING", ref)
+        st["floor_history"] = [{"session": 1, "floor": 2, "modality": "structural"}]
+        G.save_state(self.root, "func_W", st)
+        ref = G.autoescalate(self.root, "func_W", "s", "LOW", 0, "2026-09-02")
+        self.assertIn("RESOLVED BY STANDING RULING (2026-07-27)", ref)
+
+    # Ruling 3 — a foreclosure record is only valid in escalation modality (both titles)
+    def test_ladder_exhausted_title_refused_outside_escalation(self):
+        os.makedirs(os.path.join(self.root, "docs", "grind"), exist_ok=True)
+        with open(os.path.join(self.root, "docs", "grind", "decisions.md"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            f.write("## x — func_Z — OWNER-ESCALATION — LADDER EXHAUSTED (non-endgame residual, floor 15): FORECLOSED\n")
+        o = {"result": "owner-gated", "escalation_ref": "func_Z — LADDER EXHAUSTED (non-endgame residual, floor 15): FORECLOSED"}
+        ok, why = G.validate_outcome(o, "structural", self.root)
+        self.assertFalse(ok)
+        self.assertIn("escalation", why)
+        ok, _ = G.validate_outcome(o, "escalation", self.root)
+        self.assertTrue(ok)
+
+
 if __name__ == "__main__":
     unittest.main()

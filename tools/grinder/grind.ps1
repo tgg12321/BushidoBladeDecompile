@@ -1055,6 +1055,20 @@ while ($true) {
         }
     }
 
+    # 2b) unpark sync (owner ruling 2026-09-02, ruling 1): a queue item that
+    # returned to active with a fresh unpark_reason gets its exhaustion window
+    # reset BEFORE the modality is assigned — otherwise the old flat history
+    # forces `escalation` on the very first post-unpark session and the owner's
+    # ruling buys exactly one session (11/12 of the 2026-09-01 unparks).
+    try {
+        $sync = (python tools/grinder/grindlib.py sync-unpark . $func).Trim()
+        if ($sync -eq 'stamped') {
+            Log "${func}: unpark detected — exhaustion window reset (fresh flat window from here)."
+            git -C $Root add -- "memory/grind/$func/state.json" 2>$null
+            git -C $Root commit -m "grind: $func exhaustion window reset on unpark [skip-park-src-guard]" 2>$null | Out-Null
+        }
+    } catch { }
+
     # 3) brief with mandated modality
     $modality = (python tools/grinder/grindlib.py modality . $func).Trim()
     $outPath  = Join-Path $GrindTmp "outcome_$func.json"
@@ -1270,6 +1284,14 @@ while ($true) {
                 Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
                 Log "${func}: ENDGAME LOCK — FORECLOSED silently ($escRef; owner ruling 2026-08-31)."
                 Journal "$func s$sessionN [$modality] STANDING RULING (2026-07-27) applied — FORECLOSED: $($o.headline)"
+            } elseif ($escRef -match 'LADDER EXHAUSTED') {
+                # Owner ruling 2026-09-02 (ruling 2): a non-endgame residual (floor >
+                # ENDGAME_LOCK_MAX_FLOOR) foreclosed after two full ladder cycles —
+                # the record never claims the 2026-07-27 standing ruling.
+                $reason = "FORECLOSED (ladder exhausted, non-endgame residual — owner ruling 2026-09-02; silent per owner ruling 2026-08-31): $escRef"
+                Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
+                Log "${func}: LADDER EXHAUSTED (non-endgame) — FORECLOSED silently ($escRef)."
+                Journal "$func s$sessionN [$modality] LADDER EXHAUSTED (non-endgame residual) — FORECLOSED: $($o.headline)"
             } elseif ($escRef -match 'CANONICAL-ASM GRANT PATH') {
                 # Owner ruling 2026-08-18 (judge-sole-gate, b9d91163): STRONG-tier
                 # canonical-asm no longer waits on the owner. Stay ACTIVE — the next
@@ -1333,7 +1355,11 @@ while ($true) {
                     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
                     git -C $Root commit -m "grind: $func auto-filed canonical-asm grant path (backstop) [skip-park-src-guard]" 2>$null | Out-Null
                 } else {
-                    $bsReason = "FORECLOSED (standing ruling 2026-07-27, auto-filed backstop; silent per owner ruling 2026-08-31): $ref"
+                    # The ref carries its own title: RESOLVED BY STANDING RULING (floor <=
+                    # ENDGAME_LOCK_MAX_FLOOR) or LADDER EXHAUSTED (wider residual, owner
+                    # ruling 2026-09-02) — never claim the standing ruling for the latter.
+                    $bsKind = if ($ref -match 'LADDER EXHAUSTED') { 'ladder exhausted, non-endgame residual — owner ruling 2026-09-02' } else { 'standing ruling 2026-07-27' }
+                    $bsReason = "FORECLOSED ($bsKind, auto-filed backstop; silent per owner ruling 2026-08-31): $ref"
                     Invoke-Eng @('queue', 'foreclose', $func, '--reason', $bsReason) | Out-Null
                     Log "${func}: EXHAUSTION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + foreclosed."
                     Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file) — foreclosed: $ref"
