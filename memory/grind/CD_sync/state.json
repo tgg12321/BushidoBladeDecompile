@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 112,
+ "session_count": 113,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -681,23 +681,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Named the note-writer (cse.c:6923) and denied it in ordinary C: idx_1495's REG_EQUIV vanishes when its init sits in the success block, un-doubling its live length at build_insns 160 and seating it at "
+  },
+  {
+   "session": 113,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Structural: killed the displaced-base refs-lift (5 spellings) and the lower-the-parameters reading of the seat gate; found the FIRST measured C-level denial of the local-alloc.c:1064 doubling for a ba"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C spelling exists that keeps tbl_125c's lui/addiu in the prologue and its live range spanning the loop (so it still conflicts into the $s3 seat) while giving its set a source that is not CONSTANT_P at cse's fold point, denying the cse.c:6923 note and leaving its live length at the raw 74 (pri 405, inside the required (266,933) band).",
-   "mechanism": "cse.c:6923 attaches the note only when src_const is non-zero; src_const comes from the hash-table equivalence class or from CONSTANT_P (src_folded) (cse.c:6484-6507). p78 escapes because its source is (plus p77 1) and the fold depends on the table; p79 does not, because its source is a bare symbol_ref. The open question is whether any spelling makes the TABLE BASE arrive as a non-constant that cse cannot fold while the emitted insn pair is still lui %hi / addiu %lo.",
-   "next_probe": "Enumerate sources for tbl_125c that are not bare symbol decays: a pointer staged through a value cse tracks only as a register across an extended-block boundary (the n3 trick applied to the BASE rather than the offset), an address formed as &D_800A125C[k] where k is a live pseudo cse cannot resolve, and a subscript form whose base is re-derived after a multi-predecessor label. For each, grep the CD_sync segment of the .lreg dump for a REG_EQUIV on p79's set BEFORE scoring - tmp/grind/CD_sync/s112/notes.sh gives the verdict in one grep at zero measurement cost, and only spellings that both deny the note and hold build_insns at 160 are worth a sandbox run."
+   "hypothesis": "The +2-instruction cost of the note-denying second live set can be paid for by composing it with one of the already-measured honest forms that runs 2-4 instructions SHORT, landing the composite at build_insns 160 with the note denied and p79's union live length pushed above 87 (so pri falls under p77's 921 and into the band).",
+   "mechanism": "The second set denies the doubling at local-alloc.c:1021/1064 and costs exactly one address materialisation (2 insns); s110/s111 measured several honest placement forms that LOSE instructions for the opposite reason (the constant is rematerialised into the addressing): s111 p3 158, p2 157, r2 157, r1 156, s110 v1 157. Composing a -2 form with the +2 carrier is arithmetically neutral, and priority is then set by the union live length of the two sets' ranges, measured this session at 31 (tail) / 57 (poll) / 71 (after uses) / 74 (success block).",
+   "next_probe": "Splice c1's and d2's second set onto the s111 p3 / p2 / r2 bases and the s110 v1 base, and score each: accept only build_insns 160 with p79's ALLOCDBG row showing nrefs=4, livelen > 87 and hardreg 19 ($s3). Read the ALLOCDBG table before spending a sandbox run \u2014 the row is the whole verdict."
   },
   {
-   "hypothesis": "tbl_125c reaches the (266,933) band by a refs lift 3 -> 4 carried by a real, non-redundant address-forming insn inside the do_timeout block that combine folds into one of the two table loads.",
-   "mechanism": "reg_n_refs is built by flow.c at toplev.c:2983 and combine runs at toplev.c:3004, and combine's LOG_LINKS are basic-block-local, so the extra mention must sit in the same basic block as the reads. nrefs 4 with the doubled live length of 148 gives 2*4*10000/148 = 540, which clears p78's 266 and stays under p77's 933.",
-   "next_probe": "Rewrite the do_timeout window so the two table accesses are built from two separately-formed base addresses that combine re-merges - e.g. one access through an explicitly staged (u8 *)tbl_125c + scaled_index local and the other through a distinct (s32)tbl_125c + offset expression, with the staging local declared inside the debug block so it is a fresh named intermediate rather than a borrow - then read the insn-count ladder rtl/cse/cse2/flow/combine plus the ALLOCDBG nrefs for p79. Accept only nrefs 4 at build_insns 160; anything that raises build_insns has materialised the mention."
+   "hypothesis": "An ordinary-C source exists for tbl_125c that is not CONSTANT_P at cse's fold point, denying the REG_EQUIV note while keeping reg_n_sets at 1 and exactly three mentions (pri 3*10000/74 = 405, the ideal in-band value).",
+   "mechanism": "cse_insn writes the note only when src_const is non-zero (cse.c:6923); for a bare array decay src_const comes straight from CONSTANT_P (src_folded) at cse.c:6497-6505 without consulting the value table, which is why every relocation of the bare-symbol initialiser (s112 n2/m1/m2/m3, s113 a1-a4) keeps the note. Denial therefore requires the SET_SRC itself to be a non-constant expression that still emits one lui/addiu pair.",
+   "next_probe": "Enumerate the remaining non-cross-symbol, non-dead-arithmetic sources: a pointer whose value arrives from a MEM that update_equiv_regs cannot validate (local-alloc.c:1050 requires reg_basic_block >= 0, so a multi-block pointer loaded from memory takes no note \u2014 measure what a `D_800A125C` address held in a real global would cost in bytes), and a pointer set from another pseudo that global.c coalesces onto $s3 so the copy is deleted as a no-op. Grep the .lreg CD_sync segment for the REG_EQUIV note before scoring (tmp/grind/CD_sync/s113/notes.sh)."
   },
   {
-   "hypothesis": "A matched libcd bios.c CD_sync body exists upstream in Xeeynamo/psyz or sozud/psy-q-decomp, closing the function by provenance; s112 sharpens the acceptance signature for any such port.",
-   "mechanism": "BB2 links Sony's prebuilt PsyQ BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md: all 1,526 .text words masked-identical), so a matched upstream body IS the original source shape. That shape must produce p78 with NO REG_EQUIV note (s112) and p79 with either no note or nrefs >= 4, while still emitting the prologue lui/addiu pairs at asm/funcs/CD_sync.s:15-19.",
-   "next_probe": "Re-fetch Xeeynamo/psyz decomp/src/libcd/bios.c and sozud/psy-q-decomp (last checked s105, 2026-08-25, still INCLUDE_ASM). If a body exists, port it onto the goto chassis and run tmp/grind/CD_sync/s112/notes.sh on its .lreg before scoring: a port whose p79 still carries the note and only 3 refs cannot seat $s3 and is the wrong shape regardless of its provenance."
+   "hypothesis": "A matched libcd bios.c CD_sync body exists upstream in Xeeynamo/psyz or sozud/psy-q-decomp, closing the function by provenance.",
+   "mechanism": "BB2 links Sony's prebuilt PsyQ BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md: all 1,526 .text words masked-identical), so a matched upstream body IS the original source shape. s113 sharpens the acceptance signature: that shape must produce a tbl_125c pseudo with either NO REG_EQUIV note at three mentions, or a live length under 56, while still emitting the prologue lui/addiu at asm/funcs/CD_sync.s:15-16 and writing $s3 exactly once.",
+   "next_probe": "Re-fetch Xeeynamo/psyz decomp/src/libcd/bios.c and sozud/psy-q-decomp (last checked s105, 2026-08-25, still INCLUDE_ASM). If a body exists, port it onto the goto chassis and read its .lreg REG_EQUIV notes and ALLOCDBG p79 row before scoring."
   }
  ],
  "judge_constraints": [
@@ -781,6 +787,30 @@
    "measured_on": "n3 honest base (memory/grind/CD_sync/rejected/s112_HONEST_BASE_1495_success_block_note_denied_15.c, control 15/160, rules_dropped 0); no FAKE constructs present except the inherited pp pointer-alias",
    "predicate_cite": "",
    "result": "KILLED for both: t1 = 15 / build_insns 160 and t2 = 15 / build_insns 160, with p79's ALLOCDBG row (nrefs=3 livelen=148 p"
+  },
+  {
+   "session": 113,
+   "statement": "tbl_125c's reg_n_refs can be lifted from 3 to 4 by forming one of the two table addresses off a displaced base (tp = tbl_125c + 1; tp[i - 1]), whose displacement combine absorbs into the load's 16-bit",
+   "kill_scope": "instance",
+   "measured_on": "n3 honest base (memory/grind/CD_sync/rejected/s112_HONEST_BASE_1495_success_block_note_denied_15.c), control 15/160, rules_dropped 0; no FAKE constructs except the pp pointer-alias inherited from h0",
+   "predicate_cite": "",
+   "result": "KILLED for all five. p79 stays at nrefs=3 in a1 (livelen 150 pri 200), a2 (148/202, ALLOCDBG bit-identical to the contro"
+  },
+  {
+   "session": 113,
+   "statement": "The seat can be reached from the other side: leave tbl_125c at pri 202 and push the two parameters below idx_1495's noted priority of 138 on the h0 base, giving the target order 933 > 202 > 138 > pri(",
+   "kill_scope": "instance",
+   "measured_on": "n3 and h0 honest bases (controls 15/160, rules_dropped 0) plus the eleven s113 variants; no FAKE constructs except the inherited pp pointer-alias",
+   "predicate_cite": "",
+   "result": "KILLED. Honest live lengths top out at ~79 insns (mode 76, result 79, idx_1494/idx_1495 raw 75, tbl_125c raw 74); every "
+  },
+  {
+   "session": 113,
+   "statement": "A second, genuinely LIVE set of tbl_125c (one reached through the loop's back edge, so neither set is dead) makes reg_n_sets 2, denying the REG_EQUIV note and the live-length doubling, and lands p79 i",
+   "kill_scope": "instance",
+   "measured_on": "n3 honest base (control 15/160, rules_dropped 0); c1 and d1 sandbox-re-scored this session at 21/162; no FAKE constructs except the inherited pp pointer-alias",
+   "predicate_cite": "",
+   "result": "The MECHANISM is confirmed \u2014 the first measured C-level denial of the doubling for a bare-symbol pointer: c1 moves p79 f"
   }
  ]
 }

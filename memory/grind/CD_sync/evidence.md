@@ -2282,3 +2282,111 @@ callee-saved-seat permutation is decided.
 - [s112] Two byte-neutral refs-lift carriers measured inert on the n3 base (both 15/160, p79 row bit-identical to control): a cross-cse-block reg-reg handle copy, and a self-difference re-association of the second table address. Copies redistribute references between pseudos, they do not add them.
 
 - [s112] AGGREGATE-MERGE PROBE NEGATIVE: asm/funcs/CD_sync.s:66-68 loads the third debug_printf argument through its own lui $at,%hi(D_800A11DC) / lw $a2,%lo(D_800A11DC)($at) pair, not off $s3, so there is no base-register evidence that D_800A11DC and D_800A125C are one aggregate and the aggregate-merge family's prong (a) fails for this pair.
+
+## s113 — structural (the tbl_125c seat: refs-lift and note-denial carriers)
+
+Chassis re-measured at dispatch on the n3 honest base
+(`memory/grind/CD_sync/rejected/s112_HONEST_BASE_1495_success_block_note_denied_15.c`
+spliced over `INCLUDE_ASM("asm/funcs", CD_sync);` at `src/system.c:376`):
+ALLOCDBG ord=10..15 = 952 (p80, $s1) / 933 (p77 idx_1494, $s2) / 266 (p78
+idx_1495, $s3) / 263 (p72 mode, $s4) / 253 (p73 result, $s5) / 202 (p79
+tbl_125c, $s6) — bit-identical to s112's record, so every s112 conclusion still
+holds on this chassis. Target seating: p77 $s2, p79 $s3, p78 $s4, p72 $s5,
+p73 $s6, i.e. the single open gate is pri(p79) ∈ (266, 933).
+
+### [s113-E1] The raw live lengths of all five long-lived allocnos are ~75; only the REG_EQUIV doubling separates them
+
+Read off the `.lreg` register report for the CD_sync segment (n3 base):
+
+    Register 72 (mode)      used 2 times across 76 insns
+    Register 73 (result)    used 2 times across 79 insns
+    Register 77 (idx_1494)  used 7 times across 150 insns   <- 75 doubled
+    Register 78 (idx_1495)  used 2 times across 75 insns    <- note denied by n3
+    Register 79 (tbl_125c)  used 3 times across 148 insns   <- 74 doubled
+
+So the function's maximum honest live length is ~79 insns; 148/150 are the
+`reg_live_length[regno] *= 2` at local-alloc.c:1064. This bounds the whole
+priority landscape: with nrefs 2 a parameter can never fall below
+2*10000/79 = 253, and only the doubling can put a pseudo under that.
+
+### [s113-E2] Register-passed parameters can never take the doubling
+
+`assign_parms` attaches the parameter REG_EQUIV note only under
+`GET_CODE (entry_parm) == MEM && entry_parm == stack_parm`
+(tools/gcc-2.7.2/function.c:3826-3830) — i.e. only for a parameter that ARRIVES
+in memory. CD_sync's two parameters arrive in $a0/$a1, so p72/p73 are the one
+class of allocno here that structurally cannot be pushed below ~246 by any C
+spelling. Measured consistency: across all eleven variants compiled this session
+p72/p73 never moved outside 246-266 and never took a note. This closes the
+"lower the parameters instead of lifting tbl_125c" reading of the gate: on the
+h0 base (p78 note in force, pri 138) the required order 933 > 202 > 138 >
+pri(p72) > pri(p73) needs both parameters under 138, i.e. live lengths > 145,
+which is nearly twice the function's honest maximum.
+
+### [s113-E3] A displaced base does not ADD a reg_n_refs mention — it moves one
+
+Five spellings of "form the table address off a displaced base so the
+displacement is absorbed into the load's 16-bit offset by combine", all spliced
+onto the n3 base and ALLOCDBG-captured (`a1`..`a5` in tmp/grind/CD_sync/s113/):
+
+| variant | shape | p79 row |
+|---|---|---|
+| a1 | `tp = tbl_125c + 1; arg5 = tp[ix - 1];` (2nd access) | nrefs 3 livelen 150 pri 200 |
+| a2 | same on the 1st access | nrefs 3 livelen 148 pri 202 (bit-identical to control) |
+| a3 | byte displacement `tb = (u8*)tbl_125c + 4; *(s32*)(tb + (ix-4))` | nrefs 3 livelen 150 pri 200 |
+| a4 | negative displacement `tp = tbl_125c - 1; tp[ix + 1]` | nrefs 3 livelen 150 pri 200 |
+| a5 | BOTH accesses off one displaced base | nrefs **2** livelen 152 pri 131 |
+
+The reason is structural, not a fold accident: every C-level address chain
+mentions the base pseudo exactly once, so introducing a displaced handle makes
+the handle carry that mention instead of p79 (a5 makes it worse — one handle
+serving both accesses drops p79 to two mentions). This generalises s112's t1
+finding from reg-reg copies to the whole "extra address-forming insn" family:
+a fourth mention of p79 cannot come from re-spelling the two existing accesses.
+
+### [s113-E4] A second LIVE set of tbl_125c DOES deny the note — at a fixed cost of two instructions
+
+This is the first measured C-level denial of the local-alloc.c:1064 doubling for
+a bare-symbol pointer. `update_equiv_regs` bails at local-alloc.c:1021 when
+`reg_n_sets[regno] != 1`, before it can convert the CONSTANT_P REG_EQUAL into
+REG_EQUIV. s111 measured six multi-set spellings and found reg_n_sets still 1
+in all six because every extra set was DEAD (removed by cse_main /
+delete_dead_from_cse at toplev.c:2867 before the reg_scan at toplev.c:2925).
+The un-measured case is a second set that is genuinely live — one reachable by
+the loop's back edge, so neither set is dead:
+
+| variant | second set placed | p79 row | seat | build_insns |
+|---|---|---|---|---|
+| c1 | end of the do_timeout block, after both uses | nrefs 4 livelen **71** (NOT doubled) pri 1126 | $s1 | 162 (score 21) |
+| d1 | loop tail, immediately before the back edge | nrefs 4 livelen 31 pri 2580 | $s0 | 162 (score 21) |
+| d2 | success block | nrefs 4 livelen 74 pri 1081 | $s1 | 162 |
+| d3 | head of the inner poll loop | nrefs 4 livelen 57 pri 1403 | $s1 | 162 |
+| c2 | second live set of idx_1494 instead | p77 leaves the table; p79 unchanged 3/150/200 | — | — |
+
+Both halves of the gate move at once and both overshoot: the note is denied
+(livelen 71 raw, not 148) AND the set itself is a fourth mention, so
+pri = 2*4*10000/71 = 1126 outranks p77's 921 and takes $s1 instead of $s3. And
+every placement materialises a second `lui/addiu` address pair: build_insns 162
+against the target's 160, with the sandbox distance rising to 21.
+
+The composite arithmetic is worth recording for the next session: with the note
+denied, nrefs 4 needs live length > 87 to fall under p77, and nrefs 3 (no second
+set, hence no denial) gives the ideal 405. So the ONLY shape that lands in band
+is "note denied AND exactly three mentions" — a second set of p79 whose emitted
+insn already exists in the target's schedule. The target writes $s3 exactly once
+(asm/funcs/CD_sync.s:15-16, the prologue lui/addiu); there is no second write of
+$s3 anywhere in its 160 instructions, so a zero-cost second set would have to be
+a reg-reg copy coalesced onto $s3 — which needs a second pseudo already holding
+D_800A125C, i.e. another address materialisation, which is the same +2.
+
+- [s113] Chassis re-measured at dispatch: the n3 honest base still scores 15 / build_insns 160 / rules_dropped 0 with ALLOCDBG ord=10..15 = 952 (p80 $s1) / 933 (p77 idx_1494 $s2) / 266 (p78 idx_1495 $s3) / 263 (p72 mode $s4) / 253 (p73 result $s5) / 202 (p79 tbl_125c $s6) — bit-identical to s112, so every s112 conclusion still holds.
+
+- [s113] The .lreg register report gives the honest live-length ceiling for this function: mode 76, result 79, idx_1494 150 (raw 75), idx_1495 75 (note denied by n3), tbl_125c 148 (raw 74). Nothing honest exceeds ~79 without the local-alloc.c:1064 doubling.
+
+- [s113] assign_parms attaches a parameter REG_EQUIV only when GET_CODE (entry_parm) == MEM && entry_parm == stack_parm (tools/gcc-2.7.2/function.c:3826-3830), so register-passed parameters can never take the doubling — the parameters' priorities are structurally pinned at 246-266 in this function.
+
+- [s113] A displaced base (tbl_125c + 1 consumed as tp[i-1], and three sign/scale variants) never adds a reg_n_refs mention: the handle inherits the mention. Using ONE displaced base for both accesses drops p79 to nrefs=2 (pri 131).
+
+- [s113] A second LIVE set of tbl_125c denies the REG_EQUIV note (p79 live length 71 raw instead of 148 doubled) — the first measured C-level denial for a bare-symbol pointer, and the mechanism the owner-refused h5 cross-symbol chain-extender was buying. Cost is fixed at +2 instructions (a second lui/addiu pair) in all four placements: build_insns 162, sandbox 21.
+
+- [s113] The target writes $s3 exactly once in its 160 instructions (asm/funcs/CD_sync.s:15-16, the prologue lui/addiu) and uses it twice (lines 58, 63), so the original compile had nrefs=3 with a priority above 266 — i.e. the original's tbl_125c pseudo carried NO REG_EQUIV (raw 74 -> pri 405) or had a live length under 56. This is now the sharpest available statement of what the original source shape must have done.
