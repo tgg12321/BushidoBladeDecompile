@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 72,
+ "session_count": 73,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -441,23 +441,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Both open pass-level frontier items discharged: the local-alloc suggestion pass IS reachable from C (first copysugg in 72 sessions) but cannot reach either contested quantity, and qty_size costs two i"
+  },
+  {
+   "session": 73,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "s72 frontier item 1 CONFIRMED as a real mechanism - a multi-block carrier removes the t0 chain from local-alloc and seats the arg5 value at $v1 uncontested (first time in 73 sessions without a loop no"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The t0-chain value can be kept OUT of local-alloc entirely on the order-perfect base, the way the multiply-set t0 variable (reg98) already is, so that no local quantity of span 6 is ever created and the arg5 value becomes the only contender for $v1.",
-   "mechanism": "block_alloc scans forward from basic_block_head and creates quantities only for pseudos SET inside the block (local-alloc.c:1170-1180 and the reg_is_born call sites at :1865 and :2031); a value computed in a predecessor block is never a local quantity and falls through to global-alloc, which already seats reg98 at $a0 correctly on the floor body. This is the one route that changes WHICH quantities exist rather than trying to re-rank the two that do, and every re-ranking input (refs, span, quantity number, size, suggestion) is now measured dead.",
-   "next_probe": "On the g06 base, hoist the t0 index load and/or the shift above the do_timeout: label (into the loop body or the predecessor block) so the shift temp is live-in to block 3. The binding constraint is the fast path: check build_insns is still 179 BEFORE reading the score, since the hoisted computation also executes on the success path. Then dump with tmp/grind/CD_ready/s72/qtyrun.sh and confirm block 3 has three quantities rather than four - the arg5 value should then be uncontested."
+   "hypothesis": "A multi-block carrier exists whose global-alloc seat is $a0, which would leave the s73 r6 body needing only the 56/57 order.",
+   "mechanism": "MIPS has no REG_ALLOC_ORDER override, so global-alloc scans hard regs 0,1,2,... and a call-free allocno should reach $a0 (reg 4) once $v0 and $v1 are taken by block 3's three remaining local quantities. Measured carriers did not: `status` crosses the getintr calls and is forced call-saved ($s0), and the call-free `cnt` took $a3 rather than $a0 - which is unexplained and is the single open mechanical question on this route.",
+   "next_probe": "Dump global-alloc's conflict/preference state for the carrier allocno on r8 (cnt) - add or use a -dg/greg dump under tmp/grind/CD_ready/s74/ - and read why hard reg 4 is excluded or de-preferred while 7 is chosen. If $a0 is excluded by a hard-reg conflict, identify which insn contributes it (the puts argument at slots 47-49 or the printf argument at 68-69) and whether a carrier whose live range starts after slot 51 avoids it. Note r6/r8 both still emit the floor 56/57 order, so a carrier that reaches $a0 would score about 3, not 0."
   },
   {
-   "hypothesis": "find_free_reg's conflict set, rather than the allocation ORDER, decides the seat: if $v1 were unavailable to the t0-chain quantity at the moment it is seated it would fall to $a0 and the arg5 value would take $v1, with no change to any qty_compare_1 input.",
-   "mechanism": "The two quantities overlap in lifetime, so they must differ; the build's assignment is $v1 then $a0 purely because the t0 quantity is considered first and find_free_reg walks the allocation order ($v0 already taken by qty0/qty3, so $v1 is its first free choice). A third value live in $v1 across insns 57-61 would force it to $a0.",
-   "next_probe": "Enumerate C spellings that put a live value in $v1 across the t0 chain without adding an instruction - the most promising being a call return value or a second global load whose result is consumed after the printf. Read the QTYDBG 'used' hard-register set for the t0 quantity before and after, and reject anything that moves build_insns off 179."
+   "hypothesis": "The statement-order (INSN_LUID) lever can be restored on a globalized body, so that the arg5-value-at-$v1 seat and the target's 56/57 order are held at once.",
+   "mechanism": "On the non-globalized bases, moving the t0 statements after the arg5 load is what produces the target order (g06). On every globalized form that lever measured completely inert, which means the RTL shape that sched1 was steering changed when the carrier became multi-block. Identifying WHAT changed (a combine fold that no longer fires, a different insn count in the block, an extra copy) names the sub-lever.",
+   "next_probe": "Diff the .combine and .sched1 dumps of g06 against r6 for block 3 (pwsh tools/grinder/dump.ps1 CD_ready with each body spliced) and identify the insn-level difference that removes the order sensitivity. Then re-tune statement order on the globalized body with that difference held - in particular try carrying ONLY the t0 address (not the shift) in the carrier so the shift remains a local pseudo with a movable LUID."
   },
   {
-   "hypothesis": "A permuter campaign seeded from the g06 order-perfect base finds the spelling by search; no campaign in 72 sessions has been seeded from a body whose sched1 output is already the target's instruction sequence.",
-   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies whose residual mixed order and seats, so the search wandered across both. g06's residual is a single local-alloc tie and its scored neighbourhood is far narrower.",
-   "next_probe": "Build a FRESH workspace - the existing tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1. Mirror engine/buildconfig.py's flags exactly, validate the scorer reproduces 6 for g06 and 2 for candidate.c before launching, then run one fresh-seed window with 'python3 tools/permuter_campaign.py wait --dir <ws>', harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
+   "hypothesis": "A permuter campaign seeded from the s73 r6 body finds the remaining spelling by search; its residual is five instructions of which the arg5 half is already byte-exact, and no campaign in 73 sessions has been seeded from a body whose arg5 seat is already the target's.",
+   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies whose residual mixed order and seats. r6's residual is one register choice plus one adjacent transposition, a far narrower scored neighbourhood.",
+   "next_probe": "Build a FRESH workspace - the existing tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1. Mirror engine/buildconfig.py's flags exactly, validate the scorer reproduces 5 for r6 and 2 for candidate.c before launching, then run one fresh-seed window with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
   }
  ],
  "judge_constraints": [
@@ -599,6 +605,30 @@
    "measured_on": "HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0 and the g06 base at 6/179/0 immediately before the batch, both carrying their full inherited FAKE sets.",
    "predicate_cite": "",
    "result": "KILLED. On the floor body fa..fi, fk and fl are all 2/179/0, byte-identical to the base. On the g06 base gb, gd, gf, gg,"
+  },
+  {
+   "session": 73,
+   "statement": "rank_for_schedule's CLASS rung, the last rung between INSN_PRIORITY and INSN_LUID, cannot separate the two contested insns because insn_cost returns the CANDIDATE insn's result_ready_cost, which is 1 ",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis 2026-09-03, candidate.c (the floor body) re-verified live at 2/179/0 with its full inherited FAKE set",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2429",
+   "result": "Both candidates print cls=3 and the class difference is 0, so the comparison falls through to INSN_LUID (tmp) - INSN_LUI"
+  },
+  {
+   "session": 73,
+   "statement": "Globalizing the t0 chain through a multi-block carrier closes the seat half but spends the order lever: across twenty carrier/position spellings the carrier lands in $s0 or $a3 rather than $a0, and sl",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, both the g06 order-perfect base (re-verified live at 6/179/0) and candidate.c (re-verified live at 2/179/0), each carrying its full inherited FAKE set",
+   "predicate_cite": "",
+   "result": "KILLED. Best is 5 (`status`, shift-only r4 and whole-chain r6) against the floor of 2. r6 emits the chain in $s0 (lbu $s"
+  },
+  {
+   "session": 73,
+   "statement": "The mandated kill re-audit on the closest-to-target form: no inherited FAKE carrier on candidate.c is masking a lever, re-measured across the full ablation grid on the current chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, candidate.c (the floor body) with each subset of its 8 inherited FAKE units ablated in turn",
+   "predicate_cite": "",
+   "result": "KILLED (the re-audit finds nothing). keep-all reproduces 2/179 exactly and every other subset is worse (7, 11, 12, 13 .."
   }
  ]
 }

@@ -2684,3 +2684,129 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s72] local-alloc.c:1176 does not advance insn_number over NOTEs, so a do-while(0) can never move a quantity's span directly; every span change s67-s71 observed came from the note acting as a sched1 region boundary.
 
 - [s72] Byte-neutral respelling invariance extended by 24 measurements: operand commutation, u32 type narrowing, declaration-order swap, plain-integer address arithmetic, &arr[i] and [0] spellings are all byte-identical on both bases; commuting the arg5 address expression is the only respelling that changes bytes, and it changes exactly one instruction.
+
+## s73 (structural, 2026-09-03) - measured facts
+
+- [s73] Baselines re-verified live on the HEAD chassis BEFORE any probe:
+  `memory/grind/CD_ready/candidate.c` = score 2, build 179, target 179, rules_dropped 0;
+  `progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c` = 6/179/0.
+  `git status --porcelain src/system.c` verified clean after every batch. Harness copied into
+  `tmp/grind/CD_ready/s73/` (measure.ps1, dumpq.sh, qtyext.py, gen.py/gen2.py/gen3.py).
+
+- [s73] THE FLOOR BODY'S RESIDUAL IS EXACTLY TWO ADJACENT INSTRUCTIONS, read off the disassembly
+  at slot granularity: build slots 56/57 are `sll $a0,$a0,2` then `addu $v0,$v0,$s5`, and the
+  target is `addu $v0,$v0,$s5` then `sll $a0,$a0,2`. EVERY register in the block is already the
+  target's on the floor body - t0 chain $a0, arg5 address $v0, arg5 value $v1, a2 chain $v0. The
+  whole 179-instruction function differs from the target in that one adjacent transposition and
+  nothing else.
+
+- [s73] rank_for_schedule's CLASS rung - the only rung between INSN_PRIORITY (killed s72) and
+  INSN_LUID - is structurally unavailable to this pair, and the predicate is one line.
+  `tools/gcc-2.7.2/sched.c:2429` reads
+  `if (link == 0 || insn_cost (tmp, link, last_scheduled_insn) == 1) tmp_class = 3;`
+  and `insn_cost` (sched.c:1372-1380) returns `result_ready_cost` OF THE CANDIDATE INSN, which is
+  1 for every single-cycle MIPS ALU insn. The target's two contested insns are an `addu` and an
+  `sll`, both cost 1, so both candidates are class 3 on every call regardless of what is scheduled
+  around them, and the rung always falls through to `INSN_LUID` at sched.c:2464. The s72 RANKDBG
+  dump records the decision directly: `RANKDBG last=122 y=120 cls=3 x=106 cls2=3 val=0`
+  (tmp/grind/CD_ready/s72/cand.prio.txt:1770 and :2088). With s72's priority kill this closes the
+  ENTIRE rank_for_schedule ladder above INSN_LUID for this pair - the emission order of slots
+  56/57 is decided by RTL order alone.
+
+- [s73] The block-3 quantity table maps 1:1 onto emitted slots once each lui/%lo pair is counted as
+  a single RTL insn. Block 3's RTL insn list is
+  0 `la $a0,D_800161B8` / 1 call puts / 2 `lbu` t0 byte / 3 `lbu` arg5 index / 4 `lw $a1,D_800F19C0`
+  / 5 `sll` arg5 index / 6 `addu` arg5 addr / 7 `sll` t0 / 8 `lw` arg5 value / 9 `lbu` D_800A11D5 /
+  10 `addu` t0 addr / 11 `sll` a2 index / 12 `sw 0x10($sp)` / 13 `lw $a2` / 14 `lw $a3,0(t0)` /
+  15 `la $a0,D_800161C8` / 16 call printf, and local-alloc's birth/death are twice that index.
+  The t0-shift quantity is therefore literally [t0 `sll` -> t0 `addu`]: the floor order puts the
+  `sll` at index 6 and the `addu` at 10 (span 8, pri 1.0000, allocated last, $a0 - correct); the
+  target order puts the `sll` at 7 (span 6, pri 1.3333, an exact tie with the arg5 value, won on
+  quantity number, $v1 - wrong). The `addu` slot is pinned by the target, so on the target's order
+  the span cannot be anything but 6 and the refs anything but 4.
+
+- [s73] find_free_reg's conflict sets on the g06 order-perfect base, read for the first time
+  (tmp/grind/CD_ready/s73/g06.qty.txt, SUGGDBG-FFR lines): qty3 used={0,1,5,...} -> $v0;
+  qty0 used={0,1,5,...} -> $v0; qty1 (t0) used={0,1,2,5,...} -> $v1; qty2 (arg5)
+  used={0,1,2,3,5,...} -> $a0. Hard reg 5 ($a1) is in every set because the `pp` alias places
+  printf's $a1 argument load early, exactly as the target does. Nothing but the allocation ORDER
+  of qty1/qty2 decides the two contested seats - both colourings are feasible - and the s67 worry
+  that $a0 might be in the t0 quantity's used set does NOT hold on this base.
+
+- [s73] **CONFIRMED, A NEW AND WORKING MECHANISM (the s72 frontier's item 1): the t0 chain can be
+  removed from local-alloc entirely by carrying it in a function-scope variable that is also
+  referenced in another basic block.** `block_alloc` creates quantities only for pseudos whose
+  whole life is inside the block (local-alloc.c:1170-1180); a multi-block pseudo is
+  REG_BLOCK_GLOBAL and falls through to global-alloc. Measured on the g06 base with `status` as
+  the carrier (r6): block 3 drops from four local quantities to THREE -
+  `SUGGDBG-QTY blk=3 qty=0 reg1=101 birth=18 death=20`, `qty=1 reg1=97 birth=20 death=26`,
+  `qty=2 reg1=109 birth=22 death=30` - the t0-chain quantity is gone, the 1.3333-vs-1.3333
+  qty_compare_1 tie ceases to exist, and reg97 (the arg5 VALUE) is allocated
+  `QTYDBG blk=3 ord=2 qty=1 reg1=97 birth=20 death=26 refs=4 got=3` = **$v1, the target's seat**.
+  This is the first time in 73 sessions that the arg5 value reaches $v1 on a body derived from the
+  order-perfect base without a loop note, and the arg5 half is then byte-exact against the target
+  (`addu $v0,$v0,$s5` / `lw $v1,0($v0)` / `sw $v1,0x10($sp)`).
+  Dump: tmp/grind/CD_ready/s73/r6.qty.txt.
+
+- [s73] **KILLED on the same battery: the globalized carrier never reaches $a0, and the emitted
+  order collapses to the non-target one.** Twenty variants on the g06 base across carriers `i`,
+  `cnt`, `status`, `src`, `dst`, `dst2` and three chain positions (shift-only, address-only,
+  whole-chain), plus the arg5-value mirror. Best = 5 (`status`, shift-only r4 and whole-chain r6)
+  against the floor of 2. The disassembly says why: `status`, whose other live range crosses the
+  `getintr` calls, forces a call-saved seat and the chain emits in $s0; `cnt` is call-free but
+  lands the chain in $a3 and drags cnt's own block-1 uses from $v1 to $a3 for four extra diffs;
+  `i`, `src`, `dst`, `dst2` damage their own use sites. Scores (all build 179): r1 i-shift 24,
+  r2 i-fused 9, r3 cnt-shift 9, r4 status-shift **5**, r5 i-whole 24, r6 status-whole **5**,
+  r8 cnt-whole 9, r9 arg5-value-globalized 20, a_cnt 11, a_i 26, a_st 7, a_dst 12, a_dst2 13,
+  a_src 22, w_dst 10, w_dst2 11, w_src 20, sa_cnt 15, sa_i 30, sa_st 11.
+
+- [s73] **THE DECISIVE CONTROL: once the t0 chain is globalized the ORDER degree of freedom
+  disappears - the order-perfect base and the floor body converge to the SAME code.** The battery
+  was re-generated on `candidate.c`'s statement order (t0 chain first) instead of g06's (t0 chain
+  after the arg5 load): f_st 5, f_cnt 9, f_i 24, f_dst 10, f_dst2 11, f_src 20, fs_st 5,
+  fs_cnt 9 - score-for-score identical to their g06-based twins r6/r8/r5/w_dst/w_dst2/w_src/r4/r3.
+  Moving the t0 statements, the ONLY lever that has ever produced the target's instruction
+  sequence, is completely inert once the carrier is multi-block, and all twenty forms emit slots
+  56/57 in the floor order. Globalization buys the arg5 seat and spends the order lever to do it;
+  it is not a partial win a later session can finish by re-tuning statement order.
+
+- [s73] `f_sv` (the `saved` u8 carrier) is the one form that leaves the 179-instruction basin
+  (build 181, score 12) - a u8 carrier costs the two extra insns of the byte round-trip.
+
+- [s73] Harness note for future sessions: `bash tools/wsl.sh ...` works from the Bash tool but NOT
+  from the PowerShell tool on this machine (`wsl: command not found`, exit 127), while
+  `tools/wteng.ps1` only works from PowerShell. A splice -> sandbox -> objdump-compare cycle
+  therefore has to alternate between the two tools; there is no single-tool form.
+
+- [s73] MANDATED KILL RE-AUDIT DISCHARGED on the closest-to-target form (candidate.c itself, the
+  floor body): the full 38-variant `tools/fake_ablate.py` grid re-run on the CURRENT chassis
+  (tmp/grind/CD_ready/s73/ablate.log). keep-all reproduces 2/179 exactly; every other subset is
+  worse (7, 11, 12, 13 ... 63) with one apparent exception, drop-00010000 (`v0 <<= 2;` removed),
+  which scores 2 at build 178 - it is one instruction SHORT of the target because removing the
+  shift changes the arg5 address semantically, so it is not a lever. No inherited FAKE carrier is
+  masking anything on this body; the FAKE set is minimal and load-bearing, and every s72/s73
+  instance kill measured with it in place stands.
+  Harness gotcha re-confirmed (s70's note): fake_ablate returns ERR for every row unless the
+  candidate's function is literally named `CD_ready` - rename with tmp/grind/CD_ready/s70/rename.py
+  first - and its default --max-variants 24 silently refuses this body's 8-unit grid; pass
+  --max-variants 40.
+
+- [s73] Chassis re-verified live before any probe: memory/grind/CD_ready/candidate.c = 2/179/0 and progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c = 6/179/0; src/system.c verified clean by git status --porcelain after every batch.
+
+- [s73] The floor body's residual is EXACTLY the two adjacent instructions at build slots 56/57 - sll $a0,$a0,2 then addu $v0,$v0,$s5 where the target has addu $v0,$v0,$s5 then sll $a0,$a0,2 - and every register in block 3 is already the target's.
+
+- [s73] rank_for_schedule's class rung is closed as a class at sched.c:2429: insn_cost returns the candidate's own result_ready_cost, 1 for any single-cycle ALU insn, so an addu and an sll are both class 3 on every call and the rung always falls through to INSN_LUID.
+
+- [s73] Block 3's RTL insn list maps 1:1 onto emitted slots once each lui/%lo pair is counted as one insn; the t0-shift quantity is literally [t0 sll -> t0 addu], span 8 in the floor order (pri 1.0000, allocated last, $a0) and span 6 in the target order (pri 1.3333, tie, $v1).
+
+- [s73] find_free_reg's conflict sets on g06, read for the first time: qty1 (t0) used={0,1,2,5,...} -> $v1 and qty2 (arg5) used={0,1,2,3,5,...} -> $a0. $a0 is NOT in the t0 quantity's used set, so both colourings are feasible and only the allocation order decides - retiring the s67 open question.
+
+- [s73] CONFIRMED MECHANISM: a multi-block carrier removes the t0 chain from local-alloc (block 3 drops to three quantities) and seats the arg5 value at $v1 uncontested - the first arg5-value-in-$v1 on an order-perfect-derived body with no loop note in 73 sessions.
+
+- [s73] KILLED: the globalized carrier lands in $s0 (status, call-crossing) or $a3 (cnt) and never $a0; best score 5 against the floor's 2, across 28 measurements.
+
+- [s73] DECISIVE CONTROL: once the carrier is multi-block the statement-order lever is inert - eight forms generated on the floor body's statement order score identically to their g06-based twins (5/9/24/10/11/20/5/9), and all twenty forms emit slots 56/57 in the floor order.
+
+- [s73] Mandated kill re-audit discharged: the full 38-row fake_ablate grid on the floor body reproduces keep-all at 2/179 and every other subset is worse; no FAKE carrier is masking a lever.
+
+- [s73] Harness: bash tools/wsl.sh works from the Bash tool but not from the PowerShell tool (wsl: command not found, exit 127), while tools/wteng.ps1 only works from PowerShell - a splice/sandbox/objdump cycle must alternate tools.

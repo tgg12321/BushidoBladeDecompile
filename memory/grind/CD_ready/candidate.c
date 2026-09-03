@@ -1,3 +1,29 @@
+/* s73 UPDATE (2026-09-03, structural). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live at the start of s73: score 2, build 179, target 179, rules_dropped 0; the g06
+ * order-perfect base re-verified at 6/179/0 in the same batch). Read hypotheses.md s73 before
+ * working here. The four results that matter:
+ *   1. The residual on THIS body is EXACTLY the two adjacent instructions at build slots 56/57 -
+ *      `sll $a0,$a0,2` then `addu $v0,$v0,$s5` where the target has `addu $v0,$v0,$s5` then
+ *      `sll $a0,$a0,2`. Every register in block 3 is already the target's. Nothing else in the
+ *      179-instruction function differs.
+ *   2. KILLED (class, sched.c:2429): rank_for_schedule's CLASS rung cannot separate the pair -
+ *      insn_cost returns the CANDIDATE's result_ready_cost, 1 for any single-cycle ALU insn, so
+ *      an `addu` and an `sll` are both class 3 on every call. With s72's INSN_PRIORITY kill the
+ *      whole rank_for_schedule ladder above INSN_LUID is now closed: slot order = RTL order.
+ *   3. CONFIRMED, a new working mechanism (the s72 frontier's item 1): carrying the t0 chain in a
+ *      function-scope variable that is also referenced in ANOTHER basic block removes it from
+ *      local-alloc entirely (block_alloc only makes quantities for single-block pseudos,
+ *      local-alloc.c:1170-1180). Block 3 then has THREE quantities, the 1.3333-vs-1.3333 tie
+ *      disappears, and the arg5 VALUE is seated at $v1 - the target's seat - for the first time in
+ *      73 sessions on an order-perfect-derived body with no loop note (r6, dump s73/r6.qty.txt).
+ *   4. KILLED (instance): but it does not close. The globalized carrier lands in $s0 (`status`,
+ *      call-crossing) or $a3 (`cnt`) and never $a0, and - the decisive control - once the carrier
+ *      is multi-block the statement-order lever goes completely inert: the same eight forms score
+ *      identically whether generated on THIS body's statement order or on g06's, and all twenty
+ *      forms emit slots 56/57 in the floor order. Best 5 against this body's 2.
+ * The open frontier is therefore: find a multi-block carrier that global-alloc seats at $a0, or a
+ * way to restore the LUID lever on a globalized body. Full battery in rejected/s73-*.
+ */
 /* s72 UPDATE (2026-09-03, structural). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s72 executed
  * both open pass-level items of the s71 frontier and both are now discharged. What a future
