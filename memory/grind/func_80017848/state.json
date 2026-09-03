@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 28,
+ "session_count": 29,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -171,18 +171,29 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "Floor holds at 3 (re-measured 127/127); s27's toolchain question is answered with a complete GCC 2.7.2 copy-producer census - both frontier candidates (regmove.c, optimize_reg_copy_3) DO NOT EXIST, an"
+  },
+  {
+   "session": 29,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "Floor holds at 3 (127/127); reload1.c - the last unmeasured copy producer - is closed by measurement (reload emits 0 insns here), and the residual is retyped: the s23 exact-stream form re-measures 14 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "reload1.c's reload/inheritance copy emission is the last unmeasured producer in the completed census, and is the only remaining pass that could create target's preheader copy addu $a3,$a0,$zero at 0x800178D0 without a source-level copy statement.",
-   "mechanism": "reload1.c holds 13 emit_move_insn/gen_move_insn sites (emit_reload_insns and the inheritance paths). scan_hand_coded reports 7 spills in the 127-insn target (s27, E-s27-5), so a reload situation is not a priori absent - but a reload copy is normally reg-to-stack or stack-to-reg, and the copy at 0x800178D0 is pseudo-to-pseudo with no stack slot in sight.",
-   "next_probe": "Read reload1.c's 13 sites end to end and identify which, if any, can emit a REGISTER-to-REGISTER reload copy with no memory operand. If one exists, characterise the reload class/conflict that triggers it and check the .greg/.lreg dumps of the standing candidate for that conflict at the loop-2 preheader; only if the conflict is reproducible does a C spelling become worth pricing."
+   "hypothesis": "Cell E's four seat divergences (p $a1->$a0, sh $a0->$a1, copy $v0->$a3, lnk $a1->$a2) are reachable by a modelled perturbation of local-alloc/global-alloc's inputs, and inverse.py will name the C lever that produces it.",
+   "mechanism": "The residual is now typed RA on an instruction-for-instruction identical 127-insn stream (E-s29-5), which is exactly the input the solver suite was built for; the forward models are validated and inverse.py ranks minimal input perturbations that reach a given goal assignment and maps each to a C technique.",
+   "next_probe": "Apply tmp/grind/func_80017848/s29/body_E.c, run tools/ra_solver/extract.py to produce the model.json for func_80017848 on that chassis, then python3 tools/ra_solver/inverse.py local (and global) <model.json> --goal with the target seats (pointer -> $a0/4, shift -> $a1/5, copy -> $a3/7, links -> $a2/6) --depth 2 --top 8. A NEGATIVE result is first-class: it means the seating is decided outside the modelled inputs and the next move is ALLOCDBG instrumentation of local-alloc's suggested-register pass on this chassis, not another spelling."
   },
   {
-   "hypothesis": "Target's preheader copy is not created by any optimisation pass at all - it is an ordinary expand-time copy from a source-level assignment, the same construct the candidate's `p = q` buys for loop 1, and the residual is purely the price of siting a second one for loop 2.",
-   "mechanism": "E-s28-1 closes the producer census; E-s28-2/3 kill the one new pass-level candidate by measurement; E-s28-4 excludes loop.c. If reload1.c also falls, no pass remains, and the copy must be present in the RTL before any optimisation - i.e. it came from C.",
-   "next_probe": "Conditional on the reload1.c reading above coming back negative. Then the search returns to siting a second-use carrier for loop 2's pointer at a price below 6, which the banked price table (post-loop 19-22, in-body 6, pre-join 12, guard-consuming 6-28) says has no measured site - so the productive move would be to look for a site that does not appear in that table at all, e.g. a use inside the loop-2 guard's own arm rather than in its condition."
+   "hypothesis": "There is a spelling of combine escape 2 (combine.c:914-917) whose intervening set of p does NOT extend a value's live range into the loop body, which would buy both copies without the seat displacement cell E pays.",
+   "mechanism": "use_crosses_set_p only requires that the pseudo used in the copy's SOURCE be assigned between the copy and the base add. Cell E satisfies it with the links load because links is the only other preheader value, but any assignment to p whose result dies inside the preheader would satisfy it equally while leaving p's live range short and the loop body reading a separate links pseudo at $a2.",
+   "next_probe": "Price cells that reuse p for a preheader-local value instead of for links: (i) p reused to hold the base itself (q = p; p = (u8 *)(sh + (s32)q); loop reads p as base) - note this makes i3 SET i2dest's source, so check whether combine.c:1458's dead_or_set_p still fires; (ii) p reused to hold the loop-2 bound so the guard's own load assigns p; (iii) p reused as the loop counter carrier. Each must be measured for BOTH the copy's presence and the seat map, not just the score."
+  },
+  {
+   "hypothesis": "Escape 1 (a downstream second use of loop 2's copy) has an unpriced site inside loop 2's guard's own taken arm, above the copy, that costs less than the banked minimum of 6.",
+   "mechanism": "The banked price table for loop-2 second-use sites is post-loop 19-22, in-body 6, pre-join 12, guard-consuming 6-28, and every entry sites the use either outside the arm or inside the loop body. A use in the arm but above the loop has never been priced, and it is the only region of the arm the table does not cover.",
+   "next_probe": "Cells that place a second read of the copy pseudo between the guard branch and the base add - e.g. the loop-2 bound reloaded through the copy (t = *(s32 *)((s32)q + sh2 + 0x20)) so q is used twice in the preheader itself - measured on the candidate chassis, then diffed for whether the second preheader use materialises as an extra insn or folds into the existing addu v0,a1,a0."
   }
  ],
  "judge_constraints": [],
@@ -219,6 +230,38 @@
    "measured_on": "target listing asm/funcs/func_80017848.s against the frozen tools/gcc-2.7.2/loop.c; no build, no FAKE constructs",
    "predicate_cite": "",
    "result": "Target's loops are not strength-reduced: the address is recomputed from scratch every iteration as addu $v0, $a0, $v1 (0"
+  },
+  {
+   "session": 29,
+   "statement": "reload1.c's reload/inheritance emission is the producer of target's preheader copies at 0x800178D0 and 0x80017930 (the s28 frontier's last unmeasured producer).",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor), floor 3 at 127/127, rules_dropped 0, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "88 insns in, 88 insns out, and comm -13 over the sorted UID lists is EMPTY - reload added nothing whatsoever to this fun"
+  },
+  {
+   "session": 29,
+   "statement": "Giving the preheader copy's destination a second SET (reg_n_sets == 2, one copy statement per loop writing one shared local q) is what keeps combine from substituting the copy away.",
+   "kill_scope": "instance",
+   "measured_on": "chassis A (tmp/grind/func_80017848/s29/ings.orig.c = committed HEAD INCLUDE_ASM anchor, plus the cell body), floor-3 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "4, at 127 target / 126 build insns - the kill holds on the current chassis. Both copies are absent from the build: loop "
+  },
+  {
+   "session": 29,
+   "statement": "Making the two preheaders source-symmetric by giving loop 2 its own named lnk = *(u8 **)(ctx + 0x10); between the copy and the base add - the shape target's addu a3,a0,zero / lw a2,16(s2) / addu a0,a1",
+   "kill_scope": "instance",
+   "measured_on": "chassis A (tmp/grind/func_80017848/s29/ings.orig.c plus the cell body), floor-3 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "B = 12 (126 build insns), C = 13 (126), D = 36 (126). The named links local costs 8 points over cell A and restores neit"
+  },
+  {
+   "session": 29,
+   "statement": "The 14-point residual of the s23 crosses-set form, which s23 recorded as emitting target's entire instruction stream, carries instruction-selection or ordering differences as well as register ones.",
+   "kill_scope": "instance",
+   "measured_on": "chassis A (tmp/grind/func_80017848/s29/ings.orig.c plus the cell E body), floor-3 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "14 at 127/127, and the diff carries no opcode, no offset and no operand-count difference anywhere in the 127 instruction"
   }
  ]
 }

@@ -3521,3 +3521,115 @@ everywhere it has been sited.
 - [s28] loop.c's fourteen emitters excluded by reading: the movable path at loop.c:1702 requires m->move_insn, which loop.c:657-670 sets only for a REG_EQUIV or constant-REG_EQUAL invariant, so its emitted source is the note's expression and never an arbitrary pseudo; the seven giv/biv emitters (3940, 3948, 3972, 4065, 5868, 5891, 6098) require strength reduction, and target's loops are demonstrably not strength-reduced (address recomputed as addu $v0,$a0,$v1 at 0x800178DC and 0x80017910, index incremented separately by addiu $v1,$v1,1 at 0x800178FC).
 
 - [s28] 3 new disproven forms banked under memory/grind/func_80017848/rejected/ (188 total). src/ings.c was restored to its committed INCLUDE_ASM state; the working tree carries only ledger edits under memory/grind/func_80017848/.
+
+## s29 (forensics, 2026-09-03)
+
+- **E-s29-0 CHASSIS.** `sandbox func_80017848 --disable all` with
+  `memory/grind/func_80017848/candidate.c` applied over the `src/ings.c:719`
+  INCLUDE_ASM anchor = **3**, 127 target insns / 127 build insns, `rules_dropped: 0`.
+  The chassis is unchanged from s28. The three residual instructions are still the
+  swap-pair: loop-1 exit tail target `lw a0,12(s2)` vs ours `addu a0,a3,zero`;
+  loop-2 preheader target `addu a3,a0,zero` vs ours `lw v0,12(s2)`; loop-2 base
+  target `addu a0,a1,a3` vs ours `addu a0,a1,v0`.
+
+- **E-s29-1 RELOAD1.C FRONTIER CLOSED BY MEASUREMENT (s28 frontier item 1).**
+  reload emitted **zero** insns into this function. The `.lreg` dump region
+  (ings.lreg:7203-8162) and the `.greg` dump region (ings.greg:6283-7030) both
+  contain exactly **88 `(insn ...)` UIDs, and the two UID sets are identical**
+  (`comm -13` over the sorted lists is empty): tmp/grind/func_80017848/s29/
+  reload_lreg_uids.txt vs reload_greg_uids.txt. Structurally, reload1.c's 13
+  move-emitting sites are only two functions: `gen_reload` (reload1.c:6907, 6935,
+  6956, 6957, 6963) and `inc_for_reload` (reload1.c:7116, 7137, 7152, 7154, 7168).
+  `inc_for_reload` is auto-increment reload, which MIPS cannot reach. `gen_reload`
+  emits a bare reg-reg move only at reload1.c:6963, and only for an operand for
+  which `find_reloads` actually pushed a reload — an `addu` whose two inputs are
+  already GENERAL_REGS pushes none. Combined with the E-s28-1 census this closes
+  the producer question: **no optimisation pass in this compiler creates target's
+  preheader copies. They are in the RTL from expand, i.e. they came from the C.**
+
+- **E-s29-2 THE COMBINE GATE, NAMED EXACTLY.** A preheader reg-reg copy `i2 = (set q p)`
+  feeding `i3 = (set base (plus sh q))` survives combine on exactly three escapes,
+  all in `can_combine_p`/`try_combine`:
+  1. `combine.c:1458  added_sets_2 = ! dead_or_set_p (i3, i2dest);` — if `q` is still
+     live after i3, combine must keep i2's set, `total_sets` becomes 2, the PARALLEL
+     fails `recog` on MIPS and try_combine aborts. This is the "second downstream use"
+     lever the candidate already spends on loop 1 (`p = q` in the exit tail).
+  2. `combine.c:914-917  (! all_adjacent && ... use_crosses_set_p (src, INSN_CUID (insn)))`
+     — if a register **used in i2's SOURCE** is SET by an insn between i2 and i3,
+     can_combine_p returns 0 and the copy is never touched. i2's source is the single
+     pseudo `p`, so the intervening insn must assign to `p` itself.
+  3. `combine.c:928  (INSN_CUID (insn) < last_call_cuid && ! CONSTANT_P (src))` — a
+     CALL between i2 and i3. Not reachable in either preheader.
+  Additionally `flow.c:2102` only creates the LOG_LINK combine walks when the next use
+  `y` satisfies `BLOCK_NUM (y) == blocknum`, so a copy and its consumer in DIFFERENT
+  basic blocks are never paired at all — but every zero-cost spelling of that split has
+  already been priced (s26 pre-join carriers = 12, s9/s21 q-preinit = 11/12).
+
+- **E-s29-3 REG_N_SETS IS NOT THE GATE (kill re-audit, mandated).** Re-measured the
+  closest banked score-4 form,
+  `rejected/s16_sym_shared_addend_local_reg_n_sets_2_costs_4.c` (cell A), on the
+  CURRENT chassis: **4**, 127 target / **126** build insns. No FAKE construct exists in
+  any form of this function, so FAKE-ablation is vacuous. Its diff
+  (tmp/grind/func_80017848/s29/A_diff.txt) shows BOTH preheader copies are gone:
+  loop 1 collapses to `addu a0,a1,a0` (one insn short of target's copy+base pair) and
+  loop 2 emits `lw v0,12(s2)` / `addu a0,a1,v0`. Giving `q` two SETS therefore does not
+  stop combine from substituting — consistent with E-s29-2, where nothing in
+  can_combine_p or the added_sets_2 test reads `reg_n_sets` of i2dest.
+
+- **E-s29-4 THREE NEW SYMMETRY CELLS, ALL WORSE.** On chassis A: adding a named
+  `lnk = *(u8 **)(ctx + 0x10);` inside loop 2's preheader so both preheaders are
+  source-symmetric = **12** (cell B, 126 insns); B plus writing loop 1's guard inline
+  instead of two-step through `t` = **13** (cell C); B plus writing loop 2's guard
+  two-step through `t` like loop 1 = **36** (cell D). Banked as
+  rejected/s29_symmetric_lnk_*.
+
+- **E-s29-5 THE RESIDUAL IS NOW A PURE REGISTER-SEAT PROBLEM ON AN EXACT STREAM.**
+  Re-measured `rejected/s23_crosses_set_p_reused_as_links_both_loops_exact_insn_stream_costs_14.c`
+  (cell E) on the current chassis: **14**, 127/127. Its diff
+  (tmp/grind/func_80017848/s29/E_diff.txt, streams in E_T.txt / E_B.txt) contains
+  **no opcode, offset or operand-count difference anywhere in the 127 instructions** —
+  every one of the 14 is the same instruction with different register seats, and the
+  differences are one systematic permutation repeated identically in both loops:
+  | value | target seat | our seat |
+  |---|---|---|
+  | ctx+0xC pointer (`p`) | `$a0` | `$a1` |
+  | `slot_a << 6` (`sh`) | `$a1` | `$a0` |
+  | preheader copy (`q`) | `$a3` | `$v0` |
+  | ctx+0x10 links (`lnk`) | `$a2` | `$a1` (p reused) |
+  `tools/ra_solver/inverse_compose.py classify ings func_80017848 --target-object
+  build/src/ings.o --ours-object tmp/sandbox/func_80017848/ings.o` prints
+  `FIRST DIVERGENCE: RA / next tool: tools/ra_solver/inverse.py (global / local)` and
+  lists exactly those four pairs. The func_80045294-s57 mis-typing hazard does NOT
+  apply here: its disambiguator is "check whether the divergent register is already
+  correct on the pseudo's OTHER references", and here every reference of each pseudo
+  carries the WRONG seat consistently, which is a genuine allocation divergence, not a
+  cse/canon_reg operand substitution.
+
+- **E-s29-6 WHY THE EXACT-STREAM FORM PAYS 14, MECHANISTICALLY.** Cell E buys the copy
+  through escape 2 of E-s29-2: it reuses the variable `p` to hold the links pointer, so
+  `lw <lnk>,16(s2)` sets `p` between the copy and the base add and `use_crosses_set_p`
+  fires. But that reuse is exactly what displaces the seats: the links value now lives
+  in `p`'s pseudo and is read on every iteration of the loop body, so `p`'s live range
+  spans the whole loop instead of dying in the preheader, and local-alloc seats it at
+  `$a1` while the short-lived shift takes `$a0` — the reverse of target, which keeps
+  links in a separate pseudo at `$a2`. The escape and the seats are therefore coupled
+  through one source decision, and the open question is whether any input perturbation
+  that keeps the crossing set can restore the target seating.
+
+- [s29] Chassis re-measured: sandbox func_80017848 --disable all with candidate.c applied = 3, 127 target / 127 build insns, rules_dropped 0, unchanged from s28.
+
+- [s29] reload emitted ZERO insns into this function: 88 (insn ...) UIDs in the .lreg region (ings.lreg:7203-8162), 88 in the .greg region (ings.greg:6283-7030), identical UID sets (comm -13 empty). Banked as reload_lreg_uids.txt / reload_greg_uids.txt.
+
+- [s29] reload1.c's 13 move sites are only gen_reload (6907/6935/6956/6957/6963) and inc_for_reload (7116/7137/7152/7154/7168); the only bare reg-reg emitter is reload1.c:6963 and it needs find_reloads to have pushed a reload for that operand.
+
+- [s29] The three and only three combine escapes for a preheader copy: combine.c:1458 added_sets_2 = ! dead_or_set_p (i3, i2dest); combine.c:914-917 ! all_adjacent && use_crosses_set_p (src, INSN_CUID (insn)); combine.c:928 INSN_CUID (insn) < last_call_cuid. flow.c:2102 additionally gates LOG_LINK creation on BLOCK_NUM (y) == blocknum.
+
+- [s29] cse.c:8038 re-read confirms the s27 EBB finding verbatim: while (p && GET_CODE (p) != CODE_LABEL) - cse's block scan ends at ANY code label, and the follow-jumps extension at cse.c:8104 requires LABEL_NUSES (JUMP_LABEL (p)) == 1, which target's join label does not satisfy.
+
+- [s29] Kill re-audit (mandated): rejected/s16_sym_shared_addend_local_reg_n_sets_2_costs_4.c re-measures 4 at 127/126 on the current chassis; its diff shows BOTH copies deleted, so REG_N_SETS is not the survival gate. FAKE-ablation is vacuous - no form of this function has ever carried a FAKE construct.
+
+- [s29] New cells on chassis A: B (symmetric named lnk in loop 2's preheader) = 12, C (B + inline loop-1 guard) = 13, D (B + two-step loop-2 guard) = 36. All banked to rejected/.
+
+- [s29] rejected/s23_crosses_set_p_reused_as_links_both_loops_exact_insn_stream_costs_14.c re-measures 14 at 127/127 with ZERO opcode/offset/operand-count differences - the entire residual is four register seats, repeated once per loop: p $a0->$a1, sh $a1->$a0, copy $a3->$v0, lnk $a2->$a1.
+
+- [s29] inverse_compose.py classify on cell E prints FIRST DIVERGENCE: RA / next tool: tools/ra_solver/inverse.py (global / local) and lists exactly those four pairs; the func_80045294-s57 mis-typing hazard is excluded by its own disambiguator (every reference of each pseudo carries the wrong seat, so it is not an operand substitution).
