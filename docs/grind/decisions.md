@@ -21272,3 +21272,7 @@ Re-entry is mechanical when a trigger fires; do not re-file the residual escalat
 3. Apply both bodies; `verify-oracle`; `sandbox --disable all` == 0 for both; fresh layer-2
    `cheat-reviewer` on each (default-FAIL); `queue unpark` + `queue done`; `Match:` commits.
 4. Relaunch the grinder.
+
+## 2026-09-02 22:45 — func_80027640 + func_80030580 — MERGED — COMPLETED-C (operator lane)
+
+Both spend the 2026-09-02 foreclosed-bucket ruling: grants 5480a91e, Match 0df67969, layer-2 cheat-reviewer PASS on each, `queue done` re-verified SHA1 == oracle. Ledgers closed (git history keeps them). Foreclosed bucket is now `main` alone.
