@@ -766,6 +766,11 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     "func_80049A2C": frozenset({("pre_pad", 2)}),
     "func_800481E8": frozenset({("pre_pad", 8)}),
     "func_80041688": frozenset({("pre_pad", 8)}),
+    # 2026-09-02 owner ruling (docs/grind/decisions.md, "foreclosed-bucket
+    # disposition"): byte-proven (operator full build == oracle before the
+    # grant), target vars=24 vs ours 8 with zero ($sp) references in the body;
+    # same general phantom-frame-slot family, no family extension.
+    "func_80030580": frozenset({("pre_pad", 4)}),
 }
 
 

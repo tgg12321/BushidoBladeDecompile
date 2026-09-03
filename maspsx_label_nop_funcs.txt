@@ -18,3 +18,4 @@ CD_getsector
 func_80060E04
 func_80040594
 _spu_init
+func_80027640
