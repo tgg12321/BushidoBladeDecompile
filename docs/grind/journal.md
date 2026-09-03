@@ -1509,3 +1509,4 @@
 - 2026-09-02 18:16 func_80030580 s9 [escalation] STANDING RULING (2026-07-27) applied — FORECLOSED: Escalation: both live frontier items closed with 31 measurements (all vars=8); scan tier LOW, PSX SOTN precedent for the volatile-pad closer cited; foreclosure record filed at docs/grind/decisions.md:20989.
 - 2026-09-02 18:27 func_8003D52C COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-02 19:04 func_8003A728 s1 [recon] floor=3: recon: clean pure-C draft 38 -> 3 (s32 c0lo, multi-set lh staging, u16 loads into buf8); last 3 = sched1 lbu placement, mechanism proven (v3b gets exact order, moves residual to a 24-insn RA seat rotation)
+- 2026-09-02 19:26 func_8003A728 s2 [structural] floor=3: Floor still 3 but the shape is new: every block-1 register seat now matches the target and only the D_800A3916 lbu slot (3 insns) remains; s1's whole 24-insn rotation family is explained by one predicate, local-alloc.c:472 reg_n_deaths==1.

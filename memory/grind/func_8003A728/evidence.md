@@ -106,3 +106,96 @@
 - [s1] matched sibling func_8003A5A0 uses the same step-wise hash idiom (v0 = a1 ^ (a1 >> 16); v0 = v0 ^ (a0 >> 16); v0 = v0 & 0xFFFF), supporting the in-place scratch-variable spelling
 
 - [s1] src/code6cac_c_mid.c currently carries v2 (the score-3 candidate) in place of the INCLUDE_ASM line
+
+
+## s2 (2026-09-02, structural) - chassis: HEAD (9de438a2), -mel, no rules; v2=3 and v3b=24 re-measured identical, chassis UNCHANGED
+
+### What this session changed
+The floor is still 3, but the SHAPE at 3 is completely different and the block-1 residual is
+now understood end to end. s1 was stuck in a two-horn dilemma: v2 (3) had the right registers
+and the wrong lbu slot; v3b (24) had the right order and 24 rotated seats. s2 dissolved the
+dilemma's second horn: v3b's rotation is NOT a search problem, it is one mechanical predicate.
+
+### The predicate that explains every 24 (the s1 frontier's dead end)
+local-alloc.c:472:  `if (reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1 && ...) reg_qty[i] = -2;`
+Only pseudos with EXACTLY ONE REG_DEAD note become local-alloc quantities. Reading the flag
+into `packed` gives reg 74 two disjoint live ranges (hash value, then flag) -> two deaths ->
+reg 74 is skipped by local-alloc and falls through to global_alloc. By then every block-1 local
+temp has already taken v0/v1, so global_alloc hands packed a0. Confirmed by the s2 .lreg slice:
+"Register 74 used 12 times across 13 insns in block 1; dies in 2 places" and the greg
+disposition "74 in 4" (a0) / "75 in 3" (v1), with NO ";; Register 74 in" line in .lreg.
+Measured on FOUR independent flag-into-packed spellings (v3b, v7a, x3, x4) and on two different
+hi16 placements: all 24. This is the single fact behind s1's whole H5 frontier.
+
+### The route that worked (structural, all measured with sandbox --disable all)
+| form | score | what changed vs the previous row |
+|---|---|---|
+| v2 (s1 candidate) | 3 | re-measured, chassis unchanged |
+| v3b (s1) | 24 | re-measured, chassis unchanged |
+| v5a | 24 | v3b minus the two never-used `s32 v0; s32 v1;` locals - BYTE-NEUTRAL (hygiene) |
+| v5b/v5c/v5d/v5e | 24 | hi16-before-packed, decl-order swaps, store-before-hi16: all inert on v3b |
+| **v6a** | **10** | flag read into `hi16` instead of `packed` -> packed keeps ONE death -> local qty -> v0 |
+| v6b | 26 | same idea but with s1's nested one-expression hash - the hash must be in-place steps |
+| v6c | 10 | or-dest `packed` instead of a fresh temp - same seat problem as v6a |
+| v7a | 24 | in-place ior + flag back into packed - back to the two-deaths predicate |
+| v7b | 10 | in-place ior + flag into hi16 - or-dest seat correct, lbu pushed past the store (+nop, 201 insns) |
+| v7c | 3 | in-place ior + FRESH `flag` local |
+| **v8c** | **6** | v6a with `hi16 = D_800A37C4 << 16;` moved AFTER the first hash step |
+| v8a/v8b/v8d/v8e | 14/10/16/14 | the other four placements of that one statement |
+| v9b | 5 | v8c + in-place ior + fresh `flag` |
+| **w3** | **3** | v9b with the hi16 statement between the D_800A3698 store and the first hash step |
+| w1 | 3 | hi16 before the store - byte-identical outcome to w3 |
+| w2/w4/w5/w6/w7 | 14/12/12/12/12 | other placements / load-shift splits of the hi16 statement |
+| z2/z3 | 3 | flag statement before the ior; `if (D_800A3916 != 0)` with no flag local - both inert |
+| z4 | 27 | separate `raw` local for the pre-hash value - re-rotates block 1 |
+
+### w3 = the new candidate (3). Its residual, in full
+TGT: ... andi v0,v0,0xffff / or a0,a0,v0 / lbu v0,0(gp) / lui at / sw a0,0(at) / beqz v0
+BLD: ... andi v0,v0,0xffff / lbu v1,0(gp) / or a0,a0,v0 / lui at / sw a0,0(at) / beqz v1
+Three differing instructions. EVERY other instruction in the function, including all 24 seats
+that v3b rotated and the six block-1 schedule slots that v6a/v8c still had wrong, now matches.
+
+### Why the last 3 are hard - the exact sched1 geometry (s2 .sched slice, w3)
+Post-sched1 RTL order is 56 (andi) -> 65 (lbu, reg/v:SI 76) -> 58 (ior into reg/v:SI 75)
+-> 61 (sw D_800A369C) -> 68 (beqz). Backward list scheduling fills T-1=68, T-2=61, then at T-3
+the ready list holds 58 and 65. rank_for_schedule (sched.c:2407-2465) sorts ascending and the
+LAST element wins: INSN_PRIORITY(65)=2 (load->branch latency) beats INSN_PRIORITY(58)=1
+(alu->store), and 65 also has the larger INSN_LUID, so 65 would win the tie either way. It does
+not win because it is function-unit BLOCKED at T-3 (a load immediately preceding a store on the
+memory unit, s1's H4 measurement, sched.c:1200-1240). So 58 takes T-3 and 65 drops to T-4.
+The target's text requires a STALL at T-3, i.e. 58 must ALSO be unavailable at T-3.
+58's LOG_LINKS in the dump are "48, REG_DEP_ANTI 53, 56"; its only dependent is 61 (already at
+T-2), so it is ready. The only insn that can make it unready is 65 itself, via an anti-dep -
+i.e. the lbu must write a pseudo that 58 READS, and 58 reads exactly two pseudos: 75 (hi16) and
+74 (packed). Both branches of that fork are now measured dead on this chassis:
+ * lbu writes 74 (packed): two deaths -> global alloc -> a0. 24. (v3b, v7a, x1, x3, x4)
+ * lbu writes 75 (hi16), ior writes hi16 in place: then 61 reads 75 too, so the anti-dep pushes
+   the lbu PAST the store and maspsx adds a load-delay nop. 6-10. (v9a, v7b)
+ * lbu writes 75 (hi16), ior writes a fresh temp T: the order is then EXACTLY right, but in the
+   target's own order T is born at the ior, the flag is born at the lbu, and T dies at the sw -
+   T and the flag overlap, so T can never share a0 with hi16. `or v0,a0,v0`/`lbu a0` instead of
+   `or a0,a0,v0`/`lbu v0`. 6-10. (v8c, v6a, v6c, x2)
+That trichotomy is exhaustive for spellings in which block 1 contains only these insns; the
+untried axis is therefore adding/removing an insn from block 1, or attacking the function-unit
+blockage itself rather than the readiness of 58.
+
+- [s2] chassis re-measured UNCHANGED: v2 = 3, v3b = 24, identical to s1's numbers
+- [s2] local-alloc.c:472 `reg_n_deaths[i] == 1` is the gate that sends a twice-dying pseudo to global_alloc; it is the single cause of every 24-score form in this ledger
+- [s2] the two never-used `s32 v0; s32 v1;` locals inherited from s1's drafts are byte-neutral (v3b 24 == v5a 24) and are dropped from the candidate
+- [s2] w3 (memory/grind/func_8003A728/candidate.c) = 3 with EVERY register seat correct; residual is 3 insns: lbu one slot early + beqz reg
+- [s2] rank_for_schedule (sched.c:2407-2465) gives the flag lbu priority 2 vs the ior's 1 and the larger LUID, so source-order/LUID levers cannot flip T-3; only the memory-unit blockage keeps the lbu out
+- [s2] statement position of `hi16 = D_800A37C4 << 16;` is worth up to 11 insns on its own (v8a 14 / v8b 10 / v8c 6 / w3 3 / w2 14) - the strongest single structural lever found in block 1
+
+- [s2] Chassis re-measured unchanged at dispatch: s1's v2 still scores 3 and s1's v3b still scores 24, so every s1 spelling conclusion is still chassis-valid.
+
+- [s2] local-alloc.c:472 ('reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1') is the gate behind every 24-score form in this ledger; a pseudo that carries two disjoint live ranges is never given a local-alloc quantity and therefore cannot win the low caller-saved seats.
+
+- [s2] New candidate w3 = 3 with EVERY register seat in the function matching the target; the entire residual is three instructions: 'lbu v1' one slot before the 'or a0,a0,v0' instead of after it, plus the resulting 'beqz v1' vs 'beqz v0'.
+
+- [s2] Post-sched1 RTL for w3 (dumps sliced this session): 56 andi -> 65 lbu (reg 76) -> 58 ior (reg 75) -> 61 sw D_800A369C -> 68 beqz. rank_for_schedule (sched.c:2407-2465) gives 65 priority 2 vs 58's priority 1 AND the larger INSN_LUID, so 65 loses T-3 only because of the memory-unit blockage (load immediately preceding a store), not because of any source-order tie.
+
+- [s2] Because the lbu already outranks the ior on both priority and LUID, source-order and declaration-order levers cannot flip the T-3 decision; the only remaining handles are the readiness of insn 58 (all three anti-dependence carriers now measured) or the function-unit blockage itself.
+
+- [s2] The two never-used 's32 v0; s32 v1;' locals inherited from s1's drafts are byte-neutral (v3b 24 == v5a 24) and have been dropped from the candidate as hygiene.
+
+- [s2] The statement position of 'hi16 = D_800A37C4 << 16;' alone spans 14 / 10 / 6 / 3 / 14 across five placements - the strongest single structural lever measured in block 1.

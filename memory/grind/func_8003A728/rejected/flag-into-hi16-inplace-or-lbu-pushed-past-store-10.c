@@ -1,26 +1,11 @@
-/* func_8003A728 candidate - s2 (2026-09-02, structural), sandbox --disable all = 3 (from 38).
- * SHAPE CHANGED COMPLETELY vs the s1 candidate (v2) even though the score is the same 3:
- * every register seat in block 1 is now the target's, and the ONLY residual is that sched1
- * places the D_800A3916 lbu one slot too early (before the `or a0,a0,v0` instead of after),
- * which also costs the beqz its v0 seat. Target tail:  or a0,a0,v0 / lbu v0 / lui at / sw a0 /
- * beqz v0.  Ours:  lbu v1 / or a0,a0,v0 / lui at / sw a0 / beqz v1.  (3 differing insns.)
- *
- * The three structural moves that got here from s1's v2 (each measured, see evidence.md s2):
- *   1. `flag` is a FRESH local holding the D_800A3916 read (s1's v3b reused `packed` for it,
- *      which gave reg 74 two REG_DEAD notes -> local-alloc.c:472 refuses it -> global alloc ->
- *      a0 instead of v0, and that single fact is the whole 24-insn v3b/v7a/x1/x3/x4 rotation).
- *   2. `hi16 = hi16 | packed;` in place (not a fresh temp): the or's dest is then hi16's own
- *      pseudo, so it inherits a0 and prints `or a0,a0,v0` exactly as the target does.
- *   3. `hi16 = D_800A37C4 << 16;` sits between `D_800A3698 = packed;` and the first hash step,
- *      which is what puts `lhu a0` early and `sll a0,a0,0x10` before `sra v1,v0,0x10`.
- * Constructs still carried from s1: s32 c0lo; multi-set s32 t staging for the &0xF loads; the
- * u16 low-half loads written into the existing buf8 local (variable reuse -> FAKE decision at
- * candidate time). `flag`, `hi16 |= packed` and the statement order are ordinary C. */
+/* REJECTED (s2): flag read into `hi16` AND the or written in place (`hi16 |= packed`).
+ * Score 6-10 (v9a 6, v7b 10). The or's dest seat is right, but now the D_800A369C store
+ * also reads hi16, so the lbu's anti-dependence forces it AFTER the store and maspsx has
+ * to add a load-delay nop (201 insns in v7b). */
 void func_8003A728(s32 a0) {
     s32 buf8;
     s32 packed;
     s32 hi16;
-    s32 flag;
     s32 vsync;
     s32 c0lo;
     s32 t;
@@ -31,15 +16,15 @@ void func_8003A728(s32 a0) {
         packed = (vsync << 31) | (D_800A3730 << 30) | ((D_800A3870 & 3) << 28)
                | (*(s16 *)a0 << 16) | (buf8 & 0xFFFF);
         D_800A3698 = packed;
-        hi16 = D_800A37C4 << 16;
         packed = packed ^ (packed >> 16);
+        hi16 = D_800A37C4 << 16;
         packed = packed ^ (hi16 >> 16);
         packed = packed & 0xFFFF;
         hi16 = hi16 | packed;
         D_800A369C = hi16;
-        flag = D_800A3916;
+        hi16 = D_800A3916;
 
-        if (flag != 0) {
+        if (hi16 != 0) {
             if (vsync == 0) {
                 func_8003A574();
             } else {

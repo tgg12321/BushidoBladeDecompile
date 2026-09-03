@@ -82,3 +82,95 @@ Next probes, in order:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: post-migration main chassis, -mel, no rules; v3b body with buf8 reuse + multi-set t staging + flag-into-packed present, no FAKE annotations
+
+
+## s2 (2026-09-02, structural) - floor 3 -> 3, shape changed, 24-family explained
+
+### H6 - the v3b/24 seat rotation is caused by `packed` acquiring a second REG_DEAD note - CONFIRMED (instance)
+Mechanism: local-alloc.c:472 only creates a local quantity for a pseudo with
+`reg_n_deaths == 1`; reusing `packed` for the D_800A3916 flag gives it two disjoint
+live ranges, so it is handed to global_alloc, which finds v0 already taken by the
+block-1 local temps and assigns a0. Measured: v3b/v7a/x1/x3/x4 all 24; the .lreg slice
+shows "Register 74 ... dies in 2 places" with no ";; Register 74 in N" line, and the
+.greg dispositions read "74 in 4" (a0), "75 in 3" (v1).
+
+### H7 - reading the flag into a variable OTHER than `packed` restores packed to v0 - CONFIRMED (instance)
+Mechanism: with one death `packed` becomes a local quantity and its priority
+(floor_log2(12)*12/13) beats every 2-ref temp in block 1, so it is allocated first and
+takes v0. Measured: v3b 24 -> v6a 10 (flag into hi16), and 24 -> v7c/w3 3 (fresh `flag`).
+
+### H8 - the ior written in place on hi16 gives the target's `or a0,a0,v0` - CONFIRMED (instance)
+Mechanism: the ior's destination is then hi16's own pseudo rather than a fresh temp, so
+it keeps hi16's hard register instead of taking the lowest free one. Measured: v8c 6 ->
+v9b 5 (the two or/lbu register diffs disappear).
+
+### H9 - the position of `hi16 = D_800A37C4 << 16;` controls the lhu/sll schedule slots - CONFIRMED (instance)
+Mechanism: sched1's LUID tie-break (sched.c:2464) on equal-priority ready insns; the
+statement's LUID decides whether the load floats up next to `lh v1,0(s1)` and whether the
+`sll a0,a0,0x10` lands before `sra v1,v0,0x10`. Measured across five placements on the
+v6a chassis: 14 / 10 / 6 / 3 / 14 (v8a / v8b / v8c / w3 / w2).
+
+### H10 - declaration order, unused-local removal, and flag-statement position are inert on this residual - KILLED (instance)
+Mechanism hypothesised: pseudo numbering / LUID order feeding local-alloc qty ties.
+Measured: v5a/v5c/v5d (decl order, dropping the dead v0/v1 locals) all 24 on the v3b
+chassis; z2 (flag statement before the ior) and z3 (no flag local at all) both 3 on the w3
+chassis - byte-identical to w3.
+- kill_scope: instance
+- measured_on: HEAD chassis 9de438a2, -mel, no rules; w3/v3b bodies with buf8 reuse + multi-set t staging, no FAKE annotations
+
+### H11 - on the w3 chassis the last 3 insns are not closed by any of the three ways of making the ior unready at sched1 T-3 - KILLED (instance)
+Mechanism: the target text needs a stall at T-3, i.e. insn 58 (the ior) must be unready
+there, which requires the flag lbu to write a pseudo that 58 reads - reg 74 (packed) or
+reg 75 (hi16). Writing 74 trips local-alloc.c:472 (24). Writing 75 with the ior in place
+makes the store read 75 too, pushing the lbu past the store plus a load-delay nop (6-10).
+Writing 75 with a fresh ior destination T gets the order exactly right but T and the flag
+overlap in the target's own order, so T cannot share a0 (6-10). Measured: x1 24, x3 24,
+x4 24, v9a 6, v7b 10, v8c 6, v6a 10, v6c 10, x2 10.
+- kill_scope: instance
+- measured_on: HEAD chassis 9de438a2, -mel, no rules; w3 body (fresh `flag` local, in-place ior on hi16, hi16 statement between the D_800A3698 store and the first hash step), buf8 reuse + multi-set t staging present, no FAKE annotations
+
+### Rejected forms (this session)
+- flag-into-packed (any spelling measured) - local-alloc.c:472 two-deaths gate, 24.
+- flag-into-hi16 with a fresh ior destination - seats swapped, 6.
+- flag-into-hi16 with the ior in place - lbu past the store + nop, 6-10.
+- separate `raw` local for the pre-hash value - 27.
+
+## [s2] The 24-insn seat rotation seen in v3b (and in every other spelling that reads D_800A3916 into the `packed` variable) is caused by `packed` acquiring a second REG_DEAD note, which disqualifies it from local allocation and hands it to global_alloc.
+- mechanism: local-alloc.c:472 creates a local-alloc quantity only for pseudos with reg_basic_block>=0 AND reg_n_deaths==1. Reusing `packed` for the flag gives reg 74 two disjoint live ranges (hash value, then flag), so reg_qty stays -1 and packed falls through to global_alloc; by then the block-1 local temps have taken v0/v1, so packed gets a0 while the target has it in v0.
+- probe: Sliced .lreg/.greg for func_8003A728 on the v3b state (Register 74 'dies in 2 places', no ';; Register 74 in N' line, greg '74 in 4'), then measured four independent flag-into-packed spellings on two different hi16 statement placements: v3b, v7a, x1, x3, x4.
+- result: All five flag-into-packed forms score 24 regardless of hash spelling, declaration order or statement order; the .lreg/.greg slices show the predicate firing exactly as described.
+- verdict: CONFIRMED
+
+## [s2] Reading D_800A3916 into a variable other than `packed` leaves `packed` with one death, makes it a local-alloc quantity, and restores its v0 seat.
+- mechanism: With one death `packed` becomes a qty; its local-alloc priority floor_log2(12)*12/13 beats every 2-ref block-1 temp, so it is allocated first and takes the lowest free hard reg, v0.
+- probe: v3b (flag into packed, 24) vs v6a (flag into hi16) vs v7c/w3 (flag into a fresh `flag` local), sandbox --disable all plus fdiff against the target object.
+- result: v3b 24 -> v6a 10 -> w3 3. In w3 every register seat in the function matches the target.
+- verdict: CONFIRMED
+
+## [s2] Writing the final ior in place on hi16 (rather than into a fresh temporary) makes its destination inherit hi16's hard register and prints the target's `or a0,a0,v0`.
+- mechanism: The ior's SET_DEST is hi16's own pseudo instead of a newly born temp, so it keeps hi16's allocation rather than taking the lowest free caller-saved register.
+- probe: v8c (fresh ior destination, 6) vs v9b (in-place ior, 5), then w3; fdiff against the target object.
+- result: The two register diffs on the ior and the following lbu disappear (6 -> 5, and 3 in w3).
+- verdict: CONFIRMED
+
+## [s2] The source position of the single statement `hi16 = D_800A37C4 << 16;` controls both the schedule slot of its lhu and the slot of its sll relative to the first hash step.
+- mechanism: sched1's LUID tie-break in rank_for_schedule (sched.c:2464) on equal-priority ready insns; the statement's LUID decides whether the load floats up next to `lh v1,0(s1)` and whether `sll a0,a0,0x10` lands before `sra v1,v0,0x10`.
+- probe: Five placements of that one statement measured on the v6a chassis (v8a, v8b, v8c, w3, w2) plus two load/shift splits (w4, w5, w6, w7).
+- result: 14 / 10 / 6 / 3 / 14, and 12 for every load-shift split; it is the strongest single structural lever found in block 1.
+- verdict: CONFIRMED
+
+## [s2] Declaration order of the block-1 locals, removal of the two never-used s32 locals inherited from s1's drafts, and moving the flag-read statement relative to the ior leave the measured score unchanged on this residual.
+- mechanism: Hypothesised: pseudo numbering and LUID order feeding local-alloc qty ties and sched1 tie-breaks.
+- probe: v5a (dead locals dropped), v5c/v5d (hi16 declared before packed) on the v3b chassis; z2 (flag statement before the ior) and z3 (no flag local, inline `if (D_800A3916 != 0)`) on the w3 chassis.
+- result: v5a/v5c/v5d all 24 (identical to v3b); z2 and z3 both 3 (byte-identical to w3). The dead-local removal is byte-neutral and has been taken into the candidate as hygiene.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 9de438a2, -mel, no rules; v3b and w3 bodies with the buf8 low-half reuse and the multi-set s32 t staging present, no FAKE annotations
+
+## [s2] The three flag-carrier spellings measured on the w3 chassis - flag into packed, flag into hi16 with the ior in place, and flag into hi16 with a fresh ior destination - each leave the last 3 instructions unclosed, so the sched1 T-3 stall was not reached this session.
+- mechanism: The target text needs an empty ready list at sched1 T-3 so the lbu drops to T-4 adjacent to the store. Insn 58 (the ior) is otherwise ready there, and the only insn that can make it unready is the lbu itself via an anti-dependence, which requires the lbu to write one of the two pseudos 58 reads: reg 74 (packed) or reg 75 (hi16). Writing 74 trips local-alloc.c:472. Writing 75 with the ior in place makes the store read 75 as well, so the anti-dependence pushes the lbu past the store and maspsx adds a load-delay nop. Writing 75 with a fresh ior destination T yields the exact target order, but in that order T is born at the ior, the flag at the lbu, and T dies at the store, so T and the flag overlap and T cannot share a0 with hi16.
+- probe: x1 / x3 / x4 (flag into packed on the w3 chassis), v9a / v7b (flag into hi16, ior in place), v8c / v6a / v6c / x2 (flag into hi16, fresh ior destination); each measured with sandbox --disable all and fdiff'd against the target object, with the post-sched1 RTL for w3 read out of the .sched dump (insn order 56, 65, 58, 61, 68 with 58's LOG_LINKS 48 / REG_DEP_ANTI 53 / 56).
+- result: 24, 24, 24 / 6, 10 / 6, 10, 10, 10 respectively - none reaches 0 and none beats w3's 3.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 9de438a2, -mel, no rules; w3 body (fresh `flag` local, in-place ior on hi16, hi16 statement between the D_800A3698 store and the first hash step) with buf8 reuse and multi-set t staging present, no FAKE annotations

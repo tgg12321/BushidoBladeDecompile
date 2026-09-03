@@ -1,31 +1,37 @@
 {
  "func": "func_8003A728",
  "file": "code6cac_c_mid",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 3,
    "modality": "recon",
    "headline": "recon: clean pure-C draft 38 -> 3 (s32 c0lo, multi-set lh staging, u16 loads into buf8); last 3 = sched1 lbu placement, mechanism proven (v3b gets exact order, moves residual to a 24-insn RA seat rota"
+  },
+  {
+   "session": 2,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "Floor still 3 but the shape is new: every block-1 register seat now matches the target and only the D_800A3916 lbu slot (3 insns) remains; s1's whole 24-insn rotation family is explained by one predic"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With the v3b dependence shape (flag read into packed), the packed->v0 / hi16->a0 seats can be recovered by keeping hi16 a global-alloc pseudo (as in v2, where it wins a0) or by changing where hi16 is born relative to the in-place hash chain",
-   "mechanism": "global.c find_reg numeric order with regs_used_so_far pass-0 skip; local-alloc qty priority (floor_log2(refs)*refs*size/length) decides the block-1 caller-saved seats",
-   "next_probe": "measure v3b variants: hi16 computed before `packed` is assembled / before D_800A3698 store; hi16 declared as the sibling-style separate `a0` variable read twice; then run tools/ra_solver/extract.py + inverse.py on block 1 with goal {packed: v0, hi16: a0}"
+   "hypothesis": "The sched1 T-3 stall can be reached by removing the memory-unit blockage rather than by making the ior unready - e.g. by changing what occupies the memory unit at T-2/T-3, or by a spelling in which the D_800A3698 store (insn 48) is the T-3 candidate instead of the ior.",
+   "mechanism": "sched.c:1200-1240 actual_hazard_this_instance: a load issued immediately before a store on the memory unit costs max(1, bmax(load)=2 - bmax(store)=1 + 1) = 2 cycles, which is the only reason the flag lbu loses T-3 despite higher INSN_PRIORITY and larger INSN_LUID.",
+   "next_probe": "Re-dump with the instrumented cc1 (tools/gcc-2.7.2/cc1) under BB2_RANK_DEBUG=1 to print the T-3 ready list and the rank decisions for insns 58/65/48 on the w3 state, and confirm whether insn 48 is also blocked at T-3; then decide whether an extra block-1 instruction (or one fewer) changes the unit occupancy."
   },
   {
-   "hypothesis": "A sched_solver perturb pinned to block 1 (--block, pass 1) yields a luid/luid_move vector that reaches the target order WITHOUT the flag-into-packed reuse, keeping v2's allocation",
-   "mechanism": "sched.c rank_for_schedule LUID tie-breaks and the T-3 stall condition; the model is exact on this TU",
-   "next_probe": "perturb.py tmp/sched_solver_work/code6cac_c_mid.sched.json --func func_8003A728 --pass 1 --block <block1 id> --goal-before <or uid>:<lbu uid> --atoms luid,luid_move --depth 2 on the v2 state"
+   "hypothesis": "A block-1 shape in which the value stored to D_800A369C reaches the store through a pseudo distinct from hi16 AND hi16 is not the flag carrier - i.e. a fourth flag-carrier arrangement not covered by the measured trichotomy - could give both the anti-dependence and the a0 seat.",
+   "mechanism": "The trichotomy killed this session is exhaustive only for block-1 shapes containing exactly the current instruction set; adding or removing one insn changes both the local-alloc qty landscape (local-alloc.c:1565-1600 find_free_reg order) and the sched1 ready sets.",
+   "next_probe": "Run tools/ra_solver/extract.py + inverse.py on the w3 state pinned to block 1 with the goal {packed: v0, hi16: a0, flag: v0} to enumerate which pseudo-count/live-range configurations are REACHABLE, then spell only the reachable ones."
   },
   {
-   "hypothesis": "The flag-into-packed reuse (v3b) is classifiable as ordinary scratch-variable C given sibling func_8003A5A0's style; otherwise it is the staged-value-reused-variable family and needs the FAKE annotation + lever exhaustion",
-   "mechanism": "policy: staged-value-reused-variable.md (real value, immediately used, existing dead local)",
-   "next_probe": "once bytes match, grep docs/reference/sotn-construct-index.md for flag-into-scratch precedent before writing self_vet.md; if none, emit ruling-request"
+   "hypothesis": "The buf8 low-half reuse carried since s1 (writing the (u16)D_800A3698 / (u16)D_800A36D0 loads into the existing call-crossing buf8 local) needs its family decided before any candidate-ready submission; the new `flag` local, the in-place ior and the statement ordering are ordinary C and need nothing.",
+   "mechanism": "Policy: the reuse is either ordinary scratch-variable C (sibling func_8003A5A0 in the same TU uses the same step-wise scratch idiom) or the staged-value-reused-variable family, which requires a FAKE annotation plus lever exhaustion.",
+   "next_probe": "Grep docs/reference/sotn-construct-index.md for a low-half-load-into-an-existing-call-crossing-local precedent before writing self_vet.md; if the census is negative, emit ruling-request rather than a submission."
   }
  ],
  "judge_constraints": [],
@@ -38,6 +44,22 @@
    "measured_on": "post-migration main chassis, -mel, no rules; v3b body with buf8 reuse + multi-set t staging + flag-into-packed present, no FAKE annotations",
    "predicate_cite": "",
    "result": "24 and 26 \u2014 seats unchanged (packed a0, hi16 v1)"
+  },
+  {
+   "session": 2,
+   "statement": "Declaration order of the block-1 locals, removal of the two never-used s32 locals inherited from s1's drafts, and moving the flag-read statement relative to the ior leave the measured score unchanged ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 9de438a2, -mel, no rules; v3b and w3 bodies with the buf8 low-half reuse and the multi-set s32 t staging present, no FAKE annotations",
+   "predicate_cite": "",
+   "result": "v5a/v5c/v5d all 24 (identical to v3b); z2 and z3 both 3 (byte-identical to w3). The dead-local removal is byte-neutral a"
+  },
+  {
+   "session": 2,
+   "statement": "The three flag-carrier spellings measured on the w3 chassis - flag into packed, flag into hi16 with the ior in place, and flag into hi16 with a fresh ior destination - each leave the last 3 instructio",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 9de438a2, -mel, no rules; w3 body (fresh `flag` local, in-place ior on hi16, hi16 statement between the D_800A3698 store and the first hash step) with buf8 reuse and multi-set t staging p",
+   "predicate_cite": "",
+   "result": "24, 24, 24 / 6, 10 / 6, 10, 10, 10 respectively - none reaches 0 and none beats w3's 3."
   }
  ],
  "ladder_skip": 0,
