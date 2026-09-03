@@ -3738,3 +3738,112 @@ everywhere it has been sited.
 - [s30] Taken together, E-s30-4 and E-s30-5 sharpen the standing frontier: the cell-E four-seat permutation does not move for declaration scope or source write order, so the perturbation that reaches target's seats has to come from inside the modelled local-alloc/global-alloc inputs (live-range shape, reference counts, preference edges) rather than from source presentation.
 
 - [s30] 10 new disproven forms banked to memory/grind/func_80017848/rejected/ (201 total). src/ings.c was restored to its committed INCLUDE_ASM state; the working tree carries only ledger edits under memory/grind/func_80017848/.
+
+## s31 (rederive, 2026-09-03) — the RA frontier is closed by form, not by model fidelity
+
+- [s31] CHASSIS. `sandbox func_80017848 --disable all` over the HEAD
+  `src/ings.c:719` INCLUDE_ASM anchor: candidate body = **3** at 127 target /
+  127 build insns; cell E (the s23/s29 exact-instruction-stream form) = **14** at
+  127/127. Both tie the ledger, so the floor-3 chassis is unchanged from s30.
+  FAKE-ablation is vacuous for this function (no form has ever carried a FAKE
+  construct), so the mandated kill re-audit is the cell-E re-measurement.
+  All cell scores: `tmp/grind/func_80017848/s31/scores.txt`.
+
+- [s31] THE RESIDUAL IS EXACTLY THREE INSTRUCTIONS, and they are named for the
+  first time in one place (`tmp/grind/func_80017848/s31/dis.sh` diff of the
+  candidate against `asm/funcs/func_80017848.s`):
+    1. loop-1 exit tail — target `lw a0,12(s2)`,  ours `addu a0,a3,zero`
+    2. loop-2 preheader — target `addu a3,a0,zero`, ours `lw v0,12(s2)`
+    3. loop-2 base add  — target `addu a0,a1,a3`,  ours `addu a0,a1,v0`
+  Everything else in the 127-instruction stream is byte-identical.
+
+- [s31] THE SOLVER SUITE RETURNS A STRUCTURAL NEGATIVE ON CELL E. `extract.py`
+  builds a 13-pseudo model (57 dispositions); `simulate.py` reproduces the dump
+  **13/13 with sort order MATCH**, so the forward global.c model is exact on this
+  chassis. `goal_from_tgt.py goal ings func_80017848 --show` then aligns
+  127 vs 127 with 14 `replace` pairs and 0 skips and prints the substitution table
+  ($a1->$a0 x6, $a0->$a1 x6, $v0->$a3 x4, $a1->$a2 x4) with per-instruction
+  detail — but **derives an EMPTY goal**, because only two pseudos hold $a1
+  (78 = loop 1's `p`, 123 = loop 2's `p`) and each is required to be BOTH $a0
+  (the copy-source role, `lw a1,12(s2)` / `move v0,a1`) and $a2 (the links role,
+  `lw a1,16(s2)` / `addu v0,v0,a1`). Cell E's C reuses the single variable `p`
+  for the record pointer AND the link pointer — that reuse IS its
+  `use_crosses_set_p` escape — and GCC 2.7.2 creates one pseudo per declaration,
+  which receives one hard register. Target seats the two roles separately, so
+  cell E's seat map is unsatisfiable by that form: inverse.py has nothing to
+  search. Full report: `tmp/grind/func_80017848/s31/goal_E_report.txt`; model:
+  `tmp/grind/func_80017848/s31/E_model.json`.
+  CONSEQUENCE: any spelling of combine escape 2 that reaches 127 insns here forces
+  the p/links pseudo merge, because the only instruction target places between the
+  copy and the base add is the links load, so the links load is the only possible
+  intervening set of `p`.
+
+- [s31] `use_crosses_set_p` SCANS ONLY BETWEEN i2 AND i3 — i3 setting i2's source
+  is not an escape. Measured, not read: cells L/M reuse `p` as the base
+  (`q = p; lnk = ...; p = (u8 *)(sh + (s32)q);`) in both loops and come out at
+  125 and 126 build insns (scores 12 / 13), i.e. combine substitutes the copy
+  away exactly as in the plain spelling. Frontier item 2's sub-probe (i) is dead.
+
+- [s31] A SECOND USE THAT IS A REDUNDANT RECOMPUTATION IS INVISIBLE TO COMBINE.
+  Cell P gives loop 2's copy dest `q` a second use in the do-while bottom test
+  (`while (i < *(s32 *)(sh2 + (s32)q + 0x20));`) — a site target already spends an
+  instruction on, so it should have been free. Result 9 at 126 insns: cse folds
+  `sh2 + (s32)q` back to the available base pseudo BEFORE combine runs, `q` is
+  back to one reference, and the copy dies. Any future escape-1 site must be a use
+  cse cannot fold, not merely a use.
+
+- [s31] SHARING ONE `p`/`sh` PAIR ACROSS BOTH LOOPS IS A WHOLE-FUNCTION SEAT
+  ROTATION, NOT A PREHEADER FIX. Cells N1/N2 delete `sh2` and re-assign `p` and
+  `sh` in loop 1's exit tail (the literal shape of target's
+  `lw a0,12(s2)` / `sll a1,s4,6`): 30 at 126 and 32 at 125. The N1 diff
+  (`tmp/grind/func_80017848/s31/N1_diff.txt`) shows the loop counter moving
+  `$v1 -> $a0` and the base `$a0 -> $v1` in BOTH loops, which is where most of the
+  regression lives.
+
+- [s31] TWO CORRECTIONS TO THE STANDING NARRATIVE, both measured:
+  (a) The "cse folds the redundant load into an ORPHANED copy that combine never
+      sees" mechanism recorded in `candidate.c`'s s9 header is NOT sufficient on
+      its own. N1's loop 1 still writes `q = *(u8 **)(ctx + 0xC);` and still gets
+      the cse fold, but without the downstream `p = q;` the copy is DELETED. The
+      candidate's loop-1 copy is bought by escape 1 (a live second use), full stop.
+  (b) A fresh `*(u8 **)(ctx + 0xC)` read in loop 2's preheader never materialises
+      as a cse-folded reg-reg copy — it is always a real `lw`. `.L8001791C` has two
+      predecessors and therefore starts a new cse extended basic block in which no
+      load of `ctx+0xC` is available, so there is nothing for cse to fold against.
+
+- [s31] TARGET'S COPY IS USE-ONCE, WHICH RULES OUT ESCAPE 1 AS ITS PRODUCER.
+  `$a3` is written once per loop (0x800178D0, 0x80017930), read once per loop
+  (0x800178D8, 0x80017938) and appears nowhere else in the function except the
+  prologue's `addu $s3, $a3, $zero`; loop 1's exit tail reloads the pointer
+  (`lw $a0, 0xC($s2)`) instead of copying `$a3`. Escape 1 needs the copy's
+  destination live past the base add, and target's is not. So the candidate
+  reproduces loop 1's bytes for a reason target cannot be using, and the open
+  question for s32 is not "where does loop 2's second use go" (escape 1 prices:
+  in-body 6, s31 bottom-test 9, pre-join 12, post-loop 19-22) but "what makes a
+  use-once copy survive combine at all". The two `emit_move_insn` producers from
+  the s28 census that no session has read end-to-end for this function, and that
+  no measured form has exercised, are `jump.c` (7 sites) and `flow.c` (1 site).
+
+- [s31] Chassis re-measured this session over the HEAD src/ings.c:719 INCLUDE_ASM anchor: candidate body = 3 at 127 target / 127 build insns; cell E = 14 at 127/127. Both tie the ledger, so the floor-3 chassis is unchanged from s30. FAKE-ablation is vacuous (no form of this function has ever carried a FAKE construct), so the mandated kill re-audit is the cell-E re-measurement.
+
+- [s31] The residual is exactly three instructions and is now named in one place: (1) loop-1 exit tail, target `lw a0,12(s2)` vs ours `addu a0,a3,zero`; (2) loop-2 preheader, target `addu a3,a0,zero` vs ours `lw v0,12(s2)`; (3) loop-2 base add, target `addu a0,a1,a3` vs ours `addu a0,a1,v0`. The other 124 instructions are byte-identical.
+
+- [s31] tools/ra_solver forward fidelity on this function is exact: extract.py builds a 13-pseudo model with 57 dispositions and simulate.py reproduces the dump 13/13 with sort order MATCH. Any negative from the inverse side is therefore about the form, not the model.
+
+- [s31] goal_from_tgt.py aligns cell E against the target 127 vs 127 with 14 `replace` pairs and 0 skips, prints the substitution table ($a1->$a0 x6, $a0->$a1 x6, $v0->$a3 x4, $a1->$a2 x4) with per-instruction detail, and derives an EMPTY goal: only pseudos 78 (loop 1's p) and 123 (loop 2's p) hold $a1, and each must become both $a0 (copy-source role) and $a2 (links role). Cell E merges the record pointer and the link pointer into one C variable, GCC 2.7.2 gives one pseudo per declaration and one hard register per pseudo, so the target seat map is unsatisfiable by that form.
+
+- [s31] Consequence of the above: any spelling of combine escape 2 reaching 127 instructions in this function forces the p/links pseudo merge, because the only instruction target places between the copy and the base add is the links load, so the links load is the only possible intervening set of p.
+
+- [s31] use_crosses_set_p scans only the insns strictly BETWEEN i2 and i3 - i3 setting i2's source is not an escape. Measured: cells L/M reuse p as the base in both loops and come out at 125 / 126 build insns (scores 12 / 13), with the copy substituted away exactly as in the plain spelling.
+
+- [s31] A second use of the copy destination that is a redundant recomputation of an available expression is invisible to combine, because cse runs first. Cell P routes loop 2's do-while bottom test through q and scores 9 at 126 insns: cse folds sh2 + (s32)q back to the base pseudo, q drops to one reference, and the copy dies.
+
+- [s31] Sharing one p / sh pair across both loops (cells N1/N2, sh2 deleted and both re-assigned in loop 1's exit tail) scores 30 / 32 at 126 / 125 insns; the diff shows the loop counter moving $v1 -> $a0 and the base $a0 -> $v1 in BOTH loops, i.e. a whole-function seat rotation rather than a preheader effect.
+
+- [s31] CORRECTION to candidate.c's s9 header: the 'cse folds the redundant load into an orphaned copy that combine never sees' mechanism is not sufficient on its own. Cell N1's loop 1 still writes q = *(u8 **)(ctx + 0xC); and still gets the fold, but with the downstream p = q; removed the copy is DELETED. The candidate's loop-1 copy is bought by escape 1 (a live second use) and by nothing else.
+
+- [s31] A fresh *(u8 **)(ctx + 0xC) read in loop 2's preheader always materialises as a real `lw`, never a cse-folded reg-reg copy: .L8001791C has two predecessors and therefore starts a new cse extended basic block in which no load of ctx+0xC is available.
+
+- [s31] Target's copy is USE-ONCE: $a3 is written once and read once in each loop and appears nowhere else except the prologue's addu $s3,$a3,$zero, and loop 1's exit tail reloads the pointer (lw $a0,0xC($s2)) instead of copying $a3. Escape 1 needs the copy's destination live past the base add, so target cannot be using escape 1 - the candidate matches loop 1's bytes for the wrong reason.
+
+- [s31] The two emit_move_insn/gen_move_insn producers from the s28 census that no session has read end-to-end for this function, and that no measured form has exercised, are jump.c (7 sites) and flow.c (1 site). loop.c (s28), reload1.c (s29) and integrate.c (s30) are already closed by measurement.

@@ -906,3 +906,27 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * perturbation that reaches target's seats has to come from inside the modelled
  * local-alloc/global-alloc inputs, not from source presentation.
  */
+/* [s31 REDERIVE ADDENDUM - body unchanged, re-measured 3 at 127/127.]
+ * The residual is now named instruction-for-instruction: (1) loop-1 exit tail,
+ * target `lw a0,12(s2)` vs ours `addu a0,a3,zero`; (2) loop-2 preheader, target
+ * `addu a3,a0,zero` vs ours `lw v0,12(s2)`; (3) loop-2 base add, target
+ * `addu a0,a1,a3` vs ours `addu a0,a1,v0`.
+ *
+ * TWO CORRECTIONS TO THE s9 HEADER ABOVE, both measured this session.
+ *  (a) The "cse leaves an ORPHANED copy that combine never sees" story is not
+ *      sufficient on its own.  s31 cell N1 keeps `q = *(u8 **)(ctx + 0xC);` in
+ *      loop 1 (so the cse fold still happens) but drops the downstream `p = q;`
+ *      and the copy is DELETED.  Loop 1's copy here is bought by escape 1 - a
+ *      live second use of q - and by nothing else.
+ *  (b) Target cannot be using escape 1: its $a3 is written once and read once in
+ *      each loop and nowhere else, and its loop-1 exit tail RELOADS the pointer
+ *      rather than copying $a3.  So this body matches loop 1 for the wrong
+ *      reason, and the open question is what makes a USE-ONCE copy survive
+ *      combine.
+ *
+ * Escape 2 is closed as a route to the target seats: the ra_solver goal
+ * derivation on the exact-instruction-stream form (cell E) returns an EMPTY goal
+ * because that form merges the record pointer and the link pointer into one
+ * variable (one pseudo, one hard register) while target seats them at $a0 and
+ * $a2.  See tmp/grind/func_80017848/s31/goal_E_report.txt.
+ */

@@ -2701,3 +2701,201 @@ where the banked table already put it. **KILLED.**
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: committed HEAD src tree, read-only census, no build
+
+## s31 (rederive, 2026-09-03)
+
+Chassis re-measured first: BASE (candidate.c body) = **3** at 127/127, cell E
+(s23/s29 exact-instruction-stream form) = **14** at 127/127. Both tie the ledger
+exactly, so the floor-3 chassis is unchanged. FAKE-ablation is vacuous — no form
+of this function has ever carried a FAKE construct, so `tools/fake_ablate.py` has
+nothing to remove; the kill re-audit is the cell-E re-measurement above.
+All s31 cell scores are banked in `tmp/grind/func_80017848/s31/scores.txt`.
+
+## [s31] Cell E's four seat divergences (p $a1->$a0, sh $a0->$a1, copy $v0->$a3, lnk $a1->$a2) are reachable by a modelled perturbation of local-alloc's / global-alloc's inputs, and inverse.py will name the C lever that produces it. (FRONTIER ITEM 1)
+- mechanism: The residual is typed RA on an instruction-for-instruction identical
+  127-insn stream (E-s29-5), which is exactly the input the solver suite was built
+  for; s30 removed declaration scope and source write order as explanations, so the
+  remaining explanation was supposed to live in the modelled inputs (live-range
+  shape, reg_n_refs, preference edges).
+- probe: Applied cell E, ran `tools/ra_solver/extract.py func_80017848 ings`
+  (model: 13 pseudos in allocation order, 57 dispositions), `simulate.py` (sort
+  order MATCH, dispositions 13/13 match — the forward model is exact here), then
+  `tools/ra_solver/goal_from_tgt.py goal ings func_80017848 --model ... --show` to
+  derive the {pseudo -> target hardreg} goal that inverse.py requires. Full output
+  banked at `tmp/grind/func_80017848/s31/goal_E_report.txt`, model at
+  `tmp/grind/func_80017848/s31/E_model.json`.
+- result: The goal is EMPTY and inverse.py can never be run on this form.
+  goal_from_tgt aligns 127 vs 127 with 14 `replace` pairs and 0 skips, and prints
+  the four substitutions with per-instruction detail, but every attribution comes
+  back AMBIGUOUS: only TWO pseudos hold $a1 (78 = loop 1's `p`, 123 = loop 2's `p`),
+  and each of them is asked to move to $a0 (x6, the copy-source role at
+  `lw a1,12(s2)` / `move v0,a1`) AND to $a2 (x4, the links role at `lw a1,16(s2)` /
+  `addu v0,v0,a1`) at the same time. That is not a tool limitation: cell E's C
+  reuses the single variable `p` for both the record pointer and the link pointer
+  (that reuse IS its `use_crosses_set_p` escape), GCC 2.7.2 creates one pseudo per
+  declaration, and one pseudo receives exactly one hard register. Target seats the
+  two roles in two different registers, so cell E's seat map cannot be satisfied by
+  this form and no perturbation of any modelled RA input reaches it. The frontier's
+  own contract makes this a first-class negative, but it is stronger than the
+  "instrument local-alloc next" branch it anticipated: the seating is not decided
+  outside the modelled inputs, it is decided by the FORM. The corollary is the
+  actionable part — any spelling of combine escape 2 that reaches 127 insns in this
+  function forces the p/links pseudo merge, because the only instruction the target
+  places between the copy and the base add is the links load, so the links load is
+  the only candidate for the intervening set of `p`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: cell-E exact-instruction-stream chassis (score 14 re-measured this
+  session at 127/127) over the HEAD `src/ings.c:719` INCLUDE_ASM anchor, no FAKE
+  constructs
+
+## [s31] There is a spelling of combine escape 2 whose intervening set of p does NOT extend a value's live range into the loop body - specifically p reused to hold the base itself - which buys both copies without cell E's seat displacement. (FRONTIER ITEM 2, sub-probe (i))
+- mechanism: `use_crosses_set_p` only requires that a register used in i2's SOURCE
+  be assigned between i2 and i3. Reusing `p` as the base variable
+  (`q = p; lnk = ...; p = (u8 *)(sh + (s32)q);`) makes i3 itself set i2's source,
+  which keeps `p`'s live range short and leaves the loop body reading a separate
+  `lnk` pseudo — the seat conflict cell E pays would disappear.
+- probe: Cells L and M (`tmp/grind/func_80017848/s31/body_L.c`, `body_M.c`), both
+  loops written with `p` as the base and a named `lnk`; L takes a fresh
+  `p = *(u8 **)(ctx + 0xC);` as loop 1's exit tail (target's `lw a0,12(s2)`),
+  M keeps the candidate's `p = q;`. Measured through
+  `tmp/grind/func_80017848/s31/cells.ps1`, disassembly diffed with `dis.sh`.
+- result: L = 12 at 125 build insns, M = 13 at 126. Both UNDERSHOOT the 127-insn
+  target. i3 setting i2's source is not an escape: `use_crosses_set_p` scans only
+  the insns strictly BETWEEN i2 and i3, so combine substitutes the copy into the
+  base add exactly as before. L loses BOTH preheader copies; M keeps only loop 1's
+  (bought by its `p = q` second use, i.e. escape 1, not escape 2) and its base add
+  reads `a0` directly (`addu a0,a2,a0`) rather than target's `addu a0,a1,a3`.
+  Banked as `rejected/s31_p_reused_as_base_both_loops_loses_both_copies_costs_12.c`
+  and `rejected/s31_p_reused_as_base_with_pq_exit_tail_costs_13.c`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD `src/ings.c:719` INCLUDE_ASM anchor plus the cell body, floor-3
+  chassis (BASE re-measured 3 this session), no FAKE constructs
+
+## [s31] Target's loop-1 exit tail lw a0,12(s2) / sll a1,s4,6 is the RE-ASSIGNMENT of the SAME p and sh variables that loop 2 then reuses, so writing both loops against one shared p / sh pair reproduces the exit tail and the loop-2 preheader copy together.
+- mechanism: Target reloads `$a0` and recomputes `$a1` in the loop-1 exit tail and
+  the loop-2 guard at `.L8001791C` consumes them, which is exactly the shape of two
+  loops sharing one pointer variable and one shift variable, with the exit tail
+  restoring them after loop 1's base add clobbers `$a0`. The candidate instead
+  carries a SECOND shift variable `sh2` at function scope and restores the pointer
+  with `p = q;`, which is what emits the wrong `addu a0,a3,zero`. This is the
+  rederive modality's structural-reshape leg: one pointer/shift pair for the whole
+  function instead of the candidate's p/sh/sh2 triple.
+- probe: Cells N1 and N2 (`tmp/grind/func_80017848/s31/body_N1.c`, `body_N2.c`):
+  `sh` re-assigned inside loop 1's exit tail alongside `p`, `sh2` deleted, loop 2's
+  guard and base written against the shared pair; N1 takes
+  `q = *(u8 **)(ctx + 0xC);` as loop 2's preheader copy source, N2 takes `q = p;`.
+  Diff of N1 banked at `tmp/grind/func_80017848/s31/N1_diff.txt`.
+- result: N1 = 30 at 126 build insns, N2 = 32 at 125. Sharing the pair is a ~+27
+  regression, and the diff shows why: the loop counter `i` migrates from `$v1` to
+  `$a0` and the base from `$a0` to `$v1` throughout BOTH loops, so most of the 30
+  points are a whole-function counter/base seat rotation, not the preheader. Two
+  further facts fall out of N1's stream and are the durable part of this cell:
+  (a) loop 1's copy DIES in N1 (`addu a3,a0,zero` absent) even though loop 1 still
+  writes `q = *(u8 **)(ctx + 0xC);` — so the "cse folds the redundant load into an
+  orphaned copy that combine cannot see" story recorded in candidate.c's header is
+  NOT sufficient on its own: without the downstream `p = q;` second use the copy is
+  deleted; (b) a fresh `*(u8 **)(ctx + 0xC)` read in loop 2's preheader materialises
+  as a real `lw v0,12(s2)`, never a cse-folded reg-reg copy, because `.L8001791C`
+  has two predecessors and therefore starts a new cse extended basic block in which
+  no load of `ctx+0xC` is available. Banked as
+  `rejected/s31_shared_p_sh_across_both_loops_fresh_reads_costs_30.c` and
+  `rejected/s31_shared_p_sh_across_both_loops_l2_copy_costs_32.c`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD `src/ings.c:719` INCLUDE_ASM anchor plus the cell body, floor-3
+  chassis, no FAKE constructs
+
+## [s31] Escape 1 (a downstream second use of loop 2's copy) has an unpriced site inside loop 2's guard's own taken arm, above the copy, that costs less than the banked minimum of 6. (FRONTIER ITEM 3)
+- mechanism: The banked price table for loop-2 second-use sites is post-loop 19-22,
+  in-body 6, pre-join 12, guard-consuming 6-28, and every entry sites the use either
+  outside the arm or inside the loop body. A use in the arm but above the loop had
+  never been priced; the cheapest such site is the do-while bottom test rewritten
+  through `q` (`while (i < *(s32 *)(sh2 + (s32)q + 0x20));`), which target already
+  spends an instruction on (`lw v0,32(a0)`), so it should have been free.
+- probe: Cells P and Q (`tmp/grind/func_80017848/s31/body_P.c`, `body_Q.c`):
+  candidate body with loop 2 given a named `q`/`lnk` preheader; P puts q's second
+  use in the do-while bottom test, Q puts it in a `p = q;` after loop 2.
+- result: P = 9 at 126 build insns, Q = 13 at 125. P does NOT buy the copy: cse
+  folds `sh2 + (s32)q` back to the already-computed base pseudo BEFORE combine runs,
+  so by the time `can_combine_p` looks, `q` has exactly one reference again and the
+  copy is substituted away — the build comes out one instruction short. This is a
+  general result about second-use sites in this function: a second use that is a
+  REDUNDANT RECOMPUTATION of an available expression is invisible to combine,
+  because cse runs first. Q loses two instructions instead (the post-loop `p = q` is
+  dead and DCE removes it along with the copy). Banked as
+  `rejected/s31_l2_q_second_use_in_bottom_test_cse_folds_costs_9.c` and
+  `rejected/s31_l2_q_second_use_as_p_after_loop2_costs_13.c`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD `src/ings.c:719` INCLUDE_ASM anchor plus the cell body, floor-3
+  chassis, no FAKE constructs
+
+## [s31] The candidate's loop-1 byte-match is produced by a mechanism the TARGET cannot be using, so the remaining 3-point residual is a whole-function mechanism problem rather than a loop-2 placement problem.
+- mechanism: Read off the target listing rather than inferred. `$a3` is written once
+  per loop (0x800178D0, 0x80017930) and read once per loop (0x800178D8, 0x80017938)
+  and nowhere else in the function; loop 1's exit tail is `lw $a0, 0xC($s2)` /
+  `sll $a1, $s4, 6`, i.e. a FRESH reload of the pointer, not a copy of `$a3`.
+  Escape 1 (`added_sets_2 = ! dead_or_set_p (i3, i2dest)`, combine.c:1458) requires
+  the copy's destination to be live past the base add; target's is not. The
+  candidate buys loop 1's copy precisely with escape 1 (`p = q;` in the exit tail),
+  and that `p = q;` is what emits `addu a0,a3,zero` where target has
+  `lw a0,12(s2)` — one of the three residual instructions. So the candidate matches
+  loop 1's bytes for the wrong reason.
+- probe: Full disassembly diff of the candidate against the target
+  (`tmp/grind/func_80017848/s31/dis.sh`), which isolates the residual to exactly
+  three instructions: loop-1 exit tail `lw a0,12(s2)` vs `addu a0,a3,zero`;
+  loop-2 preheader `addu a3,a0,zero` vs `lw v0,12(s2)`; loop-2 base
+  `addu a0,a1,a3` vs `addu a0,a1,v0`. Cross-checked against the `$a3` reference
+  census above and against cells L/M/N1/N2/P/Q, none of which produce a use-once
+  surviving copy.
+- result: In 31 sessions no form has ever produced a copy that survives combine
+  with a single downstream reference. Escape 1 always costs the second use
+  (candidate pays it in loop 1's exit tail, price 3; every loop-2 site prices 6 or
+  worse, s31 cell P being the cheapest new one at 9). Escape 2 always costs the
+  p/links pseudo merge (cell E, price 14, and s31's goal derivation shows that merge
+  makes target's seats unsatisfiable). The next session's question is therefore not
+  "where do I put loop 2's second use" but "what makes a use-once copy survive
+  combine at all", and the two remaining unread producers from the s28 census are
+  `jump.c` (7 emit_move_insn sites) and `flow.c` (1) — neither has been read
+  end-to-end for this function, and neither has been exercised by any measured form.
+- verdict: CONFIRMED
+
+## [s31] Cell E's four seat divergences (p $a1->$a0, sh $a0->$a1, copy $v0->$a3, lnk $a1->$a2) are reachable by a modelled perturbation of local-alloc's / global-alloc's inputs, and inverse.py will name the C lever that produces it.
+- mechanism: The residual is typed RA on an instruction-for-instruction identical 127-insn stream (E-s29-5), which is exactly the input the solver suite was built for; s30 removed declaration scope and source write order as explanations, so the remaining explanation was supposed to live in the modelled inputs (live-range shape, reg_n_refs, preference edges).
+- probe: Applied cell E; ran tools/ra_solver/extract.py func_80017848 ings (13-pseudo model, 57 dispositions), simulate.py (sort order MATCH, dispositions 13/13 match - the forward global.c model is exact on this chassis), then tools/ra_solver/goal_from_tgt.py goal ings func_80017848 --model ... --show to derive the {pseudo -> target hardreg} goal that inverse.py requires. Artifacts: tmp/grind/func_80017848/s31/goal_E_report.txt, tmp/grind/func_80017848/s31/E_model.json.
+- result: The derived goal is EMPTY, so inverse.py cannot be run on this form at all. goal_from_tgt aligns 127 vs 127 with 14 'replace' pairs and 0 skips and prints the four substitutions ($a1->$a0 x6, $a0->$a1 x6, $v0->$a3 x4, $a1->$a2 x4) with per-instruction detail, but every attribution comes back AMBIGUOUS: only two pseudos hold $a1 (78 = loop 1's p, 123 = loop 2's p) and each of them is asked to become $a0 (the copy-source role at lw a1,12(s2) / move v0,a1) AND $a2 (the links role at lw a1,16(s2) / addu v0,v0,a1) simultaneously. That is not a tool limitation: cell E's C reuses the single variable p for both the record pointer and the link pointer - that reuse IS its use_crosses_set_p escape - GCC 2.7.2 creates one pseudo per declaration, and one pseudo receives one hard register. Target seats the two roles separately, so cell E's seat map cannot be satisfied by that form and no perturbation of any modelled RA input reaches it. The negative is first-class and stronger than the branch the frontier anticipated (ALLOCDBG instrumentation of the suggested-register pass): the seating is decided by the FORM, not outside the model. Corollary, now the actionable part: any spelling of combine escape 2 that reaches 127 insns in this function forces the p/links pseudo merge, because the only instruction the target places between the copy and the base add is the links load, so the links load is the only possible intervening set of p.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: cell-E exact-instruction-stream chassis (rejected/s23_crosses_set_p_reused_as_links_both_loops_exact_insn_stream_costs_14.c over the HEAD src/ings.c:719 INCLUDE_ASM anchor), re-measured this session at score 14, 127/127, no FAKE constructs
+
+## [s31] There is a spelling of combine escape 2 whose intervening set of p does not extend a value's live range into the loop body - specifically p reused to hold the base itself - which buys both preheader copies without cell E's seat displacement.
+- mechanism: use_crosses_set_p only requires that a register used in i2's SOURCE be assigned between i2 and i3. Reusing p as the base variable (q = p; lnk = ...; p = (u8 *)(sh + (s32)q);) makes i3 itself set i2's source, which keeps p's live range short and leaves the loop body reading a separate lnk pseudo, so the seat conflict cell E pays would disappear.
+- probe: Cells L and M (tmp/grind/func_80017848/s31/body_L.c, body_M.c), both loops written with p as the base and a named lnk; L takes a fresh p = *(u8 **)(ctx + 0xC); as loop 1's exit tail (target's lw a0,12(s2)), M keeps the candidate's p = q;. Measured with sandbox --disable all through tmp/grind/func_80017848/s31/cells.ps1 and disassembly-diffed with dis.sh.
+- result: L = 12 at 125 build insns, M = 13 at 126 - both UNDERSHOOT the 127-insn target. i3 setting i2's source is not an escape: use_crosses_set_p scans only the insns strictly BETWEEN i2 and i3, so combine substitutes the copy into the base add exactly as in the plain spelling. L loses BOTH preheader copies; M keeps only loop 1's, and that one is bought by its p = q second use (escape 1, not escape 2), with the base add reading a0 directly (addu a0,a2,a0) rather than target's addu a0,a1,a3. Banked as rejected/s31_p_reused_as_base_both_loops_loses_both_copies_costs_12.c and rejected/s31_p_reused_as_base_with_pq_exit_tail_costs_13.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the cell body, floor-3 chassis (candidate re-measured 3 at 127/127 this session), no FAKE constructs
+
+## [s31] Target's loop-1 exit tail lw a0,12(s2) / sll a1,s4,6 is the re-assignment of the SAME p and sh variables that loop 2 then reuses, so writing both loops against one shared p / sh pair reproduces the exit tail and the loop-2 preheader copy together.
+- mechanism: Target reloads $a0 and recomputes $a1 in loop 1's exit tail and the loop-2 guard at .L8001791C consumes them, which is the shape of two loops sharing one pointer variable and one shift variable with the exit tail restoring them after loop 1's base add clobbers $a0. The candidate instead carries a second shift variable sh2 at function scope and restores the pointer with p = q;, which is what emits the wrong addu a0,a3,zero. This is the rederive modality's structural-reshape leg: one pointer/shift pair for the whole function instead of the candidate's p/sh/sh2 triple.
+- probe: Cells N1 and N2 (tmp/grind/func_80017848/s31/body_N1.c, body_N2.c): sh re-assigned inside loop 1's exit tail alongside p, sh2 deleted, loop 2's guard and base written against the shared pair; N1 takes q = *(u8 **)(ctx + 0xC); as loop 2's preheader copy source, N2 takes q = p;. N1's disassembly diff banked at tmp/grind/func_80017848/s31/N1_diff.txt.
+- result: N1 = 30 at 126 build insns, N2 = 32 at 125. Sharing the pair is roughly a +27 regression and the diff shows why: the loop counter i migrates from $v1 to $a0 and the base from $a0 to $v1 throughout BOTH loops, so most of the regression is a whole-function counter/base seat rotation rather than a preheader effect. Two durable facts fall out of N1's stream: (a) loop 1's copy DIES in N1 even though loop 1 still writes q = *(u8 **)(ctx + 0xC); and still gets the cse fold - so the 'cse leaves an orphaned copy combine never sees' story in candidate.c's s9 header is not sufficient on its own, the downstream p = q; second use is what preserves it; (b) a fresh *(u8 **)(ctx + 0xC) read in loop 2's preheader always materialises as a real lw v0,12(s2) and never as a cse-folded reg-reg copy, because .L8001791C has two predecessors and therefore starts a new cse extended basic block in which no load of ctx+0xC is available. Banked as rejected/s31_shared_p_sh_across_both_loops_fresh_reads_costs_30.c and rejected/s31_shared_p_sh_across_both_loops_l2_copy_costs_32.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the cell body, floor-3 chassis, no FAKE constructs
+
+## [s31] Escape 1 (a downstream second use of loop 2's copy) has an unpriced site inside loop 2's guard's own taken arm, above the copy, that costs less than the banked minimum of 6.
+- mechanism: The banked price table for loop-2 second-use sites is post-loop 19-22, in-body 6, pre-join 12, guard-consuming 6-28, and every entry sites the use either outside the arm or inside the loop body. A use in the arm but above the loop had never been priced; the cheapest such site is the do-while bottom test rewritten through q (while (i < *(s32 *)(sh2 + (s32)q + 0x20));), which target already spends an instruction on (lw v0,32(a0)), so it should have been free.
+- probe: Cells P and Q (tmp/grind/func_80017848/s31/body_P.c, body_Q.c): candidate body with loop 2 given a named q/lnk preheader; P puts q's second use in the do-while bottom test, Q puts it in a p = q; after loop 2.
+- result: P = 9 at 126 build insns, Q = 13 at 125. P does not buy the copy: cse folds sh2 + (s32)q back to the already-computed base pseudo BEFORE combine runs, so by the time can_combine_p looks q has exactly one reference again and the copy is substituted away, leaving the build one instruction short. The general result, which is the part worth keeping: a second use that is a REDUNDANT RECOMPUTATION of an available expression is invisible to combine here, because cse runs first - a future escape-1 site must be a use cse cannot fold, not merely a use. Q loses two instructions instead (the post-loop p = q is dead and DCE removes it along with the copy). Banked as rejected/s31_l2_q_second_use_in_bottom_test_cse_folds_costs_9.c and rejected/s31_l2_q_second_use_as_p_after_loop2_costs_13.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus the cell body, floor-3 chassis, no FAKE constructs
+
+## [s31] The candidate's byte-exact loop 1 is produced by a mechanism the target cannot be using, so the remaining 3-point residual is a whole-function mechanism problem rather than a loop-2 placement problem.
+- mechanism: Read off the target listing rather than inferred. $a3 is written once per loop (0x800178D0, 0x80017930), read once per loop (0x800178D8, 0x80017938) and appears nowhere else in the function except the prologue's addu $s3,$a3,$zero; loop 1's exit tail is lw $a0,0xC($s2) / sll $a1,$s4,6, a FRESH reload of the pointer rather than a copy of $a3. Escape 1 (added_sets_2 = ! dead_or_set_p (i3, i2dest), combine.c:1458) requires the copy's destination to be live past the base add, and target's is not.
+- probe: Full disassembly diff of the candidate against asm/funcs/func_80017848.s (tmp/grind/func_80017848/s31/dis.sh), isolating the residual to exactly three instructions, cross-checked against a complete $a3 reference census of the target listing and against cells L/M/N1/N2/P/Q.
+- result: The residual is loop-1 exit tail (target lw a0,12(s2) vs ours addu a0,a3,zero), loop-2 preheader (target addu a3,a0,zero vs ours lw v0,12(s2)) and loop-2 base add (target addu a0,a1,a3 vs ours addu a0,a1,v0) - nothing else in 127 instructions. In 31 sessions no form has produced a copy that survives combine with a single downstream reference: escape 1 always costs the second use (candidate pays 3 in loop 1's exit tail; every loop-2 site prices 6 or worse, s31's bottom-test site being 9) and escape 2 always costs the p/links pseudo merge (cell E, 14, whose seat map s31 shows to be unsatisfiable). So s32's question is not where loop 2's second use goes but what makes a use-once copy survive combine at all.
+- verdict: CONFIRMED

@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 30,
+ "session_count": 31,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -183,23 +183,29 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "Floor re-measured at 3 (127/127); the rederive modality is closed on all three legs - integrate.c (the last unmeasured copy producer in the s28 census) is killed by measurement at three inline-helper "
+  },
+  {
+   "session": 31,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "Floor holds at 3 (127/127); the RA frontier is closed by FORM not model fidelity - the solver's goal derivation on the exact-instruction-stream form returns an EMPTY goal because that form merges the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Cell E's four seat divergences (p $a1->$a0, sh $a0->$a1, copy $v0->$a3, lnk $a1->$a2) are reachable by a modelled perturbation of local-alloc/global-alloc's inputs, and inverse.py will name the C lever that produces it.",
-   "mechanism": "The residual is typed RA on an instruction-for-instruction identical 127-insn stream (E-s29-5), which is exactly the input the solver suite was built for. s30 removes two whole classes of cheap source-side explanation for the permutation - declaration scope (E-s30-4) and source write order (E-s30-5) - both measured inert, so the remaining explanation must live in the modelled inputs (live-range shape, reg_n_refs, preference edges), which is precisely what inverse.py searches.",
-   "next_probe": "Apply tmp/grind/func_80017848/s30/body_J.c or the s29 body_E.c, run tools/ra_solver/extract.py to produce model.json for func_80017848 on that chassis, then python3 tools/ra_solver/inverse.py local (and global) <model.json> --goal with the target seats (pointer -> $a0/4, shift -> $a1/5, copy -> $a3/7, links -> $a2/6) --depth 2 --top 8. A NEGATIVE result is first-class: it means the seating is decided outside the modelled inputs and the next move is ALLOCDBG instrumentation of local-alloc's suggested-register pass, not another spelling."
+   "hypothesis": "Target's use-once preheader copy is emitted by jump.c or flow.c - the last two unread emit_move_insn/gen_move_insn producers in the s28 census - rather than surviving combine at all, which would explain why 31 sessions of combine-escape spellings have never reproduced it without paying a second use or a pseudo merge.",
+   "mechanism": "s28's census enumerated seven copy producers in GCC 2.7.2 (loop.c 14, reload1.c 13, unroll.c 9, jump.c 7, integrate.c 2, cse.c 1, flow.c 1); loop.c, reload1.c and integrate.c are closed by measurement in s28/s29/s30 and unroll.c never runs here (no unrolling in the target stream). jump.c's move emitters run during cross-jumping / jump threading and flow.c's during life analysis, both AFTER the point where the candidate's copy would have been deleted, so either could create a copy that never faced can_combine_p. This is also the only remaining explanation consistent with s31's measured fact that target's $a3 is use-once.",
+   "next_probe": "Read tools/gcc-2.7.2/jump.c's 7 emit_move_insn/gen_move_insn call sites and flow.c's 1 end to end and identify which are reachable for this CFG (two guarded do-while loops sharing a return-0 block), exactly as s28 did for loop.c. Then run `pwsh tools/grinder/dump.ps1 func_80017848` on the candidate chassis and read tmp/grind/func_80017848/dumps/ings.jump and ings.flow for a preheader reg-reg set that is absent from ings.combine's input - the dump names the producer in one read. If both are structurally unreachable, the copy is a combine survivor after all and the only untried survival route left is the succ-based `reg_used_between_p (dest, succ, i3)` refusal at combine.c:902 (a THREE-insn combine i1/i2/i3), which no session has spelled."
   },
   {
-   "hypothesis": "There is a spelling of combine escape 2 (combine.c:914-917) whose intervening set of p does NOT extend a value's live range into the loop body, which would buy both copies without the seat displacement cell E pays.",
-   "mechanism": "use_crosses_set_p only requires that the pseudo used in the copy's SOURCE be assigned between the copy and the base add. Cell E satisfies it with the links load because links is the only other preheader value, but any assignment to p whose result dies inside the preheader would satisfy it equally while leaving p's live range short and the loop body reading a separate links pseudo at $a2. s30 rules out the cheapest decoys (scope, order) without touching this axis.",
-   "next_probe": "Price cells that reuse p for a preheader-local value instead of for links: (i) p reused to hold the base itself (q = p; p = (u8 *)(sh + (s32)q); loop reads p as base) - note this makes i3 SET i2dest's source, so check whether combine.c:1458's dead_or_set_p still fires and whether an intervening links load is enough to keep it alive; (ii) p reused to hold the loop-2 bound so the guard's own load assigns p; (iii) p reused as the loop counter carrier. Each must be measured for BOTH the copy's presence and the seat map, not just the score."
+   "hypothesis": "A second use of loop 2's copy destination that cse CANNOT fold away costs less than the 6-point in-body minimum, because s31 showed the cheap sites all failed for the same removable reason (cse folded the recomputation before combine ran) rather than because the site was expensive.",
+   "mechanism": "Cell P's bottom-test use (score 9) and the older in-body site (6) both re-express an expression cse already has available, so q's reference count is back to one by the time can_combine_p runs. A use cse cannot fold - one whose value is not an available expression, e.g. a comparison of q against another live pointer, or a use through a differently-typed access that cse does not treat as equivalent - would keep the reference and force the refusal without adding an instruction, provided the use itself folds into an instruction target already has.",
+   "next_probe": "Price loop-2 second-use sites that are NOT redundant recomputations: (i) the loop-exit test written as a pointer comparison against a value derived from q rather than an address recompute; (ii) q used as the source of the loop's first address computation (addr = q + sh2 + i) so the use sits in an insn target already spends (addu v0,a0,v1); (iii) q consumed by loop 2's guard arm through a sub-word read of the pointer, which cse does not canonicalise to the same expression. Measure both the score AND whether `addu a3,a0,zero` appears, not just the score."
   },
   {
-   "hypothesis": "Escape 1 (a downstream second use of loop 2's copy) has an unpriced site inside loop 2's guard's own taken arm, above the copy, that costs less than the banked minimum of 6.",
-   "mechanism": "The banked price table for loop-2 second-use sites is post-loop 19-22, in-body 6, pre-join 12, guard-consuming 6-28, and every entry sites the use either outside the arm or inside the loop body. A use in the arm but above the loop has never been priced, and it is the only region of the arm the table does not cover.",
-   "next_probe": "Cells that place a second read of the copy pseudo between the guard branch and the base add - e.g. the loop-2 bound reloaded through the copy (t = *(s32 *)((s32)q + sh2 + 0x20)) so q is used twice in the preheader itself - measured on the candidate chassis, then diffed for whether the second preheader use materialises as an extra insn or folds into the existing addu v0,a1,a0."
+   "hypothesis": "The three residual instructions are one decision, not two: a form whose loop-1 exit tail is a fresh `lw a0,12(s2)` necessarily loses loop 1's copy under every mechanism measured so far, so the correct move is to find the single construct that gives BOTH loops a use-once surviving copy, and to stop optimising the two loops independently.",
+   "mechanism": "Target's two preheaders are byte-identical four-instruction sequences with identical seats, which is the signature of one source construct written twice; the candidate reaches 3 only by using a DIFFERENT mechanism in loop 1 (escape 1, paid for in the exit tail) than in loop 2 (nothing). Every s31 cell that made the two loops symmetric moved away from the floor (L 12, M 13, N1 30, N2 32, P 9), which is evidence that the symmetric construct is not any of the spellings tried, not that symmetry is wrong.",
+   "next_probe": "Once the jump.c/flow.c producer question above is answered, re-spell the function symmetrically around whatever that answer implies and measure the two preheaders together; if the producer turns out to be a combine survivor, the symmetric construct must be one whose second use is shared - e.g. a single copy variable q defined before loop 1's guard and re-assigned in each preheader, with its downstream use in the other loop's guard - which has never been priced because it needs q live on the loop-1-skip path."
   }
  ],
  "judge_constraints": [],
@@ -308,6 +314,38 @@
    "measured_on": "committed HEAD src tree, read-only census, no build",
    "predicate_cite": "",
    "result": "The (index << 4) + links + field idiom appears nowhere else in either file - the only hits are this function's own two l"
+  },
+  {
+   "session": 31,
+   "statement": "Cell E's four seat divergences (p $a1->$a0, sh $a0->$a1, copy $v0->$a3, lnk $a1->$a2) are reachable by a modelled perturbation of local-alloc's / global-alloc's inputs, and inverse.py will name the C ",
+   "kill_scope": "instance",
+   "measured_on": "cell-E exact-instruction-stream chassis (rejected/s23_crosses_set_p_reused_as_links_both_loops_exact_insn_stream_costs_14.c over the HEAD src/ings.c:719 INCLUDE_ASM anchor), re-measured this session a",
+   "predicate_cite": "",
+   "result": "The derived goal is EMPTY, so inverse.py cannot be run on this form at all. goal_from_tgt aligns 127 vs 127 with 14 'rep"
+  },
+  {
+   "session": 31,
+   "statement": "There is a spelling of combine escape 2 whose intervening set of p does not extend a value's live range into the loop body - specifically p reused to hold the base itself - which buys both preheader c",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the cell body, floor-3 chassis (candidate re-measured 3 at 127/127 this session), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "L = 12 at 125 build insns, M = 13 at 126 - both UNDERSHOOT the 127-insn target. i3 setting i2's source is not an escape:"
+  },
+  {
+   "session": 31,
+   "statement": "Target's loop-1 exit tail lw a0,12(s2) / sll a1,s4,6 is the re-assignment of the SAME p and sh variables that loop 2 then reuses, so writing both loops against one shared p / sh pair reproduces the ex",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the cell body, floor-3 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "N1 = 30 at 126 build insns, N2 = 32 at 125. Sharing the pair is roughly a +27 regression and the diff shows why: the loo"
+  },
+  {
+   "session": 31,
+   "statement": "Escape 1 (a downstream second use of loop 2's copy) has an unpriced site inside loop 2's guard's own taken arm, above the copy, that costs less than the banked minimum of 6.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the cell body, floor-3 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "P = 9 at 126 build insns, Q = 13 at 125. P does not buy the copy: cse folds sh2 + (s32)q back to the already-computed ba"
   }
  ]
 }
