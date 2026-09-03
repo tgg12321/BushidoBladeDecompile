@@ -1,3 +1,42 @@
+/* s70 UPDATE (2026-09-03, rederive). This body is UNCHANGED and remains the floor at masked 2
+ * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s70 spent the
+ * rederive rung and enumerated the last unread compiler predicate. What a future session inherits:
+ *   1. KILLED (rederive): the ORIGINAL PsyQ libcd source shape is in hand -
+ *      tmp/closer/sotn_bios.c:260-286 is CD_ready(int mode, u_char *result) with set_alarm (:95),
+ *      get_alarm (:102) and callback (:210) inlined - and transplanted faithfully onto BB2 symbols
+ *      it measures 57 at 174 build insns (r1, direct globals) and 55 at 178 (r2, Intr triple via
+ *      one base pointer). Both are SHORT of the target's 179: the natural while(1) + short-circuit
+ *      `||` control flow is a different basin, not a perturbation of this one. At block level the
+ *      natural subscript spellings of the printf arguments bottom out at 7 (r4/r6; r3/r3b/r5 = 14,
+ *      r7 = 8) - dropping the `pp` alias sinks the D_800F19C0 load from emitted slot 53/54 to
+ *      61/62. Do not re-transplant the source shape.
+ *   2. KILLED (class): flow.c has four `reg_n_refs[regno] += loop_depth;` sites, but :2329 and
+ *      :2725 are inside `#ifdef AUTO_INC_DEC` and config/mips/mips.h:2175-2179 leaves
+ *      HAVE_PRE/POST_INCREMENT commented out. The two live sites (:2081, :2515) are reached only
+ *      from propagate_block, which walks PATTERN (insn) (flow.c:1584). REG_NOTES are NEVER walked.
+ *      The s69 frontier's "which other RTL positions does flow.c count?" is answered: none.
+ *   3. KILLED: the sanctioned F1 combine-foldable copy chain-extender (`a5b = arg5;` and a
+ *      two-link version, plus the t0 mirror) is refs-INERT - byte-identical to the g06 base and
+ *      block-3 quantity dumps line-for-line identical (refs 4/4/4/8). The copy is copy-propagated
+ *      away before flow.c, a different mechanism from s69's self-stores with the same outcome.
+ *   4. CONFIRMED, NEW AND POSITIVE: a do-while(0) whose note pair BRACKETS block 3 from outside
+ *      (a second wrap opened above the `cnt` test and the `do_timeout:` label, NESTED over the
+ *      existing in-block wrap) raises every block-3 qty_n_refs by one loop_depth level -
+ *      4/4/4/8 -> 6/6/6/12 - at ZERO byte cost, instruction sequence unchanged. Every in-block
+ *      placement s69 measured cost 4-9 points. Base:
+ *      progress/s70-q02-note-outside-block3-byte-neutral-refs-lever-6.c. The un-nested form (just
+ *      relocating the existing BEG) does NOT raise the depth at all.
+ *   5. KILLED (class): that free depth lever cannot break the seat tie by itself. qty1 (reg104,
+ *      the t0 shift temp) and qty2 (reg97, the arg5 value) have identical mention counts, spans
+ *      and sizes, so a UNIFORM depth change multiplies both qty_n_refs equally and pri1 == pri2 at
+ *      every depth; local-alloc.c:1683 then breaks the tie on quantity number, which the target's
+ *      own instruction order pins in qty1's favour. Only an ASYMMETRIC refs change moves the seat.
+ *   6. KILL RE-AUDIT (mandated) DISCHARGED: s69's k01 self-store kill re-measured across the full
+ *      47-variant fake_ablate grid on the current chassis - keep-all and drop-[self-store] are
+ *      both 6/179 and byte-identical, every other subset >= 7. No FAKE carrier was masking it.
+ * The ONE open question on this body is still F3 (the volatile prong-2 / allowlist ruling for
+ * idx_1496) - documented below and moot while the floor is 2.
+ */
 /* s69 UPDATE (2026-09-03, forensics). This body is UNCHANGED and remains the floor at masked 2
  * (re-verified live this session: score 2, build 179, target 179, rules_dropped 0). s69 read the
  * residual out of BOTH GCC passes with the instrumented cc1 and reduced it to closed form:

@@ -2369,3 +2369,135 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s69] The one structurally-identified escape from the order/seat coupling, priced so nobody re-derives it: for sched1 to emit the CANDIDATE order (span 8, correct seats) while sched2 transposes the pair, sched2's class rung would have to break the tie, i.e. insn_cost(120 -> 122) > 1. Node 120 is unit=-1 icost=1; only function-unit-0 insns (loads) carry icost 2 on this machine description, so the arg5 address would have to be produced by a load - an extra instruction, off 179-parity.
 
 - [s69] F3 is unchanged and still the only completion-blocker on this body: whether prong 2 of .claude/rules/legitimate-volatile-interrupt-touched.md admits the idx_1496 poll loop, and whether the shipped in-TU declarations constitute the volatile_extern_allowlist.txt grant. Moot while the floor is 2.
+
+## s70 (rederive, 2026-09-03) - banked facts
+
+- [s70] Chassis re-measured live before any probe: memory/grind/CD_ready/candidate.c spliced over
+  the INCLUDE_ASM marker = **score 2, build_insns 179, target_insns 179, rules_dropped 0**; the
+  s69 order-perfect base g06 reproduces exactly at **6, 179, 0**. No drift. Harness this session:
+  `pwsh tmp/grind/CD_ready/s70/measure.ps1 <form.c>...` (splice -> sandbox -> restore, one call per
+  batch), built on the s60 splice.py. src/system.c verified clean (`git status --porcelain`) after
+  every batch.
+
+- [s70] **MANDATORY KILL RE-AUDIT DISCHARGED.** s69's closest instance kill (k01, `arg5 = arg5;`
+  on the order-perfect base, score 6) was re-measured on the CURRENT chassis across the FULL
+  FAKE-ablation grid: `python3 tools/fake_ablate.py --func CD_ready --file system --candidate
+  tmp/grind/CD_ready/s70/k01_renamed.c --max-variants 47` -> **47/47 variants, keep-all = 6/179 and
+  drop-[arg5 self-store] = 6/179, byte-identical**; every other subset scores 7 or worse. No FAKE
+  carrier was sitting on the pseudo the lever targets (the func_8002EA24-s8 failure mode does not
+  apply here). s69's k01 kill STANDS on this chassis. Artifact:
+  `tmp/grind/CD_ready/s70/ablate_k01.txt`. NOTE FOR FUTURE SESSIONS: fake_ablate.py requires the
+  candidate's function to be literally named `CD_ready`; the Closer-era ledger forms are named
+  `marionation_Exec` and the tool returns `ERR/None` for every row without saying why. Rename first
+  with `tmp/grind/CD_ready/s70/rename.py <in.c> <out.c>`.
+
+- [s70] **THE REDERIVE AXIS IS MEASURED AND DEAD, at both the whole-function and the block level.**
+  The original source is IN HAND and has been for the whole grind: `tmp/closer/sotn_bios.c:260-286`
+  is `CD_ready(int mode, u_char *result)` with `set_alarm` (:95), `get_alarm` (:102) and `callback`
+  (:210) as the inlined helpers, and it maps onto BB2 one-for-one (Alarm.unk0/unk4/unk8 =
+  D_800F19B8/BC/C0; Intr.sync/.ready/.c = D_800A1494/95/96; the command-name table D_80032AC8 =
+  D_800A11DC indexed by CD_com = D_800A11D5; the status-name table D_80032B48 = D_800A125C; the
+  three Result_t buffers D_80039260/68/70 = D_800F19A0/A8/B0). Transplanted faithfully:
+  | form | shape | score | build insns |
+  |---|---|---|---|
+  | r1 | full source shape, direct globals, no FAKEs, no gotos | 57 | **174** |
+  | r2 | same control flow, Intr triple via one base pointer, 1496 volatile | 55 | **178** |
+  | r3/r3b | candidate chassis, both printf table args as inline subscripts | 14 | 179 |
+  | r4 | t0 named, arg5 inline | 7 | 179 |
+  | r5 | arg5 named, t0 inline | 14 | 179 |
+  | r6 | both named (`t0 = tbl_125c[idx_1494[0]];` etc.), no shift/addu split | **7** | 179 |
+  | r7 | both named, arg5 first | 8 | 179 |
+  The natural whole-function shape is not a perturbation of the vAT1 basin - it is 5 (r1) or 1 (r2)
+  instructions SHORT of the target's 179 and 55+ masked. At block level the best natural spelling
+  is 7: with the `pp` pointer-alias gone the D_800F19C0 load sinks from emitted slot 53/54 to 61/62
+  and the t0 value load rises to 57 (adiff over slots 51-67, r6 spliced). This is the first time in
+  70 sessions the original source shape has been measured end-to-end rather than assumed.
+
+- [s70] **flow.c's `reg_n_refs` accumulation is now ENUMERATED, not guessed** (the s69 frontier's
+  first item asked exactly this). There are four textual accumulation sites in
+  `tools/gcc-2.7.2/flow.c` - :2081 (mark_set_1, a SET), :2515 (mark_used_regs, a USE), :2329 and
+  :2725 - but the last two are inside `#ifdef AUTO_INC_DEC`, and `config/mips/mips.h:2175-2179`
+  leaves `HAVE_POST_INCREMENT` / `HAVE_PRE_INCREMENT` COMMENTED OUT, so neither is compiled on this
+  target. The two live sites are reached only from `propagate_block`, which walks
+  `PATTERN (insn)` (flow.c:1584) plus `CALL_INSN_FUNCTION_USAGE` (:1603, hard regs only) and
+  `global_regs` (:1625). **REG_NOTES are never walked for reg_n_refs.** Consequences, all now
+  facts rather than conjecture: a mention in a REG_EQUAL/REG_DEAD note is worth ZERO; a REG inside
+  a MEM address IS counted, but only because mark_used_regs recurses through the pattern of an insn
+  that exists; and an insn deleted before flow.c contributes nothing. The only instruction-free
+  refs position left in the whole compiler is a SECOND occurrence of the same pseudo inside ONE
+  surviving insn's pattern.
+
+- [s70] **The sanctioned F1 combine-foldable copy chain-extender is refs-INERT here, proven in the
+  dump.** `a5b = arg5;` (p01), a two-link chain (p02) and the mirror on the t0 address (p05) are
+  all byte-identical to the g06 base at 6/179/0, and their block-3 local-alloc records are
+  line-for-line identical to g06's (qty0 refs=4, qty1 reg104 refs=4, qty2 reg97 refs=4, qty3
+  refs=8; same ALLOC order 3,0,1,2; same seats $v0/$v0/$v1/$a0). The copy pseudo is
+  copy-propagated away before flow.c runs, so it never becomes a mention - a DIFFERENT mechanism
+  from s69's k01-k03 self-stores (which die at delete_noop_moves) with the same outcome. Dumps:
+  `tmp/grind/CD_ready/s70/p01_g06_a5copy1.qty.txt`, `p02_...qty.txt`, `p05_...qty.txt`.
+
+- [s70] **NEW LEVER, POSITIVE: a do-while(0) whose note pair BRACKETS block 3 from outside raises
+  every block-3 qty_n_refs by one loop_depth level at ZERO byte cost.** Base g06 (order-perfect,
+  6/179). Form q02: a second `do {` opened above the `cnt` test and the `do_timeout:` label - i.e.
+  its NOTE_INSN_LOOP_BEG is emitted in the PREDECESSOR basic block - closing after the existing
+  in-block wrap. Measured 6/179/0, instruction sequence unchanged, and the quantity dump moves
+  4/4/4/8 -> **6/6/6/12**. Every in-block note placement s69 measured cost 4-9 points
+  (h01/h02/h03 = 12/12/15, control h04 = 12, j01-j04 = 10/12/10/10). This is the first placement in
+  70 sessions that buys refs for free, and it decouples block 3's loop_depth from its instruction
+  order. Banked as
+  `memory/grind/CD_ready/progress/s70-q02-note-outside-block3-byte-neutral-refs-lever-6.c`.
+
+- [s70] The variant of that lever WITHOUT the inner wrap (q01: relocate the existing wrap's BEG into
+  the predecessor rather than nesting a new one) leaves block-3 refs UNCHANGED at 4/4/4/8 (score 6,
+  179). Relocating the BEG does not raise the depth - `goto do_timeout` enters the region from
+  outside, so the relocated pair does not survive as a depth-carrying loop. The lever requires the
+  NESTED shape (outer bracket + the existing in-block wrap retained), which is why q02 works and
+  q01 does not. q03 (BEG in predecessor, END moved past the `v0 = -1; goto check;` tail) also
+  measures 6/179 with no refs change.
+
+- [s70] **Why the free depth lever does not close the function BY ITSELF, stated as arithmetic.**
+  `qty_compare_1` (tools/gcc-2.7.2/local-alloc.c:1659-1684) ranks on
+  `floor_log2(qty_n_refs) * qty_n_refs * qty_size / (qty_death - qty_birth)` and, on a tie, on
+  quantity number (:1683). The residual seat is qty1 (reg104, the t0 shift temp, 18-24) vs qty2
+  (reg97, the arg5 value, 20-26): identical mention count (2), identical span (6), identical size
+  (1). A UNIFORM depth change multiplies both qty_n_refs by the same factor, so pri1 == pri2 for
+  every depth (4/4 -> 1.3333 each; 6/6 -> 2.0000 each; 8/8 -> 4.0000 each) and :1683 hands qty1 the
+  $v1 seat on quantity number - which the target's own instruction order pins. Only an ASYMMETRIC
+  change closes it: a third pattern mention for reg97, or a first-and-only one for reg104.
+
+- [s70] Consequence for the frontier, stated precisely so no session re-derives it: with the
+  target's instruction sequence held, `qty_size`, the span and the quantity numbers are pinned
+  (s69), a uniform loop_depth is now free but tie-preserving (s70), REG_NOTES and deleted insns
+  contribute nothing (s70), self-stores die at delete_noop_moves (s69) and copies die at
+  copy-propagation (s70). The ONLY surviving shape for the needed asymmetry is an insn whose
+  PATTERN mentions reg97 twice, or a note boundary lying strictly between reg104's set and its use
+  (emitted slots 57 and 61) - and the latter is exactly the in-block placement s69 priced at 4-9
+  points.
+
+- [s70] Chassis re-measured live before any probe: candidate.c = score 2, build_insns 179, target_insns 179, rules_dropped 0; the s69 order-perfect base g06 = 6, 179, 0. No drift. src/system.c verified clean by git status --porcelain after every measurement batch.
+
+- [s70] The ORIGINAL SOURCE for this function is in the repo and maps one-for-one onto BB2: tmp/closer/sotn_bios.c:260-286 is CD_ready(int mode, u_char *result), with set_alarm at :95, get_alarm at :102 and callback at :210 as the inlined helpers. Mapping: Alarm.unk0/unk4/unk8 = D_800F19B8/BC/C0; Intr.sync/.ready/.c = D_800A1494/95/96; command-name table D_80032AC8 = D_800A11DC indexed by CD_com = D_800A11D5; status-name table D_80032B48 = D_800A125C; the three Result_t buffers D_80039260/68/70 = D_800F19A0/A8/B0. The do_timeout block IS get_alarm's inlined failure path.
+
+- [s70] Transplanting that source shape faithfully measures 57 at 174 build insns (r1, direct globals, zero FAKE constructs) and 55 at 178 (r2, Intr triple via one base pointer, 1496 volatile). Being SHORT of the target's 179 instructions is the decisive fact: the natural while(1) + short-circuit || control flow is a different basin, not a perturbation of the vAT1 one.
+
+- [s70] At block level the natural spellings of the printf table arguments measure: both inline as subscripts = 14 (and identically 14 with the pp alias retained, so pp is irrelevant once subscripts are used), t0 named + arg5 inline = 7, arg5 named + t0 inline = 14, both named = 7, both named with arg5 first = 8. The floor form's staged decomposition is worth 5 points over the best natural spelling.
+
+- [s70] flow.c's reg_n_refs accumulation is now enumerated rather than guessed: four textual sites (:2081, :2329, :2515, :2725), of which :2329 and :2725 are inside #ifdef AUTO_INC_DEC and config/mips/mips.h:2175-2179 leaves HAVE_POST_INCREMENT / HAVE_PRE_INCREMENT commented out. The two live sites are reached only from propagate_block, which walks PATTERN (insn) (flow.c:1584), CALL_INSN_FUNCTION_USAGE (:1603, hard regs only) and global_regs (:1625). REG_NOTES are never walked, so a mention in a REG_EQUAL/REG_DEAD note is worth zero.
+
+- [s70] The only instruction-free refs position that survives that enumeration is a SECOND occurrence of the same pseudo inside ONE surviving insn's pattern. Everything else that mentions a pseudo either emits an instruction or is deleted before the counter runs.
+
+- [s70] The sanctioned F1 combine-foldable copy chain-extender is refs-inert here and it is proven in the dump, not merely by score: p01/p02/p05 are byte-identical to the g06 base and their block-3 local-alloc records are line-for-line identical (qty0 refs=4, qty1 reg104 refs=4, qty2 reg97 refs=4, qty3 refs=8, ALLOC order 3,0,1,2). The copy pseudo is copy-propagated away before flow.c - a different mechanism from s69's self-stores (delete_noop_moves) with the same outcome.
+
+- [s70] NEW POSITIVE LEVER: a do-while(0) whose note pair BRACKETS block 3 from outside - a second wrap opened above the cnt test and the do_timeout: label, NESTED over the existing in-block wrap - raises every block-3 qty_n_refs by one loop_depth level (4/4/4/8 -> 6/6/6/12) at ZERO byte cost, instruction sequence unchanged, score 6 == the g06 base. Every in-block placement s69 measured cost 4-9 points. This is the first free refs lever found in 70 sessions and it decouples block 3's loop_depth from its instruction order.
+
+- [s70] The un-nested form of that lever does nothing: merely relocating the existing wrap's BEG into the predecessor (q01) or additionally moving its END past the tail (q03) leaves block-3 refs at 4/4/4/8, because `goto do_timeout` enters the region from outside and the relocated pair does not survive as a depth-carrying loop. The NESTED shape is load-bearing.
+
+- [s70] The free depth lever cannot close the function alone, and the arithmetic says why: qty1 (reg104, t0 shift temp, 18-24) and qty2 (reg97, arg5 value, 20-26) have identical mention counts, spans and sizes, so a uniform loop_depth change multiplies both qty_n_refs equally and qty_compare_1's pri1 == pri2 at every depth; local-alloc.c:1683 breaks the tie on quantity number, which is birth order, which the target's own instruction sequence pins in qty1's favour.
+
+- [s70] The residual is therefore reduced to a single named requirement: an ASYMMETRIC refs change on the order-perfect base - a third pattern mention for reg97, or a first-and-only one for reg104 - since qty_size, span and quantity number are pinned by the target's order (s69), uniform depth is free but tie-preserving (s70), REG_NOTES and deleted insns contribute nothing (s70), self-stores die at delete_noop_moves (s69) and copies die at copy-propagation (s70).
+
+- [s70] Mandated kill re-audit discharged: s69's k01 self-store kill re-measured across the full 47-variant fake_ablate grid on the current chassis - keep-all and drop-[self-store] both 6/179 and byte-identical, every other subset >= 7. No FAKE carrier was masking the lever; the kill stands.
+
+- [s70] Harness gotcha for future sessions: tools/fake_ablate.py requires the candidate's function to be literally named CD_ready and returns ERR/None for every row otherwise, without saying why. The Closer-era ledger forms are named marionation_Exec. Rename first with tmp/grind/CD_ready/s70/rename.py <in.c> <out.c>.
+
+- [s70] Harness gotcha 2: the Windows python used for splicing defaults to cp1252, so any script that rewrites evidence.md/hypotheses.md must open BOTH read and write with encoding='utf-8' - a write without it truncates the file to zero bytes before failing. Caught and restored from git this session; the ledger appends are intact and re-verified by size.

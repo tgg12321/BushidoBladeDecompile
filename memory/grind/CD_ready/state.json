@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 69,
- "current_modality": "forensics",
+ "session_count": 70,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -423,23 +423,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "s69 forensics: the 62-session ORDERING half is SOLVED on the candidate chassis (g06 emits the target's exact instruction sequence for the whole block, score 6/179/0) and the residual is reduced to clo"
+  },
+  {
+   "session": 70,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Rederive rung spent and dead (original libcd source shape transplanted: 55-57 at 174/178 insns, block-level natural spellings bottom at 7); flow.c's reg_n_refs positions enumerated (REG_NOTES never co"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "There is a refs lever that is not loop_depth: a construct that gives a pseudo a mention surviving to flow.c's reg_n_refs accumulation while emitting no instruction, which would move the arg5 value from 4 refs to 5 or 6 with zero loop notes and close the tie on the g06 order-perfect base.",
-   "mechanism": "qty_compare_1's only free input on an order-perfect base is qty_n_refs (H-s69-C). loop_depth is dead (H-s69-D: notes are sched1 region boundaries here) and self-copies are dead (H-s69-E: delete_noop_moves precedes the counter). What has never been enumerated is which OTHER RTL positions flow.c counts - a mention inside a REG_EQUAL/REG_NOTE, a use consumed by a combine merge, or a second use folded into the addressing mode of an insn that already exists.",
-   "next_probe": "Read flow.c's reg_n_refs accumulation loop first and list exactly which rtx positions it walks (does it count REG_NOTES? does it count uses inside a MEM address?). Then spell one C form per counted-but-instruction-free position on the g06 base and re-dump with BB2_QTY_DEBUG, checking refs(reg97) before checking the score."
+   "hypothesis": "The one instruction-free refs position flow.c leaves is a SECOND occurrence of the same pseudo inside ONE surviving insn's pattern, so there is a C spelling of the arg5 value whose consuming insn mentions reg97 twice, giving it 3 mentions (refs 6 at depth 2) against reg104's 2 and breaking the qty_compare_1 tie on the order-perfect base with no extra instruction.",
+   "mechanism": "s70 enumerated flow.c's accumulation: reg_n_refs is the loop_depth-weighted count of a pseudo's occurrences in the PATTERNS of insns that exist at flow.c time (flow.c:1584, :2081, :2515), and mark_used_regs recurses through the whole pattern, so two REG occurrences in one pattern are counted twice for one instruction. reg97 currently has exactly two: its set by `lw $v1,0($v0)` (emitted slot 58) and its use by `sw $v1,0x10($sp)` (slot 63). Any MIPS pattern of the form (set X (op R R)) or a two-operand compare/select on the same pseudo would count twice.",
+   "next_probe": "Grep tools/gcc-2.7.2/config/mips/mips.md for insn patterns whose RTL template mentions the same operand register twice and that MIPS emits as a single instruction (candidates: `addu R,R,R` from `x + x`, `sltu`/`subu` self-forms, `and R,R,R` from `x & x`). Then spell each as C on the g06 order-perfect base in a position where the arg5 VALUE is the doubled operand and the result is still what printf's 5th argument must be, measure with tmp/grind/CD_ready/s70/measure.ps1, and check refs(reg97) in the BB2_QTY_DEBUG dump BEFORE looking at the score - the dump is the discriminator, the score is downstream of it."
   },
   {
-   "hypothesis": "A loop note placed OUTSIDE block 3 - both its BEG and END in the predecessor block - raises block 3's loop_depth without introducing a scheduling-region boundary inside block 3, giving the refs change without the order damage that killed H-s69-D.",
-   "mechanism": "s67-A and H-s69-D both show the damage comes from the note acting as a sched1 region boundary INSIDE the block being scheduled. Every wrap measured in 69 sessions has been placed inside the do_timeout block. flow.c's loop_depth is a running counter over the whole insn stream, so a BEG in an earlier block that is closed after block 3 would raise block 3's depth with no note between block 3's own insns.",
-   "next_probe": "Wrap from before the do_timeout label (or from the loop head) through the end of the do_timeout block in a do-while(0), so both notes land outside block 3's insn range; measure the score, then dump BB2_QTY_DEBUG and check whether refs in block 3 doubled while the block-3 RANKDBG stream is unchanged."
+   "hypothesis": "With uniform depth now FREE (s70's q02 outer bracket), the s69 in-block note family should be re-priced on top of it: an in-block note no longer has to buy depth, only asymmetry, so a placement whose sched1 region boundary happens to fall on a scheduling-indifferent seam may now cost 0 instead of the 4-9 points s69 measured.",
+   "mechanism": "Every s69 h/j variant paid twice - once for the depth it needed and once for the region boundary. On the q02 base the enclosing depth is already 3, so a single in-block END/BEG pair that raises only reg97's death mention (the sw at emitted slot 63) is a smaller perturbation than the whole-block re-nesting s69 measured, and s70 showed the note cost is placement-specific rather than intrinsic (outside-block notes cost nothing).",
+   "next_probe": "Take progress/s70-q02-note-outside-block3-byte-neutral-refs-lever-6.c as the base and re-run the s69 h01-h04 and j01-j04 placements on top of it (the printf-nesting j03 shape is the one that puts the boundary between reg104's death at slot 61 and reg97's death at slot 63). Score each, and for every one that stays at 6 or better, dump BB2_QTY_DEBUG and check whether qty2's refs exceeded qty1's - an asymmetric 8-vs-6 is the win condition."
   },
   {
-   "hypothesis": "The g06 order-perfect base is productive permuter territory that has never been searched: no campaign in 69 sessions has started from a body whose sched1 output is already the target's instruction sequence on this chassis.",
-   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies whose residual mixed order and seats. g06's residual is a single local-alloc tie, so a permuter run scores a much narrower neighbourhood and its rich passes may find a refs perturbation that hand-derivation missed.",
-   "next_probe": "Import memory/grind/CD_ready/progress/s69-g06-order-perfect-on-candidate-chassis-seats-swapped-6.c as a permuter base (mind the nonmatchings/ scope-break noted in memory), run one fresh-seed window with tools/permuter_campaign.py wait, harvest and --stop inside the same turn."
+   "hypothesis": "The g06/q02 order-perfect base is productive permuter territory that has never been searched: no campaign in 70 sessions has started from a body whose sched1 output is already the target's instruction sequence on this chassis.",
+   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies whose residual mixed order and seats. g06's residual is a single local-alloc tie and q02 adds a free depth dial on top, so a permuter run scores a much narrower neighbourhood and its rich passes may find the asymmetric refs perturbation hand-derivation has not.",
+   "next_probe": "Import progress/s70-q02-note-outside-block3-byte-neutral-refs-lever-6.c as a permuter base (mind the root-level nonmatchings/ scope-break recorded in memory/project/grinder-nonmatchings-scope-break.md), run one fresh-seed window with `python3 tools/permuter_campaign.py wait --dir <ws>`, then harvest and `--stop` inside the same turn."
   }
  ],
  "judge_constraints": [
@@ -469,6 +475,46 @@
    "measured_on": "HEAD chassis 2026-09-03, g06 order-perfect base (score 6/179/0) carrying the sanctioned tbl_125c do-while(0) wrap, the pp pointer-alias and the v0 staging FAKEs",
    "predicate_cite": "",
    "result": "k01 = 6, k02 = 6, k03 = 6 - all byte-identical to g06 - and k01's block-3 local-alloc dump is line-for-line identical to"
+  },
+  {
+   "session": 70,
+   "statement": "The original PsyQ libcd source shape for CD_ready, transplanted faithfully onto BB2 symbols, reaches or improves on the vAT1 basin's floor of 2.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, candidate.c re-verified live at 2/179/0 and g06 at 6/179/0 before any probe; r1/r2 carry NO FAKE constructs at all, r3-r7 sit on the candidate chassis with its FAKE set minus ",
+   "predicate_cite": "",
+   "result": "KILLED. r1 = 57 masked at 174 build insns; r2 = 55 at 178 - both SHORT of the target's 179, so the natural control flow "
+  },
+  {
+   "session": 70,
+   "statement": "flow.c counts a pseudo reference from an RTL position other than a surviving insn's PATTERN - a REG_NOTE mention, or a mention in an insn deleted later - so a construct can raise reg_n_refs without em",
+   "kill_scope": "class",
+   "measured_on": "tools/gcc-2.7.2 source as pinned in this repo, read against config/mips/mips.h; no FAKE state involved (a compiler-source predicate, not a spelling measurement).",
+   "predicate_cite": "tools/gcc-2.7.2/flow.c:1584",
+   "result": "KILLED as a class. flow.c has four `reg_n_refs[regno] += loop_depth;` statements (:2081 mark_set_1 for a SET, :2515 mark"
+  },
+  {
+   "session": 70,
+   "statement": "The sanctioned F1 combine-foldable copy chain-extender - a fresh local copied from the arg5 value and passed in its place - raises that quantity's qty_n_refs, because local-alloc's combine_regs merges",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03; measured on the s69 g06 order-perfect base carrying its full inherited FAKE set (the tbl_125c do-while(0) wrap, the pp pointer-alias, the two v0 staging lines, the new_var/new",
+   "predicate_cite": "",
+   "result": "KILLED. p01/p02/p05 all score 6/179/0, byte-identical to the g06 base, and their block-3 quantity records are line-for-l"
+  },
+  {
+   "session": 70,
+   "statement": "The now-free uniform depth lever (q02) breaks the qty1-vs-qty2 seat tie on the order-perfect base.",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis 2026-09-03, g06 order-perfect base with its full inherited FAKE set plus the new outer bracket wrap; dump tmp/grind/CD_ready/s70/q02_g06_beg_pred_plus_inner.qty.txt.",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1683",
+   "result": "KILLED. q02 scores 6, exactly its g06 base, and the ALLOC records are unchanged (ord 0,1,2,3 = qty3, qty0, qty1, qty2; s"
+  },
+  {
+   "session": 70,
+   "statement": "MANDATED KILL RE-AUDIT: s69's k01 self-store kill was measured while a FAKE carrier occupied the pseudo the lever targets, so it is not a real kill on a clean base.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-03, k01 form across all 47 subsets of its nine FAKE units (including the all-removed and none-removed controls).",
+   "predicate_cite": "",
+   "result": "KILLED (the re-audit finds no masking; s69's kill stands). keep-all = 6/179 and drop-[arg5 self-store] = 6/179 are byte-"
   }
  ]
 }
