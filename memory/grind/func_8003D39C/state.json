@@ -1,0 +1,71 @@
+{
+ "func": "func_8003D39C",
+ "file": "code6cac_c2",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 16,
+   "modality": "recon",
+   "headline": "func_8003D39C recon: plain C 26 -> 16 (two-statement array address + OTag-bitfield addPrim tail); whole tail byte-identical, residual is the sched1 head order (n+1 store vs n*16+base chain) which the "
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Lengthen the sched1 priority chain feeding the n*16+base computation with an ordinary-C spelling that leaves no extra instruction after RA (coalescable copy of n used only in the index, typed/sub-word index, or array base through a typed pointer local)",
+   "mechanism": "INSN_PRIORITY(36) >= 2 out-ranks the pri-1 sw/addiu at the stale sort taken when 42 is picked",
+   "next_probe": "recompile each spelling, extract.py code6cac_c2, read block-1 picks (want 42,40,39,36,34,32,28,26,mask), then sandbox"
+  },
+  {
+   "hypothesis": "Make the sw of D_800A3358 unready at the 42-pick sort by giving it a successor among {lw idx, sll n,4, la, addu}",
+   "mechanism": "true/anti dependence requires a shared address base \u2014 only possible if count and buffer-select live in one aggregate (aggregate-merge rule, needs base-register evidence)",
+   "next_probe": "grep asm/funcs for base-register access covering D_800A3358/D_800A3218; if none, record dead"
+  },
+  {
+   "hypothesis": "Full-order goal at depth 2 restricted to luid atoms on the v5 model to confirm the head is out of reach for pairs of statement moves",
+   "mechanism": "same rank mechanism",
+   "next_probe": "perturb.py --goal-order <target picks> --atoms luid,luid_move --depth 2 --block 1 (run unbuffered, background, ~10 min)"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "A u32 rgb_mask = 0xFFFFFF local with the manual and/or tail (v4, this chassis, no FAKE) reaches 25 but not the tail seats",
+   "kill_scope": "instance",
+   "measured_on": "v4 pure-C chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "25; superseded by the bitfield form"
+  },
+  {
+   "session": 1,
+   "statement": "Moving D_800A3358 = n + 1 after the address computation (v6, this chassis) changes nothing",
+   "kill_scope": "instance",
+   "measured_on": "v6 = v5 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "16, identical instruction stream"
+  },
+  {
+   "session": 1,
+   "statement": "Post-increment index p = &D_800A3930[D_800A3358++] with no local n (v7, this chassis) changes nothing",
+   "kill_scope": "instance",
+   "measured_on": "v7 = v5 chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "16, identical head"
+  },
+  {
+   "session": 1,
+   "statement": "On the v5 pass-1 block-1 model no single luid/luid_move atom (statement reorder) produces the target head; sub-goal 'sll n,4 after sw' is satisfied only by add_dep 32/34/36<-28 or cost atoms",
+   "kill_scope": "instance",
+   "measured_on": "v3/v5 pure-C chassis sched models, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "NO perturbation at depth 1 for the full order; G2 vectors are all add_dep/cost"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-03T01:09:48.670973+00:00"
+}
