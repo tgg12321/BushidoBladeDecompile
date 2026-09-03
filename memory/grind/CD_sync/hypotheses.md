@@ -1920,3 +1920,42 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: honest chassis (control 15/160) and its symbol-ref derivative; pp pointer-alias FAKE present, h5 chain-extender absent; build_insns 165/164 vs target 160
+
+## s111 (rederive)
+
+- **H111-1 KILLED (instance).** "Giving tbl_125c or idx_1495 a second C-level
+  assignment makes reg_n_sets != 1, denying the REG_EQUIV note and the
+  local-alloc.c:1064 live-length doubling." Six spellings measured on the honest
+  base (control 15/160): split-init compound assign (15/160), duplicate
+  same-value set x3 (18/160), dead different-value first store x3 (15/160).
+  ALLOCDBG live lengths unchanged at 148/144 in every case. cse_main +
+  delete_dead_from_cse (toplev.c:2867) run before the reg_scan at toplev.c:2925.
+  Measured on: honest chassis, no FAKE constructs present.
+- **H111-2 KILLED (instance).** "Moving the pointer initialisations out of the
+  prologue shortens their raw live length into the frontier's acceptance band and
+  seats them above the parameters at build_insns 160." The band IS reachable
+  (r1 = 921/800/750/263/253, the first honest form with all three pointers above
+  both parameters) but every placement move costs instructions: 159 / 158 / 157 /
+  157 / 156 against the target's 160. Measured on: honest chassis, no FAKE
+  constructs present.
+- **CONFIRMED.** The honest chassis's ~13-point residual is entirely
+  `reg_live_length[regno] *= 2` at local-alloc.c:1064 applied to the three
+  constant-address pointer pseudos and not to the two parameter pseudos.
+  Un-doubled, the honest priorities would be 1866 / 405 / 277 / 263 / 253 - the
+  exact target seating.
+
+## [s111] Giving tbl_125c or idx_1495 a second C-level assignment (ordinary split-init compound assign, duplicate same-value set, or a dead different-value first store) makes reg_n_sets != 1 at local_alloc, denying the REG_EQUIV note and the live-length doubling.
+- mechanism: update_equiv_regs skips the note when reg_n_sets[regno] != 1 (local-alloc.c:1021) and only doubles reg_live_length for pseudos that got a note (local-alloc.c:1064); reg_n_sets is built by the last reg_scan, at toplev.c:2925.
+- probe: Six spellings spliced onto the honest base (control h0 = 15/160): t1 'idx_1495 = idx_1494; idx_1495 += 1;'; t2/t3/t4 duplicate same-value sets of tbl_125c and/or idx_1495; q1/q2/q3 different-value dead first stores. Each captured with the instrumented cc1 under BB2_ALLOC_DEBUG and scored with sandbox CD_sync --disable all.
+- result: t1 15/160 with live lengths 148/144 unchanged; t2/t3/t4 18/160 with 152/144 (the shift is the set moving one insn earlier, not a note change); q1/q2/q3 15/160 with the ALLOCDBG table bit-identical to h0. The extra set is removed by cse_main and by delete_dead_from_cse (toplev.c:2867), both of which precede the reg_scan at toplev.c:2925, so reg_n_sets is still 1 when update_equiv_regs runs.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: honest chassis (tmp/grind/CD_sync/s111/h0.c, control 15/160, build_insns 160, rules_dropped 0), no FAKE constructs present
+
+## [s111] Moving the pointer initialisations out of the prologue shortens their raw live length into the acceptance band the s110 frontier derived, seating both pointers above the parameters while build_insns stays at 160.
+- mechanism: reg_live_length is accumulated over the insns a pseudo is live across (flow.c); a constant-address pointer set at the top of the do_timeout window or just before the poll is live over far fewer insns than one set in the prologue, and global.c allocno priority is floor_log2(nrefs)*nrefs*size*10000/live_length.
+- probe: p1 (idx_1495 set moved to just before 'new_var = 0xFF'), p3 (tbl_125c set moved into the do_timeout window), p2 (both), r2 (tbl_125c set moved to the loop top), r1 (r2 + p1); ALLOCDBG ord=11..15 read for each variant, then scored.
+- result: The band is reachable - r1 gives ord=11..15 = 921/800/750/263/253, the first honest form on record with all three pointers above both parameters - but every placement move costs instructions: p1 159, p3 158, p2 157, r2 157, r1 156, against the target's 160. Once the set leaves the prologue the constant is rematerialized into the addressing (lbu $a0,1($s2) instead of addiu $s4,$s2,1 plus lbu $a0,0($s4)), deleting the prologue lui/addiu pairs the target carries at asm/funcs/CD_sync.s:15-19. Scores 15/22/22/20/20.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: honest chassis (control h0 15/160, build_insns 160, rules_dropped 0), no FAKE constructs present

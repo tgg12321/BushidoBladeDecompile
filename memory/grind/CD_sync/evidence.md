@@ -2126,3 +2126,83 @@ carrier-masked, and the ledger floor of 2 is current, not historical.
 - [s110] Target ref counts read directly off asm/funcs/CD_sync.s: $s2 (&Intr) 7, $s3 (CD_intstr) 3, $s4 (&Intr+1) 2, $s5 (mode) 2, $s6 (result) 2 - identical to the honest chassis's counts, confirming the honest form has the right refs and only the wrong live lengths.
 
 - [s110] The upstream-provenance frontier item was not advanced this session (no network fetch attempted); tmp/closer/sotn_bios.c's CD_sync body remains the only in-hand reference C and its structured-while shape is now measured to cost +4/+5 instructions here.
+
+## s111 (rederive) - the honest seating gap is ONE compiler fact: local-alloc.c:1064 doubles live_length for REG_EQUIV pseudos
+
+Root cause, named for the first time in 111 sessions. `update_equiv_regs`
+(`tools/gcc-2.7.2/local-alloc.c`) attaches a REG_EQUIV note to any pseudo whose
+initializing insn is a `single_set` with `reg_n_sets[regno] == 1` and either a
+CONSTANT_P REG_EQUAL note (local-alloc.c:1026-1029) or a single-basic-block MEM
+source (1048-1052). For every such pseudo it then executes
+`reg_live_length[regno] *= 2;` (**local-alloc.c:1064**), under an in-tree comment
+saying the doubling "does not affect the priority in local-alloc!" - i.e. it is a
+**global.c-only** effect, and global.c is exactly where CD_sync's 13-point
+callee-saved-seat permutation is decided.
+
+- [s111] Dump proof: `tmp/grind/CD_sync/s110/honest1495.lreg:3636` carries
+  `(expr_list:REG_EQUIV (const:SI (plus:SI (symbol_ref:SI ("D_800A1494")) (const_int 1))))`
+  on `(insn 30 (set (reg/v:SI 78) (plus (reg/v:SI 77) (const_int 1))))`. The same
+  insn in `h5base.lreg` has NO such note (the dump jumps 3634 -> 3645). idx_1495's
+  ALLOCDBG live length is 144 honest vs **exactly 72** in h5. The FAKE
+  chain-extender's second lever is therefore not "shortening a live range" at all -
+  it is *denying the REG_EQUIV note*, and the 144 -> 72 is the `*= 2` being skipped.
+- [s111] All three address pseudos carry the note and are doubled:
+  p77 idx_1494 REG_EQUIV(symbol_ref D_800A1494) len 150 = 2x75;
+  p79 tbl_125c REG_EQUIV(symbol_ref D_800A125C) len 148 = 2x74;
+  p78 idx_1495 REG_EQUIV(const plus) len 144 = 2x72.
+  The two PARAMETERS have no note and are counted raw: mode 76, result 79.
+  Every one of these five pseudos is live across essentially the whole outer poll
+  loop, so their RAW live lengths are all within 72..79 of each other. **The entire
+  seating inversion is the x2, nothing else**: honest priorities 933 / 202 / 138 vs
+  parameters 263 / 253, when the un-doubled values would be 1866 / 405 / 277 - which
+  is precisely the target order idx_1494 > tbl_125c > idx_1495 > mode > result.
+- [s111] ROUTE A (deny the note by making `reg_n_sets != 1`, local-alloc.c:1021) is
+  measured DEAD across six spellings, all on the honest base (control h0 = 15/160):
+  t1 ordinary-C split-init `idx_1495 = idx_1494; idx_1495 += 1;` -> 15/160, len 144
+  unchanged; t2/t3/t4 duplicate same-value sets of tbl_125c and/or idx_1495 ->
+  18/160, len 152/144 (the move of the set one insn earlier, not a note change);
+  q1/q2/q3 *different-value dead first stores* (`tbl_125c = (s32*)&D_800A1494;`
+  before the real set) -> 15/160, len 148/144 bit-identical to h0. Mechanism: the
+  redundant set is removed by `cse_main` and the dead set by `delete_dead_from_cse`
+  (**toplev.c:2867**), both of which run BEFORE the last `reg_scan` that builds
+  `reg_n_sets` (**toplev.c:2925**). No C-level extra assignment to these locals
+  survives to local_alloc, so reg_n_sets stays 1 and the note is always attached.
+- [s111] ROUTE B (shorten the RAW live length by moving the set out of the prologue)
+  is measured DEAD on instruction count, not on priority - and it is the first time
+  the frontier's acceptance band was actually hit:
+    p1  idx_1495 set moved to just before `new_var = 0xFF`  -> len 144->25, pri 138->**800**, score 15, **build_insns 159**
+    p3  tbl_125c set moved into the do_timeout window        -> tbl leaves the allocno list entirely, score 22, build 158
+    p2  both of the above                                    -> score 22, build 157
+    r2  tbl_125c set moved to the loop top                   -> len 148->40, pri 202->**750**, score 20, build 157
+    r1  r2 + p1                                              -> ALLOCDBG ord=11..15 = 921 / 800 / 750 / 263 / 253, i.e. **all three pointers above both parameters for the first time on the honest chassis** - score 20, **build_insns 156**
+  Every move costs 1-4 instructions: once the constant-address set is not in the
+  prologue, reload rematerializes it into the addressing (`lbu $a0,1($s2)` instead
+  of `addiu $s4,$s2,1` + `lbu $a0,0($s4)`), so the target's prologue lui/addiu pairs
+  (asm/funcs/CD_sync.s:15-19) disappear. Priority-order correctness and
+  build_insns==160 are, on this axis, mutually exclusive.
+- [s111] Consequence for the arithmetic: at the pinned live lengths (148 doubled /
+  144 doubled) there is NO integer nrefs for idx_1495 that lands its priority in the
+  band (263, pri(tbl_125c)) - nrefs 3 gives 208 (too low), nrefs 4 gives 555 (above
+  a tbl_125c lifted to nrefs 4 = 540). So a pure refs-lift on both pointers cannot
+  produce the target order either; **idx_1495 specifically must lose its doubling**.
+  That single sub-problem - emit `addiu $s4,$s2,1` in the prologue while denying its
+  set a CONSTANT_P REG_EQUAL note - is now the whole remaining honest endgame, and
+  it is exactly what the FAKE chain-extender buys.
+- [s111] Mandated kill re-audit: candidate.c re-splices at **2 / 160, rules_dropped 0**
+  on the current chassis; `tools/fake_ablate.py` gives keep-all 2/160, drop
+  chain-extender 15/159, drop pp alias 17/161, drop both 30/160. Floor 2 is current
+  and both FAKE units remain load-bearing and super-additive.
+- [s111] Tooling: tmp/grind/CD_sync/s111/{splice.py,cap.py,run.sh,run.ps1} (s110
+  harness re-pointed); every probe's -da dumps and ALLOCDBG stderr are in that dir.
+
+- [s111] The s110 honest lreg dump carries (expr_list:REG_EQUIV (const:SI (plus (symbol_ref "D_800A1494") (const_int 1)))) on insn 30 = (set p78 (plus p77 (const_int 1))) at tmp/grind/CD_sync/s110/honest1495.lreg:3636; the identical insn in h5base.lreg has no note at all (the dump jumps 3634 -> 3645). idx_1495's ALLOCDBG live length is 144 honest vs exactly 72 with the FAKE chain-extender - the x2 at local-alloc.c:1064 being skipped.
+
+- [s111] The FAKE chain-extender's second lever is therefore REG_EQUIV DENIAL, not live-range shortening; reproducing 'a shorter live range' is what 15 sessions of honest respellings were unknowingly aiming at, and it is not the mechanism.
+
+- [s111] All three address pseudos carry REG_EQUIV and are doubled: p77 idx_1494 150 = 2x75, p79 tbl_125c 148 = 2x74, p78 idx_1495 144 = 2x72. The two parameters carry no note and are counted raw at 76 and 79. All five are live across essentially the whole outer poll loop, so their RAW live lengths sit within 72..79 of each other - the seating inversion is the doubling and nothing else.
+
+- [s111] Un-doubled, the honest priorities would be 1866 / 405 / 277 / 263 / 253 = idx_1494 > tbl_125c > idx_1495 > mode > result, which is exactly the target's $s2/$s3/$s4/$s5/$s6 assignment (asm/funcs/CD_sync.s:15-19, 53-63, 106).
+
+- [s111] At the pinned doubled live lengths no integer nrefs pair produces the target order: idx_1495 at nrefs 3 gives 208 (below mode's 263) and at nrefs 4 gives 555 (above a tbl_125c lifted to nrefs 4 = 540). A refs-lift on both pointers therefore cannot seat this function on the honest chassis; idx_1495 has to lose its doubling.
+
+- [s111] Mandated kill re-audit: candidate.c re-splices at 2/160, rules_dropped 0 on the current chassis; tools/fake_ablate.py gives keep-all 2/160, drop chain-extender 15/159, drop pp alias 17/161, drop both 30/160 - the recorded floor is current and both FAKE units remain load-bearing and super-additive.
