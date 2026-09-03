@@ -2182,3 +2182,143 @@ Returned to active under Ruling A. Ground: the 2026-08-31 amended named-intermed
 - measured_on: SB chassis with the compound `idx = (idx2 + idx) << 2;`
   statement, no FAKE constructs beyond the standing `val` LICM-defeat reuse;
   honest `sandbox --disable all` on the 2026-09-02 tree.
+
+## Session s17b (2026-09-02, structural)
+
+### H75 — KILLED (instance). Loop-STATEMENT spelling cannot substitute for the banned wrap's loop notes.
+- **Statement.** On the WD chassis, writing the inner and/or outer loop as
+  `do { ... } while (cond);` or `while (cond) { ... }` instead of `for` changes
+  the RTL loop-note and basic-block structure around the inner-loop head, and
+  closes the same three instructions (11/12/65) the banned
+  `do { idx = i + j; } while (0);` wrap closes.
+- **Mechanism.** The wrap's whole effect is an extra nested
+  NOTE_INSN_LOOP_BEG + code_label pair between the loop-top `addu` and the
+  const-1 `li`, which changes what cc1's first-pass list scheduler
+  (sched.c `adjust_priority` / `birthing_insn_p`, sched.c:2505/2543) may move
+  across. A different loop STATEMENT emits its notes for free and needs no
+  GCC-internals justification.
+- **Probe.** tmp/grind/func_800645B0/s17b/gen.py W0–W4, honest
+  `sandbox func_800645B0 --disable all` on each.
+- **Result.** W0 control 3/78, W1 (inner do/while) 3/78, W2 (inner while) 3/78,
+  W3 (outer do/while) 3/78, W4 (both do/while) 3/78 — all at 78 build insns,
+  byte-identical to the control. GCC 2.7.2 canonicalises all three statement
+  forms to the same bottom-tested RTL loop (no entry guard, because `j` is
+  provably `0 < 4`), so no note lands where the wrap put one. Extends s4's H20
+  from the retired CA chassis onto the chassis that actually carries the
+  residual.
+- **Verdict:** KILLED (instance — WD chassis, no FAKE constructs beyond the
+  pre-existing `val` reuse). Banked:
+  `rejected/loop-statement-spelling-inert-on-wd-chassis.c`.
+
+### H76 — KILLED (instance). Declaration order is inert on all three live chassis, for allocation as well as expansion.
+- **Statement.** Permuting the eight local declarations changes pseudo-register
+  numbers, which are local-alloc's quantity order and global-alloc's allocno
+  tie-break as well as a scheduler ready-list tie-break; if the k chassis'
+  `$s0`/`$s1` permutation or the h chassis' callee-saved seat is an ORDER tie,
+  a permutation moves it — with a construct that is unimpeachable ordinary C.
+- **Mechanism.** local_alloc orders quantities by priority with ties broken in
+  qty order, which follows pseudo number, which follows declaration/first-use
+  order; global.c's allocno sort has the same tie-break shape.
+- **Probe.** s17b gen.py W6/W7/W8 (WD), genk.py K1–K4 (k), genh.py H1–H3 plus
+  H4 (h). Twelve permutations, honest sandbox each.
+- **Result.** WD control 3/78 → W6/W7/W8 all 3/78. k control (K0) 12/78 →
+  K1/K2/K3/K4 all 12/78. h control (H0) 2/78 → H1/H2/H3 all 2/78, and H4 (the
+  `& 7` value staged through `last` before landing in `idx`) also 2/78. Not one
+  instruction moved in any of the twelve. The seats are priority/conflict
+  outcomes, not ordering ties — independent corroboration of s16's ra_solver
+  FORECLOSED verdict, reached without the solver.
+- **Verdict:** KILLED (instance — measured on WD 3/78, h 2/78 and k 12/78
+  controls as shipped, no added FAKE constructs). s2's H7 had closed
+  declaration order only for the commutative operand order; it is now closed for
+  allocation too. Banked:
+  `rejected/declaration-order-inert-on-wd-h-and-k-chassis.c`.
+
+### H77 — KILLED (instance). The inner-loop exit-bound spelling.
+- **Statement.** `for (j = 0; j != 4; j++)` is semantically identical and may
+  change the loop's exit-test RTL and therefore the loop-head block.
+- **Probe.** s17b W5, honest sandbox.
+- **Result.** 10/78 at 80 build insns (control 3/78 at 78): GCC drops the
+  `slti $v0,$a0,0x4` the target uses and emits a compare/branch pair, two
+  instructions over target.
+- **Verdict:** KILLED (instance — WD chassis). Banked:
+  `rejected/inner-loop-ne-bound-costs-two-insns.c`.
+
+### H78 — CONFIRMED (mechanism reading, no measurement). loop.c's movable test has three more preconditions than `n_times_set == 1`, and this function's control flow pins all of them.
+- **Statement.** s16's H66 killed "make the const-1 `li` birthing" on the ground
+  that `reg_n_sets[val] == 1` is *also* loop.c's hoist precondition, i.e. the two
+  requirements are the same condition. That is true in effect but not in
+  mechanism: loop.c:695-705 skips a movable unless one of three cases holds —
+  (1) `! maybe_never && ! loop_reg_used_before_p (...)`, (2) the dest is not a
+  user variable and not `REG_LOOP_TEST_P`, or (3) `reg_in_basic_block_p (p, dest)`.
+  A single-set const-1 carrier therefore escapes the hoist iff it is a user
+  variable whose use is in a DIFFERENT basic block from its set, and either the
+  set sits past a conditional jump (`maybe_never`) or the carrier is read
+  earlier in the loop than it is set.
+- **Why it is unreachable here.** The const-1's only use is the `sllv` that
+  builds `mask`, and `mask` is the inner `if`'s condition — so the set and the
+  use are necessarily in the inner loop's first basic block, before any
+  conditional jump. Case (3) always holds, the movable is always formed, and the
+  hoist always fires. That is exactly why every single-set spelling measured
+  12/80 (s9c XD/XG). A fourth clause (loop.c:723-770, the "potential lossage"
+  deletion in loops with calls) deletes the set and substitutes its source into
+  a single use, but requires `validate_replace_rtx` to succeed, and
+  `(const_int 1)` does not satisfy the `ashlsi3` pattern's register operand on
+  MIPS, so it never fires either.
+- **Verdict:** CONFIRMED. Recorded so no session re-opens H66 hoping loop.c has
+  an unexplored precondition: it has three more, and the function's own control
+  flow pins all three.
+
+## Frontier (rewritten by session s17b)
+Floor 1 (SB), unchanged. The 0/78 body exists and is BANNED, so the function is
+NOT "one lever away" in any usable sense — the remaining question is whether an
+ordinary-C form reaches the WD chassis' loop head without a note-emitting
+device, and every structural axis this session could name is now measured dead.
+
+1. **The h chassis' 2/78 register seat** (unchanged from s16, still the closest
+   live residual). `idx = rand() & 7;` wins both halves; the two points are the
+   `& 7` value landing in `idx`'s callee-saved seat (`$s0`) where the target has
+   `$v0`. s16 typed this FORECLOSED at the RA stage (global.c:897
+   prune_preferences plus a hard conflict with `$v0`), and s17b's declaration-
+   order sweep independently confirms it is not an ordering tie. Next probe is
+   still the ra_solver instrumentation task (score the local-alloc
+   suggested-register pass, then re-run inverse on
+   tmp/grind/func_800645B0/s16/h.model.json with goal {"74":2}) — a tooling
+   task, not a spelling search.
+2. **The k chassis' 12/78 seat permutation** (unchanged from s16). Same
+   instrumentation gates it; s17b adds that declaration order does not move it.
+3. **Policy, not codegen.** The only measured 0/78 form is the banned wrap. If a
+   future owner ruling ever scopes the do-while(0) family to cover this
+   function's scheduler-tie mechanism, the form is banked and ready at
+   `rejected/do-while0-wrap-scores-0-but-layer1-FAIL-banned-construct.c`
+   (bytes re-verified against the oracle by the previous session). Nothing else
+   about this function is unknown.
+
+## [s17] On the WD chassis (3/78) the inner and/or outer loop written as `do { ... } while (cond);` or `while (cond) { ... }` instead of `for` moves the residual at stream indices 11/12 (inner-loop head) and 65 (back-edge delay slot), substituting for the banned do-while(0) wrap's extra loop notes.
+- mechanism: The wrap's effect is an extra nested NOTE_INSN_LOOP_BEG + code_label between the loop-top `addu` and the const-1 `li`, changing what cc1's first-pass list scheduler may move across (sched.c adjust_priority / birthing_insn_p, tools/gcc-2.7.2/sched.c:2505,2543). A different loop STATEMENT emits its notes for free and needs no GCC-internals justification.
+- probe: tmp/grind/func_800645B0/s17b/gen.py W0-W4, honest `sandbox func_800645B0 --disable all` on each.
+- result: W0 control 3/78, W1 inner do/while 3/78, W2 inner while 3/78, W3 outer do/while 3/78, W4 both do/while 3/78 -- all at 78 build insns and byte-identical to the control. GCC 2.7.2 canonicalises all three statement forms to the same bottom-tested RTL loop (no entry guard, `j` provably 0 < 4), so no note lands where the wrap put one. Extends s4's H20 from the retired CA chassis onto the chassis that carries the residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: WD chassis (wid = idx2 + idx), 3/78 control; no FAKE constructs beyond the pre-existing `val` LICM-defeat reuse
+
+## [s17] Permuting the eight local declarations moves the register seats behind the h chassis' 2/78 residual or the k chassis' 12/78 seat permutation, or the WD chassis' loop head, because pseudo numbers are local-alloc's quantity order and global-alloc's allocno tie-break.
+- mechanism: local_alloc orders quantities by priority with ties broken in qty order, which follows pseudo number, which follows declaration/first-use order; global.c's allocno sort has the same tie-break shape; the scheduler ready list likewise falls back to INSN_LUID.
+- probe: Twelve permutations measured with honest sandbox: s17b gen.py W6/W7/W8 (WD), genk.py K1-K4 (k), genh.py H1-H3 plus H4 (h).
+- result: WD control 3/78 -> W6/W7/W8 all 3/78. k control K0 12/78 -> K1/K2/K3/K4 all 12/78. h control H0 2/78 -> H1/H2/H3 all 2/78, and H4 (the `& 7` value staged through `last` first) also 2/78. Not one instruction moved in any of the twelve. The seats are priority/conflict outcomes, not ordering ties -- independent corroboration of s16's ra_solver FORECLOSED verdict, obtained without the solver. s2's H7 had closed declaration order only for the commutative operand order; it is now closed for allocation too.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: WD 3/78, h 2/78 and k 12/78 controls as shipped this session; no added FAKE constructs
+
+## [s17] The inner loop's exit bound written as `j != 4` instead of `j < 4` changes the exit-test RTL and the loop-head block on the WD chassis.
+- mechanism: A != bound may remove the `slti` the target uses; if GCC still emits an slti the block content is unchanged, otherwise the compare/branch pair changes block pressure at the loop head.
+- probe: s17b W5, honest sandbox.
+- result: 10/78 at 80 build insns (control 3/78 at 78). GCC drops the target's `slti $v0,$a0,0x4` and emits a compare/branch pair -- two instructions over target.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: WD chassis, 3/78 control, no added FAKE constructs
+
+## [s17] loop.c's movable test carries three preconditions beyond `n_times_set == 1`, and this function's control flow pins all three, which is the real mechanism behind s16's H66 (make the const-1 `li` birthing) finding no gradient.
+- mechanism: tools/gcc-2.7.2/loop.c:695-705 skips a movable unless one of three cases holds: (1) `! maybe_never && ! loop_reg_used_before_p`, (2) the dest is not a user variable and not REG_LOOP_TEST_P, or (3) `reg_in_basic_block_p (p, dest)`. The const-1's only use is the `sllv` that builds `mask`, and `mask` is the inner `if`'s condition, so set and use sit in the inner loop's first basic block before any conditional jump: case (3) holds and the movable is always formed. The fourth clause (loop.c:723-770, the 'potential lossage' deletion in loops with calls) needs validate_replace_rtx to succeed, and (const_int 1) does not satisfy the ashlsi3 pattern's register operand on MIPS.
+- probe: Direct read of tools/gcc-2.7.2/loop.c:640-790 and tools/gcc-2.7.2/sched.c:2480-2600, cross-checked against the already-banked s9c measurements XD 12/80 and XG 12/80 (single-set const-1 carriers).
+- result: Confirmed by reading, and consistent with every single-set const-1 measurement in the bank. Recorded so no session re-opens H66 hoping loop.c has an unexplored precondition: it has three more, and the function's own control flow pins all three.
+- verdict: CONFIRMED
