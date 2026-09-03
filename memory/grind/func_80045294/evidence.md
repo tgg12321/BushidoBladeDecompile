@@ -1717,3 +1717,151 @@ apply.py,dis.sh}`; rejected form banked at
 - [s55] Closed-form restatement of the residual: the target's two operands require block 0's copy and block 0's shift to be in different cse EBBs at BOTH cse passes; at cse2 the only surviving EBB terminator is a CODE_LABEL. Flipping the global crown clause instead cannot work, because clause (A) is true for the loop counter in both block 0's EBB and the loop-2 preheader's EBB, so one global comparison decides both and they need opposite answers — the same wall s53's form A measured at 11/83, now with a code-level predicate.
 
 - [s55] Kill re-audit discharged: tools/fake_ablate.py finds no FAKE-annotated constructs in candidate.c (nothing to ablate), and the closest-to-target instance kill (s53's loop-1 control-flow respellings) re-measures at score 1, insns 83 on the current chassis.
+
+
+## s56 (synthesis) — the block-0 EBB split validated at cse1, and the H-geometry schedule class-killed
+
+**Chassis re-measured first (mandated).** `memory/grind/func_80045294/candidate.c`
+(a0-as-pointer, i-first = permutation `SIVLCF`) re-measures **score=1, build_insns=83,
+target_insns=83** on HEAD 2026-09-03. Residual unchanged: instruction idx 9, target
+`sll $v1,$s2,4` (a0's register) vs build `sll $v1,$s0,4` (i's register).
+`tools/fake_ablate.py` remains vacuous — no form in this ledger carries a FAKE construct.
+
+### 1. Exhaustive block-0 declaration-order sweep (120 forms, all measured)
+
+`tmp/grind/func_80045294/s56/gen.py` enumerates every permutation of block 0's six
+initialised declarations — `S` (`sum = 0`), `V` (`v1 = a0 << 4`), `L` (`s4 = load`),
+`I` (`i = a0`), `C` (`count = D_800A33AC`), `F` (`s5 = s4 + a1`) — subject only to the
+data-dependence constraints `V < L < F`. All 120 were built and scored
+(`tmp/grind/func_80045294/s56/sweep.csv`, driver `sweep.ps1`):
+
+| score | count |
+|---|---|
+| 1 | 6 |
+| 2 | 53 |
+| 4 | 36 |
+| 5 | 24 |
+
+**No permutation reaches 0.** The six score-1 forms are exactly those ordering
+`S < I < V < L < F` with `C` free (`CSIVLF, SCIVLF, SICVLF, SIVCLF, SIVLCF, SIVLFC`),
+i.e. `sum` before `i` before `v1` before `s4` before `s5`; `count`'s position is
+byte-irrelevant. Every `V < I` (shift-first / "H") permutation lands at 2 or worse.
+Statement order inside block 0 is therefore a fully-enumerated, closed axis on this
+chassis.
+
+### 2. The H geometry's 2-instruction residual is a scheduler LUID tiebreak — class-killed
+
+With `H_a0ptr_vfirst.c` applied, `pwsh tools/grinder/dump.ps1 func_80045294` gives
+`text1a_c.sched2` (extract `tmp/grind/func_80045294/s56/H.sched2.fn`). Insn identities
+in block 0: **insn 14 = `(set (reg/v:SI 3 v1) (ashift ...))`** (the shift),
+**insn 22 = `(set (reg/v:SI 16 s0) ...)`** (the copy `i = a0`), insn 12 = `sum = 0`,
+insn 4 = `move s2,a0`, insns 197/199/201/203/205/207/209/211 = the prologue
+sp-adjust + seven callee-save stores.
+
+sched2's own priority listing for block 0:
+
+    ;; insn[ 197]: priority = 1   ... ;; insn[   4]: priority = 1
+    ;; insn[  12]: priority = 1   ;; insn[  14]: priority = 1
+    ;; insn[  22]: priority = 1   ;; insn[  19]: priority = 1
+    ;; insn[  28]: priority = 2   ;; insn[  31]: priority = 2
+
+Every block-0 insn except the two tail insns has `INSN_PRIORITY == 1`.
+`rank_for_schedule` (tools/gcc-2.7.2/sched.c:2408) compares priority first
+(sched.c:2418), then the last-scheduled-insn dependence class, then falls through to
+**`return INSN_LUID (tmp) - INSN_LUID (tmp2);` (sched.c:2464)** — i.e. original insn
+order. `priority()` (sched.c:1433-1521) is computed *only* from `LOG_LINKS`
+(predecessors): `prev_priority = priority (x) + insn_cost (x, prev, insn) - 1`. Both
+the shift and the copy have exactly one real predecessor, insn 4 (`move s2,a0`,
+priority 1, cost 1), so both are pinned at priority 1 and the tie is always broken by
+source order. Emitted order for H is therefore `... sw s1, sum=0, sw s0, sll, move s0,
+sw ra ...` against the target's `... sw s1, sum=0, sw s0, move s0, sll, sw ra ...` —
+insns 14 and 22 swapped, and nothing else: **score 2, and the two differing positions
+are exactly those two insns.**
+
+Because the target's block-0 shift reads the incoming parameter (`sll $v1,$s2,4`, whose
+only predecessor is the parameter move), no source spelling can lengthen the shift's
+predecessor chain without changing that operand, so `INSN_PRIORITY(shift)` cannot exceed
+`INSN_PRIORITY(copy)` and the LUID tiebreak decides. The v1-first geometry cannot emit
+the copy before the shift.
+
+### 3. The target's own register layout proves the original had crown = i
+
+Read off `target.txt`: in loop 2 the pointer (`$s2`, the parameter's register) is last
+mentioned at `addiu $s2,$s2,0x10`, which precedes the counter's last mention
+`slt $v0,$s0,$v0` at the loop-2 exit test. So `uid_cuid[regno_last_uid[i]] >
+uid_cuid[regno_last_uid[a0]]`, i.e. clause (B) of `make_regs_eqv` (cse.c:854-857) is
+TRUE for i in the original compilation too — **the original's cse crown was i, exactly as
+on the candidate chassis**, and block 0's shift still printed `$s2`. Combined with §2
+(the shift cannot precede the copy and still be emitted after it), the original's block-0
+shift must have escaped `canon_reg` (cse.c:2532-2572) by sitting in a **different
+extended basic block** from the copy, or by being created after cse2.
+
+### 4. An EBB split DOES preserve the parameter at cse1 — and loop.c undoes it, not cse2
+
+`s56/L1_label_probe.c` wraps block 0's shift in `do { v1 = a0 << 4; } while (i < a0);`
+(semantics-preserving: `i == a0`, so the body runs exactly once). Measured
+**score 4, build_insns 86** (the loop costs `slt` + branch + a nop), and the dumps say:
+
+* `text1a_c.cse`: `;; Processing block from 2 to 18` then `;; Processing block from 20 to
+  33`, with `(code_label 18 ...)` between them, and the shift printed as
+  **`(ashift:SI (reg/v:SI 72) ...)`** — the parameter pseudo, i.e. the target's operand.
+* `text1a_c.cse2`: the same `(code_label 18 ...)` is STILL PRESENT, but the shift now
+  appears *above* it in the insn stream and reads **`(reg/v:SI 75)`** (the counter).
+
+So cse2 does not ignore the label (cse.c:8039 terminates the EBB at any CODE_LABEL
+irrespective of `after_loop`); what defeats the device is **loop.c hoisting the
+loop-invariant shift out of the do-while into its preheader, i.e. above the label**,
+between cse1 (toplev.c:2865) and cse2 (toplev.c:2926). This corrects the s55 framing,
+which attributed the cse2 regression to the after_loop-gated NOTE_INSN_LOOP_END
+(cse.c:8055) alone: a real CODE_LABEL survives cse2 fine — the shift is what moves.
+
+`s56/L2_ifjoin_probe.c` tried the non-loop alternative (`if (i < a0) { sum = 1; }`
+between the copy and the shift; never taken because `i == a0`). Measured **score 1,
+build_insns 83** — the whole `if` is folded away before cse1 (`text1a_c.cse` shows
+`;; Processing block from 2 to 46` with no `code_label` at all), so no split happens.
+A non-loop label carrier therefore needs a condition `jump_optimize` cannot resolve.
+
+### 5. Form A re-measured and decomposed
+
+`A_reuse_i_as_idx.c` (crown flipped to a0 by reusing i as loop 2's byte offset)
+re-measures **11/83**. Instruction-level diff against the target: block 0's first
+seventeen instructions are byte-exact including `sll $v1,$s2,4`; the differences are
+(i) the loop-1 entry guard `slt $v0,$s2,$a0` vs target `slt $v0,$s0,$a0` — one insn, the
+crown's price — and (ii) a pure register-name swap through the loop-2 preheader and body
+(build counter `$s1` / idx `$s0` against target counter `$s0` / idx `$s1`), which is an
+*allocation* consequence of A's variable-sharing pattern (i shared between loop-1 counter
+and loop-2 idx) differing from the target's (`$s0` = loop-1 counter + loop-2 counter,
+`$s1` = sum + loop-2 idx). Note that adopting the target's sharing pattern re-crowns i,
+because it makes i loop 2's counter and therefore the quantity's last mention.
+
+- [s56] Chassis re-confirmed: candidate.c = score 1, target_insns 83, build_insns 83 on HEAD 2026-09-03; residual is idx 9 only.
+- [s56] Exhaustive 120-permutation sweep of block 0's six initialised declarations (constraints V<L<F): scores 1x6, 2x53, 4x36, 5x24; NONE reaches 0. The six score-1 forms are exactly the orderings S<I<V<L<F with C free (sweep.csv).
+- [s56] sched2 dump for the v1-first (H) geometry: every block-0 insn has INSN_PRIORITY 1 except the two tail insns (28, 31 = 2). rank_for_schedule (sched.c:2408) therefore falls through to the LUID tiebreak at sched.c:2464, so the emitted order is the RTL order; H's score-2 residual is exactly insns 14 (the shift) and 22 (the copy) swapped.
+- [s56] priority() (sched.c:1433-1521) derives INSN_PRIORITY only from LOG_LINKS predecessors. The target's block-0 shift reads the incoming parameter, whose only predecessor is `move s2,a0` (priority 1, cost 1), so the shift's priority cannot be raised above the copy's without changing the shift's operand.
+- [s56] The TARGET's own loop 2 mentions the pointer ($s2, the parameter) at `addiu $s2,$s2,0x10` BEFORE the counter's last mention at the exit `slt $v0,$s0,$v0`, so clause (B) of make_regs_eqv (cse.c:854-857) held for the counter in the original compilation too: the original's cse crown was i, and block 0's shift still printed $s2. The original's shift therefore escaped canon_reg by EBB placement or post-cse creation, not by a crown flip.
+- [s56] MEASURED: `do { v1 = a0 << 4; } while (i < a0);` (runs once; i == a0) splits block 0 at cse1 (`Processing block from 2 to 18` / `from 20 to 33`, code_label 18 between) and the shift is printed `(ashift:SI (reg/v:SI 72))` — the target's operand — for only the second time in 56 sessions. Score 4, build_insns 86 (the loop costs slt + branch + nop).
+- [s56] CORRECTION to s55: the cse2 regression is NOT cse2 ignoring the split. code_label 18 is still present in text1a_c.cse2; loop.c hoists the loop-invariant shift out of the do-while into its preheader, i.e. ABOVE the label, between toplev.c:2865 (cse1) and toplev.c:2926 (cse2). The shift then reads (reg/v:SI 75) again.
+- [s56] `if (i < a0) { sum = 1; }` placed between the copy and the shift (never taken, i == a0) is folded away before cse1 — text1a_c.cse shows `Processing block from 2 to 46` with no code_label — so it costs nothing (1/83) and splits nothing. A non-loop label carrier needs a condition jump_optimize cannot resolve.
+- [s56] Form A re-measured at 11/83: block 0's first seventeen instructions are byte-exact INCLUDING `sll $v1,$s2,4`; the residual is the loop-1 guard operand (1 insn) plus a pure $s0/$s1 register-name swap across the loop-2 preheader and body, which follows from A's variable-sharing pattern rather than from cse.
+
+- [s56] Chassis re-confirmed: memory/grind/func_80045294/candidate.c pasted over the INCLUDE_ASM line at src/text1a_c.c:1445 gives sandbox func_80045294 --disable all = score 1, target_insns 83, build_insns 83 on HEAD 2026-09-03; residual is instruction idx 9 only (target sll $v1,$s2,4 vs build sll $v1,$s0,4).
+
+- [s56] tools/fake_ablate.py still finds no FAKE-annotated constructs in this ledger, so the FAKE-ablation leg of the kill re-audit stays vacuous; the two closest-to-target instance kills (H = v1-first, A = crown-flipped) were re-measured this session at 2/83 and 11/83 respectively and both stand.
+
+- [s56] Exhaustive enumeration: all 120 permutations of block 0's six initialised declarations satisfying v1 < s4 < s5 were built and scored (tmp/grind/func_80045294/s56/sweep.csv). Histogram 1x6, 2x53, 4x36, 5x24; no form reaches 0. The six score-1 forms are exactly the orderings sum < i < v1 < s4 < s5 with count free.
+
+- [s56] sched2's own priority listing for block 0 on the v1-first geometry: every insn has INSN_PRIORITY 1 except insns 28 and 31 (priority 2). The shift is insn 14 and the copy is insn 22, both priority 1, so rank_for_schedule (sched.c:2408, priority compare at 2418) falls through to the INSN_LUID tiebreak at sched.c:2464 and the emitted order is the RTL order.
+
+- [s56] priority() (sched.c:1433-1521) derives INSN_PRIORITY only from LOG_LINKS predecessors; the target's block-0 shift reads the incoming parameter whose only predecessor is `move s2,a0` (priority 1, cost 1), so the shift's priority cannot exceed the copy's without changing the shift's operand.
+
+- [s56] In the shipped code the parameter's register $s2 is last mentioned at loop 2's addiu $s2,$s2,0x10, BEFORE the counter's last mention at the loop-2 exit slt $v0,$s0,$v0, so clause (B) of make_regs_eqv (cse.c:854-857) held for the counter in the original compilation: the original's cse crown was i and block 0's shift still printed $s2.
+
+- [s56] MEASURED: do { v1 = a0 << 4; } while (i < a0); (runs exactly once because i == a0) splits block 0's extended basic block at cse1 — dumps/text1a_c.cse shows `Processing block from 2 to 18` then `from 20 to 33` with (code_label 18 ...) between them — and prints the shift as (ashift:SI (reg/v:SI 72)), the target's operand. Score 4, build_insns 86.
+
+- [s56] CORRECTION to the s55 ledger: the cse2 regression is NOT cse2 ignoring the split. (code_label 18 ...) is still present in dumps/text1a_c.cse2; loop.c (toplev.c:2895) hoists the loop-invariant shift out of the do-while into its preheader — above the label — between cse1 (toplev.c:2865) and cse2 (toplev.c:2926), and the shift then reads (reg/v:SI 75) again.
+
+- [s56] if (i < a0) { sum = 1; } between block 0's copy and its shift (never taken, since i == a0) is folded away before cse1: dumps/text1a_c.cse shows block 0 as one EBB `Processing block from 2 to 46` with no code_label. It measures 1/83, byte-identical to candidate.c. A non-loop label carrier needs a condition jump_optimize (toplev.c:2827) cannot resolve.
+
+- [s56] Form A (A_reuse_i_as_idx) re-measured at 11/83 and decomposed for the first time: block 0's first seventeen instructions are byte-exact including sll $v1,$s2,4; one point is the loop-1 guard operand ($s2 vs $s0) and ten are a pure $s0/$s1 register-name swap through the loop-2 preheader and body, an allocation consequence of A's variable-sharing pattern rather than of cse.
+
+- [s56] src/text1a_c.c was restored to HEAD at end of session; the working tree carries only the two updated ledger files, two new rejected/ forms, and metrics/events.jsonl. candidate.c is unchanged (still the score-1 a0-as-pointer i-first form).

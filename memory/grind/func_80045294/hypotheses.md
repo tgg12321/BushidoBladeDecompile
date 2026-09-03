@@ -1467,3 +1467,175 @@ them could ever have moved idx 9.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present
+
+
+## [s56] synthesis — merged attack after re-reading the whole ledger
+
+### Kill re-audit (mandated, discharged)
+
+`tools/fake_ablate.py` still reports no FAKE-annotated constructs anywhere in this
+ledger, so the FAKE-ablation leg is vacuous (unchanged since s51). The two instance
+kills that sat closest to the target were re-measured on the current HEAD 2026-09-03
+chassis:
+
+* s53's **H_a0ptr_vfirst** (v1-first, both operands correct, order wrong) — re-measures
+  **2/83**, kill stands, and this session upgraded it to a class kill (below).
+* s53's **A_reuse_i_as_idx** (crown flipped to a0) — re-measures **11/83**, kill stands,
+  and its 11 points were decomposed for the first time: 1 = the loop-1 guard operand,
+  10 = a pure `$s0`/`$s1` register-name swap in loop 2 caused by A's variable-sharing
+  pattern, NOT by cse.
+
+The s53/s55 loop-1 control-flow respellings were re-measured last session at 1/83 and
+are subsumed by this session's exhaustive 120-permutation sweep of block 0, which is a
+strictly larger enumeration of the same axis.
+
+### [s56-H1] KILLED (class) — the v1-first geometry cannot emit the copy before the shift
+
+**Statement.** On the v1-first (H) geometry the shift is emitted before the copy because
+both insns carry `INSN_PRIORITY == 1` and `rank_for_schedule` falls through to its
+`INSN_LUID` tiebreak, and the shift's priority cannot be raised while its operand remains
+the incoming parameter.
+
+**Mechanism.** `priority()` (tools/gcc-2.7.2/sched.c:1433-1521) derives `INSN_PRIORITY`
+only from an insn's `LOG_LINKS` predecessors, `prev_priority = priority (x) +
+insn_cost (x, prev, insn) - 1`, floored at 1. In block 0 the shift and the copy each have
+exactly one real predecessor — insn 4, `move s2,a0`, priority 1, cost 1 — so both are
+priority 1 (verified in the sched2 dump listing). `rank_for_schedule`
+(sched.c:2408) then compares priority (sched.c:2418), then the last-scheduled-insn
+dependence class (both class 3 here, as s51/s53 measured), then returns
+`INSN_LUID (tmp) - INSN_LUID (tmp2)` at **sched.c:2464**, preserving RTL order.
+Raising the shift's priority requires giving it a predecessor with a longer chain or a
+multi-cycle cost, i.e. changing its operand away from the parameter — which is exactly
+the byte the target fixes.
+
+**Measured on.** HEAD 2026-09-03 chassis, a0-as-pointer geometry, zero FAKE constructs.
+`H.c` = 2/83; dumps `tmp/grind/func_80045294/s56/H.sched2.fn`; the 120-form sweep
+confirms every `V < I` permutation is >= 2.
+
+**predicate_cite:** `tools/gcc-2.7.2/sched.c:2464`
+
+### [s56-H2] KILLED (instance) — block-0 declaration order is a closed axis
+
+**Statement.** No permutation of block 0's six initialised declarations reaches score 0
+on the a0-as-pointer chassis: all 120 orderings permitted by the data dependences
+`v1 < s4 < s5` were built and scored, giving 6 forms at 1, 53 at 2, 36 at 4 and 24 at 5.
+
+**Measured on.** HEAD 2026-09-03 chassis, a0-as-pointer geometry, zero FAKE constructs;
+`tmp/grind/func_80045294/s56/sweep.csv`.
+
+### [s56-H3] KILLED (instance) — a do-while label between the copy and the shift is undone by loop.c, not by cse2
+
+**Statement.** `do { v1 = a0 << 4; } while (i < a0);` splits block 0's extended basic
+block at cse1 and makes the shift print the parameter pseudo (reg 72), but loop.c hoists
+the loop-invariant shift above the label before cse2 and the shift reads the counter
+again; the form measures 4/86.
+
+**Mechanism.** cse.c:8039 terminates the EBB at any CODE_LABEL, and `text1a_c.cse2`
+still contains `(code_label 18 ...)` — so the label itself survives. Between cse1
+(toplev.c:2865) and cse2 (toplev.c:2926), loop.c (toplev.c:2895) recognises
+`a0 << 4` as invariant in the do-while and moves it into the loop's preheader, i.e.
+ahead of the label, restoring the single-EBB configuration in which `canon_reg`
+(cse.c:2532-2572) rewrites reg 72 to the crown.
+
+**This CORRECTS the s55 conclusion** that "at cse2 the only surviving EBB terminator is a
+CODE_LABEL" was the blocker: the blocker is the shift's mobility, not the label's
+survival.
+
+**Measured on.** HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE
+constructs. `memory/grind/func_80045294/rejected/s56-loop-label-split-undone-by-licm-hoist.c`.
+
+### [s56-H4] KILLED (instance) — a never-taken `if` between the copy and the shift is folded before cse1
+
+**Statement.** `if (i < a0) { sum = 1; }` placed between block 0's copy and its shift is
+removed before cse1 runs — `text1a_c.cse` shows block 0 as one EBB (`from 2 to 46`) with
+no code_label — so it costs nothing (1/83) and creates no split.
+
+**Measured on.** HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE
+constructs. `memory/grind/func_80045294/rejected/s56-ifjoin-label-folded-before-cse1.c`.
+
+### [s56-E1] CONFIRMED — the original compilation had crown = i, so its block-0 shift escaped canon_reg
+
+**Statement.** In the shipped code the parameter's register `$s2` is last mentioned at
+loop 2's `addiu $s2,$s2,0x10`, which precedes the counter's last mention at loop 2's exit
+`slt $v0,$s0,$v0`; clause (B) of `make_regs_eqv` (cse.c:854-857) therefore held for the
+counter in the original compilation, i.e. the original's crown was i — the same crown the
+candidate chassis produces — and block 0's shift nevertheless printed `$s2`.
+
+**Consequence.** Crown-flipping is not the route (it is form A, and it costs the guard).
+The original's block-0 shift was either in a different extended basic block from the copy
+or created after cse2. Together with [s56-H1] this closes "the shift preceded the copy",
+leaving exactly two live routes for the last instruction.
+
+### Frontier reset for the next ladder pass
+
+1. **A label between the copy and the shift that loop.c cannot hoist the shift across.**
+   [s56-H3] proved the split works at cse1 and that only LICM undoes it. Probe: keep the
+   shift OUT of any loop body and put a non-loop CODE_LABEL between the copy and the
+   shift — [s56-H4] shows the carrier's condition must be one `jump_optimize`
+   (toplev.c:2827) cannot resolve, so build it on `a1` or on a global rather than on a
+   value cse knows equals `a0`; alternatively keep the do-while carrier but make the
+   shift non-invariant inside it (e.g. shift a value the loop also writes). For every
+   form, read `dumps/text1a_c.cse2` for `(ashift:SI (reg/v:SI 72)` BEFORE reading the
+   score, and only then hunt for a zero-instruction carrier.
+2. **Post-cse2 creation of block 0's shift.** The only remaining route besides the EBB
+   split. Passes after cse2 (toplev.c:2926) that can create insns are jump_optimize
+   (2929), thread_jumps (2935), combine, and the allocators. Probe: enumerate loop-1
+   shapes in which loop.c's strength reduction emits the `a0 << 4` giv initialisation
+   into block 0 rather than into loop 1's preheader (s52 measured it landing after the
+   guard) — a giv init created at toplev.c:2895 is still canonicalised by cse2, so the
+   useful variant is one where combine rebuilds the shift from the surviving
+   `(set (reg 75) (reg 72))` copy, which requires the shift's operand pseudo to die at
+   the shift.
+3. **Form A's loop-2 register swap.** Form A is byte-exact through block 0's first
+   seventeen instructions; ten of its eleven points are a `$s0`/`$s1` naming swap driven
+   by its variable-sharing pattern. Probe: re-derive A with the target's sharing pattern
+   (`sum` reused as loop 2's byte offset, `i` reused as loop 2's counter) and measure —
+   note the tension that this pattern makes `i` the quantity's last mention and so
+   re-crowns i; a form that keeps A's crown while adopting the target's allocation would
+   isolate the guard as the single residual and give a second, independent one-instruction
+   attack surface.
+
+## [s56] On the v1-first (H) geometry the shift is emitted before the copy because both insns carry INSN_PRIORITY 1 and rank_for_schedule falls through to its INSN_LUID tiebreak, and the shift's priority cannot be raised while its operand remains the incoming parameter.
+- mechanism: priority() (tools/gcc-2.7.2/sched.c:1433-1521) derives INSN_PRIORITY only from an insn's LOG_LINKS predecessors via prev_priority = priority(x) + insn_cost(x,prev,insn) - 1, floored at 1. In block 0 the shift (insn 14) and the copy (insn 22) each have exactly one real predecessor, insn 4 = move s2,a0 (priority 1, cost 1), so both are priority 1. rank_for_schedule (sched.c:2408) compares priority (sched.c:2418), then the last-scheduled-insn dependence class (both class 3, as s51/s53 measured), then returns INSN_LUID(tmp) - INSN_LUID(tmp2) at sched.c:2464, preserving RTL order. Lengthening the shift's predecessor chain requires changing its operand away from the parameter, which is the very byte the target fixes.
+- probe: Applied tmp/grind/func_80045294/s56/H.c, measured `sandbox func_80045294 --disable all` = 2/83, then `pwsh tools/grinder/dump.ps1 func_80045294` and read the sched2 priority listing and scheduled insn chain (tmp/grind/func_80045294/s56/H.sched2.fn). Cross-checked against the 120-form block-0 permutation sweep, where every v1-before-i ordering measures 2 or worse.
+- result: sched2 prints `insn[14]: priority = 1` and `insn[22]: priority = 1` for the shift and the copy, with only the two tail insns (28, 31) at priority 2. The emitted block-0 stream is sp / sw s2 / move s2 / sw s3 / move s3 / sw s1 / sum=0 / sw s0 / sll / move s0 / sw ra / sw s5 / sw s4 / ..., against the target's ... sw s0 / move s0 / sll / sw ra ..., i.e. insns 14 and 22 swapped and nothing else. The H geometry's entire 2-point residual is that swap.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer geometry, v1-first block-0 head, zero FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+
+## [s56] No permutation of block 0's six initialised declarations reaches score 0 on the a0-as-pointer chassis: the 120 orderings permitted by the data dependences v1 < s4 < s5 were each built and scored, giving 6 forms at 1, 53 at 2, 36 at 4 and 24 at 5.
+- mechanism: Declaration/statement order inside block 0 fixes the RTL insn order, which fixes both cse's crown assignment for the a0 quantity (make_regs_eqv, cse.c:842-857) and the scheduler's LUID tiebreak (sched.c:2464). If the last instruction were a pure block-0 ordering artifact, some permutation would land at 0.
+- probe: tmp/grind/func_80045294/s56/gen.py generated all orderings of S (sum=0), V (v1 = a0<<4), L (s4 = load), I (i = a0), C (count = D_800A33AC), F (s5 = s4+a1) satisfying V < L < F; tmp/grind/func_80045294/s56/sweep.ps1 applied and scored each with `sandbox func_80045294 --disable all`, recording tmp/grind/func_80045294/s56/sweep.csv.
+- result: 120/120 forms measured, build_insns 83 throughout. Score histogram 1x6, 2x53, 4x36, 5x24; minimum 1. The six score-1 forms are exactly the orderings S < I < V < L < F with C free (CSIVLF, SCIVLF, SICVLF, SIVCLF, SIVLCF, SIVLFC) — count's position is byte-irrelevant, and candidate.c is one of the six.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer geometry, zero FAKE constructs present
+
+## [s56] A do-while carrier placed between block 0's copy and its shift (`do { v1 = a0 << 4; } while (i < a0);`, which runs once because i == a0) splits the extended basic block at cse1 and makes the shift print the parameter pseudo, but loop.c hoists the invariant shift above the label before cse2 and the shift reads the counter again; the form measures 4/86.
+- mechanism: cse.c:8039 terminates an extended basic block at any CODE_LABEL irrespective of after_loop, so the do-while's top label splits block 0 at both cse passes. But loop.c (toplev.c:2895), which runs between cse1 (toplev.c:2865) and cse2 (toplev.c:2926), recognises a0 << 4 as loop-invariant and moves it into the loop's preheader, i.e. ahead of the label, restoring the single-EBB configuration in which canon_reg (cse.c:2532-2572) rewrites reg 72 to the crown.
+- probe: Built tmp/grind/func_80045294/s56/L1_label_probe.c, measured `sandbox func_80045294 --disable all`, then `pwsh tools/grinder/dump.ps1 func_80045294` and grepped the per-function regions of dumps/text1a_c.cse and dumps/text1a_c.cse2 for `Processing block`, `code_label` and `ashift`.
+- result: score 4, build_insns 86 (the carrier costs slt + branch + nop). cse1: `;; Processing block from 2 to 18` then `;; Processing block from 20 to 33` with `(code_label 18 ...)` between them, and the shift printed `(ashift:SI (reg/v:SI 72) ...)` — the parameter pseudo, the target's operand, for only the second time in 56 sessions. cse2: `(code_label 18 ...)` is STILL present, but the shift now sits above it and reads `(reg/v:SI 75)`. This corrects s55's framing: the label survives cse2 fine; the shift's mobility is the blocker.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present
+
+## [s56] A never-taken `if (i < a0) { sum = 1; }` placed between block 0's copy and its shift is folded away before cse1 runs, so it costs nothing and creates no extended-basic-block split.
+- mechanism: jump_optimize at toplev.c:2827 resolves the comparison and deletes the branch and its join label; jump.c:270-271 then deletes any CODE_LABEL whose LABEL_NUSES has fallen to zero at the start of the next jump_optimize, so nothing survives into cse_main.
+- probe: Built tmp/grind/func_80045294/s56/L2_ifjoin_probe.c, measured `sandbox func_80045294 --disable all`, then dumped and grepped the per-function regions of dumps/text1a_c.cse and .cse2.
+- result: score 1, build_insns 83 — byte-identical to candidate.c. dumps/text1a_c.cse shows block 0 as a single EBB `;; Processing block from 2 to 46` with no code_label anywhere in the function's cse region, and the shift still reads (reg/v:SI 75). A non-loop label carrier therefore needs a condition jump_optimize cannot resolve.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present
+
+## [s56] The shipped code's own register layout shows the original compilation had cse crown = i, so its block-0 shift escaped canon_reg by extended-basic-block placement or by post-cse2 creation rather than by a crown flip.
+- mechanism: make_regs_eqv's clause (B) (cse.c:854-857) is the global comparison uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]. In the target, the parameter's register $s2 is last mentioned at loop 2's `addiu $s2,$s2,0x10`, which precedes the counter's last mention at loop 2's exit `slt $v0,$s0,$v0`, so clause (B) held for the counter in the original build exactly as it does on the candidate chassis.
+- probe: Read the full target disassembly (tmp/grind/func_80045294/s56/target.txt) and located the last mention of each register in the a0 quantity, then compared against the crown predicate in tools/gcc-2.7.2/cse.c:842-857.
+- result: Confirmed: the original's crown was i, and block 0's shift still printed $s2. Combined with the class kill of the v1-first geometry above, the two remaining routes to the last instruction are (a) an extended-basic-block split that survives loop.c and cse2, and (b) creation of block 0's shift after cse2 (toplev.c:2926). Crown-flipping is form A, which costs the loop-1 guard.
+- verdict: CONFIRMED
+
+## [s56] Form A's eleven points decompose into one crown-priced instruction (the loop-1 entry guard operand) plus a ten-instruction $s0/$s1 register-name swap in the loop-2 preheader and body that follows from its variable-sharing pattern, not from cse.
+- mechanism: Form A reuses i as loop 2's byte offset, so i and the loop-2 counter are distinct variables and the allocator gives the counter $s1 and the offset $s0; the target instead shares $s0 between the loop-1 and loop-2 counters and $s1 between sum and the loop-2 offset. The crown flip itself only mis-prints the guard.
+- probe: Applied tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c, measured `sandbox func_80045294 --disable all`, and diffed the objdump of tmp/sandbox/func_80045294/text1a_c.o against target.txt instruction by instruction (tmp/grind/func_80045294/s56/d.sh, cur.txt).
+- result: 11/83 re-confirmed on the current chassis. Block 0's first seventeen instructions are byte-exact INCLUDING `sll $v1,$s2,4`; the guard prints `slt $v0,$s2,$a0` against the target's `slt $v0,$s0,$a0`; the remainder is the naming swap (build `move s1,s2` / `slt v0,s1,v0` / `sll v1,s1,4` against target `addu $s0,$s2,$zero` / `slt $v0,$s0,$v0` / `sll $v1,$s0,4`).
+- verdict: CONFIRMED

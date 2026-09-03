@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 55,
+ "session_count": 56,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -333,23 +333,29 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "cse EBB structure is a real lever: a do-while(0) split makes cse1 emit the target's shift operand (reg 72) for the first time in 55 sessions, and cse2 (toplev.c:2926, after_loop=1) is now the single n"
+  },
+  {
+   "session": 56,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Block-0 declaration order exhaustively enumerated (120 forms, none reach 0); the v1-first geometry is class-killed at sched.c:2464; and a do-while label DOES split block 0's cse EBB and print the targ"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A zero-instruction CODE_LABEL placed between block 0's `i = a0` and block 0's `a0 << 4` splits the EBB at BOTH cse passes, so the shift keeps the parameter pseudo (target's $s2) while the loop-1 guard and the loop-2 preheader keep the counter pseudo ($s0) \u2014 closing the last instruction.",
-   "mechanism": "cse.c:8039 terminates an extended basic block at any CODE_LABEL irrespective of LABEL_NUSES and irrespective of after_loop, so unlike the NOTE_INSN_LOOP_END device (killed this session at cse.c:8055) a label survives cse2. The obstacle is jump.c: jump_optimize deletes a jump whose target is the next insn and then deletes the label once LABEL_NUSES hits zero, in the same pass, and the dead-goto label-pad spelling is a FORBIDDEN family, so the label must be one an ordinary construct genuinely needs.",
-   "next_probe": "Read tools/gcc-2.7.2/jump.c's label and jump deletion predicates end to end and enumerate ordinary-C constructs that leave a surviving CODE_LABEL with no emitted instruction. Concrete candidates to build and measure: a one-case switch around the copy; a do { ... } while (cond) whose exit label is referenced by a break that jump.c cannot fold to a jump-to-next; and any restructuring that puts loop 1's own top label between the copy and the shift while the shift still lands before the guard branch. For each form, check dumps/text1a_c.cse2 for `(ashift:SI (reg/v:SI 72)` in block 0 BEFORE reading the score, and reject anything at build_insns != 83."
+   "hypothesis": "A CODE_LABEL between block 0's copy and its shift closes the last instruction, provided loop.c cannot hoist the shift across it \u2014 the cse1 half of the device is already proven to print the target's operand.",
+   "mechanism": "cse.c:8039 ends an extended basic block at any CODE_LABEL irrespective of after_loop, so the split survives cse2; s56 measured the shift printing (reg/v:SI 72) at cse1 under exactly this device. The only thing that undid it was loop.c (toplev.c:2895) moving the loop-invariant shift into the do-while's preheader, above the label. Removing the shift's invariance, or using a label that is not a loop top, keeps the split alive into cse2.",
+   "next_probe": "Build and measure carriers whose label is not a loop top and whose condition jump_optimize (toplev.c:2827) cannot resolve \u2014 s56 showed a condition on a value cse knows equals a0 is folded before cse1, so build it on a1 or on a global instead; and separately keep the do-while carrier but make the shifted value non-invariant inside it (shift a value the loop body also writes). For each form, grep the per-function region of dumps/text1a_c.cse2 for `(ashift:SI (reg/v:SI 72)` BEFORE looking at the score; only forms that keep reg 72 at cse2 are worth optimising down toward build_insns == 83."
   },
   {
-   "hypothesis": "cse2's crown can be flipped to the parameter pseudo without touching cse1, because toplev.c:2925 re-runs reg_scan on the POST-LOOP RTL, so cse2's global clause (B) is evaluated on last-use positions loop.c may have moved.",
-   "mechanism": "If loop.c's strength reduction or biv elimination makes loop 2's counter (reg 75) die before the pointer pseudo (reg 72), then uid_cuid[regno_last_uid[75]] < uid_cuid[regno_last_uid[72]] at cse2 and make_regs_eqv (cse.c:854-856) leaves reg 72 canonical, so block 0's shift keeps the parameter. The cost is that the loop-2 preheader shift then flips the wrong way, so this is only worth measuring in combination with a cse1-side split (frontier 1) that protects the preheader.",
-   "next_probe": "Compare regno_last_uid for regs 72 and 75 between dumps/text1a_c.loop and dumps/text1a_c.cse2 on candidate.c, then measure loop-2 shapes that push reg 75's last use earlier (pointer-compare exit test; idx merged into the pointer so only two inductions remain), each with `sandbox func_80045294 --disable all` at build_insns == 83."
+   "hypothesis": "Block 0's shift is created after cse2 in the original build, which is the only route left besides the extended-basic-block split.",
+   "mechanism": "s56 proved the original's crown was i (cse.c:854-857 clause B, from the target's own register last-mentions) and class-killed the shift-precedes-copy geometry at sched.c:2464, so the shift must have escaped canon_reg (cse.c:2532-2572). Passes that can create insns after cse2 (toplev.c:2926) are jump_optimize (2929), thread_jumps (2935), combine and the allocators. A loop.c giv initialisation created at toplev.c:2895 is still canonicalised by cse2, so the useful variant is one where combine rebuilds the shift out of the surviving (set (reg 75) (reg 72)) copy, which requires the shift's operand pseudo to die at the shift.",
+   "next_probe": "Enumerate loop-1 shapes in which the block-0 offset is a short-lived intermediate that dies at the shift (t = a0; v1 = t << 4; with t unused elsewhere, and variants where t is written inside a one-trip construct), and read dumps/text1a_c.combine for whether try_combine substitutes the copy's source reg 72 into the ashift. Reject any form at build_insns != 83 before scoring."
   },
   {
-   "hypothesis": "The block-0 prologue cluster has a free 3-insn scheduling degree of freedom that can pay back the rotation any successful idx-9 fix might cost.",
-   "mechanism": "B1 moved sw ra / sw s5 / sw s4 ahead of sw s0 / move s0,s2 / sll at unchanged instruction count (83), purely from a source-level change in block 0. Nothing in the ledger has catalogued this knob; s50/s51 only measured the sll-vs-move pair.",
-   "next_probe": "Bisect which part of B1 causes the rotation using B0_control_splitdecl.c (score 1, so NOT the split declarations) as the control: measure a do-while(0) wrapped around a different block-0 statement, and a form with only the LUID renumbering. Read dumps/text1a_c.sched and .sched2 for the ready-list order of the six prologue insns after each variant."
+   "hypothesis": "Form A's ten-point loop-2 register-name swap is an allocation artifact that can be removed independently of the crown, which would isolate the loop-1 guard as a second single-instruction attack surface at floor 1.",
+   "mechanism": "Form A already emits block 0's first seventeen instructions byte-exactly, including sll $v1,$s2,4. Its swap comes from sharing i between the loop-1 counter and loop-2's byte offset, whereas the target shares $s0 between the two loop counters and $s1 between sum and loop 2's offset. The tension is that the target's sharing makes i loop 2's counter and therefore the a0 quantity's last mention, which re-crowns i.",
+   "next_probe": "Build A-variants that adopt the target's sharing pattern one axis at a time (sum reused as loop 2's byte offset while the loop-1 counter stays distinct from loop 2's; then i reused as loop 2's counter) and measure each with sandbox at build_insns == 83, reading dumps/text1a_c.cse for which pseudo takes the crown. A form that keeps the crown on the parameter while allocating loop 2 the target's way would leave exactly one differing instruction with a mechanism different from the shift's."
   }
  ],
  "judge_constraints": [
@@ -488,6 +494,38 @@
    "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "fake_ablate: 'no FAKE-annotated constructs found in memory/grind/func_80045294/candidate.c; nothing to ablate'. R1 = sco"
+  },
+  {
+   "session": 56,
+   "statement": "On the v1-first (H) geometry the shift is emitted before the copy because both insns carry INSN_PRIORITY 1 and rank_for_schedule falls through to its INSN_LUID tiebreak, and the shift's priority canno",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer geometry, v1-first block-0 head, zero FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2464",
+   "result": "sched2 prints `insn[14]: priority = 1` and `insn[22]: priority = 1` for the shift and the copy, with only the two tail i"
+  },
+  {
+   "session": 56,
+   "statement": "No permutation of block 0's six initialised declarations reaches score 0 on the a0-as-pointer chassis: the 120 orderings permitted by the data dependences v1 < s4 < s5 were each built and scored, givi",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer geometry, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "120/120 forms measured, build_insns 83 throughout. Score histogram 1x6, 2x53, 4x36, 5x24; minimum 1. The six score-1 for"
+  },
+  {
+   "session": 56,
+   "statement": "A do-while carrier placed between block 0's copy and its shift (`do { v1 = a0 << 4; } while (i < a0);`, which runs once because i == a0) splits the extended basic block at cse1 and makes the shift pri",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 4, build_insns 86 (the carrier costs slt + branch + nop). cse1: `;; Processing block from 2 to 18` then `;; Proces"
+  },
+  {
+   "session": 56,
+   "statement": "A never-taken `if (i < a0) { sum = 1; }` placed between block 0's copy and its shift is folded away before cse1 runs, so it costs nothing and creates no extended-basic-block split.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 1, build_insns 83 \u2014 byte-identical to candidate.c. dumps/text1a_c.cse shows block 0 as a single EBB `;; Processing"
   }
  ]
 }
