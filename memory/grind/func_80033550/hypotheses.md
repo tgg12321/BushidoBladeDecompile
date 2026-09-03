@@ -1082,3 +1082,28 @@ Everything else — bytes, oracle, family prongs, self-vet — is done and banke
 - probe: BB2_FINDREG_DEBUG comparison inherited from s16a and re-confirmed by the byte result this session: scalar-triple conflicts {2,3,4,29} -> first free 5 ($a1); struct-copy conflicts {2,3,4,5,6,29} -> first free 7 ($a3), both at 34 instructions.
 - result: Frontier RETIRED as moot rather than killed by measurement - recorded that way in hypotheses.md so it is not re-opened. If the merge were ever refused on policy grounds those three axes become live again, in that order.
 - verdict: CONFIRMED
+
+## s17 (2026-09-03, forensics) — frontier #1 CONFIRMED and closed
+
+H-s17-1: "With the 2026-09-03 pipeline scope grant in force, applying
+tmp/grind/func_80033550/s16/integration_surfaces.patch plus the candidate.c body
+verbatim reproduces sandbox 0/34/34/0-rules and a full-build SHA1 equal to the
+oracle on the current chassis."
+  mechanism: the merged 12-byte-record declaration turns the tail into an
+  aggregate copy, so GCC's MIPS block-move expansion keeps the source address
+  register live across all three loads and all three stores;
+  hard_reg_conflicts[72] becomes {2,3,4,5,6,29} and find_reg's pass-0 scan
+  (global.c:996-1001) returns $a3 instead of $a1.
+  probe: git apply the banked surface patch, substitute the body at
+  src/code6cac_b.c:2873, `sandbox func_80033550 --disable all`, `verify-oracle`.
+  result: sandbox score 0, target_insns 34, build_insns 34, rules_dropped 0;
+  verify-oracle ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa,
+  build_matches true. CONFIRMED. Nothing about the banked form needed adjusting
+  for the current chassis; it applied clean and measured clean first try.
+
+Remaining frontier for OTHER functions (unchanged from s16, not this function's
+work): the same per-word-splat mis-declaration is a candidate root cause on
+other stalled ledgers that describe an unreachable register seat around a run of
+consecutive D_<addr> stores through one base pointer. Grep the foreclosure
+entries for that shape and check named_syms.txt for a committed stride/record
+census row on the base before spending RA sessions.

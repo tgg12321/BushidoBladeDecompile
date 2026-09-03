@@ -21712,3 +21712,7 @@ WHY ESCALATE AND NOT PASS. The work is sound but I do not merge it: the fix cann
 This supersedes the 2026-07-22 and 2026-08-20 endgame-lock dispositions and the 2026-09-02 foreclosure reset for this function: a pure-C byte match retires an exhaustion finding outright.
 
 **Constraint recorded for any future session:** Land EXACTLY the banked form: the canonical aggregate declaration in include/code6cac.h plus deletion of D_80107854/D_80107858 from undefined_syms_auto.txt and named_syms.txt (prong (c) completeness is mandatory - a header-only merge leaving the per-word symbols in the splat configs is NOT the authorized spelling), and the candidate.c body verbatim. The banned per-use byte-pointer pun stays banned and must not reappear in any form.
+
+## 2026-09-03 15:02 — func_80033550 — layer-1 review — **FAIL**
+
+The LeafPos/D_80107850 aggregate merge is legitimate and satisfies the 2026-08-17 family's prongs, but the diff introduces a second, unfixed instance of the exact same anti-pattern: D_800A3918 is accessed as `*(&D_800A3918 + i)`, a per-use pointer pun on a scalar that the diff's own evidence proves is really a 6-byte flag array.

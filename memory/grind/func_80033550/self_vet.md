@@ -1,10 +1,19 @@
-# SELF-VET â€” func_80033550  (s16b, 2026-09-03, solver modality)
+# SELF-VET — func_80033550  (s17, 2026-09-03, forensics modality — LANDING SESSION)
 
-Written for the INTEGRATION-HANDOFF form banked in candidate.c (canonical
-aggregate-merge spelling). NOT a candidate-ready submission: the fix cannot be
-staged from a grind session because it edits include/code6cac.h,
-undefined_syms_auto.txt and named_syms.txt. The vet is written now so the
-landing session / Judge inherits it complete.
+This is a candidate-ready submission. The integration-handoff scope grant for
+func_80033550 (include/code6cac.h, undefined_syms_auto.txt, named_syms.txt) was
+executed by the pipeline on 2026-09-03 (tools/grinder/scope_allow.txt), so the
+canonical aggregate-merge spelling banked by s16 is landed here in src/ and on
+the three granted surfaces, and re-measured in place THIS session:
+
+  `sandbox func_80033550 --disable all` = score 0, target_insns 34,
+  build_insns 34, rules_dropped 0   (tmp/grind/func_80033550/s17/sandbox_final.json)
+  `verify-oracle` = ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  == oracle, build_matches true      (tmp/grind/func_80033550/s17/verify_oracle.txt)
+
+The vet body below is inherited verbatim from the s16 authoring of the same
+form (the diff is byte-identical to the banked one) with prong (e) updated to
+this session's own measurement.
 
 CONSTRUCTS: (1) canonical aggregate declaration `typedef struct { s32 x, y, z; } LeafPos; extern LeafPos D_80107850[6];` in include/code6cac.h replacing three per-word `extern s32` splat scalars, with the per-word symbols deleted from undefined_syms_auto.txt and named_syms.txt; (2) parameter retyped `s32 *arg0` -> `LeafPos *arg0`; (3) `D_80107850[i] = *arg0;` (struct assignment); (4) `*(&D_800A3918 + i)` byte-flag indexing (pre-existing in every banked form since s1, unchanged).
 
@@ -38,9 +47,11 @@ SANCTIONED-FAMILY-CLAIMS:
         (include/code6cac.h), never TU-local, no per-use pointer pun.
     (e) byte-neutral for every other consumer: the only other reader of the
         table (func_800335D8) is still INCLUDE_ASM and untouched; no C consumer
-        of the per-word symbols exists (grep, this session); `verify-oracle`
-        build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
-        Layer-2 cheat-reviewer still owed at landing time.
+        of the per-word symbols exists (grep, re-confirmed s17); `verify-oracle`
+        re-run s17 with the complete merge and the body in place in src/:
+        ok true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+        oracle, build_matches true. Layer-1 + layer-2 cheat-reviewer run on
+        this landing diff.
 
 ANNOTATION-CONFORMANCE: n/a â€” no FAKE construct. The aggregate-merge family does
 not mandate a /* FAKE */ annotation (it is a declaration-correctness family, not

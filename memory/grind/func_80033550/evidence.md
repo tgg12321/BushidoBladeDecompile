@@ -1301,3 +1301,57 @@ INTEGRATION HANDOFF in `docs/grind/decisions.md`.
 - [s16] SCOPE HYGIENE: every out-of-scope file (include/code6cac.h, undefined_syms_auto.txt, named_syms.txt) was edited only for measurement and restored via git checkout in-session; src/code6cac_b.c is back to INCLUDE_ASM per asm-until-matched. Final git status shows only docs/grind/, memory/grind/func_80033550/ and the engine-written metrics file.
 
 - [s16] All three blocked paths are inside the classes grindlib add-scope-allow may grant per .claude/rules/integration-handoff-self-serve.md (shared headers include/*.h, root-level *.txt outside the denylist); none is on the severe-blocker list (no oracle, substrate, flag, guard or asset change).
+
+## s17 (2026-09-03, forensics modality) — THE BANKED FORM IS LANDED AND BYTE-VERIFIED IN PLACE
+
+The pipeline executed s16's integration handoff before this session started:
+`tools/grinder/scope_allow.txt` now carries
+`func_80033550 include/code6cac.h undefined_syms_auto.txt named_syms.txt`
+("pipeline scope grant 2026-09-03 (judge ESCALATE integration-handoff,
+integration-handoff-self-serve owner ruling 2026-08-19)"). That removed the only
+thing blocking the banked form, so this session did the mechanical landing
+rather than opening a new forensic axis — the frontier's own next_probe.
+
+Applied, exactly as banked, nothing improvised:
+  1. `git apply tmp/grind/func_80033550/s16/integration_surfaces.patch` —
+     include/code6cac.h:478-480 three per-word `extern s32` replaced by the
+     `LeafPos` typedef + `extern LeafPos D_80107850[6];`; the D_80107854 /
+     D_80107858 rows deleted from undefined_syms_auto.txt; the
+     g_leaf_position_table_plus_4 / _plus_8 rows deleted from named_syms.txt.
+  2. `INCLUDE_ASM("asm/funcs", func_80033550);` at src/code6cac_b.c:2873
+     replaced by the candidate.c body verbatim.
+
+Measured in place, this session, this chassis:
+  - `sandbox func_80033550 --disable all` = **score 0, target_insns 34,
+    build_insns 34, scorable true, rules_dropped 0** —
+    tmp/grind/func_80033550/s17/sandbox_final.json.
+  - `verify-oracle` = **ok true, build_sha1
+    62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true** —
+    tmp/grind/func_80033550/s17/verify_oracle.txt. The full link is byte-identical
+    to the original executable with the complete symbol merge applied, which is
+    prong (e) of the aggregate-merge family satisfied by direct measurement and
+    not by argument: no other translation unit regressed, and the only other
+    consumer of the table (func_800335D8) is still INCLUDE_ASM and unaffected.
+  - Landed diff banked verbatim at tmp/grind/func_80033550/s17/landed.patch
+    (4 files: include/code6cac.h, named_syms.txt, undefined_syms_auto.txt,
+    src/code6cac_b.c) and its shape at s17/landed_diff.stat.
+
+The floor for this function is therefore **0**, and the fifteen-session
+register-seat hunt is closed by the s16 finding, not by a lever: the residual
+was never an RA seat that needed a byte-free occupant manufactured for it. It
+was a mis-declaration. Splat invents one C symbol per word, which forced the
+tail to be spelled as three scalar load/store pairs; that spelling makes the
+source pointer die at the third load, so hard_reg_conflicts[72] came out
+{2,3,4,29} and find_reg's pass-0 scan seated the pointer in $a1. Declaring the
+storage as what the binary actually uses — six 12-byte records — makes the tail
+a 12-byte aggregate copy, GCC 2.7.2's MIPS block-move expansion emits all three
+loads before all three stores and keeps the source address live across the whole
+pattern, the conflict set becomes {2,3,4,5,6,29}, and pass-0's first free
+register is $a3. The correct seat arrives for free, with no FAKE construct, no
+dead local, no wrap and no preference route.
+
+Self-vet updated in place (memory/grind/func_80033550/self_vet.md) from the s16
+authoring to an s17 landing vet: same constructs, same single sanctioned-family
+claim (per-word splat symbol -> aggregate merge, owner ruling 2026-08-17,
+.claude/rules/no-new-park-categories.md:238), prong (e) re-grounded on this
+session's own verify-oracle rather than s16's.
