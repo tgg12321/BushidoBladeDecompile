@@ -21180,3 +21180,95 @@ The do-while(0) wrap (C1) is the exact form this ledger already banked as REJECT
 ## 2026-09-02 22:22 — func_800645B0 — final call — **PASS**
 
 Two constructs. (1) `last = 1; mask = last << idx;` sits squarely in the frozen family defeat-licm-hoist-var-reuse (const-1 carried by an existing local that is ALSO multi-set with real rand() results, so count_loop_regs_set marks it may_not_move); I verified tools/gcc-2.7.2/loop.c:3040 says exactly that, and the annotation carries all three required parts (what/mechanism/exhaustion) with the borrow gate of staged-value-reused-variable satisfied: the staged 1 is read by the very next statement, `last` pre-exists in the shipped floor form, and its prior value is dead. Exhaustion verified independently against hypotheses.md (19 sessions) and 65 rejected/ files, not the agent's claim. (2) `idx = idx * 12;` is ordinary C: symbol_addrs.txt puts D_800F0D78/7C/videoDec at 0xD78/0xD7C/0xD80, a 3-word record, so 12 IS the stride; it is arithmetically identical to the prior `(idx2+idx)<<2`. Decisive check: I diffed this body against the banked HEAD candidate -- the statement SEQUENCE is byte-for-byte unchanged, only those two in-place substitutions differ, so none of the eight banned constructs (j+=1 relocation, wid/val staging, `bit=0` dead store, VA-VG DEAD-second-store sweep, do-while(0)) is respelled; the second set here is a live rand() result, not an injected dead store. No dead code, no invented locals, no asm, no pins, and the diff touches no build-pipeline file (git status: src/text1b.c + ledger only). Re-measured myself: sandbox --disable all = 0, 78/78, rules_dropped 0.
+
+## 2026-09-02 — OWNER RULING — foreclosed-bucket disposition: `_SANCTIONED_UNWRITTEN_PADS` row for func_80030580, maspsx label-nop opt-in for func_80027640, `main` stays foreclosed
+
+**Provenance.** Owner (Trenton), 2026-09-02, in conversation, after the foreclosure-mechanics
+ruling left three items in the `foreclosed` bucket. The owner asked *"Do we have any
+foreclosed items remaining?"*, received the three-item summary, and directed:
+*"Go ahead and investigate these and decide what we should do with them."* The operator
+read every decisions.md entry and ledger for the three, re-verified the two byte claims
+by full driver build from a clean tree (EVIDENCE below), and disposes them here under
+existing policy. This record lands as a standalone `rules:` commit BEFORE any commit spends
+it ([[ruling-record-lands-before-code]]). Nothing here extends a family, widens a gate, or
+lowers a standard: both grants apply an EXISTING sanctioned path exactly as its rule text
+describes, and both carry operator precedent.
+
+### EVIDENCE — the two byte proofs, re-verified by the operator on 2026-09-02
+
+Each candidate was applied over `main` (HEAD 7a33303a) from a clean tree, built with
+`& tools/wteng.ps1 main build`, and the tree restored (`tmp/foreclosed/verify.ps1`). The
+engine allowlist was NOT touched: allowlist rows affect only the cheat-invisible sandbox
+score, never the real build, so the func_80030580 SHA1 is independent of the grant.
+
+| Function | Applied | Build SHA1 |
+|---|---|---|
+| `func_80027640` | `memory/grind/func_80027640/candidate.c` body over `src/code6cac_b.c:323` **+ `func_80027640` appended to `maspsx_label_nop_funcs.txt`** | `62efab4f73f992798c43e8c730aa43baa10bb4fa` **== oracle** |
+| `func_80030580` | `memory/grind/func_80030580/candidate.c` body + `volatile u32 pre_pad[4]; /* !FAKE */` in first-decl position over `src/code6cac_b.c:1857` | `62efab4f73f992798c43e8c730aa43baa10bb4fa` **== oracle** |
+
+### (1) func_80030580 — `_SANCTIONED_UNWRITTEN_PADS` row GRANTED: `"func_80030580": frozenset({("pre_pad", 4)})`
+
+Same shape as the 2026-08-22 "parked-but-proven audit" grants (func_80049A2C,
+func_800481E8, func_80041688): byte-proven, blocked ONLY on the per-function engine row
+the phantom-frame-slot volatile pad local family (owner ruling 2026-08-18,
+`.claude/rules/no-new-park-categories.md`) itself requires. **No family extension.** Every
+prerequisite of that family is met on the record:
+- frame forensics: `asm/funcs/func_80030580.s` has zero `($sp)` references; target
+  vars=24, ours 8 (FRAMEDBG, decisions.md:20996-21006) — the slot is genuinely untouched;
+- honest producers measured inert first: 9 sessions, floor flat at 2 from s1, 44
+  structural respellings + 31 frame-producer shapes (s9, decisions.md:21063-21079),
+  84,000 permuter iterations, solver class-kill (`reload1.c:2403`);
+- gate (b) SOTN precedent exhibited: `src/st/sel/stream.c:80` `volatile u32 pad[4]; // FAKE`
+  (decisions.md:21018-21030); gate (a) scanner LOW 0/8 → no asm, none proposed;
+- form constraint: array form, first-decl position, `/* !FAKE */` annotation, no shim.
+
+The three standing `judge_constraints` in `memory/grind/func_80030580/state.json` all
+turn on the row being owner-granted and unreachable from a session; the row is now
+granted, so they are discharged (not overridden — their condition is satisfied). The
+disclosed engine artifact (`find_unused_local_arrays` matches the identifier inside
+comments, decisions.md:20970-20975) is NOT exploited: the landed annotation does not spell
+the identifier.
+
+### (2) func_80027640 — `maspsx_label_nop_funcs.txt` opt-in GRANTED (operator-landed)
+
+The C is final, FAKE-free, 157/158 honest with the single missing word a load-delay `nop`
+at 0x800277A4 across a `.L` label (`lh $v0,4($a0)` / `.L800277A4:` / `nop` / `sw`), which
+ASPSX 2.34 emitted at assembly time and this pipeline drops (cc1 `mips.c:705` suppresses
+the marker before a CODE_LABEL; maspsx `is_label()` matches `$L` not `.L`). Both endgame
+gates fail (decisions.md:20199-20203) and the C axis is closed by measurement (26 synthetic
+TUs, 32-TU final-RTL census, 114,656 permuter iterations, decisions.md:20205-20231).
+
+`.claude/rules/maspsx-label-nop-gate.md` names the per-function opt-in **"a PURE-C path
+(not a park)"** — the RETIREMENT route for exactly this seam — and `maspsx-gate-lists.md:27`
+classifies the list as fidelity ("No C spelling can emit an assembler hazard nop").
+Operator precedent: commit edd7faae (func_80088740 / `_spu_init`), plus `spu_DmaTransfer`,
+`CD_getsector`, `func_80060E04`, `func_80040594`. The two Judge FAILs (decisions.md:20082,
+:20171) were dispositional: a grind session may not stage a build-surface file. That is
+correct and unchanged — the operator stages it, as the rule and precedent provide. The
+two `judge_constraints` in `memory/grind/func_80027640/state.json` bound sessions, not
+the operator; they are discharged by this grant. Route A (the maspsx `$at`-aware label
+repair, decisions.md:20110-20148) is NOT adopted: it is a substrate change and the
+per-function list already closes the function with zero blast radius.
+
+### (3) `main` — STAYS FORECLOSED (no change)
+
+Residual: two branch-target words (0x80017494, 0x800174B4), the poll-loop back-edges
+retargeted one word past the loop head; 189/189 instructions and 606,206 of 606,208 bytes
+match. Proven an assembler-stage semantics gap (ASPSX "retarget iff filled" vs our cc1
+reorg's unconditional `reorg_redirect_jump`; cc1psx counter-exhibit emits one label and no
+delay-slot processing — `memory/grind/main/evidence.md:218-249`). The remedy is the maspsx
+ASPSX-parity fill the owner DECLINED on 2026-08-24 (decisions.md:10303) and re-affirmed on
+2026-08-30 (ruling 9). Neither re-decision trigger has fired: the 138-site census is
+numerically unchanged and its beneficiary set has decayed to `main` alone
+(decisions.md:14928-14937); ASPSX fill semantics remain undocumented. The C candidate is
+banked (`memory/grind/main/candidate.c`) and `main` stays `INCLUDE_ASM` — zero cheat risk.
+Re-entry is mechanical when a trigger fires; do not re-file the residual escalation
+(auto-reject class, decisions.md:14975-14981).
+
+### Execution (this session, operator lane)
+
+1. This record (`rules:` commit).
+2. `engine/volatile_cheats.py` row + `maspsx_label_nop_funcs.txt` line; `engine test` green.
+3. Apply both bodies; `verify-oracle`; `sandbox --disable all` == 0 for both; fresh layer-2
+   `cheat-reviewer` on each (default-FAIL); `queue unpark` + `queue done`; `Match:` commits.
+4. Relaunch the grinder.
