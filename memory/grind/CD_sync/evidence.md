@@ -1896,3 +1896,133 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
 - [s107] Foreclosure record filed this session at docs/grind/decisions.md:18279.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET â€” the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=107
+
+## s108 — forensics (instrumented cc1: sched.c + local-alloc.c telemetry)
+
+Chassis re-measured at dispatch: `memory/grind/CD_sync/candidate.c` spliced over
+`INCLUDE_ASM("asm/funcs", CD_sync);` at `src/system.c:376` -> `sandbox CD_sync
+--disable all` = **score 2, target_insns 160, build_insns 160, rules_dropped 0**.
+Unchanged from the s104-s107 chassis. `src/system.c` restored to HEAD at session end.
+
+New tooling (artifacts, all under `tmp/grind/CD_sync/s108/`): `schedcap.py` runs the
+project's exact `cpp | cc1` front half with the INSTRUMENTED cc1
+(`tools/gcc-2.7.2/cc1`) and any `BB2_*_DEBUG` env hooks, writing `-da` dumps plus the
+telemetry to `<tag>.stderr`; `probe.py` splices a window variant of candidate.c into
+`src/system.c`; `ndiff.py` prints a per-index diff using **the engine's own
+normalization** (`engine.score.normalized_insns` on `tmp/sandbox/CD_sync/system.o`
+vs `build/src/system.o`), which is what finally made the residual legible — the
+older mnemonic-only `odiff.py` could not show it.
+
+### [s108-E1] The two basins are the SAME degree of freedom with opposite signs
+
+Measured, not inferred. Two window spellings, both 160/160:
+
+| form | window statement order | masked | residual |
+|---|---|---|---|
+| h5 (candidate; also `rejected/s108_h5_t0shift_deferred.c`) | t0 chain before arg5 | **2** | `{sll@54 <-> addu@55}` pair order; **registers all correct** |
+| g3 (`rejected/s108_g3_arg5_first_regexchange.c`) | arg5 subseq before t0 chain | **6** | **order all correct**; a pure a0/v1 exchange on 6 insns |
+
+The g3 residual, verbatim from `ndiff.py` (target | ours):
+
+    49  lbu a0,0(s2)      | lbu v1,0(s2)
+    55  sll a0,a0,0x2     | sll v1,v1,0x2
+    56  lw  v1,0(v0)      | lw  a0,0(v0)
+    59  addu a0,a0,s3     | addu v1,v1,s3
+    61  sw  v1,16(sp)     | sw  a0,16(sp)
+    65  lw  a3,0(a0)      | lw  a3,0(v1)
+
+i.e. the t0 chain takes v1 where the target takes a0, and the arg5 VALUE takes a0
+where the target takes v1. Nothing else differs in 160 instructions.
+
+### [s108-E2] The g3 register exchange is one exact tie in local-alloc.c::qty_compare_1
+
+`BB2_QTY_DEBUG` + `BB2_SUGG_DEBUG` block=3 tables for CD_sync (artifacts
+`g3b.stderr` / `h5.stderr`, sliced into `g3_cdsync_qty.txt`). `qty_compare_1`
+(`tools/gcc-2.7.2/local-alloc.c`) ranks by
+`pri = floor_log2(refs) * refs * size / (death - birth) * 10000`, ties broken by
+`return *q1 - *q2` (qty index = birth order):
+
+    g3 (order-perfect, masked 6)
+      qty1 reg1=108 (t0 shift result) birth=18 death=24 refs=2 -> pri 3333  ord=2 got=3 ($v1)
+      qty2 reg1=100 (arg5 value)      birth=20 death=26 refs=2 -> pri 3333  ord=3 got=4 ($a0)
+      => EXACT TIE; the index tie-break puts the t0 shift first, so it takes $v1.
+
+    h5 (masked 2, target registers)
+      qty1 reg1=107 (t0 shift result) birth=16 death=24 refs=2 -> pri 2500  ord=3 got=4 ($a0)
+      qty2 reg1=100 (arg5 value)      birth=20 death=26 refs=2 -> pri 3333  ord=2 got=3 ($v1)
+      => no tie; the arg5 value is allocated first and takes $v1 = TARGET.
+
+The whole 6-vs-2 basin difference is **one scalar**: the birth index of the t0-shift
+qty, 16 in h5 vs 18 in g3. One post-sched1 slot earlier => life 8 instead of 6 =>
+pri 2500 instead of 3333 => the tie disappears and the target allocation falls out.
+And that same slot position is precisely what makes the h5 *emission* order wrong.
+Order-correctness and allocation-correctness are the same variable, pulled opposite ways.
+
+### [s108-E3] sched1 clock=13: what the tie actually is (fresh telemetry)
+
+`BB2_SCHED_DEBUG` + `BB2_RANK_DEBUG` on the h5 chassis (`base.stderr`, sliced to
+`cdsync_p1.txt`; block=3 = 20 insns, straight line):
+
+    ADJPRI insn=121 deaths=0 birth=1 maxpri=2130706433 pri=2
+    RANKDBG last=123 y=121 cls=3 x=111 cls2=3 val=0
+    PICK clock=13 picked=121 (pri=2130706433 luid=12)
+      ready was: [ 121(p=2130706433,l=12) 111(p=2130706433,l=8) 142(p=1,l=22) ]
+
+Pass-source detail corrected/completed this session: the 0x7F000001 both insns carry
+is NOT assigned by `adjust_priority`. `schedule_block` sets the *currently scheduled*
+insn's priority to `LAUNCH_PRIORITY` immediately before calling `schedule_insn`
+(sched.c:4049); `schedule_insn` then computes
+`max_priority = MAX (INSN_PRIORITY (ready[0]), INSN_PRIORITY (insn))` (sched.c:2619)
+and `adjust_priority` raises every birthing insn to that value (sched.c:2586-2590).
+So the sentinel is *inherited* by every `birthing_insn_p` insn in the block, which is
+why 111 and 121 can never differ on the priority axis: `rank_for_schedule` falls
+through the priority test, then through the class test (`val=0` on all 51 block=3
+comparisons — reconfirms s15), and terminates on `INSN_LUID (tmp) - INSN_LUID (tmp2)`.
+`TAIL_PRIORITY` (0x7ffffffe) is only ever held by the block's last insn, which is
+scheduled first and drops to DONE_PRIORITY, so it can never leak into `max_priority`
+for this pair.
+
+### [s108-E4] sched2 cannot decouple the RA order from the byte order (on this chassis)
+
+Since h5's post-sched1 stream produces the TARGET registers, the obvious two-stage
+lever is: let sched1 emit the h5 order (for RA), and let sched2 restore the target
+pair order (for bytes). Measured on the h5 chassis, block=3 of pass=2 (`base.stderr`,
+`SCHEDDBG FUNC func=CD_sync pass=2` at line 6396):
+
+    PICK clock=12 picked=123 (pri=2 luid=8)
+    RANKDBG last=123 y=121 cls=3 x=111 cls2=3 val=0
+    PICK clock=13 picked=121 (pri=2 luid=7)
+    RANKDBG last=121 y=118 cls=3 x=111 cls2=3 val=0
+    PICK clock=14 picked=111 (pri=2 luid=6)
+
+At sched2 `reload_completed == 1`, so `birthing_insn_p` returns 0 and no insn in the
+block carries a sentinel — every block=3 insn sits at pri 1-4. The pair still ties on
+priority (both 2) and on class (`val=0`), so `rank_for_schedule` again terminates on
+LUID — and the sched2 LUIDs are just the sched1 OUTPUT order. sched2 is a fixpoint of
+sched1 for this window: it reproduces the order it is given.
+
+### [s108-E5] Probe scores (all 160/160, h5 chassis, FAKE chain-extender + pp alias present)
+
+    p1 arg5-subseq-first ..................... 6   (g3; order perfect, a0/v1 exchange)
+    p2 t0-shift deferred one statement ....... 2   (h5; alternate spelling, target regs)
+    p3 arg5 address staged in the ix carrier . 6   (g3; qty priorities unchanged)
+    p4 fresh single-set local for t0 address . 9   (window re-schedules, 15 raw diffs)
+    p5 t0 address as one single-set expr ..... 9   (same)
+
+All five banked under `memory/grind/CD_sync/rejected/s108_*.c`.
+
+- [s108] Chassis re-measured at dispatch: candidate.c spliced at src/system.c:376 -> sandbox CD_sync --disable all = score 2, target_insns 160, build_insns 160, rules_dropped 0. src/system.c restored to HEAD at session end.
+
+- [s108] The g3 basin's masked-6 residual is a PURE register exchange with zero ordering error: target/ours at indices 49,55,59,65 = lbu/sll/addu/lw on a0 vs v1 (the t0 chain), and at 56,61 = lw/sw on v1 vs a0 (the arg5 value). Nothing else differs across 160 instructions.
+
+- [s108] local-alloc block=3 qty tables from the instrumented cc1: g3 has qty(t0-shift p108) birth18/death24/refs2 = pri 3333 EXACTLY TIED with qty(arg5-value p100) birth20/death26/refs2 = pri 3333, resolved by qty_compare_1's `*q1 - *q2` index tie-break; h5 has qty(t0-shift p107) birth16/death24 = pri 2500 vs 3333, no tie, target registers.
+
+- [s108] The single scalar separating the two basins is the birth index of the t0-shift qty (16 in h5, 18 in g3) - one post-sched1 slot. That same slot position is what makes h5's emission order wrong, so order-correctness and allocation-correctness are the same variable with opposite signs.
+
+- [s108] sched1 clock=13 ready list on the h5 chassis: [121(p=2130706433,l=12) 111(p=2130706433,l=8) 142(p=1,l=22)]; priority tie, class tie (val=0), decided by LUID.
+
+- [s108] sched2 block=3 on the h5 chassis carries no sentinels (all pri 1-4), ties the pair at pri=2 and cls=3, and terminates on LUID inherited from the sched1 output - sched2 is a fixpoint of sched1 for this 20-insn straight-line window.
+
+- [s108] Probe scores this session, all 160/160: p1 arg5-first 6, p2 t0-shift-deferred 2 (alternate h5 spelling with target registers), p3 addr-in-ix-carrier 6, p4 fresh t0-addr local 9, p5 single-expr t0 addr 9. All five banked under memory/grind/CD_sync/rejected/s108_*.c.
+
+- [s108] New reusable tooling: tmp/grind/CD_sync/s108/schedcap.py (exact cpp|cc1 front half with the instrumented cc1 plus arbitrary BB2_*_DEBUG env hooks, -da dumps + telemetry), probe.py (window-variant splicer), ndiff.py (per-index diff using engine.score.normalized_insns - the engine's own normalization; the older mnemonic-only odiff.py could not render this residual).

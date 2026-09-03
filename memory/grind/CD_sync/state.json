@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 107,
- "current_modality": "escalation",
+ "session_count": 108,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -651,23 +651,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Owner Ruling D (CD_intr aggregate merge) executed in full and KILLED: prong (c) is structurally unsatisfiable (8 asm consumers define/reference D_800A1494/95/96 by name) and every prong-conformant spe"
+  },
+  {
+   "session": 108,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: the 6-insn a0/v1 exchange that separates the g3 (order-perfect) basin from h5 is ONE exact tie in local-alloc.c::qty_compare_1 (both contested qtys pri=3333), and sched2 is measured to be a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Once the asm-only consumers of D_800A1494/95/96 (CD_cw, getintr, func_800819C4, func_800817A0, func_80081E1C) are decompiled to C, prong (c) of the sanctioned aggregate family becomes satisfiable and owner Ruling D can be spent for real across the whole libcd Intr cluster.",
-   "mechanism": "Prong (c) fails today only because those consumers force the per-word splat symbols to survive in the splat symbol config, making any aggregate a second handle. Removing the asm consumers removes the constraint.",
-   "next_probe": "Re-run the p1-p4 aggregate sweep at the canonical shared-header site (prong (d)) with the per-word symbols retired, after those five functions reach C; verify byte-neutrality for every matched consumer with verify-oracle --rebuild before scoring."
-  },
-  {
-   "hypothesis": "A NEW sanctioned family lands in .claude/rules/ whose mechanism touches allocno birth order WITHOUT a byte-neutrality requirement, re-opening the p106/val5 tie.",
-   "mechanism": "Every measured lever on this residual is byte-neutral-or-nothing: the F1 chain-extender is structurally excluded (s105) because both tie operands are runtime-dependent through the loaded index, and every allocno perturbation that does register also moves emission order into the g3 basin (s106).",
-   "next_probe": "Do NOT re-run the closed space. Re-check .claude/rules/ for a new family, then re-run the two AND-gates."
+   "hypothesis": "In the g3 order-perfect basin, giving the arg5-VALUE qty a third reference lifts its qty_compare_1 priority from 3333 to 5000 (floor_log2(3)*3/6) without touching any birth/death index, breaking the tie in the direction that yields the target a0/v1 assignment.",
+   "mechanism": "refs is the one qty_compare_1 input that is not pinned by the target's instruction spacing: birth and death are fixed by the (order-perfect) post-sched1 stream, but reg_n_refs is counted at local-alloc time and a reference that combine/reload folds away before final emission still counts. p100 already carries a REG_EQUIV (mem sp+16) note, so a re-read of arg5 through its own equivalent stack slot is the natural candidate shape.",
+   "next_probe": "On the g3 base (memory/grind/CD_sync/rejected/s108_g3_arg5_first_regexchange.c), enumerate byte-neutral third-read spellings of arg5 - duplicate-read into the surrounding arms per .claude/rules/split-read-defeats-hoist.md, and a re-read through the REG_EQUIV slot - and for each read the block=3 BB2_QTY_DEBUG table with tmp/grind/CD_sync/s108/schedcap.py: accept only a form where qty(arg5-value) pri != 3333 AND build_insns stays 160, then score it."
   },
   {
    "hypothesis": "A matched libcd bios.c body for CD_sync appears upstream in psyz / sozud psy-q-decomp, closing the function by provenance instead of by search.",
    "mechanism": "BB2 links Sony's prebuilt PsyQ BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md: all 1,526 .text words masked-identical), so a matched upstream body IS the original source shape.",
    "next_probe": "Re-fetch Xeeynamo/psyz decomp/src/libcd/bios.c and check whether line ~94 is still INCLUDE_ASM for CD_sync (it was, as of s105 2026-08-25)."
+  },
+  {
+   "hypothesis": "Once the asm-only consumers of D_800A1494/95/96 (CD_cw, getintr, func_800819C4, func_800817A0, func_80081E1C) are decompiled to C, prong (c) of the sanctioned aggregate family becomes satisfiable and owner Ruling D can be spent across the whole libcd Intr cluster.",
+   "mechanism": "Prong (c) fails today only because those consumers force the per-word splat symbols to survive in the splat symbol config, making any aggregate a second handle.",
+   "next_probe": "Re-run the s107 p1-p4 aggregate sweep at the canonical shared-header site with the per-word symbols retired, after those five functions reach C; verify byte-neutrality for every matched consumer with verify-oracle --rebuild before scoring."
   }
  ],
  "judge_constraints": [
@@ -678,5 +684,23 @@
  "created": "2026-07-07T15:21:29.115668+00:00",
  "exhaustion_base": 107,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.356825+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.356825+00:00",
+ "kills": [
+  {
+   "session": 108,
+   "statement": "The g3 (order-perfect) basin's 6-insn a0/v1 exchange can be won by a C form that gives the arg5-value qty a strictly higher local-alloc priority than the t0-shift qty while the post-sched1 emission or",
+   "kill_scope": "instance",
+   "measured_on": "h5/g3 chassis, 160/160 build_insns, rules_dropped 0; FAKE chain-extender on idx_1495 and the pp pointer-alias both present; four g3-base window respellings",
+   "predicate_cite": "",
+   "result": "KILLED for all four spellings. The qty life-lengths are read off the POST-sched1 insn stream, and in the g3 basin that s"
+  },
+  {
+   "session": 108,
+   "statement": "The h5 post-sched1 order, which measurably produces the target registers, can be combined with the target emission order by letting sched2 swap the residual pair back after reload, decoupling the orde",
+   "kill_scope": "instance",
+   "measured_on": "h5 chassis (memory/grind/CD_sync/candidate.c, 160/160, masked 2), FAKE chain-extender + pp alias present; sched2 block=3 telemetry",
+   "predicate_cite": "",
+   "result": "KILLED. At sched2 reload_completed==1, so birthing_insn_p returns 0 and no block=3 insn carries a sentinel; every insn s"
+  }
+ ]
 }

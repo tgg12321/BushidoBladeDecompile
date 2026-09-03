@@ -1536,3 +1536,4 @@
 - 2026-09-02 22:22 func_800645B0 COMPLETED-C after 19 sessions (closer: s19 [synthesis]).
 - 2026-09-02 OWNER RULING (foreclosed-bucket disposition): func_80030580 pad row granted, func_80027640 maspsx label-nop opt-in granted (both byte-proven by operator full build == oracle), main stays foreclosed (ASPSX branch-fill DECLINE stands). docs/grind/decisions.md final entry.
 - 2026-09-02 22:45 func_80027640 + func_80030580: COMPLETED-C (operator lane, owner ruling foreclosed-bucket disposition; layer-2 PASS x2; Match 0df67969). Ledgers closed. main remains the only foreclosed item.
+- 2026-09-02 22:48 CD_sync s108 [forensics] floor=2: Forensics: the 6-insn a0/v1 exchange that separates the g3 (order-perfect) basin from h5 is ONE exact tie in local-alloc.c::qty_compare_1 (both contested qtys pri=3333), and sched2 is measured to be a fixpoint of sched1 for this window - order-correctness and allocation-correctness are the same degree of freedom pulled opposite ways.
