@@ -21098,3 +21098,77 @@ Ordinary C, no sanctioned-family claim needed. Body is a varargs printf-lite: on
 ## 2026-09-02 20:09 — func_8003A728 — final call — **PASS**
 
 Bytes re-verified by me: sandbox --disable all = 0 (200/200) and verify-oracle build_sha1 == 62efab4f... ; the diff touches only src/code6cac_c_mid.c (no Makefile/pipeline/txt/.o surface) and the body contains zero __asm__/pins/volatile. Exactly ONE no-semantic-purpose construct: `s32 zero;` + `zero = 0;` read as `D_800A3730 != zero`. It is a scalar constant-holder, on the frozen list (no-new-park-categories.md:299 -> named-local-fake-exception.md, owner ruling 2026-07-01), with all four prerequisites verified independently: exhaustion (hypotheses.md H25 q1-q5 = 29/5/14/3/6 plus s2's five hi16 placements and s3's five-arrangement closure, banked in rejected/s4-*.c), named mechanism (sched1 block-1 T-2 displacement of the D_800A369C store + local-alloc.c update_equiv_regs deletion, dump-cited), FAKE annotation at the declaration, layer-1 self_vet.md. Decisive fact: H24 shows the second permuter holder was byte-neutral and was dropped, so the landed form is the simplest known byte-exact one (Ruling 1(4)). The other constructs (c0lo, multi-set `t`, buf8 low-half reuse, `flag`, `hi16 |= packed`, FuncBufType) each carry a truthful semantic reading with no dead write, so under ordinary-c-judge-decidable Ruling 1(3)/Ruling 4 they are ordinary C, not family claims; the matched sibling func_8003A5A0 in this same TU is written in the identical step-wise multi-write scratch idiom (verified in src). judge_constraints and banned_constructs are both empty.
+
+## 2026-09-02 — OWNER RULING — foreclosure mechanics: unpark resets the exhaustion window; standing-ruling foreclosure is scoped to the endgame-lock floor; a spent probe is progress, not a disposition
+
+**Provenance.** Owner (Trenton), 2026-09-02, in conversation, after a status review
+of the 20-item foreclosed bucket: *"Everything has to be decompiled eventually, so I
+don't want agents just kicking the can down the road"* → three changes were proposed
+and the owner directed *"Go ahead and make those changes."* This record lands BEFORE
+the driver code that spends it ([[ruling-record-lands-before-code]]). Nothing here
+lowers a standard: the two endgame-lock AND-gates, the frozen family list, the
+default-FAIL Judge, and full-build SHA1 == oracle are all unchanged. This ruling only
+changes WHEN the driver may declare a function exhausted.
+
+**Findings the ruling rests on** (measured from `engine/queue.json`,
+`docs/grind/journal.md`, and each `memory/grind/<func>/state.json`):
+
+1. Eleven of the twelve functions unparked by the 2026-09-01 FORECLOSED-BUCKET REVIEW
+   (Ruling A) were re-foreclosed the same day, each after exactly one session. The
+   driver's exhaustion trigger (`ESCALATION_FLAT_SESSIONS = 8` flat across >= 4
+   modalities) reads the whole `floor_history`, and an unpark did not reset it — so
+   the first post-unpark session was already forced into `escalation` modality, ran
+   the owner's named probe, killed it, and filed the foreclosure in the same session.
+   The one exception, func_8002EA24, was not window-bound and reached COMPLETED-C
+   after 21 sessions.
+2. The 2026-07-27 standing ruling (endgame-lock-disposition policy) is scoped to
+   RA/scheduler-tiebreak residuals "a few instructions short in honest pure C". Six
+   foreclosed items carry a ledger floor well outside that scope (func_8001F938 8,
+   get_alarm 9, func_80034F88 10, func_80022F34 11, func_8003C714 15,
+   func_800480C0 20) — they were foreclosed on the flat-8 trigger the moment the
+   ladder's single cycle ran out, not because the residual is an endgame lock.
+3. Foreclosure is silent by design (2026-08-31) and nothing re-activates a foreclosed
+   item except a family grant re-scan or a manual unpark. Left alone, the bucket sits
+   indefinitely — the outcome [[no-park-permanently]] and [[escalation-not-parked]]
+   forbid.
+
+**Ruling 1 — an unpark resets the exhaustion window.** When a foreclosed item returns
+to active (owner `queue unpark`, `grant_rescan.py --apply`, or any future
+re-activation path), the driver stamps `exhaustion_base` = the current session count
+in the ledger; `_exhaustion_ready` only counts floor-history entries AFTER that base.
+A ruling therefore buys a full fresh flat window (8 sessions, >= 4 modalities), never
+one session. The owner's named probe (the queue item's `unpark_reason`) is executed
+in ordinary ladder modality; a killed probe is a `progress` outcome with the kill
+banked, and the ladder continues.
+
+**Ruling 2 — the standing-ruling foreclosure path is scoped to its actual subject.**
+`ENDGAME_LOCK_MAX_FLOOR = 5`. A flat floor at or below 5 keeps the existing trigger
+(8 flat sessions, >= 4 modalities) and the existing
+`RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED` record. A flat floor ABOVE 5
+is NOT an endgame lock: the trigger does not fire at 8; the ladder runs a second full
+cycle (20 flat sessions, >= 6 distinct modalities) before exhaustion may be declared,
+and the record is titled `LADDER EXHAUSTED (non-endgame residual, floor N):
+FORECLOSED` so the audit surface never claims endgame-lock status for a residual that
+is not one. Flat at 0 (scorer-invisible byte residual) keeps the 8-session trigger.
+
+**Ruling 3 — spending a probe is not a disposition.** A session may only file a
+foreclosure record in driver-assigned `escalation` modality (unchanged); with Ruling 1
+in force the first sessions after an unpark are never in that modality, so "probe
+executed and killed" and "foreclosed" can no longer land in one session. The
+validator refuses an owner-gated standing-ruling / ladder-exhausted outcome outside
+`escalation` modality (existing 2026-07-28 guard, now covering both titles).
+
+**Retroactive application (operator lane, same day).** Every item foreclosed on or
+after 2026-09-01 within two sessions of an unpark (the eleven Ruling-A re-foreclosures:
+func_800645B0, CD_sync, func_80045294, func_80060A68, func_80017848, func_80033550,
+CD_ready, func_80062020, func_80072CD4, CD_datasync, func_800770B8) and every item
+whose ledger floor exceeds 5 (func_8001F938, get_alarm, func_80034F88, func_80022F34,
+func_8003C714, func_800480C0) returns to active with the window reset. `main` (floor 0,
+2-byte reorg residual behind the 2026-08-24 maspsx branch-fill DECLINE) and
+func_80027640 (Judge ESCALATE refused — a construct refusal, not exhaustion) stay
+foreclosed under their own records. All standing `banned_constructs` remain in force
+on every unparked function; nothing is pre-accepted.
+
+**Consequence the owner accepts.** The queue is easiest-first and the grinder takes
+the top, so the seventeen returned items (distance 1..20) sit ahead of the fresh tail
+(distance 39+) and each gets at least a full fresh window before any disposition.

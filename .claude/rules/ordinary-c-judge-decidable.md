@@ -186,3 +186,30 @@ Record: docs/grind/decisions.md 2026-09-02 OWNER RULING, Ruling B
 [[judge-sole-gate]] · [[integration-handoff-self-serve]] ·
 [[escalation-not-parked]] · [[completion-standard]] ·
 [[no-deferral-work-to-completion]] · [[difficult-is-not-impossible]]
+
+## Amendment 2026-09-02 — foreclosure mechanics (owner ruling, decisions.md "foreclosure mechanics")
+
+Measured 2026-09-02: 11 of the 12 items unparked on 2026-09-01 were re-foreclosed
+after ONE session because an unpark did not reset the driver's flat-floor window,
+and six items were foreclosed under the 2026-07-27 standing ruling with ledger
+floors of 8..20 — outside that ruling's "a few instructions short" subject. Owner
+ruled three mechanical changes (no standard changes):
+
+1. **An unpark resets the exhaustion window.** The driver stamps
+   `exhaustion_base` in the ledger when a queue item returns to active;
+   `_exhaustion_ready` counts only sessions after it. A ruling buys a full
+   fresh window, never one session.
+2. **Standing-ruling foreclosure is scoped to the endgame-lock floor
+   (`ENDGAME_LOCK_MAX_FLOOR = 5`).** Flat floor <= 5: existing 8-session /
+   4-modality trigger and the `RESOLVED BY STANDING RULING (2026-07-27)` record.
+   Flat floor > 5: the ladder runs a SECOND full cycle (20 flat sessions, >= 6
+   modalities) before exhaustion may fire, and the record is titled
+   `LADDER EXHAUSTED (non-endgame residual, floor N): FORECLOSED` — never
+   claiming endgame-lock status. Flat at 0 keeps the 8-session trigger.
+3. **Spending a probe is not a disposition.** Foreclosure records are only
+   valid in driver-assigned `escalation` modality (both titles); post-unpark
+   sessions are ordinary ladder sessions, so a killed probe is `progress`.
+
+Retroactive: the 11 same-day re-foreclosures and the 6 out-of-scope floors
+returned to active with the window reset (17 items); `main` and
+func_80027640 stay foreclosed under their own records.
