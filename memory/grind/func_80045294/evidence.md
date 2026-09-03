@@ -1252,3 +1252,174 @@ what the frontier below points at.
 - [s51] The distinct-loop-2-counter form's 80-instruction shape is an allocation collapse (loop 1's counter stays in $a0, block 0's copy vanishes, the $s5 save/restore pair drops, frame 0x30 -> 0x28), not a hoisted gp-rel load -- correcting the s48 record.
 
 - [s51] cse EBB bounds on the i-first chassis (dumps_B/text1a_c.cse): `;; Processing block from 2 to 37` (block 0 + guard), `from 39 to 65` (loop 1), `from 71 to 110` (loop-2 preheader). Block 0's EBB ends at 37, so clause (1) of cse.c:849-853 is satisfied for i via `uid_cuid[regno_last_uid[i]] > cse_basic_block_end` and NOT via the first_uid disjunct -- while the preheader EBB satisfies it via the OTHER disjunct.
+
+## s52 (structural) -- 2026-09-03
+
+### THE FLOOR MOVED: 2 -> 1
+
+`memory/grind/func_80045294/candidate.c` is replaced this session. The new form
+(`tmp/grind/func_80045294/s52/F_a0ptr_ifirst.c`) measures
+**score=1, target_insns=83, build_insns=83** under
+`sandbox func_80045294 --disable all` on today's HEAD, and its residual is a
+SINGLE instruction:
+
+    idx 9   target  sll $v1, $s2, 4        build  sll $v1, $s0, 4
+
+Every other instruction in the function -- the whole prologue interleave
+(`sw $s0,0x10($sp)` / `addu $s0,$s2,$zero` / `sll` in the TARGET's order), the
+complete callee-save allocation (a0->$s2, a1->$s3, sum->$s1, i->$s0, s4->$s4,
+s5->$s5, ptr->$s2, idx->$s1), the stack frame, both loops, the delay slots and
+the tail -- is byte-exact. Full disassembly comparison in
+tmp/grind/func_80045294/s52/build_disasm.txt (+ cmp.py).
+
+### What changed: a0 is REUSED as loop 2's pointer
+
+The previous candidate declared a separate `s32 *ptr` for loop 2. The new form
+assigns loop 2's walking pointer back into the parameter `a0`:
+
+    a0 = (s32)((u8 *)&D_800EED14 + v1);
+    do { *(s32 *)a0 += a1; ... a0 += 0x10; idx += 0x10; i += 1; }
+    while (i < D_800A33AC);
+
+This is a REAL value that materialises in the target's bytes: the target itself
+reuses $s2 for a0 and then for the loop-2 pointer (`addu $s2,$v1,$v0` at
+0x80045344 overwrites a0's register), so the register-level evidence for the
+reuse is in the shipped code, not merely in a score.
+
+The reuse buys the *block-0 schedule*, which 51 sessions of declaration-order
+and scheduler work could not: extending a0's pseudo live range through loop 2
+changes block 0's allocation pressure so that the i-first source order
+(`i = a0;` then `v1 = a0 << 4;`) now emits `sw $s0 / addu $s0,$s2 / sll` in the
+TARGET's order. On the pre-s52 chassis the same i-first source order scored 11.
+The s51 finding still holds and now works FOR us: the emitted order of the
+copy/shift pair is the source order at both scheduler passes, so writing the
+copy first is what puts it first in the bytes.
+
+Measured pairs on today's HEAD (loop-2 pointer spelling x block-0 order):
+
+    separate `ptr` local, v1-first block 0 (old candidate.c)   score=2  insns=83
+    separate `ptr` local, i-first block 0                      score=11 insns=83
+    a0 reused as ptr,     v1-first block 0 (H_a0ptr_vfirst)    score=2  insns=83
+    a0 reused as ptr,     i-first block 0 (NEW candidate.c)    score=1  insns=83
+
+A second equal-floor spelling exists: moving `count = D_800A33AC` ahead of the
+shift in block 0 (M_countfirst) also measures score=1 / 83, so the last residual
+is insensitive to that declaration-order axis.
+
+### The one remaining residual is a cse canonicalisation, fully attributed
+
+Dumps for the new chassis: tmp/grind/func_80045294/s52/dumps_F/ (extracted
+per-function in F.rtl.fn / F.cse.fn).
+
+    .rtl   (insn 15 ... (set (reg/v:SI 75) (reg/v:SI 72)))            i = a0
+           (insn 17 ... (set (reg/v:SI 76) (ashift (reg/v:SI 72) 4)))  v1 = a0<<4
+    .cse   (insn 17 ... (set (reg/v:SI 76) (ashift (reg/v:SI 75) 4)))
+
+i.e. cse rewrites the shift's operand from reg 72 (a0, allocated $s2) to reg 75
+(i, allocated $s0). That single rewrite IS the last diff. The gate is
+make_regs_eqv at tools/gcc-2.7.2/cse.c:842-857: when `i = a0` is walked, i
+becomes qty_first_reg because
+  (1) uid_cuid[regno_last_uid[i]] > cse_basic_block_end   (i lives past the EBB), and
+  (2) uid_cuid[regno_last_uid[i]] > uid_cuid[regno_last_uid[a0]].
+canon_reg then rewrites every later reference in the quantity to i.
+
+### Why clause (2) resisted inversion in this chassis (measured, 6 spellings)
+
+a0's last reference must be at or after i's last reference. i is loop 2's
+counter, so i's last reference is loop 2's exit test, which GCC emits as the
+LAST insn of the loop body -- no source statement can be placed after it inside
+a do/while. Every way of getting a0 referenced later was measured this session:
+
+    a0 += 0x10 moved to the last body statement (K)          score=5  insns=84
+    exit test hoisted into `more` before a0's inc (G)        score=27 insns=85
+    for(;;) + break so a0's inc follows the test (J)         score=29 insns=85
+    loop 2 as a top-tested while, guard kept (T)             score=5  insns=84
+    loop 2 as a top-tested while, no guard (S)               score=12 insns=85
+    s50's guard-on-a0, re-audited on this chassis (N)        score=5  insns=84
+
+All six cost at least one instruction; none reaches 83. The only zero-cost site
+for a later a0 reference would be after loop 2 (the `D_800A33A0 += a1` tail),
+and that is unavailable because a0's pseudo is already allocated $s2 for the
+loop-2 pointer -- a tail use would print $s2 where the target prints $v0.
+
+### Why clause (1) resisted too (measured, 4 spellings)
+
+Failing clause (1) needs i's whole live range inside block 0's cse EBB. i is a
+loop counter, so it always leaves the EBB. Making the block-0 copy's dest
+short-lived does fail clause (1) -- and the shift then keeps a0 -- but the
+short-lived pseudo is dead-eliminated and the SURVIVING copy lands after the
+shift, which is the old score-2 rotation again:
+
+    t = a0; v1 = a0<<4; ...; i = t;   (C)   score=2  insns=83  <- rotation residual
+    t = a0; i = t; v1 = a0<<4;        (D)   score=11 insns=83  <- i crowned at `i = t`
+    b = a0; i = b; v1 = b<<4; b reused as ptr (L)  score=6  insns=83
+    loop-1 offset left to loop.c strength reduction (A/B)  score=11 insns=83
+
+The strength-reduction route (frontier item 3 from s51) is now measured and
+attributed: loop.c DOES create a preheader giv chain that reads a0 --
+tmp/grind/func_80045294/s52/Agiv.loop.fn shows
+`(insn 192 (set (reg 109) (reg/v:SI 72)))` / `(insn 193 (set (reg 110)
+(ashift (reg 109) 4)))` with `REG_EQUAL (mult (reg/v:SI 72) 16)` -- but it is
+emitted into loop 1's PREHEADER block, after the guard branch, whereas the
+target's shift sits in block 0 feeding the `D_800EED14` load before the branch.
+And block 0's own shift is already canonicalised to i by cse1 before loop.c
+runs, so the giv never becomes the surviving block-0 shift.
+
+### Separate-counter forms still collapse on this chassis
+
+Giving loop 2 its own counter DOES fail clause (2) (a0 then outlives loop 1's
+counter), but it also lets loop 1's counter stay in the incoming $a0, deleting
+block 0's copy entirely -- the s48/s51 collapse, reproduced here on the
+a0-as-pointer chassis:
+
+    a0 reused as ptr + distinct loop-2 counter j (I)  score=30 insns=80
+    a0 used as loop 2's counter, ptr separate    (E)  score=34 insns=80
+
+### Kill re-audit (mandated)
+
+The closest prior instance kill, s50's "buy a0's fourth reference from the
+loop-2 guard" (`if (a0 < D_800A33AC)` ahead of `i = a0`), was re-measured on the
+NEW chassis as N_guard_on_a0: score=5, insns=84. The kill stands and its cause
+is unchanged (the a0 compare emits its own `slt` on $s2 and the `move` is still
+needed). Neither the old nor the new candidate carries a FAKE construct, so the
+`fake_ablate.py` leg is vacuous for this function, as recorded in s51.
+
+### Vetting note for whoever submits this
+
+The new candidate's only non-obvious construct is the reuse of the parameter
+`a0` as loop 2's walking pointer. It is NOT a coercion: the value is real, it is
+loaded from and stored through on every iteration, and it materialises in the
+target's own bytes ($s2 carries both a0 and the pointer). It nonetheless sits in
+the frozen "variable reuse for codegen control" family, so a candidate-ready
+session must fill in `self_vet.md` with that family, its scope sentence, and a
+precedent before submitting.
+
+- [s52] FLOOR 2 -> 1. New candidate.c = i-first block 0 (`i = a0;` before `v1 = a0 << 4;`) plus loop 2's walking pointer assigned into the parameter `a0` instead of a separate `s32 *ptr`. sandbox score=1, target_insns=83, build_insns=83.
+
+- [s52] The score-1 residual is exactly one instruction: idx 9, target `sll $v1,$s2,4` vs build `sll $v1,$s0,4`. Prologue interleave, callee-save allocation, frame, both loops, delay slots and tail are byte-exact.
+
+- [s52] Reusing a0 as loop 2's pointer is corroborated by the TARGET's own register usage: 0x80045344 `addu $s2,$v1,$v0` overwrites a0's register with the loop-2 pointer, so $s2 genuinely carries both values in the shipped code.
+
+- [s52] Mechanism of the last diff, read off tmp/grind/func_80045294/s52/dumps_F/: .rtl insn 17 is `(ashift (reg/v:SI 72) 4)` (a0); .cse insn 17 is `(ashift (reg/v:SI 75) 4)` (i). cse.c:842-857 make_regs_eqv crowns i as qty_first_reg on the `i = a0` copy and canon_reg rewrites the shift.
+
+- [s52] Six zero-cost attempts to make a0's last reference postdate i's (K,G,J,T,S,N) all measure 84 or 85 instructions. The loop-2 exit test is the last insn of the body, so no source statement tried this session could be ordered after it inside a do/while.
+
+- [s52] loop.c's strength reduction DOES emit a preheader giv chain reading a0 (`Agiv.loop.fn` insns 192/193, REG_EQUAL `mult (reg 72) 16`), but into loop 1's preheader block after the guard branch, not into block 0 where the target's shift feeds the D_800EED14 load. Frontier item 3 from s51 is answered: post-cse insn creation exists but lands in the wrong block.
+
+- [s52] On the new chassis cse's first EBB for this function is printed as `;; Processing block from 2 to 199` with path retries (`2 to 61`, `2 to 51`, `2 to 33`), i.e. cse re-walks block 0 several times with different branch paths. Any EBB-boundary attack on clause (1) must therefore defeat EVERY retry pass, not just the first.
+
+- [s52] FLOOR 2 -> 1. New candidate.c = i-first block 0 (`i = a0;` before `v1 = a0 << 4;`) plus loop 2's walking pointer assigned into the parameter `a0` instead of a separate `s32 *ptr`. sandbox score=1, target_insns=83, build_insns=83 on today's HEAD.
+
+- [s52] The score-1 residual is exactly one instruction: idx 9, target `sll $v1,$s2,4` vs build `sll $v1,$s0,4`. Everything else in the function matches byte for byte, including the prologue sw/move/sll interleave that 51 previous sessions could not reproduce together with the correct shift operand.
+
+- [s52] Reusing a0 as loop 2's pointer is corroborated by the target's own register usage: `addu $s2,$v1,$v0` at 0x80045344 overwrites a0's register with the loop-2 pointer, so $s2 genuinely carries both values in the shipped code. The value is real (loaded from, stored through, incremented), not a coercion.
+
+- [s52] Mechanism of the last diff read off tmp/grind/func_80045294/s52/dumps_F/: .rtl insn 17 is `(ashift (reg/v:SI 72) 4)`; .cse insn 17 is `(ashift (reg/v:SI 75) 4)`. cse.c:842-857 make_regs_eqv crowns i as qty_first_reg on the `i = a0` copy and canon_reg rewrites the shift.
+
+- [s52] Six zero-cost attempts to make a0's last reference postdate i's (a0-increment-last, cond-hoist, for/break, top-tested while with and without guard, guard-on-a0) all measure 84 or 85 instructions, never 83.
+
+- [s52] Kill re-audit as mandated: s50's guard-on-a0 instance kill re-measured on the new chassis as N_guard_on_a0 = score 5 / 84 insns; the kill stands and its cause is unchanged. Neither candidate carries a FAKE construct, so the fake_ablate leg remains vacuous for this function.
+
+- [s52] On the new chassis cse's first EBB for this function prints as `;; Processing block from 2 to 199` with path retries (`2 to 61`, `2 to 51`, `2 to 33`), i.e. cse re-walks block 0 several times with different branch paths -- any EBB-boundary attack on clause (1) must defeat every retry pass.
+
+- [s52] src/text1a_c.c was restored to HEAD at end of session; the tree carries only the two ledger files, the new/updated candidate.c, sixteen new rejected/ forms, and metrics/events.jsonl.

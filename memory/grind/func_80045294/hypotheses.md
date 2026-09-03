@@ -1029,3 +1029,104 @@ FAKE constructs present.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-03 chassis, i-first block-0 head with a distinct loop-2 counter `j`, zero FAKE constructs present
+
+## [s52] Reusing the parameter a0 as loop 2's walking pointer fixes block 0's schedule -- CONFIRMED, floor 2 -> 1
+
+**Statement.** With loop 2's walking pointer assigned into the parameter `a0`
+instead of a separate `s32 *ptr` local, the i-first block-0 source order
+(`i = a0;` before `v1 = a0 << 4;`) emits the TARGET's prologue order
+`sw $s0,0x10($sp) / addu $s0,$s2,$zero / sll $v1,...,4`, dropping the residual
+from 2 to 1.
+
+**Mechanism.** a0's pseudo now stays live through loop 2 (it is the pointer that
+is loaded from, stored through and incremented every iteration), which changes
+block 0's allocation pressure and, with it, the sched1/sched2 ready-list state at
+the copy/shift tie. s51 established that the pair's emitted order is its source
+order at both scheduler passes; the reuse is what makes the i-first source order
+allocatable at 83 instructions instead of the 11-diff shape it produced before.
+Independent corroboration in the target: `addu $s2,$v1,$v0` at 0x80045344
+overwrites a0's register with the loop-2 pointer, so the shipped code really does
+carry both values in $s2.
+
+**Probe.** `tmp/grind/func_80045294/s52/F_a0ptr_ifirst.c` measured with
+`sandbox func_80045294 --disable all`: score=1, target_insns=83, build_insns=83.
+Control matrix on the same HEAD: separate-ptr/v1-first = 2, separate-ptr/i-first
+= 11, a0-ptr/v1-first = 2, a0-ptr/i-first = 1.
+
+**Result.** CONFIRMED. Banked as the new `memory/grind/func_80045294/candidate.c`.
+
+## [s52] cse.c:855 crowns loop 2's counter over a0 whenever the block-0 copy precedes the shift -- KILLED (class)
+
+**Statement.** In every form measured this session in which the surviving block-0
+copy `i = a0` precedes the shift in RTL and `i` is the pseudo that loop 2's exit
+test reads, cse's make_regs_eqv makes `i` the quantity's canonical register and
+canon_reg rewrites the block-0 shift's operand from a0 to i, printing
+`sll $v1,$s0,4` instead of the target's `sll $v1,$s2,4`.
+
+**Mechanism.** tools/gcc-2.7.2/cse.c:842-857. The copy joins i to a0's quantity;
+i wins qty_first_reg because its last reference (loop 2's exit test) is both past
+`cse_basic_block_end` and later than a0's last reference. Confirmed insn-by-insn
+on the new chassis: .rtl insn 17 is `(ashift (reg 72) 4)` and .cse insn 17 is
+`(ashift (reg 75) 4)` (tmp/grind/func_80045294/s52/dumps_F/, F.rtl.fn/F.cse.fn).
+
+**Probe.** Ten spellings measured on the new chassis. Clause-(2) attacks (make
+a0's last reference postdate i's): a0's increment last in the body = 84/score 5;
+exit test hoisted into a `more` temporary = 85/27; for(;;)+break = 85/29;
+top-tested while with guard = 84/5; top-tested while without guard = 85/12;
+s50's guard-on-a0 re-audited = 84/5. Clause-(1) attacks (shorten the copy dest's
+live range): `t = a0; v1 = a0<<4; ...; i = t` = 83/2 (the shift keeps a0, but the
+surviving copy moves after it -- the old rotation); `t = a0; i = t; v1 = a0<<4` =
+83/11; `b = a0; i = b; v1 = b<<4` with b reused as the pointer = 83/6. Separate
+loop-2 counter (which does invert clause 2) = 80/30, the s48 allocation collapse.
+
+**Result.** KILLED. kill_scope: class -- the gate is the predicate at
+cse.c:855, and every spelling that keeps the surviving copy ahead of the shift
+with a counter that outlives block 0's EBB is rewritten by it. Not killed: forms
+in which the shift is created after cse in block 0 (see frontier), or in which
+the surviving copy's dest is not loop 2's counter without triggering the $a0
+allocation collapse.
+
+## [s52] loop.c strength reduction cannot supply block 0's shift -- KILLED (instance)
+
+**Statement.** Leaving loop 1's offset to loop.c (writing the body as
+`sum += *(s32 *)((u8 *)&D_800EED18 + (i << 4))` with no explicit offset local)
+does not put an a0-reading shift into block 0: loop.c's giv initialisation is
+emitted into loop 1's PREHEADER block, after block 0's guard branch, while block
+0's own shift has already been canonicalised to i by cse1.
+
+**Mechanism.** tmp/grind/func_80045294/s52/Agiv.loop.fn: loop.c emits
+`(insn 192 (set (reg 109) (reg/v:SI 72)))`, `(insn 193 (set (reg 110)
+(ashift (reg 109) 4)))` carrying `REG_EQUAL (mult (reg/v:SI 72) 16)` -- reg 72 is
+a0, so the giv chain really is created post-cse on a0 -- but it sits between the
+guard jump (insn 31) and loop 1's top label (insn 35). The target's shift is in
+block 0, before the guard, because its result feeds the `D_800EED14` load.
+
+**Probe.** A_giv (s4 indexed by a0) and B_giv_ishift (s4 indexed by i) both
+measure score=11, insns=83; dumps in tmp/grind/func_80045294/s52/dumps_Agiv/.
+
+**Result.** KILLED. kill_scope: instance -- measured on the pre-a0-pointer
+chassis with zero FAKE constructs; the same experiment has not been re-run on top
+of the new score-1 chassis, where block 0's allocation differs.
+
+## [s52] Assigning loop 2's walking pointer into the parameter a0 (instead of a separate `s32 *ptr` local) makes the i-first block-0 source order `i = a0; v1 = a0 << 4;` emit the target's prologue order, lowering the honest floor from 2 to 1.
+- mechanism: a0's pseudo now stays live through loop 2 (loaded from, stored through and incremented every iteration), changing block 0's allocation pressure and with it the sched1/sched2 ready-list state at the copy/shift tie. s51 established that the emitted order of the copy/shift pair is its source order at both scheduler passes, so writing `i = a0` first is what puts it first in the bytes; before this session the same i-first order was only allocatable as an 11-diff shape. The target corroborates the reuse: `addu $s2,$v1,$v0` at 0x80045344 overwrites a0's register with the loop-2 pointer, so $s2 really carries both values in the shipped code.
+- probe: tmp/grind/func_80045294/s52/F_a0ptr_ifirst.c measured with `sandbox func_80045294 --disable all`; control matrix on the same HEAD: separate-ptr/v1-first = 2, separate-ptr/i-first = 11, a0-ptr/v1-first = 2, a0-ptr/i-first = 1.
+- result: score=1, target_insns=83, build_insns=83. The only differing instruction is idx 9: target `sll $v1,$s2,4` vs build `sll $v1,$s0,4`. The prologue interleave, the complete callee-save allocation (a0->$s2, a1->$s3, sum->$s1, i->$s0, s4->$s4, s5->$s5, ptr->$s2, idx->$s1), the stack frame, both loops, every delay slot and the tail are byte-exact. Banked as the new candidate.c; the superseded score-2 form is banked at rejected/s52-superseded-candidate-score2-rotation.c. A second equal-floor spelling (count loaded before the shift, M_countfirst) also measures 1/83.
+- verdict: CONFIRMED
+
+## [s52] When the surviving block-0 copy `i = a0` precedes the shift in RTL and `i` is the pseudo that loop 2's exit test reads, cse's make_regs_eqv makes i the quantity's canonical register and canon_reg rewrites the block-0 shift's operand from a0 to i.
+- mechanism: tools/gcc-2.7.2/cse.c:842-857. The copy joins i to a0's quantity; i wins qty_first_reg because its last reference (loop 2's exit test) is both past cse_basic_block_end and later than a0's last reference. Confirmed insn-by-insn on the new chassis: .rtl insn 17 is `(ashift (reg/v:SI 72) 4)` (a0) and .cse insn 17 is `(ashift (reg/v:SI 75) 4)` (i).
+- probe: Ten spellings measured this session. Clause-(2) attacks (make a0's last reference postdate i's): a0's increment moved to the last body statement = 84/score 5; exit test hoisted into a `more` temporary = 85/27; for(;;)+break so the increment follows the test = 85/29; loop 2 as a top-tested while with the guard kept = 84/5; without the guard = 85/12; s50's guard-on-a0 re-audited on this chassis = 84/5. Clause-(1) attacks (shorten the copy dest's live range): `t = a0; v1 = a0<<4; ...; i = t` = 83/2 (shift keeps a0 but the surviving copy moves after it); `t = a0; i = t; v1 = a0<<4` = 83/11; `b = a0; i = b; v1 = b<<4` with b reused as the pointer = 83/6. A distinct loop-2 counter does invert clause (2) but reproduces the s48 allocation collapse at 80/30.
+- result: Every spelling that keeps the surviving copy ahead of the shift while its dest outlives block 0's cse EBB is rewritten by the predicate; the six zero-cost attempts to buy a later a0 reference each cost an instruction (84 or 85) because loop 2's exit test is the last insn of the do/while body and nothing can be ordered after it. Left open: forms in which the block-0 shift is created after cse, and forms whose surviving copy dest is not loop 2's counter without triggering the $a0 collapse.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, both the separate-ptr and the new a0-as-pointer chassis, zero FAKE constructs present in any measured form
+- predicate_cite: tools/gcc-2.7.2/cse.c:855
+
+## [s52] Leaving loop 1's offset to loop.c strength reduction does not put an a0-reading shift into block 0, because loop.c emits the giv initialisation into loop 1's preheader block after the guard branch while block 0's own shift has already been canonicalised to i by cse1.
+- mechanism: tmp/grind/func_80045294/s52/Agiv.loop.fn shows loop.c emitting `(insn 192 (set (reg 109) (reg/v:SI 72)))` and `(insn 193 (set (reg 110) (ashift (reg 109) 4)))` carrying `REG_EQUAL (mult (reg/v:SI 72) 16)` -- the chain really is created post-cse on a0 -- but between the guard jump (insn 31) and loop 1's top label (insn 35). The target's shift sits in block 0 before the guard because its result feeds the D_800EED14 load.
+- probe: A_giv (s4 indexed by a0) and B_giv_ishift (s4 indexed by i), both measured with `sandbox func_80045294 --disable all`; dumps in tmp/grind/func_80045294/s52/dumps_Agiv/.
+- result: Both score=11, insns=83, identical to the plain i-first control. This answers s51's frontier item 3: post-cse insn creation does exist in this function, but it lands in the wrong basic block.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, pre-a0-pointer (separate `s32 *ptr`) chassis, zero FAKE constructs present
