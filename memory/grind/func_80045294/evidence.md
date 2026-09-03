@@ -1501,3 +1501,122 @@ old chassis.
 - [s53] jump.c's duplicate_loop_exit_test is reached from the first jump_optimize call (toplev.c:2827, after_regscan = 1), which runs before cse_main (toplev.c:2865) - no loop-1 spelling can defer the entry guard past cse.
 
 - [s53] GCC 2.7.2 emits no RTL at all for a0 = a0, so the s51 dead-store deletion path (jump.c:577) is not even reached; the self-assignment is inert one pass earlier than the dead store was.
+
+## [s54] synthesis — the block-0 residual reduced to a two-registers-one-quantity impossibility, and the crown-invalidation lever closed at cse.c:6871-6902
+
+**Chassis re-measured first (mandated).** `memory/grind/func_80045294/candidate.c`
+(a0-as-pointer, i-first) re-measures **score=1, build_insns=83, target_insns=83** on
+HEAD 2026-09-03. Its one differing instruction is still idx 9: target `sll $v1,$s2,4`
+(a0's register) vs build `sll $v1,$s0,4` (i's register). Fresh dumps for the chassis in
+`tmp/grind/func_80045294/s54/dumps_BASE/` (+ per-function extracts `BASE.rtl.fn`,
+`BASE.cse.fn`, `BASE.cse2.fn`, extractor `fn.py`).
+
+### The residual restated as a closed-form constraint (this session's main result)
+
+Block 0 contains exactly three insns in the a0 quantity, and cse prints `qty_first_reg`
+(the "crown") for EVERY canonicalised reference inside one extended basic block:
+
+    RTL insn 15   (set (reg/v:SI 75) (reg/v:SI 72))          i = a0      -> target addu $s0,$s2,$zero
+    RTL insn 17   (set (reg 76) (ashift (reg/v:SI ?) 4))     v1 = a0<<4  -> target sll  $v1,$s2,4   ($s2 = a0)
+    RTL insn 31   (set (reg 81) (lt (reg/v:SI ?) (reg 79)))  i < count   -> target slt  $v0,$s0,$a0 ($s0 = i)
+
+The target therefore needs TWO DIFFERENT registers for two references to the SAME cse
+quantity inside ONE basic block. Measured EBB bounds on this chassis (header of
+`BASE.cse2.fn`): `;; Processing block from 2 to 36` = block 0 alone; loop 1 is `38 to 67`,
+the loop-2 preheader `70 to 109`, loop 2 `111 to 173` (plus retries 111-142 / 144-173).
+cse EBBs are unions of whole basic blocks, so the shift and the guard are unavoidably in
+the same EBB and receive the same crown. That leaves exactly three escape routes, and two
+are now closed:
+
+  (R1) **flip the crown, accept a wrong guard.** This is form A (`A_reuse_i_as_idx`,
+       11/83) and it is strictly worse than the score-1 corner: the crown test is a global
+       `regno_last_uid` comparison, so flipping it also flips the LOOP-2 PREHEADER's EBB,
+       where the target wants `sll $v1,$s0,4` (i's register, 0x80045338). One crown flip
+       costs the block-0 guard AND the preheader shift.
+  (R2) **invalidate the crown between insn 17 and insn 31**, so `delete_reg_equiv` promotes
+       `reg_next_eqv` (= i) to `qty_first_reg`. CLOSED this session — see below.
+  (R3) **have one of the two insns created after BOTH cse passes** (cse1 and cse2 both run:
+       `-O2` sets `flag_rerun_cse_after_loop` and `text1a_c.cse2` is in the dumps). s52
+       measured the loop.c strength-reduction route for the shift (the giv chain lands in
+       loop 1's PREHEADER, after the guard branch, not in block 0); s53 measured that
+       `duplicate_loop_exit_test` builds the entry guard in the FIRST `jump_optimize`
+       (toplev.c:2827), i.e. before cse. R3 is the only route the ledger has not closed.
+
+### R2 is closed: a value-preserving write to the crown register is deleted by cse
+
+Two measurements, one dump, one predicate.
+
+  * **`a0 = i;` in block 0 between the shift and the guard, on the BASE chassis (crown = i,
+    reg 75)** — `P1_a0eqi_blk0.c` = **score 6, insns 83**. The construct is FREE in
+    instruction count (83, not 84) because a later pass propagates it away. But it does not
+    move the crown: `dumps_P1/text1a_c.cse` keeps the copy as
+    `(insn 31 (set (reg/v:SI 72) (reg/v:SI 75)))`, insn 17 is still
+    `(ashift (reg/v:SI 75) 4)` and the guard still `(lt (reg/v:SI 75) ...)`. Reason: reg 72
+    is not the crown here, so cse takes the `qty_first_reg[reg_qty[REGNO (dest)]] !=
+    REGNO (dest)` branch at **tools/gcc-2.7.2/cse.c:6878** and rewrites SET_SRC to the class
+    head; the insn stays a real copy and invalidates nothing.
+  * **the same `a0 = i;` on form A, where a0 IS the crown** — `A2_A_plus_blk0_inval.c` =
+    **score 11, insns 83, output identical to plain A (11/83)**. `A2.cse.fn` shows the copy
+    GONE from the cse output (insn 28 links straight to insn 34) and the guard still
+    `(lt (reg/v:SI 72) ...)`. Reason: canon_reg rewrites the source to the crown, the insn
+    becomes `(set (reg 72) (reg 72))`, and the cse.c:6871-6877 comment ("In general, it is
+    good to have a SET with SET_SRC == SET_DEST. However, there is an important exception:
+    If both are registers that are not the head of their equivalence class, replace SET_SRC
+    with the head of the class.") deliberately PRESERVES the self-move when dest is the
+    head — a self-move that never reaches the assembler.
+
+  Those two cases partition every value-preserving write to the a0 quantity: dest != head
+  becomes a live copy that changes no equivalence; dest == head degenerates to a self-move
+  and disappears. A write with a DIFFERENT value does invalidate, but it destroys the a0
+  value that loop 2's preheader re-reads (`addu $s0,$s2,$zero` at 0x8004532C), and every
+  spelling that preserves it in a second pseudo needs a seventh long-lived callee-save,
+  which the target's frame (0x30, $s0-$s5 + $ra) does not have.
+
+### The crown flip cannot be bought with a post-loop mention either
+
+The crown comparison is `uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`
+(cse.c:854-856). On the target's geometry i's last mention is loop 2's exit compare — the
+last insn of the loop — so flipping the crown needs an a0 mention AFTER it. Measured:
+
+    tail `a0 = i;` as the function's final statement (T1)            score 27  insns 84
+    T1 + the block-0 `a0 = i;` invalidation attempt  (T2)            score 27  insns 84
+
+Both cost an instruction. Unlike the s51 `dead = a0;` forms, a store INTO a0 is not
+deletable by jump.c:577 (its `regno_first_uid[dest] == INSN_UID && regno_last_note_uid[dest]
+== INSN_UID` predicate cannot hold for a pseudo with other mentions), and unlike P1 there is
+no later reader to propagate it into, so it materialises.
+
+### A new 83-instruction chassis banked (the parameter carries the count)
+
+`P4_a0_carries_count.c` — the preserved a0 moves into a fresh local `base` ($s2, which also
+becomes loop 2's walking pointer) and the PARAMETER pseudo is reused to hold `D_800A33AC`,
+which the target really does keep in `$a0` (`lw $a0, %gp_rel(D_800A33AC)($gp)` at
+0x800452D4). Result **score 6, insns 83**: the register economy is sound (no extra
+callee-save, frame unchanged), but the crown analysis is untouched — the extra `base = a0`
+copy simply crowns `base` and then `i`, so block 0's shift is still canonicalised to i.
+Banked as a chassis, not a lever.
+
+- [s54] candidate.c re-measured on HEAD 2026-09-03: score=1, build_insns=83, target_insns=83; the residual is idx 9 only (target `sll $v1,$s2,4` vs build `sll $v1,$s0,4`).
+- [s54] cse EBB bounds on the a0-as-pointer chassis (BASE.cse2.fn): block 0 = `from 2 to 36`, loop 1 = `38 to 67`, loop-2 preheader = `70 to 109`, loop 2 = `111 to 173`. Block 0's shift and the loop-1 entry guard are unavoidably in the same EBB, so canon_reg gives them the same register; the target gives them different ones.
+- [s54] make_regs_eqv's crown test (cse.c:842-857) is `(last_uid[new] > cse_basic_block_end || first_uid[new] < cse_basic_block_start) && last_uid[new] > last_uid[firstr]`. For i to LOSE the crown in block 0 while WINNING it in the loop-2 preheader EBB, clause 2 must hold (it is EBB-independent) and clause 1 must fail in block 0, i.e. i's last mention would have to sit inside cuid 36 — which contradicts i being loop 2's counter. The two EBBs cannot disagree.
+- [s54] `a0 = i;` between block 0's shift and guard is free in instruction count (83) but never invalidates the quantity: on the BASE chassis (a0 not the crown) cse.c:6878 rewrites SET_SRC to the class head and keeps a live copy (score 6, dumps_P1); on form A (a0 IS the crown) it degenerates to `(set 72 72)` and is deleted outright, leaving output byte-identical to plain A (11/83, A2.cse.fn).
+- [s54] A store INTO the parameter placed after loop 2 costs an instruction (T1 27/84, T2 27/84): jump.c:577's deletion predicate cannot hold for a pseudo with other mentions, and there is no later reader to propagate it into.
+- [s54] `P4_a0_carries_count.c` (preserved a0 in a fresh `base`, parameter pseudo reused for `D_800A33AC` -> `$a0`) measures 6/83 — sound register economy, no crown movement.
+
+- [s54] candidate.c re-measured on HEAD 2026-09-03: score=1, build_insns=83, target_insns=83; the single differing instruction is idx 9 (target `sll $v1,$s2,4`, build `sll $v1,$s0,4`).
+
+- [s54] cse EBB bounds for func_80045294 on the a0-as-pointer chassis (tmp/grind/func_80045294/s54/BASE.cse2.fn header): block 0 = `;; Processing block from 2 to 36`, loop 1 = `38 to 67`, loop-2 preheader = `70 to 109`, loop 2 = `111 to 173` with path retries 111-142 and 144-173.
+
+- [s54] Block 0 holds exactly three references to the a0 quantity - the copy (RTL insn 15), the shift (insn 17) and the loop-1 entry guard (insn 31) - and cse canonicalises every reference in one EBB to qty_first_reg, while the target prints $s2 for the shift and $s0 for the guard.
+
+- [s54] make_regs_eqv's crown test (cse.c:842-857) is `(uid_cuid[regno_last_uid[new]] > cse_basic_block_end || uid_cuid[regno_first_uid[new]] < cse_basic_block_start) && uid_cuid[regno_last_uid[new]] > uid_cuid[regno_last_uid[firstr]]`. Clause 2 is EBB-independent, so block 0 and the loop-2 preheader EBB cannot disagree about the crown unless clause 1 fails in block 0, which would require the loop counter's last mention to sit inside cuid 36.
+
+- [s54] `a0 = i;` between block 0's shift and guard is free in instruction count (83, not 84) on the BASE chassis - a later pass propagates it away - but cse.c:6878 rewrites its source to the class head and it never invalidates the quantity (score 6, dumps_P1/text1a_c.cse).
+
+- [s54] On form A, where the parameter pseudo IS the class head, the same construct degenerates to `(set (reg 72) (reg 72))`, is dropped, and the build is byte-identical to plain A (both 11/83) - confirmed by the copy's absence from A2.cse.fn.
+
+- [s54] A store INTO the parameter placed after loop 2 costs one instruction (T1 = 27/84, T2 = 27/84): jump.c:577's deletion predicate cannot hold for a pseudo with other mentions and there is no later reader to propagate it into.
+
+- [s54] Reusing the parameter pseudo for D_800A33AC with a fresh `base` carrier keeps the frame at 0x30 and the build at 83 instructions (score 6), confirming the target's `lw $a0, %gp_rel(D_800A33AC)($gp)` allocation is reproducible in C, but it does not move block 0's crown.
+
+- [s54] Neither candidate.c nor any form measured this session carries a FAKE construct, so the tools/fake_ablate.py leg of the kill re-audit stays vacuous for this function (as recorded in s51-s53).
