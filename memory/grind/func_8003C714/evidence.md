@@ -1048,3 +1048,5 @@ No owner question is asked and no packet is filed.
 - [s9] Foreclosure record appended at docs/grind/decisions.md:19815 — `## 2026-09-01 — func_8003C714 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**` — carrying both gates' evidence, the term-by-term closure table, the exhaustion counts, and three named re-activation triggers. It asks the owner no question and files no packet.
 
 - [s9] Tree state at end of session: src/code6cac_c2.c reverted to its INCLUDE_ASM line (clean); modified files are docs/grind/decisions.md and the three memory/grind/func_8003C714/ ledger files only (plus the engine's own metrics/events.jsonl).
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated — ledger floor 15 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force. exhaustion_base=9

@@ -113,5 +113,8 @@
   "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'"
  ],
  "ladder_skip": 11,
- "pending_fixup": null
+ "pending_fixup": null,
+ "exhaustion_base": 12,
+ "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+ "last_unpark_at": "2026-09-03T01:44:08.518301+00:00"
 }

@@ -3364,3 +3364,5 @@ Correction 1). Both gates FAIL.
 - [s27] What holds the byte match: nothing. func_80017848 carries zero regfix/asmfix rules and zero cheat-asm of its own and is committed as INCLUDE_ASM("asm/funcs", func_80017848); - the 2026-08-30 record's 'byte-matches only via a cheat' sentence was retracted by the 2026-09-01 review, Correction 1.
 
 - [s27] 7 new disproven forms banked under memory/grind/func_80017848/rejected/ (185 total). src/ings.c was restored to its committed INCLUDE_ASM state; the working tree carries only ledger + docs/grind edits.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=27

@@ -320,5 +320,8 @@
   "OWNER RULING 2026-07-20 (decisions.md): escalation REFUSED (option b). Canonical-asm refused \u2014 scan_hand_coded 0/8, the 2-insn residual is a sched1/sched2 LUID artifact (ordinary GCC output, no hand-coded evidence). Per 2026-07-20 standing policy (endgame-lock-disposition): INCOMPLETE-owner-accepted, prologue_fix retained to hold the byte-match (NOT sanctioned), parked, eligible for re-attempt only via a genuine pure-C lever. Do not re-propose asm or a coercion for this function."
  ],
  "origin": "queue",
- "created": "2026-07-19T01:19:29.988705+00:00"
+ "created": "2026-07-19T01:19:29.988705+00:00",
+ "exhaustion_base": 49,
+ "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+ "last_unpark_at": "2026-09-03T01:44:08.379854+00:00"
 }

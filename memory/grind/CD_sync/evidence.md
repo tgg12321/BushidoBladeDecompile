@@ -1894,3 +1894,5 @@ across 6 chassis (~81k+ iters, 0 novel basin closures), m2c (s8), in-repo transp
 - [s107] src/system.c verified clean against HEAD at session end (keeps INCLUDE_ASM("asm/funcs", CD_sync);). 5 disproven forms banked to memory/grind/CD_sync/rejected/ (140 total).
 
 - [s107] Foreclosure record filed this session at docs/grind/decisions.md:18279.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=107

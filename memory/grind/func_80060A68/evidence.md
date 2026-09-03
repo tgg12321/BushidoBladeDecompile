@@ -2152,3 +2152,5 @@ packet. The honest outcome is `progress` with the kills banked and the item ACTI
 - [s13] Nothing holds a byte-match here: the function is committed as INCLUDE_ASM per asm-until-matched, asmfix.txt is empty project-wide, so there is no cheat to retire and no integration handoff pending.
 
 - [s13] Foreclosure record filed this session at docs/grind/decisions.md:18515 with both gates' evidence, the enumerated escape set, the exhaustion count (13 sessions, 6 modalities, 76 banked rejected forms) and four named re-activation triggers.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=13

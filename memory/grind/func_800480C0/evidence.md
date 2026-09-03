@@ -961,3 +961,5 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s11] Disposition record filed this session at docs/grind/decisions.md:20353 - '## 2026-09-02 - func_800480C0 (src/text1b.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED'. It is a proof-of-foreclosure record, not a decision packet and not a re-filing of the INTEGRATION HANDOFF at decisions.md:20282 (Judge FAIL at decisions.md:20349).
 
 - [s11] src/text1b.c was restored to its HEAD INCLUDE_ASM("asm/funcs", func_800480C0); state after the measurement; the session's diff touches only docs/grind/decisions.md, memory/grind/func_800480C0/{candidate.c,evidence.md,hypotheses.md}, tmp/, and the engine-written metrics/events.jsonl.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated — ledger floor 20 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force. exhaustion_base=11

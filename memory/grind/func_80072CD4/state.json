@@ -130,5 +130,8 @@
   "The 2026-09-01 17:30 docs/grind/decisions.md entry ('func_80072CD4 -- ruling: ... -- PASS') cited by the session and by self_vet.md's SANCTIONED-FAMILY-CLAIMS section as clearing state.json's construct tripwire",
   "self_vet.md T3 ('No [GCC-internals justification]. ... I am deliberately NOT offering a pass-level mechanism as the reason the construct is present')"
  ],
- "ladder_skip": 17
+ "ladder_skip": 17,
+ "exhaustion_base": 13,
+ "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+ "last_unpark_at": "2026-09-03T01:44:08.542839+00:00"
 }

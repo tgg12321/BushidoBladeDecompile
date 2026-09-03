@@ -987,3 +987,5 @@ Banked forms: memory/grind/func_80033550/rejected/s12-*.c (9 files).
 - [s13] Exhaustion: 13 sessions, 6 modalities (recon, structural, permuter, forensics, escalation, disposition), floor flat at 4 throughout, ~138k cumulative permuter iterations across 6 basins, 31 rejected forms banked in memory/grind/func_80033550/rejected/.
 
 - [s13] Foreclosure record filed this session at docs/grind/decisions.md:18726.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=13

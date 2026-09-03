@@ -2274,3 +2274,5 @@ sweep and not the permuter.
 - [s20] Exhaustion at disposition: 20 sessions, floor flat at 7/91 since s9 (eleven consecutive sessions), eight distinct modalities (recon, structural, permuter, forensics, rederive, synthesis, escalation, solver), 91 banked rejected forms (7 added this session), ~60k permuter iterations over four campaigns including a re-aligned objective proven monotone with the sandbox that still could not descend, and 23 argument spellings scored on BOTH compiler forks with identical ranking and no form below the shared minimum.
 
 - [s20] Foreclosure record filed this session at docs/grind/decisions.md:19229; working tree restored to HEAD (git checkout -- src/system.c) — only memory/grind/CD_datasync/, docs/grind/decisions.md and tmp/ were written.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=20

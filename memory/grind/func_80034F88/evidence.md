@@ -3135,3 +3135,5 @@ and it measured inert. The floor is unchanged at 10 and candidate.c is unchanged
 - [s24] DISPOSITION FILED: docs/grind/decisions.md, entry '## 2026-08-30 - func_80034F88 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (final: the owner's 2026-08-30 ruling-1 instrument was BUILT, RUN, and measures INERT)'. It supersedes the 2026-08-26 entry, whose refusal was conditional on exactly the pass measured here.
 
 - [s24] No new spelling was tried and nothing was added to rejected/ this session -- the mandated modality was disposition, the un-tried lever was the granted instrument, and it measured inert. Floor unchanged at 10; candidate.c body unchanged (header updated with the s24 record).
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated — ledger floor 10 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force. exhaustion_base=24

@@ -1125,3 +1125,5 @@ ever reversed — it is superseded, not disproven.
 - [s12] FORECLOSED record filed this session at docs/grind/decisions.md:19002 ('2026-09-01 - func_80062020 - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED'), carrying both gates' evidence, the six-ground kill of the Ruling-A probe, the exhaustion tally (11 sessions, 7 modalities, ~46k permuter iterations, 20 rejected forms) and three re-activation triggers.
 
 - [s12] No src/ edits remain: the session's only tracked changes are docs/grind/decisions.md, memory/grind/func_80062020/evidence.md and memory/grind/func_80062020/hypotheses.md (plus the engine's own metrics/events.jsonl appends).
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=12

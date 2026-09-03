@@ -675,5 +675,8 @@
   "OWNER RULING 2026-07-20 (decisions.md): escalation REFUSED (option b). Cross-symbol arithmetic idiom refused \u2014 no SOTN precedent, unique to this repo; parallels motion_SetMotion CLOBBER refusal. Canonical-asm barred (2026-07-09 Judge; scan_hand_coded 2/8). INCOMPLETE-owner-accepted, 5 rules retained to hold the match (NOT sanctioned), parked, eligible for re-attempt. Do not re-propose the cross-symbol idiom or asm."
  ],
  "origin": "queue",
- "created": "2026-07-07T15:21:29.115668+00:00"
+ "created": "2026-07-07T15:21:29.115668+00:00",
+ "exhaustion_base": 107,
+ "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+ "last_unpark_at": "2026-09-03T01:44:08.356825+00:00"
 }

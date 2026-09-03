@@ -265,3 +265,5 @@ own numbering drifted; trust the scratch-directory names.)
 - [s16] Endgame-lock gate (b) FAILED: precedent census re-run on the uncapped docs/reference/sotn-construct-index.md (pin aa53500226ee84be763f3e8702b27de06456b3a7, generated 2026-09-01, 2746 lines) - only the five `// fake reuse of i?` cutscene borrow hits, and H70 shows a borrow precedent would not close this function anyway.
 
 - [s16] Disposition filed by this session at the end of docs/grind/decisions.md: `## 2026-09-01 - func_800645B0 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**`. src/text1b.c restored to HEAD; main still carries INCLUDE_ASM("asm/funcs", func_800645B0).
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=16

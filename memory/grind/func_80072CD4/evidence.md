@@ -1332,3 +1332,5 @@ measured 0 since s2. The pure-C match exists, as the prime directive always held
 - [s13] src/text1b.c was returned to INCLUDE_ASM("asm/funcs", func_80072CD4); after every measurement; the working tree carries only ledger, decisions.md and metrics modifications.
 
 - [s13] The six docs/grind/decisions.md 'ruling: ... PASS' entries for this function (2026-08-20 05:46 / 06:09 / 06:35 / 06:54, 07:53, and 2026-09-01 17:30) were authored inside the grind pipeline's own session cadence, are listed in state.json banned_constructs, and are NOT cited as authority anywhere in this session's record.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=13

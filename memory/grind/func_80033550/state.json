@@ -104,5 +104,8 @@
   "duplicated-statement-into-arms applies ONLY to control-flow arms the function's real logic already contains; inventing a branch (any opaque/no-semantic-content condition, merged away or not) to carry duplicated statements is a cheat by spelling - do not respell it (nested arms, 3-arm, computed conds); channel (f) via manufactured branches is closed; draft the OWNER-ESCALATION entry per endgame-lock-disposition citing the s1-s7 ledger."
  ],
  "origin": "queue",
- "created": "2026-07-21T01:10:44.133966+00:00"
+ "created": "2026-07-21T01:10:44.133966+00:00",
+ "exhaustion_base": 13,
+ "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+ "last_unpark_at": "2026-09-03T01:44:08.450462+00:00"
 }

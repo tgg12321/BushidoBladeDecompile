@@ -959,3 +959,5 @@ at the end of the session (`git checkout -- src/text1a_c.c`), tree clean apart f
 - [s49] Exhaustion: 49 sessions over permuter/forensics/rederive/synthesis/solver/escalation; 137,872 permuter iterations over 11 chassis/mode combos; 40 banked rejected forms (4 filed this session); exhaustive single-atom enumerations over both scheduler passes (s47 pass-2 960 atoms, s48 pass-1 192 atoms) with every goal-reaching atom spelling the single intent i-before-v1.
 
 - [s49] src/text1a_c.c restored to HEAD (git checkout --) at the end of the session; working tree clean apart from metrics/events.jsonl. HEAD ships INCLUDE_ASM("asm/funcs", func_80045294);.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=49

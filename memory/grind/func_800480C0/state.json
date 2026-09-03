@@ -361,5 +361,8 @@
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-02T09:18:48.346901+00:00"
+ "created": "2026-09-02T09:18:48.346901+00:00",
+ "exhaustion_base": 11,
+ "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 20 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
+ "last_unpark_at": "2026-09-03T01:44:08.780732+00:00"
 }

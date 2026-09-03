@@ -1513,3 +1513,20 @@
 - 2026-09-02 19:47 func_8003A728 s3 [structural] floor=3: Floor still 3; read the sched1 trace directly and closed the block-1 dependence space - all five ways to stall T-3 are now measured dead, and the only register-consistent one is blocked by local-alloc.c:471.
 - 2026-09-02 20:09 func_8003A728 COMPLETED-C after 4 sessions (closer: s4 [permuter]).
 - 2026-09-02 20:39 func_8003D39C s1 [recon] floor=16: func_8003D39C recon: plain C 26 -> 16 (two-statement array address + OTag-bitfield addPrim tail); whole tail byte-identical, residual is the sched1 head order (n+1 store vs n*16+base chain) which the exact sched model shows is NOT reachable by any statement reorder — needs a longer priority chain on the address computation
+- 2026-09-02 func_800645B0 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 1, exhaustion window reset at session 16.
+- 2026-09-02 CD_sync unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 2, exhaustion window reset at session 107.
+- 2026-09-02 func_80045294 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 2, exhaustion window reset at session 49.
+- 2026-09-02 func_80060A68 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 2, exhaustion window reset at session 13.
+- 2026-09-02 func_80017848 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 3, exhaustion window reset at session 27.
+- 2026-09-02 func_80033550 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 4, exhaustion window reset at session 13.
+- 2026-09-02 CD_ready unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 2, exhaustion window reset at session 68.
+- 2026-09-02 func_80062020 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 4, exhaustion window reset at session 12.
+- 2026-09-02 func_80072CD4 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 4, exhaustion window reset at session 13.
+- 2026-09-02 CD_datasync unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 7, exhaustion window reset at session 20.
+- 2026-09-02 func_800770B8 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 5, exhaustion window reset at session 20.
+- 2026-09-02 func_8001F938 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 8, exhaustion window reset at session 12.
+- 2026-09-02 get_alarm unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 9, exhaustion window reset at session 43.
+- 2026-09-02 func_80034F88 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 10, exhaustion window reset at session 24.
+- 2026-09-02 func_80022F34 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 11, exhaustion window reset at session 9.
+- 2026-09-02 func_8003C714 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 15, exhaustion window reset at session 9.
+- 2026-09-02 func_800480C0 unparked (owner ruling 2026-09-02 foreclosure mechanics): ledger floor 20, exhaustion window reset at session 11.

@@ -117,5 +117,8 @@
  "ladder_skip": 3,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-08-19T12:58:09.910403+00:00"
+ "created": "2026-08-19T12:58:09.910403+00:00",
+ "exhaustion_base": 13,
+ "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+ "last_unpark_at": "2026-09-03T01:44:08.403898+00:00"
 }

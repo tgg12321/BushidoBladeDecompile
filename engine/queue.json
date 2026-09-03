@@ -4,6 +4,176 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_800645B0",
+      "file": "text1b",
+      "distance": 1,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 `## 2026-09-01 \u2014 func_800645B0 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**` (final entry in the file; both endgame-lock gates re-run and FAILED this session: scan_hand_coded tier=LOW 0/8, precedent census NEGATIVE on the uncapped index at pin aa53500)"
+    },
+    {
+      "func": "CD_sync",
+      "file": "system",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18279 \u2014 ## 2026-09-01 \u2014 CD_sync (src/system.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (owner Ruling D executed in full; the CD_intr aggregate merge is not a lever and its prong (c) is structurally unsatisfiable)"
+    },
+    {
+      "func": "func_80045294",
+      "file": "text1a_c",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md - '2026-09-01 - func_80045294 (saTan0Init, src/text1a_c.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (owner Ruling A named probe executed in full; the duplication ref-lift is not available at this site, and the residual is now attributed to a single cse.c canonical-register decision)' (last entry in the file)"
+    },
+    {
+      "func": "func_80060A68",
+      "file": "text1b",
+      "distance": 2,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18515 \u2014 2026-09-01 \u2014 func_80060A68 \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
+    },
+    {
+      "func": "func_80017848",
+      "file": "ings",
+      "distance": 3,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18614 \u2014 ## 2026-09-01 \u2014 func_80017848 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**"
+    },
+    {
+      "func": "func_80033550",
+      "file": "code6cac_b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18726 \u2014 2026-09-01 \u2014 func_80033550 (src/code6cac_b.c) \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
+    },
+    {
+      "func": "CD_ready",
+      "file": "system",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18823 \u2014 '## 2026-09-01 \u2014 CD_ready (src/system.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (owner Ruling A discharged in full; both live frontier axes killed with dump-level mechanism, both endgame gates fail)'",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force."
+    },
+    {
+      "func": "func_80062020",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19002 - 2026-09-01 - func_80062020 (src/text1b.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
+    },
+    {
+      "func": "func_80072CD4",
+      "file": "text1b",
+      "distance": 4,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19128 - '## 2026-09-01 - func_80072CD4 (src/text1b.c) - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (gate (a) FAILS, gate (b) PASSES on the operator census - borderline-log for owner batch review; the residual is an adjudication deadlock, not a codegen gap)'"
+    },
+    {
+      "func": "CD_datasync",
+      "file": "system",
+      "distance": 7,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19229 \u2014 2026-09-01 \u2014 CD_datasync (src/system.c) \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
+    },
+    {
+      "func": "func_8001F938",
+      "file": "code6cac",
+      "distance": 8,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 8 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - 2026-08-30 entry 'func_8001F938 (src/code6cac.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (ruling-10 return-to-active executed in full; the last un-tried axis - PsyQ cc1psx as calibration oracle - measured and KILLED)'"
+    },
+    {
+      "func": "get_alarm",
+      "file": "display",
+      "distance": 9,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 9 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:16162 \u2014 ## 2026-08-30 \u2014 get_alarm / func_8007DC9C (src/display.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
+    },
+    {
+      "func": "func_80034F88",
+      "file": "code6cac_b",
+      "distance": 10,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 10 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-30 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (final: the owner's 2026-08-30 ruling-1 instrument was BUILT, RUN, and measures INERT)'"
+    },
+    {
+      "func": "func_80022F34",
+      "file": "code6cac",
+      "distance": 11,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 11 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
+      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: '## 2026-08-31 - func_80022F34 (src/code6cac.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'"
+    },
+    {
+      "func": "func_800770B8",
+      "file": "text1b",
+      "distance": 32,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 '## 2026-09-01 \u2014 func_800770B8 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' (appended this session, s20; records the executed Ruling-A named probe, both failed endgame gates, and the re-activation triggers)",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force."
+    },
+    {
+      "func": "func_8003C714",
+      "file": "code6cac_c2",
+      "distance": 33,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19815 \u2014 ## 2026-09-01 \u2014 func_8003C714 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 15 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force."
+    },
+    {
+      "func": "func_800480C0",
+      "file": "text1b",
+      "distance": 36,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:20353 - ## 2026-09-02 - func_800480C0 (src/text1b.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 20 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force."
+    },
+    {
       "func": "func_8003D39C",
       "file": "code6cac_c2",
       "distance": 39,
@@ -1555,184 +1725,6 @@
       "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): 2-byte reorg branch-retarget residual (decisions.md 2026-08-30 main packet); the maspsx branch-fill DECLINE (decisions.md:10303) stands and the packet's queue-routing question is mooted by the foreclosed state. Re-activated on a fidelity ruling or owner unpark."
     },
     {
-      "func": "func_800645B0",
-      "file": "text1b",
-      "distance": 1,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - '## 2026-08-30 - func_800645B0 - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 `## 2026-09-01 \u2014 func_800645B0 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**` (final entry in the file; both endgame-lock gates re-run and FAILED this session: scan_hand_coded tier=LOW 0/8, precedent census NEGATIVE on the uncapped index at pin aa53500)"
-    },
-    {
-      "func": "CD_sync",
-      "file": "system",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15206 (## 2026-08-30 - CD_sync (src/system.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE)",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18279 \u2014 ## 2026-09-01 \u2014 CD_sync (src/system.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (owner Ruling D executed in full; the CD_intr aggregate merge is not a lever and its prong (c) is structurally unsatisfiable)"
-    },
-    {
-      "func": "func_80045294",
-      "file": "text1a_c",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15292 \u2014 2026-08-30 \u2014 func_80045294 (saTan0Init, src/text1a_c.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md - '2026-09-01 - func_80045294 (saTan0Init, src/text1a_c.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (owner Ruling A named probe executed in full; the duplication ref-lift is not available at this site, and the residual is now attributed to a single cse.c canonical-register decision)' (last entry in the file)"
-    },
-    {
-      "func": "func_80060A68",
-      "file": "text1b",
-      "distance": 2,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15403 (2026-08-30 - func_80060A68 - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE); re-affirms the driver-filed packet at docs/grind/decisions.md:12060 and the owner's 2026-08-30 batch ruling 8 at docs/grind/decisions.md:14860. Nothing pends on the owner.",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18515 \u2014 2026-09-01 \u2014 func_80060A68 \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
-    },
-    {
-      "func": "func_80017848",
-      "file": "ings",
-      "distance": 3,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-30 \u0393\u00c7\u00f6 func_80017848 \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18614 \u2014 ## 2026-09-01 \u2014 func_80017848 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**"
-    },
-    {
-      "func": "func_80033550",
-      "file": "code6cac_b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15517 \u2014 2026-08-30 \u2014 func_80033550 (src/code6cac_b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18726 \u2014 2026-09-01 \u2014 func_80033550 (src/code6cac_b.c) \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
-    },
-    {
-      "func": "CD_ready",
-      "file": "system",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15629 - '## 2026-08-30 - CD_ready (src/system.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18823 \u2014 '## 2026-09-01 \u2014 CD_ready (src/system.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (owner Ruling A discharged in full; both live frontier axes killed with dump-level mechanism, both endgame gates fail)'"
-    },
-    {
-      "func": "func_80062020",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:17017 \u2014 ## 2026-08-31 \u2014 func_80062020 (src/text1b.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19002 - 2026-09-01 - func_80062020 (src/text1b.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
-    },
-    {
-      "func": "func_80072CD4",
-      "file": "text1b",
-      "distance": 4,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15851 \u2014 '## 2026-08-30 \u2014 func_80072CD4 (src/text1b.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE' (owner-funded ruling-7 calibration probe executed and negative; both endgame-lock AND-gates re-measured FAIL)",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19128 - '## 2026-09-01 - func_80072CD4 (src/text1b.c) - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (gate (a) FAILS, gate (b) PASSES on the operator census - borderline-log for owner batch review; the residual is an adjudication deadlock, not a codegen gap)'"
-    },
-    {
-      "func": "CD_datasync",
-      "file": "system",
-      "distance": 7,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:15943 \u2014 2026-08-30 \u2014 CD_datasync (src/system.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19229 \u2014 2026-09-01 \u2014 CD_datasync (src/system.c) \u2014 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
-    },
-    {
-      "func": "func_8001F938",
-      "file": "code6cac",
-      "distance": 8,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 2026-08-25 entry: \"func_8001F938 (src/code6cac.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**\"",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md - 2026-08-30 entry 'func_8001F938 (src/code6cac.c) - OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE (ruling-10 return-to-active executed in full; the last un-tried axis - PsyQ cc1psx as calibration oracle - measured and KILLED)'",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "get_alarm",
-      "file": "display",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27, auto-filed backstop): 2026-08-26 \u0393\u00c7\u00f6 get_alarm \u0393\u00c7\u00f6 OWNER-ESCALATION \u0393\u00c7\u00f6 ESCALATED WITH DECISION PACKET (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:16162 \u2014 ## 2026-08-30 \u2014 get_alarm / func_8007DC9C (src/display.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_80034F88",
-      "file": "code6cac_b",
-      "distance": 10,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 1 \u2014 local-alloc suggestion instrumentation granted; solver modality once built",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:13099 \u2014 '## 2026-08-26 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (re-filed after the 2026-08-24 unpark; owner solver directive EXECUTED)'",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-30 \u2014 func_80034F88 \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE** (final: the owner's 2026-08-30 ruling-1 instrument was BUILT, RUN, and measures INERT)'",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_80022F34",
-      "file": "code6cac",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 10 \u2014 ledger states nothing pends; active with modality change per escalation-not-parked",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md \u2014 '## 2026-08-26 \u2014 func_80022F34 (src/code6cac.c) \u2014 **OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md :: '## 2026-08-31 - func_80022F34 (src/code6cac.c) - **OWNER-ESCALATION - RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE**'",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): exhaustion disposition under the 2026-07-27 standing ruling \u2014 proof-of-foreclosure is this function's latest RESOLVED-BY-STANDING-RULING / OWNER-ESCALATION entry in docs/grind/decisions.md. Re-activation triggers: a new owner class grant covering the residual, a toolchain-fidelity finding, or an explicit owner unpark."
-    },
-    {
-      "func": "func_800770B8",
-      "file": "text1b",
-      "distance": 32,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:17443 - 2026-09-01 - func_800770B8 - OWNER-ESCALATION record - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED",
-      "unpark_reason": "owner ruling 2026-09-01 FORECLOSED-BUCKET REVIEW (decisions.md), Ruling A - named probe in ledger reopen note",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 '## 2026-09-01 \u2014 func_800770B8 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' (appended this session, s20; records the executed Ruling-A named probe, both failed endgame gates, and the re-activation triggers)"
-    },
-    {
-      "func": "func_8003C714",
-      "file": "code6cac_c2",
-      "distance": 33,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:19815 \u2014 ## 2026-09-01 \u2014 func_8003C714 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**"
-    },
-    {
       "func": "func_80027640",
       "file": "code6cac_b",
       "distance": 35,
@@ -1740,15 +1732,6 @@
       "rules": 0,
       "status": "foreclosed",
       "foreclosure": "FORECLOSED (logged to borderline.md; owner ruling 2026-08-31): docs/grind/decisions.md:20175"
-    },
-    {
-      "func": "func_800480C0",
-      "file": "text1b",
-      "distance": 36,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:20353 - ## 2026-09-02 - func_800480C0 (src/text1b.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
     },
     {
       "func": "func_80030580",
@@ -1762,13 +1745,13 @@
   ],
   "counts": {
     "total": 196,
-    "active": 176,
+    "active": 193,
     "by_status": {
-      "active": 176,
-      "foreclosed": 20
+      "active": 193,
+      "foreclosed": 3
     },
     "by_verdict": {
-      "C": 149,
+      "C": 166,
       "ASM-PARTIAL": 27
     }
   }

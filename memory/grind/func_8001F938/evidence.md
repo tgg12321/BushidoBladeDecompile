@@ -581,3 +581,5 @@ shipped as candidate.c with the 13 rules retired.
 - [s12] Exhaustion: 12 sessions, floor flat at 8 since s3, SIX distinct axes measured dead -- structural (s2,s3), permuter (s4,s5, ~131k iters across both basins, neither touching the crux), forensics (s6,s7, pass-level attribution), rederive (s8,s9), solver (s11, NOT APPLICABLE since an instruction-COUNT deficit is neither a register seat nor an emission-order tie), compiler-fork calibration (s12). 12 forms banked in rejected/.
 
 - [s12] No packet asking the owner to lower a standard was filed: a family sanction, canonical-asm grant, evidence-bar override or debt acceptance are all pre-decided NO under the 2026-08-24 auto-reject ruling. The filed entry pends nothing and states its single named re-open trigger.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated — ledger floor 8 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force. exhaustion_base=12

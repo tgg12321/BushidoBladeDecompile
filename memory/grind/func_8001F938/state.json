@@ -102,5 +102,8 @@
   "s16 dmg = *((s16 *)(arg0 + 0x270)); if (dmg >= 4) { dmg = 3; } idx = dmg * 2;",
   "The 2026-08-25 23:20 decisions.md entry cited by the s11 vet as authorization ('RULING: NO -- the ban does not reach this shape...')"
  ],
- "ladder_skip": 20
+ "ladder_skip": 20,
+ "exhaustion_base": 12,
+ "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 8 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
+ "last_unpark_at": "2026-09-03T01:44:08.621528+00:00"
 }

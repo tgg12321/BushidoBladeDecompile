@@ -2521,3 +2521,5 @@ identity detour.
 - [s20] Four new rejected forms banked (93 total), including the first 175-insn surviving-label builds this ledger has ever held: rejected/s20-classB-B1-label-device-plus-pointer-walk-slack-175insn-score43.c, s20-classB-C1-joinlabel-plus-pointer-walk-slack-175insn-score51.c, s20-classB-C1-joinlabel-plus-dowhile-gate1-slack-175insn-score65.c, s20-CABD-basin-plus-B1-label-slack-175insn-score52.c.
 
 - [s20] src/text1b.c was restored to its pristine committed state at the end of the sweep; the only tracked edits this session are the ledger, decisions.md, and the four rejected forms.
+
+- [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=20
