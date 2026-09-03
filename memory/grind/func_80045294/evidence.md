@@ -1886,3 +1886,101 @@ because it makes i loop 2's counter and therefore the quantity's last mention.
 - [s58] tools/sched_solver/extract.py reported parity=True on src/text1a_c.c as a whole: 154 functions, 560 blocks, 3618 picks reproduced exactly, so the H-geometry enumeration rests on a validated model of this TU specifically.
 
 - [s58] No new C form was spelled this session and no new form beat 1; candidate.c is unchanged and src/text1a_c.c was restored to its HEAD INCLUDE_ASM state after every probe (git status shows only ledger files and metrics/events.jsonl modified).
+
+## s59 (forensics) — instrumented-cc1 pass attribution
+
+- [s59] Chassis re-confirmed: `memory/grind/func_80045294/candidate.c` pasted over the
+  `INCLUDE_ASM` line at src/text1a_c.c:1445 gives `sandbox func_80045294 --disable all`
+  = score 1, target_insns 83, build_insns 83 on HEAD 2026-09-03. Residual is instruction
+  idx 9 only: target `sll $v1,$s2,4` (reg 72 = a0), build `sll $v1,$s0,4` (reg 75 = i).
+  Zero FAKE constructs in the form, so the fake_ablate leg of the kill re-audit is again
+  vacuous for this function.
+
+- [s59] KILL RE-AUDIT (the closest banked score-0-attempt instance kill re-measured on the
+  current chassis): `rejected/s52-a0ptr-separate-loop2-counter-collapse-80.c` re-measures
+  **score 30 / build_insns 80 / target_insns 83**, identical in shape to the s48/s52
+  measurement. The kill stands on today's chassis.
+
+- [s59] Pseudo dictionary for this function (from `tmp/grind/func_80045294/s59/dumps_C/fn.rtl`):
+  reg 72 = parameter a0, reg 73 = parameter a1, reg 74 = sum, reg 75 = i, reg 76 = v1,
+  reg 77 = s4, reg 79 = count, reg 80 = s5. Block 0's RTL is insn 4 (`72 = $a0`),
+  insn 6 (`73 = $a1`), insn 12 (`74 = 0`), insn 15 (`75 = 72`, the copy), insn 17
+  (`76 = 72 << 4`, the shift), insn 22 (the s4 load), insn 25 (the count load), insn 28
+  (s5 = s4 + a1), insn 31 (`slt 75, 79`, the loop-1 entry guard).
+
+- [s59] cse1 on candidate.c rewrites insn 17's operand from reg 72 to reg 75 (`fn.rtl` and
+  `fn.jump` print `(ashift:SI (reg/v:SI 72) ...)`, `fn.cse` prints
+  `(ashift:SI (reg/v:SI 75) ...)`), and every later dump (loop, cse2, combine, sched, greg)
+  carries reg 75. For this function the per-function cse2 region is byte-identical to the
+  cse1 region, i.e. loop.c changes nothing in func_80045294 on the candidate chassis
+  beyond adding notes.
+
+- [s59] Form J (distinct loop-2 counter `j`) keeps reg 72 in the block-0 shift at every
+  pass — `fn.cse`, `fn.loop`, `fn.cse2` and `fn.combine` all print
+  `(ashift:SI (reg/v:SI 72) (const_int 4))` — but canon_reg moves the LOOP-1 ENTRY GUARD
+  the other way: `fn.cse` prints `(lt:SI (reg/v:SI 72) (reg/v:SI 79))` for insn 31 where
+  the pre-cse dump had reg 75. The loop-BOTTOM test keeps reg 75 (it is a separate
+  extended block). J's emitted block 0 is
+  `sw $18 / move $18,$4 / sw $19 / move $19,$5 / sw $16 / move $16,$0 / sll $3,$18,4 / ...`
+  with no `move $16,$18` and with `slt $2,$18,$5` — the shift right, the guard and the copy
+  wrong.
+
+- [s59] The three instructions form J loses are attributed: reg 75 is allocated `$4` (`$a0`)
+  instead of `$s0` because it crosses no call, which is `find_reg`'s call-clobbered path at
+  global.c:972 (`allocno_calls_crossed[allocno] == 0` -> `used1 = fixed_reg_set`), and MIPS
+  defines no `REG_ALLOC_ORDER` so the default 0..31 order reaches `$4` first. `fn.greg`
+  shows `(insn 15 12 17 (set (reg/v:SI 4 a0) (reg/v:SI 18 s2)))`; by `fn.jump2` insn 15 is
+  gone, because `$a0` already held the incoming parameter. The frame drops to `regs= 6/0`
+  (five `$s` registers plus `$ra`) against the target's six `$s` registers, so the missing
+  sw/lw pair accounts for the other two instructions.
+
+- [s59] Form L (the s56 do-while label carrier) is the first form measured in 59 sessions in
+  which cse1 prints BOTH of the target's block-0 operands at once:
+  `tmp/grind/func_80045294/s59/dumps_L/fn.cse` line 44 has
+  `(ashift:SI (reg/v:SI 72) (const_int 4))` (the target's `sll $v1,$s2,4`) and line 79 has
+  `(lt:SI (reg/v:SI 75) (reg/v:SI 78))` (the target's `slt $v0,$s0,$a0`). Mechanism: the
+  carrier's CODE_LABEL ends the extended basic block that holds the copy, so BOTH consumers
+  are canonicalised against an empty table. The crown question is therefore not the real
+  constraint — an extended-block split placed between the copy and the shift satisfies both
+  uses simultaneously.
+
+- [s59] Form L's failure is two-step and both steps are named. `fn.loop` shows LICM emitting
+  the shift into the carrier's preheader as a fresh insn (printed with uid `-1`, still
+  reading reg 72); `fn.cse2` then prints `(ashift:SI (reg/v:SI 75) ...)` because the hoisted
+  insn is back inside the first extended block. Form L measures 4 / 86.
+
+- [s59] `cse_end_of_basic_block` (tools/gcc-2.7.2/cse.c) terminates an extended basic block
+  on exactly three things: a CODE_LABEL (the `while (p && GET_CODE (p) != CODE_LABEL)`
+  scan condition), a `NOTE_INSN_LOOP_END` note guarded by `! after_loop`, and a
+  `NOTE_INSN_SETJMP` note. Calls, block notes and loop-begin notes do not end it. Since
+  cse2 is invoked with after_loop = 1 (toplev.c:2926), a surviving CODE_LABEL is the only
+  splitter that works in both passes, and a CODE_LABEL without a live branch reference is
+  deleted by jump_optimize before cse runs.
+
+- [s59] `tools/loop_movables.py` on form L (banked at
+  `tmp/grind/func_80045294/s59/loop_movables_L.txt`) reports the carrier loop as
+  `insns 17..33: insn_count=3 loop_has_call=False threshold=122`, with insn 21 (regno 76,
+  the shift) at `122*1*40 = 4880 >= 3` and insn 26 (regno 80) at `119*1*1 = 119 >= 3`. Both
+  move on the middle disjunct of loop.c:1626-1631, by three orders of magnitude, so
+  savings / lifetime / insn_count / threshold are all inert levers. The only remaining
+  C-level lever named by the tool is `n_times_set` (loop.c:705-709): a second store to v1
+  inside the carrier removes the movable, but only if the consecutive set-chain is NOT
+  itself invariant, so the second store must read a value the carrier writes.
+
+- [s59] Chassis re-confirmed at dispatch: memory/grind/func_80045294/candidate.c over src/text1a_c.c:1445 gives sandbox func_80045294 --disable all = score 1, target_insns 83, build_insns 83 on HEAD 2026-09-03; the residual is instruction idx 9 only (target sll $v1,$s2,4 = reg 72, build sll $v1,$s0,4 = reg 75). Zero FAKE constructs, so the fake_ablate leg of the kill re-audit is vacuous for this function.
+
+- [s59] KILL RE-AUDIT: rejected/s52-a0ptr-separate-loop2-counter-collapse-80.c re-measures 30 / 80 insns on today's chassis, identical in shape to the s48/s52 result; the kill stands, and this session supplies the pass attribution it previously lacked.
+
+- [s59] Pseudo dictionary from dumps_C/fn.rtl: reg 72 = param a0, 73 = param a1, 74 = sum, 75 = i, 76 = v1, 77 = s4, 79 = count, 80 = s5. Block 0 is insn 4 (72 = $a0), 6 (73 = $a1), 12 (74 = 0), 15 (75 = 72, the copy), 17 (76 = 72 << 4, the shift), 22 (s4 load), 25 (count load), 28 (s5 = s4 + a1), 31 (slt 75, 79, the loop-1 entry guard).
+
+- [s59] On candidate.c, cse1 is the pass that rewrites insn 17's operand: fn.rtl and fn.jump print (ashift:SI (reg/v:SI 72) ...), fn.cse prints (ashift:SI (reg/v:SI 75) ...), and loop, cse2, combine, sched and greg all carry reg 75. The per-function cse2 region is byte-identical to the cse1 region, so loop.c changes nothing in this function on the candidate chassis.
+
+- [s59] Form J keeps reg 72 in the block-0 shift through cse, loop, cse2 and combine, but canon_reg moves the loop-1 ENTRY guard the other way: fn.cse prints (lt:SI (reg/v:SI 72) (reg/v:SI 79)) for insn 31, and the emitted block 0 is sw $18 / move $18,$4 / sw $19 / move $19,$5 / sw $16 / move $16,$0 / sll $3,$18,4 with slt $2,$18,$5 and no move $16,$18.
+
+- [s59] Form L is the first form in 59 sessions whose cse1 dump carries BOTH target operands: dumps_L/fn.cse line 44 (ashift:SI (reg/v:SI 72) (const_int 4)) and line 79 (lt:SI (reg/v:SI 75) (reg/v:SI 78)).
+
+- [s59] Form L's undoing is two-step and both steps are dumped: fn.loop shows LICM emitting the shift into the carrier's preheader as a fresh insn (uid -1) still reading reg 72, and fn.cse2 then prints (ashift:SI (reg/v:SI 75) ...) because the hoisted insn is back inside the first extended block. Form L measures 4 / 86.
+
+- [s59] MIPS defines no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so global allocation walks hard registers 0,1,2,...,31; a pseudo that crosses no call therefore lands on a low call-clobbered register long before any $s register.
+
+- [s59] src/text1a_c.c was restored to HEAD at the end of the session; the working tree carries only the two ledger files and metrics/events.jsonl.

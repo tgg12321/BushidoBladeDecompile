@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 58,
- "current_modality": "solver",
+ "session_count": 59,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -351,23 +351,29 @@
    "floor": 1,
    "modality": "solver",
    "headline": "First solver-suite pass in 57 sessions: the RA layer is class-killed (the allocation already IS the target's, global.c:1275), the scheduler layer is class-killed a second time by exhaustive depth-2 in"
+  },
+  {
+   "session": 59,
+   "floor": 1,
+   "modality": "forensics",
+   "headline": "Forensics reframes the residual: a CODE_LABEL between block 0's copy and its shift makes cse1 print BOTH target operands at once (shift on reg 72, loop-1 guard on reg 75), so the 'one crown, two oppos"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A CODE_LABEL between block 0's copy and its shift still closes the last instruction, but the carrier must be byte-free AND must not move the shift into a loop body - s56 proved the cse1 half works and that loop.c's LICM is the only thing that undoes it, and s57 adds that the carrier must not reorder block 0's statements either.",
-   "mechanism": "cse.c:8039 ends an extended basic block at any CODE_LABEL irrespective of after_loop, so a surviving label keeps canon_reg (cse.c:2532-2572) from rewriting the shift's operand to the crown; s56 measured the shift printing (reg/v:SI 72) at cse1 under exactly this device. What undid it was loop.c (toplev.c:2895) hoisting the loop-invariant shift into the do-while's preheader, above the label. s56-H4 additionally showed the carrier's condition must be one jump_optimize (toplev.c:2827) cannot resolve, so it must be built on a1 or on a global rather than on a value cse knows equals a0. s57-H4 adds the new constraint that the carrier must leave block 0's statement order alone, since that order is the sole scheduler-visible lever and is already at its best value.",
-   "next_probe": "Build carriers whose label is NOT a loop top and whose condition is unresolvable at jump_optimize (a1-based or global-based), and separately keep the do-while carrier but make the shifted value non-invariant inside it (shift a value the loop body also writes). For each form, grep the per-function region of dumps/text1a_c.cse2 for `(ashift:SI (reg/v:SI 72)` BEFORE looking at the score; only forms that keep reg 72 at cse2 are worth optimising down toward build_insns == 83."
+   "hypothesis": "A carrier whose CODE_LABEL survives BOTH cse passes and whose branch is folded away only after combine would give the target's shift operand and the target's guard operand simultaneously at zero net instructions, because the split places both consumers in a class-free extended block (measured this session at cse1) and nothing after cse2 re-canonicalises them.",
+   "mechanism": "cse_end_of_basic_block ends an extended block only at a CODE_LABEL (plus NOTE_INSN_LOOP_END while after_loop is zero, and NOTE_INSN_SETJMP), and jump_optimize deletes a label with no live branch reference before cse ever sees it \u2014 so the branch must be unfoldable by jump.c, cse1, loop.c and cse2, and foldable afterwards. combine's nonzero_bits can prove that (and (ashift x 4) 15) is zero, which neither jump.c nor cse's fold_rtx derives, and the post-combine jump pass then deletes the dead branch and the unreferenced label.",
+   "next_probe": "Build carriers of the shape `do { v1 = a0 << 4; } while (v1 & 0xF);` and `if (((a0 << 4) & 0xF) != 0) { ... }` variants, and for each one grep the per-function slices in order: fn.cse and fn.cse2 for `(ashift:SI (reg/v:SI 72)` AND `(lt:SI (reg/v:SI 75)` (both must be present), then fn.combine and fn.jump2 for the disappearance of the carrier's compare and branch. Only forms that hold both operands through cse2 are worth scoring, and only forms at build_insns == 83 are worth sandboxing."
   },
   {
-   "hypothesis": "Creation of block 0's shift after cse2 is the other live route, and s57 narrows it: the creating pass must be one that runs after cse2 and must not disturb block 0's statement order, which points at combine rebuilding the shift out of the surviving (set (reg 75) (reg 72)) copy.",
-   "mechanism": "s56-E1 proved the original's crown was i (cse.c:854-857 clause B, read off the target's own register last-mentions) and s56-H1 plus s57-H4 class-kill the shift-precedes-copy geometry at sched.c:2464, so in the original the shift must have escaped canon_reg (cse.c:2532-2572) rather than pre-dating the copy. Passes that can create insns after cse2 (toplev.c:2926) are jump_optimize (2929), thread_jumps (2935), combine and the allocators; a loop.c giv initialisation created at toplev.c:2895 is still canonicalised by cse2, so the useful variant is one where try_combine substitutes the copy's source reg 72 into the ashift, which requires the shift's operand pseudo to be short-lived and to die at the shift.",
-   "next_probe": "Enumerate loop-1 shapes in which block 0's offset is a short-lived intermediate that dies at the shift (t = a0; v1 = t << 4; with t unused elsewhere, and variants where t is written inside a one-trip construct), and read dumps/text1a_c.combine for whether try_combine substitutes reg 72 into the ashift. Reject any form at build_insns != 83 before scoring. Note the standing obstacle: while t, i and a0 are all in one cse equivalence class, cse rewrites t to the crown before combine ever sees it, so the form must also break that class or delay t's creation past cse2."
+   "hypothesis": "The LICM hoist that undoes the label carrier can only be stopped through n_times_set: a second store to the shift's destination inside the carrier whose consecutive set-chain is not itself loop-invariant.",
+   "mechanism": "scan_loop admits a movable only when n_times_set[dest] == 1 or consec_sets_invariant_p succeeds (loop.c:705-709). tools/loop_movables.py measured the carrier's shift at 122*1*40 = 4880 >= 3 on the middle disjunct of loop.c:1626-1631, so the arithmetic terms cannot be moved; and a second store sourced from a constant, a global load or another invariant local keeps consec_sets_invariant_p true and the movable alive.",
+   "next_probe": "Enumerate carriers in which v1 is written twice with the second source depending on a value the carrier body itself writes (for example a second local written inside the carrier and then shifted, or a store/reload pair through an already-needed local), re-run tools/loop_movables.py on each and require the shift's row to disappear from the movable table before anything is scored. If no such chain can be built without adding an instruction, that closes the loop-carrier shape and leaves only the combine-folded-branch carrier of frontier 1."
   },
   {
-   "hypothesis": "The two modelled layers are now closed, so the next ladder rung should be spent on cse's EBB structure and on post-cse2 insn creation rather than on any further RA or scheduler search - and a future session should not re-run classify's verdict as a routing decision on this function.",
-   "mechanism": "s57-H1 (global.c:1275) shows the allocation already equals the target's, and s57-H4 (sched.c:2464) shows the scheduler's whole depth-2 input space contains no spellable vector; s57-H2 shows inverse_compose.py classify will nonetheless keep reporting RA here because register blanking cannot see a pseudo substitution. Both solver backends are therefore structurally inapplicable to this residual, exactly as they were to func_80017848.",
-   "next_probe": "Skip the solver ladder on any future func_80045294 session and go straight to cse instrumentation: dump with `pwsh tools/grinder/dump.ps1 func_80045294` and diff the per-function cse/cse2 regions across the candidate and any new carrier, using `(ashift:SI (reg/v:SI 72)` at cse2 as the single pass/fail signal before the sandbox is consulted."
+   "hypothesis": "The distinct-loop-2-counter family is closed at 83 instructions and should not be re-entered: its 3-instruction deficit is the call-clobbered allocation path, and the only role that keeps the loop-1 counter alive across the calls is loop 2's idx, which forces the $s0/$s1 register-name swap that form A already pays 10 points for.",
+   "mechanism": "global.c:972 (allocno_calls_crossed == 0 selects fixed_reg_set, opening the whole call-clobbered file) plus the target's own register layout, which needs the loop-1 counter in $s0 and idx in $s1 \u2014 two hard registers that a single shared pseudo cannot occupy.",
+   "next_probe": "Do not re-derive this family. If a future session wants to revisit it, the one open sub-question is whether a copy preference (global.c's hard_reg_copy_preferences) can pull a non-call-crossing loop-1 counter onto $s0 without a live range change; check dumps_J/fn.greg's allocno ordering first, and abandon the line if the preference sets are empty."
   }
  ],
  "judge_constraints": [
@@ -562,6 +568,14 @@
    "measured_on": "HEAD 2026-09-03 chassis, H (v1-first) geometry at score 2 / 83 insns, zero FAKE constructs present",
    "predicate_cite": "tools/gcc-2.7.2/sched.c:2464",
    "result": "Pass 2 returns 40 vectors, pass 1 returns 12. The only physically spellable class is `luid swap 14 <-> 22` / `luid_move "
+  },
+  {
+   "session": 59,
+   "statement": "Every distinct-loop-2-counter form loses exactly three instructions because the loop-1 counter pseudo crosses no call, so global.c's find_reg takes the call-clobbered path, gives it $a0, frees a calle",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer geometry, zero FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:972",
+   "result": "dumps_J/fn.greg shows `(insn 15 12 17 (set (reg/v:SI 4 a0) (reg/v:SI 18 s2)))` where dumps_C/fn.greg shows `(set (reg/v:"
   }
  ]
 }
