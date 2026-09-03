@@ -989,3 +989,128 @@ Banked forms: memory/grind/func_80033550/rejected/s12-*.c (9 files).
 - [s13] Foreclosure record filed this session at docs/grind/decisions.md:18726.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=13
+
+## s14 (2026-09-03, SYNTHESIS) — the find_reg selection model is measured, and it is NOT "plain ascending scan"
+
+Baseline re-measured first thing on this chassis with `memory/grind/func_80033550/candidate.c`
+pasted over `INCLUDE_ASM("asm/funcs", func_80033550);` at src/code6cac_b.c:2873:
+**score 4, target_insns 34, build_insns 34, rules_dropped 0** — floor unchanged, chassis
+unchanged. (The dispatch brief reported "measurement unavailable"; this is the number.)
+
+### E14.1 — first direct instrumentation of find_reg for pseudo 72 (the pointer)
+`tools/gcc-2.7.2/cc1` (the INSTRUMENTED cc1 — note `engine/buildconfig.py:19` points CC1 at
+`tools/gcc-2.7.2/build/cc1`, which is NOT instrumented; the session driver
+`tmp/grind/func_80033550/s14/findreg.sh` overrides it) with `BB2_FINDREG_DEBUG=72`.
+Artifact: `tmp/grind/func_80033550/s14/findreg_stderr.txt`, entry `func=func_80033550`:
+
+    conflicts:        2 3 4 29
+    someone_prefers:  (empty)
+    used_so_far:      0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 24 25 26 27 28 29 31
+    pass0_used:       0 1 2 3 4 16 17 18 19 20 21 22 23 26 27 28 29 30 31
+    own_copy_prefs:   (empty)
+    own_full_prefs:   (empty)
+    pass1_used:       0 1 2 3 4 26 27 28 29 31
+    class=1 mode=4 size=1
+
+First free bit in `pass0_used` is 5 = `$a1`. That is the build's seat.
+
+### E14.2 — the model the ledger has been using since s9 is INCOMPLETE
+s9-s13 all reasoned as: "hard conflicts {2,3,4,29}, so find_reg's ascending scan gives $a1;
+reaching $a3 requires conflicts superset-of {2,3,4,5,6}". Read against
+`tools/gcc-2.7.2/global.c:996-1075`, the real selection is a **two-pass scan** over
+
+    pass 0:  used = hard_reg_conflicts | ~regs_used_so_far | regs_someone_prefers
+    pass 1:  used = hard_reg_conflicts   (| fixed | ~class)
+
+followed by a **preference override block** (`global.c:1090+`) that REPLACES `best_reg` with a
+member of `hard_reg_copy_preferences` / `hard_reg_full_preferences` when one is free and
+class-compatible. So there are THREE ways into $a3, not one:
+
+  (a) `hard_reg_conflicts[72] ⊇ {5,6}`  — the ledger's route; costs instructions (s12 dS4/dZ).
+  (b) `regs_someone_prefers[72] ⊇ {5,6}` — **byte-free**: preferences emit nothing.
+  (c) `hard_reg_full_preferences[72] ∋ 7`  — **byte-free**: the override block.
+
+`regs_used_so_far` is NOT a filter here: `global.c:365-367` seeds it with every
+`call_used_regs[i]`, and $v0-$a3 are all call-clobbered on MIPS, so all six candidates are
+already in it. Only conflicts + preferences matter.
+
+### E14.3 — route (b) is a real, live mechanism in this very TU (positive control)
+Same instrumented compile, same TU `code6cac_b.c`: `func_80027438` pseudo 72 shows
+`someone_prefers: 5 6` and `func_8002738C` shows `someone_prefers: 5`. So a non-empty
+`regs_someone_prefers` with exactly the bits we want is not hypothetical — it happens in
+neighbouring functions (they contain calls, which put $a1/$a2 in the RTL as hard regs).
+
+### E14.4 — route (c) FIRES in func_80033550, and it is steerable (measured)
+`set_preference` (`global.c:1671-1716`) converts BOTH sides through `reg_renumber`, so a
+**local-allocated pseudo counts as a hard register** for preference purposes. This falsifies
+s10's predicate ("the preference route is FORECLOSED because $a3 never appears as a hard reg in
+the pre-RA RTL") — a hard reg need not appear literally; a local-alloc seat is enough.
+
+`set_preference` also strips exactly one level of the SET's src (`if (GET_RTX_FORMAT
+(GET_CODE (src))[0] == 'e') src = XEXP (src, 0)`), so for `lw dest, off(ptr)` the src becomes
+the ADDRESS: a bare REG when off==0 (preference fires) and a PLUS when off!=0 (returns, no
+preference). Consequence: **only the offset-0 dereference can give the pointer a preference,
+and only if the pointer dies there** (otherwise the dest conflicts and prune_preferences,
+`global.c:906-910`, strips it).
+
+Measured probe: source order permuted so `w0 = arg0[0]` is the pointer's LAST use
+(`w1 = arg0[1]; w2 = arg0[2]; w0 = arg0[0];`). Result:
+`own_full_prefs` flips **{} -> {5}** — the mechanism fires — but the preferred register is the
+seat local-alloc gave that load's destination ($a1), which is the seat the scan already
+produced. Sandbox: **score 4, 34 insns, 0 rules** (score- and RA-neutral). Banked at
+`rejected/s14-lastuse-offset0-flips-own-pref-to-a1-seat-unchanged-4.c`.
+
+This is the first time any session has moved a find_reg input for this function without
+spending an instruction.
+
+### E14.5 — why route (c) cannot reach $a3 in the target's shape
+By E14.4 the register that route (c) can name is, by construction, the local-alloc seat of the
+pseudo loaded from `*ptr`. In the target that value is `w0`, and the target emits
+`lw $v1, 0($a3)` — the loaded value lives in $v1, NOT in $a3. A preference naming $a3 would
+therefore require the offset-0 load's destination itself to be seated in $a3, i.e.
+`lw $a3, 0($a3)`, which is not the target instruction. Route (c) is closed for this shape.
+
+### E14.6 — kill re-audit: the closest banked form re-measured on this chassis
+`state.json` carries no `kills[]` array (kills live as prose in hypotheses.md), so the re-audit
+was run against the two closest banked forms instead. The closest-to-target banked form is
+`rejected/s12-liverange-extension-blocks-a1-ptr-to-a2-costs-one-insn-5.c` (pointer in $a2).
+Re-measured this session with the instrumentation
+(`tmp/grind/func_80033550/s14/findreg_liverange_ext.txt`):
+
+    conflicts:   2 3 4 5 29
+    pass0_used:  0 1 2 3 4 5 16..23 26..31      -> first free 6 = $a2
+
+Confirmed on this chassis and now *typed*: that form is exactly **one bit** (bit 6) away from
+$a3, and that bit can be supplied by conflicts (route a) or by `someone_prefers` (route b).
+It still costs the extra `arg0[0] = w0` slot (35 insns), so it is not itself a path to 0 — but
+it pins the arithmetic: baseline conflicts {2,3,4} + `someone_prefers {5,6}` would land the
+pointer in $a3 at **exactly 34 instructions**.
+
+### E14.7 — where route (b) actually bottlenecks
+`prune_preferences` (`global.c:881-931`) builds `regs_someone_prefers[X]` from the pruned
+`hard_reg_full_preferences` of allocnos that (i) conflict with X and (ii) sit LOWER in
+`allocno_order`. Pseudo 72 is the lowest-priority of the function's only two global allocnos
+(74 = i, priority 22500; 72 = ptr, priority 6250 — s10), so today the set is necessarily empty.
+Making it {5,6} needs a third global allocno, below 72 in priority, conflicting with 72, whose
+pruned preferences name $a1 and $a2. Per E14.4 a preference can only name $a1/$a2 if those
+registers appear either as literal hard regs in the pre-RA RTL (this function has no calls and
+one parameter, so only $a0 does) or as a local-alloc SEAT — and a local-alloc seat at $a2
+requires a fifth block-local, which is the very thing s12 measured at +1 instruction minimum
+(dS4) / +3 (dZ). That is the wall, and it is now stated as a mechanism rather than an
+observation.
+
+- [s15] Baseline re-measured on this chassis with candidate.c applied over the INCLUDE_ASM line at src/code6cac_b.c:2873: score 4, target_insns 34, build_insns 34, rules_dropped 0. The dispatch brief's chassis check reported 'measurement unavailable'; this is the number.
+
+- [s15] engine/buildconfig.py:19 points CC1 at tools/gcc-2.7.2/build/cc1, which is NOT the instrumented compiler; the BB2_*_DEBUG hooks live in tools/gcc-2.7.2/cc1. tmp/grind/func_80033550/s14/findreg.sh overrides it. That compiler exits rc 33 on this TU because of pre-existing prototype conflicts elsewhere in code6cac_b.c, but still emits the diagnostics and the -da dumps - rc 33 is not a failure here.
+
+- [s15] find_reg pass 0 excludes regs_someone_prefers, and that set is demonstrably non-empty in this very TU: func_80027438 pseudo 72 shows someone_prefers {5,6} and func_8002738C shows {5}. So the byte-free bit pattern func_80033550 needs is a live mechanism in this compiler build, not a theoretical one.
+
+- [s15] regs_used_so_far is not a discriminator for this function: global.c:365-367 seeds it with every call_used_regs entry, and $v0-$a3 are all call-clobbered on MIPS.
+
+- [s15] prune_preferences (global.c:881-931) fills regs_someone_prefers[X] only from allocnos that conflict with X AND sit lower in allocno_order. Pseudo 72 (priority 6250) is the lower of this function's only two global allocnos (74 = i, priority 22500), so the set is necessarily empty today; a third, lower-priority, conflicting global allocno is the prerequisite.
+
+- [s15] set_preference can only name $a1/$a2 if those registers appear as literal hard regs in pre-RA RTL (this function has no calls and one parameter, so only $a0 does) or as a local-alloc SEAT - and a local-alloc seat at $a2 requires a fifth block-local, which s12 already measured at +1 instruction minimum (dS4) / +3 (dZ). That is the wall, now stated as a mechanism instead of an unexplained anomaly.
+
+- [s15] s13's remark that 'REG_ALLOC_ORDER is undefined in mips.h so find_reg's scan really is plain ascending' is true about the iteration order and misleading about the selection; re-verified this session that neither REG_ALLOC_ORDER nor ORDER_REGS_FOR_LOCAL_ALLOC is defined in tools/gcc-2.7.2/config/mips/mips.h.
+
+- [s15] The tree was restored to INCLUDE_ASM("asm/funcs", func_80033550); at src/code6cac_b.c:2873 before finishing - no draft C left on main (asm-until-matched).

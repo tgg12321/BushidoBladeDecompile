@@ -872,3 +872,108 @@ sites (s12) and is a cheat when the arms are invented (Judge FAIL 2026-07-21).
 - probe: Ledger audit of memory/grind/func_80033550/hypotheses.md [s12] against the reopen note at hypotheses.md:719; surface check of the Ruling C lane against the grind session contract.
 - result: Ruling A is SPENT: s12 executed it over 7 variants at both real branch sites and killed it by three distinct measured mechanisms (upstream cross_jump merge at site 1; DCE-able duplicates at site 2; semantically-invalid stores as the only non-DCE-able statements). The Ruling C lane is a tools/ edit, explicitly outside a grind session's allowed surface - recorded as re-activation trigger (2) in the decisions entry rather than attempted.
 - verdict: CONFIRMED
+
+## [s14] SYNTHESIS — merged attack, model correction, and the reset frontier
+
+**Chassis:** floor re-measured 4 (34/34, 0 rules) with candidate.c applied. Unchanged.
+
+### What s14 changed about the ledger's core model
+Sessions s9-s13 built every argument on "find_reg does a plain ascending scan over
+`hard_reg_conflicts`, so $a3 requires conflicts ⊇ {2,3,4,5,6}". That model is incomplete.
+Read + instrumented this session (evidence.md E14.1/E14.2): the scan is two-pass and is
+followed by a preference-override block, giving three entry points to $a3 — conflicts (costly),
+`regs_someone_prefers` (byte-free), and the allocno's own hard-reg preferences (byte-free).
+s13's line "REG_ALLOC_ORDER is undefined in mips.h, so find_reg's scan really is plain
+ascending" is true about the *iteration order* and misleading about the *selection*.
+
+s10's predicate for foreclosing the preference route ("$a3 never appears as a hard reg in the
+pre-RA RTL, so set_preference cannot name it") is **falsified**: `set_preference`
+(global.c:1708-1712) substitutes `reg_renumber` on both operands, so any pseudo already seated
+by local-alloc acts as a hard reg. The route is real, it fires in this function, and s14
+measured it moving (E14.4).
+
+### KILLED this session
+- **H14-a (class): pseudo 72 cannot acquire an own hard-reg preference for $a3 in the target's
+  34-insn shape.** `set_preference` can only name the local-alloc seat of the pseudo set from
+  the offset-0 dereference of the pointer (offset!=0 makes the src a PLUS and returns early),
+  and prune_preferences strips it unless the pointer dies at that load. So the named register
+  is by construction the register holding `*arg0` — which the target puts in $v1
+  (`lw $v1, 0($a3)`), not $a3. Predicate: tools/gcc-2.7.2/global.c:1708.
+- **H14-b (instance): permuting the source so the offset-0 dereference is the pointer's last
+  use does not move the seat.** Measured: own_full_prefs {} -> {5}, seat still $a1, score 4,
+  34 insns, 0 rules. Banked `rejected/s14-lastuse-offset0-flips-own-pref-to-a1-seat-unchanged-4.c`.
+  Valuable as the positive control: it is the first byte-free movement of a find_reg input ever
+  achieved on this function.
+
+### CONFIRMED / re-measured
+- The s12 live-range-extension form re-measured on this chassis: conflicts {2,3,4,5,29},
+  seat $a2, 35 insns. Exactly one `pass0_used` bit from $a3 (E14.6).
+- Positive control for route (b): `func_80027438` in the same TU shows
+  `someone_prefers: 5 6` (E14.3) — the exact bit pattern this function needs.
+
+### The reset frontier (strongest first)
+1. **`regs_someone_prefers[72] ⊇ {5,6}` at 34 instructions.** Byte-free by construction
+   (preferences emit nothing) and demonstrated live in this TU. Bottleneck is *origination*
+   (E14.7): needs a third global allocno below 72 in priority, conflicting with 72, whose
+   pruned preferences name $a1 and $a2. Next probe: stop guessing at C spellings — instrument
+   the origination side. Add `BB2_SETPREF_DEBUG` reading of `global.c:1484`'s call site to a
+   scratch build (or just dump `.greg` + FINDREGDBG for each trial) and enumerate which
+   *existing* SETs in the 34-insn budget can be re-pointed so their src's first operand is a
+   local-alloc'd pseudo. The three stores are `SET(MEM, reg)` (set_preference returns on a MEM
+   dest) and the three loads are `SET(reg, MEM)`; the only SET whose src operand is a pseudo
+   that could be re-seated is the offset-0 load. Verify that claim by dumping every
+   `single_set` in the .greg-stage RTL before spending another spelling.
+2. **A post-local-alloc deletion channel other than cross_jump.** The target needs an occupant
+   at $a2 that emits nothing; local-alloc must therefore have seated a quantity there whose
+   insns all die AFTER local-alloc. cross_jump (jump2) is closed (s12 at the real branch sites;
+   Judge FAIL 2026-07-21 for invented ones). The unexamined one is **final.c's no-op move
+   deletion** combined with **local-alloc's `combine_regs` coalescing** (local-alloc.c): two
+   copy-related pseudos coalesced into one quantity make the copy `move $aN,$aN`, deleted in
+   final. Probe: build a copy pair that combine_regs provably merges (check the `.lreg` dump's
+   quantity table), confirm the move is deleted in the objdump, and read whether the merged
+   quantity's live range covers the pointer's. This is ordinary C (a plain assignment between
+   two locals) — no FAKE family needed if the value is real.
+3. **Rederive by SUBSTITUTION, not addition.** s11's 1:1 correspondence says all 34 slots are
+   spoken for, so a shape that adds an occupant must replace an existing insn with one that
+   both does that insn's job and occupies a fifth register. Acceptance test before building:
+   does the candidate shape emit exactly 34 instructions AND show `conflicts ⊇ {2,3,4,5,6}` or
+   `someone_prefers ⊇ {5,6}` under BB2_FINDREG_DEBUG=<ptr pseudo>? Reject on the dump, not on
+   the sandbox score — the dump answers in one compile.
+
+### Tooling note for the next session (saves a turn)
+`tmp/grind/func_80033550/s14/findreg.sh` compiles the TU with the INSTRUMENTED cc1
+(`tools/gcc-2.7.2/cc1`, NOT `engine/buildconfig.py`'s `tools/gcc-2.7.2/build/cc1`) and writes
+`tmp/grind/func_80033550/s14/findreg_stderr.txt`; run it as
+`wsl bash tmp/grind/func_80033550/s14/findreg.sh` (PSEUDO=<n> env to change the pseudo).
+`tmp/grind/func_80033550/s14/swap.py <file.c>` swaps any banked form's body into
+src/code6cac_b.c in place. cc1 exits 33 on this TU (pre-existing prototype conflicts elsewhere
+in the file) but still emits the diagnostics and the dumps — do not treat rc 33 as failure.
+
+## [s15] find_reg selects the pointer's hard register by a two-pass scan (pass 0 excluding hard_reg_conflicts | ~regs_used_so_far | regs_someone_prefers) followed by a preference-override block, not by a plain ascending scan over hard_reg_conflicts alone.
+- mechanism: tools/gcc-2.7.2/global.c:996-1075 plus the copy/full-preference override at global.c:1090+. regs_used_so_far is seeded with every call_used_regs entry (global.c:365-367), so $v0-$a3 are all in it and only conflicts and preferences discriminate.
+- probe: Compiled src/code6cac_b.c with the INSTRUMENTED cc1 (tools/gcc-2.7.2/cc1, NOT buildconfig's tools/gcc-2.7.2/build/cc1) under BB2_FINDREG_DEBUG=72 with candidate.c applied.
+- result: Measured for func_80033550 pseudo 72: conflicts {2,3,4,29}; someone_prefers {}; own_copy_prefs {}; own_full_prefs {}; used_so_far {0,1,2..15,24..29,31}; pass0_used {0,1,2,3,4,16..23,26..31} -> first free bit 5 = $a1, which is the build's seat. Artifact tmp/grind/func_80033550/s14/findreg_stderr.txt. This gives $a3 three entry points, not one: conflicts superset-of {2,3,4,5,6} (costs instructions), regs_someone_prefers superset-of {5,6} (byte-free), or an own hard-reg preference naming $a3 (byte-free).
+- verdict: CONFIRMED
+
+## [s15] Pseudo 72 can be given an own hard-register preference naming $a3 that overrides find_reg's scan, in the target's 34-instruction shape.
+- mechanism: set_preference (global.c:1671-1716) substitutes reg_renumber on both operands, so a LOCAL-ALLOCATED pseudo counts as a hard register - which falsifies s10's foreclosure predicate that '$a3 never appears as a hard reg in the pre-RA RTL'. set_preference also strips exactly one level of the SET src, so for lw dest,off(ptr) the src becomes the address: a bare REG when off==0 (preference fires) and a PLUS when off!=0 (early return). The preference therefore names the local-alloc seat of the pseudo loaded from *arg0, and prune_preferences (global.c:906-910) keeps it only if the pointer dies at that load.
+- probe: Permuted the source so the offset-0 dereference is the pointer's last use (w1=arg0[1]; w2=arg0[2]; w0=arg0[0];), then re-read BB2_FINDREG_DEBUG=72 and measured the sandbox.
+- result: own_full_prefs flipped {} -> {5} - the mechanism fires, and this is the first byte-free movement of a find_reg input ever achieved on this function - but the register it can name is by construction the seat of *arg0, and the target puts that value in $v1 (lw $v1,0($a3)). A preference naming $a3 would require the offset-0 load's destination itself to be seated in $a3, i.e. lw $a3,0($a3), which is not a target instruction. Sandbox on the probe: score 4, 34 insns, 0 rules; banked at rejected/s14-lastuse-offset0-flips-own-pref-to-a1-seat-unchanged-4.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: post-migration chassis 2026-09-03, candidate.c body applied over src/code6cac_b.c:2873, sandbox 4/34/0 rules, one FAKE construct present (the sanctioned single-level do-while(0) wrap)
+- predicate_cite: tools/gcc-2.7.2/global.c:1708
+
+## [s15] Permuting the source load order so the offset-0 dereference is the pointer's last use moves the pointer out of $a1 on this chassis.
+- mechanism: The permutation is the only source-level way to make set_preference fire for pseudo 72, since only an offset-0 dereference presents a bare REG as the SET src's first operand.
+- probe: Applied the permutation to src/code6cac_b.c, measured sandbox --disable all and BB2_FINDREG_DEBUG=72.
+- result: Seat unchanged at $a1: own_full_prefs {} -> {5}, but 5 is exactly the register the pass-0 scan already produced, so the override is a no-op. score 4, target_insns 34, build_insns 34, rules_dropped 0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: post-migration chassis 2026-09-03, permuted candidate body in src/code6cac_b.c, sandbox 4/34/0 rules, sanctioned do-while(0) FAKE wrap present
+
+## [s15] The closest banked form (s12 live-range extension, pointer in $a2) still measures the same allocation outcome on the current chassis, and its residual is one pass0_used bit.
+- mechanism: Kill re-audit: state.json carries no kills[] array (kills live as prose in hypotheses.md), so the re-audit was run against the two closest banked forms instead.
+- probe: Swapped rejected/s12-liverange-extension-blocks-a1-ptr-to-a2-costs-one-insn-5.c into src/code6cac_b.c and re-read BB2_FINDREG_DEBUG=72.
+- result: conflicts {2,3,4,5,29}; pass0_used {0,1,2,3,4,5,16..23,26..31} -> first free 6 = $a2, exactly as banked. It is one bit (bit 6) from $a3, and that bit is suppliable either by conflicts or, byte-free, by regs_someone_prefers. It still pays an extra instruction slot (35 insns), so the arithmetic it pins is: baseline conflicts {2,3,4} + someone_prefers {5,6} lands the pointer in $a3 at exactly 34 instructions. Artifact tmp/grind/func_80033550/s14/findreg_liverange_ext.txt.
+- verdict: CONFIRMED

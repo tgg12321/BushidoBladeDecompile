@@ -1,8 +1,8 @@
 {
  "func": "func_80033550",
  "file": "code6cac_b",
- "session_count": 13,
- "current_modality": "escalation",
+ "session_count": 15,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -81,23 +81,35 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "s13 escalation/disposition: floor re-measured 4 (34/34, 0 rules); owner Ruling A confirmed SPENT (s12 killed it at both real branch sites); NEW target register census proves the original carried a zer"
+  },
+  {
+   "session": 14,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "s14 synthesis: floor re-measured 4; the ledger's find_reg model CORRECTED by direct instrumentation (BB2_FINDREG_DEBUG=72) - selection is a two-pass scan plus a preference-override block, so $a3 has two BYTE-FREE entry points the ledger never considered (regs_someone_prefers, own hard-reg preference). s10's preference-route foreclosure predicate falsified (set_preference substitutes reg_renumber, so a local-alloc'd pseudo counts as a hard reg). Own-preference route KILLED (class); someone_prefers route is the new frontier #1."
+  },
+  {
+   "session": 15,
+   "floor": 4,
+   "modality": "synthesis",
+   "headline": "s14 synthesis: floor re-measured 4 (34/34, 0 rules); the ledger's find_reg model CORRECTED by first-ever direct instrumentation of pseudo 72 - selection is a two-pass scan plus a preference-override b"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A construct exists that injects an RA conflict at $a2 across the pointer's live range at ZERO instruction cost - the exact thing the original's RTL provably contained.",
-   "mechanism": "The target reaches $a3 with only four block-locals, so under find_reg's ascending scan a fifth conflict at $a2 existed pre-RA and emitted nothing. Every honest construct measured so far either creates an instruction (dS4 +1, dZ +3) or is deleted before conflict construction (dead stores / named locals in jump1, aliases in cse, empty ifs in jump1, DCE-able duplicates in flow.c); the one post-local-alloc deletion channel that survives to conflict construction (cross_jump merging of identical arms) is structurally closed at both real branch sites (s12) and is a cheat when the arms are invented (Judge FAIL 2026-07-21).",
-   "next_probe": "Do not re-probe arm duplication or five-local constructions. The productive lane is the operator-side Ruling C extension: add a HARD_CONFLICT_ADD atom class to tools/ra_solver/inverse.py and re-run --goal {\"72\": 7} to enumerate, typed, which single conflict additions reach $a3 and what RTL shape each requires. That is a tools/ edit, so it needs an operator or a session with tools/ in scope."
+   "hypothesis": "regs_someone_prefers[72] can be driven to include $a1 and $a2 at exactly 34 instructions, which seats the pointer in $a3 with zero instruction cost.",
+   "mechanism": "find_reg pass 0 (global.c:996-1001) excludes hard_reg_conflicts | ~regs_used_so_far | regs_someone_prefers; regs_used_so_far already contains every call-clobbered reg (global.c:365-367), so with the measured conflicts {2,3,4,29} a someone_prefers of {5,6} makes the first free bit 7 = $a3. Preferences emit no instructions. The bit pattern is not hypothetical: func_80027438 in the same TU shows someone_prefers {5,6} in this session's dump. Bottleneck is origination: prune_preferences (global.c:881-931) fills the set only from allocnos that conflict with 72 AND sit lower in allocno_order, and set_preference (global.c:1671-1716) can only name $a1/$a2 if they appear as literal hard regs in pre-RA RTL (this function has no calls and one param) or as a local-alloc seat.",
+   "next_probe": "Instrument the origination side instead of guessing spellings: dump every single_set in the pre-RA RTL (the .greg/.lreg stage) for the baseline and check the claim that the offset-0 load is the ONLY SET whose src's first operand is a re-seatable pseudo. If a second one exists, that is the carrier; re-point it and re-read BB2_FINDREG_DEBUG=72 for someone_prefers. Reject on the dump, not the sandbox score."
   },
   {
-   "hypothesis": "A rederive-modality reconstruction puts a conflict at $a2 without spending one of the 34 accounted-for instruction slots.",
-   "mechanism": "s6's closure theorem is scoped to THIS 34-insn shape; a different source shape yields a different allocno set and entry-copy topology. s11's 1:1 correspondence and s13's target census together give the acceptance test.",
-   "next_probe": "Acceptance test up front, before building anything: does the proposed shape produce a conflict at $a2 across the pointer's live range while still emitting exactly the target's 34 instructions (30 of which are already byte-identical)? If it adds or substitutes a slot, it cannot reach $a3 and should not be built."
+   "hypothesis": "A local-alloc quantity can occupy $a2 across the pointer's live range while emitting nothing, via local-alloc.c combine_regs coalescing plus final.c no-op-move deletion.",
+   "mechanism": "The target needs an occupant at $a2 that emits no instruction. cross_jump (jump2) is the only post-local-alloc deletion channel the ledger examined and it is closed (s12 at both real branch sites; Judge FAIL 2026-07-21 for invented arms). Unexamined: local-alloc merges copy-related pseudos into ONE quantity, after which the connecting copy is reg-to-same-reg and is deleted by final.c's no-op move deletion (the same final.c:1800 path s6 cited) - the merged quantity still holds its hard reg across the union of both live ranges.",
+   "next_probe": "Write a plain assignment between two real locals (ordinary C, no FAKE family needed if the value is real), confirm in the .lreg dump that combine_regs put both pseudos in one quantity, confirm in the objdump that the move is gone, then read BB2_FINDREG_DEBUG=72 to see whether the quantity's seat entered hard_reg_conflicts[72]. Measure insn count first: the probe is only interesting at 34."
   },
   {
-   "hypothesis": "A class grant covering byte-free RA-conflict occupants would close this function immediately.",
-   "mechanism": "The residual is a single register field in 4 of 34 instructions; s12's dS4 and dZ show the seat is reachable from ordinary C at a known instruction price, and the only missing ingredient is a sanctioned way to spend a conflict without spending a slot.",
-   "next_probe": "Owner-only. The frozen family list does not cover this construct today and the SOTN census is negative, so no session may self-authorize it; an owner class grant or unpark re-activates the item."
+   "hypothesis": "A rederived shape that SUBSTITUTES an existing instruction (rather than adding one) can occupy a fifth register at 34 instructions.",
+   "mechanism": "s11's 1:1 correspondence shows all 34 target slots are spoken for and 30 are already byte-identical, so any added occupant must replace an existing insn with one that both does that insn's job and holds an extra register. s14 supplies the acceptance test as a one-compile dump read rather than a sandbox cycle.",
+   "next_probe": "Acceptance test BEFORE building: the shape must emit exactly 34 instructions AND show, under BB2_FINDREG_DEBUG on the pointer's pseudo, either conflicts superset-of {2,3,4,5,6} or someone_prefers superset-of {5,6}. Anything that adds a 35th slot is rejected without a sandbox run."
   }
  ],
  "judge_constraints": [
@@ -107,5 +119,23 @@
  "created": "2026-07-21T01:10:44.133966+00:00",
  "exhaustion_base": 13,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.450462+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.450462+00:00",
+ "kills": [
+  {
+   "session": 15,
+   "statement": "Pseudo 72 can be given an own hard-register preference naming $a3 that overrides find_reg's scan, in the target's 34-instruction shape.",
+   "kill_scope": "class",
+   "measured_on": "post-migration chassis 2026-09-03, candidate.c body applied over src/code6cac_b.c:2873, sandbox 4/34/0 rules, one FAKE construct present (the sanctioned single-level do-while(0) wrap)",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1708",
+   "result": "own_full_prefs flipped {} -> {5} - the mechanism fires, and this is the first byte-free movement of a find_reg input eve"
+  },
+  {
+   "session": 15,
+   "statement": "Permuting the source load order so the offset-0 dereference is the pointer's last use moves the pointer out of $a1 on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "post-migration chassis 2026-09-03, permuted candidate body in src/code6cac_b.c, sandbox 4/34/0 rules, sanctioned do-while(0) FAKE wrap present",
+   "predicate_cite": "",
+   "result": "Seat unchanged at $a1: own_full_prefs {} -> {5}, but 5 is exactly the register the pass-0 scan already produced, so the "
+  }
+ ]
 }

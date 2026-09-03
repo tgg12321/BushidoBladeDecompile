@@ -115,6 +115,25 @@
  * so find_reg's scan really is plain ascending. Both endgame gates re-measured
  * failing (scan_hand_coded LOW 0/8; SOTN census negative). FORECLOSED under the
  * standing 2026-07-27 ruling; see docs/grind/decisions.md s13 entry.
+ * s14 (2026-09-03, SYNTHESIS): floor re-measured 4 (34/34, 0 rules) with this
+ * body. Body UNCHANGED — s14's contribution is a corrected RA model, not a new
+ * form. First direct instrumentation of find_reg for pseudo 72
+ * (tmp/grind/func_80033550/s14/findreg_stderr.txt, BB2_FINDREG_DEBUG=72):
+ * conflicts {2,3,4,29}, someone_prefers {}, own prefs {}, pass0_used first free
+ * = 5 = $a1. The ledger's "plain ascending scan over conflicts" model is
+ * INCOMPLETE: global.c:996-1075 is a two-pass scan whose pass 0 also excludes
+ * ~regs_used_so_far and regs_someone_prefers, followed by a preference-override
+ * block. So $a3 has THREE entry points, two of them byte-free
+ * (regs_someone_prefers ⊇ {5,6}; own full/copy preference = $a3). s10's
+ * foreclosure predicate for the preference route is falsified — set_preference
+ * (global.c:1708) substitutes reg_renumber, so a LOCAL-ALLOC'D pseudo counts as
+ * a hard reg. Measured: permuting the source so the offset-0 dereference is the
+ * pointer's last use flips own_full_prefs {} -> {5} at score 4 / 34 insns (the
+ * first byte-free movement of a find_reg input on this function), but the named
+ * register is by construction the seat of *arg0, which the target puts in $v1 —
+ * so the own-preference route cannot name $a3 in this shape (KILLED, class).
+ * The byte-free route still open is regs_someone_prefers; see evidence.md E14.7
+ * and hypotheses.md [s14] for the origination bottleneck and the next probe.
  * NOTE: this file is CRLF - normalise to LF after pasting into src/*.c.
  * Residual 4 = arg0's pointer pseudo homed in $a1 (build) vs $a3 (target):
  * move + 3 lw base regs. See evidence.md for the RTL conflict analysis. */
