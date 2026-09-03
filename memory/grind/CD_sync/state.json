@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 113,
- "current_modality": "structural",
+ "session_count": 114,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -687,23 +687,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Structural: killed the displaced-base refs-lift (5 spellings) and the lower-the-parameters reading of the seat gate; found the FIRST measured C-level denial of the local-alloc.c:1064 doubling for a ba"
+  },
+  {
+   "session": 114,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Duplicated-statement-into-arms on the WHOLE do_timeout region is byte-neutral here (cross-jump re-merges, build_insns 160) and for the first time seats tbl_125c/idx_1495/mode/result at $s3/$s4/$s5/$s6"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The +2-instruction cost of the note-denying second live set can be paid for by composing it with one of the already-measured honest forms that runs 2-4 instructions SHORT, landing the composite at build_insns 160 with the note denied and p79's union live length pushed above 87 (so pri falls under p77's 921 and into the band).",
-   "mechanism": "The second set denies the doubling at local-alloc.c:1021/1064 and costs exactly one address materialisation (2 insns); s110/s111 measured several honest placement forms that LOSE instructions for the opposite reason (the constant is rematerialised into the addressing): s111 p3 158, p2 157, r2 157, r1 156, s110 v1 157. Composing a -2 form with the +2 carrier is arithmetically neutral, and priority is then set by the union live length of the two sets' ranges, measured this session at 31 (tail) / 57 (poll) / 71 (after uses) / 74 (success block).",
-   "next_probe": "Splice c1's and d2's second set onto the s111 p3 / p2 / r2 bases and the s110 v1 base, and score each: accept only build_insns 160 with p79's ALLOCDBG row showing nrefs=4, livelen > 87 and hardreg 19 ($s3). Read the ALLOCDBG table before spending a sandbox run \u2014 the row is the whole verdict."
+   "hypothesis": "Duplicating ONLY the tbl_125c address math + debug_printf tail into the two arms - with the two idx_1494 byte reads shared between the arms rather than duplicated - keeps pri(p79) in band while leaving p77's weighted refs at the n3 value, landing all five s-register seats.",
+   "mechanism": "The g1 duplication adds about 13 weighted refs to p77 (from the two duplicated lbu reads) and about 7 to p79 (from the two duplicated address computations). Only the p79 half is wanted. jump2 find_cross_jump merges identical SUFFIXES, so a shared prefix can sit above the branch pair as long as each arm's tail is byte-identical; the reads then reach both arms through locals declared before the branch, which is ordinary C so long as those locals are the real, consumed t0/ix values (named-intermediate shape, .claude/rules/narrow-byte-args-packed-call.md), not carriers.",
+   "next_probe": "On the g1 base, hoist t0 = idx_1494[0]; ix = idx_1494[1]; (and the puts call, if the suffix match needs it) above the two arms and duplicate only t0 *= 4; t0 = (s32)((u8 *)tbl_125c + t0); ix <<= 2; arg5 = *(s32 *)(ix + (s32)tbl_125c); debug_printf(...); cdrom_ClearIrq(); v0 = -1; goto check;. Accept only build_insns 160 with ALLOCDBG showing p80 above p77 and p79 in (266, pri(p77)). Read the ALLOCDBG table before spending a sandbox run."
   },
   {
-   "hypothesis": "An ordinary-C source exists for tbl_125c that is not CONSTANT_P at cse's fold point, denying the REG_EQUIV note while keeping reg_n_sets at 1 and exactly three mentions (pri 3*10000/74 = 405, the ideal in-band value).",
-   "mechanism": "cse_insn writes the note only when src_const is non-zero (cse.c:6923); for a bare array decay src_const comes straight from CONSTANT_P (src_folded) at cse.c:6497-6505 without consulting the value table, which is why every relocation of the bare-symbol initialiser (s112 n2/m1/m2/m3, s113 a1-a4) keeps the note. Denial therefore requires the SET_SRC itself to be a non-constant expression that still emits one lui/addiu pair.",
-   "next_probe": "Enumerate the remaining non-cross-symbol, non-dead-arithmetic sources: a pointer whose value arrives from a MEM that update_equiv_regs cannot validate (local-alloc.c:1050 requires reg_basic_block >= 0, so a multi-block pointer loaded from memory takes no note \u2014 measure what a `D_800A125C` address held in a real global would cost in bytes), and a pointer set from another pseudo that global.c coalesces onto $s3 so the copy is deleted as a no-op. Grep the .lreg CD_sync segment for the REG_EQUIV note before scoring (tmp/grind/CD_sync/s113/notes.sh)."
+   "hypothesis": "pri(p77) can be pushed under p80's 952 on the g1 chassis from the other side - by lifting p80's weighted refs instead - because p80 is a 2-ref/21-insn allocno and a single extra weighted mention roughly doubles its priority.",
+   "mechanism": "pri = W*10000/livelen; p80 at W=2 / livelen 21 needs only W=3 to reach about 1428, above p77's 1421. p80 is the short-lived saved value (saved = (*D_800A147C) & 3; ... *D_800A147C = saved;), and the poll region it lives in has two control-flow arms (the status&4 and status&2 callback arms) that duplicated-statement-into-arms can target.",
+   "next_probe": "Identify p80 exactly in tmp/grind/CD_sync/s114/g1.lreg (grep the CD_sync segment for reg 80), then measure a duplicated-statement-into-arms form that gives it a third weighted mention inside the inner poll loop without changing emitted bytes; require build_insns 160 and check that p80 moves above 1421 while p79 stays in band."
   },
   {
-   "hypothesis": "A matched libcd bios.c CD_sync body exists upstream in Xeeynamo/psyz or sozud/psy-q-decomp, closing the function by provenance.",
-   "mechanism": "BB2 links Sony's prebuilt PsyQ BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md: all 1,526 .text words masked-identical), so a matched upstream body IS the original source shape. s113 sharpens the acceptance signature: that shape must produce a tbl_125c pseudo with either NO REG_EQUIV note at three mentions, or a live length under 56, while still emitting the prologue lui/addiu at asm/funcs/CD_sync.s:15-16 and writing $s3 exactly once.",
-   "next_probe": "Re-fetch Xeeynamo/psyz decomp/src/libcd/bios.c and sozud/psy-q-decomp (last checked s105, 2026-08-25, still INCLUDE_ASM). If a body exists, port it onto the goto chassis and read its .lreg REG_EQUIV notes and ALLOCDBG p79 row before scoring."
+   "hypothesis": "The upstream SOTN body's remaining un-ported shapes - static volatile CD_intr Intr (volatile byte reads of D_800A1494/95) and the _memcpy inline with its NULL guard first and while (size--) loop - change the live ranges and mention counts of p77/p80 on the g1 duplicated-arms chassis.",
+   "mechanism": "Volatile reads are not CSE-able, so each Intr.sync / Intr.ready mention stays a separate insn and cannot be sunk or hoisted, changing both the mention count and the live length feeding the pri formula. The ledger has only ever measured the volatile-struct form on the retired aggregate-merge chassis (rejected/agg_cdintr_volatile_direct_member_34.c, score 34), never on g1.",
+   "next_probe": "Port the upstream _memcpy guard ordering and (separately) volatile-qualified reads of D_800A1494/D_800A1495 onto rejected/s114_HONEST_BASE_dup_arms_13.c; score each and read the p77/p80/p79 ALLOCDBG rows. Treat the volatile variant as measurement only - a volatile extern needs its volatile_extern_allowlist.txt grant plus the two-prong gate in .claude/rules/legitimate-volatile-interrupt-touched.md before it can be submitted."
   }
  ],
  "judge_constraints": [
@@ -811,6 +817,22 @@
    "measured_on": "n3 honest base (control 15/160, rules_dropped 0); c1 and d1 sandbox-re-scored this session at 21/162; no FAKE constructs except the inherited pp pointer-alias",
    "predicate_cite": "",
    "result": "The MECHANISM is confirmed \u2014 the first measured C-level denial of the doubling for a bare-symbol pointer: c1 moves p79 f"
+  },
+  {
+   "session": 114,
+   "statement": "Spelling both table reads as ordinary array indexing off the named global D_800A125C with no tbl_125c pointer local - the shape the matched upstream PsyQ libcd body in tmp/sotn/src/main/psxsdk/libcd/b",
+   "kill_scope": "instance",
+   "measured_on": "n3 honest base (memory/grind/CD_sync/rejected/s112_HONEST_BASE_1495_success_block_note_denied_15.c) re-measured at control 15/160, rules_dropped 0; no FAKE constructs present except the inherited pp p",
+   "predicate_cite": "",
+   "result": "f1 = 35 / build_insns 159, f2 = 38 / 159. In both variants the tbl pseudo is absent from the global allocno list entirel"
+  },
+  {
+   "session": 114,
+   "statement": "On the g1 duplicated-arms chassis, p77's inflated loop-weighted reg_n_refs comes from the loop-depth weighting of the idx_1495 = idx_1494 + 1 mention sitting in the success block, so hoisting that ini",
+   "kill_scope": "instance",
+   "measured_on": "g1 duplicated-arms honest base (memory/grind/CD_sync/rejected/s114_HONEST_BASE_dup_arms_13.c), control 13/160, rules_dropped 0; no FAKE constructs present except the inherited pp pointer alias and the",
+   "predicate_cite": "",
+   "result": "20 / build_insns 160 / rules_dropped 0. p77's ALLOCDBG row is bit-identical to g1 (9 refs / livelen 190 / pri 1421) - th"
   }
  ]
 }

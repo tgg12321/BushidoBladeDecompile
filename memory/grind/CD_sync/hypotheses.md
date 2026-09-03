@@ -2071,3 +2071,51 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: n3 honest base (control 15/160, rules_dropped 0); c1 and d1 sandbox-re-scored this session at 21/162; no FAKE constructs except the inherited pp pointer-alias
+
+## [s114] Mandated kill re-audit: candidate.c is still the floor and both FAKE units are still load-bearing
+- mechanism: instance kills are chassis-relative; s111's ablation table had to be re-confirmed on HEAD.
+- probe: splice memory/grind/CD_sync/candidate.c, `sandbox CD_sync --disable all`, then `tools/fake_ablate.py --func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c`.
+- result: CONFIRMED. 2/160/0 keep-all; 15/159 drop chain-extender; 17/161 drop pp alias; 30/160 drop both — identical to s111. n3 honest base re-measured 15/160/0 with the s112/s113 ALLOCDBG rows bit-identical.
+
+## [s114] The original Sony source spells both table reads as ordinary array indexing off the named global `D_800A125C[]` with no pointer local, so removing the `tbl_125c` local should reproduce the target's $s3 base
+- mechanism: `tmp/sotn/src/main/psxsdk/libcd/bios.c:232` is a matched-project body for the same PsyQ libcd `CD_sync`; its printf reads `D_80032B48[Intr.sync]` / `D_80032B48[Intr.ready]` off a `char *[8]` global. BB2 links the same prebuilt BIOS.OBJ (memory/closer/libcd-groundtruth.md), so that shape is the original. cse would create the address pseudo and loop.c hoist it into the prologue as the target's `lui/addiu $s3`.
+- probe: f1 (delete the local, spell `(u8 *)D_800A125C + t0` / `ix + (s32)D_800A125C`) and f2 (f1 + ordinary `D_800A125C[i]` indexing), both spliced on the n3 honest base (control 15/160/0), sandbox + ALLOCDBG + `.lreg` REG_EQUIV grep.
+- result: KILLED (instance). f1 = 35 / build_insns 159, f2 = 38 / 159. In both, the tbl pseudo does not appear in the global allocno list at all and no callee-saved base register is formed — the address is rematerialised at each access. The explicit C-level pointer local is what creates the long-lived allocno the target seats at $s3. Banked rejected/s114_f1.c, rejected/s114_f2.c.
+
+## [s114] Duplicating the WHOLE do_timeout region into both arrival arms (deleting the `do_timeout:` label that blocked s20's merge) lifts tbl_125c's reg_n_refs across the s113 gate at zero byte cost
+- mechanism: sanctioned duplicated-statement-into-arms (.claude/rules/duplicated-statement-into-arms.md). flow.c books reg_n_refs before combine and long before jump2, so both copies' mentions are counted; jump2's `find_cross_jump` then re-merges the two identical arm bodies. s20 measured that an intervening label defeats the suffix match, so the label must go and the `goto check;` tail must live inside each arm.
+- probe: g1 = n3 honest base with `tslTm2LoadImage_2` + the two `idx_1494[]` reads + the pp binding + both tbl_125c address computations + `debug_printf` + `cdrom_ClearIrq()` + `v0 = -1; goto check;` duplicated into the `D_800F19B8 < v0` arm and the `0x3C0000 < cnt` arm. sandbox + ALLOCDBG.
+- result: CONFIRMED. score 13 / build_insns 160 / rules_dropped 0 — cross-jump merged exactly (160 == target) and this is the first honest-chassis form to beat n3's 15. p79 tbl_125c 5/188/**531** seats at **$s3**, p78 idx_1495 at **$s4**, p72 mode at **$s5**, p73 result at **$s6** — four of five target s-register seats, and s113's gate `pri(p79) ∈ (266,933)` is cleared. Residual: the same duplication lifts p77 idx_1494's loop-weighted refs 14 -> 27 (pri 933 -> 1421), putting it above p80's 952 so $s1/$s2 invert. Banked rejected/s114_HONEST_BASE_dup_arms_13.c — the next session's chassis, NOT a dead form.
+
+## [s114] p77's inflated weighted-ref count on the duplicated-arms chassis comes from the loop-depth weighting of the `idx_1495 = idx_1494 + 1;` mention, so hoisting that init back to the prologue restores pri(p77) < 952
+- mechanism: flow.c books reg_n_refs weighted by loop_depth; the success-block init sits inside the outer loop, the prologue does not.
+- probe: g2 = g1 with the idx_1495 init moved from the success block back to the prologue. sandbox + ALLOCDBG + `.lreg` note grep.
+- result: KILLED (instance). 20 / 160 / 0. p77's row is **bit-identical** (9 / 190 / 1421) — the init's placement contributes nothing to p77's weighting — and p78 re-acquires its `REG_EQUIV (const (plus (symbol_ref "D_800A1494") 1))`, collapsing to pri 108 and the $s6 seat. The success-block placement remains load-bearing for the note denial (s112). Banked rejected/s114_g2.c.
+
+## [s114] Mandated kill re-audit: candidate.c is still the recorded floor on the current chassis and both of its FAKE units are still load-bearing and super-additive.
+- mechanism: Instance kills and ablation tables are chassis-relative; the dispatch brief again reported the HEAD floor as unavailable, so the closest-to-target banked form had to be re-measured before any new probe.
+- probe: Spliced memory/grind/CD_sync/candidate.c into src/system.c, ran sandbox CD_sync --disable all, then tools/fake_ablate.py --func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c. Also re-measured the n3 honest base.
+- result: 2/160/rules_dropped 0 keep-all; 15/159 drop chain-extender; 17/161 drop pp alias; 30/160 drop both - identical to s111. n3 honest base 15/160/0 with ALLOCDBG ord=10..15 bit-identical to s112/s113 (952/933/266/263/253/202).
+- verdict: CONFIRMED
+
+## [s114] Spelling both table reads as ordinary array indexing off the named global D_800A125C with no tbl_125c pointer local - the shape the matched upstream PsyQ libcd body in tmp/sotn/src/main/psxsdk/libcd/bios.c:232 uses - reproduces the target's prologue lui/addiu $s3 base register.
+- mechanism: BB2 links Sony's prebuilt BIOS.OBJ verbatim (memory/closer/libcd-groundtruth.md), so SOTN's matched bios.c CD_sync body is the original source shape; D_800A125C is its char pointer table D_80032B48[8] and both reads are D_80032B48[Intr.sync] / D_80032B48[Intr.ready]. cse would create the address pseudo and loop.c hoist it to the preheader as the target's lui/addiu $s3.
+- probe: f1 (delete the local; spell (u8 *)D_800A125C + t0 and ix + (s32)D_800A125C) and f2 (f1 + ordinary D_800A125C[i] indexing), both spliced on the n3 honest base (control 15/160/0); sandbox --disable all + ALLOCDBG + .lreg REG_EQUIV grep.
+- result: f1 = 35 / build_insns 159, f2 = 38 / 159. In both variants the tbl pseudo is absent from the global allocno list entirely and no callee-saved base register is formed - the address is rematerialised at each access. The explicit C-level pointer local is what creates the long-lived allocno the target seats at $s3. Banked memory/grind/CD_sync/rejected/s114_f1.c and s114_f2.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: n3 honest base (memory/grind/CD_sync/rejected/s112_HONEST_BASE_1495_success_block_note_denied_15.c) re-measured at control 15/160, rules_dropped 0; no FAKE constructs present except the inherited pp pointer alias
+
+## [s114] Duplicating the whole do_timeout region into both do_timeout arrival arms, with the do_timeout label deleted so jump2 find_cross_jump can re-merge the copies, lifts tbl_125c's reg_n_refs across the s113 pri(p79) gate at zero byte cost.
+- mechanism: Sanctioned duplicated-statement-into-arms (.claude/rules/duplicated-statement-into-arms.md): flow.c books reg_n_refs before combine and long before jump2, so both copies' mentions are counted by local-alloc and global-alloc, and jump2 find_cross_jump then collapses the two identical arm bodies back to one emitted sequence. s20 measured that an intervening label defeats the suffix match, so the label had to go and the goto-check tail had to live inside each arm.
+- probe: g1 = n3 honest base with tslTm2LoadImage_2(&D_800161B8) + both idx_1494 byte reads + the pp binding + both tbl_125c address computations + debug_printf + cdrom_ClearIrq() + v0 = -1 + goto check, duplicated into the (D_800F19B8 < v0) arm and the (0x3C0000 < cnt) arm. sandbox --disable all + ALLOCDBG.
+- result: score 13 / build_insns 160 / rules_dropped 0 - cross-jump merged exactly to the target's instruction count, and this is the first honest-chassis form to beat the n3 base's 15. ALLOCDBG: p79 tbl_125c 5 refs / livelen 188 / pri 531 seats at $s3 (TARGET), p78 idx_1495 2/95/210 at $s4 (TARGET), p72 mode 2/96/208 at $s5 (TARGET), p73 result 2/99/202 at $s6 (TARGET). s113's closing condition pri(p79) in (266,933) is cleared. Residual: the same duplication lifts p77 idx_1494's loop-weighted refs from 14 to 27 (pri 933 to 1421), above p80's 952, inverting $s1/$s2. Banked as memory/grind/CD_sync/rejected/s114_HONEST_BASE_dup_arms_13.c - the next session's chassis, not a dead form.
+- verdict: CONFIRMED
+
+## [s114] On the g1 duplicated-arms chassis, p77's inflated loop-weighted reg_n_refs comes from the loop-depth weighting of the idx_1495 = idx_1494 + 1 mention sitting in the success block, so hoisting that init back to the prologue drops pri(p77) below p80's 952.
+- mechanism: flow.c books reg_n_refs weighted by loop_depth; the success block is inside the outer poll loop and the prologue is not, so the same mention is worth more in the success block.
+- probe: g2 = g1 with idx_1495 = idx_1494 + 1 moved from the success block back to the prologue; sandbox --disable all + ALLOCDBG + .lreg REG_EQUIV grep.
+- result: 20 / build_insns 160 / rules_dropped 0. p77's ALLOCDBG row is bit-identical to g1 (9 refs / livelen 190 / pri 1421) - the init's placement contributes nothing to p77's weighting - and p78 re-acquires its REG_EQUIV const-plus-symbol note, collapsing to pri 108 and the $s6 seat. Confirms s112: the success-block placement is load-bearing for the note denial. Banked memory/grind/CD_sync/rejected/s114_g2.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: g1 duplicated-arms honest base (memory/grind/CD_sync/rejected/s114_HONEST_BASE_dup_arms_13.c), control 13/160, rules_dropped 0; no FAKE constructs present except the inherited pp pointer alias and the arm duplication itself

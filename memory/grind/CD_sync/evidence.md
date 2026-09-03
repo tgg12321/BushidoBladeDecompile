@@ -2390,3 +2390,131 @@ D_800A125C, i.e. another address materialisation, which is the same +2.
 - [s113] A second LIVE set of tbl_125c denies the REG_EQUIV note (p79 live length 71 raw instead of 148 doubled) — the first measured C-level denial for a bare-symbol pointer, and the mechanism the owner-refused h5 cross-symbol chain-extender was buying. Cost is fixed at +2 instructions (a second lui/addiu pair) in all four placements: build_insns 162, sandbox 21.
 
 - [s113] The target writes $s3 exactly once in its 160 instructions (asm/funcs/CD_sync.s:15-16, the prologue lui/addiu) and uses it twice (lines 58, 63), so the original compile had nrefs=3 with a priority above 266 — i.e. the original's tbl_125c pseudo carried NO REG_EQUIV (raw 74 -> pri 405) or had a live length under 56. This is now the sharpest available statement of what the original source shape must have done.
+
+## s114 — synthesis (merged attack; the duplicated-arms chassis lands four of five s-register seats)
+
+### [s114-C] Chassis + mandated kill re-audit
+`memory/grind/CD_sync/candidate.c` re-spliced on HEAD and re-scored this session:
+**score 2 / build_insns 160 / rules_dropped 0** (the dispatch brief again reported
+the HEAD floor as "measurement unavailable"; it is 2). `tools/fake_ablate.py
+--func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c` reproduces
+s111 exactly: keep-all 2/160, drop chain-extender 15/159, drop pp alias 17/161,
+drop both 30/160. Both FAKE units remain load-bearing and super-additive; every
+chassis-relative conclusion in the ledger is still valid. The n3 honest base
+(`rejected/s112_HONEST_BASE_1495_success_block_note_denied_15.c`) re-measured at
+**15 / 160 / 0** with ALLOCDBG ord=10..15 bit-identical to s112/s113
+(952 p80 $s1 / 933 p77 $s2 / 266 p78 $s3 / 263 p72 $s4 / 253 p73 $s5 / 202 p79 $s6).
+
+### [s114-E1] Upstream provenance is IN THE REPO and it names the original source shape
+`tmp/sotn/src/main/psxsdk/libcd/bios.c:232` carries a **matched-project C body for
+PsyQ libcd `CD_sync`**, with `set_alarm` / `get_alarm` / `callback` / `_memcpy` as
+static inlines. Mapping onto BB2 (confirmed statement-for-statement against
+`asm/funcs/CD_sync.s`):
+
+| SOTN bios.c | BB2 |
+|---|---|
+| `Alarm.unk0 = VSync(-1) + 960; Alarm.unk4 = 0; Alarm.unk8 = name;` | `D_800F19B8`, `D_800F19BC`, `D_800F19C0 = &D_80016240` |
+| `puts("CD timeout: ")` | `tslTm2LoadImage_2(&D_800161B8)` |
+| `printf("%s:(%s) Sync=%s, Ready=%s\n", Alarm.unk8, D_80032AC8[CD_com], D_80032B48[Intr.sync], D_80032B48[Intr.ready])` | `debug_printf(&D_800161C8, D_800F19C0, D_800A11DC[D_800A11D5], D_800A125C[idx_1494[0]], D_800A125C[idx_1494[1]])` |
+| `CD_flush()` | `cdrom_ClearIrq()` |
+| `CheckCallback()` | `sys_GetVblankCount()` |
+| `static volatile CD_intr Intr {sync,ready,c}` | `D_800A1494 / D_800A1495 / D_800A1496` |
+| `char *D_80032B48[8]` (the "NoIntr/DataReady/..." string table) | `D_800A125C[]` |
+
+So **`D_800A125C` is a real 8-entry `char *` array and both table reads are ordinary
+array indexing off a named global; there is no `tbl_125c` pointer local in the original
+source.** The ledger's whole chassis family has carried one since s1.
+
+### [s114-E2] …and removing that local destroys the $s3 base entirely (KILLED, instance)
+Two spellings measured on the n3 honest base, both with the statement structure of
+n3 otherwise byte-identical:
+- **f1** — delete `s32 *tbl_125c;` + its init, spell both addresses `(u8 *)D_800A125C + t0`
+  / `ix + (s32)D_800A125C`: **score 35, build_insns 159**. The tbl pseudo is GONE from
+  the global allocno list (ALLOCDBG ord=9..13 shows only p77/p79(short)/p78/p72/p73;
+  the `.lreg` note grep finds a REG_EQUIV for `D_800A1494` only). No callee-saved base
+  register is formed at all.
+- **f2** — f1 + ordinary `D_800A125C[t0]` / `D_800A125C[ix]` indexing: **score 38, 159**,
+  same allocno picture.
+Banked as `rejected/s114_f1.c`, `rejected/s114_f2.c`. **The explicit C-level pointer
+local is what creates the long-lived $s3 allocno; the "faithful array-indexing"
+reading of the upstream body does not reach it under this compiler configuration.**
+
+### [s114-E3] THE RESULT: duplicated-statement-into-arms is byte-neutral here and seats FOUR of the five s-registers
+s73 flagged "duplicate a byte-neutral tbl_125c reference into BOTH do_timeout arrival
+arms" as the un-run F6 frontier and s74 never executed it; s20's earlier attempts
+duplicated *single statements* (the `D_800F19C0` store, the dispatch load) and either
+failed to cross-jump (an intervening `do_timeout:` label blocks find_cross_jump's
+suffix match, s20) or lifted the wrong pseudo.
+
+**g1** duplicates the ENTIRE do_timeout region — `tslTm2LoadImage_2(&D_800161B8)`, the
+two `idx_1494[]` byte reads, the `pp` binding, both `tbl_125c` address computations,
+`debug_printf`, `cdrom_ClearIrq()`, `v0 = -1; goto check;` — into both arrival arms,
+deleting the `do_timeout:` label (which is what blocked s20's merge):
+
+    if (D_800F19B8 < v0)      { <BLOCK> }
+    cnt = D_800F19BC; D_800F19BC = cnt - -1;
+    if (0x3C0000 < cnt)       { <BLOCK> }
+    success: ...
+
+Measured on the n3 honest base: **score 13, build_insns 160, rules_dropped 0** — the
+first honest-chassis form to beat n3's 15, and jump2's `find_cross_jump` re-merges the
+two copies to identical bytes (build_insns is exactly the target's 160).
+
+ALLOCDBG ord=11..16 (hardreg 17=$s1 … 22=$s6):
+
+| pseudo | what | nrefs | livelen | pri | seat | target seat |
+|---|---|---|---|---|---|---|
+| p77 | idx_1494 | 9 | 190 | 1421 | $s1 | **$s2** |
+| p80 | (short-lived, `saved`) | 2 | 21 | 952 | $s2 | **$s1** |
+| p79 | tbl_125c | 5 | 188 | 531 | **$s3** | $s3 ✔ |
+| p78 | idx_1495 | 2 | 95 | 210 | **$s4** | $s4 ✔ |
+| p72 | mode | 2 | 96 | 208 | **$s5** | $s5 ✔ |
+| p73 | result | 2 | 99 | 202 | **$s6** | $s6 ✔ |
+
+The gate s113 defined — `pri(p79) ∈ (266, 933)` — is CLEARED (531), and with it the
+$s3/$s4/$s5/$s6 seats all land for the first time on an honest chassis. The residual is
+a single new inversion: the same duplication also lifts p77's loop-weighted reg_n_refs
+from 14 to 27 (`pri = W*10000/livelen`: 933 = 14·10000/150 → 1421 = 27·10000/190),
+pushing idx_1494 above p80's 952 and swapping $s1/$s2.
+
+### [s114-E4] The p77 lift is not reachable by relocating the idx_1495 init (KILLED, instance)
+**g2** = g1 with `idx_1495 = idx_1494 + 1;` moved from the success block back to the
+prologue (testing whether that mention's loop-depth weighting is what inflates p77):
+**score 20 / 160 / 0**, p77's ALLOCDBG row **bit-identical** (9 / 190 / 1421), and p78
+re-acquires its REG_EQUIV note (`const (plus (symbol_ref D_800A1494) 1)` present in the
+`.lreg` dump), collapsing to pri 108 and the $s6 seat. Banked `rejected/s114_g2.c`.
+Confirms s112: the success-block placement of the idx_1495 init is load-bearing for the
+note denial, and it is NOT where p77's weighted refs come from.
+
+### [s114-E5] Arithmetic of the remaining gate
+On the g1 chassis the ONLY wrong seat pair is p77/p80. p80 is fixed at W=2 / livelen 21
+/ pri 952, so the closing condition is **pri(p77) ∈ (531, 952)** — i.e. p77's
+loop-weighted refs must come in at W ≤ 18 at livelen 190 (it is 27), while p79 keeps
+W ≥ 10. Both duplicated copies of the block contribute the two `idx_1494[0]` /
+`idx_1494[1]` byte reads, so the next form must duplicate the tbl_125c address math
+into the arms **without** duplicating the two index reads — the reads have to be shared
+between the arms while the table accesses are not.
+
+### [s114-A] Artifacts
+`tmp/grind/CD_sync/s114/` — splice.py / cap.py / notes.sh / drive.ps1 (PowerShell
+splice+sandbox+ALLOCDBG+note-grep driver), the variant sources n3/f1/f2/g1/g2.c and
+their `<tag>.{s,stderr,rtl,jump,cse,loop,flow,combine,lreg,greg,sched,sched2,jump2,dbr}`
+dump sets.
+
+- [s114] s114 chassis: candidate.c re-splices at 2/160/rules_dropped 0 on HEAD; fake_ablate reproduces s111 exactly (keep-all 2/160, drop chain-extender 15/159, drop pp alias 17/161, drop both 30/160).
+
+- [s114] A matched-project C body for the SAME PsyQ libcd CD_sync is already in this repo at tmp/sotn/src/main/psxsdk/libcd/bios.c:232, with set_alarm/get_alarm/callback/_memcpy as static inlines. It maps statement-for-statement onto asm/funcs/CD_sync.s: puts to tslTm2LoadImage_2, printf(%s:(%s) Sync=%s, Ready=%s) to debug_printf(&D_800161C8, ...), CD_flush to cdrom_ClearIrq, CheckCallback to sys_GetVblankCount, static volatile CD_intr Intr{sync,ready,c} to D_800A1494/95/96, and char pointer table D_80032B48[8] to D_800A125C[]. The provenance frontier is therefore SPENT for structure: the upstream body is in hand and it contains no tbl_125c pointer local.
+
+- [s114] Removing the tbl_125c local (the upstream shape) removes the pseudo from the global allocno list entirely: f1 35/159, f2 38/159, no callee-saved base register formed. The explicit C-level pointer local is a prerequisite for the target's prologue lui/addiu $s3.
+
+- [s114] Duplicated-statement-into-arms IS byte-neutral for this function when the whole do_timeout region (including the goto-check tail) is duplicated and the do_timeout label is deleted: build_insns 160 == target, rules_dropped 0, jump2 find_cross_jump re-merges. s20's failed merge was caused by the intervening label, not by the family.
+
+- [s114] g1 ALLOCDBG ord=11..16 (hardreg 17=$s1 .. 22=$s6): p77 idx_1494 9/190/1421 seats $s1; p80 2/21/952 seats $s2; p79 tbl_125c 5/188/531 seats $s3; p78 idx_1495 2/95/210 seats $s4; p72 mode 2/96/208 seats $s5; p73 result 2/99/202 seats $s6. Four of the five target s-register seats land, and the s113 gate pri(p79) in (266,933) is cleared for the first time on an honest chassis.
+
+- [s114] The global.c priority is pri = W*10000/livelen where W is the loop-depth-weighted reg_n_refs, not the raw mention count printed as nrefs: n3 p77 933 = 14*10000/150, g1 p77 1421 = 27*10000/190, g1 p79 531 = 10*10000/188. The arm duplication adds about 13 weighted refs to p77 and about 7 to p79.
+
+- [s114] The remaining gate on the g1 chassis is a single ordering: pri(p77) must fall into (531, 952) - i.e. W(p77) at most 18 at livelen 190, currently 27 - while p79 keeps W at least 10. p80 is pinned at W=2 / livelen 21 / pri 952.
+
+- [s114] Moving the idx_1495 init off the success block does not change p77's weighted refs at all (g2 p77 row bit-identical) and re-attaches p78's REG_EQUIV note; the success-block placement stays mandatory.
+
+- [s114] local-alloc.c update_equiv_regs has exactly three C-reachable denial gates for the reg_live_length doubling at local-alloc.c:1064: single_set(insn) == 0 (local-alloc.c:979), reg_n_sets != 1 (local-alloc.c:1020), and no CONSTANT_P REG_EQUAL note (local-alloc.c:1030). The fourth, reg_live_length < 0, is set only for pseudos live across setjmp (flow.c:1260) and is unreachable here.
