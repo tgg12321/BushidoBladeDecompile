@@ -1571,3 +1571,84 @@ W1/P2A1 = 5/67, Y3 = 7/67, Y1/Y2/Y7 = 8/67, Y6 = 10/68, Y5 = 11/68.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: P2A1 chassis (3 loads, $a1 seat, 67 insns), sched_solver model text1b pass 2 block 0, zero FAKE constructs
+
+## s15 (2026-09-03) — forensics modality
+
+**H-s15-1 (CONFIRMED — the session's headline).** "The +2 halfword value pseudo can be
+seated in $a0 — target's register — by ordinary statement order alone." Placing
+`D_800A3478 = outer + 0x18;` between the +2 read and the 0x1A store makes the addiu
+quantity live inside the value's range; the addiu (refs 2, span 2, priority 10000) is
+allocated first and takes $v0, and first-fit forces the value past {$v0,$v1} to $a0.
+QTYDBG ground truth in tmp/grind/func_80060A68/s15/qtydbg_W5.txt; measured on A8/E2/E3.
+
+**H-s15-2 (CONFIRMED).** "Both register-based stores AND gp symbol stores separate two
+`*(s32 *)(outer + 0x10)` reads in cse." E2 and E3 differ only in whether the p10 statement
+precedes or follows `D_800A3478 = outer + 0x18;`, and that alone is 2 loads vs 3.
+
+## [s15] The five-instruction residual of s14's W5 body is a scheduling problem in slots 24-29.
+- mechanism: s14 recorded the residual as "the +2 read's value must land in $a0, its 0x1A store must be deferred past the D_800A3478 gp store, and the idx read must fall to slot 29", i.e. three coupled facts.
+- probe: QTYDBG/FFR extraction on W5 (tools/ra_solver/local_extract.py) plus the -da sched1/sched2 traces; then a direct statement move placing the gp store inside the +2 value's live range, measured on 30 bodies.
+- result: It is ONE fact, not three, and it is a local-alloc fact rather than a scheduling one. W5's slots 24-29 hold the same instruction multiset as target; the only wrong register is the +2 value's ($v0 vs $a0), and the two ordering differences follow from it (with the value in $a0 the idx read cannot occupy the load-delay slot at 25). Moving the gp store inside the value's range buys $a0 directly (E2/E3/A8, QTYDBG got=4) and target's 25/26/27 order comes with it for free.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis (identical to s14's text1b.c.HEAD), W5 re-measured 5/66; zero FAKE constructs in any body
+
+## [s15] A three-load body can carry BOTH the early slot-11 $a1 load and the D_800A3478 gp store placed between the +2 read and the 0x1A store, at 66 instructions.
+- mechanism: The two requirements are independent in principle — the first is a cse/sched2 fact about where p10's load is emitted, the second a local-alloc fact about the +2 value's seat.
+- probe: 30 bodies built and measured with sandbox --disable all: A1-A8 (idx read in all eight gaps), B00-B23 (p10 statement before copy 1 / 2 / 3 crossed with four idx positions), C1-C18 (all tail permutations of {idx, +4 read, D_800A347C, 0x1C store} plus insertions of each into the S2..S3 window). Plus H1-H12, which try `D_800A347C = outer + 0x20;` as an alternative early cse separator.
+- result: Every one of the 30 measures 67 instructions (scores 5-9); H1-H12 measure 67-69 (scores 8-14). The sched1/sched2 traces name the cause: with the gp store inside the +2 read's range, sched1 emits p10's load adjacent to the +2 pointer load, and in sched2's reverse walk the ready list at T-30 holds only insn 39, which is forced there and spent as the +2 pointer's delay-slot filler, leaving the +0 read's delay slot a nop. Best 3-load body reachable this way is 5/67; the best 3-load body overall is E3 at 3/66, which drops the early load instead.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 42 bodies, zero FAKE constructs in any of them
+
+## [s15] Moving `D_800A347C = outer + 0x20;` early, to act as the cse separator that gives p10 its own early load, is byte-neutral for the rest of the body.
+- mechanism: gp symbol stores separate cse'd loads (H-s15-2), so D_800A347C could supply the separation that a copy store supplies in the W5 family, without disturbing the +2 read's neighbourhood.
+- probe: H1-H12 — the statement hoisted above the p10 statement and above it, crossed with all tail permutations.
+- result: 67-69 instructions, scores 8-14; the statement's position is load-bearing for slots 30-32 and hoisting it costs one to three instructions immediately.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 12 bodies, zero FAKE constructs
+
+## [s15] The +2 halfword value pseudo can be seated in $a0 - target's register - by ordinary statement order alone, with no multiply-set carrier and no FAKE construct.
+- mechanism: local-alloc priority = floor_log2(refs)*refs*size*10000/(death-birth) with first-fit ascending allocation (local-alloc.c:1649-1685 / 1563-1580). In W5 the +2 value has refs 2 and span 2, so its priority 10000 is the maximum a refs=2 quantity can carry; it is allocated 6th of 25, nothing holds $v0 across [36,38], and first-fit gives it $v0. Placing the D_800A3478 addiu/store pair INSIDE its range lengthens the value to span 6 (priority 3333, allocated 23rd-24th) and makes the addiu quantity (refs 2, span 2, priority 10000, allocated 6th-7th) hold $v0 across it, so first-fit is forced past {$v0,$v1} to $a0.
+- probe: tools/ra_solver/local_extract.py text1b --func func_80060A68 --suggest on W5 and on the moved-store bodies (A8, E2, E3); sandbox --disable all on each.
+- result: W5: qty11 reg1=74 birth 36 death 38 refs 2 ord 5 got=2 ($v0). A8/E3: qty12 reg1=74 birth 38 death 44 refs 2 ord 23 got=4 ($a0), with the addiu quantity (reg 93/94, birth 40 death 42) taking $v0 at ord 6. Target's slot 25/26/27 order `addiu v0,v1,0x18 / sw v0,%gp(D_800A3478) / sh a0,0x1A(v1)` comes with the seat for free, because with the value in $a0 the idx read can no longer be hoisted into the load-delay slot at 25.
+- verdict: CONFIRMED
+
+## [s15] Both register-based stores and gp symbol stores separate two `*(s32 *)(outer + 0x10)` reads in cse, so the number of `lw ?,0x10($v1)` loads is set by which stores sit between the reads.
+- mechanism: cse invalidates the cached MEM on an intervening store; a store through a register base invalidates conservatively, and the gp symbol stores also invalidate the register-based MEM here.
+- probe: Bodies E2 and E3, which differ ONLY in whether the `p10 = *(s32 *)(outer + 0x10);` statement precedes or follows `D_800A3478 = outer + 0x18;`.
+- result: E2 (p10 before the gp store) = 2 loads, score 2 / 66. E3 (p10 after it) = 3 loads, score 3 / 66. The same separation comes from every register-based store (the 0x18 store, the 0x1A store, the three copy stores). This is the rule that governs whether the third 0x10 load exists and where it can be emitted.
+- verdict: CONFIRMED
+
+## [s15] The five-instruction residual of s14's W5 body is three coupled facts (the +2 read's register, the 0x1A store's deferral past the gp store, and the idx read falling to slot 29).
+- mechanism: s14 read the residual off the disassembly as three independent requirements in slots 24-29.
+- probe: QTYDBG/FFR extraction on W5 (tools/ra_solver/local_extract.py) plus the -da sched1/sched2 traces, then a single statement move placing the gp store inside the +2 value's live range, measured across 30 bodies.
+- result: It is ONE fact, and it is a local-alloc fact rather than a scheduling one. W5's slots 24-29 already hold target's exact instruction multiset; the only wrong register is the +2 value's, and both ordering differences follow from it. Bodies that buy the $a0 seat (E2/E3/A8) reproduce target's 25/26/27 order automatically.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis (byte-identical to s14's tmp/grind/func_80060A68/s14/text1b.c.HEAD; W5 re-measured 5 / 66 / 66); zero FAKE constructs in any body measured
+
+## [s15] A three-load body can carry BOTH the early slot-11 $a1 load and the D_800A3478 gp store placed between the +2 read and the 0x1A store, at 66 instructions.
+- mechanism: The early slot-11 load is a cse/sched2 fact about where p10's load is emitted; the $a0 seat is a local-alloc fact about the +2 value's range. They were expected to be independent.
+- probe: 30 bodies built and measured with sandbox --disable all: A1-A8 (idx read in all eight gaps), B00-B23 (p10 statement before copy 1 / 2 / 3 crossed with four idx positions), C1-C18 (all tail permutations plus insertions into the S2..S3 window). Plus the -da sched1/sched2 traces of W5 and V4.
+- result: Every one of the 30 measures 67 instructions (scores 5-9). Named cause from the sched2 trace: with the gp store inside the +2 read's range, sched1 emits p10's load adjacent to the +2 pointer load; in sched2's reverse walk the ready list at T-30 then holds only insn 39 (p10's load, priority 3), so it is forced into that slot and spent filling the +2 pointer's load-delay slot, leaving the +0 read's own delay slot a nop. In W5 the two are separated by the 0x18 store, insn 39 keeps losing rank_for_schedule against priority-6..10 insns and sinks to slot 11.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 30 bodies, zero FAKE constructs in any of them
+
+## [s15] Moving `D_800A347C = outer + 0x20;` early, to act as the cse separator that gives p10 its own early load, is byte-neutral for the rest of the body.
+- mechanism: gp symbol stores separate cse'd loads, so D_800A347C could supply the separation a copy store supplies in the W5 family without disturbing the +2 read's neighbourhood.
+- probe: H1-H12: the statement hoisted above and below the p10 statement, crossed with all tail permutations, sandbox --disable all on each.
+- result: 67-69 instructions, scores 8-14. The statement's position is load-bearing for slots 30-32 and hoisting it costs one to three instructions immediately.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 12 bodies, zero FAKE constructs
+
+## [s15] The p10 statement's position among the three copy statements steers codegen on the gp-store-moved chassis.
+- mechanism: s14's H-s14-3 measured it inert on the W5 chassis; the moved-store chassis has a different sched1 order and might respond.
+- probe: B00-B23: p10 before copy 1 / copy 2 / copy 3 crossed with four idx-read positions, on the A-family (gp store between the +2 read and the 0x1A store).
+- result: Each idx-position column is constant across all three p10 positions (7/67, 5/67, 7/67, 7/67), so the p10 statement's position among the copies is codegen-inert on this chassis too - a second independent confirmation of H-s14-3.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 12 bodies, zero FAKE constructs

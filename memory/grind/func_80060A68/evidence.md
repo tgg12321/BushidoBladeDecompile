@@ -2237,3 +2237,114 @@ indices 18 and 19 (slots 23 and 24); target wants slot 22 and slot 11.
 - [s14] Dressing sweep around the $a1-seated family (18 bodies measured this session): X2/X3/X5/X6 = 5/66, V1/V3 = 6/66 (66 insns and no nop, but the seat falls back to $a0), W1 and P2A1 = 5/67, Y3 = 7/67, Y1/Y2/Y7 = 8/67, Y6 = 10/68, Y5 = 11/68. Every attempt to restore target's apparent D_800A3478-store position (between the +2 read and the 0x1A store) costs the instruction back.
 
 - [s14] Tooling notes for the next session: tmp/grind/func_80060A68/s12/text1b.c.HEAD is STALE (src/text1b.c gained C bodies for func_80057CC8 and func_800645B0 since s12); use tmp/grind/func_80060A68/s14/text1b.c.HEAD with s14/apply.py. 'bash tools/wsl.sh' fails from inside a PowerShell tool call on this host ('wsl: command not found'); the working sweep recipe is the Bash tool calling pwsh -NoProfile -Command "& tools/wteng.ps1 main sandbox ..." (see tmp/grind/func_80060A68/s14/sweep.sh).
+
+## s15 (2026-09-03) — forensics modality
+
+Chassis re-measured first: HEAD == tmp/grind/func_80060A68/s14/text1b.c.HEAD byte-for-byte
+(commit 506390f5 touched only the ledger), s14's W5 body re-measures **5 / build 66 /
+target 66** with three `lw ?,0x10($v1)` loads. Every number below is on that chassis with
+ZERO FAKE constructs in any body: no invented local, no second write to any variable, no
+dead code, no volatile, no asm anywhere in the ~70 bodies measured this session.
+
+### 1. The residual of s14's W5 is ONE local-alloc decision, and it is now bought.
+
+W5's five wrong slots (24-29) are the SAME instruction multiset as target's; the only
+register that differs is the destination of the +2 halfword read (`lhu $v0,2($a0)` vs
+target `lhu $a0,2($a0)`), and the ordering follows from it (with the value in $a0 the idx
+read can no longer be hoisted into the load-delay slot at 25, so the D_800A3478 addiu/store
+pair fills 25/26 and idx falls to 29 — target's stream).
+
+QTYDBG/FFR ground truth for W5 (`tmp/grind/func_80060A68/s15/qtydbg_W5.txt`, extracted with
+`tools/ra_solver/local_extract.py text1b --func func_80060A68 --suggest`):
+
+    qty11  reg1=74 (the +2 halfword value)  birth 36  death 38  refs 2  ord  5  got=2 ($v0)
+    qty14  reg1=94 (the D_800A3478 addiu)   birth 44  death 46  refs 2  ord  6  got=2 ($v0)
+    qty12  reg1=75 (p10)                    birth 40  death 48  refs 2  ord 24  got=5 ($a1)
+
+pri = floor_log2(refs)*refs*size*10000/(death-birth) (local-alloc.c:1649-1685), allocated
+first-fit in descending-priority order (local-alloc.c:1563-1580). reg74 has span 2, the
+minimum, so its priority 10000 is the LARGEST a refs=2 quantity can have; it is allocated
+6th of 25, nothing holds $v0 across [36,38], and first-fit hands it $v0. There is no way to
+out-prioritise it — the fix is the opposite direction: make its range ENCLOSE the addiu's.
+
+**Placing `D_800A3478 = outer + 0x18;` between the +2 read and the 0x1A store does exactly
+that.** The +2 value then spans [38,44] (priority 3333, allocated 23rd-24th), the addiu
+spans [40,42] (priority 10000, allocated 6th-7th) and takes $v0, and first-fit is forced
+past {$v0,$v1} into **$a0 — target's register**. Measured on the A8 and E3 chassis
+(`qty12 reg1=74 ... got=4`).
+
+### 2. The cse rule that decides how many `lw ?,0x10($v1)` loads exist (new).
+
+A second `*(s32 *)(outer + 0x10)` in source is folded onto the first unless a store
+separates them, and **both kinds of store separate**: the register-based stores
+(`*(u16 *)(outer + 0x18) = ...`, `*(u16 *)(outer + 0x1A) = ...`, the three copy stores) AND
+the gp symbol stores (`D_800A3478 = ...`, `D_800A347C = ...`). Cleanest instance: bodies E2
+and E3 differ ONLY in whether the `p10 = *(s32 *)(outer + 0x10);` statement sits before or
+after `D_800A3478 = outer + 0x18;` — before it, 2 loads; after it, 3.
+
+### 3. E2 — a new score-2 class, two slots from target.
+
+`memory/grind/func_80060A68/candidate.c` (and rejected/s15-E2-*) is
+`S1, S2, p10, D_800A3478, S3(0x1A store), S6, idx, D_800A347C, S8`: 2 / 66, two 0x10 loads,
+and its ONLY differing slots are
+
+    22  ours nop               vs  target lw $a0,0x10($v1)
+    24  ours lhu $a0,2($a1)    vs  target lhu $a0,2($a0)
+
+Everything else — including the $a0 seat for the +2 value and target's
+`addiu v0,v1,0x18 / sw v0,%gp(D_800A3478) / sh a0,0x1A(v1)` at 25/26/27 — is identical.
+The entire residual is the missing THIRD 0x10 load: with p10 folded onto the +2 read's
+pointer there is nothing to fill the +0 read's load-delay slot at 22, and the +2 read
+addresses $a1 instead of $a0.
+
+### 4. E3 — the best three-load body in the campaign: 3 / 66 (W5 was 5 / 66).
+
+Same order with the p10 statement moved one line later (after `D_800A3478 = outer + 0x18;`).
+Three loads, 66 instructions, slots 20-27 are target's own stream shifted one slot earlier.
+Its residual is that the third load is emitted at slot 26 in $v0 (`lw $v0,0x10($v1)` feeding
+`lhu $a1,4($v0)`) instead of at slot 11 in $a1.
+
+### 5. The tension that is left, measured across ~70 bodies.
+
+* Three loads WITH the early slot-11 $a1 load requires the p10 statement to sit before one
+  of the copy stores (only a register-based store early enough separates it from S1's load).
+* Three loads that way, COMBINED with the gp store between the +2 read and the 0x1A store,
+  measures **67 instructions in every ordering tried — 30 bodies**: A1-A8 (idx in all 8
+  gaps), B00-B23 (three p10-before-copy positions x four idx positions), C1-C18 (all tail
+  permutations plus insertions into the S2..S3 window). Score range 5-9.
+* Forensic cause of that extra instruction (sched1/sched2 dumps
+  `tmp/grind/func_80060A68/s15/{W5,V4}.sched{1,2}.trace`, extracted from `-da` with
+  tools/grinder/dump.ps1): with the gp store inside the +2 read's range, sched1 emits p10's
+  load ADJACENT to the +2 pointer load; in sched2's reverse walk the ready list at T-30 then
+  contains only insn 39 (p10's load), which is forced into that slot and spent filling the
+  +2 pointer's load-delay slot, leaving the +0 read's own delay slot (slot 21) a nop. In W5
+  the same two insns are separated by the 0x18 store, insn 39 keeps losing rank_for_schedule
+  (priority 3 against 6-10) and sinks all the way to slot 11.
+* Making `D_800A347C = outer + 0x20;` the early cse separator instead (H1-H12) is 68/69
+  instructions, score 8-14 — that statement's position is NOT free.
+* The p10 statement's position among the three copy statements remains codegen-inert
+  (B00/B10/B20 etc. identical), confirming s14's H-s14-3 on a second chassis.
+
+- [s15] Chassis check: HEAD src/text1b.c is byte-identical to s14's saved copy, and s14's W5 body re-measures 5 / build 66 / target 66 with three lw ?,0x10($v1) loads.
+
+- [s15] W5's five wrong slots (24-29) contain target's exact instruction multiset; the sole register difference is the +2 halfword read's destination ($v0 vs target $a0), and both ordering differences follow from it.
+
+- [s15] QTYDBG ground truth for W5 (tmp/grind/func_80060A68/s15/qtydbg_W5.txt): qty11 = pseudo 74 (the +2 value), birth 36 death 38, refs 2, allocation order 5 of 25, got $v0; qty14 = pseudo 94 (the D_800A3478 addiu), birth 44 death 46, got $v0; qty12 = pseudo 75 (p10), birth 40 death 48, order 24, got $a1.
+
+- [s15] pri = floor_log2(refs)*refs*size*10000/(death-birth) at local-alloc.c:1649-1685; a refs=2 quantity with span 2 has the maximum possible priority 10000, so the +2 value cannot be out-prioritised - the only lever is to make its range ENCLOSE a higher-priority $v0 quantity.
+
+- [s15] Placing `D_800A3478 = outer + 0x18;` between the +2 read and the 0x1A store does exactly that and yields got=4 ($a0) for pseudo 74 on the A8 / E2 / E3 chassis - the seat that the 2026-08-19, 2026-08-30 and 2026-09-01 records all describe as requiring a multiply-set carrier.
+
+- [s15] New cse rule (measured): a second *(s32 *)(outer + 0x10) read is folded onto the first unless a store separates them, and BOTH register-based stores and the gp symbol stores separate. E2 vs E3 differ only in whether the p10 statement precedes or follows the D_800A3478 store, and that alone is 2 loads vs 3.
+
+- [s15] E3 (memory/grind/func_80060A68/rejected/s15-E3-three-loads-a0-seat-for-plus2-value-third-load-lands-slot26-in-v0-score3.c) is the best three-load body in the campaign: score 3 / build 66 / target 66, with slots 20-27 reproducing target's stream one slot early; s14's W5 was 5 / 66.
+
+- [s15] E2 (now memory/grind/func_80060A68/candidate.c) is a new score-2 class: 66 instructions, two loads, and its ONLY differing slots are 22 (nop vs target lw $a0,0x10($v1)) and 24 (lhu $a0,2($a1) vs lhu $a0,2($a0)); target's 25/26/27 addiu / sw %gp(D_800A3478) / sh 0x1A order is matched exactly.
+
+- [s15] The prior candidate.c body (s7..s14, 2 / 66, residual at slots 22-23) is preserved at memory/grind/func_80060A68/rejected/s14-candidate-2load-a1-plus0-read-score2.c.
+
+- [s15] Combining the $a0 seat with an early third 0x10 load costs exactly one instruction in all 30 orderings measured (A1-A8, B00-B23, C1-C18): 67 instructions, scores 5-9.
+
+- [s15] sched2 forensic cause of that instruction (tmp/grind/func_80060A68/s15/V4.sched2.trace): ';; ready list at T-30: 39 (3)' - the list holds only p10's load, which is forced into that slot and spent as the +2 pointer's delay-slot filler; W5's trace shows the same insn lingering from T-26 down past T-39 because the 0x18 store keeps the list non-empty.
+
+- [s15] All ~70 bodies measured this session are ordinary C: no invented local, no variable written twice, no dead code, no volatile, no asm, no FAKE construct of any kind.

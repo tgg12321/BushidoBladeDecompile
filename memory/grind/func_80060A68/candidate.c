@@ -1,3 +1,40 @@
+/* [s15 2026-09-03 - forensics modality.  BODY REPLACED: candidate.c is now the E2 body.
+ * Still 2 / build 66 / target 66, but a DIFFERENT and much closer score-2 class; the
+ * s7..s14 body is preserved at rejected/s14-candidate-2load-a1-plus0-read-score2.c.]
+ *
+ * THE ONE FACT THIS SESSION ADDS.  The +2 halfword value's $a0 seat - which every record
+ * from 2026-08-19 onward treated as unreachable without a multiply-set carrier - is bought
+ * by ONE ordinary statement move: put `D_800A3478 = outer + 0x18;` BETWEEN the +2 read and
+ * the 0x1A store.  Mechanism (local-alloc.c:1649-1685 priority, 1563-1580 first-fit,
+ * QTYDBG ground truth in tmp/grind/func_80060A68/s15/qtydbg_W5.txt): with the store after
+ * the 0x1A store, the +2 value pseudo has refs 2 / span 2 => priority 10000 (the maximum a
+ * refs=2 quantity can have), it is allocated 6th of 25, nothing holds $v0 across its range,
+ * and first-fit gives it $v0.  Moving the gp store inside its range lengthens it to span 6
+ * (priority 3333, allocated 24th) AND puts the addiu quantity (refs 2, span 2, priority
+ * 10000, allocated 7th) in $v0 across it, so first-fit is forced past {$v0,$v1} to $a0.
+ *
+ * THIS BODY (E2) - two 0x10 loads, 66 insns, score 2.  Its ONLY differing slots are
+ *     22  ours nop              vs  target lw $a0,0x10($v1)
+ *     24  ours lhu $a0,2($a1)   vs  target lhu $a0,2($a0)
+ * Everything else matches, including target's 25/26/27 `addiu v0,v1,0x18 /
+ * sw v0,%gp(D_800A3478) / sh a0,0x1A(v1)`.  The residual is entirely the MISSING THIRD
+ * 0x10 load: cse folds p10 and the +2 read's pointer into one $a1 load.
+ *
+ * THE cse RULE THAT GOVERNS THE THIRD LOAD (new, measured s15).  A second
+ * `*(s32 *)(outer + 0x10)` is folded onto the first unless a store separates them, and
+ * BOTH kinds of store separate: the register-based stores (`*(u16 *)(outer + 0x18) = ...`,
+ * the copy stores) AND the gp symbol stores (`D_800A3478 = ...`).  E2 vs E3 differ only in
+ * whether the p10 statement sits before or after `D_800A3478 = outer + 0x18;` and that
+ * alone is 2 loads vs 3.
+ *
+ * THE TENSION THAT IS LEFT (the whole frontier).  Three loads WITH the early slot-11 $a1
+ * one requires the p10 statement before a copy store; three loads with the gp store between
+ * the +2 read and the 0x1A store then measures 67 in every ordering tried (30 bodies:
+ * A1-A8, B00-B23, C1-C18).  Putting the p10 statement after the gp store keeps 66 and 3
+ * loads but the third load lands at slot 26 in $v0 (E3, score 3 - the best 3-load body in
+ * the campaign, rejected/s15-E3-*).  Moving `D_800A347C = outer + 0x20;` early to act as
+ * the cse separator is 68/69 (H1-H12).
+ */
 /* [s14 2026-09-03 - solver modality.  BODY UNCHANGED, re-measured 2 / 66 / 66 on
  * today HEAD.  READ THIS BEFORE SPENDING ANOTHER SESSION ON THIS BODY.]
  *
@@ -453,10 +490,10 @@ void func_80060A68(void) {
     *(s32 *)(outer + 0x20) = *(s32 *)(*(s32 *)(outer + 0xC) + 0);
     *(s32 *)(outer + 0x24) = *(s32 *)(*(s32 *)(outer + 0xC) + 4);
     *(s32 *)(outer + 0x28) = *(s32 *)(*(s32 *)(outer + 0xC) + 8);
-    p10 = *(s32 *)(outer + 0x10);
 
     *(u16 *)(outer + 0x18) = *(u16 *)(*(s32 *)(outer + 0x10) + 0);
     temp2 = *(u16 *)(*(s32 *)(outer + 0x10) + 2);
+    p10 = *(s32 *)(outer + 0x10);
     D_800A3478 = outer + 0x18;
     *(u16 *)(outer + 0x1A) = temp2;
     temp_a1 = *(u16 *)(p10 + 4);

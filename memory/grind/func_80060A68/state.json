@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 14,
- "current_modality": "solver",
+ "session_count": 15,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -87,23 +87,29 @@
    "floor": 2,
    "modality": "solver",
    "headline": "Solver session overturns the campaign's central negative: a THREE-load body (W5) whose slots 0-23 are byte-identical to target, including the slot-11 lw $a1,0x10($v1), is reachable in ordinary C at 66"
+  },
+  {
+   "session": 15,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: W5's 5-instruction residual is ONE local-alloc decision, and it is bought - moving `D_800A3478 = outer + 0x18;` between the +2 read and the 0x1A store seats the +2 halfword value in $a0 (QT"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "W5's remaining 5 instructions (slots 24-29) are a second instance of the same seat/priority arithmetic that the $a1 seat solved: the +2 read's value must land in $a0 rather than $v0, and its 0x1A store must be deferred past the D_800A3478 gp store.",
-   "mechanism": "Same local-alloc first-fit priority law (local-alloc.c:1649-1685): the +2 read's quantity is short-lived, therefore high-priority, therefore seated early into $v0. Lengthening its live range by moving its CONSUMER (the 0x1A store) later should push it to the end of the allocation order and into $a0, exactly as moving the +4 read's consumer did for pseudo 75.",
-   "next_probe": "Re-extract QTYDBG with W5 applied (src is left at HEAD - use s14/apply.py with s14/bodies/W5.c), identify the +2 read's quantity and its span/priority, then sweep the 0x1A-store position (temp2 as a named local, written inline, and with the D_800A3478 store interleaved) looking for the $a0 seat at 66 instructions."
+   "hypothesis": "E2's entire residual is the missing third 0x10 load: give the +2 read its own load at slot 22 in $a0 while keeping p10's load early in $a1, and the function closes at 66 instructions.",
+   "mechanism": "In E2, cse folds p10 and the +2 read's pointer into a single $a1 load, so slot 22 has nothing to fill the +0 read's load-delay slot and the +2 read addresses $a1. Three fresh loads require a store between each consecutive pair of *(s32 *)(outer + 0x10) reads; the only stores available early enough are the three copy stores and the 0x18 store, and every arrangement using them measured 67 (the A/B/C families).",
+   "next_probe": "Enumerate the separator geometries s15 did not reach: (a) split a copy statement so ITS store lands between the p10 read and the +0 read, on the E2 chassis specifically; (b) reorder the three copy statements so a different one is the separator; (c) sweep the p10 read through the copy block on the E2 chassis (the B-sweep only covered the A-family). Record loads10 and whether slot 22 is filled for each."
   },
   {
-   "hypothesis": "The idx read being hoisted into the +2 read's load-delay slot at 25 is what displaces target's addiu $v0,$v1,0x18 from that slot, and it is steerable by giving that delay slot a competitor rather than by moving idx (every idx move measured this session costs an instruction).",
-   "mechanism": "sched2 fills the load-delay slot after lhu v0,2(a0) with the highest-priority ready insn; in target that insn is the D_800A3478 address computation, in W5 it is the idx load.",
-   "next_probe": "tools/sched_solver: re-extract with W5 applied and run perturb.py --pass 2 --block 0 --goal-before <idx-read>:<addiu> --atoms luid,luid_move at depth 1 and then depth 2 (allow more than 15 minutes for depth 2), then spell the top vector and measure it."
+   "hypothesis": "E3's third load can be pulled from slot 26 ($v0) to slot 11 ($a1) by lowering p10's local-alloc priority the same way the +2 value's was lowered, rather than by moving the p10 statement.",
+   "mechanism": "In E3 the p10 statement sits immediately before its consumer, giving pseudo 75 a short span, a high priority, an early allocation call and the $v0 seat. s14's H-s14-2 showed the mirror move (lengthening the range to win $a1) works for this exact pseudo. The consumer here is the +4 read; deferring it lengthens p10's range without adding a reference.",
+   "next_probe": "On the E3 chassis, sweep the position of `temp_a1 = *(u16 *)(p10 + 4);` and of the 0x1C store that consumes it through every legal slot, re-extracting QTYDBG each time and watching for qty(reg 75) got=5. E3 is 3/66, so a single seat flip may be the whole remaining distance."
   },
   {
-   "hypothesis": "The two dispositions filed for this function (docs/grind/decisions.md 2026-08-30 and 2026-09-01) rest on a mechanism claim that is now measured false, so their foreclosure grounds no longer hold and the next session should grind the W5 chassis rather than re-open the disposition question.",
-   "mechanism": "Both entries state that target needs 'a load that is BOTH unshared (three loads) AND early-in-$a1 - the one combination the law excludes at 66 instructions', and that closing the function 'REQUIRES a C variable assigned more than once'. W5 exhibits that exact combination at 66 instructions in ordinary C with no multiply-assigned variable.",
-   "next_probe": "No probe needed; the record correction is banked in memory/grind/func_80060A68/hypotheses.md (H-s14-1 and H-s14-6) and in candidate.c's s14 header, and the body itself is banked at memory/grind/func_80060A68/rejected/s14-W5-three-loads-early-a1-slot11-slots0-23-target-identical-score5.c."
+   "hypothesis": "The two dispositions filed for this function (docs/grind/decisions.md 2026-08-30 and 2026-09-01) rest on a claim that is now doubly measured false and should not be re-opened as a disposition question.",
+   "mechanism": "Both entries state that target needs a load that is BOTH unshared and early-in-$a1, 'the one combination the law excludes at 66 instructions', and that closing the function REQUIRES a C variable assigned more than once. s14's W5 exhibited the first at 66 instructions in ordinary C; s15 buys the $a0 seat those entries called unreachable, also in ordinary C, and lowers the three-load floor from 5 to 3.",
+   "next_probe": "No probe needed; the correction is banked in evidence.md s15, hypotheses.md H-s15-1/2, and candidate.c's s15 header. The next session should grind the E2/E3 chassis, not the disposition."
   }
  ],
  "judge_constraints": [
@@ -159,6 +165,38 @@
    "measured_on": "P2A1 chassis (3 loads, $a1 seat, 67 insns), sched_solver model text1b pass 2 block 0, zero FAKE constructs",
    "predicate_cite": "",
    "result": "No single atom reaches either goal. (The depth-2 run was started and stopped inconclusive after 15 minutes - it is an op"
+  },
+  {
+   "session": 15,
+   "statement": "The five-instruction residual of s14's W5 body is three coupled facts (the +2 read's register, the 0x1A store's deferral past the gp store, and the idx read falling to slot 29).",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis (byte-identical to s14's tmp/grind/func_80060A68/s14/text1b.c.HEAD; W5 re-measured 5 / 66 / 66); zero FAKE constructs in any body measured",
+   "predicate_cite": "",
+   "result": "It is ONE fact, and it is a local-alloc fact rather than a scheduling one. W5's slots 24-29 already hold target's exact "
+  },
+  {
+   "session": 15,
+   "statement": "A three-load body can carry BOTH the early slot-11 $a1 load and the D_800A3478 gp store placed between the +2 read and the 0x1A store, at 66 instructions.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 30 bodies, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "Every one of the 30 measures 67 instructions (scores 5-9). Named cause from the sched2 trace: with the gp store inside t"
+  },
+  {
+   "session": 15,
+   "statement": "Moving `D_800A347C = outer + 0x20;` early, to act as the cse separator that gives p10 its own early load, is byte-neutral for the rest of the body.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 12 bodies, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "67-69 instructions, scores 8-14. The statement's position is load-bearing for slots 30-32 and hoisting it costs one to t"
+  },
+  {
+   "session": 15,
+   "statement": "The p10 statement's position among the three copy statements steers codegen on the gp-store-moved chassis.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 12 bodies, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "Each idx-position column is constant across all three p10 positions (7/67, 5/67, 7/67, 7/67), so the p10 statement's pos"
   }
  ]
 }
