@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 49,
- "current_modality": "escalation",
+ "session_count": 50,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -297,23 +297,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Owner Ruling A named probe executed: the duplicated-statement ref-lift is unavailable at this site (duplicate survives to bytes, 84 insns, score 27), but a new guard-on-a0 form CORRECTS s48 by proving"
+  },
+  {
+   "session": 50,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Block-0 residual fully attributed (sched.c LUID tiebreak coupled to a cse ref-count collapse), and a NEW equal-floor chassis found whose entire residual is two swapped sll operands with prologue sched"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C-level distinction exists that changes make_regs_eqv's qty_first_reg choice for the 72/75 quantity without moving either register's last-use uid -- e.g. a mode/class difference that makes REGNO_REG_CLASS(new) == NO_REGS or otherwise fails the guard at cse.c:844-857 while leaving the emitted instruction set at 83.",
-   "mechanism": "cse.c:842-857 gates the displacement on three clauses, only two of which the ledger has attacked (the EBB-outliving clause and the last-uid inequality). The class/mode clauses `new >= FIRST_PSEUDO_REGISTER || REGNO_REG_CLASS(new) != NO_REGS` have never been examined for this function; a pseudo of a different register class or machine mode for i would take a different branch. On the s49 guard-on-a0 chassis the allocation is already target-exact, so only this operand choice remains.",
-   "next_probe": "On the s49 guard-on-a0 chassis (rejected/h1-second-loop-guard-on-a0.c), dump .cse via `pwsh tools/grinder/dump.ps1 func_80045294` and read which clause of cse.c:844-857 actually decides the 72/75 displacement; then enumerate ONLY mode/class-changing spellings of i (short/char/pointer-typed induction variable, bitfield-backed counter) that keep build_insns at 83, checking nrefs and the emitted sll operand. Every declaration-order and second-counter-identity spelling is already banked KILLED -- do not re-spell those."
+   "hypothesis": "On the s50 chassis (rejected/s50-i-first-a0ref-in-loop2-preheader.c) the whole function reduces to ONE question: can block 0's `a0 << 4` read a0 while sitting after `i = a0`? If it can, block 0 is byte-exact and only the loop-2 operand remains, giving a floor of 1 or 0.",
+   "mechanism": "cse.c:842-857 makes i canonical only when BOTH (a) i's live range leaves the cse EBB and (b) uid_cuid[regno_last_uid[i]] > uid_cuid[regno_last_uid[a0]]. s48 already measured the obvious attack on (b) -- a distinct loop-2 counter j, which shortens i's last use -- and it costs the instruction count (80 insns, score 37, on BOTH chassis). The untried direction is to LENGTHEN a0's last use past i's rather than shorten i's, or to attack clause (a) by shrinking the first cse EBB (currently insns 2..36, bounded by loop 1's top label) so that i's live range no longer leaves it.",
+   "next_probe": "Apply rejected/s50-i-first-a0ref-in-loop2-preheader.c, dump .cse, and confirm which of clauses (a)/(b) is true for the {a0, i} quantity in the FIRST EBB on this chassis. Then enumerate only spellings that move an EBB boundary: loop 1 written so its top label falls after the shift, an `if`/comma/statement grouping that extends the first EBB past loop 1, or any real a0 read reachable at or after loop 2's termination test. Reject on build_insns != 83 before spending a sandbox run."
   },
   {
-   "hypothesis": "The one-instruction cost of the guard-on-a0 ref-lift is removable, which would leave a 1-instruction residual (the sll operand) instead of the current 5-score / 84-insn form and give a strictly better fallback chassis than candidate.c's score 2 for future work.",
-   "mechanism": "The extra instruction appears because `i = a0` must sit inside the guard's arm to keep the guard's a0 read outside cse's equivalence region; target emits `move $s0,$s2` before the slt and `sll $v1,$s0,4` in the delay slot. If the arm's copy can be made to cross-jump-merge with the loop-2 preamble, or if the guard can read a0 through an expression cse cannot canonicalize while `i = a0` stays in front of it, the count returns to 83 with nrefs 4.",
-   "next_probe": "Disassemble the s49 v1 object block by block (tmp/grind/func_80045294/s49/v1_disasm.txt is the head only) and attribute all five score points; then test whether the loop-2 preamble can absorb the arm copy (e.g. `i = a0` folded into the loop's first iteration) at 83 instructions with nrefs_flow(72) still 4, checking extract.py before each sandbox run."
+   "hypothesis": "The loop-2 operand alone is removable on the s50 chassis -- a0's fourth reference can be paid by some construct in the loop-2 preheader other than the shift, leaving `sll $v1,$s0,4` correct there and a 1-instruction residual.",
+   "mechanism": "a0's fourth reference only has to be an a0 read in a cse EBB where the a0/i equivalence is not live, i.e. anywhere before the loop-2 preheader's `i = a0`. It does not have to be the shift. s50 measured the guard spelling (`if (a0 < D_800A33AC)`) and it costs an instruction because the target's `slt` reads $s0; but the preheader also contains the `ptr` and `idx` initialisations, either of which could in principle be spelled off a0 and re-merge to the same bytes.",
+   "next_probe": "On the s50 chassis, enumerate a0-spellings of the loop-2 preheader's `ptr = (s32 *)((u8 *)&D_800EED14 + v1)` and `idx = v1` (e.g. `idx = a0 << 4` ahead of `i = a0` with `v1 = i << 4` after it, or `ptr` formed from a0) and keep only those at build_insns == 83; check the .greg allocation order still shows 72(a0) ahead of s4/s5 before spending a sandbox run."
   },
   {
-   "hypothesis": "The Ruling A duplication family is available at a DIFFERENT site than the one probed -- specifically inside loop 2, where the `if (fn != 0)` arms converge on the loop tail, if some real a0-referencing statement genuinely belongs on both arms.",
-   "mechanism": "The 2026-08-06 control-transfer-tail extension covers duplicating a loop tail with its conditional branch, and the loop-2 tail IS a genuine convergence point with two predecessors, which is exactly what the s49 probe site lacked. It would also place an a0 reference after i's last reference, inverting the make_regs_eqv inequality.",
-   "next_probe": "Enumerate whether any statement in loop 2's tail (`ptr += 0x10`, `idx += 0x10`, `i += 1`, the bound reload) admits an a0-referencing spelling that is byte-identical to the current one at 83 instructions; if none does, that closes the duplication family for this function definitively rather than by the s49 site-specific argument. NOTE: $s2 is reused as the walking pointer at 0x80045344, so a0 is architecturally dead inside loop 2 in the target -- expect this to be negative, and record it as such."
+   "hypothesis": "The two complementary score-2 forms can be merged: some third spelling gets candidate.c's correct sll operands AND the s50 chassis's correct block-0 schedule, which would be a byte match.",
+   "mechanism": "The two requirements are contradictory only through the single cse canonicalisation at cse.c:855. Every other target property is now simultaneously reachable -- s50 demonstrated the target prologue schedule and the target allocation coexisting in one build. The merge therefore needs exactly one thing that no session has produced: an RTL insn stream in which the shift insn follows `i = a0` (LUID) while its operand rtx is still a0.",
+   "next_probe": "Search for a construct that produces the shift insn AFTER cse has run, so canon_reg never sees it -- e.g. an induction-variable initial value that loop.c emits into a preheader, or a `combine`-formed shift whose operands were fixed pre-cse. Read tmp/grind/func_80045294/s50/dumps_base/text1a_c.loop and .combine to see which insns in block 0 are created after cse at all; if none can be, that closes the merge by construction and the s50 chassis's 2 is the informed floor."
   }
  ],
  "judge_constraints": [
@@ -323,5 +329,23 @@
  "created": "2026-07-19T01:19:29.988705+00:00",
  "exhaustion_base": 49,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.379854+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.379854+00:00",
+ "kills": [
+  {
+   "session": 50,
+   "statement": "With loop 2 spelled `i = a0; v1 = i << 4;`, no declaration order of {sum, i, v1, s4, count, s5} in block 0 reaches below score 11 whenever i is declared before v1.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-03 chassis (candidate.c pasted over src/text1a_c.c:1445, sandbox score 2 / 83 insns), zero FAKE constructs present, loop 2 spelled `i = a0; v1 = i << 4;`",
+   "predicate_cite": "cse.c:855",
+   "result": "P00-P05 (sum declared before i) score=11, P06-P29 (i declared first) score=14, all at build_insns=83. Baseline candidate"
+  },
+  {
+   "session": 50,
+   "statement": "Buying a0's fourth reference from the loop-2 guard, by spelling it `if (a0 < D_800A33AC)` ahead of `i = a0`, raises build_insns to 84 on both block-0 chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, both the i-first and v1-first block-0 heads, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "I_a0shift_in_guard score=5 insns=84; B_a0shift_in_guard score=27 insns=84. Both exceed the target's 83 instructions, so "
+  }
+ ]
 }

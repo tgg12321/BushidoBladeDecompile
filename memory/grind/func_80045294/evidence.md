@@ -961,3 +961,178 @@ at the end of the session (`git checkout -- src/text1a_c.c`), tree clean apart f
 - [s49] src/text1a_c.c restored to HEAD (git checkout --) at the end of the session; working tree clean apart from metrics/events.jsonl. HEAD ships INCLUDE_ASM("asm/funcs", func_80045294);.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=49
+
+## [s50] rederive -- the block-0 residual fully attributed, and an equal-floor chassis with a DISJOINT residual
+
+Chassis re-measured at dispatch: candidate.c applied over
+INCLUDE_ASM("asm/funcs", func_80045294); at src/text1a_c.c:1445 gives
+`sandbox func_80045294 --disable all` -> **score=2, target_insns=83,
+build_insns=83**. Note the FILE chassis has moved since s49: four siblings in
+src/text1a_c.c (func_80043BD0 / func_80043C7C / func_80043D34 / func_80043DE0)
+are now pure C with POLY_FT3/FT4/GT3/GT4 typedefs, where s49's snapshot still
+had register-asm bodies. tmp/grind/func_80045294/s49/text1a_c.orig.c is
+therefore STALE -- s50 re-snapshotted HEAD to
+tmp/grind/func_80045294/s50/text1a_c.orig.c. The floor is unchanged at 2, so no
+banked spelling conclusion is voided by the file drift, but future sessions must
+re-snapshot rather than reuse s49's harness.
+
+### The exact residual on candidate.c (objdump, s50)
+Only three positions differ, and they are a rotation of the same three insns:
+
+    idx  build                    target
+      7  sll  $v1,$s2,4           sw   $s0,0x10($sp)
+      8  sw   $s0,0x10($sp)       addu $s0,$s2,$zero
+      9  addu $s0,$s2,$zero       sll  $v1,$s2,4
+
+i.e. the target emits the $s0 save/init pair BEFORE the shift; the build emits
+the shift first. Everything else, including the entire callee-save allocation,
+matches.
+
+### Pass attribution (dumps READ, not guessed): sched.c rank_for_schedule
+tmp/grind/func_80045294/s50/dumps_base/text1a_c.sched2 shows block 0 scheduled
+BACKWARDS from T-1 to T-18 with **every insn at INSN_PRIORITY 1**. The decision
+is a single tie at T-9, where the ready list is `22 14 12 6` (insn 22 = `i = a0`,
+insn 14 = the `a0 << 4` shift). Insn 22 is at the head, so 22 is picked first
+and therefore EMITTED LAST -- producing the build's `sll ; sw $s0 ; move $s0`.
+
+Reading tools/gcc-2.7.2/sched.c:
+
+  * `priority()` (sched.c:1434-1522) accumulates over **LOG_LINKS**, i.e.
+    predecessors, as `priority(pred) + insn_cost(pred) - 1`. It is distance from
+    the block START, not to the block end, and the `- 1` makes any chain of
+    latency-1 insns come out flat at 1. Only insns with a LOAD predecessor reach
+    2 -- in block 0 exactly insn 28 (`s5 = s4 + a1`, fed by the `lw` of s4) and
+    insn 31 (the `slt`, fed by the `lw` of D_800A33AC). Neither insn 14 nor
+    insn 22 has a load predecessor; both are fed by insn 4, the a0 param copy,
+    so both are priority 1. **The priority clause cannot separate them.**
+  * The middle clause classifies against `last_scheduled_insn`, which at T-9 is
+    insn 199, a `sw` callee-save store. Neither insn 14 nor insn 22 has a
+    dependence on a store, so both are class 3. **The class clause cannot
+    separate them either.**
+  * The decision therefore falls through to sched.c:2461-2463,
+    `return INSN_LUID (tmp) - INSN_LUID (tmp2);` -- descending LUID, head
+    picked, highest LUID emitted last.
+
+**=> The target's emission order requires the shift's RTL insn to carry a HIGHER
+LUID than `i = a0`'s, i.e. the SOURCE must declare i before v1.**
+
+Verified directly rather than inferred: with the i-first order the build's
+prologue becomes
+
+    addiu sp,sp,-48 / sw s5,36 / move s5,a0 / sw s3,28 / move s3,a1
+    sw s1,20 / move s1,zero / sw s0,16 / move s0,s5 / sll v1,s0,4 / sw ra,40 ...
+
+which is the target's structure insn-for-insn (`sw $s0` and `move $s0` now
+precede the `sll`). The only remaining difference is which hard registers the
+allocator handed out.
+
+### Why i-first has cost score 11 for 49 sessions: cse -> global.c, quantified
+tmp/grind/func_80045294/s50/dumps_A/text1a_c.greg vs dumps_base:
+
+    baseline (v1 first)  ;; 11 regs to allocate: 92 78 75 86 85 79 74 73 72 76 80
+                         ;; 72(a0) in 18   76(s4) in 20   80(s5) in 21   <- TARGET
+    i-first              ;; 11 regs to allocate: 92 75 76 86 85 79 74 73 77 80 72
+                         ;; 72(a0) in 21   77(s4) in 18   80(s5) in 20
+
+a0 falls from 9th to LAST in the allocation order. The cause chain:
+
+  1. cse.c:842-857 `make_regs_eqv (new=i, old=a0)`: i displaces a0 as
+     `qty_first_reg` because (a) i's live range leaves the cse EBB (the dump's
+     first EBB is `;; Processing block from 2 to 36`, and i is loop 2's counter)
+     and (b) `uid_cuid[regno_last_uid[i]] > uid_cuid[regno_last_uid[a0]]` -- i
+     always dies last, since a0's last reference is the loop-2 preheader's
+     `i = a0` while i's is loop 2's own termination test.
+  2. `canon_reg` therefore rewrites the later `a0 << 4` into `i << 4`. Confirmed
+     in the dump: the i-first .greg shows
+     `(insn 17 ... (ashift:SI (reg/v:SI 16 s0) (const_int 4)))` -- the shift
+     reads i, not a0. a0's `reg_n_refs` drops 4 -> 3.
+  3. global.c `allocno_compare`: priority is
+     `floor_log2(n_refs) * n_refs / live_length`, so a0 goes from
+     `floor_log2(4)*4 = 8` to `floor_log2(3)*3 = 3` -- a 2.67x collapse, enough
+     to drop it below s4 (3 refs, shorter live_length) and s5 (2 refs, much
+     shorter live_length). The callee-saves rotate a0 $s2->$s5, s4 $s4->$s2,
+     s5 $s5->$s4.
+
+So the 49-session "wall" is a genuine COUPLING, now named on both sides: the
+schedule wants i-first (sched.c LUID tiebreak), the allocation wants v1-first
+(cse ref count -> global.c priority), and within the declaration-order axis
+alone the two requirements are contradictory.
+
+### Exhaustive sweep of the i-first declaration subspace (30/30 measured)
+All 30 legal orderings of {sum, count} interleaved into the fixed chain
+i < v1 < s4 < s5 were generated and measured
+(tmp/grind/func_80045294/s50/v/P00..P29, results in
+tmp/grind/func_80045294/s50/sweep.txt):
+
+    sum before i  (6 forms, P00-P05):   score=11  insns=83  (all)
+    i first       (24 forms, P06-P29):  score=14  insns=83  (all)
+
+No declaration order anywhere in the i-first subspace goes below 11. The
+subspace is closed by measurement, not by argument.
+
+### THE NEW RESULT: an equal-floor chassis whose residual is DISJOINT
+The coupling is breakable on the ALLOCATION side. The loop-2 preheader is a
+**fresh cse EBB** (the dump's `;; Processing block from 70 to 109`) in which i
+has been clobbered by loop 1, so an `a0 << 4` placed BEFORE that block's
+`i = a0` is NOT canonicalized to i and pays a0's fourth reference back. Form
+I_a0shift_before_i = i-first block 0 + loop-2 preheader respelled
+`v1 = a0 << 4; i = a0;` measures **score=2, build_insns=83**, and its residual is
+
+    idx  9  build `sll $v1,$s0,4`   target `sll $v1,$s2,4`   (block 0)
+    idx 41  build `sll $v1,$s2,4`   target `sll $v1,$s0,4`   (loop-2 preheader)
+
+and **nothing else** -- the prologue sw/move interleave, the
+`sw $s0 / move $s0,$s2 / sll` ordering that candidate.c gets wrong, the complete
+callee-save allocation (a0->$s2, a1->$s3, sum->$s1, i->$s0, s4->$s4, s5->$s5)
+and every stack slot are byte-exact. Banked as
+memory/grind/func_80045294/rejected/s50-i-first-a0ref-in-loop2-preheader.c.
+
+**candidate.c and this form are exactly complementary**: candidate.c has both
+`sll` operands RIGHT and the block-0 schedule WRONG; this form has the schedule
+RIGHT and both operands WRONG. Both sit at 2. This is the first time the floor
+of 2 has been reached from the i-first side at all, and it converts the residual
+from a coupled 3-insn scheduling rotation into two isolated register-operand
+choices.
+
+Companion measurements from the same batch (block-0 head fixed, loop-2 preheader
+varied) -- tmp/grind/func_80045294/s50/v/:
+
+    B_shiftfirst        v1-first blk0, loop-2 `i=a0; v1=i<<4`   score=2   insns=83  (== candidate.c)
+    B_a0shift_before_i  v1-first blk0, loop-2 `v1=a0<<4; i=a0`  score=3   insns=83
+    I_shiftfirst        i-first  blk0, loop-2 `i=a0; v1=i<<4`   score=11  insns=83
+    I_a0shift_before_i  i-first  blk0, loop-2 `v1=a0<<4; i=a0`  score=2   insns=83  <- new chassis
+    B_a0shift_in_guard  loop-2 guard on a0                      score=27  insns=84
+    I_a0shift_in_guard  loop-2 guard on a0                      score=5   insns=84
+
+The `_in_guard` pair costs an instruction (84) because testing
+`a0 < D_800A33AC` before `i = a0` emits the `slt` on $s2 and then still needs the
+`move`, so a0's fourth reference cannot be bought from the loop-2 guard for free.
+
+### What this leaves for the next session
+On the new chassis the whole function reduces to ONE question: can the block-0
+`a0 << 4` read a0 while sitting after `i = a0`? Under cse.c:842-857 that needs
+`uid_cuid[regno_last_uid[i]] <= uid_cuid[regno_last_uid[a0]]`, i.e. a0 must be
+referenced at or after i's last reference. s48 already measured the obvious way
+to shorten i (a distinct loop-2 counter j): 80 insns, score 37 on BOTH chassis.
+The untried direction is to LENGTHEN a0 rather than shorten i, or to shrink the
+first cse EBB so that clause (a) of make_regs_eqv fails.
+
+- [s50] Chassis re-measured at dispatch: candidate.c over src/text1a_c.c:1445 gives sandbox score=2, target_insns=83, build_insns=83. Floor unchanged at 2.
+
+- [s50] The FILE chassis moved since s49: func_80043BD0 / func_80043C7C / func_80043D34 / func_80043DE0 in src/text1a_c.c are now pure C with POLY_FT3/FT4/GT3/GT4 typedefs where s49's snapshot still had register-asm bodies. tmp/grind/func_80045294/s49/text1a_c.orig.c is STALE and must not be reused as an apply harness; s50 re-snapshotted HEAD to tmp/grind/func_80045294/s50/text1a_c.orig.c.
+
+- [s50] candidate.c's residual is exactly three positions and is a rotation of the same three insns: build emits `sll $v1,$s2,4 / sw $s0,0x10($sp) / addu $s0,$s2,$zero`, target emits `sw $s0,0x10($sp) / addu $s0,$s2,$zero / sll $v1,$s2,4`. Everything else including the whole callee-save allocation matches.
+
+- [s50] sched.c priority() measures distance from the block START (`priority(pred) + insn_cost(pred) - 1` over LOG_LINKS), not to the block end. In block 0 this leaves every insn at priority 1 except the two fed by an `lw` (insn 28 `s5 = s4 + a1` and insn 31 the `slt`), which reach 2. This corrects any earlier assumption that the block-0 order is a critical-path/priority effect: it is a pure tiebreak.
+
+- [s50] The block-0 order is decided by a single tie at T-9 of a BACKWARDS schedule, where the ready list is `22 14 12 6`; both contenders are priority 1 and class 3, so sched.c:2461-2463 `INSN_LUID (tmp) - INSN_LUID (tmp2)` decides. Descending LUID, head picked, highest LUID emitted last.
+
+- [s50] cse.c:842-857 make_regs_eqv makes i the qty_first_reg on `i = a0` because i leaves the first cse EBB (`Processing block from 2 to 36`) and uid_cuid[regno_last_uid[i]] > uid_cuid[regno_last_uid[a0]] -- i is loop 2's counter so it always dies last. canon_reg then rewrites a later `a0 << 4` to `i << 4`, dropping a0's reg_n_refs from 4 to 3.
+
+- [s50] global.c allocno_compare priority is floor_log2(n_refs)*n_refs/live_length, so a0's 4->3 ref loss collapses its priority from 8 to 3. Measured in the dumps: baseline allocation order `92 78 75 86 85 79 74 73 72 76 80` with 72(a0) in $18, 76(s4) in $20, 80(s5) in $21 (target); i-first order `92 75 76 86 85 79 74 73 77 80 72` with 72(a0) in $21, 77(s4) in $18, 80(s5) in $20.
+
+- [s50] Exhaustive: all 30 legal block-0 declaration orders with i before v1 measured at build_insns=83 and score 11 (sum before i) or 14 (i first). None below 11. The declaration-order axis is closed by measurement.
+
+- [s50] NEW equal-floor chassis: i-first block 0 plus loop-2 preheader respelled `v1 = a0 << 4; i = a0;` gives score=2 / 83 with a residual of exactly two `sll` operands (idx 9 and idx 41, swapped relative to the target) and a byte-exact prologue schedule, callee-save allocation and stack frame. Banked at memory/grind/func_80045294/rejected/s50-i-first-a0ref-in-loop2-preheader.c.
+
+- [s50] src/text1a_c.c was restored to HEAD at end of session; git status shows only the two ledger files, the new rejected/ form, and metrics/events.jsonl modified. candidate.c is unchanged and remains the best form (tied at 2 with the new chassis).

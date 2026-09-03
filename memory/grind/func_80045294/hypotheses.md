@@ -893,3 +893,101 @@ holding the identical value the shift reads.
 - probe: H1 chassis + guard on a0 + distinct loop-2 counter j; extract.py (v3.model.json, nrefs_flow(72) = 6) then `sandbox func_80045294 --disable all`. Form banked rejected/h1-guard-on-a0-distinct-j.c.
 - result: score 38 at build_insns 81 against target 83. The s48 deletion reproduces unchanged and is independent of the guard spelling: with a distinct loop-2 counter the `lw %gp_rel(D_800A33AC)` the target keeps INSIDE loop 2 at 0x8004538C hoists out of the loop and three instructions disappear. Keeping a0 canonical for the shift requires shortening i, and shortening i deletes instructions the target has.
 - verdict: KILLED
+
+## [s50] The block-0 rotation is a sched.c LUID tiebreak coupled to a cse ref-count collapse -- and the coupling breaks on the allocation side
+
+### H-s50-1 (KILLED, class) -- declaration order alone cannot satisfy both halves
+**Statement.** With loop 2 spelled `i = a0; v1 = i << 4;` (candidate.c's
+spelling), no declaration order of {sum, i, v1, s4, count, s5} in block 0
+reaches below score 11 whenever i is declared before v1.
+
+**Mechanism.** sched2 schedules block 0 backwards; all block-0 insns are
+INSN_PRIORITY 1 (priority() at sched.c:1497 measures distance from the block
+START as `priority(pred) + insn_cost(pred) - 1`, which is flat over latency-1
+chains) and all ready candidates at the deciding tie are class 3 against a `sw`
+last_scheduled_insn, so rank_for_schedule falls through to the LUID compare at
+sched.c:2461-2463. The target's order needs the shift's LUID above `i = a0`'s,
+i.e. i declared first. But `i = a0` then makes i the cse quantity's
+qty_first_reg (cse.c:842-857, because i outlives the EBB and outlives a0), so
+canon_reg rewrites `a0 << 4` to `i << 4` and a0's reg_n_refs falls 4 -> 3.
+global.c allocno_compare's `floor_log2(n_refs)*n_refs/live_length` then collapses
+a0's priority 8 -> 3 and rotates the callee-saves.
+
+**Probe.** All 30 legal orderings generated and measured
+(tmp/grind/func_80045294/s50/v/P00..P29): P00-P05 (sum before i) score=11,
+P06-P29 (i first) score=14, all at build_insns=83. Plus dumps_A/.greg read for
+the allocation order and the rewritten `(ashift (reg 16 s0) 4)`.
+
+**Result.** KILLED. The declaration-order axis is closed by exhaustive
+measurement, and both halves of the coupling are now named with file:line
+predicates rather than described as "an RA plateau".
+
+kill_scope: class
+predicate_cite: cse.c:855
+measured_on: candidate.c chassis at HEAD 2026-09-03 (score 2, 83 insns), zero
+FAKE constructs present, loop 2 spelled `i = a0; v1 = i << 4;`.
+
+### H-s50-2 (CONFIRMED) -- a0's fourth reference is recoverable in the loop-2 preheader's fresh cse EBB
+**Statement.** Respelling the loop-2 preheader as `v1 = a0 << 4; i = a0;`
+restores a0's fourth reg_n_refs and therefore the target's complete callee-save
+allocation, which makes the i-first block-0 order viable for the first time.
+
+**Mechanism.** cse processes the loop-2 preheader as a separate extended basic
+block (`;; Processing block from 70 to 109` in the .cse dump). i has been
+clobbered by loop 1, so no a0/i equivalence exists at the top of that block; an
+`a0 << 4` placed before that block's `i = a0` is not canonicalized to i and
+counts as a genuine a0 reference. a0 returns to 4 refs, allocno priority returns
+to 8, and a0 is allocated $s2 again.
+
+**Probe.** Form I_a0shift_before_i (i-first block 0 + that loop-2 respelling)
+measured score=2, build_insns=83; objdump diff against asm/funcs/func_80045294.s
+shows the ONLY differences are the two `sll` operands at idx 9 and idx 41 --
+prologue ordering, the full callee-save allocation and every stack slot match.
+Control I_shiftfirst (i-first, unrespelled loop 2) = 11; control
+B_a0shift_before_i (v1-first, respelled loop 2) = 3.
+
+**Result.** CONFIRMED. Banked as
+memory/grind/func_80045294/rejected/s50-i-first-a0ref-in-loop2-preheader.c as an
+equal-floor ALTERNATE chassis, not a rejection. candidate.c (operands right,
+schedule wrong) and this form (schedule right, operands wrong) are exactly
+complementary at score 2.
+
+### H-s50-3 (KILLED, instance) -- buying a0's fourth reference from the loop-2 guard costs an instruction
+**Statement.** Spelling the loop-2 guard `if (a0 < D_800A33AC)` ahead of
+`i = a0`, on either block-0 chassis, raises build_insns to 84.
+
+**Mechanism.** The target emits `move $s0,$s2` then `slt $v0,$s0,$v0`; testing
+a0 instead emits the `slt` on $s2 and still requires the `move`, so the compare
+cannot double as both the a0 reference and the target's `slt` operand.
+
+**Probe.** I_a0shift_in_guard score=5 insns=84; B_a0shift_in_guard score=27
+insns=84.
+
+**Result.** KILLED for these two spellings.
+
+kill_scope: instance
+measured_on: HEAD 2026-09-03 chassis, i-first and v1-first block-0 heads, zero
+FAKE constructs present.
+
+## [s50] With loop 2 spelled `i = a0; v1 = i << 4;`, no declaration order of {sum, i, v1, s4, count, s5} in block 0 reaches below score 11 whenever i is declared before v1.
+- mechanism: sched2 schedules block 0 backwards. Every block-0 insn is INSN_PRIORITY 1, because priority() (sched.c:1434-1522) accumulates over LOG_LINKS as `priority(pred) + insn_cost(pred) - 1`, i.e. distance from the block START, which is flat over latency-1 chains; only the two insns fed by an `lw` reach 2, and neither the `a0 << 4` shift (insn 14) nor `i = a0` (insn 22) is one of them. Both are also class 3 against the `sw` last_scheduled_insn, so rank_for_schedule falls through to the LUID compare at sched.c:2461-2463 (descending LUID, head picked, highest LUID emitted last). The target's `sw $s0 / move $s0,$s2 / sll` order therefore requires the shift's LUID to exceed `i = a0`'s, i.e. i declared first. But `i = a0` then makes i the cse quantity's qty_first_reg (cse.c:842-857: i outlives the EBB `Processing block from 2 to 36` and outlives a0, whose last reference is the loop-2 preheader's own `i = a0`), so canon_reg rewrites `a0 << 4` into `i << 4` and a0's reg_n_refs falls 4 -> 3. global.c allocno_compare's `floor_log2(n_refs)*n_refs/live_length` then collapses a0's priority from floor_log2(4)*4 = 8 to floor_log2(3)*3 = 3, dropping a0 from 9th to last in the allocation order and rotating the callee-saves a0 $s2->$s5, s4 $s4->$s2, s5 $s5->$s4.
+- probe: Generated and measured all 30 legal orderings of {sum, count} interleaved into the fixed chain i < v1 < s4 < s5 (tmp/grind/func_80045294/s50/v/P00..P29, one sandbox run each). Read tmp/grind/func_80045294/s50/dumps_base/text1a_c.sched2 for the T-9 ready-list tie and the flat priorities, dumps_A/text1a_c.greg for the allocation order and the rewritten `(ashift (reg 16 s0) (const_int 4))`, and tools/gcc-2.7.2/{sched.c,cse.c,global.c} for the three predicates.
+- result: P00-P05 (sum declared before i) score=11, P06-P29 (i declared first) score=14, all at build_insns=83. Baseline candidate.c = score 2 / 83. The i-first order does produce the target's prologue structure insn-for-insn (`addiu sp,-48 / sw s5,36 / move s5,a0 / sw s3,28 / move s3,a1 / sw s1,20 / move s1,zero / sw s0,16 / move s0,s5 / sll v1,s0,4 / sw ra,40 ...`), so the scheduling half of the target is reachable; the entire cost is the callee-save rotation caused by a0 losing its shift reference. The 49-session 'wall' is therefore a genuine two-sided coupling, now named with file:line predicates on both sides rather than described as an RA plateau: the schedule wants i-first, the allocation wants v1-first.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis (candidate.c pasted over src/text1a_c.c:1445, sandbox score 2 / 83 insns), zero FAKE constructs present, loop 2 spelled `i = a0; v1 = i << 4;`
+- predicate_cite: cse.c:855
+
+## [s50] Respelling the loop-2 preheader as `v1 = a0 << 4; i = a0;` restores a0's fourth reg_n_refs and with it the target's complete callee-save allocation, making the i-first block-0 order reach score 2.
+- mechanism: cse processes the loop-2 preheader as a separate extended basic block (`;; Processing block from 70 to 109` in the .cse dump). i has been clobbered by loop 1, so no a0/i equivalence is live at the top of that block, and an `a0 << 4` placed ahead of that block's `i = a0` is not canonicalized to i. It counts as a genuine a0 reference, returning a0 to 4 refs and its global.c allocno priority to 8, so a0 is allocated $s2 again while block 0 keeps the i-first LUID order that the scheduler needs.
+- probe: Built the 2x3 matrix of {block-0 head: v1-first / i-first} x {loop-2 preheader: `i=a0; v1=i<<4` / `v1=a0<<4; i=a0` / guard-on-a0} and measured each with sandbox --disable all, then objdump-diffed the winner against asm/funcs/func_80045294.s.
+- result: I_a0shift_before_i measures score=2, build_insns=83. Its residual is ONLY the two `sll` operands: idx 9 build `sll $v1,$s0,4` vs target `sll $v1,$s2,4`, and idx 41 build `sll $v1,$s2,4` vs target `sll $v1,$s0,4`. The prologue sw/move interleave, the `sw $s0 / move $s0,$s2 / sll` ordering that candidate.c gets WRONG, the whole callee-save allocation (a0->$s2, a1->$s3, sum->$s1, i->$s0, s4->$s4, s5->$s5) and every stack slot are byte-exact. Controls isolate the effect: I_shiftfirst (i-first, unrespelled loop 2) = 11; B_a0shift_before_i (v1-first, respelled loop 2) = 3; B_shiftfirst = 2 (identical to candidate.c). This is the first time the floor of 2 has been reached from the i-first side at all, and candidate.c and this form are exactly complementary -- candidate.c has both sll operands right and the block-0 schedule wrong, this form has the schedule right and both operands wrong. Banked as memory/grind/func_80045294/rejected/s50-i-first-a0ref-in-loop2-preheader.c (equal-floor ALTERNATE chassis, not a rejection).
+- verdict: CONFIRMED
+
+## [s50] Buying a0's fourth reference from the loop-2 guard, by spelling it `if (a0 < D_800A33AC)` ahead of `i = a0`, raises build_insns to 84 on both block-0 chassis.
+- mechanism: The target emits `move $s0,$s2` and then `slt $v0,$s0,$v0`; testing a0 instead emits the `slt` on $s2 and still requires the `move`, so the compare cannot serve as both the a0 reference and the target's `slt` operand.
+- probe: Measured I_a0shift_in_guard and B_a0shift_in_guard with sandbox --disable all.
+- result: I_a0shift_in_guard score=5 insns=84; B_a0shift_in_guard score=27 insns=84. Both exceed the target's 83 instructions, so the guard is not a free carrier for a0's fourth reference.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, both the i-first and v1-first block-0 heads, zero FAKE constructs present
