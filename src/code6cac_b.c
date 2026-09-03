@@ -320,7 +320,66 @@ void func_800274BC(s32 *arg0, s16 *arg1) {
 extern void *func_80021424(s32, u16, s32);
 extern s32 func_80021A98(s16, void *, s16);
 extern s32 func_80032854(s16, s32, s32 *, s32);
-INCLUDE_ASM("asm/funcs", func_80027640);
+void func_80027640(s32 arg0)
+{
+    VECTOR tgt;
+    VECTOR dir;
+    s32 idx;
+    s16 *tbl;
+    s32 rate;
+    u8 cnt;
+    void *r1;
+    void *r2;
+    s32 vx;
+    s32 vz;
+
+    idx = *(s16 *)(arg0 + 4);
+    tbl = (s16 *)stage_GetDataPtr();
+    cnt = *(u8 *)(arg0 + 0x34C);
+    if (cnt < 0x40) {
+        *(u8 *)(arg0 + 0x34C) = cnt + 1;
+    }
+    rate = 0x3C - ((*(u8 *)(arg0 + 0x34C) - 1) * 4);
+    if (rate < 10) {
+        rate = 10;
+    }
+    if (D_800A36A4 == 3) {
+        vx = 0x2EE0;
+        if (*(s32 *)(*(s32 *)arg0 + 0xF4) >= 0x3E9) {
+            vx = -0x2710;
+        }
+        dir.vx = vx;
+        vz = 0x1770;
+        if (*(s32 *)(*(s32 *)arg0 + 0xFC) > 0) {
+            vz = -0x1770;
+        }
+        dir.vz = vz;
+        tgt.vx = (dir.vx * rate + *(s32 *)(arg0 + 0xF4) * (100 - rate)) / 100;
+        tgt.vz = (dir.vz * rate + *(s32 *)(arg0 + 0xFC) * (100 - rate)) / 100;
+    } else {
+        tbl += (D_800A36A4 * 12 + idx * 3);
+        tgt.vx = tbl[0];
+        tgt.vz = tbl[2];
+    }
+    tgt.vx -= *(s32 *)(arg0 + 0xF4);
+    tgt.vz -= *(s32 *)(arg0 + 0xFC);
+    *(s32 *)(arg0 + 0xF4) += tgt.vx;
+    *(s32 *)(arg0 + 0xFC) += tgt.vz;
+    *(s32 *)(arg0 + 0xD8) += tgt.vx;
+    *(s32 *)(arg0 + 0xE0) += tgt.vz;
+    *(s32 *)(arg0 + 0xB8) += tgt.vx;
+    *(s32 *)(arg0 + 0xC0) += tgt.vz;
+    *(s32 *)(arg0 + 0x104) = 0;
+    *(s32 *)(arg0 + 0x108) = 0;
+    *(s32 *)(arg0 + 0x10C) = 0;
+    *(s32 *)(arg0 + 0x134) = 0;
+    *(s32 *)(arg0 + 0x138) = 0;
+    *(s32 *)(arg0 + 0x13C) = 0;
+    r1 = func_80021424(arg0, **(u16 **)(arg0 + 0x50), arg0 + 0x5E);
+    r2 = func_80021424(arg0, *(u16 *)((s32)r1 + 0x3A), arg0 + 0x5E);
+    func_80021A98(idx, r2, *(s16 *)(arg0 + 0x5E));
+    func_80032854(*(s16 *)(arg0 + 4), 0x30, (s32 *)(arg0 + 0xF4), 0);
+}
 /* kengo:HIGH  |  nm_cpu/cpu_side_move_dir  |  160i  |  x4 size collision */
 extern s32 func_80032854(s32, s32, u8 *, s16 *);
 void func_800278C0(s32 a0, s32 *ptr, s32 cmd, s32 a3, u8 *stack_a2, s32 stack_v1) {
@@ -1854,7 +1913,63 @@ void func_80030524(void) {
         off += 0x64;
     } while (++i < 12);
 }
-INCLUDE_ASM("asm/funcs", func_80030580);
+s32 *func_80030580(s32 *arg0, s32 arg1) {
+    /* FAKE: unwritten leading pad (phantom-frame-slot volatile pad local family, owner ruling 2026-08-18; row granted by owner ruling 2026-09-02, docs/grind/decisions.md "foreclosed-bucket disposition"): reserves the 16 untouched locals bytes the target frame holds beyond our single combine-orphan slot (target vars=24, ours 8; zero ($sp) references in asm/funcs/func_80030580.s). Mechanism: reload alter_reg / get_frame_size counts the never-accessed volatile object and emits no instruction. Lever exhaustion: memory/grind/func_80030580/hypotheses.md (s1-s9, 44 structural respellings + 31 frame-producer shapes, all measured inert). SOTN-master precedent: volatile u32 pad[4]; // FAKE at st/sel/stream.c:80. */
+    volatile u32 pre_pad[4]; /* !FAKE */
+    u8 *obj;
+    u8 *src = (u8 *)arg0;
+    s16 *tbl;
+    s32 i;
+
+    obj = (u8 *)&D_80106A78;
+    for (i = 0; i < 12; i++, obj += 0x64) {
+        if (*(s16 *)(obj + 2) == -1 && *(u8 *)(obj + 0xA) == 0xFF) break;
+    }
+    *(u8 *)(obj + 0xA) = i;
+    *(s16 *)(obj + 2) = arg1;
+    *(u8 *)(obj + 7) = 0;
+    *(u8 *)(obj + 8) = 0;
+    *(u8 *)(obj + 4) = 1;
+    *(u8 *)(obj + 6) = *(u16 *)(src + 4);
+    *(s32 *)(obj + 0x2C) = *(s32 *)(src + 0xF4);
+    *(s32 *)(obj + 0x30) = *(s32 *)(src + 0xF8) - *(s16 *)(src + 0x1A) / 32;
+    *(s32 *)(obj + 0x34) = *(s32 *)(src + 0xFC);
+    tbl = &D_8008E194 + arg1 * 7;
+    *(s32 *)(obj + 0x44) = ((&Judge)[*(u16 *)(src + 0x1CA) & 0xFFF] * tbl[2]) >> 12;
+    *(s32 *)(obj + 0x48) = tbl[3];
+    *(s32 *)(obj + 0x4C) = ((&Judge)[(*(s16 *)(src + 0x1CA) + 0x400) & 0xFFF] * tbl[2]) >> 12;
+    *(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44);
+    *(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48);
+    *(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C);
+    *(s32 *)(obj + 0x2C) += *(s32 *)(obj + 0x44) / 2;
+    *(s32 *)(obj + 0x30) += *(s32 *)(obj + 0x48) / 2;
+    *(s32 *)(obj + 0x34) += *(s32 *)(obj + 0x4C) / 2;
+    *(Vec3i *)(obj + 0x38) = *(Vec3i *)(obj + 0x2C);
+    *(s16 *)(obj + 0x54) = 0;
+    *(u16 *)(obj + 0x56) = *(u16 *)(src + 0x1CA);
+    *(s16 *)(obj + 0x58) = 0;
+    if (tbl[0] == 1) {
+        *(s16 *)(obj + 0x5C) = 0;
+        *(u16 *)(obj + 0x5E) = *(u16 *)(tbl + 4);
+        *(s16 *)(obj + 0x60) = 0;
+    } else if (tbl[0] == 2) {
+        *(u16 *)(obj + 0x5C) = *(u16 *)(tbl + 4);
+        *(s16 *)(obj + 0x5E) = 0;
+        *(s16 *)(obj + 0x60) = 0;
+    } else if (tbl[0] == 3) {
+        *(s16 *)(obj + 0x5C) = 0;
+        *(u16 *)(obj + 0x5E) = *(u16 *)(tbl + 4);
+        *(s16 *)(obj + 0x60) = 0;
+    } else {
+        *(s16 *)(obj + 0x5C) = 0;
+        *(s16 *)(obj + 0x5E) = 0;
+        *(s16 *)(obj + 0x60) = 0;
+    }
+    *(s32 *)(obj + 0x50) = 1;
+    *(u8 *)(obj + 5) = 0;
+    *(s16 *)obj = 0;
+    return (s32 *)obj;
+}
 /* kengo:HIGH  |  is_coli/coli_hit_body_weapon  |  148i */
 /* TABLED: -4 bytes, beqz delay slot scheduling (GCC fills with move v1,s2 instead of move a2,v0) */
 extern s32 *func_80030580(s32 *, s32);
