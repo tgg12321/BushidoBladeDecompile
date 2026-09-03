@@ -2826,3 +2826,186 @@ genR/genP/genG/genD.py, sweep.sh, dis.sh, cmp.sh, target.txt).
 - [s19] Whichever 0x10 halfword read is hoisted above the copy block has its own load emitted at slot 11-16 in $a0, taking the seat target gives p10 (N/R, 24 bodies); the copy stores are therefore not usable as a free separator by moving a read to them.
 
 - [s19] src/text1b.c was restored to HEAD at the end of the session; the only dirty file is metrics/events.jsonl.
+
+## [s20 2026-09-03 - structural modality] The merge is CSE-1, confirmed in the dumps; only a memory store or a call can break it; and two new same-floor bodies localize the residual to ONE decision each
+
+### 0. Mandated chassis / kill re-audit
+`sandbox func_80060A68 --disable all` on today's HEAD with the s14 apply harness:
+D1 (a fresh re-spelling of candidate.c's E2 body through the s20 generator) = **2 / build 66 /
+target 66**, loads at 12 ($a1) / 20 ($a0) - instruction-for-instruction the s15-s19 record.
+The chassis has not moved.  All 46 bodies measured this session are ordinary C with zero FAKE
+constructs, so `tools/fake_ablate.py` again had nothing to ablate and every s15-s19 instance
+kill remains chassis-current.  (Slot numbers in this section are 1-based against
+`asm/funcs/func_80060A68.s` lines 2-68, i.e. the same numbering as `s20/target.txt`; the s20
+sweep harness prints them in that numbering too, so unlike s19 they read the SAME as target.)
+
+### 1. PASS ATTRIBUTION IS NOW READ OUT OF THE DUMPS, NOT INFERRED
+`pwsh tools/grinder/dump.ps1 func_80060A68` on the E2 body, sliced with `s20/slice.py`:
+
+* `text1b.rtl` for func_80060A68 contains **three** `(mem:SI (plus:SI (reg/v:SI 72) (const_int 16)))`
+  loads - insn 46 -> reg90 (the +0 read's pointer), insn 53 -> reg92 (the +2 read's pointer),
+  insn 58 -> reg/v 75 (`p10`).  Insn 50 (the `sh` to `outer+0x18`) sits between 46 and 53.
+* `text1b.jump` still has three.  `text1b.cse` has **two**.  `loop`, `cse2` and `combine` also
+  have two.
+
+**The merge is performed by the FIRST cse pass (cse.c), on insn 58, exactly as s15 guessed and
+s19 asked to be confirmed.  The attribution is now measured, not inferred.**
+
+### 2. CLASS RESULT: nothing but a memory store or a call can separate two of these reads
+Read out of `tools/gcc-2.7.2/cse.c`.  The table entry for `(mem:SI (plus (reg 72) (const_int 16)))`
+has a VARYING address (`cse_rtx_addr_varies_p` is true - the address contains a pseudo), so
+`invalidate_memory` (cse.c:1701) removes it unconditionally on any invalidation, regardless of
+the `all` / `nonscalar` refinement that protects fixed-address scalars.  `invalidate_memory` has
+exactly two callers: `invalidate_from_clobbers` (cse.c:7599), which fires only when
+`note_mem_written` set `writes_memory.var`, and that flag is set only when the written rtx is a
+`MEM` (cse.c, `note_mem_written`); and `cse_insn` (cse.c:7246) for a non-const `CALL_INSN`.
+The only other way to lose the entry is `invalidate()` on the base register `reg 72` (`outer`).
+
+Consequence for this function: **frontier item 1 of s19 - "a separator that is not a store" - is
+closed.  In cse's model a construct that emits no store, no call and no redefinition of `outer`
+cannot make the two reads non-equivalent, whatever its C spelling.**  The base-register escape
+was measured too: **Q1** (`outer = outer;` written between the +2 read and the p10 read on the
+E2 spine) = **2 / 66 with two loads**, byte-identical to the control - `store_expr` returns the
+same rtx for both sides so no insn is emitted at all, and cse never sees a redefinition.  A
+spelling that DOES emit the redefinition (Q5, `outer = D_800A3468;` re-read) costs the gp load:
+26 / 68.
+
+### 3. Type of the +2 value is inert (structural lever, killed)
+D1 (`u16 temp2`, control) = 2 / 66; **D2 (`s32 temp2`) = 2 / 66; D3 (`u32 temp2`) = 2 / 66** -
+byte-identical.  The lhu/sh pair and the pseudo's local-alloc `size` are unchanged by the
+declared width, so declaration-type narrowing/widening on the +2 value is not a lever here.
+
+### 4. NEW BODY Q2/R3: 66 instructions, target's EXACT three-load geometry, one register seat wrong
+`Q2 = C1,C2,C3, S1, S2, S4, S3, P, S5, S6, S7, S8` (i.e. E2's spine with the 0x1A store moved
+UP in front of `P` so it separates the +2 read from the p10 read, and `idx` inserted into the
+[+2 read, 0x1A store] window) measures **5 / build 66 / target 66** with all three
+`lw ?,0x10($v1)` at **slots 12 ($a1) / 20 ($a0) / 23 ($a0) - target's slots and target's
+registers**.  `R3 = C1,C2,C3,S1,S2,S3,S4,P,S5,S6,S7,S8` is the same, 5 / 66.  A slot-for-slot
+diff shows Q2 is target through slot 24 and again from slot 33 to the end; the whole residual is
+slots 25-32, and it is caused by ONE thing: the +2 value seats in `$v0` (`lhu v0,0x2(a0)`)
+instead of target's `$a0`, which forces `sh v0,0x1A(v1)` before the `addiu v0,v1,0x18`/gp-store
+pair instead of after it.  **This is the first body in the campaign that has target's complete
+instruction inventory, target's instruction count and target's three-load geometry with only a
+single register seat wrong.**
+
+### 5. WHY Q2's window filler fails - the R2 filler must be a STORE
+`tools/ra_solver/local_extract.py text1b --func func_80060A68` (QTYDBG) on Q2:
+
+    main ord=5   qty=11  reg1=74  birth=36  death=38  refs=2  got=2     <- the +2 value, $v0
+    sugg ord=24  qty=12  reg1=73  birth=40  death=66  refs=4  got=4     <- idx, $a0
+    main ord=23  qty=13  reg1=75  birth=42  death=48  refs=2  got=5     <- p10, $a1
+
+reg74's span is still **2** even though `idx`'s read is written between the +2 read and the 0x1A
+store in the C: local-alloc runs after sched1, and **sched1 moved the `lhu` out of the window**,
+so the range was never lengthened.  reg73 (idx) is allocated in the suggested pass and does not
+even overlap [36,38], so there is no conflict to exploit - reg74 simply first-fits `$v0` because
+nothing occupies `$v0` over its two-insn range.  The gp store works as R2's filler in E2 for a
+reason a read cannot reproduce: **`sw $v0,%gp_rel(D_800A3478)($gp)` and `sh ?,0x1A($v1)` are two
+stores that sched cannot disambiguate, so the store-store edge GLUES the filler inside the
+window.**  R2's filler must therefore be a store whose value is a span-2 `$v0` quantity: a gp
+store (addiu+sw) or a copy (lw+sw).  A copy in that position drags its load out of the copy
+block (N1/N3/N4 = 9-10 / 66, halfword loads pulled back to slots 17/20), and a gp store there
+puts `P` downstream of it, which is R4.
+
+### 6. NEW BODY T1: target's whole stream with p10's load in the slot-5 nop (score 2, 65 insns)
+`T1 = P, Z0, C1,C2,C3, S1, S2, S5, S3, S6, S4, S7, S8` - the p10 read hoisted ABOVE the
+`D_800F10D0` zero-store, which no previous session had tried (s19's Q family hoisted it above
+the COPY block, i.e. below the zero store) - measures **2 / build 65 / target 66** with three
+loads at slots **5 ($a1) / 19 ($a0) / 22 ($a0)**.  Slot-for-slot it is **target's entire
+instruction stream, every register seat included (the +2 value is in `$a0`), with exactly one
+difference: target's slot-5 `nop` is T1's `lw $a1,0x10($v1)`, and everything after it is shifted
+one slot earlier.**  T1 is the second score-2 body in the campaign and the first with all three
+loads and all target seats.
+
+T1 also breaks the s4/s10 "conservation law" (three independent 0x10 loads => p10 has no early
+consumer => sched1/sched2 pin its load to slot 25) for the first time: the law holds for every P
+position at or below the zero store, and fails for P above it.  The discontinuity is the zero
+store itself - `sw zero,%lo(D_800F10D0)($at)` is an `$at`-based store that sched2 cannot
+disambiguate from `lw ?,0x10($v1)`, so it is a hoist barrier.  Above it, p10's load reaches slot
+5 (the earliest free slot after the prologue) and eats target's nop; below it, the load pins to
+25.  Six bodies (V1-V6) that give p10 an early consumer while keeping P just below the zero
+store all regress (7-12 / 66-67); T2/T3/T4 (P just below the zero store, in or before the copy
+block) are 5 / 67 with the load at 25.
+
+### 7. Negatives banked this session
+* **The +2 read hoisted into or above the copy block** (A1-A9, F1-F7, 16 bodies): three loads at
+  66 instructions is easy to reach this way (A1/A2/A4/F1 = 12 / 66) but the hoisted read's own
+  `lw` is always emitted at slot 11-16 in `$a0`, taking the seat target gives p10 - the s19 N/R
+  law, re-confirmed for the +0 read with the split 0x18 store (F1-F7) and for the +2 read
+  (A1-A9).  Best of the family 12 / 66; F4 (the read above the zero store) = 9 / 65.
+* **The +2 read placed before the +0 read** (W1, W2, W6, W8): W8 = 7 / 66 with target's exact
+  three-load geometry, but the 0x1A store then precedes the 0x18 store in the stream, which is
+  seven instructions' worth of reordering - a dead reads-order.
+* **P among the copies with the 0x1C store as the second separator and a copy as R3's donor**
+  (Z1, Z2, Z4, Z6): 10-14 / 67-68.  Giving [P,S6] a copy-value donor does not recover the slot-12
+  load once P is textually inside the copy block.
+* **A copy moved into the R2 window so it serves as donor AND gap-2 separator** (N1-N6): 9-12 / 66.
+  The copy's load leaves the copy block, so the halfword pointer loads move to slots 17/20.
+* **The zero store as the R2 window filler** (N7): 16 / 65.
+
+### 8. The bind, restated with this session's two new faces
+Three reads means two gaps; cse says each gap needs a store (section 2); R2 says the [+2 read,
+0x1A store] window needs a span-2 `$v0` STORE (section 5); R4 says `P` must precede that store.
+E2 spends the free 0x18 store on gap 1 and leaves gap 2 open (one missing load, slot 23 nop).
+Q2 covers both gaps by moving the 0x1A store above `P`, which empties R2's window (one wrong
+seat).  T1 covers both gaps by hoisting `P` above the zero store, which costs target's slot-5
+nop (one displaced load).  **Each of the three closest bodies is one decision from the match and
+the three decisions are the same trilemma seen from three sides.**
+
+Artifacts: `tmp/grind/func_80060A68/s20/` (46 bodies + disassemblies, gen20.py, slice.py,
+sweep.sh, dis.sh, cmp.sh, target.txt, the sliced rtl/jump/cse/loop/cse2/combine dumps) and
+`tmp/grind/func_80060A68/dumps/` (the full -da set for the E2 body).
+
+- [s20] Chassis re-audit: D1 (an independent re-spelling of candidate.c's E2 body) = 2 / build 66 / target 66 with loads at 12 ($a1) / 20 ($a0) on today's HEAD, instruction-for-instruction identical to the s15-s19 records. All 46 s20 bodies are ordinary C with zero FAKE constructs, so tools/fake_ablate.py had nothing to ablate and the s15-s19 instance kills remain chassis-current.
+
+- [s20] PASS ATTRIBUTION MEASURED: text1b.rtl for func_80060A68 carries three (mem:SI (plus (reg/v 72) (const_int 16))) loads (insns 46, 53, 58); text1b.cse carries two. The merge is done by the FIRST cse pass on insn 58 - s19's frontier asked for this confirmation and it is now read out of the dumps rather than inferred.
+
+- [s20] CLASS: the cse table entry for these reads has a varying address, so invalidate_memory (cse.c:1701) removes it unconditionally; invalidate_memory is reachable only from invalidate_from_clobbers when note_mem_written set writes_memory.var (the written rtx is a MEM) and from cse_insn for a non-const CALL_INSN. Nothing but a memory store, a call, or a redefinition of the base register `outer` can separate two of these reads.
+
+- [s20] The base-register escape is closed for a byte-neutral spelling: Q1 (`outer = outer;` between the +2 read and the p10 read) is 2 / 66 with two loads, byte-identical to the control, because store_expr returns the same rtx for both sides and emits no insn; the spelling that does emit a redefinition (Q5, re-reading D_800A3468) costs the gp load at 26 / 68.
+
+- [s20] The declared type of the +2 value is inert: D1 (u16) = D2 (s32) = D3 (u32) = 2 / 66, byte-identical. Declaration-width narrowing/widening is not a lever on this residual.
+
+- [s20] NEW closest-by-inventory body Q2 = C1,C2,C3,S1,S2,S4,S3,P,S5,S6,S7,S8 (the 0x1A store moved above P so it separates the +2 read from the p10 read, idx inserted in the R2 window) = 5 / build 66 / target 66 with all three lw ?,0x10($v1) at target's exact slots and registers (12/$a1, 20/$a0, 23/$a0); R3 (idx after the 0x1A store) is the same at 5 / 66. Q2 is target through slot 24 and from slot 33 on; the entire residual is the +2 value seating in $v0 instead of $a0.
+
+- [s20] QTYDBG on Q2: reg74 (the +2 value) is qty 11, birth 36, death 38, refs 2, allocation ord 5, got=2 ($v0) - its span is still 2 even though idx's read is written inside the window, because local-alloc runs after sched1 and sched1 moved the lhu out. reg73 (idx) is allocated in the suggested pass with range [40,66] and got=4 ($a0), so it does not even conflict; reg74 first-fits $v0 simply because nothing occupies $v0 over its two-insn range.
+
+- [s20] R2's window filler must be a STORE, not any statement: the gp store stays inside [+2 read, 0x1A store] only because sw %gp_rel and sh 0x1A are two stores sched cannot disambiguate, so the store-store edge glues it there. A read filler (idx) is scheduled out of the window; a copy filler works as a donor but drags its load out of the copy block (N1/N3/N4 = 9-10 / 66 with the halfword loads pulled back to slots 17/20); a gp store filler puts P downstream of it, which is R4.
+
+- [s20] NEW second score-2 body T1 = P,Z0,C1,C2,C3,S1,S2,S5,S3,S6,S4,S7,S8 (the p10 read hoisted ABOVE the D_800F10D0 zero-store - a position no prior session tried; s19's Q family hoisted it above the COPY block, i.e. below the zero store) = 2 / build 65 / target 66, three loads at 5 ($a1) / 19 ($a0) / 22 ($a0). Slot-for-slot it is target's entire stream with every register seat correct (the +2 value is in $a0) and exactly one difference: target's slot-5 nop is T1's lw $a1,0x10($v1), with everything after shifted one slot earlier.
+
+- [s20] T1 breaks the s4/s10 conservation law (three independent 0x10 loads implies p10's load pinned to slot 25) for the first time. The discontinuity is the zero store: sw zero,%lo(D_800F10D0)($at) is an $at-based store sched2 cannot disambiguate from lw ?,0x10($v1), so it is a hoist barrier. Above it p10's load reaches slot 5 and eats target's nop; below it the load pins to 25 (T2/T3/T4 = 5 / 67 with the load at 25; V1-V6, which give p10 an early consumer just below the zero store, are 7-12 / 66-67).
+
+- [s20] Hoisting either halfword read into or above the copy block is dead across 16 more bodies (A1-A9 for the +2 read, F1-F7 for the +0 read with the split 0x18 store): three loads at 66 instructions is reachable (A1/A2/A4/F1 = 12 / 66) but the hoisted read's own lw is always emitted at slot 11-16 in $a0, taking the seat target gives p10.
+
+- [s20] Putting the +2 read before the +0 read (W1/W2/W6/W8) reaches target's exact three-load geometry at 66 instructions (W8 = 7 / 66) but then emits the 0x1A store before the 0x18 store, which is seven instructions of reordering - the reads order (+2, +0, p10) is dead.
+
+- [s20] src/text1b.c was restored to HEAD at the end of the session; the only dirty file is metrics/events.jsonl.
+
+- [s20] Chassis re-audit: D1, an independent re-spelling of candidate.c's E2 body through the s20 generator, measures 2 / build 66 / target 66 with loads at 12 ($a1) / 20 ($a0) on today's HEAD -- instruction-for-instruction the s15-s19 record. All 46 s20 bodies are ordinary C with zero FAKE constructs, so tools/fake_ablate.py had nothing to ablate and the s15-s19 instance kills remain chassis-current.
+
+- [s20] Pass attribution is now measured rather than inferred: text1b.rtl for func_80060A68 carries three (mem:SI (plus (reg/v 72) (const_int 16))) loads at insns 46, 53 and 58, text1b.jump still three, and text1b.cse two. The first cse pass merges insn 58 (p10's read) into insn 53's value.
+
+- [s20] The cse table entry for these reads has a varying address, so invalidate_memory (tools/gcc-2.7.2/cse.c:1701) drops it unconditionally; invalidate_memory is reachable only from invalidate_from_clobbers when note_mem_written set writes_memory.var (the written rtx is a MEM) and from cse_insn on a non-const CALL_INSN.
+
+- [s20] `outer = outer;` emits no RTL at all (store_expr returns the same rtx for both sides), so the base-register invalidation escape has no byte-neutral spelling: Q1 = 2 / 66 with two loads, byte-identical to the control, and Q5 (a real re-read of D_800A3468) = 26 / 68.
+
+- [s20] The declared width of the +2 value is inert: u16, s32 and u32 spellings all measure 2 / 66 and are byte-identical.
+
+- [s20] NEW closest-by-inventory body Q2 = C1,C2,C3,S1,S2,S4,S3,P,S5,S6,S7,S8 measures 5 / build 66 / target 66 with all three 0x10 loads at target's exact slots and registers (12/$a1, 20/$a0, 23/$a0), is identical to target through slot 24 and from slot 33 on, and has a single defect: the +2 value seats in $v0 instead of $a0. R3 (idx after the 0x1A store) is the same at 5 / 66.
+
+- [s20] QTYDBG on Q2: reg74 (the +2 value) is qty 11, birth 36, death 38, refs 2, allocation ord 5, got=2 ($v0); reg73 (idx) is allocated in the suggested pass with range [40,66] and got=4 ($a0) and does not overlap reg74; reg75 (p10) is ord 23, got=5 ($a1). reg74's span is still 2 despite idx's read being written inside the window, because local-alloc runs after sched1 and sched1 moved the lhu out.
+
+- [s20] R2's window filler must be a STORE: the gp store survives inside [+2 read, 0x1A store] only because sw %gp_rel and sh 0x1A are two stores sched cannot disambiguate, so a store-store edge glues it there. A read filler is scheduled out; a copy filler works as a donor but drags its load out of the copy block (N1/N3/N4 = 9-10 / 66 with the halfword loads pulled back to slots 17/20); a gp store filler puts the p10 read downstream of it, which is R4.
+
+- [s20] NEW second score-2 body T1 = P,Z0,C1,C2,C3,S1,S2,S5,S3,S6,S4,S7,S8 measures 2 / build 65 / target 66 with three loads at 5 ($a1) / 19 ($a0) / 22 ($a0); slot-for-slot it is target's entire stream with every register seat correct and exactly one difference, target's slot-5 nop being T1's lw $a1,0x10($v1).
+
+- [s20] The zero store is the hoist barrier that decides the p10 load's slot: with the p10 read above sw zero,%lo(D_800F10D0)($at) the load reaches slot 5 (T1), with it just below the load pins to slot 25 (T2/T3/T4 = 5 / 67), and with it after the halfword reads the load reaches target's slot 12 but the third read is cse-merged away (E2 = 2 / 66).
+
+- [s20] Hoisting either halfword read into or above the copy block is dead across 16 further bodies (A1-A9, F1-F7): three loads at 66 instructions is reachable (12 / 66) but the hoisted read's own lw is emitted at slot 11-16 in $a0, taking the seat target gives p10.
+
+- [s20] Reading the +2 halfword before the +0 halfword reaches target's exact three-load geometry at 66 instructions (W8 = 7 / 66) but emits the 0x1A store ahead of the 0x18 store, seven instructions of reordering.
+
+- [s20] The three closest bodies are three faces of one trilemma: two read gaps each need a store, R2 needs a span-2 $v0 STORE inside [+2 read, 0x1A store], and R4 needs the p10 read before that store. E2 leaves gap 2 open (missing load, slot-23 nop); Q2 empties R2's window (wrong seat); T1 costs target's slot-5 nop (displaced load).
+
+- [s20] src/text1b.c was restored to HEAD at the end of the session; the only dirty tracked file outside memory/grind/func_80060A68/ is metrics/events.jsonl.

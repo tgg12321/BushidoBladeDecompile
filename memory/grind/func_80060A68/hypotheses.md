@@ -2091,3 +2091,173 @@ would free the 0x1A store to act as a separator.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: today's HEAD chassis, 4 bodies plus control, zero FAKE constructs in any of them
+
+## s20 (2026-09-03, structural modality) - hypotheses measured
+
+**H-s20-1 (KILLED, class).** *No construct that emits neither a memory store, nor a call, nor a
+redefinition of the base register `outer` can make the +2 read and the p10 read non-equivalent to
+the first cse pass, whatever its C spelling.*
+Mechanism: the entry cse hashes for these reads is `(mem:SI (plus (reg 72) (const_int 16)))`,
+whose address is varying (`cse_rtx_addr_varies_p` true because the address contains a pseudo), so
+`invalidate_memory` (tools/gcc-2.7.2/cse.c:1701) removes it on every invalidation regardless of
+the `all`/`nonscalar` refinement that shields fixed-address scalars.  `invalidate_memory` is
+reachable only from `invalidate_from_clobbers` (cse.c:7599) when `note_mem_written` set
+`writes_memory.var` - which happens only when the written rtx is a `MEM` - and from `cse_insn`
+(cse.c:7246) on a non-const `CALL_INSN`.
+Probe: dumps (`text1b.rtl` three reads at insns 46/53/58, `text1b.cse` two) plus the cse.c
+predicate read.  Predicate cite: `tools/gcc-2.7.2/cse.c:1701`.
+Verdict: KILLED, class.  This closes s19's frontier item 1 ("break the cse equivalence without a
+store").
+
+**H-s20-2 (KILLED, instance).** *A byte-neutral redefinition of `outer` between the +2 read and
+the p10 read invalidates the cse entry and restores the third load.*
+Probe: Q1 (`outer = outer;` on the E2 spine).  Result: 2 / build 66 / target 66 with TWO loads -
+byte-identical to the control, because `store_expr` returns the same rtx for both sides of a
+self-assignment and emits no insn at all, so cse never sees a redefinition.  The spelling that
+does emit one (Q5, `outer = D_800A3468;`) pays the gp load: 26 / 68.
+Measured on: today's HEAD chassis, 2 bodies plus control, zero FAKE constructs in any of them.
+
+**H-s20-3 (KILLED, instance).** *The declared width of the +2 value changes its local-alloc
+priority or seat.*
+Probe: D1 (`u16`) / D2 (`s32`) / D3 (`u32`) on the E2 spine.  Result: all three 2 / 66, byte-
+identical.  Both refs keep the same `lhu`/`sh` opcodes and the quantity's `size` stays 1.
+Measured on: today's HEAD chassis, 3 bodies, zero FAKE constructs in any of them.
+
+**H-s20-4 (KILLED, instance).** *A non-store statement placed between the +2 read and the 0x1A
+store lengthens the +2 value's live range enough to push it out of `$v0` (R2), so the 0x1A store
+can be moved above `P` and serve as gap 2's free separator.*
+Probe: Q2 / R3 / R1 / R2 / R6 / R7 (the 0x1A store above `P`, `idx` used as the window filler in
+every position).  Result: Q2 and R3 reach 5 / build 66 / target 66 with all three
+`lw ?,0x10($v1)` at target's exact slots and registers (12/$a1, 20/$a0, 23/$a0) and are target
+through slot 24 and from slot 33 on - but the +2 value still seats in `$v0`.  QTYDBG on Q2 shows
+reg74 birth=36 death=38 refs=2 ord=5 got=2: the span is STILL 2, because local-alloc runs after
+sched1 and sched1 scheduled `idx`'s `lhu` out of the window.  R2's filler must be a store, which
+sched cannot move out of a store-store chain.
+Measured on: today's HEAD chassis, 6 bodies + QTYDBG extraction, zero FAKE constructs in any of them.
+
+**H-s20-5 (KILLED, instance).** *A copy statement moved into the [+2 read, 0x1A store] window
+serves as both R2's span-2 `$v0` donor and gap 2's separator, so both gaps close for free.*
+Probe: N1-N6 (each of the three copies, several tails).  Result: 9-12 / 66.  The moved copy's
+`lw` leaves the copy block, so the two halfword pointer loads are emitted at slots 17/20 instead
+of target's 20/23.  N7 (the `D_800F10D0` zero store used as the window filler) = 16 / 65.
+Measured on: today's HEAD chassis, 7 bodies, zero FAKE constructs in any of them.
+
+**H-s20-6 (KILLED, instance).** *Hoisting one of the two halfword reads into or above the copy
+block lets a copy store act as the missing free separator.*
+Probe: A1-A9 (the +2 read hoisted, with and without the split 0x18 store) and F1-F7 (the +0 read
+hoisted, with the split 0x18 store spent on gap 2).  Result: 9-16 at 65-67.  Three loads at 66
+instructions is reachable (A1/A2/A4/F1 = 12 / 66) but the hoisted read's own `lw` is always
+emitted at slot 11-16 in `$a0`, taking the seat target gives p10 - the s19 N/R law, now
+re-confirmed for both halfword reads and for the split-store spelling.
+Measured on: today's HEAD chassis, 16 bodies, zero FAKE constructs in any of them.
+
+**H-s20-7 (KILLED, instance).** *Reading the +2 halfword before the +0 halfword lets the 0x1A
+store cover gap 1 and the 0x18 store cover gap 2, closing both for free.*
+Probe: W1, W2, W6, W8.  Result: W8 = 7 / 66 with target's exact three-load geometry, W1 = 7 / 66,
+W2/W6 = 7 / 67.  The reads order forces the 0x1A store ahead of the 0x18 store in the emitted
+stream, which is seven instructions of reordering.
+Measured on: today's HEAD chassis, 4 bodies, zero FAKE constructs in any of them.
+
+**H-s20-8 (KILLED, instance).** *Placing `P` among the copies with the 0x1C store as gap 2's
+separator and a copy value as R3's `$v0` donor recovers the slot-12 p10 load (the s18 Z family
+failed only for lack of that donor).*
+Probe: Z1, Z2, Z4, Z6.  Result: 10-14 / 67-68 with the p10 load at 22-23 in `$v0`.  The donor is
+not the missing ingredient; `P` textually inside the copy block is itself disqualifying.
+Measured on: today's HEAD chassis, 4 bodies, zero FAKE constructs in any of them.
+
+**H-s20-9 (CONFIRMED).** *Hoisting the p10 read ABOVE the `D_800F10D0` zero store - not merely
+above the copy block - breaks the s4/s10 conservation law and yields three loads with every
+target register seat.*
+Probe: T1 = `P, Z0, C1,C2,C3, S1, S2, S5, S3, S6, S4, S7, S8`.  Result: **2 / build 65 / target
+66**, three loads at 5 ($a1) / 19 ($a0) / 22 ($a0).  Slot-for-slot T1 is target's entire stream
+with every seat correct (the +2 value is in `$a0`), differing only in that target's slot-5 `nop`
+is T1's `lw $a1,0x10($v1)` and everything after is shifted one slot earlier.  The zero store is
+an `$at`-based store sched2 cannot disambiguate from `lw ?,0x10($v1)`, so it is a hoist barrier:
+above it the p10 load reaches slot 5, below it the load pins to slot 25 (T2/T3/T4 = 5 / 67).
+T1 is the second score-2 body in the campaign and the first with three loads and all seats.
+
+**H-s20-10 (KILLED, instance).** *Giving p10 an early consumer while keeping `P` just below the
+zero store unpins its load onto slot 12 without losing the third load.*
+Probe: V1-V6 (the +4 read and the 0x1C store moved to every position between the copy block and
+the 0x1A store, with `P` immediately below the zero store).  Result: 7-12 / 66-67; the p10 load
+is at 24-25 in every member and is in `$v0` in four of them.
+Measured on: today's HEAD chassis, 6 bodies, zero FAKE constructs in any of them.
+
+## [s20] No construct that emits neither a memory store, nor a call, nor a redefinition of the base register `outer` can make the +2 read and the p10 read non-equivalent to GCC 2.7.2's first cse pass, in any C spelling.
+- mechanism: The entry cse hashes for both reads is (mem:SI (plus (reg 72) (const_int 16))); its address is varying (cse_rtx_addr_varies_p is true because the address contains a pseudo), so invalidate_memory removes it on every invalidation regardless of the all/nonscalar refinement that shields fixed-address scalars. invalidate_memory has exactly two callers: invalidate_from_clobbers (cse.c:7599), which fires only when note_mem_written set writes_memory.var, and that flag is set only when the written rtx is a MEM; and cse_insn (cse.c:7246) on a non-const CALL_INSN. The only other loss path is invalidate() on the base register itself.
+- probe: pwsh tools/grinder/dump.ps1 func_80060A68 on the E2 body, sliced with tmp/grind/func_80060A68/s20/slice.py: text1b.rtl carries three (mem:SI (plus (reg/v 72) (const_int 16))) loads (insns 46, 53, 58), text1b.jump three, text1b.cse two, and loop/cse2/combine two. The predicate was then read out of tools/gcc-2.7.2/cse.c (note_mem_written, invalidate_memory, invalidate_from_clobbers, cse_insn).
+- result: The merge is performed by the FIRST cse pass, on insn 58 (p10's read), exactly where s15 guessed and s19 asked for confirmation. Because the MEM's address varies, the coarse-grained protections in invalidate_memory never apply to it, so every memory store in the function invalidates it and nothing else does. s19's frontier item 1 -- 'find a separator that is not a store' -- is therefore closed at the predicate level, and the separator inventory banked in s19 is the complete inventory.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: today's HEAD chassis, the E2 body's full -da dump set, zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/cse.c:1701
+
+## [s20] On the E2 spine, writing `outer = outer;` between the +2 read and the p10 read invalidates the cse entry for the base register and restores the third load at zero instruction cost.
+- mechanism: invalidate() on a REG dest removes every hashed entry mentioning that register, so a redefinition of `outer` would drop both MEM entries; a self-assignment was the only spelling that could do that without emitting an instruction.
+- probe: Q1 = C1,C2,C3,S1,S2,(outer = outer;),P,S5,S3,S6,S4,S7,S8 measured with sandbox --disable all; Q5 = the same slot filled with `outer = D_800A3468;`.
+- result: Q1 = 2 / build 66 / target 66 with TWO loads, byte-identical to the control D1: expand_assignment/store_expr returns the same rtx for both sides of a self-assignment, so no insn is emitted at all and cse never sees a redefinition. Q5, the spelling that does emit one, pays the gp reload: 26 / build 68.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 2 bodies plus control, zero FAKE constructs in any of them
+
+## [s20] On the E2 spine, changing the declared width of the +2 value (u16 vs s32 vs u32) changes its local-alloc priority or its register seat.
+- mechanism: Structural type-narrowing lever from the codegen-technique catalogue: the quantity's mode feeds local-alloc's size term in the priority formula and its conflict test.
+- probe: D1 (u16 temp2, control), D2 (s32 temp2), D3 (u32 temp2), all on the E2 statement order, measured with sandbox --disable all.
+- result: All three measure 2 / build 66 / target 66 with loads at 12 ($a1) / 20 ($a0) and are byte-identical. Both refs keep the same lhu/sh opcodes and the quantity's size stays 1 word, so the declared width is inert on this residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 3 bodies, zero FAKE constructs in any of them
+
+## [s20] Moving the 0x1A store above the p10 read (so it covers the second read gap) and inserting a non-store statement into the [+2 read, 0x1A store] window lengthens the +2 value's live range enough to push it out of $v0.
+- mechanism: R2 as recorded in s17: the +2 value has refs 2, so with its two refs adjacent its span is 2 and its priority is the 10000 maximum a refs-2 quantity can reach (local-alloc.c:1649-1685), and first-fit hands it $v0. Lengthening the range was expected to drop its priority below a span-2 $v0 competitor's.
+- probe: Q2 = C1,C2,C3,S1,S2,S4,S3,P,S5,S6,S7,S8 and R3/R1/R2/R6/R7 (idx used as the window filler in every position), plus tools/ra_solver/local_extract.py text1b --func func_80060A68 (QTYDBG) on Q2.
+- result: Q2 and R3 reach 5 / build 66 / target 66 with all three lw ?,0x10($v1) at target's exact slots AND registers (12/$a1, 20/$a0, 23/$a0); a slot-for-slot diff shows Q2 is target through slot 24 and again from slot 33 to the end, with the entire residual (slots 25-32) caused by the +2 value seating in $v0 instead of $a0. QTYDBG explains the failure: reg74 is qty 11, birth 36, death 38, refs 2, allocation ord 5, got=2 -- the span is STILL 2, because local-alloc runs after sched1 and sched1 scheduled the filler lhu out of the window. reg73 (idx) is allocated in the suggested pass with range [40,66] and got=4, so it does not even conflict with reg74; reg74 first-fits $v0 purely because nothing occupies $v0 over its two-insn range. The gp store survives in that window in E2 only because sw %gp_rel and sh 0x1A are two stores sched cannot disambiguate, so a store-store edge glues it there -- R2's filler has to be a store.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 6 bodies plus a QTYDBG extraction, zero FAKE constructs in any of them
+
+## [s20] A copy statement moved into the [+2 read, 0x1A store] window serves as both R2's span-2 $v0 donor and the second read gap's separator, closing both gaps on the E2 spine.
+- mechanism: A copy's loaded value is a refs-2, span-2 quantity that first-fits $v0, and its sw is a memory store, so one statement could satisfy R2 and R1 at once without a gp store (which R4 forbids ahead of the p10 read).
+- probe: N1-N6 (each of the three copies moved, several tail orders) and N7 (the D_800F10D0 zero store used as the window filler instead), measured with sandbox --disable all.
+- result: N1/N3/N4 = 9-10 / build 66 with all three loads present but the two halfword pointer loads emitted at slots 17/20 instead of target's 20/23, because the moved copy's lw left the copy block and shortened it; N2/N5/N6 = 11-15 / 66; N7 = 16 / build 65. The copy pays for the window with the copy block's geometry.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 7 bodies, zero FAKE constructs in any of them
+
+## [s20] Hoisting one of the two halfword reads into or above the copy block lets a copy store act as the missing free separator on the E2 and X2 spines.
+- mechanism: s19 measured this for hoisted reads in the N/R families; the s20 variants pair the hoist with s19's new split 0x18 store so the freed sh can cover the other gap.
+- probe: A1-A9 (the +2 read hoisted, fused and split 0x18 store, several tails) and F1-F7 (the +0 read hoisted, including above the zero store, with the split 0x18 store spent on the second gap).
+- result: 9-16 at 65-67 instructions. Three loads at 66 instructions is easy to reach this way (A1/A2/A4/F1 = 12 / 66) but the hoisted read's own lw is emitted at slot 11-16 in $a0 in every member, taking the seat target gives p10; F4 (the read above the zero store) = 9 / 65 and F2/F8 pay an extra instruction as well.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 16 bodies, zero FAKE constructs in any of them
+
+## [s20] Reading the +2 halfword before the +0 halfword lets the 0x1A store cover the first read gap and the 0x18 store cover the second, closing both gaps at zero instruction cost.
+- mechanism: Each fused halfword statement emits its store immediately after its own pointer load, so swapping the reads order was expected to make both stores available as separators without moving any statement out of place.
+- probe: W1, W2, W6 (split 0x18 store), W8, measured with sandbox --disable all and diffed against target.txt.
+- result: W8 = 7 / build 66 with target's exact three-load geometry (12/$a1, 20/$a0, 23/$a0) and W1 = 7 / 66; W2/W6 = 7 / 67. In every member the 0x1A store is emitted ahead of the 0x18 store, which is seven instructions' worth of reordering against target's slots 24 and 28.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 4 bodies, zero FAKE constructs in any of them
+
+## [s20] Placing the p10 read among the copies with the 0x1C store as the second gap's separator and a copy value as R3's $v0 donor recovers target's slot-12 p10 load, which s18's Z family missed only for lack of that donor.
+- mechanism: s18 diagnosed the Z family's failure as an empty [p10 read, +4 read] window; a copy statement placed inside that window supplies the span-2 $v0 quantity R3 asks for without using a gp store.
+- probe: Z1, Z2, Z4, Z6 (the copy in the window, the p10 read at several positions inside the copy block), measured with sandbox --disable all.
+- result: 10-14 at 67-68 instructions, with the p10 load at slot 22-23 in $v0 in every member. Supplying the donor does not recover the slot-12 load once the p10 read sits textually inside the copy block, so the donor was not the missing ingredient there.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 4 bodies, zero FAKE constructs in any of them
+
+## [s20] Hoisting the p10 read ABOVE the D_800F10D0 zero store (rather than above the copy block, which is as far as s19's Q family went) yields three loads with every target register seat.
+- mechanism: sw zero,%lo(D_800F10D0)($at) is an $at-based store sched2 cannot disambiguate from lw ?,0x10($v1), so it is a hoist barrier for the p10 load; a read placed above it is free of the sched1 pin that the s4/s10 conservation law describes.
+- probe: T1 = P, Z0, C1,C2,C3, S1, S2, S5, S3, S6, S4, S7, S8 (plus T2/T3/T4 with P just below the zero store, T5/T7 tail variants), measured with sandbox --disable all and diffed slot-for-slot against target.txt.
+- result: T1 = 2 / build 65 / target 66 with three loads at 5 ($a1) / 19 ($a0) / 22 ($a0). Slot-for-slot it is target's entire instruction stream with every register seat correct -- the +2 value is in $a0 -- and exactly one difference: target's slot-5 nop is T1's lw $a1,0x10($v1), with everything after shifted one slot earlier. T1 is the second score-2 body in the campaign and the first with three loads and all target seats. T2/T3/T4 (P just below the zero store) are 5 / 67 with the load pinned at 25, which locates the discontinuity precisely at the zero store.
+- verdict: CONFIRMED
+
+## [s20] Giving the p10 value an early consumer while keeping its read just below the D_800F10D0 zero store unpins its load onto target's slot 12 without losing the third load.
+- mechanism: The s4/s10 conservation law says three independent 0x10 loads imply p10 has no early consumer, which lets sched1 chain the bumped insn and sched2 pin the load to slot 25; supplying an early consumer was expected to unpin it while the zero store keeps it from hoisting to slot 5.
+- probe: V1-V6 (the +4 read and the 0x1C store moved to every position between the copy block and the 0x1A store, with the p10 read immediately below the zero store), measured with sandbox --disable all.
+- result: 7-12 at 66-67 instructions; the p10 load is emitted at slot 24-25 in every member and lands in $v0 in four of them. The early consumer does not move the load to slot 12 from that position.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 6 bodies, zero FAKE constructs in any of them

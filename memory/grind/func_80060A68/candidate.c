@@ -1,3 +1,55 @@
+/* [s20 2026-09-03 - structural modality.  BODY UNCHANGED (still the E2 body, re-measured
+ * 2 / build 66 / target 66 on today's HEAD as D1 through the s20 generator).  The s20 header
+ * is prepended; every earlier header below is intact.]
+ *
+ * WHY THIS BODY AND NOT T1.  s20 produced a SECOND score-2 body, T1, banked at
+ * rejected/t1-p10-read-above-the-zero-store-three-loads-but-its-lw-fills-target-slot5-nop-
+ * score2-65insns.c.  T1 is arguably closer in kind - it carries all THREE 0x10 loads and
+ * every target register seat - but it is 65 instructions, so it is not a drop-in replacement
+ * for the pinned 66-instruction floor body.  E2 is kept here as the stable inheritance; T1 is
+ * the live lead.  Both measure 2.
+ *
+ * WHAT s20 ADDS.  46 ordinary-C bodies, no FAKE construct anywhere.
+ *
+ * (1) THE MERGE IS CSE-1, MEASURED.  tools/grinder/dump.ps1 on this body: text1b.rtl carries
+ *     three (mem:SI (plus (reg/v 72) (const_int 16))) loads (insns 46, 53, 58) and text1b.cse
+ *     carries two.  s19's frontier item 1 asked for this confirmation; it is now read out of
+ *     the dumps instead of inferred.
+ *
+ * (2) CLASS RESULT - ONLY A STORE OR A CALL SEPARATES.  These reads hash to a VARYING-address
+ *     MEM, so invalidate_memory (cse.c:1701) drops the entry unconditionally; it is reachable
+ *     only from invalidate_from_clobbers when the written rtx is a MEM, and from cse_insn on a
+ *     non-const CALL_INSN.  Nothing that emits neither a store, nor a call, nor a redefinition
+ *     of `outer` can break the equivalence, in any spelling.  The base-register escape is
+ *     closed for a byte-neutral form too: `outer = outer;` emits no insn (Q1 = 2 / 66, two
+ *     loads, byte-identical), and a form that does emit one costs the gp load (Q5 = 26 / 68).
+ *
+ * (3) NEW BODY Q2/R3 - TARGET'S WHOLE INVENTORY, ONE SEAT WRONG.  Moving the 0x1A store above
+ *     `P` (so it separates the +2 read from the p10 read) and putting `idx` in the
+ *     [+2 read, 0x1A store] window gives 5 / build 66 / target 66 with all three loads at
+ *     target's exact slots and registers (12/$a1, 20/$a0, 23/$a0), identical to target through
+ *     slot 24 and from slot 33 on.  The only defect is the +2 value seating in $v0.  QTYDBG
+ *     says why: reg74 birth=36 death=38 refs=2 ord=5 got=2 - its span is still 2 because
+ *     local-alloc runs after sched1 and sched1 scheduled the filler `lhu` out of the window.
+ *     R2's filler must be a STORE (a store-store edge is what glues the gp store in place); a
+ *     copy filler works as a donor but drags its load out of the copy block (N1-N6, 9-12 / 66).
+ *
+ * (4) NEW BODY T1 - THE WHOLE STREAM, ONE DISPLACED LOAD.  Hoisting the p10 read ABOVE the
+ *     D_800F10D0 zero store (s19's Q family only went above the COPY block, i.e. below the zero
+ *     store) gives 2 / build 65 / target 66 with three loads at 5/$a1, 19/$a0, 22/$a0.  It is
+ *     target's entire stream, all seats included, except that target's slot-5 nop is T1's
+ *     lw $a1,0x10($v1) and everything after shifts one slot earlier.  The zero store is an
+ *     $at-based store sched2 cannot disambiguate from lw ?,0x10($v1), so it is the hoist
+ *     barrier: above it the p10 load reaches slot 5, below it the load pins to slot 25.  This
+ *     is the first body to break the s4/s10 conservation law.
+ *
+ * (5) THE TRILEMMA.  Three reads = two gaps; each gap needs a store (2); R2 needs a span-2 $v0
+ *     STORE inside [+2 read, 0x1A store]; R4 needs P before that store.  E2 spends the free
+ *     0x18 store on gap 1 and leaves gap 2 open (missing load, slot-23 nop).  Q2 closes both
+ *     gaps by moving the 0x1A store above P, which empties R2's window (wrong seat).  T1
+ *     closes both by hoisting P above the zero store, which costs target's slot-5 nop
+ *     (displaced load).  Three faces of one bind, each one decision from the match.
+ */
 /* [s19 2026-09-03 - structural modality.  BODY UNCHANGED (still the E2 body, re-measured
  * 2 / build 66 / target 66 on today's HEAD, and reproduced independently as D2 through the
  * s19 generator).  The s19 header is prepended; every earlier header below is intact.]

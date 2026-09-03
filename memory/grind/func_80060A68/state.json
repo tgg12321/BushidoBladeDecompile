@@ -1,7 +1,7 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 19,
+ "session_count": 20,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -117,23 +117,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "The floor-2 body is ONE instruction from a byte match and the slot is already a nop: E2 == target except target's third lw $a0,0x10($v1) is a load-delay nop here; a new byte-neutral free separator (th"
+  },
+  {
+   "session": 20,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "cse-1 confirmed as the merger in the dumps and closed as a class (only a store or a call separates); two new same-floor bodies, Q2 (66 insns, target's exact three-load geometry, one wrong seat) and T1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The match is one free cse separator away from candidate.c, and the separator does not have to be a store: any construct that makes the +2 read and the p10 read non-equivalent to cse - without adding an instruction or relocating a load - lands the third lw in E2's existing slot-23 nop and byte-matches.",
-   "mechanism": "cse merges the two reads because they are structurally identical rtx (mem:SI (plus (reg v1) (const_int 16))). Equivalence, not ordering, is what fails: the load itself is free (the slot is a nop) and every register seat is already target's. Pass attribution should be confirmed against the .cse/.combine dumps before spelling candidates, since the s15 attribution to cse was made on a different spine.",
-   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80060A68 on the E2 body and read tmp/grind/func_80060A68/dumps/*.cse and *.combine to confirm which pass performs the merge and on which rtx. Then sweep ordinary-C spellings that change the rtx of ONE of the two reads without changing the emitted instruction: reading p10 as a different pointer type (u16 * / u8 * / struct *) so its address rtx differs, computing the +2 address as (p-style) base arithmetic that folds to the same lw but a different rtx before cse, and reading through a differently-typed lvalue for outer. Measure build_insns and the three 0x10 load slots/registers for each, and diff any 66-instruction three-load member against target.txt with cmp.sh."
+   "hypothesis": "T1's single defect is a scheduling placement, not an allocation or a cse fact: the p10 load is ready at slot 5 only because nothing else is ready there. Any ordinary-C change that makes some other instruction ready in target's slot-5 nop, or that raises another insn's INSN_PRIORITY above the p10 load's at that point, turns T1 into a byte match without touching the read structure at all.",
+   "mechanism": "T1 places the p10 read above sw zero,%lo(D_800F10D0)($at), the $at-based store sched2 cannot disambiguate from lw ?,0x10($v1); above that barrier the load's only constraint is the availability of $v1 at slot 1, so sched2 fills the lhu's load-delay slot with it. Target leaves that slot empty, which means in target's RTL either the p10 read is below the barrier (and then it must survive cse, the E2 problem) or every other candidate insn is blocked. The candidates at slot 5 are the v1-based loads (blocked by the zero store) and the two gp addius (blocked because $v0 is carrying idx*4).",
+   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80060A68 on the T1 body and read tmp/grind/func_80060A68/dumps/text1b.sched2 for the ready list at the slot-5 cycle: identify every insn sched2 considered and why the p10 load won rank_for_schedule. Then sweep ordinary-C forms that occupy that cycle -- reordering the zero store's address arithmetic (idx*4 computed before or after the lui), moving the idx read (S4) to the top so its lhu is the slot-4/5 pair, and placing the D_800A3478/D_800A347C addiu statements earlier so one of them is ready at slot 5 -- measuring build_insns and the three 0x10 load slots for each, and diff any 66-instruction three-load member against s20/target.txt with cmp.sh."
   },
   {
-   "hypothesis": "If R2's window can be satisfied by a donor that is not a gp store, the 0x1A store is freed to act as the second separator and both gaps are covered at zero cost - which is the only other way out of the two-gaps/one-separator bind.",
-   "mechanism": "R2 currently requires the D_800A3478 addiu (a span-2 $v0 quantity) inside [+2 read, 0x1A store], which forces the 0x1A store downstream of a gp store while R4 forces every read upstream of it. Any other span-2 quantity that local-alloc allocates before the +2 value and that is live across its two-insn range would push the +2 value to $a0 without a gp store in the window; local-alloc.c:1649-1685 gives a refs-2/span-2 quantity priority 10000, so only a span-2 competitor can win the tie.",
-   "next_probe": "Pull tools/ra_solver/local_extract.py text1b --func func_80060A68 (QTYDBG) for E2 and X2, list every quantity with refs, span, priority, allocation order and got, and identify which quantities are span-2 at local-alloc time (post-sched1). Then spell bodies that place a candidate span-2 quantity (the +0 value on the split-0x18 spine, temp0; the idx read; a copy's value) across the +2 value's range without a gp store in the window, and read the +2 value's got field back out of QTYDBG. Bank the dumps under tmp/grind/func_80060A68/s20/."
+   "hypothesis": "On the Q2 spine the only missing ingredient is a span-2 $v0 STORE inside [+2 read, 0x1A store] that is not a gp store and does not move a copy's load out of the copy block. The 0x1C store (sh, value temp_a1) is the one store in the function never tried in that window, because it needs the +4 read and therefore the p10 read ahead of it -- which the Q2 spine, unlike E2, can supply, since Q2 already covers both read gaps with the 0x1A store.",
+   "mechanism": "R2 needs a quantity that is allocated before the +2 value (refs 2, span 2, priority 10000) and holds $v0 across its range; temp_a1 is a refs-3 quantity (read, 0x1C store, call argument) so it does not qualify by itself, but the sh 0x1C is a store, and a store placed between the +2 read and the 0x1A store is glued there by the same store-store edge that glues the gp store, which lengthens the +2 value's span past 2 and drops its priority below any span-2 competitor's.",
+   "next_probe": "Spell Q2 variants with the p10 read and the +4 read moved ahead of the +2 read and the 0x1C store placed inside [+2 read, 0x1A store] (P,S6 before S2; S8 between S2 and S3; S5/S7/S4 permuted in the tail), measure each with sandbox --disable all, and for any member that stays at 66 instructions with three loads pull tools/ra_solver/local_extract.py text1b --func func_80060A68 and read reg74's birth/death/refs/ord/got back out of QTYDBG before scoring conclusions. Bank the QTYDBG dumps under tmp/grind/func_80060A68/s21/."
   },
   {
-   "hypothesis": "The X2 spine (65 instructions, score 4) is a second, cheaper attack surface than E2 for the same defect, because its missing load is the +2 read's rather than the p10 read's and its gap is between two adjacent halfword statements rather than across the p10 read.",
-   "mechanism": "X2 spends the free 0x18 separator on the +2-to-p10 gap and leaves the +0/+2 gap open. The two reads there are adjacent statements with no intervening statement at all, so any zero-instruction construct placed between them - including one that is not a store, if the cse-equivalence attack of frontier item 1 works - is enough, and the rest of X2's stream is already target's.",
-   "next_probe": "Diff X2 against target.txt with cmp.sh to enumerate its exact residual slots, then sweep the zero-instruction constructs from frontier item 1 into the S1a/S2 gap on the X2 spine (as well as the E2 spine), measuring build_insns and load slots for each. If any member reaches 66 instructions with three loads at 11/19/22, diff it slot-for-slot before scoring conclusions."
+   "hypothesis": "The three closest bodies differ by one decision each and the decisions are not independent, so the campaign's remaining question is which single face admits a zero-cost fix: E2 needs one more free store, Q2 needs one span-2 $v0 store in a window, T1 needs one instruction in target's slot-5 nop. T1's is the cheapest because it does not touch the read structure at all -- the reads, the seats and the whole instruction inventory are already target's.",
+   "mechanism": "E2's and Q2's defects are both consequences of the cse/R2/R4 trilemma banked in section 8 of the s20 evidence entry, and the s20 class kill closes the only route that would have dissolved it (a non-store separator). T1 sits outside that trilemma entirely: its residual is a sched2 ready-list decision at one cycle, governed by INSN_PRIORITY and the $at-store hoist barrier rather than by cse equivalence or local-alloc first-fit.",
+   "next_probe": "Before spending another session on the E2 or Q2 faces, exhaust T1's: enumerate every ordinary-C rearrangement of the function's first nine instructions (the prologue, the idx read, the shift, and the D_800F10D0 address computation) that changes what is ready at the slot-5 cycle, measure each on the T1 spine, and record the p10 load's slot for each. A T1 member at 66 instructions with the p10 load at slot 12 is a byte match; anything else narrows the ready-list law."
   }
  ],
  "judge_constraints": [
@@ -349,6 +355,78 @@
    "measured_on": "today's HEAD chassis, 4 bodies plus control, zero FAKE constructs in any of them",
    "predicate_cite": "",
    "result": "KILLED. 15-19 at 65 instructions. The store does restore the third load, but its five-instruction address computation (l"
+  },
+  {
+   "session": 20,
+   "statement": "No construct that emits neither a memory store, nor a call, nor a redefinition of the base register `outer` can make the +2 read and the p10 read non-equivalent to GCC 2.7.2's first cse pass, in any C",
+   "kill_scope": "class",
+   "measured_on": "today's HEAD chassis, the E2 body's full -da dump set, zero FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:1701",
+   "result": "The merge is performed by the FIRST cse pass, on insn 58 (p10's read), exactly where s15 guessed and s19 asked for confi"
+  },
+  {
+   "session": 20,
+   "statement": "On the E2 spine, writing `outer = outer;` between the +2 read and the p10 read invalidates the cse entry for the base register and restores the third load at zero instruction cost.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 2 bodies plus control, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "Q1 = 2 / build 66 / target 66 with TWO loads, byte-identical to the control D1: expand_assignment/store_expr returns the"
+  },
+  {
+   "session": 20,
+   "statement": "On the E2 spine, changing the declared width of the +2 value (u16 vs s32 vs u32) changes its local-alloc priority or its register seat.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 3 bodies, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "All three measure 2 / build 66 / target 66 with loads at 12 ($a1) / 20 ($a0) and are byte-identical. Both refs keep the "
+  },
+  {
+   "session": 20,
+   "statement": "Moving the 0x1A store above the p10 read (so it covers the second read gap) and inserting a non-store statement into the [+2 read, 0x1A store] window lengthens the +2 value's live range enough to push",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 6 bodies plus a QTYDBG extraction, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "Q2 and R3 reach 5 / build 66 / target 66 with all three lw ?,0x10($v1) at target's exact slots AND registers (12/$a1, 20"
+  },
+  {
+   "session": 20,
+   "statement": "A copy statement moved into the [+2 read, 0x1A store] window serves as both R2's span-2 $v0 donor and the second read gap's separator, closing both gaps on the E2 spine.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 7 bodies, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "N1/N3/N4 = 9-10 / build 66 with all three loads present but the two halfword pointer loads emitted at slots 17/20 instea"
+  },
+  {
+   "session": 20,
+   "statement": "Hoisting one of the two halfword reads into or above the copy block lets a copy store act as the missing free separator on the E2 and X2 spines.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 16 bodies, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "9-16 at 65-67 instructions. Three loads at 66 instructions is easy to reach this way (A1/A2/A4/F1 = 12 / 66) but the hoi"
+  },
+  {
+   "session": 20,
+   "statement": "Reading the +2 halfword before the +0 halfword lets the 0x1A store cover the first read gap and the 0x18 store cover the second, closing both gaps at zero instruction cost.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 4 bodies, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "W8 = 7 / build 66 with target's exact three-load geometry (12/$a1, 20/$a0, 23/$a0) and W1 = 7 / 66; W2/W6 = 7 / 67. In e"
+  },
+  {
+   "session": 20,
+   "statement": "Placing the p10 read among the copies with the 0x1C store as the second gap's separator and a copy value as R3's $v0 donor recovers target's slot-12 p10 load, which s18's Z family missed only for lack",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 4 bodies, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "10-14 at 67-68 instructions, with the p10 load at slot 22-23 in $v0 in every member. Supplying the donor does not recove"
+  },
+  {
+   "session": 20,
+   "statement": "Giving the p10 value an early consumer while keeping its read just below the D_800F10D0 zero store unpins its load onto target's slot 12 without losing the third load.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 6 bodies, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "7-12 at 66-67 instructions; the p10 load is emitted at slot 24-25 in every member and lands in $v0 in four of them. The "
   }
  ]
 }
