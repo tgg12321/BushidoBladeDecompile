@@ -278,3 +278,65 @@ guessing spellings.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 1c8fa981 chassis, -mel, no rules; z0 (v3b) and w3 bodies with the buf8 low-half reuse and the multi-set s32 t staging; no FAKE constructs present in the measured diff
+
+## s4 (2026-09-02, permuter) — floor 3 → **0** (full build SHA1 == oracle)
+
+### H21 — every banked instance kill still holds on the current chassis, and no carried construct was a FAKE carrier on the block-1 pseudos — CONFIRMED (instance)
+Mechanism: the mandated kill re-audit. `fake_ablate.py` had no units to ablate (the
+inherited candidate carried no `/* FAKE */` annotation), so the three carried constructs
+were ablated by hand instead.
+Measured on HEAD 8fbb8b41, -mel, no rules: w3 = 3, z0 = 24, y1 = 6 (all identical to their
+s2/s3 numbers). Hand ablations of the w3 body: drop the buf8 low-half reuse → 36; drop the
+multi-set `s32 t` staging → 6; `s32 c0lo` → `u16 c0lo` → 4. None of these constructs touches
+the block-1 pseudos (74/75/76) that the s3 dependence closure measured, so the s1-s3 kills are
+not carrier-confounded.
+
+### H22 — adding an insn to the block-1 INSN SET (rather than changing the dependence carrier) displaces the D_800A369C store from the slot before the branch and lets the flag lbu take T-3 — CONFIRMED (instance)
+This is the s3 frontier's second hypothesis, confirmed, with one refinement that was not
+anticipated: **the added insn does not have to survive into the output — it only has to exist
+during sched1.**
+Mechanism, read from this session's dumps rather than inferred:
+  * `.flow`: the added holder is `(insn 24 ... (set (reg/v:SI 80) (const_int 0)) ...
+    (expr_list:REG_EQUAL (const_int 0)))`, inside block 1.
+  * `.sched`: insn 24 is still in sched1's block-1 insn list
+    (`;; insn[  24]: priority = 1, ref_count = 1`) and wins T-2 —
+    `;; ready list at T-2: 24 (7f000001) 64 (2), now 24 64`. Insn 64 is the D_800A369C store,
+    which in every earlier form was the ONLY insn ready at T-2 (s3's trace) and whose presence
+    in that slot is precisely the memory-unit load-after-store blockage (sched.c:2685 +
+    mips.md:153-161) that kept the D_800A3916 flag lbu out of T-3 across s1-s3. Displaced, the
+    lbu takes T-3: `;; launching 68 before 24 with no stalls at T-3`.
+  * `.lreg`: there is NO register 80 entry. `update_equiv_regs`
+    (tools/gcc-2.7.2/local-alloc.c:947; constant case at local-alloc.c:1031) reads the REG_EQUAL
+    note, substitutes the constant at the single use and deletes the set. The holder costs zero
+    instructions, so the function is 200 insns like the target.
+Measured on HEAD 8fbb8b41, -mel, no rules: p2/f1 (zero holder as a block-1 statement) = **0**;
+`verify-oracle` build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
+
+### H23 — the holder must be a STATEMENT inside block 1; the same constant-holder written as a declaration initializer is inert — CONFIRMED (instance)
+Mechanism: an initializer on the declaration is emitted before the `if (D_800A320C != 0)` test,
+i.e. in a different basic block, so it never enters block 1's sched1 ready lists.
+Measured on HEAD 8fbb8b41, -mel, with the FAKE annotation present: f1 (`s32 zero; ... zero = 0;`
+after `vsync = D_800A38A0;`) = 0; f2 (`s32 zero = 0;`) = 3.
+
+### H24 — the permuter's second holder (`new_var = 8` used as `*(s32 *)(a0 + new_var)`) is byte-neutral and is not part of the match — KILLED (instance)
+Mechanism: the offset holder feeds an address computation in the tail block, not block 1's
+schedule; nothing in the residual depended on it.
+Measured on HEAD 8fbb8b41, -mel, no other FAKE construct present: p3 (eight-holder alone on the
+w3 body) = 3, i.e. identical to w3 without it; p1 (both holders) = 0 = p2 (zero-holder alone).
+Dropped from the candidate; banked at rejected/s4-eight-holder-alone-byte-neutral-3.c.
+
+### H25 — an ordinary-C block-1 quantity carrying a REAL value can do the same job as the constant holder — KILLED (instance)
+This is the lever-exhaustion record behind the `/* FAKE */` annotation: every natural way of
+adding a block-1 quantity was spelled and measured, and all are worse than the 0.
+Mechanism: a real value's insn carries real dependences into the rest of block 1, so it either
+re-rotates the seats (the s1/s2 rotation family) or is scheduled somewhere other than the slot
+before the branch.
+Measured on HEAD 8fbb8b41, -mel, no FAKE constructs present, on the w3 body:
+  * `lower = buf8 & 0xFFFF;` hoisted and used at all three sites (q1) → 29
+  * the same hoist used only inside `packed` (q2) → 5
+  * `fld = D_800A3730;` staged and used in `packed` + the tail test (q3) → 14
+  * `hdr = *(s16 *)a0;` staged (q4) → 3 (byte-neutral)
+  * `mode = D_800A3870 & 3;` staged (q5) → 6
+Banked at rejected/s4-*.c. Together with s2's five `hi16`-placement measurements and s3's
+five-arrangement dependence closure, this is the spent modality ladder that the FAKE annotation
+cites.

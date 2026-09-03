@@ -1,24 +1,28 @@
-/* func_8003A728 candidate - s4 (2026-09-02, permuter), sandbox --disable all = 0, FULL BUILD
- * SHA1 == oracle 62efab4f73f992798c43e8c730aa43baa10bb4fa with this body in src/code6cac_c_mid.c.
+/* func_8003A728 candidate - s2 (2026-09-02, structural), sandbox --disable all = 3 (from 38).
+ * SHAPE CHANGED COMPLETELY vs the s1 candidate (v2) even though the score is the same 3:
+ * every register seat in block 1 is now the target's, and the ONLY residual is that sched1
+ * places the D_800A3916 lbu one slot too early (before the `or a0,a0,v0` instead of after),
+ * which also costs the beqz its v0 seat. Target tail:  or a0,a0,v0 / lbu v0 / lui at / sw a0 /
+ * beqz v0.  Ours:  lbu v1 / or a0,a0,v0 / lui at / sw a0 / beqz v1.  (3 differing insns.)
  *
- * Route: s1 took a clean pure-C draft 38 -> 3 (s32 c0lo, multi-set `t` staging for the three
- * `& 0xF` sites, the u16 low-half loads written into the existing call-crossing `buf8` local).
- * s2 rebuilt the shape at 3 so that EVERY register seat matches the target (fresh `flag` local,
- * in-place `hi16 |= packed`, the `hi16 = D_800A37C4 << 16;` statement between the D_800A3698
- * store and the first hash step). s3 read the sched1 trace directly and closed the block-1
- * dependence space: the D_800A369C store was the ONLY insn ready at T-2, so the D_800A3916 flag
- * lbu was function-unit blocked out of T-3 (memory-unit load-after-store, sched.c:2685 +
- * mips.md:153-161) and all five dependence carriers that could have emptied the T-3 ready list
- * measured 6-24.
+ * The three structural moves that got here from s1's v2 (each measured, see evidence.md s2):
+ *   1. `flag` is a FRESH local holding the D_800A3916 read (s1's v3b reused `packed` for it,
+ *      which gave reg 74 two REG_DEAD notes -> local-alloc.c:472 refuses it -> global alloc ->
+ *      a0 instead of v0, and that single fact is the whole 24-insn v3b/v7a/x1/x3/x4 rotation).
+ *   2. `hi16 = hi16 | packed;` in place (not a fresh temp): the or's dest is then hi16's own
+ *      pseudo, so it inherits a0 and prints `or a0,a0,v0` exactly as the target does.
+ *   3. `hi16 = D_800A37C4 << 16;` sits between `D_800A3698 = packed;` and the first hash step,
+ *      which is what puts `lhu a0` early and `sll a0,a0,0x10` before `sra v1,v0,0x10`.
+ * Constructs still carried from s1: s32 c0lo; multi-set s32 t staging for the &0xF loads; the
+ * u16 low-half loads written into the existing buf8 local (variable reuse -> FAKE decision at
+ * candidate time). `flag`, `hi16 |= packed` and the statement order are ordinary C.
  *
- * s4 closed it from the other side, the axis s3's frontier named: change the block-1 INSN SET
- * rather than the dependence carrier. A decomp-permuter campaign on this chassis found it in
- * 201 iterations; hand-minimised, the whole delta is the one `zero` constant-holder below.
- * Everything else in this body is ordinary C and byte-load-bearing (s4 ablations, w3 chassis:
- * dropping the buf8 low-half reuse costs 33 insns, dropping the multi-set `t` staging 3,
- * `s32 c0lo` -> `u16 c0lo` 1). The natural alternatives that add a block-1 quantity carrying a
- * REAL value were all measured and are all worse: hoisting `buf8 & 0xFFFF` into a local (29 / 5),
- * staging D_800A3730 (14), staging `*(s16 *)a0` (3), staging `D_800A3870 & 3` (6). */
+ * s3 (2026-09-02, structural) KEPT this body unchanged at 3 and closed the block-1 dependence
+ * space around it: the sched1 trace was read directly from the instrumented cc1, the store to
+ * D_800A369C is the ONLY insn ready at T-2 so the flag lbu can never occupy T-3 (memory-unit
+ * load-after-store hazard, sched.c:2685 + mips.md:153-161), and all five ways of making the hash
+ * `or` unready at T-3 (anti dep on packed / on hi16 in three placements, output dep on the or's
+ * dest) are now measured dead. See evidence.md s3 for the table. */
 void func_8003A728(s32 a0) {
     s32 buf8;
     s32 packed;
@@ -27,17 +31,13 @@ void func_8003A728(s32 a0) {
     s32 vsync;
     s32 c0lo;
     s32 t;
-    /* FAKE: constant-holder local; mechanism: the (set (reg) (const_int 0)) survives into
-     * sched1's block-1 ready lists and displaces the D_800A369C store from the slot before the
-     * branch, then local-alloc.c update_equiv_regs deletes it (no insn emitted);
-     * lever-exhaustion: memory/grind/func_8003A728/hypotheses.md s1-s4 */
-    s32 zero;
+    s32 fld;
 
     if (D_800A320C != 0) {
         buf8 = *(s32 *)(a0 + 8);
         vsync = D_800A38A0;
-        zero = 0;
-        packed = (vsync << 31) | (D_800A3730 << 30) | ((D_800A3870 & 3) << 28)
+        fld = D_800A3730;
+        packed = (vsync << 31) | (fld << 30) | ((D_800A3870 & 3) << 28)
                | (*(s16 *)a0 << 16) | (buf8 & 0xFFFF);
         D_800A3698 = packed;
         hi16 = D_800A37C4 << 16;
@@ -81,7 +81,7 @@ void func_8003A728(s32 a0) {
             D_800A3908 += func_8003A6FC(buf8 & 0xFFFF);
             func_8003A574();
             if (D_800A38A0 == 0) {
-                if (D_800A3730 != zero || (D_800A36C0 & 0x40000000)) {
+                if (fld != 0 || (D_800A36C0 & 0x40000000)) {
                     func_8003A39C();
                     return;
                 }

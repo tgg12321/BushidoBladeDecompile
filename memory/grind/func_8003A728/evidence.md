@@ -322,3 +322,105 @@ purely allocator ordering, measured this session on the z0 dumps:
 - [s3] Naming or re-staging the block-1 `sra` temporaries does not change that landscape - z10/z11/z13/zt3/zt4 are byte-identical to z0 at 24 because combine re-collapses them - so the counter-lever of freeing $v0 before global_alloc is not reachable by temp spelling alone.
 
 - [s3] Tooling for the next session: `wsl.exe bash tmp/grind/func_8003A728/s3/dbg.sh` runs the instrumented cc1 with BB2_SCHED_DEBUG=1 and writes s3/sched_debug.txt plus a full -da dump set; `wsl.exe bash tmp/grind/func_8003A728/s3/meas.sh` prints the pairdiff; s3/apply.py swaps a body file into src/code6cac_c_mid.c (latin-1, sentinel-delimited). `bash tools/wsl.sh` does NOT work from the Bash tool on this host - wsl is not on that PATH; call wsl.exe from PowerShell.
+
+## s4 (2026-09-02, permuter) — chassis: HEAD (8fbb8b41), -mel, no rules; w3 re-measured 3, chassis UNCHANGED. **FLOOR 0 — full build SHA1 == oracle.**
+
+### Result
+`sandbox func_8003A728 --disable all` = **0**, and `verify-oracle` reports
+`build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`, `build_matches: true`, with the
+candidate body in `src/code6cac_c_mid.c`. The entire delta from the s2/s3 candidate (w3, 3) is
+ONE construct: a `zero` constant-holder local set in block 1 and read once at the tail test
+`if (D_800A3730 != zero || (D_800A36C0 & 0x40000000))`, carrying the mandatory `/* FAKE */`
+annotation. Everything else in the body is unchanged from w3.
+
+### Chassis + kill re-audit (mandated; all `sandbox --disable all` on HEAD 8fbb8b41)
+| form | s3 score | s4 re-measure |
+|---|---|---|
+| w3 (candidate.c as inherited) | 3 | 3 |
+| z0 (arrangement 1, flag into `packed`) | 24 | 24 |
+| y1 (arrangement 5, OUTPUT dep on the or-dest) | 6 | 6 |
+Every banked instance kill therefore still holds on the current chassis. `fake_ablate.py` had no
+units to ablate (the inherited candidate carried NO `/* FAKE */` annotations), so the ablation was
+run by hand over the three carried constructs instead:
+| ablation of the w3 body | score |
+|---|---|
+| buf8 low-half reuse -> fresh `low` local | **36** (the reuse is worth 33 insns) |
+| multi-set `s32 t` staging -> direct `D_800A36C2 & 0xF` reads | 6 |
+| `s32 c0lo` -> `u16 c0lo` | 4 |
+No carried construct sat on the block-1 pseudos the s3 kills targeted, so none of the s1-s3 kills
+was FAKE-carrier-confounded.
+
+### The permuter workspace (reusable)
+`tmp/perm_8003A728_s4/` — full-TU compile + per-function extraction, built by
+`tmp/grind/func_8003A728/s4/mkws.sh` (which calls `mktgt.sh` for `target.o` and copies
+`compile.sh`). Validation before launch: `base.o` vs `target.o` mnemonic diff was EXACTLY the
+known 3-insn residual (`lbu v1` one slot early + `beqz v1`) and nothing else.
+Gotcha for future sessions: the `cut -c33-` idiom copied from the func_8003C714 workspace scripts
+CUTS THE WHOLE INSTRUCTION AWAY when objdump prints small (section-relative) addresses — every
+line compares equal and a broken workspace looks perfect. Use
+`awk -F'\t' 'NF>=3 {print $3"\t"$4}'` instead (`tmp/grind/func_8003A728/s4/dis.sh`).
+
+### The campaign
+  launch : `python3 tools/permuter_campaign.py launch --func func_8003A728 --dir tmp/perm_8003A728_s4 --label s4-w3-candidate-chassis -j 6 --stop-on-zero`
+  base_score 70 (permuter weighted metric; objdump distance 3)
+  **found score 0 at iteration 201, 10.4 s after launch**; harvest --stop, elapsed 146.4 s,
+  finds_total 1, best_new_score 0.
+A second campaign on a structurally different chassis (`tmp/perm_8003A728_s4z/`, the z0 /
+arrangement-1 body, base_score 225, label s4-z0-arrangement1-chassis, -j 5) ran in parallel and
+was harvested + stopped once the first campaign closed: 3 finds, best 70, no improvement on its
+own base. Both campaigns are stopped; neither outlives the session.
+
+### The find, and its minimisation
+The permuter's `output-0-1/source.c` added TWO locals to the w3 body:
+`int new_var2; new_var2 = 0;` in block 1, read as `D_800A3730 != new_var2` at the tail, and
+`int new_var; new_var = 8;` read as `*(s32 *)(a0 + new_var)`. Hand-minimised on the real chassis:
+| form | score |
+|---|---|
+| p1 both holders | 0 |
+| **p2 zero-holder alone** | **0** |
+| p3 eight-holder alone | 3 (byte-neutral — DROPPED) |
+| f1 zero-holder as a statement in block 1 (`s32 zero; ... zero = 0;`) | **0** |
+| f2 zero-holder as a declaration initializer (`s32 zero = 0;`) | 3 |
+The statement position matters: the initializer form is hoisted out of block 1 and is inert. The
+committed form is f1.
+
+### Mechanism (dump-attributed this session, tmp/grind/func_8003A728/dumps/)
+1. `.flow` shows the holder as `(insn 24 ... (set (reg/v:SI 80) (const_int 0)) ...
+   (expr_list:REG_EQUAL (const_int 0)))` inside block 1.
+2. `.sched` shows insn 24 STILL PRESENT in sched1's block-1 insn list
+   (`;; insn[  24]: priority = 1, ref_count = 1`) and scheduled at T-2 —
+   `;; ready list at T-2: 24 (7f000001) 64 (2), now 24 64`. That is the slot the D_800A369C store
+   (insn 64) occupied in every previous form, and s3 proved the store being pinned there is
+   exactly what function-unit-blocked the D_800A3916 flag lbu out of T-3 (memory-unit
+   load-after-store, sched.c:2685 + mips.md:153-161). With the store displaced, the lbu takes T-3
+   (`;; launching 68 before 24 with no stalls at T-3`) and the emitted order becomes the
+   target's.
+3. `.lreg` has NO entry for register 80: `update_equiv_regs` (tools/gcc-2.7.2/local-alloc.c:947,
+   constant case at local-alloc.c:1031) reads the REG_EQUAL note, substitutes the constant at the
+   single use and deletes the set. So the holder costs ZERO instructions — the function is 200
+   insns, like the target.
+This is the s3 frontier's second hypothesis (change the block-1 INSN SET rather than the
+dependence carrier) CONFIRMED, with the twist that the added insn does not have to survive to the
+output: it only has to exist during sched1.
+
+### Natural alternatives measured (all worse — this is the lever-exhaustion record for the FAKE)
+Every ordinary-C way of adding a block-1 quantity that carries a REAL value:
+| form | score |
+|---|---|
+| q1 `lower = buf8 & 0xFFFF;` hoisted, used in `packed` and both `func_8003A6FC` calls | 29 |
+| q2 same hoist, used only in `packed` | 5 |
+| q3 `fld = D_800A3730;` staged, used in `packed` and the tail test | 14 |
+| q4 `hdr = *(s16 *)a0;` staged | 3 |
+| q5 `mode = D_800A3870 & 3;` staged | 6 |
+Together with s2's five `hi16`-placement measurements and s3's five-arrangement dependence
+closure, the modality ladder for this residual is spent: no ordinary-C form of the block-1 insn
+set reaches 0, and the only measured form that does is the sanctioned constant-holder.
+
+- [s4] FLOOR 0. `sandbox func_8003A728 --disable all` = 0 and `verify-oracle` = build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa / build_matches true, with the s4 candidate body in src/code6cac_c_mid.c (measured on HEAD 8fbb8b41).
+- [s4] The whole delta from the inherited w3 candidate (3) is ONE `/* FAKE */`-annotated constant-holder local: `s32 zero;` declared, `zero = 0;` as a statement in block 1, read once as `D_800A3730 != zero`. p2/f1 = 0; the same holder written as a declaration initializer (f2) is inert at 3, so the STATEMENT POSITION inside block 1 is load-bearing.
+- [s4] Mechanism, read from this session's dumps: `.flow` insn 24 is `(set (reg/v:SI 80) (const_int 0))` with a REG_EQUAL note; `.sched` still lists insn 24 in block 1 and schedules it at T-2, displacing the D_800A369C store (insn 64) out of the slot before the branch that had function-unit-blocked the flag lbu since s1; `.lreg` has no register 80 at all, because update_equiv_regs (tools/gcc-2.7.2/local-alloc.c:947, constant case at :1031) substitutes the constant and deletes the insn. The holder therefore emits no instruction and the function is 200 insns like the target.
+- [s4] This CONFIRMS the s3 frontier's block-1-insn-set hypothesis, with the refinement that the added insn need not survive to the output — it only has to exist during sched1.
+- [s4] Every ordinary-C alternative that adds a block-1 quantity carrying a REAL value was measured and is worse: hoisting `buf8 & 0xFFFF` into a local (29 used at all three sites, 5 used only in `packed`), staging D_800A3730 (14), staging `*(s16 *)a0` (3), staging `D_800A3870 & 3` (6).
+- [s4] Kill re-audit on HEAD 8fbb8b41: w3 = 3, z0 = 24, y1 = 6 — every banked instance kill still holds on the current chassis. fake_ablate had no units (the inherited candidate carried no FAKE annotations), so the three carried constructs were ablated by hand: removing the buf8 low-half reuse costs 33 insns (3 -> 36), removing the multi-set `t` staging costs 3 (3 -> 6), `s32 c0lo` -> `u16 c0lo` costs 1 (3 -> 4).
+- [s4] Permuter campaign telemetry: tmp/perm_8003A728_s4 (label s4-w3-candidate-chassis, base_score 70, -j 6, --stop-on-zero) found score 0 at iteration 201, 10.4 s after launch; the parallel structurally-different chassis campaign tmp/perm_8003A728_s4z (z0 body, base_score 225, -j 5) produced 3 finds with best 70 and no improvement. Both harvested with --stop before the session ended.
+- [s4] Workspace gotcha worth carrying forward: the `cut -c33-` mnemonic-extraction idiom copied from the func_8003C714 permuter scripts silently cuts the ENTIRE instruction away when objdump prints small section-relative addresses, so a mis-built workspace compares byte-perfect. Use `awk -F'\t' 'NF>=3 {print $3"\t"$4}'` (tmp/grind/func_8003A728/s4/dis.sh) to validate base.o against target.o.
