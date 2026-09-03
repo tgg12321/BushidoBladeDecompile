@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 21,
- "current_modality": "permuter",
+ "session_count": 22,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -129,23 +129,24 @@
    "floor": 2,
    "modality": "permuter",
    "headline": "Permuter axis measured dead on two NEW chassis (39k iters, 87 finds: 37 are the banned multiply-assigned carrier, 13 are new_var aliases, most of the rest semantically unfaithful); the gp store is pri"
+  },
+  {
+   "session": 22,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "All three of s21's live frontier items measured dead on the current chassis (21 bodies, zero FAKE constructs); floor stays 2, both endgame gates fail, foreclosure record filed."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With the second-separator price list complete and empty of free members, the remaining question is a statement-INVENTORY question rather than an ordering one: the E2 face needs one more ordinary-C memory store somewhere between the +2 read and the p10 read that the function's semantics already require. The only unexamined source of such a store is the TAIL - the dispatch call, the sb to *(s32*)(D_800A3468+0x14), and the D_800A32BC = 0xA store - none of which any session has tried moving or splitting into the body.",
-   "mechanism": "s20's class result says cse loses the mem(v1+0x10) entry on any MEM write, any non-const CALL_INSN, or a redefinition of `outer`. The body's own stores are all priced (evidence s21 section 2), but a CALL is also an invalidator and the function contains exactly one - the chractar_use_pset_combo_id_table dispatch. Its arguments (idx, temp_a1) are computed from the p10 chain, so the call cannot be hoisted, but the sb store that consumes its result and the conditional D_800A32BC store have no such dependence and have never been tested as body-interior statements.",
-   "next_probe": "Sweep bodies that relocate the tail's independent stores into the halfword block: `*(s8 *)*(s32 *)((s32)D_800A3468 + 0x14) = result;` cannot move (result is the call's value), but the `if (*(s32 *)D_800A3468 & 0x200000) D_800A32BC = 0xA;` block can be evaluated anywhere - place it between the +2 read and the p10 read on the E2 spine, measure build_insns and the three 0x10 load slots, and diff any 66-instruction three-load member against s21/target.txt with cmp.sh. If the branch costs instructions, try the same with the D_800A3468 re-read spelling that already exists in the tail so no new load is introduced."
+   "hypothesis": "The T1 body (2 / build 65, three loads at 5/19/22 with every target register seat) is one instruction short of target, and the missing instruction is real work target performs that this reconstruction omits - which makes the residual a statement-INVENTORY question with only one untapped source left: the sibling cluster's version of this routine.",
+   "mechanism": "T1 is target's whole instruction stream shifted one slot earlier from slot 5 onward, with target's slot-5 load-delay nop occupied by T1's lw. s21 killed nine attempts to make another instruction READY in that slot from the existing statement inventory; what was never attempted is enlarging the inventory from an external, semantically-grounded source rather than re-ordering what is already there.",
+   "next_probe": "Read the source of the COMPLETED-C sibling func_80061710 and the still-INCLUDE_ASM func_80060B70 / func_80061250 / func_80061658 (same file, same halfword-copy-then-dispatch shape) and diff their statement inventories against this body's: any statement they all carry that this reconstruction lacks (an extra field copy, a flag write, a second index read) is a candidate for the missing instruction. Splice each such statement into the T1 spine and measure with sandbox --disable all."
   },
   {
-   "hypothesis": "M2 (score 3, 66 instructions, three loads at 19/22/27) is a shorter distance from target than the campaign's slot-27 reading suggests, because its residual is the same single $v0/$a0 seat as Q2's plus one displacement - and unlike Q2 it keeps the 0x1A store downstream of the gp store, so R2's window is not empty.",
-   "mechanism": "M2 = E2 with the 0x1A store lifted above the p10 read and the p10 read dropped to just before the +4 read. The gp store D_800A3478 sits between the +2 read and the 0x1A store (R2 satisfied), the 0x1A store separates the +2 read from the p10 read (R1 satisfied for gap 2), and the 0x18 store covers gap 1 - which means M2 is the first body to satisfy R1 on both gaps AND R2 simultaneously. Its only failure is R3: the p10 read has no span-2 $v0 donor before the +4 read, so its load is emitted at 27 in $v0.",
-   "next_probe": "Take the M2 spine and sweep the position of the D_800A347C gp store (S7) into the [p10 read, +4 read] window so it supplies R3's donor without disturbing R2's filler: M2 variants with S7 between P and S6, between S3 and P, and split across the idx read. Measure each with sandbox --disable all, then pull tools/ra_solver/local_extract.py text1b --func func_80060A68 on any 66-instruction three-load member and read the p10 pseudo's birth/death/refs/ord/got out of QTYDBG before scoring conclusions. Bank the QTYDBG dumps under tmp/grind/func_80060A68/s22/."
-  },
-  {
-   "hypothesis": "The four conditions R1/R2/R3/R4 are now individually measured and pairwise satisfiable but no body satisfies all four, and the reason is that R3's donor and R4's positional constraint both fix the same gp store relative to the p10 read in opposite directions - which makes a THIRD gp-relative store (one this function does not currently have as a separate statement) the load-bearing missing ingredient.",
-   "mechanism": "R3 needs a span-2 $v0 quantity strictly inside [p10 read, +4 read]; the only such quantities are the two gp stores' addiu/sw pairs. R4 (positional) needs the p10 read to precede every gp store. With only two gp stores, using one as R3's donor forces it after the p10 read (fine) but using the other as a cse separator forces it either before the p10 read (R4 violated, J family, load at 27) or before the halfword reads (two instructions of displacement, K/L families, 68 insns).",
-   "next_probe": "Test whether the D_800A3478 store can be spelled as two statements whose addiu and sw are separable at the source level (e.g. staging outer + 0x18 through the already-live `result` local before its call assignment, or writing the store through a pointer-to-global alias), so that the addiu/sw pair can straddle the p10 read and serve as both R3's donor and gap 2's separator. Measure each spelling on the E2 and M2 spines; any spelling that introduces a local written twice, or a fresh scratch, is inside this function's standing ban and must be recorded as such rather than submitted."
+   "hypothesis": "With the separator inventory priced and empty, further ordinary-C progress must come from a change to the READ SET rather than the statement order - specifically a spelling in which the second 0x10 read hashes differently in cse, so the two reads are never equivalent and no separator is needed at all.",
+   "mechanism": "s20's class kill is about the EQUIVALENCE of two identical MEMs, not about the schedule: if the second read's rtx hashes differently (a different base register, a different displacement decomposition, an aliasing-opaque address), cse never merges it. Every body measured so far reads both through `outer`.",
+   "next_probe": "Sweep spellings that reach the same word through a different address expression GCC does not fold back to (plus (reg outer) 16) - e.g. through a second pointer local seeded from another of the function's already-live base values, or through the D_800A3468 global re-read the tail already performs - and read the .cse dump (pwsh tools/grinder/dump.ps1 func_80060A68) to see whether the mem entry survives, before scoring."
   }
  ],
  "judge_constraints": [
@@ -473,6 +474,30 @@
    "measured_on": "today's HEAD chassis, 10 bodies, zero FAKE constructs in any of them",
    "predicate_cite": "",
    "result": "KILLED on instruction count. K1/K2/K3 = 8 at 68 instructions with loads at 12 ($a1) / 20 ($a0) / 27 ($v0) - K1 is identi"
+  },
+  {
+   "session": 22,
+   "statement": "The tail's conditional block (if (*(s32 *)D_800A3468 & 0x200000) { D_800A32BC = 0xA; }) relocated into the [+2 read, p10 read] gap supplies the missing ordinary-C cse separator at no instruction cost,",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis (candidate.c re-measured 2 / build 66 / target 66 first; src/text1b.c restored to HEAD after), 5 bodies plus control, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "X1 = 53 / build 64, X2 = 51 / 62, X3 = 50 / 62, X5 = 51 / 62, and the lw ?,0x10($v1) count falls to ZERO in all four: th"
+  },
+  {
+   "session": 22,
+   "statement": "On the M2 spine (the best three-load body, 3 / build 66 / target 66) sweeping the D_800A347C gp store into the [p10 read, +4 read] window supplies R3's span-2 $v0 donor without disturbing R2's filler,",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 8 bodies plus the M2 control, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "Every member scores worse than the M2 control (A1 = 3): N1 = 5, N2 = 6 (67 insns), N3 = 5, N4 = 7, N5 = 7, N6 = 7, N7 = "
+  },
+  {
+   "session": 22,
+   "statement": "The D_800A3478 gp store can be spelled as two source statements whose addiu and sw are separable, so the pair can straddle the p10 read and serve as R3's donor and gap 2's cse separator at once.",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 8 bodies plus the A0 and T1 controls, zero FAKE constructs in any of them (the `result` staging was measured, not adopted; it is byte-neutral and emits nothing)",
+   "predicate_cite": "",
+   "result": "The split never materialises as two separable instructions. P1 and P3 are byte-IDENTICAL to the A0/E2 control (empty dif"
   }
  ]
 }

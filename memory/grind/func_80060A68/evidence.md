@@ -3161,3 +3161,73 @@ permT1/ and permQ2/ with their campaign.log, campaign_meta.json and 87 output-* 
 - [s21] The T1 face is closed by the zero-store hoist barrier rather than by a ready-list tie: with the p10 read above sw zero,%lo(D_800F10D0)($at) its load is confined to slots 4-8 in both directions, so occupying slot 5 only moves the load to slot 6 and the body stays 65 instructions. G1/G2/G8 = 38 at 62; G3/G4 = 11 at 67 with the load at 10; G5 = 9 at 66 with the load at 4; G6 = 9 at 65; G7 = 7 at 64 with two loads.
 
 - [s21] src/text1b.c was restored to HEAD at the end of the session; the only dirty tracked file outside memory/grind/func_80060A68/ is metrics/events.jsonl.
+
+## s22 (2026-09-03) - escalation/disposition session: the three live frontier items, all measured dead
+
+Chassis re-measured first: HEAD carries `INCLUDE_ASM("asm/funcs", func_80060A68);` (sandbox
+66 / build 0), and `memory/grind/func_80060A68/candidate.c` spliced over it measures
+**2 / build 66 / target 66** - unchanged from the ledger, so every banked spelling
+conclusion is still chassis-valid. The A0 control (E2 statement order, regenerated from the
+s16/s21 statement dictionary) reproduces that 2 / 66 exactly, and the A1 control reproduces
+M2 at 3 / 66 with its three loads at 19 ($a0) / 22 ($a0) / 27 ($v0).
+
+**1. The tail conditional is not a free cse separator (frontier item 1, closed).** The
+s20 class result leaves exactly three separator kinds (a MEM write, a non-const call, a
+redefinition of `outer`), and s21 priced every store the body already contains. The one
+untested candidate was the tail's `if (*(s32 *)D_800A3468 & 0x200000) { D_800A32BC = 0xA; }`,
+which has no dependence on the call. Relocated into the [+2 read, p10 read] gap it measures
+50-53 at 62-64 instructions in all four spellings (X1 re-reading the global, X2/X3/X5 off
+the live `outer`), and the `lw ?,0x10($v1)` count goes to ZERO in every one: the conditional
+splits the contested span into separate basic blocks, and both cse and the list scheduler
+are per-block, so target's single 66-instruction straight-line stream stops being
+constructible at all. The block-boundary-free upper bound X4 (the bare store, semantics
+ignored) does separate the reads - three loads at 20/23/28 - but at build 70, four
+instructions over target, for score 13. Either way the tail conditional is priced and dead.
+
+**2. R3's donor is not what pins M2's third load (frontier item 2, closed).** Eight
+variants (N1-N8) sweep the D_800A347C gp store through every position in and around the
+[p10 read, +4 read] window on the M2 spine, including swapping the roles of the two gp
+stores. All eight score WORSE than the M2 control (5, 6, 5, 7, 7, 7, 5, 5 vs 3). The
+diagnostic content is in the load geometry: the first two loads never move off 19/22 in
+$a0, and the third load only alternates between slot 27 in $v0 and slot 28 in $a0. So the
+donor does buy the target SEAT (N1/N5/N8 put the third load in $a0) but never the target
+SLOT - the p10 load's five-to-six-slot lateness on this spine is not a register-pressure
+effect and cannot be bought with a donor.
+
+**3. A gp store cannot be split at the source level (frontier item 3, closed - its premise
+is false).** Frontier item 3 rested on being able to separate a gp store's `addiu` from its
+`sw` so the pair could straddle the p10 read, resolving the R3/R4 conflict that s21
+identified as the load-bearing obstruction. Staged through the pre-existing currently-dead
+`result` local (`result = outer + 0x18;` ... `D_800A3478 = result;` - measured only, never
+adopted, and it produces no bytes), P1 and P3 come out **byte-identical to the A0/E2
+control** (empty diff of the disassemblies, 2 / build 66, two loads at 12/20) and P6/P7 come
+out byte-identical to T1 (2 / build 65, three loads at 5/19/22). GCC folds the staged
+address straight back into the store's address operand, so no spelling of the split ever
+puts the addiu and the sw on opposite sides of the read. P2/P4/P5 (5-6) and P8 (10, the
+`idx` carrier) confirm that where the split is not byte-neutral it is simply worse. The
+R3-vs-R4 conflict therefore has no gp-store-respelling escape.
+
+**Net.** All three of s21's live frontier items are now measured dead on the current
+chassis with zero FAKE constructs anywhere in the 21 bodies. The floor is unchanged at 2,
+the best bodies remain E2 (2 / 66, two loads) and T1 (2 / 65, three loads, every target
+register seat, one instruction short), and the disposition filed in docs/grind/decisions.md
+for 2026-09-03 records the two endgame gates (scan_hand_coded tier=LOW 1/8; no coercion
+family in candidate.c and therefore no precedent to cite).
+
+- [s22] Chassis re-measured at session start: HEAD carries INCLUDE_ASM (sandbox 66 / build 0); memory/grind/func_80060A68/candidate.c spliced over it measures 2 / build 66 / target 66, unchanged from the ledger, so all banked spelling conclusions remain chassis-valid.
+
+- [s22] The A0 control (E2 statement order, regenerated from the s16/s21 statement dictionary) reproduces the floor exactly at 2 / 66 with two lw ?,0x10($v1) at slots 12 ($a1) and 20 ($a0); the A1 control reproduces M2 at 3 / 66 with three loads at 19 ($a0) / 22 ($a0) / 27 ($v0).
+
+- [s22] Relocating a CONDITIONAL statement into the contested span is categorically destructive here, not merely unhelpful: the basic-block boundary it creates takes cse and the list scheduler out of the single-block regime target's 66-instruction stream requires, dropping the body to 62-64 instructions and score 50-53 with zero 0x10 loads.
+
+- [s22] A free-standing store in the same slot (X4) DOES separate the two 0x10 reads and yields three loads, but costs four instructions (build 70) - which quantifies, for the first time, what an out-of-inventory separator would have to cost: the body is already at target's exact 66 instructions, so any separator that is not already a statement of the function is a guaranteed net loss.
+
+- [s22] Source-level splitting of a gp store into an address stage plus a store is byte-neutral on both score-2 spines (P1/P3 byte-identical to E2; P6/P7 byte-identical to T1) - GCC re-fuses the addiu into the store's address operand, so no staging spelling can put the addiu and the sw on opposite sides of the p10 read.
+
+- [s22] Gate (a) canonical-asm FAILS: tools/scan_hand_coded.py --single func_80060A68 on today's HEAD returns tier=LOW score=1/8, S4 only (6 loads in 8-insn window @ insn 9); S1/S2/S3/S5/S6/S7/S8 all clear. Artifact tmp/grind/func_80060A68/s22/scan_hand_coded.txt.
+
+- [s22] Gate (b) SOTN-master precedent FAILS: candidate.c carries no coercion construct at all (no volatile, no pad, no dead local, no invented carrier, no inline asm), so there is no family for which a precedent could be cited; the one family-shaped spelling measured this session (staged-value through `result`) is byte-neutral and therefore moot on the evidence, not on the rules.
+
+- [s22] Nothing holds a byte-match via a cheat: the function is committed as INCLUDE_ASM per asm-until-matched, and asmfix.txt/regfix.txt have been empty project-wide since 2026-08-25 - there is no cheat to retire and no integration handoff pending.
+
+- [s22] Foreclosure record filed this session at the end of docs/grind/decisions.md: '2026-09-03 - func_80060A68 - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED', carrying both gates' evidence, the exhaustion history (22 sessions, >=7 modalities, ~104k permuter iterations, 116 banked rejected forms) and four re-activation triggers.

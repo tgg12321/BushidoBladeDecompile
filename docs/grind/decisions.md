@@ -21368,3 +21368,95 @@ constructible from C on this chassis (83 insns) and only its position was tested
 change that alters block 0's pre-cse insn set, or that gives cse a source-level way to keep the parameter
 pseudo as the extended block's canonical register. (3) A future cse-level lever that invalidates the crown
 without the cse.c:6871-6902 path.
+
+## 2026-09-03 — func_80060A68 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+**Function:** func_80060A68 (src/text1b.c, committed as `INCLUDE_ASM("asm/funcs",
+func_80060A68);`). Honest pure-C floor **2 / build 66 / target 66**, re-measured this
+session (s22) with `memory/grind/func_80060A68/candidate.c` spliced over HEAD. 22 grind
+sessions, ≥7 distinct modalities (recon, structural, permuter, forensics, rederive, solver,
+escalation); ~104,000 permuter iterations across four structurally distinct chassis;
+116 banked rejected forms.
+
+**This entry is a proof-of-foreclosure RECORD, not a question and not a decision packet**
+(owner ruling 2026-08-31, [[ordinary-c-judge-decidable]]). Nothing waits on the owner.
+
+**Provenance.** The function was re-activated by owner ruling 2026-09-02 ("foreclosure
+mechanics") with the exhaustion window RESET, because the 2026-09-01 foreclosure had
+followed a single post-unpark session. The window has now been spent honestly: sessions
+s14 (solver), s15/s16 (forensics), s17/s18 (rederive), s19/s20 (structural), s21 (permuter)
+and s22 (this one) all ran after the reset, each banking measured kills, and the floor never
+moved off 2.
+
+**What s22 measured (the three live frontier items s21 left, all closed).**
+1. *The tail conditional as the missing cse separator.* s20's class kill (cse.c:1701) leaves
+   exactly three separator kinds — a MEM write, a non-const CALL_INSN, a redefinition of
+   `outer` — and s19/s21 priced every store the body already has. The only untested
+   candidate was the tail's `if (*(s32 *)D_800A3468 & 0x200000) { D_800A32BC = 0xA; }`.
+   Relocated into the [+2 read, p10 read] gap it measures 50–53 at 62–64 instructions in
+   all four spellings (X1/X2/X3/X5) with the `lw ?,0x10($v1)` count falling to ZERO: the
+   conditional introduces a basic-block boundary inside the contested span, and cse and the
+   list scheduler are both per-block, so target's single 66-instruction straight-line stream
+   is no longer constructible. The block-boundary-free upper bound (X4, the bare store) does
+   separate the reads — three loads at 20/23/28 — but at build 70 for score 13.
+2. *R3's donor on the M2 spine.* Eight variants (N1–N8) sweep the D_800A347C gp store
+   through the [p10 read, +4 read] window, including swapping the two gp stores' roles. All
+   eight score worse than the M2 control (5,6,5,7,7,7,5,5 vs 3). The first two loads never
+   leave 19/22 in $a0; the third only alternates slot 27/$v0 ↔ slot 28/$a0. The donor buys
+   the target SEAT and never the target SLOT.
+3. *Splitting a gp store's addiu from its sw.* This was s21's load-bearing hypothesis (the
+   R3-vs-R4 conflict has no resolution with only two gp stores unless one can straddle the
+   p10 read). Staged through the pre-existing, currently-dead `result` local — measured
+   only, never adopted — P1 and P3 come out **byte-identical to the E2 control** (empty
+   disassembly diff, 2 / build 66) and P6/P7 byte-identical to T1 (2 / build 65). GCC folds
+   the staged address back into the store's address operand, so the split never materialises
+   as two separable instructions. The premise of frontier item 3 is false.
+
+**The residual.** Two best bodies, both at score 2 and both ban-free: E2 (`candidate.c`,
+66 instructions, two `lw ?,0x10($v1)` where target has three, the third slot standing as a
+load-delay nop) and T1 (65 instructions, all three loads with target's exact register seats
+$a1/$a0/$a0, differing from target only in that target's slot-5 nop is T1's load with
+everything after shifted one slot earlier). Closing either requires exactly one more
+instruction's worth of ordinary-C material in a specific slot, and the complete inventory of
+statements that could supply it — every store the body contains, both gp stores, all three
+copies, both halfword reads, the zero store, the tail's conditional and the tail's sb — is
+now priced and banked across s19–s22.
+
+**Gate (a) — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single
+func_80060A68` on today's HEAD: **tier=LOW, score 1/8**, S4 only ("6 loads in 8-insn window
+@ insn 9"); S1/S2/S3/S5/S6/S7/S8 all clear. Artifact:
+`tmp/grind/func_80060A68/s22/scan_hand_coded.txt`. Per [[endgame-lock-disposition]] a LOW
+tier is dispositive against canonical-asm for a pure scheduling/allocation artifact, which
+is exactly what a 66-of-66-instruction body with one mis-slotted load is.
+
+**Gate (b) — in-hand SOTN-master precedent: FAILS.** `candidate.c` carries no coercion
+construct of any kind (no volatile, no pad, no dead local, no invented carrier, no inline
+asm), so there is no family for which a precedent could be cited. The one family-shaped
+spelling s22 measured — staging a gp store's address through the pre-existing `result`
+local, i.e. the staged-value-reused-variable shape — is moot on the evidence rather than on
+the rules: it is byte-neutral (P1/P3 are byte-identical to the un-staged control), so it
+buys nothing and was never a candidate. The carrier families that would buy something remain
+banned for this function by the 2026-08-19 Judge ruling (fresh AND multi-write is the frozen
+list's excluded quadrant, not a gap).
+
+**What holds the byte-match: nothing does.** This function does not byte-match via a cheat.
+It is committed as `INCLUDE_ASM` per [[asm-until-matched]]; `grep -n func_80060A68
+asmfix.txt regfix.txt` is empty (both files have been empty project-wide since 2026-08-25).
+There is no cheat to retire and no integration handoff pending.
+
+**Evidence pointers.** `memory/grind/func_80060A68/evidence.md` (s22 section) and
+`hypotheses.md` (three s22 hypotheses, all KILLED with kill_scope/measured_on);
+`tmp/grind/func_80060A68/s22/` (gen22.py, gen22b.py, 21 bodies, 21 disassemblies,
+scan_hand_coded.txt, sweep/dis/cmp harness); 116 forms in
+`memory/grind/func_80060A68/rejected/`.
+
+**Re-activation triggers.** (i) An owner class grant admitting a purpose-introduced
+multiply-assigned carrier (the 2026-08-19 ruling's excluded quadrant) — the score-0 body
+that construct produces is preserved at
+`memory/grind/func_80060A68/rejected/banned-temp2-dual-role-score0-layer1-and-judge-FAIL.c`.
+(ii) A toolchain finding that changes local-alloc's priority inputs (local-alloc.c:1649-1685)
+or cse's per-block MEM invalidation (cse.c:1701) — both are the load-bearing predicates
+behind every kill above. (iii) An honest early consumer of `*(s32 *)(outer + 0x10)` derived
+from the sibling cluster func_80060B70 / func_80061250 / func_80061658 / func_80061710 (the
+last is COMPLETED-C) — the standing fidelity lead, still unexamined at the source level.
+(iv) An owner unpark. Until then: FORECLOSED, silently, queue advances.
