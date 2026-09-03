@@ -1130,3 +1130,81 @@ of the new score-1 chassis, where block 0's allocation differs.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-03 chassis, pre-a0-pointer (separate `s32 *ptr`) chassis, zero FAKE constructs present
+
+## [s53] Reusing loop 1's counter as loop 2's byte offset inverts cse.c:855 clause (2) and makes block 0's shift print a0's register while keeping the target's copy-before-shift emission order.
+- mechanism: cse.c:842-857 make_regs_eqv promotes the copy destination i to qty_first_reg only when uid_cuid[regno_last_uid[i]] > uid_cuid[regno_last_uid[a0]]. On the a0-as-pointer chassis a0's last mention is loop 2's pointer increment; if loop 1's counter is ALSO loop 2's byte offset and its increment is written before the pointer's, i's last mention precedes a0's, the crown fails, and canon_reg leaves the block-0 shift reading reg 72 (a0). The copy still precedes the shift in RTL, so sched1/sched2's LUID tiebreak (sched.c:2461-2463) keeps the target's `sw $s0 / move $s0,$s2 / sll` order.
+- probe: tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c measured with `sandbox func_80045294 --disable all`, disassembled and diffed against asm/funcs/func_80045294.s; RTL/cse dumps in tmp/grind/func_80045294/s53/dumps_A/text1a_c.{rtl,cse}.fn. Control B_reuse_i_as_idx_a0first (pointer increment written first, restoring clause (2)) = score 10.
+- result: score=11, build_insns=83. Block 0's first ten instructions are byte-exact, including idx 8 `addu $s0,$s2,$zero` and idx 9 `sll $v1,$s2,4` — the first form in 53 sessions with the correct shift operand AND the correct prologue order. The .cse dump shows insn 17 keeping `(ashift (reg 72) 4)`. Banked as rejected/s53-crown-defeat-guard-operand-lost.c.
+- verdict: CONFIRMED
+
+## [s53] Under a single cse crown state, block 0's shift and the loop-1 entry guard print the same register, so any spelling whose block-0 copy precedes the shift in RTL misses one of the target's two operands.
+- mechanism: cse keeps one qty_first_reg per quantity per extended basic block (tools/gcc-2.7.2/cse.c:842-857) and canon_reg rewrites every subsequent use of that quantity to it. Block 0's EBB is `;; Processing block from 2 to 36` (dumps_A/text1a_c.cse.fn), and it contains BOTH the shift (.rtl insn 17) and the loop-1 entry guard (.rtl insn 31). The target needs the shift to print a0's register ($s2) and the guard to print i's ($s0). Measured in both crown states: with the crown succeeding (candidate.c) insn 17 is rewritten 72 -> 75 and insn 31 stays 75 (shift wrong, guard right, score 1); with the crown failing (A_reuse_i_as_idx) insn 17 stays 72 and insn 31 is rewritten 75 -> 72 (shift right, guard wrong, score 11).
+- probe: Ten forms measured this session with `sandbox func_80045294 --disable all`: candidate.c 1/83; A_reuse_i_as_idx 11/83; B_reuse_i_as_idx_a0first 10/83; C_sepctr 31/80; D_base_idxfirst 3/83; K0 decl-split control 1/83; K1 `a0 = a0;` statement 1/83; K2 `(a0 = a0) << 4` 1/83; K3 (A + self-assign) 11/83; N_sum_as_idx 31/80; plus G1..G4 loop-1 restructurings 1/83 each. The only device that can flip the canonical mid-EBB is a real write to reg 72 (cse's invalidate -> delete_reg_equiv promotes reg_next_eqv), and the only zero-instruction spelling of such a write, a self-assignment, is folded away by expand and never reaches RTL (K1/K2 byte-identical to K0).
+- result: KILLED for the copy-before-shift geometry. The escape that remains measured-open is the shift-before-copy geometry (H_a0ptr_vfirst, 2/83), where cse processes the shift before the equivalence exists and both operands come out right; there the residual is purely the sched2 emission order.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer, both crown states, zero FAKE constructs present in any measured form (K1/K2/K3 carried an un-annotated self-assignment that expand deletes)
+- predicate_cite: tools/gcc-2.7.2/cse.c:855
+
+## [s53] A self-assignment of the parameter (`a0 = a0;`) cannot flip block 0's cse canonical register, because expand never emits the store.
+- mechanism: intended path was cse's invalidate() -> delete_reg_equiv(), which promotes reg_next_eqv to qty_first_reg when the current canonical register is written; a write to reg 72 between the shift and the guard would hand the quantity back to i. GCC 2.7.2's expand_assignment produces no insn when source and destination are the same pseudo, so no pass ever sees it (unlike the s51 dead-store case, where the insn existed in .rtl and jump.c:577 deleted it).
+- probe: K1_selfassign_stmt.c (statement form, block 0 declarations split so the statement can sit between the shift and the guard) and K2_selfassign_inexpr.c (`s32 v1 = (a0 = a0) << 4;`) against the decl-split control K0_declsplit_ctrl.c, each measured with `sandbox func_80045294 --disable all`. K3 applied the same device to the crown-defeated chassis.
+- result: K0 1/83, K1 1/83, K2 1/83 — all three identical, residual unchanged at idx 9. K3 11/83, identical to A_reuse_i_as_idx. Banked as rejected/s53-selfassign-a0-inert.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, both the i-first (candidate.c) and the crown-defeated (form A) block-0 heads
+
+## [s53] No loop-1 control-flow spelling makes the entry guard a post-cse insn, so restructuring loop 1 cannot separate the guard's operand from the shift's.
+- mechanism: the guard that the target emits at idx 18 is created by jump.c's duplicate_loop_exit_test (called at jump.c:626), and toplev.c:2827 runs that jump_optimize with after_regscan = 1 BEFORE cse_main (toplev.c:2865). The duplicated test therefore exists as ordinary RTL when cse walks block 0 and is canonicalised with everything else.
+- probe: Four loop-1 spellings on the a0-as-pointer chassis, each measured with `sandbox func_80045294 --disable all`: G1 top-tested `while` with the offset left to loop.c; G2 guarded do-while with the offset left to loop.c (s52's A_giv shape re-measured on the new chassis); G3 `for`; G4 candidate.c's explicit offset with a top-tested `while`. Disassembly of G1 and G4 compared against asm/funcs/func_80045294.s.
+- result: All four score 1 / 83 insns with the identical single residual at idx 9 (`sll $v1,$s0,4` vs `sll $v1,$s2,4`). Banked as rejected/s53-giv-while-loop1.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer, i-first block-0 head, zero FAKE constructs present
+
+## [s53] The block-0 copy's destination must itself be live across DrawSync/func_800520B8, so a loop-1-only counter cannot carry it.
+- mechanism: with loop 1's counter distinct from loop 2's and not reused later, it crosses no call; local-alloc leaves it in the incoming $a0, the copy `move $s0,$s2` is never emitted, and the $s5 save/restore pair drops out with it (the s48/s51 collapse, 80 instructions).
+- probe: N_sum_as_idx.c (loop-2 offset carried by the dead `sum` instead, so the loop-1 counter stays short-lived) and C_sepctr.c (plain distinct counters), both measured on this chassis.
+- result: Both 31 / 80 insns; the disassembly shows block 0 emitting `sw $s0 / move $s0,$zero / sll $v1,$s2,4` with no parameter copy at idx 8. Reusing the loop-1 counter as loop 2's OFFSET (form A) is the only measured way to keep the copy and defeat the crown at the same time. Banked as rejected/s53-sum-as-idx-alloc-collapse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer, distinct loop counters, zero FAKE constructs present
+
+## [s53] Reusing loop 1's counter as loop 2's byte offset inverts cse.c:855 clause (2) and makes block 0's shift print a0's register ($s2) while keeping the target's copy-before-shift emission order.
+- mechanism: make_regs_eqv (tools/gcc-2.7.2/cse.c:842-857) crowns the copy destination i only when uid_cuid[regno_last_uid[i]] > uid_cuid[regno_last_uid[a0]]. On the a0-as-pointer chassis a0's last mention is loop 2's pointer increment; writing the offset increment (carried by loop 1's counter) before it puts i's last mention first, the crown fails, and canon_reg leaves the block-0 shift reading reg 72. The copy still precedes the shift in RTL, so the sched.c:2461-2463 LUID tiebreak keeps the target's sw $s0 / move $s0,$s2 / sll order.
+- probe: tmp/grind/func_80045294/s53/A_reuse_i_as_idx.c measured with sandbox func_80045294 --disable all, disassembled and diffed against asm/funcs/func_80045294.s; RTL/cse dumps at tmp/grind/func_80045294/s53/dumps_A/text1a_c.rtl.fn and .cse.fn; control B_reuse_i_as_idx_a0first (pointer increment written first) measured too.
+- result: score=11, build_insns=83. Block 0's first ten instructions are byte-exact against the target, including idx 8 addu $s0,$s2,$zero and idx 9 sll $v1,$s2,4 - the first form in 53 sessions carrying the correct shift operand together with the correct prologue order. The .cse dump shows insn 17 keeping (ashift (reg 72) 4). Control B = score 10. Banked as rejected/s53-crown-defeat-guard-operand-lost.c.
+- verdict: CONFIRMED
+
+## [s53] With one cse crown state per extended basic block, block 0's shift and the loop-1 entry guard print the same register, so a spelling whose block-0 copy precedes the shift in RTL misses one of the target's two operands.
+- mechanism: cse keeps one qty_first_reg per quantity per extended basic block (cse.c:842-857) and canon_reg rewrites every later use of that quantity to it. Block 0's EBB is ';; Processing block from 2 to 36' (dumps_A/text1a_c.cse.fn) and contains both the shift (.rtl insn 17) and the loop-1 entry guard (.rtl insn 31). The target needs the shift on a0's register ($s2) and the guard on i's ($s0). Both crown states measured: crown succeeding (candidate.c) rewrites insn 17 from reg 72 to reg 75 and leaves insn 31 at reg 75; crown failing (form A) leaves insn 17 at reg 72 and rewrites insn 31 from reg 75 to reg 72.
+- probe: Ten forms measured with sandbox --disable all this session: candidate.c 1/83, A_reuse_i_as_idx 11/83, B_reuse_i_as_idx_a0first 10/83, C_sepctr 31/80, D_base_idxfirst 3/83, K0 1/83, K1 1/83, K2 1/83, K3 11/83, N_sum_as_idx 31/80, plus G1-G4 at 1/83 each; RTL vs cse dumps read insn-by-insn in tmp/grind/func_80045294/s53/dumps_A/.
+- result: KILLED for the copy-before-shift geometry. The only device that flips the canonical mid-EBB is a real write to reg 72 (cse invalidate -> delete_reg_equiv), and the sole zero-instruction spelling of such a write, a self-assignment, is folded away by expand and never reaches RTL. The shift-before-copy geometry (H_a0ptr_vfirst, 2/83) is NOT killed: there both operands come out right and the residual is purely sched2's emission order.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer, both crown states, zero FAKE constructs present (K1/K2/K3 carried an un-annotated self-assignment that expand deletes)
+- predicate_cite: tools/gcc-2.7.2/cse.c:855
+
+## [s53] A self-assignment of the parameter (a0 = a0;) placed between block 0's shift and the loop-1 guard leaves the build byte-identical to its control, because expand emits no store for it.
+- mechanism: The intended path was cse's invalidate() -> delete_reg_equiv(), which promotes reg_next_eqv to qty_first_reg when the canonical register is written, handing the quantity back to i. GCC 2.7.2's expand_assignment produces no insn when source and destination are the same pseudo, so no pass sees it - unlike the s51 dead-store case, where the insn existed in .rtl and jump.c:577 deleted it.
+- probe: K1_selfassign_stmt.c (statement form, block-0 declarations split so the statement can sit between shift and guard), K2_selfassign_inexpr.c (s32 v1 = (a0 = a0) << 4;), and K3_A_selfassign.c (same device on the crown-defeated chassis), each measured against the decl-split control K0_declsplit_ctrl.c with sandbox --disable all.
+- result: K0 1/83, K1 1/83, K2 1/83 - all identical, residual unchanged at idx 9; K3 11/83, identical to form A. Banked as rejected/s53-selfassign-a0-inert.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, both the i-first (candidate.c) and the crown-defeated (form A) block-0 heads
+
+## [s53] Four loop-1 control-flow spellings on the a0-as-pointer chassis all measure 1/83 with the identical idx-9 residual, so restructuring loop 1 does not make the entry guard a post-cse insn.
+- mechanism: The entry guard the target emits at idx 18 is created by jump.c's duplicate_loop_exit_test (jump.c:626), and toplev.c:2827 runs that jump_optimize with after_regscan = 1 before cse_main at toplev.c:2865, so the duplicated test is ordinary RTL when cse walks block 0 and is canonicalised with everything else.
+- probe: G1 top-tested while with the offset left to loop.c, G2 guarded do-while with the offset left to loop.c (s52's A_giv shape re-measured on the new chassis), G3 for, G4 candidate.c's explicit offset with a top-tested while; each measured with sandbox --disable all, G1 and G4 disassembled and diffed against asm/funcs/func_80045294.s.
+- result: All four score 1 / build_insns 83 with the same single differing instruction at idx 9 (sll $v1,$s0,4 vs target sll $v1,$s2,4). Banked as rejected/s53-giv-while-loop1.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer, i-first block-0 head, zero FAKE constructs present
+
+## [s53] A loop-1-only counter cannot carry block 0's copy: with the loop-2 offset given to the dead sum instead, the counter crosses no call, stays in the incoming $a0 and the copy is never emitted.
+- mechanism: local-alloc leaves a short-lived pseudo copied from the parameter in the incoming $a0, so move $s0,$s2 is never emitted and the $s5 save/restore pair drops with it - the s48/s51 allocation collapse at 80 instructions.
+- probe: N_sum_as_idx.c (loop-2 offset carried by the dead sum so the loop-1 counter stays short-lived) and C_sepctr.c (plain distinct counters), both measured with sandbox --disable all on this chassis; N disassembled and its block 0 read against the target.
+- result: Both 31 / 80 insns, block 0 emitting no parameter copy at idx 8. Reusing the loop-1 counter as loop 2's OFFSET (form A) is the only measured way to keep the copy and defeat the crown at the same time. Banked as rejected/s53-sum-as-idx-alloc-collapse.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-03 chassis, a0-as-pointer, distinct loop counters, zero FAKE constructs present

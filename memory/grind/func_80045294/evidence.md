@@ -1423,3 +1423,81 @@ precedent before submitting.
 - [s52] On the new chassis cse's first EBB for this function prints as `;; Processing block from 2 to 199` with path retries (`2 to 61`, `2 to 51`, `2 to 33`), i.e. cse re-walks block 0 several times with different branch paths -- any EBB-boundary attack on clause (1) must defeat every retry pass.
 
 - [s52] src/text1a_c.c was restored to HEAD at end of session; the tree carries only the two ledger files, the new/updated candidate.c, sixteen new rejected/ forms, and metrics/events.jsonl.
+
+## [s53] structural — block 0's residual is a two-valued cse canonical, and BOTH values are now reachable
+
+**Chassis re-measured first.** `memory/grind/func_80045294/candidate.c` (a0-as-pointer,
+i-first) re-measures **score=1, build_insns=83, target_insns=83** on HEAD 2026-09-03.
+Its single differing instruction is idx 9: target `sll $v1,$s2,4` (a0's register)
+vs build `sll $v1,$s0,4` (i's register).
+
+**The block-0 constraint, stated exactly.** Block 0 contains three insns that
+touch the a0 quantity, in the target's emission order:
+  idx 8  `addu $s0,$s2,$zero`   the copy   i = a0
+  idx 9  `sll  $v1,$s2,4`       the shift  reads **a0's register**
+  idx 18 `slt  $v0,$s0,$a0`     the loop-1 entry guard, reads **i's register**
+cse assigns ONE canonical register (`qty_first_reg`) per quantity per extended
+basic block, and `canon_reg` rewrites every later use to it, so under a single
+crown state the shift and the guard must print the SAME register. The target
+prints different ones. Documented insn-by-insn this session in
+`tmp/grind/func_80045294/s53/dumps_A/text1a_c.{rtl,cse}.fn`:
+  .rtl insn 15 `(set (reg 75) (reg 72))`      copy      (reg 72 = a0, reg 75 = i)
+  .rtl insn 17 `(ashift (reg 72) 4)`  -> .cse `(ashift (reg 72) 4)`   [crown failed]
+  .rtl insn 31 `(lt (reg 75) (reg 79))` -> .cse `(lt (reg 72) (reg 79))` [i rewritten to a0]
+and the mirror image on candidate.c (s52 dumps): insn 17 rewritten 72 -> 75, insn 31 left at 75.
+
+**New this session: the crown state is now a controllable knob.** Reusing loop 1's
+counter as loop 2's byte offset (`A_reuse_i_as_idx.c`) puts i's last mention
+(`i += 0x10`) BEFORE a0's last mention (`a0 += 0x10`) inside loop 2's body, so
+cse.c:855 clause (2) fails and a0 stays canonical. Result: block 0's first ten
+instructions, including `sw $s0,0x10($sp) / addu $s0,$s2,$zero / sll $v1,$s2,4`,
+are byte-exact against the target — the FIRST time the copy-first emission order
+and the correct shift operand have coexisted. The price is the other side of the
+same knob: the guard becomes `slt $v0,$s2,$a0`, and loop 2's two callee-saves swap
+(build idx=$s0 / counter=$s1 against target idx=$s1 / counter=$s0). score=11/83.
+
+**Three-corner map of block 0 on the a0-as-pointer chassis (all 83 insns):**
+| form | RTL order | crown | shift operand | guard operand | emission order | score |
+|---|---|---|---|---|---|---|
+| candidate.c (i-first) | copy, shift | i wins | `$s0` WRONG | `$s0` right | sw/move/sll right | **1** |
+| A_reuse_i_as_idx (i-first + offset reuse) | copy, shift | a0 wins | `$s2` right | `$s2` WRONG | sw/move/sll right | 11 |
+| H_a0ptr_vfirst (v1-first) | shift, copy | i wins | `$s2` right | `$s0` right | **sll/sw/move WRONG** | 2 |
+H is the only form with both operands right; its whole residual is that the shift
+is emitted two slots early (before `sw $s0,0x10($sp)` and the copy) because
+sched2's rank falls through to the LUID compare and preserves the source order.
+The instrumented-cc1 trace for H on this chassis
+(`tmp/grind/func_80045294/s53/dumps_H/sched_debug.txt`) shows block 0's rank
+comparisons returning `val=0` (`RANKDBG last=23 y=15 cls=3 x=12 cls2=3 val=0`),
+i.e. the tie is still class-3/class-3 with flat priority 1, as s51 measured on the
+old chassis.
+
+**Negative results banked (all measured with `sandbox func_80045294 --disable all`):**
+- `a0 = a0;` between the shift and the guard, meant to invalidate reg 72's quantity
+  so `delete_reg_equiv` promotes i: 1/83, byte-identical to its decl-split control
+  (K0 = 1/83). expand never emits the store, so no pass can see it. Also measured
+  in expression position (`v1 = (a0 = a0) << 4;`): 1/83.
+- Loop 1 restructured four ways on this chassis — top-tested `while` (G1), guarded
+  do-while with the offset left to loop.c (G2), `for` (G3), and candidate.c's
+  explicit offset with a top-tested while (G4): every one is 1/83 with the identical
+  idx-9 residual. `duplicate_loop_exit_test` is reached from the FIRST
+  `jump_optimize (insns, 0, 0, 1)` call (toplev.c:2827, jump.c:626), i.e. before cse,
+  so no loop spelling can make the entry guard a post-cse insn.
+- Loop-1 counter distinct from loop-2's counter with `sum` reused as the loop-2
+  offset (N): 31/80 — the s48/s51 allocation collapse (the counter lands in the
+  incoming `$a0`, block 0's copy and the `$s5` save/restore pair disappear). The
+  block-0 copy's destination must itself be live across DrawSync/func_800520B8.
+- C_sepctr (plain distinct counters on this chassis) re-measured: 31/80, same collapse.
+
+- [s53] candidate.c re-measured on HEAD 2026-09-03: score=1, build_insns=83, target_insns=83; the single differing instruction is idx 9, target sll $v1,$s2,4 vs build sll $v1,$s0,4.
+
+- [s53] Block 0 contains exactly three insns touching the a0 quantity: the copy addu $s0,$s2,$zero (idx 8), the shift sll $v1,$s2,4 (idx 9, reads a0's register) and the loop-1 entry guard slt $v0,$s0,$a0 (idx 18, reads i's register). cse's one-canonical-per-EBB rule means the last two cannot differ under a copy-before-shift RTL order.
+
+- [s53] Three-corner map, all at build_insns 83 on the a0-as-pointer chassis: candidate.c (i-first) = shift wrong / guard right / order right, score 1; A_reuse_i_as_idx (i-first + offset reuse) = shift right / guard wrong / order right, score 11; H_a0ptr_vfirst (v1-first) = both operands right / order wrong, score 2.
+
+- [s53] H_a0ptr_vfirst's residual is exactly that the shift is emitted two slots early: build sll v1,s2,4 / sw s0,16(sp) / move s0,s2 against target sw $s0,0x10($sp) / addu $s0,$s2,$zero / sll $v1,$s2,4.
+
+- [s53] The instrumented cc1 trace for H on this chassis still shows block 0's rank comparisons tying at class 3 with flat priority 1 (RANKDBG last=23 y=15 cls=3 x=12 cls2=3 val=0 in tmp/grind/func_80045294/s53/dumps_H/sched_debug.txt), so the s51 LUID tiebreak survives the chassis change.
+
+- [s53] jump.c's duplicate_loop_exit_test is reached from the first jump_optimize call (toplev.c:2827, after_regscan = 1), which runs before cse_main (toplev.c:2865) - no loop-1 spelling can defer the entry guard past cse.
+
+- [s53] GCC 2.7.2 emits no RTL at all for a0 = a0, so the s51 dead-store deletion path (jump.c:577) is not even reached; the self-assignment is inert one pass earlier than the dead store was.

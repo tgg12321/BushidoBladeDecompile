@@ -1,7 +1,7 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 52,
+ "session_count": 53,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -315,23 +315,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Floor 2 -> 1: reusing the parameter a0 as loop 2's walking pointer fixes block 0's schedule; the whole residual is now one instruction, a cse operand rewrite of the block-0 sll."
+  },
+  {
+   "session": 53,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Block 0's residual is proven to be a single per-EBB cse canonical register serving two uses that need opposite registers; both crown states are now reachable (form A gives the target's shift operand A"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A block-0 shift whose operand rtx is fixed before cse1 walks the `i = a0` copy -- i.e. the shift textually first -- combined with some non-scheduler device that still emits the copy first, would close the last instruction. The two complementary score-1/score-2 forms differ only in this ordering.",
-   "mechanism": "a0-as-pointer + v1-first (H_a0ptr_vfirst) measures 2/83 with the correct `sll $v1,$s2,4` and the wrong prologue rotation; a0-as-pointer + i-first (candidate.c) measures 1/83 with the correct rotation and the wrong shift operand. s51 closed the scheduler tiebreak for the pair on the OLD chassis (sched.c:2461-2463, LUID, both passes); that measurement has NOT been repeated on the new a0-as-pointer chassis, where block 0's allocation and hence the ready lists differ.",
-   "next_probe": "Re-run the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_PRIO_DEBUG/BB2_RANK_DEBUG, via tmp/grind/func_80045294/s52/dump.sh) over H_a0ptr_vfirst and read the sched1/sched2 ready lists for block 0. If the tie now involves different priorities or classes than the s51 trace, a source device that lowers the shift's rank (or raises the copy's) becomes available and closes the function from the H side, where the operand is already right."
+   "hypothesis": "H_a0ptr_vfirst (2/83) already carries both of block 0's target operands; if the shift can be emitted two slots later - after the prologue sw $s0,0x10($sp) and the copy move $s0,$s2 - the function closes from the v1-first side without touching the crown at all.",
+   "mechanism": "Both insns are INSN_PRIORITY 1 and class 3 against the prologue store, so rank_for_schedule falls through to sched.c:2461-2463's INSN_LUID compare and preserves source order; the trace taken this session (dumps_H/sched_debug.txt) confirms val=0 ties in block 0 on the new chassis. A priority of 2 requires a predecessor whose insn_cost is 2 (a load feeding the insn); a class below 3 requires a cost>1 LOG_LINKS relation to last_scheduled_insn.",
+   "next_probe": "Read dumps_H/text1a_c.sched2 block 0 end-to-end and identify which insn ids are the copy and the shift on this chassis, then enumerate source shapes that give the COPY a load predecessor (its source arriving through a value block 0 already loads) or that delay the shift's readiness by giving it an in-block consumer later than the guard's slt. Measure any candidate that keeps build_insns at 83."
   },
   {
-   "hypothesis": "The block-0 copy's dest can be a pseudo distinct from loop 2's counter -- failing cse.c:855 clause (2) outright -- without triggering the $a0 allocation collapse, if loop 1's counter is forced into a callee-save for an independent reason.",
-   "mechanism": "The collapse (80 insns) happens because a distinct loop-1 counter dies before the two calls, so local-alloc leaves it in the incoming $a0 and block 0's `move $s0,$s2` disappears. The target has BOTH the parameter copy `move $s2,$a0` and the counter copy `move $s0,$s2`, so in the original source loop 1's counter must have been callee-save-worthy. Anything that makes it live across DrawSync/func_800520B8 restores the copy while keeping its last reference before a0's.",
-   "next_probe": "Enumerate zero-cost ways for loop 1's counter to be live at the first call on the a0-as-pointer chassis (e.g. loop 2's counter initialised from loop 1's counter rather than from a0, sum's accumulation expressed through it, the `sum != 0` test consuming it), measure each with sandbox, and reject anything at build_insns != 83. Check the .lreg/.greg dumps for whether the counter still gets $a0."
+   "hypothesis": "On the i-first chassis, a real write to the parameter pseudo (reg 72) placed between the block-0 shift and the loop-1 guard flips qty_first_reg back to i, which would give that chassis both operands at once.",
+   "mechanism": "cse's invalidate() calls delete_reg_equiv(), which promotes reg_next_eqv to qty_first_reg when the current canonical register is written; every use after that point is canonicalised to i while the shift, already processed, keeps reg 72. The self-assignment spelling is folded by expand (s53) and the dead-store spelling is deleted by jump.c:577 (s51), so what is needed is a write the function performs anyway.",
+   "next_probe": "Enumerate values block 0 must compute that could legally land in the parameter (the D_800A33AC reload, the D_800EED14 element address, s4 + a1) while still leaving the original a0 value available to loop 2's preheader copy - e.g. by having the preheader read a second preserved copy that the target's move $s0,$s2 could itself be. Measure each with sandbox and reject anything at build_insns != 83."
   },
   {
-   "hypothesis": "cse's path-retry passes over block 0 (`from 2 to 199`, then `2 to 61`, `2 to 51`, `2 to 33`) may crown i on a different pass than the first, so a source change that shortens only the FOLLOWED path could leave a0 canonical on every pass.",
-   "mechanism": "cse_end_of_basic_block (tools/gcc-2.7.2/cse.c:8008) follows a conditional jump when LABEL_NUSES(JUMP_LABEL)==1 and the label is preceded by a BARRIER, and cse_main reprocesses the block with each alternative branch path. cse_basic_block_end therefore differs per pass, and clause (1) of cse.c:849-853 is evaluated afresh each time.",
-   "next_probe": "Instrument or trace which retry pass performs the reg-72 -> reg-75 rewrite of block 0's shift (add a targeted fprintf in a scratch copy of the dump pipeline, or bisect by reading `;; Processing block` boundaries against the .cse insn stream), then enumerate only the source shapes that change that pass's boundary -- loop-1 guard spellings whose branch target has a single label use, or a `sum != 0` structure that removes the followed jump. Confirm each candidate by grepping the `;; Processing block` lines before spending a sandbox run."
+   "hypothesis": "Form A's loop-2 callee-save rotation (build offset=$s0 / counter=$s1 against target offset=$s1 / counter=$s0) is an independent defect; undoing it while keeping the offset-reuse crown defeat should drop form A's score from 11 toward a block-0-only residual.",
+   "mechanism": "Both loop-2 pseudos are callee-save because they cross the indirect call; which one gets $s0 follows global.c's allocno_compare priority (floor_log2(n_refs)*n_refs/live_length), and form A's offset pseudo inherits the block-0 copy's longer live range so it outranks the counter. The target gives the offset $s1 - the register sum occupies until func_800520B8.",
+   "next_probe": "Vary the reference counts and live ranges of form A's two loop-2 pseudos (offset initialised from v1 vs from the pointer, exit test hoisted or not, offset uses split across the D_800EED1C and D_800EED10 loads), read tmp/grind/func_80045294/dumps/text1a_c.greg for the allocation order after each change, and measure only shapes that stay at 83 instructions."
   }
  ],
  "judge_constraints": [
@@ -390,6 +396,38 @@
    "measured_on": "HEAD 2026-09-03 chassis, pre-a0-pointer (separate `s32 *ptr`) chassis, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "Both score=11, insns=83, identical to the plain i-first control. This answers s51's frontier item 3: post-cse insn creat"
+  },
+  {
+   "session": 53,
+   "statement": "With one cse crown state per extended basic block, block 0's shift and the loop-1 entry guard print the same register, so a spelling whose block-0 copy precedes the shift in RTL misses one of the targ",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer, both crown states, zero FAKE constructs present (K1/K2/K3 carried an un-annotated self-assignment that expand deletes)",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:855",
+   "result": "KILLED for the copy-before-shift geometry. The only device that flips the canonical mid-EBB is a real write to reg 72 (c"
+  },
+  {
+   "session": 53,
+   "statement": "A self-assignment of the parameter (a0 = a0;) placed between block 0's shift and the loop-1 guard leaves the build byte-identical to its control, because expand emits no store for it.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, both the i-first (candidate.c) and the crown-defeated (form A) block-0 heads",
+   "predicate_cite": "",
+   "result": "K0 1/83, K1 1/83, K2 1/83 - all identical, residual unchanged at idx 9; K3 11/83, identical to form A. Banked as rejecte"
+  },
+  {
+   "session": 53,
+   "statement": "Four loop-1 control-flow spellings on the a0-as-pointer chassis all measure 1/83 with the identical idx-9 residual, so restructuring loop 1 does not make the entry guard a post-cse insn.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer, i-first block-0 head, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All four score 1 / build_insns 83 with the same single differing instruction at idx 9 (sll $v1,$s0,4 vs target sll $v1,$"
+  },
+  {
+   "session": 53,
+   "statement": "A loop-1-only counter cannot carry block 0's copy: with the loop-2 offset given to the dead sum instead, the counter crosses no call, stays in the incoming $a0 and the copy is never emitted.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer, distinct loop counters, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Both 31 / 80 insns, block 0 emitting no parameter copy at idx 8. Reusing the loop-1 counter as loop 2's OFFSET (form A) "
   }
  ]
 }
