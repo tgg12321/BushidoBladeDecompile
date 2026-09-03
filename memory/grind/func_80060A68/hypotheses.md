@@ -2261,3 +2261,85 @@ Measured on: today's HEAD chassis, 6 bodies, zero FAKE constructs in any of them
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: today's HEAD chassis, 6 bodies, zero FAKE constructs in any of them
+
+## s21 (2026-09-03, permuter modality) - hypotheses measured
+
+## [s21] Seeding permuter campaigns on the T1 and Q2 chassis - two bodies that did not exist when s3/s3b ran - reaches a ban-free improvement on the honest floor that random mutation missed on the E2 and w3 chassis.
+- mechanism: T1 and Q2 each sit one decision from target with different residuals (a displaced load vs a wrong register seat), so their neighbourhoods in mutation space are disjoint from the floor-2 E2 basin s3 sampled and from the w3 basin s3b sampled; the 2026-09-01 chassis rule asks for exactly this kind of structurally different seed.
+- probe: two minimal-TU workspaces built from the validated s3 workspace (base permuter score 315 for T1, 420 for Q2), launched through tools/permuter_campaign.py at -j 4, run to 19,350 and 19,605 iterations (899 s / 905 s) and harvested with --stop in-session; all 87 finds classified by tmp/grind/func_80060A68/s21/semcheck.py against the function's 13 required statements, and the ban-free ordinary-C find re-spelled and measured with sandbox --disable all.
+- result: KILLED as an improvement path, CONFIRMED as a classification. Best new permuter scores were 115 (T1) and 175 (Q2), but 37 of the 87 finds re-assign p10 or temp2 a second time to hold a copy's source pointer - the Judge-banned multiply-assigned carrier - 13 introduce new_var alias locals, and most of the rest are semantically unfaithful (temp_a1 read from p10 above p10's assignment, p10 = 4, a dropped copy, if (1) wrapping). Seven finds are faithful; six are plain statement reorderings and one is T1 plus a bare do { } while (0). The one worth spending, permQ2/output-245-1, re-spells as M1 = 4 / 66 and its neighbour M2 = 3 / build 66 / target 66 with three loads - the best three-load score in the campaign, but above the floor of 2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis (candidate.c re-measured at 2 / 66 / 66 before and src/text1b.c restored to HEAD after), two campaigns totalling 38,955 iterations, zero FAKE constructs in any measured body
+
+## [s21] Any ordinary-C change that makes another instruction ready in target's slot-5 nop turns T1 into a byte match without touching the read structure (s20 frontier item 1).
+- mechanism: s20 read the T1 residual as a sched2 ready-list decision at one cycle - the p10 load wins slot 5 only because nothing else is ready there - so occupying that cycle with any other insn should push the load to target's slot 12 and restore the nop.
+- probe: G1-G8, eight bodies hoisting a second statement above the D_800F10D0 zero store alongside the p10 read (the idx read, a copy, either gp store, the 0x18 statement, and an idx-fed spelling of the zero store), plus control G0; sandbox --disable all on today's HEAD, with the three 0x10 load slots and registers read out of each disassembly.
+- result: KILLED. G0 (control) = 2 / 65 with the load at 5. G1/G2/G8 = 38 at 62 instructions (the hoisted idx read merges with the zero store's own index read and the head collapses); G3/G4 = 11 at 67 with the load at 10; G5 = 9 at 66 with the load at 4; G6 = 9 at 65 with the load at 7; G7 = 7 at 64 with two loads. The premise is wrong: the zero store is a hoist barrier in BOTH directions, so a p10 read above it has its load confined to slots 4-8 and filling slot 5 with another insn only moves the load to slot 6 - the body stays 65 instructions and never reaches target's slot-12 placement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 9 bodies, zero FAKE constructs in any of them
+
+## [s21] On the Q2 spine the 0x1C store can be placed inside [+2 read, 0x1A store] as R2's span-2 $v0 store by moving the p10 read and the +4 read ahead of the +2 read (s20 frontier item 2).
+- mechanism: R2 needs a store glued inside the [+2 read, 0x1A store] window; the 0x1C store is the one store in the function never tried in that role, and unlike E2 the Q2 spine can supply its prerequisites because Q2 already covers both read gaps with the 0x1A store.
+- probe: H1-H6, six bodies with the p10 read and the +4 read hoisted ahead of the +2 read at three positions each and the 0x1C store placed between the +2 read and the 0x1A store; sandbox --disable all on today's HEAD.
+- result: KILLED. 9-14 at 65-66 instructions, and every member has only TWO 0x10 loads (H2/H4/H6 at 19/22 in $a0; H1/H3/H5 at 19 $a0 and 23 $v0). Putting the +4 read adjacent to the p10 read removes R3's span-2 $v0 donor from p10's range, which is the same mechanism that killed s18's Z family, and the third read merges again. The 0x1C store's prerequisites and R3's donor requirement are mutually exclusive on this spine as well as on E2's.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 6 bodies, zero FAKE constructs in any of them
+
+## [s21] A gp store placed in a read gap works as a free cse separator, so the second gap can be covered without spending the 0x1A store (Q2's defect) or a copy's load-delay nop.
+- mechanism: s17 recorded R4 as a positional law - the p10 read must not follow a gp-based store - which is why no session had ever placed a gp store in a read gap; s18 corrected R4 to a register law about p10's $a1 seat and its span-2 $v0 donor, which re-opens the configuration if the OTHER gp store supplies the donor.
+- probe: J1-JA, ten bodies with a gp store between the +2 read and the p10 read and the other gp store placed strictly inside [p10 read, +4 read] in six of them; sandbox --disable all on today's HEAD, load slots and registers read out of each disassembly.
+- result: CONFIRMED as a separator, KILLED as a route to the match. All ten members are 66 instructions with three 0x10 loads - the separator really is free - but the p10 load is emitted at slot 27-29 and is never in $a1, including in the six members that satisfy s18's corrected donor condition. Scores 5-9 (JA = 5, J5/J8 = 7, J1-J4/J7/J9 = 8-9). The positional flavour of R4 is therefore an independent necessary condition that s18's correction did not subsume: a p10 read following a gp store loses the slot-12 $a1 load whether or not it has a donor.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 10 bodies, zero FAKE constructs in any of them
+
+## [s21] Ordering the reads so the p10 read precedes both gp stores (reads +0/p10/+2 or p10/+0/+2, with one gp store covering the remaining gap and the other serving as R2's window filler) satisfies R1, R2, R3 and both flavours of R4 at once.
+- mechanism: with the p10 read early, one gp store can cover the gap that the free 0x18 store cannot reach while simultaneously sitting inside [p10 read, +4 read] as R3's span-2 $v0 donor, and the second gp store still lands inside [+2 read, 0x1A store] for R2 - the first configuration in the campaign in which all four conditions hold simultaneously.
+- probe: K1-K3 and K5 (reads +0, p10, +2) and L1-L6 (reads p10, +0, +2, i.e. target's load order), ten bodies with both gp-store assignments and several tail permutations; sandbox --disable all on today's HEAD plus a slot-for-slot diff of K1 against target.
+- result: KILLED on instruction count. K1/K2/K3 = 8 at 68 instructions with loads at 12 ($a1) / 20 ($a0) / 27 ($v0) - K1 is identical to target through slot 22, then target's slot-23 lw a0,0x10(v1) is a nop and the +2 load appears at 27 in $v0 with a second nop at 28. L1/L2/L3 = 8-9 at 68 with loads at 12 ($a1) / 24 ($v0) / 25 ($a0); L6 = 9 / 68; L5 (R2 broken control) = 13 / 69; K5 = 5 / 66. A gp store used as a separator ahead of the halfword reads costs exactly two instructions of displacement, which is the price the J family avoids by sitting after them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 10 bodies, zero FAKE constructs in any of them
+
+## [s21] Seeding permuter campaigns on the T1 and Q2 chassis - two bodies that did not exist when s3/s3b ran - reaches a ban-free improvement on the honest floor that random mutation missed on the E2 and w3 chassis.
+- mechanism: T1 and Q2 each sit one decision from target with different residuals (a displaced load vs a wrong register seat), so their neighbourhoods in mutation space are disjoint from the floor-2 E2 basin s3 sampled and the w3 basin s3b sampled; the 2026-09-01 chassis rule asks for exactly this kind of structurally different seed.
+- probe: Two minimal-TU workspaces built from the validated s3 workspace (base permuter score 315 for T1, 420 for Q2), launched through tools/permuter_campaign.py at -j 4, run to 19,350 and 19,605 iterations (899 s / 905 s) and harvested with --stop in-session; all 87 finds classified by tmp/grind/func_80060A68/s21/semcheck.py against the function's 13 required statements, and the ban-free ordinary-C find re-spelled and measured with sandbox --disable all.
+- result: KILLED as an improvement path, CONFIRMED as a classification. Best new permuter scores were 115 (T1) and 175 (Q2), but 37 of the 87 finds re-assign p10 or temp2 a second time to hold a copy's source pointer - the Judge-banned multiply-assigned carrier - 13 introduce new_var/new_var2 alias locals, and most of the rest are semantically unfaithful (temp_a1 read from p10 above p10's assignment, p10 = 4, a dropped copy statement, if (1) wrapping). Seven finds are faithful: six plain statement reorderings and one T1 plus a bare do { } while (0). The one worth spending, permQ2/output-245-1, re-spells as M1 = 4 / 66 with three loads and its neighbour M2 = 3 / build 66 / target 66 with three loads at 19 ($a0) / 22 ($a0) / 27 ($v0) - the best three-load score in the campaign, but still above the floor of 2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis (candidate.c re-measured at 2 / build 66 / target 66 before, src/text1b.c restored to HEAD after), two campaigns totalling 38,955 iterations, zero FAKE constructs in any measured body
+
+## [s21] Any ordinary-C change that makes another instruction ready in target's slot-5 nop turns T1 into a byte match without touching the read structure.
+- mechanism: s20 read the T1 residual as a sched2 ready-list decision at one cycle - the p10 load wins slot 5 only because nothing else is ready there - so occupying that cycle with any other insn should push the load to target's slot 12 and restore the nop.
+- probe: G1-G8, eight bodies hoisting a second statement above the D_800F10D0 zero store alongside the p10 read (the idx read, a copy, either gp store, the 0x18 statement, and an idx-fed spelling of the zero store), plus control G0; sandbox --disable all on today's HEAD, with the three 0x10 load slots and registers read out of each disassembly.
+- result: KILLED. G0 (control) = 2 / 65 with the load at slot 5, reproducing s20's T1. G1/G2/G8 = 38 at 62 instructions (the hoisted idx read merges with the zero store's own index read and the head collapses); G3/G4 = 11 at 67 with the load at 10; G5 = 9 at 66 with the load at 4; G6 = 9 at 65 with the load at 7; G7 = 7 at 64 with two loads. The premise is wrong: the zero store is a hoist barrier in BOTH directions, so a p10 read above it has its load confined to slots 4-8 and filling slot 5 with another insn only moves the load to slot 6 - the body stays 65 instructions on this spine and no member reaches target's slot-12 placement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 9 bodies, zero FAKE constructs in any of them
+
+## [s21] On the Q2 spine the 0x1C store can be placed inside [+2 read, 0x1A store] as R2's span-2 $v0 store by moving the p10 read and the +4 read ahead of the +2 read.
+- mechanism: R2 needs a store glued inside the [+2 read, 0x1A store] window; the 0x1C store is the one store in the function never tried in that role, and unlike E2 the Q2 spine can supply its prerequisites because Q2 already covers both read gaps with the 0x1A store.
+- probe: H1-H6, six bodies with the p10 read and the +4 read hoisted ahead of the +2 read at three positions each and the 0x1C store placed between the +2 read and the 0x1A store; sandbox --disable all on today's HEAD.
+- result: KILLED. 9-14 at 65-66 instructions, and every member has only TWO 0x10 loads (H2/H4/H6 at 19/22 in $a0; H1/H3/H5 at 19 $a0 and 23 $v0). Putting the +4 read adjacent to the p10 read removes R3's span-2 $v0 donor from p10's range - the same mechanism that killed s18's Z family - and the third read merges again. The 0x1C store's prerequisites and R3's donor requirement are mutually exclusive on this spine as well as on E2's.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 6 bodies, zero FAKE constructs in any of them
+
+## [s21] A gp store placed in a read gap works as a free cse separator, so the second gap can be covered without spending the 0x1A store or a copy's load-delay nop.
+- mechanism: s17 recorded R4 as a positional law - the p10 read must not follow a gp-based store - which is why no session had ever placed a gp store in a read gap; s18 corrected R4 to a register law about p10's $a1 seat and its span-2 $v0 donor, which re-opens the configuration if the OTHER gp store supplies the donor.
+- probe: J1-JA, ten bodies with a gp store between the +2 read and the p10 read and the other gp store placed strictly inside [p10 read, +4 read] in six of them; sandbox --disable all on today's HEAD, load slots and registers read out of each disassembly.
+- result: CONFIRMED as a separator, KILLED as a route to the match. All ten members are 66 instructions with three 0x10 loads - the separator is genuinely free - but the p10 load is emitted at slot 27-29 and is never in $a1, including in the six members that satisfy s18's corrected donor condition. Scores 5-9 (JA = 5, J5/J8 = 7, J1-J4/J7/J9 = 8-9). The positional flavour of R4 is therefore an independent necessary condition that s18's correction did not subsume: a p10 read following a gp store loses the slot-12 $a1 load whether or not it has a donor.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 10 bodies, zero FAKE constructs in any of them
+
+## [s21] Ordering the reads so the p10 read precedes both gp stores (reads +0/p10/+2 or p10/+0/+2, with one gp store covering the remaining gap and the other serving as R2's window filler) satisfies R1, R2, R3 and both flavours of R4 at once.
+- mechanism: With the p10 read early, one gp store can cover the gap the free 0x18 store cannot reach while simultaneously sitting inside [p10 read, +4 read] as R3's span-2 $v0 donor, and the second gp store still lands inside [+2 read, 0x1A store] for R2 - the first configuration in the campaign in which all four conditions hold simultaneously.
+- probe: K1-K3 and K5 (reads +0, p10, +2) and L1-L6 (reads p10, +0, +2, i.e. target's load order), ten bodies covering both gp-store assignments and several tail permutations; sandbox --disable all on today's HEAD plus a slot-for-slot diff of K1 against target.
+- result: KILLED on instruction count. K1/K2/K3 = 8 at 68 instructions with loads at 12 ($a1) / 20 ($a0) / 27 ($v0) - K1 is identical to target through slot 22, then target's slot-23 lw a0,0x10(v1) is a nop and the +2 load appears at 27 in $v0 with a second nop at 28. L1/L2/L3 = 8-9 at 68 with loads at 12 ($a1) / 24 ($v0) / 25 ($a0); L6 = 9 / 68; L5 (R2 broken, control) = 13 / 69; K5 = 5 / 66. A gp store used as a separator ahead of the halfword reads costs exactly two instructions of displacement, which is the price the J family avoids by sitting after them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: today's HEAD chassis, 10 bodies, zero FAKE constructs in any of them

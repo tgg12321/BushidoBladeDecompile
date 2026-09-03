@@ -3009,3 +3009,155 @@ sweep.sh, dis.sh, cmp.sh, target.txt, the sliced rtl/jump/cse/loop/cse2/combine 
 - [s20] The three closest bodies are three faces of one trilemma: two read gaps each need a store, R2 needs a span-2 $v0 STORE inside [+2 read, 0x1A store], and R4 needs the p10 read before that store. E2 leaves gap 2 open (missing load, slot-23 nop); Q2 empties R2's window (wrong seat); T1 costs target's slot-5 nop (displaced load).
 
 - [s20] src/text1b.c was restored to HEAD at the end of the session; the only dirty tracked file outside memory/grind/func_80060A68/ is metrics/events.jsonl.
+
+## [s21 2026-09-03 - permuter modality] Two fresh-chassis campaigns (39k iterations) classify the whole permuter basin as banned-carrier or semantically unfaithful; and the gp store is priced as a cse separator for the first time
+
+### 0. Mandated chassis / kill re-audit
+`sandbox func_80060A68 --disable all` on today's HEAD with `memory/grind/func_80060A68/candidate.c`
+applied through the s14 harness = **2 / build 66 / target 66**.  The chassis has not moved.
+Kill re-audit of the closest banked form: **G0**, an independent re-spelling of s20's T1 through
+this session's generator, = **2 / build 65 / target 66** with loads at 5 ($a1) / 19 ($a0) / 22 ($a0)
+- instruction-for-instruction the s20 record.  Every body measured this session (41 of them) is
+ordinary C with zero FAKE constructs, so `tools/fake_ablate.py` again had nothing to ablate and
+every s15-s20 instance kill remains chassis-current.
+
+### 1. THE PERMUTER AXIS, THIRD AND FOURTH CAMPAIGNS - on two chassis that did not exist in s3/s3b
+Two minimal-TU workspaces were built from the validated s3 workspace, one seeded on **T1**
+(`tmp/grind/func_80060A68/s21/permT1`, base permuter score 315, 65 insns) and one on **Q2**
+(`.../permQ2`, base 420, 66 insns).  Both are structurally different chassis from s3's floor-2 E2
+seed and s3b's w3 seed, so the 2026-09-01 chassis rule is satisfied.  Campaigns
+`s21-T1-p10-above-zero-store` (-j 4, 899 s, **19,350 iterations**, best new 115) and
+`s21-Q2-three-load-geometry` (-j 4, 905 s, **19,605 iterations**, best new 175) both ran to a
+harvest `--stop` inside this session.
+
+**87 finds were produced and every one was classified** by
+`tmp/grind/func_80060A68/s21/semcheck.py`, which normalizes each output's statement set and
+compares it against the function's 13 required statements:
+
+* **37 finds** re-assign `p10` (or `temp2`) a SECOND time to hold a copy's source pointer -
+  `p10 = *(s32 *)(outer + 0xC) + 0;`, `p10 = outer + 0x18;` and so on.  This is precisely the
+  multiply-assigned pointer-staging carrier the Judge banned for this function ("No local may be
+  written twice to hold copy 1's or copy 2's source pointer under any name, family label, or
+  second-write spelling").
+* **13 finds** introduce `new_var` / `new_var2` alias locals (`new_var = outer;` then every
+  dereference through `new_var`) - an invented scratch, the shape layer-1 already FAILed here.
+* The remainder are semantically UNFAITHFUL: `temp_a1 = *(u16 *)(p10 + 4);` emitted ABOVE
+  `p10 = *(s32 *)(outer + 0x10);` (use-before-def), `p10 = 4; temp_a1 = *(u16 *)(p10 + p10);`,
+  a dropped copy statement, or `if (1) { ... }` wrapping.
+* **Seven finds are semantically faithful.**  Six are ordinary-C statement reorderings; one
+  (permT1/output-215-1) is T1 plus a bare `do { } while (0);`, i.e. a FAKE construct with no
+  objdump benefit (215 vs base 315 is a permuter-weight artefact).
+
+**The single ordinary-C, ban-free find worth spending is permQ2/output-245-1**, whose statement
+order is `Z0,C1,C2,C3,S1,S2,S5,S4,S3,P,S6,S7,S8`.  Re-spelled and measured in the sandbox it is
+**M1 = 4 / build 66 / target 66** with three loads; its neighbour **M2 =
+`Z0,C1,C2,C3,S1,S2,S5,S3,P,S6,S4,S7,S8` = 3 / build 66 / target 66**, three loads at 19 ($a0) /
+22 ($a0) / 27 ($v0).  **M2 is the best-scoring THREE-LOAD body the campaign has produced** (the
+previous best three-load members were Q2/R3 and JA at 5).  It is E2 with the 0x1A store lifted
+above the p10 read and the p10 read dropped to just before the +4 read.
+
+**Verdict on the axis: on all four chassis tried, the permuter's low-score basin for this function
+is the banned multiply-assigned carrier plus semantically-broken reorderings.  Random mutation
+finds the same illegal shape s3 found, because that shape genuinely is the cheapest way to buy the
+contested seat - and it is exactly what the Judge closed.**
+
+### 2. THE gp STORE IS PRICED AS A cse SEPARATOR FOR THE FIRST TIME (three new families, 24 bodies)
+s17's R4 was a positional law ("the p10 read must not follow a gp-based store"), which is why no
+session ever placed a gp store in a read gap.  s18 corrected R4 to a REGISTER law (the slot-12
+`lw $a1` follows from p10's $a1 seat, which needs a span-2 $v0 donor inside [p10 read, +4 read]).
+That correction re-opens the gp store as a candidate separator, and this session prices it:
+
+* **J family (10 bodies)** - a gp store placed in the [+2 read, p10 read] gap, i.e. AFTER both
+  halfword reads: **all ten are 66 instructions with three loads** (J1/J2/J3/J4/J7/J9 = 8-9,
+  J5/J8 = 7, JA = 5).  The separator is FREE here.  What it costs is the head geometry: the p10
+  load is emitted at slot 27-29 and never in $a1, even in the members (J1-J4, J7, J9) where the
+  OTHER gp store sits strictly inside [P, S6] and supplies R3's donor.  **The positional flavour of
+  R4 therefore survives s18's correction as an independent necessary condition: a p10 read that
+  follows a gp store loses the slot-12 $a1 load whether or not it has a donor.**
+* **K family (reads order +0, p10, +2; gp store covers the p10->+2 gap)** - K1/K2/K3 = 8 at
+  **68** instructions, loads at **12 ($a1) / 20 ($a0) / 27 ($v0)**.  A slot-for-slot diff shows K1
+  is identical to target through slot 22 and then diverges: target's slot-23 `lw a0,0x10(v1)` is a
+  nop, and the +2 load appears at 27 in $v0 with a second nop at 28.
+* **L family (reads order p10, +0, +2 = target's LOAD order; gp store covers the p10->+0 gap)** -
+  L1/L2/L3 = 8-9 at **68** instructions, loads at **12 ($a1) / 24 ($v0) / 25 ($a0)**.  L6 (the gp
+  store inside the copy block) = 9 / 68; L5 (R2 broken, control) = 13 / 69.
+
+**Consolidated price list for the second cse separator, now complete:** the 0x18 store is the only
+free one and covers exactly one gap (s19); the 0x1A store is free but empties R2's window (Q2,
+s20); a copy store costs a load-delay nop (N/P/R families, s18-s20); the 0x1C store needs S6
+adjacent to P and so destroys R3's donor (H family this session: H1-H6 = 9-14 at 65-66 with only
+TWO loads, re-confirming s19 on a different spine); the zero store costs the head geometry (D
+family, s19); and **a gp store is free when it sits after both halfword reads but then pins the
+p10 load late (J), and costs exactly two instructions of displacement when it sits before them
+(K, L)**.
+
+### 3. The T1 face is closed by the hoist barrier, not by a ready-list tie
+s20's frontier claimed T1 becomes a byte match if any other instruction occupies target's slot-5
+nop.  That is measured false, and the reason is structural.  With the p10 read above
+`sw zero,%lo(D_800F10D0)($at)` the load is confined to slots 4-8 by the barrier in BOTH directions
+(sched2 cannot sink a load past a store it cannot disambiguate any more than it can hoist one
+across it), so no T1 member can put that load at target's slot 12; filling slot 5 with something
+else merely moves the load to slot 6 and the body stays 65 instructions.  Measured: G1/G2/G8 (the
+idx read hoisted above the zero store) = 38 at 62 instructions - `*(u16 *)outer` merges with the
+zero store's own index read and the head collapses; G3/G4 (a copy hoisted above the zero store) =
+11 at **67** with the p10 load at 10; G5 (the D_800A3478 gp store hoisted above it) = 9 at 66 with
+the load at 4; G6 = 9 at 65 with the load at 7; G7 (the 0x18 statement hoisted) = 7 at 64 with two
+loads.  **Not one member reaches 66 instructions with the p10 load below the barrier.**
+
+### 4. Where the campaign stands after s21
+The floor is unchanged at 2 (E2 / candidate.c).  The three-load frontier improved from 5 to 3
+(M2).  Two of s20's three frontier items are closed by measurement: the T1 face (section 3) and
+the Q2 / 0x1C-store probe (H family, section 2).  What survives is the E2 face, and the separator
+price list in section 2 says exactly what it needs: a store between the +2 read and the p10 read
+that is neither a gp store (pins the p10 load late, J), nor the 0x1A store (empties R2, Q2), nor a
+copy (nop), nor the 0x1C store (kills R3's donor, H), nor the zero store (head geometry).  On the
+existing statement inventory that set is empty, which makes the next question a statement-inventory
+question rather than an ordering question.
+
+Artifacts: `tmp/grind/func_80060A68/s21/` (gen21.py, sweep.sh, dis.sh, cmp.sh, semcheck.py,
+semcheck_final.txt, target.txt, 41 bodies + disassemblies, and the two permuter workspaces
+permT1/ and permQ2/ with their campaign.log, campaign_meta.json and 87 output-* find directories).
+
+- [s21] Chassis re-audit: candidate.c applied through the s14 harness = 2 / build 66 / target 66 on today's HEAD; G0 (an independent re-spelling of s20's T1) = 2 / build 65 / target 66 with loads at 5 ($a1) / 19 ($a0) / 22 ($a0), instruction-for-instruction the s20 record. All 41 s21 bodies are ordinary C with zero FAKE constructs, so tools/fake_ablate.py had nothing to ablate and the s15-s20 instance kills remain chassis-current.
+
+- [s21] Third and fourth permuter campaigns, on two chassis that did not exist when s3/s3b ran: s21-T1-p10-above-zero-store (base 315, 19,350 iterations, 899 s, best new 115) and s21-Q2-three-load-geometry (base 420, 19,605 iterations, 905 s, best new 175). Both were harvested with --stop inside the session.
+
+- [s21] All 87 permuter finds were classified by tmp/grind/func_80060A68/s21/semcheck.py against the function's 13 required statements: 37 re-assign p10 or temp2 a second time to hold a copy's source pointer (the Judge-banned multiply-assigned carrier), 13 introduce new_var/new_var2 alias locals, the rest are semantically unfaithful (use-before-def of p10, a dropped copy, if (1) wrapping), and 7 are faithful - six ordinary-C reorderings and one bare do { } while (0) with no objdump benefit.
+
+- [s21] The permuter axis is now measured dead on FOUR chassis. Random mutation reaches the same illegal shape s3 reached, because the multiply-assigned carrier genuinely is the cheapest way to buy the contested seat; nothing in the stock mutation vocabulary reaches a ban-free improvement on either new chassis.
+
+- [s21] The one ordinary-C ban-free find worth spending (permQ2/output-245-1) re-spells as M1 = 4 / 66 with three loads; its neighbour M2 (Z0,C1,C2,C3,S1,S2,S5,S3,P,S6,S4,S7,S8) = 3 / build 66 / target 66 with three loads at 19 ($a0) / 22 ($a0) / 27 ($v0) and is the best-scoring three-load body the campaign has produced (previous best: Q2/R3/JA at 5).
+
+- [s21] The gp store is priced as a cse separator for the first time (s17's positional R4 had forbidden the configuration; s18's correction re-opened it). J family, ten bodies with a gp store in the [+2 read, p10 read] gap: all ten are 66 instructions with three loads (7-9, JA = 5), so the separator is free there - but the p10 load is emitted at slot 27-29 and never in $a1, even in the six members where the other gp store sits strictly inside [P, S6] and supplies R3's donor.
+
+- [s21] The positional flavour of R4 survives s18's register-law correction as an independent necessary condition: a p10 read that follows a gp store loses the slot-12 $a1 load whether or not it has a span-2 $v0 donor in its range.
+
+- [s21] A gp store used as a separator BEFORE the halfword reads costs exactly two instructions of displacement: K1/K2/K3 (reads +0, p10, +2) = 8 at 68 instructions with loads at 12 ($a1) / 20 ($a0) / 27 ($v0), and K1 is identical to target through slot 22; L1/L2/L3 (reads p10, +0, +2 - target's load order) = 8-9 at 68 with loads at 12 ($a1) / 24 ($v0) / 25 ($a0).
+
+- [s21] The 0x1C store in R2's window is re-confirmed dead on the Q2 spine: H1-H6 (the p10 read and the +4 read hoisted ahead of the +2 read so the 0x1C store can sit inside [+2 read, 0x1A store]) = 9-14 at 65-66 instructions with only TWO 0x10 loads, because S6 adjacent to P removes R3's donor.
+
+- [s21] The T1 face is closed by the zero-store hoist barrier, not by a ready-list tie: with the p10 read above sw zero,%lo(D_800F10D0)($at) the load is confined to slots 4-8 in both directions, so filling slot 5 with another instruction only moves the load to slot 6 and the body stays 65. G1/G2/G8 (idx read hoisted) = 38 at 62; G3/G4 (a copy hoisted) = 11 at 67 with the load at 10; G5 = 9 at 66 with the load at 4; G6 = 9 at 65; G7 = 7 at 64 with two loads. No member reaches 66 instructions with the p10 load below the barrier.
+
+- [s21] src/text1b.c was restored to HEAD at the end of the session; the only dirty tracked file outside memory/grind/func_80060A68/ is metrics/events.jsonl.
+
+- [s21] Chassis re-audit: candidate.c applied through the s14 harness measures 2 / build 66 / target 66 on today's HEAD; G0, an independent re-spelling of s20's T1 through this session's generator, measures 2 / build 65 / target 66 with loads at 5 ($a1) / 19 ($a0) / 22 ($a0), instruction-for-instruction the s20 record. All 41 bodies measured this session are ordinary C with zero FAKE constructs, so tools/fake_ablate.py had nothing to ablate and every s15-s20 instance kill remains chassis-current.
+
+- [s21] Third and fourth permuter campaigns ran on chassis that did not exist when s3/s3b ran: s21-T1-p10-above-zero-store (base 315, 19,350 iterations, 899 s, best new 115) and s21-Q2-three-load-geometry (base 420, 19,605 iterations, 905 s, best new 175). Both were harvested with --stop inside the session; no campaign outlives it.
+
+- [s21] All 87 permuter finds were classified mechanically (tmp/grind/func_80060A68/s21/semcheck.py normalizes each output's statement set against the function's 13 required statements): 37 re-assign p10 or temp2 a second time to hold a copy's source pointer (the Judge-banned multiply-assigned carrier), 13 introduce new_var/new_var2 alias locals, most of the remainder are semantically unfaithful (temp_a1 read from p10 above p10's assignment, p10 = 4, a dropped copy, if (1) wrapping), and 7 are faithful - six ordinary-C reorderings plus one bare do { } while (0) with no objdump benefit.
+
+- [s21] The permuter axis is now measured dead on FOUR chassis for this function. Random mutation converges on the same illegal shape s3 reached because the multiply-assigned carrier genuinely is the cheapest way to buy the contested seat, and that is exactly what the Judge closed.
+
+- [s21] The one ordinary-C ban-free find worth spending (permQ2/output-245-1, statement order Z0,C1,C2,C3,S1,S2,S5,S4,S3,P,S6,S7,S8) re-spells as M1 = 4 / 66 with three loads; its neighbour M2 (Z0,C1,C2,C3,S1,S2,S5,S3,P,S6,S4,S7,S8) = 3 / build 66 / target 66 with three loads at 19 ($a0) / 22 ($a0) / 27 ($v0) and is the best-scoring three-load body the campaign has produced (previous best: Q2/R3 and JA at 5). Banked at rejected/s21-M2-gp-store-then-0x1A-store-before-p10-read-three-loads-score3-66insns.c.
+
+- [s21] The gp store is priced as a cse separator for the first time in the campaign (s17's positional R4 had forbidden the configuration; s18's register-law correction re-opened it). J family, ten bodies with a gp store in the [+2 read, p10 read] gap: all ten are 66 instructions with three loads (scores 5-9), so the separator is free there - but the p10 load lands at slot 27-29 and never in $a1, even in the six members where the other gp store sits strictly inside [P, S6] and supplies R3's donor.
+
+- [s21] The positional flavour of R4 survives s18's register-law correction as an independent necessary condition: a p10 read that follows a gp store loses the slot-12 $a1 load whether or not it has a span-2 $v0 donor in its range.
+
+- [s21] A gp store used as a separator BEFORE the halfword reads costs exactly two instructions of displacement: K1/K2/K3 (reads +0, p10, +2) = 8 at 68 instructions with loads at 12 ($a1) / 20 ($a0) / 27 ($v0), K1 identical to target through slot 22; L1/L2/L3 (reads p10, +0, +2 - target's load order) = 8-9 at 68 with loads at 12 ($a1) / 24 ($v0) / 25 ($a0).
+
+- [s21] The second-separator price list is now complete and every member is priced: 0x18 store free but covers exactly one gap (s19); 0x1A store free but empties R2's window (Q2, s20); copy store costs a load-delay nop (N/P/R families, s18-s20); 0x1C store needs the +4 read adjacent to the p10 read and so destroys R3's donor (H family, s21, re-confirming s18's Z family on a different spine); zero store costs the head geometry (D family, s19); gp store free after both halfword reads but pins the p10 load late (J family, s21) and costs two instructions before them (K/L families, s21).
+
+- [s21] The T1 face is closed by the zero-store hoist barrier rather than by a ready-list tie: with the p10 read above sw zero,%lo(D_800F10D0)($at) its load is confined to slots 4-8 in both directions, so occupying slot 5 only moves the load to slot 6 and the body stays 65 instructions. G1/G2/G8 = 38 at 62; G3/G4 = 11 at 67 with the load at 10; G5 = 9 at 66 with the load at 4; G6 = 9 at 65; G7 = 7 at 64 with two loads.
+
+- [s21] src/text1b.c was restored to HEAD at the end of the session; the only dirty tracked file outside memory/grind/func_80060A68/ is metrics/events.jsonl.
