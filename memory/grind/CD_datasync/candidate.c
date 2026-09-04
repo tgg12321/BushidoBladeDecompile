@@ -1,3 +1,42 @@
+/* s54 UPDATE (2026-09-04, synthesis).  FLOOR UNCHANGED at 2 / 91, but the
+ * BODY CHANGED in one review-relevant way: the `pp` pointer alias is now a
+ * plain declaration-with-initializer (`void **pp = &D_800F19C0;`) instead of
+ * a mid-block assignment carrying a redundant `(void **)` cast.  D_800F19C0
+ * is ALREADY declared `extern void *D_800F19C0;` (src/system.c:526), so
+ * `&D_800F19C0` is already `void **` and the cast was pure noise - it was the
+ * single line the driver's DECLARATION-PUN auto-scan flagged as a layer-1
+ * hazard.  Measured byte-inert: a_base 2/91, b_nocast 2/91, d_declinit_top
+ * 2/91 (tmp/grind/CD_datasync/s54/forms).  The alias now matches the
+ * pointer-alias rule's own idiom verbatim (`Type* t = &g_Thing;`).
+ *
+ * s54 SYNTHESIS RESULT - THE SEAT/ORDER COUPLING IS NOW READ OFF THE DUMPS,
+ * NOT INFERRED, AND ONE OF THE TWO STANDING FRONTIER ITEMS IS DEAD:
+ *   Block-3 local-alloc quantity tables of all three banked bases (s53's
+ *   dumps2 / dumps4 / dumps7, re-read this session):
+ *     score-2 base : qty1 reg94 b12 d22 r4 -> ord3 got $a0 | qty2 reg86 b18 d24 r4 -> ord2 got $v1
+ *     score-4 base : qty1 reg95 b14 d22 r4 -> ord3 got $a0 | qty2 reg88 b18 d24 r4 -> ord2 got $v1
+ *     order-exact  : qty1 reg97 b16 d22 r4 -> ord2 got $v1 | qty2 reg86 b18 d24 r4 -> ord3 got $a0
+ *   TARGET seats are arg5-value -> $v1 and arg4-address -> $a0, i.e. arg5's
+ *   quantity must be SORTED FIRST.  arg4 is quantity number 1 and arg5 is
+ *   quantity number 2 on ALL THREE bases - INVARIANT under every window
+ *   ordering measured in 2000+ compiles.  Since qty_compare_1's tie-break is
+ *   literally `return *q1 - *q2` (local-alloc.c:1683), the tie at birth 16 is
+ *   ALWAYS won by arg4.  s51's/s53's frontier item "renumber the quantities so
+ *   the tie resolves the other way" is therefore killed on measurement, not on
+ *   theory: no C form has ever moved those two numbers, and arg5's birth is
+ *   pinned at 18 while arg4's is the only free variable (12/14/16).
+ *   What survives is escape (b) only: arg4-address death > 22 (its death is
+ *   invariant at 22 = its own `lw`, one slot before arg5's `sw` at 24, in
+ *   SCHED1's numbering - note the FINAL emission has the sw at 59 and the lw
+ *   at 61, so the two passes genuinely disagree on that pair and the span can
+ *   move without disturbing a single final slot).
+ *
+ * s54 also re-ran the mandated FAKE kill re-audit on the ORDER-EXACT base
+ * (s53 had only ablated the score-2 base): keep-all 7/91, drop pp 16/92,
+ * drop do{}while(0) 32/74, drop both 32/74.  Neither FAKE unit masks the
+ * contested quantities on either base; every inherited order-lever instance
+ * kill stands.
+ */
 /* s53 UPDATE (2026-09-04, structural).  BODY UNCHANGED - still the floor at
  * 2 / 91 (re-verified live: score 2, build_insns 91, target_insns 91,
  * rules_dropped 0; mandated FAKE re-audit keep-all 2, drop-pp 11 / 92,
@@ -191,9 +230,8 @@ do_timeout:
         s32 arg5;
         s32 i5;
         s32 t0;
-        void **pp;
+        void **pp = &D_800F19C0; /* FAKE: pointer-alias staging the D_800F19C0 load early; mechanism: local-alloc.c update_equiv_regs refs-2 sink defeat; lever-exhaustion: memory/grind/CD_datasync/hypotheses.md s50 */
         puts(&g_str_cd_timeout);
-        pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging the D_800F19C0 load early; mechanism: local-alloc.c update_equiv_regs refs-2 sink defeat; lever-exhaustion: memory/grind/CD_datasync/hypotheses.md s50 */
         i5 = idx_1494[1];
         t0 = idx_1494[0];
         t0 *= 4;

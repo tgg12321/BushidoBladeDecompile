@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 53,
- "current_modality": "structural",
+ "session_count": 54,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -321,23 +321,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Order/seat coupling reduced to one measured integer (arg4's local-alloc birth index 12/14/16 across the three bases) with four enumerable arithmetic escapes; two escapes killed in 360 compiles, floor "
+  },
+  {
+   "session": 54,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Synthesis: chassis re-verified at 2/91, FAKE re-audit extended to the order-exact base, and the quantity-NUMBER escape killed on measurement - arg4 is quantity 1 and arg5 quantity 2 on all three banke"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Escape (b) is the only un-attacked arithmetic route: lengthen the arg4-ADDRESS quantity by making its death index exceed 22 in SCHED1's output, which lowers its priority below the arg5-value quantity's fixed 13333 even at birth 16 and therefore gives order-exact emission AND target seats at once.",
-   "mechanism": "local-alloc runs between the two scheduling passes, so the spans it sees are SCHED1's output order - and that order is measurably different from the final emission (sched1: lw $a3 at 22 before sw 16($sp) at 24; emission: sw at 59, lw $a3 at 61). A C form that makes sched1 place arg4's lw $a3 after the sw, while sched2 restores the target order, raises arg4's span from 6 to >= 7 (pri <= 11428 < 13333) without changing a single final slot. Nothing measured so far has separated the two passes' orders deliberately.",
-   "next_probe": "Apply progress/s51-order-exact-seats-swapped-7.c and dump with BB2_SCHED_DEBUG=1 via tmp/grind/CD_datasync/s53/dump7.sh; read the sched1 PICK sequence for block 3 and identify which ready-list tie puts arg4's lw $a3 at index 22 rather than after the sw. Then sweep ONLY spellings that change the memory-dependence shape between arg4's load and the stack store - arg4 dereferenced through a differently-typed pointer, the stack-homed argument written from a value produced later, arg5 and arg4 swapped in which one is stack-homed - and read the QTYDBG death index for the arg4-address quantity on each, accepting only forms whose death index exceeds 22."
+   "hypothesis": "Escape (b) is the only surviving arithmetic route: pushing arg4-address's death from 22 to >= 24 in SCHED1's output (span >= 8, pri <= 10000 < arg5's 13333) hands arg5 the first seat while leaving the order-exact emission untouched, because the two scheduling passes already disagree about that load/store pair (sched1 has the lw before the sw; the final emission has the sw at 59 and the lw at 61).",
+   "mechanism": "local-alloc runs between the two scheduling passes and its births/deaths index SCHED1's output, not the final emission. Every other term of qty_compare_1 is now measured immovable on this window: refs (s53 escape (c), 44 forms), span-by-neighbour-eviction (s53 escape (a), 220 forms), quantity number (s54, invariant across all three bases).",
+   "next_probe": "First reconcile the two numberings: re-run tmp/grind/CD_datasync/s53/dump7.sh (its dumps7/stderr.txt is already on disk) and align SCHEDDBG block=3's PICK sequence with the QTYDBG block=3 insn numbering so the death index can actually be aimed at. Then sweep ONLY forms that change the memory-dependence shape between arg4's load and the outgoing-argument store - arg4 dereferenced through a pointer the alias analysis cannot separate from the stack slot, the stack-homed value produced by a longer chain, arg4's load made dependent on the store - and read the QTYDBG death field rather than the score, accepting only forms whose arg4-address death exceeds 22."
   },
   {
-   "hypothesis": "The quantity-NUMBER tie-break itself is the cheapest escape at birth 16: if the arg5-value quantity were numbered lower than the arg4-address quantity, the exact 13333/13333 tie would resolve the other way and the order-exact base would score 0 with no span change at all.",
-   "mechanism": "qty_compare_1's fallback is literally `return *q1 - *q2`. Quantity numbers are assigned by block_alloc as it walks the block and creates or combines quantities, so they are NOT simply birth order - on the order-exact base the arg4 quantity is numbered 1 and the arg5 value quantity 2 even though the arg5 lw (insn 108) precedes the arg4 sll (insn 112) in the chain. Whatever combine_regs did to produce that numbering is a C-visible fact that s51's declaration-order sweep (48 permutations, all inert) did NOT reach, because it varied declarations rather than which pseudos get COMBINED.",
-   "next_probe": "Read block_alloc in tools/gcc-2.7.2/local-alloc.c to find exactly when a quantity number is allocated (first reference vs combine_regs merge), then instrument or hand-trace the order-exact base's block 3 to see why reg97's quantity is numbered before reg86's. Sweep forms that change WHICH pseudos combine - arg4's scaled index kept in a distinct local from its address (the 'R' shape) versus folded, arg5's address local dying at the load versus living past it - and read the qty= field of the QTYDBG lines rather than the score, accepting any form where the arg5-value quantity's number drops below the arg4-address quantity's."
+   "hypothesis": "tools/ra_solver's inverse_compose.py classify can type this residual directly as REACHABLE or FORECLOSED and rank the surviving C-lever vectors, which is cheaper than another hand sweep - the item has been on the frontier since s51 and has never been spent.",
+   "mechanism": "The residual is now stated in exactly ra_solver's input terms with every parameter measured rather than inferred: two quantities in one block, arg5-value (birth 18, death 24, refs 4, size 1, quantity number 2, wants $v1) and arg4-address (birth 16, death 22, refs 4, size 1, quantity number 1, wants $a0), the comparator qty_compare_1 including its *q1 - *q2 tie-break, and find_free_reg handing out $v1 before $a0.",
+   "next_probe": "Apply progress/s51-order-exact-seats-swapped-7.c, build tmp/sandbox/CD_datasync/system.o, and run tools/ra_solver/inverse_compose.py classify against build/src/system.o as target with the measured quantity table; ask which single parameter change flips the sort order. If it returns anything other than the death-index vector, that is a lever no hand sweep has reached."
   },
   {
-   "hypothesis": "The three banked bases bracket the residual so tightly (arg4 birth 12 / 14 / 16, needing 16 for order and <= 15 for seats) that tools/ra_solver's inverse_compose.py classify should now be able to type the gap directly as REACHABLE or FORECLOSED and rank the C-lever vectors, which is cheaper than another hand sweep.",
-   "mechanism": "ra_solver models GCC 2.7.2's local-alloc quantity priority and find_free_reg exactly, and the residual is now expressed in precisely the terms it takes as input: two quantities, known births, deaths and refs, a known comparator and a known tie-break. s51's frontier item (run classify on the order-exact base) was never spent, and it is now much better posed because the target seat assignment and both quantities' parameters are measured rather than inferred.",
-   "next_probe": "Apply progress/s51-order-exact-seats-swapped-7.c, build tmp/sandbox/CD_datasync/system.o, and run tools/ra_solver/inverse_compose.py classify against build/src/system.o as target; feed it the measured quantity table (arg5-value birth 18 death 24 refs 4; arg4-address birth 16 death 22 refs 4) and ask which single parameter change flips the seat assignment, then hand the surviving lever vectors to a targeted sweep instead of a cross-product."
+   "hypothesis": "The free variable is not in the argument window at all: the window's invariants (arg5-value b18 d24 r4, arg4-address d22 r4, quantity numbers 1 and 2) may be artefacts of the s9 do{}while(0) FAKE wrap rather than facts about the function, in which case 2500 forms have been searching a chassis the original never had.",
+   "mechanism": "s50-s54 compiled roughly 2500 whole-function forms whose only variable is the spelling and interleaving of the five statements inside the do{}while(0) block, and not one of them moved any of those invariants. Meanwhile the wrap itself is worth 24-42 instructions on ablation, so it is certainly not the original's spelling, and it is the one part of the chassis that has not been varied since s9.",
+   "next_probe": "Re-measure the two zero-FAKE reference-faithful chassis on HEAD (s7's `clean` at 32 / 96 and s8's goto-loop g0 at 18 / 91), then run the s54 QTYDBG read on THEM: if the arg4-address / arg5-value quantities have different births, deaths or refs on a FAKE-free chassis, the invariants are chassis artefacts and the basin is wrong, not just hard."
   }
  ],
  "judge_constraints": [],
@@ -347,30 +353,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 36,
-   "statement": "A pointer-valued arg4 whose index is written on the LEFT of the addition reaches target's index-first addu - the last untested spelling of the s26/s32 operand-order rule.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 8 pointer spellings (y1,y2,y3,y6,y7,z2,z3,z5)",
-   "predicate_cite": "",
-   "result": "All eight emit addu $3,$16,$3 - base first - exactly like s32's spellings, at lev 9/10. GCC 2.7.2 canonicalises the PLUS"
-  },
-  {
-   "session": 36,
-   "statement": "The condition 'idx[0]'s lbu emitted first' and the condition 'arg4's sll emitted after arg5's addu' are separable by some statement-order or naming choice inside the value-local family.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 10 value-local spellings, s36 harness",
-   "predicate_cite": "",
-   "result": "The two conditions are the same condition in this family: whichever argument's chain is expanded first gets both its ind"
-  },
-  {
-   "session": 37,
-   "statement": "The do{}while(0) FAKE in candidate.c occupies a pseudo in the printf argument block, so the s21-s24 instance kills measured with it present were measured on a coerced chassis.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals), candidate.c with and without the do{}while(0) FAKE; tools/fake_ablate.py, 2 variants",
-   "predicate_cite": "",
-   "result": "keep-all = score 7 / 91 build insns; drop-1 (wrapper removed) = score 27 / 87 build insns. The wrapper is the loop_depth"
-  },
   {
    "session": 37,
    "statement": "On the candidate.c chassis, target's window order is produced by some single modelled scheduler-input change, or by a pair of statement-move atoms.",
@@ -822,6 +804,30 @@
    "measured_on": "the s51 order-exact chassis and, as controls, the s50 score-2 and s52 score-4 orderings, all with the s9 do{}while(0) FAKE and the void **pp pointer-alias FAKE present",
    "predicate_cite": "",
    "result": "The score-2 ordering control reproduced exactly at 2 / 91 and the score-4 ordering at 4 / 91, so the harness is calibrat"
+  },
+  {
+   "session": 54,
+   "statement": "The inherited order-lever instance kills were only ever FAKE-ablated on the score-2 chassis, so a FAKE unit could still be masking the lever on the order-exact chassis where the seat tie lives.",
+   "kill_scope": "instance",
+   "measured_on": "the s51 order-exact-seats-swapped chassis (7 / 91) ablated on all four FAKE subsets, and the s50 pp / integer-split-init-address chassis (2 / 91) re-verified with both FAKE units present",
+   "predicate_cite": "",
+   "result": "keep-all 7 / 91, drop the pp alias 16 / 92, drop the do{}while(0) wrap 32 / 74, drop both 32 / 74. Both FAKE units are l"
+  },
+  {
+   "session": 54,
+   "statement": "The standing frontier item 'renumber the two contested quantities so qty_compare_1's *q1 - *q2 tie-break resolves in arg5's favour' is reachable by a C form that changes which pseudos combine_regs mer",
+   "kill_scope": "instance",
+   "measured_on": "the three banked bases (s50 score-2, s52 score-4, s51 order-exact), all with the s9 do{}while(0) FAKE and the void **pp pointer-alias FAKE present; quantity tables read from the s53 instrumented-cc1 d",
+   "predicate_cite": "",
+   "result": "The two quantity NUMBERS are invariant: arg4-address is quantity 1 and arg5-value is quantity 2 on the score-2 base (reg"
+  },
+  {
+   "session": 54,
+   "statement": "The (void **) cast on the pp pointer alias - the one line the driver's DECLARATION-PUN auto-scan flags as a layer-1 hazard - is load-bearing for the score-2 codegen.",
+   "kill_scope": "instance",
+   "measured_on": "the s50 pp / integer-split-init-address chassis (2 / 91) with the s9 do{}while(0) FAKE present and the pp pointer-alias spelling itself as the swept variable",
+   "predicate_cite": "",
+   "result": "The cast is pure noise: a_base 2 / 91, b_nocast 2 / 91, d_declinit_top 2 / 91, all identical; only c_declinit regresses "
   }
  ]
 }
