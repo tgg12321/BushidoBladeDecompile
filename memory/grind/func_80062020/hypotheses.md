@@ -1600,3 +1600,24 @@ materialisation authored in C.
 - kill_scope: class
 - measured_on: 2026-09-03 chassis, honest floor 0 with the banked form applied (sandbox 0 at 38/38, verify-oracle build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked); no FAKE construct present in any of the 15 shapes
 - predicate_cite: tools/gcc-2.7.2/expr.c:3453
+
+## s17 (structural, 2026-09-03)
+
+- **H-s17-LAND — CONFIRMED.** *With the two superseded `banned_constructs` entries cleared by
+  the driver-executed integration handoff, the banked s15/s16 body plus the byte-neutral
+  alias suffix lands at honest floor 0 through the normal gates.* Probe: `apply_s15.py apply`
+  + the two suffix edits → `verify-oracle --rebuild --allow-dirty` → `verify-oracle
+  --allow-dirty` (ok true, build_matches true, build_sha1 == oracle) → `sandbox
+  func_80062020 --disable all` = **0 at 38/38**, rules_dropped 0. `grindlib.py selfvet`
+  exits 0. Submitted as candidate-ready with the diff left in place.
+
+- **H-s17-E14FULL — CONFIRMED (frontier item 2 resolved).** *The bare 2-D declaration
+  `extern s32 D_800F1198[][3];` is an equally matching alternative to the record typedef in
+  FULL build context, not only in the s16e harness.* Probe: substituted the declaration in
+  `include/game.h`, respelled the four row writes `D_800F1198[i][0..2]` keeping the same
+  chained assignment, measured → sandbox 0 at 38/38 and full-build SHA1 == oracle. Banked as
+  `alt-e14-2d-declaration.c`. This is the measurement that makes the epilogue arrangement
+  provably DECLARATION-INDEPENDENT at byte scope: the typedef and its invented member names
+  are not load-bearing for a single byte, so the aggregate declaration is a fidelity claim
+  and not a codegen device. Not submitted — the standing Judge order is to land the banked
+  body exactly; E14 is the fallback if the invented names are ever objected to.

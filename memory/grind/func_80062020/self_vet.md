@@ -229,3 +229,42 @@ body has no pointer local and all four row writes use the single spelling
 this is not a re-file of a merits rejection but the completion of the remedy the s16c
 ruling ordered, and it carries a substantive tree change (the prong-(c) suffix) that
 converts the one prong previously conceded as unmet into a satisfied one.
+
+## s17 (structural, 2026-09-03) — SUBMISSION MEASUREMENT, body UNCHANGED, bans now cleared
+
+Everything above stands verbatim; this section records the s17 re-measurement and the one
+thing that changed OUTSIDE the diff. The C body, the `include/game.h` declaration and the
+two suffixed rows in `undefined_syms_auto.txt` are byte-for-byte the s15/s16d form — this
+session added nothing to and removed nothing from the diff.
+
+WHAT CHANGED: the driver executed the integration handoff filed by s16e and CLEARED the two
+superseded `banned_constructs` entries (state.json now carries exactly two: (1) the pointer
+local `row` plus a second, differently-spelled materialisation of the row address, and (2) a
+comments-only re-file of a body FAILed on the merits). Neither is present in this diff, for
+the reasons already given: there is no pointer local anywhere in the body, all four row
+writes use the single spelling `D_800F1198[i].unkN`, and this submission is not a
+comments-only re-file — it lands the body under the Judge's own standing order ("Land the
+banked s15/s16 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py,
+plus the byte-neutral alias suffix on undefined_syms_auto.txt:527-528") with the ban
+tripwire that blocked s16e mechanically cleared by the driver rather than argued around.
+
+MEASURED THIS SESSION, full diff in the tree (three source files + the two suffixed rows):
+
+- `python3 memory/grind/func_80062020/apply_s15.py apply`, then the two suffix edits.
+- `verify-oracle --rebuild --allow-dirty` — rebuilt the scoring reference from THIS body.
+- `verify-oracle --allow-dirty` — `ok: true`, `build_matches: true`,
+  `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa` == `original_sha1_locked`.
+- `sandbox func_80062020 --disable all` — **score 0**, target_insns 38, build_insns 38,
+  scorable true, rules_dropped 0, cheat_asm_stripped 165.
+
+STRUCTURAL PROBE RUN THIS SESSION (does not change the submitted diff). The s16e harness
+result that the epilogue arrangement is DECLARATION-INDEPENDENT was re-tested in FULL
+build context: `extern s32 D_800F1198[][3];` substituted for the record typedef, with the
+body's member writes respelled `D_800F1198[i][0..2]` and the same chained assignment, also
+measures `sandbox` **score 0 at 38/38** and full-build `build_sha1 == original_sha1_locked`.
+That variant is banked as an equally-matching alternative declaration (evidence.md, s17
+block); it is NOT what is submitted, because the standing Judge order is to land the banked
+body EXACTLY. It matters to the vet only as further evidence for T1/T3: the byte
+arrangement is not produced by the invented typedef or member names — a bare 2-D array
+declaration with no struct tag and no member names emits the identical bytes — so the
+declaration carries no codegen coercion, only the object-model fidelity claim of prong (a).

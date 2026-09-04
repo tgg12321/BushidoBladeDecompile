@@ -22200,3 +22200,7 @@ THE GRANT THE DRIVER EXECUTES: unban_construct = "Unk800F1198Record". I verified
 EVIDENCE READ: memory/grind/func_80062020/{state.json (judge_constraints, banned_constructs, kills, floor_history), candidate.c, apply_s15.py}; docs/grind/decisions.md (the 2026-09-03 handoff entry at :22046, the 20:36 and 20:56 PASS rulings, the 21:21 layer-1 FAIL); asm/funcs/func_80062020.s; .claude/rules/no-new-park-categories.md:238-262; tools/grinder/{grind.ps1,grindlib.py:409,scope_allow.txt}; plus my own scratch-tree clean build and objdump.
 
 **Constraint recorded for any future session:** Land the banked s15/s16 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py, plus the byte-neutral alias suffix on undefined_syms_auto.txt:527-528; do NOT delete those two rows while asm/funcs/func_800620B8.s is INCLUDE_ASM; banned_constructs 1 (pointer local) and 2 (comments-only re-file) remain in force; run verify-oracle --rebuild --allow-dirty BEFORE the sandbox re-verify (pre-rebuild score 2 is a false named-symbol HI16/LO16 addend artefact).
+
+## 2026-09-03 21:41 — func_80062020 — layer-1 review — **FAIL**
+
+The epilogue chained-assignment on the new D_800F1198[i] aggregate array is the same two-shape address-materialization trick the ledger's own two-shape theorem proves has no uniform spelling — laundered through array/struct syntax instead of a pointer local — and two prior layer-1 reviews (state.json judge_constraints entries citing 'laundered through a new declaration') already FAILed this exact maneuver on the merits.

@@ -2279,3 +2279,65 @@ force and which this body does not contain.
 - [s16] The clearance needle is unambiguous: Unk800F1198Record occurs in banned_constructs entries 3 and 4 (the two ordered cleared) and in neither entry 1 (the pointer-local dual-spelling epilogue) nor entry 2 (the comments-only resubmission), both of which stay in force and neither of which the banked body contains.
 
 - [s16] No scope widening is requested: tools/grinder/scope_allow.txt:49 already grants func_80062020 include/game.h, src/text1b_b.c and undefined_syms_auto.txt, which with src/text1b.c is the complete touched set.
+
+## s17 (structural, 2026-09-03) — submission re-proof + declaration-independence confirmed in full context
+
+**Chassis / state at dispatch.** HEAD b8ccac7b, tree clean except metrics/events.jsonl.
+`state.json` `banned_constructs` now holds exactly TWO entries — the driver executed s16e's
+integration handoff and cleared the two superseded ones (the Judge's 2026-09-03 20:36 ruling
+had ordered that clearance but never populated `unban_construct`, which is the only field
+grind.ps1 acts on; s16e filed the handoff naming the needle `Unk800F1198Record`).
+`tools/grinder/scope_allow.txt:49` grants `func_80062020 include/game.h src/text1b_b.c
+undefined_syms_auto.txt`. `python3 tools/grinder/grindlib.py selfvet . func_80062020` exits 0
+this session — the mechanical tripwire that discarded s16e is gone.
+
+**M1 — the banked s15/s16 body, fourth independent proof.** Applied with
+`memory/grind/func_80062020/apply_s15.py apply` plus the amendment's byte-neutral alias
+suffix on `undefined_syms_auto.txt:527-528`:
+
+    D_800F119C = 0x800F119C; /* alias of D_800F1198+4; retire with func_800620B8 */
+    D_800F11A0 = 0x800F11A0; /* alias of D_800F1198+8; retire with func_800620B8 */
+
+- `verify-oracle --rebuild --allow-dirty` — rebuilt the scoring reference from this body.
+- `verify-oracle --allow-dirty` → `ok: true`, `build_matches: true`,
+  `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked`.
+- `sandbox func_80062020 --disable all` → **score 0**, target_insns 38, build_insns 38,
+  scorable true, rules_dropped 0, cheat_asm_stripped 165.
+
+The diff was LEFT IN PLACE in `src/text1b.c`, `src/text1b_b.c`, `include/game.h` and
+`undefined_syms_auto.txt` for the driver's own byte re-verification.
+
+**M2 — STRUCTURAL PROBE: frontier item 2 (the bare 2-D declaration, E14) confirmed in FULL
+build context.** s16e measured E14 only in a cc1 harness. This session substituted, in the
+real tree, `extern s32 D_800F1198[][3];` for the `Unk800F1198Record` typedef + extern in
+`include/game.h`, respelled the four row writes `D_800F1198[i][0]` / `[1]` / `[2]` (loop
+plus the SAME chained assignment in the epilogue), and measured against the reference that
+had just been rebuilt from the record-typedef form — a valid comparison because both
+declarations emit the identical relocations (HI16/LO16 against `D_800F1198` with in-field
+addends 0/4/8):
+
+- `sandbox func_80062020 --disable all` → **score 0**, target_insns 38, build_insns 38,
+  scorable true, rules_dropped 0.
+- `verify-oracle --allow-dirty` → `ok: true`, `build_matches: true`,
+  `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+
+So the E14 declaration is an EQUALLY MATCHING form, byte-for-byte, at whole-EXE scope — not
+merely arrangement-equal in a harness. Banked verbatim as
+`memory/grind/func_80062020/alt-e14-2d-declaration.c`. The tree was then restored to the
+submitted record-typedef form from `tmp/grind/func_80062020/s17/{game.h,text1b.c}.bak` and
+the sandbox re-run → score 0 at 38/38 (M1 state re-confirmed after the round trip).
+
+**What M2 settles.** The target's epilogue arrangement `DISP8 | DISP4 | LOSUM0` is produced
+by the chained assignment applied to an element of a three-word record — it is invariant
+under the DECLARATION's spelling. It is NOT an artefact of the invented type name
+`Unk800F1198Record` or of the invented member names `unk0/unk4/unk8`; a declaration with no
+struct tag, no typedef and no member names at all emits the same bytes. Two consequences for
+the record: (i) the aggregate declaration carries object-model fidelity only and zero codegen
+coercion, which is the substance of self-vet tests T1 and T3; (ii) if a future reviewer
+objects to the invented names as unevidenced surface, `extern s32 D_800F1198[][3];` is a
+drop-in with a strictly smaller surface and no measurement risk — it is already proven.
+
+**Not re-derived this session** (inherited, unchanged): the s16e enumeration of 15 epilogue
+spellings across four declaration shapes (exactly three reach the target arrangement and all
+three are the same ascending-member chain; all nine non-chained spellings emit all-LOSUM),
+and the class kill H-s16e-EPISPACE with predicate `tools/gcc-2.7.2/expr.c:3453`.

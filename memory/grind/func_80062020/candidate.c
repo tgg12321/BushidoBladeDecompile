@@ -72,7 +72,7 @@
  * the single spelling D_800F1198[i].unkN, and the comment change here is the remedy the
  * Judge itself ordered rather than a cosmetic re-file of a merits rejection.
  *
- * s16b (rederive, 2026-09-03) RE-MEASUREMENT � body UNCHANGED, nothing added or removed.
+ * s16b (rederive, 2026-09-03) RE-MEASUREMENT ï¿½ body UNCHANGED, nothing added or removed.
  *   - This form re-proven on today's chassis: apply_s15.py apply ->
  *     verify-oracle --rebuild --allow-dirty ok true / build_matches true /
  *     build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, then
@@ -159,6 +159,29 @@
  *     populated `unban_construct`, the only field grind.ps1:557-563 acts on.  s16e filed an
  *     INTEGRATION HANDOFF in docs/grind/decisions.md naming the single needle that clears
  *     exactly those two superseded entries and nothing else: "Unk800F1198Record".
+ *
+ * s17 (structural, 2026-09-03) SUBMITTED - body UNCHANGED, bans cleared, re-proven.
+ *   - The driver executed s16e's integration handoff and CLEARED the two superseded
+ *     banned_constructs entries; state.json now carries exactly two (pointer local +
+ *     second address materialisation; comments-only re-file of a merits-FAILed body),
+ *     neither of which this body declares.  `grindlib.py selfvet . func_80062020` exits 0.
+ *   - Fourth independent proof on the live chassis, full diff in the tree (three source
+ *     files + the two suffixed rows in undefined_syms_auto.txt:527-528):
+ *     apply_s15.py apply -> verify-oracle --rebuild --allow-dirty -> verify-oracle
+ *     --allow-dirty = ok true / build_matches true / build_sha1
+ *     62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked; then
+ *     sandbox func_80062020 --disable all = score 0, target_insns 38, build_insns 38,
+ *     rules_dropped 0, cheat_asm_stripped 165.  Diff LEFT IN PLACE for the driver.
+ *   - STRUCTURAL PROBE (frontier item 2, now CONFIRMED in full context, not just in the
+ *     s16e harness): the bare 2-D declaration `extern s32 D_800F1198[][3];` with the body
+ *     respelled D_800F1198[i][0..2] and the SAME chained assignment also measures sandbox
+ *     0 at 38/38 AND full-build SHA1 == oracle.  Banked as
+ *     memory/grind/func_80062020/alt-e14-2d-declaration.c.  Consequence for the record:
+ *     the target arrangement DISP8 | DISP4 | LOSUM0 is produced by the CHAINED ASSIGNMENT
+ *     on any element-of-3-word-record lvalue, not by the Unk800F1198Record typedef or its
+ *     invented member names - the declaration carries object-model fidelity only, zero
+ *     codegen coercion.  Not submitted: the standing Judge order is to land the banked
+ *     body EXACTLY, and this is a strictly optional surface reduction for a future ruling.
  */
 void func_80062020(s32 *arg0) {
     s32 i;
