@@ -3110,3 +3110,57 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - probe: tmp/grind/CD_datasync/s30/wscan.py over all 484 compiled forms in the s26/s27/s28/s30 asm directories, computing window-levenshtein against target's 18-insn window.
 - result: Minimum window-lev is 7 and it is reached ONLY by the candidate.c family (candidate, m45, n4/n24/n42/n45/n245/n425/n452, ya4/ya45/ya4b/ya4c/yab4/yba4, and the za4*/zab4* group). No banked artifact is closer, so every s21-s29 instance kill stands on the current chassis. tools/fake_ablate.py itself is broken on this host for this function (ERR on both the keep-all and drop-1 variants, its sweep_variants.py child returning no score), so s28's hand-built ya53_nowrap ablation remains the FAKE re-audit of record.
 - verdict: CONFIRMED
+
+## [s32] combine folds the single-use index copy into arg4's scaling chain, so hoisting the index alone can never decouple `lbu` from `sll` (the s30/s31 mechanism of record, and the premise of the live frontier's first item).
+- mechanism: s30/s31 inferred the fold from emitted assembly alone - every index-local form showed the `lbu` adjacent to its `sll` late in the window - and attributed it to combine substituting a single-use `reg/v` pseudo into its consumer.
+- probe: Built `tmp/grind/CD_datasync/s32/u3.c` with `-da` via `s32/dmp.sh` and read the CD_datasync block out of `w.i.combine`, `w.i.sched`, `w.i.lreg`, `w.i.greg`, `w.i.sched2` with `s32/blk.py`.
+- result: KILLED. The post-combine RTL keeps insn 93 (`reg86 = zero_extend(mem(reg76))`, the idx[0] lbu) at the head of the block, with its `sll` (insn 120, LOG_LINKS -> 93) after the entire arg5 and arg3 chains and its value load (insn 132) last - i.e. TARGET's LUID geometry, already in hand before scheduling. combine performs no fold. The `lbu` is moved from block position 1 to position 10 by sched1 (`.sched`, reproduced verbatim in `.lreg`/`.greg`), and sched2 emits it at window slot 12. Every "give the index a second consumer / a conversion insn / a second indirection so combine cannot fold it" probe on the old frontier was aimed at a pass that is not acting.
+- verdict: KILLED
+
+## [s32] Some member of the index-local x value-local x statement-order space puts idx[0]'s `lbu` at window slot 1 while leaving arg4's scaling chain late (target's decoupling).
+- mechanism: s28 exhausted the 65-member VALUE-local space; the crossing with a hoisted index local had never been enumerated, and s28's own split-chain finding suggested the index local was the trigger.
+- probe: `tmp/grind/CD_datasync/s32/gen3.py` - all 48 members of {index local} x {subsets of arg2/arg3/arg5 as value locals} x {every statement order}, arg4 inline via the index; plus 21 hand-designed forms in `gen.py` / `gen2.py` (arg4-inline x third-live-scratch, index types, arg4-named, scaled offsets, &-subscript pointer locals). 69 forms compiled, windows classified by signature with `tmp/grind/CD_datasync/s30/rep.py`.
+- result: KILLED. Minimum window-levenshtein 11 inside the index-local family and 7 (a tie with candidate.c, never a win) in the r4/r5/r7 scaled-offset family; every form is an 18-insn window except q5 (17, an automatic loss). idx[0]'s `lbu` reaches window slot 1 in none of the 69. The forms that put it earliest (u1/vi53, slot 4) do so only behind arg3's `lui/lbu` pair.
+- verdict: KILLED
+
+## [s32] A pointer local spelled `&tbl_125c[idx_1494[0]]` gives the address chain a statement-expanded (early) position and the value load a load_register_parameters (late) position WHILE keeping target's index-first `addu` operand order.
+- mechanism: s26's rule ("a pointer-typed named expression emits base-first") had only been measured on the `(u8 *)base + k` spelling; the `&`-subscript spelling preserves the array-subscript expansion and might have emitted `plus(ashift(idx,2), base)`.
+- probe: t1/t2/t3/t6/t8/u5 in `tmp/grind/CD_datasync/s32/gen2.py`, six spellings crossed with arg5/arg3/arg2 value locals.
+- result: KILLED. All six collapse to one window (lev 9) whose arg4 addu is `addu v1,s0,v1` - BASE-first. The &-subscript form obeys the same operand-order rule as the cast-and-add form, so no pointer spelling of the arg4 address survives the s26 pre-filter.
+- verdict: KILLED
+
+## [s32] An index local combined with BOTH other argument value locals reproduces target's split arg4 chain with target's index-first addu.
+- mechanism: s28 found split chains only in base-first or wrong-register forms; the split had never been crossed with the arg3 value local on the current chassis.
+- probe: `u1` (= `vi53`): `s32 i4 = idx_1494[0]; arg5 = tbl_125c[idx_1494[1]]; arg3 = tbl_11dc[D_800A11D5];` with arg4 inline as `tbl_125c[i4]`.
+- result: CONFIRMED (structurally; lev 15 by score). Emits `lbu a3,0(s1)` at slot 4, `sll a3,a3,2` at 11, `addu a3,a3,s0` at 14, `lw a3,0(a3)` at 16 - target's split shape and target's index-first operand order, for the first time in 32 sessions. It differs from target in exactly two ways: the `lbu` sits at slot 4 rather than 1, and the address pseudo coalesces with the value pseudo into ONE register ($a3) where target keeps the address in $a0 and loads the value into $a3.
+- verdict: CONFIRMED
+
+## [s33] combine folds the single-use hoisted index copy into arg4's scaling chain, so an index local cannot decouple the lbu from the sll (the s30/s31 mechanism of record and the premise of the inherited frontier's first item).
+- mechanism: s30/s31 inferred the fold from emitted assembly alone - every index-local form showed the lbu adjacent to its sll late in the window - and attributed it to combine substituting a single-use reg/v pseudo into its consumer. That attribution was never read out of a dump.
+- probe: Built tmp/grind/CD_datasync/s32/u3.c (s32 i4 = idx_1494[0]; arg4 inline as tbl_125c[i4], everything else inline) with -da via s32/dmp.sh, and extracted the CD_datasync printf block from w.i.combine, w.i.sched, w.i.lreg, w.i.greg and w.i.sched2 with s32/blk.py.
+- result: The post-combine RTL keeps insn 93 (reg86 = zero_extend(mem(reg76)), the idx[0] lbu) at the HEAD of the block, its sll (insn 120, LOG_LINKS back to 93) after the entire arg5 and arg3 chains, and its value load (insn 132, a3 = mem(reg104)) LAST - that is target's LUID geometry, already in hand before scheduling. combine performs no fold at all. The block's insn order is 93-first in .combine and 93-at-position-10 in .sched, with .lreg and .greg reproducing .sched verbatim, so the sink is sched1 and register allocation does not reorder. sched2 then emits the lbu at window slot 12. Every 'give the index a second consumer / a conversion insn / a second level of indirection so combine cannot fold it' probe on the inherited frontier was aimed at a pass that is not acting.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; form u3 built with -da; read from w.i.combine / w.i.sched / w.i.lreg / w.i.greg / w.i.sched2
+
+## [s33] Some member of the index-local x value-local x statement-order cross-product puts idx[0]'s lbu at window slot 1 while leaving arg4's scaling chain late, which is the one decoupling target's window requires.
+- mechanism: s28 exhausted the 65-member VALUE-local subset/order space but never crossed it with a hoisted index local, and s28's own split-chain finding suggested the index local was the trigger for target's split arg4 chain.
+- probe: tmp/grind/CD_datasync/s32/gen3.py generated all 48 members of {s32 i4 = idx_1494[0];} x {subsets of arg2/arg3/arg5 as value locals} x {every statement order with i4 in every position}, arg4 always inline via i4. Plus 21 hand-designed forms: gen.py p1-p8 (arg4 inline crossed with third-live-scratch spellings), q1-q5 (index type, arg4 named), r1-r7 (scaled offset crossed with order); gen2.py t1-t9 (&-subscript pointer locals), u1-u5. All 69 compiled and classified by window signature with tmp/grind/CD_datasync/s30/rep.py.
+- result: Minimum window-levenshtein is 11 inside the index-local family and 7 (a tie with candidate.c, never a win) in the r4/r5/r7 scaled-offset family; every form is an 18-insn window except q5 (17, an automatic loss because the stack store leaves the block). idx[0]'s lbu reaches window slot 1 in none of the 69. The forms that place it earliest (u1 / vi53, slot 4) do so only behind arg3's lui/lbu pair. Candidate.c's family remains the only thing that puts that lbu at slot 1, and it is exactly the family that also completes arg4's chain first.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 69 forms, window-signature classified, floor re-measured live at 7 before the sweep
+
+## [s33] A pointer local spelled &tbl_125c[idx_1494[0]] gives arg4's address chain a statement-expanded (early) position and its value load a load_register_parameters (late) position while keeping target's index-first addu operand order.
+- mechanism: s26's operand-order rule ('a pointer-typed named expression emits base-first') had only ever been measured on the (u8 *)base + k spelling. The &-subscript spelling preserves the array-subscript expansion, so it might have emitted plus(ashift(idx,2), base) - which would have been the one spelling combining target's LUID geometry with target's operand order.
+- probe: t1/t2/t3/t6/t8/u5 in tmp/grind/CD_datasync/s32/gen2.py - the &-subscript pointer local crossed with arg5, arg3 and arg2 value locals and with both statement orders.
+- result: All six spellings collapse to ONE window (lev 9) whose arg4 addu is emitted as addu v1,s0,v1 - BASE-first. The &-subscript form obeys the same expansion rule as the cast-and-add form, so no pointer spelling of the arg4 address survives s26's operand-order pre-filter. Banked as rejected/amp-subscript-pointer-local-emits-base-first-addu-9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; six spellings, one identical emitted window
+
+## [s33] An index local combined with BOTH other argument value locals reproduces target's split arg4 chain with target's index-first addu operand order.
+- mechanism: s28 found split arg4 chains only in forms that emitted base-first addus or landed the chain in $a2/$v1; the split had never been crossed with the arg3 value local on the current chassis, and s30/s31 recorded that the s28 split did not reproduce here at all.
+- probe: u1 (= vi53): s32 i4 = idx_1494[0]; arg5 = tbl_125c[idx_1494[1]]; arg3 = tbl_11dc[D_800A11D5]; with arg4 inline as tbl_125c[i4].
+- result: CONFIRMED structurally (lev 15 by score). u1 emits lbu a3,0(s1) at slot 4, sll a3,a3,2 at slot 11, addu a3,a3,s0 at slot 14 and lw a3,0(a3) at slot 16 - target's split shape AND target's index-first operand order, for the first time in 32 sessions. It differs from target in exactly two ways: the lbu sits at slot 4 rather than slot 1 (arg3's lui/lbu occupy slots 2-3), and the address pseudo COALESCES with the value pseudo into one register ($a3) where target keeps the address in $a0 and loads the value into $a3. Banked as rejected/index-local-plus-arg3-arg5-splits-arg4-index-first-but-coalesces-addr-value-15.c as a structural artifact, not as a loss.
+- verdict: CONFIRMED

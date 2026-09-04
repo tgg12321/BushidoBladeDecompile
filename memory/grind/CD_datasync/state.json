@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 31,
- "current_modality": "rederive",
+ "session_count": 33,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -189,23 +189,35 @@
    "floor": 7,
    "modality": "rederive",
    "headline": "Residual reduced to one sentence for the first time in 30 sessions - candidate.c's printf window IS target's window with the two tbl_125c chains' roles transposed - plus a priority-model correction (d"
+  },
+  {
+   "session": 32,
+   "modality": "synthesis",
+   "floor": 7,
+   "note": "Floor 7 live. The ledger's mechanism of record is overturned: the .combine dump shows combine does NOT fold the hoisted index copy - the pre-scheduling RTL already carries target's exact LUID geometry - and sched1 alone sinks the idx[0] lbu from block position 1 to position 10. The residual is one sched1 ready-list decision about one priority-leaf insn. 69 new forms (complete index-local x value-local x order cross-product plus &-subscript pointer locals) all fail to put that lbu at window slot 1; u1/vi53 is the first form ever to emit target's SPLIT arg4 chain with target's index-first addu."
+  },
+  {
+   "session": 33,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "The ledger's mechanism of record is overturned by the RTL dumps: combine does NOT fold the hoisted index - the pre-scheduling RTL already carries target's exact LUID geometry - and sched1 alone sinks "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole residual is the single LUID inversion LUID(arg4.lbu) < LUID(arg5.lbu) < LUID(arg5.sll) < LUID(arg4.sll); some ordinary-C construct gives idx_1494[0] a second consumer or a real intervening operation so combine cannot fold the index copy into arg4's scaling chain, letting the two halves of arg4's chain sit on opposite sides of arg5's.",
-   "mechanism": "Every spelling measured to date couples the index read to its chain because the index copy is a single-use pseudo that combine folds. With two uses, or a definition that is not a plain copy, the lbu stays at the statement's own LUID while the sll is emitted inside the call at the argument's LUID. s24 named this predicate ('one extra edge at the FRONT of arg4's chain, none at the back'); s30 shows it is now the ONLY difference between candidate.c and target.",
-   "next_probe": "On the candidate chassis, sweep spellings that give idx_1494[0] a second honest consumer or a real intervening operation, and classify by window signature with tmp/grind/CD_datasync/s30/rep.py (not by score): (a) the index feeding both the arg4 lookup and part of another argument if a semantically honest reading of the format string supports it, (b) an index type that forces a conversion insn between load and shift, (c) both indices read as one wider load and split, (d) the arg4 table access through a second base-pointer local so the addu has a different operand. Every candidate must keep the arg5 sw ...,16($sp) INSIDE the block - b4 shows a 17-insn window is an automatic loss."
+   "hypothesis": "The whole residual is ONE sched1 ready-list decision: whether the block's first instruction after the puts call is the idx[0] lbu (insn 93, target) or the idx[1] lbu (every spellable form). The pre-scheduling RTL of the index-local form ALREADY equals target's LUID geometry, so no expansion-side lever remains.",
+   "mechanism": "s32's dumps show .combine with insn 93 at position 1 and .sched with it at position 10, .lreg/.greg unchanged from .sched. Both 93 and 97 are dependence leaves, so the choice is made inside rank_for_schedule / the ready-list release logic in tools/gcc-2.7.2/sched.c, not by expand or combine. s16 measured that sixteen of nineteen picks in this block carry LAUNCH_PRIORITY (sched.c:3985 + birthing_insn_p while reload_completed == 0), so the ordinary priority model does not decide it and the actual comparison has never been read for THIS form.",
+   "next_probe": "Run the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1 - only the former carries the BB2_*_DEBUG hooks) with BB2_PRIO_DEBUG=1 and BB2_RANKDBG=1 over tmp/grind/CD_datasync/s32/u3.c AND over candidate.c, isolating the CD_datasync block by first recording its insn-id range from the -da dumps (u3: 87..134; the TU emits ~5.5k PRIODBG lines, so the range filter is mandatory). Diff the two runs at the FIRST pick after the puts call: in candidate.c insn 93 wins it, in u3 insn 97 does. Name the field that differs (priority, LAUNCH_PRIORITY status, ready-list release clock, or the LUID tie-break) - that field, and only that field, is what a C spelling must move."
   },
   {
-   "hypothesis": "Re-running tools/sched_solver under the corrected depth-from-block-start ordering may type the chain transposition REACHABLE, since s26's FORECLOSED verdict was computed with the ordering inverted.",
-   "mechanism": "s29's measured priority table plus s30's reading of it show the comparison direction s26 used was backwards; under depth-from-start the scheduler's choice at target slot 9 (arg3's priority-1 lbu over arg4's ready priority-2 addu) is correct, and under the successors reading it is impossible. Any solver verdict built on the wrong ordering carries no weight.",
-   "next_probe": "Dump candidate.c's pre-sched block with tmp/grind/CD_datasync/s29/dmp.sh, re-run tools/sched_solver with the ordering convention set to depth-from-block-start, self-check that it reproduces candidate.c's known emission first, then ask whether target's order is reachable and what minimal LUID permutation reaches it. Bound the run - the CD_ready precedent is that an unbounded solver run never finishes depth 1."
+   "hypothesis": "u1 / vi53 is one register-allocation decision away from target's arg4 chain: it emits the split chain with target's index-first addu but coalesces the address pseudo and the value pseudo into a single register ($a3), where target keeps the address in $a0 and loads the value into $a3.",
+   "mechanism": "In u1 the address pseudo dies exactly at the value load, so local-alloc reuses its hard register as the load's destination. Target's two-register form needs the address pseudo still live, or a different scan order, at the moment the value load is allocated. s29 established the governing predicate: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so the scan is ascending register number and $a0 is only reachable once $v0/$v1/$a1/$a2/$a3 are taken or conflicting.",
+   "next_probe": "On the u1 chassis, sweep spellings that add exactly one more simultaneously-live scratch value across the slots where arg4's address pseudo lives (slots 4-16) WITHOUT shortening the 18-insn window - the arg2 value local, a second table-base pointer local, and an earlier-hoisted arg5 value load are the three candidates. Classify by whether the emitted arg4 chain uses TWO registers (address + value) rather than one, not by score: u1 is lev 15 and a structurally correct two-register variant may still score 12-15."
   },
   {
-   "hypothesis": "The twins CD_sync and CD_ready share this block, so the transposition statement and the corrected priority model transfer and one answer closes three functions.",
-   "mechanism": "CD_ready's ledger (s36/s46) records a byte-shape-identical do_timeout window and CD_sync s26 records the same {sll,addu,sll} -> jal debug_printf residual. The transposition is a property of the shared source idiom (two adjacent byte indices into one table, one of them the stack argument), not of CD_datasync's surrounding chassis.",
-   "next_probe": "Run tmp/grind/CD_datasync/s30/wscan.py retargeted to each twin's function name and target .s over that twin's banked forms. If a twin's best form already shows the OPPOSITE transposition - its deferred chain being the one target defers - then that twin's C spelling is the answer for all three."
+   "hypothesis": "The twins CD_sync and CD_ready share this printf block and therefore this exact sched1 decision, so whichever twin's banked forms already issue the idx[0] lbu first carries the answer for all three functions.",
+   "mechanism": "CD_ready s36/s46 record a byte-shape-identical do_timeout window and CD_sync s26 records the same {sll,addu,sll} -> jal printf residual signature. s32's finding is a statement about a single sched1 pick inside that shared block, which is a property of the shared source idiom rather than of CD_datasync's surrounding chassis.",
+   "next_probe": "Run tmp/grind/CD_datasync/s30/wscan.py retargeted to each twin's function name and target .s over that twin's banked forms, and additionally dump .combine + .sched for each twin's best form. Look specifically for a twin whose .sched keeps its first argument lbu at block position 1; if one exists, diff its block's dependence graph against tmp/grind/CD_datasync/s32/w.i.combine to isolate what makes sched1 keep it there."
   }
  ],
  "judge_constraints": [],
@@ -496,6 +508,48 @@
    "measured_on": "HEAD chassis with the do{}while(0) FAKE present; form b4",
    "predicate_cite": "",
    "result": "b4 does push a chain into $t0, but the arg5 sw ...,16($sp) leaves the block, producing a 17-insn window (lev 14) - the s"
+  },
+  {
+   "session": 32,
+   "statement": "combine folds the single-use hoisted index copy into arg4's scaling chain, so an index local cannot decouple the lbu from the sll (the s30/s31 mechanism of record).",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis with the do{}while(0) FAKE present, form u3 built with -da; read from w.i.combine / w.i.sched / w.i.lreg / w.i.greg / w.i.sched2"
+  },
+  {
+   "session": 32,
+   "statement": "Some member of the index-local x value-local x statement-order cross-product puts idx[0]'s lbu at window slot 1 while leaving arg4's scaling chain late.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis with the do{}while(0) FAKE present; 69 forms (48-member complete cross-product plus 21 hand-designed), window-signature classified"
+  },
+  {
+   "session": 32,
+   "statement": "A pointer local spelled &tbl_125c[idx_1494[0]] keeps target's index-first addu operand order while deferring the value load to load_register_parameters.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis with the do{}while(0) FAKE present; six spellings t1/t2/t3/t6/t8/u5, one identical window, addu emitted base-first"
+  },
+  {
+   "session": 33,
+   "statement": "combine folds the single-use hoisted index copy into arg4's scaling chain, so an index local cannot decouple the lbu from the sll (the s30/s31 mechanism of record and the premise of the inherited fron",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; form u3 built with -da; read from w.i.combine / w.i.sched / w.i.lreg / w.i.greg / w.i.sched2",
+   "predicate_cite": "",
+   "result": "The post-combine RTL keeps insn 93 (reg86 = zero_extend(mem(reg76)), the idx[0] lbu) at the HEAD of the block, its sll ("
+  },
+  {
+   "session": 33,
+   "statement": "Some member of the index-local x value-local x statement-order cross-product puts idx[0]'s lbu at window slot 1 while leaving arg4's scaling chain late, which is the one decoupling target's window req",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 69 forms, window-signature classified, floor re-measured live at 7 before the sweep",
+   "predicate_cite": "",
+   "result": "Minimum window-levenshtein is 11 inside the index-local family and 7 (a tie with candidate.c, never a win) in the r4/r5/"
+  },
+  {
+   "session": 33,
+   "statement": "A pointer local spelled &tbl_125c[idx_1494[0]] gives arg4's address chain a statement-expanded (early) position and its value load a load_register_parameters (late) position while keeping target's ind",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; six spellings, one identical emitted window",
+   "predicate_cite": "",
+   "result": "All six spellings collapse to ONE window (lev 9) whose arg4 addu is emitted as addu v1,s0,v1 - BASE-first. The &-subscri"
   }
  ]
 }
