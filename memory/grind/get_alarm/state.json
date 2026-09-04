@@ -292,7 +292,9 @@
    "next_probe": "Deferred and conditional on frontier item 2 producing a $v0-seat form. If one appears, re-run the s2/s3 declaration/access-shape enumeration AND this session's F1 spellings against the NEW chassis before quoting any banked axis-A conclusion, since every one of them is chassis-relative."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Volatility must live on the DECL (`extern volatile s32 D_8009BF68[];`, pattern 3) - never injected at a pointer or cast over a non-volatile decl; reconcile the conflicting src/display.c:733 fn-ptr extern; add D_8009BF68 to volatile_extern_allowlist.txt in the same commit citing Ruling 4 (git show cd19d7a2^:docs/closer/rulings.md:68) NOT the IRQ three-shape catalog; the root allowlist txt needs a scope_allow.txt line."
+ ],
  "origin": "queue",
  "created": "2026-07-22T13:53:31.417799+00:00",
  "exhaustion_base": 43,
@@ -322,6 +324,23 @@
    "measured_on": "chassis-current floor-9 body (score 9 / target 91 / build 90 / rules_dropped 0 / cheat_asm_stripped 147); no FAKE construct present",
    "predicate_cite": "",
    "result": "B1 = score 9 / build_insns 90 - inert, no seat change, identical fingerprint to the floor. B2 = score 17 / build_insns 9"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "bc13a6d76f47d945",
+   "when": "2026-09-04T18:48:02.558511+00:00",
+   "ref": "decisions.md 2026-09-04 13:48 ruling PASS",
+   "justification": "(a) NO. legitimate-volatile-interrupt-touched's three-shape catalog is exact ('Other use-site shapes default-FAIL'); a fourth 'read-to-be-printed' shape would be a family extension = FAIL(CONSTRUCT) under ordinary-c-judge-decidable. The session was right not to self-approve it. (b) The ruling EXISTS and the citation is merely stale: docs/closer/rulings.md was deleted 2026-08-30 in cd19d7a2 as dead-era docs; Ruling 4 text is recoverable at `git show cd19d7a2^:docs/closer/rulings.md` lines 68-83 (granted 2026-07-10, commit c80d976e), and it is live policy - applied twice since at docs/grind/deci"
+  }
+ ],
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "bc13a6d76f47d945",
+   "when": "2026-09-04T18:48:02.558511+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-04 13:48 ruling PASS)"
   }
  ]
 }

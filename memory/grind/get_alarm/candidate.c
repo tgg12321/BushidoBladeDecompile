@@ -1,65 +1,94 @@
 /* Candidate body for get_alarm (formerly func_8007DC9C) — honest floor 9 on the
- * post-migration chassis (re-measured s42: sandbox --disable all score 9, target_insns 91,
+ * post-migration chassis (re-measured s45: sandbox --disable all score 9, target_insns 91,
  * build_insns 90, rules_dropped 0, cheat_asm_stripped 147).
  *
- * s42 change vs the s41 form: the discarded volatile read of *g_gpu_stat_reg is now spelled
- * as the bare expression statement `(void)*g_gpu_stat_reg;` instead of `new_var = *g_gpu_stat_reg;`
- * + a trailing `(void)new_var;`. Same score (9), same fingerprint, but it removes a dead local
- * whose only purpose was to hold a discarded value — ordinary C for "read a volatile and throw
- * the value away", and one fewer construct for a reviewer to question. Measured, not assumed.
+ * s45 change vs the s42-s44 body: the body is now the SOTN-libgpu-FAITHFUL spelling.
+ * The ORIGINAL library source for this function was located this session at
+ * tmp/sotn/src/main/psxsdk/libgpu/sys.c:937-946 (`int get_alarm(void)`), a matched
+ * decomp of the SAME PsyQ libgpu sys.c BB2 links.  It reads:
  *
- * Residual 9-op gap = two orthogonal axes (see hypotheses.md):
- *   axis A (1 insn) — combine.c:1458 added_sets_2 single-use fold of the &D_8009BF68 address
- *     pseudo; target keeps it materialized (lui+addiu+lw 0(reg)), we fold to lui+lw %lo.
- *   axis B (8 insns) — RE-ATTRIBUTED s42 by tools/sched_solver: it is a ONE-INSN move of the
- *     format-string `la` (pass-2 UID 60) from emit slot 4 to slot 1, and the exhaustive
- *     single-atom search over 4391 atoms found EXACTLY ONE vector reaching target's order —
- *     `del_dep 60 <- 38`, i.e. deleting the pass-2 OUTPUT DEPENDENCE on hard register $a0
- *     between the dead *g_gpu_stat_reg read (UID 38, greg seats it in $4) and the fmt `la`
- *     (also writes $4). Target seats that dead read in $v0 (lw $v0,0($v1) @ 0x8007DCFC), so
- *     the edge does not exist there. NO luid/statement-order atom reaches the goal. Axis B is
- *     therefore an RA SEAT question, not a scheduler tie — see tmp/grind/get_alarm/s42/solver_report.md.
+ *     int get_alarm(void) {
+ *         if (D_80039254 < VSync(-1) || D_80039258++ > 0x780000) {
+ *             *GPU_STATUS;
+ *             printf("GPU timeout:que=%d,stat=%08x,chcr=%08x,madr=%08x\n",
+ *                    (_qin - _qout) & 0x3F, *GPU_STATUS, *DMA2_CHCR, *DMA2_MADR);
+ *             _reset(1);
+ *             return -1;
+ *         }
+ *         return 0;
+ *     }
  *
- * s43 (escalation modality) adds the two links UPSTREAM of s42's output dependence, so axis B's
- * chain is now named end to end: insn 36 (lw stat_ptr, icost 2) shadows insn 38 (the dead read),
- * so sched1 hoists insn 54 (lw madr_ptr) between them; that gives pseudo 89 the live range [6,10)
- * overlapping the dead read's [8,9); local-alloc allocates the dead read LAST (qty 2, refs 1 ->
- * qty_compare priority 0) and the only free low reg across its life is $a0 — which is the register
- * the fmt `la` must write. s43 then closed the C-expressible surface in BOTH scheduler passes:
- * pass-1 goals "38 before 54" and "56 before 38" are each unreachable by any of 2583 luid/luid_move
- * atoms, while the SAME goals ARE reachable by add_dep/del_dep/cost atoms (dependence-graph and
- * machine-description edits with no C spelling). The one implicated C form (stage *g_gpu_dma_madr
- * before the dead read) builds at score 9 — ties, closes nothing. This body is unchanged from s42.
+ * Deltas BB2-vs-SOTN, all confirmed against asm/funcs/get_alarm.s: BB2's libgpu
+ * version (sys.c v1.129) writes `_reset(1)` OUT INLINE (the exact case-1/3 arm of
+ * src/display.c's `_reset`), adds a SECOND debug printf
+ * `printf(&D_80016044 /* "func=(%08x)(%08x,%08x)" */, D_8009BF68[0], D_8009BF6C,
+ * D_8009BF70)`, uses 0xF0000 rather than 0x780000 as the draw-count limit, and
+ * reaches the GPU registers through pointer globals rather than constant MMIO
+ * addresses.  Everything else matches one-for-one, including the bare discarded
+ * `*GPU_STATUS;` read, the `(_qin - _qout) & 0x3F` queue-depth argument, the
+ * printf argument ORDER (stat, chcr, madr; BB2 chcr = D_8009BF54, madr = D_8009BF4C
+ * -> a3 and 0x10($sp) respectively) and the `||` short-circuit with the
+ * post-incremented draw counter.  So the CHASSIS IS THE ORIGINAL'S and the rederive
+ * axis is closed by the identified source, not by exhaustion.
  *
- * s44 (synthesis, 5th merge pass) leaves this BODY UNCHANGED and re-measured it
- * chassis-current at score 9 (target 91 / build 90 / rules_dropped 0 /
- * cheat_asm_stripped 147). Two things changed around it:
- *   (1) The statement-order surface is now CLOSED AT ALL DEPTHS, not just at
- *       depth 1. luid/luid_move atoms mutate only the per-node luid field
- *       (tools/sched_solver/perturb.py:239-251) while priorities are recomputed
- *       from the dependence graph alone, so the whole depth-N luid space is a
- *       permutation space; 80,000 random luid permutations (pass 1 and pass 2,
- *       window-only and whole-block) yield ONE emitted order in pass 1 and FOUR
- *       in pass 2, none of them target's. In pass 2 it is a graph fact rather
- *       than a sampling result: deps[60] = [[38,15]] is an OUTPUT dependence,
- *       and a backward list scheduler can never cross a dependence edge on a
- *       tie-break. Do NOT re-open statement reordering.
- *   (2) The mandated sibling sweep measured CD_sync's two devices on this
- *       chassis for the first time. The sanctioned F1 combine-foldable
- *       chain-extender does NOT open axis A (three spellings, build_insns never
- *       leaves 90), and the sanctioned pointer-alias-to-a-global does NOT move
- *       the dead read off $a0 (madr alias 9/90 inert, stat alias 17/92 worse).
- *       s3's axis-A kill rested on a scope the 2026-07-01 F1 ruling widened, so
- *       axis A is now dead on MEASUREMENT rather than on a superseded reading.
- * Live frontier: (a) which pass kills the F1 extender's second reference
- * (cse2 vs combine — a dump read); (b) the unfinished ra_solver inverse local
- * run for the $v0 seat. See tmp/grind/get_alarm/s44/MERGED-ATTACK-s44.md.
+ * Measured s45 on the current chassis: this reference-faithful body scores 9 with a
+ * fingerprint IDENTICAL to the s42-s44 comma-expression body (target 91 / build 90 /
+ * rules_dropped 0 / cheat_asm_stripped 147).  It is promoted because it is strictly
+ * plainer C: no `temp_v1`, no comma-expression increment dance, no `(void)` cast on
+ * the discarded read — three fewer constructs for a reviewer to question, at zero
+ * cost in bytes.
+ *
+ * Residual 9-op gap = two orthogonal axes:
+ *
+ *   axis A (~2 pts) — the &D_8009BF68 materialization.  s45 RE-ATTRIBUTED this from
+ *     the dumps and the 44-session `added_sets_2` / multi-use story is WRONG.
+ *     display.rtl:9007 shows expand ALREADY emits target's shape for the array-decay
+ *     read: `(set (reg 92) (symbol_ref "D_8009BF68"))` + `(set (reg 5 a1)
+ *     (mem/s:SI (reg 92)))`, with reg 92 having exactly ONE use.  display.combine:8523
+ *     shows combine collapsing it to `(mem/s:SI (symbol_ref))` = our lui;lw %lo.
+ *     Re-dumping with `extern volatile s32 D_8009BF68[];` leaves the standalone
+ *     `(set (reg) (symbol_ref))` insn ALIVE after combine (display.combine:8512) and
+ *     emits `la $2,D_8009BF68` — target's `lui $v0/addiu $v0,%lo` in target's own
+ *     register.  So the gate is MEM_VOLATILE_P blocking combine's substitution at a
+ *     SINGLE use, not a second use.  That also explains why every multi-use device
+ *     (s44's sanctioned F1 chain-extender A1/A6) measured 13, not lower: a second use
+ *     makes combine keep the `la` AND fold the first use, which is not target's shape.
+ *     Axis A therefore closes ONLY by qualifying D_8009BF68 for the
+ *     `extern volatile T G;` carve-out.  Prong 1 (IRQ writer) HOLDS: _exeque
+ *     (= func_8007D6D8, installed via irq_AcknowledgeVblank(2, _exeque),
+ *     src/display.c:890 per volatile_extern_allowlist.txt:29) materializes
+ *     &D_8009BF68 into $s0 (asm/funcs/_exeque.s:30-31) and stores through it.
+ *     Prong 2 (a cataloged use-site shape on SOME consumer — the grant is per
+ *     SYMBOL, .claude/rules/legitimate-volatile-interrupt-touched.md:251-262) is
+ *     UNMET on the evidence in hand: the only three consumers in the whole program
+ *     are _addque2, _exeque and get_alarm, and none of them spin-waits on
+ *     D_8009BF68, double-reads it across a sequence point, or uses it as an
+ *     IRQ-mutated loop bound.  Filed as this session's ruling question.
+ *
+ *   axis B (~7 pts) — RE-ATTRIBUTED s42/s43 by tools/sched_solver + tools/ra_solver:
+ *     sched1 hoists the madr-pointer load (uid 54) into the two-cycle shadow of the
+ *     stat-pointer load (uid 36), pseudo 89 then spans [6,10) across the dead read's
+ *     [8,9), and local-alloc — which allocates the dead read LAST (qty 2, pseudo 81,
+ *     refs 1, qty_compare priority 0, ord 15 of 16; re-confirmed s45 on this exact
+ *     body, tmp/ra_solver_work/display.local.json) — finds only $a0 free.  That $a0
+ *     seat creates the pass-2 OUTPUT dependence `60 <- 38` that pins the format-string
+ *     `la` to emit slot 4 instead of target's slot 1.  Target seats the dead read in
+ *     $v0 (`lw $v0,0($v1)` @ 0x8007DCFC) and the edge does not exist there.
+ *     Statement order is CLOSED at all depths (s44: 80k luid permutations; pass 1
+ *     luid-invariant, pass 2 blocked by the output-dependence edge), and the two
+ *     sanctioned sibling devices (F1 chain-extender, pointer-alias-to-a-global) are
+ *     measured inert or worse (s44).  The untried input is the shape of local-alloc's
+ *     QUANTITY TABLE itself.
+ *
+ * NOTE FOR THE NEXT SESSION: axis A and axis B are decided by different passes on
+ * different sides of a hard boundary — combine runs BEFORE sched1 and local-alloc,
+ * so the frontier item "axis A behaves differently under a $v0-seat chassis" is
+ * mechanically impossible and was retired in s45.  Work them independently.
  */
 s32 get_alarm(void) {
     s32 temp_v0;
-    s32 temp_v1;
-    if ((g_gpu_vcount < VSync(-1)) || (temp_v1 = g_gpu_draw_count, g_gpu_draw_count = temp_v1 + 1, ((temp_v1 > 0xF0000) != 0))) {
-        (void)*g_gpu_stat_reg;
+    if (g_gpu_vcount < VSync(-1) || g_gpu_draw_count++ > 0xF0000) {
+        *g_gpu_stat_reg;
         printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
         printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
         temp_v0 = SetIntrMask(0);
