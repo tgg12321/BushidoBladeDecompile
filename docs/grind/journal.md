@@ -1646,3 +1646,4 @@
 - 2026-09-04 13:04 func_8001F938 COMPLETED-C after 13 sessions (closer: s13 [synthesis]).
 - 2026-09-04 13:21 get_alarm s44 [synthesis] floor=9: s44 synthesis: statement-order surface CLOSED at all depths (80k luid permutations; pass 1 luid-invariant, pass 2 blocked by an OUTPUT dep edge), and the mandated sibling sweep measured CD_sync's two sanctioned devices dead on both axes.
 - 2026-09-04 14:28 get_alarm JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: get_alarm volatile_extern_allowlist.txt), function stays active.
+- 2026-09-04 14:33 get_alarm COMPLETED-C after 47 sessions (closer: s47 [solver]).

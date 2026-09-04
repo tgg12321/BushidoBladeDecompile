@@ -1,4 +1,0 @@
-regfix.txt:2281: get_alarm: subst "lw\s+\$5,D_8009BF68" "la	$2,D_8009BF68" @ 31
-regfix.txt:2282: get_alarm: insert_after "lw	$5, 0($2)" @ 31
-regfix.txt:2284: get_alarm: subst "lw\s+\$4,0\(\$3\)" "lw	$2,0($3)" @ 20
-regfix.txt:2286: get_alarm: reorder 21,20,19,18 @ 18-21
