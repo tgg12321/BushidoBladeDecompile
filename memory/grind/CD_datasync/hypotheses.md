@@ -2974,3 +2974,51 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis (goto loop, three hoisted pointer locals, do{}while(0) FAKE present); 16 forms on the fast harness, two re-measured on live sandbox
+
+## [s28] The complete 65-member value-local subset/order space collapses to 18 windows, none of them target's
+- mechanism: plain-subscript value locals for subsets of {arg2,arg3,arg4,arg5} in every assignment order are the space s26/s27 sampled with 16 members and derived two placement rules from. Generating all 65 tests those rules exhaustively rather than by sample.
+- probe: tmp/grind/CD_datasync/s28/gen.py -> 65 forms -> s28/sweep.sh -> s28/asm/n*.s, classified by window signature with s25/rep.py and by window-levenshtein with s28/wrank.py.
+- result: KILLED (instance). 18 distinct windows. Minimum window-lev 7 (the candidate.c family). No member carries target's split arg4 chain and no member carries the $a0/$a3 register map together with an 18-insn window.
+
+## [s28] An s32 index local assigned first, with arg4 left inline, splits arg4's address chain the way target does
+- mechanism: naming the index creates a pseudo that is live from the top of the block; with a third live scratch value present, local-alloc must give that chain its own hard register, and sched2 is then free to hoist the lbu and defer the addu - the shape s24 predicted was needed ("one extra edge at the FRONT of arg4's chain and none at the back") and could not spell.
+- probe: 90-form sweep (s28/gen2.py, x*.s) over {i4,i5,arg3,arg5} locals in every order and both index types, plus 52-form gen3.py and 258-form gen4.py extensions adding i3 and arg4.
+- result: CONFIRMED. The split appears in 53 forms. It requires the s32 index type (u8 folds) AND a co-present value local (the index local alone reproduces the all-inline window). It also reproduces on arg3 (`s32 i3` + arg4 value local -> arg3's chain splits into $a2), so it is a general property of the named-index-plus-third-live-value shape.
+
+## [s28] The split chain cannot be placed in $a0 by any of the 465 spellings measured, because sched1 schedules the fmt-string `set $a0` as stall filler before the address pseudo dies
+- mechanism: mips.h defines no REG_ALLOC_ORDER, so local-alloc tries hard regs in ascending order; $a1 (arg2) and $a2 (arg3 value) are live to the call, and $a0 is live from sched1's placement of `(set (reg:SI 4 a0) (symbol_ref "D_800161C8"))` to the call. When that set is scheduled before the arg4 address pseudo's death, $a0 conflicts and the next free scratch, $a3, is taken.
+- probe: -da dump of ya53 (tmp/grind/CD_datasync/s28/ya53.sched.txt, insn 129 at position 10 of 17 vs reg 105 born 125 / dead 135) plus s28/scan_split.py and s28/scan2.py over all 465 forms compiled this session.
+- result: KILLED (instance). 53 forms reach the $a0/$a3 map and every one of them has a 17-insn window (arg4's value load is not last, so dbr sinks the stack store into the printf delay slot); every 18-insn form places the split chain in $a3, $a2 or $v1. The two target properties are reachable separately and never together in this set of spellings.
+
+## [s28] The split-chain geometry is not carried by the do{}while(0) FAKE
+- mechanism: mandated kill re-audit, run on the session's closest-topology form rather than on candidate.c (already ablated in s26 and s27).
+- probe: ya53_nowrap (ya53 with the do{}while(0) replaced by a bare brace block) compiled and window-compared.
+- result: CONFIRMED (the FAKE is inert for this axis). The printf window is byte-identical modulo the callee-saved base register assignment (s0/s1/s3 -> s1/s2/s3); lev 24 vs 15. The FAKE's whole measured effect on this chassis is which callee-saved registers the three base pointer locals receive.
+
+## [s28] The complete 65-member space of plain-subscript value locals for subsets of {arg2,arg3,arg4,arg5} in every assignment order collapses to 18 distinct printf windows, and none of those 18 is target's window.
+- mechanism: s26/s27 sampled this space with 16 hand-picked members and derived two placement rules from it (value loads emit in source assignment order; the first-assigned local's chain gets the third scratch register). Generating all 65 members tests those rules exhaustively instead of by sample, and settles whether the rules' apparent mutual exclusivity is an artefact of the sample.
+- probe: tmp/grind/CD_datasync/s28/gen.py generated all 65 forms; s28/sweep.sh compiled each with the exact build cc1 invocation into s28/asm/n*.s; classified by window signature with tmp/grind/CD_datasync/s25/rep.py and by window-levenshtein against asm/funcs/CD_datasync.s:47-68 with s28/wrank.py.
+- result: 18 distinct windows. Minimum window-lev 7, reached by the candidate.c family {n4,n24,n42,n45,n245,n425,n452}; the all-inline spelling n0 is 13. No member carries target's split arg4 chain, and no member carries the $a0/$a3 register map together with an 18-insn window. The axis s26/s27 opened is now measured to its boundary rather than left half-sampled.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; all 65 members compiled, fast harness calibrated sandbox = lev + nop - 3, candidate.c re-verified live at sandbox 7
+
+## [s28] An s32 index local assigned first (s32 i4 = idx_1494[0];) with arg4 still passed inline as tbl_125c[i4], plus at least one co-present value local, emits target's split arg4 address chain: lbu early, sll in the middle, a deferred addu, and the value load last, inside an 18-insn window that keeps the stack store in the block.
+- mechanism: Naming the index creates a pseudo live from the top of the block; with a third simultaneously-live scratch value present, local-alloc must give that chain its own hard register, and sched2 is then free to hoist the lbu and defer the addu. This is exactly the shape s24 predicted was required (one extra dependence edge at the FRONT of arg4's chain and none at the back) and could not spell, because s24 only tried index locals that combine folded away.
+- probe: 90-form sweep tmp/grind/CD_datasync/s28/gen2.py over {i4,i5,arg3,arg5} locals in every order and both index types (s32 and u8); 52-form gen3.py adding i3 and 258-form gen4.py adding arg4, 465 forms in total; split detection by tmp/grind/CD_datasync/s28/scan_split.py.
+- result: CONFIRMED - the split appears in 53 of the 465 forms (representatives xsa3, ya3, ya53, banked to rejected/). Trigger conditions measured: the index local must be s32 (the u8 spelling folds back into the inline chain), and the index local alone is insufficient (xsa reproduces the all-inline window) - a value local must also be present. The trigger is not arg4-specific: s32 i3 = D_800A11D5 plus an arg4 value local splits arg3's chain into $a2 the same way (yac4, yca4).
+- verdict: CONFIRMED
+
+## [s28] Among the 465 forms compiled this session, no spelling places the split arg4 address chain in $a0: the 53 forms that reach target's $a0/$a3 register map all have a 17-insn window, and every 18-insn form puts the split chain in $a3, $a2 or $v1.
+- mechanism: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so local-alloc tries hard registers in ascending number order. $a1 (arg2) and $a2 (arg3's value) are live to the printf call; $a0 is live from sched1's placement of (set (reg:SI 4 a0) (symbol_ref "D_800161C8")) to the call. sched1 places that fmt-string set as stall filler - it is the block's minimum-priority insn, path length 1 to the call - and when it lands before the arg4 address pseudo's death, $a0 conflicts and the next free scratch, $a3, is taken. $a0 is therefore only free when the address pseudo dies EARLY, and an early death is exactly what moves arg4's value load off the end of the block, which lets dbr sink the stack store into the printf delay slot and costs the 18th insn.
+- probe: -da dump of ya53 (instrumented path tools/gcc-2.7.2/build/cc1 -dr -da), window block extracted to tmp/grind/CD_datasync/s28/ya53.sched.txt: insn 129 (set a0, symbol_ref D_800161C8) sits at position 10 of 17, while the arg4 address pseudo reg 105 is born at insn 125 and dies at insn 135. Cross-checked over all 465 forms with s28/scan_split.py (split register census) and s28/scan2.py ($a0/$a3 map vs window length).
+- result: KILLED - 53 a0-map forms, all 17-insn; 0 forms with both properties. ya43 (i4 first, then value locals arg4 then arg3) reaches target's arg4 register map byte-for-byte but loses the stack store to the delay slot; ya53 reaches target's split topology and 18-insn window but lands the chain in $a3. The two halves of target's window are each reachable and are in direct tension under every spelling measured.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 465 forms (n*/x*/y*/z*), plus the ya53 -da sched1 dump
+
+## [s28] The new split-chain geometry is not carried by the do{}while(0) FAKE: ablating the wrapper leaves ya53's printf window byte-identical modulo the callee-saved base register assignment.
+- mechanism: Mandated kill re-audit, run on this session's closest-topology form rather than on candidate.c (s26 and s27 had already ablated candidate.c twice). tools/fake_ablate.py still returns ERR on this candidate because of the 420-line header comment, so the ablation is by hand.
+- probe: ya53_nowrap = ya53 with `do { ... } while (0);` replaced by a bare brace block, nothing else changed; compiled through the same harness and window-compared with s25/rep.py.
+- result: CONFIRMED that the FAKE is inert for this axis. The window is identical except that the three base pointer locals move from s0/s1/s3 to s1/s2/s3 (lev 24 vs 15). The FAKE's entire measured effect on this chassis is the callee-saved assignment of the three base pointers, so every s21-s27 instance kill measured under it still stands and the new axis can be explored with or without it.
+- verdict: CONFIRMED

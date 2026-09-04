@@ -2522,3 +2522,47 @@ sweep and not the permuter.
 - [s27] Sweep results (fast harness, calibrated sandbox = lev + nop - 3, 82 emitted insns each): candidate 7, m45 7, m54 8, m35 11, m2453 13, m43 13, m435 13, m453 13 (live 13), m53 13, m2345 14, m34 14, m345 14, m543 14, m354 15, m534 15, m5342 15.
 
 - [s27] Working tree restored to HEAD; candidate.c unchanged (still the best-scoring form at 7); two forms banked to rejected/ with full headers (119 total). Scratch is tmp/grind/CD_datasync/s26/ because the previous session had already written s25.
+
+## Session 28 - synthesis (2026-09-04)
+
+- [s28] CHASSIS RE-MEASURED LIVE at dispatch (the brief again reported "measurement unavailable", and again named a scratch dir - s25 - that two previous sessions had already written; this session's scratch is `tmp/grind/CD_datasync/s28/`). `candidate.c` applied to `src/system.c` -> `sandbox CD_datasync --disable all` = score 7, target_insns 91, build_insns 91, rules_dropped 0. Floor 7, chassis-current.
+
+- [s28] **THE VALUE-LOCAL SUBSET/ORDER SPACE IS NOW COMPLETE AND CLOSED.** s26/s27 measured 16 hand-picked members; this session generated and compiled ALL 65 of them (every subset of {arg2,arg3,arg4,arg5} spelled as plain-subscript value locals, in every assignment order; `tmp/grind/CD_datasync/s28/gen.py`, asm in `s28/asm/n*.s`). They collapse to exactly **18 distinct printf windows**, none of them target's. Best window-levenshtein against target's 18-insn window is 7, reached by the candidate.c family {n4,n24,n42,n45,n245,n425,n452}. The all-inline spelling `n0` is lev 13. This closes the axis s26/s27 opened rather than leaving it half-measured.
+
+- [s28] **NEW AXIS FOUND - THE s32 INDEX LOCAL SPLITS THE arg4 ADDRESS CHAIN.** `s32 i4 = idx_1494[0];` assigned FIRST, with arg4 still passed inline as `tbl_125c[i4]`, plus at least one value local elsewhere, produces for the first time in 28 sessions target's SPLIT chain shape: `lbu` early, `sll` in the middle, a DEFERRED `addu`, and the value load LAST, inside an 18-insn window that keeps `sw ...,16($sp)` in the block (so dbr cannot steal the printf delay slot). 90-form sweep `s28/gen2.py` (`s28/asm/x*.s`) + 52-form `gen3.py` (`y*.s`) + 258-form `gen4.py` (`z*.s`). Representative: `xsa3`, `ya3`, `ya53` (banked to rejected/).
+
+- [s28] TRIGGER CONDITIONS FOR THE SPLIT, MEASURED: (a) the index local must be **s32** - the `u8` spelling folds back into the inline chain and emits the unsplit window; (b) the index local ALONE does not split (`xsa` == the all-inline window) - a value local must also be present, creating a third simultaneously-live scratch value; (c) the trigger is not arg4-specific: `s32 i3 = D_800A11D5;` plus an arg4 value local splits **arg3's** chain into `$a2` the same way (`yac4`, `yca4`).
+
+- [s28] **THE SPLIT CHAIN LANDS IN $a3 (or $a2), NEVER IN $a0 - AND THE sched1 DUMP NAMES WHY.** Target holds arg4's ADDRESS in `$a0` and loads the value `lw $a3,0($a0)`; every split form puts both in the same register. `tmp/grind/CD_datasync/s28/ya53.sched.txt` (extracted from the -da `w.i.sched`, pass-1 output) shows sched1 placing insn 129 `(set (reg:SI 4 a0) (symbol_ref:SI ("D_800161C8")))` at **position 10 of 17**, i.e. BEFORE the arg4 address pseudo (`reg 105`, born at insn 125, dead at insn 135) - so hard reg `$a0` is live across that pseudo and conflicts with it. `tools/gcc-2.7.2/config/mips/mips.h` defines **no REG_ALLOC_ORDER**, so local-alloc walks hard regs in ascending number order and takes the first non-conflicting scratch after $v0/$v1: $a1 (arg2, live to the call) and $a2 (arg3 value) also conflict, leaving **$a3**. The fmt-string set is scheduled early because it is the block's minimum-priority insn (path length 1 to the call) and sched1 uses it as filler during a load-latency stall.
+
+- [s28] **THE TWO HALVES OF TARGET ARE REACHABLE SEPARATELY AND ARE IN DIRECT TENSION - MEASURED ACROSS ALL 465 FORMS.** `ya43` (`s32 i4` first, then value locals arg4 then arg3) reaches target's arg4 REGISTER MAP exactly: `lbu $a0,0($s1) ... sll $a0,$a0,2 addu $a0,$a0,$s0 ... lw $a3,0($a0)`. But a scan of every form compiled this session (`s28/scan2.py`) finds **53 forms carrying the $a0/$a3 map and ALL 53 have a 17-insn window**; **zero** 18-insn form puts arg4's chain in $a0 (the split register is always $a3, $a2 or $v1 - `s28/scan_split.py`). The reason is one mechanism seen from both ends: $a0 is only free when the address pseudo DIES EARLY (before sched1's placement of the fmt set), and an early death is exactly what moves arg4's value load off the end of the block, which in turn lets dbr sink the stack store into the printf delay slot.
+
+- [s28] **THE RESIDUAL IS NOW ONE SHARP QUESTION**, replacing s24's "two sched1 ready-list decisions" and s25's four-priority-inversion foreclosure (both of which s26/s27 already showed were asked of the wrong pass): find a C form whose **sched1 output places the fmt-string `set $a0` AFTER arg4's value load**, while keeping the split chain. Everything else about target's window is already reproduced by one form or another. sched1 emits the fmt set as stall filler, so the lever is the block's ILP profile / dependence-graph shape, not statement order.
+
+- [s28] MANDATED KILL RE-AUDIT (run on the NEW closest-topology form, not on candidate.c, which s26/s27 had already ablated twice): `ya53_nowrap` - ya53 with the `do { ... } while (0);` replaced by a bare brace block - emits a **byte-identical printf window** to ya53 modulo the callee-saved base assignment (s0/s1/s3 -> s1/s2/s3), lev 24 vs 15. So the do{}while(0) FAKE is load-bearing ONLY for which callee-saved registers the three base pointer locals receive; it is NOT carrying the split-chain geometry, and the new axis is FAKE-independent.
+
+- [s28] Working tree restored to HEAD; candidate.c UNCHANGED (the arg4-value-local form at 7 is still the best-scoring form). Three forms banked to `rejected/` with full headers (122 total).
+
+- [s28] Floor re-measured live at dispatch: candidate.c applied to src/system.c -> sandbox CD_datasync --disable all = score 7, target_insns 91, build_insns 91, rules_dropped 0. The brief again reported 'measurement unavailable'.
+
+- [s28] The brief again named an already-used scratch directory (s25); this session's scratch is tmp/grind/CD_datasync/s28/. Sessions have now written s25, s26 and s28 while the driver numbers them 24, 25.
+
+- [s28] The complete 65-member value-local subset/order space compiles to exactly 18 distinct printf windows; best window-levenshtein 7 (the candidate.c family), all-inline 13.
+
+- [s28] NEW AXIS: `s32 i4 = idx_1494[0];` assigned first with arg4 inline plus a co-present value local reproduces target's SPLIT arg4 address chain (lbu early / sll / deferred addu / value load last) in an 18-insn window - the first time in 28 sessions.
+
+- [s28] The split requires the s32 index type; the u8 index local folds back into the inline chain. The index local alone does not split - a third live scratch value must exist.
+
+- [s28] The same trigger splits arg3's chain into $a2 when spelled `s32 i3 = D_800A11D5;` plus an arg4 value local, so it is a property of the named-index-plus-third-live-value shape rather than of arg4.
+
+- [s28] ya43 reaches target's arg4 register map exactly: lbu $a0,0($s1) / sll $a0,$a0,2 / addu $a0,$a0,$s0 / lw $a3,0($a0).
+
+- [s28] Across all 465 forms: 53 carry the $a0/$a3 map and all 53 have a 17-insn window; 0 forms have the map with an 18-insn window; every split chain lands in $a3, $a2 or $v1.
+
+- [s28] sched1 dump (s28/ya53.sched.txt): insn 129 `(set (reg:SI 4 a0) (symbol_ref "D_800161C8"))` at position 10 of 17, before the arg4 address pseudo reg 105 (born 125, dead 135) - this is why local-alloc skips $a0.
+
+- [s28] tools/gcc-2.7.2/config/mips/mips.h defines NO REG_ALLOC_ORDER, so local-alloc's hard-register search is plain ascending register number ($v0,$v1,$a0,$a1,$a2,$a3,$t0,...). This is the predicate behind every scratch-register choice in this window and was previously assumed rather than read.
+
+- [s28] Kill re-audit: ya53_nowrap emits a window byte-identical to ya53 apart from the callee-saved base assignment, so the do{}while(0) FAKE does not carry the new geometry.
+
+- [s28] Working tree restored to HEAD; candidate.c unchanged at 7; three forms banked to rejected/ with full headers (122 total).
