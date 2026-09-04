@@ -1756,3 +1756,92 @@ INTEGRATION HANDOFF (see docs/grind/decisions.md, 2026-09-03 entry).
 - [s15] Merge prong (c) is PARTIAL and disclosed: undefined_syms_auto.txt:527-528 must keep D_800F119C / D_800F11A0 defined while asm/funcs/func_800620B8.s is INCLUDE_ASM and references them. The prong's stated purpose (exactly one C handle per storage location) is met - all nine vestigial per-word externs are deleted from src/ and none had a use site anywhere. The sanctioned precedents did the same: func_800861BC and commit e788983a both retained the linker-script names for exactly this reason.
 
 - [s15] Tree hygiene: the diff was applied, measured, and then RESTORED, and verify-oracle --rebuild was re-run on clean HEAD so the next session inherits an honest reference (HEAD sandbox now reads target_insns 38 / build_insns 0, i.e. the INCLUDE_ASM reading, not a stale C-built reference). A durable copy of the apply/restore script is banked at memory/grind/func_80062020/apply_s15.py so the form survives any tmp/ cleanup.
+
+
+## s16 (2026-09-03, solver modality) - THE BANKED s15 BODY IS LANDED; HONEST FLOOR IS 0
+
+**Disposition: the scope gate that blocked s15 is gone, and the form measures 0 in place.**
+
+The s15 session proved the bytes but could not land them: the aggregate merge needs
+`include/game.h` (the canonical declaration site) and `src/text1b_b.c` (a vestigial
+per-word extern triple), and the grinder's default candidate scope is `src/<stem>.c` alone.
+The pipeline executed the integration handoff on 2026-09-03 (commit 52fbbe83) and wrote the
+grant into `tools/grinder/scope_allow.txt`:
+
+    func_80062020 include/game.h src/text1b_b.c
+
+This session applied the banked diff verbatim and re-measured it end to end.
+
+### What was applied (byte-for-byte the s15 form; no new construct)
+
+`python3 memory/grind/func_80062020/apply_s15.py apply`, which does exactly three things:
+
+1. `include/game.h` - appends the record declaration before `#endif /* GAME_H */`:
+   `typedef struct { s32 unk0; s32 unk4; s32 unk8; } Unk800F1198Record;` plus
+   `extern Unk800F1198Record D_800F1198[];`, carrying the object-model evidence comment
+   (12-byte-stride IV `addiu $v1, $v1, 0xC`; base+displacement member stores at 0x4/0x8).
+2. Deletes the nine vestigial `extern s32 D_800F1198/119C/11A0;` declarations - two triples
+   in `src/text1b.c`, one triple in `src/text1b_b.c`. None had a use site anywhere in src/,
+   so the merge leaves exactly ONE C handle for the storage.
+3. Replaces `INCLUDE_ASM("asm/funcs", func_80062020);` in `src/text1b.c` with the s15 body
+   (uniform `D_800F1198[i].unkN` spelling throughout; chained-assignment epilogue; no
+   pointer local, no second address materialisation, no FAKE construct).
+
+The applied body was diffed against `memory/grind/func_80062020/candidate.c` line by line:
+identical (src/text1b.c:3926-3945).
+
+### Measurements (this chassis, this session)
+
+| command | result |
+|---|---|
+| `verify-oracle --rebuild --allow-dirty` (diff in tree) | completed; reference objects rebuilt from this body |
+| `verify-oracle --allow-dirty` | `ok: true`, `build_matches: true`, `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa` == `original_sha1_locked` |
+| `sandbox func_80062020 --disable all` | **score 0**, target_insns 38, build_insns 38, scorable true, rules_dropped 0, cheat_asm_stripped 165 (TU-wide, none in this function) |
+
+**The honest floor for func_80062020 is 0.** The full clean-driver build and link of the
+whole executable is byte-identical to the original with this diff in the tree, so the
+aggregate merge is byte-neutral for every other consumer as well as for the target.
+
+### The s15 "score 2" is resolved, and its cause is worth keeping
+
+s15 recorded `sandbox = 2` for this same C and could not explain it away without the
+rebuild. The cause is reference staleness, not code: the sandbox scores the freshly built
+object against a reference object, and s15's reference was built from HEAD, where
+func_80062020 was still `INCLUDE_ASM` and the neighbouring TUs still spelled the table as
+three separate per-word symbols. This body relocates the two in-loop stores at .o offsets
+0x38 and 0x4c as HI16/LO16 against `D_800F1198` with in-field addends 4 and 8; the stale
+reference relocated them against `D_800F119C` / `D_800F11A0` with addend 0. S+A is
+identical, so the LINKED words are identical - which is exactly why the full-build SHA1
+matched even while the sandbox printed 2. `engine/score.py` masks section-relative
+HI16/LO16 addends but deliberately NOT named-symbol ones (module docstring,
+engine/score.py:8-11 and :61-63), so the merge's spelling scored as a difference.
+
+**Operational lesson for any future aggregate-merge candidate:** a merge that changes which
+NAMED symbol a relocation is written against will show a false non-zero sandbox score until
+`verify-oracle --rebuild --allow-dirty` is run WITH the diff in place. Rebuild first, then
+score. This is now a standing note in the judge constraints and it generalises past this
+function.
+
+### Modality note
+
+The mandated modality was `solver` (ra_solver / sched_solver inverse search). It was not
+exercised, and deliberately so: the solver suite exists to type a REGISTER-SEAT or
+EMISSION-ORDER residual as REACHABLE/FORECLOSED and rank C-lever vectors at it. This
+function's residual is zero - the build is instruction-for-instruction identical at 38/38
+and the linked image matches the oracle SHA1. There is no residual to classify, and running
+`inverse_compose.py classify` on an IDENTICAL body would return IDENTICAL and consume the
+session without advancing anything. The correct work in a session that inherits a proven
+form plus a freshly granted scope is to land it, which is what the frontier prescribed and
+what the standing judge constraint ("Land the banked s15 body EXACTLY as in
+memory/grind/func_80062020/candidate.c + apply_s15.py") directs.
+
+### What is NOT done (disclosed, unchanged from s15)
+
+`undefined_syms_auto.txt:527-528` still define `D_800F119C` and `D_800F11A0`. They are
+required by `asm/funcs/func_800620B8.s`, a sibling still committed as `INCLUDE_ASM`; the
+link breaks without them. Deleting them is a follow-on cleanup that becomes possible once
+func_800620B8 reaches COMPLETED-C - and it is explicitly NOT a gate: the standing judge
+constraint forbids deleting them while that sibling is INCLUDE_ASM, and the sanctioned
+precedents for this family (func_800861BC, commit e788983a) shipped with the splat names
+retained. Prong (c) of the aggregate-merge family is met in purpose (exactly one C handle
+per storage location) and disclosed as partial in letter.

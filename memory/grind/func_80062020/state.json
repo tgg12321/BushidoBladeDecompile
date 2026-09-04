@@ -120,15 +120,18 @@
   "LAYER-1 CHEAT-REVIEWER FAIL: Same-lvalue dual-spelling addressing-mode steer (row[0] re-spelled as the full &D_800F1198+ofs expression) \u2014 the exact construct already FAILed by two prior Judges (2026-08-25 and 2026-08-31); deleting the incriminating comments does not change what the code does. Next action: Do not commit. This construct (the same-lvalue dual-spelling epilogue store) is FAILed on the merits, independent of its comments or claimed family \u2014 it is the identical construct two prior Judges already rejected. The worker must return to the honest floor-4 candidate (uniform row-pointer ep",
   "The address expression for the terminator row may not be materialised twice by any means, including a function-call/inline boundary between the writes. Do not respell the once-called static __inline__ helper split (one helper or two, any names, any parameterisation, macro or decayed-array variants). The honest floor-4 uniform body in candidate.c remains the best admissible form; work the ladder's next rung or record foreclosure \u2014 do not re-open the second-address-def axis.",
   "Land the banked s15 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py (aggregate declaration in include/game.h, the nine vestigial per-word externs removed, the uniform chained-assignment epilogue). Do not reintroduce a pointer local, a second address materialisation, or any of the banned dual-spelling forms; do not delete D_800F119C / D_800F11A0 from undefined_syms_auto.txt while asm/funcs/func_800620B8.s is still INCLUDE_ASM. Run `verify-oracle --rebuild --allow-dirty` BEFORE the driver's sandbox re-verify (pre-rebuild the score is a false 2 from named-symbol HI16/LO16 addend spelling; post-rebuild it is 0 at 38/38).",
-  "integration-handoff EXECUTED (pipeline, 2026-09-03): scope grant: func_80062020 include/game.h src/text1b_b.c. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+  "integration-handoff EXECUTED (pipeline, 2026-09-03): scope grant: func_80062020 include/game.h src/text1b_b.c. Land the banked form through the normal gates; the widened paths are scope-checked AND staged.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The epilogue chained-assignment on the new aggregate-array declaration is the same address-materialization-order trick already killed at class scope (s14) and repeatedly FAILed under other spellings \u2014 it is a re-spelling, not a new construct. Next action: Do not commit. This is not a citation error \u2014 the aggregate-array declaration itself may be legitimate (the object-model evidence for it is real: the original loop's 12-byte-stride induction register, the original epilogue's base+displacement addressing at two of the three stores, and cross-function confirmation i"
  ],
  "origin": "queue",
  "created": "2026-07-24T03:28:39.877485+00:00",
  "banned_constructs": [
   "row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0; row[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;",
-  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'"
+  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'",
+  "end: D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;  (chain ordered so unk0 is stored last)",
+  "Aggregate-array chain landing the mixed DISP8|DISP4|LOSUM epilogue arrangement"
  ],
- "ladder_skip": 11,
+ "ladder_skip": 12,
  "pending_fixup": null,
  "exhaustion_base": 12,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",

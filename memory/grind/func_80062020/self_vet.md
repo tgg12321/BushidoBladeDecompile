@@ -127,6 +127,31 @@ text mandates one); the chained assignment is ordinary C outside every family li
 
 ## MEASUREMENT STATE (read with the outcome JSON)
 
+Re-measured in grind s16 (2026-09-03, solver modality) with the scope grant in place
+(`tools/grinder/scope_allow.txt`: `func_80062020 include/game.h src/text1b_b.c`), applying
+this exact diff to the tree via `memory/grind/func_80062020/apply_s15.py apply`:
+
+- `verify-oracle --rebuild --allow-dirty` (rebuild WITH the diff in place, so the reference
+  object the sandbox scores against is built from this body): completed.
+- `verify-oracle --allow-dirty` re-check: `ok: true`, `build_matches: true`,
+  `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa` == `original_sha1_locked`. The
+  full clean-driver build+link of the whole EXE is byte-identical to the original with this
+  diff in the tree -- no other TU moved a byte (prong (e) of the aggregate-merge family).
+- `sandbox func_80062020 --disable all`: **score 0**, target_insns 38, build_insns 38,
+  scorable true, rules_dropped 0. The cheat-invisible honest distance is ZERO.
+
+This SUPERSEDES the s15 note below, which recorded score 2. That 2 was an artefact of
+scoring against a reference object built from HEAD (INCLUDE_ASM) rather than from this
+body: engine/score.py masks section-relative HI16/LO16 addends but deliberately not
+named-symbol ones (module docstring, engine/score.py:8-11 and :61-63), so the merge's
+`D_800F1198+4` / `+8` relocation spelling scored as two differences against the reference's
+`D_800F119C` / `D_800F11A0` addend-0 spelling even though S+A -- and therefore the linked
+word -- is identical. Once the reference is rebuilt from the same source the residual is
+gone and the honest floor is 0. Nothing about the C changed between the two measurements.
+
+### s15 note (superseded, retained for audit)
+
+
 `sandbox func_80062020 --disable all` prints **score 2**, target_insns 38, build_insns 38,
 against a freshly rebuilt clean reference. The two scored instructions are the in-loop
 stores at .o offsets 0x38 and 0x4c: this body relocates them HI16/LO16 against

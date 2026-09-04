@@ -1,3 +1,19 @@
+/* s16 UPDATE (2026-09-03, solver modality) - THIS BODY IS LANDED AND MEASURED AT 0.
+ * With the pipeline scope grant in tools/grinder/scope_allow.txt
+ * (`func_80062020 include/game.h src/text1b_b.c`) the diff was applied to the tree with
+ * memory/grind/func_80062020/apply_s15.py apply, then:
+ *   verify-oracle --rebuild --allow-dirty  -> reference rebuilt FROM this body
+ *   verify-oracle --allow-dirty            -> ok true, build_matches true,
+ *                                             sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+ *                                             == oracle
+ *   sandbox func_80062020 --disable all    -> score 0, target_insns 38, build_insns 38,
+ *                                             rules_dropped 0
+ * The "score 2" recorded in the s15 header below was a reference-staleness artefact:
+ * the sandbox scored this body against an object built from HEAD (INCLUDE_ASM), and
+ * engine/score.py does not mask NAMED-symbol HI16/LO16 addends (engine/score.py:8-11,
+ * :61-63), so D_800F1198+4/+8 vs D_800F119C/D_800F11A0+0 scored as two differences
+ * despite identical S+A and identical linked words. Rebuilt reference -> 0.
+ * The C below is unchanged from s15, byte for byte. */
 /* func_80062020 (src/text1b.c) - MATCHING FORM, grind s15 (synthesis, 2026-09-03).
  *
  * STATUS: BYTES PROVEN.  With this body and the header declaration below applied to

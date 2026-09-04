@@ -1406,3 +1406,27 @@ See the s15 re-verification block in evidence.md.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: 2026-09-03 chassis; the s15 aggregate-merge body applied to src/text1b.c + include/game.h + src/text1b_b.c; no FAKE construct present in the diff; measured against a HEAD-built reference (score 2) and against a --allow-dirty-rebuilt reference (score 0)
+
+
+## s16 (2026-09-03, solver) - frontier resolved
+
+**H-s15-frontier-1: "With scope_paths=[include/game.h, src/text1b_b.c] granted, the banked
+form lands as COMPLETED-C through the full normal gates." - CONFIRMED.**
+
+The grant landed in `tools/grinder/scope_allow.txt` via the pipeline integration handoff
+(commit 52fbbe83). Applying `apply_s15.py apply` and rebuilding gives
+`verify-oracle --allow-dirty` -> `build_matches: true`, sha1 == oracle, and
+`sandbox func_80062020 --disable all` -> score 0 at 38/38 with rules_dropped 0. Both the
+byte gate and the scope gate pass. The remaining gates are layer-1 (cheat-reviewer) and the
+Judge, which rule on the C - and the C is the frozen-family aggregate merge plus ordinary
+C, vetted prong-by-prong in `memory/grind/func_80062020/self_vet.md`.
+
+**Sub-finding, generalisable: the s15 sandbox residual of 2 was reference staleness, not
+code.** Recorded as a kill in the s15 outcome as an instance result; s16 confirms the
+mechanism and the fix. A candidate whose merge changes the NAMED symbol a relocation is
+written against scores non-zero against a reference built from the pre-merge source, because
+engine/score.py masks section-relative HI16/LO16 addends but not named-symbol ones
+(engine/score.py:8-11, :61-63). Rebuild the reference with the diff in place, then score.
+
+**Remaining open item (not a gate):** retiring `D_800F119C` / `D_800F11A0` from
+`undefined_syms_auto.txt` once `func_800620B8` is decompiled. Tracked in evidence.md s16.
