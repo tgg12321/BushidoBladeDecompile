@@ -1005,6 +1005,14 @@ def assign_modality(session_count, state=None):
         return "annotation-fix"
     if session_count == 0:
         return "recon"
+    # Sibling progress (2026-09-04): a sibling ledger dropped BELOW this floor
+    # since the last session -> exactly one forced `rederive` (the transplant
+    # session). Sits above exhaustion on purpose: new sibling evidence is the
+    # one thing that should pre-empt an escalation. One-shot by construction —
+    # apply_outcome consumes the notice, so the override cannot fire twice on
+    # the same news.
+    if sibling_progress_pending(st):
+        return "rederive"
     if _exhaustion_ready(state):
         # Object-model gate (2026-09-03): exhaustion may not be declared until
         # ONE session has audited declared shape vs evidence on the record.
@@ -1049,6 +1057,15 @@ def apply_outcome(root, func, o, modality):
     """Fold a VALIDATED outcome into the ledger. Appends are never compacted."""
     st = load_state(root, func)
     n = st["session_count"] + 1
+    # Sibling-progress notices are ONE-SHOT: the brief for session n carried
+    # every unconsumed entry, so applying session n consumes them all (the
+    # forced rederive cannot repeat). A discarded session never reaches here,
+    # so it respawns with the same notice — bounded by the circuit-breaker.
+    for e in st.get("sibling_progress") or []:
+        if e.get("consumed") is None:
+            e["consumed"] = n
+    prev_floors = [e.get("floor") for e in st["floor_history"] if isinstance(e.get("floor"), int)]
+    prev_min = min(prev_floors) if prev_floors else None
     if _has_object_model(o):
         st["object_model_audited"] = n
     for h in o.get("hypotheses", []):
@@ -1073,6 +1090,17 @@ def apply_outcome(root, func, o, modality):
     if o.get("frontier"):
         st["frontier"] = o["frontier"][:MAX_FRONTIER]
     save_state(root, func, st)
+    # A genuine floor DROP (below every earlier int floor) is news to every
+    # sibling ledger. A ledger's FIRST floor is not a drop — the SIBLING
+    # LEDGERS block already shows new ledgers. Runs AFTER save_state and never
+    # raises (see the sibling section's header for why an `apply` that raises
+    # is a driver livelock).
+    new_floor = o.get("floor")
+    if isinstance(new_floor, int) and prev_min is not None and new_floor < prev_min:
+        try:
+            notify_siblings(root, func, n, new_floor, o.get("headline"))
+        except Exception:
+            pass
     return st
 
 
@@ -1741,6 +1769,293 @@ def knowledge_sweep(root, func, limit=40, names=None):
             + "\n".join(hits) + "\n")
 
 
+# ── Sibling ledgers (2026-09-04 post-mortem: the CD_datasync plateau) ────────
+# CD_datasync sat 41 sessions (s9-s49) at floor 7 on a printf window it shares
+# byte-for-byte with CD_sync and CD_ready. CD_sync solved that window to floor
+# 2 on 2026-09-02 and was then FORECLOSED — off the queue, so nothing ever
+# dispatched it again and nothing carried its candidate back. CD_datasync's
+# ledger had named CD_sync as a twin at s16 and never re-read it; s50 finally
+# did and went 7 -> 2 in one session. Two mechanisms close the gap:
+#   1. the brief carries a SIBLING LEDGERS block — every other ledger this one
+#      names (or that names this one), with its CURRENT floor, the date that
+#      floor was reached, the date THIS ledger last mentioned it, and an
+#      UNSPENT flag when the sibling improved after that mention;
+#   2. a genuine floor DROP on any function stamps `sibling_progress` into the
+#      ledger of every sibling; assign_modality then forces ONE `rederive`
+#      session on that sibling (consumed by its next applied session, so it
+#      can never loop), and the brief says why.
+# Everything here is read-only over other ledgers except the stamp, which is
+# wrapped so a broken sibling ledger can never make `apply` fail (an `apply`
+# that raises leaves session_count unbumped and the driver re-dispatches the
+# same session number forever).
+_SIBLING_MAX_BYTES = 4 * 1024 * 1024
+_JOURNAL_LINE_RE = re.compile(r"^- (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) (\S+) s(\d+) \[")
+_SESSION_TAG_RE = re.compile(r"\[s(\d+)\]")
+
+
+def _ident_like(name):
+    """A function name safe to word-search in prose. All-lowercase alphabetic
+    names (`main`, `prnt`, `sprintf`) are ordinary English/prose tokens and
+    would make every ledger a sibling of `main`; anything carrying a digit,
+    an underscore, or an upper-case letter is treated as an identifier."""
+    return bool(name) and not (name.isalpha() and name.islower())
+
+
+def _read_capped(path):
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            return f.read(_SIBLING_MAX_BYTES)
+    except OSError:
+        return ""
+
+
+def _ledger_text(root, func):
+    """hypotheses.md + evidence.md + the state's frontier/headlines — the
+    surfaces a ledger uses to name other functions."""
+    d = ledger_dir(root, func)
+    parts = [_read_capped(os.path.join(d, "hypotheses.md")),
+             _read_capped(os.path.join(d, "evidence.md"))]
+    st = load_state(root, func) or {}
+    parts.append(json.dumps(st.get("frontier", [])))
+    parts.append(json.dumps([e.get("headline", "") for e in st.get("floor_history", [])]))
+    return "\n".join(parts)
+
+
+def _ledger_names(root, func, extra=()):
+    st = load_state(root, func) or {}
+    names = [func, str(st.get("func") or "")] + list(extra)
+    out = []
+    for n in names:
+        if _ident_like(n) and n not in out:
+            out.append(n)
+    return out
+
+
+def _name_re(names):
+    return re.compile(r"(?<![\w$])(?:" + "|".join(re.escape(n) for n in names) + r")(?![\w$])")
+
+
+def _last_mention_session(root, func, pat):
+    """Highest session number under which this ledger's hypotheses.md /
+    evidence.md mention a name matching `pat` (None if never)."""
+    d = ledger_dir(root, func)
+    best = None
+    cur = None
+    for line in _read_capped(os.path.join(d, "hypotheses.md")).splitlines():
+        m = re.match(r"^## \[s(\d+)\]", line)
+        if m:
+            cur = int(m.group(1))
+        if pat.search(line) and cur is not None:
+            best = cur if best is None else max(best, cur)
+    # evidence.md entries start `- [sN] ...` and may continue over several
+    # lines; an INLINE `[sN]` inside the text is a citation of some other
+    # ledger's session (CD_datasync cited "CD_ready evidence [s68]" at its own
+    # s20), so only the entry-leading tag sets the current session.
+    cur = None
+    for line in _read_capped(os.path.join(d, "evidence.md")).splitlines():
+        m = re.match(r"^- \[s(\d+)\]", line)
+        if m:
+            cur = int(m.group(1))
+        if pat.search(line) and cur is not None:
+            best = cur if best is None else max(best, cur)
+    return best
+
+
+def journal_session_dates(root):
+    """{(func_name, session): 'YYYY-MM-DD HH:MM'} from docs/grind/journal.md —
+    the only dated per-session record; floor_history carries no timestamps."""
+    out = {}
+    for line in _read_capped(os.path.join(root, "docs", "grind", "journal.md")).splitlines():
+        m = _JOURNAL_LINE_RE.match(line)
+        if m:
+            out[(m.group(2), int(m.group(3)))] = m.group(1)
+    return out
+
+
+def _floor_since(hist):
+    """(floor, session) — the current int floor and the session that opened
+    its trailing run (the last session whose floor differed). WIP-imported
+    ledgers carry a session-0 seed and non-monotone early history, so a
+    running-minimum would date CD_sync's floor 2 to s0; the trailing run
+    dates it to the session that actually reached it."""
+    ints = [(e.get("session"), e.get("floor")) for e in hist if isinstance(e.get("floor"), int)]
+    if not ints:
+        return None, None
+    floor = ints[-1][1]
+    since = ints[-1][0]
+    for s, f in reversed(ints):
+        if f != floor:
+            break
+        since = s
+    return floor, since
+
+
+def _queue_status(root, func):
+    try:
+        with open(os.path.join(root, "engine", "queue.json"), encoding="utf-8") as fh:
+            qi = next((i for i in json.load(fh).get("items", []) if i.get("func") == func), None)
+    except (OSError, ValueError):
+        return "unknown"
+    return str(qi.get("status", "unknown")) if qi else "not in queue"
+
+
+def sibling_ledgers(root, func, names=None):
+    """Every other ledger under memory/grind/ that this ledger names, or that
+    names this ledger (identifier-like names only, word-bounded). Each entry:
+    func, names, file, queue_status, floor, floor_since_session,
+    floor_since_date, sessions, candidate (repo-relative path or None),
+    candidate_mtime, mentioned_at_session, mentioned_at_date, unspent."""
+    base = os.path.join(root, "memory", "grind")
+    if not os.path.isdir(base):
+        return []
+    own_names = _ledger_names(root, func, names or ())
+    own_text = _ledger_text(root, func)
+    own_pat = _name_re(own_names) if own_names else None
+    dates = journal_session_dates(root)
+    own_st = load_state(root, func) or {}
+    own_floor, _ = _floor_since(own_st.get("floor_history", []))
+    out = []
+    for d in sorted(os.listdir(base)):
+        if d == func or not os.path.isfile(os.path.join(base, d, "state.json")):
+            continue
+        sib_names = _ledger_names(root, d)
+        if not sib_names:
+            continue
+        sib_pat = _name_re(sib_names)
+        outbound = bool(sib_pat.search(own_text))
+        inbound = bool(own_pat and own_pat.search(_ledger_text(root, d)))
+        if not (outbound or inbound):
+            continue
+        st = load_state(root, d) or {}
+        floor, since = _floor_since(st.get("floor_history", []))
+        since_date = next((dates.get((n, since)) for n in sib_names
+                           if since is not None and (n, since) in dates), None)
+        ment = _last_mention_session(root, func, sib_pat) if outbound else None
+        if ment is not None and ment > int(own_st.get("session_count", 0)):
+            ment = None               # a cited foreign session number, not ours
+        ment_date = next((dates.get((n, ment)) for n in own_names
+                          if ment is not None and (n, ment) in dates), None)
+        cand = os.path.join(base, d, "candidate.c")
+        cand_rel = f"memory/grind/{d}/candidate.c" if os.path.isfile(cand) else None
+        cand_mtime = ""
+        if cand_rel:
+            try:
+                cand_mtime = datetime.datetime.fromtimestamp(
+                    os.path.getmtime(cand)).strftime("%Y-%m-%d %H:%M")
+            except OSError:
+                pass
+        # UNSPENT = the sibling moved after this ledger last read it (dated), or
+        # — when that cannot be dated, or this ledger never read it (a caller
+        # that merely names us) — the sibling sits strictly BELOW our floor. A
+        # caller at a higher floor is listed for context, never mandated.
+        below = isinstance(floor, int) and isinstance(own_floor, int) and floor < own_floor
+        if since_date and ment_date:
+            unspent = since_date > ment_date
+        else:
+            unspent = below
+        out.append({"func": d, "names": sib_names, "file": st.get("file", "?"),
+                    "queue_status": _queue_status(root, d), "floor": floor,
+                    "floor_since_session": since, "floor_since_date": since_date,
+                    "sessions": int(st.get("session_count", 0)),
+                    "candidate": cand_rel, "candidate_mtime": cand_mtime,
+                    "mentioned_at_session": ment, "mentioned_at_date": ment_date,
+                    "unspent": bool(unspent)})
+    return out
+
+
+def render_siblings(sibs, func):
+    if not sibs:
+        return ""
+    lines = []
+    for s in sibs:
+        aka = f" (aka {', '.join(n for n in s['names'] if n != s['func'])})" if len(s["names"]) > 1 else ""
+        since = (f" since its s{s['floor_since_session']}"
+                 + (f" ({s['floor_since_date']})" if s["floor_since_date"] else "")) \
+            if s["floor_since_session"] is not None else ""
+        cand = (f"{s['candidate']} (written {s['candidate_mtime']})" if s["candidate"]
+                else "no candidate.c")
+        if s["mentioned_at_session"] is None:
+            ment = "your ledger has NEVER mentioned it (it names you)"
+        else:
+            ment = (f"your ledger last mentions it at your s{s['mentioned_at_session']}"
+                    + (f" ({s['mentioned_at_date']})" if s["mentioned_at_date"] else ""))
+        flag = "  -> UNSPENT: it moved after that, or sits below your floor — READ ITS candidate.c FIRST" \
+            if s["unspent"] else ""
+        lines.append(f"  - {s['func']}{aka} src/{s['file']}.c — queue: {s['queue_status']} — "
+                     f"floor {s['floor'] if s['floor'] is not None else '?'}{since} — "
+                     f"{s['sessions']} sessions — candidate: {cand}\n"
+                     f"      {ment}{flag}")
+    return ("\n## SIBLING LEDGERS (auto — functions this ledger names, or that name this one)\n"
+            "A sibling's ledger is inheritance you did not write, and it keeps moving after\n"
+            "you last read it — INCLUDING when the sibling is foreclosed and off the queue.\n"
+            "CD_datasync sat 41 sessions at floor 7 while foreclosed CD_sync held the shared\n"
+            "window's fix at floor 2 (2026-09-04 post-mortem). For every UNSPENT sibling,\n"
+            "BEFORE any probe of your own: read its candidate.c, transplant its spelling of\n"
+            "every block you share onto your chassis, measure it, and bank the result as a\n"
+            "CONFIRMED/KILLED hypothesis that names the sibling and its session number.\n"
+            + "\n".join(lines) + "\n")
+
+
+def sibling_progress_pending(st):
+    """Unconsumed sibling_progress entries whose floor is strictly below this
+    ledger's own last int floor (or any, if this ledger has no int floor)."""
+    if not isinstance(st, dict):
+        return []
+    own, _ = _floor_since(st.get("floor_history", []))
+    out = []
+    for e in st.get("sibling_progress") or []:
+        if e.get("consumed") is not None:
+            continue
+        f = e.get("floor")
+        if isinstance(f, int) and (not isinstance(own, int) or f < own):
+            out.append(e)
+    return out
+
+
+def render_sibling_progress(st):
+    pend = sibling_progress_pending(st)
+    if not pend:
+        return ""
+    lines = "\n".join(f"  - {e.get('from')} reached floor {e.get('floor')} at its s{e.get('session')} "
+                      f"({str(e.get('at', ''))[:16]}): {str(e.get('headline', ''))[:200]}\n"
+                      f"      read memory/grind/{e.get('from')}/candidate.c and "
+                      f"memory/grind/{e.get('from')}/hypotheses.md (its s{e.get('session')} entries)"
+                      for e in pend)
+    return ("\n## SIBLING PROGRESS SINCE YOUR LAST SESSION — THIS SESSION IS A FORCED REDERIVE\n"
+            "A function whose ledger cites yours (or that yours cites) dropped its floor BELOW\n"
+            "yours since you last ran. The driver forced `rederive` for exactly this session.\n"
+            "Your first probe is the transplant: apply the sibling's new spelling of every\n"
+            "shared block to your chassis and measure it. Bank the result either way; the\n"
+            "notice is consumed when this session's outcome is applied, and does not repeat.\n"
+            + lines + "\n")
+
+
+def notify_siblings(root, func, session, floor, headline):
+    """Stamp a floor DROP on `func` into every sibling ledger's
+    `sibling_progress`. One live entry per source function (a newer drop
+    replaces an unconsumed older one). Never raises."""
+    stamped = []
+    try:
+        sibs = sibling_ledgers(root, func)
+    except Exception:
+        return stamped
+    for s in sibs:
+        try:
+            st = load_state(root, s["func"])
+            if not st:
+                continue
+            lst = [e for e in (st.get("sibling_progress") or [])
+                   if not (e.get("from") == func and e.get("consumed") is None)]
+            lst.append({"from": func, "floor": floor, "session": session, "at": _now(),
+                        "headline": str(headline or "")[:200], "consumed": None})
+            st["sibling_progress"] = lst[-12:]
+            save_state(root, s["func"], st)
+            stamped.append(s["func"])
+        except Exception:
+            continue
+    return stamped
+
+
 # ── Current-scope injection (2026-09-01 post-mortem) ─────────────────────────
 # A ledger paraphrases a rule's scope at the time it was written; rule text
 # moves by owner ruling. func_800283D0 banked its decisive find as "out of
@@ -1941,6 +2256,17 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
                    + "\n".join("  " + h for h in _puns) + "\n")
     psyq = psyq_identity(root, func)
     ksweep = knowledge_sweep(root, func, names=_names)
+    # Sibling ledgers (2026-09-04): the surfaces knowledge_sweep cannot see —
+    # the sibling's CURRENT floor and candidate, and whether this ledger has
+    # read them since they moved. Degrades to '' on any failure.
+    try:
+        siblings = render_siblings(sibling_ledgers(root, func, names=_names), func)
+    except Exception:
+        siblings = ""
+    try:
+        sib_progress = render_sibling_progress(st)
+    except Exception:
+        sib_progress = ""
     last_floor = next((e.get("floor") for e in reversed(st["floor_history"])
                        if isinstance(e.get("floor"), int)), None)
     chassis = (f"\n## CHASSIS CHECK (driver-measured at dispatch — trust THIS number)\n"
@@ -1989,7 +2315,7 @@ You are session {st['session_count'] + 1} of a cumulative grind. Your mandated
 modality for THIS session is: **{modality}**
 
 {psyq}
-{ksweep}{chassis}
+{sib_progress}{ksweep}{siblings}{chassis}
 {MODALITY_PLAYBOOK[modality]}
 {scopes}{fixup}{directive}{consistency}{dmodel}{banned}{clearances}
 ## Ledger state (your inheritance — do not re-derive any of it)
@@ -2104,6 +2430,7 @@ if __name__ == "__main__":
     #   grindlib.py log-borderline <root> <func> <category> <evidence> <disposition> <date>
     #   grindlib.py rule-scopes <root> <func>                        -> prints the current-scope block
     #   grindlib.py supersede-bans <root> <func> <superseded_by> <needle> [needles...]  -> prints count moved
+    #   grindlib.py siblings <root> <func>                          -> sibling-ledger block + pending notices
     import sys
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -2217,6 +2544,11 @@ if __name__ == "__main__":
     elif cmd == "rule-scopes":
         # rule-scopes <root> <func> -> prints the CURRENT SCOPE block (empty if none cited)
         print(render_rule_scopes(cited_rule_scopes(sys.argv[2], sys.argv[3])))
+    elif cmd == "siblings":
+        # siblings <root> <func> -> the SIBLING LEDGERS block + pending progress
+        # notices, exactly as the next brief would carry them (read-only)
+        print(render_siblings(sibling_ledgers(sys.argv[2], sys.argv[3]), sys.argv[3]))
+        print(render_sibling_progress(load_state(sys.argv[2], sys.argv[3]) or {}))
     else:
         print(f"unknown cmd {cmd}")
         sys.exit(2)

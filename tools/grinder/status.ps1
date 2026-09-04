@@ -43,6 +43,17 @@ if ($top -and $top.func) {
         Write-Host "frontier ($($st.frontier.Count)):"
         $st.frontier | ForEach-Object { Write-Host "  - $($_.hypothesis)" }
         Write-Host "judge constraints: $($st.judge_constraints.Count)"
+        # Sibling ledgers (2026-09-04): which other ledgers this one is coupled
+        # to, and whether any of them moved below this floor unread.
+        try {
+            $sib = (python (Join-Path $Root 'tools\grinder\grindlib.py') siblings $Root $top.func | Out-String)
+            $names = @([regex]::Matches($sib, '(?m)^  - (\S+)') | ForEach-Object { $_.Groups[1].Value })
+            $unspent = @([regex]::Matches($sib, '-> UNSPENT')).Count
+            $forced = $sib -match 'FORCED REDERIVE'
+            if ($names.Count) {
+                Write-Host ("siblings: " + ($names -join ', ') + "  unspent: $unspent" + $(if ($forced) { "  (next session: forced rederive on sibling progress)" } else { '' }))
+            }
+        } catch { }
         $hyp = Join-Path $Root "memory\grind\$($top.func)\hypotheses.md"
         if (Test-Path $hyp) {
             $killed = @(Select-String -Path $hyp -Pattern 'verdict: KILLED').Count

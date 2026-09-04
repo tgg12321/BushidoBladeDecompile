@@ -1361,5 +1361,211 @@ class TestReviewLoopBreaker(unittest.TestCase):
         self.assertIn("no prior review verdict", G.render_review_context(self.root, "func_X", "zzzz"))
 
 
+class TestSiblingLedgers(unittest.TestCase):
+    """2026-09-04 post-mortem: CD_datasync sat 41 sessions at floor 7 while its
+    sibling CD_sync (foreclosed, off the queue) held the fix at floor 2. The
+    brief now surfaces sibling ledgers and a sibling floor drop forces ONE
+    rederive session on every ledger that cites it."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "CD_datasync", "system")
+        G.init_ledger(self.root, "CD_sync", "system")
+        G.init_ledger(self.root, "main", "system")        # prose-word name
+        G.init_ledger(self.root, "func_80011111", "text1a")  # unrelated
+        os.makedirs(os.path.join(self.root, "docs", "grind"))
+        os.makedirs(os.path.join(self.root, "engine"))
+        json.dump({"items": [{"func": "CD_sync", "status": "foreclosed"},
+                             {"func": "CD_datasync", "status": "active"}]},
+                  open(os.path.join(self.root, "engine", "queue.json"), "w"))
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def progress(self, func, n_floors, mod="structural"):
+        for fl in n_floors:
+            G.apply_outcome(self.root, func, {
+                "result": "progress", "floor": fl, "headline": f"floor {fl}",
+                "hypotheses": [{"statement": "s", "mechanism": "m", "probe": "p",
+                                "result": f"-> {fl}", "verdict": "KILLED"}],
+                "evidence": [], "frontier": []}, mod)
+
+    def journal(self, lines):
+        with open(os.path.join(self.root, "docs", "grind", "journal.md"), "a",
+                  encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+
+    def test_outbound_mention_detects_sibling(self):
+        st = G.load_state(self.root, "CD_datasync")
+        st["session_count"] = 20
+        G.save_state(self.root, "CD_datasync", st)
+        G.append_hypothesis(self.root, "CD_datasync",
+                            {"statement": "the twin CD_sync shares this window"}, session=16)
+        sibs = G.sibling_ledgers(self.root, "CD_datasync")
+        self.assertEqual([s["func"] for s in sibs], ["CD_sync"])
+        self.assertEqual(sibs[0]["mentioned_at_session"], 16)
+        self.assertEqual(sibs[0]["queue_status"], "foreclosed")
+
+    def test_inbound_mention_detects_sibling(self):
+        G.append_evidence(self.root, "CD_sync", "CD_datasync carries the same block", session=3)
+        sibs = G.sibling_ledgers(self.root, "CD_datasync")
+        self.assertEqual([s["func"] for s in sibs], ["CD_sync"])
+        self.assertIsNone(sibs[0]["mentioned_at_session"])
+
+    def test_prose_word_names_never_match(self):
+        G.append_evidence(self.root, "CD_datasync", "the main lever is on main now")
+        self.assertEqual(G.sibling_ledgers(self.root, "CD_datasync"), [])
+
+    def test_old_name_alias_matches(self):
+        st = G.load_state(self.root, "CD_sync")
+        st["func"] = "cpu_side_move_dir_4"      # ledger created under the old name
+        G.save_state(self.root, "CD_sync", st)
+        G.append_evidence(self.root, "CD_datasync", "cpu_side_move_dir_4 has the fix")
+        sibs = G.sibling_ledgers(self.root, "CD_datasync")
+        self.assertEqual([s["func"] for s in sibs], ["CD_sync"])
+        self.assertIn("cpu_side_move_dir_4", sibs[0]["names"])
+
+    def test_floor_since_and_journal_dates(self):
+        self.progress("CD_sync", [10, 7, 7, 2, 2])
+        self.progress("CD_datasync", [9, 7])
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        self.journal(["- 2026-09-01 10:00 CD_datasync s1 [structural] floor=9: a",
+                      "- 2026-09-02 10:00 CD_sync s4 [rederive] floor=2: b",
+                      "- 2026-09-03 10:00 CD_datasync s2 [structural] floor=7: c"])
+        s = G.sibling_ledgers(self.root, "CD_datasync")[0]
+        self.assertEqual(s["floor"], 2)
+        self.assertEqual(s["floor_since_session"], 4)
+        self.assertEqual(s["floor_since_date"], "2026-09-02 10:00")
+        self.assertEqual(s["mentioned_at_date"], "2026-09-01 10:00")
+        self.assertTrue(s["unspent"])   # improved AFTER the ledger last read it
+
+    def test_floor_since_dates_trailing_run_not_running_min(self):
+        # WIP-imported shape: session-0 seed at the final floor, then higher, then back
+        st = G.load_state(self.root, "CD_sync")
+        st["floor_history"] = [{"session": 0, "floor": 2}, {"session": 1, "floor": 7},
+                               {"session": 2, "floor": 2}, {"session": 3, "floor": 2}]
+        st["session_count"] = 3
+        G.save_state(self.root, "CD_sync", st)
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        s = G.sibling_ledgers(self.root, "CD_datasync")[0]
+        self.assertEqual((s["floor"], s["floor_since_session"]), (2, 2))
+
+    def test_inline_foreign_session_tag_is_not_a_mention_session(self):
+        self.progress("CD_datasync", [9, 7])
+        G.append_evidence(self.root, "CD_datasync",
+                          "the prong CD_sync died on (CD_sync evidence [s68])", session=2)
+        s = G.sibling_ledgers(self.root, "CD_datasync")[0]
+        self.assertEqual(s["mentioned_at_session"], 2)
+
+    def test_caller_above_our_floor_is_listed_not_mandated(self):
+        self.progress("CD_datasync", [2])
+        self.progress("func_80011111", [30])
+        G.append_evidence(self.root, "func_80011111", "calls CD_datasync here", session=1)
+        s = [x for x in G.sibling_ledgers(self.root, "CD_datasync") if x["func"] == "func_80011111"][0]
+        self.assertIsNone(s["mentioned_at_session"])
+        self.assertFalse(s["unspent"])
+
+    def test_spent_when_mention_postdates_drop(self):
+        self.progress("CD_sync", [10, 2])
+        self.progress("CD_datasync", [9])
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        self.journal(["- 2026-09-01 10:00 CD_sync s2 [structural] floor=2: b",
+                      "- 2026-09-03 10:00 CD_datasync s1 [structural] floor=9: c"])
+        s = G.sibling_ledgers(self.root, "CD_datasync")[0]
+        self.assertFalse(s["unspent"])
+
+    def test_unspent_without_dates_when_sibling_is_lower(self):
+        self.progress("CD_sync", [2])
+        self.progress("CD_datasync", [7])
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        s = G.sibling_ledgers(self.root, "CD_datasync")[0]
+        self.assertTrue(s["unspent"])
+
+    def test_brief_carries_sibling_block(self):
+        self.progress("CD_sync", [2])
+        self.progress("CD_datasync", [7])
+        with open(os.path.join(self.root, "memory", "grind", "CD_sync", "candidate.c"), "w") as f:
+            f.write("s32 CD_sync(void) { return 0; }\n")
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        b = G.build_brief(self.root, "CD_datasync", "structural", "OUT.json")
+        self.assertIn("SIBLING LEDGERS", b)
+        self.assertIn("memory/grind/CD_sync/candidate.c", b)
+        self.assertIn("UNSPENT", b)
+
+    def test_brief_omits_block_without_siblings(self):
+        b = G.build_brief(self.root, "func_80011111", "structural", "OUT.json")
+        self.assertNotIn("SIBLING LEDGERS", b)
+
+    def test_floor_drop_notifies_citing_siblings_once(self):
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        self.progress("CD_datasync", [7])
+        self.progress("CD_sync", [10, 10])            # first floor + flat: no notice
+        self.assertNotIn("sibling_progress", G.load_state(self.root, "CD_datasync"))
+        self.progress("CD_sync", [2])                 # drop: notice
+        sp = G.load_state(self.root, "CD_datasync")["sibling_progress"]
+        self.assertEqual(len(sp), 1)
+        self.assertEqual((sp[0]["from"], sp[0]["floor"], sp[0]["session"]), ("CD_sync", 2, 3))
+        self.assertIsNone(sp[0]["consumed"])
+        self.progress("CD_sync", [1])                 # second drop replaces, no pile-up
+        sp = G.load_state(self.root, "CD_datasync")["sibling_progress"]
+        self.assertEqual([e["floor"] for e in sp], [1])
+        # the unrelated ledger never hears about it
+        self.assertNotIn("sibling_progress", G.load_state(self.root, "func_80011111"))
+
+    def test_sibling_progress_forces_one_rederive_then_consumes(self):
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        self.progress("CD_datasync", [7])
+        self.progress("CD_sync", [9, 2])
+        st = G.load_state(self.root, "CD_datasync")
+        self.assertEqual(G.assign_modality(st["session_count"], st), "rederive")
+        b = G.build_brief(self.root, "CD_datasync", "rederive", "OUT.json")
+        self.assertIn("SIBLING PROGRESS SINCE YOUR LAST SESSION", b)
+        self.progress("CD_datasync", [7])             # the rederive session ran
+        st = G.load_state(self.root, "CD_datasync")
+        self.assertEqual(st["sibling_progress"][0]["consumed"], 2)
+        self.assertNotEqual(G.assign_modality(st["session_count"], st), "rederive")
+
+    def test_sibling_progress_not_below_own_floor_is_advisory_only(self):
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        self.progress("CD_datasync", [2])
+        self.progress("CD_sync", [30, 12])
+        st = G.load_state(self.root, "CD_datasync")
+        self.assertNotEqual(G.assign_modality(st["session_count"], st), "rederive")
+
+    def test_override_order_fixup_and_recon_win(self):
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        self.progress("CD_sync", [9, 2])
+        st = G.load_state(self.root, "CD_datasync")   # session_count 0 -> recon first
+        self.assertEqual(G.assign_modality(0, st), "recon")
+        self.progress("CD_datasync", [7])
+        G.set_pending_fixup(self.root, "CD_datasync", "annotation", "fix comment")
+        st = G.load_state(self.root, "CD_datasync")
+        self.assertEqual(G.assign_modality(st["session_count"], st), "annotation-fix")
+
+    def test_sibling_progress_beats_exhaustion(self):
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        # flat at 3 (<= ENDGAME_LOCK_MAX_FLOOR) across 4 modalities => exhaustion
+        mods = ["structural", "permuter", "synthesis", "forensics"] * 3
+        for m in mods[:G.ESCALATION_FLAT_SESSIONS]:
+            self.progress("CD_datasync", [3], mod=m)
+        st = G.load_state(self.root, "CD_datasync")
+        st["object_model_audited"] = 1
+        self.assertEqual(G.assign_modality(st["session_count"], st), "escalation")
+        self.progress("CD_sync", [9, 2])
+        st = G.load_state(self.root, "CD_datasync")
+        st["object_model_audited"] = 1
+        self.assertEqual(G.assign_modality(st["session_count"], st), "rederive")
+
+    def test_apply_survives_broken_sibling_ledger(self):
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        self.progress("CD_datasync", [7])
+        with open(os.path.join(self.root, "memory", "grind", "CD_datasync", "state.json"),
+                  "w") as f:
+            f.write("{not json")
+        self.progress("CD_sync", [9, 2])              # must not raise
+        self.assertEqual(G.load_state(self.root, "CD_sync")["floor_history"][-1]["floor"], 2)
+
+
 if __name__ == "__main__":
     unittest.main()
