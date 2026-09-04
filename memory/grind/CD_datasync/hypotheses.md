@@ -3573,3 +3573,79 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - probe: Hand derivation over the true-dependence graph of asm/funcs/CD_datasync.s:47-68, recorded in full in evidence.md [s40].
 - result: Descending required rank: fmt > arg4.lw > arg3.lw > sw > arg3.addu > arg3.sll > arg4.addu > arg3.lbu > arg5.lw > arg4.sll > arg5.addu > arg5.sll > arg2.lw > idx1.lbu > idx0.lbu. Two consequences: arg2's load must rank below the whole arg5 chain and below arg4's sll but above both index lbus, a one-slot band; and arg4's sll must rank BELOW arg5's value load while arg4's addu ranks ABOVE arg3's index load, i.e. arg4's two address insns are split across two other chains. expand_expr emits a single subscript's sll and addu contiguously, so under the equal-priority model that split cannot come from any RTL stream order - only from edges absent in sched1's true-dependence graph, namely the hard-register anti-dependences that exist only in sched2.
 - verdict: CONFIRMED
+
+## [s42] Reducing the number of hoisted callee-saved table pointers lowers the printf window's register pressure and is the last source-side variable (s39/s41 frontier item 3)
+- mechanism: All three hoisted pointers (tbl_11dc, idx_1494, tbl_125c) are used ONLY inside the do_timeout block, so the hoist count is exactly "how many callee-saved bases are live across the timeout block". s40's reframe says target's window reuses $v0 across two argument chains, which happens only when the allocator is short of call-clobbered temps; fewer hoisted bases should raise the pressure inside the window and force that reuse.
+- probe: Complete cross-product {2^3 hoist subsets} x {arg3 value local on/off} x {arg4 value local on/off} = 32 whole-function compiles, tmp/grind/CD_datasync/s42/forms/ + run.sh, scored with the calibrated s21 harness (sandbox = lev + nop - 3).
+- result: KILLED (instance). Only the all-three-hoisted subset reaches target's expanded instruction count of 82. All 28 forms dropping at least one hoist land at n=69..80 and lev 20..38; best non-h7 cell h6 = 20. The hoists are load-bearing for the instruction COUNT, not just for the callee-saved map. Inside h7 the four cells are 13 / 12 / 7 / 14.
+
+## [s42] Declaration order of the three pointer locals, the order of their initialising assignments, and the position of that assignment block relative to the two other prologue stores are three independent structural levers on the window
+- mechanism: allocno creation order and LUID order both follow source order, and global.c:allocno_compare's tie-breaks are sensitive to it; the s9 H37/H38 argument fixes the callee-saved map by priority but says nothing about ties.
+- probe: 108 whole-function compiles, {6 decl permutations} x {6 assignment permutations} x {3 block positions}, tmp/grind/CD_datasync/s42/forms2/ + res2.txt.
+- result: KILLED (instance) for two of the three axes and BOUNDED for the third. Declaration order is completely byte-inert (all 6 permutations identical in every cell) and the block position is completely byte-inert (p0 == p1 == p2 in all 36 cells). Only the assignment permutation moves the score, and only through which pointer is assigned FIRST: tbl_11dc-first = 7 or 8, idx_1494-first = 11, tbl_125c-first = 12. candidate.c already holds the unique optimum. Nothing in the 108-cell space is below 7.
+
+## [s42] Making one argument's value live across the puts() call raises the window's register pressure enough to force target's $v0 reuse
+- mechanism: s40 restated the residual as "target keeps only two call-clobbered temps live in the window". A value computed before puts() must survive the call, consuming a callee-saved register and changing what the window has to work with.
+- probe: {arg3, arg4, arg5} x {inline, local assigned after puts, local assigned before puts} = 27 whole-function compiles, tmp/grind/CD_datasync/s42/forms3/ + res3.txt.
+- result: KILLED (instance). Every form with at least one before-puts assignment grows the function to n=84..90 (a save/restore pair per surviving value) and scores 27..39; the nine all-after-puts forms stay at n=82 and score 7..14. The extra callee-save pair costs far more than any scheduling gain.
+
+## [s42] Hoisting arg2 (D_800F19C0) into a value local advances its lui/lw pair into target's slots 43/44 on the new m011 chassis
+- mechanism: On m011 the arg2 pair sits at slots 51/52 while arg4's chain occupies target's 43/44/47; giving arg2 its own named local and placing that assignment first should lift it to the head of the argument block's RTL stream. s41 measured arg2 hoisting byte-inert, but only on the 16-member 13-class, so the finding had to be re-tested on the 7-scoring family.
+- probe: 38 whole-function compiles on the m011 family: every subset of {arg2, arg3} added to the {arg4, arg5} value locals, times every permutation of the resulting assignment statements. tmp/grind/CD_datasync/s42/forms4/ + res4.txt.
+- result: KILLED (instance). A `void *arg2 = D_800F19C0;` local in any of the three assignment positions is byte-identical to leaving arg2 inline (p245 == p425 == p452 == p45, all 7). Adding arg3 as a value local regresses to 12-14 in every ordering. The arg2 advance is not reachable from the argument block's spelling.
+
+## [s42] Type narrowing - the declared types of the locals and of the hoisted table pointers - is a live structural lever on this window
+- mechanism: The structural-modality catalogue lists type narrowing alongside declaration order and statement re-association; sub-word and unsigned types change QImode/SImode RTL and can change combine's choices and the addressing scale.
+- probe: 10 whole-function compiles covering u32 table pointers (with casts at the hoist), u32 argument locals, `void *` argument locals with casts, u32 index locals split out of the subscripts, an explicit (s32) cast on the arg3 index, and a u32 `cnt` with an (s32) cast at the compare - applied to BOTH 7-scoring families. tmp/grind/CD_datasync/s42/forms5/.
+- result: KILLED (instance). All seven m011-derived variants are byte-identical to m011 (single md5 1bb8643812d2793ab8a96cf8241c5f86) and all three candidate-derived variants are byte-identical to candidate.c (single md5 8b0d0bf4ec63edd058c7d17b2df537bb). Declared type, with value semantics preserved, has zero byte effect here.
+
+## [s42] CONFIRMED: a second byte-distinct function ties the 7/91 floor, and it carries more of target's window spine than candidate.c
+- mechanism: The floor had been held by exactly one emitted function for 40 sessions. Hoisting arg5's value alongside arg4's produces a different function that happens to score the same, so the floor is a two-point set and the two points have different residuals.
+- probe: forms3/m011 compiled, md5'd against candidate.c's emission, scored live with `sandbox CD_datasync --disable all`, and aligned against target with the s21 cmp.py expansion.
+- result: CONFIRMED. m011 = 7/91, target_insns 91, build_insns 91, rules_dropped 0, md5 1bb8643812d2793ab8a96cf8241c5f86 (candidate.c is 8b0d0bf4...). m011 is correct at expanded slots 42, 45, 46, 48, 49, 50 (the whole idx1/arg5 address chain plus the arg3 leaf pair) against candidate.c's 43, 44, 45, 46. Banked as memory/grind/CD_datasync/alt_m011_arg4_arg5_locals_7.c and recommended as the next session's starting chassis.
+
+## [s42] Reducing the number of hoisted callee-saved table pointers (tbl_11dc, idx_1494, tbl_125c), which are used only inside the do_timeout block, raises the printf window's register pressure and reaches target's window - the s39/s41 frontier item 3 quadrant.
+- mechanism: All three hoisted pointers are live only across the timeout block, so the hoist count is exactly 'how many callee-saved bases are live across the window'. s40's reframe says target reuses $v0 across two argument chains, which requires the allocator to be short of call-clobbered temps; fewer hoisted bases should force that reuse.
+- probe: Complete cross-product {2^3 hoist subsets} x {arg3 value local on/off} x {arg4 value local on/off} = 32 whole-function compiles (tmp/grind/CD_datasync/s42/forms/), scored with the calibrated s21 harness (sandbox = lev + nop - 3, verified: candidate.c reproduces lev=7 nop=3).
+- result: Only the all-three-hoisted subset reaches target's expanded instruction count of 82 at all. All 28 forms that drop at least one hoist land at n=69..80 (2-13 instructions short) and score lev 20..38; the best is h6 (idx_1494 + tbl_125c hoisted, tbl_11dc read as the global) at 20. Inside the all-hoisted subset the four cells are: no locals 13, arg3 local 12, arg4 local 7 (= candidate.c), arg3+arg4 locals 14. The three hoists are load-bearing for the instruction COUNT, not merely for the callee-saved map the s9 H37/H38 argument fixes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, do{}while(0) FAKE present), 32 whole-function compiles with the FAKE wrapper in place in every form
+
+## [s42] The declaration order of the three pointer locals, the order of their initialising assignments, and the position of that assignment block relative to the D_800F19BC and D_800F19C0 prologue stores are three independent structural levers that can reach below 7 on this chassis.
+- mechanism: allocno creation order and LUID order both follow source order, and global.c allocno_compare's tie-breaks are sensitive to it; the s9 H37/H38 argument fixes the callee-saved map by priority but says nothing about ties.
+- probe: 108 whole-function compiles: {6 declaration permutations} x {6 assignment permutations} x {3 positions of the assignment block} (tmp/grind/CD_datasync/s42/forms2/, res2.txt).
+- result: Declaration order is completely byte-inert (all 6 permutations give identical scores in every cell) and the block position is completely byte-inert (p0 == p1 == p2 in all 36 cells). Only the assignment permutation moves the score, and only through which pointer is assigned FIRST: tbl_11dc-first = 7 (its idx_1494-then-tbl_125c tail) or 8 (tbl_125c-then-idx_1494 tail), idx_1494-first = 11 (all 36), tbl_125c-first = 12 (all 36). candidate.c already holds the unique optimum and nothing in the 108-cell space is below 7. This subsumes the two previously banked point-probes (rejected/init-order-11dc-125c-1494-costs-one-8.c, rejected/init-order-125c-first-regresses-12.c) as cells of one table.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; 108 whole-function compiles, all n=82 nop=3
+
+## [s42] Assigning one argument's value into a local BEFORE the puts() call raises the window's register pressure enough to force target's $v0 reuse.
+- mechanism: s40 restated the residual as 'target keeps only two call-clobbered temps live in the window'. A value computed before puts() must survive the call in a callee-saved register, changing what the window's allocator has to work with.
+- probe: {arg3, arg4, arg5} x {inline, value local assigned after puts, value local assigned before puts} = 27 whole-function compiles (tmp/grind/CD_datasync/s42/forms3/, res3.txt).
+- result: Every form carrying at least one before-puts assignment grows the function to n=84/85/87/88/90 - one callee-saved save/restore pair per surviving value - and scores 27..39. The nine all-after-puts forms stay at n=82 and score 7..14. The extra save/restore pair costs far more than any scheduling gain, so the axis is dead from the source side.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; 27 whole-function compiles
+
+## [s42] Hoisting arg2 (D_800F19C0) into a named value local advances its lui/lw pair into target's slots 43/44 on the new m011 chassis, where arg4's chain currently occupies them.
+- mechanism: On m011 the arg2 pair sits at expanded slots 51/52 while arg4's chain occupies target's 43/44/47; giving arg2 its own named local and placing that assignment first should lift it to the head of the argument block's RTL stream. s41 measured arg2 hoisting byte-inert only on the 16-member 13-class, so the finding had to be re-tested on the 7-scoring family.
+- probe: 38 whole-function compiles on the m011 family: every subset of {arg2, arg3} added to the {arg4, arg5} value locals, times every permutation of the resulting assignment statements (tmp/grind/CD_datasync/s42/forms4/, res4.txt).
+- result: A `void *arg2 = D_800F19C0;` local in any of the three assignment positions is byte-identical to leaving arg2 inline (p245 == p425 == p452 == p45, all 7). Adding arg3 as a value local regresses to 12-14 in every ordering. The arg2 advance is not reachable from the argument block's spelling on this chassis either.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: m011 chassis (arg4 and arg5 value locals after puts) with the do{}while(0) FAKE present; 38 whole-function compiles
+
+## [s42] Type narrowing - the declared types of the argument locals, the index locals and the hoisted table pointers - is a live structural lever on this window.
+- mechanism: The structural-modality catalogue lists type narrowing alongside declaration order and statement re-association; sub-word and unsigned types change QImode/SImode RTL and can change combine's choices and the addressing scale.
+- probe: 10 whole-function compiles applied to BOTH 7-scoring families: u32 table pointers with casts at the hoist, u32 argument locals, void* argument locals with casts, u32 index locals split out of the subscripts, an explicit (s32) cast on the arg3 index, a u32 cnt with an (s32) cast at the compare (tmp/grind/CD_datasync/s42/forms5/, md5-grouped).
+- result: All seven m011-derived variants are byte-identical to m011 (single md5 1bb8643812d2793ab8a96cf8241c5f86) and all three candidate-derived variants are byte-identical to candidate.c (single md5 8b0d0bf4ec63edd058c7d17b2df537bb). With value semantics preserved, the declared type of any local in this function has zero effect on the emitted bytes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis and m011 chassis, do{}while(0) FAKE present in both; 10 whole-function compiles grouped by md5
+
+## [s42] A second, byte-distinct function ties the 7/91 floor and carries more of target's printf-window spine than candidate.c does.
+- mechanism: The floor had been held by exactly one emitted function for 40 sessions. Hoisting arg5's value alongside arg4's produces a different function that happens to score the same, so the floor is a two-point set whose two points have different residuals.
+- probe: forms3/m011 compiled, md5'd against candidate.c's emission, scored with a LIVE `sandbox CD_datasync --disable all`, and aligned against target with the s21 cmp.py expansion.
+- result: CONFIRMED. m011 = score 7, target_insns 91, build_insns 91, rules_dropped 0, whole-function md5 1bb8643812d2793ab8a96cf8241c5f86 (candidate.c is 8b0d0bf4ec63edd058c7d17b2df537bb). m011 is correct at expanded slots 42, 45, 46, 48, 49, 50 - the entire idx1/arg5 address chain (lbu $v0,1($s1) / sll $v0,$v0,2 / addu $v0,$v0,$s0 / lw $v1,0($v0)) plus the arg3 leaf pair (lui $v0,%hi / lbu $v0,%lo) - against candidate.c's 43, 44, 45, 46, two of which candidate reaches only by coincidence (its arg4 chain spells the same bytes target's arg5 chain does). Banked as memory/grind/CD_datasync/alt_m011_arg4_arg5_locals_7.c.
+- verdict: CONFIRMED

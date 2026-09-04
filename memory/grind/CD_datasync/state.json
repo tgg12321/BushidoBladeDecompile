@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 41,
- "current_modality": "rederive",
+ "session_count": 42,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -249,23 +249,29 @@
    "floor": 7,
    "modality": "rederive",
    "headline": "32+8 whole-function compiles collapse to a SIXTEEN-member byte-identical class - every index local, the arg2 value local, the arg5 value local, the pointer-arithmetic arg3 spelling and every assignmen"
+  },
+  {
+   "session": 42,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Structural sweep of 215 whole-function compiles kills the hoist-count, declaration-order, init-position, live-across-puts and type-narrowing axes, and finds a SECOND byte-distinct 7/91 function whose "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is a sched2 register-REUSE fact: target's window keeps only two call-clobbered temps live because $v0 carries idx1's address chain and is then reused for arg3's chain, and that anti-dependence is the extra edge that lets arg4's address chain be stretched across the window.",
-   "mechanism": "The s40 rank-order derivation shows target's order requires an edge sched1's true-dependence graph does not contain; the only edges available at sched2 are hard-register anti-dependences, and target's $v0 reuse is exactly one. f17 is the only family with target's $a0 map but it keeps $a0, $v1 and $v0 live at once, so no reuse occurs.",
-   "next_probe": "On the f17 family (arg4 and arg3 as value locals; drop the inert index local), sweep spellings that force arg5's VALUE load to be emitted before arg3's index load - arg5 hoisted as a value local placed before arg3's, arg5 hoisted while arg3 is left inline, arg5's value passed through a local - and for each read the .greg/.sched2 dump for how many call-clobbered temps are live across the window and whether any $v0 anti-dependence links the arg5 and arg3 chains. Score live anything that drops the live temp count to two."
+   "hypothesis": "On the m011 chassis the residual is a single two-slot swap: arg2's lui/lw pair must move up into slots 43/44 and arg4's sll/addu must be split apart. Since arg2 hoisting is byte-inert (s42) and arg4's chain is emitted contiguously by expand_expr (s40), the swap must come from arg2's EXPRESSION being longer or shorter, not from its spelling.",
+   "mechanism": "s40's rank-order inversion says arg2's load must rank below the whole arg5 chain and above the two index lbu's - a narrow band - and the s42 m011 alignment now shows exactly which two insns sit in arg2's target slots. INSN_PRIORITY is the longest path to the block end, so changing arg2's chain LENGTH (e.g. reading D_800F19C0 through one more indirection, or writing the format-pointer store so the loaded value is a different expression) moves its rank without changing any other chain.",
+   "next_probe": "On alt_m011_arg4_arg5_locals_7.c, sweep arg2 EXPRESSIONS of differing dependence-chain length rather than differing spelling: D_800F19C0 read through a function-scope pointer alias initialised in the prologue, read as *(&D_800F19C0), read from a second global that aliases the same storage, and the same with the `D_800F19C0 = &D_800162C0;` prologue store moved inside the do-block so the value is a live pseudo rather than a reload. For each, read tmp/grind/CD_datasync/dumps/*.sched2 for where arg2's load lands and whether arg4's sll/addu separate. Score live anything that puts arg2's lui at slot 43."
   },
   {
-   "hypothesis": "Priority, not LUID, decides the leaf-load picks, so the lever is the LENGTH of one argument's dependence chain - a genuinely different expression for one argument, not a different spelling of the same one.",
-   "mechanism": "s34 found nearly every window insn carries LAUNCH_PRIORITY so the priority term looked like a constant tie, and s40 proved the LUID term is inert for the leaves. If both were truly inert the emission could not vary at all, yet 11 distinct functions exist - so one of the two is live in a way the ledger has not measured. INSN_PRIORITY is the longest path to the block end, so an argument whose chain is one insn longer changes every rank in the window.",
-   "next_probe": "Dump BB2_PRIO_DEBUG for three forms with different windows (c_0000_435, c_0010_435, c_0110_435) and tabulate the actual INSN_PRIORITY of all 15 window insns in each. If priorities differ across forms, s34's 'constant tie' is scoped too broadly and the priority column is the live lever; then compute from the s40 rank-constraint table which priority assignment produces target's order and which chain-length change realises it."
+   "hypothesis": "Priority, not LUID, decides the leaf-load picks, so the lever is the LENGTH of one argument's dependence chain - a genuinely different expression for one argument, not a different spelling of the same one. (Inherited from s41; s42 sharpened it by killing every spelling axis while leaving chain length untouched, and by showing 11+ distinct emissions exist, so one of priority/LUID must be live.)",
+   "mechanism": "s34 found nearly every window insn carries LAUNCH_PRIORITY so the priority term looked like a constant tie, and s40 proved the LUID term inert for the leaves. s42 has now also killed hoist count, declaration order, init order, init position, before-puts liveness, arg2 hoisting and type narrowing - so no spelling axis remains, which forces the live variable to be the dependence-chain shape itself.",
+   "next_probe": "Dump BB2_PRIO_DEBUG (instrumented cc1 at tools/gcc-2.7.2/cc1) for m010, m011 and h7_l30_l40 - three forms with visibly different windows and the same 82 instructions - and tabulate the actual INSN_PRIORITY of all 15 window insns in each. If priorities differ across forms, s34's 'constant tie' is scoped too broadly; then compute from the s40 rank-constraint table which priority assignment produces target's order and which chain-length change realises it."
   },
   {
-   "hypothesis": "The window's emission is invariant under sixteen distinct named-local spellings, so the only remaining source-side variable is the surrounding chassis's register pressure - how many callee-saved bases are live across the timeout block - not the block's own spelling.",
-   "mechanism": "All four live families differ only in whether arg3 and arg4 are value locals. Target's window needs $v0 reused across two chains, which happens only when the allocator is short of call-clobbered temps. The chassis hoists THREE table pointers into callee-saved registers before the loop; the s9 H37/H38 allocation argument fixes the callee-saved MAP but says nothing about the window's temp count, so this quadrant is genuinely open.",
-   "next_probe": "Cross the two axes for the first time: {0,1,2,3 hoisted table pointer locals, the rest read directly as globals inside the block} x {arg3 value local on/off} x {arg4 value local on/off}, about 16 forms. For each record the number of distinct call-clobbered registers live inside the printf window and whether $v0 is reused across two chains; score live anything reaching two."
+   "hypothesis": "The two 7-scoring functions have DISJOINT correct slots in the window (candidate.c 43,44,45,46; m011 42,45,46,48,49,50), so a third source form combining candidate's arg2 placement with m011's idx1/arg5 chain would score below 7 - i.e. the floor is a two-point set only because no measured form crosses the two.",
+   "mechanism": "candidate.c differs from m011 by exactly one bit (whether arg5 is a value local). That single bit trades arg2's slots 43/44 for the arg5 chain's slots 42/45/46/48 plus the arg3 leaf pair. If the two effects are separable, some third construct holds both.",
+   "next_probe": "Enumerate what distinguishes the two emissions at the RTL level: dump .sched1/.greg for m010 and m011 (pwsh tools/grinder/dump.ps1 CD_datasync, run once per applied form) and diff the argument-block insn lists to identify the single scheduling decision the arg5 local flips. Then look for a source construct that flips that decision WITHOUT giving arg5 a pseudo - e.g. arg5 duplicated into both branch arms of the surrounding structure, or arg5's subscript re-associated as tbl_125c[1 + idx_1494[0] - idx_1494[0] + ...]-free variants that keep one expression but change its consumer count."
   }
  ],
  "judge_constraints": [],
@@ -275,46 +281,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 22,
-   "statement": "The declaration shape of the callees \u2014 printf's prototype, its arity and its return type \u2014 is a live structural lever, because a variadic or unprototyped printf takes a different path through GCC 2.7.",
-   "kill_scope": "instance",
-   "measured_on": "candidate chassis (goto loop, three hoisted pointer locals, named arg4 value) with the do{}while(0) FAKE present",
-   "predicate_cite": "",
-   "result": "All six are byte-identical to the baseline \u2014 lev 7 / nop 3 / n 82, sandbox 7. With ACCUMULATE_OUTGOING_ARGS on this targ"
-  },
-  {
-   "session": 22,
-   "statement": "Declaration order and declaration scope \u2014 the block temporary hoisted to function scope, and permutations of the five function-scope locals \u2014 move local-alloc's quantity ordering, because pseudo numbe",
-   "kill_scope": "instance",
-   "measured_on": "candidate chassis (goto loop, three hoisted pointer locals, named arg4 value) with the do{}while(0) FAKE present",
-   "predicate_cite": "",
-   "result": "All 24 are byte-identical to the baseline \u2014 lev 7 / nop 3 / n 82, sandbox 7. Neither the scope of the temporary nor the "
-  },
-  {
-   "session": 22,
-   "statement": "Type narrowing or widening of the block's values (the temporary, the table pointers, the index pointer, the loop counter) perturbs the argument block's codegen.",
-   "kill_scope": "instance",
-   "measured_on": "candidate chassis (goto loop, three hoisted pointer locals, named arg4 value) with the do{}while(0) FAKE present",
-   "predicate_cite": "",
-   "result": "Five of six are byte-identical at 7; the pointer-temporary form regresses to 9 (banked). Every value in the block is alr"
-  },
-  {
-   "session": 23,
-   "statement": "Keeping a table ADDRESS pointer live past its own load (s22's frontier item 1) anti-coalesces arg5's load destination from its address register, on the do{}while(0) chassis with the wrapper FAKE prese",
-   "kill_scope": "instance",
-   "measured_on": "do{}while(0) wrapper chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 40 forms",
-   "predicate_cite": "",
-   "result": "KILLED for these 40 spellings. Minimum 7 (four forms tie the floor, none beat it); named-address spellings sit at 9-10; "
-  },
-  {
-   "session": 23,
-   "statement": "Inside the geometry-correct basin, some spelling or placement of arg2 (D_800F19C0) keeps its `lui/lw $a1` at build 43-44 instead of letting it sink to 54-55.",
-   "kill_scope": "instance",
-   "measured_on": "geometry-correct (scaled-offset arg4 + named raw idx1) chassis and the base chassis, both with the do{}while(0) FAKE present; 26 forms",
-   "predicate_cite": "",
-   "result": "KILLED for these 26 spellings. The ten in-block arg2 spellings are BYTE-IDENTICAL at 8 \u2014 naming arg2 does not create a p"
-  },
   {
    "session": 23,
    "statement": "Computing a printf argument BEFORE the `puts(&g_str_cd_timeout)` call re-associates the block's register pressure toward target's shape, where arg4's address is parked in $a0 across the D_800A11D5 cha",
@@ -736,6 +702,46 @@
    "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 8 forms (w1-w8), whole-function md5, window-slot classification",
    "predicate_cite": "",
    "result": "Four of the eight (w1, w2, w3, w5) are byte-identical to the class found earlier in the session, which therefore has SIX"
+  },
+  {
+   "session": 42,
+   "statement": "Reducing the number of hoisted callee-saved table pointers (tbl_11dc, idx_1494, tbl_125c), which are used only inside the do_timeout block, raises the printf window's register pressure and reaches tar",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, do{}while(0) FAKE present), 32 whole-function compiles with the FAKE wrapper in place in every form",
+   "predicate_cite": "",
+   "result": "Only the all-three-hoisted subset reaches target's expanded instruction count of 82 at all. All 28 forms that drop at le"
+  },
+  {
+   "session": 42,
+   "statement": "The declaration order of the three pointer locals, the order of their initialising assignments, and the position of that assignment block relative to the D_800F19BC and D_800F19C0 prologue stores are ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 108 whole-function compiles, all n=82 nop=3",
+   "predicate_cite": "",
+   "result": "Declaration order is completely byte-inert (all 6 permutations give identical scores in every cell) and the block positi"
+  },
+  {
+   "session": 42,
+   "statement": "Assigning one argument's value into a local BEFORE the puts() call raises the window's register pressure enough to force target's $v0 reuse.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 27 whole-function compiles",
+   "predicate_cite": "",
+   "result": "Every form carrying at least one before-puts assignment grows the function to n=84/85/87/88/90 - one callee-saved save/r"
+  },
+  {
+   "session": 42,
+   "statement": "Hoisting arg2 (D_800F19C0) into a named value local advances its lui/lw pair into target's slots 43/44 on the new m011 chassis, where arg4's chain currently occupies them.",
+   "kill_scope": "instance",
+   "measured_on": "m011 chassis (arg4 and arg5 value locals after puts) with the do{}while(0) FAKE present; 38 whole-function compiles",
+   "predicate_cite": "",
+   "result": "A `void *arg2 = D_800F19C0;` local in any of the three assignment positions is byte-identical to leaving arg2 inline (p2"
+  },
+  {
+   "session": 42,
+   "statement": "Type narrowing - the declared types of the argument locals, the index locals and the hoisted table pointers - is a live structural lever on this window.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis and m011 chassis, do{}while(0) FAKE present in both; 10 whole-function compiles grouped by md5",
+   "predicate_cite": "",
+   "result": "All seven m011-derived variants are byte-identical to m011 (single md5 1bb8643812d2793ab8a96cf8241c5f86) and all three c"
   }
  ]
 }
