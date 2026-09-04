@@ -141,6 +141,51 @@
  * the engine score is lev + (nop - 3) for this chassis, NOT lev.  Reading
  * lev alone makes every F3-family form look like a 7.  Both s48 sweeps are
  * re-scored with the nop column (tmp/grind/CD_datasync/s48/res.json).
+ *
+ * S49 ADDENDUM (forensics) - THE F3 FORK IS A MEMORY DEPENDENCE, AND THE
+ * SEARCH SPACE SHRINKS ACCORDINGLY.  Chassis re-confirmed with the engine
+ * (7 / 91 / 91) and the mandated kill re-audit run (fake_ablate: keep-all
+ * 7 / 91, drop-1 31 / 75 - the do{}while(0) is worth 24 instructions and is
+ * not masking a lever).
+ *
+ * s48's frontier item 1 is dead: the arg4-pointer x arg5-pointer crossing
+ * (arg4 in {ip,ikp,dp} x arg5 in {ip,ikp,dp} x every interleaving, 62
+ * compiles) is ONE equivalence class - byte-identical block-3 quantity table
+ * and byte-identical window, at 10, with only ONE quantity spanning [20,36)
+ * instead of the two the $a0 seat needs.
+ *
+ * The valuable result is why F3 has behaved as a hard fork for 46 sessions.
+ * Read from the instrumented cc1 under BB2_SCHED_DEBUG, this form's block-3
+ * dependence graph carries
+ *      dep insn=130 pred=105 kind=14
+ * where 130 is the arg5 stack store `sw $v1,16($sp)`, 105 is the arg4 value
+ * load `lw $a3,0($v0)`, and kind 14 is REG_DEP_ANTI.  sched.c creates it in
+ * its store analysis - it walks pending_read_insns and adds an anti edge for
+ * every pending read that `anti_dependence` cannot disambiguate against the
+ * store's dest (tools/gcc-2.7.2/sched.c:1784).  Both scheduling passes honour
+ * LOG_LINKS, so once the arg4 value load is EMITTED before the stack store,
+ * no permutation can put it after.  In the arg4-inline family the edge is
+ * reversed rather than absent (r_inl_iv_w0: `dep insn=130 pred=124 kind=0`;
+ * r_ik_iv_w0: `dep insn=105 pred=128 kind=0`), because expand_call runs
+ * store_one_arg before load_register_parameters.  F3 is therefore decided at
+ * expand, by whether arg4's VALUE is a named local or is loaded inside the
+ * call - never by statement order.
+ *
+ * That reframes the residual for the next session.  The F3-holding forms
+ * (r_ik_iv_*, r_k_iv_*, r_k_v_*) already reach lev=7, EQUAL to this form,
+ * and their entire extra instruction is one maspsx load-delay #nop between
+ * `lw $2,0($2)` and `sw $2,16($sp)` (engine 8 / 92).  The sched2 PICK trace
+ * names the decision: at clocks 12/13/14 the ready set is a three-way
+ * priority-3 tie {119 luid 9, 105 luid 8, 128 luid 7} and rank_for_schedule
+ * falls through to `INSN_LUID (tmp) - INSN_LUID (tmp2)` (sched.c:2463),
+ * preferring the higher luid; the store has the lowest, so it is picked last
+ * backwards and lands first forwards, directly behind its producer.
+ *
+ * MEASUREMENT-HARNESS FIX (inherit this).  engine == lev + (nop - 3), and
+ * s48's nop column under-counted by one across the whole F3 family because
+ * its hazard detector skipped the SOURCE register of a store.  Use
+ * tmp/grind/CD_datasync/s49/rescore.py, which reproduces the sandbox exactly
+ * on both points measured this session (this form 7/91, r_ik_iv_w0 8/92).
  */
 s32 CD_datasync(s32 a0) {
     s32 v0;

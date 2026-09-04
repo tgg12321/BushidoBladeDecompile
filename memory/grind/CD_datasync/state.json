@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 48,
+ "session_count": 49,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -291,23 +291,29 @@
    "floor": 7,
    "modality": "forensics",
    "headline": "Feature F4 re-attributed to sched1: the stack-argument store is hoisted behind its producing load before local_alloc runs, so no arg5 spelling can lengthen the arg5 value quantity (28 of 32 forms shar"
+  },
+  {
+   "session": 49,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "Forensics: F3 is a REG_DEP_ANTI memory edge fixed at expand (sched.c:1784), not a scheduling choice; s48's arg4-pointer x arg5-pointer cross is one 10-scoring equivalence class; sweep-harness nop coun"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The unspelled solver atom family - 'qty0 dies later (14->24)', i.e. the arg5 INDEX/ADDRESS chain (not its value) staying live across the arg4 chain - supplies the second $v0/$v1 occupancy that the $a0 seat needs, and it is immune to the sched1 hoist because an address pointer has no stack store to be hoisted.",
-   "mechanism": "s48 measured that the arg5 VALUE can never be the second occupant: sched1 collapses its range to 2 luids before local_alloc. The solver's other cost-2 family asks instead for q0 (the arg5 index+address chain, currently [8,14)) to die at 24. s48 also measured that single-use POINTER locals escape the copy-propagation that erases value locals, and that a named arg4 pointer really does move its quantity's birth as modelled. So an arg5 ADDRESS pointer dereferenced at the call, crossed with the arg4 pointer form that already spans [16,36), puts TWO long quantities across the region - which is exactly the two-occupant precondition find_free_reg needs before its ascending scan reaches $a0.",
-   "next_probe": "Cross arg4 in {ip, ikp} (named element-address pointer, already measured to span [16,36)) with arg5 in {ip, ikp} (named element-address pointer, deref inline in the call) over every statement interleaving, arg3 inline; compile each through tmp/grind/CD_datasync/s48/run48.py and score on the block-3 QTYDBG table, requiring TWO quantities whose spans both cover [20,36) and whose allocation order (ord column) puts them ahead of the arg4 chain. This crossing was NOT in s48's 39-form batch, which held arg5 at v/iv/ik only."
+   "hypothesis": "An F3-family form whose arg5 stack store gets a HIGHER luid than the arg3 leaf lbu (D_800A11D5) and the arg4 leaf lbu wins the rank_for_schedule LUID tie-break, is picked FIRST in the backward walk, lands LAST in forward order among the three, and thereby loses the load-delay nop that is the family's whole 1-instruction penalty - reaching 7 while holding F3.",
+   "mechanism": "tools/gcc-2.7.2/sched.c:2463 - with priorities tied at 3, rank_for_schedule returns INSN_LUID(y) - INSN_LUID(x) and prefers the higher luid. luid is the post-sched1 insn order, so the C-level lever is the RTL emission order of the arg3/arg4 LEAF READS relative to the call's stack-argument store. Both leaf reads are currently emitted inside expand_call (arg3 wholly inline, arg4's value inline) and therefore land after the store in luid order.",
+   "next_probe": "Take r_ik_iv_w0 as the base (it holds F3 structurally and is lev=7). Sweep: (a) hoist arg3's index read into a named statement ahead of the call (`s32 i3 = D_800A11D5;` then `tbl_11dc[i3]` inline), (b) the same for the arg4 index while keeping arg4's value inline, (c) both, x every statement interleaving. Compile each with BB2_SCHED_DEBUG=1 and accept on the DEPENDENCE DUMP, not the score: the target state is `dep insn=<store> pred=<a3 load>` absent (F3 held) AND store-luid greater than both leaf-lbu luids. Score survivors with tmp/grind/CD_datasync/s49/rescore.py, then confirm through the sandbox."
   },
   {
-   "hypothesis": "sched1's hoist of the stack-argument store is itself a function of the source shape: an input in which the store's operand pseudo has a second consumer, or in which higher-priority insns are ready when the producing load issues, leaves the store at its expand position and hands local_alloc the long arg5-value range target has.",
-   "mechanism": "PASS-INPUT ENUMERATION applied to the pass s48 named. Naming sched1 is half the job; the other half is enumerating the source-side shapes that change what its ready list contains at the moment insn 101 issues. At expand the store is ALREADY in target's slot-54 position, so nothing has to be invented - only the hoist has to be prevented.",
-   "next_probe": "Read tmp/grind/CD_datasync/dumps/system.sched's priority/ready-list annotations for the block, identify why insn 128 outranks insns 105/119 in the pick order (INSN_PRIORITY and the dependence lists), then enumerate C inputs that change it: a second consumer for the arg5 value in the block, a longer producing chain for it, and an arg5 value whose load is not the last memory reference before the register moves. Score every one on the block-3 QTYDBG table and on the post-.sched insn order, not on the sandbox."
+   "hypothesis": "Raising insn 116's INSN_PRIORITY above 1 lets it fill the slot between the arg5 value load and the stack store by itself, killing the F3 family's nop without touching the luid order.",
+   "mechanism": "116 is the `lw $a1,D_800F19C0` arg2 load. Its INSN_PRIORITY is 1 because it is a dependence-chain leaf: sched.c's priority() computes the longest chain ending at the insn, and 116 has no real predecessor in the block. It is ready from clock 6 but never picked because every competitor has priority 2-5. Lengthening arg2's dependence chain by one real link raises its priority and makes it a candidate at the clock the store issues.",
+   "next_probe": "Spell arg2 with one extra real dependence link that survives to RTL - e.g. read D_800F19C0 through the same walking base register already live in the block, or through an index computed in the block - and re-read the sched2 PICK trace for whether 116's priority rises and whether it is picked at clock 13-15. Watch feature F2 (target's arg2 lui/lw pair at slots 43/44) on every form: F2 is currently held BECAUSE 116 is priority-1 and lands early, so this lever trades directly against it and must be scored, not assumed."
   },
   {
-   "hypothesis": "The solver's cost-3 hardreg_live family ($v0 or $v1 genuinely live across [8,36)) is reachable here, because the block already contains two calls (puts before the region, CD_flush after) and a return value or argument could genuinely span the argument block.",
-   "mechanism": "inverse_extend's hardreg_live atoms name the honest producer as 'a real argument or return value genuinely live across that span - i.e. a call placed inside the range, or a parameter still used after it'. CD_datasync's parameter a0 IS still used after the do_timeout block (the `if (a0 == 0) goto loop` test), so a hard-register liveness claim over the region is not obviously fictional; it has never been measured for this function.",
-   "next_probe": "Read the .flow/.lreg liveness for the block to see which hard registers are already recorded live across [8,36), then test the two honest shapes: the parameter a0 read inside the do_timeout block (it is live-out already), and the puts return value consumed after the printf. Score on whether regs_live_at over [20,36) gains a second occupied caller-saved register in the QTYDBG stream."
+   "hypothesis": "The cost-3 hardreg_live family ($v0 or $v1 genuinely live across [8,36)) is reachable here - inherited from s48, still unmeasured.",
+   "mechanism": "inverse_extend's hardreg_live atoms name the honest producer as a real argument or return value genuinely live across the span. CD_datasync's parameter a0 IS still used after the do_timeout block (the `if (a0 == 0) goto loop` test), and the block contains two calls (puts before, CD_flush after), so a hard-register liveness claim over the region is not obviously fictional.",
+   "next_probe": "Read the .flow/.lreg liveness for block 3 to see which hard registers are already recorded live across [8,36), then measure the two honest shapes: the parameter a0 read INSIDE the do_timeout block, and the puts return value consumed after the printf. Accept on whether regs_live_at over [20,36) gains a second occupied caller-saved register in the QTYDBG stream, not on the score alone."
   }
  ],
  "judge_constraints": [],
@@ -317,14 +323,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 31,
-   "statement": "Both indices hoisted as s32/u8 locals in [0],[1] order with the value locals assigned arg5-first then arg4 splits arg4's LUID chain (index read early, scaling late) the way target's window requires.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 7 forms plus the candidate control, fast harness calibrated sandbox = lev + nop - 3",
-   "predicate_cite": "",
-   "result": "All five emit a single window - candidate.c's window with the two lbu reads merely transposed (lbu v1,1(s1) | lbu v0,0(s"
-  },
   {
    "session": 31,
    "statement": "A named s32 index local for arg4 with arg4 left inline and arg5 hoisted as a value local before it keeps arg4's lbu at window slot 1 while deferring its scaling chain, reproducing s28's split arg4 cha",
@@ -784,6 +782,14 @@
    "measured_on": "current chassis, candidate.c and r_ik_iv_w0 measured through the engine sandbox with the do{}while(0) FAKE present in both; two forms, bodies diffed",
    "predicate_cite": "",
    "result": "KILLED as stated - lev alone does NOT reproduce the engine score, though the harness is sound when both columns are read"
+  },
+  {
+   "session": 49,
+   "statement": "Crossing arg4 in {ip,ikp,dp} with arg5 in {ip,ikp,dp} - two named element-ADDRESS pointer locals, both dereferenced in the printf call - puts two long quantities across [20,36) and gives find_free_reg",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c-family chassis (arg3 inline) with the do{}while(0) FAKE present; 62 whole-function compiles through the instrumented cc1, scored on the block-3 QTYDBG table plus the engine-equivalent resc",
+   "predicate_cite": "",
+   "result": "All 62 forms emit a byte-identical block-3 quantity table (q0 [8,16) refs12 -> $v0, q1 [14,36) refs12 -> $v1, q2 [16,20)"
   }
  ]
 }
