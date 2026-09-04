@@ -1,4 +1,4 @@
-# SELF-VET — func_80062020 (grind s15, synthesis, 2026-09-03)
+# SELF-VET — func_80062020 (grind s16, forensics, 2026-09-03)
 
 CONSTRUCTS: (1) per-word splat-symbol aggregate merge — the three splat scalars
 `D_800F1198` / `D_800F119C` / `D_800F11A0` replaced by one record-array declaration
@@ -93,8 +93,18 @@ SANCTIONED-FAMILY-CLAIMS:
     three words per step, and addresses the terminator record's members through ONE base
     register at displacements 0x8 and 0x4 (0x8006209C / 0x800620A0). That is record-stride
     indexing plus base+offset addressing, the two evidence kinds the prong names.
-    asm/funcs/func_800620B8.s reads the same table with the same 12-byte stride, so the
-    record shape is cross-function, not a property of the function being matched.
+    CORRECTION ordered by the s16 Judge ruling (2026-09-03): the earlier version of this
+    vet claimed `asm/funcs/func_800620B8.s` reads the same table with the same 12-byte
+    stride. That claim is FALSE and is withdrawn. func_800620B8.s reads record 0's three
+    members as absolute loads at `%lo(D_800F1198)` / `%lo(D_800F119C)` / `%lo(D_800F11A0)`
+    (func_800620B8.s:66-67, :83-85, :200-202, :210-212, :223) — consistent with a 3-word
+    record but NOT independent stride evidence. Prong (a) therefore rests entirely on
+    func_80062020.s's own bytes, which is sufficient on the prong's own terms: the prong
+    names "cross-TU stride indexing, base+offset addressing in the original binary, or a
+    committed naming-census schema" disjunctively, and the original binary's
+    base+displacement member addressing at 0x8006209C / 0x800620A0 plus the 12-byte-stride
+    induction register at 0x80062080 are both present in the target bytes, independent of
+    and predating this session.
   - (b) THE DECLARATION REFLECTS THAT SHAPE. A struct of three s32 in a flat array,
     indexed by a RECORD index (`D_800F1198[i]`). No index anywhere encodes 12 as a magic
     stride; the byte offset `ofs` in the body walks the SOURCE buffer `arg0`, which is a
@@ -127,9 +137,9 @@ text mandates one); the chained assignment is ordinary C outside every family li
 
 ## MEASUREMENT STATE (read with the outcome JSON)
 
-Re-measured in grind s16 (2026-09-03, solver modality) with the scope grant in place
-(`tools/grinder/scope_allow.txt`: `func_80062020 include/game.h src/text1b_b.c`), applying
-this exact diff to the tree via `memory/grind/func_80062020/apply_s15.py apply`:
+Re-measured in grind s16 (2026-09-03, forensics modality) with the scope grant in place
+(`func_80062020 include/game.h src/text1b_b.c`), applying this exact diff to the tree via
+`memory/grind/func_80062020/apply_s15.py apply`:
 
 - `verify-oracle --rebuild --allow-dirty` (rebuild WITH the diff in place, so the reference
   object the sandbox scores against is built from this body): completed.
@@ -139,6 +149,22 @@ this exact diff to the tree via `memory/grind/func_80062020/apply_s15.py apply`:
   diff in the tree -- no other TU moved a byte (prong (e) of the aggregate-merge family).
 - `sandbox func_80062020 --disable all`: **score 0**, target_insns 38, build_insns 38,
   scorable true, rules_dropped 0. The cheat-invisible honest distance is ZERO.
+
+## WHAT CHANGED IN s16 vs THE BODY LAYER-1 FAILED ON 2026-09-03 20:23
+
+Nothing in the C. The Judge adjudicated that layer-1 FAIL the same day and ruled:
+"Resubmit the s15 body unchanged, but first correct candidate.c's header claim that
+func_800620B8.s walks the table with a 12-byte stride (it reads record-0 members at
+%lo(D_800F1198) / %lo(D_800F119C) instead); banned_constructs 1 and 2 (pointer local +
+second address materialisation) remain in force." This session made exactly that
+correction — in candidate.c's header and in prong (a) above — verified it against the
+sibling's bytes, and re-measured. This is NOT the banned "comments-only resubmission"
+pattern (state.json banned_constructs entry 2): that ban is on re-filing a body the Judge
+FAILED on the merits with only comments changed, whereas the Judge's own disposition of
+THIS body is "resubmit unchanged" and the comment correction is the remedy it ordered.
+The body declares neither banned construct: banned_construct 1 (pointer local `row` plus a
+second, differently-spelled materialisation of the row address) is absent — there is no
+pointer local, and all four row writes use the single spelling `D_800F1198[i].unkN`.
 
 This SUPERSEDES the s15 note below, which recorded score 2. That 2 was an artefact of
 scoring against a reference object built from HEAD (INCLUDE_ASM) rather than from this

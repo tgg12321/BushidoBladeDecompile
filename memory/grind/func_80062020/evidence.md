@@ -1941,3 +1941,45 @@ before any reviewer sees it, and respelling it to evade the ban is forbidden. Th
 own instruction for exactly this situation ("If the restored form trips a
 `banned_constructs` entry, emit `ruling-request`") was followed. The ruling question is
 recorded in the outcome JSON and in hypotheses.md (H-s16-BANBASIS).
+
+## s16 (forensics, 2026-09-03) — Judge-ordered evidence correction, then re-measurement
+
+**Mandate.** The 2026-09-03 20:23 layer-1 FAIL on the s15 aggregate-merge body was
+adjudicated by the Judge the same day; the ruling was *"Resubmit the s15 body unchanged,
+but first correct candidate.c's header claim that func_800620B8.s walks the table with a
+12-byte stride (it reads record-0 members at %lo(D_800F1198) / %lo(D_800F119C) instead);
+banned_constructs 1 and 2 (pointer local + second address materialisation) remain in
+force."* This session executed exactly that, in forensics modality: verify the sibling's
+addressing against its bytes, correct the record, re-measure, resubmit.
+
+**Finding 1 — the sibling stride claim is FALSE and is withdrawn.** Every reference to the
+table in `asm/funcs/func_800620B8.s` (524 lines) is an absolute `lui %hi(SYM)` /
+`lw %lo(SYM)($at)` pair against one of the three splat names, with no index register and
+no 0xC-stride induction variable anywhere in the function: lines 66-67 (D_800F1198),
+83-85 (D_800F119C), 200-202 (D_800F1198), 210-212 (D_800F119C), 223 (D_800F11A0). The
+sibling reads record 0's three members directly. That is *consistent* with a 3-word record
+at 0x800F1198 — it touches exactly those three words and no others — but it is NOT
+independent stride evidence and may not be cited as such. Artifact:
+`tmp/grind/func_80062020/s16/sibling_addressing_verification.md`.
+
+**Finding 2 — prong (a) survives on func_80062020.s's own bytes.** The aggregate-merge
+prong (a) lists its evidence kinds disjunctively ("cross-TU stride indexing, base+offset
+addressing in the original binary, or a committed naming-census schema",
+`.claude/rules/no-new-park-categories.md:243-246`). The target function carries two of the
+three in its own bytes: the 12-byte-stride induction register `addiu $v1, $v1, 0xC` at
+0x80062080 driving three consecutive-word stores, and base+displacement member addressing
+`sw $zero, 0x8($v0)` / `sw $zero, 0x4($v0)` at 0x8006209C / 0x800620A0 off a single base
+computed as `index*12 + &D_800F1198`. So the correction removes a cross-function
+corroboration, not the prong's basis.
+
+**Re-measurement on the live chassis (this session), body byte-for-byte the s15 body:**
+- `apply_s15.py apply` → include/game.h + src/text1b.c + src/text1b_b.c
+- `verify-oracle --rebuild --allow-dirty`, then `verify-oracle --allow-dirty`:
+  `ok true`, `build_matches true`,
+  `build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked`.
+- `sandbox func_80062020 --disable all`: **score 0**, target_insns 38, build_insns 38,
+  scorable true, rules_dropped 0, cheat_asm_stripped 165.
+
+The honest cheat-free floor is 0 and the bytes are proven by the full clean-driver build.
+The only s16 change relative to the FAILed submission is the evidence correction the Judge
+ordered — recorded here, in candidate.c's header, and in self_vet.md prong (a).

@@ -122,15 +122,17 @@
   "Land the banked s15 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py (aggregate declaration in include/game.h, the nine vestigial per-word externs removed, the uniform chained-assignment epilogue). Do not reintroduce a pointer local, a second address materialisation, or any of the banned dual-spelling forms; do not delete D_800F119C / D_800F11A0 from undefined_syms_auto.txt while asm/funcs/func_800620B8.s is still INCLUDE_ASM. Run `verify-oracle --rebuild --allow-dirty` BEFORE the driver's sandbox re-verify (pre-rebuild the score is a false 2 from named-symbol HI16/LO16 addend spelling; post-rebuild it is 0 at 38/38).",
   "integration-handoff EXECUTED (pipeline, 2026-09-03): scope grant: func_80062020 include/game.h src/text1b_b.c. Land the banked form through the normal gates; the widened paths are scope-checked AND staged.",
   "LAYER-1 CHEAT-REVIEWER FAIL: The epilogue chained-assignment on the new aggregate-array declaration is the same address-materialization-order trick already killed at class scope (s14) and repeatedly FAILed under other spellings \u2014 it is a re-spelling, not a new construct. Next action: Do not commit. This is not a citation error \u2014 the aggregate-array declaration itself may be legitimate (the object-model evidence for it is real: the original loop's 12-byte-stride induction register, the original epilogue's base+displacement addressing at two of the three stores, and cross-function confirmation i",
-  "Resubmit the s15 body unchanged, but first correct candidate.c's header claim that func_800620B8.s walks the table with a 12-byte stride (it reads record-0 members at %lo(D_800F1198) / %lo(D_800F119C) instead); banned_constructs 1 and 2 (pointer local + second address materialisation) remain in force."
+  "Resubmit the s15 body unchanged, but first correct candidate.c's header claim that func_800620B8.s walks the table with a 12-byte stride (it reads record-0 members at %lo(D_800F1198) / %lo(D_800F119C) instead); banned_constructs 1 and 2 (pointer local + second address materialisation) remain in force.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: Aggregate-merge family cited correctly (prong (a)/(b) hold on 2026-05-17 named_syms.txt census evidence), but prong (c) completeness is admittedly NOT met while D_800F119C/D_800F11A0 remain live in undefined_syms_auto.txt for the still-INCLUDE_ASM sibling func_800620B8 -- the rule's five prongs are ALL mandatory, no partial-disclosed carve-out exists. Next action: Do not commit the include/game.h aggregate declaration or the src/text1b.c epilogue rewrite yet. Either (1) hold this construct until func_800620B8 is decompiled and D_800F119C/D_800F11A0 can be fully rem"
  ],
  "origin": "queue",
  "created": "2026-07-24T03:28:39.877485+00:00",
  "banned_constructs": [
   "row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0; row[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;",
-  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'"
+  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'",
+  "extern Unk800F1198Record D_800F1198[]; replacing the three per-word externs, landed while undefined_syms_auto.txt:527-528 still declares D_800F119C and D_800F11A0"
  ],
- "ladder_skip": 12,
+ "ladder_skip": 14,
  "pending_fixup": null,
  "exhaustion_base": 12,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
