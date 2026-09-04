@@ -3062,3 +3062,51 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - probe: Read candidate.c's w.i.sched block order against its emitted .s (tmp/grind/CD_datasync/s29/dmp_cand/out.s), tracking each pseudo's def and death position.
 - result: CONFIRMED. candidate.c already emits lbu $2,0($17) / sll $2,$2,2 / addu $2,$2,$16 / lw $7,0($2) - target's arg4 chain modulo one register - with reg86 already receiving $a3 and insn 133's move already deleted as redundant. The gap is exactly one register-allocation decision, whose predicate is the count of scratch pseudos live across sched1 positions 4-7.
 - verdict: CONFIRMED
+
+## [s30] Both indices hoisted as s32 locals in [0],[1] order with the VALUE locals assigned arg5-first then arg4 gives arg4's index read the lowest LUID while putting arg5's scaling chain below arg4's, which is the exact LUID geometry target's window requires.
+- mechanism: sched.c ranks a priority tie by INSN_LUID, and priority here is depth-from-block-start (s30 correction), so the two tbl_125c chains are separated only by the order in which their RTL was emitted. calls.c expands inline argument values in ascending argument index, and a value-local statement emits its chain at the statement's own (lower) LUID, so statement order is the only LUID lever the source has.
+- probe: tmp/grind/CD_datasync/s30/gen2.py -> b1 (s32 indices), b2 (u8 indices), b5 (+arg2 value local), b6 (no index locals, arg5 then arg4), b7 (one index local); compiled with tmp/grind/CD_datasync/s30/sweep.sh and classified by window signature with s30/rep.py.
+- result: KILLED (instance). All five emit ONE window - candidate.c's window with the two lbu reads transposed (lbu v1,1(s1) | lbu v0,0(s1) | ...), lev 8 vs candidate's 7. The index copies fold in combine (s24's kill re-confirmed on this chassis), so the index read never separates from its chain: whichever argument's value-local statement comes first takes BOTH window slot 1 and the first-completed chain. Measured on the HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present.
+
+## [s30] A named s32 index local for arg4 with arg4 left INLINE and arg5 hoisted as a value local before it (a1) puts arg4's lbu at the lowest LUID while arg5's whole chain sits below arg4's scaling, splitting arg4's chain the way target does.
+- mechanism: s28 recorded that `s32 i4 = idx_1494[0];` assigned first with arg4 inline plus a co-present value local produces target's split arg4 chain (lbu early, deferred addu, value load last). Combining that with an arg5 value local should also invert the two chains' LUID order.
+- probe: tmp/grind/CD_datasync/s30/gen.py -> a1 (s32 i4), a2 (u8 i4), a4 (+arg2 local), a5 (+i5 local), a7 (*idx_1494 spelling), plus controls c1 (arg5 local alone) and c2 (i4 alone), and b3 (both indices + arg5 value).
+- result: KILLED (instance). All eight emit ONE window at lev 13: the i4 copy folds into the inline arg4 chain, so arg4's lbu migrates to window slot 12 together with its sll/addu/lw and the block reverts to the all-inline geometry. The s28 split does not reproduce on the candidate chassis without the arg3 value local, and that configuration is the one that puts the split chain in $a3/$a2 (s28's 53-form scan). Measured on the HEAD chassis with the do{}while(0) FAKE present.
+
+## [s30] Adding a fifth value local (both indices + arg3 + arg4 + arg5) raises register pressure enough to spill a chain into $t0 and lengthen the block toward target's 18-insn window.
+- mechanism: s29's frontier asks for a third scratch pseudo live across arg4's address range; more value locals is the crudest way to create one.
+- result: KILLED (instance). b4 emits a chain in $t0 but a 17-insn WINDOW - the arg5 `sw ...,16($sp)` leaves the block, which is exactly the failure mode s28 recorded for all 53 of its $a0/$a3-mapped forms (reorg.c then has the store available for the printf delay slot). lev 14. Measured on the HEAD chassis with the do{}while(0) FAKE present.
+
+## [s30] KILL RE-AUDIT: no banked artifact is closer to target's printf WINDOW than candidate.c.
+- probe: tmp/grind/CD_datasync/s30/wscan.py over all 484 compiled forms in the s26/s27/s28/s30 asm directories, scoring window-levenshtein against target's 18-insn window instead of whole-function levenshtein.
+- result: CONFIRMED. Minimum window-lev is 7, reached only by the candidate.c family (candidate, m45, n4/n24/n42/n45/n245/n425/n452, ya4/ya45/ya4b/ya4c/yab4/yba4, za4*/zab4*). tools/fake_ablate.py is BROKEN on this host for this function (ERR on both keep-all and drop-1 variants), so s28's hand-built ya53_nowrap ablation remains the FAKE re-audit of record.
+
+## [s31] Both indices hoisted as s32/u8 locals in [0],[1] order with the value locals assigned arg5-first then arg4 splits arg4's LUID chain (index read early, scaling late) the way target's window requires.
+- mechanism: sched.c breaks a priority tie by INSN_LUID, and priority on this block is depth-from-block-start, so the two tbl_125c chains are separated only by RTL emission order. calls.c expands inline argument values in ascending argument index while a value-local statement emits its chain at the statement's own lower LUID, so statement order is the only LUID lever the source has.
+- probe: tmp/grind/CD_datasync/s30/gen2.py generated b1 (s32 indices), b2 (u8 indices), b5 (+arg2 value local), b6 (no index locals, arg5 then arg4), b7 (one index local); compiled with s30/sweep.sh and classified by emitted window signature with s30/rep.py against target's 18-insn puts->printf window.
+- result: All five emit a single window - candidate.c's window with the two lbu reads merely transposed (lbu v1,1(s1) | lbu v0,0(s1) | ...) - at lev 8 against candidate's 7. The index copies fold in combine, so the index read never separates from its own scaling chain: whichever argument's value-local statement is written first takes BOTH window slot 1 and the first-completed chain. a6 (i4 plus both value locals) lands in the same window.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 7 forms plus the candidate control, fast harness calibrated sandbox = lev + nop - 3
+
+## [s31] A named s32 index local for arg4 with arg4 left inline and arg5 hoisted as a value local before it keeps arg4's lbu at window slot 1 while deferring its scaling chain, reproducing s28's split arg4 chain on the candidate chassis.
+- mechanism: s28 recorded the split as triggered by an s32 index local assigned first with arg4 inline plus at least one co-present value local; pairing that with an arg5 value local should additionally invert the two chains' LUID order.
+- probe: tmp/grind/CD_datasync/s30/gen.py generated a1 (s32 i4), a2 (u8 i4), a4 (+arg2 local), a5 (+i5 local), a7 (*idx_1494 spelling), b3 (both indices + arg5 value), and controls c1 (arg5 local alone) and c2 (i4 alone).
+- result: All eight emit one window at lev 13: the i4 copy folds into the inline arg4 chain and arg4's lbu migrates to window slot 12 with its sll/addu/lw, reverting to the all-inline geometry. s28's split does not reproduce on the candidate chassis without the arg3 value local, and that configuration is exactly the one that lands the split chain in $a3/$a2 rather than $a0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; 8 forms plus the candidate control
+
+## [s31] Adding a fifth value local (both indices plus arg3, arg4 and arg5) raises register pressure enough to lengthen the printf block toward target's 18-insn window.
+- mechanism: s29's frontier asks for a third scratch pseudo live across arg4's address range; more value locals is the crudest way to create one.
+- probe: Form b4 in tmp/grind/CD_datasync/s30/gen2.py, compiled and window-classified with the same harness.
+- result: b4 does push a chain into $t0, but the arg5 sw ...,16($sp) leaves the block, producing a 17-insn window (lev 14) - the same failure mode s28 recorded for all 53 of its $a0/$a3-mapped forms, where reorg.c then has the store available for the printf delay slot.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; form b4
+
+## [s31] Some banked artifact from sessions 26-28 is closer to target's printf window than candidate.c, so the mandated kill re-audit should be run on it rather than on candidate.c.
+- mechanism: Previous sessions scored forms by whole-function levenshtein, which mixes the matched prologue/tail into the number; scoring the puts->printf window alone is the metric that decides the residual.
+- probe: tmp/grind/CD_datasync/s30/wscan.py over all 484 compiled forms in the s26/s27/s28/s30 asm directories, computing window-levenshtein against target's 18-insn window.
+- result: Minimum window-lev is 7 and it is reached ONLY by the candidate.c family (candidate, m45, n4/n24/n42/n45/n245/n425/n452, ya4/ya45/ya4b/ya4c/yab4/yba4, and the za4*/zab4* group). No banked artifact is closer, so every s21-s29 instance kill stands on the current chassis. tools/fake_ablate.py itself is broken on this host for this function (ERR on both the keep-all and drop-1 variants, its sweep_variants.py child returning no score), so s28's hand-built ya53_nowrap ablation remains the FAKE re-audit of record.
+- verdict: CONFIRMED
