@@ -3210,3 +3210,79 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - probe: Every SELBEST/BLOCKAGE line in the CD_datasync pick block of both logs, read against the ready-list snapshot printed with it.
 - result: CONFIRMED. In u3 the pick at clock=12 is 'SELBEST insn=93 pos=1' over a ready list headed by 104 - the blockage model, not the LUID rule, is what drags idx[0]'s lbu from emission slot 1 to slot 11; the same override fires at clock=8 on insn 98 (pos=2). In candidate.c no override touches 93: it is picked last at clock=22 and emitted first. The mechanism of record for the residual is the blockage model plus the LUID term, not priority (s24/s29/s30/s31), not a combine fold (s30/s31, already killed by s32), not local-alloc (s29).
 - verdict: CONFIRMED
+
+## [s36] The do{}while(0) FAKE is an inert carrier occupying a pseudo that a real argument-block lever wants (mandated kill re-audit, widened from candidate.c to all three live families)
+- mechanism: func_8002EA24-s8 failure mode - a FAKE sitting on the pseudo a lever targets voids every "lever inert" verdict measured beside it. s34/s35 both re-ran the same candidate.c ablation; the families that actually carry the closest geometries (value-local x2, pointer-local y1, index-local u3/u1) had never been ablated on the current chassis.
+- probe: tmp/grind/CD_datasync/s36/nowrap.py replaces `do { ... } while (0);` with a plain compound block, nothing else changed, on x2 / y1 / w0_u3 / u1; all four compiled through s36/sweep.sh and compared window-to-window against their wrapped twins.
+- result: KILLED (instance). Every ablated form's emitted printf window is textually identical to its wrapped twin except that the two callee-saved base registers renumber $16/$17 -> $17/$18; the scores move 8->18, 9->19, 13->23, 15->24 entirely from that rotation. The wrapper carries the callee-saved assignment and nothing else, in all three families. Every s21-s35 instance kill measured beside it stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals), four bodies (x2, y1, w0_u3, u1) each with the do{}while(0) FAKE hand-ablated; s36 harness, lev+nop calibrated to the live sandbox
+
+## [s36] Some spelling that changes which memory operations are adjacent in the printf block - an arg2 value local, an arg3 index local, a second index local, a fifth value local - removes the sched1 blockage override that sinks idx[0]'s lbu in the index-local family (inherited s34 frontier item 2, stated verbatim)
+- mechanism: s34 read the pick logs and found the sink is `SELBEST clock=12 insn=93 pos=1` - schedule_select skipping the sorted head of the ready list because the unit-0 (memory) blockage model says the head cannot issue at that clock. The blockage cost depends on which memory insns are already in the partial schedule, so moving one load or lbu within the block was the named lever.
+- probe: fifteen index-local spellings compiled with the instrumented cc1 through tmp/grind/CD_datasync/s36/sweep.sh - w0 (bare index local), w1/w2 (arg2 value local before/after it), w3/w4 (arg3 index local in both orders), w5/w6 (both indices hoisted in both orders), w8/w9 (arg5 value local, with and without arg2), w11/w12 (three index locals), w13 (index + arg3 index + arg5 value), x1/x3 (arg5 value local with arg4 inline, both orders). Classified by emitted window AND by the SELBEST list, per s34's instruction.
+- result: KILLED (instance). All fifteen emit a BYTE-IDENTICAL 15-insn window at lev 13 (`lbu idx1 | lbu arg3 | lw arg2 | sll a5 | addu a5 | sll a3 | lw a5val | addu a3 | sw | lbu idx0 | lw a2 | sll a4 | addu a4 | lw a4val | la`). The override never disappears: its insn UID moves with the spelling (i96/i93/i97/i102) but its clock (8, 12, 17), its position (pos=2, pos=1, pos=1) and the resulting emission are invariant. Load adjacency inside the argument list is not the variable the blockage model is reading.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 15 index-local spellings, instrumented-cc1 sched logs plus emitted windows
+
+## [s36] A pointer-valued arg4 whose index is written on the LEFT of the addition reaches target's index-first `addu` (the last untested spelling of the s26/s32 operand-order rule)
+- mechanism: s26 established that an inline subscript expands index-first and a pointer-typed named expression expands base-first, and s32 killed `&tbl_125c[idx]` and `(u8 *)tbl_125c + k` on that ground. Both spellings write the base first in the source, so the open question was whether the expander preserves the source operand order of the PLUS.
+- probe: y1/y2/y3 (`p4 = idx_1494[0] + tbl_125c;` in three statement orders, alone and crossed with arg5/arg3 value locals) and y6/y7 (`p4 = &idx_1494[0][tbl_125c];`, the reversed-subscript spelling), plus z2/z3/z5 (both arguments as pointers, both orders).
+- result: KILLED (instance). Every one of them emits `addu $3,$16,$3` - base first - exactly like s32's spellings, at lev 9/10. GCC 2.7.2 canonicalises the PLUS before expansion, so the source operand order of a pointer addition is not observable in the emitted addu. Since every value-expression spelling measured (inline or value local) emits index-first and target's `addu $a0,$a0,$s0` is index-first, target's arg4 is a value expression and not a pointer local - which retires the whole pointer family as an arg4 chassis rather than just the two spellings s32 killed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; 8 pointer spellings (y1,y2,y3,y6,y7,z2,z3,z5)
+
+## [s36] "idx[0]'s lbu emitted first" and "arg4's sll emitted after arg5's addu" are separable by some statement-order or naming choice within the value-local family
+- mechanism: target needs both, and the value-local family is the only family that reaches the first. If the two conditions were independent knobs, some assignment order over {arg2,arg3,arg4,arg5} value locals would satisfy both.
+- probe: z1 (arg4 then arg5), x2 (arg5 then arg4), z4 (arg4 value local then arg5 pointer), z6 (arg4 value local then arg5 index local), x4/x6/x7/x8/x9 (arg5 crossed with arg3 and arg2 in several orders), plus candidate.c as the arg4-only baseline.
+- result: KILLED (instance). The two conditions are the SAME condition in this family: whichever argument's chain is expanded first gets both its index lbu AND its sll emitted first. arg4-first forms (candidate, z1, z4, z6) all land lev 7 with arg4's sll ahead of arg5's; arg5-first forms (x2, x4, x7, x9) put idx[1]'s lbu at slot 1. The mechanism is the backward scheduler: both index lbus are leaves that become ready together and the LUID tie-break emits the lower-LUID one first, and that is the same LUID that puts its sll first. Decoupling them requires a LOW LUID on the lbu with a HIGH LUID on the sll - which is precisely the index local, and precisely the family the sched1 blockage override defeats.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; 10 value-local spellings, s36 harness
+
+## [s36] New closest-by-prefix artifact: arg5 and arg4 as value locals in that order reproduces target's window slots 3-6 exactly
+- mechanism: expanding arg5's chain first gives it the lower combine LUIDs, so its sll/addu are emitted before arg4's sll - the one ordering relation target has and candidate.c lacks.
+- probe: x2 = `arg5 = tbl_125c[idx_1494[1]]; arg4 = tbl_125c[idx_1494[0]]; printf(fmt, D_800F19C0, tbl_11dc[D_800A11D5], arg4, arg5);`
+- result: CONFIRMED for slots 3-6 (`lw arg2 | sll a5 | addu a5 | sll a4`), lev 8. The first form in 36 sessions to put arg5's scaling chain ahead of arg4's sll. It loses on the lbu order at slots 1/2 and on arg4's addu/value-load staying glued behind its sll. Banked as rejected/arg5-then-arg4-value-locals-gets-target-slots-3-6-but-swaps-lbu-order-8.c - an artifact, not a loss.
+- verdict: CONFIRMED
+
+## [s36] The do{}while(0) FAKE in candidate.c is an inert carrier occupying a pseudo that a real argument-block lever wants - re-audited across all three live families rather than only on candidate.c.
+- mechanism: func_8002EA24-s8 failure mode: a FAKE sitting on the pseudo a lever targets voids every 'lever inert' verdict measured beside it. s34/s35 both re-ran the same candidate.c ablation; the families carrying the closest geometries (value-local x2, pointer-local y1, index-local u3/u1) had never been ablated on the current chassis.
+- probe: tmp/grind/CD_datasync/s36/nowrap.py replaces the do{ }while(0) with a plain compound block, nothing else changed, on x2 / y1 / w0_u3 / u1; all four compiled through s36/sweep.sh and compared window-to-window with their wrapped twins.
+- result: Every ablated form's emitted printf window is textually identical to its wrapped twin except that the two callee-saved base registers renumber $16/$17 -> $17/$18; scores move 8->18, 9->19, 13->23, 15->24 entirely from that rotation. The wrapper carries the callee-saved assignment and nothing else, in all three families, so every s21-s35 instance kill measured beside it stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals); four bodies x2/y1/w0_u3/u1 with the do{}while(0) FAKE hand-ablated; s36 harness, lev+nop calibrated against the live sandbox (candidate.c lev 7 == sandbox 7)
+
+## [s36] Some spelling that changes which memory operations are adjacent in the printf block - an arg2 value local, an arg3 index local, a second index local, a fifth value local - removes the sched1 blockage override that sinks idx[0]'s lbu in the index-local family.
+- mechanism: s34 read the pick logs: the sink is SELBEST clock=12 insn=93 pos=1, schedule_select skipping the sorted head of the ready list because the unit-0 (memory) blockage model says the head cannot issue at that clock. The blockage cost depends on which memory insns are already in the partial schedule, so moving one load or lbu inside the block was the named lever (inherited s34 frontier item 2, verbatim).
+- probe: Fifteen index-local spellings compiled with the instrumented cc1 through tmp/grind/CD_datasync/s36/sweep.sh: w0 (bare index local), w1/w2 (arg2 value local before/after), w3/w4 (arg3 index local both orders), w5/w6 (both indices hoisted both orders), w8/w9 (arg5 value local with and without arg2), w11/w12 (three index locals), w13, x1/x3 (arg5 value local with arg4 inline, both orders). Classified by emitted window AND by the SELBEST list.
+- result: All fifteen emit a byte-identical 15-insn window at lev 13 (lbu idx1 | lbu arg3 | lw arg2 | sll a5 | addu a5 | sll a3 | lw a5val | addu a3 | sw | lbu idx0 | lw a2 | sll a4 | addu a4 | lw a4val | la). The override never disappears: its insn UID moves with the spelling (i96/i93/i97/i102) but its clocks (8, 12, 17), its positions (pos=2, pos=1, pos=1) and the emitted window are invariant. Load adjacency inside the argument list is not the variable the blockage model reads.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; 15 index-local spellings; instrumented-cc1 sched logs plus emitted windows
+
+## [s36] A pointer-valued arg4 whose index is written on the LEFT of the addition reaches target's index-first addu - the last untested spelling of the s26/s32 operand-order rule.
+- mechanism: s26 established that an inline subscript expands index-first and a pointer-typed named expression base-first; s32 killed &tbl_125c[idx] and (u8 *)tbl_125c + k on that ground. Both write the base first in the source, so the open question was whether the expander preserves the source operand order of the PLUS.
+- probe: y1/y2/y3 (p4 = idx_1494[0] + tbl_125c; in three statement orders, alone and crossed with arg5/arg3 value locals), y6/y7 (p4 = &idx_1494[0][tbl_125c];, the reversed-subscript spelling), z2/z3/z5 (both arguments as pointers, both orders).
+- result: All eight emit addu $3,$16,$3 - base first - exactly like s32's spellings, at lev 9/10. GCC 2.7.2 canonicalises the PLUS before expansion, so a pointer addition's source operand order is not observable in the emitted addu. Since every value-expression spelling measured emits index-first and target's addu $a0,$a0,$s0 is index-first, target's arg4 is a value expression, not a pointer local - which retires the pointer family as an arg4 chassis rather than just the two spellings s32 killed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; 8 pointer spellings (y1,y2,y3,y6,y7,z2,z3,z5)
+
+## [s36] The condition 'idx[0]'s lbu emitted first' and the condition 'arg4's sll emitted after arg5's addu' are separable by some statement-order or naming choice inside the value-local family.
+- mechanism: Target needs both conditions and the value-local family is the only family that reaches the first. If they were independent knobs, some assignment order over {arg2,arg3,arg4,arg5} value locals would satisfy both.
+- probe: z1 (arg4 then arg5), x2 (arg5 then arg4), z4 (arg4 value local then arg5 pointer), z6 (arg4 value local then arg5 index local), x4/x6/x7/x8/x9 (arg5 crossed with arg3 and arg2 in several orders), candidate.c as the arg4-only baseline.
+- result: The two conditions are the same condition in this family: whichever argument's chain is expanded first gets both its index lbu and its sll emitted first. arg4-first forms (candidate, z1, z4, z6) all land lev 7 with arg4's sll ahead of arg5's; arg5-first forms (x2, x4, x7, x9) put idx[1]'s lbu at slot 1. Mechanism: the backward scheduler leaves both index lbus ready together and the LUID tie-break emits the lower-LUID one first - the same LUID that puts its sll first. Decoupling them needs a LOW LUID on the lbu with a HIGH LUID on the sll, which is exactly the index local and exactly the family the blockage override defeats.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis with the do{}while(0) FAKE present; 10 value-local spellings, s36 harness
+
+## [s36] arg5 and arg4 spelled as value locals in that order reproduces target's window slots 3-6 exactly (lw arg2 | sll a5 | addu a5 | sll a4).
+- mechanism: Expanding arg5's chain first gives it the lower combine LUIDs, so its sll/addu are emitted before arg4's sll - the one ordering relation target has and candidate.c lacks.
+- probe: x2 = arg5 = tbl_125c[idx_1494[1]]; arg4 = tbl_125c[idx_1494[0]]; printf(fmt, D_800F19C0, tbl_11dc[D_800A11D5], arg4, arg5);
+- result: CONFIRMED for slots 3-6, lev 8 - the first form in 36 sessions with arg5's scaling chain ahead of arg4's sll. It loses only on the lbu order at slots 1/2 and on arg4's addu/value-load staying glued behind its sll. Banked as an artifact, not a loss.
+- verdict: CONFIRMED

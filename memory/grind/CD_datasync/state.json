@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 35,
+ "session_count": 36,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -213,23 +213,29 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "Instrumented-cc1 pick logs overturn the model every session since s24 worked under: nearly every insn in the printf window carries LAUNCH_PRIORITY, so rank_for_schedule's priority term is a constant t"
+  },
+  {
+   "session": 36,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "Floor holds at 7/91; synthesis merges 36 sessions into ONE statement - target needs idx[0]'s lbu emitted first AND arg4's sll emitted after arg5's addu, and the three live source families each reach e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some C spelling makes sched1 emit arg4's sll AFTER arg5's addu (96 after 121), which is the exact and only structural difference between candidate.c's emitted window and target's.",
-   "mechanism": "sched2 consumes sched1's output order as its LUIDs. With INSN_PRIORITY tied at LAUNCH_PRIORITY, sched1's order is set by the LUID term (lower combine LUID = emitted earlier) and by the blockage override; arg4's chain is emitted early precisely because it holds the lowest combine LUIDs in every spelling where arg4 is hoisted or expanded first.",
-   "next_probe": "Recompile the s30/s32 corpora with -da and classify each form by ONE predicate read from the .sched dump - does arg4's sll appear after arg5's addu in the CD_datasync block? No scoring needed. Then target the predicate directly: spellings whose combine LUID order is idx0.lbu << arg5's whole chain << arg4's sll/addu/value-load, with arg4 left INLINE so its value load is the fused load_register_parameters insn."
+   "hypothesis": "The sched1 blockage override that sinks idx[0]'s lbu in the index-local family is driven by the printf block's memory-op composition OUTSIDE the argument list - the puts call's setup, the CD_flush call, the block's entry/exit shape - not by the argument spelling, which is now measured invariant across 15 forms.",
+   "mechanism": "schedule_select's unit-0 blockage model (maxb=3) reads the partial schedule of the WHOLE basic block, which here runs from the .L80081C58 label through jal puts, the printf window, jal printf, jal CD_flush and the j to the merge label. Every s36 probe varied only the argument list and the override was invariant in clock and position - so the free variable that remains is the block's other contents and its boundaries.",
+   "next_probe": "On the index-local chassis (w0_u3), vary the BLOCK STRUCTURE rather than the argument list: the placement of the v0 = -1 assignment relative to the do{}while(0) body, and the timeout block duplicated into both condition arms (alt_dup_into_arms_7.c's chassis, byte-identical at 7 for the value-local family and never crossed with an index local). Do NOT move CD_flush() ahead of the printf - that is not semantics-preserving. Classify by s36/sweep.sh's SELBEST line for the printf block: has the clock-12 override on idx[0]'s lbu moved or vanished? Score only the forms whose override changes."
   },
   {
-   "hypothesis": "The sinking of idx[0]'s lbu in the index-local family is caused by schedule_select's unit-0 blockage override, so the lever is the number and spacing of memory operations in the block rather than the dependence graph.",
-   "mechanism": "u3's sched1 pick at clock=12 is SELBEST insn=93 pos=1 over a ready list headed by 104; candidate.c's block takes no such override. The block holds six loads and one store, and which of them are adjacent in the partial schedule feeds the blockage cost (BLOCKAGE unit=0 ... maxb=3).",
-   "next_probe": "Run tmp/grind/CD_datasync/s34/dbg.sh per form (one call each) and tabulate WHICH picks are overridden. Then test spellings that change load adjacency without changing the instruction multiset - the arg2 value local (moves the D_800F19C0 load), the arg3 index local (moves the D_800A11D5 lbu) - and check whether the override on 93 disappears. Classify by the presence of the override, not by score."
+   "hypothesis": "Target's arg4 is an INLINE value expression (index-first addu, value load at load_register_parameters) whose scaling chain is nonetheless expanded EARLY, which no spelling in the three measured families produces - so the lever is whatever gives an inline subscript a low-LUID sll.",
+   "mechanism": "s36 established that target's arg4 emits an index-first addu (so it is a value expression, not a pointer) and that its value load lands last (so it is passed inline, expanded by load_register_parameters). But its sll is emitted at slot 6, which every measured inline form defers to slot 12. In the value-local family the sll is early but the value load is early too; the two have never been separated for an inline argument.",
+   "next_probe": "Attack the ARGUMENT EXPANSION ORDER rather than the statement order: GCC 2.7.2 emits load_register_parameters in a fixed order, so change what the other four arguments cost. Sweep spellings where arg2/arg3/arg5 are inline or named in every combination WHILE arg4 stays inline (the complement of the s28 value-local space, which always named arg4 or hoisted its index), and read the .combine LUID of arg4's sll for each. Look for any form where arg4's sll holds a combine LUID below arg5's addu while arg4's value load stays above it."
   },
   {
-   "hypothesis": "The twins CD_sync and CD_ready share this printf block, so a form of either that takes no blockage override on its first argument lbu carries the answer for all three functions.",
-   "mechanism": "CD_ready s36/s46 record a byte-shape-identical do_timeout window and CD_sync s26 the same {sll,addu,sll} -> jal printf residual signature. s34's finding is a statement about pick-level scheduling of that shared block, a property of the shared source idiom rather than of CD_datasync's chassis.",
-   "next_probe": "Run tmp/grind/CD_datasync/s34/dbg.sh retargeted to each twin's file and function over that twin's banked best form and extract its pick block. Look for a twin whose block schedules its first argument lbu last (emitted first) while deferring that argument's scaling chain; if one exists, diff its combine LUID order against candidate.c's to isolate the spelling difference."
+   "hypothesis": "The twins CD_sync and CD_ready share this printf block, so the s36 family split and the blockage override transfer verbatim, and a twin whose surrounding block differs may already take a different override - which would name the chassis variable directly.",
+   "mechanism": "CD_ready s36/s46 record a byte-shape-identical do_timeout window and CD_sync s26 the same {sll,addu,sll} -> jal printf residual. s36's result is a statement about the shared source idiom's LUID geometry plus a blockage decision that depends on the enclosing block, and the twins' enclosing blocks are NOT identical (CD_ready has callbacks and a check-region, CD_datasync does not).",
+   "next_probe": "Retarget tmp/grind/CD_datasync/s36/sweep.sh (function name, file, and the s21 scorer's target vector) to CD_sync and CD_ready, run it over each twin's banked best form plus a bare index-local variant of it, and compare the SELBEST list for the printf block against CD_datasync's. A twin that does NOT take the clock-12 override on its idx[0] lbu identifies, by difference, exactly which surrounding-block property controls it."
   }
  ],
  "judge_constraints": [],
@@ -592,6 +598,38 @@
    "measured_on": "candidate.c and tmp/grind/CD_datasync/s32/u3.c on the HEAD chassis with the do{}while(0) FAKE present; instrumented-cc1 pick logs for both sched passes",
    "predicate_cite": "",
    "result": "Sixteen of the eighteen window insns are picked with pri=2130706433 = LAUNCH_PRIORITY; sched.c:4048 assigns it to every "
+  },
+  {
+   "session": 36,
+   "statement": "The do{}while(0) FAKE in candidate.c is an inert carrier occupying a pseudo that a real argument-block lever wants - re-audited across all three live families rather than only on candidate.c.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals); four bodies x2/y1/w0_u3/u1 with the do{}while(0) FAKE hand-ablated; s36 harness, lev+nop calibrated against the live sandbox (candidate.c lev 7 ",
+   "predicate_cite": "",
+   "result": "Every ablated form's emitted printf window is textually identical to its wrapped twin except that the two callee-saved b"
+  },
+  {
+   "session": 36,
+   "statement": "Some spelling that changes which memory operations are adjacent in the printf block - an arg2 value local, an arg3 index local, a second index local, a fifth value local - removes the sched1 blockage ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 15 index-local spellings; instrumented-cc1 sched logs plus emitted windows",
+   "predicate_cite": "",
+   "result": "All fifteen emit a byte-identical 15-insn window at lev 13 (lbu idx1 | lbu arg3 | lw arg2 | sll a5 | addu a5 | sll a3 | "
+  },
+  {
+   "session": 36,
+   "statement": "A pointer-valued arg4 whose index is written on the LEFT of the addition reaches target's index-first addu - the last untested spelling of the s26/s32 operand-order rule.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 8 pointer spellings (y1,y2,y3,y6,y7,z2,z3,z5)",
+   "predicate_cite": "",
+   "result": "All eight emit addu $3,$16,$3 - base first - exactly like s32's spellings, at lev 9/10. GCC 2.7.2 canonicalises the PLUS"
+  },
+  {
+   "session": 36,
+   "statement": "The condition 'idx[0]'s lbu emitted first' and the condition 'arg4's sll emitted after arg5's addu' are separable by some statement-order or naming choice inside the value-local family.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 10 value-local spellings, s36 harness",
+   "predicate_cite": "",
+   "result": "The two conditions are the same condition in this family: whichever argument's chain is expanded first gets both its ind"
   }
  ]
 }
