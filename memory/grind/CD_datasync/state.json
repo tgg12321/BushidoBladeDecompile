@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 42,
+ "session_count": 43,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -255,23 +255,29 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Structural sweep of 215 whole-function compiles kills the hoist-count, declaration-order, init-position, live-across-puts and type-narrowing axes, and finds a SECOND byte-distinct 7/91 function whose "
+  },
+  {
+   "session": 43,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "84 structural compiles: the mandated arg2-hoist kill survives FAKE ablation, arg2's chain LENGTH is killed as a lever, index locals and declaration scope collapse 16 source forms into the same two 7-s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the m011 chassis the residual is a single two-slot swap: arg2's lui/lw pair must move up into slots 43/44 and arg4's sll/addu must be split apart. Since arg2 hoisting is byte-inert (s42) and arg4's chain is emitted contiguously by expand_expr (s40), the swap must come from arg2's EXPRESSION being longer or shorter, not from its spelling.",
-   "mechanism": "s40's rank-order inversion says arg2's load must rank below the whole arg5 chain and above the two index lbu's - a narrow band - and the s42 m011 alignment now shows exactly which two insns sit in arg2's target slots. INSN_PRIORITY is the longest path to the block end, so changing arg2's chain LENGTH (e.g. reading D_800F19C0 through one more indirection, or writing the format-pointer store so the loaded value is a different expression) moves its rank without changing any other chain.",
-   "next_probe": "On alt_m011_arg4_arg5_locals_7.c, sweep arg2 EXPRESSIONS of differing dependence-chain length rather than differing spelling: D_800F19C0 read through a function-scope pointer alias initialised in the prologue, read as *(&D_800F19C0), read from a second global that aliases the same storage, and the same with the `D_800F19C0 = &D_800162C0;` prologue store moved inside the do-block so the value is a live pseudo rather than a reload. For each, read tmp/grind/CD_datasync/dumps/*.sched2 for where arg2's load lands and whether arg4's sll/addu separate. Score live anything that puts arg2's lui at slot 43."
+   "hypothesis": "The residual is a register-PRESSURE question, not an ordering question: target's window holds four live scratch chains around slots 47-51 ($a0 = idx0 address, $v0 = arg3 address, $v1 = arg5 value, $a1 = arg2 done) where m011 holds three and sequences them. A third live pseudo that is NOT arg3's materialised value would buy the $a0 spread without hoisting arg3's leaf pair into arg2's slots.",
+   "mechanism": "s43 pinned the $a0 allocation to 'arg4 assigned first + a third live scratch pseudo', and separately measured that arg2-as-a-local and a format-pointer local are both byte-inert (they never become the third pseudo). Only arg3's 5-insn chain currently supplies the pressure, and it pays slots 42/43 for it. Any other source of a fourth live value in the window is untried.",
+   "next_probe": "On the m011 chassis, sweep sources of a fourth live value that do not create an arg3 pseudo: (a) a FOURTH hoisted base pointer used by arg4 or by arg5 rather than by arg3 (the arg3 variant scored 11, s43 g9); (b) keeping `cnt` or `v0` live across the do_timeout block via the surrounding control flow (e.g. the timeout arm re-reading D_800F19BC after the printf) rather than via a new declaration; (c) letting CD_flush()'s own setup or the fifth argument's stack slot be scheduled above the printf. For each, read the emission for `lbu $a0,0($s1)` at slot 41 and check whether arg3's lui/lbu pair stays at 49/50."
   },
   {
-   "hypothesis": "Priority, not LUID, decides the leaf-load picks, so the lever is the LENGTH of one argument's dependence chain - a genuinely different expression for one argument, not a different spelling of the same one. (Inherited from s41; s42 sharpened it by killing every spelling axis while leaving chain length untouched, and by showing 11+ distinct emissions exist, so one of priority/LUID must be live.)",
-   "mechanism": "s34 found nearly every window insn carries LAUNCH_PRIORITY so the priority term looked like a constant tie, and s40 proved the LUID term inert for the leaves. s42 has now also killed hoist count, declaration order, init order, init position, before-puts liveness, arg2 hoisting and type narrowing - so no spelling axis remains, which forces the live variable to be the dependence-chain shape itself.",
-   "next_probe": "Dump BB2_PRIO_DEBUG (instrumented cc1 at tools/gcc-2.7.2/cc1) for m010, m011 and h7_l30_l40 - three forms with visibly different windows and the same 82 instructions - and tabulate the actual INSN_PRIORITY of all 15 window insns in each. If priorities differ across forms, s34's 'constant tie' is scoped too broadly; then compute from the s40 rank-constraint table which priority assignment produces target's order and which chain-length change realises it."
+   "hypothesis": "The three window families hold disjoint correct-slot sets and no measured form crosses two of them, so the correct source form is not a point in the lattice this ledger has been sweeping (value locals x index locals x order x scope x type) - it differs from all three families in a dimension outside that lattice.",
+   "mechanism": "43 sessions have swept spelling, declaration order, init position, hoist count, type narrowing, scope, index naming and assignment permutation; every one of those axes is now measured byte-inert or measured worse, and the ceiling is stuck at 6 of 16 window slots. Since the pure-C match provably exists, the live dimension must be one none of those axes touches - most plausibly the shape of the surrounding control flow (which arm the printf sits in, how the timeout branch re-joins), which is what sets liveness across the window.",
+   "next_probe": "Re-open the control-flow axis on the m011 chassis specifically (prior control-flow sweeps at s2/s3/s6/s7 predate both 7-scoring functions): sweep the do_timeout arm's join shape - inline return vs goto check, the check block duplicated into the timeout arm, the success path expressed as a while/for rather than the goto loop - and for each read the slot-41/43/47 signature rather than only the score."
   },
   {
-   "hypothesis": "The two 7-scoring functions have DISJOINT correct slots in the window (candidate.c 43,44,45,46; m011 42,45,46,48,49,50), so a third source form combining candidate's arg2 placement with m011's idx1/arg5 chain would score below 7 - i.e. the floor is a two-point set only because no measured form crosses the two.",
-   "mechanism": "candidate.c differs from m011 by exactly one bit (whether arg5 is a value local). That single bit trades arg2's slots 43/44 for the arg5 chain's slots 42/45/46/48 plus the arg3 leaf pair. If the two effects are separable, some third construct holds both.",
-   "next_probe": "Enumerate what distinguishes the two emissions at the RTL level: dump .sched1/.greg for m010 and m011 (pwsh tools/grinder/dump.ps1 CD_datasync, run once per applied form) and diff the argument-block insn lists to identify the single scheduling decision the arg5 local flips. Then look for a source construct that flips that decision WITHOUT giving arg5 a pseudo - e.g. arg5 duplicated into both branch arms of the surrounding structure, or arg5's subscript re-associated as tbl_125c[1 + idx_1494[0] - idx_1494[0] + ...]-free variants that keep one expression but change its consumer count."
+   "hypothesis": "Because the FAKE is worth 10-11 points on both 7-scoring functions, the honest floor recorded for this function is a FAKE-carrying floor, and the no-FAKE floor is 17-18. Any future family/ruling question about this function should be framed against the 17/18 number, not the 7.",
+   "mechanism": "s43 ablated the do{}while(0) on both chassis and measured 18 (m011) and 17 (m010). The sandbox does not strip an annotated do{}while(0) (it is a sanctioned family), so the recorded floor of 7 is genuinely FAKE-dependent - which matters for how a foreclosure record or a family grant for this residual is worded.",
+   "next_probe": "Before any escalation or ruling-request is drafted for CD_datasync, re-run `python3 tools/fake_ablate.py --func CD_datasync --file system --candidate memory/grind/CD_datasync/candidate.c` and record both numbers, so the record states the FAKE-free floor alongside the 7."
   }
  ],
  "judge_constraints": [],
@@ -281,38 +287,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 23,
-   "statement": "Computing a printf argument BEFORE the `puts(&g_str_cd_timeout)` call re-associates the block's register pressure toward target's shape, where arg4's address is parked in $a0 across the D_800A11D5 cha",
-   "kill_scope": "instance",
-   "measured_on": "do{}while(0) wrapper chassis with the FAKE present; 40 forms",
-   "predicate_cite": "",
-   "result": "KILLED for these 40 forms. Any single value moved before the call costs two to three instructions (build_insns 84-85, sc"
-  },
-  {
-   "session": 23,
-   "statement": "Some combination of index naming (raw or scaled), argument-value naming, and statement order in the timeout block scores below 7 on the do{}while(0) chassis.",
-   "kill_scope": "instance",
-   "measured_on": "do{}while(0) wrapper chassis with the FAKE present; 51 forms",
-   "predicate_cite": "",
-   "result": "KILLED for these 51 forms. Twenty-one tie the floor at 7 and nothing goes below; s21's scaled-index results are reproduc"
-  },
-  {
-   "session": 24,
-   "statement": "The banked s23 artifact alt_target_geometry_8.c scores 8/91 on the current chassis and differs from target by a single displacement of arg2's lui/lw.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; live sandbox plus fast harness, 3 bodies",
-   "predicate_cite": "",
-   "result": "Sandbox reports score 10, target_insns 91, build_insns 91 - not 8. The fast harness agrees exactly (lev 10, nop 3), and "
-  },
-  {
-   "session": 24,
-   "statement": "An extra dependence edge can be placed between arg4's lbu and its sll by naming the index in a local (i0 = idx_1494[0]; arg4 = tbl_125c[i0];), which is what target's scheduling order requires.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 10 forms, fast harness + window-signature classification",
-   "predicate_cite": "",
-   "result": "KILLED. z1, z6, z7 and z8 emit assembly BYTE-IDENTICAL to z9, which is the same body with no index local at all; all fiv"
-  },
   {
    "session": 24,
    "statement": "Hoisting only an index, or only arg5's value, into a named local changes the emission of the timeout block.",
@@ -742,6 +716,38 @@
    "measured_on": "HEAD chassis and m011 chassis, do{}while(0) FAKE present in both; 10 whole-function compiles grouped by md5",
    "predicate_cite": "",
    "result": "All seven m011-derived variants are byte-identical to m011 (single md5 1bb8643812d2793ab8a96cf8241c5f86) and all three c"
+  },
+  {
+   "session": 43,
+   "statement": "The s42 kill 'hoisting arg2 (D_800F19C0) into a value local is byte-inert on the m011 chassis' was measured with the do{}while(0) FAKE present, so it must be re-measured with the FAKE ablated before i",
+   "kill_scope": "instance",
+   "measured_on": "m011 chassis (goto loop, arg4+arg5 value locals after puts) measured BOTH with the do{}while(0) FAKE present and with it ablated to a plain brace block; 4 whole-function compiles, md5-classified",
+   "predicate_cite": "",
+   "result": "The kill survives ablation. WITH the FAKE, hoisted == inline byte-for-byte (md5 1bb8643812d2793ab8a96cf8241c5f86, lev 7)"
+  },
+  {
+   "session": 43,
+   "statement": "arg2's emission slot is set by its dependence-chain LENGTH and memory-dependence rather than by its spelling, so an arg2 expression of different chain length advances its lui into target's slot 43 (th",
+   "kill_scope": "instance",
+   "measured_on": "m011 chassis with the do{}while(0) FAKE present; 8 whole-function compiles plus s21 cmp.py window alignments for the baseline and the shortened-chain form",
+   "predicate_cite": "",
+   "result": "*(&D_800F19C0) is byte-identical to m011 (7). The shortened, memory-dependence-free chain (&D_800162C0) scores 9 and its"
+  },
+  {
+   "session": 43,
+   "statement": "Naming the two subscripts as index locals (i4 = idx_1494[0]; i5 = idx_1494[1];) decouples the leaf lbu emission order from the value-assignment order, so the leaf order can be set idx0-first while the",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, do{}while(0) FAKE present), 57 whole-function compiles md5-classified against candidate.c and alt_m011",
+   "predicate_cite": "",
+   "result": "Sixteen of the source forms collapse to exactly TWO emitted functions. The eight cells with arg4-local + arg5-local (c00"
+  },
+  {
+   "session": 43,
+   "statement": "Some spelling of arg3, of the format pointer, or of the value locals' declaration SCOPE moves the m011 window without paying arg3's register-pressure cost.",
+   "kill_scope": "instance",
+   "measured_on": "m011 chassis with the do{}while(0) FAKE present; 13 whole-function compiles, md5-classified",
+   "predicate_cite": "",
+   "result": "Eight of the thirteen are byte-identical to alt_m011 (one md5): the pointer-dereference arg3, the arg3 index local assig"
   }
  ]
 }
