@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 33,
- "current_modality": "structural",
+ "session_count": 35,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -201,23 +201,35 @@
    "floor": 7,
    "modality": "structural",
    "headline": "The ledger's mechanism of record is overturned by the RTL dumps: combine does NOT fold the hoisted index - the pre-scheduling RTL already carries target's exact LUID geometry - and sched1 alone sinks "
+  },
+  {
+   "session": 34,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "Dump-proven mechanism correction: nearly every insn in the printf window carries LAUNCH_PRIORITY, so rank_for_schedule's priority term is a constant tie and every s24-s31 priority-based programme is inert; the picks are decided by the LUID term and by schedule_select's memory-unit blockage override (SELBEST), and the residual is restated as 'sched1 must emit arg4's sll after arg5's addu'."
+  },
+  {
+   "session": 35,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "Instrumented-cc1 pick logs overturn the model every session since s24 worked under: nearly every insn in the printf window carries LAUNCH_PRIORITY, so rank_for_schedule's priority term is a constant t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole residual is ONE sched1 ready-list decision: whether the block's first instruction after the puts call is the idx[0] lbu (insn 93, target) or the idx[1] lbu (every spellable form). The pre-scheduling RTL of the index-local form ALREADY equals target's LUID geometry, so no expansion-side lever remains.",
-   "mechanism": "s32's dumps show .combine with insn 93 at position 1 and .sched with it at position 10, .lreg/.greg unchanged from .sched. Both 93 and 97 are dependence leaves, so the choice is made inside rank_for_schedule / the ready-list release logic in tools/gcc-2.7.2/sched.c, not by expand or combine. s16 measured that sixteen of nineteen picks in this block carry LAUNCH_PRIORITY (sched.c:3985 + birthing_insn_p while reload_completed == 0), so the ordinary priority model does not decide it and the actual comparison has never been read for THIS form.",
-   "next_probe": "Run the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1 - only the former carries the BB2_*_DEBUG hooks) with BB2_PRIO_DEBUG=1 and BB2_RANKDBG=1 over tmp/grind/CD_datasync/s32/u3.c AND over candidate.c, isolating the CD_datasync block by first recording its insn-id range from the -da dumps (u3: 87..134; the TU emits ~5.5k PRIODBG lines, so the range filter is mandatory). Diff the two runs at the FIRST pick after the puts call: in candidate.c insn 93 wins it, in u3 insn 97 does. Name the field that differs (priority, LAUNCH_PRIORITY status, ready-list release clock, or the LUID tie-break) - that field, and only that field, is what a C spelling must move."
+   "hypothesis": "Some C spelling makes sched1 emit arg4's sll AFTER arg5's addu (96 after 121), which is the exact and only structural difference between candidate.c's emitted window and target's.",
+   "mechanism": "sched2 consumes sched1's output order as its LUIDs. With INSN_PRIORITY tied at LAUNCH_PRIORITY, sched1's order is set by the LUID term (lower combine LUID = emitted earlier) and by the blockage override; arg4's chain is emitted early precisely because it holds the lowest combine LUIDs in every spelling where arg4 is hoisted or expanded first.",
+   "next_probe": "Recompile the s30/s32 corpora with -da and classify each form by ONE predicate read from the .sched dump - does arg4's sll appear after arg5's addu in the CD_datasync block? No scoring needed. Then target the predicate directly: spellings whose combine LUID order is idx0.lbu << arg5's whole chain << arg4's sll/addu/value-load, with arg4 left INLINE so its value load is the fused load_register_parameters insn."
   },
   {
-   "hypothesis": "u1 / vi53 is one register-allocation decision away from target's arg4 chain: it emits the split chain with target's index-first addu but coalesces the address pseudo and the value pseudo into a single register ($a3), where target keeps the address in $a0 and loads the value into $a3.",
-   "mechanism": "In u1 the address pseudo dies exactly at the value load, so local-alloc reuses its hard register as the load's destination. Target's two-register form needs the address pseudo still live, or a different scan order, at the moment the value load is allocated. s29 established the governing predicate: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so the scan is ascending register number and $a0 is only reachable once $v0/$v1/$a1/$a2/$a3 are taken or conflicting.",
-   "next_probe": "On the u1 chassis, sweep spellings that add exactly one more simultaneously-live scratch value across the slots where arg4's address pseudo lives (slots 4-16) WITHOUT shortening the 18-insn window - the arg2 value local, a second table-base pointer local, and an earlier-hoisted arg5 value load are the three candidates. Classify by whether the emitted arg4 chain uses TWO registers (address + value) rather than one, not by score: u1 is lev 15 and a structurally correct two-register variant may still score 12-15."
+   "hypothesis": "The sinking of idx[0]'s lbu in the index-local family is caused by schedule_select's unit-0 blockage override, so the lever is the number and spacing of memory operations in the block rather than the dependence graph.",
+   "mechanism": "u3's sched1 pick at clock=12 is SELBEST insn=93 pos=1 over a ready list headed by 104; candidate.c's block takes no such override. The block holds six loads and one store, and which of them are adjacent in the partial schedule feeds the blockage cost (BLOCKAGE unit=0 ... maxb=3).",
+   "next_probe": "Run tmp/grind/CD_datasync/s34/dbg.sh per form (one call each) and tabulate WHICH picks are overridden. Then test spellings that change load adjacency without changing the instruction multiset - the arg2 value local (moves the D_800F19C0 load), the arg3 index local (moves the D_800A11D5 lbu) - and check whether the override on 93 disappears. Classify by the presence of the override, not by score."
   },
   {
-   "hypothesis": "The twins CD_sync and CD_ready share this printf block and therefore this exact sched1 decision, so whichever twin's banked forms already issue the idx[0] lbu first carries the answer for all three functions.",
-   "mechanism": "CD_ready s36/s46 record a byte-shape-identical do_timeout window and CD_sync s26 records the same {sll,addu,sll} -> jal printf residual signature. s32's finding is a statement about a single sched1 pick inside that shared block, which is a property of the shared source idiom rather than of CD_datasync's surrounding chassis.",
-   "next_probe": "Run tmp/grind/CD_datasync/s30/wscan.py retargeted to each twin's function name and target .s over that twin's banked forms, and additionally dump .combine + .sched for each twin's best form. Look specifically for a twin whose .sched keeps its first argument lbu at block position 1; if one exists, diff its block's dependence graph against tmp/grind/CD_datasync/s32/w.i.combine to isolate what makes sched1 keep it there."
+   "hypothesis": "The twins CD_sync and CD_ready share this printf block, so a form of either that takes no blockage override on its first argument lbu carries the answer for all three functions.",
+   "mechanism": "CD_ready s36/s46 record a byte-shape-identical do_timeout window and CD_sync s26 the same {sll,addu,sll} -> jal printf residual signature. s34's finding is a statement about pick-level scheduling of that shared block, a property of the shared source idiom rather than of CD_datasync's chassis.",
+   "next_probe": "Run tmp/grind/CD_datasync/s34/dbg.sh retargeted to each twin's file and function over that twin's banked best form and extract its pick block. Look for a twin whose block schedules its first argument lbu last (emitted first) while deferring that argument's scaling chain; if one exists, diff its combine LUID order against candidate.c's to isolate the spelling difference."
   }
  ],
  "judge_constraints": [],
@@ -550,6 +562,36 @@
    "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; six spellings, one identical emitted window",
    "predicate_cite": "",
    "result": "All six spellings collapse to ONE window (lev 9) whose arg4 addu is emitted as addu v1,s0,v1 - BASE-first. The &-subscri"
+  },
+  {
+   "session": 34,
+   "statement": "The do{}while(0) wrapper in candidate.c is an inert carrier occupying a pseudo a real lever wants.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis, candidate.c body, live sandbox; hand-built ablation tmp/grind/CD_datasync/s34/nowrap.c scores 17 vs candidate.c's 7",
+   "result": "KILLED - the wrapper is load-bearing (7 vs 17, both build_insns 91)."
+  },
+  {
+   "session": 34,
+   "statement": "The printf window's pick order is decided by INSN_PRIORITY, so a C spelling that lengthens arg4's dependence chain between its lbu and its sll can move it.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c and s32/u3.c on the HEAD chassis with the do{}while(0) FAKE present; instrumented-cc1 BB2_SCHED_DEBUG/BB2_PRIO_DEBUG pick logs for both sched passes",
+   "result": "KILLED - sixteen of eighteen window insns are picked at pri=2130706433 (LAUNCH_PRIORITY), so rank_for_schedule's priority term is a constant tie and chain depth is never consulted."
+  },
+  {
+   "session": 35,
+   "statement": "The do{}while(0) wrapper in candidate.c is an inert carrier occupying a pseudo that a real lever wants.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals), candidate.c body, do{}while(0) FAKE ablated by hand; live sandbox",
+   "predicate_cite": "",
+   "result": "Score 17 / build_insns 91 against candidate.c's 7 / 91 measured on the same chassis this session. The wrapper is load-be"
+  },
+  {
+   "session": 35,
+   "statement": "The printf window's pick order is decided by INSN_PRIORITY, so a C spelling that lengthens arg4's dependence chain between its lbu and its sll can move it.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c and tmp/grind/CD_datasync/s32/u3.c on the HEAD chassis with the do{}while(0) FAKE present; instrumented-cc1 pick logs for both sched passes",
+   "predicate_cite": "",
+   "result": "Sixteen of the eighteen window insns are picked with pri=2130706433 = LAUNCH_PRIORITY; sched.c:4048 assigns it to every "
   }
  ]
 }
