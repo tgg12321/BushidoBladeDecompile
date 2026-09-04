@@ -1,3 +1,21 @@
+/* s51 UPDATE (2026-09-04, rederive).  THIS BODY IS UNCHANGED and remains the
+ * floor at 2 / 91 (re-verified live this session: score 2, build 91, target 91,
+ * rules_dropped 0).  s51 transplanted CD_ready's s69 statement-order lever and
+ * found a SECOND, DISJOINT BASE: with arg5's chain emitted before arg4's shift
+ * chain the window is EMISSION-ORDER IDENTICAL to target across build idx
+ * 46-63 and the whole residual is a two-quantity seat swap ($a0 <-> $v1
+ * between arg4's address and arg5's value) - score 7 / 91, banked as
+ * progress/s51-order-exact-seats-swapped-7.c.  So the function is a two-body
+ * problem: THIS body has the seats and misses the order by one insn; that one
+ * has the order and misses the seats.  Killed on the new base: the index
+ * carrier variable (fresh local == function-scope v0, byte-identical at all 40
+ * matched interleavings), nested do{}while(0) refs weighting (28 forms, all
+ * regress), declaration order (48 permutations, all byte-identical at 7), and
+ * arg4 chain shape (16 forms, inert or worse).  Pass attribution is read, not
+ * guessed: both scheduling passes decide the transposition at the SAME tie -
+ * `RANKDBG last=114 y=112 cls=3 x=104 cls2=3 val=0`, resolved by
+ * INSN_LUID (tools/gcc-2.7.2/sched.c:2463).
+ */
 /* CD_datasync - SESSION 50 (rederive).  BEST BANKED FORM.  2 / 91.
  * sandbox CD_datasync --disable all => score 2, target_insns 91, build_insns 91
  * (engine-confirmed this session, rules_dropped 0).
