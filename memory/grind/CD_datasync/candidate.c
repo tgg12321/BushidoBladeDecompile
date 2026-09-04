@@ -1,3 +1,36 @@
+/* s56 UPDATE (2026-09-04, synthesis).  BODY UNCHANGED - still the floor at
+ * 2 / 91 (chassis re-verified live; mandated fake_ablate re-audit keep-all
+ * 2 / 91, drop-pp 11 / 89, drop-do{}while(0) 32 / 74, drop-both 32 / 74,
+ * identical to s53-s55).  s56 spent the two standing frontier items and
+ * banked three kills.  What a future session must carry:
+ *
+ * 1. THE ZERO-FAKE CHASSIS IS NOT A DIFFERENT FIXED POINT.  s55's F-outside
+ *    hope is dead: running the whole s50-s52 window programme on the zero-FAKE
+ *    goto-loop chassis (16 forms) tops out at 15 / 91, and pairdiff decomposes
+ *    that residual into the IDENTICAL two-body problem (seat-exact spelling =
+ *    the same `sll $a0` transposition; order-exact spelling = the same
+ *    $v1 / $a0 seat swap) PLUS a 13-point 3-cycle rotation of the callee-saved
+ *    seats (ours s0=param / s1=tbl_125c / s2=idx_1494 vs target s2 / s0 / s1)
+ *    that the do{}while(0) wrap fixes for free.  Different quantity table,
+ *    same contested outcome.  The tail shape (xeno vs candidate) is byte-inert.
+ *
+ * 2. THE RESIDUALS ARE NOW TYPED.  ra_solver's inverse_compose classify says
+ *    THIS body is a pure SCHED residual (3 slots, identical registers) and the
+ *    s51 order-exact base is a pure RA residual (6 insns, identical order).
+ *    inverse.py local --swap says the seat swap is REACHABLE with 23 one-atom
+ *    vectors in four classes; three classes are now measured dead (live_shrink
+ *    s53, live_extend-death s55, refs_down + copy-carrier refs_up s56).
+ *
+ * 3. THE REFS DIAL IS NAMING - MECHANISM READ OFF THE .lreg DUMP.  qty_n_refs
+ *    SUMS the refs of every pseudo merged into the quantity, each weighted x2
+ *    by the wrap's loop_depth.  A chain written through ONE named C local is
+ *    one pseudo => 4 refs (arg4's t0, arg5's value); the same chain left
+ *    anonymous is three temporaries merged into one quantity => 12 refs (the
+ *    arg5 ADDRESS chain, reg 97, and the arg3 chain, reg 103).  No measured
+ *    spelling lands in between: 8 split spellings all give 4 or 12, never 3.
+ *    And pure copy carriers (a5 = arg5;) are byte-inert - copy propagation
+ *    eats them before local-alloc, so they never buy the second pseudo.
+ */
 /* s55 UPDATE (2026-09-04, synthesis).  BODY UNCHANGED - still the floor at
  * 2 / 91 (chassis re-verified live: candidate 2 / 91, s52 third base 4 / 91,
  * s51 order-exact base 7 / 91, rules_dropped 0; mandated fake_ablate re-audit

@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 55,
+ "session_count": 56,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -333,23 +333,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Synthesis: the window invariants 2500 forms have been optimising against are artefacts of the do{}while(0) chassis (zero-FAKE 91-insn chassis has 5-6 quantities at refs 6/6/6/2/2, not 4 at 12/12/4/4);"
+  },
+  {
+   "session": 56,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s55's zero-FAKE-chassis hope is dead (same two-body residual + a 13-point callee-save rotation), both banked bases are TYPED for the first time (candidate = pure SCHED 3-slot, order-exact base = pure "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The zero-FAKE 91-insn chassis is a live, never-ground search space: every window invariant the last five sessions optimised against belongs to the do{}while(0) wrap, not to CD_datasync, so the s50-s52 window levers must be re-measured there rather than assumed dead.",
-   "mechanism": "The wrap raises block 3's loop_depth (hence every qty_n_refs) and its note pair is a sched1 region boundary, so it fixes four of qty_compare_1's inputs before any statement-level lever is applied. The zero-FAKE goto-loop forms are insn-exact with the target (91) yet present five or six quantities at refs 6/6/6/2/2 and spans 8-20 - a different fixed point entirely. s9 adopted the wrap for its 24-30 instruction win and no session since has questioned it.",
-   "next_probe": "Take tmp/grind/CD_datasync/s55/ref/xeno-nesting-on-goto-loop-byte-inert-18.c (18/91, already renamed) as the base and run the s50-s52 window programme on IT: the void **pp pointer alias, the integer-typed arg4 address built by split-init, the named arg5 from an index local, and the arg4/arg5 statement interleavings. Read QTYDBG block 3 each time rather than the score, and ask specifically whether any lever reaches the target's seats (arg5 -> $v1, arg4 -> $a0) on a chassis that starts at refs 6/6/6/2/2."
+   "hypothesis": "The floor body's residual is a PURE SCHEDULER residual of 3 slots (ra_solver classify), and the scheduler solver has never been pointed at it - sched_solver can decide order-exactness on the SEAT-CORRECT body instead of chasing the seats on the order-correct body.",
+   "mechanism": "Every session since s50 has attacked the seat swap on the order-exact base, i.e. the RA side of the two-body problem. classify says the 2 / 91 body needs no register change at all: same instructions, same registers, 3 slots out of order - which is exactly tools/sched_solver's and inverse_sched.py's domain (the emission tie is RANKDBG last=114 y=111 cls=3 x=106 cls2=3 val=0, resolved by INSN_LUID at sched.c:2463).",
+   "next_probe": "Apply memory/grind/CD_datasync/candidate.c, run tools/sched_solver/extract.py on system to build the pass-1/pass-2 block model, then tools/ra_solver/inverse_sched.py <model> --func CD_datasync --block 3 --pass 1 --target-object build/src/system.o --ours-object tmp/sandbox/CD_datasync/system.o --depth 3. A REACHABLE verdict names the LUID perturbation that sinks arg4's `sll $a0` past arg5's sll/addu pair with the seats untouched; a FORECLOSED verdict is the first predicate-cited class result this ledger would own."
   },
   {
-   "hypothesis": "tools/ra_solver's inverse_compose.py classify can type this residual as REACHABLE or FORECLOSED and rank the surviving C-lever vectors, which after s55's kills is cheaper than any further hand sweep.",
-   "mechanism": "The residual is stated in exactly ra_solver's input terms with every parameter dump-measured: two quantities in one block on the order-exact base, arg5-value (reg86, birth 18, death 24, refs 4, size 1, quantity number 2, wants $v1) and arg4-address (reg97, birth 16, death 22, refs 4, size 1, quantity number 1, wants $a0), the comparator qty_compare_1 with its *q1 - *q2 tie-break (local-alloc.c:1683), and find_free_reg handing out $v1 before $a0. All three hand-sweepable inputs are now measured dead: span (s55's F-b kill), refs (s55's 24-placement note sweep) and quantity number (s54).",
-   "next_probe": "Apply progress/s51-order-exact-seats-swapped-7.c, build tmp/sandbox/CD_datasync/system.o, run tools/ra_solver/inverse_compose.py classify against build/src/system.o as target with the measured quantity table, and ask which single parameter change flips the sort order. A REACHABLE verdict on any vector other than span / refs / quantity number is a lever no hand sweep has reached; a FORECLOSED verdict for the wrapped chassis is the argument for spending the remaining effort on the zero-FAKE chassis instead."
+   "hypothesis": "The 13-point callee-saved 3-cycle rotation on the zero-FAKE chassis is a global.c allocno-order residual that is separately attackable, and closing it would give a FAKE-free body at the wrapped chassis' score.",
+   "mechanism": "global.c orders allocnos by allocno_compare (refs weighted by loop_depth) and hands out callee-saved registers in that order. The four spanning values are the `a0` parameter and the three table pointers; their DECLARATION and INITIALISATION order, and which of them is read inside the timeout region, are ordinary-C dials on that order. The wrap currently supplies the weighting for free, which is why the rotation has never been seen, let alone attacked.",
+   "next_probe": "On progress/s56-zerofake-best-15.c sweep the declaration order and the initialisation order of {tbl_11dc, idx_1494, tbl_125c} x the position of the `D_800F19C0 = &D_800162C0;` store, reading the .greg dump's allocno order rather than the score. If any permutation reaches target's s2=param / s0=tbl_125c / s1=idx_1494, the zero-FAKE chassis drops to the wrapped chassis' score with no FAKE units at all, and the do{}while(0) dependency in candidate.c can be retired."
   },
   {
-   "hypothesis": "The asymmetric-refs requirement can be met without an extra instruction only by an RTL pattern that mentions the arg5-value pseudo twice, and that set can be enumerated from the dumps rather than swept.",
-   "mechanism": "s55 proved a loop note CAN make qty_n_refs asymmetric here (reg86 refs 5 against the invariant 4) and that it costs one instruction because the note is a sched1 region boundary in block 3. CD_ready s70's enumeration of flow.c shows the only instruction-free refs position left in the compiler is a second occurrence of the same pseudo inside one surviving insn's PATTERN: REG_NOTES are never walked (propagate_block's only sources are flow.c:1584, :1603 hard regs only, and :1625), self-stores die at delete_noop_moves and copies die at copy-propagation.",
-   "next_probe": "Enumerate the block-3 RTL patterns that could mention the arg5-value pseudo twice without adding an instruction - the outgoing-argument store, the printf CALL_INSN_FUNCTION_USAGE (hard regs only, so probably excluded), and any addressing form where the value is both address base and stored datum - checking each against the .lreg / .greg dumps for the order-exact base BEFORE spelling any C. If none exists, the refs axis is closed by enumeration rather than by sweep and the zero-FAKE chassis becomes the only live route."
+   "hypothesis": "Of inverse.py's four vector classes only live_extend-BIRTH survives (arg4-address birth 16 -> 14 with the emission order held), and it is decidable by dump rather than by sweep.",
+   "mechanism": "qty_death is pinned at 22 (arg4's own lw, s55) and qty births are even, so 16 -> 15 is unreachable and 16 -> 14 gives pri 10000 < the arg5 value's 13333 - the seats flip with the order untouched. s53 measured order-exact <=> birth 16 as exceptionless over its form space, but the birth is read AFTER sched1, so the identity is a claim about what sched1 does to the arg4 index load, not about where the C statement sits.",
+   "next_probe": "Take the s51 order-exact base and read the sched1 pick stream (BB2_SCHED_DEBUG, remembering blocks are picked BACKWARD) for the arg4 index lbu: identify what forces it down to birth 16 - dependence on the tbl_125c base, or rank_for_schedule's LUID tie. Then spell the ONE C change that gives that lbu an earlier ready time (a consumer that must precede arg5's address, or the index read through a different base local) and re-dump QTYDBG. Two or three forms decide it; a birth of 14 with order-exact emission is a 0."
   }
  ],
  "judge_constraints": [],
@@ -359,30 +365,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 37,
-   "statement": "The joint window goal is reached from the inline chassis by a PAIR of modelled input changes (any dependence edge or instruction cost, not just statement moves).",
-   "kill_scope": "instance",
-   "measured_on": "fully-inline argument chassis with the do{}while(0) FAKE present; sched_solver pass-1 block 3, exhaustive depth-2 over all 1332 atoms (886,446 pairs)",
-   "predicate_cite": "",
-   "result": "886,446 pairs, 0 hits, 980 s. Target's block-3 dependence graph sits more than two edges away from the fully-inline form"
-  },
-  {
-   "session": 38,
-   "statement": "The do{}while(0) FAKE is an inert carrier occupying a pseudo an argument-block lever wants, on the two closest-to-target banked forms (alt_target_geometry_8.c, alt_inline_chassis_13.c).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals); both forms measured with and without the do{}while(0) FAKE; 4 live sandbox measurements",
-   "predicate_cite": "",
-   "result": "KILLED. alt_target_geometry_8.c 10 -> 21; alt_inline_chassis_13.c 13 -> 23; build_insns stays 91 in both ablations, so t"
-  },
-  {
-   "session": 38,
-   "statement": "Target's printf-window order is reached from the fully-inline chassis by some permutation of the argument chains' source statement order - the space s37's atom-level depth-2 search structurally could ",
-   "kill_scope": "instance",
-   "measured_on": "fully-inline chassis (alt_inline_chassis_13.c, re-measured 13/91) with the do{}while(0) FAKE present; sched_solver model re-extracted with that form in src/ (parity=True); 40,320 simulated orders",
-   "predicate_cite": "",
-   "result": "KILLED. 0 of 40,320 orders reach target's window order; best window prefix 0/15. The perturbation is not inert - it prod"
-  },
   {
    "session": 38,
    "statement": "Target's printf-window order is reached from the candidate.c chassis by some permutation of the argument chains' source statement order.",
@@ -834,6 +816,30 @@
    "measured_on": "the s51 order-exact-seats-swapped chassis (7 / 91) with the s9 do{}while(0) FAKE and the void **pp pointer-alias FAKE present, 24 loop-note placements; refs read from BB2_QTY_DEBUG block-3 tables rath",
    "predicate_cite": "",
    "result": "Two mechanism facts, no closing form. (1) The asymmetry IS reachable: w5, a wrap around `arg5 = tbl_125c[i5];` alone, is"
+  },
+  {
+   "session": 56,
+   "statement": "The zero-FAKE 91-insn goto-loop chassis has a different local-alloc fixed point from the do{}while(0)-wrapped chassis, so the s50-s52 window levers reach the target's $v1/$a0 seats there.",
+   "kill_scope": "instance",
+   "measured_on": "the zero-FAKE goto-loop chassis (no do{}while(0) wrap), both tail shapes, with and without the void **pp pointer-alias FAKE, 16 forms scored on HEAD's src/system.c",
+   "predicate_cite": "",
+   "result": "KILLED. Best zero-FAKE form 15 / 91 (integer-typed split-init arg4 address + void **pp); tail shape byte-inert across al"
+  },
+  {
+   "session": 56,
+   "statement": "The arg4-address quantity's qty_n_refs can be lowered from 4 to 3 (inverse.py's minimal vector #1) by respelling the index/address chain so the quantity merges fewer pseudos.",
+   "kill_scope": "instance",
+   "measured_on": "the s51 order-exact-seats-swapped chassis (7 / 91) with the s9 do{}while(0) FAKE and the void **pp pointer-alias FAKE present; 8 spellings, each QTYDBG-dumped",
+   "predicate_cite": "",
+   "result": "KILLED. No spelling lowers the quantity below refs 4. The six splitting spellings move it the WRONG way - refs 12 with d"
+  },
+  {
+   "session": 56,
+   "statement": "A pure copy carrier (`a5 = arg5;`) lifts the arg5-value quantity's refs from 4 to 8 at zero instruction cost, because local-alloc merges the quantities of a copy's source and destination and sums thei",
+   "kill_scope": "instance",
+   "measured_on": "the s51 order-exact-seats-swapped chassis (7 / 91) with the s9 do{}while(0) FAKE and the void **pp pointer-alias FAKE present; 4 copy-carrier forms, each QTYDBG-dumped",
+   "predicate_cite": "",
+   "result": "KILLED. All four are byte-inert at 7 / 91 with a block-3 quantity table bit-identical to the base (arg5 still birth 18 d"
   }
  ]
 }
