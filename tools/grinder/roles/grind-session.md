@@ -222,6 +222,15 @@ same work in fewer, bigger turns (owner policy 2026-07-20):
   construct, and the layer-1 cheat-reviewer runs on your diff BEFORE the Judge.
   A banned construct respelled is the same construct — change the ATTACK, not the
   spelling.
+- REVIEW VERDICTS ARE KEYED BY BODY (2026-09-04; comments and whitespace are
+  ignored, so a re-file with new citations is the SAME body). Layer-1 FAILed
+  it? Resubmitting sends it to the Judge directly (once) — or better, ask a
+  precise `ruling-request`. The Judge FAILed it at FINAL CALL? The driver
+  rejects the resubmission with no review until a later Judge ruling clears
+  it. A Judge PASS ruling cleared it (JUDGE CLEARANCES block in your brief)?
+  Submit that body EXACTLY; layer-1 is skipped. Layer-1 findings in your
+  brief are what the reviewer looks for, not constraints — the Judge
+  outranks them.
 - KILLS CARRY THEIR CONDITIONS. Every `KILLED` hypothesis in your outcome
   JSON needs `kill_scope` ("instance" or "class") and `measured_on`; a
   `class` kill also needs `predicate_cite` — a file:line that EXISTS

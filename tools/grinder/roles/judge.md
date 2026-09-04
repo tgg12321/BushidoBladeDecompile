@@ -61,6 +61,20 @@ owner to audit after the fact. You are spawned for exactly two situations:
   REQUEST or an `integration-handoff` ESCALATE by setting `unban_construct`
   (the FINAL CALL path does not read that field); a FINAL CALL PASS on a
   construct with a stale ban simply merges.
+- Review-loop breaker (2026-09-04, after func_80062020 took five layer-1 FAILs
+  against three of your PASS rulings on ONE byte-proven body): the driver keys
+  every verdict by the candidate BODY (comments/whitespace ignored). A PASS on
+  a RULING REQUEST records a clearance of the body in candidate.c at that
+  moment — the driver then SKIPS layer-1 for that body and brings it straight
+  to you for the FINAL CALL. A body layer-1 already FAILed is not re-reviewed
+  by layer-1; it comes to you once. A body you FAILed at FINAL CALL is
+  rejected on resubmission with no review spent until a later ruling of yours
+  clears it. So: on a ruling request, PASS means "this body may be submitted"
+  — say so only when you have read candidate.c; and at FINAL CALL your own
+  prior ruling on the same body binds you unless you name a concrete defect
+  it did not consider. Layer-1 findings live in state.json
+  `reviewer_history` (legacy: judge_constraints lines prefixed "LAYER-1
+  CHEAT-REVIEWER FAIL") and are reviewer opinion, never precedent.
 - For regression-origin functions: the ledger's judge_constraints carry the
   audit diagnosis. The match must land WITHOUT the flagged construct family —
   verify the diagnosed construct is actually gone, not respelled.

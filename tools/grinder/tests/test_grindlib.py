@@ -1291,5 +1291,75 @@ class TestDeclarationPunScan(unittest.TestCase):
         self.assertEqual(G.scan_declaration_puns(self.root, "func_X"), [])
 
 
+class TestReviewLoopBreaker(unittest.TestCase):
+    """2026-09-04: body-keyed review verdicts close the layer-1/Judge loop."""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "text1b")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_body_hash_ignores_comments_and_whitespace(self):
+        a = "/* s14 header */ s32 func_X(s32 a) { return a + 1; }\nvoid f(void) { func_X(3); }"
+        b = "s32   func_X (s32 a)\n{ // re-filed with new citations\n  return a+1; }"
+        self.assertEqual(G.body_hash(a, "func_X"), G.body_hash(b, "func_X"))
+        self.assertNotEqual(G.body_hash(a, "func_X"), G.body_hash(a.replace("+ 1", "+ 2"), "func_X"))
+
+    def test_body_hash_keys_on_the_function_not_the_file(self):
+        a = "s32 other(void) { return 0; } s32 func_X(s32 a) { return a; }"
+        b = "s32 other(void) { return 99; } s32 func_X(s32 a) { return a; }"
+        self.assertEqual(G.body_hash(a, "func_X"), G.body_hash(b, "func_X"))
+        # a prototype / call is not the definition
+        self.assertEqual(G.extract_function_body(G.normalize_c("s32 func_X(s32); s32 func_X(s32 a){return a;}"), "func_X"),
+                         "func_X(s32 a){return a;}")
+        self.assertIsNone(G.extract_function_body(G.normalize_c("s32 func_X(s32);"), "func_X"))
+        self.assertTrue(G.body_hash("no such function here", "func_X"))  # falls back, never empty
+
+    def test_disposition_timeline(self):
+        h = "abcd"
+        self.assertEqual(G.review_disposition(self.root, "func_X", h), "fresh")
+        G.record_review_verdict(self.root, "func_X", "layer1", "FAIL", h, "smells")
+        self.assertEqual(G.review_disposition(self.root, "func_X", h), "layer1-repeat")
+        G.record_judge_clearance(self.root, "func_X", h, "decisions.md 2026-09-04 ruling PASS", "ordinary C")
+        self.assertEqual(G.review_disposition(self.root, "func_X", h), "judge-cleared")
+        # a later layer-1 FAIL does not outrank the Judge
+        G.record_review_verdict(self.root, "func_X", "layer1", "FAIL", h, "still smells")
+        self.assertEqual(G.review_disposition(self.root, "func_X", h), "judge-cleared")
+        G.record_review_verdict(self.root, "func_X", "judge", "FAIL", h, "final call")
+        self.assertEqual(G.review_disposition(self.root, "func_X", h), "judge-failed")
+        # a NEW ruling PASS re-clears it
+        G.record_judge_clearance(self.root, "func_X", h, "later ruling", "ban was stale")
+        self.assertEqual(G.review_disposition(self.root, "func_X", h), "judge-cleared")
+        # other bodies are untouched
+        self.assertEqual(G.review_disposition(self.root, "func_X", "ffff"), "fresh")
+
+    def test_reviewer_notes_are_not_constraints(self):
+        G.add_reviewer_note(self.root, "func_X", "LAYER-1 CHEAT-REVIEWER FAIL: x")
+        G.add_reviewer_note(self.root, "func_X", "LAYER-1 CHEAT-REVIEWER FAIL: x")  # dedupe
+        G.add_judge_constraint(self.root, "func_X", "keep the epilogue as one tree shape")
+        G.add_judge_constraint(self.root, "func_X", "keep the epilogue as one tree shape")  # dedupe
+        G.add_judge_constraint(self.root, "func_X", "LAYER-1 CHEAT-REVIEWER FAIL: legacy line")
+        st = G.load_state(self.root, "func_X")
+        self.assertEqual(len(st["reviewer_history"]), 1)
+        self.assertEqual(len(st["judge_constraints"]), 2)
+        jc, notes = G.split_constraints(st)
+        self.assertEqual(jc, ["keep the epilogue as one tree shape"])
+        self.assertEqual(len(notes), 2)
+        brief = G.build_brief(self.root, "func_X", "structural", "/tmp/o.json")
+        self.assertIn("NOT precedent", brief)
+        self.assertNotIn("  - LAYER-1 CHEAT-REVIEWER FAIL: legacy line\n\nRejected", brief)
+
+    def test_review_context_block(self):
+        G.record_judge_clearance(self.root, "func_X", "abcd", "ref1", "ordinary C, clear bans 3-4")
+        G.record_review_verdict(self.root, "func_X", "layer1", "FAIL", "abcd", "laundered")
+        blk = G.render_review_context(self.root, "func_X", "abcd")
+        self.assertIn("Judge PASS rulings on record", blk)
+        self.assertIn("Prior verdicts on THIS EXACT body", blk)
+        self.assertIn("not precedent", blk)
+        self.assertIn("no prior review verdict", G.render_review_context(self.root, "func_X", "zzzz"))
+
+
 if __name__ == "__main__":
     unittest.main()

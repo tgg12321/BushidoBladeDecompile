@@ -18,6 +18,7 @@ The ledger (memory/grind/<func>/) is the pipeline's persistent brain:
 Spec: docs/superpowers/specs/2026-07-06-grinder-pipeline-design.md
 """
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -1077,8 +1078,184 @@ def apply_outcome(root, func, o, modality):
 
 def add_judge_constraint(root, func, text):
     st = load_state(root, func)
-    st["judge_constraints"].append(text)
+    # Exact-duplicate lines are noise the next session pays to re-read.
+    if text and text not in st["judge_constraints"]:
+        st["judge_constraints"].append(text)
     save_state(root, func, st)
+
+
+# ---------------------------------------------------------------------------
+# REVIEW-LOOP BREAKER (2026-09-04). func_80062020 spent 5 layer-1 FAILs and 3
+# Judge PASS rulings on ONE byte-proven body in a single evening; func_80072CD4
+# started the same loop the next hour. Root cause: layer-1 ran on every
+# submission, was not bound by per-function Judge PASS rulings, and read its
+# own prior FAILs (stored in judge_constraints) as precedent. Fix, mechanically:
+#   * every review verdict is keyed by a BODY HASH (comment- and
+#     whitespace-insensitive, so a comments-only re-file is the same body);
+#   * a Judge PASS ruling records a CLEARANCE of candidate.c's body — the driver
+#     skips layer-1 for that exact body (the Judge outranks layer-1 on policy,
+#     judge-sole-gate) and goes straight to bytes + FINAL CALL;
+#   * a body layer-1 already FAILed is not re-reviewed by layer-1 — it goes to
+#     the Judge (the authoritative default-FAIL gate) for one decision;
+#   * a body the Judge already FAILed at FINAL CALL (and no later clearance)
+#     is rejected by the driver with NO review spent;
+#   * layer-1 FAIL summaries live in `reviewer_history`, not judge_constraints,
+#     and the briefs say they are not precedent.
+# ---------------------------------------------------------------------------
+LAYER1_NOTE_PREFIX = "LAYER-1 CHEAT-REVIEWER FAIL"
+_C_COMMENT_RE = re.compile(r"/\*.*?\*/|//[^\n]*", re.S)
+
+
+def normalize_c(text):
+    """Strip C comments and collapse whitespace so two spellings of the SAME
+    code hash equal. Comments carry citations/annotations the reviewers read
+    in the diff itself; for loop detection only the code matters."""
+    text = _C_COMMENT_RE.sub(" ", text or "")
+    text = re.sub(r"\s+", " ", text).strip()
+    # drop every space that does not separate two identifier characters, so
+    # `a+1` and `a + 1` (and `){` vs `) {`) are the same body
+    return re.sub(r"(?<!\w) | (?!\w)", "", text)
+
+
+def extract_function_body(norm, func):
+    """`func`'s DEFINITION (identifier through its closing brace) from
+    normalized C text, or None. Skips prototypes/calls (no `{` after the
+    parameter list)."""
+    for m in re.finditer(r"\b" + re.escape(func) + r"\s*\(", norm):
+        i, depth = m.end() - 1, 0
+        while i < len(norm):
+            if norm[i] == "(":
+                depth += 1
+            elif norm[i] == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        j = i + 1
+        while j < len(norm) and norm[j] == " ":
+            j += 1
+        if j >= len(norm) or norm[j] != "{":
+            continue
+        depth = 0
+        for k in range(j, len(norm)):
+            if norm[k] == "{":
+                depth += 1
+            elif norm[k] == "}":
+                depth -= 1
+                if depth == 0:
+                    return norm[m.start():k + 1]
+        return None
+    return None
+
+
+def body_hash(text, func):
+    """16-hex-char key for the candidate BODY of `func` in `text` (a whole
+    src/*.c file or a bare candidate.c). Falls back to the whole normalized
+    text when the definition is not found, so a hash always exists."""
+    norm = normalize_c(text)
+    body = extract_function_body(norm, func) or norm
+    return hashlib.sha1(body.encode("utf-8")).hexdigest()[:16]
+
+
+def body_hash_from_file(path, func):
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            return body_hash(f.read(), func)
+    except OSError:
+        return ""
+
+
+def record_review_verdict(root, func, layer, verdict, h, summary=""):
+    """Append {layer, verdict, hash, when, summary} to state['review_ledger']."""
+    st = load_state(root, func)
+    st.setdefault("review_ledger", []).append({
+        "layer": layer, "verdict": verdict, "hash": h, "when": _now(),
+        "summary": (summary or "")[:300]})
+    save_state(root, func, st)
+
+
+def record_judge_clearance(root, func, h, ref, justification=""):
+    """A Judge PASS ruling on the body hashed `h` (candidate.c at ruling time).
+    Also logged to review_ledger as layer=judge verdict=PASS so the ordering
+    logic in review_disposition sees one timeline."""
+    st = load_state(root, func)
+    st.setdefault("judge_clearances", []).append({
+        "hash": h, "when": _now(), "ref": ref,
+        "justification": (justification or "")[:600]})
+    st.setdefault("review_ledger", []).append({
+        "layer": "judge", "verdict": "PASS", "hash": h, "when": _now(),
+        "summary": f"ruling PASS ({ref})"})
+    save_state(root, func, st)
+
+
+def review_disposition(root, func, h):
+    """What the record already says about body `h`:
+      judge-cleared  — the Judge's LAST word on this body is PASS (ruling
+                       clearance); layer-1 is skipped, bytes + FINAL CALL run.
+      judge-failed   — the Judge's LAST word on this body is FAIL; the driver
+                       rejects the resubmission without spending any review.
+      layer1-repeat  — no Judge word yet, but layer-1 already FAILed this body;
+                       layer-1 is skipped and the Judge decides once.
+      fresh          — never reviewed."""
+    st = load_state(root, func) or {}
+    events = [e for e in st.get("review_ledger", []) if e.get("hash") == h]
+    judge = [e for e in events if e.get("layer") == "judge"]
+    if judge:
+        last = sorted(judge, key=lambda e: e.get("when", ""))[-1]
+        return "judge-cleared" if last.get("verdict") == "PASS" else "judge-failed"
+    if any(e.get("layer") == "layer1" and e.get("verdict") == "FAIL" for e in events):
+        return "layer1-repeat"
+    return "fresh"
+
+
+def add_reviewer_note(root, func, text):
+    """Layer-1 FAIL findings: kept for the session to read, NEVER precedent."""
+    st = load_state(root, func)
+    st.setdefault("reviewer_history", [])
+    if text and text not in st["reviewer_history"]:
+        st["reviewer_history"].append(text)
+    save_state(root, func, st)
+
+
+def split_constraints(st):
+    """(judge_constraints without legacy layer-1 lines, reviewer notes incl.
+    legacy layer-1 lines). Ledgers written before 2026-09-04 stored layer-1
+    FAIL summaries in judge_constraints."""
+    jc = [str(c) for c in (st.get("judge_constraints") or [])]
+    legacy = [c for c in jc if c.startswith(LAYER1_NOTE_PREFIX)]
+    kept = [c for c in jc if not c.startswith(LAYER1_NOTE_PREFIX)]
+    notes = [str(n) for n in (st.get("reviewer_history") or [])]
+    return kept, legacy + [n for n in notes if n not in legacy]
+
+
+def render_review_context(root, func, h=""):
+    """Block for the layer-1 / Judge briefs: dated Judge clearances, prior
+    verdicts on THIS body, and the precedence rule."""
+    st = load_state(root, func) or {}
+    out = ["REVIEW RECORD (mechanical, from state.json review_ledger):"]
+    cl = st.get("judge_clearances") or []
+    if cl:
+        out.append("Judge PASS rulings on record (each is a DATED per-function ruling; it "
+                   "SUPERSEDES every ban, layer-1 FAIL, and older Judge FAIL for the "
+                   "construct it names — decide on the ruling's own terms, do not re-cite "
+                   "what it superseded):")
+        for c in cl[-4:]:
+            out.append(f"  - {c.get('when', '')[:16]} body={c.get('hash', '')} ref={c.get('ref', '')}: "
+                       f"{str(c.get('justification', ''))[:400]}")
+    if h:
+        ev = [e for e in st.get("review_ledger", []) if e.get("hash") == h]
+        if ev:
+            out.append(f"Prior verdicts on THIS EXACT body (hash {h}):")
+            for e in ev[-6:]:
+                out.append(f"  - {e.get('when', '')[:16]} {e.get('layer')} {e.get('verdict')}: "
+                           f"{str(e.get('summary', ''))[:200]}")
+        else:
+            out.append(f"This body (hash {h}) has no prior review verdict.")
+    out.append("PRECEDENCE: a layer-1 FAIL is a reviewer opinion, not precedent — never cite "
+               "'already FAILed by layer-1' as a ground. The Judge outranks layer-1 on policy "
+               "(judge-sole-gate). Bans and FAILs older than a Judge PASS ruling covering the "
+               "same construct are stale.")
+    return "\n".join(out)
 
 
 def autoescalate(root, func, file_stem, scan_tier, rule_count, date):
@@ -1606,6 +1783,7 @@ def cited_rule_scopes(root, func):
     texts = []
     st = load_state(root, func) or {}
     texts += [str(x) for x in st.get("judge_constraints", [])]
+    texts += [str(x) for x in st.get("reviewer_history", [])]
     texts += [str(x) for x in st.get("banned_constructs", [])]
     texts += [json.dumps(f) for f in st.get("frontier", [])]
     texts.append(json.dumps(st.get("floor_history", [])))
@@ -1657,7 +1835,23 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
     frontier = "\n".join(f"  - {f['hypothesis']}\n    mechanism: {f['mechanism']}\n"
                          f"    next probe: {f['next_probe']}"
                          for f in st["frontier"]) or "  (empty — build one)"
-    constraints = "\n".join(f"  - {c}" for c in st["judge_constraints"]) or "  (none)"
+    _jc, _rn = split_constraints(st)
+    constraints = "\n".join(f"  - {c}" for c in _jc) or "  (none)"
+    reviewer = ""
+    if _rn:
+        reviewer = ("\nLayer-1 reviewer findings (READ these — they say what the reviewer will look\n"
+                    "for — but they are NOT precedent and NOT constraints: the Judge outranks\n"
+                    "layer-1, and a later dated Judge PASS ruling supersedes them):\n"
+                    + "\n".join(f"  - {n[:400]}" for n in _rn[-6:]) + "\n")
+    clearances = ""
+    _cl = st.get("judge_clearances") or []
+    if _cl:
+        clearances = ("\n## JUDGE CLEARANCES ON RECORD (a Judge PASS ruling on a specific body)\n"
+                      "The driver SKIPS layer-1 for a candidate whose body hash matches one of these\n"
+                      "(comments/whitespace ignored) and runs bytes + FINAL CALL directly. If the\n"
+                      "cleared body is the one in candidate.c, submit it EXACTLY — do not respell it.\n"
+                      + "\n".join(f"  - {c.get('when', '')[:16]} body={c.get('hash', '')} ref={c.get('ref', '')}: "
+                                  f"{str(c.get('justification', ''))[:240]}" for c in _cl[-3:]) + "\n")
     # Banned constructs get their own loud block ABOVE the ledger state: the audit
     # found 59% of FAILs sitting in respelling loops, where the constraint existed
     # but read as advice buried in a list. This one is mechanically enforced.
@@ -1797,7 +1991,7 @@ modality for THIS session is: **{modality}**
 {psyq}
 {ksweep}{chassis}
 {MODALITY_PLAYBOOK[modality]}
-{scopes}{fixup}{directive}{consistency}{dmodel}{banned}
+{scopes}{fixup}{directive}{consistency}{dmodel}{banned}{clearances}
 ## Ledger state (your inheritance — do not re-derive any of it)
 Floor history:
 {floors}
@@ -1807,7 +2001,7 @@ Live frontier:
 
 Judge constraints (BINDING — forms/techniques already ruled out):
 {constraints}
-
+{reviewer}
 Rejected forms bank (do NOT re-propose; full list in memory/grind/{func}/rejected/): {(f"{len(rejected)} total, newest: " + ', '.join(rejected[-12:])) if len(rejected) > 12 else (', '.join(rejected) or '(empty)')}
 
 READ before working: memory/grind/{func}/evidence.md, memory/grind/{func}/hypotheses.md,
@@ -1836,6 +2030,7 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - "candidate-ready" means: sandbox distance 0 THIS session, edits in place in src/. The driver re-verifies bytes itself — never claim it speculatively.
 - KILL SCOPE IS MANDATORY. `kill_scope` is REQUIRED on every KILLED hypothesis; `instance` is the normal choice = "this form, on this chassis, with these FAKE constructs present, measured N" — re-testable. `class` = "every form fails predicate P" and needs `predicate_cite` as file:line. The check reads your STATEMENT field only (your `result` narration is free prose): wording like "unreachable", "any natural geometry", "all forms", "impossible" in the STATEMENT of an instance kill makes the session INVALID. Say what you measured, not what you inferred.
 - SELF-VET IS MANDATORY FOR candidate-ready. Before you write the outcome JSON, write memory/grind/{func}/self_vet.md using the template in your role prompt: a CONSTRUCTS: line, the six cheat-checklist tests answered IN WRITING for every construct in your diff, a SANCTIONED-FAMILY-CLAIMS: section (each claimed family carrying its rule's SCOPE sentence quoted VERBATIM plus a PRECEDENT as file:line or a commit hash), and an ANNOTATION-CONFORMANCE: line. The driver checks all of that mechanically and DISCARDS a candidate-ready session that lacks it — the same disposition as a scope violation. Then a fresh adversarial cheat-reviewer (layer 1) rules on your diff BEFORE the Judge is spawned; a layer-1 FAIL bounces straight back without a Judge cycle. Writing the vet honestly is how you pass both: if you cannot quote a scope sentence and cite a precedent for a family you are claiming, you do not have that family, and the correct outcome is `ruling-request`, not a submission.
+- REVIEW LOOPS ARE CLOSED MECHANICALLY: the driver keys every review verdict by the BODY (comments/whitespace ignored). A body the Judge FAILed at FINAL CALL is rejected on resubmission with no review — respelling comments does not make a new body. A body layer-1 FAILed goes to the Judge directly the second time (the Judge decides once; layer-1 does not re-run). A body a Judge PASS ruling cleared skips layer-1. So: if layer-1 FAILed a body you believe is ordinary C, `ruling-request` with the precise question is the ONE correct move — never resubmit with new comments, never respell to dodge a ban.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
 - "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and FORECLOSES the function silently (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — a recorded disposition, never a question to the owner) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
 - OWNER'S STANDING AUTO-RULING (2026-07-27) — this governs HOW you word an escalation, and it NEVER authorizes ending a function early. Two separate questions, do not conflate them:
@@ -1899,6 +2094,12 @@ if __name__ == "__main__":
     #   grindlib.py convert-wip <root> <func> <file_stem>
     #   grindlib.py modality <root> <func>                          -> prints next modality
     #   grindlib.py constrain <root> <func> <text>
+    #   grindlib.py reviewer-note <root> <func> <text>               (layer-1 findings; not precedent)
+    #   grindlib.py body-hash <root> <func> <path>                   -> body key (comment/ws-insensitive)
+    #   grindlib.py review-verdict <root> <func> <layer> <verdict> <hash> [summary]
+    #   grindlib.py clearance <root> <func> <hash> <ref> [justification]   (Judge PASS ruling)
+    #   grindlib.py review-disposition <root> <func> <hash>          -> judge-cleared|judge-failed|layer1-repeat|fresh
+    #   grindlib.py review-context <root> <func> [hash]              -> brief block
     #   grindlib.py grant-canonical-asm <root> <func> <tier> <date>   -> prints allowlist line / exit 1 refused
     #   grindlib.py log-borderline <root> <func> <category> <evidence> <disposition> <date>
     #   grindlib.py rule-scopes <root> <func>                        -> prints the current-scope block
@@ -1955,6 +2156,30 @@ if __name__ == "__main__":
         print("stamped" if sync_unpark(sys.argv[2], sys.argv[3]) else "unchanged")
     elif cmd == "constrain":
         add_judge_constraint(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif cmd == "reviewer-note":
+        # reviewer-note <root> <func> <text>  (layer-1 findings: not precedent)
+        add_reviewer_note(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif cmd == "body-hash":
+        # body-hash <root> <func> <path>  -> prints the 16-hex body key ("" if unreadable)
+        p = sys.argv[4]
+        if not os.path.isabs(p):
+            p = os.path.join(sys.argv[2], p)
+        print(body_hash_from_file(p, sys.argv[3]))
+    elif cmd == "review-verdict":
+        # review-verdict <root> <func> <layer> <verdict> <hash> [summary]
+        record_review_verdict(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6],
+                              sys.argv[7] if len(sys.argv) > 7 else "")
+    elif cmd == "clearance":
+        # clearance <root> <func> <hash> <ref> [justification]
+        record_judge_clearance(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
+                               sys.argv[6] if len(sys.argv) > 6 else "")
+    elif cmd == "review-disposition":
+        # review-disposition <root> <func> <hash> -> judge-cleared|judge-failed|layer1-repeat|fresh
+        print(review_disposition(sys.argv[2], sys.argv[3], sys.argv[4]))
+    elif cmd == "review-context":
+        # review-context <root> <func> [hash] -> brief block
+        print(render_review_context(sys.argv[2], sys.argv[3],
+                                    sys.argv[4] if len(sys.argv) > 4 else ""))
     elif cmd == "autoescalate":
         # autoescalate <root> <func> <file_stem> <scan_tier> <rule_count> <date>
         print(autoescalate(sys.argv[2], sys.argv[3], sys.argv[4],

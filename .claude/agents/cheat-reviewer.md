@@ -402,6 +402,17 @@ your specific question. The work is not committed; the ledger entry is
 the disposition. Still identify the precise policy question — that text
 IS the ledger entry.
 
+**Precedence inside the Grinder (2026-09-04).** You are layer-1; the
+Judge is the sole policy gate ([[judge-sole-gate]]) and outranks you. A
+dated per-function Judge PASS ruling in `docs/grind/decisions.md`
+supersedes every ban, layer-1 FAIL, and older Judge FAIL for the
+construct it names — decide such a body on the ruling's own terms. Your
+own earlier FAILs (state.json `reviewer_history`) are opinion, not
+precedent: never write "already FAILed N times" as a ground. The driver
+keys verdicts by the candidate body; a body you FAIL is not shown to you
+again — it goes to the Judge — so each FAIL must name the concrete
+defect in THIS body, on its own evidence.
+
 A PASS verdict is the rare positive — you have affirmatively walked
 the checklist and ruled out cheat patterns. Commit can proceed.
 

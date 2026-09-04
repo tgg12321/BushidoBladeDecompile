@@ -266,7 +266,7 @@ function Get-Layer1RoleFile {
     } catch { return '' }
 }
 
-function Invoke-Layer1([string]$func, [string]$stem, [string]$diff) {
+function Invoke-Layer1([string]$func, [string]$stem, [string]$diff, [string]$bodyHash = '') {
     # LAYER-1 GATE (2026-08-07 review-audit fix #2b). A fresh adversarial
     # cheat-reviewer rules on the candidate diff + the session's own self-vet
     # BEFORE the Judge is spawned. Rationale from the audit: 46% of Judge FAILs
@@ -288,6 +288,11 @@ function Invoke-Layer1([string]$func, [string]$stem, [string]$diff) {
     try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String).Trim() } catch { }
     # Mechanical pun scan (2026-09-03): per-use address puns on splat symbols in
     # candidate.c — the object model belongs at the declaration (prong (d)).
+    # Review-loop breaker (2026-09-04): the dated Judge clearances + every prior
+    # verdict on THIS body, so the reviewer cannot cite its own earlier FAIL or
+    # a ban a later Judge ruling already superseded.
+    $reviewBlock = ''
+    try { $reviewBlock = (python tools/grinder/grindlib.py review-context . $func $bodyHash 2>$null | Out-String).Trim() } catch { }
     $punBlock = ''
     try {
         $puns = (python tools/grinder/grindlib.py pun-scan . $func 2>$null | Out-String).Trim()
@@ -322,14 +327,23 @@ that does not check out is a FAIL, not a rounding error.
 
 $scopeBlock
 $punBlock
+$reviewBlock
+
 DATED RULINGS: rulings in docs/grind/decisions.md carry dates; bans in state.json
 do NOT — date a ban from the dated FAIL entry that created it in
 docs/grind/decisions.md, or ``git log -S "<ban text>" -- memory/grind/<func>/state.json``.
-A family grant in .claude/rules/no-new-park-categories.md dated AFTER a
-per-function refusal or ban SUPERSEDES that refusal for the construct it covers.
-Before citing a ban or an older ruling as a FAIL ground, date it; if a later
-dated grant covers the construct, the ban is stale and the correct verdict is
-decided on the grant's own prerequisites.
+TWO things supersede a per-function refusal or ban for the construct they cover:
+(1) a family grant in .claude/rules/no-new-park-categories.md dated AFTER it;
+(2) a per-function Judge PASS ruling in docs/grind/decisions.md dated AFTER it
+(the Judge outranks layer-1 on policy — .claude/rules/judge-sole-gate.md). Before
+citing a ban or an older ruling as a FAIL ground, date it; if a later dated grant
+or Judge ruling covers the construct, the ban is stale and the correct verdict is
+decided on the grant's/ruling's own terms. Your own earlier layer-1 FAILs
+(state.json reviewer_history, and legacy judge_constraints lines prefixed
+"LAYER-1 CHEAT-REVIEWER FAIL") are NOT precedent and NOT a FAIL ground: a body you
+FAIL here is not re-reviewed by layer-1 — it goes to the Judge — so decide THIS
+body on its own defects, name each defect concretely, and say nothing about
+how many times it was submitted.
 
 Write your verdict JSON (the schema in your role prompt: decision / function /
 summary / evidence / next_action) to the exact path below. Write NOTHING else to
@@ -554,6 +568,23 @@ Write your verdict JSON to the exact path given below.
     }
     Add-Decision $func "ruling: $qShort" $v.verdict $v.justification
     if ($v.constraint) { python tools/grinder/grindlib.py constrain . $func ([string]$v.constraint) | Out-Null }
+    if ($v.verdict -eq 'PASS') {
+        # Review-loop breaker (2026-09-04): a PASS ruling clears the body in
+        # candidate.c at ruling time. The driver skips layer-1 for that exact
+        # body (comments/whitespace ignored) — the Judge still makes the FINAL
+        # CALL. func_80062020: three PASS rulings had no effect on five layer-1
+        # FAILs of the same body before this existed.
+        $cand = Join-Path $Root "memory\grind\$func\candidate.c"
+        if (Test-Path $cand) {
+            $ch = (python tools/grinder/grindlib.py body-hash . $func $cand 2>$null | Out-String).Trim()
+            if ($ch) {
+                $ref = "decisions.md $(Get-Date -Format 'yyyy-MM-dd HH:mm') ruling PASS"
+                $jSum = if ($v.justification) { ([string]$v.justification).Substring(0, [Math]::Min(600, ([string]$v.justification).Length)) } else { '' }
+                python tools/grinder/grindlib.py clearance . $func $ch $ref $jSum | Out-Null
+                Log "${func}: judge PASS ruling — candidate.c body $ch CLEARED (layer-1 will be skipped for it)."
+            }
+        }
+    }
     if ($v.unban_construct) {
         # integration-handoff-self-serve (owner ruling 2026-08-19): a ruling that
         # explicitly narrows/supersedes an earlier ban clears the mechanical
@@ -655,7 +686,41 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     # A FAIL here short-circuits straight back to the worker with the construct
     # banned and the modality advanced. Sandbox has already proven the honest
     # distance is 0, so nothing about the bytes is lost by rejecting here.
-    $l1 = Invoke-Layer1 $func $stem ((git -C $Root diff -- "src/$stem.c" | Out-String))
+    # REVIEW-LOOP BREAKER (2026-09-04). Key every verdict by the candidate BODY
+    # (comments/whitespace-insensitive hash). func_80062020 burned five layer-1
+    # FAILs against three Judge PASS rulings on ONE byte-proven body because
+    # layer-1 re-ran on every submission and cited its own earlier FAILs.
+    #   judge-failed   -> the Judge's last word on this body is FAIL: reject with
+    #                     NO review spent (a comments-only re-file is the same body)
+    #   judge-cleared  -> a Judge PASS ruling covers this body: skip layer-1,
+    #                     bytes + FINAL CALL (the Judge is the sole gate)
+    #   layer1-repeat  -> layer-1 already FAILed this body: skip layer-1, the
+    #                     Judge decides once
+    #   fresh          -> normal layer-1 gate
+    $bodyHash = (python tools/grinder/grindlib.py body-hash . $func "src/$stem.c" 2>$null | Out-String).Trim()
+    $disp = 'fresh'
+    if ($bodyHash) { $disp = (python tools/grinder/grindlib.py review-disposition . $func $bodyHash 2>$null | Out-String).Trim() }
+    if ($disp -eq 'judge-failed') {
+        Log "${func}: body $bodyHash is one the Judge already FAILED at FINAL CALL — rejected, no review spent."
+        Record-Review $func 'layer1' 'SKIP' 'judge-failed-body'
+        Copy-Item (Join-Path $Root "src\$stem.c") (Join-Path $Root "memory\grind\$func\rejected\resubmit-judge-failed-$(Get-Date -Format 'MMdd-HHmm').c") -ErrorAction SilentlyContinue
+        Revert-SessionEdits $func
+        python tools/grinder/grindlib.py review-verdict . $func driver REJECT $bodyHash 'resubmission of a Judge-FAILed body (no review spent)' | Out-Null
+        python tools/grinder/grindlib.py constrain . $func ("RESUBMISSION REJECTED (driver, body $bodyHash): this exact body (comments/whitespace ignored) was already FAILed by the Judge at FINAL CALL; the driver rejects it without review. A comments-only or citation-only re-file is the SAME body. Only a later Judge PASS ruling (ruling-request) can clear it — change the construct or ask the precise question.") | Out-Null
+        $newMod = (python tools/grinder/grindlib.py advance-modality . $func 2>&1 | Out-String).Trim()
+        Add-Decision $func 'gate' 'REJECTED (identical to a Judge-FAILed body; no review spent)' "body hash $bodyHash — see the Judge FAIL on record in state.json review_ledger."
+        Journal "${func}: driver REJECTED a resubmitted Judge-FAILed body (hash $bodyHash) — no review spent; next modality '$newMod'."
+        git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+        git -C $Root commit -m "grind: $func judge-failed body resubmission rejected [skip-park-src-guard]" 2>$null | Out-Null
+        return
+    }
+    $l1 = $null
+    if ($disp -eq 'judge-cleared' -or $disp -eq 'layer1-repeat') {
+        Log "${func}: layer-1 SKIPPED ($disp, body $bodyHash) — straight to bytes + Judge FINAL CALL."
+        Record-Review $func 'layer1' 'SKIP' $disp
+    } else {
+        $l1 = Invoke-Layer1 $func $stem ((git -C $Root diff -- "src/$stem.c" | Out-String)) $bodyHash
+    }
     if ($l1 -and $l1.decision -eq 'FAIL' -and $l1.citation_only) {
         # Right construct, wrong paperwork (2026-08-19 audit). One-brief re-cite:
         # no construct ban, no modality advance, no Judge cycle. The candidate
@@ -683,7 +748,10 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
         Revert-SessionEdits $func
         $c = "LAYER-1 CHEAT-REVIEWER FAIL: $l1Summary" +
              $(if ($l1.next_action) { " Next action: $($l1.next_action)" })
-        python tools/grinder/grindlib.py constrain . $func $c.Substring(0, [Math]::Min(600, $c.Length)) | Out-Null
+        # Reviewer findings are for the session to read, never precedent — they
+        # live in reviewer_history, not judge_constraints (2026-09-04).
+        python tools/grinder/grindlib.py reviewer-note . $func $c.Substring(0, [Math]::Min(600, $c.Length)) | Out-Null
+        if ($bodyHash) { python tools/grinder/grindlib.py review-verdict . $func layer1 FAIL $bodyHash $l1Summary | Out-Null }
         foreach ($bc in $l1Constructs) {
             python tools/grinder/grindlib.py ban . $func $bc.Substring(0, [Math]::Min(400, $bc.Length)) | Out-Null
         }
@@ -721,6 +789,8 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
     $led = "memory/grind/$func"
     $scopeBlock = ''
     try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String).Trim() } catch { }
+    $reviewBlock = ''
+    try { $reviewBlock = (python tools/grinder/grindlib.py review-context . $func $bodyHash 2>$null | Out-String).Trim() } catch { }
     $task = @"
 FINAL CALL for $func — bytes are already proven on main (sandbox 0 + retire +
 full-build SHA1 == oracle). Rule ONLY on the legitimacy of the C.
@@ -732,6 +802,12 @@ $diff
 
 $scopeBlock
 
+$reviewBlock
+If a Judge PASS ruling above covers this body, it is YOUR OWN prior ruling: hold
+to it unless you name a concrete defect that ruling did not consider. Layer-1
+FAILs on this body were reviewer opinions the driver routed to you precisely
+because you outrank them — they are not a ground.
+
 Ledger: $led/state.json (judge_constraints — includes the regression diagnosis
 if this is a regression-origin item), $led/hypotheses.md, $led/evidence.md,
 $led/rejected/. Write your verdict JSON to the exact path given below.
@@ -739,6 +815,10 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
     $v = Invoke-Judge $func $task
     $sessionsTaken = ((Get-Content (Join-Path $Root "memory\grind\$func\state.json") -Raw | ConvertFrom-Json).session_count + 1)
     Record-Review $func 'judge' ([string]$v.verdict) ([string]$v.fail_ground).ToLower()
+    if ($bodyHash -and $v.verdict -ne 'ESCALATE') {
+        $jSum = if ($v.justification) { ([string]$v.justification).Substring(0, [Math]::Min(200, ([string]$v.justification).Length)) } else { '' }
+        python tools/grinder/grindlib.py review-verdict . $func judge ([string]$v.verdict) $bodyHash "final call: $jSum" | Out-Null
+    }
     if ($v.verdict -eq 'ESCALATE') {
         # Sound work, authority limit. Preserve the candidate as the record's
         # evidence, put main back to HEAD, then route per owner ruling 2026-08-18

@@ -371,3 +371,43 @@ Surfaces changed: `tools/grinder/roles/grind-session.md`,
 `tools/grinder/grind.ps1`, `tools/grinder/drill.ps1`,
 `tools/grinder/record_review.py` (new),
 `tools/grinder/tests/test_grindlib.py`.
+
+## Addendum — review-loop breaker (2026-09-04)
+
+**Incident.** func_80062020 (s14–s19) produced ONE pure-C body that byte-matched
+the oracle six times. In one evening it drew five layer-1 FAILs and three Judge
+PASS rulings; func_80072CD4 began the same alternation an hour later. Cause: the
+layer-1 gate ran on every submission, nothing in the driver bound it to a
+per-function Judge PASS ruling (the brief named only *family grants* as
+supersession), and its FAIL summaries were stored in `judge_constraints`, so it
+cited its own earlier verdicts as precedent ("already FAILed four times today").
+Every FAIL also banned the construct and force-advanced the modality, so sessions
+were spent re-asking the Judge the same question.
+
+**Mechanism (all in `grindlib.py` + `grind.ps1`, covered by
+`TestReviewLoopBreaker`).** Every review verdict is keyed by a BODY HASH of the
+candidate (`body_hash`: C comments stripped, whitespace collapsed, so a
+comments-only re-file is the same body). `state.json` gains `review_ledger`
+(`{layer, verdict, hash, when, summary}`), `judge_clearances`, and
+`reviewer_history`. At `candidate-ready`, before layer-1, the driver asks
+`review-disposition`:
+
+| disposition | meaning | driver action |
+|---|---|---|
+| `judge-cleared` | the Judge's LAST word on this body is a PASS ruling | skip layer-1 → bytes → FINAL CALL |
+| `layer1-repeat` | no Judge word; layer-1 already FAILed this body | skip layer-1 → bytes → FINAL CALL (the Judge decides once) |
+| `judge-failed` | the Judge's LAST word is a FINAL CALL FAIL | reject with NO review spent; constraint + modality advance |
+| `fresh` | never reviewed | normal layer-1 gate |
+
+A Judge PASS on a *ruling request* records a clearance of `candidate.c`'s body at
+ruling time. Layer-1 FAIL findings go to `reviewer_history` (the brief renders
+them as "what the reviewer looks for", not constraints; legacy
+`LAYER-1 CHEAT-REVIEWER FAIL` lines in `judge_constraints` are split out at
+render). Both review briefs receive a `REVIEW RECORD` block (dated clearances +
+every prior verdict on this body) and the precedence rule: the Judge outranks
+layer-1; a later dated Judge PASS ruling supersedes older bans/FAILs; a
+reviewer's own earlier FAILs are never a ground.
+
+Surfaces changed: `tools/grinder/grindlib.py`, `tools/grinder/grind.ps1`,
+`tools/grinder/roles/judge.md`, `tools/grinder/roles/grind-session.md`,
+`.claude/agents/cheat-reviewer.md`, `tools/grinder/tests/test_grindlib.py`.
