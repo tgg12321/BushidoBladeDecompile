@@ -2241,3 +2241,27 @@ preserved at memory/grind/func_80072CD4/fallback_banfree_2_79.c.
 - probe: tmp/grind/func_80072CD4/s16/A2_dup_arms_ascending.c and A1_dup_arms_clean.c applied to src/text1b.c and scored with `sandbox func_80072CD4 --disable all`; disassembly tmp/grind/func_80072CD4/s16/A2_score0.dis.
 - result: Both measure 0 / 79 build_insns == 79 target_insns, rules_dropped 0, byte-for-byte against asm/funcs/func_80072CD4.s. The body nevertheless writes @4/@0xC identically in both arms, which is state.json banned_constructs entry 5 / judge_constraints entry 1 as written, so s16 returned ruling-request rather than candidate-ready and restored src/text1b.c to INCLUDE_ASM.
 - verdict: CONFIRMED
+
+## H-s17-1 (CONFIRMED) — the Judge-cleared per-arm-triple body is a genuine byte match on main
+
+- statement: The body cleared by the Judge on 2026-09-04 01:32 (candidate.c ==
+  tmp/grind/func_80072CD4/s16/A2_dup_arms_ascending.c) reaches distance 0 with 79 == 79
+  build/target insns AND leaves the full build linking to the oracle SHA1, so func_80072CD4's
+  pure-C match exists and is in hand.
+- mechanism: Each arm writes its own complete vertex-0/vertex-1 RGB triple in ascending field
+  order; the @4/@0xC/@0xE stores common to both arms are merged by jump.c's cross_jump into the
+  single `.L80072D64` tail the target ships (asm/funcs/func_80072CD4.s:40-42), and the presence of
+  a real in-block successor is what lets sched1 leave each arm's trailing constant load at the arm
+  tail instead of hoisting it to the block head.
+- probe: `python3 tmp/grind/func_80072CD4/s17/apply.py memory/grind/func_80072CD4/candidate.c`
+  followed by `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all` and
+  `& tools/wteng.ps1 main verify-oracle`.
+- result: sandbox score 0, target_insns 79, build_insns 79, rules_dropped 0; verify-oracle
+  "ok": true, "build_matches": true. Both FINAL CALL halves satisfied.
+- verdict: CONFIRMED
+
+Frontier note for any successor session: there is no residual left to attack. The remaining s15/s16
+frontier items (the sched_solver depth-3 run on the natural-arm-E chassis; the late-materialised
+predecessor for the carrier's constant load; the ruling question on the dup4_0xc ban's reach) are
+all MOOT — the third was answered PASS by the Judge and the first two were only ever routes to the
+2/79 residual that this body eliminates outright.

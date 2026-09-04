@@ -1827,3 +1827,53 @@ rather than `candidate-ready`. src/text1b.c was restored to `INCLUDE_ASM("asm/fu
 func_80072CD4);` before the session ended. The score-0 body is banked at
 memory/grind/func_80072CD4/candidate.c with the full argument in its header; the standing ban-free
 best (2/79) is at memory/grind/func_80072CD4/fallback_banfree_2_79.c.
+
+## s17 (2026-09-04, synthesis) — MATCHED AND LANDED: sandbox 0 + full-build SHA1 == oracle
+
+s16 measured a score-0 body but returned `ruling-request` rather than `candidate-ready`, because
+the body writes `*(u8 *)(arg1 + 4) = red;` and `*(u8 *)(arg1 + 0xC) = red;` in both arms of the
+inner `if` and that shape was, as written, state.json banned_constructs entry 5 /
+judge_constraints entry 1 (dup4_0xc_into_arms). The Judge answered that request on 2026-09-04
+01:32 (docs/grind/decisions.md:22248) with a **PASS**, keyed to the body itself
+(body=97055a736fe5f309, == tmp/grind/func_80072CD4/s16/A2_dup_arms_ascending.c ==
+memory/grind/func_80072CD4/candidate.c). The ruling's operative holdings, quoted for the record:
+
+- "banned_constructs entry 5 / judge_constraints entry 1 are narrowed: they do NOT reach a
+  device-free, unannotated, ascending-order per-arm triple body."
+- "asm/funcs/func_80072CD4.s emits @4/@0xC/@0xE exactly ONCE, at .L80072D64 (lines 40-42), so the
+  per-arm copies are a byte-neutral jump2 cross_jump merge."
+- ".claude/rules/ordinary-c-judge-decidable.md Ruling 1(3) governs, and its 'scheduling-motivated
+  respelling is not a FAIL ground when the spelling is semantically truthful' retires the SOLE
+  stated premise of the 2026-07-24 ban ('store-SCHEDULING-order duplication')."
+- "NO /* FAKE ... annotation is owed here (this is ordinary C, not an exception-family use);
+  adding one would be a defect."
+- In-project confirmation the Judge checked itself: the COMPLETED-C sibling func_80072BC4, already
+  on main in this same file, ships `*(u8*)(arg1+0x1D) = 0xC3;` duplicated identically in both arms
+  of the same `D_800A35C4+8 & 4` branch.
+
+s17 therefore did exactly one thing, which is the correct thing under the body-keyed review rule:
+it applied candidate.c to src/text1b.c EXACTLY as cleared (no respelling, no annotation added, no
+header narration carried into the source, only a three-line provenance comment above the
+function), and re-verified it in place.
+
+MEASUREMENTS THIS SESSION, with the body in src/text1b.c:
+- `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all` -> score **0**, target_insns 79,
+  build_insns **79**, scorable true, rules_dropped **0**, cheat_asm_stripped 164 (file-wide, other
+  functions), disabled_o tmp/sandbox/func_80072CD4/text1b.o.
+- `& tools/wteng.ps1 main verify-oracle` -> `"ok": true`, `"build_matches": true` — the FULL build
+  links to SHA1 == the oracle 62efab4f73f992798c43e8c730aa43baa10bb4fa with this C in the tree.
+
+Both halves of the FINAL CALL the Judge named as the remaining burden ("sandbox 0 on main AND
+full-build SHA1 == oracle") are now satisfied and reproducible: apply
+memory/grind/func_80072CD4/candidate.c with `python3 tmp/grind/func_80072CD4/s17/apply.py
+memory/grind/func_80072CD4/candidate.c` (it strips the header block and substitutes for the
+`INCLUDE_ASM("asm/funcs", func_80072CD4);` line), then re-run the two commands above.
+
+The six-test vet for the landed diff is memory/grind/func_80072CD4/self_vet.md; it claims NO
+sanctioned family (the body is ordinary C under ordinary-c-judge-decidable.md:57) and its
+ANNOTATION-CONFORMANCE is "n/a", per the Judge's explicit instruction that adding a FAKE
+annotation to this body would be a defect. The 2/79 ban-free fallback
+(memory/grind/func_80072CD4/fallback_banfree_2_79.c) is superseded and is retained only as
+history; per Ruling 1(4) (simplest-known-form) the device-free score-0 body is the one that lands.
+
+Floor: 4 (s8-s13) -> 2 (s14-s16) -> **0 (s17)**.

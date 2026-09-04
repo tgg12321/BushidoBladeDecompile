@@ -210,6 +210,13 @@
    "hash": "97055a736fe5f309",
    "when": "2026-09-04T06:32:10.550769+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-04 01:32 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "97055a736fe5f309",
+   "when": "2026-09-04T06:37:24.343191+00:00",
+   "summary": "final call: FINAL CALL PASS on body 97055a736fe5f309 -- the same body I cleared at 2026-09-04 01:32 (decisions.md:22248); nothing in the landed diff is new except the 3-line provenance header, and I found no defe"
   }
  ]
 }
