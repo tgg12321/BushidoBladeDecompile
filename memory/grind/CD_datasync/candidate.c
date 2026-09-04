@@ -375,6 +375,49 @@
  * beat 7.  See hypotheses.md [s18].
  * =========================================================================== */
 
+/* ===========================================================================
+ * SESSION 21 (2026-09-04, rederive) - BODY UNCHANGED (7 / 91); THE ARGUMENT
+ * BLOCK IS A CLOSED FOUR-ATTRACTOR SYSTEM AND THE WRAPPER HAS A TWIN
+ * ===========================================================================
+ * Re-applied and re-measured this session: score 7, target_insns 91,
+ * build_insns 91, rules_dropped 0.
+ *
+ *   * The do{}while(0) wrapper is NOT the only route to the pointer ref-lift.
+ *     Duplicating the timeout block into BOTH condition arms (no wrapper at
+ *     all) emits assembly BYTE-IDENTICAL to this file - only .L label numbers
+ *     differ - and sandbox-measures 7 / 91.  Banked as
+ *     memory/grind/CD_datasync/alt_dup_into_arms_7.c.  It is a LATERAL, not an
+ *     improvement: same floor, and the duplicated-statement-into-arms rule
+ *     mandates its own /* FAKE * / annotation, so neither form carries fewer
+ *     annotated devices.  Do not "clean up" this file by swapping them.
+ *     Stacking BOTH lifts (duplicated arms each wrapped) OVERSHOOTS: 14, with
+ *     the callee-save map rotated off target's $s0/$s1/$s3.
+ *   * A FOURTH attractor was found - the named SCALED INDEX OFFSET,
+ *     `k0 = idx_1494[0] * 4;` consumed as `*(s32 *)((u8 *)tbl_125c + k0)`.
+ *     It is the first non-inline spelling to reproduce target's whole TAIL
+ *     (`lw $a3` last at target's own build idx 56, `lw $a2` at 55, the
+ *     D_800A11D5 chain in target's exact slots 49-53, and the idx[0] chain
+ *     SPREAD rather than contiguous) - but idx[0]'s `lbu` sinks from 41 to 48
+ *     and the arg5 `lw`/`sw` pair stays adjacent, costing a load-delay nop:
+ *     8 / 92.  Head-correct and tail-correct remain mutually exclusive under a
+ *     third independent geometry.
+ *   * 86 argument spellings measured this session (a 78-form exhaustive
+ *     cross-product of arg4 x arg5 x arg3 spelling x statement order, plus 8
+ *     single-axis probes).  Minimum 7, reached by six byte-identical
+ *     spellings.  NEW DEAD AXES: arg1 named, arg2 named / pointer-aliased /
+ *     hoisted, `*idx_1494` vs `idx_1494[0]`, `*(tbl_125c + i)` vs
+ *     `tbl_125c[i]`, an `i0` two-step, an arg4 same-value re-store, and
+ *     `volatile u8 *idx_1494` (byte-inert here, a regression elsewhere -
+ *     volatile does not pin this block's schedule).
+ *   * A FRESH m2c decompile was run and contributes nothing: its arguments are
+ *     the fully-inline 13-attractor and its single-accumulator tail costs an
+ *     instruction (12 / 92).  This file's multiple-return tail already
+ *     reproduces target's tail exactly.
+ *   * Harness for any future session: tmp/grind/CD_datasync/s21/ scores a form
+ *     in ~0.5 s and is calibrated - sandbox score = lev + (nop - 3).  The nop
+ *     term is load-bearing; the s19 harness dropped nops and would have called
+ *     the scaled-offset form a tie with this floor.
+ * =========================================================================== */
 s32 CD_datasync(s32 a0) {
     s32 v0;
     s32 cnt;

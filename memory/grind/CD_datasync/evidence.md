@@ -2276,3 +2276,39 @@ sweep and not the permuter.
 - [s20] Foreclosure record filed this session at docs/grind/decisions.md:19229; working tree restored to HEAD (git checkout -- src/system.c) — only memory/grind/CD_datasync/, docs/grind/decisions.md and tmp/ were written.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=20
+
+- [s21] CHASSIS RE-MEASURED at dispatch: candidate.c applied to src/system.c scores exactly 7 / 91, build_insns 91, rules_dropped 0 - the floor is unchanged across the 2026-09-02 re-activation.
+
+- [s21] NEW EQUAL-FLOOR CHASSIS: the timeout block DUPLICATED into both condition arms (no do{}while(0) anywhere) emits assembly BYTE-IDENTICAL to the wrapper chassis (only .L label numbers differ) and sandbox-measures 7 / 91, rules_dropped 0. Banked as memory/grind/CD_datasync/alt_dup_into_arms_7.c. The pointer ref-lift the wrapper buys through flow.c's loop_depth is therefore equally reachable through literal duplication + jump.c cross-jump re-merge (the sanctioned duplicated-statement-into-arms family). LATERAL, not a win - same floor, and that family also mandates a /* FAKE */ annotation.
+
+- [s21] The ref-lift is a THRESHOLD, not a gradient: stacking both routes (duplicated arms each wrapped in their own do{}while(0)) scores 14 - the pointers' allocno priorities overshoot each other and the callee-save map rotates off target's $s0/$s1/$s3 assignment.
+
+- [s21] FOURTH ARGUMENT-BLOCK ATTRACTOR discovered - the named SCALED INDEX OFFSET (`k0 = idx_1494[0] * 4;` consumed as `*(s32 *)((u8 *)tbl_125c + k0)`). It is the FIRST non-inline spelling to reproduce target's whole TAIL: `lw $a3` as the block's last memory reference at target's own build idx 56, `lw $a2` at 55, the D_800A11D5 chain at 49-53 in target's exact slots, and the idx[0] chain SPREAD (lbu/sll/addu/lw at 48/51/54/56) instead of contiguous. It loses the HEAD instead: idx[0]'s `lbu` sinks to 48 where target has it at 41. Sandbox 8 / 92 - the extra instruction is a load-delay nop between the adjacent arg5 `lw`/`sw` pair, which target separates by six insns.
+
+- [s21] The head/tail split of the residual survives a THIRD independent geometry. Head-correct forms (named arg4 value, 7) and tail-correct forms (scaled offset, 8; fully inline, 13) remain mutually exclusive: 86 argument spellings measured this session, none combines them.
+
+- [s21] 78-form EXHAUSTIVE argument cross-product (arg4 in {inline, named value, named s32* address, named scaled offset, named u8* scaled address} x arg5 in {inline, value, address, scaled offset} x arg3 in {inline, value} x statement order) plus 8 single-axis probes: minimum 7, reached by six byte-identical spellings. Naming arg3 costs >= 2 in all 39 of its pairings. NEW DEAD AXES: arg1 (format string named), arg2 (D_800F19C0 named / pointer-aliased / hoisted before arg4), `*idx_1494` vs `idx_1494[0]`, `*(tbl_125c + i)` vs `tbl_125c[i]`, an `i0` two-step, and an arg4 same-value re-store - all byte-inert at 7.
+
+- [s21] `volatile u8 *idx_1494` does NOT pin the block's schedule: byte-inert at 7 on the named-value chassis, 8 on the scaled-offset chassis, 13 on the fully-inline chassis. The "freeze the emission order with volatile" lever does not exist here.
+
+- [s21] FRESH m2c REDERIVE (tools/m2c/m2c.py --target mipsel-gcc-c, this session) contributes nothing new: its argument expressions are the fully-inline 13-attractor, and its single-accumulator tail (`ret = -1; if (...) { ret = 0; ... } return ret;`) COSTS an instruction (lev 12, n 83). The candidate's multiple-return tail already reproduces target's tail exactly. m2c's `||` short-circuit re-spelled as a nested if, and `cnt = D_800F19BC++;`, are both byte-inert at 7.
+
+- [s21] NEW TOOLING (reusable, function-agnostic apart from the hardcoded name): tmp/grind/CD_datasync/s21/{sweep.sh,rep.py,cmp.py,show.sh,apply.py} - a ~0.5 s/form scoring loop that runs cpp + the frozen open cc1 only, expands la/lw-symbol macros, and reports Levenshtein distance against asm/funcs/CD_datasync.s PLUS the emitted `#nop` count. CALIBRATION (measured, three points): sandbox score = lev + (nop - 3). candidate lev7/nop3 -> sandbox 7; scaled-offset lev7/nop4 -> sandbox 8; u8*-address lev9/nop3 -> sandbox 9. The nop term is load-bearing - the s19 harness dropped nops from both streams and would have called the scaled-offset form a tie with the floor. cmp.py prints a positional build-vs-target alignment of any build-index window, which is how the head/tail decomposition above was read off directly instead of inferred.
+
+- [s21] Chassis re-measured at dispatch: candidate.c applied to src/system.c scores exactly 7 / 91, build_insns 91, rules_dropped 0 - unchanged across the 2026-09-02 re-activation.
+
+- [s21] NEW EQUAL-FLOOR CHASSIS: the timeout block duplicated into both condition arms (no do{}while(0) anywhere) emits assembly BYTE-IDENTICAL to the wrapper chassis (only .L label numbers differ) and sandbox-measures 7 / 91, rules_dropped 0. Banked as memory/grind/CD_datasync/alt_dup_into_arms_7.c.
+
+- [s21] The pointer ref-lift is a THRESHOLD, not a gradient: stacking both routes (duplicated arms each wrapped in their own do{}while(0)) scores 14, with the callee-save map rotated off target's $s0/$s1/$s3 assignment.
+
+- [s21] FOURTH ARGUMENT-BLOCK ATTRACTOR: the named scaled index offset reproduces target's whole TAIL (lw $a3 last at target's build idx 56, lw $a2 at 55, the D_800A11D5 chain at 49-53 in target's exact slots, idx[0] chain SPREAD rather than contiguous) at 8 / 92; the extra instruction is a load-delay nop between the adjacent arg5 lw/sw pair, which target separates by six insns.
+
+- [s21] The head/tail split of the residual survives a third independent geometry: head-correct (named arg4 value, 7) and tail-correct (scaled offset, 8; fully inline, 13) were not combined by any of the 86 argument spellings measured this session.
+
+- [s21] 78-form exhaustive argument cross-product plus 8 single-axis probes: minimum 7, reached by six byte-identical spellings; naming arg3 costs at least 2 in all 39 of its pairings. NEW DEAD AXES - arg1 named, arg2 named / pointer-aliased / hoisted before arg4, *idx_1494 vs idx_1494[0], *(tbl_125c + i) vs tbl_125c[i], an i0 two-step, an arg4 same-value re-store: all byte-inert at 7.
+
+- [s21] volatile u8 *idx_1494 does not pin the block's schedule: byte-inert at 7 on the named-value chassis, 8 on the scaled-offset chassis, 13 on the fully-inline chassis.
+
+- [s21] Fresh m2c rederive contributes nothing new: its argument expressions are the fully-inline 13-attractor and its single-accumulator tail costs an instruction (lev 12, n 83). Its nested-if condition arrangement and cnt = D_800F19BC++ compound are byte-inert at 7.
+
+- [s21] NEW CALIBRATED TOOLING: tmp/grind/CD_datasync/s21/{sweep.sh,rep.py,cmp.py,show.sh,apply.py} scores a form in ~0.5 s (cpp + the frozen open cc1 only) and reports Levenshtein distance against asm/funcs/CD_datasync.s PLUS the emitted-#nop count. Calibration measured at three points: sandbox = lev + (nop - 3) (candidate lev7/nop3 -> 7; scaled-offset lev7/nop4 -> 8; u8*-address lev9/nop3 -> 9). The nop term is load-bearing - the s19 harness dropped nops from both streams and would have mis-called the scaled-offset form a tie with the floor. cmp.py prints a positional build-vs-target alignment of any build-index window.
