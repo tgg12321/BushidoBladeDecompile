@@ -902,3 +902,27 @@ annotation, its two siblings in the same declaration block already carry that ex
 - probe: Read the driver source plus the empirical confirmation: the immediately preceding s46 run measured the same score-0 tree and was DISCARDED with 'SCOPE VIOLATION: you edited files outside the allowed surface ( M volatile_extern_allowlist.txt)'.
 - result: The only pipeline-legal route is `owner-gated` with an escalation_ref matching INTEGRATION HANDOFF; the driver routes that to the Judge, and on ESCALATE(integration-handoff, scope_paths=[volatile_extern_allowlist.txt]) it writes the grant itself and the function STAYS ACTIVE (tools/grinder/grind.ps1:469-497). Future sessions must not re-propose a candidate carrying the allowlist edit.
 - verdict: CONFIRMED
+
+## s47 (2026-09-04) — solver modality, landing session
+
+- hypothesis: With the pipeline-executed scope grant `get_alarm
+  volatile_extern_allowlist.txt` present in tools/grinder/scope_allow.txt, the
+  banked s46 diff applies unmodified to the current chassis and reproduces honest
+  sandbox score 0 together with a full-build SHA1 == oracle, making get_alarm
+  submittable as candidate-ready without any new construct.
+- mechanism: The s45/s46 recipe is three declaration corrections that compose
+  (9 -> 6 -> 5 -> 0) plus the reference-faithful SOTN-libgpu sys.c body. Two of the
+  three corrections are `extern volatile T G;` = engine/volatile_cheats.py pattern
+  3, which the sandbox refuses unless the symbol holds a volatile_extern_allowlist
+  entry; the allowlist file sits outside the default one-file candidate surface, so
+  the grant line was the only thing standing between a proven zero and a landing.
+- probe: `git apply --unidiff-zero memory/grind/get_alarm/s46-score0-verified-diff.txt`
+  (clean), then `sandbox get_alarm --disable all`, then `verify-oracle`, then a
+  body-identity diff of src/display.c's get_alarm against candidate.c.
+- result: CONFIRMED at every step. sandbox = score 0 / 91 target / 91 build /
+  rules_dropped 0 / cheat_asm_stripped 147 (unchanged baseline). verify-oracle
+  "ok": true, build_matches true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+  Body diffs empty against the Judge-PASSed body bc13a6d76f47d945. Session returns
+  candidate-ready with self_vet.md in place.
+- verdict: CONFIRMED
+

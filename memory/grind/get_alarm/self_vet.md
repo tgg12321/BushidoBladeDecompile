@@ -1,8 +1,16 @@
-# SELF-VET — get_alarm (session 46, 2026-09-04; supersedes the s45 vet)
+# SELF-VET — get_alarm (session 47, 2026-09-04; carried forward from s46 unchanged)
 
-Written for the score-0 form even though this session returns `owner-gated`
-(INTEGRATION HANDOFF re-file), so the next session can submit `candidate-ready`
-verbatim the moment the `volatile_extern_allowlist.txt` scope grant exists.
+SESSION 47 STATUS: the `volatile_extern_allowlist.txt` scope grant that s46 handed
+off now EXISTS (tools/grinder/scope_allow.txt, commit c30a5102 — "get_alarm
+volatile_extern_allowlist.txt"), so this session applied the banked diff verbatim
+and returns `candidate-ready`. Re-measured live this session with the edits in
+place in src/: `sandbox get_alarm --disable all` = score 0 (91/91, rules_dropped 0,
+cheat_asm_stripped 147 = unchanged display.c baseline) AND `verify-oracle`
+build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (build_matches true).
+Proof: `tmp/grind/get_alarm/s47/measurements.txt`. The vet body below is the s46
+text, unmodified — the diff and the constructs are identical, so the analysis is
+identical, and the submitted BODY is the one the Judge PASSed at 2026-09-04 13:48
+(hash bc13a6d76f47d945).
 Diff: `memory/grind/get_alarm/s46-score0-verified-diff.txt` — the exact tree that
 measured `sandbox get_alarm --disable all` = 0 (91/91) AND full-build
 SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa this session. Only the

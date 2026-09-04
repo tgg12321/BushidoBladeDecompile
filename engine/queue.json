@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "get_alarm",
-      "file": "display",
-      "distance": 9,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 9 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
-      "unparked_from": "OWNER-ACCEPTED INCOMPLETE (standing ruling 2026-07-27): docs/grind/decisions.md:16162 \u2014 ## 2026-08-30 \u2014 get_alarm / func_8007DC9C (src/display.c) \u2014 OWNER-ESCALATION \u2014 RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE"
-    },
-    {
       "func": "func_80034F88",
       "file": "code6cac_b",
       "distance": 10,
@@ -1682,14 +1672,14 @@
     }
   ],
   "counts": {
-    "total": 189,
-    "active": 182,
+    "total": 188,
+    "active": 181,
     "by_status": {
-      "active": 182,
+      "active": 181,
       "foreclosed": 7
     },
     "by_verdict": {
-      "C": 155,
+      "C": 154,
       "ASM-PARTIAL": 27
     }
   }

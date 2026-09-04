@@ -1298,3 +1298,51 @@ session re-applied.
 - [s46] This session REVERTED both src/display.c and volatile_extern_allowlist.txt and then re-ran `verify-oracle --rebuild` on the reverted tree, so build/ is once more the committed-tree canonical reference (a build/ compiled from candidate sources would skew the next session's sandbox baseline).
 
 - [s46] CHASSIS NOTE: on the committed tree get_alarm is INCLUDE_ASM, so `sandbox get_alarm --disable all` reports 91 / build_insns 0 / cheat_asm_stripped 148 - no body to score. The ledger's floor 9 and floor 0 are both body-relative; apply a body before quoting a floor. That is why the dispatch brief printed 'measurement unavailable'.
+
+## s47 (2026-09-04) — solver modality; LANDING SESSION (the scope grant exists)
+
+- [s47] The integration handoff s45/s46 filed has been EXECUTED by the pipeline:
+  `tools/grinder/scope_allow.txt` now carries the line
+  `get_alarm volatile_extern_allowlist.txt` (commit c30a5102, "grind: get_alarm
+  integration-handoff executed (judge ESCALATE, ruling 2026-08-19)"). The blocker
+  named in the s46 frontier ("the function lands as COMPLETED-C the moment
+  scope_allow.txt carries the grant") is therefore GONE. Nothing in the solver
+  modality was worth spending before landing: the residual this session would have
+  classified is ZERO instructions.
+- [s47] `memory/grind/get_alarm/s46-score0-verified-diff.txt` applies CLEAN to
+  HEAD (`git apply --check --unidiff-zero` — the banked diff is -U0, so the
+  --unidiff-zero form is the correct application; no hunk was hand-edited and no
+  deviation from the banked recipe was introduced, satisfying the binding
+  judge_constraint "Land exactly memory/grind/get_alarm/s46-score0-verified-diff.txt").
+- [s47] RE-MEASURED LIVE, chassis-current, with the edits in place in src/:
+  `& tools/wteng.ps1 main sandbox get_alarm --disable all` -> score 0,
+  target_insns 91, build_insns 91, scorable true, rules_dropped 0,
+  cheat_asm_stripped 147. The 147 is display.c's pre-existing unrelated
+  INCLUDE_ASM/canonical material and is UNCHANGED from the floor-9 baseline, i.e.
+  nothing in this candidate is being stripped by the cheat-invisible sandbox — the
+  zero is the honest pure-C distance, not a stripped-cheat artifact.
+- [s47] FULL-BUILD ORACLE RE-CONFIRMED with the complete recipe live:
+  `& tools/wteng.ps1 main verify-oracle` -> "ok": true, "build_matches": true,
+  build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked.
+  This satisfies the binding judge_constraint requiring a full-build SHA1 measured
+  with all three decls + body + both allowlist entries simultaneously live.
+- [s47] BODY IDENTITY VERIFIED, not assumed: the `s32 get_alarm(void) { ... }` now
+  in src/display.c diffs EMPTY against memory/grind/get_alarm/candidate.c lines
+  109-127. That is the body the Judge PASSed at 2026-09-04 13:48 (JUDGE CLEARANCES
+  hash bc13a6d76f47d945, docs/grind/decisions.md:22292), so layer-1 is skipped and
+  the submission goes to bytes + FINAL CALL directly. It was NOT respelled.
+- [s47] Scope audit of the working tree at submission: exactly two build inputs are
+  modified — `src/display.c` (the default single-file surface) and
+  `volatile_extern_allowlist.txt` (the granted path, which the driver both
+  scope-checks AND stages into the Match commit). `metrics/events.jsonl` is
+  engine-appended telemetry, not an agent edit. No rules/engine/tools/Makefile/*.ld
+  file was touched; no queue op, retire, or commit was run.
+- [s47] Constructs in the submitted diff, unchanged from the s46 vet: (1)
+  `extern volatile s32 D_8009BF68[];` at BOTH decl sites (:733 replacing the false
+  function-pointer spelling, :758), (2) `extern volatile u32 *g_gpu_dma_madr;` at
+  BOTH decl sites (:20, :756) — type-level MMIO volatile, no allowlist owed, (3)
+  `extern volatile s32 D_8009BF78;` at BOTH decl sites (:721, :750). No FAKE
+  construct, no inline asm, no register pin, no invented local, no dead store.
+  memory/grind/get_alarm/self_vet.md carries the six-test vet verbatim from s46
+  plus an s47 status header recording the two measurements above.
+

@@ -17,7 +17,7 @@ extern void DeliverEvent(s32, s32);
 /* Externs for globals */
 extern volatile u32 *g_gpu_stat_reg;
 extern volatile u32 *g_gpu_data_reg;
-extern u32 *g_gpu_dma_madr;
+extern volatile u32 *g_gpu_dma_madr;
 extern u32 *g_gpu_dma_bcr;
 extern volatile u32 *g_gpu_dma_chcr;
 extern u8 g_gpu_color_table[];
@@ -718,8 +718,8 @@ void _addque(s32 a0, s32 a1, s32 a2) {
     _addque2(a0, a1, 0, a2);
 }
 extern s32 *D_8009BF48;
-extern s32 D_8009BF78;
-extern s32 D_8009BF7C;
+extern volatile s32 D_8009BF78;
+extern volatile s32 D_8009BF7C;
 extern s32 set_alarm();
 
 void _exeque();                           /* extern */
@@ -730,7 +730,7 @@ extern u8 D_8009BE75;
 extern s32 D_8009BE7C;
 extern s32 D_8009BE80;
 extern s32 *D_8009BF54;
-extern s32 (*D_8009BF68)(s32 *, s32);
+extern volatile s32 D_8009BF68[];
 extern s32 *D_8009BF6C;
 extern s32 D_8009BF70;
 extern s32 D_8009BF80;
@@ -747,15 +747,15 @@ extern s32 _version(s32);
 extern volatile s32 *D_8009BF48;
 extern s32 *D_8009BF54;
 extern volatile s32 D_8009BF7C;
-extern s32 D_8009BF78;
+extern volatile s32 D_8009BF78;
 extern s32 D_8009BF88;
 extern u8 D_800F189C[];
 extern u8 D_80103680[];
 extern s32 g_str_gpu_timeout;
 extern s32 D_80016044;
-extern u32 *g_gpu_dma_madr;
+extern volatile u32 *g_gpu_dma_madr;
 extern volatile int *D_8009BF64;
-extern s32 D_8009BF68[];
+extern volatile s32 D_8009BF68[];
 extern s32 D_8009BF6C;
 extern s32 D_8009BF70;
 extern s32 printf();
@@ -821,7 +821,25 @@ void set_alarm(void) {
     g_gpu_vcount = VSync(-1) + 0xF0;
     g_gpu_draw_count = 0;
 }
-INCLUDE_ASM("asm/funcs", get_alarm);
+s32 get_alarm(void) {
+    s32 temp_v0;
+    if (g_gpu_vcount < VSync(-1) || g_gpu_draw_count++ > 0xF0000) {
+        *g_gpu_stat_reg;
+        printf(&g_str_gpu_timeout, (D_8009BF78 - D_8009BF7C) & 0x3F, *g_gpu_stat_reg, *g_gpu_dma_chcr, *g_gpu_dma_madr);
+        printf(&D_80016044, D_8009BF68[0], D_8009BF6C, D_8009BF70);
+        temp_v0 = SetIntrMask(0);
+        D_8009BF7C = 0;
+        D_8009BF88 = temp_v0;
+        D_8009BF78 = D_8009BF7C;
+        *g_gpu_dma_chcr = 0x401;
+        *D_8009BF64 |= 0x800;
+        *g_gpu_stat_reg = 0x02000000;
+        *g_gpu_stat_reg = 0x01000000;
+        SetIntrMask(D_8009BF88);
+        return -1;
+    }
+    return 0;
+}
 s32 _version(s32 arg0) {
     *(volatile s32 *)g_gpu_stat_reg = 0x10000007;
     if ((*(volatile s32 *)g_gpu_data_reg & 0xFFFFFF) != 2) {

@@ -364,6 +364,13 @@
    "hash": "bc13a6d76f47d945",
    "when": "2026-09-04T18:48:02.558511+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-04 13:48 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "bc13a6d76f47d945",
+   "when": "2026-09-04T19:33:40.811867+00:00",
+   "summary": "final call: Diff is byte-identical to the banked, oracle-verified memory/grind/get_alarm/s46-score0-verified-diff.txt (diffed -U0 myself). Four constructs, no FAKE, no build-time output rewriting (volatile_extern"
   }
  ]
 }

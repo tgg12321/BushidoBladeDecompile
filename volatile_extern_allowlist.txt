@@ -64,3 +64,13 @@ D_800A14F4    # cdread.c .cbsync — same §3 grant.
 D_800A14F8    # cdread.c .cbready — same §3 grant.
 D_800A14FC    # cdread.c .cbdata — same §3 grant.
 D_800A1500    # cdread.c .tslmode — same §3 grant.
+# get_alarm / LIBGPU SYS.OBJ que-state pair (grant proposed 2026-09-04, grind s45/s46;
+# Judge PASS ruling docs/grind/decisions.md 2026-09-04 13:48, body bc13a6d76f47d945).
+# Both symbols live in the VERBATIM-matched LIBGPU/SYS region 0x8007AE7C-0x8007DF10
+# (memory/closer/psyq-library-census.md:76); every program-wide consumer of either
+# symbol is a member of that region (_addque2 0x8007D3F8, _exeque 0x8007D6D8,
+# _reset, _sync, get_alarm 0x8007DC9C — census:244/245/246). RULING 4 class grant
+# (ground-truth codegen; commit c80d976e, text recoverable at
+# `git show cd19d7a2^:docs/closer/rulings.md` lines 68-83) — NO IRQ prong required.
+D_8009BF68    # get_alarm second debug printf arg 1 (LIBGPU SYS.OBJ module state) — RULING 4 class grant (commit c80d976e), function-specific Judge PASS docs/grind/decisions.md 2026-09-04 13:48. Codegen prong: target emits the UNFOLDED lui/addiu %lo(D_8009BF68)/lw 0($v0) at asm/funcs/get_alarm.s:0x8007DD3C-DD44 while the SAME printf folds the non-volatile adjacent siblings D_8009BF6C and D_8009BF70 to lui/lw %lo four and six insns later = the MEM_VOLATILE_P fold-block signature (dump tmp/grind/get_alarm/dumps/display.combine, insn 73 -> single consumer insn 81 flagged mem/s/v, reg REG_DEAD there). Non-volatile spelling measured floor 9 (memory/grind/get_alarm/rejected/); with the grant the function measures honest sandbox 0. Census prong: consumers = get_alarm.s, _addque2.s (sole writer), _exeque.s only.
+D_8009BF78    # LIBGPU SYS.OBJ que HEAD index — sibling at -4 of the already-granted D_8009BF7C que tail index above, same module, same five consumers. RULING 4 class grant (commit c80d976e; ground-truth codegen, no IRQ prong required — D_8009BF78 is written synchronously by _addque2 @0x8007D688, so the IRQ carve-out is deliberately NOT claimed for it). Codegen prong: with (a) and the g_gpu_dma_madr pointed-to-type correction live, the non-volatile spelling of this decl measures floor 5 and the volatile spelling measures floor 0 (91/91) — measured s45/s46, memory/grind/get_alarm/rejected/s45-two-lever-bf68-madr-volatile-score5.c. Consumers: _addque2, _exeque, _reset, _sync (paired spin-wait `while (D_8009BF78 != D_8009BF7C)` src/display.c:796), get_alarm.
