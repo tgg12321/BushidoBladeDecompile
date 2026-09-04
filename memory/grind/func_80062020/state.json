@@ -1,8 +1,8 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 16,
- "current_modality": "structural",
+ "session_count": 17,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 0,
@@ -105,23 +105,29 @@
    "floor": 0,
    "modality": "structural",
    "headline": "Structural enumeration closes the epilogue space (15 spellings, 4 declaration shapes, in-chassis): exactly one construct reaches the target and it is declaration-independent; floor 0 re-proven with fu"
+  },
+  {
+   "session": 17,
+   "floor": 6,
+   "modality": "solver",
+   "headline": "Solver triage types the residual PRE-RA (both backend solvers foreclosed by their own multiset predicate) and all four ranked C-lever families measure dead in 12 new spellings; the reaching-set law is"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With banned_constructs entries 3 and 4 cleared by the driver-executed unban, the banked form lands as COMPLETED-C through the normal gates.",
-   "mechanism": "The bytes are proven (full-build SHA1 == oracle) and the post-rebuild sandbox is 0 at 38/38, so the driver byte gate passes; the scope grant already covers all four paths; with the superseded tripwire gone, layer-1 and the Judge rule on the C, which is the frozen-family aggregate merge plus one ordinary-C chained assignment.",
-   "next_probe": "After unban_construct=Unk800F1198Record executes: apply_s15.py apply; add the amendment suffix to undefined_syms_auto.txt:527-528; verify-oracle --rebuild --allow-dirty (confirm build_matches true + oracle SHA1); sandbox func_80062020 --disable all (expect 0 at 38/38); keep the existing prong-by-prong self_vet.md; return candidate-ready."
+   "hypothesis": "Every remaining sanctioned axis for func_80062020 is now measured dead: the residual is 3 instructions, typed PRE-RA, both backend solvers are foreclosed by their own predicate, 27 spellings across four declarations leave a reaching set of exactly one construct, and that construct is banned_constructs 3/4.",
+   "mechanism": "The modality ladder has now run structural (s16e), rederive (s9/s16b-d), synthesis (s13/s14/s17b), permuter (s4), forensics (s6/s16) and solver (this session) on the same 3-instruction residual, each closing its own axis with measurements rather than argument. There is no untried rung whose model can express an instruction-multiset gap.",
+   "next_probe": "The next session dispatched in `escalation` modality should file the proof-of-foreclosure record in docs/grind/decisions.md - flat honest floor 6 (>5, so the 2026-07-27 standing ruling is NOT its subject per the 2026-09-02 owner ruling: title it 'LADDER EXHAUSTED (non-endgame residual, floor 6): FORECLOSED', never 'endgame lock'), citing scan_hand_coded LOW 0/8, the s17 PRE-RA class kill, the 27-spelling enumeration, and the s17syn SOTN precedent census - and return owner-gated. Do NOT re-measure the dead axes."
   },
   {
-   "hypothesis": "If a reviewer still reads the DISP/LOSUM mix as authored, the bare 2-D declaration extern s32 D_800F1198[][3]; is an equally-matching declaration with a strictly smaller surface (no typedef, no struct tag, no member names).",
-   "mechanism": "E14 measured byte-identical arrangement and insn count to E01 in the harness, so the record typedef is not load-bearing for the bytes; a 2-D array is the minimal merged declaration and removes the invented member names from the diff entirely.",
-   "next_probe": "Apply the E14 declaration in include/game.h in place of the record typedef, rewrite the loop and epilogue as D_800F1198[i][k], verify-oracle --rebuild --allow-dirty and sandbox; if it also lands 0 at 38/38 in full context, bank it as an alternative-declaration candidate."
+   "hypothesis": "The disposition blocker is not the C but the ban: the only construct that reaches the target is bytes-proven six times (full-build SHA1 == oracle) yet re-banned after each layer-1 FAIL, so no candidate-ready can ever be filed for this function under the current state.json.",
+   "mechanism": "grindlib.py selfvet exits 1 on banned_constructs entry 3, which names the epilogue line literally, so the driver discards a candidate-ready before layer-1 or the Judge reads it. Six same-day resubmissions have already been bounced this way.",
+   "next_probe": "A ruling-request that asks ONE question and does not re-submit the body: given (a) the s17 class kill that no backend model can express the residual, (b) the 27-spelling reaching-set enumeration, and (c) the s17syn SOTN-master precedent (src/dra/62DEC.c:961, a chained 3-deep assignment zeroing all three members of an indexed element of a splat D_ symbol re-declared as an array of 3-word records, unannotated, in a provenance-checked PSX GCC-2.7.2 TU), is the ascending chained assignment ordinary C for this function or is the correct disposition foreclosure at floor 6? Ask it once; do not attach a diff."
   },
   {
-   "hypothesis": "Retiring D_800F119C / D_800F11A0 from undefined_syms_auto.txt closes prong (c) literally as well as in purpose.",
-   "mechanism": "The only remaining consumers of those two names are asm siblings; when func_800620B8 is C, the linker-script definitions are dead. Follow-on cleanup, not a gate - the sanctioned precedents (func_800861BC, e788983a) shipped with the names retained.",
-   "next_probe": "After func_800620B8 reaches COMPLETED-C, grep asm/funcs for D_800F119C / D_800F11A0, delete the two suffixed rows from undefined_syms_auto.txt, and re-run verify-oracle --rebuild."
+   "hypothesis": "The DISP8|DISP4|DISP0 pointer family (rejected/epilogue-recptr-uniform-disp-solver-s17.c) is the honest end state if the chained assignment is refused - it is admissible, uniform, carries no banned or FAKE construct, and is 3 instructions from the target.",
+   "mechanism": "Seven independent spellings of the family all land on the same arrangement, and the classifier proves the remaining gap is not reachable by any backend perturbation, so this is provably the closest admissible form rather than merely the best one found.",
+   "next_probe": "If a foreclosure record is filed, quote this form as the honest floor-6 body and point at tmp/grind/func_80062020/s17/sweep_solver_results.txt rows S01-S06/S11 as the proof that its arrangement is the family maximum - no further spelling search inside it is warranted."
   }
  ],
  "judge_constraints": [
@@ -247,6 +253,38 @@
    "measured_on": "2026-09-03 chassis, honest floor 0 with the banked form applied (sandbox 0 at 38/38, verify-oracle build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked); no FAKE construct prese",
    "predicate_cite": "tools/gcc-2.7.2/expr.c:3453",
    "result": "KILLED. Exactly three of fifteen reach DISP8 | DISP4 | LOSUM0, and all three are the same construct: E01 the ascending-m"
+  },
+  {
+   "session": 17,
+   "statement": "The func_80062020 residual is a register-seat or emission-order residual that tools/ra_solver or tools/sched_solver can search.",
+   "kill_scope": "class",
+   "measured_on": "2026-09-03 chassis (HEAD INCLUDE_ASM + the admissible score-6 body applied to src/text1b.c); no FAKE construct present, rules_dropped 0",
+   "predicate_cite": "tools/ra_solver/inverse_compose.py:22",
+   "result": "FIRST DIVERGENCE: PRE-RA, 'no backend - the residual is upstream of every model'. Register-blanked multiset gap: ours on"
+  },
+  {
+   "session": 17,
+   "statement": "The solver-ranked cse_split vector defeat-combine-symbol-fold - a pre-computed named row pointer - spells an epilogue that reaches the target DISP8 | DISP4 | LOSUM0 store arrangement.",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis, s16struct harness (project cc1 flags, tools/gcc-2.7.2/build/cc1) plus one real-chassis sandbox run at score 6; no FAKE construct present",
+   "predicate_cite": "",
+   "result": "All seven emit DISP8 | DISP4 | DISP0. The vector genuinely works - a named pointer defeats the fold and materialises the"
+  },
+  {
+   "session": 17,
+   "statement": "Giving the stored zero a single name - the solver-ranked cse_merge vectors, including the sanctioned named-local-fake-exception constant holder and staged-value-reused-variable - moves the epilogue to",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis, s16struct harness; no FAKE construct present in the measured forms",
+   "predicate_cite": "",
+   "result": "Both emit LOSUM+8 | LOSUM+4 | LOSUM0 at 25 harness insns - all three stores keep the folded symbolic form and no base re"
+  },
+  {
+   "session": 17,
+   "statement": "A 3-iteration clearing loop over the terminator row emits the three terminator stores in the target arrangement.",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis, s16struct harness; no FAKE construct present",
+   "predicate_cite": "",
+   "result": "GCC 2.7.2 does not unroll at -O2. Both directions keep a real loop and emit ONE zero store (DISP0) at 29 harness insns -"
   }
  ],
  "object_model_audited": 16

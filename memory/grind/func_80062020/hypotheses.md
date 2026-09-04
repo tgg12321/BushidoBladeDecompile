@@ -1710,3 +1710,71 @@ FRONTIER for the next session, strongest first:
    solely for that sibling's assembly; prong (c) is already satisfied via the 2026-09-03
    amendment's alias suffix. Next probe: after func_800620B8 reaches COMPLETED-C, grep
    asm/funcs for both names, delete the rows, verify-oracle --rebuild.
+
+## s17 (solver, 2026-09-03)
+
+- **H-s17-PRERA (CLASS, KILLED).** *The func_80062020 residual is a register-seat
+  or emission-order residual that tools/ra_solver or tools/sched_solver can search.*
+  Probe: `inverse_compose.py classify text1b func_80062020 --target-object
+  build/src/text1b.o --ours-object tmp/sandbox/func_80062020/text1b.o` on the
+  admissible score-6 body. Verdict PRE-RA with a differing register-blanked
+  instruction multiset, which is the classifier's own foreclosure predicate for both
+  backends (`tools/ra_solver/inverse_compose.py:22`). The solver ladder rung is
+  closed; no RA seat or schedule perturbation can express a 3-instruction multiset
+  gap. Measured on the 2026-09-03 chassis, no FAKE construct present.
+
+- **H-s17-PTRFOLD (instance, KILLED).** *The solver-ranked
+  defeat-combine-symbol-fold vector — a pre-computed named row pointer — reaches the
+  target DISP8 | DISP4 | LOSUM0 arrangement.* Seven spellings (record pointer, 2-D
+  row pointer, pointer-to-array, split-symbol byte-offset pointer; statements and
+  chains; both member orders) all reach DISP8 | DISP4 | DISP0 instead. The vector
+  does work mechanically — it defeats the fold and materialises a base register —
+  but it defeats it for all three stores simultaneously, leaving no symbol for the
+  last store's LO_SUM. Measured on the 2026-09-03 chassis in the s16struct harness,
+  no FAKE construct present; the family's real-chassis sandbox score is 6.
+
+- **H-s17-VALSTAGE (instance, KILLED).** *Giving the stored zero one name (the
+  cse_merge / named-local-fake-exception / staged-value-reused-variable vectors)
+  moves the epilogue toward the target.* S09/S10 keep all three stores in the
+  folded symbolic form with no base register at all — further from the target than
+  the pointer family. Closes both sanctioned FAKE vectors for this function without
+  a FAKE construct being submitted. Measured on the 2026-09-03 chassis, no FAKE
+  construct present.
+
+- **H-s17-CLEARLOOP (instance, KILLED).** *A 3-iteration clearing loop over the
+  terminator row emits the three stores in the target arrangement.* GCC 2.7.2 does
+  not unroll at -O2; both directions emit a real loop with one store, 29 harness
+  insns. Measured on the 2026-09-03 chassis, no FAKE construct present.
+
+## [s17] The func_80062020 residual is a register-seat or emission-order residual that tools/ra_solver or tools/sched_solver can search.
+- mechanism: If the two instruction streams share a register-blanked multiset, the divergence is an allocation (global.c / local-alloc / reload) or a schedule (sched.c list scheduler) and inverse.py / inverse_reload.py / inverse_sched.py can invert it into ranked C-lever vectors. If the multisets differ, both models are permutation-and-rename engines over a FIXED insn set and cannot express the gap.
+- probe: Applied the best admissible body (memory/grind/func_80062020/rejected/epilogue-uniform-pointer-floor4-superseded.c, no banned construct) to src/text1b.c:3932; sandbox func_80062020 --disable all = score 6, target_insns 38, build_insns 35, rules_dropped 0; then python3 tools/ra_solver/inverse_compose.py classify text1b func_80062020 --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80062020/text1b.o (under WSL).
+- result: FIRST DIVERGENCE: PRE-RA, 'no backend - the residual is upstream of every model'. Register-blanked multiset gap: ours only sw #,0(#) x2; target only addu #,#,# / lui #,0x0 / nop / sw #,4(#) / sw #,8(#). The classifier states the foreclosure itself: 'A different instruction MULTISET means the RA and scheduler models cannot express this residual: they permute and rename a FIXED set of insns. Searching them would produce fiction.' The solver rung of the modality ladder is therefore closed for this function - no future session should spend measurements on RA seats or schedule order here. Capture: tmp/grind/func_80062020/s17/classify_floor6.txt.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: 2026-09-03 chassis (HEAD INCLUDE_ASM + the admissible score-6 body applied to src/text1b.c); no FAKE construct present, rules_dropped 0
+- predicate_cite: tools/ra_solver/inverse_compose.py:22
+
+## [s17] The solver-ranked cse_split vector defeat-combine-symbol-fold - a pre-computed named row pointer - spells an epilogue that reaches the target DISP8 | DISP4 | LOSUM0 store arrangement.
+- mechanism: combine.c folds a constant member displacement into the LO_SUM addend when the base is still a symbol_ref plus index; giving the row address its own pseudo removes the symbol from the addressing expression, so the displacement has to stay a register displacement. The target uses a base register for the +8 and +4 columns and a fresh lui/addu/%lo re-materialisation for the +0 column.
+- probe: tmp/grind/func_80062020/s17/sweep_solver.py - seven spellings on the s16struct chassis verbatim (record pointer statements in both member orders, chained-through-record-pointer, 2-D row pointer statements, chained 2-D row pointer, pointer-to-array, split-symbol byte-offset pointer): rows S01-S06 and S11 in tmp/grind/func_80062020/s17/sweep_solver_results.txt, plus the real-chassis sandbox measurement of S11's src equivalent.
+- result: All seven emit DISP8 | DISP4 | DISP0. The vector genuinely works - a named pointer defeats the fold and materialises the base register - but it defeats it for all three stores simultaneously, because a pointer pseudo leaves no symbol for the last store's LO_SUM. Real-chassis score 6 (35 vs 38 insns); the whole residual is the missing lui/addu/%lo triple on the +0 column. Chain-ness does not rescue the family: S03 and S05 are chains through the pointer and still emit DISP0. This CORRECTS one sentence of the s16e write-up ('all NINE non-chained spellings emit all-LOSUM with no base register in any order'), which held for the nine lvalue spellings s16e enumerated but not in general; the s16e class kill on the reachable arrangement itself stands. Banked as memory/grind/func_80062020/rejected/epilogue-recptr-uniform-disp-solver-s17.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis, s16struct harness (project cc1 flags, tools/gcc-2.7.2/build/cc1) plus one real-chassis sandbox run at score 6; no FAKE construct present
+
+## [s17] Giving the stored zero a single name - the solver-ranked cse_merge vectors, including the sanctioned named-local-fake-exception constant holder and staged-value-reused-variable - moves the epilogue toward the target arrangement.
+- mechanism: cse.c unifies two textual occurrences of a constant into one register copy when they are given one name, so the classifier ranks a single named intermediate whenever the target materialises a value once where we materialise it twice.
+- probe: tmp/grind/func_80062020/s17/sweep_solver.py rows S09 (record declaration) and S10 (2-D declaration): s32 z; z = 0; then the three column stores from z, descending member order.
+- result: Both emit LOSUM+8 | LOSUM+4 | LOSUM0 at 25 harness insns - all three stores keep the folded symbolic form and no base register is materialised at all, strictly further from the target than the pointer family. Naming the VALUE changes the value's RTL, not the address's, and the residual here is entirely an address-form residual. This closes the constant-holder and staged-value FAKE vectors for func_80062020 without a FAKE construct ever being submitted: they are measured not to reach, so that rung of the exhaustion ladder never opens.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis, s16struct harness; no FAKE construct present in the measured forms
+
+## [s17] A 3-iteration clearing loop over the terminator row emits the three terminator stores in the target arrangement.
+- mechanism: A counted loop over the row members is a control shape absent from every previous enumeration (s16struct measured statement and chain spellings only); if GCC 2.7.2 unrolled it at -O2 it would emit three stores whose addresses come from an induction register rather than from the folded symbol.
+- probe: tmp/grind/func_80062020/s17/sweep_solver.py rows S07 (for (k = 2; k >= 0; k--)) and S08 (for (k = 0; k < 3; k++)) on the 2-D declaration.
+- result: GCC 2.7.2 does not unroll at -O2. Both directions keep a real loop and emit ONE zero store (DISP0) at 29 harness insns - wrong instruction count and wrong shape, further from the target than any straight-line spelling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis, s16struct harness; no FAKE construct present

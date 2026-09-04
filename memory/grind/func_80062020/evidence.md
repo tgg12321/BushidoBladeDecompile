@@ -2497,3 +2497,116 @@ Item 1 (land the banked form) is EXECUTED this session and returned candidate-re
 gated on func_800620B8 reaching COMPLETED-C. Item 2 (the bare 2-D declaration) is demoted:
 s17 already proved it byte-equivalent in full context, and the standing Judge order forbids
 substituting it, so it is a surface-reduction option for a future ruling, not a probe.
+
+---
+
+## s17 (SOLVER modality, 2026-09-03) — the residual is typed PRE-RA; both backend solvers foreclosed; four ranked C-lever families measured dead
+
+Full write-up: `tmp/grind/func_80062020/s17/solver_s17.md`. Raw:
+`tmp/grind/func_80062020/s17/classify_floor6.txt`,
+`tmp/grind/func_80062020/s17/sweep_solver{.py,_results.txt}` and S01..S12{.c,.s}.
+
+**Chassis.** HEAD is INCLUDE_ASM. This session measured on the best ADMISSIBLE
+body — `rejected/epilogue-uniform-pointer-floor4-superseded.c`, which declares NO
+banned construct (no aggregate merge, no chained assignment). Applied to
+src/text1b.c:3932: `sandbox func_80062020 --disable all` = **score 6**,
+target_insns 38, build_insns 35, scorable true, rules_dropped 0. This is a third
+independent confirmation of the s16b correction: the ledger's long-quoted
+"floor 4" belongs to the dual-spelling body that is banned_constructs[0]; the
+admissible floor is 6. The tree was restored to HEAD afterwards (`git status`
+clean apart from metrics/events.jsonl).
+
+**The residual, stated exactly** (objdump of tmp/sandbox/func_80062020/text1b.o
+against asm/funcs/func_80062020.s). 35 of the 38 instructions are identical —
+including the whole copy loop, the `sll/addu/sll` recompute of i*12 into $v1, the
+`lui/addiu %hi/%lo(D_800F1198)` + `addu $v0,$v1,$v0` base materialisation, and the
++8 and +4 terminator stores off $v0. The entire divergence is the addressing form
+of ONE store:
+
+    ours   : sw zero,8(v0) ; sw zero,4(v0) ; jr ra ; sw zero,0(v0)
+    target : sw zero,8(v0) ; sw zero,4(v0) ;
+             lui at,%hi(D_800F1198) ; addu at,at,v1 ;
+             sw zero,%lo(D_800F1198)(at) ; jr ra ; nop
+
+Writing DISP<n> for `sw $0,n($reg)` and LOSUM for `sw $0,SYM+n($reg)`, the TARGET
+ARRANGEMENT is **DISP8 | DISP4 | LOSUM0** and the admissible body reaches
+DISP8 | DISP4 | DISP0.
+
+**Solver triage (the mandated first step).**
+`inverse_compose.py classify text1b func_80062020 --target-object build/src/text1b.o
+--ours-object tmp/sandbox/func_80062020/text1b.o` (run under WSL; engine/score.py
+shells out to mipsel-linux-gnu-objdump and dies on Windows-side python) returns
+**FIRST DIVERGENCE: PRE-RA — "no backend, the residual is upstream of every
+model"**, with the register-blanked multiset gap `ours only: sw #,0(#) x2` vs
+`target only: addu #,#,# ; lui #,0x0 ; nop ; sw #,4(#) ; sw #,8(#)`.
+Because the classifier's own predicate for foreclosing both backends is exactly a
+differing multiset (`tools/ra_solver/inverse_compose.py:22`), `inverse.py`,
+`inverse_reload.py`, `inverse_sched.py` and `perturb.py` cannot express this
+residual for any body in the DISP8|DISP4|DISP0 family. **The solver rung of the
+ladder is closed for func_80062020** — banked as a class kill so that no future
+session spends measurements on RA seats or schedule order here.
+
+**The ranked C-lever vectors, spelled and measured** (12 new spellings, s16struct
+chassis verbatim, so the rows are directly comparable with s16struct/results.txt).
+
+1. *cse_split / defeat-combine-symbol-fold* ("pre-compute a displaced pointer so
+   combine cannot fold the displacement into the addressing mode") — spelled seven
+   ways: a record pointer, a 2-D row pointer, a pointer-to-array, and the
+   split-symbol byte-offset pointer, as separate statements and as chains, in both
+   member orders (S01-S06, S11). **The vector really works**: a NAMED row pointer
+   defeats the symbol fold outright and puts every store on a base register. It
+   just defeats it for all three stores at once — a pointer pseudo leaves GCC no
+   symbol to spell a LO_SUM against — so every member of the family lands on
+   DISP8 | DISP4 | DISP0, i.e. the 3-instruction residual above, score 6.
+   KILLED for reaching the target arrangement. Banked as
+   `rejected/epilogue-recptr-uniform-disp-solver-s17.c`.
+   NOTE — this CORRECTS a sentence in the s16e write-up ("all NINE non-chained
+   spellings emit all-LOSUM with no base register in any order"). That statement is
+   true of the nine LVALUE spellings s16e enumerated and false in general: a named
+   pointer is a non-chained spelling that does produce a base register. The s16e
+   CLASS KILL itself stands — its subject is which arrangement is reachable, and no
+   pointer spelling reaches DISP8|DISP4|LOSUM0.
+
+2. *cse_merge / "single named intermediate"* and the sanctioned
+   `named-local-fake-exception` / `staged-value-reused-variable` vectors (S09, S10):
+   staging the zero through a named local changes the VALUE's RTL, not the
+   ADDRESS's. All three stores keep the folded symbolic form and no base register
+   is materialised at all — strictly further from the target than (1). KILLED,
+   and note this closes those two FAKE families for this function WITHOUT a FAKE
+   construct ever being submitted: they are measured not to reach, so the
+   exhaustion ladder never opens onto them.
+
+3. A 3-iteration clearing loop, both directions (S07, S08; free probe, not
+   solver-ranked): GCC 2.7.2 does not unroll at -O2, so it emits a real loop with a
+   single store. Wrong shape and wrong count. KILLED.
+
+**The law, sharpened.** 27 distinct epilogue spellings across four declaration
+shapes are now measured (15 in s16struct + 12 here) and the reaching set is still
+exactly three rows, all the same construct. The mechanism now explains every
+negative in both sweeps with one rule: a chained assignment makes GCC copy the
+address to a register for each link whose value is WANTED
+(`tools/gcc-2.7.2/expr.c:3457`, the `value_mode != VOIDmode && GET_CODE (addr) !=
+REG` gate calling `copy_to_reg`) and leaves the LAST-EVALUATED (leftmost) link's
+address alone for the MIPS backend to fold the member offset into the symbol —
+which is why ascending source order 0,4,8 emits in target order 8,4,0. Therefore
+**chain-ness is necessary but NOT sufficient: the leftmost lvalue must itself be
+symbol-based.** S03/S05 are chains and still fail, because through a pointer there
+is no symbol left to fold into and the outermost link degrades to DISP0. That is
+the missing half of the s16e class kill.
+
+**Disposition.** `progress`. This session did not re-litigate the banned
+construct and did not submit; the four kills above are its product.
+
+- [s17] Admissible floor re-measured a third time at 6, not 4: the best body carrying NO banned construct (rejected/epilogue-uniform-pointer-floor4-superseded.c) applied to src/text1b.c:3932 gives sandbox func_80062020 --disable all = score 6, target_insns 38, build_insns 35, scorable true, rules_dropped 0. The ledger's long-quoted floor 4 belongs to the dual-spelling body that is banned_constructs[0]. Tree restored to HEAD afterwards; git status clean apart from metrics/events.jsonl.
+
+- [s17] The residual is EXACTLY three instructions, and they are all one store's addressing form. objdump of tmp/sandbox/func_80062020/text1b.o against asm/funcs/func_80062020.s: 35 of 38 instructions are identical, including the entire copy loop, the sll/addu/sll recompute of i*12 into $v1, the lui/addiu %hi/%lo(D_800F1198) plus addu $v0,$v1,$v0 base materialisation, and the +8 and +4 terminator stores off $v0. Ours ends 'sw zero,8(v0); sw zero,4(v0); jr ra; sw zero,0(v0)'; the target ends 'sw zero,8(v0); sw zero,4(v0); lui at,%hi(D_800F1198); addu at,at,v1; sw zero,%lo(D_800F1198)(at); jr ra; nop'.
+
+- [s17] inverse_compose.py classify needs --target-object build/src/text1b.o + --ours-object tmp/sandbox/func_80062020/text1b.o for this INCLUDE_ASM-routed function, and it must be run under WSL: engine/score.py:46 shells out to mipsel-linux-gnu-objdump, which does not exist on the Windows-side python, and the tool dies with FileNotFoundError [WinError 2] before printing anything useful.
+
+- [s17] 27 distinct epilogue spellings across four declaration shapes are now measured for this function (15 in tmp/grind/func_80062020/s16struct/results.txt + 12 in tmp/grind/func_80062020/s17/sweep_solver_results.txt) and the reaching set is still exactly three rows - E01, E04, E14 - all the same construct.
+
+- [s17] SHARPENED LAW (the mechanism sentence the ledger has been asserting, now measured against a counterexample): a chained assignment makes GCC copy the address to a register for every link whose value is WANTED (tools/gcc-2.7.2/expr.c:3457, the 'value_mode != VOIDmode && GET_CODE (addr) != REG' gate calling copy_to_reg) and leaves the LAST-EVALUATED (leftmost) link's address alone for the MIPS backend to fold the member offset into the symbol - which is why an ascending source chain 0,4,8 emits in target order 8,4,0. Chain-ness is therefore necessary but NOT sufficient: the leftmost lvalue must itself be symbol-based. S03/S05 are chains through a row pointer and still emit DISP0, because a pointer pseudo leaves no symbol to fold into.
+
+- [s17] The two sanctioned FAKE vectors the solver ranked (named-local-fake-exception constant holder, staged-value-reused-variable) are measured NOT to reach on this function (S09/S10 -> all-LOSUM, no base register). That closes them without any FAKE construct being written, so no future session needs to open a lever-exhaustion argument for them here.
+
+- [s17] state.json banned_constructs currently carries FOUR entries: the pointer-local + second-address-materialisation form, the comments-only re-file, the chained-assignment epilogue line itself, and the whole aggregate-merge diff. Entries 3 and 4 were cleared by the driver after the s16e integration handoff and RE-ADDED after the 2026-09-03 21:41/22:04 layer-1 FAILs, so the bytes-proven s15/s16 body is mechanically un-submittable again. This session did not touch it and did not re-litigate it.

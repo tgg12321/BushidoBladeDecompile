@@ -226,6 +226,28 @@
  *     carve-out.  Corroborating negative evidence: docs/reference/sotn-construct-index.md
  *     (1,365 catalogued SOTN match hacks) has ZERO chained-assignment entries.  Census:
  *     tmp/grind/func_80062020/s17syn/sotn_chain_precedent.md; self_vet.md PRIMARY OBJECTION.
+ *
+ * s17solv (SOLVER, 2026-09-03) NOT SUBMITTED - body UNCHANGED, nothing added or removed.
+ *   - banned_constructs 3 and 4 are BACK in state.json, so this body is mechanically
+ *     un-submittable this session; s17solv did not re-litigate it and did not touch it.
+ *   - What it measured instead, on the best ADMISSIBLE body (rejected/epilogue-uniform-
+ *     pointer-floor4-superseded.c, sandbox score 6 at 35/38): the residual is EXACTLY
+ *     three instructions - the +0 terminator store's addressing form - and
+ *     `inverse_compose.py classify` types it PRE-RA, which is the classifier's own
+ *     foreclosure predicate for BOTH backend solvers (tools/ra_solver/
+ *     inverse_compose.py:22).  The solver rung of the ladder is closed here.
+ *   - Twelve new spellings measured (tmp/grind/func_80062020/s17/sweep_solver_results.txt),
+ *     bringing the enumerated epilogue space to 27 across four declaration shapes.  The
+ *     solver's top vector (defeat-combine-symbol-fold via a named row pointer) WORKS but
+ *     lands on DISP8|DISP4|DISP0 for all seven of its spellings; the cse_merge /
+ *     constant-holder vectors land on all-LOSUM.  Reaching set unchanged: E01/E04/E14.
+ *   - REFINEMENT for whoever writes the next self_vet: the law is not "the chain reaches
+ *     it" but "a chain whose LEFTMOST (last-evaluated) lvalue is symbol-based reaches it" -
+ *     S03/S05 are chains through a pointer and fail, because expr.c:3457 only leaves the
+ *     leftmost link's address unstabilised and a pointer pseudo has no symbol to fold into.
+ *     This is the mechanism sentence the header's "ON THE EPILOGUE'S ADDRESSING MIX"
+ *     paragraph asserts, now measured against a pointer-chain counterexample.
+ *   - Report: tmp/grind/func_80062020/s17/solver_s17.md; evidence.md + hypotheses.md s17 blocks.
  */
 void func_80062020(s32 *arg0) {
     s32 i;
