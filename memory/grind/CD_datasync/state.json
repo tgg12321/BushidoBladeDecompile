@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 45,
+ "session_count": 46,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -273,23 +273,29 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "s45 synthesis: all three inherited frontier items measured dead (106+ compiles), and the residual re-decomposes onto ONE C variable - the tbl_125c value-statement order sets BOTH the leaf lbu order an"
+  },
+  {
+   "session": 46,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "s45's two-feature fork BROKEN by asymmetric argument statement counts (24 of 680 forms hold both features at 7/91), and sched_solver's object-goal path re-attributes the whole residual from scheduling"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A form can hold BOTH target features (leaf order idx0-first AND arg2's pair at 43/44) if 'first statement' and 'first value' are decoupled by giving arg4 and arg5 DIFFERENT statement counts, rather than by index locals (which s45 proved inert).",
-   "mechanism": "s45 proved the two features are controlled by one variable, the tbl_125c value-statement order, and that index locals cannot decouple the leaf order from it. Every form in the gen4/gen5/gen6 sweeps gave the two arguments the SAME number of statements, so 'the first statement in the block' and 'the first completed value' were always the same event. A two-statement arg4 (idx0 read, then table read) paired with a single-statement arg5 makes them different events for the first time.",
-   "next_probe": "On the m011 chassis, sweep asymmetric statement counts: arg4 spelled as two statements whose FIRST is the idx0 read and whose second is the table read, with arg5 a single statement placed between them, before them, and after them; the mirror with arg5 split; and three-statement splits (index, scaled offset, load). Read the slot of the arg2 lui/lw pair and the two leaf lbu in each, not only the score."
+   "hypothesis": "The residual is a register-assignment fact: some C lever seats the idx0 address chain in $a0 across the whole window (as target does), which removes the two kind-14 anti-dependences that make target's pick order non-topological on our graph.",
+   "mechanism": "sched_solver's object-goal path localised the entire residual to pass-2 block 3 and to a single instruction whose required move violates deps[119] and deps[130], both citing UID 105 with an anti/output dependence. Post-reload WAR edges exist only where two values share a hard register, and sched2 runs after reload - so the seat is an input to the scheduler, not an output of it. This is the first time the function's residual has been handed to the RA question with a named seat.",
+   "next_probe": "Run tools/ra_solver/inverse_compose.py classify on the block-3 seat question ($a0 vs $v0 for the idx0 address chain) on the new candidate.c chassis, and ask ra_solver's local-alloc / reload models which C-level lever moves that chain onto $a0. Re-run the sched_solver object-goal command (recorded verbatim in evidence.md) after every RA-lever spelling to see whether the topological violation clears."
   },
   {
-   "hypothesis": "Attack from alt_arg2_slots4344_7.c (the arg5-first 7-form) instead of candidate.c: its single named defect is the leaf order at 41/42, which is a narrower residual than manufacturing arg2's 43/44 from the arg4-first side (which 45 sessions of arg2 spellings have failed to do).",
-   "mechanism": "arg2's pair slot has proven completely unreachable from the arg4-first family - every arg2 spelling is byte-inert there across s42, s43, s44 and s45. The leaf order, by contrast, is a known function of one variable, so the arg5-first side has a residual with a known controlling variable while the arg4-first side does not.",
-   "next_probe": "On the alt_arg2_slots4344_7.c chassis, sweep constructs that make idx_1494[0] be READ first without making arg4's value the first-assigned value: idx0 read into a value that arg5's own expression consumes; arg5's scaled offset expressed in terms of idx_1494[0] plus a delta; and the arg4/arg5 statement pair written as a single comma expression or a single declaration-with-initialiser list. Read slots 41/42 and 43/44 in each."
+   "hypothesis": "arg4's value can be a named local whose LOAD is still emitted as call setup, which would put F3 into the same form as F1&F2 - but only if the naming is crossed with the index-read statement rather than with the address spelling alone.",
+   "mechanism": "Over 680 forms F3 holds iff arg4's value is loaded inline in the printf call, and F1&F2 hold only when arg4's value is a named local; the two sets are disjoint. The pure address-named quadrant (p, ip, b, ib as arg4) was swept this session and holds neither, so the untried crossing is a named index-read statement whose value is nevertheless read inside the call.",
+   "next_probe": "Sweep forms where the named entity is arg4's index (i4 = idx_1494[0];) or its scaled offset while the table read stays inline in the printf argument list, crossed with every interleaving against arg5's own multi-statement chains - i.e. the s46 gen.py lattice restricted to zero-value-statement arg4 spellings with a nonzero index-statement count. Read slots 41/42, 43/44, 54 and 56 in each, not only the score."
   },
   {
-   "hypothesis": "The s45 fork is a sched2 LUID constraint that tools/sched_solver can decide directly - i.e. there exists (or provably does not exist) a sched1 output order that simultaneously yields leaf order idx0-first and the arg2 pair at 43/44.",
-   "mechanism": "sched_solver was validated order- and clock-exact on this function at s37 (12/12 blocks, both passes) and has swept depth-2 atom pairs and the 40,320 group-move orders, but it has never been run with the s45 fork as the input CONSTRAINT. The residual is now known to be pure emission order over an identical instruction multiset, which is exactly the solver's decidable domain.",
-   "next_probe": "Run tools/sched_solver (plus tools/ra_solver/inverse_compose.py classify for the $v1-vs-$a0 seat, which s10 showed is downstream of the order) with target's window as the goal and the two s45 7-forms as the two starting LUID assignments; ask for the set of LUID orders that produce target's emission, then map that set back to C-level statement structure. A FORECLOSED verdict here would be the first predicate-cited class kill this function has."
+   "hypothesis": "arg3's spelling - held inline by every session for 46 sessions - is the lever for feature F4, target's sw ...,16($sp) at slot 54, which no form has ever reached.",
+   "mechanism": "In target the arg5 stack store sits between the arg3 address chain (52/53) and arg3's own load (55), i.e. the arg5 value is held live in $v1 across the arg3 chain. Every form measured to date stores it at 47, 50, 51, 53 or 55, and arg3 has never been given a statement of its own, so the arg3 chain has never been able to interpose itself.",
+   "next_probe": "Sweep the arg3 spelling (tbl_11dc[D_800A11D5]) over {inline, named value, named index, index+value, named pointer} against the asymmetric-statement-count arg4/arg5 lattice from gen.py, with the arg3 statement placed at every position in the interleaving. Read the sw 16($sp) slot and the lw $a2 slot in each."
   }
  ],
  "judge_constraints": [],
@@ -299,22 +305,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 27,
-   "statement": "s25's operand-order pre-filter - naming an ADDRESS flips the addu to base-first and naming a VALUE emits that load too early, leaving only inline spellings - excludes the value-local family.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals, do{}while(0) FAKE present); 16 forms on the fast harness, two re-measured on live sandbox",
-   "predicate_cite": "",
-   "result": "KILLED. m453, m43, m435 and m2453 are plain-subscript VALUE locals whose value load lands at the register-load point, so"
-  },
-  {
-   "session": 28,
-   "statement": "The complete 65-member space of plain-subscript value locals for subsets of {arg2,arg3,arg4,arg5} in every assignment order collapses to 18 distinct printf windows, and none of those 18 is target's wi",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; all 65 members compiled, fast harness calibrated sandbox = lev + nop - 3, candidate.c re-verified live at san",
-   "predicate_cite": "",
-   "result": "18 distinct windows. Minimum window-lev 7, reached by the candidate.c family {n4,n24,n42,n45,n245,n425,n452}; the all-in"
-  },
   {
    "session": 28,
    "statement": "Among the 465 forms compiled this session, no spelling places the split arg4 address chain in $a0: the 53 forms that reach target's $a0/$a3 register map all have a 17-insn window, and every 18-insn fo",
@@ -760,6 +750,22 @@
    "measured_on": "m011 chassis with the do{}while(0) FAKE present; 30 whole-function compiles",
    "predicate_cite": "",
    "result": "Index locals are completely byte-inert. All 15 arg4-first cells score 7 and all 15 arg5-first cells score 8, with no dep"
+  },
+  {
+   "session": 46,
+   "statement": "The third window feature - target issuing arg4's lw $a3 as the last memory reference of the block at slot 56 instead of at 49 - is settable independently of the leaf order and of arg2's pair slot, acr",
+   "kill_scope": "instance",
+   "measured_on": "m011-family chassis with the do{}while(0) FAKE present; 680 whole-function compiles, windows read for all four slot features",
+   "predicate_cite": "",
+   "result": "F3 is decided entirely and deterministically by arg4's spelling, with no dependence on arg5, on the interleaving, or on "
+  },
+  {
+   "session": 46,
+   "statement": "MANDATED KILL RE-AUDIT: the s45 index-local and value-order kills were measured with the do{}while(0) FAKE occupying the block, so the new best form's numbers must be re-measured with that FAKE ablate",
+   "kill_scope": "instance",
+   "measured_on": "z_iv_ik_w2 chassis, both FAKE subsets scored by tools/fake_ablate.py through the engine sandbox",
+   "predicate_cite": "",
+   "result": "keep-all 7 / build_insns 91; drop-1 (wrapper removed) 31 / build_insns 75. The wrapper is load-bearing exactly as s9 mod"
   }
  ]
 }
