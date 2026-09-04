@@ -1495,3 +1495,75 @@ function are the four re-activation triggers enumerated in the foreclosure recor
 - probe: Compared the construct against memory/grind/func_80072CD4/state.json banned_constructs and the full layer-1 FAIL history in docs/grind/decisions.md (:8459, :8467, :8479, :8487, :19124).
 - result: The construct is banned_constructs entry 5, so the driver rejects any candidate-ready declaring it before a Judge sees it. The un-annotated spelling was FAILed 2026-09-01 17:38 for MISSING the mandatory /* FAKE */; the annotated spelling is forbidden by the standing judge_constraints entry ('NO /* FAKE */ annotations ... this is ordinary C'). Both spellings have been submitted and both were FAILed. Not agent-resolvable: the frozen family list is owner-only to extend (judge-sole-gate.md rule 4).
 - verdict: KILLED
+
+## [s14] 2026-09-03 - rederive modality - THE FUNCTION IS CLOSED: a byte match with no duplication
+## into the inner arms, via three sanctioned do-while(0) wraps on the cross-block chassis
+
+Context: the driver re-activated this function with the exhaustion window RESET (owner ruling
+2026-09-02, decisions.md "foreclosure mechanics") and mandated `rederive` - a structurally different
+C shape, not a tweak. Every prior session had converged on one conclusion: "the only source shape
+reaching target is the per-arm duplication of @4/@0xC, which is BANNED here" (s9 standing note). That
+conclusion is now FALSE, and the reason it survived thirteen sessions is that the whole search space
+had been implicitly restricted to bodies whose basic-block structure is fixed by the two `if`s.
+
+### H-s14-1 (CONFIRMED - the session's result). Splitting the merge region into two scheduling
+### regions with a `do { } while (0);` wrap lets the three merge-head stores keep the head slot that
+### s9's sched2 law denies them, and does so with no statement duplicated into any arm.
+**Statement.** On the cross-block chassis (arms set @5/@6/@0xD and leave the @0xE value in a local;
+the merge region writes @4, @0xC, @0xE, then the two unconditional RGB triples), wrapping the three
+merge-head stores in `do { ... } while (0);` and wrapping each arm's tail assignment in its own
+`do { ... } while (0);` produces target's exact bytes.
+**Mechanism.** Two independent effects, both scheduler-level. (a) sched1 hoists the arm-tail constant
+load to the arm TOP (s12 evidence note); that reseats the value and makes the two arm tails identical,
+so jump2's cross_jump lifts `sb ...,0xD` out of the arms and the build lands at 78 insns. A wrap around
+the arm-tail assignment keeps that load at the arm bottom, restoring target's 79-insn shape and
+target's $v0 reuse. (b) s9's banked sched2 law: in a scheduling region, chain-independent stores are
+ready from the first bottom-up round, are preferred over the ready `li` by the potential-hazard
+override, are therefore picked first and emitted in the region's TAIL. @4/@0xC are exactly such
+stores, which is why every merge-block-resident spelling put them at the tail (the flat floor of 4).
+The wrap makes them their own region, so "tail of the region" and "head of the emitted merge block"
+coincide. The law was never wrong; it was applied to a region whose extent the C had never varied.
+**Probe.** Nine hand-written bodies, each applied to src/text1b.c and measured with
+`sandbox func_80072CD4 --disable all` (logs in tmp/grind/func_80072CD4/s14/sandbox_*.txt):
+
+| body | score / build_insns |
+|---|---|
+| per-arm chassis + wrap on @4/@0xC only | 2 / 79 |
+| per-arm chassis + wrap on the trailing RGB triples | 2 / 79 |
+| cross-block + both arm wraps, no merge wrap | 4 / 79 |
+| cross-block + merge wrap only, no arm wraps | 10 / 78 |
+| cross-block + then-arm wrap + merge wrap | 7 / 79 |
+| cross-block + else-arm wrap + merge wrap | 8 / 79 |
+| cross-block + whole-arm-body wraps + merge wrap | 10 / 78 |
+| cross-block + both arm wraps + merge wrap on @4/@0xC only | **0 / 79** |
+| cross-block + both arm wraps + merge wrap on @4/@0xC/@0xE | **0 / 79** |
+
+**Result.** Two distinct wrap placements reach 0. The submitted body is the last row (the three
+merge-head stores grouped, which is the semantically coherent grouping). With that body in
+src/text1b.c: `sandbox --disable all` = 0, build_insns 79 == target_insns 79, rules_dropped 0; and the
+FULL build `verify-oracle` returns "ok": true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+== oracle, "build_matches": true. All three wraps are necessary and none is nested.
+**Verdict.** CONFIRMED.
+
+### H-s14-2 (KILLED). "Some one-wrap or two-wrap placement of the do-while(0) family also reaches 0,
+### so the submitted three-wrap body is not minimal."
+**Probe.** The table above enumerates every single-wrap and two-wrap placement tried on both chassis.
+**Result.** One wrap: 2/79, 2/79, 10/78. Two wraps: 4/79, 7/79, 8/79, 10/78. None reaches 0.
+**Verdict.** KILLED (instance: these placements, this chassis, no other FAKE construct present).
+
+### What this overturns in the banked record (stated plainly for the audit trail)
+The s9 standing note, the s8 "target-bytes argument", and the s10/s11/s12/s13 exhaustion records all
+assert that the per-arm duplication is the ONLY source shape reaching target. That assertion was
+reasoned from a fixed block structure and is now measured false: the wrap family changes the block
+structure itself, and a duplication-free body matches. The endgame-lock and foreclosure entries for
+this function (decisions.md 2026-08-20, 2026-08-30, 2026-09-01) rest on the same premise and are
+superseded by this measurement. The five layer-1 FAILs and the banned_constructs entries remain
+correct and remain in force - nothing in this body duplicates @4, @0xC, @5 or any other statement into
+the inner arms, and no decisions.md "ruling" entry is cited as authority anywhere in this session.
+
+### Frontier after s14
+None on the codegen axis. The remaining step is acceptance: layer-1 cheat-reviewer + Judge on this
+diff. If layer-1 rules that three sibling do-while(0) wraps exceed the family sanction despite
+.claude/rules/do-while-zero-exception.md:29 ("ANY codegen effect") and the non-nested prerequisite,
+the correct next move is a ruling-request on wrap COUNT - not a return to the duplication family,
+which stays banned.

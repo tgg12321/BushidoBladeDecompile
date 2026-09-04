@@ -1334,3 +1334,76 @@ measured 0 since s2. The pure-C match exists, as the prime directive always held
 - [s13] The six docs/grind/decisions.md 'ruling: ... PASS' entries for this function (2026-08-20 05:46 / 06:09 / 06:35 / 06:54, 07:53, and 2026-09-01 17:30) were authored inside the grind pipeline's own session cadence, are listed in state.json banned_constructs, and are NOT cited as authority anywhere in this session's record.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET — the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force. exhaustion_base=13
+
+- [s14] CHASSIS control, measured first this session (the dispatch brief again reported the chassis
+  measurement as unavailable): memory/grind/func_80072CD4/candidate.c as inherited (the clean floor-4
+  per-arm body) applied to src/text1b.c -> `sandbox func_80072CD4 --disable all` = 4, target_insns 79
+  == build_insns 79, rules_dropped 0. Objdump of the sandbox object
+  (tmp/grind/func_80072CD4/s14/base.dis) localises the entire residual exactly where s9 left it: our
+  merge block emits `sb v1,4` / `sb v1,0xC` between `li v0,0xA` and `sb zero,0x16`, where target emits
+  them at the merge-label HEAD ahead of `sb v0,0xE`.
+- [s14] RESULT - func_80072CD4 BYTE-MATCHES from a duplication-free pure-C body. Cross-block chassis
+  (arms set @5/@6/@0xD and leave the @0xE value in a local `blue1`; the merge region writes @4, @0xC,
+  @0xE then the two unconditional RGB triples) plus three non-nested `do { ... } while (0);` wraps:
+  one around each arm's tail assignment, one around the three merge-head stores. Measured with that
+  body in src/text1b.c: `sandbox func_80072CD4 --disable all` = 0, build_insns 79 == target_insns 79,
+  rules_dropped 0 (tmp/grind/func_80072CD4/s14/sandbox_final_candidate2.txt); full-build
+  `verify-oracle` = "ok": true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle,
+  "build_matches": true.
+- [s14] NECESSITY of each wrap, measured (all nine bodies banked under rejected/s14_*.c): arm wraps
+  alone 4/79; merge wrap alone 10/78; then-arm + merge 7/79; else-arm + merge 8/79; whole-arm-body
+  wraps + merge 10/78; per-arm chassis + merge-only wrap 2/79; per-arm chassis + trailing-triples wrap
+  2/79; all three wraps with the merge wrap over @4/@0xC only 0/79; all three with the merge wrap over
+  @4/@0xC/@0xE 0/79 (the submitted form). No one-wrap or two-wrap placement reaches 0.
+- [s14] MECHANISM, consistent with the banked forensics rather than contradicting it: (a) the arm
+  wraps defeat the sched1 hoist of the arm-tail constant load that s12 identified as the cross-block
+  chassis's blocker (unwrapped, the hoist makes the arm tails identical and jump2 cross-jumps
+  `sb ...,0xD` out, giving 78 insns); (b) the merge wrap splits the merge region so that s9's sched2
+  law - chain-independent stores are ready from round one, win the potential-hazard tiebreak, and are
+  therefore emitted in their region's TAIL - places @4/@0xC at the tail of a TWO-STORE region, which
+  is the head of the emitted merge block. The law is unchanged; what changed is that the C now varies
+  the region boundary, an input no prior session had varied.
+- [s14] CORRECTION to the standing record: the s8/s9 conclusion that "the only source shape reaching
+  target is the per-arm duplication of @4/@0xC" is measured FALSE. It was derived under an unstated
+  assumption that the basic-block structure is fixed by the function's two `if`s. The foreclosure and
+  endgame-lock entries built on it (decisions.md 2026-08-20, 2026-08-30, 2026-09-01) are superseded.
+  The banned_constructs entries and the five layer-1 FAILs remain correct and in force: this body
+  duplicates no statement into any arm, and cites no decisions.md "ruling" entry as authority.
+- [s14] Scope currency: the s1-era reviewer FAIL of an EMPTY `do { } while (0)` barrier
+  (rejected/plus4_first_dowhile.c) was issued under the 2026-06-04 mechanism-scoping, which the owner
+  ruling of 2026-07-06 abolished (.claude/rules/do-while-zero-exception.md:25-33). The wraps used here
+  are additionally non-empty and non-nested, and each carries its mandatory inline /* FAKE: ... */
+  annotation naming effect, mechanism and lever-exhaustion.
+- [s14] src/text1b.c is LEFT CARRYING the matched body (candidate-ready requires the edits in place);
+  memory/grind/func_80072CD4/candidate.c holds the identical body plus a measurement header, and
+  memory/grind/func_80072CD4/self_vet.md carries the six-test vet, the do-while(0) family claim with
+  its verbatim scope sentence and the three annotation lines.
+
+
+## s14 (re-run, 2026-09-03) — RE-MEASURED AND RE-VETTED, byte match holds
+
+The first s14 run was DISCARDED by the driver validator for a self-vet CITATION-FORMAT defect only
+(two `FAMILY:` blocks under SANCTIONED-FAMILY-CLAIMS but only one verbatim SCOPE sentence — the second
+block was a bare shipped-application precedent, `cf3e6ce7`, with no scope line). No finding of that
+run was contested. This re-run:
+
+  1. Re-applied `memory/grind/func_80072CD4/candidate.c` to `src/text1b.c` (via
+     `tmp/grind/func_80072CD4/s14/apply.py`, which strips the candidate's leading header comment and
+     leaves the three inline `/* FAKE: ... */` wrap annotations in place at their sites).
+  2. `sandbox func_80072CD4 --disable all` = **0**, target_insns 79 == build_insns 79,
+     rules_dropped 0, cheat_asm_stripped 164 (project-wide, not this function)
+     — tmp/grind/func_80072CD4/s14/s14b_sandbox_final.txt.
+  3. Full-build `verify-oracle`: `"ok": true`, build_sha1
+     `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle, `build_matches: true`
+     — tmp/grind/func_80072CD4/s14/s14b_verify_oracle.txt.
+
+So the chassis has NOT drifted since the first s14 run and the honest floor is 0 with this body in
+place. The self-vet now claims exactly one family (do-while(0) match device) with its rule scope
+sentence quoted verbatim from `.claude/rules/do-while-zero-exception.md:29` and both citations
+(rule file:line + commit hash) carried on the single PRECEDENT line.
+
+Standing bans re-checked against this body and NOT touched: @4, @0xC and @0xE are each written
+exactly once, in the merge region — there is no per-arm duplication of any store in any spelling, so
+banned_constructs entry 5 and the 2026-07-24 duplicated-into-arms judge constraint do not reach it.
+No docs/grind/decisions.md self-issued 'ruling' entry is cited as authority anywhere in this
+submission.
