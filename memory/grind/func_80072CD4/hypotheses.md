@@ -1761,3 +1761,184 @@ The remaining question is a classification one, and it is NEW: banned_constructs
 third do-while(0) wrap" of a THREE-wrap body whose other two wraps were the element layer-1 called
 laundering. The single-wrap body did not exist when that entry was written. Whether entry 9 reaches
 it is a ruling, not a measurement — filed as this session's outcome.
+
+## [s14f] 2026-09-04 — synthesis — MERGED ATTACK: the arm carrier is not needed at all, the
+## honest floor drops 4 -> 2 for the first time since s2, and the last residual is named exactly
+
+**Inheritance handled first.** judge_constraints entry 15 (the ruling that closed s14e) bans the
+arm carrier local outright: "Do not carry an arm's successive values in one invented multi-write
+local (any name, any width, any count) - that is the banned y1 fresh-carrier class; the merge-head
+single-level FAKE-annotated do-while(0) is unbanned and may be used in a body that carries no other
+unsanctioned device." The inherited candidate.c (s14e, score 0) is therefore dead as submitted and
+was retired to rejected/s14e_armcarrier_mergewrap_score0_banned_by_ruling15.c. This session took the
+ruling literally: keep the merge-head wrap, delete the carrier, and find what replaces it.
+
+**Chassis control (re-measured).** fallback_floor4.c = 4, build_insns 79 == target_insns 79,
+rules_dropped 0 (tmp/grind/func_80072CD4/s14f/sandbox_control.txt). The brief reported the chassis as
+unavailable; it reproduces.
+
+**KILL RE-AUDIT.** This ledger keeps kills in hypotheses.md (state.json has no kills[] array for
+this function). The two closest-to-target banked instances are fallback_floor4.c (4/79) and the
+inherited s14e candidate (0/79). The first was re-measured above and is unchanged. The second was
+NOT re-measured with fake_ablate.py because it is now foreclosed by ruling 15 on classification
+grounds, not on measurement grounds — ablating its wraps only re-derives the already-banked
+xblock_sched1_hoist number (13/78), which this session re-measured directly anyway as the P_plain
+body of H-s14f-1. No banked number was found chassis-stale.
+
+### H-s14f-1 (CONFIRMED — the mechanism, read out of the dump, not inferred).
+**Statement.** The arm-tail constant load is hoisted to the arm HEAD by sched1's equal-priority
+tiebreak, not by any priority or dependence property that C addresses directly: in a block of
+independent li/sb pairs plus one trailing li, the trailing li has no in-block successor, so it is
+ready from the first bottom-up round and every competing store outranks it on potential_hazard.
+**Probe.** `pwsh tools/grinder/dump.ps1 func_80072CD4` with the plain cross-block body ("P_plain",
+13/78, the int-typed sibling of rejected/s14f_u8blue_carrier_13_78.c) in src/text1b.c; slices at
+tmp/grind/func_80072CD4/s14f/func_80072CD4.combine.txt and .sched.txt.
+**Result.** In .combine the arm block (insns 42..59) is still in source order, with the carrier's
+`(set (reg/v:SI 75) (const_int 50))` as insn 57, second to last. In .sched, block 2 prints every
+insn at `priority = 1` and then, round after round, `insn 54 has a greater potential hazard`,
+`insn 49 has a greater potential hazard`, `insn 44 has a greater potential hazard` — the three
+stores are pulled ahead of 57 in the bottom-up ready list, so 57 is placed last bottom-up and
+`new basic block head = 57`. The rule is tools/gcc-2.7.2/sched.c:2706-2721 (schedule_select: within
+a group of equal INSN_PRIORITY, "select the first one with the largest potential hazard"); a `sb`
+uses the memory unit and a `li` the ALU, so the store always wins. The knock-on effects are the
+whole 13/78 diff: with the carrier's li at the arm head its live range crosses the arm's scratch
+register, so the carrier takes $v1 and the 0xFC constant is pushed to $a0 (target: $v1 and $v0),
+and the two arms then end with an identical `sb v0,0xD` which jump2's cross_jump lifts out,
+costing the 79th instruction.
+**Consequence.** Only three C-level things can change that outcome: give the trailing li an in-block
+successor (which lifts it out of the store priority group entirely), give it an in-block dependence
+(which delays the stores' readiness), or accept the hoist. The s14e carrier took the second route by
+output-dependence, and ruling 15 closed it. H-s14f-3 takes the FIRST route, and it is ordinary C.
+
+### H-s14f-2 (KILLED, instance). Reusing the PARAMETER `arg0` as the arm carrier is the
+### staged-value-reused-variable family rather than the banned invented-carrier class, and reaches
+### the same bytes the invented carrier did.
+**Mechanism.** `arg0` is dead after `if (arg0 < 4)`, so borrowing it satisfies every bound of
+.claude/rules/staged-value-reused-variable.md (real immediately-used value, pre-existing variable,
+provably dead prior value) while creating the same REG_DEP_OUTPUT chain the invented carrier created.
+**Probe.** Six bodies: arg0 reused for all four arm values / for the last two / for the first and
+the last, each with and without the merge-head wrap
+(rejected/s14f_paramreuse_arg0_22_79.c plus tmp/grind/func_80072CD4/s14f/{A,B,C,D,E,F}_*.c).
+**Result.** 22/79, 17/79, 48/78, 45/78, 47/78, 44/78. The full-reuse form does reach 79 instructions
+(the output-dependence works), but `arg0`'s pseudo is the incoming-argument pseudo and the allocator
+keeps it in $a0 rather than $v0, so every constant in both arms and the vertex-1 blue store are
+emitted against the wrong register. The parameter is not a substitute for the banned local: the
+target's economy needs the arm scratch and the carried value to share $v0, and only a pseudo born
+inside the arm gets $v0.
+  kill_scope: instance
+  measured_on: current chassis (2026-09-04), cross-block form, 78/79 insns; no FAKE construct
+    present in four of the six bodies and only the merge-head wrap in the other two
+**Verdict.** KILLED.
+
+### H-s14f-3 (CONFIRMED — the session's result). Writing each arm's vertex-1 blue DIRECTLY at its
+### destination, with no carrier variable anywhere, reproduces the target's arm bytes exactly and
+### drops the honest floor from 4 to 2.
+**Statement.** On a body whose arms each write their own `@5`, `@6`, `@0xD` and `@0xE` as four plain
+per-arm constant stores, and whose join writes only `@4`/`@0xC` from the pre-branch `red`, the build
+is byte-identical to target through the end of both arms, is 79 instructions, and scores 4 with no
+device at all and 2 with the single merge-head do-while(0) that ruling 15 leaves available.
+**Mechanism.** The `@0xE` store is the in-block successor H-s14f-1 says the trailing li needs: the
+li is no longer in the store priority group's competition at all, so it is emitted immediately
+before its own store at the arm bottom. The two arms then end with an identical `sb v0,0xE` whose
+`li` differs (0x32 vs 0x46), so jump2's cross_jump lifts exactly that one store to the join and
+leaves `li v0,0x32` in the delay slot of arm 1's `j` and `li v0,0x46` as the last insn of arm 2 —
+the target's arm shape, register for register, including the single-$v0 constant economy that every
+previous session could only reach with a multi-write carrier. Nothing is duplicated into the arms:
+the two `@0xE` stores carry DIFFERENT values (0x32, 0x46), i.e. they are per-arm data, not a common
+statement respelled into both paths, and neither copy is a byte-neutral clone of the other.
+**Probe.** Twelve bodies measured with `sandbox func_80072CD4 --disable all`:
+
+| body | score / build_insns |
+|---|---|
+| arms write @5,@6,@0xD,@0xE; join `@4=red; @0xC=red` — NO device at all (rejected/s14f_naturalarmE_clean_4_79.c) | **4 / 79** |
+| same + merge-head do-while(0) around `@4`,`@0xC` (memory/grind/func_80072CD4/candidate.c) | **2 / 79** |
+| same, wrap around `@4` only | 2 / 79 |
+| same, wrap around `@0xC`,`@4` in that order | 2 / 79 |
+| arms write @5,@6,@0xE,@0xD (blue not last) (rejected/s14f_armEmid_10_79.c) | 10 / 79 |
+| same + wrap | 7 / 79 |
+| join reds spelled as literals instead of `red` (rejected/s14f_armE_litreds_6_77.c) | 6 / 77 |
+| same + wrap | 6 / 77 |
+| carrier local, `int` (P_plain) | 13 / 78 |
+| carrier local, `u8` (rejected/s14f_u8blue_carrier_13_78.c) | 13 / 78 |
+| carrier local written FIRST in each arm | 13 / 78 |
+| carrier local written third of four | 13 / 78 |
+
+**Result.** CONFIRMED. tmp/grind/func_80072CD4/s14f/G2.dis is byte-identical to
+asm/funcs/func_80072CD4.s from the prologue through the end of both arms and again from the second
+join store to the epilogue.
+**Verdict.** CONFIRMED. New honest floor: **2** with the ruling-15 wrap, **4** with no device of any
+kind — and the device-free 4 now lives on the SAME chassis as the best form, in a body that declares
+one named intermediate (`red`, written once, read twice) and nothing else.
+
+### H-s14f-4 (KILLED, instance). Perturbing the arms' store ORDER, or reusing `red` itself as the
+### arm carrier by moving its own stores in front of the branch, reaches the join order the target has.
+**Probe.** (a) arm 2's stores permuted to @5,@0xD,@6,@blue so the arms have no common tail
+(rejected/s14f_arm2_storeorder_perm_14_79.c), with and without the wrap; (b) `red = 0xFC; @4 = red;
+@0xC = red;` hoisted ahead of the inner branch and `red` then borrowed as the arm carrier
+(rejected/s14f_redreuse_prestores_8_78.c), with and without the wrap.
+**Result.** (a) 14/79 and 12/79 — the permutation does buy the 79th instruction by killing the
+common tail, but it costs more than it buys because arm 2's emitted store order then differs from
+target. (b) 8/78 and 8/78 — borrowing `red` makes it dead across the join, so the 0xFC constant is
+re-materialised inside the join instead of living in $v1, and the arms lose the second live register
+the target needs. The target requires TWO values live across the join (0xFC in $v1, the vertex-1
+blue in $v0), so the pre-branch constant cannot also be the arm's scratch.
+  kill_scope: instance
+  measured_on: current chassis (2026-09-04), cross-block chassis, 78/79 insns; merge-head wrap
+    present in two of the four bodies and absent in the other two
+**Verdict.** KILLED.
+
+### The residual, named exactly (this is what the next session inherits)
+Two instructions, and they are an ORDER, not a spelling: candidate.c emits the join as
+`sb v0,0xE / sb v1,4 / sb v1,0xC`; the target has `sb v1,4 / sb v1,0xC / sb v0,0xE`. The `sb v0,0xE`
+is arm 2's own last instruction, adopted as the join head by cross_jump when it merged the two arms'
+common tail, so the join LABEL sits in front of it. jump_optimize(cross_jump=1) runs after sched2
+(toplev.c:3117 -> :3142), so nothing a merge-block-resident store does in sched2 can put it ahead of
+an instruction that is not in the merge block at all. The two shapes that put `@4`/`@0xC` ahead of
+`@0xE` are (i) writing `@4`/`@0xC` in both arms after `@0xE`, so the common tail cross_jump lifts is
+the whole three-store group in target's order — this is precisely the standing-banned
+dup4_0xc_into_arms construct and is NOT proposed here; or (ii) keeping `@0xE` in the join, which
+needs the arm carrier banned by ruling 15. Every other route measured this session is in the table
+above.
+
+### Frontier after s14f
+1. The 2-instruction join order is the only residual, and both known routes to it are closed by
+   standing bans, so the productive question is whether a THIRD route exists that keeps `@0xE` in
+   the join without a multi-write local: an in-block successor for the arm's trailing li that is not
+   the `@0xE` store itself. Nothing in the ledger has tried giving the arm's last value a consumer
+   that is byte-free at the join.
+2. The device-free 4/79 body (rejected/s14f_naturalarmE_clean_4_79.c) is the natural chassis for
+   tools/sched_solver, which has never been run against it: its join block is two stores plus a
+   trailing constant chain, and every previous perturbation search was aimed at the carrier chassis.
+3. Classification: whether per-arm stores of DIFFERENT values at the same offset (`@0xE = 0x32` in
+   one arm, `@0xE = 0x46` in the other) are reachable by the dup4_0xc ban at all. They are not
+   identical statements, and neither copy is cross-jump-dead in the sense banned_constructs entry 5
+   describes — one of the two IS the target's own instruction — but the ban's wording has been read
+   broadly before, so a session that wants to build on candidate.c should get that settled first.
+
+## [s14] The arm-tail constant load is hoisted to the arm head by sched1's equal-priority tiebreak: the trailing li has no in-block successor, is ready from the first bottom-up round, and every competing store outranks it on potential_hazard.
+- mechanism: tools/gcc-2.7.2/sched.c:2706-2721 schedule_select - within a group of equal INSN_PRIORITY it selects the ready insn with the largest potential_hazard; a memory-unit sb always outranks an ALU li, so the stores are pulled ahead of the carrier's li round after round and the li is placed last bottom-up, i.e. emitted first.
+- probe: pwsh tools/grinder/dump.ps1 func_80072CD4 with the plain carrier body (13/78) in src/text1b.c; read tmp/grind/func_80072CD4/s14f/func_80072CD4.combine.txt (block still in source order before sched1, carrier li is insn 57) and .sched.txt (block 2: all priority 1, 'insn 54 / 49 / 44 has a greater potential hazard', 'new basic block head = 57').
+- result: CONFIRMED at dump level. The knock-on effects account for the whole 13/78 diff: the hoisted li's live range crosses the arm scratch, so the carrier takes $v1 and the 0xFC constant is pushed to $a0 (target uses $v1 and $v0), and the two arms then end with an identical sb v0,0xD that cross_jump lifts out, costing the 79th instruction. This replaces thirteen sessions of inferred pass attribution with the pass's own printout, and it identifies the cure used below: give the trailing li an in-block SUCCESSOR so it leaves the store priority group entirely.
+- verdict: CONFIRMED
+
+## [s14] Writing each arm's vertex-1 blue directly at its destination (@0xE = 0x32 in one arm, @0xE = 0x46 in the other), with no carrier variable anywhere, reproduces the target's arm bytes exactly, keeps the build at 79 instructions, and lowers the score to 4 with no device at all and 2 with the merge-head do-while(0) that judge_constraints entry 15 leaves available.
+- mechanism: The @0xE store is the in-block successor the trailing li needs, so the li is emitted immediately before its own store at the arm bottom instead of being hoisted. The two arms then end with an identical sb v0,0xE whose li differs (0x32 vs 0x46), so jump2's cross_jump lifts exactly that one store to the join and leaves li v0,0x32 in the delay slot of arm 1's j and li v0,0x46 as arm 2's last insn - target's arm shape, register for register, including the single-$v0 constant economy previously reachable only with a multi-write carrier.
+- probe: Twelve bodies applied to src/text1b.c and scored with `sandbox func_80072CD4 --disable all`; disassembly of the best one at tmp/grind/func_80072CD4/s14f/G2.dis compared against asm/funcs/func_80072CD4.s.
+- result: CONFIRMED. Device-free form = 4/79 == 79 (rejected/s14f_naturalarmE_clean_4_79.c); same body + one merge-head do-while(0) = 2/79 == 79, rules_dropped 0 (memory/grind/func_80072CD4/candidate.c, tmp/grind/func_80072CD4/s14f/sandbox_candidate_final.txt). Wrap-placement variants (around @4 only, around @0xC then @4) also measure 2/79. Blue-not-last in the arms = 10/79 and 7/79; join reds as literals = 6/77; carrier-local variants (int, u8, written first, written third) all 13/78. The build is byte-identical to target from the prologue through both arms and again from the second join store to the epilogue. Nothing is duplicated into the arms - the two @0xE stores carry different values, so neither is a byte-neutral clone of the other and one of them IS the target's own instruction.
+- verdict: CONFIRMED
+
+## [s14] Reusing the parameter arg0 as the arm carrier - a genuine staged-value-reused-variable borrow rather than the invented multi-write local banned by judge_constraints entry 15 - reaches the same arm bytes the invented carrier reached.
+- mechanism: arg0 is dead after `if (arg0 < 4)`, so borrowing it creates the same REG_DEP_OUTPUT chain that stops sched1 hoisting the arm's last constant, while satisfying every bound of .claude/rules/staged-value-reused-variable.md.
+- probe: Six bodies (arg0 reused for all four arm values, for the last two, for the first and the last), each with and without the merge-head wrap, scored with `sandbox func_80072CD4 --disable all`; banked as rejected/s14f_paramreuse_arg0_22_79.c plus tmp/grind/func_80072CD4/s14f/{A,B,C,D,E,F}_*.c.
+- result: 22/79, 17/79, 48/78, 45/78, 47/78, 44/78. The output-dependence works and the full-reuse body does reach 79 instructions, but arg0's pseudo is the incoming-argument pseudo and the allocator keeps it in $a0 rather than $v0, so both arms' constants and the vertex-1 blue store are emitted against the wrong register. On this chassis the parameter is not a substitute for the banned local.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current chassis 2026-09-04, cross-block arm shape, 78/79 build_insns; no FAKE construct present in four of the six bodies, merge-head do-while(0) present in the other two
+
+## [s14] Freeing `red` to serve as the arm carrier by moving its own @4/@0xC stores ahead of the inner branch, or perturbing arm 2's store order so the two arms have no common tail, reaches the join store order the target has.
+- mechanism: (a) if red's stores happen before the branch, red is dead at the arms and can be borrowed there under staged-value-reused-variable; (b) if the arms have no common tail, cross_jump cannot lift anything and the join block keeps all three of its own stores in source order.
+- probe: rejected/s14f_redreuse_prestores_8_78.c and rejected/s14f_arm2_storeorder_perm_14_79.c, each measured with and without the merge-head wrap.
+- result: (a) 8/78 both ways - borrowing red makes it dead across the join, so 0xFC is re-materialised inside the join instead of living in $v1 and the arms lose the second cross-join live value the target needs (target keeps 0xFC in $v1 and the vertex-1 blue in $v0 simultaneously). (b) 14/79 and 12/79 - the permutation does buy back the 79th instruction by killing the common tail, but arm 2's emitted store order then differs from target and costs more than it buys.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current chassis 2026-09-04, cross-block chassis, 78/79 build_insns; merge-head do-while(0) present in two of the four bodies and absent in the other two

@@ -1,8 +1,8 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 13,
- "current_modality": "escalation",
+ "session_count": 14,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -87,23 +87,29 @@
    "floor": 4,
    "modality": "escalation",
    "headline": "Disposition filed: gate (a) canonical-asm FAILS (scan LOW 0/8, re-run this session), gate (b) SOTN precedent PASSES on shape (operator Ruling-A census, 8 PSX exhibits) - foreclosed as an adjudication "
+  },
+  {
+   "session": 14,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "SYNTHESIS: floor 4 -> 2, the first drop since s2 - writing each arm's vertex-1 blue directly at its destination (no carrier local, no per-arm wrap) makes both arms byte-exact and 79 insns, and the ent"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An owner ruling that picks ONE of the two contradictory annotation requirements (FAKE-annotated duplicated-statement-into-arms vs un-annotated ordinary C) closes this function immediately.",
-   "mechanism": "The closing body is already measured at 0 with build_insns 79 == 79 and banked; the only blocker is state.json banned_constructs entry 5 plus the layer-1 vs judge_constraints contradiction, neither of which an agent may clear.",
-   "next_probe": "Owner/operator lane only: clear or re-word banned_constructs entry 5 and state which annotation form governs, then run a normal layer-1 + Judge FINAL CALL on rejected/rederive_polyg4_struct_perarm_score0_banned_family.c (sandbox 0 on main plus full-build SHA1 == oracle)."
+   "hypothesis": "A third route to the target join order exists that keeps the @0xE store in the join without a multi-write local: any in-block successor for the arm's trailing li will defeat the sched1 hoist, and the @0xE store is only the most obvious one.",
+   "mechanism": "H-s14f-1 established that the hoist is decided by schedule_select's potential_hazard tiebreak among equal-INSN_PRIORITY insns (tools/gcc-2.7.2/sched.c:2706-2721). Any in-block consumer of the arm's last value raises that li out of the store group; if a consumer exists whose own emitted bytes coincide with instructions the target already has in the arm, the carrier local becomes unnecessary and the join keeps all three stores in source order.",
+   "next_probe": "Enumerate arm-local consumers of the vertex-1 blue value that are not a store to arg1 and are byte-free or byte-coincident on this chassis (e.g. the value feeding one of the arm's OTHER stores through an expression combine cannot fold, or a second named intermediate the join reads), measuring each with `sandbox func_80072CD4 --disable all` against the 4/79 device-free chassis."
   },
   {
-   "hypothesis": "The 8 census exhibits also match this function's MECHANISM (cross_jump re-merge after sched2), not just its source shape, which would upgrade gate (b) from shape-only to mechanism-matching precedent.",
-   "mechanism": "The census verified source-level duplication only; whether SOTN's shipped builds actually re-merge the duplicated arm tails via jump_optimize(cross_jump=1) after sched2 was never checked.",
-   "next_probe": "Operator lane: build the 4 cited SOTN US-PSX files at pin aa53500226 and objdump the 8 exhibit sites to confirm the second copy is cross-jump-dead in the shipped bytes."
+   "hypothesis": "tools/sched_solver can decide the join-block order question on the NEW device-free chassis, where it has never been run.",
+   "mechanism": "The previous solver campaigns (s11) targeted the carrier chassis, whose join block held three stores plus a trailing constant chain. On rejected/s14f_naturalarmE_clean_4_79.c the join block holds only two stores plus that chain, and the third store arrives from cross_jump after sched2 - a materially smaller and differently-shaped scheduling problem that the banked FORECLOSED verdicts do not cover.",
+   "next_probe": "Run tools/sched_solver (both passes) and tools/ra_solver/inverse_compose.py classify against the 4/79 device-free body, then spell any REACHABLE lever vector it returns and measure it."
   },
   {
-   "hypothesis": "The clean floor-4 body could reach 0 without any duplication if sched2's equal-priority bottom-up tiebreak can be perturbed from C.",
-   "mechanism": "sched.c schedule_block picks bottom-up; merge-block stores whose value register is defined in a predecessor block have zero in-block dependence predecessors, win the pri=1 potential-hazard tiebreak (sched.c:2660-2745), are picked first and hence emitted LAST; jump_optimize(cross_jump=1) runs after sched2 (toplev.c:3117 -> :3142), so a cross-jumped tail keeps the head slot the sunk stores cannot reach.",
-   "next_probe": "Tooling lane, not session work: extend tools/sched_solver/perturb.py to a depth-3 search over the restricted --atoms luid,luid_move sets (84 and 63 atoms) for pass-1 blocks 2 and 3 of the cross-block chassis, and confirm the depth-2 zero-vector result survives."
+   "hypothesis": "Per-arm stores of DIFFERENT values at the same offset (@0xE = 0x32 in one arm, @0xE = 0x46 in the other) are outside the standing dup4_0xc_into_arms ban, so candidate.c is submittable once its residual closes.",
+   "mechanism": "banned_constructs entry 5 and judge_constraints entry 1 describe IDENTICAL statements written into both arms whose second copy is cross-jump-dead. Here the two statements differ in value, neither is a clone of the other, and one of the two is literally an instruction the target ships; the store is per-arm DATA, not a common-tail statement respelled. But the ban has been read broadly before and this reading has never been ruled on.",
+   "next_probe": "A ruling-request naming rejected/s14f_naturalarmE_clean_4_79.c and memory/grind/func_80072CD4/candidate.c, asking whether a per-arm store of a per-arm value at a shared offset is reached by the dup4_0xc_into_arms ban - filed before any session invests further in this chassis."
   }
  ],
  "judge_constraints": [
@@ -140,5 +146,23 @@
  "ladder_skip": 20,
  "exhaustion_base": 13,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.542839+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.542839+00:00",
+ "kills": [
+  {
+   "session": 14,
+   "statement": "Reusing the parameter arg0 as the arm carrier - a genuine staged-value-reused-variable borrow rather than the invented multi-write local banned by judge_constraints entry 15 - reaches the same arm byt",
+   "kill_scope": "instance",
+   "measured_on": "current chassis 2026-09-04, cross-block arm shape, 78/79 build_insns; no FAKE construct present in four of the six bodies, merge-head do-while(0) present in the other two",
+   "predicate_cite": "",
+   "result": "22/79, 17/79, 48/78, 45/78, 47/78, 44/78. The output-dependence works and the full-reuse body does reach 79 instructions"
+  },
+  {
+   "session": 14,
+   "statement": "Freeing `red` to serve as the arm carrier by moving its own @4/@0xC stores ahead of the inner branch, or perturbing arm 2's store order so the two arms have no common tail, reaches the join store orde",
+   "kill_scope": "instance",
+   "measured_on": "current chassis 2026-09-04, cross-block chassis, 78/79 build_insns; merge-head do-while(0) present in two of the four bodies and absent in the other two",
+   "predicate_cite": "",
+   "result": "(a) 8/78 both ways - borrowing red makes it dead across the join, so 0xFC is re-materialised inside the join instead of "
+  }
+ ]
 }

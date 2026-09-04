@@ -1589,3 +1589,77 @@ Two distinct single-wrap placements reach 0 (v7, the three-store group; v9, the 
 Five wrap-free attempts to reproduce the same effect measure 12, 5, 4, 4 and 4. The device count of
 the closing body is therefore one, down from the three of the s14d body, and the two removed wraps
 are replaced by a construct on the frozen SOTN-accepted family list rather than by an exception.
+
+## s14f (2026-09-04, synthesis) — measured facts
+
+- **Chassis control:** `sandbox func_80072CD4 --disable all` on fallback_floor4.c = 4,
+  build_insns 79 == target_insns 79, rules_dropped 0
+  (tmp/grind/func_80072CD4/s14f/sandbox_control.txt).
+
+- **NEW HONEST FLOOR = 2** (was 4 since s2). memory/grind/func_80072CD4/candidate.c measures
+  2 / 79 == 79, rules_dropped 0 (tmp/grind/func_80072CD4/s14f/sandbox_candidate_final.txt).
+  Its only device is the merge-head single-level FAKE-annotated `do { } while (0);` that
+  judge_constraints entry 15 explicitly leaves available; it declares one named intermediate
+  (`red`, written once, read twice) and no other local of any kind.
+
+- **NEW DEVICE-FREE FLOOR FORM = 4 / 79 with ZERO devices**
+  (rejected/s14f_naturalarmE_clean_4_79.c): no do-while, no carrier local, no dead store, no
+  annotation — each arm writes its own `@5`, `@6`, `@0xD`, `@0xE` as four per-arm constant stores;
+  the join writes `@4 = red; @0xC = red;`. Same numeric floor as the old fallback, but on the same
+  chassis as the best form and byte-exact through both arms.
+
+- **The arms are byte-exact for the first time without a carrier variable.**
+  tmp/grind/func_80072CD4/s14f/G2.dis matches asm/funcs/func_80072CD4.s instruction for
+  instruction from the prologue through arm 2's `li v0,0x46`, including `j .L…` with `li v0,0x32`
+  in its delay slot and the single-$v0 constant economy in both arms.
+
+- **The whole residual is a 2-instruction ORDER in the join block.** Build:
+  `sb v0,0xE / sb v1,4 / sb v1,0xC`. Target (asm/funcs/func_80072CD4.s:40-42):
+  `sb v1,4 / sb v1,0xC / sb v0,0xE`. The `sb v0,0xE` is arm 2's own last instruction which
+  jump2's cross_jump adopted as the join head, so the join label precedes it and no
+  merge-block-resident spelling of `@4`/`@0xC` can get in front of it.
+
+- **The sched1 hoist is now attributed from the dump, not inferred.**
+  tmp/grind/func_80072CD4/s14f/func_80072CD4.sched.txt, basic block 2: every insn at
+  `priority = 1`, then `insn 54 / 49 / 44 has a greater potential hazard` in successive rounds and
+  `new basic block head = 57` (57 is the carrier's `li`). Rule: tools/gcc-2.7.2/sched.c:2706-2721,
+  schedule_select — among equal-INSN_PRIORITY ready insns it takes the largest `potential_hazard`,
+  and a memory-unit `sb` always outranks an ALU `li`. tmp/grind/func_80072CD4/s14f/
+  func_80072CD4.combine.txt shows the same block still in source order before sched1, so the
+  reordering is sched1's and nothing earlier.
+
+- **`arg0` is not a usable carrier.** Reusing the parameter (a genuine
+  staged-value-reused-variable borrow, dead after `if (arg0 < 4)`) does create the
+  REG_DEP_OUTPUT chain and does reach 79 instructions, but the allocator keeps the argument pseudo
+  in `$a0`: 22/79 (no wrap) and 17/79 (with wrap); the partial-reuse variants are 44-48 at 78.
+  rejected/s14f_paramreuse_arg0_22_79.c.
+
+- **`red` cannot double as the arm carrier.** Moving `@4`/`@0xC` ahead of the inner branch to free
+  `red` measures 8/78 with and without the wrap (rejected/s14f_redreuse_prestores_8_78.c): the
+  target needs two values live across the join (`0xFC` in `$v1`, the vertex-1 blue in `$v0`).
+
+- **Carrier-local width and position are all equivalent:** `int` 13/78, `u8` 13/78, written first
+  in the arm 13/78, written third of four 13/78 (rejected/s14f_u8blue_carrier_13_78.c).
+
+- **Store-order perturbation buys the 79th insn but costs more than it buys:** arm 2 permuted to
+  `@5,@0xD,@6,blue` = 14/79, 12/79 with the wrap (rejected/s14f_arm2_storeorder_perm_14_79.c).
+
+- **Retired:** the s14e score-0 body is now
+  rejected/s14e_armcarrier_mergewrap_score0_banned_by_ruling15.c — judge_constraints entry 15 bans
+  its arm carrier local ("any name, any width, any count").
+
+- [s14] Chassis control re-measured: fallback_floor4.c = 4, build_insns 79 == target_insns 79, rules_dropped 0 (tmp/grind/func_80072CD4/s14f/sandbox_control.txt). No banked number was found chassis-stale.
+
+- [s14] NEW HONEST FLOOR = 2 (was 4 since s2): memory/grind/func_80072CD4/candidate.c measures 2 / 79 == 79, rules_dropped 0. Its only device is the merge-head single-level FAKE-annotated do-while(0) that judge_constraints entry 15 explicitly leaves available; it declares one named intermediate (red, written once, read twice) and no other local.
+
+- [s14] A body with ZERO devices - no do-while, no carrier local, no dead store, no annotation - measures 4/79 on the same chassis (rejected/s14f_naturalarmE_clean_4_79.c). For the first time the device-free form and the best form live on one chassis.
+
+- [s14] The arms are byte-exact without any carrier variable: tmp/grind/func_80072CD4/s14f/G2.dis matches asm/funcs/func_80072CD4.s instruction for instruction from the prologue through arm 2's li v0,0x46, including the j with li v0,0x32 in its delay slot.
+
+- [s14] The whole residual is a 2-instruction ORDER in the join block. Build: sb v0,0xE / sb v1,4 / sb v1,0xC. Target (asm/funcs/func_80072CD4.s:40-42): sb v1,4 / sb v1,0xC / sb v0,0xE. The sb v0,0xE is arm 2's own last instruction adopted as the join head by cross_jump, so the join label precedes it and no merge-block-resident spelling of @4/@0xC can get in front of it.
+
+- [s14] sched1's hoist is attributed from the pass's own dump for the first time: tmp/grind/func_80072CD4/s14f/func_80072CD4.sched.txt block 2 prints all insns at priority = 1, then 'insn 54 / 49 / 44 has a greater potential hazard' and 'new basic block head = 57'. Rule: tools/gcc-2.7.2/sched.c:2706-2721 (schedule_select takes the largest potential_hazard among equal-priority ready insns; a memory-unit sb always outranks an ALU li). The .combine slice shows the same block still in source order beforehand.
+
+- [s14] The s14e score-0 body is retired to rejected/s14e_armcarrier_mergewrap_score0_banned_by_ruling15.c: judge_constraints entry 15 bans its arm carrier local in any name, width or count.
+
+- [s14] src/text1b.c was returned to INCLUDE_ASM("asm/funcs", func_80072CD4); at the end of the session (asm-until-matched); the only tracked files this session changed are under memory/grind/func_80072CD4/.
