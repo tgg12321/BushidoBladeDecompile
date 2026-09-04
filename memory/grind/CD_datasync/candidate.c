@@ -1,3 +1,44 @@
+/* s55 UPDATE (2026-09-04, synthesis).  BODY UNCHANGED - still the floor at
+ * 2 / 91 (chassis re-verified live: candidate 2 / 91, s52 third base 4 / 91,
+ * s51 order-exact base 7 / 91, rules_dropped 0; mandated fake_ablate re-audit
+ * keep-all 2 / 91, drop-pp 11 / 89, drop-do{}while(0) 32 / 74, drop-both
+ * 32 / 74).  s55 was a synthesis pass and it changed the SHAPE of the search,
+ * not the score.  Three things a future session must carry:
+ *
+ * 1. THE SIBLING LEDGER MOVED AGAIN AND IT CORRECTED A DUMP-READING ERROR THIS
+ *    LEDGER WAS BUILDING ON.  CD_ready s69 established that GCC 2.7.2 schedules
+ *    each basic block BACKWARD - the SCHEDDBG PICK stream starts at the block's
+ *    JUMP and ends at its first insn, so the EMITTED order is the reverse of
+ *    the pick order.  s54's frontier item F-b ("sched1 and sched2 disagree
+ *    about the arg4-load / arg5-store pair, so arg4's death can be pushed past
+ *    22 for free") was built entirely on reading that stream forwards.  Read
+ *    correctly the passes agree; arg4-address's death at 22 IS its own
+ *    `lw $a3,0($a0)`, and there is no slack.  F-b is dead.
+ *
+ * 2. THE REFS AXIS IS NOW SWEPT AND DEAD ON THE ORDER-EXACT BASE (24 loop-note
+ *    placements, tmp/grind/CD_datasync/s55/forms).  CD_ready s70's "free depth"
+ *    outer-bracket lever transfers mechanically - block-3 refs go 12/12/4/4 ->
+ *    18/18/6/6 at zero extra instructions - but it is a UNIFORM multiply, so
+ *    qty_compare_1's tie survives and the seats do not move; on this function
+ *    it also costs 7 points of order (14 vs 7).  A wrap around the arg5 load
+ *    alone DOES produce the asymmetric count the seat flip needs (reg86
+ *    refs = 5 against the invariant 4) - the first time this ledger has moved
+ *    that number at all - but it costs one instruction (bi 92, score 12)
+ *    because the note is a sched1 region boundary in block 3.
+ *
+ * 3. THE INVARIANTS THIS BODY IS OPTIMISED AGAINST ARE CHASSIS ARTEFACTS.
+ *    Dumping block 3 on the ZERO-FAKE reference chassis (rejected/
+ *    xeno-nesting-on-goto-loop-byte-inert-18.c = 18 / 91 and
+ *    goto-loop-reference-inline-args-23.c = 23 / 91, both re-measured on HEAD)
+ *    shows FIVE and SIX quantities at refs 6/6/6/2/2 and spans 8-20 - against
+ *    this chassis' four at refs 12/12/4/4 and spans 10/12/6/6.  Not one of the
+ *    "pinned" parameters (arg5 b18 d24 r4, arg4 d22 r4, quantity numbers 1 and
+ *    2) survives removing the do{}while(0) wrap, and BOTH zero-FAKE forms are
+ *    91 build insns - insn-exact with the target.  ~2500 forms since s50 have
+ *    been searching one chassis' quantity structure.  The s55 frontier's first
+ *    item is to run the s50-s52 window programme on the zero-FAKE chassis
+ *    instead (renamed copies at tmp/grind/CD_datasync/s55/ref/).
+ */
 /* s54 UPDATE (2026-09-04, synthesis).  FLOOR UNCHANGED at 2 / 91, but the
  * BODY CHANGED in one review-relevant way: the `pp` pointer alias is now a
  * plain declaration-with-initializer (`void **pp = &D_800F19C0;`) instead of
