@@ -83,7 +83,18 @@ $log = pwsh tools/grinder/grind.ps1 -Once -MockSessionScript $mockB 2>&1 | Out-S
 $makefileClean = -not (git status --porcelain Makefile)
 if ($log -match 'SCOPE VIOLATION' -and $makefileClean) { Write-Host "DRILL B PASS — Makefile edit rejected + reverted." -ForegroundColor Green }
 else { Write-Host "DRILL B FAIL (makefileClean=$makefileClean):`n$log" -ForegroundColor Red; $fail++ }
-if ((git rev-parse HEAD) -ne $preHead) { Write-Host "DRILL A/B FAIL — HEAD moved during drills!" -ForegroundColor Red; $fail++ }
+# HEAD must not move — EXCEPT for the driver's own unpark stamp (owner ruling
+# 2026-09-02: at first dispatch of a freshly unparked top item the driver
+# commits "grind: <func> exhaustion window reset on unpark"). That commit is
+# idempotent per unpark reason and is exactly what a drill run over an unparked
+# top item is supposed to produce (false NO-GO 2026-09-04 on CD_ready).
+$headNow = (git rev-parse HEAD)
+if ($headNow -ne $preHead) {
+    $moved = @(git log --format=%s "$preHead..$headNow")
+    $benign = ($moved.Count -gt 0) -and -not ($moved | Where-Object { $_ -notmatch '^grind: \S+ exhaustion window reset on unpark' })
+    if ($benign) { Write-Host "DRILL A/B note — HEAD moved only by the driver's unpark-stamp commit ($($moved -join ' | ')); allowed." -ForegroundColor Yellow }
+    else { Write-Host "DRILL A/B FAIL — HEAD moved during drills! ($($moved -join ' | '))" -ForegroundColor Red; $fail++ }
+}
 git checkout -- memory/grind docs/grind 2>$null   # discard any drill ledger noise
 
 # ── Drill C: judge vs a known cheat (live strong-model call) ─────────────────
