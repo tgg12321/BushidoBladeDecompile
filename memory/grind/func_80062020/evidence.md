@@ -2929,3 +2929,143 @@ store stays DISP0 — the 3-instruction residual of the admissible floor-6 body.
 
 **Artifacts.** tmp/grind/func_80062020/s19/forensics_s19b.md, s19b_func80062020.{rtl,combine,
 cse2,greg,s}, extract_dumps.py, alias_suffix.py, update_header.py, append_ledger.py.
+
+## s19c — REDERIVE (2026-09-03) — the corpus supplies what the last layer-1 FAIL said it could not verify: two INDEPENDENT matched decompilations ship this exact statement and this exact split, one of them under BB2's own compiler flags
+
+**Chassis re-measured LIVE this session (the dispatch brief read "measurement unavailable").**
+Clean HEAD `3cf72eaa`: `sandbox func_80062020 --disable all` = score 38, target_insns 38,
+build_insns 0, `no_c_body: true` — still `INCLUDE_ASM("asm/funcs", func_80062020);` at
+src/text1b.c:3932. The best ADMISSIBLE body
+(`rejected/epilogue-uniform-pointer-floor4-superseded.c`) was then applied to src/text1b.c and
+measured: **score 6, target_insns 38, build_insns 35, scorable true, rules_dropped 0**, then
+reverted with `git checkout -- src/text1b.c` (tree clean at end apart from
+metrics/events.jsonl and this session's ledger/scratch writes). **Honest floor on this
+chassis: 6**, confirmed by measurement rather than inherited.
+
+**Where the function actually stands.** Three Judge rulings on 2026-09-03 (20:36, 21:53 at
+decisions.md:22208, 22:38 at decisions.md:22216) have each adjudicated the ascending 3-deep
+chained assignment `D_800F1198[i].unk0 = .unk4 = .unk8 = 0;` **ORDINARY C** and ordered
+`banned_constructs` entries 3 and 4 cleared, the last of them closing: "The body may now be
+submitted and adjudicated on the merits; foreclosure at floor 6 is NOT the correct
+disposition." The body is bytes-proven seven times (`verify-oracle --rebuild --allow-dirty`
+→ build_sha1 == `62efab4f73f992798c43e8c730aa43baa10bb4fa`; `sandbox` → score 0 at 38/38).
+After each PASS a layer-1 cheat-reviewer has FAILed the same body and the ban has been
+re-added; state.json today again carries entries 2 and 3 naming the chain line and the
+diff, so `grindlib.py selfvet` exits 1 and no candidate-ready can reach layer-1 or the
+Judge. The 2026-09-03 22:51 FAIL (decisions.md:22220) rests on exactly two claims: that the
+chain is "reverse-engineered from a 102-variant structural sweep to hit a specific GCC
+addressing quirk", and that the citation offered is one "this reviewer cannot verify".
+**This session was dispatched in `rederive` modality and attacks precisely those two
+claims with instruments neither the ledger nor any prior session had used.**
+
+### Instrument 1 — fresh m2c decompile (unbiased mechanical read of the bytes)
+
+`m2c --target mipsel-gcc-c --valid-syntax asm/funcs/func_80062020.s` emits, with no
+knowledge of this ledger:
+
+    temp_v1  = var_a1 * 0xC;
+    temp_v0_2 = temp_v1 + &D_800F1198;
+    M2C_FIELD(temp_v0_2, s32 *, 8) = 0;
+    M2C_FIELD(temp_v0_2, s32 *, 4) = 0;
+    *(&D_800F1198 + temp_v1) = 0;
+
+i.e. the "second materialisation of the row address" that `banned_constructs[0]` forbids is
+what a mechanical decompiler reads straight out of the bytes, and the loop is confirmed
+`i`-indexed with a strength-reduced byte offset whose `i*12` is recomputed at the join. No
+new structural shape is available from this direction.
+
+### Instrument 2 — caller-derived signature check
+
+The sole caller, `asm/funcs/func_8005BA8C.s:58`, discards `$v0` (the next instruction is
+`bne $s7, $fp`). The one structurally different shape the s18 law leaves open — a function
+that RETURNS the terminator row pointer, which would give the shared address pseudo a real
+third use and let the two DISP stores survive without their values being consumed — has no
+supporting evidence and was not pursued.
+
+### Instrument 3 — the decomp.me corpus (the session's finding)
+
+Local cache `tmp/decomp_me_corpus/` (tools/decomp_me_scrape.py): 3,754 scratches, **1,751
+MATCHED at score 0** across the three GCC-2.7.2-class PSX compilers (gcc2.7.2-psx,
+gcc2.7.2-cdk, psyq3.5). Two censuses, both reproducible by re-running the scripts:
+
+**(A) Target-asm census** (`tmp/grind/func_80062020/s19/arrangement_census.py`, output
+`census_results.txt`). Pattern hunted: >= 2 consecutive NON-STACK base-register
+displacement stores immediately followed by
+`lui $at,%hi(SYM+K)` / `addu $at,$at,$idx` / `store %lo(SYM+K)($at)` — i.e. this function's
+`DISP|DISP|LOSUM`. Result: **4 instances in 2 distinct matched scratches, all
+gcc2.7.2-psx**, and in EVERY instance the responsible source statement is an ordinary
+chained assignment over one aggregate. No matched scratch in the corpus reaches the
+arrangement from a non-chain construct — an independent replication of s18's result that
+the chain is the only dead-code-free member of the reaching set.
+
+**(B) Source-side census** (`corpus_scan.py`): **14** matched scratches carry a >= 3-lvalue
+chained assignment whose lvalues are members/elements of ONE aggregate, spread across all
+three compilers (gcc2.7.2-cdk 4, gcc2.7.2-psx 7, psyq3.5 3) — e.g.
+`scaleVec[0] = scaleVec[1] = scaleVec[2] = scale;`,
+`player->svec54.vx = player->svec54.vy = player->svec54.vz = 0;`,
+`prim->b0 = prim->b1 = ... = prim->r3 = 0;`. The construct is routine authored C in this
+compiler class, independent of this project.
+
+**THE TWIN — scratch `wTOCG`, function `drawAll_YA`, compiler `gcc2.7.2-psx`, flags
+`-O2 -G0 -g -Wa,--aspsx-version=2.34 -Wa,--expand-div` (the same -O2, the same -G0, the same
+aspsx 2.34 this project builds with), `score: 0`, `is_matching: true`,
+`match_override: FALSE`.** Its authored C contains one statement:
+
+    dB[actSw].draw.r0 = dB[actSw].draw.g0 = dB[actSw].draw.b0 = 0;
+
+and the target bytes it matches, at 0x8016F0A0-0x8016F0B4, are:
+
+    addu $v0, $v1, $v0
+    sb   $zero, 0x1B($v0)              <- DISP, highest member  (rightmost / first-evaluated link)
+    sb   $zero, 0x1A($v0)              <- DISP, middle member
+    lui  $at, %hi(dB + 0x19)           <- LOSUM, lowest member  (leftmost / last-evaluated link),
+    addu $at, $at, $v1                    re-indexed by the SAME scaled-index register
+    sb   $zero, %lo(dB + 0x19)($at)
+
+Set beside `asm/funcs/func_80062020.s:35-39` (`sw $zero,0x8($v0)` / `sw $zero,0x4($v0)` /
+`lui $at,%hi(D_800F1198)` / `addu $at,$at,$v1` / `sw $zero,%lo(D_800F1198)($at)`) this is
+the same five-instruction shape with word stores in place of byte stores.
+
+**THE SECOND PROJECT — scratch `w4QFC`, function `InitEnemies`, gcc2.7.2-psx, score 0,
+is_matching true, match_override false** — carries the construct in func_80062020's exact
+context, a GLOBAL ARRAY OF RECORDS indexed by a running counter:
+
+    enemies[numEnemies].rotationVec.vx = enemies[numEnemies].rotationVec.vy =
+        enemies[numEnemies].rotationVec.vz = 0;
+    ->  sh $zero,0x3C($v0) / sh $zero,0x3A($v0) /
+        lui $at,%hi(enemies+0x38) / addu $at,$at,$a0 / sh $zero,%lo(enemies+0x38)($at)
+
+with two further instances of the arrangement in the same matched function.
+
+**WHY THIS IS DIFFERENT FROM THE s19 SOTN CITATION.** The 22:38 Judge PASS credited the
+SOTN `src/dra/62DEC.c` chain only as corroborative, correctly noting SOTN's PSX build is
+`cc1-psx-26` and therefore not GCC-2.7.2 family precedent; and the 22:51 layer-1 FAIL
+dismissed it as unverifiable. The corpus evidence has neither defect: the compiler is
+literally `gcc2.7.2-psx`, one instance carries this project's own optimisation level, -G
+setting and aspsx version, the scratches are community byte-matches with
+`match_override: false`, and the artefacts are cached IN THIS REPO's scratch tree so any
+reviewer can re-run `arrangement_census.py` and read the JSON directly. The provenance
+claim that the chain was "reverse-engineered from a 102-variant sweep to hit a GCC quirk"
+is answered by the fact that independent human authors, working from their own game's
+semantics, wrote the identical statement first and their bytes match.
+
+**WHAT THIS DOES NOT DO.** It produces no new submittable FORM. The corpus twin's spelling
+transplanted into this chassis IS the line named by `banned_constructs[2]`, so `selfvet`
+still exits 1 and this session cannot file a candidate-ready. Nothing was submitted; no
+BB2 source, header or pipeline file was modified. The disposition remains a ledger-state
+question, now with the last stated evidentiary deficiency filled.
+
+The full record with verbatim source/target excerpts and both census outputs is banked at
+**memory/grind/func_80062020/precedent-decompme-chain-arrangement.md**.
+
+Artifacts: tmp/grind/func_80062020/s19/{corpus_scan.py, arrangement_census.py,
+census_results.txt}, memory/grind/func_80062020/precedent-decompme-chain-arrangement.md.
+
+- [s19c] Chassis re-measured LIVE: clean HEAD 3cf72eaa = no_c_body (score 38); the admissible pointer body applied to src/text1b.c = score 6 at 35/38, rules_dropped 0; reverted, tree clean. Honest floor on this chassis: 6.
+- [s19c] Fresh m2c decompile emits the two-addressing-form epilogue unprompted (temp_v0_2 = temp_v1 + &D_800F1198; field 8 = 0; field 4 = 0; *(&D_800F1198 + temp_v1) = 0) - banned_constructs[0]'s "second address materialisation" is what a mechanical decompiler reads out of the bytes.
+- [s19c] Sole caller asm/funcs/func_8005BA8C.s:58 discards $v0, so the return-the-row-pointer signature (the one shape the s18 law leaves open, which would give the address pseudo a real third use) has no evidence and was not pursued.
+- [s19c] decomp.me corpus, 1,750 MATCHED scratches with target asm scanned: the DISP|DISP|LOSUM arrangement occurs in 4 instances across 2 independent scratches, all gcc2.7.2-psx, and in every instance the source statement responsible is an ordinary chained assignment over one aggregate; no matched scratch reaches it from a non-chain construct.
+- [s19c] wTOCG/drawAll_YA (gcc2.7.2-psx; -O2 -G0 -Wa,--aspsx-version=2.34, i.e. this project's own flags; score 0, is_matching true, match_override false) matches `dB[actSw].draw.r0 = dB[actSw].draw.g0 = dB[actSw].draw.b0 = 0;` to sb 0x1B($v0) / sb 0x1A($v0) / lui %hi(dB+0x19) / addu / sb %lo(dB+0x19)($at) - an instruction-for-instruction twin of asm/funcs/func_80062020.s:35-39.
+- [s19c] w4QFC/InitEnemies (gcc2.7.2-psx, score 0, is_matching true, match_override false) matches `enemies[numEnemies].rotationVec.vx = .vy = .vz = 0;` - a global ARRAY of records indexed by a running counter, func_80062020's exact context - to the same five-instruction split, three times in one matched function.
+- [s19c] The construct is routine authored C in this compiler class: 14 MATCHED scratches across gcc2.7.2-cdk (4), gcc2.7.2-psx (7) and psyq3.5 (3) carry a >=3-lvalue chained assignment over one aggregate.
+- [s19c] The corpus evidence repairs both defects the 2026-09-03 22:51 layer-1 FAIL named: the compiler is literally gcc2.7.2-psx (not SOTN's cc1-psx-26), and the artefacts are cached in-repo so the citation is re-derivable by re-running tmp/grind/func_80062020/s19/arrangement_census.py.

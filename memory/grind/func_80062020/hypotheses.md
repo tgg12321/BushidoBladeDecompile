@@ -1911,3 +1911,53 @@ values are consumed, and which store is last — only its pass attribution is co
 SHA1 == oracle on today's chassis, and `grindlib.py selfvet` now exits 0 (the 22:38 Judge
 ruling cleared the two bans that had bounced six same-day submissions before layer-1). The
 disposition blocker recorded as frontier item 1 through s17/s18 is RESOLVED.
+
+## s19c (rederive, 2026-09-03)
+
+**H-s19c-1 — "A fresh, unbiased re-derivation of func_80062020 (m2c decompile + caller-derived
+signature) yields a structurally different C shape for the terminator epilogue than the one the
+ledger has been arguing about."** KILLED (instance). m2c, run this session with no ledger
+context, emits the two-addressing-form epilogue itself — `temp_v0_2 = temp_v1 + &D_800F1198;
+M2C_FIELD(temp_v0_2,s32*,8)=0; M2C_FIELD(temp_v0_2,s32*,4)=0; *(&D_800F1198+temp_v1)=0;` —
+i.e. the mechanical read of the bytes IS `banned_constructs[0]`, and the loop shape it recovers
+(i-indexed with a strength-reduced byte offset, `i*12` recomputed at the join) is the shape
+already banked. The one alternative shape the s18 law leaves open — a function returning the
+terminator row pointer, which would give the shared address pseudo a real third use and let the
+two DISP stores survive combine without their values being consumed — is unsupported: the sole
+caller `asm/funcs/func_8005BA8C.s:58` discards `$v0`. Measured on: 2026-09-03 chassis (clean
+HEAD 3cf72eaa), m2c + static caller read, no compile, no FAKE construct.
+
+**H-s19c-2 — "The DISP|DISP|LOSUM epilogue arrangement is peculiar to this function's ledger, so
+the only evidence that it is compiler-produced rather than authored is BB2-internal sweeps."**
+KILLED (instance). A census of the 1,750 MATCHED (score 0) decomp.me scratches on the three
+GCC-2.7.2-class PSX compilers finds the arrangement in **4 instances across 2 independent
+scratches, all `gcc2.7.2-psx`**, every one of them produced by an ordinary authored chained
+assignment over one aggregate — and none produced by a non-chain construct.
+`wTOCG`/`drawAll_YA` (flags `-O2 -G0 -g -Wa,--aspsx-version=2.34`, i.e. this project's own
+optimisation level, -G setting and aspsx version; `is_matching: true`,
+`match_override: false`) matches `dB[actSw].draw.r0 = dB[actSw].draw.g0 = dB[actSw].draw.b0 = 0;`
+to `sb 0x1B($v0) / sb 0x1A($v0) / lui %hi(dB+0x19) / addu / sb %lo(dB+0x19)($at)` — an
+instruction-for-instruction twin of `asm/funcs/func_80062020.s:35-39`. `w4QFC`/`InitEnemies`
+does the same three times from a global ARRAY of records indexed by a running counter, which is
+func_80062020's exact context. Measured on: 2026-09-03, static census of cached corpus JSON
+(tmp/decomp_me_corpus/, 3,754 scratches); no compile, no FAKE construct; scripts
+tmp/grind/func_80062020/s19/{arrangement_census.py, corpus_scan.py}.
+
+**H-s19c-3 — "The remaining blocker on func_80062020 is a missing piece of C evidence, so more
+spelling or corpus work can unblock it."** KILLED (instance). The blocker is ledger state, not
+evidence: three Judge rulings (2026-09-03 20:36, 21:53 at decisions.md:22208, 22:38 at
+decisions.md:22216) have each ruled the chain ORDINARY C and ordered `banned_constructs` 3/4
+cleared, and the 22:38 ruling closed "foreclosure at floor 6 is NOT the correct disposition";
+after each PASS a layer-1 review re-FAILed the identical body and the ban was re-added, so
+state.json today again carries entries 2 and 3 and `grindlib.py selfvet` exits 1 before layer-1
+or the Judge sees a diff. This session added the one thing the 2026-09-03 22:51 FAIL said was
+missing (a citation on a literally-`gcc2.7.2` compiler that the reviewer can verify locally) and
+still cannot file a candidate-ready. Measured on: 2026-09-03 chassis; state.json
+banned_constructs read directly; no submission attempted.
+
+**Standing, not re-tested this session:** the s18/s19b law (each terminator store's address form
+is fixed at RTL expand by `store_field`'s want_value gate, tools/gcc-2.7.2/expr.c:3457-3464;
+the author supplies only which stores' values are consumed and which store is last), the closure
+of the 38-spelling epilogue enumeration over four declaration shapes, and the refusal of the
+five dead-code non-chain consumption carriers
+(rejected/epilogue-nonchain-consumption-carriers-deadcode-s18.c).
