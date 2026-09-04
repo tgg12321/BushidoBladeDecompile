@@ -182,6 +182,26 @@
  *     invented member names - the declaration carries object-model fidelity only, zero
  *     codegen coercion.  Not submitted: the standing Judge order is to land the banked
  *     body EXACTLY, and this is a strictly optional surface reduction for a future ruling.
+ *
+ * s17b (SYNTHESIS, 2026-09-03) NOT SUBMITTED - body UNCHANGED, one ledger verdict withdrawn.
+ *   - Fifth independent proof on today's chassis: HEAD sandbox = 38 (no C body); apply_s15.py
+ *     apply + the two alias suffixes -> verify-oracle --rebuild --allow-dirty ok true /
+ *     build_matches true / build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+ *     original_sha1_locked -> sandbox func_80062020 --disable all = 0 at 38/38, rules_dropped 0.
+ *     Tree restored, scoring reference rebuilt.
+ *   - NOT submitted: banned_constructs 3 and 4 were RE-ADDED after the 21:41 layer-1 FAIL, so
+ *     grindlib.py selfvet exits 1 and a candidate-ready would be discarded unread.  s17b returns
+ *     a ruling-request instead.
+ *   - THE SUBSTANTIVE FINDING (kill re-audit): the ledger's s14 CLASS kill - "a C construct
+ *     exists that yields the target mixed epilogue without spelling the same lvalue base two
+ *     different ways" = KILLED - is REFUTED by this body's own five SHA1 proofs and is now
+ *     annotated refuted_by in state.json.  It was measured against four floor-4 bodies whose
+ *     enumeration contained no chained assignment.  Every layer-1 FAIL on this body cites it as
+ *     the "two-shape theorem".  The C materialises the row address ONCE; the two emitted
+ *     addressing forms are chosen inside store_field's want_value gate,
+ *     tools/gcc-2.7.2/expr.c:3453-3464, and are declaration-independent (E14 reaches the same
+ *     bytes with no typedef, no struct tag and no member names).  Full argument:
+ *     tmp/grind/func_80062020/s17/synthesis_s17.md and the s17b block of evidence.md.
  */
 void func_80062020(s32 *arg0) {
     s32 i;

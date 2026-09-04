@@ -2341,3 +2341,64 @@ drop-in with a strictly smaller surface and no measurement risk — it is alread
 spellings across four declaration shapes (exactly three reach the target arrangement and all
 three are the same ascending-member chain; all nine non-chained spellings emit all-LOSUM),
 and the class kill H-s16e-EPISPACE with predicate `tools/gcc-2.7.2/expr.c:3453`.
+
+## s17b (synthesis, 2026-09-03) — the ledger's own s14 class kill is refuted, and it is what is holding the function
+
+Full write-up: `tmp/grind/func_80062020/s17/synthesis_s17.md`.
+
+**Chassis re-measured, five proofs now stand.** HEAD (INCLUDE_ASM) `sandbox func_80062020
+--disable all` = **38** (target_insns 38, build_insns 0, rules_dropped 0, cheat_asm_stripped
+166). Banked body applied (`apply_s15.py apply` + the byte-neutral alias suffix on
+`undefined_syms_auto.txt:527-528`) -> `verify-oracle --rebuild --allow-dirty` = ok true,
+build_matches true, build_sha1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` ==
+original_sha1_locked -> `sandbox func_80062020 --disable all` = **0 at 38/38**, rules_dropped 0.
+`grindlib.py selfvet . func_80062020` exits 1 on `banned_constructs[3]`, so a candidate-ready
+would be discarded before the Judge; the tree was restored and the scoring reference rebuilt
+(`verify-oracle --rebuild` ok true, `git status` clean apart from `metrics/events.jsonl`).
+
+**The finding (kill re-audit, mandated by the 2026-09-01 rule).** `state.json kills[]` session
+14, `kill_scope: class`, `predicate_cite tools/gcc-2.7.2/config/mips/mips.h:2286`, states: *"A C
+construct exists that yields the target's mixed epilogue (shared base at DISP8/DISP4 plus one
+inline-symbolic store, same base symbol, same index) without spelling the same lvalue base two
+different ways" — KILLED.* That verdict is **FALSE on this chassis** and is now annotated
+`refuted_by` in state.json (annotated, not deleted). The construct it declares nonexistent is the
+banked body's epilogue, whose four row writes all use the single lvalue spelling
+`D_800F1198[i].unkN` and which has produced a full-build SHA1 match five times. The s14 kill was
+taken against four whole-function bodies at honest floor 4, before the aggregate declaration
+existed; its enumeration contained no chained assignment. s16e's proper enumeration (15 spellings,
+four declaration shapes, real chassis) found the chain reaching the target under a record typedef
+(E01), parenthesised (E04), and under a bare `extern s32 D_800F1198[][3];` with no typedef, no
+struct tag and no member names (E14) — re-confirmed in full build context in the previous session
+and banked as `alt-e14-2d-declaration.c`.
+
+**Why this is the whole residual.** Every layer-1 FAIL on this body cites that refuted verdict as
+its ground — 21:41 "the same two-shape address-materialization trick *the ledger's own two-shape
+theorem proves has no uniform spelling*"; 21:21 "materializes the base address TWICE ... laundered
+through a new declaration"; likewise 20:46 and 20:23. The reviewers reasoned correctly from a
+ledger statement that no measurement supports. Restated law that does survive measurement: the
+target emits the row address in two machine addressing forms; **the C materialises it once**; which
+store gets which form is decided by `store_field`'s `want_value` gate
+(`tools/gcc-2.7.2/expr.c:3453-3464`, "If a value is wanted ... make the address stable for multiple
+use" -> `copy_to_reg`) — the two inner assignments of a chain have their value consumed (DISP8,
+DISP4), the outermost does not, so its member offset folds into the symbol (LOSUM0); C's
+right-associativity fixes which is outermost. All nine non-chained spellings emit all-LOSUM with no
+base register in any order (s16e), so the author selects nothing. s13 had already killed the
+competing "two distinct C objects" reading.
+
+**Contrast with the construct that is correctly banned.** `banned_constructs[0]` is a body in
+which the AUTHOR writes two different address expressions for the same row (`row = (s32 *)((u8
+*)&D_800F1198 + ofs); ... *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;`), the second for no semantic
+reason. The chain writes one lvalue spelling and has full semantic purpose — delete it and the
+function stops clearing the terminator record. Different C text, different construct.
+
+**Checklist posture under `ordinary-c-judge-decidable` Ruling 1:** (1) zero non-C mechanisms
+(rules_dropped 0; the 21:34 Judge's own scratch-tree build showed `build/asm/funcs/func_80062020.o`
+absent, decisions.md:22163); (2) the construct-class clause governs *no-semantic-purpose*
+constructs — the candidate's only such technique is the frozen aggregate merge
+(`.claude/rules/no-new-park-categories.md:238`, prongs (a)-(e), prong (c) closed by the 2026-09-03
+amendment `:245-259`); (3) rename test passes and E14 shows the bytes survive deleting every member
+name; (4) simplest-known-form: the chain is the ONLY known byte-exact form, the best admissible
+alternative measures 6 (s16b M2). `docs/reference/sotn-construct-index.md` has no
+chained-assignment class at all — it indexes match-hack classes only, so the absence is evidence
+that no SOTN reviewer has ever catalogued a chained assignment as a hack, not evidence about SOTN's
+ordinary C.

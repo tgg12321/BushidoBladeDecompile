@@ -1621,3 +1621,48 @@ materialisation authored in C.
   are not load-bearing for a single byte, so the aggregate declaration is a fidelity claim
   and not a codegen device. Not submitted — the standing Judge order is to land the banked
   body exactly; E14 is the fallback if the invented names are ever objected to.
+
+## s17b (synthesis, 2026-09-03) — kill re-audit + frontier reset
+
+- **H-s17b-S14REFUTED — the s14 class kill is withdrawn (CONFIRMED refutation, not a new kill).**
+  *Statement under audit (s14, class, predicate `tools/gcc-2.7.2/config/mips/mips.h:2286`):* "A C
+  construct exists that yields the target's mixed epilogue ... without spelling the same lvalue base
+  two different ways" — recorded KILLED. *Re-measurement:* the banked epilogue
+  `D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;` uses ONE lvalue spelling and
+  yields exactly that arrangement — `sandbox func_80062020 --disable all` = 0 at 38/38 and
+  `verify-oracle --rebuild --allow-dirty` build_sha1 == oracle, re-run this session (fifth
+  independent proof), plus s16e E01/E04/E14 in the harness. The s14 kill was measured against four
+  floor-4 whole-function bodies whose enumeration contained no chained assignment, so it
+  generalised past its evidence. Annotated `refuted_by` in `state.json kills[]`; every layer-1 FAIL
+  on this body (20:23, 20:46, 21:21, 21:41) cites it as its ground.
+
+- **H-s17b-SEMPURPOSE — CONFIRMED (by construction + measurement).** *The chained assignment is a
+  semantic-purpose statement, not a no-semantic-purpose construct, so
+  `ordinary-c-judge-decidable` Ruling 1 section 2 (construct-class membership) does not reach it.*
+  Remove the statement and the function no longer zeroes the terminator record (behavioural change,
+  trivially observable). Its emitted two-form addressing is compiler-internal
+  (`tools/gcc-2.7.2/expr.c:3453-3464` `want_value` -> `copy_to_reg`) and declaration-independent
+  (E14: same bytes with no typedef, no struct tag, no member names).
+
+### Frontier after s17b (reset to three)
+
+1. **Clear `banned_constructs` 3 and 4 on the withdrawn premise, then land the proven body.**
+   Mechanism: both entries were written from layer-1 findings whose stated ground is the refuted
+   s14 verdict; with it withdrawn the ledger contains no measurement that the chain is an authored
+   device, and the body's only frozen-family technique (aggregate merge) has all five prongs
+   verified. Next probe: on an unban covering entry 3 (`Unk800F1198Record` clears entry 4 only —
+   entry 3 is spelled as the epilogue statement and needs its own clearance), re-run
+   `apply_s15.py apply` + the alias suffix, `verify-oracle --rebuild --allow-dirty`, `sandbox`
+   (expect 0 at 38/38), keep the prong-by-prong self_vet.md, return candidate-ready.
+
+2. **If entry 3 stands but the invented member names are the objection, land E14 by ruling.**
+   Mechanism: `extern s32 D_800F1198[][3];` with `D_800F1198[i][0..2]` and the same chain is
+   byte-exact in full context (banked `alt-e14-2d-declaration.c`) and has strictly smaller surface
+   — no typedef, no struct tag, no invented names. Next probe: none by an agent — respelling a
+   banned construct to dodge a substring match is precisely what the pipeline forbids, so this must
+   arrive as an explicit ruling; on that ruling, apply, rebuild, sandbox, submit.
+
+3. **Follow-on cleanup, not a gate.** Retire `D_800F119C` / `D_800F11A0` from
+   `undefined_syms_auto.txt` once `asm/funcs/func_800620B8.s` reaches COMPLETED-C; until then the
+   suffixed rows satisfy prong (c) per the 2026-09-03 amendment
+   (`.claude/rules/no-new-park-categories.md:245-259`).
