@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 28,
+ "session_count": 29,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -171,23 +171,29 @@
    "floor": 7,
    "modality": "forensics",
    "headline": "465 forms compiled: the complete value-local space is closed (18 windows), a NEW axis (s32 index local) reproduces target's split arg4 chain for the first time in 28 sessions, and the sched1 dump name"
+  },
+  {
+   "session": 29,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "Instrumented-cc1 priority dump makes the printf-block residual a register-allocation question, not a scheduling one - and inverts s26/s27's 'arg4 must be inline' rule."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some ordinary-C spelling makes sched1 place the fmt-string `set $a0` AFTER arg4's value load, which frees $a0 for the split address chain and is the last property of target's window not yet reproduced.",
-   "mechanism": "sched1 emits the fmt set as stall filler because it is the minimum-priority insn in the block (path length 1 to the call). It only lands late when the block has enough independent work to cover every load-latency bubble. That is a property of the block's ILP profile - the dependence graph shape - not of statement order, so the lever is a spelling that lengthens or re-balances the three argument chains rather than one that reorders them.",
-   "next_probe": "Take ya53 as the chassis and sweep spellings that lengthen arg4's chain by exactly one insn without adding a byte to the window: arg4 as a value local whose move to $a3 is the extra insn (the ya43/ya53 hybrid orders za4*/z*a43*, re-classified by sched1 position of insn 129 rather than by score), an arg5 value whose stack store is forced later, and an arg2 read placed so its $a1 set covers the bubble. For every candidate, extract the sched1 block with tmp/grind/CD_datasync/s28/dmp.sh + the ya53.sched.txt extraction recipe and record the POSITION OF THE fmt `set a0` relative to the arg4 value load - that single number, not the score, is the classifier."
+   "hypothesis": "On the candidate.c chassis (named arg4 value local), a third scratch pseudo made live across sched1 positions 4-7 forces local-alloc's ascending scan past $v0 and $v1 onto $a0 for arg4's address, emitting target's arg4 chain without shortening the block.",
+   "mechanism": "local-alloc walks scratch hard regs in ascending number order (no REG_ALLOC_ORDER in mips.h). reg92 (arg4 address, def pos4 / dead pos7) currently overlaps only reg104 (arg5 address, pos6-9), so two registers suffice. A third overlapping scratch pseudo makes $v0 and $v1 both unavailable at reg92's scan. s27's m453 is a measured instance where the 3-scratch condition IS reached and target's arg4 chain is emitted byte-for-byte, but it drops build_insns to 90 and dbr then steals the sw 16($sp) into the printf delay slot.",
+   "next_probe": "Sweep spellings that add a third scratch pseudo whose live range covers sched1 positions 4-7 WITHOUT removing an insn from the block: (a) arg5's VALUE named and assigned before arg4's statement so its pseudo spans the arg4 addu, (b) arg3's index named so its lbu is emitted before arg4's chain, (c) arg2 named as a value local so reg94 is born early and live to the a1 move. For each form do NOT score first: dump w.i.sched with tmp/grind/CD_datasync/s29/dmp.sh and count scratch pseudos live across the arg4 address pseudo's range, then check build_insns stays 91. The n*/x*/y*/z* families of s28 were classified by emitted window only; none was classified by this liveness predicate, which is the one that decides."
   },
   {
-   "hypothesis": "tools/sched_solver, given the correct question this time, can type the fmt-set placement REACHABLE or FORECLOSED for the ya53 dependence graph - and s25's solver campaign is re-usable because the setup work is banked, only the pass and the goal change.",
-   "mechanism": "s24/s25 asked the solver whether target's EMITTED order is a sched1 output; s26/s27 showed the emitted order is sched2's. The right question for sched1 is much smaller: given ya53's pre-sched dependence graph, over what set of source orders can insn 129 be scheduled after the arg4 value load? That is a single-insn placement question on a 17-node graph, not a full-order reachability search, so it should terminate where the s25 run did not.",
-   "next_probe": "Feed the ya53 sched1 block (tmp/grind/CD_datasync/s28/ya53.sched.txt, RTL UIDs and dependence lists already printed there) to tools/sched_solver with the goal predicate 'insn 129 scheduled after insn 135' and enumerate the pre-sched orders that satisfy it. Use the s26 setup recipe (--target-object build/src/system.o --ours-object tmp/sandbox/CD_datasync/system.o) for the self-check that the solver reproduces ya53's known emission before trusting any verdict."
+   "hypothesis": "The dbr theft of sw 16($sp) into the printf delay slot - the cost that killed m453 and every 17-insn form - is separately blockable, so the 3-scratch condition and the 18-insn window are not actually in tension.",
+   "mechanism": "s28 concluded the two halves of target are in direct tension because $a0 is free only when arg4's address pseudo dies early, and an early death moves the value load off the end of the block, letting reorg.c sink the stack store into the delay slot. The candidate.c dump shows a third configuration s28 never enumerated: the address pseudo dies early (pos7) while the VALUE pseudo reg86 stays live to the a3 move at the block end, so the block keeps its length. Whether dbr can still steal the store in that configuration is unmeasured.",
+   "next_probe": "Take the m453 form (banked, tmp/grind/CD_datasync/s26/gen.py) and read its w.i.dbr dump to identify exactly which insn reorg.c sinks and why the sw is eligible; then test whether a spelling that keeps the arg4 VALUE pseudo live to the a3 move (rather than fusing the load into it) makes the store ineligible. Compare against candidate.c's w.i.dbr, where the jal printf delay slot is not filled by the store."
   },
   {
-   "hypothesis": "The twins CD_sync and CD_ready share this printf window, so the s32-index-local split axis found here transfers to them, and one of the three may have a surrounding chassis in which $a0 is naturally free.",
-   "mechanism": "CD_ready s36/s46 record a byte-shape-identical do_timeout window and CD_sync s26 records the same {sll,addu,sll} -> jal debug_printf residual. The $a0 conflict found this session comes from the fmt-string set inside the window, which is shared; but the block's ILP profile depends on what surrounds the window, which is not shared. A twin whose surrounding block covers the bubble would place the fmt set late for free.",
-   "next_probe": "Apply the gen2.py index-local generator (retargeted to each twin's argument expressions and call names) to CD_sync's and CD_ready's banked best forms, classify with s28/scan_split.py and s28/scan2.py, and check whether any twin reaches the $a0/$a3 map with an 18-insn window. If one does, its source shape is the answer for all three."
+   "hypothesis": "The twins CD_sync and CD_ready share this block, so the priority table and the scratch-liveness predicate transfer and one register-allocation answer closes three functions.",
+   "mechanism": "CD_ready's ledger (s36/s46) records a byte-shape-identical do_timeout window and CD_sync s26 records the same {sll,addu,sll} -> jal debug_printf residual. The priorities measured here follow only from the argument shapes (four address chains, one stack arg, one constant fmt) and from calls.c's emission order, all of which the twins share.",
+   "next_probe": "Run the BB2_PRIO_DEBUG dump (tmp/grind/CD_datasync/s29/prio.sh, retargeted) on CD_sync's and CD_ready's best banked forms and compare their printf-block priority tables and scratch-liveness counts against this one. If a twin's block already has three scratch pseudos live across its arg4 address range, that twin's C spelling is the answer for all three; if not, the difference in its table names the lever."
   }
  ],
  "judge_constraints": [],
@@ -428,6 +434,14 @@
    "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 465 forms (n*/x*/y*/z*), plus the ya53 -da sched1 dump",
    "predicate_cite": "",
    "result": "KILLED - 53 a0-map forms, all 17-insn; 0 forms with both properties. ya43 (i4 first, then value locals arg4 then arg3) r"
+  },
+  {
+   "session": 29,
+   "statement": "The fmt-string `set $a0` insn's placement is a source-controllable variable that some C spelling can defer (the framing s24/s25/s28 all worked under).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; candidate.c applied to src/system.c, live sandbox 7/91, plus the instrumented-cc1 BB2_PRIO_DEBUG dump of the ",
+   "predicate_cite": "",
+   "result": "KILLED as a lever. Measured priorities for the printf block: fmt set (insn 127) = 1, the block minimum, tied with the fo"
   }
  ]
 }
