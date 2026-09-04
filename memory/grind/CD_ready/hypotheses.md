@@ -3284,3 +3284,103 @@ All four judge_constraints remain in force.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis (candidate.c re-measured live at 2/179/0 in the same batch); the seven inherited FAKE units present plus each form's own staging FAKE, the `pp` alias absent.
+
+## [s80] An order-exact base with the a1 argument load still at its target slot and no extra pseudo is reachable by ordinary statement reordering alone.
+- mechanism: The floor body's residual is a scheduler transposition at build slots 56/57 that s79 could only fix by naming the arg5 address into a fresh `a5a` local, whose extra block-3 set renumbered LUIDs and displaced the a1 load. Moving the two t0-chain statements after the arg5 chain changes the same RTL index without adding a pseudo.
+- probe: gen2.py g7 (`t0 = idx_1494[0];` then the whole arg5 chain, then `t0 *= 4;` and `t0 = (s32)((u8 *)tbl_125c + t0);`), scored with the cheat-invisible sandbox and read with tmp/grind/CD_ready/s79/adiff2.py.
+- result: CONFIRMED. 6/179/0, and adiff2 shows every emitted opcode in the target's order including `lw a1,0(a1)` at slot 54. The only differences in the whole function are register names: the t0 chain in $v1 where the target has $a0, the arg5 value in $a0 where the target has $v1. Banked progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c. g8 (same order with the t0 shift fused into the address) reproduces it at 6 with one operand-order difference.
+- verdict: CONFIRMED
+
+## [s80] On that order-exact base the seat swap is a single qty_compare_1 tie, and both quantities read refs 4 / span 6 / pri 1.3333.
+- mechanism: local-alloc.c:1660 sorts quantities by floor_log2(refs)*refs*size/(death-birth) descending and breaks ties with `return *q1 - *q2`, the lower quantity number, which is the earlier-born quantity.
+- probe: tmp/grind/CD_ready/s80/qty.sh (s72/prio.sh with BB2_QTY_DEBUG and BB2_SUGG_DEBUG added to the subprocess env) over the order-exact base, extracted with tmp/grind/CD_ready/s72/qtyext.py; dump tmp/grind/CD_ready/s80/h_0_9_d1.qty.txt.
+- result: CONFIRMED. qty0 reg107 16-20 span 4 refs 4 pri 2.0000 ord 1 $v0; qty1 reg109 18-24 span 6 refs 4 pri 1.3333 ord 2 $v1 (t0 chain); qty2 reg102 20-26 span 6 refs 4 pri 1.3333 ord 3 $a0 (arg5 value); qty3 reg116 22-30 span 8 refs 8 pri 3.0000 ord 0 $v0. The tie is exact and the t0 chain wins it on quantity number alone. The flip needs arg5 refs >= 5 at span 6, or t0 refs <= 3 at span 6.
+- verdict: CONFIRMED
+
+## [s80] A nested inner do-while(0) around the printf call raises the arg5 quantity's refs to 5 as predicted but simultaneously moves its birth two indices earlier, so its qty_compare_1 priority falls instead of rising.
+- mechanism: reg_n_refs accumulates loop_depth per reference (flow.c), so an inner note around the call lifts the arg5 pseudo's use from depth 2 to depth 3. A loop NOTE cannot move a quantity's birth directly (local-alloc.c:1176 advances insn_number only for non-NOTE insns), so any birth movement is the note perturbing the schedule.
+- probe: gen4.py, 24 nested forms (outer depth 1/2 over the whole do_timeout list, inner depth 1/2 over the call alone, the call+ClearIrq, the arg5 statement alone, and split inner wraps), tmp/grind/CD_ready/s80/n.log; plus the block-3 quantity dump of n_o1_7_8_i1 (tmp/grind/CD_ready/s80/n_o1_7_8_i1.qty.txt).
+- result: KILLED. reg102 reads refs 5 as designed, but its record is birth 18 death 26 = span 8, giving pri 1.25 against the t0 chain's unchanged 1.3333, so the allocation order is identical and the seats do not flip. The whole block-3 table shifts by two indices (16/18/20/22 to 14/16/18/22). Scores: best 9 (n_o1_split_i2), the two call-only families all 10, the arg5-statement families 14, the outer-depth-2 families 21-29. The predicted lever is real arithmetic; what defeats it is that the note is not schedule-neutral on this block.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the s80 order-exact base (re-measured live at 6/179/0 in the same batch) carrying its inherited FAKE set plus the added note units; candidate.c re-verified live at 2/179/0 before and after the batch.
+
+## [s80] Loop-note wrap placement and depth cannot move the seats on the order-exact base.
+- mechanism: the s60-era outer do-while(0) was placed over the whole do_timeout block; if the refs weighting is what decides the tie, some sub-range or depth ought to separate the two contested quantities.
+- probe: gen3.py, 51 forms - 15 contiguous sub-ranges of the nine do_timeout statements x depths 1/2/3, plus 6 two-wrap forms wrapping the arg5 chain and the call separately - tmp/grind/CD_ready/s80/h.log.
+- result: KILLED. Best is 6, which is the base itself (h_0_8_d1/d2, h_0_9_d1/d2, h_2_8_d1/d2 - all note geometries that leave the whole block at a single depth). Every geometry that actually splits the block is worse: the "exclude the t0 statements" family h_0_5/h_1_5/h_2_5 is 11-19 because tbl_125c loses its $s5 seat, h_7_8 (call only, no outer wrap) is 15-19, h_4_8/h_4_9 are 10, h_5_9/h_6_9 are 12-17, the two-wrap h2_ family is 8-17. No placement reaches 5 or below.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the s80 order-exact base re-measured live at 6/179/0 in the same batch, with the body's inherited FAKE set present.
+
+## [s80] The statement order that would let a contiguous note split the t0 chain's two references while keeping both arg5 references inside it does not stay in the target's instruction basin.
+- mechanism: On the order-exact order the four references nest as arg5-set < t0-sll < t0-addu < arg5-use, so no contiguous wrap can achieve t0 refs 3 with arg5 refs 4. Placing `t0 *= 4;` between `v0 <<= 2;` and the arg5 statement re-nests them as t0-sll < arg5-set < t0-addu < arg5-use, which a wrap starting at the arg5 statement does split.
+- probe: gen5.py, 20 forms on that intermediate order - 10 contiguous wrap ranges x depths 1/2 - tmp/grind/CD_ready/s80/p.log.
+- result: KILLED. The intermediate order itself sits in the FLOOR basin, not the target one: p_0_9_d1/d2, p_0_8_d1/d2 and p_2_9_d1/d2 all score 2 with the floor's wrong ALU order, i.e. moving the t0 shift one statement earlier than the order-exact position puts slots 56/57 back the floor way round. The refs-splitting wraps that were the point of the order (p_5_9, p_5_8, p_4_9, all depths) are 7, and the deeper splits are 12-17. So the refs-split geometry is reachable but only on a body that has already lost the target's instruction order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis; the floor body re-verified live at 2/179/0 in the same batch, all forms carrying the body's inherited FAKE set.
+
+## [s80] The Sony bios.c v1.86 argument-expression spellings are not the ones this chassis wants.
+- mechanism: The original source spells the printf's CD_comstr argument as a manual shift-and-add and its two CD_intstr arguments as array subscripts; the floor body does the exact opposite (array subscript for the comstr argument, manual shift-and-add staged through v0 for the intstr argument). If the shipped object came from that source, the Sony spellings should be at least byte-neutral here. This is the rederive modality's fresh-source axis applied at expression granularity rather than at whole-function granularity (s70 transplanted the whole function for 55-57).
+- probe: gen.py, 10 micro-transplants crossing the three argument spellings onto the s78 struct chassis (tmp/grind/CD_ready/s80/f*.c), each scored with the cheat-invisible sandbox; f2 additionally read with adiff2.
+- result: KILLED. Every form is worse and all sit at 179 build instructions, so these are pure register-web/order effects: f2 (arg5 subscripted only) 11, f5 13, f1/f3/f6/f7 14, f8 15, f4 16, f0 (fully Sony-spelled) 17, f9 18. adiff2 on f2 shows the subscript form rebuilding the whole of block 3 - the a1 load, both lbu, the contested sll/addu pair and the stack store all move. The manual shift-and-add spelling of the arg5 index is load-bearing for the floor.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis with candidate.c re-measured live at 2/179/0 immediately before the batch, all forms carrying the body's inherited FAKE set.
+
+## [s80] The arg5 index shift can be fused into the address expression, retiring one FAKE staging statement at zero byte cost.
+- mechanism: `v0 <<= 2;` existed as a separate staged statement only because the three-statement chain was the first spelling measured at the floor; the shift is an ordinary sub-expression of the address.
+- probe: gen2.py g2 (`v0 = idx_1494[1];` then `arg5 = *(s32 *)((v0 << 2) + (s32)tbl_125c);`), scored and then read with adiff2 against the target.
+- result: CONFIRMED. 2/179/0 with a residual byte-identical to the s78/s79 floor - adiff2 prints exactly the 56/57 transposition and nothing else. candidate.c is updated to this body; FAKE unit count 7 to 6. Three sibling spellings also hold the floor (g5, g6, g11 all 2), so the floor is a five-member plateau in this neighbourhood; the t0-side fusions g1/g3/g9 are 9 and g4 (arg5 chain moved entirely ahead of the t0 chain) is 7.
+- verdict: CONFIRMED
+
+## [s80] An order-exact base with the printf's a1 argument load still at its target slot and with no extra pseudo anywhere is reachable on this chassis by ordinary C statement reordering alone: moving the two t0-chain statements after the whole arg5 chain.
+- mechanism: The floor body's residual is a scheduler transposition at build slots 56/57 that s79 could only fix by naming the arg5 address into a fresh a5a local, whose extra block-3 set renumbered LUIDs and displaced the a1 load (post-sched1 insn 170, anti-dependences only). Reordering the t0 statements moves the same RTL index without adding a pseudo.
+- probe: tmp/grind/CD_ready/s80/gen2.py form g7_t0shift_late, scored with `sandbox CD_ready --disable all` and read instruction-by-instruction with tmp/grind/CD_ready/s79/adiff2.py.
+- result: CONFIRMED. 6/179/0. adiff2 shows every emitted opcode in the target's order, including `lw a1,0(a1)` at slot 54; the only differences in the whole 179-instruction function are register names - the t0 chain in $v1 where the target has $a0 (lbu v1,0(s2) / sll v1,v1,2 / addu v1,v1,s5 / lw a3,0(v1)) and the arg5 value in $a0 where the target has $v1 (lw a0,0(v0) / sw a0,16(sp)). Every prior order-exact base in 80 sessions paid for the order with an a1 displacement (s79 y2, 5) or an extra a5a pseudo (s79 z_d0, 6); this one pays with neither. Banked memory/grind/CD_ready/progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c.
+- verdict: CONFIRMED
+
+## [s80] On that order-exact base the seat swap reduces to a single exact qty_compare_1 tie: the t0-chain quantity and the arg5-value quantity both read refs 4, span 6, priority 1.3333, and the t0 chain wins only on the lower quantity number.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:1660 sorts block quantities by floor_log2(refs)*refs*size/(death-birth) descending and breaks exact ties with `return *q1 - *q2`, i.e. the earlier-born quantity is allocated first.
+- probe: New harness tmp/grind/CD_ready/s80/qty.sh (tmp/grind/CD_ready/s72/prio.sh with BB2_QTY_DEBUG and BB2_SUGG_DEBUG added to the instrumented-cc1 subprocess env), extracted with tmp/grind/CD_ready/s72/qtyext.py; dump tmp/grind/CD_ready/s80/h_0_9_d1.qty.txt.
+- result: CONFIRMED. Block 3: qty0 reg107 birth 16 death 20 span 4 refs 4 pri 2.0000 ord 1 -> $v0; qty1 reg109 birth 18 death 24 span 6 refs 4 pri 1.3333 ord 2 -> $v1 (t0 chain); qty2 reg102 birth 20 death 26 span 6 refs 4 pri 1.3333 ord 3 -> $a0 (arg5 value); qty3 reg116 birth 22 death 30 span 8 refs 8 pri 3.0000 ord 0 -> $v0. The flip therefore needs arg5 refs >= 5 while its span stays 6 (floor_log2(5)*5 = 10 > 8), or t0 refs <= 3 at span 6 (floor_log2(3)*3 = 3, pri 0.5). That is the entire remaining question for this function.
+- verdict: CONFIRMED
+
+## [s80] A nested inner do-while(0) placed around the printf call raises the arg5 quantity's reg_n_refs from 4 to 5 exactly as qty_compare_1 predicts, but the same note also moves that quantity's birth two insn-indices earlier, so its span goes 6 to 8, its priority falls to 1.25, and the allocation order is unchanged.
+- mechanism: reg_n_refs accumulates loop_depth per reference in flow.c, so an inner note around the call lifts the arg5 pseudo's use from depth 2 to depth 3. A loop NOTE cannot move a quantity's birth directly (local-alloc.c:1176 advances insn_number only for non-NOTE insns), so the observed birth movement is the note perturbing the SCHEDULE, not local-alloc.
+- probe: tmp/grind/CD_ready/s80/gen4.py, 24 nested forms (outer depth 1/2 over the whole do_timeout list x inner depth 1/2 over the call alone, the call+ClearIrq, the arg5 statement alone, and split inner wraps), tmp/grind/CD_ready/s80/n.log; plus the block-3 quantity dump tmp/grind/CD_ready/s80/n_o1_7_8_i1.qty.txt read against h_0_9_d1.qty.txt.
+- result: KILLED on these 24 forms. reg102 reads refs 5 as designed but its record is birth 18 death 26 = span 8, pri 1.25 against the t0 chain's unchanged 1.3333, so the seats do not flip. The whole block-3 table shifts by two indices (16/18/20/22 -> 14/16/18/22). Scores: best 9 (n_o1_split_i2), the two call-only families all 10, the arg5-statement families 14, the outer-depth-2 families 21-29. The arithmetic lever is real; the note's non-neutrality on the schedule is what defeats it, and that is a concrete, named thing for the next session to attack.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the s80 order-exact base re-measured live at 6/179/0 in the same batch and carrying its inherited FAKE set plus the added note units; candidate.c re-verified live at 2/179/0 both before and after the batch.
+
+## [s80] Loop-note wrap placement and depth over the do_timeout statement list does not move the seats on the order-exact base: across 51 placements the best score equals the base itself.
+- mechanism: The s60-era outer do-while(0) covers the whole do_timeout block; if the refs weighting decides the tie, some sub-range or depth ought to separate the two contested quantities by putting one quantity's references at a different loop depth from the other's.
+- probe: tmp/grind/CD_ready/s80/gen3.py, 51 forms - 15 contiguous sub-ranges of the nine do_timeout statements x depths 1/2/3, plus 6 two-wrap forms wrapping the arg5 chain and the call separately - tmp/grind/CD_ready/s80/h.log.
+- result: KILLED on these 51 forms. Best is 6, which is the base itself (h_0_8_d1/d2, h_0_9_d1/d2, h_2_8_d1/d2 - every geometry that leaves the whole block at a single depth). Everything that actually splits the block is worse: the exclude-the-t0-statements family h_0_5/h_1_5/h_2_5 is 11-19 because tbl_125c loses its $s5 seat (which is what the s60-era outer wrap was buying), h_7_8 (call only, no outer wrap) 15-19, h_4_8/h_4_9 10, h_5_9/h_6_9 12-17, the two-wrap h2_ family 8-17. Nothing reaches 5.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the s80 order-exact base re-measured live at 6/179/0 in the same batch, with the body's inherited FAKE set present.
+
+## [s80] The statement order that would let a contiguous note split the t0 chain's two references while keeping both arg5 references inside it does not stay in the target's instruction basin: with `t0 *= 4;` placed between `v0 <<= 2;` and the arg5 statement the body scores 2 with the FLOOR's wrong ALU order.
+- mechanism: On the order-exact statement order the four contested references nest as arg5-set < t0-sll < t0-addu < arg5-use, so no contiguous wrap can produce t0 refs 3 with arg5 refs 4. Moving the t0 shift one statement earlier re-nests them as t0-sll < arg5-set < t0-addu < arg5-use, which a wrap starting at the arg5 statement does split.
+- probe: tmp/grind/CD_ready/s80/gen5.py, 20 forms on that intermediate order - 10 contiguous wrap ranges x depths 1/2 - tmp/grind/CD_ready/s80/p.log.
+- result: KILLED on these 20 forms. The intermediate order itself sits in the floor basin: p_0_9_d1/d2, p_0_8_d1/d2 and p_2_9_d1/d2 all score 2 with slots 56/57 the floor way round. The refs-splitting wraps that were the whole point of the order (p_5_9, p_5_8, p_4_9, both depths) are 7 and the deeper splits are 12-17. So on this chassis the refs-split geometry is reachable only on a body that has already lost the target's instruction order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, with candidate.c re-verified live at 2/179/0 in the same batch; all forms carrying the body's inherited FAKE set.
+
+## [s80] The Sony bios.c v1.86 argument-expression spellings - manual shift-and-add for the CD_comstr argument and array subscripts for the two CD_intstr arguments - are worse than the floor's opposite spelling on this chassis, by 9 to 16 points across 10 micro-transplants.
+- mechanism: The rederive modality's fresh-source axis applied at expression granularity rather than whole-function granularity (s70 transplanted the whole Sony function for 55-57). If the shipped BIOS.OBJ came from that source, its argument spellings should be at least byte-neutral when transplanted onto the floor chassis.
+- probe: tmp/grind/CD_ready/s80/gen.py, 10 forms crossing the three argument spellings onto the s78 struct chassis (f0-f9), each scored with `sandbox CD_ready --disable all`; f2 additionally read with adiff2.
+- result: KILLED on these 10 forms. All sit at 179 build instructions, so these are pure register-web and ordering effects: f2 (arg5 subscripted only) 11, f5 13, f1/f3/f6/f7 14, f8 15, f4 16, f0 (fully Sony-spelled) 17, f9 18. adiff2 on f2 shows the subscript form rebuilding the whole of block 3 - the a1 load, both lbu, the contested sll/addu pair and the stack store all move. The manual shift-and-add spelling of the arg5 index is load-bearing for the floor, not a stylistic choice.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, with candidate.c re-measured live at 2/179/0 immediately before the batch; all forms carrying the body's inherited FAKE set.
+
+## [s80] The arg5 index shift can be fused into the address expression, retiring one FAKE staging statement and its annotation from the floor body at zero byte cost.
+- mechanism: `v0 <<= 2;` existed as a separate staged statement only because the three-statement chain was the first spelling ever measured at the floor; the shift is an ordinary sub-expression of the address and needs no separate staging step.
+- probe: tmp/grind/CD_ready/s80/gen2.py form g2_a5_fused (`v0 = idx_1494[1];` then `arg5 = *(s32 *)((v0 << 2) + (s32)tbl_125c);`), scored and then read with adiff2 against build/src/system.o.
+- result: CONFIRMED. 2/179/0 with a residual byte-identical to the s78/s79 floor - adiff2 prints exactly the 56/57 transposition and nothing else. memory/grind/CD_ready/candidate.c is updated to this body and re-verified live at 2/179/0; FAKE unit count on the floor body 7 -> 6. Three sibling spellings also hold the floor (g5 loads-first, g6 loads-first-with-arg5-add-first, g11 arg5 address via the same (u8 *) idiom as t0, all 2), so the floor is a five-member plateau in this neighbourhood rather than a point; the t0-side fusions g1/g3/g9 are 9 and g4 (arg5 chain moved entirely ahead of the t0 chain) is 7.
+- verdict: CONFIRMED

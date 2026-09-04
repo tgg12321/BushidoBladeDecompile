@@ -1,58 +1,3 @@
-/* s80 UPDATE (2026-09-04, rederive). FLOOR UNCHANGED AT 2/179/0, but the BODY CHANGED: the
- * arg5 index chain is now spelled in TWO statements instead of three
- * (`v0 = idx_1494[1];` then `arg5 = *(s32 *)((v0 << 2) + (s32)tbl_125c);`), which retires the
- * separate `v0 <<= 2;` staging statement and one FAKE annotation unit at ZERO byte cost -
- * measured 2/179/0 with a residual byte-identical to the s78/s79 floor (the single adjacent
- * transposition at build slots 56/57; adiff2 prints exactly `ours[55] sll a0,a0,2` vs
- * `tgt[57] sll a0,a0,2`). FAKE unit count on the floor body: 7 -> 6.
- *
- * THE ONE STRUCTURAL RESULT OF s80 - READ THIS BEFORE PROBING.  A body whose instruction
- * ORDER is 100% target-exact, with the printf's a1 argument load STILL AT ITS TARGET SLOT and
- * with NO extra pseudo anywhere, exists and is reached by ORDINARY C statement reordering:
- * move the two t0-chain statements (`t0 *= 4;` and `t0 = (s32)((u8 *)tbl_125c + t0);`) to
- * AFTER the whole arg5 chain.  Banked as
- * progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c (score 6, 179).
- * Its residual is a PURE TWO-WAY SEAT SWAP and nothing else: every emitted opcode is the
- * target's, the t0 chain sits in $v1 where the target has $a0 and the arg5 value sits in $a0
- * where the target has $v1.  This is strictly better conditioned than the s79 y2/z_d0 bases
- * (which paid an a1 displacement or an extra a5a pseudo for the same order).
- *
- * THE SEAT SWAP IS ONE INTEGER AWAY, AND s80 MEASURED THE INTEGER.  Instrumented-cc1 dump
- * tmp/grind/CD_ready/s80/h_0_9_d1.qty.txt, block 3:
- *     qty=0 reg107 birth 16 death 20 span 4  refs 4  -> pri 2.0000 -> ord 1 -> $v0
- *     qty=1 reg109 birth 18 death 24 span 6  refs 4  -> pri 1.3333 -> ord 2 -> $v1  (t0 chain)
- *     qty=2 reg102 birth 20 death 26 span 6  refs 4  -> pri 1.3333 -> ord 3 -> $a0  (arg5 value)
- *     qty=3 reg116 birth 22 death 30 span 8  refs 8  -> pri 3.0000 -> ord 0 -> $v0
- * qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) is
- * floor_log2(refs)*refs*size/(death-birth), sorted DESCENDING, ties broken by
- * `return *q1 - *q2` - the LOWER QUANTITY NUMBER.  qty1 and qty2 are an exact tie at 1.3333
- * and qty1 (the t0 chain) wins the tie purely because it is born two insn-indices earlier.
- * To flip the seats the arg5 quantity must read STRICTLY greater than 1.3333 while its span
- * stays 6, i.e. refs >= 5 at span 6 (floor_log2(5)*5 = 10 > 8), or the t0 quantity must read
- * strictly less, i.e. refs <= 3 at span 6 (floor_log2(3)*3 = 3, pri 0.5).
- *
- * WHAT s80 MEASURED AGAINST THAT TARGET AND WHAT IS LEFT (75 whole-function builds):
- *   - 51 loop-note wrap placements/depths on the order-exact base (tmp/grind/CD_ready/s80/h.log,
- *     gen3.py): every one is >= 6.  Excluding the t0 statements from the wrap does lower the t0
- *     refs but costs tbl_125c its $s5 seat (14-19).
- *   - 24 NESTED inner-wrap forms (n.log, gen4.py) aimed exactly at "arg5 refs 5, span 6": the
- *     inner note DOES lift reg102's refs 4 -> 5, but it also moves reg102's birth 20 -> 18, so
- *     the span goes 6 -> 8 and the priority DROPS to 1.25 (dump
- *     tmp/grind/CD_ready/s80/n_o1_7_8_i1.qty.txt).  Best 9, most 10-29.  A loop note does not
- *     advance local-alloc's insn_number (local-alloc.c:1176), so the birth move is a SCHEDULER
- *     effect of the note, not a local-alloc one - that is the thing to defeat.
- *   - The "t0 refs 3" half needs the t0 shift's two references split across a note boundary
- *     while both arg5 references stay inside it.  On the order-exact statement order the four
- *     references nest as arg5-set < t0-sll < t0-addu < arg5-use, so NO contiguous wrap can do
- *     it.  The one intermediate order that would separate them (`t0 *= 4;` between `v0 <<= 2;`
- *     and the arg5 statement) was measured this session: it sits in the FLOOR basin, not the
- *     target one (p_0_9_d1 = 2 with the floor's wrong ALU order; the refs-split wraps on it are
- *     7).  So the remaining opening is a NON-CONTIGUOUS or statement-level restructuring that
- *     puts the t0 shift outside the arg5 pseudo's live note region.
- *   - The Sony bios.c v1.86 ARGUMENT SPELLINGS are dead on this chassis (10 forms, f*.c, 11-18):
- *     spelling the two CD_intstr arguments as array subscripts of tbl_125c instead of the
- *     manual shift-and-add costs 9+ points and rebuilds the whole block-3 register web.
- */
 /* CD_ready CANDIDATE - s78 (2026-09-04, rederive). FLOOR UNCHANGED AT MASKED 2 (score 2,
  * build 179, target 179, rules_dropped 0, re-measured live this session), but this body is
  * STRICTLY CLEANER than the s60-s77 floor body it replaces: it retires TWO non-ordinary
@@ -151,21 +96,21 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     goto success;
   }
   do_timeout:
-  do { /* FAKE: do-while(0) loop-note ref weighting seats tbl_125c in s5 (SOTN FAKE-class match device; do-while-zero-exception 2026-07-06) */
-  tslTm2LoadImage_2(&D_800161B8);
-
   {
     s32 arg5;
     s32 t0;
+    do { /* FAKE: do-while(0) loop-note refs weighting per do-while-zero-exception (owner ruling 2026-07-06) */
+    tslTm2LoadImage_2(&D_800161B8);
     t0 = idx_1494[0];
+    v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03) */
+    v0 <<= 2; /* FAKE: continued staging per staged-value-reused-variable */
+    arg5 = *(s32 *)(v0 + (s32)tbl_125c);
     t0 *= 4;
     t0 = (s32)((u8 *)tbl_125c + t0);
-    v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03) */
-    arg5 = *(s32 *)((v0 << 2) + (s32)tbl_125c);
     debug_printf(&D_800161C8, D_800F19B8.func, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
+    cdrom_ClearIrq();
+    } while (0);
   }
-  cdrom_ClearIrq();
-  } while (0);
   v0 = -1;
   goto check;
   success:

@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 79,
- "current_modality": "forensics",
+ "session_count": 80,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -483,23 +483,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics: the mandated kill re-audit re-derives r3 on the s78 struct chassis and its a1v-ablation (y2) yields a residual shape new in 79 sessions - every seat and the 56/57 ALU pair target-exact, one"
+  },
+  {
+   "session": 80,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Rederive finds a NEW order-exact base - 179 instructions in the target's exact order with the a1 load in place and no extra pseudo, reached by ordinary statement reordering - whose whole residual is o"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The depth 0-2 regime's defect is a pure SEAT question - the t0 chain seated at $v1 with the arg5 value taking $a0, 6 points, with the a1 load and the ALU pair BOTH already target-exact - and it is one RA seat away from 0, which is exactly the class tools/ra_solver is built to type as REACHABLE or FORECLOSED.",
-   "mechanism": "z_d0/zn_d0 (6/179) differ from the target only in which of two pseudos wins $a0 in block 3. That is a global.c/local-alloc seat decision with a bounded input set (allocno order, reg_n_refs, hard-reg preference), unlike the y2 residual which is a scheduler ready-list position with no dependence edge to move. Every prior seat probe on this function was run on the scalar chassis or on the r3 base, never on the depth-0 struct regime, which is a genuinely new fixed point.",
-   "next_probe": "Run tools/ra_solver's global.c/local-alloc models plus `inverse_compose.py classify` on the z_d0 body (banked as rejected/s79-z_d0-a5a-depth0-a1-correct-t0-chain-seated-v1-6.c), asking specifically which C-level inputs flip the $a0 winner between the t0 chain pseudo and the arg5 pseudo; then spell the top-ranked lever vectors and measure them."
+   "hypothesis": "The whole function is now one qty_compare_1 tie-break on a body that is otherwise byte-exact in order and in every other seat. The two ways to break it are arithmetically exact: give the arg5-value quantity refs >= 5 while holding its span at 6, or give the t0-chain quantity refs <= 3 while holding its span at 6.",
+   "mechanism": "local-alloc.c:1660 pri = floor_log2(refs)*refs*size/(death-birth), descending, ties by lower quantity number. On the order-exact base both quantities are refs 4 / span 6 / 1.3333 and the t0 chain wins on birth order (dump tmp/grind/CD_ready/s80/h_0_9_d1.qty.txt). s80 killed the loop-note route to both halves: the inner note that lifts arg5 to refs 5 also moves its birth (span 6 -> 8, pri 1.25), and the statement order that would let a contiguous note split the t0 chain's refs falls back into the floor basin.",
+   "next_probe": "Attack refs WITHOUT a loop note. (a) qty_size is the third factor and is untried: an aggregate or wider-mode spelling of the arg5 value would make size 2 and the priority 2.6667 outright - measure whether any legal C spelling of that stack argument gives size 2 without adding an instruction. (b) reg_n_refs also counts multiple references inside ONE insn; look for a spelling in which the arg5 pseudo is referenced twice by the single stack-store insn. (c) Re-run tools/ra_solver's local-alloc model and `inverse_compose.py classify` against the h_0_9_d1 quantity table (it is now a four-quantity table with every input measured, which is exactly the solver's input format) and ask it which C-level inputs reach refs 5 / span 6."
   },
   {
-   "hypothesis": "Owner directive probe 2 is still unrun and should now be seeded from the s78 struct/no-pp chassis with y2 (5) and z_d0 (6) as seeds rather than r3 and b2: both new seeds are one defect from the target and their defects are in the two different passes, which is exactly the crossing the permuter's statement-reordering and variable-splitting passes explore.",
-   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats across the whole block. The tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1.",
-   "next_probe": "Build a fresh workspace mirroring engine/buildconfig.py's flags exactly (cc1 = tools/gcc-2.7.2/cc1, -mel). Validate the scorer reproduces 2 for candidate.c, 5 for y2 and 6 for z_d0 before launching, then run fresh-seed windows with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
+   "hypothesis": "The owner directive's permuter probe should be seeded from the s80 order-exact base rather than from the s79 y2/z_d0 bases, and is still unrun.",
+   "mechanism": "progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c has the target's exact instruction sequence with no extra pseudo and no a1 displacement, so its permuter residual is a pure register-assignment difference - the narrowest seed this function has ever had. Every prior campaign (s4, s5, s40, s41, s49, s50, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats, and those workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1.",
+   "next_probe": "Build a fresh workspace mirroring engine/buildconfig.py exactly (cc1 = tools/gcc-2.7.2/cc1, -mel, maspsx --aspsx-version=2.34). Validate the scorer reproduces 2 for candidate.c and 6 for the s80 order-exact base before launching, then run fresh-seed windows with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break recorded in memory/project/grinder-nonmatchings-scope-break.md."
   },
   {
-   "hypothesis": "F3 still needs a Judge ruling rather than another measurement: the floor body's `volatile u8 *idx_1496` is worth 2 points and no declaration-level spelling of that volatility reaches the floor, so the eventual candidate must either carry the pointer-injected spelling under an explicit ruling or the function cannot submit at 0 even if the last transposition falls.",
-   "mechanism": "engine/volatile_cheats.py pattern 3 and volatile_extern_allowlist.txt cover `extern volatile T G;` only; decisions.md:11004 records pointer/cast-injected volatility as a spelling defect no grant carries. s78 measured every honest alternative: direct symbol access 27 (control 27), CD_intr struct with volatile members 36 (control 37), qualifier dropped 4.",
-   "next_probe": "When a body reaches 0, file a ruling-request stating the s78 numbers verbatim and asking whether Ruling 4's grant class can attach to a pointer-typed volatile when the declaration-level spelling is measurably unreachable - or whether the 2-point qualifier must be dropped, making 4/178 the honest ceiling for this shape."
+   "hypothesis": "F3 is unchanged and still needs a Judge ruling rather than another measurement: the floor body's `volatile u8 *idx_1496` is worth 2 points and no declaration-level spelling of that volatility reaches the floor, so a body that reaches 0 must either carry the pointer-injected spelling under an explicit ruling or accept 4/178 as the honest ceiling.",
+   "mechanism": "engine/volatile_cheats.py pattern 3 and volatile_extern_allowlist.txt cover `extern volatile T G;` only; docs/grind/decisions.md:11004 records pointer/cast-injected volatility as a spelling defect no grant carries. s78 measured every honest alternative: direct symbol access 27 (control 27), CD_intr struct with volatile members 36 (control 37), qualifier dropped 4/178.",
+   "next_probe": "When a body reaches 0, file a ruling-request stating the s78 numbers verbatim and asking whether Ruling 4's grant class can attach to a pointer-typed volatile when the declaration-level spelling is measurably unreachable."
   }
  ],
  "judge_constraints": [
@@ -777,6 +783,38 @@
    "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis (candidate.c re-measured live at 2/179/0 in the same batch); the seven inherited FAKE units present plus each form's own staging FAKE, the `pp` al",
    "predicate_cite": "",
    "result": "Control 5 (reproduces y2 exactly). v0 carrier 19/19/12 at depths 0/1/3; status 13/13/11; cnt 17/-/8. Every carrier is po"
+  },
+  {
+   "session": 80,
+   "statement": "A nested inner do-while(0) placed around the printf call raises the arg5 quantity's reg_n_refs from 4 to 5 exactly as qty_compare_1 predicts, but the same note also moves that quantity's birth two ins",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the s80 order-exact base re-measured live at 6/179/0 in the same batch and carrying its inherited FAKE set plus the added note units; candidat",
+   "predicate_cite": "",
+   "result": "KILLED on these 24 forms. reg102 reads refs 5 as designed but its record is birth 18 death 26 = span 8, pri 1.25 against"
+  },
+  {
+   "session": 80,
+   "statement": "Loop-note wrap placement and depth over the do_timeout statement list does not move the seats on the order-exact base: across 51 placements the best score equals the base itself.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the s80 order-exact base re-measured live at 6/179/0 in the same batch, with the body's inherited FAKE set present.",
+   "predicate_cite": "",
+   "result": "KILLED on these 51 forms. Best is 6, which is the base itself (h_0_8_d1/d2, h_0_9_d1/d2, h_2_8_d1/d2 - every geometry th"
+  },
+  {
+   "session": 80,
+   "statement": "The statement order that would let a contiguous note split the t0 chain's two references while keeping both arg5 references inside it does not stay in the target's instruction basin: with `t0 *= 4;` p",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, with candidate.c re-verified live at 2/179/0 in the same batch; all forms carrying the body's inherited FAKE set.",
+   "predicate_cite": "",
+   "result": "KILLED on these 20 forms. The intermediate order itself sits in the floor basin: p_0_9_d1/d2, p_0_8_d1/d2 and p_2_9_d1/d"
+  },
+  {
+   "session": 80,
+   "statement": "The Sony bios.c v1.86 argument-expression spellings - manual shift-and-add for the CD_comstr argument and array subscripts for the two CD_intstr arguments - are worse than the floor's opposite spellin",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, with candidate.c re-measured live at 2/179/0 immediately before the batch; all forms carrying the body's inherited FAKE set.",
+   "predicate_cite": "",
+   "result": "KILLED on these 10 forms. All sit at 179 build instructions, so these are pure register-web and ordering effects: f2 (ar"
   }
  ],
  "sibling_progress": [
