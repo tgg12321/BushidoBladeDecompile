@@ -248,6 +248,47 @@
  *     This is the mechanism sentence the header's "ON THE EPILOGUE'S ADDRESSING MIX"
  *     paragraph asserts, now measured against a pointer-chain counterexample.
  *   - Report: tmp/grind/func_80062020/s17/solver_s17.md; evidence.md + hypotheses.md s17 blocks.
+ *
+ * s18 (FORENSICS, 2026-09-03) NOT SUBMITTED - body UNCHANGED, nothing added or removed.
+ *   - banned_constructs 3 and 4 are in state.json, so `grindlib.py selfvet` exits 1 and this
+ *     body cannot reach layer-1 or the Judge this session; s18 did not touch it and did not
+ *     re-litigate it.  Chassis: clean HEAD 8ab6561d, sandbox func_80062020 --disable all =
+ *     target_insns 38, build_insns 0, no_c_body true (still INCLUDE_ASM at src/text1b.c:3932);
+ *     no src/, include/ or pipeline file has changed since s17, so the six SHA1 proofs of
+ *     this body and the admissible floor of 6 both stand unchanged.
+ *   - THE FINDING (this supersedes the header paragraph "ON THE EPILOGUE'S ADDRESSING MIX"
+ *     above, and s17solv's leftmost-lvalue refinement).  The DISP8|DISP4|LOSUM0 arrangement
+ *     is NOT chain-specific and is not a property the author can select.  Eleven new
+ *     spellings in the s16struct chassis: FIVE bodies containing no chained assignment at
+ *     all reach the target arrangement exactly (an OR into a dead local, the same OR into
+ *     the existing local t, two sequential stagings into t, an empty-bodied comparison, an
+ *     additive identity), while TWO chain bodies MISS it (a cast-wrapped chain; a chain with
+ *     the +0 store written first).  cc1 -da dumps name the two passes: RTL EXPAND fixes each
+ *     store's address form in the FIRST dump from store_field's want_value
+ *     (tools/gcc-2.7.2/expr.c:3453-3464) - consumed => base register, discarded => symbol-
+ *     folded - and COMBINE then re-folds any base-register address whose pseudo has a single
+ *     use back into the symbol (tools/gcc-2.7.2/combine.c:1458,
+ *     `added_sets_2 = ! dead_or_set_p (i3, i2dest)`).  Two consumed stores share the pseudo,
+ *     so it is not dead at either store and both survive.  LAW: the +8 and +4 stores' values
+ *     both consumed, and the +0 store written LAST with its value discarded.  All 38
+ *     spellings measured across s16/s17/s18 over four declaration shapes obey it, including
+ *     the pointer chassis (no symbol to fold => the last store stays DISP0 => the admissible
+ *     floor-6 body's 3-instruction residual).  This retires s14's cse2 attribution for the
+ *     initial choice (cse2 leaves the arrangement untouched in all four dumps).
+ *   - CONSEQUENCE FOR THE STANDING OBJECTION.  Five layer-1 FAILs assert that this epilogue
+ *     "materialises the row base address TWICE in two different addressing forms", i.e. that
+ *     the split is authored.  The C names ONE lvalue base; the split is the joint output of
+ *     expr.c want_value and combine.c:1458, and it is reproduced by five bodies that share
+ *     no syntax with a chain and no semantics with each other.  The author supplies only
+ *     "is this store's value used?" and "which store is last?".
+ *   - NO NEW FORM.  All five non-chain reaching spellings buy their second consumption with
+ *     DEAD CODE (dead scalar local, dead re-store into t, empty-bodied if - the last a
+ *     forbidden-family construct verbatim).  They are strictly more coercive than the plain
+ *     ascending chain and are banked as evidence only, in
+ *     rejected/epilogue-nonchain-consumption-carriers-deadcode-s18.c.  The chain remains the
+ *     ONLY dead-code-free member of the reaching set.
+ *   - Report: tmp/grind/func_80062020/s18/forensics_s18.md; evidence.md + hypotheses.md s18
+ *     blocks; dumps in tmp/grind/func_80062020/s18/dumps_*/.
  */
 void func_80062020(s32 *arg0) {
     s32 i;

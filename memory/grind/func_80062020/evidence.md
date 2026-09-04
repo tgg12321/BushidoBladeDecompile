@@ -2610,3 +2610,134 @@ construct and did not submit; the four kills above are its product.
 - [s17] The two sanctioned FAKE vectors the solver ranked (named-local-fake-exception constant holder, staged-value-reused-variable) are measured NOT to reach on this function (S09/S10 -> all-LOSUM, no base register). That closes them without any FAKE construct being written, so no future session needs to open a lever-exhaustion argument for them here.
 
 - [s17] state.json banned_constructs currently carries FOUR entries: the pointer-local + second-address-materialisation form, the comments-only re-file, the chained-assignment epilogue line itself, and the whole aggregate-merge diff. Entries 3 and 4 were cleared by the driver after the s16e integration handoff and RE-ADDED after the 2026-09-03 21:41/22:04 layer-1 FAILs, so the bytes-proven s15/s16 body is mechanically un-submittable again. This session did not touch it and did not re-litigate it.
+
+---
+
+## s18 — FORENSICS (2026-09-03) — the epilogue addressing law is a TWO-PASS compiler law, and it is not chain-specific
+
+**Chassis measured this session.** `sandbox func_80062020 --disable all` on clean HEAD
+(8ab6561d) = target_insns 38, build_insns 0, `no_c_body: true`, rules_dropped 0 — i.e. the
+function is still committed as `INCLUDE_ASM("asm/funcs", func_80062020);` at
+src/text1b.c:3932. No src/, include/ or pipeline file has changed since s17 (the last four
+commits touch only docs/grind/, memory/grind/ and metrics/), so the s17-measured honest
+floor of the best ADMISSIBLE body (rejected/epilogue-uniform-pointer-floor4-superseded.c,
+score 6 at 35/38) stands unchanged on this chassis, and the six SHA1 proofs of the banked
+body likewise stand. Floor recorded for this session: **6**.
+
+**The question s18 was dispatched to answer.** Five layer-1 FAILs (2026-09-03 20:23,
+20:46, 21:21, 21:41, 22:04) plus the 2026-08-25 and 2026-08-31 Judge FAILs all rest on one
+factual claim: that the epilogue "materialises the terminator row base address TWICE in two
+different addressing forms", i.e. that the split is an *authored* trick. Up to s17 the
+ledger could not test that claim, because every form ever measured to reach the target
+arrangement `DISP8 | DISP4 | LOSUM0` was a chained assignment (s16 E01/E04/E14; s17's seven
+pointer variants). One reaching syntax cannot distinguish "the chain is the trick" from
+"the chain is one instance of a compiler law".
+
+**Probe 1 — eleven NON-CHAIN spellings** (tmp/grind/func_80062020/s18/sweep18.py, results
+in results18.txt; same s16struct chassis: real function, real names, real copy loop,
+project cc1 flags, tools/gcc-2.7.2/build/cc1). **FIVE bodies that contain no chained
+assignment at all reach the target arrangement exactly, at 27 insns**, identical to the
+chain control N00:
+
+* N01 `z = (D[i].unk8 = 0) | (D[i].unk4 = 0); D[i].unk0 = 0;` (dead scalar local z)
+* N02 the same OR consumed into the function's existing dead local `t`
+* N03 `t = (D[i].unk8 = 0); t = (D[i].unk4 = 0); D[i].unk0 = 0;`
+* N05 `if ((D[i].unk8 = 0) != (D[i].unk4 = 0)) { } D[i].unk0 = 0;`
+* N07 `z = (D[i].unk8 = 0) + (D[i].unk4 = 0) + 0; D[i].unk0 = 0;`
+
+and, symmetrically, two *chain* forms MISS: N06 (a cast wrapped round each link) and N09
+(the +0 store written first) both emit all-LOSUM. So the reaching set is not "chains"; the
+chain is one member of it, and chain-ness is neither necessary nor sufficient.
+
+**Probe 2 — pass attribution from `cc1 -da`** (dumps_N00_control_chain / dumps_N01_or_deadlocal
+/ dumps_N08_one_consumed / dumps_N09_zero_first; extractor zstores.py). The address form of
+every `(set (mem…) (const_int 0))` in the epilogue, per pass, in chronological order
+(rtl -> jump -> cse -> loop -> cse2 -> flow -> combine -> lreg -> greg):
+
+```
+N00 reaches   rtl DISP8|DISP4|LOSUM0   flow DISP8|DISP4|LOSUM0   combine DISP8|DISP4|LOSUM0    greg DISP8|DISP4|LOSUM0
+N01 reaches   rtl DISP8|DISP4|LOSUM0   flow DISP8|DISP4|LOSUM0   combine DISP8|DISP4|LOSUM0    greg DISP8|DISP4|LOSUM0
+N08 misses    rtl DISP8|LOSUM4|LOSUM0  flow DISP8|LOSUM4|LOSUM0  combine LOSUM8|LOSUM4|LOSUM0  greg LOSUM8|LOSUM4|LOSUM0
+N09 misses    rtl LOSUM0|DISP8|LOSUM4  flow LOSUM0|DISP8|LOSUM4  combine LOSUM0|LOSUM8|LOSUM4  greg LOSUM0|LOSUM8|LOSUM4
+```
+
+Two passes, both named from the dump rather than inferred:
+
+1. **RTL EXPAND** (`store_field` / `expand_assignment`, tools/gcc-2.7.2/expr.c:3453-3464)
+   fixes each store's address form in the FIRST dump: value consumed (`want_value != 0`)
+   => address stabilised into a pseudo, `(mem (plus (reg) (const_int N)))` = DISP; value
+   discarded => member offset folded into the symbol,
+   `(mem (plus (const (plus symbol N)) (reg)))` = LOSUM. Nothing between expand and flow
+   perturbs this in any of the four dumps. This CONFIRMS the s15/s16 expand attribution by
+   dump and RETIRES s14's attribution of the initial choice to a post-expand optimiser
+   (cse2) — cse2 leaves the arrangement untouched in all four dumps.
+2. **COMBINE** (tools/gcc-2.7.2/combine.c:1458,
+   `added_sets_2 = ! dead_or_set_p (i3, i2dest);`) is what destroys a LONE stabilised
+   address. With one consumed store the address pseudo has a single use, is dead at the
+   store insn, and combine substitutes the `symbol + i*12` set into the MEM, re-folding the
+   member offset back into the symbol (N08 and N09: DISP8 at flow, LOSUM8 at combine). With
+   two consumed stores sharing the pseudo it is not dead at either, `added_sets_2` is true,
+   the combination is unprofitable, and both DISP stores survive to greg (N00, N01).
+
+**THE LAW (supersedes s17solv's leftmost-lvalue formulation).**
+
+> The three terminator stores are emitted in source order. Each store's address form is
+> chosen at RTL expand by want_value — consumed => DISP, discarded => LOSUM. Combine then
+> re-folds any DISP whose address pseudo has a single use. The target arrangement
+> DISP8 | DISP4 | LOSUM0 therefore requires the +8 and +4 stores' values BOTH consumed (so
+> the shared address pseudo survives combine) and the +0 store written LAST with its value
+> discarded.
+
+s17solv's "a chain whose LEFTMOST (last-evaluated) lvalue is symbol-based reaches it" is a
+correct description of the chain family but the wrong predicate: N03 has no chain and
+reaches; N08 has a symbol-based leftmost lvalue and misses. The operative term is the
+consumption COUNT (>= 2), not leftmost-ness. All 38 spellings now measured across s16 (15),
+s17 (12) and s18 (11), over four declaration shapes, satisfy the law without exception —
+including the pointer-local chassis, where every store addresses off a pseudo with no
+symbol to fold into, so combine has nothing to fold and the last store stays DISP0, giving
+the admissible floor-6 body its `DISP8|DISP4|DISP0` and its 3-instruction residual.
+
+**What this settles.** The layer-1 characterisation is not a property the author can
+express. The C names ONE lvalue base; the two emitted addressing forms are the joint output
+of expr.c want_value and combine.c:1458. The author supplies only "is this store's value
+used?" and "which store is last?". Five semantically unrelated non-chain bodies produce the
+identical arrangement; two chain bodies do not.
+
+**What this does NOT settle — and the honest limit of the finding.** It produces no new
+submittable body. All five non-chain reaching forms buy their second consumption with DEAD
+CODE (a dead scalar local, a dead re-store into `t`, an empty-bodied `if` — the last being
+a forbidden-family construct verbatim). They are strictly more coercive than the plain
+ascending chain and must never be submitted; they are banked as evidence in
+rejected/epilogue-nonchain-consumption-carriers-deadcode-s18.c. The chain remains the ONLY
+dead-code-free member of the reaching set — but that is now a measured consequence of a
+two-pass compiler law rather than an assertion about a favoured spelling.
+
+**Disposition state, unchanged by this session.** state.json banned_constructs 3 and 4 name
+the chain line and the whole diff, so `grindlib.py selfvet` exits 1 and no candidate-ready
+for this function can reach layer-1 or the Judge. Nothing was submitted; the tree was not
+modified (clean at start and at end apart from metrics/events.jsonl).
+
+Artifacts: tmp/grind/func_80062020/s18/{forensics_s18.md, sweep18.py, results18.txt,
+dump18.sh, zstores.py, N*.c, N*.s, dumps_*/}.
+
+- [s18] Chassis measured this session: clean HEAD 8ab6561d, `sandbox func_80062020 --disable all` = target_insns 38, build_insns 0, no_c_body true, rules_dropped 0, cheat_asm_stripped 166 - the function is still INCLUDE_ASM at src/text1b.c:3932. No src/, include/ or pipeline file has changed since s17 (the last four commits touch only docs/grind/, memory/grind/ and metrics/), so the s17-measured admissible floor of 6 and the six SHA1 proofs of the banked body both stand unchanged. Floor recorded: 6.
+
+- [s18] Five NON-CHAIN epilogue bodies reach the target arrangement DISP8|DISP4|LOSUM0 exactly at 27 insns in the s16struct chassis: N01 z = (D[i].unk8=0) | (D[i].unk4=0); D[i].unk0=0; N02 the same OR into the existing local t; N03 t=(D[i].unk8=0); t=(D[i].unk4=0); D[i].unk0=0; N05 if ((D[i].unk8=0) != (D[i].unk4=0)) { } D[i].unk0=0; N07 z = (D[i].unk8=0) + (D[i].unk4=0) + 0; D[i].unk0=0.
+
+- [s18] Two CHAIN bodies miss the target arrangement: N06 (a cast wrapped round each link) and N09 (the +0 store written first) both emit all-LOSUM at 25 insns. So chain syntax is neither necessary nor sufficient for the arrangement.
+
+- [s18] Pass attribution from cc1 -da, chronological order rtl -> jump -> cse -> loop -> cse2 -> flow -> combine -> lreg -> greg: N00 rtl DISP8|DISP4|LOSUM0 all the way to greg; N01 identical; N08 rtl/flow DISP8|LOSUM4|LOSUM0 then combine LOSUM8|LOSUM4|LOSUM0; N09 rtl/flow LOSUM0|DISP8|LOSUM4 then combine LOSUM0|LOSUM8|LOSUM4.
+
+- [s18] RTL EXPAND fixes each store's address form: tools/gcc-2.7.2/expr.c:3453-3457, store_field - 'If a value is wanted, it must be the lhs; so make the address stable for multiple use' - stabilises the address into a pseudo when want_value is set and the address is neither a REG nor a CONSTANT_ADDRESS_P; otherwise the member offset is folded into the symbol.
+
+- [s18] COMBINE destroys a LONE stabilised address: tools/gcc-2.7.2/combine.c:1458, `added_sets_2 = ! dead_or_set_p (i3, i2dest);`. One consumed store leaves the address pseudo with a single use, dead at the store insn, so combine substitutes the symbol+i*12 set into the MEM and re-folds the offset into the symbol. Two consumed stores share the pseudo, it is not dead at either store, added_sets_2 is true and both base-register stores survive to greg.
+
+- [s18] THE LAW (supersedes s17solv's leftmost-lvalue formulation and s14's cse2 attribution of the initial choice): the three terminator stores are emitted in source order; each store's address form is chosen at RTL expand by want_value (consumed => base register, discarded => symbol-folded); combine then re-folds any base-register address whose pseudo has a single use. The target arrangement requires the +8 and +4 stores' values BOTH consumed and the +0 store written LAST with its value discarded.
+
+- [s18] All 38 epilogue spellings now measured across s16 (15), s17 (12) and s18 (11), over four declaration shapes, obey the law without exception - including the pointer-local chassis of the admissible floor-6 body, where every store addresses off a pseudo with no symbol to fold into, so combine has nothing to fold and the last store stays DISP0, which is exactly that body's 3-instruction residual.
+
+- [s18] Consequence for the standing layer-1 objection: the assertion that this epilogue 'materialises the terminator row base address TWICE in two different addressing forms' describes something the author cannot express. The C names ONE lvalue base; the split is the joint output of expr.c want_value and combine.c:1458, and is reproduced by five bodies that share no syntax with a chain and no semantics with each other.
+
+- [s18] No new submittable form: all five non-chain reaching spellings buy their second consumption with dead code (dead scalar local, dead re-store into t, empty-bodied if - the last a forbidden-family construct verbatim), strictly more coercive than the ascending chain. Banked as rejected/epilogue-nonchain-consumption-carriers-deadcode-s18.c and NOT proposed.
+
+- [s18] Disposition state unchanged by this session: state.json banned_constructs 3 and 4 name the chain line and the whole diff, so `grindlib.py selfvet` exits 1 and no candidate-ready for this function can reach layer-1 or the Judge. Nothing was submitted; the working tree was clean at start and carries only ledger edits at end.

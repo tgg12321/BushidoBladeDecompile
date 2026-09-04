@@ -1778,3 +1778,93 @@ FRONTIER for the next session, strongest first:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: 2026-09-03 chassis, s16struct harness; no FAKE construct present
+
+---
+
+## s18 (forensics, 2026-09-03)
+
+### H-s18-NONCHAIN — "only a chained assignment can produce the target DISP8|DISP4|LOSUM0 epilogue arrangement" — **KILLED (class)**
+
+* **Statement.** Before s18 the ledger's reaching set contained only chained assignments,
+  and five layer-1 reviews characterised the arrangement as an authored
+  address-materialization trick that the chain spells. The hypothesis under test was that
+  chain-ness is the operative property.
+* **Probe.** Eleven non-chain / variant-chain epilogue spellings compiled in the s16struct
+  chassis (real function, real names, real copy loop, project cc1 flags,
+  tools/gcc-2.7.2/build/cc1); addressing form of each terminator store classified.
+  tmp/grind/func_80062020/s18/sweep18.py, results18.txt.
+* **Result.** FIVE bodies containing no chained assignment reach the target arrangement
+  exactly at 27 insns (N01 OR-into-dead-local, N02 OR-into-reused-`t`, N03 two sequential
+  stagings into `t`, N05 empty-bodied comparison, N07 additive identity), while TWO chain
+  bodies miss it (N06 cast-wrapped links, N09 +0 written first). Chain-ness is therefore
+  neither necessary nor sufficient.
+* **kill_scope:** class. **predicate_cite:** tools/gcc-2.7.2/expr.c:3453 (the
+  `want_value` gate in store_field that selects the address form; chain syntax is not a
+  term in it). **measured_on:** 2026-09-03 chassis (clean HEAD 8ab6561d, sandbox
+  func_80062020 --disable all = target_insns 38 / no_c_body), s16struct harness; no FAKE
+  construct present in any measured form.
+
+### H-s18-TWOPASS — "the DISP-vs-LOSUM split is decided by one pass, and that pass is a post-expand optimiser (s14: cse2)" — **KILLED (class)**
+
+* **Statement.** s14 attributed the choice to a post-expand optimiser; s17solv refined the
+  rule to "a chain whose LEFTMOST lvalue is symbol-based reaches the target". Both are
+  single-pass, chain-shaped accounts.
+* **Probe.** `cc1 -da` on N00 (reaches), N01 (reaches), N08 (misses), N09 (misses);
+  address form of every epilogue `(set (mem…) (const_int 0))` extracted per pass dump.
+  tmp/grind/func_80062020/s18/dumps_*/ + zstores.py.
+* **Result.** The split exists ALREADY IN THE .rtl (expand) dump, before any optimiser
+  runs, and is untouched by jump / cse / loop / cse2 / flow in all four cases — so the
+  initial choice is RTL EXPAND's (`store_field` want_value, expr.c:3453-3464), not cse2's.
+  The second half of the law is COMBINE: in N08 and N09, whose single consumed store leaves
+  its address pseudo with one use, combine substitutes the address set into the MEM and
+  re-folds the member offset into the symbol (DISP8 at flow -> LOSUM8 at combine -> LOSUM8
+  at greg); in N00/N01 two consumed stores share the pseudo, it is not dead at either
+  store, `added_sets_2` is true, the combination is unprofitable, and both DISP stores
+  survive. The governing law is therefore two-pass, and its predicate is the CONSUMPTION
+  COUNT (>= 2) plus discarded-and-last for the +0 store — not leftmost-ness (N03 reaches
+  with no chain; N08 misses with a symbol-based leftmost lvalue).
+* **kill_scope:** class. **predicate_cite:** tools/gcc-2.7.2/combine.c:1458
+  (`added_sets_2 = ! dead_or_set_p (i3, i2dest);` — the single-use gate that re-folds a
+  lone stabilised address). **measured_on:** 2026-09-03 chassis, cc1 -da dumps from
+  tools/gcc-2.7.2/build/cc1 with the project flags; no FAKE construct present.
+
+### H-s18-NEWFORM — "one of the non-chain reaching spellings is an admissible substitute for the banned chain" — **KILLED (instance)**
+
+* **Statement.** If a non-chain body reaches the target arrangement, it might be
+  submittable where the chain is banned.
+* **Probe.** Inspect all five reaching non-chain forms against the forbidden-family
+  catalog and the frozen sanctioned list.
+* **Result.** Every one buys its second value-consumption with dead code: N01/N07 a dead
+  scalar local, N02/N03 a dead re-store into the existing local `t`, N05 an empty-bodied
+  `if (cond) { }` dead read — which is a forbidden-family construct verbatim. All are
+  strictly more coercive than the plain ascending chain they would replace. Banked as
+  rejected/epilogue-nonchain-consumption-carriers-deadcode-s18.c and NOT proposed.
+* **kill_scope:** instance. **measured_on:** 2026-09-03 chassis, s16struct harness, these
+  five spellings; no FAKE construct present in the measured forms (the dead locals are what
+  is being rejected, not an annotated lever).
+
+## [s18] Chain-ness is the operative property of the epilogue spellings that reach the target arrangement DISP8|DISP4|LOSUM0 - i.e. a chained assignment is what produces the two addressing forms.
+- mechanism: Until s18 the ledger's reaching set contained only chained assignments (s16 E01/E04/E14, s17's seven pointer variants), so the data could not separate 'the chain is an authored address-materialization trick' (the assertion five layer-1 FAILs rest on) from 'the chain is one instance of a compiler law'. The test is to put the three terminator stores into value-consuming contexts that contain no chain at all.
+- probe: Eleven new epilogue spellings compiled in the s16struct chassis (real function, real names, real copy loop, project cc1 flags, tools/gcc-2.7.2/build/cc1); addressing form of each terminator store classified. tmp/grind/func_80062020/s18/sweep18.py, results18.txt.
+- result: FIVE bodies containing no chained assignment reach the target arrangement exactly at 27 insns, identical to the chain control N00: N01 (OR of the two stores into a dead scalar local), N02 (the same OR consumed into the function's existing dead local t), N03 (two sequential stagings t = (unk8 = 0); t = (unk4 = 0);), N05 (empty-bodied comparison of the two stores), N07 (additive identity into a dead local). Symmetrically, TWO chain bodies MISS: N06 (a cast wrapped round each link) and N09 (the +0 store written first) both emit all-LOSUM. Chain-ness is neither necessary nor sufficient; the reaching set is defined by value consumption, not by syntax.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: 2026-09-03 chassis (clean HEAD 8ab6561d; sandbox func_80062020 --disable all = target_insns 38, build_insns 0, no_c_body true, rules_dropped 0), s16struct harness; no FAKE construct present in any measured form
+- predicate_cite: tools/gcc-2.7.2/expr.c:3453
+
+## [s18] The DISP-vs-LOSUM split is decided by a single post-expand optimiser pass - s14 attributed it to cse2, s17solv restated it as 'a chain whose LEFTMOST (last-evaluated) lvalue is symbol-based reaches the target'.
+- mechanism: Both accounts are single-pass and chain-shaped. Reading the address form of each epilogue zero-store out of every cc1 -da dump, in chronological pass order, shows where the form is first fixed and where it is later changed.
+- probe: cc1 -da on N00 (reaches), N01 (reaches), N08 (one consumption, misses), N09 (+0 first, misses); per-pass extraction of every epilogue (set (mem...) (const_int 0)) address form. tmp/grind/func_80062020/s18/dumps_*/ and zstores.py.
+- result: The split is ALREADY PRESENT IN THE .rtl (expand) dump, before any optimiser runs, and is untouched by jump / cse / loop / cse2 / flow in all four cases - so the initial choice belongs to RTL EXPAND's store_field ('If a value is wanted, it must be the lhs; so make the address stable for multiple use', expr.c:3453-3457): consumed => base-register MEM, discarded => member offset folded into the symbol. This retires s14's cse2 attribution for the initial choice. The second half of the law is COMBINE: in N08 and N09 the single consumed store leaves its address pseudo with one use, so it is dead at the store insn, combine substitutes the symbol+i*12 set into the MEM and re-folds the offset back into the symbol (DISP8 at flow -> LOSUM8 at combine -> LOSUM8 at greg); in N00/N01 two consumed stores share the pseudo, it is not dead at either, added_sets_2 is true, the combination is unprofitable and both DISP stores survive. The governing predicate is therefore the CONSUMPTION COUNT (>=2) plus discarded-and-last for the +0 store, not leftmost-ness: N03 reaches with no chain, N08 misses with a symbol-based leftmost lvalue.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: 2026-09-03 chassis, cc1 -da dumps from tools/gcc-2.7.2/build/cc1 with the project flags (-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel); no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/combine.c:1458
+
+## [s18] One of the five non-chain spellings measured this session is an admissible substitute for the banned chain in the epilogue.
+- mechanism: If a body that reaches the target arrangement is not a chained assignment, it is not the literal text named by banned_constructs entry 3, so it might be submittable where the chain is not.
+- probe: Each of the five reaching non-chain forms inspected against the forbidden-family catalog and the frozen sanctioned-family list, and against the plain ascending chain it would replace.
+- result: All five buy their second value-consumption with DEAD CODE: N01 and N07 a dead scalar local, N02 and N03 a dead re-store into the existing local t, N05 an empty-bodied 'if (cond) { }' dead read - which is in the forbidden-family catalog verbatim. Every one is strictly more coercive than the ascending chain it would replace, so none is proposed; they are banked as mechanism evidence in memory/grind/func_80062020/rejected/epilogue-nonchain-consumption-carriers-deadcode-s18.c. The chain remains the only dead-code-free member of the reaching set.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis, s16struct harness, these five spellings; no FAKE construct present in the measured forms (the dead locals are what is being rejected, not an annotated lever)
