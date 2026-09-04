@@ -1,3 +1,25 @@
+/* s53 UPDATE (2026-09-04, structural).  BODY UNCHANGED - still the floor at
+ * 2 / 91 (re-verified live: score 2, build_insns 91, target_insns 91,
+ * rules_dropped 0; mandated FAKE re-audit keep-all 2, drop-pp 11 / 92,
+ * drop-do{}while(0) 32 / 74, so both FAKE units stay load-bearing).  s53 read
+ * the block-3 local-alloc quantity tables of all THREE banked bases and turned
+ * the order/seat coupling into an arithmetic identity: the arg5-VALUE quantity
+ * is invariant (birth 18, death 24, refs 4 => pri 13333) and the arg4-ADDRESS
+ * quantity's death is invariant at 22, so its pri is 8000 / 10000 / 13333 for
+ * births 12 (this body) / 14 (score-4) / 16 (order-exact).  Seats are correct
+ * iff arg4's birth <= 15; the emission order is correct iff arg4's index-scale
+ * sll outranks arg5's address addu on INSN_LUID, which happens ONLY at birth
+ * 16 - exactly the priority tie that loses the seats on quantity number
+ * (local-alloc.c:1659-1684).  Four arithmetic escapes follow; s53 killed two
+ * of them on the order-exact base with 360 whole-function compiles: arg3
+ * spelling/position (220 forms, best 7) and the arg5 value carrier / refs
+ * merge (44 forms, every carrier regresses 8-12), plus arg2 spelling and pp
+ * position (96 forms, best 7).  The live escape is (b): lengthen the
+ * arg4-address quantity by making `lw $a3` die LATER IN SCHED1'S OUTPUT - note
+ * sched1 and sched2 disagree here (sched1 has lw $a3 at 22 before sw 16($sp)
+ * at 24; the final emission has sw at 59 and lw $a3 at 61), so that span can
+ * move without disturbing the final order at all.
+ */
 /* s52 UPDATE (2026-09-04, structural).  BODY UNCHANGED - still the floor at
  * 2 / 91 (re-verified live this session: score 2, build 91, target 91,
  * rules_dropped 0).  s52 swept 903 whole-function compiles across four
