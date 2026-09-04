@@ -2860,3 +2860,72 @@ provenance refutation plus the compiler-version correction. No diff attached.
 - [s19] A regex sweep of src/*.c for chained assignments (`lhs = lhs2 = ...;`) returns ZERO hits: BB2's own matched C has no in-repo precedent for the construct. BB2's matched surface is small and largely m2c-derived, so this is weak evidence about the original author's idiom rather than evidence against the construct.
 
 - [s19] The local sotn-decomp checkout is a DEPTH-1 SHALLOW CLONE (.git/shallow present, git rev-list --count HEAD = 1), so the decisive history probe - was 62DEC.c:961 changed into a chain by a match commit, or was it a chain from first import? - could NOT be run offline. Highest-value network follow-up: git fetch --unshallow, then git log -S "D_80137B20[i].vx = D_80137B20[i].vy" -- src/dra/62DEC.c.
+
+
+## s19b (FORENSICS, 2026-09-03) — SUBMITTED: bans cleared, bytes re-proven, mechanism corrected
+
+**Chassis.** Clean HEAD `3c508c4b` (the 22:38 Judge-ruling commit). `sandbox func_80062020
+--disable all` at HEAD = target_insns 38, build_insns 0, no_c_body true (still INCLUDE_ASM).
+Then the banked s15/s16 diff applied.
+
+**Why this session submits.** The 2026-09-03 22:38 Judge ruling
+(docs/grind/decisions.md:22216, `**PASS**`) adjudicated the outstanding s19 ruling-request and
+ruled the ascending 3-deep chained assignment ORDINARY C: "It has a truthful semantic reading
+(clear the terminator record), is textbook-writable from spec, and contains ZERO surplus text
+… no frozen family is needed for a construct with a semantic reading." It cleared
+`banned_constructs` entries 3 and 4 (needle `un`), left entries 1 and 2 in force, and closed:
+"The body may now be submitted and adjudicated on the merits; foreclosure at floor 6 is NOT the
+correct disposition." `python3 tools/grinder/grindlib.py selfvet . func_80062020` exits **0**
+on this session's vet — the mechanical blocker that stopped s16e/s17b/s17solv/s18 is gone.
+
+**Measurements (seventh independent proof, full diff in the tree).**
+- `python3 memory/grind/func_80062020/apply_s15.py apply` (under WSL) +
+  `python3 tmp/grind/func_80062020/s19/alias_suffix.py` (the two prong-(c) alias suffixes at
+  undefined_syms_auto.txt:527-528).
+- `verify-oracle --rebuild --allow-dirty`, then `verify-oracle --allow-dirty` → ok true,
+  build_matches true, build_sha1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` ==
+  original_sha1_locked. Taken WITH the suffixed rows in place (they are ld-script comments,
+  Makefile:99, and emit nothing).
+- `sandbox func_80062020 --disable all` → **score 0**, target_insns 38, build_insns 38,
+  scorable true, rules_dropped 0, cheat_asm_stripped 165.
+- Diff LEFT IN PLACE in src/text1b.c, src/text1b_b.c, include/game.h, undefined_syms_auto.txt.
+
+**THE FORENSIC FINDING — the split is one pass, not two (corrects the s18 block).**
+s18's law attributed DISP8|DISP4|LOSUM0 to expand's `store_field` want_value gate *plus* a
+later `combine.c:1458` re-fold of a single-use base pseudo back into the symbol, measured in
+the s16struct neutral harness. Dumps taken this session from the MATCHING tree
+(`pwsh tools/grinder/dump.ps1 func_80062020`, function sliced by
+`tmp/grind/func_80062020/s19/extract_dumps.py`) show the second term is not load-bearing:
+
+`s19b_func80062020.rtl` — the FIRST dump, straight out of expand — already carries the final
+arrangement: insn 148 `(set (mem (plus (reg 123) (const_int 8))) (const_int 0))`, insn 150
+`(set (mem (plus (reg 116) (const_int 4))) (const_int 0))`, insn 152
+`(set (mem (plus (symbol_ref "D_800F1198") (reg 108))) (const_int 0))`. The +0 store is
+**never** base-register-formed. `s19b_func80062020.combine` insn 152 is byte-identical to the
+expand form and `.cse2` leaves it alone; all combine does here is merge the two redundant
+symbol loads (regs 122/124 → 117, folded into 116) — a copy cleanup, not an address re-fold.
+
+The gate is a single `if` in `store_field`, `tools/gcc-2.7.2/expr.c:3457-3464`:
+`if (value_mode != VOIDmode && GET_CODE (addr) != REG && ! CONSTANT_ADDRESS_P (addr) && ...)
+addr = copy_to_reg (addr);` under the comment "If a value is wanted, it must be the lhs; so
+make the address stable for multiple use."
+
+**LAW (one pass, one predicate).** Per member store, GCC 2.7.2 asks exactly one question: is
+this assignment's value wanted? In a chain the two inner links' values ARE wanted (they are the
+value of the enclosing assignment) → `copy_to_reg` → shared base pseudo → `sw $0,8($2)` /
+`sw $0,4($2)`. The outermost (leftmost, last-evaluated) link's value is discarded,
+`value_mode == VOIDmode`, the address stays `(plus symbol index)` → `sw $0,D_800F1198($3)`.
+The author supplies only *which stores' values are consumed* and *which store is last*; the C
+names ONE lvalue base and selects no addressing mode. This is why the arrangement is
+declaration-independent (s17's bare `extern s32 D_800F1198[][3];` reaches the same bytes) and
+not chain-specific (s18's five non-chain carriers, all of which buy the second consumption with
+dead code and are rejected), and why the pointer chassis cannot reach it: with no symbol in the
+discarded store's address there is nothing for the `else` branch to leave symbolic, so that
+store stays DISP0 — the 3-instruction residual of the admissible floor-6 body.
+
+**Emitted asm (tmp/grind/func_80062020/s19/s19b_func80062020.s), 38 insns, matching:**
+`sll/addu/sll` index scaling → `la $2,D_800F1198` → `addu $2,$3,$2` → `sw $0,8($2)` →
+`sw $0,4($2)` → `sw $0,D_800F1198($3)`.
+
+**Artifacts.** tmp/grind/func_80062020/s19/forensics_s19b.md, s19b_func80062020.{rtl,combine,
+cse2,greg,s}, extract_dumps.py, alias_suffix.py, update_header.py, append_ledger.py.

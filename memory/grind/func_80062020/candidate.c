@@ -329,6 +329,36 @@
  *     git fetch --unshallow ; git log -S "D_80137B20[i].vx = D_80137B20[i].vy" -- src/dra/62DEC.c
  *   - Report: tmp/grind/func_80062020/s19/forensics_s19.md; evidence.md + hypotheses.md s19
  *     blocks.  Outcome: ruling-request, no diff attached.
+ *
+ * s19b (FORENSICS, 2026-09-03) SUBMITTED - body UNCHANGED, bans cleared by the 22:38 Judge.
+ *   - The 2026-09-03 22:38 Judge ruling (docs/grind/decisions.md:22216, **PASS**) adjudicated
+ *     the ascending 3-deep chained assignment on the merits and ruled it ORDINARY C, cleared
+ *     banned_constructs entries 3 and 4, and stated: "The body may now be submitted and
+ *     adjudicated on the merits; foreclosure at floor 6 is NOT the correct disposition."
+ *     state.json now carries exactly two bans (pointer local + second address materialisation;
+ *     comments-only re-file of a merits-FAILed body), neither of which this body declares, and
+ *     `grindlib.py selfvet . func_80062020` exits 0 on this session's vet.
+ *   - SEVENTH independent proof, full diff in the tree (three source files + the two
+ *     alias-suffixed rows at undefined_syms_auto.txt:527-528): apply_s15.py apply (UNDER WSL)
+ *     + tmp/grind/func_80062020/s19/alias_suffix.py -> verify-oracle --rebuild --allow-dirty
+ *     -> verify-oracle --allow-dirty = ok true / build_matches true / build_sha1
+ *     62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked; then
+ *     sandbox func_80062020 --disable all = score 0, target_insns 38, build_insns 38,
+ *     rules_dropped 0, cheat_asm_stripped 165.  Diff LEFT IN PLACE.  Returned candidate-ready.
+ *   - MECHANISM CORRECTION (supersedes the s18 block's two-pass law above).  Dumps taken from
+ *     the MATCHING tree this session (tools/grinder/dump.ps1, sliced by s19/extract_dumps.py)
+ *     show the DISP8|DISP4|LOSUM0 arrangement is settled ENTIRELY at RTL EXPAND, in one `if`.
+ *     s19b_func80062020.rtl - the first dump - already has insn 148 `(mem (plus (reg 123) 8))`,
+ *     insn 150 `(mem (plus (reg 116) 4))` and insn 152 `(mem (plus (symbol_ref "D_800F1198")
+ *     (reg 108)))`.  The +0 store is NEVER base-register-formed, so combine.c:1458 is NOT part
+ *     of the mechanism for this body: combine leaves insn 152 byte-identical and only merges
+ *     the two redundant symbol loads (regs 122/124 -> 117 -> 116).  The single gate is
+ *     tools/gcc-2.7.2/expr.c:3457-3464 in store_field - "If a value is wanted, it must be the
+ *     lhs; so make the address stable for multiple use" -> value wanted (the two inner chain
+ *     links) => copy_to_reg => base+displacement; value discarded (the outermost, last-evaluated
+ *     link) => address left as (plus symbol index) => %lo-relative.  The C supplies only which
+ *     stores' values are consumed and which store is last; it names ONE lvalue base and selects
+ *     no addressing mode.  Report: tmp/grind/func_80062020/s19/forensics_s19b.md.
  */
 void func_80062020(s32 *arg0) {
     s32 i;

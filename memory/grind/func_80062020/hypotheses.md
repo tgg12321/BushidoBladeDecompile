@@ -1884,3 +1884,30 @@ FRONTIER for the next session, strongest first:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: 2026-09-03 chassis, static scans only (no compile, no FAKE construct); scan (b) re-read from the s14 artifact rather than re-run
+
+
+## s19b (FORENSICS, 2026-09-03)
+
+**H-s19b-EXPANDONLY — CONFIRMED (mechanism, instance-scoped to this body's dumps).**
+Statement: on the real matching chassis the terminator epilogue's DISP8|DISP4|LOSUM0
+arrangement is fixed entirely at RTL expand by `store_field`'s want_value gate, and no later
+pass changes any of the three store addresses.
+Mechanism: `tools/gcc-2.7.2/expr.c:3457-3464` copies a consumed store's address to a register
+("make the address stable for multiple use") and leaves a discarded store's address as
+`(plus symbol index)`.
+Probe: whole-TU cc1 -da dumps from the matching tree; function sliced and read at .rtl,
+.combine, .cse2, .greg.
+Result: .rtl insns 148/150/152 already hold the final forms; .combine insn 152 is identical;
+combine's only action is merging the duplicate symbol loads. Verdict CONFIRMED.
+
+**H-s18-TWOPASS — SUPERSEDED (was: expand want_value + combine.c:1458 re-fold).**
+The combine term was measured in the s16struct neutral harness and does not fire on the real
+body: the +0 store is never base-register-formed, so there is no single-use pseudo for
+`combine.c:1458` to re-fold. The s18 law's FIRST term (want_value) is confirmed and is
+sufficient on its own. The predictive content of the s18 law is unchanged — which stores'
+values are consumed, and which store is last — only its pass attribution is corrected.
+
+**H-s19b-SUBMIT — CONFIRMED.** The banked body reaches sandbox 0 at 38/38 with full-build
+SHA1 == oracle on today's chassis, and `grindlib.py selfvet` now exits 0 (the 22:38 Judge
+ruling cleared the two bans that had bounced six same-day submissions before layer-1). The
+disposition blocker recorded as frontier item 1 through s17/s18 is RESOLVED.
