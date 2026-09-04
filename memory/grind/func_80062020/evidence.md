@@ -2741,3 +2741,122 @@ dump18.sh, zstores.py, N*.c, N*.s, dumps_*/}.
 - [s18] No new submittable form: all five non-chain reaching spellings buy their second consumption with dead code (dead scalar local, dead re-store into t, empty-bodied if - the last a forbidden-family construct verbatim), strictly more coercive than the ascending chain. Banked as rejected/epilogue-nonchain-consumption-carriers-deadcode-s18.c and NOT proposed.
 
 - [s18] Disposition state unchanged by this session: state.json banned_constructs 3 and 4 name the chain line and the whole diff, so `grindlib.py selfvet` exits 1 and no candidate-ready for this function can reach layer-1 or the Judge. Nothing was submitted; the working tree was clean at start and carries only ledger edits at end.
+
+---
+
+## s19 — FORENSICS (2026-09-03) — the provenance premise of the layer-1 objection is measured false, and the SOTN citation's compiler version is CORRECTED
+
+Full write-up: `tmp/grind/func_80062020/s19/forensics_s19.md`. Raw:
+`tmp/grind/func_80062020/s19/{sweep19.py, results19.txt, S1..S4_*.c, S1..S4_*.s}`.
+
+**Chassis.** Clean HEAD dbbd8306. `sandbox func_80062020 --disable all` = target_insns 38,
+build_insns 0, `no_c_body: true`, scorable true, rules_dropped 0, cheat_asm_stripped 166 — the
+function is still `INCLUDE_ASM("asm/funcs", func_80062020);` at src/text1b.c:3932. No src/,
+include/ or pipeline file has changed since s17, so the s17/s18 admissible floor of **6**
+(rejected/epilogue-uniform-pointer-floor4-superseded.c at 35/38) and the six SHA1 proofs of the
+banked body both stand unchanged. Floor recorded: **6**. Tree carried only
+`metrics/events.jsonl` at start and only ledger/scratch edits at end; no BB2 source file was
+modified this session.
+
+**What s18 left open.** s18 refuted the layer-1 objection's *mechanism* premise: the arrangement
+DISP8|DISP4|LOSUM0 is the joint output of RTL expand (`store_field` want_value,
+tools/gcc-2.7.2/expr.c:3453-3464) and combine (`added_sets_2 = ! dead_or_set_p (i3, i2dest)`,
+tools/gcc-2.7.2/combine.c:1458), and five bodies sharing no syntax with a chain reproduce it.
+It did not test the objection's *provenance* premise — the 2026-09-03 22:04 layer-1 FAIL's
+wording, that the chain is "a spelling reverse-engineered from 15+/102+ enumerated variants
+specifically to reproduce a GCC-internal addressing split". That is a claim about where the text
+came from, and it is separately testable.
+
+**THE PROBE.** Take a chained assignment of exactly this shape out of an independent,
+byte-matched upstream decomp and compile it with BB2's frozen cc1. Source, verbatim from
+sotn-decomp master @ db41b28, `src/dra/62DEC.c:12-13, 961`, inside `func_801042C4` (:915):
+
+    static VECTOR D_80137B20[24];
+    D_80137B20[i].vx = D_80137B20[i].vy = D_80137B20[i].vz = 0;
+
+Provenance re-verified this session, not taken from s17syn: the TU is listed as a compiled `c`
+segment at `config/splat.us.dra.yaml:231`, and there is **no `asm/us/dra/nonmatchings/62DEC/`
+directory at all**, i.e. every function in it byte-matches. The line carries no FAKE annotation,
+no `// fake`, no carve-out, no comment.
+
+Compiled with `tools/gcc-2.7.2/build/cc1` and the project CC_FLAGS
+(`-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel`):
+
+    S1_sotn_static_vector_chain   SOTN's line verbatim                 DISP8 | DISP4 | LOSUM0
+    S2_sotn_extern_vector_chain   same, array made extern (control)    DISP8 | DISP4 | LOSUM0
+    S3_sotn_scalar_chain          the non-indexed sibling (:934)       DISP0
+    S4_sotn_unchained_control     same statement, three plain stmts    LOSUM0 | LOSUM4 | LOSUM8
+
+S1's emitted stores (`S1_sotn_static_vector_chain.s:30-32`) are the disputed construct verbatim
+— one lvalue base, two addressing forms:
+
+    sw  $0,8($16)
+    sw  $0,4($16)
+    sw  $0,D_80137B20($17)
+
+S4 is what makes S1 informative: the same statement written unchained does not split. S2 rules
+out `static` linkage as the cause.
+
+**THE CORRECTION — the SOTN precedent is NOT GCC 2.7.2, and every prior citation of it is wrong
+on this point.** s17syn's census, `candidate.c`'s header block and the s17 block of this file
+all describe `src/dra/62DEC.c` as "US PSX DRA overlay, GCC 2.7.2". Measured this session:
+sotn-decomp's PSX build compiles **every** PSX TU with **`bin/cc1-psx-26`** — the PsyQ cc1 2.6
+line — not GCC 2.7.2. Evidence: `tools/builds/gen.py:777` and
+`tools/sotn_permuter/permuter_settings.us.toml:2` each spell the single PSX compile command
+(`bin/cc1-psx-26 -G0 -w -O2 -funsigned-char -fpeephole -ffunction-cse -fpcc-struct-return
+-fcommon -fverbose-asm -msoft-float -g -quiet -mcpu=3000 -fgnu-linker -mgas -gcoff`), and `bin/`
+carries exactly one cc1 tarball hash, `cc1-psx-26.tar.gz.sha256`. There is no 2.7.2 PSX compiler
+in that tree. Any future self-vet, ruling-request or Judge submission citing 62DEC.c must
+describe the precedent as **same-family, same-era PsyQ MIPS GCC of a DIFFERENT VERSION**.
+
+**Why the correction strengthens rather than weakens the provenance argument.** SOTN's authors
+were matching bytes emitted by cc1-psx-26. Whatever they reverse-engineered, it cannot have been
+GCC 2.7.2's `expr.c:3457` / `combine.c:1458` interaction, because they never ran that compiler.
+They wrote the ascending 3-deep chain because it is the ordinary way to zero the three members
+of a vector — and under BB2's frozen 2.7.2 that ordinary spelling emits the split that seven
+reviews have called reverse-engineered. The spelling is therefore attested as ordinary C
+independently of the byte effect it has here, which is precisely what cheat-checklist test T4
+("necessary only because permuter / search found it") asks about.
+
+**Corroborating scans (both negative, both banked so no session re-runs them).**
+1. A regex sweep of `src/*.c` for `lhs = lhs2 = ...;` returns **0 hits** — BB2's own matched C
+   contains no chained assignment anywhere, confirming s17syn's narrower grep. BB2's matched
+   surface is small and largely m2c-derived, so this is weak evidence about the ORIGINAL
+   author's idiom, not evidence against the construct.
+2. Re-read (not re-run) of `tmp/grind/func_80062020/s14/species_sameobj_results.txt`: of the
+   five shipped-EXE functions carrying both a shared-base displacement pair and an at-form `%lo`
+   indexed reference, func_80062020 is the ONLY one whose two forms address the SAME object
+   (func_8001FBE8, func_8003EDC0, func_80055138, func_800770B8 all touch different objects). The
+   original EXE offers no second instance of the arrangement to argue from.
+
+**LIMITS — stated so no future session over-reads this evidence.**
+1. The local `sotn-decomp` checkout (`C:\Users\Trenton\Desktop\sotn-decomp`) is a **depth-1
+   shallow clone** (`git rev-list --count HEAD` = 1, `.git/shallow` present). The decisive
+   history probe — was `62DEC.c:961` CHANGED from three plain statements into a chain inside a
+   match commit (which would make it a match-hack) or was it a chain from first import (ordinary
+   idiom)? — **could not be run**; `git log -S` returns only db41b28 and `git blame` attributes
+   every line to it. This is the single highest-value follow-up for any session with network
+   access: `git fetch --unshallow` then
+   `git log -S "D_80137B20[i].vx = D_80137B20[i].vy" -- src/dra/62DEC.c`.
+2. S1-S4 measure what **BB2's** cc1 does with SOTN's source. They do not establish what bytes
+   SOTN's shipped DRA overlay contains at that line; sotn-decomp commits no disc image and the
+   2.6 compiler is not present locally (only a `.sha256`).
+3. No new submittable body was produced and none was sought.
+
+**Disposition.** `ruling-request` — the frontier's prescribed next move, now carrying two facts
+that did not exist at the last Judge or layer-1 review: s18's mechanism refutation and s19's
+provenance refutation plus the compiler-version correction. No diff attached.
+
+- [s19] Chassis: clean HEAD dbbd8306, `sandbox func_80062020 --disable all` = target_insns 38, build_insns 0, no_c_body true, rules_dropped 0, cheat_asm_stripped 166. Still INCLUDE_ASM at src/text1b.c:3932; nothing in src/, include/ or the pipeline has changed since s17, so the admissible floor of 6 and the six SHA1 proofs of the banked body both stand. Floor recorded: 6.
+
+- [s19] sotn-decomp master @ db41b28 src/dra/62DEC.c:961 (`D_80137B20[i].vx = D_80137B20[i].vy = D_80137B20[i].vz = 0;`, static VECTOR D_80137B20[24] at :13, inside func_801042C4 at :915), compiled verbatim with tools/gcc-2.7.2/build/cc1 and the project CC_FLAGS, emits DISP8 | DISP4 | LOSUM0 - literally `sw $0,8($16) ; sw $0,4($16) ; sw $0,D_80137B20($17)` (tmp/grind/func_80062020/s19/S1_sotn_static_vector_chain.s:30-32). The same statement expanded to three plain statements (S4) emits LOSUM0 | LOSUM4 | LOSUM8; making the array extern (S2) changes nothing.
+
+- [s19] Provenance of that line re-verified independently of s17syn: config/splat.us.dra.yaml:231 lists 62DEC as a compiled `c` segment, and asm/us/dra/nonmatchings/62DEC/ DOES NOT EXIST - every function in the TU byte-matches. The line carries no FAKE annotation, no `// fake` and no comment.
+
+- [s19] CORRECTION to s17syn, candidate.c's header and evidence.md's s17 block, all of which call src/dra/62DEC.c "US PSX DRA overlay, GCC 2.7.2": sotn-decomp compiles EVERY PSX TU with bin/cc1-psx-26 (the PsyQ cc1 2.6 line), per tools/builds/gen.py:777 and tools/sotn_permuter/permuter_settings.us.toml:2; bin/ carries exactly one cc1 tarball hash (cc1-psx-26.tar.gz.sha256) and no 2.7.2 PSX compiler exists in that tree. The precedent is same-family, same-era PsyQ MIPS GCC of a DIFFERENT VERSION and must be cited as such.
+
+- [s19] Consequence of the correction: SOTN's authors were matching cc1-psx-26 bytes and never ran GCC 2.7.2, so their ascending 3-deep chain cannot have been reverse-engineered from GCC 2.7.2's expr.c:3457 / combine.c:1458 interaction. The spelling is attested as ordinary C independently of the byte effect it has in BB2 - which is exactly what cheat-checklist test T4 ("necessary only because permuter / search found it") asks about.
+
+- [s19] A regex sweep of src/*.c for chained assignments (`lhs = lhs2 = ...;`) returns ZERO hits: BB2's own matched C has no in-repo precedent for the construct. BB2's matched surface is small and largely m2c-derived, so this is weak evidence about the original author's idiom rather than evidence against the construct.
+
+- [s19] The local sotn-decomp checkout is a DEPTH-1 SHALLOW CLONE (.git/shallow present, git rev-list --count HEAD = 1), so the decisive history probe - was 62DEC.c:961 changed into a chain by a match commit, or was it a chain from first import? - could NOT be run offline. Highest-value network follow-up: git fetch --unshallow, then git log -S "D_80137B20[i].vx = D_80137B20[i].vy" -- src/dra/62DEC.c.

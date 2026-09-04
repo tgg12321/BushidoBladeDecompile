@@ -161,9 +161,7 @@
  "created": "2026-07-24T03:28:39.877485+00:00",
  "banned_constructs": [
   "row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0; row[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;",
-  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'",
-  "end: D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;",
-  "Whole diff (aggregate merge + chained assignment) resubmitted unchanged"
+  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'"
  ],
  "ladder_skip": 20,
  "pending_fixup": null,

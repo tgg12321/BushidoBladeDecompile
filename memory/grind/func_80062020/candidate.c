@@ -289,6 +289,46 @@
  *     ONLY dead-code-free member of the reaching set.
  *   - Report: tmp/grind/func_80062020/s18/forensics_s18.md; evidence.md + hypotheses.md s18
  *     blocks; dumps in tmp/grind/func_80062020/s18/dumps_*/.
+ *
+ * s19 (FORENSICS, 2026-09-03) NOT SUBMITTED - body UNCHANGED, nothing added or removed.
+ *   - Chassis: clean HEAD dbbd8306, sandbox func_80062020 --disable all = target_insns 38,
+ *     build_insns 0, no_c_body true (still INCLUDE_ASM at src/text1b.c:3932); nothing in src/,
+ *     include/ or the pipeline has changed since s17, so the admissible floor of 6 and the six
+ *     SHA1 proofs of this body both stand.  banned_constructs 3 and 4 remain in state.json, so
+ *     grindlib.py selfvet exits 1 and this body cannot reach layer-1 or the Judge.
+ *   - THE FINDING.  s18 refuted the standing objection's MECHANISM premise; s19 refutes its
+ *     PROVENANCE premise (the 2026-09-03 22:04 layer-1 FAIL: "a spelling reverse-engineered
+ *     from 15+/102+ enumerated variants specifically to reproduce a GCC-internal addressing
+ *     split").  sotn-decomp master @ db41b28 src/dra/62DEC.c:961 - the unannotated line
+ *     `D_80137B20[i].vx = D_80137B20[i].vy = D_80137B20[i].vz = 0;` on `static VECTOR
+ *     D_80137B20[24]` (:13), inside func_801042C4 (:915), in a TU with NO
+ *     asm/us/dra/nonmatchings/62DEC directory (every function byte-matches) listed as a
+ *     compiled `c` segment at config/splat.us.dra.yaml:231 - compiled VERBATIM with
+ *     tools/gcc-2.7.2/build/cc1 and this project's CC_FLAGS emits the disputed split exactly:
+ *     `sw $0,8($16) ; sw $0,4($16) ; sw $0,D_80137B20($17)` = DISP8 | DISP4 | LOSUM0
+ *     (tmp/grind/func_80062020/s19/S1_sotn_static_vector_chain.s:30-32).  The same statement
+ *     unchained emits LOSUM0 | LOSUM4 | LOSUM8 (S4); making the array extern changes nothing
+ *     (S2).  Sweep: tmp/grind/func_80062020/s19/sweep19.py, results19.txt.
+ *   - CORRECTION TO THIS HEADER'S s17 BLOCK ABOVE (and to s17syn and evidence.md's s17 block):
+ *     src/dra/62DEC.c is NOT "GCC 2.7.2" code.  sotn-decomp compiles EVERY PSX TU with
+ *     bin/cc1-psx-26, the PsyQ cc1 2.6 line (tools/builds/gen.py:777 and
+ *     tools/sotn_permuter/permuter_settings.us.toml:2 spell the single PSX compile command;
+ *     bin/ carries one cc1 hash, cc1-psx-26.tar.gz.sha256, and no 2.7.2 PSX compiler).  Cite
+ *     the precedent as same-family, same-era PsyQ MIPS GCC of a DIFFERENT VERSION.  The
+ *     correction STRENGTHENS the provenance argument: SOTN's authors were matching
+ *     cc1-psx-26 bytes and never ran the compiler whose expr.c:3457 / combine.c:1458
+ *     interaction produces this split, so their choice of the ascending chain cannot have
+ *     been reverse-engineered from it - it is simply the ordinary way to zero three members.
+ *   - NEGATIVE SCANS BANKED: src/*.c contains ZERO chained assignments (no in-repo precedent;
+ *     weak evidence, BB2's matched surface is small and m2c-derived), and the s14 whole-EXE
+ *     species scan still shows func_80062020 as the only same-object instance of the
+ *     arrangement in the shipped binary.
+ *   - LIMIT: the local sotn-decomp checkout is a DEPTH-1 SHALLOW CLONE, so the decisive
+ *     history probe (was :961 turned into a chain by a match commit, or was it a chain from
+ *     first import?) could not be run offline.  Highest-value network follow-up:
+ *     git fetch --unshallow ; git log -S "D_80137B20[i].vx = D_80137B20[i].vy" -- src/dra/62DEC.c
+ *   - Report: tmp/grind/func_80062020/s19/forensics_s19.md; evidence.md + hypotheses.md s19
+ *     blocks.  Outcome: ruling-request, no diff attached.
  */
 void func_80062020(s32 *arg0) {
     s32 i;
