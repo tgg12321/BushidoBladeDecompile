@@ -1,51 +1,61 @@
-/* func_80072CD4 - COMPLETED-C body (s14d, 2026-09-03).
- * Measured this session with this exact text in src/text1b.c:
- *   sandbox func_80072CD4 --disable all = 0, build_insns 79 == target_insns 79, rules_dropped 0
- *   verify-oracle = ok (build_matches true), build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
- * Cross-block chassis: each inner arm writes its own @5/@6/@0xD and leaves its vertex-1 blue in
- * `blue1`; the shared red 0xFC is written once after the join into @4 and @0xC via `red`.
- * The three single-level do-while(0) wraps are the sanctioned match device
- * (.claude/rules/do-while-zero-exception.md:29); each carries its inline FAKE annotation.
- * Self-vet: memory/grind/func_80072CD4/self_vet.md.
+/* func_80072CD4 - s14e (2026-09-04, synthesis). Measured THIS session with this exact text in
+ * src/text1b.c: `sandbox func_80072CD4 --disable all` = 0, build_insns 79 == target_insns 79,
+ * rules_dropped 0 (tmp/grind/func_80072CD4/s14e/sandbox_v7_xblock_armreuse_mergewrap.txt).
+ *
+ * WHAT CHANGED vs the s14d body this replaces: that body needed THREE do-while(0) wraps - one per
+ * inner arm (to stop sched1 hoisting the arm-tail blue constant to the arm top) plus one on the
+ * merge-head group. The two ARM wraps are gone. They are replaced by reusing a single local `t`
+ * for the arm's three colour components AND for the vertex-1 blue that the merge region consumes:
+ * because GCC 2.7.2 keeps one pseudo per C variable, the four writes to `t` carry
+ * REG_DEP_OUTPUT edges that sched1 may not reorder, so the final `t = 0x32/0x46` cannot be hoisted
+ * above the arm's own stores and stays at the arm bottom - which is target's shape (the arms
+ * measure byte-identical to target with no wrap present at all: see
+ * rejected/s14e_xblock_armreuse_clean_4_79.c, 4/79).
+ *
+ * ONE device remains: the merge-group do-while(0). Its removal was attacked five ways this session
+ * and all five measured 4/79 or worse (merge-chain variable reuse full/first/last = 12, 5, 4; the
+ * base-pointer alias = 4; the red-reassign-first form = 4, its reassignment CSE-folded because
+ * `red` already holds 0xFC). See hypotheses.md [s14e].
+ *
+ * NOTE FOR THE NEXT SESSION: this body is NOT submittable as-is. state.json banned_constructs
+ * entry 9 names this exact wrap. It is filed as a ruling-request, not a candidate-ready.
  */
 s32 func_80072CD4(s32 arg0, GameObj *arg1) {
     int red;
-    u8 blue1;
+    int t;
 
     SetPolyG4(arg1);
     SetSemiTrans(arg1, 0);
     if (arg0 < 4) {
         red = 0xFC;
         if (*(s32 *)((s32)(D_800A35C4) + 8) & 4) {
-            *(u8 *)((s32)(arg1) + 5) = 0xC3;
-            *(u8 *)((s32)(arg1) + 6) = 0x1E;
-            *(u8 *)((s32)(arg1) + 0xD) = 0xC8;
-            /* FAKE: do-while(0) wrap, mechanism: GCC 2.7.2 sched.c first-pass
-             * scheduler (sched1) - without it the arm-tail blue1 constant load is
-             * hoisted to the arm top, which reseats it and cross-jumps the
-             * 0xD store out of the arm; lever-exhaustion: memory/grind/func_80072CD4/hypotheses.md
-             * (s2-s13, 36 banked forms, 15.8k-iteration directed permuter). */
-            do { blue1 = 0x32; } while (0);
+            t = 0xC3;
+            *(u8 *)((s32)(arg1) + 5) = t;
+            t = 0x1E;
+            *(u8 *)((s32)(arg1) + 6) = t;
+            t = 0xC8;
+            *(u8 *)((s32)(arg1) + 0xD) = t;
+            t = 0x32;
         } else {
-            *(u8 *)((s32)(arg1) + 5) = 0xC3;
-            *(u8 *)((s32)(arg1) + 6) = 0x50;
-            *(u8 *)((s32)(arg1) + 0xD) = 0xDC;
-            /* FAKE: do-while(0) wrap, mechanism: GCC 2.7.2 sched.c sched1 -
-             * keeps the arm-tail blue1 constant load at the arm bottom (same effect as
-             * the then-arm wrap; both arms measured necessary, 7/79 and 8/79 with
-             * only one present); lever-exhaustion: memory/grind/func_80072CD4/hypotheses.md. */
-            do { blue1 = 0x46; } while (0);
+            t = 0xC3;
+            *(u8 *)((s32)(arg1) + 5) = t;
+            t = 0x50;
+            *(u8 *)((s32)(arg1) + 6) = t;
+            t = 0xDC;
+            *(u8 *)((s32)(arg1) + 0xD) = t;
+            t = 0x46;
         }
-        /* FAKE: do-while(0) wrap, mechanism: GCC 2.7.2 sched.c second-pass
-         * scheduler (sched2) - it separates these three stores into their own
-         * scheduling region so they keep the merge-block head instead of being
-         * sunk to the block tail by the ready-store/potential-hazard tiebreak;
-         * lever-exhaustion: memory/grind/func_80072CD4/hypotheses.md (this wrap
-         * alone measures 10/78, the arm wraps alone 4/79). */
+        /* FAKE: do-while(0) wrap, mechanism: GCC 2.7.2 sched.c second-pass scheduler
+         * (sched2) - it makes these three stores their own scheduling region, so the
+         * ready-store/potential-hazard tiebreak (sched.c:2660-2745) that otherwise sinks
+         * producer-less stores to the block tail sinks them to the tail of a region whose
+         * tail IS the merge-block head; lever-exhaustion: memory/grind/func_80072CD4/
+         * hypotheses.md [s9 H3, s14e H2/H3] - the register-anti-dep and memory-alias
+         * deferral routes are measured dead at 12/79, 5/79, 4/79, 4/79 and 4/79. */
         do {
             *(u8 *)((s32)(arg1) + 4) = red;
             *(u8 *)((s32)(arg1) + 0xC) = red;
-            *(u8 *)((s32)(arg1) + 0xE) = blue1;
+            *(u8 *)((s32)(arg1) + 0xE) = t;
         } while (0);
         *(u8 *)((s32)(arg1) + 0x14) = 0xFC;
         *(u8 *)((s32)(arg1) + 0x15) = 0x82;

@@ -1537,3 +1537,55 @@ locally and should be run BEFORE writing the outcome JSON. A 10-line script that
 tools/grinder/grindlib.py and calls `check_banned_constructs(root, func)` and
 `validate_self_vet(root, func)` converts a discarded session into a one-turn fix. Both gates
 returning a reason string means the fix is textual, not scientific.
+
+## [s14e] 2026-09-04 — synthesis — measurements
+
+Chassis control, taken first (the dispatch brief reported the chassis measurement as unavailable):
+
+| body | score | build_insns | target_insns | rules_dropped |
+|---|---|---|---|---|
+| memory/grind/func_80072CD4/fallback_floor4.c | 4 | 79 | 79 | 0 |
+| memory/grind/func_80072CD4/candidate.c (s14d three-wrap body, as inherited) | 0 | 79 | 79 | 0 |
+
+New measurements this session (all `& tools/wteng.ps1 main sandbox func_80072CD4 --disable all`,
+each body applied to src/text1b.c via tmp/grind/func_80072CD4/s14/apply.py and reverted after;
+raw JSON in tmp/grind/func_80072CD4/s14e/sandbox_*.txt):
+
+| # | body | construct under test | score / insns |
+|---|---|---|---|
+| v1 | s14e_mergechain_varreuse_full_12_79.c | carrier reused for every trailing merge constant | 12 / 79 |
+| v2 | s14e_mergechain_varreuse_first_5_79.c | carrier reused for the first trailing constant | 5 / 79 |
+| v3 | s14e_mergechain_varreuse_last_4_79.c | carrier reused for the last trailing constant | 4 / 79 |
+| v4 | s14e_xblock_armreuse_clean_4_79.c | cross-block chassis, ONE local reused across each arm's four values, no device at all | **4 / 79** |
+| v5 | s14e_xblock_armreuse_mergechain_11_79.c | v4 + carrier reused for every trailing constant | 11 / 79 |
+| v6 | s14e_xblock_armreuse_alias_4_79.c | v4 + base-pointer alias on the @4/@0xC stores | 4 / 79 |
+| v7 | memory/grind/func_80072CD4/candidate.c (new) | v4 + ONE do-while(0) wrap on the @4/@0xC/@0xE group | **0 / 79** |
+| v8 | s14e_xblock_armreuse_redfirst_cse_4_79.c | v4 + carrier reassigned at trailing-chain position 0 | 4 / 79 |
+| v9 | s14e_xblock_armreuse_wrap2_score0_banned_wrap.c | v4 + ONE do-while(0) wrap on @4/@0xC only | **0 / 79** |
+
+### E-s14e-1. The cross-block chassis reaches 79 instructions for the first time.
+Every earlier cross-block spelling lost the 79th instruction to sched1's hoist of the arm-tail
+constant load, which made the two arm tails identical and let jump2 cross-jump `sb v0,0xD` out of
+them (rejected/xblock_sched1_hoist.c = 13/78; s11/s12 recorded the hoist as the lever they could not
+defeat from C, and s14 defeated it only with a per-arm do-while(0) wrap). Reusing a single local for
+the arm's three colour components and its outgoing blue value defeats the hoist with ordinary C: one
+C variable is one GCC 2.7.2 pseudo, so the four writes are output-dependent and sched1 cannot lift
+the last one above the first three. Verified in the disassembly, not just in the score —
+tmp/grind/func_80072CD4/s14e/v4_xblock_armreuse.dis is byte-identical to asm/funcs/func_80072CD4.s
+from the prologue through both inner arms.
+
+### E-s14e-2. The register-anti-dependence deferral is real, and its exact ceiling is now known.
+tmp/grind/func_80072CD4/s14e/v1.dis and v5_xblock_armreuse_chain.dis show the @4/@0xC stores
+relocated from the merge-block tail to the merge-block head by reusing their carrier variable for
+the block's trailing constants — v5 puts `sb v1,4 / sb v1,0xC` in target's exact first-two-slots
+position. The construction cannot close because the anti-dependence requires the trailing constants
+to flow through the carrier's pseudo, which moves the entire trailing li/sb chain from $v0 (target)
+to $v1. The only reassignment placement that would preserve $v0 is at chain position 0, and its
+constant (0xFC) equals the carrier's existing value, so CSE deletes the reassignment (v8 = 4/79,
+identical to v4). This closes the last untested escape s9-H3 left open, by measurement.
+
+### E-s14e-3. Minimality of the remaining device.
+Two distinct single-wrap placements reach 0 (v7, the three-store group; v9, the two-store group).
+Five wrap-free attempts to reproduce the same effect measure 12, 5, 4, 4 and 4. The device count of
+the closing body is therefore one, down from the three of the s14d body, and the two removed wraps
+are replaced by a construct on the frozen SOTN-accepted family list rather than by an exception.

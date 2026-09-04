@@ -1648,3 +1648,116 @@ own asymmetry.
 Frontier note: with sandbox 0 and full-build SHA1 == oracle re-measured this session and both
 pre-Judge gates green, the remaining path is layer-1 + Judge FINAL CALL. There is no open codegen
 question on this function.
+
+## [s14e] 2026-09-04 — synthesis — MERGED ATTACK: the three-wrap body collapses to ONE wrap, and
+## the "register-anti-dependence escape" s9 dismissed by reasoning is measured (it works, but only
+## partway, and the reason it stops short is now exact)
+
+**Chassis control (re-measured this session; the brief reported the chassis as unavailable).**
+fallback_floor4.c = 4, 79 == 79, 0 rules. candidate.c as inherited (the s14d three-wrap body) = 0,
+79 == 79. Both banked numbers reproduce; nothing in the bank was chassis-stale.
+
+**KILL RE-AUDIT.** state.json has no kills[] array for this function (this ledger records kills in
+hypotheses.md, not in state.json), so the mandated "re-measure the two closest-to-target instance
+kills" was executed against the two closest banked forms instead — fallback_floor4.c (4/79) and the
+inherited candidate.c (0/79) — both re-measured above, both unchanged. tools/fake_ablate.py was not
+needed: ablating the three FAKE do-while(0) wraps from the inherited candidate.c yields the plain
+cross-block body, whose score this session measured directly as part of H-s14e-1.
+
+### H-s14e-1 (CONFIRMED). Reusing ONE local for an arm's colour components AND for the value the
+### merge region consumes defeats sched1's arm-tail hoist, with no do-while(0) wrap in either arm.
+**Statement.** On the cross-block chassis (arms write @5/@6/@0xD and leave the vertex-1 blue in a
+local; the merge region writes @4, @0xC, @0xE), writing each arm as
+"t = 0xC3; @5 = t; t = 0x1E; @6 = t; t = 0xC8; @0xD = t; t = 0x32;" — one local t reused for all
+four values — produces arms byte-identical to target and a 79-instruction build.
+**Mechanism.** GCC 2.7.2 allocates one pseudo per C variable (no SSA), so the four assignments to t
+are four writes to the SAME pseudo and carry REG_DEP_OUTPUT edges. sched1 may not lift the final
+li t,0x32/0x46 above the earlier writes to t, which is exactly the hoist every previous cross-block
+spelling suffered (rejected/xblock_sched1_hoist.c, 13/78: the hoist reseats the value, makes the two
+arm tails identical, and lets jump2 cross-jump sb v0,0xD out of the arms, costing the 79th
+instruction). With t reused, the arm tails stay distinct and the build is 79 insns.
+**Probe.** rejected/s14e_xblock_armreuse_clean_4_79.c applied to src/text1b.c and scored with
+"sandbox func_80072CD4 --disable all"; objdump of the sandbox object at
+tmp/grind/func_80072CD4/s14e/v4_xblock_armreuse.dis.
+**Result.** 4 / 79 == 79, rules_dropped 0, and the disassembly is byte-identical to target from the
+prologue through the end of both inner arms (li v0,0xC3 / sb v0,5 / li v0,0x1E / sb v0,6 /
+li v0,0xC8 / sb v0,0xD / j / li v0,0x32, and the else-arm mirror). The whole residual 4 is the two
+sb v1,4 / sb v1,0xC stores sitting at the merge-block TAIL instead of its head. No do-while(0), no
+duplication into the arms, no dead store, no annotation. This is a NEW clean floor-4 form on a
+chassis (cross-block) that had never before reached 79 instructions.
+**Verdict.** CONFIRMED.
+**Consequence.** The s14d body's two PER-ARM do-while(0) wraps — banned_constructs entry 10 and the
+arm half of entry 11 — have an ordinary variable-reuse replacement. Only the merge-group wrap
+remains: rejected/s14e_xblock_armreuse_wrap2_score0_banned_wrap.c (wrap around @4/@0xC only) and the
+new candidate.c (wrap around @4/@0xC/@0xE) both measure 0 / 79 == 79.
+
+### H-s14e-2 (KILLED, instance). The s9-H3(a) escape that was dismissed by reasoning and never
+### measured: deferring @4/@0xC by a REGISTER anti-dependence, i.e. reusing their carrier variable
+### for the merge region's trailing constants.
+**Statement.** On the floor-4 chassis and on the new cross-block chassis, reusing the fc_const/red
+carrier for the merge region's trailing constants gives the @4/@0xC stores an in-block
+anti-dependence successor that defers their bottom-up readiness and lifts them off the block tail.
+**Mechanism.** sched.c makes a store ready (bottom-up) only once every insn depending on it is
+picked; a later write to the store's value register is a REG_DEP_ANTI successor. s9 dismissed this
+by reasoning ("only defers them to the slot before the redefinition, never to the head") without
+measuring it.
+**Probe.** Five settings, each applied to src/text1b.c and scored with sandbox --disable all:
+
+| body | score / build_insns |
+|---|---|
+| full chain reuse, every trailing constant reassigns the carrier (s14e_mergechain_varreuse_full_12_79.c) | 12 / 79 |
+| first trailing constant only (s14e_mergechain_varreuse_first_5_79.c) | 5 / 79 |
+| last trailing constant only (s14e_mergechain_varreuse_last_4_79.c) | 4 / 79 |
+| cross-block + arm reuse + full chain reuse (s14e_xblock_armreuse_mergechain_11_79.c) | 11 / 79 |
+| cross-block + arm reuse, carrier reassigned at chain position 0 (s14e_xblock_armreuse_redfirst_cse_4_79.c) | 4 / 79 |
+
+**Result.** The mechanism WORKS, and s9's reasoning understated its reach: with FULL chain reuse the
+two stores move from the block tail into the head region. tmp/grind/func_80072CD4/s14e/v1.dis shows
+"sb v0,0xE / sb v1,4 / sb v1,0xC / li v1,0xFC / ..." and
+tmp/grind/func_80072CD4/s14e/v5_xblock_armreuse_chain.dis shows "sb v1,4 / sb v1,0xC" as the FIRST
+TWO instructions of the merge block, which is target's placement exactly. It nevertheless cannot
+close, for a reason that is now exact rather than hand-waved: the anti-dependence exists only if the
+trailing constants are written THROUGH THE SAME PSEUDO, which drags the whole trailing li/sb chain
+into the carrier's register ($v1) where target uses $v0 — six wrong instructions instead of two. The
+one placement that would keep the chain in $v0 (reassign the carrier at chain position 0, whose
+constant is 0xFC) is folded away by CSE because the carrier already holds 0xFC, so that body scores
+4/79 with the reassignment simply absent from the RTL. Every deferral point later than position 0
+emits the two stores after the first li/sb pair rather than at the head.
+  kill_scope: instance
+  measured_on: current chassis (2026-09-04); floor-4 and cross-block-with-arm-reuse forms; no FAKE
+    construct present in any of the five bodies
+**Verdict.** KILLED.
+
+### H-s14e-3 (KILLED, instance). The s9-H3(b) memory-disambiguation escape, re-measured on the new
+### 79-instruction cross-block chassis where it had never been tried.
+**Statement.** Storing @4/@0xC through a separate base pointer (q = (u8 *)arg1 + 4; *q = red;
+q[8] = red;) makes memrefs_conflict_p unable to disambiguate them from the trailing stores, giving
+them memory dependence successors that defer them to the merge head.
+**Probe.** rejected/s14e_xblock_armreuse_alias_4_79.c measured with sandbox --disable all.
+**Result.** 4 / 79 — unchanged from the no-alias body. GCC folds q back to arg1 + constant, the
+addresses stay disambiguable, no dependence is created. Consistent with the three older alias-axis
+measurements (6/79, 11/78, 13/79), but taken for the first time on a chassis that is otherwise
+byte-exact.
+  kill_scope: instance
+  measured_on: current chassis (2026-09-04); cross-block + arm variable reuse, 79 insns; no FAKE
+    construct present
+**Verdict.** KILLED.
+
+### What this session changes for the record
+1. The honest clean floor is unchanged at 4, but the form carrying it is different and strictly
+   better placed: rejected/s14e_xblock_armreuse_clean_4_79.c is byte-exact everywhere except the
+   position of two sb instructions, on the SAME chassis as the closing body. Previously the clean
+   floor-4 form and the closing form lived on different chassis, which is what made every
+   comparison between them indirect.
+2. The closing body's device count drops from THREE do-while(0) wraps to ONE. Two of the three are
+   replaced by variable reuse for codegen control — the first entry on the frozen SOTN-accepted
+   family list — and the replacement is measured, not argued.
+3. Nothing measured in this session duplicates any statement into the inner arms. @4, @0xC, @0xE,
+   @5, @6 and @0xD each appear exactly once per path in every body above. The standing
+   dup4_0xc_into_arms ban is untouched and uncontested by this work.
+
+### Frontier after s14e
+The remaining question is a classification one, and it is NEW: banned_constructs entry 9 names "the
+third do-while(0) wrap" of a THREE-wrap body whose other two wraps were the element layer-1 called
+laundering. The single-wrap body did not exist when that entry was written. Whether entry 9 reaches
+it is a ruling, not a measurement — filed as this session's outcome.
