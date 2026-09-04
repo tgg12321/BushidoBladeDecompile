@@ -1,3 +1,44 @@
+/* s58 UPDATE (2026-09-04, object-model).  BODY UNCHANGED - still the floor at
+ * 2 / 91 (chassis re-verified live at score 2 / build 91 / target 91 /
+ * rules_dropped 0).  s58 was the mandated OBJECT-MODEL audit.  Verdict: the
+ * residual is object-model-INVARIANT, but the object model REMOVES ONE FAKE.
+ *
+ * 1. EVERY GLOBAL RE-DECLARED IN SONY'S SHAPE IS BYTE-INERT ON THE RESIDUAL.
+ *    Strings as char[] (A), the two string-pointer tables as char *[] (B/C),
+ *    the index bytes as u8[] / a CD_intr struct through a pointer local (D/E):
+ *    all 2 / 91.  The Alarm words 0x800F19B8/BC/C0 as ONE struct (F, and G =
+ *    everything at once) sandbox 7 / 91 - but the object diff against the
+ *    floor body (tmp/grind/CD_datasync/s58/diff_base_G.txt) is ONLY the five
+ *    R_MIPS_LO16 addends D_800F19B8+4 / +8 vs D_800F19BC / D_800F19C0, which
+ *    link to the same addresses.  So 7 = 2 real + 5 FALSE points: score.py
+ *    does not mask named-symbol reloc addends.  s20's "Alarm merge regresses
+ *    to 12" was the same artefact on the 7 chassis (7 + 5).  Never read a
+ *    struct-model sandbox score on this function without subtracting 5, and
+ *    verify with the addend-normalised objdump diff (s58/batch2.sh).
+ *
+ * 2. UNDER THE ALARM STRUCT THE `void **pp` POINTER-ALIAS FAKE IS REDUNDANT.
+ *    G2 = struct model, `D_800F19B8.func` read directly in the printf call, no
+ *    pp: LINK-IDENTICAL to this body (norm_G2_nopp.txt == norm_base.txt).  On
+ *    the scalar model dropping pp costs 9 points (11 / 89, s53-s57).  The
+ *    member MEM `(mem (const (plus (symbol_ref D_800F19B8) 8)))` already gets
+ *    the early argument load that the alias had to buy for a bare
+ *    `(mem (symbol_ref D_800F19C0))`.  Banked as
+ *    progress/s58-alarm-struct-no-pp-fake-link-identical-2.c with the
+ *    declaration surface in its header.  Prong (c) of the aggregate-merge
+ *    family, which s20 / CD_ready s68 measured as FAILING symbol-level, was
+ *    AMENDED 2026-09-03 (.claude/rules/no-new-park-categories.md:254-262):
+ *    per-word rows may stay while INCLUDE_ASM siblings reference them.  That
+ *    block is VOID; the Alarm merge is integrable, and the ground truth for
+ *    prong (a) is Sony's XDEF `Alarm` at .bss+0x18 (libcd-groundtruth.md:42).
+ *
+ * 3. THE RESIDUAL ITSELF DOES NOT MOVE.  H2 (s57 order-exact p5 base on the
+ *    struct model) = 12 = 7 real, the identical $a0<->$v1 seat swap; H1 (named
+ *    arg2 intermediate on the struct model) = 11 = 6 real, the s52 lui/lw $a1
+ *    displacement; G3 (struct model, do{}while(0) ablated) = 20 = 15 real,
+ *    s56's callee-save 3-cycle.  Both scheduling-side frontier items from s57
+ *    stand unchanged and should be run on the G2 chassis (one pseudo fewer in
+ *    block 3, one FAKE fewer to defend).
+ */
 /* s57 UPDATE (2026-09-04, solver).  BODY UNCHANGED - still the floor at 2 / 91
  * (chassis re-verified live before and after every probe; mandated FAKE
  * re-audit run on the NEW s57 order-exact base: keep-all 7 / 91, drop-pp

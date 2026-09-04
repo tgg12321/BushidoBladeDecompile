@@ -4554,3 +4554,66 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: the s57 p5 / integer-sum-address order-exact chassis (7 / 91) with the s9 do{}while(0) FAKE and the void **pp pointer alias present
+
+## [s58] OBJECT MODEL: re-declaring every global the target touches in Sony's shape (char[] strings, char *[] name tables, CD_intr struct, CD_alarm struct) changes the do_timeout window's codegen
+- mechanism: a struct/array declaration gives GCC 2.7.2 a different MEM shape (symbol+offset, base register) from a per-word scalar, which can change LICM, cse and local-alloc quantity structure in the window.
+- probe: forms A-G (tmp/grind/CD_datasync/s58/forms) each applied whole-function via apply.py and scored with sandbox; F/G/G2 objects diffed against the floor object with objdump -dr (diff_base_G.txt, norm_*.txt).
+- result: KILLED (instance).  A-E score 2 / 91; F and G score 7 / 91 but are LINK-IDENTICAL to the floor body (the only object diffs are D_800F19B8+4 / +8 reloc addends vs D_800F19BC / D_800F19C0, which score.py counts as 5 false points).  No declaration moves the residual.  Measured on the s50 pp / integer-split-init-address chassis at 2 / 91 with the s9 do{}while(0) FAKE and (for A-F) the void **pp pointer alias present.
+
+## [s58] Under the Alarm struct declaration the `void **pp` pointer-alias FAKE is no longer load-bearing
+- mechanism: the alias existed to stage the D_800F19C0 argument load early (s50: `update_equiv_regs` refs-2 sink defeat on a bare symbol MEM); a member MEM `D_800F19B8+8` is not a bare symbol_ref and may not be subject to the same sinking.
+- probe: G2 = form G with the pp declaration deleted and `D_800F19B8.func` read directly in the printf call; sandbox + addend-normalised objdump diff against the floor object.
+- result: CONFIRMED.  norm_G2_nopp.txt is identical to norm_base.txt (sandbox 7 = 2 real + 5 false).  On the scalar model the same deletion measures 11 / 89.  Banked as progress/s58-alarm-struct-no-pp-fake-link-identical-2.c.  Measured on the s50 chassis at 2 / 91 with the s9 do{}while(0) FAKE present and the pp alias ABSENT.
+
+## [s58] KILL RE-AUDIT (mandated): s20's F14 Alarm-aggregate instance kill ("12 / 91 regression") re-measured on the current chassis with FAKE ablation
+- mechanism: an instance kill measured on the 7 chassis with both FAKEs present may have been masked by the FAKE carriers or by the chassis.
+- probe: form F on the current 2 / 91 chassis; F2/G2 (pp ablated), G3 (do{}while(0) ablated), G4 (both ablated); objects diffed addend-normalised.
+- result: the kill's CONCLUSION stands (the aggregate does not reach the residual) but its MEASUREMENT was an artefact: F = 7 sandbox = link-identical to the floor, and s20's 12 was 7 + the same 5 false points.  With pp ablated the struct body is still link-identical (the struct absorbs the pp lever); with do{}while(0) ablated it is 15 real (callee-save 3-cycle), so the wrap is not masking the aggregate.  Re-filed as: KILLED (instance) for "the Alarm merge REGRESSES codegen" and CONFIRMED for "the Alarm merge is byte-inert on the residual".  Measured on the s50 chassis at 2 / 91, FAKE state as listed per form.
+
+## [s58] The struct model changes the local-alloc fixed point of the s57 order-exact p5 base (the seat swap could resolve differently with pp's pseudo gone from block 3)
+- mechanism: removing the pp pseudo renumbers block-3 quantities; qty_compare_1 breaks the arg4/arg5 priority tie on quantity number.
+- probe: H2 = progress/s57-order-exact-p5-luid-insert-7.c transplanted onto the struct/no-pp model (tmp/grind/CD_datasync/s58/forms/H2_struct_p5_order_exact.c), sandbox + addend-normalised diff.
+- result: KILLED (instance).  12 sandbox = 7 real; the diff against the floor object is exactly s57's $a0<->$v1 seat swap.  Measured on the s57 p5 order-exact chassis under the CD_alarm struct model with the s9 do{}while(0) FAKE present and the pp alias absent.
+
+## [s58] The named arg2 intermediate (`a1v`), killed at 7 on the pp chassis (s52), survives on the struct/no-pp model
+- mechanism: s52 attributed the a1v regression to destroying the pp lever; with no pp lever to destroy the named intermediate might be byte-inert.
+- probe: H1 (tmp/grind/CD_datasync/s58/forms/H1_struct_a1v_named.c), a1v assigned before the idx reads, sandbox + addend-normalised diff.
+- result: KILLED (instance).  11 sandbox = 6 real: the lui/lw $a1 pair is displaced after the D_800A11D5 lbu and arg4 is seated in $a3 - the same shape s52 measured.  Measured on the s50 chassis under the CD_alarm struct model with the s9 do{}while(0) FAKE present and the pp alias absent.
+
+## [s58] Re-declaring every global the target touches in Sony's object model (rodata strings as char[], D_800A11DC/D_800A125C as char *[], D_800A1494 as a CD_intr struct, D_800F19B8/BC/C0 as a CD_alarm struct) changes the do_timeout window's codegen on the 2/91 chassis
+- mechanism: struct/array declarations give GCC 2.7.2 a symbol+offset or base-register MEM shape instead of a per-word scalar MEM, which can change LICM, cse and local-alloc quantity structure in the window
+- probe: forms A-G in tmp/grind/CD_datasync/s58/forms applied whole-function via apply.py and scored with sandbox; the F/G/G2 objects diffed against the floor object with objdump -dr and reloc addends normalised (diff_base_G.txt, norm_*.txt)
+- result: A-E (strings, tables, u8 array, CD_intr struct) score 2/91 each. F and G (CD_alarm struct, everything at once) score 7/91 but the object diff against the floor body is ONLY the five memrefs relocated as D_800F19B8+4/+8 instead of D_800F19BC/D_800F19C0; instruction words and registers are otherwise identical and the linker resolves both to the same addresses. The sandbox's 7 is 2 real + 5 false points (score.py masks section-symbol addends only). No declaration moves the residual; s20's 'Alarm merge = 12/91 regression' was the same artefact on the 7 chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s50 pp / integer-split-init-address chassis at 2/91 with the s9 do{}while(0) FAKE and (forms A-F) the void **pp pointer alias present
+
+## [s58] Under the CD_alarm struct declaration the void **pp pointer-alias FAKE is no longer load-bearing: reading D_800F19B8.func directly as printf's second argument reproduces the floor bytes
+- mechanism: the alias staged a bare (mem (symbol_ref D_800F19C0)) argument load early (s50: update_equiv_regs refs-2 sink defeat); a struct member MEM (mem (const (plus (symbol_ref D_800F19B8) 8))) is not a bare symbol MEM and is already emitted early without the alias
+- probe: G2 = form G with the pp declaration deleted and D_800F19B8.func read in the call; sandbox 7/91 plus addend-normalised objdump diff against the floor object (norm_G2_nopp.txt vs norm_base.txt)
+- result: CONFIRMED: the addend-normalised disassemblies are identical, so G2 is link-identical to the 2/91 floor with one FAKE fewer. On the scalar model the same deletion costs 9 points (11/89, s53-s57). F2 and F3 (struct through a CD_alarm * alias) are likewise link-identical. Banked as memory/grind/CD_datasync/progress/s58-alarm-struct-no-pp-fake-link-identical-2.c with the declaration surface in its header.
+- verdict: CONFIRMED
+
+## [s58] KILL RE-AUDIT (mandated): s20's F14 instance kill that the Alarm aggregate merge REGRESSES codegen (12/91) holds on the current chassis and with each FAKE ablated
+- mechanism: an instance kill measured on the 7 chassis with both FAKE carriers present could have been masked by a carrier or by the chassis
+- probe: form F on the current chassis; F2/G2 with pp ablated; G3 with do{}while(0) ablated; G4 with both ablated; every object diffed addend-normalised against the floor object
+- result: The regression reading is dead: F = 7 sandbox = link-identical to the floor body, and s20's 12 was 7 + the same 5 false addend points. With pp ablated the struct body is still link-identical (the struct absorbs the pp lever). With do{}while(0) ablated the body is 20 sandbox = 15 real at bi 91, the s0/s1/s2 callee-save 3-cycle of s56's zero-FAKE chassis, so the wrap is load-bearing and does not mask the aggregate. The kill's conclusion that the aggregate cannot reach the residual stands as byte-inert, not as a regression.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s50 chassis at 2/91; FAKE state per form: F both present, F2/G2 pp absent, G3 do{}while(0) absent, G4 both absent
+
+## [s58] The struct model changes the local-alloc fixed point of the s57 order-exact p5 base, so the $a0/$v1 seat swap resolves differently with pp's pseudo gone from block 3
+- mechanism: removing the pp pseudo renumbers block-3 quantities and qty_compare_1 breaks the arg4/arg5 priority tie on quantity number
+- probe: H2 = progress/s57-order-exact-p5-luid-insert-7.c transplanted onto the CD_alarm struct model without pp (tmp/grind/CD_datasync/s58/forms/H2_struct_p5_order_exact.c), sandbox plus addend-normalised diff
+- result: 12 sandbox = 7 real; the diff against the floor object is exactly s57's $a0<->$v1 seat swap (lbu order, sll/addu seats, sw $a0,16(sp), lw $a3,0($v1)). The order-exact fixed point is object-model-invariant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s57 p5 order-exact chassis under the CD_alarm struct model with the s9 do{}while(0) FAKE present and the pp alias absent
+
+## [s58] The named arg2 intermediate (a1v = D_800F19B8.func), killed at 7 on the pp chassis in s52, survives on the struct model where there is no pp lever to destroy
+- mechanism: s52 attributed the a1v regression to destroying the pp lever; without pp the named intermediate might be byte-inert
+- probe: H1 (tmp/grind/CD_datasync/s58/forms/H1_struct_a1v_named.c), a1v assigned before the idx reads, sandbox plus addend-normalised diff
+- result: 11 sandbox = 6 real: the lui/lw $a1 pair is displaced after the D_800A11D5 lbu and arg4 is seated in $a3, the same shape s52 measured. The object model does not revive the named-arg2 lever.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s50 chassis under the CD_alarm struct model with the s9 do{}while(0) FAKE present and the pp alias absent
