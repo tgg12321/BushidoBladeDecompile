@@ -22038,3 +22038,7 @@ I also confirmed the standing bans do not bite here. banned_constructs[1] is the
 THE GRANT THE DRIVER EXECUTES: add `undefined_syms_auto.txt` to func_80062020's line in tools/grinder/scope_allow.txt (merging with the existing include/game.h src/text1b_b.c grant). The function stays ACTIVE and the fix still passes every normal gate - layer-1, the Judge, and the full-build SHA1.
 
 **Constraint recorded for any future session:** Land the banked s15/s16 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py, plus the amendment's comment suffix on undefined_syms_auto.txt:527-528 (D_800F119C / D_800F11A0) reading `/* alias of D_800F1198+4; retire with func_800620B8 */` and `/* alias of D_800F1198+8; retire with func_800620B8 */`. Do NOT delete those two rows while asm/funcs/func_800620B8.s is INCLUDE_ASM. Do not reintroduce a pointer local, a second address materialisation, or any banned dual-spelling form (banned_constructs 1 and 2 remain in force). Run `verify-oracle --rebuild --allow-dirty` BEFORE the sandbox re-verify (pre-rebuild the score is a false 2 from named-symbol HI16/LO16 addend spelling).
+
+## 2026-09-03 21:21 — func_80062020 — layer-1 review — **FAIL**
+
+The chained-assignment epilogue on the new aggregate-array declaration still materializes the terminator row's base address TWICE in two different addressing forms — the literal banned_constructs[0] pattern — merely laundered through a new declaration; not sanctioned by the aggregate-merge family or any other.

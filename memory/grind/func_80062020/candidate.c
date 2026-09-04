@@ -114,6 +114,27 @@
  *   - NEXT SESSION, once the grant exists: apply_s15.py apply; add the suffix to
  *     undefined_syms_auto.txt:527-528; verify-oracle --rebuild --allow-dirty; sandbox
  *     (expect 0 at 38/38); keep the prong-by-prong self_vet.md; return candidate-ready.
+ *
+ * s16d (rederive, 2026-09-03) SUBMITTED - body UNCHANGED, prong (c) now literally closed.
+ *   - The scope grant was widened to include undefined_syms_auto.txt
+ *     (tools/grinder/scope_allow.txt:49: `func_80062020 include/game.h src/text1b_b.c
+ *     undefined_syms_auto.txt`), which is the one thing s16c was missing.  This session
+ *     applied apply_s15.py and added the amendment's suffix to undefined_syms_auto.txt:527-528:
+ *       D_800F119C = 0x800F119C; /* alias of D_800F1198+4; retire with func_800620B8 * /
+ *       D_800F11A0 = 0x800F11A0; /* alias of D_800F1198+8; retire with func_800620B8 * /
+ *     Per .claude/rules/no-new-park-categories.md:245-259 prong (c) is then SATISFIED - the
+ *     rows retire when func_800620B8 lands.  No C names either symbol after the merge (the
+ *     only grep hit in src/ + include/ is include/game.h:26, inside the merge's own comment).
+ *   - Measured with the FULL diff (three source files + the two suffixed rows) in the tree:
+ *     verify-oracle --rebuild --allow-dirty, then verify-oracle --allow-dirty -> ok true,
+ *     build_matches true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+ *     original_sha1_locked; sandbox func_80062020 --disable all -> score 0, target_insns 38,
+ *     build_insns 38, scorable true, rules_dropped 0.  The suffix is byte-neutral: the SHA1
+ *     proof above was taken WITH it in place (undefined_syms_auto.txt is consumed as an ld
+ *     script, Makefile:99, where a /* ... * / comment emits nothing).
+ *   - Returned candidate-ready with the diff LEFT IN PLACE in src/, include/ and
+ *     undefined_syms_auto.txt.  self_vet.md carries the prong-by-prong vet with (c) rewritten
+ *     as satisfied and an s16d measurement section.
  */
 void func_80062020(s32 *arg0) {
     s32 i;

@@ -109,16 +109,29 @@ SANCTIONED-FAMILY-CLAIMS:
     indexed by a RECORD index (`D_800F1198[i]`). No index anywhere encodes 12 as a magic
     stride; the byte offset `ofs` in the body walks the SOURCE buffer `arg0`, which is a
     caller-supplied `s32 *` and is not part of the merged object.
-  - (c) COMPLETENESS — PARTIAL, DISCLOSED. Every merged per-word symbol is removed from C:
-    all three stale `extern s32 D_800F1198/119C/11A0;` triples are deleted
-    (src/text1b.c:2145-2147 and 3929-3931, src/text1b_b.c:387-389; none of the nine had a
-    use site anywhere in src/), leaving exactly ONE C handle for the storage. The splat
-    config half is NOT done: `undefined_syms_auto.txt:527-528` still define D_800F119C and
-    D_800F11A0, because `asm/funcs/func_800620B8.s` — a sibling that is still
-    `INCLUDE_ASM` under asm-until-matched — references those names and the link breaks
-    without them. Removing them becomes possible when func_800620B8 is decompiled. I am
-    flagging this rather than claiming the prong: the prong's stated purpose ("leaving
-    exactly one C handle per storage location") is met, its literal text is not.
+  - (c) COMPLETENESS — SATISFIED under the prong's 2026-09-03 amendment. Every merged
+    per-word symbol is removed from C: all three stale `extern s32 D_800F1198/119C/11A0;`
+    triples are deleted (src/text1b.c:2145-2147 and 3929-3931, src/text1b_b.c:387-389;
+    none of the nine had a use site anywhere in src/), leaving exactly ONE C handle for the
+    storage — after the diff, `grep -rn "D_800F119C|D_800F11A0" src/ include/` returns a
+    single hit, and it is not code: include/game.h:26, a line inside the merge's own
+    explanatory comment recording which per-word scalars the record replaces. No
+    declaration, no use site, no linkage reference to either name survives in C. The two splat rows `undefined_syms_auto.txt:527-528` STAY, because
+    `asm/funcs/func_800620B8.s` — a sibling still `INCLUDE_ASM` under asm-until-matched —
+    references those names and the link breaks without them. That is exactly the case the
+    prong's amendment of 2026-09-03 (operator, .claude/rules/no-new-park-categories.md:245-259)
+    covers: "a per-word symbol row may STAY in `undefined_syms_auto.txt` / `named_syms.txt`
+    while a still-`INCLUDE_ASM` sibling's `asm/funcs/*.s` references it (deleting it would
+    break that sibling's assembly), provided no C code names the symbol and the row is
+    suffixed `/* alias of <base>+N; retire with <sibling> */`. Prong (c) is then satisfied;
+    the row retires when the sibling lands". Both conditions are met by this diff: no C
+    names either symbol, and the two rows now read
+    `D_800F119C = 0x800F119C; /* alias of D_800F1198+4; retire with func_800620B8 */` and
+    `D_800F11A0 = 0x800F11A0; /* alias of D_800F1198+8; retire with func_800620B8 */`.
+    The suffix is byte-neutral (undefined_syms_auto.txt is consumed as an ld script,
+    Makefile:99, where `/* ... */` is a comment) — confirmed by the full-build SHA1 match
+    recorded below, which was taken WITH the suffixes in the tree. The scope grant covering
+    this path is tools/grinder/scope_allow.txt:49.
   - (d) CANONICAL DECLARATION SITE. `include/game.h`, the shared header text1b.c already
     includes — not TU-local, not a per-use pointer pun.
   - (e) BYTE-NEUTRALITY FOR EVERY OTHER CONSUMER. `engine build` (full clean-driver build
@@ -188,3 +201,31 @@ section-relative HI16/LO16 addends but deliberately not named-symbol ones (modul
 docstring, engine/score.py:8-11 and :61-63), so the merge's spelling scores as a
 difference. This residual is a property of the aggregate merge itself and is not removable
 in C while func_800620B8 remains INCLUDE_ASM.
+
+
+## s16d (rederive, 2026-09-03) — SUBMISSION MEASUREMENT, body UNCHANGED
+
+The C body and the include/game.h declaration are byte-for-byte the s15/s16 form; the ONLY
+addition this session is the prong-(c) comment suffix on undefined_syms_auto.txt:527-528
+that the s16c Judge ruling ordered and that the widened scope grant
+(tools/grinder/scope_allow.txt:49 — `func_80062020 include/game.h src/text1b_b.c
+undefined_syms_auto.txt`) now permits. Measured on the live chassis this session, with the
+full diff (three source files + the two suffixed splat rows) in the tree:
+
+- `python3 memory/grind/func_80062020/apply_s15.py apply` + the two `sed` suffix edits.
+- `verify-oracle --rebuild --allow-dirty` — rebuilt the scoring reference from THIS body.
+- `verify-oracle --allow-dirty` — `ok: true`, `build_matches: true`,
+  `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa` == `original_sha1_locked`.
+  The whole-EXE clean-driver build+link is byte-identical to the original with the diff in
+  place: prong (e) byte-neutrality for every other consumer, and the suffix's byte-neutrality.
+- `sandbox func_80062020 --disable all` — **score 0**, target_insns 38, build_insns 38,
+  scorable true, rules_dropped 0, cheat_asm_stripped 165. The cheat-invisible honest
+  distance is ZERO with cheats stripped.
+
+Both `banned_constructs` entries in state.json remain absent from this diff: entry 1 (a
+pointer local plus a second, differently-spelled materialisation of the row address) — this
+body has no pointer local and all four row writes use the single spelling
+`D_800F1198[i].unkN`; entry 2 (a comments-only re-file of a body FAILed on the merits) —
+this is not a re-file of a merits rejection but the completion of the remedy the s16c
+ruling ordered, and it carries a substantive tree change (the prong-(c) suffix) that
+converts the one prong previously conceded as unmet into a satisfied one.

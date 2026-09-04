@@ -126,15 +126,18 @@
   "LAYER-1 CHEAT-REVIEWER FAIL: Aggregate-merge family cited correctly (prong (a)/(b) hold on 2026-05-17 named_syms.txt census evidence), but prong (c) completeness is admittedly NOT met while D_800F119C/D_800F11A0 remain live in undefined_syms_auto.txt for the still-INCLUDE_ASM sibling func_800620B8 -- the rule's five prongs are ALL mandatory, no partial-disclosed carve-out exists. Next action: Do not commit the include/game.h aggregate declaration or the src/text1b.c epilogue rewrite yet. Either (1) hold this construct until func_800620B8 is decompiled and D_800F119C/D_800F11A0 can be fully rem",
   "Do NOT delete D_800F119C / D_800F11A0 from undefined_syms_auto.txt while asm/funcs/func_800620B8.s is INCLUDE_ASM; retire them as follow-on cleanup once its last asm consumer is decompiled. Prongs (a)/(b)/(d) and the standing bans on the pointer-local and second-address-materialisation epilogue forms remain in force.",
   "Land the banked s15/s16 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py, plus the amendment's comment suffix on undefined_syms_auto.txt:527-528 (D_800F119C / D_800F11A0) reading `/* alias of D_800F1198+4; retire with func_800620B8 */` and `/* alias of D_800F1198+8; retire with func_800620B8 */`. Do NOT delete those two rows while asm/funcs/func_800620B8.s is INCLUDE_ASM. Do not reintroduce a pointer local, a second address materialisation, or any banned dual-spelling form (banned_constructs 1 and 2 remain in force). Run `verify-oracle --rebuild --allow-dirty` BEFORE the sandbox re-verify (pre-rebuild the score is a false 2 from named-symbol HI16/LO16 addend spelling).",
-  "integration-handoff EXECUTED (pipeline, 2026-09-03): scope grant: func_80062020 include/game.h src/text1b_b.c undefined_syms_auto.txt  (merged with prior line). Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+  "integration-handoff EXECUTED (pipeline, 2026-09-03): scope grant: func_80062020 include/game.h src/text1b_b.c undefined_syms_auto.txt  (merged with prior line). Land the banked form through the normal gates; the widened paths are scope-checked AND staged.",
+  "LAYER-1 CHEAT-REVIEWER FAIL: The chained-assignment epilogue on the new aggregate-array declaration still materializes the terminator row's base address TWICE in two different addressing forms \u2014 the literal banned_constructs[0] pattern \u2014 merely laundered through a new declaration; not sanctioned by the aggregate-merge family or any other. Next action: Do not commit. The aggregate declaration may be worth keeping (prongs (b)/(c)/(d) verified), but the epilogue must not spell the terminator-row zeroing in a way that reproduces the dual address-materialization the Judge has repeatedly banned (ban"
  ],
  "origin": "queue",
  "created": "2026-07-24T03:28:39.877485+00:00",
  "banned_constructs": [
   "row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0; row[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;",
-  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'"
+  "Self-vet's SCOPE NOTE: 'the C body is BYTE-FOR-BYTE IDENTICAL to the body the Judge already FAILed on 2026-08-31 22:24 ... The ONLY changes are comments.'",
+  "D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0; (chained assignment, right-to-left evaluation order, on the new Unk800F1198Record array)",
+  "Unk800F1198Record aggregate-array declaration in include/game.h (per-word splat symbol -> aggregate merge)"
  ],
- "ladder_skip": 14,
+ "ladder_skip": 16,
  "pending_fixup": null,
  "exhaustion_base": 12,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",

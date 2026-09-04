@@ -1535,3 +1535,22 @@ this condition, so a `candidate-ready` is mechanically discarded before the Judg
 - **Open (procedural, not technical): the one-line widening.** Add
   `undefined_syms_auto.txt` to func_80062020's scope_allow.txt line, then land the banked
   body plus the two suffixed rows through the normal gates.
+
+
+## s16d (rederive, 2026-09-03)
+
+- **CONFIRMED — With `undefined_syms_auto.txt` inside the scope grant, the banked s15 body
+  plus the amendment's alias suffix lands as a complete, prong-satisfying aggregate merge at
+  honest distance 0.** Mechanism: the only thing blocking s16/s16b/s16c was prong (c) of the
+  aggregate-merge family, and the operator's 2026-09-03 amendment
+  (`.claude/rules/no-new-park-categories.md:245-259`) satisfies it with a comment suffix on
+  the two splat rows that the still-`INCLUDE_ASM` sibling `func_800620B8` needs; the suffix
+  is byte-neutral because the file is an ld script. Probe: apply_s15.py apply + suffix on
+  `undefined_syms_auto.txt:527-528`; `verify-oracle --rebuild --allow-dirty` then
+  `verify-oracle --allow-dirty` (ok true, build_matches true, SHA1 == oracle) then
+  `sandbox func_80062020 --disable all` (score 0, 38/38, rules_dropped 0). Result: all three
+  gates pass with the full diff in the tree.
+- Open, not a blocker: the two suffixed rows retire from `undefined_syms_auto.txt` once
+  `func_800620B8` reaches COMPLETED-C (grep `asm/funcs` for the two names, delete the rows,
+  re-run `verify-oracle --rebuild`). The sanctioned precedents `func_800861BC` and
+  `e788983a` shipped with such rows retained.
