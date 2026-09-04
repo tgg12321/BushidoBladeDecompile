@@ -490,6 +490,27 @@
  * crossed with the pointer chassis for the first time -- 21 at 45 insns in both
  * the s32 and u8 spellings, because cse folds the duplicated `*q` read and the
  * select collapses, LOSING four instructions.
+ *
+ * (11) s31 (structural) re-measures this body on HEAD -- score 10, 49/49 insns,
+ * rules_dropped 0 -- and does not change a line of it. It spends the structural
+ * modality with DUMPS rather than scores: eleven bodies (block-local splits, a
+ * named mask intermediate, a separate flag-word local, read-before-condition
+ * re-association, one function-scope v/c pair shared by all three blocks, type
+ * narrowing of `p`, an empty-else init-then-or spelling, and a hoist of block
+ * 1's flag-word read above the mask). SEVEN of them tie at 10/49 and emit a
+ * BIT-IDENTICAL instruction stream (`diff base.s vN.s` empty); the four that
+ * change the code all move away (12 / 14 / 30 / 33). The .greg dumps show why:
+ * the extra C objects create no allocno at all -- base, v5 and v7 print the same
+ * nine allocnos, the same conflict graph and the same seats, and even the
+ * five-allocno v8 body still puts the address object in $a0.
+ * s31 also restates the residual one level lower than "one missing address
+ * allocno": .greg prints `;; 74 conflicts: ... 2 3 29`, so the address allocno
+ * is INELIGIBLE for $v1 before find_reg runs, because a local-alloc pseudo (the
+ * block-0 QImode mask value) is seated there and local-alloc runs first. And it
+ * CORRECTS s23: preferences for $v0/$v1 DO exist here (`77 preferences: 3`),
+ * via global.c:1709-1713 mapping a copy operand through reg_renumber; what is
+ * true is that allocno 74 is never a copy operand, so none can be recorded for
+ * it without a second C object aliasing the byte.
  */
 void func_80034F88(void) {
     s32 *p;

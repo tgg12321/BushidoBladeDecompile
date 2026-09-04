@@ -3035,3 +3035,151 @@ ablation (banked at 29). The floor of 10 holds.
 - probe: candidate.c re-installed at src/code6cac_b.c:3420 and measured with sandbox func_80034F88 --disable all; the tying blocks-2/3 do-while wrap measured on the same chassis; fake_ablate has nothing to strip because candidate.c carries no /* FAKE */-annotated construct (the ablation arm remains s27's hand ablation, banked at 29).
 - result: score 10, target_insns 49, build_insns 49, rules_dropped 0 -- the floor of 10 is confirmed by direct measurement for the second consecutive session, and the tying form emits the same stream.
 - verdict: CONFIRMED
+
+
+==== s31 (structural) ====
+
+H-s31-1. Block-local variable splits (a named intermediate for the mask value,
+a separate local for the flag word, or both) add pseudos that survive to
+register allocation and perturb the allocno set that seats the address object.
+  PROBE: v5 (mask intermediate `s32 m`), v6 (flag-word local `s32 f`), v7 (both),
+  measured on the candidate.c score-10 chassis on HEAD, with .greg + .s dumps
+  per variant (pwsh tools/grinder/dump.ps1 func_80034F88).
+  RESULT: all three score 10 at 49 insns and `diff base.s vN.s` is EMPTY. The
+  .greg allocator input is character-identical to base -- same nine allocnos
+  (73 78 82 86 74 77 81 85 72), same conflict graph, same preferences, same
+  dispositions with `74 in 4` ($a0). The added C objects create no allocno.
+  VERDICT: KILLED (instance).
+
+H-s31-2. Re-associating the mask so that its value IS block 1's value (dropping
+the C-level reload) changes the emitted stream.
+  PROBE: v1 (`v = *q & 0xF8; *q = v; ... c = v | 1;`) and v2 (`v = *q;` moved
+  before `c = p[8] & K;` in all three blocks), same chassis.
+  RESULT: both 10 at 49 insns with an EMPTY asm diff against base. cse already
+  forwards the mask value into block 1 on the base body, so the C-level change
+  has no RTL to change.
+  VERDICT: KILLED (instance).
+
+H-s31-3. Collapsing the three block-scoped `v`/`c` pairs into one function-scope
+pair changes the allocator's input enough to re-seat the address object.
+  PROBE: v8 (one shared `s32 v, c;`, mask value carried) and v9 (same with the
+  classic `*q &= 0xF8;` mask), same chassis.
+  RESULT: both 10 at 49 insns, asm BIT-IDENTICAL to base. v8's .greg shows the
+  global allocno count drop from NINE to FIVE (`;; 5 regs to allocate:
+  73 76 75 74 72`) with a different conflict graph and allocation order -- and
+  `74 in 4` ($a0) regardless.
+  VERDICT: KILLED (instance).
+
+H-s31-4. The address object is excluded from $v1 because $v0's liveness across
+block 0 (the call's return copy is scheduled after the mask sequence) pushes the
+block-0 value quantity into $v1 in local-alloc; giving `p` a use before the mask
+frees $v0, releases $v1, and lets the address allocno take it.
+  PROBE: v11 (block 1's `p[8]` read hoisted above the mask statement), same
+  chassis, .greg compared against base.
+  RESULT: 14 at 49 insns. $v0 IS freed for the block-0 value (`75 in 2`,
+  `76 preferences: 3`), but a different local-alloc pseudo takes $v1 (`77 in 3`),
+  `74 conflicts: 72 74 75 76 81 82 85 86 2 3 29` is unchanged, and 74 is still
+  in $a0. The hoist costs 4 points on its own.
+  VERDICT: KILLED (instance).
+
+H-s31-5. Type narrowing of the OTHER object (`p` as `u8 *` with the flag word
+read as `*(s32 *)(p + 0x20)` and the copy loop as `p[i + 0x17]`) reaches the
+target's addressing without touching the alias axis.
+  PROBE: v3, same chassis.  RESULT: 12 at 49 insns.
+  VERDICT: KILLED (instance).
+
+H-s31-6. An init-then-conditional-or spelling (`c = *q; if (p[8] & K) c |= K;
+*q = c;`), i.e. an empty else arm, reproduces the target's join-and-store shape.
+  PROBE: v4, same chassis.  RESULT: 30 at 44 insns -- five instructions are lost;
+  the empty arm collapses the diamond, confirming s1's reading that the store is
+  unconditional in the target.
+  VERDICT: KILLED (instance).
+
+H-s31-7 (mandated kill re-audit). The chassis and the closest banked form are
+re-measured, and the FAKE state of the floor body is checked mechanically.
+  PROBE: candidate.c installed on HEAD; rejected/roundtrip-fresh-pseudo-target-
+  census-score10-DEAD-ARITH.c (the only banked body whose instruction multiset
+  matches the target) re-measured; `tools/fake_ablate.py` run on candidate.c.
+  RESULT: candidate.c 10 at 49 insns, rules_dropped 0; the round-trip form 10 at
+  49 insns; fake_ablate reports "no FAKE-annotated constructs found ... nothing
+  to ablate".
+  VERDICT: CONFIRMED.
+
+H-s31-8. The residual can be stated one level below "one missing address
+allocno", as an allocator INPUT fact, and s23's reading of the preference lever
+is exact.
+  PROBE: read the `;; NN conflicts` / `;; NN preferences` headers of the .greg
+  dumps for all eleven bodies and `set_preference` in tools/gcc-2.7.2/global.c.
+  RESULT: allocno 74 conflicts with HARD registers 2 ($v0) and 3 ($v1) in every
+  body -- it is ineligible for $v1 before find_reg runs, because a local-alloc
+  pseudo (the block-0 QImode mask value, s24's blk=0 qty=0 row) is seated in $v1
+  across its range and local-alloc runs first. Separately, s23's claim that
+  set_preference "can never record a preference for either [$v1 or $a0], for any
+  pseudo" is FALSE on this chassis: pseudo 77 carries `preferences: 3` and
+  78/82/86 carry `preferences: 2`, produced by global.c:1709-1713, which maps a
+  copy operand through `reg_renumber` to a hard register once local-alloc has
+  seated it. The correct statement is narrower: allocno 74 is never a copy
+  operand (it is set from a bare symbol_ref), so no preference can be recorded
+  for it; the only copy source that would carry one is an object local-alloc has
+  seated in $v1, i.e. a second C object aliasing the byte.
+  VERDICT: CONFIRMED.
+
+## [s31] Block-local variable splits (a named intermediate for the mask value, a separate local for the flag word, or both) add pseudos that survive to register allocation and perturb the allocno set that seats the address object.
+- mechanism: A fresh once-written once-read local is expanded as its own pseudo; if it survives cse/combine it becomes a new allocno and changes the conflict graph and allocation order that global.c find_reg walks.
+- probe: v5 (mask intermediate `s32 m`), v6 (flag-word local `s32 f`), v7 (both) installed at src/code6cac_b.c:3420 and measured with `sandbox func_80034F88 --disable all`; .greg and .s dumps captured per variant with `pwsh tools/grinder/dump.ps1 func_80034F88`.
+- result: All three score 10 at 49 build insns and `diff base.s vN.s` is EMPTY. The .greg allocator input is character-identical to base: the same nine allocnos (73 78 82 86 74 77 81 85 72), the same conflict graph, the same preference lines and `74 in 4` ($a0). The added C objects create no allocno.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD (score 10, 49/49, rules_dropped 0), single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s31] Re-associating the mask so that its value IS block 1's value (dropping the C-level reload) changes the emitted stream.
+- mechanism: cse.c forwards the stored mask value into block 1 on the base body already, so the C-level reload is not an RTL reload; removing it should be observable only if the forwarding had not happened.
+- probe: v1 (`v = *q & 0xF8; *q = v; ... c = v | 1;`) and v2 (`v = *q;` moved before `c = p[8] & K;` in all three blocks), same chassis, with .s dumps.
+- result: Both 10 at 49 insns with an EMPTY asm diff against base -- the C change has no RTL to change.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD, single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s31] Collapsing the three block-scoped v/c pairs into one function-scope pair changes the allocator's input enough to re-seat the address object.
+- mechanism: Sharing one value variable across all three flag blocks merges live ranges, which changes allocno count, conflicts and the priority order find_reg processes.
+- probe: v8 (one shared `s32 v, c;`, mask value carried) and v9 (same with the classic `*q &= 0xF8;` mask), same chassis, .greg + .s dumps for v8.
+- result: Both 10 at 49 insns and v8's asm is BIT-IDENTICAL to base. v8's .greg drops the global allocno count from NINE to FIVE (`;; 5 regs to allocate: 73 76 75 74 72`), a different conflict graph and a different allocation order -- and still prints `74 in 4` ($a0).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD, single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s31] The address object is excluded from $v1 because $v0 is live across block 0 (the call's return copy is scheduled after the mask sequence), pushing the block-0 value quantity into $v1 in local-alloc; giving p a use before the mask frees $v0, releases $v1, and lets the address allocno take it.
+- mechanism: local-alloc runs before global-alloc and seats its quantities with find_free_reg in reg_alloc_order; a seated local pseudo becomes a hard-reg conflict for every overlapping global allocno.
+- probe: v11 (block 1's `p[8]` read hoisted above the mask statement), same chassis, .greg compared against base.
+- result: 14 at 49 insns. $v0 IS freed for the block-0 value (`75 in 2`, `76 preferences: 3`), but a different local-alloc pseudo takes $v1 (`77 in 3`); `74 conflicts: 72 74 75 76 81 82 85 86 2 3 29` is unchanged and 74 is still in $a0. The hoist costs 4 points on its own.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD with block 1's flag-word read hoisted above the mask; single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s31] Type narrowing of the OTHER object -- p declared `u8 *`, the flag word read as *(s32 *)(p + 0x20), the copy loop as p[i + 0x17] -- reaches the target's addressing without touching the alias axis.
+- mechanism: Narrowing the pointer type changes the MEM addressing forms cse sees and could change which quantity carries the base register.
+- probe: v3, same chassis, `sandbox func_80034F88 --disable all`.
+- result: 12 at 49 insns -- two points worse than base.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD with p narrowed to u8 *; single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s31] An init-then-conditional-or spelling (c = *q; if (p[8] & K) c |= K; *q = c;) with an empty else arm reproduces the target's join-and-store shape.
+- mechanism: The target emits the ori in the branch delay slot and the sb on the join, which an unconditional store with a two-armed select produces; an empty else arm was the untested alternative spelling of the same semantics.
+- probe: v4, same chassis.
+- result: 30 at 44 insns -- five instructions LOST; the empty arm collapses the diamond, re-confirming s1's reading that the store is unconditional in the target.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD with all three blocks respelled as init-then-conditional-or; single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s31] Mandated kill re-audit: the chassis and the closest banked form still measure what the ledger records, and the floor body carries no FAKE construct that could be masking a lever.
+- mechanism: An instance kill is only valid on the chassis and FAKE state it was measured under, so both are re-established before new probes.
+- probe: candidate.c installed on HEAD and measured; rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c (the only banked body whose instruction multiset matches the target) re-measured; `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c` run.
+- result: candidate.c 10 at 49 insns, rules_dropped 0; the round-trip form 10 at 49 insns; fake_ablate reports 'no FAKE-annotated constructs found ... nothing to ablate'. The floor of 10 and the banked kills' chassis both hold.
+- verdict: CONFIRMED
+
+## [s31] The residual can be stated as an allocator INPUT fact -- allocno 74 conflicts with hard register $v1 -- and s23's claim that global.c set_preference can never record a $v0/$v1 preference for any pseudo here is inexact.
+- mechanism: global.c:1709-1713 maps a copy operand through reg_renumber, so a copy between a global allocno and a pseudo local-alloc has already seated becomes a hard-reg preference; and any local-alloc pseudo seated in $v1 across an allocno's live range makes that allocno ineligible for $v1 before find_reg runs.
+- probe: Read the `;; NN conflicts` / `;; NN preferences` headers of the .greg dumps for base, v1, v5, v6, v7, v8 and v11, plus set_preference in tools/gcc-2.7.2/global.c.
+- result: Every body prints `;; 74 conflicts: ... 2 3 29` -- 74 is ineligible for $v0 and $v1 pre-find_reg; the $v1 holder is the block-0 QImode mask value that local-alloc seats first (s24's `blk=0 qty=0 reg1=76 size=1 mode=1` row). Contra s23, preferences for hard regs DO appear here: `77 preferences: 3` ($v1) and `78/82/86 preferences: 2` ($v0). The narrower true statement is that allocno 74 is never a copy operand (it is set from a bare symbol_ref), so no preference can be recorded for it; the only copy source that would carry one is an object local-alloc has seated in $v1, i.e. a second C object aliasing the byte (the standing banned construct).
+- verdict: CONFIRMED

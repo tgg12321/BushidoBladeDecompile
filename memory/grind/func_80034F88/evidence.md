@@ -4146,3 +4146,147 @@ rotation at the block-1 join.
 - [s30] Seven new forms banked under memory/grind/func_80034F88/rejected/ (s30-*), bringing the disproven bank to 166. candidate.c is unchanged as the best admissible form at floor 10, with its header updated with the s30 note (10).
 
 - [s30] The residual is unchanged from s29's pricing: one missing address allocno, expressed as the blocks-0/1 seat convention plus the 3-insn lui/addiu/sb rotation at the block-1 join. src/code6cac_b.c is back at HEAD (INCLUDE_ASM) and the tree carries no src dirt.
+
+
+==== s31 (structural) ====
+
+CHASSIS RE-MEASURE (dispatch printed "measurement unavailable" again).
+candidate.c re-installed at src/code6cac_b.c:3420 and measured on HEAD this
+session: **score 10, target_insns 49, build_insns 49, rules_dropped 0**. Third
+consecutive session in which the floor of 10 is confirmed by direct measurement.
+
+MANDATED KILL RE-AUDIT. (a) The closest banked form to the target -- the s20/s25
+dead round-trip `q = q + 3; q = q - 3;`
+(rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c), the only
+body whose instruction multiset matches the target's -- re-measures **10 at 49
+insns** on today's chassis, unchanged. (b) `python3 tools/fake_ablate.py --func
+func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/
+candidate.c` reports "no FAKE-annotated constructs found ... nothing to
+ablate": the floor-10 body is FAKE-free, so no banked kill on this chassis was
+measured with a FAKE carrier occupying the contested pseudo.
+
+--- 1. THE STRUCTURAL LEVER SET, MEASURED WITH DUMPS (not inferred) ---
+
+Eleven bodies measured (tmp/grind/func_80034F88/s31/variants/, scores from
+`sandbox --disable all`):
+
+    base (candidate.c)                                  10   49
+    v1  mask value reused as block 1's value            10   49   asm IDENTICAL
+    v2  `v = *q` read before `c = p[8] & K` in all 3    10   49   asm IDENTICAL
+    v3  p narrowed to `u8 *`, flag word via *(s32*)     12   49
+    v4  init-then-conditional-or (empty else arm)       30   44
+    v5  named intermediate for the mask statement       10   49   asm IDENTICAL
+    v6  flag word split into its own local (block 1)    10   49   asm IDENTICAL
+    v7  v5 + v6 together                                10   49   asm IDENTICAL
+    v8  ONE function-scope v/c pair shared by 3 blocks  10   49   asm IDENTICAL
+    v9  v8 with the classic `*q &= 0xF8;` mask          10   49
+    v10 value carried between blocks (`v = c;`)         33   49
+    v11 block 1's flag-word read hoisted above the mask 14   49
+
+"asm IDENTICAL" is not a score tie: `diff base.s vN.s` on the cc1 output
+(tmp/grind/func_80034F88/s31/*.s, produced with `pwsh tools/grinder/dump.ps1
+func_80034F88` per variant) is EMPTY. Every block-local split, declaration-order
+and statement-re-association form in the modality's catalogue that stays at 49
+insns emits the SAME instruction stream, byte for byte.
+
+The .greg dumps say why, and this is the new datum: the extra C objects do not
+survive to allocation. base, v5 and v7 all print the identical allocator input:
+
+    ;; 9 regs to allocate: 73 78 82 86 74 77 81 85 72
+    ;; 74 conflicts: 72 74 77 78 81 82 85 86 2 3 29
+    ;; 77 preferences: 3      ;; 78 preferences: 2   (82, 86 likewise 2)
+    ;; Register dispositions: ... 74 in 4 ...
+
+-- same allocno list, same conflict graph, same preferences, same seats. Adding
+`s32 m;` for the mask value or `s32 f;` for the flag word adds NO allocno.
+
+v8 is the strongest form of the experiment: collapsing the three block-scoped
+`v`/`c` pairs into ONE function-scope pair takes the allocator input from NINE
+global allocnos to FIVE (`;; 5 regs to allocate: 73 76 75 74 72`) -- a different
+conflict graph, a different allocation order, a different priority ranking -- and
+the emitted function is still BIT-IDENTICAL to base, with `74 in 4` ($a0) again.
+The address object's seat is invariant under the entire structural axis measured
+here.
+
+--- 2. WHY $v1 IS UNREACHABLE FOR THE ADDRESS OBJECT, IN THE ALLOCATOR'S OWN
+       VOCABULARY (new to this ledger) ---
+
+Every previous session states the residual as "one missing address allocno".
+The .greg header states it one level lower, as a HARD-REG CONFLICT:
+
+    ;; 74 conflicts: ... 2 3 29
+
+Allocno 74 (the `&D_80106A73` object) conflicts with hard registers $v0 (2) and
+$v1 (3) -- and 29 ($sp), which every allocno does. It is therefore not merely
+outranked for $v1; it is INELIGIBLE for it before find_reg ever runs. The holder
+is a LOCAL-ALLOC pseudo: dispositions show `75 in 3` / `77 in 3` for pseudos
+outside s23's global allocno set {72,73,74,77,78,81,82,85,86} -- the block-0
+mask read/`and` value (QImode; s24's local-alloc table row
+`blk=0 qty=0 reg1=76 size=1 mode=1`). It takes $v1 because $v0 is unavailable:
+the RTL shows the call's return copy `(set (reg/v:SI 5 a1) (reg:SI 2 v0))`
+(insn 11) SCHEDULED AFTER the whole mask sequence (insns 14/17/18/20), so $v0
+is live across block 0. Local-alloc runs before global-alloc, so it wins the
+seat unconditionally.
+
+v11 is the direct test of that chain: hoisting block 1's `p[8]` read above the
+mask statement gives `p` a use before block 0 and does free $v0 for the block-0
+value (`75 in 2` now, `76 preferences: 3`). It does NOT free $v1 -- another
+local-alloc pseudo (`77 in 3`) takes it -- `74 conflicts: ... 2 3 29` is
+unchanged, 74 is still in $a0, and the body costs 4 points (14 at 49 insns).
+
+An s23 CLAIM IS CORRECTED HERE, with a file:line. s23 wrote: "`$v1` and `$a0`
+never appear as hard registers in this function's pre-RA RTL, so
+`global.c set_preference` can never record a preference for either, for any
+pseudo. The preference lever ... is structurally unavailable HERE." The dumps
+falsify the conclusion: pseudo 77 carries `preferences: 3` ($v1) and pseudos
+78/82/86 carry `preferences: 2` ($v0), in EVERY variant measured this session.
+The mechanism is `tools/gcc-2.7.2/global.c:1709-1713`, inside set_preference:
+
+    if (reg_renumber[src_regno] >= 0)  src_regno  = reg_renumber[src_regno];
+    if (reg_renumber[dest_regno] >= 0) dest_regno = reg_renumber[dest_regno];
+
+-- a copy between a global allocno and a pseudo that LOCAL-ALLOC already seated
+is converted to a hard-reg preference. Preferences for $v0/$v1 therefore exist
+in this function without any call-argument setup. What is true, and is the
+sharper statement, is that allocno 74 carries NO preference line in any of the
+eleven bodies: it is never the operand of a copy at all (it is set from a bare
+`(symbol_ref "D_80106A73")`), so no preference can be recorded for it. Supplying
+one requires a copy from an object local-alloc has already seated in $v1 -- i.e.
+a second C object aliasing the byte, the standing banned construct -- and even
+then the hard-reg conflict on 3 would make find_reg reject it.
+
+--- 3. WHAT THIS SESSION DOES NOT CHANGE ---
+
+candidate.c is unchanged: nothing measured this session beats 10, and the seven
+forms that tie it emit base's exact stream. The structural modality is now
+banked with dumps rather than with scores: block-local splits, declaration
+order/scope, statement re-association, value-object sharing and type narrowing
+are each measured, and the four that change the emitted code (v3 12, v4 30,
+v10 33, v11 14) all move away from the target.
+
+LADDER STATUS after s31: cycle 2 of the modality ladder (owner directive
+2026-09-02: 20 flat sessions and at least 6 distinct modalities before any
+disposition) stands at TEN sessions and SIX distinct modalities -- escalation
+(s23, s24), synthesis (s25), solver (s26), forensics (s27, s28), rederive (s29,
+s30), structural (s31). The modality count condition is now met; the session
+count is not.
+
+- [s31] Chassis re-measured on HEAD this session: candidate.c = score 10, 49 target insns / 49 build insns, rules_dropped 0. Third consecutive session confirming the floor by direct measurement.
+
+- [s31] Eleven structural bodies measured: base 10/49; v1 10/49; v2 10/49; v3 12/49; v4 30/44; v5 10/49; v6 10/49; v7 10/49; v8 10/49; v9 10/49; v10 33/49; v11 14/49.
+
+- [s31] Seven of the ties are not merely score-equal: `diff base.s vN.s` on the cc1 output is EMPTY for v1, v2, v5, v6, v7 and v8 -- the structural rewrites emit base's instruction stream byte for byte.
+
+- [s31] base/v5/v7 .greg print the identical allocator input: `;; 9 regs to allocate: 73 78 82 86 74 77 81 85 72`, `;; 74 conflicts: 72 74 77 78 81 82 85 86 2 3 29`, `;; 77 preferences: 3`, dispositions `74 in 4`. Adding a named mask intermediate or a flag-word local creates NO allocno.
+
+- [s31] v8 (one function-scope v/c pair) reduces the global allocno set from nine to five (`;; 5 regs to allocate: 73 76 75 74 72`) with a different conflict graph and allocation order, and still emits a bit-identical function with the address object in $a0.
+
+- [s31] The address allocno's exclusion from $v1 is a HARD-REG conflict (`74 conflicts: ... 2 3 29`), created by a local-alloc-seated pseudo holding $v1 across q's live range; local-alloc runs before global-alloc, so it wins the seat unconditionally.
+
+- [s31] v11 tests that chain directly: hoisting block 1's p[8] read above the mask frees $v0 for the block-0 value (`75 in 2`) but not $v1 (`77 in 3`); 74's hard-reg conflicts are unchanged and the body costs 4 points.
+
+- [s31] s23's statement that '$v1 and $a0 never appear as hard registers in this function's pre-RA RTL, so set_preference can never record a preference for either, for any pseudo' is corrected: preferences for hard regs 2 and 3 are printed for pseudos 77/78/82/86 in every body, via global.c:1709-1713 (reg_renumber mapping). Allocno 74 alone carries none, because it is never a copy operand.
+
+- [s31] fake_ablate on candidate.c reports no FAKE-annotated constructs, so no banked kill on this chassis was measured with a FAKE carrier on the contested pseudo.
+
+- [s31] Ladder cycle 2 (owner directive 2026-09-02) now stands at TEN sessions and SIX distinct modalities -- escalation (s23, s24), synthesis (s25), solver (s26), forensics (s27, s28), rederive (s29, s30), structural (s31). The >= 6 modality condition is met; the 20-session condition is not.

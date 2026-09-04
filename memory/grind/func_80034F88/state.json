@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 30,
- "current_modality": "rederive",
+ "session_count": 31,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -183,23 +183,29 @@
    "floor": 10,
    "modality": "rederive",
    "headline": "Rederive s30: the last unspent sibling technique (CD_sync's F1 combine-foldable chain-extender) is measured BYTE-NEUTRAL in the body here -- diff base.s vs chainext.s is four prologue/epilogue lines a"
+  },
+  {
+   "session": 31,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural modality spent with dumps, not scores: seven distinct block-split / re-association / value-sharing bodies tie at 10/49 and emit a BIT-IDENTICAL stream (empty asm diff, identical .greg alloc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual remains one missing address allocno on 0x80106A73, and s30 removes the last candidate route to it that did not require a second declared C object: the F1 combine-foldable chain-extender is byte-neutral in the body, so no folded-away arithmetic can supply the allocno. The multi-handle axis stays CLOSED pending a class grant.",
-   "mechanism": "One C object is one pseudo is one allocno (global.c:426), confirmed again in .greg this session with the chain-extender present (all three symbol_ref sets in reg 4 a0). The surviving allocno's seat is pinned to $a0 by blocks 2-3, which are byte-exact, so the blocks-0/1 seat cannot be swapped without losing them.",
-   "next_probe": "Only after a ruling or class grant. A grant should be spent on the three-separately-scoped-pointer-locals partition {mask+bit1}/{bit2}/{bit4} of the score-0 s13-s16 body, not on a fourth assignment to one object."
+   "hypothesis": "The residual is now stated at the allocator's input level: allocno 74 is INELIGIBLE for $v1 (hard-reg conflict) and carries no hard-reg preference, and both facts are fixed by the single-C-object model. Every route to changing either one lands on a second C object aliasing D_80106A73, which is the standing banned construct.",
+   "mechanism": "A local-alloc-seated pseudo occupying $v1 across q's live range creates the conflict (local-alloc precedes global-alloc); global.c:1709-1713 records a preference only for a copy operand, and 74 is set from a bare symbol_ref, never copied.",
+   "next_probe": "Only after a ruling or class grant covering a second address object. Do not re-run structural, declaration-order, value-sharing or type-narrowing searches -- s31 measured them with dumps and seven of them emit base's exact stream."
   },
   {
-   "hypothesis": "The sanctioned-family surface for this function is now measured in every placement, not merely argued: do-while(0) (all six placements), duplicated-statement-into-arms, dead-store, constant-holder, pointer-alias (single handle), split-read, aggregate/array declaration, and F1 chain-extender are each banked with a measurement.",
-   "mechanism": "Each family's characteristic effect is either byte-neutral in the body (F1 chain-extender, blocks-2/3 do-while wrap), instruction-adding (any wrap or re-materialisation crossing the mask store: 50-51 insns), or instruction-deleting (m2c inverted diamond, 45 insns) -- none of them adds an address allocno without adding a C object.",
-   "next_probe": "Do not re-run family placement searches. Any remaining session budget belongs to the allocno question or to the disposition record."
+   "hypothesis": "The structural modality is exhausted on this chassis in the strong sense: the forms that stay at 49 insns are RTL-invisible, and the forms that reach RTL move away from the target.",
+   "mechanism": "cse/combine eliminate every added value object before global allocation, so the modality's levers cannot reach the contested allocno at all; the four bodies that do change codegen (v3 12, v4 30, v10 33, v11 14) each lose more than the seat convention is worth.",
+   "next_probe": "None on this axis. If a future session wants a structural datum it should target the LOCAL-ALLOC seat directly, and the only C construct that reaches it is a second object -- currently banned."
   },
   {
-   "hypothesis": "The ladder's second cycle (owner directive 2026-09-02: 20 flat sessions and at least 6 modalities before any disposition) now stands at 9 sessions and 5 distinct modalities (escalation, synthesis, solver, forensics, rederive), with rederive measured dead twice (s29, s30) and its full toolset -- fresh m2c, sibling transplant, inverse-function transplant, decomp.me-class corpus idioms -- fully spent.",
-   "mechanism": "Every sanctioned axis is closed with a named GCC predicate (cse.c:1905/1943/1967/1902/7326/7599, mips.md:2901, mips.h:2369, sched.c:1738, global.c:426) rather than by saturation, and s30 adds the F1 byte-neutrality result to that list.",
-   "next_probe": "When the driver assigns escalation modality, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the completed cse enumeration, s29's seat-invariance and reload-pricing results, and s30's F1 byte-neutrality measurement, then return owner-gated. Do not re-run RA, scheduler, declaration-order, spelling, assignment-placement, cse-input or sibling-transplant searches."
+   "hypothesis": "The ladder's second cycle needs ten more sessions before disposition; the modality-count condition is already satisfied.",
+   "mechanism": "Owner directive 2026-09-02 requires 20 flat sessions and >= 6 modalities; s31 supplies the sixth modality at session ten of the cycle.",
+   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the completed cse enumeration (s27/s28), s29's seat-invariance and reload pricing, s30's F1 byte-neutrality, and s31's allocator-input restatement plus the set_preference correction, then return owner-gated."
   }
  ],
  "judge_constraints": [
@@ -355,6 +361,54 @@
    "measured_on": "candidate.c score-10 chassis on HEAD, single u8 *q with three assignments, no FAKE-annotated construct present",
    "predicate_cite": "",
    "result": "Both spellings score 21 at 45 build insns. The diamond COLLAPSES: four instructions are lost against the target's 49, be"
+  },
+  {
+   "session": 31,
+   "statement": "Block-local variable splits (a named intermediate for the mask value, a separate local for the flag word, or both) add pseudos that survive to register allocation and perturb the allocno set that seat",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD (score 10, 49/49, rules_dropped 0), single `u8 *q` with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "All three score 10 at 49 build insns and `diff base.s vN.s` is EMPTY. The .greg allocator input is character-identical t"
+  },
+  {
+   "session": 31,
+   "statement": "Re-associating the mask so that its value IS block 1's value (dropping the C-level reload) changes the emitted stream.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD, single `u8 *q` with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "Both 10 at 49 insns with an EMPTY asm diff against base -- the C change has no RTL to change."
+  },
+  {
+   "session": 31,
+   "statement": "Collapsing the three block-scoped v/c pairs into one function-scope pair changes the allocator's input enough to re-seat the address object.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD, single `u8 *q` with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "Both 10 at 49 insns and v8's asm is BIT-IDENTICAL to base. v8's .greg drops the global allocno count from NINE to FIVE ("
+  },
+  {
+   "session": 31,
+   "statement": "The address object is excluded from $v1 because $v0 is live across block 0 (the call's return copy is scheduled after the mask sequence), pushing the block-0 value quantity into $v1 in local-alloc; gi",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD with block 1's flag-word read hoisted above the mask; single `u8 *q` with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "14 at 49 insns. $v0 IS freed for the block-0 value (`75 in 2`, `76 preferences: 3`), but a different local-alloc pseudo "
+  },
+  {
+   "session": 31,
+   "statement": "Type narrowing of the OTHER object -- p declared `u8 *`, the flag word read as *(s32 *)(p + 0x20), the copy loop as p[i + 0x17] -- reaches the target's addressing without touching the alias axis.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD with p narrowed to u8 *; single `u8 *q` with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "12 at 49 insns -- two points worse than base."
+  },
+  {
+   "session": 31,
+   "statement": "An init-then-conditional-or spelling (c = *q; if (p[8] & K) c |= K; *q = c;) with an empty else arm reproduces the target's join-and-store shape.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD with all three blocks respelled as init-then-conditional-or; single `u8 *q` with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "30 at 44 insns -- five instructions LOST; the empty arm collapses the diamond, re-confirming s1's reading that the store"
   }
  ]
 }
