@@ -729,3 +729,64 @@ produce. See the s13 frontier and the ruling request.
   inside a frozen family. The transferable lesson for other functions sitting on a flat floor
   behind a construct ban: re-read the ban's own enumerated text against your actual C, and if
   the C does not contain any enumerated spelling, that is a ruling-request, not a wall.
+
+## s13c (2026-09-04) — synthesis modality: merged attack + kill re-audit + sibling sweep
+
+- [s13c] CHASSIS RE-MEASURED LIVE (the brief's chassis check said "measurement unavailable"):
+  clean floor-8 body installed in src/code6cac.c, `sandbox func_8001F938 --disable all`
+  => score 8, target_insns 107, build_insns 105, rules_dropped 0, scorable true,
+  cheat_asm_stripped 24 (file-wide, not this function). The ledger floor of 8 is current.
+  src/ was restored to `INCLUDE_ASM("asm/funcs", func_8001F938);` immediately afterwards.
+- [s13c] THE CLEAN CHASSIS IS NOW SIMPLER AND BYTE-IDENTICAL. `idx = ((raw_or_3 << 16) >> 15);`
+  — carried in the blessed clean form since s1 as a failed attempt to defeat combine's fold —
+  is codegen-inert: replacing it with `idx = raw_or_3 * 2;` yields an EMPTY diff over the
+  extracted func_8001F938 asm body (tmp/grind/func_8001F938/s13c/base.s vs P0_mul2.s) and the
+  same sandbox score 8. The simplified form is banked as
+  memory/grind/func_8001F938/clean_floor8.c and is the reference clean chassis from now on;
+  it removes the last no-semantic-purpose construct from the zero-FAKE body
+  (owner ruling 2026-08-31 Ruling 1(4), .claude/rules/ordinary-c-judge-decidable.md:61).
+- [s13c] NINE NEW NARROWING VARIANTS, ALL vars= 0. s13 killed six retypings but never touched
+  the multpath/defaultpath locals. s13c measured `s16 sum_or_3` (if/else, two paths),
+  `s16 vv0`/`s16 vv1`, `s16 f`, `s16 sum = vv0+vv1`, `s16 raw_or_3` (from the SImode probe),
+  P0+P1 combined, `s16 f` written on both arms of an if/else with the +0x274 load in one arm
+  (semantics preserved by the 0x1000 identity multiplier), `s16 f = load; if (0x26C) f = 0x1000;`,
+  and `s16 sum = load; sum += load; if (sum>=4) sum=3;`. Every one:
+  `.frame $sp,0,$31 # vars= 0`. Control (the banked distance-0 body): `vars= 8`.
+- [s13c] THE FRAME GATE IS NARROWER THAN s13 STATED. Probe Q5 (`s16 sum = *(s16*)(a0+0x26E);
+  if (sum>=4) sum=3; idx = sum*2;` — semantically WRONG, it drops the +0x272 term, probe only)
+  measured `vars= 8` at a DIFFERENT address. Combined with the nine negatives the gate is:
+  (i) the short must be initialised DIRECTLY by a HImode MEM load, (ii) re-stored with a
+  constant on a second path with NO intervening SImode arithmetic, (iii) consumed by the
+  `*2` index expression feeding the base+offset `addu`. The address is irrelevant; the shape
+  is not. `+=` between the load and the clamp (Q4) kills it; consuming the value in
+  `(a2*f)>>12` instead of an index (Q1/Q3) kills it; sourcing the short from an SImode
+  expression (P4/P5) kills it.
+- [s13c] WHY THAT DOES NOT HELP HERE. The only other clamped index in the function is the
+  defaultpath one, and the target itself (asm/funcs/func_8001F938.s:97-108) computes it as
+  `lh 0x26E ; lh 0x272 ; addu` — a SUM of two loads — so gate condition (i) cannot hold for
+  any truthful spelling of that block. P4/Q4 additionally CORRUPT the block (the target's
+  folded `sll $v0,$v1,1` pair becomes `move`/`sll 16`/`sra 16`/`sll 16`/`sra 15`, and Q4 flips
+  both `lh` to `lhu`). The 2-point frame and the 6-point .L8001FA60 block therefore remain one
+  construct bought by one declaration, exactly as s13 concluded — now on 15 measured retypings.
+- [s13c] SIBLING SWEEP EXECUTED (CD_datasync, the brief's UNSPENT sibling). Its s59 candidate.c
+  header states its whole residual is a scheduling-order fact (`sll $a0,$a0,2` two slots early
+  in a `sll/addu/sll/lw` window) and its levers are luid insertion via an address-carrier local
+  — which it disproved on its own chassis. func_8001F938 shares no block, no global and no
+  residual species with it (count deficit + HImode fold, not an order flip), so there is
+  nothing to transplant in either direction. This confirms CD_datasync's own s55 finding from
+  the other side.
+- [s13c] MECHANICAL BLOCK IDENTIFIED (the reason this session cannot submit the distance-0
+  body). All three banked copies of that body — memory/grind/func_8001F938/candidate.c,
+  rejected/layer1-fail-0825-2329.c, rejected/layer1-fail-0904-1246.c — hash to
+  `9f1177d269cd17e7` under the driver's own key
+  (`python3 tools/grinder/grindlib.py body-hash <root> func_8001F938 <path>`). The Judge PASS
+  clearance recorded in state.json judge_clearances is keyed `f56d218136d69273`, which matches
+  no artifact in the ledger; the 12:46 layer-1 FAIL was recorded against `9f1177d269cd17e7`.
+  So the clearance cannot fire, and the layer-1 objection ("no reviewer has ever passed the
+  body being submitted") is self-perpetuating. Separately, the Judge's PASS text
+  (docs/grind/decisions.md:22276) closes with "unban_construct clears the mechanical tripwire
+  on the construct itself", yet state.json banned_constructs still carries entry #3 — the
+  verbatim clamp statement — so a `candidate-ready` re-declaring it is discarded by the driver
+  before any review runs. Per the brief's standing instruction ("If the restored form trips a
+  banned_constructs entry, emit ruling-request naming the grant that supersedes it"), s13c
+  returns `ruling-request`.

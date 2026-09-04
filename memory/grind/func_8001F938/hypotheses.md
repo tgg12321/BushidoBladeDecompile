@@ -484,3 +484,139 @@ retypings; they are measured dead above.
   - result: score 0, target_insns 107, build_insns 107, rules_dropped 0; verify-oracle
     `"ok": true, "build_matches": true`. CONFIRMED.
   - verdict: CONFIRMED
+
+## s13c (2026-09-04, SYNTHESIS modality) — merged attack, kill re-audit, sibling sweep
+
+### [s13c] The 8-byte phantom frame (2 of the 8 residual points) is buyable by narrowing some OTHER local of the clean floor-8 body — s13 tested only six of them.
+- mechanism: s13 CONFIRMED that the target's frame comes from `get_frame_size()` reserving a
+  slot for a signed `short` local, and killed six retypings (A_u16kind, B_s16val, C_s16a2,
+  D_s16factor, E_s16idx, F_AB). It never touched the defaultpath/multpath locals
+  (`sum_or_3`, `sum`, `vv0`, `vv1`, `f`, `raw_or_3`), which are exactly the values that are
+  small, clamped and index-multiplied — the same shape as the +0x270 value. If any of them
+  buys `vars= 8` the frame sub-residual decouples from the banned +0x270 construct and the
+  floor drops 8 -> 6 without touching the frozen family at all.
+- probe: nine new whole-function variants, each installed alone into src/code6cac.c and
+  compiled with the project's cpp+cc1 (`tmp/grind/func_8001F938/s13c/screen.sh`, which reads
+  cc1's own `.frame ... # vars=` comment):
+  P0_mul2 (drop the artificial `(x<<16)>>15`), P1_s16sum_or_3 (`s16 sum_or_3` written on two
+  paths by if/else, used as `sum_or_3 * 2`), P2_s16vv (`s16 vv0`, `s16 vv1` loaded from
+  +0x26E/+0x272), P3_s16f (`s16 f` from +0x274), P4_s16sum (`s16 sum = vv0+vv1` then clamped
+  in place), P5_s16raw_or_3 (`s16 raw_or_3` written on two paths from the SImode +0x270 probe),
+  P6 (P0+P1), Q1_s16f_multipath (`s16 f` written on BOTH arms of an if/else, one arm the
+  +0x274 memory load, semantics preserved via the 0x1000 identity multiplier),
+  Q3_s16f_initload_rewrite (`s16 f = *(s16*)(a0+0x274); if (0x26C != 0) f = 0x1000;`),
+  Q4_s16sum_initload (`s16 sum = *(s16*)(a0+0x26E); sum += *(s16*)(a0+0x272); if (sum>=4) sum=3;`).
+- result: ALL of them measured `.frame $sp,0,$31 # vars= 0` — no frame, floor unchanged at 8.
+  Control CTRL_banked (the distance-0 body from candidate.c) measured `vars= 8` in the same
+  harness run, so the harness is live and discriminating.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: live chassis 2026-09-04, clean floor-8 body (sandbox score 8, build_insns 105,
+  target_insns 107, rules_dropped 0), zero FAKE constructs present; `vars=` read from cc1's
+  `.frame` comment for each of the nine variants plus base and CTRL_banked.
+
+### [s13c] The frame trigger is "a signed `short` local assigned on more than one path and later sign-extended" (the s13 statement of the mechanism).
+- mechanism: s13 stated the gate that broadly. If it is right, several of the nine s13c
+  variants (P1, P4, P5, Q1, Q3, Q4 all have exactly that shape) should have bought the frame.
+- probe: same nine-variant screen, plus the sharper probe Q5_probe_only
+  (`s16 sum = *(s16*)(arg0+0x26E); if (sum >= 4) sum = 3; idx = sum * 2;` — semantically WRONG,
+  it drops the +0x272 term, and is therefore a mechanism probe only, never a candidate).
+- result: the s13 statement is too broad and is hereby REFINED. P5 (short written on two paths
+  from an SImode value) => vars= 0. Q4 (short initialised from a HImode MEM load but with an
+  intervening `+=` before the clamp) => vars= 0. Q3/Q1 (short initialised from / assigned on
+  both arms with a HImode MEM load arm, but consumed by `(a2*f)>>12` rather than by an index
+  multiply) => vars= 0. Q5, which is the exact shape `short x = <HImode MEM load>; if (x>=4)
+  x=3; <index> = x*2;` at a DIFFERENT address (+0x26E), => vars= 8. So the frame needs ALL of:
+  (i) the short initialised DIRECTLY by a HImode memory load, (ii) re-stored with a constant on
+  a second path with no intervening SImode arithmetic, (iii) consumed by the `*2` index
+  expression that feeds the `addu` base+offset. The address itself is irrelevant.
+- verdict: CONFIRMED
+
+### [s13c] There is a SEMANTICALLY TRUTHFUL C form of the defaultpath (+0x26E/+0x272) block that has the frame-buying shape, so the 2-point frame can be bought away from +0x270.
+- mechanism: Q5 proves the shape works at +0x26E. If the defaultpath block could be written so
+  its clamped value is initialised directly by ONE HImode load, the frame would come from a
+  site the ban does not reach.
+- probe: read the target's own defaultpath block, asm/funcs/func_8001F938.s:97-108
+  (`lh $v0,0x26E ; lh $v1,0x272 ; addu $v1,$v0,$v1 ; slti ; bnez ; sll $v0,$v1,1 ; li 3 ;
+  sll $v0,$v1,1 ; addu`), and compare against the P4/Q4/Q5 codegen.
+- result: KILLED. The block's clamped value is by construction the SUM of two loads, so
+  condition (i) of the refined gate cannot hold without deleting one of the two loads —
+  which is what Q5 does and why Q5 is semantically wrong (and why its own block loses the
+  second `lh` and the `addu`, contradicting the target). Every truthful spelling of the sum
+  (P4 `s16 sum = vv0+vv1`, Q4 `s16 sum = load; sum += load`) measured vars= 0 AND additionally
+  corrupted the block (P4/Q4 diffs show `move`+`sll 16`+`sra 16`+`sll 16`/`sra 15` replacing
+  the target's folded `sll 1` pair, and Q4 also flips both `lh` to `lhu`). On this chassis the
+  only value in this function that satisfies the refined gate is the single load at +0x270 —
+  i.e. the frame and the .L8001FA60 block remain ONE construct, as s13 concluded, now on
+  nine more measurements and with the mechanism named exactly.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: live chassis 2026-09-04, clean floor-8 body, zero FAKE constructs; nine variants
+  + Q5 + CTRL_banked measured via cc1 `.frame` and per-variant asm diffs in
+  tmp/grind/func_8001F938/s13c/*.s.
+
+### [s13c] The clean floor-8 chassis still needs the artificial `((raw_or_3 << 16) >> 15)` shift pair it has carried since s1.
+- mechanism: The shift pair was introduced in s1 as an attempt to defeat combine's
+  simplify_shift_const fold. s6/s7 proved combine folds it to `sll 1` regardless. If it is
+  codegen-inert it is a no-semantic-purpose construct sitting in the blessed reference form,
+  and owner ruling 2026-08-31 Ruling 1(4) (.claude/rules/ordinary-c-judge-decidable.md:61)
+  says the simplest byte-exact form lands.
+- probe: P0_mul2 (`idx = raw_or_3 * 2;`) vs base; extracted `func_8001F938` bodies of
+  tmp/grind/func_8001F938/s13c/base.s and P0_mul2.s diffed; sandbox re-measured live.
+- result: KILLED (the shift pair is inert). The two asm bodies diff EMPTY — byte-identical
+  codegen — and the sandbox with P0_mul2 installed measured score 8, target_insns 107,
+  build_insns 105, rules_dropped 0. The clean chassis is therefore simplified and re-banked at
+  memory/grind/func_8001F938/clean_floor8.c; `((raw_or_3 << 16) >> 15)` is retired from the
+  reference form.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: live chassis 2026-09-04, clean floor-8 body with `idx = raw_or_3 * 2`, zero FAKE
+  constructs, sandbox score 8.
+
+### [s13c] SIBLING SWEEP (mandated) — CD_datasync holds a transplantable spelling for a block this function shares.
+- mechanism: The brief lists CD_datasync (src/system.c, foreclosed, floor 2 since its s50) as
+  UNSPENT. Its s59 candidate.c header names its own residual and its levers.
+- probe: read memory/grind/CD_datasync/candidate.c header (s59 update) and compare its residual
+  and levers against ours.
+- result: KILLED (no transplant exists). CD_datasync's entire 59-session residual is ONE
+  scheduling-order fact — `sll $a0,$a0,2` emitted two slots too early in a
+  `sll/addu/sll/lw` window (its candidate.c header item 1) — and its levers are luid-insertion
+  via an address-carrier local (item 2, which it also disproved). func_8001F938 has no
+  address-carrier pseudo, no shared block, no shared global, and a residual that is a COUNT
+  deficit (105 vs 107) plus a HImode-fold shape, not an order flip; its own s55 sweep already
+  recorded that the two functions share no block. Nothing to transplant in either direction.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: read of memory/grind/CD_datasync/candidate.c (written 2026-09-04 12:21) against
+  the live func_8001F938 chassis (score 8, build_insns 105).
+
+### [s13c] The Judge PASS clearance of 2026-09-04 12:39 is usable by a future session as recorded.
+- mechanism: The brief says the driver skips layer-1 for a body whose hash matches a recorded
+  clearance, and that a body layer-1 FAILed goes straight to the Judge on resubmission.
+- probe: `python3 tools/grinder/grindlib.py body-hash <root> func_8001F938 <path>` on all three
+  banked copies of the distance-0 body.
+- result: KILLED as recorded — a bookkeeping defect, not a code fact. candidate.c,
+  rejected/layer1-fail-0825-2329.c and rejected/layer1-fail-0904-1246.c ALL hash
+  `9f1177d269cd17e7` (the hash carrying the 12:46 layer-1 FAIL). The clearance in
+  state.json judge_clearances is keyed `f56d218136d69273`, which matches NO artifact in the
+  ledger, so the clearance can never fire and layer-1 will keep bouncing the body on the
+  ground that "no reviewer has ever passed the body being submitted". Independently, the
+  Judge's own PASS text (docs/grind/decisions.md:22276) ends "unban_construct clears the
+  mechanical tripwire on the construct itself" — but state.json banned_constructs still
+  carries entry #3, the verbatim clamp statement, so a candidate-ready re-declaring it is
+  discarded by the driver before any review runs. Both facts together are why s13c returns
+  `ruling-request` rather than `candidate-ready`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: state.json + grindlib body-hash, 2026-09-04, live chassis.
+
+## s13c frontier (reset)
+The pure-C search is not the bottleneck and has not been for six sessions: the distance-0
+body exists, is banked, re-measures 0 on the current chassis, links to the oracle SHA1, and
+has a Judge PASS ruling on its text. What blocks it is two mechanical records — a clearance
+keyed to a hash no artifact carries, and a banned_constructs entry the same Judge ruling
+directed be removed. Everything else this session touched is now measured dead:
+nine narrowing variants, the sibling transplant, and the last no-semantic-purpose construct
+in the clean chassis (removed, byte-neutral). A future session should NOT re-open structural /
+permuter / forensics / rederive / solver / compiler-fork, and should NOT re-run any of the
+fifteen retypings (s13's six + s13c's nine).

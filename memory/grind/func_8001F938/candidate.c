@@ -1,3 +1,23 @@
+/* s13c ADDENDUM (2026-09-04, synthesis modality). BODY UNCHANGED AND UNTOUCHED --
+ * do not respell it. Three things s13c adds:
+ *   1. The clean floor-8 reference chassis is now memory/grind/func_8001F938/clean_floor8.c,
+ *      with the artificial ((raw_or_3 << 16) >> 15) replaced by raw_or_3 * 2 (measured
+ *      byte-identical asm, sandbox 8). The header note below that calls the shift pair
+ *      "artificial" is now acted on rather than merely observed.
+ *   2. The 2-point phantom frame CANNOT be bought anywhere else in this function. s13c
+ *      measured nine further narrowings (sum_or_3, vv0/vv1, f, sum, raw_or_3, two if/else
+ *      forms of f, and sum-initialised-from-load) -- all vars= 0 -- and refined the gate:
+ *      the short must be initialised DIRECTLY by a HImode MEM load, re-stored with a constant
+ *      on a second path with no intervening SImode arithmetic, and consumed by the *2 index.
+ *      The defaultpath clamp is a SUM of two loads, so it can never satisfy that.
+ *   3. THIS BODY IS MECHANICALLY UNSUBMITTABLE AS THE RECORDS STAND. Its driver body-hash is
+ *      9f1177d269cd17e7 (identical for candidate.c, rejected/layer1-fail-0825-2329.c and
+ *      rejected/layer1-fail-0904-1246.c); the Judge PASS clearance in state.json is keyed
+ *      f56d218136d69273, which matches no artifact, and state.json banned_constructs #3 still
+ *      names this body's clamp statement even though the Judge PASS text
+ *      (docs/grind/decisions.md:22276) directed unban_construct. s13c therefore returned
+ *      ruling-request asking for the clearance to be re-keyed and the ban entry removed.
+ */
 /* func_8001F938 (src/code6cac.c) -- DISTANCE-0 BODY, CLEARED FOR SUBMISSION.
  *
  * Session s13b (2026-09-04, structural modality). Measured live on the current chassis
