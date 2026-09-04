@@ -1382,3 +1382,87 @@ ever reversed — it is superseded, not disproven.
 - [s13] PROBE W (8 shapes): walking pointers (*p--, *--p, *p++) give three independent bases (DISP0|DISP0|DISP-4, 28 insns) and walking indices give bucket (i) all-LOSUM, including the variant that re-derives a pointer LOCAL each time. Ordinary-C per-store single-use defs do not reproduce the target's asymmetry.
 
 - [s13] TWO-OBJECT PROVENANCE is dead on arithmetic, not on policy: the column-a store is at &D_800F1198 + i*12 and the b/c stores at +4 and +8 of that same 12-byte element for every i, and two separate C objects cannot interleave at stride 12 inside each other's elements. Do not re-open it as a ruling-request.
+
+## s14 — synthesis, 2026-09-03 — the residual is CLOSED mechanically; only its classification is open
+
+**Chassis.** `sandbox func_80062020 --disable all` with `candidate.c` in place at
+`src/text1b.c:3932`: **score 4, target_insns 38, build_insns 35, rules_dropped 0,
+cheat_asm_stripped 165** — identical to s8–s13. Sixth consecutive session at floor 4, no drift,
+so every chassis-relative conclusion in this ledger remains spendable.
+
+**Mandated kill re-audit (the closest-to-target instance kill).** `tools/fake_ablate.py --func
+func_80062020 --file text1b --candidate rejected/epilogue-deadcond-identical-arms-crossjump-score0-s13.c`
+returns `no FAKE-annotated constructs found ... nothing to ablate` — the BANKED copy of that body
+carries no `/* FAKE */` markers even though the s13 kill record describes two. The ablation grid
+was therefore spelled out by hand as shapes A0–A3 of `tmp/grind/func_80062020/s14/sweep14.py`
+(device D1 = the identical-arms conditional, device D2 = the row-pointer re-assignment):
+
+| shape | devices present | terminator forms |
+|---|---|---|
+| A0 | none (= the floor-4 body) | DISP8 \| DISP4 \| DISP0 |
+| A1 | D1 only | DISP8 \| DISP4 \| DISP0 |
+| A2 | D2 only | DISP8 \| DISP4 \| DISP0 |
+| A3 | D1 + D2 | **DISP8 \| DISP4 \| LOSUM[D_800F1198]** |
+
+Neither dead device alone moves the arrangement; the s13 score-0 body needed BOTH. **The s13 kill
+stands, re-confirmed on the 2026-09-03 chassis** — and the re-audit also proves the residual is not
+a one-device effect, which is what made the helper-boundary idea below worth measuring.
+
+**THE RESULT: two ordinary-C bodies that measure distance 0 with no dead statement anywhere.**
+`sweep14.py` crossed three untried axes in full function context (compiled with the oracle cc1 and
+the verbatim Makefile `CC_FLAGS`): (B) splitting the terminator clear across `static __inline__`
+helpers so each address expression has a distinct logical owner, (C) index-left operand order
+(`ofs + (u8 *)&SYM`), (D) a-column-distinct-role readings without a helper. Results in
+`tmp/grind/func_80062020/s14/sweep14_results.txt`; a follow-up set in `sweep14b.py`.
+
+- **B1 / `pending-ruling/s14-two-helper-split-score0.c`** — `bb2_clr_pay(ofs)` writes `q[2]`,`q[1]`
+  through its own local row pointer; `bb2_clr_flag(ofs)` writes the flag word through its own
+  direct expression; the caller holds no addressing expression at all. **sandbox = score 0,
+  38/38 insns**, and **`verify-oracle` = `ok: true`, `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`,
+  `build_matches: true`** — the whole 606,208-byte EXE is byte-identical with this body in place.
+- **E2 / `pending-ruling/s14-single-helper-score0-weaker.c`** — one helper
+  `bb2_clear_terminator(ofs)`; the payload is written inline through a row pointer in the caller.
+  **sandbox = score 0, 38/38 insns.** It reads more naturally but it is literally the banned
+  statement sequence with a function boundary inserted before the last store, so it is the weaker
+  form to ask about.
+
+**Mechanism, and why this is exactly what H-s13-8's law demanded.** The law: the target needs ONE
+address def with TWO uses (columns c and b, at DISP8/DISP4 off a shared base) plus a SECOND def of
+the same address value with ONE use (column a, folded by combine to `sw $0,%lo(D_800F1198)($at)`),
+in the same block, and `flow.c:2102` grants the LOG_LINK only to a def that dies at its single use.
+s13 proved (165 uniform shapes) that no uniform spelling produces that pair, and that reaching it
+by writing the same expression twice is a dead re-assignment. GCC 2.7.2 expands each
+`static __inline__` body with its own address computation and cse2 does not unify the two, so the
+2-use + 1-use pair appears with every statement live. **This is the first construct measured in
+fourteen sessions that satisfies the law honestly.**
+
+**Boundary conditions of the effect (all measured, all in `sweep14_results.txt` / `sweep14b.py` output).**
+- `static` WITHOUT `__inline__` is not inlined at -O2 (`E1_plain_static_two` emits `jal`) — the
+  `__inline__` keyword is load-bearing.
+- The helper must take the same byte-offset expression the caller uses: `E4`, whose helper
+  recomputes `n * 12` internally, collapses back to `DISP8 | DISP4 | DISP0`.
+- Order matters: flag-first (`B8`) gives `LOSUM[D_800F1198] | DISP8 | DISP4`, not the target.
+- The array-declaration spellings of the same split (`B5`, `B6`, decayed `extern s32 D_800F1198[]`)
+  do NOT hit — they give `DISP8 | DISP4 | DISP0` at 35 insns.
+- `B3`/`B4`, a helper that RETURNS the row pointer (`row(ofs)[0] = 0;`), does not hit: the returned
+  pointer is CSE'd back into one def.
+- Axis C (index-left operand order) is inert for the pointer form (`C1` = DISP0) and only "hits"
+  in `C3`, which is the banned dual spelling with the operands swapped. Axis D (a-column distinct
+  role without a helper) is entirely dead: `D1`,`D2`,`D3` all give `DISP8 | DISP4 | DISP0`.
+
+**In-repo precedent for the syntax, in byte-matched code:** `src/main.c:1069`
+(`static inline void vmSetStartAddr(u16 addr)`) and `src/main.c:2187`
+(`static inline void _memcpy(char *dst, char *src, u32 size)`). The tree containing them builds to
+the oracle SHA1, so `static inline` helpers are part of this codebase's shipped, matched style.
+**No SOTN-master precedent:** `docs/reference/sotn-construct-index.md` carries zero non-asm
+`inline` entries, so the construct has no citable SOTN family.
+
+**Why s14 returns `ruling-request` and not `candidate-ready`.** The construct class — a
+`static __inline__` helper called once, whose only distinguishable effect is to give one of the
+three terminator stores its own address def — is a FIRST REACH: it is in neither the frozen
+sanctioned family list nor the forbidden-family catalog. It passes T4 (not permuter-derived; it
+came from the s13 law plus a designed sweep) and T6 (names describe the work). T1/T2/T3 are
+genuinely arguable in both directions and the standing ban on this function's residual is phrased
+as intent ("a second, separately-materialised address chain for the column-a store"), which this
+achieves through a function boundary rather than a dead statement. Per the first-reach rule the
+honest move is to ask, not to self-approve.

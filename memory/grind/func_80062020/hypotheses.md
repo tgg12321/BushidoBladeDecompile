@@ -1107,3 +1107,75 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: 2026-09-03, reasoned against the target bytes in asm/funcs/func_80062020.s; no compile, no FAKE construct
+
+## [s14] The s13 score-0 dead-conditional body needs BOTH of its dead devices; either one alone reaches the target arrangement.
+- mechanism: If only one device were load-bearing, the other could be dropped and the remaining
+  single device might be re-spellable as something real (s13-7 had tried real-statement carriers
+  but never tried the two devices in isolation).
+- probe: tools/fake_ablate.py refused the banked body ("no FAKE-annotated constructs found"), so
+  the grid was spelled by hand as shapes A0-A3 of tmp/grind/func_80062020/s14/sweep14.py, compiled
+  with the oracle cc1 and the verbatim Makefile CC_FLAGS in full function context.
+- result: A1 (identical-arms conditional alone) = DISP8 | DISP4 | DISP0. A2 (row-pointer
+  re-assignment alone) = DISP8 | DISP4 | DISP0. A3 (both) = the target arrangement. A0 (neither,
+  the floor-4 body) = DISP8 | DISP4 | DISP0. The s13 kill is re-confirmed on this chassis and the
+  residual is not a one-device effect.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis (sandbox honest floor 4, cheat_asm_stripped 165); devices present
+  as stated per shape, no /* FAKE */ annotation in any of the four bodies
+
+## [s14] A `static __inline__` helper gives one terminator store its own single-use address def with every statement live, satisfying H-s13-8's use-count law without any dead code.
+- mechanism: flow.c:2102 grants combine's LOG_LINK only to a def that dies at its single use in the
+  block, so the target needs one address def with two uses (columns c,b at DISP8/DISP4) plus a
+  second def of the same value with one use (column a, folded to sw $0,%lo(D_800F1198)($at)). GCC
+  2.7.2 expands each inlined helper body with its own address computation and cse2 does not unify
+  the two, so the pair exists because the two writes have different logical owners rather than
+  because an expression was written twice.
+- probe: tmp/grind/func_80062020/s14/sweep14.py (19 shapes: helper splits, index-left operand
+  order, a-column-distinct-role) + sweep14b.py (4 follow-ups), then the two hits re-measured in the
+  real chassis via sandbox, and the strongest one through a full verify-oracle.
+- result: CONFIRMED. B1 (two helpers, caller holds no addressing expression) = sandbox score 0,
+  38/38 insns, and verify-oracle ok:true with build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  == oracle. E2 (one helper for the flag, payload inline in the caller) = sandbox score 0, 38/38.
+  Boundary conditions: plain `static` without `__inline__` emits jal (not inlined at -O2); a helper
+  that recomputes the index internally (E4) collapses to DISP0; flag-first ordering (B8) puts the
+  LOSUM first; the decayed-array declarations of the same split (B5,B6) do not hit; a helper that
+  RETURNS the row pointer (B3,B4) is CSE'd back to one def. Bodies banked at
+  memory/grind/func_80062020/pending-ruling/.
+- verdict: CONFIRMED (bytes proven; classification of the construct is the open question and is
+  the s14 ruling_request)
+
+## [s14] The a-column can be given a distinct role WITHOUT a function boundary (a different index spelling, a different operand order, or a decayed-array route) and still reach the target.
+- mechanism: s13's frontier item 1 asked for "a reading in which the a-column write belongs to a
+  different logical operation". The cheapest such readings need no helper at all.
+- probe: sweep14.py axes C (index-left, `*(s32 *)(ofs + (u8 *)&SYM)`) and D (payload through a row
+  pointer, flag through the decayed array `D_800F1198[n]`, `D_800F1198[i*3]`, `*(D_800F1198 + n)`).
+- result: KILLED. C1 (index-left pointer form) = DISP8 | DISP4 | DISP0; C2/C4 (index-left direct)
+  are bucket (i) all-LOSUM at 25 insns; C3 "hits" but is the standing banned dual spelling with the
+  `+` operands swapped, i.e. not a new construct. D1/D2/D3 all = DISP8 | DISP4 | DISP0 at 35-39
+  insns. Nothing short of the function boundary produces the second def.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis, honest floor 4, 7 shapes (C1-C4, D1-D3), no FAKE construct present
+
+### Frontier after s14 — reset to three
+
+1. **Resolve the classification of the `static __inline__` helper split, then promote.** The
+   residual is closed mechanically: `pending-ruling/s14-two-helper-split-score0.c` measures
+   distance 0 with a full-EXE SHA1 match and contains no dead statement, no FAKE construct, and no
+   same-body dual spelling. The only open question is whether a once-called `static __inline__`
+   helper is ordinary program structure or a first reach of an unsanctioned coercion family. If the
+   ruling is favourable, promote that file verbatim — no further search is needed. If it is
+   refused, the family is closed and the a-column residual has no honest construct left that any of
+   fourteen sessions has found.
+2. **A spelling found on a SIMPLER member of the 32-function same-symbol dual-address-form species
+   transfers back at zero cost.** (Carried forward from s9/s12/s13, unchanged.)
+   `tmp/grind/func_80062020/s9/scan4.py` identified 32 functions in SLUS-00663 with the identical
+   arrangement. `func_80061064` (D_800F1150) is the immediate data-region neighbour; `CD_cw` and
+   `SpuSetReverbModeParam` are shorter bodies where the arrangement may appear without the
+   surrounding loop. NOTE for the next session: the s14 helper result predicts those 31 siblings
+   are the SAME construct question, so a ruling here settles all 32 at once.
+3. **An owner class grant covering the same-symbol dual-address-form residual would close this
+   function and 31 siblings in one act.** (Carried forward, unchanged.) If the frozen list is ever
+   extended, resubmit `rejected/layer1-fail-0831-2231.c` unchanged — it already measures distance 0
+   with SHA1 == oracle.

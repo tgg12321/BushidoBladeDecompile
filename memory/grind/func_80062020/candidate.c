@@ -1,3 +1,25 @@
+/* s14 BANNER (synthesis, 2026-09-03) — READ THIS FIRST.
+ * 1. Floor re-measured on the live chassis with this body in place: sandbox
+ *    func_80062020 --disable all = score 4, target_insns 38, build_insns 35,
+ *    rules_dropped 0, cheat_asm_stripped 165.  Sixth consecutive session at floor 4.
+ *    This body remains the best UNCONTESTED form and candidate.c deliberately still holds it.
+ * 2. BUT s14 measured TWO DISTANCE-0 BODIES that carry no dead statement and no
+ *    same-body dual spelling — the first honest forms ever to reach the target arrangement.
+ *    They are NOT here because their construct class (a `static __inline__` helper used once,
+ *    which after inlining supplies the second single-use address def H-s13-8's law requires)
+ *    is a first reach: not in the frozen sanctioned family list, not in the forbidden catalog.
+ *    They live at memory/grind/func_80062020/pending-ruling/ and the s14 outcome JSON carries
+ *    the ruling question.  Both were verified: score 0, 38/38 insns, and the two-helper form
+ *    also passed a full verify-oracle (build_sha1 == 62efab4f...bb4fa, build_matches true).
+ *    If the ruling is favourable, promote pending-ruling/s14-two-helper-split-score0.c
+ *    verbatim — it needs no further search.
+ * 3. s14 also ran the mandated kill re-audit of the s13 score-0 dead-conditional body.
+ *    tools/fake_ablate.py refuses it ("no FAKE-annotated constructs found" — the banked copy
+ *    carries no markers), so the ablation grid was spelled by hand
+ *    (tmp/grind/func_80062020/s14/sweep14.py, shapes A0..A3): the identical-arms conditional
+ *    ALONE gives DISP8|DISP4|DISP0 and the pointer re-assignment ALONE gives DISP8|DISP4|DISP0;
+ *    only both together reach the target.  The s13 kill stands, re-confirmed on this chassis.
+ */
 /* s13 RE-MEASURE (synthesis, 2026-09-03, second run): this body, pasted over the
  * INCLUDE_ASM line at src/text1b.c:3932, measures sandbox func_80062020 --disable all
  * = score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 165.
