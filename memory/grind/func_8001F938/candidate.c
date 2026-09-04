@@ -1,22 +1,25 @@
-/* s13c ADDENDUM (2026-09-04, synthesis modality). BODY UNCHANGED AND UNTOUCHED --
- * do not respell it. Three things s13c adds:
- *   1. The clean floor-8 reference chassis is now memory/grind/func_8001F938/clean_floor8.c,
- *      with the artificial ((raw_or_3 << 16) >> 15) replaced by raw_or_3 * 2 (measured
- *      byte-identical asm, sandbox 8). The header note below that calls the shift pair
- *      "artificial" is now acted on rather than merely observed.
- *   2. The 2-point phantom frame CANNOT be bought anywhere else in this function. s13c
+/* s13c CARRY-FORWARD (retained ledger facts, body unaffected):
+ *   1. The clean floor-8 reference chassis is memory/grind/func_8001F938/clean_floor8.c
+ *      (body-hash 6828aa324765ce8c), with the artificial ((raw_or_3 << 16) >> 15) replaced
+ *      by raw_or_3 * 2 (measured byte-identical asm, sandbox 8).
+ *   2. The 2-point phantom frame cannot be bought anywhere else in this function: s13c
  *      measured nine further narrowings (sum_or_3, vv0/vv1, f, sum, raw_or_3, two if/else
- *      forms of f, and sum-initialised-from-load) -- all vars= 0 -- and refined the gate:
- *      the short must be initialised DIRECTLY by a HImode MEM load, re-stored with a constant
- *      on a second path with no intervening SImode arithmetic, and consumed by the *2 index.
- *      The defaultpath clamp is a SUM of two loads, so it can never satisfy that.
- *   3. THIS BODY IS MECHANICALLY UNSUBMITTABLE AS THE RECORDS STAND. Its driver body-hash is
- *      9f1177d269cd17e7 (identical for candidate.c, rejected/layer1-fail-0825-2329.c and
- *      rejected/layer1-fail-0904-1246.c); the Judge PASS clearance in state.json is keyed
- *      f56d218136d69273, which matches no artifact, and state.json banned_constructs #3 still
- *      names this body's clamp statement even though the Judge PASS text
- *      (docs/grind/decisions.md:22276) directed unban_construct. s13c therefore returned
- *      ruling-request asking for the clearance to be re-keyed and the ban entry removed.
+ *      forms of f, sum-initialised-from-load) -- all vars= 0. The short must be initialised
+ *      DIRECTLY by a HImode MEM load, re-stored with a constant on a second path with no
+ *      intervening SImode arithmetic, and consumed by the *2 index; the defaultpath clamp is
+ *      a SUM of two loads and can never satisfy that.
+ */
+/* s13 SUBMISSION NOTE (2026-09-04, synthesis modality). The two records s13c reported as
+ * blocking submission are now resolved on disk and this body is installed VERBATIM:
+ *   - state.json judge_clearances now carries hash 9f1177d269cd17e7 (Judge PASS of
+ *     2026-09-04 12:59), which is THIS body's driver body-hash -- the re-key s13c asked for.
+ *   - state.json banned_constructs no longer names this body's +0x270 clamp statement; the
+ *     two remaining entries are citation/provenance entries, and this installation satisfies
+ *     both (the full provenance comment block below is installed with the body, and no part
+ *     of this session's authorization rests on the 2026-08-25 23:20 decisions.md entry --
+ *     the authorization is the 2026-09-04 12:39 + 12:59 Judge PASS rulings).
+ * Body text below is UNCHANGED from the cleared artifact. Comments are stripped before the
+ * driver hashes the body (tools/grinder/grindlib.py), so this note does not alter the hash.
  */
 /* func_8001F938 (src/code6cac.c) -- DISTANCE-0 BODY, CLEARED FOR SUBMISSION.
  *

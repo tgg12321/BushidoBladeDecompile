@@ -620,3 +620,35 @@ nine narrowing variants, the sibling transplant, and the last no-semantic-purpos
 in the clean chassis (removed, byte-neutral). A future session should NOT re-open structural /
 permuter / forensics / rederive / solver / compiler-fork, and should NOT re-run any of the
 fifteen retypings (s13's six + s13c's nine).
+
+## s13 (2026-09-04, synthesis) -- frontier resolved
+
+- hypothesis: The blocking condition for this function is a RECORDS condition (clearance keyed
+  to a hash matching no artifact + a banned_constructs entry naming the cleared clamp), not a
+  code condition, and once those records were corrected the already-proven body would install,
+  measure 0, and byte-match the oracle.
+  probe: read state.json judge_clearances + banned_constructs; install candidate.c verbatim
+  with its header block into src/code6cac.c; sandbox --disable all; verify-oracle.
+  result: CONFIRMED. judge_clearances now carries 9f1177d269cd17e7 (decisions.md:22284,
+  2026-09-04 12:59); banned_constructs no longer names the clamp; sandbox score 0
+  (107/107, rules_dropped 0); verify-oracle ok:true build_matches:true.
+  verdict: CONFIRMED
+
+- hypothesis: The foreclosed sibling CD_datasync (its s59, floor 2) holds a spelling of a block
+  shared with func_8001F938 that would move this function's floor.
+  probe: read memory/grind/CD_datasync/candidate.c (s59 header + body) and cross-check the
+  block inventory against func_8001F938's five blocks.
+  result: KILLED (instance). CD_datasync's residual is a scheduling-order question inside a
+  CD-library block-3 window (`sll $a2/$a0` index-shift placement) with no counterpart here;
+  CD_datasync's own s55 sibling sweep already recorded that func_8001F938 shares NO block with
+  it. Nothing to transplant. Measured on the s13 chassis (candidate body installed, sandbox 0,
+  zero FAKE constructs present).
+  verdict: KILLED
+  kill_scope: instance
+  measured_on: s13 chassis, candidate.c body 9f1177d269cd17e7 installed in src/code6cac.c, no FAKE constructs present, sandbox 0
+
+FRONTIER AFTER s13: none for a grind session. The body measures 0, the full build matches the
+oracle, the body carries two Judge PASS clearances (decisions.md:22276 and :22284) and is
+submitted verbatim with its header block. The remaining step is the driver's byte re-verify +
+FINAL CALL. If the Judge FAILs the body at FINAL CALL, do NOT respell it (verdicts are keyed by
+body); the only correct next move is a ruling-request naming decisions.md:22284's re-key.

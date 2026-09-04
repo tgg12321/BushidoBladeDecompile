@@ -1,19 +1,42 @@
-# SELF-VET â€” func_8001F938
+# SELF-VET — func_8001F938
 
-Session s13b (2026-09-04, structural modality). Diff against `src/code6cac.c`: the single
-line `INCLUDE_ASM("asm/funcs", func_8001F938);` (was line 1684) is replaced by the C body
-of `func_8001F938`, installed VERBATIM from
-`memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c` per the Judge PASS ruling of
-2026-09-04 12:39 (`docs/grind/decisions.md:22276`), which explicitly CLEARED that body for
-submission. Nothing else in the tree is touched. Measured this session:
-`sandbox func_8001F938 --disable all` => **score 0**, target_insns 107, build_insns 107,
-rules_dropped 0; and `verify-oracle` => `"ok": true, "build_matches": true` (full-build SHA1
-== the oracle).
+Session s13 (2026-09-04, synthesis modality). Diff against `src/code6cac.c`: the single
+line `INCLUDE_ASM("asm/funcs", func_8001F938);` (line 1684) is replaced by the C body of
+`func_8001F938`, installed VERBATIM from `memory/grind/func_8001F938/candidate.c` —
+driver body-hash `9f1177d269cd17e7`, byte-identical in its definition to
+`memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c` — TOGETHER WITH its full
+provenance/mechanism/precedent comment header block, plus a short s13 submission note that
+records why the two remaining banned_constructs entries are satisfied. Nothing else in the
+tree is touched. Measured THIS session with the edit in place:
+`& tools/wteng.ps1 main sandbox func_8001F938 --disable all` => **score 0**,
+target_insns 107, build_insns 107, scorable true, rules_dropped 0.
 
-**Authorization note (explicit, because the driver enforces it):** this vet cites the
-2026-09-04 12:39 Judge ruling and `.claude/rules/ordinary-c-judge-decidable.md`. It does NOT
-cite, rely on, or re-declare the 2026-08-25 23:20 decisions.md entry, which remains a banned
-construct for this function.
+**Authorization (explicit, because the driver enforces it).** This body carries TWO Judge
+PASS clearances on record:
+  - `docs/grind/decisions.md:22276` (2026-09-04 12:39) — the standing +0x270 pre-ban does
+    NOT reach this body; "Declared type is not a construct family."
+  - `docs/grind/decisions.md:22284` (2026-09-04 12:59) — the clearance is RE-KEYED to this
+    body's actual driver hash `9f1177d269cd17e7`, the 12:46 layer-1 FAIL's sole ground
+    (hash/comment-block mismatch) is shown mechanically impossible because
+    `tools/grinder/grindlib.py:1141` strips comments before hashing, and
+    `banned_constructs #3` (which named this exact clamp statement) is cleared by that
+    ruling's own unban direction. It is no longer present in `state.json banned_constructs`.
+
+**The two banned_constructs entries that DO stand are both satisfied by this diff, and
+neither is re-declared:**
+  1. "The 2026-08-25 23:20 decisions.md entry cited by the s11 vet as authorization" — this
+     vet does NOT cite, rely on, or re-declare that entry anywhere. Its authorization is
+     exclusively the 2026-09-04 12:39 + 12:59 Judge PASS rulings and
+     `.claude/rules/ordinary-c-judge-decidable.md`.
+  2. "Whole-diff provenance break: candidate.c installs only the bare function ... and drops
+     the entire header comment block" — this installation carries the ENTIRE header comment
+     block into `src/code6cac.c` above the definition (measured ladder, mechanism
+     explanation, rename rationale, the "narrowing, not a repeal" scope statement, and the
+     measured alternatives for the kind-split). Comments do not affect the body hash, so the
+     submitted body is still exactly the cleared `9f1177d269cd17e7`.
+
+The body is submitted UNRESPELLED, exactly as cleared, per judge_constraints #5 ("Install
+candidate.c verbatim (body 9f1177d269cd17e7) with its header block intact").
 
 CONSTRUCTS: (C1) kind-split â€” `u32 kind_full` holds the raw `*(u16*)(arg0+0x6A)` read and
 `u32 kind = kind_full & 0xFFFFU` holds the masked value used for the `==` comparisons;
@@ -88,7 +111,9 @@ type. The Judge ruled precisely this question on 2026-09-04 12:39
 (`docs/grind/decisions.md:22276`): "The ban does NOT reach this body... Declared type is not
 a construct family." That ruling postdates both the ban (2026-07-23) and the 2026-08-25
 layer-1 FAILs and governs under the dated-rulings clause. Its clearance names this body by
-path and by hash (`body=f56d218136d69273`), and it is submitted here verbatim, unrespelled.
+path and by hash (`body=f56d218136d69273`), and the follow-up PASS of 2026-09-04 12:59
+(`docs/grind/decisions.md:22284`) re-keys that clearance to this body's actual driver hash
+`9f1177d269cd17e7`. It is submitted here verbatim, unrespelled.
 
 ## T6 naming-announces-intent
 No name in the diff announces coercion intent. `kind_full`, `kind`, `dmg`, `idx`, `factor`,
@@ -99,8 +124,8 @@ one is read after being written; none is address-taken, discarded, or unused.
 SANCTIONED-FAMILY-CLAIMS: none â€” this candidate is 100% ordinary compilable C (zero asm,
 zero pins, zero pragmas, zero gate-list/allowlist/build changes, zero volatile) and contains
 no no-semantic-purpose construct requiring family membership, per
-`.claude/rules/ordinary-c-judge-decidable.md:51` (Ruling 1(3)) and the Judge PASS at
-`docs/grind/decisions.md:22276`.
+`.claude/rules/ordinary-c-judge-decidable.md:51` (Ruling 1(3)) and the Judge PASS rulings at
+`docs/grind/decisions.md:22276` and `docs/grind/decisions.md:22284`.
 
 ANNOTATION-CONFORMANCE: n/a â€” no FAKE construct. No construct in this diff belongs to a
 family that mandates an annotation; every construct carries a truthful semantic reading

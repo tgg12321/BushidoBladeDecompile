@@ -790,3 +790,56 @@ produce. See the s13 frontier and the ruling request.
   before any review runs. Per the brief's standing instruction ("If the restored form trips a
   banned_constructs entry, emit ruling-request naming the grant that supersedes it"), s13c
   returns `ruling-request`.
+
+## s13 (2026-09-04, synthesis modality) -- DISTANCE 0 REACHED AND SUBMITTED
+
+- [s13] MERGED ATTACK, EXECUTED AND MEASURED. The synthesis brief's job for this function was
+  not a new search axis: twelve sessions had already proven the ONLY distance-0 body (the
+  `s16 dmg` clamp form) and the last three sessions were blocked purely on RECORDS, not on
+  code. s13c's own header stated the block precisely: the Judge PASS clearance was keyed
+  `f56d218136d69273`, which matched no artifact on disk, while the actual driver body-hash of
+  candidate.c / rejected/layer1-fail-0825-2329.c / rejected/layer1-fail-0904-1246.c is
+  `9f1177d269cd17e7`; and `state.json banned_constructs #3` still named this body's +0x270
+  clamp statement even though the 12:39 Judge PASS had directed the unban. Both records are
+  now RESOLVED ON DISK, verified by reading state.json this session:
+    * `judge_clearances` carries BOTH `f56d218136d69273` (12:39, decisions.md:22276) and
+      `9f1177d269cd17e7` (12:59, decisions.md:22284) -- the re-key s13c asked for. The 12:59
+      ruling establishes DECISIVELY that `tools/grinder/grindlib.py:1141` strips every C
+      comment before hashing, so the 12:46 layer-1 FAIL's sole ground (that the cleared hash
+      "included the provenance comment block" and the staged one did not) is mechanically
+      impossible; `f56d...` was a recording error, not a different artifact.
+    * `banned_constructs` is now TWO entries, and neither names a code construct: (#1) the
+      2026-08-25 23:20 self-issued "ruling" may not be cited as authorization; (#2) the
+      whole-diff provenance break (installing the bare function while dropping the header
+      comment block). The clamp-statement ban is GONE.
+- [s13] INSTALLATION. `src/code6cac.c:1684` `INCLUDE_ASM("asm/funcs", func_8001F938);` replaced
+  by the cleared body VERBATIM (judge_constraints #5: "Install candidate.c verbatim (body
+  9f1177d269cd17e7) with its header block intact"), TOGETHER WITH the full provenance /
+  mechanism / precedent header comment block -- which is what discharges banned_constructs #2
+  -- plus a short s13 submission note recording the resolution above. Comments do not enter
+  the body hash, so the submitted body is still exactly `9f1177d269cd17e7`.
+- [s13] MEASURED, THIS SESSION, WITH THE EDIT IN PLACE:
+    `& tools/wteng.ps1 main sandbox func_8001F938 --disable all`
+      => score 0, target_insns 107, build_insns 107, scorable true, rules_dropped 0.
+      (cheat_asm_stripped 24 is FILE-wide for src/code6cac.c, not this function; this function
+      contributes zero cheat-asm, zero rules, zero pins, zero volatile, zero pragmas.)
+    `& tools/wteng.ps1 main verify-oracle`  =>  "ok": true, "build_matches": true
+      (full clean-driver build + link SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa).
+  Artifacts: tmp/grind/func_8001F938/s13/sandbox_score0.json,
+             tmp/grind/func_8001F938/s13/verify_oracle.json.
+  This is the FIRST session in which the honest floor of this function is not 8. The floor is
+  0 and the tree byte-matches the oracle with pure C.
+- [s13] SELF-VET rewritten for this session at memory/grind/func_8001F938/self_vet.md: the six
+  cheat tests answered per construct (C1 kind-split, C2 the +0x270 short clamp, C3 block-scoped
+  named intermediates, C4 mixed goto/return control flow), SANCTIONED-FAMILY-CLAIMS: none
+  (100% ordinary C; no no-semantic-purpose construct, hence no family membership and no FAKE
+  owed, per .claude/rules/ordinary-c-judge-decidable.md:51 Ruling 1(3) and both Judge PASS
+  rulings), ANNOTATION-CONFORMANCE: n/a. The vet does NOT cite the 2026-08-25 23:20 entry
+  anywhere -- banned_constructs #1 is not re-declared.
+- [s13] SIBLING-LEDGER MANDATE DISCHARGED. CD_datasync (src/system.c, foreclosed, floor 2) was
+  read this session at memory/grind/CD_datasync/candidate.c: its whole residual is a
+  `sll $a0,$a0,2` scheduling-order question in a CD-library block-3 window
+  (CD_datasync s59 notes 1-3), and its own s55 sweep already recorded that func_8001F938
+  "shares NO block with CD_datasync" (memory/grind/CD_datasync/evidence.md:3338,:3364). There
+  is no shared block to transplant a spelling for, and this function measured 0 regardless.
+  Recorded as a KILLED (instance) transplant hypothesis naming the sibling and its session.
