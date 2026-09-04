@@ -1,3 +1,39 @@
+/* s13 UPDATE (2026-09-04, structural modality) -- READ THIS BEFORE THE OLDER HEADERS.
+ * Floor re-measured live with this exact body: score 8, build_insns 105, target_insns 107,
+ * rules_dropped 0, and cc1 reports `.frame $sp,0,$31 # vars= 0`.
+ *
+ * THE OLDER HEADERS BELOW CONTAIN A MIS-ATTRIBUTION, CARRIED SINCE s3, THAT s13 CORRECTS.
+ * They say "the 2-instruction deficit (105 vs 107) IS the whole residual" and that the
+ * missing instruction is the target's second +0x270 load. It is not. A full normalised
+ * instruction diff (tmp/grind/func_8001F938/s13/cmp.py) shows the .L8001FA60 block is
+ * COUNT-NEUTRAL -- target 8 insns before the `addu` (lh, lhu, slti, bnez, sll16, addiu3,
+ * sll16, sra15), ours 8 (lh, nop, move, slti, bnez, sll1, li3, sll1); the target's second
+ * load merely fills the load-delay slot maspsx fills with a nop. The ENTIRE 105-vs-107
+ * count deficit is the target's 8-byte stack frame, which this body does not have:
+ *     asm/funcs/func_8001F938.s:11   addiu $sp, $sp, -0x8   (delay slot of the first beq)
+ *     asm/funcs/func_8001F938.s:117  addiu $sp, $sp,  0x8   (epilogue)
+ * Nothing in the target reads or writes those 8 bytes -- a phantom frame in the sense of
+ * [[phantom-frame-slots-gcc272]]. Honest decomposition of score 8: 6 (block shape) + 2 (frame).
+ *
+ * s13 measured what buys that frame. cc1's `.frame ... # vars=` comment IS get_frame_size(),
+ * so it is a direct gradient (harness: tmp/grind/func_8001F938/s13/frame.sh). An isolated
+ * micro-suite (ft.c/ft2.c/ft3.c in the same directory) shows the trigger is a signed `short`
+ * local assigned on MORE THAN ONE PATH and afterwards used in a sign-extending context:
+ * `s16 x = load; if (x>=4) x=3; use x` => vars=8; the same without the conditional assign
+ * => vars=0; assigned from a computed SImode expression => vars=0; unsigned `short` with no
+ * sign-extending use => vars=0. All SIX narrowings of the other locals in THIS body
+ * (u16 kind_full+kind, s16 val, s16 a2, s16 factor, s16 idx, and kind+val together;
+ * files in tmp/grind/func_8001F938/s13/variants/) measured vars=0 -- none buys the frame.
+ *
+ * CONSEQUENCE. The frame and the second load are ONE construct, not two: the only value in
+ * this function that is narrow, assigned on more than one path, and later sign-extended is
+ * the clamped +0x270 value. The banked distance-0 body was re-measured live this session
+ * (score 0, build_insns 107, vars=8) purely as evidence; src/ was restored to INCLUDE_ASM
+ * and NOTHING was submitted -- that body is a mechanically banned construct for this
+ * function. s13's outcome is a ruling-request carrying the frame evidence.
+ *
+ * This file stays at the clean floor-8 form per the standing Judge constraint.
+ */
 /* s12 UPDATE (2026-08-30, escalation modality). Floor RE-MEASURED on the live chassis with
  * this exact body installed: sandbox func_8001F938 --disable all => score 8, build_insns 105,
  * target_insns 107, rules_dropped 0. Unchanged.

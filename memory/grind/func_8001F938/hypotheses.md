@@ -431,3 +431,37 @@ session should open NONE of them.
 ## 2026-09-01 — operator census-of-record note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
 STAYS FORECLOSED — Ruling E executed: a first-hand five-stage sweep of sotn-decomp master (HEAD db41b28e, PSX-config membership verified per hit) found ZERO opposite-signedness same-address 16-bit read pairs; closest exhibits (servant/tt_002/faerie.c:1362 'needed for match' cast respelling; weapon/w_017.c:142 / w_032.c:16 union-view slot reuse) are all SAME-signedness. This supersedes the 2026-08-30 index census (which was a detector-coverage artifact — the index has no class for this shape) as the gate-(b) census of record. The F2 refusal stands; the banked distance-0 body (rejected/layer1-fail-0825-2329.c) stays rejected. Re-activation now requires an actual SOTN-master exhibit appearing in a future checkout or an owner family ruling.
+
+## [s13] The 105-vs-107 instruction-count deficit is the missing 8-byte stack frame, not the second +0x270 load.
+- mechanism: Normalised full-function diff of our build vs asm/funcs/func_8001F938.s. Target's `.L8001FA60` block emits 8 insns before the `addu` (lh, lhu, slti, bnez, sll16, addiu3, sll16, sra15); ours emits 8 (lh, nop, move, slti, bnez, sll1, li3, sll1). Count-neutral: the target's 2nd load occupies the load-delay slot maspsx fills with a nop, and its `sra $v0,$v0,15` is paid for by our `move $v1,$v0`. The only count difference in the whole function is `addiu $sp,$sp,-0x8` (delay slot of the first beq, asm/funcs/func_8001F938.s:11) + `addiu $sp,$sp,0x8` (epilogue, :117), which our build does not emit at all.
+- probe: tmp/grind/func_8001F938/s13/cmp.py over tmp/grind/func_8001F938/s13/ours.txt (objdump of the sandbox .o) and the target .s.
+- result: score 8 decomposes as 6 (block .L8001FA60 shape) + 2 (missing frame). This CORRECTS the H2/candidate.c/decisions.md attribution carried since s3, which recorded the count deficit as the second load and therefore never named the frame as a sub-residual. Chassis floor re-measured live: score 8, build_insns 105, target_insns 107, rules_dropped 0.
+- verdict: CONFIRMED
+
+## [s13] The target's 8-byte frame is a phantom slot produced by a signed `short` local assigned on more than one path and later used in a sign-extending context.
+- mechanism: cc1's own `.frame ... # vars=` comment is get_frame_size(). Isolated micro-suite (tmp/grind/func_8001F938/s13/ft.c, ft2.c, ft3.c): `s16 x = load; if (x>=4) x=3; use x` => vars=8 (probes t2,u1,u3,u4,u5); the same without the conditional assignment (u2,t5) => vars=0; assigned from a computed SImode expression (v1) => vars=0; unsigned short with no sign-extending use (v4) => vars=0; `u16` kind-split HImode bitwise (t1) => vars=0. Sign-extension of a non-MEM HImode operand is expanded at tools/gcc-2.7.2/config/mips/mips.md:2340 (extendhisi2). The slot is never referenced: the .rtl/.cse/.flow dumps of the distance-0 body contain zero virtual-stack-vars refs — the [[phantom-frame-slots-gcc272]] artifact.
+- probe: cpp+cc1 with the project's CC_FLAGS on the micro-suite; tmp/grind/func_8001F938/s13/frame.sh on the whole file.
+- result: t2 (the banned clamp) reproduces BOTH the frame (vars=8) and the target's `lh`+`lhu` pair in eight instructions, in isolation, from one C statement.
+- verdict: CONFIRMED
+
+## [s13] Narrowing any OTHER local of the clean floor-8 body buys the target's 8-byte frame.
+- mechanism: If some other local could be given a narrow type that GCC 2.7.2 gives a phantom frame slot, the 2-point frame sub-residual would be attackable without touching the +0x270 block at all.
+- probe: six variants installed one at a time in src/code6cac.c and measured with tmp/grind/func_8001F938/s13/frame.sh — A_u16kind (u16 kind_full + u16 kind), B_s16val (s16 val), C_s16a2 (s16 a2), D_s16factor (s16 factor), E_s16idx (s16 idx), F_AB (A+B). Files in tmp/grind/func_8001F938/s13/variants/.
+- result: all six measured `.frame $sp,0,$31 # vars= 0`. None buys the frame. Within this body the only value that is narrow AND assigned on more than one path AND later sign-extended is the clamped +0x270 value, so on this chassis the frame and the second load are one construct.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: live chassis 2026-09-04, candidate.c clean floor-8 body (score 8, build_insns 105), zero FAKE constructs present, six single-declaration retypings measured via cc1 `.frame` (get_frame_size).
+
+## [s13] The banked distance-0 body is still distance-0 after all chassis drift.
+- mechanism: Re-measurement, not a new form. rejected/layer1-fail-0825-2329.c's function body installed verbatim.
+- probe: sandbox func_8001F938 --disable all + frame.sh, 2026-09-04.
+- result: score 0, target_insns 107, build_insns 107, rules_dropped 0, `.frame $sp,8,$31 # vars= 8`. One `short` declaration buys both the frame and the block. src/ restored to INCLUDE_ASM immediately; nothing submitted (the body is a mechanically banned construct).
+- verdict: CONFIRMED
+
+## s13 frontier
+The structural axis produced a real result this session, but it is not a new form: it
+is the discovery that the residual has TWO halves and that both halves are bought by
+the same single `short` declaration, plus the measured elimination of every other
+narrowing in the function. The next move is a `ruling-request` carrying the frame
+evidence — see the s13 outcome JSON's ruling_question. Do NOT re-run the six
+retypings; they are measured dead above.

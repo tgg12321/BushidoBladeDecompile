@@ -583,3 +583,101 @@ shipped as candidate.c with the 13 rules retired.
 - [s12] No packet asking the owner to lower a standard was filed: a family sanction, canonical-asm grant, evidence-bar override or debt acceptance are all pre-decided NO under the 2026-08-24 auto-reject ruling. The filed entry pends nothing and states its single named re-open trigger.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated — ledger floor 8 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force. exhaustion_base=12
+
+## s13 (2026-09-04, structural modality) — THE RESIDUAL WAS MIS-ATTRIBUTED FOR TWELVE SESSIONS
+
+**Chassis re-measurement.** `sandbox func_8001F938 --disable all` with `candidate.c`
+(the clean floor-8 form) installed in `src/code6cac.c`: `score 8, target_insns 107,
+build_insns 105, rules_dropped 0`. Floor 8 confirmed live on 2026-09-04.
+
+**THE CORRECTION.** Every session since s3 has recorded, in `candidate.c`, in
+`hypotheses.md` (H2) and in three `docs/grind/decisions.md` entries, that "the
+2-instruction deficit (105 vs 107) IS the whole residual" and that the missing
+instruction is the target's second `+0x270` load. **That is wrong, and it is wrong in
+a way that hid an independently-attackable sub-residual for ten sessions.**
+
+A full normalised instruction-by-instruction diff of our build against
+`asm/funcs/func_8001F938.s` (harness `tmp/grind/func_8001F938/s13/cmp.py`, our
+disassembly banked at `tmp/grind/func_8001F938/s13/ours.txt`) shows:
+
+* The `.L8001FA60` block is **instruction-count-neutral**. Target emits
+  `lh, lhu, slti, bnez, sll16, addiu3, sll16, sra15` = 8 insns before the `addu`;
+  we emit `lh, nop, move, slti, bnez, sll1, li3, sll1` = 8 insns before the `addu`.
+  The target's second load costs nothing net — it *fills the load-delay slot that
+  maspsx fills with a `nop` in our build*. The target's `sra $v0,$v0,15` is paid for
+  by our `move $v1,$v0`. So the second load is a SHAPE difference (~6 of the 8 score
+  points), not a COUNT difference.
+* The entire 105-vs-107 count deficit is the **stack frame**, which our build does
+  not have and the target does:
+      asm/funcs/func_8001F938.s:11  addiu $sp, $sp, -0x8   (delay slot of the first beq)
+      asm/funcs/func_8001F938.s:117 addiu $sp, $sp,  0x8   (epilogue)
+  Nothing in the target ever reads or writes those 8 bytes — it is a *phantom* frame
+  in the sense of the project memory `[[phantom-frame-slots-gcc272]]`.
+
+So the honest decomposition of score 8 is **6 (block-`.L8001FA60` shape) + 2 (missing
+8-byte frame)**, and the frame half had never been named, let alone attacked.
+
+**The frame is a direct, cheap gradient.** cc1 prints `get_frame_size()` itself in the
+`.frame` comment. Harness: `tmp/grind/func_8001F938/s13/frame.sh` (cpp + cc1 with the
+project's exact `CC_FLAGS`, then `awk` the first `.frame` after `func_8001F938:`).
+Clean floor-8 form → `.frame $sp,0,$31  # vars= 0`. Target needs `vars= 8`.
+
+**What actually produces `vars= 8` (measured, isolated micro-suite).**
+Artifacts `tmp/grind/func_8001F938/s13/ft.c`, `ft2.c`, `ft3.c` (+ the `.s` outputs),
+all compiled with the project's flags:
+
+| probe | shape | vars= |
+|---|---|---|
+| `t1` | `u16 a = *(u16*)p; u16 b = a & 0xFFFF;` (the kind-split, HImode) | 0 |
+| `t2` | `s16 x = *(s16*)(p+0x270); if (x>=4) x=3; i = x*2;` | **8** |
+| `t3` | `(a & ~b) & 1` on two `s16` locals | 0 |
+| `t5` | `s16 a = *(s16*)p; ... a<<1` (no conditional assign) | 0 |
+| `t7` | `s32 v[2];` local array | **8** |
+| `u2` | `s16 x = load; i = x*2;` (**no** conditional assign) | 0 |
+| `u1/u3/u4/u5` | `s16 x = load; if (x>=4) x=3; <use x>` | **8** |
+| `u6` | `u16 x = load; if ((s16)x>=4) x=3; i=(s16)x*2;` | **8** |
+| `v1` | `s16 a2` assigned conditionally from a computed SImode expr `(a2*f)>>12` | 0 |
+| `v3` | `s16 val = load; if (val<0) val=0;` | **8** |
+| `v4` | `u16 k = load; if (k>0x40) k=0;` (unsigned, no sign-extending use) | 0 |
+
+The trigger is narrow and reproducible: **a signed `short` local that is assigned on
+more than one path and afterwards used in a sign-extending context.** Assigning it
+from a computed SImode expression (v1) does not trigger it; an unsigned `short` with
+no sign-extending use (v4) does not trigger it; a `short` with a single assignment
+(u2, t5) does not trigger it. Sign-extension of a non-MEM HImode operand is expanded
+in `tools/gcc-2.7.2/config/mips/mips.md:2340` (`extendhisi2`: `force_not_mem` for a
+MEM operand, otherwise in-register `sll 16 ; sra 16`), and the frame slot the multi-path
+HImode local acquires is never referenced by any insn — the `.rtl`, `.cse` and `.flow`
+dumps for the distance-0 body contain ZERO `virtual-stack-vars` references
+(`tmp/grind/func_8001F938/dumps/`). That is precisely the
+`[[phantom-frame-slots-gcc272]]` artifact: a slot `get_frame_size()` counts and the
+register allocator then makes unnecessary.
+
+**Six re-typings of the clean form: all `vars= 0` (KILLED).** Narrowing every other
+local in the floor-8 body, one at a time and in combination
+(`tmp/grind/func_8001F938/s13/variants/`):
+`A_u16kind` (`u16 kind_full` + `u16 kind`), `B_s16val` (`s16 val`), `C_s16a2`
+(`s16 a2`), `D_s16factor` (`s16 factor`), `E_s16idx` (`s16 idx`), `F_AB` (A+B) —
+**every one measured `vars= 0`.** So within this function there is no second place to
+buy the frame: the only value that is (i) narrow, (ii) assigned on more than one path,
+and (iii) subsequently sign-extended is the clamped `+0x270` value. The frame and the
+second load are **one construct, not two**.
+
+**The distance-0 body is still distance-0 on the live chassis.** Installing
+`rejected/layer1-fail-0825-2329.c`'s body verbatim:
+`score 0, target_insns 107, build_insns 107, rules_dropped 0`, and
+`.frame $sp,8,$31 # vars= 8`. It matches the frame AND the block in one statement.
+(Measured only as evidence for the ruling question; `src/code6cac.c` was restored to
+`INCLUDE_ASM("asm/funcs", func_8001F938)` immediately afterwards. Nothing was
+submitted — the body is a mechanically banned construct for this function.)
+
+**Why this changes the ruling question rather than the search.** The banned body
+contains **exactly one dereference of `+0x270`**, no cast, no union, no second
+pointer, and no hand-written shift. The second `lhu` and the `sll 16 ; sra 15` are
+produced by GCC 2.7.2's lowering of a `short` local, and so is the phantom frame. The
+ban's enumerated spellings ("guarded ternary, unconditional split, union, two-pointer,
+single-u16-read + `(s16)` cast") are all *source-level* second views; this body has
+none of them. That distinction was arguable before; what makes it materially new is
+the frame: an independent byte-level fingerprint, in a different part of the function
+(prologue + epilogue), that the same `short` declaration is the only measured way to
+produce. See the s13 frontier and the ruling request.
