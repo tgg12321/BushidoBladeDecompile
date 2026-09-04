@@ -373,6 +373,39 @@
  * crossed with statement order (rigid at 9 regardless of which of the two
  * arguments is named or in which order), and arg3 combinations (12-13).  None
  * beat 7.  See hypotheses.md [s18].
+ *
+ * ===========================================================================
+ * SESSION 44 (synthesis) - BODY UNCHANGED (7 / 91); TWO FRONTIER ITEMS CLOSED
+ * ===========================================================================
+ * Re-applied and re-measured this session: score 7, target_insns 91,
+ * build_insns 91, rules_dropped 0.
+ *
+ *   * The residual restated as a delta between two MEASURED functions: this
+ *     file (and its m011 twin) contain the same 82 expanded instructions as
+ *     target modulo one register name.  m011 already holds target's slots 42,
+ *     45, 46, 48, 49, 50 (the arg5 chain and arg3's leaf pair).  What is left
+ *     is (a) the idx0 address chain living in $v1 and finishing early
+ *     (41/43/44/47) where target spreads it through $a0 (41/47/51/56), and
+ *     (b) arg2's lui/lw $a1 pair at 51/52 where target has it at 43/44.
+ *   * The "fourth live pseudo" frontier is closed for every FUNCTION-SCOPE
+ *     source, with the mechanism measured: a fourth hoisted base pointer, or a
+ *     loop value (the VSync deadline, the DMA register pointer) kept live
+ *     across the block, all grow the function to n=84-88 and score 18-33,
+ *     because the do{}while(0) loop_depth device ref-weights every
+ *     function-scope pointer equally and global.c allocno_compare hands each
+ *     one a callee-saved seat plus a save/restore pair.  Only a value born
+ *     inside the block can be call-clobbered scratch, and arg3's is still the
+ *     only one that exists.
+ *   * The control-flow join shape is closed on this chassis: inverting the
+ *     success test so the timeout arm falls through is BYTE-IDENTICAL to this
+ *     file; an inline `return -1` loses three instructions (16); duplicating
+ *     the check block into the arm is 13 at n=85.
+ *   * The $a0 family's floor moved 13 -> 12 for the first time since s28:
+ *     naming arg2 as a value local is byte-inert on THIS chassis (s42/s43) but
+ *     not on the $a0 chassis.  Every $a0-family form still sinks the
+ *     sw $v1,16($sp) outgoing-stack-argument store into printf's delay slot,
+ *     which target does not - the stack-argument store position and the $a0
+ *     spread trade off against each other in all 38 forms measured.
  * =========================================================================== */
 
 /* ===========================================================================
