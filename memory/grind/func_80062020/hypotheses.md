@@ -1473,3 +1473,45 @@ sanctioned family - may be submitted for this function.
 **Why the next session must NOT simply resubmit.** The driver mechanically discards a
 `candidate-ready` whose self-vet re-declares a banned construct, and respelling to evade a
 ban is itself forbidden. The ban has to be cleared by ruling, not by wording.
+
+## H-s16b-NOMERGE — KILLED (instance, rederive, 2026-09-03)
+
+**Statement.** The best no-merge body in the bank — three per-word scalar externs, one pointer
+local, uniform `p[2]=0; p[1]=0; p[0]=0;` terminator clear
+(`rejected/epilogue-uniform-pointer-floor4-superseded.c`) — still measures the ledger's
+recorded honest floor of 4 on the current chassis.
+
+**Probe.** Applied verbatim at src/text1b.c:3932 in place of the INCLUDE_ASM line;
+`sandbox func_80062020 --disable all`; objdump of the resulting
+tmp/sandbox/func_80062020/text1b.o. Log: tmp/grind/func_80062020/s16b/measurements.md (M2).
+
+**Result.** KILLED — it measures **6**, not 4 (build_insns 35, target_insns 38, rules_dropped 0,
+no FAKE construct present). The 3-instruction shortfall is the LO_SUM triple for the terminator
+row's column a, plus the delay-slot difference. The ledger's "floor 4" was the DUAL-SPELLING
+body that is `banned_constructs[0]`; with that body excluded the admissible no-merge floor is 6.
+Chassis-relative and re-testable.
+
+## H-s16b-PRONGC — CONFIRMED (rederive, 2026-09-03)
+
+**Statement.** Prong (c) of the per-word-splat-symbol -> aggregate-merge family
+(.claude/rules/no-new-park-categories.md:245-248) has been satisfied in every previously
+ACCEPTED instance of the family with the merged per-word names still defined in
+`undefined_syms_auto.txt`, whenever the only surviving references were in still-INCLUDE_ASM
+sibling asm functions.
+
+**Probe.** `git show --stat e788983a` (the family's founding commit, func_8003B9D0) plus a grep
+of the merged names across undefined_syms_auto.txt / named_syms.txt / symbol_addrs.txt / asm/funcs
+/ src / include on today's oracle-exact tree. Log: measurements.md (M5).
+
+**Result.** CONFIRMED. e788983a touched no symbol-config file; D_80101EDA
+(undefined_syms_auto.txt:789) and D_80102326 (:867) are still defined there, referenced only by
+INCLUDE_ASM siblings. func_800861BC (decisions.md:20664) is the second accepted instance and did
+the same. Together with the link-level finding (undefined_syms_auto.txt is the sole definition
+site, fed to ld via `-T` at Makefile:99; bb2.ld defines nothing here; func_800620B8.s still
+relocates against both names), this establishes that the literal reading of the splat-config
+clause applied in the 2026-09-03 20:46 layer-1 FAIL would have refused the very commit the rule
+was written from.
+
+**Disposition.** Not resubmitted. `banned_constructs[2]` names this declaration under exactly
+this condition, so a `candidate-ready` is mechanically discarded before the Judge. s16b returns
+`ruling-request`.

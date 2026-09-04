@@ -1983,3 +1983,64 @@ corroboration, not the prong's basis.
 The honest cheat-free floor is 0 and the bytes are proven by the full clean-driver build.
 The only s16 change relative to the FAILed submission is the evidence correction the Judge
 ordered — recorded here, in candidate.c's header, and in self_vet.md prong (a).
+
+## s16b — rederive modality, 2026-09-03 (chassis re-measure + prong-(c) precedent audit)
+
+Artifacts: `tmp/grind/func_80062020/s16b/measurements.md` (M1-M5),
+`tmp/grind/func_80062020/s16b/text1b.c.bak`,
+`tmp/grind/func_80062020/s16b/reference_rebuild_after_restore.json`.
+
+- [s16b] **HEAD chassis floor is not 4 and not 0 — HEAD has no C body.** `sandbox
+  func_80062020 --disable all` on the clean tree prints score 38 / build_insns 0 /
+  `no_c_body: true`. The dispatch brief's "measurement unavailable" is explained: since the
+  asm-until-matched migration the function is `INCLUDE_ASM("asm/funcs", func_80062020);` at
+  src/text1b.c:3932 and there is nothing to score. Every floor number in this ledger is a
+  property of a body applied from `memory/grind/func_80062020/`, never of HEAD.
+
+- [s16b] **LEDGER CORRECTION: the admissible no-merge floor is 6, not 4.** The body sessions
+  s7-s15 called "the honest floor-4 candidate" is the DUAL-SPELLING body whose last store is
+  `*(s32 *)((u8 *)&D_800F1198 + ofs) = 0;` — `state.json banned_constructs[0]`, FAILed by the
+  Judge on 2026-08-25 and 2026-08-31 and by layer-1 on 2026-08-30 and 2026-08-31. With that
+  construct excluded, the best surviving no-merge shape
+  (`rejected/epilogue-uniform-pointer-floor4-superseded.c`: three per-word scalar externs, one
+  pointer local, uniform `p[2]=0; p[1]=0; p[0]=0;`) measures **score 6, build_insns 35** against
+  target 38 on the 2026-09-03 chassis. It is 3 instructions short — it never emits the
+  `lui $at,%hi / addu $at,$at,$v1 / sw $zero,%lo(...)($at)` LO_SUM triple the target uses for
+  the terminator row's column a, and it fills the `jr $ra` delay slot with that column's store
+  where the target emits `nop`. Do not quote "floor 4" for this function again: 4 is the score
+  of a body that cannot be submitted.
+
+- [s16b] **The s15 aggregate-merge body still matches, re-proven end to end today.**
+  `apply_s15.py apply` -> `verify-oracle --rebuild --allow-dirty` -> `ok true`,
+  `build_matches true`, `build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+  original_sha1_locked`; then `sandbox func_80062020 --disable all` -> **score 0, 38/38,
+  rules_dropped 0**. Tree restored (`apply_s15.py restore`), reference rebuilt from the
+  restored tree, `git status` clean apart from metrics/events.jsonl. The scope grant covering
+  include/game.h and src/text1b_b.c is live at tools/grinder/scope_allow.txt:47.
+
+- [s16b] **Prong (c)'s splat-config clause cannot be satisfied from inside this function's
+  scope, and the reason is the linker, not style.** `undefined_syms_auto.txt:526-528` is the
+  ONLY definition site for D_800F1198 / D_800F119C / D_800F11A0 — `bb2.ld` does not define
+  them (grep: no hit) and the file is passed to `ld` with `-T` (Makefile:99,
+  engine/buildconfig.py:93). `asm/funcs/func_800620B8.s` still names D_800F119C and D_800F11A0
+  in its own relocations, so deleting lines 527-528 while that sibling is INCLUDE_ASM is an
+  undefined-symbol link error. Decompiling func_800620B8, or editing the splat symbol config,
+  is outside the session's scope grant. The C half of prong (c) IS satisfied: all nine
+  vestigial per-word externs are deleted, none had a use site, and exactly one C handle
+  remains.
+
+- [s16b] **DECISIVE NEW PRECEDENT: the family's founding instance did exactly this and was
+  accepted.** The aggregate-merge family was created by owner ruling 2026-08-17 and first
+  applied in commit **e788983a** (func_8003B9D0, `PracticeMenuRec g_practice_menu_table[]` in
+  include/code6cac.h, merging the per-word scalars D_80101EDA and D_80102326).
+  `git show --stat e788983a` shows it **did not touch undefined_syms_auto.txt**, and both
+  merged names are still defined there on today's oracle-exact tree —
+  `undefined_syms_auto.txt:789` (`D_80101EDA = 0x80101EDA;`) and
+  `undefined_syms_auto.txt:867` (`D_80102326 = 0x80102326;`) — retained because
+  still-INCLUDE_ASM siblings reference them (D_80101EDA in asm/funcs/func_8001DCB0.s,
+  func_8003AFFC.s, func_8003B10C.s, func_8003B9D0.s, func_8003C040.s; D_80102326 in
+  asm/funcs/func_8003B9D0.s, func_8003CE18.s). func_800861BC (decisions.md:20664, Judge PASS
+  2026-09-02) is the second instance and did the same. The 2026-09-03 20:46 layer-1 FAIL, which
+  read prong (c)'s splat-config clause literally and refused func_80062020 on it, is therefore
+  in direct conflict with the instance the rule was written from. That conflict is the s16b
+  ruling-request.

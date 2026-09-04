@@ -71,6 +71,24 @@
  * force and this body declares neither: it has no pointer local, all four row writes use
  * the single spelling D_800F1198[i].unkN, and the comment change here is the remedy the
  * Judge itself ordered rather than a cosmetic re-file of a merits rejection.
+ *
+ * s16b (rederive, 2026-09-03) RE-MEASUREMENT — body UNCHANGED, nothing added or removed.
+ *   - This form re-proven on today's chassis: apply_s15.py apply ->
+ *     verify-oracle --rebuild --allow-dirty ok true / build_matches true /
+ *     build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, then
+ *     sandbox func_80062020 --disable all -> score 0, 38/38, rules_dropped 0.  Tree restored
+ *     and the scoring reference rebuilt afterwards.
+ *   - The best ADMISSIBLE no-merge alternative (rejected/epilogue-uniform-pointer-floor4-
+ *     superseded.c) measures 6 on this chassis, not the ledger's long-quoted 4: floor 4
+ *     belongs to the dual-spelling body that is banned_constructs[0].  See
+ *     tmp/grind/func_80062020/s16b/measurements.md (M2).
+ *   - NOT resubmitted this session.  banned_constructs[2] names this exact declaration while
+ *     undefined_syms_auto.txt:527-528 still declares D_800F119C / D_800F11A0, so a
+ *     candidate-ready would be discarded before the Judge sees it.  s16b returns a
+ *     ruling-request on that prong instead, citing the family's founding instance e788983a,
+ *     which left its own two merged per-word names in undefined_syms_auto.txt (:789, :867)
+ *     for exactly the same reason (still-INCLUDE_ASM siblings reference them) and was
+ *     accepted.  Measurement M5 in the same file.
  */
 void func_80062020(s32 *arg0) {
     s32 i;
