@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 49,
- "current_modality": "forensics",
+ "session_count": 50,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -297,23 +297,30 @@
    "floor": 7,
    "modality": "forensics",
    "headline": "Forensics: F3 is a REG_DEP_ANTI memory edge fixed at expand (sched.c:1784), not a scheduling choice; s48's arg4-pointer x arg5-pointer cross is one 10-scoring equivalence class; sweep-harness nop coun"
+  },
+  {
+   "session": 50,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "41-session plateau broken: floor 7 -> 4 -> 2 / 91 by transplanting the CURRENT window spelling of the foreclosed sibling CD_sync (a void** pointer-alias for arg2 + arg4's element address carried as an"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An F3-family form whose arg5 stack store gets a HIGHER luid than the arg3 leaf lbu (D_800A11D5) and the arg4 leaf lbu wins the rank_for_schedule LUID tie-break, is picked FIRST in the backward walk, lands LAST in forward order among the three, and thereby loses the load-delay nop that is the family's whole 1-instruction penalty - reaching 7 while holding F3.",
-   "mechanism": "tools/gcc-2.7.2/sched.c:2463 - with priorities tied at 3, rank_for_schedule returns INSN_LUID(y) - INSN_LUID(x) and prefers the higher luid. luid is the post-sched1 insn order, so the C-level lever is the RTL emission order of the arg3/arg4 LEAF READS relative to the call's stack-argument store. Both leaf reads are currently emitted inside expand_call (arg3 wholly inline, arg4's value inline) and therefore land after the store in luid order.",
-   "next_probe": "Take r_ik_iv_w0 as the base (it holds F3 structurally and is lev=7). Sweep: (a) hoist arg3's index read into a named statement ahead of the call (`s32 i3 = D_800A11D5;` then `tbl_11dc[i3]` inline), (b) the same for the arg4 index while keeping arg4's value inline, (c) both, x every statement interleaving. Compile each with BB2_SCHED_DEBUG=1 and accept on the DEPENDENCE DUMP, not the score: the target state is `dep insn=<store> pred=<a3 load>` absent (F3 held) AND store-luid greater than both leaf-lbu luids. Score survivors with tmp/grind/CD_datasync/s49/rescore.py, then confirm through the sandbox."
+   "hypothesis": "The `sll $a0` / `sll $v0`+`addu` transposition is decided at RTL emission (expand / sched1 luid order), not by any C statement arrangement, and the dumps will name the pass in one read.",
+   "mechanism": "s50 measured statement order, chain shape, deref shape and typing all inert at 2 across 440 compiles, which is the signature of a decision taken before the C-visible order matters. With priorities tied, sched.c:2463 rank_for_schedule falls through to INSN_LUID(y) - INSN_LUID(x) and prefers the higher luid; luid is the post-expand order, so the question is which sll gets the higher luid at expand.",
+   "next_probe": "Apply memory/grind/CD_datasync/candidate.c, run `pwsh tools/grinder/dump.ps1 CD_datasync`, and read tmp/grind/CD_datasync/dumps/*.rtl (expand order of the two sll insns relative to arg5's addu) and *.sched (block-3 dependence graph + PICK trace under BB2_SCHED_DEBUG=1). Accept on whether the two sll insns' luids are already in target order at expand, or whether sched1 reorders them. Do NOT permute statements further - that axis is measured dead at 2."
   },
   {
-   "hypothesis": "Raising insn 116's INSN_PRIORITY above 1 lets it fill the slot between the arg5 value load and the stack store by itself, killing the F3 family's nop without touching the luid order.",
-   "mechanism": "116 is the `lw $a1,D_800F19C0` arg2 load. Its INSN_PRIORITY is 1 because it is a dependence-chain leaf: sched.c's priority() computes the longest chain ending at the insn, and 116 has no real predecessor in the block. It is ready from clock 6 but never picked because every competitor has priority 2-5. Lengthening arg2's dependence chain by one real link raises its priority and makes it a candidate at the clock the store issues.",
-   "next_probe": "Spell arg2 with one extra real dependence link that survives to RTL - e.g. read D_800F19C0 through the same walking base register already live in the block, or through an index computed in the block - and re-read the sched2 PICK trace for whether 116's priority rises and whether it is picked at clock 13-15. Watch feature F2 (target's arg2 lui/lw pair at slots 43/44) on every form: F2 is currently held BECAUSE 116 is priority-1 and lands early, so this lever trades directly against it and must be scored, not assumed."
+   "hypothesis": "The remaining transposition is an allocation-order artefact reachable from ra_solver's local-alloc model, now that the register ASSIGNMENT matches target exactly and only one insn's position differs.",
+   "mechanism": "tools/ra_solver's local_extract/inverse_compose path types a residual as RA vs scheduling from the object. s47's typing was done on a chassis whose registers did NOT match target; with the seats now identical, `inverse_compose.py classify` should return a much smaller goal (or type the residual as pure scheduling, which would redirect s51 to sched_solver).",
+   "next_probe": "Re-run `tools/ra_solver/inverse_compose.py classify` and `tools/sched_solver/perturb.py --target-object build/src/system.o --ours-object tmp/sandbox/CD_datasync/system.o` on the NEW 2/91 chassis and compare the verdict with s47's (four-quantity vector) and s48's (single atom qty2 $v1 -> $a0). A REACHABLE verdict names the C lever; a FORECLOSED verdict on the RA side settles that the last insn is a scheduler question.",
+   "phase": "solver"
   },
   {
-   "hypothesis": "The cost-3 hardreg_live family ($v0 or $v1 genuinely live across [8,36)) is reachable here - inherited from s48, still unmeasured.",
-   "mechanism": "inverse_extend's hardreg_live atoms name the honest producer as a real argument or return value genuinely live across the span. CD_datasync's parameter a0 IS still used after the do_timeout block (the `if (a0 == 0) goto loop` test), and the block contains two calls (puts before, CD_flush after), so a hard-register liveness claim over the region is not obviously fictional.",
-   "next_probe": "Read the .flow/.lreg liveness for block 3 to see which hard registers are already recorded live across [8,36), then measure the two honest shapes: the parameter a0 read INSIDE the do_timeout block, and the puts return value consumed after the printf. Accept on whether regs_live_at over [20,36) gains a second occupied caller-saved register in the QTYDBG stream, not on the score alone."
+   "hypothesis": "The other two siblings that share this window - CD_ready (foreclosed at 4) and CD_cw (active at 263) - carry further un-propagated window spellings, and CD_datasync's new 2/91 window should propagate BACK to them.",
+   "mechanism": "s50 proved the propagation channel works in one direction (CD_sync -> CD_datasync, 7 -> 2). The same do_timeout printf window appears in all four functions with byte-shape-identical fingerprints (CD_ready s36/s39/s46). CD_ready's own ledger reached 4 by a different route, so its window may hold the last transposition that CD_sync's does not.",
+   "next_probe": "Read memory/grind/CD_ready/candidate.c's do_timeout block (NOT its evidence.md summaries - the ledger prose is stale by the same mechanism that hid CD_sync's win), symbol-translate it onto the s50 chassis, and sweep it plus the pairwise crossings of its arg4/arg5/arg2 spellings with the s50 form."
   }
  ],
  "judge_constraints": [],
@@ -323,22 +330,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 31,
-   "statement": "A named s32 index local for arg4 with arg4 left inline and arg5 hoisted as a value local before it keeps arg4's lbu at window slot 1 while deferring its scaling chain, reproducing s28's split arg4 cha",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 8 forms plus the candidate control",
-   "predicate_cite": "",
-   "result": "All eight emit one window at lev 13: the i4 copy folds into the inline arg4 chain and arg4's lbu migrates to window slot"
-  },
-  {
-   "session": 31,
-   "statement": "Adding a fifth value local (both indices plus arg3, arg4 and arg5) raises register pressure enough to lengthen the printf block toward target's 18-insn window.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; form b4",
-   "predicate_cite": "",
-   "result": "b4 does push a chain into $t0, but the arg5 sw ...,16($sp) leaves the block, producing a 17-insn window (lev 14) - the s"
-  },
   {
    "session": 32,
    "statement": "combine folds the single-use hoisted index copy into arg4's scaling chain, so an index local cannot decouple the lbu from the sll (the s30/s31 mechanism of record).",
@@ -790,6 +781,22 @@
    "measured_on": "candidate.c-family chassis (arg3 inline) with the do{}while(0) FAKE present; 62 whole-function compiles through the instrumented cc1, scored on the block-3 QTYDBG table plus the engine-equivalent resc",
    "predicate_cite": "",
    "result": "All 62 forms emit a byte-identical block-3 quantity table (q0 [8,16) refs12 -> $v0, q1 [14,36) refs12 -> $v1, q2 [16,20)"
+  },
+  {
+   "session": 50,
+   "statement": "The s48/s49 F3-family instance kill (arg4's value loaded inline in the printf call, harness r_ik_iv_w0, engine 8/92) was measured with the do{}while(0) FAKE occupying the window, so the wrapper could ",
+   "kill_scope": "instance",
+   "measured_on": "r_ik_iv_w0 (arg4 index+scaled-offset loaded inline in the call, arg5 index+value), the s46/s49 chassis, measured with the do{}while(0) FAKE present AND with it ablated",
+   "predicate_cite": "",
+   "result": "The re-audit SUSTAINS the original kill. keep-all 8 / build_insns 92; drop-1 (do{}while(0) removed) 31 / build_insns 75."
+  },
+  {
+   "session": 50,
+   "statement": "On the new pp / integer-address chassis, arg4's `sll $a0` can be sunk from build slot 50 to target's slot 52 (behind arg5's `sll $v0` + `addu $v0,$v0,$s0` pair) by re-shaping arg4's index-scaling chai",
+   "kill_scope": "instance",
+   "measured_on": "the s50 pp / integer-split-init-address chassis (arg2 via `void **pp`, arg3 via the tbl_11dc pointer local), with both the do{}while(0) and the pp-alias FAKE constructs present; 440 whole-function com",
+   "predicate_cite": "",
+   "result": "Nothing scored below 2 in 440 compiles. Statement order is inert: every interleaving of the two chains, including both e"
   }
  ]
 }

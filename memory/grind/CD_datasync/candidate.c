@@ -1,191 +1,99 @@
-/* CD_datasync — SESSION 46 (synthesis).  BEST BANKED FORM.  7 / 91.
- * sandbox CD_datasync --disable all => score 7, target_insns 91, build_insns 91
- * (engine-confirmed twice this session: directly, and as fake_ablate's
- * keep-all cell).  Harness name: z_iv_ik_w2 (tmp/grind/CD_datasync/s46).
+/* CD_datasync - SESSION 50 (rederive).  BEST BANKED FORM.  2 / 91.
+ * sandbox CD_datasync --disable all => score 2, target_insns 91, build_insns 91
+ * (engine-confirmed this session, rules_dropped 0).
+ * Harness name: c_a2_b2_w2_pp1 (tmp/grind/CD_datasync/s50/forms_c).
  *
- * WHY THIS REPLACES THE OLD candidate.c (the m011 chassis, banked as
- * alt_m011_f1only_7.c) — IT IS THE FIRST FORM IN 46 SESSIONS THAT HOLDS TWO
- * OF TARGET'S THREE WINDOW FEATURES AT ONCE.
+ * THE 49-SESSION PLATEAU AT 7 IS BROKEN: 7 -> 4 -> 2 IN ONE SESSION, AND THE
+ * LEVER CAME FROM A SIBLING LEDGER, NOT FROM THIS ONE.
  * =========================================================================
- * s45 left the residual as a HARD FORK on one C variable (the order of the
- * two tbl_125c value statements):
- *   value order arg4-then-arg5 -> leaf lbu order idx0-first (TARGET), but
- *                                 arg2's lui/lw pair at 51/52   (WRONG)
- *   value order arg5-then-arg4 -> arg2's pair at 43/44 (TARGET), but the
- *                                 leaf lbu order swapped        (WRONG)
- * s46 BROKE that fork.  The lever is the one s45 named and never swept:
- * give the two arguments DIFFERENT STATEMENT COUNTS, so that "the first
- * statement in the block" and "the first completed value" stop being the
- * same event.  Here arg4 is a TWO-statement chain (index read, then table
- * read) and arg5 is a two-statement scaled-offset chain whose FIRST
- * statement is interleaved ahead of arg4's — pattern B A A B:
- *      i5 = idx_1494[1];      <- arg5's index read, first statement
- *      i4 = idx_1494[0];      <- arg4's index read
- *      val4 = tbl_125c[i4];   <- arg4's value completes FIRST
- *      k5   = i5 * 4;
- * That makes arg4 the first COMPLETED value (which fixes the leaf lbu order
- * to target's idx0-first) while arg5's index read is the first STATEMENT
- * (which puts arg2's lui/lw pair at target's slots 43/44).  Measured over
- * 680 whole-function compiles this session; 48 + 62 of them score 7 and
- * exactly 24 hold both features.  Every one of the 680 forms with arg4
- * spelled as a named VALUE local and arg5 spelled as a scaled offset /
- * pointer / index chain lands in this class.
+ * WHAT THIS SESSION DID.  Mandated modality was `rederive`.  The three named
+ * re-derivation sources were checked against the ledger first: fresh m2c is
+ * spent (s21 - its accumulator tail is a regression, its argument expressions
+ * are the fully-inline 13-attractor), the 5-project reference corpus is spent
+ * (s8), and the psyz/PsyQ-4.0 axis is a verified dead end
+ * (research-psyz-axis-2026-08-19.md: psyz leaves CD_datasync as INCLUDE_ASM).
+ * The one un-spent source was the SIBLING LEDGER.  CD_datasync's ledger last
+ * looked at its siblings in s16/s20, when CD_sync (splat `cpu_side_move_dir_4`)
+ * stood at 7/160 with "the identical residual".  CD_sync has since ground its
+ * own floor to 2/160 and SOLVED the shared printf window.  Nothing propagated
+ * that back here.  memory/grind/CD_sync/candidate.c carries the answer.
  *
- * WINDOW NOW (build idx | target, `!!` = differs):
- *   41 !! lbu  $v0,0($s1)     | lbu  $a0,0($s1)   <- idx0 FIRST (feature F1 OK,
- *   42 !! lbu  $v1,1($s1)     | lbu  $v0,1($s1)      register naming only)
- *   43    lui  $a1,%hi(S)     | lui  $a1,%hi(S)   <- MATCH (feature F2)
- *   44    lw   $a1,%lo(S)($a1)| lw   $a1,%lo(S)($a1) <- MATCH
- *   45    sll  $v0,$v0,2      | sll  $v0,$v0,2    <- MATCH (new vs s45)
- *   46    addu $v0,$v0,$s0    | addu $v0,$v0,$s0  <- MATCH (new vs s45)
- *   47 !! sll  $v1,$v1,2      | sll  $a0,$a0,2
- *   48 !! addu $v1,$s0,$v1    | lw   $v1,0($v0)
- *   49 !! lw   $a3,0($v0)     | lui  $v0,%hi(S)
- *   50 !! lui  $v0,%hi(S)     | lbu  $v0,%lo(S)($v0)
- *   51 !! lbu  $v0,%lo(S)($v0)| addu $a0,$a0,$s0
- *   52 !! lw   $v1,0($v1)     | sll  $v0,$v0,2
- *   53 !! sll  $v0,$v0,2      | addu $v0,$v0,$s3
- *   54 !! addu $v0,$v0,$s3    | sw   $v1,16($sp)
- *   55 !! sw   $v1,16($sp)    | lw   $a2,0($v0)
- *   56 !! lw   $a2,0($v0)     | lw   $a3,0($a0)
+ * THE TRANSPLANTED WINDOW (CD_sync's spelling, symbol-translated):
+ *   - arg2 (D_800F19C0) is read through a POINTER-ALIAS LOCAL `void **pp`
+ *     instead of inline.  THIS IS THE WHOLE FIRST HALF OF THE WIN.
+ *   - arg4's element ADDRESS is carried in an s32 INTEGER local built by
+ *     split-init (`t0 = idx[0]; t0 *= 4; t0 = (s32)((u8 *)tbl_125c + t0);`)
+ *     and dereferenced at the call site as `*(s32 *)t0`.  Every previous
+ *     session spelled that address as an `s32 *` POINTER local (s48/s49's
+ *     ip/ikp/dp family, measured 10) or as a named VALUE (measured 7); the
+ *     integer-typed address had never been written in 49 sessions.
+ *   - arg3 stays on the `tbl_11dc` pointer local.  CD_sync spells arg3 as the
+ *     direct global `D_800A11DC[D_800A11D5]`; transplanting THAT costs three
+ *     instructions of build (bi 91 -> 88) and scores 16-21.  Keep the pointer.
  *
- * THE REMAINING RESIDUAL, RE-ATTRIBUTED (this is the s46 headline):
- * Target completes arg5's (stack argument) address chain FIRST and issues
- * arg4's `lw $a3` as the LAST memory reference of the block (slot 56);
- * we issue `lw $a3` at 49.  Call that feature F3.  Across all 680 forms F3
- * is decided ENTIRELY by arg4's spelling: 150/150 forms whose arg4 value is
- * loaded INLINE in the printf call (scaled offset `k`, `ik`, or fully
- * inline) hold F3; 0/530 forms whose arg4 value is a NAMED LOCAL hold it.
- * F1&F2 hold only in the named-local set.  The two sets are disjoint, so the
- * fork moved from "value-statement order" onto "arg4 value named vs loaded
- * in the call" — and target's `sw $v1,16($sp)` at slot 54 was held by NONE
- * of the 680 (observed slots: 47, 50, 51, 53, 55).
+ * MEASUREMENTS (all engine sandbox, all bi=91 unless stated):
+ *   pp ABSENT, integer-address arg4   : best 8   (16 forms at 8, 4 at 10)
+ *   pp PRESENT, integer-address arg4  : best 4   (80 of 100 interleavings)
+ *   pp PRESENT + arg5 as a named value from an index local (b2/b3/b4): 2
+ *   pp added to the OLD s46 chassis (named val4 arg4): 7 - no change.
+ * So `pp` is worth 4 instructions, and it is worth them ONLY in the
+ * integer-address chassis: the two levers are not additive, they are a pair.
  *
- * WHY THAT IS NOT A SCHEDULING QUESTION ANY MORE.  The sched_solver
- * object-goal path was made to run on this function for the first time this
- * session (`perturb.py --target-object build/src/system.o --ours-object
- * tmp/sandbox/CD_datasync/system.o`; hon->tgt alignment 85 equal / 5 replace
- * / 1 moved out of 91).  It localises the whole residual to ONE block —
- * pass 2, block 3, 21 insns — and to ONE instruction: target picks UID 105
- * (luid 8) seven slots earlier in the backward pick order than we do.  That
- * move is NOT a tie-break the scheduler could have taken: it violates two
- * dependence edges in our own graph, deps[119] and deps[130] both listing
- * [105, 14].  Kind 14 is an anti/output dependence, i.e. a WAR edge created
- * by REGISTER REUSE — our window recycles $v0/$v1 across the two index
- * chains where target keeps idx0 in $a0.  sched2 runs after reload, so those
- * registers are an INPUT to it.  The residual is therefore a register-
- * assignment fact wearing an ordering costume, and the next attack is the
- * seat of the idx0 chain ($a0 vs $v0), not another statement permutation.
+ * WINDOW NOW (build idx | target) - the residual is ONE INSTRUCTION MOVED:
+ *   46    lbu  $a0,0($s1)      | lbu  $a0,0($s1)     <- F1 held
+ *   47    lbu  $v0,1($s1)      | lbu  $v0,1($s1)
+ *   48    lui  $a1,%hi(S)      | lui  $a1,%hi(S)     <- F2 held
+ *   49    lw   $a1,%lo(S)($a1) | lw   $a1,%lo(S)($a1)
+ *   50 !! sll  $a0,$a0,2       | sll  $v0,$v0,2
+ *   51 !! sll  $v0,$v0,2       | addu $v0,$v0,$s0
+ *   52 !! addu $v0,$v0,$s0     | sll  $a0,$a0,2
+ *   53    lw   $v1,0($v0)      | lw   $v1,0($v0)
+ *   54    lui  $v0,%hi(D_800A11D5)  | same
+ *   55    lbu  $v0,%lo(D_800A11D5)($v0) | same
+ *   56    addu $a0,$a0,$s0     | addu $a0,$a0,$s0
+ *   57    sll  $v0,$v0,2       | sll  $v0,$v0,2
+ *   58    addu $v0,$v0,$s3     | addu $v0,$v0,$s3
+ *   59    sw   $v1,16($sp)     | sw   $v1,16($sp)    <- F4 HELD (slot 54 of
+ *   60    lw   $a2,0($v0)      | lw   $a2,0($v0)        the old numbering -
+ *   61    lw   $a3,0($a0)      | lw   $a3,0($a0)     <- F3 HELD, LAST memref)
+ * Every register name matches.  F1, F2, F3 and F4 - the four window features
+ * the ledger has tracked since s45, never previously held together - are ALL
+ * held simultaneously.  The entire remaining residual is that our `sll $a0`
+ * (arg4's index scaling) is emitted at slot 50 and target emits it at 52,
+ * i.e. one insn has to sink past arg5's `sll $v0` + `addu $v0,$v0,$s0` pair.
+ * Score 2 = one transposition counted at both endpoints.
  *
- * The do{}while(0) wrapper is unchanged and load-bearing: fake_ablate this
- * session scored keep-all 7 / build_insns 91 vs drop-1 31 / 75.  It carries
- * the same sanctioned FAKE annotation (owner ruling 2026-07-06,
- * .claude/rules/do-while-zero-exception.md).
+ * WHAT WAS MEASURED DEAD AGAINST THAT LAST TRANSPOSITION (s50, 652 whole-
+ * function compiles on this chassis, all with pp present):
+ *   - Statement ORDER is inert: all interleavings of arg4's and arg5's
+ *     statement chains (272 d-forms) hold 2 or regress; the extremes
+ *     (whole arg5 chain first, whole arg4 chain first) both score 2.
+ *   - arg4 chain SHAPE is inert at 2: `t0 *= 4` vs `t0 <<= 2` vs `t0 = t0<<2`
+ *     vs folding the scale into the add (`t0 * 4` inside the address
+ *     expression) vs `t0 += (s32)tbl_125c` vs `(s32)tbl_125c + i4 * 4`.
+ *   - arg4 DEREF shape is inert at 2: `*(s32 *)t0` == `((s32 *)t0)[0]`.
+ *     Re-typing the address back to `s32 *p4` REGRESSES (>=7) - the integer
+ *     type is load-bearing, not cosmetic.
+ *   - Reading idx[0] through a second `u8 *` base local, and leaving arg4's
+ *     value fully inline in the call with only the scaled index named, both
+ *     regress.
+ *   - arg5 in {named value from index local, index*4 + integer base, fully
+ *     inline scaled expression} are byte-equivalent at 2; the `ix <<= 2`
+ *     split-shift form of arg5 costs 2 more (score 4).
  *
- * S47 ADDENDUM (solver modality) - THE SEAT IS NOW DERIVED, NOT GUESSED.
- * inverse_compose classify (object path) types the residual RA (identical
- * register-blanked multisets, six insns differing only in register names).
- * extract.py shows only 5 pseudos reach GLOBAL alloc, so the window is
- * LOCAL-alloc territory; local_extract.py's block-3 table maps one-to-one
- * onto the window and the goal is qty0 (this form's arg4/idx0 address chain,
- * first_reg 95, [8,20), refs 12) moving $v0 -> $a0 with qty1 following it
- * $v1 -> $v0.  ra_solver's stock local search calls that unreachable, but
- * only because its LIVE_EXTEND atom offers death+1/+2/+4 and the vector
- * needs +8; from the bounds-widened fork (tmp/grind/CD_datasync/s47/
- * inverse_extend.py) the same goal is REACHABLE with 176 depth-2 vectors,
- * all of the form "qty0 dies later (20->28+)" + "qty1 dies earlier
- * (24-><=22)".  Spelling the first half alone (arg4 loaded inline in the
- * call) was measured: the chain does become last-allocated and lands in
- * $v1, because nothing occupies $v1 across its span.  The missing input is
- * target's arg5 VALUE living in $v1 from its load across the arg3 address
- * chain to the sw 16($sp) - i.e. feature F4 and the $a0 seat are the same
- * requirement.  arg3's own spelling is NOT the lever for it: 906 compiles
- * this session, every named-arg3 form >= 8, sw slot 54 never reached.
+ * FAKE CONSTRUCTS AND THEIR MEASURED WEIGHT:
+ *   - do{}while(0) wrapper: unchanged from s9, still load-bearing.  s50
+ *     re-ran the mandated kill re-audit with tools/fake_ablate.py on the
+ *     CLOSEST banked instance kill (the F3-holding r_ik_iv_w0 form, s48):
+ *     keep-all 8 / bi 92, drop-1 31 / bi 75.  The wrapper is worth 24
+ *     instructions and is not masking the lever; that instance kill stands.
+ *   - `void **pp` pointer alias to D_800F19C0: worth 4 instructions in this
+ *     chassis (measured pp0 best 8 vs pp1 best 4 over 100 matched forms).
+ *     Family: C-level pointer alias to a global,
+ *     .claude/rules/pointer-alias-fake-exception.md.  In-repo precedent for
+ *     this exact symbol and shape: memory/grind/CD_sync/candidate.c.
  *
- * S48 ADDENDUM (forensics) - THE MISSING QUANTITY IS DECIDED BY sched1, NOT
- * BY ANY arg5 SPELLING.  s47 left the goal as "make the arg5 VALUE span the
- * arg3 address chain" (feature F4), to be spelled by arg5's C form.  s48
- * swept that axis on the QUANTITY TABLE rather than the score, as the
- * frontier demanded: 32 forms, arg4 in {inl,k,ik} x arg5 in {v,iv,pv,pd} x
- * every statement interleaving, each compiled through the instrumented cc1
- * with BB2_QTY_DEBUG.  28 of 32 - every form with a named arg4 statement -
- * emit a BYTE-IDENTICAL block-3 table (q0 [8,14)->$v0, q1 [14,18)->$v0,
- * q2 [20,36)->$v1, q3 [22,34)->$v0).  The arg5 VALUE quantity is q1 and it
- * dies at luid 18 in ALL of them, four luids before the arg3 chain is born
- * at 22.  Only arg4='inl' perturbs the table at all, and those forms are
- * 13/14.
- *
- * The dumps name the pass.  At expand (system.rtl) the stack-argument store
- * `sw val5,16($sp)` is insn 128 and sits LATE - between the arg4 address
- * addu (126) and the argument-register moves (130-136), which is exactly
- * target's slot-54 position.  The FIRST scheduling pass (sched.c
- * schedule_block, which runs BEFORE local_alloc) hoists it to sit directly
- * behind its only producer; the post-.sched order of the block is
- *   89 93 97 99 101 130 [128] 105 119 109 122 124 126 116 134 136 132 138
- * So the arg5 value's live range is collapsed to 2 luids before local_alloc
- * ever runs.  F4 is a sched1 placement fact.
- *
- * The solver was also re-run against the F3-family model, as the s47
- * frontier's second item asked (tmp/grind/CD_datasync/s48/inv_f3.txt).  On
- * that chassis the goal collapses from s47's four-quantity vector to the
- * single atom {qty2: $v1 -> $a0}, and it is REACHABLE at DEPTH 1 with 14
- * distinct vectors at cost 2 - the two live_extend families being "qty0
- * dies later (14->24)" and "qty2 born earlier (20->18..12)".  s48 spelled
- * the second one: arg4's element address as a named pointer local moves
- * qty2's birth 20 -> 16 and gives it a [16,36) span (39 forms swept), and
- * it STILL takes $v1, because only q3 overlaps it.  $a0 needs TWO
- * quantities alive across [20,36) and allocated first, and the only
- * candidate for the second is the arg5 value that sched1 shortens.
- *
- * MEASUREMENT HYGIENE: the s46/s47 sweep harness reports `n= lev= nop=`;
- * the engine score is lev + (nop - 3) for this chassis, NOT lev.  Reading
- * lev alone makes every F3-family form look like a 7.  Both s48 sweeps are
- * re-scored with the nop column (tmp/grind/CD_datasync/s48/res.json).
- *
- * S49 ADDENDUM (forensics) - THE F3 FORK IS A MEMORY DEPENDENCE, AND THE
- * SEARCH SPACE SHRINKS ACCORDINGLY.  Chassis re-confirmed with the engine
- * (7 / 91 / 91) and the mandated kill re-audit run (fake_ablate: keep-all
- * 7 / 91, drop-1 31 / 75 - the do{}while(0) is worth 24 instructions and is
- * not masking a lever).
- *
- * s48's frontier item 1 is dead: the arg4-pointer x arg5-pointer crossing
- * (arg4 in {ip,ikp,dp} x arg5 in {ip,ikp,dp} x every interleaving, 62
- * compiles) is ONE equivalence class - byte-identical block-3 quantity table
- * and byte-identical window, at 10, with only ONE quantity spanning [20,36)
- * instead of the two the $a0 seat needs.
- *
- * The valuable result is why F3 has behaved as a hard fork for 46 sessions.
- * Read from the instrumented cc1 under BB2_SCHED_DEBUG, this form's block-3
- * dependence graph carries
- *      dep insn=130 pred=105 kind=14
- * where 130 is the arg5 stack store `sw $v1,16($sp)`, 105 is the arg4 value
- * load `lw $a3,0($v0)`, and kind 14 is REG_DEP_ANTI.  sched.c creates it in
- * its store analysis - it walks pending_read_insns and adds an anti edge for
- * every pending read that `anti_dependence` cannot disambiguate against the
- * store's dest (tools/gcc-2.7.2/sched.c:1784).  Both scheduling passes honour
- * LOG_LINKS, so once the arg4 value load is EMITTED before the stack store,
- * no permutation can put it after.  In the arg4-inline family the edge is
- * reversed rather than absent (r_inl_iv_w0: `dep insn=130 pred=124 kind=0`;
- * r_ik_iv_w0: `dep insn=105 pred=128 kind=0`), because expand_call runs
- * store_one_arg before load_register_parameters.  F3 is therefore decided at
- * expand, by whether arg4's VALUE is a named local or is loaded inside the
- * call - never by statement order.
- *
- * That reframes the residual for the next session.  The F3-holding forms
- * (r_ik_iv_*, r_k_iv_*, r_k_v_*) already reach lev=7, EQUAL to this form,
- * and their entire extra instruction is one maspsx load-delay #nop between
- * `lw $2,0($2)` and `sw $2,16($sp)` (engine 8 / 92).  The sched2 PICK trace
- * names the decision: at clocks 12/13/14 the ready set is a three-way
- * priority-3 tie {119 luid 9, 105 luid 8, 128 luid 7} and rank_for_schedule
- * falls through to `INSN_LUID (tmp) - INSN_LUID (tmp2)` (sched.c:2463),
- * preferring the higher luid; the store has the lowest, so it is picked last
- * backwards and lands first forwards, directly behind its producer.
- *
- * MEASUREMENT-HARNESS FIX (inherit this).  engine == lev + (nop - 3), and
- * s48's nop column under-counted by one across the whole F3 family because
- * its hazard detector skipped the SOURCE register of a store.  Use
- * tmp/grind/CD_datasync/s49/rescore.py, which reproduces the sandbox exactly
- * on both points measured this session (this form 7/91, r_ik_iv_w0 8/92).
+ * FRONTIER FOR s51 - the whole function is now ONE sunk instruction.
  */
 s32 CD_datasync(s32 a0) {
     s32 v0;
@@ -218,16 +126,18 @@ do_timeout:
      * mechanism: flow.c loop_depth ref-weighting -> global.c allocno_compare.
      * lever-exhaustion: memory/grind/CD_datasync/hypotheses.md (s9 H37/H38). */
     do {
+        s32 arg5;
         s32 i5;
-        s32 k5;
-        s32 i4;
-        s32 val4;
+        s32 t0;
+        void **pp;
         puts(&g_str_cd_timeout);
+        pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging the D_800F19C0 load early; mechanism: local-alloc.c update_equiv_regs refs-2 sink defeat; lever-exhaustion: memory/grind/CD_datasync/hypotheses.md s50 */
         i5 = idx_1494[1];
-        i4 = idx_1494[0];
-        val4 = tbl_125c[i4];
-        k5 = i5 * 4;
-        printf(&D_800161C8, D_800F19C0, tbl_11dc[D_800A11D5], val4, *(s32 *)((u8 *)tbl_125c + k5));
+        t0 = idx_1494[0];
+        t0 *= 4;
+        arg5 = tbl_125c[i5];
+        t0 = (s32)((u8 *)tbl_125c + t0);
+        printf(&D_800161C8, *pp, tbl_11dc[D_800A11D5], *(s32 *)t0, arg5);
         CD_flush();
     } while (0);
     v0 = -1;
