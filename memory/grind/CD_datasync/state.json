@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 24,
+ "session_count": 26,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -147,23 +147,35 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "s23's '8/91 geometry-correct basin' re-measures at 10/91 and is FARTHER from target than candidate.c (s23 frontier void); RTL dumps then localize the whole residual to two sched1 ready-list decisions,"
+  },
+  {
+   "session": 25,
+   "modality": "synthesis",
+   "floor": 7,
+   "note": "Floor holds at 7/91 (live). Kill re-audit: the do{}while(0) FAKE is load-bearing (7 vs 17 hand-ablated), so every s21-s24 kill stands. s24's central claim is CORRECTED: the inline form carries target's instruction multiset but NOT its dependence graph - sched_solver (model order- and clock-exact at baseline) finds no vector at depth 1 over all 1332 atoms nor depth 2 over the spellable ones, target's order is not a fixed point, and the reachable set under statement reordering is 32 emissions of which the best satisfies 9 of 13 target constraints. New axis opened: the arg4 ADDRESS-POINTER local is the first spelling ever to put arg4's value load at the register-load point (target's geometry), but a pointer-typed expression flips the addu to base-first where target is index-first, excluding the whole family on operand order."
+  },
+  {
+   "session": 26,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "s24's central claim inverted with the exact scheduler model: the inline form carries target's instruction multiset but NOT its dependence graph - statement order is exhausted (32 reachable emissions, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "tools/sched_solver can type the two remaining sched1 ready-list decisions REACHABLE or FORECLOSED, given the inline form's pre-sched RTL as the source order and the target window as the goal.",
-   "mechanism": "sched_solver models GCC 2.7.2's sched.c list scheduler order- and clock-exactly (6978/6978 validated, project memory sched-solver-campaign-2026-08-05). Until this session the solver had no correct input: every banked form's dependence graph differed from target's. The inline form's .combine block is now proven to carry target's graph, so the only free variable is the pre-sched insn order and the priority/tie-break, which is precisely what the solver decides.",
-   "next_probe": "Feed the CD_datasync block of tmp/grind/CD_datasync/s24/inl.combine to tools/sched_solver as the source order and asm/funcs/CD_datasync.s:47-68 as the goal order. Ask (a) is the goal order reachable at all under the modelled priority + tie-break, and (b) what is the minimal change to the dependence graph or to the pre-sched UID order that reaches it. Bound and profile the run - the CD_ready precedent is that an unbounded solver run burns CPU without finishing depth 1. Verify the solver reproduces the two KNOWN emissions first (candidate.c at 7 and inl at 13) as a self-check before trusting a verdict on the goal."
+   "hypothesis": "Target's window needs a longer critical path through arg4's chain and a shorter one through arg5's, while every argument stays an inline subscript so the addu stays index-first. The four unbought constraints are priority inversions, and priority is a pure function of the dependence graph.",
+   "mechanism": "s25 measured that statement order is exhausted on the inline graph (32 reachable emissions, best 9/13). rank_for_schedule sorts priority-descending before any tie-break, so those four orderings can only be bought by changing the graph. Concretely target needs p(arg4.lbu) above p(arg5.lbu) while p(arg4.sll) stays below p(arg5.sll) - an edge strictly between arg4's lbu and its sll - and it needs the stack store (121) to fall below arg3's addu (101).",
+   "next_probe": "Reuse tmp/grind/CD_datasync/s25/luid_search.py as the harness but perturb the GRAPH instead of the LUIDs: enumerate single add_dep/del_dep atoms on the inline pass-1 block 3, recompute priorities with perturb.apply_priorities, and re-run the LUID search for each, scoring the 13 constraints. Report every atom that lifts the best score above 9, and for each name the C construct that would place that edge. This converts 'which edge' from a guess into a bounded enumeration, and s25 proved it is the right question."
   },
   {
-   "hypothesis": "Some ordinary-C construct places a surviving dependence edge between arg4's index load and its shift - the one graph change the target order requires - other than a named index local (which folds).",
-   "mechanism": "The predicate derived this session is sharp: arg4's chain must gain exactly one edge at the FRONT (between lbu and sll) while gaining none at the back. Candidates not yet measured are (a) an index whose value needs a real conversion insn (a signed narrow read that emits sll/sra, or a masked read that emits andi), (b) an index that is genuinely used twice so combine cannot fold the copy, (c) an index arriving through an extra pointer indirection so the lbu feeds a load rather than a shift.",
-   "next_probe": "On the candidate chassis, sweep spellings that put a REAL operation between the index read and its scaling: signed/narrow index types that force a sign-extend pair, an index masked or offset by a constant before use, an index read through a second pointer level, and an index genuinely consumed twice (for example the same index selecting both the arg4 string and part of the arg3 expression, if a semantically honest reading of the format string supports it). Classify every result with tmp/grind/CD_datasync/s24/rep2.py by window signature, not by score - the score is a misleading gradient here and the window signature is what decides."
+   "hypothesis": "The stack-argument store's position (UID 121) is a separate, independently movable lever: target emits sw 16($sp) at window slot 12, after arg3's addu, where every measured form emits it by slot 9.",
+   "mechanism": "121 has priority 3 and both register-argument loads (127, 129) depend on it, so it is scheduled early in every reachable order. Target's late store implies the two loads do not both depend on it - i.e. target's memory-dependence structure between the stack store and the two table loads differs from ours. That is a C-level aliasing question, not an ordering one.",
+   "next_probe": "Ask whether del_dep 127<-121, del_dep 129<-121, or both lifts the reachable-set score with the same harness. If it does, the C question is what makes GCC 2.7.2's sched.c prove the stack store independent of the two table loads - candidates: the tables reached through differently-typed pointers, or a fifth argument whose store does not alias an s32 load. Always recompile to verify; the model proposes, the compiler disposes."
   },
   {
-   "hypothesis": "The twins CD_sync and CD_ready share this block and therefore this exact residual, so the pre-sched-graph result transfers and one solved scheduling question closes three functions.",
-   "mechanism": "CD_ready's ledger (s36/s46) records a byte-shape-IDENTICAL do_timeout window, and CD_sync s26 records the same {sll,addu,sll} -> jal debug_printf residual signature. This session's finding is a statement about the block's dependence graph, which is a property of the shared source idiom rather than of CD_datasync's surrounding chassis.",
-   "next_probe": "Run tmp/grind/CD_datasync/s24/rep2.py's window-signature classification (retarget the two call names) over CD_sync's and CD_ready's banked forms, and dump the .combine block for each twin's best form. If either twin's best form already carries the inline pre-sched graph, the scheduler question is identical there and the solver result applies to all three; if a twin's graph differs, that difference is itself a lever the other two do not have."
+   "hypothesis": "The twins CD_sync and CD_ready share this window, so the s25 role map and the graph-perturbation result transfer and the enumeration only has to be run once.",
+   "mechanism": "CD_ready s36/s46 record a byte-shape-IDENTICAL do_timeout window and CD_sync s26 records the same {sll,addu,sll} -> jal debug_printf residual. s25's finding is a statement about the block's dependence graph and priorities, which are properties of the shared source idiom rather than of CD_datasync's chassis.",
+   "next_probe": "Run tools/sched_solver/extract.py on the twins' best banked forms and build the same role map. If their pass-1 block priorities match CD_datasync's, one graph answer closes three functions; if a twin's priorities differ, that difference is a lever CD_datasync does not have and is worth importing."
   }
  ],
  "judge_constraints": [],
@@ -316,6 +328,54 @@
    "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 15 forms, fast harness",
    "predicate_cite": "",
    "result": "KILLED. All of them emit assembly byte-identical to the fully-inline form and score 13. The 'name the fifth argument' fa"
+  },
+  {
+   "session": 25,
+   "statement": "The do{}while(0) FAKE in candidate.c is an inert carrier occupying a pseudo that a real lever wants.",
+   "kill_scope": "instance",
+   "predicate_cite": "",
+   "measured_on": "HEAD chassis, candidate.c, live sandbox; hand ablation (bare braces) because tools/fake_ablate.py returns ERR on this candidate",
+   "result": "KILLED. 7/91 with the wrapper, 17/91 without it, build_insns 91 in both. The wrapper is worth 10 and is load-bearing, so the s21-s24 kills measured under it are not ablation artefacts."
+  },
+  {
+   "session": 25,
+   "statement": "Target's printf-window order is reachable from the fully-inline form's dependence graph by changing the source statement order.",
+   "kill_scope": "instance",
+   "predicate_cite": "",
+   "measured_on": "inline chassis (tmp/grind/CD_datasync/s24/inl.c) with the do{}while(0) FAKE present; sched_solver pass-1 block 3, baseline order- and clock-exact",
+   "result": "KILLED. perturb.py finds no vector at depth 1 over all 1332 atoms nor at depth 2 over the 693 spellable ones; replaying with the LUIDs set to target's own order does not reproduce it; 20,000 randomized LUID permutations produce only 32 distinct emissions and the best satisfies 9 of 13 target constraints. The four unbought constraints (104<112, 93<115, 107<119, 101<121) are priority inversions, which a tie-break cannot buy. s24's 'the inline form carries target's graph' is corrected to 'carries target's instruction multiset'."
+  },
+  {
+   "session": 25,
+   "statement": "Naming arg4's address in a pointer local reaches target's window, because it puts arg4's value load at the register-load point.",
+   "kill_scope": "instance",
+   "predicate_cite": "",
+   "measured_on": "inline chassis with the do{}while(0) FAKE present; 18 forms (p1-p8, q1-qa), fast harness calibrated against live sandbox on candidate.c",
+   "result": "KILLED for the match, CONFIRMED for the geometry. The load does move to the register-load point (lev 9, the closest non-candidate window measured), but a pointer-typed source expression emits addu BASE-first where target is INDEX-first; six spellings are byte-identical; pointerising arg5 or arg3 flips those too; initialising before puts() costs a fifth callee-save (lev 31, 84 insns)."
+  },
+  {
+   "session": 26,
+   "statement": "The do{}while(0) FAKE in candidate.c is an inert carrier occupying a pseudo that a real lever wants.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis, candidate.c applied to src/system.c, live sandbox; hand ablation because tools/fake_ablate.py returns ERR on this candidate",
+   "predicate_cite": "",
+   "result": "KILLED. 7/91 with the wrapper, 17/91 without it, build_insns 91 in both. The wrapper is worth 10 points and is load-bear"
+  },
+  {
+   "session": 26,
+   "statement": "Target's printf-window order is reachable from the fully-inline form's dependence graph by changing the source statement order (s24's frontier item 1, and the premise that the inline form carries targ",
+   "kill_scope": "instance",
+   "measured_on": "inline chassis (tmp/grind/CD_datasync/s24/inl.c) with the do{}while(0) FAKE present; sched_solver pass-1 block 3, baseline order- and clock-exact",
+   "predicate_cite": "",
+   "result": "KILLED. No vector at either depth. Target's order is not a fixed point of the scheduler even when fed as the source orde"
+  },
+  {
+   "session": 26,
+   "statement": "Naming arg4's ADDRESS in a pointer local, rather than its value, reaches target's window - because it defers arg4's value load into expand_call's register-loading phase, where target's trailing lw $a3",
+   "kill_scope": "instance",
+   "measured_on": "inline chassis with the do{}while(0) FAKE present; 18 forms on the fast harness, calibrated against live sandbox on candidate.c (lev 7 -> sandbox 7)",
+   "predicate_cite": "",
+   "result": "KILLED for the match, CONFIRMED for the geometry. The value load does move to the register-load point - the first time i"
   }
  ]
 }
