@@ -22578,3 +22578,249 @@ Diff is byte-identical to the banked, oracle-verified memory/grind/get_alarm/s46
 ## 2026-09-04 15:09 — func_80034F88 — ruling: For func_80034F88 the standing ban (and the 2026-08-13 layer-1/Judge FAIL) rules — **FAIL**
 
 (1) NO. The 2026-08-13 16:36 FINAL-CALL FAIL POSTDATES the 2026-07-01 pointer-alias grant, so the grants-supersede rule does not reach it, and s26 rebuts only its PHRASING, not its ground: decisions.md:5465 bans the extra handles because they are value-redundant with the first (`q1 = qm;`) and exist solely to change a GCC pass's analysis. Renaming that pass from global.c find_reg to cse.c store-to-load forwarding leaves the C text identical -- `u8 *r = &D_80106A73;` alongside a live `q` on the same byte has no distinguishing semantic reading and survives no rename test. `pointer-alias-fake-exception` sanctions ONE redundant handle standing in for direct global access; TWO simultaneously-live handles on one address is a different shape, and this ledger's own first-hand SOTN-master census (s22, db41b28e) and the s24 recheck of the construct index's PSX `pointer_alias` rows both return ZERO instances. Reading it in is a family extension = FAIL(CONSTRUCT) under ordinary-c-judge-decidable Ruling 1(2), never an escalate. I verified independently: candidate.c holds one handle; rejected/two-objects-block1-fresh-handle-score13-RA-BANNED.c (y02) is the two-handle body and measures 13 -- WORSE than the base chassis's 10 -- so the construct does not even reach the floor, and 'changes the instruction multiset' is not a legitimacy criterion under any rule. (2) NO, a fortiori: the three-object qm/q1/q2 body reaches 0 only by three duplicate handles on one byte, the catalog's strongest cheat signal (no-new-park-categories, 'you can describe what it does without referencing GCC's allocator'), and s26 names no defect the 2026-08-13 ruling did not consider. The s26 diagnosis itself is sound work and correctly banked as diagnostics; the session was right not to submit a body. Ledger read: state.json judge_constraints/banned_constructs, candidate.c header s16-s26, rejected/ (incl. three-pointer-objects-judge-FAIL-score0.c), decisions.md:5461-5469.
+
+## 2026-09-04 — OWNER RULING — foreclosed-bucket re-evaluation: 3 unparks with named probes, 3 foreclosures affirmed, 4 driver/engine defects ordered fixed, `main` fidelity question logged for the owner's own hand
+
+**Provenance.** Owner (Trenton), 2026-09-04, in conversation. After a grinder status
+review the owner directed *"Lets evaluate those foreclosed items while the grinder
+runs"*; six independent read-only reviewers (one per function or sibling pair) each
+read the function's latest decisions.md record, its full `memory/grind/<func>/` ledger,
+the governing rulings (2026-09-01 FORECLOSED-BUCKET REVIEW, 2026-09-02 foreclosure
+mechanics), and the driver/engine source their findings rest on. The operator
+independently re-verified every driver and engine claim against source before
+presenting the per-function verdicts. The owner then directed: *"Go ahead and fix all
+of these, take your time and think through these problems, be sure not to introduce
+any regressions or cheats."* This record lands as a standalone `rules:` commit BEFORE
+any code, queue, or ledger change spends it ([[ruling-record-lands-before-code]]) and
+passed a fresh layer-2 cheat-reviewer before landing. **Nothing here lowers a
+standard:** the two endgame-lock AND-gates, the frozen family list, the default-FAIL
+Judge, `ENDGAME_LOCK_MAX_FLOOR`, the 8-session/4-modality and 20-session/6-modality
+windows, and full-build SHA1 == oracle are all unchanged. No `banned_constructs` entry
+is cleared. No candidate is pre-accepted.
+
+### Findings the rulings rest on (each verified at the cited source)
+
+1. **Window compliance is now real.** Every 2026-09-03/04 re-foreclosure ran 9-39
+   sessions after its `exhaustion_base` across 5-7 modalities (state.json
+   `floor_history` for CD_sync, func_80045294, func_80060A68, func_80017848, CD_ready,
+   CD_datasync). The 2026-09-02 ruling did what it was meant to do.
+2. **All seven scan LOW** for hand-coded asm (`tools/scan_hand_coded.py --single`,
+   0-2/8), so gate (a) fails everywhere and canonical asm is not on the table for any
+   of them.
+3. **The escalation backstop cannot tell a dodge from an opened axis.**
+   `tools/grinder/grind.ps1` (the `default` branch of the outcome switch, `$dodged`)
+   fires on exactly one predicate: escalation modality AND floor >= prior. CD_sync
+   s116 (hypotheses.md:2247-2289, evidence.md:2680+) CONFIRMED the sll/addu pair
+   inversion defeated in ordinary C for the first time in 116 sessions, named the
+   new wall, and wrote that it declined to self-file because the axis was not
+   exhausted; the driver auto-filed the foreclosure anyway (decisions.md:21280 is a
+   generic template citing no s108-s116 measurement). That is a false positive on
+   the 2026-09-02 Ruling 3 principle "a spent probe is progress, not a disposition".
+4. **Sibling propagation only fires on a strictly lower floor.**
+   `grindlib.sibling_progress_pending` requires `f < own`. CD_datasync's s58 finding
+   (hypotheses.md:4558-4600: the Sony `CD_alarm` struct retires the shared `void **pp`
+   FAKE and links identically) reached neither CD_sync nor CD_ready, both at the same
+   floor 2, and both re-foreclosed without it.
+5. **The API-error classifier keys on a field the CLI leaves null.**
+   `Test-AgentApiError` (grind.ps1) requires `api_error_status >= 500 or == 429`; the
+   CLI's result JSON carries the code only in `result` text ("API Error: 529
+   Overloaded"). metrics/events.jsonl `grind-agent-usage` rows for func_80017848 s30
+   on 2026-09-03 13:24-14:47Z show one 500 after 30 turns and five 529s at one turn /
+   zero tokens, each running 190-266 s (past the 120 s spawn window), so six
+   outages fed the circuit breaker twice (08:32, 09:47). No work was lost: the first
+   attempt's forms survived in tmp/ and the successful 12:04 s30 re-measured them.
+6. **`engine/score.py` inflates every struct-model probe on the CD cluster.**
+   `_SECTION_ADDEND_RELOCS` masking applies only to section symbols
+   (`r.group(3).startswith(".")`); a named-symbol HI16/LO16 pair keeps its literal
+   immediate, so `D_800F19B8+4` and `D_800F19BC` score as different despite linking
+   to the same address. tmp/grind/CD_datasync/s58/diff_base_G.txt shows exactly five
+   such sites and nothing else. The honest floor of CD_datasync (2, scalar-model
+   candidate) is NOT affected; the hazard is a +N trap on any aggregate-merge probe
+   project-wide.
+7. **Three queue distances are stale** (engine/queue.json `generated_at`
+   2026-08-25): CD_datasync 7 vs ledger 2, CD_ready 4 vs 2, func_80045294 2 vs 1.
+8. **func_80060A68's record is wrong on its face** (decisions.md:21372, state.json
+   frontier[0]): it names func_80060B70 / func_80061250 / func_80061658 as
+   "still-INCLUDE_ASM"; all three are matched C in src/text1b.c (3140/3419/3550) and
+   none is in the queue. Separately, every one of its 116 banked bodies calls the
+   dispatch table as `(idx, temp_a1)`, while the matched sibling func_80060B70 calls
+   the same table as `()` (src/text1b.c:3174) and the table's first callee is
+   `u8 func_80063AF0(void)` (src/text1b.c:4042). Argument-register suggestions are
+   load-bearing allocation levers in this ledger's own law R3 (hypotheses.md:1777).
+   Never measured.
+
+### Ruling A — RETURN TO ACTIVE (owner `queue unpark`, Ruling-3 trigger), 3 items
+
+Each item returns to the active grind lane with a named, falsifiable next probe
+(recorded verbatim in its ledger as an operator reopen note). The exhaustion window
+resets per the 2026-09-02 ruling. No candidate is pre-accepted; each is adjudicated
+fresh by layer-1 + the default-FAIL Judge against current rule text.
+
+| function | reopen ground | named probe |
+|---|---|---|
+| CD_sync (ledger 2 rests on the refused cross-symbol arithmetic idiom; best submittable form j1 = 3) | finding 3: backstop false positive over a CONFIRMED lever; finding 4: unconsumed sibling finding; post-reset window ran no permuter or solver modality and its own frontier[1] names the sched_solver run as unexecuted | (i) transplant CD_datasync s58's `CD_alarm`-struct / no-`pp` spelling onto j1 and measure with the addend-normalised scorer (finding 6 fix lands first); (ii) run sched_solver + ra_solver on j1/h1 per frontier[1]; (iii) a fresh-seed permuter window from j1 (3) and h1 (7) — none has run since s95 and never on the duplicated-arms chassis |
+| func_80060A68 (2) | finding 8: a never-measured prototype contradiction and a misstated frontier | (1) spell the dispatch call `()` matching func_80060B70 and the callee prototype; measure candidate.c (E2), T1, Q2, M2 with that change and re-read QTYDBG for the idx / temp_a1 seats; (2) the sibling statement-inventory diff the s22 frontier named (func_80060B70's matched body vs E2: destination-pointer locals, `{ last_arg; copy3; call }` block shape); (3) operator lane, not a grind probe: hoist the `len(base) <= 6` guard at tools/ra_solver/inverse.py:484 out of the permutations loop (reported s13, unpatched) and run the real ALLOC_ORDER enumeration on block 0 |
+| CD_ready (2; queue 4 stale) | finding 4: unconsumed sibling finding; its own record names the unrun permuter window as re-activation trigger 3 and state.json frontier[0] says no campaign in 77 sessions was seeded from r3/b2 | (i) the CD_datasync s58 struct transplant onto vAT1 (addend-normalised scorer); (ii) a fresh-flag permuter workspace seeded from r3 (5) and b2 (12) — the tmp/perm_mar* workspaces predate `-mel` and point at the wrong cc1 (memory project/instrumented-cc1-location.md) |
+
+**Ban clause.** NO `banned_constructs` entry is cleared by this ruling. CD_sync's
+owner-REFUSED **cross-symbol arithmetic idiom** (`idx_1495 = &D_800A1494[1]` and any
+spelling that derives one splat symbol's address from another's — decisions.md:
+948-950, 2026-07-20, refused as an unsanctioned coercion family) stays refused. This is
+NOT the separately-defined *combine-foldable chain-extender* construct
+(`.claude/rules/dead-store-fake-exception.md:51`, sanctioned scope extension) that the
+same ledger uses legitimately on its h5/g3/j1 chassis; the two must not be conflated
+in either direction. The honest CD_sync floor for window purposes is the j1 form at 3,
+not the candidate.c 2, which rests on the refused idiom. func_80060A68's five bans
+and CD_ready's four judge constraints remain in force. Unparked functions may only
+close via spellings no standing ban covers.
+
+### Foreclosures AFFIRMED (3)
+
+- **CD_datasync** (2026-09-04, decisions.md:22256) — correct branch of the 2026-09-02
+  ruling: the driver branched on the ledger's honest floor 2 (grindlib `hist[-1]`),
+  the endgame-lock bar (8 flat across >= 4 modalities) was met at s51-s58 across five
+  modalities, and the residual is one two-slot scheduler transposition typed by the
+  ledger's own classifier (evidence.md:3399, s56). Ruling D (CD_intr merge) was
+  executed in s20 and re-confirmed link-identical in s58. The SOTN checkout
+  (../sotn-decomp bios.c:459-478) scored 35 verbatim in s7; psyz leaves the function
+  as INCLUDE_ASM. Its re-activation trigger 3 (score.py addend resolution) is
+  executed by this ruling (Ruling B) but does not lower its true floor; the equal-
+  floor sibling propagation fix (Ruling B) means any future CD_sync / CD_ready drop
+  reaches it.
+- **func_80045294** (2026-09-03, decisions.md:21298) — floor is 1, not the queue's
+  2: a single cse `make_regs_eqv` canonical-register choice (tools/gcc-2.7.2/cse.c:
+  842-857, the `regno_last_uid` clause at :855, verified in source; dump evidence
+  evidence.md:1309-1325). The Ruling A named probe was built and measured (rejected/
+  dup-i-eq-a0-into-sum-arms.c: nrefs 7, score 27); every ra_solver-reachable atom was
+  spelled or superseded by the s52 chassis; the SOTN census ran against the uncapped
+  index (8d0d5c8c) and the one precedented shape scored 5. Two caveats recorded, not
+  acted on: s57/s58 are near-duplicate solver sessions (the duplicate is load-bearing
+  for the trigger firing at s60), and no permuter or rederive session ran on the
+  post-s52 chassis. The only unspent lever (s59/s60's CODE_LABEL carrier) is a
+  fabricated always-false conditional with a dead body — auto-reject class — so a
+  position sweep can only produce a construct the Judge must FAIL.
+- **func_80017848** (2026-09-03, decisions.md:21464) — the cse extended-basic-block
+  attribution the 2026-09-01 review called inference is now dump-confirmed
+  (evidence.md:3269-3298, `ings.cse` insns 64/89 vs code_label 145 / insn 162; s32
+  combine-deletion, s34 join-shape, s35 loop.c dumps). The guard-duplication probe
+  was built at three spellings (18/44/47) and killed. Sessions 28-35 flat across four
+  modalities with 51 new banked cells. Its frontier[2] (a minimal scratch-TU combine
+  test of use-once copy deletion) is carried forward unspent as the named probe if
+  the owner ever unparks; it is a toolchain finding, not a C-form lever.
+
+### Ruling B — driver and engine defects ORDERED FIXED (operator lane, `engine test` + grinder suite green)
+
+All four are tooling fixes that produce no bytes, touch no gate, and widen no family.
+Each lands with a regression test.
+
+1. **Escalation backstop deferral** (finding 3). An escalation-modality session that
+   returns `progress` with floor >= prior is honored as ordinary progress — NOT
+   auto-foreclosed — when it banks at least one QUALIFYING CONFIRMED hypothesis AND
+   names a frontier item, at most TWICE per exhaustion window
+   (`escalation_deferrals` in state.json, reset on unpark and on any floor drop).
+   *Qualifying* is mechanical and mirrors the kill hygiene (layer-2 review of this
+   record: a bare CONFIRMED verdict had no hygiene gate and could be manufactured):
+   a numeric measurement in `result`, a `measured_on` chassis, and a statement not
+   already banked as CONFIRMED in an earlier session of the same ledger (a
+   re-confirmation is not a new lever). The driver then forces the next session's
+   modality to the first of `solver`, `permuter`, `structural`, `forensics` that has
+   not run since the window base, so the deferral attacks the named wall rather than
+   re-entering escalation. The third such session is backstopped exactly as today.
+   Bound: two deferrals per window, each buying one directed session, so at most four
+   extra sessions (two directed attacks, two escalation re-entries) before the
+   backstop fires regardless. The 2026-07-22 loop this backstop exists for
+   (func_8007DC9C, 40 flat sessions) stays bounded by construction. This is not a
+   second ladder cycle (asm-until-matched R1 unchanged): it is the same
+   "spent probe is progress" principle the 2026-09-02 ruling applied to unparks,
+   applied to a session that measured a lever rather than killed one.
+2. **Sibling propagation at equal floor** (finding 4). `sibling_progress_pending`
+   fires on `f <= own`: a sibling reaching your floor from a different chassis is
+   transplantable news. Still stamped only on a genuine drop, still one-shot.
+3. **API-error classifier** (finding 5). `Test-AgentApiError` also matches
+   `API Error: (5\d\d|429)` in the CLI result text and parses the result blob the
+   same way `record_usage.py` does. A 5xx/429 death of any duration is weather, not
+   an invalid session.
+4. **Named-symbol addend resolution in the scorer** (finding 6). When a HI16/LO16
+   pair against a NAMED symbol resolves through the linker symbol files
+   (`undefined_syms_auto.txt`, `named_syms.txt`, `undefined_funcs_auto.txt`), the
+   scorer replaces both immediates with the LINKED values (`%hi` / `%lo` of
+   symbol + addend), so two spellings of the same address score equal and two
+   different addresses still differ, exactly as the bytes do. Unresolvable symbols
+   keep today's literal behaviour. The oracle is untouched (score.py is not on the
+   build path); `queue regen` re-derives distances from the same C text, so no
+   active-lane distance moves. The 2026-08-07 false-negative bound in the module
+   docstring is unchanged — this fix removes false POSITIVES only.
+
+### Ruling C — queue regenerated (operator lane)
+
+`queue regen` on a clean tree after Ruling B lands, so CD_datasync (7 -> 2),
+CD_ready (4 -> 2) and func_80045294 (2 -> 1) read their ledger floors and the
+foreclosed set is preserved unchanged.
+
+### Ruling D — `main`: FIDELITY QUESTION LOGGED FOR THE OWNER, NOT DECIDED HERE
+
+`main` stays FORECLOSED under its own records (2026-08-24 DECLINE, affirmed
+2026-09-01 and 2026-09-02). The review found that the DECLINE's technical objections
+(from-scratch ASPSX fill reimplementation, `-fno-delayed-branch` on the frozen flags,
+~120 census sites re-decided) apply to a remedy nobody proposed in its narrow form.
+The residual is two branch-displacement words (evidence.md:1467-1516, whole-EXE
+verified), mechanism pinned to cc1 reorg's redundancy thread-skip retargeting
+UNFILLED branches, which ASPSX never did (cc1psx on the identical ings.i emits one
+label with all seven branches on it). A per-function-gated maspsx post-pass that
+re-emits the pre-fill label for reorder-mode branches — "retarget iff filled" parity,
+opt-in list, the same mechanism as `maspsx_label_nop_funcs.txt` — was never built or
+scoped. A read-only census over TARGET asm shows a GLOBAL rule would break 36 sites in
+33 matched functions, so only the per-function form is even a candidate.
+
+`.claude/rules/no-compiler-divergence.md` §2 makes a NEW per-function gate category an
+owner ruling. The decidable question, logged to `docs/grind/borderline.md` as a
+`policy-question` entry with the evidence both ways, is: *is "retarget iff filled"
+ASPSX parity, per-function gated and oracle-enforced, a FIDELITY gate under
+maspsx-gate-lists, or cheat-by-config?* Against it: the gate's selectivity comes
+almost entirely from the opt-in list (the fill-dup precondition holds at 761 target
+sites), which makes it resemble the retired label regfix rules more than the
+label-nop gate; the owner declined the class once and affirmed twice; one proven
+beneficiary. For it: cc1psx compiling the identical `ings.i` emits one label with all
+seven branches on it and no delay-slot processing, which is evidence about
+ASPSX/maspsx FIDELITY on this one label-placement behaviour (the shape
+`.claude/rules/maspsx-gate-lists.md` classifies as a gate question) — NOT a claim that
+the toolchain is the variable or that no C-side lever exists, a framing
+`.claude/rules/no-compiler-divergence.md` forbids and this record does not adopt; the
+transform is narrow, semantically neutral and oracle-enforced; and the label-nop
+precedent (2026-09-02, func_80027640) is the same "model the original assembler's
+output" shape. Only a subsequent explicit owner ruling spends it. If the
+owner rules cheat-by-config, `main`'s re-activation trigger A ("census candidates
+regrow") must be reworded — with the rule files retired nothing can regrow it, so as
+written it can never fire.
+
+### Corrections filed with this ruling
+
+1. **func_80060A68**, 2026-09-03 record (decisions.md:21372) and state.json
+   frontier[0]: func_80060B70, func_80061250 and func_80061658 are matched C in
+   src/text1b.c, not "still-INCLUDE_ASM". The sibling inventory diff the record calls
+   "never attempted" was available at source level throughout s14-s22.
+2. **CD_sync**, 2026-09-03 record (decisions.md:21280): "both gates fail; exhaustion
+   backstop" is a driver template; s116 banked a CONFIRMED lever and expressly did not
+   self-file. The record's window claim is true only in the count-based sense.
+3. **func_80045294**: the queue's distance 2 has been 1 since s52 (2026-09-03).
+4. **docs/grind/INCIDENT.md** (2026-09-03 09:47): the three "invalid" sessions were
+   500/529 API deaths (finding 5), not agent or driver defects. The two 213-byte
+   "giving up" JSONs preserved as `tmp/grind/invalid_func_80017848_s30_*.json`
+   (09:37 and 12:04, i.e. the operator's pre-relaunch drills) are `drill.ps1` Drill A
+   canaries, not session output. This says nothing about the OTHER preserved files
+   under the same name pattern: `invalid_func_80017848_s18_210645.json` and
+   `invalid_func_80017848_s24_225516.json` (2026-08-18, ~10 KB each) are genuine
+   discarded session outputs from the pre-2026-08-31 owner-gated mechanics
+   (the s24 file cites the 2026-08-18 REFUSED / OWNER-ACCEPTED INCOMPLETE entry),
+   unrelated to the 2026-09-03 breaks and not re-examined here.
+
+### Execution order (operator)
+
+1. This record lands as a standalone `rules:` commit (same commit adds the
+   borderline entry for `main`).
+2. Ruling B fixes + tests; `engine test` and `tools/grinder/tests` green; commit
+   `grinder:` / `engine:`.
+3. Ruling C: `queue regen` on the clean tree; commit `queue:`.
+4. Ruling A: operator reopen notes appended to the three ledgers; `queue unpark` x3;
+   commit `grind:`.
+5. Grinder drill (`-WithJudge`) + relaunch.

@@ -213,3 +213,33 @@ ruled three mechanical changes (no standard changes):
 Retroactive: the 11 same-day re-foreclosures and the 6 out-of-scope floors
 returned to active with the window reset (17 items); `main` and
 func_80027640 stay foreclosed under their own records.
+
+## Amendment 2026-09-04 — escalation deferral and equal-floor sibling propagation (owner ruling, decisions.md "foreclosed-bucket re-evaluation", Ruling B)
+
+Measured 2026-09-04: the driver's exhaustion backstop fired on one predicate
+(escalation modality AND floor did not drop), so CD_sync s116 — which CONFIRMED a
+lever for the first time in 116 sessions, named the new wall, and expressly
+declined to self-file — was auto-foreclosed anyway; and the sibling-progress
+stamp fired only on a STRICTLY lower floor, so CD_datasync s58's link-identical
+struct spelling reached neither twin at the same floor 2. Owner ruled two
+mechanical changes (no standard changes; the windows, gates and
+`ENDGAME_LOCK_MAX_FLOOR` are untouched):
+
+1. **A confirmed lever is progress, not a dodge.** An escalation-modality
+   session that returns `progress` at a flat floor is honored as ordinary
+   progress when it banks at least one QUALIFYING CONFIRMED hypothesis
+   (numeric measurement in `result`, a `measured_on` chassis, and a statement
+   not already CONFIRMED in an earlier session of the same ledger) AND names a
+   frontier item — at most `ESCALATION_DEFERRALS_MAX = 2` times per exhaustion
+   window (reset on unpark and on any floor drop). The driver forces the next
+   session, one-shot, to the first of solver / permuter / structural /
+   forensics not run since the window base. The third such session is
+   backstopped exactly as before. This is not a second ladder cycle
+   (asm-until-matched R1 unchanged) and a re-confirmation buys nothing.
+2. **Sibling propagation fires at or below your floor.** A genuine sibling
+   floor drop TO your floor (from a different chassis) forces the same
+   one-shot `rederive` transplant session that a drop below it already did.
+
+`main`'s residual (two branch-displacement words behind the 2026-08-24 maspsx
+branch-fill DECLINE) is a fidelity question logged to `docs/grind/borderline.md`
+for the owner's own hand; nothing is granted and `main` stays foreclosed.
