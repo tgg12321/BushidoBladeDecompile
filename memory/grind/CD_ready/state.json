@@ -726,5 +726,15 @@
    "predicate_cite": "",
    "result": "p1 16, p4 14, p3 21 (181 insns), p6 16; q1 10, q1b 11 (180 insns), q1c 21. Both bases re-verified live in the same batch"
   }
+ ],
+ "sibling_progress": [
+  {
+   "from": "get_alarm",
+   "floor": 0,
+   "session": 45,
+   "at": "2026-09-04T19:05:13.565558+00:00",
+   "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
+   "consumed": null
+  }
  ]
 }

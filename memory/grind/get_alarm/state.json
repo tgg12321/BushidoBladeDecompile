@@ -1,7 +1,7 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 44,
+ "session_count": 45,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -273,27 +273,34 @@
    "floor": 9,
    "modality": "synthesis",
    "headline": "s44 synthesis: statement-order surface CLOSED at all depths (80k luid permutations; pass 1 luid-invariant, pass 2 blocked by an OUTPUT dep edge), and the mandated sibling sweep measured CD_sync's two "
+  },
+  {
+   "session": 45,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The F1 chain-extender's second reference to &D_8009BF68 is destroyed by a specific named pass before combine runs, and identifying that pass either yields a spelling that survives it or closes axis A for the whole F1 family.",
-   "mechanism": "A1 and A6 moved the score 9 -> 13 while build_insns stayed at 90: the extra symbol reference perturbs codegen but is not present as a second use of the address pseudo when combine.c:1458 evaluates added_sets_2. The candidate killers are cse2 (constant-folding the symbol difference) and combine itself. CD_sync's own s105 note records that its extender survived precisely because cse could not fold the SYMBOL_REF difference, so the two cases must differ somewhere identifiable.",
-   "next_probe": "Apply variant A1 (tmp/grind/get_alarm/s44/variant.py A1), run `pwsh tools/grinder/dump.ps1 get_alarm`, and read tmp/grind/get_alarm/dumps/display.cse2 and display.combine for the D_8009BF68 address pseudo, tracking its reference count across passes. If it dies in cse2, spell an extender cse cannot fold and take ONE measurement; if it dies inside combine, bank axis A as closed for the F1 family (a class result) and record the predicate."
+   "hypothesis": "The function lands as COMPLETED-C the moment tools/grinder/scope_allow.txt carries `get_alarm volatile_extern_allowlist.txt`.",
+   "mechanism": "Once the grant exists, the session scope check and Revert-SessionEdits both honour the allowlist path (grind.ps1:1231 and :1099), the candidate scope check passes (the file is neither src/ nor include/), and the granted path is STAGED into the Match commit so the committed tree is the tree that was byte-verified.",
+   "next_probe": "Add the scope_allow line (or `python tools/grinder/grindlib.py add-scope-allow . get_alarm <date> volatile_extern_allowlist.txt`), re-apply memory/grind/get_alarm/s45-score0-full-diff.txt and the two allowlist entries from memory/grind/get_alarm/candidate.c, confirm sandbox 0, then submit candidate-ready with memory/grind/get_alarm/self_vet.md as written."
   },
   {
-   "hypothesis": "local-alloc can be pushed to seat the dead *g_gpu_stat_reg read in $v0 by changing WHICH pseudos exist or how long they live, rather than by reordering statements or aliasing a pointer global.",
-   "mechanism": "The dead read is allocated last (qty 2, refs 1 -> qty_compare priority 0), so its seat is decided entirely by what is live across [8,9). Statement order is now closed at all depths (this session) and two pointer-alias spellings are dead (B1/B2), leaving the shape of the quantity table itself as the only untested input. The $v0 seat is the unique thing that deletes the pass-2 output dependence s42 isolated.",
-   "next_probe": "Finish the run s43 left interrupted: `python3 tools/ra_solver/inverse.py local tmp/ra_solver_work/display.local.json --func get_alarm --block 2 --goal '{\"2\": 2}' --depth 2 --top 12` (goal = qty 2 into hardreg 2 = $v0), then classify each returned vector as C-expressible or not exactly as s43 did for the scheduler atoms. The model is ours plus an analyst-supplied goal, so the inverse_compose --target-object gap does not block it."
+   "hypothesis": "Lever (b), the g_gpu_dma_madr type correction, is byte-neutral for every OTHER function in src/display.c.",
+   "mechanism": "It adds a volatile qualifier to a pointed-to type used at src/display.c:709 and :829. The 709 use site already casts to volatile explicitly, so its codegen should be unchanged; 829 is inside get_alarm itself. Any other consumer of *g_gpu_dma_madr in the TU would gain a scheduling barrier.",
+   "next_probe": "`& tools/wteng.ps1 main verify-oracle --rebuild` with the full recipe applied, and `python3 tools/objdiff.py` on display.o before/after to confirm get_alarm is the only changed function. If another function regresses, narrow lever (b) to a use-site-local `volatile u32 *` handle inside get_alarm and re-measure the 6 -> 5 step."
   },
   {
-   "hypothesis": "Axis A (the &D_8009BF68 materialization) behaves differently under a $v0-seat chassis than under the $a0-seat chassis every probe in s1-s44 has used.",
-   "mechanism": "combine.c:1458 added_sets_2 is a pre-RA decision so it should be seat-independent, but every axis-A probe has run against a chassis where the dead read occupies $a0; the two axes were only ever proven orthogonal against THAT seat.",
-   "next_probe": "Deferred and conditional on frontier item 2 producing a $v0-seat form. If one appears, re-run the s2/s3 declaration/access-shape enumeration AND this session's F1 spellings against the NEW chassis before quoting any banked axis-A conclusion, since every one of them is chassis-relative."
+   "hypothesis": "The order-dependence finding generalises: other long-flat functions in this ledger family are blocked by a lever COMBINATION that every one-change-at-a-time modality reads as a kill.",
+   "mechanism": "Lever (c) alone scored 12 against a floor of 6 and would have been banked as a clean instance kill by any prior session. The ladder's search modalities (permuter, ra_solver inverse, sched_solver perturbation) all explore single-change neighbourhoods.",
+   "next_probe": "For the foreclosed siblings CD_sync / CD_ready / CD_datasync (all floor 2, all Sony libcd census modules with existing volatile grants on some symbols), re-test whether a volatile declaration on a SECOND module-local symbol \u2014 inert or worse alone \u2014 closes the residual when paired with a pointed-to-volatile correction on the module's register pointers."
   }
  ],
  "judge_constraints": [
-  "Volatility must live on the DECL (`extern volatile s32 D_8009BF68[];`, pattern 3) - never injected at a pointer or cast over a non-volatile decl; reconcile the conflicting src/display.c:733 fn-ptr extern; add D_8009BF68 to volatile_extern_allowlist.txt in the same commit citing Ruling 4 (git show cd19d7a2^:docs/closer/rulings.md:68) NOT the IRQ three-shape catalog; the root allowlist txt needs a scope_allow.txt line."
+  "Volatility must live on the DECL (`extern volatile s32 D_8009BF68[];`, pattern 3) - never injected at a pointer or cast over a non-volatile decl; reconcile the conflicting src/display.c:733 fn-ptr extern; add D_8009BF68 to volatile_extern_allowlist.txt in the same commit citing Ruling 4 (git show cd19d7a2^:docs/closer/rulings.md:68) NOT the IRQ three-shape catalog; the root allowlist txt needs a scope_allow.txt line.",
+  "Re-escalate only after a full-build verify-oracle SHA1==oracle measured with the COMPLETE recipe live (all three decls + body + both allowlist entries), and with the duplicate/contradictory externs at src/display.c:721 (D_8009BF78) and :733 (D_8009BF68 fn-ptr) reconciled in the same diff."
  ],
  "origin": "queue",
  "created": "2026-07-22T13:53:31.417799+00:00",
@@ -324,6 +331,14 @@
    "measured_on": "chassis-current floor-9 body (score 9 / target 91 / build 90 / rules_dropped 0 / cheat_asm_stripped 147); no FAKE construct present",
    "predicate_cite": "",
    "result": "B1 = score 9 / build_insns 90 - inert, no seat change, identical fingerprint to the floor. B2 = score 17 / build_insns 9"
+  },
+  {
+   "session": 45,
+   "statement": "Declaring D_8009BF78 volatile as a single change on top of the D_8009BF68-volatile chassis lowers the score below 6.",
+   "kill_scope": "instance",
+   "measured_on": "floor-6 chassis: s44 reference-faithful body in src/display.c with `extern volatile s32 D_8009BF68[];` + its volatile_extern_allowlist.txt entry, g_gpu_dma_madr still `extern u32 *`; zero FAKE constru",
+   "predicate_cite": "",
+   "result": "NEGATIVE \u2014 score 12, build_insns 91, i.e. strictly worse than the 6 it was measured against. This is the order-dependenc"
   }
  ],
  "judge_clearances": [

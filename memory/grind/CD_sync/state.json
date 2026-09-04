@@ -886,5 +886,15 @@
    "predicate_cite": "",
    "result": "HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns) - only S4 (four loads in an 8-insn window at insn 49) and S5 (one ap"
   }
+ ],
+ "sibling_progress": [
+  {
+   "from": "get_alarm",
+   "floor": 0,
+   "session": 45,
+   "at": "2026-09-04T19:05:13.566558+00:00",
+   "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
+   "consumed": null
+  }
  ]
 }

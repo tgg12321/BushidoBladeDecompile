@@ -864,5 +864,15 @@
    "result": "P3 sandbox 7 = 2 real, object-identical to G2 - completely byte-inert. P4 sandbox 17 = 12 real, exactly P1's score with "
   }
  ],
- "object_model_audited": 58
+ "object_model_audited": 58,
+ "sibling_progress": [
+  {
+   "from": "get_alarm",
+   "floor": 0,
+   "session": 45,
+   "at": "2026-09-04T19:05:13.564558+00:00",
+   "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
+   "consumed": null
+  }
+ ]
 }

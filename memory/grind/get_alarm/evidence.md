@@ -1068,3 +1068,138 @@ args is NOT a sanctioned use-site shape) and stripped by `volatile_cheats`.
 - [s45] s44 frontier item 3 ("axis A behaves differently under a $v0-seat chassis") RETIRED WITHOUT COST: combine runs before sched1 and local-alloc, so no register seat can influence the fold. The two axes are on opposite sides of that boundary and must be worked independently.
 - [s45] Axis-B inputs re-confirmed on the reference-faithful body: tmp/ra_solver_work/display.local.json regenerated, block 2 shows the dead read as qty 2 / pseudo 81 / birth 8 / death 9 / refs 1 / got 4 ($a0) / ord 15 of 16 — verbatim identical to s43's reading. The chassis change did not move the quantity table.
 - [s45] The mandated ra_solver inverse LOCAL run (`inverse.py local tmp/ra_solver_work/display.local.json --func get_alarm --block 2 --goal '{"2": 2}' --depth 2 --top 12`) produced NO output in ~20 minutes and was STOPPED, not orphaned. Next session: run `--depth 1` first, and use `python3 -u ... > file` rather than piping through `tail`, so partial progress survives.
+
+
+## s45 (2026-09-04) — synthesis — **FLOOR 9 -> 0. THE FUNCTION IS SOLVED IN PURE C.**
+
+`& tools/wteng.ps1 main sandbox get_alarm --disable all` = **score 0 / target_insns 91 /
+build_insns 91 / rules_dropped 0 / cheat_asm_stripped 147**, measured this session with
+the edits live in `src/display.c`. The 147 is display.c's pre-existing unrelated
+INCLUDE_ASM/canonical material — identical to the floor-9 baseline measured at the top
+of this same session, i.e. NOTHING in the candidate was stripped by the cheat-invisible
+sandbox. Session outcome is `owner-gated` / INTEGRATION HANDOFF, not `candidate-ready`,
+for a purely mechanical reason recorded below; the full record is
+`docs/grind/decisions.md` (2026-09-04 OWNER-ESCALATION — INTEGRATION HANDOFF entry).
+
+### The path, step by measured step
+
+| step | change | floor |
+|---|---|---|
+| baseline | s44 candidate body applied to `src/display.c` | 9 |
+| a | `extern s32 D_8009BF68[];` -> `extern volatile s32 D_8009BF68[];` **+ allowlist entry** | **6** (build_insns 91 == target for the first time) |
+| b | `extern u32 *g_gpu_dma_madr;` -> `extern volatile u32 *g_gpu_dma_madr;` (BOTH decls, `src/display.c:20` and `:756`) | **5** |
+| c | `extern s32 D_8009BF78;` -> `extern volatile s32 D_8009BF78;` **+ allowlist entry** | **0** |
+
+Intermediate controls measured, not assumed:
+- (a) with NO allowlist entry: `cheat_asm_stripped` 147 -> 148, score stays 9 — the
+  sandbox strips pattern-3 volatile externs, so the allowlist entry is load-bearing for
+  the HONEST score (this is the mechanism of
+  [[unannotated-fake-inflates-honest-floor]] applied to volatile).
+- (c) applied ALONE on the floor-6 chassis (a, no b): **score 12 — strictly WORSE than
+  the floor.** Banked as a kill at the time; it only becomes correct after (b).
+- (b) leaves `cheat_asm_stripped` at 147 — the pointed-to volatile is NOT pattern 3 and
+  needs no allowlist entry.
+
+### Why 44 sessions missed it: ORDER-DEPENDENCE, plus two wrong attributions
+
+1. **The three levers do not compose additively.** (c) alone is worse than the floor;
+   only (a)+(b)+(c) is 0. Every prior session probed one lever at a time and read a
+   score increase as a kill. The permuter, the RA solver and the scheduler solver all
+   search a ONE-CHANGE-AT-A-TIME neighbourhood, so none of them could have reached this.
+2. **Axis A was mis-attributed for 44 sessions.** The `added_sets_2` / "the address
+   pseudo needs a SECOND use to survive combine" story is WRONG and is now RETIRED.
+   `tmp/grind/get_alarm/dumps/display.combine` insn 73 keeps
+   `(set (reg 92) (symbol_ref "D_8009BF68"))` alive with its SINGLE consumer at insn 81
+   flagged `mem/s/v` — `MEM_VOLATILE_P` blocks combine's address substitution at ONE
+   use. A second use is precisely why every F1 chain-extender spelling measured 13:
+   combine keeps the `la` AND folds the first use, which is not target's shape.
+3. **Axis B was mis-attributed for 3 sessions (s42/s43/s44).** The `$v0` seat for the
+   discarded `*g_gpu_stat_reg;` read is NOT a local-alloc quantity-table outcome and
+   never was. In GCC 2.7.2 `sched.c` a volatile MEM is a full memory barrier (it depends
+   on every prior memory ref, every later one depends on it). Marking `*g_gpu_dma_madr`
+   volatile forbids sched1 from hoisting RTL insn 56 — and with it the madr POINTER load
+   insn 54 — above the volatile dead read insn 38; the dead read then lands in `$v0`,
+   exactly as target does at `0x8007DCFC`. It is a scheduler MEMORY-DEPENDENCE problem
+   one pass upstream of allocation. The frontier item
+   "`inverse.py local ... --goal '{"2": 2}'`" is therefore VOID, not unfinished, and so
+   is the s44 class kill on statement-order permutation (statement order was never the
+   input that mattered — dependence CLASS was).
+
+### Why the outcome is a handoff and not `candidate-ready`
+
+Levers (a) and (c) are `extern volatile T G;` = `engine/volatile_cheats.py` pattern 3, so
+they need `volatile_extern_allowlist.txt` entries to score honestly. That file is outside
+a grind session's allowed dirty surface (`$AllowedDirtyPattern`,
+`tools/grinder/grind.ps1:1082`) and get_alarm has no `tools/grinder/scope_allow.txt`
+grant. Leaving it dirty = SCOPE VIOLATION, session discarded at step 5 before the outcome
+is read; reverting it = the driver's own `candidate-ready` re-verification measures 9 and
+discards the session as a false claim. Circular by construction. The exit is the
+`SioSyncroRead` route: a Judge `ESCALATE(integration-handoff)` writing
+`get_alarm volatile_extern_allowlist.txt` into `scope_allow.txt` —
+`volatile_extern_allowlist.txt` is already an ALLOWED grant class
+(`tools/grinder/grindlib.py:465`, not on `_SCOPE_GRANT_DENY`) and that exact precedent
+line is already in the file. **This session therefore reverted
+`volatile_extern_allowlist.txt` before ending. The next session's dispatch CHASSIS CHECK
+will read floor 9 again — that is the revert, not a regression.** Re-apply the two
+allowlist lines (text in `memory/grind/get_alarm/candidate.c`) plus
+`memory/grind/get_alarm/s45-score0-full-diff.txt` and the score is 0 immediately.
+
+### Grant basis for the ONE new volatile (`D_8009BF78`)
+
+Ruling 4 — ground-truth-codegen volatile class, granted 2026-07-10, commit `c80d976e`
+(text at `git show cd19d7a2^:docs/closer/rulings.md` lines 68-83; the file was deleted as
+dead-era docs in `cd19d7a2`, so the frozen-family table's `docs/closer/rulings.md:68`
+citation is a DEAD PATH — cite the commit). `D_8009BF78` is `_qin`, module-local state of
+the same verbatim-matched Sony libgpu `sys.c` object as `get_alarm` itself
+(`memory/closer/psyq-library-census.md:246`); its only consumers program-wide are
+`get_alarm`, `_addque2` (sole writer, `asm/funcs/_addque2.s:176`), `_exeque` and `_sync`,
+all verbatim LIBGPU/SYS members; **its pair-mate `D_8009BF7C` (`_qout`) already holds a
+volatile grant in the allowlist**; and it is MEASURED unreachable without volatile
+(5 -> 0). Corroborating use-site shape on the older two-prong carve-out's side:
+`src/display.c:796` `while (D_8009BF78 != D_8009BF7C) { _exeque(); ... }` is a cataloged
+spin-wait. The IRQ-WRITER prong is the WEAK one here (`_addque2` writes it in normal
+context; `_exeque` writes only `D_8009BF7C`) — which is exactly why the citation must be
+Ruling 4, whose stated point is that the writer prong is not required for Sony census
+state. Do not let it be accepted under the IRQ carve-out.
+
+Lever (b) needs NO grant: `g_gpu_dma_madr` points at DMA2_MADR (0x1F8010A0) inside the
+sanctioned MMIO window, `.claude/rules/mmio-volatile-type-level.md` is type-level with no
+annotation, its two siblings in the same declaration block already carry that exact type
+(`src/display.c:18` and `:22`), and `src/display.c:709` already casts this very pointer to
+`volatile u32 *` at another use site.
+
+### Artifacts
+- `memory/grind/get_alarm/candidate.c` — score-0 body + the complete recipe
+- `memory/grind/get_alarm/s45-score0-full-diff.txt` — the exact `git diff src/display.c`
+- `memory/grind/get_alarm/self_vet.md` — 6-test vet written for the score-0 form
+- `memory/grind/get_alarm/rejected/s45-two-lever-bf68-madr-volatile-score5.c` — the
+  score-5 two-lever intermediate (kept as a chassis, not as a dead end)
+- `tmp/grind/get_alarm/s45/` — sbs diff tool + score-5/score-0 display.c snapshots,
+  `decision_entry.md`
+- `tmp/grind/get_alarm/dumps/` — cc1 -da dumps regenerated on the post-(a) chassis
+
+- [s45] MEASURED THIS SESSION, chassis-current, in order: baseline 9 -> (a) `extern volatile s32 D_8009BF68[];` + allowlist entry = 6 -> (b) `extern volatile u32 *g_gpu_dma_madr;` on both decls (src/display.c:20 and :756) = 5 -> (c) `extern volatile s32 D_8009BF78;` + allowlist entry = 0. Final: score 0, target_insns 91, build_insns 91, rules_dropped 0, cheat_asm_stripped 147.
+
+- [s45] cheat_asm_stripped stayed at 147 for the score-0 form — the exact count of the floor-9 baseline measured at the top of the same session. Nothing in the candidate was stripped by the cheat-invisible sandbox; the 147 is display.c's pre-existing unrelated INCLUDE_ASM/canonical material.
+
+- [s45] CONTROL: lever (a) applied WITHOUT the volatile_extern_allowlist.txt entry leaves the score at 9 and moves cheat_asm_stripped 147 -> 148. Pattern-3 volatile externs are stripped by the sandbox unless allowlisted, so the allowlist entry is load-bearing for the honest score, not paperwork.
+
+- [s45] CONTROL: lever (b) leaves cheat_asm_stripped at 147 — pointed-to volatile on a pointer object is not engine/volatile_cheats.py pattern 3 and requires no allowlist entry. It is type-level MMIO volatile (.claude/rules/mmio-volatile-type-level.md): g_gpu_dma_madr holds DMA2_MADR = 0x1F8010A0, inside the sanctioned 0x1F801000-0x1F802FFF window; its two siblings in the same declaration block already carry that exact type (src/display.c:18 g_gpu_stat_reg, :22 g_gpu_dma_chcr); and src/display.c:709 already writes through this very pointer as *(volatile u32 *)g_gpu_dma_madr = a0.
+
+- [s45] ORDER-DEPENDENCE is the reason the floor sat at 9 for 44 sessions: lever (c) measured alone on the floor-6 chassis scores 12, strictly worse. Only the (a)+(b)+(c) combination is 0. Every search modality on the ladder — permuter, ra_solver inverse, sched_solver luid perturbation, statement-order enumeration — explores a one-change-at-a-time neighbourhood and therefore could not reach this point.
+
+- [s45] AXIS A RE-ATTRIBUTED (dump-proven, tmp/grind/get_alarm/dumps/display.combine): insn 73 keeps (set (reg 92) (symbol_ref "D_8009BF68")) alive after combine with its SINGLE consumer at insn 81 flagged mem/s/v and reg 92 REG_DEAD there. MEM_VOLATILE_P blocks combine's address substitution at ONE use. The 44-session added_sets_2 / 'needs a second use' story is WRONG and is retired; a second use is why every s44 F1 chain-extender spelling measured 13 (combine keeps the la AND folds the first use).
+
+- [s45] AXIS B RE-ATTRIBUTED (dump-proven, tmp/grind/get_alarm/dumps/display.sched): the $v0 seat for the discarded *g_gpu_stat_reg read is a sched1 memory-dependence outcome, not a local-alloc quantity-table outcome. A volatile MEM is a full memory barrier in GCC 2.7.2 sched.c; making *g_gpu_dma_madr volatile stops sched1 hoisting RTL insn 56 (and with it the madr pointer load insn 54) above the volatile dead read insn 38, and the dead read lands in $v0 exactly as target does at 0x8007DCFC. The s42/s43 quantity-table attribution and the banked `inverse.py local --goal '{"2": 2}'` frontier probe are VOID, and the s44 class kill on statement-order permutation was answering the wrong question (dependence CLASS, not statement ORDER, was the input that mattered).
+
+- [s45] WHY THIS IS owner-gated AND NOT candidate-ready — the block is purely mechanical and is documented in full in the decisions.md entry. Levers (a) and (c) need volatile_extern_allowlist.txt entries to score honestly. That file is outside a grind session's allowed dirty surface ($AllowedDirtyPattern, tools/grinder/grind.ps1:1082, which admits only memory/grind/, docs/grind/, tmp/, metrics/events.jsonl, src/, include/) and get_alarm has no tools/grinder/scope_allow.txt grant. Leaving it dirty = SCOPE VIOLATION at step 5, session discarded before the outcome is read; reverting it = the driver's own candidate-ready sandbox re-verification measures 9 and discards the session as a false claim. Circular by construction.
+
+- [s45] THE EXIT IS ALREADY PAVED: volatile_extern_allowlist.txt is an ALLOWED scope-grant class (_SCOPE_GRANT_ALLOWED_RE, tools/grinder/grindlib.py:465; it is NOT on _SCOPE_GRANT_DENY), and the precedent line `SioSyncroRead volatile_extern_allowlist.txt` is already in tools/grinder/scope_allow.txt from the identical 2026-08-25 integration handoff. One line — `get_alarm volatile_extern_allowlist.txt` — re-activates the function and the very next session lands it.
+
+- [s45] THIS SESSION REVERTED volatile_extern_allowlist.txt before ending (mandatory, to avoid the scope-violation discard). The next dispatch's CHASSIS CHECK will therefore read floor 9 again: that is the revert, NOT a regression. Re-apply memory/grind/get_alarm/s45-score0-full-diff.txt plus the two allowlist lines (text in memory/grind/get_alarm/candidate.c) and the score is 0 immediately.
+
+- [s45] GRANT BASIS for the one NEW volatile (D_8009BF78 = libgpu _qin): Ruling 4, granted 2026-07-10, commit c80d976e, text at `git show cd19d7a2^:docs/closer/rulings.md` lines 68-83 — the file was deleted as dead-era docs in cd19d7a2, so the frozen-family table's `docs/closer/rulings.md:68` citation is a DEAD PATH and must not be used. Census identity: get_alarm @0x8007DC9C sits in a verbatim-matched LIBGPU/SYS module placement (memory/closer/psyq-library-census.md:246); D_8009BF78's only program-wide consumers are get_alarm, _addque2 (sole writer, asm/funcs/_addque2.s:176), _exeque and _sync, all verbatim LIBGPU/SYS members; its pair-mate D_8009BF7C (_qout) ALREADY holds a volatile grant in the allowlist. Measured unreachable without volatile: 5 -> 0. Corroborating cataloged use-site shape: src/display.c:796 `while (D_8009BF78 != D_8009BF7C) { _exeque(); ... }` is a spin-wait. The IRQ-WRITER prong is the WEAK one for this symbol (_addque2 writes it in normal context; _exeque writes only D_8009BF7C) — which is exactly why the citation is Ruling 4, whose stated point is that the writer prong is not required for Sony census state. It must NOT be accepted under the IRQ carve-out.
+
+- [s45] Lever (a) is already Judge-PASSed for this exact symbol and this exact body: docs/grind/decisions.md:22292 (2026-09-04 13:48) — 'Ruling 4 GRANTS `extern volatile s32 D_8009BF68[];` here, with NO IRQ prong required'; the same ruling explicitly cleared the s45 reference-faithful body plus the authorized volatile decl.
+
+- [s45] NOT YET VERIFIED, and the one thing the next step must check: lever (b) edits two declarations shared with the rest of src/display.c. This session did not run verify-oracle (forbidden as an iteration tool); the full-build SHA1 gate is the driver's own step and must confirm no other function in the TU regressed.
