@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 77,
- "current_modality": "escalation",
+ "session_count": 78,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -471,23 +471,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Disposition session: the s76 frontier's one named unexplored shape (birthing_insn_p de-boost carrier with two real in-block sets) measured dead on BOTH live bases (7 forms, 10-21 vs floors of 2 and 5)"
+  },
+  {
+   "session": 78,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Owner-directive probe 1 lands: the Sony CD_alarm object model transplants onto the floor body at 2/179/0 and retires the void **pp FAKE, and the asm(\"D_800A147C\") alias rename is byte-inert too - the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A permuter campaign seeded from r3 (5) and b2 (12) finds the last spelling by search; no campaign in 77 sessions has been seeded from a body whose residual is two independently root-caused facts.",
-   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats across the whole block. r3's residual is one global-alloc seat plus one scheduler readiness gap, and b2's is one local-alloc seat set; the permuter's statement-reordering and variable-splitting passes act on exactly the RTL-position and reg_n_sets inputs both facts depend on.",
-   "next_probe": "Build a FRESH workspace mirroring engine/buildconfig.py's flags exactly (the tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1). Validate the scorer reproduces 5 for r3, 12 for b2 and 2 for candidate.c before launching, then run fresh-seed windows with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
+   "hypothesis": "Owner directive probe 2 is still unrun: a permuter campaign seeded from r3 (5) and b2 (12), on a FRESH workspace, finds the last spelling by search - and it should now be seeded from the s78 struct/no-pp chassis, which is one statement and one pseudo lighter in block 3 than every body previously handed to the permuter.",
+   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats across the whole block. r3's residual is one global-alloc seat plus one scheduler readiness gap and b2's is one local-alloc seat set; the permuter's statement-reordering and variable-splitting passes act on exactly the RTL-position and reg_n_sets inputs both facts depend on. The tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1.",
+   "next_probe": "Build a fresh workspace mirroring engine/buildconfig.py's flags exactly (correct cc1 = tools/gcc-2.7.2/cc1, -mel). Validate the scorer reproduces 2 for the new candidate.c, 5 for r3 and 12 for b2 before launching, then run fresh-seed windows with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
   },
   {
-   "hypothesis": "On the r3 base (score 5, block-3 order target-exact from slot 53) the transposed leading lbu pair is a readiness-time artefact, not a tie, and it closes by making the arg5 chain's sll schedule one clock earlier so insn 106 re-enters the ready list alongside insn 99.",
-   "mechanism": "r3's dump shows 99 picked at clock 18 with 106 absent from that ready list and 'BLOCKAGE unit=0 clock=19 raw_tick=21 adj_tick=19 maxb=3 exec=106 last=99' - 106 became ready only after its single dependent 108 was picked at clock 17 and then missed the memory unit's issue slot. On the floor body the analogous pair are both ready at clock 17 and the LUID tie resolves correctly. This is a different rung from every LUID probe s61-s77 ran; note s75's u01-u12 sweep already killed twelve dependence-respecting statement permutations at 5, so the probe must change the dependence CHAIN LENGTH, not the statement order.",
-   "next_probe": "Dump BB2_SCHED_DEBUG for r3 variants that shorten the arg5 chain's tail by one dependence step (or lengthen the t0 chain's), reading the clock at which insn 106 enters the ready list rather than the score. If 106 and 99 can be made ready in the same clock the pair reverts to a LUID tie, which r3's RTL order already resolves in the target's favour - that alone is 2 of r3's 5 points, leaving only reg98's $a3 seat."
+   "hypothesis": "The r3 base's transposed leading lbu pair is a readiness-time artefact that closes by shortening the arg5 chain's tail by one dependence step, and r3 has never been re-derived on the s78 struct/no-pp chassis, where block 3 has one fewer statement.",
+   "mechanism": "r3's dump shows insn 99 picked at clock 18 with 106 absent from that ready list ('BLOCKAGE unit=0 clock=19 raw_tick=21 adj_tick=19 maxb=3 exec=106 last=99'); 106 became ready only after its single dependent 108 was picked at clock 17 and then missed the memory unit's issue slot. On the floor body the analogous pair are both ready at clock 17 and the LUID tie resolves in the target's favour. s75's u01-u12 sweep already killed twelve dependence-RESPECTING statement permutations at 5, so the probe must change the dependence CHAIN LENGTH, not the statement order - and the struct model changes exactly one link of the argument chain (member MEM instead of the pp deref).",
+   "next_probe": "Transplant r3 (memory/grind/CD_ready/progress/s75-r3-nested-note-refs-flip-seats-block3-order-exact-5.c) onto the s78 struct/no-pp chassis with memory/grind/CD_ready/apply_s78.py, re-measure, then dump BB2_SCHED_DEBUG and read the clock at which insn 106 enters the ready list rather than the score. If 106 and 99 become ready in the same clock the pair reverts to a LUID tie that r3's RTL order already resolves correctly - 2 of r3's 5 points - leaving only reg98's $a3 seat."
   },
   {
-   "hypothesis": "A version-correct libcd bios.c body for CD_ready appearing upstream (psyz / sozud) settles the statement order the scheduler is reading, which is the one input 77 sessions have had to guess.",
-   "mechanism": "The residual is entirely INSN_LUID, i.e. RTL statement position, and every route found so far trades order against local-alloc seats. The original source's statement order would fix the LUIDs by construction rather than by search, and memory/reference/psyz-psyq40-decomp.md records psyz as the version-correct PsyQ decomp with 308 matched library bodies.",
-   "next_probe": "Re-check psyz / sozud upstream for a matched libcd bios.c CD_ready body (and CD_sync, the proven sibling in the same object). Mind memory/reference/psyq-reference-c-version-skew.md: BB2 links PsyQ 3.5 (bios.c v1.86 1997/03/28), so a 4.0-era body is a lead, not a drop-in."
+   "hypothesis": "F3 needs a Judge ruling, not another measurement: the floor body's `volatile u8 *idx_1496` is worth 2 points and no declaration-level spelling of that volatility reaches the floor, so the eventual candidate must either carry the pointer-injected spelling under an explicit ruling or the function cannot submit at 0 even if the last transposition falls.",
+   "mechanism": "engine/volatile_cheats.py pattern 3 and volatile_extern_allowlist.txt cover `extern volatile T G;` only; decisions.md:11004 records pointer/cast-injected volatility as a spelling defect no grant carries. s78 measured every honest alternative: direct symbol access 27 (control 27), CD_intr struct with volatile members 36 (control 37), qualifier dropped 4.",
+   "next_probe": "When a body reaches 0, file a ruling-request that states the s78 numbers verbatim and asks whether Ruling 4's grant class can attach to a pointer-typed volatile when the declaration-level spelling is measurably unreachable - or whether the 2-point qualifier must simply be dropped, making 4/178 the honest ceiling for this shape."
   }
  ],
  "judge_constraints": [
@@ -725,6 +731,22 @@
    "measured_on": "HEAD chassis 2026-09-03; candidate.c re-verified live at 2/179/0 and the s75 r3 base at 5/179/0 in the same batches. The p-series carries the floor body's full inherited 8-unit FAKE set; the q-series ",
    "predicate_cite": "",
    "result": "p1 16, p4 14, p3 21 (181 insns), p6 16; q1 10, q1b 11 (180 insns), q1c 21. Both bases re-verified live in the same batch"
+  },
+  {
+   "session": 78,
+   "statement": "On this body the volatile qualifier on idx_1496 is worth 2 points, and every declaration-level re-spelling of it measured this session (direct symbol access, and a CD_intr struct with volatile members",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis (candidate.c re-measured live at 2/179/0 in the same batch); seven FAKE units present, pp alias absent",
+   "predicate_cite": "",
+   "result": "v10 4/178 (the qualifier is load-bearing, worth 2). v5 27/177 and control v6 27/177 - IDENTICAL, so the volatile is byte"
+  },
+  {
+   "session": 78,
+   "statement": "Removing pp's statement and pseudo from block 3 (the struct model) does not change the coupling that kills the birthing_insn_p de-boost family, and opens no statement order that the scalar chassis had",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis re-measured live at 2/179/0 in the same batch; seven FAKE units present, pp alias absent",
+   "predicate_cite": "",
+   "result": "Orders: w05 2, w08 2, w10 2, w06 4, w07 4, w04 6, w09 7 - the same shape as the scalar chassis, with w04 (the order that"
   }
  ],
  "sibling_progress": [
@@ -734,8 +756,9 @@
    "session": 45,
    "at": "2026-09-04T19:05:13.565558+00:00",
    "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
-   "consumed": null
+   "consumed": 78
   }
  ],
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "object_model_audited": 78
 }
