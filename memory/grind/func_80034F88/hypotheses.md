@@ -3183,3 +3183,75 @@ is exact.
 - probe: Read the `;; NN conflicts` / `;; NN preferences` headers of the .greg dumps for base, v1, v5, v6, v7, v8 and v11, plus set_preference in tools/gcc-2.7.2/global.c.
 - result: Every body prints `;; 74 conflicts: ... 2 3 29` -- 74 is ineligible for $v0 and $v1 pre-find_reg; the $v1 holder is the block-0 QImode mask value that local-alloc seats first (s24's `blk=0 qty=0 reg1=76 size=1 mode=1` row). Contra s23, preferences for hard regs DO appear here: `77 preferences: 3` ($v1) and `78/82/86 preferences: 2` ($v0). The narrower true statement is that allocno 74 is never a copy operand (it is set from a bare symbol_ref), so no preference can be recorded for it; the only copy source that would carry one is an object local-alloc has seated in $v1, i.e. a second C object aliasing the byte (the standing banned construct).
 - verdict: CONFIRMED
+
+## [s32] Mandated kill re-audit: the floor-10 chassis and two banked instance kills still measure exactly what the ledger records, and the floor body still carries no FAKE construct.
+- mechanism: An instance kill is only valid on the chassis and FAKE state it was measured under; both are re-established before any new probe.
+- probe: candidate.c installed at src/code6cac_b.c:3420 and measured with `sandbox func_80034F88 --disable all`; `rejected/mask-on-symbol-then-pointer-score16.c` and `rejected/pointer-live-blocks23-only-score14.c` (the two banked forms that move the address allocno's live range, i.e. the forms closest to the target's register geometry) re-installed and re-measured; `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c` run.
+- result: candidate.c 10 at 49/49 with rules_dropped 0; mask-on-symbol 16 at 51 insns; pointer-live-blocks23-only 14 at 49 insns -- all three reproduce their banked scores exactly. fake_ablate: 'no FAKE-annotated constructs found ... nothing to ablate'. The chassis and every s31 kill's measurement basis hold.
+- verdict: CONFIRMED
+
+## [s32] The frontier's mechanism statement ("allocno 74 is INELIGIBLE for $v1 because of a hard-reg conflict, and no route exists that does not add a second C object") is one-sided: the hard-reg conflict IS removable by structural means alone, and removing it exposes a SECOND, independent barrier -- allocno_compare priority -- that the same structural change creates.
+- mechanism: global.c:635-655 orders allocnos by `floor_log2(n_refs)*n_refs / live_length * 10000 * size`; a shorter live range removes the hard-reg conflicts contributed by overlapping local-alloc-seated pseudos (local-alloc runs first and, with no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, hands out $v0 then $v1 in raw register order), but it simultaneously DIVIDES the address allocno's priority denominator down -- the two effects trade against each other.
+- probe: .greg + .lreg dumps captured for three bodies with `pwsh tools/grinder/dump.ps1 func_80034F88` and compared allocno-by-allocno (tmp/grind/func_80034F88/s32/greg_base.txt, greg_v1.txt, greg_v2.txt, greg_v3.txt, lreg_base.txt).
+- result: base (q live blocks 0-3, 74 = 10 refs across 29 insns): `74 conflicts: 72 74 77 78 81 82 85 86 2 3 29`, `74 in 4` ($a0); block-0 locals 75 (QI, 2 refs/4 insns) and 76 (SI, 3 refs/6 insns) are BOTH seated `in 3` ($v1) and 79 `in 2`. v1 (mask via symbol): the seats merely PERMUTE -- 75,76 in 2 and 79 in 3 -- and the conflict set is byte-identical, `74 in 4` still. v2 (q materialised after the flag-word read): 76 in 3, 75 in 2, conflict set again identical, `74 in 4`. **v3 (q live in blocks 2/3 only): 74 shrinks to 6 refs across 17 insns and its conflict set becomes `72 74 78 81 82 85 86 2 29` -- hard reg 3 ($v1) is GONE.** But 74 is still `in 4`: the allocation order printed is `73 82 86 78 77 81 85 74 72`, 74 is EIGHTH, and by the time find_reg reaches it $v1 is held by 78 (`78 in 3`), 81 and 85 -- all three of which 74 conflicts with. 74's priority is floor_log2(6)*6/17 = 0.71 against 78's floor_log2(5)*5/11 = 0.91 and 81/85's floor_log2(3)*3/4 = 0.75.
+- verdict: CONFIRMED
+
+## [s32] Shortening the address object's live range to blocks 2/3 -- the one structural change that provably deletes the $v1 hard-reg conflict -- seats the address in $v1.
+- mechanism: with the block-0 local quantities no longer overlapping 74, find_reg should be free to give it $v1 in raw register order.
+- probe: rejected/pointer-live-blocks23-only-score14.c installed on the current chassis, measured, and its .greg read (tmp/grind/func_80034F88/s32/greg_v3.txt).
+- result: 14 at 49 insns and `74 in 4` -- the seat does NOT move. The conflict is gone but the priority ordering has replaced it: 74 is allocated eighth of nine, after 78/81/85 have taken $v1. The arithmetic threshold is exact -- on a 17-insn live range 74 would need floor_log2(n)*n > 15.45, i.e. EIGHT refs rather than six, to be ordered ahead of 78; and every extra ref through `q` is an extra memory access, i.e. an extra instruction on a body that is already at the target's 49.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pointer-live-blocks23-only body on the current HEAD floor-10 chassis (candidate.c = 10, 49/49, rules_dropped 0); single `u8 *q`, two assignments, no FAKE-annotated construct present
+
+## [s32] Delaying q's materialisation below block 1's flag-word read (so the flag-word temps are born and die before the address allocno starts) removes enough block-0 overlap to drop the $v1 hard-reg conflict.
+- mechanism: local-alloc seats block-0 quantities in raw register order ($v0 then $v1) and every one of them that overlaps the address allocno's range becomes a hard-reg conflict for it; making the flag-word temps die before the address is born should leave only the mask temps overlapping, and those can take $v0.
+- probe: v2 (`c = p[8] & 1;` hoisted above `q = &D_80106A73; *q &= 0xF8;` inside block 1's scope), installed at src/code6cac_b.c:3420, measured and dumped; banked as rejected/s32-q-materialised-after-flagread-score14.c.
+- result: 14 at 49 insns. `74 conflicts: 72 74 75 76 81 82 85 86 2 3 29` and `74 in 4` -- unchanged. The block-0 seats permute (76 in 3, 75 in 2) but block 0 retains two local quantities overlapping 74, so hard reg 3 stays in the conflict set. Four points spent for zero allocator movement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD with q materialised after the block-1 flag-word read; single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s32] Moving the mask off the pointer (block 0 masks the symbol directly, q first assigned in block 1) frees $v1 by removing the mask temps from the address allocno's overlap.
+- mechanism: the mask's QI load temp and SI and-result are the two block-0 local quantities the .greg shows seated in $v1 on the base body; masking the symbol directly should give them a different birth point.
+- probe: rejected/mask-on-symbol-then-pointer-score16.c re-installed on the current chassis, measured and dumped (tmp/grind/func_80034F88/s32/greg_v1.txt).
+- result: 16 at 51 insns -- reproduces the banked score. The mask temps DO move ($v0), but block-0 local 79 takes $v1 in their place; `74 conflicts: ... 2 3 29` is byte-identical to base and `74 in 4` stands. The $v1 occupancy is a property of block 0 having >= 2 local quantities across the address's range, not of which statement produces them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD with block 0's mask spelled as a direct symbol RMW; single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s32] Mandated kill re-audit: the floor-10 chassis and the two banked instance kills whose forms move the address allocno's live range still measure what the ledger records, and the floor body carries no FAKE construct that could be masking a lever.
+- mechanism: An instance kill is only valid on the chassis and FAKE state it was measured under, so both are re-established before any new probe.
+- probe: candidate.c installed at src/code6cac_b.c:3420 and measured with `sandbox func_80034F88 --disable all`; rejected/mask-on-symbol-then-pointer-score16.c and rejected/pointer-live-blocks23-only-score14.c re-installed and re-measured; tools/fake_ablate.py run on candidate.c.
+- result: candidate.c 10 at 49/49, rules_dropped 0, cheat_asm_stripped 27; mask-on-symbol 16 at 51 insns; pointer-live-blocks23-only 14 at 49 insns -- all three reproduce their banked scores exactly. fake_ablate: 'no FAKE-annotated constructs found ... nothing to ablate'.
+- verdict: CONFIRMED
+
+## [s32] The frontier's mechanism statement is one-sided: the hard-reg conflict that keeps the address allocno out of $v1 is removable by a structural change alone, and removing it exposes a second, independent barrier (global.c allocno_compare priority) that the same change creates.
+- mechanism: global.c:635-655 orders allocnos by floor_log2(n_refs)*n_refs/live_length*10000*size; tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so local-alloc (which runs first) seats its block-0 quantities in raw register order $v0 then $v1, and each one overlapping the address allocno's range becomes a hard-reg conflict for it. Shortening that range removes the overlap but simultaneously lowers the allocno's priority quotient relative to the allocnos it competes with.
+- probe: pwsh tools/grinder/dump.ps1 func_80034F88 on four bodies (base, mask-via-symbol, q-materialised-late, pointer-live-blocks23-only), reading the ';; NN conflicts' / ';; N regs to allocate' / 'Register dispositions' blocks of .greg and the per-pseudo ref/live-length headers of .lreg.
+- result: base: 74 = 10 refs across 29 insns, `74 conflicts: 72 74 77 78 81 82 85 86 2 3 29`, `74 in 4` ($a0); block-0 locals 75 and 76 both seated `in 3` ($v1). mask-via-symbol and q-materialised-late: the block-0 seats permute (75,76 -> $v0 with 79 -> $v1; then 76 -> $v1 with 75 -> $v0) and the conflict set and `74 in 4` are byte-identical. pointer-live-blocks23-only: 74 shrinks to 6 refs across 17 insns and its conflict set becomes `72 74 78 81 82 85 86 2 29` -- hard reg 3 is GONE -- yet 74 is still `in 4`, because the printed allocation order `73 82 86 78 77 81 85 74 72` puts it eighth, after 78 (priority 0.91), 81 and 85 (0.75), all of which conflict with 74 and take $v1, against 74's own 0.71.
+- verdict: CONFIRMED
+
+## [s32] Shortening the address object's live range to blocks 2 and 3 -- the structural change that provably deletes the $v1 hard-reg conflict -- seats the address in $v1.
+- mechanism: With the block-0 local quantities no longer overlapping the address allocno, find_reg is free to hand it $v1 in raw register order.
+- probe: rejected/pointer-live-blocks23-only-score14.c installed on the current chassis, measured with sandbox, and its .greg read at tmp/grind/func_80034F88/s32/greg_v3.txt.
+- result: 14 at 49 insns, `74 in 4`. The hard-reg conflict is gone but the priority ordering replaces it. The threshold is exact: on a 17-insn live range the address allocno would need floor_log2(n)*n > 15.45, i.e. EIGHT refs rather than six, to be ordered ahead of allocno 78 -- and each extra ref through q measured so far is an extra memory access on a body already at the target's 49 instructions.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pointer-live-blocks23-only body on the current HEAD floor-10 chassis (candidate.c = 10, 49/49, rules_dropped 0); single u8 *q, two assignments, no FAKE-annotated construct present
+
+## [s32] Delaying q's materialisation below block 1's flag-word read, so the flag-word temps are born and die before the address allocno starts, removes enough block-0 overlap to drop the $v1 hard-reg conflict.
+- mechanism: local-alloc seats block-0 quantities in raw register order and every one overlapping the address allocno's range becomes a hard-reg conflict for it; making the flag-word temps die before the address is born should leave only the mask temps overlapping, and those could take $v0.
+- probe: v2 (`c = p[8] & 1;` hoisted above `q = &D_80106A73; *q &= 0xF8;` inside block 1's scope) installed at src/code6cac_b.c:3420, measured and dumped; banked as rejected/s32-q-materialised-after-flagread-score14.c.
+- result: 14 at 49 insns. `74 conflicts: 72 74 75 76 81 82 85 86 2 3 29` and `74 in 4` -- unchanged from base. The block-0 seats permute (76 in 3, 75 in 2) but block 0 retains two local quantities overlapping 74. Four points spent for zero allocator movement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD with q materialised after the block-1 flag-word read; single u8 *q with three assignments, no FAKE-annotated construct present
+
+## [s32] Moving the mask off the pointer (block 0 masks the symbol directly, q first assigned in block 1) frees $v1 by removing the mask's temps from the address allocno's overlap.
+- mechanism: The mask's QI load temp and SI and-result are the two block-0 local quantities the base .greg shows seated in $v1; masking the symbol directly gives them a different birth point.
+- probe: rejected/mask-on-symbol-then-pointer-score16.c re-installed on the current chassis, measured and dumped (tmp/grind/func_80034F88/s32/greg_v1.txt).
+- result: 16 at 51 insns -- reproduces the banked score. The mask temps do move to $v0, but block-0 local 79 takes $v1 in their place; the conflict set is byte-identical to base and `74 in 4` stands. The $v1 occupancy tracks block 0 holding two or more local quantities across the address's range, not which statement produces them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD with block 0's mask spelled as a direct symbol RMW; single u8 *q with three assignments, no FAKE-annotated construct present

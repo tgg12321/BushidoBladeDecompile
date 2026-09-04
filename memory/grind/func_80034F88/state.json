@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 31,
+ "session_count": 32,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -189,23 +189,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural modality spent with dumps, not scores: seven distinct block-split / re-association / value-sharing bodies tie at 10/49 and emit a BIT-IDENTICAL stream (empty asm diff, identical .greg alloc"
+  },
+  {
+   "session": 32,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "The $v1 seat has TWO barriers, not one: shortening the address allocno's live range provably deletes the hard-reg conflict s31 named, and the same change drops it below the competing allocnos in globa"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is now stated at the allocator's input level: allocno 74 is INELIGIBLE for $v1 (hard-reg conflict) and carries no hard-reg preference, and both facts are fixed by the single-C-object model. Every route to changing either one lands on a second C object aliasing D_80106A73, which is the standing banned construct.",
-   "mechanism": "A local-alloc-seated pseudo occupying $v1 across q's live range creates the conflict (local-alloc precedes global-alloc); global.c:1709-1713 records a preference only for a copy operand, and 74 is set from a bare symbol_ref, never copied.",
-   "next_probe": "Only after a ruling or class grant covering a second address object. Do not re-run structural, declaration-order, value-sharing or type-narrowing searches -- s31 measured them with dumps and seven of them emit base's exact stream."
+   "hypothesis": "The $v1 seat is gated by a two-sided trade on the address allocno: a live range long enough to cover blocks 0-3 gives it a hard-reg conflict on $v1 from block-0 local quantities; a live range short enough to drop that conflict puts its allocno_compare priority below the block-value allocnos that then take $v1.",
+   "mechanism": "local-alloc runs before global-alloc and seats block-0 quantities in raw register order ($v0, $v1) because mips.h defines no REG_ALLOC_ORDER; global.c:635-655 then orders the remaining allocnos by floor_log2(n_refs)*n_refs/live_length.",
+   "next_probe": "The only opening the arithmetic leaves is raising the address allocno's ref count to eight on a 17-insn live range without adding an instruction. Every ref through q measured so far is a memory access that costs an instruction on a 49-insn body, so this needs a ref that survives to allocation but folds away before final -- check the .combine dump for such a q-referencing form before spending a session on it."
   },
   {
-   "hypothesis": "The structural modality is exhausted on this chassis in the strong sense: the forms that stay at 49 insns are RTL-invisible, and the forms that reach RTL move away from the target.",
-   "mechanism": "cse/combine eliminate every added value object before global allocation, so the modality's levers cannot reach the contested allocno at all; the four bodies that do change codegen (v3 12, v4 30, v10 33, v11 14) each lose more than the seat convention is worth.",
-   "next_probe": "None on this axis. If a future session wants a structural datum it should target the LOCAL-ALLOC seat directly, and the only C construct that reaches it is a second object -- currently banned."
+   "hypothesis": "Structural respelling of block 0 permutes which local quantity holds $v1 but does not reduce block 0 below two local quantities overlapping the address allocno.",
+   "mechanism": "Block 0 contains the mask's load temp, the mask's and-result and the flag-word temp; local-alloc seats them $v0 then $v1 in raw order, so at least one lands on $v1 across the address's range.",
+   "next_probe": "None on the block-0 respelling axis -- three bodies (base, mask-via-symbol, q-materialised-late) print byte-identical conflict sets. A session wanting to move this must reduce block 0 to ONE local quantity, and no single-object spelling measured so far does."
   },
   {
-   "hypothesis": "The ladder's second cycle needs ten more sessions before disposition; the modality-count condition is already satisfied.",
-   "mechanism": "Owner directive 2026-09-02 requires 20 flat sessions and >= 6 modalities; s31 supplies the sixth modality at session ten of the cycle.",
-   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the completed cse enumeration (s27/s28), s29's seat-invariance and reload pricing, s30's F1 byte-neutrality, and s31's allocator-input restatement plus the set_preference correction, then return owner-gated."
+   "hypothesis": "The ladder's second cycle needs nine more sessions before disposition; the modality-count condition was already satisfied at s31.",
+   "mechanism": "Owner directive 2026-09-02 requires 20 flat sessions and >= 6 modalities before any disposition; s32 is session eleven of the cycle.",
+   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the completed cse enumeration (s27/s28), s29's reload pricing, s30's F1 byte-neutrality, s31's allocator-input restatement and s32's two-barrier measurement, then return owner-gated."
   }
  ],
  "judge_constraints": [
@@ -409,6 +415,30 @@
    "measured_on": "candidate.c score-10 chassis on HEAD with all three blocks respelled as init-then-conditional-or; single `u8 *q` with three assignments, no FAKE-annotated construct present",
    "predicate_cite": "",
    "result": "30 at 44 insns -- five instructions LOST; the empty arm collapses the diamond, re-confirming s1's reading that the store"
+  },
+  {
+   "session": 32,
+   "statement": "Shortening the address object's live range to blocks 2 and 3 -- the structural change that provably deletes the $v1 hard-reg conflict -- seats the address in $v1.",
+   "kill_scope": "instance",
+   "measured_on": "pointer-live-blocks23-only body on the current HEAD floor-10 chassis (candidate.c = 10, 49/49, rules_dropped 0); single u8 *q, two assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "14 at 49 insns, `74 in 4`. The hard-reg conflict is gone but the priority ordering replaces it. The threshold is exact: "
+  },
+  {
+   "session": 32,
+   "statement": "Delaying q's materialisation below block 1's flag-word read, so the flag-word temps are born and die before the address allocno starts, removes enough block-0 overlap to drop the $v1 hard-reg conflict",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD with q materialised after the block-1 flag-word read; single u8 *q with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "14 at 49 insns. `74 conflicts: 72 74 75 76 81 82 85 86 2 3 29` and `74 in 4` -- unchanged from base. The block-0 seats p"
+  },
+  {
+   "session": 32,
+   "statement": "Moving the mask off the pointer (block 0 masks the symbol directly, q first assigned in block 1) frees $v1 by removing the mask's temps from the address allocno's overlap.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD with block 0's mask spelled as a direct symbol RMW; single u8 *q with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "16 at 51 insns -- reproduces the banked score. The mask temps do move to $v0, but block-0 local 79 takes $v1 in their pl"
   }
  ]
 }

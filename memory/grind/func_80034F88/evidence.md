@@ -4290,3 +4290,84 @@ count is not.
 - [s31] fake_ablate on candidate.c reports no FAKE-annotated constructs, so no banked kill on this chassis was measured with a FAKE carrier on the contested pseudo.
 
 - [s31] Ladder cycle 2 (owner directive 2026-09-02) now stands at TEN sessions and SIX distinct modalities -- escalation (s23, s24), synthesis (s25), solver (s26), forensics (s27, s28), rederive (s29, s30), structural (s31). The >= 6 modality condition is met; the 20-session condition is not.
+
+==== s32 (structural) ====
+
+The residual's mechanism is now stated with BOTH of its barriers measured, and
+the frontier's one-barrier statement from s31 is corrected.
+
+CHASSIS. candidate.c installed at src/code6cac_b.c:3420 measures 10 at 49 build
+insns / 49 target insns, rules_dropped 0, cheat_asm_stripped 27. fake_ablate
+reports no FAKE construct in the body. Two banked forms re-measured on this
+chassis reproduce their banked scores exactly (mask-on-symbol 16/51,
+pointer-live-blocks23-only 14/49), so every s31 instance kill's basis holds.
+
+THE TWO BARRIERS. The 10 points are all in block 0 + block 1: the target puts
+the address in $v1 and the byte value in $a0, we put the address in $a0 and the
+value in $v1, and where the target reloads the byte (`lbu $a0, 0($v1)`) we emit
+the load-delay nop of `lw $v0, 0x20($a1)`. The address is pseudo 74 in the .greg
+dumps.
+
+  (1) HARD-REG CONFLICT. On every body where `q` is live across block 0, .greg
+      prints `74 conflicts: ... 2 3 29`: 74 is ineligible for $v0 and $v1 before
+      find_reg runs. tools/gcc-2.7.2/config/mips/mips.h defines no
+      REG_ALLOC_ORDER, so local-alloc (which runs first) hands its block-0
+      quantities out in raw register number order -- $v0, then $v1 -- and every
+      such quantity overlapping 74's range becomes a hard-reg conflict for it.
+      Block 0 always holds at least TWO of them (the mask's QI load temp and SI
+      and-result, plus the flag-word temp). This is invariant under respelling:
+      base seats 75,76 in $v1 and 79 in $v0; the mask-on-symbol body seats
+      75,76 in $v0 and 79 in $v1; the q-materialised-late body seats 76 in $v1
+      and 75 in $v0. All three print the same conflict set and all three print
+      `74 in 4` ($a0).
+
+  (2) ALLOCNO PRIORITY. Shortening 74's live range to blocks 2/3 only
+      (pointer-live-blocks23-only) DOES delete barrier (1): 74 becomes 6 refs
+      across 17 insns and its conflict set drops to `72 74 78 81 82 85 86 2 29`
+      -- hard reg 3 is gone. The seat still does not move. global.c:635-655
+      orders allocnos by floor_log2(n_refs)*n_refs/live_length; the printed
+      order is `73 82 86 78 77 81 85 74 72`, so 74 is allocated EIGHTH, after
+      78 (0.91), 81 and 85 (0.75) -- all three conflict with 74 and all three
+      take $v1 -- against 74's own 0.71.
+
+  The two barriers trade against each other: the only structural lever that
+  removes the hard-reg conflict (shortening the address's live range) is
+  exactly the lever that lowers its priority below the allocnos that then take
+  $v1. On the 17-insn range the threshold is floor_log2(n)*n > 15.45, i.e. 74
+  would need EIGHT refs instead of six to be ordered ahead of 78, and each
+  extra ref through `q` is an extra memory access on a body already at the
+  target's 49 instructions.
+
+  Note also that priority is NOT a barrier on the base body: `73 conflicts:
+  72 73 2 29` does not list 74, so the $v1-holding allocno 73 and the address 74
+  do not conflict at all there, and 74 (10345) already outranks 77/81/85 (7500).
+  s31's reading of the base body was right; what it did not measure is that the
+  conflict is removable and that removing it merely swaps in barrier (2).
+
+WHAT THIS SAYS ABOUT THE TARGET. In the target, block 0's mask temp is in $a0,
+which under raw allocation order means BOTH $v0 (the live call return, still
+live at the `lbu` on line 8 -- `addu $a1,$v0,$zero` is line 9) and $v1 were
+unavailable when local-alloc reached it. $v1 being unavailable at that moment
+means the address was already seated there, i.e. the target's block-0/1 address
+was resolved before local-alloc's block-0 quantities -- which no single-pointer
+body reproduces, because a single `q` spanning blocks 0-3 is necessarily a
+global allocno and global-alloc runs second.
+
+ARTIFACTS. tmp/grind/func_80034F88/s32/{greg_base,greg_v1,greg_v2,greg_v3,
+lreg_base}.txt, base.txt (objdump of the floor body), base.c, v1.c, v2.c, v3.c,
+install.py, ext.py. New rejected form:
+rejected/s32-q-materialised-after-flagread-score14.c.
+
+- [s32] Chassis re-established: candidate.c = score 10, 49 build insns / 49 target insns, rules_dropped 0, cheat_asm_stripped 27; fake_ablate finds no FAKE construct in the floor body.
+
+- [s32] objdump of the floor body (tmp/grind/func_80034F88/s32/base.txt) against asm/funcs/func_80034F88.s localises all 10 points to block 0 + block 1: target holds the address in $v1 and the byte value in $a0, we hold the address in $a0 and the value in $v1, and target's `lbu $a0, 0($v1)` sits where we emit the load-delay nop of `lw $v0, 0x20($a1)`. Blocks 2, 3 and the trailing copy loop are register-exact.
+
+- [s32] tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so local-alloc allocates in raw register number order: $v0 first, $v1 second. That is why block-0 local quantities land on $v1 and become a hard-reg conflict for the address allocno.
+
+- [s32] global.c:635-655 (allocno_compare) prioritises by floor_log2(n_refs)*n_refs/live_length*10000*size. Measured priorities on the base body: address allocno 74 = 1.03, the $v1-holding allocno 73 = 4.71 -- but 73 does NOT appear in 74's conflict list, so priority is not the barrier there; the hard-reg conflict on register 3 is.
+
+- [s32] On the pointer-live-blocks23-only body the hard-reg conflict on register 3 disappears from `74 conflicts` entirely (`72 74 78 81 82 85 86 2 29`), the first measured body in 32 sessions where it does, and the seat still does not move -- the printed allocation order `73 82 86 78 77 81 85 74 72` puts 74 eighth of nine.
+
+- [s32] The two barriers trade against each other on this function: the live-range shortening that deletes the hard-reg conflict is the same change that lowers the address allocno's priority below allocnos 78/81/85, which conflict with it and take $v1.
+
+- [s32] In the target, block 0's mask temp sits in $a0 while the call return is still live in $v0 (`addu $a1,$v0,$zero` follows the first lbu), which under raw allocation order means $v1 was already occupied when local-alloc reached that quantity -- i.e. the target's block-0/1 address was seated before local-alloc's block-0 quantities, which a single q spanning blocks 0-3 cannot be, since it is necessarily a global allocno and global-alloc runs second.
