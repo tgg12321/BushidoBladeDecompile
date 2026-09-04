@@ -447,6 +447,27 @@
  * remains the dead pointer round-trip, whose gate s28 located in the RTL:
  * setting the address pseudo bumps `reg_tick` in `invalidate` (cse.c:1539),
  * which un-validates the `(mem:QI (reg 74))` entry the store recorded.
+ *
+ * (9) s29 (rederive) re-measures this body on HEAD -- score 10, 49/49 insns,
+ * rules_dropped 0 -- and does not change a line of it. It banks the first full
+ * instruction-by-instruction alignment (evidence.md "==== s29 (rederive) ===="):
+ * blocks 2/3, the copy loop, the prologue and the epilogue are byte-exact, and
+ * all ten points are in blocks 0-1. Re-auditing the closest banked form (the
+ * s20/s25 dead round-trip, the only body whose multiset matches the target) on
+ * the current chassis gives score 10 at 49 insns again -- and, aligned
+ * instruction by instruction, shows that RESTORING BLOCK 1'S RELOAD IS WORTH
+ * ZERO POINTS. The whole residual is the blocks-0/1 seat convention (7 insns)
+ * plus the 3-insn lui/addiu/sb rotation at the block-1 join, both consequences
+ * of one missing address allocno. Probe the ALLOCNO, not the reload.
+ * s29 also read func_80035280 for the first time in 29 sessions -- this
+ * function's inverse, same TU, same p[8] flag word. It holds &D_80106A73 in ONE
+ * named u8 * local ($a1, materialised once, three surviving lbu) and DERIVES
+ * its D_80106A70 pointer from it (`addiu $a2,$a1,-0x3`), so named pointer
+ * locals are this code family's idiom for the byte and the plain-symbol reading
+ * of the original is closed. Transplanting that idiom (`u8 *r = q - 3;` for the
+ * copy loop) measures 19 at 50 insns and leaves blocks 0-1 BYTE-FOR-BYTE as
+ * they are here: an address allocno that does not alias the flag byte does not
+ * touch the contested seat.
  */
 void func_80034F88(void) {
     s32 *p;

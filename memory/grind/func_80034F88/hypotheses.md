@@ -2833,3 +2833,131 @@ session's editable surface.
 - probe: b1 (struct { u8 f5:5; u8 f3:3; }) and b1b (struct { u8 f3:3; u8 f5:5; }), both assigning f3 = 0, compared in the emitted stream.
 - result: b1 emits andi #,#,0x1f (f5 occupies bits 0-4); b1b emits andi #,#,0xf8 (f3 occupies bits 0-2). First-declared takes the LOW bits. The rule's 'declare SDK bitfield structs in FLIPPED field order' advice is stale post--mel and would now produce the wrong layout. Recorded in the ledger only -- rule files are outside a grind session's editable surface.
 - verdict: CONFIRMED
+
+
+## s29 (rederive)
+
+### H29.1 -- KILLED (instance) -- a second address allocno on a DIFFERENT global
+
+- statement: A second live address allocno that does not alias the flag byte --
+  the func_80035280 idiom `u8 *r = q - 3;` (i.e. &D_80106A70), held live across
+  the flag blocks and used to spell the copy loop -- reseats blocks 0-1 to the
+  target's base=$v1 / value=$a0 convention.
+- mechanism: global.c allocates allocnos in priority order; adding a second
+  long-lived address allocno changes the conflict graph and the order in which
+  $v1 and $a0 are handed out, which is the whole 7-instruction seat residual.
+  The idiom is not invented: the inverse function in this TU
+  (asm/funcs/func_80035280.s:9, `addiu $a2,$a1,-0x3`) literally derives its
+  D_80106A70 pointer from its D_80106A73 pointer this way, so it is ordinary C
+  with in-repo provenance.
+- probe: v1 (`r` derived at the top, loop spelled `r[i] = ...`) and v2 (`r`
+  derived immediately before the loop), built and objdumped;
+  tmp/grind/func_80034F88/s29/v1_derived_r_loop.c, v2_derived_r_late.c.
+- result: KILLED. v1 = score 19 at 50 insns, v2 = 30 at 48. The allocno is
+  created (r is seated in $a2 and the loop's `lui $at,%hi(D_80106A70)` /
+  `addu $at,$at,$v1` re-materialisation collapses to an `addu` on r), but the
+  first sixteen instructions of v1 are BYTE-FOR-BYTE the base chassis's:
+  `lui $a0` / `addiu $a0` / `lbu $v1,0($a0)` / `sb $v1,0($a0)`. The contested
+  seat is invariant to address allocnos that do not alias the flag byte, so the
+  second allocno the target needs must be a second handle ON 0x80106A73.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD, single `u8 *q` plus one
+  derived `u8 *r`; no FAKE-annotated construct present.
+
+### H29.2 -- KILLED (instance) -- re-materialisation moved before the store
+
+- statement: Moving the `q = &D_80106A73;` re-assignment from the head of block
+  2 (and of block 3) into the preceding block, between the value select and the
+  store, reproduces the target's join-block emission order (`lui`/`addiu` then
+  `sb`).
+- mechanism: the target emits pair #2 at .L80034FC8, i.e. BEFORE block 1's
+  `sb $v0,0($v1)`; s26b showed no scheduler vector reaches that order while one
+  pseudo carries the address (REG_DEP_ANTI, tools/gcc-2.7.2/sched.c:1738).
+  Placing the SET earlier in the source is the only remaining input to that
+  ordering that is not a scheduler perturbation.
+- probe: v3 (move into block 1) and v4 (move into blocks 1 and 2),
+  tmp/grind/func_80034F88/s29/v3_remat_inside_block1.c,
+  v4_remat_inside_b1_b2.c.
+- result: KILLED. v3 = 21 at 51 insns -- the set now sits after a branch join,
+  where cse no longer unifies it away into the following block, so a FOURTH
+  lui/addiu pair appears (the s27 cost law again). v4 = 22 at 49 insns, with the
+  join order still `sb` then `lui`/`addiu`, i.e. ours. Source position does not
+  move the anti-dependence.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD; single `u8 *q`, three
+  assignments, no FAKE-annotated construct present.
+
+### H29.3 -- CONFIRMED (mandated kill re-audit + a pricing correction)
+
+- statement: The s20/s25 dead round-trip form -- the only banked body whose
+  instruction multiset matches the target -- still measures score 10 at 49 insns
+  on the current HEAD chassis, and restoring block 1's byte reload is worth ZERO
+  score points.
+- mechanism: the re-audit rule (a lever measured inert while a carrier occupies
+  its pseudo is not a kill) plus a first full objdump alignment of the
+  round-trip body against the target.
+- probe: rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c
+  re-installed and measured; objdump of the resulting object aligned against
+  asm/funcs/func_80034F88.s.
+- result: CONFIRMED. Score 10 at 49 insns, unchanged. With the reload present
+  (`lbu $v1,0($a0)` at the target's `lbu $a0,0($v1)` position) the ten differing
+  positions are: the two address-materialisation insns, the two byte loads, the
+  block-0 store, the `ori`, the `addu`, and the three-instruction rotation of
+  `lui`/`addiu`/`sb` at the block-1 join -- every one of them a register-naming
+  or ordering consequence of the single missing address allocno. This corrects
+  the s25/s28 pricing, which carried the reload at roughly 2 of the 10 points.
+- verdict: CONFIRMED
+
+### H29.4 -- CONFIRMED -- func_80035280 fixes the original's object model
+
+- statement: The inverse function in this TU, func_80035280, holds D_80106A73
+  through ONE named `u8 *` local and derives its D_80106A70 pointer from it by
+  pointer arithmetic; its surviving reloads are explained by intervening stores,
+  not by any input the F88 target stream contains.
+- mechanism: cse.c:7599 invalidate_memory fires on the `sw $v0,0x20($t0)` that
+  35280 executes between its byte reads; F88's target has `sb`, `lw`, `lbu`
+  between its store and its reload and therefore no invalidation. 35280 is the
+  positive control for the s27/s28 cse input enumeration.
+- probe: asm/funcs/func_80035280.s read in full (never examined in 28 sessions,
+  despite the dispatch DATA MODEL naming it as an xref of D_80106A73).
+- result: CONFIRMED. 0x80035294/98 materialise &D_80106A73 into $a1 once;
+  0x8003529C is `addiu $a2,$a1,-0x3`, the D_80106A70 pointer derived from it;
+  three `lbu 0($a1)` reads survive at that one pointer. Together with sibling
+  func_80034708's single long-lived `s5`, this establishes named `u8 *` locals
+  as the code family's idiom for this byte and closes off the plain-symbol
+  reading of F88's original for good. It also sharpens what F88's THREE address
+  materialisations mean: they partition its four byte-access groups as
+  {mask + bit1} / {bit2} / {bit4}, exactly the partition three separately-scoped
+  pointer locals produce -- and exactly the partition of the three-object body
+  that measured score 0 in s13-s16 and that the standing ban forecloses.
+- verdict: CONFIRMED
+
+## [s29] A second live address allocno that does not alias the flag byte -- the func_80035280 idiom `u8 *r = q - 3;` (&D_80106A70), held live across the flag blocks and used to spell the copy loop -- reseats blocks 0-1 to the target's base=$v1 / value=$a0 convention.
+- mechanism: global.c allocates allocnos in priority order, so a second long-lived address allocno changes the conflict graph and the order in which $v1 and $a0 are handed out -- which is the entire 7-instruction seat residual. The idiom is not invented: asm/funcs/func_80035280.s:9 (`addiu $a2,$a1,-0x3`) literally derives the D_80106A70 pointer from the D_80106A73 pointer, so it is ordinary C with in-repo provenance.
+- probe: v1 (r derived at the top, loop spelled `r[i] = ...`) and v2 (r derived immediately before the loop) built and objdumped: tmp/grind/func_80034F88/s29/v1_derived_r_loop.c, v2_derived_r_late.c.
+- result: KILLED. v1 = score 19 at 50 insns; v2 = score 30 at 48 insns. The second allocno is genuinely created (r is seated in $a2 and the loop's `lui $at,%hi(D_80106A70)` / `addu $at,$at,$v1` re-materialisation collapses), but v1's first sixteen instructions are byte-for-byte the base chassis's -- `lui $a0` / `addiu $a0` / `lbu $v1,0($a0)` / `sb $v1,0($a0)`. The contested seat is invariant to address allocnos that do not alias 0x80106A73.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD (score 10, 49/49, rules_dropped 0), single `u8 *q` plus one derived `u8 *r`; no FAKE-annotated construct present
+
+## [s29] Moving the `q = &D_80106A73;` re-assignment from the head of block 2 (and of block 3) into the preceding block, between the value select and the store, reproduces the target's join-block emission order (lui/addiu then sb).
+- mechanism: The target emits address pair #2 at .L80034FC8, before block 1's `sb $v0,0($v1)`. s26b showed no scheduler vector reaches that order while one pseudo carries the address (REG_DEP_ANTI, tools/gcc-2.7.2/sched.c:1738); moving the SET earlier in the source is the remaining non-scheduler input to that ordering.
+- probe: v3 (move into block 1) and v4 (move into blocks 1 and 2): tmp/grind/func_80034F88/s29/v3_remat_inside_block1.c, v4_remat_inside_b1_b2.c.
+- result: KILLED. v3 = score 21 at 51 insns -- the set now sits after a branch join, cse no longer unifies it into the following block, and a fourth lui/addiu pair appears (the s27 cost law). v4 = score 22 at 49 insns with the join order still `sb` then `lui`/`addiu`, i.e. ours. Source position does not move the anti-dependence.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD; single `u8 *q` with three assignments, no FAKE-annotated construct present
+
+## [s29] MANDATED KILL RE-AUDIT: the s20/s25 dead round-trip form -- the only banked body whose instruction multiset matches the target -- still measures score 10 at 49 insns on the current HEAD chassis, and restoring block 1's byte reload is worth ZERO score points.
+- mechanism: A lever measured inert while a carrier occupies its pseudo is not a kill, so the closest-to-target instance kill was re-installed and re-measured, then aligned instruction by instruction against asm/funcs/func_80034F88.s for the first time.
+- probe: memory/grind/func_80034F88/rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c re-installed at src/code6cac_b.c:3420, `sandbox func_80034F88 --disable all`, then mipsel-linux-gnu-objdump of tmp/sandbox/func_80034F88/code6cac_b.o.
+- result: CONFIRMED (kill holds). Score 10 at 49 insns, unchanged. With the reload present -- `lbu $v1,0($a0)` sitting exactly where the target has `lbu $a0,0($v1)` -- the ten differing positions are the two address-materialisation insns, the two byte loads, the block-0 store, the `ori`, the `addu`, and the three-instruction rotation of lui/addiu/sb at the block-1 join. Every one is a register-naming or ordering consequence of the single missing address allocno, which corrects the s25/s28 pricing that carried the reload at ~2 of the 10 points.
+- verdict: CONFIRMED
+
+## [s29] func_80035280, this function's inverse in the same TU (unread in 28 sessions despite being a listed D_80106A73 xref), holds the flag byte through ONE named u8* local and derives its D_80106A70 pointer from it by pointer arithmetic; its surviving reloads are explained by intervening stores, not by any input F88's target stream contains.
+- mechanism: cse.c:7599 invalidate_memory fires on the `sw $v0,0x20($t0)` that func_80035280 executes between its byte reads. F88's target has `sb`, `lw`, `lbu` between its block-0 store and its block-1 reload -- no store, no invalidation. func_80035280 is therefore the positive control for the s27/s28 cse input enumeration.
+- probe: asm/funcs/func_80035280.s read in full and aligned against asm/funcs/func_80034F88.s.
+- result: CONFIRMED. 0x80035294/98 materialise &D_80106A73 into $a1 once; 0x8003529C is `addiu $a2,$a1,-0x3`, the D_80106A70 pointer derived from it and walked by its copy loop; three `lbu 0($a1)` reads survive on that one pointer. With sibling func_80034708's single long-lived `s5`, named u8* locals are established as this code family's idiom for the byte, closing the plain-symbol reading of the original. It also sharpens what F88's three address materialisations mean: they partition the four byte-access groups as {mask + bit1} / {bit2} / {bit4}, exactly the partition three separately-scoped pointer locals produce -- and exactly the partition of the score-0 three-object body the standing ban forecloses.
+- verdict: CONFIRMED

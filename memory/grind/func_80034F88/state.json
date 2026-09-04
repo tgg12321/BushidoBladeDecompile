@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 28,
- "current_modality": "forensics",
+ "session_count": 29,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -171,23 +171,29 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "Forensics: the cse input enumeration is now COMPLETE (two gates s27 missed, both closed with predicates), the residual is proven to be a 1:1 nop-for-lbu swap so restoring block 1's reload is instructi"
+  },
+  {
+   "session": 29,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "Rederive: the 10-point residual is re-priced from the objdump -- restoring block 1's reload is worth ZERO, the whole gap is one missing address allocno; and func_80035280 (this function's inverse, unr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every sanctioned axis for this residual is closed with a named GCC predicate rather than by saturation, and s28 closes the last two open cse inputs. The one-object family's cost law (s27), cse.c:1905 (the quantity gate), cse.c:7004 + mips.md:2901 (the bitfield gate), cse.c:7326 (libcall), cse.c:7599 (the call gate, priced at +2), sched.c:1738 (the ordering edge) and mips.h:2369 (the plain-symbol family) now cover the whole input space. What remains is a disposition question, not a probe.",
-   "mechanism": "Restoring block 1's reload is instruction-free (a 1:1 nop-for-lbu swap), but every measured construct that restores it either costs +2 instructions (a fourth address materialisation; a CALL between the store and the read) or is inadmissible (a second declared pointer object -- the standing ban; a dead pointer round-trip -- dead arithmetic that fails cheat-checklist T1/T2/T6). The only zero-cost invalidator in 28 sessions is the round-trip, and its chassis is RA-FORECLOSED anyway.",
-   "next_probe": "Escalation-modality session: file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record, citing the completed cse input enumeration (cse.c:1905/1943/1967/1902/7326/7004/7599 + mips.md:2901 + mips.h:2369 + sched.c:1738) as the proof that no ordinary-C input to the pass that deletes the instruction remains. Do NOT re-run RA, scheduler, declaration-order, spelling, assignment-placement or cse-input searches: all are now predicate-cited closed."
+   "hypothesis": "The residual is exactly one missing address allocno on 0x80106A73, and s29's seat-invariance result narrows the ways to create one to a second handle on that byte -- the standing ban. The multi-handle axis stays CLOSED pending a class grant.",
+   "mechanism": "One C object is one pseudo is one allocno (global.c:426), and the surviving allocno's seat is pinned to $a0 by blocks 2-3, which are byte-exact. s29 measured that adding an address allocno on a DIFFERENT global (D_80106A70, derived as q-3) leaves blocks 0-1 bit-identical, so the second allocno cannot be supplied indirectly.",
+   "next_probe": "Only after a ruling/class grant. The target's three materialisations partition the four access groups as {mask+bit1}/{bit2}/{bit4} -- the three separately-scoped pointer locals of the score-0 s13-s16 body -- so a grant should be spent on that partition, not on a fourth assignment to one object."
   },
   {
-   "hypothesis": "If a class grant ever reopens the multi-handle axis, the shortest path is a second declared pointer object, NOT a fourth assignment to the single object.",
-   "mechanism": "A second object's set has a source cse CAN unify, so cse rewrites it to a register copy that flow propagates away: a new quantity for zero instructions (s26's y02 -- 49 insns, four lbu, three pairs, score 13, classify RA). A fourth assignment to the one object always costs a full lui+addiu pair (s27's cost law, four measured points), landing at 51 insns.",
-   "next_probe": "Only after a ruling. The two-object family reaches 8 (s21) and only the three-object body reaches 0, and the Judge FAILed that body at FINAL CALL on 2026-08-13, so it cannot be resubmitted without a later Judge ruling."
+   "hypothesis": "Any further one-object probe that targets block 1's missing reload is spending points it cannot recover.",
+   "mechanism": "s29's aligned re-audit prices the reload at ZERO: the round-trip chassis restores it and still scores 10. Every cse-input route to it costs +1 (direct-symbol read, score 11) or +2 (fourth materialisation / interposed CALL, 51 insns).",
+   "next_probe": "None on this axis. Redirect any future probe budget to the allocno question above, or to the disposition record."
   },
   {
-   "hypothesis": "candidate.c's flagged declaration pun is still removable for free and should be cleared the next time this function has a submittable body.",
-   "mechanism": "s25 measured `extern u8 D_80106A70[4];` + `D_80106A70[i] = ...` at score 10 / 49 insns -- exactly the base chassis, so the sanctioned declaration-level fix costs zero codegen.",
-   "next_probe": "Integration handoff: include/code6cac.h:472-474 (three u8 scalars -> `extern u8 D_80106A70[4];`), src/code6cac.c:340-342 and :345, src/code6cac_c_mid.c:205 ((Quad *)&D_80106A70 -> (Quad *)D_80106A70), then re-verify the oracle. Cross-TU, so not a grind-session edit; it does not move the floor and must not be sequenced ahead of the floor work."
+   "hypothesis": "The ladder's second cycle is nearly exhausted: rederive is now measured dead alongside permuter, solver, forensics and synthesis, and the sibling/inverse-function inheritance that rederive existed to harvest has now been fully spent (func_80034708 s25, func_80035280 s29).",
+   "mechanism": "Every sanctioned axis is closed with a named GCC predicate (cse.c:1905/1943/1967/1902/7326/7599, mips.md:2901, mips.h:2369, sched.c:1738, global.c:426) rather than by saturation.",
+   "next_probe": "When the driver assigns escalation modality, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md, citing the completed cse enumeration plus s29's seat-invariance and reload-pricing results, and return owner-gated. Do not re-run RA, scheduler, declaration-order, spelling, assignment-placement or cse-input searches."
   }
  ],
  "judge_constraints": [
@@ -303,6 +309,22 @@
    "measured_on": "b1b bitfield chassis on HEAD (candidate.c body with block 0 respelled as a 3-bit bitfield store), no FAKE-annotated construct present",
    "predicate_cite": "",
    "result": "Reload still deleted -- 'ours only: nop' / 'target only: lbu' at 51 insns, score 13. The MEM flag asymmetry is not a cse"
+  },
+  {
+   "session": 29,
+   "statement": "A second live address allocno that does not alias the flag byte -- the func_80035280 idiom `u8 *r = q - 3;` (&D_80106A70), held live across the flag blocks and used to spell the copy loop -- reseats b",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD (score 10, 49/49, rules_dropped 0), single `u8 *q` plus one derived `u8 *r`; no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "KILLED. v1 = score 19 at 50 insns; v2 = score 30 at 48 insns. The second allocno is genuinely created (r is seated in $a"
+  },
+  {
+   "session": 29,
+   "statement": "Moving the `q = &D_80106A73;` re-assignment from the head of block 2 (and of block 3) into the preceding block, between the value select and the store, reproduces the target's join-block emission orde",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD; single `u8 *q` with three assignments, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "KILLED. v3 = score 21 at 51 insns -- the set now sits after a branch join, cse no longer unifies it into the following b"
   }
  ]
 }

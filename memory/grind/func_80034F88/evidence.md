@@ -3918,3 +3918,110 @@ not acted on (rule files are outside a grind session's surface).
 - [s28] Re-audited kill result: that round-trip chassis is 49 insns / score 10 with FIRST DIVERGENCE: RA and a MATCHING multiset -- the closest chassis this function has ever reached -- and the whole residual is the $v1/$a0 seat swap that s26's RA inverse already FORECLOSES on this exact chassis. The construct is dead arithmetic with no semantic purpose (fails cheat-checklist T1/T2/T6), so it is not a submission route.
 
 - [s28] Bitfield direction under -mel: FIRST-declared field takes the LOW bits (b1 andi 0x1f vs b1b andi 0xf8). .claude/rules/bitfield-direction-divergence.md (2026-06-11) predates the 2026-08-04 -mel adoption and its flipped-field-order advice is stale; this is a cross-function toolchain fact, recorded but not acted on.
+
+
+==== s29 (rederive) ====
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` re-installed at
+`src/code6cac_b.c:3420` and measured on HEAD this session: **score 10,
+target_insns 49, build_insns 49, rules_dropped 0**. The dispatch brief's
+CHASSIS CHECK printed "measurement unavailable"; the ledger's floor of 10 is
+therefore re-confirmed by direct measurement, not inherited.
+
+THE RESIDUAL, INSTRUCTION BY INSTRUCTION (first full objdump alignment banked
+in the ledger). Blocks 2 and 3, the copy loop, the prologue and the epilogue are
+byte-exact. All ten points sit in blocks 0-1:
+
+    #   target                          candidate.c
+    1   lui   $v1,%hi(D_80106A73)       lui   $a0,%hi(D_80106A73)
+    2   addiu $v1,$v1,%lo              addiu $a0,$a0,%lo
+    3   lbu   $a0,0($v1)                lbu   $v1,0($a0)
+    4   sb    $a0,0($v1)                sb    $v1,0($a0)
+    5   lbu   $a0,0($v1)                nop
+    6   ori   $v0,$a0,0x1               ori   $v0,$v1,0x1
+    7   addu  $v0,$a0,$zero             addu  $v0,$v1,$zero
+    8   [L] lui   $a0,%hi               [L] sb    $v0,0($a0)
+    9       addiu $a0,$a0,%lo               lui   $a0,%hi
+    10      sb    $v0,0($v1)                addiu $a0,$a0,%lo
+
+MANDATED KILL RE-AUDIT (floor flat >= 3 sessions). The instance-killed form that
+sits closest to the target is the s20/s25 dead round-trip
+(`rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c`, the only
+banked body whose instruction MULTISET matches the target). Re-measured on the
+current HEAD chassis this session: **score 10 at 49 insns** -- the kill holds.
+candidate.c carries no /* FAKE */-annotated construct (`fake_ablate.py` had
+nothing to strip in s27), so the (b) ablation arm is the s27 hand ablation,
+already banked at 29.
+
+NEW AND SHARPER: the round-trip body's objdump was aligned instruction by
+instruction for the first time. With block 1's reload RESTORED (its `lbu
+$v1,0($a0)` sits exactly where the target's `lbu $a0,0($v1)` sits) the score is
+STILL 10, and the ten differing positions are rows 1-4 and 6-10 of the table
+above with row 5 now a register-naming difference instead of a missing
+instruction. **Restoring block 1's byte reload is worth ZERO score points.**
+That corrects the s25/s28 pricing (which carried the reload at ~2 of the 10):
+the ENTIRE residual is the blocks-0/1 seat convention (7 instructions) plus the
+3-instruction rotation at the block-1 join, and both are consequences of one and
+the same missing fact -- a SECOND address allocno covering blocks 0-1. Future
+probes must target the allocno, not the reload.
+
+CROSS-FUNCTION EVIDENCE -- func_80035280, never examined in 28 sessions.
+`asm/funcs/func_80035280.s` is this function's INVERSE (same TU, same
+`func_80077D00()` handle, same `p[8]` flag word, same D_80106A70[0..2] triple,
+copied the other way). It is direct evidence about the original source's object
+model for this byte:
+
+  * 0x80035294/98  `lui $a1,%hi(D_80106A73)` / `addiu $a1,$a1,%lo` -- ONE named
+    pointer local holding &D_80106A73, materialised once and live across the
+    whole flag section (three `lbu 0($a1)` reads at 0x800352AC/C8/DC, no
+    re-materialisation).
+  * 0x8003529C  `addiu $a2,$a1,-0x3` -- the pointer to D_80106A70 is DERIVED
+    FROM IT by pointer arithmetic (`r = q - 3`), and that derived pointer is
+    what its copy loop walks (`lbu 0($a2)` / `addiu $a2,$a2,1`).
+
+So this code family's idiom for 0x80106A73 is a named `u8 *` local, exactly the
+object model candidate.c uses -- independent corroboration (alongside sibling
+func_80034708's single long-lived `s5`) that the plain-symbol family is not what
+the original wrote. It also explains why 35280 keeps every reload with ONE
+pointer where F88 cannot: 35280 writes `sw $v0,0x20($t0)` BETWEEN its byte
+reads, and that store fires cse.c:7599 `invalidate_memory`; F88's target stream
+between its block-0 `sb` and its block-1 `lbu` is `sb`, `lw`, `lbu` -- no store,
+so no invalidation (the s27/s28 enumeration stands, and 35280 is the positive
+control for it).
+
+Finally, 35280 sharpens what the target's THREE materialisations mean for F88's
+original source. F88's pairs partition the four byte-access groups as
+{mask + bit1} / {bit2} / {bit4} -- pair #1 serves the mask AND the bit-1 block,
+pairs #2 and #3 serve one block each. That is precisely the partition a source
+with three separately-scoped pointer locals produces, and it is the partition of
+the three-object body that measured score 0 in s13-s16. It is NOT reachable from
+one C object: one C object is one pseudo (global.c:426), one allocno, one hard
+register, and the seat is then forced to $a0 by blocks 2-3 (which are exact).
+
+REDERIVE PROBES (all four banked in rejected/):
+  * v1 `u8 *r = q - 3;` live from the top, copy loop spelled `r[i] = ...` (the
+    35280 idiom transplanted onto this chassis): **score 19 at 50 insns**. The
+    second address allocno is real -- `r` is seated in $a2 and the loop drops its
+    `lui $at,%hi` re-materialisation -- but blocks 0-1 come out
+    BYTE-FOR-BYTE IDENTICAL to the base chassis (base $a0 / value $v1). An extra
+    live address allocno that does NOT alias the flag byte does not perturb the
+    contested seat at all.
+  * v2 the same derivation placed just before the loop: **30 at 48 insns**.
+  * v3 the block-2 re-materialisation moved INTO block 1, between the value
+    select and the store (the position the target emits it at): **21 at 51
+    insns** -- crossing the branch join costs a fourth lui/addiu pair.
+  * v4 the same move applied to blocks 1 and 2 both: **22 at 49 insns**; the
+    join order is still ours, not the target's, consistent with the s26b
+    REG_DEP_ANTI finding (sched.c:1738).
+
+- [s29] Chassis re-measured this session (the brief's CHASSIS CHECK printed 'measurement unavailable'): candidate.c at src/code6cac_b.c:3420 = score 10, target_insns 49, build_insns 49, rules_dropped 0.
+
+- [s29] First full instruction alignment banked: blocks 2 and 3, the copy loop, the prologue and the epilogue are byte-exact; all ten points are in blocks 0-1 (target base $v1 / value $a0, ours base $a0 / value $v1, plus the lui/addiu-vs-sb rotation at the block-1 join).
+
+- [s29] The dead round-trip chassis (matching instruction multiset) re-measures 10 at 49 on HEAD, and with the reload restored the score does not move -- the reload is score-neutral and the residual is entirely allocno-driven.
+
+- [s29] func_80035280 (0x80035294-0x8003529C) shows the original source's idiom for 0x80106A73: one named u8* local, with the D_80106A70 pointer derived as `q - 3`.
+
+- [s29] Transplanting that idiom onto this chassis (u8 *r = q - 3 for the copy loop) scores 19 at 50 insns and leaves blocks 0-1 byte-for-byte unchanged: a non-aliasing address allocno does not perturb the contested seat.
+
+- [s29] Moving an address re-assignment across a branch join costs a fourth lui/addiu pair (51 insns, score 21), re-confirming the s27 cost law from a new direction.
