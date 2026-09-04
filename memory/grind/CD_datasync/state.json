@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 47,
- "current_modality": "solver",
+ "session_count": 48,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -285,23 +285,29 @@
    "floor": 7,
    "modality": "solver",
    "headline": "Residual typed RA and localised to ONE local-alloc quantity: ra_solver's stock local NEGATIVE is a LIVE_EXTEND search-bounds artifact, and from a bounds-widened fork the target seat is REACHABLE with "
+  },
+  {
+   "session": 48,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "Feature F4 re-attributed to sched1: the stack-argument store is hoisted behind its producing load before local_alloc runs, so no arg5 spelling can lengthen the arg5 value quantity (28 of 32 forms shar"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Making the arg5 VALUE quantity span the arg3 address chain - born at its load before the arg3 chain starts, dying at the sw 16($sp) after it ends - supplies the missing $v1 occupancy and completes the solver's vector, seating the arg4 address chain in $a0.",
-   "mechanism": "s47 measured that the live_extend half alone puts the arg4 chain in $v1 because $v1 is free across its span. In target, the arg5 value quantity occupies $v1 from the arg5 load across the entire arg3 chain to the stack store, which is exactly feature F4 (sw at expand-slot 54). With $v0 blocked by the arg3 chain and $v1 blocked by the arg5 value, find_free_reg's ascending scan reaches $a0 for the last-allocated quantity.",
-   "next_probe": "Sweep the F3-holding family (arg4's value loaded inline in the printf call) crossed with arg5 spellings that complete the arg5 VALUE early - arg5 as a named value assigned before the arg3 read, arg5 staged through a pointer whose load precedes arg3, arg5 read into a local at the top of the do_timeout block - and after EACH compile re-run local_extract.py system and read the block-3 QTYDBG table, scoring on the four-quantity shape ($v0 twice, $v1 spanning the arg3 chain, the arg4 chain allocated last) rather than on the sandbox score. The score-first sweep is what missed this for 46 sessions."
+   "hypothesis": "The unspelled solver atom family - 'qty0 dies later (14->24)', i.e. the arg5 INDEX/ADDRESS chain (not its value) staying live across the arg4 chain - supplies the second $v0/$v1 occupancy that the $a0 seat needs, and it is immune to the sched1 hoist because an address pointer has no stack store to be hoisted.",
+   "mechanism": "s48 measured that the arg5 VALUE can never be the second occupant: sched1 collapses its range to 2 luids before local_alloc. The solver's other cost-2 family asks instead for q0 (the arg5 index+address chain, currently [8,14)) to die at 24. s48 also measured that single-use POINTER locals escape the copy-propagation that erases value locals, and that a named arg4 pointer really does move its quantity's birth as modelled. So an arg5 ADDRESS pointer dereferenced at the call, crossed with the arg4 pointer form that already spans [16,36), puts TWO long quantities across the region - which is exactly the two-occupant precondition find_free_reg needs before its ascending scan reaches $a0.",
+   "next_probe": "Cross arg4 in {ip, ikp} (named element-address pointer, already measured to span [16,36)) with arg5 in {ip, ikp} (named element-address pointer, deref inline in the call) over every statement interleaving, arg3 inline; compile each through tmp/grind/CD_datasync/s48/run48.py and score on the block-3 QTYDBG table, requiring TWO quantities whose spans both cover [20,36) and whose allocation order (ord column) puts them ahead of the arg4 chain. This crossing was NOT in s48's 39-form batch, which held arg5 at v/iv/ik only."
   },
   {
-   "hypothesis": "Re-running the bounds-widened inverse search against the F3-family model (where the arg4 chain is qty2, fr105, [20,36) -> $v1) rather than the candidate.c model yields a cheaper, differently-shaped vector for the same seat.",
-   "mechanism": "Operational rule 2 of the solver playbook: re-derive the model from the body that sits closest to target. On the F3 chassis half of the required vector is already spent, so the remaining goal is the single atom {qty2: $a0}, and the atom classes that can supply it (extra_qty, hardreg_live, live_extend on a rival) are a much smaller space than the four-quantity goal searched this session.",
-   "next_probe": "Apply q_ik_iv_w0_inl_p0, re-run local_extract.py system, then run tmp/grind/CD_datasync/s47/inverse_extend.py local tmp/ra_solver_work/system.local.json --func CD_datasync --block 3 --goal {\"2\":4} --depth 2 --top 20, and read the EXTRA_QTY and LIVE_EXTEND vectors first - the extra_qty class is the model's spelling of 'one more real temp overlapping the region', which is what the arg5 value has to become."
+   "hypothesis": "sched1's hoist of the stack-argument store is itself a function of the source shape: an input in which the store's operand pseudo has a second consumer, or in which higher-priority insns are ready when the producing load issues, leaves the store at its expand position and hands local_alloc the long arg5-value range target has.",
+   "mechanism": "PASS-INPUT ENUMERATION applied to the pass s48 named. Naming sched1 is half the job; the other half is enumerating the source-side shapes that change what its ready list contains at the moment insn 101 issues. At expand the store is ALREADY in target's slot-54 position, so nothing has to be invented - only the hoist has to be prevented.",
+   "next_probe": "Read tmp/grind/CD_datasync/dumps/system.sched's priority/ready-list annotations for the block, identify why insn 128 outranks insns 105/119 in the pick order (INSN_PRIORITY and the dependence lists), then enumerate C inputs that change it: a second consumer for the arg5 value in the block, a longer producing chain for it, and an arg5 value whose load is not the last memory reference before the register moves. Score every one on the block-3 QTYDBG table and on the post-.sched insn order, not on the sandbox."
   },
   {
-   "hypothesis": "The ra_solver LIVE_EXTEND bound defect found this session invalidates other campaigns' banked local-mode negatives.",
-   "mechanism": "tools/ra_solver/inverse.py:449 enumerates death extensions of +1/+2/+4 only, while enumerating shrinks exhaustively, and the printed bounds_note claims 'birth/death enumerated exhaustively'. Any goal whose vector needed a longer extension was reported as 'no modelled input explains this flip', which reads as a foreclosure.",
-   "next_probe": "Not a CD_datasync probe - flag it for a tooling session: re-run the banked local-mode negatives from the ra_solver campaign (project/ra-solver-campaign-2026-08-04) against tmp/grind/CD_datasync/s47/inverse_extend.py and count how many flip to REACHABLE. The fix in tools/ is one line, but tools/ is outside a grind session's allowed surface."
+   "hypothesis": "The solver's cost-3 hardreg_live family ($v0 or $v1 genuinely live across [8,36)) is reachable here, because the block already contains two calls (puts before the region, CD_flush after) and a return value or argument could genuinely span the argument block.",
+   "mechanism": "inverse_extend's hardreg_live atoms name the honest producer as 'a real argument or return value genuinely live across that span - i.e. a call placed inside the range, or a parameter still used after it'. CD_datasync's parameter a0 IS still used after the do_timeout block (the `if (a0 == 0) goto loop` test), so a hard-register liveness claim over the region is not obviously fictional; it has never been measured for this function.",
+   "next_probe": "Read the .flow/.lreg liveness for the block to see which hard registers are already recorded live across [8,36), then test the two honest shapes: the parameter a0 read inside the do_timeout block (it is live-out already), and the puts return value consumed after the printf. Score on whether regs_live_at over [20,36) gains a second occupied caller-saved register in the QTYDBG stream."
   }
  ],
  "judge_constraints": [],
@@ -311,24 +317,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 30,
-   "statement": "Both indices hoisted as s32/u8 locals in [0],[1] order with the value locals assigned arg5-first then arg4 splits arg4's LUID chain (index read early, scaling late).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 7 forms (b1,b2,b5,b6,b7,a6 + candidate control), fast harness calibrated sandbox=lev+nop-3"
-  },
-  {
-   "session": 30,
-   "statement": "A named s32 index local for arg4 with arg4 left inline and arg5 hoisted as a value local before it keeps arg4's lbu at window slot 1 while deferring its scaling chain.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 9 forms (a1,a2,a4,a5,a7,b3,c1,c2 + control)"
-  },
-  {
-   "session": 30,
-   "statement": "Adding a fifth value local raises register pressure enough to lengthen the printf block toward target's 18-insn window.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; form b4"
-  },
   {
    "session": 31,
    "statement": "Both indices hoisted as s32/u8 locals in [0],[1] order with the value locals assigned arg5-first then arg4 splits arg4's LUID chain (index read early, scaling late) the way target's window requires.",
@@ -772,6 +760,30 @@
    "measured_on": "q_ik_iv_w0_inl_p0 (arg4 index+offset loaded inline, arg5 index+value) with the do{}while(0) FAKE present; block-3 quantity table re-derived from a fresh BB2_QTY_DEBUG dump of that exact form",
    "predicate_cite": "",
    "result": "KILLED as sufficient, CONFIRMED as necessary. The table becomes qty0 [8,14) -> $v0, qty3 [22,34) -> $v0, qty2 [20,36) ->"
+  },
+  {
+   "session": 48,
+   "statement": "Arg5 spellings that complete the arg5 VALUE early (named value / index+value / pointer+value / pointer with inline deref, at every statement position, crossed with the F3-holding arg4 family) give the",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c-family chassis (arg3 inline) with the do{}while(0) FAKE present; 32 whole-function compiles, block-3 QTYDBG table read for every one",
+   "predicate_cite": "",
+   "result": "KILLED. 28 of the 32 forms - every form carrying a named arg4 statement, i.e. the whole F3-holding family - emit a byte-"
+  },
+  {
+   "session": 48,
+   "statement": "Re-running the bounds-widened inverse search against the F3-family model yields a cheaper, differently-shaped vector for the $a0 seat, and its cheapest C-spellable atom family (qty2 born earlier) seat",
+   "kill_scope": "instance",
+   "measured_on": "F3-family chassis (arg4 element address named as a pointer local, arg3 inline) with the do{}while(0) FAKE present; 39 whole-function compiles, block-3 QTYDBG table read for every one",
+   "predicate_cite": "",
+   "result": "The solver half CONFIRMED, the C half KILLED. The goal collapses from s47's four-quantity depth-2 vector to ONE atom and"
+  },
+  {
+   "session": 48,
+   "statement": "MANDATED KILL RE-AUDIT: the s46/s47 sweep harness reproduces the engine score from its lev column alone, so the banked F3-family scores are sound as quoted.",
+   "kill_scope": "instance",
+   "measured_on": "current chassis, candidate.c and r_ik_iv_w0 measured through the engine sandbox with the do{}while(0) FAKE present in both; two forms, bodies diffed",
+   "predicate_cite": "",
+   "result": "KILLED as stated - lev alone does NOT reproduce the engine score, though the harness is sound when both columns are read"
   }
  ]
 }

@@ -101,6 +101,46 @@
  * chain to the sw 16($sp) - i.e. feature F4 and the $a0 seat are the same
  * requirement.  arg3's own spelling is NOT the lever for it: 906 compiles
  * this session, every named-arg3 form >= 8, sw slot 54 never reached.
+ *
+ * S48 ADDENDUM (forensics) - THE MISSING QUANTITY IS DECIDED BY sched1, NOT
+ * BY ANY arg5 SPELLING.  s47 left the goal as "make the arg5 VALUE span the
+ * arg3 address chain" (feature F4), to be spelled by arg5's C form.  s48
+ * swept that axis on the QUANTITY TABLE rather than the score, as the
+ * frontier demanded: 32 forms, arg4 in {inl,k,ik} x arg5 in {v,iv,pv,pd} x
+ * every statement interleaving, each compiled through the instrumented cc1
+ * with BB2_QTY_DEBUG.  28 of 32 - every form with a named arg4 statement -
+ * emit a BYTE-IDENTICAL block-3 table (q0 [8,14)->$v0, q1 [14,18)->$v0,
+ * q2 [20,36)->$v1, q3 [22,34)->$v0).  The arg5 VALUE quantity is q1 and it
+ * dies at luid 18 in ALL of them, four luids before the arg3 chain is born
+ * at 22.  Only arg4='inl' perturbs the table at all, and those forms are
+ * 13/14.
+ *
+ * The dumps name the pass.  At expand (system.rtl) the stack-argument store
+ * `sw val5,16($sp)` is insn 128 and sits LATE - between the arg4 address
+ * addu (126) and the argument-register moves (130-136), which is exactly
+ * target's slot-54 position.  The FIRST scheduling pass (sched.c
+ * schedule_block, which runs BEFORE local_alloc) hoists it to sit directly
+ * behind its only producer; the post-.sched order of the block is
+ *   89 93 97 99 101 130 [128] 105 119 109 122 124 126 116 134 136 132 138
+ * So the arg5 value's live range is collapsed to 2 luids before local_alloc
+ * ever runs.  F4 is a sched1 placement fact.
+ *
+ * The solver was also re-run against the F3-family model, as the s47
+ * frontier's second item asked (tmp/grind/CD_datasync/s48/inv_f3.txt).  On
+ * that chassis the goal collapses from s47's four-quantity vector to the
+ * single atom {qty2: $v1 -> $a0}, and it is REACHABLE at DEPTH 1 with 14
+ * distinct vectors at cost 2 - the two live_extend families being "qty0
+ * dies later (14->24)" and "qty2 born earlier (20->18..12)".  s48 spelled
+ * the second one: arg4's element address as a named pointer local moves
+ * qty2's birth 20 -> 16 and gives it a [16,36) span (39 forms swept), and
+ * it STILL takes $v1, because only q3 overlaps it.  $a0 needs TWO
+ * quantities alive across [20,36) and allocated first, and the only
+ * candidate for the second is the arg5 value that sched1 shortens.
+ *
+ * MEASUREMENT HYGIENE: the s46/s47 sweep harness reports `n= lev= nop=`;
+ * the engine score is lev + (nop - 3) for this chassis, NOT lev.  Reading
+ * lev alone makes every F3-family form look like a 7.  Both s48 sweeps are
+ * re-scored with the nop column (tmp/grind/CD_datasync/s48/res.json).
  */
 s32 CD_datasync(s32 a0) {
     s32 v0;
