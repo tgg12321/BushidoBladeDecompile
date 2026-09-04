@@ -387,6 +387,27 @@
  * (measured: y02, two objects, score 13, classify RA, still three %hi/%lo
  * pairs); two objects with block 1 still reading the first pointer (y01) is
  * score 21 and still PRE-RA. That is the s26 ruling question.
+ *
+ * (6) s26 (solver, continuation run) opened the SCHEDULER axis for the first
+ * time in 26 sessions. tools/sched_solver extracts this TU at parity=True;
+ * goalmap reports GOAL == OURS (identity) for all 11 blocks in both scheduler
+ * passes; and perturb.py finds that EVERY vector reaching the target's
+ * block-3 order (the address re-materialisation before block 1's store)
+ * begins with `del_dep 56 <- 49`, with the single atom `del_dep 56 <- 49`
+ * being the whole minimal vector in pass 2. That edge is the REG_DEP_ANTI
+ * emitted at tools/gcc-2.7.2/sched.c:1738 because insn 49 USES and insn 56
+ * SETS the same address pseudo, and schedule_block never releases an insn
+ * with an unsatisfied LOG_LINK -- so the ordering triple is not a tie and no
+ * statement move can reach it while one pseudo carries the address.
+ * The obvious escape -- reach the byte by its plain symbol in the later
+ * blocks, creating a fresh pseudo per use with no second declared object --
+ * is false at the mechanism: CONSTANT_ADDRESS_P
+ * (tools/gcc-2.7.2/config/mips/mips.h:2369) accepts SYMBOL_REF, so a direct
+ * global access stays (mem (symbol_ref)) and allocates no address pseudo at
+ * all; measured in h1's bytes as `lui` + `lbu ...%lo(sym)(...)` with the
+ * %lo FOLDED and no addiu, 48 insns against the target's 49 unfolded
+ * lui+addiu pairs. Five hybrid pointer/symbol bodies measure 16-28
+ * (rejected/hybrid-h[1-5]-*.c). This body remains the best measured form.
  */
 void func_80034F88(void) {
     s32 *p;

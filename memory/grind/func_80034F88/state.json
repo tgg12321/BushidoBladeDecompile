@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 25,
- "current_modality": "synthesis",
+ "session_count": 26,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -153,23 +153,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Synthesis: the residual is re-stated as a seat-space ARGMAX (the $v1/$a0 swap 22 sessions chased is a net LOSS, priced ~+8/-12), s20's fresh-pseudo escape is measured position-specific and stream-iden"
+  },
+  {
+   "session": 26,
+   "floor": 10,
+   "modality": "solver",
+   "headline": "sched_solver run on this function for the first time in 26 sessions: the target's block-3 ordering triple is a REG_DEP_ANTI edge (sched.c:1738), not a scheduler tie, and the one construct that could g"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 10-point residual is not a seat we have mis-assigned but a seat COUNT: the target runs two register conventions because it has two simultaneously live address values, and candidate.c is the maximum of the one-address-object seat space (any swap is a net loss of ~4 points). No form that reassigns one seat can improve the floor.",
-   "mechanism": "global.c:426 gives one allocno per pseudo with no live-range splitting, so one hard register per address object for its whole live range; s25 prices the only remaining one-object seat choice and it is worse than the current one. Blocks 2, 3, the copy loop and the epilogue are already exact, so every point recoverable in blocks 0-1 is paid for twice over in blocks 2-3.",
-   "next_probe": "Do NOT spend further sessions on live-range, ref-count, declaration-order or preference surgery aimed at the $v1/$a0 dial -- s25 shows the dial points the wrong way even if it could be turned. Any future probe must change the NUMBER of live address values, not their seats."
+   "hypothesis": "Both remaining residual defects are now traced to the same structural fact -- one address pseudo -- by two independent GCC passes, and no ordinary-C construct measured so far produces a second address pseudo for a global without a second pointer object.",
+   "mechanism": "cse.c forwards block 0's stored value into block 1's load whenever the two addresses hash to the same pseudo (first s26 run); sched.c:1738 emits a REG_DEP_ANTI edge from block 1's store to the re-materialisation whenever both touch the same pseudo (this run); and mips.h:2369 makes a direct symbol access a legitimate address, so it allocates no pseudo at all (this run). A pointer-typed value is the only remaining generator, and a second one is the standing banned construct.",
+   "next_probe": "Do NOT re-run RA/scheduler/declaration-order searches on the one-pseudo chassis -- both solver layers are now typed FORECLOSED on it with predicate cites. The only untried non-alias structural question left is whether the address can be carried by a pointer-typed value that is NOT a second object aliasing D_80106A73 -- e.g. a pointer derived from `p` or from another live object that happens to reach the byte. Check the naming census and the data model for any struct or record that contains 0x80106A73 before spending a session on it; if none exists, that route is empty by inspection."
   },
   {
-   "hypothesis": "Every route to a second address allocno that does not declare a second C object is now measured closed, so reaching 0 requires the standing banned construct and the two-object family reaches only 8.",
-   "mechanism": "Anonymous symbol refs never create a pseudo (s16, 14-28); reload.c:4128-4137 substitutes the REG_EQUIV constant instead of allocating (s16); aggregates either scalarise to one pseudo or go frame-resident (s18, 10 / 35); the census-exact diagnostic chassis creates no second allocno (s23, still 9); local-alloc's suggested-register pass is inert on a DISJOINT pseudo set (s24); dead round-trip arithmetic makes temps, not allocnos, and is stream-identical at the block-1/block-2 boundary (s25); and merging the declaration into one aggregate changes only which symbol the relocation names (s25).",
-   "next_probe": "If a later session wants to re-open this, the cheapest decisive measurement is a cc1 -da .greg dump of the two-object form vs the base chassis to confirm the allocno count is the ONLY structural difference -- but note the two-object family measures 8, not 0 (s21), and only the three-object family measures 0, which the Judge FAILed on 2026-08-13. A ruling-request, not a submission, is the correct move if that path is ever revisited."
+   "hypothesis": "The standing ban on multiple pointer handles rests on the premise that they are a register-allocation lever with no observable effect on the instruction stream; two sessions of measurement now contradict that premise.",
+   "mechanism": "The residual's FIRST divergence is PRE-RA (a missing lbu), and this run adds a second pre-RA defect (a dependence edge that only exists on a shared pseudo). Neither is a seat. But the honest arithmetic matters: the two-object family measures 8, not 0, and only the three-object family measures 0 -- and that exact body was Judge-FAILed at final call on 2026-08-13, so it is not resubmittable.",
+   "next_probe": "This is a ruling question, not a probe, and it belongs to whichever session the driver dispatches in escalation modality. The precise question to ask is whether the 2026-08-13 FAIL survives the finding that the multi-handle body's effect is a missing INSTRUCTION upstream of RA rather than a register seat -- and, if it does, whether the correct disposition is the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record."
   },
   {
-   "hypothesis": "candidate.c's standing layer-1 declaration-pun finding is removable for free and should be cleared as hygiene the next time this function has a submittable body.",
-   "mechanism": "s25 measured `extern u8 D_80106A70[4];` + `D_80106A70[i] = ...` at score 10 / 49 insns, exactly the base chassis -- the sanctioned declaration-level fix the dispatch brief names, at zero codegen cost.",
-   "next_probe": "Integration handoff: include/code6cac.h:472-474 (three u8 scalars -> `extern u8 D_80106A70[4];`), src/code6cac.c:340-342 and :345 (scalar writes/read -> D_80106A70[0..2]), src/code6cac_c_mid.c:205 (`(Quad *)&D_80106A70` -> `(Quad *)D_80106A70`), then re-verify the oracle. Cross-TU, so not a grind-session edit; it does not move this function's floor and must not be sequenced ahead of the floor work."
+   "hypothesis": "candidate.c's flagged declaration pun is still removable for free and should be cleared the next time this function has a submittable body.",
+   "mechanism": "s25 measured `extern u8 D_80106A70[4];` + `D_80106A70[i] = ...` at score 10 / 49 insns, exactly the base chassis -- the sanctioned declaration-level fix at zero codegen cost.",
+   "next_probe": "Integration handoff: include/code6cac.h:472-474 (three u8 scalars -> `extern u8 D_80106A70[4];`), src/code6cac.c:340-342 and :345, src/code6cac_c_mid.c:205 (`(Quad *)&D_80106A70` -> `(Quad *)D_80106A70`), then re-verify the oracle. Cross-TU, so not a grind-session edit; it does not move the floor and must not be sequenced ahead of the floor work."
   }
  ],
  "judge_constraints": [
@@ -221,6 +227,22 @@
    "measured_on": "sibling ledger memory/grind/func_80034708/ as of 2026-09-04 (floor 542, 1 session, no candidate.c); no build performed",
    "predicate_cite": "",
    "result": "No transplant exists: func_80034708 has NO candidate.c and its floor is 542 after a single session (s1, 2026-07-07). One"
+  },
+  {
+   "session": 26,
+   "statement": "The target's block-3 emission order (the address re-materialisation emitted before block 1's store) is reachable by perturbing the scheduler's inputs -- statement order/LUID, insn cost, priority -- on",
+   "kill_scope": "class",
+   "measured_on": "candidate.c score-10 single-object chassis installed at HEAD (src/code6cac_b.c:3420; sandbox re-measured this session: score 10, 49/49 insns, rules_dropped 0); no FAKE construct beyond candidate.c's o",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:1738",
+   "result": "goalmap reports GOAL == OURS (identity) for all 11 blocks in BOTH passes, with difflib moved:0 (that half is corroborati"
+  },
+  {
+   "session": 26,
+   "statement": "A direct (non-pointer) access to D_80106A73 creates a fresh address pseudo per use, so spelling the later flag blocks as `D_80106A73 |= 2;` yields the target's second live address value without declar",
+   "kill_scope": "class",
+   "measured_on": "candidate.c score-10 single-object chassis at HEAD; the five hybrid bodies carry candidate.c's single `u8 *q` pointer alias and no other FAKE construct; banked at memory/grind/func_80034F88/rejected/h",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:2369",
+   "result": "The premise is false. CONSTANT_ADDRESS_P accepts SYMBOL_REF, so a direct global access is already a legitimate address: "
   }
  ]
 }

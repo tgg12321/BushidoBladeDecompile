@@ -3507,3 +3507,130 @@ s26 hands forward.
 `variants/`, `variants2/`, `variants3/`, plus the dumps at
 `tmp/grind/func_80034F88/dumps/`. Nine forms banked to
 `memory/grind/func_80034F88/rejected/`.
+
+## s26 (solver, continuation run) — the scheduler axis is opened for the first time, and it closes on one dependence edge
+
+**Context.** This is the second dispatch of session 26. The first s26 run wrote
+and committed the section above but never produced an outcome JSON, so the
+driver discarded it and re-dispatched; `state.json` still reads
+`session_count: 25`. Everything in the section above was re-checked against
+HEAD here and stands. This section is the NEW work.
+
+- [s26b] CHASSIS RE-CONFIRMED ON HEAD. `src/code6cac_b.c:3420` carries
+  `INCLUDE_ASM("asm/funcs", func_80034F88);`; installing
+  `memory/grind/func_80034F88/candidate.c` verbatim measures **score 10,
+  49 target insns / 49 build insns, rules_dropped 0, scorable true**. The
+  dispatch brief's "measurement unavailable" is resolved; floor 10 is
+  chassis-valid for everything below.
+
+- [s26b] `tools/sched_solver` HAD NEVER BEEN RUN ON THIS FUNCTION in 25
+  sessions (`grep sched_solver hypotheses.md` = 0 hits; the single hit in
+  evidence.md is the queue item's 2026-08-24 directive text). The ledger's
+  "16/17/18 ordering triple" residual — the target emits the second base's
+  `lui`/`addiu` BEFORE block 1's store, we emit the store first — is an
+  emission-order residual, exactly the class `sched_solver` exists to type.
+  `extract.py code6cac_b` reports **parity=True** (the README's stale
+  `parity=False` note for this TU no longer applies), funcs=128, blocks=1464,
+  picks=7270.
+
+- [s26b] TARGET PINNED PROPERLY. `mkasm.sh` refuses to carry the target for an
+  INCLUDE_ASM-routed function (it copies `.hon.s` to `.tgt.s`), so the target
+  stream was built by splicing `asm/funcs/func_80034F88.s` into
+  `code6cac_b.hon.s` in place of our body, with register names normalised to
+  cc1's numeric form (`tmp/grind/func_80034F88/s26/splice_tgt.py` ->
+  `tmp/sched_map/code6cac_b.tgt.head.s`, 53 target lines against our 58).
+
+- [s26b] GOALMAP: **all 11 basic blocks report `GOAL == OURS (identity)` in
+  BOTH scheduler passes**, and difflib finds `moved: 0` on the honest->target
+  alignment. Caveat recorded honestly: the alignment is weak
+  (`equal 3, replace 8, delete 33, insert 38`) because register naming differs
+  almost everywhere, so most goals are interpolated rather than resolved. The
+  identity verdict is therefore corroborating, not decisive on its own — the
+  decisive result is the dependence structure below.
+
+- [s26b] THE ORDERING TRIPLE IS A DEPENDENCE EDGE, NOT A TIE. In the extracted
+  model, the block that begins at block 1's join label is block 3, insns
+  `{49 = block-1 store, 56 = the re-materialisation set of the address pseudo,
+  59 = lw p[8], 60/64 = lbu/andi, 67 = the compare/jump}`. Its dependence list,
+  identically in both passes, is:
+
+  ```
+  pass 2 block 3 deps: {"59": [[49,0]], "56": [[49,14]], "60": [[59,0]],
+                        "64": [[49,0],[56,0]], "67": [[64,14],[60,0]]}
+  ```
+
+  `"56": [[49, 14]]` is an anti/output dependence from insn 49 to insn 56 —
+  emitted by `tools/gcc-2.7.2/sched.c:1738`
+  (`add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI)` over `reg_last_uses`)
+  because insn 49 USES the address pseudo and insn 56 SETS it. Block 6 (block
+  2's store + block 3's re-materialisation) carries the mirror edge
+  `"90": [[83,14]]` — and there the TARGET also emits the store first, which is
+  why block 6 is already exact. The model reproduces both facts.
+
+- [s26b] `perturb.py` TYPED VERDICT: **every** vector that reaches the target's
+  block-3 order starts with `del_dep 56 <- 49`. Searching 95-96 single atoms
+  plus depth-2 pairs, pass 1 finds 5 vectors and pass 2 finds 3 for goal
+  `67,64,60,59,49,56`; for the goal that matches our own intra-block tie
+  (`67,60,64,59,49,56`) pass 2's **minimal vector is the single atom
+  `del_dep 56 <- 49` and nothing else**. No priority, LUID, cost or
+  function-unit atom reaches the goal, at any depth searched, without it —
+  `schedule_block` never releases an insn with an unsatisfied `LOG_LINKS`
+  entry, so a dependence edge is not perturbable by scheduler inputs. The
+  scheduler axis is therefore CLOSED on a one-address-pseudo chassis, and the
+  ONLY C-level way to delete that edge is for the store and the
+  re-materialisation to touch DIFFERENT pseudos.
+
+- [s26b] THE "SECOND PSEUDO WITHOUT A SECOND POINTER OBJECT" ROUTE IS CLOSED AT
+  THE MECHANISM, NOT JUST BY SCORE. A direct global access (`D_80106A73 |= 2;`)
+  looked like the one construct that creates a fresh address pseudo per use
+  while declaring no second C object. It does not: `CONSTANT_ADDRESS_P`
+  (`tools/gcc-2.7.2/config/mips/mips.h:2369`) accepts `SYMBOL_REF`, so the
+  access stays `(mem (symbol_ref))` and never allocates an address pseudo at
+  all. Measured in the emitted bytes of `h1_ptr01_sym23`: block 2 becomes
+  `lui $v0,%hi(sym)` + `lbu $v0,%lo(sym)($v0)` — **one `lui`, no `addiu`**,
+  the %lo folded into the memory operand, 48 insns instead of 49. The target
+  has three UNFOLDED `lui`+`addiu` pairs. So a plain-symbol access can never
+  produce the target's address shape, and this single fact explains every
+  plain-symbol and hybrid score in the bank (14, 16, 18, 20, 22, 26, 28, 29,
+  30, 35) without re-deriving any of them.
+
+- [s26b] FIVE NEW HYBRID FORMS MEASURED (pointer object for some blocks, plain
+  symbol for the rest), all banked to `rejected/hybrid-*`:
+  `h1` pointer blocks 0-1 / symbol 2-3 = **28** at 48 insns; `h2` pointer for
+  the mask only = **22** at 52; `h3` pointer blocks 0-2 / symbol 3 = **16** at
+  49; `h4` (h1 with the block-1 re-materialisation restored) = **28** at 48;
+  `h5` pointer 0-1, symbol 2, pointer 3 = **20** at 50. None approaches 10.
+
+- [s26b] CONVERGENCE. The first s26 run reached "block 1 reading through a
+  different pointer pseudo is the only structure that restores the target's
+  `lbu`" from `cse.c`. This run reaches "the store and the re-materialisation
+  must sit on different pseudos" from `sched.c` dependence construction, and
+  then shows the only pseudo-creating construct other than a pointer object
+  (a direct symbol access) cannot make the target's address shape. Two
+  independent passes, one conclusion: on this toolchain the target's
+  instruction stream requires more than one pointer OBJECT on `D_80106A73`,
+  which is the standing banned construct.
+
+### Artifacts (this run)
+
+`tmp/grind/func_80034F88/s26/`: `sched1.sh`, `sched2.sh`, `sched3.sh`,
+`sched4.sh`, `sched5.sh`, `sched6.sh`, `splice_tgt.py`, `h1.dis`,
+`variants4/` (5 forms), `code6cac_b.c.orig2`; plus
+`tmp/sched_solver_work/code6cac_b.sched.json` and
+`tmp/sched_map/code6cac_b.tgt.head.s`.
+
+- [s26] This is the SECOND dispatch of session 26: the first s26 run committed its evidence.md/hypotheses.md sections and nine rejected forms but never wrote an outcome JSON, so the driver discarded it and state.json still reads session_count 25. Everything in that section was re-checked against HEAD here and stands; this session's work is recorded as s26b.
+
+- [s26] tools/sched_solver had never been run on func_80034F88 in 25 sessions (0 hits in hypotheses.md; the single evidence.md hit is the queue item's own 2026-08-24 directive text), despite the ledger carrying an emission-order residual since s25.
+
+- [s26] extract.py reports parity=True for code6cac_b (128 funcs, 1464 blocks, 7270 picks) -- the sched_solver README's stale parity=False note for this TU no longer applies.
+
+- [s26] mkasm.sh cannot carry the target for an INCLUDE_ASM-routed function (it copies .hon.s to .tgt.s by design, owner ruling 2026-08-25); the target stream here was built by splicing asm/funcs/func_80034F88.s into code6cac_b.hon.s with register names normalised to cc1's numeric form.
+
+- [s26] Extracted dependence lists, identical in both scheduler passes: block 3 = {"59":[[49,0]], "56":[[49,14]], "60":[[59,0]], "64":[[49,0],[56,0]], "67":[[64,14],[60,0]]}; block 6 = {"93":[[83,0]], "90":[[83,14]], "94":[[93,0]], "98":[[83,0],[90,0]], "101":[[98,14],[94,0]]}.
+
+- [s26] h1's emitted bytes are the direct evidence that a plain-symbol access folds %lo into the memory operand: `lui $v0,%hi(sym)` + `lbu $v0,%lo(sym)($v0)`, one lui and no addiu, versus the target's three unfolded lui+addiu pairs.
+
+- [s26] The two class kills converge with the first s26 run's cse.c finding from a completely different pass: cse.c says block 1's reload survives only if block 1 reads through a different pointer pseudo; sched.c says the ordering triple resolves only if the store and the re-materialisation sit on different pseudos; mips.h says the only construct that makes an address pseudo for a global is a pointer-typed value. All three point at a second pointer OBJECT, which is the standing banned construct.
+
+- [s26] Scope note for a future escalation: unbanning the two-object family reaches 8 (s21), not 0. Only the three-object family measures 0, and the Judge FAILed that body at final call on 2026-08-13, so it cannot be resubmitted without a later Judge ruling.
