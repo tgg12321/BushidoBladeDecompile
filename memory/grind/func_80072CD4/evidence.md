@@ -1407,3 +1407,52 @@ exactly once, in the merge region — there is no per-arm duplication of any sto
 banned_constructs entry 5 and the 2026-07-24 duplicated-into-arms judge constraint do not reach it.
 No docs/grind/decisions.md self-issued 'ruling' entry is cited as authority anywhere in this
 submission.
+
+## s14b — structural (2026-09-03) — the @5=0xC3 per-arm store is byte-MATERIALIZING
+
+- [s14b] CHASSIS RE-MEASURED: `memory/grind/func_80072CD4/candidate.c` with its header and its three
+  `/* FAKE */` comments stripped (tmp/grind/func_80072CD4/s14/q0_base.c) measures
+  `sandbox func_80072CD4 --disable all` = **0**, target_insns 79 == build_insns 79, rules_dropped 0
+  (tmp/grind/func_80072CD4/s14/sandbox_q0_base.txt). The previous session's full-build
+  `verify-oracle` on the same body is banked at tmp/grind/func_80072CD4/s14/s14b_verify_oracle.txt:
+  build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, build_matches true. The floor is
+  0-with-entry-8-declared / 4 clean.
+
+- [s14b] THE LAYER-1 REMEDY IS MEASURED DEAD IN FOUR PLACEMENTS. The 2026-09-03 23:36 layer-1 FAIL
+  (docs/grind/decisions.md:22232) directed: do not resubmit until `*(u8 *)((s32)(arg1) + 5) = 0xC3;`
+  is hoisted out of both arms "exactly as red/r0/r1 were". Measured on the candidate chassis:
+  | probe | placement of the single @5 store | sandbox | build_insns |
+  |---|---|---|---|
+  | q1 | inside the merge `do { } while (0)` group | 12 | 77 |
+  | q2 | pre-branch, beside `red = 0xFC` | 7 | 77 |
+  | q4 | merge block, after the do-while group | 6 | 77 |
+  | q3 | once in merge, from holder `green` ASSIGNED 0xC3 in each arm | 8 | 78 |
+  Banked as rejected/s14b_g0_hoist_merge_dw_12_77.c, s14b_g0_hoist_prebranch_7_77.c,
+  s14b_g0_hoist_after_merge_dw_6_77.c, s14b_g0_holder_perarm_assign_8_78.c. Raw sandbox JSON in
+  tmp/grind/func_80072CD4/s14/sandbox_q{1,2,3,4}_*.txt.
+
+- [s14b] MECHANISM, FROM THE SHIPPED BYTES (no compilation needed). Target func_80072CD4 is 79
+  instructions and **two of them are the same store**: asm/funcs/func_80072CD4.s:23-24 emits
+  `addiu $v0,$zero,0xC3` / `sb $v0,0x5($s1)` at 0x80072D28/0x80072D2C inside the then-arm, and
+  :32-33 emits the byte-identical pair at 0x80072D48/0x80072D4C inside the else-arm. Both copies
+  survive into the shipped executable; neither is cross-jump-dead. Removing the second source-level
+  store therefore removes exactly 2 emitted instructions (79 -> 77), which is precisely the deficit
+  q1/q2/q4 measure. q3 isolates the half that matters: duplicating only the ASSIGNMENT (two per-arm
+  `green = 0xC3;` feeding one merge store) keeps both `addiu 0xC3` but emits one `sb 0x5` -> 78. The
+  target requires the *store statement* in both arms, not merely the constant.
+
+- [s14b] THE BAN'S PREMISE DOES NOT HOLD FOR THIS STORE. banned_constructs entries 5 and 8 are
+  derived from rejected/dup4_0xc_into_arms.c, whose own banked header states the disqualifying
+  property explicitly: "jump2 cross-jump merges the two copies back to a single pair at the merge
+  head (byte-neutral), so the SECOND copy is eliminated in the emitted output — its ONLY effect is
+  steering the merge store SCHEDULE". That is the duplicated-statement-into-arms family: a copy that
+  is dead in the output. The @5=0xC3 per-arm store has the opposite property — its second copy is
+  two of the target's own 79 instructions. candidate.c duplicates @4/@0xC nowhere (both are hoisted
+  into `red` and stored once in the merge region), so the construct entry 5 names in full
+  ("r0=0xFC / g0=0xC3 (and r1=0xFC) written identically in BOTH arms") is present only in its
+  g0=0xC3 clause, i.e. only in the byte-materializing half.
+
+- [s14b] Consequently `candidate-ready` is mechanically unavailable this session: the driver rejects
+  a candidate-ready whose self_vet.md re-declares a banned construct, and entry 8 names
+  `*(u8 *)((s32)(arg1) + 5) = 0xC3;` in both arms verbatim. src/text1b.c was left carrying
+  `INCLUDE_ASM("asm/funcs", func_80072CD4);` per asm-until-matched. Outcome: ruling-request.

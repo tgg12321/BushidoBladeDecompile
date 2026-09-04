@@ -1567,3 +1567,27 @@ diff. If layer-1 rules that three sibling do-while(0) wraps exceed the family sa
 .claude/rules/do-while-zero-exception.md:29 ("ANY codegen effect") and the non-nested prerequisite,
 the correct next move is a ruling-request on wrap COUNT - not a return to the duplication family,
 which stays banned.
+
+## s14b — structural (2026-09-03)
+
+- H-s14b-1 (KILLED, instance): "On the candidate.c cross-block do-while chassis, hoisting the
+  `*(u8 *)((s32)(arg1) + 5) = 0xC3;` store out of both inner arms into a single merge-region,
+  post-merge-group or pre-branch placement holds sandbox at 0." Probe: four placements applied to
+  src/text1b.c and scored with `sandbox func_80072CD4 --disable all`. Result: 12/77, 7/77, 6/77 and
+  (holder-assignment variant) 8/78 against target 79. KILLED on the current chassis with the three
+  sanctioned do-while(0) wraps present. This is the exact remedy the 2026-09-03 23:36 layer-1 FAIL
+  named, so the FAIL's next_action has now been executed and measured rather than argued.
+
+- H-s14b-2 (CONFIRMED): "The second copy of the @5=0xC3 store is present in the target's own bytes,
+  so its per-arm duplication is byte-materializing and not the byte-neutral cross-jump-dead property
+  that defines the banned dup4_0xc_into_arms construct." Probe: read asm/funcs/func_80072CD4.s
+  (:23-24 and :32-33 are byte-identical `addiu $v0,0xC3` / `sb $v0,0x5($s1)` pairs, one per arm, both
+  in the shipped 79 instructions) and cross-check against the 2-instruction deficit every hoisted
+  form measures. CONFIRMED.
+
+- OPEN (owner/Judge lane only): whether banned_constructs entries 5 (g0 clause) and 8 reach a
+  duplicated store whose copies both materialize in the target. If they do not, candidate.c closes
+  this function immediately — it is already sandbox 0 / build_insns 79 == 79 with a banked full-build
+  SHA1 == oracle, its only other constructs are the sanctioned do-while(0) wraps
+  (.claude/rules/do-while-zero-exception.md, FAKE-annotated at each site) plus the `red`/`blue1`
+  named intermediates, and it duplicates @4/@0xC nowhere.
