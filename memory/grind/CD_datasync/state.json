@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 56,
- "current_modality": "synthesis",
+ "session_count": 57,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -339,23 +339,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s55's zero-FAKE-chassis hope is dead (same two-body residual + a 13-point callee-save rotation), both banked bases are TYPED for the first time (candidate = pure SCHED 3-slot, order-exact base = pure "
+  },
+  {
+   "session": 57,
+   "floor": 2,
+   "modality": "solver",
+   "headline": "Solver turns the residual into arithmetic: block 3 needs 9 < luid(arg4-sll) < 10, so no statement REORDER can reach it (perturb luid-only depth 4: unreachable) - but ADDING a statement (split arg5 int"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The floor body's residual is a PURE SCHEDULER residual of 3 slots (ra_solver classify), and the scheduler solver has never been pointed at it - sched_solver can decide order-exactness on the SEAT-CORRECT body instead of chasing the seats on the order-correct body.",
-   "mechanism": "Every session since s50 has attacked the seat swap on the order-exact base, i.e. the RA side of the two-body problem. classify says the 2 / 91 body needs no register change at all: same instructions, same registers, 3 slots out of order - which is exactly tools/sched_solver's and inverse_sched.py's domain (the emission tie is RANKDBG last=114 y=111 cls=3 x=106 cls2=3 val=0, resolved by INSN_LUID at sched.c:2463).",
-   "next_probe": "Apply memory/grind/CD_datasync/candidate.c, run tools/sched_solver/extract.py on system to build the pass-1/pass-2 block model, then tools/ra_solver/inverse_sched.py <model> --func CD_datasync --block 3 --pass 1 --target-object build/src/system.o --ours-object tmp/sandbox/CD_datasync/system.o --depth 3. A REACHABLE verdict names the LUID perturbation that sinks arg4's `sll $a0` past arg5's sll/addu pair with the seats untouched; a FORECLOSED verdict is the first predicate-cited class result this ledger would own."
+   "hypothesis": "Delaying arg4's address death in SCHED1's numbering only - making sched1 place arg4's `lw $a3` after arg5's `sw 16($sp)`, which sched2 already re-orders anyway - lengthens arg4's quantity to span 8 and shortens arg5's to 4, so arg5 sorts first and the seats flip with the final emission order untouched.",
+   "mechanism": "local-alloc prices by floor_log2(refs)*refs*size/(death-birth) and ties on quantity number. Spans 8 and 4 give priorities 1 and 2 instead of the current 8/6 tie, so arg5's quantity is sorted first and takes $v1, leaving $a0 for arg4's address - target's disposition. This re-opens s55's frontier item F-b, whose kill assumed the two scheduling passes agree about the lw/sw pair; the s57 local-alloc table read on a live order-exact body shows they do not.",
+   "next_probe": "On progress/s57-order-exact-p5-luid-insert-7.c read the block-3 SCHED1 pick stream for the `lw $a3` / `sw 16($sp)` pair (BB2_SCHED_DEBUG, picks BACKWARD) and identify what makes sched1 place the lw first. Then spell the one C change that delays arg4's load past arg5's argument store in sched1 (a later consumer of the arg4 address, or arg5's store made ready earlier) and re-read local_extract.py's block-3 table. Two or three forms decide it."
   },
   {
-   "hypothesis": "The 13-point callee-saved 3-cycle rotation on the zero-FAKE chassis is a global.c allocno-order residual that is separately attackable, and closing it would give a FAKE-free body at the wrapped chassis' score.",
-   "mechanism": "global.c orders allocnos by allocno_compare (refs weighted by loop_depth) and hands out callee-saved registers in that order. The four spanning values are the `a0` parameter and the three table pointers; their DECLARATION and INITIALISATION order, and which of them is read inside the timeout region, are ordinary-C dials on that order. The wrap currently supplies the weighting for free, which is why the rotation has never been seen, let alone attacked.",
-   "next_probe": "On progress/s56-zerofake-best-15.c sweep the declaration order and the initialisation order of {tbl_11dc, idx_1494, tbl_125c} x the position of the `D_800F19C0 = &D_800162C0;` store, reading the .greg dump's allocno order rather than the score. If any permutation reaches target's s2=param / s0=tbl_125c / s1=idx_1494, the zero-FAKE chassis drops to the wrapped chassis' score with no FAKE units at all, and the do{}while(0) dependency in candidate.c can be retired."
+   "hypothesis": "The statement-ADDING axis the solver cannot see is a general lever on this window: any real statement boundary inserted between two RTL insns creates a luid the reorder search proves unreachable, so other blocked inequalities in the window may fall the same way.",
+   "mechanism": "perturb.py's luid/luid_move atoms permute a FIXED luid multiset; they cannot model a new luid appearing between two adjacent ones. The s57 p5 split is the first measured instance of that escape on this function, and it moved a residual that had been flat for 7 sessions.",
+   "next_probe": "Enumerate the remaining adjacent-luid pairs in block 3 (90/92, 96/100, 100/104, 110/112, 114/117) and for each ask which real C statement could be emitted between them, then sweep those splits against BOTH banked bases - in particular a split of arg3's `tbl_11dc[D_800A11D5]` chain, which is the only other multi-insn expression in the window."
   },
   {
-   "hypothesis": "Of inverse.py's four vector classes only live_extend-BIRTH survives (arg4-address birth 16 -> 14 with the emission order held), and it is decidable by dump rather than by sweep.",
-   "mechanism": "qty_death is pinned at 22 (arg4's own lw, s55) and qty births are even, so 16 -> 15 is unreachable and 16 -> 14 gives pri 10000 < the arg5 value's 13333 - the seats flip with the order untouched. s53 measured order-exact <=> birth 16 as exceptionless over its form space, but the birth is read AFTER sched1, so the identity is a claim about what sched1 does to the arg4 index load, not about where the C statement sits.",
-   "next_probe": "Take the s51 order-exact base and read the sched1 pick stream (BB2_SCHED_DEBUG, remembering blocks are picked BACKWARD) for the arg4 index lbu: identify what forces it down to birth 16 - dependence on the tbl_125c base, or rank_for_schedule's LUID tie. Then spell the ONE C change that gives that lbu an earlier ready time (a consumer that must precede arg5's address, or the index read through a different base local) and re-dump QTYDBG. Two or three forms decide it; a birth of 14 with order-exact emission is a 0."
+   "hypothesis": "Because two disjoint C spellings reach the identical order-exact quantity table, the seat swap on an order-exact body is a function of the emission order alone and not of the C spelling - so the productive attack is the SEAT-EXACT 2/91 body's remaining 3 slots, not the order-exact bodies' 6 registers.",
+   "mechanism": "s53's `order-exact <=> arg4 address birth 16` identity now has a second independent witness (s51 base, s57 p5 base, identical tables), which makes the RA side of the two-body problem invariant under spelling. The SCHED side has just been shown to move under a statement-adding lever.",
+   "next_probe": "Re-run inverse_sched.py on the 2/91 body with the add_dep atoms DISABLED and the search allowed to insert a luid (the masked-atom fork pattern from tmp/grind/func_80041188/s3/masked_inverse.py), enumerating which adjacent-luid insertions reach the goal; then spell only those insertions that are real consumed values on the seat-exact chassis."
   }
  ],
  "judge_constraints": [],
@@ -365,30 +371,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 38,
-   "statement": "Target's printf-window order is reached from the candidate.c chassis by some permutation of the argument chains' source statement order.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals, arg4 value local) with the do{}while(0) FAKE present; 40,320 simulated orders",
-   "predicate_cite": "",
-   "result": "KILLED. 0 hits; best window prefix 3/15 and the best IS the baseline. Positive by-product: candidate.c already emits tar"
-  },
-  {
-   "session": 39,
-   "statement": "Dropping MEM_IN_STRUCT_P on the argument loads by binding the address to a named pointer local, or by spelling the reads as explicit pointer arithmetic, changes the emitted bytes of the f17 form.",
-   "kill_scope": "instance",
-   "measured_on": "f17 chassis (alt_f17_a0map_13.c, 13/91 target, build_insns 90) with the do{}while(0) FAKE present; 2 live sandbox measurements plus one cc1 -da dump",
-   "predicate_cite": "",
-   "result": "KILLED as a byte lever, CONFIRMED as a mechanism. (a) DOES drop the flag - the sched2 dump shows (mem:SI (reg/v:SI 4 a0)"
-  },
-  {
-   "session": 39,
-   "statement": "Target's printf-window order, or merely the fmt-emitted-last fact, is reached from the f17 chassis by some permutation of the argument chains' source statement order.",
-   "kill_scope": "instance",
-   "measured_on": "f17 chassis (alt_f17_a0map_13.c, 13/91, build_insns 90) with the do{}while(0) FAKE present; sched_solver model re-extracted with that form in src/ (parity=True); 40,320 simulated orders",
-   "predicate_cite": "",
-   "result": "KILLED. 144 distinct windows; 0 reach target's window order and 0 put the fmt last. Best window prefix 3/15, from source"
-  },
   {
    "session": 39,
    "statement": "On the u1 chassis, arg4's value load is emitted before the fmt set in sched1 - the condition that frees $a0 for the arg4 address pseudo - under some statement order or some pair of spellable scheduler",
@@ -840,6 +822,30 @@
    "measured_on": "the s51 order-exact-seats-swapped chassis (7 / 91) with the s9 do{}while(0) FAKE and the void **pp pointer-alias FAKE present; 4 copy-carrier forms, each QTYDBG-dumped",
    "predicate_cite": "",
    "result": "KILLED. All four are byte-inert at 7 / 91 with a block-3 quantity table bit-identical to the base (arg5 still birth 18 d"
+  },
+  {
+   "session": 57,
+   "statement": "Block 3's remaining transposition is reachable by pure statement reordering (the INSN_LUID atom space) at search depth 4 on the 2/91 candidate body.",
+   "kill_scope": "instance",
+   "measured_on": "the s50 pp / integer-split-init-address chassis (2 / 91) with the s9 do{}while(0) FAKE and the void **pp pointer alias present",
+   "predicate_cite": "",
+   "result": "630 single atoms plus pairs searched; no perturbation reaches the goal order. The pick stream says why in arithmetic: in"
+  },
+  {
+   "session": 57,
+   "statement": "Some minimal scheduler perturbation reaching target's block-3 order on the 2/91 body is spellable in ordinary C without adding a statement.",
+   "kill_scope": "instance",
+   "measured_on": "the s50 pp / integer-split-init-address chassis (2 / 91) with the s9 do{}while(0) FAKE and the void **pp pointer alias present",
+   "predicate_cite": "",
+   "result": "Minimal solution size 2 atoms; all 140 reported vectors pair a luid atom with exactly one of add_dep_true 96<-100, add_d"
+  },
+  {
+   "session": 57,
+   "statement": "The p5-split order-exact chassis has a different block-3 local-alloc fixed point from the s51 order-exact base, so the $a0 / $v1 seat swap is attackable on it.",
+   "kill_scope": "instance",
+   "measured_on": "the s57 p5 / integer-sum-address order-exact chassis (7 / 91) with the s9 do{}while(0) FAKE and the void **pp pointer alias present",
+   "predicate_cite": "",
+   "result": "The table is qty0 reg89 [8,18) refs 12 -> $v0, qty3 reg103 [20,32) refs 12 -> $v0, qty1 reg97 [16,22) refs 4 -> ord2 -> "
   }
  ]
 }

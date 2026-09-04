@@ -1,3 +1,46 @@
+/* s57 UPDATE (2026-09-04, solver).  BODY UNCHANGED - still the floor at 2 / 91
+ * (chassis re-verified live before and after every probe; mandated FAKE
+ * re-audit run on the NEW s57 order-exact base: keep-all 7 / 91, drop-pp
+ * 12 / 89, drop-do{}while(0) 32 / 74, drop-both 32 / 74).  s57 was the first
+ * session to point tools/sched_solver and tools/ra_solver/inverse_sched.py at
+ * this body, and it converted the residual from a description into arithmetic.
+ *
+ * 1. THE RESIDUAL IS ONE LUID INEQUALITY.  Block 3, sched1, picks are BACKWARD.
+ *    Ours picks 123, 114, 112, 110, 104 at clocks 13-17; target's goal order is
+ *    123, 114, 104, 112, 110.  Every candidate in that window carries the same
+ *    adjusted priority, so rank_for_schedule falls through to INSN_LUID and
+ *    takes the LARGER luid.  Pass-1 luids: 96=3 (idx[1] lbu), 100=5 (idx[0]
+ *    lbu), 104=6 (arg4 index sll), 110=8 (arg5 index sll), 112=9 (arg5 address
+ *    addu), 114=10 (arg5 value lw).  104 must be picked at clock 15 but not at
+ *    clock 14, i.e. 9 < luid(104) < 10.  Those luids are ADJACENT, which is why
+ *    2500+ statement-order forms since s50 never moved the transposition.
+ *    perturb.py --atoms luid,luid_move --depth 4 confirms it mechanically: 630
+ *    single atoms + pairs, no perturbation reaches the goal.
+ *
+ * 2. THE INEQUALITY IS SOLVED BY ADDING A STATEMENT, NOT MOVING ONE.  Splitting
+ *    `arg5 = tbl_125c[i5];` into an address statement and a load statement
+ *    creates a NEW luid slot between insns 112 and 114; putting `t0 *= 4` in it
+ *    makes the emission order EXACT (sll $v0 50, addu $v0 51, sll $a0 52).
+ *    20 topological interleavings are strictly bimodal - scale between address
+ *    and load = order-exact (score 8), scale before the address = the old
+ *    seat-exact window (score 3).  `p5 = (s32 *)(i5 * 4 + (s32)tbl_125c);`
+ *    fixes the last `addu $v0,$s0,$v0` operand-order point: 7 / 91, banked as
+ *    progress/s57-order-exact-p5-luid-insert-7.c, classified PURE RA.
+ *
+ * 3. AND IT CONVERGES ON THE SAME QUANTITY TABLE.  local_extract on that new
+ *    order-exact base gives qty0 reg89 [8,18) r12 -> $v0, qty3 reg103 [20,32)
+ *    r12 -> $v0, qty1 reg97 [16,22) r4 -> $v1, qty2 reg86 [18,24) r4 -> $a0 -
+ *    identical register-for-register and number-for-number to the s51
+ *    order-exact base, which shares no statement with it.  On ANY order-exact
+ *    body both contested quantities have refs 4 and span 6, so the priorities
+ *    tie and qty_compare_1's `*q1 - *q2` gives the seat to arg4 (born first,
+ *    which order-exactness requires).  Both spans are pinned by target's own
+ *    order.  The one arithmetic escape left is arg4's DEATH: local-alloc runs
+ *    on SCHED1's output, where arg4's `lw $a3` is at 22 and arg5's
+ *    `sw 16($sp)` at 24, while the FINAL emission has the sw at 59 and the lw
+ *    at 61.  The passes disagree about that pair; s55's F-b kill assumed they
+ *    agree, and should be re-opened.
+ */
 /* s56 UPDATE (2026-09-04, synthesis).  BODY UNCHANGED - still the floor at
  * 2 / 91 (chassis re-verified live; mandated fake_ablate re-audit keep-all
  * 2 / 91, drop-pp 11 / 89, drop-do{}while(0) 32 / 74, drop-both 32 / 74,
