@@ -3783,3 +3783,138 @@ s23/s24 already mined them.
 - [s27] tools/nrefs_census.py cannot run on this TU: its extract.py run_dumps cpp step exits 1 on src/code6cac_b.c. The .lreg/.greg dumps under tmp/grind/func_80034F88/dumps/ carry the same allocation data and s23/s24 already mined them.
 
 - [s27] A zero-cost fourth address quantity requires a set whose SOURCE cse can unify (so cse rewrites it to a register copy that flow propagates away) into a DIFFERENT destination pseudo. In C that is a second declared pointer object -- s26's y02 (49 insns, four lbu, three pairs, score 13, classify RA) and the three-object body that measured 0 -- i.e. the standing ban.
+
+## s28 (forensics) -- the cse input enumeration COMPLETED, and the round-trip's gate located in the RTL
+
+**Chassis.** `candidate.c` (variant `b0`) installed at `src/code6cac_b.c:3420`;
+`sandbox func_80034F88 --disable all` = **score 10, 49 build / 49 target insns**,
+classify FIRST DIVERGENCE: PRE-RA with `ours only: nop` / `target only: lbu #,0(#)`.
+The dispatch brief carried "measurement unavailable" for the HEAD floor -- it is
+**10**, re-measured this session. `src/` restored to HEAD at session end.
+
+**The residual restated arithmetically (this makes the remaining search finite).**
+Our 49 insns and the target's 49 insns are the SAME COUNT with a 1:1 shape swap:
+we emit a `nop` exactly where the target emits `lbu $a0,0($v1)` at 0x80034FB4 --
+the load fills the load-delay slot of `lw $v0,0x20($a1)`. So restoring block 1's
+byte reload is **free**: a construct that restores it without adding a second
+instruction lands on the target's multiset. Every route measured so far adds two
+(a fourth address materialisation: 51 insns; the call gate: 51 insns).
+
+**PASS-INPUT ENUMERATION -- two gates s27 did not list, both closed this session.**
+s27 enumerated five cse inputs (volatile mem cse.c:1943, CALL/UNSPEC_VOLATILE
+cse.c:1967, hard reg cse.c:1902, invalidate_memory cse.c:7599, path boundary at a
+code label) plus the address quantity. Reading `cse_insn`'s dest-recording loop
+end to end (cse.c:7310-7360) turns up two more entry points to
+`sets[i].src_elt == 0`, the condition at cse.c:7329 that skips
+`insert (dest, ...)` and therefore leaves the stored byte unrecorded:
+
+6. **`in_libcall_block`** (cse.c:7326). Reachable only if the STORE insn sits
+   between a REG_LIBCALL and its REG_RETVAL. `emit_libcall_block` wraps only the
+   call sequence, and `*q &= 0xF8` contains no libcall operation (no division, no
+   float), so no ordinary-C spelling of block 0 puts the `sb` inside one.
+7. **A bitfield destination** (cse.c:7004-7027): when `SET_DEST` is a
+   `ZERO_EXTRACT` / `SIGN_EXTRACT`, cse sets `sets[i].src_elt = 0` and
+   `sets[i].src_volatile = 1` *specifically so the destination is invalidated but
+   no value is recorded* -- exactly the behaviour the target's stream needs.
+   **MEASURED AND DEAD.** `b1`/`b1b` spell block 0 as a 3-bit bitfield store
+   (`((struct FB *)q)->f3 = 0;`), both 51 insns, score 13/13, reload still
+   forwarded. The mechanism: `mips.md:2901`'s `insv` expander `FAIL`s for every
+   field that is not a 32-bit byte-aligned field, so `store_bit_field` falls back
+   to `store_fixed_bit_field`'s explicit load/and/store RTL. Direct proof --
+   `grep -c zero_extract` over `.rtl`, `.jump` and `.cse` is **0/0/0**, and the
+   dumped block 0 is insn 17 `(set (reg:QI 75) (mem/s:QI (reg 74)))`, insn 20
+   `and 248`, insn 22, insn 24 `(set (mem/s:QI (reg 74)) (reg:QI 75))`
+   (`tmp/grind/func_80034F88/s28/b1b.jump.block0`). No `ZERO_EXTRACT` SET_DEST
+   ever reaches cse on this target, so gate 7 is unreachable, not merely unlucky.
+
+**Gate 8, also measured: MEM_IN_STRUCT_P asymmetry does not help.** In `b1b` the
+store is `(mem/s:QI (reg 74))` and block 1's reload is `(mem:QI (reg 74))` --
+different `MEM_IN_STRUCT_P` -- and the reload is STILL forwarded, because
+`canon_hash` does not hash that flag and `exp_equiv_p` does not compare it. So
+reaching the byte through a struct-typed lvalue in one block and a plain
+`u8 *` in another is not a cse-defeating input.
+
+**Gate 5 (invalidate_memory) measured for the first time, and priced.** `b2`
+hoists block 0's read-modify-write ABOVE `p = func_80077D00()` so the CALL_INSN
+invalidates the byte's table entry (cse.c:7599). **The reload IS restored** --
+classify's only remaining shape difference is an extra `lw #,0x20(#)` /
+`sw #,0x20(#)` pair (the pointer now has to survive the call) -- at 51 insns,
+score 29. So the call gate costs +2, the same price as a fourth address
+materialisation. The target's own stream has no call between its `sb` at
+0x80034FAC and its `lbu` at 0x80034FB4, so this was not the original's input.
+
+**MANDATED KILL RE-AUDIT -- the s25/s20 dead round-trip, re-measured on HEAD and
+located in the RTL for the first time.** `b4` re-installs
+`q = q + 3; q = q - 3;` between block 0 and block 1 on the current chassis:
+**49 insns, score 10, and classify now reports FIRST DIVERGENCE: RA with a
+MATCHING instruction multiset** (`ours: lbu v1,0(a0)` x2 vs
+`target: lbu a0,0(v1)` x2 -- the whole residual is the $v1/$a0 seat swap).
+The instance kill stands (it is a dead-arithmetic construct, and s26's RA inverse
+FORECLOSES the swap on this very chassis), but the MECHANISM is now proven rather
+than inferred. Side-by-side dumps
+(`tmp/grind/func_80034F88/s28/b4.jump`, `b4.cse`):
+
+    .jump  (insn 20 (set (mem:QI (reg/v:SI 74)) (subreg:QI (reg:SI 76) 0)))
+           (insn 23 (set (reg/v:SI 74) (plus (reg/v:SI 74) (const_int 3))))
+           (insn 26 (set (reg/v:SI 74) (plus (reg/v:SI 74) (const_int -3))))
+           (insn 35 (set (reg:QI 80) (mem:QI (reg/v:SI 74))))
+    .cse   insn 35 SURVIVES UNCHANGED  (in candidate.c it becomes
+           (set (reg:QI 80) (subreg:QI (reg:SI 76) 0)) -- s27's D1)
+
+Insns 23 and 26 SET the address pseudo, so `cse_insn` calls `invalidate` on
+reg 74, which does `reg_tick[regno]++` at **cse.c:1539**; every table entry whose
+expression mentions reg 74 -- including the `(mem:QI (reg 74))` that insn 20
+recorded -- stops validating, and block 1's load is a real load again. cse still
+folds the arithmetic (both insns carry REG_EQUAL notes: `D_80106A73 + 3`, then
+`D_80106A73`), which is why the round-trip costs zero instructions. **That is the
+only zero-cost invalidator measured in 28 sessions, and its C spelling is a dead
+pointer round-trip.**
+
+**Toolchain fact worth carrying off this function: bitfield direction flipped
+with `-mel`.** `.claude/rules/bitfield-direction-divergence.md` (dated
+2026-06-11, i.e. BEFORE the 2026-08-04 `-mel` adoption) states our cc1 allocates
+the FIRST-declared bitfield at the HIGH bits and advises declaring SDK bitfield
+structs in flipped field order. Measured here on the live toolchain:
+`struct { u8 f5:5; u8 f3:3; }` with `f3 = 0` emits `andi #,#,0x1f` (so `f5`
+occupies bits 0-4), and `struct { u8 f3:3; u8 f5:5; }` with `f3 = 0` emits
+`andi #,#,0xf8`. **First-declared now takes the LOW bits** -- the rule's advice
+is stale post-`-mel` and re-flipping field order would be wrong. Recorded here,
+not acted on (rule files are outside a grind session's surface).
+
+- [s28] HEAD chassis re-measured: candidate.c = score 10, 49/49 insns, classify PRE-RA with ours-only nop / target-only lbu. The dispatch brief's "measurement unavailable" resolves to floor 10.
+- [s28] The nop-for-lbu swap is 1:1, so restoring block 1's reload is instruction-free; every measured route to it costs +2 (fourth materialisation 51 insns, call gate 51 insns).
+- [s28] cse.c:7326 in_libcall_block is the sixth src_elt==0 gate; unreachable because `*q &= 0xF8` contains no libcall operation and emit_libcall_block wraps only the call sequence.
+- [s28] cse.c:7004-7027 (ZERO_EXTRACT/SIGN_EXTRACT SET_DEST) is the seventh gate and is UNREACHABLE on MIPS: mips.md:2901's insv expander FAILs for non-32-bit fields, so store_bit_field emits explicit load/and/store RTL. zero_extract count is 0 in .rtl, .jump and .cse for the bitfield body b1b.
+- [s28] Bitfield bodies b1 (f5 first) and b1b (f3 first) both measure 51 insns / score 13 with the reload still forwarded; b1 additionally pins the field order (andi 0x1f vs andi 0xf8).
+- [s28] MEM_IN_STRUCT_P asymmetry between the store (mem/s:QI) and the reload (mem:QI) does not defeat forwarding -- canon_hash does not hash the flag and exp_equiv_p does not compare it.
+- [s28] b2 (block-0 RMW hoisted above the call) restores the reload via cse.c:7599 invalidate_memory but costs +2 (an lw/sw pair keeping the pointer alive across the call): 51 insns, score 29.
+- [s28] KILL RE-AUDIT: the s25/s20 dead round-trip re-measures at 49 insns / score 10 on HEAD with a MATCHING multiset and an RA-only residual ($v1/$a0 swap). Its cse mechanism is now RTL-proven: setting the address pseudo bumps reg_tick at cse.c:1539, invalidating the (mem:QI (reg 74)) entry insn 20 recorded, so insn 35 survives cse unchanged.
+- [s28] Bitfield direction on the live toolchain: FIRST-declared field takes the LOW bits (measured andi 0x1f / andi 0xf8). .claude/rules/bitfield-direction-divergence.md predates the 2026-08-04 -mel adoption and its "declare in FLIPPED field order" advice is stale.
+
+### Artifacts (s28)
+
+`tmp/grind/func_80034F88/s28/`: `variants/b0.c`, `variants/b1.c`, `variants/b1b.c`,
+`variants/b2.c`, `variants/b4.c`, `sweep.ps1`, `install.py`, `dis.sh`, `cls.sh`,
+`b0.txt`, `b1.txt`, `b1b.txt`, `b2.txt`, `b4.txt`, `b4.jump`, `b4.cse`,
+`b1b.jump.block0`, `code6cac_b.c.orig`; plus the refreshed pass dumps in
+`tmp/grind/func_80034F88/dumps/`.
+
+- [s28] HEAD chassis re-measured (the dispatch brief said 'measurement unavailable'): candidate.c installed at src/code6cac_b.c:3420 gives sandbox --disable all = score 10, 49 build / 49 target insns, rules_dropped 0. Floor is 10.
+
+- [s28] The residual is a 1:1 shape swap, not a size gap: classify reports exactly 'ours only: nop' and 'target only: lbu #,0(#)'. The target's lbu $a0,0($v1) at 0x80034FB4 fills the load-delay slot of lw $v0,0x20($a1); we fill that slot with a nop. Restoring block 1's byte reload is therefore INSTRUCTION-FREE, and any construct that restores it without adding a second instruction lands on the target's multiset.
+
+- [s28] Target address geometry, read off asm/funcs/func_80034F88.s: three lui+addiu pairs (0x80034F98 -> $v1, 0x80034FC8 -> $a0, 0x80034FF0 -> $a0) serving four lbu and four sb. Group A ($v1) carries TWO loads and TWO stores (lbu 0x80034FA0, sb 0x80034FAC, lbu 0x80034FB4, sb 0x80034FD0); groups B and C carry one load and one store each. So the entire deficit is one read-after-write inside a SINGLE address quantity.
+
+- [s28] cse input enumeration completed. s27 listed five gates plus the address quantity; s28 adds cse.c:7326 in_libcall_block (unreachable -- emit_libcall_block wraps only the call sequence and *q &= 0xF8 contains no libcall operation) and cse.c:7004-7027, the bitfield ZERO_EXTRACT/SIGN_EXTRACT SET_DEST gate.
+
+- [s28] The bitfield gate is unreachable on MIPS, not merely unlucky: mips.md:2901's insv expander FAILs for any field that is not 32 bits wide and byte-aligned, so store_bit_field falls back to explicit load/and/store RTL. Measured: grep -c zero_extract = 0 in .rtl, .jump and .cse for the bitfield body b1b.
+
+- [s28] MEM_IN_STRUCT_P asymmetry (mem/s:QI store vs mem:QI reload, both on reg 74) does not defeat forwarding -- canon_hash does not hash that flag and exp_equiv_p does not compare it. Measured in b1b's dumped RTL (insn 24 vs insn 33) with the reload still deleted.
+
+- [s28] The CALL gate (cse.c:7599 invalidate_memory) DOES restore the reload -- b2 measures 51 insns / score 29 with the lbu multiset matching and only an lw/sw spill pair as the shape difference -- but costs +2, the same price as a fourth address materialisation.
+
+- [s28] The dead round-trip's cse gate is now located in the RTL rather than inferred: .jump insn 23 (set (reg 74) (plus (reg 74) 3)) and insn 26 (set (reg 74) (plus (reg 74) -3)) make cse_insn invalidate reg 74, which bumps reg_tick at cse.c:1539 and un-validates the (mem:QI (reg 74)) entry insn 20 recorded; insn 35's load therefore survives .cse verbatim. Both round-trip insns carry REG_EQUAL notes (D_80106A73 + 3, then D_80106A73), so cse folds the arithmetic away and the construct costs zero instructions.
+
+- [s28] Re-audited kill result: that round-trip chassis is 49 insns / score 10 with FIRST DIVERGENCE: RA and a MATCHING multiset -- the closest chassis this function has ever reached -- and the whole residual is the $v1/$a0 seat swap that s26's RA inverse already FORECLOSES on this exact chassis. The construct is dead arithmetic with no semantic purpose (fails cheat-checklist T1/T2/T6), so it is not a submission route.
+
+- [s28] Bitfield direction under -mel: FIRST-declared field takes the LOW bits (b1 andi 0x1f vs b1b andi 0xf8). .claude/rules/bitfield-direction-divergence.md (2026-06-11) predates the 2026-08-04 -mel adoption and its flipped-field-order advice is stale; this is a cross-function toolchain fact, recorded but not acted on.

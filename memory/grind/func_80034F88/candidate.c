@@ -428,6 +428,25 @@
  * fourth quantity needs a set whose source cse unifies (rewritten to a copy,
  * propagated away by flow) into a DIFFERENT pseudo: a second declared pointer
  * object, i.e. the standing ban.
+ *
+ * (8) s28 (forensics) re-measures this body on HEAD -- score 10, 49/49 insns,
+ * classify PRE-RA with `ours only: nop` / `target only: lbu #,0(#)` -- and
+ * makes the residual finite: the swap is 1:1, so the target's `lbu` at
+ * 0x80034FB4 fills the load-delay slot of `lw $v0,0x20($a1)` that we fill with
+ * a nop. Restoring block 1's reload is therefore INSTRUCTION-FREE; every route
+ * measured to date costs +2 (a fourth address materialisation: 51 insns; a
+ * CALL between the store and the read: 51 insns). s28 also completes s27's cse
+ * input enumeration with two gates it had missed and closes both:
+ * cse.c:7326 `in_libcall_block` (unreachable -- `*q &= 0xF8` contains no
+ * libcall operation) and cse.c:7004-7027, the bitfield ZERO_EXTRACT SET_DEST
+ * gate, which is unreachable on MIPS because mips.md:2901's `insv` expander
+ * FAILs for any field that is not 32-bit byte-aligned (measured: bitfield
+ * bodies b1/b1b at 51 insns / score 13, `zero_extract` count 0 in .rtl/.jump/
+ * .cse). MEM_IN_STRUCT_P asymmetry between the store and the reload does not
+ * defeat forwarding either. The one zero-cost invalidator known in 28 sessions
+ * remains the dead pointer round-trip, whose gate s28 located in the RTL:
+ * setting the address pseudo bumps `reg_tick` in `invalidate` (cse.c:1539),
+ * which un-validates the `(mem:QI (reg 74))` entry the store recorded.
  */
 void func_80034F88(void) {
     s32 *p;

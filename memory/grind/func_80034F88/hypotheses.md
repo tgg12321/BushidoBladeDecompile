@@ -2715,3 +2715,121 @@ any further disposition attempt.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c score-10 chassis at HEAD; ablated body banked at memory/grind/func_80034F88/rejected/pointer-alias-ablated-plain-symbol-47insn-score29.c
+
+## s28 (forensics)
+
+### H28.1 -- KILLED (class) -- bitfield destination reaching cse.c:7004
+**Statement.** No bitfield spelling of the flag byte reaches cse.c:7004's
+ZERO_EXTRACT/SIGN_EXTRACT SET_DEST gate on this target, so that gate can never be
+the input that kept block 1's byte reload alive in the original compilation.
+**Mechanism.** cse.c:7004-7027 sets `sets[i].src_elt = 0` (and `src_volatile = 1`)
+for a bitfield destination, which makes cse.c:7329 skip `insert (dest, ...)`: the
+destination is invalidated but no value is recorded, so a later read of the same
+byte is a real load. Reaching it needs a `ZERO_EXTRACT` SET_DEST to survive
+expansion, which requires the `insv` expander to succeed.
+`tools/gcc-2.7.2/config/mips/mips.md:2901` `FAIL`s unless the field is 32 bits
+wide and byte-aligned, so `store_bit_field` falls back to
+`store_fixed_bit_field`'s explicit load/and/store RTL.
+**Probe.** `b1` (`struct { u8 f5:5; u8 f3:3; }`) and `b1b`
+(`struct { u8 f3:3; u8 f5:5; }`), block 0 spelled `((struct FB *)q)->f3 = 0;`.
+**Result.** 51 insns / score 13 both; classify still `ours only: nop` /
+`target only: lbu #,0(#)`. `grep -c zero_extract` = 0 in `.rtl`, `.jump`, `.cse`.
+Block 0's dumped RTL is a plain load / and / store triple
+(`tmp/grind/func_80034F88/s28/b1b.jump.block0`).
+**kill_scope.** class. **predicate_cite.** `tools/gcc-2.7.2/config/mips/mips.md:2901`.
+**measured_on.** candidate.c score-10 chassis at HEAD, no FAKE construct present.
+
+### H28.2 -- KILLED (instance) -- MEM_IN_STRUCT_P asymmetry
+**Statement.** Storing through a struct-typed lvalue (`mem/s:QI`) in block 0 and
+reading through a plain `u8 *` (`mem:QI`) in block 1 does not stop cse forwarding
+the stored value on this chassis.
+**Mechanism.** `canon_hash` does not hash `MEM_IN_STRUCT_P` and `exp_equiv_p`
+does not compare it, so the two MEMs land in the same class regardless.
+**Probe.** `b1b`'s dumped RTL: insn 24 `(set (mem/s:QI (reg 74)) (reg:QI 75))`,
+insn 33 `(set (reg:QI 81) (mem:QI (reg 74)))`.
+**Result.** Reload still deleted (ours-only nop / target-only lbu) at 51 insns.
+**kill_scope.** instance. **measured_on.** b1b bitfield chassis on HEAD, no FAKE
+construct present.
+
+### H28.3 -- CONFIRMED -- the CALL gate restores the reload, at +2 instructions
+**Statement.** Placing a CALL_INSN between block 0's store and block 1's read
+restores the target's fourth `lbu`, but costs two instructions to keep the
+pointer alive across the call.
+**Mechanism.** `invalidate_memory` (cse.c:7599) drops every non-`RTX_UNCHANGING_P`
+memory entry at a CALL_INSN, so the store's `(mem:QI (reg 74))` entry is gone by
+the time block 1 reads.
+**Probe.** `b2` -- `q = &D_80106A73; *q &= 0xF8; p = func_80077D00();` then blocks
+1-3 unchanged.
+**Result.** 51 insns, score 29; classify's only shape difference is an extra
+`lw #,0x20(#)` / `sw #,0x20(#)` pair, i.e. the lbu multiset matches. The target's
+own stream has no call between 0x80034FAC and 0x80034FB4, so this was not the
+original's input. Banked at
+`rejected/s28-block0-rmw-before-call-invalidates-51insn-score29.c`.
+
+### H28.4 -- CONFIRMED (kill re-audit) -- the dead round-trip's gate is reg_tick
+**Statement.** The s20/s25 dead pointer round-trip still measures 49 insns /
+score 10 on the current HEAD chassis, with a MATCHING instruction multiset and an
+RA-only residual, and its cse mechanism is the `reg_tick` bump in `invalidate`.
+**Mechanism.** `q = q + 3; q = q - 3;` emits two real SETs of the address pseudo.
+`cse_insn` calls `invalidate` on reg 74, which does `reg_tick[regno]++` at
+cse.c:1539; every table entry mentioning reg 74 -- including the `(mem:QI (reg 74))`
+recorded for the store -- stops validating, so block 1's load survives. cse folds
+the arithmetic itself (REG_EQUAL `D_80106A73 + 3`, then `D_80106A73`), so the
+round-trip costs zero instructions.
+**Probe.** `b4` = `rejected/s25-roundtrip-before-b1-reconfirms-s20-score10-DEAD-ARITH.c`,
+re-measured, plus fresh `-da` dumps sliced to `tmp/grind/func_80034F88/s28/b4.jump`
+and `b4.cse`.
+**Result.** score 10 / 49 insns; classify FIRST DIVERGENCE: **RA**, `ours: lbu
+v1,0(a0)` x2 vs `target: lbu a0,0(v1)` x2 -- the whole residual is the $v1/$a0
+seat swap that s26's RA inverse FORECLOSES on this exact chassis. The construct
+remains inadmissible (dead arithmetic with no semantic purpose: fails T1, T2 and
+T6 of the cheat checklist), so the kill stands; only its mechanism is upgraded
+from inferred to RTL-proven.
+
+### H28.5 -- CONFIRMED (cross-function toolchain fact) -- bitfield direction under -mel
+**Statement.** On the live toolchain the FIRST-declared bitfield occupies the LOW
+bits of its storage unit, the opposite of what
+`.claude/rules/bitfield-direction-divergence.md` (2026-06-11) records.
+**Probe.** `b1` `struct { u8 f5:5; u8 f3:3; }` with `f3 = 0` emits
+`andi #,#,0x1f`; `b1b` `struct { u8 f3:3; u8 f5:5; }` with `f3 = 0` emits
+`andi #,#,0xf8`.
+**Result.** CONFIRMED. The rule predates the 2026-08-04 `-mel` adoption, which
+flips `BYTES_BIG_ENDIAN` and therefore the bitfield allocation direction; its
+"declare SDK bitfield structs in FLIPPED field order" advice is stale and would
+now produce the wrong layout. Not acted on -- rule files are outside a grind
+session's editable surface.
+
+## [s28] No bitfield spelling of the flag byte reaches cse.c:7004's ZERO_EXTRACT/SIGN_EXTRACT SET_DEST gate on this target, so that gate cannot be the cse input that kept block 1's byte reload alive in the original compilation.
+- mechanism: cse.c:7004-7027 sets sets[i].src_elt = 0 and src_volatile = 1 for a bitfield destination, which makes cse.c:7329 skip insert (dest, ...): the destination is invalidated but no value is recorded, so a later read of the same byte is a real load. Reaching it requires a ZERO_EXTRACT SET_DEST to survive expansion, which requires the insv expander to succeed; mips.md:2901 FAILs unless the field is 32 bits wide and byte-aligned, so store_bit_field falls back to store_fixed_bit_field's explicit load/and/store RTL.
+- probe: Variants b1 (struct { u8 f5:5; u8 f3:3; }) and b1b (struct { u8 f3:3; u8 f5:5; }) spell block 0 as ((struct FB *)q)->f3 = 0; sandbox + inverse_compose.py classify on each, plus fresh -da dumps and grep -c zero_extract over .rtl/.jump/.cse.
+- result: Both 51 insns, score 13; classify still reports 'ours only: nop' / 'target only: lbu #,0(#)'. zero_extract count is 0/0/0 in .rtl, .jump and .cse. The dumped block 0 is a plain load/and/store triple (insn 17 (set (reg:QI 75) (mem/s:QI (reg 74))), insn 20 and 248, insn 22, insn 24 (set (mem/s:QI (reg 74)) (reg:QI 75))). Banked at memory/grind/func_80034F88/rejected/s28-bitfield-block0-store-no-zero-extract-51insn-score13.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: candidate.c score-10 single-object chassis at HEAD (src/code6cac_b.c:3420 INCLUDE_ASM replaced by the body), no FAKE-annotated construct present
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.md:2901
+
+## [s28] Storing through a struct-typed lvalue (mem/s:QI) in block 0 while reading through a plain u8 * (mem:QI) in block 1 does not stop cse forwarding the stored value on this chassis.
+- mechanism: canon_hash does not hash MEM_IN_STRUCT_P and exp_equiv_p does not compare it, so the two MEMs land in the same equivalence class regardless of the flag.
+- probe: b1b's dumped RTL: insn 24 (set (mem/s:QI (reg 74)) (reg:QI 75)) as the store and insn 33 (set (reg:QI 81) (mem:QI (reg 74))) as the reload; measured emitted stream compared with classify.
+- result: Reload still deleted -- 'ours only: nop' / 'target only: lbu' at 51 insns, score 13. The MEM flag asymmetry is not a cse-defeating input.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: b1b bitfield chassis on HEAD (candidate.c body with block 0 respelled as a 3-bit bitfield store), no FAKE-annotated construct present
+
+## [s28] Placing a CALL_INSN between block 0's store and block 1's read restores the target's fourth lbu via cse.c:7599 invalidate_memory, at a cost of two extra instructions.
+- mechanism: invalidate_memory drops every non-RTX_UNCHANGING_P memory entry at a CALL_INSN, so the store's (mem:QI (reg 74)) table entry is gone by the time block 1 reads; but the pointer then has to live across the call, which buys an lw/sw pair.
+- probe: Variant b2: q = &D_80106A73; *q &= 0xF8; p = func_80077D00(); with blocks 1-3 unchanged. Sandbox + classify.
+- result: 51 insns, score 29. classify's only remaining shape difference is an extra 'lw #,0x20(#)' / 'sw #,0x20(#)' pair -- the lbu multiset matches the target, so the gate genuinely fires. Price is +2, identical to a fourth address materialisation (a3/a4/a11/a12, 51 insns). The target's own stream has no call between its sb at 0x80034FAC and its lbu at 0x80034FB4, so this was not the original's input. Banked at memory/grind/func_80034F88/rejected/s28-block0-rmw-before-call-invalidates-51insn-score29.c.
+- verdict: CONFIRMED
+
+## [s28] MANDATED KILL RE-AUDIT: the s20/s25 dead pointer round-trip still measures 49 insns / score 10 on the current HEAD chassis with a MATCHING instruction multiset and an RA-only residual, and its cse mechanism is the reg_tick bump inside invalidate().
+- mechanism: q = q + 3; q = q - 3; emits two real SETs of the address pseudo. cse_insn calls invalidate on reg 74, which does reg_tick[regno]++ at cse.c:1539; every table entry whose expression mentions reg 74 -- including the (mem:QI (reg 74)) recorded for block 0's store -- stops validating, so block 1's load survives cse. cse folds the arithmetic itself (REG_EQUAL notes D_80106A73 + 3 then D_80106A73), which is why the round-trip costs zero instructions.
+- probe: Variant b4 (= rejected/s25-roundtrip-before-b1-reconfirms-s20-score10-DEAD-ARITH.c) re-installed and re-measured on HEAD, with fresh pwsh tools/grinder/dump.ps1 dumps sliced to tmp/grind/func_80034F88/s28/b4.jump and b4.cse. FAKE state: candidate.c carries no /* FAKE */ construct (s27's fake_ablate.py run reported none), and the alias itself was ablated in s27, so no FAKE carrier occupied the pseudo during this measurement.
+- result: score 10, 49 insns; classify FIRST DIVERGENCE: RA with 'ours: lbu v1,0(a0)' x2 vs 'target: lbu a0,0(v1)' x2 -- the entire residual is the $v1/$a0 seat swap that s26's RA inverse FORECLOSES on this exact chassis. The RTL confirms the mechanism: .jump insn 35 (set (reg:QI 80) (mem:QI (reg 74))) survives .cse unchanged, whereas on candidate.c the same insn becomes (set (reg:QI 80) (subreg:QI (reg:SI 76) 0)). The construct remains inadmissible (dead arithmetic with no semantic purpose -- fails cheat-checklist T1, T2 and T6), so the standing instance kill is unchanged; only its mechanism is upgraded from inferred to RTL-proven.
+- verdict: CONFIRMED
+
+## [s28] On the live toolchain the FIRST-declared bitfield occupies the LOW bits of its storage unit, which is the opposite of what .claude/rules/bitfield-direction-divergence.md records.
+- mechanism: The 2026-08-04 -mel adoption flips BYTES_BIG_ENDIAN in cc1, and GCC 2.7.2 derives bitfield allocation direction from it. The rule is dated 2026-06-11 and predates that change.
+- probe: b1 (struct { u8 f5:5; u8 f3:3; }) and b1b (struct { u8 f3:3; u8 f5:5; }), both assigning f3 = 0, compared in the emitted stream.
+- result: b1 emits andi #,#,0x1f (f5 occupies bits 0-4); b1b emits andi #,#,0xf8 (f3 occupies bits 0-2). First-declared takes the LOW bits. The rule's 'declare SDK bitfield structs in FLIPPED field order' advice is stale post--mel and would now produce the wrong layout. Recorded in the ledger only -- rule files are outside a grind session's editable surface.
+- verdict: CONFIRMED

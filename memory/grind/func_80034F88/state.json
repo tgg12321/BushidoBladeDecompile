@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 27,
+ "session_count": 28,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -165,22 +165,28 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "cse.c read at the predicate level: the one-object family obeys an exact cost law (surviving lbu == assignments to q; insns == 41+2*assignments) that the target's 4-loads-at-3-pairs/49-insn point is of"
+  },
+  {
+   "session": 28,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "Forensics: the cse input enumeration is now COMPLETE (two gates s27 missed, both closed with predicates), the residual is proven to be a 1:1 nop-for-lbu swap so restoring block 1's reload is instructi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every sanctioned axis for this residual is now closed with a named GCC predicate rather than by saturation: cse.c:1905 (the cost law), cse.c:7328 (the input enumeration), sched.c:1738 (the ordering edge, s26), mips.h:2369 (the plain-symbol family, s26), and inverse.py FORECLOSED on a multiset-matching chassis (s26). What remains is a disposition question, not a probe.",
-   "mechanism": "The target's instruction MULTISET requires four address quantities materialised by three lui+addiu pairs. One pointer object gives quantities and pairs in 1:1 lockstep (measured, four points). Only a second declared pointer object produces a quantity for zero instructions, because cse unifies its source into a copy that flow deletes.",
-   "next_probe": "Escalation-modality session: ask the Judge whether the 2026-08-13 FINAL-CALL FAIL on the multi-handle body survives the s26+s27 finding that the handles' effect is a missing INSTRUCTION upstream of RA (an lbu the target contains and we do not), not a register seat -- and, if it does, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record. Do NOT re-run RA, scheduler, declaration-order, spelling or assignment-placement searches: all five are now predicate-cited closed."
+   "hypothesis": "Every sanctioned axis for this residual is closed with a named GCC predicate rather than by saturation, and s28 closes the last two open cse inputs. The one-object family's cost law (s27), cse.c:1905 (the quantity gate), cse.c:7004 + mips.md:2901 (the bitfield gate), cse.c:7326 (libcall), cse.c:7599 (the call gate, priced at +2), sched.c:1738 (the ordering edge) and mips.h:2369 (the plain-symbol family) now cover the whole input space. What remains is a disposition question, not a probe.",
+   "mechanism": "Restoring block 1's reload is instruction-free (a 1:1 nop-for-lbu swap), but every measured construct that restores it either costs +2 instructions (a fourth address materialisation; a CALL between the store and the read) or is inadmissible (a second declared pointer object -- the standing ban; a dead pointer round-trip -- dead arithmetic that fails cheat-checklist T1/T2/T6). The only zero-cost invalidator in 28 sessions is the round-trip, and its chassis is RA-FORECLOSED anyway.",
+   "next_probe": "Escalation-modality session: file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record, citing the completed cse input enumeration (cse.c:1905/1943/1967/1902/7326/7004/7599 + mips.md:2901 + mips.h:2369 + sched.c:1738) as the proof that no ordinary-C input to the pass that deletes the instruction remains. Do NOT re-run RA, scheduler, declaration-order, spelling, assignment-placement or cse-input searches: all are now predicate-cited closed."
   },
   {
-   "hypothesis": "A four-assignment one-object body (a3/a4/a11/a12, 51 insns, all four lbu present, score 12-14) is a better STARTING chassis than candidate.c for anything that attacks the surplus lui+addiu pair rather than the missing load.",
-   "mechanism": "Those forms invert the residual: they are +2 instructions with a correct multiset in every other respect, where candidate.c is -1 instruction with a wrong multiset. inverse_compose.py classify on them reports only 'ours only: lui/addiu' -- a pure surplus, which is a different (and shorter) search than a pure deficit.",
-   "next_probe": "If a later ruling reopens this function, ask whether ONE of the four assignments can be made to emit no pair while still creating its own quantity, from ordinary C. The known answer set is empty (that is exactly the second-object construct), so this is only worth a session if a class grant lands first. Chassis banked at memory/grind/func_80034F88/rejected/one-object-4th-address-set-restores-all-lbu-51insn-score12.c."
+   "hypothesis": "If a class grant ever reopens the multi-handle axis, the shortest path is a second declared pointer object, NOT a fourth assignment to the single object.",
+   "mechanism": "A second object's set has a source cse CAN unify, so cse rewrites it to a register copy that flow propagates away: a new quantity for zero instructions (s26's y02 -- 49 insns, four lbu, three pairs, score 13, classify RA). A fourth assignment to the one object always costs a full lui+addiu pair (s27's cost law, four measured points), landing at 51 insns.",
+   "next_probe": "Only after a ruling. The two-object family reaches 8 (s21) and only the three-object body reaches 0, and the Judge FAILed that body at FINAL CALL on 2026-08-13, so it cannot be resubmitted without a later Judge ruling."
   },
   {
    "hypothesis": "candidate.c's flagged declaration pun is still removable for free and should be cleared the next time this function has a submittable body.",
-   "mechanism": "s25 measured `extern u8 D_80106A70[4];` + `D_80106A70[i] = ...` at score 10 / 49 insns, exactly the base chassis -- the sanctioned declaration-level fix at zero codegen cost.",
+   "mechanism": "s25 measured `extern u8 D_80106A70[4];` + `D_80106A70[i] = ...` at score 10 / 49 insns -- exactly the base chassis, so the sanctioned declaration-level fix costs zero codegen.",
    "next_probe": "Integration handoff: include/code6cac.h:472-474 (three u8 scalars -> `extern u8 D_80106A70[4];`), src/code6cac.c:340-342 and :345, src/code6cac_c_mid.c:205 ((Quad *)&D_80106A70 -> (Quad *)D_80106A70), then re-verify the oracle. Cross-TU, so not a grind-session edit; it does not move the floor and must not be sequenced ahead of the floor work."
   }
  ],
@@ -281,6 +287,22 @@
    "measured_on": "candidate.c score-10 chassis at HEAD; ablated body banked at memory/grind/func_80034F88/rejected/pointer-alias-ablated-plain-symbol-47insn-score29.c",
    "predicate_cite": "",
    "result": "KILLED. fake_ablate.py reports 'no FAKE-annotated constructs found' -- candidate.c's `u8 *q` is un-annotated, so the too"
+  },
+  {
+   "session": 28,
+   "statement": "No bitfield spelling of the flag byte reaches cse.c:7004's ZERO_EXTRACT/SIGN_EXTRACT SET_DEST gate on this target, so that gate cannot be the cse input that kept block 1's byte reload alive in the ori",
+   "kill_scope": "class",
+   "measured_on": "candidate.c score-10 single-object chassis at HEAD (src/code6cac_b.c:3420 INCLUDE_ASM replaced by the body), no FAKE-annotated construct present",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.md:2901",
+   "result": "Both 51 insns, score 13; classify still reports 'ours only: nop' / 'target only: lbu #,0(#)'. zero_extract count is 0/0/"
+  },
+  {
+   "session": 28,
+   "statement": "Storing through a struct-typed lvalue (mem/s:QI) in block 0 while reading through a plain u8 * (mem:QI) in block 1 does not stop cse forwarding the stored value on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "b1b bitfield chassis on HEAD (candidate.c body with block 0 respelled as a 3-bit bitfield store), no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "Reload still deleted -- 'ours only: nop' / 'target only: lbu' at 51 insns, score 13. The MEM flag asymmetry is not a cse"
   }
  ]
 }
