@@ -3634,3 +3634,152 @@ HEAD here and stands. This section is the NEW work.
 - [s26] The two class kills converge with the first s26 run's cse.c finding from a completely different pass: cse.c says block 1's reload survives only if block 1 reads through a different pointer pseudo; sched.c says the ordering triple resolves only if the store and the re-materialisation sit on different pseudos; mips.h says the only construct that makes an address pseudo for a global is a pointer-typed value. All three point at a second pointer OBJECT, which is the standing banned construct.
 
 - [s26] Scope note for a future escalation: unbanning the two-object family reaches 8 (s21), not 0. Only the three-object family measures 0, and the Judge FAILed that body at final call on 2026-08-13, so it cannot be resubmitted without a later Judge ruling.
+
+## s27 (forensics) -- cse.c read at the predicate level; the one-object cost law measured
+
+**Chassis.** `memory/grind/func_80034F88/candidate.c` installed at
+`src/code6cac_b.c:3420`; `sandbox func_80034F88 --disable all` = **score 10,
+49 target / 49 build insns, rules_dropped 0**. Floor 10 re-confirmed on HEAD.
+`src/` restored to HEAD at session end.
+
+**D1 located in the RTL, not inferred.** s26 named cse.c from a per-pass
+`(mem:QI` count. This session read the two dumps side by side
+(`tmp/grind/func_80034F88/s27/f88.jump` vs `f88.cse`, sliced out of
+`tmp/grind/func_80034F88/dumps/`) and the rewrite is literal:
+
+    .jump  (insn 29 (set (reg:QI 80) (mem:QI (reg/v:SI 74))))
+    .cse   (insn 29 (set (reg:QI 80) (subreg:QI (reg:SI 76) 0)))
+
+cse does NOT delete the insn -- it retargets the load's source to the register
+block 0 stored (insn 20 `(set (mem:QI (reg 74)) (subreg:QI (reg:SI 76) 0))`),
+turning a `lbu` into a QI register copy; the copy and its `zero_extend`
+(insn 30) are then folded away downstream, which is where the instruction
+actually disappears. The target's `lbu $a0, 0($v1)` at 0x80034FB4 is that
+insn.
+
+**The gate, quoted.** `canon_hash` hashes a REG on its QUANTITY, not its
+number -- `hash += ((unsigned) REG << 7) + (unsigned) reg_qty[regno];`
+(tools/gcc-2.7.2/cse.c:1905). So every `(mem:QI (reg 74))` in the function
+hashes to the same slot for as long as reg 74 keeps one quantity, and the
+store's table entry (recorded at cse.c:7338 `insert (dest, sets[i].src_elt,
+...)`, gated only by `sets[i].src_elt == 0` at cse.c:7328) is found by every
+later load.
+
+**PASS-INPUT ENUMERATION (the complete set of source-side inputs that stop
+the forwarding), each checked against the target's own instruction stream:**
+
+1. *Volatile mem* -- `canon_hash` sets `do_not_record` for `MEM_VOLATILE_P`
+   (cse.c:1943), which leaves `src_elt == 0` and skips the record. Measured
+   dead as a family (12/15/28, `rejected/vol*`).
+2. *A CALL / UNSPEC_VOLATILE inside the stored value* -- `do_not_record`
+   (cse.c:1967). No call exists between the target's `sb` at 0x80034FAC and
+   its `lbu` at 0x80034FB4, so this was not the original's input.
+3. *A non-fixed hard register in the value* (cse.c:1902) -- only under
+   `SMALL_REGISTER_CLASSES`, which MIPS does not define.
+4. *Memory invalidated between the store and the load* -- `invalidate_memory`
+   (cse.c:7599), driven by a CALL_INSN or a store through an address cse
+   cannot disambiguate. The target's stream contains neither: `sb`, `lw`,
+   `lbu`, nothing else.
+5. *A cse basic-block-path boundary between them* -- paths break at code
+   labels. `tools/label_census.py --func func_80034F88`
+   (`tmp/grind/func_80034F88/s27/label_census.txt`) reports the target's FOUR
+   labels at insns 16 / 25 / 34 / 37, all `preds=2`; the earliest is at
+   insn 16, i.e. AFTER block 1's compare arms. There is no label between the
+   store and the reload in the target either.
+6. *A different address QUANTITY for the load* -- cse.c:1905. This is the only
+   input left standing.
+
+**The one-object cost law (six measured points, this session).** Ten bodies
+were built varying only WHICH of the four byte-access groups re-assigns the
+single `u8 *q`, and with which of two spellings (`&D_80106A73`, or
+`(u8 *)((u8 *)&D_80106A70 + 3)` -- the same address, an rtx cse cannot unify
+with the first). Driver `tmp/grind/func_80034F88/s27/sweep.ps1`, bodies in
+`tmp/grind/func_80034F88/s27/variants/`, per-form disassembly `a*.txt`,
+`inverse_compose.py classify` run on each:
+
+| sets of `q` | form | insns | surviving `lbu` | score |
+|---|---|---|---|---|
+| 1 | a9  (A,-,-,-)   | 47 | 1 | 23 |
+| 2 | a10 (A,-,A,-)   | 47 | 2 | 20 |
+| 3 | **candidate.c** | 49 | 3 | **10** |
+| 3 | a1/a2/a5/a8 (mixed spellings) | 49 | 3 | 22/14/14/22 |
+| 4 | a3 (A,B,A,A)    | 51 | **4** | 12 |
+| 4 | a4 (B,A,A,A)    | 51 | **4** | 12 |
+| 4 | a11 (A,B,B,B)   | 51 | **4** | 14 |
+| 4 | a12 (A,B,A,B)   | 51 | **4** | 13 |
+
+Two exact identities across the series:
+**surviving `lbu` == number of assignments to `q`**, and
+**build insns == 41 + 2 x (number of assignments to `q`)** (a9's 47 is off the
+line because a single set also flips the branch polarity of all three arms;
+its `lbu` count obeys the first identity exactly). Every assignment buys
+exactly one surviving byte load and costs exactly one `lui`+`addiu` pair,
+because a new quantity is only created by setting the pseudo to an rtx cse
+cannot unify with what it already holds -- and such an rtx is, by
+construction, a fresh address materialisation.
+
+**The target sits off that line.** It needs FOUR surviving `lbu` (0x80034FA0,
+0x80034FB4, 0x80034FD8, 0x80034FFC) with THREE `lui`/`addiu` pairs
+(0x80034F98, 0x80034FC8, 0x80034FF0) at 49 insns. The law gives 4 loads only
+at 51 insns and 49 insns only at 3 loads. **The single-pointer-object family
+cannot produce the target's instruction multiset, for arithmetic reasons, not
+search reasons.** This closes the ledger's longest-standing open question
+(s16-s26: "which spelling of one `q`") with a mechanism rather than
+saturation.
+
+**What a zero-cost fourth quantity requires.** Exactly one construct produces
+a new quantity for zero instructions: a set whose SOURCE cse *can* unify
+(so cse rewrites it to a register copy, which flow then propagates away) while
+its DESTINATION is a different pseudo. In C that is a second declared pointer
+object -- s26's y02, measured 49 insns / four `lbu` / three pairs / score 13 /
+classify RA -- and the three-object body that reaches 0. Both are the standing
+ban.
+
+**s26 frontier item answered by inspection + measurement.** "Can the address be
+carried by a pointer-typed value that is not a second object aliasing
+D_80106A73 -- e.g. derived from `p` or from another live object that reaches
+the byte?" The DATA MODEL records exactly one record covering the byte
+(0x80106A70..0x80106A73: three default-colour nibbles plus the flag byte); `p`
+(the `func_80077D00()` return) is unrelated memory. The one derived spelling
+that exists, `&D_80106A70[3]`, was built in eight of the ten forms above: it
+does create a distinct quantity, and it costs the same full `lui`+`addiu`
+pair as any other materialisation, plus 2-12 points of `addiu #,#,3` vs
+`addiu #,#,0` distance. The route is closed.
+
+**FAKE re-audit (mandated).** `tools/fake_ablate.py --func func_80034F88
+--file code6cac_b --candidate memory/grind/func_80034F88/candidate.c` reports
+"no FAKE-annotated constructs found". The candidate's only construct of a
+FAKE-requiring family is its single `u8 *q` pointer alias, so it was ablated
+by hand: a13 spells all four groups as direct `D_80106A73` accesses and
+measures **score 29 at 47 insns** with three `lbu` missing
+(`rejected/pointer-alias-ablated-plain-symbol-47insn-score29.c`). The alias is
+worth 19 points and is load-bearing; no lever is being masked behind it.
+
+**Loop axis (mandated tool).** `tools/loop_movables.py --func func_80034F88
+--file code6cac_b` (`tmp/grind/func_80034F88/s27/loop_movables.txt`): the copy
+loop at insns 123..154 has `insn_count=6`, `loop_has_call=False`, threshold
+122, and **an empty movable table** -- loop.c hoists nothing out of it, so
+there is no LICM input to perturb. `tools/nrefs_census.py` could not run (its
+`extract.py run_dumps` cpp step exits 1 on this TU); the .lreg/.greg dumps
+under `tmp/grind/func_80034F88/dumps/` carry the same allocation data and
+s23/s24 already mined them.
+
+- [s27] Chassis re-confirmed: candidate.c at src/code6cac_b.c:3420 measures score 10, 49 target / 49 build insns, rules_dropped 0 on HEAD; src/ restored to HEAD at session end.
+
+- [s27] D1 is now located in the RTL rather than inferred from a per-pass count: .jump insn 29 (set (reg:QI 80) (mem:QI (reg/v:SI 74))) becomes .cse insn 29 (set (reg:QI 80) (subreg:QI (reg:SI 76) 0)). cse RETARGETS the load's source to the register block 0 stored (insn 20), turning a lbu into a QI register copy; the copy and its zero_extend (insn 30) fold away downstream, which is where the instruction actually disappears.
+
+- [s27] The gate is cse.c:1905 -- canon_hash hashes a REG on reg_qty[regno], not on the register number -- so all four byte accesses share one hash slot while `q` holds one quantity. The store's table entry is recorded at cse.c:7338 with the only relevant guard being sets[i].src_elt == 0 at cse.c:7328.
+
+- [s27] Cost law measured at four points on the one-object family: assignments to q = 1/2/3/4 give surviving lbu = 1/2/3/4 and build insns = 47/47/49/51 (the 1-set point also flips all three arms' branch polarity, which is why its insn count is off the 41+2n line while its lbu count is not).
+
+- [s27] Four independent 4-assignment forms (a3, a4, a11, a12) all restore EVERY byte load at 51 insns, scores 12/12/14/13, with classify showing only the surplus lui/addiu as 'ours only' -- the nop-for-lbu delta that has defined this residual since s26 is gone. That is the first time any admissible single-object form has matched the target's lbu count.
+
+- [s27] The target sits off the law: four lbu (0x80034FA0/FB4/FD8/FFC) at three lui+addiu pairs (0x80034F98/FC8/FF0) in 49 insns.
+
+- [s27] label_census on the target: 49 insns, four labels (0x80034FC8 @16, 0x80034FEC @25, 0x80035010 @34, 0x8003501C @37), all preds=2, callee-saved refs all zero. The earliest label is after block 1's compare arms, so the target's own compilation had no cse path boundary between block 0's store and block 1's reload either.
+
+- [s27] loop_movables on the copy loop (insns 123..154): insn_count=6, loop_has_call=False, threshold 122, and an EMPTY movable table -- loop.c hoists nothing, so there is no LICM input to perturb on this function.
+
+- [s27] tools/nrefs_census.py cannot run on this TU: its extract.py run_dumps cpp step exits 1 on src/code6cac_b.c. The .lreg/.greg dumps under tmp/grind/func_80034F88/dumps/ carry the same allocation data and s23/s24 already mined them.
+
+- [s27] A zero-cost fourth address quantity requires a set whose SOURCE cse can unify (so cse rewrites it to a register copy that flow propagates away) into a DIFFERENT destination pseudo. In C that is a second declared pointer object -- s26's y02 (49 insns, four lbu, three pairs, score 13, classify RA) and the three-object body that measured 0 -- i.e. the standing ban.

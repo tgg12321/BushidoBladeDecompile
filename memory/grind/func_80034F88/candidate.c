@@ -408,6 +408,26 @@
  * %lo FOLDED and no addiu, 48 insns against the target's 49 unfolded
  * lui+addiu pairs. Five hybrid pointer/symbol bodies measure 16-28
  * (rejected/hybrid-h[1-5]-*.c). This body remains the best measured form.
+ *
+ * (7) s27 (forensics) turns s26's saturation argument into arithmetic. cse.c
+ * keys a REG in the value table on its QUANTITY, not its number
+ * (`hash += ((unsigned) REG << 7) + (unsigned) reg_qty[regno];`,
+ * tools/gcc-2.7.2/cse.c:1905), so a new address quantity exists only after
+ * setting the pseudo to an rtx cse cannot unify -- which is a fresh
+ * lui+addiu materialisation. Ten bodies varying which of the four
+ * byte-access groups re-assigns `q` give two exact identities: surviving
+ * `lbu` == number of assignments to `q`, and build insns == 41 + 2 x that
+ * number (1 set: 47/1/score 23; 2: 47/2/20; 3: 49/3/10 = this body; 4:
+ * 51/4/12). The target needs FOUR loads at THREE pairs in 49 insns, which is
+ * off that line -- so no assignment pattern of one pointer object reaches its
+ * multiset. The complete cse input enumeration (volatile mem cse.c:1943,
+ * CALL/UNSPEC_VOLATILE cse.c:1967, hard reg cse.c:1902, invalidate_memory
+ * cse.c:7599, path boundary at a code label) is checked against the TARGET's
+ * own stream -- `sb`, `lw`, `lbu`, no call, no store, and its earliest label
+ * at insn 16 -- so the address quantity is the only live input. A zero-cost
+ * fourth quantity needs a set whose source cse unifies (rewritten to a copy,
+ * propagated away by flow) into a DIFFERENT pseudo: a second declared pointer
+ * object, i.e. the standing ban.
  */
 void func_80034F88(void) {
     s32 *p;

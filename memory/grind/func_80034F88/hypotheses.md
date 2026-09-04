@@ -2564,3 +2564,154 @@ any further disposition attempt.
 - probe: src/code6cac_b.c:3420 INCLUDE_ASM replaced by memory/grind/func_80034F88/candidate.c verbatim (no extra extern needed: include/code6cac.h:472 declares D_80106A70, src/code6cac_b.c:128 declares D_80106A73); `& tools/wteng.ps1 main sandbox func_80034F88 --disable all`.
 - result: score 10, target_insns 49, build_insns 49, rules_dropped 0, scorable true. Floor 10 confirmed on HEAD; src restored to HEAD afterwards.
 - verdict: CONFIRMED
+
+## [s27] From a single `u8 *q`, some assignment pattern reaches the target's instruction multiset -- four surviving byte loads at three address materialisations.
+
+- mechanism: cse.c's `canon_hash` keys a REG on `reg_qty[regno]`
+  (tools/gcc-2.7.2/cse.c:1905), so every `(mem:QI (reg 74))` hashes to one slot
+  while reg 74 holds one quantity, and the entry recorded for block 0's store
+  (`insert` at cse.c:7338, gated only by `sets[i].src_elt == 0` at cse.c:7328)
+  is found by every later load. A new quantity therefore requires setting the
+  pseudo to an rtx cse cannot unify with what it already holds -- and such an
+  rtx is by construction a fresh address materialisation, i.e. a `lui`+`addiu`
+  pair. The hypothesis was that some placement or spelling of the assignments
+  breaks that coupling.
+- probe: ten bodies varying only which of the four byte-access groups
+  re-assigns `q`, and with which of two address spellings (`&D_80106A73`, or
+  `(u8 *)((u8 *)&D_80106A70 + 3)` -- same address, non-unifiable rtx).
+  `tmp/grind/func_80034F88/s27/gen.py` + `sweep.ps1`; bodies in
+  `tmp/grind/func_80034F88/s27/variants/a{1..13}.c`; each scored with
+  `sandbox func_80034F88 --disable all`, disassembled to `a*.txt` and
+  re-classified with `tools/ra_solver/inverse_compose.py classify`.
+- result: KILLED, and it yields two exact identities rather than a saturation
+  count. Across the series, **surviving `lbu` == number of assignments to `q`**
+  and **build insns == 41 + 2 x (number of assignments)**: 1 set = 47 insns /
+  1 lbu / 23; 2 sets = 47 / 2 / 20; 3 sets = 49 / 3 / **10** (candidate.c) and
+  49 / 3 / 14-22 for the mixed-spelling variants a1/a2/a5/a8; 4 sets = 51 / 4 /
+  12-14 (a3, a4, a11, a12 -- all four restore EVERY byte load, and their
+  classify output drops the `nop`-for-`lbu` delta entirely, leaving only
+  `ours only: lui/addiu` for the surplus pair). Each assignment buys exactly
+  one surviving load and costs exactly one `lui`+`addiu` pair. The target needs
+  four loads (0x80034FA0/FB4/FD8/FFC) at three pairs (0x80034F98/FC8/FF0) in 49
+  insns; the law gives four loads only at 51 insns and 49 insns only at three
+  loads. No assignment pattern of one pointer object sits on the target's
+  point.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/cse.c:1905
+- measured_on: candidate.c score-10 single-object chassis installed at HEAD
+  (src/code6cac_b.c:3420; sandbox re-measured this session: score 10, 49/49,
+  rules_dropped 0); every form carries exactly candidate.c's one `u8 *q`
+  pointer alias and no other FAKE-family construct; `src/` restored to HEAD.
+  Banked at `rejected/one-object-4th-address-set-restores-all-lbu-51insn-score12.c`,
+  `rejected/one-object-2-address-sets-2lbu-47insn-score20.c`,
+  `rejected/one-object-3-sets-mixed-A70plus3-spelling-49insn-score14.c`.
+
+## [s27] An input other than the address quantity can stop cse forwarding block 0's stored byte into block 1's load, and the original source used it.
+
+- mechanism: `cse_insn` records a store's MEM destination unless
+  `sets[i].src_elt == 0` (cse.c:7328); `canon_hash` zeroes it via
+  `do_not_record` for a volatile MEM (cse.c:1943), for CALL / UNSPEC_VOLATILE
+  (cse.c:1967), and for a non-fixed hard register under SMALL_REGISTER_CLASSES
+  (cse.c:1902); `invalidate_memory` (cse.c:7599) drops the entry on a
+  CALL_INSN or an ambiguous store; and cse's extended-basic-block paths break
+  at code labels. Those five plus the address quantity are the complete input
+  set.
+- probe: each input checked against the TARGET's own instruction stream rather
+  than against ours -- `asm/funcs/func_80034F88.s` between the block-0 `sb` at
+  0x80034FAC and the block-1 `lbu` at 0x80034FB4, plus
+  `tools/label_census.py --func func_80034F88`
+  (`tmp/grind/func_80034F88/s27/label_census.txt`).
+- result: KILLED for all five. The target's stream between the store and the
+  reload is `sb`, `lw`, `lbu` -- no call (so neither the `do_not_record` CALL
+  case nor `invalidate_memory`), no store (so no ambiguous-write invalidation),
+  and the label census puts the target's earliest of four labels at insn 16,
+  after block 1's compare arms, so there is no cse path boundary there either.
+  SMALL_REGISTER_CLASSES is not defined for MIPS. Volatile is the only one of
+  the five reachable from C and it is already measured dead as a family
+  (12/15/28, `rejected/vol*`). The address quantity (cse.c:1905) is the sole
+  surviving input, which is what makes the s27 cost law above complete rather
+  than merely empirical.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/cse.c:7328
+- measured_on: target asm `asm/funcs/func_80034F88.s` and the s27 dumps sliced
+  from `tmp/grind/func_80034F88/dumps/` (`f88.jump`, `f88.cse`) on the
+  candidate.c score-10 chassis at HEAD; no FAKE construct present.
+
+## [s27] The s26 frontier route -- carrying the address in a pointer-typed value derived from `p` or from another live object that reaches 0x80106A73, rather than a second object aliasing D_80106A73.
+
+- mechanism: a second live address value is what the target's multiset needs;
+  if some already-live object contained the byte, a pointer derived from it
+  would supply the second quantity without declaring a second handle.
+- probe: the dispatch DATA MODEL and the naming census for any record covering
+  0x80106A73; then the one derived spelling that exists,
+  `(u8 *)((u8 *)&D_80106A70 + 3)`, built into eight of the ten s27 forms.
+- result: KILLED. The only record covering the byte is 0x80106A70..0x80106A73
+  itself (three default-colour nibbles + the flag byte); `p`, the
+  `func_80077D00()` return, is unrelated memory, and nothing else in the
+  function is live at the byte. `&D_80106A70[3]` does create a distinct
+  quantity, but it obeys the same cost law -- one full `lui`+`addiu` pair --
+  and additionally carries 2-12 points of `addiu #,#,3` vs `addiu #,#,0`
+  distance in the emitted pairs. The route is closed by inspection and by
+  measurement together.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis at HEAD; forms a1/a2/a3/a5/a7/a8/
+  a11/a12 in `tmp/grind/func_80034F88/s27/variants/`; single `u8 *q` in every
+  form, no other FAKE-family construct.
+
+## [s27] The single `u8 *q` pointer alias in candidate.c is masking a lever (the mandated FAKE-ablation re-audit).
+
+- mechanism: a lever measured inert while a FAKE carrier occupies its target
+  pseudo is not a kill (func_8002EA24 s8), so the ledger's kills had to be
+  re-checked with the candidate's only FAKE-family construct removed.
+- probe: `tools/fake_ablate.py --func func_80034F88 --file code6cac_b
+  --candidate memory/grind/func_80034F88/candidate.c`, then a hand ablation
+  (a13: all four byte-access groups spelled as direct `D_80106A73` accesses,
+  no pointer object at all), scored and classified.
+- result: KILLED. `fake_ablate.py` reports "no FAKE-annotated constructs
+  found" -- candidate.c's `u8 *q` is un-annotated, so the tool has nothing to
+  strip. The hand ablation measures **score 29 at 47 insns** with three of the
+  four `lbu` missing, consistent with the s16 plain-symbol family (28/29) and
+  with s26's CONSTANT_ADDRESS_P finding (mips.h:2369). The alias is worth 19
+  points and is load-bearing rather than a carrier; nothing is masked behind
+  it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis at HEAD; ablated body banked at
+  `rejected/pointer-alias-ablated-plain-symbol-47insn-score29.c`.
+
+## [s27] From a single `u8 *q`, some assignment pattern reaches the target's instruction multiset -- four surviving byte loads at three address materialisations.
+- mechanism: cse.c's canon_hash keys a REG on reg_qty[regno] (tools/gcc-2.7.2/cse.c:1905), so every (mem:QI (reg 74)) hashes to one slot while reg 74 holds one quantity, and the entry recorded for block 0's store (insert at cse.c:7338, gated only by sets[i].src_elt == 0 at cse.c:7328) is found by every later load. A new quantity therefore requires setting the pseudo to an rtx cse cannot unify with what it already holds -- and such an rtx is by construction a fresh lui+addiu address materialisation.
+- probe: Ten bodies varying only which of the four byte-access groups re-assigns `q`, and with which of two address spellings (&D_80106A73, or (u8 *)((u8 *)&D_80106A70 + 3) -- same address, non-unifiable rtx). tmp/grind/func_80034F88/s27/gen.py + sweep.ps1; variants a1..a13; each scored with `sandbox func_80034F88 --disable all`, disassembled to a*.txt, and re-classified with tools/ra_solver/inverse_compose.py classify.
+- result: KILLED with two exact identities rather than a saturation count. surviving lbu == number of assignments to q, and build insns == 41 + 2 x that number: 1 set = 47 insns / 1 lbu / score 23; 2 sets = 47 / 2 / 20; 3 sets = 49 / 3 / 10 (candidate.c) and 49 / 3 / 14-22 for the mixed-spelling forms a1/a2/a5/a8; 4 sets = 51 / 4 / 12-14 (a3, a4, a11, a12 -- all four restore EVERY byte load, and classify drops the nop-for-lbu delta entirely, leaving only 'ours only: lui/addiu' for the surplus pair). Each assignment buys exactly one surviving load and costs exactly one lui+addiu pair. The target needs four loads (0x80034FA0/FB4/FD8/FFC) at three pairs (0x80034F98/FC8/FF0) in 49 insns; the law gives four loads only at 51 insns and 49 insns only at three loads.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: candidate.c score-10 single-object chassis installed at src/code6cac_b.c:3420 on HEAD (sandbox re-measured this session: score 10, 49 target / 49 build, rules_dropped 0); every form carries exactly candidate.c's one `u8 *q` pointer alias and no other FAKE-family construct; src/ restored to HEAD
+- predicate_cite: tools/gcc-2.7.2/cse.c:1905
+
+## [s27] An input other than the address quantity can stop cse forwarding block 0's stored byte into block 1's load, and the original source used it.
+- mechanism: cse_insn records a store's MEM destination unless sets[i].src_elt == 0 (cse.c:7328); canon_hash zeroes it via do_not_record for a volatile MEM (cse.c:1943), for CALL / UNSPEC_VOLATILE (cse.c:1967), and for a non-fixed hard register under SMALL_REGISTER_CLASSES (cse.c:1902); invalidate_memory (cse.c:7599) drops the entry on a CALL_INSN or an ambiguous store; and cse's extended-basic-block paths break at code labels. Those five plus the address quantity are the complete input set.
+- probe: Each input checked against the TARGET's own instruction stream rather than ours -- asm/funcs/func_80034F88.s between the block-0 sb at 0x80034FAC and the block-1 lbu at 0x80034FB4 -- plus tools/label_census.py --func func_80034F88 (tmp/grind/func_80034F88/s27/label_census.txt), and the .jump/.cse dumps sliced to the function region (tmp/grind/func_80034F88/s27/f88.jump, f88.cse).
+- result: KILLED for all five. The dumps show the rewrite literally: .jump insn 29 (set (reg:QI 80) (mem:QI (reg/v:SI 74))) becomes .cse insn 29 (set (reg:QI 80) (subreg:QI (reg:SI 76) 0)) -- cse retargets the load rather than deleting it, and the copy plus its zero_extend fold away downstream. The target's stream between store and reload is sb, lw, lbu: no call (so neither the do_not_record CALL case nor invalidate_memory), no store (no ambiguous-write invalidation), and label_census puts its earliest of four labels (all preds=2) at insn 16, after block 1's compare arms, so no cse path boundary either. SMALL_REGISTER_CLASSES is not defined for MIPS. Volatile is the only one of the five reachable from C and is already measured dead as a family (12/15/28). The address quantity is the sole surviving input.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: target asm asm/funcs/func_80034F88.s plus the s27 dump slices of tmp/grind/func_80034F88/dumps/ on the candidate.c score-10 chassis at HEAD; no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/cse.c:7328
+
+## [s27] The s26 frontier route -- carrying the address in a pointer-typed value derived from `p` or from another live object that reaches 0x80106A73, rather than a second object aliasing D_80106A73.
+- mechanism: A second live address value is what the target's multiset needs; if some already-live object contained the byte, a pointer derived from it would supply the second quantity without declaring a second handle.
+- probe: The dispatch DATA MODEL and naming census checked for any record covering 0x80106A73; then the one derived spelling that exists, (u8 *)((u8 *)&D_80106A70 + 3), built into eight of the ten s27 forms and measured.
+- result: KILLED. The only record covering the byte is 0x80106A70..0x80106A73 itself (three default-colour nibbles plus the flag byte); `p`, the func_80077D00() return, is unrelated memory, and nothing else in the function is live at the byte. &D_80106A70[3] does create a distinct quantity, but it obeys the same cost law -- one full lui+addiu pair -- and additionally carries 2-12 points of 'addiu #,#,3' vs 'addiu #,#,0' distance in the emitted pairs (a2 = 14, a12 = 13, a1/a8 = 22).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis at HEAD; forms a1/a2/a3/a5/a7/a8/a11/a12 in tmp/grind/func_80034F88/s27/variants/; a single `u8 *q` in every form and no other FAKE-family construct
+
+## [s27] The single `u8 *q` pointer alias in candidate.c is masking a lever (the mandated FAKE-ablation re-audit).
+- mechanism: A lever measured inert while a FAKE carrier occupies its target pseudo is not a kill (func_8002EA24 s8), so the ledger's kills had to be re-checked with the candidate's only FAKE-family construct removed.
+- probe: tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c, then a hand ablation (a13: all four byte-access groups spelled as direct D_80106A73 accesses, no pointer object at all), scored and classified.
+- result: KILLED. fake_ablate.py reports 'no FAKE-annotated constructs found' -- candidate.c's `u8 *q` is un-annotated, so the tool has nothing to strip. The hand ablation measures score 29 at 47 insns with three of the four lbu missing, consistent with the s16 plain-symbol family (28/29) and with s26's CONSTANT_ADDRESS_P finding (mips.h:2369). The alias is worth 19 points and is load-bearing rather than a carrier; nothing is masked behind it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis at HEAD; ablated body banked at memory/grind/func_80034F88/rejected/pointer-alias-ablated-plain-symbol-47insn-score29.c

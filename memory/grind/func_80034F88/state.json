@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 26,
- "current_modality": "solver",
+ "session_count": 27,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -159,23 +159,29 @@
    "floor": 10,
    "modality": "solver",
    "headline": "sched_solver run on this function for the first time in 26 sessions: the target's block-3 ordering triple is a REG_DEP_ANTI edge (sched.c:1738), not a scheduler tie, and the one construct that could g"
+  },
+  {
+   "session": 27,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "cse.c read at the predicate level: the one-object family obeys an exact cost law (surviving lbu == assignments to q; insns == 41+2*assignments) that the target's 4-loads-at-3-pairs/49-insn point is of"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Both remaining residual defects are now traced to the same structural fact -- one address pseudo -- by two independent GCC passes, and no ordinary-C construct measured so far produces a second address pseudo for a global without a second pointer object.",
-   "mechanism": "cse.c forwards block 0's stored value into block 1's load whenever the two addresses hash to the same pseudo (first s26 run); sched.c:1738 emits a REG_DEP_ANTI edge from block 1's store to the re-materialisation whenever both touch the same pseudo (this run); and mips.h:2369 makes a direct symbol access a legitimate address, so it allocates no pseudo at all (this run). A pointer-typed value is the only remaining generator, and a second one is the standing banned construct.",
-   "next_probe": "Do NOT re-run RA/scheduler/declaration-order searches on the one-pseudo chassis -- both solver layers are now typed FORECLOSED on it with predicate cites. The only untried non-alias structural question left is whether the address can be carried by a pointer-typed value that is NOT a second object aliasing D_80106A73 -- e.g. a pointer derived from `p` or from another live object that happens to reach the byte. Check the naming census and the data model for any struct or record that contains 0x80106A73 before spending a session on it; if none exists, that route is empty by inspection."
+   "hypothesis": "Every sanctioned axis for this residual is now closed with a named GCC predicate rather than by saturation: cse.c:1905 (the cost law), cse.c:7328 (the input enumeration), sched.c:1738 (the ordering edge, s26), mips.h:2369 (the plain-symbol family, s26), and inverse.py FORECLOSED on a multiset-matching chassis (s26). What remains is a disposition question, not a probe.",
+   "mechanism": "The target's instruction MULTISET requires four address quantities materialised by three lui+addiu pairs. One pointer object gives quantities and pairs in 1:1 lockstep (measured, four points). Only a second declared pointer object produces a quantity for zero instructions, because cse unifies its source into a copy that flow deletes.",
+   "next_probe": "Escalation-modality session: ask the Judge whether the 2026-08-13 FINAL-CALL FAIL on the multi-handle body survives the s26+s27 finding that the handles' effect is a missing INSTRUCTION upstream of RA (an lbu the target contains and we do not), not a register seat -- and, if it does, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record. Do NOT re-run RA, scheduler, declaration-order, spelling or assignment-placement searches: all five are now predicate-cited closed."
   },
   {
-   "hypothesis": "The standing ban on multiple pointer handles rests on the premise that they are a register-allocation lever with no observable effect on the instruction stream; two sessions of measurement now contradict that premise.",
-   "mechanism": "The residual's FIRST divergence is PRE-RA (a missing lbu), and this run adds a second pre-RA defect (a dependence edge that only exists on a shared pseudo). Neither is a seat. But the honest arithmetic matters: the two-object family measures 8, not 0, and only the three-object family measures 0 -- and that exact body was Judge-FAILed at final call on 2026-08-13, so it is not resubmittable.",
-   "next_probe": "This is a ruling question, not a probe, and it belongs to whichever session the driver dispatches in escalation modality. The precise question to ask is whether the 2026-08-13 FAIL survives the finding that the multi-handle body's effect is a missing INSTRUCTION upstream of RA rather than a register seat -- and, if it does, whether the correct disposition is the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record."
+   "hypothesis": "A four-assignment one-object body (a3/a4/a11/a12, 51 insns, all four lbu present, score 12-14) is a better STARTING chassis than candidate.c for anything that attacks the surplus lui+addiu pair rather than the missing load.",
+   "mechanism": "Those forms invert the residual: they are +2 instructions with a correct multiset in every other respect, where candidate.c is -1 instruction with a wrong multiset. inverse_compose.py classify on them reports only 'ours only: lui/addiu' -- a pure surplus, which is a different (and shorter) search than a pure deficit.",
+   "next_probe": "If a later ruling reopens this function, ask whether ONE of the four assignments can be made to emit no pair while still creating its own quantity, from ordinary C. The known answer set is empty (that is exactly the second-object construct), so this is only worth a session if a class grant lands first. Chassis banked at memory/grind/func_80034F88/rejected/one-object-4th-address-set-restores-all-lbu-51insn-score12.c."
   },
   {
    "hypothesis": "candidate.c's flagged declaration pun is still removable for free and should be cleared the next time this function has a submittable body.",
    "mechanism": "s25 measured `extern u8 D_80106A70[4];` + `D_80106A70[i] = ...` at score 10 / 49 insns, exactly the base chassis -- the sanctioned declaration-level fix at zero codegen cost.",
-   "next_probe": "Integration handoff: include/code6cac.h:472-474 (three u8 scalars -> `extern u8 D_80106A70[4];`), src/code6cac.c:340-342 and :345, src/code6cac_c_mid.c:205 (`(Quad *)&D_80106A70` -> `(Quad *)D_80106A70`), then re-verify the oracle. Cross-TU, so not a grind-session edit; it does not move the floor and must not be sequenced ahead of the floor work."
+   "next_probe": "Integration handoff: include/code6cac.h:472-474 (three u8 scalars -> `extern u8 D_80106A70[4];`), src/code6cac.c:340-342 and :345, src/code6cac_c_mid.c:205 ((Quad *)&D_80106A70 -> (Quad *)D_80106A70), then re-verify the oracle. Cross-TU, so not a grind-session edit; it does not move the floor and must not be sequenced ahead of the floor work."
   }
  ],
  "judge_constraints": [
@@ -243,6 +249,38 @@
    "measured_on": "candidate.c score-10 single-object chassis at HEAD; the five hybrid bodies carry candidate.c's single `u8 *q` pointer alias and no other FAKE construct; banked at memory/grind/func_80034F88/rejected/h",
    "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:2369",
    "result": "The premise is false. CONSTANT_ADDRESS_P accepts SYMBOL_REF, so a direct global access is already a legitimate address: "
+  },
+  {
+   "session": 27,
+   "statement": "From a single `u8 *q`, some assignment pattern reaches the target's instruction multiset -- four surviving byte loads at three address materialisations.",
+   "kill_scope": "class",
+   "measured_on": "candidate.c score-10 single-object chassis installed at src/code6cac_b.c:3420 on HEAD (sandbox re-measured this session: score 10, 49 target / 49 build, rules_dropped 0); every form carries exactly ca",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:1905",
+   "result": "KILLED with two exact identities rather than a saturation count. surviving lbu == number of assignments to q, and build "
+  },
+  {
+   "session": 27,
+   "statement": "An input other than the address quantity can stop cse forwarding block 0's stored byte into block 1's load, and the original source used it.",
+   "kill_scope": "class",
+   "measured_on": "target asm asm/funcs/func_80034F88.s plus the s27 dump slices of tmp/grind/func_80034F88/dumps/ on the candidate.c score-10 chassis at HEAD; no FAKE construct present",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:7328",
+   "result": "KILLED for all five. The dumps show the rewrite literally: .jump insn 29 (set (reg:QI 80) (mem:QI (reg/v:SI 74))) become"
+  },
+  {
+   "session": 27,
+   "statement": "The s26 frontier route -- carrying the address in a pointer-typed value derived from `p` or from another live object that reaches 0x80106A73, rather than a second object aliasing D_80106A73.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis at HEAD; forms a1/a2/a3/a5/a7/a8/a11/a12 in tmp/grind/func_80034F88/s27/variants/; a single `u8 *q` in every form and no other FAKE-family construct",
+   "predicate_cite": "",
+   "result": "KILLED. The only record covering the byte is 0x80106A70..0x80106A73 itself (three default-colour nibbles plus the flag b"
+  },
+  {
+   "session": 27,
+   "statement": "The single `u8 *q` pointer alias in candidate.c is masking a lever (the mandated FAKE-ablation re-audit).",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis at HEAD; ablated body banked at memory/grind/func_80034F88/rejected/pointer-alias-ablated-plain-symbol-47insn-score29.c",
+   "predicate_cite": "",
+   "result": "KILLED. fake_ablate.py reports 'no FAKE-annotated constructs found' -- candidate.c's `u8 *q` is un-annotated, so the too"
   }
  ]
 }
