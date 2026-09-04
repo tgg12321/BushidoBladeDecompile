@@ -1,9 +1,0 @@
-regfix.txt:2329: func_80072CD4: subst "addiu\s+\$3,\$zero,70" "addiu\t$3,$zero,252" @ 20
-regfix.txt:2331: func_80072CD4: subst "addiu\s+\$3,\$zero,50" "addiu\t$2,$zero,50" @ 28
-regfix.txt:2333: func_80072CD4: subst "sb\s+\$2,12\(" "sb\t$3,4(" @ 36
-regfix.txt:2335: func_80072CD4: subst "sb\s+\$3,14\(" "sb\t$3,12(" @ 37
-regfix.txt:2337: func_80072CD4: subst "sb\s+\$2,20\(" "sb\t$2,14(" @ 38
-regfix.txt:2339: func_80072CD4: subst "sb\s+\$2,4\(" "sb\t$2,20(" @ 40
-regfix.txt:2342: func_80072CD4: delete @ 35
-regfix.txt:2344: func_80072CD4: insert_after "addiu\t$2,$zero,70" @ 34
-regfix.txt:2352: func_80072CD4: reorder 56,63,54,57,58,59,55,60,61,62 @ 54-63
