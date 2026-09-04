@@ -1,3 +1,17 @@
+/* !!! SESSION 24 CORRECTION (2026-09-04) !!!
+ * The "8 / 91" in the header below is WRONG.  Session 24 re-measured this exact
+ * file with the live sandbox (`sandbox CD_datasync --disable all`, HEAD chassis)
+ * and it scores **10 / 91**, not 8.  The fast harness agrees (lev 10, nop 3, and
+ * the s21/s22 calibration sandbox = lev + nop - 3 was verified exactly on two
+ * points this session: candidate.c 7 == 7 and this file 10 == 10).
+ * It is also STRUCTURALLY FARTHER from target than candidate.c, not closer:
+ * aligned against the target window, candidate.c has 6 displaced insns and this
+ * file has 8, and this file's arg4 chain completes at window slot 9 where target
+ * completes it LAST (slot 16).  The s23 "geometry-correct basin" reading and the
+ * whole s23 frontier built on it (the "one displacement" / "arg2 second-consumer"
+ * programme) are therefore VOID - see evidence.md [s24].
+ * Keep the file as a measured data point; do NOT use it as a chassis.
+ */
 /* CD_datasync (saEft01Init) - SESSION 23 ARTIFACT: the first form in 23
  * sessions that reproduces the TARGET'S EXACT BLOCK-3 GEOMETRY.
  * sandbox 8 / 91 (lev 8, nop 3) - one WORSE than the 7-floor base form, but

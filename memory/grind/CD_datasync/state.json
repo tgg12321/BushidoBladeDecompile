@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 23,
- "current_modality": "structural",
+ "session_count": 24,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -141,23 +141,29 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Target's block-3 geometry is REACHABLE in pure C for the first time in 23 sessions \u2014 14 forms hit target's exact (lbu-order, chain-completion-order, arg5-anti-coalesced) triple at 8/91, and their whol"
+  },
+  {
+   "session": 24,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "s23's '8/91 geometry-correct basin' re-measures at 10/91 and is FARTHER from target than candidate.c (s23 frontier void); RTL dumps then localize the whole residual to two sched1 ready-list decisions,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Within the geometry-correct basin (alt_target_geometry_8.c), forcing arg2's value to be live at the moment arg5's value is born denies arg5 the $a1 seat, which is the last displacement between that form and target.",
-   "mechanism": "local-alloc assigns arg5's loaded value $a1 only because arg2's pseudo has not yet been born there; arg2's setup in turn cannot precede arg5's retirement at build 53. Target breaks the cycle by having $a1 loaded at 43-44 and live to the call. The C-side requirement is therefore not a *placement* of the arg2 read (measured dead, 10 byte-identical forms) but a *second consumer* that makes arg2's value a real pseudo with a live range overlapping the index chains \u2014 for example arg2's value participating in the arg3 or arg5 computation, or being compared/tested before the printf, or the block reading the same global twice for two distinct arguments.",
-   "next_probe": "On the alt_target_geometry_8.c chassis (harness tmp/grind/CD_datasync/s23/, ~0.5 s/form; classify every result with scan.py, not just the score) sweep spellings that give D_800F19C0's value a second ordinary-C consumer inside the block: (a) pass the same pointer as two different printf arguments, (b) derive arg3's table base or the D_800A11D5 index through it, (c) a natural guard such as `if (D_800F19C0 != 0)` around the printf, (d) reading D_800F19C0 into a local that is then also stored back to the global inside the block. Watch for `lui $a1 / lw $a1,%lo` migrating from build 54-55 to 43-44 and for arg5's value moving from $a1 to $v1; the score will read 8 or worse until BOTH move, so score alone will not show partial progress."
+   "hypothesis": "tools/sched_solver can type the two remaining sched1 ready-list decisions REACHABLE or FORECLOSED, given the inline form's pre-sched RTL as the source order and the target window as the goal.",
+   "mechanism": "sched_solver models GCC 2.7.2's sched.c list scheduler order- and clock-exactly (6978/6978 validated, project memory sched-solver-campaign-2026-08-05). Until this session the solver had no correct input: every banked form's dependence graph differed from target's. The inline form's .combine block is now proven to carry target's graph, so the only free variable is the pre-sched insn order and the priority/tie-break, which is precisely what the solver decides.",
+   "next_probe": "Feed the CD_datasync block of tmp/grind/CD_datasync/s24/inl.combine to tools/sched_solver as the source order and asm/funcs/CD_datasync.s:47-68 as the goal order. Ask (a) is the goal order reachable at all under the modelled priority + tie-break, and (b) what is the minimal change to the dependence graph or to the pre-sched UID order that reaches it. Bound and profile the run - the CD_ready precedent is that an unbounded solver run burns CPU without finishing depth 1. Verify the solver reproduces the two KNOWN emissions first (candidate.c at 7 and inl at 13) as a self-check before trusting a verdict on the goal."
   },
   {
-   "hypothesis": "F32 (inherited, now with a much sharper input) \u2014 tools/ra_solver/inverse.py local can type the remaining seat question REACHABLE or FORECLOSED and name the C-lever vectors.",
-   "mechanism": "s20's classify verdict named inverse.py as the next tool; s22 supplied the anti-coalescing half of the spec; s23 supplies the rest and, critically, an ACHIEVED emission (alt_target_geometry_8.c) that differs from target in exactly one register assignment. The solver's input is therefore no longer a hypothetical goal order \u2014 it is a concrete two-emission pair, which is the input shape inverse.py is designed for.",
-   "next_probe": "Run inverse.py local against CD_datasync block 3 using alt_target_geometry_8.c as the SOURCE emission and the target window as the goal, rather than the base candidate. The goal order is now hand-verifiable because both emissions carry the same discriminants and differ only in the $a1/$v1 assignment and the arg2 slot, which should let perturb.py --goal-from-target pair the duplicate sll/lw skeletons it previously mis-paired ('goal is not a topological order, 2 violations'). Bound and profile the run \u2014 the CD_ready precedent is that an unbounded inverse.py local burns 100% CPU without finishing depth 1."
+   "hypothesis": "Some ordinary-C construct places a surviving dependence edge between arg4's index load and its shift - the one graph change the target order requires - other than a named index local (which folds).",
+   "mechanism": "The predicate derived this session is sharp: arg4's chain must gain exactly one edge at the FRONT (between lbu and sll) while gaining none at the back. Candidates not yet measured are (a) an index whose value needs a real conversion insn (a signed narrow read that emits sll/sra, or a masked read that emits andi), (b) an index that is genuinely used twice so combine cannot fold the copy, (c) an index arriving through an extra pointer indirection so the lbu feeds a load rather than a shift.",
+   "next_probe": "On the candidate chassis, sweep spellings that put a REAL operation between the index read and its scaling: signed/narrow index types that force a sign-extend pair, an index masked or offset by a constant before use, an index read through a second pointer level, and an index genuinely consumed twice (for example the same index selecting both the arg4 string and part of the arg3 expression, if a semantically honest reading of the format string supports it). Classify every result with tmp/grind/CD_datasync/s24/rep2.py by window signature, not by score - the score is a misleading gradient here and the window signature is what decides."
   },
   {
-   "hypothesis": "The standing family trigger (inherited) \u2014 a JOINT sched.c-emission-order x global.c/local-alloc.c-seat solver closes CD_datasync, CD_sync and CD_ready together \u2014 is now testable against a known-good waypoint.",
-   "mechanism": "Every C change that fixes the emission order breaks the register seats and vice versa, proven over 23 sessions here, 68 on CD_ready and 107 on CD_sync. s23 adds the first counterexample to the pessimistic reading: the emission ORDER is now correct in a real form, and only ONE seat is wrong. A joint solver therefore has a validated intermediate state to aim at instead of only the endpoints.",
-   "next_probe": "When a joint solver exists, re-open CD_datasync, CD_sync and CD_ready as ONE basin and seed it with alt_target_geometry_8.c rather than candidate.c. Independently and immediately: run scan.py's discriminant methodology on the two twins' residual windows \u2014 both share the byte-shape-identical do_timeout window (CD_ready ledger s36/s46), so the (lbu order, completion order, seat) triple should classify their banked forms too and may reveal that one of them already has a geometry-correct form banked at a non-minimal score."
+   "hypothesis": "The twins CD_sync and CD_ready share this block and therefore this exact residual, so the pre-sched-graph result transfers and one solved scheduling question closes three functions.",
+   "mechanism": "CD_ready's ledger (s36/s46) records a byte-shape-IDENTICAL do_timeout window, and CD_sync s26 records the same {sll,addu,sll} -> jal debug_printf residual signature. This session's finding is a statement about the block's dependence graph, which is a property of the shared source idiom rather than of CD_datasync's surrounding chassis.",
+   "next_probe": "Run tmp/grind/CD_datasync/s24/rep2.py's window-signature classification (retarget the two call names) over CD_sync's and CD_ready's banked forms, and dump the .combine block for each twin's best form. If either twin's best form already carries the inline pre-sched graph, the scheduler question is identical there and the solver result applies to all three; if a twin's graph differs, that difference is itself a lever the other two do not have."
   }
  ],
  "judge_constraints": [],
@@ -286,6 +292,30 @@
    "measured_on": "do{}while(0) wrapper chassis with the FAKE present; 51 forms",
    "predicate_cite": "",
    "result": "KILLED for these 51 forms. Twenty-one tie the floor at 7 and nothing goes below; s21's scaled-index results are reproduc"
+  },
+  {
+   "session": 24,
+   "statement": "The banked s23 artifact alt_target_geometry_8.c scores 8/91 on the current chassis and differs from target by a single displacement of arg2's lui/lw.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; live sandbox plus fast harness, 3 bodies",
+   "predicate_cite": "",
+   "result": "Sandbox reports score 10, target_insns 91, build_insns 91 - not 8. The fast harness agrees exactly (lev 10, nop 3), and "
+  },
+  {
+   "session": 24,
+   "statement": "An extra dependence edge can be placed between arg4's lbu and its sll by naming the index in a local (i0 = idx_1494[0]; arg4 = tbl_125c[i0];), which is what target's scheduling order requires.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 10 forms, fast harness + window-signature classification",
+   "predicate_cite": "",
+   "result": "KILLED. z1, z6, z7 and z8 emit assembly BYTE-IDENTICAL to z9, which is the same body with no index local at all; all fiv"
+  },
+  {
+   "session": 24,
+   "statement": "Hoisting only an index, or only arg5's value, into a named local changes the emission of the timeout block.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 15 forms, fast harness",
+   "predicate_cite": "",
+   "result": "KILLED. All of them emit assembly byte-identical to the fully-inline form and score 13. The 'name the fifth argument' fa"
   }
  ]
 }
