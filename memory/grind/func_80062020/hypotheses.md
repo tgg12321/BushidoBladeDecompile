@@ -1179,3 +1179,142 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
    function and 31 siblings in one act.** (Carried forward, unchanged.) If the frozen list is ever
    extended, resubmit `rejected/layer1-fail-0831-2231.c` unchanged — it already measures distance 0
    with SHA1 == oracle.
+
+## [s14 second run] The pass that decides which terminator store gets the symbolic address form is a post-expand optimiser (cse2 per s8, or combine's LOG_LINK availability per s13), so a pass-level lever exists.
+- mechanism: s8 attributed the split to cse2 (`-frerun-cse-after-loop`); s13 restated it as
+  combine folding a single-use address pseudo into its MEM under `flow.c:2102`. Both imply the
+  form is chosen after expand and could in principle be steered by anything that changes
+  availability or use counts.
+- probe: `pwsh tools/grinder/dump.ps1 func_80062020` with the floor-4 body applied, then reading
+  `tmp/grind/func_80062020/dumps/text1b.rtl` (the FIRST `-da` dump = RTL expand output); plus the
+  two-pole and four-pole minimal-harness dumps `tmp/grind/func_80062020/s14/mkdump.py` and
+  `poles_rtl.py` (oracle cc1 + verbatim Makefile CC_FLAGS), results `mkdump_results.txt` /
+  `poles_rtl_results.txt`.
+- result: FALSIFIED at expand. In the floor-4 body all three terminator MEMs are already
+  `(mem (plus (reg 76) (const_int 8|4)))` / `(mem (reg 76))` in `text1b.rtl`; in the banned
+  dual-spelling body the column-a store is already
+  `(set (mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI ("D_800F1198")))) (const_int 0))` in the
+  expand dump, with no address pseudo ever created for it. `GO_IF_LEGITIMATE_ADDRESS`
+  (`tools/gcc-2.7.2/config/mips/mips.h:2286`) accepts `REG + CONSTANT_ADDRESS` verbatim, so a
+  `&SYM + index` C tree becomes the MEM address directly while a pointer-local deref becomes a
+  displacement off the pointer's pseudo. cse2 and combine only preserve what expand chose. The
+  s8 and s13 attributions are superseded; no pass-level lever exists to search for.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis (sandbox `--disable all` score 4, target 38 / build 35,
+  cheat_asm_stripped 165), floor-4 body applied for the real-chassis dump and then reverted; no
+  FAKE construct present in any of the four dumped bodies
+
+## [s14 second run] A C construct exists that yields the target's mixed epilogue (shared base at DISP8/DISP4 plus one inline-symbolic store, same base symbol, same index) without spelling the same lvalue base two different ways.
+- mechanism: the four-pole RTL table shows GCC 2.7.2 has exactly two generators for
+  `(mem (plus (reg idx) (symbol_ref SYM)))`. (G1) RTL expand emits it directly whenever the
+  store's own C address tree is `&SYM + index`, because that shape passes
+  `GO_IF_LEGITIMATE_ADDRESS` at `tools/gcc-2.7.2/config/mips/mips.h:2286` (REG + CONSTANT_ADDRESS)
+  and needs no pseudo. (G2) combine folds a single-use address pseudo into its MEM when
+  `flow.c:2102` grants the LOG_LINK. A store whose C tree is a pointer-local deref always expands
+  to `(mem (plus (reg P) (const_int K)))` off that pointer's pseudo, and every store sharing the
+  pointer shares the pseudo.
+- probe: `tmp/grind/func_80062020/s14/poles_rtl.py` — four whole-function epilogue spellings
+  (pointer-uniform = the floor-4 body; three-symbol direct uniform; one-symbol three-direct
+  uniform; the banned mixed body), each compiled with the oracle cc1 and the verbatim Makefile
+  CC_FLAGS and dumped with `-da`; expand MEM forms read out of `in.i.rtl` and set beside the
+  emitted asm. Results `poles_rtl_results.txt`.
+- result: KILLED. Every uniform spelling gives three MEMs of ONE kind (all shared-pseudo
+  displacement, or all inline-symbolic), and the mixed arrangement appears only when the C
+  contains both tree kinds for the same base — the banned construct. G2 is the only alternative
+  and it requires a second def of the same address value, which in C is either a duplicate
+  expression (dead re-assignment, KILLED s13) or a function/inline boundary (REFUSED by the
+  2026-09-03 Judge ruling now standing in `state.json judge_constraints`). This is the same
+  conclusion s7/s9/s13 reached inductively over 165+ spellings, now grounded in the generator
+  that produces the bytes rather than in an enumeration.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: 2026-09-03 chassis (honest floor 4, cheat_asm_stripped 165), four whole-function
+  bodies dumped at `-da` expand level, no FAKE construct present in any of them
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:2286
+
+## [s14 second run] A spelling found on a SIMPLER member of the 32-function same-symbol dual-address-form species transfers back to func_80062020 at zero extra cost.
+- mechanism: s9's `scan4.py` reported 32 functions in SLUS-00663 "with the identical
+  arrangement", none matched in pure C, and named `func_80061064`, `CD_cw` and
+  `SpuSetReverbModeParam` as shorter bodies where the arrangement might appear without the
+  surrounding loop, isolating the use-count problem.
+- probe: `tmp/grind/func_80062020/s14/species_sameobj.py` re-scans the same input
+  (`tmp/grind/func_80062020/s9/all.dis`, objdump of the original SLUS_006.63 text, all functions)
+  with a sharper test: a function qualifies only if it holds BOTH (A) a register-materialised
+  shared base `lui r,%hi(S); addiu r,r,%lo(S); addu r,idx,r` feeding >=2 memory refs at NON-ZERO
+  displacements AND (B) an at-form symbolic ref `lui at,%hi(T); addu at,at,idx; op _,%lo(T)(at)`,
+  and it is classified same-object iff `S == T`. Results `species_sameobj_results.txt`.
+- result: KILLED. Five functions in the whole executable match A AND B, and exactly ONE has
+  `S == T`: func_80062020 itself (base `0x800F1198`, displacements `[4, 8]`, at-form symbols
+  `0x800F1198/119C/11A0`). The other four — `func_8001FBE8` (base `0x80101EC8`, at `0x80101F14`),
+  `func_8003EDC0` (base `0x800A6690`, at `0x800F66A0`), `func_80055138` (base `0x80101EC8`, at
+  `0x80099D8B`), `func_800770B8` (base `0x800A35D0`, at `0x8009BCE4`) — mix the two forms across
+  DIFFERENT objects, which is ordinary C needing no dual spelling. s9's 32-member list was built
+  on the at-form alone and is not a species of this residual; the three named transfer candidates
+  are not instances. There is no simpler sibling to solve first.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03, static scan of the original-EXE disassembly (no compile, no FAKE
+  construct); detector windows: addiu within 2 insns of the lui, addu within 3 of the addiu,
+  memory ref within 12 of the addu or until the next branch/jump
+
+### Frontier after s14 (second run) — reset to three
+
+1. **Re-audit the expand-time predicate itself: is there a C address tree, other than
+   `&SYM + index` and other than a pointer-local deref, that expand routes differently?**
+   The class kill above rests on a two-generator model of `(mem (plus (reg) (symbol_ref)))`
+   validated on four whole-function poles. It has NOT been validated against every C address
+   tree GCC 2.7.2 can build — notably an address tree that mixes a `const`-qualified or
+   differently-typed base, an address that passes through `legitimize_address`
+   (`tools/gcc-2.7.2/config/mips/mips.c`) because it is initially illegitimate (e.g. a
+   large-constant offset that must be split), or a tree that reaches the MEM through a
+   `COMPONENT_REF` on a symbol-addressed aggregate whose offset exceeds the 16-bit field. Next
+   probe: extend `tmp/grind/func_80062020/s14/gentable.py` (its regex for extracting MEM forms
+   from `in.i.rtl` currently misses the nested `(plus reg symbol_ref)` case and must be fixed
+   first) into a full single-store generator table over ~15 address trees, reading the expand
+   MEM form for each; any tree that produces the symbolic form from a NON-`&SYM+index` shape is
+   a new lever and re-opens the residual.
+
+2. **An owner class grant covering the same-object dual-address-form residual would close this
+   function.** (Carried forward; note the species is now known to be a species of ONE, so a
+   grant closes exactly this function, not 32.) The construct is byte-proven — distance 0 plus a
+   full-build oracle SHA1 match — and its generic shape ships in SOTN PSX/GCC-2.7.2 code; the
+   only barrier is that the frozen family list does not cover it and extending it is owner-only.
+   Two Judges and two layer-1 reviews have FAILed it on the merits. No grind action. If the list
+   is extended, resubmit `rejected/layer1-fail-0831-2231.c` unchanged.
+
+3. **Toolchain-provenance re-audit: was this epilogue compiled by the same cc1 configuration as
+   the rest of text1b.c?** Untried in fourteen sessions and cheap. The residual is a 3-insn
+   addressing difference that no C tree in this configuration produces; a per-object flag skew
+   (`-G` value, a different `-mno-abicalls`/PIC setting, or a different cc1 build) would produce
+   exactly this kind of addressing-mode difference while leaving every other function in the
+   file matching. Next probe: sweep the sandbox build of func_80062020 across `-G` values and
+   the small handful of codegen-relevant cc1 flags that do not perturb the already-matching
+   functions in `text1b.c`, and check whether any produces the mixed epilogue from the honest
+   uniform body. A hit would be a build-configuration finding, not a C construct, and would need
+   to be reported rather than spent (`.claude/rules/no-compiler-divergence.md` governs).
+
+## [s14] The pass that decides which terminator store gets the symbolic address form is a post-expand optimiser (cse2 per s8, or combine's LOG_LINK availability per s13), so a pass-level lever exists.
+- mechanism: s8 attributed the split to cse2 (-frerun-cse-after-loop); s13 restated it as combine folding a single-use address pseudo into its MEM under flow.c:2102. Both imply the address form is chosen after expand and could be steered by anything that changes availability or use counts.
+- probe: pwsh tools/grinder/dump.ps1 func_80062020 with the floor-4 candidate body applied, then read tmp/grind/func_80062020/dumps/text1b.rtl (the FIRST -da dump = RTL expand output); plus two-pole and four-pole minimal-harness dumps via tmp/grind/func_80062020/s14/mkdump.py and poles_rtl.py, oracle cc1 tools/gcc-2.7.2/build/cc1 with the verbatim Makefile CC_FLAGS.
+- result: FALSIFIED at expand. In the floor-4 body all three terminator MEMs are already (mem (plus (reg 76) (const_int 8|4))) / (mem (reg 76)) in text1b.rtl. In the banned dual-spelling body the column-a store is already (set (mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI ("D_800F1198")))) (const_int 0)) in the expand dump, with no address pseudo ever created for it. GO_IF_LEGITIMATE_ADDRESS at tools/gcc-2.7.2/config/mips/mips.h:2286 accepts REG + CONSTANT_ADDRESS verbatim, so an '&SYM + index' C tree becomes the MEM address directly while a pointer-local deref becomes a displacement off that pointer's pseudo. cse2 and combine only preserve what expand chose; the s8 and s13 attributions are superseded and no pass-level lever remains to search for. The minimal harness reproduces the real chassis exactly (uniform -> sw $0,0($2); banned -> sw $0,D_800F1198($3)).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis (sandbox func_80062020 --disable all = score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 165); floor-4 body applied for the real-chassis dump and src/text1b.c reverted to HEAD afterwards; no FAKE construct present in any of the four dumped bodies
+
+## [s14] A C construct exists that yields the target's mixed epilogue (shared base at DISP8/DISP4 plus one inline-symbolic store, same base symbol, same index) without spelling the same lvalue base two different address trees.
+- mechanism: The four-pole RTL table shows GCC 2.7.2 has exactly two generators for (mem (plus (reg idx) (symbol_ref SYM))). G1: RTL expand emits it directly whenever the store's own C address tree is '&SYM + index', because that shape passes GO_IF_LEGITIMATE_ADDRESS at tools/gcc-2.7.2/config/mips/mips.h:2286 (REG + CONSTANT_ADDRESS) and needs no pseudo. G2: combine folds a single-use address pseudo into its MEM when flow.c:2102 grants the LOG_LINK. A store whose C tree is a pointer-local deref always expands to (mem (plus (reg P) (const_int K))) off that pointer's pseudo, and every store sharing the pointer shares the pseudo.
+- probe: tmp/grind/func_80062020/s14/poles_rtl.py - four whole-function epilogue spellings (pointer-uniform = the floor-4 body; three-symbol direct uniform; one-symbol three-direct uniform; the banned mixed body), each compiled with the oracle cc1 and the verbatim Makefile CC_FLAGS and dumped with -da; expand MEM forms read out of in.i.rtl and set beside the emitted asm. Results tmp/grind/func_80062020/s14/poles_rtl_results.txt.
+- result: KILLED. Every uniform spelling gives three MEMs of ONE kind - all shared-pseudo displacement (asm 8($2) 4($2) 0($2), 29 harness insns) or all inline-symbolic (asm D_800F11A0($3) D_800F119C($3) D_800F1198($3), or D_800F1198+8($3) +4($3) D_800F1198($3), 27 harness insns). The mixed arrangement appears only when the C contains both tree kinds for the same base, i.e. state.json banned_constructs[0]. G2 is the only alternative generator and it requires a second def of the same address value, which in C is either a duplicate expression (dead re-assignment, KILLED s13) or a function/inline boundary (REFUSED by the 2026-09-03 Judge ruling now standing in state.json judge_constraints). This reaches the same conclusion s7/s9/s13 reached inductively over 165+ spellings, but grounded in the generator that produces the bytes rather than in an enumeration.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: 2026-09-03 chassis (honest floor 4, cheat_asm_stripped 165); four whole-function bodies dumped at -da expand level with the oracle cc1 and verbatim Makefile CC_FLAGS; no FAKE construct present in any of them
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:2286
+
+## [s14] A spelling found on a SIMPLER member of the 32-function same-symbol dual-address-form species transfers back to func_80062020 at zero extra cost and re-activates it.
+- mechanism: s9's scan4.py reported 32 functions in SLUS-00663 with the identical arrangement, none matched in pure C, and named func_80061064 (the immediate data-region neighbour), CD_cw and SpuSetReverbModeParam as shorter bodies where the arrangement might appear without the surrounding loop, isolating the use-count problem from the loop's live values.
+- probe: tmp/grind/func_80062020/s14/species_sameobj.py re-scans the same input (tmp/grind/func_80062020/s9/all.dis, objdump of the original SLUS_006.63 text, all functions) with a sharper test: a function qualifies only if it holds BOTH (A) a register-materialised shared base 'lui r,%hi(S); addiu r,r,%lo(S); addu r,idx,r' feeding >=2 memory refs at NON-ZERO displacements AND (B) an at-form symbolic ref 'lui at,%hi(T); addu at,at,idx; op _,%lo(T)(at)', classified same-object iff S == T. Results tmp/grind/func_80062020/s14/species_sameobj_results.txt.
+- result: KILLED. Five functions in the whole executable match A AND B, and exactly ONE has S == T: func_80062020 itself (base 0x800F1198, displacements [4, 8], at-form symbols 0x800F1198/119C/11A0). The other four mix the two forms across DIFFERENT objects, which is ordinary C needing no dual spelling: func_8001FBE8 (base 0x80101EC8, at 0x80101F14), func_8003EDC0 (base 0x800A6690, at 0x800F66A0), func_80055138 (base 0x80101EC8, at 0x80099D8B), func_800770B8 (base 0x800A35D0, at 0x8009BCE4). s9's 32-member list was built on the at-form alone and is not a species of this residual; the three named transfer candidates are not instances of it, so there is no simpler sibling to solve first and the standing frontier item is retired.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03, static scan of the original-EXE disassembly (no compile, no FAKE construct); detector windows: addiu within 2 insns of the lui, addu within 3 of the addiu, memory ref within 12 of the addu or until the next branch/jump

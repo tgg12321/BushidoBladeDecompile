@@ -1466,3 +1466,124 @@ genuinely arguable in both directions and the standing ban on this function's re
 as intent ("a second, separately-materialised address chain for the column-a store"), which this
 achieves through a function boundary rather than a dead statement. Per the first-reach rule the
 honest move is to ask, not to self-approve.
+
+## [s14, second run — synthesis, 2026-09-03] Pass re-attribution: the deciding pass is RTL EXPAND, not cse2 and not combine
+
+**Chassis re-measured first, as mandated.** `memory/grind/func_80062020/candidate.c`'s body
+pasted over `INCLUDE_ASM("asm/funcs", func_80062020);` at `src/text1b.c:3932` →
+`sandbox func_80062020 --disable all` = **score 4, target_insns 38, build_insns 35,
+rules_dropped 0, cheat_asm_stripped 165**. Identical to s8/s9/s10/s11/s12/s13 and to the
+first s14 run. Seventh consecutive session at floor 4; `src/text1b.c` restored to HEAD
+(`git checkout -- src/text1b.c`, tree clean apart from `metrics/events.jsonl`) after the
+measurement and after the dumps were taken.
+
+**Inherited state consumed, not re-derived.** The first s14 run's ruling-request on the
+`static __inline__` helper split was ANSWERED and REFUSED — the ruling is now a binding
+Judge constraint in `state.json`: *"The address expression for the terminator row may not be
+materialised twice by any means, including a function-call/inline boundary between the
+writes. Do not respell the once-called static __inline__ helper split (one helper or two,
+any names, any parameterisation, macro or decayed-array variants)."* Frontier item 1 as it
+stood is therefore closed by ruling, and `pending-ruling/s14-two-helper-split-score0.c` /
+`pending-ruling/s14-single-helper-score0-weaker.c` are dead forms, not promotable.
+
+### The measurement: RTL dumps of the two poles, in the real chassis and in a minimal harness
+
+`pwsh tools/grinder/dump.ps1 func_80062020` was run with the floor-4 body applied. In
+`tmp/grind/func_80062020/dumps/text1b.rtl` — the FIRST `-da` dump, i.e. the output of RTL
+generation/expand, before jump, cse, loop, cse2, combine — the epilogue of func_80062020 is
+already fully determined:
+
+```
+(insn 101 ... (set (reg:SI 88) (symbol_ref:SI ("D_800F1198"))))
+(insn 103 ... (set (reg/v:SI 76) (plus:SI (reg:SI 88) (reg/v:SI 74))))
+(insn 106 ... (set (mem/s:SI (plus:SI (reg/v:SI 76) (const_int 8))) (const_int 0)))
+(insn 109 ... (set (mem/s:SI (plus:SI (reg/v:SI 76) (const_int 4))) (const_int 0)))
+(insn 112 ... (set (mem:SI (reg/v:SI 76)) (const_int 0)))
+```
+
+All three terminator MEMs are already based on the single pseudo 76. Nothing downstream
+converts one of them to the symbolic form — the `sw $0,0($2)` that costs the 4 points is
+decided at expand.
+
+The same two-pole comparison in a minimal harness (`tmp/grind/func_80062020/s14/mkdump.py`,
+oracle cc1 `tools/gcc-2.7.2/build/cc1` + verbatim Makefile `CC_FLAGS`) reproduces the real
+chassis exactly (uniform → `sw $0,0($2)`; banned dual-spelling → `sw $0,D_800F1198($3)`), and
+the banned body's `.rtl` shows the target insn present **at expand**:
+
+```
+(insn 111 ... (set (mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI ("D_800F1198")))) (const_int 0)))
+```
+
+i.e. no pseudo is ever created for that store's address. The reason is
+`GO_IF_LEGITIMATE_ADDRESS` at **`tools/gcc-2.7.2/config/mips/mips.h:2286`**, which accepts
+`REG + CONSTANT_ADDRESS` verbatim: a C address tree of the shape `&SYM + index` is a legal
+MIPS address, so expand emits it straight into the MEM, whereas a pointer-local deref emits
+`(mem (plus (reg P) (const_int K)))` off the pointer's pseudo.
+
+**This retires two earlier attributions.** s8 concluded "the deciding pass is cse2
+(`-frerun-cse-after-loop`)"; s13 framed the residual as combine's `LOG_LINK` availability
+(`flow.c:2102`). Both describe passes that only *preserve* what expand emitted. The residual
+is an expand-time, C-tree-level fact — which is why 165+ spelling permutations across s7/s9/s13
+never moved it, and why no pass-level lever exists to look for.
+
+### The four-pole table (`tmp/grind/func_80062020/s14/poles_rtl.py`, results `poles_rtl_results.txt`)
+
+| epilogue spelling | expand MEM forms | asm | harness insns |
+|---|---|---|---|
+| `p = &SYM+ofs; p[2],p[1],p[0]` (floor-4 body) | `(plus r76 8)`, `(plus r76 4)`, `(r76)` | `8($2) 4($2) 0($2)` | 29 |
+| three direct symbols `&D_800F11A0/119C/1198 + ofs` | three `(plus r_idx symbol)` | `D_800F11A0($3) D_800F119C($3) D_800F1198($3)` | 27 |
+| one symbol, three direct byte offsets | three `(plus r_idx symbol)` | `D_800F1198+8($3) +4($3) D_800F1198($3)` | 27 |
+| **banned mixed** (`p[2],p[1]` + direct for col a) | `(plus r76 8)`, `(plus r76 4)`, `(plus r74 symbol)` | `8($2) 4($2) D_800F1198($3)` | 29 |
+
+The table is the generator law in its final form: **each store's address form is chosen at
+expand from that store's own C address tree — pointer-local tree ⇒ shared-pseudo/displacement
+form; `&SYM + index` tree ⇒ inline symbolic form.** The target needs two stores of the first
+kind and one of the second kind *for the same base and index*, so the C must contain two
+different address trees for the same lvalue base in the same block. That is precisely the
+construct in `state.json banned_constructs[0]`.
+
+The only other generator of the symbolic form is combine folding a SINGLE-USE address pseudo
+into its MEM (s13's `flow.c:2102` law). That route needs a second def of the same address
+value, which in C is either a duplicate expression (a dead re-assignment — KILLED s13, banked
+`rejected/epilogue-deadcond-identical-arms-crossjump-score0-s13.c`) or a function/inline
+boundary (REFUSED by the 2026-09-03 ruling). Both generators are therefore closed.
+
+### Species re-scan: func_80062020 is the ONLY same-object instance in the whole EXE
+
+`tmp/grind/func_80062020/s14/species_sameobj.py` re-scans `tmp/grind/func_80062020/s9/all.dis`
+(objdump of the original SLUS_006.63 text, all functions) for the co-occurrence of
+(A) a register-materialised shared base `lui r,%hi(S); addiu r,r,%lo(S); addu r,idx,r` feeding
+≥2 memory refs at NON-ZERO displacements, and (B) an assembler-temp symbolic ref
+`lui at,%hi(T); addu at,at,idx; op _,%lo(T)(at)` — then asks whether `S == T`.
+
+Result (`species_sameobj_results.txt`): **5 functions match A∧B in the entire executable; exactly
+one of them has `S == T`, and it is func_80062020** (base `0x800F1198`, disps `[4, 8]`, at-form
+symbols `0x800F1198/119C/11A0`). The other four —
+`func_8001FBE8` (base `0x80101EC8`, at `0x80101F14`), `func_8003EDC0` (base `0x800A6690`, at
+`0x800F66A0`), `func_80055138` (base `0x80101EC8`, at `0x80099D8B`), `func_800770B8`
+(base `0x800A35D0`, at `0x8009BCE4`) — mix the two forms across **different objects**, which is
+ordinary C requiring no dual spelling of one lvalue.
+
+This retires the standing frontier item "a spelling found on a SIMPLER member of the
+32-function same-symbol species transfers back at zero cost". s9's 32-member list was built on
+the at-form alone; under the sharper same-object test the species has exactly one member. There
+is no simpler sibling carrying this problem, and `func_80061064`, `CD_cw` and
+`SpuSetReverbModeParam` (the three named transfer candidates) are not instances of it.
+
+- [s14] Chassis re-measured first, as mandated: candidate.c's body pasted over INCLUDE_ASM("asm/funcs", func_80062020); at src/text1b.c:3932 -> sandbox func_80062020 --disable all = score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 165. Identical to s8-s13 and to the first s14 run; seventh consecutive session at floor 4. src/text1b.c restored to HEAD afterwards (git checkout --), tree clean apart from the ledger files and metrics/events.jsonl.
+
+- [s14] The first s14 run's ruling-request on the `static __inline__` helper split was ANSWERED and REFUSED; the standing Judge constraint forbids materialising the terminator row address twice by any means including a function-call/inline boundary, and forbids respelling the helper split in any parameterisation. memory/grind/func_80062020/pending-ruling/ therefore holds DEAD forms, not promotable ones; candidate.c's banner has been corrected to say so.
+
+- [s14] PASS RE-ATTRIBUTION: the deciding pass is RTL EXPAND. tmp/grind/func_80062020/dumps/text1b.rtl (real chassis, floor-4 body applied) already shows insn 106/109/112 as (mem (plus (reg 76) (const_int 8))), (mem (plus (reg 76) (const_int 4))), (mem (reg 76)) - one pseudo, three uses, decided before jump/cse/loop/cse2/combine ever run.
+
+- [s14] In the banned dual-spelling body the target insn exists at expand: (insn 111 (set (mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI ("D_800F1198")))) (const_int 0))) - no address pseudo is ever created for that store. The mechanism is GO_IF_LEGITIMATE_ADDRESS at tools/gcc-2.7.2/config/mips/mips.h:2286, which accepts REG + CONSTANT_ADDRESS verbatim.
+
+- [s14] Four-pole generator table (poles_rtl_results.txt): pointer-uniform -> expand MEMs (plus r76 8)/(plus r76 4)/(r76), asm 8($2) 4($2) 0($2), 29 harness insns; three-symbol direct uniform -> asm D_800F11A0($3) D_800F119C($3) D_800F1198($3), 27; one-symbol three-direct uniform -> asm D_800F1198+8($3) D_800F1198+4($3) D_800F1198($3), 27; banned mixed -> asm 8($2) 4($2) D_800F1198($3), 29 (the target arrangement).
+
+- [s14] The minimal harness reproduces the live chassis exactly for both poles, so the expand-level attribution is not a harness artefact (mkdump_results.txt).
+
+- [s14] s8's attribution ('the deciding pass is cse2, -frerun-cse-after-loop') and s13's framing ('combine's LOG_LINK under flow.c:2102 decides the bucket by use count') are both SUPERSEDED: those passes only preserve the form expand chose. The use-count law remains a correct DESCRIPTION of the outcome but is not the causal mechanism, and there is no pass-level lever to steer.
+
+- [s14] SPECIES IS A SPECIES OF ONE: across the entire original EXE only 5 functions co-locate a register-materialised shared base (>=2 non-zero displacements) with an at-form %lo indexed reference, and func_80062020 is the only one where both forms address the SAME symbol. s9's '32-function species' was defined on the at-form alone. An owner class grant covering this residual would therefore close exactly one function, not 32.
+
+- [s14] Scope: no file outside memory/grind/func_80062020/ and tmp/grind/func_80062020/ was modified; src/text1b.c is byte-identical to HEAD.

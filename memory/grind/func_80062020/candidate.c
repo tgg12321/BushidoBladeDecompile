@@ -1,3 +1,43 @@
+/* s14 SECOND-RUN BANNER (synthesis, 2026-09-03) - READ THIS FIRST; it supersedes the
+ * banner below it on two points.
+ *
+ * 1. FLOOR RE-MEASURED on the live chassis with this body pasted over the INCLUDE_ASM at
+ *    src/text1b.c:3932: sandbox func_80062020 --disable all = score 4, target_insns 38,
+ *    build_insns 35, rules_dropped 0, cheat_asm_stripped 165.  Seventh consecutive session
+ *    at floor 4.  src/text1b.c restored to HEAD immediately afterwards.  This body remains
+ *    the best UNCONTESTED form.
+ *
+ * 2. THE HELPER SPLIT IS DEAD BY RULING.  The first s14 run's ruling-request on the
+ *    `static __inline__` helper split was ANSWERED and REFUSED.  The standing Judge
+ *    constraint now reads: "The address expression for the terminator row may not be
+ *    materialised twice by any means, including a function-call/inline boundary between the
+ *    writes.  Do not respell the once-called static __inline__ helper split (one helper or
+ *    two, any names, any parameterisation, macro or decayed-array variants)."  Point 2 of
+ *    the banner below is therefore OBSOLETE: memory/grind/func_80062020/pending-ruling/
+ *    holds dead forms, NOT promotable ones.  Do not resubmit them in any spelling.
+ *
+ * 3. PASS RE-ATTRIBUTION (the s14 second-run finding).  The deciding pass is RTL EXPAND -
+ *    not cse2 (s8's attribution) and not combine's LOG_LINK availability (s13's).  With this
+ *    body applied, `pwsh tools/grinder/dump.ps1 func_80062020` shows all three terminator
+ *    MEMs already based on one pseudo in tmp/grind/func_80062020/dumps/text1b.rtl (the FIRST
+ *    -da dump); in the banned dual-spelling body the column-a store is already
+ *    (set (mem:SI (plus:SI (reg 74) (symbol_ref "D_800F1198"))) (const_int 0)) at expand,
+ *    with no address pseudo ever created.  GO_IF_LEGITIMATE_ADDRESS at
+ *    tools/gcc-2.7.2/config/mips/mips.h:2286 accepts REG + CONSTANT_ADDRESS verbatim, so a
+ *    `&SYM + index` C tree becomes the MEM address directly while a pointer-local deref
+ *    becomes a displacement off that pointer's pseudo.  Consequence: each store's address
+ *    form is fixed by its OWN C address tree, so the target's mix (two shared-pseudo stores
+ *    at DISP8/DISP4 plus one inline-symbolic store, same symbol, same index) requires two
+ *    different address trees for the same lvalue base - the banned construct.  Banked as a
+ *    CLASS kill with that predicate cite.  There is no pass-level lever left to look for.
+ *
+ * 4. SPECIES IS A SPECIES OF ONE.  tmp/grind/func_80062020/s14/species_sameobj.py re-scanned
+ *    the whole original EXE: 5 functions co-locate a register-materialised shared base
+ *    (>=2 non-zero displacements) with an at-form %lo indexed ref, and func_80062020 is the
+ *    ONLY one where both forms address the SAME symbol.  s9's "32-function species" was
+ *    built on the at-form alone; func_80061064 / CD_cw / SpuSetReverbModeParam are NOT
+ *    instances, so the "solve a simpler sibling first" frontier item is retired.
+ */
 /* s14 BANNER (synthesis, 2026-09-03) — READ THIS FIRST.
  * 1. Floor re-measured on the live chassis with this body in place: sandbox
  *    func_80062020 --disable all = score 4, target_insns 38, build_insns 35,
