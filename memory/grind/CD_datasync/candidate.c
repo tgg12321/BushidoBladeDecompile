@@ -451,6 +451,39 @@
  *     term is load-bearing; the s19 harness dropped nops and would have called
  *     the scaled-offset form a tie with this floor.
  * =========================================================================== */
+/* ===========================================================================
+ * SESSION 45 (synthesis) - BODY UNCHANGED, RE-MEASURED 7 / 91 ON THE ENGINE
+ * ===========================================================================
+ * `sandbox CD_datasync --disable all` => score 7, target_insns 91,
+ * build_insns 91, with this exact body applied.  106 further forms measured;
+ * nothing below 7.  What s45 adds is a SHARPER MODEL OF THE 7 and a second,
+ * byte-distinct 7-form to attack from:
+ *
+ *   * The window (build idx 41-56) is the SAME 16-instruction multiset as
+ *     target's, modulo the $v1-vs-$a0 naming of the idx0 address chain.  The
+ *     entire residual is a sched2 EMISSION ORDER fact - there is nothing to
+ *     add or delete.
+ *   * This file's two defects, stated positionally: arg2's
+ *     `lui $a1,%hi(D_800F19C0) / lw $a1,%lo(...)` pair sits at 51/52 where
+ *     target has 43/44, and the idx0 chain is contiguous (41/43/44/47) where
+ *     target spreads it (41/47/51/56).
+ *   * THE NEW LEVER: arg2's pair moves to target's 43/44 when the two
+ *     tbl_125c value statements are written arg5-FIRST.  It is not an arg2
+ *     spelling effect - arg2 named / inline / first / last is byte-inert in
+ *     all 106 forms, as s42-s44 also found.  But the SAME variable sets the
+ *     leaf `lbu` order, and arg5-first reverses it.  The two target features
+ *     are a hard fork on one C variable; both halves score 7.
+ *   * The arg5-first half is banked as
+ *     memory/grind/CD_datasync/alt_arg2_slots4344_7.c (engine-confirmed 7/91).
+ *     It is the recommended s46 chassis: it holds 43/44, which this file has
+ *     never held.
+ *   * Also killed this session (all instance kills, see hypotheses.md [s45]):
+ *     the hoist-count and index-local levers re-audited on the $a0 chassis
+ *     (both transfer - nothing dead on m011 is live there); every arg5
+ *     spelling on the $a0 family (byte-inert at 12); block-scope declaration
+ *     of a table base pointer (20-38 on both chassis); and index locals as a
+ *     way to decouple leaf order from value order (30 forms, two byte classes).
+ * =========================================================================== */
 s32 CD_datasync(s32 a0) {
     s32 v0;
     s32 cnt;

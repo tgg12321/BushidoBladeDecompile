@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 44,
+ "session_count": 45,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -267,23 +267,29 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "Both s43 frontier items closed with measurements: no function-scope value can be the window's fourth live scratch pseudo (the do{}while(0) ref-weighting gives every one a callee-saved seat), no contro"
+  },
+  {
+   "session": 45,
+   "floor": 7,
+   "modality": "synthesis",
+   "headline": "s45 synthesis: all three inherited frontier items measured dead (106+ compiles), and the residual re-decomposes onto ONE C variable - the tbl_125c value-statement order sets BOTH the leaf lbu order an"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The missing ingredient is a value BORN INSIDE the do_timeout block that is not one of the four printf argument values - the only remaining category, now that every function-scope source measured this session is dead. The untried instances are values produced by the block's own calls or by its own control flow rather than by a declaration.",
-   "mechanism": "s44 measured that function-scope pointers and loop values all take callee-saved seats (n grows, score 18-33), and s43 measured that arg2, the format pointer and index locals are byte-inert on m011. Only arg3's materialised value has ever produced the $a0 spread, and it pays its leaf pair into target's arg2 slots. A block-born value that is neither an argument nor a hoisted pointer would supply pressure without occupying an argument chain's slots.",
-   "next_probe": "On the m011 chassis, sweep block-born non-argument values: (a) consume puts()'s return value (s32 r = puts(...); with r fed into the loop's v0 accumulator so it is a real use, not a dead store); (b) give the block a second real call whose result is live across the printf; (c) initialise a base pointer for arg5 INSIDE the block rather than at function scope - the one hoist position s44's set A did not test, and the only one that can produce a call-clobbered rather than callee-saved seat. For each, read slots 41/43/47/54 rather than only the score."
+   "hypothesis": "A form can hold BOTH target features (leaf order idx0-first AND arg2's pair at 43/44) if 'first statement' and 'first value' are decoupled by giving arg4 and arg5 DIFFERENT statement counts, rather than by index locals (which s45 proved inert).",
+   "mechanism": "s45 proved the two features are controlled by one variable, the tbl_125c value-statement order, and that index locals cannot decouple the leaf order from it. Every form in the gen4/gen5/gen6 sweeps gave the two arguments the SAME number of statements, so 'the first statement in the block' and 'the first completed value' were always the same event. A two-statement arg4 (idx0 read, then table read) paired with a single-statement arg5 makes them different events for the first time.",
+   "next_probe": "On the m011 chassis, sweep asymmetric statement counts: arg4 spelled as two statements whose FIRST is the idx0 read and whose second is the table read, with arg5 a single statement placed between them, before them, and after them; the mirror with arg5 split; and three-statement splits (index, scaled offset, load). Read the slot of the arg2 lui/lw pair and the two leaf lbu in each, not only the score."
   },
   {
-   "hypothesis": "Attack from the $a0 family rather than from m011. Its floor moved 13 -> 12 this session for the first time since s28, it already holds target's slots 41/47/55 and the $a0 spread, and its single named defect is that the arg5 chain is scheduled last so the 16($sp) store sinks into printf's delay slot.",
-   "mechanism": "The s40-s43 sweeps optimised the m011 family, which is a local minimum holding six correct slots; the $a0 family holds the structural feature (the spread $a0 chain) that no m011 form has ever produced, and it had never been swept with arg2 named. Fixing the arg5 store position is a smaller residual than manufacturing the $a0 spread from scratch.",
-   "next_probe": "On the p_3245 / d_4_5_2_3 chassis, sweep spellings that pull the arg5 (fifth, stack) argument's chain to the FRONT of the window: arg5 assigned before puts() (known to cost a callee-save on m011 - re-measure here, where it may not); arg5 read through the scaled-index-offset spelling (the s21 f1 fourth attractor, which reproduced target's whole tail on the m011 chassis at 8/92); arg5 as an index local with the value inline. Read the slot of sw $v1,16($sp) in each."
+   "hypothesis": "Attack from alt_arg2_slots4344_7.c (the arg5-first 7-form) instead of candidate.c: its single named defect is the leaf order at 41/42, which is a narrower residual than manufacturing arg2's 43/44 from the arg4-first side (which 45 sessions of arg2 spellings have failed to do).",
+   "mechanism": "arg2's pair slot has proven completely unreachable from the arg4-first family - every arg2 spelling is byte-inert there across s42, s43, s44 and s45. The leaf order, by contrast, is a known function of one variable, so the arg5-first side has a residual with a known controlling variable while the arg4-first side does not.",
+   "next_probe": "On the alt_arg2_slots4344_7.c chassis, sweep constructs that make idx_1494[0] be READ first without making arg4's value the first-assigned value: idx0 read into a value that arg5's own expression consumes; arg5's scaled offset expressed in terms of idx_1494[0] plus a delta; and the arg4/arg5 statement pair written as a single comma expression or a single declaration-with-initialiser list. Read slots 41/42 and 43/44 in each."
   },
   {
-   "hypothesis": "KILL RE-AUDIT for s45: the s42 hoist-count and declaration-order kills were measured ONLY on the m011/HEAD chassis, and s44 has now shown by direct counter-example (arg2) that byte-inertness on m011 does not transfer to the $a0 chassis.",
-   "mechanism": "Driver kill-re-audit rule plus this session's measured counter-example: arg2-as-a-value-local is byte-inert on m011 (s42, s43, re-confirmed s44 as d_2_4_5 = 7) yet moves the $a0 family from 13 to 12. Every s41-s43 'byte-inert' verdict reached on m011 is therefore chassis-relative and untested on the family that actually carries target's $a0 spread.",
-   "next_probe": "Re-run the s42 hoist-count sweep (dropping each of tbl_11dc / idx_1494 / tbl_125c to an inline global reference) and the s43 index-local lattice on the p_3245 chassis instead of m011, md5-classifying against p_3245; any cell that is NOT byte-identical to p_3245 is a lever the ledger records as dead but which is live on the family that matters."
+   "hypothesis": "The s45 fork is a sched2 LUID constraint that tools/sched_solver can decide directly - i.e. there exists (or provably does not exist) a sched1 output order that simultaneously yields leaf order idx0-first and the arg2 pair at 43/44.",
+   "mechanism": "sched_solver was validated order- and clock-exact on this function at s37 (12/12 blocks, both passes) and has swept depth-2 atom pairs and the 40,320 group-move orders, but it has never been run with the s45 fork as the input CONSTRAINT. The residual is now known to be pure emission order over an identical instruction multiset, which is exactly the solver's decidable domain.",
+   "next_probe": "Run tools/sched_solver (plus tools/ra_solver/inverse_compose.py classify for the $v1-vs-$a0 seat, which s10 showed is downstream of the order) with target's window as the goal and the two s45 7-forms as the two starting LUID assignments; ask for the set of LUID orders that produce target's emission, then map that set back to C-level statement structure. A FORECLOSED verdict here would be the first predicate-cited class kill this function has."
   }
  ],
  "judge_constraints": [],
@@ -293,38 +299,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 26,
-   "statement": "Target's printf-window order is reachable from the fully-inline form's dependence graph by changing the source statement order (s24's frontier item 1, and the premise that the inline form carries targ",
-   "kill_scope": "instance",
-   "measured_on": "inline chassis (tmp/grind/CD_datasync/s24/inl.c) with the do{}while(0) FAKE present; sched_solver pass-1 block 3, baseline order- and clock-exact",
-   "predicate_cite": "",
-   "result": "KILLED. No vector at either depth. Target's order is not a fixed point of the scheduler even when fed as the source orde"
-  },
-  {
-   "session": 26,
-   "statement": "Naming arg4's ADDRESS in a pointer local, rather than its value, reaches target's window - because it defers arg4's value load into expand_call's register-loading phase, where target's trailing lw $a3",
-   "kill_scope": "instance",
-   "measured_on": "inline chassis with the do{}while(0) FAKE present; 18 forms on the fast harness, calibrated against live sandbox on candidate.c (lev 7 -> sandbox 7)",
-   "predicate_cite": "",
-   "result": "KILLED for the match, CONFIRMED for the geometry. The value load does move to the register-load point - the first time i"
-  },
-  {
-   "session": 27,
-   "statement": "The do{}while(0) FAKE in candidate.c is an inert carrier occupying a pseudo that a real lever wants (mandated kill re-audit on the closest-to-target banked form, which is candidate.c itself).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis, candidate.c applied to src/system.c, live sandbox; hand ablation because tools/fake_ablate.py returns ERR on this candidate",
-   "predicate_cite": "",
-   "result": "KILLED. 7/91 with the wrapper, 17/91 without it, build_insns 91 in both. The wrapper is worth 10 points, is load-bearing"
-  },
-  {
-   "session": 27,
-   "statement": "This function's window residual is a sched1 ready-list problem, so a sched1 reachability verdict decides it - the framing s24 introduced and s25 spent its whole solver campaign on.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis, candidate.c with the do{}while(0) FAKE present; cc1 -da dumps of the live build",
-   "predicate_cite": "",
-   "result": "KILLED. The pass-1 and pass-2 orders for this block are DIFFERENT and the emitted .s carries the pass-2 order. sched1's "
-  },
   {
    "session": 27,
    "statement": "s25's operand-order pre-filter - naming an ADDRESS flips the addu to base-first and naming a VALUE emits that load too early, leaving only inline spellings - excludes the value-local family.",
@@ -754,6 +728,38 @@
    "measured_on": "m011 chassis and three $a0-family chassis, each measured both with the do{}while(0) FAKE present and with it ablated to a plain brace block; 8 whole-function compiles",
    "predicate_cite": "",
    "result": "The kills survive ablation and the ablation is monotone in the wrong direction: m011 7 -> 18, d_4_5_2_3 13 -> 23, p_5243"
+  },
+  {
+   "session": 45,
+   "statement": "MANDATED KILL RE-AUDIT: the s42 hoist-count kill and the s43 index-local kill, both measured only on the m011/HEAD chassis, are live levers on the p_3245 ($a0) chassis that actually carries target's s",
+   "kill_scope": "instance",
+   "measured_on": "p_3245 ($a0) chassis with the do{}while(0) FAKE present; 18 whole-function compiles, harness re-calibrated against the engine sandbox",
+   "predicate_cite": "",
+   "result": "Both kills transfer unchanged. Hoist count on p_3245: none 38, idx_1494 29, tbl_125c 31, tbl_11dc 31, 11dc+1494 32, 11dc"
+  },
+  {
+   "session": 45,
+   "statement": "Some arg5 spelling pulls the fifth (stack) argument's chain to the front of the window on the $a0 family, fixing the family's one named defect - the sw $v1,16($sp) store sinking into printf's delay sl",
+   "kill_scope": "instance",
+   "measured_on": "p_3245 and d_4_5_2_3 ($a0-family) chassis with the do{}while(0) FAKE present; 6 whole-function compiles",
+   "predicate_cite": "",
+   "result": "Every non-regressing spelling is byte-inert at 12 (index local 12, scaled offset 12, named address 12, inline 12, named "
+  },
+  {
+   "session": 45,
+   "statement": "A value born inside the do_timeout block supplies the fourth live scratch pseudo the window needs - specifically a table base pointer declared and initialised INSIDE the block rather than at function ",
+   "kill_scope": "instance",
+   "measured_on": "m011 and p_3245 chassis, do{}while(0) FAKE present in both; 14 whole-function compiles",
+   "predicate_cite": "",
+   "result": "Every cell regresses. m011: 20, 24, 24, 24, 28, 30, 35. p_3245: 22, 29, 30, 31, 31, 32, 38. n collapses 82 -> 69-80 in e"
+  },
+  {
+   "session": 45,
+   "statement": "Naming the two subscripts as index locals decouples the leaf lbu emission order from the tbl_125c value-assignment order, so the leaf order can be set idx0-first while the values are assigned in the o",
+   "kill_scope": "instance",
+   "measured_on": "m011 chassis with the do{}while(0) FAKE present; 30 whole-function compiles",
+   "predicate_cite": "",
+   "result": "Index locals are completely byte-inert. All 15 arg4-first cells score 7 and all 15 arg5-first cells score 8, with no dep"
   }
  ]
 }
