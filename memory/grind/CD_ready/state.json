@@ -498,9 +498,9 @@
  ],
  "origin": "queue",
  "created": "2026-07-07T06:07:47.638269+00:00",
- "exhaustion_base": 68,
- "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.475494+00:00",
+ "exhaustion_base": 77,
+ "last_unpark_reason": "owner ruling 2026-09-04 (decisions.md foreclosed-bucket re-evaluation, Ruling A): window RESET; probes: CD_datasync s58 CD_alarm-struct transplant onto vAT1 (addend-resolving scorer); fresh-flag permuter window seeded from r3/b2 (frontier[0], never run). All judge_constraints stand.",
+ "last_unpark_at": "2026-09-04T22:08:22.284897+00:00",
  "kills": [
   {
    "session": 69,
@@ -736,5 +736,6 @@
    "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
    "consumed": null
   }
- ]
+ ],
+ "escalation_deferrals": 0
 }
