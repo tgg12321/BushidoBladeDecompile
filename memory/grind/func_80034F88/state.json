@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 24,
- "current_modality": "escalation",
+ "session_count": 25,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -147,13 +147,29 @@
    "floor": 10,
    "modality": "escalation",
    "headline": "Owner ruling-1 instrument (BB2_SUGG_DEBUG / local_extract --suggest, built at 70d6c905) run here for the first time: the local-alloc suggested-register pass is INERT (0 suggestions on all 7 qtys, used"
+  },
+  {
+   "session": 25,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "Synthesis: the residual is re-stated as a seat-space ARGMAX (the $v1/$a0 swap 22 sessions chased is a net LOSS, priced ~+8/-12), s20's fresh-pseudo escape is measured position-specific and stream-iden"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_80034F88 has no remaining admissible pure-C lever, and the tooling escape hatch left open by the 2026-08-26 entry is now closed by measurement. Reaching 0 requires two simultaneously live address allocnos, hence two C objects aliasing D_80106A73 -- the banned construct, with no SOTN-master precedent in either of two independent censuses.",
-   "mechanism": "global.c:426 gives one allocno per pseudo with no live-range splitting, so one hard register per address object for its whole live range. Both non-object routes to a second pseudo are closed in compiler source (anonymous symbol refs never create a pseudo; reload.c:4128-4137 substitutes the REG_EQUIV constant instead of allocating a reload register), the census-exact diagnostic chassis creates no second allocno (s23), every modelled allocator input is FORECLOSED to depth 2 (s23), and the last unmodelled pass -- local-alloc's suggested-register pass -- is measured inert three ways (s24).",
-   "next_probe": "None inside the sanctioned space. Only relevant if the owner sanctions a multi-handle family on evidence that does not exist in SOTN master today -- and even then the starting point is rejected/three-pointer-objects-judge-FAIL-score0.c (measures 0), not the two-object forms, which reach only 8."
+   "hypothesis": "The 10-point residual is not a seat we have mis-assigned but a seat COUNT: the target runs two register conventions because it has two simultaneously live address values, and candidate.c is the maximum of the one-address-object seat space (any swap is a net loss of ~4 points). No form that reassigns one seat can improve the floor.",
+   "mechanism": "global.c:426 gives one allocno per pseudo with no live-range splitting, so one hard register per address object for its whole live range; s25 prices the only remaining one-object seat choice and it is worse than the current one. Blocks 2, 3, the copy loop and the epilogue are already exact, so every point recoverable in blocks 0-1 is paid for twice over in blocks 2-3.",
+   "next_probe": "Do NOT spend further sessions on live-range, ref-count, declaration-order or preference surgery aimed at the $v1/$a0 dial -- s25 shows the dial points the wrong way even if it could be turned. Any future probe must change the NUMBER of live address values, not their seats."
+  },
+  {
+   "hypothesis": "Every route to a second address allocno that does not declare a second C object is now measured closed, so reaching 0 requires the standing banned construct and the two-object family reaches only 8.",
+   "mechanism": "Anonymous symbol refs never create a pseudo (s16, 14-28); reload.c:4128-4137 substitutes the REG_EQUIV constant instead of allocating (s16); aggregates either scalarise to one pseudo or go frame-resident (s18, 10 / 35); the census-exact diagnostic chassis creates no second allocno (s23, still 9); local-alloc's suggested-register pass is inert on a DISJOINT pseudo set (s24); dead round-trip arithmetic makes temps, not allocnos, and is stream-identical at the block-1/block-2 boundary (s25); and merging the declaration into one aggregate changes only which symbol the relocation names (s25).",
+   "next_probe": "If a later session wants to re-open this, the cheapest decisive measurement is a cc1 -da .greg dump of the two-object form vs the base chassis to confirm the allocno count is the ONLY structural difference -- but note the two-object family measures 8, not 0 (s21), and only the three-object family measures 0, which the Judge FAILed on 2026-08-13. A ruling-request, not a submission, is the correct move if that path is ever revisited."
+  },
+  {
+   "hypothesis": "candidate.c's standing layer-1 declaration-pun finding is removable for free and should be cleared as hygiene the next time this function has a submittable body.",
+   "mechanism": "s25 measured `extern u8 D_80106A70[4];` + `D_80106A70[i] = ...` at score 10 / 49 insns, exactly the base chassis -- the sanctioned declaration-level fix the dispatch brief names, at zero codegen cost.",
+   "next_probe": "Integration handoff: include/code6cac.h:472-474 (three u8 scalars -> `extern u8 D_80106A70[4];`), src/code6cac.c:340-342 and :345 (scalar writes/read -> D_80106A70[0..2]), src/code6cac_c_mid.c:205 (`(Quad *)&D_80106A70` -> `(Quad *)D_80106A70`), then re-verify the oracle. Cross-TU, so not a grind-session edit; it does not move this function's floor and must not be sequenced ahead of the floor work."
   }
  ],
  "judge_constraints": [
@@ -170,5 +186,40 @@
  "created": "2026-08-13T16:00:39.577842+00:00",
  "exhaustion_base": 24,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 10 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.697914+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
+ "object_model_audited": 25,
+ "kills": [
+  {
+   "session": 25,
+   "statement": "The fresh address pseudo that s20 created before block 1 with a dead round-trip (`q = q + 3; q = q - 3;`) can be moved to the block-1/block-2 boundary, where it would give blocks 2-3 a different hard ",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 single-object chassis on HEAD (src/code6cac_b.c:3420 INCLUDE_ASM replaced by the body, rules_dropped 0); diagnostic dead-pointer-arithmetic construct present in all four forms, ne",
+   "predicate_cite": "",
+   "result": "Round-trip ADDED after block 1's store with blocks 2/3 keeping their own `q = &D_80106A73;`: score 10 at 49 insns, and t"
+  },
+  {
+   "session": 25,
+   "statement": "Two different address expressions for the same byte -- symbol_ref(D_80106A73)+0 in blocks 0-1 and symbol_ref(D_80106A70)+3 in blocks 2-3 -- give the one C object two allocnos, because cse cannot unify",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 single-object chassis on HEAD, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Score 12 at 49 insns -- two points WORSE than the base chassis, the two points being the differing %hi/%lo symbol in the"
+  },
+  {
+   "session": 25,
+   "statement": "Declaring 0x80106A70..73 as ONE aggregate (`extern u8 D_80106A70[4];`) makes the flag byte and the copy-loop destination members of one object, which gives the function a second naturally-live base an",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD with include/code6cac.h:472-474 patched to `extern u8 D_80106A70[4];`, no FAKE construct present; header and src restored to HEAD before session end",
+   "predicate_cite": "",
+   "result": "SPLIT: hygiene CONFIRMED, lever KILLED. w2 = score 10 at 49 insns, exactly the base chassis -- so removing candidate.c's"
+  },
+  {
+   "session": 25,
+   "statement": "Sibling func_80034708 (same TU, same global D_80106A73) holds a spelling of the shared flag-byte access that transplants onto this chassis and drops the floor.",
+   "kill_scope": "instance",
+   "measured_on": "sibling ledger memory/grind/func_80034708/ as of 2026-09-04 (floor 542, 1 session, no candidate.c); no build performed",
+   "predicate_cite": "",
+   "result": "No transplant exists: func_80034708 has NO candidate.c and its floor is 542 after a single session (s1, 2026-07-07). One"
+  }
+ ]
 }

@@ -3137,3 +3137,221 @@ and it measured inert. The floor is unchanged at 10 and candidate.c is unchanged
 - [s24] No new spelling was tried and nothing was added to rejected/ this session -- the mandated modality was disposition, the un-tried lever was the granted instrument, and it measured inert. Floor unchanged at 10; candidate.c body unchanged (header updated with the s24 record).
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated — ledger floor 10 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force. exhaustion_base=24
+
+==== s25 (synthesis) ====
+
+- [s25] CHASSIS RE-MEASURED ON HEAD. `src/code6cac_b.c:3420` is
+  `INCLUDE_ASM("asm/funcs", func_80034F88);` (asm-until-matched). Installing
+  `memory/grind/func_80034F88/candidate.c` verbatim needs NO extra extern
+  (`include/code6cac.h:472` already declares `extern u8 D_80106A70;` and
+  `src/code6cac_b.c:128` declares `extern u8 D_80106A73;`). Measured this
+  session: `sandbox func_80034F88 --disable all` = **score 10, 49 target insns /
+  49 build insns, rules_dropped 0, scorable true**. The dispatch brief's
+  "measurement unavailable" chassis line is resolved: floor 10 is chassis-valid
+  on HEAD and every banked conclusion carries over unchanged.
+
+- [s25] THE FULL INSTRUCTION-ALIGNED DIFF, re-derived from scratch this session
+  (build stream `tmp/grind/func_80034F88/s25/build.txt`, target
+  `asm/funcs/func_80034F88.s`). This is the first time the ledger carries the
+  whole 49-vs-49 alignment in one place rather than in prose:
+
+    idx  TARGET                     BUILD (candidate.c)
+    4    lui   $v1,%hi(A73)         lui   $a0,%hi(A73)        DIFF (reg)
+    5    addiu $v1,%lo(A73)         addiu $a0,%lo(A73)        DIFF (reg)
+    6    lbu   $a0,0($v1)           lbu   $v1,0($a0)          DIFF (reg swap)
+    7    move  $a1,$v0              move  $a1,$v0             same
+    8    andi  $a0,$a0,0xF8         andi  $v1,$v1,0xf8        DIFF (reg)
+    9    sb    $a0,0($v1)           sb    $v1,0($a0)          DIFF (reg swap)
+    10   lw    $v0,0x20($a1)        lw    $v0,0x20($a1)       same
+    11   lbu   $a0,0($v1)           nop                       DIFF (reload)
+    12   andi  $v0,$v0,0x1          andi  $v0,$v0,0x1         same
+    13   bnez  $v0,L                bnez  $v0,L               same
+    14   ori   $v0,$a0,0x1          ori   $v0,$v1,0x1         DIFF (reg)
+    15   addu  $v0,$a0,$zero        move  $v0,$v1             DIFF (reg)
+    16   lui   $a0,%hi(A73)         sb    $v0,0($a0)          DIFF (order)
+    17   addiu $a0,%lo(A73)         lui   $a0,%hi(A73)        DIFF (order)
+    18   sb    $v0,0($v1)           addiu $a0,%lo(A73)        DIFF (order)
+    19..48                          IDENTICAL (blocks 2 and 3, the whole copy
+                                    loop, and the epilogue match instruction
+                                    for instruction AND register for register)
+
+  Read as an allocation statement: **our build is the target with blocks 0 and 1
+  re-spelled in blocks 2/3's register convention.** The target uses base=$v1 /
+  value=$a0 for blocks 0-1 and base=$a0 / value=$v1 for blocks 2-3; our single
+  address object uses base=$a0 / value=$v1 EVERYWHERE, so blocks 2-3 come out
+  exact and blocks 0-1 come out mirrored.
+
+- [s25] THE SEAT SWAP IS A NET LOSS, priced. This closes s16's "$v1-vs-$a0 dial
+  would be a net loss" as arithmetic rather than as a remark. If a single-object
+  form could be made to seat the address in $v1 for the whole function (the
+  target's blocks-0/1 convention), blocks 0 and 1 would gain the seven register
+  positions above (idx 4,5,6,8,9,14,15), but blocks 2 and 3 - currently 100%
+  exact, nine scored instructions each - would each acquire the mirror image of
+  the same six register differences (lui/addiu reg, `lbu $a0,0($v1)`,
+  `ori $v0,$a0`, `addu $v0,$a0`, `sb $v0,0($v1)`), i.e. about twelve new points
+  against about eight recovered. **No single-seat assignment of one address
+  allocno beats the current one.** The current chassis is the argmax over the
+  whole one-address-object seat space, not merely a point in it. This also
+  explains why 24 sessions of live-range / ref-count / declaration-order surgery
+  aimed at the "$v1 dial" were not merely inert but pointed the wrong way.
+
+- [s25] THE FRESH-PSEUDO ESCAPE IS POSITION-SPECIFIC AND DOES NOT REACH THE
+  RESIDUAL. s20 established that a dead round-trip (`q = q + 3; q = q - 3;`)
+  placed BEFORE block 1 creates a fresh address pseudo and recovers the target's
+  missing `lbu` at zero instruction cost (still score 10, target's exact
+  lbu 176 / sb 164 / lui 456 census). The open reading of that result was that
+  the "one C object = one pseudo" barrier is false, and hence that the same
+  trick moved to the block-1/block-2 boundary might give blocks 2-3 a different
+  seat from blocks 0-1 without a second C object. **Measured this session: it
+  does not.** Four placements, all on the score-10 chassis, all diagnostics
+  never intended for installation (dead pointer arithmetic fails checklist
+  T1/T2/T3):
+    * round-trip ADDED after block 1's store, blocks 2/3 keeping their
+      `q = &D_80106A73;` re-materialisations -> score 10, 49 insns, and the
+      emitted stream is **byte-for-byte identical** to the base chassis
+      (`diff tmp/grind/func_80034F88/s25/build.txt tmp/grind/func_80034F88/s25/v3.txt`
+      is empty). The round-trip is folded away entirely at that position: no
+      fresh pseudo, no extra insn, no seat change.
+      Banked rejected/s25-roundtrip-at-b1b2-boundary-IDENTICAL-STREAM-score10-DEAD-ARITH.c
+    * round-trip REPLACING block 2's re-materialisation -> score 11 at **47**
+      insns: the address never dies, so the second lui/addiu pair is never
+      emitted and the function comes out two instructions short.
+      Banked rejected/s25-roundtrip-replaces-b2-remat-folds-away-score11-47insn.c
+    * round-trip replacing block 2's AND block 3's -> score 13 at **45** insns
+      (both re-materialisation pairs gone).
+      Banked rejected/s25-roundtrip-replaces-b2b3-remat-folds-away-score13-45insn.c
+    * round-trip before block 1 (s20's own form) re-measured on HEAD -> score 10
+      at 49 insns, reconfirmed.
+      Banked rejected/s25-roundtrip-before-b1-reconfirms-s20-score10-DEAD-ARITH.c
+  Mechanism the four together name: the round-trip's only observable effect is
+  to make an otherwise-redundant `q = &D_80106A73;` set NON-redundant to cse, so
+  that set survives as its own address pair. It is a re-materialisation ENABLER,
+  not an allocno splitter. Where the set is already non-redundant (blocks 2 and
+  3, which sit after a CODE_LABEL that flushes cse's value table - the s7
+  mechanism recorded at hypotheses.md:892) it is inert; where it replaces the
+  set it deletes the pair. **A fresh RTL temp is not a fresh allocno for the C
+  variable it feeds: the temp is copy-propagated into `q`'s pseudo, and `q`
+  still has exactly one allocno (tools/gcc-2.7.2/global.c:426), hence exactly
+  one hard register for its whole live range.** s20's "one C object = one pseudo
+  is not a theorem" reading is hereby narrowed to its true scope: extra address
+  temps can appear, but they cannot carry a second SIMULTANEOUSLY LIVE base.
+
+- [s25] `&D_80106A70 + 3` AS THE BLOCK-2/3 RE-MATERIALISATION EXPRESSION ->
+  score 12 at 49 insns. Two different address rtxs for the same byte
+  (symbol_ref(A73)+0 for blocks 0-1, symbol_ref(A70)+3 for blocks 2-3) do NOT
+  buy a second allocno either - still one `q`, one seat - and the differing
+  %hi/%lo symbol costs 2 points. It is also the declaration pun the dispatch
+  brief's auto-scan flags (`extern u8 D_80106A70;` indexed out of bounds), so it
+  is inadmissible independently of its score.
+  Banked rejected/s25-a70-plus-3-remat-b2b3-score12-DECL-PUN.c
+
+- [s25] SIBLING func_80034708 (same TU, same global) - MANDATED TRANSPLANT
+  DISCHARGED, NOTHING TO SPEND, ONE EVIDENTIARY GAIN. Its ledger has no
+  candidate.c and its floor is 542 (one session, s1 2026-07-07), so there is no
+  spelling to transplant onto this chassis. What it DOES carry is first-hand
+  target evidence about this exact byte: func_80034708's jump-table cases 8 and
+  9 spell `D_80106A73 ^= 1` / `^= 2` through a single long-lived pointer local
+  (`s5 = &D_80106A73`, held across the whole phase-B loop). The original
+  codebase's idiom for this byte is a **pointer object, not a direct symbol
+  access**, which independently corroborates candidate.c's object model and
+  independently corroborates s16's measurement that the plain-symbol family is
+  far worse (28/29). It supplies no second handle: func_80034708 holds exactly
+  one, in a function long enough to have wanted more.
+
+- [s25] KILL RE-AUDIT (2026-09-01 protocol) - VACUOUS BY CONSTRUCTION, and
+  discharged by substitution. `memory/grind/func_80034F88/state.json` has NO
+  `kills[]` array at all (keys present: func, file, session_count,
+  current_modality, floor_history, frontier, judge_constraints,
+  banned_constructs, ladder_skip, pending_fixup, origin, created,
+  exhaustion_base, last_unpark_reason, last_unpark_at). There is therefore no
+  instance kill whose `measured_on` can be stale and `tools/fake_ablate.py` has
+  nothing to ablate. The re-audit was instead discharged against the two
+  closest-to-target BANKED FORMS, both re-measured on HEAD this session: the
+  base chassis (candidate.c, 10 / 49 insns) and s20's census-exact fresh-pseudo
+  diagnostic (10 / 49 insns). Both hold at their recorded scores.
+
+- [s25] CONTRADICTION-RULE AUDIT (the brief's standing instruction). The weakest
+  foreclosure in the ledger was s20's, because it was the only one whose own
+  measurement contradicted the ceiling argument it sat under: s20 showed a fresh
+  address pseudo IS creatable from one C object, which if it generalised would
+  have voided s23/s24's "second base needs a second allocno needs a second C
+  object" chain. That is the foreclosure this session re-opened and re-measured,
+  and it closes cleanly in the ceiling's favour (position-specific, temp not
+  allocno, stream byte-identical at the boundary that mattered). The remaining
+  foreclosures - RA modelled exactly and FORECLOSED over 218 perturbations
+  (s23), local-alloc suggested-register pass measured inert three ways on a
+  DISJOINT pseudo set (s24) - are not weakened by anything measured here, and
+  s25's seat-swap pricing supplies the argument they were missing: even a
+  granted swap would make the function WORSE.
+
+- [s25] THE ARRAY DECLARATION MEASURED FOR THE FIRST TIME (the dispatch brief's
+  DATA MODEL signal, and F3 of this session's frontier). Every prior session
+  varied the address SPELLING at the use site (`&D_80106A70 + 3`,
+  `*(&D_80106A70 + i)`); none had ever changed the DECLARATION. Patched
+  `include/code6cac.h:472-474` from three `extern u8 D_80106A70/71/72;` scalars
+  to a single `extern u8 D_80106A70[4];` (the sandbox compiles only
+  src/code6cac_b.c, so the two out-of-TU consumers - src/code6cac.c:340-342 and
+  src/code6cac_c_mid.c:205 - do not affect the measurement; they WOULD have to
+  be adapted in a real integration handoff). Header and src both restored to
+  HEAD at the end of the session. Two forms:
+
+    w2  array decl + copy loop spelled `D_80106A70[i] = *((u8 *)p + i + 0x17);`
+        (flags still via `q = &D_80106A73;`)
+        -> score 10, 49 insns. **EXACTLY the base chassis.**
+        Banked rejected/s25-arraydecl-loop-depunned-score10-NEUTRAL-needs-header-handoff.c
+
+    w1  array decl + flags ALSO via the array: `q = &D_80106A70[3];` in all
+        three blocks
+        -> score 12, 49 insns. Disassembled and reloc-dumped: the ONLY
+        differences from the base chassis are three `addiu a0,a0,3` where the
+        base emits `addiu a0,a0,0`, and `objdump -r` shows all six sites are
+        R_MIPS_HI16/R_MIPS_LO16 against D_80106A70. After linking,
+        %lo(D_80106A70)+3 == 0x6A73 == the target's own
+        `addiu $v1,$v1,%lo(D_80106A73)` immediate. So the +2 is the known FALSE
+        distance from engine/score.py not masking section-relative R_MIPS_LO16
+        addends ([[sandbox-lo16-text-addend-false-distance]]), exactly as s17
+        found for `&D_80106A70 + 3`. **w1 is byte-identical to the base chassis
+        after link.**
+        Banked rejected/s25-arraydecl-flags-via-index3-score12-FALSE-LO16-ADDEND.c
+
+  Three consequences, all new:
+  (a) The declaration pun the dispatch brief flags on candidate.c:374
+      (`*(&D_80106A70 + i)` against a scalar `extern u8 D_80106A70;`) is
+      REMOVABLE AT ZERO CODEGEN COST. The sanctioned fix is exactly the one the
+      brief names - fix the DECLARATION, not the use site - and w2 proves it is
+      free. It is not a single-file grind edit: `extern u8 D_80106A70[4];`
+      requires src/code6cac.c:340-342 (`D_80106A70 = 0x11;` ->
+      `D_80106A70[0] = 0x11;` etc, and the read at :345) and
+      src/code6cac_c_mid.c:205 (`(Quad *)&D_80106A70` -> `(Quad *)D_80106A70`)
+      to move with it, i.e. an integration handoff. It should be executed
+      whenever this function next has a submittable body, and it removes a
+      standing layer-1 finding for free.
+  (b) The array/aggregate model is byte-COMPATIBLE with the target for the flag
+      byte as well as for the colour bytes (w1). The disassembly cannot
+      distinguish `%lo(D_80106A70)+3` from `%lo(D_80106A73)` in a linked PS-EXE,
+      so the target's asm is NOT evidence against the one-object model.
+  (c) But the aggregate model does NOT create a second live base. w1 still has
+      exactly one `q`, one pseudo, one seat; blocks 2-3 keep the register they
+      had and blocks 0-1 stay mirrored. Merging A70..A73 into one declared
+      object changes the symbol the relocation names and nothing else. The
+      aggregate-merge family is therefore a HYGIENE fix here, not a lever: F3 as
+      posed in this session's frontier reset is measured and CLOSED in the same
+      session that opened it.
+
+- [s25] CHASSIS: HEAD carries `INCLUDE_ASM("asm/funcs", func_80034F88);` at src/code6cac_b.c:3420. Installing memory/grind/func_80034F88/candidate.c verbatim needs NO extra extern (include/code6cac.h:472 already declares D_80106A70, src/code6cac_b.c:128 declares D_80106A73). Measured this session: score 10, 49 target insns / 49 build insns, rules_dropped 0, scorable true. The dispatch brief's 'measurement unavailable' chassis line is resolved and floor 10 is chassis-valid.
+
+- [s25] FULL 49-vs-49 ALIGNMENT re-derived from scratch and banked in evidence.md for the first time. Positions 0-3 and 7,10,12,13 and 19-48 are identical instruction-for-instruction AND register-for-register; the 10 points are positions 4,5,6,8,9 (block 0 register mirror), 11 (nop where the target reloads), 14,15 (block 1 register mirror) and the 16/17/18 ordering triple (target emits the second base's lui/addiu BEFORE block 1's store; we emit the store first, because with one C object the second set is a def of the register the store reads).
+
+- [s25] SEAT SWAP PRICED AS A NET LOSS. The target runs base=$v1 / value=$a0 in blocks 0-1 and base=$a0 / value=$v1 in blocks 2-3; our single address object runs base=$a0 / value=$v1 everywhere, so blocks 2-3 are 100% exact and blocks 0-1 are mirrored. Granting the $v1 seat for the whole function would recover the seven register positions in blocks 0-1 and give back the mirror image of six register differences in EACH of blocks 2 and 3 (~+8 against ~-12). candidate.c is the ARGMAX of the one-address-object seat space, not a point in it we failed to improve -- which retires the whole class of live-range / ref-count / declaration-order probes that 22 of the first 24 sessions ran and explains why they were not merely inert but aimed the wrong way.
+
+- [s25] s20's FRESH-PSEUDO ESCAPE IS POSITION-SPECIFIC. Round-trip at the block-1/block-2 boundary: score 10, 49 insns, stream BYTE-FOR-BYTE identical to the base chassis (empty diff). Replacing block 2's re-materialisation: 11 at 47 insns. Replacing block 2's and block 3's: 13 at 45 insns. Before block 1 (s20's form): 10 at 49, reconfirmed on HEAD. The construct makes a cse-redundant `q = &D_80106A73;` set survive as its own address pair; it does not split an allocno.
+
+- [s25] ARRAY DECLARATION MEASURED FOR THE FIRST TIME IN 25 SESSIONS. `extern u8 D_80106A70[4];` + copy loop spelled `D_80106A70[i] = ...` scores 10 at 49 insns -- EXACTLY the base chassis. So candidate.c's flagged declaration pun is removable at ZERO codegen cost via the sanctioned declaration-level fix; it needs src/code6cac.c:340-342/:345 and src/code6cac_c_mid.c:205 to move with the header, i.e. an integration handoff, and it should be executed whenever this function next has a submittable body.
+
+- [s25] THE AGGREGATE MODEL IS BYTE-COMPATIBLE BUT NOT A LEVER. Reaching the flag byte as `&D_80106A70[3]` scores 12, and objdump -d + objdump -r show the only differences are three `addiu a0,a0,3` against R_MIPS_LO16 D_80106A70, linking to the target's own 0x6A73 immediate -- the known false LO16-addend distance. So the target's disassembly cannot distinguish %lo(D_80106A70)+3 from %lo(D_80106A73) and is not evidence against the one-object model; but the merge creates no second live base.
+
+- [s25] SIBLING func_80034708: no candidate.c, floor 542, nothing to transplant. Its target holds D_80106A73 through ONE long-lived pointer local (s5, jtbl cases 8/9 `^= 1` / `^= 2`) -- corroborating candidate.c's pointer-object model and holding exactly one handle itself.
+
+- [s25] KILL RE-AUDIT VACUOUS BY CONSTRUCTION: state.json has no kills[] key at all, so no instance kill has a stale measured_on and tools/fake_ablate.py has nothing to ablate. Discharged by substitution instead -- the two closest-to-target banked forms (candidate.c and s20's census-exact fresh-pseudo diagnostic) were both re-measured on HEAD at 10 / 49 and both hold.
+
+- [s25] CONTRADICTION-RULE AUDIT: the weakest foreclosure was s20's, because its own measurement (a fresh address pseudo IS creatable from one C object) contradicted the ceiling argument above it. Re-opened and re-measured this session; it closes in the ceiling's favour. The s23 (RA modelled exactly, FORECLOSED over 218 perturbations) and s24 (local-alloc suggested-register pass inert three ways on a DISJOINT pseudo set) foreclosures are not weakened by anything measured here, and s25's seat-swap pricing supplies the argument they were missing.

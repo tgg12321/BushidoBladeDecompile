@@ -2211,3 +2211,186 @@ registers is a second C object aliasing D_80106A73, banned for this function on
 - probe: Grouped the 163 PSX (untagged) `pointer_alias` rows of docs/reference/sotn-construct-index.md (commit aa53500226ee84be763f3e8702b27de06456b3a7) by (file, identical RHS address expression), then read the two tightest groups first-hand in the sotn-decomp checkout.
 - result: 33 multi-alias groups, every one being one alias per FUNCTION repeated across sibling functions in the same file (line spans 12 to 3373). src/dra/4DA70.c:30/:42 are func_800EDAE4 and func_800EDB08; src/st/rare/e_azaghal.c:475-477/:489-491 are InitPositionLerp and ApplyPositionLerp, each taking three aliases to three DIFFERENT members. Zero PSX functions hold two live handles on one address. Gate 2 FAILS from a second independent source.
 - verdict: KILLED
+
+## [s25] The fresh address pseudo that s20 created before block 1 can be moved to the block-1/block-2 boundary, where it would give blocks 2-3 a different hard register from blocks 0-1 out of ONE C object.
+
+- mechanism: s20 measured that `q = q + 3; q = q - 3;` before block 1 makes an
+  extra address value appear in the stream (it recovers the target's missing
+  `lbu` at zero instruction cost). If that extra value is a genuine second
+  address pseudo rather than a folded temp, then placing it at the boundary
+  between block 1 and block 2 would split the base's live range in exactly the
+  place the target splits it, and the "second base needs a second C object"
+  chain (global.c:426, one allocno per pseudo, no live-range splitting) would be
+  void - which is what the brief's CONTRADICTION RULE says to re-audit first.
+- probe: four placements of the round-trip on the score-10 chassis, each built
+  and scored with `sandbox func_80034F88 --disable all`, the boundary form also
+  disassembled and diffed against the base chassis stream
+  (tmp/grind/func_80034F88/s25/sweep.ps1, build.txt, v3.txt).
+- result: KILLED. Round-trip ADDED after block 1's store, with blocks 2/3
+  keeping their own `q = &D_80106A73;`: score 10 at 49 insns and the emitted
+  instruction stream is BYTE-FOR-BYTE IDENTICAL to the base chassis (empty
+  diff). The construct is folded away completely at that position. Round-trip
+  REPLACING block 2's re-materialisation: score 11 at 47 insns - the address
+  never dies, the second lui/addiu pair is never emitted, the function is two
+  instructions short. Replacing block 2's AND block 3's: score 13 at 45 insns.
+  Round-trip before block 1 re-measured on HEAD: score 10 at 49 insns
+  (s20 reconfirmed). The round-trip's only effect is to make an otherwise
+  cse-redundant `q = &D_80106A73;` set survive as its own address pair - a
+  re-materialisation ENABLER, not an allocno splitter. The RTL temp is
+  copy-propagated into `q`'s pseudo; `q` still has exactly one allocno and
+  therefore exactly one hard register for its whole live range.
+- verdict: KILLED (instance - four placements of one diagnostic construct on
+  the score-10 single-object chassis)
+
+## [s25] Two different address expressions for the same byte (symbol_ref(A73)+0 in blocks 0-1, symbol_ref(A70)+3 in blocks 2-3) give the one C object two allocnos, because cse cannot unify the two rtxs.
+
+- mechanism: cse's value table keys on the address rtx; two non-identical
+  constants for the same address would defeat unification, and if the
+  non-unified sets were allocated independently the second could land in a
+  different seat.
+- probe: blocks 2 and 3 re-materialise with `q = &D_80106A70 + 3;`, blocks 0-1
+  keep `q = &D_80106A73;`; built and scored.
+- result: KILLED. Score 12 at 49 insns - two points WORSE than the base chassis,
+  and the two extra points are exactly the differing %hi/%lo symbol in the
+  block-2/3 lui/addiu pairs. Still one `q`, still one seat; blocks 2-3 keep the
+  same register they had. The form is additionally inadmissible on its own
+  terms: `extern u8 D_80106A70;` indexed at +3 is the out-of-bounds declaration
+  pun the dispatch brief's auto-scan flags.
+- verdict: KILLED (instance - one form on the score-10 single-object chassis,
+  no FAKE construct present)
+
+## [s25] Sibling func_80034708 (same TU, same global D_80106A73) holds a spelling of the shared flag-byte access that transplants onto this chassis and drops the floor.
+
+- mechanism: the brief's SIBLING LEDGERS rule - a sibling's candidate is
+  inheritance this ledger never wrote, and CD_datasync/CD_sync showed a
+  foreclosed sibling holding the shared window's fix.
+- probe: read memory/grind/func_80034708/{state.json,evidence.md}; look for a
+  candidate.c and for the spelling of every block the two functions share.
+- result: KILLED as a transplant, CONFIRMED as corroboration. func_80034708 has
+  NO candidate.c and its floor is 542 after one session (s1, 2026-07-07), so
+  there is no spelling to transplant. Its target evidence is still worth
+  banking: its jump-table cases 8 and 9 spell `D_80106A73 ^= 1` / `^= 2` through
+  a single long-lived pointer local (`s5 = &D_80106A73` held across the whole
+  phase-B loop). So the original codebase's idiom for this byte is a POINTER
+  OBJECT, not a direct symbol access - independent corroboration of
+  candidate.c's object model and of s16's 28/29 measurements on the plain-symbol
+  family - and func_80034708 holds exactly ONE handle in a function far longer
+  than this one.
+- verdict: KILLED (instance - transplant unavailable, sibling at floor 542 with
+  no candidate.c as of 2026-09-04)
+
+## [s25] FRONTIER RESET (synthesis - the merged attack for the ladder's second cycle)
+
+s25's job was to merge, re-audit and re-aim, and the merge changes the shape of
+the remaining question in one specific way, so state the new frontier precisely:
+
+F1 (the residual, now stated as a seat-space argmax rather than a dial).
+The whole 10-point residual is blocks 0 and 1 wearing blocks 2/3's register
+convention. The target runs TWO conventions because it has TWO simultaneously
+live address values; we run ONE because we have one C object, hence one pseudo,
+hence one allocno (global.c:426), hence one hard register for the whole live
+range. s25 prices the only remaining single-object dial - the $v1/$a0 seat swap
+- and it is a NET LOSS (about +8 recovered in blocks 0-1 against about -12 given
+back in blocks 2-3, which are currently exact). So the current chassis is not a
+point in the one-object seat space that we have failed to improve on; it is the
+MAXIMUM of that space. Nothing that reassigns one seat can help, which retires
+the entire class of probes that 22 of the first 24 sessions ran.
+
+F2 (what is actually left, and it is not RA). Reaching 0 needs a second address
+allocno. Every route to one that does not declare a second C object is now
+measured closed: anonymous symbol refs never create a pseudo (s16, 14-28);
+reload rematerialises the REG_EQUIV constant instead of allocating
+(reload.c:4128-4137, s16); aggregates either scalarise to one pseudo or go
+frame-resident (s18, 10 / 35); the census-exact diagnostic chassis creates no
+second allocno (s23, still 9 allocnos); local-alloc's suggested-register pass is
+inert on a DISJOINT pseudo set (s24); and now dead round-trip arithmetic makes
+temps, not allocnos, and is stream-identical at the only boundary that mattered
+(s25). The second C object is the standing banned construct, and the two-object
+family reaches 8, not 0 (s21) - only the three-object family reaches 0, and the
+Judge FAILed it on 2026-08-13.
+
+F3 (the one genuinely unmeasured thing left, and it is a DECLARATION question,
+not a spelling question). Everything above assumes the flag byte is reached
+through `extern u8 D_80106A73;`. The dispatch brief's DATA MODEL scan says
+D_80106A70 is indexed with a computed register and is really an ARRAY (or a
+record base) mis-declared as a scalar, and code6cac.c:340-342 writes
+D_80106A70/71/72 as three separate scalars while code6cac_c_mid.c:205 casts
+`&D_80106A70` to `Quad *`. If the true declaration is one aggregate spanning
+0x80106A70..0x80106A73, then the flag byte and the copy-loop destination are
+MEMBERS OF THE SAME OBJECT, and the aggregate-merge family (no-new-park-
+categories.md, 2026-08-17 entry, five prongs) - not the pointer-alias family -
+is the frame in which a second live base could be ordinary C rather than a
+second handle. s17 measured the ADDRESS SPELLING `&D_80106A70 + 3` as
+codegen-neutral and s25 measured it at 12 as a per-block re-materialisation, but
+NEITHER measured the DECLARATION: an actual `extern u8 D_80106A70[4];` (or a
+struct) in include/code6cac.h, with code6cac.c:340-342 and
+code6cac_c_mid.c:205 updated to match, has never been built. That is a
+cross-TU header edit, i.e. an integration-handoff-shaped change rather than a
+single-file grind edit, and prong (a) of the aggregate-merge family requires
+base-register or stride evidence - which the copy loop's
+`lui $at / addu $at,$v1 / sb $v0,%lo(D_80106A70)($at)` arguably supplies for
+A70..A72 but NOT for A73, whose accesses use an independent %hi/%lo pair. It is
+the only unmeasured axis the ledger can name, and it should be measured before
+any further disposition attempt.
+
+## [s25] F3, opened and closed in the same session: declaring 0x80106A70..73 as ONE aggregate (`extern u8 D_80106A70[4];`) makes the flag byte and the copy-loop destination members of one object, which gives the function a second naturally-live base and/or removes the declaration pun.
+
+- mechanism: the dispatch brief's DATA MODEL scan flags D_80106A70 as
+  indexed-with-a-computed-register but declared `extern u8 D_80106A70;`, i.e.
+  an array mis-declared as a scalar; the sanctioned fix for a use-site pun is at
+  the DECLARATION (aggregate-merge family, no-new-park-categories.md 2026-08-17
+  entry). Every prior session varied the address SPELLING; none had ever built
+  the changed DECLARATION.
+- probe: patch include/code6cac.h:472-474 (three u8 scalars -> one
+  `extern u8 D_80106A70[4];`), then build two forms - (w2) copy loop spelled
+  `D_80106A70[i] = ...` with the flags still via `q = &D_80106A73;`, and (w1)
+  the flags ALSO via the array, `q = &D_80106A70[3];`. Score both; disassemble
+  w1 and dump its relocations. Header and src restored to HEAD afterwards.
+- result: PARTLY CONFIRMED (hygiene), KILLED (lever). w2 = score 10 at 49 insns,
+  exactly the base chassis - so removing the pun is CODEGEN-NEUTRAL and free,
+  though it needs src/code6cac.c:340-342/:345 and src/code6cac_c_mid.c:205 to
+  move with the header, i.e. an integration handoff rather than a grind edit.
+  w1 = score 12 at 49 insns, and the disassembly plus `objdump -r` show the only
+  differences are three `addiu a0,a0,3` against R_MIPS_LO16 D_80106A70, which
+  link to the target's own 0x6A73 immediate - the known false LO16-addend
+  distance ([[sandbox-lo16-text-addend-false-distance]], as in s17). So the
+  aggregate model is byte-COMPATIBLE with the target for the flag byte too, and
+  the target's asm is not evidence against it - but it creates NO second live
+  base: one `q`, one pseudo, one allocno, one seat, blocks 0-1 still mirrored.
+  Merging the declaration changes which symbol the relocation names and nothing
+  else.
+- verdict: KILLED (instance - two forms on the score-10 single-object chassis
+  with include/code6cac.h patched to `extern u8 D_80106A70[4];`, no FAKE
+  construct present)
+
+## [s25] The fresh address pseudo that s20 created before block 1 with a dead round-trip (`q = q + 3; q = q - 3;`) can be moved to the block-1/block-2 boundary, where it would give blocks 2-3 a different hard register from blocks 0-1 out of ONE C object.
+- mechanism: s20 measured that the round-trip before block 1 makes an extra address value appear in the stream and recovers the target's missing lbu at zero instruction cost. If that value were a genuine second address pseudo rather than a folded temp, placing it at the block-1/block-2 boundary would split the base's live range exactly where the target splits it, voiding the global.c:426 one-allocno-per-pseudo chain that s23/s24's foreclosures rest on. This was the ledger's weakest foreclosure (its own measurement contradicted the ceiling argument above it), so the brief's CONTRADICTION RULE points at it first.
+- probe: Four placements of the round-trip built on the score-10 chassis and scored with `sandbox func_80034F88 --disable all`; the boundary form additionally disassembled (mipsel-linux-gnu-objdump -d on tmp/sandbox/func_80034F88/code6cac_b.o) and diffed against the base chassis stream. Driver: tmp/grind/func_80034F88/s25/sweep.ps1.
+- result: Round-trip ADDED after block 1's store with blocks 2/3 keeping their own `q = &D_80106A73;`: score 10 at 49 insns, and the emitted stream is BYTE-FOR-BYTE IDENTICAL to the base chassis (diff of build.txt vs v3.txt is empty) -- folded away completely, no fresh pseudo, no seat change. Round-trip REPLACING block 2's re-materialisation: score 11 at 47 insns (the address never dies, the second lui/addiu pair is never emitted). Replacing block 2's AND block 3's: score 13 at 45 insns. Round-trip before block 1 (s20's own form) re-measured on HEAD: score 10 at 49 insns, reconfirmed. Mechanism the four name together: the round-trip's only observable effect is to make an otherwise cse-redundant `q = &D_80106A73;` set survive as its own address pair -- a re-materialisation ENABLER, not an allocno splitter. The RTL temp is copy-propagated into q's pseudo, so q still has exactly one allocno and one hard register for its whole live range. s20's 'one C object = one pseudo is not a theorem' reading is narrowed to its true scope: extra address temps can appear, they cannot carry a second simultaneously-live base.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 single-object chassis on HEAD (src/code6cac_b.c:3420 INCLUDE_ASM replaced by the body, rules_dropped 0); diagnostic dead-pointer-arithmetic construct present in all four forms, never installed as a candidate
+
+## [s25] Two different address expressions for the same byte -- symbol_ref(D_80106A73)+0 in blocks 0-1 and symbol_ref(D_80106A70)+3 in blocks 2-3 -- give the one C object two allocnos, because cse cannot unify the two rtxs.
+- mechanism: cse's value table keys on the address rtx; two non-identical constants for the same address defeat unification, and if the non-unified sets were allocated independently the second could land in a different seat.
+- probe: Blocks 2 and 3 re-materialise with `q = &D_80106A70 + 3;` while blocks 0-1 keep `q = &D_80106A73;`; built and scored on the score-10 chassis.
+- result: Score 12 at 49 insns -- two points WORSE than the base chassis, the two points being the differing %hi/%lo symbol in the block-2/3 lui/addiu pairs. Still one q, still one seat; blocks 2-3 keep the register they already had and blocks 0-1 stay mirrored. The form is additionally inadmissible on its own terms: `extern u8 D_80106A70;` indexed at +3 is the out-of-bounds declaration pun the dispatch brief's auto-scan flags.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 single-object chassis on HEAD, no FAKE construct present
+
+## [s25] Declaring 0x80106A70..73 as ONE aggregate (`extern u8 D_80106A70[4];`) makes the flag byte and the copy-loop destination members of one object, which gives the function a second naturally-live base and/or removes the declaration pun.
+- mechanism: The dispatch brief's DATA MODEL scan flags D_80106A70 as indexed with a computed register but declared as a scalar extern -- an array mis-declared -- and names the aggregate-merge family (no-new-park-categories.md 2026-08-17) as the sanctioned fix at the DECLARATION rather than the use site. Every prior session varied the address SPELLING; none had ever built the changed DECLARATION.
+- probe: Patched include/code6cac.h:472-474 from three `extern u8 D_80106A70/71/72;` scalars to `extern u8 D_80106A70[4];` (the sandbox compiles only src/code6cac_b.c, so the out-of-TU consumers do not affect the measurement) and built two forms: w2 = copy loop spelled `D_80106A70[i] = ...` with the flags still via `q = &D_80106A73;`, and w1 = flags also via the array, `q = &D_80106A70[3];`. Scored both; disassembled w1 and dumped its relocations with `objdump -r`. Header and src restored to HEAD at the end of the session.
+- result: SPLIT: hygiene CONFIRMED, lever KILLED. w2 = score 10 at 49 insns, exactly the base chassis -- so removing candidate.c's declaration pun (`*(&D_80106A70 + i)` against a scalar extern, a standing layer-1 FAIL finding) is CODEGEN-NEUTRAL and free, though the header change drags src/code6cac.c:340-342/:345 and src/code6cac_c_mid.c:205 with it, making it an integration handoff rather than a grind edit. w1 = score 12 at 49 insns, and the disassembly plus objdump -r show the only differences are three `addiu a0,a0,3` against R_MIPS_LO16 D_80106A70, which link to the target's own 0x6A73 immediate -- the known false LO16-addend distance (sandbox-lo16-text-addend-false-distance), so w1 is byte-identical to the base chassis after link and the target's asm is NOT evidence against the one-object model. But neither form creates a second live base: one q, one pseudo, one allocno, one seat, blocks 0-1 still mirrored. Merging the declaration changes which symbol the relocation names and nothing else.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD with include/code6cac.h:472-474 patched to `extern u8 D_80106A70[4];`, no FAKE construct present; header and src restored to HEAD before session end
+
+## [s25] Sibling func_80034708 (same TU, same global D_80106A73) holds a spelling of the shared flag-byte access that transplants onto this chassis and drops the floor.
+- mechanism: The brief's SIBLING LEDGERS rule -- a sibling's candidate is inheritance this ledger never wrote, and the 2026-09-04 CD_datasync/CD_sync post-mortem showed a foreclosed sibling holding the shared window's fix.
+- probe: Read memory/grind/func_80034708/state.json and evidence.md; look for candidate.c and for the sibling's spelling of every block the two functions share.
+- result: No transplant exists: func_80034708 has NO candidate.c and its floor is 542 after a single session (s1, 2026-07-07). One evidentiary gain banked instead -- its jump-table cases 8 and 9 spell `D_80106A73 ^= 1` / `^= 2` through a single long-lived pointer local (`s5 = &D_80106A73`, held across the whole phase-B loop), so the original codebase's idiom for this byte is a POINTER OBJECT rather than a direct symbol access. That independently corroborates candidate.c's object model and s16's 28/29 measurements on the plain-symbol family, and it supplies no second handle: func_80034708 holds exactly one, in a function far longer than this one.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: sibling ledger memory/grind/func_80034708/ as of 2026-09-04 (floor 542, 1 session, no candidate.c); no build performed

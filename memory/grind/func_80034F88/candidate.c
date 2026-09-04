@@ -316,6 +316,52 @@
  * source this session — docs/reference/sotn-construct-index.md's 163 PSX
  * pointer_alias rows contain ZERO functions holding two live handles on one
  * address). This file remains the best ADMISSIBLE pure-C form at floor 10.
+ *
+ * s25 (synthesis) re-measured this body ON HEAD -- still score 10, 49/49 insns,
+ * rules_dropped 0 -- and did not change a line of it. It re-derived the full
+ * 49-vs-49 instruction alignment from scratch (evidence.md "==== s25
+ * (synthesis) ===="), and it changes how the residual should be STATED:
+ *
+ * (1) The residual is blocks 0 and 1 wearing blocks 2/3's register convention.
+ * Target: base=$v1 / value=$a0 in blocks 0-1, base=$a0 / value=$v1 in blocks
+ * 2-3. This body: base=$a0 / value=$v1 EVERYWHERE, so blocks 2, 3, the copy
+ * loop and the epilogue are exact and blocks 0-1 are mirrored. The $v1/$a0
+ * "dial" 22 sessions chased is therefore a NET LOSS if it were ever granted:
+ * swapping the one seat recovers ~8 points in blocks 0-1 and gives back ~12 in
+ * blocks 2-3, which are currently 100% exact. This body is the ARGMAX of the
+ * one-address-object seat space, not a point in it we failed to improve.
+ *
+ * (2) s20's fresh-address-pseudo escape is position-specific and does not reach
+ * the residual. Moved to the block-1/block-2 boundary the round-trip is folded
+ * away completely -- the emitted stream is BYTE-FOR-BYTE IDENTICAL to this
+ * body's (score 10, 49 insns, empty diff). Used to REPLACE a block's
+ * re-materialisation it deletes the lui/addiu pair (score 11 at 47 insns; 13 at
+ * 45 for two blocks). The construct is a re-materialisation ENABLER (it makes a
+ * cse-redundant `q = &D_80106A73;` set survive), not an allocno splitter: the
+ * RTL temp is copy-propagated into q's pseudo and q still has exactly one
+ * allocno (global.c:426). s20's "one C object = one pseudo is not a theorem"
+ * reading is narrowed accordingly.
+ *
+ * (3) The DECLARATION was measured for the first time. Declaring
+ * `extern u8 D_80106A70[4];` in include/code6cac.h and spelling the copy loop
+ * `D_80106A70[i] = ...` scores 10 at 49 insns -- EXACTLY this body. So the
+ * declaration pun on the loop line below (`*(&D_80106A70 + i)` against a scalar
+ * extern, which the dispatch auto-scan flags and layer-1 would FAIL) is
+ * removable at ZERO codegen cost. It is not a single-file edit: the header
+ * change drags src/code6cac.c:340-342/:345 and src/code6cac_c_mid.c:205 with
+ * it, so it is an integration handoff to be executed whenever this function
+ * next has a submittable body. Reaching the flag byte through the same array
+ * (`q = &D_80106A70[3];`) is byte-identical after link too (score 12 is the
+ * known false R_MIPS_LO16-addend distance; objdump -r confirms
+ * %lo(D_80106A70)+3 == the target's 0x6A73 immediate) -- but it creates no
+ * second live base, so the aggregate model is hygiene here, not a lever.
+ *
+ * (4) Sibling func_80034708 (same TU, same byte) has no candidate.c and sits at
+ * floor 542, so there was nothing to transplant -- but its target holds
+ * D_80106A73 through a SINGLE long-lived pointer local (`s5`, cases 8/9
+ * `^= 1` / `^= 2`), independent corroboration that this body's object model is
+ * the codebase's idiom for this byte and that the plain-symbol family (28/29,
+ * s16) is not.
  */
 void func_80034F88(void) {
     s32 *p;
