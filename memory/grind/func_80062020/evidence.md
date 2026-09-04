@@ -2402,3 +2402,98 @@ alternative measures 6 (s16b M2). `docs/reference/sotn-construct-index.md` has n
 chained-assignment class at all — it indexes match-hack classes only, so the absence is evidence
 that no SOTN reviewer has ever catalogued a chained assignment as a hack, not evidence about SOTN's
 ordinary C.
+
+## s17 (SYNTHESIS, 2026-09-03) — SOTN-master precedent found for the epilogue construct; body resubmitted unchanged
+
+MODALITY: synthesis. Task: re-read the whole ledger, merge the attack, reset the frontier,
+re-audit kills. Outcome: the body was NOT changed (the standing Judge order is to land it
+exactly), the floor was re-proven for the sixth time, and one genuinely new piece of
+adjudicative evidence was found and banked — the thing five layer-1 FAILs were missing.
+
+### 1. Floor re-proven (sixth independent proof, live chassis, HEAD clean at start)
+
+  python3 memory/grind/func_80062020/apply_s15.py apply     (run under WSL — the script pins
+      a /mnt/c/... root and raises FileNotFoundError from Windows-side Python; use
+      `bash tools/wsl.sh 'cd "/mnt/c/.../Bushido Blade 2 Decompile" && python3 ...'`.
+      This cost s17 one turn and is recorded so the next session does not repeat it.)
+  + the two byte-neutral alias suffixes on undefined_syms_auto.txt:527-528
+  verify-oracle --rebuild --allow-dirty ; verify-oracle --allow-dirty
+      -> ok true, build_matches true,
+         build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked
+  sandbox func_80062020 --disable all
+      -> score 0, target_insns 38, build_insns 38, scorable true, rules_dropped 0
+
+Ban state at submission: state.json banned_constructs has exactly TWO entries (the pointer
+local + second address materialisation; the comments-only re-file of a merits-FAILed body).
+Entries 3 and 4, added after the 21:41 layer-1 FAIL, are GONE — the driver executed the
+integration handoff. `python3 tools/grinder/grindlib.py selfvet . func_80062020` exits 0,
+so a candidate-ready is no longer discarded before the Judge sees it.
+
+### 2. THE FINDING — SOTN master ships this exact construct, unannotated, in PSX GCC 2.7.2 code
+
+Full census: tmp/grind/func_80062020/s17syn/sotn_chain_precedent.md.
+
+Every layer-1 FAIL on this body has made one objection in varying words: the epilogue
+"materialises the terminator row's address twice in two addressing forms". Until now the
+ledger answered it only with mechanism (expr.c:3453-3464) and with negative enumeration
+(s16e: all nine non-chained spellings emit all-LOSUM). What was missing was an in-hand
+upstream precedent — the exact thing the endgame-lock gate (b) and the frozen-family
+non-extension clause demand, and the thing the s4 escalation once wrongly asserted did not
+exist. It exists, and it is a direct hit on BOTH constructs at once:
+
+  sotn-decomp master @ db41b28, src/dra/62DEC.c  — US PSX DRA overlay, GCC 2.7.2
+  (provenance verified against config/splat.us.dra.yaml:58, per
+  [[sotn-citation-requires-version-check]]; NOT PSP/mwcc, NOT Saturn):
+
+    :13   static VECTOR D_80137B20[24];
+    :961  D_80137B20[i].vx = D_80137B20[i].vy = D_80137B20[i].vz = 0;
+    :12   static VECTOR D_801379E0[20];
+    :973  D_801379E0[i].vx = D_801379E0[i].vy = D_801379E0[i].vz = 0;
+    :934  D_801379C8.vx = D_801379C8.vy = D_801379C8.vz = 0;
+
+A splat-invented `D_<addr>` symbol RE-DECLARED AS AN ARRAY OF 3-WORD RECORDS (VECTOR =
+{long vx,vy,vz;}) — construct (1), the aggregate merge — plus an ASCENDING 3-DEEP CHAINED
+ASSIGNMENT zeroing all three members of an INDEXED element `[i]` of that array — construct
+(2), the epilogue. Member-for-member the shape of func_80062020's epilogue. Unannotated:
+no `// fake`, no `/* FAKE */`, no carve-out, no comment at all on either line.
+
+Further 3-deep PSX hits, all unannotated: src/dra/7E4BC.c:258, :396, :2408;
+src/dra/71830.c:2543, :3074; src/dra/66590.c:347; src/weapon/w_001.c:64-65;
+src/weapon/w_024.c:245, :255; src/weapon/w_020.c:191-192. 2-deep hits are routine
+(w_025.c, w_014.c, w_024.c, w_015.c — 20+ sites).
+
+CORROBORATING NEGATIVE EVIDENCE: docs/reference/sotn-construct-index.md, the
+machine-generated index of 1,365 SOTN match-hack constructs, contains ZERO
+chained-assignment entries. The project that catalogued 1,365 match hacks did not classify
+this one as a hack.
+
+CONTRAST: `grep -rE "ID = ID = ...;" src/*.c` over the BB2 tree returns ZERO hits. The
+construct has no in-repo precedent, which is plausibly why it kept reading as novel to
+fresh layer-1 reviewers — but it has abundant same-compiler upstream precedent.
+
+### 3. Kill re-audit (mandated by the brief)
+
+state.json kills[] holds 11 entries. Ten are instance kills measured on the 2026-09-03
+chassis at honest floor 4 with no FAKE construct present; they concern floor-4 chassis
+bodies that the banked form supersedes, and none of them bears on the submitted diff.
+The eleventh — the s14 CLASS kill, "a C construct exists that yields the target's mixed
+epilogue without spelling the same lvalue base two different ways = KILLED", predicate
+tools/gcc-2.7.2/config/mips/mips.h:2286 — is the "two-shape theorem" that EVERY layer-1
+FAIL on this body cites. It was already annotated `refuted_by` in s17b: it was measured
+against four floor-4 bodies whose enumeration contained no chained assignment, and this
+body's six SHA1 proofs refute it directly. The s17 precedent census strengthens that
+withdrawal from the other side: the construct the kill declares nonexistent is one SOTN
+master ships without annotation.
+
+No re-measurement with tools/fake_ablate.py was warranted: the two closest-to-target banked
+forms are this body (measured 0 this session, no FAKE construct anywhere in it) and
+rejected/epilogue-uniform-pointer-floor4-superseded.c (re-measured 6 on this chassis in
+s16b, also FAKE-free). Ablation has nothing to strip in either.
+
+### 4. Frontier after this session
+
+Item 1 (land the banked form) is EXECUTED this session and returned candidate-ready. Item 3
+(retire D_800F119C / D_800F11A0 from undefined_syms_auto.txt) is unchanged follow-on cleanup
+gated on func_800620B8 reaching COMPLETED-C. Item 2 (the bare 2-D declaration) is demoted:
+s17 already proved it byte-equivalent in full context, and the standing Judge order forbids
+substituting it, so it is a surface-reduction option for a future ruling, not a probe.

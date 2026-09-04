@@ -7,6 +7,66 @@ CONSTRUCTS: (1) per-word splat-symbol aggregate merge — the three splat scalar
 No pointer local, no dead statement, no self-assign, no volatile, no duplicated address
 materialisation, no dual spelling, no FAKE construct, no inline asm, no register pin.
 
+## PRIMARY OBJECTION, ANSWERED WITH A SOTN-MASTER PRECEDENT (new in s17b-synthesis)
+
+Every layer-1 FAIL on this body has made ONE objection, in varying words: "the epilogue
+chained assignment materialises the terminator row's address twice in two addressing forms".
+Four facts answer it, and the fourth is new this session.
+
+1. THE C MATERIALISES IT ONCE. All four row writes in the body use the identical token
+   sequence `D_800F1198[i].unkN`. There is no pointer local, no second address expression,
+   and no textual variation between the four writes. The two addressing forms in the emitted
+   asm (`addu $v0,$v1,$v0` + `0x8($v0)` / `0x4($v0)` vs `%lo(D_800F1198)($at)`) are chosen
+   by GCC inside `store_field`'s `want_value` gate, tools/gcc-2.7.2/expr.c:3453-3464 — the
+   author writes one address tree and the compiler emits two modes for it.
+
+2. THE AUTHOR CANNOT SELECT THE ARRANGEMENT. s16e enumerated 15 epilogue spellings across
+   four declaration shapes on the real chassis
+   (tmp/grind/func_80062020/s16struct/{sweep.py,results.txt}). All NINE non-chained
+   spellings — every separate-statement column permutation, both 2-chain+statement mixes,
+   the comma form — emit ALL-LOSUM with no base register, in every order. The chain is not
+   one option among several equally-matching spellings that happens to smuggle in a second
+   form: it is the ONLY ordinary-C spelling that reaches the target, and it is also the
+   shortest and most idiomatic way to write "zero these three fields". A construct that is
+   simultaneously forced and minimal is not a coercion device.
+
+3. THE DECLARATION IS NOT THE LEVER. s17 confirmed in FULL build context that a bare
+   `extern s32 D_800F1198[][3];` — no typedef, no struct tag, no invented member names —
+   with the same chain reaches sandbox 0 at 38/38 AND full-build SHA1 == oracle
+   (memory/grind/func_80062020/alt-e14-2d-declaration.c). The arrangement is
+   declaration-independent, so nothing in `Unk800F1198Record` is doing codegen work.
+
+4. **SOTN MASTER SHIPS THIS EXACT CONSTRUCT, UNANNOTATED, IN MATCHED PSX GCC-2.7.2 CODE.**
+   `sotn-decomp` master (db41b28), `src/dra/62DEC.c` — a PSX/DRA translation unit
+   (`config/splat.us.dra.yaml:58`, so GCC 2.7.2, not PSP/mwcc or Saturn):
+
+     src/dra/62DEC.c:13   `static VECTOR D_80137B20[24];`
+     src/dra/62DEC.c:961  `D_80137B20[i].vx = D_80137B20[i].vy = D_80137B20[i].vz = 0;`
+     src/dra/62DEC.c:12   `static VECTOR D_801379E0[20];`
+     src/dra/62DEC.c:973  `D_801379E0[i].vx = D_801379E0[i].vy = D_801379E0[i].vz = 0;`
+     src/dra/62DEC.c:934  `D_801379C8.vx = D_801379C8.vy = D_801379C8.vz = 0;`
+
+   This is BOTH of this diff's constructs in one line, and it is the same shape our epilogue
+   has, member-for-member: a splat-invented `D_<addr>` symbol re-declared as an ARRAY OF
+   3-WORD RECORDS, and an ascending 3-deep chained assignment zeroing all three members of
+   an INDEXED element of that array. There is no `// fake` comment, no annotation and no
+   rule-file carve-out attached to any of them — SOTN treats the construct as ordinary C.
+   Corroborating negative evidence: `docs/reference/sotn-construct-index.md`, the
+   machine-generated index of 1,365 SOTN match-hack constructs, contains ZERO
+   chained-assignment entries. The community that catalogued 1,365 match hacks did not
+   classify this one as a hack, because it is not one.
+
+   Further 2-deep instances across PSX overlays, all unannotated:
+   `src/dra/7E4BC.c:258`, `src/dra/71830.c:2543`, `src/weapon/w_025.c:221`,
+   `src/weapon/w_014.c:93`.
+
+5. THE LEDGER VERDICT THE FAILS RELIED ON IS WITHDRAWN. The s14 CLASS kill ("no C construct
+   yields the target mixed epilogue without spelling the same lvalue base two different
+   ways") is the "two-shape theorem" every layer-1 FAIL cites. s17b annotated it
+   `refuted_by` in state.json: it was measured against four floor-4 bodies whose enumeration
+   contained NO chained assignment, and this body's six independent SHA1 proofs refute it
+   directly.
+
 ## T1 semantic purpose
 
 (1) **Aggregate merge.** The declaration is a fidelity claim about the object model, not a
@@ -57,7 +117,10 @@ it contains no construct outside ordinary C plus one sanctioned declaration chan
 
 ## T5 family check
 
-Construct (2), chained assignment, is ordinary C and needs no family. It is NOT the banned
+Construct (2), chained assignment, is ordinary C and needs no family — and it is now
+backed by in-hand SOTN-master PSX precedent for the exact shape (sotn-decomp db41b28,
+src/dra/62DEC.c:961 and :973, unannotated, in a GCC 2.7.2 PSX TU per
+config/splat.us.dra.yaml:58); see the PRIMARY OBJECTION section above, point 4. It is NOT the banned
 construct: the ledger ban is on `row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0;
 row[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;` — a pointer local plus a SECOND,
 differently-spelled materialisation of the same row address. This body has no pointer
@@ -268,3 +331,38 @@ body EXACTLY. It matters to the vet only as further evidence for T1/T3: the byte
 arrangement is not produced by the invented typedef or member names — a bare 2-D array
 declaration with no struct tag and no member names emits the identical bytes — so the
 declaration carries no codegen coercion, only the object-model fidelity claim of prong (a).
+
+## s17-synthesis (2026-09-03) — SUBMISSION MEASUREMENT, body UNCHANGED
+
+The C body, the `include/game.h` declaration and the two suffixed rows in
+`undefined_syms_auto.txt` are byte-for-byte the s15/s16d/s17 form. This session added
+nothing to and removed nothing from the diff; its contribution is the SOTN-master precedent
+recorded in the PRIMARY OBJECTION section above, which is evidence, not code.
+
+Ban state at submission: `state.json banned_constructs` carries exactly TWO entries — (1)
+`row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0; row[1]=0; *(s32 *)((u8 *)&D_800F1198 +
+ofs) = 0;` and (2) a self-vet SCOPE NOTE re-filing a merits-FAILed body with only comments
+changed. Neither is declared by this diff: there is no pointer local and no second address
+expression anywhere in the body (all four row writes are the single token sequence
+`D_800F1198[i].unkN`), and this is not a comments-only re-file of a merits rejection — it
+lands the body under the standing Judge order ("Resubmit the banked s15/s16 body EXACTLY
+(candidate.c + apply_s15.py + the byte-neutral alias suffixes on
+undefined_syms_auto.txt:527-528); the alt-e14 2-D form is NOT authorised as a substitute;
+banned_constructs 1 and 2 remain in force; run verify-oracle --rebuild --allow-dirty before
+the sandbox re-verify"), and it carries substantive new adjudicative evidence.
+`python3 tools/grinder/grindlib.py selfvet . func_80062020` exits 0.
+
+MEASURED THIS SESSION, full diff in the tree (three source files + the two suffixed rows) —
+the sixth independent proof of this body:
+
+- `python3 memory/grind/func_80062020/apply_s15.py apply` (run under WSL; the script pins a
+  `/mnt/c/...` root and fails from the Windows-side Python), then the two suffix edits on
+  `undefined_syms_auto.txt:527-528`.
+- `verify-oracle --rebuild --allow-dirty` — rebuilt the scoring reference from THIS body.
+- `verify-oracle --allow-dirty` — `ok: true`, `build_matches: true`,
+  `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa` == `original_sha1_locked`.
+- `sandbox func_80062020 --disable all` — **score 0**, target_insns 38, build_insns 38,
+  scorable true, rules_dropped 0.
+
+Diff LEFT IN PLACE in `src/text1b.c`, `src/text1b_b.c`, `include/game.h` and
+`undefined_syms_auto.txt` for the driver's byte re-verification.

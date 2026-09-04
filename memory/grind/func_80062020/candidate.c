@@ -202,6 +202,30 @@
  *     tools/gcc-2.7.2/expr.c:3453-3464, and are declaration-independent (E14 reaches the same
  *     bytes with no typedef, no struct tag and no member names).  Full argument:
  *     tmp/grind/func_80062020/s17/synthesis_s17.md and the s17b block of evidence.md.
+ *
+ * s17 (SYNTHESIS, 2026-09-03) SUBMITTED - body UNCHANGED; the missing precedent found.
+ *   - Sixth independent proof on the live chassis, full diff in the tree (three source
+ *     files + the two alias-suffixed rows at undefined_syms_auto.txt:527-528):
+ *     apply_s15.py apply (RUN IT UNDER WSL - the script pins a /mnt/c/... root and raises
+ *     FileNotFoundError from Windows-side Python) -> verify-oracle --rebuild --allow-dirty
+ *     -> verify-oracle --allow-dirty = ok true / build_matches true / build_sha1
+ *     62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked; then
+ *     sandbox func_80062020 --disable all = score 0, 38/38, rules_dropped 0.  Bans 3 and 4
+ *     are cleared by the driver; grindlib.py selfvet exits 0.  Diff LEFT IN PLACE.
+ *   - THE FINDING.  Every layer-1 FAIL on this body objects that the epilogue materialises
+ *     the row address twice.  SOTN master (db41b28) ships BOTH of this diff's constructs in
+ *     ONE unannotated line of matched PSX GCC-2.7.2 code - src/dra/62DEC.c, a US DRA overlay
+ *     TU (config/splat.us.dra.yaml:58, provenance-checked per
+ *     [[sotn-citation-requires-version-check]]):
+ *         :13   static VECTOR D_80137B20[24];
+ *         :961  D_80137B20[i].vx = D_80137B20[i].vy = D_80137B20[i].vz = 0;
+ *         :12/:973  the same pair for D_801379E0[20];  :934 the non-indexed form.
+ *     A splat-invented D_<addr> symbol re-declared as an array of 3-word records, plus an
+ *     ascending 3-deep chained assignment zeroing all three members of an INDEXED element -
+ *     member-for-member the shape of this epilogue, with no /* FAKE * /, no // fake and no
+ *     carve-out.  Corroborating negative evidence: docs/reference/sotn-construct-index.md
+ *     (1,365 catalogued SOTN match hacks) has ZERO chained-assignment entries.  Census:
+ *     tmp/grind/func_80062020/s17syn/sotn_chain_precedent.md; self_vet.md PRIMARY OBJECTION.
  */
 void func_80062020(s32 *arg0) {
     s32 i;

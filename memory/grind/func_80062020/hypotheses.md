@@ -1666,3 +1666,47 @@ materialisation authored in C.
    `undefined_syms_auto.txt` once `asm/funcs/func_800620B8.s` reaches COMPLETED-C; until then the
    suffixed rows satisfy prong (c) per the 2026-09-03 amendment
    (`.claude/rules/no-new-park-categories.md:245-259`).
+
+## s17 (synthesis, 2026-09-03) — frontier reset
+
+CONFIRMED this session:
+- H-s17-PRECEDENT: "The epilogue's 3-deep chained assignment on an indexed element of a
+  merged record array has in-hand SOTN-master precedent in matched PSX GCC-2.7.2 code, so
+  it is ordinary C rather than a first-reach construct." CONFIRMED by census —
+  sotn-decomp db41b28, src/dra/62DEC.c:13 + :961 and :12 + :973 (declaration AND chain, both
+  unannotated), TU provenance verified at config/splat.us.dra.yaml:58; plus zero
+  chained-assignment entries in docs/reference/sotn-construct-index.md's 1,365-hack index.
+  Artifact: tmp/grind/func_80062020/s17syn/sotn_chain_precedent.md.
+- H-s17-FLOOR: the banked body measures 0 at 38/38 with full-build SHA1 == oracle. Sixth
+  independent proof; no drift.
+
+WITHDRAWN (carried forward from s17b, restated because every layer-1 FAIL leans on it):
+- The s14 class kill ("no C construct yields the target mixed epilogue without spelling the
+  same lvalue base two different ways") is refuted by measurement and by the s17 precedent.
+  Do not cite it as the "two-shape theorem".
+
+FRONTIER for the next session, strongest first:
+
+1. (ONLY IF THIS SUBMISSION IS BOUNCED) The remaining layer-1 objection is not about the
+   construct but about the ABSENCE of a family label for it. Mechanism: the reviewer's
+   checklist test 5 asks which frozen family covers the construct; "ordinary C, no family
+   needed" reads as an unanswered question when the construct has no in-repo precedent.
+   Next probe: file a `ruling-request` asking whether a 3-deep chained assignment on an
+   indexed record-array element should be recorded as ORDINARY C in
+   .claude/rules/ordinary-c-judge-decidable.md, citing src/dra/62DEC.c:961 and :973 as the
+   SOTN-master evidence — a one-line rule addition that removes the objection permanently
+   for this function and every future one. Do NOT change the body to chase the objection;
+   six SHA1 proofs say the body is right.
+
+2. Surface reduction (optional, needs a ruling to substitute): the bare 2-D declaration
+   `extern s32 D_800F1198[][3];` in memory/grind/func_80062020/alt-e14-2d-declaration.c
+   reaches sandbox 0 at 38/38 and full-build SHA1 == oracle in full context (s17), with no
+   typedef, no struct tag and no invented member names. Mechanism: the arrangement is
+   declaration-independent, so the record typedef carries object-model fidelity only. Next
+   probe: none unless the standing "land the banked body EXACTLY" order is lifted.
+
+3. Follow-on cleanup, gated: retire D_800F119C / D_800F11A0 from undefined_syms_auto.txt
+   once asm/funcs/func_800620B8.s is no longer INCLUDE_ASM. Mechanism: those two rows exist
+   solely for that sibling's assembly; prong (c) is already satisfied via the 2026-09-03
+   amendment's alias suffix. Next probe: after func_800620B8 reaches COMPLETED-C, grep
+   asm/funcs for both names, delete the rows, verify-oracle --rebuild.
