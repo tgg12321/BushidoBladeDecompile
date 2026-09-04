@@ -1554,3 +1554,49 @@ this condition, so a `candidate-ready` is mechanically discarded before the Judg
   `func_800620B8` reaches COMPLETED-C (grep `asm/funcs` for the two names, delete the rows,
   re-run `verify-oracle --rebuild`). The sanctioned precedents `func_800861BC` and
   `e788983a` shipped with such rows retained.
+
+## H-s16e-EPISPACE (structural, 2026-09-03) — KILLED (class)
+
+**Statement.** Some ordinary-C epilogue spelling other than a 3-deep chained assignment —
+separate statements in some order, a comma expression, a 2-chain plus a statement, a
+whole-record assignment, or a different merged declaration shape (flat `s32 []`, bare 2-D
+`s32 [][3]`) — reaches the target terminator arrangement DISP8 | DISP4 | LOSUM0.
+
+**Mechanism proposed.** If statement order or declaration shape could select which store keeps
+the inline-symbolic address, the chained assignment would be one option among several and
+therefore a chosen device rather than the natural spelling.
+
+**Probe.** `tmp/grind/func_80062020/s16struct/sweep.py` — 15 spellings across four declaration
+shapes on the real chassis (real names, real copy loop, project cc1 flags), each classified by
+the addressing form of its three `sw $0` terminator stores. Results
+`tmp/grind/func_80062020/s16struct/results.txt`.
+
+**Result.** KILLED. Only the ascending-member 3-deep chain reaches the target, under either a
+record declaration (E01) or a bare 2-D array declaration (E14); its parenthesised form (E04) is
+the same construct. All nine non-chained spellings emit all-LOSUM with no base register in any
+order; the flat-array declaration emits the wrong arrangement at the wrong insn count; the two
+non-ascending chains put the LOSUM store on the wrong column.
+
+**kill_scope: class.** predicate_cite `tools/gcc-2.7.2/expr.c:3453` — `store_field`'s
+`value_mode != VOIDmode` (`want_value`) gate is what copies the row address into a pseudo, and
+`want_value` is 1 exactly when an assignment's value is consumed by an enclosing expression
+(threaded from `expand_assignment`, expr.c:2445; a statement-level assignment gets 0,
+expr.c:6660). A spelling in which no store's value is consumed cannot produce a base-register
+store for +8 and +4, whatever its order or declaration.
+
+**measured_on.** 2026-09-03 chassis, honest floor 0 with the banked form applied (sandbox 0 at
+38/38, full-build SHA1 == oracle); no FAKE construct present in any of the 15 shapes.
+
+**Consequence.** The chained assignment is not a device: it is the only spelling of "clear the
+three columns of the terminator row" that the compiler can turn into these bytes, and the
+DISP/LOSUM mix is therefore evidence about the original source, not a second address
+materialisation authored in C.
+
+## [s16] Some ordinary-C epilogue spelling other than a 3-deep chained assignment - separate statements in some order, a comma expression, a 2-chain plus a statement, a whole-record assignment, or a different merged declaration shape (flat s32 [], bare 2-D s32 [][3]) - reaches the target terminator arrangement DISP8 | DISP4 | LOSUM0.
+- mechanism: If statement order or declaration shape could select which of the three terminator stores keeps the inline-symbolic address, the chained assignment would be one option among several and therefore a chosen device rather than the natural spelling of clear the three columns of the terminator row.
+- probe: tmp/grind/func_80062020/s16struct/sweep.py - 15 spellings across four declaration shapes compiled on the real chassis (real symbol names, real copy loop, real goto-end early exit, project cc1 flags -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel, tools/gcc-2.7.2/build/cc1), each of the three sw $0 terminator stores classified DISPn vs LOSUM. Results tmp/grind/func_80062020/s16struct/results.txt.
+- result: KILLED. Exactly three of fifteen reach DISP8 | DISP4 | LOSUM0, and all three are the same construct: E01 the ascending-member chain under the record declaration, E04 the same chain fully parenthesised, and E14 the same chain under a BARE 2-D declaration extern s32 D_800F1198[][3]; with no typedef and no struct tag (27 insns, byte-identical arrangement). Every one of the six separate-statement permutations (E05) emits all-LOSUM with no base register in any order; so do both 2-chain+statement mixes (E06/E07), both reversed mixes (E08/E09) and the comma form (E10). The whole-record assignment from a zeroed local (E11) emits three ($sp) stores at 33 insns. The flat extern s32 D_800F1198[]; declaration with [i*3+k] indexing is affirmatively disproven (E12 chain -> DISP0|DISP0|DISP0 at 36 insns; E13 statements at 37). Even inside the chain family the member order is forced: the two non-ascending 3-chains (E02, E03) put the LOSUM store on the wrong column. Two consequences bear on the standing layer-1 FAIL ground: the arrangement is DECLARATION-INDEPENDENT, so it is not an artefact of the Unk800F1198Record declaration; and the C text materialises the row address exactly once, D_800F1198[i], with the second addressing form emitted by store_field on an assignment C right-associativity makes an inner operand.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: 2026-09-03 chassis, honest floor 0 with the banked form applied (sandbox 0 at 38/38, verify-oracle build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked); no FAKE construct present in any of the 15 shapes
+- predicate_cite: tools/gcc-2.7.2/expr.c:3453

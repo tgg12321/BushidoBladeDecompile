@@ -596,3 +596,8 @@ disposition taken: driver-executed per integration-handoff-self-serve (owner rul
 category: integration-handoff
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-03 — func_80062020 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80062020 include/game.h src/text1b_b.c undefined_syms_auto.txt  (merged with prior line); function stays ACTIVE.
+
+## 2026-09-03 — func_80062020 — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-03 — func_80062020 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): cleared 2 superseded ban(s); function stays ACTIVE.

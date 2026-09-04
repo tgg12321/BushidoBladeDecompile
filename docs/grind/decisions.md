@@ -22042,3 +22042,161 @@ THE GRANT THE DRIVER EXECUTES: add `undefined_syms_auto.txt` to func_80062020's 
 ## 2026-09-03 21:21 — func_80062020 — layer-1 review — **FAIL**
 
 The chained-assignment epilogue on the new aggregate-array declaration still materializes the terminator row's base address TWICE in two different addressing forms — the literal banned_constructs[0] pattern — merely laundered through a new declaration; not sanctioned by the aggregate-merge family or any other.
+
+## 2026-09-03 — func_80062020 (src/text1b.c) — **INTEGRATION HANDOFF (bytes proven; blocked only on a stale ban tripwire two Judge rulings already ordered cleared)**
+
+**Filed by:** grind session s16e, mandated modality `structural`. This is NOT an exhaustion
+claim and NOT an endgame lock: the honest floor is **0**, the full build SHA1s to the oracle,
+and the only thing standing between the banked form and the normal gates is a mechanical
+`state.json.banned_constructs` tripwire whose two entries were explicitly ruled superseded by
+the Judge on 2026-09-03 but never mechanically cleared.
+
+### The bytes (re-proven this session, from clean HEAD)
+
+    (clean HEAD)  sandbox func_80062020 --disable all -> score 38, no_c_body true
+    python3 memory/grind/func_80062020/apply_s15.py apply
+      + the amendment suffix on undefined_syms_auto.txt:527-528
+        D_800F119C = 0x800F119C; /* alias of D_800F1198+4; retire with func_800620B8 */
+        D_800F11A0 = 0x800F11A0; /* alias of D_800F1198+8; retire with func_800620B8 */
+    verify-oracle --rebuild --allow-dirty ; verify-oracle --allow-dirty
+      -> ok true, build_matches true,
+         build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked
+    sandbox func_80062020 --disable all
+      -> score 0, target_insns 38, build_insns 38, scorable true, rules_dropped 0
+
+Tree restored afterwards; scoring reference rebuilt on clean HEAD. Scope: every touched path
+(`src/text1b.c`, `include/game.h`, `src/text1b_b.c`, `undefined_syms_auto.txt`) is already
+granted at `tools/grinder/scope_allow.txt:49`.
+
+### The blocker, demonstrated mechanically
+
+    $ python3 tools/grinder/grindlib.py selfvet . func_80062020
+    self-vet re-declares a BANNED construct for func_80062020:
+    'D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0; (chained assignment,
+    right-to-left evaluation order, on the new Unk800F1198Record array)'   -> exit 1
+
+`banned_constructs` entries **3** (the chained assignment) and **4** (the
+`Unk800F1198Record` aggregate-array declaration) are still live. Both were ordered cleared
+the same day:
+
+- **decisions.md:21985 — 2026-09-03 20:36, Judge ruling, verdict PASS:** *"The ban does NOT
+  survive; banned_constructs entries 3 and 4 are cleared."* The Judge did not take the claim
+  on trust — it recompiled `tmp/grind/func_80062020/s16/N1_chain_abc.c` (generic
+  `struct Rec`/`g_table`, no BB2 symbol, no loop) with `tools/gcc-2.7.2/cc1` and the project
+  flags, got the exact DISP8|DISP4|LOSUM mix, and named the predicate:
+  `tools/gcc-2.7.2/expr.c:3453-3464`, `store_field`'s `want_value` copy-to-reg.
+- **decisions.md:21993 — 2026-09-03 20:56, Judge ruling, verdict PASS:** prong (c) satisfied
+  by C-side completeness, *"banned_constructs[2] is therefore narrowed away."*
+
+Neither ruling populated the `unban_construct` field, which is the only input
+`grind.ps1:557-563` acts on, so `grindlib.check_banned_constructs` never saw the narrowing —
+and the 2026-09-03 21:21 layer-1 FAIL then re-asserted, as its sole ground, the very premise
+the 20:36 Judge had refuted by independent recompilation ("materializes the base address
+TWICE ... the literal banned_constructs[0] pattern").
+
+### New evidence this session adds (structural modality, in-chassis enumeration)
+
+`tmp/grind/func_80062020/s16struct/sweep.py` enumerated **15 epilogue/declaration spellings on
+the real chassis** (real names, real copy loop, project cc1 flags) and classified each of the
+three `sw $0` terminator stores. Results `results.txt`, write-up `structural_s16.md`, ledger
+block `memory/grind/func_80062020/evidence.md` (s16e), hypothesis `H-s16e-EPISPACE` (class
+kill, predicate `tools/gcc-2.7.2/expr.c:3453`).
+
+- Exactly **three** spellings reach DISP8 | DISP4 | LOSUM0, and all three are the same
+  construct: the ascending-member chain, its parenthesised form, and the same chain under a
+  **bare 2-D declaration** `extern s32 D_800F1198[][3];` with no typedef and no struct tag.
+- **All nine** non-chained spellings — every one of the six separate-statement permutations,
+  both 2-chain+statement mixes, and the comma form — emit **all-LOSUM, no base register in any
+  order**. The author cannot select the target arrangement by ordering statements.
+- The flat `extern s32 D_800F1198[];` declaration with `[i*3+k]` indexing is affirmatively
+  disproven (wrong arrangement, 36-37 insns), and the whole-record assignment from a zeroed
+  local is disproven (33 insns, `($sp)` stores).
+
+Two consequences bear directly on the standing FAIL ground. (i) The arrangement is
+**declaration-independent** — it is identical under the record typedef and under a bare 2-D
+array — so it is not an artefact of the `Unk800F1198Record` declaration (ban entry 4). (ii) The
+C text materialises the row address **exactly once**, `D_800F1198[i]`; the second addressing
+form is emitted by `store_field` on an assignment C's right-associativity makes an inner
+operand. There is no C-level dual spelling to remove, and no alternative spelling to move to:
+the enumeration is complete and the chain is the only member of the reaching set.
+
+### The remedy (driver-executable, per `.claude/rules/integration-handoff-self-serve.md`)
+
+**`unban_construct = "Unk800F1198Record"`.** That substring occurs in banned_constructs
+entries 3 and 4 — precisely the two the 20:36 and 20:56 rulings ordered narrowed — and in
+neither entry 1 (`row = (s32 *)((u8 *)&D_800F1198 + ofs); ...` — the pointer-local dual-spelling
+epilogue) nor entry 2 (the comments-only resubmission of a merits-FAILed body). Those two
+remain in force, and the banked body contains neither: it has no pointer local, all four row
+writes use the single spelling `D_800F1198[i].unkN`, and this is not a comments-only re-file of
+a merits rejection but a resubmission the Judge itself twice authorised.
+
+No scope widening is requested — `scope_allow.txt:49` already covers all four paths.
+
+### Steps after the clearance
+
+1. `python3 memory/grind/func_80062020/apply_s15.py apply` (three source files).
+2. Add the amendment suffix to `undefined_syms_auto.txt:527-528` (byte-neutral: the file is
+   consumed as an ld script, `Makefile:99`, where a `/* ... */` comment emits nothing; the SHA1
+   proof above was taken with the suffix in place).
+3. `verify-oracle --rebuild --allow-dirty` -> `build_matches: true` + the oracle SHA1.
+4. `sandbox func_80062020 --disable all` -> 0 at 38/38.
+5. Keep the existing prong-by-prong `memory/grind/func_80062020/self_vet.md`; return
+   `candidate-ready`. Layer-1 and the Judge then rule on the C on its merits.
+
+### Construct standing
+
+The merged declaration is claimed under **per-word splat symbol -> aggregate merge**
+(`.claude/rules/no-new-park-categories.md:238`), prongs (a)/(b)/(d) verified and prong (c)
+satisfied per the 2026-09-03 operator amendment (`no-new-park-categories.md:245-259`, commit
+`570210eb`) with the suffix in place. The epilogue is claimed as **ordinary C, no family**
+(`.claude/rules/ordinary-c-judge-decidable.md` Ruling 1 sec.2-3): one address expression, full
+semantic purpose, no FAKE, no annotation.
+
+**Ledger:** `memory/grind/func_80062020/{candidate.c,self_vet.md,evidence.md (s16e),
+hypotheses.md (H-s16e-EPISPACE),apply_s15.py}`; artifacts
+`tmp/grind/func_80062020/s16struct/{sweep.py,results.txt,structural_s16.md}`.
+
+## 2026-09-03 21:34 — func_80062020 — ruling: INTEGRATION HANDOFF filed for func_80062020 : docs/grind/decisions.md - 2026-09- — **ESCALATE**
+
+WHAT THIS IS. func_80062020 copies three-word records out of its argument until a terminator word's low bit clears, then zeroes all three columns of the terminating record. The matching C is exactly that: an ordinary copy loop plus one chained assignment `D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;`. No pointer local, no duplicated address expression, no dead store, no volatile, no /* FAKE */ construct; all four row writes use the single spelling `D_800F1198[i].unkN`. The one technique in play is the frozen "per-word splat symbol -> aggregate merge" family (.claude/rules/no-new-park-categories.md:238).
+
+BYTES: PROVEN BY ME, NOT CREDITED. I copied src/ + include/ + the root build files into a scratch tree OUTSIDE the repo (/tmp/judge62020b, tools/ asm/ disc/ .venv symlinked; the repo working tree was untouched — git status over src/, include/, undefined_syms_auto.txt and scope_allow.txt was empty before and stayed empty), applied the banked diff programmatically by executing memory/grind/func_80062020/apply_s15.py's own HEADER_BLOCK/BODY/SCALARS constants against the scratch paths (nothing retyped), added the two alias comment suffixes to undefined_syms_auto.txt, and ran a full clean `make`. Result: `62efab4f73f992798c43e8c730aa43baa10bb4fa  /tmp/judge62020b/build/bb2.exe` == the locked oracle. `build/asm/funcs/func_80062020.o` DOES NOT EXIST in that tree, and objdump -dr of build/src/text1b.o shows func_80062020 at exactly 38 instructions (0x1a150-0x1a1e4) with the target arrangement: the loop's three HI16/addu/LO16 stores with `addiu a0,12` / `addiu v1,12`, then the epilogue sll/addu/sll, la-pair, addu, `sw zero,8(v0)`, `sw zero,4(v0)`, and the final lui/addu/`sw zero,0(at)` at-form, jr/nop. So the matching bytes come from the committed C, not from an asm object, a prebuilt .o, or any output-rewriting rule — the tree carries zero rules and the diff adds no pipeline stage.
+
+WHY THE C IS SOUND (verified, not taken on trust).
+- Prong (a), object model independent of byte-chasing: I read asm/funcs/func_80062020.s directly. It advances the destination pointer by 0xC per iteration (`addiu $v1, $v1, 0xC`, 0x80062080) and the epilogue addresses the record's members off ONE base register at displacements 0x8 and 0x4 (0x8006209C / 0x800620A0). Twelve-byte stride plus base+displacement member access is a three-word record, not three adjacent scalars.
+- Prong (b): the declaration is a record typedef with named members, not a flat array with a magic stride index. Prong (d): it lives in include/game.h, the canonical shared header. Prong (e): the full-rebuild SHA1 above.
+- Prong (c), the 2026-09-03 operator amendment (no-new-park-categories.md:245-259): D_800F119C / D_800F11A0 may stay in undefined_syms_auto.txt while the still-INCLUDE_ASM sibling func_800620B8.s references them, provided no C names them and the rows carry the alias suffix. I grepped the scratch tree's src/ + include/ after the merge: the ONLY hit for either symbol is include/game.h:26, inside the merge's own explanatory comment. The suffix is byte-neutral — my SHA1 proof was taken with it in place (undefined_syms_auto.txt is consumed as an ld script, Makefile:99).
+- The epilogue is ordinary C under ordinary-c-judge-decidable.md Ruling 1 sec.2-3: one address expression in the C text, full semantic purpose (clearing a row), no family needed. The DISP8|DISP4|LOSUM0 mix is a compiler consequence of C's right-associative chain and store_field's want_value copy-to-reg (tools/gcc-2.7.2/expr.c:3453-3464), which the 2026-09-03 20:36 Judge reproduced in a neutral TU with unrelated names.
+
+WHY THIS IS NOT A MERGE I CAN MAKE MYSELF. The work is complete and the only blocker is a mechanical tripwire. `state.json.banned_constructs` entries 3 (the chained assignment) and 4 (the Unk800F1198Record declaration) are still live, so grindlib's self-vet exits 1 and the candidate is discarded before layer-1 or a final call ever reads it. Both entries were explicitly superseded the SAME DAY by two Judge PASS rulings that simply never populated `unban_construct`, the only field grind.ps1:469/557-563 acts on: decisions.md:21987 (20:36 — "The ban does NOT survive; banned_constructs entries 3 and 4 are cleared", reached by independent recompilation) and decisions.md:21993 (20:56 — prong (c) narrowing). Under the dated-rulings rule, a grant supersedes the earlier refusal; this is precisely the stale-tripwire shape .claude/rules/integration-handoff-self-serve.md gives the driver to clear.
+
+THE GRANT THE DRIVER EXECUTES: unban_construct = "Unk800F1198Record". I verified the needle's selectivity mechanically against state.json rather than by eye: it occurs in entries 3 and 4 and in NEITHER entry 1 (the `row = (s32 *)((u8 *)&D_800F1198 + ofs)` pointer-local dual-spelling epilogue) nor entry 2 (the comments-only resubmission of a merits-FAILed body). Those two stay in force and this body declares neither. No scope widening is needed — tools/grinder/scope_allow.txt:49 already grants func_80062020 include/game.h, src/text1b_b.c and undefined_syms_auto.txt, covering all four touched paths. The function stays ACTIVE and the landing candidate still faces the driver sandbox check, layer-1 and a Judge final call on the C: this clears a tripwire, not a standard.
+
+EVIDENCE READ: memory/grind/func_80062020/{state.json (judge_constraints, banned_constructs, kills, floor_history), candidate.c, apply_s15.py}; docs/grind/decisions.md (the 2026-09-03 handoff entry at :22046, the 20:36 and 20:56 PASS rulings, the 21:21 layer-1 FAIL); asm/funcs/func_80062020.s; .claude/rules/no-new-park-categories.md:238-262; tools/grinder/{grind.ps1,grindlib.py:409,scope_allow.txt}; plus my own scratch-tree clean build and objdump.
+
+## 2026-09-03 — func_80062020 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-03)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WHAT THIS IS. func_80062020 copies three-word records out of its argument until a terminator word's low bit clears, then zeroes all three columns of the terminating record. The matching C is exactly that: an ordinary copy loop plus one chained assignment `D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;`. No pointer local, no duplicated address expression, no dead store, no volatile, no /* FAKE */ construct; all four row writes use the single spelling `D_800F1198[i].unkN`. The one technique in play is the frozen "per-word splat symbol -> aggregate merge" family (.claude/rules/no-new-park-categories.md:238).
+
+BYTES: PROVEN BY ME, NOT CREDITED. I copied src/ + include/ + the root build files into a scratch tree OUTSIDE the repo (/tmp/judge62020b, tools/ asm/ disc/ .venv symlinked; the repo working tree was untouched — git status over src/, include/, undefined_syms_auto.txt and scope_allow.txt was empty before and stayed empty), applied the banked diff programmatically by executing memory/grind/func_80062020/apply_s15.py's own HEADER_BLOCK/BODY/SCALARS constants against the scratch paths (nothing retyped), added the two alias comment suffixes to undefined_syms_auto.txt, and ran a full clean `make`. Result: `62efab4f73f992798c43e8c730aa43baa10bb4fa  /tmp/judge62020b/build/bb2.exe` == the locked oracle. `build/asm/funcs/func_80062020.o` DOES NOT EXIST in that tree, and objdump -dr of build/src/text1b.o shows func_80062020 at exactly 38 instructions (0x1a150-0x1a1e4) with the target arrangement: the loop's three HI16/addu/LO16 stores with `addiu a0,12` / `addiu v1,12`, then the epilogue sll/addu/sll, la-pair, addu, `sw zero,8(v0)`, `sw zero,4(v0)`, and the final lui/addu/`sw zero,0(at)` at-form, jr/nop. So the matching bytes come from the committed C, not from an asm object, a prebuilt .o, or any output-rewriting rule — the tree carries zero rules and the diff adds no pipeline stage.
+
+WHY THE C IS SOUND (verified, not taken on trust).
+- Prong (a), object model independent of byte-chasing: I read asm/funcs/func_80062020.s directly. It advances the destination pointer by 0xC per iteration (`addiu $v1, $v1, 0xC`, 0x80062080) and the epilogue addresses the record's members off ONE base register at displacements 0x8 and 0x4 (0x8006209C / 0x800620A0). Twelve-byte stride plus base+displacement member access is a three-word record, not three adjacent scalars.
+- Prong (b): the declaration is a record typedef with named members, not a flat array with a magic stride index. Prong (d): it lives in include/game.h, the canonical shared header. Prong (e): the full-rebuild SHA1 above.
+- Prong (c), the 2026-09-03 operator amendment (no-new-park-categories.md:245-259): D_800F119C / D_800F11A0 may stay in undefined_syms_auto.txt while the still-INCLUDE_ASM sibling func_800620B8.s references them, provided no C names them and the rows carry the alias suffix. I grepped the scratch tree's src/ + include/ after the merge: the ONLY hit for either symbol is include/game.h:26, inside the merge's own explanatory comment. The suffix is byte-neutral — my SHA1 proof was taken with it in place (undefined_syms_auto.txt is consumed as an ld script, Makefile:99).
+- The epilogue is ordinary C under ordinary-c-judge-decidable.md Ruling 1 sec.2-3: one address expression in the C text, full semantic purpose (clearing a row), no family needed. The DISP8|DISP4|LOSUM0 mix is a compiler consequence of C's right-associative chain and store_field's want_value copy-to-reg (tools/gcc-2.7.2/expr.c:3453-3464), which the 2026-09-03 20:36 Judge reproduced in a neutral TU with unrelated names.
+
+WHY THIS IS NOT A MERGE I CAN MAKE MYSELF. The work is complete and the only blocker is a mechanical tripwire. `state.json.banned_constructs` entries 3 (the chained assignment) and 4 (the Unk800F1198Record declaration) are still live, so grindlib's self-vet exits 1 and the candidate is discarded before layer-1 or a final call ever reads it. Both entries were explicitly superseded the SAME DAY by two Judge PASS rulings that simply never populated `unban_construct`, the only field grind.ps1:469/557-563 acts on: decisions.md:21987 (20:36 — "The ban does NOT survive; banned_constructs entries 3 and 4 are cleared", reached by independent recompilation) and decisions.md:21993 (20:56 — prong (c) narrowing). Under the dated-rulings rule, a grant supersedes the earlier refusal; this is precisely the stale-tripwire shape .claude/rules/integration-handoff-self-serve.md gives the driver to clear.
+
+THE GRANT THE DRIVER EXECUTES: unban_construct = "Unk800F1198Record". I verified the needle's selectivity mechanically against state.json rather than by eye: it occurs in entries 3 and 4 and in NEITHER entry 1 (the `row = (s32 *)((u8 *)&D_800F1198 + ofs)` pointer-local dual-spelling epilogue) nor entry 2 (the comments-only resubmission of a merits-FAILed body). Those two stay in force and this body declares neither. No scope widening is needed — tools/grinder/scope_allow.txt:49 already grants func_80062020 include/game.h, src/text1b_b.c and undefined_syms_auto.txt, covering all four touched paths. The function stays ACTIVE and the landing candidate still faces the driver sandbox check, layer-1 and a Judge final call on the C: this clears a tripwire, not a standard.
+
+EVIDENCE READ: memory/grind/func_80062020/{state.json (judge_constraints, banned_constructs, kills, floor_history), candidate.c, apply_s15.py}; docs/grind/decisions.md (the 2026-09-03 handoff entry at :22046, the 20:36 and 20:56 PASS rulings, the 21:21 layer-1 FAIL); asm/funcs/func_80062020.s; .claude/rules/no-new-park-categories.md:238-262; tools/grinder/{grind.ps1,grindlib.py:409,scope_allow.txt}; plus my own scratch-tree clean build and objdump.
+
+**Constraint recorded for any future session:** Land the banked s15/s16 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py, plus the byte-neutral alias suffix on undefined_syms_auto.txt:527-528; do NOT delete those two rows while asm/funcs/func_800620B8.s is INCLUDE_ASM; banned_constructs 1 (pointer local) and 2 (comments-only re-file) remain in force; run verify-oracle --rebuild --allow-dirty BEFORE the sandbox re-verify (pre-rebuild score 2 is a false named-symbol HI16/LO16 addend artefact).

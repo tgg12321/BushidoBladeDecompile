@@ -2179,3 +2179,103 @@ prong-(c) suffix) that converts the last conceded-unmet prong into a satisfied o
 **Artifacts.** `tmp/grind/func_80062020/s16/patch_vet.py` (the self-vet prong-(c) rewrite),
 `memory/grind/func_80062020/self_vet.md` (§ s16d), `memory/grind/func_80062020/candidate.c`
 (header § s16d).
+
+## s16e (structural modality, 2026-09-03) — the epilogue-spelling space is ENUMERATED: exactly one construct reaches the target, and it is declaration-independent
+
+Mandated modality: `structural` (block-local splits, declaration order, type narrowing,
+statement re-association). The structural axis that had never been enumerated IN-CHASSIS is
+the epilogue itself: prior sessions measured whole-function shapes and a neutral-TU repro,
+but no session had asked, on the real chassis, "how many ordinary-C spellings of *clear the
+three columns of the terminator row* reach DISP8 | DISP4 | LOSUM0, and is the chained
+assignment one option among several or the only one?"
+
+**Sweep:** `tmp/grind/func_80062020/s16struct/sweep.py`, results
+`tmp/grind/func_80062020/s16struct/results.txt`, write-up
+`tmp/grind/func_80062020/s16struct/structural_s16.md`. Real names, real copy loop, real
+`goto end`, project cc1 flags, `tools/gcc-2.7.2/build/cc1`. 15 spellings across FOUR
+declaration shapes (record typedef, bare 2-D `s32 [][3]`, flat `s32 []`, and a whole-record
+assignment from a zeroed local).
+
+**Result — 3 hits out of 15, and all three are the same construct:**
+- E01 record decl + chain `unk0 = unk4 = unk8 = 0` -> DISP8 | DISP4 | LOSUM0 (target).
+- E04 the same chain fully parenthesised -> identical (confirms it is one construct, not two).
+- E14 **bare 2-D declaration** `extern s32 D_800F1198[][3];` + chain `[i][0]=[i][1]=[i][2]=0`
+  -> DISP8 | DISP4 | LOSUM0, 27 insns, byte-identical arrangement to E01.
+- MISSES: all SIX separate-statement permutations (E05) -> all-LOSUM, no base register in any
+  order; both 2-chain+statement mixes (E06/E07) and both reversed mixes (E08/E09) -> all-LOSUM;
+  the comma form (E10) -> all-LOSUM; the whole-record assignment from a zeroed local (E11) ->
+  three `($sp)` stores, 33 insns; the FLAT `extern s32 D_800F1198[];` declaration with
+  `[i*3+k]` indexing (E12 chain -> DISP0|DISP0|DISP0, 36 insns; E13 statements, 37 insns);
+  the 2-D declaration with separate statements (E15) -> all-LOSUM. The two non-ascending
+  3-chains (E02 `unk8=unk4=unk0=0`, E03 `unk4=unk0=unk8=0`) put the LOSUM store on the wrong
+  column, so even within the chain family the member order is forced by right-associativity.
+
+**Three things this settles that were previously argued rather than measured.**
+1. The author CANNOT select the target arrangement by statement ordering: nine distinct
+   separate-statement spellings all give all-LOSUM. The only lever is chained-vs-not.
+2. The arrangement is **declaration-independent** — it appears under a struct-record
+   declaration and under a bare 2-D array with no typedef and no struct tag. So the mix is
+   not an artefact of the `Unk800F1198Record` declaration, and conversely no alternative
+   declaration shape is an escape route from the chained assignment (the flat-array
+   declaration is affirmatively disproven, wrong arrangement AND wrong insn count).
+3. The C text materialises the row address exactly ONCE (`D_800F1198[i]`). The second
+   addressing form is emitted by `store_field`'s `want_value` gate,
+   `tools/gcc-2.7.2/expr.c:3453-3464`, on an assignment whose value C's right-associativity
+   makes an inner operand. This is the same predicate the 2026-09-03 20:36 Judge verified by
+   independent recompilation.
+
+### Floor re-proven on the live chassis (third-party-reproducible, this session)
+
+    (HEAD clean, INCLUDE_ASM)  sandbox func_80062020 --disable all -> score 38, no_c_body true
+    python3 memory/grind/func_80062020/apply_s15.py apply
+    + the amendment suffix on undefined_syms_auto.txt:527-528
+    verify-oracle --rebuild --allow-dirty ; verify-oracle --allow-dirty
+        -> ok true, build_matches true,
+           build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked
+    sandbox func_80062020 --disable all
+        -> score 0, target_insns 38, build_insns 38, scorable true, rules_dropped 0
+
+Honest floor **0**. Tree restored afterwards and the scoring reference rebuilt on clean HEAD.
+
+### Why this session did not return candidate-ready (mechanically demonstrated, not asserted)
+
+    $ python3 tools/grinder/grindlib.py selfvet . func_80062020
+    self-vet re-declares a BANNED construct for func_80062020:
+    'D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0; (chained assignment,
+    right-to-left evaluation order, on the new Unk800F1198Record array)'
+    (matched on d_800f1198, unk0, d_800f1198, unk4, d_800f1198)   -> exit 1
+
+`state.json.banned_constructs` entries 3 and 4 (0-indexed 2 and 3) are still live even though
+**two Judge rulings the same day ordered them cleared**:
+- 2026-09-03 20:36 (decisions.md:21985, verdict PASS): *"The ban does NOT survive;
+  banned_constructs entries 3 and 4 are cleared."* — reached after the Judge recompiled the
+  neutral case itself and named `expr.c:3453-3464` as the predicate.
+- 2026-09-03 20:56 (decisions.md:21993, verdict PASS): prong (c) satisfied by C-side
+  completeness; *"banned_constructs[2] is therefore narrowed away."*
+
+Neither ruling populated the `unban_construct` field, which is the ONLY thing
+`grind.ps1:557-563` acts on, so `grindlib.check_banned_constructs` never saw the narrowing and
+the 2026-09-03 21:21 layer-1 FAIL re-asserted the exact premise the 20:36 Judge had refuted.
+The remedy is the documented one in `.claude/rules/integration-handoff-self-serve.md`: a
+driver-executed ban clearance. **One needle clears exactly the two superseded entries and
+nothing else: `Unk800F1198Record`** — it occurs in entries 3 and 4 and in neither of entries 1
+and 2 (the pointer-local dual-spelling body and the comments-only resubmission), which stay in
+force and which this body does not contain.
+
+- [s16] Floor re-proven from clean HEAD this session: sandbox func_80062020 --disable all = 38 (no_c_body true) on INCLUDE_ASM HEAD; after apply_s15.py apply plus the amendment suffix on undefined_syms_auto.txt:527-528, verify-oracle --rebuild --allow-dirty then verify-oracle --allow-dirty gave ok true / build_matches true / build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, and sandbox func_80062020 --disable all gave score 0, target_insns 38, build_insns 38, rules_dropped 0. Tree restored and the scoring reference rebuilt on clean HEAD (verify-oracle --rebuild, ok true, oracle SHA1).
+
+- [s16] OBJECT MODEL: the storage at 0x800F1198 is a table of 3-word records. func_80062020 own bytes carry both signals the aggregate-merge prong (a) names - a 12-byte-stride induction register in the copy loop (asm/funcs/func_80062020.s .L80062038, addiu $v1,$v1,0xC) and base+displacement member addressing in the terminator epilogue (0x8006209C / 0x800620A0, sw $zero,0x8($v0) / 0x4($v0)). The sibling asm/funcs/func_800620B8.s reads record 0 three members as absolute loads at %lo(D_800F1198)/%lo(D_800F119C)/%lo(D_800F11A0) - consistent with, but not independent evidence of, the record shape.
+
+- [s16] The epilogue-spelling space is now ENUMERATED IN-CHASSIS rather than argued: 15 spellings, 4 declaration shapes, 3 hits, all one construct (tmp/grind/func_80062020/s16struct/results.txt). Nine distinct non-chained spellings emit all-LOSUM with no base register in ANY statement order, so the target arrangement is not selectable by ordering.
+
+- [s16] The arrangement is declaration-independent: the identical DISP8|DISP4|LOSUM0 mix appears under the record typedef (E01) and under a bare 2-D array extern s32 D_800F1198[][3]; (E14). It therefore cannot be an artefact of the Unk800F1198Record declaration named in banned_constructs entry 4.
+
+- [s16] The deciding predicate is tools/gcc-2.7.2/expr.c:3453-3464 (store_field: If a value is wanted, it must be the lhs; so make the address stable for multiple use -> copy_to_reg), gated on want_value, which is 1 exactly when an assignment value is consumed by an enclosing expression (threaded from expand_assignment, expr.c:2445; statement-level assignments get 0, expr.c:6660). The 2026-09-03 20:36 Judge verified this itself by recompiling the neutral case (decisions.md:21985).
+
+- [s16] The blocker is mechanical and demonstrated, not inferred: python3 tools/grinder/grindlib.py selfvet . func_80062020 exits 1 with 'self-vet re-declares a BANNED construct ... (chained assignment, right-to-left evaluation order, on the new Unk800F1198Record array)'. A candidate-ready is therefore discarded before layer-1 or the Judge sees it.
+
+- [s16] Both blocking bans were ordered cleared the same day and never mechanically executed: decisions.md:21985 (2026-09-03 20:36, PASS) - 'The ban does NOT survive; banned_constructs entries 3 and 4 are cleared'; decisions.md:21993 (2026-09-03 20:56, PASS) - 'banned_constructs[2] is therefore narrowed away'. Neither ruling populated unban_construct, the only field grind.ps1:557-563 acts on, so grindlib.check_banned_constructs never saw the narrowing and the 2026-09-03 21:21 layer-1 FAIL re-asserted the exact premise the 20:36 Judge had refuted by independent recompilation.
+
+- [s16] The clearance needle is unambiguous: Unk800F1198Record occurs in banned_constructs entries 3 and 4 (the two ordered cleared) and in neither entry 1 (the pointer-local dual-spelling epilogue) nor entry 2 (the comments-only resubmission), both of which stay in force and neither of which the banked body contains.
+
+- [s16] No scope widening is requested: tools/grinder/scope_allow.txt:49 already grants func_80062020 include/game.h, src/text1b_b.c and undefined_syms_auto.txt, which with src/text1b.c is the complete touched set.

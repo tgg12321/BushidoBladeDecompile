@@ -135,6 +135,30 @@
  *   - Returned candidate-ready with the diff LEFT IN PLACE in src/, include/ and
  *     undefined_syms_auto.txt.  self_vet.md carries the prong-by-prong vet with (c) rewritten
  *     as satisfied and an s16d measurement section.
+ *
+ * s16e (structural, 2026-09-03) EPILOGUE-SPELLING SPACE ENUMERATED - body UNCHANGED.
+ *   - 15 spellings across four declaration shapes measured on the real chassis
+ *     (tmp/grind/func_80062020/s16struct/{sweep.py,results.txt,structural_s16.md}).
+ *     EXACTLY THREE reach the target arrangement DISP8 | DISP4 | LOSUM0, and all three are
+ *     the same construct: the ascending-member chain, its parenthesised form, and the same
+ *     chain under a BARE 2-D declaration `extern s32 D_800F1198[][3];` (no typedef, no
+ *     struct tag).  All NINE non-chained spellings - every separate-statement permutation,
+ *     both 2-chain+statement mixes, the comma form - emit all-LOSUM with no base register in
+ *     any order.  The flat `extern s32 D_800F1198[];` declaration and the whole-record
+ *     assignment from a zeroed local are both disproven (wrong arrangement, 36/37/33 insns).
+ *     So: the arrangement is DECLARATION-INDEPENDENT (not an artefact of Unk800F1198Record),
+ *     the author cannot select it by statement order, and the chain is the only member of the
+ *     reaching set.  Banked as H-s16e-EPISPACE, class kill, predicate tools/gcc-2.7.2/expr.c:3453.
+ *   - Floor re-proven from clean HEAD: sandbox 38 (no_c_body) -> apply + suffix ->
+ *     verify-oracle --rebuild --allow-dirty ok true / build_matches true /
+ *     build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked ->
+ *     sandbox func_80062020 --disable all = 0 at 38/38, rules_dropped 0.  Tree restored.
+ *   - NOT resubmitted: `grindlib.py selfvet . func_80062020` exits 1 on banned_constructs
+ *     entry 3, which the 2026-09-03 20:36 Judge ruling (decisions.md:21985) already ordered
+ *     cleared ("banned_constructs entries 3 and 4 are cleared") - the ruling just never
+ *     populated `unban_construct`, the only field grind.ps1:557-563 acts on.  s16e filed an
+ *     INTEGRATION HANDOFF in docs/grind/decisions.md naming the single needle that clears
+ *     exactly those two superseded entries and nothing else: "Unk800F1198Record".
  */
 void func_80062020(s32 *arg0) {
     s32 i;
