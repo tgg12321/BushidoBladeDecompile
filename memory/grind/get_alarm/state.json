@@ -1,8 +1,8 @@
 {
  "func": "func_8007DC9C",
  "file": "display",
- "session_count": 43,
- "current_modality": "escalation",
+ "session_count": 44,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -267,23 +267,29 @@
    "floor": 9,
    "modality": "escalation",
    "headline": "Owner ruling-10 return-to-active executed: axis B's chain named end to end (sched1 delay-slot hoist of uid 54 -> local-alloc $a0 seat -> pass-2 output dep on the fmt la), and the C-expressible surface"
+  },
+  {
+   "session": 44,
+   "floor": 9,
+   "modality": "synthesis",
+   "headline": "s44 synthesis: statement-order surface CLOSED at all depths (80k luid permutations; pass 1 luid-invariant, pass 2 blocked by an OUTPUT dep edge), and the mandated sibling sweep measured CD_sync's two "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A PAIR of statement-order moves reaches the goal in a pass where no single move does (pass 1 goal '38 before 54' / '56 before 38'; pass 2 goal 'fmt la to slot 1').",
-   "mechanism": "Depth 1 is exhaustively negative in both passes, but a pair of luid moves can produce an order no single move can. This is the last C-expressible surface that has not been searched to exhaustion; if it is also empty, the scheduler axis is closed by exhaustion rather than by depth-1 sampling.",
-   "next_probe": "Run BOTH depth-2 runs detached and harvest in the SAME turn (they are pure-Python replays with no build in the loop, but each is >70 min): (a) python3 tools/sched_solver/perturb.py tmp/grind/get_alarm/s43/display.sched.json --func get_alarm --pass 1 --block 2 --goal-before 54:38 --atoms luid,luid_move --depth 2; (b) the same with --pass 2 --goal-before 38:60 --goal-before 43:60 --goal-before 54:60. Launch as the FIRST action of the session, write the outcome JSON before the 90-minute wall."
+   "hypothesis": "The F1 chain-extender's second reference to &D_8009BF68 is destroyed by a specific named pass before combine runs, and identifying that pass either yields a spelling that survives it or closes axis A for the whole F1 family.",
+   "mechanism": "A1 and A6 moved the score 9 -> 13 while build_insns stayed at 90: the extra symbol reference perturbs codegen but is not present as a second use of the address pseudo when combine.c:1458 evaluates added_sets_2. The candidate killers are cse2 (constant-folding the symbol difference) and combine itself. CD_sync's own s105 note records that its extender survived precisely because cse could not fold the SYMBOL_REF difference, so the two cases must differ somewhere identifiable.",
+   "next_probe": "Apply variant A1 (tmp/grind/get_alarm/s44/variant.py A1), run `pwsh tools/grinder/dump.ps1 get_alarm`, and read tmp/grind/get_alarm/dumps/display.cse2 and display.combine for the D_8009BF68 address pseudo, tracking its reference count across passes. If it dies in cse2, spell an extender cse cannot fold and take ONE measurement; if it dies inside combine, bank axis A as closed for the F1 family (a class result) and record the predicate."
   },
   {
-   "hypothesis": "local-alloc can be pushed to seat the dead read in $v0 by changing some OTHER quantity's shape rather than by reordering statements.",
-   "mechanism": "The dead read is allocated last (refs 1 -> qty_compare priority 0), so its seat is decided entirely by what is already live across [8,9). Reordering is dead; the untested alternative is changing WHICH pseudos exist or how long they live, e.g. a form in which the madr pointer is not a separate pseudo at all.",
-   "next_probe": "Finish the interrupted run: python3 tools/ra_solver/inverse.py local tmp/ra_solver_work/display.local.json --func get_alarm --block 2 --goal '{\"2\": 2}' --depth 2 --top 12 (goal = qty 2 into hardreg 2 = $v0). Then classify each returned vector as C-expressible or not, exactly as this session did for the scheduler atoms. Note the model is OURS plus an analyst-supplied goal, so the inverse_compose --target-object gap does not block it."
+   "hypothesis": "local-alloc can be pushed to seat the dead *g_gpu_stat_reg read in $v0 by changing WHICH pseudos exist or how long they live, rather than by reordering statements or aliasing a pointer global.",
+   "mechanism": "The dead read is allocated last (qty 2, refs 1 -> qty_compare priority 0), so its seat is decided entirely by what is live across [8,9). Statement order is now closed at all depths (this session) and two pointer-alias spellings are dead (B1/B2), leaving the shape of the quantity table itself as the only untested input. The $v0 seat is the unique thing that deletes the pass-2 output dependence s42 isolated.",
+   "next_probe": "Finish the run s43 left interrupted: `python3 tools/ra_solver/inverse.py local tmp/ra_solver_work/display.local.json --func get_alarm --block 2 --goal '{\"2\": 2}' --depth 2 --top 12` (goal = qty 2 into hardreg 2 = $v0), then classify each returned vector as C-expressible or not exactly as s43 did for the scheduler atoms. The model is ours plus an analyst-supplied goal, so the inverse_compose --target-object gap does not block it."
   },
   {
-   "hypothesis": "Axis A (the remaining 1 insn, the &D_8009BF68 materialization) may behave differently under a $v0-seat chassis.",
-   "mechanism": "combine.c:1458 added_sets_2 is a pre-RA decision so it should be seat-independent, but every axis-A probe in s1-s43 ran against a chassis where the dead read occupies $a0; the two axes were only ever proven orthogonal against THAT seat.",
-   "next_probe": "Deferred and conditional: only if a $v0-seat form is ever found. Then re-run the s2/s3 axis-A declaration/access-shape enumeration against the NEW chassis before quoting any banked axis-A conclusion, since every one of them is chassis-relative."
+   "hypothesis": "Axis A (the &D_8009BF68 materialization) behaves differently under a $v0-seat chassis than under the $a0-seat chassis every probe in s1-s44 has used.",
+   "mechanism": "combine.c:1458 added_sets_2 is a pre-RA decision so it should be seat-independent, but every axis-A probe has run against a chassis where the dead read occupies $a0; the two axes were only ever proven orthogonal against THAT seat.",
+   "next_probe": "Deferred and conditional on frontier item 2 producing a $v0-seat form. If one appears, re-run the s2/s3 declaration/access-shape enumeration AND this session's F1 spellings against the NEW chassis before quoting any banked axis-A conclusion, since every one of them is chassis-relative."
   }
  ],
  "judge_constraints": [],
@@ -291,5 +297,31 @@
  "created": "2026-07-22T13:53:31.417799+00:00",
  "exhaustion_base": 43,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 9 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.646047+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.646047+00:00",
+ "kills": [
+  {
+   "session": 44,
+   "statement": "The depth-2 luid/luid_move perturbation search reaches target's emitted order in either scheduler pass, i.e. a pair of statement-order moves is the missing lever.",
+   "kill_scope": "class",
+   "measured_on": "chassis-current floor-9 body (candidate.c applied to src/display.c: score 9 / target 91 / build 90 / rules_dropped 0 / cheat_asm_stripped 147); ZERO FAKE constructs present; model tmp/grind/get_alarm/",
+   "predicate_cite": "tools/sched_solver/simulate.py:127",
+   "result": "NEGATIVE, and far more strongly than depth 2 would have shown. PASS 1 is completely LUID-INVARIANT for this block: 20,00"
+  },
+  {
+   "session": 44,
+   "statement": "CD_sync's sanctioned F1 combine-foldable chain-extender (a symbol-difference delta that folds to zero emitted bytes) gives &D_8009BF68 a second use that survives to combine, so combine's added_sets_2 ",
+   "kill_scope": "instance",
+   "measured_on": "chassis-current floor-9 body (score 9 / target 91 / build 90 / rules_dropped 0 / cheat_asm_stripped 147); no FAKE construct present in the base body; the three probe spellings carried no FAKE annotati",
+   "predicate_cite": "",
+   "result": "A1 = score 13 / build_insns 90. A6 = score 13 / build_insns 90. A3 = score 9 / build_insns 90 (folds away entirely, iner"
+  },
+  {
+   "session": 44,
+   "statement": "CD_sync/CD_datasync's sanctioned pointer-alias-to-a-global device changes which pseudos exist across the dead read's live range and moves local-alloc's seat for that read from $a0 to $v0.",
+   "kill_scope": "instance",
+   "measured_on": "chassis-current floor-9 body (score 9 / target 91 / build 90 / rules_dropped 0 / cheat_asm_stripped 147); no FAKE construct present",
+   "predicate_cite": "",
+   "result": "B1 = score 9 / build_insns 90 - inert, no seat change, identical fingerprint to the floor. B2 = score 17 / build_insns 9"
+  }
+ ]
 }
