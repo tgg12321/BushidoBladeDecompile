@@ -34,6 +34,23 @@ dev-table pointer load) schedules several slots later than target.
 2. a size argument that equals the byte size of the whole run
    (`0x14` == `sizeof(u_long[5])`).
 
+**Second signature — the register-allocation face (func_80033550,
+2026-09-03, 17 sessions):** the residual is a POINTER homed in the wrong
+register (`move a1,a0` vs target `move a3,a0`) that feeds N loads at
+consecutive offsets (`lw 0/4/8($p)`) whose values go to N adjacent splat
+scalars (`D_x`, `D_x_plus_4`, `D_x_plus_8`) — or the mirror image, N
+consecutive stores into adjacent scalars from one base. Spelled as scalars
+the pointer DIES at the last load and gets the first free register; spelled
+as one record copy (`table[i] = *p;`) GCC 2.7.2's block-move expansion
+issues all loads before all stores and keeps the pointer LIVE across the
+whole pattern, so its conflict set grows and it homes exactly where the
+target has it — at unchanged instruction count. Thirteen sessions modeled
+`find_reg` for this; the `named_syms.txt` census row ("12-byte stride per
+leaf, 6 entries") had said "record" since 2026-05-17. The grind brief's
+DATA MODEL section (engine/datamodel.py) now surfaces such rows and the
+`+N from` sub-symbols mechanically — when it flags SPLIT-AGGREGATE,
+INDEXED-ACCESS or CENSUS-VS-DECL, the declaration is hypothesis #1.
+
 ## Mechanism
 
 `*p = a` is a MEM with a VARYING address and no `MEM_IN_STRUCT_P`. `canon_rtx`

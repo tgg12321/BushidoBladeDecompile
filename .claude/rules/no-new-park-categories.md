@@ -249,7 +249,14 @@ SOTN master-branch evidence ([[sotn-borderline-research-2026-06-02]]):
   a flat array) — an index that encodes a record stride as a magic number
   does NOT qualify; (c) the merge is complete: every merged per-word
   symbol is removed from C and from the splat symbol config, leaving
-  exactly one C handle per storage location; (d) spelled at the canonical
+  exactly one C handle per storage location — **amendment 2026-09-03
+  (operator, under the owner's 2026-08-19 self-serve discretion; func_80062020
+  20:46 layer-1 FAIL): a per-word symbol row may STAY in
+  `undefined_syms_auto.txt` / `named_syms.txt` while a still-`INCLUDE_ASM`
+  sibling's `asm/funcs/*.s` references it (deleting it would break that
+  sibling's assembly), provided no C code names the symbol and the row is
+  suffixed `/* alias of <base>+N; retire with <sibling> */`. Prong (c) is
+  then satisfied; the row retires when the sibling lands**; (d) spelled at the canonical
   declaration in the shared header, never TU-local, never a per-use
   pointer pun; (e) byte-neutrality verified for every other consumer,
   full `verify-oracle --rebuild`, layer-2 cheat-reviewer.
