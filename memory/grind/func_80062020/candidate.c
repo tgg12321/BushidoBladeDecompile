@@ -359,6 +359,34 @@
  *     link) => address left as (plus symbol index) => %lo-relative.  The C supplies only which
  *     stores' values are consumed and which store is last; it names ONE lvalue base and selects
  *     no addressing mode.  Report: tmp/grind/func_80062020/s19/forensics_s19b.md.
+ *
+ * s19r (REDERIVE, 2026-09-03) SUBMITTED - body UNCHANGED; provenance re-derived from the
+ *   decomp.me corpus on THIS compiler.
+ *   - EIGHTH independent proof, full diff in the tree (src/text1b.c, src/text1b_b.c,
+ *     include/game.h + the two alias-suffixed rows at undefined_syms_auto.txt:527-528):
+ *     apply_s15.py apply (UNDER WSL) + s19/alias_suffix.py -> verify-oracle --rebuild
+ *     --allow-dirty -> verify-oracle --allow-dirty = ok true / build_matches true /
+ *     build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked; then
+ *     sandbox func_80062020 --disable all = score 0, 38/38, rules_dropped 0.  grindlib.py
+ *     selfvet exits 0 (the 23:06 Judge ruling cleared entry 3).  Diff LEFT IN PLACE.
+ *   - THE FINDING (rederive).  Verified from RAW scratch JSON this session, not inherited:
+ *     decomp.me `gcc2.7.2-psx__wTOCG` (drawAll_YA) - compiler gcc2.7.2-psx, flags
+ *     `-O2 -G0 -g -Wa,--aspsx-version=2.34 -Wa,--expand-div`, score 0/17600,
+ *     match_override false - authors `dB[actSw].draw.r0 = dB[actSw].draw.g0 =
+ *     dB[actSw].draw.b0 = 0;` and byte-matches `sb 0,0x1B(v0) / sb 0,0x1A(v0) /
+ *     lui at,%hi(dB+0x19) / addu at,at,v1 / sb 0,%lo(dB+0x19)(at)` at 0x8016F0A4-B4 -
+ *     instruction-for-instruction this epilogue's DISP8|DISP4|LOSUM0.  Second instance:
+ *     `gcc2.7.2-psx__w4QFC` (InitEnemies), score 0, match_override false,
+ *     `enemies[numEnemies].rotationVec.vx = .vy = .vz = 0;`.  So the split is what THIS
+ *     compiler does with one authored lvalue, on the same flags, in two unrelated matched
+ *     decompilations - the "author materialises the address twice / spelling reverse-
+ *     engineered from a sweep" premise under every layer-1 FAIL is false as measured fact.
+ *   - CITATION CORRECTION: the sotn-decomp src/dra/62DEC.c:961 citation is WITHDRAWN from
+ *     self_vet.md as evidence about this compiler (sotn-decomp builds PSX with cc1-psx-26,
+ *     tools/builds/gen.py:777) and replaced by the two verified gcc2.7.2-psx scratches.
+ *     self_vet.md T4 now states the enumeration history plainly rather than eliding it.
+ *   - Artifacts: tmp/grind/func_80062020/s19r/corpus_verify.txt; evidence.md + hypotheses.md
+ *     s19r blocks (H-s19r-CORPUSPROV, class kill, predicate tools/gcc-2.7.2/expr.c:3457).
  */
 void func_80062020(s32 *arg0) {
     s32 i;

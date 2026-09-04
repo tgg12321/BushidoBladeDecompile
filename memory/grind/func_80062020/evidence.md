@@ -3069,3 +3069,62 @@ census_results.txt}, memory/grind/func_80062020/precedent-decompme-chain-arrange
 - [s19c] w4QFC/InitEnemies (gcc2.7.2-psx, score 0, is_matching true, match_override false) matches `enemies[numEnemies].rotationVec.vx = .vy = .vz = 0;` - a global ARRAY of records indexed by a running counter, func_80062020's exact context - to the same five-instruction split, three times in one matched function.
 - [s19c] The construct is routine authored C in this compiler class: 14 MATCHED scratches across gcc2.7.2-cdk (4), gcc2.7.2-psx (7) and psyq3.5 (3) carry a >=3-lvalue chained assignment over one aggregate.
 - [s19c] The corpus evidence repairs both defects the 2026-09-03 22:51 layer-1 FAIL named: the compiler is literally gcc2.7.2-psx (not SOTN's cc1-psx-26), and the artefacts are cached in-repo so the citation is re-derivable by re-running tmp/grind/func_80062020/s19/arrangement_census.py.
+
+
+## s19r (REDERIVE, 2026-09-03) — SUBMITTED; corpus re-derivation of the epilogue provenance
+
+CHASSIS. Clean HEAD 3aa1995f, tree clean apart from metrics/events.jsonl. Applied the banked
+body (`memory/grind/func_80062020/apply_s15.py apply`, run UNDER WSL — the script pins a
+/mnt/c/... root) plus `tmp/grind/func_80062020/s19/alias_suffix.py` (the two byte-neutral alias
+suffixes on undefined_syms_auto.txt:527-528). Then `verify-oracle --rebuild --allow-dirty`
+followed by `verify-oracle --allow-dirty` -> ok true, build_matches true, build_sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked; then
+`sandbox func_80062020 --disable all` -> score 0, target_insns 38, build_insns 38, scorable
+true, rules_dropped 0. EIGHTH independent SHA1==oracle proof of this body. Diff LEFT IN PLACE.
+
+WHAT REDERIVE PRODUCED. The C shape space for this epilogue is closed (s16e class kill,
+predicate tools/gcc-2.7.2/expr.c:3453; 38 spellings over four declaration shapes), and the body
+already measures 0, so re-deriving a DIFFERENT C shape is not the available work — re-deriving
+the PROVENANCE of the existing one is, and that is what the six layer-1 FAILs actually turn on.
+This session re-derived it from the decomp.me corpus (tools/decomp_me_scrape.py cache,
+tmp/decomp_me_corpus/) and verified it from the RAW scratch JSON rather than inheriting s19's
+or the 23:06 Judge's summary — script output in tmp/grind/func_80062020/s19r/corpus_verify.txt:
+
+  * `gcc2.7.2-psx__wTOCG.json` — function drawAll_YA, compiler field literally `gcc2.7.2-psx`,
+    compiler_flags `-O2 -G0 -g -Wa,--aspsx-version=2.34 -Wa,--expand-div` (this project's own
+    -O2, -G0 and aspsx 2.34), score 0 of max_score 17600, `match_override: false` (a real byte
+    match, not an override). Its authored source line 22 is
+    `dB[actSw].draw.r0 = dB[actSw].draw.g0 = dB[actSw].draw.b0 = 0;` and the target assembly it
+    matches reads, at 0x8016F0A4-0x8016F0B4:
+        sb $zero, 0x1B($v0) / sb $zero, 0x1A($v0) / lui $at, %hi(dB+0x19) /
+        addu $at, $at, $v1 / sb $zero, %lo(dB+0x19)($at)
+    — instruction-for-instruction the arrangement of asm/funcs/func_80062020.s:35-39
+    (DISP8 | DISP4 | LOSUM0, the %lo store re-indexed by the SAME scaled-index register).
+  * `gcc2.7.2-psx__w4QFC.json` — function InitEnemies, same compiler, score 0,
+    `match_override: false`, authored source line 63
+    `enemies[numEnemies].rotationVec.vx = ... .vy = ... .vz = 0;` — the same construct on a
+    global record array indexed by a running counter, i.e. func_80062020's shape with the names
+    changed (line 79 carries a second chained assignment of a constant).
+
+CONSEQUENCE. The premise under every layer-1 FAIL on this body — that the two addressing forms
+mean the AUTHOR materialised the row address twice, and that the chained assignment is "a
+spelling reverse-engineered from a 102-variant sweep to hit a GCC addressing quirk" — is false
+as measured fact on the SAME compiler this project uses. Two unrelated projects' authors, whose
+only objective was their own bytes, wrote the identical ordinary statement and got the identical
+split. s18 had already refuted the mechanism half from the compiler side (expr.c:3453-3464
+store_field want_value); this closes the provenance half with same-compiler, same-flags,
+byte-matched external evidence.
+
+CITATION CORRECTION CARRIED INTO THE VET. The sotn-decomp citation (src/dra/62DEC.c:961) is
+WITHDRAWN from self_vet.md as evidence about this compiler — sotn-decomp builds every PSX TU
+with cc1-psx-26 (tools/builds/gen.py:777), a different compiler line — and replaced by the two
+verified gcc2.7.2-psx scratches above. self_vet.md's T4 was also rewritten to state the
+enumeration history plainly instead of eliding it: the sweep ELIMINATED alternatives (every other
+reaching spelling buys its second consumed store with dead code and was refused by s18 itself);
+it did not invent this statement.
+
+STATUS. `python3 tools/grinder/grindlib.py selfvet . func_80062020` exits 0 (the 23:06 Judge
+ruling, docs/grind/decisions.md, cleared entry 3; the surviving entries are the pointer-local
+dual-spelling epilogue and the comments-only re-file, neither of which this body declares, plus
+a non-construct disposition-history entry that ruling states is superseded). Returned
+candidate-ready with the diff in place.

@@ -1961,3 +1961,31 @@ the author supplies only which stores' values are consumed and which store is la
 of the 38-spelling epilogue enumeration over four declaration shapes, and the refusal of the
 five dead-code non-chain consumption carriers
 (rejected/epilogue-nonchain-consumption-carriers-deadcode-s18.c).
+
+
+## H-s19r-CORPUSPROV — "the chained-assignment epilogue is an authored/reverse-engineered spelling" (the standing layer-1 premise)
+
+STATEMENT. The DISP8|DISP4|LOSUM0 addressing split in func_80062020's epilogue is authored — the
+C materialises the terminator row's base address twice in two different forms — and the ascending
+chained assignment is a spelling selected by this project's codegen sweep rather than the ordinary
+way to write the operation.
+
+PROBE. Re-derived the provenance from the decomp.me corpus cache (tmp/decomp_me_corpus/, 3,754
+scratches) and verified it from the raw scratch JSON this session, not from a prior session's
+summary: tmp/grind/func_80062020/s19r/corpus_verify.txt.
+
+RESULT — KILLED (class). Two independent community decompilations on the SAME compiler
+(`gcc2.7.2-psx`), both score 0 with `match_override: false`, contain the same authored chained
+assignment and byte-match the same split. wTOCG (drawAll_YA) runs on this project's own flags
+(-O2 -G0 -Wa,--aspsx-version=2.34) and matches
+`sb $zero,0x1B($v0) / sb $zero,0x1A($v0) / lui $at,%hi(dB+0x19) / addu $at,$at,$v1 /
+sb $zero,%lo(dB+0x19)($at)` from `dB[actSw].draw.r0 = dB[actSw].draw.g0 = dB[actSw].draw.b0 = 0;`.
+w4QFC (InitEnemies) does the same on a counter-indexed global record array. The split is
+therefore produced by the compiler from one authored lvalue, not by an author writing two forms —
+the mechanism being the store_field want_value gate at tools/gcc-2.7.2/expr.c:3457, which copies
+a consumed store's address into a register and leaves a discarded store's address symbol-folded.
+Predicate: tools/gcc-2.7.2/expr.c:3457.
+
+MEASURED ON. 2026-09-03 chassis HEAD 3aa1995f with the banked diff applied (sandbox 0 at 38/38,
+full-build SHA1 == oracle); no FAKE construct present in the measured body. The corpus half of
+the probe is a static read of cached scratch JSON and is chassis-independent.

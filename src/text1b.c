@@ -2142,9 +2142,6 @@ extern u8 D_800F1150;
 extern s32 D_800F1178;
 extern s32 D_800F117C;
 extern s32 D_800F1180;
-extern s32 D_800F1198;
-extern s32 D_800F119C;
-extern s32 D_800F11A0;
 extern s32 D_800F1850;
 extern u8 D_800F6338;
 extern u8 D_800F6339;
@@ -3926,10 +3923,26 @@ void func_80061FAC(u16 *a0, s32 a1, u8 *a2) {
     SetRotMatrix(s0);
 }
 extern s32 D_800A32B8;
-extern s32 D_800F1198;
-extern s32 D_800F119C;
-extern s32 D_800F11A0;
-INCLUDE_ASM("asm/funcs", func_80062020);
+void func_80062020(s32 *arg0) {
+    s32 i;
+    s32 ofs;
+    s32 t;
+    t = *(s32 *)((u8 *)arg0 + 0);
+    D_800A32B8 = 0;
+    i = 0;
+    if ((t & 1) == 0) goto end;
+    ofs = 0;
+    do {
+        D_800F1198[i].unk0 = *(s32 *)((u8 *)arg0 + ofs + 0);
+        D_800F1198[i].unk4 = *(s32 *)((u8 *)arg0 + ofs + 4);
+        D_800F1198[i].unk8 = *(s32 *)((u8 *)arg0 + ofs + 8);
+        i = i + 1;
+        ofs = ofs + 12;
+        t = *(s32 *)((u8 *)arg0 + ofs + 0);
+    } while ((t & 1) != 0);
+end:
+    D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;
+}
 INCLUDE_ASM("asm/funcs", func_800620B8);
 s32 func_8006288C(void) {
     extern s32 D_800A3460;
