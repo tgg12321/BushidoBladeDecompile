@@ -233,6 +233,15 @@ def dossier(func: str) -> str:
           if any(n in ln for n in names)][-3:]
     lines.append("journal tail:")
     lines += [f"  {l[:160]}" for l in jl] or ["  (none)"]
+    # Data model (2026-09-03, func_80033550 post-mortem): declared shape vs
+    # census / sibling-addressing evidence for every global the target touches.
+    try:
+        from . import datamodel as _dm
+        dm = _dm.render(func)
+    except Exception:
+        dm = ""
+    if dm:
+        lines.append(dm)
     warns = audit(func, item)
     lines.append("CONSISTENCY: " + ("OK" if not warns else ""))
     lines += [f"  WARN: {w}" for w in warns]

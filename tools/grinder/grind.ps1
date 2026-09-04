@@ -286,6 +286,13 @@ function Invoke-Layer1([string]$func, [string]$stem, [string]$diff) {
     $vet = if (Test-Path $vetPath) { Get-Content $vetPath -Raw } else { '(no self-vet on disk)' }
     $scopeBlock = ''
     try { $scopeBlock = (python tools/grinder/grindlib.py rule-scopes . $func 2>$null | Out-String).Trim() } catch { }
+    # Mechanical pun scan (2026-09-03): per-use address puns on splat symbols in
+    # candidate.c — the object model belongs at the declaration (prong (d)).
+    $punBlock = ''
+    try {
+        $puns = (python tools/grinder/grindlib.py pun-scan . $func 2>$null | Out-String).Trim()
+        if ($puns) { $punBlock = "DECLARATION PUNS (mechanical scan of candidate.c — a per-use cast or pointer arithmetic on a splat symbol's ADDRESS spells an object model at the use site; the aggregate-merge family requires it at the DECLARATION, prong (d). FAIL unless the self-vet justifies each line on its own evidence):`n$puns`n" }
+    } catch { }
     $task = @"
 LAYER-1 REVIEW for $func (src/$stem.c) — you are the pre-Judge gate in the
 Grinder pipeline. A grind session has produced a candidate whose honest
@@ -314,6 +321,7 @@ every PRECEDENT must resolve to the file:line or commit it names. A citation
 that does not check out is a FAIL, not a rounding error.
 
 $scopeBlock
+$punBlock
 DATED RULINGS: rulings in docs/grind/decisions.md carry dates; bans in state.json
 do NOT — date a ban from the dated FAIL entry that created it in
 docs/grind/decisions.md, or ``git log -S "<ban text>" -- memory/grind/<func>/state.json``.
@@ -1120,7 +1128,9 @@ while ($true) {
     # Per-modality model: recon sessions get the strong model (frontier quality
     # determines how many execution sessions follow); everything else grinds on
     # the cheaper worker model.
-    $sessionModel = if ($modality -eq 'recon') { $ReconModel } else { $Model }
+    # object-model (2026-09-03) is a one-shot audit whose quality decides whether
+    # the function forecloses — it gets the recon-tier model for the same reason.
+    $sessionModel = if ($modality -in @('recon', 'object-model')) { $ReconModel } else { $Model }
     Log "${func}: session $sessionN starting, modality=$modality, model=$sessionModel"
 
     # 4) spawn

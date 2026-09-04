@@ -177,15 +177,64 @@ class TestApplyAndLadder(unittest.TestCase):
 class TestExhaustionEscalation(unittest.TestCase):
     MODS = ["structural", "permuter", "forensics", "rederive"]
 
-    def hist(self, floors, mods=None):
+    def hist(self, floors, mods=None, audited=True):
         mods = mods or self.MODS
-        return {"floor_history": [
+        st = {"floor_history": [
             {"session": i + 1, "floor": f, "modality": mods[i % len(mods)]}
             for i, f in enumerate(floors)]}
+        if audited:  # object-model gate (2026-09-03) already satisfied
+            st["object_model_audited"] = 1
+        return st
 
     def test_flat_positive_floor_escalates(self):
         st = self.hist([3] * G.ESCALATION_FLAT_SESSIONS)
         self.assertEqual(G.assign_modality(8, st), "escalation")
+
+    # Object-model gate (2026-09-03, func_80033550 post-mortem): exhaustion
+    # routes through ONE object-model audit session before escalation.
+    def test_exhausted_unaudited_routes_to_object_model(self):
+        st = self.hist([3] * G.ESCALATION_FLAT_SESSIONS, audited=False)
+        self.assertEqual(G.assign_modality(8, st), "object-model")
+
+    def test_object_model_not_forced_while_floor_moves(self):
+        st = self.hist([5, 5, 5, 5, 5, 5, 5, 4], audited=False)
+        self.assertNotIn(G.assign_modality(8, st), ("object-model", "escalation"))
+
+    def test_object_model_outcome_requires_evidence_and_stamps_state(self):
+        tmp = tempfile.TemporaryDirectory()
+        try:
+            root = tmp.name
+            G.init_ledger(root, "func_X", "text1a_c")
+            base = {"result": "progress", "floor": 3, "hypotheses": [], "frontier": []}
+            ok, why = G.validate_outcome(dict(base, evidence=["no audit here"]),
+                                         "object-model", root, "func_X")
+            self.assertFalse(ok)
+            self.assertIn("OBJECT MODEL", why)
+            o = dict(base, evidence=["OBJECT MODEL: D_1 MATCHES; D_2 MISMATCH measured score 4"])
+            ok, why = G.validate_outcome(o, "object-model", root, "func_X")
+            self.assertTrue(ok, why)
+            G.apply_outcome(root, "func_X", o, "object-model")
+            st = G.load_state(root, "func_X")
+            self.assertEqual(st["object_model_audited"], 1)
+            # a stamped ledger at exhaustion now escalates instead of re-auditing
+            st.update(self.hist([3] * G.ESCALATION_FLAT_SESSIONS, audited=False))
+            st["object_model_audited"] = 1
+            self.assertEqual(G.assign_modality(8, st), "escalation")
+        finally:
+            tmp.cleanup()
+
+    def test_recon_without_signals_needs_no_object_model(self):
+        # temp root has no asm/ -> data_model_signals degrades to no flags
+        tmp = tempfile.TemporaryDirectory()
+        try:
+            G.init_ledger(tmp.name, "func_X", "text1a_c")
+            o = {"result": "progress", "floor": 3, "frontier": [
+                {"hypothesis": "h", "mechanism": "m", "next_probe": "p"}],
+                "evidence": ["baseline"], "hypotheses": []}
+            ok, why = G.validate_outcome(o, "recon", tmp.name, "func_X")
+            self.assertTrue(ok, why)
+        finally:
+            tmp.cleanup()
 
     def test_flat_zero_floor_escalates(self):
         # 2026-08-11 `main` regression: sandbox floor 0 but a scorer-invisible
@@ -1097,7 +1146,8 @@ class TestForeclosureMechanics(unittest.TestCase):
         mods = mods or self.MODS6
         st = {"session_count": len(floors), "floor_history": [
             {"session": i + 1, "floor": f, "modality": mods[i % len(mods)]}
-            for i, f in enumerate(floors)]}
+            for i, f in enumerate(floors)],
+            "object_model_audited": 1}  # gate (2026-09-03) satisfied
         if base is not None:
             st["exhaustion_base"] = base
         return st
@@ -1196,6 +1246,49 @@ class TestForeclosureMechanics(unittest.TestCase):
         self.assertIn("escalation", why)
         ok, _ = G.validate_outcome(o, "escalation", self.root)
         self.assertTrue(ok)
+
+
+class TestDeclarationPunScan(unittest.TestCase):
+    """Per-use address puns on splat symbols (2026-09-03): both func_80033550
+    layer-1 FAILs were these, one session apart."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "func_X", "text1a_c")
+        self.cand = os.path.join(self.root, "memory", "grind", "func_X", "candidate.c")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _write(self, body):
+        with open(self.cand, "w", encoding="utf-8") as fh:
+            fh.write(body)
+
+    def test_flags_each_pun_shape(self):
+        self._write("void f(s32 *p) {\n"
+                    "    *(Word3 *)(((u8 *)(&D_80107850)) + i * 12) = *(Word3 *)p;\n"
+                    "    if (*(&D_800A3918 + i) == 0) return;\n"
+                    "    (&g_leaf_slot_state)[i] = 1;\n"
+                    "}\n")
+        hits = G.scan_declaration_puns(self.root, "func_X")
+        self.assertEqual(len(hits), 3, hits)
+        self.assertIn("[D_80107850]", hits[0])
+        self.assertIn("[D_800A3918]", hits[1])
+        self.assertIn("[g_leaf_slot_state]", hits[2])
+
+    def test_clean_declaration_merge_is_silent(self):
+        self._write("void f(LeafPos *p) {\n"
+                    "    D_800A3918[i] = 1;\n"
+                    "    D_80107850[i] = *p;\n"
+                    "    q = &D_80107850[i];\n"
+                    "}\n")
+        self.assertEqual(G.scan_declaration_puns(self.root, "func_X"), [])
+
+    def test_missing_candidate_is_silent(self):
+        if os.path.exists(self.cand):
+            os.remove(self.cand)
+        self.assertEqual(G.scan_declaration_puns(self.root, "func_X"), [])
 
 
 if __name__ == "__main__":

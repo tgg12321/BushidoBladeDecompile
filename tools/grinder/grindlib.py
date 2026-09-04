@@ -23,7 +23,16 @@ import os
 import re
 import sys
 
-MODALITIES = ["recon", "structural", "permuter", "solver", "forensics", "rederive", "synthesis"]
+MODALITIES = ["recon", "structural", "permuter", "solver", "forensics", "rederive", "synthesis",
+              "object-model"]
+# "object-model" (2026-09-03, func_80033550 post-mortem): a one-session audit of
+# declared shape vs evidence for every global the target touches, forced ONCE
+# before the driver may declare exhaustion. 13 of that function's 17 sessions
+# modeled register allocation for a tail named_syms.txt had described as a
+# 12-byte record table since 2026-05-17; no ladder rung ever asked whether the
+# declarations were right. Not a ladder rung: it sits between exhaustion-ready
+# and `escalation`, so a flat floor can no longer reach a foreclosure record
+# without the object model having been checked on the record.
 # Sessions walk this ladder ONCE; a flat floor across the cycle forces the
 # escalation modality (R1, owner ruling 2026-08-19) — never a second cycle.
 # R2 (modality-effectiveness 2026-08-19, owner ruling asm-until-matched): the single
@@ -322,6 +331,60 @@ def check_banned_constructs(root, func):
                            "respelled is the same construct — change the attack, not the "
                            "spelling, or emit ruling-request.")
     return True, ""
+
+
+_OBJECT_MODEL_RE = re.compile(r"\bOBJECT MODEL\b", re.I)
+
+
+def _has_object_model(o):
+    """True when the outcome banks an `OBJECT MODEL:` evidence entry."""
+    return any(_OBJECT_MODEL_RE.search(str(e)) for e in (o.get("evidence") or []))
+
+
+def data_model_signals(root, func):
+    """(rows, flags) from engine/datamodel.py evaluated with cwd=root.
+    Degrades to ([], []) on any failure — never blocks a dispatch."""
+    cwd = os.getcwd()
+    try:
+        os.chdir(root)
+        if root not in sys.path:
+            sys.path.insert(0, root)
+        from engine import datamodel as _dm
+        _dm.reset_cache()
+        return _dm.data_model(func)
+    except Exception:
+        return [], []
+    finally:
+        os.chdir(cwd)
+
+
+# Per-use puns on a splat symbol's ADDRESS: `(T *)&D_x`, `(&D_x + i)`,
+# `(&D_x)[i]`. Each spells an object model at the use site that belongs at
+# the declaration (aggregate-merge family prong (d)); both func_80033550
+# layer-1 FAILs on 2026-09-03 were exactly these, one session apart.
+_SYM = r"(D_[0-9A-Fa-f]{8}|g_\w+)"
+_PUN_RES = (re.compile(r"\(\s*(?:struct\s+\w+|\w+)\s*\*+\s*\)\s*\(?\s*&\s*" + _SYM + r"\b"),
+            re.compile(r"\(\s*&\s*" + _SYM + r"\s*[+-]"),
+            re.compile(r"&\s*" + _SYM + r"\s*\)\s*\["))
+
+
+def scan_declaration_puns(root, func, path=None):
+    """['<line>: <text>  [<sym>]'] for every candidate.c line carrying a per-use
+    address pun on a splat symbol. Empty when clean or unreadable."""
+    p = path or os.path.join(ledger_dir(root, func), "candidate.c")
+    try:
+        with open(p, encoding="utf-8", errors="replace") as fh:
+            lines = fh.read().split("\n")
+    except OSError:
+        return []
+    hits = []
+    for i, ln in enumerate(lines, 1):
+        for rx in _PUN_RES:
+            m = rx.search(ln)
+            if m:
+                hits.append(f"{i}: {ln.strip()[:120]}  [{m.group(1)}]")
+                break
+    return hits
 
 
 def add_banned_construct(root, func, text):
@@ -779,11 +842,22 @@ def validate_outcome(o, modality, root, func=None):
             return False, ("annotation-fix must bank evidence saying what the "
                            "annotation now reads, or why the fix-up failed")
         return True, ""
+    if modality == "object-model":
+        if not _has_object_model(o):
+            return False, ("object-model session must bank an evidence entry beginning "
+                           "`OBJECT MODEL:` with per-symbol verdicts and the premise list")
+        return True, ""
     if modality == "recon":
         if not o.get("frontier"):
             return False, "recon must produce an initial frontier"
         if not o.get("evidence"):
             return False, "recon must bank evidence"
+        if func and not _has_object_model(o):
+            _rows, _flags = data_model_signals(root, func)
+            if _flags:
+                return False, ("recon on a function whose DATA MODEL carries signals "
+                               f"({len(_flags)}) must bank an evidence entry beginning "
+                               "`OBJECT MODEL:` answering each flagged symbol")
         return True, ""
     proven = [h for h in o.get("hypotheses", [])
               if h.get("verdict") in ("CONFIRMED", "KILLED")
@@ -931,6 +1005,12 @@ def assign_modality(session_count, state=None):
     if session_count == 0:
         return "recon"
     if _exhaustion_ready(state):
+        # Object-model gate (2026-09-03): exhaustion may not be declared until
+        # ONE session has audited declared shape vs evidence on the record.
+        # apply_outcome stamps the flag when an `OBJECT MODEL:` evidence entry
+        # is banked (any modality), so a recon that did the audit skips this.
+        if isinstance(st, dict) and not st.get("object_model_audited"):
+            return "object-model"
         return "escalation"
     skip = int(st.get("ladder_skip") or 0) if isinstance(st, dict) else 0
     mod = LADDER[(session_count - 1 + skip) % len(LADDER)]
@@ -968,6 +1048,8 @@ def apply_outcome(root, func, o, modality):
     """Fold a VALIDATED outcome into the ledger. Appends are never compacted."""
     st = load_state(root, func)
     n = st["session_count"] + 1
+    if _has_object_model(o):
+        st["object_model_audited"] = n
     for h in o.get("hypotheses", []):
         append_hypothesis(root, func, h, session=n)
     for e in o.get("evidence", []):
@@ -1177,7 +1259,14 @@ MODALITY_PLAYBOOK = {
     "recon": ("Baseline + map. Run canonical + sandbox for the honest floor; scan for "
               "sibling/duplicate analogs (tmp/duplicates_leads.txt, tools/find_duplicates.py); "
               "read the m2c reference shape; read asm/funcs/<func>.s. Output an initial "
-              "frontier of 1-3 mechanism-grounded hypotheses."),
+              "frontier of 1-3 mechanism-grounded hypotheses."
+              " DATA MODEL FIRST: the brief's DATA MODEL section lists every global the "
+              "target touches with its census row, header declaration, cross-references "
+              "and mechanical SIGNALS. If ANY signal is present, hypothesis #1 is the "
+              "declaration fix (measure it with sandbox before any codegen lever), and you "
+              "MUST bank one evidence entry beginning `OBJECT MODEL:` giving, per flagged "
+              "symbol, MATCHES / MISMATCH (measured score N) / MISMATCH-unmeasured (why). "
+              "The driver discards a recon session on a flagged function without it."),
     "structural": ("Structural levers: block-local var splits, declaration order, type "
                    "narrowing, statement re-association — the codegen-technique-index "
                    "catalog. Measure every form with sandbox; record deltas."),
@@ -1256,6 +1345,24 @@ MODALITY_PLAYBOOK = {
                   "incomplete loop.c predicate. (This rule governs ledger-internal chassis "
                   "verdicts; it does not override a driver-declared exhaustion "
                   "disposition in `escalation` modality.)"),
+    "object-model": ("OBJECT-MODEL AUDIT — the driver has found the honest floor flat across "
+                     "the ladder and will declare exhaustion NEXT session unless the object "
+                     "model is checked first. func_80033550 (2026-09-03) spent 13 of 17 sessions "
+                     "modeling register allocation for a tail that named_syms.txt had described "
+                     "as a 12-byte record table since 2026-05-17; the residual closed the moment "
+                     "the three per-word scalars were declared as one record. Your ENTIRE job: "
+                     "for EVERY global in the brief's DATA MODEL section, state declared shape vs "
+                     "evidence (census row, sibling-function addressing in asm/funcs/*.s, index "
+                     "arithmetic in this function's own asm, the m2c shape). For every mismatch, "
+                     "spell the corrected DECLARATION (header-level; aggregate-merge family prongs "
+                     "(a)-(e); never a per-use cast) and MEASURE it with sandbox. Then list the "
+                     "PREMISES the current floor argument rests on (e.g. 'the tail is three "
+                     "independent scalar stores') as explicit, attackable statements. Bank ONE "
+                     "evidence entry beginning `OBJECT MODEL:` with the per-symbol verdicts "
+                     "(MATCHES / MISMATCH measured score N / MISMATCH-unmeasured why) and the "
+                     "premise list; a session without it is invalid and discarded. A corrected "
+                     "declaration that needs include/*.h or a symbol-config edit is an integration "
+                     "handoff (candidate-ready with the surface named), not a scope violation."),
     "annotation-fix": ("ANNOTATION FIX-UP — TINY SCOPE. The Judge FAILed the previous "
                        "candidate on ANNOTATION FORMAT ONLY: the work itself was accepted, "
                        "and the sole defect is the /* FAKE: ... */ comment's presence or "
@@ -1618,6 +1725,26 @@ def build_brief(root, func, modality, outcome_path, head_floor=""):
     if len(_names) > 1:
         consistency = ("\n## NAME ALIASES: " + ", ".join(_names) + " — grep ALL of these when "
                        "searching decisions.md / ledgers / rules.\n") + consistency
+    # Data model (2026-09-03): declared shape vs evidence for every global the
+    # target touches, plus a pun scan of the inherited candidate. Rows are
+    # capped in engine/datamodel.py; a clean function costs a few lines.
+    dmodel = ""
+    _rows, _flags = data_model_signals(root, func)
+    if _rows:
+        dmodel = ("\n## DATA MODEL (auto: declared shape vs evidence, every global the target touches)\n"
+                  + "\n".join(_rows) + "\n")
+        if _flags:
+            dmodel += ("SIGNALS — declaration-level facts, not codegen levers. A flagged symbol's\n"
+                       "declaration is hypothesis #1 (func_80033550: 13 sessions of RA modeling for a\n"
+                       "record copy the census had named since 2026-05-17):\n"
+                       + "\n".join("  " + f for f in _flags) + "\n")
+    _puns = scan_declaration_puns(root, func)
+    if _puns:
+        dmodel += ("\n## DECLARATION PUNS IN candidate.c (auto-scan)\n"
+                   "Each spells an object model at the USE site. The sanctioned fix is at the\n"
+                   "DECLARATION (aggregate-merge family prong (d); header edits go through an\n"
+                   "integration handoff). A candidate carrying these FAILs layer-1:\n"
+                   + "\n".join("  " + h for h in _puns) + "\n")
     psyq = psyq_identity(root, func)
     ksweep = knowledge_sweep(root, func, names=_names)
     last_floor = next((e.get("floor") for e in reversed(st["floor_history"])
@@ -1670,7 +1797,7 @@ modality for THIS session is: **{modality}**
 {psyq}
 {ksweep}{chassis}
 {MODALITY_PLAYBOOK[modality]}
-{scopes}{fixup}{directive}{consistency}{banned}
+{scopes}{fixup}{directive}{consistency}{dmodel}{banned}
 ## Ledger state (your inheritance — do not re-derive any of it)
 Floor history:
 {floors}
@@ -1783,6 +1910,9 @@ if __name__ == "__main__":
     if cmd == "brief":
         hf = sys.argv[6] if len(sys.argv) > 6 else ""
         print(build_brief(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], hf))
+    elif cmd == "pun-scan":
+        # pun-scan <root> <func>  -> one line per per-use address pun in candidate.c
+        print("\n".join(scan_declaration_puns(sys.argv[2], sys.argv[3])))
     elif cmd == "validate":
         o = json.load(open(sys.argv[3], encoding="utf-8"))
         ok, why = validate_outcome(o, sys.argv[4], sys.argv[2],

@@ -2432,7 +2432,88 @@ def test_queue_hand_coded_tier() -> None:
        "ASM-STRUCTURAL")
 
 
+def test_datamodel() -> None:
+    """engine/datamodel.py (2026-09-03): declared shape vs evidence signals,
+    evaluated against a synthetic repo tree."""
+    from engine import datamodel as DM
+    print("test_datamodel")
+    cwd = os.getcwd()
+    try:
+        _test_datamodel_body()
+    finally:
+        os.chdir(cwd)
+
+
+def _test_datamodel_body() -> None:
+    from engine import datamodel as DM
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        for d in ("asm/funcs", "include", "src"):
+            Path(d).mkdir(parents=True)
+        Path("named_syms.txt").write_text(
+            "g_leaf_slot_state = 0x800A3918;  /* 6-byte slot state table (per-leaf counter byte) */\n"
+            "g_leaf_position_table = 0x80107850;  /* 12-byte stride per leaf, 6 entries */\n"
+            "g_leaf_position_table_plus_4 = 0x80107854;  /* +4 from g_leaf_position_table (0x80107850) */\n"
+            "g_plain = 0x80107900;  /* just a flag */\n", encoding="utf-8")
+        Path("undefined_syms_auto.txt").write_text(
+            "D_800A3918 = 0x800A3918;\nD_80107850 = 0x80107850;\nD_80107854 = 0x80107854;\n"
+            "D_80107900 = 0x80107900;\n", encoding="utf-8")
+        Path("include/x.h").write_text(
+            "extern u8 D_800A3918;\nextern s32 D_80107850;\nextern s32 D_80107854;\n"
+            "extern u8 D_80107900;\n", encoding="utf-8")
+        Path("asm/funcs/func_A.s").write_text(
+            "glabel func_A\n"
+            "    lui $at, %hi(D_800A3918)\n    addu $at, $at, $v1\n"
+            "    lbu $v0, %lo(D_800A3918)($at)\n"
+            "    lui $at, %hi(D_80107850)\n    sw $v1, %lo(D_80107850)($at)\n"
+            "    lui $at, %hi(D_80107854)\n    sw $a0, %lo(D_80107854)($at)\n"
+            "    lui $v0, %hi(D_80107900)\n    lbu $v0, %lo(D_80107900)($v0)\n"
+            "    jal func_B\n", encoding="utf-8")
+        Path("asm/funcs/func_B.s").write_text(
+            "glabel func_B\n    lui $at, %hi(D_80107854)\n    lw $v0, %lo(D_80107854)($at)\n",
+            encoding="utf-8")
+        Path("src/a.c").write_text('INCLUDE_ASM("asm/funcs", func_A);\n'
+                                   'INCLUDE_ASM("asm/funcs", func_B);\n', encoding="utf-8")
+        DM.reset_cache()
+        rows, flags = DM.data_model("func_A")
+        eq("one row per data symbol, callee excluded", len(rows), 4)
+        check("rows are address-ordered", rows[0].startswith("  D_800A3918"))
+        check("sub-symbol row marked", any("SUB-SYMBOL +4 of g_leaf_position_table" in r for r in rows))
+        check("census comment surfaced", any('"12-byte stride per leaf, 6 entries"' in r for r in rows))
+        check("header decl surfaced", any("decl `extern u8 D_800A3918;` (x.h)" in r for r in rows))
+        check("asm xref lists the still-INCLUDE_ASM sibling", any("xref asm:func_B" in r for r in rows))
+        kinds = [f.split(":")[0] for f in flags]
+        # D_800A3918: indexed + census ("table"); D_80107850: census ("stride");
+        # the split flag; D_80107850's plain lui/sw must NOT read as indexed.
+        eq("signals: 2x census-vs-decl + indexed + split-aggregate", sorted(kinds),
+           sorted(["!! INDEXED-ACCESS", "!! CENSUS-VS-DECL", "!! CENSUS-VS-DECL",
+                   "!! SPLIT-AGGREGATE"]))
+        check("indexed flag names the indexed symbol only",
+              any("INDEXED-ACCESS: the target indexes D_800A3918" in f for f in flags)
+              and not any("INDEXED-ACCESS: the target indexes D_80107850" in f for f in flags))
+        split = next(f for f in flags if f.startswith("!! SPLIT-AGGREGATE"))
+        check("split flag names the sibling that keeps the config row alive",
+              "still-INCLUDE_ASM func_B" in split)
+        check("plain flag global raises no signal", not any("D_80107900" in f for f in flags))
+        # a declaration merge silences the signals it answers
+        Path("include/x.h").write_text(
+            "extern u8 D_800A3918[6];\nextern LeafPos D_80107850[6];\nextern u8 D_80107900;\n",
+            encoding="utf-8")
+        DM.reset_cache()
+        _, flags2 = DM.data_model("func_A")
+        check("array decl clears INDEXED-ACCESS + CENSUS-VS-DECL",
+              not any(f.startswith(("!! INDEXED", "!! CENSUS")) for f in flags2))
+        eq("no asm file -> empty", DM.data_model("func_missing"), ([], []))
+        # dossier + render wiring
+        from engine import dossier as DS
+        DM.reset_cache()
+        check("dossier carries the data-model block", "data model (4 globals" in DS.dossier("func_A"))
+        os.chdir(cwd)  # leave the temp dir before it is removed (Windows)
+
+
 def main() -> int:
+    test_datamodel()
     test_canonical()
     test_score()
     test_score_section_addend_mask()
