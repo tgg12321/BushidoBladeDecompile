@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 46,
- "current_modality": "synthesis",
+ "session_count": 47,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -279,23 +279,29 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "s45's two-feature fork BROKEN by asymmetric argument statement counts (24 of 680 forms hold both features at 7/91), and sched_solver's object-goal path re-attributes the whole residual from scheduling"
+  },
+  {
+   "session": 47,
+   "floor": 7,
+   "modality": "solver",
+   "headline": "Residual typed RA and localised to ONE local-alloc quantity: ra_solver's stock local NEGATIVE is a LIVE_EXTEND search-bounds artifact, and from a bounds-widened fork the target seat is REACHABLE with "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is a register-assignment fact: some C lever seats the idx0 address chain in $a0 across the whole window (as target does), which removes the two kind-14 anti-dependences that make target's pick order non-topological on our graph.",
-   "mechanism": "sched_solver's object-goal path localised the entire residual to pass-2 block 3 and to a single instruction whose required move violates deps[119] and deps[130], both citing UID 105 with an anti/output dependence. Post-reload WAR edges exist only where two values share a hard register, and sched2 runs after reload - so the seat is an input to the scheduler, not an output of it. This is the first time the function's residual has been handed to the RA question with a named seat.",
-   "next_probe": "Run tools/ra_solver/inverse_compose.py classify on the block-3 seat question ($a0 vs $v0 for the idx0 address chain) on the new candidate.c chassis, and ask ra_solver's local-alloc / reload models which C-level lever moves that chain onto $a0. Re-run the sched_solver object-goal command (recorded verbatim in evidence.md) after every RA-lever spelling to see whether the topological violation clears."
+   "hypothesis": "Making the arg5 VALUE quantity span the arg3 address chain - born at its load before the arg3 chain starts, dying at the sw 16($sp) after it ends - supplies the missing $v1 occupancy and completes the solver's vector, seating the arg4 address chain in $a0.",
+   "mechanism": "s47 measured that the live_extend half alone puts the arg4 chain in $v1 because $v1 is free across its span. In target, the arg5 value quantity occupies $v1 from the arg5 load across the entire arg3 chain to the stack store, which is exactly feature F4 (sw at expand-slot 54). With $v0 blocked by the arg3 chain and $v1 blocked by the arg5 value, find_free_reg's ascending scan reaches $a0 for the last-allocated quantity.",
+   "next_probe": "Sweep the F3-holding family (arg4's value loaded inline in the printf call) crossed with arg5 spellings that complete the arg5 VALUE early - arg5 as a named value assigned before the arg3 read, arg5 staged through a pointer whose load precedes arg3, arg5 read into a local at the top of the do_timeout block - and after EACH compile re-run local_extract.py system and read the block-3 QTYDBG table, scoring on the four-quantity shape ($v0 twice, $v1 spanning the arg3 chain, the arg4 chain allocated last) rather than on the sandbox score. The score-first sweep is what missed this for 46 sessions."
   },
   {
-   "hypothesis": "arg4's value can be a named local whose LOAD is still emitted as call setup, which would put F3 into the same form as F1&F2 - but only if the naming is crossed with the index-read statement rather than with the address spelling alone.",
-   "mechanism": "Over 680 forms F3 holds iff arg4's value is loaded inline in the printf call, and F1&F2 hold only when arg4's value is a named local; the two sets are disjoint. The pure address-named quadrant (p, ip, b, ib as arg4) was swept this session and holds neither, so the untried crossing is a named index-read statement whose value is nevertheless read inside the call.",
-   "next_probe": "Sweep forms where the named entity is arg4's index (i4 = idx_1494[0];) or its scaled offset while the table read stays inline in the printf argument list, crossed with every interleaving against arg5's own multi-statement chains - i.e. the s46 gen.py lattice restricted to zero-value-statement arg4 spellings with a nonzero index-statement count. Read slots 41/42, 43/44, 54 and 56 in each, not only the score."
+   "hypothesis": "Re-running the bounds-widened inverse search against the F3-family model (where the arg4 chain is qty2, fr105, [20,36) -> $v1) rather than the candidate.c model yields a cheaper, differently-shaped vector for the same seat.",
+   "mechanism": "Operational rule 2 of the solver playbook: re-derive the model from the body that sits closest to target. On the F3 chassis half of the required vector is already spent, so the remaining goal is the single atom {qty2: $a0}, and the atom classes that can supply it (extra_qty, hardreg_live, live_extend on a rival) are a much smaller space than the four-quantity goal searched this session.",
+   "next_probe": "Apply q_ik_iv_w0_inl_p0, re-run local_extract.py system, then run tmp/grind/CD_datasync/s47/inverse_extend.py local tmp/ra_solver_work/system.local.json --func CD_datasync --block 3 --goal {\"2\":4} --depth 2 --top 20, and read the EXTRA_QTY and LIVE_EXTEND vectors first - the extra_qty class is the model's spelling of 'one more real temp overlapping the region', which is what the arg5 value has to become."
   },
   {
-   "hypothesis": "arg3's spelling - held inline by every session for 46 sessions - is the lever for feature F4, target's sw ...,16($sp) at slot 54, which no form has ever reached.",
-   "mechanism": "In target the arg5 stack store sits between the arg3 address chain (52/53) and arg3's own load (55), i.e. the arg5 value is held live in $v1 across the arg3 chain. Every form measured to date stores it at 47, 50, 51, 53 or 55, and arg3 has never been given a statement of its own, so the arg3 chain has never been able to interpose itself.",
-   "next_probe": "Sweep the arg3 spelling (tbl_11dc[D_800A11D5]) over {inline, named value, named index, index+value, named pointer} against the asymmetric-statement-count arg4/arg5 lattice from gen.py, with the arg3 statement placed at every position in the interleaving. Read the sw 16($sp) slot and the lw $a2 slot in each."
+   "hypothesis": "The ra_solver LIVE_EXTEND bound defect found this session invalidates other campaigns' banked local-mode negatives.",
+   "mechanism": "tools/ra_solver/inverse.py:449 enumerates death extensions of +1/+2/+4 only, while enumerating shrinks exhaustively, and the printed bounds_note claims 'birth/death enumerated exhaustively'. Any goal whose vector needed a longer extension was reported as 'no modelled input explains this flip', which reads as a foreclosure.",
+   "next_probe": "Not a CD_datasync probe - flag it for a tooling session: re-run the banked local-mode negatives from the ra_solver campaign (project/ra-solver-campaign-2026-08-04) against tmp/grind/CD_datasync/s47/inverse_extend.py and count how many flip to REACHABLE. The fix in tools/ is one line, but tools/ is outside a grind session's allowed surface."
   }
  ],
  "judge_constraints": [],
@@ -305,22 +311,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 28,
-   "statement": "Among the 465 forms compiled this session, no spelling places the split arg4 address chain in $a0: the 53 forms that reach target's $a0/$a3 register map all have a 17-insn window, and every 18-insn fo",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 465 forms (n*/x*/y*/z*), plus the ya53 -da sched1 dump",
-   "predicate_cite": "",
-   "result": "KILLED - 53 a0-map forms, all 17-insn; 0 forms with both properties. ya43 (i4 first, then value locals arg4 then arg3) r"
-  },
-  {
-   "session": 29,
-   "statement": "The fmt-string `set $a0` insn's placement is a source-controllable variable that some C spelling can defer (the framing s24/s25/s28 all worked under).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; candidate.c applied to src/system.c, live sandbox 7/91, plus the instrumented-cc1 BB2_PRIO_DEBUG dump of the ",
-   "predicate_cite": "",
-   "result": "KILLED as a lever. Measured priorities for the printf block: fmt set (insn 127) = 1, the block minimum, tied with the fo"
-  },
   {
    "session": 30,
    "statement": "Both indices hoisted as s32/u8 locals in [0],[1] order with the value locals assigned arg5-first then arg4 splits arg4's LUID chain (index read early, scaling late).",
@@ -766,6 +756,22 @@
    "measured_on": "z_iv_ik_w2 chassis, both FAKE subsets scored by tools/fake_ablate.py through the engine sandbox",
    "predicate_cite": "",
    "result": "keep-all 7 / build_insns 91; drop-1 (wrapper removed) 31 / build_insns 75. The wrapper is load-bearing exactly as s9 mod"
+  },
+  {
+   "session": 47,
+   "statement": "Giving arg3 (tbl_11dc[D_800A11D5]) a statement of its own, in any of six spellings and at any position in the argument block, moves target's sw ...,16($sp) to slot 54 or improves the floor on the z_iv",
+   "kill_scope": "instance",
+   "measured_on": "z_iv_ik_w2 / candidate.c chassis (arg4 index+value, arg5 index+scaled-offset) with the do{}while(0) FAKE present; 906 whole-function compiles, sw and lw-$a3 slots read for all of them",
+   "predicate_cite": "",
+   "result": "KILLED. All 12 forms scoring 7 keep arg3 inline; every one of the 894 forms giving arg3 its own statement scores 8 or wo"
+  },
+  {
+   "session": 47,
+   "statement": "Spelling the solver's live_extend half alone - arg4's value loaded inline in the printf call so its address chain is the last memory reference of the block - seats that chain in $a0.",
+   "kill_scope": "instance",
+   "measured_on": "q_ik_iv_w0_inl_p0 (arg4 index+offset loaded inline, arg5 index+value) with the do{}while(0) FAKE present; block-3 quantity table re-derived from a fresh BB2_QTY_DEBUG dump of that exact form",
+   "predicate_cite": "",
+   "result": "KILLED as sufficient, CONFIRMED as necessary. The table becomes qty0 [8,14) -> $v0, qty3 [22,34) -> $v0, qty2 [20,36) ->"
   }
  ]
 }

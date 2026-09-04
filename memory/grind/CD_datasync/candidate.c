@@ -81,6 +81,26 @@
  * session scored keep-all 7 / build_insns 91 vs drop-1 31 / 75.  It carries
  * the same sanctioned FAKE annotation (owner ruling 2026-07-06,
  * .claude/rules/do-while-zero-exception.md).
+ *
+ * S47 ADDENDUM (solver modality) - THE SEAT IS NOW DERIVED, NOT GUESSED.
+ * inverse_compose classify (object path) types the residual RA (identical
+ * register-blanked multisets, six insns differing only in register names).
+ * extract.py shows only 5 pseudos reach GLOBAL alloc, so the window is
+ * LOCAL-alloc territory; local_extract.py's block-3 table maps one-to-one
+ * onto the window and the goal is qty0 (this form's arg4/idx0 address chain,
+ * first_reg 95, [8,20), refs 12) moving $v0 -> $a0 with qty1 following it
+ * $v1 -> $v0.  ra_solver's stock local search calls that unreachable, but
+ * only because its LIVE_EXTEND atom offers death+1/+2/+4 and the vector
+ * needs +8; from the bounds-widened fork (tmp/grind/CD_datasync/s47/
+ * inverse_extend.py) the same goal is REACHABLE with 176 depth-2 vectors,
+ * all of the form "qty0 dies later (20->28+)" + "qty1 dies earlier
+ * (24-><=22)".  Spelling the first half alone (arg4 loaded inline in the
+ * call) was measured: the chain does become last-allocated and lands in
+ * $v1, because nothing occupies $v1 across its span.  The missing input is
+ * target's arg5 VALUE living in $v1 from its load across the arg3 address
+ * chain to the sw 16($sp) - i.e. feature F4 and the $a0 seat are the same
+ * requirement.  arg3's own spelling is NOT the lever for it: 906 compiles
+ * this session, every named-arg3 form >= 8, sw slot 54 never reached.
  */
 s32 CD_datasync(s32 a0) {
     s32 v0;
