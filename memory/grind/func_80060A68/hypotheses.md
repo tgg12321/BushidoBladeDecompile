@@ -2393,3 +2393,32 @@ Measured on: today's HEAD chassis, 6 bodies, zero FAKE constructs in any of them
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: today's HEAD chassis, 8 bodies plus the A0 and T1 controls, zero FAKE constructs in any of them (the `result` staging was measured, not adopted; it is byte-neutral and emits nothing)
+
+## 2026-09-04 — operator reopen note (owner ruling 2026-09-04, decisions.md "foreclosed-bucket re-evaluation", Ruling A)
+
+Returned to active with the exhaustion window RESET. Ground (record finding 8): every
+one of the 116 banked bodies, including candidate.c (E2) at line ~720, calls the
+dispatch table as `(idx, temp_a1)`; the matched sibling func_80060B70 calls the SAME
+table as `()` (src/text1b.c:3174) and the table's first callee is
+`u8 func_80063AF0(void)` (src/text1b.c:4042). Argument-register suggestions for idx
+and temp_a1 are load-bearing allocation levers in this ledger's own law R3
+(hypotheses.md:1777). Never measured in 22 sessions. Correction to the s22 record and
+state.json frontier[0]: func_80060B70 / func_80061250 / func_80061658 are matched C in
+src/text1b.c (lines 3140 / 3419 / 3550), not "still-INCLUDE_ASM"; the sibling
+statement-inventory diff was available at source level throughout s14-s22 and was
+not done. self_vet.md is stale (2026-08-19, describes the banned temp2 dual-role body,
+not E2) and must be rewritten before any candidate-ready. All five
+`banned_constructs` and all judge_constraints remain in force; a `()` call that
+merely re-spells a banned carrier is still banned.
+
+**Named probes, in order:**
+1. Spell the dispatch call `()` (matching func_80060B70 and the callee prototype);
+   measure candidate.c (E2), T1, Q2 and M2 with that single change; re-read QTYDBG for
+   the idx / temp_a1 seats and bank the seats either way.
+2. The sibling statement-inventory diff the s22 frontier named: func_80060B70's matched
+   body against E2 — destination-pointer locals and the `{ last_arg; copy3; call }`
+   block shape.
+3. (Operator lane, done with this ruling) tools/ra_solver/inverse.py's `len(base) <= 6`
+   guard is hoisted out of the permutation loop, so a bounded `inverse.py local
+   --block 0` ALLOC_ORDER enumeration now terminates; run it for completeness on the
+   s13 baseline (qtydbg_baseline.txt).

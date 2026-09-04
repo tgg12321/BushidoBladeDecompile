@@ -3141,3 +3141,27 @@ existing insn and add none.
 - probe: `python3 tools/scan_hand_coded.py --single CD_ready` (artifact tmp/grind/CD_ready/s77/scan_hand_coded.txt); grep of docs/reference/sotn-construct-index.md for scheduler / emission-order / transposition entries with [PSP/mwcc] and [SATURN] rows excluded.
 - result: Gate (a): tier=LOW score=2/8, 'no strong hand-coded indicators'. S1, S2 and S6 all unset; the two set signals are S4 (4 loads in an 8-insn window at insn 51 - the printf argument block this ledger has been grinding) and S5 (approx-sibling CD_sync, jaccard 0.64), both weak and both explained by the function's proven identity as PsyQ 3.5 libcd bios.c output from GCC 2.7.2. Gate (b): the only PSX-tagged scheduler-adjacent families in the index are match_comment (229 codegen-reason COMMENTS, not a construct) and new_var_temp (20 RA/scheduling scalar temporaries, e.g. src/dra/cd.c:520-522 and src/main/psxsdk/libsnd/vmanager.c:352), which is the already-sanctioned named-local family this body already uses twice. Nothing unspent. Both gates fail, so the standing-ruling foreclosure applies (floor 2 <= ENDGAME_LOCK_MAX_FLOOR 5).
 - verdict: CONFIRMED
+
+## 2026-09-04 — operator reopen note (owner ruling 2026-09-04, decisions.md "foreclosed-bucket re-evaluation", Ruling A)
+
+Returned to active with the exhaustion window RESET. The 2026-09-03 foreclosure
+(decisions.md:21724) was honestly filed by the letter, but the post-reset window
+s69-s77 ran no permuter and no solver session, and the record's own re-activation
+trigger 3 plus state.json frontier[0] name the unrun permuter window: no campaign in
+77 sessions was seeded from r3 (5) or b2 (12); the tmp/perm_mar* workspaces predate
+`-mel` and point at the wrong cc1 (memory project/instrumented-cc1-location.md).
+CD_datasync s58 (hypotheses.md:4558-4600) found the Sony `CD_alarm` struct retires
+the shared `pp` FAKE and links identically; it never reached this ledger (equal-floor
+propagation gap, fixed Ruling B.2). `engine/score.py` now resolves named-symbol
+addends (Ruling B.4), so the rd1/rd2 aggregate scores (41/37) were overstated by the
+per-member false points and struct probes measure honestly from here.
+
+Floor: vAT1 body at 2/179/0 (unchanged since s60); queue distance refreshed 4 -> 2.
+All four judge_constraints remain in force.
+
+**Named probes, in order:**
+1. Transplant CD_datasync s58's `CD_alarm`-struct / no-`pp` spelling onto vAT1 and
+   measure with the addend-resolving scorer.
+2. Build a fresh-flag permuter workspace (correct cc1: tools/gcc-2.7.2/cc1, `-mel`
+   flags from engine/buildconfig.py) seeded from r3 (5) and b2 (12) and run the
+   window per frontier[0] (tools/permuter_campaign.py, fresh-seed stopping rule).

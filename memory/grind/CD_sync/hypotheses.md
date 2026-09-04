@@ -2287,3 +2287,38 @@ on the closed-seat chassis is named, and F1 inherits a precise target.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD asm/funcs/CD_sync.s, 160 insns, no candidate spliced
+
+## 2026-09-04 — operator reopen note (owner ruling 2026-09-04, decisions.md "foreclosed-bucket re-evaluation", Ruling A)
+
+Returned to active with the exhaustion window RESET. Ground: the 2026-09-03
+foreclosure (decisions.md:21280) was auto-filed by the driver backstop over s116,
+which CONFIRMED the 54/55 sll/addu pair inversion defeated in ordinary C on the j1
+chassis (h1/e3/k1 at 7/160 with the target's exact order — the first time in 116
+sessions), named the new wall (the 6-pt a0/v1 local-alloc exchange), and expressly
+declined to self-file because the axis was not exhausted. The backstop's dodge test
+could not see that (fixed, driver Ruling B.1). The post-reset window s108-s116 ran no
+permuter and no solver session; state.json frontier[1] names the sched_solver run as
+still unexecuted. CD_datasync s58 (hypotheses.md:4558-4600, 2026-09-04) found that the
+Sony `CD_alarm` struct over 0x800F19B8/BC/C0 makes the `void **pp` pointer-alias FAKE
+non-load-bearing and links identically to its floor body; that finding never reached
+this ledger because the propagation stamp fired only on a strictly-lower floor (fixed,
+Ruling B.2). `engine/score.py` now resolves named-symbol HI16/LO16 addends (Ruling
+B.4), so struct-model probes no longer pay +1 per member access.
+
+Honest floor for window purposes: the j1 form (rejected/s115_HONEST_BASE_dup_arms_idx1495_read_3.c)
+at 3/160/0. candidate.c's 2 rests on the owner-REFUSED cross-symbol arithmetic idiom
+(`idx_1495 = &D_800A1494[1]`, decisions.md:948-950, 2026-07-20); that idiom stays
+refused and must not be re-spelled. It is NOT the sanctioned combine-foldable
+chain-extender (dead-store-fake-exception.md:51) this ledger uses legitimately — do not
+conflate them in either direction. All standing judge_constraints remain in force.
+
+**Named probes, in order (each a falsifiable measurement; a kill is `progress`):**
+1. Transplant CD_datasync s58's `CD_alarm`-struct / no-`pp` spelling onto j1 (recipe:
+   tmp/grind/CD_datasync/s58/batch2.sh; the s58 progress file is
+   memory/grind/CD_datasync/progress/s58-alarm-struct-no-pp-fake-link-identical-2.c)
+   and measure with the addend-resolving scorer (`sandbox CD_sync --disable all`).
+2. Run tools/sched_solver and tools/ra_solver (`--target-object` escape) on j1 and h1
+   over block 49-66, exactly as state.json frontier[1] prescribes.
+3. A fresh-seed permuter window seeded from j1 (3) and h1 (7) — no permuter session
+   has run since s95 and none on the duplicated-arms chassis (permuter cap: this
+   function has used 2 permuter sessions historically; the driver's gating applies).
