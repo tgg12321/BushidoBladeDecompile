@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -135,23 +135,29 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Floor holds at 7/91 (live sandbox re-measure); the mandated kill re-audit confirms s21's scaled-offset kill under both FAKE ablations, and four structural axes are killed with 166 measured forms \u2014 inc"
+  },
+  {
+   "session": 23,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Target's block-3 geometry is REACHABLE in pure C for the first time in 23 sessions \u2014 14 forms hit target's exact (lbu-order, chain-completion-order, arg5-anti-coalesced) triple at 8/91, and their whol"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole remaining residual reduces to ONE seat question that no session has attacked directly: get the arg5 loaded VALUE into a quantity distinct from its own address register (target: address in $v0, value in $v1), which frees $v0 for the D_800A11D5 chain and \u2014 on the scaled-offset chassis, whose tail is already target-exact \u2014 removes the load-delay nop.",
-   "mechanism": "s22's alignment shows the candidate coalesces arg5's load destination with its address register because the address dies at the load. Target does not coalesce, so the value survives in $v1 across insns 48-54 while the D5 chain reuses $v0 at 49-53. In C terms the anti-coalescing condition is that the ADDRESS remains live past the load \u2014 a pointer local that is read twice, or an address whose second use is the arg4 chain's base \u2014 which is a spelling nobody has tried: every banked address form uses the pointer exactly once.",
-   "next_probe": "On the scaled-offset chassis (tmp/grind/CD_datasync/s22 harness, ~0.5 s/form) sweep spellings that keep an address pointer live past its own load: (a) `s32 *p5 = &tbl_125c[idx_1494[1]];` consumed as *p5 AND with p5 (or p5-derived arithmetic) reused for the arg4 base, (b) one pointer walked between the two elements (`p = &tbl_125c[idx_1494[0]]` then arg5 read through an offset of the same p), (c) both elements read through a single walking pointer with post-increment, per .claude/rules/walking-pointer-serializes-parallel-loads.md. Read every result with cmp.py 40 60 and watch specifically for the arg5 lw destination becoming a register other than its address register; the score alone will not show partial progress."
+   "hypothesis": "Within the geometry-correct basin (alt_target_geometry_8.c), forcing arg2's value to be live at the moment arg5's value is born denies arg5 the $a1 seat, which is the last displacement between that form and target.",
+   "mechanism": "local-alloc assigns arg5's loaded value $a1 only because arg2's pseudo has not yet been born there; arg2's setup in turn cannot precede arg5's retirement at build 53. Target breaks the cycle by having $a1 loaded at 43-44 and live to the call. The C-side requirement is therefore not a *placement* of the arg2 read (measured dead, 10 byte-identical forms) but a *second consumer* that makes arg2's value a real pseudo with a live range overlapping the index chains \u2014 for example arg2's value participating in the arg3 or arg5 computation, or being compared/tested before the printf, or the block reading the same global twice for two distinct arguments.",
+   "next_probe": "On the alt_target_geometry_8.c chassis (harness tmp/grind/CD_datasync/s23/, ~0.5 s/form; classify every result with scan.py, not just the score) sweep spellings that give D_800F19C0's value a second ordinary-C consumer inside the block: (a) pass the same pointer as two different printf arguments, (b) derive arg3's table base or the D_800A11D5 index through it, (c) a natural guard such as `if (D_800F19C0 != 0)` around the printf, (d) reading D_800F19C0 into a local that is then also stored back to the global inside the block. Watch for `lui $a1 / lw $a1,%lo` migrating from build 54-55 to 43-44 and for arg5's value moving from $a1 to $v1; the score will read 8 or worse until BOTH move, so score alone will not show partial progress."
   },
   {
-   "hypothesis": "F32 (inherited, unchanged) \u2014 tools/ra_solver/inverse.py local can type the block-3 seat residual REACHABLE or FORECLOSED and name the C-lever vectors, converting the disposition from an exhaustion argument into a proof. s22 sharpens its input: the residual is now stated as a specific anti-coalescing condition plus target's $a0 parking of the arg4 address.",
-   "mechanism": "s20's classify verdict names inverse.py as the next tool and extracted the block-3 QTYDBG attribution; find_free_reg's ascending scan means reaching $a0 requires both $v0 and $v1 occupied across the arg4 address chain's whole span at allocation time. s22 adds the second half of the spec: the arg5 value must be a separate quantity from its address, which is what keeps $v1 busy over that span.",
-   "next_probe": "Run inverse.py local against CD_datasync block 3 with a HAND-VERIFIED --goal-order (perturb.py --goal-from-target still SKIPS this block: 'goal is not a topological order, 2 violations', because difflib mis-pairs the duplicate sll / lw skeletons). Bound and profile the run \u2014 the CD_ready precedent is that an unbounded inverse.py local can burn 100% CPU without finishing depth 1. A REACHABLE verdict must name a lever vector nobody has spelled; the banked count is now 103 rejected forms plus this session's 166 measured spellings."
+   "hypothesis": "F32 (inherited, now with a much sharper input) \u2014 tools/ra_solver/inverse.py local can type the remaining seat question REACHABLE or FORECLOSED and name the C-lever vectors.",
+   "mechanism": "s20's classify verdict named inverse.py as the next tool; s22 supplied the anti-coalescing half of the spec; s23 supplies the rest and, critically, an ACHIEVED emission (alt_target_geometry_8.c) that differs from target in exactly one register assignment. The solver's input is therefore no longer a hypothetical goal order \u2014 it is a concrete two-emission pair, which is the input shape inverse.py is designed for.",
+   "next_probe": "Run inverse.py local against CD_datasync block 3 using alt_target_geometry_8.c as the SOURCE emission and the target window as the goal, rather than the base candidate. The goal order is now hand-verifiable because both emissions carry the same discriminants and differ only in the $a1/$v1 assignment and the arg2 slot, which should let perturb.py --goal-from-target pair the duplicate sll/lw skeletons it previously mis-paired ('goal is not a topological order, 2 violations'). Bound and profile the run \u2014 the CD_ready precedent is that an unbounded inverse.py local burns 100% CPU without finishing depth 1."
   },
   {
-   "hypothesis": "The standing family trigger (inherited) \u2014 a JOINT sched.c-emission-order x global.c/local-alloc.c-seat solver closes CD_datasync, CD_sync and CD_ready together. s22 adds a new requirement for any such solver: it must be chassis-aware, because two chassis that emit identical bytes at one spelling diverge by 5 instructions one spelling away.",
-   "mechanism": "Every C change that fixes the emission order breaks the register seats and vice versa \u2014 proven over 22 sessions here, 68 on CD_ready and 107 on CD_sync. The current solver suite is single-axis, which is why all three twins land on the same disposition.",
-   "next_probe": "When a joint solver exists, re-open CD_datasync, CD_sync and CD_ready as ONE basin. Use the s22 harness (tmp/grind/CD_datasync/s22/, ~0.5 s/form, calibrated sandbox = lev + nop - 3, now with declaration-block rewriting and three parameterised form generators) as the scoring loop, and run every candidate lever on BOTH the wrapper and the duplicated-arms chassis rather than assuming they agree."
+   "hypothesis": "The standing family trigger (inherited) \u2014 a JOINT sched.c-emission-order x global.c/local-alloc.c-seat solver closes CD_datasync, CD_sync and CD_ready together \u2014 is now testable against a known-good waypoint.",
+   "mechanism": "Every C change that fixes the emission order breaks the register seats and vice versa, proven over 23 sessions here, 68 on CD_ready and 107 on CD_sync. s23 adds the first counterexample to the pessimistic reading: the emission ORDER is now correct in a real form, and only ONE seat is wrong. A joint solver therefore has a validated intermediate state to aim at instead of only the endpoints.",
+   "next_probe": "When a joint solver exists, re-open CD_datasync, CD_sync and CD_ready as ONE basin and seed it with alt_target_geometry_8.c rather than candidate.c. Independently and immediately: run scan.py's discriminant methodology on the two twins' residual windows \u2014 both share the byte-shape-identical do_timeout window (CD_ready ledger s36/s46), so the (lbu order, completion order, seat) triple should classify their banked forms too and may reveal that one of them already has a geometry-correct form banked at a non-minimal score."
   }
  ],
  "judge_constraints": [],
@@ -248,6 +254,38 @@
    "measured_on": "candidate chassis (goto loop, three hoisted pointer locals, named arg4 value) with the do{}while(0) FAKE present",
    "predicate_cite": "",
    "result": "Five of six are byte-identical at 7; the pointer-temporary form regresses to 9 (banked). Every value in the block is alr"
+  },
+  {
+   "session": 23,
+   "statement": "Keeping a table ADDRESS pointer live past its own load (s22's frontier item 1) anti-coalesces arg5's load destination from its address register, on the do{}while(0) chassis with the wrapper FAKE prese",
+   "kill_scope": "instance",
+   "measured_on": "do{}while(0) wrapper chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 40 forms",
+   "predicate_cite": "",
+   "result": "KILLED for these 40 spellings. Minimum 7 (four forms tie the floor, none beat it); named-address spellings sit at 9-10; "
+  },
+  {
+   "session": 23,
+   "statement": "Inside the geometry-correct basin, some spelling or placement of arg2 (D_800F19C0) keeps its `lui/lw $a1` at build 43-44 instead of letting it sink to 54-55.",
+   "kill_scope": "instance",
+   "measured_on": "geometry-correct (scaled-offset arg4 + named raw idx1) chassis and the base chassis, both with the do{}while(0) FAKE present; 26 forms",
+   "predicate_cite": "",
+   "result": "KILLED for these 26 spellings. The ten in-block arg2 spellings are BYTE-IDENTICAL at 8 \u2014 naming arg2 does not create a p"
+  },
+  {
+   "session": 23,
+   "statement": "Computing a printf argument BEFORE the `puts(&g_str_cd_timeout)` call re-associates the block's register pressure toward target's shape, where arg4's address is parked in $a0 across the D_800A11D5 cha",
+   "kill_scope": "instance",
+   "measured_on": "do{}while(0) wrapper chassis with the FAKE present; 40 forms",
+   "predicate_cite": "",
+   "result": "KILLED for these 40 forms. Any single value moved before the call costs two to three instructions (build_insns 84-85, sc"
+  },
+  {
+   "session": 23,
+   "statement": "Some combination of index naming (raw or scaled), argument-value naming, and statement order in the timeout block scores below 7 on the do{}while(0) chassis.",
+   "kill_scope": "instance",
+   "measured_on": "do{}while(0) wrapper chassis with the FAKE present; 51 forms",
+   "predicate_cite": "",
+   "result": "KILLED for these 51 forms. Twenty-one tie the floor at 7 and nothing goes below; s21's scaled-index results are reproduc"
   }
  ]
 }
