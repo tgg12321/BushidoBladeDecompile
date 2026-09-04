@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 80,
+ "session_count": 81,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -489,23 +489,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Rederive finds a NEW order-exact base - 179 instructions in the target's exact order with the a1 load in place and no extra pseudo, reached by ordinary statement reordering - whose whole residual is o"
+  },
+  {
+   "session": 81,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Residual pinned to six register names and two named RTL insns; the s80 'arg5 refs>=5' target is proven unreachable by loop_depth parity, and the real requirement is one extra surviving reference to th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole function is now one qty_compare_1 tie-break on a body that is otherwise byte-exact in order and in every other seat. The two ways to break it are arithmetically exact: give the arg5-value quantity refs >= 5 while holding its span at 6, or give the t0-chain quantity refs <= 3 while holding its span at 6.",
-   "mechanism": "local-alloc.c:1660 pri = floor_log2(refs)*refs*size/(death-birth), descending, ties by lower quantity number. On the order-exact base both quantities are refs 4 / span 6 / 1.3333 and the t0 chain wins on birth order (dump tmp/grind/CD_ready/s80/h_0_9_d1.qty.txt). s80 killed the loop-note route to both halves: the inner note that lifts arg5 to refs 5 also moves its birth (span 6 -> 8, pri 1.25), and the statement order that would let a contiguous note split the t0 chain's refs falls back into the floor basin.",
-   "next_probe": "Attack refs WITHOUT a loop note. (a) qty_size is the third factor and is untried: an aggregate or wider-mode spelling of the arg5 value would make size 2 and the priority 2.6667 outright - measure whether any legal C spelling of that stack argument gives size 2 without adding an instruction. (b) reg_n_refs also counts multiple references inside ONE insn; look for a spelling in which the arg5 pseudo is referenced twice by the single stack-store insn. (c) Re-run tools/ra_solver's local-alloc model and `inverse_compose.py classify` against the h_0_9_d1 quantity table (it is now a four-quantity table with every input measured, which is exactly the solver's input format) and ask it which C-level inputs reach refs 5 / span 6."
+   "hypothesis": "The seat swap flips if the arg5 VALUE pseudo (post-sched1 insn 122, reg 103) acquires ONE more surviving reference - refs 4 -> 6 at loop_depth 2, giving qty_compare_1 pri 2.0 against qty1's unchanged 1.3333 - without moving its birth (20) or its death (26).",
+   "mechanism": "local-alloc.c:1660 pri = floor_log2(refs)*refs*size/(death-birth), descending, ties by lower quantity number; flow.c counts REG_N_REFS as references x loop_depth AFTER dead stores are deleted and AFTER copy propagation, which is why this session's relay locals (b0, c4) were coalesced away and left refs at 4.",
+   "next_probe": "Find a spelling in which the loaded value is genuinely referenced twice by live code that still emits 179 instructions - e.g. a second reference folded into an existing insn, or a use of the same value in the 4th argument's address computation - and verify with a quantity dump (tmp/grind/CD_ready/s80/qty.sh + tmp/grind/CD_ready/s72/qtyext.py) that reg103 reads refs 6 with birth 20 / death 26 BEFORE spending a score measurement. The other arithmetic factor, qty_size, is still untried: a legal C spelling that gives the stack argument size 2 without adding an instruction would give pri 2.6667 outright."
   },
   {
-   "hypothesis": "The owner directive's permuter probe should be seeded from the s80 order-exact base rather than from the s79 y2/z_d0 bases, and is still unrun.",
-   "mechanism": "progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c has the target's exact instruction sequence with no extra pseudo and no a1 displacement, so its permuter residual is a pure register-assignment difference - the narrowest seed this function has ever had. Every prior campaign (s4, s5, s40, s41, s49, s50, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats, and those workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1.",
-   "next_probe": "Build a fresh workspace mirroring engine/buildconfig.py exactly (cc1 = tools/gcc-2.7.2/cc1, -mel, maspsx --aspsx-version=2.34). Validate the scorer reproduces 2 for candidate.c and 6 for the s80 order-exact base before launching, then run fresh-seed windows with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break recorded in memory/project/grinder-nonmatchings-scope-break.md."
+   "hypothesis": "Every live_extend / live_shrink atom the solver offers is realizable only if the sched1 alloc-time order in block 3 can be made to differ from the sched2 emission order; s74's 'sched1 == sched2 in block 3' was measured on the FLOOR body and has never been re-derived on the order-exact base.",
+   "mechanism": "local-alloc runs on the sched1 order, so births, deaths and quantity numbers come from sched1, while sched2 runs after reload and can reorder. The solver prints this as its LOCAL-MODE CAVEAT (a birth/span vector is NECESSARY, not SUFFICIENT). Every atom in the list moves an insn that is already at its target EMISSION slot, so the only way to spend one without breaking the order is a sched1/sched2 divergence.",
+   "next_probe": "Diff the CD_ready block-3 insn chain in tmp/grind/CD_ready/dumps/system.sched against tmp/grind/CD_ready/dumps/system.sched2 on the order-exact base to establish whether any divergence exists there today; if it does, look for a C form that widens it so insn 122 precedes insn 126 at sched1 time while sched2 restores the target order. If it does not, that is a block-level statement worth banking with a predicate cite."
   },
   {
-   "hypothesis": "F3 is unchanged and still needs a Judge ruling rather than another measurement: the floor body's `volatile u8 *idx_1496` is worth 2 points and no declaration-level spelling of that volatility reaches the floor, so a body that reaches 0 must either carry the pointer-injected spelling under an explicit ruling or accept 4/178 as the honest ceiling.",
-   "mechanism": "engine/volatile_cheats.py pattern 3 and volatile_extern_allowlist.txt cover `extern volatile T G;` only; docs/grind/decisions.md:11004 records pointer/cast-injected volatility as a spelling defect no grant carries. s78 measured every honest alternative: direct symbol access 27 (control 27), CD_intr struct with volatile members 36 (control 37), qualifier dropped 4/178.",
-   "next_probe": "When a body reaches 0, file a ruling-request stating the s78 numbers verbatim and asking whether Ruling 4's grant class can attach to a pointer-typed volatile when the declaration-level spelling is measurably unreachable."
+   "hypothesis": "The owner directive's probe 2 - a fresh-flag permuter window seeded from the order-exact base - is the single largest unspent axis and is now optimally conditioned: the residual is a pure six-register rename with zero ordering and zero instruction-count difference.",
+   "mechanism": "progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c has the target's exact instruction sequence with no extra pseudo and no a1 displacement. Every prior campaign (s4, s5, s40, s41, s49, s50, s59) was seeded from vT40-family bodies whose residual mixed order and seats, and those workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1.",
+   "next_probe": "Build a fresh workspace mirroring engine/buildconfig.py exactly (cc1 = tools/gcc-2.7.2/cc1, -mel, maspsx --aspsx-version=2.34); validate the scorer reproduces 2 for candidate.c and 6 for the order-exact base before launching; then run fresh-seed windows with python3 tools/permuter_campaign.py wait --dir <ws>, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break recorded in memory/project/grinder-nonmatchings-scope-break.md."
   }
  ],
  "judge_constraints": [
@@ -815,6 +821,14 @@
    "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, with candidate.c re-measured live at 2/179/0 immediately before the batch; all forms carrying the body's inherited FAKE set.",
    "predicate_cite": "",
    "result": "KILLED on these 10 forms. All sit at 179 build instructions, so these are pure register-web and ordering effects: f2 (ar"
+  },
+  {
+   "session": 81,
+   "statement": "Seven arg5-side respellings of the printf argument expressions measured 6 on the order-exact base with the contested quantity pair's local-alloc record unchanged, and twelve t0-side respellings measur",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the s80 order-exact base re-measured live at 6/179/0 and candidate.c at 2/179/0 in the same batch; all forms carry the body's inherited FAKE s",
+   "predicate_cite": "",
+   "result": "KILLED on these 24 forms. The seven arg5-side respellings (relay through a fresh local, relay through the function-scope"
   }
  ],
  "sibling_progress": [

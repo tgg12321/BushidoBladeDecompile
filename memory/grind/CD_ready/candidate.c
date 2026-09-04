@@ -1,3 +1,58 @@
+/* s81 UPDATE (2026-09-04, rederive). BODY UNCHANGED (still 2/179/0, re-measured live this
+ * session); what changed is that the residual is now IDENTIFIED DOWN TO THE RTL INSN, and the
+ * s80 frontier's arithmetic target has been corrected.
+ *
+ * 1. THE RESIDUAL, READ OFF THE ORDER-EXACT BASE (progress/s80-g7-...-6.c), IS EXACTLY SIX
+ *    INSTRUCTIONS AND ONE TWO-WAY SEAT SWAP.  objdump slots 44-71, ours | target:
+ *        51  lbu v1,0(s2)   | lbu a0,0(s2)          <- CD_intstr index byte  (chain A)
+ *        57  sll v1,v1,2    | sll a0,a0,2           <- chain A shift
+ *        58  lw  a0,0(v0)   | lw  v1,0(v0)          <- arg5 VALUE load       (chain B)
+ *        61  addu v1,v1,s5  | addu a0,a0,s5         <- chain A address
+ *        63  sw  a0,16(sp)  | sw  v1,16(sp)         <- arg5 stack store
+ *        67  lw  a3,0(v1)   | lw  a3,0(a0)          <- chain A deref
+ *    Slot 54 (`lw a1,8(a1)` vs `lw a1,0(a1)`) is NOT a residual: it is the CD_alarm struct
+ *    model's %hi/%lo addend on D_800F19B8+8 against the target's own %hi/%lo on D_800F19C0,
+ *    the same address after relocation, and the scorer counts it as equal.
+ *
+ * 2. THE TWO CONTESTED QUANTITIES ARE NAMED RTL INSNS NOW (post-sched1 dump
+ *    tmp/grind/CD_ready/dumps/system.sched, taken on the order-exact base):
+ *        qty1 = reg 109 = (set (reg 109) (ashift (reg/v 104) 2))  = insn 126, chain A's SHIFT
+ *        qty2 = reg 103 = (set (reg/v 103) (mem (reg 107)))       = insn 122, the arg5 VALUE
+ *      sched1 order is 120(reg107 = arg5 addr), 126(reg109), 122(reg103), 139, 131(chain A
+ *      addr), 148(the sw), 144, 154 - and local-alloc's insn_number steps by 2, which maps
+ *      exactly onto the measured births 16/18/20/22.  So s80's label "qty1 = the t0 chain" is
+ *      right but imprecise: qty1 is only the SHIFT RESULT, and qty2 is only the LOADED VALUE.
+ *      Each has exactly ONE set and ONE use.
+ *
+ * 3. THEREFORE THE s80 FRONTIER TARGET ("arg5 refs >= 5") WAS OFF BY THE PARITY OF THE WRAP.
+ *    reg_n_refs = (number of references) x loop_depth, and the do_timeout block sits at
+ *    loop_depth 2 inside the outer FAKE do-while(0), so refs are QUANTIZED TO EVEN VALUES:
+ *    refs 5 is not a reachable state at all.  Proven by ablation - deleting the outer wrap
+ *    halves every refs field exactly (4/4/4/8 -> 2/2/2/4, dump tmp/grind/CD_ready/s81/d0.qty.txt)
+ *    and leaves births, deaths and the seats identical.  The real requirement, identical at
+ *    either depth, is ONE ADDITIONAL SURVIVING REFERENCE TO reg103 (refs 4 -> 6 at depth 2,
+ *    2 -> 3 at depth 1; either gives pri 2.0 or 0.5 against qty1's unchanged 1.3333/0.3333).
+ *
+ * 4. THE ARG5-SIDE C SPELLING IS BYTE-INERT ON THE ORDER-EXACT BASE, AND THE T0-SIDE IS NOT.
+ *    24 forms this session (tmp/grind/CD_ready/s81/{a,b,c}*.c, logs a.log/c.log): every
+ *    respelling of the arg5 chain - fresh split locals, pointer-typed intermediate, array
+ *    subscript off tbl_125c, a relay local, a shared table pointer, staging through the
+ *    function-scope status local - scores exactly 6, and three qty dumps confirm qty2 stays
+ *    bit-identical at birth 20 / death 26 / refs 4.  Every t0-side respelling regresses
+ *    (split-into-three 9, pointer-typed 9, array subscript 11, relay 11, staged through v0 11,
+ *    both indices through function-scope locals 17).  Note the array-subscript spelling of
+ *    arg5 costs 9+ on the FLOOR body (s80 f2 = 11) but is FREE here.
+ *
+ * 5. THE LOCAL-ALLOC INVERSE SOLVER SAYS REACHABLE, WITH 23 SINGLE-ATOM VECTORS
+ *    (`python3 tools/ra_solver/inverse.py local tmp/ra_solver_work/system.local.json
+ *      --func CD_ready --block 3 --swap 1,2 --depth 3`): refs_up on qty2 (4->5/6/7),
+ *    refs_down on qty1 (4->3/2), live_extend on qty1, live_shrink on qty2, and six
+ *    alloc_order atoms.  Of these, refs_down on qty1 is unreachable (a one-reference pseudo
+ *    is dead), the odd-refs atoms are unreachable by the parity fact in (3), and EVERY
+ *    live_extend/live_shrink atom moves an insn that is already at its target slot - so it is
+ *    realizable only if the sched1 alloc-time order can be made to differ from the final
+ *    sched2 emission order.  That leaves exactly two live openings, and they are the frontier.
+ */
 /* s80 UPDATE (2026-09-04, rederive). FLOOR UNCHANGED AT 2/179/0, but the BODY CHANGED: the
  * arg5 index chain is now spelled in TWO statements instead of three
  * (`v0 = idx_1494[1];` then `arg5 = *(s32 *)((v0 << 2) + (s32)tbl_125c);`), which retires the
