@@ -3331,3 +3331,113 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s81] The owner directive's probe 2 (fresh-flag permuter window seeded from the order-exact base) is still unrun; its seed is unchanged and its residual is now known to be exactly six register names.
 
 - [s81] src/system.c restored to HEAD; the only tracked changes are the CD_ready ledger files plus metrics/events.jsonl.
+
+- [s82] THE s74/s81 PREMISE IS OVERTURNED: sched1 AND sched2 DO DIVERGE IN BLOCK 3 ON THE
+  ORDER-EXACT BASE, and the divergence is one adjacent pair. Dumped with
+  tmp/grind/CD_ready/s82/schedord.sh (cpp|build/cc1 -da, engine/buildconfig flags verbatim) and
+  read with tmp/grind/CD_ready/s82/uidorder.py:
+      sched1 emission: 117 120 126 122 139 131 148 144 154
+      sched2 emission: 117 120 126 122 139 131 144 148 154   <- the target's order
+  i.e. sched1 puts the arg5 stack store (insn 148) BEFORE the a2 index shift (insn 144) and
+  sched2 swaps them back. s74 measured "sched1 == sched2 in block 3" on the FLOOR body; on the
+  order-exact base that statement is false. Every live_extend / live_shrink atom the s81 solver
+  returned was gated behind "a sched1/sched2 divergence has never been shown to exist here" -
+  that gate is now open.
+- [s82] THE CAUSE OF THE DIVERGENCE IS NAMED AND IT IS birthing_insn_p. tools/sched_solver's
+  extracted model (tmp/sched_solver_work/system.sched.json, parity=True, simulate.py --func
+  CD_ready = 60/60 blocks order-exact AND clock-exact in BOTH passes) carries the harvested
+  adjust_priority flags. In pass 1 the insns 120/122/126/139/144/154/156 all carry birth=1 and
+  are boosted to INSN_PRIORITY 0x7F000001 (sched.c:2543 adjust_priority -> sched.c:2505
+  birthing_insn_p); 131 and 148 carry birth=0 and keep their real priorities 2 and 3. In pass 2
+  reload_completed==1 so birthing_insn_p returns 0 at sched.c:2510 and every boost disappears -
+  144 and 148 both read priority 3 and the LUID/dep-class tie-break puts them back in the
+  target's order. THAT is the whole divergence.
+- [s82] WHY EACH CONTESTED PRIORITY IS THE VALUE IT IS, read off the RTL (dump
+  tmp/grind/CD_ready/s82/d/base.sched, insns 103-158 printed in full this session):
+    * insn 148 `(set (mem (plus (reg 29 sp) 16)) (reg/v 103))` is a STORE, not a SET of a REG,
+      so birthing_insn_p can never return 1 for it (sched.c:2513 requires
+      GET_CODE (SET_DEST (pat)) == REG). Its priority is 3 = pri(122) + insn_cost(122) - 1
+      = 2 + 2 - 1, and the 2 is the LOAD latency of insn 122.
+    * insn 131 `(set (reg/v 104) (plus (reg 109) (reg/v 81)))` sets t0's pseudo reg/v 104,
+      which is ALSO set by the chain-A byte load insn 111 - reg_n_sets == 2 - so
+      birthing_insn_p returns 0 at sched.c:2526. Its priority is 2 = pri(126) + 1 - 1, and the
+      1 is the ALU latency of the shift insn 126.
+    So the +1 that makes 148 outrank 131 in sched1 is exactly "chain B's last producer is a
+    load, chain A's is a shift".
+- [s82] THE EXACT SINGLE-ATOM TARGET IS NOW KNOWN, DERIVED OFFLINE ON THE VALIDATED MODEL
+  (tmp/grind/CD_ready/s82/whatif.py). Three independent perturbations - birth(131)=1,
+  pri(131)>=4, pri(148)<=1 - ALL produce the SAME pass-1 emission:
+      117 120 122 148 126 139 131 144 154
+  With local-alloc's insn_number stepping by 2 that reads
+      reg107 birth 16 death 18 span 2 refs 4 -> pri 4.0
+      reg103 birth 18 death 20 span 2 refs 4 -> pri 4.0   (the arg5 VALUE)
+      reg109 birth 22 death 26 span 4 refs 4 -> pri 2.0   (chain A's SHIFT)
+  i.e. the arg5 value is numbered qty1 and allocated BEFORE chain A's shift instead of after
+  it - the seat order the target needs. Two other perturbations were simulated and are WRONG
+  turns: birth(144)=0 gives 117 126 131 120 139 122 144 148 154, and birth(131)=1 combined with
+  birth(144)=0 gives 117 120 139 122 144 148 126 131 154.
+- [s82] AND THE SCHED2 ORDER IS INVARIANT TO THAT SCHED1 CHANGE, ON THE UNCHANGED DEP GRAPH.
+  Re-running the pass-2 model (tmp/grind/CD_ready/s82/whatif2.py) with every LUID relabelled to
+  the perturbed sched1 emission order reproduces the target order 117 120 126 122 139 131 144
+  148 154 unchanged - pass-2 LUIDs are exactly the pass-1 emission positions (verified by
+  relabelling with the BASELINE order, which is a no-op). So a form that changes ONLY the sched1
+  order is predicted to keep the target emission; every observed sched2 regression this session
+  therefore comes from the ALLOCATION change, not from the relabel.
+- [s82] SEVEN SPELLINGS THAT REALIZE THE PERTURBATION WERE MEASURED AND ALL REGRESS. Making
+  reg/v 104 single-set is the only C-reachable way to set birth(131)=1 that this session found,
+  and it always adds a pseudo:
+    k1  chain A address in a fresh `s32 t0a`                                 9 / 179 / 0
+    k6  chain A split into three fresh locals (t0/t0s/t0a)                   9 / 179 / 0
+    k2  chain A address in a fresh `s32 *t0p`                                9 / 179 / 0
+    k10 chain A byte staged through the multi-set `status`, address in t0    8 / 179 / 0
+    k11 same through the multi-set `cnt`                                     8 / 179 / 0
+    k13 k10 spelled `(s32)tbl_125c + (status << 2)`                          8 / 179 / 0
+    k14 k11 spelled `(s32)tbl_125c + (cnt << 2)`                             8 / 179 / 0
+  Dumps confirm the MECHANISM fires in every one: all seven produce exactly the predicted sched1
+  emission `117 120 122 148 126 139 131 144 154`. k1/k6/k2 additionally push the chain-A byte
+  load (insn 111) later, because a fresh single-set local makes 111 birthing too; k10/k11/k13/k14
+  fix that (the multi-set carrier keeps 111 un-boosted and it stays first). But in all seven the
+  sched2 order also moves - k10's is 117 120 126 122 131 148 139 156 144 154 - and the seats do
+  NOT flip: k10's objdump still reads chain A in $v1 and the arg5 value in $v0 (target: $a0 and
+  $v1). Banked as rejected/s82-chainA-*.c.
+- [s82] THE OWNER DIRECTIVE'S PROBE 2 (fresh-flag permuter window) WAS ATTEMPTED AND IS BLOCKED
+  ON A WORKSPACE-BUILD BUG, WHICH IS NOW DIAGNOSED FOR THE NEXT SESSION.
+  tools/mar_perm_workspace.sh is stale in three ways and a rebuilt copy is staged at
+  tmp/grind/CD_ready/s82/mkws.sh (it already carries the -mel fix and the correct
+  tools/gcc-2.7.2/build/cc1 path). The two remaining faults, both visible in its output:
+  (a) `mipsel-linux-gnu-as` on the extracted cc1 fragment fails because the awk window keys on
+  `.ent` / `glabel CD_ready`, and the maspsx stream for this TU opens the fragment at `.frame`
+  with no `.ent`, so the fragment is junk from line 4; (b) the base.c compile drags in
+  system.c's sibling `INCLUDE_ASM(...)` directives, so `as` tries to assemble asm/funcs/CD_cw.s
+  and asm/funcs/CD_datasync.s (glabel/endlabel unrecognized) and then reports `.size expression
+  for CD_ready does not evaluate to a constant`. Fix the extraction window and strip the sibling
+  `.include` lines before assembling; the seed body and the scorer validation targets are
+  unchanged (order-exact base scores 6, floor body scores 2).
+- [s82] Baselines re-measured live on the HEAD chassis: candidate.c 2/179/0 and
+  progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c 6/179/0, both applied
+  with memory/grind/CD_ready/apply_s78.py. src/system.c restored to HEAD at the end of the
+  session; the only tracked changes are the CD_ready ledger files plus metrics/events.jsonl.
+
+- [s82] Baselines re-measured live on the HEAD chassis: candidate.c 2/179/0 and progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c 6/179/0, both applied with memory/grind/CD_ready/apply_s78.py.
+
+- [s82] sched1 and sched2 DO diverge in block 3 on the order-exact base: sched1 emits ... 131 148 144 154 and sched2 emits ... 131 144 148 154 (the target). The opposite s74 statement was measured on the floor body.
+
+- [s82] The divergence is caused solely by birthing_insn_p (sched.c:2505) via adjust_priority (sched.c:2543), which sched.c:2510 disables once reload_completed == 1. In sched1 insns 120/122/126/139/144/154/156 carry birth=1 and INSN_PRIORITY 0x7F000001; 131 and 148 do not.
+
+- [s82] insn 148 is a store, so the SET_DEST == REG test at sched.c:2513 can never hold for it: it is structurally incapable of being birthing. insn 131 sets reg/v 104, which insn 111 also sets, so the reg_n_sets == 1 test at sched.c:2526 fails.
+
+- [s82] pri(148) = 3 because its predecessor insn 122 is a load (latency 2); pri(131) = 2 because its predecessor insn 126 is a shift (latency 1). That single point of priority is the whole ordering difference.
+
+- [s82] Ledger label correction: reg/v 104 is t0 itself and carries TWO sets (the chain-A byte load insn 111 and the address insn 131); reg 109 is only the shift result. Earlier sessions labelled reg104 as the address alone.
+
+- [s82] Offline on the validated sched_solver model, birth(131)=1, pri(131)>=4 and pri(148)<=1 all give the pass-1 emission 117 120 122 148 126 139 131 144 154, in which the arg5 value (reg103) is born at 18 with span 2 (pri 4.0) and chain A shift (reg109) at 22 with span 4 (pri 2.0) - the arg5 value allocates first, which is the target seat order.
+
+- [s82] birth(144)=0, and birth(131)=1 combined with birth(144)=0, were simulated and give different, wrong pass-1 orders; they are not levers.
+
+- [s82] The pass-2 order is invariant under relabelling pass-2 LUIDs to the perturbed pass-1 emission order, so a sched1-only perturbation is predicted to keep the target emission; the regressions measured this session are allocation-driven.
+
+- [s82] Seven C spellings realize the birthing perturbation (all reproduce the predicted sched1 order exactly) and all regress to 8 or 9 at 179 instructions with 0 rules dropped, because each adds a pseudo and moves sched2 with it.
+
+- [s82] sched_solver models CD_ready exactly: extract.py reports parity=True for the system TU and simulate.py scores 60/60 blocks order-exact and clock-exact across both passes, so the offline perturbation results above are model-exact predictions, not estimates.
+
+- [s82] The probe-2 permuter workspace recipe is stale in two further ways beyond the -mel and cc1-path fixes already applied; both faults are named and mechanical, and the campaign is still un-run.

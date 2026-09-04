@@ -1,3 +1,45 @@
+/* s82 UPDATE (2026-09-04, structural). BODY UNCHANGED (2/179/0, re-measured live). What
+ * changed is that the s74/s81 blocking premise is GONE and the single-atom target is exact.
+ *
+ * 1. SCHED1 AND SCHED2 DO DIVERGE IN BLOCK 3 on the order-exact base (6/179/0):
+ *      sched1 emission  117 120 126 122 139 131 148 144 154
+ *      sched2 emission  117 120 126 122 139 131 144 148 154   <- the target
+ *    s74 measured "sched1 == sched2 in block 3" on the FLOOR body; it is false here. Every
+ *    live_extend / live_shrink atom the s81 solver returned was gated behind that premise.
+ *
+ * 2. THE CAUSE IS birthing_insn_p (sched.c:2505, driven by adjust_priority sched.c:2543,
+ *    switched off in sched2 by reload_completed at sched.c:2510). In sched1 the insns
+ *    120/122/126/139/144/154/156 are boosted to INSN_PRIORITY 0x7F000001; 131 and 148 are not.
+ *      - insn 148 is a STORE, so sched.c:2513's `SET_DEST == REG` can never hold -> never
+ *        birthing. pri 3 = pri(122) + LOAD latency 2 - 1.
+ *      - insn 131 sets reg/v 104 (t0), which the chain-A byte load insn 111 also sets, so
+ *        reg_n_sets == 2 fails sched.c:2526. pri 2 = pri(126) + ALU latency 1 - 1.
+ *    The +1 that makes 148 outrank 131 in sched1 is exactly "chain B ends in a load, chain A
+ *    ends in a shift".
+ *
+ * 3. THE ATOM, DERIVED OFFLINE ON THE VALIDATED sched_solver MODEL (60/60 blocks order- AND
+ *    clock-exact in BOTH passes). birth(131)=1, pri(131)>=4 and pri(148)<=1 all give sched1
+ *      117 120 122 148 126 139 131 144 154
+ *    -> reg103 (arg5 value) born 18 span 2 pri 4.0, reg109 (chain A shift) born 22 span 4
+ *    pri 2.0: the arg5 value becomes qty1 and allocates FIRST. That is the seat order the
+ *    target needs. birth(144)=0 is a wrong turn (different, worse order).
+ *
+ * 4. AND THE PASS-2 ORDER IS INVARIANT TO THAT RELABEL (whatif2.py): pass-2 LUIDs are the
+ *    pass-1 emission positions, and relabelling to the perturbed order still reproduces the
+ *    target emission. So a form that perturbs ONLY sched1 keeps the byte order.
+ *
+ * 5. WHAT IS DEAD: seven spellings that realize birth(131)=1 by making reg/v 104 single-set
+ *    (fresh s32 address local 9, three fresh locals 9, fresh s32* address 9, chain-A byte
+ *    staged through the multi-set `status` 8 / `cnt` 8, and both `(s32)tbl + (x<<2)`
+ *    respellings 8). All seven DO produce the predicted sched1 order - the mechanism fires -
+ *    but each adds a pseudo, the allocation changes, sched2 moves with it, and the seats do
+ *    not flip. rejected/s82-chainA-*.c.
+ *
+ * 6. THE FRONTIER IS THEREFORE: a spelling that raises pri(131) to >= 4 or lowers pri(148)
+ *    to <= 1 WITHOUT adding a pseudo (these are priority-graph atoms, not liveness atoms, so
+ *    they do not touch reg_n_sets); or a spelling that sets birth(131)=1 while keeping the
+ *    pseudo count and the post-reload dep graph of the order-exact base.
+ */
 /* s81 UPDATE (2026-09-04, rederive). BODY UNCHANGED (still 2/179/0, re-measured live this
  * session); what changed is that the residual is now IDENTIFIED DOWN TO THE RTL INSN, and the
  * s80 frontier's arithmetic target has been corrected.

@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 81,
- "current_modality": "rederive",
+ "session_count": 82,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -495,23 +495,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Residual pinned to six register names and two named RTL insns; the s80 'arg5 refs>=5' target is proven unreachable by loop_depth parity, and the real requirement is one extra surviving reference to th"
+  },
+  {
+   "session": 82,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "The sched1/sched2 divergence that gated every solver atom is PROVEN to exist on the order-exact base, its cause is named (birthing_insn_p / adjust_priority), and the single perturbation that flips the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The seat swap flips if the arg5 VALUE pseudo (post-sched1 insn 122, reg 103) acquires ONE more surviving reference - refs 4 -> 6 at loop_depth 2, giving qty_compare_1 pri 2.0 against qty1's unchanged 1.3333 - without moving its birth (20) or its death (26).",
-   "mechanism": "local-alloc.c:1660 pri = floor_log2(refs)*refs*size/(death-birth), descending, ties by lower quantity number; flow.c counts REG_N_REFS as references x loop_depth AFTER dead stores are deleted and AFTER copy propagation, which is why this session's relay locals (b0, c4) were coalesced away and left refs at 4.",
-   "next_probe": "Find a spelling in which the loaded value is genuinely referenced twice by live code that still emits 179 instructions - e.g. a second reference folded into an existing insn, or a use of the same value in the 4th argument's address computation - and verify with a quantity dump (tmp/grind/CD_ready/s80/qty.sh + tmp/grind/CD_ready/s72/qtyext.py) that reg103 reads refs 6 with birth 20 / death 26 BEFORE spending a score measurement. The other arithmetic factor, qty_size, is still untried: a legal C spelling that gives the stack argument size 2 without adding an instruction would give pri 2.6667 outright."
+   "hypothesis": "A spelling that raises pri(131) to >= 4, or lowers pri(148) to <= 1, reaches the same flip WITHOUT adding a pseudo - these are dependence-graph priority atoms rather than liveness atoms, so they never touch reg_n_sets and cannot drag the allocation (and therefore sched2) with them, which is exactly what killed all seven of this session forms.",
+   "mechanism": "priority(insn) = max over preds of (priority(pred) + insn_cost(pred,link,insn) - 1). pri(131) = pri(126) + 1 - 1 and pri(126) = pri(111) + 2 - 1 = 2 because insn 111 has no in-block predecessor; pri(148) = pri(122) + 2 - 1 = 3 because insn 122 is a load. Raising pri(111) to >= 3 (chain A byte load acquiring an in-block predecessor chain) lifts pri(131) with it; MIPS ADJUST_COST zeroes anti/output dependence costs, so only true data dependences can carry the latency.",
+   "next_probe": "Enumerate C forms in which chain A byte load depends on an in-block computation without adding an instruction - e.g. sourcing idx_1494 (reg/v 76) from a value produced inside the do_timeout block rather than hoisted, or re-associating the two chains so that chain A producer sits deeper in the dependence graph than chain B producer. Predict each form pass-1 order OFFLINE first with tmp/grind/CD_ready/s82/whatif.py by editing the node pri fields, and only spend a sandbox measurement on the forms the model says reach 117 120 122 148 126 139 131 144 154."
   },
   {
-   "hypothesis": "Every live_extend / live_shrink atom the solver offers is realizable only if the sched1 alloc-time order in block 3 can be made to differ from the sched2 emission order; s74's 'sched1 == sched2 in block 3' was measured on the FLOOR body and has never been re-derived on the order-exact base.",
-   "mechanism": "local-alloc runs on the sched1 order, so births, deaths and quantity numbers come from sched1, while sched2 runs after reload and can reorder. The solver prints this as its LOCAL-MODE CAVEAT (a birth/span vector is NECESSARY, not SUFFICIENT). Every atom in the list moves an insn that is already at its target EMISSION slot, so the only way to spend one without breaking the order is a sched1/sched2 divergence.",
-   "next_probe": "Diff the CD_ready block-3 insn chain in tmp/grind/CD_ready/dumps/system.sched against tmp/grind/CD_ready/dumps/system.sched2 on the order-exact base to establish whether any divergence exists there today; if it does, look for a C form that widens it so insn 122 precedes insn 126 at sched1 time while sched2 restores the target order. If it does not, that is a block-level statement worth banking with a predicate cite."
+   "hypothesis": "A spelling that sets birth(131)=1 while leaving the pseudo count and the post-reload dependency graph of the order-exact base intact exists - the seven measured forms all failed for the SAME single reason (an extra pseudo), not for seven different reasons.",
+   "mechanism": "birthing_insn_p needs reg_n_sets[SET_DEST] == 1 (sched.c:2526). Today reg/v 104 is written by insn 111 and insn 131. Any split of those two writes across two names adds a pseudo. The unexplored direction is to REMOVE the first write instead of adding a name: a form in which chain A byte load feeds the shift directly as a subexpression, so the only pseudo the source names is the address.",
+   "next_probe": "Build the fused single-statement chain A (t0 = (s32)((u8 *)tbl_125c + idx_1494[0] * 4); with no separate byte-load statement, and the arg5 chain unchanged and still first), plus the variant that keeps the byte load as an unnamed subexpression inside the shift. Score with the sandbox, then dump both passes with schedord.sh and compare the pseudo count in the .lreg dump against the order-exact base - the diagnostic that separates the mechanism firing but costing a pseudo from the mechanism firing for free."
   },
   {
-   "hypothesis": "The owner directive's probe 2 - a fresh-flag permuter window seeded from the order-exact base - is the single largest unspent axis and is now optimally conditioned: the residual is a pure six-register rename with zero ordering and zero instruction-count difference.",
-   "mechanism": "progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c has the target's exact instruction sequence with no extra pseudo and no a1 displacement. Every prior campaign (s4, s5, s40, s41, s49, s50, s59) was seeded from vT40-family bodies whose residual mixed order and seats, and those workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1.",
-   "next_probe": "Build a fresh workspace mirroring engine/buildconfig.py exactly (cc1 = tools/gcc-2.7.2/cc1, -mel, maspsx --aspsx-version=2.34); validate the scorer reproduces 2 for candidate.c and 6 for the order-exact base before launching; then run fresh-seed windows with python3 tools/permuter_campaign.py wait --dir <ws>, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break recorded in memory/project/grinder-nonmatchings-scope-break.md."
+   "hypothesis": "The owner directive probe 2 (fresh-flag permuter window seeded from the order-exact base) is still the largest unspent axis and is now two mechanical fixes away from running.",
+   "mechanism": "progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c has the target exact instruction sequence with no extra pseudo and no a1 displacement; its residual is six register names and nothing else. tmp/grind/CD_ready/s82/mkws.sh already carries the -mel fix and the correct tools/gcc-2.7.2/build/cc1 path, mirroring engine/buildconfig.py.",
+   "next_probe": "In mkws.sh, (a) change the awk extraction window to bracket the CD_ready fragment in the maspsx stream by its own label and the following function label rather than by .ent, and (b) strip the sibling INCLUDE_ASM include lines from the stream before assembling. Validate that the scorer reproduces 6 for the order-exact base and 2 for the floor body, then run fresh-seed windows with python3 tools/permuter_campaign.py wait --dir tmp/grind/CD_ready/s82/perm, harvesting and --stop inside the same turn. Mind memory/project/grinder-nonmatchings-scope-break.md."
   }
  ],
  "judge_constraints": [
@@ -829,6 +835,22 @@
    "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the s80 order-exact base re-measured live at 6/179/0 and candidate.c at 2/179/0 in the same batch; all forms carry the body's inherited FAKE s",
    "predicate_cite": "",
    "result": "KILLED on these 24 forms. The seven arg5-side respellings (relay through a fresh local, relay through the function-scope"
+  },
+  {
+   "session": 82,
+   "statement": "Seven C spellings that set birth(131)=1 by making reg/v 104 single-set - a fresh s32 address local, three fresh locals, a fresh s32 pointer address local, the chain-A byte staged through the multi-set",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the order-exact base re-measured live at 6/179/0 with all floor-body FAKE constructs present; candidate.c re-measured live at 2/179/0 in the s",
+   "predicate_cite": "",
+   "result": "All seven produce EXACTLY the predicted sched1 emission 117 120 122 148 126 139 131 144 154, so the birthing mechanism i"
+  },
+  {
+   "session": 82,
+   "statement": "The staged permuter workspace recipe for the owner directive probe 2 does not build: the awk extraction window misses the maspsx fragment start and the base.c compile pulls the sibling INCLUDE_ASM dir",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, order-exact base applied to src/system.c.",
+   "predicate_cite": "",
+   "result": "Both faults are mechanical and now diagnosed; the campaign itself remains un-run. The next session can fix the extractio"
   }
  ],
  "sibling_progress": [
