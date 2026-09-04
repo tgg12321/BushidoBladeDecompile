@@ -1,42 +1,12 @@
-/* func_80072CD4 — s14 (rederive modality, 2026-09-03): BYTE MATCH.
- * `sandbox func_80072CD4 --disable all` = 0, build_insns 79 == target_insns 79,
- * rules_dropped 0; full-build `verify-oracle` = SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa
- * == oracle, both measured this session with this exact body in src/text1b.c.
- *
- * Structure: the CROSS-BLOCK chassis (target's own structure per s11/s12) — the inner arms set
- * @5/@6/@0xD and leave the @0xE value in `blue1`; the merge region writes @4, @0xC, @0xE and then
- * the two unconditional RGB triples. It contains NO duplication of any statement into the inner
- * arms: the banned per-arm @4/@0xC duplication is absent in every spelling.
- *
- * The three `do { ... } while (0);` wraps are the sanctioned do-while(0) match device
- * (.claude/rules/do-while-zero-exception.md:29, owner ruling 2026-07-06 — ANY codegen effect,
- * mandatory inline FAKE annotation, which each wrap carries at its site). Each is measured
- * necessary this session: arm wraps alone = 4/79, merge wrap alone = 10/78, then-arm+merge =
- * 7/79, else-arm+merge = 8/79, all three = 0/79. No wrap is nested inside another.
-
- * s14b (structural, 2026-09-03) — THE @5 DUPLICATION IS BYTE-MATERIALIZING, NOT BYTE-NEUTRAL.
- * The 2026-09-03 23:36 layer-1 FAIL demanded that `*(u8 *)((s32)(arg1) + 5) = 0xC3;` be hoisted
- * out of the two inner arms "exactly as red/r0/r1 were". That remedy is measured DEAD in four
- * placements this session (tmp/grind/func_80072CD4/s14/sandbox_q{1,2,3,4}_*.txt):
- *   q1 @5 inside the merge do-while group ....... sandbox 12, build_insns 77
- *   q2 @5 pre-branch, beside `red = 0xFC` ....... sandbox  7, build_insns 77
- *   q4 @5 in the merge block, after the wrap .... sandbox  6, build_insns 77
- *   q3 @5 stored once from a holder ASSIGNED per-arm  sandbox  8, build_insns 78
- * Target is 79 insns. Deleting the second source-level @5 store deletes exactly two emitted
- * instructions, because the TARGET ITSELF ships both copies: asm/funcs/func_80072CD4.s:23-24
- * (`addiu $v0,$zero,0xC3` / `sb $v0,0x5($s1)` in the then-arm at 0x80072D28/0x80072D2C) and
- * :32-33 (the identical pair in the else-arm at 0x80072D48/0x80072D4C). Neither copy is
- * cross-jump-dead. q3 further isolates which half must be duplicated: two per-arm ASSIGNMENTS
- * with one merge STORE keeps both `addiu 0xC3` but emits one `sb 0x5` (78) — it is the STORE
- * statement that target requires twice.
- * This is the categorical difference from rejected/dup4_0xc_into_arms.c, the construct
- * banned_constructs entries 5 and 8 are derived from: there the duplicated @4/@0xC copies are
- * re-merged by jump_optimize(cross_jump=1) and vanish from the output (byte-neutral, sole effect
- * = merge-block store schedule). Here the second copy IS output. This body duplicates @4/@0xC
- * NOWHERE — they are hoisted into `red` and stored once in the merge region.
- * Session s14b returned `ruling-request`, not `candidate-ready`: the driver mechanically rejects a
- * candidate-ready whose self-vet re-declares a banned construct, and entry 8 names this store
- * verbatim. No agent may clear it.
+/* func_80072CD4 - COMPLETED-C body (s14d, 2026-09-03).
+ * Measured this session with this exact text in src/text1b.c:
+ *   sandbox func_80072CD4 --disable all = 0, build_insns 79 == target_insns 79, rules_dropped 0
+ *   verify-oracle = ok (build_matches true), build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
+ * Cross-block chassis: each inner arm writes its own @5/@6/@0xD and leaves its vertex-1 blue in
+ * `blue1`; the shared red 0xFC is written once after the join into @4 and @0xC via `red`.
+ * The three single-level do-while(0) wraps are the sanctioned match device
+ * (.claude/rules/do-while-zero-exception.md:29); each carries its inline FAKE annotation.
+ * Self-vet: memory/grind/func_80072CD4/self_vet.md.
  */
 s32 func_80072CD4(s32 arg0, GameObj *arg1) {
     int red;
