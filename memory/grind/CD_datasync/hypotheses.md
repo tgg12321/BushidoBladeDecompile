@@ -3338,3 +3338,75 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: fully-inline argument chassis with the do{}while(0) FAKE present; sched_solver pass-1 block 3, exhaustive depth-2 over all 1332 atoms (886,446 pairs)
+
+## [s38] The do{}while(0) FAKE is an inert carrier occupying a pseudo an argument-block lever wants, on the two closest-to-target banked forms (mandated kill re-audit, current chassis)
+- mechanism: an instance kill measured with a FAKE construct sitting on the pseudo a lever targets is not a kill (func_8002EA24 s8). s25/s37 ablated candidate.c only; the two forms that sit CLOSEST to target's window geometry (alt_target_geometry_8.c, alt_inline_chassis_13.c) had never been ablated on the current chassis.
+- probe: re-measure each live (`sandbox CD_datasync --disable all`), then replace `do { ... } while (0);` with a bare brace block (tmp/grind/CD_datasync/s38/unwrap.py) and re-measure. tools/fake_ablate.py ERRs on both files - its sweep_variants path cannot build them - so the ablation was done by hand.
+- result: KILLED. alt_target_geometry_8.c 10 -> 21; alt_inline_chassis_13.c 13 -> 23; build_insns stays 91 in both ablations. The wrapper carries the callee-saved base-pointer map (s9 H37/H38) on all three live families and masks nothing in the argument block.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals), both forms with and without the do{}while(0) FAKE; live sandbox, 4 measurements
+
+## [s38] Target's printf-window order is reached from the inline chassis by some permutation of the argument chains' SOURCE STATEMENT ORDER - the space s37's atom-level depth-2 search structurally could not cover
+- mechanism: perturb.py's luid_move atom moves ONE insn's LUID (perturb.py:216,242), but a C statement move relocates a whole 4-5 insn chain, i.e. >= 4 atoms. So s37's exhaustive depth-2 result says nothing about ordinary statement moves. Laying each chain out as a contiguous LUID block, in every order (and with each chain optionally split into address part vs value load, which is what a pointer local vs a value local spells), covers exactly the C-spellable statement-order space.
+- probe: tmp/grind/CD_datasync/s38/groupmove.py (inline chassis, pass 2 block 3): 5 chain blocks -> 120 orders, 8 blocks with address/value splits -> 40,320 orders; each applied as a LUID re-lay, priorities recomputed via perturb.apply_priorities, then simulate.sim_block.
+- result: KILLED. 0 of 40,320 reach target's window order; best window prefix 0/15. The atom is NOT inert - it yields 6 distinct emissions - but all six differ only in the order of the three leading leaves, and the tail (104,127,107,109,129,123) is invariant. On this chassis arg4's lbu is pinned at window slot 10 and target needs it at slot 1.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: fully-inline chassis (alt_inline_chassis_13.c, 13/91) with the do{}while(0) FAKE present; sched_solver model extracted with that form in src/, 40,320 simulated orders
+
+## [s38] Target's printf-window order is reached from the candidate.c chassis by some permutation of the argument chains' source statement order
+- mechanism: same group-move argument as above, run on the best-scoring chassis.
+- probe: tmp/grind/CD_datasync/s38/groupmove_cand.py, 8 blocks -> 40,320 orders, pass 2 block 3.
+- result: KILLED. 0 hits; best window prefix 3/15 and the best IS the baseline. Useful positive by-product: candidate.c already emits target's first three window insns (93,116,105) and already emits the fmt `la $a0` LAST in pass 2 - so s28's "make the fmt set be emitted last" question is already answered on this chassis and should not be re-opened.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis (goto loop, three hoisted pointer locals, arg4 value local) with the do{}while(0) FAKE present; 40,320 simulated orders
+
+## [s38] The candidate.c and inline chassis are foreclosed on OPPOSITE halves of target's window, so the residual is a program shape carrying both halves
+- mechanism: the exact scheduler model can be asked one target fact at a time instead of the joint 14-constraint goal; a single-constraint depth-1 sweep over ALL atoms (add_dep of every kind, del_dep, cost, luid, luid_move) is a strong per-fact verdict.
+- probe: perturb.py --pass 2 --block 3 --depth 1 on each chassis. Candidate: `--goal-before 100:131` (arg4's value load emitted after arg3's) and `--goal-before 100:125` (after the sw). Inline: `--goal-before 112:104 96:104 93:104` (idx0's lbu emitted first).
+- result: CONFIRMED. All three return NO vector over 1165/1166 atoms. Candidate cannot defer arg4's value load; inline cannot lead with idx0's lbu; each chassis has the other's missing fact for free.
+- verdict: CONFIRMED
+
+## [s38] A third chassis - the s32/s33 index-local form u1 - carries target's window FRONT and types REACHABLE on the deferral facts that are foreclosed on candidate.c
+- mechanism: u1 (`s32 i4 = idx_1494[0];` + arg5/arg3 value locals, arg4 inline as `tbl_125c[i4]`) was banked in s33 as a structural artifact and never carried into the solver era, because its SCORE (15) is worse than candidate's 7 and s25/s37 chose chassis by the solver's constraint count instead.
+- probe: apply rejected/index-local-plus-arg3-arg5-splits-arg4-index-first-but-coalesces-addr-value-15.c, live sandbox, extract.py system (parity=True), then perturb.py depth-1 single-constraint sweeps on pass 2 block 3.
+- result: CONFIRMED. 15/91 build_insns 91. Window emission starts `97(idx0 lbu), 108(idx1 lbu), ...` - target's slot 1, which neither other chassis reaches at any depth. `--goal-before 104:115` (arg4's load after arg5's) returns several vectors; `--goal-before 104:135` (arg4's load after arg3's) returns exactly one, `del_dep 127 <- 104`. The remaining structural difference is s33's: the arg4 address pseudo coalesces with its value pseudo into one register where target keeps $a0/$a3 - an RA question for tools/ra_solver, not a scheduling one.
+- verdict: CONFIRMED
+
+## [s38] The do{}while(0) FAKE is an inert carrier occupying a pseudo an argument-block lever wants, on the two closest-to-target banked forms (alt_target_geometry_8.c, alt_inline_chassis_13.c).
+- mechanism: A kill measured with a FAKE sitting on the pseudo a lever targets is not a kill (func_8002EA24 s8); s25/s37 had ablated candidate.c only, never the two geometry-closest forms.
+- probe: Live re-measure of each form on the current chassis, then hand-ablation of the wrapper into a bare brace block (tmp/grind/CD_datasync/s38/unwrap.py) and re-measure. tools/fake_ablate.py ERRs on both files (its sweep_variants path cannot build them), so the ablation was done by hand.
+- result: KILLED. alt_target_geometry_8.c 10 -> 21; alt_inline_chassis_13.c 13 -> 23; build_insns stays 91 in both ablations, so the wrapper only rotates the callee-saved base map (s9 H37/H38) and masks nothing in the argument block. This differs from candidate.c, where the same ablation also drops build_insns 91 -> 87.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals); both forms measured with and without the do{}while(0) FAKE; 4 live sandbox measurements
+
+## [s38] Target's printf-window order is reached from the fully-inline chassis by some permutation of the argument chains' source statement order - the space s37's atom-level depth-2 search structurally could not cover.
+- mechanism: perturb.py's luid_move atom moves ONE insn's LUID (tools/sched_solver/perturb.py:216,242), but a C statement move relocates a whole 4-5 insn chain, i.e. >=4 atoms, so s37's 886,446-pair depth-2 sweep never tested an ordinary statement move. Laying each chain out as a contiguous LUID block in every order - with each chain optionally split into address part vs value load, which is exactly what a pointer local vs a value local spells - covers the C-spellable statement-order space directly.
+- probe: tmp/grind/CD_datasync/s38/groupmove.py on the inline chassis, pass 2 block 3: 5 chain blocks (120 orders) and 8 address/value-split blocks (40,320 orders); each applied as a LUID re-lay, priorities recomputed via perturb.apply_priorities, then simulate.sim_block.
+- result: KILLED. 0 of 40,320 orders reach target's window order; best window prefix 0/15. The perturbation is not inert - it produces 6 distinct emissions - but all six differ only in the order of the three leading leaves, and the tail (104,127,107,109,129,123) is invariant: arg4's lbu sits at window slot 10 where target needs slot 1.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: fully-inline chassis (alt_inline_chassis_13.c, re-measured 13/91) with the do{}while(0) FAKE present; sched_solver model re-extracted with that form in src/ (parity=True); 40,320 simulated orders
+
+## [s38] Target's printf-window order is reached from the candidate.c chassis by some permutation of the argument chains' source statement order.
+- mechanism: Same group-move argument, run on the best-scoring chassis, where s26-s28's 465 hand-compiled forms had only sampled the space.
+- probe: tmp/grind/CD_datasync/s38/groupmove_cand.py, 8 blocks -> 40,320 orders, pass 2 block 3, model re-extracted with candidate.c in src/ (parity=True; the model's pass-1 emission reproduces the ledger's recorded candidate sched1 order exactly, which independently validates the s37 UID map).
+- result: KILLED. 0 hits; best window prefix 3/15 and the best IS the baseline. Positive by-product: candidate.c already emits target's first three window insns (93 idx0-lbu, 116 idx1-lbu, 105 arg2-lw) and already emits the fmt la $a0 LAST in pass 2, so s28's 'make the fmt set be emitted last' question is already answered on this chassis and must not be re-opened.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c chassis (goto loop, three hoisted pointer locals, arg4 value local) with the do{}while(0) FAKE present; 40,320 simulated orders
+
+## [s38] The candidate.c and fully-inline chassis are foreclosed on opposite halves of target's window, each missing exactly the one fact the other has for free.
+- mechanism: The exact scheduler model can be asked one target fact at a time instead of the joint 14-constraint goal; a single-constraint depth-1 sweep over ALL atoms (add_dep of every kind, del_dep, cost, luid, luid_move) is a strong per-fact verdict, and s37 only ever asked the joint goal at depth 2.
+- probe: perturb.py --pass 2 --block 3 --depth 1: on candidate.c --goal-before 100:131 (arg4's value load emitted after arg3's) and --goal-before 100:125 (after the sw 16($sp)); on the inline chassis --goal-before 112:104 96:104 93:104 (idx0's lbu emitted first in the window).
+- result: CONFIRMED. All three return NO vector, over 1165 and 1166 atoms respectively. candidate.c cannot defer arg4's value load; the inline chassis cannot lead with idx0's lbu. By contrast, on candidate.c the constraint 'idx1's sll before idx0's sll' IS reachable and every solution is an add_dep 93 <- X (an extra predecessor for idx0's lbu), reproducing s37's family from the other pass.
+- verdict: CONFIRMED
+
+## [s38] The s32/s33 index-local form u1 carries target's window front and types REACHABLE on the deferral facts that are foreclosed on candidate.c.
+- mechanism: u1 (s32 i4 = idx_1494[0]; plus arg5 and arg3 value locals, arg4 inline as tbl_125c[i4]) was banked in s33 as a structural artifact and never carried into the solver era, because chassis selection since s25 has gone by score or by joint-constraint count, not by which single target facts are individually reachable.
+- probe: Apply rejected/index-local-plus-arg3-arg5-splits-arg4-index-first-but-coalesces-addr-value-15.c, live sandbox, extract.py system (parity=True), then perturb.py depth-1 single-constraint sweeps on pass 2 block 3.
+- result: CONFIRMED. 15/91, build_insns 91. Pass-2 window emission is 97(idx0 lbu),108(idx1 lbu),93,120,100,102,111,113,123,104(arg4 lw),115(arg5 lw),125,127,135(arg3 lw),129 - idx0's lbu at slot 1, exactly target's slot 1, which neither other chassis reaches at any depth. --goal-before 104:115 returns several vectors and --goal-before 104:135 returns exactly one (del_dep 127 <- 104). Promoted out of rejected/ to memory/grind/CD_datasync/alt_u1_index_local_15.c with the full verdict map in its header.
+- verdict: CONFIRMED

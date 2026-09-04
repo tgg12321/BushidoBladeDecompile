@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 37,
- "current_modality": "solver",
+ "session_count": 38,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -225,23 +225,29 @@
    "floor": 7,
    "modality": "solver",
    "headline": "s24 frontier item 1 executed and answered: sched_solver is validated exact on CD_datasync (12/12 blocks both passes) and an EXHAUSTIVE depth-2 sweep over all 1332 scheduler-input atoms (886,446 pairs)"
+  },
+  {
+   "session": 38,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "Synthesis: s37's exhaustive depth-2 kill provably could not cover C statement moves; the group-move space (40,320 chain orders) is now swept exhaustively on both chassis, and the two chassis are forec"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ledger's reading of the printf argument list is wrong: the third argument is not an independent read of tbl_11dc[D_800A11D5], but something that shares a subexpression with the fourth - which is the only honest way the edge 'arg3's index load depends on arg4's chain' can exist in C.",
-   "mechanism": "The solver names exactly one missing graph edge (add_dep 96 <- 107 on the inline chassis) and it recurs across four independent constraints. arg3's lbu and arg4's sll share no register and no memory as the block is currently written, so no statement move can create it - but a DIFFERENT program in which arg3's index is derived from, or aliases, arg4's chain would have it natively. D_800A11D5 sits inside the region that also holds the D_800A11DC table, and D_800A1494/D_800A1495 are the idx pair. A single struct or a single index expression feeding both the third and fourth arguments is the shape to test.",
-   "next_probe": "Re-derive the argument list from the format string and the data model rather than from m2c: dump the bytes at D_800161C8 and D_800A11D0-D_800A11E0 and D_800A1490-D_800A1498, and check whether D_800A11D5 can be reached as a member of the same object the idx pair lives in (or as tbl_11dc's own index byte). Then spell the two candidate forms - (a) arg3's index read through the same pointer local that carries idx_1494, (b) arg3's index and idx0 as two members of one struct - apply each to the INLINE chassis (alt_inline_chassis_13.c, NOT candidate.c), re-run extract.py + solve_inl.py, and check whether constraint k=3 onward becomes baseline-satisfied. Judge by the constraint count the solver reports, never by the sandbox score."
+   "hypothesis": "The u1 index-local chassis (15/91) closes the window, because it is the only measured shape carrying target's front (idx0's lbu at slot 1) and both of target's back facts type REACHABLE on it at depth 1.",
+   "mechanism": "s38 typed all three chassis fact-by-fact with the validated sched_solver model: candidate.c is depth-1 foreclosed on arg4-deferral, the inline chassis is depth-1 foreclosed on the leading lbu, u1 has the front free and the back reachable. Chassis selection has never before been made on per-fact reachability - s25/s37 chose by joint-constraint count and s26-s33 by score, which is why a 15-scoring form was left in rejected/.",
+   "next_probe": "Apply memory/grind/CD_datasync/alt_u1_index_local_15.c, re-extract the model, hand-build the FULL target goal for its block 3 in u1 UIDs from asm/funcs/CD_datasync.s:47-68 (goalmap's automatic goal is invalid here - duplicate instruction text, s37), and run perturb.py at depth 1 then depth 2 with --atoms luid,luid_move first. Then spell the winning vector in C and re-measure with the live sandbox. Do NOT re-run the group-move sweep on candidate.c or the inline chassis; both are exhaustively closed (s38)."
   },
   {
-   "hypothesis": "The same solver loop transfers verbatim to the twins CD_sync and CD_ready, which share this window; one of them may have a chassis where the missing edge is native, and that chassis is then transplantable.",
-   "mechanism": "CD_sync lives in the SAME TU (src/system.c), so tmp/sched_solver_work/system.sched.json already contains its blocks; CD_ready's ledger (s36/s46) records a byte-shape-identical do_timeout window and CD_sync s26 records the same {sll,addu,sll} -> jal debug_printf residual. The finding is a property of the shared source idiom, not of CD_datasync's chassis.",
-   "next_probe": "With CD_sync's best banked form applied, run the s25 loop for func=CD_sync (blk2.py with the func name changed gives the UID map; the goal comes from asm/funcs/CD_sync.s's own window). Compare which of the fourteen analogous constraints are baseline-satisfied there against CD_datasync's eight. A twin with MORE free constraints has structure CD_datasync's chassis lacks, and that structural difference is the lever."
+   "hypothesis": "u1's arg4 address/value pseudo COALESCE is a register-allocation decision that tools/ra_solver can type REACHABLE or FORECLOSED, and breaking it gives target's $a0/$a3 pair.",
+   "mechanism": "Target keeps arg4's address in $a0 and loads the value into $a3 (lw $a3,0($a0)); u1 puts both in $a3. s28/s29 established the surrounding predicate: mips.h defines no REG_ALLOC_ORDER, so local-alloc walks hard regs in ascending number order, and $a0 is only free for the address pseudo when that pseudo dies before the fmt set defines $a0 - which u1's ordering now allows. This is precisely ra_solver's question ('which register'), and it has never been asked on this function's argument block.",
+   "next_probe": "Run tools/ra_solver (global.c / local-alloc / reload models + inverse_compose.py classify) on the u1 build's CD_datasync block 3 with the goal 'arg4 address pseudo -> $a0, arg4 value pseudo -> $a3'. Classify REACHABLE/FORECLOSED and take the ranked C-lever vector; a third simultaneously-live scratch value across the address pseudo's range is the s29-predicted lever, and u1 may already supply it."
   },
   {
-   "hypothesis": "Target's block-3 dependence graph is three or more edges from the inline form's, and the missing edges are a property of the ARGUMENT EXPRESSIONS rather than of any spelling of the current ones - so the next rung is a depth-3 add_dep sweep restricted to the arg3 chain, used as an ORACLE to describe the graph, not as a search for a C form.",
-   "mechanism": "Depth-2 over all 1332 atoms is exhausted with zero hits, so no two-edge description of target's graph exists. A depth-3 sweep over the full atom set is ~4e8 simulations and is not worth running, but a depth-3 sweep restricted to add_dep atoms whose head or tail is on the arg3 chain (96/99/101/127) is ~1e5 and is affordable.",
-   "next_probe": "Restrict enumerate_atoms to add_dep atoms touching UIDs 96,99,101,127 on the inline chassis and run depth 3 against the same 14 constraints. Any hit is a three-edge SPECIFICATION of target's graph, which is then the exact thing the re-derived argument expression must produce; no hit at that restriction promotes the search to the arg2/arg5 chains. Either way the output is a description of the target graph, which is what frontier item 1's data-model re-derivation needs as its acceptance test."
+   "hypothesis": "The one graph fact every chassis needs and none can spell - an extra predecessor for idx0's lbu (add_dep 93 <- X on candidate.c, add_dep 96 <- 107/109 on the inline chassis) - is a data-model question, not a spelling question: target's index expression is not idx_1494[0].",
+   "mechanism": "Three independent solver runs across two chassis and two passes return the SAME family: the leading index load must depend on something in another argument's chain. No ordinary statement move creates that edge (s38 group-move sweep: 0/40,320 on both chassis). An edge into a LOAD is an address dependence, so the C form that creates it is one where the index is reached through a value another chain computes - i.e. a different data model for D_800A1494 / D_800A11D5 / the two tables, not a different spelling of the same subscripts.",
+   "next_probe": "Re-derive the argument expressions from the format string and the data layout rather than from m2c: D_800A11DC and D_800A125C are 0x80 apart and D_800A1494 is 0x238 past D_800A125C, and the fmt is '%s:(%s) Sync=%s, Ready=%s'. Test aggregate spellings (one object covering the status byte and the two index bytes, or one string table with two sections) that make the index load's address depend on a pointer another argument's chain produces, then re-run the depth-1 single-constraint sweeps to see whether the add_dep family becomes baseline-satisfied."
   }
  ],
  "judge_constraints": [],
@@ -668,6 +674,30 @@
    "measured_on": "fully-inline argument chassis with the do{}while(0) FAKE present; sched_solver pass-1 block 3, exhaustive depth-2 over all 1332 atoms (886,446 pairs)",
    "predicate_cite": "",
    "result": "886,446 pairs, 0 hits, 980 s. Target's block-3 dependence graph sits more than two edges away from the fully-inline form"
+  },
+  {
+   "session": 38,
+   "statement": "The do{}while(0) FAKE is an inert carrier occupying a pseudo an argument-block lever wants, on the two closest-to-target banked forms (alt_target_geometry_8.c, alt_inline_chassis_13.c).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals); both forms measured with and without the do{}while(0) FAKE; 4 live sandbox measurements",
+   "predicate_cite": "",
+   "result": "KILLED. alt_target_geometry_8.c 10 -> 21; alt_inline_chassis_13.c 13 -> 23; build_insns stays 91 in both ablations, so t"
+  },
+  {
+   "session": 38,
+   "statement": "Target's printf-window order is reached from the fully-inline chassis by some permutation of the argument chains' source statement order - the space s37's atom-level depth-2 search structurally could ",
+   "kill_scope": "instance",
+   "measured_on": "fully-inline chassis (alt_inline_chassis_13.c, re-measured 13/91) with the do{}while(0) FAKE present; sched_solver model re-extracted with that form in src/ (parity=True); 40,320 simulated orders",
+   "predicate_cite": "",
+   "result": "KILLED. 0 of 40,320 orders reach target's window order; best window prefix 0/15. The perturbation is not inert - it prod"
+  },
+  {
+   "session": 38,
+   "statement": "Target's printf-window order is reached from the candidate.c chassis by some permutation of the argument chains' source statement order.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals, arg4 value local) with the do{}while(0) FAKE present; 40,320 simulated orders",
+   "predicate_cite": "",
+   "result": "KILLED. 0 hits; best window prefix 3/15 and the best IS the baseline. Positive by-product: candidate.c already emits tar"
   }
  ]
 }
