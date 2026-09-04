@@ -1663,3 +1663,76 @@ are replaced by a construct on the frozen SOTN-accepted family list rather than 
 - [s14] The s14e score-0 body is retired to rejected/s14e_armcarrier_mergewrap_score0_banned_by_ruling15.c: judge_constraints entry 15 bans its arm carrier local in any name, width or count.
 
 - [s14] src/text1b.c was returned to INCLUDE_ASM("asm/funcs", func_80072CD4); at the end of the session (asm-until-matched); the only tracked files this session changed are under memory/grind/func_80072CD4/.
+
+## s15 (2026-09-04, synthesis) — facts established this session
+
+- **Chassis control.** memory/grind/func_80072CD4/candidate.c in src/text1b.c: `sandbox
+  func_80072CD4 --disable all` = 2, build_insns 79 == target_insns 79, rules_dropped 0
+  (tmp/grind/func_80072CD4/s15/sandbox_candidate_restored.txt). The ledger floor of 2 reproduces on
+  the chassis the driver dispatched; the brief's "measurement unavailable" was a dispatch-side gap,
+  not chassis drift.
+
+- **The residual, disassembled on both sides.** candidate.c emits the join as
+  `sb v0,0xE / sb v1,4 / sb v1,0xC` (tmp/grind/func_80072CD4/s15/cand.dis); the target has
+  `sb v1,4 / sb v1,0xC / sb v0,0xE` (asm/funcs/func_80072CD4.s:41-43). The `sb v0,0xE` is the arms'
+  common tail, adopted as the cross-jump target label at the end of arm 2, so the join label sits
+  behind it and no merge-block-resident spelling can get ahead of it.
+
+- **NEW: the target's join ORDER is reachable.** rejected/s15_carr_arm2perm_joinorder_correct_12_79.c
+  (carrier chassis + arm 2's stores permuted to @5,@0xD,@6, merge-head wrap) emits the join as
+  `sb a0,4 / sb a0,0xC / sb v1,0xE` — the target's order exactly — at 79 instructions
+  (tmp/grind/func_80072CD4/s14f/s15N2.dis). This is the first body in fifteen sessions to do so. Its
+  residual 12 is entirely inside the arms: sched1's hoist of the carrier's constant load makes three
+  values live simultaneously across the arm (red, the carried blue, the arm scratch), so red is
+  allocated `$a0` and blue `$v1`, where the target uses `$v1` and `$v0`.
+
+- **NEW: zero-byte in-block successors do not survive to sched1.** A second named intermediate copying
+  the carrier (`spare = blue;`, join stores `spare`), a three-deep copy chain, `blue = blue;`, and
+  `arg0 = blue;` (dead store to the provably-dead parameter) all measure EXACTLY the plain
+  single-carrier numbers: 13/78 device-free, 10/78 with the merge-head do-while(0). Six bodies, zero
+  instructions of movement. Constant propagation and flow.c remove every one of them before sched1.
+
+- **NEW: the hoist has a named, cited predicate.** `schedule_select`
+  (tools/gcc-2.7.2/sched.c:2706) promotes, within an equal-INSN_PRIORITY group, the ready insn with
+  the largest `potential_hazard = (minb * 0x40 + maxb) * ((unit_n_insns[unit] - 1) * 0x1000 + unit)`.
+  A constant load has `insn_unit == -1` and scores 0; a `sb` scores non-zero the moment the block
+  holds two or more memory-unit insns. `priority()` (tools/gcc-2.7.2/sched.c:1434-1519) pins a
+  predecessor-less insn at priority 1, and MIPS's ADJUST_COST zeroes anti/output dependences, so only
+  a true data dependence with latency >= 2 (load = 2, imul = 12) can raise it. A successor-less
+  constant load in a multi-store block therefore always ends up at the block head.
+
+- **NEW: tools/sched_solver run against this function for the first time.** Model built with
+  `extract.py text1b` on the carrier chassis (`parity=True`, 490 funcs, 1760 blocks);
+  target pinned with `--target-object build/src/text1b.o` (that object is the s14c/s14d oracle build
+  and carries the target's own join order — verified by objdump, tmp/grind/func_80072CD4/s15/tgtobj.dis)
+  against `--ours-object tmp/sandbox/func_80072CD4/text1b.o`. Results
+  (tmp/grind/func_80072CD4/s15/perturb_allatoms_depth2.txt):
+  - arm block (block 3, 7 insns), spellable atoms only (`luid,luid_move`), depth 2: NO perturbation
+    reaches the goal, in either pass.
+  - arm block, ALL atom classes, depth 2: the ONLY vectors are
+    `add_dep 80 <- {67,72,77} (true/data) + cost {2,3,12}` — 7 vectors in pass 1, 9 in pass 2, all the
+    same family: give the carrier's constant load a true data dependence on an arm insn whose ready
+    cost is a load's or a multiply's.
+  - join block (block 4, 15 insns), ALL atom classes, depth 2: NO perturbation reaches the goal, in
+    either pass.
+
+- **Re-measured axes.** Inner-branch-sense inversion on the natural-arm-E chassis = 9/79 (the s6
+  number, 11/79, was taken on a chassis since retired). The common-tail-breaking arm permutation
+  placed on arm 1 rather than arm 2 = 11/79. Join reds as the literal 0xFC on the carrier chassis =
+  10/77 (cse merges the constant with the trailing `@0x14 = 0xFC` store).
+
+- [s15] Chassis control re-measured first: memory/grind/func_80072CD4/candidate.c in src/text1b.c scores 2, build_insns 79 == target_insns 79, rules_dropped 0 (tmp/grind/func_80072CD4/s15/sandbox_candidate_restored.txt). The brief's 'measurement unavailable' was a dispatch-side gap; the ledger floor of 2 reproduces exactly and nothing in the bank was found chassis-stale.
+
+- [s15] The residual, disassembled: candidate.c emits the join as `sb v0,0xE / sb v1,4 / sb v1,0xC` (tmp/grind/func_80072CD4/s15/cand.dis); the target has `sb v1,4 / sb v1,0xC / sb v0,0xE` (asm/funcs/func_80072CD4.s:41-43). The sb v0,0xE is the arms' common tail adopted as the cross-jump label at the end of arm 2, so the join label sits behind it.
+
+- [s15] For the first time in fifteen sessions a body produces the TARGET'S JOIN ORDER at 79 instructions: rejected/s15_carr_arm2perm_joinorder_correct_12_79.c emits `sb a0,4 / sb a0,0xC / sb v1,0xE` (tmp/grind/func_80072CD4/s14f/s15N2.dis). Its residual 12 is entirely inside the arms and is caused by sched1's hoist forcing red into $a0 and the carried blue into $v1.
+
+- [s15] Six zero-byte-successor bodies (second named intermediate, three-deep copy chain, self-assign, dead store to the dead parameter arg0) all measure EXACTLY the plain single-carrier numbers -- 13/78 device-free and 10/78 with the merge-head wrap -- i.e. GCC removes every one of them before sched1 and none moves a single instruction.
+
+- [s15] The hoist now has a cited predicate: schedule_select (tools/gcc-2.7.2/sched.c:2706) promotes the largest potential_hazard within an equal-priority group; a constant load has insn_unit == -1 and scores 0 while a store scores non-zero once the block holds >= 2 memory-unit insns, and priority() (tools/gcc-2.7.2/sched.c:1434-1519) pins a predecessor-less insn at priority 1 with MIPS's ADJUST_COST zeroing anti/output dependences.
+
+- [s15] tools/sched_solver was run against this function for the first time (model via extract.py text1b, parity=True; target pinned with --target-object build/src/text1b.o, which is the s14c/s14d oracle build and carries the target's join order per tmp/grind/func_80072CD4/s15/tgtobj.dis). Arm block, spellable atoms, depth 2, both passes: NO perturbation reaches the goal. Arm block, all atoms, depth 2: the only vectors are `add_dep 80 <- {67,72,77} (true/data) + cost {2,3,12}`. Join block (15 insns), all atoms, depth 2, both passes: NO perturbation reaches the goal. Log: tmp/grind/func_80072CD4/s15/perturb_allatoms_depth2.txt.
+
+- [s15] Re-measured axes on the current chassis: inner-branch inversion on the natural-arm-E chassis = 9/79 (s6's 11/79 was a retired chassis); arm-1 placement of the common-tail-breaking permutation = 11/79; join reds as the literal 0xFC on the carrier chassis = 10/77.
+
+- [s15] src/text1b.c was reverted to `INCLUDE_ASM("asm/funcs", func_80072CD4);` at the end of the session; candidate.c is unchanged (still the best form at 2/79) and nine new rejected/ forms were banked.

@@ -1,7 +1,7 @@
 {
  "func": "func_80072CD4",
  "file": "text1b",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -93,23 +93,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "SYNTHESIS: floor 4 -> 2, the first drop since s2 - writing each arm's vertex-1 blue directly at its destination (no carrier local, no per-arm wrap) makes both arms byte-exact and 79 insns, and the ent"
+  },
+  {
+   "session": 15,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Floor holds at 2/79; the residual splits into two halves that are each individually reachable on mutually exclusive chassis, and the pivot between them (sched1's hoist of the carrier's constant load) "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A third route to the target join order exists that keeps the @0xE store in the join without a multi-write local: any in-block successor for the arm's trailing li will defeat the sched1 hoist, and the @0xE store is only the most obvious one.",
-   "mechanism": "H-s14f-1 established that the hoist is decided by schedule_select's potential_hazard tiebreak among equal-INSN_PRIORITY insns (tools/gcc-2.7.2/sched.c:2706-2721). Any in-block consumer of the arm's last value raises that li out of the store group; if a consumer exists whose own emitted bytes coincide with instructions the target already has in the arm, the carrier local becomes unnecessary and the join keeps all three stores in source order.",
-   "next_probe": "Enumerate arm-local consumers of the vertex-1 blue value that are not a store to arg1 and are byte-free or byte-coincident on this chassis (e.g. the value feeding one of the arm's OTHER stores through an expression combine cannot fold, or a second named intermediate the join reads), measuring each with `sandbox func_80072CD4 --disable all` against the 4/79 device-free chassis."
+   "hypothesis": "A two-step input change that depth 2 cannot see reaches the target arm order on the natural-arm-E chassis, which the scheduler solver has never been run against.",
+   "mechanism": "Every solver run so far targeted the carrier chassis, whose arm block holds three constant-load/store pairs plus a successor-less trailing load. The natural-arm-E arm block holds four load/store pairs and no successor-less load, and its join block holds two stores plus the trailing constant chain -- a materially different scheduling problem that the depth-2 'NO perturbation' verdicts do not cover.",
+   "next_probe": "Put rejected/s14f_naturalarmE_clean_4_79.c in src/text1b.c, re-run `python3 tools/sched_solver/extract.py text1b`, then `python3 tools/sched_solver/perturb.py tmp/sched_solver_work/text1b.sched.json --func func_80072CD4 --pass 1 --goal-from-target text1b --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80072CD4/text1b.o --depth 3`, and spell any REACHABLE vector it returns."
   },
   {
-   "hypothesis": "tools/sched_solver can decide the join-block order question on the NEW device-free chassis, where it has never been run.",
-   "mechanism": "The previous solver campaigns (s11) targeted the carrier chassis, whose join block held three stores plus a trailing constant chain. On rejected/s14f_naturalarmE_clean_4_79.c the join block holds only two stores plus that chain, and the third store arrives from cross_jump after sched2 - a materially smaller and differently-shaped scheduling problem that the banked FORECLOSED verdicts do not cover.",
-   "next_probe": "Run tools/sched_solver (both passes) and tools/ra_solver/inverse_compose.py classify against the 4/79 device-free body, then spell any REACHABLE lever vector it returns and measure it."
+   "hypothesis": "A C construct exists whose RTL is a multi-insn chain at sched1 and a single instruction after reload, and which can therefore give the carrier's constant load the true data predecessor H-s15-3 says it needs without adding a byte to the arm.",
+   "mechanism": "H-s15-3 kills the carrier route only for a load with NO predecessor. The solver's one surviving vector family is `add_dep 80 <- {67,72,77} (true/data) + cost >= 2`. Every zero-byte successor tried so far was removed before sched1 (H-s15-2), but no session has looked at the predecessor side: address arithmetic, a %lo relocation form, or any other value GCC materialises late would be present as a chain at sched1 and folded afterwards.",
+   "next_probe": "Spell the arm's blue constant as a value derived from the arm's own base register or from a late-materialised address expression (e.g. via arg1 arithmetic that folds into the store offset after reload) and measure each with `sandbox func_80072CD4 --disable all` against the 2/79 candidate.c control; read tmp/grind/func_80072CD4/dumps/text1b.combine and .sched (via `pwsh tools/grinder/dump.ps1 func_80072CD4`) to confirm whether the chain survives to sched1 before believing any score."
   },
   {
-   "hypothesis": "Per-arm stores of DIFFERENT values at the same offset (@0xE = 0x32 in one arm, @0xE = 0x46 in the other) are outside the standing dup4_0xc_into_arms ban, so candidate.c is submittable once its residual closes.",
-   "mechanism": "banned_constructs entry 5 and judge_constraints entry 1 describe IDENTICAL statements written into both arms whose second copy is cross-jump-dead. Here the two statements differ in value, neither is a clone of the other, and one of the two is literally an instruction the target ships; the store is per-arm DATA, not a common-tail statement respelled. But the ban has been read broadly before and this reading has never been ruled on.",
-   "next_probe": "A ruling-request naming rejected/s14f_naturalarmE_clean_4_79.c and memory/grind/func_80072CD4/candidate.c, asking whether a per-arm store of a per-arm value at a shared offset is reached by the dup4_0xc_into_arms ban - filed before any session invests further in this chassis."
+   "hypothesis": "The standing dup4_0xc_into_arms ban does not reach a per-arm store of a PER-ARM value at a shared offset (@0xE = 0x32 in one arm, @0xE = 0x46 in the other), which is what candidate.c already does at 2/79.",
+   "mechanism": "banned_constructs entry 5 and judge_constraints entry 1 describe IDENTICAL statements written into both arms whose second copy is byte-neutral because cross_jump kills it. In candidate.c the two statements differ in value, neither is a clone of the other, and one of the two is literally an instruction the target ships -- the store is per-arm DATA, not a common-tail statement respelled. The ban has been read broadly before and this reading has never been ruled on.",
+   "next_probe": "File a ruling-request naming memory/grind/func_80072CD4/candidate.c and rejected/s14f_naturalarmE_clean_4_79.c and asking whether a per-arm store of a per-arm value at a shared offset is reached by the dup4_0xc_into_arms ban -- before any further session invests in this chassis, since the ledger can no longer close the question by measurement."
   }
  ],
  "judge_constraints": [
@@ -163,6 +169,30 @@
    "measured_on": "current chassis 2026-09-04, cross-block chassis, 78/79 build_insns; merge-head do-while(0) present in two of the four bodies and absent in the other two",
    "predicate_cite": "",
    "result": "(a) 8/78 both ways - borrowing red makes it dead across the join, so 0xFC is re-materialised inside the join instead of "
+  },
+  {
+   "session": 15,
+   "statement": "Giving the carrier's arm-tail constant load an in-block successor that costs no target bytes -- a copy into a second named intermediate that the join reads, a three-deep copy chain, a self-assign of t",
+   "kill_scope": "instance",
+   "measured_on": "current chassis 2026-09-04, carrier (cross-block) chassis, 78 build_insns; merge-head single-level FAKE-annotated do-while(0) present in four of the six bodies and absent in the other two",
+   "predicate_cite": "",
+   "result": "Every one is byte-identical to the plain single-carrier body: 13/78 device-free, 10/78 with the merge-head do-while(0). "
+  },
+  {
+   "session": 15,
+   "statement": "A carrier local whose per-arm assignment compiles to a successor-less constant load is emitted at the arm block's HEAD by sched1 in every arm block that contains two or more stores, for every source p",
+   "kill_scope": "class",
+   "measured_on": "current chassis 2026-09-04, carrier chassis, sched_solver pass 1 and pass 2, all atom classes, depth 2; six C bodies with and without the merge-head do-while(0)",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2706",
+   "result": "With the spellable-only atom set (luid,luid_move -- i.e. statement-order changes) the arm block returns 'NO perturbation"
+  },
+  {
+   "session": 15,
+   "statement": "Three axes re-measured on the current chassis: inverting the inner branch sense on the natural-arm-E chassis, placing the common-tail-breaking store permutation on arm 1 rather than arm 2, and spellin",
+   "kill_scope": "instance",
+   "measured_on": "current chassis 2026-09-04, natural-arm-E and carrier chassis, 77-79 build_insns; merge-head do-while(0) present in all three bodies",
+   "predicate_cite": "",
+   "result": "9/79, 11/79 and 10/77 respectively, against the 2/79 control. The inversion costs both arms' layout; the arm-1 permutati"
   }
  ]
 }

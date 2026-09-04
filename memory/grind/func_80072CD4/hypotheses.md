@@ -1942,3 +1942,191 @@ above.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: current chassis 2026-09-04, cross-block chassis, 78/79 build_insns; merge-head do-while(0) present in two of the four bodies and absent in the other two
+
+## [s15] 2026-09-04 — synthesis — MERGED ATTACK: the residual splits into two halves, both are
+## individually reachable but on mutually exclusive chassis, and the pivot between them (sched1's
+## hoist) is now closed by the compiler's own predicate AND by an independent scheduler-solver verdict
+
+**Chassis control (re-measured, first thing).** memory/grind/func_80072CD4/candidate.c applied to
+src/text1b.c: `sandbox func_80072CD4 --disable all` = **2**, build_insns 79 == target_insns 79,
+rules_dropped 0 (tmp/grind/func_80072CD4/s15/sandbox_candidate_restored.txt). The brief reported the
+HEAD floor as "measurement unavailable" and the ledger floor as 2; the ledger number reproduces
+exactly. Nothing in the bank was found chassis-stale.
+
+**KILL RE-AUDIT.** This ledger keeps kills in hypotheses.md; state.json carries no kills[] array. The
+two closest-to-target banked instances are candidate.c (2/79) and
+rejected/s14f_naturalarmE_clean_4_79.c (4/79, device-free). candidate.c was re-measured above. The
+device-free 4/79 body is candidate.c minus its single do-while(0) — i.e. exactly the fake_ablate.py
+ablation of the only FAKE construct present — and its number is re-derived by every s15 probe that
+carries no wrap (each wrap-free sibling below reproduces its banked partner instruction for
+instruction). Both s14 instance kills (arg0-as-carrier; red-reuse / arm-store permutation) name the
+same cross-block chassis that is still current, and the permutation family was re-run this session in
+a new placement (arm 1 rather than arm 2, 11/79) and behaved exactly as banked.
+
+### H-s15-1 (CONFIRMED). The 2-instruction residual is not one defect but two, and they live on
+### mutually exclusive chassis: the arms are byte-exact only when the join order is wrong, and the
+### join order is target-exact only when the arms are wrong.
+**Statement.** On the natural-arm-E chassis (candidate.c, 2/79) the build is byte-identical to target
+through the end of BOTH arms and the whole residual is the join block's store ORDER. On the carrier
+chassis with arm 2's store order permuted
+(rejected/s15_carr_arm2perm_joinorder_correct_12_79.c, 12/79) the JOIN block is emitted in the
+target's own order — `sb ?,4 / sb ?,0xC / sb ?,0xE` — and the whole residual is inside the arms. No
+previously banked body had ever produced the target's join order at 79 instructions.
+**Mechanism.** The two chassis differ in exactly one thing: whether the vertex-1 blue is stored at
+`@0xE` INSIDE the arms (so the constant load has an in-block successor, no sched1 hoist, perfect arm
+bytes — and jump2's cross_jump then lifts the arms' common `sb v0,0xE` to the join HEAD, ahead of
+`@4`/`@0xC`), or is carried in a local to the join (so the join keeps all three of its stores in
+source order, but the carrier's constant load is successor-less, sched1 hoists it to the arm head, and
+the hoist puts a third value simultaneously live across the arm — red, blue, arm scratch — which
+pushes red to `$a0` and blue to `$v1` where the target uses `$v1` and `$v0`).
+**Probe.** Both bodies applied to src/text1b.c and scored with `sandbox func_80072CD4 --disable all`;
+disassemblies at tmp/grind/func_80072CD4/s15/cand.dis and tmp/grind/func_80072CD4/s14f/s15N2.dis.
+**Result.** CONFIRMED. candidate.c join = `sb v0,0xE / sb v1,4 / sb v1,0xC`. N2 join =
+`sb a0,4 / sb a0,0xC / sb v1,0xE` — order right, registers wrong. The function therefore turns on ONE
+question: can sched1 be stopped from hoisting the carrier's constant load out of the arm, in ordinary C?
+**Verdict.** CONFIRMED.
+
+### H-s15-2 (KILLED, instance). Zero-byte in-block successors for the arm's trailing constant load.
+**Statement.** Giving the carrier's constant load an in-block successor that costs no target bytes — a
+copy into a second named intermediate that the join then reads, a three-deep copy chain, a self-assign
+of the carrier, or a dead store of the carrier into the provably-dead parameter `arg0` — defeats
+sched1's hoist the way the (banned) multi-write carrier's REG_DEP_OUTPUT chain did.
+**Mechanism.** H-s14f-1 established that the hoist happens because the trailing load has no in-block
+successor, so it is ready from the first bottom-up round and loses schedule_select's equal-priority
+potential_hazard tiebreak to every store in the block. Any real successor lifts it out of that
+competition entirely. A register-to-register copy IS a real insn at sched1 and can still be coalesced
+away at reload, so on paper it is a byte-free successor.
+**Probe.** Six bodies, each applied to src/text1b.c and scored with `sandbox --disable all`:
+
+| body | score / build_insns |
+|---|---|
+| carrier + `spare = blue;`, join stores `spare`, no wrap (rejected/s15_carr_chain2_nowrap_13_78.c) | 13 / 78 |
+| same + merge-head wrap (rejected/s15_carr_chain2_spare_10_78.c) | 10 / 78 |
+| carrier + three-deep chain `blue -> mid -> spare` + wrap (rejected/s15_carr_chain3_10_78.c) | 10 / 78 |
+| carrier + `blue = blue;` self-assign + wrap (rejected/s15_carr_selfassign_10_78.c) | 10 / 78 |
+| carrier + `arg0 = blue;` dead store to the dead parameter + wrap (rejected/s15_carr_deadparam_arg0_10_78.c) | 10 / 78 |
+| carrier + `arg0 = blue;`, no wrap | 13 / 78 |
+
+**Result.** Every one is byte-identical to the plain single-carrier body (13/78 device-free, 10/78
+with the merge-head wrap). Not one moved the score by a single instruction. GCC 2.7.2 folds or deletes
+all of them — constant propagation collapses the copy chains, flow.c deletes the self-assign and the
+dead parameter store — long before sched1 runs, so the successor the lever depends on does not exist
+at scheduling time. The zero-byte-successor route is closed by measurement, not by argument.
+  kill_scope: instance
+  measured_on: current chassis 2026-09-04, carrier (cross-block) chassis, 78 build_insns; merge-head
+    single-level do-while(0) present in four of the six bodies and absent in the other two
+**Verdict.** KILLED.
+
+### H-s15-3 (KILLED, class). A carrier local whose per-arm assignment compiles to a successor-less
+### constant load cannot be kept at the arm bottom by sched1 in an arm block that contains two or
+### more stores.
+**Statement.** In an arm block made of constant-load/byte-store pairs plus one trailing
+successor-less constant load, sched1 emits that trailing load at the block HEAD, for every placement
+of the assignment in the C source and for every spelling of the carrier variable.
+**Mechanism (read out of the compiler, not inferred).** `schedule_select`
+(tools/gcc-2.7.2/sched.c:2706) walks the ready list in equal-INSN_PRIORITY groups and promotes "the
+first one with the largest potential hazard". `potential_hazard` is
+`(minb * 0x40 + maxb) * ((unit_n_insns[unit] - 1) * 0x1000 + unit)`: a constant load occupies no
+function unit at all (`insn_unit == -1`) and scores 0, while a `sb` occupies the memory unit and
+scores non-zero as soon as the block holds TWO OR MORE memory-unit insns (with exactly one the
+`unit_n_insns - 1` factor is zero and the whole term vanishes). The only escape from that tie is a
+higher INSN_PRIORITY, and `priority()` (tools/gcc-2.7.2/sched.c:1434-1519) computes
+`max over preds of (priority(pred) + insn_cost(pred, link, insn) - 1)` with a floor of 1 — so an insn
+with no predecessors is pinned at priority 1, and MIPS's ADJUST_COST zeroes anti and output
+dependences, leaving only a TRUE DATA dependence carrying latency >= 2 (a load, ready 2; an imul,
+ready 12) able to lift it. A constant load has no predecessor and cannot acquire one without
+materialising the producing instruction, which the target's arms do not contain.
+**Probe.** (a) The compiler source cited above. (b) `tools/sched_solver/perturb.py`, run against this
+function for the first time, on the carrier chassis, both passes, ALL atom classes, depth 2
+(log: tmp/grind/func_80072CD4/s15/perturb_allatoms_depth2.txt; model from
+`tools/sched_solver/extract.py text1b`, target pinned with `--target-object build/src/text1b.o`,
+ours `--ours-object tmp/sandbox/func_80072CD4/text1b.o`). For the arm block (block 3, 7 insns) the
+ONLY vectors that reach the target order are
+`add_dep 80 <- {67,72,77} (true/data) + cost {2,3,12}` — give the carrier's load a true data
+dependence on one of the arm's own insns AND raise that insn's ready cost to a load's or a multiply's.
+With the spellable-only atom set (`--atoms luid,luid_move`, i.e. statement-order changes) the same
+block returns "NO perturbation reaches the goal at this depth".
+**Result.** KILLED as a class. The solver's answer and the compiler's own predicate agree exactly: the
+target's arm order is reachable only by changing the DEPENDENCE GRAPH with a latency-bearing producer,
+never by re-ordering or re-spelling statements, and no such producer exists in the target's arm bytes.
+  kill_scope: class
+  predicate_cite: tools/gcc-2.7.2/sched.c:2706
+  measured_on: current chassis 2026-09-04, carrier chassis, sched_solver pass 1 and pass 2, all atom
+    classes, depth 2; six C bodies with and without the merge-head do-while(0)
+**Verdict.** KILLED.
+
+### H-s15-4 (KILLED, instance). Three axes whose banked numbers predate the current chassis, or that
+### had never been placed this way, re-measured.
+**Probe / result.** (a) Inner-branch-sense inversion on the natural-arm-E chassis (the s6 axis was
+measured at 11/79 on a chassis since retired): rejected/s15_naturalE_innerinvert_9_79.c = 9/79.
+(b) The arm permutation that breaks the post-hoist common tail, applied to ARM 1 instead of arm 2:
+rejected/s15_carr_arm1perm_11_79.c = 11/79, against the banked 14/79 (no wrap) and 12/79 (wrap) for
+the arm-2 placement. (c) The join's reds spelled as the literal 0xFC on the carrier chassis, to remove
+`red`'s cross-arm live range so the hoisted carrier could take `$v0`:
+rejected/s15_carr_litreds_10_77.c = 10/77 — cse merges the literal with the trailing `@0x14 = 0xFC`
+store's constant and the build loses two instructions.
+  kill_scope: instance
+  measured_on: current chassis 2026-09-04, natural-arm-E and carrier chassis, 77-79 build_insns;
+    merge-head do-while(0) present in all three bodies
+**Verdict.** KILLED.
+
+### What this session establishes for the record (the merged picture)
+1. The floor is unchanged at **2** and candidate.c is unchanged; no probe this session beat it.
+2. The residual is two independent halves, each individually solved, on chassis that exclude each
+   other (H-s15-1). The pivot between them is sched1's hoist of the carrier's constant load.
+3. That hoist is now a CLASS kill with the compiler's own predicate and an independent solver verdict
+   behind it (H-s15-3), and the whole family of zero-byte successors that could have defeated it is an
+   INSTANCE kill with six measurements behind it (H-s15-2).
+4. Consequently the source shapes that can produce the target's join order are exactly the ones the
+   s14f record already named — the multi-write arm carrier (banned by judge_constraints entry 15),
+   the per-arm `@4`/`@0xC` duplication (banned as dup4_0xc_into_arms), and a per-arm scheduling-region
+   device (banned entries 10/11). This session looked hard for a fourth and did not find one.
+
+### Frontier after s15
+1. The arm block at solver depth 3, on the natural-arm-E chassis, which has never been extracted:
+   put rejected/s14f_naturalarmE_clean_4_79.c in src/text1b.c, re-run
+   `python3 tools/sched_solver/extract.py text1b`, then
+   `perturb.py ... --pass 1 --depth 3 --target-object build/src/text1b.o
+   --ours-object tmp/sandbox/func_80072CD4/text1b.o`. Depth 2 on the carrier chassis returned exactly
+   one family of vectors (a latency-bearing true data dependence into the carrier's load); depth 3 is
+   the only remaining way to learn whether a two-step input change exists that depth 2 cannot see.
+2. The one untested way to give the carrier's constant load a real predecessor without new bytes is a
+   value whose RTL is a multi-insn chain at sched1 and a single insn after reload — address
+   arithmetic, a `%lo` relocation form, or anything else GCC materialises late. Nothing in the ledger
+   has looked for such a construct; the arm's own `$s1` base register is the obvious thing to test.
+3. Unchanged from s14f, and now the only route the ledger cannot close by measurement: whether a
+   per-arm store of a PER-ARM value at a shared offset (`@0xE = 0x32` in one arm, `@0xE = 0x46` in the
+   other) is reached by the dup4_0xc_into_arms ban at all. That is what candidate.c already does, and
+   candidate.c is 2 instructions away, so it is worth settling before another session invests in this
+   chassis.
+
+## [s15] The 2-instruction residual is two independent halves living on mutually exclusive chassis: on the natural-arm-E chassis (candidate.c, 2/79) both arms are byte-exact and only the join's store ORDER is wrong, while on the carrier chassis with arm 2's stores permuted (12/79) the join block is emitted in the target's own order and the whole residual is inside the arms.
+- mechanism: The two chassis differ in exactly one thing: whether the vertex-1 blue is stored at @0xE inside the arms (the constant load then has an in-block successor, sched1 does not hoist it, the arm bytes are perfect, and jump2's cross_jump lifts the arms' common `sb v0,0xE` to the join HEAD, ahead of @4/@0xC), or is carried in a local to the join (the join keeps all three stores in source order, but the carrier's constant load is successor-less, sched1 hoists it to the arm head, and the hoist makes three values live simultaneously across the arm -- red, blue, the arm scratch -- so red is allocated $a0 and blue $v1 where the target uses $v1 and $v0).
+- probe: Both bodies applied to src/text1b.c and scored with `sandbox func_80072CD4 --disable all`; disassemblies at tmp/grind/func_80072CD4/s15/cand.dis and tmp/grind/func_80072CD4/s14f/s15N2.dis, banked as memory/grind/func_80072CD4/rejected/s15_carr_arm2perm_joinorder_correct_12_79.c.
+- result: CONFIRMED. candidate.c join = `sb v0,0xE / sb v1,4 / sb v1,0xC`; the permuted-carrier body's join = `sb a0,4 / sb a0,0xC / sb v1,0xE` (target order, wrong registers) at 79 instructions -- the first body in fifteen sessions to produce the target's join order at all. The whole function now turns on one question: can sched1 be stopped from hoisting the carrier's constant load out of the arm, in ordinary C?
+- verdict: CONFIRMED
+
+## [s15] Giving the carrier's arm-tail constant load an in-block successor that costs no target bytes -- a copy into a second named intermediate that the join reads, a three-deep copy chain, a self-assign of the carrier, or a dead store of the carrier into the provably-dead parameter arg0 -- moves the score on the carrier chassis.
+- mechanism: H-s14f-1 established that the hoist happens because the trailing load has no in-block successor, so it is ready from the first bottom-up round and loses schedule_select's equal-priority potential_hazard tiebreak to every store. A register-to-register copy is a real insn at sched1 and can still be coalesced away at reload, so on paper it is a byte-free successor that lifts the load out of the store priority group.
+- probe: Six bodies applied to src/text1b.c and scored with `sandbox func_80072CD4 --disable all`: carrier + `spare = blue;` with the join storing spare (no wrap, and with the merge-head wrap); carrier + a three-deep chain blue -> mid -> spare; carrier + `blue = blue;`; carrier + `arg0 = blue;` (with and without the wrap). Banked as memory/grind/func_80072CD4/rejected/s15_carr_chain2_nowrap_13_78.c, s15_carr_chain2_spare_10_78.c, s15_carr_chain3_10_78.c, s15_carr_selfassign_10_78.c, s15_carr_deadparam_arg0_10_78.c.
+- result: Every one is byte-identical to the plain single-carrier body: 13/78 device-free, 10/78 with the merge-head do-while(0). Not one moved the score by a single instruction. Constant propagation collapses the copy chains and flow.c deletes the self-assign and the dead parameter store, all long before sched1 runs, so the successor the lever depends on never exists at scheduling time.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current chassis 2026-09-04, carrier (cross-block) chassis, 78 build_insns; merge-head single-level FAKE-annotated do-while(0) present in four of the six bodies and absent in the other two
+
+## [s15] A carrier local whose per-arm assignment compiles to a successor-less constant load is emitted at the arm block's HEAD by sched1 in every arm block that contains two or more stores, for every source placement of the assignment and every spelling of the carrier.
+- mechanism: schedule_select (tools/gcc-2.7.2/sched.c:2706) walks the ready list in equal-INSN_PRIORITY groups and promotes the first insn with the largest potential_hazard = (minb * 0x40 + maxb) * ((unit_n_insns[unit] - 1) * 0x1000 + unit). A constant load has insn_unit == -1 and scores 0; a `sb` occupies the memory unit and scores non-zero as soon as the block holds two or more memory-unit insns (with exactly one the unit_n_insns - 1 factor is zero and the term vanishes). The only escape from that tie is a higher INSN_PRIORITY, and priority() (tools/gcc-2.7.2/sched.c:1434-1519) computes max over preds of (priority(pred) + insn_cost(pred, link, insn) - 1) with a floor of 1, so a predecessor-less insn is pinned at priority 1; MIPS's ADJUST_COST zeroes anti and output dependences, leaving only a true data dependence with latency >= 2 (load = 2, imul = 12) able to raise it. A constant load has no predecessor and cannot acquire one without materialising the producing instruction, which the target's arms do not contain.
+- probe: (a) The compiler source cited above, read directly. (b) tools/sched_solver run against this function for the first time: `extract.py text1b` on the carrier chassis (parity=True, 490 funcs, 1760 blocks), target pinned with --target-object build/src/text1b.o (the s14c/s14d oracle build, verified by objdump to carry the target's join order, tmp/grind/func_80072CD4/s15/tgtobj.dis) against --ours-object tmp/sandbox/func_80072CD4/text1b.o; perturb.py both passes, depth 2, spellable-only atoms and then all atom classes. Log: tmp/grind/func_80072CD4/s15/perturb_allatoms_depth2.txt.
+- result: With the spellable-only atom set (luid,luid_move -- i.e. statement-order changes) the arm block returns 'NO perturbation reaches the goal at this depth' in both passes. With all atom classes the ONLY vectors are `add_dep 80 <- {67,72,77} (true/data) + cost {2,3,12}` (7 vectors in pass 1, 9 in pass 2, one family): give the carrier's constant load a true data dependence on an arm insn whose ready cost is a load's or a multiply's. The solver's answer and the compiler's own predicate agree exactly -- the target's arm order is reachable only by changing the dependence graph with a latency-bearing producer, never by re-ordering or re-spelling statements.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: current chassis 2026-09-04, carrier chassis, sched_solver pass 1 and pass 2, all atom classes, depth 2; six C bodies with and without the merge-head do-while(0)
+- predicate_cite: tools/gcc-2.7.2/sched.c:2706
+
+## [s15] Three axes re-measured on the current chassis: inverting the inner branch sense on the natural-arm-E chassis, placing the common-tail-breaking store permutation on arm 1 rather than arm 2, and spelling the join's reds as the literal 0xFC on the carrier chassis to free red's register.
+- mechanism: (a) The s6 inversion number (11/79) was taken on a chassis since retired and had never been measured on the chassis whose arms are otherwise byte-exact. (b) The arm-1 placement of the permutation had never been measured at all. (c) Removing red's cross-arm live range would leave only two values live across the hoisted arm, which could let the carrier take $v0.
+- probe: rejected/s15_naturalE_innerinvert_9_79.c, rejected/s15_carr_arm1perm_11_79.c and rejected/s15_carr_litreds_10_77.c, each applied to src/text1b.c and scored with `sandbox func_80072CD4 --disable all`.
+- result: 9/79, 11/79 and 10/77 respectively, against the 2/79 control. The inversion costs both arms' layout; the arm-1 permutation behaves like the banked arm-2 placement (14/79 and 12/79); the literal reds let cse merge the constant with the trailing @0x14 = 0xFC store, so the build loses two instructions.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: current chassis 2026-09-04, natural-arm-E and carrier chassis, 77-79 build_insns; merge-head do-while(0) present in all three bodies
