@@ -4617,3 +4617,47 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: the s50 chassis under the CD_alarm struct model with the s9 do{}while(0) FAKE present and the pp alias absent
+
+## [s59] The s9 do{}while(0) FAKE on the G2 struct/no-pp chassis is load-bearing rather than masking the block-3 order lever (mandated kill re-audit)
+- mechanism: flow.c loop_depth ref-weighting feeding global.c allocno_compare; if the wrapper were merely occupying the pseudo the lever needs, ablating it would leave the floor flat or improve it
+- probe: applied progress/s58-alarm-struct-no-pp-fake-link-identical-2.c and an ablated copy (do/while lines stripped) via tmp/grind/CD_datasync/s59/apply.py; sandbox CD_datasync --disable all on each
+- result: G2 keep-all = sandbox 7 (2 real, +5 named-symbol reloc-addend false points); G2 do{}while(0) ablated = sandbox 36 / build_insns 75 = 31 real. The wrapper is worth 29 points here (24 on the scalar chassis, s50). CONFIRMED load-bearing; every kill banked with it present stands.
+- verdict: CONFIRMED
+
+## [s59] The s57 luid-insertion lever (adding a statement between the arg5 address-addu and the arg5 value-lw) can be spelled WITHOUT introducing a new pseudo, by staging arg5's address through an existing local, and doing so preserves block 3's pseudo multiset
+- mechanism: s57 proved the residual is 9 < luid(arg4-sll) < 10 and that only an ADDED luid reaches it; s57's spelling added a new pointer local p5, and its kill was attributed to the new pseudo changing block 3's local-alloc fixed point. Reusing an existing local as the address carrier adds the luid without adding a quantity, so if the attribution were right the seat-exact fixed point should survive.
+- probe: two spellings on the G2 chassis - P1 (arg5 reused as its own address carrier: `arg5 = (char *)&tbl_125c[i5]; t0 = idx_1494->sync; t0 *= 4; arg5 = *(char **)arg5;`) and P2 (t0 carries the address, i5 reused for arg4's index). tmp/grind/CD_datasync/s59/forms/, measured with s59/run.ps1; P1 disassembled to s59/dis_P1.txt and diffed against s59/dis_G2.txt.
+- result: P1 = sandbox 17 = 12 real; P2 = sandbox 15 = 10 real. Both WORSE than s57's new-pseudo p5 form (7 real) and than the floor (2). The disassembly shows the order lever DID fire - P1 emits `addu $v0,$s0,$v0 ; sll $a0,$a0,2 ; lw $v0,0($v0)`, the target's relative order - but the insertion simultaneously hoists the D_800A11D5 lbu/lui pair ahead of the arg2 lui, flips the addu operand order, and rotates $v1/$v0 across the sw/lw pair. The new pseudo was never the cause; ANY added luid in that window re-prices five block-3 quantities at once. KILLED as an instance on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s58 G2 struct-model / no-pp chassis at 2 real (sandbox 7) with the s9 do{}while(0) FAKE present and the void **pp pointer-alias FAKE absent
+
+## [s59] Splitting arg2's member load (D_800F19B8.func) into an integer address then a load - the chain the Sony Alarm struct model newly made splittable - inserts a schedulable luid into block 3
+- mechanism: s58's frontier item 2 noted arg2's load is a member MEM under the struct model `(mem (const (plus (symbol_ref D_800F19B8) 8)))` and may accept the integer-address split that the bare-symbol load (F3, byte-inert) did not
+- probe: P3 on G2 (`s32 fp; fp = (s32)&D_800F19B8.func; printf(..., *(char **)fp, ...)`) and P4 = P1+P3 combined; tmp/grind/CD_datasync/s59/forms/, measured with s59/run.ps1
+- result: P3 = sandbox 7 = 2 real, object-identical to G2 - completely byte-inert. P4 = sandbox 17 = 12 real, i.e. exactly P1's score with no interaction term. arg2's chain contributes no schedulable luid in block 3 under either object model, so frontier item 2's arg2 sub-probe is closed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s58 G2 struct-model / no-pp chassis at 2 real (sandbox 7) with the s9 do{}while(0) FAKE present and the void **pp pointer-alias FAKE absent
+
+## [s59] The s9 do{}while(0) FAKE on the G2 struct/no-pp chassis is load-bearing for the 2/91 floor rather than masking the block-3 order lever.
+- mechanism: flow.c loop_depth ref-weighting feeding global.c allocno_compare; if the wrapper merely occupied the pseudo the lever needs, ablating it would leave the floor flat or improve it.
+- probe: Applied progress/s58-alarm-struct-no-pp-fake-link-identical-2.c and a do/while-stripped copy via tmp/grind/CD_datasync/s59/apply.py; sandbox CD_datasync --disable all on each.
+- result: Keep-all sandbox 7 (2 real, +5 named-symbol reloc-addend false points); ablated sandbox 36 / build_insns 75 = 31 real. The wrapper is worth 29 points on this chassis (24 on the scalar chassis in s50). Mandated kill re-audit therefore passes: every kill banked with the wrapper present stands.
+- verdict: CONFIRMED
+
+## [s59] Staging arg5's address through an EXISTING local inserts s57's required luid between the arg5 address-addu and the arg5 value-lw while leaving block 3's pseudo multiset unchanged, so it reaches the target's block-3 order at a lower cost than s57's new-pseudo p5 form.
+- mechanism: s57 proved the residual is the inequality 9 < luid(arg4-sll) < 10 on sched.c pass-1 numbering, reachable only by ADDING a luid in that window, and attributed the p5 form's 7-point cost to the NEW pointer local changing block 3's local-alloc fixed point. Reusing an existing local adds the luid without adding a quantity, so under that attribution the seat-exact fixed point should survive.
+- probe: Two spellings on the G2 chassis: P1 (arg5 reused as its own address carrier: arg5 = (char *)&tbl_125c[i5]; t0 = idx_1494->sync; t0 *= 4; arg5 = *(char **)arg5;) and P2 (t0 carries the address, i5 reused for arg4's index). tmp/grind/CD_datasync/s59/forms/, measured via s59/run.ps1; P1 disassembled to s59/dis_P1.txt and diffed against s59/dis_G2.txt.
+- result: P1 sandbox 17 = 12 real; P2 sandbox 15 = 10 real - both worse than s57's p5 form (7 real) and than the floor (2). The disassembly shows the order lever DID fire (P1 emits addu $v0,$s0,$v0 ; sll $a0,$a0,2 ; lw $v0,0($v0), the target's relative order) but the insertion simultaneously hoists the D_800A11D5 lbu/lui pair ahead of the arg2 lui, flips the addu's operand order and rotates $v1/$v0 across the sw/lw pair. s57's attribution to the new pseudo is disproved: any added luid in that window re-prices five block-3 quantities at once.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s58 G2 struct-model / no-pp chassis at 2 real (sandbox 7) with the s9 do{}while(0) FAKE present and the void **pp pointer-alias FAKE absent
+
+## [s59] Splitting arg2's member load (D_800F19B8.func) into an integer address then a load - the chain the Sony Alarm struct model newly made splittable - inserts a schedulable luid into block 3 (frontier item 2's arg2 sub-probe).
+- mechanism: s58 noted arg2's load becomes a member MEM under the struct model, (mem (const (plus (symbol_ref D_800F19B8) 8))), and might accept the integer-address split that the bare-symbol load (F3) did not.
+- probe: P3 on G2 (s32 fp; fp = (s32)&D_800F19B8.func; printf(..., *(char **)fp, ...)) and P4 = P1+P3 combined; tmp/grind/CD_datasync/s59/forms/, measured via s59/run.ps1.
+- result: P3 sandbox 7 = 2 real, object-identical to G2 - completely byte-inert. P4 sandbox 17 = 12 real, exactly P1's score with no interaction term. arg2's chain contributes no schedulable luid in block 3 under either object model.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s58 G2 struct-model / no-pp chassis at 2 real (sandbox 7) with the s9 do{}while(0) FAKE present and the void **pp pointer-alias FAKE absent

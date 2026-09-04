@@ -1,3 +1,41 @@
+/* s59 UPDATE (2026-09-04, escalation/disposition).  BODY UNCHANGED - chassis
+ * re-verified LIVE at 2 / 91 (score 2, build_insns 91, target_insns 91,
+ * rules_dropped 0).  s59 was the driver-declared exhaustion session and filed
+ * docs/grind/decisions.md '2026-09-04 - CD_datasync - RESOLVED BY STANDING
+ * RULING (2026-07-27): FORECLOSED'.  Three things it added that the next
+ * session (or an unpark) should start from:
+ *
+ * 1. THE RESIDUAL IS ONE INSTRUCTION, READ OFF THE BYTES.  Normalised objdump
+ *    vs asm/funcs/CD_datasync.s:45-62: target emits
+ *    `sll $v0,$v0,2 ; addu $v0,$v0,$s0 ; sll $a0,$a0,2 ; lw $v1,0($v0)`
+ *    (80081C78-84); we emit the same four with `sll $a0,$a0,2` FIRST.  Every
+ *    other block-3 insn matches including seats.  The 59-session residual is
+ *    "arg4's index sll is scheduled two slots too early", nothing else.
+ *
+ * 2. THE ORDER LEVER FIRES WITHOUT A NEW PSEUDO - AND STILL COSTS MORE.
+ *    s57 attributed its p5 kill (7 real) to the NEW pointer local changing
+ *    block 3's local-alloc fixed point.  s59 disproved that attribution:
+ *    staging arg5's address through an EXISTING local, which leaves the
+ *    pseudo multiset untouched, reaches the same order and scores WORSE -
+ *    P1 (arg5 as its own address carrier) 12 real, P2 (t0 carries the
+ *    address, i5 reused for arg4's index) 10 real.  P1's disassembly
+ *    (tmp/grind/CD_datasync/s59/dis_P1.txt) shows why: the inserted luid
+ *    hoists the D_800A11D5 lbu/lui pair ahead of the arg2 lui, flips the
+ *    addu's operand order and rotates $v1/$v0 across the sw/lw pair.  ANY
+ *    added luid in that window re-prices five quantities at once.
+ *
+ * 3. MANDATED KILL RE-AUDIT PASSED ON THE MINIMAL-FAKE CHASSIS.  On G2
+ *    (progress/s58-alarm-struct-no-pp-fake-link-identical-2.c, one FAKE):
+ *    keep-all 2 real, do{}while(0) ablated 31 real (sandbox 36 / bi 75).
+ *    The wrapper is worth 29 points, load-bearing, not masking the lever;
+ *    every kill measured with it present stands.  Also killed cheaply:
+ *    arg2's member-address split (frontier item 2's arg2 sub-probe) is
+ *    byte-inert, and combining it with P1 adds no interaction term.
+ *
+ * scan_hand_coded --single CD_datasync = tier LOW 1/8 (S4 only), so there is
+ * no canonical-asm path; and the SOTN PSX construct index has no entry for a
+ * self-staged-address carrier, so there is no precedent gate either.
+ */
 /* s58 UPDATE (2026-09-04, object-model).  BODY UNCHANGED - still the floor at
  * 2 / 91 (chassis re-verified live at score 2 / build 91 / target 91 /
  * rules_dropped 0).  s58 was the mandated OBJECT-MODEL audit.  Verdict: the

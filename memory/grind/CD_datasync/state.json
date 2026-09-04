@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 58,
- "current_modality": "object-model",
+ "session_count": 59,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -351,23 +351,29 @@
    "floor": 2,
    "modality": "object-model",
    "headline": "Object-model audit: every global re-declared in Sony's shape (char[] strings, char*[] name tables, CD_intr struct, CD_alarm struct) is link-identical to the 2/91 floor body; the Alarm struct makes the"
+  },
+  {
+   "session": 59,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Disposition: floor re-verified live at 2/91, both endgame gates FAIL (scan_hand_coded LOW 1/8; no PSX SOTN precedent and no closing construct in hand) - foreclosure record filed at docs/grind/decision"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s57 scheduling-side frontier (delaying arg4's address death in SCHED1's numbering so local-alloc prices arg5's quantity first) is attackable on the G2 struct/no-pp chassis, which has one pseudo fewer in block 3 and one FAKE fewer to defend, with the identical floor bytes",
-   "mechanism": "local-alloc prices by floor_log2(refs)*refs*size/(death-birth) on SCHED1's output; the pp pseudo's removal changes nothing in the emitted bytes but removes a block-3 quantity, so any luid-insertion or death-extension probe should be run on G2 where the ledger's FAKE count is minimal",
-   "next_probe": "Apply progress/s58-alarm-struct-no-pp-fake-link-identical-2.c via tmp/grind/CD_datasync/s58/apply.py, dump with BB2_SCHED_DEBUG + local_extract.py, confirm the block-3 quantity table (expect one quantity fewer), then run s57's frontier probe 1 (read the lw $a3 / sw 16($sp) SCHED1 pick pair and spell a later consumer of arg4's address) on this chassis; subtract 5 from every sandbox score and confirm with the addend-normalised objdump diff (s58/batch2.sh)."
+   "hypothesis": "A construct that inserts a luid between two ADJACENT sched.c pass-1 luids without re-pricing the surrounding block-3 quantities would close CD_datasync, CD_ready and CD_sync together; no member of the frozen family list reaches it today.",
+   "mechanism": "s57's inequality 9 < luid(arg4-sll) < 10 plus s59's measurement that every added-luid spelling tried (new pseudo, existing-local carrier, member-address split) either is byte-inert or re-prices five quantities at once.",
+   "next_probe": "Re-activation trigger only: a class grant or owner ruling covering such a construct, or a toolchain finding that changes rank_for_schedule's INSN_LUID tiebreak for equal-priority candidates."
   },
   {
-   "hypothesis": "The statement-ADDING axis (a new luid between adjacent block-3 luids 90/92, 96/100, 100/104, 110/112, 114/117) can be swept on the struct model, where the arg2 load is a member MEM and may accept a split that the bare-symbol load did not",
-   "mechanism": "perturb.py's luid atoms permute a fixed multiset; a new real statement inserts a luid the search cannot model (s57's p5 split moved a 7-session-flat residual); with pp gone, arg2's own chain is now one MEM that can itself be split into address-then-load (`char **fp = &D_800F19B8.func;` was byte-inert as F3, but an integer-address split as used for arg4 has not been tried on arg2)",
-   "next_probe": "On the G2 chassis, enumerate the adjacent-luid pairs in block 3 and for each spell a real consumed statement between them (arg3's tbl_11dc[D_800A11D5] chain split into index-then-address, arg2's member load split into integer address then load), sweep against both the seat-exact and the order-exact struct-model bases, scoring sandbox-5 with objdump confirmation."
+   "hypothesis": "engine/score.py's failure to resolve named-symbol R_MIPS_LO16/HI16 addends to absolute addresses inflates every struct-model measurement on this function by exactly 5 points, a standing measurement hazard for CD_datasync and its two foreclosed siblings.",
+   "mechanism": "normalized_insns masks section-symbol addends (fixed 2026-08-07) but keeps named-symbol immediates, so D_800F19B8+4/+8 compare unequal to D_800F19BC/D_800F19C0 despite linking to the same addresses; undefined_syms_auto.txt / named_syms.txt give every symbol's absolute address.",
+   "next_probe": "Operator/integration task outside the grind surface: add absolute-address resolution of named HI16/LO16 relocs to engine/score.py, re-run `engine test`, then re-score memory/grind/CD_datasync/progress/s58-alarm-struct-no-pp-fake-link-identical-2.c, which should read 2 rather than 7. This does not lower the true floor."
   },
   {
-   "hypothesis": "engine/score.py's named-symbol reloc handling makes every aggregate-merge probe on splat per-word symbols look like a regression; a resolver that maps sym+addend to the absolute address before comparison would make the driver's honest-floor measurement agree with the linked bytes",
-   "mechanism": "normalized_insns masks section-symbol addends (fixed 2026-08-07) but keeps named-symbol immediates; undefined_syms_auto.txt / named_syms.txt give every symbol's absolute address, so sym+N is resolvable at score time",
-   "next_probe": "Integration/tooling handoff (engine/ is outside the grind surface): the operator adds absolute-address resolution of named R_MIPS_LO16/HI16 relocs to engine/score.py, re-runs `engine test`, and re-scores progress/s58-alarm-struct-no-pp-fake-link-identical-2.c, which should then read 2/91."
+   "hypothesis": "Recovery of the original libcd source spelling of the shared do_timeout window would decide CD_datasync, CD_ready and CD_sync simultaneously.",
+   "mechanism": "All three twins share a byte-shape-identical do_timeout window (CD_ready s36/s39/s46/s53); each has ground the window independently to floor 2 and each residual is a scheduling artefact of the unknown original statement geometry.",
+   "next_probe": "Re-activation trigger only: new PsyQ-era libcd source or a version-correct decomp of CD_datasync's window (psyz / psxsdk skew already surveyed negative in research-psyz-axis-2026-08-19.md)."
   }
  ],
  "judge_constraints": [],
@@ -377,21 +383,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 40,
-   "statement": "Some ordinary-C spelling of arg3 that is neither a plain value local nor plain-inline (index local, explicit pointer arithmetic, or a value local assigned after arg5's) moves arg3's index load later in the window, toward target's slot 8.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 8 forms (w1-w8), whole-function md5; four are byte-identical to the 16-member fixed-point class, best arg3-lbu slot reached is 3",
-   "predicate_cite": ""
-  },
-  {
-   "session": 41,
-   "statement": "The do{}while(0) FAKE in alt_f17_a0map_13.c is an inert carrier occupying a pseudo an argument-block lever wants (mandated kill re-audit, run on the one live family never previously ablated).",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis, alt_f17_a0map_13.c with the do{}while(0) FAKE present and hand-ablated; 2 live sandbox measurements",
-   "predicate_cite": "",
-   "result": "Wrapped 13/91 (build 90); ablated 24/91 (build 90). The wrapper is load-bearing on the fourth family exactly as on the o"
-  },
   {
    "session": 41,
    "statement": "Some cell of the complete {index local} x {arg4 value local} x {arg3 value local} x {arg5 value local} x {assignment order} cross-product holds both halves of the s39 two-pass conjunction (inherited s",
@@ -855,6 +846,22 @@
    "measured_on": "the s50 chassis under the CD_alarm struct model with the s9 do{}while(0) FAKE present and the pp alias absent",
    "predicate_cite": "",
    "result": "11 sandbox = 6 real: the lui/lw $a1 pair is displaced after the D_800A11D5 lbu and arg4 is seated in $a3, the same shape"
+  },
+  {
+   "session": 59,
+   "statement": "Staging arg5's address through an EXISTING local inserts s57's required luid between the arg5 address-addu and the arg5 value-lw while leaving block 3's pseudo multiset unchanged, so it reaches the ta",
+   "kill_scope": "instance",
+   "measured_on": "the s58 G2 struct-model / no-pp chassis at 2 real (sandbox 7) with the s9 do{}while(0) FAKE present and the void **pp pointer-alias FAKE absent",
+   "predicate_cite": "",
+   "result": "P1 sandbox 17 = 12 real; P2 sandbox 15 = 10 real - both worse than s57's p5 form (7 real) and than the floor (2). The di"
+  },
+  {
+   "session": 59,
+   "statement": "Splitting arg2's member load (D_800F19B8.func) into an integer address then a load - the chain the Sony Alarm struct model newly made splittable - inserts a schedulable luid into block 3 (frontier ite",
+   "kill_scope": "instance",
+   "measured_on": "the s58 G2 struct-model / no-pp chassis at 2 real (sandbox 7) with the s9 do{}while(0) FAKE present and the void **pp pointer-alias FAKE absent",
+   "predicate_cite": "",
+   "result": "P3 sandbox 7 = 2 real, object-identical to G2 - completely byte-inert. P4 sandbox 17 = 12 real, exactly P1's score with "
   }
  ],
  "object_model_audited": 58
