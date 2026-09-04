@@ -1,14 +1,28 @@
-# SELF-VET — get_alarm (session 45, 2026-09-04)
+# SELF-VET — get_alarm (session 46, 2026-09-04; supersedes the s45 vet)
 
 Written for the score-0 form even though this session returns `owner-gated`
-(INTEGRATION HANDOFF), so the operator / next session has the vet already done.
-Diff: `memory/grind/get_alarm/s45-score0-full-diff.txt` (= `git diff src/display.c`
-as this session left it).
+(INTEGRATION HANDOFF re-file), so the next session can submit `candidate-ready`
+verbatim the moment the `volatile_extern_allowlist.txt` scope grant exists.
+Diff: `memory/grind/get_alarm/s46-score0-verified-diff.txt` — the exact tree that
+measured `sandbox get_alarm --disable all` = 0 (91/91) AND full-build
+SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa this session. Only the
+`src/display.c` hunks belong in the candidate diff; the
+`volatile_extern_allowlist.txt` hunk is the granted path.
+
+Delta vs the s45 vet: the s46 diff additionally RECONCILES the two duplicate/
+contradictory declaration sites the 14:08 Judge ruling ordered fixed —
+`src/display.c:721` (`extern s32 D_8009BF78;` -> volatile, matching :750) and
+`:733` (`extern s32 (*D_8009BF68)(s32 *, s32);` -> `extern volatile s32
+D_8009BF68[];`, matching :758). Removing a wrong function-pointer spelling of a
+data symbol in favour of the array spelling the use site requires is a
+declaration CORRECTION, not a construct: it adds nothing to the constructs list
+below and is byte-neutral outside get_alarm (proven by the full-build SHA1).
 
 CONSTRUCTS: (1) `extern volatile s32 D_8009BF68[];` decl-level volatile on a splat
-global; (2) `extern volatile u32 *g_gpu_dma_madr;` pointed-to volatile on an MMIO
-register pointer (two identical decls, src/display.c:20 and :756); (3)
-`extern volatile s32 D_8009BF78;` decl-level volatile on a splat global; (4) the
+global (both decl sites, src/display.c:733 and :758); (2) `extern volatile u32
+*g_gpu_dma_madr;` pointed-to volatile on an MMIO register pointer (both decl sites,
+src/display.c:20 and :756); (3) `extern volatile s32 D_8009BF78;` decl-level volatile
+on a splat global (both decl sites, src/display.c:721 and :750); (4) the
 function body itself — plain C, one named local `temp_v0` holding the real
 `SetIntrMask(0)` result that is genuinely re-read later.
 

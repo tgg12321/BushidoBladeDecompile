@@ -1203,3 +1203,98 @@ annotation, its two siblings in the same declaration block already carry that ex
 - [s45] Lever (a) is already Judge-PASSed for this exact symbol and this exact body: docs/grind/decisions.md:22292 (2026-09-04 13:48) — 'Ruling 4 GRANTS `extern volatile s32 D_8009BF68[];` here, with NO IRQ prong required'; the same ruling explicitly cleared the s45 reference-faithful body plus the authorized volatile decl.
 
 - [s45] NOT YET VERIFIED, and the one thing the next step must check: lever (b) edits two declarations shared with the rest of src/display.c. This session did not run verify-oracle (forbidden as an iteration tool); the full-build SHA1 gate is the driver's own step and must confirm no other function in the TU regressed.
+
+## s46 (2026-09-04, synthesis) — the three 14:08 Judge defects CURED; SHA1 == oracle
+
+The s45 handoff was routed to the Judge by the driver and FAILed at 14:08
+(`docs/grind/decisions.md`, `## 2026-09-04 14:08 — get_alarm — ruling: INTEGRATION
+HANDOFF`). The FAIL was explicitly "on the handoff's entry bar only" — bytes accepted as
+real, families accepted as checking out, the 13:48 body PASS (`bc13a6d76f47d945`)
+untouched — and it named exactly three defects. A first s46 run then measured the score-0
+tree again but was DISCARDED by the driver validator for a SCOPE VIOLATION (it ended its
+turn with `volatile_extern_allowlist.txt` still dirty); its verified diff survived as the
+untracked `memory/grind/get_alarm/s46-score0-verified-diff.txt`, which is what this
+session re-applied.
+
+- [s46] DEFECT 1 CURED (the Judge's binding requirement: "integration-handoff-self-serve
+  requires full-build SHA1==oracle with the banked form applied"). With the COMPLETE
+  recipe live in the working tree — body + all three declaration corrections + both
+  allowlist entries — measured this session in order:
+  `sandbox get_alarm --disable all` = **score 0**, target_insns 91, build_insns 91,
+  rules_dropped 0, cheat_asm_stripped 147 (identical to the floor-9 baseline's 147, i.e.
+  nothing in the candidate was stripped);
+  `verify-oracle --rebuild --allow-dirty` then `verify-oracle` = **ok true**,
+  `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked`;
+  `build` (full clean-driver build) = `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa /
+  want 62efab4f73f992798c43e8c730aa43baa10bb4fa / MATCH`.
+  Engine telemetry, not an agent claim: `metrics/events.jsonl` 2026-09-04T19:18:41Z
+  (sandbox 0) and 19:19:20Z / 19:19:25Z (verify-oracle ok, build_sha1 == oracle),
+  session_id 46016721-667b-4207-9a2d-03a0ea5c494b; transcript at
+  `tmp/grind/get_alarm/s46/metrics_proof.txt`.
+  NOTE for future sessions: `verify-oracle --rebuild` REFUSES on dirty build inputs
+  (`refused: dirty-build-inputs`) — the flag needed to prove a candidate tree is
+  `--rebuild --allow-dirty`. That refusal is why s45 could not close this defect.
+
+- [s46] DEFECT 2 CURED (TU risk from lever (c) volatilizing D_8009BF78, which `_sync`
+  reads at `src/display.c:796` `while (D_8009BF78 != D_8009BF7C)` and `:805`
+  `(D_8009BF78 - D_8009BF7C) & 0x3F` — already-matched C). The full-build SHA1 == oracle
+  is a whole-image proof that `_sync` and every other already-matched function in
+  `src/display.c` still assembles to the original bytes with all three volatile
+  corrections live, and the `build` run is a from-scratch clean-driver compile, so this
+  is not an incremental-link artifact. Lever (b) had already been cleared by the Judge
+  itself at 14:08 (its only other use site, `_cwc` at `:709`, already spells
+  `*(volatile u32 *)g_gpu_dma_madr`, an identity).
+
+- [s46] DEFECT 3 CURED (contradictory duplicate externs). The verified diff reconciles
+  BOTH duplicate declaration sites of all three symbols, so no pair disagrees any more:
+  `:20`/`:756` both `extern volatile u32 *g_gpu_dma_madr;`, `:721`/`:750` both
+  `extern volatile s32 D_8009BF78;`, `:733`/`:758` both `extern volatile s32
+  D_8009BF68[];`. The wrong function-pointer spelling `extern s32 (*D_8009BF68)(s32 *,
+  s32);` at `:733` is gone, replaced by the array spelling the use site
+  (`printf(&D_80016044, D_8009BF68[0], ...)`) requires. This is the reconciliation this
+  ledger's own `judge_constraints` ordered, and it is byte-neutral outside get_alarm —
+  proven by the same full-build SHA1.
+
+- [s46] THE ONE REMAINING BLOCKER IS UNCHANGED AND IS NOT A C PROBLEM: one line,
+  `get_alarm volatile_extern_allowlist.txt`, in `tools/grinder/scope_allow.txt` — a file
+  a grind session may not touch. `volatile_extern_allowlist.txt` is an ALLOWED
+  scope-grant class (`_SCOPE_GRANT_ALLOWED_RE`, `tools/grinder/grindlib.py:465`), the
+  precedent line `SioSyncroRead volatile_extern_allowlist.txt` is already in that file,
+  and on a Judge `ESCALATE(integration-handoff)` with
+  `scope_paths=["volatile_extern_allowlist.txt"]` the DRIVER writes the grant itself and
+  the function STAYS ACTIVE (`tools/grinder/grind.ps1:469-497`). The re-filed packet is
+  `docs/grind/decisions.md`, `## 2026-09-04 (s46) — get_alarm ... OWNER-ESCALATION —
+  INTEGRATION HANDOFF (RE-FILED, all three 14:08 Judge defects cured)`.
+
+- [s46] THIS SESSION REVERTED BOTH `volatile_extern_allowlist.txt` AND `src/display.c`
+  before ending, and re-ran `verify-oracle --rebuild --allow-dirty` on the reverted tree
+  so `build/` is once more the committed-tree canonical reference (a `build/` left
+  compiled from candidate sources would silently skew the next session's sandbox
+  baseline). The next dispatch's CHASSIS CHECK will therefore read floor 9 again: that is
+  the revert, NOT a regression. Re-apply
+  `memory/grind/get_alarm/s46-score0-verified-diff.txt` and the score is 0 immediately.
+
+- [s46] CHASSIS-BASELINE NOTE for whoever reads the next dispatch: on the COMMITTED tree
+  (get_alarm as `INCLUDE_ASM("asm/funcs", get_alarm);`) `sandbox get_alarm --disable all`
+  reports score 91 / build_insns 0 / cheat_asm_stripped 148 — the sandbox strips the
+  INCLUDE_ASM, so there is no body to score. The ledger's "floor 9" is the score of the
+  s44 floor-9 BODY applied to src/display.c, and the "floor 0" is the score of the s46
+  verified diff applied. Neither is readable from the bare committed tree; that is why
+  the dispatch brief's CHASSIS CHECK printed "measurement unavailable". Apply a body
+  before quoting a floor.
+
+- [s46] MEASURED THIS SESSION with the complete recipe live: `sandbox get_alarm --disable all` = score 0, target_insns 91, build_insns 91, rules_dropped 0, cheat_asm_stripped 147 (the same 147 as the floor-9 baseline - nothing in the candidate was stripped).
+
+- [s46] MEASURED THIS SESSION: `verify-oracle --rebuild --allow-dirty` then `verify-oracle` = ok true, build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa = original_sha1_locked; and a full clean-driver `& tools/wteng.ps1 main build` printed sha1 62efab4f... / want 62efab4f... / MATCH. This is the exact bar the 14:08 Judge FAIL set as defect 1.
+
+- [s46] TOOLING FACT worth inheriting: `verify-oracle --rebuild` REFUSES on dirty build inputs (`refused: dirty-build-inputs`, exit 3) to protect the canonical build/ reference. Proving a candidate tree requires `--rebuild --allow-dirty`. s45 could not close the Judge's defect 1 because it did not know this flag.
+
+- [s46] Defect 2 (TU risk) is answered by the whole-image SHA1: already-matched `_sync` reads D_8009BF78 at src/display.c:796 (`while (D_8009BF78 != D_8009BF7C)`) and :805, and it still assembles to the original bytes with all three volatile corrections live, in a from-scratch clean-driver compile.
+
+- [s46] Defect 3 (contradictory duplicate externs) is cured: all three symbols are now declared identically at both of their decl sites - g_gpu_dma_madr at :20/:756, D_8009BF78 at :721/:750, D_8009BF68 at :733/:758 - and the wrong function-pointer spelling `extern s32 (*D_8009BF68)(s32*, s32);` at :733 is replaced by `extern volatile s32 D_8009BF68[];`, the array spelling the use site `printf(&D_80016044, D_8009BF68[0], ...)` requires.
+
+- [s46] The remaining blocker is one line in a file a grind session may not touch: `get_alarm volatile_extern_allowlist.txt` in tools/grinder/scope_allow.txt. That class is ALLOWED for scope grants (_SCOPE_GRANT_ALLOWED_RE, tools/grinder/grindlib.py:465) and the identical precedent `SioSyncroRead volatile_extern_allowlist.txt` is already in the file from the 2026-08-25 handoff.
+
+- [s46] This session REVERTED both src/display.c and volatile_extern_allowlist.txt and then re-ran `verify-oracle --rebuild` on the reverted tree, so build/ is once more the committed-tree canonical reference (a build/ compiled from candidate sources would skew the next session's sandbox baseline).
+
+- [s46] CHASSIS NOTE: on the committed tree get_alarm is INCLUDE_ASM, so `sandbox get_alarm --disable all` reports 91 / build_insns 0 / cheat_asm_stripped 148 - no body to score. The ledger's floor 9 and floor 0 are both body-relative; apply a body before quoting a floor. That is why the dispatch brief printed 'measurement unavailable'.

@@ -852,3 +852,53 @@ annotation, its two siblings in the same declaration block already carry that ex
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: floor-6 chassis: s44 reference-faithful body in src/display.c with `extern volatile s32 D_8009BF68[];` + its volatile_extern_allowlist.txt entry, g_gpu_dma_madr still `extern u32 *`; zero FAKE constructs present; score 12 / target_insns 91 / build_insns 91 / rules_dropped 0 / cheat_asm_stripped 147
+
+## s46 (2026-09-04, synthesis)
+
+- hypothesis: The 14:08 Judge FAIL on the s45 INTEGRATION HANDOFF packet is curable
+  inside a single grind session's allowed surface, because all three named defects are
+  measurement/edit defects rather than C defects.
+  mechanism: (1) needed `verify-oracle --rebuild --allow-dirty` (plain `--rebuild`
+  REFUSES on dirty build inputs, which is why s45 never ran it with the recipe live);
+  (2) is answered BY (1), since a whole-image SHA1 == oracle proves every other function
+  in the TU — `_sync` at src/display.c:796/:805 included — is byte-unchanged by the
+  volatile corrections; (3) is a two-line declaration reconciliation inside
+  `src/display.c`, which is in the allowed surface.
+  probe: re-applied `memory/grind/get_alarm/s46-score0-verified-diff.txt` (body + three
+  decl corrections + both duplicate-site reconciliations + the two allowlist entries),
+  then `sandbox get_alarm --disable all`, `verify-oracle --rebuild --allow-dirty`,
+  `verify-oracle`, and a full clean-driver `build`.
+  result: sandbox score 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 unchanged);
+  verify-oracle ok true with build_sha1 == original_sha1_locked ==
+  62efab4f73f992798c43e8c730aa43baa10bb4fa; clean-driver build MATCH. All three defects
+  cured and re-filed as a superseding packet in docs/grind/decisions.md.
+  verdict: CONFIRMED
+
+- hypothesis: `candidate-ready` is not a reachable outcome for this function until the
+  `tools/grinder/scope_allow.txt` grant exists, independent of how good the bytes are.
+  mechanism: levers (a) and (c) are `engine/volatile_cheats.py` pattern 3, so without an
+  allowlist entry the cheat-invisible sandbox strips them and the driver's own
+  re-verification measures 9 (s45 control: cheat_asm_stripped 147 -> 148, score stays 9);
+  with the allowlist entry but no scope grant, `Invoke-CandidatePath`'s scope check
+  (tools/grinder/grind.ps1:640-670) rejects the session as invalid before any review, and
+  the counter at `:5` forecloses the function on scope livelock.
+  probe: read the driver source and the predecessor s46 run's discard notice ("SCOPE
+  VIOLATION: you edited files outside the allowed surface ( M
+  volatile_extern_allowlist.txt)"), which is the empirical confirmation.
+  result: the only pipeline-legal route is `owner-gated` with an escalation_ref matching
+  INTEGRATION HANDOFF, which the driver routes to the Judge; on
+  ESCALATE(integration-handoff) the driver writes the grant and the function stays
+  ACTIVE (grind.ps1:469-497). Do not re-propose a candidate carrying the allowlist edit.
+  verdict: CONFIRMED
+
+## [s46] The 2026-09-04 14:08 Judge FAIL on the s45 INTEGRATION HANDOFF packet is curable inside a single grind session's allowed surface, because all three named defects are measurement/edit defects rather than C defects.
+- mechanism: Defect 1 (no full-build SHA1==oracle with the recipe live) needed `verify-oracle --rebuild --allow-dirty` - plain `--rebuild` REFUSES with `refused: dirty-build-inputs`, which is exactly why s45 never ran it. Defect 2 (unflagged TU risk from volatilizing D_8009BF78, read by already-matched `_sync` at src/display.c:796 and :805) is answered BY defect 1's cure, since a whole-image SHA1==oracle proves every other function in the TU is byte-unchanged. Defect 3 (contradictory duplicate externs at :721 and :733) is a two-line declaration reconciliation inside src/display.c, which is in the allowed surface.
+- probe: Re-applied memory/grind/get_alarm/s46-score0-verified-diff.txt (body + three declaration corrections + both duplicate-site reconciliations + the two volatile_extern_allowlist.txt entries), then ran `sandbox get_alarm --disable all`, `verify-oracle --rebuild --allow-dirty`, `verify-oracle`, and a full clean-driver `build`.
+- result: sandbox score 0, target_insns 91, build_insns 91, rules_dropped 0, cheat_asm_stripped 147 (identical to the floor-9 baseline, so nothing in the candidate is stripped); verify-oracle ok true with build_sha1 == original_sha1_locked == 62efab4f73f992798c43e8c730aa43baa10bb4fa; clean-driver `build` printed sha1/want/MATCH. Engine telemetry in metrics/events.jsonl at 2026-09-04T19:18:41Z and 19:19:20Z/19:19:25Z, session_id 46016721-667b-4207-9a2d-03a0ea5c494b. Superseding packet filed in docs/grind/decisions.md.
+- verdict: CONFIRMED
+
+## [s46] `candidate-ready` is not a reachable outcome for get_alarm until the tools/grinder/scope_allow.txt grant exists, however good the bytes are.
+- mechanism: Levers (a) `extern volatile s32 D_8009BF68[];` and (c) `extern volatile s32 D_8009BF78;` are engine/volatile_cheats.py pattern 3, so with no volatile_extern_allowlist.txt entry the cheat-invisible sandbox strips them and the driver's own candidate re-verification measures 9 (s45 control: cheat_asm_stripped 147 -> 148, score stays 9). With the allowlist entry but no scope grant, Invoke-CandidatePath's scope check (tools/grinder/grind.ps1:640-670) discards the session as invalid before any review, and its repeat counter forecloses the function on scope livelock at 5.
+- probe: Read the driver source plus the empirical confirmation: the immediately preceding s46 run measured the same score-0 tree and was DISCARDED with 'SCOPE VIOLATION: you edited files outside the allowed surface ( M volatile_extern_allowlist.txt)'.
+- result: The only pipeline-legal route is `owner-gated` with an escalation_ref matching INTEGRATION HANDOFF; the driver routes that to the Judge, and on ESCALATE(integration-handoff, scope_paths=[volatile_extern_allowlist.txt]) it writes the grant itself and the function STAYS ACTIVE (tools/grinder/grind.ps1:469-497). Future sessions must not re-propose a candidate carrying the allowlist edit.
+- verdict: CONFIRMED

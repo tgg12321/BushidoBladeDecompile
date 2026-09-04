@@ -22417,3 +22417,156 @@ axis is being declared dead.
 ## 2026-09-04 14:08 — get_alarm — ruling: INTEGRATION HANDOFF filed for get_alarm : docs/grind/decisions.md — '2026-09-04  — **FAIL**
 
 Bytes are real: metrics/events.jsonl logs 9->6->5->0 at 2026-09-04T18:50-18:56, score 0 at 91/91, engine-written not agent-claimed. Families check out - Ruling 4 verified live (git show cd19d7a2^:docs/closer/rulings.md:68-83), MMIO type-level at .claude/rules/mmio-volatile-type-level.md:5, SioSyncroRead scope precedent present. My 18:48 body PASS (hash bc13a6d76f47d945) STANDS and is not disturbed; this FAIL is on the handoff's entry bar only. (1) integration-handoff-self-serve requires full-build SHA1==oracle with the banked form applied; the last verify-oracle ran 18:48, BEFORE the score-0 recipe existed (evidence.md:1205 concedes it). Not scope-blocked - the session ran verify-oracle twice today with edits live. (2) The TU risk is concrete and unflagged: lever (c) volatilizes D_8009BF78, read in _sync's spin-wait at src/display.c:796 and :805 - already-matched C. Lever (b) I cleared myself (only other use is _cwc:709, already *(volatile u32*)-cast, identity). (3) s45-score0-full-diff.txt leaves contradictory duplicate externs at :721 (non-volatile D_8009BF78) and :733 (D_8009BF68 as fn-ptr) - the latter is the reconciliation this ledger's own judge_constraints explicitly ordered.
+
+## 2026-09-04 (s46) — get_alarm / func_8007DC9C (src/display.c) — **OWNER-ESCALATION — INTEGRATION HANDOFF (RE-FILED, all three 14:08 Judge defects cured): bytes proven at sandbox 0 AND full-build SHA1 == oracle; needs the `volatile_extern_allowlist.txt` scope grant. Not an exhaustion claim, not an endgame lock, no question asked.**
+
+**This entry supersedes the 2026-09-04 s45 handoff entry that the Judge FAILed at
+14:08 (decisions.md, `## 2026-09-04 14:08 — get_alarm — ruling: INTEGRATION HANDOFF`).
+That FAIL was explicitly "on the handoff's entry bar only" and named exactly three
+defects. All three are cured and re-measured this session (s46, 2026-09-04 19:18-19:23).**
+
+### Defect 1 — "requires full-build SHA1==oracle with the banked form applied" — CURED
+Measured this session with the COMPLETE recipe live in the working tree (body + all
+three declaration corrections + both allowlist entries):
+
+| command | result |
+|---|---|
+| `& tools/wteng.ps1 main sandbox get_alarm --disable all` | **score 0**, target_insns 91, build_insns 91, rules_dropped 0, cheat_asm_stripped 147 (unchanged from the floor-9 baseline — nothing in the candidate is stripped) |
+| `& tools/wteng.ps1 main verify-oracle --rebuild --allow-dirty` then `verify-oracle` | **ok: true**, `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa` == `original_sha1_locked` |
+| `& tools/wteng.ps1 main build` (full clean-driver build) | `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa` / `want 62efab4f...` / **MATCH** |
+
+Engine-written telemetry, not an agent claim: `metrics/events.jsonl`
+2026-09-04T19:18:41Z (sandbox, score 0) and 2026-09-04T19:19:20Z / 19:19:25Z
+(verify-oracle, ok true, build_sha1 == oracle), session_id
+`46016721-667b-4207-9a2d-03a0ea5c494b`. Transcribed to
+`tmp/grind/get_alarm/s46/metrics_proof.txt`.
+
+### Defect 2 — "TU risk concrete and unflagged: lever (c) volatilizes D_8009BF78, read in _sync's spin-wait at src/display.c:796 and :805 — already-matched C" — CURED
+The full-build SHA1 == oracle above is a whole-image proof: every already-matched
+function in `src/display.c` (`_sync` included, with its `while (D_8009BF78 !=
+D_8009BF7C)` at :796 and its `(D_8009BF78 - D_8009BF7C) & 0x3F` at :805) still assembles
+to the original bytes with all three volatile corrections live. The clean-driver `build`
+run is a from-scratch compile of the whole TU, so this is not an incremental-link
+artifact. Lever (b) was already cleared by the Judge itself (only other use site is
+`_cwc` at :709, which already spells `*(volatile u32 *)g_gpu_dma_madr`, an identity).
+
+### Defect 3 — "leaves contradictory duplicate externs at :721 (non-volatile D_8009BF78) and :733 (D_8009BF68 as fn-ptr) — the reconciliation this ledger's own judge_constraints explicitly ordered" — CURED
+The re-filed diff reconciles BOTH duplicate declaration sites in the same edit. Current
+state of every declaration of the three symbols in `src/display.c`:
+
+```
+20:  extern volatile u32 *g_gpu_dma_madr;      756: extern volatile u32 *g_gpu_dma_madr;
+721: extern volatile s32 D_8009BF78;           750: extern volatile s32 D_8009BF78;
+733: extern volatile s32 D_8009BF68[];         758: extern volatile s32 D_8009BF68[];
+```
+
+The contradictory `extern s32 (*D_8009BF68)(s32 *, s32);` function-pointer spelling at
+:733 is gone, replaced by the array spelling the target's use site
+(`printf(&D_80016044, D_8009BF68[0], ...)`) actually requires. No duplicate pair
+disagrees any more.
+
+### The remedy (unchanged from s45; the ONLY thing still missing)
+`tools/grinder/scope_allow.txt` needs one line:
+
+```
+get_alarm volatile_extern_allowlist.txt
+```
+
+Exact precedent already in that file: `SioSyncroRead volatile_extern_allowlist.txt`
+(2026-08-25 integration handoff). `volatile_extern_allowlist.txt` is an ALLOWED
+scope-grant class (`_SCOPE_GRANT_ALLOWED_RE`, `tools/grinder/grindlib.py:465`; it is not
+on `_SCOPE_GRANT_DENY`). With that line present, the session scope check
+(`tools/grinder/grind.ps1:1221`) and `Revert-SessionEdits` (`:1091`) both honour the
+path, and the Match commit stages it, so the committed tree is the tree that was
+byte-verified.
+
+### Why this cannot be landed as an ordinary `candidate-ready`
+Levers (a) and (c) are `extern volatile T G;` = `engine/volatile_cheats.py` pattern 3.
+Un-allowlisted, the cheat-invisible sandbox STRIPS them (control measured s45: lever (a)
+alone with no allowlist entry leaves the score at 9 and moves `cheat_asm_stripped`
+147 -> 148). So without the grant the driver's own re-verification measures 9 and the
+claim is false; with the grant-file edit but no grant, the session is discarded as a
+SCOPE VIOLATION before its outcome is read (which is exactly what happened to the s46
+predecessor run — the discard notice is quoted in this session's outcome). This session
+therefore REVERTED `volatile_extern_allowlist.txt` (and `src/display.c`) before ending
+and restored `build/` to the committed reference. The next dispatch's CHASSIS CHECK will
+read floor 9 again: that is the revert, not a regression.
+
+### Grant basis (unchanged, and Judge-verified at 13:48 and again at 14:08)
+- **(a) `extern volatile s32 D_8009BF68[];`** — already carries a function-specific
+  Judge PASS: `docs/grind/decisions.md:22292` (2026-09-04 13:48, body
+  `bc13a6d76f47d945`), granting Ruling 4 with no IRQ prong required. The 14:08 FAIL
+  states that PASS "STANDS and is not disturbed".
+- **(b) `extern volatile u32 *g_gpu_dma_madr;`** (both decls) — ordinary C, no grant and
+  no annotation: type-level MMIO volatile, `.claude/rules/mmio-volatile-type-level.md:5`.
+  `g_gpu_dma_madr` holds DMA2_MADR `0x1F8010A0`, inside the sanctioned
+  `0x1F801000-0x1F802FFF` window; its two siblings in the same declaration block already
+  carry that exact type (`src/display.c:18`, `:22`). Not pattern 3 — `cheat_asm_stripped`
+  stays 147 across the 6 -> 5 step.
+- **(c) `extern volatile s32 D_8009BF78;`** — Ruling 4 class grant (granted 2026-07-10,
+  commit `c80d976e`; text recoverable at `git show cd19d7a2^:docs/closer/rulings.md`
+  lines 68-83 — the file was deleted as dead-era docs in `cd19d7a2`, so the frozen-family
+  table's `docs/closer/rulings.md:68` path is DEAD and must not be cited). `D_8009BF78`
+  is libgpu `_qin`, module-local state of the same verbatim-matched LIBGPU/SYS object as
+  `get_alarm` (`memory/closer/psyq-library-census.md:246`); its pair-mate `D_8009BF7C`
+  (`_qout`) ALREADY holds a volatile grant in the allowlist; measured unreachable without
+  volatile (5 -> 0). The IRQ-writer prong is deliberately NOT claimed for it
+  (`_addque2` writes it synchronously, `asm/funcs/_addque2.s:176`) — that is precisely
+  why the citation is Ruling 4, whose stated point is that the writer prong is not
+  required for census-proven Sony library module state.
+
+### Evidence pointers
+- `memory/grind/get_alarm/s46-score0-verified-diff.txt` — the exact verified diff
+  (`src/display.c` + `volatile_extern_allowlist.txt`), regenerated from the tree that
+  measured 0 and built to the oracle SHA1 this session.
+- `memory/grind/get_alarm/candidate.c` — score-0 body + the complete recipe.
+- `memory/grind/get_alarm/self_vet.md` — the 6-test vet for the score-0 form.
+- `tmp/grind/get_alarm/s46/` — `display-only.diff`, `metrics_proof.txt`.
+- `memory/grind/get_alarm/evidence.md` (s46 entries) — the four measurements above.
+
+## 2026-09-04 14:28 — get_alarm — ruling: INTEGRATION HANDOFF filed for get_alarm : docs/grind/decisions.md - '## 2026-09- — **ESCALATE**
+
+INTEGRATION HANDOFF GRANTED (escalate_kind=integration-handoff). The bytes are real and the only remaining blocker is a one-line scope widening the driver may execute.
+
+WHAT WAS BUILT. get_alarm (func_8007DC9C, src/display.c) sat at honest floor 9 for 44 sessions. Session 45 found that three separate DECLARATION corrections, which are inert or worse individually, compose to an exact match: (a) `extern volatile s32 D_8009BF68[];` (9->6), (b) `extern volatile u32 *g_gpu_dma_madr;` on both of its declaration sites (6->5), (c) `extern volatile s32 D_8009BF78;` (5->0). The function BODY is unchanged from the reference-faithful SOTN-libgpu sys.c spelling and already carries my own PASS from earlier today (13:48, body hash bc13a6d76f47d945); it contains no FAKE construct, no invented carrier, no asm.
+
+WHAT I VERIFIED MYSELF (not taken from the ledger).
+1. Bytes. metrics/events.jsonl, engine-written: the 18:49-18:56 chain reads 9 -> 6 -> 12 (lever (c) alone, strictly worse - the order-dependence) -> 5 -> 0, and the s46 re-measurement at 2026-09-04T19:18:41Z is score 0, target_insns 91, build_insns 91, rules_dropped 0, cheat_asm_stripped 147. The 147 is display.c's pre-existing unrelated material and is the SAME value as the floor-9 baseline, so nothing in the candidate was stripped: the score is honest, not an artifact of the sandbox silently deleting the volatiles. (The control is visible in the same log - the un-allowlisted spelling reads 9 with cheat_asm_stripped 148.)
+2. Full build. This is the defect that sank the s45 filing. It is now cured: verify-oracle with the complete recipe live in the tree returns ok:true, build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, at 19:19:20Z and again at 19:19:25Z (session 46016721). That is a whole-image proof, which also disposes of my 14:08 defect 2 - the already-matched sibling functions in the same file that read D_8009BF78 (_sync's spin-wait at :796/:805) still assemble to the original bytes with the volatile live.
+3. Duplicate-extern reconciliation (my 14:08 defect 3). memory/grind/get_alarm/s46-score0-verified-diff.txt fixes BOTH contradictory declaration sites: :721 D_8009BF78 now volatile to match :750, and the false function-pointer spelling `extern s32 (*D_8009BF68)(s32*, s32);` at :733 is replaced by the array spelling the use site actually requires, matching :758. No pair disagrees.
+4. Family membership, checked for each lever separately.
+   (a) and (c) are `extern volatile T G;` = volatile_cheats.py pattern 3, and both are claimed under Ruling 4, the owner-granted ground-truth-codegen volatile class of 2026-07-10. I read Ruling 4's text myself at `git show cd19d7a2^:docs/closer/rulings.md` lines 68-83 (the file was deleted as dead-era docs, so the frozen table's path is stale but the ruling is live and has been applied twice since). Its two prongs hold for (c) as well as for (a): CENSUS IDENTITY - I grepped the whole tree for D_8009BF78 and found exactly five consumers (get_alarm 0x8007DC9C, _addque2 0x8007D3F8, _exeque 0x8007D6D8, _reset 0x8007D9C4, _sync 0x8007DB20), every one inside the verbatim-matched LIBGPU/SYS region 0x8007AE7C-0x8007DF10 (psyq-library-census.md:76), i.e. module-local Sony libgpu queue state, and its pair-mate D_8009BF7C already holds a volatile grant in the allowlist; GROUND-TRUTH CODEGEN - the non-volatile spelling measures 5 and the volatile spelling measures 0 on the same chassis, so the target shape is measurably unreachable without it. Ruling 4 explicitly does not require the IRQ-writer prong for this class, and the session correctly declined to claim that prong.
+   (b) is not pattern 3 at all - the qualifier lands on the POINTED-TO type of a pointer that holds a hardware register address. Its two siblings in the same declaration block are already spelled exactly that way (src/display.c:18, :22) and src/display.c:709 already writes through this very pointer as `*(volatile u32 *)g_gpu_dma_madr`, so the change makes the file self-consistent rather than introducing a claim. Ordinary C under mmio-volatile-type-level.md; confirmed inert to the detector (cheat_asm_stripped stayed 147 across the 6->5 step).
+5. No stale tripwire. state.json carries no banned_constructs key, so nothing needs unbanning; rejected/axisA-permuter-volatile-bf68.c is an agent self-rejection under the wrong rule, never a Judge ban.
+
+WHY IT CANNOT LAND WITHOUT THE GRANT. Un-allowlisted, the cheat-invisible sandbox strips (a) and (c), so the driver's own re-verification would measure 9 and the claim would read as false; and a session that edited the allowlist without a scope line is discarded as a scope violation before its outcome is even read - which is exactly what happened to this session's predecessor run.
+
+THE GRANT THE DRIVER EXECUTES. One line in tools/grinder/scope_allow.txt: `get_alarm volatile_extern_allowlist.txt`. That path is in the allowed class (grindlib.py _SCOPE_GRANT_ALLOWED_RE admits a root-level *.txt) and is not on _SCOPE_GRANT_DENY; the exact precedent `SioSyncroRead volatile_extern_allowlist.txt` is already on line 31 of that file. This widens surface only - the function stays ACTIVE and the next session still passes the full driver re-verify, layer-1, my FINAL CALL and the full-build SHA1 gate, with the granted path staged into the Match commit so the committed tree is the byte-verified tree. Per integration-handoff-self-serve.md (owner ruling 2026-08-19).
+
+## 2026-09-04 — get_alarm — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-04)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+INTEGRATION HANDOFF GRANTED (escalate_kind=integration-handoff). The bytes are real and the only remaining blocker is a one-line scope widening the driver may execute.
+
+WHAT WAS BUILT. get_alarm (func_8007DC9C, src/display.c) sat at honest floor 9 for 44 sessions. Session 45 found that three separate DECLARATION corrections, which are inert or worse individually, compose to an exact match: (a) `extern volatile s32 D_8009BF68[];` (9->6), (b) `extern volatile u32 *g_gpu_dma_madr;` on both of its declaration sites (6->5), (c) `extern volatile s32 D_8009BF78;` (5->0). The function BODY is unchanged from the reference-faithful SOTN-libgpu sys.c spelling and already carries my own PASS from earlier today (13:48, body hash bc13a6d76f47d945); it contains no FAKE construct, no invented carrier, no asm.
+
+WHAT I VERIFIED MYSELF (not taken from the ledger).
+1. Bytes. metrics/events.jsonl, engine-written: the 18:49-18:56 chain reads 9 -> 6 -> 12 (lever (c) alone, strictly worse - the order-dependence) -> 5 -> 0, and the s46 re-measurement at 2026-09-04T19:18:41Z is score 0, target_insns 91, build_insns 91, rules_dropped 0, cheat_asm_stripped 147. The 147 is display.c's pre-existing unrelated material and is the SAME value as the floor-9 baseline, so nothing in the candidate was stripped: the score is honest, not an artifact of the sandbox silently deleting the volatiles. (The control is visible in the same log - the un-allowlisted spelling reads 9 with cheat_asm_stripped 148.)
+2. Full build. This is the defect that sank the s45 filing. It is now cured: verify-oracle with the complete recipe live in the tree returns ok:true, build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, at 19:19:20Z and again at 19:19:25Z (session 46016721). That is a whole-image proof, which also disposes of my 14:08 defect 2 - the already-matched sibling functions in the same file that read D_8009BF78 (_sync's spin-wait at :796/:805) still assemble to the original bytes with the volatile live.
+3. Duplicate-extern reconciliation (my 14:08 defect 3). memory/grind/get_alarm/s46-score0-verified-diff.txt fixes BOTH contradictory declaration sites: :721 D_8009BF78 now volatile to match :750, and the false function-pointer spelling `extern s32 (*D_8009BF68)(s32*, s32);` at :733 is replaced by the array spelling the use site actually requires, matching :758. No pair disagrees.
+4. Family membership, checked for each lever separately.
+   (a) and (c) are `extern volatile T G;` = volatile_cheats.py pattern 3, and both are claimed under Ruling 4, the owner-granted ground-truth-codegen volatile class of 2026-07-10. I read Ruling 4's text myself at `git show cd19d7a2^:docs/closer/rulings.md` lines 68-83 (the file was deleted as dead-era docs, so the frozen table's path is stale but the ruling is live and has been applied twice since). Its two prongs hold for (c) as well as for (a): CENSUS IDENTITY - I grepped the whole tree for D_8009BF78 and found exactly five consumers (get_alarm 0x8007DC9C, _addque2 0x8007D3F8, _exeque 0x8007D6D8, _reset 0x8007D9C4, _sync 0x8007DB20), every one inside the verbatim-matched LIBGPU/SYS region 0x8007AE7C-0x8007DF10 (psyq-library-census.md:76), i.e. module-local Sony libgpu queue state, and its pair-mate D_8009BF7C already holds a volatile grant in the allowlist; GROUND-TRUTH CODEGEN - the non-volatile spelling measures 5 and the volatile spelling measures 0 on the same chassis, so the target shape is measurably unreachable without it. Ruling 4 explicitly does not require the IRQ-writer prong for this class, and the session correctly declined to claim that prong.
+   (b) is not pattern 3 at all - the qualifier lands on the POINTED-TO type of a pointer that holds a hardware register address. Its two siblings in the same declaration block are already spelled exactly that way (src/display.c:18, :22) and src/display.c:709 already writes through this very pointer as `*(volatile u32 *)g_gpu_dma_madr`, so the change makes the file self-consistent rather than introducing a claim. Ordinary C under mmio-volatile-type-level.md; confirmed inert to the detector (cheat_asm_stripped stayed 147 across the 6->5 step).
+5. No stale tripwire. state.json carries no banned_constructs key, so nothing needs unbanning; rejected/axisA-permuter-volatile-bf68.c is an agent self-rejection under the wrong rule, never a Judge ban.
+
+WHY IT CANNOT LAND WITHOUT THE GRANT. Un-allowlisted, the cheat-invisible sandbox strips (a) and (c), so the driver's own re-verification would measure 9 and the claim would read as false; and a session that edited the allowlist without a scope line is discarded as a scope violation before its outcome is even read - which is exactly what happened to this session's predecessor run.
+
+THE GRANT THE DRIVER EXECUTES. One line in tools/grinder/scope_allow.txt: `get_alarm volatile_extern_allowlist.txt`. That path is in the allowed class (grindlib.py _SCOPE_GRANT_ALLOWED_RE admits a root-level *.txt) and is not on _SCOPE_GRANT_DENY; the exact precedent `SioSyncroRead volatile_extern_allowlist.txt` is already on line 31 of that file. This widens surface only - the function stays ACTIVE and the next session still passes the full driver re-verify, layer-1, my FINAL CALL and the full-build SHA1 gate, with the granted path staged into the Match commit so the committed tree is the byte-verified tree. Per integration-handoff-self-serve.md (owner ruling 2026-08-19).
+
+**Constraint recorded for any future session:** Land exactly memory/grind/get_alarm/s46-score0-verified-diff.txt (body + all three declaration corrections at BOTH decl sites each + both allowlist entries with their Ruling 4 citations); any deviation from that diff is a new candidate and re-enters review.
