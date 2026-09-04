@@ -1736,3 +1736,94 @@ are replaced by a construct on the frozen SOTN-accepted family list rather than 
 - [s15] Re-measured axes on the current chassis: inner-branch inversion on the natural-arm-E chassis = 9/79 (s6's 11/79 was a retired chassis); arm-1 placement of the common-tail-breaking permutation = 11/79; join reds as the literal 0xFC on the carrier chassis = 10/77.
 
 - [s15] src/text1b.c was reverted to `INCLUDE_ASM("asm/funcs", func_80072CD4);` at the end of the session; candidate.c is unchanged (still the best form at 2/79) and nine new rejected/ forms were banked.
+
+
+## [s16] 2026-09-04 - synthesis - the residual is a jump.c cross_jump artifact, not a scheduler
+## artifact, and sched.c's own readiness rule proves what the original source must have looked like
+
+**Chassis control (first measurement of the session).** memory/grind/func_80072CD4/candidate.c as
+inherited (the s14f/s15 natural-arm-E body with one merge-head do-while(0)) applied to src/text1b.c:
+`sandbox func_80072CD4 --disable all` = **2**, build_insns 79 == target_insns 79, rules_dropped 0
+(tmp/grind/func_80072CD4/s16/control.txt). The brief's CHASSIS CHECK said "measurement unavailable";
+the ledger floor of 2 reproduces exactly. That body is now preserved as
+memory/grind/func_80072CD4/fallback_banfree_2_79.c (it is the best form carrying no banned
+construct).
+
+**KILL RE-AUDIT.** state.json carries no kills[] array; the kills live in hypotheses.md. The two
+closest-to-target banked instances are the 2/79 natural-arm-E body (re-measured above, unchanged) and
+the device-free 4/79 sibling rejected/s14f_naturalarmE_clean_4_79.c (the same body minus its single
+FAKE do-while(0) - i.e. exactly the fake_ablate ablation of the only FAKE construct in the bank).
+The s15 carrier-chassis kills were re-derived directly this session: the plain carrier body
+(tmp/grind/func_80072CD4/s15/N9_carr_plain_wrap.c) re-measures **10/78** unchanged, and its
+disassembly is banked at tmp/grind/func_80072CD4/s16/carr_plain.dis. Nothing in the bank was found
+chassis-stale.
+
+### FACT 1 (new). Neither scheduler pass diverges from target on the 2/79 chassis. The whole
+### residual is placed by jump.c's cross_jump, not by sched1 or sched2.
+`tools/sched_solver/mkasm.sh text1b` + `extract.py text1b` were re-run against the 2/79 natural-arm-E
+chassis - a chassis the solver had never been extracted from (every s11/s15 run targeted the carrier
+chassis). `perturb.py --goal-from-target text1b --target-object build/src/text1b.o --ours-object
+tmp/sandbox/func_80072CD4/text1b.o --depth 2`, all atom classes, both passes, prints:
+
+    func_80072CD4: cc1=75 hon=78 tgt=79 dbr_uids=71
+    align honobj->tgtobj: |A|=79 |B|=79 {'equal': 78, 'replace': 0, 'delete': 0, 'insert': 0, 'moved': 1}
+
+and then **no block report at all** - i.e. not one basic block on this chassis has a scheduled order
+that differs from target's, in either pass. (Contrast the carrier chassis, where s15's identical
+invocation printed "block 3: 7 insns, goal differs from ours" and "block 4: 15 insns, goal differs".)
+Log: tmp/grind/func_80072CD4/s16/perturb_naturalE_depth2.txt. The single displaced instruction is the
+join block's `sb $v0,0xE`: on this chassis both arms end with an identical `sb $v0,0xE`, jump.c's
+cross_jump merges them and necessarily places its new label IMMEDIATELY BEFORE the common tail, so the
+merged store becomes the FIRST insn of the join instead of target's third. No scheduling input change
+can move it, because the schedulers are already producing target's order.
+
+### FACT 2 (new). GCC 2.7.2's own scheduler readiness rule proves the original source wrote the
+### @0xE store - and therefore the @4/@0xC stores - INSIDE both arms.
+Target's arm 1 ends `j .L80072D64 / addiu $v0,$zero,0x32` (asm/funcs/func_80072CD4.s, 0x80072D40),
+and arm 2 ends `addiu $v0,$zero,0x46` immediately before the join label: in both arms the vertex-1
+blue is a constant load sitting at the BLOCK TAIL with no in-block consumer. GCC 2.7.2's sched1
+cannot emit such an insn at a block tail when the block also contains stores:
+  - `schedule_select` (tools/gcc-2.7.2/sched.c:2706) walks the ready list in equal-INSN_PRIORITY
+    groups and promotes "the first one with the largest potential hazard";
+  - `potential_hazard` (tools/gcc-2.7.2/sched.c:2762) returns 0 immediately for an insn whose
+    `insn_unit` is negative - which is every `li`/`addiu` - and a non-zero product for any insn on
+    the "memory" unit, and `mips.md:161` puts `(eq_attr "type" "store")` on that unit;
+  - scheduling is bottom-up, so the insn selected first is placed LAST. Every store therefore
+    outranks the constant load, the load is selected last, and it is emitted at the block HEAD;
+  - the only escape is READINESS, not priority: an insn is ready (bottom-up) only when every insn
+    that depends on it has been scheduled, so a constant load with ANY in-block successor is held
+    back and stays next to that successor.
+This is not inference. Measured on the plain-carrier chassis this session with
+`pwsh tools/grinder/dump.ps1 func_80072CD4`: insn 57 `(set (reg/v:SI 75) (const_int 50))` is the LAST
+insn of arm 1 in tmp/grind/func_80072CD4/s16/f.combine (`insn 57 54 59`) and the FIRST insn of arm 1
+in tmp/grind/func_80072CD4/s16/f.sched (`insn 57 40 42`); insn 80 does the same in arm 2. The
+resulting build is 10/78 with `red` in $a0 and the carrier in $v1 where target uses $v1 and $v0
+(tmp/grind/func_80072CD4/s16/carr_plain.dis).
+s15 measured that every zero-byte in-block successor (two- and three-deep copy chains, self-assign,
+dead store into the dead parameter) is folded or deleted by cse/flow BEFORE sched1 and therefore does
+not exist at scheduling time. The one class of successor that DOES survive sched1 and still costs no
+final bytes is a STORE that jump2's cross_jump later merges into the join. Hence the original source
+ended both arms with stores; and for the join to come out in target's `@4 / @0xC / @0xE` order the
+cross-jumped common tail must be `@4, @0xC, @0xE` - i.e. the original wrote all three in both arms.
+
+### FACT 3 (new). The implied source measures 0/79 in its plainest, fully symmetric spelling.
+Each arm writing its own complete vertex-0 and vertex-1 RGB triple in canonical ascending field order:
+
+| body | score / build_insns |
+|---|---|
+| per-arm order 4,5,6,0xC,0xD,0xE (tmp/grind/func_80072CD4/s16/A2_dup_arms_ascending.c) | **0 / 79** |
+| per-arm order 5,6,0xD,4,0xC,0xE (tmp/grind/func_80072CD4/s16/A1_dup_arms_clean.c) | **0 / 79** |
+
+Both are byte-for-byte target (tmp/grind/func_80072CD4/s16/A2_score0.dis). Neither declares an
+invented local, a holder, a do-while(0), a FAKE annotation, or an intent-announcing name; the only
+local is the pre-existing `red`. The ascending-order body is textually the same shape as the outer
+else-arm ten lines below it, which already writes exactly those six offsets in exactly that order.
+This is NOT the banned spelling rejected/dup4_0xc_into_arms.c, which carried an `int fc_const` holder
+and appended a bare `@4=fc_const; @0xC=fc_const;` pair after the per-arm values.
+
+**Disposition.** The body still writes `@4`/`@0xC` in both arms, which is state.json
+banned_constructs entry 5 / judge_constraints entry 1 verbatim, so s16 returns `ruling-request`
+rather than `candidate-ready`. src/text1b.c was restored to `INCLUDE_ASM("asm/funcs",
+func_80072CD4);` before the session ended. The score-0 body is banked at
+memory/grind/func_80072CD4/candidate.c with the full argument in its header; the standing ban-free
+best (2/79) is at memory/grind/func_80072CD4/fallback_banfree_2_79.c.
