@@ -4025,3 +4025,124 @@ REDERIVE PROBES (all four banked in rejected/):
 - [s29] Transplanting that idiom onto this chassis (u8 *r = q - 3 for the copy loop) scores 19 at 50 insns and leaves blocks 0-1 byte-for-byte unchanged: a non-aliasing address allocno does not perturb the contested seat.
 
 - [s29] Moving an address re-assignment across a branch join costs a fourth lui/addiu pair (51 insns, score 21), re-confirming the s27 cost law from a new direction.
+
+
+==== s30 (rederive) ====
+
+CHASSIS RE-MEASURE (dispatch printed "measurement unavailable"). candidate.c
+re-installed at src/code6cac_b.c:3420 and measured on HEAD this session:
+**score 10, target_insns 49, build_insns 49, rules_dropped 0**. The floor of 10
+is confirmed by direct measurement for the second consecutive session.
+
+--- 1. THE LAST UNSPENT SIBLING: CD_sync's F1 combine-foldable chain-extender ---
+
+The dispatch brief listed CD_sync (src/system.c, foreclosed, floor 2, 116
+sessions) and CD_datasync as siblings never spent on this ledger. CD_sync's
+candidate.c carries the one construct this function has never seen: the
+FAKE-annotated F1 combine-foldable chain-extender (sanctioned by owner ruling
+2026-07-01), spelled there as
+
+    idx_1495 = (u8 *)((u8 *)tbl_125c
+                      + ((s32)&D_800A1494 - (s32)D_800A125C) + 1);
+
+whose header claims it "folds to &D_800A1494 + 1 with ZERO emitted bytes" while
+"flow.c records the extra reg_n_refs before combine.c folds the SYMBOL_REF
+difference". That is exactly the shape of lever this function's frontier wants
+(a perturbation of the address quantity that costs no instruction), and it is
+NOT the standing multi-handle ban: it is assigned to the SINGLE existing object
+`q`, declaring no second pointer object.
+
+Transplanted onto this chassis as
+
+    q = (u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70));
+
+in three placements -- all three assignments (a_chainext_all), the first only
+(a2_chainext_first), and blocks 2+3 only (a3_chainext_b2b3). ALL THREE measure
+**score 14 at 49 build insns**.
+
+MECHANISM, read off the dumps rather than inferred (pwsh tools/grinder/dump.ps1
+func_80034F88 on the a2 body, dumps under tmp/grind/func_80034F88/dumps/):
+
+  * .combine holds THREE `(set (reg) (symbol_ref:SI ("D_80106A73")))` insns --
+    the SYMBOL_REF difference is folded away completely and the chain-extender
+    leaves no arithmetic behind. The two later sets carry
+    `(expr_list:REG_EQUAL (symbol_ref:SI ("D_80106A73")))`, the first does not.
+  * .greg assigns ALL THREE of those sets to `(reg/v:SI 4 a0)` -- one hard reg,
+    one allocno, identical to the base body. The chain-extender creates NO
+    second address allocno. `global.c:426` (one C object = one pseudo = one
+    allocno) is untouched by it.
+  * The emitted function bodies are BIT-IDENTICAL. `diff base.s a2.s`
+    (tmp/grind/func_80034F88/s30/{base,a2}.s) is FOUR lines and all four are the
+    frame:  `subu $sp,$sp,24` -> `subu $sp,$sp,32`, `sw $31,16($sp)` ->
+    `sw $31,24($sp)`, and the matching epilogue pair. Every instruction between
+    the prologue and the epilogue is unchanged.
+
+So the +4 points are ENTIRELY a phantom frame slot: the folded-away intermediate
+still reserves 8 bytes of locals frame (the known GCC 2.7.2 behaviour recorded in
+the auto-memory `project/phantom-frame-slots-gcc272`). The lever's reg_n_refs
+perturbation, which is load-bearing in CD_sync, is INERT here -- it does not
+reach allocation at all on this chassis, because the address pseudo's seat is
+already decided by the blocks-2/3 uses that are byte-exact.
+
+CONCLUSION: the F1 chain-extender cannot move this residual. It is byte-neutral
+in the body by construction (it folds pre-RA), and the residual is a body
+defect, not a priority defect. This closes the sibling-inheritance axis
+completely: func_80034708 (s25), func_80035280 (s29), CD_sync/CD_datasync (s30).
+
+--- 2. do-while(0) JOINT WRAPS (the un-banked placements) ---
+
+The bank held do-while(0) around block 0 (15), around block 1 (10, reload lost),
+per-block (26) and at the block boundary (23), but never a JOINT wrap of
+adjacent blocks. Measured:
+
+    mask-stmt + block 1 wrapped together   score 12, 50 insns
+    block 2 + block 3 wrapped together     score 10, 49 insns (INERT)
+    all three blocks wrapped together      score 12, 50 insns
+
+Any wrap that spans the mask store adds an instruction (50 vs the target's 49);
+the blocks-2/3 wrap is a no-op on a region that is already byte-exact. The
+sanctioned do-while(0) family is now exhausted in every placement on this
+chassis.
+
+--- 3. FRESH m2c RE-DECOMPILE (the mandated rederive tool, re-run) ---
+
+`python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f func_80034F88`
+run fresh this session. m2c's shape is the INVERTED diamond -- the positive
+value is computed first and overwritten in the negated arm:
+
+    var_v0 = D_80106A73 | 1;
+    if (!(p[8] & 1)) { var_v0 = D_80106A73; }
+    D_80106A73 = var_v0;
+
+The bank holds that shape only on the PLAIN-SYMBOL chassis (m2c-verbatim 29,
+posif-copy-first 23, m2c-tworead-condfirst 20, m2c-value-shape-s32-temps 21).
+It had never been crossed with the pointer chassis. Measured on the `q` chassis
+with the three re-assignments intact, with an s32 temp and with m2c's own u8
+temp: **both score 21 at 45 build insns**. The diamond COLLAPSES -- four
+instructions short of the target's 49 -- because reading `*q` in both the
+computation and the negated arm lets cse fold the whole select into a single
+arm. The m2c shape is dead on this chassis in both spellings.
+
+--- 4. WHAT s30 DOES NOT CHANGE ---
+
+candidate.c is unchanged: no form measured this session reaches 10, and the two
+that tie it (the blocks-2/3 do-while wrap; the s25/s20 round-trip) emit the same
+stream. The residual is still exactly what s29 priced: one missing address
+allocno, expressed as the blocks-0/1 seat convention plus the 3-insn lui/addiu/sb
+rotation at the block-1 join.
+
+- [s30] Chassis re-measured on HEAD this session: candidate.c = score 10, target_insns 49, build_insns 49, rules_dropped 0. The dispatch brief's CHASSIS CHECK was 'measurement unavailable'; the floor of 10 is now measured, not inherited.
+
+- [s30] The CD_sync F1 chain-extender folds COMPLETELY before RA on this chassis: .combine holds three plain (set (reg) (symbol_ref "D_80106A73")) insns (the two later ones carrying REG_EQUAL symbol_ref notes), and .greg assigns all three to (reg/v:SI 4 a0). One pseudo, one allocno, identical to the base body.
+
+- [s30] diff tmp/grind/func_80034F88/s30/base.s tmp/grind/func_80034F88/s30/a2.s is exactly four lines, all of them frame: subu $sp,$sp,24 -> subu $sp,$sp,32, sw $31,16($sp) -> sw $31,24($sp), and the two matching epilogue lines. Every instruction between prologue and epilogue is unchanged, so the F1 chain-extender is byte-neutral IN THE BODY and its entire 4-point cost is a phantom frame slot for the folded intermediate.
+
+- [s30] Sibling inheritance is now fully spent for this function: func_80034708 (s25), func_80035280 (s29), and CD_sync / CD_datasync (s30, the F1 chain-extender). No sibling ledger holds a construct that has not been transplanted and measured here.
+
+- [s30] do-while(0) is exhausted in every placement on this chassis: block 0 = 15, block 1 = 10 (reload lost), per-block = 26, block boundary = 23, mask+block1 joint = 12 at 50 insns, block2+block3 joint = 10 at 49 (inert), all-three joint = 12 at 50. Any wrap spanning the mask store costs one instruction against the target's 49.
+
+- [s30] m2c's inverted diamond on the pointer chassis (measured for the first time, both s32 and u8 temps) is 21 at 45 build insns: cse forwards the duplicated *q read and the select collapses, so the shape LOSES four instructions instead of restoring block 1's lbu.
+
+- [s30] Seven new forms banked under memory/grind/func_80034F88/rejected/ (s30-*), bringing the disproven bank to 166. candidate.c is unchanged as the best admissible form at floor 10, with its header updated with the s30 note (10).
+
+- [s30] The residual is unchanged from s29's pricing: one missing address allocno, expressed as the blocks-0/1 seat convention plus the 3-insn lui/addiu/sb rotation at the block-1 join. src/code6cac_b.c is back at HEAD (INCLUDE_ASM) and the tree carries no src dirt.

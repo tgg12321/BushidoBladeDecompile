@@ -2961,3 +2961,77 @@ session's editable surface.
 - probe: asm/funcs/func_80035280.s read in full and aligned against asm/funcs/func_80034F88.s.
 - result: CONFIRMED. 0x80035294/98 materialise &D_80106A73 into $a1 once; 0x8003529C is `addiu $a2,$a1,-0x3`, the D_80106A70 pointer derived from it and walked by its copy loop; three `lbu 0($a1)` reads survive on that one pointer. With sibling func_80034708's single long-lived `s5`, named u8* locals are established as this code family's idiom for the byte, closing the plain-symbol reading of the original. It also sharpens what F88's three address materialisations mean: they partition the four byte-access groups as {mask + bit1} / {bit2} / {bit4}, exactly the partition three separately-scoped pointer locals produce -- and exactly the partition of the score-0 three-object body the standing ban forecloses.
 - verdict: CONFIRMED
+
+
+==== s30 (rederive) ====
+
+H-s30-1. The CD_sync F1 combine-foldable chain-extender (owner ruling
+2026-07-01), assigned to this function's SINGLE pointer object `q`, supplies the
+missing address allocno -- or at least a reg_n_refs perturbation that flips the
+blocks-0/1 seat -- at zero instruction cost.
+  PROBE: `q = (u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70));`
+  in three placements (all three assignments / first only / blocks 2+3 only),
+  measured on the candidate.c score-10 chassis on HEAD.
+  RESULT: all three score 14 at 49 build insns. Dumps show the difference is
+  folded away before RA: .combine holds three plain
+  `(set (reg) (symbol_ref "D_80106A73"))`, .greg puts all three in
+  `(reg/v:SI 4 a0)` (one allocno, as base), and `diff base.s a2.s` is four
+  frame lines only -- prologue/epilogue 24 -> 32 bytes. The body is
+  BIT-IDENTICAL to candidate.c; the entire +4 is a phantom frame slot for the
+  folded intermediate.
+  VERDICT: KILLED (instance). The lever is byte-neutral in the body here, so it
+  cannot reach a body defect.
+
+H-s30-2. A do-while(0) wrap spanning TWO adjacent flag blocks (a placement the
+bank never held) reaches the join rotation that a single-block wrap cannot.
+  PROBE: mask+block1 jointly; block2+block3 jointly; all three jointly.
+  RESULT: 12 at 50 insns / 10 at 49 insns (inert) / 12 at 50 insns.
+  VERDICT: KILLED (instance). Any wrap crossing the mask store costs an
+  instruction; the wrap confined to the already-exact region is a no-op.
+
+H-s30-3. m2c's inverted diamond (compute the positive value, overwrite in the
+negated arm), never crossed with the pointer chassis, restores block 1's reload
+because it reads the byte twice in C.
+  PROBE: fresh m2c decompile this session; its shape re-spelled on the `q`
+  chassis with an s32 temp and with m2c's u8 temp.
+  RESULT: both 21 at 45 build insns -- the select collapses and four
+  instructions are LOST, moving away from the target's 49.
+  VERDICT: KILLED (instance). cse folds the duplicated `*q` read across the
+  arms, so the C-level second read never becomes a second lbu.
+
+H-s30-4 (mandated kill re-audit). The chassis and the closest banked forms are
+re-measured on HEAD: candidate.c is 10/49/rules_dropped 0, and the blocks-2/3
+do-while wrap ties it with the same stream. candidate.c carries no
+/* FAKE */-annotated construct, so the ablation arm remains the s27 hand
+ablation (banked at 29). The floor of 10 holds.
+  VERDICT: CONFIRMED.
+
+## [s30] CD_sync's FAKE-annotated F1 combine-foldable chain-extender, assigned to this function's single pointer object q (no second pointer object, so outside the standing multi-handle ban), supplies the missing address allocno or at least a reg_n_refs perturbation that flips the blocks-0/1 seat at zero instruction cost.
+- mechanism: CD_sync's candidate.c claims flow.c records the extra reg_n_refs of the SYMBOL_REF-difference chain before combine.c folds it, giving an allocation change with zero emitted bytes. Transplanted here the fold is total: .combine holds three plain (set (reg) (symbol_ref "D_80106A73")) insns and .greg assigns all three to (reg/v:SI 4 a0) -- one hard reg, one allocno, exactly as the base body (global.c:426 untouched).
+- probe: q = (u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70)); in three placements (all three assignments / first assignment only / blocks 2+3 only), measured on the candidate.c score-10 chassis on HEAD; then pwsh tools/grinder/dump.ps1 func_80034F88 on the first-only body and a line diff of the emitted assembly against the base body.
+- result: All three placements score 14 at 49 build insns. The emitted function bodies are BIT-IDENTICAL to candidate.c: diff tmp/grind/func_80034F88/s30/base.s tmp/grind/func_80034F88/s30/a2.s is four lines, all four frame -- subu $sp,$sp,24 -> 32, sw $31,16($sp) -> 24($sp), and the matching epilogue pair. The whole +4 is a phantom frame slot reserved for the folded-away intermediate (project/phantom-frame-slots-gcc272). The reg_n_refs perturbation that is load-bearing in CD_sync is inert on this chassis, and this closes the sibling-inheritance axis completely (func_80034708 s25, func_80035280 s29, CD_sync/CD_datasync s30).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD (score 10, 49/49, rules_dropped 0), single u8 *q with three assignments; the chain-extender is the only added construct and no other FAKE-annotated construct is present in the body
+
+## [s30] A do-while(0) wrap spanning TWO adjacent flag blocks -- a placement the 159-form bank never held -- reaches the block-1 join rotation that the already-banked single-block wraps could not.
+- mechanism: The do-while(0) family is sanctioned for any codegen effect including register allocation (owner ruling 2026-07-06). A wrap over a two-block span changes where jump.c/reorg.c place the join label relative to the address re-materialisation, which is the 3-insn rotation s29 priced as the second half of the residual.
+- probe: Three joint wraps built from the candidate.c body and measured on HEAD: the mask statement plus block 1; block 2 plus block 3; all three blocks together.
+- result: mask+block1 = score 12 at 50 build insns; block2+block3 = score 10 at 49 (an exact no-op, the region is already byte-exact); all three = score 12 at 50. Every wrap that spans the mask store costs an instruction against the target's 49. The sanctioned do-while(0) family is now measured in every placement on this chassis (block 0 = 15, block 1 = 10 with the reload lost, per-block = 26, boundary = 23, and the three joint spans here).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD; single u8 *q with three assignments; the do-while(0) wrap is the only added construct, no other FAKE-annotated construct present
+
+## [s30] m2c's inverted diamond (compute the positive value first, overwrite it in the negated arm), which the bank holds only on the plain-symbol chassis, restores block 1's missing lbu when crossed with the pointer chassis, because the C reads the byte twice.
+- mechanism: The fresh m2c decompile emits var = D_80106A73 | 1; if (!(p[8] & 1)) var = D_80106A73; D_80106A73 = var; -- two syntactic reads of the byte per block instead of the one read our select chassis uses. The residual's visible symptom is one missing lbu (build lbu census 175 against the target's 176).
+- probe: python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax -f func_80034F88 run fresh this session, its shape re-spelled on the q chassis with the three q re-assignments intact, in both an s32 temp and m2c's own u8 temp.
+- result: Both spellings score 21 at 45 build insns. The diamond COLLAPSES: four instructions are lost against the target's 49, because cse forwards the duplicated *q read across the arms and folds the select into a single arm. The C-level second read never becomes a second lbu. Moves away from the target, not toward it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD, single u8 *q with three assignments, no FAKE-annotated construct present
+
+## [s30] Mandated kill re-audit: the floor of 10 and the closest banked forms still measure as the ledger records them on the current HEAD chassis.
+- mechanism: Instance kills are chassis-relative and FAKE-state-relative; the dispatch brief printed 'measurement unavailable' for the chassis check, so the floor had to be re-established by direct measurement rather than inherited from the ledger.
+- probe: candidate.c re-installed at src/code6cac_b.c:3420 and measured with sandbox func_80034F88 --disable all; the tying blocks-2/3 do-while wrap measured on the same chassis; fake_ablate has nothing to strip because candidate.c carries no /* FAKE */-annotated construct (the ablation arm remains s27's hand ablation, banked at 29).
+- result: score 10, target_insns 49, build_insns 49, rules_dropped 0 -- the floor of 10 is confirmed by direct measurement for the second consecutive session, and the tying form emits the same stream.
+- verdict: CONFIRMED

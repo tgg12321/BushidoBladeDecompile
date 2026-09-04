@@ -468,6 +468,28 @@
  * copy loop) measures 19 at 50 insns and leaves blocks 0-1 BYTE-FOR-BYTE as
  * they are here: an address allocno that does not alias the flag byte does not
  * touch the contested seat.
+ *
+ * (10) s30 (rederive) re-measures this body on HEAD -- score 10, 49/49 insns,
+ * rules_dropped 0 -- and again does not change a line of it. It spends the last
+ * unspent sibling inheritance, CD_sync's FAKE-annotated F1 combine-foldable
+ * chain-extender (owner ruling 2026-07-01), by assigning it to THIS function's
+ * single object `q` (no second pointer object, so outside the standing ban):
+ * `q = (u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70));` in
+ * three placements, all 14 at 49 insns. The dumps say why: .combine folds the
+ * SYMBOL_REF difference away completely (three plain
+ * `(set (reg) (symbol_ref "D_80106A73"))`), .greg puts all three sets in
+ * `(reg/v:SI 4 a0)` -- still ONE allocno -- and `diff base.s a2.s` is four
+ * PROLOGUE/EPILOGUE lines and nothing else (frame 24 -> 32). The emitted body is
+ * BIT-IDENTICAL to this one; the whole +4 is a phantom frame slot for the folded
+ * intermediate. The reg_n_refs perturbation that is load-bearing in CD_sync is
+ * inert here, so the F1 family cannot reach a body defect on this chassis.
+ * s30 also closes the two remaining un-banked placements of sanctioned shapes:
+ * do-while(0) wrapped JOINTLY over adjacent blocks (mask+block1 = 12 at 50;
+ * block2+block3 = 10 at 49, an exact no-op on an already-exact region; all
+ * three = 12 at 50), and m2c's INVERTED diamond (fresh decompile this session)
+ * crossed with the pointer chassis for the first time -- 21 at 45 insns in both
+ * the s32 and u8 spellings, because cse folds the duplicated `*q` read and the
+ * select collapses, LOSING four instructions.
  */
 void func_80034F88(void) {
     s32 *p;
