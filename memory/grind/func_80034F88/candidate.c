@@ -362,6 +362,31 @@
  * `^= 1` / `^= 2`), independent corroboration that this body's object model is
  * the codebase's idiom for this byte and that the plain-symbol family (28/29,
  * s16) is not.
+ *
+ * (5) s26 (solver) RE-FRAMES the residual and the ledger's F1/F2 ceiling
+ * argument above. `inverse_compose.py classify` -- never run on this function
+ * before -- reports FIRST DIVERGENCE: PRE-RA, not RA: `ours only: nop` /
+ * `target only: lbu #,0(#)`. The cc1 dumps name the pass (the `(mem:QI` count
+ * in this function's region is 8 in .rtl and .jump, 7 in .cse and thereafter),
+ * so cse.c's first pass deletes block 1's byte reload (.rtl insn 29) by
+ * forwarding block 0's stored value (insn 20), whose high bits are provably
+ * zero because insn 18 is `and(...,248)`. So the residual is TWO defects, not
+ * one: D1 = a missing instruction, upstream of every RA/scheduler model, and
+ * D2 = the seat convention, which is only askable once D1 is fixed.
+ * Eight one-object honest shapes fail to restore the load (split-read into
+ * both arms, split-read in all three blocks, conditional expression, do-
+ * while(0) around block 0 and around block 1, statement-order swap, u8-typed
+ * value local, and an explicit fourth `q = &D_80106A73;` in block 1) -- cse
+ * follows jumps at -O2, and a re-set of the SAME pseudo to a value it already
+ * holds is rewritten to a register copy without invalidating the memory entry.
+ * The RA search was then RE-RUN on a multiset-matching chassis (the dead
+ * round-trip diagnostic, which classifies RA at 10/49) with the FULL blocks-0/1
+ * disposition as the goal, and it still FORECLOSES -- so s23/s24's foreclosure
+ * is upgraded, not voided. What restores the target's `lbu` at zero instruction
+ * cost is specifically block 1 reading through a DIFFERENT pointer pseudo
+ * (measured: y02, two objects, score 13, classify RA, still three %hi/%lo
+ * pairs); two objects with block 1 still reading the first pointer (y01) is
+ * score 21 and still PRE-RA. That is the s26 ruling question.
  */
 void func_80034F88(void) {
     s32 *p;

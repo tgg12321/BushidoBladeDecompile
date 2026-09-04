@@ -3355,3 +3355,155 @@ and it measured inert. The floor is unchanged at 10 and candidate.c is unchanged
 - [s25] KILL RE-AUDIT VACUOUS BY CONSTRUCTION: state.json has no kills[] key at all, so no instance kill has a stale measured_on and tools/fake_ablate.py has nothing to ablate. Discharged by substitution instead -- the two closest-to-target banked forms (candidate.c and s20's census-exact fresh-pseudo diagnostic) were both re-measured on HEAD at 10 / 49 and both hold.
 
 - [s25] CONTRADICTION-RULE AUDIT: the weakest foreclosure was s20's, because its own measurement (a fresh address pseudo IS creatable from one C object) contradicted the ceiling argument above it. Re-opened and re-measured this session; it closes in the ceiling's favour. The s23 (RA modelled exactly, FORECLOSED over 218 perturbations) and s24 (local-alloc suggested-register pass inert three ways on a DISJOINT pseudo set) foreclosures are not weakened by anything measured here, and s25's seat-swap pricing supplies the argument they were missing.
+
+## s26 (solver) — the residual is PRE-RA, and cse.c is the pass
+
+**Headline.** The first thing the solver playbook mandates —
+`inverse_compose.py classify` — had never been run on this function in 25
+sessions. It says **FIRST DIVERGENCE: PRE-RA**. The whole RA framing the ledger
+carried from s16 to s25 was aimed one stage too late.
+
+### The residual, restated exactly
+
+`classify code6cac_b func_80034F88 --target-object build/src/code6cac_b.o
+--ours-object tmp/sandbox/func_80034F88/code6cac_b.o`, on candidate.c installed
+at HEAD (sandbox re-measured: score 10, 49 target insns, 49 build insns,
+rules_dropped 0):
+
+```
+FIRST DIVERGENCE: PRE-RA
+  ours only  : nop
+  target only: lbu #,0(#)
+```
+
+One instruction differs in KIND, not in register: the target has a byte load
+where we have a load-delay `nop`. Everything else in the 10-point score is
+register naming *downstream* of that. Two independent defects, which every
+prior session treated as one:
+
+* **D1 — PRE-RA.** Block 1's reload of the flag byte is deleted. Target
+  `/* 257B4 */ lbu $a0, 0x0($v1)` has no counterpart in our stream; our
+  `4f64: nop` sits in its place.
+* **D2 — RA.** Blocks 0-1 wear blocks 2/3's convention (base `$a0` + value
+  `$v1`; target has base `$v1` + value `$a0`). This is the seat question s16-s25
+  ground on, and it is only askable once D1 is fixed.
+
+### Pass attribution, from the dumps (not guessed)
+
+`pwsh tools/grinder/dump.ps1 func_80034F88`, then the count of `(mem:QI` inside
+the `;; Function func_80034F88` region of each dump:
+
+| dump | `(mem:QI` refs |
+|---|---|
+| `.rtl` | 8 |
+| `.jump` | 8 |
+| `.cse` | **7** |
+| `.loop` / `.cse2` / `.combine` | 7 |
+
+**cse.c, the first CSE pass, is the pass that deletes the load.** The RTL names
+the insns:
+
+```
+(insn 14 (set (reg/v:SI 74) (symbol_ref:SI ("D_80106A73"))))
+(insn 17 (set (reg:QI 75) (mem:QI (reg/v:SI 74))))
+(insn 18 (set (reg:SI 76) (and:SI (subreg:SI (reg:QI 75) 0) (const_int 248))))
+(insn 20 (set (mem:QI (reg/v:SI 74)) (subreg:QI (reg:SI 76) 0)))     <- block 0 store
+(insn 25 (set (reg:SI 79) (mem/s:SI (plus:SI (reg/v:SI 72) (const_int 32)))))
+(insn 29 (set (reg:QI 80) (mem:QI (reg/v:SI 74))))                   <- DELETED by cse
+(insn 30 (set (reg/v:SI 77) (zero_extend:SI (reg:QI 80))))
+```
+
+cse forwards insn 20's stored value into insn 29/30 and folds the
+`zero_extend` away because reg 76 is `and(...,248)` — high bits provably zero.
+Note also insn 56: `(set (reg/v:SI 74) (symbol_ref ...))` — the ONE C object is
+re-set per block, so all four materialisations share pseudo 74, hence one
+allocno (`global.c:426`), hence one hard register. That is the D2 chain, and it
+is intact; it is just not the whole residual.
+
+### D1 has no one-object honest fix (eight shapes, all measured)
+
+`tmp/grind/func_80034F88/s26/sweep1.txt` + `probe1.txt`:
+
+| form | score / insns | classify |
+|---|---|---|
+| w00 base (candidate.c) | 10 / 49 | PRE-RA |
+| w01 read duplicated into both arms | 10 / 49 | **still PRE-RA** |
+| w02 same, all three flag blocks | 25 / 53 | — |
+| w03 block 1 as `*q = c ? (*q\|1) : *q;` | 12 / 46 | — |
+| w04 `do { ... } while (0);` around block 1 | 10 / 49 | still PRE-RA |
+| w05 `v = *q;` before `c = p[8] & M;` | 10 / 49 | still PRE-RA |
+| w06 value local typed `u8` | 19 / 51 | — |
+| w07 `do { *q &= 0xF8; } while (0);` (block 0) | 15 / 50 | PRE-RA, **two** nops |
+| w08 explicit `q = &D_80106A73;` in block 1 too | 10 / 49 | still PRE-RA |
+
+The classifier itself names `split-read-defeats-hoist` as the honest lever for a
+cse-merge residual; w01/w02 are that lever, and it does not work here, because
+cse follows jumps at -O2 (the equivalence propagates into both arms) and jump2
+re-merges the copies. w08 fails for a different and important reason: cse
+recognises a re-set of the SAME pseudo to a value it already holds, rewrites the
+source to the register and keeps the quantity — so no memory-table
+invalidation happens and the load stays dead.
+
+### What DOES restore the load — and a multiset-matching chassis exists
+
+Two constructs restore it, both inadmissible, and between them they name the
+mechanism exactly:
+
+1. **Dead round-trip on the one object** (`q = q + 3; q = q - 3;` before
+   block 1 — s20's diagnostic, x09/x10 here): score 10 / 49 insns, and
+   `classify` flips to **RA**. So a chassis whose instruction multiset matches
+   the target IS reachable; the residual on it is purely register naming.
+2. **A second C pointer object read by block 1** (y02: `r = &D_80106A73;`
+   inside block 1, `r` also serving blocks 2-3): score 13 / 49, `classify`
+   **RA**, and — decisively — *no extra `lui`/`addiu`*. Still three %hi/%lo
+   pairs, exactly as the target. cse turns the second handle's set into a copy
+   of the first and flow propagates it away, while keeping `mem(r)` as its own
+   table entry, so the load survives for free.
+
+And the control: **y01** — two objects, but block 1 still reading through the
+first pointer — is score 21 and **still PRE-RA**. So it is not object *count*
+that restores the target's instruction; it is *block 1's read going through a
+different pointer PSEUDO*.
+
+### The RA foreclosure, re-derived on the corrected model
+
+The brief's re-audit rule applies to the model, not just to a spelling: if the
+base chassis is PRE-RA-divergent, then s23's and s24's `inverse.py` FORECLOSED
+verdicts were computed on a model with the wrong insn set — the func_80072CD4
+defect the tool exists to prevent. So the search was re-run on x09 (the
+multiset-matching chassis):
+
+* `extract.py func_80034F88 code6cac_b` → 9 allocnos, dispositions 17;
+  `simulate.py` → **sort order MATCH, dispositions 9/9**. The model is
+  genuinely different from s23's: pseudo 74's priority is 15000 here vs 10344
+  there, moving it from 5th to 2nd in the allocation order.
+* Baseline disposition (2=`$v0`, 3=`$v1`, 4=`$a0`, 5=`$a1`):
+  `{72: $a1, 73: $v1, 74: $a0, 77: $v1, 78: $v0, 81: $v1, 82: $v0, 85: $v1, 86: $v0}`.
+* `inverse.py global --goal '{"74": 3, "73": 4, "77": 4}'` (the FULL blocks-0/1
+  disposition, not a subset) → **FORECLOSED**. `--goal '{"74": 3}'` →
+  **FORECLOSED**. Depth 2, 260-atom space, 18 preference atoms mechanically
+  non-emittable because neither `$v1` nor `$a0` ever appears as a hard register
+  in this function's pre-RA RTL.
+
+So the RA foreclosure is **upgraded, not voided**: it now stands on a chassis
+whose instruction multiset matches the target, where the classifier's
+"searching this produces fiction" objection does not apply.
+
+### Why this matters for the standing ban
+
+The ban and the 2026-08-13 Judge FAIL both classify the repeated
+`u8 *q = &D_80106A73;` handles as a *register-allocation lever* — a construct
+with no observable effect on the function's output. D1 is not a seat. It is one
+extra `lbu` in the target's instruction stream, upstream of RA, and this session
+measured that a second pointer pseudo read by block 1 is the only structure
+short of dead arithmetic that produces it, at zero instruction cost. That is a
+different factual claim from the one the ban rests on, and it is the question
+s26 hands forward.
+
+### Artifacts
+
+`tmp/grind/func_80034F88/s26/`: `classify.txt`, `sweep1.txt`, `probe1.txt`,
+`probe2.txt`, `probe3.txt`, `inverse_x09.txt`, `build.txt`, `x09_rt3.txt`,
+`variants/`, `variants2/`, `variants3/`, plus the dumps at
+`tmp/grind/func_80034F88/dumps/`. Nine forms banked to
+`memory/grind/func_80034F88/rejected/`.

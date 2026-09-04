@@ -2394,3 +2394,133 @@ any further disposition attempt.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: sibling ledger memory/grind/func_80034708/ as of 2026-09-04 (floor 542, 1 session, no candidate.c); no build performed
+
+## [s26] The 10-point residual is an RA seat-count problem (the ledger's F1/F2 framing from s16-s25).
+
+- mechanism: 25 sessions modelled the residual as register allocation -- one
+  address pseudo, one allocno (global.c:426), therefore one hard register,
+  therefore blocks 0-1 cannot wear a different convention from blocks 2-3.
+  Every session from s16 on searched RA inputs (refs / live span / birth order /
+  conflicts / preferences / calls-crossed / local-alloc suggestions).
+- probe: `tools/ra_solver/inverse_compose.py classify code6cac_b func_80034F88
+  --target-object build/src/code6cac_b.o --ours-object
+  tmp/sandbox/func_80034F88/code6cac_b.o` -- the triage step the solver
+  playbook mandates FIRST and which no prior session had ever run on this
+  function. Then `pwsh tools/grinder/dump.ps1 func_80034F88` and a per-pass
+  count of `(mem:QI` in the func_80034F88 region of every dump.
+- result: KILLED as a framing. classify says **FIRST DIVERGENCE: PRE-RA** on the
+  score-10 chassis: `ours only : nop` / `target only : lbu #,0(#)`. The
+  instruction MULTISET differs, so by the classifier's own doctrine the RA and
+  scheduler models "permute and rename a FIXED set of insns" and searching them
+  "would produce fiction". The pass is named by the dumps, not guessed:
+  the `(mem:QI` count in the func_80034F88 region is 8 in .rtl, 8 in .jump,
+  **7 in .cse**, and 7 thereafter -- **cse.c (the first CSE pass) deletes
+  block 1's byte reload** (.rtl insn 29 `(set (reg:QI 80) (mem:QI (reg/v:SI
+  74)))`, feeding insn 30 `(set (reg 77) (zero_extend:SI (reg:QI 80)))`). It
+  forwards the value stored by block 0's insn 20 `(set (mem:QI (reg 74))
+  (subreg:QI (reg 76) 0))` because reg 76 is `and(...,248)` and therefore
+  provably zero in its high bits. The residual therefore has TWO independent
+  defects, which every prior session conflated: **D1** = one missing byte load,
+  upstream of RA (cse.c), and **D2** = the seat convention, which is downstream
+  of D1 and only meaningful once D1 is fixed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: memory/grind/func_80034F88/candidate.c installed at src/code6cac_b.c:3420 on HEAD, sandbox re-measured score 10 / 49 target / 49 build / rules_dropped 0; no FAKE construct present; dumps produced by tools/gcc-2.7.2/cc1 via tools/grinder/dump.ps1
+
+## [s26] D1 (cse.c deleting block 1's reload) has an ordinary-C fix that keeps ONE pointer object.
+
+- mechanism: cse.c's memory table is keyed on the address REGISTER, and the
+  entry is dropped when that register is re-set to a value cse cannot prove
+  equal, or when the reading MEM's address rtx is a different pseudo. Eight
+  shapes were built to try to reach one of those states honestly, from a single
+  `u8 *q`.
+- probe: eight bodies built and scored with `sandbox func_80034F88
+  --disable all` (tmp/grind/func_80034F88/s26/sweep1.txt), each of the
+  plateau ones additionally re-classified with `inverse_compose.py classify`
+  (tmp/grind/func_80034F88/s26/probe1.txt):
+  w01 read duplicated into both branch arms (`if (c) c = *q|1; else c = *q;`);
+  w02 the same in all three flag blocks; w03 block 1 as a conditional
+  expression `*q = c ? (*q|1) : *q;`; w04 `do { ... } while (0);` around
+  block 1; w05 statement-order swap (`v = *q;` before `c = p[8] & M;`);
+  w06 the value local typed `u8` instead of `s32`; w07 `do { *q &= 0xF8; }
+  while (0);` around block 0; w08 an explicit `q = &D_80106A73;`
+  re-materialisation added to block 1 as well (four sets of the one object).
+- result: KILLED for all eight. w01 = 10/49 STILL PRE-RA (cse follows jumps at
+  -O2, so the equivalence propagates into both arms and jump2 re-merges them);
+  w02 = 25/53; w03 = 12/46; w04 = 10/49 still PRE-RA; w05 = 10/49 still PRE-RA;
+  w06 = 19/51; w07 = 15/50 and it ADDS a second nop rather than a load;
+  w08 = 10/49 still PRE-RA (cse recognises the re-set as redundant, replaces its
+  source with the register already holding the symbol and keeps the same qty, so
+  no invalidation happens). The mechanism these eight name together: from ONE
+  pointer object every read of the byte after block 0's store is
+  `(mem:QI (reg 74))` with reg 74 unchanged, and cse forwards it
+  unconditionally. Only two constructs measured this session restore the load,
+  and both are inadmissible: a dead pointer round-trip (`q = q + 3; q = q - 3;`)
+  and a second C pointer object read in block 1.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 single-object chassis on HEAD; no FAKE construct present in any of the eight forms (w04/w07 carry an un-annotated do-while(0) built as a diagnostic only, never proposed as a candidate)
+
+## [s26] A chassis whose instruction MULTISET matches the target exists, and on it the RA foreclosure has to be re-derived (s23/s24's foreclosures were computed on a PRE-RA-divergent model).
+
+- mechanism: the classifier's doctrine cuts both ways -- if the base chassis is
+  PRE-RA-divergent then s23's `inverse.py global` FORECLOSED and s24's
+  `inverse.py local` FORECLOSED were computed on a model with the wrong insn
+  set, which is exactly the func_80072CD4 defect the tool was written to
+  prevent. The re-audit the brief mandates is therefore not a spelling
+  re-measurement but a re-run of the RA search on a multiset-matching model.
+- probe: build the two dead-round-trip diagnostics (x09 `q = q + 3; q = q - 3;`
+  and x10 `q = q + 1; q = q - 1;` before block 1), score them, classify them;
+  then on x09 run `extract.py func_80034F88 code6cac_b`, `simulate.py`, and
+  `inverse.py global` twice -- goal A = the full blocks-0/1 exchange
+  `{"74": 3, "73": 4, "77": 4}` (the FULL target disposition for that block
+  group, not a subset), goal B = the address alone `{"74": 3}`.
+  Console at tmp/grind/func_80034F88/s26/inverse_x09.txt.
+- result: SPLIT -- the premise CONFIRMED, the conclusion UNCHANGED, which is
+  the valuable half. x09 and x10 both score 10 at 49 insns and both
+  **classify RA, not PRE-RA**: the dead round-trip restores exactly the missing
+  `lbu` and the multiset then matches the target's, so a multiset-matching
+  chassis is reachable and the residual on it is purely register naming. The
+  re-extracted model on x09 validates 9/9 dispositions with sort order MATCH
+  (pseudo 74's priority moves 10344 -> 15000, i.e. it rises from 5th to 2nd in
+  the allocation order -- the model is genuinely different from s23's). And
+  `inverse.py global` still returns **FORECLOSED on both goals**: no
+  perturbation of refs / live span / birth order / conflicts / preferences /
+  calls-crossed, to depth 2 over the 260-atom space, reaches the target
+  assignment, with 18 preference atoms mechanically non-emittable because
+  neither $v1 nor $a0 ever appears as a hard register in this function's pre-RA
+  RTL. So s23/s24's RA foreclosure is UPGRADED rather than voided: it now stands
+  on a chassis whose instruction multiset matches the target, where the
+  classifier's "searching this produces fiction" objection does not apply.
+- verdict: CONFIRMED
+
+## [s26] The target's own instruction multiset -- not a seat preference -- is what requires more than one C pointer object on D_80106A73, so the standing ban rests on a premise this session measured false.
+
+- mechanism: the ban (and the 2026-08-13 Judge FAIL) classify the repeated
+  `u8 *q = &D_80106A73;` handles as a register-allocation lever with no
+  observable effect on the function's output. D1 is not a seat: it is one extra
+  `lbu` in the target's instruction stream, upstream of RA. If a second handle
+  is the only structure that reproduces the target's instruction SET, then the
+  handles are what the original source contained, not a coercion applied to an
+  otherwise-correct body.
+- probe: two diagnostic bodies, scored and classified. y01 = two objects with
+  the SECOND used only by blocks 2-3, block 1 still reading through the first
+  (`q` for blocks 0-1, `r` for blocks 2-3). y02 = two objects with block 1
+  reading through a freshly-set second handle (`r = &D_80106A73;` inside
+  block 1, `r` also used by blocks 2-3).
+  tmp/grind/func_80034F88/s26/probe3.txt.
+- result: CONFIRMED, and it isolates the mechanism precisely. y01 = score 21 and
+  still **PRE-RA** with the same `nop`-for-`lbu` delta: adding a second object
+  does NOT restore the load if block 1 keeps reading through the first pointer.
+  y02 = score 13 and **RA**: the load is restored and the multiset matches the
+  target, at NO extra lui/addiu (still 49 insns, still three %hi/%lo pairs --
+  cse turns the second handle's set into a copy of the first and flow propagates
+  it away, while keeping mem(r) as a separate table entry). So what restores the
+  target's missing instruction is specifically *the block-1 read going through a
+  different pointer PSEUDO*, and from C the only two ways to get one are a dead
+  round-trip on the single object (a cheat) or a second declared object (the
+  standing ban). Every remaining sanctioned axis is now measured dead: D1 has no
+  one-object honest fix in eight shapes (s26), and D2's RA search forecloses on
+  the corrected multiset-matching model (s26) as well as on the old one
+  (s23/s24).
+- verdict: CONFIRMED
