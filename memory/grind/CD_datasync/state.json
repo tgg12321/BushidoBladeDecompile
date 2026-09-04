@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 36,
- "current_modality": "synthesis",
+ "session_count": 37,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -219,23 +219,29 @@
    "floor": 7,
    "modality": "synthesis",
    "headline": "Floor holds at 7/91; synthesis merges 36 sessions into ONE statement - target needs idx[0]'s lbu emitted first AND arg4's sll emitted after arg5's addu, and the three live source families each reach e"
+  },
+  {
+   "session": 37,
+   "floor": 7,
+   "modality": "solver",
+   "headline": "s24 frontier item 1 executed and answered: sched_solver is validated exact on CD_datasync (12/12 blocks both passes) and an EXHAUSTIVE depth-2 sweep over all 1332 scheduler-input atoms (886,446 pairs)"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The sched1 blockage override that sinks idx[0]'s lbu in the index-local family is driven by the printf block's memory-op composition OUTSIDE the argument list - the puts call's setup, the CD_flush call, the block's entry/exit shape - not by the argument spelling, which is now measured invariant across 15 forms.",
-   "mechanism": "schedule_select's unit-0 blockage model (maxb=3) reads the partial schedule of the WHOLE basic block, which here runs from the .L80081C58 label through jal puts, the printf window, jal printf, jal CD_flush and the j to the merge label. Every s36 probe varied only the argument list and the override was invariant in clock and position - so the free variable that remains is the block's other contents and its boundaries.",
-   "next_probe": "On the index-local chassis (w0_u3), vary the BLOCK STRUCTURE rather than the argument list: the placement of the v0 = -1 assignment relative to the do{}while(0) body, and the timeout block duplicated into both condition arms (alt_dup_into_arms_7.c's chassis, byte-identical at 7 for the value-local family and never crossed with an index local). Do NOT move CD_flush() ahead of the printf - that is not semantics-preserving. Classify by s36/sweep.sh's SELBEST line for the printf block: has the clock-12 override on idx[0]'s lbu moved or vanished? Score only the forms whose override changes."
+   "hypothesis": "The ledger's reading of the printf argument list is wrong: the third argument is not an independent read of tbl_11dc[D_800A11D5], but something that shares a subexpression with the fourth - which is the only honest way the edge 'arg3's index load depends on arg4's chain' can exist in C.",
+   "mechanism": "The solver names exactly one missing graph edge (add_dep 96 <- 107 on the inline chassis) and it recurs across four independent constraints. arg3's lbu and arg4's sll share no register and no memory as the block is currently written, so no statement move can create it - but a DIFFERENT program in which arg3's index is derived from, or aliases, arg4's chain would have it natively. D_800A11D5 sits inside the region that also holds the D_800A11DC table, and D_800A1494/D_800A1495 are the idx pair. A single struct or a single index expression feeding both the third and fourth arguments is the shape to test.",
+   "next_probe": "Re-derive the argument list from the format string and the data model rather than from m2c: dump the bytes at D_800161C8 and D_800A11D0-D_800A11E0 and D_800A1490-D_800A1498, and check whether D_800A11D5 can be reached as a member of the same object the idx pair lives in (or as tbl_11dc's own index byte). Then spell the two candidate forms - (a) arg3's index read through the same pointer local that carries idx_1494, (b) arg3's index and idx0 as two members of one struct - apply each to the INLINE chassis (alt_inline_chassis_13.c, NOT candidate.c), re-run extract.py + solve_inl.py, and check whether constraint k=3 onward becomes baseline-satisfied. Judge by the constraint count the solver reports, never by the sandbox score."
   },
   {
-   "hypothesis": "Target's arg4 is an INLINE value expression (index-first addu, value load at load_register_parameters) whose scaling chain is nonetheless expanded EARLY, which no spelling in the three measured families produces - so the lever is whatever gives an inline subscript a low-LUID sll.",
-   "mechanism": "s36 established that target's arg4 emits an index-first addu (so it is a value expression, not a pointer) and that its value load lands last (so it is passed inline, expanded by load_register_parameters). But its sll is emitted at slot 6, which every measured inline form defers to slot 12. In the value-local family the sll is early but the value load is early too; the two have never been separated for an inline argument.",
-   "next_probe": "Attack the ARGUMENT EXPANSION ORDER rather than the statement order: GCC 2.7.2 emits load_register_parameters in a fixed order, so change what the other four arguments cost. Sweep spellings where arg2/arg3/arg5 are inline or named in every combination WHILE arg4 stays inline (the complement of the s28 value-local space, which always named arg4 or hoisted its index), and read the .combine LUID of arg4's sll for each. Look for any form where arg4's sll holds a combine LUID below arg5's addu while arg4's value load stays above it."
+   "hypothesis": "The same solver loop transfers verbatim to the twins CD_sync and CD_ready, which share this window; one of them may have a chassis where the missing edge is native, and that chassis is then transplantable.",
+   "mechanism": "CD_sync lives in the SAME TU (src/system.c), so tmp/sched_solver_work/system.sched.json already contains its blocks; CD_ready's ledger (s36/s46) records a byte-shape-identical do_timeout window and CD_sync s26 records the same {sll,addu,sll} -> jal debug_printf residual. The finding is a property of the shared source idiom, not of CD_datasync's chassis.",
+   "next_probe": "With CD_sync's best banked form applied, run the s25 loop for func=CD_sync (blk2.py with the func name changed gives the UID map; the goal comes from asm/funcs/CD_sync.s's own window). Compare which of the fourteen analogous constraints are baseline-satisfied there against CD_datasync's eight. A twin with MORE free constraints has structure CD_datasync's chassis lacks, and that structural difference is the lever."
   },
   {
-   "hypothesis": "The twins CD_sync and CD_ready share this printf block, so the s36 family split and the blockage override transfer verbatim, and a twin whose surrounding block differs may already take a different override - which would name the chassis variable directly.",
-   "mechanism": "CD_ready s36/s46 record a byte-shape-identical do_timeout window and CD_sync s26 the same {sll,addu,sll} -> jal printf residual. s36's result is a statement about the shared source idiom's LUID geometry plus a blockage decision that depends on the enclosing block, and the twins' enclosing blocks are NOT identical (CD_ready has callbacks and a check-region, CD_datasync does not).",
-   "next_probe": "Retarget tmp/grind/CD_datasync/s36/sweep.sh (function name, file, and the s21 scorer's target vector) to CD_sync and CD_ready, run it over each twin's banked best form plus a bare index-local variant of it, and compare the SELBEST list for the printf block against CD_datasync's. A twin that does NOT take the clock-12 override on its idx[0] lbu identifies, by difference, exactly which surrounding-block property controls it."
+   "hypothesis": "Target's block-3 dependence graph is three or more edges from the inline form's, and the missing edges are a property of the ARGUMENT EXPRESSIONS rather than of any spelling of the current ones - so the next rung is a depth-3 add_dep sweep restricted to the arg3 chain, used as an ORACLE to describe the graph, not as a search for a C form.",
+   "mechanism": "Depth-2 over all 1332 atoms is exhausted with zero hits, so no two-edge description of target's graph exists. A depth-3 sweep over the full atom set is ~4e8 simulations and is not worth running, but a depth-3 sweep restricted to add_dep atoms whose head or tail is on the arg3 chain (96/99/101/127) is ~1e5 and is affordable.",
+   "next_probe": "Restrict enumerate_atoms to add_dep atoms touching UIDs 96,99,101,127 on the inline chassis and run depth 3 against the same 14 constraints. Any hit is a three-edge SPECIFICATION of target's graph, which is then the exact thing the re-derived argument expression must produce; no hit at that restriction promotes the search to the arg2/arg5 chains. Either way the output is a description of the target graph, which is what frontier item 1's data-model re-derivation needs as its acceptance test."
   }
  ],
  "judge_constraints": [],
@@ -630,6 +636,38 @@
    "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 10 value-local spellings, s36 harness",
    "predicate_cite": "",
    "result": "The two conditions are the same condition in this family: whichever argument's chain is expanded first gets both its ind"
+  },
+  {
+   "session": 37,
+   "statement": "The do{}while(0) FAKE in candidate.c occupies a pseudo in the printf argument block, so the s21-s24 instance kills measured with it present were measured on a coerced chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals), candidate.c with and without the do{}while(0) FAKE; tools/fake_ablate.py, 2 variants",
+   "predicate_cite": "",
+   "result": "keep-all = score 7 / 91 build insns; drop-1 (wrapper removed) = score 27 / 87 build insns. The wrapper is the loop_depth"
+  },
+  {
+   "session": 37,
+   "statement": "On the candidate.c chassis, target's window order is produced by some single modelled scheduler-input change, or by a pair of statement-move atoms.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c chassis (arg4 hoisted into a named local) with the do{}while(0) FAKE present; sched_solver pass-1 block 3, 1459 single atoms + all 759-choose-2 spellable pairs",
+   "predicate_cite": "",
+   "result": "No hit at depth 1 over all 1459 atoms (add_dep of every kind, luid, luid_move, insn-cost) and no hit in the exhaustive s"
+  },
+  {
+   "session": 37,
+   "statement": "On the fully-inline chassis - the one whose .combine graph s24 showed equals target's - target's window order is produced by some single modelled input change or by a pair of statement-move atoms.",
+   "kill_scope": "instance",
+   "measured_on": "fully-inline argument chassis (no named locals in the timeout block) with the do{}while(0) FAKE present; sched_solver pass-1 block 3, 1332 single atoms + all 693-choose-2 spellable pairs",
+   "predicate_cite": "",
+   "result": "Every one of the fourteen constraints is individually reachable here (unlike candidate.c), and EIGHT of them are already"
+  },
+  {
+   "session": 37,
+   "statement": "The joint window goal is reached from the inline chassis by a PAIR of modelled input changes (any dependence edge or instruction cost, not just statement moves).",
+   "kill_scope": "instance",
+   "measured_on": "fully-inline argument chassis with the do{}while(0) FAKE present; sched_solver pass-1 block 3, exhaustive depth-2 over all 1332 atoms (886,446 pairs)",
+   "predicate_cite": "",
+   "result": "886,446 pairs, 0 hits, 980 s. Target's block-3 dependence graph sits more than two edges away from the fully-inline form"
   }
  ]
 }
