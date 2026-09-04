@@ -21857,3 +21857,123 @@ sibling dispositions CD_sync and CD_datasync.
 ## 2026-09-03 19:24 — func_80062020 — ruling: Is a once-called `static __inline__` helper, introduced so that one of three adj — **FAIL**
 
 FIRST REACH, not ordinary C. After inlining, the two-helper body IS the standing banned construct verbatim (state.json banned_constructs[0]: row=...; row[2]=0; row[1]=0; *(s32*)((u8*)&D_800F1198+ofs)=0;) — the candidate's own header concedes the mechanism is that GCC emits each helper's address computation separately. The helper boundary's sole work is to put the two spellings of one lvalue in different function bodies so the ban's textual predicate stops firing; respelling a banned construct is the same construct. The split is not truthful decomposition: each helper is called exactly once, is one/two lines, and re-derives the same base address its adjacent sibling re-derives — it abstracts nothing, so it has no semantic reading independent of the codegen effect (T1/T2/T3 all fail). Ruling 1(3) protects semantically-truthful respellings of the SAME text; it does not license inventing new program entities whose only distinguishable effect is a second address def. I verified the cited in-repo precedent myself: src/main.c:1069 vmSetStartAddr and src/main.c:2187 _memcpy are MULTI-CALL genuine utilities (3 and 4 sites), not once-called one-liners — different shape, no support. docs/reference/sotn-construct-index.md has zero non-asm inline entries (grep confirmed). Closest frozen family is the 2026-08-18 F3 compound-address duplication, whose scope is duplication across CALL ARG-LISTS; a duplication across two inlined helper bodies is outside it, and no other entry covers a once-called inline helper used as an address-def multiplier. Non-membership in the frozen list is a clean FAIL(CONSTRUCT), never a packet (ordinary-c-judge-decidable Ruling 1(2)). No later grant supersedes the 2026-08-25/08-31 refusals: Ruling 4 (2026-09-02) covers same-VARIABLE compound-assignment splits only. The single-helper variant at pending-ruling/s14-single-helper-score0-weaker.c falls under the same ban for the same reason. ANSWER TO THE SESSION'S QUESTION: bank the class as refused and stop searching this axis — it does not settle the 31 siblings, it is closed for all of them. Evidence read: state.json (judge_constraints, banned_constructs, s13 kills), pending-ruling/*.c, candidate.c, self_vet.md, rejected/ (22 banked forms).
+
+## 2026-09-03 — func_80062020 (src/text1b.c) — **OWNER-ESCALATION — INTEGRATION HANDOFF (bytes proven, full-build SHA1 == oracle)**
+
+**This is NOT an endgame lock and NOT an exhaustion record.** func_80062020 is MATCHED. A
+pure-C body containing no cheat, no FAKE construct, no inline asm, no pointer alias, no dead
+statement and no volatile builds an object that is instruction-for-instruction identical to
+`asm/funcs/func_80062020.s` (38 == 38) and links to an executable whose SHA1 is the oracle.
+The only thing standing between that fact and COMPLETED-C is two mechanical pipeline gates
+that a grind session may not touch. Per [[integration-handoff-self-serve]] (owner ruling
+2026-08-19) this is a pipeline-executable disposition, not an owner-pending state.
+
+### The bytes claim (re-verified from scratch in grind s15, 2026-09-03)
+
+1. `verify-oracle --rebuild` on clean HEAD, then `verify-oracle` → `ok: true`,
+   `build_matches: true`, `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`.
+2. Diff applied (three files, exact text in `memory/grind/func_80062020/candidate.c` and
+   reproducible with `memory/grind/func_80062020/apply_s15.py apply|restore`):
+   - `include/game.h` — the aggregate declaration
+     `typedef struct { s32 unk0; s32 unk4; s32 unk8; } Unk800F1198Record;` and
+     `extern Unk800F1198Record D_800F1198[];`
+   - `src/text1b.c` — both vestigial `extern s32 D_800F1198/119C/11A0;` triples removed
+     (neither had a use site), INCLUDE_ASM replaced by the C body
+   - `src/text1b_b.c` — the third vestigial triple removed (also unused)
+3. `sandbox func_80062020 --disable all` → **score 2**, target_insns 38, build_insns 38,
+   rules_dropped 0, cheat_asm_stripped 165 (all from OTHER functions in the TU).
+4. `engine build` (full clean-driver build + link) → **sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa,
+   MATCH.**
+5. `objdump -dr` on the sandbox object: identical instructions in identical order. The only
+   pre-link difference is the SPELLING of two relocations — this body emits the two in-loop
+   stores as R_MIPS_HI16/LO16 against `D_800F1198` with in-field addends 4 and 8; the
+   reference (splat's `.s`) emits addend 0 against the invented per-word symbols
+   `D_800F119C` / `D_800F11A0`. S + A is identical, which (4) proves.
+
+### The two blocking gates (both outside a grind session's surface)
+
+- **G1 — single-stem scope.** `tools/grinder/grind.ps1:596-600` allows a candidate to modify
+  only `src/<stem>.c` unless `tools/grinder/scope_allow.txt` carries a per-function line.
+  This diff also touches `include/game.h` and `src/text1b_b.c`. Both are in the
+  add-scope-allow ALLOWED classes (`include/*.h`, `src/*.c`); neither is on the denylist.
+  **Remedy: `scope_paths = ["include/game.h", "src/text1b_b.c"]`.** Note that `include/game.h`
+  is mandatory, not a convenience: prong (d) of the aggregate-merge family requires the
+  canonical shared-header declaration site and forbids a TU-local spelling.
+- **G2 — the sandbox score-0 precondition: NOT a blocker (measured this session).**
+  `tools/grinder/grind.ps1:579-583` rejects any candidate whose driver-run
+  `sandbox --disable all` is not 0. Against a reference built from HEAD (INCLUDE_ASM) this
+  form scores **2**, because the sandbox compares this TU's object with the canonical object
+  built from `asm/funcs/func_80062020.s`, whose own relocations name splat's per-word symbols
+  `D_800F119C` / `D_800F11A0` at addend 0 while this body emits `D_800F1198` with in-field
+  addends 4 and 8, and `engine/score.py` deliberately does not mask NAMED-symbol HI16/LO16
+  addends (module docstring :8-11; `_SECTION_ADDEND_RELOCS` comment :55-63). S + A is
+  identical, so the 2 is a false distance of exactly the known class
+  ([[sandbox-lo16-text-addend-false-distance]] is its section-relative cousin).
+  **Measured resolution, this session:** with the diff in place,
+  `verify-oracle --rebuild --allow-dirty` → `ok: true`, `build_matches: true`,
+  `build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa` (so the rebuilt reference is a
+  byte-correct build of the whole EXE, gated by the oracle itself), and then
+  `sandbox func_80062020 --disable all` → **score 0, 38/38, rules_dropped 0**. This is the
+  same mechanic the Judge accepted as "post-rebuild sandbox 0" for **func_800861BC**
+  (decisions.md 2026-09-02, final call PASS, nine-symbol merge, pre-rebuild residual 18)
+  and for **func_80033550** (2026-09-03 PASS). The earlier s15 note in this ledger calling
+  the candidate gate structurally unpassable is therefore RETRACTED: the landing session
+  must simply run `verify-oracle --rebuild --allow-dirty` before the driver's sandbox
+  re-verify. **G1 is the only real blocker.**
+
+### Landing recipe for the next session (after the scope grant)
+
+1. Apply `memory/grind/func_80062020/apply_s15.py apply` (three files; exact text also in
+   candidate.c's header).
+2. `verify-oracle --rebuild --allow-dirty` → confirm `build_matches: true` and the oracle
+   SHA1 (this both proves the bytes and makes the sandbox reference the byte-correct build).
+3. `sandbox func_80062020 --disable all` → 0 at 38/38.
+4. Write self_vet.md (the current one is already prong-by-prong) and return
+   `candidate-ready`. The driver's own sandbox re-verify then prints 0, the scope check
+   passes on the granted paths, and layer-1 + Judge rule on the C.
+
+### Construct standing
+
+The merged declaration is claimed under **per-word splat symbol → aggregate merge** (owner
+ruling 2026-08-17, `.claude/rules/no-new-park-categories.md:238`), prong-by-prong in
+`memory/grind/func_80062020/self_vet.md`; prong (c) is PARTIAL and disclosed
+(`undefined_syms_auto.txt:527-528` must keep D_800F119C / D_800F11A0 defined while
+`asm/funcs/func_800620B8.s` is INCLUDE_ASM and references them in asm). The epilogue is a
+plain chained assignment `D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;`
+— ordinary C, one spelling for all four row writes, no pointer local, no second address
+materialisation. It is NOT the standing banned construct (which is a pointer local plus a
+second, differently-spelled materialisation of the same row address), and no ban clearance is
+requested: `unban_construct` is not needed.
+
+**Ledger:** `memory/grind/func_80062020/{candidate.c,self_vet.md,evidence.md (s15 +
+s15 re-verification blocks),hypotheses.md,apply_s15.py}`; artifacts
+`tmp/grind/func_80062020/s15/`.
+
+## 2026-09-03 20:15 — func_80062020 — ruling: INTEGRATION HANDOFF filed for func_80062020 : docs/grind/decisions.md - 2026-09- — **ESCALATE**
+
+BYTES: PROVEN, and I proved them myself rather than crediting the ledger. I copied src/ + include/ + the root build files into a scratch tree OUTSIDE the repo (/tmp/judge62020, symlinked tools/ asm/ disc/ .venv; repo git status unchanged before and after, scratch since deleted), applied the banked diff programmatically from memory/grind/func_80062020/apply_s15.py (header block + body extracted from the banked file itself, not retyped), and ran a full clean `make`. Result: build/bb2.exe SHA1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. `build/asm/funcs/func_80062020.o` DOES NOT EXIST in that tree, and objdump -dr of build/src/text1b.o shows func_80062020 at exactly 38 instructions, opcode-for-opcode and order-for-order identical to asm/funcs/func_80062020.s (loop: lw/lui-addu-sw x3 with the addiu a0,12 and addiu v1,12 in place; epilogue: sll/addu/sll, la-pair, addu, sw 8(v0), sw 4(v0), then the lui/addu/sw at-form, jr/nop). So the matching bytes come from the C body, not from an asm object. The engine's own metrics/events.jsonl corroborates independently of the session's prose: `build` -> sha1 == oracle at 00:53:16 / 00:55:13 / 00:56:25 / 01:03:28 on a tree that verify-oracle had refused seconds earlier as dirty in src/text1b.c + src/text1b_b.c, and `sandbox func_80062020 --disable all` -> score 0, target_insns 38, build_insns 38, rules_dropped 0 after the --allow-dirty rebuild (01:01:45 and 01:07:51). The pre-rebuild residual of 2 is exactly the class the ledger names: this body relocates the two in-loop stores HI16/LO16 against D_800F1198 with in-field addends 4 and 8 while the reference .o (built from splat's .s) names D_800F119C / D_800F11A0 at addend 0; S+A is identical, and engine/score.py's own comments (module docstring lines 8-11 and the _SECTION_ADDEND_RELOCS comment at 55-63) say named-symbol HI16/LO16 addends are DELIBERATELY not masked. The linked SHA1 settles it.
+
+CONSTRUCT: legitimate on the record I can check, and NOT the standing ban. The banned construct (state.json banned_constructs[0]) is a pointer local plus a SECOND, differently-spelled materialisation of the same row address; I read rejected/epilogue-permuter-s4-dualspelling-chain.c myself and confirmed its chain mixes p[1]/p[2] with the full &D_800F1198+ofs expression — that is what the s14 judge_constraint forbids. The s15 body has no pointer local and ONE spelling, D_800F1198[i].unkN, for all four row writes; the DISP8|DISP4|LOSUM mix is two addressing modes GCC chose for one C address tree, not two source-level materialisations. No unban is needed and none is requested. The declaration change sits in the frozen 'per-word splat symbol -> aggregate merge' family (.claude/rules/no-new-park-categories.md:238). I verified its prongs myself: (a) the ORIGINAL binary walks the table with a 12-byte-stride IV (addiu $v1,$v1,0xC at 0x80062080, three words per step) and addresses the terminator record through one base at 0x8 / 0x4 (0x8006209C / 0x800620A0) — record stride plus base+offset, not symbol adjacency; func_800620B8.s reads the same table, so the shape is cross-function; (b) a 3xs32 struct in a flat array indexed by the record counter, no magic 12 anywhere; (c) C-side COMPLETE (all nine vestigial externs removed, one C handle left) with the splat-config half disclosed as blocked — undefined_syms_auto.txt:527-528 must keep D_800F119C / D_800F11A0 while func_800620B8 is INCLUDE_ASM and references them; the func_800861BC ruling (decisions.md 2026-09-02) already settled that this retention is what the sanctioned precedent e788983a itself did, so it is not a prong defect; (d) canonical shared header include/game.h, not TU-local, no per-use pointer pun — this is WHY the header path is mandatory, not a convenience; (e) byte-neutrality for every other consumer proven by my own full-EXE SHA1 on the exact tree to be landed.
+
+WHY THIS IS NOT MY CALL TO MERGE: the work is sound and complete, and the only remaining blocker is a commit surface a grind session may not stage. tools/grinder/grind.ps1's single-stem gate allows only src/text1b.c; this diff also touches include/game.h and src/text1b_b.c. Both clear _SCOPE_GRANT_ALLOWED_RE in tools/grinder/grindlib.py:401 (include/*.h and src/*.c) and neither is in _SCOPE_GRANT_DENY. That is precisely the integration-handoff shape per .claude/rules/integration-handoff-self-serve.md, with two direct precedents I checked in scope_allow.txt: func_800861BC include/sound.h (2026-09-02) and func_80033550 (2026-09-03). GRANT FOR THE DRIVER TO EXECUTE: add `func_80062020 include/game.h src/text1b_b.c` to tools/grinder/scope_allow.txt. The function stays ACTIVE and the landing candidate still faces the driver sandbox check, layer-1, and a Judge final call on the C — this widens scope, not standards.
+
+EVIDENCE READ: memory/grind/func_80062020/{state.json (judge_constraints + banned_constructs), candidate.c, self_vet.md, apply_s15.py, rejected/ (23 banked forms, incl. the two new s15 controls)}, tmp/grind/func_80062020/s15/evidence_s15.md, docs/grind/decisions.md (the 2026-09-03 handoff entry, the 19:24 inline-helper FAIL, the 2026-09-02 func_800861BC ruling), asm/funcs/func_80062020.s and func_800620B8.s, undefined_syms_auto.txt, engine/score.py, tools/grinder/grind.ps1 + grindlib.py + scope_allow.txt, metrics/events.jsonl.
+
+## 2026-09-03 — func_80062020 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-03)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+BYTES: PROVEN, and I proved them myself rather than crediting the ledger. I copied src/ + include/ + the root build files into a scratch tree OUTSIDE the repo (/tmp/judge62020, symlinked tools/ asm/ disc/ .venv; repo git status unchanged before and after, scratch since deleted), applied the banked diff programmatically from memory/grind/func_80062020/apply_s15.py (header block + body extracted from the banked file itself, not retyped), and ran a full clean `make`. Result: build/bb2.exe SHA1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. `build/asm/funcs/func_80062020.o` DOES NOT EXIST in that tree, and objdump -dr of build/src/text1b.o shows func_80062020 at exactly 38 instructions, opcode-for-opcode and order-for-order identical to asm/funcs/func_80062020.s (loop: lw/lui-addu-sw x3 with the addiu a0,12 and addiu v1,12 in place; epilogue: sll/addu/sll, la-pair, addu, sw 8(v0), sw 4(v0), then the lui/addu/sw at-form, jr/nop). So the matching bytes come from the C body, not from an asm object. The engine's own metrics/events.jsonl corroborates independently of the session's prose: `build` -> sha1 == oracle at 00:53:16 / 00:55:13 / 00:56:25 / 01:03:28 on a tree that verify-oracle had refused seconds earlier as dirty in src/text1b.c + src/text1b_b.c, and `sandbox func_80062020 --disable all` -> score 0, target_insns 38, build_insns 38, rules_dropped 0 after the --allow-dirty rebuild (01:01:45 and 01:07:51). The pre-rebuild residual of 2 is exactly the class the ledger names: this body relocates the two in-loop stores HI16/LO16 against D_800F1198 with in-field addends 4 and 8 while the reference .o (built from splat's .s) names D_800F119C / D_800F11A0 at addend 0; S+A is identical, and engine/score.py's own comments (module docstring lines 8-11 and the _SECTION_ADDEND_RELOCS comment at 55-63) say named-symbol HI16/LO16 addends are DELIBERATELY not masked. The linked SHA1 settles it.
+
+CONSTRUCT: legitimate on the record I can check, and NOT the standing ban. The banned construct (state.json banned_constructs[0]) is a pointer local plus a SECOND, differently-spelled materialisation of the same row address; I read rejected/epilogue-permuter-s4-dualspelling-chain.c myself and confirmed its chain mixes p[1]/p[2] with the full &D_800F1198+ofs expression — that is what the s14 judge_constraint forbids. The s15 body has no pointer local and ONE spelling, D_800F1198[i].unkN, for all four row writes; the DISP8|DISP4|LOSUM mix is two addressing modes GCC chose for one C address tree, not two source-level materialisations. No unban is needed and none is requested. The declaration change sits in the frozen 'per-word splat symbol -> aggregate merge' family (.claude/rules/no-new-park-categories.md:238). I verified its prongs myself: (a) the ORIGINAL binary walks the table with a 12-byte-stride IV (addiu $v1,$v1,0xC at 0x80062080, three words per step) and addresses the terminator record through one base at 0x8 / 0x4 (0x8006209C / 0x800620A0) — record stride plus base+offset, not symbol adjacency; func_800620B8.s reads the same table, so the shape is cross-function; (b) a 3xs32 struct in a flat array indexed by the record counter, no magic 12 anywhere; (c) C-side COMPLETE (all nine vestigial externs removed, one C handle left) with the splat-config half disclosed as blocked — undefined_syms_auto.txt:527-528 must keep D_800F119C / D_800F11A0 while func_800620B8 is INCLUDE_ASM and references them; the func_800861BC ruling (decisions.md 2026-09-02) already settled that this retention is what the sanctioned precedent e788983a itself did, so it is not a prong defect; (d) canonical shared header include/game.h, not TU-local, no per-use pointer pun — this is WHY the header path is mandatory, not a convenience; (e) byte-neutrality for every other consumer proven by my own full-EXE SHA1 on the exact tree to be landed.
+
+WHY THIS IS NOT MY CALL TO MERGE: the work is sound and complete, and the only remaining blocker is a commit surface a grind session may not stage. tools/grinder/grind.ps1's single-stem gate allows only src/text1b.c; this diff also touches include/game.h and src/text1b_b.c. Both clear _SCOPE_GRANT_ALLOWED_RE in tools/grinder/grindlib.py:401 (include/*.h and src/*.c) and neither is in _SCOPE_GRANT_DENY. That is precisely the integration-handoff shape per .claude/rules/integration-handoff-self-serve.md, with two direct precedents I checked in scope_allow.txt: func_800861BC include/sound.h (2026-09-02) and func_80033550 (2026-09-03). GRANT FOR THE DRIVER TO EXECUTE: add `func_80062020 include/game.h src/text1b_b.c` to tools/grinder/scope_allow.txt. The function stays ACTIVE and the landing candidate still faces the driver sandbox check, layer-1, and a Judge final call on the C — this widens scope, not standards.
+
+EVIDENCE READ: memory/grind/func_80062020/{state.json (judge_constraints + banned_constructs), candidate.c, self_vet.md, apply_s15.py, rejected/ (23 banked forms, incl. the two new s15 controls)}, tmp/grind/func_80062020/s15/evidence_s15.md, docs/grind/decisions.md (the 2026-09-03 handoff entry, the 19:24 inline-helper FAIL, the 2026-09-02 func_800861BC ruling), asm/funcs/func_80062020.s and func_800620B8.s, undefined_syms_auto.txt, engine/score.py, tools/grinder/grind.ps1 + grindlib.py + scope_allow.txt, metrics/events.jsonl.
+
+**Constraint recorded for any future session:** Land the banked s15 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py (aggregate declaration in include/game.h, the nine vestigial per-word externs removed, the uniform chained-assignment epilogue). Do not reintroduce a pointer local, a second address materialisation, or any of the banned dual-spelling forms; do not delete D_800F119C / D_800F11A0 from undefined_syms_auto.txt while asm/funcs/func_800620B8.s is still INCLUDE_ASM. Run `verify-oracle --rebuild --allow-dirty` BEFORE the driver's sandbox re-verify (pre-rebuild the score is a false 2 from named-symbol HI16/LO16 addend spelling; post-rebuild it is 0 at 38/38).

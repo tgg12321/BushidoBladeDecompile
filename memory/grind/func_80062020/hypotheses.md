@@ -1,8 +1,8 @@
-# Hypothesis ledger — func_80062020
+# Hypothesis ledger â€” func_80062020
 
 ## Honest floor: 10 (sandbox --disable all). Was stale-ledgered as 12 (pin-aided) / 20 (naive pure-C).
 
-The stale "12" was measured with the abandoned pinned src still in place —
+The stale "12" was measured with the abandoned pinned src still in place â€”
 register-asm pins are NOT stripped by the sandbox, so 12 was a cheat-aided
 score. Naive pure-C (walking a0[K] source, no pins) = 20. The s1 lever below = 10.
 
@@ -24,7 +24,7 @@ score. Naive pure-C (walking a0[K] source, no pins) = 20. The s1 lever below = 1
     * pointer p[0..2] / flat array  -> full CSE  (0/4/8(v0)), 7-insn epilogue
     * consistent `&sym+i12+K` / 3 distinct symbols -> full recompute, 9-insn
   Only the dual-expression (col a via symbol+index, cols b,c via pointer p)
-  reproduces target's split — and that is the rejected [[inline-asm-injection]]-
+  reproduces target's split â€” and that is the rejected [[inline-asm-injection]]-
   adjacent dual-spelling (same row, two spellings, no semantic purpose), which
   ALSO still fails to close (score 12: reg-alloc puts index in v0 not v1, order off).
 
@@ -33,7 +33,7 @@ score. Naive pure-C (walking a0[K] source, no pins) = 20. The s1 lever below = 1
   (b) needs col a spelled apart from cols b,c. The 4 pins in the abandoned src
   forced the v1 placement; without them GCC picks v0.
 
-## s2 findings (structural) — floor 10 -> 4; frontier hyps #1,#2,#3 all resolved
+## s2 findings (structural) â€” floor 10 -> 4; frontier hyps #1,#2,#3 all resolved
 
 - **H-index-v1 [CONFIRMED lever, floor 10 -> 4].** REUSE the loop's `ofs`
   variable to compute the terminator index (`ofs = i+i; ofs += i; ofs <<= 2;`
@@ -46,7 +46,7 @@ score. Naive pure-C (walking a0[K] source, no pins) = 20. The s1 lever below = 1
 
 - **H-object-split [KILLED].** A genuine flag(1198)/data(119C) object model
   (col a via 1198 symbol+index, cols b,c via a 119C-anchored pointer) reaches
-  score 2 — col a's store MATCHES target — but cannot close: target anchors the
+  score 2 â€” col a's store MATCHES target â€” but cannot close: target anchors the
   b,c "data view" pointer at 1198 (disp 4/8), not 119C, proving b,c share the
   flag's base (one interleaved struct-row). Resolves frontier hyp #1.
 
@@ -60,25 +60,25 @@ score. Naive pure-C (walking a0[K] source, no pins) = 20. The s1 lever below = 1
   %hi/%lo(1198)+index address while cols b,c share base pointer v0=&1198+index.
   This partial CSE is produced by NO consistent pure-C spelling; the ONLY
   distance-0 form is the same-lvalue dual-spelling (col a re-spelled as
-  *(&1198+ofs) apart from p) — a codegen steer (rejected bank, now measured at 0
+  *(&1198+ofs) apart from p) â€” a codegen steer (rejected bank, now measured at 0
   with the s2 register fix). scan_hand_coded = LOW 0/8 -> canonical-asm refused.
 
-## s3 findings (structural) — CSE-defeat lever KILLED; structural axis exhausted
+## s3 findings (structural) â€” CSE-defeat lever KILLED; structural axis exhausted
 
 - **H-cse-defeat [KILLED].** The frontier CSE-defeat lever (separate col a's
   store from the b,c base pointer WITHOUT a same-lvalue respelling) is dead.
   Measured this session (all clean pure C):
-    * store order c,a,b (p[2],p[0],p[1]) = 5 — col a STILL folds to 0(v0)
+    * store order c,a,b (p[2],p[0],p[1]) = 5 â€” col a STILL folds to 0(v0)
     * (with s2's c,b,a=4 and a,b,c=5) the base-pointer CSE is store-order-
       INVARIANT: GCC forms v0=&1198+index once and folds p[0] onto 0(v0)
       regardless of order. No permutation reaches target's partial CSE.
   The other two sub-avenues are structurally unavailable, not merely unmeasured:
-    * type/width distinction — all 3 cols are `sw` of 0 in target; narrowing
+    * type/width distinction â€” all 3 cols are `sw` of 0 in target; narrowing
       col a changes bytes; a differently-typed pointer VIEW of the same lvalue
       is numerically identical and GCC CSEs the address rtx regardless of
       pointee type -> folds to 0(v0), and spelled as two views IS the banked
       same-lvalue dual-spelling (cheat).
-    * intervening real dependency — col a stores constant 0 with no dependency
+    * intervening real dependency â€” col a stores constant 0 with no dependency
       on b/c; a 3-word constant-zero terminator has no natural intervening op;
       manufacturing one is a codegen steer / dead construct (forbidden).
   Artifact: tmp/grind/func_80062020/s3/structural_cse_defeat_sweep.md;
@@ -90,7 +90,7 @@ clean floor is 4; distance 0 exists ONLY via the banked same-lvalue dual-spellin
 coercion. This is endgame-lock-disposition territory (both AND-gates fail:
 scan_hand_coded LOW 0/8 -> refuse asm; no SOTN precedent for same-lvalue
 respelling). Remaining sanctioned axis NOT yet run: **permuter** (fresh-seed
-campaign from the floor-4 base, per the sibling-cluster protocol —
+campaign from the floor-4 base, per the sibling-cluster protocol â€”
 func_80048530/func_80022F34 ran permuter BEFORE escalating). Expectation: the
 permuter finds only the dual-spelling / alias-rename / width-cast respellings
 (all cheats), as it did for sibling func_80048530 (13 zero-finds, all the single
@@ -124,7 +124,7 @@ forms, file the endgame-lock OWNER-ESCALATION and return owner-gated.
 ## [s2] A genuine flag(1198)/data(119C) object-model split (col a via 1198 symbol+index, cols b,c via a 119C-anchored pointer) reproduces target's partial CSE without a same-lvalue respelling.
 - mechanism: If col a (loop flag) and cols b,c (data) were distinct objects, accessing them via different address expressions would be semantically justified, giving col a a separate %hi/%lo recompute while b,c share a base pointer.
 - probe: Wrote p=(s32*)(&D_800F119C+ofs); p[1]=0; p[0]=0; *(&D_800F1198+ofs)=0; sandbox + objdump.
-- result: Score 2 (build 38). col a's store MATCHES target exactly, but the b,c pointer is anchored at 119C (disp 0/4) while target anchors b,c at 1198 (disp 4/8) — proving b,c share the flag's base (one interleaved struct-row {flag@1198,b@119C,c@11A0}), so no genuine object separation reproduces target. Cannot close. Resolves frontier hyp #1.
+- result: Score 2 (build 38). col a's store MATCHES target exactly, but the b,c pointer is anchored at 119C (disp 0/4) while target anchors b,c at 1198 (disp 4/8) â€” proving b,c share the flag's base (one interleaved struct-row {flag@1198,b@119C,c@11A0}), so no genuine object separation reproduces target. Cannot close. Resolves frontier hyp #1.
 - verdict: KILLED
 
 ## [s2] A distinct-symbol/displacement spelling makes GCC combine fold 119C/11A0 as +4/+8 off a shared %hi(1198) base while keeping 1198 as its own %hi/%lo, reproducing target's mix.
@@ -136,7 +136,7 @@ forms, file the endgame-lock OWNER-ESCALATION and return owner-gated.
 ## [s2] Target's col-a partial CSE (base pointer v0 for cols b,c + separate %hi/%lo(1198)+index for col a) has a legitimate pure-C form.
 - mechanism: The only source shape producing base-pointer-for-b,c + separate-recompute-for-a is spelling the identical lvalue &D_800F1198+ofs two ways: once as pointer p's base, once as a direct symbol store for col a.
 - probe: Measured the same-lvalue dual-spelling (p[2],p[1] via p=&1198+ofs; col a via *(&1198+ofs)) with the s2 register fix in place; also ran scan_hand_coded.
-- result: Distance 0 (build 38 == target 38) — but ONLY via the same-lvalue dual-spelling, a codegen steer (rejected bank; was score 12 at s1 before the register fix). scan_hand_coded=LOW 0/8 (no S1/S2/S6) -> canonical-asm refused. No legitimate consistent spelling closes it.
+- result: Distance 0 (build 38 == target 38) â€” but ONLY via the same-lvalue dual-spelling, a codegen steer (rejected bank; was score 12 at s1 before the register fix). scan_hand_coded=LOW 0/8 (no S1/S2/S6) -> canonical-asm refused. No legitimate consistent spelling closes it.
 - verdict: KILLED
 
 ## [s3] A store-order permutation of the 3 base-pointer epilogue zero-stores defeats GCC's CSE of col a's address (&1198+index) onto the base pointer v0, reproducing target's partial CSE (b,c via 4/8(v0) + col a via separate %hi/%lo(1198)+v1 recompute).
@@ -151,7 +151,7 @@ forms, file the endgame-lock OWNER-ESCALATION and return owner-gated.
 - result: Structurally unavailable: all 3 cols are `sw` of 0 (narrowing col a changes bytes; a differently-typed pointer VIEW of the same address folds via address-rtx CSE and, spelled as two views, IS the banked same-lvalue dual-spelling). A 3-word constant-zero terminator has no natural intervening op; manufacturing one is a codegen steer/dead construct (forbidden).
 - verdict: KILLED
 
-## s4 findings (permuter) — permuter axis KILLED
+## s4 findings (permuter) â€” permuter axis KILLED
 
 - **H-permuter [KILLED].** Fresh-seed permuter campaign from the floor-4 base
   finds a legitimate (non-dual-spelling) distance-0 form.
@@ -169,12 +169,12 @@ forms, file the endgame-lock OWNER-ESCALATION and return owner-gated.
 ## Disposition (s4): OWNER-GATED
 All sanctioned axes measured dead: structural (s1 indexed-source loop lever; s2
 ofs-reuse register lever + object-split/combine-fold KILLs; s3 CSE-defeat KILL)
-and permuter (s4, two basins, ~46k iters — only byte-0 form is the dual-spelling
+and permuter (s4, two basins, ~46k iters â€” only byte-0 form is the dual-spelling
 cheat). Both endgame-lock AND-gates fail (scan_hand_coded LOW 0/8; no SOTN
 precedent for same-lvalue respelling). OWNER-ESCALATION filed in
 docs/grind/decisions.md (2026-07-24). Clean floor-4 pure-C candidate on main,
-0 rules — NOT a cheat, does not byte-match. Awaiting owner ruling (option a
-canonical-asm NOT supportable / option b REFUSE → INCOMPLETE-owner-accepted;
+0 rules â€” NOT a cheat, does not byte-match. Awaiting owner ruling (option a
+canonical-asm NOT supportable / option b REFUSE â†’ INCOMPLETE-owner-accepted;
 sibling func_80048530 already ruled option b).
 
 ## [s4] A fresh-seed permuter campaign from the clean floor-4 base finds a legitimate (non-dual-spelling) distance-0 form for func_80062020's col-a partial-CSE epilogue.
@@ -189,7 +189,7 @@ sibling func_80048530 already ruled option b).
 - result: Plateaued at score 15, NO byte-0 find. Re-anchoring b,c to &1198+ofs as a pointer makes col a's *(&1198+ofs) the same lvalue as that pointer's [0] -> collapses into the dual-spelling. No legitimate byte-0 form exists from this basin either.
 - verdict: KILLED
 
-## s5 findings (synthesis) — merged attack, corrected mechanism, reset frontier
+## s5 findings (synthesis) â€” merged attack, corrected mechanism, reset frontier
 
 ### What the four prior sessions actually established (merged, de-duplicated)
 1. The LOOP is solved: the fixed-base indexed source read (s1) + the `ofs` biv
@@ -207,14 +207,14 @@ s2/s3 attributed the residual to **CSE** ("base-pointer CSE folds col a"). The
 `(set (mem (reg 76)) 0)` at expand (insn 112), before any optimizer pass runs.
 The decision is made by **RTL expansion / the MIPS `legitimize_address` path**,
 keyed on the C TREE SHAPE. Consequence: every "defeat the CSE" style lever is
-a category error for this function — there is no fold to defeat. s3's KILL was
+a category error for this function â€” there is no fold to defeat. s3's KILL was
 right for the wrong reason, and the correct generalization is stronger:
 
   **EXPAND-TIME ADDRESSING LAW (s5).** For an epilogue that touches one table
   element at offsets 0/4/8:
    * any tree shape that force_regs the element address (pointer variable,
      `struct` COMPONENT_REF, even `COMPONENT_REF` whose member is a 1-element
-     array) makes ALL THREE stores `base + disp` — offset 0 included;
+     array) makes ALL THREE stores `base + disp` â€” offset 0 included;
    * any tree shape that keeps the symbol in the address expression (2D array
      `arr[i][K]`) folds the constant column INTO the symbol for ALL THREE
      columns, so no shared base ever forms.
@@ -240,7 +240,7 @@ right for the wrong reason, and the correct generalization is stronger:
   shape is uniform per-column `la` (14-15); no shape mixes. Additionally the
   struct shapes are +6/+7 WORSE than the current floor because they hoist
   `la(sym)` ahead of the index computation, the reverse of target's order.
-  Verdict: KILLED — and note this also forecloses the 5-prong aggregate-merge
+  Verdict: KILLED â€” and note this also forecloses the 5-prong aggregate-merge
   family as a *closing* lever here (it cannot even tie the floor), independent of
   whether its evidence prongs would pass.
 - **H-solver [KILLED / inapplicable].** `inverse_compose classify` is not wired
@@ -252,11 +252,11 @@ right for the wrong reason, and the correct generalization is stronger:
   recommendation is hereby measured dead for func_80062020.
 
 ### RESET FRONTIER (strongest 1-3, in order)
-1. **F1 — FORENSICS: recover the original object model from SIBLING byte
+1. **F1 â€” FORENSICS: recover the original object model from SIBLING byte
    evidence (highest value, never attempted).** The func_800651F0 owner ruling
    (docs/grind/decisions.md, 2026-07-27 23:04) PASSed a contested spelling
    specifically because "independent BYTE evidence the original source genuinely
-   had this shape" was recovered from the target bytes of sibling functions —
+   had this shape" was recovered from the target bytes of sibling functions â€”
    "decompilation evidence recovered from target bytes, not GCC-steering
    rationale". That is the ONLY gate this function has never tested. Probe:
    grep every `asm/funcs/*.s` for `D_800F1198` / `D_800F119C` / `D_800F11A0`
@@ -264,12 +264,12 @@ right for the wrong reason, and the correct generalization is stronger:
    classify each reference site's addressing form. Decisive outcomes:
    (a) a site that touches ONLY the flag column, or only cols b,c, in a context
    with no possible steer, is direct evidence that the original source addressed
-   the flag column through a different idiom than the data columns — which
+   the flag column through a different idiom than the data columns â€” which
    converts the epilogue's two address expressions from "a steer" into
    "reconstruction of original variable identity" (the exact reasoning the
    func_800651F0 ruling credited); (b) uniform addressing at every sibling site
    is evidence AGAINST, and closes this line honestly.
-2. **F2 — kill the struct-shape operand-order penalty (cheap, enables F1).**
+2. **F2 â€” kill the struct-shape operand-order penalty (cheap, enables F1).**
    The struct/aggregate shapes cost +6 purely because `la(sym)` is emitted before
    the index. Probe: re-measure the struct shapes with the index materialized
    first (explicit `ofs = i+i; ofs += i; ofs <<= 2;` split-init already in the
@@ -278,14 +278,14 @@ right for the wrong reason, and the correct generalization is stronger:
    the floor at 4, any object-model finding from F1 becomes expressible at
    no byte cost; if it cannot tie 4, the aggregate declaration is dead as a
    vehicle and F1's finding would have to be expressed in the byte-offset idiom.
-3. **F3 — ONLY after F1 returns positive: a precise ruling-request.** The banked
+3. **F3 â€” ONLY after F1 returns positive: a precise ruling-request.** The banked
    FAIL framing is "wrote the same lvalue two different ways"
    (.claude/rules/walking-pointer-serializes-parallel-loads.md). Strictly, the
    candidate form never writes `p[0]`: the flag column is written ONCE, in the
    SAME idiom the loop body uses for it (`*(s32*)((u8*)&D_800F1198 + ofs) = ...`),
    while the row pointer is introduced only for the two data columns. Whether
    that is one coherent whole-function idiom or a steer is a genuine
-   classification question — but it is NOT askable without F1's byte evidence,
+   classification question â€” but it is NOT askable without F1's byte evidence,
    because s4 already failed the "in-hand precedent" gate on exactly this
    construct. Do NOT re-file it as an escalation packet without F1: a packet
    whose YES would sanction a no-precedent family is pre-decided NO
@@ -315,20 +315,20 @@ right for the wrong reason, and the correct generalization is stronger:
 - result: score 4, build_insns 35 - exactly ties the byte-offset candidate. The +6/+7 penalty of the earlier struct shapes is caused entirely by the rows[i] array-ref index materialization order (la(sym) hoisted ahead of the index), not by the struct type. An aggregate object model is byte-free here.
 - verdict: CONFIRMED
 
-## s6 findings (synthesis) — F1 resolved, 2D whole-function model killed, precedent gate overturned; floor flat at 4
+## s6 findings (synthesis) â€” F1 resolved, 2D whole-function model killed, precedent gate overturned; floor flat at 4
 
 - **H-F1-object-model [KILLED].** "Sibling asm sites reveal an original object
   model in which the flag column is addressed through a different idiom than the
   data columns." Probe: full symbol sweep of asm/funcs/, src/, include/ for
   D_800F1198/119C/11A0; six consumer sites classified by addressing form
   (tmp/grind/func_80062020/s6/forensics_sweep.md). Result: the table's only
-  consumer, func_800620B8, addresses all three columns identically — per-column
-  symbol + byte-index (LO_SUM) — and at 800623A4..80062418 reads all three
+  consumer, func_800620B8, addresses all three columns identically â€” per-column
+  symbol + byte-index (LO_SUM) â€” and at 800623A4..80062418 reads all three
   columns of ONE row back to back with the same index register live, emitting
   three independent LO_SUM addresses and never forming a shared row base. No
   divergent idiom exists. Additionally the consumer's arithmetic REFUTES a split:
   col a is `sra`'d by 1 into a vector's X component while its bit 0 is the list
-  terminator flag, i.e. col a packs `x*2 | flag` — flag and coordinate are the
+  terminator flag, i.e. col a packs `x*2 | flag` â€” flag and coordinate are the
   same word. Verdict: KILLED, and this is the branch the s5 frontier itself
   pre-registered as "a uniform result closes this line honestly".
 
@@ -345,22 +345,22 @@ right for the wrong reason, and the correct generalization is stronger:
   Result: **score 24, build_insns 30** (vs floor 4 / 35). Mechanism, read
   straight off target: `addiu $a1,$a1,1` (count) fires MID-loop at 8006204C
   while `addiu $v1,$v1,0xC` (byte offset) fires in the loop-end delay slot at
-  80062080 — two INDEPENDENT induction variables bumped at different points. A
+  80062080 â€” two INDEPENDENT induction variables bumped at different points. A
   giv derived from `i` would be bumped where `i` is bumped, so the loop's source
   provably carries an explicit byte-offset variable alongside the count. The
   candidate's three-distinct-expression loop is therefore the source shape, and
   it agrees with the consumer's idiom. Verdict: KILLED. Banked:
   rejected/epilogue-2d-wholefunction-loop-biv-broken.c.
 
-- **H-two-shape-theorem [CONFIRMED — closes the uniform-spelling search space by
+- **H-two-shape-theorem [CONFIRMED â€” closes the uniform-spelling search space by
   derivation].** "Target's epilogue cannot be produced by ANY single C tree
   shape, for a reason that follows from MIPS `legitimize_address` rather than
   from enumeration." Mechanism: at RTL expansion,
   `(plus (symbol_ref S) (reg X))` with no constant IS a legal MIPS address, so
   expand emits `sw $0,S($X)` directly and the symbol never enters a general
-  register — that is target's col-a store, the whole loop, and all six consumer
+  register â€” that is target's col-a store, the whole loop, and all six consumer
   sites. `(plus (symbol_ref S) (reg X) (const K))` with K != 0 is NOT legal, so
-  GCC folds K into the symbol (`la(S+K)`) and force_regs that — which is exactly
+  GCC folds K into the symbol (`la(S+K)`) and force_regs that â€” which is exactly
   why s5 measured the 2D shape emitting a separate `la(sym+4K)` per column with
   no shared base. A shared `base+disp` (target's `8(v0)`/`4(v0)`) therefore
   requires the row address to exist as a POINTER VALUE before the constant is
@@ -371,7 +371,7 @@ right for the wrong reason, and the correct generalization is stronger:
   provably futile, not merely unproductive across s1-s5. Any future session that
   proposes one is re-deriving a closed question.
 
-- **H-sotn-precedent-empty [KILLED — s4's gate assertion is false].** s4's
+- **H-sotn-precedent-empty [KILLED â€” s4's gate assertion is false].** s4's
   escalation asserts "no SOTN/VS/ESA/oot/MGS precedent for a same-lvalue
   respelling"; it was never scanned. Probe: two scripted scans of the
   sotn-decomp master clone (HEAD db41b28eee52969244a52cc269c8163d1ed8826a),
@@ -380,13 +380,13 @@ right for the wrong reason, and the correct generalization is stronger:
   narrow same-lvalue gate** (`p = &GLOBAL[idx];` with both `p->member` and
   `GLOBAL[idx].member` in one function). Hand-verified exemplar with function
   boundaries confirmed: SOTN `src/st/cen/e_chamber.c` `EntityPlatform`
-  (lines 70-571) — `Tilemap* tilemap = &g_Tilemap;` at :72, `tilemap->height`
+  (lines 70-571) â€” `Tilemap* tilemap = &g_Tilemap;` at :72, `tilemap->height`
   at :201/:335/:382/:489/:547, `g_Tilemap.height` read DIRECTLY at :240.
   Verdict: KILLED. The endgame-lock AND-gate 2 ("in-hand SOTN-master precedent
   you can CITE") is no longer a failed gate for the alias family; it is a live
   citation.
 
-## s7 (synthesis) — predictions tested
+## s7 (synthesis) â€” predictions tested
 
 **H-s7-1. The two-shape theorem's prong 1 is node-independent: any tree shape that
 turns `&D_800F1198 + ofs` into a pointer VALUE will emit the offset-0 store as
@@ -395,11 +395,11 @@ Mechanism: MIPS `legitimize_address` at RTL expansion decides addressing from th
 address expression, not from the access node; once the element address is force_reg'd
 into a pseudo, `(mem (plus base K))` is the only legal form for every K including 0.
 Probe: two PRE-REGISTERED predictions on node classes s5 never measured, chosen as
-the most plausible falsifiers — (A) `*p = 0;` (INDIRECT_REF instead of the ARRAY_REF
+the most plausible falsifiers â€” (A) `*p = 0;` (INDIRECT_REF instead of the ARRAY_REF
 `p[0]` the law was built on) and (B) `union RowU { s32 a; s32 w[3]; }` with `p->a = 0`
 (a union whose offset-0 member ALIASES the whole row, the one configuration where a
 symbol-relative re-expansion was conceivable). Both predicted score 4 / build_insns 35.
-Result: **A = 4 / 35, B = 4 / 35 — both exact, insn count included.**
+Result: **A = 4 / 35, B = 4 / 35 â€” both exact, insn count included.**
 Verdict: **CONFIRMED.** Prong 1 now holds across seven distinct tree-node classes
 (pointer ARRAY_REF, pointer INDIRECT_REF, struct COMPONENT_REF, 1-element-array member,
 union member at offset 0, union member that is an array, plus the prong-2 contrapositive
@@ -412,19 +412,19 @@ would exist and the whole derivation would collapse.
 Probe: re-read the target bytes directly (asm/funcs/func_80062020.s:29-39) rather than
 inheriting the ledger's claim. Result: `$v1` (= count*12) feeds BOTH the `addu $v0,$v1,$v0`
 row base and the `addu $at,$at,$v1` LO_SUM address; `%hi/%lo` on both sides name the same
-symbol `D_800F1198`. Verdict: **CONFIRMED** — one address, two shapes.
+symbol `D_800F1198`. Verdict: **CONFIRMED** â€” one address, two shapes.
 
 **H-s7-3 (inherited from s6 frontier item 1, resolved by the Judge, not by measurement).
 Is the row-alias-plus-direct-flag-store epilogue an instance of the sanctioned
 pointer-alias family, or the banked same-lvalue dual-spelling?**
-Result: docs/grind/decisions.md 2026-08-25 21:17 — **FAIL**. The family sanctions
+Result: docs/grind/decisions.md 2026-08-25 21:17 â€” **FAIL**. The family sanctions
 introducing a redundant handle in place of the global, not routing one element of one
 address around that handle; the shape is inverted relative to all 34 cited SOTN instances
 and is first-reach of an un-exemplified shape; default-FAIL governs the residual doubt.
 Verdict: **KILLED.** The construct is not available under any current family, and s6's
 derivation work is expressly preserved by the same ruling.
 
-## Open frontier (reset for the next ladder pass — s7)
+## Open frontier (reset for the next ladder pass â€” s7)
 
 The floor-4 -> 0 gap is a CLOSED search space plus ONE open policy question. There is no
 spelling left to find: the two-shape law now predicts the score of any candidate shape
@@ -432,7 +432,7 @@ before it is compiled (force_reg shapes -> 4, occasionally 5 on store order; sym
 shapes -> 6, 2D shapes 10-15, whole-function 2D 24), and the only shape that reaches 0 is
 the one the Judge FAILed on 2026-08-25.
 
-1. **[OWNER DECISION — FILED 2026-08-25, packet in docs/grind/decisions.md] Does
+1. **[OWNER DECISION â€” FILED 2026-08-25, packet in docs/grind/decisions.md] Does
    byte-derived provenance govern over uniformity of spelling for this function?**
    The two-shape theorem is a derivation about the ORIGINAL source recovered from target
    instructions, which is the standard the owner credited in the func_800651F0 rulings
@@ -443,7 +443,7 @@ the one the Judge FAILed on 2026-08-25.
    epilogue, function-specific and evidence-gated, no rule text changed. NO -> the
    function is a fidelity-limited lock and routes out of active grinding as a
    proved-closed search space at honest floor 4 (canonical-asm is independently
-   unavailable: scan_hand_coded LOW 0/8). Next probe: none — this is a ruling.
+   unavailable: scan_hand_coded LOW 0/8). Next probe: none â€” this is a ruling.
 
 2. **[ONLY IF SOMEONE DOUBTS THE LAW] Falsify the two-shape theorem rather than search
    under it.** The productive form of doubt is no longer "try another spelling" but
@@ -452,7 +452,7 @@ the one the Judge FAILed on 2026-08-25.
    now failed to do it, and prong 2 explains why every symbol-keeping shape refuses to
    share a base. Next probe: if attempted, do it as a MINIMAL standalone cc1 test case
    outside this function (a 3-word global row, one indexed store per column), not as
-   another src/text1b.c edit — it is a compiler-behaviour question, not a BB2 question,
+   another src/text1b.c edit â€” it is a compiler-behaviour question, not a BB2 question,
    and the sandbox loop is the slow way to ask it.
 
 3. **[DO NOT RE-RUN] Axes measured dead, with the session that killed them.** structural
@@ -460,7 +460,7 @@ the one the Judge FAILed on 2026-08-25.
    aggregate/tree-shape (s5), solver (s5: residual is PRE-RA, 35 vs 38 insns; the
    classifier is not even wired for this function), forensics (s6: one consumer,
    func_800620B8, addresses all three columns identically and its arithmetic refutes a
-   flag/data object split — col a packs `x*2 | flag`), whole-function 2D model (s6,
+   flag/data object split â€” col a packs `x*2 | flag`), whole-function 2D model (s6,
    score 24). Re-running any of these is re-measuring a prediction.
 
 ## [s6] The two-shape theorem's prong 1 is node-independent: any C tree shape that turns &D_800F1198+ofs into a pointer VALUE emits the offset-0 store as base+disp, whatever RTL node spells the access.
@@ -481,9 +481,9 @@ the one the Judge FAILed on 2026-08-25.
 - result: FAIL. The family sanctions introducing a redundant handle in place of the global, not routing one element of one address around that handle; the shape is inverted relative to all 34 instances (the alias's own offset-0 target is precisely the element not reached through it) and is first-reach of an un-exemplified shape; default-FAIL governs the residual doubt. The ruling expressly preserves s6's derivation work.
 - verdict: KILLED
 
-## s7 (2026-08-30) — the provenance frontier item, RESOLVED by owner ruling and measured
+## s7 (2026-08-30) â€” the provenance frontier item, RESOLVED by owner ruling and measured
 
-**H-s7-provenance-governs [CONFIRMED — by owner ruling 6a, then measured].** Statement:
+**H-s7-provenance-governs [CONFIRMED â€” by owner ruling 6a, then measured].** Statement:
 "the byte-derived two-shape derivation is admissible as decompilation evidence, so the
 epilogue may write column a in a second expression shape and the function closes at 0."
 This was the top frontier item carried from s6 and was explicitly not decidable by the
@@ -497,13 +497,13 @@ Result: `sandbox --disable all` score **0**, build_insns 38 == target 38, rules_
 function is a candidate at distance 0 with a rule-citing annotation; no family is granted
 and nothing generalises beyond func_80062020 (the ruling says so in terms).
 
-**H-s7-solver-applicable [KILLED — restated, not re-measured].** Statement: "the residual is
+**H-s7-solver-applicable [KILLED â€” restated, not re-measured].** Statement: "the residual is
 an RA seat or a scheduler tie that `tools/ra_solver` / `tools/sched_solver` can type."
-Mechanism: s5 measured build_insns 35 vs target 38 — a three-instruction COUNT difference
+Mechanism: s5 measured build_insns 35 vs target 38 â€” a three-instruction COUNT difference
 originating at RTL expansion (the `.rtl` dump has the column-a store as
 `(set (mem (reg 76)) 0)` at insn 112), so there is no allocation seat and no emission order
 to invert; both solvers operate strictly downstream of the divergence. Probe: none run this
-session — the owner directive closed the function at 0 before any residual remained to
+session â€” the owner directive closed the function at 0 before any residual remained to
 classify, and re-running a solver against a zero residual is meaningless.
 Verdict: **KILLED (inherited from s5, re-affirmed by the closure)**. Any future session that
 proposes a solver pass on this function is re-deriving a closed question.
@@ -521,22 +521,22 @@ on the answer.
 ## [s8] The two-shape law's prong 2 is true: no symbol-keeping C tree shape can emit a shared base+disp for two columns of a row while emitting a LO_SUM symbol-relative address for a third.
 - mechanism: claimed by s5/s6 to follow from MIPS `legitimize_address` folding the column constant K into the symbol whenever the symbol is present in the address expression, so a symbol-keeping shape can only ever produce per-column `la(sym+K)`.
 - probe: the falsification test the s7 frontier prescribed, run as a MINIMAL standalone cc1 harness outside BB2 (tmp/grind/func_80062020/s7/falsify.py + falsify2.py + falsify3.py): 53 tree shapes, oracle cc1 + verbatim CC_FLAGS, each `sw $0` store's address operand classified LOSUM vs DISP.
-- result: **FALSIFIED.** `(*(A + n))[2] = 0; (*(A + n))[1] = 0; (*(A + n))[0] = 0;` — one uniform template, symbol kept, no pointer variable — emits `LOSUM[A+8] | DISP0 | DISP0`. Four further spellings of the same family and the flat `A[n*3+K]` shape mix as well, in all six column orders (falsif2_results.txt). Plain `A[n][K]` does not mix, so the mix is a property of the exact tree, not of "symbol present".
+- result: **FALSIFIED.** `(*(A + n))[2] = 0; (*(A + n))[1] = 0; (*(A + n))[0] = 0;` â€” one uniform template, symbol kept, no pointer variable â€” emits `LOSUM[A+8] | DISP0 | DISP0`. Four further spellings of the same family and the flat `A[n*3+K]` shape mix as well, in all six column orders (falsif2_results.txt). Plain `A[n][K]` does not mix, so the mix is a property of the exact tree, not of "symbol present".
 - verdict: **KILLED** (as a general law). Its CONCLUSION for this function survives on the narrower ground below.
 
 ## [s8] The LO_SUM-vs-base+disp choice for a store is made by RTL EXPAND / legitimize_address, keyed on the C tree shape (s5 attribution).
 - mechanism: s5 read the residual as expand choosing `(mem (plus REG CONSTANT_ADDRESS))` vs force_reg'ing the element address.
 - probe: read the machine description (`tools/gcc-2.7.2/config/mips/mips.h:2286` GO_IF_LEGITIMATE_ADDRESS, `:2433` LEGITIMIZE_ADDRESS) and diff the `-da` dumps of a mixing shape across passes (dumps_new_2d_rowptr_inline/in.i.{rtl,cse,loop,combine}).
-- result: `LEGITIMIZE_ADDRESS` only rewrites REG + large CONST_INT and never sees symbol+register addresses. In the mixing shape, `.rtl`, `.cse` and `.loop` all carry three plain `(set (mem (reg N)) 0)` stores with NO symbol in any address; the LO_SUM first appears in `.combine`, where the single-use address pseudo's def chain (`reg = const(sym+8)`, `reg' = ofs + reg`) is folded into the MEM. Combine builds LOG_LINKS only for single-use defs, so a multi-use base pseudo (the shared `reg 78` in dumps_new_struct_inline_addr) can never be folded and stays base+disp — including at disp 0.
+- result: `LEGITIMIZE_ADDRESS` only rewrites REG + large CONST_INT and never sees symbol+register addresses. In the mixing shape, `.rtl`, `.cse` and `.loop` all carry three plain `(set (mem (reg N)) 0)` stores with NO symbol in any address; the LO_SUM first appears in `.combine`, where the single-use address pseudo's def chain (`reg = const(sym+8)`, `reg' = ofs + reg`) is folded into the MEM. Combine builds LOG_LINKS only for single-use defs, so a multi-use base pseudo (the shared `reg 78` in dumps_new_struct_inline_addr) can never be folded and stays base+disp â€” including at disp 0.
 - verdict: **KILLED / RE-ATTRIBUTED.** The deciding pass is **combine**, gated on single-use of the address pseudo. Expand only decides how many address pseudos exist; CSE decides how many survive.
 
-## [s8, OPEN — the sharpened residual] A uniform C spelling can leave CSE with two un-unified address chains over the same `ofs`, one multi-use (feeding disp 8 and 4) and one single-use ending in the symbolic constant (folded by combine to `sw $0,sym($v1)`).
+## [s8, OPEN â€” the sharpened residual] A uniform C spelling can leave CSE with two un-unified address chains over the same `ofs`, one multi-use (feeding disp 8 and 4) and one single-use ending in the symbolic constant (folded by combine to `sw $0,sym($v1)`).
 - mechanism: expand emits one address pseudo AND one `reg = symbol_ref` per access (three of each in dumps_new_struct_inline_addr/in.i.rtl); CSE unifies them into one base, after which combine's single-use rule forbids the LO_SUM. The target proves the 1998 compilation reached combine with two chains. Everything now hinges on what CSE will and will not unify.
-- probe (for the next forensics session, cheap — the standalone harness makes each shape ~1s):
+- probe (for the next forensics session, cheap â€” the standalone harness makes each shape ~1s):
   (a) instrument or dump `.cse` for shapes whose two accesses use the row base in different
-      *modes/types* (e.g. a `u8`/`u16` access at offset 0 alongside `s32` accesses at 4/8 — MEM
+      *modes/types* (e.g. a `u8`/`u16` access at offset 0 alongside `s32` accesses at 4/8 â€” MEM
       mode participates in CSE hashing);
-  (b) [KILLED in s8 — measured, falsif5_results.txt] shapes that put the offset-0 access in a
+  (b) [KILLED in s8 â€” measured, falsif5_results.txt] shapes that put the offset-0 access in a
       different extended basic block from the 4/8 accesses. Four control-flow splits tried on
       the array-decay struct-cast shape; all four still measure DISP8|DISP4|DISP0. A BB boundary
       does not defeat the unification.
@@ -544,7 +544,7 @@ on the answer.
       already materialises, so the two chains are not syntactically equal at CSE time.
   Each is ordinary C, not a coercion family; (b) in particular is a control-flow question, and
   the target's epilogue does sit immediately after the loop-exit label `.L80062084`.
-- verdict: UNTESTED. This replaces "the uniform-spelling space is closed by proof" — that claim
+- verdict: UNTESTED. This replaces "the uniform-spelling space is closed by proof" â€” that claim
   rested on the now-falsified prong 2 and on the superseded expand attribution.
 
 ## [s7] Prong 2 of the s5/s6 two-shape law holds: no symbol-keeping C tree shape can emit a shared base+disp for two columns of a row while emitting a LO_SUM symbol-relative address for a third.
@@ -566,7 +566,7 @@ on the answer.
 - verdict: KILLED
 
 ## [s8] The s7 minimal 3-line harness (falsify*.py, 53 shapes) predicts the in-function addressing category of an epilogue spelling.
-- mechanism: assumed by s7 — the LO_SUM-vs-base+disp choice was taken to be a local property of the C tree shape, so a standalone TU with the same three stores was treated as an oracle for func_80062020.
+- mechanism: assumed by s7 â€” the LO_SUM-vs-base+disp choice was taken to be a local property of the C tree shape, so a standalone TU with the same three stores was treated as an oracle for func_80062020.
 - probe: re-ask the same shapes with the real loop and the real `ofs = i*12` epilogue index in place (new instrument tmp/grind/func_80062020/s8/fullsweep.py, 30 shapes, same oracle cc1 + verbatim CC_FLAGS).
 - result: categories flip. `((struct Row*)((u8*)Rows + n*12))->c/b/a` = DISP8|DISP4|DISP0 standalone, LOSUM|LOSUM|LOSUM in-function (index carried in the `ofs` variable). The two-armed-join control that yields the target arrangement standalone yields LOSUM|LOSUM|LOSUM in-function on that shape.
 - verdict: **KILLED.** Inherited shape conclusions sourced from the s7 sweep are statements about a 3-line TU. fullsweep.py replaces it.
@@ -574,53 +574,53 @@ on the answer.
 ## [s8] s7's kill of the control-flow axis ("a BB boundary does not defeat the CSE unification") rests on probes that actually reached cse.
 - mechanism: s7 inserted `if(c) c=1;` between the b- and a-stores, and separately duplicated the a-store into both arms of an `if`, and read DISP0 in both.
 - probe: dump the emitted asm and the -da passes for those exact probes (tmp/grind/func_80062020/s8/dump_splitif/).
-- result: the emitted function contains no branch at all — jump1 deletes the dead assignment (and the join) and cross-jumps identical arms, both BEFORE cse runs. CSE was never presented with a join. The control with distinct surviving side effects in both arms (`if(c) G=1; else G=2;`) does break the unification and yields the LO_SUM.
+- result: the emitted function contains no branch at all â€” jump1 deletes the dead assignment (and the join) and cross-jumps identical arms, both BEFORE cse runs. CSE was never presented with a join. The control with distinct surviving side effects in both arms (`if(c) G=1; else G=2;`) does break the unification and yields the LO_SUM.
 - verdict: **KILLED (the kill was invalid).** The control-flow axis is re-opened as the live mechanism, and immediately re-narrowed by the next entry.
 
 ## [s8] The epilogue's addressing category is decided by ONE property of the C tree shape.
-- mechanism: the s5/s6/s7 framing — a single "two-shape" dichotomy (symbol-keeping vs pointer-value) chosen at expand or at combine.
+- mechanism: the s5/s6/s7 framing â€” a single "two-shape" dichotomy (symbol-keeping vs pointer-value) chosen at expand or at combine.
 - probe: 30 in-function shapes classified by store-address form (s8/fullsweep_results.txt).
-- result: TWO independent properties, not one. **P1** — is the row address materialised as a register value? YES for a pointer variable *or* an inline index expression (`+ i*12`) → DISP family; NO for a variable index (`+ ofs`) whose symbol+reg address is never force_reg'd → LOSUM family. **P2** — is CSE's extended-basic-block path broken between the b-store and the a-store? Only then is the a-store's chain single-use and combine folds it to `sw $0,sym($reg)`. The target is P1-YES ∧ P2-YES.
+- result: TWO independent properties, not one. **P1** â€” is the row address materialised as a register value? YES for a pointer variable *or* an inline index expression (`+ i*12`) â†’ DISP family; NO for a variable index (`+ ofs`) whose symbol+reg address is never force_reg'd â†’ LOSUM family. **P2** â€” is CSE's extended-basic-block path broken between the b-store and the a-store? Only then is the a-store's chain single-use and combine folds it to `sw $0,sym($reg)`. The target is P1-YES âˆ§ P2-YES.
 - verdict: **KILLED / REPLACED** by the two-property law.
 
 ## [s8] No uniform C spelling can produce the target's DISP8 | DISP4 | LO_SUM arrangement (the ledger's standing conclusion since s5).
 - mechanism: claimed successively from legitimize_address (refuted s7), from prong 2 of the two-shape law (falsified s7), and from the combine single-use rule plus 53 minimal shapes.
-- probe: `JOINctl_i12` in the full function — `((struct Row *)((u8 *)Rows + i*12))->c=0; ->b=0; if(i) G=1; else G=2; ->a=0;` (one uniform tree shape, one index spelling, no pointer alias, no dual spelling).
-- result: **DISP8 | DISP4 | LOSUM[Rows]** — the exact target arrangement, from uniform C (fs_JOINctl_i12.s).
-- verdict: **KILLED.** The claim is false as stated. What survives is the weaker, measured statement: no uniform spelling *that emits no extra code* has produced it — the P2 break costs a surviving branch (35 in-function insns vs the target's 38 total, 11-insn straight-line epilogue).
+- probe: `JOINctl_i12` in the full function â€” `((struct Row *)((u8 *)Rows + i*12))->c=0; ->b=0; if(i) G=1; else G=2; ->a=0;` (one uniform tree shape, one index spelling, no pointer alias, no dual spelling).
+- result: **DISP8 | DISP4 | LOSUM[Rows]** â€” the exact target arrangement, from uniform C (fs_JOINctl_i12.s).
+- verdict: **KILLED.** The claim is false as stated. What survives is the weaker, measured statement: no uniform spelling *that emits no extra code* has produced it â€” the P2 break costs a surviving branch (35 in-function insns vs the target's 38 total, 11-insn straight-line epilogue).
 
 ## [s8] The pass that unifies the a-store's address chain with the row base is combine's single-use rule / cse1 (the s7 attribution).
 - mechanism: s7 concluded that combine decides the LO_SUM by folding only single-use address pseudos, so the question was "what does CSE unify".
 - probe: -da dumps of the `do { c; b; } while (0);` variant compiled in the FULL function (tmp/grind/func_80062020/s8/fdump_brk_dowhile0/in.i.cse vs in.i.cse2), read against tools/gcc-2.7.2/cse.c:8054.
-- result: cse1 does NOT unify — `cse_end_of_basic_block` ends its block at the `NOTE_INSN_LOOP_END` (that break is guarded by `! after_loop`, i.e. cse1 only), and the a-store leaves cse1 as a fresh single-use chain (insn 135 `reg 101 = symbol_ref("Rows")` … insn 145 `(set (mem (reg 106)) 0)`) — exactly what combine needs. **cse2** (the -frerun-cse-after-loop pass, `after_loop = 1`, which therefore ignores the LOOP_END note) is what rewrites that chain into copies of the live pseudos and the store into `(set (mem (reg 94)) 0)`.
+- result: cse1 does NOT unify â€” `cse_end_of_basic_block` ends its block at the `NOTE_INSN_LOOP_END` (that break is guarded by `! after_loop`, i.e. cse1 only), and the a-store leaves cse1 as a fresh single-use chain (insn 135 `reg 101 = symbol_ref("Rows")` â€¦ insn 145 `(set (mem (reg 106)) 0)`) â€” exactly what combine needs. **cse2** (the -frerun-cse-after-loop pass, `after_loop = 1`, which therefore ignores the LOOP_END note) is what rewrites that chain into copies of the live pseudos and the store into `(set (mem (reg 94)) 0)`.
 - verdict: **KILLED / RE-ATTRIBUTED for the second time.** The decider is **cse2**; combine is only the consumer, and cse1 is already defeated for free.
 
-## [s8, OPEN — the sharpened residual] The whole remaining residual is a cse2 basic-block break between the b-store and the a-store that emits no branch.
-- mechanism: `cse_end_of_basic_block` (cse.c:8038) scans `while (p && GET_CODE (p) != CODE_LABEL)`; each block is processed with a fresh hash table. In cse1 a `NOTE_INSN_LOOP_END` also ends it (cse.c:8054, `! after_loop`) — free, no code. In cse2 that guard is off, so only a real CODE_LABEL ends the block, and a CODE_LABEL that survives jump1 needs a live reference, i.e. a branch — which the target's 11-insn straight-line epilogue does not contain.
-- probe (measured this session, all on the inline-`i*12` chassis that is exactly one break away from the target): `do { c; b; } while (0);` · `if (i) { }` · `goto L; L:` · `for(;;){ c; b; break; }` · `i = i;` · `arg0[0]=0;` (possibly-aliasing store) · a-store duplicated into both arms. **All seven measure DISP8|DISP4|DISP0.** The first four break cse1 (or are deleted by jump1) and are all undone by cse2.
-- next probe for the next session, in priority order: **(i) a branch that survives jump1/cse1/loop/cse2 and combine but is deleted at jump2** — the LO_SUM is folded in combine, so a post-combine branch deletion would leave exactly the target's straight-line epilogue; jump2 runs after reload (dump `in.i.jump2`) and does cross-jumping / jump-to-next-insn deletion, so look for two arms that only become identical after reload. **(ii) cse2's own skip conditions** — cse.c:8330 skips a block outright when `val.nsets == 0 || GET_MODE (insn) == QImode`, and cse.c:8550 (`val.nsets * 2 + next_qty > max_qty`) abandons a path; measure whether an epilogue with enough sets makes cse2 skip the block with no control flow at all. **(iii)** whether declaring the destination as an ARRAY (P1-YES via `(u8 *)Arr + i*12`) rather than as splat's three scalars changes the LOOP's codegen — the loop matches 100% today in the symbol form, so any array-declaration proposal must re-measure the loop, not just the epilogue (in-function `arrloop_arrepi_cast` keeps the loop's three `%lo` stores, `full_arrloop_arrepi_cast.s`, so this is live).
-- verdict: UNTESTED (i–iii). This is the live frontier and it is ordinary-C / compiler-behaviour work, not a coercion family.
+## [s8, OPEN â€” the sharpened residual] The whole remaining residual is a cse2 basic-block break between the b-store and the a-store that emits no branch.
+- mechanism: `cse_end_of_basic_block` (cse.c:8038) scans `while (p && GET_CODE (p) != CODE_LABEL)`; each block is processed with a fresh hash table. In cse1 a `NOTE_INSN_LOOP_END` also ends it (cse.c:8054, `! after_loop`) â€” free, no code. In cse2 that guard is off, so only a real CODE_LABEL ends the block, and a CODE_LABEL that survives jump1 needs a live reference, i.e. a branch â€” which the target's 11-insn straight-line epilogue does not contain.
+- probe (measured this session, all on the inline-`i*12` chassis that is exactly one break away from the target): `do { c; b; } while (0);` Â· `if (i) { }` Â· `goto L; L:` Â· `for(;;){ c; b; break; }` Â· `i = i;` Â· `arg0[0]=0;` (possibly-aliasing store) Â· a-store duplicated into both arms. **All seven measure DISP8|DISP4|DISP0.** The first four break cse1 (or are deleted by jump1) and are all undone by cse2.
+- next probe for the next session, in priority order: **(i) a branch that survives jump1/cse1/loop/cse2 and combine but is deleted at jump2** â€” the LO_SUM is folded in combine, so a post-combine branch deletion would leave exactly the target's straight-line epilogue; jump2 runs after reload (dump `in.i.jump2`) and does cross-jumping / jump-to-next-insn deletion, so look for two arms that only become identical after reload. **(ii) cse2's own skip conditions** â€” cse.c:8330 skips a block outright when `val.nsets == 0 || GET_MODE (insn) == QImode`, and cse.c:8550 (`val.nsets * 2 + next_qty > max_qty`) abandons a path; measure whether an epilogue with enough sets makes cse2 skip the block with no control flow at all. **(iii)** whether declaring the destination as an ARRAY (P1-YES via `(u8 *)Arr + i*12`) rather than as splat's three scalars changes the LOOP's codegen â€” the loop matches 100% today in the symbol form, so any array-declaration proposal must re-measure the loop, not just the epilogue (in-function `arrloop_arrepi_cast` keeps the loop's three `%lo` stores, `full_arrloop_arrepi_cast.s`, so this is live).
+- verdict: UNTESTED (iâ€“iii). This is the live frontier and it is ordinary-C / compiler-behaviour work, not a coercion family.
 
 ## [s8] The s7 minimal 3-line harness (falsify*.py, 53 shapes) predicts the in-function addressing category of an epilogue spelling for func_80062020.
 - mechanism: s7 assumed the LO_SUM-vs-base+disp choice is a local property of the C tree shape, so a standalone TU with the same three stores was treated as an oracle.
-- probe: Re-asked the same shapes with the real loop and the real `ofs = i*12` epilogue index in place — new instrument tmp/grind/func_80062020/s8/fullsweep.py, 30 shapes, same oracle cc1 + verbatim CC_FLAGS.
+- probe: Re-asked the same shapes with the real loop and the real `ofs = i*12` epilogue index in place â€” new instrument tmp/grind/func_80062020/s8/fullsweep.py, 30 shapes, same oracle cc1 + verbatim CC_FLAGS.
 - result: Categories flip. `((struct Row*)((u8*)Rows + n*12))->c/b/a` = DISP8|DISP4|DISP0 standalone but LOSUM|LOSUM|LOSUM in-function; the two-armed-join control that yields the target arrangement standalone yields LOSUM|LOSUM|LOSUM in-function on that same shape.
 - verdict: KILLED
 
 ## [s8] s7's kill of the control-flow axis ('a BB boundary does not defeat the CSE unification') was measured on probes that actually reached CSE.
 - mechanism: s7 inserted `if(c) c=1;` between the b- and a-stores, and separately duplicated the a-store into both arms of an `if`, reading DISP0 in both.
 - probe: Dumped the emitted asm and -da passes for those exact probes (tmp/grind/func_80062020/s8/dump_splitif/).
-- result: The emitted function contains NO branch at all — jump1 deletes the dead assignment (and the join) and cross-jumps identical arms, both before cse runs. CSE was never presented with a join. A join with distinct surviving side effects in both arms DOES defeat the unification (dump_splitreal/out.s).
+- result: The emitted function contains NO branch at all â€” jump1 deletes the dead assignment (and the join) and cross-jumps identical arms, both before cse runs. CSE was never presented with a join. A join with distinct surviving side effects in both arms DOES defeat the unification (dump_splitreal/out.s).
 - verdict: KILLED
 
 ## [s8] No uniform C spelling can produce the target's DISP8 | DISP4 | LO_SUM epilogue arrangement (the ledger's standing conclusion since s5, re-grounded in s7).
 - mechanism: Claimed successively from expand/legitimize_address (refuted s7), from two-shape prong 2 (falsified s7), and from combine's single-use rule plus 53 minimal shapes.
-- probe: `JOINctl_i12` in the FULL function: `((struct Row *)((u8 *)Rows + i*12))->c=0; ->b=0; if(i) G=1; else G=2; ->a=0;` — one uniform tree shape, one index spelling, no pointer alias, no dual spelling.
-- result: Measures DISP8 | DISP4 | LOSUM[Rows] — the exact target arrangement (tmp/grind/func_80062020/s8/fs_JOINctl_i12.s). What survives is only the weaker statement: no uniform spelling that emits NO EXTRA CODE has produced it; the break costs a surviving branch plus arm bodies.
+- probe: `JOINctl_i12` in the FULL function: `((struct Row *)((u8 *)Rows + i*12))->c=0; ->b=0; if(i) G=1; else G=2; ->a=0;` â€” one uniform tree shape, one index spelling, no pointer alias, no dual spelling.
+- result: Measures DISP8 | DISP4 | LOSUM[Rows] â€” the exact target arrangement (tmp/grind/func_80062020/s8/fs_JOINctl_i12.s). What survives is only the weaker statement: no uniform spelling that emits NO EXTRA CODE has produced it; the break costs a surviving branch plus arm bodies.
 - verdict: KILLED
 
 ## [s8] The epilogue's addressing category is decided by ONE property of the C tree shape (the s5/s6/s7 'two-shape' framing).
-- mechanism: A single dichotomy — symbol-keeping vs pointer-value — chosen at expand or at combine.
+- mechanism: A single dichotomy â€” symbol-keeping vs pointer-value â€” chosen at expand or at combine.
 - probe: 30 in-function shapes classified by store-address form (tmp/grind/func_80062020/s8/fullsweep_results.txt).
 - result: TWO independent properties. P1: is the row address materialised as a register value? YES for a pointer variable OR an inline index expression (`+ i*12`) -> DISP family; NO for a variable index (`+ ofs`), whose symbol+reg legitimate address is never force_reg'd -> LOSUM family (which is what the target's LOOP body does). P2: is CSE's basic-block path broken between the b-store and the a-store? Only then is the a-store's chain single-use and folded to `sw $0,sym($reg)`. Target = P1-YES AND P2-YES.
 - verdict: KILLED
@@ -628,7 +628,7 @@ on the answer.
 ## [s8] The pass that unifies the a-store's address chain with the row base is combine's single-use rule / cse1 (the s7 attribution the ledger has run on since).
 - mechanism: s7 concluded combine decides the LO_SUM by folding only single-use address pseudos, so the open question was 'what does CSE unify'.
 - probe: -da dumps of the `do { c; b; } while (0);` variant compiled in the FULL function (tmp/grind/func_80062020/s8/fdump_brk_dowhile0/in.i.cse vs in.i.cse2), read against tools/gcc-2.7.2/cse.c:8054.
-- result: cse1 does NOT unify: cse_end_of_basic_block ends its block at the NOTE_INSN_LOOP_END (a break guarded by `! after_loop`, i.e. cse1 only), and the a-store leaves cse1 as a fresh single-use chain (insn 135 `reg 101 = symbol_ref("Rows")` ... insn 145 `(set (mem (reg 106)) 0)`) — exactly what combine needs. cse2 (-frerun-cse-after-loop, after_loop=1, so it ignores the note) is what rewrites that chain into copies of the live pseudos and the store into `(set (mem (reg 94)) 0)`.
+- result: cse1 does NOT unify: cse_end_of_basic_block ends its block at the NOTE_INSN_LOOP_END (a break guarded by `! after_loop`, i.e. cse1 only), and the a-store leaves cse1 as a fresh single-use chain (insn 135 `reg 101 = symbol_ref("Rows")` ... insn 145 `(set (mem (reg 106)) 0)`) â€” exactly what combine needs. cse2 (-frerun-cse-after-loop, after_loop=1, so it ignores the note) is what rewrites that chain into copies of the live pseudos and the store into `(set (mem (reg 94)) 0)`.
 - verdict: KILLED
 
 ## [s8] Some code-free construct breaks CSE's path between the b-store and the a-store, giving the target arrangement without a branch.
@@ -637,26 +637,26 @@ on the answer.
 - result: All seven measure DISP8|DISP4|DISP0. Those that survive jump1 break cse1 only, and cse2 undoes the break; the rest are deleted by jump1 before cse.
 - verdict: KILLED
 
-## s9 — rederive modality (2026-08-30)
+## s9 â€” rederive modality (2026-08-30)
 
-### H-s9-1 — KILLED
-**Statement.** A structurally different WHOLE-FUNCTION C shape — natural struct-array /
+### H-s9-1 â€” KILLED
+**Statement.** A structurally different WHOLE-FUNCTION C shape â€” natural struct-array /
 2-D-array / flat-array C for the loop as well as the terminator, rather than the s1/s2
-byte-offset-cast body every prior session held fixed — reaches the target's mixed
+byte-offset-cast body every prior session held fixed â€” reaches the target's mixed
 `DISP8 | DISP4 | LOSUM` terminator arrangement.
 **Mechanism.** Prior sweeps only ever perturbed the epilogue; if the loop's spelling is what
 seeds cse2's value table with the row-base quantity, changing the loop's spelling could change
 what is available to the third terminator store.
-**Probe.** `tmp/grind/func_80062020/s9/wholesweep.py` — 10 whole-function shapes through
+**Probe.** `tmp/grind/func_80062020/s9/wholesweep.py` â€” 10 whole-function shapes through
 cc1 with the canonical CC_FLAGS, classifying the three `sw $0` terminator stores.
 **Result.** 8/10 all-LO_SUM, 1/10 all-register-base (`(Rows + n)->c` form), 1/10 the
 flat-array degenerate `LOSUM | DISP0 | DISP0`. Zero hits on the target arrangement. The
 natural struct-array loop reproduces the target loop exactly (3 LO_SUM stride-12 stores), so
-the loop's spelling is NOT the discriminator — the terminator's tree shape alone is.
+the loop's spelling is NOT the discriminator â€” the terminator's tree shape alone is.
 **Verdict.** KILLED. The rederive axis does not reach the arrangement; the uniform-spelling
 law is a whole-function law, not an epilogue-local one.
 
-### H-s9-2 — KILLED (as an improvement) / CONFIRMED (as a bracket)
+### H-s9-2 â€” KILLED (as an improvement) / CONFIRMED (as a bracket)
 **Statement.** The all-LO_SUM uniform pole, never scored in the sandbox by any session, might
 be closer to the target than the all-register-base pole (floor 4), because its final store is
 literally the target's `sw $0,%lo(D_800F1198)($at)`.
@@ -669,13 +669,13 @@ chassis: three-symbol (`&D_800F11A0/&D_800F119C/&D_800F1198 + ofs`) and single-a
 build_insns 35. Target is 38.
 **Verdict.** KILLED as an improvement; CONFIRMED as a measured bracket. The uniform space is
 now bounded by measurement on both sides (35 insns / score 4 and 39 insns / score 6), with the
-target's 38 strictly between them — an insn-count argument that no uniform form can hit it.
+target's 38 strictly between them â€” an insn-count argument that no uniform form can hit it.
 Banked: `rejected/epilogue-uniform-allosum-score6-s9.c`,
 `rejected/epilogue-single-anchor-byteofs-allosum-score6-s9.c`.
 
-### H-s9-3 — KILLED
+### H-s9-3 â€” KILLED
 **Statement.** A dead CONDITIONAL register store (`if (i) { d = 1; }`, `d` unused) survives
-jump1 and cse2 — breaking cse2's basic block and yielding P2-YES — and is then erased by
+jump1 and cse2 â€” breaking cse2's basic block and yielding P2-YES â€” and is then erased by
 flow's dead-code elimination (toplev.c:2983) plus jump2 (toplev.c:3142), leaving the target's
 branch-free epilogue.
 **Mechanism.** s8 established that cse2 is the unifier and that its block is ended only by a
@@ -684,16 +684,16 @@ would be invisible in the final bytes while still breaking cse2.
 **Probe.** MECHANISM CONTROL ONLY (the construct is the forbidden `dead-conditional-store`
 family and was never a proposal): `rejected/epilogue-deadcondstore-erased-by-jump1-s9.c`
 applied over the INCLUDE_ASM line and scored with the sandbox.
-**Result.** **score 4, build_insns 35 — byte-identical to the baseline.** The branch does not
+**Result.** **score 4, build_insns 35 â€” byte-identical to the baseline.** The branch does not
 even reach cse2: `jump_optimize` runs at toplev.c:2827 with `after_regscan = 1`, deletes the
 set of a register with no other references, the arm becomes empty and the branch is deleted
-with it — one pass earlier than the hypothesis assumed.
+with it â€” one pass earlier than the hypothesis assumed.
 **Verdict.** KILLED. Together with s8's seven code-free candidates this closes the class:
 every construct that leaves no real code behind is erased before cse2, and every construct
-that does break cse2 leaves real code — a surviving branch plus arm bodies — which the
+that does break cse2 leaves real code â€” a surviving branch plus arm bodies â€” which the
 target's branch-free 11-insn epilogue cannot contain.
 
-### H-s9-4 — CONFIRMED (source read, not inference)
+### H-s9-4 â€” CONFIRMED (source read, not inference)
 **Statement.** cse2's basic-block boundary is not simply "a CODE_LABEL"; an UNREFERENCED
 label does not break it, because cse extends across such a label carrying the whole value
 table.
@@ -706,7 +706,7 @@ tables.
 b-store and the a-store at cse2 time, and that jump must additionally survive the SECOND full
 jump pass at toplev.c:2923 (post-loop, pre-cse2) that s8's frontier did not account for.
 
-### H-s9-5 — CONFIRMED (census)
+### H-s9-5 â€” CONFIRMED (census)
 **Statement.** The target's same-symbol dual-address-form arrangement is a shared species
 across the binary rather than a quirk of func_80062020, and the project has no matched pure-C
 precedent for it.
@@ -723,23 +723,23 @@ function.
 
 ## [s9] A structurally different WHOLE-FUNCTION C shape (natural struct-array / 2-D-array / flat-array C for the loop as well as the terminator, instead of the s1/s2 byte-offset-cast body every prior session held fixed) reaches the target's mixed DISP8 | DISP4 | LOSUM terminator arrangement.
 - mechanism: Every prior sweep (s7 3-line harness, s8 fullsweep) perturbed only the epilogue. If the loop's spelling is what seeds cse2's value table with the row-base quantity, a different loop spelling could change what is available to the third terminator store.
-- probe: tmp/grind/func_80062020/s9/wholesweep.py — 10 whole-function shapes compiled through cc1 with the canonical CC_FLAGS (-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -mel), classifying the three `sw $0` terminator stores; per-shape .c/.s banked as ws_*.c / ws_*.s.
+- probe: tmp/grind/func_80062020/s9/wholesweep.py â€” 10 whole-function shapes compiled through cc1 with the canonical CC_FLAGS (-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -mel), classifying the three `sw $0` terminator stores; per-shape .c/.s banked as ws_*.c / ws_*.s.
 - result: 8/10 all-LO_SUM (LOSUM[Rows+8] | LOSUM[Rows+4] | LOSUM[Rows]); 1/10 all-register-base ((Rows + n)->c form, DISP8 | DISP4 | DISP0); 1/10 the flat-array degenerate LOSUM | DISP0 | DISP0. Zero hits on the target arrangement. The natural struct-array loop reproduces the target loop exactly (3 LO_SUM stride-12 stores), so the loop spelling is not the discriminator.
 - verdict: KILLED
 
-## [s9] The all-LO_SUM uniform pole — never scored in the sandbox by any prior session, only classified by cc1 — might be closer to the target than the all-register-base pole (floor 4), because its final store is literally the target's sw $0,%lo(D_800F1198)($at).
+## [s9] The all-LO_SUM uniform pole â€” never scored in the sandbox by any prior session, only classified by cc1 â€” might be closer to the target than the all-register-base pole (floor 4), because its final store is literally the target's sw $0,%lo(D_800F1198)($at).
 - mechanism: The target epilogue ends with a LO_SUM store; an all-LO_SUM epilogue matches that last store exactly and could align better across the whole epilogue.
 - probe: Two spellings applied over the INCLUDE_ASM line at src/text1b.c:3853 and scored with `sandbox func_80062020 --disable all`: three-symbol (&D_800F11A0/&D_800F119C/&D_800F1198 + ofs) and single-anchor (&D_800F1198 + ofs + 8/4/0).
 - result: Both score 6 at build_insns 39. Baseline all-register-base body re-measured the same session: score 4 at build_insns 35. Target is 38 insns. The uniform space is therefore bracketed by measurement, with the target strictly between the two poles.
 - verdict: KILLED
 
-## [s9] A dead CONDITIONAL register store (`if (i) { d = 1; }` with d an unused local) survives jump1 and cse2 — breaking cse2's basic block, giving P2-YES — and is then erased by flow's DCE (toplev.c:2983) plus jump2 (toplev.c:3142), leaving the target's branch-free epilogue.
+## [s9] A dead CONDITIONAL register store (`if (i) { d = 1; }` with d an unused local) survives jump1 and cse2 â€” breaking cse2's basic block, giving P2-YES â€” and is then erased by flow's DCE (toplev.c:2983) plus jump2 (toplev.c:3142), leaving the target's branch-free epilogue.
 - mechanism: s8 established cse2 as the unifier and that its block is ended only by a real CODE_LABEL; flow_analysis and jump2 both run after cse2, so a construct erased there would break cse2 yet be invisible in the final bytes. NOTE: this is the forbidden dead-conditional-store family and was compiled as a MECHANISM CONTROL only, never as a proposal.
 - probe: memory/grind/func_80062020/rejected/epilogue-deadcondstore-erased-by-jump1-s9.c applied over the INCLUDE_ASM line and scored with the sandbox on the live chassis.
-- result: score 4, build_insns 35 — byte-identical to the baseline. The branch never reaches cse2: jump_optimize at toplev.c:2827 runs with after_regscan = 1 and deletes the set of a register with no other references, emptying the arm and deleting the branch with it, one pass earlier than the hypothesis assumed.
+- result: score 4, build_insns 35 â€” byte-identical to the baseline. The branch never reaches cse2: jump_optimize at toplev.c:2827 runs with after_regscan = 1 and deletes the set of a register with no other references, emptying the arm and deleting the branch with it, one pass earlier than the hypothesis assumed.
 - verdict: KILLED
 
-## [s9] cse2's basic-block boundary is not simply 'a CODE_LABEL' — an UNREFERENCED label does not break it, because cse extends across such a label carrying the whole value table; only a label with a live jump reference resets the qty tables.
+## [s9] cse2's basic-block boundary is not simply 'a CODE_LABEL' â€” an UNREFERENCED label does not break it, because cse extends across such a label carrying the whole value table; only a label with a live jump reference resets the qty tables.
 - mechanism: tools/gcc-2.7.2/cse.c:8517 gates block extension on `--LABEL_NUSES (to) == to_usage`, and LABEL_NUSES was pre-incremented at cse.c:8433, so the test means 'the label had zero real references'. Only new_basic_block() resets the qty tables.
 - probe: Direct read of tools/gcc-2.7.2/cse.c:8430-8560 and of the pass order in tools/gcc-2.7.2/toplev.c:2827-3142.
 - result: Confirmed in source. It also surfaces a pass s8's frontier did not account for: a SECOND full jump_optimize runs at toplev.c:2923, post-loop and pre-cse2, so any jump/label intended to break cse2 must survive jump1 AND that pass.
@@ -748,12 +748,12 @@ function.
 ## [s9] The target's same-symbol dual-address-form arrangement is a shared species across SLUS-00663 rather than a quirk of func_80062020, and the project has no matched pure-C precedent for it anywhere.
 - mechanism: If the arrangement had a pure-C spelling reachable under this toolchain, at least one of the project's already-matched functions would exhibit it.
 - probe: tmp/grind/func_80062020/s9/scan4.py over tmp/grind/func_80062020/s9/all.dis (objdump -d of build/bb2.elf): per function, intersect the symbol addresses reached by a register-materialised `lui rX,H; addiu rX,rX,L` base with those reached by a `lui at,H; addu at,at,rY; <ld/st> d(at)` LO_SUM access.
-- result: 32 functions have a non-empty intersection and every one of them is still an unmatched INCLUDE_ASM item — neighbours include func_80061064 (D_800F1150), func_80045294, func_80057CC8, CD_cw, SpuSetReverbModeParam. The two apparent matched hits (.L80065D1C, .L80066968) are internal labels inside func_80065800's unmatched asm body, not C functions.
+- result: 32 functions have a non-empty intersection and every one of them is still an unmatched INCLUDE_ASM item â€” neighbours include func_80061064 (D_800F1150), func_80045294, func_80057CC8, CD_cw, SpuSetReverbModeParam. The two apparent matched hits (.L80065D1C, .L80066968) are internal labels inside func_80065800's unmatched asm body, not C functions.
 - verdict: CONFIRMED
 
-## s10 — escalation modality (2026-08-30)
+## s10 â€” escalation modality (2026-08-30)
 
-- **H-s10-1 — "The governance deadlock recorded by s9 is real and chronologically established:
+- **H-s10-1 â€” "The governance deadlock recorded by s9 is real and chronologically established:
   the state.json ban on the proven-spelling-class-reconstruction route was created AFTER owner
   ruling 6a named that route as the function's sole admissibility path."**
   Mechanism: ruling 6a (docs/grind/decisions.md:14836) returns the item to ACTIVE for a
@@ -766,12 +766,12 @@ function.
   ruling. **VERDICT: CONFIRMED.** Consequence: no grind session can honour both instructions,
   so the residual is gated by a routing decision, not by a search.
 
-- **H-s10-2 — "Endgame gate (a) (canonical-asm) still fails on the live scanner."**
+- **H-s10-2 â€” "Endgame gate (a) (canonical-asm) still fails on the live scanner."**
   Probe: `python3 tools/scan_hand_coded.py --single func_80062020`.
   Result: tier LOW, 0/8, 38 insns, zero S1-S8 signals. **VERDICT: CONFIRMED (gate FAILS).**
   Third independent re-run agreeing with s2 and s4; canonical-asm is not the disposition here.
 
-- **H-s10-3 — "Endgame gate (b) (an in-hand, CITABLE SOTN-master precedent for the closing
+- **H-s10-3 â€” "Endgame gate (b) (an in-hand, CITABLE SOTN-master precedent for the closing
   construct's shape) PASSES."** s3 asserted the gate empty; s6 falsified the assertion but
   banked only file names, which is not a citation under the escalation contract.
   Probe: pin exact line numbers in the SOTN master clone (HEAD `db41b28`) and version-check
@@ -781,12 +781,12 @@ function.
   instance `src/st/cen/e_chamber.c:56` + 240 + 201; both in `splat.us.*` configs.
   **VERDICT: CONFIRMED (gate PASSES).** Note the honest limit of this evidence: it establishes
   that same-lvalue dual-spelling is ordinary shipped PSX idiom, NOT that the owner's frozen
-  family list covers it — extending that list is owner-only, which is precisely why this is a
+  family list covers it â€” extending that list is owner-only, which is precisely why this is a
   packet and not a submission.
 
-- **H-s10-4 — "The honest floor has drifted since s9."**
+- **H-s10-4 â€” "The honest floor has drifted since s9."**
   Probe: re-measure on the live chassis with candidate.c pasted at src/text1b.c:3853.
-  Result: score 4 / build_insns 35 / target_insns 38 / cheat_asm_stripped 167 — identical to s8
+  Result: score 4 / build_insns 35 / target_insns 38 / cheat_asm_stripped 167 â€” identical to s8
   and s9 to the digit. **VERDICT: KILLED (no drift).** The chassis is stable across three
   sessions; every banked chassis-relative conclusion in this ledger remains spendable.
 
@@ -801,25 +801,25 @@ untouched and remain available if the owner answers ANSWER B and a sibling funct
 ## [s10] The governance deadlock s9 recorded is real and chronologically established: the state.json ban on the proven-spelling-class-reconstruction route was created AFTER owner ruling 6a named that route as this function's sole admissibility path.
 - mechanism: Ruling 6a (docs/grind/decisions.md:14836) returns func_80062020 to ACTIVE for a four-point adjudication under .claude/rules/proven-spelling-class-reconstruction.md. The layer-1 FAIL the same day (line 15728) refused the resubmission on the procedural ground that 'the ledger's explicit ban on this exact construct was never mechanically cleared'. The driver discards any candidate-ready whose self-vet re-declares a banned construct before any reviewer or Judge sees it, so the ordered adjudication is mechanically unperformable.
 - probe: git log -S"proven-spelling-class-reconstruction" -- memory/grind/func_80062020/state.json
-- result: Exactly ONE commit introduced the two bans: d1bf57c9 'grind: func_80062020 layer-1 FAIL banked' — i.e. the bans were created by, and in reaction to, the layer-1 FAIL that itself post-dates ruling 6a. The two owner instructions are mutually unsatisfiable by any grind session.
+- result: Exactly ONE commit introduced the two bans: d1bf57c9 'grind: func_80062020 layer-1 FAIL banked' â€” i.e. the bans were created by, and in reaction to, the layer-1 FAIL that itself post-dates ruling 6a. The two owner instructions are mutually unsatisfiable by any grind session.
 - verdict: CONFIRMED
 
-## [s10] Endgame gate (a) — canonical-asm — still fails on the live scanner, so canonical-asm is not the disposition for this function.
+## [s10] Endgame gate (a) â€” canonical-asm â€” still fails on the live scanner, so canonical-asm is not the disposition for this function.
 - mechanism: tools/scan_hand_coded.py scores S1-S8 hand-written-asm signals; a STRONG tier (S1/S2/S6) is the evidence bar for the canonical-asm grant path.
 - probe: python3 tools/scan_hand_coded.py --single func_80062020
 - result: tier=LOW score=0/8, 38 insns, zero signals (S3/S4 report 'too short (38 < 40 insns)'). Third independent re-run agreeing with s2 and s4.
 - verdict: CONFIRMED
 
-## [s10] Endgame gate (b) — an in-hand, CITABLE SOTN-master precedent for the closing construct's shape (same lvalue written through a local alias AND through the direct global spelling in one function) — PASSES.
+## [s10] Endgame gate (b) â€” an in-hand, CITABLE SOTN-master precedent for the closing construct's shape (same lvalue written through a local alias AND through the direct global spelling in one function) â€” PASSES.
 - mechanism: s3's ledger asserted the gate empty; s6 falsified the assertion by scan but banked only file names, which is not a citation under the escalation contract (file+line or commit hash required). A PSX/GCC-2.7.2 provenance check is also required per sotn-citation-requires-version-check, since a src/ path alone does not establish the compiler.
 - probe: Pin exact line numbers in the SOTN master clone (C:/Users/Trenton/Desktop/sotn-decomp, HEAD db41b28) and grep -rl over config/ for splat.us.* membership.
-- result: src/st/lib/e_lock_camera.c:20 declares `Tilemap* tilemap = &g_Tilemap;`, writes g_Tilemap.x / g_Tilemap.width DIRECTLY at lines 50-51, and writes the SAME members tilemap->x (line 75) and tilemap->width (line 91) through the alias. Second instance: src/st/cen/e_chamber.c:56 with direct g_Tilemap.height at 240 and aliased tilemap->height at 201. Both files are members of config/splat.us.*.yaml (PSX US build, GCC 2.7.2), not only splat.pspeu.*. The s4 escalation's 'no SOTN precedent' assertion is formally false and is corrected on the record in the packet. Honest limit: this shows the shape is ordinary shipped PSX idiom, NOT that the frozen family list covers it — extending that list is owner-only, which is why this is a packet and not a submission.
+- result: src/st/lib/e_lock_camera.c:20 declares `Tilemap* tilemap = &g_Tilemap;`, writes g_Tilemap.x / g_Tilemap.width DIRECTLY at lines 50-51, and writes the SAME members tilemap->x (line 75) and tilemap->width (line 91) through the alias. Second instance: src/st/cen/e_chamber.c:56 with direct g_Tilemap.height at 240 and aliased tilemap->height at 201. Both files are members of config/splat.us.*.yaml (PSX US build, GCC 2.7.2), not only splat.pspeu.*. The s4 escalation's 'no SOTN precedent' assertion is formally false and is corrected on the record in the packet. Honest limit: this shows the shape is ordinary shipped PSX idiom, NOT that the frozen family list covers it â€” extending that list is owner-only, which is why this is a packet and not a submission.
 - verdict: CONFIRMED
 
 ## [s10] The honest floor has drifted since s9 (the brief again reported 'measurement unavailable').
 - mechanism: Chassis drift would make every banked chassis-relative conclusion in this ledger unspendable and would reopen killed axes.
 - probe: candidate.c pasted over INCLUDE_ASM("asm/funcs", func_80062020); at src/text1b.c:3853 -> `& tools/wteng.ps1 main sandbox func_80062020 --disable all`; src restored to HEAD immediately afterwards.
-- result: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 167 — identical to the digit to both s8 and s9. No drift; git status clean apart from the pre-existing metrics/events.jsonl and this session's docs/grind/decisions.md packet.
+- result: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 167 â€” identical to the digit to both s8 and s9. No drift; git status clean apart from the pre-existing metrics/events.jsonl and this session's docs/grind/decisions.md packet.
 - verdict: KILLED
 
 ## [s11] The remaining search class - a jump2-survivable cross-jump whose arms carry REAL program logic - has no admissible member.
@@ -843,33 +843,33 @@ untouched and remain available if the owner answers ANSWER B and a sibling funct
 ## [s11] The 2026-08-31 owner YES answer (ruling 6a supersedes the d1bf57c9 bans) reopens a path to distance 0 that survives review.
 - mechanism: The routing answer cleared all three banned_constructs entries and ordered a fresh layer-1 + default-FAIL Judge adjudication of the dual-spelling epilogue against ruling 6a's four-point bar, with oracle SHA1 deciding.
 - probe: Run the adjudication to completion: Judge 2026-08-31 22:25 FAIL (comment-only defect), execute the prescribed one-comment fix verbatim, re-measure (score 0, 38/38, verify-oracle SHA1 == oracle), fresh layer-1 2026-08-31 22:31.
-- result: Layer-1 FAILed the fixed submission ON THE MERITS — 'the exact construct already FAILed by two prior Judges (2026-08-25 and 2026-08-31); deleting the incriminating comments does not change what the code does' — prescribed a return to the honest floor-4 candidate, and the construct is a mechanically-enforced banned_constructs entry again. Ruling 6a's own 'proof fails' branch is the operative one.
+- result: Layer-1 FAILed the fixed submission ON THE MERITS â€” 'the exact construct already FAILed by two prior Judges (2026-08-25 and 2026-08-31); deleting the incriminating comments does not change what the code does' â€” prescribed a return to the honest floor-4 candidate, and the construct is a mechanically-enforced banned_constructs entry again. Ruling 6a's own 'proof fails' branch is the operative one.
 - verdict: KILLED
 
-## [s11] The remaining search class — a jump2-survivable cross-jump whose arms carry REAL program logic — has an admissible member.
+## [s11] The remaining search class â€” a jump2-survivable cross-jump whose arms carry REAL program logic â€” has an admissible member.
 - mechanism: Two arms that become identical only after reload/combine so jump1 (toplev.c:2827) and the 2923 pass fail to cross-jump them but jump2 (3142, cross_jump=1) succeeds, leaving combine's folded sw $0,%lo(sym)($at) behind with no branch. s9 killed the dead-register-set spelling (erased at 2827); the frontier's precondition was that the arm body be real program logic.
 - probe: Enumerate what an arm may legally contain given the target: the target epilogue is branch-free and contains exactly the three terminator stores plus their address arithmetic (11 insns = 8 shared-base + 3 LO_SUM); cross-jumping leaves ONE copy of the arm body in the emitted code, so that body must appear in the target bytes.
-- result: The only permissible arm body is those same three stores, which makes the controlling condition semantically dead — the dead-conditional-store / 'if (1) { ... }' forbidden family (checklist T1 + T5), not a submittable C form. Any condition that is NOT dead contributes a branch or computation the 38-insn target does not contain and so cannot reach distance 0. The class is empty by construction; no measurement can produce a member.
+- result: The only permissible arm body is those same three stores, which makes the controlling condition semantically dead â€” the dead-conditional-store / 'if (1) { ... }' forbidden family (checklist T1 + T5), not a submittable C form. Any condition that is NOT dead contributes a branch or computation the 38-insn target does not contain and so cannot reach distance 0. The class is empty by construction; no measurement can produce a member.
 - verdict: KILLED
 
 ## [s11] The honest floor has drifted since s10 (the brief again reported 'measurement unavailable').
 - mechanism: Chassis drift would make every banked chassis-relative conclusion in this ledger unspendable and reopen killed axes.
 - probe: Paste the floor-4 uniform row-pointer body over INCLUDE_ASM("asm/funcs", func_80062020); at src/text1b.c:3932 -> `& tools/wteng.ps1 main sandbox func_80062020 --disable all`; restore src/text1b.c to HEAD immediately afterwards.
-- result: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 166 — identical to the digit to s8, s9 and s10. Fourth consecutive stable session; src restored, git status clean apart from ledger/docs edits and the pre-existing metrics/events.jsonl.
+- result: score 4, target_insns 38, build_insns 35, rules_dropped 0, cheat_asm_stripped 166 â€” identical to the digit to s8, s9 and s10. Fourth consecutive stable session; src restored, git status clean apart from ledger/docs edits and the pre-existing metrics/events.jsonl.
 - verdict: KILLED
 
-## 2026-09-01 — operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
+## 2026-09-01 â€” operator reopen note (owner ruling 2026-09-01 (decisions.md FORECLOSED-BUCKET REVIEW entry))
 
-Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the same-lvalue dual-spelling addressing-mode steer stays banned (its 2026-08-25 and 2026-08-31 FAILs are substantive merits rulings; the 22:31 entry's 'deleting the incriminating comments does not change what the code does' clause is an independent ground, confirmed by two layer-2 reviews of this ruling record). Reopen ground: the foreclosure's exhaustion quantifier is scoped to CFG breaks only, while the ledger's own s8 next-probe item (ii) — cse2's CODE-FREE internal skip/abandon conditions (cse.c:8330 nsets/QImode skip; cse.c:8550 max_qty abandon), a non-CFG route to the target's DISP8|DISP4|LO_SUM epilogue arrangement — was never measured. Named probe: measure that route with ordinary, non-banned C spellings only; any candidate faces fresh layer-1 + default-FAIL Judge adjudication with all bans in force.
+Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE â€” the same-lvalue dual-spelling addressing-mode steer stays banned (its 2026-08-25 and 2026-08-31 FAILs are substantive merits rulings; the 22:31 entry's 'deleting the incriminating comments does not change what the code does' clause is an independent ground, confirmed by two layer-2 reviews of this ruling record). Reopen ground: the foreclosure's exhaustion quantifier is scoped to CFG breaks only, while the ledger's own s8 next-probe item (ii) â€” cse2's CODE-FREE internal skip/abandon conditions (cse.c:8330 nsets/QImode skip; cse.c:8550 max_qty abandon), a non-CFG route to the target's DISP8|DISP4|LO_SUM epilogue arrangement â€” was never measured. Named probe: measure that route with ordinary, non-banned C spellings only; any candidate faces fresh layer-1 + default-FAIL Judge adjudication with all bans in force.
 
 ## [s12] The owner's 2026-09-01 Ruling-A named probe: cse2's CODE-FREE internal skip/abandon conditions (cse.c:8330 nsets/QImode skip; cse.c:8550 max_qty abandon) are a non-CFG route to the target's DISP8|DISP4|LO_SUM epilogue arrangement.
 - mechanism: The reopen note's ground was that the 2026-08-31 foreclosure's exhaustion quantifier is scoped to CFG breaks only, so a cse2 gate that fires WITHOUT any surviving branch would be an unmeasured route. Two gates were named: `cse_main`'s per-block skip `if (val.nsets == 0 || GET_MODE (insn) == QImode)` (tools/gcc-2.7.2/cse.c:8330) and `cse_basic_block`'s extension abandon `if (val.nsets * 2 + next_qty > max_qty) break;` (cse.c:8550).
 - probe (s12, live chassis, both epilogue poles applied to src/text1b.c in turn, `sandbox --disable all` + `pwsh tools/grinder/dump.ps1 func_80062020`, cse2 dump read at `tmp/grind/func_80062020/dumps/text1b.cse2`; cse.c read at source, excerpts banked in `tmp/grind/func_80062020/s12/`):
   1. **Block census.** cse2 prints its per-block header for this function as three top-level blocks: `;; Processing block from 2 to 30, 8 sets.` / `from 32 to 90, 12 sets.` / `from 93 to 0, 8 sets.` (uniform-pointer pole, score 4 / 35 insns) and `... from 93 to 0, 6 sets.` (uniform-symbol pole, score 6 / 39 insns). The epilogue is ALREADY its own top-level cse2 block, entered through `new_basic_block()` with fresh qty tables.
   2. **nsets==0 is unreachable.** `cse_end_of_basic_block` does `nsets += 1` for every non-NOTE insn (cse.c:8070-8071), not per SET pattern; nsets==0 therefore means a basic block containing zero real insns. Measured 8 / 6. A three-store epilogue cannot have zero insns, and no C spelling can remove the stores.
-  3. **The QImode skip is NOT code-free — it is a CFG route.** Both `PUT_MODE (NEXT_INSN (p), QImode)` sites (cse.c:8147 and cse.c:8182) sit inside the same arm: `(follow_jumps || skip_blocks) && GET_CODE (p) == JUMP_INSN && GET_CODE (PATTERN (p)) == SET && GET_CODE (SET_SRC (PATTERN (p))) == IF_THEN_ELSE`. It requires a surviving conditional jump — precisely the CFG break s8 measured dead across seven code-free shapes and s9 across ten whole-function shapes. Worse for the hypothesis: a QImode-marked block has ALREADY been cse'd as part of the extended path, so the mark suppresses re-processing, not the fold.
-  4. **The max_qty abandon is quantitatively unreachable AND structurally irrelevant.** `max_qty = val.nsets * 2`, then `if (max_qty < 500) max_qty = 500;`, then `max_qty += max_reg` (cse.c:8340-8352). The abandon test needs `val.nsets * 2 + next_qty > 500 + max_reg`, i.e. roughly 250+ additional insns in the FOLLOWING block; measured blocks carry 6-12. And the test guards only an EXTENSION past a CODE_LABEL into a following block (cse.c:8520-8552) — the epilogue is already its own top-level block, so an extension-abandon cannot touch it.
-  5. **Decisive: there is nothing in the epilogue block for cse2 to skip.** In the uniform-SYMBOL pole, after cse2 all three terminator stores are still `(set (mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI ("D_800F11A0"/"D_800F119C"/"D_800F1198")))) (const_int 0))` — insns 103/108/113 — cse2 performs NO unification on that block at all; the all-LO_SUM output is produced downstream by combine. In the uniform-POINTER pole the epilogue is already `(mem (plus (reg 76) 8))` / `(... 4)` / `(mem (reg 76))` — insns 106/109/112 — with no symbol_ref left for cse2 to leave behind. Suppressing cse2 on this block therefore changes neither pole.
+  3. **The QImode skip is NOT code-free â€” it is a CFG route.** Both `PUT_MODE (NEXT_INSN (p), QImode)` sites (cse.c:8147 and cse.c:8182) sit inside the same arm: `(follow_jumps || skip_blocks) && GET_CODE (p) == JUMP_INSN && GET_CODE (PATTERN (p)) == SET && GET_CODE (SET_SRC (PATTERN (p))) == IF_THEN_ELSE`. It requires a surviving conditional jump â€” precisely the CFG break s8 measured dead across seven code-free shapes and s9 across ten whole-function shapes. Worse for the hypothesis: a QImode-marked block has ALREADY been cse'd as part of the extended path, so the mark suppresses re-processing, not the fold.
+  4. **The max_qty abandon is quantitatively unreachable AND structurally irrelevant.** `max_qty = val.nsets * 2`, then `if (max_qty < 500) max_qty = 500;`, then `max_qty += max_reg` (cse.c:8340-8352). The abandon test needs `val.nsets * 2 + next_qty > 500 + max_reg`, i.e. roughly 250+ additional insns in the FOLLOWING block; measured blocks carry 6-12. And the test guards only an EXTENSION past a CODE_LABEL into a following block (cse.c:8520-8552) â€” the epilogue is already its own top-level block, so an extension-abandon cannot touch it.
+  5. **Decisive: there is nothing in the epilogue block for cse2 to skip.** In the uniform-SYMBOL pole, after cse2 all three terminator stores are still `(set (mem:SI (plus:SI (reg/v:SI 74) (symbol_ref:SI ("D_800F11A0"/"D_800F119C"/"D_800F1198")))) (const_int 0))` â€” insns 103/108/113 â€” cse2 performs NO unification on that block at all; the all-LO_SUM output is produced downstream by combine. In the uniform-POINTER pole the epilogue is already `(mem (plus (reg 76) 8))` / `(... 4)` / `(mem (reg 76))` â€” insns 106/109/112 â€” with no symbol_ref left for cse2 to leave behind. Suppressing cse2 on this block therefore changes neither pole.
   6. **Granularity proof.** Both named gates are BLOCK-granular and all-or-nothing (skip the whole block, or truncate an extension at a block boundary). The target arrangement requires a WITHIN-block 2-of-3 partition: two stores through a materialized base register, one through LO_SUM, with no label between them. A block-granular gate cannot express a within-block partition, so no setting of either gate can produce the target's epilogue.
 - verdict: **KILLED.** The Ruling-A named probe is closed. The reopen ground (that these are non-CFG routes) is falsified for the QImode gate (it demands a conditional jump), unreachable for the nsets gate (nsets is an insn count, measured 6-8), unreachable and misdirected for the max_qty gate (needs ~250 insns in a following block; guards only extension), and moot for both (cse2 does no epilogue unification in either pole). Floor re-measured **4** on the live chassis this session (5th consecutive session at 4, no chassis drift).
 
@@ -891,7 +891,7 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
 - result: tier=LOW score=0/8 (38 insns); no S1-S8 signal. Fifth independent re-run (s2, s4, s10, s11, s12) with the same result.
 - verdict: KILLED
 
-## s13 (synthesis, 2026-09-03) — RESOLVED
+## s13 (synthesis, 2026-09-03) â€” RESOLVED
 
 - **H-s13-1 (CONFIRMED, distance 0 + oracle SHA1).** A CODE_LABEL that is genuinely
   referenced can break cse2's basic block between the b-store and the a-store and still
@@ -909,7 +909,7 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
   two copies never cross-merge. Superseded by H-s13-1, which needs no restructuring.
 
 - **H-s13-3 (KILLED, instance).** The recomputed row pointer can be a FRESH second local
-  (`q`) rather than a re-assignment of `p`. Measured: score 22 at build_insns 38 — the
+  (`q`) rather than a re-assignment of `p`. Measured: score 22 at build_insns 38 â€” the
   arrangement is the target's exactly, but the extra pseudo plus the live-range extension
   of the arm condition `t` shifts t/i/ofs off their target hard registers. Re-using `p`
   and conditioning on `ofs` fixes it.
@@ -918,14 +918,14 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
   FAKE constructs (self_vet.md) and, beyond this function, transferring the lever to the
   31 sibling functions of the s9 same-symbol dual-address-form census.
 
-## s13 (synthesis, 2026-09-03, SECOND RUN) — the first run was DISCARDED by the driver; frontier reset
+## s13 (synthesis, 2026-09-03, SECOND RUN) â€” the first run was DISCARDED by the driver; frontier reset
 
 > **STATUS CORRECTION.** The "RESOLVED" block above was written by the s13 run the driver
 > discarded as an invalid session (its self-vet re-declared a construct banned for this function
 > in `state.json`; the Judge never saw it). **H-s13-1 is NOT a confirmed admissible path.** Its
-> codegen content is true and is kept — a referenced CODE_LABEL between the b- and a-stores
+> codegen content is true and is kept â€” a referenced CODE_LABEL between the b- and a-stores
 > breaks the block, and jump2 cross-jumping (`toplev.c:3142`) can delete the branch again, so the
-> target arrangement with a branch-free epilogue is reachable — but the two constructs that
+> target arrangement with a branch-free epilogue is reachable â€” but the two constructs that
 > produce it are an if/else with IDENTICAL arms and a dead self-assignment of a pointer local.
 > Both are semantically dead, both fail cheat tests T1/T2/T3, and together they are the standing
 > banned construct (a second, separately-materialised address chain for the column-a store)
@@ -937,25 +937,25 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
 - **H-s13-4 (KILLED, instance).** A UNIFORM, ordinary-C epilogue spelling exists that emits the
   target arrangement `DISP8 | DISP4 | LOSUM[D_800F1198]`, if the search crosses base kind,
   access shape, column order and index spelling together instead of one axis at a time.
-  - mechanism: s8 reduced the residual to a necessary condition — RTL immediately before combine
+  - mechanism: s8 reduced the residual to a necessary condition â€” RTL immediately before combine
     must hold two distinct address chains over the same index, one MULTI-USE (so combine refuses
     to fold it and it survives as a shared base with displacements 8 and 4) and one SINGLE-USE
     ending in the symbolic constant (so combine folds it into `sw $0,%lo(SYM)($v1)`). Which
     chain kind a store gets is decided by the C tree that produced its address, so the question
     is whether any single tree shape yields both kinds within one row.
-  - probe: `tmp/grind/func_80062020/s13/sweep13n.py` — 102 whole-function shapes compiled with
+  - probe: `tmp/grind/func_80062020/s13/sweep13n.py` â€” 102 whole-function shapes compiled with
     the oracle cc1 and the verbatim Makefile CC_FLAGS, crossing 4 base kinds x 7 access shapes x
     6 column orders x 4 index spellings, each carrying the matching copy loop so the epilogue
     sees the same live values as the target. Results `sweep13n_results.txt`; per-shape C and asm
     at `s13n_*`.
-  - result: 0 of 102 hit the target arrangement. The space partitions into three buckets —
+  - result: 0 of 102 hit the target arrangement. The space partitions into three buckets â€”
     all-LOSUM with no shared base (24 shapes), all-DISP off one shared base (42 shapes; this is
     the honest floor-4 body), and MIXED-but-LOSUM-FIRST (36 shapes, where the first-emitted
     column keeps the symbolic form and the other two each get their own full-address register at
     DISP0, costing 32-40 insns). The LOSUM store never landed last. With s7 (53 minimal-harness
     shapes) and s9 (10 whole-function shapes) that is 165 uniform spellings measured with no
     LOSUM-last result.
-  - verdict: KILLED (instance — this 102-shape cross product, on the 2026-09-03 chassis at
+  - verdict: KILLED (instance â€” this 102-shape cross product, on the 2026-09-03 chassis at
     honest floor 4, with no FAKE construct present)
 
 - **H-s13-5 (KILLED, instance).** Bucket (iii) can be steered into the target by reordering the
@@ -972,7 +972,7 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
     `index + (sym+8)` as `(index+sym) + 8`, because `mips.h:2286` `GO_IF_LEGITIMATE_ADDRESS`
     accepts `REG + CONSTANT_ADDRESS` directly, so nothing forces the shared `index+sym` register
     into existence.
-  - verdict: KILLED (instance — 36 bucket-(iii) shapes x 6 orders, 2026-09-03 chassis, floor 4,
+  - verdict: KILLED (instance â€” 36 bucket-(iii) shapes x 6 orders, 2026-09-03 chassis, floor 4,
     no FAKE construct present)
 
 - **H-s13-6 (KILLED, instance).** The two address spellings are two distinct C OBJECTS rather
@@ -981,11 +981,11 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
     carries no relocations ([[splat-symbol-names-are-not-evidence]]), so a two-object provenance
     would be invisible in the bytes and would legitimise the mixed spelling.
   - probe: arithmetic on the target addresses (asm/funcs/func_80062020.s:29-39) rather than a new
-    compile — the column-a store is at `&D_800F1198 + i*12`, the b/c stores at `+4` and `+8` of
+    compile â€” the column-a store is at `&D_800F1198 + i*12`, the b/c stores at `+4` and `+8` of
     that SAME 12-byte element, for every i.
   - result: two separate C objects cannot interleave at stride 12 inside each other's elements,
     so no declaration pair reproduces these addresses. Dead on arithmetic, not on policy.
-  - verdict: KILLED (instance — reasoned against the target bytes, 2026-09-03)
+  - verdict: KILLED (instance â€” reasoned against the target bytes, 2026-09-03)
 
 - **H-s13-7 (KILLED, instance).** A REAL statement the function must execute anyway can play the
   carrier role the dead conditional played: written between the terminator b- and a-stores it
@@ -993,17 +993,17 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
   - mechanism: the function has exactly one non-terminator statement available, `D_800A32B8 = 0;`
     (a gp-relative store). If a real store between the two terminator stores splits the address
     chain the way a referenced label does, the target arrangement follows from ordinary C.
-  - probe: `tmp/grind/func_80062020/s13/sweep13p.py` — the gp store placed at five positions
+  - probe: `tmp/grind/func_80062020/s13/sweep13p.py` â€” the gp store placed at five positions
     (target prologue position, between c and b, between b and a, after the loop before the row
     pointer, last), plus a variant with the row pointer recomputed after it, plus a real re-read
     of `arg0[0]` as an alternative carrier. Results `sweep13p_results.txt`.
   - result: all seven measure `DISP8 | DISP4 | DISP0`. A real intervening STORE does not split
-    the address chain at all — only a control-flow boundary does. Worse, moving the gp store out
+    the address chain at all â€” only a control-flow boundary does. Worse, moving the gp store out
     of the prologue moves its emitted position from insn 2 to insns 23-26, which the target
     forbids independently. The real-statement carrier idea is dead on both counts.
-  - verdict: KILLED (instance — 7 shapes, 2026-09-03 chassis, floor 4, no FAKE construct present)
+  - verdict: KILLED (instance â€” 7 shapes, 2026-09-03 chassis, floor 4, no FAKE construct present)
 
-- **H-s13-8 (KILLED, instance) — and it yields the sharpest law this ledger has.** A WALKING
+- **H-s13-8 (KILLED, instance) â€” and it yields the sharpest law this ledger has.** A WALKING
   pointer or walking index gives each terminator store its own single-use address def using only
   ordinary C statements (`p--`, `k -= 4`), which is what combine needs to fold one of them.
   - mechanism: `flow.c:2102` builds a LOG_LINK from a def to its use only when the register is
@@ -1011,13 +1011,13 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
     therefore fold an address def into its MEM exactly when that def has ONE use in the block.
     The floor-4 body has one def with three uses (no links, all DISP); a walking form has three
     defs with one use each.
-  - probe: `tmp/grind/func_80062020/s13/sweep13w.py` — 8 shapes: pointer pre-decrement,
+  - probe: `tmp/grind/func_80062020/s13/sweep13w.py` â€” 8 shapes: pointer pre-decrement,
     post-decrement, pre-decrement from the next row, post-increment ascending, walking index with
     the direct spelling, walking index with the pointer spelling, plus two controls. Results
     `sweep13w_results.txt`.
   - result: no shape hits the target. The walking POINTER forms give `DISP0 | DISP0 | DISP-4`
     (three independent bases, 28 insns); the walking INDEX forms give
-    `LOSUM[D_800F1198+8] | LOSUM[D_800F1198+4] | LOSUM[D_800F1198]` — bucket (i) — including
+    `LOSUM[D_800F1198+8] | LOSUM[D_800F1198+4] | LOSUM[D_800F1198]` â€” bucket (i) â€” including
     `W6_idx_walk_ptr`, which uses a POINTER LOCAL and still lands in bucket (i).
   - **THE LAW (measured over all of s13's 117 shapes, and it supersedes the tree-shape framing):
     the bucket is decided by the USE COUNT of the address def, not by the spelling. One def used
@@ -1025,19 +1025,19 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
     bases). The target needs ONE def used TWICE (columns c and b, at DISP8 and DISP4) AND A
     SECOND def used ONCE (column a, folded to LOSUM) for the SAME address value in the SAME
     block.** In C, two defs of the same address value are either the same expression written
-    twice (a dead re-assignment — the first s13 run's cheat) or two different expressions (the
+    twice (a dead re-assignment â€” the first s13 run's cheat) or two different expressions (the
     standing banned dual spelling). That is why every honest search since s2 lands on floor 4,
     and it is the precise thing a future session must break.
-  - verdict: KILLED (instance — 8 shapes, 2026-09-03 chassis, floor 4, no FAKE construct present)
+  - verdict: KILLED (instance â€” 8 shapes, 2026-09-03 chassis, floor 4, no FAKE construct present)
 
-### Frontier after s13 (second run) — reset to three
+### Frontier after s13 (second run) â€” reset to three
 
 1. **Find a C construct that gives ONE address def TWO uses and a SECOND def ONE use, without a
    dead statement.** This is the residual restated as a use-count problem (H-s13-8), which is a
    much smaller target than "find a spelling". The untried sub-space: a def whose second use is
    consumed by something OTHER than a terminator store, so the row pointer is naturally live
    for two stores and then re-derived for a real reason. Next probe: look for a reading of the
-   function in which the row pointer has a genuine second consumer — e.g. the terminator row
+   function in which the row pointer has a genuine second consumer â€” e.g. the terminator row
    address is also the value the loop would have written next, or the a-column write belongs to
    a different logical operation than the b/c writes (a "clear the flag word" step distinct from
    "clear the payload"). Measure any such reading with `sweep13n.py` extended, and check the
@@ -1158,14 +1158,14 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
 - kill_scope: instance
 - measured_on: 2026-09-03 chassis, honest floor 4, 7 shapes (C1-C4, D1-D3), no FAKE construct present
 
-### Frontier after s14 — reset to three
+### Frontier after s14 â€” reset to three
 
 1. **Resolve the classification of the `static __inline__` helper split, then promote.** The
    residual is closed mechanically: `pending-ruling/s14-two-helper-split-score0.c` measures
    distance 0 with a full-EXE SHA1 match and contains no dead statement, no FAKE construct, and no
    same-body dual spelling. The only open question is whether a once-called `static __inline__`
    helper is ordinary program structure or a first reach of an unsanctioned coercion family. If the
-   ruling is favourable, promote that file verbatim — no further search is needed. If it is
+   ruling is favourable, promote that file verbatim â€” no further search is needed. If it is
    refused, the family is closed and the a-column residual has no honest construct left that any of
    fourteen sessions has found.
 2. **A spelling found on a SIMPLER member of the 32-function same-symbol dual-address-form species
@@ -1177,7 +1177,7 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
    are the SAME construct question, so a ruling here settles all 32 at once.
 3. **An owner class grant covering the same-symbol dual-address-form residual would close this
    function and 31 siblings in one act.** (Carried forward, unchanged.) If the frozen list is ever
-   extended, resubmit `rejected/layer1-fail-0831-2231.c` unchanged — it already measures distance 0
+   extended, resubmit `rejected/layer1-fail-0831-2231.c` unchanged â€” it already measures distance 0
    with SHA1 == oracle.
 
 ## [s14 second run] The pass that decides which terminator store gets the symbolic address form is a post-expand optimiser (cse2 per s8, or combine's LOG_LINK availability per s13), so a pass-level lever exists.
@@ -1214,14 +1214,14 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
   `flow.c:2102` grants the LOG_LINK. A store whose C tree is a pointer-local deref always expands
   to `(mem (plus (reg P) (const_int K)))` off that pointer's pseudo, and every store sharing the
   pointer shares the pseudo.
-- probe: `tmp/grind/func_80062020/s14/poles_rtl.py` — four whole-function epilogue spellings
+- probe: `tmp/grind/func_80062020/s14/poles_rtl.py` â€” four whole-function epilogue spellings
   (pointer-uniform = the floor-4 body; three-symbol direct uniform; one-symbol three-direct
   uniform; the banned mixed body), each compiled with the oracle cc1 and the verbatim Makefile
   CC_FLAGS and dumped with `-da`; expand MEM forms read out of `in.i.rtl` and set beside the
   emitted asm. Results `poles_rtl_results.txt`.
 - result: KILLED. Every uniform spelling gives three MEMs of ONE kind (all shared-pseudo
   displacement, or all inline-symbolic), and the mixed arrangement appears only when the C
-  contains both tree kinds for the same base — the banned construct. G2 is the only alternative
+  contains both tree kinds for the same base â€” the banned construct. G2 is the only alternative
   and it requires a second def of the same address value, which in C is either a duplicate
   expression (dead re-assignment, KILLED s13) or a function/inline boundary (REFUSED by the
   2026-09-03 Judge ruling now standing in `state.json judge_constraints`). This is the same
@@ -1246,9 +1246,9 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
   and it is classified same-object iff `S == T`. Results `species_sameobj_results.txt`.
 - result: KILLED. Five functions in the whole executable match A AND B, and exactly ONE has
   `S == T`: func_80062020 itself (base `0x800F1198`, displacements `[4, 8]`, at-form symbols
-  `0x800F1198/119C/11A0`). The other four — `func_8001FBE8` (base `0x80101EC8`, at `0x80101F14`),
+  `0x800F1198/119C/11A0`). The other four â€” `func_8001FBE8` (base `0x80101EC8`, at `0x80101F14`),
   `func_8003EDC0` (base `0x800A6690`, at `0x800F66A0`), `func_80055138` (base `0x80101EC8`, at
-  `0x80099D8B`), `func_800770B8` (base `0x800A35D0`, at `0x8009BCE4`) — mix the two forms across
+  `0x80099D8B`), `func_800770B8` (base `0x800A35D0`, at `0x8009BCE4`) â€” mix the two forms across
   DIFFERENT objects, which is ordinary C needing no dual spelling. s9's 32-member list was built
   on the at-form alone and is not a species of this residual; the three named transfer candidates
   are not instances. There is no simpler sibling to solve first.
@@ -1258,13 +1258,13 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
   construct); detector windows: addiu within 2 insns of the lui, addu within 3 of the addiu,
   memory ref within 12 of the addu or until the next branch/jump
 
-### Frontier after s14 (second run) — reset to three
+### Frontier after s14 (second run) â€” reset to three
 
 1. **Re-audit the expand-time predicate itself: is there a C address tree, other than
    `&SYM + index` and other than a pointer-local deref, that expand routes differently?**
    The class kill above rests on a two-generator model of `(mem (plus (reg) (symbol_ref)))`
    validated on four whole-function poles. It has NOT been validated against every C address
-   tree GCC 2.7.2 can build — notably an address tree that mixes a `const`-qualified or
+   tree GCC 2.7.2 can build â€” notably an address tree that mixes a `const`-qualified or
    differently-typed base, an address that passes through `legitimize_address`
    (`tools/gcc-2.7.2/config/mips/mips.c`) because it is initially illegitimate (e.g. a
    large-constant offset that must be split), or a tree that reaches the MEM through a
@@ -1277,8 +1277,8 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
 
 2. **An owner class grant covering the same-object dual-address-form residual would close this
    function.** (Carried forward; note the species is now known to be a species of ONE, so a
-   grant closes exactly this function, not 32.) The construct is byte-proven — distance 0 plus a
-   full-build oracle SHA1 match — and its generic shape ships in SOTN PSX/GCC-2.7.2 code; the
+   grant closes exactly this function, not 32.) The construct is byte-proven â€” distance 0 plus a
+   full-build oracle SHA1 match â€” and its generic shape ships in SOTN PSX/GCC-2.7.2 code; the
    only barrier is that the frozen family list does not cover it and extending it is owner-only.
    Two Judges and two layer-1 reviews have FAILed it on the merits. No grind action. If the list
    is extended, resubmit `rejected/layer1-fail-0831-2231.c` unchanged.
@@ -1318,3 +1318,91 @@ Returned to active under Ruling A. ALL standing bans REMAIN IN FORCE — the sam
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: 2026-09-03, static scan of the original-EXE disassembly (no compile, no FAKE construct); detector windows: addiu within 2 insns of the lui, addu within 3 of the addiu, memory ref within 12 of the addu or until the next branch/jump
+
+---
+
+## s15 (synthesis, 2026-09-03) â€” frontier resolved
+
+### H-s15-1 â€” KILLED (instance)
+
+**Statement.** Writing the terminator row address as a cast EXPRESSION subscripted in
+place, with no pointer VARIABLE, makes expand see a 3-term address for the +8 / +4 stores
+(illegitimate under GO_IF_LEGITIMATE_ADDRESS, tools/gcc-2.7.2/config/mips/mips.h:2286, so
+legitimize_address forces the inner symbol+index into a pseudo) and a legitimate 2-term
+address for the +0 store, producing DISP8 | DISP4 | LOSUM from ONE uniform spelling.
+
+**Probe.** tmp/grind/func_80062020/s15/sweep15.py â€” 15 shapes on the scalar splat-symbol
+chassis: subscript-in-place, pointer-add-in-place, byte-cast round trip, `s32 (*)[3]` row
+cast, struct-pointer member, both operand orders (symbol-left and index-left), array-decl
+variants, and negative-subscript anchor-past-the-row variants; plus the s14 A0/A3 controls.
+
+**Result.** KILLED. Every in-place spelling landed on all-LOSUM
+(LOSUM[D_800F1198+8] | LOSUM[D_800F1198+4] | LOSUM[D_800F1198]), 25 harness insns: fold
+reassociates the integer constant K into the symbol before expand ever sees the address, so
+there is no 3-term address to legitimize. The premise about legitimize_address is right;
+the premise that the constant survives fold is wrong. Controls reproduced s14 exactly
+(Z0 = DISP8|DISP4|DISP0, Z1 = target arrangement), so this is a clean instance kill on the
+current chassis with no FAKE construct present.
+
+**measured_on:** 2026-09-03 chassis (verify-oracle ok:true, build_matches:true on HEAD;
+honest floor 4 for the s14 candidate), 15 shapes, no FAKE construct present.
+
+### H-s15-2 â€” CONFIRMED, and it closes the function
+
+**Statement.** On an aggregate (record-array) declaration of the table the member offsets
+are COMPONENT_REF offsets rather than integer constants added to an address expression, so
+fold cannot reassociate them into the symbol; a three-link chained assignment then stores
+right-to-left with the first two stores sharing a base pseudo and the LAST store left in
+the inline-symbolic at-form, which is the target's exact epilogue arrangement when the
+chain is written so that column a is stored last.
+
+**Probe.** sweep15b.py (forward chain, mirrored arrangement), sweep15c.py (reversed chain,
+target arrangement, plus the sub-chain and scalar-chassis negative controls), sweep15d.py /
+sweep15e.py (loop fitting), then the tree edit + sandbox + full build.
+
+**Result.** CONFIRMED. `D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;`
+on `extern Unk800F1198Record D_800F1198[];` gives DISP8 | DISP4 | LOSUM[D_800F1198].
+Whole function: sandbox score 2 at 38/38 insns (the 2 is the named-symbol HI16/LO16 addend
+spelling, which relocates identically â€” see evidence.md), and `engine build` = sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH. Negative controls matter: the
+same chain on the scalar splat-symbol chassis gives all-LOSUM (R7/R8/R9), and a two-link
+chain plus a separate store gives all-LOSUM in either order (R4/R5/R6) â€” the aggregate
+declaration and the full three-link chain are both load-bearing.
+
+### H-s14-CLASSKILL â€” RETIRED (was: the mixed epilogue requires two address trees for one
+lvalue base)
+
+The s14 class kill was derived from a two-generator model of
+`(mem (plus (reg) (symbol_ref)))` validated only on whole-function poles that all used the
+splat per-word scalars, and it never tested a member offset that is a COMPONENT_REF rather
+than an integer constant. H-s15-2 materialises the row address exactly once and still
+reaches the target mix, so the class predicate is false. The instance content of the kill
+(on the scalar chassis, with per-word scalar declarations, the mix does require two
+materialisations) survives and is corroborated by this session's R7/R8/R9 controls.
+
+### Frontier after s15
+
+The function is byte-proven; there is no open search. The remaining work is dispositional:
+layer-1 / Judge adjudication of the aggregate merge (prong (c) is partial and disclosed â€”
+`undefined_syms_auto.txt:527-528` must keep D_800F119C / D_800F11A0 while
+asm/funcs/func_800620B8.s is still INCLUDE_ASM and references them), and, once
+func_800620B8 is decompiled, completing the splat-config half of the merge. NOTE (s15
+re-verification): the claim that this would also collapse the sandbox's residual 2 to 0
+is WRONG and is retracted — the sandbox reference object is built from
+asm/funcs/func_80062020.s itself, which names D_800F119C / D_800F11A0 in its own
+relocations, so the residual 2 is invariant under anything done to other functions.
+See the s15 re-verification block in evidence.md.
+
+## [s15] Declaring the three splat per-word scalars D_800F1198/119C/11A0 as one 3-word record array (per-word splat symbol -> aggregate merge, no-new-park-categories.md:238) and writing the terminator row as a single chained assignment D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0; reproduces the target's mixed epilogue (DISP8 | DISP4 | inline-symbolic) from ONE address materialisation, with no FAKE construct and no banned construct.
+- mechanism: With a record declaration the member offsets are COMPONENT_REF offsets on an ARRAY_REF rather than integer constants added to an address expression, so fold cannot reassociate them into the symbol - which is what collapsed every '&SYM + ofs + K' spelling in s9-s14 onto the all-LOSUM pole. GCC 2.7.2 evaluates the chained assignment right-to-left, gives the first two stores a shared base pseudo and leaves the last store of the chain in the inline-symbolic (lui/addu/lo) form; writing the chain so column a is stored last puts that form exactly where the target has it.
+- probe: verify-oracle --rebuild on clean HEAD (ok true, build_matches true); apply the three-file diff via memory/grind/func_80062020/apply_s15.py; sandbox func_80062020 --disable all; engine build; objdump -dr of the sandbox object against asm/funcs/func_80062020.s; then verify-oracle --rebuild --allow-dirty and sandbox again.
+- result: CONFIRMED, twice over. Against the HEAD reference: score 2, target_insns 38, build_insns 38, rules_dropped 0. objdump: instruction-for-instruction identical to the target, 38 insns, same registers and order, including the epilogue mix sw zero,0x8(v0) / sw zero,0x4(v0) / lui at,%hi + addu at,at,v1 + sw zero,%lo(at). The two scored words are a relocation SPELLING difference only (this body: HI16/LO16 vs D_800F1198 with in-field addends 4 and 8; reference .s: addend 0 vs splat's D_800F119C / D_800F11A0) - S+A identical. engine build (full clean-driver build + link) = sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH. After verify-oracle --rebuild --allow-dirty (itself oracle-gated: ok true, build_matches true, oracle SHA1) the sandbox prints score 0 at 38/38. This retires the s14 CLASS kill ('the target's mixed epilogue requires two address trees for one lvalue base'), whose two-generator model was validated only on chassis that all used the splat per-word scalars and never tested a COMPONENT_REF member offset.
+- verdict: CONFIRMED
+
+## [s15] The sandbox residual of 2 that this form shows against a reference built from HEAD can be removed by a C-side change, or by decompiling the sibling func_800620B8 that also references D_800F119C / D_800F11A0.
+- mechanism: The earlier s15 frontier note assumed the residual came from the per-word symbols still being alive as link-time symbols, so that retiring the sibling's asm reference would collapse it.
+- probe: Read engine/score.py (module docstring :8-11, _SECTION_ADDEND_RELOCS comment :55-63) and identified what the sandbox's canonical reference object actually is, then re-measured the residual with the diff applied against both a HEAD-built reference (score 2) and a rebuilt reference (score 0).
+- result: KILLED as stated. The sandbox scores this TU's cheat-disabled object against the canonical object built from the CURRENT tree, i.e. from asm/funcs/func_80062020.s while the function is INCLUDE_ASM. That .s is splat's spelling of the original bytes and names D_800F119C / D_800F11A0 in its own relocations, so the reference carries those symbols regardless of what any other function does; and engine/score.py deliberately does not mask NAMED-symbol HI16/LO16 addends. No C-side change and nothing done to func_800620B8 moves that number. What DOES move it is rebuilding the reference from the byte-correct tree (verify-oracle --rebuild --allow-dirty, oracle-gated), after which the sandbox prints 0 - the same 'post-rebuild sandbox 0' mechanic the Judge accepted for func_800861BC (decisions.md 2026-09-02 final call PASS) and func_80033550 (2026-09-03 PASS). The s15 frontier note claiming the sibling decomp would collapse it is retracted in hypotheses.md so the next session does not spend a probe on it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: 2026-09-03 chassis; the s15 aggregate-merge body applied to src/text1b.c + include/game.h + src/text1b_b.c; no FAKE construct present in the diff; measured against a HEAD-built reference (score 2) and against a --allow-dirty-rebuilt reference (score 0)

@@ -1,29 +1,139 @@
-# SELF-VET — func_80062020
+# SELF-VET — func_80062020 (grind s15, synthesis, 2026-09-03)
 
-**STATUS: NOT A CANDIDATE. This session (s13, synthesis, 2026-09-03, second run) submits no
-candidate-ready outcome and leaves NO C in src/text1b.c — `git status --porcelain src/` is clean
-and `INCLUDE_ASM("asm/funcs", func_80062020);` remains at src/text1b.c:3932.**
+CONSTRUCTS: (1) per-word splat-symbol aggregate merge — the three splat scalars
+`D_800F1198` / `D_800F119C` / `D_800F11A0` replaced by one record-array declaration
+`extern Unk800F1198Record D_800F1198[];` in `include/game.h`; (2) chained assignment
+`D_800F1198[i].unk0 = D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;` in the epilogue.
+No pointer local, no dead statement, no self-assign, no volatile, no duplicated address
+materialisation, no dual spelling, no FAKE construct, no inline asm, no register pin.
 
-This file previously held the vet written by the s13 run that the driver DISCARDED, because that
-vet re-declared a construct banned for this function in `state.json`. It has been rewritten so no
-future session can inherit a banned construct as its starting point. The discarded body and its
-full six-test adjudication are banked at
-`rejected/epilogue-deadcond-identical-arms-crossjump-score0-s13.c`.
+## T1 semantic purpose
 
-CONSTRUCTS: none — this session produced no diff to src/ and no candidate body. The best form on
-record remains the honest floor-4 uniform body in `candidate.c` (one row-pointer local,
-`p[2] = 0; p[1] = 0; p[0] = 0;`), which contains no FAKE construct of any kind.
+(1) **Aggregate merge.** The declaration is a fidelity claim about the object model, not a
+codegen device. It changes what the C source SAYS the storage is: a table of 3-word
+records rather than three unrelated words. It has an observable effect on every reader of
+the file (the loop and the epilogue index the same records) and it is the declaration the
+original binary's own addressing implies. Codegen consequence: member offsets become
+COMPONENT_REF offsets rather than integer constants added to an address expression.
 
-## T1 semantic purpose: n/a — no construct submitted.
-## T2 human-programmer: n/a — no construct submitted.
-## T3 GCC-internals justification: n/a — no construct submitted.
-## T4 permuter/search provenance: n/a — no construct submitted. The 117 shapes compiled this
-   session are MEASUREMENTS banked in the ledger, not proposals; none of them is being advanced.
-## T5 family check: n/a — no construct submitted.
-## T6 naming-announces-intent: n/a — no construct submitted.
+(2) **Chained assignment.** Zeroes all three members of the terminator record. Its
+observable effect is exactly its meaning: three stores of 0. It is not a wrapper around a
+simpler form — the "simpler form" (three separate statements) has the same behaviour but
+this is the shorter and more idiomatic C for "set these three fields to zero", which is why
+C has the construct at all. Nothing in the diff is behaviourally inert.
 
-SANCTIONED-FAMILY-CLAIMS: none.
+## T2 human-programmer
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct. `candidate.c` is plain C with no annotation
-because it carries no coercion construct; it simply does not reach distance 0 (honest floor 4,
-re-measured this session).
+Yes to both, and this is the point of the session. A programmer writing a routine that
+copies 3-word records into a table until a terminator, then zeroes the terminator record,
+declares the table as a record array and writes `row.a = row.b = row.c = 0;`. Neither
+construct would make a reader ask "why is this here?" — the reader would instead ask why
+the previous candidate had a bare pointer local and three splat-invented per-word scalars
+for what is obviously one table. The body reads as ordinary C from top to bottom.
+
+## T3 GCC-internals justification
+
+The MECHANISM section of the reasoning is not what licenses either construct, and neither
+construct is named or shaped after a GCC pass. The merge is licensed by binary evidence
+about the object model (12-byte stride IV, base+displacement member addressing); the chain
+is licensed by what the function does. I do record, in candidate.c and evidence.md, WHY
+the resulting bytes land where they do (fold does not reassociate a COMPONENT_REF offset
+into a symbol, and GCC 2.7.2 stores a chained assignment right-to-left leaving the last
+store inline-symbolic) — but that is an explanation of an observation, not the
+justification for the code. Remove the explanation and the code still reads as the natural
+C for the task; that is the test this prong applies. No allocator, scheduler, DCE, LUID,
+`reg_n_refs`, `INSN_PRIORITY`, `reorg.c` or `combine.c` behaviour is being steered, and no
+"lever" is being carried.
+
+## T4 permuter/search provenance
+
+No permuter was run this session. The shapes were enumerated by hand as a declaration-level
+hypothesis (a record declaration blocks the constant reassociation that killed every
+`&SYM + ofs + K` spelling in s9) and measured with a cc1 harness
+(tmp/grind/func_80062020/s15/sweep15b.py, sweep15c.py, sweep15e.py). The winning form is
+not "necessary only because a search found it": it is the form the object-model evidence
+independently predicts, and it survives the detectors because there is nothing to detect —
+it contains no construct outside ordinary C plus one sanctioned declaration change.
+
+## T5 family check
+
+Construct (2), chained assignment, is ordinary C and needs no family. It is NOT the banned
+construct: the ledger ban is on `row = (s32 *)((u8 *)&D_800F1198 + ofs); row[2]=0;
+row[1]=0; *(s32 *)((u8 *)&D_800F1198 + ofs) = 0;` — a pointer local plus a SECOND,
+differently-spelled materialisation of the same row address. This body has no pointer
+local and exactly ONE spelling for all four row writes (`D_800F1198[index].unkN`), so
+there is no same-lvalue dual spelling and no second address materialisation to respell.
+The standing Judge constraint "the address expression for the terminator row may not be
+materialised twice by any means" is satisfied literally: it is materialised once, and the
+`addu $v0,$v1,$v0` base and the `%lo(D_800F1198)($at)` at-form are two ADDRESSING MODES
+GCC chose for one C address tree, not two source-level materialisations. The Judge
+constraint about "permuter-derived chained-assignment variants such as
+rejected/epilogue-permuter-s4-dualspelling-chain.c" names a chain whose links were
+`p[2]` / `p[1]` / the full `&D_800F1198 + ofs` expression — i.e. the banned dual spelling
+written as a chain; that is a different construct from a chain all of whose links are the
+same spelling. Construct (1) is claimed under the family below.
+
+## T6 naming-announces-intent
+
+No name in the diff announces coercion intent. Locals are `i` (record count), `ofs` (source
+byte offset) and `t` (the staged terminator word) — all read and all consumed. The type is
+`Unk800F1198Record` and its members are `unk0` / `unk4` / `unk8`: address-derived, claiming
+nothing about semantics that is not evidenced ([[names-require-evidence]]). There is no
+`pad`, `dummy`, `spill`, `slack` or `_buf`. Every declared entity has a use site.
+
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: Per-word splat symbol → aggregate merge
+  SCOPE: "two or more splat-invented `D_<addr>` scalars may be replaced by a single aggregate declaration."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:238
+
+  Prong-by-prong, against the rule's five mandatory prongs:
+  - (a) OBJECT MODEL, evidence independent of and predating this session, and not
+    adjacency. The ORIGINAL binary walks the table with a 12-byte-stride induction
+    register — `addiu $v1, $v1, 0xC` at asm/funcs/func_80062020.s:0x80062080 — storing
+    three words per step, and addresses the terminator record's members through ONE base
+    register at displacements 0x8 and 0x4 (0x8006209C / 0x800620A0). That is record-stride
+    indexing plus base+offset addressing, the two evidence kinds the prong names.
+    asm/funcs/func_800620B8.s reads the same table with the same 12-byte stride, so the
+    record shape is cross-function, not a property of the function being matched.
+  - (b) THE DECLARATION REFLECTS THAT SHAPE. A struct of three s32 in a flat array,
+    indexed by a RECORD index (`D_800F1198[i]`). No index anywhere encodes 12 as a magic
+    stride; the byte offset `ofs` in the body walks the SOURCE buffer `arg0`, which is a
+    caller-supplied `s32 *` and is not part of the merged object.
+  - (c) COMPLETENESS — PARTIAL, DISCLOSED. Every merged per-word symbol is removed from C:
+    all three stale `extern s32 D_800F1198/119C/11A0;` triples are deleted
+    (src/text1b.c:2145-2147 and 3929-3931, src/text1b_b.c:387-389; none of the nine had a
+    use site anywhere in src/), leaving exactly ONE C handle for the storage. The splat
+    config half is NOT done: `undefined_syms_auto.txt:527-528` still define D_800F119C and
+    D_800F11A0, because `asm/funcs/func_800620B8.s` — a sibling that is still
+    `INCLUDE_ASM` under asm-until-matched — references those names and the link breaks
+    without them. Removing them becomes possible when func_800620B8 is decompiled. I am
+    flagging this rather than claiming the prong: the prong's stated purpose ("leaving
+    exactly one C handle per storage location") is met, its literal text is not.
+  - (d) CANONICAL DECLARATION SITE. `include/game.h`, the shared header text1b.c already
+    includes — not TU-local, not a per-use pointer pun.
+  - (e) BYTE-NEUTRALITY FOR EVERY OTHER CONSUMER. `engine build` (full clean-driver build
+    + link) with the diff in place: sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle,
+    MATCH — so no other TU moved a byte. `verify-oracle --rebuild` was run on HEAD FIRST to
+    restore a clean reference (ok:true, build_matches:true) before the honest sandbox
+    measurement; it cannot also be run with the diff in place, since it refuses a dirty
+    tree by design and `--allow-dirty` would overwrite the reference the sandbox scores
+    against. Layer-2 cheat-reviewer is the operator's step.
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. Neither construct is a codegen coercion
+device: the aggregate-merge family is a declaration-fidelity exception and its five prongs
+do not include a `/* FAKE */` annotation (contrast the dead-store, constant-holder,
+pointer-alias, duplicated-statement and do-while(0) families in the same rule file, whose
+text mandates one); the chained assignment is ordinary C outside every family list.
+
+## MEASUREMENT STATE (read with the outcome JSON)
+
+`sandbox func_80062020 --disable all` prints **score 2**, target_insns 38, build_insns 38,
+against a freshly rebuilt clean reference. The two scored instructions are the in-loop
+stores at .o offsets 0x38 and 0x4c: this body relocates them HI16/LO16 against
+`D_800F1198` with in-field addends 4 and 8, the reference relocates them against
+`D_800F119C` / `D_800F11A0` with addend 0. S+A is identical either way, so the LINKED words
+are identical — proven by the full-build SHA1 match. engine/score.py masks
+section-relative HI16/LO16 addends but deliberately not named-symbol ones (module
+docstring, engine/score.py:8-11 and :61-63), so the merge's spelling scores as a
+difference. This residual is a property of the aggregate merge itself and is not removable
+in C while func_800620B8 remains INCLUDE_ASM.

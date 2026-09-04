@@ -1,7 +1,7 @@
 {
  "func": "func_80062020",
  "file": "text1b",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -93,23 +93,24 @@
    "floor": 4,
    "modality": "synthesis",
    "headline": "Pass re-attributed to RTL EXPAND (mips.h:2286 GO_IF_LEGITIMATE_ADDRESS), retiring s8's cse2 and s13's combine attributions; class kill banked on the mixed-epilogue generator, and a whole-EXE re-scan s"
+  },
+  {
+   "session": 15,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "func_80062020 is MATCHED in cheat-free C (sandbox 0 at 38/38 post-rebuild, full-build SHA1 == oracle, re-verified from scratch this session); the only blocker left is the single-stem scope gate - file"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "There is a C address tree, other than '&SYM + index' and other than a pointer-local deref, that RTL expand routes to the inline-symbolic MEM form - which would re-open the residual despite the class kill.",
-   "mechanism": "The class kill rests on a two-generator model of (mem (plus (reg) (symbol_ref))) validated on four whole-function poles. It has not been validated against every address tree GCC 2.7.2 can build: a const-qualified or differently-typed base, an address that passes through legitimize_address in tools/gcc-2.7.2/config/mips/mips.c because it is initially illegitimate (e.g. an offset too large for the 16-bit field), or a COMPONENT_REF on a symbol-addressed aggregate whose member offset exceeds that field.",
-   "next_probe": "Fix the MEM-extraction regex in tmp/grind/func_80062020/s14/gentable.py (it currently misses the nested (plus reg symbol_ref) case, which is why its first run printed '?' for every shape), then extend it into a single-store generator table over ~15 distinct address trees, reading the expand MEM form for each out of in.i.rtl. Any tree that produces the symbolic form from a NON-'&SYM+index' shape is a new lever; feed it into a whole-function epilogue and measure with sandbox."
+   "hypothesis": "With scope_paths=[include/game.h, src/text1b_b.c] granted, the banked form lands as COMPLETED-C through the full normal gates.",
+   "mechanism": "The bytes are proven (oracle SHA1) and the post-rebuild sandbox is 0, so the driver's byte gate and scope gate both pass once the scope line exists; layer-1 and the Judge then rule on the C, which contains only the frozen-family merge plus ordinary C.",
+   "next_probe": "Apply memory/grind/func_80062020/apply_s15.py apply; verify-oracle --rebuild --allow-dirty (confirm build_matches true + oracle SHA1); sandbox func_80062020 --disable all (expect 0 at 38/38); keep the existing prong-by-prong self_vet.md; return candidate-ready."
   },
   {
-   "hypothesis": "The epilogue's 3-insn addressing difference is a build-configuration artefact rather than a C-construct problem - func_80062020 was compiled with a cc1 configuration that differs from the one the rest of text1b.c uses.",
-   "mechanism": "The residual is exactly the kind of difference a -G value, PIC/abicalls setting, or cc1 build skew produces: it changes how a symbol+index address is materialised, and it can differ per object without perturbing functions that never form such an address. Fourteen sessions have searched the C side only; the toolchain side has never been swept for this function.",
-   "next_probe": "Sweep the honest uniform floor-4 body through the sandbox build across the small set of codegen-relevant cc1 flags that leave the already-matching functions in text1b.c untouched (starting with -G values), and check whether any produces the mixed epilogue. A hit is a build-configuration FINDING to report, not a lever to spend - .claude/rules/no-compiler-divergence.md governs, and the Makefile/engine surfaces are outside the grind session's allowed surface."
-  },
-  {
-   "hypothesis": "An owner class grant covering the same-object dual-address-form residual would close func_80062020 immediately.",
-   "mechanism": "The construct is byte-proven (distance 0 plus a full-build oracle SHA1 match) and its generic shape ships in SOTN PSX/GCC-2.7.2 code; the only barrier is that the frozen family list does not cover it and extending that list is owner-only. Two Judges and two layer-1 reviews have FAILed it on the merits under the current list.",
-   "next_probe": "No grind action. If the frozen list is ever extended to this shape, resubmit memory/grind/func_80062020/rejected/layer1-fail-0831-2231.c unchanged - it already measures distance 0 with SHA1 == oracle. Note the scope correction from this session: such a grant closes this one function, not the 32 s9 reported."
+   "hypothesis": "Completing the splat-config half of the merge (retiring D_800F119C / D_800F11A0 from undefined_syms_auto.txt) becomes possible once func_800620B8 is decompiled, closing prong (c) literally as well as in purpose.",
+   "mechanism": "The only remaining consumers of those two names are asm siblings; when the last one is C, the linker-script definitions are dead. This is a follow-on cleanup, not a gate - the sanctioned precedents (func_800861BC, e788983a) shipped with the names retained.",
+   "next_probe": "After func_800620B8 reaches COMPLETED-C, grep asm/funcs for D_800F119C / D_800F11A0, delete the two lines from undefined_syms_auto.txt, and re-run verify-oracle --rebuild."
   }
  ],
  "judge_constraints": [
@@ -117,7 +118,9 @@
   "LAYER-1 CHEAT-REVIEWER FAIL: The candidate epilogue is the identical byte-for-byte construct the Judge already FAILed on 2026-08-25 (pointer p for cols b/c, direct symbol-relative expression for col a); it is being resubmitted under a different family label whose own scope sentence it self-admittedly does not fit, and the ledger's explicit ban on this exact construct was never mechanically cleared. Next action: Do not commit. The construct is banned in the current, unamended ledger (state.json judge_constraints) and is the same body already FAILed by the Judge on 2026-08-25 under a closely rel",
   "Keep the epilogue body exactly as submitted; fix only the comments - delete the /* FAKE */ marker and every proven-spelling-class-reconstruction / ruling-6a four-point claim, and re-file the mixed spelling as ordinary C under ordinary-c-judge-decidable Ruling 1 sec.3.",
   "LAYER-1 CHEAT-REVIEWER FAIL: Same-lvalue dual-spelling addressing-mode steer (row[0] re-spelled as the full &D_800F1198+ofs expression) \u2014 the exact construct already FAILed by two prior Judges (2026-08-25 and 2026-08-31); deleting the incriminating comments does not change what the code does. Next action: Do not commit. This construct (the same-lvalue dual-spelling epilogue store) is FAILed on the merits, independent of its comments or claimed family \u2014 it is the identical construct two prior Judges already rejected. The worker must return to the honest floor-4 candidate (uniform row-pointer ep",
-  "The address expression for the terminator row may not be materialised twice by any means, including a function-call/inline boundary between the writes. Do not respell the once-called static __inline__ helper split (one helper or two, any names, any parameterisation, macro or decayed-array variants). The honest floor-4 uniform body in candidate.c remains the best admissible form; work the ladder's next rung or record foreclosure \u2014 do not re-open the second-address-def axis."
+  "The address expression for the terminator row may not be materialised twice by any means, including a function-call/inline boundary between the writes. Do not respell the once-called static __inline__ helper split (one helper or two, any names, any parameterisation, macro or decayed-array variants). The honest floor-4 uniform body in candidate.c remains the best admissible form; work the ladder's next rung or record foreclosure \u2014 do not re-open the second-address-def axis.",
+  "Land the banked s15 body EXACTLY as in memory/grind/func_80062020/candidate.c + apply_s15.py (aggregate declaration in include/game.h, the nine vestigial per-word externs removed, the uniform chained-assignment epilogue). Do not reintroduce a pointer local, a second address materialisation, or any of the banned dual-spelling forms; do not delete D_800F119C / D_800F11A0 from undefined_syms_auto.txt while asm/funcs/func_800620B8.s is still INCLUDE_ASM. Run `verify-oracle --rebuild --allow-dirty` BEFORE the driver's sandbox re-verify (pre-rebuild the score is a false 2 from named-symbol HI16/LO16 addend spelling; post-rebuild it is 0 at 38/38).",
+  "integration-handoff EXECUTED (pipeline, 2026-09-03): scope grant: func_80062020 include/game.h src/text1b_b.c. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
  "origin": "queue",
  "created": "2026-07-24T03:28:39.877485+00:00",
@@ -202,6 +205,14 @@
    "measured_on": "2026-09-03, static scan of the original-EXE disassembly (no compile, no FAKE construct); detector windows: addiu within 2 insns of the lui, addu within 3 of the addiu, memory ref within 12 of the addu",
    "predicate_cite": "",
    "result": "KILLED. Five functions in the whole executable match A AND B, and exactly ONE has S == T: func_80062020 itself (base 0x8"
+  },
+  {
+   "session": 15,
+   "statement": "The sandbox residual of 2 that this form shows against a reference built from HEAD can be removed by a C-side change, or by decompiling the sibling func_800620B8 that also references D_800F119C / D_80",
+   "kill_scope": "instance",
+   "measured_on": "2026-09-03 chassis; the s15 aggregate-merge body applied to src/text1b.c + include/game.h + src/text1b_b.c; no FAKE construct present in the diff; measured against a HEAD-built reference (score 2) and",
+   "predicate_cite": "",
+   "result": "KILLED as stated. The sandbox scores this TU's cheat-disabled object against the canonical object built from the CURRENT"
   }
  ]
 }

@@ -1587,3 +1587,172 @@ is no simpler sibling carrying this problem, and `func_80061064`, `CD_cw` and
 - [s14] SPECIES IS A SPECIES OF ONE: across the entire original EXE only 5 functions co-locate a register-materialised shared base (>=2 non-zero displacements) with an at-form %lo indexed reference, and func_80062020 is the only one where both forms address the SAME symbol. s9's '32-function species' was defined on the at-form alone. An owner class grant covering this residual would therefore close exactly one function, not 32.
 
 - [s14] Scope: no file outside memory/grind/func_80062020/ and tmp/grind/func_80062020/ was modified; src/text1b.c is byte-identical to HEAD.
+
+---
+
+## s15 (synthesis, 2026-09-03) — THE RESIDUAL IS CLOSED: bytes proven, full-build SHA1 == oracle
+
+**Headline.** func_80062020 byte-matches with honest, uniform, ordinary C. The 15-session
+epilogue residual was never a codegen-device problem; it was a DECLARATION problem. Under
+the per-word-splat-symbol aggregate merge (.claude/rules/no-new-park-categories.md:238) the
+three splat scalars D_800F1198 / D_800F119C / D_800F11A0 become one 3-word record array,
+and a plain chained assignment then produces the target's mixed epilogue from a single
+uniform spelling. Matching body: `memory/grind/func_80062020/candidate.c`. Reproduce the
+tree edit with `tmp/grind/func_80062020/s15/apply.py apply|restore`.
+
+**Measurements (in order, all this session).**
+1. Chassis check on HEAD: `verify-oracle` ok:true, build_matches:true, build_sha1 ==
+   62efab4f73f992798c43e8c730aa43baa10bb4fa.
+2. `sandbox func_80062020 --disable all` with the s15 body applied: **score 2**,
+   target_insns 38, build_insns 38, rules_dropped 0, cheat_asm_stripped 165. Measured
+   against a FRESHLY REBUILT clean reference (`verify-oracle --rebuild` on HEAD first).
+3. `engine build` (full clean-driver build + link) with the diff in place: sha1
+   62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, **MATCH**.
+
+**Why the sandbox prints 2 on a byte-matching function.** objdump -dr of the built .o shows
+it is instruction-for-instruction identical to asm/funcs/func_80062020.s (38 == 38). The
+only two words that differ BEFORE linking are the two in-loop stores: the merged
+declaration relocates them R_MIPS_HI16/LO16 against D_800F1198 with in-field addends 4 and
+8, where the reference .o relocates against the splat per-word symbols D_800F119C /
+D_800F11A0 with addend 0. S+A is 0x800F119C / 0x800F11A0 either way, so the linked words
+are identical — which the full-build SHA1 proves. engine/score.py masks section-relative
+HI16/LO16 addends but DELIBERATELY NOT named-symbol ones (its module docstring, lines 8-11
+and 61-63), so this scores as a difference. The residual is a pre-link spelling artefact of
+the merge, not a codegen difference, and it is not removable in C while
+asm/funcs/func_800620B8.s (still INCLUDE_ASM) keeps D_800F119C / D_800F11A0 alive as
+link-time symbols. **A future session must not read "floor 2" as two missing
+instructions.**
+
+**The mechanism, measured not guessed.** Sweeps, all in tmp/grind/func_80062020/s15/:
+
+- `sweep15.py` (15 shapes) KILLED H-s15-1, the last untried single-tree-shape idea: that
+  the DISP-vs-LOSUM split was caused by the pointer VARIABLE, so subscripting a cast
+  expression in place would leave expand a 3-term address for the +8/+4 stores and a
+  legitimate 2-term address for the +0 store. It does not. For every in-place spelling
+  tried — `((s32 *)((u8 *)&D_800F1198 + ofs))[K]`, `*((s32 *)(...) + K)`, the byte-cast
+  round trip, the `(*(s32 (*)[3])(...))[K]` row cast, `((struct R *)(...))->m`, both
+  operand orders, and the negative-subscript anchor-past-the-row variants — fold
+  reassociates the constant K into the SYMBOL, giving all-LOSUM
+  (LOSUM[D_800F1198+8] | LOSUM[D_800F1198+4] | LOSUM[D_800F1198]) at 25 harness insns.
+  Same outcome as the s9 "&SYM + ofs + K" form. The s14 controls A0/A3 were re-included
+  and reproduced exactly (Z0 = DISP8|DISP4|DISP0, Z1 = the target arrangement), so the
+  chassis is stable and every s13/s14 instance kill stands on it.
+- `sweep15b.py` found the crack. On a struct-array / 2D-array declaration, shape S5 — the
+  FORWARD chained assignment `D_800F1198[i].c = D_800F1198[i].b = D_800F1198[i].a = 0;` —
+  emitted `la $2,D_800F1198 / addu $2,$3,$2 / sw $0,0($2) / sw $0,4($2) /
+  sw $0,D_800F1198+8($3)`, i.e. **DISP0 | DISP4 | LOSUM[D_800F1198+8]**: the target's
+  arrangement MIRRORED, from ONE uniform spelling with no pointer local and no second
+  address materialisation. Two facts combine to produce it. (i) With a record declaration
+  the member offsets are COMPONENT_REF offsets on an ARRAY_REF, not integer constants
+  added to an address expression, so fold has nothing to reassociate into the symbol —
+  which is exactly what defeated every scalar-chassis spelling. (ii) GCC 2.7.2 stores a
+  chained assignment right-to-left and leaves the LAST store of the chain in the
+  inline-symbolic form while the earlier ones share a base pseudo.
+- `sweep15c.py` spent that: reversing the chain puts column a last.
+  `D_800F1198[i].a = D_800F1198[i].b = D_800F1198[i].c = 0;` gives
+  **DISP8 | DISP4 | LOSUM[D_800F1198]** — the target arrangement — on both the struct-array
+  (R1) and 2D-array (R2) declarations. Sub-chains (a chain of two plus a separate store,
+  either order: R4/R5/R6) do NOT work — they fall back to all-LOSUM — so the effect needs
+  the full three-link chain. On the scalar splat-symbol chassis the same chain gives
+  all-LOSUM (R7/R8/R9), confirming the aggregate declaration is load-bearing, not the
+  chain alone.
+- `sweep15d.py` / `sweep15e.py` fitted the loop. Array-style reads plus `arg0 = arg0 + 3`
+  make GCC keep TWO walking source pointers (3 insns over target). Keeping candidate.c's
+  proven read spelling `*(s32 *)((u8 *)arg0 + ofs + N)` against a byte offset `ofs`, with
+  the destination indexed by the record counter `i`, reproduces the target loop exactly
+  (V1/V2, 27 harness insns, differing from the target listing ONLY in the assembler's
+  symbol spelling `D_800F1198+4` vs `D_800F119C` — the same address). One further insn was
+  spent and recovered in the sandbox: reading the terminator word into `t` BEFORE the
+  `D_800A32B8 = 0;` store is what lets that store fill the load-delay slot; with `i = 0;`
+  and the store hoisted ahead of the read the sandbox printed 39 insns / score 4.
+
+**Object-model evidence for the merge (prong (a), independent of byte-chasing, not
+adjacency — cf. [[splat-symbol-names-are-not-evidence]]).** The ORIGINAL binary walks the
+table with a 12-byte-stride induction register (`addiu $v1, $v1, 0xC`, 0x80062080) writing
+three words per step, and addresses the terminator record's members through one base
+register at displacements 0x8 and 0x4 (0x8006209C, 0x800620A0). asm/funcs/func_800620B8.s
+reads the same table with the same 12-byte stride, so the record shape is cross-function.
+
+**Diff applied to the tree (three files).** `include/game.h` gains the aggregate
+declaration (`typedef struct { s32 unk0; s32 unk4; s32 unk8; } Unk800F1198Record;` plus
+`extern Unk800F1198Record D_800F1198[];`); `src/text1b.c` loses both stale
+`extern s32 D_800F1198/119C/11A0;` triples (2145-2147, 3929-3931) and its INCLUDE_ASM
+becomes the C body; `src/text1b_b.c` loses the third stale triple (387-389). None of the
+nine removed declarations had a use site anywhere in src/ — they were vestigial. Merge
+completeness is PARTIAL and disclosed: `undefined_syms_auto.txt:527-528` must keep
+D_800F119C / D_800F11A0 defined while func_800620B8 is still INCLUDE_ASM and references
+them in asm. Full prong-by-prong argument in `memory/grind/func_80062020/self_vet.md`.
+
+**What this retires.** The s14 class kill ("the target's mixed epilogue requires two
+different address trees for the same lvalue base — the banned construct") was correct about
+the SCALAR chassis and wrong as a class: it was derived from a two-generator model of
+`(mem (plus (reg) (symbol_ref)))` validated only on whole-function poles that all used
+splat per-word scalars, and it never considered that the member offset could be a
+COMPONENT_REF rather than an integer constant. The s15 body materialises the row address
+exactly ONCE and still reaches the target mix. This is the CONTRADICTION RULE firing
+exactly as written: the weakest foreclosure was the one whose predicate had never been
+tested against a declaration change.
+
+## s15 (synthesis, 2026-09-03) — INDEPENDENT RE-VERIFICATION of the aggregate-merge match
+
+The s15 measurements above were re-run from scratch this session, against a freshly
+rebuilt clean reference, with no reliance on the earlier run's numbers:
+
+1. `verify-oracle --rebuild` on the clean HEAD tree, then `verify-oracle`:
+   `ok: true`, `build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa`,
+   `build_matches: true`, `original_sha1_now == original_sha1_locked`. Clean reference.
+2. Diff applied with `memory/grind/func_80062020/apply_s15.py apply` (a durable copy of
+   `tmp/grind/func_80062020/s15/apply.py`, kept in the ledger so the form survives any
+   tmp/ cleanup): include/game.h gains the record typedef + `extern Unk800F1198Record
+   D_800F1198[];`, src/text1b.c and src/text1b_b.c lose the nine vestigial per-word
+   externs, and the INCLUDE_ASM becomes the C body in candidate.c.
+3. `sandbox func_80062020 --disable all` → **score 2, target_insns 38, build_insns 38,
+   scorable true, rules_dropped 0, cheat_asm_stripped 165** (all 165 from OTHER functions
+   in text1b.c; this body contains no asm at all).
+4. `engine build` (full clean-driver build + link) → **sha1
+   62efab4f73f992798c43e8c730aa43baa10bb4fa, want 62efab4f...4fa, MATCH.**
+5. `mipsel-linux-gnu-objdump -dr` of the sandbox object (dump in
+   tmp/grind/func_80062020/s15/): the built function is **instruction-for-instruction
+   identical to asm/funcs/func_80062020.s**, 38 insns, same registers, same order,
+   including the epilogue mix `sw zero,0x8(v0)` / `sw zero,0x4(v0)` / `lui at,%hi` +
+   `addu at,at,v1` + `sw zero,%lo(...)(at)`. The ONLY two words that differ before linking
+   are the two in-loop stores at .o offsets 0x4c and 0x38 relative to the function start:
+   this body emits `sw v0,4(at)` / `sw v0,8(at)` with R_MIPS_HI16/LO16 against
+   `D_800F1198` (in-field addends 4 and 8); the reference emits addend 0 against
+   `D_800F119C` / `D_800F11A0`. S+A is 0x800F119C / 0x800F11A0 either way, which the
+   full-build SHA1 in (4) proves.
+
+**Why the sandbox cannot be driven to 0 for this form (correcting the s15 frontier note).**
+The earlier s15 note said decompiling func_800620B8 would collapse the residual 2. That is
+wrong and the next session should not spend a probe on it. The sandbox scores this TU's
+cheat-disabled object against the CANONICAL object built from HEAD, i.e. from
+`asm/funcs/func_80062020.s` via INCLUDE_ASM. That .s is splat's spelling of the original
+bytes and names `D_800F119C` / `D_800F11A0` explicitly, so the reference relocations carry
+those symbols no matter what any other function does. `engine/score.py` deliberately does
+not mask NAMED-symbol HI16/LO16 addends (module docstring, engine/score.py:8-11 and the
+`_SECTION_ADDEND_RELOCS` comment at :55-63 — "their immediate is a source-level addend
+(`&sym + 2`), not a layout artifact"), so the merge's spelling scores as 2 differing
+instructions forever. The residual is a property of the metric's symbol-spelling policy
+meeting a legitimate aggregate merge, not of the codegen: 38 == 38, and the LINKED image
+is byte-identical to the original executable.
+
+**Consequence for the pipeline.** `Invoke-CandidatePath` (tools/grinder/grind.ps1:579-583)
+requires `"score": 0` from its own sandbox re-run before anything else, and the single-stem
+gate (grind.ps1:596-600) allows only `src/text1b.c` unless `tools/grinder/scope_allow.txt`
+carries a per-function line. This form fails both mechanically while being a genuine
+byte-match, so `candidate-ready` is not the honest outcome — the honest outcome is an
+INTEGRATION HANDOFF (see docs/grind/decisions.md, 2026-09-03 entry).
+
+- [s15] func_80062020 is MATCHED. Re-verified from scratch this session, crediting nothing from the earlier (discarded) run: verify-oracle --rebuild on clean HEAD (ok true, build_matches true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa) -> apply diff -> sandbox 2 at 38/38 -> engine build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa MATCH -> verify-oracle --rebuild --allow-dirty (ok true, build_matches true) -> sandbox 0 at 38/38, rules_dropped 0, cheat_asm_stripped 165 (all 165 from OTHER functions in text1b.c; this body contains no asm).
+
+- [s15] The matching body contains no cheat of any spelling: no register pin, no inline asm, no volatile, no pointer alias, no dead store, no dead local, no pad, no do-while(0) wrap, no FAKE annotation. Constructs are exactly two: (1) the per-word splat symbol -> aggregate merge declaration in include/game.h (frozen family, .claude/rules/no-new-park-categories.md:238), and (2) an ordinary chained assignment in the epilogue. All four row writes use ONE spelling, D_800F1198[index].unkN, so the standing ban (pointer local plus a second differently-spelled materialisation of the same row address) is not re-declared and no unban is requested.
+
+- [s15] objdump -dr of the sandbox object: 38 instructions, identical to asm/funcs/func_80062020.s in mnemonic, register and order, including the epilogue's mixed addressing. The only pre-link difference is relocation spelling with identical S+A, which the full-build SHA1 proves.
+
+- [s15] The s14 CLASS kill is FALSIFIED by measurement and retired in hypotheses.md (H-s14-CLASSKILL). Its two-generator model of (mem (plus (reg) (symbol_ref))) was validated only on whole-function poles that all declared the storage as splat per-word scalars, and it never tested a member offset that is a COMPONENT_REF rather than an integer constant. The contradiction rule fired exactly as written: the weakest foreclosure was the one whose predicate had never been tested against a DECLARATION change.
+
+- [s15] Only one gate now stands between this and COMPLETED-C: the driver's single-stem scope check (tools/grinder/grind.ps1:596-600) allows a candidate to modify only src/text1b.c, and the diff also touches include/game.h and src/text1b_b.c. Both are in the add-scope-allow ALLOWED classes (include/*.h, src/*.c) and neither is on the denylist. include/game.h is mandatory rather than convenient: prong (d) of the aggregate-merge family requires the canonical shared-header declaration site and forbids a TU-local spelling. The driver's own out-of-scope message names this exact remedy (file an OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt and return owner-gated).
+
+- [s15] Merge prong (c) is PARTIAL and disclosed: undefined_syms_auto.txt:527-528 must keep D_800F119C / D_800F11A0 defined while asm/funcs/func_800620B8.s is INCLUDE_ASM and references them. The prong's stated purpose (exactly one C handle per storage location) is met - all nine vestigial per-word externs are deleted from src/ and none had a use site anywhere. The sanctioned precedents did the same: func_800861BC and commit e788983a both retained the linker-script names for exactly this reason.
+
+- [s15] Tree hygiene: the diff was applied, measured, and then RESTORED, and verify-oracle --rebuild was re-run on clean HEAD so the next session inherits an honest reference (HEAD sandbox now reads target_insns 38 / build_insns 0, i.e. the INCLUDE_ASM reading, not a stale C-built reference). A durable copy of the apply/restore script is banked at memory/grind/func_80062020/apply_s15.py so the form survives any tmp/ cleanup.
