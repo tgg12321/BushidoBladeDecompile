@@ -2044,3 +2044,70 @@ Artifacts: `tmp/grind/func_80062020/s16b/measurements.md` (M1-M5),
   read prong (c)'s splat-config clause literally and refused func_80062020 on it, is therefore
   in direct conflict with the instance the rule was written from. That conflict is the s16b
   ruling-request.
+
+## s16c (rederive modality, 2026-09-03) — the prong-(c) ruling landed; the form re-proven; the last gap is a scope grant
+
+**Chassis.** HEAD c9e8d68a. Dispatch brief reported "measurement unavailable" for the HEAD
+floor; that is expected — since the asm-until-matched migration HEAD carries no C body for
+this function (s16b measured it as score 38 / build_insns 0 / no_c_body true).
+
+**M1 — the banked s15 aggregate-merge body is BYTES-PROVEN on today's chassis (third
+independent proof, after s15 and s16b).**
+`apply_s15.py apply` → `verify-oracle --rebuild --allow-dirty` → `verify-oracle --allow-dirty`
+= ok true, build_matches true, build_sha1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` ==
+original_sha1_locked; `sandbox func_80062020 --disable all` = **score 0, target_insns 38,
+build_insns 38, scorable true, rules_dropped 0**. Tree restored, scoring reference rebuilt
+(`verify-oracle --rebuild` = ok true) so the next session inherits an honest chassis.
+Log: `tmp/grind/func_80062020/s16c/measurements.md`.
+
+**The s16b ruling-request was ANSWERED — favourably — before this session started.** The
+operator amended aggregate-merge prong (c) on 2026-09-03 (commit **570210eb**,
+`.claude/rules/no-new-park-categories.md:245-259`), explicitly naming this function's 20:46
+layer-1 FAIL as the occasion: a per-word symbol row **may stay** in
+`undefined_syms_auto.txt` while a still-`INCLUDE_ASM` sibling's `.s` references it,
+*"provided no C code names the symbol and the row is suffixed
+`/* alias of <base>+N; retire with <sibling> */`. Prong (c) is then satisfied; the row
+retires when the sibling lands"*. The layer-1 FAIL ground of 2026-09-03 20:46 ("no
+partial-disclosed carve-out exists") is therefore SUPERSEDED, and the DATA MODEL block of
+the dispatch brief instructs the same thing.
+
+**Condition 1 of the amendment is satisfied by the banked diff.** `apply_s15.py` deletes all
+nine vestigial `extern s32 D_800F1198 / D_800F119C / D_800F11A0;` declarations
+(src/text1b.c:2145-2147 and :3929-3931, src/text1b_b.c:387-389). A fresh
+`grep -rn "D_800F1198\|D_800F119C\|D_800F11A0" src/ include/` on HEAD returns exactly those
+nine lines and nothing else — no use sites — so after the merge there is exactly one C
+handle, `extern Unk800F1198Record D_800F1198[];` in include/game.h.
+
+**Condition 2 is mechanically unreachable from this function's granted surface — this is
+the whole remaining blocker, and it is a one-line scope widening, not a C question.**
+The rows are `undefined_syms_auto.txt:526-528`. The live grant is
+`tools/grinder/scope_allow.txt:47` = `func_80062020 include/game.h src/text1b_b.c`. The
+driver's end-of-session scope check (`grind.ps1:1002` `$AllowedDirtyPattern`, enforced at
+`grind.ps1:1150-1156`) admits only `memory/grind/ docs/grind/ tmp/ metrics/events.jsonl
+src/ include/` plus granted paths; a session that writes the suffix is DISCARDED and its src
+reverted *before its outcome is read*. The comment block at `grind.ps1:1141-1149` documents
+exactly this failure mode (func_80038170 burned two grants and a session on it). The sibling
+merge func_80033550 already holds the needed widening — `scope_allow.txt:45` grants it
+`undefined_syms_auto.txt named_syms.txt` — so the remedy is precedented and one line long.
+
+**The suffix cannot perturb the proof.** `undefined_syms_auto.txt` is passed to `ld` with
+`-T` (Makefile:99), i.e. parsed as a GNU ld script, in which `/* … */` is a comment; adding
+the suffix to lines 527-528 is byte-neutral, so M1's SHA1 stands for the suffixed tree. The
+rows must NOT be deleted (bb2.ld does not define these symbols — grep: no hit — and
+`asm/funcs/func_800620B8.s`, still INCLUDE_ASM, relocates against both), which is the
+standing judge constraint and the reason the amendment exists.
+
+**Why no candidate-ready this session.** The aggregate-merge prongs are "ALL mandatory";
+condition 2 of the amended prong (c) is visibly unmet on any tree this session may submit,
+and the last two layer-1 reviews of this body FAILed on family-prong grounds (0903-2023,
+0903-2046). Submitting a diff that fails the literal text of the amendment written for this
+function risks a third FAIL and a construct-level ban on the only known matching
+declaration. Returned `ruling-request` naming the executable remedy instead — the same
+channel (Judge ESCALATE → integration-handoff → `scope_paths`) that produced this
+function's existing grant.
+
+**No new C shape was explored this session and none is owed.** The rederive axis is spent:
+s9 measured 10 structurally different whole-function shapes, s13 measured 117 ordinary-C
+shapes, and the matching shape is already in hand at distance 0. Re-deriving alternatives to
+a byte-exact form would be make-work; the honest rederive finding is that the derivation is
+FINISHED and the residual is procedural.

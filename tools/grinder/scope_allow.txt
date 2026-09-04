@@ -44,4 +44,6 @@ func_800861BC include/sound.h
 func_80033550 include/code6cac.h undefined_syms_auto.txt named_syms.txt
 # func_80062020: pipeline scope grant 2026-09-03 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
-func_80062020 include/game.h src/text1b_b.c
+# func_80062020: pipeline scope grant 2026-09-03 (judge ESCALATE integration-handoff,
+# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
+func_80062020 include/game.h src/text1b_b.c undefined_syms_auto.txt

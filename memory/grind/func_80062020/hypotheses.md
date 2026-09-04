@@ -1515,3 +1515,23 @@ was written from.
 **Disposition.** Not resubmitted. `banned_constructs[2]` names this declaration under exactly
 this condition, so a `candidate-ready` is mechanically discarded before the Judge. s16b returns
 `ruling-request`.
+
+## s16c (2026-09-03, rederive)
+
+- **CONFIRMED (re-measured, 3rd time): the s15 aggregate-merge body matches.** `apply_s15.py
+  apply` → full rebuild → SHA1 == oracle; `sandbox --disable all` = 0 at 38/38,
+  rules_dropped 0, no FAKE construct present. There is no open C question on this function.
+- **CONFIRMED: aggregate-merge prong (c) no longer requires deleting the per-word rows.**
+  Operator amendment 570210eb (`.claude/rules/no-new-park-categories.md:245-259`) lets a row
+  stay while a still-INCLUDE_ASM sibling references it, given (1) no C names the symbol —
+  satisfied by the banked diff — and (2) a `/* alias of <base>+N; retire with <sibling> */`
+  suffix on the row.
+- **KILLED (instance): "the amended prong (c) can be satisfied from inside this session's
+  granted surface."** The suffix must be written to `undefined_syms_auto.txt:527-528`, which
+  is neither in `$AllowedDirtyPattern` (grind.ps1:1002) nor in the function's grant
+  (scope_allow.txt:47); the scope check at grind.ps1:1150-1156 discards such a session before
+  reading its outcome. Measured by reading the driver's own gate, not by burning a session on
+  it. Re-testable the moment the grant is widened.
+- **Open (procedural, not technical): the one-line widening.** Add
+  `undefined_syms_auto.txt` to func_80062020's scope_allow.txt line, then land the banked
+  body plus the two suffixed rows through the normal gates.

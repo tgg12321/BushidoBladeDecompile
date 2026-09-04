@@ -72,7 +72,7 @@
  * the single spelling D_800F1198[i].unkN, and the comment change here is the remedy the
  * Judge itself ordered rather than a cosmetic re-file of a merits rejection.
  *
- * s16b (rederive, 2026-09-03) RE-MEASUREMENT — body UNCHANGED, nothing added or removed.
+ * s16b (rederive, 2026-09-03) RE-MEASUREMENT ï¿½ body UNCHANGED, nothing added or removed.
  *   - This form re-proven on today's chassis: apply_s15.py apply ->
  *     verify-oracle --rebuild --allow-dirty ok true / build_matches true /
  *     build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, then
@@ -89,6 +89,31 @@
  *     which left its own two merged per-word names in undefined_syms_auto.txt (:789, :867)
  *     for exactly the same reason (still-INCLUDE_ASM siblings reference them) and was
  *     accepted.  Measurement M5 in the same file.
+ *
+ * s16c (rederive, 2026-09-03) RE-MEASUREMENT + PRONG-(c) STATUS - body UNCHANGED.
+ *   - Third independent proof on the live chassis (HEAD c9e8d68a): apply_s15.py apply ->
+ *     verify-oracle --rebuild --allow-dirty -> ok true / build_matches true /
+ *     build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked; then
+ *     sandbox func_80062020 --disable all -> score 0, 38/38, rules_dropped 0.  Tree
+ *     restored and the scoring reference rebuilt (verify-oracle --rebuild, ok true).
+ *     Measurements: tmp/grind/func_80062020/s16c/measurements.md (M1).
+ *   - s16b's prong-(c) ruling-request WAS ANSWERED: operator amendment 2026-09-03
+ *     (commit 570210eb), .claude/rules/no-new-park-categories.md:245-259 - a per-word row
+ *     may STAY in undefined_syms_auto.txt while a still-INCLUDE_ASM sibling references it,
+ *     "provided no C code names the symbol and the row is suffixed
+ *     /* alias of <base>+N; retire with <sibling> * /".  Condition 1 is SATISFIED by this
+ *     diff (all nine vestigial externs deleted; grep of src/ + include/ shows no other C
+ *     site).  Condition 2 - the suffix on undefined_syms_auto.txt:527-528 - is a path
+ *     OUTSIDE this function's scope grant (scope_allow.txt:47 grants include/game.h and
+ *     src/text1b_b.c only), and grind.ps1:1002 + :1150-1156 DISCARD any session that dirties
+ *     it, before the candidate is read.  So s16c did not submit; it returned a
+ *     ruling-request asking for the one-line widening (undefined_syms_auto.txt), exactly the
+ *     widening func_80033550 already holds (scope_allow.txt:45) for the same family.
+ *   - The suffix is byte-neutral (undefined_syms_auto.txt is an ld script, Makefile:99;
+ *     /* ... * / is a comment there), so the SHA1 proof above stands for the suffixed tree.
+ *   - NEXT SESSION, once the grant exists: apply_s15.py apply; add the suffix to
+ *     undefined_syms_auto.txt:527-528; verify-oracle --rebuild --allow-dirty; sandbox
+ *     (expect 0 at 38/38); keep the prong-by-prong self_vet.md; return candidate-ready.
  */
 void func_80062020(s32 *arg0) {
     s32 i;
