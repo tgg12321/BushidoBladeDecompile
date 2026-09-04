@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 21,
- "current_modality": "rederive",
+ "session_count": 22,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -129,23 +129,29 @@
    "floor": 7,
    "modality": "rederive",
    "headline": "Floor re-measured at 7/91; rederive found a FOURTH argument attractor (named scaled index offset) that reaches target's whole TAIL at 8/92, and proved the do{}while(0) wrapper has a byte-identical ord"
+  },
+  {
+   "session": 22,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Floor holds at 7/91 (live sandbox re-measure); the mandated kill re-audit confirms s21's scaled-offset kill under both FAKE ablations, and four structural axes are killed with 166 measured forms \u2014 inc"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The scaled-offset attractor (tail-correct, 8/92) is one load-delay nop and one sunk lbu away from target, which is a strictly smaller residual than the candidate's - a lever that separates its adjacent arg5 lw/sw pair would convert it to 8/91 and possibly below.",
-   "mechanism": "Target separates the arg5 load from its 16($sp) store by six instructions (the D_800A11D5 chain sits between them), so no load-delay nop is needed. In the scaled-offset form store_one_arg emits lw and sw adjacently and the scheduler does not separate them, costing one instruction. The candidate chassis DOES separate them (lw at 52, sw at 55), so the separation is reachable in principle - it is the arg4 spelling that decides whether the D_800A11D5 chain lands between them.",
-   "next_probe": "On the scaled-offset chassis only, sweep spellings that force the D_800A11D5/arg3 chain to be emitted between arg5's load and its store: arg3 as a named value, as a named address, as its own scaled offset, and each crossed with the arg3 statement placed before / between / after the k0 statement. The 78-form cross-product only measured arg3 as {inline, named value} and only with arg3's statement last. Use tmp/grind/CD_datasync/s21 (0.5 s/form) and read the result with cmp.py 40 60 rather than by score alone - the informative signal is whether the D5 chain moves between build idx of the arg5 lw and the sw."
+   "hypothesis": "The whole remaining residual reduces to ONE seat question that no session has attacked directly: get the arg5 loaded VALUE into a quantity distinct from its own address register (target: address in $v0, value in $v1), which frees $v0 for the D_800A11D5 chain and \u2014 on the scaled-offset chassis, whose tail is already target-exact \u2014 removes the load-delay nop.",
+   "mechanism": "s22's alignment shows the candidate coalesces arg5's load destination with its address register because the address dies at the load. Target does not coalesce, so the value survives in $v1 across insns 48-54 while the D5 chain reuses $v0 at 49-53. In C terms the anti-coalescing condition is that the ADDRESS remains live past the load \u2014 a pointer local that is read twice, or an address whose second use is the arg4 chain's base \u2014 which is a spelling nobody has tried: every banked address form uses the pointer exactly once.",
+   "next_probe": "On the scaled-offset chassis (tmp/grind/CD_datasync/s22 harness, ~0.5 s/form) sweep spellings that keep an address pointer live past its own load: (a) `s32 *p5 = &tbl_125c[idx_1494[1]];` consumed as *p5 AND with p5 (or p5-derived arithmetic) reused for the arg4 base, (b) one pointer walked between the two elements (`p = &tbl_125c[idx_1494[0]]` then arg5 read through an offset of the same p), (c) both elements read through a single walking pointer with post-increment, per .claude/rules/walking-pointer-serializes-parallel-loads.md. Read every result with cmp.py 40 60 and watch specifically for the arg5 lw destination becoming a register other than its address register; the score alone will not show partial progress."
   },
   {
-   "hypothesis": "F32 (inherited, unchanged) - tools/ra_solver/inverse.py local can type the block-3 seat residual REACHABLE or FORECLOSED and name the C-lever vectors, converting this function's disposition from an exhaustion argument into a proof.",
-   "mechanism": "s20's classify verdict names inverse.py as the next tool and extracted the QTYDBG attribution (block 3 quantities, births, deaths, refs, allocation order, reproduced qty_compare priorities). find_free_reg's ascending scan gives a closed-form condition for target's $a0 seat: both $v0 and $v1 occupied across the chain's whole span at allocation time. s21 re-confirmed from the emission side that the register difference is downstream of the ordering - the candidate's idx[0] chain is live 41-49 (so $v0 is free) while target's is live 41-56 (so it is not).",
-   "next_probe": "Run inverse.py local against CD_datasync block 3 with a HAND-VERIFIED --goal-order (perturb.py --goal-from-target still SKIPS this block: 'goal is not a topological order, 2 violations', because difflib mis-pairs the duplicate sll / lw skeletons; anchor-based alignment is an operator-lane change to tools/). Bound and profile the run - the CD_ready precedent is that an unbounded inverse.py local can burn 100% CPU without finishing depth 1. A REACHABLE verdict must name a lever vector nobody has spelled; the banked count is now 96 rejected forms plus this session's 86 measured spellings."
+   "hypothesis": "F32 (inherited, unchanged) \u2014 tools/ra_solver/inverse.py local can type the block-3 seat residual REACHABLE or FORECLOSED and name the C-lever vectors, converting the disposition from an exhaustion argument into a proof. s22 sharpens its input: the residual is now stated as a specific anti-coalescing condition plus target's $a0 parking of the arg4 address.",
+   "mechanism": "s20's classify verdict names inverse.py as the next tool and extracted the block-3 QTYDBG attribution; find_free_reg's ascending scan means reaching $a0 requires both $v0 and $v1 occupied across the arg4 address chain's whole span at allocation time. s22 adds the second half of the spec: the arg5 value must be a separate quantity from its address, which is what keeps $v1 busy over that span.",
+   "next_probe": "Run inverse.py local against CD_datasync block 3 with a HAND-VERIFIED --goal-order (perturb.py --goal-from-target still SKIPS this block: 'goal is not a topological order, 2 violations', because difflib mis-pairs the duplicate sll / lw skeletons). Bound and profile the run \u2014 the CD_ready precedent is that an unbounded inverse.py local can burn 100% CPU without finishing depth 1. A REACHABLE verdict must name a lever vector nobody has spelled; the banked count is now 103 rejected forms plus this session's 166 measured spellings."
   },
   {
-   "hypothesis": "The standing family trigger (inherited, unchanged) - a JOINT sched.c-emission-order x global.c/local-alloc.c-seat solver closes CD_datasync, CD_sync and CD_ready together.",
-   "mechanism": "Every C change that fixes the emission order breaks the register seats and vice versa - proven over 21 sessions here, 68 on CD_ready and 107 on CD_sync. s21 adds the sharpest instance yet: the scaled-offset geometry buys target's entire tail and pays for it with the block head, and the named-value geometry does the exact reverse. The current solver suite is single-axis, which is why all three twins land on the same disposition.",
-   "next_probe": "When a joint solver exists, re-open CD_datasync, CD_sync and CD_ready as ONE basin. Use the s21 harness (tmp/grind/CD_datasync/s21/, ~0.5 s/form, calibrated sandbox = lev + nop - 3, function-agnostic apart from the hardcoded name) as the scoring loop - it supersedes the s19 dual-fork harness, which was nop-blind."
+   "hypothesis": "The standing family trigger (inherited) \u2014 a JOINT sched.c-emission-order x global.c/local-alloc.c-seat solver closes CD_datasync, CD_sync and CD_ready together. s22 adds a new requirement for any such solver: it must be chassis-aware, because two chassis that emit identical bytes at one spelling diverge by 5 instructions one spelling away.",
+   "mechanism": "Every C change that fixes the emission order breaks the register seats and vice versa \u2014 proven over 22 sessions here, 68 on CD_ready and 107 on CD_sync. The current solver suite is single-axis, which is why all three twins land on the same disposition.",
+   "next_probe": "When a joint solver exists, re-open CD_datasync, CD_sync and CD_ready as ONE basin. Use the s22 harness (tmp/grind/CD_datasync/s22/, ~0.5 s/form, calibrated sandbox = lev + nop - 3, now with declaration-block rewriting and three parameterised form generators) as the scoring loop, and run every candidate lever on BOTH the wrapper and the duplicated-arms chassis rather than assuming they agree."
   }
  ],
  "judge_constraints": [],
@@ -194,6 +200,54 @@
    "measured_on": "candidate chassis (goto loop, three hoisted pointer locals), do{}while(0) FAKE present",
    "predicate_cite": "",
    "result": "The accumulator tail COSTS an instruction: lev 12, n 83 where the candidate is lev 7, n 82 - GCC materialises the extra "
+  },
+  {
+   "session": 22,
+   "statement": "KILL RE-AUDIT (mandated by the flat-floor rule): s21's closest-to-target instance kill, the named scaled index offset at 8/92, was measured with the do{}while(0) FAKE present, so the wrapper may have ",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (goto loop, three hoisted pointer locals, named arg4 value) with the do{}while(0) FAKE ABLATED, and on the duplicated-into-arms chassis which carries no FAKE at all",
+   "predicate_cite": "",
+   "result": "Base with the wrapper ablated = lev 17 / nop 3 -> 17, i.e. the do{}while(0) is worth ten instructions on the current cha"
+  },
+  {
+   "session": 22,
+   "statement": "The two equal-floor chassis (do{}while(0) wrapper vs the timeout block duplicated into both arms), proven byte-identical at the base spelling in s21, respond identically to argument-spelling perturbat",
+   "kill_scope": "instance",
+   "measured_on": "duplicated-into-arms chassis (no FAKE construct present anywhere in the 92 forms)",
+   "predicate_cite": "",
+   "result": "The equivalence assumption is FALSE and is replaced by a measured non-equivalence: the scaled index offset costs 1 instr"
+  },
+  {
+   "session": 22,
+   "statement": "s21 frontier item 1: on the scaled-offset chassis, some spelling or placement of arg3 forces the D_800A11D5 chain to be emitted between arg5's lw and its 16($sp) sw, removing the load-delay nop and ta",
+   "kill_scope": "instance",
+   "measured_on": "scaled-offset (k0) chassis with the do{}while(0) FAKE present, plus the inline-arg4 control arm of the same sweep",
+   "predicate_cite": "",
+   "result": "Best score in the whole set is 8 (lev 7 / nop 4), reached only by the already-banked scaled-offset spellings; naming arg"
+  },
+  {
+   "session": 22,
+   "statement": "The declaration shape of the callees \u2014 printf's prototype, its arity and its return type \u2014 is a live structural lever, because a variadic or unprototyped printf takes a different path through GCC 2.7.",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (goto loop, three hoisted pointer locals, named arg4 value) with the do{}while(0) FAKE present",
+   "predicate_cite": "",
+   "result": "All six are byte-identical to the baseline \u2014 lev 7 / nop 3 / n 82, sandbox 7. With ACCUMULATE_OUTGOING_ARGS on this targ"
+  },
+  {
+   "session": 22,
+   "statement": "Declaration order and declaration scope \u2014 the block temporary hoisted to function scope, and permutations of the five function-scope locals \u2014 move local-alloc's quantity ordering, because pseudo numbe",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (goto loop, three hoisted pointer locals, named arg4 value) with the do{}while(0) FAKE present",
+   "predicate_cite": "",
+   "result": "All 24 are byte-identical to the baseline \u2014 lev 7 / nop 3 / n 82, sandbox 7. Neither the scope of the temporary nor the "
+  },
+  {
+   "session": 22,
+   "statement": "Type narrowing or widening of the block's values (the temporary, the table pointers, the index pointer, the loop counter) perturbs the argument block's codegen.",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (goto loop, three hoisted pointer locals, named arg4 value) with the do{}while(0) FAKE present",
+   "predicate_cite": "",
+   "result": "Five of six are byte-identical at 7; the pointer-temporary form regresses to 9 (banked). Every value in the block is alr"
   }
  ]
 }
