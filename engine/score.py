@@ -58,11 +58,79 @@ _RELOC_RE = re.compile(r"^\s+([0-9a-f]+):\s+(R_MIPS_\S+)\s+(\S+)\s*$")
 # field. R_MIPS_26 / R_MIPS_PC16 also occur against section symbols, but their
 # field is a control-flow target already masked by _BRANCH; R_MIPS_GPREL16
 # never occurs against a section symbol in this tree (measured 2026-08-07:
-# 2295/2295 named). Named-symbol HI16/LO16 are deliberately NOT masked — their
-# immediate is a source-level addend (`&sym + 2`), not a layout artifact.
+# 2295/2295 named). Named-symbol HI16/LO16 are NOT masked — their immediate is
+# a source-level addend (`&sym + 2`), not a layout artifact — but they ARE
+# RESOLVED (owner ruling 2026-09-04, Ruling B.4): the bytes the linker writes
+# are %hi/%lo(symbol + addend), so `D_800F19B8+4` and `D_800F19BC` link to the
+# same word and must score equal, while `&sym+2` vs `&sym+4` still differ.
+# Before this, every aggregate-merge probe (struct spelling vs per-word splat
+# symbol) paid one false point per member access — five on CD_datasync s58,
+# with nothing about the emitted code differing. An unresolvable symbol keeps
+# its literal immediate (the previous behaviour), never a false zero.
 _SECTION_ADDEND_RELOCS = {"R_MIPS_HI16", "R_MIPS_LO16"}
 # leading signed immediate of an operand: "8132", "0x1fc4", "32(at)" -> "32"
 _IMM_RE = re.compile(r"^-?(?:0x[0-9a-fA-F]+|\d+)")
+# linker symbol-file line:  NAME = 0xADDR;
+_SYM_DEF_RE = re.compile(r"^\s*([A-Za-z_]\w*)\s*=\s*(0x[0-9a-fA-F]+)\s*;")
+# name -> address, loaded once per process from cfg.LD_SYM_FILES (the same
+# files bb2.ld links against). Tests pre-seed this to stub the table.
+_SYMTAB_CACHE: dict[str, int] | None = None
+
+
+def _symtab() -> dict[str, int]:
+    global _SYMTAB_CACHE
+    if _SYMTAB_CACHE is None:
+        tab: dict[str, int] = {}
+        for fn in cfg.LD_SYM_FILES:
+            try:
+                with open(fn, encoding="utf-8", errors="replace") as fh:
+                    for line in fh:
+                        m = _SYM_DEF_RE.match(line)
+                        if m:
+                            tab.setdefault(m.group(1), int(m.group(2), 16))
+            except OSError:
+                continue
+        _SYMTAB_CACHE = tab
+    return _SYMTAB_CACHE
+
+
+def _leading_imm(ops: str) -> int | None:
+    """The signed immediate at the head of the LAST operand, or None."""
+    parts = ops.split(",")
+    m = _IMM_RE.match(parts[-1]) if parts else None
+    if not m:
+        return None
+    try:
+        return int(m.group(0), 0)
+    except ValueError:
+        return None
+
+
+def _resolve_named_pair(insns: list[list[str]], hi_i: int, hi: int | None,
+                        lo_i: int, sym: str) -> None:
+    """Rewrite a named-symbol HI16/LO16 pair's immediates to their LINKED
+    values. ld's MIPS REL rule: value = S + (hi_field << 16) + sext16(lo_field);
+    lui gets ((value + 0x8000) >> 16) & 0xffff, the LO16 insn gets
+    value & 0xffff. Tokens `@hi(0x....)` / `@lo(0x....)` encode exactly the
+    words the linker writes, so equal bytes score equal and different bytes
+    still differ. `hi` is the lui's RAW immediate captured when its HI16 reloc
+    was seen (the operand is a token after the first rewrite). Leaves both
+    immediates untouched when the symbol is unknown or either immediate is not
+    parseable."""
+    addr = _symtab().get(sym)
+    if addr is None:
+        return
+    lo = _leading_imm(insns[lo_i][1])
+    if hi is None or lo is None:
+        return
+    lo_s = ((lo & 0xFFFF) ^ 0x8000) - 0x8000
+    value = (addr + ((hi & 0xFFFF) << 16) + lo_s) & 0xFFFFFFFF
+    hi_out = ((value + 0x8000) >> 16) & 0xFFFF
+    lo_out = value & 0xFFFF
+    for idx, tok in ((hi_i, f"@hi(0x{hi_out:04x})"), (lo_i, f"@lo(0x{lo_out:04x})")):
+        parts = insns[idx][1].split(",")
+        parts[-1] = _IMM_RE.sub(tok, parts[-1], count=1)
+        insns[idx][1] = ",".join(parts)
 
 
 def _mask_section_addend(ops: str, sym: str) -> str:
@@ -125,17 +193,30 @@ def normalized_insns(o_path: str, func: str, mask: bool = True) -> list[str]:
                    f"--stop-address={off + size}", o_path)
     insns: list[list[str]] = []
     at_addr: dict[str, int] = {}
+    # Most recent named-symbol HI16 per symbol: the lui a following LO16 on the
+    # same symbol pairs with. Keyed (not consumed) so a lui shared by several
+    # loads of one symbol resolves every load, whether as emitted one HI16
+    # line per LO16 or a single one (layer-2 review 2026-09-04).
+    pending_hi: dict[str, tuple[int, int | None]] = {}   # sym -> (lui index, raw imm)
     for line in out.splitlines():
         m = _INSN_RE.match(line)
         if not m:
             # A relocation line annotates the instruction ABOVE it, so it can
             # only be applied once that instruction is already in `insns`.
             r = _RELOC_RE.match(line) if mask else None
-            if (r and r.group(2) in _SECTION_ADDEND_RELOCS
-                    and r.group(3).startswith(".")):
+            if r and r.group(2) in _SECTION_ADDEND_RELOCS:
                 i = at_addr.get(r.group(1))
-                if i is not None:
-                    insns[i][1] = _mask_section_addend(insns[i][1], r.group(3))
+                sym = r.group(3)
+                if i is None:
+                    continue
+                if sym.startswith("."):
+                    insns[i][1] = _mask_section_addend(insns[i][1], sym)
+                elif r.group(2) == "R_MIPS_HI16":
+                    if sym not in pending_hi or pending_hi[sym][0] != i:
+                        pending_hi[sym] = (i, _leading_imm(insns[i][1]))
+                elif sym in pending_hi:
+                    hi_i, hi_imm = pending_hi[sym]
+                    _resolve_named_pair(insns, hi_i, hi_imm, i, sym)
             continue  # labels, other reloc lines, section headers
         addr, mn, ops = m.group(1), m.group(2), m.group(3).strip()
         ops = re.split(r"\s+<", ops)[0]      # drop "<sym+0x..>" annotation

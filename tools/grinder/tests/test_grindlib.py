@@ -1533,6 +1533,20 @@ class TestSiblingLedgers(unittest.TestCase):
         st = G.load_state(self.root, "CD_datasync")
         self.assertNotEqual(G.assign_modality(st["session_count"], st), "rederive")
 
+    def test_sibling_progress_at_equal_floor_forces_rederive(self):
+        # Owner ruling 2026-09-04 (Ruling B.2): CD_datasync's link-identical
+        # struct spelling reached neither twin because both sat at the SAME
+        # floor 2 and the stamp only fired strictly below.
+        G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
+        self.progress("CD_datasync", [2])
+        self.progress("CD_sync", [7, 2])
+        st = G.load_state(self.root, "CD_datasync")
+        self.assertEqual(len(G.sibling_progress_pending(st)), 1)
+        self.assertEqual(G.assign_modality(st["session_count"], st), "rederive")
+        self.progress("CD_datasync", [2])          # consumes it
+        st = G.load_state(self.root, "CD_datasync")
+        self.assertEqual(G.sibling_progress_pending(st), [])
+
     def test_override_order_fixup_and_recon_win(self):
         G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
         self.progress("CD_sync", [9, 2])
@@ -1565,6 +1579,127 @@ class TestSiblingLedgers(unittest.TestCase):
             f.write("{not json")
         self.progress("CD_sync", [9, 2])              # must not raise
         self.assertEqual(G.load_state(self.root, "CD_sync")["floor_history"][-1]["floor"], 2)
+
+
+class TestEscalationDeferral(unittest.TestCase):
+    """Owner ruling 2026-09-04 (Ruling B.1): an escalation-modality session that
+    banks a CONFIRMED, measured hypothesis without dropping the floor is honored
+    as progress at most ESCALATION_DEFERRALS_MAX times per exhaustion window,
+    and the next session is forced to an unrun rung instead of escalation.
+    CD_sync s116 (a confirmed lever auto-foreclosed by the backstop) is the
+    exhibit."""
+    MODS = ["structural", "synthesis", "forensics", "rederive"]
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "CD_sync", "system")
+        # 8 flat sessions at 2 across 4 modalities (none of them solver/permuter)
+        for i in range(G.ESCALATION_FLAT_SESSIONS):
+            self.apply(2, self.MODS[i % 4], verdict="KILLED")
+        st = G.load_state(self.root, "CD_sync")
+        st["object_model_audited"] = 1
+        G.save_state(self.root, "CD_sync", st)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    _n = 0
+
+    def outcome(self, floor, verdict="CONFIRMED", result="j1 7/160 with target order",
+                statement=None, measured_on="j1 chassis, pp FAKE present", frontier=True):
+        TestEscalationDeferral._n += 1
+        h = {"statement": statement or f"lever {TestEscalationDeferral._n} defeats the pair inversion",
+             "mechanism": "m", "probe": "p", "result": result, "verdict": verdict,
+             "measured_on": measured_on}
+        if verdict == "KILLED":
+            h.update({"kill_scope": "instance"})
+        fr = [{"hypothesis": "the 6-pt a0/v1 exchange", "mechanism": "qty_compare_1",
+               "next_probe": "sched_solver on j1"}] if frontier else []
+        return {"result": "progress", "floor": floor, "headline": f"floor {floor}",
+                "hypotheses": [h], "evidence": [], "frontier": fr}
+
+    def apply(self, floor, mod, verdict="CONFIRMED", result="j1 7/160", **kw):
+        o = self.outcome(floor, verdict, result, **kw)
+        G.apply_outcome(self.root, "CD_sync", o, mod)
+        return o
+
+    def state(self):
+        return G.load_state(self.root, "CD_sync")
+
+    def test_window_is_exhausted_at_setup(self):
+        st = self.state()
+        self.assertEqual(G.assign_modality(st["session_count"], st), "escalation")
+
+    def test_confirmed_lever_defers_and_forces_unrun_rung(self):
+        o = self.apply(2, "escalation")           # floor did NOT drop
+        pick = G.escalation_deferral(self.root, "CD_sync", o)
+        self.assertEqual(pick, "solver")          # first unrun of the deferral list
+        st = self.state()
+        self.assertEqual(st["escalation_deferrals"], 1)
+        self.assertEqual(G.assign_modality(st["session_count"], st), "solver")
+        # the forced rung is one-shot: the solver session consumes it
+        self.apply(2, "solver", verdict="KILLED")
+        st = self.state()
+        self.assertNotIn("forced_next_modality", st)
+        self.assertEqual(G.assign_modality(st["session_count"], st), "escalation")
+
+    def test_second_deferral_picks_next_unrun_then_third_is_refused(self):
+        o = self.apply(2, "escalation")
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "solver")
+        self.apply(2, "solver", verdict="KILLED")
+        o = self.apply(2, "escalation")
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "permuter")
+        self.apply(2, "permuter", verdict="KILLED")
+        o = self.apply(2, "escalation")
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "")
+        self.assertEqual(self.state()["escalation_deferrals"], G.ESCALATION_DEFERRALS_MAX)
+
+    def test_killed_only_session_is_not_deferred(self):
+        o = self.apply(2, "escalation", verdict="KILLED")
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "")
+
+    def test_confirmed_without_measurement_is_not_deferred(self):
+        o = self.apply(2, "escalation", result="it works")
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "")
+
+    # layer-2 review 2026-09-04: a bare CONFIRMED verdict is gameable — the
+    # qualifying hypothesis needs kill-grade hygiene and must be NEW.
+    def test_confirmed_without_measured_on_is_not_deferred(self):
+        o = self.apply(2, "escalation", measured_on="")
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "")
+
+    def test_reconfirming_an_earlier_confirmed_statement_is_not_deferred(self):
+        self.apply(2, "structural", statement="the pair inversion is defeated on j1")
+        o = self.apply(2, "escalation", statement="The pair  inversion is defeated on j1")
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "")
+        o = self.apply(2, "escalation", statement="a genuinely new lever on h1")
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "solver")
+
+    def test_deferral_requires_a_named_frontier(self):
+        o = self.apply(2, "escalation", frontier=False)
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "")
+
+    def test_floor_drop_and_unpark_reset_the_allowance(self):
+        o = self.apply(2, "escalation")
+        G.escalation_deferral(self.root, "CD_sync", o)
+        self.assertEqual(self.state()["escalation_deferrals"], 1)
+        self.apply(1, "solver")                    # a real drop
+        self.assertEqual(self.state()["escalation_deferrals"], 0)
+        st = self.state()
+        st["escalation_deferrals"] = 2
+        st["forced_next_modality"] = "solver"
+        G.save_state(self.root, "CD_sync", st)
+        os.makedirs(os.path.join(self.root, "engine"), exist_ok=True)
+        with open(os.path.join(self.root, "engine", "queue.json"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            json.dump({"items": [{"func": "CD_sync", "status": "active", "file": "system",
+                                  "distance": 1, "verdict": "C",
+                                  "unpark_reason": "owner ruling 2026-09-04: probe"}]}, f)
+        self.assertTrue(G.sync_unpark(self.root, "CD_sync"))
+        st = self.state()
+        self.assertEqual(st["escalation_deferrals"], 0)
+        self.assertNotIn("forced_next_modality", st)
 
 
 if __name__ == "__main__":

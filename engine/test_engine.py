@@ -285,6 +285,85 @@ def test_score_section_addend_mask() -> None:
     eq("section-addend: named-symbol addend difference still scores 1",
        score._levenshtein(a, b), 1)
 
+    # 3b. NAMED-SYMBOL RESOLUTION (owner ruling 2026-09-04, Ruling B.4): when the
+    #     symbol resolves through the linker symbol files, both immediates are
+    #     rewritten to the words ld writes, so two spellings of ONE address score
+    #     0 and two different addresses still score. Pinned both ways, including
+    #     the %hi carry and the unresolvable fallback.
+    saved_tab = score._SYMTAB_CACHE
+    score._SYMTAB_CACHE = {"D_800F19B8": 0x800F19B8, "D_800F19BC": 0x800F19BC,
+                           "g_known": 0x80100000, "g_alias": 0x80100002,
+                           "g_edge": 0x80107FFC}
+    try:
+        with _stub_objdump(obj("4", sym="D_800F19B8")):
+            a = score.normalized_insns("a.o", "f")
+        with _stub_objdump(obj("0", sym="D_800F19BC")):
+            b = score.normalized_insns("b.o", "f")
+        eq("named-addend: D_800F19B8+4 vs D_800F19BC scores 0 (the CD_datasync s58 artifact)",
+           score._levenshtein(a, b), 0)
+        eq("named-addend: lui token is the linked %hi", a[0], "lui a0,@hi(0x800f)")
+        eq("named-addend: lo token is the linked %lo", a[1], "addiu a0,a0,@lo(0x19bc)")
+        with _stub_objdump(obj("0", sym="D_800F19B8")):
+            c = score.normalized_insns("c.o", "f")
+        eq("named-addend: D_800F19B8+4 vs D_800F19B8+0 still scores 1",
+           score._levenshtein(a, c), 1)
+        with _stub_objdump(obj("2", sym="g_known")):
+            a = score.normalized_insns("a.o", "f")
+        with _stub_objdump(obj("4", sym="g_known")):
+            b = score.normalized_insns("b.o", "f")
+        eq("named-addend: resolvable &sym+2 vs &sym+4 still scores 1",
+           score._levenshtein(a, b), 1)
+        with _stub_objdump(obj("0", sym="g_alias")):
+            b = score.normalized_insns("b.o", "f")
+        eq("named-addend: g_known+2 vs g_alias+0 (same address) scores 0",
+           score._levenshtein(a, b), 0)
+        # %hi carry: 0x80107FFC + 8 = 0x80108004 -> lui 0x8011, lo 0x8004
+        with _stub_objdump(obj("8", sym="g_edge")):
+            a = score.normalized_insns("a.o", "f")
+        eq("named-addend: %hi carry follows ld's (value+0x8000)>>16",
+           a[0], "lui a0,@hi(0x8011)")
+        eq("named-addend: %lo of a carried address", a[1], "addiu a0,a0,@lo(0x8004)")
+        # unresolvable symbol: literal immediates, previous behaviour
+        with _stub_objdump(obj("2", sym="g_unknown")):
+            a = score.normalized_insns("a.o", "f")
+        with _stub_objdump(obj("4", sym="g_unknown")):
+            b = score.normalized_insns("b.o", "f")
+        eq("named-addend: unresolvable symbol keeps literal (2 vs 4 scores 1)",
+           score._levenshtein(a, b), 1)
+        eq("named-addend: unresolvable symbol is not tokenised", a[1], "addiu a0,a0,2")
+        # a LO16 with no pending HI16 for its symbol is left literal
+        def lo_only(addend: str) -> str:
+            return "\n".join([
+                "00000000 <f>:",
+                _dline("   0", "8c820000", "lw", f"v0,{addend}(a0)"),
+                _reloc("0", "R_MIPS_LO16", "D_800F19B8"),
+                _dline("   4", "03e00008", "jr", "ra"),
+            ])
+        with _stub_objdump(lo_only("4")):
+            a = score.normalized_insns("a.o", "f")
+        eq("named-addend: unpaired LO16 stays literal", a[0], "lw v0,4(a0)")
+        # one lui feeding several loads of the same symbol: every load resolves
+        def shared_lui(a1: str, a2: str) -> str:
+            return "\n".join([
+                "00000000 <f>:",
+                _dline("   0", "3c010000", "lui", "at,0x0"),
+                _reloc("0", "R_MIPS_HI16", "D_800F19B8"),
+                _dline("   4", "8c220000", "lw", f"v0,{a1}(at)"),
+                _reloc("4", "R_MIPS_LO16", "D_800F19B8"),
+                _dline("   8", "8c230000", "lw", f"v1,{a2}(at)"),
+                _reloc("8", "R_MIPS_LO16", "D_800F19B8"),
+            ])
+        with _stub_objdump(shared_lui("4", "8")):
+            a = score.normalized_insns("a.o", "f")
+        eq("named-addend: shared lui, first load resolved", a[1], "lw v0,@lo(0x19bc)(at)")
+        eq("named-addend: shared lui, second load resolved too", a[2], "lw v1,@lo(0x19c0)(at)")
+        # mask=False (diagnosis view) is untouched
+        with _stub_objdump(obj("4", sym="D_800F19B8")):
+            a = score.normalized_insns("a.o", "f", mask=False)
+        eq("named-addend: mask=False keeps the raw immediate", a[1], "addiu a0,a0,4")
+    finally:
+        score._SYMTAB_CACHE = saved_tab
+
     # 4. The masked token keeps the SECTION, so a reference that moves between
     #    sections is still a difference.
     with _stub_objdump(obj("100", sym=".text")):

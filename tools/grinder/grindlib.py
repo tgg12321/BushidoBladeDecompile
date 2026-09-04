@@ -982,8 +982,114 @@ def sync_unpark(root, func):
     st["exhaustion_base"] = int(st.get("session_count", 0))
     st["last_unpark_reason"] = reason
     st["last_unpark_at"] = _now()
+    # A fresh window also gets its full deferral allowance (Ruling B.1).
+    st["escalation_deferrals"] = 0
+    st.pop("forced_next_modality", None)
     save_state(root, func, st)
     return True
+
+
+# ── Escalation deferral (owner ruling 2026-09-04, Ruling B.1) ────────────────
+# The exhaustion backstop's only test was "escalation modality AND floor did
+# not drop". CD_sync s116 CONFIRMED a lever for the first time in 116 sessions,
+# named the new wall, wrote that it declined to self-file because the axis was
+# not exhausted — and the driver auto-filed the foreclosure anyway. Under the
+# 2026-09-02 ruling "a spent probe is progress, not a disposition"; so is a
+# confirmed one. An escalation session that banks >= 1 CONFIRMED hypothesis
+# with a numeric measurement is honored as ordinary progress, at most
+# ESCALATION_DEFERRALS_MAX times per exhaustion window (reset on unpark and on
+# any floor drop), and the next session is FORCED to the first rung in
+# _DEFERRAL_MODALITIES that has not run since the window base, so the deferral
+# attacks the named wall instead of re-entering escalation. The third such
+# session is backstopped exactly as before: the 2026-07-22 loop this backstop
+# exists for (func_8007DC9C, 40 flat sessions) is bounded at two deferrals per
+# window by construction.
+ESCALATION_DEFERRALS_MAX = 2
+_DEFERRAL_MODALITIES = ("solver", "permuter", "structural", "forensics")
+_HYP_HEADER_RE = re.compile(r"(?m)^## \[s(\d+|\?)\] (.+)$")
+_HYP_VERDICT_RE = re.compile(r"(?m)^- verdict: (\w+)")
+
+
+def _norm_statement(s):
+    return re.sub(r"\s+", " ", str(s or "")).strip().lower()[:200]
+
+
+def _prior_confirmed_statements(root, func, before_session):
+    """Normalized statements of every CONFIRMED hypothesis banked in a session
+    strictly before `before_session` (hypotheses.md is append-only; each entry
+    is `## [sN] <statement>` followed by `- verdict: X`)."""
+    p = os.path.join(ledger_dir(root, func), "hypotheses.md")
+    try:
+        with open(p, encoding="utf-8", errors="replace") as f:
+            txt = f.read()
+    except OSError:
+        return set()
+    out = set()
+    heads = list(_HYP_HEADER_RE.finditer(txt))
+    for i, h in enumerate(heads):
+        end = heads[i + 1].start() if i + 1 < len(heads) else len(txt)
+        body = txt[h.end():end]
+        v = _HYP_VERDICT_RE.search(body)
+        if not v or v.group(1) != "CONFIRMED":
+            continue
+        sess = h.group(1)
+        if sess.isdigit() and int(sess) >= before_session:
+            continue
+        out.add(_norm_statement(h.group(2)))
+    return out
+
+
+def qualifying_confirmed(root, func, o, session):
+    """CONFIRMED hypotheses that can buy a deferral (layer-2 review
+    2026-09-04: a bare CONFIRMED verdict has no hygiene gate, so a session
+    could bank trivial re-confirmations to dodge the backstop). Mirrors the
+    kill hygiene mechanically: a numeric measurement in `result`, a
+    `measured_on` chassis, and a statement NOT already CONFIRMED in an earlier
+    session of this ledger (a re-confirmation is not a new lever)."""
+    prior = _prior_confirmed_statements(root, func, session)
+    out = []
+    for h in (o or {}).get("hypotheses", []):
+        if h.get("verdict") != "CONFIRMED":
+            continue
+        if not _has_measurement(h.get("result", "")):
+            continue
+        if not str(h.get("measured_on", "")).strip():
+            continue
+        if _norm_statement(h.get("statement")) in prior:
+            continue
+        out.append(h)
+    return out
+
+
+def escalation_deferral(root, func, o):
+    """Decide whether an escalation-modality session that did NOT drop the
+    floor is honored as progress. Returns the forced next modality when it is
+    (and stamps `escalation_deferrals` + `forced_next_modality` into the
+    ledger), else ''. Call AFTER apply_outcome so the session is in
+    floor_history. Requires: >= 1 qualifying CONFIRMED hypothesis (see
+    qualifying_confirmed) AND a non-empty frontier — a deferral without a
+    named next probe is a dodge, not an opened axis."""
+    st = load_state(root, func)
+    if not st:
+        return ""
+    session = int(st.get("session_count", 0))
+    if not (o or {}).get("frontier"):
+        return ""
+    if not qualifying_confirmed(root, func, o, session):
+        return ""
+    used = int(st.get("escalation_deferrals") or 0)
+    if used >= ESCALATION_DEFERRALS_MAX:
+        return ""
+    hist = st.get("floor_history", [])
+    base = st.get("exhaustion_base")
+    if isinstance(base, int) and base > 0:
+        hist = [e for e in hist if isinstance(e.get("session"), int) and e["session"] > base]
+    ran = {e.get("modality") for e in hist}
+    pick = next((m for m in _DEFERRAL_MODALITIES if m not in ran), _DEFERRAL_MODALITIES[0])
+    st["escalation_deferrals"] = used + 1
+    st["forced_next_modality"] = pick
+    save_state(root, func, st)
+    return pick
 
 
 def assign_modality(session_count, state=None):
@@ -1013,6 +1119,12 @@ def assign_modality(session_count, state=None):
     # the same news.
     if sibling_progress_pending(st):
         return "rederive"
+    # Escalation deferral (2026-09-04, Ruling B.1): one-shot forced rung after
+    # an honored escalation session. Sits above exhaustion so the deferral
+    # attacks the wall; consumed by apply_outcome, so it cannot repeat.
+    forced = st.get("forced_next_modality") if isinstance(st, dict) else None
+    if forced in LADDER:
+        return forced
     if _exhaustion_ready(state):
         # Object-model gate (2026-09-03): exhaustion may not be declared until
         # ONE session has audited declared shape vs evidence on the record.
@@ -1084,6 +1196,13 @@ def apply_outcome(root, func, o, modality):
                           "result": str(h.get("result", ""))[:120]})
     st["kills"] = kills[-60:]
     st["current_modality"] = modality
+    # A forced deferral rung is one-shot: the session that ran it consumes it.
+    st.pop("forced_next_modality", None)
+    last_floor = next((e.get("floor") for e in reversed(st["floor_history"])
+                       if isinstance(e.get("floor"), int)), None)
+    if (isinstance(o.get("floor"), int) and isinstance(last_floor, int)
+            and o["floor"] < last_floor):
+        st["escalation_deferrals"] = 0     # a real drop earns a fresh allowance
     st["floor_history"].append({"session": n, "floor": o.get("floor"),
                                 "modality": modality,
                                 "headline": (o.get("headline") or "")[:200]})
@@ -1997,8 +2116,13 @@ def render_siblings(sibs, func):
 
 
 def sibling_progress_pending(st):
-    """Unconsumed sibling_progress entries whose floor is strictly below this
-    ledger's own last int floor (or any, if this ledger has no int floor)."""
+    """Unconsumed sibling_progress entries whose floor is at or below this
+    ledger's own last int floor (or any, if this ledger has no int floor).
+    AT-OR-BELOW, not strictly below (owner ruling 2026-09-04, Ruling B.2): a
+    sibling reaching your floor from a different chassis is transplantable
+    news — CD_datasync's s58 link-identical struct spelling reached neither
+    CD_sync nor CD_ready, both sitting at the same floor 2, and both were
+    re-foreclosed without it."""
     if not isinstance(st, dict):
         return []
     own, _ = _floor_since(st.get("floor_history", []))
@@ -2007,7 +2131,7 @@ def sibling_progress_pending(st):
         if e.get("consumed") is not None:
             continue
         f = e.get("floor")
-        if isinstance(f, int) and (not isinstance(own, int) or f < own):
+        if isinstance(f, int) and (not isinstance(own, int) or f <= own):
             out.append(e)
     return out
 
@@ -2022,8 +2146,8 @@ def render_sibling_progress(st):
                       f"memory/grind/{e.get('from')}/hypotheses.md (its s{e.get('session')} entries)"
                       for e in pend)
     return ("\n## SIBLING PROGRESS SINCE YOUR LAST SESSION — THIS SESSION IS A FORCED REDERIVE\n"
-            "A function whose ledger cites yours (or that yours cites) dropped its floor BELOW\n"
-            "yours since you last ran. The driver forced `rederive` for exactly this session.\n"
+            "A function whose ledger cites yours (or that yours cites) dropped its floor TO OR\n"
+            "BELOW yours since you last ran. The driver forced `rederive` for exactly this session.\n"
             "Your first probe is the transplant: apply the sibling's new spelling of every\n"
             "shared block to your chassis and measure it. Bank the result either way; the\n"
             "notice is consumed when this session's outcome is applied, and does not repeat.\n"
@@ -2419,6 +2543,7 @@ if __name__ == "__main__":
     #   grindlib.py init <root> <func> <file_stem> [origin]
     #   grindlib.py convert-wip <root> <func> <file_stem>
     #   grindlib.py modality <root> <func>                          -> prints next modality
+    #   grindlib.py defer-escalation <root> <func> <outcome_json_path> -> forced next modality | none
     #   grindlib.py constrain <root> <func> <text>
     #   grindlib.py reviewer-note <root> <func> <text>               (layer-1 findings; not precedent)
     #   grindlib.py body-hash <root> <func> <path>                   -> body key (comment/ws-insensitive)
@@ -2481,6 +2606,12 @@ if __name__ == "__main__":
         # sync-unpark <root> <func>  -> prints "stamped" when the exhaustion
         # window was reset for a fresh unpark_reason (owner ruling 2026-09-02)
         print("stamped" if sync_unpark(sys.argv[2], sys.argv[3]) else "unchanged")
+    elif cmd == "defer-escalation":
+        # defer-escalation <root> <func> <outcome_json_path> -> prints the forced
+        # next modality when the escalation session is honored as progress
+        # (owner ruling 2026-09-04, Ruling B.1), else "none". Call after apply.
+        o = json.load(open(sys.argv[4], encoding="utf-8"))
+        print(escalation_deferral(sys.argv[2], sys.argv[3], o) or "none")
     elif cmd == "constrain":
         add_judge_constraint(sys.argv[2], sys.argv[3], sys.argv[4])
     elif cmd == "reviewer-note":

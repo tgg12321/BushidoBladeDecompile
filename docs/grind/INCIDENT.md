@@ -31,3 +31,6 @@ Last 20 log lines:
 [grind 2026-09-03 09:44:04] func_80017848: session 30 starting, modality=rederive, model=claude-opus-5[1m]
 [grind 2026-09-03 09:47:37] func_80017848: INVALID session output (no outcome file / unparseable JSON) — discarded, src reverted, respawning.
 ```
+
+---
+**RESOLVED 2026-09-04 (owner ruling, decisions.md "foreclosed-bucket re-evaluation", finding 5 / Ruling B.3).** Both 2026-09-03 breaks (08:32, 09:47) were API weather: metrics/events.jsonl `grind-agent-usage` rows for the six discarded s30 spawns show one `API Error: 500` after 30 turns and five `API Error: 529 Overloaded` at one turn / zero tokens, each 190-266 s. `Test-AgentApiError` keyed on `api_error_status`, which the CLI leaves null, so deaths past the 120 s spawn window were miscounted as invalid sessions. The classifier now also matches the status code in the result text. No session work was lost: the first attempt's forms survived in tmp/grind/func_80017848/s30/ and the successful 12:04 s30 re-measured them.

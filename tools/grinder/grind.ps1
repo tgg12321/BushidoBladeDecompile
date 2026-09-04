@@ -955,12 +955,25 @@ function Test-AgentApiError([string]$AgentLog) {
     # environmental (server overload / rate limit), not a bad session. The
     # 2026-08-18 circuit-break was three 192-second 529 deaths that outran the
     # 120s spawn-failure window and were miscounted as invalid sessions.
+    # Owner ruling 2026-09-04 (Ruling B.3): the CLI leaves `api_error_status`
+    # NULL and carries the code only in the `result` text ("API Error: 529
+    # Overloaded"), so six 500/529 deaths of 190-266 s on 2026-09-03 outran the
+    # 120 s spawn window, failed this test, and circuit-broke func_80017848
+    # twice. Parse the result blob the way record_usage.py does (first `{` to
+    # last `}`; the capture can carry stray stderr lines) and also match the
+    # status code in the result text.
     if (-not (Test-Path $AgentLog)) { return $false }
-    $last = Get-Content $AgentLog -Tail 1 -ErrorAction SilentlyContinue
-    try { $j = $last | ConvertFrom-Json } catch { return $false }
+    $j = $null
+    try {
+        $raw = Get-Content $AgentLog -Raw -ErrorAction SilentlyContinue
+        $lo = $raw.IndexOf('{'); $hi = $raw.LastIndexOf('}')
+        if ($lo -ge 0 -and $hi -gt $lo) { $j = $raw.Substring($lo, $hi - $lo + 1) | ConvertFrom-Json }
+    } catch { $j = $null }
+    if ($null -eq $j) { return $false }
     if ([string]$j.terminal_reason -ne 'api_error') { return $false }
     $code = 0; try { $code = [int]$j.api_error_status } catch { }
-    return ($code -ge 500 -or $code -eq 429)
+    if ($code -ge 500 -or $code -eq 429) { return $true }
+    return ([string]$j.result -match 'API Error: (5\d\d|429)\b')
 }
 
 function Get-AgentSpawnException([string]$AgentLog) {
@@ -1428,9 +1441,31 @@ while ($true) {
             # floor drop is honored as ordinary progress (the exhaustion counter resets).
             $dodged = ($modality -eq 'escalation' -and $null -ne $priorFloor -and
                        $null -ne $o.floor -and [int]$o.floor -ge $priorFloor)
+            # ESCALATION DEFERRAL (owner ruling 2026-09-04, Ruling B.1): the dodge
+            # test cannot tell a dodge from an OPENED AXIS — CD_sync s116 CONFIRMED
+            # a lever for the first time in 116 sessions, declined to self-file on
+            # that ground, and was auto-foreclosed anyway. A flat escalation
+            # session that banks >= 1 QUALIFYING CONFIRMED hypothesis (numeric
+            # measurement + measured_on chassis + not already CONFIRMED earlier in
+            # this ledger — grindlib.qualifying_confirmed) AND names a frontier item
+            # is honored as progress at most ESCALATION_DEFERRALS_MAX (2) times per exhaustion
+            # window (grindlib resets the count on unpark and on any floor drop),
+            # and the next session is FORCED to an unrun rung so the deferral
+            # attacks the named wall. The third such session is backstopped
+            # exactly as before, so the 2026-07-22 loop stays bounded.
+            $deferMod = ''
             if ($dodged) {
                 python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null
                 Revert-SessionEdits $func
+                try { $deferMod = (python tools/grinder/grindlib.py defer-escalation . $func $outPath 2>$null | Out-String).Trim() } catch { $deferMod = '' }
+                if ($deferMod -eq 'none') { $deferMod = '' }
+            }
+            if ($dodged -and $deferMod) {
+                Log "${func}: ESCALATION DEFERRED — flat escalation session banked a CONFIRMED lever (floor $($o.floor) >= prior $priorFloor); honored as progress, next session forced to '$deferMod' (owner ruling 2026-09-04)."
+                Journal "$func s$sessionN [escalation] DEFERRED by driver (CONFIRMED lever banked, floor=$($o.floor)) — next modality '$deferMod': $($o.headline)"
+                git -C $Root add -- memory/grind docs/grind metrics/events.jsonl 2>$null
+                git -C $Root commit -m "grind: $func escalation deferred on a confirmed lever (s$sessionN) [skip-park-src-guard]" 2>$null | Out-Null
+            } elseif ($dodged) {
                 $tier = 'LOW'
                 try { $sc = (python tools/scan_hand_coded.py --single $func 2>$null | Out-String)
                       if ($sc -match 'tier=(\w+)') { $tier = $Matches[1] } } catch { }

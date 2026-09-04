@@ -481,8 +481,13 @@ class LocalBackend:
 
         # Forced allocation order — the "no modelled input explains it" probe.
         base = sorted(self.state, key=lambda k: (-self._pri(self.state[k]), k))
-        for perm in itertools.permutations(base):
-            if list(perm) != base and len(base) <= 6:
+        # The size guard must sit OUTSIDE the permutation loop: with it inside,
+        # a 23-quantity block iterated 23! permutations doing nothing and pinned
+        # a CPU for the whole session (func_80060A68 s13, reported 2026-09-03;
+        # ordered fixed by the owner ruling 2026-09-04).
+        perms = itertools.permutations(base) if len(base) <= 6 else ()
+        for perm in perms:
+            if list(perm) != base:
                 out.append(Atom(L.ALLOC_ORDER,
                                 f"allocation order forced to {list(perm)} "
                                 f"(no refs/span/birth change)",
