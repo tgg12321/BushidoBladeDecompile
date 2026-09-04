@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 38,
+ "session_count": 39,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -231,23 +231,29 @@
    "floor": 7,
    "modality": "forensics",
    "headline": "Synthesis: s37's exhaustive depth-2 kill provably could not cover C statement moves; the group-move space (40,320 chain orders) is now swept exhaustively on both chassis, and the two chassis are forec"
+  },
+  {
+   "session": 39,
+   "floor": 7,
+   "modality": "forensics",
+   "headline": "A fourth chassis (s28's f17, re-measured 13/91 with build_insns 90) carries target's exact printf-window register map and all 15 window insns; its whole defect is the delay-slot nop, localised to the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The u1 index-local chassis (15/91) closes the window, because it is the only measured shape carrying target's front (idx0's lbu at slot 1) and both of target's back facts type REACHABLE on it at depth 1.",
-   "mechanism": "s38 typed all three chassis fact-by-fact with the validated sched_solver model: candidate.c is depth-1 foreclosed on arg4-deferral, the inline chassis is depth-1 foreclosed on the leading lbu, u1 has the front free and the back reachable. Chassis selection has never before been made on per-fact reachability - s25/s37 chose by joint-constraint count and s26-s33 by score, which is why a 15-scoring form was left in rejected/.",
-   "next_probe": "Apply memory/grind/CD_datasync/alt_u1_index_local_15.c, re-extract the model, hand-build the FULL target goal for its block 3 in u1 UIDs from asm/funcs/CD_datasync.s:47-68 (goalmap's automatic goal is invalid here - duplicate instruction text, s37), and run perturb.py at depth 1 then depth 2 with --atoms luid,luid_move first. Then spell the winning vector in C and re-measure with the live sandbox. Do NOT re-run the group-move sweep on candidate.c or the inline chassis; both are exhaustively closed (s38)."
+   "hypothesis": "On the f17 chassis, some ordinary-C form makes expand_call emit the outgoing-argument store BEFORE the a0 = fmt set, giving the fmt the higher LUID and flipping the sched2 tie-break so the fmt is emitted last and reorg.c must emit the nop - which alone takes f17 from build_insns 90 to 91.",
+   "mechanism": "The tie-break is rank_for_schedule's INSN_LUID descending, and LUID order is the pre-sched1 RTL emission order. Every session so far has permuted the argument COMPUTATIONS; nobody has tried to move the argument DELIVERY. expand_call's stream order for the stack argument versus the register arguments is sensitive to whether each argument's value is already in a pseudo when the call is expanded, i.e. to which arguments are named locals and which are inline expressions.",
+   "next_probe": "On the f17 chassis, sweep which of the five arguments are named locals versus inline expressions (arg5 currently inline, arg3 and arg4 named), and for each build read the PRE-sched1 LUID order from the model's nodes[].luid or tmp/grind/CD_datasync/dumps_*/system.rtl, looking for any form where the fmt set's LUID exceeds the sw's. Score every such form live; the predicted signature is build_insns 91 with the fmt emitted last."
   },
   {
-   "hypothesis": "u1's arg4 address/value pseudo COALESCE is a register-allocation decision that tools/ra_solver can type REACHABLE or FORECLOSED, and breaking it gives target's $a0/$a3 pair.",
-   "mechanism": "Target keeps arg4's address in $a0 and loads the value into $a3 (lw $a3,0($a0)); u1 puts both in $a3. s28/s29 established the surrounding predicate: mips.h defines no REG_ALLOC_ORDER, so local-alloc walks hard regs in ascending number order, and $a0 is only free for the address pseudo when that pseudo dies before the fmt set defines $a0 - which u1's ordering now allows. This is precisely ra_solver's question ('which register'), and it has never been asked on this function's argument block.",
-   "next_probe": "Run tools/ra_solver (global.c / local-alloc / reload models + inverse_compose.py classify) on the u1 build's CD_datasync block 3 with the goal 'arg4 address pseudo -> $a0, arg4 value pseudo -> $a3'. Classify REACHABLE/FORECLOSED and take the ranked C-lever vector; a third simultaneously-live scratch value across the address pseudo's range is the s29-predicted lever, and u1 may already supply it."
+   "hypothesis": "The solver's only vector - 'something must depend on the sw ..,16($sp)' - is spellable as a TRUE dependence if an argument load is emitted AFTER the store in the RTL stream and both memrefs escape the sched.c:834-839 guard.",
+   "mechanism": "true_dependence(store, load) needs the load to follow the store in the stream and needs the MEM_IN_STRUCT_P/rtx_addr_varies_p guard to pass. s39 proved the guard is C-controllable (a named pointer local drops MEM_IN_STRUCT_P on the load); what it did NOT provide is a load positioned after the store. Both conditions together have never been built.",
+   "next_probe": "Build a form where one printf argument's value is loaded through a named pointer local (plain mem, varying address) AND is the LAST argument computed, so that expand_call emits its load after the stack-argument store; verify in the sched1 dump that a true REG_DEP link from the sw to that load appears in LOG_LINKS, then score live. If the link appears, re-run perturb.py --goal-before 131:129 to confirm the model agrees."
   },
   {
-   "hypothesis": "The one graph fact every chassis needs and none can spell - an extra predecessor for idx0's lbu (add_dep 93 <- X on candidate.c, add_dep 96 <- 107/109 on the inline chassis) - is a data-model question, not a spelling question: target's index expression is not idx_1494[0].",
-   "mechanism": "Three independent solver runs across two chassis and two passes return the SAME family: the leading index load must depend on something in another argument's chain. No ordinary statement move creates that edge (s38 group-move sweep: 0/40,320 on both chassis). An edge into a LOAD is an address dependence, so the C form that creates it is one where the index is reached through a value another chain computes - i.e. a different data model for D_800A1494 / D_800A11D5 / the two tables, not a different spelling of the same subscripts.",
-   "next_probe": "Re-derive the argument expressions from the format string and the data layout rather than from m2c: D_800A11DC and D_800A125C are 0x80 apart and D_800A1494 is 0x238 past D_800A125C, and the fmt is '%s:(%s) Sync=%s, Ready=%s'. Test aggregate spellings (one object covering the status byte and the two index bytes, or one string table with two sections) that make the index load's address depend on a pointer another argument's chain produces, then re-run the depth-1 single-constraint sweeps to see whether the add_dep family becomes baseline-satisfied."
+   "hypothesis": "A single form can hold both halves of the two-pass conjunction: f17's arg4-value-local shape (which gives the $a0 map in sched1) together with whatever gives u1 and candidate.c the fmt-last property in sched2.",
+   "mechanism": "The two halves are properties of different passes, so they are not obviously in conflict - no measurement has yet shown that one excludes the other; they have simply never co-occurred in the 500-plus forms measured. u1 and candidate.c differ from f17 mainly in whether arg4 is a named value local and in which indices are named.",
+   "next_probe": "Enumerate the small cross-product of {arg4 value local yes/no} x {arg3 value local yes/no} x {arg5 value local yes/no} x {index local yes/no} on the current chassis (16 forms), and for each record BOTH pass facts from one model extraction: (A) is arg4's value load emitted before the fmt set in sched1, and (B) is the fmt set emitted last in sched2. Tabulate; if some cell has both, spell it and score. If no cell has both, the table is the evidence that the two halves are mutually exclusive under named-local spelling, which is the next thing to prove or refute."
   }
  ],
  "judge_constraints": [],
@@ -698,6 +704,30 @@
    "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals, arg4 value local) with the do{}while(0) FAKE present; 40,320 simulated orders",
    "predicate_cite": "",
    "result": "KILLED. 0 hits; best window prefix 3/15 and the best IS the baseline. Positive by-product: candidate.c already emits tar"
+  },
+  {
+   "session": 39,
+   "statement": "Dropping MEM_IN_STRUCT_P on the argument loads by binding the address to a named pointer local, or by spelling the reads as explicit pointer arithmetic, changes the emitted bytes of the f17 form.",
+   "kill_scope": "instance",
+   "measured_on": "f17 chassis (alt_f17_a0map_13.c, 13/91 target, build_insns 90) with the do{}while(0) FAKE present; 2 live sandbox measurements plus one cc1 -da dump",
+   "predicate_cite": "",
+   "result": "KILLED as a byte lever, CONFIRMED as a mechanism. (a) DOES drop the flag - the sched2 dump shows (mem:SI (reg/v:SI 4 a0)"
+  },
+  {
+   "session": 39,
+   "statement": "Target's printf-window order, or merely the fmt-emitted-last fact, is reached from the f17 chassis by some permutation of the argument chains' source statement order.",
+   "kill_scope": "instance",
+   "measured_on": "f17 chassis (alt_f17_a0map_13.c, 13/91, build_insns 90) with the do{}while(0) FAKE present; sched_solver model re-extracted with that form in src/ (parity=True); 40,320 simulated orders",
+   "predicate_cite": "",
+   "result": "KILLED. 144 distinct windows; 0 reach target's window order and 0 put the fmt last. Best window prefix 3/15, from source"
+  },
+  {
+   "session": 39,
+   "statement": "On the u1 chassis, arg4's value load is emitted before the fmt set in sched1 - the condition that frees $a0 for the arg4 address pseudo - under some statement order or some pair of spellable scheduler",
+   "kill_scope": "instance",
+   "measured_on": "u1 chassis (alt_u1_index_local_15.c, re-measured 15/91) with the do{}while(0) FAKE present; sched_solver model extracted with that form in src/ (parity=True); 40,320 simulated orders plus an exhaustiv",
+   "predicate_cite": "",
+   "result": "KILLED for spellable inputs. The group-move sweep produces only 16 distinct sched1 emissions and 0 hits; the exhaustive "
   }
  ]
 }

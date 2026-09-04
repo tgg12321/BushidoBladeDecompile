@@ -3410,3 +3410,93 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - probe: Apply rejected/index-local-plus-arg3-arg5-splits-arg4-index-first-but-coalesces-addr-value-15.c, live sandbox, extract.py system (parity=True), then perturb.py depth-1 single-constraint sweeps on pass 2 block 3.
 - result: CONFIRMED. 15/91, build_insns 91. Pass-2 window emission is 97(idx0 lbu),108(idx1 lbu),93,120,100,102,111,113,123,104(arg4 lw),115(arg5 lw),125,127,135(arg3 lw),129 - idx0's lbu at slot 1, exactly target's slot 1, which neither other chassis reaches at any depth. --goal-before 104:115 returns several vectors and --goal-before 104:135 returns exactly one (del_dep 127 <- 104). Promoted out of rejected/ to memory/grind/CD_datasync/alt_u1_index_local_15.c with the full verdict map in its header.
 - verdict: CONFIRMED
+
+## [s39] The s28 artifact f17 (index local + arg4 and arg3 value locals) is a live chassis carrying target's register map, and its only byte defect is one instruction
+- mechanism: s28 banked it at lev 17 and rejected it for a 17-insn window; chassis selection since then has gone by score (candidate.c 7) or by joint-constraint count (s25/s37), so it was never re-measured in the solver era. The register map ($a0 for the arg4 index/address chain, value into $a3) is the fact three sessions of RA reasoning have been chasing.
+- probe: transcode the cp1252 file, apply, live sandbox, then extract.py + dumps (tmp/grind/CD_datasync/dumps_f17/).
+- result: CONFIRMED. score 13, target_insns 91, build_insns 90 - one instruction short, and the missing one is the `jal printf` delay-slot nop, not a computation. All 15 window instructions present, target's register map exact. Promoted to memory/grind/CD_datasync/alt_f17_a0map_13.c.
+- verdict: CONFIRMED
+
+## [s39] f17's missing instruction is the sched2 LUID tie-break between the fmt set and the outgoing-argument stack store
+- mechanism: sched2 sees `131 (set (reg 4 a0) (symbol_ref D_800161C8))` and `129 (sw ..,16($sp))` both ready at equal priority; rank_for_schedule breaks the tie on INSN_LUID DESCENDING, and sched1's output gives the fmt the LOWER luid, so the sw is picked first. The block is built backwards, so picked-first = emitted-last, and reorg.c then fills the printf delay slot with the sw. Target's last window insn is the fmt `la $a0`, which reorg.c cannot sink because $a0 is a call argument - hence target's nop.
+- probe: read tmp/grind/CD_datasync/dumps_f17/system.sched and .sched2 side by side; confirm the emission tails `... 127 131 129 133 135 137` (sched1) and `... 127 131 129 jal` (sched2).
+- result: CONFIRMED. The defect is a one-pair swap, not a missing computation.
+- verdict: CONFIRMED
+
+## [s39] "The fmt set is emitted after the stack store" is reachable on the f17 chassis by a modelled input change
+- mechanism: exact sched_solver model (parity=True, CD_datasync 12/12 blocks exact in both passes) asked one fact at a time.
+- probe: perturb.py --func CD_datasync --block 3 --goal-before 131:129, depth 1, both passes, all atoms.
+- result: CONFIRMED as REACHABLE, but the vector set is degenerate: exactly `add_dep 131 <- 129` and `add_dep 117 <- 129` (true/data and anti-output flavours), on pass 2 (1191 atoms) and pass 1 (1609 atoms) alike. In C: something must depend on the `sw ..,16($sp)` - the fmt set itself, or arg2's `lw $a1,%lo(D_800F19C0)`.
+- verdict: CONFIRMED
+
+## [s39] The scheduler's refusal to make the stack store and the argument loads dependent is the MEM_IN_STRUCT_P guard in true_dependence/anti_dependence, and the guard is C-controllable
+- mechanism: tools/gcc-2.7.2/sched.c:834-839 - a memref pair is declared independent whenever one side is `MEM_IN_STRUCT_P && rtx_addr_varies_p && mode != QImode` and the other is neither. Our argument loads are `(mem/s:SI (reg N))`; the outgoing-arg store is `(mem:SI (plus (reg 29 sp) 16))`.
+- probe: spell arg4 through a named pointer local (`p4 = tbl_125c + i4; arg4 = *p4;`), rebuild, read the sched2 dump, and score live; separately spell all three reads as explicit pointer arithmetic.
+- result: KILLED as a byte lever, CONFIRMED as a mechanism. The pointer local DOES drop the flag - `(mem:SI (reg/v:SI 4 a0))` in tmp/grind/CD_datasync/dumps_vA/system.sched2 - but the form measures 13 / build_insns 90, byte-identical to f17; the pointer-arithmetic form is byte-identical too and does not even drop the flag. Mechanistically the flag cannot help in this direction: the sw sits AFTER the loads in the RTL stream, so the only dependence it could unlock is an ANTI dependence (load -> store), which pushes the store later, and the goal needs it earlier.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: f17 chassis (alt_f17_a0map_13.c, 13/90) with the do{}while(0) FAKE present; 2 live sandbox measurements plus a cc1 -da dump each
+
+## [s39] Target's printf-window order, or merely the fmt-last fact, is reached from the f17 chassis by some permutation of the argument chains' source statement order
+- mechanism: the s38 group-move argument (an ordinary C statement move relocates a whole 4-5 insn chain, which is >= 4 atoms and therefore outside any depth-2 atom search), retargeted to the chassis that carries the register map.
+- probe: tmp/grind/CD_datasync/s39/groupmove_f17.py, pass 2 block 3: 5 chain blocks (120 orders) and 8 address/value-split blocks (40,320 orders), LUIDs re-laid, priorities recomputed with perturb.apply_priorities, re-simulated.
+- result: KILLED. 144 distinct windows; 0 reach target's window order and 0 put the fmt last. Best window prefix 3/15, from source order `arg4, arg5, arg2, arg3, fmt`, which does emit target's leading `93(idx0 lbu), 120(idx1 lbu), 117(arg2 lw)`. The missing nop is therefore not a statement-order question on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: f17 chassis (alt_f17_a0map_13.c, 13/90) with the do{}while(0) FAKE present; sched_solver model re-extracted with that form in src/ (parity=True); 40,320 simulated orders
+
+## [s39] The $a0 register map is reachable on the u1 chassis by making arg4's value load precede the fmt set in sched1
+- mechanism: local-alloc can only give the arg4 address pseudo $a0 if the pseudo is dead before `(set (reg 4 a0) (symbol_ref))` in the sched1 output; on u1 the fmt sits at emission slot 11 and arg4's `lw` at slot 17, so they conflict and the chain falls to $a3 (s33's coalesce observation, now explained).
+- probe: tmp/grind/CD_datasync/s39/groupmove_p1.py (120 and 40,320 sched1 source orders) plus perturb.py --pass 1 --goal-before 129:135 at depth 1 over all 1459 atoms and exhaustively at depth 2 over the 759 spellable (luid/luid_move) atoms.
+- result: KILLED for spellable inputs. The group-move sweep yields only 16 distinct sched1 emissions and 0 hits; depth-2 spellable finds no vector (tmp/grind/CD_datasync/s39/d2_p1_spellable.log). Over ALL atoms it is reachable at depth 1, but every vector is `add_dep {120,129,131} <- 135` or `cost 135 := 12` - the same no-C-spelling family s37/s38 found from candidate.c and the inline chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: u1 chassis (alt_u1_index_local_15.c, re-measured 15/91) with the do{}while(0) FAKE present; sched_solver model extracted with that form in src/ (parity=True); 40,320 simulated orders plus an exhaustive depth-2 atom sweep
+
+## [s39] SYNTHESIS: the residual is a two-pass conjunction and each half is owned by a different chassis
+- mechanism: (A) sched1 must retire arg4's address pseudo before the $a0 fmt definition or the pseudo cannot get $a0; (B) sched2 must emit the fmt set last or reorg.c steals the `sw` into the printf delay slot and the block is one insn short. f17 has (A) and not (B); u1 and candidate.c have (B) and not (A). The two halves live in DIFFERENT PASSES of one compilation, so a single spelling must satisfy a pre-RA ordering fact and a post-RA tie-break simultaneously.
+- probe: this session's four sweeps, read together.
+- result: CONFIRMED. The one free variable that touches both halves and has never been moved is the PRE-SCHED1 LUID ORDER OF THE CALL'S OWN SETUP INSNS - the order in which expand_call emits the outgoing-argument store versus the `a0 = fmt` set. Every session so far has permuted the argument COMPUTATIONS; nobody has tried to move the argument DELIVERY.
+- verdict: CONFIRMED
+
+## [s39] The s28 artifact idx-local-plus-arg4-value-local-gets-a0-map-but-loses-sw-17.c is a live chassis on the current tree that carries target's printf-window register map and is one instruction short.
+- mechanism: It was banked at lev 17 in s28 and never re-measured in the solver era; chassis selection has gone by score (candidate.c 7) or by joint-constraint count (s25/s37). Its register map - arg4's index/address chain in $a0 with the value loaded lw $a3,0($a0) - is exactly the RA outcome s33/s38 identified as the missing fact.
+- probe: Transcode the cp1252 file to UTF-8, apply to src/system.c, live sandbox, then extract.py (parity=True) and a full cc1 -da dump into tmp/grind/CD_datasync/dumps_f17/.
+- result: CONFIRMED. score 13, target_insns 91, build_insns 90. All fifteen window instructions present; register map exact ($a0 chain -> lw $a3, $a1 arg2, $a2 arg3). The single missing instruction is the jal printf delay-slot nop, not a computation. Promoted to memory/grind/CD_datasync/alt_f17_a0map_13.c.
+- verdict: CONFIRMED
+
+## [s39] f17's missing instruction is produced by the sched2 LUID-descending tie-break between the fmt set (a0 = D_800161C8) and the outgoing-argument store sw ..,16($sp).
+- mechanism: sched1's output gives the fmt set a lower LUID than the sw; in sched2 both are ready at equal priority, so rank_for_schedule's LUID-descending tie-break picks the sw first, and because the block is built backwards picked-first means emitted-last. reorg.c then fills the printf delay slot with the sw. Target's last window insn is the fmt la $a0, which reorg.c cannot sink because $a0 is a call argument - hence target's nop.
+- probe: Read tmp/grind/CD_datasync/dumps_f17/system.sched and system.sched2 side by side and confirm the emission tails.
+- result: CONFIRMED. sched1 tail: 127(lw arg4 value) 131(fmt a0) 129(sw) 133 135 137 jal. sched2 tail: 127 131 129 jal. The defect is a one-pair swap, not a missing computation.
+- verdict: CONFIRMED
+
+## [s39] Making the fmt set be emitted after the stack store is reachable on the f17 chassis by one modelled scheduler input change.
+- mechanism: The validated sched_solver model (parity=True, CD_datasync 12/12 blocks exact in both passes) can be asked one target fact at a time instead of the joint window goal.
+- probe: perturb.py --func CD_datasync --block 3 --goal-before 131:129 --depth 1, on pass 2 (1191 atoms) and pass 1 (1609 atoms).
+- result: CONFIRMED as reachable, but with a degenerate vector set: exactly add_dep 131 <- 129 and add_dep 117 <- 129 (true/data and anti-output flavours) in BOTH passes. In C that reads 'something must depend on the sw ..,16($sp)' - either the fmt set itself or arg2's lw $a1,%lo(D_800F19C0). No luid/luid_move atom reaches it.
+- verdict: CONFIRMED
+
+## [s39] Dropping MEM_IN_STRUCT_P on the argument loads by binding the address to a named pointer local, or by spelling the reads as explicit pointer arithmetic, changes the emitted bytes of the f17 form.
+- mechanism: sched.c:834-839 (true_dependence and anti_dependence carry the identical guard) declares a memref pair independent whenever one side is MEM_IN_STRUCT_P && rtx_addr_varies_p && mode != QImode and the other is neither. Our argument loads are (mem/s:SI (reg N)); the outgoing-arg store is (mem:SI (plus (reg 29 sp) 16)). That guard, not addressing arithmetic, is what keeps the store independent of every argument load.
+- probe: Two live builds on the f17 chassis: (a) p4 = tbl_125c + i4; arg4 = *p4; (b) all three reads spelled *(base + index). sandbox --disable all on each, plus a cc1 -da dump of (a) into tmp/grind/CD_datasync/dumps_vA/.
+- result: KILLED as a byte lever, CONFIRMED as a mechanism. (a) DOES drop the flag - the sched2 dump shows (mem:SI (reg/v:SI 4 a0)) where f17 has (mem/s:SI ...) - yet measures 13 / build_insns 90, byte-identical to f17. (b) is byte-identical too and does not drop the flag on the subscripted reads. In this direction the flag cannot help: the sw sits AFTER the loads in the RTL stream, so the only dependence it could unlock is an ANTI one (load -> store), which pushes the store later while the goal needs it earlier. Both forms banked under rejected/.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: f17 chassis (alt_f17_a0map_13.c, 13/91 target, build_insns 90) with the do{}while(0) FAKE present; 2 live sandbox measurements plus one cc1 -da dump
+
+## [s39] Target's printf-window order, or merely the fmt-emitted-last fact, is reached from the f17 chassis by some permutation of the argument chains' source statement order.
+- mechanism: The s38 group-move argument - an ordinary C statement move relocates a whole 4-5 insn chain, i.e. >= 4 atoms, so it lies outside any depth-2 atom search - retargeted to the chassis that carries the register map.
+- probe: tmp/grind/CD_datasync/s39/groupmove_f17.py, pass 2 block 3: 5 chain blocks (120 orders) and 8 address/value-split blocks (40,320 orders); LUIDs re-laid, priorities recomputed with perturb.apply_priorities, re-simulated with simulate.sim_block.
+- result: KILLED. 144 distinct windows; 0 reach target's window order and 0 put the fmt last. Best window prefix 3/15, from source order arg4, arg5, arg2, arg3, fmt - which does emit target's leading 93(idx0 lbu), 120(idx1 lbu), 117(arg2 lw). The missing nop is not a statement-order question on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: f17 chassis (alt_f17_a0map_13.c, 13/91, build_insns 90) with the do{}while(0) FAKE present; sched_solver model re-extracted with that form in src/ (parity=True); 40,320 simulated orders
+
+## [s39] On the u1 chassis, arg4's value load is emitted before the fmt set in sched1 - the condition that frees $a0 for the arg4 address pseudo - under some statement order or some pair of spellable scheduler input changes.
+- mechanism: local-alloc can only give the arg4 address pseudo $a0 if the pseudo is dead before (set (reg 4 a0) (symbol_ref)) in the sched1 output. On u1 the fmt sits at emission slot 11 and arg4's lw at slot 17, so they conflict and the chain falls to $a3 - which is s33's 'address/value coalesce' observation, now explained as an ordering conflict rather than a coalesce.
+- probe: tmp/grind/CD_datasync/s39/groupmove_p1.py (120 and 40,320 sched1 source orders) plus perturb.py --pass 1 --goal-before 129:135 at depth 1 over all 1459 atoms and exhaustively at depth 2 over the 759 spellable (luid, luid_move) atoms.
+- result: KILLED for spellable inputs. The group-move sweep produces only 16 distinct sched1 emissions and 0 hits; the exhaustive depth-2 spellable sweep finds no vector (tmp/grind/CD_datasync/s39/d2_p1_spellable.log). Over ALL atoms it is reachable at depth 1, but every vector is add_dep {120,129,131} <- 135 or cost 135 := 12 - the same no-C-spelling family s37/s38 found from candidate.c and the inline chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: u1 chassis (alt_u1_index_local_15.c, re-measured 15/91) with the do{}while(0) FAKE present; sched_solver model extracted with that form in src/ (parity=True); 40,320 simulated orders plus an exhaustive depth-2 atom sweep
