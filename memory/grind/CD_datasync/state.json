@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 51,
- "current_modality": "rederive",
+ "session_count": 52,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -309,23 +309,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Transplanted CD_ready's order lever: a SECOND disjoint base (order-exact, seats swapped, 7/91) now brackets the score-2 seat-exact base; carrier, nested-note refs, declaration order and arg4 chain sha"
+  },
+  {
+   "session": 52,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Structural: 903 compiles kill four axes (sibling arg5 spellings, named intermediates, index/address split, type narrowing) and surface a THIRD base at 4/91 that is seat-exact with arg4's sll already s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The seat swap on the order-exact base is a local-alloc quantity-priority tie that ra_solver can type directly, and its inverse search will name the C lever (or forecloses the RA side and sends the residual back to the order base).",
-   "mechanism": "tools/ra_solver models GCC 2.7.2's local-alloc/global stack exactly; on the order-exact base the ONLY difference from target is the assignment of two quantities ($a0 and $v1 swapped between arg4's address and arg5's value), which is precisely the shape `inverse_compose.py classify` is built to invert. s47's typing was done on a chassis whose order did NOT match target, so the goal it computed was four quantities wide; on this base it is two.",
-   "next_probe": "Apply memory/grind/CD_datasync/progress/s51-order-exact-seats-swapped-7.c, then run `tools/ra_solver/inverse_compose.py classify` and `tools/ra_solver/sweep.py` against tmp/sandbox/CD_datasync/system.o with build/src/system.o as the target object. A REACHABLE verdict names the refs/span perturbation needed; a FORECLOSED verdict settles that the order-exact base cannot hold the seats and that the score-2 base is the only live one."
+   "hypothesis": "The new score-4 base is one leaf-load transposition away from a score-2 form that ALSO has arg4's sll at slot 51, i.e. one slot from target - so the leaf-lbu order, not the sll sink, is now the single thing to attack, and it is attackable on a base where the sink is already half-won.",
+   "mechanism": "On the score-4 base every register seat matches target and the sll has moved 50 -> 51 purely because arg5's chain got one statement longer (its leaf load's critical-path depth rose, re-ranking the two sll insns at sched.c:2463's INSN_LUID tie). The remaining leaf transposition is the same 46/47 tie the ledger has tracked since s45: our idx[1] lbu emits first. If a spelling gives idx[0]'s lbu the lower LUID WITHOUT shortening arg5's chain back, the base drops to 2 with the sll already at 51, and a second identical lengthening step would put it at 52.",
+   "next_probe": "Apply memory/grind/CD_datasync/progress/s52-third-base-seats-exact-sll-half-sunk-4.c, dump with BB2_SCHED_DEBUG=1 BB2_RANK_DEBUG=1 via tmp/grind/CD_datasync/s52/dump_dbg.sh, and read the block-3 RANKDBG line that orders the two leaf lbu. Then sweep ONLY spellings that lengthen arg5's chain further (a fourth statement in it) or shorten arg4's leaf-to-use path, checking whether the sll sinks a second slot (51 -> 52) and what it costs the leaf order."
   },
   {
-   "hypothesis": "The leaf-lbu transposition on the order-exact base (ours reads idx[1] first, target reads idx[0] first) is a separate, earlier scheduling tie that can be fixed independently of the seat swap, and fixing it may shift the two tied quantities' births enough to break the qty_compare tie for free.",
-   "mechanism": "the two leaf loads insns 96/100 sit in the same priority class and are ordered by the same INSN_LUID fallback at sched.c:2463; their emission order sets the BIRTH order of the two contested quantities, and quantity number (local-alloc.c:1683's tie-break) follows birth order within the block. So the lbu order and the seat assignment are the same fact seen twice.",
-   "next_probe": "On the order-exact base, dump with `BB2_SCHED_DEBUG=1 BB2_RANK_DEBUG=1` via tmp/grind/CD_datasync/s51/dump_dbg.sh and read the block-3 RANKDBG line that orders 96 vs 100; then sweep only the spellings that change those two insns' expand order (reading one index through a second u8* base local, reading idx[0] as `*(idx_1494 + 0)` vs `idx_1494[0]`, hoisting one lbu above the puts call) and check whether any gives idx[0]'s load the higher luid WITHOUT re-transposing the sll pair."
+   "hypothesis": "The seat assignment is decided by the 1/span priority term, so lengthening the ARG5 VALUE quantity's live span (birth at its lw, death at the sw 16($sp)) on the ORDER-EXACT base drops its priority below arg4's address quantity and flips the seats without touching the emission order.",
+   "mechanism": "local-alloc.c:1660-1684 (read this session): with all window quantities at n_refs == 2 the priority is floor_log2(2)*2*1/(death-birth) = 2/span, so a strictly longer arg5 span loses the comparison outright rather than falling to the quantity-number tie-break that s51 and s52 both measured unreachable. On the order-exact base the arg5 value spans lw@53 -> sw@59 and arg4's address spans addu@56 -> lw@61; moving the sw later, or the lw earlier, changes only spans, not the emission order the base already has right.",
+   "next_probe": "On progress/s51-order-exact-seats-swapped-7.c, sweep spellings that move the arg5 value's DEATH later or its BIRTH earlier without adding instructions: arg5 passed as the last vs an earlier printf argument is fixed, so instead vary which of the two stack-homed arguments carries the value, and vary arg3's chain length (which sits between the two spans) to shift only the death point. Read the QTYDBG birth/death/refs lines from tmp/grind/CD_datasync/s52/dumps_qty/stderr.txt for the block-3 quantities first, so each sweep entry is chosen against a measured span rather than a guessed one."
   },
   {
-   "hypothesis": "CD_cw (the fourth sibling on this window, still active at distance 263) and CD_sync (foreclosed at 2) carry window spellings not yet crossed with the s51 order-exact base, and CD_datasync's two-base bracket should propagate back to them.",
-   "mechanism": "s50 proved the propagation channel works (CD_sync -> CD_datasync, 7 -> 2) and s51 proved it works from CD_ready (order lever). All four functions emit the byte-shape-identical do_timeout printf window; CD_sync reached 2 by a route this ledger has now only partly imported (its arg3 spelling was rejected here, but its ORDER and its leaf-load spelling were never crossed with the order-exact base).",
-   "next_probe": "Read memory/grind/CD_sync/candidate.c's do_timeout block and memory/grind/CD_ready/progress/s75-r3-nested-note-refs-flip-seats-block3-order-exact-5.c (CD_ready's best order-exact form, score 5), symbol-translate both onto the s51 order-exact base, and sweep the pairwise crossings of their leaf-load and arg5 spellings with it."
+   "hypothesis": "The residual is a two-quantity seat/order coupling that tools/ra_solver can type directly, and s51's frontier probe (inverse_compose.py classify on the order-exact base) is still unspent - it should now be run on the NEW score-4 base instead, where the seats are already correct and only an emission slot is wrong.",
+   "mechanism": "ra_solver models GCC 2.7.2's local-alloc/global stack exactly and inverse_compose.py classify inverts a residual into ranked C-lever vectors. On the score-4 base the allocation is already target-identical, so a classify run there separates cleanly into a scheduler-only question (the sll slot) rather than the four-quantity goal s47 computed on a mismatched chassis - and sched_solver, not ra_solver, is then the right model.",
+   "next_probe": "Apply the score-4 base, then run tools/ra_solver/inverse_compose.py classify against tmp/sandbox/CD_datasync/system.o with build/src/system.o as target to confirm the RA side is FORECLOSED-because-already-correct, and hand the remaining one-slot question to tools/sched_solver with the block-3 insn list, asking which INSN_LUID ordering of insns 104/112 the target requires and what source-level emission order produces it."
   }
  ],
  "judge_constraints": [],
@@ -335,44 +341,6 @@
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
  "kills": [
-  {
-   "session": 33,
-   "statement": "combine folds the single-use hoisted index copy into arg4's scaling chain, so an index local cannot decouple the lbu from the sll (the s30/s31 mechanism of record and the premise of the inherited fron",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; form u3 built with -da; read from w.i.combine / w.i.sched / w.i.lreg / w.i.greg / w.i.sched2",
-   "predicate_cite": "",
-   "result": "The post-combine RTL keeps insn 93 (reg86 = zero_extend(mem(reg76)), the idx[0] lbu) at the HEAD of the block, its sll ("
-  },
-  {
-   "session": 33,
-   "statement": "Some member of the index-local x value-local x statement-order cross-product puts idx[0]'s lbu at window slot 1 while leaving arg4's scaling chain late, which is the one decoupling target's window req",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 69 forms, window-signature classified, floor re-measured live at 7 before the sweep",
-   "predicate_cite": "",
-   "result": "Minimum window-levenshtein is 11 inside the index-local family and 7 (a tie with candidate.c, never a win) in the r4/r5/"
-  },
-  {
-   "session": 33,
-   "statement": "A pointer local spelled &tbl_125c[idx_1494[0]] gives arg4's address chain a statement-expanded (early) position and its value load a load_register_parameters (late) position while keeping target's ind",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; six spellings, one identical emitted window",
-   "predicate_cite": "",
-   "result": "All six spellings collapse to ONE window (lev 9) whose arg4 addu is emitted as addu v1,s0,v1 - BASE-first. The &-subscri"
-  },
-  {
-   "session": 34,
-   "statement": "The do{}while(0) wrapper in candidate.c is an inert carrier occupying a pseudo a real lever wants.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis, candidate.c body, live sandbox; hand-built ablation tmp/grind/CD_datasync/s34/nowrap.c scores 17 vs candidate.c's 7",
-   "result": "KILLED - the wrapper is load-bearing (7 vs 17, both build_insns 91)."
-  },
-  {
-   "session": 34,
-   "statement": "The printf window's pick order is decided by INSN_PRIORITY, so a C spelling that lengthens arg4's dependence chain between its lbu and its sll can move it.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c and s32/u3.c on the HEAD chassis with the do{}while(0) FAKE present; instrumented-cc1 BB2_SCHED_DEBUG/BB2_PRIO_DEBUG pick logs for both sched passes",
-   "result": "KILLED - sixteen of eighteen window insns are picked at pri=2130706433 (LAUNCH_PRIORITY), so rank_for_schedule's priority term is a constant tie and chain depth is never consulted."
-  },
   {
    "session": 35,
    "statement": "The do{}while(0) wrapper in candidate.c is an inert carrier occupying a pseudo that a real lever wants.",
@@ -808,6 +776,46 @@
    "measured_on": "the s51 order-exact base (both w0 and w4 orderings), pp present, arg3 on the tbl_11dc pointer local, with the s9 do{}while(0) FAKE and the `void **pp` FAKE present; 64 whole-function compiles through ",
    "predicate_cite": "",
    "result": "All 48 declaration permutations are byte-identical at 7 / 91 - quantities are numbered by BIRTH within the block, not by"
+  },
+  {
+   "session": 52,
+   "statement": "The un-crossed sibling window spellings (CD_ready's symmetric integer-address arg5 and CD_sync's leaf-load spelling), swept against every interleaving of the two argument chains on the score-2 chassis",
+   "kill_scope": "instance",
+   "measured_on": "the s50 pp / integer-split-init-address chassis (arg3 on the tbl_11dc pointer local) with the s9 do{}while(0) FAKE and the void **pp pointer-alias FAKE present; 200 whole-function compiles through the",
+   "predicate_cite": "",
+   "result": "Nothing scored below 2; the floor is unchanged. The sweep did surface a THIRD BASE at 4/91 (the r family, 24 of its 35 i"
+  },
+  {
+   "session": 52,
+   "statement": "Introducing real named intermediates for arg2's value and arg3's index (CD_ready's a1v / a2i spelling) changes the BIRTH order of the window's quantities and so reaches the local-alloc.c:1683 quantity",
+   "kill_scope": "instance",
+   "measured_on": "five bases of the s50 pp / integer-split-init chassis (score-2, score-4 r, three order-exact) with the s9 do{}while(0) FAKE and the void **pp FAKE present; 309 whole-function compiles through the engi",
+   "predicate_cite": "",
+   "result": "No form beats its base. a1v is uniformly destructive: naming arg2's value regresses the score-2 base 2 -> 7 at every ins"
+  },
+  {
+   "session": 52,
+   "statement": "Splitting arg4's index and its address across TWO locals (index born early, scaling emitted late) decouples birth order from emission order, so the order-exact emission can be bought without surrender",
+   "kill_scope": "instance",
+   "measured_on": "the s50 pp / integer-split-init-address chassis with the s9 do{}while(0) FAKE and the void **pp FAKE present; 96 whole-function compiles through the engine sandbox",
+   "predicate_cite": "",
+   "result": "Every one of the 96 forms scores 7/91 or worse - the split lands on the ORDER-EXACT, SEATS-SWAPPED base regardless of in"
+  },
+  {
+   "session": 52,
+   "statement": "Type narrowing of the window's carriers (index, address integer, arg5 value) perturbs the RTL enough to move the two contested quantities.",
+   "kill_scope": "instance",
+   "measured_on": "both bases of the s50 pp / integer-split-init chassis with the s9 do{}while(0) FAKE and the void **pp FAKE present; 48 whole-function compiles through the engine sandbox",
+   "predicate_cite": "",
+   "result": "Byte-inert. Every combination reproduces its base's score exactly (20 forms at 2, 25 at 7) with one exception: an s8 ind"
+  },
+  {
+   "session": 52,
+   "statement": "Re-spelling ARG4 in CD_ready's <<= 2 + integer-base shape (symmetric to the new score-4 arg5 spelling) holds the sunk sll while restoring the leaf-load order.",
+   "kill_scope": "instance",
+   "measured_on": "the s50 pp chassis, arg3 on the tbl_11dc pointer local, with the s9 do{}while(0) FAKE and the void **pp FAKE present; 250 whole-function compiles through the engine sandbox",
+   "predicate_cite": "",
+   "result": "Only the o arg4 spelling ever reaches the floor: ov best 2, or best 4, and every form built on R or V bottoms at 7 (Rn a"
   }
  ]
 }

@@ -1,3 +1,25 @@
+/* s52 UPDATE (2026-09-04, structural).  BODY UNCHANGED - still the floor at
+ * 2 / 91 (re-verified live this session: score 2, build 91, target 91,
+ * rules_dropped 0).  s52 swept 903 whole-function compiles across four
+ * structural axes and killed all four on this chassis: (1) sibling arg5
+ * spellings x every chain interleaving (200 forms) - nothing below 2, but it
+ * found a THIRD BASE at 4 / 91, banked as
+ * progress/s52-third-base-seats-exact-sll-half-sunk-4.c, whose window is
+ * SEAT-EXACT like this one AND has arg4's `sll $a0` already sunk from slot 50
+ * to 51 (target 52), leaving only the leaf-lbu transposition and that one
+ * slot; (2) named intermediates for arg2's value / arg3's index (309 forms) -
+ * `a1v` destroys the pp lever (2 -> 7 everywhere), `a2i` is inert late and
+ * costs 5 early; (3) splitting arg4's index and address across two locals to
+ * decouple birth order from emission order (96 forms) - uniformly 7, and
+ * local-alloc.c:1660-1684 says why (priority = floor_log2(refs)*refs*size /
+ * (death-birth), tie on quantity number; a pseudo's birth IS its setting insn,
+ * so order and seats cannot be decoupled by naming); (4) type narrowing of
+ * every carrier (48 forms) - byte-inert except `s8`, which costs a sign-extend.
+ * Also newly measured: the `pp` statement POSITION is byte-inert at all 100
+ * matched pairs.  Next session inherits a three-body bracket, not a two-body
+ * one: score 2 (seats + leaf order, sll at 50), score 4 (seats + sll at 51,
+ * leaf transposed), score 7 (order-exact, seats swapped).
+ */
 /* s51 UPDATE (2026-09-04, rederive).  THIS BODY IS UNCHANGED and remains the
  * floor at 2 / 91 (re-verified live this session: score 2, build 91, target 91,
  * rules_dropped 0).  s51 transplanted CD_ready's s69 statement-order lever and
