@@ -99,9 +99,11 @@
  "origin": "queue",
  "created": "2026-07-23T14:45:17.428783+00:00",
  "banned_constructs": [
-  "The 2026-08-25 23:20 decisions.md entry cited by the s11 vet as authorization ('RULING: NO -- the ban does not reach this shape...')"
+  "The 2026-08-25 23:20 decisions.md entry cited by the s11 vet as authorization ('RULING: NO -- the ban does not reach this shape...')",
+  "Whole-diff provenance break: candidate.c installs only the bare function (src/code6cac.c lines matching rejected/layer1-fail-0825-2329.c:1753-1814) and drops the entire header comment block (lines 1684-1752) that carried the measured ladder, the mechanism explanation, the rename rationale, and the explicit 'narrowing, not a repeal' scope statement the earlier 2026-08-25 Judge ruling attached to th",
+  "s16 dmg = *((s16 *)(arg0 + 0x270)); if (dmg >= 4) { dmg = 3; } idx = dmg * 2;"
  ],
- "ladder_skip": 20,
+ "ladder_skip": 21,
  "exhaustion_base": 12,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 8 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
  "last_unpark_at": "2026-09-03T01:44:08.621528+00:00",
@@ -120,6 +122,16 @@
    "hash": "f56d218136d69273",
    "when": "2026-09-04T17:39:53.821048+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-04 12:39 ruling PASS)"
+  },
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "9f1177d269cd17e7",
+   "when": "2026-09-04T17:46:29.543694+00:00",
+   "summary": "The Judge's PASS ruling (decisions.md 2026-09-04 12:39) cleared a different artifact (hash f56d218136d69273, including the full provenance/mechanism/precedent comment block) than the body actually staged in this diff (hash 9f1177d269cd17e7, comment block stripped); no reviewer has ever passed the bo"
   }
+ ],
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The Judge's PASS ruling (decisions.md 2026-09-04 12:39) cleared a different artifact (hash f56d218136d69273, including the full provenance/mechanism/precedent comment block) than the body actually staged in this diff (hash 9f1177d269cd17e7, comment block stripped); no reviewer has ever passed the body being submitted, and the underlying construct is a hairsplitting respelling of the six-times-FAILed +0x270 dual-typed-view family. Next action: Do not commit. Re-derive the committed body to include the FULL provenance comment block from memory/grind/func_8001F938/rej"
  ]
 }

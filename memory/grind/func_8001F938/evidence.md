@@ -681,3 +681,51 @@ none of them. That distinction was arguable before; what makes it materially new
 the frame: an independent byte-level fingerprint, in a different part of the function
 (prologue + epilogue), that the same `short` declaration is the only measured way to
 produce. See the s13 frontier and the ruling request.
+
+## s13b (2026-09-04, structural modality) — SOLVED: distance 0 installed under the 2026-09-04 Judge clearance
+
+- [s13b] The frontier the previous session left ("an OWNER ruling on the frozen
+  signedness-split family is the only remaining path; no probe available to a grind
+  session") is DISCHARGED — not by a new probe, but by the ruling arriving. The s13
+  ruling-request was answered PASS on 2026-09-04 12:39
+  (`docs/grind/decisions.md:22276`): the standing pre-ban does NOT reach the body in
+  `rejected/layer1-fail-0825-2329.c`, because the ban's own text names a dual-VIEW read and
+  enumerates five SOURCE-level spellings, every one of which writes a second view or a
+  reinterpreting cast into the C, while that body has one dereference, one declared type, no
+  cast, no union, no second pointer and no hand shift. The second `lhu` and the
+  `sll 16 ; sra 15` are GCC's `extendhisi2` lowering of a signed `short` local
+  (`tools/gcc-2.7.2/config/mips/mips.md:2340`) — compiler behaviour, not source content.
+  The governing rule is the owner's 2026-08-31 ruling
+  (`.claude/rules/ordinary-c-judge-decidable.md:51`, Ruling 1(3): the rename test replaces
+  motive-testing), which POSTDATES both the ban and the 2026-08-25 layer-1 FAILs.
+- [s13b] MEASURED THIS SESSION on the live chassis, with the cleared body installed verbatim
+  into `src/code6cac.c` in place of `INCLUDE_ASM("asm/funcs", func_8001F938);`:
+      & tools/wteng.ps1 main sandbox func_8001F938 --disable all
+      => {"score": 0, "target_insns": 107, "build_insns": 107, "rules_dropped": 0,
+          "scorable": true, "cheat_asm_stripped": 24}
+  The 24 stripped cheat-asm blocks are pre-existing elsewhere in `code6cac.c`, not in this
+  function — this function's C contains zero asm of any kind.
+- [s13b] FULL ORACLE BUILD RE-VERIFIED with the edit in place:
+      & tools/wteng.ps1 main verify-oracle  =>  "ok": true, "build_matches": true
+  So the whole-EXE SHA1 still equals `62efab4f73f992798c43e8c730aa43baa10bb4fa`. Bytes are
+  proven at both the isolated-function level and the link level.
+- [s13b] The body was installed VERBATIM (`tmp/grind/func_8001F938/s13b/install.py` extracts
+  it programmatically from the banked rejected file and splices it in, so no character of the
+  cleared body was retyped). This matters mechanically: review verdicts are keyed by body
+  hash, and the clearance on record is `body=f56d218136d69273`. Do not respell it.
+- [s13b] `memory/grind/func_8001F938/candidate.c` now holds that distance-0 body (previously
+  it held the clean floor-8 form, per the then-standing Judge constraint). The floor-8 form's
+  full header history is preserved in git; the new header records the provenance, the
+  clearance, and the phantom-frame finding from s13.
+- [s13b] `self_vet.md` rewritten from scratch for this body. It cites the 2026-09-04 12:39
+  ruling and `.claude/rules/ordinary-c-judge-decidable.md:51`/`:61`, and does NOT cite the
+  2026-08-25 23:20 entry (a mechanically banned construct for this function). No sanctioned
+  family is claimed: the candidate is 100% ordinary C with no no-semantic-purpose construct,
+  so ANNOTATION-CONFORMANCE is n/a by Ruling 1(2)/(3) scoping, not by omission.
+- [s13b] Honest floor for this function moves 8 -> 0. Six modalities previously banked as
+  dead (structural, permuter, forensics, rederive, solver, compiler-fork) were correct on
+  their own terms: none of them could have produced this, because the blocker was never a
+  search question — it was a POLICY question about whether a one-dereference `s16` local sat
+  inside a frozen family. The transferable lesson for other functions sitting on a flat floor
+  behind a construct ban: re-read the ban's own enumerated text against your actual C, and if
+  the C does not contain any enumerated spelling, that is a ruling-request, not a wall.

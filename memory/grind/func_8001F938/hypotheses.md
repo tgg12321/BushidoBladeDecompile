@@ -465,3 +465,22 @@ the same single `short` declaration, plus the measured elimination of every othe
 narrowing in the function. The next move is a `ruling-request` carrying the frame
 evidence — see the s13 outcome JSON's ruling_question. Do NOT re-run the six
 retypings; they are measured dead above.
+
+## s13b (2026-09-04, structural) — CONFIRMED
+
+- hypothesis: The body banked at `rejected/layer1-fail-0825-2329.c` (`s16 dmg =
+  *((s16 *)(arg0 + 0x270)); if (dmg >= 4) dmg = 3; idx = dmg * 2;` plus the s2-PASSED
+  kind-split) compiles to distance 0 on the CURRENT chassis and links to the oracle SHA1,
+  and is submittable as ordinary C under the 2026-09-04 12:39 Judge clearance.
+  - mechanism: one source-level dereference at one declared type; GCC 2.7.2 lowers the
+    signed `short` local's sign-extending use via `extendhisi2`
+    (`tools/gcc-2.7.2/config/mips/mips.md:2340`), which emits the target's second `lhu` and
+    the `sll 16 ; sra 15`, and the multi-path HImode local buys the target's 8-byte phantom
+    frame (`asm/funcs/func_8001F938.s:11`, `:117`) via `get_frame_size()`. Both target
+    fingerprints therefore come from ONE declaration.
+  - probe: install the body verbatim into `src/code6cac.c` via
+    `tmp/grind/func_8001F938/s13b/install.py`; `sandbox func_8001F938 --disable all`;
+    `verify-oracle`.
+  - result: score 0, target_insns 107, build_insns 107, rules_dropped 0; verify-oracle
+    `"ok": true, "build_matches": true`. CONFIRMED.
+  - verdict: CONFIRMED

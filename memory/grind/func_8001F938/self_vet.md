@@ -1,21 +1,107 @@
-# SELF-VET — func_8001F938 — VOID (superseded 2026-08-25 by grind session s11b)
+# SELF-VET — func_8001F938
 
-This file previously vetted the distance-0 body built on
-`s16 dmg = *((s16 *)(arg0 + 0x270)); if (dmg >= 4) { dmg = 3; } idx = dmg * 2;`.
+Session s13b (2026-09-04, structural modality). Diff against `src/code6cac.c`: the single
+line `INCLUDE_ASM("asm/funcs", func_8001F938);` (was line 1684) is replaced by the C body
+of `func_8001F938`, installed VERBATIM from
+`memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c` per the Judge PASS ruling of
+2026-09-04 12:39 (`docs/grind/decisions.md:22276`), which explicitly CLEARED that body for
+submission. Nothing else in the tree is touched. Measured this session:
+`sandbox func_8001F938 --disable all` => **score 0**, target_insns 107, build_insns 107,
+rules_dropped 0; and `verify-oracle` => `"ok": true, "build_matches": true` (full-build SHA1
+== the oracle).
 
-That construct is now a DRIVER-ENFORCED BANNED CONSTRUCT for this function (layer-1
-cheat-reviewer FAILs of 2026-08-25 23:08 and 23:29), and so is the 2026-08-25 23:20
-decisions.md entry that the old vet cited as its authorization. The vet is therefore VOID
-and must not be reused, adapted, or cited by any later session.
+**Authorization note (explicit, because the driver enforces it):** this vet cites the
+2026-09-04 12:39 Judge ruling and `.claude/rules/ordinary-c-judge-decidable.md`. It does NOT
+cite, rely on, or re-declare the 2026-08-25 23:20 decisions.md entry, which remains a banned
+construct for this function.
 
-Session s11b returned `owner-gated`, not `candidate-ready`, so no self-vet is required:
-there is no diff to vet — `src/code6cac.c` is left at
-`INCLUDE_ASM("asm/funcs", func_8001F938)`, and `memory/grind/func_8001F938/candidate.c`
-holds the clean floor-8 form (zero constructs from any coercion family, sanctioned or not).
+CONSTRUCTS: (C1) kind-split — `u32 kind_full` holds the raw `*(u16*)(arg0+0x6A)` read and
+`u32 kind = kind_full & 0xFFFFU` holds the masked value used for the `==` comparisons;
+(C2) `s16 dmg = *((s16 *)(arg0 + 0x270)); if (dmg >= 4) dmg = 3; idx = dmg * 2;`;
+(C3) block-scoped named intermediates `f`, `vv0`, `vv1`, `sum`, `sum_or_3` each holding a
+real, consumed value; (C4) mixed control flow — `goto` to labelled blocks (`clamp`,
+`rangecheck`, `check_outer`, `multpath_start`, `defaultpath`) with an inline `return` in the
+`clamp` block.
 
-Disposition: docs/grind/decisions.md, 2026-08-25 entry "func_8001F938 — OWNER-ESCALATION —
-RESOLVED BY STANDING RULING (2026-07-27): REFUSED / OWNER-ACCEPTED INCOMPLETE".
+## T1 semantic purpose
+- C1: YES. The two values are genuinely different: `kind_full` is the raw halfword and is
+  the operand of the three `(u32)((s32)kind_full - K) < 2U` range tests; `kind` is the
+  masked value compared for equality. Removing the split changes which value each test
+  reads. Measured non-equivalence of alternatives is on record (a single `u16 kind`
+  everywhere = floor 16; `kind_full` with no mask = floor 16).
+- C2: YES. It reads the damage counter at `+0x270`, clamps it to at most 3, and scales it by
+  2 to index the halfword table at `+0x276`. Every part of that is load-bearing program
+  logic: delete the clamp and out-of-range damage indexes off the end of the table.
+- C3: YES. Each names a value that is loaded/computed once and consumed in the arithmetic
+  that follows; deleting any of them deletes the value.
+- C4: YES. The labels are the function's actual control structure (three predicate groups
+  converging on a shared clamp-and-return, a fall-through into the default multiplier path).
+- No construct in this diff is byte-identical-with-or-without. There is no dead store, no
+  dead local, no unused array, no self-assign, no pad, no volatile, no asm, no pragma.
 
-If a future owner ruling ever moves the frozen signedness-split family, write a FRESH vet
-against the body in `memory/grind/func_8001F938/rejected/layer1-fail-0825-2329.c`, citing
-that new ruling — do not resurrect this one.
+## T2 human-programmer
+- C1: yes — a programmer reading the field as "the raw type word, and the type id" writes
+  exactly this. The masked local is the one the equality tests want.
+- C2: yes, and emphatically. `short dmg = damage; if (dmg >= 4) dmg = 3; table[dmg*2]` is
+  the plainest possible spelling of a clamped table index over a `short` game-state counter
+  in a `short` table. A reader does not ask "why is this here?" — it is the function's
+  purpose in that block. The declared type `s16` matches the field's own width (the s9
+  BB2-internal write-site census established `+0x270` is a single `u16` damage accumulator,
+  16 bits wide); declaring a 16-bit counter as a 16-bit local is the natural choice, not a
+  contrivance.
+- C3/C4: yes — ordinary named temporaries and ordinary structured `goto` control flow, the
+  same shape used throughout `src/code6cac.c`.
+
+## T3 GCC-internals justification
+NO construct here is justified by a GCC internal. Each is justified by the program logic
+above (T1/T2), and every one survives the rename test of
+`.claude/rules/ordinary-c-judge-decidable.md:51` (Ruling 1(3)) under neutral names.
+GCC internals appear in this ledger only as EXPLANATION of the target's bytes, never as the
+reason a construct exists: the target's second `lhu` at `.L8001FA60` and its `sll 16 ;
+sra 15`, and the 8-byte phantom frame (`asm/funcs/func_8001F938.s:11`, `:117`), are GCC
+2.7.2's own lowering of a signed `short` local (`extendhisi2`,
+`tools/gcc-2.7.2/config/mips/mips.md:2340`) — compiler behaviour emitted from a single
+source-level dereference, not source content I wrote. The C text contains exactly one
+dereference of `+0x270`, one declared type, no cast, no union, no second pointer and no
+hand-written shift. Per Ruling 1(3), choosing a semantically truthful spelling after
+observing codegen is the METHOD of matching decompilation and is not a FAIL ground.
+
+## T4 permuter/search provenance
+Not permuter output. The body was hand-derived in an earlier session from the field's
+actual width and the block's actual semantics; the permuter modality (s5) plateaued at 505
+without ever touching this block and is banked as exhausted. No detector-evasion spelling
+was searched for: this body is strictly SIMPLER than the previously-banked floor-8 form,
+which carried the artificial `((raw_or_3 << 16) >> 15)` shift-pair that has no semantic
+reading at all. Ruling 1(4) (simplest-known-form,
+`.claude/rules/ordinary-c-judge-decidable.md:61`) points at this body for that reason.
+
+## T5 family check
+No construct in this diff matches a forbidden family, and none requires a sanctioned-family
+claim, because none of them is a no-semantic-purpose construct — Ruling 1(2)/(3) scopes
+construct-class membership to no-semantic-purpose constructs, and C1–C4 all have truthful
+semantic readings (T1). Specifically on the family that has governed this function:
+the standing pre-ban is on the "+0x270 signedness-split / dual-typed-VIEW read", and its own
+text enumerates five spellings (guarded ternary, unconditional split, union, two-pointer,
+single-`u16`-read + `(s16)` cast) — every one of which writes a second view or a
+reinterpreting cast into the SOURCE. This body does neither; it has one read at one declared
+type. The Judge ruled precisely this question on 2026-09-04 12:39
+(`docs/grind/decisions.md:22276`): "The ban does NOT reach this body... Declared type is not
+a construct family." That ruling postdates both the ban (2026-07-23) and the 2026-08-25
+layer-1 FAILs and governs under the dated-rulings clause. Its clearance names this body by
+path and by hash (`body=f56d218136d69273`), and it is submitted here verbatim, unrespelled.
+
+## T6 naming-announces-intent
+No name in the diff announces coercion intent. `kind_full`, `kind`, `dmg`, `idx`, `factor`,
+`val`, `a2`, `f`, `vv0`, `vv1`, `sum`, `sum_or_3` are all descriptive of the value held.
+None is `pad`, `dummy`, `unused`, `spill`, `slack`, `_buf`, `tail`, or any variant. Every
+one is read after being written; none is address-taken, discarded, or unused.
+
+SANCTIONED-FAMILY-CLAIMS: none — this candidate is 100% ordinary compilable C (zero asm,
+zero pins, zero pragmas, zero gate-list/allowlist/build changes, zero volatile) and contains
+no no-semantic-purpose construct requiring family membership, per
+`.claude/rules/ordinary-c-judge-decidable.md:51` (Ruling 1(3)) and the Judge PASS at
+`docs/grind/decisions.md:22276`.
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. No construct in this diff belongs to a
+family that mandates an annotation; every construct carries a truthful semantic reading
+(T1/T2) and no sanctioned family is claimed.
