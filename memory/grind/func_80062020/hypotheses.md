@@ -1430,3 +1430,46 @@ engine/score.py masks section-relative HI16/LO16 addends but not named-symbol on
 
 **Remaining open item (not a gate):** retiring `D_800F119C` / `D_800F11A0` from
 `undefined_syms_auto.txt` once `func_800620B8` is decompiled. Tracked in evidence.md s16.
+
+
+## H-s16-GENERIC — CONFIRMED (forensics, 2026-09-03)
+
+**Statement.** The epilogue arrangement DISP8 | DISP4 | LOSUM is produced by GCC 2.7.2 for
+any chained assignment to three or more members of an element of an extern struct array,
+independent of the symbols, the struct tag, the member count and the presence of a loop.
+
+**Mechanism.** RTL EXPAND, `store_field` in tools/gcc-2.7.2/expr.c:3453-3464: when an
+assignment's value is consumed (`value_mode != VOIDmode`, i.e. `want_value`, threaded from
+`expand_assignment` at expr.c:2445 and set by `expand_expr`'s MODIFY_EXPR case at
+expr.c:6170), the MEM address `(plus (symbol_ref) (reg))` is copied to a pseudo, so the
+member offset becomes a plain displacement. When the value is not consumed (statement-level
+assignment, expr.c:6660) the address is left alone and `plus_constant` folds the member
+offset into the symbol, giving the inline-symbolic form. C's right-to-left chain semantics
+decide which store is last, hence which one keeps the symbolic form.
+
+**Probe.** Neutral TU (generic names, no BB2 symbol, no loop) compiled with the project cc1
+flags, plus `-da` dumps of both shapes; then the same dumps on a replica of the candidate
+body with the real names. tmp/grind/func_80062020/s16/{neutral_results.txt,
+N*_.s, dump_N1_chain_abc/, dump_N2_stmts_cba/, dump_replica/, forensics_s16.md}.
+
+**Result.** N1 (3-member chain) and N7 (4-member chain) emit the mix; N2/N3/N10 (separate
+statements, every order) emit all-LOSUM and never allocate a base register. The `.rtl`
+dump shows the divergence at EXPAND, before any optimiser. The replica reproduces the
+target's epilogue and the target's three symbolic in-loop stores from the one rule.
+
+## H-s16-BANBASIS — OPEN (ruling requested)
+
+**Statement.** The `banned_constructs` entries 3 and 4 ("`end: D_800F1198[i].unk0 =
+D_800F1198[i].unk4 = D_800F1198[i].unk8 = 0;` (chain ordered so unk0 is stored last)" and
+"Aggregate-array chain landing the mixed DISP8|DISP4|LOSUM epilogue arrangement") rest on
+the characterisation "address-materialization-order trick ... already killed at class scope
+(s14)". Both premises are now measured false: the s14 class kill was already falsified in
+s15 and retired in this file (H-s14-CLASSKILL), and H-s16-GENERIC shows the arrangement is
+a compiler-side consequence of C's want_value, with no ordering, materialisation count or
+addressing chosen by the author. The question for the Judge is whether the ban survives
+that measurement, i.e. whether a plain chained assignment - ordinary C claiming no
+sanctioned family - may be submitted for this function.
+
+**Why the next session must NOT simply resubmit.** The driver mechanically discards a
+`candidate-ready` whose self-vet re-declares a banned construct, and respelling to evade a
+ban is itself forbidden. The ban has to be cleared by ruling, not by wording.

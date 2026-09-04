@@ -1845,3 +1845,99 @@ constraint forbids deleting them while that sibling is INCLUDE_ASM, and the sanc
 precedents for this family (func_800861BC, commit e788983a) shipped with the splat names
 retained. Prong (c) of the aggregate-merge family is met in purpose (exactly one C handle
 per storage location) and disclosed as partial in letter.
+
+
+## s16b (forensics, 2026-09-03) — THE EPILOGUE MIX IS A GENERIC GCC 2.7.2 EXPAND RULE
+
+(Note: the block above titled "s16 (2026-09-03, solver modality)" was written by the
+previous session, which landed the banked body and was FAILed at layer-1 on 2026-09-03
+20:23. This block is the NEXT session, mandated modality `forensics`.)
+
+### What was measured
+
+**1. Neutral repro — the arrangement is not function-specific.** A standalone TU with
+generic names, a generic 3-word struct, no loop, and no BB2 symbol was compiled with the
+project's exact cc1 flags (`-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1
+-mno-abicalls -fno-builtin -w -mel`). Sources and asm in `tmp/grind/func_80062020/s16/`:
+
+| shape | emitted terminator stores |
+|---|---|
+| `g_table[i].a = g_table[i].b = g_table[i].c = 0;` (N1) | `la $2,g_table ; addu $2,$3,$2 ; sw $0,8($2) ; sw $0,4($2) ; sw $0,g_table($3)` = **DISP8 \| DISP4 \| LOSUM** |
+| `g_table[i].c = g_table[i].b = g_table[i].a = 0;` (N4) | `sw $0,0($2) ; sw $0,4($2) ; sw $0,g_table+8($3)` |
+| 4-member chain (N7) | `sw $0,12($2) ; sw $0,8($2) ; sw $0,4($2) ; sw $0,g_t4($4)` |
+| three separate statements, any order (N2, N3, N10) | **all-LOSUM**, no base register, ever |
+
+So the mixed arrangement is what GCC 2.7.2 does with ANY chained assignment to three or
+more members of an element of an extern struct array. It reproduces with unrelated symbol
+names, an unrelated struct tag, a different member count and no loop in the function. It
+is not reachable from separate statements in any order.
+
+**2. The pass, named from the dumps.** `tools/gcc-2.7.2/cc1 -da` on N1 and N2. The
+divergence is already fully present in the FIRST dump, `.rtl` (RTL EXPAND), before cse,
+loop, combine, or any allocator:
+
+    N1  (insn 44 (set (mem/s:SI (plus:SI (reg:SI 91) (const_int 8))) (const_int 0)))
+        (insn 46 (set (mem/s:SI (plus:SI (reg:SI 84) (const_int 4))) (const_int 0)))
+        (insn 48 (set (mem/s:SI (plus:SI (symbol_ref "g_table") (reg:SI 76))) (const_int 0)))
+    N2  (insn 20 (set (mem/s:SI (plus:SI (const:SI (plus:SI (symbol_ref "g_table")
+                                                    (const_int 8))) (reg:SI 76))) 0))  [x3]
+
+**3. The deciding line.** `tools/gcc-2.7.2/expr.c:3453-3464`, in `store_field`:
+
+    /* If a value is wanted, it must be the lhs;
+       so make the address stable for multiple use.  */
+    if (value_mode != VOIDmode && GET_CODE (addr) != REG
+        && ! CONSTANT_ADDRESS_P (addr) ...)
+      addr = copy_to_reg (addr);
+
+`value_mode != VOIDmode` is `want_value`, threaded from `expand_assignment`
+(expr.c:2445; the COMPONENT_REF path passes `want_value ? TYPE_MODE (TREE_TYPE (to))
+: VOIDmode`). `want_value` is 1 exactly when the assignment's VALUE is consumed, i.e.
+when it is an inner operand of an enclosing expression (`expand_expr` MODIFY_EXPR passes
+`! ignore`, expr.c:6170; a statement-level assignment gets 0, expr.c:6660).
+
+* want_value 1 → the address `(plus (symbol_ref) (reg))` is neither a REG nor
+  CONSTANT_ADDRESS_P, so it is copied to a pseudo and the member bitpos becomes a plain
+  `(const_int N)` displacement → `sw $0,N($base)`.
+* want_value 0 → the address is left alone and `plus_constant` folds the member bitpos
+  into the symbol, `(const (plus (symbol_ref) (const_int N)))` → `sw $0,SYM+N($idx)`.
+
+**4. The same rule explains all six of the function's row stores.** Dump of the exact
+candidate body with the real names (`tmp/grind/func_80062020/s16/dump_replica/`): insns
+148/150 are the reg-base stores, insn 152 keeps the symbol_ref, and the three IN-LOOP
+stores — statement-level, want_value 0 — all keep the symbolic form, which is exactly how
+the target has them (`lui $at,%hi(...)` / `addu` / `sw $v0,%lo(...)($at)` x3). One
+compiler rule, six stores, no per-store authoring.
+
+### Consequence for the record
+
+The arrangement the ledger has spent eleven sessions trying to "arrange" is decided by a
+single source-level property — whether each store's value is consumed — and by C's
+right-to-left chain semantics, which fix which store is evaluated last. The author's only
+choice is "one chained assignment" vs "three statements", and the ordinary spelling of
+"clear all three columns of the terminator row" in ascending member order
+(`unk0 = unk4 = unk8 = 0`) is the one that produces the target. The descending store order
+in the original bytes is not an authored order; it is right-associativity. This makes the
+byte pattern evidence ABOUT the original source rather than a device for reproducing it.
+
+### Floor re-measured on the live chassis
+
+    apply_s15.py apply
+    verify-oracle --rebuild --allow-dirty
+    verify-oracle --allow-dirty  -> ok true, build_matches true,
+        build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked
+    sandbox func_80062020 --disable all -> score 0, target_insns 38, build_insns 38,
+        scorable true, rules_dropped 0
+
+Honest floor 0. The tree was then RESTORED and `verify-oracle --rebuild` re-run on clean
+HEAD, so the next session inherits an honest INCLUDE_ASM reference.
+
+### Why this session did not return candidate-ready
+
+The body is byte-proven and scores 0, but it is literally listed in
+`state.json.banned_constructs` (entries 3 and 4, added after the 2026-09-03 20:23 layer-1
+FAIL). A `candidate-ready` re-declaring a banned construct is discarded by the driver
+before any reviewer sees it, and respelling it to evade the ban is forbidden. The brief's
+own instruction for exactly this situation ("If the restored form trips a
+`banned_constructs` entry, emit `ruling-request`") was followed. The ruling question is
+recorded in the outcome JSON and in hypotheses.md (H-s16-BANBASIS).
