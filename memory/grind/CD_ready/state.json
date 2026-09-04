@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 78,
- "current_modality": "rederive",
+ "session_count": 79,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -477,23 +477,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Owner-directive probe 1 lands: the Sony CD_alarm object model transplants onto the floor body at 2/179/0 and retires the void **pp FAKE, and the asm(\"D_800A147C\") alias rename is byte-inert too - the "
+  },
+  {
+   "session": 79,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: the mandated kill re-audit re-derives r3 on the s78 struct chassis and its a1v-ablation (y2) yields a residual shape new in 79 sessions - every seat and the 56/57 ALU pair target-exact, one"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Owner directive probe 2 is still unrun: a permuter campaign seeded from r3 (5) and b2 (12), on a FRESH workspace, finds the last spelling by search - and it should now be seeded from the s78 struct/no-pp chassis, which is one statement and one pseudo lighter in block 3 than every body previously handed to the permuter.",
-   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats across the whole block. r3's residual is one global-alloc seat plus one scheduler readiness gap and b2's is one local-alloc seat set; the permuter's statement-reordering and variable-splitting passes act on exactly the RTL-position and reg_n_sets inputs both facts depend on. The tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1.",
-   "next_probe": "Build a fresh workspace mirroring engine/buildconfig.py's flags exactly (correct cc1 = tools/gcc-2.7.2/cc1, -mel). Validate the scorer reproduces 2 for the new candidate.c, 5 for r3 and 12 for b2 before launching, then run fresh-seed windows with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
+   "hypothesis": "The depth 0-2 regime's defect is a pure SEAT question - the t0 chain seated at $v1 with the arg5 value taking $a0, 6 points, with the a1 load and the ALU pair BOTH already target-exact - and it is one RA seat away from 0, which is exactly the class tools/ra_solver is built to type as REACHABLE or FORECLOSED.",
+   "mechanism": "z_d0/zn_d0 (6/179) differ from the target only in which of two pseudos wins $a0 in block 3. That is a global.c/local-alloc seat decision with a bounded input set (allocno order, reg_n_refs, hard-reg preference), unlike the y2 residual which is a scheduler ready-list position with no dependence edge to move. Every prior seat probe on this function was run on the scalar chassis or on the r3 base, never on the depth-0 struct regime, which is a genuinely new fixed point.",
+   "next_probe": "Run tools/ra_solver's global.c/local-alloc models plus `inverse_compose.py classify` on the z_d0 body (banked as rejected/s79-z_d0-a5a-depth0-a1-correct-t0-chain-seated-v1-6.c), asking specifically which C-level inputs flip the $a0 winner between the t0 chain pseudo and the arg5 pseudo; then spell the top-ranked lever vectors and measure them."
   },
   {
-   "hypothesis": "The r3 base's transposed leading lbu pair is a readiness-time artefact that closes by shortening the arg5 chain's tail by one dependence step, and r3 has never been re-derived on the s78 struct/no-pp chassis, where block 3 has one fewer statement.",
-   "mechanism": "r3's dump shows insn 99 picked at clock 18 with 106 absent from that ready list ('BLOCKAGE unit=0 clock=19 raw_tick=21 adj_tick=19 maxb=3 exec=106 last=99'); 106 became ready only after its single dependent 108 was picked at clock 17 and then missed the memory unit's issue slot. On the floor body the analogous pair are both ready at clock 17 and the LUID tie resolves in the target's favour. s75's u01-u12 sweep already killed twelve dependence-RESPECTING statement permutations at 5, so the probe must change the dependence CHAIN LENGTH, not the statement order - and the struct model changes exactly one link of the argument chain (member MEM instead of the pp deref).",
-   "next_probe": "Transplant r3 (memory/grind/CD_ready/progress/s75-r3-nested-note-refs-flip-seats-block3-order-exact-5.c) onto the s78 struct/no-pp chassis with memory/grind/CD_ready/apply_s78.py, re-measure, then dump BB2_SCHED_DEBUG and read the clock at which insn 106 enters the ready list rather than the score. If 106 and 99 become ready in the same clock the pair reverts to a LUID tie that r3's RTL order already resolves correctly - 2 of r3's 5 points - leaving only reg98's $a3 seat."
+   "hypothesis": "Owner directive probe 2 is still unrun and should now be seeded from the s78 struct/no-pp chassis with y2 (5) and z_d0 (6) as seeds rather than r3 and b2: both new seeds are one defect from the target and their defects are in the two different passes, which is exactly the crossing the permuter's statement-reordering and variable-splitting passes explore.",
+   "mechanism": "Every prior campaign (s4, s5, s59) was seeded from vT40-family bodies at masked 4+ whose residual mixed order and seats across the whole block. The tmp/perm_mar* workspaces predate -mel and the naming wave and point at tools/gcc-2.7.2/build/cc1, which memory/project/instrumented-cc1-location records as the wrong cc1.",
+   "next_probe": "Build a fresh workspace mirroring engine/buildconfig.py's flags exactly (cc1 = tools/gcc-2.7.2/cc1, -mel). Validate the scorer reproduces 2 for candidate.c, 5 for y2 and 6 for z_d0 before launching, then run fresh-seed windows with `python3 tools/permuter_campaign.py wait --dir <ws>`, harvesting and --stop inside the same turn. Mind the root-level nonmatchings/ scope break in memory/project/grinder-nonmatchings-scope-break.md."
   },
   {
-   "hypothesis": "F3 needs a Judge ruling, not another measurement: the floor body's `volatile u8 *idx_1496` is worth 2 points and no declaration-level spelling of that volatility reaches the floor, so the eventual candidate must either carry the pointer-injected spelling under an explicit ruling or the function cannot submit at 0 even if the last transposition falls.",
+   "hypothesis": "F3 still needs a Judge ruling rather than another measurement: the floor body's `volatile u8 *idx_1496` is worth 2 points and no declaration-level spelling of that volatility reaches the floor, so the eventual candidate must either carry the pointer-injected spelling under an explicit ruling or the function cannot submit at 0 even if the last transposition falls.",
    "mechanism": "engine/volatile_cheats.py pattern 3 and volatile_extern_allowlist.txt cover `extern volatile T G;` only; decisions.md:11004 records pointer/cast-injected volatility as a spelling defect no grant carries. s78 measured every honest alternative: direct symbol access 27 (control 27), CD_intr struct with volatile members 36 (control 37), qualifier dropped 4.",
-   "next_probe": "When a body reaches 0, file a ruling-request that states the s78 numbers verbatim and asks whether Ruling 4's grant class can attach to a pointer-typed volatile when the declaration-level spelling is measurably unreachable - or whether the 2-point qualifier must simply be dropped, making 4/178 the honest ceiling for this shape."
+   "next_probe": "When a body reaches 0, file a ruling-request stating the s78 numbers verbatim and asking whether Ruling 4's grant class can attach to a pointer-typed volatile when the declaration-level spelling is measurably unreachable - or whether the 2-point qualifier must be dropped, making 4/178 the honest ceiling for this shape."
   }
  ],
  "judge_constraints": [
@@ -747,6 +753,30 @@
    "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis re-measured live at 2/179/0 in the same batch; seven FAKE units present, pp alias absent",
    "predicate_cite": "",
    "result": "Orders: w05 2, w08 2, w10 2, w06 4, w07 4, w04 6, w09 7 - the same shape as the scalar chassis, with w04 (the order that"
+  },
+  {
+   "session": 79,
+   "statement": "On the s78 struct/no-pp chassis, across the 51 forms measured in the five families listed in the probe (r3 re-derivation and its four ablations; the y2 statement set at do-while(0) depths 0-5 with and",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis (candidate.c re-measured live at 2/179/0 before and after the batch); the seven inherited FAKE units present, the `pp` alias absent, each form car",
+   "predicate_cite": "",
+   "result": "Two regimes with nothing between them. Depth 0-2 (z_d0 6, zn_d0 6, depth-1/2 forms 10): a1 load at 53/54 and the ALU pai"
+  },
+  {
+   "session": 79,
+   "statement": "Frontier item 2's premise fails on this chassis: shortening r3's argument chain by one dependence step (the struct member MEM replacing the pp deref) does not convert 2 of r3's 5 points, because on th",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis with candidate.c re-measured live at 2/179/0 in the same batch; y1 carries r3's full FAKE set re-derived onto the struct model (a1v, a2i, a5a, two v0 ",
+   "predicate_cite": "",
+   "result": "The struct chassis renumbers block 3 (the floor's block 3 has 20 insns and no insn 99/106 at all; y1's has 21, y2's 20),"
+  },
+  {
+   "session": 79,
+   "statement": "The allocno-count explanation for y1's seat break is incomplete on this chassis: staging printf's a1 argument through an existing function-scope local (v0, status or cnt - each dead at that point and ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis (candidate.c re-measured live at 2/179/0 in the same batch); the seven inherited FAKE units present plus each form's own staging FAKE, the `pp` al",
+   "predicate_cite": "",
+   "result": "Control 5 (reproduces y2 exactly). v0 carrier 19/19/12 at depths 0/1/3; status 13/13/11; cnt 17/-/8. Every carrier is po"
   }
  ],
  "sibling_progress": [

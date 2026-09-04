@@ -1,3 +1,31 @@
+/* s79 UPDATE (2026-09-04, forensics). This body is UNCHANGED and remains the floor at 2/179/0
+ * (re-measured live twice this session, before and after a 51-form batch). What s79 adds is the
+ * first change to the SHAPE of the residual in many sessions, and the next session should read it
+ * before probing:
+ *   1. The mandated kill re-audit ran on the closest-to-target instance kill, s75's r3. Re-derived
+ *      onto THIS struct/no-pp chassis it still scores 5 (y1), so the kill stands as a score - but
+ *      ablating its `a1v` staging FAKE (y2, the member read inline at the call) keeps the score at
+ *      5 while turning the residual inside out. In y2 EVERY seat in the function is the target's
+ *      AND build slots 56/57 emit `addu v0,v0,s5` before `sll a0,a0,2` - the exact transposition
+ *      that is this body's whole 2-point residual is FIXED - and the only difference left is that
+ *      the printf's second-argument load (`lui a1` / `lw a1,8(a1)`, i.e. D_800F19B8.func) emits at
+ *      slots 61/62 instead of 53/54, with `lbu a0,0(s2)` one slot late. Banked at
+ *      progress/s79-y2-struct-chassis-seats-and-transposition-both-correct-a1-load-displaced-5.c.
+ *   2. The two facts are COUPLED. The transposition is fixed by naming the arg5 address into a
+ *      fresh `a5a` local placed before `t0 *= 4;`; that pseudo is an extra block-3 set-insn, and
+ *      the a1 load (post-sched1 insn 170, `(set (reg:SI 5 a1) (mem (const (plus (symbol_ref
+ *      "D_800F19B8") 8))))`) carries ONLY REG_DEP_ANTI edges, so nothing pins its slot except its
+ *      ready-list position against the renumbered LUIDs. 51 forms, two regimes, nothing between
+ *      them: do-while(0) depth 0-2 keeps a1 at 53/54 but seats the t0 chain at $v1 (6 points);
+ *      depth 3-5 fixes every seat but displaces a1 (5 points). 28 sub-range wrap placements give
+ *      the same two regimes; the minimum a1 displacement anywhere is 4 slots (s5_9_d1, banked).
+ *      Fewer block-3 sets rather than more is strictly worse (9 to 29).
+ *   3. So the open question is no longer "how do I fix the transposition" - that is solved and
+ *      free. It is "how do I fix the transposition without moving insn 170", i.e. what source-side
+ *      input changes the a1 argument load's ready-list position when its only graph edges are
+ *      anti-dependences. Use tmp/grind/CD_ready/s79/adiff2.py: the SCORE cannot tell the two
+ *      regimes apart (both read 5) and the residual reader can.
+ */
 /* CD_ready CANDIDATE - s78 (2026-09-04, rederive). FLOOR UNCHANGED AT MASKED 2 (score 2,
  * build 179, target 179, rules_dropped 0, re-measured live this session), but this body is
  * STRICTLY CLEANER than the s60-s77 floor body it replaces: it retires TWO non-ordinary
