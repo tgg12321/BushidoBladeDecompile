@@ -2916,3 +2916,61 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - probe: The same 18 forms, three arguments, five spellings each; window signatures printed by tmp/grind/CD_datasync/s25/rep.py.
 - result: CONFIRMED. This gives the next session a one-glance disqualifier: any candidate that names an ADDRESS is out on operand order; any candidate that names a VALUE emits that load too early. The remaining space is forms that keep all three subscripts inline and change the critical path some other way.
 - verdict: CONFIRMED
+
+## [s26b] The residual of this function is a sched1 ready-list problem, so a sched1 reachability verdict decides it (s24/s25's framing).
+- mechanism: s24 read the .combine dump and localised the residual to two sched1 ready-list decisions; s25 then built the sched_solver model of pass 1 and asked whether target's window order is a reachable sched1 OUTPUT. Both sessions treated the sched1 output order as the emitted order.
+- probe: Dumped candidate.c with -da (tmp/grind/CD_datasync/s26/dmp.sh; dumps w.i.sched, w.i.sched2) and read the CD_datasync printf window out of the pass-1 and pass-2 dumps with tmp/grind/CD_datasync/s26/win.py, then compared both against the emitted tmp/grind/CD_datasync/s24/asm/candidate.s and against asm/funcs/CD_datasync.s:47-68.
+- result: KILLED. The pass-1 and pass-2 orders for this block are DIFFERENT, and the emitted .s carries the pass-2 order. sched1's output is not what we are matching - it is the input to local-alloc, and it decides the window only through the live ranges it hands the allocator. s25's four "unbuyable priority inversions" are properties of a pass whose output is discarded and re-ordered afterwards, so they do not foreclose the window. The binding question is the pass-2 (post-RA) order, whose dependence graph is dominated by hard-register anti-dependences that do not exist pre-RA and that follow from the register assignment.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis, candidate.c with the do{}while(0) FAKE present; cc1 -da dumps of the live build
+
+## [s26b] The window residual is a large structural gap that no measured form has approached (the "mirror image" framing carried since s22).
+- mechanism: Twenty-five sessions have described the printf window as structurally wrong in several ways at once. If the post-RA instruction set itself differed from target's, the remaining work would be an expansion problem.
+- probe: Aligned candidate.c's post-RA (w.i.sched2) window against the target window insn by insn, by role and by hard register.
+- result: CONFIRMED that the gap is SMALL and precisely typed. The post-RA instruction multiset, the roles, and even the coalescing (arg4's value local coalesced into $a3, so `lw $a3,0(addr)` is the register set) are IDENTICAL to target. Exactly two things differ: the order, and ONE register assignment - target holds arg4's address chain in $a0 and uses three scratch registers in the window ($a0 arg4-addr, $v0 arg5-addr then arg3-addr, $v1 arg5-value), candidate holds it in $v0 and uses two. This is the sharpest statement of the residual the ledger has ever carried and it should replace the "mirror image" language.
+- verdict: CONFIRMED
+
+## [s26b] A 3-scratch-register window - and target's arg4 chain byte-for-byte, register and operand order included - is reachable from plain-subscript VALUE locals.
+- mechanism: local-alloc walks REG_ALLOC_ORDER ($v0,$v1,$a0,...) and only reaches $a0 when three scratch values are simultaneously live; $a0 is free in this window because the format-string lui/addiu is emitted last. Naming table values in locals lengthens their live ranges and can force the third register.
+- probe: 16 forms on the candidate.c chassis (tmp/grind/CD_datasync/s26/gen.py -> m*.c; sweep.sh; classified by window signature with tmp/grind/CD_datasync/s25/rep.py), spelling the timeout block with plain-subscript value locals for subsets of {arg2,arg3,arg4,arg5} in every assignment order. Two forms re-measured on live sandbox for calibration.
+- result: CONFIRMED. m453 (locals arg4, arg5, arg3) emits `lbu $a0,0($s1) / sll $a0,$a0,2 / addu $a0,$a0,$s0 / lw $a3,0($a0)` - target's arg4 chain exactly, in $a0, INDEX-FIRST, with the value load at the register-load point. Live sandbox 13/91, build_insns 90 (dbr steals the stack store into the printf delay slot, which target does not do). A grep over all 177 banked .s files from s20-s25 finds `sll $4,$4,2` in only nine s23 forms, none with this combination.
+- verdict: CONFIRMED
+
+## [s26b] s25's operand-order "vice": naming an ADDRESS flips the addu to base-first and naming a VALUE emits that load too early, so the remaining space is inline-only spellings.
+- mechanism: s25 measured 18 pointer-local forms and generalised from them to a pre-filter that disqualifies every named-argument spelling.
+- probe: The 16-form value-local sweep above, read at the register/operand level rather than by score.
+- result: KILLED. The second half is false: m453 / m43 / m435 / m2453 are plain-subscript VALUE locals whose value load lands at the register-load point. The first half is true only of the s23 SCALED-OFFSET cast spelling `*(s32 *)((u8 *)tbl + k)`, which is what produced the base-first `addu $4,$16,$4`; a plain-subscript value local is index-first. The pre-filter must not be used to exclude value-local forms, and the arg4-pointer axis s25 opened is unnecessary because value locals reach both properties at once.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (candidate.c chassis: goto loop, three hoisted pointer locals, do{}while(0) FAKE present); 16 forms on the fast harness, two re-measured live
+
+## [s26b] Two placement rules govern this window, and they make a pure value-local spelling of target impossible while leaving one combination open.
+- mechanism: Empirical, from the 16-form sweep, read at the register level.
+- probe: Same sweep; window signatures compared pairwise.
+- result: CONFIRMED. (1) The three table value loads are emitted in the SOURCE ASSIGNMENT ORDER of the value locals; target's load order is arg5, arg3, arg4 = source order 5,3,4. (2) The FIRST-assigned value local's address chain is the one that gets $a0; target needs arg4 there. The two rules conflict for all-value-local spellings, so the open combination is: arg4 left INLINE (its load is then the `lw $a3` register set, last by construction) with arg3 and arg5 as value locals - which is exactly the m35/m53 family, and which already reproduces target's whole tail (18-insn window, `sw` inside the block, `lw $a3` last, fmt last, `jal printf; nop`). What that family still lacks is the THIRD live scratch value that would push arg4's address into $a0.
+- verdict: CONFIRMED
+
+## [s27] The do{}while(0) FAKE in candidate.c is an inert carrier occupying a pseudo that a real lever wants (mandated kill re-audit on the closest-to-target banked form, which is candidate.c itself).
+- mechanism: An instance kill measured with a FAKE present is only a kill if the FAKE is not itself blocking the lever (the func_8002EA24 s8 failure mode). tools/fake_ablate.py returns ERR on this candidate (its body sits behind a 420-line header comment), so the ablation is hand-built.
+- probe: tmp/grind/CD_datasync/s25/nowrap.c = candidate.c with `do { ... } while (0);` replaced by a bare brace block and nothing else changed; both applied to src/system.c and measured with `sandbox CD_datasync --disable all`.
+- result: KILLED. 7/91 with the wrapper, 17/91 without it, build_insns 91 in both. The wrapper is worth 10 points, is load-bearing, and occupies no pseudo a lever wants, so every s21-s25 instance kill measured under it stands and none is an ablation artefact.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis, candidate.c applied to src/system.c, live sandbox; hand ablation because tools/fake_ablate.py returns ERR on this candidate
+
+## [s27] This function's window residual is a sched1 ready-list problem, so a sched1 reachability verdict decides it - the framing s24 introduced and s25 spent its whole solver campaign on.
+- mechanism: s24 read the .combine dump, localised the residual to two sched1 ready-list decisions, and s25 asked sched_solver whether target's window order is a reachable sched1 OUTPUT. Both treated sched1's output order as the emitted order.
+- probe: Dumped candidate.c with cc1 -da (tmp/grind/CD_datasync/s26/dmp.sh) and read the CD_datasync printf window out of w.i.sched (pass 1) and w.i.sched2 (pass 2) with tmp/grind/CD_datasync/s26/win.py, comparing both against the emitted candidate.s and against asm/funcs/CD_datasync.s:47-68.
+- result: KILLED. The pass-1 and pass-2 orders for this block are DIFFERENT and the emitted .s carries the pass-2 order. sched1's output is not what we are matching; it is the input to local-alloc, and it reaches the window only through the live ranges it hands the allocator. s25's four 'unbuyable priority inversions' therefore do not foreclose the window - they are properties of a pass whose output is re-ordered afterwards. The binding question is the post-RA order, whose dependence graph is dominated by hard-register anti-dependences that do not exist pre-RA and that follow from the register assignment.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis, candidate.c with the do{}while(0) FAKE present; cc1 -da dumps of the live build
+
+## [s27] s25's operand-order pre-filter - naming an ADDRESS flips the addu to base-first and naming a VALUE emits that load too early, leaving only inline spellings - excludes the value-local family.
+- mechanism: s25 measured 18 pointer-local forms and generalised from them into a pre-filter meant to disqualify every named-argument spelling before its schedule is examined.
+- probe: 16 plain-subscript value-local forms on the candidate.c chassis (tmp/grind/CD_datasync/s26/gen.py -> m*.c, sweep.sh, classified by window signature with tmp/grind/CD_datasync/s25/rep.py), read at the register/operand level rather than by score; m453 re-measured on live sandbox.
+- result: KILLED. m453, m43, m435 and m2453 are plain-subscript VALUE locals whose value load lands at the register-load point, so the 'value locals load too early' half is false. The base-first addu the pre-filter is built on comes from the s23 SCALED-OFFSET cast spelling *(s32 *)((u8 *)tbl + k), not from naming a value: plain-subscript value locals are index-first. m453 reproduces target's arg4 chain byte-for-byte - lbu $a0,0($s1) / sll $a0,$a0,2 / addu $a0,$a0,$s0 / lw $a3,0($a0) - at live sandbox 13/91 (build_insns 90, dbr steals the stack store into the printf delay slot). A grep over all 177 banked .s files from s20-s25 finds sll $4,$4,2 in only nine s23 forms, none with this combination.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (goto loop, three hoisted pointer locals, do{}while(0) FAKE present); 16 forms on the fast harness, two re-measured on live sandbox
