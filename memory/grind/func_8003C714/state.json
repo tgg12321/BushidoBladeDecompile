@@ -125,7 +125,8 @@
   }
  ],
  "judge_constraints": [
-  "Grind func_8003C714 in ordinary C on the SHIPPED chassis only; CC_FLAGS / cc1 configuration / buildconfig are not a lever and may not be re-filed as an integration handoff or exhaustion claim."
+  "Grind func_8003C714 in ordinary C on the SHIPPED chassis only; CC_FLAGS / cc1 configuration / buildconfig are not a lever and may not be re-filed as an integration handoff or exhaustion claim.",
+  "The libcall carrier's RHS must be ordinary C justifiable from the function's own quantities; gratuitous float/long long cast chains whose sole purpose is to emit a libcall are banned for this function."
  ],
  "banned_constructs": [],
  "ladder_skip": 0,

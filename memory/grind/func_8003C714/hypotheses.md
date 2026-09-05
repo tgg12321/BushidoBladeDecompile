@@ -2477,3 +2477,159 @@ and the insn_count dial cannot be stacked.
 - probe: s17/sweep.sh on w_split.c (the s15 body regenerated) plus fake_ablate.py --func func_8003C714 --file code6cac_c2 on candidate.c and on rejected/splitinit-ceiling-63-ordinary-c-byte-neutral-but-54-short.c.
 - result: w_split 63 real insns / asm_lines 107, identical to the s15 record; candidate.c re-measured at sandbox score 15, target 104, build 105, rules_dropped 0; fake_ablate finds nothing to ablate in either file. The kill stands and split-init was used as the base chassis for every s17 probe.
 - verdict: CONFIRMED
+
+## s18 (2026-09-05, forensics modality)
+
+### H29 -- CONFIRMED. `loop_has_call` is a live, C-reachable dial that HALVES the hoist threshold, and s8's dismissal of it rested on a false premise.
+
+`loop.c:532` computes `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`
+and `prescan_loop` (loop.c:2202) sets `loop_has_call` for ANY `CALL_INSN` between
+the loop notes. On this chassis that is 122 vs 61. s8 banked
+`rejected/threshold-term-only-movable-by-cheat-or-by-a-call-in-the-loop.c`, whose
+objection (b) was that "a call in the loop adds a jal, its argument setup, and
+turns every giv register into a caller-saved liability -- it is not a spelling of
+this function". That is true of a LIVE call and false of a call inside a DEAD
+libcall block: `flow.c`'s `libcall_dead_p` (flow.c:1827) deletes the whole
+REG_LIBCALL/REG_RETVAL block including its `CALL_INSN`, and `flow` runs AFTER
+`loop_optimize` and BEFORE `combine` and register allocation. Measured: with one
+dead `(long long)i / (long long)*(s32 *)(src + 4)` in the loop body the `.loop`
+dump prints both life-1 movables as `not desirable` at insn_count 71 -- which is
+only possible at threshold 61, since s17's x_ll1 had every movable MOVED at
+insn_count 67 with threshold 122 -- and the emitted function has no `jal
+__divdi3` and no other trace of the statement (build_insns 104 == target 104).
+
+Probe: tmp/grind/func_8003C714/s18/c_dvar.c, c_mvar.c, plus the c_base control,
+swept with s18/sweep.sh; movable tables in s18/dumps/*.seg.
+
+### H30 -- CONFIRMED. Hoisting the `&D_80106A58` base pointer to a pre-loop local is byte-neutral and DELETES s11's H17 window.
+
+`base = (u8 *)&D_80106A58;` before the loop, `src = base + i * 8;` inside it,
+leaves the symbol's set OUTSIDE the loop, so loop.c never sees it as a movable at
+all. Measured `M_pre`: 2 movables instead of 3, loop insn_count 55 (56 without
+the hoist), asm_lines 107, and `sandbox --disable all` = score 15 / target 104 /
+build 105 -- identical to candidate.c. `N_split` (the same hoist on the s15
+split-init body) = insn_count 62, score 15, build 105.
+
+The consequence is structural. H17's admissible window [120,122] existed ONLY
+because the `&D_80106A58` movable (life 1, savings 1) had to be MOVED first, its
+`threshold -= 3` (loop.c:1719) being what let the magic decline three counts
+later. With that movable gone the 0x91A2B3C5 magic is the FIRST movable in the
+list, so the whole requirement collapses to `insn_count > threshold` with NO
+upper bound. Every future carrier search on this function is a one-sided
+inequality, not a three-wide window.
+
+### H31 -- CONFIRMED. Combining H29 and H30, the function reaches sandbox distance 0 on the shipped chassis with ONE carrier statement, frame-exact.
+
+`Q_secf` = the s15 split-init body + the H30 base hoist + the single statement
+`v = (long long)((float)*(s32 *)(src + 4) / 30.0f);` placed at the top of the
+loop body, where `v` is the existing `s32` local that is unconditionally
+re-assigned `v = *src;` later in the same iteration. Loop insn_count 68 > 61, the
+0x91A2B3C5 movable prints `not desirable`, the 0x88888889 movable (life 35) still
+moves. `sandbox func_8003C714 --disable all` = **score 0, target_insns 104 ==
+build_insns 104, rules_dropped 0**, frame `subu $sp,$sp,32` = the target's 0x20.
+`P_fix` (`v = (long long)(float)*(s32 *)(src + 4);`, no divide) measures score 0
+identically at insn_count 66.
+
+This replaces s17's thirteen-statement carrier with one. NOT SUBMITTED: see the
+s18 ruling-request. Banked at
+rejected/loop-has-call-halves-threshold-one-dead-fixsfdi-carrier-d0-but-rhs-unnatural.c
+and rejected/loop-has-call-fixsfdi-bare-cast-carrier-d0-but-rhs-unnatural.c.
+
+### K51 -- KILLED (instance). The DImode divide/modulo spelling of the carrier grows the frame by 8 bytes.
+
+- mechanism: `__divdi3` / `__moddi3` / `__udivdi3` take two DImode arguments, which
+  raises `current_function_outgoing_args_size` from 16 to 24 bytes. That size is
+  charged at RTL-expansion time, long before `flow` deletes the libcall block, so
+  deleting the call cannot recover it. A float -> long long conversion
+  (`__fixsfdi` / `__fixunssfdi`) takes a 4-byte SF argument and leaves the area
+  at 16.
+- probe: tmp/grind/func_8003C714/s18/c_dvar.c, c_mvar.c, N_car1.c, Q_llv.c,
+  M_pre_C.c versus P_fix.c, Q_secf.c, Q_minf.c, Q_dbl.c, Q_ufix.c; prologue read
+  from the emitted .s in s18/dumps/, sandbox run on N_car1 and M_pre_C.
+- result: every DImode-divide spelling emits `subu $sp,$sp,40`; every float ->
+  long long spelling emits `subu $sp,$sp,32`, matching the target's
+  `addiu $sp, $sp, -0x20`. sandbox: M_pre_C score 16, N_car1 score 22, both at
+  build_insns 104 == target 104 (the residual is the frame and its sp-relative
+  offsets, not the loop).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, s18/dumps/*.s prologues plus
+  sandbox on M_pre_C.c and N_car1.c; no FAKE construct present in any body
+
+### K52 -- KILLED (instance). Raising the `&D_80106A58` movable's LIFETIME, rather than removing it, is not byte-neutral.
+
+- mechanism: `loop.c:791-793` sets `m->lifetime` to the luid span of the pseudo
+  and `m->savings` to `n_times_used`, and the test is
+  `threshold * savings * lifetime >= insn_count`. A second, non-CSE-able
+  reference to the symbol raises both, which keeps the base movable moving even
+  at threshold 61 -- but the second reference is itself emitted.
+- probe: s18/L_sym2.c, L_ptr2.c (a second `(u8 *)&D_80106A58 + i * 8` expression),
+  L_field.c (`&D_80106A58 + i*8 + 4` for the word field, `src` for the byte read)
+  and L_late.c (statement reorder), each also built with the DImode carrier.
+- result: L_sym2 / L_ptr2 / L_late all fold at cse1 and print life 1 unchanged
+  (insn_count 56, asm_lines 107). L_field does raise the symbol movable to
+  life 7 / savings 2 and, with the carrier, prints exactly the target movable
+  arrangement (base moved, magic `not desirable`, 0x88888889 moved) -- but it
+  costs bytes: asm_lines 111 alone and 109 with the carrier, versus 107 for the
+  base. The H30 source-level hoist achieves the same arrangement for free.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, s18/dumps/L_*.seg movable tables
+  and asm_lines; no FAKE construct present
+
+### K53 -- KILLED (instance). Float and double arithmetic that stays in SF/DF mode is not a carrier at all.
+
+- mechanism: this chassis is hard-float (`n_non_fixed_regs == 60`), so SF/DF add,
+  multiply, divide and the SI<->SF conversions are emitted inline with no
+  `CALL_INSN`, which means no `loop_has_call` and no libcall block for flow to
+  delete. Only conversions that touch DImode go through libgcc.
+- probe: s18/c_fdi.c, c_dfi.c, c_ftod.c, c_fdiv.c, c_llmulv.c and Q_flt.c.
+- result: `(float)(long long)i`, `(double)(long long)i`, `(double)(float)i`,
+  `(float)i / 3.0f` and `(long long)i * (long long)var` all leave insn_count at
+  the 56 baseline with all three movables moved and asm_lines 107. `Q_flt`
+  (`v = (float)x / 30.0f;`, dead, no long long) reaches insn_count 65 but still
+  moves all three movables -- 65 < threshold 122 and loop_has_call is 0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, s18/dumps/*.seg; no FAKE present
+
+### K54 -- re-audit of the s15 split-init instance kill on the current chassis: unchanged.
+
+- mechanism: mandated kill re-audit. The split-init body is the base chassis for
+  every s17 and s18 carrier probe, so its ceiling is the number the whole search
+  is measured against.
+- probe: s18/N_split.c (split-init + the H30 base hoist) swept and sandboxed.
+- result: loop insn_count 62 (63 without the base hoist, as s15/s17 recorded),
+  asm_lines 107, sandbox score 15 / target 104 / build 105. Unchanged. The kill
+  stands and the base is confirmed on the current chassis. `tools/fake_ablate.py`
+  could not run on these bodies (it errors on the FAKE annotations belonging to
+  the OTHER 43 functions in code6cac_c2.c), but no s18 body and no line of
+  candidate.c carries a FAKE annotation, so no lever was measured with a FAKE
+  carrier occupying a pseudo.
+
+### s18 frontier
+
+1. ADMISSIBILITY of the single carrier is now the whole problem, and it is a
+   ruling question, not a measurement. The statement is a store to an existing
+   `s32` local whose stored value is never read (store-level deadness, the
+   defensive-init shape the dead-store family explicitly sanctions), but its RHS
+   cast chain (`(long long)((float)x / 30.0f)`) exists only to make GCC emit a
+   `__fixsfdi` CALL_INSN, which is what T2 (human-programmer) would flag. s18
+   returned `ruling-request` on exactly this rather than submitting.
+2. If the ruling is NO, the next search is for a frame-exact `CALL_INSN`-bearing
+   construct whose C spelling is natural. The constraint set is now small and
+   fully characterised: it must touch DImode (K53 -- SF/DF stays inline), it must
+   NOT pass a DImode argument (K51 -- +8 frame), and it needs only
+   insn_count > 61 on the split-init base of 62, i.e. ANY positive count (H30
+   removed the upper bound). `__fixsfdi`, `__fixunssfdi`, `__fixdfdi` are the
+   candidates measured; `__floatdisf` / `__floatdidf` (DI argument) are not.
+3. The two declaration puns in candidate.c remain a hard submission blocker on
+   ANY distance-0 body, unchanged from s16/s17: `src` derives from the
+   `D_80106A58` per-word splat sub-symbol of `g_file_disc_type @80106A54`, and
+   `*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2` reads an s16-declared symbol
+   through a pun. The sanctioned fix is the aggregate merge at the DECLARATION in
+   `include/*.h`, prongs (a)-(e), routed as an integration handoff, with prong (a)
+   satisfied from the target's base-register stride evidence (`addiu $a2, $a2,
+   0x8` at 8003C830, reads at 0x0 and 0x4) rather than from splat-name adjacency.
+   Note the H30 base hoist makes this MORE tractable, not less: the merged
+   declaration would be named once, in the pre-loop initialiser.

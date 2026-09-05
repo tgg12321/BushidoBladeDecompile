@@ -2220,3 +2220,117 @@ stacked underneath a large insn_count.
 - [s17] Dead SImode divisions are NOT equivalent: ctl_v13 reaches the same insn_count 122 and the same hoist decision but measures score 19 at build_insns 105, so the freeness belongs specifically to the flow.c whole-block libcall deletion.
 
 - [s17] The declined-movable path does not decrement threshold (loop.c:1719 runs only on the moved path), so the s15 order dial cannot be stacked underneath a large insn_count - carriers placed before the magic measure identically to carriers placed after it.
+
+## s18 (2026-09-05, forensics modality) — measurement tables
+
+Chassis re-measured at dispatch: `candidate.c` / `N_split` = sandbox score 15,
+target_insns 104, build_insns 105, rules_dropped 0. Ledger floor 15 confirmed.
+
+All `insn_count` values are the `Loop from A to B: N real insns.` line of the
+`-dL` loop dump for func_8003C714; `asm_lines` is the instruction count of the
+emitted `.s` body (baseline 107); `frame` is the prologue `subu $sp,$sp,N`
+(target = 0x20 = 32). Scripts: `tmp/grind/func_8003C714/s18/sweep.sh`,
+`mk18.py`, `mk18b.py`, `mk18c.py`, `mk18d.py`, `mk18e.py`, `mk18f.py`.
+Dumps: `tmp/grind/func_8003C714/s18/dumps/*.seg` (movable tables + loop RTL),
+`*.s` (emitted asm), `*.i.loop` (full -dL dump).
+
+### §s18a — the loop_has_call discriminator
+
+| body | carrier statement | insn_count | movables moved / not desirable | asm_lines |
+|---|---|---|---|---|
+| c_base | (none) | 56 | 3 / 0 | 107 |
+| c_dvar | `q = (long long)i / (long long)*(s32 *)(src + 4);` | 71 | 1 / 2 | 107 |
+| c_mvar | `q = (long long)i % (long long)*(s32 *)(src + 4);` | 71 | 1 / 2 | 107 |
+| c_fdi | `f = (float)(long long)i;` | 56 | 3 / 0 | 107 |
+| c_dfi | `d = (double)(long long)i;` | 56 | 3 / 0 | 107 |
+| c_ftod | `d = (double)(float)i;` | 56 | 3 / 0 | 107 |
+| c_fdiv | `f = (float)i / 3.0f;` | 56 | 3 / 0 | 107 |
+| c_llmulv | `q = (long long)i * (long long)*(s32 *)(src + 4);` | 56 | 3 / 0 | 107 |
+
+The discriminator is s17's `x_ll1`, which at insn_count 67 had ALL FOUR movables
+moved (threshold 122). `c_dvar` at insn_count 71 has both life-1 movables
+declined, which is only possible at threshold 61 — i.e. `loop_has_call == 1`.
+The s17 `(long long)/const` channel is NOT a call: its dump shows the block as
+`(clobber (reg/v:DI 74))` + two subreg sets + a self-set carrying REG_RETVAL,
+i.e. `emit_no_conflict_block`'s sign-extend, with no CALL_INSN. The variable
+divisor is what produces a real `__divdi3` CALL_INSN.
+
+### §s18b — the base-pointer hoist (H30)
+
+| body | shape | insn_count | movables | asm_lines | sandbox |
+|---|---|---|---|---|---|
+| c_base | `src = (u8 *)&D_80106A58 + i * 8;` | 56 | 3 moved | 107 | (= candidate, 15/105) |
+| M_pre | `base = &D_80106A58;` pre-loop, `src = base + i * 8;` | 55 | 2 moved | 107 | 15 / 104 / 105 |
+| M_pre2 | also `dbase = (u8 *)s0;` pre-loop | 55 | 2 moved | 107 | — |
+| N_split | M_pre + s15 split-init | 62 | 2 moved | 107 | 15 / 104 / 105 |
+
+The movable that disappears is `Insn 33: regno 78 (life 1), savings 1` — the
+`(symbol_ref:SI ("D_80106A58"))` load. It is not declined; it is never a loop
+movable, because its set is outside the loop notes.
+
+### §s18c — lifetime manipulation of the base movable (K52)
+
+| body | symbol movable printed as | insn_count | asm_lines |
+|---|---|---|---|
+| L_sym2 (`dst[0x24] = *((u8 *)&D_80106A58 + i * 8);`) | life 1, savings 1 | 56 | 107 |
+| L_ptr2 (`... + i * 8 + 0`) | life 1, savings 1 | 56 | 107 |
+| L_late (dst computed before src) | life 1, savings 1 | 56 | 107 |
+| L_field (`&D_80106A58 + i*8 + 4` for the word field) | life 7, savings 2 | 58 | 111 |
+| L_field + DImode carrier | life 7, savings 2, MOVED; magic NOT DESIRABLE | 73 | 109 |
+
+`L_field_C`'s movable table is the target arrangement exactly —
+`Insn 62: regno 87 (life 7), savings 2 moved`, `Insn 78: regno 91 forces 62
+moved`, `Insn 87: regno 98 (life 1) not desirable`, `Insn 101: regno 105
+(life 31) moved` — but the second address computation costs +2..+4 emitted
+instructions. H30 gets the same arrangement for free.
+
+### §s18d — carrier cost, frame, and the distance-0 forms
+
+All on the `N_split` base (M_pre hoist + s15 split-init, insn_count 62), carrier
+stored into the existing `s32 v` local at the top of the loop body:
+
+| body | carrier | insn_count | movables | asm_lines | frame | sandbox |
+|---|---|---|---|---|---|---|
+| N_split | (none) | 62 | 2 moved | 107 | 32 | **15** / 104 / 105 |
+| P_const | `v = (long long)i / 7;` | 68 | 3 moved | 107 | 32 | — (no call; s17 channel) |
+| P_call / N_car1 | `v = (long long)i / (long long)*(s32 *)(src + 4);` | 75 | 1 moved, 1 nd | 106 | **40** | 22 / 104 / 104 |
+| Q_llv | `v = (long long)*(s32 *)(src + 4) / (long long)i;` | 75 | 1 moved, 1 nd | 106 | **40** | — |
+| M_pre_C | same DImode divide, `long long q` local, no split-init | 70 | 1 moved, 1 nd | 106 | **40** | 16 / 104 / 104 |
+| P_fix | `v = (long long)(float)*(s32 *)(src + 4);` | 66 | 1 moved, 1 nd | 106 | 32 | **0** / 104 / 104 |
+| Q_secf | `v = (long long)((float)*(s32 *)(src + 4) / 30.0f);` | 68 | 1 moved, 2 nd | 106 | 32 | **0** / 104 / 104 |
+| Q_minf | `... / 1800.0f` | 68 | 1 moved, 2 nd | 106 | 32 | — |
+| Q_dbl | `(long long)((double)x / 30.0)` | 68 | 1 moved, 2 nd | 106 | 32 | — |
+| Q_ufix | `(unsigned long long)((float)x / 30.0f)` | 68 | 1 moved, 2 nd | 106 | 32 | — |
+| Q_flt | `v = (float)x / 30.0f;` (no long long) | 65 | 3 moved | 107 | 32 | — (no call) |
+
+Two distinct residuals are separated here. `build_insns == target_insns == 104`
+in every carrier row, i.e. the carrier is fully deleted and the hoist decision is
+correct in all of them; the DImode-divide rows still score 16-22 purely because
+the prologue is `subu $sp,$sp,40` against the target's `addiu $sp, $sp, -0x20`,
+which shifts every sp-relative offset. The float→long long rows are frame-exact
+and score 0.
+
+### §s18e — the mechanism chain, pass by pass
+
+1. **expand** — `(long long)(float)x` expands to a `__fixsfdi` library call:
+   one SF argument word, DI result in `v0`/`v1`, wrapped in a
+   REG_LIBCALL / REG_RETVAL block. `current_function_outgoing_args_size` stays
+   at 16 because the argument is one word (contrast `__divdi3`: two DImode
+   arguments → 24 → frame 0x28).
+2. **cse1** — `delete_dead_from_cse` (cse.c:8708) is forbidden to delete insns
+   inside a libcall block, so the dead block survives into loop_optimize.
+3. **loop_optimize / prescan_loop** — loop.c:2202 sees the `CALL_INSN` and sets
+   `loop_has_call = 1`; loop.c:532 therefore computes
+   `threshold = 1 * (1 + 60) = 61` instead of `2 * 61 = 122`.
+4. **loop_optimize / move_movables** — the `0x91A2B3C5` movable has
+   `savings 1, lifetime 1`, so loop.c:1631 tests `61 * 1 * 1 >= insn_count`.
+   At insn_count 66-68 that is false and the dump prints `not desirable`: the
+   magic constant stays in the loop as the target's in-loop `lui/lw/ori/mult`
+   quartet. The `0x88888889` movable (lifetime 31-35) still passes and is
+   hoisted, as the target has it.
+5. **flow** — `libcall_dead_p` (flow.c:1827, consulted at flow.c:1482-1484,
+   deletion at flow.c:1503/1551) removes the whole block including the
+   `CALL_INSN`, because the DI result register is dead. `flow` runs after
+   `loop_optimize` and before `combine` and register allocation, so no later
+   pass ever sees the carrier: the emitted function is byte-identical to the
+   target and the frame is unchanged.
