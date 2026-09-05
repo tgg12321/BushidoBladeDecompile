@@ -9191,3 +9191,67 @@ the source read must be `*((u8 *)p + (s32)q + 0x17)` rather than
   and bound 3 because the pointer value is dead from `*q = c;` onward. If layer-1
   disagrees, the correct next move is a `ruling-request` on that exact question
   (never a respelling: verdicts are body-keyed).
+
+## s68-dispatch (labelled "session 67", rederive) — the bytes hold; the blocker is now the BAN, not the search
+
+- CHASSIS RE-CONFIRMED THIS SESSION. `tools/grinder/scope_allow.txt` carries
+  `func_80034F88 include/code6cac.h src/code6cac.c undefined_syms_auto.txt`.
+  With `memory/grind/func_80034F88/candidate.c` installed over the INCLUDE_ASM
+  line, `sandbox func_80034F88 --disable all` = **score 0, target_insns 49,
+  build_insns 49, rules_dropped 0**. The dispatch brief's "measurement
+  unavailable" is resolved: the score-0 chassis is intact.
+- THE STANDING BLOCKER IS A CONTRADICTION IN THE RECORD, NOT A RESIDUAL. The
+  Judge's 2026-09-05 14:44 ESCALATE ruling (`docs/grind/decisions.md:23549`,
+  re-filed at `:23569`) installed the candidate itself, scored it, built the
+  whole game, and ruled on every construct in it. On the loop-counter reuse it
+  wrote: "The copy loop's counter is the same C variable as block 0's dead
+  pointer handle. That is the frozen 'variable reuse for codegen control' entry
+  (no-new-park-categories.md:185) ... Both values are real and used, the loop is
+  in the target's own bytes, and the form is byte-neutral (49/49)." It then
+  stated the only blocker was scope: "That is the whole blocker: a file the
+  candidate is not allowed to edit, not a residual and not a disallowed
+  construct." ELEVEN MINUTES LATER the layer-1 cheat-reviewer FAILed the same
+  body on that same construct (`decisions.md:23598`), and the driver banked
+  `banned_constructs` entry 2 from that FAIL. So the pipeline now holds a Judge
+  PASS-in-substance and a layer-1-derived BAN on one construct, with the ban
+  dated later. Layer-1 does not outrank the Judge, but the ban is what the
+  driver enforces mechanically, so the contradiction has to be ruled on before
+  the body can be spent. (Mechanically both driver gates currently pass:
+  `grindlib.validate_self_vet` -> (True, '') and
+  `grindlib.check_banned_constructs` -> (True, '') against the existing
+  `self_vet.md`. Submitting anyway would put the ONLY known matching body in
+  front of a FINAL CALL that could kill it permanently, which is why this
+  session files the ruling request instead.)
+- CITATION CORRECTION FOR THE RECORD. The 14:44 ruling says the ledger's SOTN
+  precedent line ":92" is wrong and that the correct index lines are ":153" and
+  ":360". That is itself a mis-read: 153 and 360 are the line numbers *inside
+  the SOTN source files*, not inside the index. In
+  `docs/reference/sotn-construct-index.md` the PSX `// fake reuse of i?` rows are
+  at index lines **51, 81, 92, 97 and 109** (`src/boss/mar/cutscene.c:172`,
+  `src/st/cen/cutscene.c:211`, `src/st/lib/cutscene.c:153`,
+  `src/st/no3/cutscene.c:360`, `src/st/top/cutscene.c:143`); index line 93 is the
+  PSP twin and does not count, and index lines 153/360 are unrelated rows
+  (`EntityFakeSypha`, a return-type comment). The self-vet's existing
+  `:92` citation is therefore CORRECT and must not be "fixed" to :153/:360.
+- BOTH REMAINING FAKEs ARE LOAD-BEARING (measured this session, three sandbox
+  runs). Dropping the `u = 0;` cse2 invalidator: **score 27** at 49 insns.
+  Dropping the `r = &D_80106A73;` re-initialisation before block 2: **score 39**
+  at 47 insns. Dropping both: **score 38** at 47 insns. Neither is decorative and
+  neither can be trimmed to shrink the review surface.
+- THE `(s32)` CASTS ARE FORCED BY THE TARGET'S ADDRESSING, NOT CHOSEN TO INFLATE
+  `reg_n_refs` — which is the factual premise `banned_constructs` entry 2 rests
+  on. The target's loop keeps a plain integer index in `$v1` and uses it against
+  TWO different bases (`addu $v0,$a1,$v1` for the source and
+  `addu $at,$at,$v1` for the destination store,
+  `asm/funcs/func_80034F88.s:38-50`). A cast-free natural pointer walk therefore
+  cannot express it: `for (q = D_80106A70; q < D_80106A70 + 3; q++)` with the
+  source read as `*((u8 *)p + (q - D_80106A70) + 0x17)` builds **54 instructions
+  at score 13** (identically 54/13 whether the byte goes straight to `*q` or
+  through the shared `c`). Five extra instructions is what the cast-free spelling
+  costs. The casts exist because the value the loop needs is an INDEX and the
+  variable that must carry it is a pointer.
+- THE CARRIER IS NOT FREE EITHER. Staging the counter through `r` (the blocks-1/2
+  address object) instead of `q` measures **score 21** at 49 insns: `r`'s lifted
+  allocno takes the `$v1` seat that block 0's address object needs, so the seat
+  that s66 bought is lost. `q` is the only carrier that produces the target's
+  allocation.

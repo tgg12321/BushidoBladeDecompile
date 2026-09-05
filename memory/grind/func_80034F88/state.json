@@ -424,8 +424,7 @@
   "integration-handoff EXECUTED (pipeline, 2026-09-05): scope grant: func_80034F88 include/code6cac.h src/code6cac.c undefined_syms_auto.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
  "banned_constructs": [
-  "Same four `u8 *q = &D_80106A73;` handles, treated as ordinary program logic rather than a register-allocation lever",
-  "for (q = 0; (s32)q < 3; q++) { ... } -- reusing the dead pointer `q` (previously `u8 *q = &D_80106A73;`, used for three RMW memory ops) as an integer loop counter via repeated (s32) casts, purely to raise its REG_N_REFS-weighted allocation priority (per the self-vet's own T3: floor_log2(nrefs)*nrefs*10000/live_length) so global.c seats a DIFFERENT allocno (block 0's value) in $a0 ahead of it."
+  "Same four `u8 *q = &D_80106A73;` handles, treated as ordinary program logic rather than a register-allocation lever"
  ],
  "ladder_skip": 3,
  "pending_fixup": null,
@@ -923,6 +922,12 @@
    "when": "2026-09-05T16:01:32.893378+00:00",
    "ref": "decisions.md 2026-09-05 11:01 ruling PASS",
    "justification": "I verified the structural claim myself in asm/funcs/func_80034F88.s: 80034FC8 loads &D_80106A73 into $a0 while $v1 still holds it and is read by the store at 80034FD0 (three la pairs -> $v1/$a0/$a0). stmt.c:3387 and global.c:1275 read as cited: one declared local = one pseudo = one hard register, no live-range splitting. So the ban's stated basis (s50 finding 3 / s54: 'the multi-handle axis is not what is costing the residual') is factually false; those 21..26 and 50/24 scores were chassis artifacts, not evidence about the axis. A local pointer giving a second C handle to a global is inside th"
+  },
+  {
+   "hash": "4c793057badb6957",
+   "when": "2026-09-05T20:07:19.690944+00:00",
+   "ref": "decisions.md 2026-09-05 15:07 ruling PASS",
+   "justification": "The 14:44 Judge ruling governs. A layer-1 finding is reviewer opinion, never precedent (judge-sole-gate), so a 14:55 layer-1 FAIL cannot overturn a Judge ruling on the same body; banned_constructs entry 2 is a mechanical tripwire derived from it, and I clear it. I re-verified independently: no-new-park-categories.md:185 (\"Variable reuse for codegen control\" -> defeat-licm-hoist-var-reuse) covers reuse of one variable for two unrelated values to influence *RA*, bounded by staged-value-reused-variable, whose six bounds all hold here (q's pointer value is dead from `*q = c;`, both values real and"
   }
  ],
  "review_ledger": [
@@ -939,6 +944,13 @@
    "hash": "4c793057badb6957",
    "when": "2026-09-05T19:55:11.575642+00:00",
    "summary": "The pointer-alias and dead-store constructs are plausibly within their sanctioned families, but the loop-counter reuse of `q` is a novel GCC-internals-motivated construct (inflating reg_n_refs to out-prioritize a sibling allocno under global.c's priority formula) that is cited under two rules which "
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "4c793057badb6957",
+   "when": "2026-09-05T20:07:19.690944+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-05 15:07 ruling PASS)"
   }
  ],
  "escalation_deferrals": 0,

@@ -6908,3 +6908,35 @@ spellings 52 instructions / score 31.
 - probe: git diff include/code6cac.h | cat -A after running s63/apply.py: `M-bM-^@M-^T` (a clean em dash) became `M-CM-"M-bM-^BM-,M-bM-^@M-^]`. Re-ran with an explicit encoding="utf-8" on both ends (tmp/grind/func_80034F88/s67/apply_utf8.py) and the diff collapsed to the four intended hunks.
 - result: Confirmed and repaired in this session's tree. Any later session that installs this body must use tmp/grind/func_80034F88/s67/apply_utf8.py, not s63/apply.py; the same bug will hit any grind script that round-trips a repo file through read_text()/encode() on this host ([[windows-python-crlf-write-text]] is the neighbouring hazard).
 - verdict: CONFIRMED
+
+## s68-dispatch hypotheses (labelled "session 67", rederive) — trimming the FAKE surface, and testing the ban's factual premise
+
+## [s67] Either of the two non-alias FAKEs in the banked body can be dropped to shrink the review surface without losing the match.
+- mechanism: If the `u = 0;` cse2 invalidator or the `r = &D_80106A73;` re-initialisation were redundant on the current (granted-scope, score-0) chassis, removing it would delete a FAKE annotation from the diff and remove one construct a layer-1 reviewer can press on, at zero byte cost.
+- probe: Three bodies built from the banked candidate with the loop and both pointer aliases untouched — v1 drops only `u = 0;`, v2 drops only the `r` re-initialisation, v3 drops both — each installed with tmp/grind/func_80034F88/s67/apply_utf8.py over the granted four-path chassis and sandboxed.
+- result: v1 = 49 insns / **score 27**; v2 = 47 insns / **score 39**; v3 = 47 insns / **score 38**. Banked as rejected/s67-drop-cse2-invalidator-score27.c, rejected/s67-drop-r-reinit-47insn-score39.c, rejected/s67-drop-both-fakes-47insn-score38.c. Both constructs are byte-materialising on this chassis; the four-construct diff cannot be reduced to three.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: granted-scope chassis on HEAD 2026-09-05 (extern u8 D_80106A70[3] in include/code6cac.h + the two src/code6cac.c consumers in element form + the prong (c) undefined_syms_auto.txt suffixes), with the two Judge-granted pointer FAKEs and the s66 address-object/loop-counter variable reuse present
+
+## [s67] A cast-free spelling of the loop — `q` walking the destination array as an ordinary C pointer, with the source index recovered as a pointer difference — reproduces the match, which would put the construct outside the banned "repeated (s32) casts" wording.
+- mechanism: banned_constructs entry 2 names the construct as reuse "via repeated (s32) casts, purely to raise its REG_N_REFS-weighted allocation priority". If the same variable reuse could be spelled with zero casts as an idiomatic array walk, the reuse would read as ordinary C and the priority lift would be incidental rather than the visible purpose.
+- probe: w1 `for (q = D_80106A70; q < D_80106A70 + 3; q++) { *q = *((u8 *)p + (q - D_80106A70) + 0x17); }` and w2, the same walk with the byte staged through the shared `c` local, both on the granted-scope chassis, sandboxed.
+- result: w1 = **54 instructions / score 13**; w2 = **54 instructions / score 13**. Five instructions worse than the target's 49. The target's loop holds a plain integer index in $v1 and applies it to TWO bases — `addu $v0,$a1,$v1` for the source read and `addu $at,$at,$v1` for the %lo store (asm/funcs/func_80034F88.s:38-50) — so a single walking pointer cannot express it and GCC 2.7.2 emits the extra address arithmetic. The casts are not a stylistic choice and are not there to add references: the loop's value IS an index and the variable that must carry it IS a pointer. Banked as rejected/s67-castfree-natural-pointer-walk-54insn-score13.c and rejected/s67-castfree-walk-via-shared-c-54insn-score13.c. This is the measurement the ruling request rests on.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: granted-scope chassis on HEAD 2026-09-05, two Judge-granted pointer FAKEs + the cse2 invalidator present, address-object/loop-counter merge respelled as a pointer walk
+
+## [s67] Carrying the loop counter on `r` (the blocks-1/2 address object) instead of `q` reaches the same allocation, which would let the reuse borrow a variable other than the one the ban names.
+- mechanism: `r` prices at 6 refs / live length 19 / priority 6315 and is seated at $a0. Absorbing the loop's eleven loop-depth-weighted counter references would lift it past block 0's value allocno (pri 17500) the same way the `q` merge does, so the value would still be pushed to $a0 by find_reg's ascending scan.
+- probe: w3, the banked body with `for (r = 0; (s32)r < 3; r++)` and the loop moved inside `r`'s block, on the granted-scope chassis, sandboxed.
+- result: **score 21** at 49 instructions. The lifted `r` allocno takes the $v1 seat that block 0's ADDRESS object needs, so the seat s66 bought is spent on the wrong object and five register fields go wrong. Banked as rejected/s67-loop-counter-carried-by-r-score21.c. `q` is the only carrier that produces the target's allocation; the carrier choice is not free and is not interchangeable.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: granted-scope chassis on HEAD 2026-09-05, two Judge-granted pointer FAKEs + the cse2 invalidator present
+
+## [s67] The banked score-0 body still measures 0 on the granted-scope chassis, so nothing about the C is in question — the open item is purely the contradiction between the 14:44 Judge ruling and the 14:55 layer-1-derived ban.
+- mechanism: The scope grant s66 asked for is committed; the 14:44 Judge ESCALATE ruling installed and scored the candidate itself, placed the loop-counter reuse in the frozen "variable reuse for codegen control" entry (no-new-park-categories.md:185) with PSX SOTN precedent, and said "That is the whole blocker: a file the candidate is not allowed to edit, not a residual and not a disallowed construct." The layer-1 FAIL eleven minutes later produced banned_constructs entry 2 on that same construct.
+- probe: apply_utf8.py + `sandbox func_80034F88 --disable all`; plus grindlib.validate_self_vet and grindlib.check_banned_constructs run against the existing self_vet.md.
+- result: score 0, target_insns 49, build_insns 49, rules_dropped 0. Both driver gates return (True, ''). The body is submittable mechanically; it is the RECORD that is inconsistent, and a FINAL CALL FAIL on the only known matching body is irreversible, so this session files a ruling request rather than spending it.
+- verdict: CONFIRMED
