@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 85,
- "current_modality": "synthesis",
+ "session_count": 86,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -519,23 +519,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "s83's floor-body verdict corrected on both counts: its edge-removal sweeps were void (no INSN_REF_COUNT decrement) and its four 'fix the residual' atoms do not reach the exact target - 0 of 729,150 on"
+  },
+  {
+   "session": 86,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "The owner directive's never-run second probe is executed in full \u2014 a rebuilt, self-validating fresh-flag permuter window (85,653 iterations over r3 and b2) reaches honest 4 and honest 2 but never belo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The a4/a7 family (14/179/0, the 143-before-120 transposition already FIXED and the instruction count unchanged) reaches 0 once its +12 of REGISTER-ALLOCATION collateral is paid for - and that collateral, not the scheduler, is now the whole residual of this function.",
-   "mechanism": "Every form that names the D_800A11DC element, and every form that inlines chain A into the call, flips the contested pair in both scheduler passes (a1 16, a3/a4/a7/a8/a9/a10 all 14; non-flipping controls a2 9 and a6 7). None adds an instruction or drops a rule, so the 12 extra differing instructions are register names and their induced ordering - a global.c/local-alloc outcome. The floor body's own scheduler neighbourhood is enumerated and empty (0 of 729,150 one- and two-atom settings with its dep graph held fixed), so further sched-side grinding of the floor body spends measurements on a proven-empty set.",
-   "next_probe": "Take a4 (tmp/grind/CD_ready/s84b/forms/a4.c, banked as rejected/s84-a4-named-D800A11DC-element-flips-pair-costs-12-alloc-14.c) as the working base. Run tools/ra_solver on it (global.c / local-alloc / reload models, then inverse_compose.py classify) against the target seats to get a typed REACHABLE/FORECLOSED verdict plus ranked C-lever vectors for the 12-instruction seat residual. Do NOT re-grind the floor body's sched2 stream."
+   "hypothesis": "a4's residual is a local-alloc seat exchange ($a3<->$a0 and $v1<->$v0) on an instruction stream and order that are already target-exact, and local_alloc.py can say whether any quantity re-pricing reaches it.",
+   "mechanism": "classify types the residual as RA and simulate.py shows global.c fully explains a4's assignment (19/19 dispositions), so the exchange is decided in block_alloc's find_free_reg ascending scan under qty_compare ordering - the one model in the stack that has never been extracted for this function.",
+   "next_probe": "Apply a4, run tools/ra_solver/local_extract.py system --func <CD_ready's index> and local_alloc.py to get the per-quantity blk/ord/qty/birth/death/refs/got rows for a4's contested block, then ask what quantity set would make find_free_reg hand the contested pair $a0 and $v0. Note the README's known hook gap (QTYDBG does not print qty_size), which mis-prices DImode quantities in the ORDER check."
   },
   {
-   "hypothesis": "On the floor body the minimal-perturbation door is killing the pass-2-only anti-dependences 138<-128 and 138<-130 (post-reload $2 reuse by the arg5 chain) while simultaneously giving the D_800A11DC chain a lower luid than chain A's addu - the pair is lost twice, for two different reasons, and a form must beat both at once.",
-   "mechanism": "pri(143) = pri(138) + 1 always. In pass 2 pri(138)=2 solely because of those two anti-deps; kill them and pri(143)=2 = pri(120)=2, at which point rank()'s luid fall-through decides - and it currently favours chain A (luid 4/5/7) over the D_800A11DC chain (luid 15/17).",
-   "next_probe": "Enumerate C forms that keep the D_800A11D5 byte load out of the register the arg5 chain's ALU/load lands in AND emit the D_800A11DC chain earlier in RTL order than chain A's addu. Predict each offline first with tmp/grind/CD_ready/s84b/enum2.py by deleting the 138<-128 and 138<-130 edges (the corrected tool decrements the ref count; s83's did not) plus a luid remap, and only measure the forms the model says land."
+   "hypothesis": "The r3 permuter basin's single find (honest 4) is a fourth base, strictly between the floor (2) and r3 (5), whose residual composition has never been read.",
+   "mechanism": "In 47.5k iterations the r3 basin produced exactly one improving form and then went 27 minutes with none, which is the signature of a narrow basin with a distinct fixed point rather than a plateau. s79's y2 result showed that a form at the same SCORE can carry a completely different residual SHAPE, and score alone is a known-misleading gradient on this function (CD_datasync s23).",
+   "next_probe": "Apply rejected/s86-permuter-r3-basin-freshflags-47k-iters-honest-4.c and read its objdump residual against the target with tmp/grind/CD_ready/s79/adiff2.py, then classify it with inverse_compose.py classify. If its residual is disjoint from both the floor body's (the 56/57 ALU pair) and y2's (the displaced a1-argument load), it is a genuine fourth base worth extracting."
   },
   {
-   "hypothesis": "The y2 base (5/179/0, the 56/57 ALU pair already target-exact) has a neighbourhood that has still never been enumerated, and its displaced printf-second-argument load is decided by something other than statement placement.",
-   "mechanism": "y2 is the exact complement of the floor body: it wins the pair and loses one load's position, where the floor body wins everything else and loses the pair. Naming and re-placing the D_800F19B8.func load at five points is byte-inert, so the displacement is not a luid/statement-order effect on that load - it is decided elsewhere in y2's block, and nothing has ever extracted that block.",
-   "next_probe": "Apply y2, run python3 tools/sched_solver/extract.py system --skip-parity into a y2-specific json, identify y2's block-3 insn ids and its own target stream from the -da dump, then run tmp/grind/CD_ready/s84b/exact.py and pair.py against it. If y2's neighbourhood is open where the floor body's is closed, grind y2 rather than the floor body."
+   "hypothesis": "The three-twin libcd cluster (CD_ready, CD_sync, CD_datasync) shares one unknown - the original spelling of the do_timeout window - and all three sit at floor 2, so the cluster is decided together or not at all.",
+   "mechanism": "All three are masked-identical to PsyQ 3.5 libcd objects and share the same printf/timeout block; every session that has moved one has moved it only within its own basin. The shared window is the only remaining structure none of the three has recovered.",
+   "next_probe": "Not a grind lever: recovery of the libcd bios.c source spelling upstream (psyz / sozud) or an engine/score.py addend-resolution change. Both are recorded as re-activation triggers in the foreclosure entry."
   }
  ],
  "judge_constraints": [
@@ -981,6 +987,14 @@
    "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, base = progress/s79-y2-struct-chassis-seats-and-transposition-both-correct-a1-load-displaced-5.c re-measured live at 5/179/0, y2's triple nested do-w",
    "predicate_cite": "",
    "result": "KILLED. All five score 5 - byte-inert. The displacement is decided by something other than that load's statement positio"
+  },
+  {
+   "session": 86,
+   "statement": "The owner directive's never-run second probe - a fresh-flag permuter window seeded from r3 and b2 - does not reach a form below the honest floor of 2 in 85,653 iterations on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04/05, s78 struct/no-pp chassis; seeds carry their own full FAKE sets (r3 11 units, b2 its de-boost carrier); candidate.c floor body re-verified live at 2/179/0 before and after t",
+   "predicate_cite": "",
+   "result": "KILLED for this window. The r3 basin (permuter base_score 35 = honest 5) produced exactly ONE novel find in 47.5k iterat"
   }
  ],
  "sibling_progress": [

@@ -22824,3 +22824,134 @@ written it can never fire.
 4. Ruling A: operator reopen notes appended to the three ledgers; `queue unpark` x3;
    commit `grind:`.
 5. Grinder drill (`-WithJudge`) + relaunch.
+
+## 2026-09-05 — CD_ready (src/system.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (second post-unpark window run to exhaustion; the owner directive's never-run permuter probe is now executed and does not reach the floor; both endgame gates fail)
+
+**What this is.** Grind session 86 (`escalation` modality) on `CD_ready` @ `0x80081030`
+(`src/system.c:379`, currently `INCLUDE_ASM("asm/funcs", CD_ready);`; splat name
+`marionation_Exec`). This is a proof-of-foreclosure RECORD under the owner's standing
+auto-ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`), filed silently per
+the 2026-08-31 ruling (`.claude/rules/ordinary-c-judge-decidable.md`). It is not a question
+to the owner and not a decision packet.
+
+**Why this record exists when 2026-09-03 already filed one.** The 2026-09-03 foreclosure was
+vacated by the owner's 2026-09-04 foreclosed-bucket re-evaluation (Ruling A), which reset the
+window and named two specific unspent probes: (i) the CD_datasync s58 CD_alarm-struct
+transplant onto vAT1 under an addend-resolving scorer, and (ii) "a fresh-flag permuter
+workspace seeded from r3 (5) and b2 (12) — the tmp/perm_mar* workspaces predate `-mel` and
+point at the wrong cc1". **Both are now executed.** Probe (i) landed in s78 (the Sony CD_alarm
+object model transplants onto the floor body at 2/179/0 and retires the `void **pp` FAKE unit).
+Probe (ii) is executed in THIS session, in full, for the first time in 86 sessions. Neither
+lowered the honest floor.
+
+**The honest floor.** `memory/grind/CD_ready/candidate.c` re-verified LIVE this session with
+`& tools/wteng.ps1 main sandbox CD_ready --disable all` at the top and the bottom of the
+session: **score 2, target_insns 179, build_insns 179, 0 rules**. The floor has been 2 since
+s2 of the sibling cluster and across s78–s86 of this ledger.
+
+**Probe (ii), executed.** The owner's note that the legacy workspaces were unusable understated
+it: `tools/mar_perm_workspace.sh` fails on the current tree for four independent reasons —
+it omits `-mel` (load-bearing for the oracle), it has no cpp stage (so the header-using modern
+`src/system.c` cannot be its base), its `.ent`/`.end` region extractor requires a leading tab
+that maspsx does not emit (so it swept the following `INCLUDE_ASM` `.include` directives into
+the assembled object), and its `.set noat` prelude makes `as` reject every $at-using macro in
+the emitted region. Separately, decomp-permuter's pycparser front end refuses this TU outright
+(rc=1 at load) because `src/system.c` uses two GCC extensions it cannot parse: the nested
+function `inline int ENCODE_BCD(n)` inside `CdIntToPos` (`src/system.c:323`) and file-scope
+`__asm__` blocks whose string literals contain literal newlines. A rebuilt, self-validating
+workspace builder (`tmp/grind/CD_ready/s86/mkws2.sh` + `patchbase.py` + `mkvariant.py`) fixes
+all six and proves base-object byte-neutrality by objdump-diffing against an
+`asm/funcs/CD_ready.s`-assembled `target.o` before each launch.
+
+Result of the window: **85,653 iterations** across two campaigns, both harvested and stopped
+in-session (no orphans; `permuter_campaign.py status` shows both dead).
+
+* **r3 basin** (`tmp/perm_cdr86_r3`, seed `progress/s75-r3-...-5.c`, permuter base_score 35 =
+  honest 5): 47,533 iterations at -j5, **one** novel find in the entire run — `output-20-1`,
+  permuter score 20 — which measures **honest 4/179/0**. Better than its own seed, twice the
+  floor. Then 27 further minutes across three `wait` windows with zero additional novel finds:
+  the fresh-seed stopping rule ([[permuter-fresh-seed-discipline]]) satisfied on its own terms.
+  Banked `memory/grind/CD_ready/rejected/s86-permuter-r3-basin-freshflags-47k-iters-honest-4.c`.
+* **b2 basin** (`tmp/perm_cdr86_b2`, seed `progress/s76-b2-...-12.c`, base_score 655 = honest 12):
+  38,120 iterations at -j4, 90+ outputs, best permuter score 60 → **honest 2/179/0**. It walked
+  all the way back into the floor basin from 12 and could not leave it either. Banked
+  `memory/grind/CD_ready/progress/s86-permuter-b2-basin-freshflags-38k-iters-floor-tie-2.c`.
+
+**No form below 2 and no form at 0 was produced.**
+
+**The frontier's own solver probe, executed.** The s84/s85 frontier asked for a typed verdict on
+the a4 family's 12-instruction collateral. a4 re-measures live at 14/179/0, and
+`tools/ra_solver/inverse_compose.py classify` returns **FIRST DIVERGENCE: RA** — identical
+179-instruction register-blanked multisets, residual = a `$a3<->$a0` exchange over four insns
+and a `$v1<->$v0` exchange over four insns, nothing else. `extract.py` + `simulate.py` then
+report `sort order: MATCH` and `dispositions: 19/19 match`: global.c's replication predicts a4's
+allocation perfectly and none of the 19 global pseudos owns any of the four contested
+call-clobbered registers, so the exchange is a **local-alloc** (`block_alloc`/`find_free_reg`)
+outcome. Combined with s85's exhaustive result on the complementary floor body (0 of 729,150
+one- and two-atom scheduler settings reach the target with the dep graph held), the function's
+residual is now typed on BOTH of its bases and neither type is open to a sanctioned C lever
+that has not been measured.
+
+**Gate (a) — canonical-asm / hand-coded evidence: FAILS.**
+`python3 tools/scan_hand_coded.py --single CD_ready`, run this session
+(`tmp/grind/CD_ready/s86/scan_hand_coded.txt`):
+
+    HAND_CODED: tier=LOW  score=2/8  (CD_ready, 179 insns)
+      Reason: no strong hand-coded indicators
+      [ ] S1 multu pacing      [ ] S2 empty branch      [ ] S6 BIOS jumptable
+      [X] S4 front loads       [X] S5 cluster (CD_sync, jaccard=0.64)
+
+None of the STRONG signals (S1/S2/S6) fire. The function is compiler-generated PsyQ 3.5 libcd
+`CD_ready(int mode, u_char *result)` (identity settled: 179/179 words masked-identical against
+the library object, name string `"CD_ready"` @ `0x80016248`) — it is not hand-written asm and
+does not take the canonical-asm grant path.
+
+**Gate (b) — in-hand SOTN-master precedent for the closing construct: FAILS.**
+The closing construct this residual would need is a device that forces a specific local-alloc
+seat exchange (`$a3<->$a0`, `$v1<->$v0`) on an already-order-exact stream without re-pricing the
+surrounding quantities. A census of `docs/reference/sotn-construct-index.md` (1,365 entries,
+PSX/GCC-2.7.2 provenance only) returns no such construct: its register-allocation-adjacent
+entries are the `new_var*` temporaries (`sotn-construct-index.md:1425`), the annotated
+duplicated statement, and the dead-store/`match_comment` families — **all three already spent on
+this body** (candidate.c carries `new_var`/`new_var3` and its full sanctioned FAKE set). The
+census is NEGATIVE, which per the owner's 2026-08-24/2026-08-31 rulings is a FAILED gate, not
+an open question. No construct outside the frozen family list is argued for here.
+
+**Both gates fail, floor is 2 (<= 5) → the standing ruling's disposition applies: FORECLOSED.**
+
+**Exhaustion.** 86 sessions. Distinct modalities spent since the ledger began: forensics,
+structural, rederive, synthesis, solver, object-model, permuter, escalation — 8+, well past the
+driver's >=4 bar, with the floor flat at 2 across s78–s86 (rederive s78/s80/s81, forensics s79,
+structural s82/s83, synthesis s84/s85, escalation s86). 332 rejected forms banked in
+`memory/grind/CD_ready/rejected/`. 51 instance kills + 3 class kills in
+`memory/grind/CD_ready/hypotheses.md`. Permuter iterations this session alone: 85,653, on top of
+the prior campaigns recorded in the ledger. The mandatory kill re-audit was discharged at s79
+(r3 re-derived on the current chassis, `fake_ablate` grid) and is not re-opened here.
+
+**Evidence pointers.** `memory/grind/CD_ready/{evidence.md,hypotheses.md,candidate.c,state.json,
+progress/,rejected/}` — s86 sections appended this session. Artifacts:
+`tmp/grind/CD_ready/s86/` (`mkws2.sh`, `patchbase.py`, `mkvariant.py`, `harvest_r3.json`,
+`harvest_b2.json`, `scan_hand_coded.txt`, `perm_r3_o20.c`, `perm_b2_o60.c`, `a4.c`, `inv/`).
+Prior records: decisions.md 2026-09-03 (CD_ready, vacated by Ruling A), 2026-09-04
+(foreclosed-bucket re-evaluation, Ruling A), 2026-09-01 and 2026-08-30 (CD_ready).
+
+**Re-activation triggers.**
+1. A class grant or ruling covering a construct that forces a local-alloc seat exchange on an
+   order-exact stream without re-pricing neighbouring quantities — nothing in the frozen family
+   list reaches it today, and the SOTN census above is negative.
+2. A toolchain or `local-alloc.c` finding that changes `find_free_reg`'s ascending scan or
+   `qty_compare`'s tiebreak for equal-priority quantities (the `qty_size` hook gap named in
+   `tools/ra_solver/README.md` is the concrete next instrumentation step).
+3. Recovery of the original libcd source spelling for the shared `do_timeout` window, which
+   decides `CD_datasync`, `CD_ready` and `CD_sync` simultaneously — all three are the same
+   PsyQ 3.5 cluster and all three sit at floor 2.
+4. An `engine/score.py` change resolving named-symbol `R_MIPS_LO16`/`HI16` addends to absolute
+   addresses (an operator/integration task outside the grind surface), which would let the
+   struct-model chassis be measured honestly and remove a standing measurement hazard shared by
+   this function and its two foreclosed siblings.
+
+**Reusable finding for the whole project (not CD_ready-specific).** Any decomp-permuter campaign
+on `src/system.c` — for any function in that TU — dies at load until `base.c` is patched for the
+two pycparser-hostile GCC extensions named above. `tmp/grind/CD_ready/s86/mkws2.sh` and
+`patchbase.py` are a working, self-validating template for that, and the `-mel`/cpp/extractor
+fixes in them apply to every legacy `tmp/perm_*` workspace in the tree.
