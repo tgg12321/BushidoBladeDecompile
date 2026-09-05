@@ -1,3 +1,65 @@
+/* [s23 2026-09-04 - synthesis modality.  BODY CHANGE: the dispatch call is now spelled
+ * `()` instead of `(idx, temp_a1)`.  Everything else is unchanged (still the E2 spine).
+ * Re-measured on today's HEAD: 2 / build 66 / target 66, and the objdump of the `()` body
+ * is BYTE-IDENTICAL to the objdump of the `(idx, temp_a1)` body (diff of E2_ctl.dis vs
+ * E2_v0.dis is empty).  The floor is unchanged; the change is a semantic-fidelity fix the
+ * owner's 2026-09-04 Ruling A asked for, banked here so no later session has to re-derive it.
+ *
+ * WHY IT MATTERS.  All 116 bodies banked before this session called the dispatch table as
+ * `(idx, temp_a1)`.  The matched sibling func_80060B70 (src/text1b.c:3170) calls the SAME
+ * table as `()`, and the table's first callee is `u8 func_80063AF0(void)` (src/text1b.c:4042);
+ * the target asm sets up no argument registers before the jalr ($a0/$a1 hold live values that
+ * are consumed by the 0x1A / 0x1C stores, not by the callee).  So `(idx, temp_a1)` was a
+ * 22-session semantic infidelity.  It is now removed, at zero byte cost.
+ *
+ * WHAT s23 MEASURED (16 bodies, zero FAKE constructs in any of them).
+ *
+ * (1) ARGUMENT-REGISTER SUGGESTION IS NOT A LEVER HERE (Ruling A probe 1, KILLED).
+ *     E2 `()` == E2 `(idx,temp_a1)` byte-for-byte; T1 2/65 both ways; M2 3/66 both ways;
+ *     only Q2 moves, and it moves the WRONG way (5 -> 10, losing the $a1 seat of the +4
+ *     read).  Recording the seats: with `()`, idx still seats in $a0 and temp_a1 still
+ *     seats in $a1 on E2/T1/M2 - local-alloc first-fits them there without any argument
+ *     suggestion, which is why the arg spelling is inert.
+ *
+ * (2) SIBLING INVENTORY DIFF vs func_80060B70 (Ruling A probe 2, done at source level).
+ *     Three inventory items differ and all three are now measured:
+ *       - `u16 idx` (B70 declares its dispatch index u16; this body uses s32).  KILLED:
+ *         u16 forces an `andi a0,a0,0xffff` truncation before the sll - E2+u16 = 3/67,
+ *         T1+u16 = 3/66.  The target has no andi, so `s32 idx` is correct.
+ *       - the braced `{ ... }` block B70 wraps its last-argument cluster in.  Byte-neutral
+ *         on both E2 and T1 (2/66 and 2/65 unchanged).
+ *       - destination-pointer locals (B70's dst_u16 / dst_s32).  Already banked neutral at
+ *         rejected/sibling-dst-locals-neutral-folds-to-base-offset-score2.c.
+ *     No statement in B70 is missing from this body: B70's extra work (the 3x u16 copy
+ *     block through D_800A346C and the func_80061FAC call) has no counterpart in the
+ *     target's 66 instructions.  The s21 frontier's "enlarge the inventory from the
+ *     sibling" lead is therefore CLOSED at source level.
+ *
+ * (3) THE SLOT-12 LAW (new, dump-backed).  This is the whole residual, stated exactly:
+ *     target's `lw a1,0x10(v1)` at slot 12 is a SINGLE-consumer load (its only use is
+ *     `lhu a1,0x4(a1)` at slot 29, feeding `sh a1,0x1C(v1)` at 33).  Measured across every
+ *     spelling tried this session and every one in the bank:
+ *       - if the p10 read is cse-MERGED with the +2 read (E2, PF), the merged two-consumer
+ *         load is scheduled at slot 12 in $a1 - target's exact seat - but then only TWO
+ *         0x10 loads exist and target's slot-23 load is a nop (this is the floor-2 residual).
+ *       - if the p10 read precedes the Z0 store (T1/PA), it carries NO memory dependence on
+ *         that store, is ready at time 0, and sched1 puts it in the lhu->sll load-delay slot:
+ *         text1b.sched shows insn 12 (reg75) emitted third, right after insn 16, which is
+ *         final slot 5.  65 instructions, score 2.
+ *       - if the p10 read is separated from the other 0x10 reads by ANY store (PB/PC/PD after
+ *         Z0 = slot 25; PH/PI after the D_800A3478 gp store = slot 27; W1/W3 with the +2 read
+ *         inlined = slot 26), sched1 sinks it BELOW both other 0x10 loads, into $v0.
+ *         text1b.sched on PB shows insn 25 (reg75) emitted 18th, after insns 49 and 56.
+ *     So: three surviving 0x10 loads and a slot-12 seat for the p10 one have never been
+ *     obtained together.  The p10 load reaches slot 12 only as the merged two-consumer
+ *     pseudo.  That is the next session's question, and it is a PRIORITY question, not an
+ *     ordering one: with the Z0-store memory dependence present, all three 0x10 loads tie
+ *     in sched.c priority() and the tiebreak orders them by their consumers' block
+ *     positions, so p10 - whose consumer is last - is always scheduled last of the three.
+ *     Raising p10's load priority WITHOUT adding an instruction is the open lever.
+ *
+ * DISPOSITION.  ACTIVE.  The exhaustion window was reset by owner ruling 2026-09-04.
+ */
 /* [s20 2026-09-03 - structural modality.  BODY UNCHANGED (still the E2 body, re-measured
  * 2 / build 66 / target 66 on today's HEAD as D1 through the s20 generator).  The s20 header
  * is prepended; every earlier header below is intact.]
@@ -716,8 +778,8 @@ void func_80060A68(void) {
     D_800A347C = outer + 0x20;
     *(u16 *)(outer + 0x1C) = temp_a1;
 
-    result = ((s32 (*)(s32, s32)) *(s32 *)((s32)&chractar_use_pset_combo_id_table
-              + (*(u8 *)((s32)&D_8009BA60 + idx) + *(s32 *)((s32)&D_800F10D0 + idx * 4)) * 4))(idx, temp_a1);
+    result = ((s32 (*)(void)) *(s32 *)((s32)&chractar_use_pset_combo_id_table
+              + (*(u8 *)((s32)&D_8009BA60 + idx) + *(s32 *)((s32)&D_800F10D0 + idx * 4)) * 4))();
     *(s8 *)*(s32 *)((s32)D_800A3468 + 0x14) = result;
 
     if (*(s32 *)D_800A3468 & 0x200000) {

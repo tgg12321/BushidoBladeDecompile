@@ -3231,3 +3231,114 @@ family in candidate.c and therefore no precedent to cite).
 - [s22] Nothing holds a byte-match via a cheat: the function is committed as INCLUDE_ASM per asm-until-matched, and asmfix.txt/regfix.txt have been empty project-wide since 2026-08-25 - there is no cheat to retire and no integration handoff pending.
 
 - [s22] Foreclosure record filed this session at the end of docs/grind/decisions.md: '2026-09-03 - func_80060A68 - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED', carrying both gates' evidence, the exhaustion history (22 sessions, >=7 modalities, ~104k permuter iterations, 116 banked rejected forms) and four re-activation triggers.
+
+## [s23 2026-09-04 - synthesis] The dispatch call is a `()` call, and that is free
+
+Owner ruling 2026-09-04 Ruling A named two probes; both are executed and measured.
+
+**Probe 1 - the `()` call spelling.**  Every one of the 116 bodies banked before this
+session called the dispatch table as `(idx, temp_a1)`.  The matched sibling
+func_80060B70 (src/text1b.c:3170) calls the SAME table as `()`, the table's first
+callee is `u8 func_80063AF0(void)` (src/text1b.c:4042), and the target asm sets up no
+argument registers before the `jalr $v0` at slot 48 - $a0 holds `idx` because `idx` is
+read at slot 30 and consumed by the `sll`/`addu` at 34/36, and $a1 holds the +4
+halfword because it is stored to 0x1C at slot 33.  Measured on four spines:
+
+| spine | `(idx, temp_a1)` | `()` | 0x10 loads with `()` |
+|---|---|---|---|
+| E2 (candidate.c) | 2 / 66 | 2 / 66, **objdump byte-identical** | 12($a1) 20($a0) |
+| T1 | 2 / 65 | 2 / 65 | 5($a1) 19($a0) 22($a0) |
+| M2 | 3 / 66 | 3 / 66 | 19($a0) 22($a0) 27($v0) |
+| Q2 | 5 / 66 | **10 / 66** | 20($a0) 23($a0) 26($a0) |
+
+So the argument-register suggestion is inert on three spines and actively harmful on
+the fourth (Q2 loses the $a1 seat of the +4 read).  candidate.c has been rewritten onto
+`()`: it costs nothing and removes a 22-session semantic infidelity.  This also closes
+the ledger's law R3 (hypotheses.md:1777) as a lever: local-alloc first-fits `idx` into
+$a0 and the +4 halfword into $a1 without any argument suggestion, because nothing else
+occupies those hard registers over their live ranges.
+
+**Probe 2 - the sibling statement-inventory diff.**  func_80060B70 is matched C, so its
+inventory is authoritative.  Three items differ from candidate.c and all three are now
+measured:
+
+- `u16 idx` (B70 types its dispatch index u16; this body types it s32).  **Wrong for the
+  target**: u16 forces `andi a0,a0,0xffff` before the `sll`, which the target does not
+  contain.  E2+u16 = 3 / build 67; T1+u16 = 3 / build 66.  Note that T1+u16 does supply
+  T1's missing 66th instruction - but with the wrong instruction, in the wrong place.
+- B70's braced `{ s32 last_arg = ...; copy; call(...); }` block.  Transposed onto this
+  body's 0x1C cluster it is byte-neutral on both spines (E2 2 / 66, T1 2 / 65).
+- B70's destination-pointer locals: already banked neutral
+  (rejected/sibling-dst-locals-neutral-folds-to-base-offset-score2.c).
+
+B70's remaining extra work - the three u16 copies through D_800A346C and the
+func_80061FAC call - has no counterpart in the target's 66 instructions.  **There is no
+missing statement.**  The s21/s22 frontier item that hoped an external source would name
+T1's 66th instruction is CLOSED; T1's deficit is a scheduling artefact.
+
+## [s23] The slot-12 law (dump-backed; this is now the whole residual)
+
+Target's `lw a1,0x10(v1)` at slot 12 is a SINGLE-consumer load: its only use is
+`lhu a1,0x4(a1)` at slot 29, which feeds `sh a1,0x1C(v1)` at slot 33.  Three regimes,
+all read out of `tmp/grind/func_80060A68/dumps/text1b.sched`:
+
+1. **p10 read BEFORE the Z0 store** (T1 / PA).  The load carries no memory dependence on
+   the store - the dump shows `insn 12 (set (reg/v:SI 75) (mem:SI (plus (reg/v 72)
+   (const_int 16))))` with dependency list `(insn_list 9 (nil))` only.  It is ready at
+   time 0 and sched1 emits it third, i.e. into the `lhu`->`sll` load-delay slot that the
+   target leaves as a nop.  Result: three 0x10 loads at 5/19/22 with every target
+   register seat, but 65 instructions.
+2. **p10 read AFTER any store** (PB/PC/PD after Z0; PH/PI after the D_800A3478 gp store;
+   W1/W3 with the +2 read inlined).  The load acquires the store dependence -
+   `(insn_list 9 (insn_list 22 ...))` in the PB dump - and sched1 sinks it BELOW both
+   other 0x10 loads: PB's `insn 25 (reg75)` is emitted eighteenth, after insns 49 and 56,
+   landing at final slot 25 in $v0.  Mechanism: with the store dependence present all
+   three 0x10 loads head equal-length chains (load -> halfword read -> halfword store),
+   so `priority()` ties and `rank_for_schedule` falls to the dep-class / luid tiebreak;
+   the load whose consumer sits last in the block - p10's, whose +4 read feeds the last
+   store before the dispatch - loses every time.
+3. **p10 read cse-MERGED with the +2 read** (E2 / PF).  The merged pseudo has TWO
+   consumers, which breaks the priority tie in its favour and seats it at slot 12 in $a1 -
+   target's exact seat.  Cost: the third 0x10 load does not exist, so target's slot-23
+   `lw a0,0x10(v1)` is a nop here and the +2 read runs through $a1.  That is exactly the
+   floor-2 residual.
+
+Full s23 measurement table (all `()` spelling, zero FAKE constructs):
+
+| body | statement order (P = the p10 read) | score / insns | 0x10 loads |
+|---|---|---|---|
+| PA (=T1) | P,Z0,C1,C2,C3,S1,S2,S5,S3,S6,S4,S7,S8 | 2 / 65 | 5($a1) 19($a0) 22($a0) |
+| PB | Z0,P,C1,C2,C3,... | 5 / 67 | 19($a0) 24($v0) 25($a1) |
+| PC | Z0,C1,P,C2,C3,... | 5 / 67 | 19 24 25 |
+| PD | Z0,C1,C2,P,C3,... | 5 / 67 | 19 24 25 |
+| PE | Z0,C1,C2,C3,P,S1,S2,... | 2 / 66 | 12($a1) 20($a0) |
+| PF | Z0,C1,C2,C3,S1,P,S2,... | 2 / 66 | 12($a1) 20($a0) |
+| PG (=E2) | Z0,C1,C2,C3,S1,S2,P,S5,S3,... | 2 / 66 | 12($a1) 20($a0) |
+| PH | Z0,C1,C2,C3,S1,S2,S5,P,S3,... | 3 / 66 | 19($a0) 22($a0) 27($v0) |
+| PI (=M2) | Z0,C1,C2,C3,S1,S2,S5,S3,P,... | 3 / 66 | 19 22 27 |
+| W1 | S1,P,S5,S3-inline,... | 8 / 68 | 19 22 26 |
+| W2 | S1,P,S3-inline,S5,... | 6 / 66 | 19 22 |
+| W4 | no p10 local, +4 read inline late | 3 / 66 | 19 22 27 |
+| W5 | no p10 local, +4 read inline early | 8 / 65 | 19 23 |
+| target | - | 0 / 66 | **12($a1) 20($a0) 23($a0)** |
+
+**The open lever, stated precisely:** raise the p10 load's sched.c `priority()` above the
+other two 0x10 loads WITHOUT adding an instruction and WITHOUT merging it in cse.  Two
+untried shapes follow from the mechanism: (a) give the +4 halfword a second real consumer
+that `combine` folds back to one insn, so the load heads a two-consumer chain like the
+merged case but stays a distinct load; (b) lengthen the chain BELOW the 0x1C store so
+p10's chain is strictly longer than the 0x18 and 0x1A chains rather than tied with them.
+
+- [s23] candidate.c now spells the dispatch call `()` and re-measures 2 / build 66 / target 66 on today's HEAD (measured as body CAND with the full file spliced into src/text1b.c); src/text1b.c was restored to HEAD afterwards and the tree carries no src/ dirt.
+
+- [s23] The `()` and `(idx, temp_a1)` E2 objdumps are byte-identical (empty diff), so the 116-body bank is unaffected by the spelling change and no banked conclusion needs re-deriving.
+
+- [s23] Target sets up NO argument registers before `jalr $v0` at slot 48; $a0 at slot 30 is the dispatch index (consumed by sll/addu at 34/36) and $a1 at slot 29 is the +4 halfword (consumed by `sh a1,0x1C(v1)` at 33). The matched sibling func_80060B70 calls the same table as `()` at src/text1b.c:3170 and the table's first callee is `u8 func_80063AF0(void)` at src/text1b.c:4042.
+
+- [s23] `u16 idx` is wrong for this function: it forces `andi a0,a0,0xffff` before the sll (E2+u16 = 3 / 67, T1+u16 = 3 / 66). The target contains no andi, so `s32 idx` is correct and the sibling's typing does not transfer.
+
+- [s23] func_80060B70's braced block shape is byte-neutral here (E2 2 / 66, T1 2 / 65 unchanged), and its remaining statements (three u16 copies through D_800A346C, the func_80061FAC call) have no counterpart in the target's 66 instructions - there is no missing statement to import.
+
+- [s23] text1b.sched, T1 spine: `insn 12 (set (reg/v:SI 75) (mem:SI (plus (reg/v:SI 72) (const_int 16))))` has dependency list `(insn_list 9 (nil))` and is emitted third - the load-delay slot the target leaves as a nop. text1b.sched, PB spine: the same read is `insn 25` with `(insn_list 9 (insn_list 22 ...))` and is emitted eighteenth, after insns 49 and 56.
+
+- [s23] Target's slot-12 `lw a1,0x10(v1)` is a SINGLE-consumer load (only use: `lhu a1,0x4(a1)` at 29), yet every reproduction of that seat so far has required a TWO-consumer cse-merged pseudo. That contradiction is the entire remaining residual and is a sched.c priority question, not an ordering one.

@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 22,
- "current_modality": "escalation",
+ "session_count": 23,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -135,18 +135,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "All three of s21's live frontier items measured dead on the current chassis (21 bodies, zero FAKE constructs); floor stays 2, both endgame gates fail, foreclosure record filed."
+  },
+  {
+   "session": 23,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Owner Ruling A executed: the `()` dispatch-call spelling is byte-identical on E2 (candidate.c now carries it, floor 2 unchanged), the func_80060B70 inventory diff is closed with no missing statement, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The T1 body (2 / build 65, three loads at 5/19/22 with every target register seat) is one instruction short of target, and the missing instruction is real work target performs that this reconstruction omits - which makes the residual a statement-INVENTORY question with only one untapped source left: the sibling cluster's version of this routine.",
-   "mechanism": "T1 is target's whole instruction stream shifted one slot earlier from slot 5 onward, with target's slot-5 load-delay nop occupied by T1's lw. s21 killed nine attempts to make another instruction READY in that slot from the existing statement inventory; what was never attempted is enlarging the inventory from an external, semantically-grounded source rather than re-ordering what is already there.",
-   "next_probe": "Read the source of the COMPLETED-C sibling func_80061710 and the still-INCLUDE_ASM func_80060B70 / func_80061250 / func_80061658 (same file, same halfword-copy-then-dispatch shape) and diff their statement inventories against this body's: any statement they all carry that this reconstruction lacks (an extra field copy, a flag write, a second index read) is a candidate for the missing instruction. Splice each such statement into the T1 spine and measure with sandbox --disable all."
+   "hypothesis": "The p10 load reaches target's slot 12 only when its sched.c priority beats the other two 0x10 loads; a spelling that gives the +4 halfword a SECOND real consumer which combine folds back to a single insn would break the priority tie the same way the cse merge does, without collapsing the third load.",
+   "mechanism": "text1b.sched shows all three 0x10 loads heading equal-length chains once the Z0-store memory dependence is present, so rank_for_schedule (sched.c:2399-2456) decides on the dep-class / luid tiebreak and p10 - whose consumer is the last store before the dispatch - always loses. The merged E2 case wins the seat purely because its pseudo has two consumers. A distinct load with two source-level consumers that combine re-merges would have the merged case's priority and the three-load case's insn count.",
+   "next_probe": "On the PB/PH spines, spell the +4 halfword so it is read once and consumed twice in a form combine folds (e.g. the 0x1C store's value and the same value re-used in an expression that folds to a copy), measure with sandbox --disable all, and read text1b.combine to confirm the second consumer is folded away and text1b.sched to confirm the priority order changed before scoring."
   },
   {
-   "hypothesis": "With the separator inventory priced and empty, further ordinary-C progress must come from a change to the READ SET rather than the statement order - specifically a spelling in which the second 0x10 read hashes differently in cse, so the two reads are never equivalent and no separator is needed at all.",
-   "mechanism": "s20's class kill is about the EQUIVALENCE of two identical MEMs, not about the schedule: if the second read's rtx hashes differently (a different base register, a different displacement decomposition, an aliasing-opaque address), cse never merges it. Every body measured so far reads both through `outer`.",
-   "next_probe": "Sweep spellings that reach the same word through a different address expression GCC does not fold back to (plus (reg outer) 16) - e.g. through a second pointer local seeded from another of the function's already-live base values, or through the D_800A3468 global re-read the tail already performs - and read the .cse dump (pwsh tools/grinder/dump.ps1 func_80060A68) to see whether the mem entry survives, before scoring."
+   "hypothesis": "Lengthening the dependence chain BELOW the 0x1C store - rather than above the +4 read - would make p10's chain strictly longer than the 0x18 and 0x1A chains and win the slot-12 seat without any extra instruction.",
+   "mechanism": "priority() is the longest path from the insn to the end of the block. The three 0x10 loads tie because each heads load -> halfword read -> halfword store. If the 0x1C store is followed by insns that depend on it while the 0x18 and 0x1A stores are not, p10's chain becomes the longest and the tiebreak never runs.",
+   "next_probe": "Sweep the position of the D_800A347C gp store and the idx read (S7 / S4) relative to the 0x1C store on the PB and PH spines so that the dispatch's `lw %lo(D_800F10D0)` acquires a memory dependence specifically on the 0x1C store, and measure; confirm the chain change in text1b.sched before scoring."
+  },
+  {
+   "hypothesis": "The 65-instruction T1 body is the closest form in the bank and its single defect is one sched1 decision (the p10 load filling the lhu->sll load-delay slot); a spelling that leaves p10's read dependence-free but makes something else - not a nop and not an extra instruction - unattractive in that slot has never been enumerated exhaustively.",
+   "mechanism": "In T1 the p10 load is ready at time 0 because it precedes the Z0 store. Every attempt to add the dependence (PB/PC/PD) also sinks the load. The untried middle ground is a partial dependence: a spelling in which the p10 read is above the Z0 store but its ADDRESS is not available until after it, so it cannot be issued at time 1-5 yet still carries the earliest luid among the 0x10 loads.",
+   "next_probe": "Spell `outer` so that the p10 read's base is produced by an insn scheduled inside the Z0 cluster (e.g. read p10 through an expression whose base is the value the Z0 statement already computes) and measure on the T1 spine; read text1b.sched to confirm the load's ready time moved without changing its luid rank."
   }
  ],
  "judge_constraints": [
@@ -498,6 +509,30 @@
    "measured_on": "today's HEAD chassis, 8 bodies plus the A0 and T1 controls, zero FAKE constructs in any of them (the `result` staging was measured, not adopted; it is byte-neutral and emits nothing)",
    "predicate_cite": "",
    "result": "The split never materialises as two separable instructions. P1 and P3 are byte-IDENTICAL to the A0/E2 control (empty dif"
+  },
+  {
+   "session": 23,
+   "statement": "The `(idx, temp_a1)` argument spelling of the dispatch call is inert: spelling the call `()` (matching the matched sibling func_80060B70 at src/text1b.c:3170 and the callee prototype `u8 func_80063AF0",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 8 bodies (4 spines x 2 call spellings), zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "KILLED as a lever, CONFIRMED as a semantic-fidelity fix. E2 `()` = 2 / build 66 / target 66 and its objdump is byte-iden"
+  },
+  {
+   "session": 23,
+   "statement": "The sibling statement-inventory diff against the matched func_80060B70 names no statement this body lacks; the only differing inventory item, `u16` typing of the dispatch index, costs an andi truncati",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 4 sibling-spelling bodies plus the E2 and T1 controls, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "KILLED as an inventory source. (a) `u16 idx` costs an instruction and a seat - GCC emits `andi a0,a0,0xffff` before the "
+  },
+  {
+   "session": 23,
+   "statement": "Across every p10-read position and every read-decomposition spelling measured this session, target's slot-12 `lw a1,0x10(v1)` is reproduced only when cse has MERGED that read into a two-consumer pseud",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, 11 bodies plus the E2/T1/Q2/M2 controls, zero FAKE constructs in any of them; text1b.sched read for PA and PB",
+   "predicate_cite": "",
+   "result": "KILLED for every spelling measured. PA(T1) 2 / 65 loads 5($a1) 19($a0) 22($a0); PB/PC/PD 5 / 67 loads 19($a0) 24($v0) 25"
   }
  ],
  "escalation_deferrals": 0
