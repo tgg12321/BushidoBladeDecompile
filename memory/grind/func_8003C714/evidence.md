@@ -1189,3 +1189,141 @@ this constant exists anywhere in the project.
 - [s10] loop.c:649 may_not_optimize is a fourth admission gate omitted from s8's K23; a doubly-materialised invariant base yields ONE pseudo with n_times_set 2 (printed as savings 2), disproving K23's distinct-pseudo premise, but statement reordering did not trip reg_used_between_p (life 3 -> 7, still moved).
 
 - [s10] func_8001CD68 (src/code6cac.c:1121-1139) is matched C for the same mm:ss.cc conversion and is the function func_8003C714 calls; its expression shape (val/30 - minutes*60, centiseconds re-read from the global) is contradicted by the target's recomputed (t/30)/60, confirming candidate.c's (t/30) % 60.
+
+## s11 (2026-09-05, rederive modality) — the loop.c:1631 gate re-derived from the DUMP TABLE, and a corrected moved_once channel
+
+Chassis re-checked FIRST and again at session end with `memory/grind/func_8003C714/candidate.c`
+applied over the `INCLUDE_ASM` line in `src/code6cac_c2.c`:
+`sandbox func_8003C714 --disable all` = **score 15, target_insns 104, build_insns 105,
+rules_dropped 0**. Body unchanged this session.
+
+### s11.1 The baseline movable table, read (not inferred)
+
+`pwsh`-equivalent dump via `tmp/grind/func_8003C714/run_dump.sh`; the loop is
+`Loop from 25 to 146: 56 real insns.` in `tmp/grind/func_8003C714/s11/base.loop`:
+
+| slot | insn | regno | lifetime | savings | what it is | verdict |
+|---|---|---|---|---|---|---|
+| 1 | 33 | 78 | 1  | 1 | `&D_80106A58` (address base) | moved to 203 |
+| 2 | 46 | 84 | 1  | 1 | `0x91A2B3C5` (the /1800 magic) | moved to 205 |
+| 3 | 60 | 91 | 31 | 1 | `0x88888889` (the /30 magic)  | moved to 207 |
+
+This is the first time the ledger records the *identities* rather than the counts. It
+settles two things that earlier sessions carried as inference:
+- the /1800 magic really is movable **slot 2**, so it is tested with `threshold` already
+  decremented once (122 → 119) by the base-address hoist (loop.c:1719 `threshold -= 3`);
+- `savings` is 1 for the /30 magic even though four in-loop `mult`s read it, which is the
+  direct dump confirmation of s10's H15 (`m->savings = n_times_used[regno]` at loop.c:800,
+  and loop.c:597 `bcopy`s `n_times_set` into `n_times_used`, so savings counts SETS).
+
+### s11.2 The target-consistent arrangement, and its UPPER bound (new)
+
+The shipped target's preheader (8003C73C..8003C750) hoists exactly the base address
+(`lui/addiu $a2,%hi/%lo(D_80106A58)`) and the /30 magic (`lui/ori $a3,0x88888889`), and keeps
+the /1800 magic IN-LOOP as `lui $v0 / ori $v0` at 8003C754/8003C75C. Against the table above
+that is one and only one arrangement of loop.c:1631:
+
+    slot 1 (base,  life 1 ) : 122 * 1 *  1 >= insn_count   -> MOVED    => insn_count <= 122
+    slot 2 (/1800, life 1 ) : 119 * 1 *  1 >= insn_count   -> DECLINED => insn_count >= 120
+    slot 3 (/30,   life 31) : 119 * 1 * 31 >= insn_count   -> MOVED    (3689, always true)
+
+So the admissible window is **insn_count ∈ [120, 122]**, not "insn_count >= 120". s6's
+distance-0 form sat at 121, inside the window; the ledger never recorded that pushing
+further BREAKS the match, because at insn_count >= 123 the base-address movable is declined
+too and the preheader loses its `lui/addiu $a2` pair. Any future insn_count-inflation attack
+must land in a 3-wide window, not merely exceed a floor.
+
+### s11.3 The moved_once channel, corrected (s7's K20 was measured on the wrong carrier)
+
+loop.c:1605-1613:
+
+    if (moved_once[regno]) { insn_count *= 2; ... "halved since already moved" ... }
+
+`insn_count` is a scan_loop local and the doubling is **not undone** — it applies to every
+movable tested after it. `moved_once[]` is per-function (`alloca` + `bzero` at loop.c:344-345)
+and is written only at loop.c:1912, when a movable is actually moved out of a loop; loops are
+scanned innermost/latest-first (`for (i = max_loop_num-1; i >= 0; i--)`, loop.c around 108 of
+`loop_optimize`), so an invariant hoisted out of a loop NESTED INSIDE ours arrives at our scan
+with `moved_once` already set.
+
+s7's K20 attached that flag to the /1800 magic itself and concluded the channel is
+self-defeating (the inner-loop hoist inflates that movable's own `m->lifetime` 1 -> 14/15, and
+lifetime multiplies the LHS). **That is a property of the carrier, not of the channel.** With a
+DIFFERENT, EARLIER movable carrying the flag, the magic's lifetime stays 1 and the doubling
+still applies to its test.
+
+Measured, three placements (all diagnostics, semantics deliberately wrong; dumps kept):
+
+1. `tmp/grind/func_8003C714/s11/varB_movedonce_early.c`, first spelling — inner loop storing
+   through `&D_80106A58 + j`. **No movable at all** in the inner loop: loop.c folded the symbol
+   into the giv as `dest address ... add (symbol_ref:SI ("D_80106A58"))`, so nothing was moved
+   and `moved_once` stayed clear. A symbol-address invariant is NOT a usable carrier.
+2. Same file, second spelling — inner loop assigning a CONST_INT to a global, placed at the TOP
+   of the outer body (before the base-address computation). Dump
+   (`tmp/grind/func_8003C714/s11/varB.loop` is the pre-fix run; the const run is in
+   `s11/varE.loop`'s predecessor): `Loop from 25 to 176: 63 real insns`, carrier moved with
+   `halved since already moved`, and then **BOTH** the base address AND the /1800 magic printed
+   `not desirable` (2*63 = 126 > 122). Channel proven live, arrangement wrong.
+3. `tmp/grind/func_8003C714/s11/varD.c` / `varE.c` — same carrier moved to sit BETWEEN the
+   base-address computation and the first division, so the base is still movable slot 1 and is
+   tested against the UNDOUBLED count. Dump `tmp/grind/func_8003C714/s11/varE.loop`:
+
+        Loop from 25 to 174: 62 real insns.
+        Insn  33: regno 79 (life  1) move-insn savings 1  moved to 233        <- &D_80106A58
+        Insn 231: regno 82 (life  9) move-insn savings 1 halved since already moved  moved to 235
+        Insn  74: regno 87 (life  1) move-insn savings 1 not desirable        <- 0x91A2B3C5
+        Insn  88: regno 94 (life 31) move-insn savings 1  moved to 237        <- 0x88888889
+
+   **That is the target's preheader, movable for movable** — the first time this ledger has
+   produced the target's exact loop.c arrangement from ordinary loop structure rather than from
+   the s6 balanced-biv noise.
+
+Arithmetic of placement 3: slot 1 is tested at threshold 122 against the undoubled
+`insn_count` (62) and moves; the carrier is slot 2, doubles the count to 124, and moves
+(119 * 9 >= 124), taking threshold to 116; the magic is slot 3 and 116 < 124 declines it; the
+/30 magic is slot 4 at 116 * 31. Generalised: with the carrier between base and magic the
+requirement is `2 * insn_count > 116` and `insn_count <= 122`, i.e. **insn_count >= 59** — a
++3 RTL-insn ask instead of the +64 the s5/s6 record implies.
+
+### s11.4 What it costs, and why it is still byte-blocked
+
+`sandbox func_8003C714 --disable all` on the two carrier spellings, honest (no FAKE, no cheat
+constructs, only ordinary C):
+
+| form | build_insns | score |
+|---|---|---|
+| `candidate.c` (baseline) | 105 | 15 |
+| `varD.c` — carrier `D_800A37B8 = 0x12345678;` | 113 | 19 |
+| `varE.c` — carrier `D_800A37B8 = 5;` (leanest found) | 112 | 18 |
+
+So the cheapest measured moved_once carrier costs **+7 emitted instructions** (inner-loop
+counter init, the store, the increment, the compare, the backward branch, and the hoisted
+const in the outer preheader). Against a 104-instruction target that our honest body already
+overshoots by one, there is no room. Note the score only rose 15 -> 18 while the instruction
+count rose by 7: declining the /1800 hoist genuinely repairs several of the 15 residual
+differences, which is independent corroboration of s6's distance-0 measurement.
+
+The carrier is structurally required to be a LOOP: `moved_once[]` is written nowhere but
+loop.c:1912, and the pseudo must be one our loop also sets exactly once, which for a sibling
+loop would mean the same user variable assigned an invariant in both loops. Either way a
+second backward branch is emitted, and the target has exactly one.
+
+### s11.5 Sibling sweep
+
+`func_80067D14` (src/text1b.c, the only sibling this ledger names) has **no `candidate.c`** in
+`memory/grind/func_80067D14/`, so there is no spelling to transplant; nothing was inherited or
+measured from it this session.
+
+- [s11] Chassis re-measured twice with memory/grind/func_8003C714/candidate.c applied over the INCLUDE_ASM line: sandbox func_8003C714 --disable all = score 15, target_insns 104, build_insns 105, rules_dropped 0. Body unchanged this session; src/code6cac_c2.c restored to INCLUDE_ASM at session end.
+
+- [s11] Baseline movable table (tmp/grind/func_8003C714/s11/base.loop, 'Loop from 25 to 146: 56 real insns'): slot 1 insn 33 regno 78 life 1 savings 1 = &D_80106A58; slot 2 insn 46 regno 84 life 1 savings 1 = 0x91A2B3C5; slot 3 insn 60 regno 91 life 31 savings 1 = 0x88888889. All three moved. This is the first time the ledger records the identities rather than the counts.
+
+- [s11] The dump directly confirms s10's H15: the /30 magic is read by four in-loop mults and still prints 'savings 1', because loop.c:800 sets m->savings = n_times_used[regno] and loop.c:597 bcopies n_times_set into n_times_used.
+
+- [s11] loop.c:1609 doubles scan_loop's insn_count local permanently for all subsequent movables and does not decrement threshold; threshold is decremented by 3 only at loop.c:1719 and loop.c:1904, i.e. only when a movable is actually moved. A declined movable therefore leaves threshold intact for the next one.
+
+- [s11] moved_once[] is per-function (alloca + bzero at loop.c:344-345), written only at loop.c:1912, and loop_optimize scans loops with 'for (i = max_loop_num-1; i >= 0; i--)', so only a loop nested inside ours (or a later sibling sharing the pseudo) can pre-set the flag.
+
+- [s11] force_movables (loop.c:1193-1225) can only link m->forces to an EARLIER movable, so the loop.c:1594 '(! m->forces || m->forces->done)' skip cannot be used to suppress a movable; and the STRICT_LOW_PART partial-movable path at loop.c:832-900 is unreachable on MIPS, so two movables can never share a regno inside one scan_loop call.
+
+- [s11] Carrier cost table, all ordinary C with no FAKE constructs: candidate.c 105 insns / score 15; varE.c (carrier 'D_800A37B8 = 5;') 112 / 18; varD.c (carrier 'D_800A37B8 = 0x12345678;') 113 / 19.

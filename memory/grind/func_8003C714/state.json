@@ -1,7 +1,7 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -63,23 +63,29 @@
    "floor": 15,
    "modality": "rederive",
    "headline": "Rederive: loop.c:1631 re-derived from compiler source, correcting two inherited claims - m->savings counts SETS not uses (H15), and a FOURTH ordinary-C movable DOES exist (K30, contradicting s8 fronti"
+  },
+  {
+   "session": 11,
+   "floor": 15,
+   "modality": "rederive",
+   "headline": "Rederive: read the .loop MOVABLE TABLE instead of inheriting it - the admissible insn_count window is [120,122] not '>=120' (H17), and s7's K20 is corrected: the moved_once doubling reproduces the tar"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A class grant covering /* FAKE */-annotated loop-carried counting carriers would close this function immediately - the closing body is already written and already measured at distance 0 (s6).",
-   "mechanism": "count_loop_regs_set takes insn_count before move_movables and before strength_reduce, so a loop-carried constant-step biv is COUNTED and then deleted by biv elimination inside loop_optimize for zero emitted bytes; 32 balanced pairs take the loop 56 -> 121 real insns byte-identically and flip the 0x91A2B3C5 movable to not-desirable at >= 120. s10 confirms the target arithmetic term by term: savings and lifetime are both pinned at 1, so only insn_count can move.",
-   "next_probe": "None from inside a grind session - this is an owner-only extension of the frozen family list. If it ever lands, restore memory/grind/func_8003C714/rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c, re-measure, and add the FAKE annotation."
+   "hypothesis": "A moved_once carrier that emits zero net bytes would close the function on the shipped chassis with ordinary C, because the carrier arrangement already reproduces the target's movable table exactly and only costs +7 instructions.",
+   "mechanism": "With the carrier between the base-address computation and the first division, the requirement is only 2*insn_count > 116 and insn_count <= 122 (insn_count >= 59, i.e. +3 RTL insns over the baseline 56) - fifteen times cheaper than the +64 the s6 balanced-biv form needed. The blocker is purely that moved_once[] is written only at loop.c:1912, so the carrier must be a real loop and a real loop emits a backward branch.",
+   "next_probe": "Enumerate loop shapes whose control flow is fully removed AFTER loop_optimize: (a) an inner loop whose biv is eliminated by strength_reduce and whose remaining compare is folded by cse2/jump2 (check the .jump2 and .cse2 dumps, not the .loop dump); (b) a do{...}while(0) whose body begins with a CODE_LABEL that survives jump_optimize, which would defeat the 'is phony' rejection at loop.c:566-576 that killed rejected/dowhile0-inner-loop-is-phony.c - note do-while(0) is a SANCTIONED family (.claude/rules/do-while-zero-exception.md) so a byte-free instance would be admissible with a FAKE annotation. Measure byte cost with sandbox, and confirm 'halved since already moved' appears in the .loop dump."
   },
   {
-   "hypothesis": "A toolchain finding that changes n_non_fixed_regs on the shipped chassis without a CC_FLAGS edit (evidence that the original build's cc1 was configured for a no-FPU target, making -msoft-float chassis FIDELITY rather than a chassis change) would let the honest candidate.c body match as-is.",
-   "mechanism": "loop.c:532 threshold = 2*(1+n_non_fixed_regs) is 122 with FP regs free and 58 with them fixed; after one threshold -= 3 the magic faces 55 against insn_count 56 and stays in-loop in the target's split lui/ori form. s10's reading of loop.c:597/791/793 shows this is the only remaining free term, since savings and lifetime are both structurally 1.",
-   "next_probe": "None from inside a grind session (barred by this function's binding judge constraint and by .claude/rules/no-compiler-divergence.md). Any such finding must also resolve the s2 conflict where the same configuration regresses func_800324D0 from 0 to 3."
+   "hypothesis": "An insn_count-inflation attack must land in the 3-wide window [120,122] (no carrier) or make 2*insn_count land in (116,122] (with a carrier); a form that overshoots breaks the match from the other side by declining the base-address hoist.",
+   "mechanism": "The base address is movable slot 1 at threshold 122 and the /1800 magic is slot 2 at threshold 119; both have lifetime 1 and savings 1, so they can only be separated by an insn_count strictly between them. Measured directly: at effective insn_count 126 both printed 'not desirable' and the preheader lost its lui/addiu $a2 pair.",
+   "next_probe": "Any future free-insn_count candidate must be swept across k and the .loop dump checked for the four-line pattern 'base moved / magic not desirable / 0x88888889 moved', not just for a lower sandbox score. Re-check whether s6's balanced-biv sweep has any k in [120,122] other than 121 - the window's width bounds how much slack a natural carrier is allowed."
   },
   {
-   "hypothesis": "A hoisted invariant whose preheader insn is deleted AFTER loop_optimize would make the movable-slot dial byte-free, and s10 measured the dial closes the gap by 5 per slot, so about 12 such invariants would decline the 0x91A2B3C5 movable at zero byte cost.",
-   "mechanism": "move_movables emits each moved invariant into the preheader and decrements threshold by 3 (loop.c:1719/1904) while its in-loop set also raised insn_count. If the preheader insn's only consumer is removed later inside loop_optimize (strength reduction / biv elimination) or by cse2 as redundant with an existing preheader value, flow deletes it and the slot is free.",
-   "next_probe": "Enumerate invariants whose sole in-loop consumer is deleted by strength_reduce, and check whether any is NOT already covered by s7's K22 (which measured that a hoistable step constant makes the biv increment a register and disqualifies biv elimination at ~9 emitted instructions). If K22 does not cover the case where the invariant feeds a giv ADDRESS rather than a biv step, measure that shape - the s10 four-movable dump shows givs at insns 52/66/97/137 all combining, which is where such an invariant would land."
+   "hypothesis": "A second loop LATER in the function that assigns an invariant to the same user variable our loop assigns would set moved_once without nesting, and might reuse control flow the function already has.",
+   "mechanism": "loop_optimize scans loops in reverse order, so a sibling loop appearing after ours is scanned first; if it hoists a pseudo that our loop also sets exactly once, moved_once[regno] is already set when our loop is scanned. Unlike the nested case the carrier's set would not need to sit inside our loop's preheader.",
+   "next_probe": "Confirm with a diagnostic that a later sibling loop assigning the same C local an invariant really produces ONE pseudo (not two) - RTL may split the variable. If it does, the question becomes whether the function's post-loop tail (func_8001CD68 through gpu_DisableDisplay, 8003C844..8003C89C, 23 instructions) can host a zero-byte loop; the shipped tail is straight-line, so the honest answer is probably no, but the pseudo-identity question is cheap to settle and it is the only non-nested route to moved_once."
   }
  ],
  "judge_constraints": [
@@ -125,6 +131,30 @@
    "measured_on": "shipped chassis, source survey (grep over asm/funcs and src) plus target disassembly read",
    "predicate_cite": "",
    "result": "The sibling confirms the banked body's expression shape by contrast rather than replacing it. The only other 0x91A2B3C5 "
+  },
+  {
+   "session": 11,
+   "statement": "The leanest moved_once carrier found this session, an inner loop spelled 'j = 0; do { D_800A37B8 = 5; j += 1; } while (j < 2);' placed between the dst computation and the first division, builds to 112",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis (HEAD 2026-09-05), s11 varD.c / varE.c applied in src/code6cac_c2.c, no FAKE constructs present, rules_dropped 0",
+   "predicate_cite": "",
+   "result": "varD 113 insns score 19; varE 112 insns score 18; baseline 105 insns score 15. Note the score rose only 15 -> 18 for +7 "
+  },
+  {
+   "session": 11,
+   "statement": "An inner loop whose only invariant is the symbol address &D_80106A58 creates no movable at all, so it cannot set moved_once; the carrier has to be a CONST_INT invariant.",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis (HEAD 2026-09-05), s11 varB_movedonce_early.c first spelling applied in src/code6cac_c2.c, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Inner loop printed 'Loop from 32 to 54: 4 real insns' with no movable line, and the outer loop still moved all three mov"
+  },
+  {
+   "session": 11,
+   "statement": "The sibling func_80067D14 (src/text1b.c) has no candidate.c in its ledger, so no sibling spelling was available to transplant onto this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "ledger state at 2026-09-05, memory/grind/func_80067D14/ contains no candidate.c",
+   "predicate_cite": "",
+   "result": "Nothing to transplant; recorded so a later session does not re-spend the sweep until that sibling banks a body."
   }
  ]
 }

@@ -1403,3 +1403,84 @@ for this constant.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: shipped chassis, source survey (grep over asm/funcs and src) plus target disassembly read
+
+## s11 (2026-09-05, rederive modality)
+
+### H16 — CONFIRMED. The loop.c:1609 `moved_once` insn_count doubling is NOT self-defeating when the carrier is an EARLIER movable than the 0x91A2B3C5 magic.
+Mechanism: `insn_count *= 2` at loop.c:1609 mutates scan_loop's local permanently, so every
+movable tested after the carrier sees the doubled count, while `threshold` is decremented
+(loop.c:1719/1904) only by movables that are actually MOVED. s7's K20 measured the doubling with
+the magic itself as the carrier, which inflates that movable's own `m->lifetime` (1 -> 14/15) and
+multiplies the LHS; a separate carrier leaves the magic at lifetime 1.
+Probe: three diagnostic bodies, dumps in `tmp/grind/func_8003C714/s11/`.
+Result: with the carrier placed between the base-address computation and the first division
+(`s11/varE.c`, `s11/varE.loop`), the dump prints the target's exact arrangement — base address
+`moved`, carrier `halved since already moved  moved`, `0x91A2B3C5 ... not desirable`, `0x88888889
+... moved`. Verdict CONFIRMED on the shipped chassis, no FAKE constructs present.
+
+### K33 — KILLED (instance). The leanest moved_once carrier measured costs +7 emitted instructions.
+Statement: the inner-loop moved_once carrier spelled `j = 0; do { D_800A37B8 = 5; j += 1; } while
+(j < 2);` placed between `dst = ...` and the first division builds to 112 instructions and
+sandbox 18, i.e. +7 over the honest body's 105, and the 0x12345678 spelling of the same carrier
+builds to 113 / score 19.
+kill_scope: instance. measured_on: shipped chassis, s11 varD.c / varE.c applied in
+src/code6cac_c2.c, no FAKE constructs, `sandbox func_8003C714 --disable all` = 19 / 18.
+Note the score rose only 15 -> 18 for +7 instructions: declining the /1800 hoist repairs several
+of the 15 residual differences, independently corroborating s6's distance-0 result.
+
+### K34 — KILLED (instance). A symbol-address invariant inside the inner loop does not create a movable, so it cannot carry moved_once.
+Statement: an inner loop whose only invariant is `&D_80106A58` produced no movable at all — loop.c
+folded the symbol into the giv as `dest address src reg 74 ... add (symbol_ref:SI
+("D_80106A58"))` — so `moved_once` stayed clear and all three outer movables still moved at
+insn_count 64.
+kill_scope: instance. measured_on: shipped chassis, s11 varB_movedonce_early.c (first spelling)
+applied in src/code6cac_c2.c, no FAKE constructs, `.loop` dump inspected (no movable line printed
+for the inner loop). A CONST_INT invariant does work (H16).
+
+### H17 — CONFIRMED. The admissible insn_count window is [120, 122], not "insn_count >= 120".
+Mechanism: the movable table (s11.1 of evidence.md) puts the base address at slot 1 (threshold
+122) and the /1800 magic at slot 2 (threshold 119). The target hoists the base and keeps the magic
+in-loop, so `122 >= insn_count` AND `119 < insn_count` must both hold.
+Probe: read from `tmp/grind/func_8003C714/s11/base.loop`, and corroborated by the varB spelling
+where insn_count 63 doubled to 126 and BOTH the base address and the magic printed `not
+desirable`.
+Result: s6's distance-0 form sat at insn_count 121, inside the window. Any future
+insn_count-inflation attack must land in a 3-wide window; at >= 123 the preheader loses its
+`lui/addiu $a2, %hi/%lo(D_80106A58)` pair and the match breaks from the other side. Verdict
+CONFIRMED.
+
+## [s11] The loop.c:1609 moved_once insn_count doubling is not self-defeating when the carrier is a movable EARLIER in the list than the 0x91A2B3C5 magic; with the carrier placed between the base-address computation and the first division, the .loop dump prints the target's exact arrangement (base address moved, 0x91A2B3C5 not desirable, 0x88888889 moved).
+- mechanism: loop.c:1609 'if (moved_once[regno]) insn_count *= 2;' mutates scan_loop's local permanently, so every movable tested afterwards sees the doubled count, while threshold is decremented (loop.c:1719/1904) only by movables actually moved. moved_once[] is per-function (alloca+bzero at loop.c:344-345) and written only at loop.c:1912, and loop_optimize scans innermost/latest loops first, so an invariant hoisted out of a nested loop arrives at our scan already flagged. s7's K20 attached the flag to the magic itself, which inflates that movable's own m->lifetime 1 -> 14/15 and multiplies the LHS; a separate carrier leaves the magic at lifetime 1.
+- probe: Three diagnostic bodies compiled with the instrumented cc1 via tmp/grind/func_8003C714/run_dump.sh and their .loop movable tables read: carrier at the top of the body (both base and magic declined at 2*63=126), carrier absent (baseline, all three moved at 56), carrier between the base-address computation and the first division (target arrangement).
+- result: tmp/grind/func_8003C714/s11/varE.loop: 'Loop from 25 to 174: 62 real insns. / Insn 33: regno 79 (life 1) moved to 233 / Insn 231: regno 82 (life 9) halved since already moved moved to 235 / Insn 74: regno 87 (life 1) not desirable / Insn 88: regno 94 (life 31) moved to 237'. Slot 1 is tested at threshold 122 against the UNDOUBLED count and moves; the carrier is slot 2, doubles the count to 124 and moves (119*9 >= 124), taking threshold to 116; the magic is slot 3 and 116 < 124 declines it; the /30 magic is slot 4 at 116*31. Generalised: with the carrier between base and magic the requirement is 2*insn_count > 116 and insn_count <= 122, i.e. insn_count >= 59 - a +3 RTL-insn ask instead of the +64 the s5/s6 record implies.
+- verdict: CONFIRMED
+
+## [s11] The insn_count range that reproduces the target's preheader is [120, 122] when no moved_once carrier is present, because the base-address movable occupies slot 1 (threshold 122) and the 0x91A2B3C5 magic occupies slot 2 (threshold 119), and the target hoists the base while keeping the magic in-loop.
+- mechanism: loop.c:1631 tests threshold * savings * m->lifetime >= insn_count per movable in list order, and loop.c:1719/1904 subtract 3 from threshold only when a movable is actually moved. The baseline table read this session gives slot 1 = &D_80106A58 (life 1, savings 1), slot 2 = 0x91A2B3C5 (life 1, savings 1), slot 3 = 0x88888889 (life 31, savings 1). The target's preheader at 8003C73C..8003C750 contains the base address and the /30 magic and not the /1800 magic, which forces 122 >= insn_count and 119 < insn_count simultaneously.
+- probe: Read tmp/grind/func_8003C714/s11/base.loop (Loop from 25 to 146: 56 real insns) against the shipped disassembly asm/funcs/func_8003C714.s, and corroborated with the varB spelling where insn_count 63 doubled to 126 and BOTH the base address and the magic printed 'not desirable'.
+- result: s6's distance-0 form sat at insn_count 121, inside the window - the ledger had recorded only the lower bound. Any future insn_count-inflation attack must land in a 3-wide window: at insn_count >= 123 the preheader loses its lui/addiu $a2,%hi/%lo(D_80106A58) pair and the match breaks from the other side. The dump also directly confirms s10's H15: the /30 magic is read by four in-loop mults and still prints 'savings 1'.
+- verdict: CONFIRMED
+
+## [s11] The leanest moved_once carrier found this session, an inner loop spelled 'j = 0; do { D_800A37B8 = 5; j += 1; } while (j < 2);' placed between the dst computation and the first division, builds to 112 instructions at sandbox score 18 (+7 emitted instructions over the honest body's 105), and the 0x12345678 spelling of the same carrier builds to 113 at score 19.
+- mechanism: The carrier must be a loop because moved_once[] is written nowhere but loop.c:1912. An inner loop emits, at minimum, the counter init, the body store, the increment, the compare and the backward branch, plus the hoisted CONST_INT in the outer preheader. The shipped target is 104 instructions and the honest body already overshoots it by one.
+- probe: sandbox func_8003C714 --disable all on tmp/grind/func_8003C714/s11/varD.c and s11/varE.c applied over the INCLUDE_ASM line in src/code6cac_c2.c; the honest candidate.c re-measured immediately before and after at 15 / 105.
+- result: varD 113 insns score 19; varE 112 insns score 18; baseline 105 insns score 15. Note the score rose only 15 -> 18 for +7 instructions: declining the /1800 hoist genuinely repairs several of the 15 residual differences, which is independent corroboration of s6's distance-0 measurement. Banked as memory/grind/func_8003C714/rejected/movedonce-inner-loop-carrier-costs-7-insns.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis (HEAD 2026-09-05), s11 varD.c / varE.c applied in src/code6cac_c2.c, no FAKE constructs present, rules_dropped 0
+
+## [s11] An inner loop whose only invariant is the symbol address &D_80106A58 creates no movable at all, so it cannot set moved_once; the carrier has to be a CONST_INT invariant.
+- mechanism: loop.c's strength reduction folds a loop-invariant symbol_ref used as an address base into the giv itself, printing 'dest address src reg 74 ... add (symbol_ref:SI (D_80106A58))' rather than creating a movable, so move_movables never runs on it and loop.c:1912 never fires.
+- probe: First spelling of tmp/grind/func_8003C714/s11/varB_movedonce_early.c compiled with the instrumented cc1; the inner loop's table in the .loop dump was inspected for a movable line.
+- result: Inner loop printed 'Loop from 32 to 54: 4 real insns' with no movable line, and the outer loop still moved all three movables at insn_count 64 with no 'halved since already moved' text. Replacing the store with a CONST_INT assignment to a global immediately produced a movable and the doubling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis (HEAD 2026-09-05), s11 varB_movedonce_early.c first spelling applied in src/code6cac_c2.c, no FAKE constructs present
+
+## [s11] The sibling func_80067D14 (src/text1b.c) has no candidate.c in its ledger, so no sibling spelling was available to transplant onto this chassis.
+- mechanism: The sibling-propagation rule requires reading the sibling's candidate.c and transplanting its spelling of every shared block; memory/grind/func_80067D14/ contains no candidate.c (the dispatch brief also reports 'candidate: no candidate.c').
+- probe: Directory check of memory/grind/func_80067D14/ at session start.
+- result: Nothing to transplant; recorded so a later session does not re-spend the sweep until that sibling banks a body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: ledger state at 2026-09-05, memory/grind/func_80067D14/ contains no candidate.c

@@ -218,6 +218,34 @@
  *       not transplantable; it confirms this body's `(t/30) % 60` by contrast.
  * This body remains the honest ordinary-C best at 15. See hypotheses.md
  * H15/K29-K32 and evidence.md section s10.
+ *
+ * [s11 2026-09-05 UPDATE, rederive modality] Chassis re-checked first and again
+ * at session end: this body still scores 15 (104 target / 105 build,
+ * rules_dropped 0). BODY UNCHANGED. s11 re-derived the loop.c:1631 arrangement
+ * from the actual .loop MOVABLE TABLE (identities, not counts) and corrected one
+ * inherited kill:
+ *   H17 the admissible window is insn_count in [120, 122], NOT ">= 120". The
+ *       table is slot 1 = &D_80106A58 (life 1, threshold 122), slot 2 =
+ *       0x91A2B3C5 (life 1, threshold 119), slot 3 = 0x88888889 (life 31). The
+ *       target hoists slots 1 and 3 and keeps slot 2 in-loop, so 122 >= c AND
+ *       119 < c. At c >= 123 the preheader loses its lui/addiu $a2 pair and the
+ *       match breaks from the other side. s6's d0 form sat at 121.
+ *   H16 s7's K20 is CORRECTED. The loop.c:1609 `moved_once` doubling is only
+ *       self-defeating when the magic ITSELF is the carrier (its lifetime
+ *       inflates 1 -> 14/15). With a DIFFERENT carrier placed between the
+ *       base-address computation and the first division, the magic keeps
+ *       lifetime 1 and the dump prints the TARGET'S EXACT arrangement: base
+ *       moved, carrier "halved since already moved" moved, 0x91A2B3C5 "not
+ *       desirable", 0x88888889 moved. Requirement drops from insn_count > 119
+ *       to insn_count >= 59.
+ *   K33 the leanest such carrier measured costs +7 emitted instructions
+ *       (112 build / score 18); the 0x12345678 spelling costs +8 (113 / 19).
+ *       rejected/movedonce-inner-loop-carrier-costs-7-insns.c.
+ *   K34 a symbol-address invariant cannot carry moved_once (loop.c folds it
+ *       into the giv's `add (symbol_ref)` and no movable is created); the
+ *       carrier must be a CONST_INT invariant.
+ * This body remains the honest ordinary-C best at 15. See hypotheses.md
+ * H16/H17/K33/K34 and evidence.md section s11.
  */
 void func_8003C714(void) {
     u8 buf[4];
