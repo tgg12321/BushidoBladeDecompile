@@ -1136,6 +1136,14 @@
    "at": "2026-09-04T19:05:13.566558+00:00",
    "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
    "consumed": 117
+  },
+  {
+   "from": "func_80034F88",
+   "floor": 2,
+   "session": 64,
+   "at": "2026-09-05T18:55:55.915834+00:00",
+   "headline": "Floor 9 -> 2 after 63 flat sessions: inverse.py on the chassis-(a) model prices the target seating at ONE atom (loop index conflicts block 0's value), and spelling it as variable reuse (block-0 value ",
+   "consumed": null
   }
  ],
  "escalation_deferrals": 0,

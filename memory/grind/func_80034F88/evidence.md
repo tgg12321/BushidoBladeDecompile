@@ -8847,3 +8847,111 @@ and folds back to the 3-reference shape in the then-arm form.
 - [s63] Priority arithmetic for the seat, measured: pri = floor_log2(refs)*refs/livelen*10000. The address object is 5 refs / livelen 28 / 3571. A 3-reference block-0 value needs livelen >= 9 to fall below it; a 2-reference value needs livelen >= 6; raising the address object instead needs 8 references (the floor_log2 2->3 jump) since 7 refs only reaches 2500.
 
 - [s63] src/, include/ and the tree were restored to HEAD at session end; the split-declaration header edit remains an integration handoff documented in candidate.c and scripted in s63/apply.py.
+
+## s64 (synthesis, 2026-09-05) -- THE FLOOR MOVES 9 -> 2.  The 64-session
+## register rotation is SOLVED; the residual is two instructions in the loop.
+
+E64.1  THE HEADLINE.  A body that reuses block 0's value local as the copy
+loop's byte temp measures **score 2 at 49 target / 49 build instructions** on
+the split-declaration chassis.  Every register seat the grind has been chasing
+since s49 -- block 0's address at $v1, block 0's value at $a0, `p` at $a1 --
+comes out at the target's value, together with all three la pairs, the block-0
+reload in the load-delay slot of the flag lw, and blocks 1/2's $a0/$v1.  The
+whole remaining divergence is one register field in each of two loop
+instructions: ours `lbu $a0, 0x17($v0)` / `sb $a0, %lo(D_80106A70)($at)`
+against the target's `lbu $v0, ...` / `sb $v0, ...`.  Body:
+memory/grind/func_80034F88/candidate.c (= tmp/grind/func_80034F88/s64/
+body_a1_value_reused_as_loop_temp.c).
+
+E64.2  HOW IT WAS FOUND -- inverse.py on the (a) model, which s63 never ran.
+s63 ran `inverse.py global` only on the chassis-(c) model (z2) and got
+"minimal solution size: 2 atoms", both unavailable, and concluded (c) was the
+wrong chassis to grind.  It also concluded from the target's `lbu $a0 / andi
+$a0 / sb $a0` that "the target is chassis (b)" and pointed the next session at
+local_alloc.  Running the SAME solver on the chassis-(a) model
+(tmp/grind/func_80034F88/s64/a.model.json; goal {76:$v1, 77:$a0, 72:$a1})
+returns **"minimal solution size: 1 atom(s) -- 6 distinct vector(s)"**
+(tmp/grind/func_80034F88/s64/inverse_a.txt).  The cheapest vector is
+`[conflict_add] pseudo 73: conflict +77` -- make the LOOP INDEX conflict with
+block 0's VALUE -- and the lever the solver names for it is
+"(variable identity) reuse one variable across both regions".  The other four:
+`refs_down 77: 7->2` and `7->1` (not spellable: the value's 7 references are
+lbu + andi-use + andi-set + sb + reload-lbu + ori + move) and `refs_up 76:
+5->16` and `5->17` (eleven extra references on the address object).
+
+E64.3  THE ALLOCATION, MEASURED (tmp/grind/func_80034F88/s64/a1.model.json).
+  ord0 p73 loop index          11 refs / livelen  7 / pri 47142 -> $v1
+  ord1 p76 value + loop temp   11 refs / livelen 10 / pri 33000 -> $a0  TARGET
+  ord2 p75 c                   15 refs / livelen 19 / pri 23684 -> $v0  TARGET
+  ord3 p74 v                    6 refs / livelen 10 / pri 12000 -> $v1  TARGET
+  ord4 p81 r                    6 refs / livelen 19 / pri  6315 -> $a0  TARGET
+  ord5 p77 q (block-0 address)  5 refs / livelen 28 / pri  3571 -> $v1  TARGET
+  ord6 p72 p                    6 refs / livelen 34 / pri  3529 -> $a1  TARGET
+conflicts[73] gains 76, which is the whole difference from the s63 baseline
+(where conflicts[73] = [72, 73] and the value took $v1 at ord 2).  The address
+object needed no priority change at all: once $v1 is occupied by the index at
+its own turn and the value is pushed to $a0, find_reg's ascending scan hands
+the address $v1 unaided, exactly as E63.4 predicted.
+
+E64.4  WHY THIS SPELLING IS CAPPED AT 2.  The conflict is bought by making
+block 0's value live across the loop, and the only byte-free way to be live in
+the loop is to BE the loop's byte temp.  GCC 2.7.2 assigns one hard register
+per allocno (global.c:1275, no live-range splitting), and the target needs that
+value in $a0 in block 0 and in $v0 in the loop -- the loop's byte temp shares
+$v0 with the loop's address temp (`addu $v0,$a1,$v1` / `lbu $v0,0x17($v0)`).
+So no spelling of the loop-index-conflict route reaches 0; 2 is its floor.
+
+E64.5  THE OTHER $v1 ALLOCNO, AND WHY REUSE INTO BLOCKS 1/2 DOES NOT WORK.
+The only other allocno seated at $v1 is p74 (blocks 1/2's value).  A conflict
+with it would seat block 0's value at $a0 the same way.  Measured this session:
+reusing the block-0 value local in block 2 (rejected/s64-u-reused-block2-
+score10.c) gives score 10 at 49 insns and the extracted model shows
+conflicts[76] = [72, 75, 76, 77, 81] -- NO conflict with 74, because the local
+is dead throughout block 1, so global.c never sees them live together; the
+merged carrier then takes $v1 itself at ord 2 (10 refs / pri 23076).  Reusing
+it in block 1 (score 15) and in both blocks (score 15) MERGE the two values
+into one allocno rather than making them conflict.
+
+E64.6  CHASSIS (b) IS FORECLOSED FOR THE SEAT -- s63's frontier item 1 is dead
+before it is probed.  `local_extract.py code6cac_b --func func_80034F88
+--suggest` on the (b) chassis (mask in its own block-local carrier) dumps
+find_free_reg's actual scanned sets (tmp/grind/func_80034F88/s64/
+chassis_b.sugg.json): for block 0's mask quantity `used` (hard regs) is
+{0, 1, 2, 26..31} -- **register 3 ($v1) is NOT in it** -- and `first_used`
+equals `used`, with ncopysugg = 0 and nsugg = 0.  So the ascending scan at
+tools/gcc-2.7.2/local-alloc.c:2249 hands the mask $v1 (the first free register
+after the hard-excluded $v0), which is what puts hard conflict 3 on block 0's
+address allocno and makes the $v1 seat unreachable on that chassis regardless
+of priority.  There is no suggested-register pass to appeal to: the quantity
+carries no copy suggestion and no arithmetic suggestion at all.  s63's planned
+find_free_reg investigation is therefore answered and closed.
+
+E64.7  Index-hoisting re-measured on chassis (a) with the cse2 invalidator in
+place: `i = 0;` immediately after the call (rejected/s64-index-init-after-
+call-52insn-score31.c) and `i = 0;` immediately after block 0's mask store
+(rejected/s64-index-init-after-mask-store-52insn-score31.c) both build 52
+instructions at score 31, reproducing s61's and s63's numbers on the newer
+chassis.  Hoisting the index is not the way to buy the conflict; reusing the
+variable is.
+
+- [s64] FLOOR 9 -> 2.  Reusing block 0's value local as the copy loop's byte temp makes the loop index conflict with block 0's value, and that single conflict delivers every register seat in the function except the loop temp's own: 49/49 instructions, score 2, residual = one register field in `lbu $a0,0x17($v0)` and `sb $a0,%lo(D_80106A70)($at)`.
+- [s64] inverse.py on the chassis-(a) model prices the target seating at ONE atom (`conflict_add 73 +77`, lever "variable identity"), where s63's run on the chassis-(c) model had priced it at two unavailable atoms; running the solver on the OTHER banked chassis was the whole session.
+- [s64] The loop-index-conflict route is capped at score 2: the conflict requires block 0's value to be live in the loop, the only byte-free way to be live there is to be the loop's byte temp, and one allocno gets one hard register (global.c:1275) while the target needs $a0 in block 0 and $v0 in the loop.
+- [s64] Reusing the block-0 value local in block 2 does NOT create a conflict with blocks 1/2's value (the local is dead throughout block 1, so global.c never marks them simultaneously live); reusing it in block 1 or in both blocks MERGES the allocnos instead.  Scores 10, 15, 15 at 49 insns.
+- [s64] Chassis (b) is foreclosed for the $v1 seat: find_free_reg's measured `used` set for block 0's mask quantity is {0,1,2,26..31} with no register 3, `first_used` == `used`, and the quantity carries zero copy suggestions and zero arithmetic suggestions, so the ascending scan (local-alloc.c:2249) always hands it $v1 and always puts hard conflict 3 on the address allocno.
+
+- [s64] FLOOR 9 -> 2. memory/grind/func_80034F88/candidate.c builds 49 instructions against the target's 49 and differs from the target in exactly two instructions, in one register field each: ours `lbu $a0,0x17($v0)` / `sb $a0,%lo(D_80106A70)($at)` versus the target's `lbu $v0,0x17($v0)` / `sb $v0,%lo(D_80106A70)($at)`.
+
+- [s64] The 15-session $v1 seat hunt is over: block 0's address allocno now takes $v1, block 0's value takes $a0 and p takes $a1, with no priority change to any of them -- exactly the fall-out E63.4 predicted once the seat is freed.
+
+- [s64] The lever is ordinary variable reuse: the block-0 value local is declared at function scope and reused as the copy loop's byte temp, which makes it conflict with the loop index (conflicts[73] gains 76) so the index takes $v1 at ord 0 and pushes the value to $a0.
+
+- [s64] METHOD FINDING: s63 ran inverse.py only on the chassis-(c) model and read '2 atoms, both unavailable' as a property of the function. Running the same solver on the chassis-(a) model returns 'minimal solution size: 1 atom(s)'. The banked-chassis set must be swept with the solver, not sampled.
+
+- [s64] s63's frontier item 1 (a local_alloc find_free_reg investigation on chassis (b)) is answered and closed without spending a session on it: the measured `used` set for block 0's mask quantity is {0,1,2,26..31}, first_used == used, and the quantity carries zero copy suggestions and zero arithmetic suggestions, so the ascending scan can only return $v1.
+
+- [s64] The remaining two instructions are NOT a priority problem and not a local-alloc problem: they are the price of the conflict's current carrier. Block 0's value must be $a0 in block 0 and the loop's byte temp must be $v0, and one allocno gets one hard register (global.c:1275).
+
+- [s64] INTEGRATION HANDOFF unchanged: the body needs `extern u8 D_80106A70[3];` (absorbing D_80106A71/D_80106A72, their two consumers in src/code6cac.c converted to element form) with `extern u8 D_80106A73;` left as its own scalar -- measured byte-neutral project-wide in s62/s63. Installer: python3 tmp/grind/func_80034F88/s63/apply.py <body.c>.
+
+- [s64] src/, include/ and the tree were restored to HEAD at session end; only memory/grind/func_80034F88/ and tmp/ carry this session's output.

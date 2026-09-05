@@ -6667,3 +6667,72 @@ otherwise target-shaped body.
 - probe: objdump of the score-15 dead-re-set build diffed instruction-by-instruction against asm/funcs/func_80034F88.s; hand replay of find_reg on the extracted model; read of the target's block-0 registers.
 - result: The 49-instruction stream matches the target one-for-one (reload in the load-delay slot of the flag lw, block 1's la in position, the `move p,$v0` after block 0's lbu) and diverges only as block-0 address $a1->$v1, block-0 value $v1->$a0, p $a2->$a1 -- three register substitutions, priced 15 by the engine metric. Blocks-1/2's address and value, the loop index and the $v0 temp already match. The last open question is find_free_reg's `used` set and the qty_phys_copy_sugg/qty_phys_sugg suggested-register pass, not allocno priority.
 - verdict: CONFIRMED
+
+## s64 hypotheses (synthesis)
+
+## [s64] CONFIRMED -- Making the loop index's live range overlap block 0's value, by reusing the block-0 value local as the copy loop's byte temp, seats block 0's address at $v1, block 0's value at $a0 and p at $a1 in one move, dropping the floor from 9 to 2.
+Probe: inverse.py global on the chassis-(a) model with goal {76:$v1, 77:$a0,
+72:$a1} returned one atom (`conflict_add 73 +77`); spelled as variable reuse and
+measured with `sandbox --disable all`.  Result: score 2, 49 target / 49 build
+instructions, every seat at the target's value except the loop byte temp.
+Artifacts: tmp/grind/func_80034F88/s64/inverse_a.txt, a.model.json,
+a1.model.json, body_a1_value_reused_as_loop_temp.c.
+
+## [s64] KILLED (instance) -- The loop-index-conflict spelling cannot go below score 2, because block 0's value would have to hold $a0 in block 0 and $v0 in the copy loop.
+measured_on: split-declaration two-object chassis on HEAD 2026-09-05 with the
+two Judge-granted pointer FAKEs and the s57-family cse2 dead-re-set invalidator,
+body_a1_value_reused_as_loop_temp.c, score 2 / 49 insns.
+
+## [s64] KILLED (instance) -- Reusing block 0's value local in block 2, in block 1, or in both flag blocks does not create a conflict with blocks 1/2's value allocno.
+measured_on: same chassis; scores 10 / 15 / 15, all at 49 instructions;
+extracted model shows conflicts[76] without 74 in the block-2 case.
+
+## [s64] KILLED (class) -- No chassis-(b) spelling (block 0's mask carried in its own block-local carrier) seats block 0's address allocno at $v1.
+measured_on: split-declaration chassis, local_extract --suggest on
+body_w1_split_mask_reload.c, HEAD 2026-09-05.  predicate:
+tools/gcc-2.7.2/local-alloc.c:2249 -- find_free_reg's ascending scan over
+`first_used`, whose measured content for the mask quantity is {0,1,2,26..31}
+with no register 3 and an empty suggestion set.
+
+## [s64] KILLED (instance) -- Hoisting the loop index's initialisation, either to immediately after the call or to immediately after block 0's mask store, buys the conflict at a cost of three instructions.
+measured_on: chassis (a) with the cse2 invalidator, HEAD 2026-09-05; both
+spellings 52 instructions / score 31.
+
+## [s64] Making the loop index's live range overlap block 0's value, by reusing the block-0 value local as the copy loop's byte temp, seats block 0's address at $v1, block 0's value at $a0 and p at $a1 in a single move.
+- mechanism: global.c allocates allocnos in descending priority and find_reg scans hard registers ascending over the regs not taken by an allocno the candidate conflicts with. Adding conflicts[73] += 76 lets the loop index (pri 47142, ord 0) take $v1 first; the block-0 value then finds $v0 hard-excluded (the func_80077D00 return is live across block 0's lbu) and $v1 conflict-blocked and lands in $a0; blocks 1/2's value keeps $v1 and blocks 1/2's address keeps $a0 (neither conflicts with the block-0 value); block 0's address, at ord 5 with an unchanged priority of 3571, finds $v1 free and takes it; p, conflicting with everything, falls into $a1.
+- probe: python3 tools/ra_solver/inverse.py global tmp/grind/func_80034F88/s64/a.model.json --goal '{"76":3,"77":4,"72":5}' --depth 2 -> 'minimal solution size: 1 atom(s) - 6 distinct vector(s)', cheapest = [conflict_add] pseudo 73: conflict +77, lever '(variable identity) reuse one variable across both regions'. Spelled as body_a1_value_reused_as_loop_temp.c and measured with `sandbox func_80034F88 --disable all`.
+- result: score 2 at 49 target / 49 build instructions (previous floor 9). Extracted allocation (a1.model.json): ord0 p73 index pri 47142 -> $v1; ord1 p76 value+loop temp 11 refs / livelen 10 / pri 33000 -> $a0 (TARGET); ord2 p75 c -> $v0 (TARGET); ord3 p74 v -> $v1 (TARGET); ord4 p81 r -> $a0 (TARGET); ord5 p77 block-0 address pri 3571 -> $v1 (TARGET, the seat the grind has chased since s49); ord6 p72 p -> $a1 (TARGET). The only divergence in the whole function is one register field in each of two loop instructions: ours `lbu $a0,0x17($v0)` / `sb $a0,%lo(D_80106A70)($at)` against the target's `lbu $v0,...` / `sb $v0,...`.
+- verdict: CONFIRMED
+
+## [s64] The loop-index-conflict spelling stops at score 2, because block 0's value would have to hold $a0 in block 0 and $v0 inside the copy loop at the same time.
+- mechanism: The conflict is bought by making block 0's value live across the loop, and the only byte-free way to be live in the loop is to BE the loop's byte temp. GCC 2.7.2 gives one hard register per allocno and does no live-range splitting (global.c:1275), while the target's loop byte temp shares $v0 with the loop's address temp (`addu $v0,$a1,$v1` / `lbu $v0,0x17($v0)`).
+- probe: Measured body_a1_value_reused_as_loop_temp.c and its extracted model; inspected the per-instruction objdump-vs-target diff.
+- result: score 2, 49/49, both remaining differences are the merged pseudo's register in the loop. A different source for the same conflict is needed to close the last two instructions.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis (extern u8 D_80106A70[3] + extern u8 D_80106A73) on HEAD 2026-09-05, with the two Judge-granted pointer FAKEs and the s57-family cse2 dead-re-set invalidator present
+
+## [s64] Reusing block 0's value local in block 2, in block 1, or in both flag blocks does not make it conflict with blocks 1/2's value allocno.
+- mechanism: global.c conflicts come from simultaneous liveness. The block-0 local is dead throughout block 1 (its block-2 definition is fresh), so global.c never marks it live together with blocks 1/2's value; the block-1 and both-block spellings merge the two values into ONE allocno instead of making two that conflict, and the merged carrier (10 refs / pri 23076) then takes $v1 itself at ord 2.
+- probe: Three bodies measured with `sandbox --disable all` plus tools/ra_solver/extract.py on the block-2 variant.
+- result: block 2: score 10 at 49 insns, conflicts[76] = [72,75,76,77,81] with no 74; block 1: score 15 at 49 insns; both blocks: score 15 at 49 insns. Banked as rejected/s64-u-reused-block2-score10.c, -block1-score15.c, -both-blocks-score15.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: same split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator
+
+## [s64] No chassis-(b) spelling, meaning any body that carries block 0's mask in its own block-local carrier, seats block 0's address allocno at $v1.
+- mechanism: find_free_reg builds `used` as fixed_reg_set | union(regs_live_at[birth..death]) and then scans hard registers in ascending order. For block 0's mask quantity the measured `used` is {0,1,2,26..31} -- $v0 is excluded because func_80077D00's return value is still live across block 0's lbu, and nothing excludes $v1 -- so the scan always returns $v1. local-alloc runs before global.c, so that seat becomes hard conflict 3 on block 0's address allocno, which no global.c priority change can undo.
+- probe: python3 tools/ra_solver/local_extract.py code6cac_b --func func_80034F88 --suggest on body_w1_split_mask_reload.c; read the per-call find_free_reg sets in tmp/grind/func_80034F88/s64/chassis_b.sugg.json and the ascending scan at tools/gcc-2.7.2/local-alloc.c:2249.
+- result: block 0's mask quantity: used = {0,1,2,26..31} (register 3 absent), first_used == used, ncopysugg = 0, nsugg = 0, got = 3. There is no suggested-register pass to appeal to. This answers and closes s63's frontier item 1 before it was probed.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, body_w1_split_mask_reload.c, no FAKE construct in block 0 beyond the two granted pointer objects
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:2249
+
+## [s64] Hoisting the loop index's initialisation, either to immediately after the call or to immediately after block 0's mask store, buys the index/value conflict at a cost of three instructions.
+- mechanism: An early `i = 0;` is emitted as its own insn instead of being folded into the loop's setup, and the loop pre-header's `addu $v0,$a1,$v1` no longer merges with it.
+- probe: Two bodies on chassis (a) with the cse2 invalidator, measured with `sandbox --disable all`.
+- result: both 52 build instructions / score 31, reproducing s61's and s63's numbers on the newer chassis. Banked as rejected/s64-index-init-after-call-52insn-score31.c and -after-mask-store-52insn-score31.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis (a) (mask+reload in one local) on the split-declaration chassis, HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator

@@ -30,5 +30,15 @@
  ],
  "judge_constraints": [],
  "origin": "queue",
- "created": "2026-07-07T20:22:50.216341+00:00"
+ "created": "2026-07-07T20:22:50.216341+00:00",
+ "sibling_progress": [
+  {
+   "from": "func_80034F88",
+   "floor": 2,
+   "session": 64,
+   "at": "2026-09-05T18:55:55.917367+00:00",
+   "headline": "Floor 9 -> 2 after 63 flat sessions: inverse.py on the chassis-(a) model prices the target seating at ONE atom (loop index conflicts block 0's value), and spelling it as variable reuse (block-0 value ",
+   "consumed": null
+  }
+ ]
 }
