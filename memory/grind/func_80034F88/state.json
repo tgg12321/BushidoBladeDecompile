@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 55,
- "current_modality": "synthesis",
+ "session_count": 56,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -333,23 +333,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Spending the two-alias Judge grant reproduces the target's entire 49-instruction stream in the target's order (block-1 la before block-0's store) for the first time in 55 sessions; the whole residual "
+  },
+  {
+   "session": 56,
+   "floor": 10,
+   "modality": "solver",
+   "headline": "RA solver reduces the 56-session residual to one inequality in global.c ($v1 must be unavailable to allocno 74 at find_reg time); all six 1-atom vectors are now priced, three of them byte-foreclosed b"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Keeping sched1 from sinking the p = $v0 call-result copy below the mask removes the hard-2 conflict from the block-0 values, which lets the first of them take $v0 (its target seat) and frees $v1 for the pointer.",
-   "mechanism": "sched1 priority is critical-path length; the mask chain outranks the single-insn copy. The target's copy sits in the mask lbu's load-delay slot, so in the original compile it did not sink.",
-   "next_probe": "Read tmp/grind/func_80034F88/dumps/code6cac_b.sched for insn 11's priority against the mask chain, then look for a C shape that shortens the mask's critical path or lengthens the p-consumer chain. Win condition, checked in the .greg segment BEFORE the score: hard 2 absent from the block-0 value's conflict row."
+   "hypothesis": "A 49-instruction shape carrying the 50-insn duplicated-arm build's conflict graph (p already in $a1, handle A not conflicting with handle B) reduces the residual to the single 74<->75 swap at a bar of refs_down(74) 7 -> 3.",
+   "mechanism": "The conflict-graph change comes from block 0's store no longer sinking below block 1's `la` under sched1, which ends handle A's live range before handle B's begins. That is a scheduling fact, not a duplication fact, so a sched-side lever (or a block-1 shape that delays its own `la`) could reproduce it without the extra store.",
+   "next_probe": "Install the score-15 body, run tools/sched_solver / ra_solver perturb.py --atoms luid,luid_move pinned to the target head, and look for a C shape that keeps insn 61 (block 1's la) below insn 55 (block 0's store) at 49 instructions. Win condition, checked in the model BEFORE the score: conflicts[75] excludes 79 and dispositions[72] == 5."
   },
   {
-   "hypothesis": "A duplicated statement whose copies are IDENTICAL rtx in both arms lifts the pointer allocno to nrefs >= 16 at livelen 28 (pri > 17500) for free, because jump2's cross_jump re-merges the copies.",
-   "mechanism": "duplicated-statement-into-arms.md names this mechanism (reg_n_refs priority lift with cross-jump re-merging). Every duplicate measured in s50/s54 had DIFFERENT arms, so nothing merged and each cost an instruction; the two-alias chassis now has two pointers to duplicate references to and byte-exact flag blocks 1 and 2 to place them in.",
-   "next_probe": "Place identical duplicated statements in both arms of flag blocks 1/2 and of block 0, confirm the merge in the .jump2 dump BEFORE scoring, and read nrefs/livelen from tools/ra_solver/extract.py. Win condition: nrefs(pointer) >= 16 at 49 instructions."
+   "hypothesis": "Allocno 74's reference count can be lowered to 3 without losing a target operand only by splitting the mask value and the block-0 reload into two allocnos, which currently is impossible because cse forwards the store unless the STORED value's variable is re-set.",
+   "mechanism": "The s54/s55 invalidation works by re-setting the stored variable, which is exactly what fuses mask and reload into one allocno of 7 references. A cse invalidator that does NOT touch the mask variable would leave a 4-reference mask allocno and a 3-reference reload allocno, both conflicting with handle A and therefore both forced off $v1 once handle A is seated.",
+   "next_probe": "Enumerate cse invalidators that do not re-set the mask variable and do not add an instruction (read through the second handle, differing modes, an intervening store the target already contains), verify in tmp/grind/func_80034F88/dumps/code6cac_b.cse that mem:QI survives, then re-extract and check nrefs(74) <= 3 before scoring."
   },
   {
-   "hypothesis": "Declaring D_80106A70 as the 4-byte aggregate the DATA MODEL signal names, with the flag byte spelled as its element 3, removes the last declaration pun and changes what cse can equate between the mask's address and the trailing loop's.",
-   "mechanism": "The trailing loop already writes *(&D_80106A70 + i) for i<3 and the flag byte is the fourth byte of the same object; an extern u8 D_80106A70[4]; declaration makes both handles ordinary array-element addresses. Untried in 55 sessions.",
-   "next_probe": "Spell the aggregate in-TU first and verify the relocation still resolves to %lo(D_80106A73) (splat names the addend's symbol), then measure; a header edit is an integration handoff, not a src-only change."
+   "hypothesis": "Declaring D_80106A70 as the 4-byte aggregate the DATA MODEL signal names, with the flag byte as its element 3, removes the last declaration pun and may change the loop allocnos (73/81) that currently own $v1 and $v0.",
+   "mechanism": "The trailing loop already writes *(&D_80106A70 + i) for i<3 and the flag byte is the fourth byte of the same object; an array declaration makes both handles ordinary array-element addresses and changes what cse can equate between the mask's address and the loop's. Untried in 56 sessions.",
+   "next_probe": "Spell the aggregate in-TU first and verify the relocation still resolves to %lo(D_80106A73), then measure; the header edit in include/code6cac.h is an integration handoff, not a src-only change."
   }
  ],
  "judge_constraints": [
@@ -371,22 +377,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 37,
-   "statement": "Demoting block 0's byte-value allocno below the pointer allocno in allocno_compare, by lengthening the value's live range at zero instruction cost, wins `q` the $v1 seat on this chassis.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; single declared `u8 *q`, no FAKE construct present; k1/k4/k5 verified bit-identical to the base body by objdump diff",
-   "predicate_cite": "",
-   "result": "k1, k4 and k5 all tie at 10/49 and disassemble BIT-IDENTICALLY to the base body (diff h0.txt against k1.txt / k4.txt / k"
-  },
-  {
-   "session": 37,
-   "statement": "The frozen sanctioned family 'duplicate-read into branch arms' restores the target's block-1 reload, which the base body is missing.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; single declared `u8 *q`, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "h15 measures 10 at 49 and its disassembly is bit-identical to the base body's (empty diff) -- cse collapses both arm rea"
-  },
   {
    "session": 37,
    "statement": "Feeding the trailing copy loop off `q` (`q[i - 3]`, the idiom src/code6cac_b.c:4044 already uses) raises the pointer allocno's reference count enough to reorder it ahead of block 0's byte value in all",
@@ -850,6 +840,22 @@
    "measured_on": "two-alias single-statement-mask chassis on HEAD 2026-09-05 with two annotated pointer-alias FAKE objects present",
    "predicate_cite": "",
    "result": "47 insns / score 23. Banked as rejected/s55b-twoalias-split-result-var-47insn-score23.c."
+  },
+  {
+   "session": 56,
+   "statement": "Duplicating block 0's store into both arms of the score-15 two-alias body does not produce a jump2 cross_jump re-merge, so it is not the byte-neutral reg_n_refs lift the s55 frontier proposed: it cost",
+   "kill_scope": "instance",
+   "measured_on": "s55 two-alias TARGET-VALUE-PAIRING chassis (rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c) on HEAD 2026-09-05, with both annotated pointer-alias FAKE objects and the block-0 dead store ",
+   "predicate_cite": "",
+   "result": "50 build insns vs 49 target, score 12. reg_n_refs(75) 5 -> 6, reg_live_length(75) 28 -> 24, allocno priority 3571 -> 500"
+  },
+  {
+   "session": 56,
+   "statement": "Lowering allocno 74's reference count (inverse.py vectors #3 and #4, refs_down 7 -> 2 and 7 -> 1) is not available on this chassis, because each of its seven references is an operand the target's own ",
+   "kill_scope": "instance",
+   "measured_on": "s55 two-alias TARGET-VALUE-PAIRING chassis on HEAD 2026-09-05, both annotated pointer-alias FAKE objects and the block-0 dead store present; counted against asm/funcs/func_80034F88.s 80034FA0-80034FC4",
+   "predicate_cite": "",
+   "result": "Seven references, seven target operands, one-for-one. No byte-neutral reduction exists on this shape, which removes the "
   }
  ],
  "judge_clearances": [

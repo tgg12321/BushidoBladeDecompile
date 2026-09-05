@@ -7935,3 +7935,125 @@ Banked: rejected/s55b-twoalias-split-result-var-47insn-score23.c.
 - [s55] s51's finding (ii) reproduces on the two-handle chassis: the two-statement mask removes the block-0-confined QI temp and clears hard 3 from the pointer's conflict row (row goes from 72 74 75 76 80 2 3 29 to 72 74 75 76 79 2 29), with no score change -- so the hard-3 conflict was never the binding constraint.
 
 - [s55] Best score this session is 14 (49 insns) on the two-alias u8 body; the honest floor is unchanged at 10 (the single-object plateau, still candidate.c).
+
+
+## s56 (solver, 2026-09-05) -- the residual is one inequality in global.c
+
+CHASSIS RE-MEASURED ON HEAD.  `candidate.c` installed at src/code6cac_b.c:3420,
+`sandbox func_80034F88 --disable all` = score 10, 49 target insns / 49 build
+insns.  The dispatch brief's "measurement unavailable" is resolved: the floor is
+10 and the ledger figure was correct.
+
+SOLVER CHASSIS SELECTION (a reusable fact, not a one-off).
+`goal_from_tgt.py classify code6cac_b func_80034F88` on each banked body:
+  - candidate.c (score 10)                  -> FIRST DIVERGENCE: PRE-RA
+        ours-only `nop` x1, target-only `lbu #,0(#)` x1.  No RA model of this
+        body can be aimed at the target: it does not contain the target's
+        block-0 reload at all.
+  - rejected/s55b-twoalias-u8-...-score14.c -> FIRST DIVERGENCE: PRE-RA
+        ours-only `andi #,#,0xff` x1, target-only `move #,#` x1 (the u8
+        else-arm zero-extend).
+  - rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c -> **RA**
+        `$a1 -> $v1 x7`, `$v1 -> $a0 x7`, `$a2 -> $a1 x6`, no shape difference.
+So the score-15 body -- NOT the score-10 candidate and NOT the score-14 u8 body
+-- is the only banked chassis on which the RA solver is meaningful.  Its score is
+worse; its structure is the target's.  (`inverse_compose.py classify` refuses
+this function outright -- zero-rule guard -- and prints the `goal_from_tgt.py`
+route to use instead.)
+
+THE MODEL (tools/ra_solver/extract.py on the score-15 body; model saved as
+tmp/grind/func_80034F88/s56/model_s15.json).  Eight allocnos, with GCC's own
+`.lreg` numbers cross-checked in tmp/grind/func_80034F88/s56/lreg.txt:
+    ord0 73 loop index         refs 11 len  7 pri 47142 -> $v1   target $v1  OK
+    ord1 81 loop address temp  refs 10 len 12 pri 25000 -> $v0   target $v0  OK
+    ord2 74 mask + reload      refs  7 len  8 pri 17500 -> $v1   target $a0  XX
+    ord3 76 block-0 condition  refs  7 len  9 pri 15555 -> $v0   target $v0  OK
+    ord4 80 block-1/2 value    refs  6 len 10 pri 12000 -> $v1   target $v1  OK
+    ord5 79 handle B (q)       refs  6 len 19 pri  6315 -> $a0   target $a0  OK
+    ord6 75 handle A (t)       refs  5 len 28 pri  3571 -> $a1   target $v1  XX
+    ord7 72 p                  refs  6 len 34 pri  3529 -> $a2   target $a1  XX
+Five of the eight allocnos are ALREADY on their target seats.  The priority
+formula fits all eight rows exactly:
+    pri = floor_log2(nrefs) * nrefs * size * 10000 / live_length
+(73 and 81 are the loop allocnos and carry the same formula; earlier ledger
+entries that fitted a bare nrefs*20000/len were fitting the floor_log2==2 rows
+only.  The floor_log2 step is load-bearing: nrefs 15 -> factor 3, nrefs 16 ->
+factor 4.)
+
+THE WHOLE RESIDUAL, STATED EXACTLY.  find_reg hands 74 the register $v1 because
+$v1 is still free when 74 is reached: 74's hard conflicts are {$v0,$ra} (so $v0
+is out) and its allocno conflicts are {72,75,76} -- it does NOT conflict with 73,
+which already holds $v1.  Make $v1 unavailable to 74 and the rest is automatic:
+74 falls to $a0, 75 (which DOES conflict with 74) takes the vacated $v1, and 72
+takes $a1.  Two and only two mechanisms make $v1 unavailable:
+    (a) a conflict between 74 and 73, or
+    (b) pri(75) > pri(74) = 17500, so 75 is allocated first and takes $v1.
+inverse.py global model_s15.json with the FULL eight-pseudo disposition as the
+goal (per the solver modality's rule 3) and --depth 2 returns minimal solution
+size 1 atom / six vectors, and every one of them is a spelling of (a) or (b):
+    #1/#2 conflict_add 73<->74                     cost 2
+    #3    refs_down 74: 7 -> 2                     cost 6
+    #4    refs_down 74: 7 -> 1                     cost 7
+    #5/#6 refs_up   75: 5 -> 16 / 17               cost 12/13
+No live-length vector is reported because the search bound is +/- 8 and (b) via
+length needs len(75) <= 5.  The report also FORECLOSES all 24 preference atoms
+mechanically: $v1/$a0/$a1 never appear as hard regs in this function's pre-RA
+RTL, so global.c's set_preference can never record a preference for them from
+any C.  Report: tmp/grind/func_80034F88/s56/inverse_full.txt.
+
+VECTOR-BY-VECTOR DISPOSITION (this is the session's product).
+  - refs_down(74) to 2 or 1 -- BYTE-FORECLOSED BY COUNTING.  Allocno 74's seven
+    references map one-for-one onto operands the TARGET's own stream contains:
+    lbu $a0,0($v1) (1), andi $a0,$a0,0xF8 (2), sb $a0,0($v1) (1), the reload
+    lbu $a0,0($v1) (1), ori $v0,$a0,0x1 (1), addu $v0,$a0,$zero (1).  Removing a
+    reference removes one of the target's operands.
+  - refs_up(75) to 16/17 -- MEASURED, NOT ARGUED.  The only byte-neutral
+    reference-adder in the sanctioned families is duplicated-statement-into-arms
+    relying on a jump2 cross_jump re-merge.  It does not re-merge here.
+    Duplicating block 0's `*t = c;` into both arms of the score-15 body gives
+    **50 insns / score 12**: ours emits `sb; beqz; j` where the target emits
+    `bnez`.  It buys exactly +1 reference (5 -> 6) and -4 live length
+    (28 -> 24), pri 3571 -> 5000 against the 17500 needed.  Reaching 16 refs
+    therefore costs ten more instructions.  Banked as
+    rejected/s56-twoalias-dup-store-into-arms-NOT-MERGED-50insn-score12.c;
+    model tmp/grind/func_80034F88/s56/model_v1.json.
+  - conflict_add(73,74) -- costs 3 instructions.  It needs the trailing copy
+    loop's index live across block 0; s55 spelled it (`i = 0;` hoisted, then
+    `for (; i < 3; i++)`) and measured 52 insns / score 31.  The .lreg dump
+    shows why nothing cheaper exists on this shape: 74's last reference is its
+    arm read, and sched1 places block 0's store (insn 55) AFTER block 1's `la`
+    (insn 61), so 74 is already dead before any later value is born.
+  - pri(75) > 17500 by shortening 75's live range -- needs len <= 5 at nrefs 5.
+    75 is live from its `la` (insn 15, immediately after the call) to block 0's
+    store (insn 55); the measured length is 28 and the shortest any s55/s56
+    shape produced is 24.
+
+THE ONE PLACE THE WALL MOVED.  On the 50-insn duplicated-arm shape the
+disposition is {72:$a1, 73:$v1, 74:$v1, 75:$a0, 76:$v0, 79:$a0, 80:$v1,
+81:$v0}: **p (72) reaches its target seat $a1 for the first time**, handle B
+keeps $a0, and the conflict graph changes -- 75 no longer conflicts with 79,
+because block 0's store no longer sinks below block 1's `la`.  The three-cycle
+rotation collapses to the single 74<->75 swap, and on that model inverse.py
+reports a strictly cheaper bar: refs_down(74) 7 -> 3 suffices (pri 3750 < 75's
+5000) instead of 7 -> 2.  Report: tmp/grind/func_80034F88/s56/inverse_v1.txt.
+The shape itself is one instruction over, so it is not the answer -- but "get
+the 50-insn shape's conflict graph at 49 instructions" is a strictly smaller
+question than the one this ledger has been asking for 56 sessions.
+
+- [s56] Chassis re-measured on HEAD with candidate.c installed: sandbox func_80034F88 --disable all = score 10, 49 target insns / 49 build insns. The dispatch brief's 'measurement unavailable' is resolved and the ledger floor of 10 is correct.
+
+- [s56] inverse_compose.py classify refuses this function by design (zero-rule guard: with no regfix/asmfix rules the src-derived tgt.s cannot carry the target stream, and a text-stream classify would report a fictitious PRE-RA verdict). The supported route is goal_from_tgt.py classify / goal, on the OBJECTS.
+
+- [s56] goal_from_tgt.py goal on the score-15 body: 15 renamed pairs, 0 skipped; $a1 -> $v1 x7, $v1 -> $a0 x7, $a2 -> $a1 x6.
+
+- [s56] Measured allocation model of the score-15 body (model_s15.json, agreeing with the .lreg dump): ord0 73 loop index refs 11 len 7 pri 47142 -> $v1 (target seat); ord1 81 loop address temp refs 10 len 12 pri 25000 -> $v0 (target seat); ord2 74 mask+reload refs 7 len 8 pri 17500 -> $v1 (target wants $a0); ord3 76 block-0 condition refs 7 len 9 pri 15555 -> $v0 (target seat); ord4 80 block-1/2 value refs 6 len 10 pri 12000 -> $v1 (target seat); ord5 79 handle B refs 6 len 19 pri 6315 -> $a0 (target seat); ord6 75 handle A refs 5 len 28 pri 3571 -> $a1 (target wants $v1); ord7 72 p refs 6 len 34 pri 3529 -> $a2 (target wants $a1).
+
+- [s56] GCC 2.7.2 global.c allocno priority on this function is exactly floor_log2(nrefs) * nrefs * size * 10000 / live_length -- it fits all eight allocnos with no residual. Earlier ledger fits of the form nrefs*20000/len were fitting only the floor_log2==2 rows and mispredict the loop allocnos and any nrefs>=16 lever.
+
+- [s56] The .lreg RTL slice (tmp/grind/func_80034F88/s56/lreg.txt) shows handle A (reg 75) set at insn 15 immediately after the call and last used by block 0's store at insn 55, which sched1 has already placed AFTER block 1's `la` at insn 61 -- so on the two-alias chassis the target's block-1-la-before-block-0-store order is reproduced, and allocno 74 is dead before any later value is born.
+
+- [s56] inverse.py reports all 24 preference atoms mechanically FORECLOSED for this function: $v1, $a0 and $a1 never appear as hard registers in its pre-RA RTL, so global.c set_preference can never record a preference for them from any C form. Copy-preference levers are therefore off the table permanently for this function's residual, independent of chassis.
+
+- [s56] Duplicated-statement-into-arms measured on this function: one duplication of block 0's store = +1 reg_n_refs, -4 reg_live_length, +1 instruction, no jump2 cross_jump re-merge (50 insns / score 12).
+
+- [s56] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) at the end of the session; the only tree changes are the ledger files and one new rejected form.

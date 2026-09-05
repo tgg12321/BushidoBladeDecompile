@@ -5758,3 +5758,84 @@ call-result copy from sinking. Measured 49/17; the copy still sinks.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: two-alias single-statement-mask chassis on HEAD 2026-09-05 with two annotated pointer-alias FAKE objects present
+
+
+## s56 hypotheses (solver, 2026-09-05)
+
+H56.1 -- CONFIRMED.  The score-15 two-alias body is the only banked chassis whose
+residual is typed RA; candidate.c (score 10) and the score-14 u8 body both
+classify PRE-RA.  Probe: goal_from_tgt.py classify code6cac_b func_80034F88 on
+each of the three bodies in turn.  Consequence: RA-solver work on this function
+must install rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c first;
+a model derived from the score-10 candidate describes a function that does not
+contain the target's block-0 reload.
+
+H56.2 -- CONFIRMED.  On the score-15 chassis the whole register residual reduces
+to "$v1 must be unavailable to allocno 74 (the mask+reload value) at find_reg
+time".  Probe: extract.py model + full-disposition inverse.py global --depth 2;
+minimal solution size 1 atom, six vectors, all of them either conflict_add(73,74)
+or a priority inversion between 74 and 75.  74's hard conflicts {$v0,$ra} and
+allocno conflicts {72,75,76} exclude 73, which is why $v1 is free for it.
+
+H56.3 -- CONFIRMED.  global.c's allocno priority on this function is
+floor_log2(nrefs)*nrefs*size*10000/live_length, exact on all eight allocnos.
+The floor_log2 step is why the solver's refs_up target is 16 and not 15.
+
+H56.4 -- KILLED (instance).  Duplicating block 0's store into both arms of the
+score-15 two-alias body does not produce a jump2 cross_jump re-merge, so it is
+not the byte-neutral reg_n_refs lift the s55 frontier hoped for.  Measured 50
+insns / score 12 (target 49); ours `sb; beqz; j` vs target `bnez`.  Ref lift is
++1 (5 -> 6) with live length 28 -> 24, i.e. pri 3571 -> 5000 against the 17500
+needed.  Measured on the s55 two-alias TARGET-VALUE-PAIRING chassis on HEAD
+2026-09-05, with two annotated pointer-alias FAKE objects and the block-0 dead
+store present.  Form: rejected/s56-twoalias-dup-store-into-arms-NOT-MERGED-
+50insn-score12.c.
+
+H56.5 -- KILLED (instance).  Lowering allocno 74's reference count (solver
+vectors #3/#4) is not available on this chassis: each of its seven references is
+an operand present in the target's own instruction stream (lbu / andi x2 / sb /
+reload lbu / ori / addu), so any C form with fewer references also has fewer
+target instructions.  Measured by operand count against
+asm/funcs/func_80034F88.s 80034FA0-80034FC4 on the score-15 chassis, both FAKE
+aliases and the dead store present.
+
+H56.6 -- CONFIRMED (and the new frontier).  The 50-insn duplicated-arm shape puts
+p (allocno 72) on its target seat $a1 for the first time in 56 sessions and
+removes the 75<->79 conflict, collapsing the three-cycle rotation to the single
+74<->75 swap; on that model the swap bar drops from refs_down(74) 7->2 to 7->3.
+Probe: extract.py + inverse.py on model_v1.json.  The open question is a
+49-instruction shape carrying that conflict graph.
+
+## [s56] The score-15 two-alias body (rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c) is the only banked chassis whose residual classifies as RA; candidate.c (score 10) and the score-14 u8 body both classify PRE-RA, so no RA model derived from them can be aimed at the target.
+- mechanism: goal_from_tgt.py compares our object stream against the target's and reports the FIRST divergence layer. candidate.c is missing the target's block-0 reload entirely (ours-only nop x1 / target-only lbu x1); the score-14 u8 body carries the u8 else-arm zero-extend (ours-only andi 0xff / target-only move). Only the score-15 body has zero shape differences, leaving three pure register substitutions.
+- probe: Installed each of the three banked bodies at src/code6cac_b.c:3420 in turn, measured with `sandbox func_80034F88 --disable all` (10 / 14 / 15), and ran `python3 tools/ra_solver/goal_from_tgt.py classify code6cac_b func_80034F88` on each. inverse_compose.py classify refuses this function (zero-rule guard) and prints the goal_from_tgt route to use instead.
+- result: Score-15 body: FIRST DIVERGENCE: RA, with $a1 -> $v1 x7, $v1 -> $a0 x7, $a2 -> $a1 x6 and no instruction-shape difference at all. The other two: PRE-RA. Recorded in evidence.md s56 and in the candidate.c s56 header item 0, so future RA work starts on the right chassis.
+- verdict: CONFIRMED
+
+## [s56] On the score-15 chassis the entire register residual reduces to one condition: $v1 must be unavailable to allocno 74 (the mask+reload value) when global.c's find_reg reaches it. Satisfy it and 74 falls to $a0, 75 (handle A) takes the vacated $v1 and 72 (p) takes $a1, which is the complete target disposition.
+- mechanism: 74's hard conflicts are {$v0,$ra} so $v0 is excluded, and its allocno conflicts are {72,75,76} -- it does NOT conflict with 73, which is allocated first and holds $v1. find_reg therefore hands 74 the first free register, $v1. 74 already conflicts with 75, so any route that seats 75 in $v1 first also forces 74 off it.
+- probe: tools/ra_solver/extract.py on the score-15 body (tmp/grind/func_80034F88/s56/model_s15.json), cross-checked against GCC's own .lreg dump (tmp/grind/func_80034F88/s56/lreg.txt), then `inverse.py global model_s15.json --goal` with the FULL eight-pseudo target disposition, --depth 2 --top 10 (tmp/grind/func_80034F88/s56/inverse_full.txt).
+- result: Minimal solution size 1 atom, six distinct vectors, and every one is a spelling of either conflict_add(73,74) (cost 2) or a 74/75 priority inversion (refs_down 74 to 2/1, cost 6/7; refs_up 75 to 16/17, cost 12/13). Five of the eight allocnos are already on their target seats. All 24 preference atoms are reported mechanically FORECLOSED: $v1/$a0/$a1 never appear as hard regs in this function's pre-RA RTL, so set_preference can never record them from any C. The allocno priority formula fits all eight rows exactly as floor_log2(nrefs)*nrefs*size*10000/live_length -- the floor_log2 step is why the refs_up threshold is 16 and not 15.
+- verdict: CONFIRMED
+
+## [s56] Duplicating block 0's store into both arms of the score-15 two-alias body does not produce a jump2 cross_jump re-merge, so it is not the byte-neutral reg_n_refs lift the s55 frontier proposed: it costs an instruction and buys one reference.
+- mechanism: cross_jump merges identical tails; here the duplicated `*t = c;` sits at the end of both arms but the surrounding branch structure changes instead -- the build emits `sb; beqz; j` where the target emits `bnez`, so the copies never re-merge and the extra store survives.
+- probe: Built rejected/s56-twoalias-dup-store-into-arms-NOT-MERGED-50insn-score12.c (score-15 body with `*t = c;` moved inside both arms of block 0), measured `sandbox func_80034F88 --disable all`, then re-extracted the model (tmp/grind/func_80034F88/s56/model_v1.json) and re-classified.
+- result: 50 build insns vs 49 target, score 12. reg_n_refs(75) 5 -> 6, reg_live_length(75) 28 -> 24, allocno priority 3571 -> 5000 against the 17500 needed to outrank 74. Each byte-costing duplication buys +1 reference, so the refs_up(75)=16 vector costs ten further instructions.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s55 two-alias TARGET-VALUE-PAIRING chassis (rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c) on HEAD 2026-09-05, with both annotated pointer-alias FAKE objects and the block-0 dead store present
+
+## [s56] Lowering allocno 74's reference count (inverse.py vectors #3 and #4, refs_down 7 -> 2 and 7 -> 1) is not available on this chassis, because each of its seven references is an operand the target's own instruction stream contains.
+- mechanism: reg_n_refs counts RTL operand references. 74's seven are lbu $a0,0($v1) (1), andi $a0,$a0,0xF8 (2), sb $a0,0($v1) (1), the block-0 reload lbu $a0,0($v1) (1), ori $v0,$a0,0x1 (1) and addu $v0,$a0,$zero (1) -- one per operand in asm/funcs/func_80034F88.s 80034FA0..80034FC4. A C form with fewer references to that value emits fewer of those instructions.
+- probe: Operand-by-operand count of the target's block-0 window in asm/funcs/func_80034F88.s against the model's nrefs=7 for pseudo 74 (tmp/grind/func_80034F88/s56/model_s15.json, lreg.txt line 'Register 74 used 7 times across 8 insns').
+- result: Seven references, seven target operands, one-for-one. No byte-neutral reduction exists on this shape, which removes the two cheapest non-conflict vectors the solver offered and leaves only the 74/75 priority inversion and conflict_add(73,74) (the latter measured at +3 instructions by s55).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s55 two-alias TARGET-VALUE-PAIRING chassis on HEAD 2026-09-05, both annotated pointer-alias FAKE objects and the block-0 dead store present; counted against asm/funcs/func_80034F88.s 80034FA0-80034FC4
+
+## [s56] The 50-instruction duplicated-arm shape seats p (allocno 72) on its target register $a1 for the first time in 56 sessions and removes the 75<->79 conflict, collapsing the residual from a three-cycle rotation to the single 74<->75 swap, and on that model the swap bar is strictly cheaper.
+- mechanism: With the store duplicated into the arms, block 0's store no longer sinks below block 1's `la` under sched1, so handle A dies before handle B is born and the two pointers stop conflicting. The changed conflict graph and the shorter live length lift pri(75) to 5000, so refs_down(74) only has to reach 3 (pri 3750) instead of 2 (pri 2500).
+- probe: extract.py on the duplicated-arm build (model_v1.json) and `inverse.py global model_v1.json --goal` with the full disposition, --depth 2 --top 6 (tmp/grind/func_80034F88/s56/inverse_v1.txt).
+- result: Disposition {72:$a1, 73:$v1, 74:$v1, 75:$a0, 76:$v0, 79:$a0, 80:$v1, 81:$v0}; conflicts of 75 drop 79. Minimal solution still 1 atom but the cheapest priority vector is now refs_down(74) 7 -> 3 (cost 5) and refs_up(75) 6 -> 15 (cost 10). The shape is one instruction over so it is not the answer, but 'reproduce this conflict graph at 49 instructions' is a strictly smaller question than the one the ledger has been asking.
+- verdict: CONFIRMED

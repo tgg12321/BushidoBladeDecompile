@@ -1,3 +1,93 @@
+/* s56 (solver, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns,
+ * re-measured on HEAD this session with this exact body: score 10, 49/49).
+ * s56 spent the whole session inside tools/ra_solver and it converted the
+ * 56-session residual from "a three-cycle register rotation" into ONE
+ * arithmetic inequality over global.c's allocno_compare.  Read items 1-4
+ * before proposing any register-seat lever; three of the four 1-atom solver
+ * vectors are now BYTE-FORECLOSED by counting, not by opinion.
+ *
+ * 0. WHICH CHASSIS THE SOLVER RUNS ON.  This body (score 10) classifies
+ *    PRE-RA -- it has no block-0 reload (ours has a nop where the target has
+ *    an lbu), so no RA model of it can be aimed at the target.  The RA-typed
+ *    chassis is s55's rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-
+ *    score15.c: `goal_from_tgt.py classify` reports FIRST DIVERGENCE: RA on
+ *    it, with exactly three substitutions, $a1->$v1 x7, $v1->$a0 x7,
+ *    $a2->$a1 x6, and NO shape difference at all.  (The score-14 u8 body is
+ *    NOT the right solver chassis: it classifies PRE-RA because of its
+ *    `andi $v0,$v1,0xff` vs the target's `move`.)  Any future RA work on this
+ *    function starts by installing the score-15 body, not this one.
+ *
+ * 1. THE ALLOCATION MODEL, MEASURED (tmp/grind/func_80034F88/s56/
+ *    model_s15.json, from tools/ra_solver/extract.py on the score-15 body).
+ *    Eight allocnos; ord = global.c allocation order, pri = allocno_compare:
+ *      ord0 73 loop index      refs 11 len  7 pri 47142 -> $v1   (target $v1 OK)
+ *      ord1 81 loop addr temp  refs 10 len 12 pri 25000 -> $v0   (target $v0 OK)
+ *      ord2 74 mask+reload     refs  7 len  8 pri 17500 -> $v1   (target $a0 XX)
+ *      ord3 76 block-0 cond    refs  7 len  9 pri 15555 -> $v0   (target $v0 OK)
+ *      ord4 80 block-1/2 value refs  6 len 10 pri 12000 -> $v1   (target $v1 OK)
+ *      ord5 79 handle B (q)    refs  6 len 19 pri  6315 -> $a0   (target $a0 OK)
+ *      ord6 75 handle A (t)    refs  5 len 28 pri  3571 -> $a1   (target $v1 XX)
+ *      ord7 72 p               refs  6 len 34 pri  3529 -> $a2   (target $a1 XX)
+ *    The priority formula is EXACT on all eight rows (this is the fit, not a
+ *    guess):  pri = floor_log2(nrefs) * nrefs * size * 10000 / live_length.
+ *    Note the floor_log2 step: it is why nrefs 15 and nrefs 16 behave
+ *    completely differently (3x vs 4x).
+ *
+ * 2. THE ENTIRE RESIDUAL IS ONE INEQUALITY.  find_reg gives 74 the register
+ *    $v1 only because $v1 is still free when 74 is reached: 74's hard
+ *    conflicts are {$v0, $ra} and its allocno conflicts are {72,75,76} --
+ *    it does NOT conflict with 73, which already holds $v1.  Make $v1
+ *    unavailable to 74 and everything else falls out for free (74 -> $a0,
+ *    then 75 takes the vacated $v1, then 72 takes $a1).  There are exactly
+ *    two ways to make $v1 unavailable:
+ *      (a) give 74 a conflict with 73 (the loop index, allocated first), or
+ *      (b) get 75 allocated BEFORE 74, i.e. pri(75) > pri(74) = 17500;
+ *          74 already conflicts with 75, so 75 in $v1 forces 74 off it.
+ *    `inverse.py global model_s15.json --goal {full 8-pseudo disposition}
+ *    --depth 2` agrees: minimal solution size 1 atom, six vectors, all of
+ *    them a spelling of (a) or (b) -- conflict_add(73,74) cost 2;
+ *    refs_down(74) 7->2 or 7->1 cost 6/7; refs_up(75) 5->16 or 5->17 cost
+ *    12/13.  No live-length atom appears because the search bound is +/-8 and
+ *    75 needs len <= 5 (report: tmp/grind/func_80034F88/s56/inverse_full.txt).
+ *
+ * 3. THREE OF THE FOUR VECTOR FAMILIES ARE BYTE-FORECLOSED BY COUNTING.
+ *    - refs_down(74) to 2 or 1.  Allocno 74's seven references are, one for
+ *      one, operands the TARGET's own stream contains: lbu $a0 (1), andi
+ *      $a0,$a0 (2), sb $a0 (1), the reload lbu $a0 (1), ori $v0,$a0 (1),
+ *      addu $v0,$a0 (1).  Deleting a reference deletes one of the target's
+ *      operands, so no byte-neutral C form can lower this count.
+ *    - refs_up(75) to 16/17.  MEASURED this session, not argued: the only
+ *      byte-neutral reference-adder available (duplicated-statement-into-arms
+ *      with a jump2 cross_jump re-merge) does NOT re-merge here.  Duplicating
+ *      block 0's `*t = c;` into both arms gives 50 insns / score 12 -- ours
+ *      emits `sb; beqz; j` where the target emits `bnez` -- and buys exactly
+ *      +1 ref (5 -> 6) and -4 live length (28 -> 24), pri 3571 -> 5000.  Ten
+ *      more references means ten more instructions.  Banked as
+ *      rejected/s56-twoalias-dup-store-into-arms-NOT-MERGED-50insn-score12.c.
+ *    - conflict_add(73,74).  Requires the trailing copy loop's index to be
+ *      live across block 0.  s55 spelled it (`i = 0;` hoisted above block 0,
+ *      `for (; i < 3; i++)`) and measured 52 insns / score 31.  74 dies at
+ *      its last arm read, which sched1 places BEFORE block 1's `la`, so no
+ *      later value can be made to overlap it without a new instruction.
+ *    - the fourth, pri(75) > 17500 by shortening 75's live range, needs
+ *      live_length <= 5 at nrefs 5 (2*5*10000/5 = 20000).  75 is live from
+ *      its `la` to block 0's store, which is the whole of block 0; the
+ *      measured length is 28 and the smallest value any s55/s56 shape
+ *      produced is 24.
+ *
+ * 4. WHAT THE DUPLICATION SHAPE DID BUY, AND WHY IT IS THE NEXT LEAD.  On the
+ *    50-insn duplicated-arm shape the disposition is
+ *    {72:$a1, 73:$v1, 74:$v1, 75:$a0, 76:$v0, 79:$a0, 80:$v1, 81:$v0}: p
+ *    (72) has REACHED its target seat $a1 for the first time, and the
+ *    conflict graph changed (75 no longer conflicts with 79, because block-0's
+ *    store no longer sinks below block-1's `la`).  The residual there is the
+ *    single 74<->75 swap, and on THAT model `inverse.py` reports a cheaper
+ *    bar: refs_down(74) 7->3 suffices (pri 3750 < 75's 5000), not 7->2.
+ *    Report: tmp/grind/func_80034F88/s56/inverse_v1.txt.  The open question
+ *    the next session should ask is whether some OTHER byte-neutral shape
+ *    reproduces that conflict-graph change (75 not conflicting with 79, p in
+ *    $a1) at 49 instructions -- the swap bar drops with it.
+ */
 /* s55 SECOND PASS (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10,
  * 49 insns).  This pass SPENDS the 2026-09-05 11:01 Judge PASS (decisions.md
  * :23437), which narrowed the multi-handle closure to permit EXACTLY TWO
