@@ -4034,3 +4034,77 @@ disposition.
 - probe: Spliced rejected/s39-block1-reads-symbol-directly-score11.c as variant t1 and scored it; ran `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c`.
 - result: t1 = 11 at 50, identical to s39's measurement. fake_ablate reports `no FAKE-annotated constructs found ... nothing to ablate`, so no banked kill on this chassis was measured with a FAKE carrier occupying the contested pseudo.
 - verdict: CONFIRMED
+
+==== s41 (synthesis) - FRONTIER RESET ====
+
+s40's Frontier 1 ("a second register-held address pseudo without a second
+declared C pointer object") is CLOSED by measurement this session for the one
+shape it still prescribed. Its own next-probe text asked for "an address whose
+displacement or base comes from a runtime quantity that provably equals a
+constant (e.g. derived from `p`)"; three such bodies were built and measured
+(n1 28/48 byte-identical to s40's a1/a2, n2 10/49 byte-identical to the base,
+n3 16/50), and the pass dumps show the cancellation completing in combine via
+`simplify_plus_minus` (`tools/gcc-2.7.2/cse.c:4250`). Nothing additive survives.
+
+--- FRONTIER 1 (the disposition question, not a code probe): may the flag-byte
+address be named more than once in C?
+Mechanism: the target materialises `&D_80106A73` into an allocatable register
+three times (lui/addiu $v1 at 80034F98 for blocks 0-1; lui/addiu $a0 at 80034FC8
+for block 2; lui/addiu $a0 at 80034FF0 for block 3), with two of them
+simultaneously live at `.L80034FC8`. Measured over sessions s33-s41, exactly one
+C construct emits that lui+addiu pair - an assignment of `&D_80106A73` to a
+declared pointer object; every other spelling (bare symbol, symbol difference,
+p-derived additive expression, static-inline helper, anonymous carriers) either
+folds to a bare `symbol_ref` and is expanded through `$at` with `%lo` folded into
+the memory operand, or costs an instruction. One pointer object is one pseudo
+(global.c:426) with one hard register (global.c:1275) and no live-range
+splitting, and its redundant re-sets are deleted by cse. So the target's byte
+stream implies the original C named that address more than once.
+Next probe: NOT a code probe - a ruling question, filed by this session as the
+`ruling-request` outcome. The standing constraint bans a second pointer object
+both as a pointer-alias-family lever and as ordinary program logic; the framing
+that is new (s40 + s41) is that the construct is an EMISSION requirement of the
+target stream rather than a register-allocation lever, which is the premise the
+ban rests on. If the ruling is NO, Frontier 2 is the whole remaining ladder.
+
+--- FRONTIER 2 (what remains if the ruling is NO): the LADDER EXHAUSTED record.
+Mechanism: owner directive 2026-09-02 requires 20 flat sessions and >= 6 distinct
+modalities before any disposition; s41 is session NINETEEN of cycle 2 and the
+modality condition was met at s31. The floor is 10, above ENDGAME_LOCK_MAX_FLOOR
+= 5, so the 2026-07-27 standing ruling is not this function's subject and the
+record must be titled LADDER EXHAUSTED (non-endgame residual, floor 10).
+Next probe: when a session is assigned `escalation`, file that record in
+docs/grind/decisions.md leading with (i) the three-materialisation reading of
+asm/funcs/func_80034F88.s, (ii) the a1/a2/n1 byte-identity proof that no
+non-pointer spelling emits a register-held address, (iii) the n2 proof that
+re-setting one object is deleted, (iv) `scan_hand_coded --single func_80034F88`
+= tier LOW 0/8 (s22/s23/s24) as the failed canonical-asm gate, and (v) the
+negative SOTN-index census as the failed precedent gate; then return
+owner-gated.
+
+--- FRONTIER 3 (housekeeping, cheap and repeatedly costly when skipped):
+the dispatch digest is six sessions stale (it has now twice announced "session
+35" with a s34-era frontier). Every session must run
+`grep -n '^==== s' memory/grind/func_80034F88/evidence.md | tail` before
+spending a probe on a brief-listed "next probe", or it will re-derive s37-s40.
+
+## [s41] An ordinary-C expression of the flag byte's address written additively in terms of the runtime pointer `p` is cancelled back to a bare symbol_ref, so it produces no second address pseudo and no instruction-count change.
+- mechanism: The C source `(u8 *)((s32)p + ((s32)&D_80106A73 - (s32)p))` is reassociated at the tree level into `(p + SYM) - p` and reaches expand as genuine runtime arithmetic (`.rtl` carries `(set (reg 83) (plus p sym))` and `(set (reg 84) (minus (reg 83) p))` per access). The `+p`/`-p` pair is then cancelled by the brute-force PLUS/MINUS reassociator `simplify_plus_minus`, reached from combine through `simplify_binary_operation`; `(minus` counts in the function's section are .rtl 4, .jump 4, .cse 3, .loop 3, .cse2 3, .combine 0, .greg 0.
+- probe: Three bodies on the candidate chassis - n1 (blocks 2/3 addressed through the expression), n2 (the single declared `q` re-assigned from it before blocks 2 and 3), n3 (mirror: blocks 0/1 through it, `q` on blocks 2/3) - each scored with `sandbox func_80034F88 --disable all`, disassembled, and compared instruction-for-instruction against s40's a1 and against the base body b0; plus `pwsh tools/grinder/dump.ps1 func_80034F88` on the n1 body for pass attribution.
+- result: n1 = 28 at 48 and its stream is BYTE-IDENTICAL to s40's a1/a2 (the symbol-difference and bare-symbol bodies); n2 = 10 at 49 and its stream is BYTE-IDENTICAL to the base body b0, i.e. the re-set is cancelled and then deleted as redundant at zero instruction cost; n3 = 16 at 50. Banked as rejected/s41-blocks23-p-derived-address-folds-score28.c, rejected/s41-q-reset-from-p-derived-expr-deleted-score10-IDENTICAL.c and rejected/s41-blocks01-p-derived-blocks23-q-score16.c.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/cse.c:4250
+- measured_on: candidate.c chassis (the s39 round-trip body) on HEAD 2026-09-05, single declared `u8 *q`, no FAKE constructs present; fake_ablate.py reports nothing to ablate
+
+## [s41] MANDATED KILL RE-AUDIT - the two banked forms closest to the target re-measure unchanged on today's chassis, and the chassis itself is still 10 at 49.
+- mechanism: Re-run of the closest-to-target instance kills per the kill re-audit rule, with a FAKE-ablation check on the candidate, to confirm that no banked verdict was measured under a chassis or FAKE state that no longer holds.
+- probe: Spliced and scored b0 (a regeneration of memory/grind/func_80034F88/candidate.c), t1 (rejected/s39-block1-reads-symbol-directly-score11.c, the only banked form whose block 1 reloads the flag byte from memory like the target's `lbu $a0,0($v1)` at 80034FB4) and rt (rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c, the only banked body whose instruction multiset matches the target's); then ran `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c`.
+- result: b0 = 10 at 49, t1 = 11 at 50, rt = 10 at 49 - all three identical to their banked values. fake_ablate reports "no FAKE-annotated constructs found ... nothing to ablate".
+- verdict: CONFIRMED
+
+## [s41] The target's byte stream requires the flag byte's address to be named as a C pointer object more than once, which is an emission requirement rather than a register-allocation lever.
+- mechanism: `&D_80106A73` becomes a register-held value (the target's lui+addiu pair) only where the C source uses it AS a value assigned to a pointer object; a mem addressed by a bare symbol_ref is a legitimate MIPS address and is expanded through `$at` with `%lo` folded in. One pointer object is one pseudo (global.c:426) with one hard register (global.c:1275) and 2.7.2 has no live-range splitting, and a re-set of that object to the same constant is deleted by cse - so N register-held materialisations require N named assignments.
+- probe: Reading asm/funcs/func_80034F88.s block by block (three lui/addiu materialisations: 80034F98 into $v1 for blocks 0-1, 80034FC8 and 80034FF0 into $a0 for blocks 2 and 3, with $v1 and $a0 both live at .L80034FC8), together with the accumulated measurements: s40 a1/a2 (28 at 48, no register-held address), s40 h1 (30 at 49, inline helper shares one base), s41 n1/n2/n3 (this session), the s33-s35 anonymous-carrier family, and the score-0 four-handle body (rejected/three-pointer-objects-judge-FAIL-score0.c) which is the only measured body that emits all three materialisations.
+- result: Every non-pointer spelling measured across s33-s41 either folds to a bare symbol_ref or costs an instruction; the only construct that emits the target's second and third lui+addiu materialisations is a further `u8 *q = &D_80106A73;`. This is the ruling question filed as this session's outcome.
+- verdict: CONFIRMED

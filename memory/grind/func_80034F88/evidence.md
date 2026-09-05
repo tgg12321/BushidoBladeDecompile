@@ -5659,3 +5659,111 @@ for qL), `code6cac_b.c.orig`.
 - [s40] [s40] candidate.c body is UNCHANGED (still the s39 round-trip spelling at 10/49); only its header comment was updated with the two-address-register finding. Four new disproven forms banked; bank size is now 212.
 
 - [s40] [s40] Ladder accounting: this is session EIGHTEEN of cycle 2 (the ledger's own numbering -- the dispatch brief again said 'session 35' while the ledger already carried s35/s37/s38/s39). The six-modality condition was met at s31; two flat sessions remain before owner directive 2026-09-02 permits any disposition.
+
+==== s41 (synthesis) ====
+
+(Session-numbering note: the dispatch brief again called this "session 35" and its
+floor history stopped at s34, while the ledger already carried s35/s37/s38/s39/s40.
+This session is tagged **s41**; scratch is `tmp/grind/func_80034F88/s41/`. The
+digest is stale by six sessions - a reader who trusts the brief's "Live frontier"
+block will re-derive s37-s40. Read the ledger tail first.)
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c`, regenerated as
+variant `b0` and spliced at `src/code6cac_b.c:3420`: **score 10, build_insns 49**.
+The dispatch brief printed "measurement unavailable" for the TWELFTH consecutive
+session, so the floor is measured here, not inherited. `src/` restored to HEAD at
+session end (`git status --porcelain src/ include/` empty).
+
+MANDATED KILL RE-AUDIT (both closest-to-target banked forms, re-measured today):
+  * `rejected/s39-block1-reads-symbol-directly-score11.c` (t1 - the only banked
+    form whose block 1 reloads the flag byte from memory the way the target's
+    `lbu $a0,0($v1)` at 80034FB4 does): **11 at 50**, unchanged from s39/s40.
+  * `rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c` (rt -
+    the only banked body whose instruction multiset matches the target's):
+    **10 at 49**, unchanged.
+  * `tools/fake_ablate.py` again reports "no FAKE-annotated constructs found ...
+    nothing to ablate" for candidate.c, so no banked kill on this chassis was
+    measured with a FAKE carrier occupying the contested pseudo.
+
+--- 1. S40's FRONTIER 1 IS CLOSED BY MEASUREMENT: THE p-DERIVED ADDRESS CANCELS ---
+
+s40 left exactly one prescribed probe: "an address whose displacement or base
+comes from a runtime quantity that provably equals a constant (e.g. derived from
+`p`)", to be judged on INSTRUCTION COUNT first. Three bodies were built on the
+candidate chassis around
+
+    #define PDER ((u8 *)((s32)p + ((s32)&D_80106A73 - (s32)p)))
+
+  * `n1` - blocks 2/3 addressed through `PDER`, `q` keeps blocks 0/1:
+    **28 at 48**, and its objdump is **byte-identical to s40's `a1`/`a2`**
+    (the symbol-difference and bare-symbol bodies). The runtime base buys
+    nothing: the address is folded back to a bare `symbol_ref` and expanded as
+    `lui $v0` + `%lo`-folded `lbu`, `lui $at` + `%lo`-folded `sb`.
+  * `n2` - the single declared `q` RE-ASSIGNED from `PDER` before blocks 2 and 3
+    (one C object, non-constant-looking re-set): **10 at 49**, and its objdump is
+    **byte-identical to the base body `b0`**. The re-set is cancelled to the
+    constant and then deleted as redundant; it does not even cost an instruction.
+  * `n3` - the mirror (blocks 0/1 through `PDER`, `q` on blocks 2/3):
+    **16 at 50**.
+
+PASS ATTRIBUTION FROM DUMPS, not inference (`pwsh tools/grinder/dump.ps1` with n1
+installed; dumps in `tmp/grind/func_80034F88/dumps/`). The expression is NOT
+folded at the tree level: `.rtl` still contains, per access,
+
+    (set (reg 82) (symbol_ref "D_80106A73"))   REG_EQUAL symbol_ref
+    (set (reg 83) (plus (reg/v 72 = p) (reg 82)))
+    (set (reg 84) (minus (reg 83) (reg/v 72)))
+    (set (reg:QI 85) (mem:QI (reg 84)))
+
+i.e. tree reassociation turns `p + (SYM - p)` into `(p + SYM) - p`, and the
+address really is a runtime value at expand. Counting `(minus` in the function's
+section across passes: `.rtl` 4, `.jump` 4, `.cse` 3, `.loop` 3, `.cse2` 3,
+`.combine` **0**, `.greg` 0 - the cancellation completes in **combine**, which
+reaches `simplify_binary_operation` -> `simplify_plus_minus`
+(`tools/gcc-2.7.2/cse.c:4250`), the brute-force PLUS/MINUS reassociator that
+cancels the `+p` against the `-p` and leaves the bare symbol. That is a general
+property of ADDITIVE spellings, not of this one: any chain of `+`/`-` whose terms
+cancel to `&D_80106A73` is reassembled by the same routine.
+
+Consequence for the frontier: the class of "addresses forced into a pseudo
+because a runtime quantity makes them non-constant" is empty for additive
+spellings. Combined with s40's a1/a2 (bare symbol, symbol difference), s40's h1
+(static inline helper with its own pointer), and the whole s33/s34/s35
+anonymous-carrier family, **every measured way of naming the flag byte's address
+that is not an assignment to a declared C pointer object either folds to a bare
+`symbol_ref` (no register-held address at all) or costs an instruction.**
+
+--- 2. WHAT THE RESIDUAL IS, IN ONE PARAGRAPH (for the record) ---
+
+Read off `asm/funcs/func_80034F88.s`, the target materialises `&D_80106A73` into
+an allocatable register THREE times - `lui/addiu $v1` at 80034F98 (blocks 0-1),
+`lui/addiu $a0` at 80034FC8 (block 2), `lui/addiu $a0` at 80034FF0 (block 3) -
+with the $v1 and $a0 ranges simultaneously live at `.L80034FC8`. GCC 2.7.2 gives
+one allocno per pseudo (`global.c:426`) exactly one hard register
+(`global.c:1275`) and has no live-range splitting, so a single C pointer object
+cannot supply two of them (s40); a re-assignment of that one object to the same
+constant is deleted by cse (s25, and n2 again this session); and nothing but an
+assignment of `&D_80106A73` to a pointer object emits the `lui`+`addiu` pair at
+all (s40 a1/a2, s41 n1). The target byte stream therefore implies the original C
+named the flag-byte address more than once. That construct - a second/third
+`u8 *q = &D_80106A73;` - is exactly what the standing Judge constraint bans, and
+it is what the score-0 body (`rejected/three-pointer-objects-judge-FAIL-score0.c`)
+spells. The residual is an EMISSION requirement, not a register-allocation lever;
+that distinction is what this session escalates as a ruling question.
+
+- [s41] Chassis re-measured on HEAD (dispatch printed 'measurement unavailable' for the twelfth consecutive session): candidate body b0 = score 10, build_insns 49. src/ restored to HEAD; `git status --porcelain src/ include/` empty.
+- [s41] KILL RE-AUDIT: t1 (`rejected/s39-block1-reads-symbol-directly-score11.c`) re-measures 11 at 50 and rt (`rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c`) re-measures 10 at 49, both unchanged; fake_ablate reports no FAKE construct in candidate.c.
+- [s41] n1 (blocks 2/3 addressed through the p-derived expression `(u8 *)((s32)p + ((s32)&D_80106A73 - (s32)p))`) = 28 at 48 and is BYTE-IDENTICAL to s40's a1/a2, so a runtime base does not keep the address out of the folder.
+- [s41] n2 (the single declared q re-assigned from that same p-derived expression before blocks 2 and 3) = 10 at 49 and is BYTE-IDENTICAL to the base body b0: the re-set cancels to the constant and is then deleted as redundant, costing nothing and buying nothing.
+- [s41] n3 (mirror: blocks 0/1 p-derived, q on blocks 2/3) = 16 at 50.
+- [s41] PASS ATTRIBUTION FROM DUMPS: the p-derived address is NOT folded at the tree level -- .rtl carries `(set (reg 83) (plus p sym))` + `(set (reg 84) (minus (reg 83) p))` per access, i.e. tree reassociation produced `(p + SYM) - p`. `(minus` counts by pass in the function's section: .rtl 4, .jump 4, .cse 3, .loop 3, .cse2 3, .combine 0, .greg 0 -- the cancellation completes in COMBINE via simplify_binary_operation -> simplify_plus_minus (tools/gcc-2.7.2/cse.c:4250), the brute-force PLUS/MINUS reassociator.
+- [s41] Therefore s40's Frontier 1 is closed for additive spellings: no ordinary-C additive expression of the flag byte's address survives to become a second address pseudo, whatever runtime quantity it is written in terms of.
+- [s41] Residual restated for the ruling record: the target materialises &D_80106A73 into an allocatable register THREE times (80034F98 $v1, 80034FC8 $a0, 80034FF0 $a0); only an assignment of the address to a declared C pointer object emits that lui+addiu pair; one object gives one register (global.c:426/1275) and its redundant re-sets are deleted by cse. The residual is an EMISSION requirement, not an RA lever.
+- [s41] Ladder accounting: session NINETEEN of cycle 2; the six-modality condition was met at s31. One flat session remains before owner directive 2026-09-02 permits any disposition.
+- [s41] Three new disproven forms banked; bank size is now 215. candidate.c body unchanged at 10/49.
+- [s41] DIGEST DRIFT worth inheriting: the dispatch brief has now been six sessions stale twice running (it printed 'session 35' and a s34-era frontier). Sessions must read the ledger tail (`grep -n '^==== s' evidence.md | tail`) before spending a probe on a brief-listed 'next probe'.
+
+### Artifacts (s41)
+`tmp/grind/func_80034F88/s41/`: `variants/{b0,t1,rt,n1,n2,n3}.c`, `run.ps1`, `dis.sh`,
+`{b0,n1,n2,n3}.txt` (objdumps), `{b0,t1,rt,n1,n2,n3}.o`, `code6cac_b.c.orig`;
+`tmp/grind/func_80034F88/dumps/` (cc1 -da pass dumps for the n1 body).

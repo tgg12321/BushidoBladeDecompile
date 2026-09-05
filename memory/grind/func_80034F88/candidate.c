@@ -1,3 +1,28 @@
+/* s41 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns
+ * (variant b0).  BODY UNCHANGED.  s40's Frontier 1 is now CLOSED by
+ * measurement, so do not re-run it.
+ *
+ * s40 asked for one last shape: an address forced into a pseudo because a
+ * runtime quantity makes it non-constant, e.g. derived from `p`.  Measured:
+ *   n1  blocks 2/3 via (u8 *)((s32)p + ((s32)&D_80106A73 - (s32)p))
+ *       -> 28 at 48, BYTE-IDENTICAL to s40's a1/a2 (bare symbol / symbol diff).
+ *   n2  the single declared q RE-ASSIGNED from that expression before blocks
+ *       2 and 3 -> 10 at 49, BYTE-IDENTICAL to this body: the re-set cancels
+ *       to the constant and is deleted as redundant, costing nothing.
+ *   n3  mirror (blocks 0/1 via the expression, q on blocks 2/3) -> 16 at 50.
+ * Pass attribution from the dumps, not inference: the expression is NOT folded
+ * at the tree level -- .rtl carries (plus p sym) then (minus that p) per
+ * access -- and the `(minus` count goes .rtl 4 / .cse 3 / .cse2 3 / .combine 0,
+ * i.e. combine cancels it through simplify_binary_operation ->
+ * simplify_plus_minus (tools/gcc-2.7.2/cse.c:4250).  Any ADDITIVE spelling
+ * cancels the same way.
+ *
+ * Net across s33-s41: the target materialises &D_80106A73 into an allocatable
+ * register THREE times (80034F98 $v1, 80034FC8 $a0, 80034FF0 $a0), and the only
+ * C construct that emits that lui+addiu pair is an assignment of the address to
+ * a declared pointer object.  The residual is an EMISSION requirement, not a
+ * register-allocation lever -- filed this session as a ruling-request.
+ */
 /* s40 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns
  * (variant b0).  BODY UNCHANGED.  One result the next session must not
  * re-derive, and it retires the s39 frontier.
