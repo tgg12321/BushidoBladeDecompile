@@ -23172,3 +23172,7 @@ proven beneficiary. The owner weighed this with the plain-terms framing in hand.
 5. If the SHA1 does NOT match with the gate (i.e. the mechanism is wrong), nothing
    lands: the gate list is left empty, `main` stays foreclosed, and the failure is
    recorded here as a correction.
+
+## 2026-09-05 00:52 — func_80060A68 — layer-1 review — **FAIL**
+
+Undisclosed redundant global re-read (`(s32)D_800A3468 + 0x14` instead of `ob->p14`) is the exact CSE-defeat mechanism the ledger already named and killed in session 25 -- unannotated, undisclosed, and misrepresented by the self-vet's own blanket claims.

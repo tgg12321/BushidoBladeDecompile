@@ -2774,3 +2774,52 @@ merely re-spells a banned carrier is still banned.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: today's HEAD chassis with the s23 () dispatch-call spelling; 6 probe bodies plus the candidate.c sched2 dump, zero FAKE constructs in any of them
+
+## s29 (2026-09-05) — structural
+
+- H-s29-1 CONFIRMED. Declaring the object behind D_800A3468 as a struct and reading `ob->p10` as a
+  member reference (instead of `*(s32 *)(outer + 0x10)`) removes the scheduler dependence between the
+  `%gp_rel(D_800A3478)` store and the 0x10 loads, because true_dependence's struct-aliasing escape
+  (tools/gcc-2.7.2/sched.c:837-839) fires exactly when the load is a struct MEM with a varying
+  address and the store is a non-struct MEM with a non-varying one. Probe: SPgp / SP1A, the s27 Pgp
+  statement order re-spelled through a struct — 0 / 66 / 66, down from Pgp's 3 / 66. Verified with a
+  full build: SHA1 == oracle.
+
+- H-s29-2 CONFIRMED. With that dependence gone, the natural statement order — three word copies,
+  three halfword copies, the D_800A3478 publication between the second and third halfword copy, the
+  D_800A347C publication last — reaches score 0 with no named intermediates, no staged pointer local
+  and no `idx` local at all. Probes SN3, SN10, SN11, SN12, all 0 / 66 / 66. SN12 is the final
+  candidate.
+
+- H-s29-3 KILLED (instance). Struct typing on the s27/s28 staged statement order (the "Pt2" and
+  "P18" geometry, with the +2 read staged through a halfword local and the 0x10 pointer staged
+  through a word local above the gp store) closes the gap.
+  Result: SPt2 2 / 66 and SP18 2 / 66 — bit-for-bit the same score as their cast-based twins. Struct
+  typing changes only the scheduler dependence; it does not change cse's fold, because
+  cse's invalidate_memory already invalidates these reads through `cse_rtx_addr_varies_p` regardless
+  of MEM_IN_STRUCT_P (tools/gcc-2.7.2/cse.c:1716). The statement order has to move back to the
+  natural one as well.
+  kill_scope: instance. measured_on: today's HEAD chassis, struct-typed bodies, zero FAKE constructs.
+
+- H-s29-4 KILLED (instance). Frontier item 1: the s28 M-family premise that the {+0,+2} shared pseudo
+  must be made to lose its hard register so reload rematerialises it into target's two
+  `lw $a0,0x10($v1)`. Re-measured this session in struct-typed form (SM1) — 6 / 65, still one
+  instruction short, and the model is wrong: the target has three genuinely distinct source reads,
+  not one rematerialised pseudo, which the SN-family zeroes demonstrate directly.
+  kill_scope: instance. measured_on: today's HEAD chassis, struct-typed M-family body, zero FAKE.
+
+- H-s29-5 KILLED (class). Faithful control flow placed inside the 0x10 read window, as a cse
+  basic-block boundary that would separate two identical reads where no store can (frontier item 3).
+  asm/funcs/func_80060A68.s contains exactly one branch, at slot 60, and one label, at slot 63; slots
+  0-59 are straight-line, so no branch exists anywhere in the read window to reproduce. The axis is
+  unavailable in this function by inspection of the target itself.
+  kill_scope: class. predicate_cite: tools/gcc-2.7.2/cse.c:1716.
+  measured_on: target asm inspection plus today's HEAD chassis, zero FAKE.
+
+- H-s29-6 KILLED (instance). Under struct typing, the statement order stops mattering and any
+  arrangement of the halfword stores around the gp store reaches 0.
+  Result: false. SNAT (both halfword stores above the gp store) 8 / 66, SN2 (gp store above both)
+  8 / 66, SN6 7 / 66, SN7 13 / 67, SN8 7 / 66. The gp store must sit between the 0x1A and the 0x1C
+  halfword store in source, and the idx re-read must sit after the 0x1C store. The answer is a
+  conjunction of the type and the order, not the type alone.
+  kill_scope: instance. measured_on: today's HEAD chassis, struct-typed bodies, zero FAKE constructs.

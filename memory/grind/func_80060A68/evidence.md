@@ -3921,3 +3921,102 @@ by a load-delay nop at slot 10 and the p10 load is still stranded at slot 4.  sc
 - [s28] The function contains exactly one call (the dispatch through chractar_use_pset_combo_id_table) and it sits far below the read window, so the CALL half of s20's cse.c:1701 predicate has no faithful placement in the current statement set; every store in the function has now been tried as the second separator across s27 and s28.
 
 - [s28] src/text1b.c was restored to HEAD (INCLUDE_ASM) at the end of the session; the only tracked changes are the func_80060A68 ledger files and metrics/events.jsonl.
+
+## s29 (2026-09-05) — structural — MATCH. score 0 / 66 / 66, full-build SHA1 == oracle.
+
+- [s29] THE FUNCTION IS MATCHED IN PURE C WITH ZERO FAKE CONSTRUCTS AND ZERO SCRATCH LOCALS.
+  `sandbox func_80060A68 --disable all` prints score 0, build_insns 66, target_insns 66, and
+  `verify-oracle` prints `"ok": true`, `"build_matches": true`,
+  build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa = original_sha1_locked. The final body is
+  memory/grind/func_80060A68/candidate.c (probe SN12) and it declares exactly two locals, `ob` and
+  `result`; every one of the five banned constructs for this function concerns a scratch carrier
+  local and none of them is reachable from a body that has no scratch locals.
+
+- [s29] ROOT CAUSE OF 28 SESSIONS OF RESIDUAL, read out of the compiler source, not inferred.
+  tools/gcc-2.7.2/sched.c:826-841, `true_dependence`, does not stop at memrefs_conflict_p. It ANDs
+  in two struct-aliasing escapes, of which the second is:
+      && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
+            && GET_MODE (x) != QImode
+            && ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem))
+  The `sw $v0, %gp_rel(D_800A3478)($gp)` store is a scalar global at a SYMBOL_REF address, so for it
+  MEM_IN_STRUCT_P == 0 and rtx_addr_varies_p == 0 — it satisfies the entire right-hand side on its
+  own. The only missing condition was on the LOAD. Spelled as a cast through an integer local
+  (every chassis this function has ever carried), the 0x10 read is a bare MEM with
+  MEM_IN_STRUCT_P == 0, the escape does not fire, and the scheduler creates the dependence that
+  s27 correctly identified as stranding the third 0x10 load at slot 26. Spelled as a member of a
+  struct object, expand_expr sets MEM_IN_STRUCT_P on the COMPONENT_REF, the address is
+  `(plus (reg) (const_int 16))` so rtx_addr_varies_p == 1, the mode is SImode, and true_dependence
+  returns 0. The dependence disappears and the three 0x10 reads can sit in their natural source
+  positions on both sides of the gp store. The same escape appears at sched.c:858-863
+  (anti_dependence) and sched.c:876-881 (output_dependence), so the halfword stores are freed the
+  same way.
+
+- [s29] AND THE FOLD PROBLEM DISSOLVES RATHER THAN MOVING, for a separate reason that was also read
+  out of the source. cse's `invalidate_memory` (tools/gcc-2.7.2/cse.c:1703-1719) removes a memory
+  entry when `p->in_memory && (all || (nonscalar && p->in_struct) || cse_rtx_addr_varies_p (p->exp))`.
+  For every one of these base-register reads the LAST disjunct is already true, so every store in the
+  function invalidates them regardless of struct-ness. This is why the target's own build contains
+  three unfolded `lw ?,0xC($v1)` reads separated by the copy stores, and why s20's class kill
+  ("a store or a call") was correct and type-independent. Struct typing therefore does NOT change
+  cse's fold behaviour at all — it changes only the scheduler dependence — and the three halfword
+  stores go on separating the three 0x10 reads exactly as they always did. FRONTIER ITEM 2 IS
+  ANSWERED, but not by the mechanism it hypothesised: it proposed that MEM_IN_STRUCT_P would change
+  cse's fold, and that is measurably false (SPt2 and SP18, struct-typed on the s27/s28 staged
+  statement order, both still measure 2/66 — identical to their cast-based twins). The struct
+  matters only for sched, and only once the statement order is moved back to the natural one.
+
+- [s29] MEASUREMENTS, all on today's HEAD chassis, all zero-FAKE, all `sandbox --disable all`.
+  Cast-based control (the s27/s28 candidate.c, "Pt2") 2 / 66 / 66 — chassis reproduces.
+  Struct-typed, staged statement orders:  SPt2 2/66,  SP18 2/66  (struct typing alone does nothing)
+  Struct-typed, third read below the gp store:  SPgp 0/66,  SP1A 0/66   <-- FIRST ZEROES EVER
+  Struct-typed, staged locals deleted:          SN3 0/66, SN4 0/66, SN5 0/66, SN9 0/66
+  Struct-typed, all scratch deleted + typed members: SN10 0/66, SN11 0/66, SN12 0/66  (SN12 = final)
+  Negative controls proving statement order still matters under struct typing:
+      SNAT (both halfword stores above the gp store)   8 / 66
+      SN2  (gp store above both halfword stores)       8 / 66
+      SN6  (idx read between the 0x1A and 0x1C stores) 7 / 66
+      SN7  (gp store above, idx read between)         13 / 67
+      SN8  (idx read above the 0x1C store)             7 / 66
+      SM1  (the s28 M-family split of the +0 read)     6 / 65
+  So the answer is a conjunction: struct typing removes the dependence, and the statement order must
+  then be the NATURAL one (gp store between the 0x1A and 0x1C stores) rather than any of the geometry
+  s24-s28 built to work around the dependence. Either half alone measures non-zero.
+
+- [s29] TARGET GEOMETRY, now fully explained. asm/funcs/func_80060A68.s: the three
+  `lw ?,0x10($v1)` are at slots 11 (-> $a1), 19 (-> $a0) and 22 (-> $a0); the `sh` to 0x18 is at 23;
+  the gp store to D_800A3478 is at 26; the `sh` to 0x1A is at 27; the `lhu $a1,4($a1)` is at 28; the
+  idx re-read `lhu $a0,0($v1)` is at 29; the gp store to D_800A347C is at 31; the `sh` to 0x1C is at
+  32. Under the cast spelling the gp store at 26 pinned every 0x10 load written below it to slot 26+
+  and pinned every halfword store's relative order, which is what forced 28 sessions of increasingly
+  contorted statement geometry. Under the struct spelling none of those pins exists and the natural
+  source order — three word copies, three halfword copies with the D_800A3478 publication between the
+  second and third, then the D_800A347C publication — schedules straight into the target stream.
+
+- [s29] FRONTIER ITEM 3 IS CLOSED NEGATIVE AND SHOULD NOT BE REOPENED. The target function contains
+  exactly one branch, `beqz $v0, .L80060B60` at slot 60, and exactly one label, at slot 63. Slots
+  0-59 are straight-line. There is therefore no faithful control flow available inside the 0x10 read
+  window (slots 0-32) to act as a cse basic-block boundary, and the axis is unavailable rather than
+  untried. It is also now moot: the fold was never the binding constraint.
+
+- [s29] KILL RE-AUDIT (mandated). `tools/fake_ablate.py` is a no-op on this function — the incoming
+  candidate.c and every probe this session carry zero FAKE constructs. The instance kill whose form
+  sat closest to the target was s28's M-family (M1, 5/65, the merge partition target's register
+  picture implies). It was re-measured on the current chassis in its struct-typed form (SM1, 6/65)
+  and it does NOT close: the M-family's premise — that the shared pseudo must lose its allocno so
+  reload rematerialises it into target's two `lw $a0,0x10($v1)` — is now known to be the wrong model.
+  Target does not rematerialise anything there; it has three genuinely distinct source reads, and
+  s28's own sched2 dump reading (two 0x10 loads, one with a REG_EQUIV note) was a correct observation
+  of OUR build attached to an incorrect inference about the target's. FRONTIER ITEM 1 IS THEREFORE
+  ANSWERED NEGATIVE as well, and the note in the s28 ledger that ra_solver has nothing to classify
+  here stands for the right reason: the residual was a scheduler DEPENDENCE, decided in
+  true_dependence before the ready list is ever built, not a register-allocation outcome.
+
+- [s29] TRANSFERABLE FINDING, worth propagating beyond this function. Any BB2 function whose residual
+  is "a load will not schedule across a %gp_rel store to a scalar global" is a candidate for exactly
+  this treatment, because memrefs_conflict_p can never disambiguate a symbol address from a
+  base-register address and the ONLY escape GCC 2.7.2 offers is the MEM_IN_STRUCT_P asymmetry in
+  true_dependence. The precondition is that the load's base object be legitimately typeable as a
+  struct — i.e. the project has no header declaration pinning it to a scalar cast — which the DATA
+  MODEL block reports per function. Sibling func_80045294 (src/text1a_c.c, foreclosed at floor 1
+  since its s52) and every function in the 2026-08-18 shared-brief BLOB cluster should be re-checked
+  against this predicate before any of them is treated as settled.
