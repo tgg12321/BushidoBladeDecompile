@@ -2565,3 +2565,149 @@ identity detour.
 - [s21] Flip collateral read-out (row-diff of v1): the +24 rows are not local to rows 60-64. Rows 38-59 are the same opcodes with a rotated register assignment plus one displacement - the sll computing t0*4 sits at row 42 in the target and in the floor body but at row 50 in every flipped build, because the flipped t0*10 expansion moves where CSE materialises the shared t0<<2.
 
 - [s21] REDERIVE-LADDER STATE for the next session: the fresh-m2c rung is already spent (s10, evidence.md:1194 - the m2c body corroborates the current one statement-for-statement; its only structural readings are the class-C flip and the hoisted sp[] slot pointer, both banked). The two unspent rederive rungs are the decomp.me corpus scrape (tools/decomp_me_scrape.py, never run for this function) and a Kengo/PS2 transplant (project memory slog-kengo-dead-end records no Kengo equivalent for the BB2 functions surveyed so far). Start there rather than re-running m2c.
+
+## [s22] structural — the class-C residual re-typed as a quantity-priority problem; frontier item #2 closed
+
+Chassis re-verification. `sandbox func_800770B8 --disable all` on
+`memory/grind/func_800770B8/candidate.c` applied to src/text1b.c (with the two
+byte-neutral caller-side edits the candidate documents: prototype
+`s32 func_800770B8(s32, s32, s32);`, call site `(s32)&D_8009BD24`) = **score 5,
+build_insns 175, target_insns 175** at commit 768f08a4. The plain flipped base
+scores 29/175. Both numbers were re-measured live before any probe.
+
+Mandated FAKE kill re-audit. `tools/fake_ablate.py` reports ONE FAKE unit in the
+candidate (the empty `do { } while (0);` prologue fence at line 206): keep-all 5,
+drop-1 10. The fence is load-bearing, worth 5 rows, and lives in the prologue
+(class A); it occupies none of the block-1 pseudos that class B and class C
+live in, so no banked class-B/class-C kill on this chassis is a FAKE-masking
+artefact.
+
+Frontier item #2 (the ledger's standing next probe) is CLOSED NEGATIVE. The
+s20 device x slack cross-product was re-run on the PLAIN flipped base, the one
+base s20 never covered (it covered the floor base F and the flipped-CABD base C).
+17 builds, using the s20 transform definitions re-executed verbatim so the
+devices and slack spellings are bit-identical to the ones s20 priced:
+
+    X0  29   X0b 47   X0c 54
+    XD0 30   XDb 48   XDc 55
+    XG0 41   XGb 55   XGc 64
+    XE0 42   XEb 56   XEc 65
+    XP0 48   XPb 65   XPc 73
+    XQ0 49   XQb 66   XQc 74
+
+Device B1 = +18 rows and C1 = +25 on this base exactly as on the F base; slack
+D +1, G +12, E +13, P +19, Q +20. Nothing is refunded: the flip's collateral and
+the device's collateral stack. Cheapest build of any kind on this base is 30,
+best surviving-label 175-insn build is 56, against a floor of 5. The "class B and
+class C are payable together" hypothesis is dead on all three bases now.
+
+THE NEW RESULT — class C is a quantity-PRIORITY residual, and the sum always
+takes $v0. 20 further builds in three families (priority levers w1-w9, sum
+write-back / variable-reuse levers y1-y7, seat-competition levers z1-z4) land on
+exactly four objects:
+
+  (i)  5/175, byte-identical to the floor — y1, y6, z2, z4. Reload-first source
+       tree, sum tied to the reload. Note z2 (`p_7e = p_6a + 10`) and z4
+       (`p_7e = (s16 *)((s32)p_6a + 0x14)`) are free respellings of the second
+       cursor that cost nothing, and y1/y6 show the shift can be staged into its
+       own named local with no byte change as long as the sum stays reload-first.
+  (ii) 29/175 — y2, y3, y4, y5, y7 and the plain flip X. Sum tied to the shift.
+       Row diff of y2 at rows 60-64:
+           ours   lw $v1,0($gp) / sll $v0,$v0,1 / addu $v0,$v0,$v1 /
+                  addiu $a3,$v0,106 / addiu $a1,$v0,126
+           target lw $v0,%gp_rel(D_800A36A0) / sll $v1,$v1,1 /
+                  addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E
+       The TIE is correct and the two SEATS are swapped, and the swap drags 24
+       further rows of preheader rotation with it (rows 38-59 all reallocate).
+  (iii) 25/171 — w1, w4, w9. Consuming one hoisted `s32 sh = t0 * 10;` in both
+       the cursors and the for-loop's `s16 idx = (s16)(a2 + sh)` is a real CSE
+       that DELETES four instructions the target keeps. The target computes the
+       index loop's t0*10 separately (`sll $a3,$v0,1` in the for-loop preheader,
+       target rows 78-82) and recomputes it for the cursors (target rows 64-65),
+       so sharing is off-target by construction, whatever it does to the seats.
+  (iv) worse: w2 41, w3 51, w5 64, w6 64, w7 71, w8 41, z1 26, z3 49.
+
+Two findings fall out.
+
+FIRST, a refinement of s21. s21 concluded "the only bit of C that reaches this
+decision is which operand the source names first". That is not quite it: y2
+(`sh = (s32)D_800A36A0 + sh;`) and y3 (`sh += (s32)D_800A36A0;`) both use a
+RELOAD-FIRST source tree and still produce object (ii). What selects the object
+is which QUANTITY the sum's pseudo gets merged into by block_alloc's combine_regs
+(local-alloc.c:1240-1298), and C can express that merge either through operand
+order or by assigning the sum into the shift's own variable. Variable reuse,
+compound assignment, pointer-vs-integer domain, reusing the loop's existing `ptr`
+scratch, and declaration position are all merely different spellings of the same
+merge and give the same 29.
+
+SECOND, the observation that re-types the residual. In ALL four objects the
+cursor sum receives $v0 — the lower-numbered free register — whether it is tied
+to the reload (object i), tied to the shift (object ii), or fed by a shared
+loop-level shift sitting in $t1 (object iii). The target puts that sum in $v1
+and the reload in $v0. So the open question is no longer "which operand does the
+sum tie to" (C reaches both) but "why is the target's merged shift+sum quantity
+NOT first in local-alloc's qty_order".
+
+The arithmetic, from a fresh .lreg dump of the floor body
+(tmp/grind/func_800770B8/dumps/text1b.lreg, ";; Function func_800770B8"):
+
+    Register 108  the t0*10 shift    used 4 times across 2 insns in block 1
+    Register 109  the D_800A36A0 reload  used 4 times across 6 insns in block 1
+    Register 110  the sum            used 6 times across 3 insns in block 1
+
+qty_compare (local-alloc.c:1630-1657) orders by
+floor_log2(n_refs)*n_refs*size/(death-birth). Merged shift+sum is ~10 refs over
+a ~3-insn span, priority ~10.0; the reload alone is 4 refs over 6 insns, ~1.33.
+For find_free_reg to reach the reload FIRST (and hand it $2, leaving $3 for the
+merged shift+sum, which is the target's disposition) the merged quantity's span
+would have to grow past roughly 23 insns at the same reference count — i.e. the
+shift's pseudo must be born about twenty insns before the addu while STILL being
+merged with the sum. Note s21's v6/v8 hoisted the shift statement to the
+outer-loop top and did not achieve this, so statement position alone does not
+move the pseudo's birth that far; what is untested is a form where the shift's
+VALUE is genuinely produced early because a target-present earlier statement
+consumes it.
+
+Sibling sweep, both remaining unspent pairings, closed. CD_datasync
+(saEft01Init) and CD_sync (cpu_side_move_dir_4), both src/system.c, both
+foreclosed at floor 2, have ZERO global overlap with this function (they touch
+D_800161B8/C8, D_80016240, D_800A11B4/B8/D5/DC, D_800A125C, D_800A147C,
+D_800A1494, D_800F19A0/A8/B8/BC/C0 against this function's D_8009BCE4,
+D_8009BD21, D_800A35D0/D8/DC/E8, D_800A36A0, D_800A374C) and neither names
+func_800770B8 or text1b anywhere. No shared window, nothing to transplant; with
+s21's CD_ready result all three sibling pairings are now spent. The one thing
+worth carrying is a TECHNIQUE pointer: CD_sync's candidate.c:232 carries the
+sanctioned F1 combine-foldable chain-extender FAKE — a link-constant SYMBOL_REF
+difference that combine.c folds to zero emitted bytes after flow.c has already
+recorded the extra reg_n_refs. That is the only byte-neutral reg_n_refs lever
+known in this project and it is the right SHAPE for a qty_order residual. It is
+not proposed here: the priority arithmetic above wants a ~20-insn SPAN change,
+not a reference-count change, and a chain-extender moves refs, not span.
+
+Artifacts: tmp/grind/func_800770B8/s22/ (gen_cross.py, gen_prio.py, gen_reuse.py,
+gen_z.py, mkbase.py, apply.py, run.sh, rowdiff.sh, v/ = the 33 bodies,
+sweep.log), tmp/grind/func_800770B8/dumps/text1b.lreg (fresh this session).
+Banked rejected forms: rejected/s22-sum-written-into-shift-variable-seats-swap-29.c,
+rejected/s22-shared-t0x10-cse-loses-4-target-insns-25of171.c,
+rejected/s22-named-reload-reused-post-loop-kills-target-reload-49.c,
+rejected/s22-flipbase-B1-label-device-additive-47.c.
+
+- [s22] Floor re-verified live on the current chassis (commit 768f08a4, func_80060A68 already matched in the same TU): candidate.c = score 5, build_insns 175, target_insns 175. Plain flipped base = 29/175.
+
+- [s22] Mandated FAKE kill re-audit: fake_ablate finds one FAKE unit (the do-while(0) prologue fence); keep-all 5, drop-1 10. Load-bearing, prologue-scoped, touches no class-B/class-C pseudo.
+
+- [s22] The row diff of the floor body against asm/funcs/func_800770B8.s shows the entire honest residual is five rows: 35 and 36 (`sw $zero,0x30($s1)` / `sh $zero,0x34($s1)` vs the target's `$v0` base — class B) and 62, 63, 64 (`addu $v0,$v0,$v1` / `addiu $a3,$v0` / `addiu $a1,$v0` vs the target's `addu $v1,$v1,$v0` / `addiu $a3,$v1` / `addiu $a1,$v1` — class C). Every other differing row the tool prints is a cosmetic move-vs-addu or li-vs-addiu rendering difference.
+
+- [s22] The s20 device/slack price structure reproduces on the plain flip base: B1 = +18 rows, C1 = +25, D = +1, G = +12, E = +13, P = +19, Q = +20. The costs stack with the flip's own 24 rows rather than cancelling; cheapest plain-flip build 30, best 175-insn surviving-label build 56.
+
+- [s22] In every one of the four reachable objects the cursor sum is allocated $v0 — the lower-numbered free register — whether the sum is tied to the reload (floor, 5), tied to the shift (y2/X, 29), or fed by a shared loop-level shift living in $t1 (w1, 25/171). The target allocates that sum $v1 and the reload $v0.
+
+- [s22] s21's 'the tie follows the source tree's operand order' is refined: y2 (`sh = (s32)D_800A36A0 + sh;`) and y3 (`sh += (s32)D_800A36A0;`) both name the reload FIRST and still produce the 29 object. What selects the object is which quantity block_alloc's combine_regs merges the sum's pseudo into; C can express that merge through operand order OR by assigning the sum into the shift's own variable, and both spellings give the same bytes.
+
+- [s22] Fresh .lreg dump (tmp/grind/func_800770B8/dumps/text1b.lreg, ';; Function func_800770B8'): reg 108 = the t0*10 shift, 'used 4 times across 2 insns in block 1'; reg 109 = the D_800A36A0 reload, 'used 4 times across 6 insns in block 1'; reg 110 = the sum, 'used 6 times across 3 insns in block 1'. Under qty_compare's floor_log2(n)*n*size/(death-birth) the merged shift+sum quantity is ~10 refs over ~3 insns (~10.0) against the reload's ~1.33, so the merged quantity is ordered first and takes $2; the target's disposition needs the reload ordered first, which at the same reference count wants the merged quantity's span to exceed roughly 23 insns.
+
+- [s22] Sharing t0*10 between the cursor block and the for-loop index is off-target regardless of its allocation effect: it deletes four instructions the target keeps. The target computes the index loop's t0*10 separately in the for-loop preheader (`sll $a3,$v0,1`, target rows 78-82) and recomputes it for the cursors (rows 64-65).
+
+- [s22] Two free respellings of the second cursor are now banked as byte-neutral on the floor body: `p_7e = p_6a + 10` (z2) and `p_7e = (s16 *)((s32)p_6a + 0x14)` (z4), both 5/175. So is staging the shift into a fresh named local while keeping the sum reload-first (y1, y6, both 5/175).
+
+- [s22] Sibling sweep complete: CD_datasync, CD_sync and (from s21) CD_ready all have zero code overlap with this function. CD_sync candidate.c:232 carries the sanctioned F1 combine-foldable chain-extender FAKE, the only byte-neutral reg_n_refs lever known in the project — recorded as a technique pointer, not proposed, because this residual needs span rather than refs.

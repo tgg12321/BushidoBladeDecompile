@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 21,
- "current_modality": "rederive",
+ "session_count": 22,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -129,23 +129,29 @@
    "floor": 5,
    "modality": "rederive",
    "headline": "Floor re-verified at 5 on the MOVED chassis (func_80060A68 landed in the same TU); s18's standing class-C instruction is answered NEGATIVE - 11 fresh builds plus two .lreg dumps show the operand-order"
+  },
+  {
+   "session": 22,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Frontier item #2 closed negative on the plain flip base (17 builds, costs stack); 20 more builds re-type class C from an operand-order residual to a local-alloc quantity-PRIORITY residual \u2014 the cursor"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The decomp.me corpus contains a GCC-2.7.2 PS1 body whose address arithmetic emits `addu Rdst,Rshift,Rreload` with the reload in the LOWER-numbered hard register - i.e. a spelling that ties the sum to the shift without the shift also taking $2 - which would break s21's one-bit-two-senses coupling.",
-   "mechanism": "local-alloc.c:1240-1298 block_alloc's ordered combine_regs loop decides the tie; find_free_reg over qty_order decides the seat. s21 showed both follow the same source bit in THIS geometry, but a different surrounding geometry (a third live quantity competing for $2, or one of the pair spanning a call) could split them.",
-   "next_probe": "Run tools/decomp_me_scrape.py for the corpus, grep the scraped C+asm pairs for a three-operand address addu whose dest ties the second-named operand, and transplant that geometry onto the p_6a/p_7e block."
+   "hypothesis": "The target's cursor sum sits in $v1 because its merged shift+sum quantity is ordered AFTER the reload quantity in local-alloc's qty_order, and a C form in which the shift's VALUE is genuinely produced ~20 insns earlier (consumed by a target-present earlier statement, not merely declared earlier) drops the merged quantity's priority below the reload's and hands the reload $v0.",
+   "mechanism": "local-alloc.c:1630-1657 qty_compare = floor_log2(n_refs)*n_refs*size/(death-birth); local-alloc.c:1240-1298 block_alloc combine_regs merges the sum into the shift. Measured today: merged shift+sum ~10 refs / ~3 insns (~10.0) vs reload 4 refs / 6 insns (~1.33); reordering needs the merged span past ~23 insns at unchanged refs. s21's v6/v8 moved the shift STATEMENT to the outer-loop top and did not move the pseudo's birth, so declaration position alone is spent.",
+   "next_probe": "Find a target-present earlier statement in the same basic block whose value is honestly the t0*10 chain (the target's rows 54-59 already build t0*4 -> t0*5 in $v1 and share it with the D_800A35D0 and 0x40/0x42 store groups) and spell the cursor so its sum merges with THAT long-lived chain quantity rather than with a freshly born shift pseudo \u2014 e.g. deriving the cursor from the same named intermediate the 0x40/0x42 group uses. Verify the merge with a .lreg dump ('used N times across M insns') before scoring."
   },
   {
-   "hypothesis": "Class B's 2+2 split and class C's tie are payable TOGETHER but not separately: a body that pays the flip's +24 rows also removes some of class B's cost, so the flipped basin plus one of the s20 label devices dips below 5.",
-   "mechanism": "cse.c:8038-8063 (only a CODE_LABEL or NOTE_INSN_SETJMP ends a cse2 extended basic block) for class B; local-alloc.c:1240-1298 for class C. s20 measured the cross-product on the FLOOR base and on the flipped-CABD base but never on the plain flipped-ABCD base with the s21 staged spellings in place.",
-   "next_probe": "Re-run the s20 device x slack cross-product on the plain flip base (29/175), which s20 covered only via the CABD variant; the s21 sweep confirms all flip spellings share one object, so the cross-product needs to run once, not once per spelling."
+   "hypothesis": "Class B's two rows (35/36, the target's `$v0` base for the 0x30/0x34 stores) are reachable without a surviving CODE_LABEL if the call's return value and p_old are separate C-level quantities whose local-alloc merge leaves the return value live across the two stores.",
+   "mechanism": "cse.c:8038-8063 forecloses the cse2 extended-basic-block split without a label, and s17/s20 priced every label device at >= +18 rows on all three bases. But rows 35/36 are a BASE-REGISTER choice ($s1 vs $v0), which is an allocation question in local-alloc/global-alloc, not necessarily the cse2 split the ledger has been attacking.",
+   "next_probe": "Dump .lreg/.greg around the call block and read which quantity the 0x30/0x34 stores' base belongs to on the floor body; then try spellings in which the func_8006E49C result is consumed by the two stores directly while `p_old`/`D_800A36A0` are written from a separate copy, measuring each with sandbox. This re-opens class B on the allocation axis rather than the cse2 axis."
   },
   {
-   "hypothesis": "Nothing else is attackable in pure C on today's chassis: class B is foreclosed by device price (>= +18 rows of collateral for 2 rows of gain, s17/s20), and class C is foreclosed by the s21 coupling result.",
-   "mechanism": "cse.c:8038-8063 + jump.c pass-1 label demotion (class B); local-alloc.c:1240-1298 plus the expand/find_free_reg numbering coupling measured in s21 (class C).",
-   "next_probe": "Only a re-activation trigger changes this: an owner class grant covering the banned arithmetic-identity / dependence-edge construct (measures 4/175 today), a grant or compiler finding that splits a cse2 extended basic block without a CODE_LABEL, or a toolchain finding that alters block_alloc operand tying or find_free_reg's qty ordering."
+   "hypothesis": "The four reachable objects are the whole reachable set for the cursor block, so the residual is 5 until a lever that changes a quantity's SPAN without emitting an instruction exists.",
+   "mechanism": "local-alloc.c:1630-1657 qty_compare plus local-alloc.c:1240-1298 combine_regs; 33 builds this session and at least 22 earlier spellings collapse onto {5, 25/171, 26, 29, and strictly worse}.",
+   "next_probe": "Before conceding, run tools/ra_solver inverse.py local with the goal stated as the FULL target disposition for pseudos 108/109/110 (reload -> $2, merged shift+sum -> $3) rather than the class-B subset s5/s17 used, and read whether the solver reports any reachable perturbation of qty birth/death/refs; classify the verdict with inverse_compose.py classify before spelling anything."
   }
  ],
  "judge_constraints": [
@@ -175,6 +181,30 @@
    "measured_on": "HEAD chassis 2026-09-05; documentary probe over the sibling's candidate.c and this ledger's citations, no builds.",
    "predicate_cite": "",
    "result": "NEGATIVE - the link is a mis-classification, not a code relationship. CD_ready is a marionation dispatch body with no ca"
+  },
+  {
+   "session": 22,
+   "statement": "Class B and class C are payable TOGETHER on the PLAIN flipped base: a body that pays the flip's collateral also removes part of class B's cost, so the plain-flip basin plus one of the s20 label device",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (src/text1b.c at commit 768f08a4, func_80060A68 already landed as matched C in the same TU); floor re-verified 5/175/175 with the single annotated do-while(0) prologue fence pr",
+   "predicate_cite": "",
+   "result": "NEGATIVE and additive. X0 29, X0b 47, X0c 54, XD0 30, XDb 48, XDc 55, XG0 41, XGb 55, XGc 64, XE0 42, XEb 56, XEc 65, XP"
+  },
+  {
+   "session": 22,
+   "statement": "Class C's residual is a quantity-PRIORITY residual rather than an operand-order residual, so making the shift and reload quantities' local-alloc priorities differ \u2014 by sharing the t0*10 subexpression ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (src/text1b.c at commit 768f08a4); floor re-verified 5/175/175 with the single annotated do-while(0) prologue fence present and no other FAKE construct; 20 builds plus a fresh ",
+   "predicate_cite": "",
+   "result": "NEGATIVE \u2014 the 20 builds land on exactly four objects and none puts the cursor sum in $v1. (i) 5/175 byte-identical to t"
+  },
+  {
+   "session": 22,
+   "statement": "The two remaining unspent sibling ledgers CD_datasync (saEft01Init) and CD_sync (cpu_side_move_dir_4), both src/system.c and both foreclosed at floor 2, share a code window with func_800770B8 whose sp",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05; documentary probe over both siblings' candidate.c and their global sets, no builds.",
+   "predicate_cite": "",
+   "result": "NEGATIVE on transplant. Zero global overlap \u2014 CD_sync and CD_datasync touch D_800161B8/C8, D_80016240, D_800A11B4/B8/D5/"
   }
  ]
 }
