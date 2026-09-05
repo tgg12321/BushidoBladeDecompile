@@ -342,6 +342,26 @@
  *       stays the MINIMAL body because it is the cleaner submission shape.
  * Remaining deficit: 54 counted insns, or 18 emitted-free moved movables.
  */
+/* s16 (2026-09-05) update - the requirement has TWO reachable terms, not one.
+ * s15's "the order dial is capped at -6 because there are only two other
+ * movables" is FALSE (s16 H25): a chain of loop-invariant locals joined by
+ * DISTINCT operators is not folded by cse1 the way s15's pure-xor chain was,
+ * so extra movables can be manufactured without limit and each one takes 3
+ * off the threshold.  At 12 links the 0x91A2B3C5 movable prints "not
+ * desirable" with NO inert padding present.  The blocker is price, not
+ * reachability: every extra moved movable costs 1.0-1.4 emitted instructions
+ * (asm_lines 107 -> 126 for 15 of them), and s16 K46 measured the four shapes
+ * that could have been free - mixed-op chains, duplicate invariants hoping for
+ * a combine_movables MATCH + regs_may_share, a named invariant base pointer,
+ * and a plain invariant copy - and none of them is.  s16 K47 additionally
+ * closes the threshold INITIALISATION term as class-dead (n_non_fixed_regs is
+ * only changed by globalize_reg, varasm.c:547, i.e. a global register
+ * variable = a register-asm pin).  s1's H2 is confirmed: all 15 residual
+ * instructions are downstream of the hoist decision, because s14's padded
+ * body - which differs only in that decision - measured sandbox 0/104/104.
+ * This file is unchanged; it remains the minimal, cleanest submission shape.
+ */
+
 void func_8003C714(void) {
     u8 buf[4];
     s32 *s0;

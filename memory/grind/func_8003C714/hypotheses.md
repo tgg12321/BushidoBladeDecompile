@@ -2099,3 +2099,235 @@ constant and the order, and turns the requirement into a two-term budget.
 - probe: python3 tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c, plus a real sandbox run with the s_max body applied over the INCLUDE_ASM line and src/ restored afterwards.
 - result: fake_ablate: 'no FAKE-annotated constructs found in memory/grind/func_8003C714/candidate.c; nothing to ablate'. Sandbox: score 15, target_insns 104, build_insns 105, rules_dropped 0. Third consecutive session to confirm this branch; future sessions need not re-run it.
 - verdict: CONFIRMED
+
+## s16 (2026-09-05) - synthesis modality
+
+Chassis re-checked FIRST (the brief reported the driver measurement as
+unavailable): candidate.c applied over the INCLUDE_ASM line at
+src/code6cac_c2.c:629, `sandbox func_8003C714 --disable all` = score 15,
+target_insns 104, build_insns 105, rules_dropped 0, cheat_asm_stripped 9.
+Unchanged since s1. src/ restored to INCLUDE_ASM immediately afterwards.
+The fake_ablate branch of the kill re-audit is CLOSED by s15 (three
+consecutive confirmations that candidate.c carries no FAKE construct) and was
+not re-run; instead this session re-audited the ledger's WEAKEST verdict per
+the CONTRADICTION RULE, and that re-audit found a false cap (H25 below).
+
+This session attacked the two live frontier items s15 left and settled both.
+
+### CONFIRMED
+
+- **H25 - s15's cap on the movable-ORDER dial is FALSE, and the target's
+  in-loop const form is reachable through the order term ALONE.** s15 wrote
+  "K24's order dial is capped at -6 because there are only two other
+  movables". Extra movables can be manufactured without limit: a chain of
+  loop-invariant locals joined by DISTINCT operators (`* 3`, `^ 0x1001`,
+  `+ 7`, `* 5`, ...) is NOT constant-folded by cse1 - which is precisely what
+  destroyed s15's K44 pure-xor chain - so every link becomes its own movable.
+  Measured sweep (tmp/grind/func_8003C714/s16/sweep.sh, shipped cc1,
+  canonical flags, -dL):
+
+      links   insn_count  moved  not-desirable  asm_lines
+        0         56        3          0           107   (= candidate.c)
+        1         58        5          0           111
+        2         59        6          0           112
+        4         62        9          0           115
+        8         67       14          0           120
+       10         70       17          0           123
+       11         71       18          0           124
+       12         73       18          2           126
+       13         74       19          2           127
+       14         75       20          2           128
+       15         77       22          2           130
+       16         78       23          2           131
+
+  At 12 links the 0x91A2B3C5 movable prints "not desirable" with NO inert
+  padding whatsoever, i.e. the s14/s15 framing of the problem as "find +54
+  free counted insns" is only one of two ways to reach the same gate; the
+  order term reaches it too, at 3 units per movable exactly as H22 priced it.
+  Banked at rejected/mixed-op-invariant-chain-scales-the-order-dial-but-
+  costs-12-bytes-per-movable.c.
+
+- **H26 - the one-flip window is 3 units wide and its exact recipe is now
+  known.** At 11 links insn_count is 71 and the magic's threshold is exactly
+  71 (122 - 3*16 moved ahead of it), so it still moves; one more link
+  overshoots and flips the &D_80106A58 symbol_ref TOO (not-desirable = 2),
+  which the target hoists. The correct configuration is 11 links plus ONE unit
+  of the free ordinary split-init channel (H23): symbol_ref judged at 74 >= 72
+  (moves), magic judged at 71 < 72 (stays in loop). So a distance-0 order-dial
+  body has a fully specified shape; only its byte cost is fatal.
+
+### KILLED
+
+- **K46 (instance) - no moved movable measured in this loop is free; the
+  measured price is 1.0-1.4 emitted instructions each.** This is the direct
+  answer to s15's frontier item 1. Four carrier shapes were measured:
+  (a) mixed-operator invariant chains - 15 extra moved movables cost 19 extra
+  emitted instructions (asm_lines 107 -> 126); (b) duplicate invariant
+  expressions (`wa = (s32)s0 * 3; wb = (s32)s0 * 3;`), hoping combine_movables
+  would MATCH them and mark them regs_may_share - measured 59 insns, 6 moved,
+  asm_lines 115, i.e. three extra movables at eight extra instructions, no
+  match and no sharing; (c) a named invariant base pointer declared inside the
+  loop (`base = (u8 *)&D_80106A58; src = base + i * 8;`) - 56 insns, 3 moved,
+  107 asm, IDENTICAL to candidate.c because cse1 propagates the copy away;
+  (d) a named invariant copy of the struct pointer (`b = s0;`) - likewise
+  56 / 3 / 107. So (c) and (d) buy nothing at all and (a),(b) are priced in
+  bytes. Measured on the shipped chassis with no FAKE construct present.
+
+- **K47 (class) - the threshold INITIALISATION term is source-unreachable, so
+  122 is a constant of this chassis.** s15's K43 closed the `loop_has_call`
+  factor. The other factor, `n_non_fixed_regs`, is written in exactly two
+  places in the whole compiler: regclass.c:387 (the `init_reg_sets_1` count
+  over the target's `fixed_regs[]` table, i.e. build configuration) and
+  regclass.c:530 (`globalize_reg`, `n_non_fixed_regs--`). `globalize_reg` has
+  exactly one caller, varasm.c:547, reached only from `make_decl_rtl` for a
+  TOP-LEVEL variable carrying an asm register specification - a global
+  register variable, `register T x asm("$N");`. That is the register-asm-pin
+  family, first on the forbidden-family catalog. The threshold expression at
+  loop.c:532 therefore has no ordinary-C input at all.
+
+- **K48 (instance) - the magic constant's own movable-admission, savings and
+  lifetime inputs are all pinned at their minima.** Re-derived from compiler
+  source this session rather than inherited: `m->savings = n_times_used[regno]`
+  (loop.c:793) where `n_times_used` is a bcopy of `n_times_set` (loop.c:598),
+  so savings counts SETS and is 1 for a once-materialised constant;
+  `m->lifetime` (loop.c:791) is 1 because the const's def and its `mult`
+  consumer are adjacent LUIDs; admission is unconditional because
+  loop.c:695-700 case (2) (`! REG_USERVAR_P && ! REG_LOOP_TEST_P`) is
+  satisfied by any compiler-generated pseudo whatever `maybe_never` says, so
+  putting the division inside an `if` cannot suppress the movable; and
+  `may_not_move` has only the explicit-CLOBBER trigger and the set-twice
+  triggers (loop.c:3021-3047), none of which a single constant materialisation
+  can reach.
+
+### FRONTIER after s16 (reset)
+
+1. **THE LIVE ITEM - the gate is now a single priced quantity, and the price
+   is bytes.** Both terms of `insn_count + 3*extra_moved >= 120` are reachable
+   (split-init +7, free and ordinary; mixed-op chains unlimited but priced at
+   ~1.2 emitted instructions per movable; inert padding unlimited and free but
+   inadmissible). What has never been measured is a construct that raises
+   EITHER term while the emitted instruction count stays at 107. Every shape
+   measured across s6-s16 falls into exactly one of three buckets: free and
+   inert (inadmissible), real and priced in bytes, or folded away by cse1
+   before it is counted. The next probe should attack the third bucket
+   deliberately: find an ordinary construct that is counted by
+   `count_loop_regs_set` but deleted by a pass that runs AFTER loop_optimize
+   and is NOT combine's force_to_mode. cse2 (rerun-cse-after-loop) is the
+   obvious unexamined candidate - a computation that becomes redundant only
+   AFTER strength reduction has rewritten the givs would be counted by loop.c,
+   deleted by cse2, and semantically real. Probe: write the loop's address
+   arithmetic in a form whose redundancy appears only after strength reduction
+   (e.g. an explicit `i * 4` offset local reused where a giv will land), and
+   sweep insn_count against asm_lines with s16/sweep.sh.
+2. **Re-derive the 15-instruction residual - DISCHARGED this session.** s15's
+   frontier item 2 asked whether all 15 differing instructions are downstream
+   of the const placement. s14's own measurement already answers it: the k=32
+   padded body reaches sandbox score 0 with target_insns 104 and build_insns
+   104, and the only thing that body changes relative to candidate.c is the
+   movable decision (the pad emits nothing - asm_lines is constant at 107 from
+   k=0 through k=31). A body differing from candidate.c only in the hoist
+   decision scores 0, so all 15 residual instructions ARE downstream of the
+   hoist. s1's H2 is confirmed by measurement; do not spend a session diffing
+   .greg/.sched for it.
+3. **The declaration puns remain a submission blocker on ANY distance-0 body**
+   (unchanged from s14/s15; restated because it gates submission independently
+   of the floor). candidate.c line 358 `src = (u8 *)&D_80106A58 + i * 8;` and
+   line 370 `*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;`. Sanctioned fix is the
+   aggregate-merge family at the DECLARATION in include/*.h via an integration
+   handoff, prongs (a)-(e), with prong (c)'s 2026-09-03 amendment requiring the
+   sub-symbol rows to carry an `alias of g_file_disc_type+4; retire with
+   func_80035280` suffix. Prong (a) is satisfiable from base-register/stride
+   evidence: the target walks a single base register with
+   `addiu $a2, $a2, 0x8` at 8003C830.
+
+## [s16] Chassis re-check: candidate.c still measures score 15 / target 104 / build 105 on HEAD 2026-09-05
+- mechanism: the brief reported the driver's dispatch measurement as unavailable, so the floor had to be re-established before any banked spelling conclusion could be spent
+- probe: candidate.c applied over src/code6cac_c2.c:629 and `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`; src/ restored to INCLUDE_ASM immediately afterwards
+- result: score 15, target_insns 104, build_insns 105, rules_dropped 0, cheat_asm_stripped 9 - identical to every session since s1
+- verdict: CONFIRMED
+
+## [s16] s15's statement that the movable-order dial is capped at -6 is false: a chain of loop-invariant locals joined by DISTINCT operators manufactures unlimited extra movables, and at 12 links the 0x91A2B3C5 movable prints "not desirable" with no inert padding present at all
+- mechanism: cse1 constant-folds a chain of identical operators (s15's K44 pure-xor chain collapsed to one insn) but cannot fold a chain that alternates multiply, xor, add and subtract; each surviving link is a separate loop-invariant SET, hence a separate movable, and loop.c:1719 decrements threshold by 3 for each one moved ahead of the magic constant's movable
+- probe: mixed-operator chains of 1, 2, 4, 8, 10, 11, 12, 13, 14, 15 and 16 links generated by tmp/grind/func_8003C714/s16/gen_u.py and gen_v.py, swept with s16/sweep.sh, reading the movable table and the "not desirable" lines out of the per-variant .seg dump and the emitted instruction count out of the .s
+- result: insn_count 56/58/59/62/67/70/71/73/74/75/77/78 with moved 3/5/6/9/14/17/18/18/19/20/22/23 and asm_lines 107/111/112/115/120/123/124/126/127/128/130/131; not-desirable first appears at 12 links, where the .seg shows "Insn 93: regno 106 (life 1), move-insn savings 1 not desirable" and "Insn 106: regno 112 (life 1), move-insn savings 1 not desirable" while the life-31 0x88888889 movable still moves
+- verdict: CONFIRMED
+
+## [s16] The one-flip window is exactly 3 units wide and its recipe is 11 mixed-operator links plus one unit of the free split-init channel
+- mechanism: the &D_80106A58 symbol_ref movable is judged one position before the magic, so the symbol_ref sees threshold T and the magic sees T-3; the target requires the symbol_ref MOVED and the magic NOT moved, which needs insn_count in (T-3, T]
+- probe: read the moved and not-desirable counts at 10, 11, 12, 13, 14, 15 and 16 links against insn_count
+- result: at 11 links insn_count is 71 and the magic's threshold is 122 - 3*16 = 71, so 71 >= 71 still moves; at 12 links insn_count 73 against symbol_ref threshold 68 flips BOTH. Adding one unit of H23's split-init channel to the 11-link body gives symbol_ref 74 >= 72 (moved) and magic 71 < 72 (not moved), which is the target configuration
+- verdict: CONFIRMED
+
+## [s16] Every moved movable measured in this loop costs emitted bytes; s15's frontier item 1 (a free moved movable) is answered in the negative for the four shapes that span the mechanism
+- mechanism: move_movables hoists the movable's insn into the preheader (loop.c:1640-1700) and nothing afterwards deletes it unless its in-loop use disappears, which is the same condition that makes the construct inert; the two shapes that could have escaped that - combine_movables MATCHING two equal invariants and marking them regs_may_share (loop.c:1283-1285 and loop.c:1655-1660), and a plain invariant copy that local-alloc would coalesce - were measured directly
+- probe: (a) mixed-operator chains, 15 extra moved movables; (b) v_dup, two locals assigned the same invariant expression `(s32)s0 * 3` and both consumed; (c) u_base_ptr, `base = (u8 *)&D_80106A58; src = base + i * 8;` declared inside the loop; (d) u_cpy, `b = s0; dst = (u8 *)b + i * 4;`
+- result: (a) asm_lines 107 -> 126 for 15 extra moved movables, i.e. 1.0-1.4 emitted instructions each; (b) 59 insns / 6 moved / 115 asm - three extra movables at eight extra instructions, no match and no register sharing; (c) 56 / 3 / 107 and (d) 56 / 3 / 107, both byte-identical to candidate.c because cse1 propagates the copy away and no movable is created at all
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s16/{u_mix1,u_mix2,u_mix4,u_mix8,u_mix16,v_mix10..15,v_dup,u_base_ptr,u_cpy}.c, no FAKE construct present
+
+## [s16] The threshold initialisation term of loop.c:532 has no ordinary-C input: n_non_fixed_regs is decremented only by globalize_reg, whose sole caller is the global-register-variable path in make_decl_rtl
+- mechanism: threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) at loop.c:532; s15's K43 closed loop_has_call; n_non_fixed_regs is assigned at regclass.c:380 and incremented at regclass.c:387 from the target's fixed_regs[] table during init_reg_sets_1, and modified nowhere else except regclass.c:530
+- probe: grepped every reference to n_non_fixed_regs across tools/gcc-2.7.2/*.c, read globalize_reg (regclass.c:505-537) and its single caller
+- result: the only caller is varasm.c:547, inside make_decl_rtl, reached only when a TOP-LEVEL declaration carries an asm register specification (`register T x asm("$N");`) - a global register variable, i.e. the register-asm-pin family that heads the forbidden-family catalog. No admissible C construct can change the 122
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/varasm.c:547
+- measured_on: shipped chassis HEAD 2026-09-05, compiler source reading, no FAKE construct present
+
+## [s16] The magic constant's movable admission and its savings and lifetime inputs are all at their minima and none of the three is reachable from C
+- mechanism: m->savings = n_times_used[regno] (loop.c:793) with n_times_used a bcopy of n_times_set (loop.c:598), so savings counts SETS and is 1 for a once-materialised constant; m->lifetime (loop.c:791) is the LUID distance from the const's def to its mult consumer, which are adjacent; admission at loop.c:695-700 grants case (2) to any pseudo that is neither REG_USERVAR_P nor REG_LOOP_TEST_P regardless of maybe_never, so a conditionally executed division is still made a movable; may_not_move is set only by an explicit CLOBBER of the reg or by the reg being SET twice in the loop (loop.c:3021-3047)
+- probe: read loop.c:680-800, loop.c:960-1000 and loop.c:2989-3092, and cross-checked against the movable tables of the eight .seg dumps produced this session
+- result: every input is pinned at its minimum. In particular putting the division inside an `if` cannot suppress the movable, which would otherwise have been the cheapest attack; and a constant materialised once can never trip either may_not_move trigger
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, compiler source reading against this session's .loop movable tables, no FAKE construct present
+
+## [s16] s1's H2 - that all 15 residual instructions are downstream of the 0x91A2B3C5 hoist decision - is confirmed by s14's own distance-0 measurement, so s15's frontier item 2 needs no dump diff
+- mechanism: s14's k=32 body differs from candidate.c only in carrying a pad that emits nothing (asm_lines constant at 107 from k=0 to k=31) and in flipping the movable decision; if any of the 15 differing instructions were independent of that decision, the padded body could not have reached zero
+- probe: re-read s14's sweep table and its sandbox result against the residual claim, rather than diffing .greg/.sched instruction by instruction
+- result: the k=32 body measured score 0, target_insns 104, build_insns 104. A body whose only difference from candidate.c is the hoist decision scores 0, so all 15 residual instructions are downstream of it. H2 CONFIRMED; the CONTRADICTION-RULE re-audit therefore moved to the movable-order cap instead, where it found the false verdict (H25)
+- verdict: CONFIRMED
+
+## [s16] s15's record that the movable-order dial is capped at -6 because there are only two other movables is wrong: a chain of loop-invariant locals joined by DISTINCT operators is not constant-folded by cse1, so each link becomes its own movable, and at 12 links the 0x91A2B3C5 movable prints 'not desirable' with no inert padding present at all.
+- mechanism: cse1 constant-folds a chain of identical associative operators (this is exactly what collapsed s15's K44 pure-xor chain to a single insn) but cannot fold a chain that alternates multiply, xor, add and subtract. Every surviving link is a separate loop-invariant SET, hence a separate movable in scan_loop's list, and loop.c:1719 decrements threshold by 3 for each movable moved ahead of the magic constant's movable. The gate at loop.c:1631 is therefore reachable through the order term alone, without touching insn_count.
+- probe: Mixed-operator chains of 1, 2, 4, 8, 10, 11, 12, 13, 14, 15 and 16 links (cycling '* 3', '^ 0x1001', '+ 7', '* 5', '^ 0x2002', '- 11', '* 9', '^ 0x4004' off (s32)s0, final link consumed by the tail store) generated by tmp/grind/func_8003C714/s16/gen_u.py and gen_v.py, compiled with the shipped cc1 under canonical flags with -dL, swept by tmp/grind/func_8003C714/s16/sweep.sh reading the movable table and the 'not desirable' lines from each variant's .seg dump and the emitted instruction count from its .s.
+- result: insn_count 56/58/59/62/67/70/71/73/74/75/77/78 with moved movables 3/5/6/9/14/17/18/18/19/20/22/23 and asm_lines 107/111/112/115/120/123/124/126/127/128/130/131 at 0/1/2/4/8/10/11/12/13/14/15/16 links. 'not desirable' first appears at 12 links, where the dump reads 'Insn 93: regno 106 (life 1), move-insn savings 1 not desirable' and 'Insn 106: regno 112 (life 1), move-insn savings 1 not desirable' while the life-31 0x88888889 movable still moves.
+- verdict: CONFIRMED
+
+## [s16] The window in which the &D_80106A58 symbol_ref still moves while only the 0x91A2B3C5 magic declines is exactly 3 units wide, and its recipe is 11 mixed-operator links plus one unit of the free split-init channel.
+- mechanism: The symbol_ref movable is judged one position before the magic in scan_loop's insn-ordered list, so the symbol_ref sees threshold T and the magic sees T-3. The target requires the symbol_ref hoisted (its lui/addiu are in the target preheader at 8003C748-8003C74C) and the magic left in the loop, which needs insn_count in the half-open interval (T-3, T].
+- probe: Read moved and not-desirable counts at 10, 11, 12, 13, 14, 15 and 16 links against insn_count, and solved the two loop.c:1631 inequalities against the measured threshold decrements.
+- result: At 11 links insn_count is 71 and the magic's threshold is 122 - 3*16 = 71, so 71 >= 71 and it still moves; at 12 links insn_count 73 against a symbol_ref threshold of 68 flips BOTH. Adding one unit of H23's free split-init channel on top of the 11-link body gives symbol_ref 74 >= 72 (moves) and magic 71 < 72 (stays in loop), which is the target configuration. The shape of a distance-0 order-dial body is therefore fully specified; only its byte cost is fatal.
+- verdict: CONFIRMED
+
+## [s16] None of the four moved-movable carrier shapes measured this session is free of emitted bytes: mixed-operator chains cost 1.0-1.4 emitted instructions per moved movable, duplicate invariant expressions are not MATCHED by combine_movables and cost eight instructions for three movables, and a named invariant base pointer or a plain invariant copy declared inside the loop produce no extra movable at all.
+- mechanism: move_movables hoists a movable's insn into the preheader and nothing afterwards deletes it unless its in-loop use disappears, which is the same condition that makes the construct inert. The two shapes that could have escaped that were probed directly: combine_movables matching two equal invariants and marking them regs_may_share (loop.c:1253-1286 and loop.c:1655-1660), which local-alloc could have coalesced away to nothing; and a plain invariant register copy that local-alloc would coalesce with its source.
+- probe: (a) the mixed-operator chain sweep above, 15 extra moved movables; (b) v_dup: 'wa = (s32)s0 * 3; wb = (s32)s0 * 3;' with both consumed; (c) u_base_ptr: 'base = (u8 *)&D_80106A58; src = base + i * 8;' declared inside the loop; (d) u_cpy: 'b = s0; dst = (u8 *)b + i * 4;'. All swept through tmp/grind/func_8003C714/s16/sweep.sh for insn_count, moved count and asm_lines.
+- result: (a) asm_lines 107 -> 126 for 15 extra moved movables. (b) 59 insns / 6 moved / 115 asm - three ordinary extra movables at eight extra instructions, no match line in the dump and no register sharing. (c) 56 / 3 / 107 and (d) 56 / 3 / 107, both byte-identical to candidate.c on every axis, because cse1 propagates the invariant copy into its uses and delete_dead_from_cse removes the copy so no movable is created. This is the direct negative answer to s15's frontier item 1 for the shapes that span the mechanism.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05 (sandbox baseline re-measured this session at score 15 / target 104 / build 105), tmp/grind/func_8003C714/s16/{u_mix1,u_mix2,u_mix4,u_mix8,u_mix16,v_mix10..v_mix15,v_dup,u_base_ptr,u_cpy}.c, no FAKE construct present
+
+## [s16] The threshold initialisation term at loop.c:532 has no ordinary-C input, because n_non_fixed_regs is decremented only by globalize_reg and globalize_reg is reached only from the global-register-variable path in make_decl_rtl.
+- mechanism: threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs). s15's K43 already closed the loop_has_call factor at loop.c:2202. n_non_fixed_regs is initialised to 0 at regclass.c:380 and incremented at regclass.c:387 once per non-fixed hard register during init_reg_sets_1, i.e. straight from the target's fixed_regs[] table, and is modified in exactly one other place in the entire compiler: regclass.c:530, 'n_non_fixed_regs--', inside globalize_reg.
+- probe: Grepped every reference to n_non_fixed_regs across tools/gcc-2.7.2/*.c, then read globalize_reg (regclass.c:505-537) and traced its callers.
+- result: globalize_reg has exactly one caller, varasm.c:547, inside make_decl_rtl on the top_level register-specification path - that is, a global register variable 'register T x asm("$N");'. That construct is the register-asm-pin family, first entry on the forbidden-family catalog. So the 122 is a constant of this chassis for every admissible C body, and the ledger's long-standing assumption to that effect is now predicate-cited rather than assumed.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: shipped chassis HEAD 2026-09-05, compiler source reading, no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/varasm.c:547
+
+## [s16] The magic constant's movable-admission test, its savings and its lifetime are all at their minimum values on this body and none of the three responds to a source change, including putting the division inside a conditional.
+- mechanism: m->savings = n_times_used[regno] (loop.c:793) where n_times_used is a bcopy of n_times_set (loop.c:598), so savings counts SETS and is 1 for a once-materialised constant; m->lifetime (loop.c:791) is the LUID distance from the const's def to its mult consumer, which are adjacent, so 1; admission at loop.c:695-700 grants case (2) - '! REG_USERVAR_P (SET_DEST (set)) && ! REG_LOOP_TEST_P (SET_DEST (set))' - to any compiler-generated pseudo regardless of maybe_never or call_passed; and may_not_move (loop.c:3021-3047) is set only by an explicit CLOBBER of the register or by the register being SET twice inside the loop.
+- probe: Read loop.c:680-800, loop.c:960-1000 and loop.c:2989-3092 end to end and cross-checked each quantity against the movable tables printed in this session's eight .seg dumps.
+- result: Every input is pinned. Notably the conditional-execution attack is closed in a way the ledger had only assumed: a division placed inside an 'if' inside the loop still yields a movable, because the const pseudo is compiler-generated and satisfies case (2) unconditionally - so the cheapest imaginable escape (which would have cost a branch anyway, and the target's loop body is branchless) does not exist. A constant materialised once also cannot trip either may_not_move trigger.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, compiler source reading against this session's .loop movable tables, no FAKE construct present
+
+## [s16] s1's H2 - that all 15 residual instructions are downstream of the 0x91A2B3C5 hoist decision - is confirmed by s14's own distance-0 measurement, so s15's frontier item 2 is discharged without a .greg/.sched diff.
+- mechanism: s14's k=32 padded body differs from candidate.c only in carrying a pad that emits nothing - asm_lines is constant at 107 from k=0 through k=31 - and in flipping the movable decision. If any of the 15 differing instructions were independent of that decision, that body could not have reached zero.
+- probe: Re-read s14's sweep table and its sandbox result against the residual claim instead of spending a session diffing dumps instruction by instruction, then re-pointed the CONTRADICTION-RULE re-audit at the next-weakest verdict.
+- result: The k=32 body measured sandbox score 0, target_insns 104, build_insns 104. A body whose only difference from candidate.c is the hoist decision scores 0, so all 15 residual instructions are downstream of it and the hoist really is the whole problem. The re-audit then moved to s15's movable-order cap, which is where the false verdict actually was (see the first hypothesis above).
+- verdict: CONFIRMED

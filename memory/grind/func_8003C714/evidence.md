@@ -1920,3 +1920,149 @@ runs the other way).
 - [s15] Tooling correction for the ledger: s14's sweep.sh awk ran '/^;; Function func_8003C714/,0' to end of file, so its moved / not-desirable columns also counted the four functions that follow func_8003C714 in code6cac_c2.c. Its insn_count and asm_lines columns are unaffected. s15's sweep.sh bounds the segment at the next ';; Function' line.
 
 - [s15] loop_has_call (loop.c:532, the factor that would halve threshold to 61) is assigned in exactly one place, loop.c:2202, under GET_CODE (insn) == CALL_INSN; loop_has_volatile is a separate variable that does not enter the threshold expression.
+
+## s16 (2026-09-05) - synthesis modality
+
+### Chassis
+
+`sandbox func_8003C714 --disable all` with candidate.c applied over
+src/code6cac_c2.c:629: **score 15, target_insns 104, build_insns 105,
+rules_dropped 0, cheat_asm_stripped 9.** src/ restored to `INCLUDE_ASM` in the
+same turn; `git diff --stat` at end of session shows only metrics/events.jsonl.
+
+### Target loop, re-read from the disassembly (not inherited)
+
+`asm/funcs/func_8003C714.s` lines 18-78 are the loop: 61 emitted instructions,
+straight-line, NO branch inside the body (the only branch is the back edge
+`bnez $v0, .L8003C754` at 8003C83C). Preheader at 8003C73C-8003C750:
+`addu $t0,$zero,$zero` / `lui+ori $a3, 0x88888889` / `lui+addiu $a2,
+%hi/%lo(D_80106A58)` / `addu $a1, $s0, $zero`. The 0x91A2B3C5 magic is
+materialised INSIDE the loop as `lui $v0` (8003C754), `ori $v0` (8003C75C)
+with the `lw $v1, 0x4($a2)` load scheduled between them - the split form that
+only compiler scheduling produces. The dividend `0x4($a2)` is loaded THREE
+separate times (8003C758, 8003C77C, 8003C7C8) because the intervening `sb`
+stores may alias it, which is why every "share one named intermediate" probe
+in this ledger (s15 K45) loses instructions.
+
+### The movable table, shipped chassis, candidate.c body
+
+    Loop from 25 to 146: 56 real insns.
+    Insn 33: regno 78 (life 1)  moved      <- &D_80106A58 symbol_ref
+    Insn 46: regno 84 (life 1)  moved      <- 0x91A2B3C5  (target leaves in-loop)
+    Insn 60: regno 91 (life 31) moved      <- 0x88888889  (target hoists)
+
+Emitted asm_lines 107 against a target of 104.
+
+### s16 sweep - mixed-operator loop-invariant chains
+
+Harness `tmp/grind/func_8003C714/s16/sweep.sh` (copy of the s15 harness
+re-pointed at s16), bodies from `gen_u.py` / `gen_v.py`. The carrier is
+`w0 = (s32)s0 * 3; w1 = w0 ^ 0x1001; w2 = w1 + 7; w3 = w2 * 5; ...` cycling
+`* 3`, `^ 0x1001`, `+ 7`, `* 5`, `^ 0x2002`, `- 11`, `* 9`, `^ 0x4004`, with
+the last link consumed by rewriting the tail store to `D_800A37B8 = w{n-1};`.
+
+    links   insn_count  moved  not-desirable  asm_lines
+      0         56        3          0           107      (= candidate.c)
+      1         58        5          0           111
+      2         59        6          0           112
+      4         62        9          0           115
+      8         67       14          0           120
+     10         70       17          0           123
+     11         71       18          0           124
+     12         73       18          2           126
+     13         74       19          2           127
+     14         75       20          2           128
+     15         77       22          2           130
+     16         78       23          2           131
+
+At 12 links the .seg dump prints
+
+    Insn 93:  regno 106 (life 1), move-insn savings 1 not desirable
+    Insn 106: regno 112 (life 1), move-insn savings 1 not desirable
+    Insn 120: regno 119 (life 31), move-insn savings 1  moved to 285
+
+i.e. BOTH life-1 movables (the symbol_ref and the 0x91A2B3C5 magic) decline
+while the life-31 0x88888889 movable still moves - which is the correct
+behaviour for the third one and confirms the lifetime term is what protects
+it. The distance-0 configuration needs the symbol_ref moved and only the magic
+declined, which is the 3-unit window described in H26.
+
+Contrast with s15's K44: an all-xor invariant chain of ANY length measured
+57 insns / 1 extra movable / 110 asm. The difference is purely cse1's
+constant folding across identical associative operators; alternating operators
+defeats it. That is the correction to the "-6 cap" in the s15 ledger.
+
+### s16 - the three non-scaling shapes
+
+    variant       body change                                    insn moved asm
+    u_base_ptr    base = (u8*)&D_80106A58; src = base + i*8;       56    3   107
+    u_cpy         b = s0; dst = (u8*)b + i*4;                      56    3   107
+    v_dup         wa = (s32)s0*3; wb = (s32)s0*3; both consumed    59    6   115
+
+u_base_ptr and u_cpy are byte-identical to candidate.c on every axis: cse1
+propagates a plain invariant copy into its uses and `delete_dead_from_cse`
+removes the copy, so no movable is created and nothing is counted. v_dup was
+the combine_movables MATCH probe (loop.c:1253-1286 sets `m1->match = m` and
+loop.c:1655-1660 emits the matched copy with `regs_may_share`, which local-alloc
+could have coalesced to nothing) - it produced three ordinary extra movables
+and eight extra instructions instead, no match line in the dump.
+
+### Compiler-source re-derivations done this session
+
+- `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532).
+  `n_non_fixed_regs` is set at regclass.c:380/387 from the target `fixed_regs[]`
+  table and modified in exactly one other place, regclass.c:530 inside
+  `globalize_reg`. `globalize_reg` has exactly one caller in the whole
+  compiler: varasm.c:547, inside `make_decl_rtl`, on the `top_level` +
+  `DECL_ASSEMBLER_NAME` register-specification path - i.e. a global register
+  variable `register T x asm("$N");`. That is the register-asm-pin family.
+- `m->savings = n_times_used[regno]` (loop.c:793); `n_times_used` is a bcopy
+  of `n_times_set` (loop.c:598), so savings counts SETS, floor 1.
+- `m->lifetime = uid_luid[regno_last_uid] - uid_luid[regno_first_uid]`
+  (loop.c:791), floor 1 for a const whose consumer is the next insn.
+- Movable admission, loop.c:695-700: case (2)
+  `(! REG_USERVAR_P (SET_DEST (set)) && ! REG_LOOP_TEST_P (SET_DEST (set)))`
+  admits any compiler-generated pseudo unconditionally, independent of
+  `maybe_never` / `call_passed`. Putting the division inside an `if` therefore
+  cannot suppress the movable.
+- `may_not_move` triggers, loop.c:3021-3047: an explicit CLOBBER of the reg,
+  or the reg SET twice in the loop (across BBs, or within one BB with a use in
+  between). A constant materialised once cannot reach either.
+- `count_loop_regs_set` (loop.c:2989-3092) counts every insn with
+  `GET_RTX_CLASS == 'i'` between the LOOP_BEG note and the LOOP_END note -
+  including standalone CLOBBER insns, which emit nothing. No ordinary-C source
+  of bulk standalone CLOBBERs inside a loop body was identified.
+- `moved_once[regno]` (loop.c:1609-1613, set at loop.c:1912) doubles
+  insn_count. It is allocated and zeroed once per FUNCTION in `loop_optimize`
+  (loop.c:344-345), not per loop, so in principle a regno moved out of one
+  loop doubles the count in another - but the pseudo would have to be a
+  movable in both loops, which for a constant materialisation means the same
+  pseudo shared across two loops. s12's K35 already closed the nested-loop
+  carrier on bytes; this is the same channel seen from the allocation side.
+
+### Artifacts
+
+    tmp/grind/func_8003C714/s16/sweep.sh
+    tmp/grind/func_8003C714/s16/mk.py, gen_u.py, gen_v.py
+    tmp/grind/func_8003C714/s16/{u_base,u_mix1,u_mix2,u_mix4,u_mix8,u_mix16,
+        u_base_ptr,u_cpy,v_mix10..v_mix15,v_dup}.c
+    tmp/grind/func_8003C714/s16/dumps/*.seg  (per-variant .loop movable tables)
+    tmp/grind/func_8003C714/s16/ORIG_code6cac_c2.c  (restore source)
+    memory/grind/func_8003C714/rejected/
+        mixed-op-invariant-chain-scales-the-order-dial-but-costs-12-bytes-per-movable.c
+
+- [s16] Chassis re-measured this session: candidate.c applied over src/code6cac_c2.c:629 gives sandbox score 15, target_insns 104, build_insns 105, rules_dropped 0, cheat_asm_stripped 9; src/ restored to INCLUDE_ASM in the same turn and git diff --stat shows only metrics/events.jsonl at end of session.
+
+- [s16] The target loop (asm/funcs/func_8003C714.s lines 18-78) is 61 emitted instructions of straight-line code with no branch other than the back edge, and the dividend at 0x4($a2) is loaded three separate times because the intervening sb stores may alias it - which is the structural reason every shared-named-intermediate probe in this ledger loses instructions.
+
+- [s16] candidate.c's movable table on the shipped chassis: 'Loop from 25 to 146: 56 real insns', regno 78 (life 1, &D_80106A58) moved, regno 84 (life 1, 0x91A2B3C5) moved, regno 91 (life 31, 0x88888889) moved; emitted asm_lines 107 against a target of 104.
+
+- [s16] Mixed-operator invariant chain sweep, links -> (insn_count, moved, not-desirable, asm_lines): 0 -> (56,3,0,107); 1 -> (58,5,0,111); 2 -> (59,6,0,112); 4 -> (62,9,0,115); 8 -> (67,14,0,120); 10 -> (70,17,0,123); 11 -> (71,18,0,124); 12 -> (73,18,2,126); 13 -> (74,19,2,127); 14 -> (75,20,2,128); 15 -> (77,22,2,130); 16 -> (78,23,2,131).
+
+- [s16] At 12 links both life-1 movables decline ('Insn 93: regno 106 (life 1), move-insn savings 1 not desirable' and 'Insn 106: regno 112 (life 1), move-insn savings 1 not desirable') while the life-31 0x88888889 movable still moves - the lifetime term is what protects the third movable, and the correct target configuration needs only the second to decline.
+
+- [s16] Three shapes that could have produced a free moved movable do not: u_base_ptr (56/3/107) and u_cpy (56/3/107) are byte-identical to candidate.c because cse1 propagates the invariant copy away, and v_dup (two locals holding the same invariant expression) measured 59/6/115 with no combine_movables MATCH line in the dump, so the regs_may_share coalescing path at loop.c:1655-1660 is never entered here.
+
+- [s16] count_loop_regs_set (loop.c:2989-3092) counts every insn with GET_RTX_CLASS == 'i' between the LOOP_BEG and LOOP_END notes, including standalone CLOBBER insns which emit nothing; no ordinary-C source of bulk standalone CLOBBERs inside a loop body was identified this session, but this is a channel the ledger had never named.
+
+- [s16] moved_once[] (which doubles insn_count at loop.c:1609-1613) is allocated and zeroed once per FUNCTION in loop_optimize (loop.c:344-345), not per loop, so the doubling is in principle available to any second loop that re-moves the same pseudo - the same channel s12's K35 closed from the byte-cost side, recorded here from the allocation side so a future session does not re-derive the lifetime of the array.

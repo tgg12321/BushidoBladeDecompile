@@ -1,7 +1,7 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -93,23 +93,29 @@
    "floor": 15,
    "modality": "synthesis",
    "headline": "Synthesis: the hoist requirement is a TWO-TERM budget, not a fixed insn_count - threshold loses 3 per movable moved ahead of ours (H22, measured boundary 120/114/109/107 at m=0/1/2/3) - and split-init"
+  },
+  {
+   "session": 16,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "Synthesis: the movable-ORDER term is NOT capped at -6 as s15 recorded - mixed-operator invariant chains manufacture unlimited extra movables and flip the 0x91A2B3C5 hoist with zero inert padding at 12"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "There may exist a moved movable that costs zero emitted bytes. H22 prices one at 3 counted insns, so 18 of them close the entire remaining deficit - this is now the highest-leverage unknown in the ledger.",
-   "mechanism": "A movable is hoisted into the preheader, so it is free iff its preheader insn disappears afterwards. Two mechanisms could do that and neither has been measured: (a) the hoisted def becomes DEAD because its in-loop use is erased after loop_optimize by combine's force_to_mode (tools/gcc-2.7.2/combine.c:5682) - i.e. s14's channel applied to an INVARIANT rather than a variant local; note K44 shows the naive constant-xor spelling folds at cse1, so the carrier must be non-foldable (distinct operators, or a value cse1 cannot constant-fold); (b) the hoisted def is COALESCED into an existing preheader insn by regmove or local-alloc.",
-   "next_probe": "Build one invariant carrier of each shape with tmp/grind/func_8003C714/s15/{mk.py,sweep.sh}, read the .seg dump for a fourth 'moved to' line, and read asm_lines for the byte cost. A shape measuring +1 counted insn, +1 moved movable and 107 asm lines is decisive. If every shape that is free is also inert, that is the strong citable statement that the two-term budget cannot be paid in ordinary C - which is exactly what an eventual foreclosure record would have to establish."
+   "hypothesis": "Every construct measured across s6-s16 falls into exactly one of three buckets - free but inert (inadmissible), semantically real but priced in emitted bytes, or folded away by cse1 before loop.c counts it. The unexamined escape is a construct in the THIRD bucket that is nevertheless counted: an insn present when count_loop_regs_set runs and deleted afterwards by a pass that is not combine's force_to_mode.",
+   "mechanism": "cse2 (rerun-cse-after-loop) runs after loop_optimize. A computation that is not redundant before loop but becomes redundant once strength_reduce has rewritten the address arithmetic into givs would be counted by loop.c at full price, deleted by cse2 at zero byte cost, and remain semantically real - which is exactly the combination that the inert channels (s6 biv noise, s14 force_to_mode pad) can never have and that the priced channels (s16 mixed-op chains) can never afford.",
+   "next_probe": "Write the loop's address arithmetic in forms whose redundancy only appears post-strength-reduction - an explicit 'off = i * 4;' offset local reused where the dst giv will land, an explicit 'soff = i * 8;' for the src walk, and a pointer written as base + off rather than base + i*4 - and sweep insn_count against asm_lines with tmp/grind/func_8003C714/s16/sweep.sh. A shape measuring insn_count > 56 at asm_lines 107 is a new free ordinary channel; combined with H26 only ~16 units are needed, since the order dial supplies 3 per movable."
   },
   {
-   "hypothesis": "s1's H2 - that the entire 15-instruction residual is the 0x91A2B3C5 const placement plus the mfhi-temp seat - has never been re-verified in fourteen sessions and is the weakest verdict in the ledger under the CONTRADICTION RULE, because it is the single assumption that makes the loop.c hoist the only thing worth attacking.",
-   "mechanism": "If any of the 15 differing instructions is independent of the const placement, it is separately closable and the s15-E budget is not the only front; if all 15 really are downstream of the hoist, the budget is the whole problem and the frontier collapses to item 1.",
-   "next_probe": "Apply the s_max body (rejected/splitinit-ceiling-63-ordinary-c-byte-neutral-but-54-short.c), run pwsh tools/grinder/dump.ps1 func_8003C714, and diff the .greg / .sched output against asm/funcs/func_8003C714.s instruction by instruction, classifying each of the 15 as const-placement-dependent or not."
+   "hypothesis": "The insn_count-doubling channel at loop.c:1609-1613 remains the single largest unspent term in the gate (63 counted insns would become 126, closing the whole requirement in one step), and s12's class kill of it rests on the claim that every carrier is a second EMITTED loop.",
+   "mechanism": "moved_once[] is function-scoped (allocated and zeroed once in loop_optimize at loop.c:344-345), so the doubling fires whenever the magic's pseudo was already moved out of some other loop in the same function. s12 measured nested-loop carriers and priced them in bytes; what has never been measured is whether a second loop elsewhere in the function can share the magic pseudo, or whether any loop-shaped construct exists that loop.c sees but that jump2 or flow deletes before final.",
+   "next_probe": "Re-read s12's rejected/movedonce-inner-loop-carrier-costs-7-insns.c and inner-loop-moved-once-doubling-inflates-lifetime.c to see which carriers were actually measured, then measure the one shape they did not: a SECOND, non-nested loop earlier in the function that also divides by 1800, checking the .cse1 and .loop dumps for whether the two divisions share one const pseudo. If they do, moved_once fires on our loop for free."
   },
   {
-   "hypothesis": "The two declaration puns flagged by the brief's auto-scan remain a hard submission blocker on ANY distance-0 body, independent of the floor.",
-   "mechanism": "candidate.c:342 'src = (u8 *)&D_80106A58 + i * 8;' uses a per-word splat sub-symbol of g_file_disc_type @80106A54, and candidate.c:354 '*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;' reads an s16-declared symbol through a pun. The sanctioned fix is the aggregate-merge family at the DECLARATION in include/*.h via an integration handoff, prongs (a)-(e), with prong (c)'s 2026-09-03 amendment requiring the sub-symbol rows to carry an 'alias of g_file_disc_type+4; retire with func_80035280' suffix because func_80035280 is still INCLUDE_ASM. A per-use cast is an auto-FAIL.",
-   "next_probe": "Prong (a) looks satisfiable from base-register/stride evidence rather than the forbidden adjacency-of-splat-names evidence: the target's loop walks a single base register $a2 with 'addiu $a2, $a2, 0x8' at 8003C830. Draft the header-canonical merged declaration and route it as an integration handoff before any candidate-ready."
+   "hypothesis": "The two declaration puns in candidate.c are a hard submission blocker on ANY distance-0 body, independent of the floor, and the sanctioned fix is an integration handoff rather than a grind edit.",
+   "mechanism": "candidate.c 'src = (u8 *)&D_80106A58 + i * 8;' uses a per-word splat sub-symbol of g_file_disc_type @80106A54, and '*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;' reads an s16-declared symbol through a pun. The aggregate-merge family requires the merge at the DECLARATION in include/*.h, prongs (a)-(e), with prong (c)'s 2026-09-03 amendment requiring the sub-symbol rows to carry an 'alias of g_file_disc_type+4; retire with func_80035280' suffix because func_80035280 is still INCLUDE_ASM. A per-use cast is an auto-FAIL.",
+   "next_probe": "Prong (a) is satisfiable from base-register/stride evidence rather than the forbidden adjacency-of-splat-names evidence: the target walks a single base register with 'addiu $a2, $a2, 0x8' at 8003C830 and reads 0x0($a2) and 0x4($a2), i.e. an 8-byte stride over a two-field record. Draft the header-canonical merged declaration and route it as an integration handoff before any candidate-ready."
   }
  ],
  "judge_constraints": [
@@ -267,6 +273,30 @@
    "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s15/r_nit.c and r_both.c, no FAKE construct present",
    "predicate_cite": "",
    "result": "r_nit measures 43 insns / 85 asm; r_both measures 51 insns / 98 asm - both far below candidate.c's 56 / 107 and both wro"
+  },
+  {
+   "session": 16,
+   "statement": "None of the four moved-movable carrier shapes measured this session is free of emitted bytes: mixed-operator chains cost 1.0-1.4 emitted instructions per moved movable, duplicate invariant expressions",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05 (sandbox baseline re-measured this session at score 15 / target 104 / build 105), tmp/grind/func_8003C714/s16/{u_mix1,u_mix2,u_mix4,u_mix8,u_mix16,v_mix10..v_mix15,v_du",
+   "predicate_cite": "",
+   "result": "(a) asm_lines 107 -> 126 for 15 extra moved movables. (b) 59 insns / 6 moved / 115 asm - three ordinary extra movables a"
+  },
+  {
+   "session": 16,
+   "statement": "The threshold initialisation term at loop.c:532 has no ordinary-C input, because n_non_fixed_regs is decremented only by globalize_reg and globalize_reg is reached only from the global-register-variab",
+   "kill_scope": "class",
+   "measured_on": "shipped chassis HEAD 2026-09-05, compiler source reading, no FAKE construct present",
+   "predicate_cite": "tools/gcc-2.7.2/varasm.c:547",
+   "result": "globalize_reg has exactly one caller, varasm.c:547, inside make_decl_rtl on the top_level register-specification path - "
+  },
+  {
+   "session": 16,
+   "statement": "The magic constant's movable-admission test, its savings and its lifetime are all at their minimum values on this body and none of the three responds to a source change, including putting the division",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, compiler source reading against this session's .loop movable tables, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Every input is pinned. Notably the conditional-execution attack is closed in a way the ledger had only assumed: a divisi"
   }
  ]
 }
