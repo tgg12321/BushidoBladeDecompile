@@ -2891,3 +2891,86 @@ a sandbox run.
 - [s117] New reusable tooling for this function and its twins: tmp/grind/CD_sync/s117/apply.py (region-scoped declaration+body splice that cannot touch CD_datasync's duplicate decl block), b.sh (batch score + objdump + addend-normalised dump), cmp.py (normalised target-vs-build instruction diff that resolves hex/decimal and GNU-vs-PsyQ mnemonic aliases), mini.sh + qtyrun.sh (single-function TU + BB2_QTY_DEBUG quantity table).
 
 - [s117] The CD_intr declaration is byte-inert on this function (B2/B4 = 3/160, identical to the scalar B-line control), so a future session may adopt Sony's object model for D_800A1494 for free — it just cannot use it to replace the chain-extender at the do_timeout read site.
+
+### H118-1 CONFIRMED - the luid reconciliation the s117 frontier asked for, and what it costs conditions (a) and (d)
+
+local-alloc.c:1173-1175 counts CODE_LABELs in insn_number, so block 3's luid is
+2*(N+1) for the Nth real insn. Every birth and death in the s117 quantity table
+now has a name (full list in hypotheses.md s118). The result is deflationary:
+qty1's birth is the position of the t0-scale insn and qty2's birth is the
+position of the arg5 load, and quantity INDEX is handed out in birth order
+(alloc_qty, local-alloc.c:284). So closing conditions (a) "qty1 birth <= 16" and
+(d) "qty2 index below qty1" are both restatements of "emit the t0 scale before
+the ix addu" - which is exactly the A5 order, i.e. the non-order-exact one. Two
+of the four closing conditions collapse into the variable the two-body problem
+is already about. Do not spend another session aiming at them.
+
+### H118-2 CONFIRMED - qty_n_refs is the FUNCTION-WIDE flow.c count
+
+local-alloc.c:297 copies reg_n_refs[regno] straight into qty_n_refs. reg_n_refs
+is built in flow.c BEFORE combine and is weighted by loop_depth. Two consequences
+the ledger did not have: a reference combine later deletes still counts (the
+chain-extender FAKE's mechanism, now confirmed to be the same mechanism that
+feeds the priority formula), and a reference inside a loop-noted region counts
+twice.
+
+### H118-3 CONFIRMED - do-while(0) is a per-statement reference multiplier, and it wins the seat
+
+M1 (wrap = the single statement "arg5 = *(s32 *)ix;") moved exactly the two
+pseudos that statement references and only those: reg106 2 -> 3, reg108 6 -> 7.
+M5 (wrap = ix address + load + printf) gave reg106 four references, priority
+13333 against the t0 temp's 3333, and the QTYDBG line reads
+"blk=3 ord=2 qty=2 reg1=106 birth=22 death=26 refs=4 got=3": the arg5 value is
+seated in $v1, the target seat, WITHOUT the A5 emission order. Closing condition
+(b) is reachable from ordinary source structure. This is the first time in 118
+sessions that the seat has been won by anything other than the A5 order.
+
+### H118-4 KILLED (instance) - the carrier costs 3 points: the loop notes are a code-motion barrier
+
+Fourteen wrap geometries (M1-M8, N1-N4, P1-P3) all build at 160 insns and
+rules_dropped 0; the best is 5/160 (N1/P1/P2/P3) against the floor of 2/160.
+N1's residual is entirely code motion across the note pair: the two lbu reads of
+D_800A1494 come out exchanged at target indices 49/50 (and swapping the two C
+statements does not swap them back), and the "lui a1 / lw a1,8(a1)" load of
+D_800F19B8.func sinks from indices 51/52 to 55/56 because the printf consuming
+it sits inside the wrap - staging it through a local declared before the wrap
+does not lift it either. So the shape of the remaining problem has changed: it
+is no longer "win the seat", it is "get the +1 reference onto the arg5 pseudo
+WITHOUT a NOTE_INSN_LOOP_BEG in the block".
+
+### H118-5 KILLED (instance) - the real-loop spelling of the polling loop
+
+"for (;;)" instead of "loop:" / "goto loop" regresses to 67 (A5) and 70 (C1) at
+build_insns 165: loop.c hoists and the function grows five instructions. It is
+also symmetric - it would double the t0 temp's references as well - so it could
+not break the tie even if it were free.
+
+- [s118] New reusable tooling: tmp/grind/CD_sync/s118/dump.sh (full -da dump set
+  from the mini TU into a per-tag directory), dumpenv.sh (same, with an arbitrary
+  comma-separated list of BB2_*_DEBUG hooks enabled), mkmini.py (rebuild mini.c
+  from the current src/system.c), blocks.py (segment any cc1 -da dump into basic
+  blocks and print each insn with its local-alloc luid, its position and its uid),
+  b.sh (batch scoring of s118 forms).
+- [s118] BB2_SUGG_DEBUG is the richer instrument and had never been run on this
+  function: it prints qty_min_class, qty_alternate_class, calls-crossed,
+  copy-suggestions and suggestions per quantity, plus a find_free_reg trace. On
+  CD_sync block 3 every quantity has ncopysugg=0 nsugg=0 and minclass=1, so the
+  suggested-register pass (local-alloc.c:1505-1528) is inert here and the whole
+  allocation is decided by qty_compare_1 alone. That closes off "the target used a
+  register suggestion" as an explanation.
+
+- [s118] GCC luid for block 3 = 2*(N+1) where N is the insn's index among the block's real insns, because local-alloc.c:1173-1175 counts the block's CODE_LABEL in insn_number. Full C1 block-3 map (position, uid, pattern, and which quantity is born/dies there) is banked in hypotheses.md s118.
+
+- [s118] qty_n_refs comes from reg_n_refs[regno] (local-alloc.c:297) - the function-wide, loop-depth-weighted flow.c count taken before combine - not from a block-local count.
+
+- [s118] A do{...}while(0) wrap adds exactly +1 to reg_n_refs for every reference lexically inside it, measured pseudo-by-pseudo: M1's one-statement wrap moved reg106 2->3 and reg108 6->7 and nothing else.
+
+- [s118] With reg106 at 4 references the arg5 value takes $v1 (the target seat) on a non-A5 emission: M5 QTYDBG 'blk=3 ord=2 qty=2 reg1=106 birth=22 death=26 refs=4 got=3'. Closing condition (b) is reachable.
+
+- [s118] BB2_SUGG_DEBUG had never been run on this function: block 3's four quantities all report ncopysugg=0 nsugg=0 minclass=1, so the suggested-register pass (local-alloc.c:1505-1528) is inert here and the allocation is decided by qty_compare_1 alone. 'The target used a register suggestion' is closed off.
+
+- [s118] The wrap's NOTE_INSN_LOOP_BEG/END pair is a code-motion barrier: nothing inside the wrap hoists past its head, which sinks the D_800F19B8.func argument load from target indices 51/52 to 55/56 whenever the printf is inside the wrap, and exchanges the two lbu reads of D_800A1494 at indices 49/50 in a way statement-order swaps do not repair.
+
+- [s118] The floor is unchanged at 2/160 (build_insns 160, rules_dropped 0). candidate.c has been REPLACED with the pp-free CD_alarm-struct body (s117 progress form): same 2/160, one FAKE instead of two, and the D_800F19C0 declaration pun the dispatch auto-scan flagged is gone.
+
+- [s118] New reusable tooling: tmp/grind/CD_sync/s118/dump.sh (full -da dump set from the mini TU), dumpenv.sh (same with an arbitrary list of BB2_*_DEBUG hooks), mkmini.py, blocks.py (segment any cc1 dump into basic blocks and print luid/position/uid per insn), b.sh.

@@ -1,40 +1,31 @@
-/* s117 UPDATE (2026-09-04, rederive).  TWO changes to this file, both verified live.
+/* CD_sync candidate - s118 (2026-09-04).  Honest floor 2/160, build_insns 160,
+ * rules_dropped 0, measured live this session on HEAD's src/system.c.
  *
- * (1) CALL NAMES REPAIRED.  The banked body still used the pre-naming-wave names
- *     sys_VSync / tslTm2LoadImage_2 / debug_printf / cdrom_ClearIrq /
- *     sys_GetVblankCount / func_80080828, none of which exist in HEAD's
- *     src/system.c any more - so the banked candidate could not be spliced and
- *     compiled at all.  They are now VSync / puts / printf / CD_flush /
- *     CheckCallback / getintr (read off asm/funcs/CD_sync.s jal targets).
- *     Re-measured live this session: score 2 / build_insns 160 / target 160 /
- *     rules_dropped 0.  This is still the floor and still the SCALAR object
- *     model, so it splices against HEAD's declarations unchanged.
+ * THIS BODY REPLACES the s117 scalar/pp body that used to sit here.  It is the
+ * pp-FREE CD_alarm-struct chassis (s117 hypothesis H117-1, CONFIRMED): the
+ * per-word D_800F19BC / D_800F19C0 externs are dropped and D_800F19B8 is
+ * declared as `typedef struct { s32 timeout; s32 count; char *func; } CD_alarm;`
+ * so the printf argument is a member MEM.  Same 2/160 as the scalar body, but
+ *   - ONE FAKE construct instead of two (the `void **pp` pointer alias is gone),
+ *   - no declaration pun for the dispatch auto-scan to flag.
+ * The five R_MIPS_LO16 addend differences the struct model produces are all
+ * masked by engine/score.py and were verified addend-only against objdump
+ * records in s117, so 2 is 2.
  *
- * (2) THE BETTER FORM IS NOW memory/grind/CD_sync/progress/s117-alarm-struct-nopp-2.c.
- *     Transplanting CD_datasync's s58 CD_alarm struct model (the owner directive's
- *     first probe) onto this body scores the SAME 2 / 160 while DELETING the
- *     `void **pp` pointer-alias FAKE outright.  It is link-identical to the
- *     scalar j1 chassis: the only object-level differences are five R_MIPS_LO16
- *     addends (D_800F19B8+4 / +8 vs D_800F19BC / D_800F19C0), which the linker
- *     resolves to the same addresses - verified instruction-for-instruction
- *     (tmp/grind/CD_sync/s117/dis_A0_j1.txt vs dis_A1_alarm_struct_nopp.txt,
- *     212 records, 5 diffs, all addend-only, identical registers throughout).
- *     On the SCALAR model dropping pp costs 6 points (s115_m1 = 9); under the
- *     struct model the member MEM (mem (const (plus (symbol_ref D_800F19B8) 8)))
- *     buys the early argument load for free, exactly as CD_datasync s58 measured.
- *     That form therefore carries ONE FAKE (the combine-foldable chain-extender
- *     for idx_1495) instead of two, and it removes the pp DECLARATION-PUN that
- *     the dispatch auto-scan flags on this file.  It is kept in progress/ rather
- *     than here because it needs a declaration surface (its //REPL / //DROP
- *     directives) and would not compile if spliced bare; the CD_datasync s58
- *     precedent files its struct form the same way.
+ * The leading //REPL: / //DROP: lines are the declaration-surface directives
+ * consumed by tmp/grind/CD_sync/s117/apply.py (region-scoped so CD_datasync's
+ * duplicate declaration block is never touched).  They are also valid C
+ * comments, so this file reads as the body plus a decl-surface manifest.
  *
- * RESIDUAL AT 2, READ OFF THE BYTES (tmp/grind/CD_sync/s117/cmp.py): exactly the
- * index 54/55 transposition - target `addu $v0,$v0,$s3 ; sll $a0,$a0,2`, ours
- * `sll $a0,$a0,2 ; addu $v0,$v0,$s3`.  Every other one of the 160 matches,
- * registers included.  See hypotheses.md s117 for the QTY_CMP_PRI tie that this
- * session finally measured (the frontier's reference-count model was wrong).
+ * RESIDUAL (unchanged since s115): a single transposition at target indices
+ * 54/55 - target `addu $v0,$v0,$s3 ; sll $a0,$a0,2`, ours the other way round.
+ * All 158 other instructions match including every register.  See
+ * hypotheses.md s117/s118 for the local-alloc quantity table that governs it.
  */
+//REPL:extern s32 D_800F19B8; => typedef struct { s32 timeout; s32 count; char *func; } CD_alarm; extern CD_alarm D_800F19B8;
+//DROP:extern s32 D_800F19BC;
+//DROP:extern void *D_800F19C0;
+//REPL:extern void D_80016240; => extern char D_80016240[];
 s32 CD_sync(s32 a0, u8 *a1)
 {
   int new_var;
@@ -50,21 +41,21 @@ s32 CD_sync(s32 a0, u8 *a1)
   s32 i;
   u8 b;
   s32 temp;
-  D_800F19B8 = VSync(-1) + 0x3C0;
+  D_800F19B8.timeout = VSync(-1) + 0x3C0;
   tbl_125c = D_800A125C;
   idx_1494 = &D_800A1494;
   idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1); /* FAKE: combine-foldable chain-extender (link-constant delta; folds to &D_800A1494 + 1 with ZERO emitted bytes, build_insns 160 == target), mechanism: flow.c records the extra reg_n_refs before combine.c folds the SYMBOL_REF difference (expr.c::expand_expr emits the subsi3/addsi3 pair, unfoldable in cse.c per s97); family: .claude/rules/dead-store-fake-exception.md:32-46 (owner ruling 2026-07-01); lever-exhaustion: memory/grind/CD_sync/hypotheses.md s96-s105 (~40 decompositions, 122 rejected forms); load-bearing: s105 measured all three honest respellings (idx_1494+1, &idx_1494[1], &D_800A1494+1) at masked=15 vs 2 */
-  D_800F19BC = 0;
-  D_800F19C0 = &D_80016240;
+  D_800F19B8.count = 0;
+  D_800F19B8.func = D_80016240;
   loop:
   v0 = VSync(-1);
 
-  if (D_800F19B8 < v0)
+  if (D_800F19B8.timeout < v0)
   {
     goto do_timeout;
   }
-  cnt = D_800F19BC;
-  D_800F19BC = cnt - -1;
+  cnt = D_800F19B8.count;
+  D_800F19B8.count = cnt - -1;
   if (!(0x3C0000 < cnt))
   {
     goto success;
@@ -76,15 +67,13 @@ s32 CD_sync(s32 a0, u8 *a1)
     s32 arg5;
     s32 t0;
     s32 ix;
-    void **pp;
     t0 = idx_1494[0];
     ix = idx_1494[1]; /* s106: honest fresh local - the v0 staged-value borrow it replaces is NOT load-bearing (measured 2 == 2, 160/160) */
-    pp = (void **)&D_800F19C0; /* FAKE: pointer-alias staging the D_800F19C0 load early; mechanism: local-alloc.c update_equiv_regs refs-2 sink defeat; lever-exhaustion in WIP history */
     t0 *= 4;
     t0 = (s32)((u8 *)tbl_125c + t0);
     ix <<= 2;
     arg5 = *(s32 *)(ix + (s32)tbl_125c);
-    printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
+    printf(&D_800161C8, D_800F19B8.func, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
   }
   CD_flush();
   v0 = -1;

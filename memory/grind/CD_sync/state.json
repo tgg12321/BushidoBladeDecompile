@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 117,
- "current_modality": "rederive",
+ "session_count": 118,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 0,
@@ -711,23 +711,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Owner directive executed: CD_datasync s58's CD_alarm struct transplants onto CD_sync link-identically and DELETES the pp pointer-alias FAKE at the same floor of 2/160; and BB2_QTY_DEBUG finally names "
+  },
+  {
+   "session": 118,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Luid map reconciled (closing conditions (a) and (d) collapse into the emission-order variable); do-while(0) proven to be a per-statement reg_n_refs multiplier that wins the arg5 $v1 seat for the first"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On an order-exact emission, giving the arg5-value quantity (qty2, reg 106) a lower quantity INDEX than the t0-address quantity (qty1, reg 112) wins the 3333-vs-3333 tie outright and delivers the target seats at zero instruction cost, taking the order-exact chassis from 6 to 0.",
-   "mechanism": "qty_compare_1 falls through to *q1 - *q2 on a QTY_CMP_PRI tie, and local-alloc hands out quantity numbers in its block scan order. No session has ever aimed at the index rather than at the priority. The measurement shows the index is currently NOT simply the emitted order \u2014 in C2 the arg5 lw is emitted two instructions before the t0 addu, yet qty1 still births at 18 and qty2 at 20 \u2014 so birth is not 2x the in-block instruction index.",
-   "next_probe": "FIRST reconcile the luid mapping: run pwsh tools/grinder/dump.ps1 CD_sync -Instrumented on C1 (memory/grind/CD_sync/rejected/s117_C1_struct_h1_ix_addr_split.c) and read the .sched/.lreg pair for block 3 to establish which insn each of birth 16/18/20/24/26 corresponds to and which pseudo takes qty1 vs qty2. Only then enumerate the C spellings that move the arg5-value pseudo's FIRST reference ahead of the t0-address pseudo's. This is a dump read before any sandbox run."
+   "hypothesis": "The arg5-value pseudo can be given its third flow-time reference WITHOUT a NOTE_INSN_LOOP_BEG in the block - by a reference that flow.c counts and combine.c then folds away - which would deliver condition (b)'s 5000-vs-3333 win on the C1 order-exact chassis with zero code-motion barrier, i.e. 6 -> 0.",
+   "mechanism": "reg_n_refs is built by flow.c before combine (local-alloc.c:297 consumes it), which is exactly why the banked chain-extender FAKE works for idx_1495: a link-constant SYMBOL_REF difference is emitted as a real subsi3/addsi3 pair at flow time (expr.c expand_expr), is unfoldable in cse.c (s97), and is folded to nothing by combine.c - byte-neutral but reference-visible. Applying the same carrier to the arg5 value lifts reg106 from 2 to 3+ references while leaving the t0 temp at 2 and leaving the insn stream free of loop notes.",
+   "next_probe": "On the C1 chassis (rejected/s117_C1_struct_h1_ix_addr_split.c, control 6/160), spell an extra combine-folded reference to arg5 - e.g. arg5 staged through an expression carrying a link-constant symbol difference that cancels, or the printf argument written as a second read of the same pseudo through such a difference - and read block 3's qty table with tmp/grind/CD_sync/s118/dumpenv.sh C1x BB2_SUGG_DEBUG,BB2_QTY_DEBUG BEFORE reading the score: accept only reg106 refs >= 3 with reg112 refs still 2 and build_insns 160. NOTE this would be a SECOND FAKE construct in the same family as the existing chain-extender; if it measures 0 the correct outcome is a ruling-request naming both constructs, not a silent candidate-ready."
   },
   {
-   "hypothesis": "On an order-exact emission, restoring qty1's span to 8 (birth <= 16, priority <= 2500) recovers the seat-exact allocation while keeping the order, taking C1 from 6 to 0 \u2014 condition (a) of the closing condition, and the one the measurement says is a single luid away.",
-   "mechanism": "A5 and C2 differ ONLY in qty1's birth (16 vs 18); every other field of the block-3 quantity table is identical. Whatever the address split does to shorten qty1 by one luid is the entire cost of order-exactness, so any spelling that keeps the split's scheduling effect while restoring the earlier birth closes both halves at once.",
-   "next_probe": "Enumerate order-exact spellings that keep the ix address split but change WHERE the t0 address quantity is created: t0's address computed from a different base expression, the split written as pointer arithmetic on tbl_125c instead of s32 arithmetic, and the split expressed with the scale folded into the subscript. Score each, and for every one that stays order-exact read the block-3 qty table with tmp/grind/CD_sync/s117/qtyrun.sh BEFORE reading the score \u2014 accept only qty1 birth <= 16 with build_insns 160."
+   "hypothesis": "Condition (c) - shrinking the arg5 quantity's span to <= 4 by moving its death earlier - is the only remaining numeric route that needs no extra reference, and it is reachable if the stack-slot store 'sw reg106,16(sp)' can be emitted one insn earlier without disturbing indices 49-56.",
+   "mechanism": "qty2 dies at its store into the outgoing-argument slot (block-3 insn n12, luid 26). Death at luid <= 24 gives span <= 4 and priority >= 5000, beating the t0 temp's 3333 outright with refs unchanged at 2, so no FAKE carrier is involved at all. The store's position is decided by the order in which expand emits the call's argument setup.",
+   "next_probe": "Enumerate C spellings that change the ORDER of printf's argument evaluation without changing the arguments: the fifth argument computed into its local later or earlier relative to the third and fourth, the D_800A11DC[D_800A11D5] subscript staged into a local before the call, and the *(s32 *)t0 dereference staged likewise. Score each on the C1 chassis and read block 3's qty table; accept only qty2 death <= 24 with build_insns 160 and indices 49-56 unchanged."
   },
   {
-   "hypothesis": "The arg5-value quantity can reach 3 references on an order-exact emission (priority 5000, condition (b)) through the duplicated-statement-into-arms family rather than through a new local, since reference counts are per-block and the duplicated-arms chassis gives do_timeout two independent copies.",
-   "mechanism": "flow.c builds reg_n_refs before combine (s109), and duplicated-statement-into-arms is a sanctioned family whose copies cross-jump re-merge to identical bytes (s114 measured the whole do_timeout region byte-neutral on this function). A third reference lifts qty2 from 3333 to 5000 and wins the tie without touching any span.",
-   "next_probe": "Build the order-exact do_timeout body (C1's split) on the j1 DUPLICATED-ARMS chassis with the CD_alarm struct model \u2014 this session only measured order-exactness on the goto chassis \u2014 and read the block-3 qty table for both arms. If either arm shows qty2 at 3 references, score it; s114 already established the duplication itself is byte-neutral at build_insns 160."
+   "hypothesis": "The 3-point cost of the do-while(0) carrier is entirely the two code-motion effects named this session, and both are separately attackable: the D_800F19B8.func load sinking behind the wrap head, and the exchanged lbu pair at indices 49/50.",
+   "mechanism": "NOTE_INSN_LOOP_BEG blocks hoisting out of the wrap. If the printf can sit OUTSIDE the wrap while both of arg5's references remain inside it - impossible with the value passed directly, but not obviously impossible if the argument slot is written inside the wrap - the barrier stops mattering. The exchanged lbu pair is an independent, smaller residual worth isolating on its own.",
+   "next_probe": "Start from N1 (memory/grind/CD_sync/rejected/s118_N1_ixfirst_t0scale_wrap_addu_load_printf.c, 5/160) and dump its block 3 with tmp/grind/CD_sync/s118/dumpenv.sh: confirm whether reg106 is already seated in $v1 there. If it is, the whole 5-point residual is code motion and NOT allocation, and the next enumeration is wrap-boundary geometries only - which is a much smaller space than the seat search that consumed s108-s117."
   }
  ],
  "judge_constraints": [
@@ -915,6 +921,22 @@
    "measured_on": "C1 order-exact pp-free struct chassis (memory/grind/CD_sync/rejected/s117_C1_struct_h1_ix_addr_split.c), control 6/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted",
    "predicate_cite": "",
    "result": "D1 14/160, D2 14/160, D3 6/160 (byte-INERT, and a dead store, so not banked as a form), D4 9/160, E5 14/160. None reache"
+  },
+  {
+   "session": 118,
+   "statement": "Some do-while(0) wrap boundary plus statement order both lifts the arg5 reference count and reproduces the target's emission order, taking the wrap family below the floor of 2/160.",
+   "kill_scope": "instance",
+   "measured_on": "C1 order-exact and A5 seat-exact pp-free CD_alarm-struct chassis, chain-extender FAKE present and pp deleted; controls C1 6/160 and A5 2/160; all wrap forms build_insns 160 rules_dropped 0",
+   "predicate_cite": "",
+   "result": "Best in family is 5/160 against the standing floor of 2/160. The NOTE_INSN_LOOP_BEG/END pair is a code-motion barrier as"
+  },
+  {
+   "session": 118,
+   "statement": "Writing the outer polling loop as a real C loop (for (;;)) gives the whole do_timeout region loop_depth 2 and the same reference lift without a wrap.",
+   "kill_scope": "instance",
+   "measured_on": "A5 and C1 pp-free CD_alarm-struct chassis, chain-extender FAKE present; controls 2/160 and 6/160; the for(;;) forms build at 165 insns",
+   "predicate_cite": "",
+   "result": "L1 67 at build_insns 165, L2 70 at build_insns 165 - loop.c optimises the now-real loop and the function grows five inst"
   }
  ],
  "sibling_progress": [
