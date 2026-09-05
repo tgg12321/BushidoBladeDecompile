@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 26,
- "current_modality": "forensics",
+ "session_count": 27,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -159,23 +159,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics: the T1 residual is a READINESS constraint (the Z0 store's REG_DEP_ANTI on the p10 load), not the INSN_PRIORITY predicate s24/s25 worked under -- uid 12 is absent from the ready list at both"
+  },
+  {
+   "session": 27,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "New spine Pt2/P18 (66 insns, target's exact count) reaches target's slot-11 `lw a1,16(v1)` seat for the first time in 27 sessions; the whole residual is now two instructions in one slot pair, caused b"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Target IS the 'p10 read below the Z0 store' regime -- that is the only regime in which the read has a RAW dep on the store and becomes ready in time -- and our bodies in that regime are 67 instructions where target is 66. The whole residual therefore reduces to a single un-diagnosed instruction of overhead in the below-store family, not to a scheduler tie.",
-   "mechanism": "With the p10 read below the store, sched.c:1783 creates a true (RAW) memory dependence 12 <- 25 instead of the anti-dependence 25 <- 12, so uid 12 becomes ready before uid 25 is scheduled and can take target's slot. s24 killed the six below-store positions on SCORE (all 67 insns, score 5, one normalised cc1 stream) but never diagnosed WHERE the 67th instruction comes from -- and s25's zero-net-instruction budget constraint says that extra instruction is the entire remaining gap.",
-   "next_probe": "Apply memory/grind/func_80060A68/rejected/s24-v2_p10_after_copy1-...-67insns.c (or regenerate X4 from tmp/grind/func_80060A68/s26/x/X4.c, score 5 / 67 insns), run `pwsh tools/grinder/dump.ps1 func_80060A68`, and diff its .cse/.combine/.sched dumps against the T1 dumps to name the pass that introduces the 67th instruction. Then diff the raw insn stream against target with tmp/grind/func_80060A68/s24/dumpdiff.py to identify WHICH instruction is extra. Removing that one instruction while keeping the below-store position closes the function; every other axis on this spine is now measured dead."
+   "hypothesis": "Pgp/P1A is the better solver target of the two near-misses: it already has all three 0x10 loads distinct and diverges from target in exactly ONE instruction's position and seat (slot 26 in $v0 versus slot 11 in $a1), and its blocker is a single named dependence - the LOG_LINKS edge from the `sw ?,D_800A3478` gp store to the third 0x10 load.",
+   "mechanism": "The dep is created at sched.c:1783 and gated by memrefs_conflict_p at sched.c:697-705: the gp store's address is a SYMBOL_REF and the 0x10 load's is a pseudo holding the gp-loaded `outer` pointer, so find_symbolic_term succeeds on only one side and the function must report a conflict. Unlike the anti-dependence s24-s26 chased on the T1 spine, this is a plain memory dep on a store whose ADDRESS SPELLING is under source control: `D_800A3478` is written as a bare extern in this body, and the DATA MODEL block shows it has no header declaration, so alternative faithful spellings of that store's address (through a pointer local already holding a symbol-based address, or through an aggregate that makes both sides symbol-based) have never been enumerated for this function.",
+   "next_probe": "Apply memory/grind/func_80060A68/rejected/s27-Pgp-p10-after-the-D_800A3478-store-three-loads-but-strands-at-slot26-score3.c, run `pwsh tools/grinder/dump.ps1 func_80060A68`, and confirm in the .sched dump that the third 0x10 load's LOG_LINKS still contain the gp-store uid. Then enumerate faithful spellings of `D_800A3478 = outer + 0x18;` that change the store's address RTL (the two-prong question is whether find_symbolic_term can be made to succeed on BOTH sides, or fail on both), measure each with `sandbox func_80060A68 --disable all`, and check the LOG_LINKS - the dep, not the score, is the discriminator."
   },
   {
-   "hypothesis": "The only two unclosed routes through anti_dependence (sched.c:845-868) are memrefs_conflict_p returning 0 and the both-memrefs-volatile route; the former needs the p10 load's RTL base to be a SYMBOL_REF so find_symbolic_term succeeds on both sides at sched.c:697-705.",
-   "mechanism": "memrefs_conflict_p reaches its distinct-symbolic-base branch only when both addresses are PLUS forms whose symbolic term can be found. Our p10 load's base is a pseudo holding the gp-loaded `outer` pointer; the Z0 store's base is the symbol D_800F10D0. If the p10 value could be read through an expression whose address RTL carries a symbol base (e.g. through a differently-declared global rather than through `outer`), the branch would compare two distinct symbols and return 0, deleting the anti-dep and putting uid 12 on the ready list at clock 44.",
-   "next_probe": "Enumerate the declared shapes of D_800A3468 and the +0x10 member in the DATA MODEL block of the brief and in include/*.h, and test whether any faithful spelling gives the p10 read a symbol-based address (it is read as *(s32 *)(D_800A3468 + 0x10), so the candidate is a spelling that keeps the symbol in the address rather than materialising `outer` first). Measure each with `sandbox func_80060A68 --disable all` and, before scoring, re-extract the model and check whether deps[25] still contains [12, 14] -- the dep, not the score, is the discriminator."
+   "hypothesis": "On the Pt2/P18 spine the residual is one cse fold, and the separator does not have to be a store in the 0x10-read window: s20's class kill says a STORE or a CALL defeats the fold, and the call-based half of that predicate has never been probed on this function.",
+   "mechanism": "cse.c:1701 invalidates the memory hash table on a store it cannot disambiguate and on any call. The dispatch call `((s32 (*)(void)) ...)()` sits far below the window, but the function's only other memory writes in the window are the copy block and the 0x18 halfword store. The unexplored axis is whether any faithful re-expression of the +2 read makes cse hash it differently WITHOUT inventing a construct - for example if the +2 halfword genuinely belongs to the same aggregate read the target's source used, per the DATA MODEL block's note that none of D_800A3468's members have a header declaration.",
+   "next_probe": "Apply candidate.c (Pt2), run `pwsh tools/grinder/dump.ps1 func_80060A68`, and read the .cse dump at the point the second 0x10 load disappears to identify the exact hash-table entry that is reused. Then test declared shapes for the object at `outer` (a struct typedef with members at 0x0, 0xC, 0x10, 0x14, 0x18, 0x1A, 0x1C, 0x20, 0x24, 0x28) - note s5's struct-typed-inner-reads body re-measures 6/66 on the current chassis, so a struct chassis is NOT free and must be built on the Pt2 statement order, not the s5 one."
   },
   {
-   "hypothesis": "W1 (66 instructions, pure permutation of target's multiset) is the correct spine for a future solver session even though it scores 4, because it is the only body whose residual the sched_solver can express without an instruction-count change; its goal is `pick 12, then 15, then 31` after uid 33.",
-   "mechanism": "tools/sched_solver models an exact permutation of an identical instruction multiset; T1 (65 insns) and E2 (66 insns but a different multiset) both require an insn to be added or removed, which no scheduler atom can express. W1's model is already extracted and validated (parity=True) and banked at tmp/grind/func_80060A68/s26/W1.sched.json.",
-   "next_probe": "Run tmp/grind/func_80060A68/s24/run_perturb.py against tmp/grind/func_80060A68/s26/W1.sched.json with the goal stated MANUALLY as `--pass 2 --block 0 --goal-before 33:12 --goal-before 12:15 --goal-before 15:31` (goalmap cannot auto-derive it -- see evidence), depth 1 first, then depth 2 restricted to luid,luid_move. Expect the same anti-dependence wall; the value is a typed FORECLOSED verdict on the 66-insn geometry rather than another guess."
+   "hypothesis": "The Pt2 spine is now a clean 66-instruction pure-permutation-plus-one-substitution target for tools/ra_solver and tools/sched_solver, which W1 was proposed for at s26 but with a two-insn goal; Pt2's goal is a single instruction.",
+   "mechanism": "s26 banked W1 (66 insns, pure permutation, score 4) as the only solver-expressible spine, but its goal needed TWO insns lifted over a pri-3 wall. Pt2 is also 66 insns and strictly closer: its only divergence is one `nop`/`lw a0,16(v1)` substitution plus the $a1/$a0 seat on the consumer. `inverse_compose.py classify` has never been run on it, and the residual is now half RA (which seat the +2 pointer gets) and half cse (whether a second pseudo exists at all) rather than a scheduler tie.",
+   "next_probe": "With candidate.c applied, run `python3 tools/ra_solver/inverse_compose.py classify text1b func_80060A68` and `tools/ra_solver/goal_from_tgt.py classify text1b func_80060A68` to get a typed REACHABLE/FORECLOSED verdict on the Pt2 residual, and do the same for the Pgp body. Compare the two classifications: they are the two halves of the same answer and a REACHABLE verdict on either one closes the function."
   }
  ],
  "judge_constraints": [
@@ -591,6 +597,14 @@
    "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling; 12 probe bodies plus the T1 control, zero FAKE constructs in any of them; W1's model re-extracted with parity=True and banked at tmp/grind/",
    "predicate_cite": "",
    "result": "KILLED. Scores / build_insns: W1 4/66, W2 5/66, W3 6/64, W4 6/64, W5 4/66, W6 7/66, W7 7/64, X1 7/67, X2 7/67, X3 4/65, "
+  },
+  {
+   "session": 27,
+   "statement": "Importing a second cse-breaking separator store into the window above the `D_800A3478` gp store regresses the score on this statement inventory: all three orderings of the +0, +2 and p10 reads merge o",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 `()` dispatch-call spelling; 10 separator bodies plus the Pc3 / P18 / Pt2 / Pgp / P1A position bodies and the T1 and X4 controls, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "KILLED for every separator this statement inventory can supply. Splitting or relocating copy 3 shatters the copy block's"
   }
  ],
  "escalation_deferrals": 0

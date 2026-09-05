@@ -3701,3 +3701,88 @@ by a load-delay nop at slot 10 and the p10 load is still stranded at slot 4.  sc
 - [s26] tools/sched_solver/goalmap.py (and the s24 fork) still cannot auto-derive an object-mode goal for this function even when the tree carries the 66-instruction W1 body: it reports hon=65 / honobj |A|=67 and aborts before emitting a goal, so goal derivation for this function remains manual.
 
 - [s26] The depth-2 pass-2 solver search (frontier item 2 from s25, in both the luid,luid_move and the full-atom vocabularies) was launched as this session's first act and ran 22 minutes without emitting a line; it was stopped cleanly before the turn ended and no solver process remains. It is now analytically superseded: luid perturbations cannot change READINESS, which is a function of the dependence graph, so no luid vector can put uid 12 on the ready list at clock 44/45.
+
+- [s27] KILL RE-AUDIT (mandated, floor flat 3 sessions).  `tools/fake_ablate.py` is a no-op for this
+  function: candidate.c and every s27 probe carry ZERO FAKE constructs.  Seven banked forms
+  re-measured on today's HEAD chassis, all reproducing their recorded scores digit for digit:
+  s5-three-fresh-inline-reads 3/66, no-p10-local-inline-4-read-late 3/66, s17-A2 3/66,
+  s18-U2 5/66, s5-struct-typed-inner-reads 6/66, no-p10-local-inline-4-read-early 8/65,
+  s5-v2-named-address-locals 5/67.  No banked kill is VOID under the current rule scope.
+
+- [s27] The T1 control re-measures 2 / build 65 / target 66 on today's HEAD; X4 (the below-Z0-store
+  control) re-measures 5 / build 67.
+
+- [s27] s26's frontier item 1 is ANSWERED: X4's 67th instruction is a load-delay NOP at slot 22,
+  where target has its second `lw a0,16(v1)`.  X4's window reads
+  `lw a0,16(v1) | sw v0,40(v1) | lhu v0,0(a0) | nop | sh v0,24(v1) | lw v0,16(v1) | lw a1,16(v1) |
+  lhu a0,2(v0)` against target's
+  `lw a0,16(v1) | sw v0,40(v1) | lhu v0,0(a0) | lw a0,16(v1) | sh v0,24(v1) | lhu a0,2(a0)` plus the
+  slot-11 `lw a1,16(v1)`.  The +2 pointer reload lands in $v0, which is anti-dependent on the pending
+  `sh v0,24(v1)`, so it cannot occupy the delay slot; target's reload lands in $a0, which is free
+  after slot 21, and fills it.
+
+- [s27] PASS ATTRIBUTION, read from `pwsh tools/grinder/dump.ps1 func_80060A68` on the s5
+  three-inline-read body: in the .sched dump the third `lw ?,16(reg/v:SI 72)` is uid 66 with
+  LOG_LINKS `(insn_list 9 (insn_list 22 (insn_list 60 (nil))))`, while the other two 0x10 loads
+  (uid 46, uid 53) carry only `(insn_list 9 (insn_list 22 (nil)))`.  uid 60 is the
+  `sw ?,D_800A3478` gp store.  A 0x10 read placed below that store inherits a memory dependence on
+  it (symbol-based store vs pseudo-based load: memrefs_conflict_p cannot disambiguate,
+  sched.c:697-705) and cannot be hoisted past it.
+
+- [s27] p10-statement POSITION SWEEP on the T1 statement set, 8 positions, today's HEAD chassis,
+  zero FAKE constructs in any body:
+      after the Z0 store   (X4)   5 / 67   third 0x10 load at slot 25
+      after copy 1         (Pc1)  5 / 67   third 0x10 load at slot 25
+      after copy 2         (Pc2)  5 / 67   third 0x10 load at slot 25
+      after copy 3         (Pc3)  2 / 66   load at SLOT 11 in $a1; cse merges p10 with the +0 read
+      after the 0x18 store (P18)  2 / 66   load at SLOT 11 in $a1; cse merges p10 with the +2 read
+      after the +2 read    (Pt2)  2 / 66   load at SLOT 11 in $a1; cse merges p10 with the +2 read
+      after the gp store   (Pgp)  3 / 66   THREE distinct loads; third stranded at slot 26 in $v0
+      after the 0x1A store (P1A)  3 / 66   THREE distinct loads; third stranded at slot 26 in $v0
+  Pt2 and P18 emit byte-identical objects; Pgp and P1A emit byte-identical objects.
+
+- [s27] Pt2/P18 is byte-identical to target at every one of its 66 slots EXCEPT slot 22
+  (ours `nop`, target `lw a0,16(v1)`) and slot 24 (ours `lhu a0,2(a1)`, target `lhu a0,2(a0)`).
+  The slot-11 `lw a1,16(v1)` - the seat 26 sessions could not reach - is present and correct.
+
+- [s27] Pgp/P1A is byte-identical to target at every slot EXCEPT that its third 0x10 load sits at
+  slot 26 as `lw v0,16(v1)` (feeding `lhu a1,4(v0)`) instead of at slot 11 as `lw a1,16(v1)`
+  (feeding `lhu a1,4(a1)`).  Three distinct loads, everything else identical.
+
+- [s27] CSE is the merger on the Pt2 spine, confirmed by counting
+  `(mem:SI (plus:SI (reg/v:SI 72) (const_int 16)))` per dump: .rtl 3, .jump 3, .cse 2, .loop 2,
+  .cse2 2, .combine 2, .sched 2, .lreg 3 (reload re-materialises one).  All three source reads
+  survive into cse; cse folds two.  This reproduces s20's cse.c:1701 finding on the new spine.
+
+- [s27] SECOND-SEPARATOR SWEEP - every way of putting a second cse-breaking store into the window
+  between copy 3's store and the D_800A3478 store, measured on today's HEAD chassis:
+      copy 3's store split out through a named intermediate, placed below the +2 read (S1) 11 / 66
+      ditto, placed below the p10 read (S4)                                                8 / 67
+      ditto, placed above the +0 read (S5)                                                 5 / 67
+      copy 3's WHOLE statement moved between the +2 read and the p10 read (R1)            11 / 67
+      copy 3's WHOLE statement moved between the +0 and +2 reads (R3)                      8 / 66
+      copy 3's WHOLE statement moved between the p10 and +2 reads (R4)                    10 / 67
+      the 0x1A store hoisted above the gp store to act as the separator (R2)               6 / 66
+      temp2 deleted, +2 read inlined into the 0x1A store below the gp store (U1)           7 / 67
+      ditto with a p10 local above the gp store (U3)                                       8 / 68
+      ditto with idx below the 347C store (U4)                                            12 / 68
+  Every one regresses.  Splitting or moving copy 3 shatters the copy block's emission
+  (its loads and stores stop interleaving with the halfword group the way target's do).
+
+- [s27] Chassis re-measured at dispatch: T1 (the incoming candidate.c) gives score 2, target_insns 66, build_insns 65 - unchanged from the ledger's recorded floor.
+
+- [s27] X4's 67th instruction is a load-delay NOP at slot 22; target fills that slot with its second `lw a0,16(v1)`, which X4 cannot do because its +2 pointer reload targets $v0 and $v0 is still live for the pending `sh v0,24(v1)`.
+
+- [s27] In the .sched dump the third `lw ?,16(reg/v:SI 72)` (uid 66) carries LOG_LINKS (9, 22, 60) where uid 60 is the `sw ?,D_800A3478` gp store; the other two 0x10 loads (uid 46, uid 53) carry only (9, 22).
+
+- [s27] p10-statement position sweep, today's HEAD chassis, zero FAKE constructs: after Z0 store 5/67, after copy1 5/67, after copy2 5/67, after copy3 2/66, after the 0x18 store 2/66, after the +2 read 2/66, after the gp store 3/66, after the 0x1A store 3/66.
+
+- [s27] Pt2 and P18 emit byte-identical 66-instruction objects that match target at every slot except 22 (ours nop, target `lw a0,16(v1)`) and 24 (ours `lhu a0,2(a1)`, target `lhu a0,2(a0)`); the slot-11 `lw a1,16(v1)` is present and correct.
+
+- [s27] Pgp and P1A emit byte-identical 66-instruction objects with THREE distinct 0x10 loads that match target at every slot except that the third load sits at slot 26 as `lw v0,16(v1)` feeding `lhu a1,4(v0)`, instead of at slot 11 as `lw a1,16(v1)` feeding `lhu a1,4(a1)`.
+
+- [s27] Per-pass count of `(mem:SI (plus:SI (reg/v:SI 72) (const_int 16)))` on the Pt2 body: .rtl 3, .jump 3, .cse 2, .loop 2, .cse2 2, .combine 2, .sched 2, .lreg 3 - cse is the merger.
+
+- [s27] Second-separator sweep on today's HEAD chassis: S1 11/66, S4 8/67, S5 5/67, R1 11/67, R3 8/66, R4 10/67, R2 6/66, U1 7/67, U3 8/68, U4 12/68 - every import of a second separator regresses.
+
+- [s27] Kill re-audit: seven banked rejected forms re-measured on today's HEAD chassis all reproduce their recorded scores exactly (3/66, 3/66, 3/66, 5/66, 6/66, 8/65, 5/67); fake_ablate is a no-op because no banked body carries a FAKE construct.
