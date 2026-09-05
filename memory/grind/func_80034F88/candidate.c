@@ -1,3 +1,65 @@
+/* s52 (structural, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns,
+ * re-measured on HEAD this session).  s52 closes the block-1 reload question
+ * that s50 and s51 left open, and it closes it against us.
+ *
+ * 1. THE PASS IS cse, AND THE GUARD IS NAMED.  Pass attribution is now
+ *    dump-proven rather than argued: with an explicit re-read in flag block 0
+ *    (`w = *q;` between the mask store and the arms) the QI memory reference
+ *    count in the cc1 dumps goes 8 -> 7 exactly at .cse and never changes
+ *    again (tmp/grind/func_80034F88/s52/cnt.py over .rtl/.jump/.cse/.loop/
+ *    .cse2/.flow/.combine/.sched/.lreg/.greg).  cse_insn records the store's
+ *    memory destination in the value table (cse.c:7308-7376) and the ONLY
+ *    conditions that suppress that record are `sets[i].src_elt == 0`
+ *    (cse.c:7327), which is reached for an in_libcall_block, for a
+ *    ZERO_EXTRACT / SIGN_EXTRACT SET_DEST (the bit-field carve-out at
+ *    cse.c:7004-7027), or for a volatile source.  Nothing a value-side source
+ *    spelling can do reaches any of them.
+ *
+ * 2. THE VALUE-SIDE SPELLINGS ARE MEASURED SHUT.  The re-read survives cse's
+ *    substitution only as `zero_extend(subreg:QI(m))`, which combine then
+ *    folds to `m` whenever m is provably 8-bit clean -- and every spelling
+ *    that breaks that proof costs a DIFFERENT instruction, never an lbu:
+ *    s32 re-read 49/10 (folded to nothing), u8 re-read 51/19 (materialises as
+ *    `andi $x,$y,0xff`, not a load), u16 re-read 49/10, `m &= ~7` 49/10,
+ *    `(s8)(m & 0xF8)` 53/15 (sll/sra pair).  A second, signed-char write
+ *    handle (BANNED two-object shape, measured as diagnosis only) is also
+ *    49/10.
+ *
+ * 3. THE BIT-FIELD ESCAPE IS MEASURED SHUT.  Declaring D_80106A73 as a
+ *    bit-field record -- the one non-volatile route cse.c itself names -- does
+ *    not produce a ZERO_EXTRACT dest on this target: GCC 2.7.2 MIPS has no
+ *    insv, so store_bit_field expands to word arithmetic.  The .rtl dump
+ *    contains ZERO `zero_extract` and ZERO `mem:QI` (all accesses become
+ *    SImode lw/sw), and the two natural bit-field bodies score 26/47 and
+ *    35/40.  So on a SHARED address the target's 80034FB4 reload has no
+ *    ordinary-C generator on this chassis; s51's split-spelling body remains
+ *    the only generator and it costs the extra la pair (51/12).
+ *
+ * 4. THE SEAT RACE IS NOW A NUMERIC MODEL WITH BOTH SIDES PINNED.  Seven
+ *    duplicated-store placements were measured with refs/live_length/priority
+ *    read from .lreg/.greg before the score.  The pointer allocno must exceed
+ *    the masked value's fixed pri 13333 (refs 6, len 9):
+ *        b0 dup only            refs 11 len 27 -> 12222   NO FLIP   46/14
+ *        b0 + b1 dup            refs 12 len 26 -> 13846   FLIP      47/19
+ *        all three dup          refs 13 len 25 -> 15600   FLIP      48/21
+ *        b0 one-arm + b1b2 dup  refs 11 len 24 -> 13750   FLIP      48/21
+ *        q reused as loop base  refs 12 len 28 -> 12857   NO FLIP   49/17
+ *    and block 0 CANNOT supply the lift on its own, because cse deletes the
+ *    else arm's `*q = m;` as a same-value re-store (d2 emits a one-armed
+ *    `beqz / ori / sb`, 46 insns).  Every measured flip therefore buys the
+ *    target's block-0 seat with a duplicated store in flag block 1 or 2,
+ *    which is exactly where those blocks' bytes already match.
+ *
+ * 5. LIVE LENGTH IS INVARIANT UNDER SOURCE STATEMENT ORDER.  Hoisting flag
+ *    blocks 1 and 2's condition above their `q = &D_80106A73;` leaves the
+ *    pointer at len 27/28 and is byte-neutral (49/10, identical to this
+ *    body); sched1 re-establishes the order.  The one placement that DID move
+ *    a live length -- hoisting block 1's condition into block 0, masked value
+ *    len 9 -> 10, pri 13333 -> 12000 -- costs an extra simultaneously-live
+ *    value that pushes `p` out of $a1 into $a2 (49/25).  Two more insns of
+ *    length would reach pri 10000 and flip the seat; no shape that adds them
+ *    without adding a live value has been found.
+ */
 /* s51 (structural, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns).
  * s51 re-scopes the residual again; read this before the s50 note below.
  *

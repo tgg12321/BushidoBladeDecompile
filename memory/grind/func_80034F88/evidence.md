@@ -7252,3 +7252,73 @@ y4_split_nodup 12/51. Sources under
 - [s51] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) at end of session; no build-file dirt.
 
 - [s51] New reusable tool: tmp/grind/func_80034F88/s51/rep.sh prints score, .greg allocation order, conflict and preference rows, dispositions and per-pseudo refs/live_length/priority in one call per body.
+
+## s52 (structural, 2026-09-05) -- measured facts
+
+- HEAD chassis re-measured at session start: candidate.c installed unchanged =
+  **score 10, 49 build insns**, dispositions `74 in 3  75 in 4`, reg74 (block-0
+  masked value) refs=6 len=9 pri=13333, reg75 (&D_80106A73 pointer) refs=10
+  len=28 pri=10714. Identical to the s49/s50/s51 ledger figures, so every s51
+  conclusion is still chassis-valid.
+- The base body's own objdump was captured for the first time in several
+  sessions and aligned insn-for-insn against asm/funcs/func_80034F88.s. The
+  base and the target agree on the number of address materialisations (THREE
+  lui/addiu pairs each) and on the whole flag-block-1/2 body. Every one of the
+  ten scored differences is downstream of two facts: block 0's address sits in
+  $a0 with the masked value in $v1 (the target has them exchanged), and the
+  target's 80034FB4 slot holds `lbu $a0,0($v1)` where the base holds a
+  load-delay nop.
+- PASS ATTRIBUTION (dumps, not inference): with an explicit `w = *q;` re-read
+  in flag block 0 the count of `(mem:QI` in the cc1 dumps is 8 in .rtl and
+  .jump and 7 in .cse, .loop, .cse2, .flow, .combine, .sched, .lreg and .greg.
+  cse is the deleting pass. `(zero_extend:SI (mem:QI` appears only from
+  .combine onward, i.e. the surviving QI loads are recombined into
+  zero_extends after cse has already removed the redundant one.
+- cse.c source read (tools/gcc-2.7.2/cse.c:7308-7376): the store's MEM
+  destination is inserted into the value table unless `sets[i].src_elt == 0`,
+  which happens for an in_libcall_block, for a ZERO_EXTRACT / SIGN_EXTRACT
+  SET_DEST (the bit-field carve-out, cse.c:7004-7027), or for a volatile
+  source. No value-side spelling of the stored byte reaches any of the three.
+- A bit-field declaration of D_80106A73 produces NO `zero_extract` in .rtl or
+  .cse and NO `mem:QI` at all (GCC 2.7.2 MIPS has no insv, so store_bit_field
+  falls back to word arithmetic): 47 insns/score 26 and 40 insns/score 35.
+- Seat-race table (refs / live_length / allocno_compare priority read from
+  .lreg + .greg BEFORE the score; the masked value is pinned at 6/9/13333 in
+  every join-form block 0):
+      base / f2 hoisted b12 cond   pointer 10/28/10714   no flip   49/10
+      b0 dup only                  pointer 11/27/12222   no flip   46/14
+      q reused as loop base        pointer 12/28/12857   no flip   49/17
+      b0 one-arm + b1b2 dup        pointer 11/24/13750   FLIP      48/21
+      b0 + b1 dup                  pointer 12/26/13846   FLIP      47/19
+      all three blocks dup         pointer 13/25/15600   FLIP      48/21
+- cse DELETES `else { *q = m; }` in flag block 0 as a store of the value
+  already known to be in memory: d2_b0dup.c emits `beqz / ori / sb` (one arm,
+  46 insns), not the intended two-armed form. This is why block 0 cannot
+  supply its own reference lift.
+- A redundant `q = &D_80106A73;` inserted between the mask and flag block 0 is
+  deleted outright: 49 insns, score 10, pointer refs unchanged at 10.
+- Hoisting flag blocks 1 and 2's condition above their pointer assignment is
+  byte-neutral (49/10, identical dispositions and identical refs/len). Hoisting
+  flag block 1's condition into block 0 lengthens the masked value 9 -> 10
+  (pri 12000) but evicts `p` from $a1 to $a2 (49/25).
+- Artifacts: tmp/grind/func_80034F88/s52/{rep.sh,rd.py,cnt.py,gen.py,gen2.py,
+  gen3.py,inst_bf.py,append.py,bodies/}. Twenty-one bodies measured; sixteen
+  banked under memory/grind/func_80034F88/rejected/s52-*.
+
+- [s52] HEAD chassis re-measured at session start: candidate.c installed unchanged = score 10, 49 build insns, dispositions '74 in 3  75 in 4', reg74 (block-0 masked value) refs=6 len=9 pri=13333, reg75 (&D_80106A73 pointer) refs=10 len=28 pri=10714 -- identical to the s49/s50/s51 ledger figures, so every s51 conclusion remains chassis-valid.
+
+- [s52] The base body's objdump was aligned insn-for-insn against asm/funcs/func_80034F88.s: base and target agree on the number of address materialisations (THREE lui/addiu pairs each) and on the whole of flag blocks 1 and 2. All ten scored differences are downstream of exactly two facts -- block 0's address sits in $a0 with the masked value in $v1 (the target has them exchanged), and the target's 80034FB4 slot holds 'lbu $a0,0($v1)' where the base holds a load-delay nop.
+
+- [s52] Pass attribution by dump, not inference: with an explicit re-read in flag block 0 the count of '(mem:QI' in the cc1 dumps is 8 in .rtl and .jump and 7 in .cse and every later dump. cse is the deleting pass; '(zero_extend:SI (mem:QI' first appears in .combine.
+
+- [s52] cse.c source read: the store's MEM destination is inserted into the value table at cse.c:7308-7376 unless sets[i].src_elt == 0 (cse.c:7327) -- reachable only via an in_libcall_block, a ZERO_EXTRACT/SIGN_EXTRACT SET_DEST (cse.c:7004-7027), or a volatile source.
+
+- [s52] A bit-field declaration of D_80106A73 yields zero 'zero_extract' and zero '(mem:QI' in the RTL (GCC 2.7.2 MIPS has no insv, so store_bit_field falls back to word arithmetic): 47 insns / score 26 and 40 insns / score 35.
+
+- [s52] Seat-race table, priorities read from .lreg/.greg before the score, masked value pinned at 6/9/13333 throughout: base and hoisted-condition variant pointer 10/28/10714 no flip 49/10; b0-dup-only 11/27/12222 no flip 46/14; q-reused-as-loop-base 12/28/12857 no flip 49/17; b0-one-arm + b1b2-dup 11/24/13750 FLIP 48/21; b0+b1-dup 12/26/13846 FLIP 47/19; all-three-dup 13/25/15600 FLIP 48/21.
+
+- [s52] cse deletes 'else { *q = m; }' in flag block 0 as a store of the value already known to be in memory: d2_b0dup.c emits a one-armed 'beqz / ori / sb' at 46 insns, which is why block 0 cannot supply its own reference lift.
+
+- [s52] A redundant 'q = &D_80106A73;' inserted between the mask and flag block 0 is deleted outright: 49 insns, score 10, pointer refs unchanged at 10.
+
+- [s52] Twenty-one bodies measured this session; sixteen banked to memory/grind/func_80034F88/rejected/s52-*. src/code6cac_b.c restored to HEAD (git status clean apart from the ledger and metrics).

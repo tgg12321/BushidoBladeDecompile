@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 51,
+ "session_count": 52,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -309,23 +309,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Residual re-scoped from 'needs a second allocno' to a measured two-condition allocation race whose conditions are mutually exclusive on every block-0 shape tried; the target's 80034FB4 reload reproduc"
+  },
+  {
+   "session": 52,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "cse named as the pass that kills block 0's reload (dumps: mem:QI 8->7 at .cse) and its only non-volatile escape (a ZERO_EXTRACT/bit-field dest) measured non-existent on this target; the seat race redu"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's block-0 seat is reachable on the refs=4 chassis (single-statement mask or named raw), where the pointer allocno is ALREADY sorted first, if the short-lived block-0 temp can be pushed off $v1; s44's seat law says it takes $v0 whenever $v0 is dead across its span.",
-   "mechanism": "local-alloc runs before global_alloc and seats basic-block-local quantities first, so its choice of $v1 for the temp is what puts hard 3 into the pointer's conflict row. $v0 is live across the temp's span only because it still carries func_80077D00's return value until the 'move $a1,$v0'; retiring that value earlier makes $v0 dead across the span and, by the seat law, hands the temp $v0 and leaves hard 3 free for the pointer, which find_reg would then take because it is first in the sort order.",
-   "next_probe": "Enumerate source shapes that consume the call's return value before the mask load (an early use of p, a differently placed assignment of p, p read into a narrower local) on the r1_mask1stmt and w1_raw_s32 chassis. Read the temp's local-alloc seat in .lreg and the pointer's conflict row in .greg BEFORE the score: the win condition is the pointer's row losing hard 3 while the allocation order still lists it ahead of the masked value. Note the target schedules 'move $a1,$v0' AFTER the mask lbu, so any shape that moves it earlier must be checked against block-0 bytes rather than assumed byte-neutral."
+   "hypothesis": "The residual is one inequality with the pointer side pinned; the unmeasured side is a join-form block 0 whose masked value has FIVE references instead of six.",
+   "mechanism": "The masked value's six references are def(lbu), the use and def of the '&=', the mask 'sb', the arm 'ori' and the arm 'move'. The target's block-0 mask value has only four because its arms consume the RELOADED byte instead of the masked pseudo. Dropping one reference at len 9 gives pri 11111, still above the pointer's 10714, but at len 10 it gives 10000 and the seat flips; s52 showed len 10 is reachable (h1) at the cost of an extra live value, so a five-reference block 0 is the cheaper half of that pair.",
+   "next_probe": "Enumerate join-form block-0 shapes in which one arm sources its value from something cse folds onto the masked-value pseudo WITHOUT contributing a reference to it -- an arm whose value is built from a separate variable that copy-propagation later coalesces, or a block 0 in which the mask's 'sb' operand and one arm's operand are the same RTL reference. Read reg74's refs in .lreg before the score; the win condition is refs 5 with len >= 10."
   },
   {
-   "hypothesis": "A block-0 shape with the two-statement mask (which spawns no temp, so the pointer's conflict row stays clean) and refs(masked value) = 5 at live_length >= 10, or refs = 6 at live_length >= 12, drops the masked value's priority below the pointer's 10714 and flips the seat with no other change.",
-   "mechanism": "allocno_compare priority is floor_log2(refs) * refs / live_length * 10000. The current six references are the def, the use+def of the &=, the sb use, the ori use and the move use. Removing any arm use costs the target's ori/move pair, so the reachable lever is either a fifth-reference spelling that keeps both arms or three more insns inside the masked value's live range.",
-   "next_probe": "Enumerate block-0 shapes that keep both arms but let one arm source its value from the pointer dereference in a way cse folds to the same pseudo without adding a reference; and shapes that lengthen the masked value's live range by placing real work between its def and its last arm use (not the condition -- that direction is now killed from five placements across s50 and s51). Read reg74's refs and len in .lreg before the score."
+   "hypothesis": "g1 (q reused as the trailing loop's base pointer) is the first measured pointer-reference lift that does not touch a flag block, and it misses the flip by only 476 priority points.",
+   "mechanism": "g1 buys refs 12 at len 28 for pri 12857 against the masked value's 13333. One further pointer reference inside the loop region takes it to refs 13 / len 28 / pri 13928 and flips the seat. It currently costs 7 points because a pointer-based loop emits 'sb $v0,0($reg)' with an increment instead of the target's 'lui $at / addu $at,$at,$v1 / sb $v0,%lo(D_80106A70)($at)' direct-symbol indexing.",
+   "next_probe": "Measure whether any loop spelling through q reproduces the target's direct-symbol-plus-index loop form (q as a base with the index kept in the addressing expression, q re-derived per iteration, q reused only for the final store). If one does, the seat lift and the loop bytes are simultaneously satisfiable; read the pointer's refs/len in .lreg before the score."
   },
   {
-   "hypothesis": "The two halves of the target are each individually solved and have never been composed: s50's H50.1 duplicated-store body has the target's block-0 REGISTERS with wrong flag blocks 1 and 2, and s51's split-spelling body has the target's block-0 instruction SEQUENCE including the 80034FB4 reload with one extra la pair and swapped registers.",
-   "mechanism": "The refs lift raises the pointer allocno's priority above the masked value's; the split spelling defeats cse's store forwarding. They act on different passes (global_alloc versus cse) and are not obviously in conflict, but the split spelling's extra la pair also lengthens the pointer's live range, which lowers its priority -- so the composition needs the refs lift sized against the new live_length, not against 28.",
-   "next_probe": "Compose split-spelling block 0 with a refs lift restricted to flag block 0 only, then with lifts sized to the measured live_length (read .lreg for the pointer's new len before choosing how many duplicated stores to add). Measured so far: y1_split_dup0 52/14, y2_split_dupall 54/20, y3_split_rev_dup0 52/14, y4_split_nodup 51/12, q_split_A70mask_A73b0_dup12 53/18 -- all with the lift sized for len 28."
+   "hypothesis": "The target's 80034FB4 reload of the SAME address through the SAME register is the signature of MEM_VOLATILE_P, and s52 has measured every non-volatile generator shut on a shared address -- but the volatile gate as written fails, so this is a characterisation of the residual and not a probe.",
+   "mechanism": "cse suppresses the store-to-load equivalence only for src_elt == 0 (libcall block, ZERO_EXTRACT dest, volatile source); the bit-field/ZERO_EXTRACT route is measured non-existent on this target, leaving volatile as the only mechanism that produces the reload without a second address materialisation. But D_80106A73 has no identified IRQ writer and its use-site is an ordinary read-modify-write, so both prongs of legitimate-volatile-interrupt-touched fail, and the sandbox strips a non-allowlisted extern volatile, so the honest floor cannot move even if a grant existed.",
+   "next_probe": "Do NOT re-measure volatile. Carry this as the standing characterisation of the block-0 residual; if a later session needs a disposition record, this is the evidence line for it."
   }
  ],
  "judge_constraints": [
@@ -347,37 +353,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 34,
-   "statement": "Spelling block 1's store as a ternary (`E = c ? (v|1) : v;`), so that expand_assignment expands the destination address before the branch and the anonymous address pseudo is born in block 0's basic bl",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (10, 49/49, rules_dropped 0); four ternary-store bodies, single declared `u8 *q`, no FAKE construct present in any of them",
-   "predicate_cite": "",
-   "result": "d1 22 at 48 insns, d5 18 at 48, d6 26 at 50, d7 12 at 46. Every ternary body loses instructions instead of gaining the s"
-  },
-  {
-   "session": 34,
-   "statement": "Duplicating block 1's store into both if-arms (the duplicated-statement-into-arms shape), so that no address value has to cross the join label at all, does not produce a body at the target's 49 instru",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; four duplicated-arm-store bodies, single declared `u8 *q`, no FAKE construct present in any of them",
-   "predicate_cite": "",
-   "result": "e1 22 at 48 insns, e4 22 at 48, e5 18 at 48, e6 12 at 46 -- scores and counts identical to the matching ternary bodies, "
-  },
-  {
-   "session": 34,
-   "statement": "Mixing an anonymous read with a named store inside block 1 (read through the symbol-difference expression, store through `q`) does not beat candidate.c on this chassis, and placing `q` before the anon",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; two mixed anonymous-read/named-store bodies, single declared `u8 *q`, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "f1 14 at 49 insns, f2 13 at 49 insns (c1's score). Neither reaches 10."
-  },
-  {
-   "session": 35,
-   "kill_scope": "instance",
-   "statement": "Some assignment of the four flag-byte access sites between the declared pointer `q` and the anonymous symbol-difference expression, other than the five combinations s33 already measured, reaches the target's two-seat register assignment.",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (g0 control = 10, 49 build insns, rules_dropped 0); five new quadrant bodies g1/g5/g6/g7/g8, single declared `u8 *q`, no FAKE construct present",
-   "result": "g1 28/48, g5 25/48, g6 27/48, g7 14/49, g8 28/48; with s33's c1-c5 and the base the lattice is closed and its minimum is the base setting q:0123 = 10."
-  },
   {
    "session": 35,
    "kill_scope": "instance",
@@ -821,6 +796,38 @@
    "measured_on": "s49/s50 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct present",
    "predicate_cite": "",
    "result": "KILLED. The live-length half of the priority race is now measured shut from four further source placements; the refs hal"
+  },
+  {
+   "session": 52,
+   "statement": "The pass that deletes flag block 0's re-read is cse, and on a shared address expression the deletion survives every value-side spelling of that read: s32, u8 and u16 re-reads, a `m &= ~7` mask and an ",
+   "kill_scope": "instance",
+   "measured_on": "s49/s50/s51 two-statement-mask chassis (memory/grind/func_80034F88/candidate.c) on HEAD 2026-09-05, one declared pointer object (c1 excepted: two objects, banned, measured as diagnosis only), no FAKE ",
+   "predicate_cite": "",
+   "result": "KILLED. Confirms and sharpens s51's asserted attribution with dumps rather than argument: the reload is the cse store-re"
+  },
+  {
+   "session": 52,
+   "statement": "The one non-volatile escape that cse.c itself names -- a ZERO_EXTRACT store destination, i.e. a C bit-field -- does not exist on this target: declaring D_80106A73 as a bit-field record produces no zer",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-05 with D_80106A73's declaration changed to a bit-field record (src/code6cac_b.c:128), one declared pointer object, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "KILLED. Practical consequence: on a SHARED address expression the target's 80034FB4 reload has no ordinary-C generator o"
+  },
+  {
+   "session": 52,
+   "statement": "Every measured lift of the pointer allocno's priority past the masked value's fixed 13333 requires a duplicated store in flag block 1 or 2, and block 0 cannot supply its own lift because cse deletes t",
+   "kill_scope": "instance",
+   "measured_on": "s49/s50/s51 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "KILLED as a route to a byte-improving seat flip. This supersedes s50's H50.1 framing that the duplicated store is 'the l"
+  },
+  {
+   "session": 52,
+   "statement": "Both live lengths in the block-0 seat race are invariant under source statement order: hoisting flag blocks 1 and 2's condition above their pointer assignment is byte-neutral at 49 insns / score 10 wi",
+   "kill_scope": "instance",
+   "measured_on": "s49/s50/s51 two-statement-mask chassis and the b0-dup chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "KILLED. Extends s50's H50.5 and s51's condition-re-association kills from the masked value to the POINTER allocno and fr"
   }
  ]
 }
