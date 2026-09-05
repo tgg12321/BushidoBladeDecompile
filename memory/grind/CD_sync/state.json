@@ -730,9 +730,9 @@
  ],
  "origin": "queue",
  "created": "2026-07-07T15:21:29.115668+00:00",
- "exhaustion_base": 107,
- "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.356825+00:00",
+ "exhaustion_base": 116,
+ "last_unpark_reason": "owner ruling 2026-09-04 (decisions.md foreclosed-bucket re-evaluation, Ruling A): window RESET; backstop false positive over s116's CONFIRMED lever; probes: CD_datasync s58 CD_alarm-struct transplant onto j1 (addend-resolving scorer), sched_solver+ra_solver on j1/h1 (frontier[1]), fresh-seed permuter from j1/h1. Cross-symbol arithmetic idiom refusal (2026-07-20) + all judge_constraints stand.",
+ "last_unpark_at": "2026-09-05T01:14:01.059909+00:00",
  "kills": [
   {
    "session": 108,
@@ -896,5 +896,6 @@
    "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
    "consumed": null
   }
- ]
+ ],
+ "escalation_deferrals": 0
 }
