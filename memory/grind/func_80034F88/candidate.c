@@ -1,3 +1,69 @@
+/* s55 SECOND PASS (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10,
+ * 49 insns).  This pass SPENDS the 2026-09-05 11:01 Judge PASS (decisions.md
+ * :23437), which narrowed the multi-handle closure to permit EXACTLY TWO
+ * annotated `= &D_80106A73` alias objects on the s55 ordinary-C chassis.  The
+ * grant works, and it changes the residual completely.  Read this first; the
+ * closest body is now rejected/s55b-twoalias-u8-masked-value-in-a0-49insn-
+ * score14.c, NOT this one.
+ *
+ * 1. TWO HANDLES, BLOCK-SCOPED AFTER THE CALL, REPRODUCE THE TARGET'S ENTIRE
+ *    49-INSTRUCTION STREAM IN ORDER.  Handle `t` (mask + flag block 0) and
+ *    handle `q` (flag blocks 1 and 2), each `u8 *X = &D_80106A73;` with a
+ *    direct initializer, each declared at the head of ITS OWN inner block
+ *    placed AFTER `p = func_80077D00();`.  Result: 49 insns, three la pairs,
+ *    the block-0 reload, and -- for the first time in 55 sessions -- flag
+ *    block 1's address materialised at 80034FC8 BEFORE flag block 0's store
+ *    at 80034FD0, exactly as the target does.  Every opcode is the target's;
+ *    the ONLY residual is register naming.
+ *    (rejected/s55b-twoalias-blockscoped-EXACT-INSN-ORDER-49insn-score17.c)
+ *    THE DECLARATION SITE IS LOAD-BEARING: initialising both handles at
+ *    FUNCTION scope makes them live across the call, so they are forced into
+ *    $s0/$s1 with save/restore -- 53 insns, score 35
+ *    (tmp/grind/func_80034F88/s55/t1.c).
+ *
+ * 2. THE VALUE PAIRING IS ALSO REACHABLE.  The target pairs {masked value,
+ *    block-0 reload} in one register ($a0) and {p[8], condition, result} in
+ *    another ($v0).  The s54/s55 invalidation chassis pairs them the OTHER way
+ *    (masked+cond+result together), because the cse invalidator must re-set
+ *    the STORED value's variable.  Splitting them needs a re-set of `m` whose
+ *    value nothing consumes -- a dead store to a LOCAL, the sanctioned
+ *    dead-store family (`c = p[8]; m = c; m = *t;`).  With it the build's
+ *    pairing is the target's: 49 insns, score 15
+ *    (rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c).  Typing
+ *    the block-0 value `u8` splits the masked value into its own allocno,
+ *    which then lands on hard 4 = $a0, the target's register: score 14, the
+ *    session best (rejected/s55b-twoalias-u8-masked-value-in-a0-49insn-
+ *    score14.c).  Its remaining cost is that the u8 else-arm emits
+ *    `andi $v0,$v1,0xff` where the target emits `addu $v0,$a0,$zero`.
+ *
+ * 3. THE WHOLE RESIDUAL IS NOW ONE THREE-CYCLE REGISTER ROTATION.
+ *        build: t=$a1  masked=$v1  p=$a2
+ *        target: t=$v1 masked=$a0  p=$a1
+ *    and it is a single global.c allocation-ORDER fact, measured with
+ *    tools/ra_solver/extract.py (models tmp/grind/func_80034F88/s55/
+ *    model_t6.json, model_t7.json):
+ *      - every block-0 VALUE carries a hard-2 conflict, because sched1 sinks
+ *        the `p = $v0` call-result copy BELOW the mask store, so $v0 is live
+ *        across the mask.  Blocked from $v0, the first block-0 value takes
+ *        $v1 -- the seat the target gives the pointer.
+ *      - the pointer allocno is nrefs 5 / livelen 28 / pri 3571 and is
+ *        allocated SECOND-TO-LAST, after every block-0 value (pri 15000 ..
+ *        27500).  Priority is scale-invariant (all lengths divide out), so no
+ *        compaction of block 0 can reorder them: beating pri 17500 needs
+ *        nrefs(t) >= 16 at len 28, and lowering the value below pri 3571 needs
+ *        nrefs 3 at len >= 9, which a masked+reload value cannot have.
+ *      - the pointer's live range STRICTLY CONTAINS every block-0 value's, so
+ *        no third allocno can conflict with the value without also
+ *        conflicting with the pointer.
+ * 4. THE INVERSE SOLVER'S MINIMAL ATOM WAS TRIED AND COSTS INSTRUCTIONS.
+ *    `tools/ra_solver/inverse.py global model_t6.json --goal {75:3,74:4,72:5}`
+ *    returns a 1-atom solution: add a conflict between the loop index (73,
+ *    pri 47142, hard 3) and the block-0 value (74).  Spelling it as `i = 0;`
+ *    before block 0 with `for (; i < 3; i++)` costs three instructions
+ *    (52 insns, score 31) because the index is then live across the whole
+ *    body: rejected/s55b-loop-index-init-hoist-conflict-atom-52insn-score31.c.
+ *    The other atoms are refs_up(t) 5 -> 16/17 and refs_down(value) 7 -> 2.
+ */
 /* s55 (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns,
  * re-measured on HEAD this session: score 10, 49/49).  s55 does two things:
  * it removes the FAKE-shaped dead store from the closest-to-target chassis,

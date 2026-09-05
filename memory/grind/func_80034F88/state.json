@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 54,
+ "session_count": 55,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -327,23 +327,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "cse's store-forwarding is defeated for free by re-setting the STORED VALUE's variable (not the address pointer): first 49-insn body with the target's block-0 reload, 3 la pairs and exact instruction o"
+  },
+  {
+   "session": 55,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "Spending the two-alias Judge grant reproduces the target's entire 49-instruction stream in the target's order (block-1 la before block-0's store) for the first time in 55 sessions; the whole residual "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Lowering pri(m) below q's 11379 on the 49/13 m-re-use chassis flips the block-0 seat and, with the reload and instruction order already correct, drops the score far below 10.",
-   "mechanism": "m is nrefs 4 / livelen 4 / pri 20000 and is the only conflicting allocno ahead of q (pri 11379). floor_log2(4)*4/livelen*10000 < 11379 needs livelen >= 8 at nrefs 4; nrefs 3 wins at any length because floor_log2(3) is 1.",
-   "next_probe": "Enumerate block-0 shapes that stretch m's SECOND live span (the p[8] value) across more of block 0 without adding a simultaneously-live value -- the failure mode of the else-arm variant was that it added one and pushed p out of $a1. Read nrefs/livelen from tools/ra_solver/extract.py BEFORE looking at the score; win condition is pri(m) < 11379 with p still in $a1."
+   "hypothesis": "Keeping sched1 from sinking the p = $v0 call-result copy below the mask removes the hard-2 conflict from the block-0 values, which lets the first of them take $v0 (its target seat) and frees $v1 for the pointer.",
+   "mechanism": "sched1 priority is critical-path length; the mask chain outranks the single-insn copy. The target's copy sits in the mask lbu's load-delay slot, so in the original compile it did not sink.",
+   "next_probe": "Read tmp/grind/func_80034F88/dumps/code6cac_b.sched for insn 11's priority against the mask chain, then look for a C shape that shortens the mask's critical path or lengthens the p-consumer chain. Win condition, checked in the .greg segment BEFORE the score: hard 2 absent from the block-0 value's conflict row."
   },
   {
-   "hypothesis": "The address allocno can be lifted to nrefs >= 15 by a duplicated statement whose copies are IDENTICAL, so jump2 cross_jump re-merges them and the lift is instruction-free.",
-   "mechanism": "duplicated-statement-into-arms.md names exactly this mechanism (reg_n_refs priority lift with cross-jump re-merging the copies). Every duplicate measured so far had DIFFERENT arms (*q = v | K vs *q = v), so no merge happened and each cost an instruction.",
-   "next_probe": "Find placements where the duplicated statement is the same rtx in both arms (for instance the flag-block read or the address re-assignment duplicated into both arms of an earlier block) and confirm in the .jump2 dump that cross_jump merged the tails before scoring; win condition is nrefs(q) >= 15 at 49 instructions."
+   "hypothesis": "A duplicated statement whose copies are IDENTICAL rtx in both arms lifts the pointer allocno to nrefs >= 16 at livelen 28 (pri > 17500) for free, because jump2's cross_jump re-merges the copies.",
+   "mechanism": "duplicated-statement-into-arms.md names this mechanism (reg_n_refs priority lift with cross-jump re-merging). Every duplicate measured in s50/s54 had DIFFERENT arms, so nothing merged and each cost an instruction; the two-alias chassis now has two pointers to duplicate references to and byte-exact flag blocks 1 and 2 to place them in.",
+   "next_probe": "Place identical duplicated statements in both arms of flag blocks 1/2 and of block 0, confirm the merge in the .jump2 dump BEFORE scoring, and read nrefs/livelen from tools/ra_solver/extract.py. Win condition: nrefs(pointer) >= 16 at 49 instructions."
   },
   {
-   "hypothesis": "With a single address pseudo the block-1 la can never be scheduled above block 0's store, so the seat flip alone may not close the last instructions.",
-   "mechanism": "The target materialises block 1's address at 80034FC8, BEFORE block 0's store at 80034FD0, which requires two live address values; one C object is one pseudo, and the la would clobber the pointer before its last use.",
-   "next_probe": "Read .sched/.sched2 on the 49/13 body to see whether the la is even a candidate for that slot, and if it is not, state that dependency as the next thing to prove or disprove rather than continuing to chase the seat alone."
+   "hypothesis": "Declaring D_80106A70 as the 4-byte aggregate the DATA MODEL signal names, with the flag byte spelled as its element 3, removes the last declaration pun and changes what cse can equate between the mask's address and the trailing loop's.",
+   "mechanism": "The trailing loop already writes *(&D_80106A70 + i) for i<3 and the flag byte is the fourth byte of the same object; an extern u8 D_80106A70[4]; declaration makes both handles ordinary array-element addresses. Untried in 55 sessions.",
+   "next_probe": "Spell the aggregate in-TU first and verify the relocation still resolves to %lo(D_80106A73) (splat names the addend's symbol), then measure; a header edit is an integration handoff, not a src-only change."
   }
  ],
  "judge_constraints": [
@@ -365,30 +371,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 36,
-   "statement": "The address object's seat is a two-valued dial between $v1 and $a0, so live-range surgery on `q` can only trade one of those two seats for the other.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-05, variant g1, single declared `u8 *q` covering blocks 0+1, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "KILLED. q takes $a1 and p (the func_80077D00 return, which the target keeps in $a1) is displaced to $a0. The address obj"
-  },
-  {
-   "session": 36,
-   "statement": "A spelling of block 0's mask that restores block 1's reload without introducing a second address pseudo lands BELOW 10, which would falsify the ledger's 'one missing address allocno' factorisation.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-05 (floor control g0 = 10 at 49); bodies s17-b1-read-direct-symbol, s34-f1 and s35-g1, single declared `u8 *q`, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "KILLED. Every measured body that restores the reload is above the floor: 11 at 50 (s17), 14 at 49 (s34 f1); g1 shows the"
-  },
-  {
-   "session": 37,
-   "statement": "A `static inline` helper function called once per flag block gives each call site its own address pseudo from a SINGLE textual pointer declaration, so eleven such bodies on this chassis reach the base",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (h0 control re-measured 10 at 49, rules_dropped 0); eleven inline-helper bodies, single declared pointer per helper, no FAKE construct present (fake_abl",
-   "predicate_cite": "",
-   "result": "Best is h9 at 13 (50 insns) -- three points above the base floor and one instruction long. Full table: h1 31/48, h2 30/4"
-  },
   {
    "session": 37,
    "statement": "Demoting block 0's byte-value allocno below the pointer allocno in allocno_compare, by lengthening the value's live range at zero instruction cost, wins `q` the $v1 seat on this chassis.",
@@ -844,6 +826,30 @@
    "measured_on": "s54 m-re-use chassis on HEAD 2026-09-05 with two declared pointer objects t and q (BANNED construct, diagnosis only), no FAKE construct present",
    "predicate_cite": "",
    "result": "50 insns, score 24 -- worse than the single-handle 49/13 on the identical chassis, re-confirming s50 finding 3 on the ne"
+  },
+  {
+   "session": 55,
+   "statement": "Spelling the inverse solver's minimal atom (a conflict between the loop index allocno and the block-0 value allocno) as an early i = 0; with for (; i < 3; i++) costs three instructions on the two-alia",
+   "kill_scope": "instance",
+   "measured_on": "two-alias u8 chassis (rejected/s55b-twoalias-u8-masked-value-in-a0-49insn-score14.c) on HEAD 2026-09-05, two annotated pointer-alias FAKE objects present plus the dead-store FAKE invalidator",
+   "predicate_cite": "",
+   "result": "52 insns / score 31 (was 49/14). Banked as rejected/s55b-loop-index-init-hoist-conflict-atom-52insn-score31.c."
+  },
+  {
+   "session": 55,
+   "statement": "Reading p[8] into a separate variable before the mask does not stop sched1 sinking the p = $v0 call-result copy below the mask store, and the block-0 value allocnos keep their hard-2 conflict.",
+   "kill_scope": "instance",
+   "measured_on": "two-alias two-statement-mask chassis on HEAD 2026-09-05 with two annotated pointer-alias FAKE objects present",
+   "predicate_cite": "",
+   "result": "49 insns / score 17; hard 2 still present in the block-0 value's conflict row. Banked as rejected/s55b-twoalias-early-p8"
+  },
+  {
+   "session": 55,
+   "statement": "Splitting the block-0 result into its own variable on the two-alias chassis deletes two instructions.",
+   "kill_scope": "instance",
+   "measured_on": "two-alias single-statement-mask chassis on HEAD 2026-09-05 with two annotated pointer-alias FAKE objects present",
+   "predicate_cite": "",
+   "result": "47 insns / score 23. Banked as rejected/s55b-twoalias-split-result-var-47insn-score23.c."
   }
  ],
  "judge_clearances": [

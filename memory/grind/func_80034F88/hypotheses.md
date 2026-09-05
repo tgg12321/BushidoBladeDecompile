@@ -5661,3 +5661,100 @@ pointer object, no FAKE construct.
 1. RULING FIRST. The multi-handle ban and the target object model are now in measured contradiction, and no single-object spelling can resolve it. Do not spend another session enumerating single-object block-0 shapes: the ruling-request filed by s55 asks whether a second C pointer object aliasing &D_80106A73 -- live only across the mask and flag block 0, with `q` carrying flag blocks 1 and 2 -- is admissible now that the requirement is structural rather than score-inferred. If the ruling REFUSES, the honest disposition of this function is a LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record, because the byte-match is then unreachable under the constraint set.
 2. IF THE RULING GRANTS the second object, the chassis to build it on is the s55 ordinary-C invalidation body (rejected/s55-ordinaryC-mreuse-invalidation-NO-DEAD-STORE-49insn-score13.c), NOT the chassis s50/s54 measured the banned bodies on. Give the mask + flag-block-0 handle `t` and flag blocks 1/2 handle `q`; the target priorities require pri(t) high enough to take hard 3 ($v1) while q takes hard 4 ($a0) and p stays in $a1. Read nrefs/livelen from tools/ra_solver/extract.py BEFORE looking at the score.
 3. THE ONE REMAINING SINGLE-OBJECT UNKNOWN, if a session must probe rather than wait for the ruling: whether any C form makes GCC 2.7.2 emit the flag-block address as a compiler-generated temporary pseudo rather than as the declared variable pseudo (which would give two allocnos from one declared object). s50 measured that a direct symbol reference compiles to the `lbu $x,SYM` two-instruction assembler macro through $at and never to the register form, so the temporary would have to come from a non-constant address expression -- and every non-constant expression measured so far costs an addu. State the result either way; this is the last untried route to two allocnos without a second declared object.
+
+## [s55 SECOND PASS] (synthesis, 2026-09-05) -- frontier reset after spending the two-alias grant
+
+CONFIRMED (H55b.1): Two annotated `= &D_80106A73` alias objects, each declared
+at the head of an inner block placed AFTER `p = func_80077D00();`, reproduce
+the target's entire 49-instruction stream in the target's order -- including
+the block-0 reload at 80034FB4 and flag block 1's `la` at 80034FC8 emitted
+BEFORE flag block 0's store at 80034FD0. Only register naming differs.
+Measured 49/17 (evidence E55b.1). This confirms the s55 first-pass structural
+claim that the Judge cleared, and the grant is therefore productive, not
+merely permitted.
+
+CONFIRMED (H55b.2): The target's value pairing ({masked, reload} in one
+register, {p[8], cond, result} in the other) is reachable with a dead store to
+a local as the cse invalidator (49/15), and u8-typing the block-0 value puts
+the masked value on the target's $a0 (49/14, the session best).
+
+KILLED, instance (H55b.3): the inverse solver's minimal atom spelled as an
+early `i = 0;`. Measured 52/31 on the two-alias u8 chassis.
+
+KILLED, instance (H55b.4): hoisting the `p[8]` read above the mask to keep the
+call-result copy from sinking. Measured 49/17; the copy still sinks.
+
+### FRONTIER (strongest three, in order)
+
+1. **Stop sched1 from sinking the `p = $v0` copy below the mask.** That single
+   fact is what puts hard 2 in every block-0 value's conflict row and therefore
+   hands $v1 to a value instead of to the pointer. In the TARGET the copy sits
+   at 80034FA4, in the load-delay slot of the mask's `lbu`, i.e. it did NOT
+   sink. Mechanism to check FIRST in the dumps, not by score: read
+   tmp/grind/func_80034F88/dumps/code6cac_b.sched (the sched1 output, insn
+   order and priorities) for why insn 11 loses to the mask chain, then look for
+   a C shape that shortens the mask chain's critical path or lengthens the
+   p-consumer chain. Win condition: hard 2 absent from the block-0 value's
+   conflict row in the .greg segment, checked BEFORE the score.
+
+2. **Give the pointer allocno nrefs >= 16 at livelen 28 with byte-neutral
+   duplicates.** This is the inverse solver's refs_up vector and the only
+   priority route left (pri must clear ~17500). Every duplicate measured in
+   s50/s54 cost an instruction because the two arms DIFFERED; the untried shape
+   is a duplicate whose copies are IDENTICAL rtx in both arms so jump2's
+   cross_jump re-merges them (see duplicated-statement-into-arms.md). On the
+   two-alias chassis there are now two pointers to duplicate references to, and
+   flag blocks 1 and 2 are byte-exact, so the duplication has room. Confirm the
+   merge in the .jump2 dump before scoring.
+
+3. **Declare D_80106A70 as the 4-byte aggregate the DATA MODEL signal names,
+   and spell the flag byte as its element 3.** The trailing loop already writes
+   `*(&D_80106A70 + i)` for i<3 and the flag byte is the fourth byte; a single
+   `extern u8 D_80106A70[4];` (header edit -> integration handoff) would make
+   both handles ordinary array-element addresses instead of alias puns, remove
+   the last declaration pun from candidate.c, and change what cse can equate
+   between the mask's address and the loop's. Untried in 55 sessions. Measure
+   the pun-free spelling first in-TU to see whether the reloc still resolves to
+   `%lo(D_80106A73)` (it must: splat names the addend's symbol).
+
+## [s55] Two annotated `u8 *X = &D_80106A73;` alias objects, each declared at the head of an inner block placed after `p = func_80077D00();` (one carrying the mask + flag block 0, one carrying flag blocks 1 and 2), emit the target's 49 instructions in the target's order, including the block-0 reload at 80034FB4 and flag block 1's address materialisation at 80034FC8 BEFORE flag block 0's store at 80034FD0.
+- mechanism: global.c:1275 gives one pseudo exactly one hard register and GCC 2.7.2 has no live-range splitting, so the target's two simultaneously-live address registers require two allocnos; with two of them the block-1 la is no longer anti-dependent (sched.c:1720) on block 0's store and sched1 hoists it into the target's slot.
+- probe: Installed the two-handle body on the s55 ordinary-C invalidation chassis and ran sandbox func_80034F88 --disable all, then an aligned objdump of the sandbox object against asm/funcs/func_80034F88.s (tmp/grind/func_80034F88/s55/cmp.py).
+- result: 49 insns / score 17, every opcode in the target's order; the only differences are register names. Banked as rejected/s55b-twoalias-blockscoped-EXACT-INSN-ORDER-49insn-score17.c.
+- verdict: CONFIRMED
+
+## [s55] The declaration SITE of the two handles is load-bearing: initializing them at function scope instead of inside blocks that start after the call adds four instructions.
+- mechanism: Function-scope initializers make both pointers live across the jal, so global_alloc must use callee-saved registers ($s0/$s1) and the prologue/epilogue grow a save/restore pair each.
+- probe: Same body with both u8 *X = &D_80106A73; declarations at function scope; sandbox --disable all.
+- result: 53 insns / score 35 with sw s0 / sw s1 in the prologue (tmp/grind/func_80034F88/s55/t1.c).
+- verdict: CONFIRMED
+
+## [s55] On the two-alias chassis the target's value pairing -- {masked value, block-0 reload} in one register and {p[8], condition, result} in the other -- is produced by a consumed-then-overwritten re-set of the stored value's variable (c = p[8]; m = c; m = *t;), and u8-typing the block-0 value then seats the masked value on the target's $a0.
+- mechanism: cse records a store's MEM destination in the value class of the SOURCE register (cse.c:7308-7376), so the re-set of m strips the register from that class and the following read stays a real lbu while m also carries the reload; declaring the value u8 splits the masked value into its own allocno (nrefs 3 / livelen 8) which global_alloc seats on hard 4.
+- probe: Two bodies measured with sandbox --disable all plus tools/ra_solver/extract.py ALLOCDBG (models model_t6.json, model_t7.json).
+- result: 49 insns / score 15 for the pairing body (pseudo 76 = cond+result on hard 2 = $v0, the target's register) and 49 insns / score 14 for the u8 variant (pseudo 77 = masked value on hard 4 = $a0, the target's register) -- the session's best and the closest body in the ledger.
+- verdict: CONFIRMED
+
+## [s55] Spelling the inverse solver's minimal atom (a conflict between the loop index allocno and the block-0 value allocno) as an early i = 0; with for (; i < 3; i++) costs three instructions on the two-alias u8 chassis.
+- mechanism: Hoisting the index initialisation makes the index live across the whole body, so it conflicts with the pointer as well as with the block-0 value and forces an extra register plus its copies.
+- probe: tools/ra_solver/inverse.py global tmp/grind/func_80034F88/s55/model_t6.json --goal {"75": 3, "74": 4, "72": 5} --depth 2 --top 8 returned a 1-atom solution [conflict_add] 73<->74; spelled it and ran sandbox --disable all.
+- result: 52 insns / score 31 (was 49/14). Banked as rejected/s55b-loop-index-init-hoist-conflict-atom-52insn-score31.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-alias u8 chassis (rejected/s55b-twoalias-u8-masked-value-in-a0-49insn-score14.c) on HEAD 2026-09-05, two annotated pointer-alias FAKE objects present plus the dead-store FAKE invalidator
+
+## [s55] Reading p[8] into a separate variable before the mask does not stop sched1 sinking the p = $v0 call-result copy below the mask store, and the block-0 value allocnos keep their hard-2 conflict.
+- mechanism: sched1 orders by critical-path priority; the mask chain outranks the one-insn copy regardless of where the p-consumer read is written in the source, so $v0 stays live across the mask and every block-0 value is blocked from $v0 and takes $v1 -- the seat the target gives the pointer.
+- probe: Body with c = p[8]; before the mask and m = c; as the invalidator; sandbox --disable all plus the .greg conflict rows from tools/ra_solver/extract.py.
+- result: 49 insns / score 17; hard 2 still present in the block-0 value's conflict row. Banked as rejected/s55b-twoalias-early-p8-read-copy-does-not-rise-49insn-score17.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-alias two-statement-mask chassis on HEAD 2026-09-05 with two annotated pointer-alias FAKE objects present
+
+## [s55] Splitting the block-0 result into its own variable on the two-alias chassis deletes two instructions.
+- mechanism: With the result in a fresh variable the cse invalidation no longer covers the reload, so the reload folds back onto the masked pseudo and its load plus one arm insn disappear.
+- probe: Body with r as the block-0 result variable; sandbox --disable all.
+- result: 47 insns / score 23. Banked as rejected/s55b-twoalias-split-result-var-47insn-score23.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-alias single-statement-mask chassis on HEAD 2026-09-05 with two annotated pointer-alias FAKE objects present

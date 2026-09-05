@@ -7812,3 +7812,126 @@ value allocno at nrefs 17 / livelen 20 / pri 34000, far ABOVE the pointer's
 with no else) at 47 insns / score 33, cse deleting the missing arm's re-store;
 and the mask variable used as block 0's condition only, with the result in a
 separate variable, at 49 insns / score 27 in both mask spellings.
+
+## s55 SECOND PASS (synthesis, 2026-09-05) -- the two-alias grant, spent
+
+Chassis at dispatch: HEAD `INCLUDE_ASM`, ledger floor 10, candidate.c the
+single-object 49-insn/score-10 plateau. This pass is the first to spend the
+2026-09-05 11:01 Judge PASS (docs/grind/decisions.md:23437), which narrowed the
+standing multi-handle closure to permit EXACTLY TWO annotated
+`u8 *X = &D_80106A73;` alias objects (one for the mask + flag block 0, one for
+flag blocks 1 and 2) on the s55 ordinary-C invalidation chassis.
+
+### E55b.1 -- two block-scoped handles reproduce the target's whole instruction stream
+Body: `p = func_80077D00();` first, then an inner block declaring
+`u8 *t = &D_80106A73;` carrying the mask + flag block 0, then a second inner
+block declaring `u8 *q = &D_80106A73;` carrying flag blocks 1 and 2 (with the
+existing `q = &D_80106A73;` re-assignment before block 2). Measured
+`sandbox --disable all` = **49 insns / score 17**, and the aligned objdump
+(tmp/grind/func_80034F88/s55/cmp.py output) shows EVERY opcode in the target's
+order, including the two things 55 sessions of single-object bodies could never
+produce simultaneously: the block-0 reload at 80034FB4 AND flag block 1's
+`lui/addiu` at 80034FC8 emitted BEFORE flag block 0's store at 80034FD0. The
+only differences are register names.
+Banked: rejected/s55b-twoalias-blockscoped-EXACT-INSN-ORDER-49insn-score17.c.
+
+### E55b.2 -- the declaration SITE is load-bearing (function scope costs 4 insns)
+The same two handles declared with their initializers at FUNCTION scope are
+live across `func_80077D00()`, so both are allocated to callee-saved $s0/$s1
+and the prologue grows two `sw`/`lw` pairs: 53 insns, score 35
+(tmp/grind/func_80034F88/s55/t1.c). The grant is only usable with the
+initializers inside blocks that begin after the call.
+
+### E55b.3 -- the two-statement mask clears hard 3 from the pointer's conflict row here too
+On the two-handle chassis, `m = *t; m &= 0xF8;` (two statements) removes the
+block-0-confined QI temp that the single-statement mask leaves behind (reg 77
+in the t2 model, local-alloc-seated at $v1). Pointer conflict row goes from
+`72 74 75 76 80 2 3 29` to `72 74 75 76 79 2 29` -- no hard 3. Score unchanged
+at 49/17, i.e. s51's finding (ii) reproduces on the two-handle chassis, and the
+hard-3 conflict was never the binding constraint.
+Banked: rejected/s55b-twoalias-twostmt-mask-no-hard3-conflict-49insn-score17.c.
+
+### E55b.4 -- the target's VALUE PAIRING is reachable, and it needs a dead store to a local
+The target pairs {masked value, block-0 reload} in one register ($a0) and
+{p[8], condition, result} in another ($v0). The s54/s55 cse-invalidation
+chassis pairs them the other way round, because the invalidator must re-set the
+STORED value's variable and that variable then carries the condition. Adding a
+consumed-then-overwritten re-set -- `c = p[8]; m = c; m = *t;` -- moves the
+reload into the masked value's variable and gives the target's pairing:
+49 insns, score 15, with pseudo 74 (masked+reload, nrefs 7 len 8) and pseudo 76
+(cond+result, nrefs 7 len 9, hard 2 = $v0, the target's register).
+`m = c;` is a dead store to a LOCAL (sanctioned dead-store family, FAKE
+required); it is coalesced away and costs no instruction.
+Banked: rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c.
+
+### E55b.5 -- u8-typing the block-0 value puts the masked value on the target's $a0
+Declaring the block-0 value local as `u8 m` (instead of the function-scope
+`s32 m`) splits it into two allocnos: the raw/reload pseudo 75 (nrefs 6 len 6,
+hard 3) and the masked pseudo 77 (nrefs 3 len 8, **hard 4 = $a0**, the target's
+register for the masked value). Score **14** at 49 insns -- the session best
+and the closest body in the ledger. Its residual cost is the u8 truncation in
+the else arm: build `andi $v0,$v1,0xff` where the target has
+`addu $v0,$a0,$zero`.
+Banked: rejected/s55b-twoalias-u8-masked-value-in-a0-49insn-score14.c.
+
+### E55b.6 -- the residual is a three-cycle rotation, and it is one allocation-ORDER fact
+Aligned objdump of the score-14/15 bodies:
+    build : t=$a1   masked=$v1(or $a0)  p=$a2
+    target: t=$v1   masked=$a0          p=$a1
+Measured with tools/ra_solver/extract.py (models
+tmp/grind/func_80034F88/s55/model_t6.json, model_t7.json):
+  * Every block-0 VALUE allocno carries a hard-2 conflict, because sched1 sinks
+    the `p = $v0` call-result copy BELOW the mask store (verified in the .lreg
+    RTL, tmp/grind/func_80034F88/dumps/code6cac_b.lreg: insn 11
+    `(set (reg 72) (reg:SI 2 v0))` appears after insn 23, the mask store). $v0
+    being unavailable, the first block-0 value takes $v1 -- the seat the target
+    gives the pointer.
+  * The pointer allocno is nrefs 5 / livelen 28 / pri 3571 and is allocated
+    second-to-last of eight, behind every block-0 value (pri 12000..27500).
+    global.c's priority is scale-invariant (floor_log2(n)*n/len), so compacting
+    block 0 cannot reorder them. Beating pri 17500 needs nrefs(t) >= 16 at
+    len 28; pushing a masked+reload value below pri 3571 needs nrefs 3 at
+    len >= 9, which a two-value chain cannot have.
+  * The pointer's live range STRICTLY CONTAINS every block-0 value's range, so
+    no third allocno can be made to conflict with a block-0 value without also
+    conflicting with the pointer. That forecloses the "block $v1 for the value"
+    route from the value side.
+
+### E55b.7 -- the inverse solver's minimal atom, spelled and measured
+`python3 tools/ra_solver/inverse.py global model_t6.json --goal
+'{"75": 3, "74": 4, "72": 5}' --depth 2` reports a **1-atom** solution
+(6 distinct vectors), the cheapest being `[conflict_add] pseudo 73 <-> 74`:
+make the loop index (pri 47142, hard 3) conflict with the block-0 value, so the
+value is pushed off $v1. Spelled as `i = 0;` before block 0 with
+`for (; i < 3; i++)`: the index becomes live across the whole body, costs three
+instructions and lands at 52 insns / score 31.
+Banked: rejected/s55b-loop-index-init-hoist-conflict-atom-52insn-score31.c.
+The remaining atoms are refs_up(pointer) 5 -> 16/17 (duplicated-statement
+family; every duplicate measured in s50/s54 cost an instruction because the
+arms differ) and refs_down(block-0 value) 7 -> 2 (requires splitting masked
+from reload, which loses the pairing of E55b.4).
+
+### E55b.8 -- what did NOT move the copy
+Reading `p[8]` into a separate variable BEFORE the mask (`c = p[8];` first,
+then `m = c;` as the invalidator) does not pull the `p = $v0` copy above the
+mask: the copy is still sunk, hard 2 stays in every block-0 value's conflict
+row, and the body measures 49/17.
+Banked: rejected/s55b-twoalias-early-p8-read-copy-does-not-rise-49insn-score17.c.
+Splitting the block-0 RESULT into its own variable (`r`) on the two-handle
+chassis deletes two instructions (47 insns, score 23) -- the reload no longer
+survives.
+Banked: rejected/s55b-twoalias-split-result-var-47insn-score23.c.
+
+- [s55] The 2026-09-05 11:01 Judge PASS (docs/grind/decisions.md:23437) permitting exactly two annotated = &D_80106A73 alias objects is PRODUCTIVE, not merely permissive: the two-handle body is the first in 55 sessions to emit all 49 target instructions in the target's order.
+
+- [s55] Register residual, aligned objdump: build t=$a1 / masked=$v1 or $a0 / p=$a2 against target t=$v1 / masked=$a0 / p=$a1 -- a three-cycle rotation, nothing else.
+
+- [s55] Cause, measured in tmp/grind/func_80034F88/dumps/code6cac_b.lreg: sched1 sinks insn 11 (set (reg 72) (reg:SI 2 v0)) -- the call-result copy -- BELOW the mask store, so $v0 is live across the mask and every block-0 value allocno carries a hard-2 conflict and takes $v1. In the target that copy sits at 80034FA4, in the mask lbu's load-delay slot.
+
+- [s55] The pointer allocno is nrefs 5 / livelen 28 / pri 3571 and is allocated second-to-last of eight, behind every block-0 value (pri 12000..27500). global.c's priority floor_log2(n)*n/len is scale-invariant, so compacting block 0 cannot reorder them: the flip needs nrefs(pointer) >= 16 at len 28, or a masked+reload value at nrefs 3 with len >= 9 (a two-value chain cannot have 3 refs).
+
+- [s55] The pointer's live range STRICTLY CONTAINS every block-0 value's range, so no third allocno can be made to conflict with a block-0 value without also conflicting with the pointer -- the 'block $v1 from the value side' route is closed on this chassis.
+
+- [s55] s51's finding (ii) reproduces on the two-handle chassis: the two-statement mask removes the block-0-confined QI temp and clears hard 3 from the pointer's conflict row (row goes from 72 74 75 76 80 2 3 29 to 72 74 75 76 79 2 29), with no score change -- so the hard-3 conflict was never the binding constraint.
+
+- [s55] Best score this session is 14 (49 insns) on the two-alias u8 body; the honest floor is unchanged at 10 (the single-object plateau, still candidate.c).
