@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 119,
- "current_modality": "forensics",
+ "session_count": 120,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -723,23 +723,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Exiling the do_timeout t0 address into an existing function-wide local removes the 3333-vs-3333 local-alloc tie entirely and seats printf's 5th argument in $v1 with refs=2, no wrap and no new FAKE: T1"
+  },
+  {
+   "session": 120,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "The order-vs-seat conflict is one binary variable (folded vs split ix add) and the closing predicate is now a sched1 ORDER predicate - emit `sw arg5,16(sp)` before `lw a3,0(t0)` - not the refs>=3 FAKE"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A borrow variable whose live range avoids the $a0/$a1/$a2 argument-setup points exists, or can be produced by moving an EXISTING local's other use, and would give T1/T2's t0 chain $a0 and close the function at 0/160.",
-   "mechanism": "global.c's find_reg is an ascending hard-register walk (no REG_ALLOC_ORDER on MIPS), so $a0 is taken as soon as the allocno stops conflicting with it. The conflict comes from the borrowed variable being live at the VSync / callback / printf argument setups; $a3 escapes only because it is written once, at index 65.",
-   "next_probe": "Dump global.c's conflict matrix for the T1 chassis (instrumented cc1 -da gccdump.greg plus the ALLOCDBG hooks) and read WHICH insn creates the $a0 conflict for the status allocno. Then enumerate: (i) the remaining unborrowed locals and the two parameters, (ii) restructuring the C so the borrowed variable's other live range ends before the poll loop's callback calls, (iii) borrowing a variable whose only other use sits inside the if (CheckCallback()) region. Accept only bi 160 rd 0 with indices 49/55/59/65 in $a0."
+   "hypothesis": "A C-reachable perturbation of the split chassis makes sched1 emit the arg5 stack store before the t0 deref load, which alone yields t0 span 8 / arg5 span 4, the target seats, the target order, and 0/160.",
+   "mechanism": "INSN_PRIORITY(lw a3)=2 beats INSN_PRIORITY(sw)=1 and both are ready at the same cycle, so sched1 always takes the load first. Delaying the t0 add by one ready-cycle would leave the load unready at the cycle the store becomes ready, and sched2 (already proven to reorder this block, s119) can restore the final order.",
+   "next_probe": "Run tools/sched_solver (extract.py + simulate.py) on V1's sched1 stream for block 3 and ask for the set of dependency/priority changes that reverse the lw-a3/sw pair without disturbing the 53/54/55/56 prefix; then spell each as ordinary C on the split chassis. Accept only bi 160 rd 0 with QTYDBG blk=3 showing reg106 death < reg112 death."
   },
   {
-   "hypothesis": "Keeping the t0 address block-local (so it can take $a0 from local-alloc, as the target does) while breaking the 3333-vs-3333 qty_compare_1 tie in the arg5 value's favour by a byte-neutral asymmetry that is not a loop note.",
-   "mechanism": "The target's own emission order gives both quantities span 6 and refs 2, so the target's compilation cannot have had refs 2/2 - its arg5 quantity must have had refs >= 3 or a shorter span. s119 killed the copy route (cse deletes it) and the argument-order route (no death movement); local-alloc.c:1932 tying is the only reference-summing path left, and a load cannot tie.",
-   "next_probe": "Enumerate C shapes in which the arg5 VALUE is produced by an arithmetic insn rather than a bare load, with a source operand that dies in that insn - e.g. the table read combined with a link-constant delta that combine folds - and read block 3's qty table with tmp/grind/CD_sync/s119/qd.sh BEFORE scoring: accept only reg106 refs >= 3 with reg112 refs still 2 and bi 160. Any such carrier is a second FAKE in the chain-extender family; if it measures 0 the correct outcome is a ruling-request naming both constructs, not a silent candidate-ready."
+   "hypothesis": "The reload-materialised ix add can be forced to emit BEFORE the t0 sll on the folded chassis, giving the target order at the candidate's already-correct seats.",
+   "mechanism": "On the folded chassis the add is created during reload from the MEM's (plus reg reg) address and is emitted immediately before its load; the t0 sll is a sched1 insn already placed at slot 8. The pair is only two instructions apart in the final stream and sched2 demonstrably reorders this block, so the question is whether sched2's post-reload dependency graph or ready-list position for that pair is C-reachable at all.",
+   "next_probe": "Diff gccdump.sched vs gccdump.sched2 for the candidate (folded) chassis around the 54/55 pair with tmp/grind/CD_sync/s118/blocks.py, establish whether sched2 sees them as an INSN_PRIORITY tie (as it did for A5's uid120/uid130) and what the tie-break list position is, then look for a C change that alters only that list position."
   },
   {
-   "hypothesis": "sched2 can be made to repair the last register-class difference or the A5 54/55 transposition, because it demonstrably reorders this block after allocation.",
-   "mechanism": "A5's gccdump.sched vs gccdump.sched2 shows sched2 swapping uid145 and uid149 into the target's order. sched2 runs on hard registers, so its dependency graph and tie-breaks differ from sched1's and are separately attackable.",
-   "next_probe": "Run tools/sched_solver on the T1 chassis's post-reload stream (extract.py + simulate.py) and on A5's, and ask specifically whether any C-reachable change to sched2's ready-list ordering moves uid120/uid130 without changing sched1's output - i.e. whether the two passes can be decoupled at all on this block."
+   "hypothesis": "A construct that lifts reg106's reference count to >= 3 while leaving reg112 at 2 closes the split chassis without touching the schedule.",
+   "mechanism": "pri(arg5) at refs 3 / span 6 is 20000 vs t0's 13333, so the tie disappears. s119 killed the copy route (cse deletes it) and the load-tie route (local-alloc.c combine_regs cannot tie a MEM source), leaving only an arithmetic producer whose source operand dies in the insn.",
+   "next_probe": "Kept as the FALLBACK to frontier item 1, not the first move: any such carrier is a second chain-extender FAKE, so if it measures 0 the correct outcome is a ruling-request naming both constructs, never a silent candidate-ready."
   }
  ],
  "judge_constraints": [
@@ -967,6 +973,30 @@
    "measured_on": "C1 order-exact pp-free CD_alarm-struct chassis with the C1 / ix-first / target statement orders, chain-extender FAKE present and pp deleted; controls C1 6/160 and T1 4/160; all forms bi 160 rd 0 excep",
    "predicate_cite": "",
    "result": "Every borrow lands on one of two outcomes and neither is $a0: status gets callee-saved $s0 (T1/T2 4/160, five diffs all "
+  },
+  {
+   "session": 120,
+   "statement": "Carrying the do_timeout t0 address in parameter a0 (mode) or parameter a1 (result) seats the t0 chain in $a0 on the pp-free CD_alarm-struct chassis.",
+   "kill_scope": "instance",
+   "measured_on": "pp-free CD_alarm-struct chassis (memory/grind/CD_sync/candidate.c body), chain-extender FAKE present, pp pointer alias absent; controls 2/160 (candidate) and 4/160 (T1)",
+   "predicate_cite": "",
+   "result": "22/160, 22/160, 25/160, 25/160, all bi 160 rd 0. Both parameters are live across the polling loop's VSync/getintr/callba"
+  },
+  {
+   "session": 120,
+   "statement": "Exiling one of block 3's OTHER quantities (the ix chain, the arg5 value, the arg3 subscript, the arg4 deref) into the function-wide local status, keeping the t0 chain block-local, reaches the target s",
+   "kill_scope": "instance",
+   "measured_on": "pp-free CD_alarm-struct chassis, chain-extender FAKE present, pp absent; control 2/160",
+   "predicate_cite": "",
+   "result": "4, 6, 17, 12, 9, 13 /160, all bi 160 rd 0. E1 confirms the premise (t0 keeps $a0 when block-local) but the exiled ix cha"
+  },
+  {
+   "session": 120,
+   "statement": "Natural-C rederives of the do_timeout block - ordinary array subscripts or fully inlined printf argument expressions - reproduce the target block better than the hand-derived pointer spelling.",
+   "kill_scope": "instance",
+   "measured_on": "pp-free CD_alarm-struct chassis, chain-extender FAKE present, pp absent; control 2/160",
+   "predicate_cite": "",
+   "result": "9, 9, 14, 10, 14, 10, 14, 14, 13, 13, 5 /160, all bi 160 rd 0, against a 2/160 control. The hand-derived pointer spellin"
   }
  ],
  "sibling_progress": [

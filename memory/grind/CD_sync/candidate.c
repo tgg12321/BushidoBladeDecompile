@@ -30,6 +30,24 @@
  * existing function-wide local `status' so that pseudo is exiled from
  * local-alloc.  Its entire residual is ONE register: the t0 chain sits in $s0
  * where the target has $a0 (indices 49/55/59/65).  See hypotheses.md s119.
+ *
+ * [s120] Body unchanged; floor still 2/160.  The residual is now stated as a
+ * closed equation (evidence.md s120): local-alloc.c:1660 qty_compare_1 gives
+ * pri = floor_log2(refs)*refs*size/(death-birth)*10000, and block 3's two
+ * contending quantities are the t0 address chain and the arg5 value, both at
+ * refs 2 / size 4.  THIS body uses the FOLDED ix add
+ * (`arg5 = *(s32 *)(ix + (s32)tbl_125c)`), so the add only materialises during
+ * reload: t0's sll takes sched1 slot 8, t0 span 8 (pri 10000) vs arg5 span 6
+ * (13333), arg5 is allocated first and takes $v1, t0 takes $a0 - the TARGET
+ * seats - at the cost of the 54/55 transposition.  Writing the add as its own
+ * statement (`ix += (s32)tbl_125c;`) makes it a sched1 insn, which fixes the
+ * order for all 160 instructions but pushes t0's sll to slot 9, ties both
+ * spans at 6, and swaps $a0/$v1 (6/160; banked as progress/
+ * s120-V1-order-exact-seatswap.c).  Fifteen source orders were measured and
+ * the two outcomes are exhaustive.  The closing predicate is now a sched1
+ * ORDER predicate - make sched1 emit `sw arg5,16(sp)` before `lw a3,0(t0)`,
+ * which is the relative order the TARGET's own final output has - and not the
+ * refs>=3 chain-extender FAKE that s119's frontier called for.
  */
 //REPL:extern s32 D_800F19B8; => typedef struct { s32 timeout; s32 count; char *func; } CD_alarm; extern CD_alarm D_800F19B8;
 //DROP:extern s32 D_800F19BC;

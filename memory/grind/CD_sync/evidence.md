@@ -3091,3 +3091,125 @@ at index 65, which is the allocno's own death.
 - [s119] [s119] Forensic read of A5's gccdump.sched vs gccdump.sched2: sched2 does reorder this block (it swaps uid145 sll and uid149 sw ...,16(sp) into the target's order), so post-reload scheduling is a live degree of freedom; but the uid120/uid130 pair behind A5's 54/55 transposition is an exact INSN_PRIORITY tie (both final_pri=2, RANKDBG val=0) resolved by list position, i.e. by the source statement order - which is why A5's qty1 birth of 16 and order-exactness cannot coexist.
 
 - [s119] [s119] Floor unchanged at 2/160 (candidate.c, the pp-free CD_alarm-struct goto body). src/system.c reverted to HEAD at end of session; new progress forms banked under memory/grind/CD_sync/progress/.
+
+## s120 (rederive) — the 54/55 residual reduced to ONE sched1 predicate
+
+Floor unchanged at 2/160 (build_insns 160, rules_dropped 0). candidate.c body
+unchanged. src/system.c restored to HEAD at end of session. 30 forms measured
+(tmp/grind/CD_sync/s120/forms/, results in results.txt).
+
+### The finding, stated as a closed equation
+
+`local-alloc.c:1660 qty_compare_1` computes
+`pri = floor_log2(refs) * refs * size / (death - birth) * 10000`. Block 3 of
+CD_sync has exactly two quantities in contention for the printf argument seats:
+
+  * `reg112` — the t0 address chain (`(u8 *)tbl_125c + idx_1494[0]*4`)
+  * `reg106` — the arg5 VALUE (`*(s32 *)(tbl_125c + idx_1494[1]*4)`)
+
+Both always carry refs=2, size=4, so pri is decided by SPAN alone, and on a tie
+`qty_compare_1` falls back to `*q1 - *q2` (qty number = birth order), which t0
+always wins because it is born first. Target seating is arg5 -> $v1, t0 -> $a0,
+i.e. arg5 must be allocated FIRST, i.e. **pri(arg5) > pri(t0)**.
+
+Measured (BB2_QTY_DEBUG, tmp/grind/CD_sync/s120/*/qty.txt):
+
+| chassis | t0 birth/death | arg5 birth/death | pri t0 | pri arg5 | seats | order | score |
+|---|---|---|---|---|---|---|---|
+| candidate / F1 / F4 / F5 / F8 (folded ix) | 16/24 (span 8) | 20/26 (span 6) | 10000 | 13333 | CORRECT | 54/55 transposed | 2 |
+| V1 / W1 / W3 / W4 / W5 / G1 / G2 (split ix) | 18/24 (span 6) | 20/26 (span 6) | 13333 | 13333 tie | SWAPPED ($a0<->$v1) | EXACT | 6 |
+
+"folded" = `arg5 = *(s32 *)(ix + (s32)tbl_125c);` — the ix add lives inside the
+MEM at sched1 time and only materialises as a real `addu` during reload, so it
+is emitted immediately before the load, i.e. AFTER the t0 `sll`. "split" =
+`ix += (s32)tbl_125c;` as its own statement — the `addu` is a schedulable insn,
+sched1 places it at slot 8 (giving target order 54 `addu v0,v0,s3` / 55
+`sll a0,a0,2`) and t0's `sll` is pushed from slot 8 to slot 9, collapsing t0's
+span from 8 to 6 and creating the tie.
+
+So the order-vs-seat two-body problem of s108-s119 is now a SINGLE binary
+variable: whether the ix add is a sched1 insn. It cannot be both.
+
+### The one remaining escape, and it is NOT a refs lever
+
+s119's frontier item 2 asked for a construct lifting reg106's refs to >= 3
+(a second chain-extender FAKE). That is no longer the only route, and it is
+probably not the right one. Read the TARGET's own final order:
+
+  53 sll  v0,v0,2        (ix scale)
+  54 addu v0,v0,s3       (ix add)          <- split chassis reproduces this
+  55 sll  a0,a0,2        (t0 scale)
+  56 lw   v1,0(v0)       (arg5 load)       = reg106 birth
+  59 addu a0,a0,s3       (t0 add)
+  61 sw   v1,16(sp)      (arg5 stack arg)  = reg106 death
+  65 lw   a3,0(a0)       (t0 deref)        = reg112 death
+
+In the target's FINAL order the arg5 `sw` (61) precedes the t0 `lw a3` (65).
+If sched1 produced that same relative order, the spans would be
+t0 = 18..26 (span 8, pri 10000) and arg5 = 20..24 (span 4, pri 20000) — arg5
+allocated first, $v1; t0 second, $a0 — the target seating, ON the order-exact
+split chassis, with refs 2/2 and NO new construct. Every split form measured
+this session instead schedules `lw a3` at slot 12 and `sw` at slot 13 (t0 death
+24, arg5 death 26) and relies on sched2 to swap them back into the target order
+(s119 already proved sched2 reorders this block). The closing predicate is
+therefore:
+
+  **make sched1 emit `sw arg5,16(sp)` BEFORE `lw a3,0(t0)`.**
+
+sched1 refuses because INSN_PRIORITY(`lw a3`) = 2 (its result feeds the call)
+> INSN_PRIORITY(`sw`) = 1, and both are ready at the same cycle. The lever must
+either delay `addu a0,a0,s3` far enough that `lw a3` is not yet ready when `sw`
+becomes ready, or raise the `sw` chain's priority. This is a sched_solver
+question on the split chassis (V1), not an allocator question.
+
+### Kills banked this session
+
+- Borrowing a PARAMETER for the do_timeout t0 address — the one enumeration
+  branch s119's frontier named but never ran. `a0` (mode) 22/160, `a1` (result)
+  25/160, both statement orders, bi 160 rd 0. Both parameters are live across
+  the loop's VSync / getintr / callback calls (the do_timeout path returns, but
+  the parameter pseudo's live range is the whole loop), so the borrow forces a
+  callee-saved seat plus prologue/epilogue and argument-shuffle churn. The nine
+  local borrows of H119-6 plus these two exhaust the borrow enumeration.
+- Exiling one of the OTHER block-3 quantities to a function-wide local instead
+  of t0 (the mirror of T1): ix 4/160, arg5 value 6/160, the arg3 subscript
+  17/160, the arg4 deref 12/160, ix+arg5 together 9/160. E1 (exile ix) is
+  informative: t0 stays block-local and keeps $a0 — confirming the seat is a
+  local-alloc product — but the exiled ix chain lands in $s0 (target $v0) and
+  the 54/55 transposition returns, so it is strictly worse than the candidate.
+- Source statement order inside the do_timeout block does not move the sched1
+  positions of the printf-argument insns: 8 distinct orders on the split
+  chassis all give exactly t0 18/24 and arg5 20/26; 7 distinct orders on the
+  folded chassis all give exactly t0 16/24, arg5 20/26 and the identical two-
+  instruction 54/55 transposition.
+- Natural-C rederives of the block (array subscripts `tbl_125c[idx_1494[1]]`,
+  `&tbl_125c[idx_1494[0]]`, and fully inlined printf argument expressions) are
+  all worse: 9, 9, 14, 10, 10, 14. The hand-derived pointer form in candidate.c
+  is not an artefact of previous sessions' taste; it is the best spelling.
+
+- [s120] New reusable tooling: tmp/grind/CD_sync/s120/{b.sh,d.sh,qd.sh} (s119
+  clones retargeted at s120), gen2.py..gen8.py (form generators that patch the
+  do_timeout block of candidate.c programmatically, so a new order permutation
+  is one list of statement keys).
+
+- [s120] Floor unchanged at 2/160 (build_insns 160, rules_dropped 0); candidate.c body unchanged, src/system.c restored to HEAD.
+
+- [s120] qty_compare_1 is tools/gcc-2.7.2/local-alloc.c:1660: pri = floor_log2(qty_n_refs)*qty_n_refs*qty_size/(qty_death-qty_birth)*10000, tiebreak *q1-*q2 (qty number = birth order). refs 2 / size 4 / span 6 = 13333; span 8 = 10000; span 4 = 20000.
+
+- [s120] Birth/death are 2*insn_number (local-alloc.c:2031 births, local-alloc.c:2119 deaths, +output_p), so a span of 6 is three insns.
+
+- [s120] Block 3's two contending quantities are the t0 address chain and the arg5 value; both carry refs=2 and size=4 on every one of the fifteen forms dumped this session, so pri is decided by span alone.
+
+- [s120] FOLDED ix add (candidate, F1, F4, F5, F8): t0 16/24, arg5 20/26 -> arg5 $v1, t0 $a0 (target seats), 2/160, residual is the two-instruction 54/55 transposition.
+
+- [s120] SPLIT ix add (V1, W1, W3, W4, W5, G1, G2): t0 18/24, arg5 20/26 -> tie -> t0 $v1, arg5 $a0, 6/160, but the emission order is exact for all 160 instructions.
+
+- [s120] V1's whole residual is a pure register swap at indices 49/55/56/59/61/65 ($a0 <-> $v1); banked as memory/grind/CD_sync/progress/s120-V1-order-exact-seatswap.c.
+
+- [s120] The target's own final order puts the arg5 stack store (index 61) BEFORE the t0 deref (index 65); every split form we produce has the opposite sched1 order and relies on sched2 to swap them back.
+
+- [s120] Parameter borrows are dead: a0 22/160, a1 25/160 (both statement orders). With H119-6's nine locals the borrow enumeration is complete.
+
+- [s120] Exiling a non-t0 block-3 quantity is dead: ix 4, arg5 6, arg3 17, arg4 12, ix+arg5 9. E1 (ix) proves the t0 chain keeps $a0 whenever it stays block-local.
+
+- [s120] Natural-C subscript and inlined-argument rederives are all 9-14/160 against a 2/160 control.

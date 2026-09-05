@@ -2660,3 +2660,107 @@ a sandbox run.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: C1 order-exact pp-free CD_alarm-struct chassis with the C1 / ix-first / target statement orders, chain-extender FAKE present and pp deleted; controls C1 6/160 and T1 4/160; all forms bi 160 rd 0 except saved and new_var (bi 162)
+
+## s120 (rederive)
+
+### H120-1 KILLED (instance) — borrowing a PARAMETER for the do_timeout t0 address
+Statement: on the pp-free CD_alarm-struct chassis, carrying the do_timeout t0
+address in parameter `a0` or parameter `a1` seats the t0 chain in $a0.
+Measured: P1_a0_ixfirst 22/160, P1_a0_tgtorder 22/160, P2_a1_ixfirst 25/160,
+P2_a1_tgtorder 25/160, all bi 160 rd 0, chain-extender FAKE present, pp absent.
+Both parameters are live across the polling loop's calls, so the borrowed pseudo
+is a call-crossing global allocno; the seat is callee-saved and the incoming
+argument register has to be shuffled. This completes the borrow enumeration
+H119-6 opened (nine locals + two parameters).
+
+### H120-2 KILLED (instance) — exiling a block-3 quantity OTHER than t0
+Statement: exiling the ix chain / the arg5 value / the arg3 subscript / the arg4
+deref into the function-wide local `status` (the mirror of T1, keeping the t0
+chain block-local so local-alloc can seat it in $a0) reaches the target seats
+and the target order together.
+Measured on the C1 order-exact pp-free CD_alarm-struct chassis, chain-extender
+FAKE present: E1 (ix) 4/160, E2 (arg5) 6, E3 (arg3) 17, E4 (arg4) 12,
+E5 (ix+arg5) 9, E1b (ix, ix-first order) 13. E1's objdump diff confirms the
+t0 chain does keep $a0 when it stays block-local, but the exiled ix chain takes
+$s0 where the target has $v0 and the 54/55 transposition is unchanged.
+
+### H120-3 CONFIRMED — the order-vs-seat conflict is ONE binary variable
+Statement: whether the ix add (`ix += (s32)tbl_125c`) is a sched1 insn or lives
+inside the load's MEM decides BOTH the 54/55 emission order and the local-alloc
+seat assignment, and the two outcomes are mutually exclusive on every source
+order measured.
+Mechanism: `qty_compare_1` (tools/gcc-2.7.2/local-alloc.c:1660) is
+floor_log2(refs)*refs*size/(death-birth)*10000 with a qty-number tiebreak.
+Folded ix -> t0 span 8 (pri 10000) vs arg5 span 6 (13333) -> arg5 first -> $v1,
+t0 -> $a0 (target seats) but the reload-materialised `addu` lands after the t0
+`sll` (the 54/55 transposition, score 2). Split ix -> the `addu` is scheduled at
+slot 8 (target order) and pushes the t0 `sll` to slot 9 -> both spans 6, tie,
+qty-number tiebreak gives t0 $v1 and arg5 $a0 (score 6).
+Measured: 7 folded orders (candidate, F1, F4, F5, F8 = 2/160 with the identical
+two-instruction 54/55 diff; F3, F6, F7 = 4/160 with the two lbu's additionally
+swapped) all report t0 16/24, arg5 20/26; 8 split orders (V1, V3, W1..W5, G1,
+G2) all report t0 18/24, arg5 20/26.
+
+### H120-4 CONFIRMED — the closing predicate is a sched1 ORDER predicate, not a refs lever
+Statement: on the split (order-exact) chassis the target seating follows from
+refs 2/2 alone provided sched1 emits `sw arg5,16(sp)` before `lw a3,0(t0)`;
+this supersedes s119 frontier item 2's call for a refs>=3 chain-extender FAKE.
+Mechanism: the target's own final order has the arg5 stack store (index 61)
+before the t0 deref (index 65). If sched1 produced that relative order the spans
+would be t0 18..26 (pri 10000) and arg5 20..24 (pri 20000) — arg5 allocated
+first, taking $v1, t0 taking $a0, which is exactly the target, with no tie to
+break and no construct added. Every split form measured schedules `lw a3` at
+slot 12 and `sw` at slot 13 instead, because INSN_PRIORITY(`lw a3`)=2 (result
+feeds the call) beats INSN_PRIORITY(`sw`)=1 and both are ready together; sched2
+then swaps them back (s119 already showed sched2 reorders this block), which is
+why V1's FINAL order is exact while its allocation is not.
+Next probe: tools/sched_solver on V1's sched1 stream — ask whether any
+C-reachable change delays `addu a0,a0,s3` (the t0 add) enough that `lw a3` is
+not ready at the cycle `sw` becomes ready, or otherwise reverses that pair,
+while leaving the 53/54/55/56 prefix alone. Accept only bi 160 rd 0 with
+QTYDBG blk=3 showing reg106 death < reg112 death.
+
+### H120-5 KILLED (instance) — natural-C rederives of the do_timeout block
+Statement: writing the two table accesses as ordinary array subscripts
+(`tbl_125c[idx_1494[1]]`, `(s32)&tbl_125c[idx_1494[0]]`) or inlining the printf
+argument expressions reproduces the target block.
+Measured on the pp-free CD_alarm-struct chassis, chain-extender FAKE present:
+X1 9/160, X2 9, X3 14, Y1 10, Y2 14, Y3 10, Y4 14, Z1 14, Z2 13, Z3 13,
+Z4 5, all bi 160 rd 0. The hand-derived pointer spelling in candidate.c is the
+best available spelling of this block, not an inherited stylistic accident.
+
+## [s120] Carrying the do_timeout t0 address in parameter a0 (mode) or parameter a1 (result) seats the t0 chain in $a0 on the pp-free CD_alarm-struct chassis.
+- mechanism: global.c find_reg is an ascending hard-register walk on MIPS (no REG_ALLOC_ORDER); an incoming-argument pseudo carries a strong $a0/$a1 preference from the entry copy, so borrowing a parameter was the one branch of the s119 borrow enumeration never run.
+- probe: P1_a0_ixfirst / P1_a0_tgtorder / P2_a1_ixfirst / P2_a1_tgtorder via tmp/grind/CD_sync/s120/b.sh (sandbox CD_sync --disable all).
+- result: 22/160, 22/160, 25/160, 25/160, all bi 160 rd 0. Both parameters are live across the polling loop's VSync/getintr/callback calls, so the borrowed pseudo becomes a call-crossing global allocno with a callee-saved seat plus argument-shuffle churn. Together with H119-6's nine locals this closes the borrow enumeration.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pp-free CD_alarm-struct chassis (memory/grind/CD_sync/candidate.c body), chain-extender FAKE present, pp pointer alias absent; controls 2/160 (candidate) and 4/160 (T1)
+
+## [s120] Exiling one of block 3's OTHER quantities (the ix chain, the arg5 value, the arg3 subscript, the arg4 deref) into the function-wide local status, keeping the t0 chain block-local, reaches the target seats and the target emission order together.
+- mechanism: s119 showed exiling a pseudo to a function-wide local removes it from local-alloc's block quantity set; the mirror move should leave t0 block-local (hence $a0 from local-alloc, as the target has) while removing the competing quantity.
+- probe: E1_ix_status / E2_arg5_status / E3_arg3_status / E4_arg4_status / E5_ixarg5_status / E1b_ix_status_ixfirst, scored and objdump-diffed against asm/funcs/CD_sync.s.
+- result: 4, 6, 17, 12, 9, 13 /160, all bi 160 rd 0. E1 confirms the premise (t0 keeps $a0 when block-local) but the exiled ix chain lands in $s0 where the target has $v0 and the 54/55 transposition is unchanged, so every mirror form is worse than the 2/160 candidate.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pp-free CD_alarm-struct chassis, chain-extender FAKE present, pp absent; control 2/160
+
+## [s120] Whether the ix add is written as its own statement or folded into the load's address decides BOTH the 54/55 emission order and the local-alloc seat assignment, and on the fifteen source orders measured the two outcomes are mutually exclusive.
+- mechanism: qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) ranks by floor_log2(refs)*refs*size/(death-birth)*10000 with a qty-number tiebreak. Folded: the add only materialises during reload, t0's sll takes sched1 slot 8, t0 span 8 (pri 10000) < arg5 span 6 (13333), arg5 is allocated first and takes $v1, t0 $a0 (target seats) but the reload-emitted addu lands after the sll. Split: the addu is a sched1 insn placed at slot 8 (target order), t0's sll is pushed to slot 9, both spans are 6, the tie falls to qty number and t0 (born first) takes $v1.
+- probe: BB2_QTY_DEBUG blk=3 tables via tmp/grind/CD_sync/s120/qd.sh on 7 folded orders (candidate, F1, F3, F4, F5, F6, F7, F8) and 8 split orders (V1, V3, W1-W5, G1, G2), each also scored and objdump-diffed.
+- result: Every folded order reports t0 16/24 and arg5 20/26 and scores 2/160 with the identical two-instruction 54/55 diff (F3/F6/F7 4/160, the two lbu's additionally swapped). Every split order reports t0 18/24 and arg5 20/26 and scores 6-7/160 with a pure $a0<->$v1 swap of the t0 chain and the arg5 value on an otherwise instruction-exact and order-exact 160.
+- verdict: CONFIRMED
+
+## [s120] On the split (order-exact) chassis the target seating follows from refs 2/2 alone provided sched1 emits the arg5 stack store before the t0 deref load.
+- mechanism: The target's own final output has the arg5 stack store at index 61 and the t0 deref at index 65. With that relative order in the sched1 stream the spans become t0 18..26 (pri 10000) and arg5 20..24 (pri 20000): arg5 is allocated first and takes $v1, t0 takes $a0, with no tie and no added construct. Every split form instead schedules the lw a3 at slot 12 and the sw at slot 13 because INSN_PRIORITY(lw a3)=2 (its result feeds the call) beats INSN_PRIORITY(sw)=1 while both are ready at the same cycle, and sched2 then swaps them back - which is exactly why V1's FINAL order is target-exact while its allocation is not.
+- probe: Cross-read of the BB2_QTY_DEBUG spans against the target's own index order in asm/funcs/CD_sync.s, plus s119's measured proof that sched2 reorders this block.
+- result: Supersedes s119 frontier item 2. The closing lever is a sched1 ordering perturbation on the split chassis, reachable in ordinary C if the t0 add can be delayed past the point where the sw becomes ready; it does not require lifting reg106's reference count with a second chain-extender FAKE.
+- verdict: CONFIRMED
+
+## [s120] Natural-C rederives of the do_timeout block - ordinary array subscripts or fully inlined printf argument expressions - reproduce the target block better than the hand-derived pointer spelling.
+- mechanism: The rederive modality's premise: a structurally different, more idiomatic C shape may hit a different expand/combine path for the two table accesses.
+- probe: X1/X2/X3 (subscripts), Y1-Y4 (inlined arguments), Z1-Z4 (staged arg3/arg4) on the pp-free chassis.
+- result: 9, 9, 14, 10, 14, 10, 14, 14, 13, 13, 5 /160, all bi 160 rd 0, against a 2/160 control. The hand-derived pointer spelling in candidate.c is the best available spelling of this block.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pp-free CD_alarm-struct chassis, chain-extender FAKE present, pp absent; control 2/160
