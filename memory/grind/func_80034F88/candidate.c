@@ -1,3 +1,37 @@
+/* s42 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns.
+ * BODY UNCHANGED.  THIS IS THE FINAL SESSION OF LADDER CYCLE 2 -- the
+ * LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record was
+ * filed in docs/grind/decisions.md this session, on the Judge's explicit
+ * direction in the 2026-09-05 06:11 ruling (decisions.md:23322).
+ *
+ * What s42 measured, so it is never re-derived:
+ *   v1  RE-AUDIT of s37's h12/h13 on THIS (post-s39) chassis: the trailing
+ *       copy loop fed off `q`, `*(q - 3 + i) = ...`  -> 30 at 48, unchanged.
+ *       The loop gives up its own lui %hi(D_80106A70) / addu $at,$at,$v1 /
+ *       sb %lo(D_80106A70)($at) form -- three instructions the target HAS.
+ *       The copy loop is the only free source of extra references to `q`,
+ *       so the reference-count side of allocno_compare is now closed.
+ *   v2  value CHAINING (each block consumes the previous block's computed
+ *       value instead of re-reading the byte, two alternating named value
+ *       locals, no self-assign)                      -> 24 at 45.
+ *   v3  the same chain over blocks 0-2 only          -> 24 at 47.
+ *       Chaining DOES lengthen the value allocnos (the live-length side of
+ *       the gap s39 identified), but it deletes the target's flag-byte
+ *       reloads: the target reads the byte FOUR times (80034FA0, 80034FB4,
+ *       80034FD8, 80034FFC) and is 49 insns; the chains have 2 or 0 reloads
+ *       and 45-47.  Emission cost dominates every allocation lever here.
+ *   rt / t1  the two banked bodies closest to the target re-measure at their
+ *       banked 10 at 49 and 11 at 50; fake_ablate finds no FAKE construct in
+ *       this body, so no banked kill was measured with a FAKE carrier.
+ *
+ * If this function is ever re-activated, start from F1 in hypotheses.md: the
+ * matching body already exists and measures ZERO
+ * (rejected/three-pointer-objects-judge-FAIL-score0.c); it needs a grant that
+ * admits a SECOND C pointer object naming &D_80106A73, which the Judge has
+ * refused twice (decisions.md:22578, decisions.md:23322).  Do not re-open that
+ * axis without such a grant, and do not re-run the measured-dead alternatives
+ * listed in the s42 section of evidence.md.
+ */
 /* s41 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns
  * (variant b0).  BODY UNCHANGED.  s40's Frontier 1 is now CLOSED by
  * measurement, so do not re-run it.
@@ -657,6 +691,23 @@
  * residual is a 2619-point arithmetic gap in a priority formula, not an
  * ineligibility.  Any future session should start from THIS body, not from the
  * `*q &= 0xF8;` one.
+ *
+ * (s43, synthesis) This body is re-measured at 10 / 49 insns on HEAD
+ * 2026-09-05 and is UNCHANGED. s43 states the seat as a conjunction and
+ * measures both clauses: q takes the target's $v1 iff (a) q's .greg conflict
+ * row carries no hard reg 3 AND (b) q precedes the block-0 value in
+ * allocno_compare (global.c:635). THIS body is the only measured spelling
+ * satisfying (a) -- one named `m` carries both the load and the mask, so
+ * block 0 contains no local-alloc quantity -- and it fails (b) by 2619 points
+ * (m: 6 refs / 9 live / 13333; q: 10 refs / 28 live / 10714). Every spelling
+ * that wins (b) by cutting m's references (m1 `m = *q & 0xF8`, m4 split names,
+ * m3 mask recomputed in the arms) splits block 0 into two pseudos, one of them
+ * block-confined, which local_alloc seats in $v1 and which re-adds hard reg 3
+ * to q's conflict row -- all still 10 or worse. A redundant same-constant
+ * `q = &D_80106A73;` adds ZERO references (d1's .greg is identical to this
+ * body's), and hoisting block 1's condition above q leaves q at livelen 28
+ * exactly (e1, 13 at 49). Do not re-spell block 0; the open exit is stretching
+ * m's live range to 12 from its END while keeping it one multi-block pseudo.
  */
 void func_80034F88(void) {
     s32 *p;

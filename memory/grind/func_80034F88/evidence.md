@@ -5767,3 +5767,221 @@ that distinction is what this session escalates as a ruling question.
 `tmp/grind/func_80034F88/s41/`: `variants/{b0,t1,rt,n1,n2,n3}.c`, `run.ps1`, `dis.sh`,
 `{b0,n1,n2,n3}.txt` (objdumps), `{b0,t1,rt,n1,n2,n3}.o`, `code6cac_b.c.orig`;
 `tmp/grind/func_80034F88/dumps/` (cc1 -da pass dumps for the n1 body).
+
+==== s42 (synthesis) ====
+
+MERGED ATTACK AFTER s42 -- this is the terminal statement of the function's
+search space, written to be read WITHOUT the preceding 41 sessions.
+
+Chassis measured this session (`sandbox func_80034F88 --disable all`, target 49
+insns): b0 (memory/grind/func_80034F88/candidate.c, the s39 round-trip body)
+= **10 at 49**, rules_dropped 0.  The dispatch digest reported "measurement
+unavailable"; the ledger floor of 10 is re-confirmed by direct measurement.
+`tools/fake_ablate.py` reports "no FAKE-annotated constructs found ... nothing
+to ablate" -- the floor body is ordinary C carrying no coercion of any kind.
+
+THE RESIDUAL, STATED ONCE AND COMPLETELY.
+Read off asm/funcs/func_80034F88.s block by block, the target materialises
+`&D_80106A73` into an allocatable register THREE times:
+  80034F98/9C  lui/addiu $v1   -- serves block 0 (the mask) and block 1
+  80034FC8/CC  lui/addiu $a0   -- serves block 2, and is scheduled ABOVE block
+                                  1's `sb $v0,0($v1)` at 80034FD0, so $v1 and
+                                  $a0 hold the same address simultaneously
+  80034FF0/F4  lui/addiu $a0   -- serves block 3 (a SECOND materialisation into
+                                  the same hard register, not a reuse)
+The floor body has ONE address pseudo (`q`), seated in $a0.  That seat is right
+for blocks 2/3 -- which are register-exact -- and wrong for blocks 0/1, where
+the target wants the address in $v1 and the byte value in $a0.  The whole
+10-point residual is that $v1<->$a0 rotation plus a nop/lbu swap in an
+already-paid-for load-delay slot (s37, priced at zero).
+
+WHY ONE OBJECT CANNOT SUPPLY BOTH SEATS: one pseudo is one allocno
+(tools/gcc-2.7.2/global.c:426) and one allocno gets exactly one hard register
+(global.c:1275); GCC 2.7.2 has no live-range splitting.  s39 removed the
+LOCAL-alloc hard-reg-3 conflict that used to make `q` ineligible for $v1 (the
+round-trip mask spelling), leaving a pure `allocno_compare` priority gap
+(global.c:635, key = floor_log2(n_refs)*n_refs*size/live_length): m 6 refs /
+9 live / pri 13333 versus q 10 refs / 28 live / pri 10714.  Both sides of that
+gap have now been attacked to exhaustion (s37 k1-k5, s39's five bodies, s42
+v1-v3 below): every parameter change that is byte-neutral leaves the ORDER
+unchanged, and every parameter change that moves the order changes the
+instruction stream for more than it buys.  And even winning $v1 for `q` only
+TRADES the two seats (s32/s35), because one register cannot be two.
+
+MEASURED THIS SESSION (all `sandbox func_80034F88 --disable all`):
+  b0  the floor body (round-trip chassis)                        10 at 49
+  v1  RE-AUDIT of s37 h12/h13 on the post-s39 chassis: trailing
+      copy loop fed off `q` (`*(q - 3 + i) = ...`)               30 at 48
+  v2  value CHAINING: every flag block consumes the previous
+      block's computed value instead of re-reading the byte,
+      spelled with two alternating named value locals            24 at 45
+  v3  the same chain over blocks 0-2 only, block 3 re-reading    24 at 47
+  rt  RE-AUDIT rejected/roundtrip-fresh-pseudo-target-census-
+      score10-DEAD-ARITH.c (the only banked body whose
+      instruction MULTISET matches the target's)                 10 at 49
+  t1  RE-AUDIT rejected/s39-block1-reads-symbol-directly-
+      score11.c (the only banked body whose block 1 reloads the
+      flag byte the way the target's `lbu $a0,0($v1)` does)      11 at 50
+rt and t1 are bit-for-bit the values the ledger banked; the mandated kill
+re-audit therefore finds NO verdict that was measured on a stale chassis or
+with a FAKE carrier occupying the contested pseudo.
+
+WHAT v1-v3 ADD TO THE MAP.  v1 closes the last chassis-relative doubt about the
+reference-count side of allocno_compare: the ONLY free source of extra `q`
+references in this function is the trailing copy loop, and consuming it costs
+the loop its own `lui %hi(D_80106A70) / addu $at,$at,$v1 / sb %lo(D_80106A70)($at)`
+address form -- three instructions the target contains -- for a priority lift
+worth at most one register seat.  v2/v3 close the live-LENGTH side from the
+value's end: lengthening the value allocnos by chaining block N's result into
+block N+1 does lengthen them, but it also deletes the target's `lbu` reloads in
+blocks 2/3, because there is then no memory read left for cse to forward FROM.
+The target reads the flag byte four times (80034FA0, 80034FB4, 80034FD8,
+80034FFC) and is 49 instructions; the chained bodies have two or zero reloads
+and 45-47 instructions.  Emission cost dominates every allocation lever on this
+function -- that is the single sentence this session adds to the map.
+
+THE AXIS THAT WOULD CLOSE IT, AND WHY IT IS SHUT.  Exactly one C construct has
+ever been measured to emit the target's second and third lui+addiu
+materialisations: a further `u8 *q = &D_80106A73;` pointer object (the score-0
+body, rejected/three-pointer-objects-judge-FAIL-score0.c).  Every non-pointer
+spelling measured over s33-s41 -- bare symbol, symbol-difference, p-derived
+additive arithmetic (cancelled in combine via simplify_plus_minus,
+tools/gcc-2.7.2/cse.c:4250), static-inline helpers, anonymous carriers, one-
+and two-slot aggregates, `&D_80106A70[3]` array-model addressing -- either
+folds to a bare symbol_ref and is expanded through `$at` with %lo folded into
+the memory operand, or costs instructions.  The Judge closed that axis twice:
+2026-09-04 15:09 (docs/grind/decisions.md:22578) and again 2026-09-05 06:11
+(docs/grind/decisions.md:23322), the second time answering s41's
+emission-vs-RA reframing directly -- "that ruling's ground was the C TEXT, not
+the pass name ... this ledger's own s22/s24 SOTN-master census returns ZERO
+instances, so it is a family extension beyond pointer-alias-fake-exception =
+FAIL(CONSTRUCT), never an escalate" -- and directing the record: "file it; do
+not re-open this axis."
+
+DISPOSITION FILED THIS SESSION.  s41 was session nineteen of cycle 2; s42 is
+session TWENTY, and the modality condition (>= 6 distinct modalities) was met at
+s31, so the owner's 2026-09-02 directive is satisfied.  The honest floor is 10,
+above ENDGAME_LOCK_MAX_FLOOR = 5, so the 2026-07-27 standing ruling is not this
+function's subject and the record is titled LADDER EXHAUSTED (non-endgame
+residual, floor 10).  Filed in docs/grind/decisions.md this session; outcome
+returned owner-gated.  candidate.c is unchanged (10 at 49) and src/ is back at
+HEAD carrying `INCLUDE_ASM("asm/funcs", func_80034F88);`.
+
+==== s43 (synthesis) -- the seat condition is a two-clause conjunction, and both clauses are now measured from both sides ====
+
+Chassis re-measured first: `memory/grind/func_80034F88/candidate.c` (the s39
+round-trip body) spliced into src/code6cac_b.c scores **10 at 49 insns**,
+rules_dropped 0, on HEAD 2026-09-05. The ALLOCDBG allocno table
+(`wsl bash tmp/grind/func_80034F88/s39/ad.sh`, BB2_ALLOC_DEBUG=1) reproduces
+s39's numbers exactly:
+
+    ord=0 pseudo=73 (i)  hardreg=3 nrefs=11 livelen=7  pri=47142
+    ord=1 pseudo=77      hardreg=2 nrefs=5  livelen=6  pri=16666
+    ord=2 pseudo=80      hardreg=2 nrefs=5  livelen=7  pri=14285
+    ord=3 pseudo=84      hardreg=2 nrefs=5  livelen=7  pri=14285
+    ord=4 pseudo=74 (m)  hardreg=3 nrefs=6  livelen=9  pri=13333
+    ord=5 pseudo=75 (q)  hardreg=4 nrefs=10 livelen=28 pri=10714
+    ord=6 pseudo=79      hardreg=3 nrefs=3  livelen=4  pri=7500
+    ord=7 pseudo=83      hardreg=3 nrefs=3  livelen=4  pri=7500
+    ord=8 pseudo=72 (p)  hardreg=5 nrefs=6  livelen=33 pri=3636
+
+The target's seats are q in $v1 (blocks 0/1, sharing $v1 with the loop
+induction variable `i`, which our body also puts in $v1) and the block-0 flag
+value in $a0. Our body has them swapped. `i` and `q` do NOT conflict in either
+body (73 is absent from 75's conflict row), so the target's sharing of $v1
+between the address and the induction variable is reachable; the only question
+is which of `m` and `q` reaches $v1 first.
+
+**The seat condition, stated as a conjunction.** q takes $v1 iff
+  (a) q's .greg conflict row contains no hard reg 3, AND
+  (b) q precedes the block-0 value in `allocno_compare`
+      (tools/gcc-2.7.2/global.c:635, key = floor_log2(n_refs)*n_refs*size/live_length).
+The base body satisfies (a) -- its row is `72 74 75 77 79 80 83 84 2 29`, hard
+regs 2 and 29 only -- and fails (b) by 2619 points.
+
+**Both clauses measured from both sides this session (seven bodies).**
+
+| body | block-0 spelling | score/insns | allocate order | q's hard-reg conflicts | q's seat |
+|---|---|---|---|---|---|
+| b0 | `m = *q; m = m & 0xF8; *q = m;` (base) | 10 / 49 | 73 77 80 84 **74 75** 79 83 72 | 2 29 | $a0 |
+| d1 | b0 + redundant `q = &D_80106A73;` in block 1 | 10 / 49 | identical to b0 | 2 29 | $a0 |
+| m1 | `m = *q & 0xF8; *q = m;` | 10 / 49 | 73 78 81 85 **75 74** 80 84 72 | 2 **3** 29 | $a0 |
+| m4 | `m = *q; v0 = m & 0xF8; *q = v0;` | 10 / 49 | 73 78 81 85 **76 75** 80 84 72 | 2 **3** 29 | $a0 |
+| m3 | raw byte named, mask recomputed in both block-1 arms | 17 / 49 | 73 80 84 88 **75 74** 83 87 72 | 2 **3** 29 | $a0 (p displaced to $a2) |
+| m5 | masked value named inside block 1's scope | 27 / 52 | -- | -- | -- |
+| m2 | block-1 store duplicated into the arms, no named c | 12 / 46 | -- | -- | -- |
+| e1 | b0 + block-1 condition hoisted above `q = &...` | 13 / 49 | 73 79 81 85 **74 76** 80 84 72 | 2 29 | $a0 |
+
+Reading of the table:
+
+1. **Clause (b) is winnable and the win is worthless on its own.** m1 and m4
+   both cut the block-0 value's reference count and both flip the sort so that
+   q precedes it -- and both still score 10 with q in $a0, because cutting the
+   count requires splitting block 0 into two pseudos, and whichever pseudo is
+   confined to block 0 is a local-alloc quantity. local_alloc runs before
+   global_alloc and takes the first free hard register in allocation order;
+   $v0 is occupied across block 0 by the call's return value (the v0 -> $a1
+   copy is scheduled AFTER block 0's read-modify-write in every body measured,
+   including the target, whose copy sits at 0x80034FA4), so the quantity takes
+   $v1. It shows up in .greg as a pseudo dispositioned `in 3` that is absent
+   from the "regs to allocate" list, and as hard reg 3 appearing in q's
+   conflict row. m1's is pseudo 76, m4's is pseudo 74, m3's is pseudo 78.
+
+2. **Clause (a) is what the base body already buys, and it is fragile.** The
+   base body's single named `m` carrying both the load and the mask is the ONLY
+   measured spelling with no block-0-confined pseudo -- which is exactly why
+   s39 adopted it -- and the price of that is m's 6 references.
+
+3. **A same-constant re-assignment of `q` contributes zero references.** d1's
+   .greg section is character-for-character identical to b0's. s41's n2 had
+   shown such a re-set produces identical BYTES; d1 shows it does not even
+   reach flow's reference count, so the cheapest imaginable route to clause (b)
+   from q's side -- more pointer assignments -- is arithmetically inert, not
+   merely byte-neutral.
+
+4. **A source-level hoist does not shorten q's live range.** e1 moves block 1's
+   condition above q's materialisation; q comes out with nrefs=10 livelen=28
+   pri=10714, digit for digit the base body's, while p's live length grows
+   33 -> 35 and the score rises to 13. The first scheduling pass re-places the
+   hoisted computation inside q's range before live lengths are counted, the
+   same compaction s39's x1/x3 measured from the middle of the range.
+
+**The inequality, with thresholds.** With the block-0 value at 6 refs / 9 live
+(13333) and q at 10 refs / 28 live (10714), q wins clause (b) iff any of:
+  (i)   q reaches nrefs >= 13 at livelen 28 (3*13/28 = 13928);
+  (ii)  q reaches livelen <= 21 at nrefs 10 (3*10/21 = 14285);
+  (iii) the block-0 value reaches livelen >= 12 at 6 refs (2*6/12 = 10000),
+        or >= 10 at 5 refs, or >= 8 at 4 refs,
+and it must do so WITHOUT splitting block 0 into a confined pseudo (clause (a)).
+Exit (i)'s known ref sources are all dead: same-constant re-set (zero refs,
+d1/n2), copy-loop destination `q[i-3]` (30, s37/s42), derived pointer
+`u8 *r = q - 3;` (19 at 50, s29). Exit (ii) is unmoved by hoisting (e1). Exit
+(iii) has been attacked from the middle (s39 x1/x3) and the front (e1) and never
+from the END -- no measurement yet exists for a body in which the block-0 masked
+value has a real, ordinary consumer AFTER block 1's store while remaining one
+multi-block pseudo. That is frontier A.
+
+Artifacts: tmp/grind/func_80034F88/s43/variants/*.c (b0, d1, m1..m5, e1),
+tmp/grind/func_80034F88/s43/run.ps1 (splice + score + save .o),
+tmp/grind/func_80034F88/dumps/code6cac_b.greg (per-body, overwritten between
+bodies; the conflict rows quoted above are transcribed in this section).
+
+- [s41] Chassis: memory/grind/func_80034F88/candidate.c re-measured 10 at 49 insns, rules_dropped 0, on HEAD 2026-09-05.
+
+- [s41] ALLOCDBG allocno table for the base body (BB2_ALLOC_DEBUG=1 via tmp/grind/func_80034F88/s39/ad.sh): ord=0 pseudo=73 (i) hardreg=3 nrefs=11 livelen=7 pri=47142; ord=4 pseudo=74 (m) hardreg=3 nrefs=6 livelen=9 pri=13333; ord=5 pseudo=75 (q) hardreg=4 nrefs=10 livelen=28 pri=10714; ord=8 pseudo=72 (p) hardreg=5 nrefs=6 livelen=33 pri=3636.
+
+- [s41] The target seats the flag-byte address in $v1 for blocks 0/1 and the block-0 value in $a0; our bodies have them swapped. Pseudo 73 (i, the copy-loop induction variable) is absent from q's conflict row in every body measured, so the target's sharing of $v1 between the address and i is not a barrier.
+
+- [s41] The base body is the only measured spelling whose q conflict row is free of hard reg 3 (`72 74 75 77 79 80 83 84 2 29`); m1, m3 and m4 all read `... 2 3 29`.
+
+- [s41] A block-0-confined pseudo is identifiable in .greg as a register dispositioned `in 3` that does not appear in the `regs to allocate` list (m1: 76, m3: 78, m4: 74) -- this is local_alloc's seat, taken before global allocation runs.
+
+- [s41] $v0 is unavailable to that local quantity because the call's v0 -> $a1 copy is scheduled after block 0's read-modify-write in every body measured, and in the target as well (its copy sits at 0x80034FA4, after the lbu at 0x80034FA0).
+
+- [s41] A redundant same-constant `q = &D_80106A73;` is deleted before flow counts references: d1's .greg section is character-for-character identical to the base body's and it scores 10 at 49.
+
+- [s41] Score table this session: b0 10/49, d1 10/49, m1 10/49, m4 10/49, m2 12/46, e1 13/49, m3 17/49, m5 27/52.
+
+- [s41] Threshold arithmetic on this chassis: q wins allocno_compare at nrefs >= 13 (livelen 28) or livelen <= 21 (nrefs 10); the block-0 value loses at livelen >= 12 (6 refs), >= 10 (5 refs), >= 8 (4 refs).
+
+- [s41] Process note: the dispatch digest lagged the ledger by eight sessions again (dispatched as 'session 35' with an s34-era frontier while the ledger is at s42); the previous session's owner-gated foreclosure was discarded because a foreclosure disposition requires escalation modality, so the LADDER EXHAUSTED record it drafted still needs re-filing by an escalation-modality session.

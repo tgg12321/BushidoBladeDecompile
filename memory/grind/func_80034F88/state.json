@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 40,
- "current_modality": "rederive",
+ "session_count": 41,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -243,23 +243,29 @@
    "floor": 10,
    "modality": "rederive",
    "headline": "The target holds &D_80106A73 in TWO general registers simultaneously live at .L80034FC8, so the single-C-object chassis has a FLOOR of 10, not a plateau: s39's priority-flip frontier would relocate th"
+  },
+  {
+   "session": 41,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Synthesis: the $v1 seat is a two-clause conjunction (no hard-reg-3 conflict AND q ahead of the block-0 value in allocno_compare); seven bodies measure both clauses and show every spelling that wins on"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The only open technical question is a SECOND register-held address pseudo produced without declaring a second C pointer object. Bare symbol, symbol-difference, the s33-s35 anonymous carriers and static-inline helpers are all measured dead.",
-   "mechanism": "&D_80106A73 becomes a register-held value (the target's lui+addiu pair) only where the C source uses the address as a value; a mem addressed by a bare symbol_ref is a legitimate MIPS address and is expanded through the assembler temporary $at instead.",
-   "next_probe": "Try address expressions that are NOT legitimate constants and so must be forced into a pseudo -- an address whose base or displacement comes from a runtime quantity that provably equals a constant (derived from `p`, or from the loop counter). Every such spelling measured to date added an instruction (s34), so screen on INSN COUNT first: only a 49-insn body is a candidate, and anything at 48 or 50 is out before its registers are read."
+   "hypothesis": "Exit (iii): a block-0 spelling in which ONE multi-block pseudo carries both the loaded byte and the masked byte (so q's conflict row stays free of hard reg 3) but whose live_length reaches 12 or more, demoting it below q's 10714.",
+   "mechanism": "allocno_compare (tools/gcc-2.7.2/global.c:635) divides by live_length, and live lengths are counted after the first scheduling pass; stretching the range from the middle (s39 x1/x3) and from the front (s43 e1) both compact back, but stretching it from the END -- giving the masked value a real ordinary consumer after block 1's store -- has never been measured.",
+   "next_probe": "Enumerate the consumers of the block-0 masked value that the target's own 49 instructions still permit (block 1's stored value, the copy-loop bound or its source index) and spell each as ordinary C that keeps m one multi-block pseudo; score each and read nrefs/livelen/pri from the BB2_ALLOC_DEBUG table rather than from the score alone."
   },
   {
-   "hypothesis": "If no such spelling exists, the residual is reachable only by declaring a second pointer object for blocks 2/3 -- which the standing Judge constraint bans and which the score-0 body already demonstrates byte-matches.",
-   "mechanism": "s40 supplies what neither the layer-1 FAIL (an annotation-format failure) nor the Judge constraint had: a measured demonstration that the second pointer object is not a register-allocation lever but the only C construct that emits the target's second lui+addiu address materialisation.",
-   "next_probe": "Not a code probe. A `ruling-request` framing the second handle as the only source of the target's second address materialisation is admissible ONCE on that new framing; otherwise, when the driver assigns `escalation` after two more flat sessions, the LADDER EXHAUSTED (non-endgame residual, floor 10) record must lead with the two-address-register reading and the a1/a2/h1/qL measurements."
+   "hypothesis": "Exit (i): three more SURVIVING references to q at zero instruction cost.",
+   "mechanism": "floor_log2(13)*13/28 = 13928 > 13333, so q at 13 references wins the seat outright with its live range unchanged; but same-constant re-sets are deleted before flow counts them (s41 n2, s43 d1) and every real extra use measured so far changes the emitted address form.",
+   "next_probe": "Identify a use of the flag-byte pointer that the TARGET's stream already contains but our body currently spells through the symbol or through a value, and re-spell it through q; measure the reference count in the ALLOCDBG table before judging by score."
   },
   {
-   "hypothesis": "Ladder accounting: session eighteen of cycle 2, six-modality condition met at s31, two flat sessions remain before owner directive 2026-09-02 permits any disposition.",
-   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities before any disposition.",
-   "next_probe": "Spend the remaining two sessions on frontier 1's insn-count screen; do not re-run the allocator-priority probes, which s40 retired as routes to zero."
+   "hypothesis": "Housekeeping: the digest lag and the discarded-disposition loop are costing whole sessions.",
+   "mechanism": "The driver generates the brief from the last COMMITTED ledger, and this function's ledger commits lag; separately, a foreclosure record filed from a non-escalation modality is discarded by the validator.",
+   "next_probe": "Every session: run `grep -n '^## \\[s' memory/grind/func_80034F88/hypotheses.md | tail` before spending a probe on a brief-listed next probe; and file no foreclosure record unless the mandated modality is escalation."
   }
  ],
  "judge_constraints": [
@@ -723,6 +729,22 @@
    "measured_on": "round-trip chassis (candidate.c as of s39) on HEAD 2026-09-05, one pointer object in the caller plus the helper's own, no FAKE constructs present",
    "predicate_cite": "",
    "result": "h1 = 30 at 49. Inlining fires (no call in the .o) but buys no second register-held address, and the block shape degrades"
+  },
+  {
+   "session": 41,
+   "statement": "Cutting the block-0 flag value's reference count flips the allocno order so that q precedes it, but each of the four spellings measured that achieves the cut splits block 0 into two pseudos, one block",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 re-measured 10 at 49, rules_dropped 0); single declared `u8 *q`; no FAKE constructs present (fake_ablate has nothing to ablate on this chassis, pe",
+   "predicate_cite": "",
+   "result": "m1 = 10 at 49 and m4 = 10 at 49: the sort order flips (m1 `73 78 81 85 75 74 80 84 72`, m4 `73 78 81 85 76 75 80 84 72`)"
+  },
+  {
+   "session": 41,
+   "statement": "Hoisting block 1's condition above the point where q is materialised shortens q's live range and lifts it past the block-0 value in allocno_compare.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49), single declared `u8 *q`, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "e1 = 13 at 49, and q comes out with nrefs=10 livelen=28 pri=10714 -- digit for digit the base body's -- while p's live l"
   }
  ]
 }
