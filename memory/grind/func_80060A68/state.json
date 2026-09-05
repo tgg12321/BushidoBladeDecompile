@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 23,
- "current_modality": "synthesis",
+ "session_count": 24,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -141,23 +141,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Owner Ruling A executed: the `()` dispatch-call spelling is byte-identical on E2 (candidate.c now carries it, floor 2 unchanged), the func_80060B70 inventory diff is closed with no missing statement, "
+  },
+  {
+   "session": 24,
+   "floor": 2,
+   "modality": "solver",
+   "headline": "Solver modality: the T1 spine is target's stream with ONE instruction moved, the residual is now a stated scheduler predicate, and the depth-1 full-atom search plus a six-position statement sweep clos"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The p10 load reaches target's slot 12 only when its sched.c priority beats the other two 0x10 loads; a spelling that gives the +4 halfword a SECOND real consumer which combine folds back to a single insn would break the priority tie the same way the cse merge does, without collapsing the third load.",
-   "mechanism": "text1b.sched shows all three 0x10 loads heading equal-length chains once the Z0-store memory dependence is present, so rank_for_schedule (sched.c:2399-2456) decides on the dep-class / luid tiebreak and p10 - whose consumer is the last store before the dispatch - always loses. The merged E2 case wins the seat purely because its pseudo has two consumers. A distinct load with two source-level consumers that combine re-merges would have the merged case's priority and the three-load case's insn count.",
-   "next_probe": "On the PB/PH spines, spell the +4 halfword so it is read once and consumed twice in a form combine folds (e.g. the 0x1C store's value and the same value re-used in an expression that folds to a copy), measure with sandbox --disable all, and read text1b.combine to confirm the second consumer is folded away and text1b.sched to confirm the priority order changed before scoring."
+   "hypothesis": "The depth-2 pass-2 search over the full atom vocabulary, with the goal stated correctly in PICK order (`--goal-before 30:12 --goal-before 12:35`), has never completed - the s24 run was still going when the one-shot session had to close. It is the single cheapest unspent solver step and it either names a spellable pair or converts the axis into a typed FORECLOSED.",
+   "mechanism": "Depth 1 over 4634 atoms is a clean negative, so if the order is reachable at all it needs two simultaneous input changes - the shape that resolved two of the three banked scheduling residuals in the 2026-08-05 application round (title_mv_exec2 and func_8002C61C), where the first-pass answer was also 'no single-atom vector'.",
+   "next_probe": "Apply memory/grind/func_80060A68/candidate.c (T1) to src, re-run `extract.py text1b`, then run BOTH `--atoms luid,luid_move --depth 2` (cheap, fully spellable) and the unrestricted `--depth 2` via tmp/grind/func_80060A68/s24/run_perturb.py, using --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80060A68/text1b.o. Budget it as the session's first act, in the background, and harvest it in-turn."
   },
   {
-   "hypothesis": "Lengthening the dependence chain BELOW the 0x1C store - rather than above the +4 read - would make p10's chain strictly longer than the 0x18 and 0x1A chains and win the slot-12 seat without any extra instruction.",
-   "mechanism": "priority() is the longest path from the insn to the end of the block. The three 0x10 loads tie because each heads load -> halfword read -> halfword store. If the 0x1C store is followed by insns that depend on it while the 0x18 and 0x1A stores are not, p10's chain becomes the longest and the tiebreak never runs.",
-   "next_probe": "Sweep the position of the D_800A347C gp store and the idx read (S7 / S4) relative to the 0x1C store on the PB and PH spines so that the dispatch's `lw %lo(D_800F10D0)` acquires a memory dependence specifically on the 0x1C store, and measure; confirm the chain change in text1b.sched before scoring."
+   "hypothesis": "pri(12) can be lifted to 3 or 4 only by giving the p10 load a predecessor, and the six statement positions below the Z0 store are all normalised to one cc1 stream - so the remaining lever is to change what uid 9 or uid 16 IS, not where the p10 read sits: any spelling that lengthens the head chain above the p10 read without adding an instruction raises pri(12) by construction.",
+   "mechanism": "pri(insn) = max over preds of (pri(pred) + insn_cost(pred) - 1), floor 1, with ADJUST_COST zeroing anti/output costs. Today the head chain is uid 9 (pri 1) -> uid 12 (pri 2). If `outer`'s value reached the p10 load through one more true dependence link of load cost 2, pri(12) becomes 4 and the pass-2 requirement is met with NO luid change at all - which is the only route that does not run into the six-position collapse.",
+   "next_probe": "Sweep spellings of the `outer = D_800A3468;` head and of the Z0 store's index read that keep the instruction count at 65: read D_800A3468 into a local that is then used for the p10 address; spell the Z0 store's index through a named local declared before the p10 read; and read `*(u16 *)outer` into a local above the p10 read (checking whether cse merges it with the later idx read across the Z0 store). Measure each with sandbox --disable all, then re-extract the model and read pri(12) / luid(12) out of the picks before scoring - the model, not the score, is the discriminator."
   },
   {
-   "hypothesis": "The 65-instruction T1 body is the closest form in the bank and its single defect is one sched1 decision (the p10 load filling the lhu->sll load-delay slot); a spelling that leaves p10's read dependence-free but makes something else - not a nop and not an extra instruction - unattractive in that slot has never been enumerated exhaustively.",
-   "mechanism": "In T1 the p10 load is ready at time 0 because it precedes the Z0 store. Every attempt to add the dependence (PB/PC/PD) also sinks the load. The untried middle ground is a partial dependence: a spelling in which the p10 read is above the Z0 store but its ADDRESS is not available until after it, so it cannot be issued at time 1-5 yet still carries the earliest luid among the 0x10 loads.",
-   "next_probe": "Spell `outer` so that the p10 read's base is produced by an insn scheduled inside the Z0 cluster (e.g. read p10 through an expression whose base is the value the Z0 statement already computes) and measure on the T1 spine; read text1b.sched to confirm the load's ready time moved without changing its luid rank."
+   "hypothesis": "E2's PRE-RA residual and T1's scheduling residual are the two halves of one question - E2 has the p10 load at target's exact slot 11 in target's exact seat $a1 but no third load, T1 has three loads with the p10 load seven slots early - so a body that keeps E2's merged-pseudo priority behaviour while re-materialising the third load would be at zero.",
+   "mechanism": "s23's slot-12 law: the merged pseudo wins the priority tie because it has TWO consumers. A distinct load with two source-level consumers that combine folds back to one insn would carry the merged case's priority and the three-load case's insn count. s24 adds the missing number to that law: the merged case's advantage is worth exactly pri 3-with-high-luid or pri 4 on uid 12.",
+   "next_probe": "On the T1 spine, give the +4 halfword a second real consumer that combine folds (the 0x1C store's value re-used in an expression that folds to a copy), measure with sandbox --disable all, and read tmp/grind/func_80060A68/dumps/text1b.combine to confirm the second consumer is folded away and the pass-2 pri(12) in the re-extracted model BEFORE scoring."
   }
  ],
  "judge_constraints": [
@@ -533,6 +539,14 @@
    "measured_on": "today's HEAD chassis, 11 bodies plus the E2/T1/Q2/M2 controls, zero FAKE constructs in any of them; text1b.sched read for PA and PB",
    "predicate_cite": "",
    "result": "KILLED for every spelling measured. PA(T1) 2 / 65 loads 5($a1) 19($a0) 22($a0); PB/PC/PD 5 / 67 loads 19($a0) 24($v0) 25"
+  },
+  {
+   "session": 24,
+   "statement": "Moving the p10 read below the Z0 store is inert as a statement move on the T1 spine: six distinct source positions, including three that split a copy statement so the read sits between the copy's load",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 `()` dispatch-call spelling; 6 probe bodies plus the T1 and E2 controls, zero FAKE constructs in any of them; cc1 streams diffed for 3 of the 6",
+   "predicate_cite": "",
+   "result": "KILLED. All six score 5 / build 67 / target 66 with their three loads at 18 ($a0) / 23 ($v0) / 24 ($a1) - the p10 load L"
   }
  ],
  "escalation_deferrals": 0

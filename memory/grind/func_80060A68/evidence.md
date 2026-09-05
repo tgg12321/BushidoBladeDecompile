@@ -3342,3 +3342,114 @@ p10's chain is strictly longer than the 0x18 and 0x1A chains rather than tied wi
 - [s23] text1b.sched, T1 spine: `insn 12 (set (reg/v:SI 75) (mem:SI (plus (reg/v:SI 72) (const_int 16))))` has dependency list `(insn_list 9 (nil))` and is emitted third - the load-delay slot the target leaves as a nop. text1b.sched, PB spine: the same read is `insn 25` with `(insn_list 9 (insn_list 22 ...))` and is emitted eighteenth, after insns 49 and 56.
 
 - [s23] Target's slot-12 `lw a1,0x10(v1)` is a SINGLE-consumer load (only use: `lhu a1,0x4(a1)` at 29), yet every reproduction of that seat so far has required a TWO-consumer cse-merged pseudo. That contradiction is the entire remaining residual and is a sched.c priority question, not an ordering one.
+
+## [s24 2026-09-04 — solver modality] THE T1 RESIDUAL IS ONE SCHEDULER PREDICATE, STATED EXACTLY
+
+**The residual, in object space (this is the whole diff, nothing else differs).**
+`tools/ra_solver/goal_from_tgt.py classify text1b func_80060A68` on the E2 chassis
+reports **FIRST DIVERGENCE: PRE-RA — "next tool: none, the residual is upstream of
+every model"**, with `ours only: nop x1 / target only: lw #,16(#) x1`: on E2 the two
+streams differ by a cse merge, which no RA or scheduler model can attack. **On the T1
+chassis (`rejected/t1-p10-read-above-the-zero-store-...c`, re-measured this session at
+2 / build 65 / target 66 with the s23 `()` call spelling) the picture is completely
+different and far better**: a full `engine.score.normalized_insns` diff of
+`tmp/sandbox/func_80060A68/text1b.o` against `build/src/text1b.o` (the canonical
+INCLUDE_ASM object, i.e. the real target bytes) is
+
+    ours   : ... lhu v0,0(v1) | lw a1,16(v1) | sll v0,v0,0x2 | lui at | addu at | sw zero | lw v0,12(v1) | lw a0,12(v1) |            lw v0,0(v0) ...
+    target : ... lhu v0,0(v1) | nop          | sll v0,v0,0x2 | lui at | addu at | sw zero | lw v0,12(v1) | lw a0,12(v1) | lw a1,16(v1) | lw v0,0(v0) ...
+
+and **every other one of the 64 remaining instructions, including every nop, is
+identical**. T1 is target's stream with ONE instruction (the p10 load) moved seven
+positions earlier, into the `lhu -> sll` load-delay slot. Artifact:
+`tmp/grind/func_80060A68/s24/dumpdiff.py` output.
+
+**The scheduler model, extracted and exact.** `tools/sched_solver/extract.py text1b`
+reports `parity=True funcs=492 blocks=1764`; func_80060A68 pass1 block 0 (42 insns) and
+pass2 block 0 (44 insns) both replay **baseline exact**. The cc1 index -> RTL uid map
+(`tmp/grind/func_80060A68/s24/map.py`) fixes the vocabulary for every future session:
+
+    uid   9  lw $3,D_800A3468      uid  16  lhu $2,0($3)        uid  12  lw $5,16($3)   <- THE P10 LOAD
+    uid  21  sll $2,$2,2           uid  25  sw $0,D_800F10D0($2)  (the Z0 store)
+    uid  28  lw $2,12($3)          uid  35  lw $4,12($3)        uid  30  lw $2,0($2)
+    uid  32  sw $2,32($3)          uid  49/56  the two later lw $4,16($3)
+    uid  69  lhu $5,4($5)          uid  81  sh $5,28($3)
+
+**The predicate.** `sched.c` builds the block backwards, so the printed pick order is
+the reverse of the emission order. Our pass-2 pick tail is
+`... 32, 30, 35, 28, 25, 21, 12, 16, 147, 145, 9`; target's must be
+`... 32, 30, 12, 35, 28, 25, 21, 16, 147, 145, 9`. So **uid 12 must be picked
+immediately after uid 30 and before uid 35**. `rank_for_schedule` is priority
+descending, then dep class, then LUID descending, and the harvested pass-2 priorities
+are `pri(30)=4, pri(35)=pri(28)=pri(25)=pri(21)=3, pri(12)=pri(16)=2`, with
+`luid(12)=17, luid(30)=21, luid(35)=22`. Since `INSN_PRIORITY` is the longest
+dependence path **from the block head**, the requirement is exactly:
+
+> **pri(12) = 3 AND pass-2 LUID(12) > 22**, or **pri(12) = 4** (any luid < 21).
+
+and `pri(insn) = max over LOG_LINKS preds of (pri(pred) + insn_cost(pred) - 1)`, with
+`ADJUST_COST` zeroing anti/output costs. With the p10 read written first, uid 12's ONLY
+pred is uid 9 (pri 1, load cost 2) => pri(12) = 2, permanently. Raising it needs a pred,
+and a pred must precede it. Since pass-2 LUID is the sched1 emission position, the whole
+question collapses to: **sched1 must emit the p10 load after uid 35 and before uid 32,
+with the Z0 store as the only store above it in source.**
+
+**The depth-1 solver verdict.** `perturb.py --pass 2 --block 0 --goal-before 30:12
+--goal-before 12:35 --depth 1` searched **4634 single atoms** (the FULL atom vocabulary
+— add_dep, del_dep, luid, luid_move, unit/cost — not the spellable-only subset) and
+reports **NO perturbation reaches the goal at this depth**. The same search on pass 1
+(goal `12:35`, 4400 atoms) returns exactly **one** vector:
+
+    del_dep 25 <- 12        (remove the Z0 store's ANTI-dependence on the p10 load)
+
+i.e. the only single input change that lets sched1 emit the p10 load below the two 0xC
+loads is to make `sw $0,D_800F10D0($2)` not conflict with `lw $5,16($3)` in
+`sched_analyze`. GCC 2.7.2 has no C-reachable spelling for that: both memrefs are
+`(plus reg X)` forms with a varying index, so `memrefs_conflict_p` cannot disambiguate
+them, and there is no `restrict`, no type-based aliasing and no `RTX_UNCHANGING_P` a C
+author can set on an ordinary load. **The vector is real, is the right shape, and has no
+C form** — recording it so no later session re-derives it.
+
+**The six-position collapse (new, and it closes a whole family).** The only other way to
+change LUID(12) is to move the p10 read below the Z0 store in source. Six distinct
+source positions were built and measured this session — immediately after the Z0 store,
+after copy 1, after copy 2, and three splits that put the read *inside* a copy statement
+between its load and its store (`c1 = *(s32 *)(*(s32 *)(outer + 0xC) + 0); p10 = ...;
+*(s32 *)(outer + 0x20) = c1;` and the copy-2 equivalent). **All six score 5 / build 67
+with their three 0x10 loads at 18 / 23 / 24, and their raw cc1 output is BYTE-IDENTICAL**
+(`diff tmp/grind/func_80060A68/s24/cc1_v1_p10_after_Z0.s cc1_v3_p10_after_copy2.s` and
+`cc1_v6_split_copy2_p10_between.s` are both empty). So the statement position of the p10
+read below the Z0 store is inert *upstream of sched* — cse/RTL emission normalises all
+six to one stream — and the split-a-copy idea, which was the only way to place the read
+with the Z0 store as its sole preceding store, buys nothing. There are exactly two
+regimes reachable by moving this statement: **p10 load FIRST (T1, 65 insns, score 2)** or
+**p10 load LAST (67 insns, score 5)**. The middle seat target uses has never been
+produced by a statement move, and now has a mechanism for why.
+
+- [s24] CHASSIS: candidate.c (E2) re-measured 2 / build 66 / target 66 on today's HEAD before any probe; the T1 body from rejected/t1-p10-read-above-the-zero-store-...c, with the s23 `()` call spelling, re-measured 2 / build 65 / target 66. Floor unchanged at 2.
+
+- [s24] THE WHOLE T1 RESIDUAL, in target bytes: ours `lhu v0,0(v1) | lw a1,16(v1) | sll | lui at | addu at | sw zero | lw v0,12(v1) | lw a0,12(v1) | lw v0,0(v0)` vs target `lhu v0,0(v1) | nop | sll | lui at | addu at | sw zero | lw v0,12(v1) | lw a0,12(v1) | lw a1,16(v1) | lw v0,0(v0)`. Every other instruction, every nop included, is identical.
+
+- [s24] The scheduler model is exact for this function: extract.py text1b -> parity=True, 492 funcs, 1764 blocks; pass1 block 0 (42 insns) and pass2 block 0 (44 insns) both replay BASELINE EXACT.
+
+- [s24] RTL-uid vocabulary for every future session (from tmp/grind/func_80060A68/s24/map.py): 9 `lw $3,D_800A3468`; 16 `lhu $2,0($3)`; 12 `lw $5,16($3)` = THE P10 LOAD; 21 `sll $2,$2,2`; 25 `sw $0,D_800F10D0($2)` = the Z0 store; 28 `lw $2,12($3)`; 35 `lw $4,12($3)`; 30 `lw $2,0($2)`; 32 `sw $2,32($3)`; 49/56 the two later `lw $4,16($3)`; 69 `lhu $5,4($5)`; 81 `sh $5,28($3)`.
+
+- [s24] PASS-2 PICK ORDERS. Ours: `... 32, 30, 35, 28, 25, 21, 12, 16, 147, 145, 9`. Target's must be `... 32, 30, 12, 35, 28, 25, 21, 16, 147, 145, 9`. Pick order is the REVERSE of emission order (sched.c builds the block backwards).
+
+- [s24] HARVESTED PASS-2 PRIORITIES/LUIDS: pri(30)=4, pri(35)=pri(28)=pri(25)=pri(21)=3, pri(12)=pri(16)=2; luid(12)=17, luid(30)=21, luid(35)=22. Requirement: pri(12)=3 with luid(12)>22, or pri(12)=4.
+
+- [s24] pri(12)=2 is structural while the p10 read is written first: INSN_PRIORITY is the longest dependence path FROM THE BLOCK HEAD and uid 12's only pred is uid 9 (pri 1, load cost 2).
+
+- [s24] DEPTH-1 SOLVER NEGATIVE: perturb.py --pass 2 --block 0 --goal-before 30:12 --goal-before 12:35 --depth 1 searched all 4634 single atoms and reached the goal with NONE. NOTE the goal semantics: --goal-before is evaluated on the PICK list, so `A:B` means A is emitted AFTER B - a goal stated in emission order returns a false negative (this session lost one search to that).
+
+- [s24] THE ONE PASS-1 VECTOR: `del_dep 25 <- 12` - remove the Z0 store's ANTI-dependence on the p10 load. Right shape, no C spelling under GCC 2.7.2 (both memrefs are `(plus reg X)` with a varying index, so memrefs_conflict_p cannot disambiguate; no restrict, no TBAA, no author-settable RTX_UNCHANGING_P).
+
+- [s24] SIX-POSITION COLLAPSE: v1-v6 (p10 read after the Z0 store / after copy 1 / after copy 2 / split inside copy 1 both ways / split inside copy 2) ALL score 5 / build 67 with loads at 18 ($a0) / 23 ($v0) / 24 ($a1), and their raw cc1 streams are byte-identical to each other. Statement position below the Z0 store is normalised upstream of sched.
+
+- [s24] TOOL DEFECT (upstream, not fixed here - tools/ is not an editable surface for a grind session): tools/sched_solver/goalmap.py `_macro_expand_counts` counts `sw $0,SYM($idx)` as ONE object insn, but GNU as assembles it to lui/addu/sw. That makes object-mode goal derivation abort on this function with `honest object has 65 insns but text1b.hon.s body has 63 lines`. A read-only fork with the third case added is at tmp/grind/func_80060A68/s24/goalmap.py, driven by tmp/grind/func_80060A68/s24/run_perturb.py.
+
+- [s24] inverse_compose.py refuses text-mode classify for this zero-rule function and names the object-mode invocation; goal_from_tgt.py classify is the working entry point.
+
+- [s24] candidate.c is now the T1 body (documented header); the E2 body is preserved undisproven at memory/grind/func_80060A68/e2-spine-floor2-cse-merged.c. Zero FAKE constructs in every body measured this session; none of the five banned constructs is present in any of them.
+
+- [s24] src/text1b.c restored to HEAD (INCLUDE_ASM) at session end; the working tree carries only memory/grind/func_80060A68/ changes.
