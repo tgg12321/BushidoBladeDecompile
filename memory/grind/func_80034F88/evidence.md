@@ -8955,3 +8955,116 @@ variable is.
 - [s64] INTEGRATION HANDOFF unchanged: the body needs `extern u8 D_80106A70[3];` (absorbing D_80106A71/D_80106A72, their two consumers in src/code6cac.c converted to element form) with `extern u8 D_80106A73;` left as its own scalar -- measured byte-neutral project-wide in s62/s63. Installer: python3 tmp/grind/func_80034F88/s63/apply.py <body.c>.
 
 - [s64] src/, include/ and the tree were restored to HEAD at session end; only memory/grind/func_80034F88/ and tmp/ carry this session's output.
+
+## s65 (synthesis, 2026-09-05) -- floor 2 holds; the residual is now stated as arithmetic, not as a spelling search
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` installed with
+`python3 tmp/grind/func_80034F88/s63/apply.py` measures **score 2, 49 target /
+49 build instructions** on HEAD 2026-09-05. The dispatch brief's "measurement
+unavailable" is resolved: the chassis is unchanged and every s64 verdict is
+spendable verbatim.
+
+THE PRIORITY FORMULA IS NOW KNOWN EXACTLY. global.c's allocno priority in this
+build is
+
+    pri = floor_log2(nrefs) * nrefs * 10000 / live_length
+
+fitted with no free parameters against all seven ALLOCDBG lines of
+`tmp/grind/func_80034F88/s64/a.model.json` and re-checked against the two
+models extracted this session (`s65/b3.model.json`, `s65/v4.model.json`).
+Baseline allocnos: 73 loop index 11 refs / 7 = 47142; 75 shared flag+result
+local `c` 15 / 19 = 23684; 77 block-0 value `u` 7 / 8 = 17500; 74 blocks-1/2
+value `v` 6 / 10 = 12000; 81 blocks-1/2 address `r` 6 / 19 = 6315; 76 block-0
+address `q` 5 / 28 = 3571; 72 `p` 6 / 34 = 3529.
+
+WHAT THE FORMULA SAYS ABOUT THE RESIDUAL. The target seating requires block 0's
+value at $a0 while block 0's address takes $v1. find_reg scans hard registers
+ascending, so the value takes $v1 unless one of exactly two things is true:
+
+  (A) the address object is allocated BEFORE the value. That needs
+      pri(q) > pri(u) = 17500. With q's live length fixed at 28 this needs
+      floor_log2(n)*n > 49, i.e. **n >= 16 references on q** (n = 15 gives 45).
+      Alternatively q's live length would have to fall to 5 or below.
+  (B) the value CONFLICTS with an already-allocated allocno sitting in $v1.
+
+BOTH BRANCHES ARE NOW BOUNDED BY MEASUREMENT.
+
+Branch (B) -- the containment theorem. `q` is live continuously from its `la`
+(target 80034F98) to block 0's store (80034FD0); `u` is live from the first
+`lbu` (80034FA0) to the last arm read (80034FC4), strictly inside. So any
+pseudo made live simultaneously with `u` is also live simultaneously with `q`,
+and global.c records the conflict on BOTH. Since `q` is the second-lowest
+priority allocno, the new conflict partner is always allocated first, takes
+$v1, and forecloses the very seat we are buying. Measured directly this session
+by reusing the blocks-1/2 value local `v` inside block 0: b1 (v carries the
+flag test) 47 insns / 33; b2 (v carries the arms and the store source) 47 / 12;
+b3 (both) 49 / 16. `s65/b3.model.json` shows the mechanism exactly --
+conflicts[76 (u)] gains 74, 74 is allocated at ord 2 into $v1, u is correctly
+pushed to $a0 and r to $a0 (both TARGET), but conflicts[77 (q)] also gained 74,
+so q scans past register 3 to $a1 and p follows to $a2.
+
+The one escape from the containment theorem is a conflict partner that lives
+OUTSIDE q's range, which means `u` must stay live past block 0's store. But
+blocks-1/2's address object `r` is born at 80034FC8, one instruction BEFORE
+that store, and `r` must share $a0 with `u` in the target -- so extending `u`
+past the store necessarily makes it conflict with `r` and costs `r` its seat.
+This is why s64's only working conflict source was the loop index, and why that
+route caps at 2: the conflict is bought by making `u` the loop's temp, and the
+target's loop contains no $a0 reference at all.
+
+Branch (A) -- no byte-neutral reference lift for `q` is known. The obvious
+sanctioned one, duplicated-statement-into-arms on block 0's store, does NOT
+re-merge here because the two arms are not identical (`c = u | 1;` vs
+`c = u;`), so cross-jump never fires: v1 = 50 insns / 12, v2 = 50 / 12,
+v3 = 52 / 19. Loop-body references to `q` are excluded on principle: they would
+extend `q` into the loop and make it conflict with the index, which holds $v1
+at ord 0.
+
+CLOSING s64's FRONTIER ITEM 2. A loop spelling in which block 0's value stays
+live across the loop while the byte temp is a separate pseudo does exist -- make
+the value the loop's ADDRESS temp -- but the value still carries $a0, so the
+loop emits `addu $a0,$a1,$v1; lbu $v0,0x17($a0)` against the target's
+`addu $v0,$a1,$v1; lbu $v0,0x17($v0)`: w1 = 49 / 3, w9 = 49 / 3, both WORSE
+than the score-2 body. w3 (`c = u` after the load) is folded by
+copy-propagation and the conflict vanishes entirely (49 / 15); w7 (`u = i;`
+inside the loop) costs an instruction (50 / 19).
+
+OTHER MEASUREMENTS. Merging block 0's mask into one expression cuts `u` to 5
+refs / pri 14285 but re-creates the block-local $v1 quantity, so
+hard_conflicts[q] becomes [2, 3, 29] and the seat is foreclosed before global.c
+runs (49 / 15, model `s65/v4.model.json`) -- s62's D-family kill, re-measured on
+the current chassis with a model attached. Splitting the shared flag/result
+local `c` into three per-block locals is codegen-neutral on both chassis
+(score 2 stays 2, score 15 stays 15): the pseudos coalesce back into one
+15-reference allocno, so the shared-`c` shape is not costing anything.
+
+WHERE THIS LEAVES THE NEXT SESSION. Our refs and live lengths for `q` (5 / 28)
+and `u` (7 / 8) are exactly what the TARGET's own instruction stream implies --
+count them at 80034F98..80034FD0 and 80034FA0..80034FC4 -- yet the target's
+allocation differs. One of the three modelling premises must therefore be
+false, and finding which one is the highest-value probe left:
+  (i) `q` is a global allocno in the target (it crosses the branch at 80034FBC,
+      so local-alloc should not touch it) -- verify, because if the original C
+      produced the 80034FD0 store through a pseudo that local-alloc seated in
+      the join block, the entire global-allocno framing for `q` is wrong;
+  (ii) `u`'s live length really is 8 in the target (the model's `live_length`
+      is 28 for `q` where the .flow dump reports 14, so the two are not the same
+      quantity -- find what doubles it, and whether any C shape shrinks `q`'s to
+      5, which alone would give pri 20000 > 17500 and hand over branch (A));
+  (iii) `u` and the loop index really do not conflict in the target.
+
+- [s65] Chassis re-measure: memory/grind/func_80034F88/candidate.c installed via tmp/grind/func_80034F88/s63/apply.py measures score 2, 49 target / 49 build instructions on HEAD 2026-09-05. The dispatch brief's 'measurement unavailable' is resolved.
+
+- [s65] global.c allocation priority in this build is exactly floor_log2(nrefs) * nrefs * 10000 / live_length -- fitted with no free parameters against all seven ALLOCDBG lines of s64/a.model.json and confirmed predictive on s65/b3.model.json and s65/v4.model.json.
+
+- [s65] Baseline allocnos: 73 loop index 11/7 = 47142; 75 shared flag+result local 15/19 = 23684; 77 block-0 value 7/8 = 17500; 74 blocks-1/2 value 6/10 = 12000; 81 blocks-1/2 address 6/19 = 6315; 76 block-0 address 5/28 = 3571; 72 p 6/34 = 3529.
+
+- [s65] CONTAINMENT ARGUMENT (measured three ways this session): block 0's address object is live continuously from 80034F98 to 80034FD0 and block 0's value is live strictly inside it (80034FA0 to 80034FC4), so no allocno can conflict with the value without also conflicting with the address; because the address is the second-lowest-priority allocno, that partner is allocated first, takes $v1, and forecloses the seat.
+
+- [s65] The one escape from containment -- extending the block-0 value past block 0's store -- necessarily overlaps blocks-1/2's address object, which is born at 80034FC8, one instruction BEFORE that store, and which must share $a0 with the value in the target. This is why s64's only working conflict source was the loop index, and why that route caps at 2: the target's loop contains no $a0 reference at all.
+
+- [s65] Duplicated-statement-into-arms on block 0's store does not cross-jump re-merge here because the arms are not identical (ori vs move): 50 insns / score 12. No byte-neutral reference lift for the address object is known.
+
+- [s65] Merged-mask spelling re-creates a block-local $v1 quantity giving hard_conflicts[address] = [2, 3, 29] -- s62's D-family kill re-measured on the current chassis, now with the extracted model as evidence.
+
+- [s65] OPEN CONTRADICTION for the next session: our refs and live lengths for the block-0 address (5 refs) and the block-0 value (7 refs) are exactly what the TARGET's own instruction stream implies -- count them at 80034F98..80034FD0 and 80034FA0..80034FC4 -- yet the target's seats differ from ours. One of three modelling premises must be false, and identifying which is now the highest-value probe.

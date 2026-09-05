@@ -6736,3 +6736,109 @@ spellings 52 instructions / score 31.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis (a) (mask+reload in one local) on the split-declaration chassis, HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator
+
+## s65 hypotheses (synthesis)
+
+## [s65] KILL RE-AUDIT + chassis check: the s64 candidate re-measures at score 2 / 49 build instructions on HEAD 2026-09-05 with the split declaration applied, so every s64 verdict is spendable verbatim.
+- mechanism: the dispatch brief reported the HEAD floor as "measurement unavailable"; the ledger's last recorded floor was 2 and the two closest-to-target s64 kills (the loop-index-conflict cap and the block-1/2 reuse family) are both keyed to that chassis.
+- probe: python3 tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c, then sandbox func_80034F88 --disable all.
+- result: score 2, target_insns 49, build_insns 49. Chassis unchanged; all s64 numbers stand.
+- verdict: CONFIRMED
+
+## [s65] The global.c allocation priority in this build is exactly floor_log2(nrefs) * nrefs * 10000 / live_length, which turns the whole remaining residual into a two-number arithmetic problem instead of a spelling search.
+- mechanism: global.c computes allocno priority from REG_N_REFS and REG_LIVE_LENGTH; the fitted form reproduces every ALLOCDBG line of the baseline model exactly -- 73 (loop index): floor_log2(11)=3, 3*11*10000/7 = 47142; 75 (c): 3*15*10000/19 = 23684; 77 (block-0 value u): 2*7*10000/8 = 17500; 74 (blocks-1/2 value v): 2*6*10000/10 = 12000; 81 (blocks-1/2 address r): 2*6*10000/19 = 6315; 76 (block-0 address q): 2*5*10000/28 = 3571; 72 (p): 2*6*10000/34 = 3529. Seven of seven, no free parameters.
+- probe: read tmp/grind/func_80034F88/s64/a.model.json allocdbg and solved for the constant; re-checked against tmp/grind/func_80034F88/s65/b3.model.json and v4.model.json, where the changed reference counts predict the printed priorities.
+- result: The formula holds on all three models. Consequence: block 0's address object q can only be allocated before block 0's value u if floor_log2(n)*n*10000/28 > 17500, i.e. n >= 16 references on q (n=15 gives 3*15 = 45 < 49, n=16 gives 4*16 = 64), or if q's live length falls to 5 or below. Every other route to the target seating must instead block u from $v1 by a CONFLICT rather than by allocation order.
+- verdict: CONFIRMED
+
+## [s65] Block 0's address object's live range strictly contains block 0's value's, so no allocno can be made to conflict with the value without also conflicting with the address and taking the $v1 seat away from it.
+- mechanism: q is live continuously from its la (target 80034F98) to block 0's store (80034FD0); u is live from the first lbu (80034FA0) to the last arm read (80034FC4), strictly inside. Any pseudo made live simultaneously with u is therefore also live simultaneously with q, and global.c records the conflict on both. Because q is the second-lowest-priority allocno, the new conflict partner is always allocated first, takes $v1, and forecloses the seat the grind is chasing.
+- probe: Three spellings that reuse blocks-1/2's value local v inside block 0 (b1 = v carries block 0's flag test; b2 = v carries block 0's arms and store source; b3 = both), each sandboxed, with the RA model extracted for b3.
+- result: b1 = 47 insns / score 33, b2 = 47 / 12, b3 = 49 / 16. b3's model is the clean demonstration: conflicts[76 (u)] now contains 74 (v), 74 is allocated at ord 2 into $v1, and u is duly pushed to $a0 (TARGET) and r to $a0 (TARGET) -- but conflicts[77 (q)] also gained 74, so q scans past register 3 and lands at $a1, and p follows to $a2. The lever works and is self-cancelling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis (extern u8 D_80106A70[3] + extern u8 D_80106A73) on HEAD 2026-09-05, with the two Judge-granted pointer FAKEs and the s57-family cse2 dead-re-set invalidator present; model tmp/grind/func_80034F88/s65/b3.model.json
+
+## [s65] Merging block 0's mask into a single expression cuts the value allocno to five references but re-creates the block-local $v1 quantity, which puts hard register 3 into the address object's hard conflicts.
+- mechanism: (*q & 0xF8) is computed into a pseudo that is dead by the end of block 0's first basic block, so local-alloc's block_alloc seats it; find_free_reg's ascending scan skips $v0 (the call's return value is still live) and returns $v1, and that seat becomes hard conflict 3 on the overlapping address allocno before global.c ever runs.
+- probe: v4_mergedmask.c on the split-declaration chassis; sandbox plus tools/ra_solver/extract.py.
+- result: 49 insns / score 15. Model v4.model.json: 76 (u) = 5 refs / livelen 7 / pri 14285 -> $v1; 77 (q) = 5 refs / livelen 28 / pri 3571 with hard conflicts [2, 3, 29] -> $a1. The reference cut is real and useless: even with u moved off $v1, hard conflict 3 forecloses q. This re-measures s62's D-family kill on the current chassis and adds the extracted model as evidence.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator; model tmp/grind/func_80034F88/s65/v4.model.json
+
+## [s65] Duplicating block 0's store into both arms -- the sanctioned byte-neutral reference lift for the address object -- is not re-merged by cross-jump here, because the two arms are not identical.
+- mechanism: duplicated-statement-into-arms relies on jump2/cross-jump collapsing the copies back to one insn. Block 0's arms end "c = u | 1;" and "c = u;", so the duplicated "*q = c;" sits behind different predecessors and the tail-merge does not fire; the extra sb survives into the output.
+- probe: v1 (store duplicated), v2 (merged mask + store duplicated), v3 (arms re-read *q + store duplicated), each sandboxed.
+- result: v1 = 50 insns / score 12, v2 = 50 / 12, v3 = 52 / 19. All three are one to three instructions long. The solver's "refs_up 76: 5->16" vector therefore still has no known byte-neutral spelling, and the most obvious sanctioned candidate for it is now measured dead.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator
+
+## [s65] Making block 0's value the copy loop's ADDRESS temp, instead of its byte temp, keeps the loop-index conflict and the 49-instruction shape but moves the wrong register onto the loop's addu and lbu base -- score 3, worse than s64's score 2.
+- mechanism: s64's frontier item 2 asked whether a loop spelling exists in which block 0's value stays live across the loop while the loop's byte temp is a separate pseudo. It exists -- the byte temp becomes an anonymous block-local seated at $v0 -- but block 0's value is then the address temp and still carries $a0 from block 0, so the loop emits "addu $a0,$a1,$v1; lbu $v0,0x17($a0)" against the target's "addu $v0,$a1,$v1; lbu $v0,0x17($v0)": the same two divergent registers plus the addu.
+- probe: w1 (u = (s32)p + i; c = *((u8 *)u + 0x17); D_80106A70[i] = c;), w9 (same without the intermediate c), w3 (u loaded then copied to c) and w7 (u = i; inside the loop), each sandboxed.
+- result: w1 = 49 insns / score 3; w9 = 49 / 3; w3 = 49 / 15 (copy-propagation folds "c = u" and deletes u's loop store, so the conflict disappears entirely); w7 = 50 / 19. This closes s64's frontier item 2 in both of its stated spellings.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator, s64's score-2 body as the base
+
+## [s65] Splitting the shared flag/result local c into three per-block locals is codegen-neutral on both the score-2 and the score-15 chassis.
+- mechanism: the three uses never overlap, so the pseudos coalesce back into a single allocno with the same fifteen references; the allocno landscape the whole grind reasons about is unchanged by the C-level split.
+- probe: y1 (three locals on s64's score-2 body) and y2 (three locals on the clean-loop score-15 body), sandboxed.
+- result: y1 = 49 insns / score 2 (unchanged); y2 = 49 / 15 (unchanged). The shared-c shape costs nothing and need not be revisited by a later session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator
+
+## [s65] The s64 candidate re-measures at score 2 / 49 build instructions on HEAD 2026-09-05 with the split declaration applied, so every s64 verdict is spendable verbatim.
+- mechanism: The dispatch brief reported the HEAD honest floor as 'measurement unavailable' while the ledger recorded 2; the two closest-to-target s64 kills are keyed to that chassis, so the mandated kill re-audit required re-measuring it before anything was spent.
+- probe: python3 tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c, then sandbox func_80034F88 --disable all.
+- result: score 2, target_insns 49, build_insns 49. Chassis unchanged.
+- verdict: CONFIRMED
+
+## [s65] The global.c allocation priority in this build is exactly floor_log2(nrefs) * nrefs * 10000 / live_length, so the target seating is reachable only by giving block 0's address object at least 16 references (at live length 28) or by a conflict that blocks block 0's value from $v1.
+- mechanism: global.c derives allocno priority from REG_N_REFS and REG_LIVE_LENGTH; the fitted form reproduces all seven ALLOCDBG lines of the baseline model with no free parameters (index 3*11*10000/7 = 47142, c 3*15*10000/19 = 23684, block-0 value 2*7*10000/8 = 17500, blocks-1/2 value 2*6*10000/10 = 12000, blocks-1/2 address 2*6*10000/19 = 6315, block-0 address 2*5*10000/28 = 3571, p 2*6*10000/34 = 3529). find_reg then scans hard registers ascending, so the value takes $v1 unless the address is allocated first or the value carries a conflict with an already-seated $v1 allocno.
+- probe: Solved for the constant against tmp/grind/func_80034F88/s64/a.model.json and re-checked the prediction against the two models extracted this session, tmp/grind/func_80034F88/s65/b3.model.json and v4.model.json, whose changed reference counts predict their printed priorities.
+- result: Formula holds on all three models. Branch (A) needs floor_log2(n)*n > 49 on the address object, i.e. n >= 16 (n = 15 gives 45), or its live length down from 28 to 5. Branch (B) needs a conflict.
+- verdict: CONFIRMED
+
+## [s65] Reusing blocks-1/2's value local inside block 0, in the flag test, in the arms, or in both, does seat block 0's value at $a0 and blocks-1/2's address at $a0, but the same extension makes the reused local conflict with block 0's address object, which then scans past $v1 to $a1.
+- mechanism: Block 0's address object is live continuously from its la to block 0's store, and block 0's value is live strictly inside that range, so any pseudo made live simultaneously with the value is also live simultaneously with the address; global.c records the conflict on both allocnos, and because the address object is the second-lowest priority allocno the new partner is always allocated first and takes $v1.
+- probe: Three bodies on the split-declaration chassis, each sandboxed, with tools/ra_solver/extract.py run on the third: b1_v_flagtest_block0.c, b2_v_arms_block0.c, b3_v_both_block0.c.
+- result: b1 = 47 insns / score 33; b2 = 47 / 12; b3 = 49 / 16. b3's model shows conflicts[76] gaining 74, 74 allocated at ord 2 into $v1, the block-0 value pushed to $a0 and blocks-1/2's address to $a0 (both target values) -- and conflicts[77] gaining 74 as well, so the address object lands at $a1 and p at $a2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis (extern u8 D_80106A70[3] + extern u8 D_80106A73) on HEAD 2026-09-05, with the two Judge-granted pointer FAKEs and the s57-family cse2 dead-re-set invalidator present
+
+## [s65] Merging block 0's mask into a single expression cuts the value allocno to five references and priority 14285 but re-creates the block-local $v1 quantity, so the address object's hard conflicts become [2, 3, 29].
+- mechanism: The masked value is computed into a pseudo that dies inside block 0's first basic block, so local-alloc's block_alloc seats it; find_free_reg's ascending scan skips $v0 because the call's return value is still live and returns $v1, and that seat becomes hard conflict 3 on the overlapping address allocno before global.c runs.
+- probe: tmp/grind/func_80034F88/s65/v4_mergedmask.c sandboxed, then tools/ra_solver/extract.py.
+- result: 49 insns / score 15; model v4.model.json shows 76 (value) 5 refs / livelen 7 / pri 14285 -> $v1 and 77 (address) 5 refs / livelen 28 / pri 3571 with hard conflicts [2, 3, 29] -> $a1. Re-measures s62's D-family kill on the current chassis with a model attached.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator; model tmp/grind/func_80034F88/s65/v4.model.json
+
+## [s65] Duplicating block 0's store into both arms, the sanctioned byte-neutral reference lift for the address object, is not re-merged by cross-jump here and costs one to three instructions.
+- mechanism: duplicated-statement-into-arms relies on jump2/cross-jump collapsing the copies; block 0's arms are not identical (one ends in an ori of the flag bit, the other in a plain move), so the tail-merge does not fire and the extra sb survives.
+- probe: v1_dupstore.c, v2_mergedmask_dupstore.c and v3_splitread_dupstore.c, each sandboxed.
+- result: v1 = 50 insns / score 12; v2 = 50 / 12; v3 = 52 / 19. The solver's refs_up 5->16 vector on the address object still has no known byte-neutral spelling, and its most obvious sanctioned candidate is now measured dead.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator
+
+## [s65] Making block 0's value the copy loop's address temp rather than its byte temp keeps the loop-index conflict and the 49-instruction shape but seats the loop's addu destination and lbu base at $a0, measuring score 3 against the score-2 body.
+- mechanism: s64 asked for a loop spelling where the value stays live across the loop while the byte temp is a separate pseudo. It exists -- the byte temp becomes an anonymous block-local seated at $v0 -- but the value still carries $a0 from block 0, so the loop emits addu $a0,$a1,$v1 and lbu $v0,0x17($a0) against the target's addu $v0,$a1,$v1 and lbu $v0,0x17($v0).
+- probe: w1_u_as_addr_temp.c, w9_u_addr_only.c, w3_u_then_c.c and w7_u_index_copy.c, each sandboxed on the s64 score-2 base.
+- result: w1 = 49 / 3; w9 = 49 / 3; w3 = 49 / 15 (copy-propagation folds the copy and deletes the loop store, so the conflict disappears); w7 = 50 / 19. Closes s64's frontier item 2 in both of its stated spellings.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator, s64's score-2 body as the base
+
+## [s65] Splitting the shared flag/result local into three per-block locals is codegen-neutral on both the score-2 and the score-15 chassis.
+- mechanism: The three uses never overlap, so the pseudos coalesce back into a single fifteen-reference allocno and the allocno landscape is unchanged.
+- probe: y1_split_c_score2base.c and y2_split_c_cleanloop.c, sandboxed.
+- result: y1 = 49 insns / score 2 (unchanged); y2 = 49 / 15 (unchanged). The shared-c shape costs nothing and need not be revisited.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator

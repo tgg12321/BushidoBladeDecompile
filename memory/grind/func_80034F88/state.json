@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 64,
+ "session_count": 65,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -387,23 +387,29 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Floor 9 -> 2 after 63 flat sessions: inverse.py on the chassis-(a) model prices the target seating at ONE atom (loop index conflicts block 0's value), and spelling it as variable reuse (block-0 value "
+  },
+  {
+   "session": 65,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Floor holds at 2; global.c's priority formula is now fitted exactly (floor_log2(n)*n*10000/livelen) and the residual is reduced to two arithmetic branches, one of which (conflict-buying) is closed by "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The last two instructions close if block 0's value gets its $v1-blocking conflict from an allocno OTHER than the loop index -- specifically from blocks 1/2's value (p74, seated at $v1) -- because such a conflict does not require block 0's value to occupy a register inside the copy loop, leaving the loop's byte temp free to merge with the loop's address temp at $v0 as the target has it.",
-   "mechanism": "In the s63 baseline model conflicts[77] = [72,75,76,77] and p74 is allocated at ord 3 with pri 12000 against the value's 17500, so even a conflict would not help unless the value's priority also drops below 12000. Both conditions are satisfied at once by any spelling that keeps block 0's value live from its own arms into block 1: livelen 8 -> 12 gives pri 11666, and the overlap with block 1's lbu-to-arms range gives the conflict. Hand-simulating find_reg on the s63 model with just that change yields the complete target seating (74 -> $v1, 77 -> $a0, 81 -> $a0, 76 -> $v1, 72 -> $a1).",
-   "next_probe": "Install chassis (a) (python3 tmp/grind/func_80034F88/s63/apply.py tmp/grind/func_80034F88/s63/body_v1_deadreset_reload_high.c) and search for a BYTE-NEUTRAL consumer of the block-0 value that sits at or after block 1's lbu. s64 established that reuse in block 2 is not enough (the local is dead through block 1) and that reuse in block 1 merges rather than conflicts, so the spelling wanted is one where block 1 reads its own byte into its own local WHILE the block-0 value still has a pending use. Check `;; NN conflicts` in tmp/grind/func_80034F88/dumps/code6cac_b.greg for 74 appearing in 77's conflict list, and confirm 76's conflicts stay free of 74."
+   "hypothesis": "One of the three premises behind our allocation model of block 0 is false, because the target's own instruction stream implies the SAME reference counts and live ranges we measure, yet allocates differently. The likeliest false premise is that block 0's address object is a global allocno in the target.",
+   "mechanism": "Our address object crosses the branch at 80034FBC (used at 80034FB4 and again at 80034FD0), so local-alloc cannot seat it and global.c must. If the original C instead produced the 80034FD0 store through a pseudo that local-alloc seated inside the join block -- for instance because the store's address was rematerialised there rather than carried -- then $v1 for that store comes from local-alloc's ascending scan, not from a priority race, and 60 sessions of global.c reasoning have been aimed at the wrong pass.",
+   "next_probe": "Install candidate.c, run pwsh tools/grinder/dump.ps1 func_80034F88 and read tmp/grind/func_80034F88/dumps/code6cac_b.lreg for block 0: check whether the target-shaped store at the join can be produced by a pseudo with reg_basic_block >= 0. Then price the C shapes that would give the join block its own address pseudo without emitting a second la -- note the ban permits at most TWO C pointer objects aliasing &D_80106A73, so this must come from the existing two, not a third."
   },
   {
-   "hypothesis": "The score-2 body's residual can also be attacked from the loop side: if the copy loop's byte temp is forced to be a SEPARATE pseudo from block 0's value while block 0's value keeps its loop-spanning liveness, the seating survives and the two instructions close.",
-   "mechanism": "The merge happens because the loop's only value-producing statement is assigned to the reused local. A second local in the loop would take $v0 (it merges with the loop's address temp, which is dead-after-use), but block 0's value then has no use in the loop and its live range collapses back, removing conflicts[73] += 76 and with it the whole seating.",
-   "next_probe": "Price the two spellings that keep BOTH properties: (i) block-0 value used as the loop's ADDRESS temp (`u = (s32)p + i; c = *((u8 *)u + 0x17); D_80106A70[i] = c;`) -- measure whether the address temp and byte temp stay distinct and what each is seated at; (ii) a loop body where the block-0 value's last use is the loop's first statement only. Both are single sandbox measurements on the s64 chassis; neither was measured this session."
+   "hypothesis": "Branch (A) of the arithmetic is still open through live length rather than references: block 0's address object at live length 5 would have priority 20000 > 17500 and would be allocated before block 0's value, which hands over the entire target seating in one move.",
+   "mechanism": "pri = floor_log2(5)*5*10000/livelen = 100000/livelen for the address object, so any live length at or below 5 beats the value's 17500. The model reports live length 28 for that allocno where the .flow dump reports 14 -- exactly double -- so the quantity global.c prices is not the one flow.c measures, and whatever doubles it is a second, unexamined lever.",
+   "next_probe": "Read tools/gcc-2.7.2/global.c's live-length computation and the .greg dump to establish what the 28 counts (it is not 2x for every allocno: 73 is 7 vs flow 8, 81 is 19 vs flow 20). Then enumerate C shapes that shorten the address object's live range -- principally anything that lets block 0's store reach the symbol without keeping the pointer live across the branch -- and measure each with sandbox."
   },
   {
-   "hypothesis": "The solver's remaining 1-atom vectors on the (a) model -- refs_up on block 0's address from 5 to 16/17 -- are worth re-pricing on the s64 (score-2) model rather than on the s63 baseline, because loop-body references are loop-weighted and therefore much cheaper per statement than the straight-line references the s63 arithmetic assumed.",
-   "mechanism": "flow.c increments REG_N_REFS by a loop-depth-scaled amount, which is why the loop index shows 11 references for four textual uses. A reference to block 0's address inside the loop would count several times over, but it would also extend that address's live range into the loop and make it conflict with the index, which currently holds $v1.",
-   "next_probe": "Re-run tools/ra_solver/inverse.py global on tmp/grind/func_80034F88/s64/a1.model.json (the score-2 model) rather than a.model.json, with the goal expressed for whatever seating a split loop temp would need, and read whether any 1-atom vector survives that does not require the block-0 value to live in the loop."
+   "hypothesis": "Branch (A) through references needs 16 references on block 0's address object, and the only reference sites that do not extend its live range into the copy loop are inside blocks 0, 1 and 2 -- so the question is which C shapes actually increment REG_N_REFS on a pointer pseudo without emitting an instruction.",
+   "mechanism": "flow.c counts references per RTL insn, weighted by loop depth (the loop index shows 11 for roughly seven textual references). s62's split-read spelling measured the address object DROPPING to 4 references, so re-reading *q in the arms does not add references the way the naive count suggests; the mapping from C shape to REG_N_REFS on this pseudo is not yet characterised.",
+   "next_probe": "Rather than sandbox-searching, extract the model for four or five candidate shapes in one pass and tabulate (C shape -> nrefs, livelen, pri) for the address object only; use tools/ra_solver/extract.py on each and compare against the 16-reference threshold before spending a single scoring run."
   }
  ],
  "judge_constraints": [
@@ -425,46 +431,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 48,
-   "statement": "Restoring a second declared pointer object for flag blocks 2/3 on the straight-line chassis - measured diagnostically only, reverted immediately, never proposed as a candidate - measures 21 at 49 insn",
-   "kill_scope": "instance",
-   "measured_on": "straight-line-mask chassis on HEAD 2026-09-05, two declared pointer objects (banned construct, measured diagnostically and reverted, never proposed), no FAKE construct present",
-   "predicate_cite": "",
-   "result": "tw_vol = 21 at 49 (5 lbu / 2 nop); tw_str = 21 at 49 (4 lbu / 3 nop). Census on tw_vol: ord 1 reg 76 -> hard 3, ord 8 re"
-  },
-  {
-   "session": 48,
-   "statement": "Hoisting `c0 = p[8] & 1;` above the block-0 mask on the straight-line chassis, so that a BB0 quantity spans the mask's read-modify-write and could take hard 3 ahead of it, measures 14 at 49 on both th",
-   "kill_scope": "instance",
-   "measured_on": "straight-line-mask chassis on HEAD 2026-09-05, one declared pointer object, plain and volatile variants, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "x1 = 14 at 49, x2 = 14 at 49; both lose the target's block-0 order. Banked as rejected/s48-c0-hoisted-above-mask-straigh"
-  },
-  {
-   "session": 49,
-   "statement": "On the straight-line-mask chassis, restoring the target's block-1 reload via a volatile-qualified read (*(volatile u8 *)q) or via a non-unifiable address expression (*(&D_80106A78 - 5)) leaves the blo",
-   "kill_scope": "instance",
-   "measured_on": "straight-line-mask chassis (s48 candidate) on HEAD 2026-09-05, one declared pointer object, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "Both escapes put the lbu back at the target's position and neither moves a register. The reload and the seat are indepen"
-  },
-  {
-   "session": 49,
-   "statement": "With both block-0-local quantities removed, reg 75 still takes hard 4 because global.c allocno_compare ranks the masked-value allocno (refs=6, live_length=9, priority 13333) above the pointer allocno ",
-   "kill_scope": "instance",
-   "measured_on": "two-statement-mask chassis (s49 candidate) on HEAD 2026-09-05, one declared pointer object, no FAKE construct",
-   "predicate_cite": "",
-   "result": "KILLED for this body. Thresholds computed from the formula: lower reg 74 to refs<=4 at len 9 (8888) or len>=12 at refs 6"
-  },
-  {
-   "session": 49,
-   "statement": "Six spellings of a single-statement block-0 mask -- & 0xF8, & ~7, & -8, & 0x1F8, & 0xFFF8 and (*q >> 3) << 3 -- each leave a 2-reference block-0-local temp that local-alloc seats at hard 3, so each me",
-   "kill_scope": "instance",
-   "measured_on": "one-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct",
-   "predicate_cite": "",
-   "result": "KILLED as a route to deleting the block-0-local temp. This is one horn of the measured dilemma; the other horn is the pr"
-  },
   {
    "session": 49,
    "statement": "Hoisting each block's `c = p[8] & N;` above its `q = &D_80106A73;` re-assignment (rd7), and adding a redundant `q = &D_80106A73;` immediately before block 0's store to split reg 75's block-0 live inte",
@@ -904,6 +870,46 @@
    "measured_on": "chassis (a) (mask+reload in one local) on the split-declaration chassis, HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator",
    "predicate_cite": "",
    "result": "both 52 build instructions / score 31, reproducing s61's and s63's numbers on the newer chassis. Banked as rejected/s64-"
+  },
+  {
+   "session": 65,
+   "statement": "Reusing blocks-1/2's value local inside block 0, in the flag test, in the arms, or in both, does seat block 0's value at $a0 and blocks-1/2's address at $a0, but the same extension makes the reused lo",
+   "kill_scope": "instance",
+   "measured_on": "split-declaration two-object chassis (extern u8 D_80106A70[3] + extern u8 D_80106A73) on HEAD 2026-09-05, with the two Judge-granted pointer FAKEs and the s57-family cse2 dead-re-set invalidator prese",
+   "predicate_cite": "",
+   "result": "b1 = 47 insns / score 33; b2 = 47 / 12; b3 = 49 / 16. b3's model shows conflicts[76] gaining 74, 74 allocated at ord 2 i"
+  },
+  {
+   "session": 65,
+   "statement": "Merging block 0's mask into a single expression cuts the value allocno to five references and priority 14285 but re-creates the block-local $v1 quantity, so the address object's hard conflicts become ",
+   "kill_scope": "instance",
+   "measured_on": "split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator; model tmp/grind/func_80034F88/s65/v4.model.json",
+   "predicate_cite": "",
+   "result": "49 insns / score 15; model v4.model.json shows 76 (value) 5 refs / livelen 7 / pri 14285 -> $v1 and 77 (address) 5 refs "
+  },
+  {
+   "session": 65,
+   "statement": "Duplicating block 0's store into both arms, the sanctioned byte-neutral reference lift for the address object, is not re-merged by cross-jump here and costs one to three instructions.",
+   "kill_scope": "instance",
+   "measured_on": "split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator",
+   "predicate_cite": "",
+   "result": "v1 = 50 insns / score 12; v2 = 50 / 12; v3 = 52 / 19. The solver's refs_up 5->16 vector on the address object still has "
+  },
+  {
+   "session": 65,
+   "statement": "Making block 0's value the copy loop's address temp rather than its byte temp keeps the loop-index conflict and the 49-instruction shape but seats the loop's addu destination and lbu base at $a0, meas",
+   "kill_scope": "instance",
+   "measured_on": "split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator, s64's score-2 body as the base",
+   "predicate_cite": "",
+   "result": "w1 = 49 / 3; w9 = 49 / 3; w3 = 49 / 15 (copy-propagation folds the copy and deletes the loop store, so the conflict disa"
+  },
+  {
+   "session": 65,
+   "statement": "Splitting the shared flag/result local into three per-block locals is codegen-neutral on both the score-2 and the score-15 chassis.",
+   "kill_scope": "instance",
+   "measured_on": "split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator",
+   "predicate_cite": "",
+   "result": "y1 = 49 insns / score 2 (unchanged); y2 = 49 / 15 (unchanged). The shared-c shape costs nothing and need not be revisite"
   }
  ],
  "judge_clearances": [
