@@ -582,26 +582,50 @@
  * via global.c:1709-1713 mapping a copy operand through reg_renumber; what is
  * true is that allocno 74 is never a copy operand, so none can be recorded for
  * it without a second C object aliasing the byte.
+ *
+ * (12) s39 (synthesis) CHANGES THE BODY for the first time since s20, at the
+ * SAME score (10 at 49 insns, objdump BIT-IDENTICAL to the previous body), and
+ * the reason is the chassis underneath it, not the bytes.  Block 0's mask is now
+ * spelled as an SImode round-trip through one named variable --
+ * `m = *q; m = m & 0xF8; *q = m;` -- instead of `*q &= 0xF8;`.  Measured with the
+ * instrumented cc1 (BB2_ALLOC_DEBUG, granted by docs/grind/decisions.md:14784)
+ * and the .lreg/.greg dumps:
+ *   - `*q &= 0xF8;` expands to a QImode load into its own pseudo plus an SImode
+ *     AND through a subreg.  That QImode pseudo is referenced in ONE basic block,
+ *     so LOCAL-alloc seats it in $v1 before global-alloc runs, and q therefore
+ *     carries a HARD-register conflict with reg 3: `;; 75 conflicts: ... 2 3 29`.
+ *     That conflict is what s31 and s38 called the residual's root cause.
+ *   - The round-trip spelling emits a single `zero_extend:SI (mem:QI)` into the
+ *     user pseudo and masks it in place, so the entry block contains NO local
+ *     quantity at all.  q's conflict row loses hard reg 3 entirely
+ *     (`;; 75 conflicts: 72 74 75 77 79 80 83 84 2 29`).
+ * q is now ELIGIBLE for $v1.  It still does not get it, but for a different and
+ * much weaker reason: allocno_compare orders m (nrefs 6, livelen 9, pri 13333)
+ * ahead of q (nrefs 10, livelen 28, pri 10714), and m takes the seat first.  The
+ * residual is a 2619-point arithmetic gap in a priority formula, not an
+ * ineligibility.  Any future session should start from THIS body, not from the
+ * `*q &= 0xF8;` one.
  */
 void func_80034F88(void) {
     s32 *p;
     s32 i;
+    s32 m;
     u8 *q;
 
     p = func_80077D00();
     q = &D_80106A73;
-    *q &= 0xF8;
+    m = *q;
+    m = m & 0xF8;
+    *q = m;
 
     {
-        s32 v;
         s32 c;
 
         c = p[8] & 1;
-        v = *q;
         if (c) {
-            c = v | 1;
+            c = m | 1;
         } else {
-            c = v;
+            c = m;
         }
         *q = c;
     }

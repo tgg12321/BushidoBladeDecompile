@@ -5330,3 +5330,181 @@ handoff.  One new disproven form banked (bank size 203).
 - [s38] Ladder accounting: this is session sixteen of cycle 2 (the ledger's own numbering; the dispatch brief called it 'session 35' while the ledger already carried s35 and s37 blocks, so this session is tagged s38 and its scratch is tmp/grind/func_80034F88/s38/). The six-modality condition was met at s31; four flat sessions remain before the owner directive 2026-09-02 permits any disposition.
 
 - [s38] One new disproven form banked (rejected/s38-loop-source-byte-array-indexed-score12.c); bank size is now 203.
+
+==== s39 (synthesis) ====
+
+(Session-numbering note: the dispatch brief again called this "session 35"; the
+ledger already carries s35/s37/s38 blocks, so this session is tagged **s39** and
+its scratch is `tmp/grind/func_80034F88/s39/`.)
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` (the s38 body)
+spliced as variant `b0`: **score 10, build_insns 49**. The dispatch brief printed
+"measurement unavailable" for the TENTH consecutive session, so the floor is
+measured here, not inherited. `src/code6cac_b.c` and `include/code6cac.h` are
+both back at HEAD at session end (`git status --porcelain src/ include/` empty).
+
+MANDATED KILL RE-AUDIT. The instance kill re-measured this session is s37's k1
+(`rejected/s37-block0-value-lives-across-block1-score10-BIT-IDENTICAL.c`, the
+banked form claimed to make block 0's value live across the block-1 branch):
+**10 at 49**, unchanged. But its .greg dump shows the s37/s38 kill NARRATION was
+incomplete -- see section 1 -- and re-reading it is what produced this session's
+result. `fake_ablate.py` again reports no FAKE-annotated construct in
+`candidate.c`, so no banked kill on this chassis was measured with a FAKE carrier
+on the contested pseudo.
+
+--- 1. THE HARD-REGISTER CONFLICT ON q IS REMOVABLE, AND IT IS REMOVED ---
+
+The ledger has carried, since s31 and in sharper form since s38, the statement
+that the `&D_80106A73` object `q` is INELIGIBLE for $v1 before `find_reg` even
+runs, because `.greg` prints a hard-register conflict with reg 3:
+
+    ;; 75 conflicts: 72 74 75 77 79 80 83 84 2 3 29
+
+s38 attributed that hard conflict to local-alloc seating "block 0's masked byte"
+in $v1 before global-alloc looks at q, and treated it as a fact of the function
+rather than a fact of the SPELLING. This session read the pre-allocation RTL for
+three different spellings of block 0, and the attribution is spelling-dependent:
+
+  * `*q &= 0xF8;` (the body every session since s20 has measured) expands to TWO
+    pseudos -- a QImode load destination and an SImode AND through a subreg:
+
+        (insn 17 (set (reg:QI 76) (mem:QI (reg/v:SI 75))))
+        (insn 19 (set (reg/v:SI 74) (and:SI (subreg:SI (reg:QI 76) 0) (const_int 248))))
+        (insn 22 (set (mem:QI (reg/v:SI 75)) (subreg:QI (reg/v:SI 74) 0)))
+
+    Pseudo 76 is referenced in ONE basic block, so it never enters the global
+    allocno table at all: local-alloc seats it, and (with $v0 held by the call
+    return, and no REG_ALLOC_ORDER defined for MIPS in
+    `tools/gcc-2.7.2/config/mips/mips.h`, so the scan is ascending) the lowest
+    free hard register is $v1. THAT is the source of q's hard-reg-3 conflict.
+
+  * `m = *q; m = m & 0xF8; *q = m;` -- one named SImode variable, loaded and
+    masked in place -- expands to ONE pseudo and a `zero_extend`:
+
+        (insn 14 (set (reg/v:SI 75) (symbol_ref:SI ("D_80106A73"))))
+        (insn 18 (set (reg/v:SI 74) (zero_extend:SI (mem:QI (reg/v:SI 75)))))
+        (insn 20 (set (reg/v:SI 74) (and:SI (reg/v:SI 74) (const_int 248))))
+        (insn 23 (set (mem:QI (reg/v:SI 75)) (subreg:QI (reg/v:SI 74) 0)))
+
+    The entry block now contains NO local-alloc quantity. `.greg` prints
+
+        ;; 75 conflicts: 72 74 75 77 79 80 83 84 2 29
+
+    -- hard reg 3 is GONE from q's conflict row. q is ELIGIBLE for $v1.
+
+Measured, not inferred: `tmp/grind/func_80034F88/s39/v2.greg` and `v4.greg`
+versus `k1.greg`. This retires the s31/s38 formulation of the residual.
+
+--- 2. THE RESIDUAL IS NOW A TWO-NUMBER PRIORITY GAP ---
+
+Eligible is not seated. With the round-trip spelling the instrumented cc1
+(`tools/gcc-2.7.2/cc1`, BB2_ALLOC_DEBUG=1, granted by decisions.md:14784;
+driver `tmp/grind/func_80034F88/s39/ad.sh`) prints:
+
+    ord=0 pseudo=73 hardreg=3 nrefs=11 livelen=7  pri=47142   <- i (loop counter)
+    ord=1 pseudo=77 hardreg=2 nrefs=5  livelen=6  pri=16666
+    ord=2 pseudo=80 hardreg=2 nrefs=5  livelen=7  pri=14285
+    ord=3 pseudo=84 hardreg=2 nrefs=5  livelen=7  pri=14285
+    ord=4 pseudo=74 hardreg=3 nrefs=6  livelen=9  pri=13333   <- m  (takes $v1)
+    ord=5 pseudo=75 hardreg=4 nrefs=10 livelen=28 pri=10714   <- q  (gets $a0)
+    ord=6 pseudo=79 hardreg=3 nrefs=3  livelen=4  pri=7500
+    ord=7 pseudo=83 hardreg=3 nrefs=3  livelen=4  pri=7500
+    ord=8 pseudo=72 hardreg=5 nrefs=6  livelen=33 pri=3636    <- p
+
+`allocno_compare` (tools/gcc-2.7.2/global.c:635) sorts on
+`floor_log2(nrefs) * nrefs / live_length`; m at 13333 is allocated before q at
+10714 and takes the seat. The target wants the opposite pairing (address in $v1,
+byte value in $a0), so the whole 10-point residual is now the 2619-point gap
+between those two numbers. Thresholds that would flip it, from the formula:
+q nrefs >= 13 at livelen 28 (13928); or q livelen <= 22 at nrefs 10 (13636); or
+m nrefs <= 4 at livelen 9 (8888); or m livelen >= 12 at nrefs 6 (10000).
+
+--- 3. ALL FOUR INPUTS TO THAT GAP MEASURE PINNED FROM C ---
+
+Every dial was pushed on directly this session and each is held by a different
+pass:
+
+  (a) q's nrefs is pinned at 10. Adding a redundant `q = &D_80106A73;`
+      re-materialisation in block 1 (variant `w1`) leaves the allocno table
+      numerically IDENTICAL -- q still nrefs=10 livelen=28 pri=10714 -- because
+      cse deletes the redundant set. Score 10 at 49, unchanged. Extra
+      re-materialisations therefore cannot buy references; only genuinely new
+      uses could, and the candidate new use (q as the trailing copy loop's store
+      base) was measured at 30 in s37.
+  (b) m's nrefs is pinned at 6 whenever m is global. Interposing a copy
+      (`v = m;`, block 1's arms reading v -- variant `z2`) is coalesced away:
+      identical table, identical score. Removing block 1's use of m entirely
+      (variant `t1`: block 1 reads `D_80106A73` by symbol so cse cannot forward)
+      does drop m out of the global table -- but only by making it a
+      single-basic-block quantity again, which restores exactly the local-alloc
+      $v1 seat and the hard-reg-3 conflict section 1 removed. 11 at 50. That is
+      the dichotomy: m consumed by block 1 => global, pri 13333, takes $v1;
+      m not consumed by block 1 => local, local-alloc takes $v1.
+  (c) m's livelen is pinned at 9 and moves the WRONG way under reordering.
+      Computing block 1's condition between m's load and m's mask (variant `x1`,
+      the direct attempt at livelen >= 12) gives livelen 7, pri 17142 -- the
+      scheduler compacts the range rather than stretching it. 14 at 49. Hoisting
+      the whole flag word first (`x3`) is 27 at 48.
+  (d) q's livelen is pinned at 28 without dropping q from a block, and the hybrid
+      that drops it (q for blocks 0/1, symbol for blocks 2/3) is the
+      already-banked `hybrid-h1_ptr01_sym23-score28.c`.
+
+--- 4. THE BIT-IDENTICAL BASIN IS NOW FIFTEEN BODIES ---
+
+`b0` (the s38 candidate), `k1`, `v1`, `v2`, `v3`, `v4`, `w1`, `z2` and the
+array-declared `a1` all measure 10 at 49 and disassemble BIT-IDENTICALLY
+(`diff s39/b0.txt s39/<n>.txt` empty except the objdump filename line). Added to
+s31's seven and s37's h15/k1/k4/k5 this is the widest measured statement of the
+basin's rigidity: three structurally distinct spellings of block 0's
+read-modify-write, two of block 1's value flow, and the destination-array
+declaration change all collapse to the same 49 instructions -- while, per section
+1, they do NOT all produce the same conflict graph. Score-identity is not
+chassis-identity, and the ledger's practice of ranking bodies only by score is
+what hid this for 19 sessions.
+
+--- 5. CANDIDATE.C IS REPLACED (SAME BYTES, BETTER CHASSIS) ---
+
+`memory/grind/func_80034F88/candidate.c` and its pun-free twin
+`candidate_arraydecl_pun_free.c` now carry the round-trip spelling of block 0
+(`m = *q; m = m & 0xF8; *q = m;`). Both measure 10 at 49 (`a1` verified this
+session with `include/code6cac.h:472` temporarily reading
+`extern u8 D_80106A70[3];`; disassembly bit-identical to `b0`; header restored).
+The body emits byte-for-byte the same output as the previous candidate; the
+reason to prefer it is that q is no longer hard-conflicted out of $v1, so the
+next session inherits a live arithmetic target instead of a foreclosure.
+
+- [s39] Chassis re-measured on HEAD (dispatch printed 'measurement unavailable' for the tenth consecutive session): candidate body = score 10, build_insns 49, rules_dropped 0. src/ and include/ restored to HEAD; `git status --porcelain src/ include/` empty.
+- [s39] KILL RE-AUDIT: s37's k1 re-measures 10 at 49 on today's chassis; fake_ablate reports no FAKE construct in candidate.c. Re-reading k1's .greg is what exposed the s38 mis-attribution below.
+- [s39] THE HARD-REG-3 CONFLICT ON q IS A PROPERTY OF THE SPELLING, NOT OF THE FUNCTION. `*q &= 0xF8;` expands to a QImode load pseudo plus an SImode AND-through-subreg; the QImode pseudo is single-basic-block, so local-alloc seats it in $v1 (ascending scan, no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, $v0 held by the call return) and q inherits `;; conflicts: ... 2 3 29`. Spelling block 0 as `m = *q; m = m & 0xF8; *q = m;` emits a single `zero_extend:SI (mem:QI)` into one named pseudo, leaves the entry block with NO local quantity, and q's conflict row loses hard reg 3 entirely. Measured in tmp/grind/func_80034F88/s39/{k1,v2,v4}.greg.
+- [s39] The residual is therefore no longer an ineligibility but a priority gap in global.c:635 allocno_compare: m nrefs=6 livelen=9 pri=13333 is ordered ahead of q nrefs=10 livelen=28 pri=10714 and takes $v1 first. Flip thresholds from floor_log2(n)*n/livelen: q nrefs>=13, or q livelen<=22, or m nrefs<=4, or m livelen>=12.
+- [s39] q's nrefs is pinned at 10: a redundant `q = &D_80106A73;` in block 1 (w1) is deleted by cse and leaves the allocno table numerically identical (10 at 49).
+- [s39] m's nrefs is pinned at 6 while m is global: an interposed copy (z2) is coalesced away (identical table); removing block 1's use of m (t1, block 1 reads the symbol so cse cannot forward) drops m from the global table only by making it a single-BB quantity, which restores the local-alloc $v1 seat and the hard-reg-3 conflict. 11 at 50.
+- [s39] m's livelen moves the wrong way under statement reordering: computing block 1's condition between the load and the mask (x1) gives livelen 7 / pri 17142, not >=12. 14 at 49. Hoisting the whole flag word (x3) is 27 at 48.
+- [s39] The block-1 two-arm select is load-bearing: replacing it with `c = m; if (cond) c = m|1;` (w2) or `c |= 1` (w3) is 13 at 47 -- the branch-around form loses two instructions.
+- [s39] Bit-identical-tie count is now FIFTEEN bodies. Score-identity is NOT chassis-identity: bodies with identical bytes have different conflict graphs, which is why 19 sessions of score-only ranking missed section 1.
+- [s39] candidate.c and candidate_arraydecl_pun_free.c both REPLACED with the round-trip spelling; both measure 10 at 49 and disassemble bit-identically to the previous candidate.
+- [s39] Ladder accounting: this is session SEVENTEEN of cycle 2; the six-modality condition was met at s31. Three flat sessions remain before the owner directive 2026-09-02 permits any disposition.
+- [s39] Five new disproven forms banked; bank size is now 208.
+
+### Artifacts (s39)
+`tmp/grind/func_80034F88/s39/`: `variants/{b0,k1,v1,v2,v3,v4,w1,w2,w3,x1,x2,x3,z2,t1,a1}.c`,
+`run.ps1`, `ad.sh`, `{b0,k1,v1,v2,v3,v4,w1,x1,a1}.txt` (objdumps), `{k1,v2,v4}.greg`,
+`{v2,v4}.lreg`, `code6cac_b.c.orig`.
+
+- [s39] Chassis re-measured on HEAD this session (the dispatch brief printed 'measurement unavailable' for the tenth consecutive session): the candidate body = score 10, build_insns 49, rules_dropped 0. src/code6cac_b.c and include/code6cac.h are both restored to HEAD at session end; `git status --porcelain src/ include/` is empty.
+
+- [s39] The ledger's standing statement since s31 -- that allocno q is INELIGIBLE for $v1 before find_reg runs -- is spelling-dependent and is removed by an ordinary-C change: `*q &= 0xF8;` expands to a QImode load pseudo plus an SImode AND through a subreg, and the QImode pseudo is single-basic-block so local-alloc seats it in $v1; `m = *q; m = m & 0xF8; *q = m;` emits one zero_extend:SI (mem:QI) into one named pseudo and leaves the entry block with no local quantity. Measured in tmp/grind/func_80034F88/s39/{k1,v2,v4}.greg.
+
+- [s39] The reason local-alloc picks $v1 specifically: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so the free-register scan is ascending, and $v0 is unavailable because the call return is still live (the `a1 = v0` copy is scheduled after block 0's store).
+
+- [s39] On the new chassis the entire 10-point residual is a priority gap in global.c:635 allocno_compare (floor_log2(nrefs) * nrefs / live_length): m nrefs=6 livelen=9 pri=13333 is allocated before q nrefs=10 livelen=28 pri=10714 and takes $v1. Full table in evidence.md; source tmp/grind/func_80034F88/s39/ad.sh (instrumented cc1, BB2_ALLOC_DEBUG=1, granted by docs/grind/decisions.md:14784).
+
+- [s39] The four numeric ways the formula allows the flip: q nrefs >= 13 at livelen 28 (13928); q livelen <= 22 at nrefs 10 (13636); m nrefs <= 4 at livelen 9 (8888); m livelen >= 12 at nrefs 6 (10000). Each was probed this session and each is held by a different pass -- cse deletes redundant q re-materialisations (w1), copy coalescing absorbs interposed copies (z2), local-alloc reclaims m the moment block 1 stops consuming it (t1), and the first scheduling pass compacts rather than stretches m's range (x1).
+
+- [s39] Score-identity is not chassis-identity. Fifteen bodies now measure 10 at 49 with bit-identical disassembly (s31's seven, s37's h15/k1/k4/k5, and s39's v1/v2/v3/v4/w1/z2/a1), yet they do NOT all produce the same conflict graph -- b0/k1 carry the hard-reg-3 conflict and v2/v4 do not. Ranking bodies by score alone is what hid this for 19 sessions.
+
+- [s39] candidate.c and candidate_arraydecl_pun_free.c are both REPLACED with the round-trip spelling. Both measure 10 at 49. The pun-free twin was verified this session with include/code6cac.h:472 temporarily reading `extern u8 D_80106A70[3];` and its objdump is bit-identical to the punned body; the header was restored immediately afterwards.
+
+- [s39] Ladder accounting: this is session seventeen of cycle 2 (the ledger's own numbering; the dispatch brief again said 'session 35' while the ledger already carried s35/s37/s38, so this session is tagged s39). The six-modality condition was met at s31; three flat sessions remain before owner directive 2026-09-02 permits any disposition.
+
+- [s39] Five new disproven forms banked in memory/grind/func_80034F88/rejected/; bank size is now 208.

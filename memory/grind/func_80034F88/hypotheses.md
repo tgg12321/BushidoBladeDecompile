@@ -3791,3 +3791,126 @@ FRONTIER RESET (strongest three for the next ladder pass):
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c score-10 chassis on HEAD 2026-09-05 with include/code6cac.h:472 temporarily set to `extern u8 D_80106A70[3];`; single declared `u8 *q`, no FAKE-annotated construct present
+
+==== s39 (synthesis) — FRONTIER RESET ====
+
+The residual has been RESTATED this session and the old frontier is retired.
+Everything below supersedes the s34–s38 frontier items, which were all phrased
+around "q is ineligible for $v1 because a local-alloc pseudo is seated there".
+That premise is false for the round-trip spelling of block 0 (see evidence.md
+"==== s39 (synthesis) ====" section 1): with
+`m = *q; m = m & 0xF8; *q = m;` the entry block contains no local-alloc quantity
+and q's `.greg` conflict row no longer carries hard reg 3. The new candidate.c
+carries that spelling.
+
+WHAT IS LEFT, EXACTLY. `global.c:635 allocno_compare` sorts allocnos on
+`floor_log2(nrefs) * nrefs / live_length`. On the new chassis:
+
+    m (block 0/1 byte value)  nrefs=6   livelen=9   pri=13333   -> $v1
+    q (&D_80106A73)           nrefs=10  livelen=28  pri=10714   -> $a0
+
+The target wants q in $v1 and m in $a0. Nothing else in the function differs:
+blocks 2/3, the trailing copy loop and the epilogue are register-exact, and the
+target's block-1 reload is instruction-free (it fills the load-delay slot our
+build wastes on a `nop` — s38 direct diff). So the entire 10-point residual is
+"make pri(q) > pri(m)", and the four ways the formula allows it are:
+
+    q nrefs  >= 13  at livelen 28  -> 13928
+    q livelen <= 22 at nrefs 10    -> 13636
+    m nrefs  <= 4   at livelen 9   ->  8888
+    m livelen >= 12 at nrefs 6     -> 10000
+
+All four were probed this session and all four are pinned by a DIFFERENT pass
+(evidence.md section 3). The three frontier items below are the routes that
+remain, in priority order.
+
+--- FRONTIER 1 (strongest): find a C form in which block 1 consumes m but m's
+reference count is 4, not 6.
+Mechanism: m's six references are the `zero_extend` def (1), the in-place mask
+`m = m & 0xF8` (dest + src = 2), the store `*q = m` (1) and block 1's two arm
+uses (2). Dropping to 4 puts pri(m) at 8888, below q's 10714, and (per
+global.c:426 one-pseudo-one-hardreg and the ascending free-register scan) q then
+takes $v1 and m takes $a0 — the target's pairing. The two obvious reductions are
+both measured dead: interposing a copy is coalesced (z2, identical table), and
+dropping block 1's use makes m single-basic-block so local-alloc re-seats it in
+$v1 (t1, 11 at 50). Untried: a spelling in which the mask is applied WITHOUT a
+second reference to m and WITHOUT spawning a second pseudo — i.e. some expression
+whose RTL is one `zero_extend` insn followed by one AND insn that reads a
+different rtx but writes m. Also untried: whether a `u8`-typed m changes the ref
+accounting (all previous u8 experiments were on the `*q &= 0xF8` chassis and
+scored 19–23, so they never reached this question).
+
+--- FRONTIER 2: shorten q's live length to <= 22 without removing q from any
+block.
+Mechanism: live_length in global.c is accumulated over the insns the allocno is
+actually LIVE, so dead gaps do not count. q is dead between block 1's store and
+block 2's re-materialisation and again between blocks 2 and 3, yet still measures
+28. Six more dead insns inside q's span would give pri 13636 > 13333. The only
+lever that lengthens a dead gap is moving work OUT of q's live range; the whole
+function is 49 instructions and blocks 2/3 are already exact, so the only place
+with slack is between block 0's store and block 1's store. Probe: measure
+live_length (not score) for bodies that move the p[8] read, the `a1 = v0` copy
+and the block-1 condition around, and read the number off `ad.sh` rather than
+inferring it from the objdump — x1 showed the number can move by 2 in one step,
+and it moved the wrong way, so the derivative is real and steerable.
+
+--- FRONTIER 3 (bookkeeping, not a probe): ladder accounting.
+This is session seventeen of cycle 2; the six-modality condition was met at s31.
+THREE flat sessions remain before owner directive 2026-09-02 permits any
+disposition. If the driver assigns `escalation` after that count is met, the
+record to file is the LADDER EXHAUSTED (non-endgame residual, floor 10) form —
+but note that s39 materially changed the causal story, so any such record must
+cite the priority-gap statement above, NOT the retired "q is ineligible for $v1"
+one, and must state the four numeric flip thresholds and which pass pins each.
+
+## [s39] Spelling block 0's read-modify-write as `m = *q; m = m & 0xF8; *q = m;` (one named SImode variable, loaded via zero_extend and masked in place) removes hard register 3 from q's .greg conflict row, so q becomes eligible for $v1.
+- mechanism: `*q &= 0xF8;` expands to a QImode load into its own pseudo plus an SImode AND through a subreg (insns 17/19/22 of the k1 dump). That QImode pseudo is referenced in exactly one basic block, so it never enters the global allocno table; local-alloc seats it, and with $v0 held by the call return and no REG_ALLOC_ORDER defined for MIPS in tools/gcc-2.7.2/config/mips/mips.h the ascending free-register scan gives it $v1. q, live across it, inherits the hard-reg-3 conflict. The round-trip spelling emits one `zero_extend:SI (mem:QI)` into the user pseudo and one in-place AND, so the entry block contains no local-alloc quantity at all.
+- probe: Installed the s38 candidate (b0) and four round-trip spellings (v1..v4) via tmp/grind/func_80034F88/s39/run.ps1, then `pwsh tools/grinder/dump.ps1 func_80034F88` on each and read the .greg conflict rows and the pre-allocation RTL.
+- result: b0/k1 print `;; 75 conflicts: 72 74 75 77 79 80 83 84 2 3 29` (hard reg 3 present). v2/v4 print `;; 75 conflicts: 72 74 75 77 79 80 83 84 2 29` -- hard reg 3 gone. All of v1..v4 measure 10 at 49 and disassemble bit-identically to b0, so the change is invisible to the score and was missed by 19 sessions of score-only ranking. Artifacts: s39/{k1,v2,v4}.greg, s39/{v2,v4}.lreg.
+- verdict: CONFIRMED
+
+## [s39] On the round-trip chassis, q's reference count cannot be raised above 10 by adding a redundant `q = &D_80106A73;` re-materialisation in block 1.
+- mechanism: cse deletes a set whose destination already holds the same value, so the extra reference never reaches flow.c's reg_n_refs count that global.c:635 allocno_compare divides by live_length.
+- probe: Variant w1 = v2 plus `q = &D_80106A73;` at the head of block 1; scored with the sandbox and dumped with the instrumented cc1 (BB2_ALLOC_DEBUG=1, tmp/grind/func_80034F88/s39/ad.sh).
+- result: w1 = 10 at 49, and its allocno table is numerically identical to v2's: q still ord=5 pseudo=75 hardreg=4 nrefs=10 livelen=28 pri=10714. The added statement bought zero references.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present; fake_ablate.py reports nothing to ablate
+
+## [s39] On the round-trip chassis, m's reference count of 6 cannot be reduced by interposing a copy of m for block 1's arms to read.
+- mechanism: The copy is coalesced away before allocation, so m's references are unchanged and pri(m) stays at 13333, above q's 10714.
+- probe: Variant z2 = v2 with block 1 spelled `v = m; c = p[8] & 1; if (c) c = v | 1; else c = v; *q = c;`; sandbox plus instrumented-cc1 allocno table.
+- result: z2 = 10 at 49, allocno table identical to v2's (m ord=4 nrefs=6 livelen=9 pri=13333; q ord=5 nrefs=10 livelen=28 pri=10714).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present
+
+## [s39] Removing block 1's use of m -- by having block 1 read D_80106A73 by symbol so cse cannot forward block 0's store -- drops m to 4 references but re-creates the local-alloc $v1 seat, because m then lives in a single basic block again.
+- mechanism: local_alloc only handles quantities referenced in one basic block; once block 1 stops consuming m, m qualifies and is seated in $v1 before global-alloc runs, which restores the hard-reg-3 conflict on q that the round-trip spelling removed.
+- probe: Variant t1 = v2 with block 1's load spelled `v = D_80106A73;` and its store still through q; sandbox plus instrumented-cc1 allocno table.
+- result: t1 = 11 at 50 insns. The allocno table has only 8 entries and m is absent from it entirely; q is back at ord=4 hardreg=4 nrefs=10 livelen=29 pri=10344. This is the second horn of the dichotomy: m consumed by block 1 => global allocno at pri 13333 which outranks q; m not consumed => local quantity which local-alloc seats in $v1 first.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present
+
+## [s39] Computing block 1's condition between m's load and m's mask, to stretch m's live length to 12 or more and demote it below q in allocno_compare, moves m's live length in the opposite direction.
+- mechanism: live_length is measured after the first scheduling pass, and the scheduler compacts the reordered range rather than preserving the source-level separation.
+- probe: Variants x1 (`m = *q; c0 = p[8] & 1; m = m & 0xF8; *q = m;` then the two-arm select on c0) and x3 (whole flag word hoisted into c0 before block 0's mask); sandbox plus instrumented-cc1 allocno table for x1.
+- result: x1 = 14 at 49; its table gives m nrefs=6 livelen=7 pri=17142 -- live length fell from 9 to 7 and pri rose. x3 = 27 at 48. Banked as rejected/s39-cond-hoisted-between-load-and-mask-score14.c and rejected/s39-whole-flagword-hoisted-score27.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present
+
+## [s39] Replacing block 1's two-arm select with an init-then-conditional-or shape, to cut one of m's references, loses two instructions.
+- mechanism: `c = m; if (cond) c = m | 1;` compiles to the branch-around form, which does not reproduce the target's store-on-the-join geometry (bnez with the ori in the delay slot and an addu on the fall-through).
+- probe: Variants w2 (`c = m; if (p[8] & 1) c = m | 1;`) and w3 (`c |= 1`); sandbox scores.
+- result: w2 = 13 at 47 insns, w3 = 13 at 47 insns. Banked as rejected/s39-block1-init-then-conditional-or-score13.c and rejected/s39-block1-init-then-compound-or-score13.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present
+
+## [s39] MANDATED KILL RE-AUDIT -- s37's k1 (block 0's value named and consumed by block 1) re-measures unchanged on today's chassis, and fake_ablate finds no FAKE carrier on the contested pseudo.
+- mechanism: Re-run of the closest-to-target banked form on HEAD, per the kill re-audit rule; its .greg dump is what exposed the s38 mis-attribution.
+- probe: Spliced rejected/s37-block0-value-lives-across-block1-score10-BIT-IDENTICAL.c as variant k1, scored it, dumped its .greg, and ran `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c`.
+- result: k1 = 10 at 49, unchanged from s37, and bit-identical to b0. Its .greg still carries hard reg 3 in q's conflict row because k1 keeps `m = *q & 0xF8;` as one statement, which still spawns the single-basic-block QImode load pseudo. fake_ablate reports no FAKE-annotated construct in candidate.c.
+- verdict: CONFIRMED

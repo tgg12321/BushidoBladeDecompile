@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 38,
- "current_modality": "forensics",
+ "session_count": 39,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -231,23 +231,29 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "s37's causal story withdrawn: the $v1-stealing top-priority pseudo is the copy loop's induction variable, and the real barrier is a LOCAL-alloc hard-reg seat (q's priority won outright and the seat di"
+  },
+  {
+   "session": 39,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "The hard-reg-$v1 conflict that 8 sessions called the residual's root cause is a property of the SPELLING of block 0, not of the function: an SImode round-trip removes it and leaves a 2619-point allocn"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The contested pass is LOCAL-alloc, not global-alloc: block 0's masked byte is a block-local quantity that local-alloc seats in hard $v1, which is what creates q's hard-reg-3 conflict. An ordinary-C spelling of block 0's read-mask-store whose temporary is either not block-local or carries a copy-preference for $a0 (as the target has it) would remove the conflict without adding a C object.",
-   "mechanism": "local-alloc.c assigns qty_phys_reg for single-block quantities before global.c runs; the resulting `(set (reg:QI 3 v1) ...)` in the pre-global RTL is a hard register that find_reg must respect. Bodies that only move C-level live ranges (s37 k1/k4/k5) are byte-inert because cse normalises them to the same RTL, and bodies that only add references (rt) move the sort without moving the seat.",
-   "next_probe": "The instrumented cc1 prints the quantity table under BB2_QTY_DEBUG=1 (`QTYDBG blk=... qty=... reg1=... birth=... death=... refs=... got=...`, tools/gcc-2.7.2/local-alloc.c:1585), but the hook carries NO function tag, so this session's whole-TU capture (tmp/grind/func_80034F88/s38/qtydbg_b0.txt) cannot be attributed. Compile a REDUCED translation unit containing only func_80034F88 and its externs so the QTYDBG rows are unambiguous, identify block 0's quantity, read what drives its `got=3`, and only then search for a C shape that changes it."
+   "hypothesis": "There is a C spelling in which block 1 still consumes m (so m stays a global allocno and no local quantity is seated in $v1) but m carries only 4 references instead of 6, putting pri(m) at 8888 below q's 10714 and giving q the $v1 seat the target uses.",
+   "mechanism": "m's six references are the zero_extend def (1), the in-place mask `m = m & 0xF8` (dest + src = 2), the store `*q = m` (1) and block 1's two arm uses (2). global.c:635 divides floor_log2(nrefs)*nrefs by live_length, so 4 references at live length 9 scores 8888. global.c:426 then gives q the lowest free hard register, which is $v1 with $v0 held by the call return.",
+   "next_probe": "Search for an expression whose RTL is one zero_extend insn plus one AND insn that writes m without reading it a second time, and that does not spawn a second pseudo the way `m = *q & 0xF8;` does (k1). Also re-run the u8-typed variants of m on THIS chassis -- every previous u8 experiment (scores 19-23) was measured on the `*q &= 0xF8;` chassis and so never reached the reference-count question. Read the number off tmp/grind/func_80034F88/s39/ad.sh, not off the score: several bodies with different tables have identical bytes."
   },
   {
-   "hypothesis": "The body a future candidate-ready should submit is memory/grind/func_80034F88/candidate_arraydecl_pun_free.c plus the one-line header change, not candidate.c: the two are bit-identical, and only the former is free of the declaration pun the brief's auto-scan FAILs at layer 1.",
-   "mechanism": "None at codegen level -- measured neutral (empty objdump diff). The header line `extern u8 D_80106A70[3];` at include/code6cac.h:472 is outside a grind session's surface, so it is an integration handoff, not a src edit.",
-   "next_probe": "Carry it forward unchanged; re-measure it alongside candidate.c on whatever chassis the next session finds, and if any body ever reaches distance 0, port that body to the array spelling before submitting."
+   "hypothesis": "q's live length can be pushed from 28 down to 22 or less without removing q from any of the four blocks, which alone flips allocno_compare (13636 > 13333).",
+   "mechanism": "global.c accumulates live_length over the insns an allocno is actually live, so dead gaps do not count; q is already dead between block 1's store and block 2's re-materialisation and again between blocks 2 and 3. x1 showed the number is steerable -- it moved m's live length from 9 to 7 in one statement move -- so the derivative is real, it was simply pushed on the wrong allocno.",
+   "next_probe": "Generate bodies that move the p[8] read, the `a1 = v0` copy and the block-1 condition around inside blocks 0-1, and for each read q's live_length directly from ad.sh rather than inferring from the objdump. The target metric is q livelen, not score; a body that scores worse but moves q's live length is a better lead than a body that ties at 10."
   },
   {
-   "hypothesis": "Cycle 2 of the ladder needs four more flat sessions before any disposition is permitted.",
-   "mechanism": "Owner directive 2026-09-02 (docs/grind/decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; the modality condition was met at s31 and s38 is session sixteen of the cycle.",
-   "next_probe": "When the driver assigns escalation modality, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the cse enumeration (s27/s28), the reload pricing (s29, now direct-diff confirmed by s38), F1 byte-neutrality (s30), the allocator restatement (s31/s32), s33's proof that both seats are individually reachable from one object, s34's reorg.c:3442 dump proof, s35's end-to-end q-coverage lattice, s37's inline-helper family, and s38's correction that the barrier is a local-alloc hard-register seat rather than a global-allocno priority order; then return owner-gated."
+   "hypothesis": "Ladder accounting -- three flat sessions remain before owner directive 2026-09-02 permits any disposition, and the disposition record, if it is ever written, must be re-drafted.",
+   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; the modality condition was met at s31 and this is session seventeen of cycle 2.",
+   "next_probe": "If the driver assigns `escalation` after the count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) record -- but it must cite the s39 priority-gap statement with its four numeric flip thresholds and the pass that pins each, NOT the retired 's31/s38: q is ineligible for $v1' formulation, which this session disproved."
   }
  ],
  "judge_constraints": [
@@ -646,6 +652,46 @@
    "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 with include/code6cac.h:472 temporarily set to `extern u8 D_80106A70[3];`; single declared `u8 *q`, no FAKE-annotated construct present",
    "predicate_cite": "",
    "result": "KILLED for this chassis; keep the pointer-arithmetic spelling on the source operand. Banked as rejected/s38-loop-source-"
+  },
+  {
+   "session": 39,
+   "statement": "On the round-trip chassis, q's reference count cannot be raised above 10 by adding a redundant `q = &D_80106A73;` re-materialisation in block 1.",
+   "kill_scope": "instance",
+   "measured_on": "round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present; fake_ablate.py reports nothing to ablate",
+   "predicate_cite": "",
+   "result": "w1 = 10 at 49, and its allocno table is numerically identical to v2's: q still ord=5 pseudo=75 hardreg=4 nrefs=10 livele"
+  },
+  {
+   "session": 39,
+   "statement": "On the round-trip chassis, m's reference count of 6 cannot be reduced by interposing a copy of m for block 1's arms to read.",
+   "kill_scope": "instance",
+   "measured_on": "round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "z2 = 10 at 49, allocno table identical to v2's (m ord=4 nrefs=6 livelen=9 pri=13333; q ord=5 nrefs=10 livelen=28 pri=107"
+  },
+  {
+   "session": 39,
+   "statement": "Removing block 1's use of m -- by having block 1 read D_80106A73 by symbol so cse cannot forward block 0's store -- drops m to 4 references but re-creates the local-alloc $v1 seat, because m then live",
+   "kill_scope": "instance",
+   "measured_on": "round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "t1 = 11 at 50 insns. The allocno table has only 8 entries and m is absent from it entirely; q is back at ord=4 hardreg=4"
+  },
+  {
+   "session": 39,
+   "statement": "Computing block 1's condition between m's load and m's mask, to stretch m's live length to 12 or more and demote it below q in allocno_compare, moves m's live length in the opposite direction.",
+   "kill_scope": "instance",
+   "measured_on": "round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "x1 = 14 at 49; its table gives m nrefs=6 livelen=7 pri=17142 -- live length fell from 9 to 7 and pri rose. x3 = 27 at 48"
+  },
+  {
+   "session": 39,
+   "statement": "Replacing block 1's two-arm select with an init-then-conditional-or shape, to cut one of m's references, loses two instructions.",
+   "kill_scope": "instance",
+   "measured_on": "round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "w2 = 13 at 47 insns, w3 = 13 at 47 insns. Banked as rejected/s39-block1-init-then-conditional-or-score13.c and rejected/"
   }
  ]
 }
