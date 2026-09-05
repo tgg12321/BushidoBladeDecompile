@@ -7102,3 +7102,58 @@ the .greg conflict rows for the installed body -- reusable),
 - [s49] tools/fake_ablate.py on the candidate reports 'no FAKE-annotated constructs found' -- the mandated kill re-audit had no FAKE carrier to ablate, so it was discharged instead by re-pricing the s46/s47 reload escapes on the current chassis (first hypothesis above).
 
 - [s49] tmp/grind/func_80034F88/s49/ra.py is a reusable one-command reader: it prints the allocation order, every .greg conflict/preference row, the register dispositions, and refs/live_length/allocno priority for every pseudo of the installed body.
+
+## s50 (rederive, 2026-09-05) -- the seat mechanism is solved; the residual is re-scoped
+
+- `global.c:635-656 allocno_compare` is the exact gate, and its formula includes
+  `allocno_size` (words): `pri = floor_log2(n_refs) * n_refs / live_length *
+  10000 * size`.  All allocnos here are SImode (size 1), so only refs and
+  live_length are movable.
+- **The pointer allocno's seat IS movable by ordinary C.**  Duplicating the
+  flag-block store into both arms of flag blocks 1 and 2 lifts reg 75 from
+  refs=10/len=28/pri=10714 to refs=12/len=26/pri=13846, above reg 74's 13333,
+  and the dispositions become `75 in 3  74 in 4`.  Block 0 then emits the
+  target's registers exactly.  Duplicating in all three flag blocks gives
+  refs=13/len=25/pri=15600 and the same seat.  Cross-jump (`jump2`) runs after
+  reload, so the duplicated stores are counted by global_alloc and merged
+  afterwards -- the mechanism the duplicated-statement-into-arms rule names.
+- **The target needs TWO allocnos for `&D_80106A73`**, not one seat: `$v1` for
+  the mask + flag block 0 (materialised at 80034F98, last used by the store at
+  80034FD0) and `$a0` for flag blocks 1 and 2 (80034FC8, 80034FF0).  With one
+  declared pointer object there is one pseudo, one allocno, one hard register,
+  and GCC 2.7.2's global_alloc has no live-range splitting.  Both seats were
+  measured: hard 4 -> score 10 (flag blocks 1/2 exact), hard 3 -> score 16..18
+  (block 0 exact).  The floor-10 residual is therefore "a second address
+  allocno over the block-0 region", not "the wrong allocation priority".
+- **Direct symbol references cannot supply that second allocno.**  A plain
+  `D_80106A73` lvalue compiles to the `lbu $x,D_80106A73` / `sb $x,D_80106A73`
+  assembler macro (2 insns via `$at`), never to `lui/addiu` + `0($reg)`; it also
+  pushes `p` from `$a1` to `$a2`.  Scores 25..30.
+- **The two-object axis (BANNED; diagnosed only) does not reach 0 either.**
+  Eight two-object bodies measure 21..26.  The blocker there is the same
+  priority race one level down: `pri(t)` = 3333..4545 against `pri(m)` = 13333,
+  so the masked value still wins hard 3.  A two-object body would need
+  `refs(t) >= 13` at live_length 22 to reach the target seat; duplicated stores
+  and duplicated reads got it to 5.  Conclusion for the record: the standing
+  multi-handle ban is NOT demonstrably what costs the 10 points.
+- Register roles on the current chassis, for the next session (from `.lreg`/
+  `.greg` via `tmp/grind/func_80034F88/s50/ra.py`): reg72 = `p` (refs 6, len 33,
+  hard 5 = `$a1`, matches target), reg73 = loop counter `i` (refs 11, len 7,
+  pri 47142, hard 3, matches target), reg74 = block-0 masked value, reg75 =
+  `&D_80106A73`, reg77/80/84 = the three `p[8] & N` conditions (hard 2 = `$v0`,
+  match target), reg79/83 = flag block 1/2 values (hard 3 = `$v1`, match
+  target).  Everything except reg74/reg75 already matches the target.
+
+- [s50] global.c:635 allocno_compare's priority formula includes allocno_size (words); every allocno in this function is SImode (size 1), so only n_refs and live_length are movable by C.
+
+- [s50] The duplicated-statement-into-arms family is a working, measured priority lever on THIS function: +1 reg_n_refs per duplicated store on the pointer pseudo, counted at global_alloc, merged away later by jump2 cross-jumping which runs after reload.
+
+- [s50] Threshold arithmetic, re-derived and now half-spent: the pointer allocno beats the masked value at refs>=12 with live_length<=26 (13846) or refs=13 at 25 (15600); the live_length route (>=12 at refs 6) is measured shut because sched1 shortens rather than lengthens that range.
+
+- [s50] The target holds &D_80106A73 in two hard registers: $v1 for the mask + flag block 0 (materialised 80034F98, last used 80034FD0) and $a0 for flag blocks 1 and 2 (80034FC8, 80034FF0).
+
+- [s50] Everything except reg74 (block-0 masked value) and reg75 (&D_80106A73) already matches the target on the current chassis: reg72 p in $a1, reg73 loop counter in $v1, reg77/80/84 conditions in $v0, reg79/83 flag block 1/2 values in $v1.
+
+- [s50] A direct D_80106A73 lvalue compiles to the two-insn assembler macro through $at, never to the target's lui/addiu + 0($reg) form, and additionally moves p from $a1 to $a2.
+
+- [s50] Two-object bodies (banned; diagnosis only) bottom out at 21, so the multi-handle ban is not demonstrably the thing costing the 10 points.

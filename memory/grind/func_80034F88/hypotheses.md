@@ -5160,3 +5160,143 @@ pointer object, no FAKE construct.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct
+
+## s50 (rederive, 2026-09-05)
+
+### H50.1 -- CONFIRMED (and it OVERTURNS the s49 H49.3 instance kill)
+**Statement.** Duplicating the flag-block store into both arms of flag blocks 1
+and 2 (`if (c) { *q = v | N; } else { *q = v; }` instead of computing into `c`
+and storing once at the join) raises the `&D_80106A73` pointer allocno from
+refs=10/live_length=28/pri=10714 to refs=12/live_length=26/pri=13846, above the
+block-0 masked-value allocno's 13333, which flips `global.c allocno_compare`'s
+sort order and gives dispositions `75 in 3  74 in 4` -- the target's block-0
+seat ($v1 address, $a0 value) for the first time in 50 sessions.
+**Mechanism.** `allocno_compare` (global.c:635-656) sorts by
+`pri = floor_log2(n_refs) * n_refs / live_length * 10000 * allocno_size`
+descending, and `find_reg` gives each allocno in turn the lowest hard register
+not conflicting with an already-allocated one.  Each duplicated store is one
+extra `reg_n_refs` reference on the pointer pseudo counted at global_alloc time;
+`jump2`'s cross-jump pass, which re-merges the duplicated tails, runs AFTER
+reload, so the refs are counted before the duplicates disappear.  This is the
+mechanism the duplicated-statement-into-arms rule doc names verbatim ("the
+effect is a reg_n_refs priority lift").
+**Probe.** `tmp/grind/func_80034F88/s50/bodies/rd_dupstore_b12.c`,
+`.greg` order `;; regs to allocate: 73 77 75 74 79 85 72`, dispositions
+`72 in 5  73 in 3  74 in 4  75 in 3`, reg75 refs=12 len=26 pri=13846.  Emitted
+block 0 is register-for-register the target's 80034F98..80034FD0.  Score 18 /
+51 insns (the loss is entirely in flag blocks 1/2, see H50.2).  All-three-block
+duplication gives refs=13 len=25 pri=15600, same seat, score 19 / 48 insns.
+**Re-audit note.** s49's H49.3 said "reg 75 still takes hard 4 because
+allocno_compare ranks the masked value above the pointer allocno".  Re-measured
+on the current chassis: the ranking is exactly as s49 recorded, but it is
+movable by an ordinary-C source lever, so H49.3 is overturned as a kill.
+
+### H50.2 -- KILLED (instance)
+**Statement.** With one declared pointer object on the current chassis, both
+attainable seats for the `&D_80106A73` allocno were measured, and neither
+reproduces the target's block-0/blocks-1-2 split: hard 4 ($a0) is the s49
+candidate at score 10 (flag blocks 1 and 2 exact, block 0 wrong), hard 3 ($v1)
+is the H50.1 refs-lift at score 16-18 (block 0 exact, flag blocks 1 and 2
+wrong).
+**Mechanism.** The target materialises `&D_80106A73` three times, into `$v1`
+(80034F98, used by the mask lbu/sb and by flag block 0's store at 80034FD0) and
+into `$a0` twice (80034FC8, 80034FF0, used by flag blocks 1 and 2).  A single C
+pointer object is a single pseudo, hence a single allocno, hence one hard
+register for all four dereference sites; `global_alloc` has no live-range
+splitting in GCC 2.7.2.  So the residual is no longer an allocation-priority
+question: it is "produce a second allocno holding this address, live only over
+the mask + flag-block-0 region, without a second declared C pointer object".
+**Probe.** `rd_dupstore_b12.c` 51 insns / 18; `rd_dupstore_all.c` 48 / 19;
+`rd_dup12_b0reload.c` 51 / 16; baseline `candidate.c` 49 / 10.  `.greg`
+dispositions read for each.
+**Measured on.** s49 two-statement-mask chassis on HEAD 2026-09-05, one declared
+pointer object, no FAKE construct present.
+
+### H50.3 -- KILLED (instance)
+**Statement.** Six two-object diagnostic bodies (`t` for the mask + flag block
+0, `q` for flag blocks 1 and 2; with and without duplicated stores and
+duplicated reads lifting either object's reference count) measure score 21..26
+on the current chassis, never below the single-object floor of 10.
+**Mechanism.** From `.greg`: with the address split into two objects, `pri(t)`
+is 3333..4545 (refs 4..5, live_length 22..24) against `pri(m)` 13333 for the
+block-0 masked value, so `m` is still the first of the three contested allocnos
+and still takes hard 3, leaving `t` on hard 4 -- the exact inverse of the
+target's `t`=$v1 / `m`=$a0.  Reaching the target from a two-object body would
+require `refs(t) >= 13` at live_length 22; the largest reachable with duplicated
+stores and duplicated reads was 5.
+**Probe.** `DIAG_two_object_t_q.c` 49/21, `DIAG_tA` 48/22, `DIAG_tB` 49/21,
+`DIAG_tC` 49/21, `DIAG_tD` 48/22 (reg75 refs=5 len=22 pri=4545),
+`DIAG_tq_dup12` 51/25, `DIAG_tq_dup0` 48/22, `DIAG_tq_dupall` 50/26.
+**Measured on.** s49 chassis on HEAD 2026-09-05, TWO declared pointer objects --
+a BANNED construct, run purely as diagnosis (as s49 ran the volatile escapes)
+and banked in rejected/ tagged BANNED.  No such body was or may be submitted.
+**Consequence.** The standing multi-handle ban is not, on present evidence, what
+is costing the 10 points; a ruling-request resting on the ban alone would be
+unsupported.
+
+### H50.4 -- KILLED (instance)
+**Statement.** Rebuilding the direct-symbol block 0 (mask and flag block 0 write
+`D_80106A73` with no pointer object, flag blocks 1/2 keep `q`) on the s49
+two-statement-mask chassis measures 25 (49 insns), and 30 with the duplicated
+store; the single-statement mask variant measures the same.
+**Mechanism.** A plain `D_80106A73` lvalue compiles to the assembler macro form
+`lbu $3,D_80106A73` / `sb $3,D_80106A73` -- two machine insns through `$at` --
+and never to the target's three-insn `lui / addiu / lbu 0($reg)` register form,
+and it also drives `p` out of `$a1` into `$a2`.  So the wanted second address
+allocno cannot be sourced from a direct symbol reference.
+**Probe.** `rd_anon0_m2.c` 49/25 (reg75 refs=6 len=17 pri=7058, `75 in 5`),
+`rd_anon0_m1.c` 49/25, `rd_anon0_m2_dup.c` 51/30, `rd_anon0_m1_dup.c` 51/30.
+**Measured on.** s49 chassis on HEAD 2026-09-05, one declared pointer object, no
+FAKE construct.
+
+### H50.5 -- KILLED (instance)
+**Statement.** Hoisting block 0's condition (`c = p[8] & 1;`) above the mask
+statements on the s49 two-statement chassis, to lengthen the masked value's live
+range toward the >= 12 threshold that would drop its priority below the
+pointer's, instead SHORTENS it from 9 to 7 (pri 13333 -> 17142) and scores 14.
+**Mechanism.** sched1 sinks the hoisted `lw`/`andi` back below the mask lbu, and
+the masked value's def moves later relative to its uses, so `reg_live_length`
+falls rather than rises.
+**Probe.** `rd_hoistc0.c` 49 insns / score 14; `.greg` reg74 refs=6 len=7
+pri=17142, reg75 unchanged at refs=10 len=28 pri=10714, dispositions unchanged
+(`74 in 3  75 in 4`).
+**Measured on.** s49 two-statement-mask chassis on HEAD 2026-09-05, one declared
+pointer object, no FAKE construct.
+
+## [s50] Duplicating the flag-block store into both arms of flag blocks 1 and 2 (if (c) { *q = v | N; } else { *q = v; } instead of computing into c and storing once at the join) raises the &D_80106A73 pointer allocno from refs=10/live_length=28/priority 10714 to refs=12/live_length=26/priority 13846, above the block-0 masked-value allocno's 13333, flipping global.c allocno_compare's sort order so the pointer is allocated first and takes hard 3 ($v1) while the masked value takes hard 4 ($a0) -- the target's block-0 disposition.
+- mechanism: allocno_compare (tools/gcc-2.7.2/global.c:635) sorts allocnos by pri = floor_log2(n_refs) * n_refs / live_length * 10000 * allocno_size, descending, and find_reg then gives each allocno in turn the lowest hard register not conflicting with an already-allocated one. Each duplicated store contributes one extra reg_n_refs reference on the pointer pseudo, counted at global_alloc time; jump2's cross-jump pass, which re-merges the duplicated arm tails, runs after reload, so the references are counted before the duplicates disappear. This is the reg_n_refs priority lift the duplicated-statement-into-arms rule doc names explicitly.
+- probe: tmp/grind/func_80034F88/s50/bodies/rd_dupstore_b12.c installed and dumped: .greg order ';; regs to allocate: 73 77 75 74 79 85 72', dispositions '72 in 5  73 in 3  74 in 4  75 in 3', reg75 refs=12 len=26 pri=13846, reg74 refs=6 len=9 pri=13333. Emitted block 0 (la $3,D_80106A73 / lbu $4,0($3) / move $5,$2 / andi $4,$4,0xf8 / sb $4,0($3) / lw $2,32($5) / andi $2,$2,1 / bne / ori $2,$4,1 / move $2,$4 / sb $2,0($3)) is register-for-register the target's 80034F98..80034FD0. Sandbox 51 insns / score 18. All-three-block duplication (rd_dupstore_all.c): reg75 refs=13 len=25 pri=15600, same seat, 48 insns / score 19.
+- result: CONFIRMED. This also overturns s49's H49.3 instance kill ('reg 75 still takes hard 4 because allocno_compare ranks the masked value above the pointer allocno'): the ranking is exactly as s49 measured, but it is movable by an ordinary-C source lever inside a sanctioned family. The mandated kill re-audit was performed on that kill and it did not survive.
+- verdict: CONFIRMED
+
+## [s50] With one declared pointer object on the current chassis, both attainable seats for the &D_80106A73 allocno were measured and each leaves the other half of the function wrong: hard 4 ($a0) is the s49 candidate at score 10 with flag blocks 1 and 2 exact and block 0 wrong, and hard 3 ($v1) is the H50.1 refs-lift body at score 16-18 with block 0 exact and flag blocks 1 and 2 wrong.
+- mechanism: The target materialises &D_80106A73 three times: into $v1 at 80034F98 (used by the mask lbu/sb and by flag block 0's store at 80034FD0) and into $a0 at 80034FC8 and 80034FF0 (used by flag blocks 1 and 2). One C pointer object is one pseudo, hence one allocno, hence one hard register across all four dereference sites; GCC 2.7.2's global_alloc performs no live-range splitting. So on this chassis the residual is a second-allocno problem, not a priority problem.
+- probe: rd_dupstore_b12.c 51 insns / 18; rd_dupstore_all.c 48 / 19; rd_dup12_b0reload.c 51 / 16; baseline memory/grind/func_80034F88/candidate.c 49 / 10. .greg dispositions read for each via tmp/grind/func_80034F88/s50/ra.py.
+- result: KILLED for this chassis. The useful consequence is a re-scoped frontier: the next lever must produce a second allocno holding this address, live only over the mask + flag-block-0 region, without declaring a second C pointer object.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct present
+
+## [s50] Eight two-object diagnostic bodies (t for the mask + flag block 0, q for flag blocks 1 and 2, with and without duplicated stores and duplicated reads lifting either object's reference count) measure score 21 to 26 on the current chassis, never below the single-object floor of 10.
+- mechanism: From .greg: splitting the address into two objects leaves the same priority race one level down. pri(t) measures 3333 to 4545 (refs 4-5, live_length 22-24) against pri(m) 13333 for the block-0 masked value, so the masked value is still the first of the three contested allocnos and still takes hard 3, leaving t on hard 4 -- the inverse of the target's t=$v1 / m=$a0. Reaching the target seat from a two-object body needs refs(t) >= 13 at live_length 22; duplicated stores and duplicated reads got refs(t) to 5.
+- probe: DIAG_two_object_t_q.c 49/21 (reg75=t refs=4 len=24 pri=3333 hard 4; reg76=q refs=6 len=16 pri=7500 hard 3), DIAG_tA 48/22, DIAG_tB 49/21, DIAG_tC 49/21, DIAG_tD 48/22 (reg75 refs=5 len=22 pri=4545), DIAG_tq_dup12 51/25, DIAG_tq_dup0 48/22, DIAG_tq_dupall 50/26.
+- result: KILLED as measured. IMPORTANT for the record: every one of these bodies declares two C pointer objects aliasing D_80106A73, which is a BANNED construct for this function. They were compiled purely as diagnosis (exactly as s49 compiled the volatile-cast and address-pun escapes) and are banked in rejected/ tagged BANNED; none was or may be submitted. The consequence is that the standing multi-handle ban is not, on present evidence, what is costing the 10 points, so a ruling-request resting on the ban alone would be unsupported.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49 chassis on HEAD 2026-09-05, TWO declared pointer objects (banned construct, measured as diagnosis only), no FAKE construct
+
+## [s50] Rebuilding the direct-symbol block 0 (mask and flag block 0 write D_80106A73 with no pointer object while flag blocks 1 and 2 keep q) on the s49 two-statement-mask chassis measures score 25 at 49 insns, and 30 with the duplicated store; the single-statement mask variant measures the same.
+- mechanism: A plain D_80106A73 lvalue compiles to the assembler macro form lbu $3,D_80106A73 / sb $3,D_80106A73 -- two machine insns through $at -- and not to the target's three-insn lui / addiu / lbu 0($reg) register form. It also drives p out of $a1 into $a2. So the second address allocno the target needs is not obtainable from a direct symbol reference on this chassis.
+- probe: rd_anon0_m2.c 49/25 (.greg reg75 refs=6 len=17 pri=7058, '75 in 5'; emitted 'lbu $3,D_80106A73' and 'move $6,$2'), rd_anon0_m1.c 49/25, rd_anon0_m2_dup.c 51/30, rd_anon0_m1_dup.c 51/30.
+- result: KILLED on this chassis. This closes the cheapest non-alias route to a second address allocno and is why the frontier now points at the DATA MODEL signal (declaring D_80106A70 as the 4-byte array/record it is indexed as) rather than at more direct-symbol spellings.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49 chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct
+
+## [s50] Hoisting block 0's condition (c = p[8] & 1;) above the mask statements on the s49 two-statement chassis, intended to lengthen the masked value's live range toward the >= 12 threshold that would drop its priority below the pointer's, instead shortens that live range from 9 to 7 (priority 13333 -> 17142) and scores 14.
+- mechanism: sched1 sinks the hoisted lw/andi back below the mask lbu, and the masked value's def moves later relative to its uses, so flow.c's reg_live_length falls rather than rises; allocno_compare then ranks the masked value even further above the pointer.
+- probe: rd_hoistc0.c 49 insns / score 14; .greg reg74 refs=6 len=7 pri=17142, reg75 unchanged at refs=10 len=28 pri=10714, dispositions unchanged at '74 in 3  75 in 4'.
+- result: KILLED. The live-length half of the s49 frontier's threshold table is measured shut from this direction; the refs half (H50.1) is the half that worked.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct
