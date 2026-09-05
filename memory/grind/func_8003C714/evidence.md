@@ -1579,3 +1579,152 @@ spellings maspsx expands. There is no second, independent residual to attack.
 - [s13] Build-vs-target instruction diff of the candidate: the only structural difference is the preheader/loop split (build emits li/ori of 0x91A2B3C5 in an 8-instruction preheader vs the target's 6, and lacks the target's in-loop lui/ori pair; the mfhi temp lands in $10 instead of $t1 because $t1 holds the hoisted magic). Prologue and tail are instruction-for-instruction identical, so there is no second independent residual.
 
 - [s13] Mandated kill re-audit: fake_ablate reports no FAKE constructs in candidate.c; s12's closest-to-target instance kill K37 re-measures at 15 / 105 on the current chassis and stands.
+
+## s14 (2026-09-05) - synthesis modality: the combine/force_to_mode free channel
+
+### Chassis and mandated kill re-audit (done first, before any probe)
+- `memory/grind/func_8003C714/candidate.c` applied over `INCLUDE_ASM("asm/funcs",
+  func_8003C714);` at src/code6cac_c2.c:629 (via tmp/grind/func_8003C714/s12/apply.py).
+  `& tools/wteng.ps1 main sandbox func_8003C714 --disable all` ->
+  `score 15, target_insns 104, build_insns 105, scorable true, rules_dropped 0,
+  cheat_asm_stripped 9`. The brief's CHASSIS CHECK said "measurement
+  unavailable"; the measured HEAD floor for this session is **15**.
+- `python3 tools/fake_ablate.py --func func_8003C714 --file code6cac_c2
+  --candidate memory/grind/func_8003C714/candidate.c` ->
+  "no FAKE-annotated constructs found ... nothing to ablate". No banked lever in
+  this ledger was measured while a FAKE carrier occupied a target pseudo.
+- Closest instance kill re-measured: s12's K36 chassis,
+  `tmp/grind/func_8003C714/s12/pc_second_biv.c` -> score 15, build_insns 105,
+  rules_dropped 0. Identical to the s12 record. K36 STANDS. (s13 had already
+  re-audited K37 on this chassis; both floor-15 alternative chassis are current.)
+
+### The harness
+`tmp/grind/func_8003C714/s14/sweep.sh` is the s6 driver with its directory
+re-pointed at s14; it runs the shipped cc1 (`tools/gcc-2.7.2/build/cc1`) with the
+canonical flags `-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls
+-fno-builtin -w -mel -dL`, reads `Loop from A to B: N real insns.` out of the
+`.loop` dump for func_8003C714, counts `moved to` / `not desirable` lines, and
+counts emitted asm lines between `func_8003C714:` and `.end`.
+Generators: `gen_xorpair.py` (xor pairs) and `gen_pad.py` (MODE=xor|addsub|mask|
+shift). Both splice a body into a copy of src/code6cac_c2.c, so the compilation
+context is the real translation unit, not an isolated file.
+
+The carrier is the last statement of the loop body, re-spelled from
+`dst[0x24] = *src;` to `v = *src;` ... `dst[0x24] = v;` with k pairs inserted
+between. Everything else is byte-for-byte candidate.c.
+
+### Sweep results (xor pairs)
+
+    k     .loop insn_count    movable        emitted asm lines
+    0     57                  moved          107
+    1     59                  moved          107
+    2     61                  moved          107
+    4     65                  moved          107
+    8     73                  moved          107
+    16    89                  moved          107
+    30    117                 moved          107
+    31    119                 moved          107
+    32    121                 NOT DESIRABLE  106
+
+Two facts fall out of the k=0 row alone: introducing the ordinary named
+intermediate `v` costs **+1 insn_count for +0 emitted instructions** (56 -> 57,
+asm 107 unchanged), and the 107-line emitted function is unchanged from
+candidate.c, so the carrier statement itself is byte-neutral.
+
+The k=30/31/32 rows pin `threshold` at exactly **119**: 119 >= 119 still moves,
+119 >= 121 does not. This is the first direct measurement of the threshold
+boundary (s11's H17 predicted the window `insn_count in [120,122]` from source
+reading; it is confirmed to the instruction).
+
+### Distance 0 measured
+`tmp/grind/func_8003C714/s14/body_xp32.c` copied over `src/code6cac_c2.c`
+(the generator emits a whole translation unit, so it is a `cp`, not apply.py):
+
+    "score": 0, "target_insns": 104, "build_insns": 104,
+    "rules_dropped": 0, "cheat_asm_stripped": 9
+
+This is the SECOND independent distance-0 body for func_8003C714. The first
+(s6, `rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c`) is free
+because `strength_reduce` deletes a constant-step biv. This one is free because
+combine's `force_to_mode` (tools/gcc-2.7.2/combine.c:5682) masks off computation
+that cannot reach the 8 live bits of the QImode store. The two channels share no
+mechanism, no pass and no placement constraint - notably s6's K18 placement rule
+(the carrier must not inflate the surviving counter's `reg_n_refs`, or local-alloc
+rotates the whole allocation) does not bite here at all: this carrier is a plain
+local and every seat still lands.
+
+`src/code6cac_c2.c` was restored to `INCLUDE_ASM` immediately after the
+measurement. The body is banked at
+`memory/grind/func_8003C714/rejected/combine-foldable-live-value-pads-64-insns-d0-but-inadmissible.c`.
+
+### Breadth of the channel (MODE sweep, k = 4 / 16 / 32)
+
+    MODE=addsub   `v += C; v -= C;`          65 / 89 / 121 insns, asm 107/107/106
+    MODE=mask     `v &= 0xFF; v &= 0xFF;`    65 / 89 / 121 insns, asm 107/107/106
+    MODE=shift    `v = v << 3; v = v >> 3;`  65 / 89 / 121 insns, asm 107/107/106
+
+Identical to the xor sweep in every cell. The channel is a property of the
+position (live local -> narrower store), not of the operator. This re-scopes s3's
+K10, which recorded that byte-neutral `& 0xFF` masks fold away before loop.c
+counts them: that is true where s3 measured it (masks on the divided value, where
+cse1 folds them into the existing computation) and false here.
+
+### Why none of it is submittable
+`force_to_mode` deletes exactly those insns whose results cannot reach the stored
+bits. So in this channel "free" and "unobservable" are the same predicate: every
+carrier it makes free fails cheat-test T1 (no observable effect beyond a simpler
+form) and T2 (no human programmer writes it). The same is true of the s6 channel
+for a different reason - `strength_reduce` deletes a biv only when nothing
+consumes its exit value, and s13's K40 enumerated the target's 23-instruction
+tail and found no possible consumer. In-loop inert arithmetic matches no frozen
+SOTN family, so a first reach would be a cheat. Neither body was submitted.
+
+### The one shape that could break the pattern (frontier item 1)
+combine does not only mask - it MERGES. A 2- or 3-insn group that combine folds
+into a single pattern that the target ALREADY emits would be counted by
+`count_loop_regs_set` before loop_optimize and cost nothing after it, while both
+halves compute real values. That is the only conceivable free carrier whose
+freeness does not imply inertness, and it has never been probed. The loop emits
+~45 instructions, so the ceiling of the sub-channel is in the right order of
+magnitude for the +63 requirement. Concrete probes for the next session, all
+runnable through s14/sweep.sh in one pass each: `x >> 10` spelled as two
+`ashiftrt` steps; `% 60` spelled as `x - (x / 60) * 60`; `(x % 30) * 100`
+decomposed into the shift/add chain GCC itself emits. The
+[[split-init-accumulation-sanctioned]] owner feedback (same-variable split-init
+and compound-assignment splits are ORDINARY C) is the admissibility handle the
+two deletion channels never had.
+
+### Arithmetic aside: the original source had no carrier
+On the original chassis the `&D_80106A58` movable (savings 1, lifetime 1) moved
+and the 0x91A2B3C5 movable (savings 1, lifetime 1) did not, so loop.c:1631 gives
+`threshold_orig >= insn_count_orig` and `threshold_orig - 3 < insn_count_orig`.
+With s2's measured `threshold_orig = 58` that bounds `insn_count_orig` to
+[56, 58], and candidate.c measures **56** with no carrier statement at all. The
+>= 63 extra RTL insns the shipped chassis demands are therefore a chassis
+artifact rather than source this ledger has failed to recover. Recorded as an
+arithmetic consequence only - the CC_FLAGS route stays barred by the standing
+Judge constraint and is not re-filed in any shape.
+
+### Artifacts
+- tmp/grind/func_8003C714/s14/sweep.sh, gen_xorpair.py, gen_pad.py
+- tmp/grind/func_8003C714/s14/body_xp32.c (the distance-0 translation unit)
+- tmp/grind/func_8003C714/s14/dumps/ (per-k .i, .i.loop, .s for every sweep row)
+- memory/grind/func_8003C714/rejected/combine-foldable-live-value-pads-64-insns-d0-but-inadmissible.c
+
+- [s14] HEAD honest floor measured this session = 15 (candidate.c applied: score 15, target_insns 104, build_insns 105, rules_dropped 0, cheat_asm_stripped 9). The brief's CHASSIS CHECK said 'measurement unavailable'.
+
+- [s14] threshold for the 0x91A2B3C5 movable is exactly 119, measured rather than derived: insn_count 119 still moves it, insn_count 121 prints 'not desirable'. s11's H17 window (insn_count >= 120) is confirmed to the instruction.
+
+- [s14] Introducing the ordinary named intermediate `v = *src;` ahead of `dst[0x24] = v;` costs +1 insn_count (56 -> 57) at +0 emitted instructions (asm 107 unchanged) - the only free insn measured in this ledger that is not semantically inert.
+
+- [s14] Distance 0 measured for the second time on the shipped chassis, by a mechanism sharing nothing with s6's: score 0, target_insns 104, build_insns 104, with 32 `v ^= C; v ^= C;` pairs on a live local feeding the QImode store.
+
+- [s14] s6's K18 placement rule (a carrier must not inflate the surviving counter's reg_n_refs or local-alloc rotates the whole allocation) does NOT bite in this channel - the carrier is a plain local, and every register seat still lands at score 0.
+
+- [s14] Four operator shapes measured identical (+2 insn_count per pair, +0 emitted): xor pairs, add/sub pairs, repeated &0xFF masks, shift round-trips. s3's K10 is re-scoped from 'masks fold before loop' to 'masks on the divided value fold before loop'.
+
+- [s14] MERGED LAW: both known free-insn_count channels are free for the same underlying reason - the compiler proves the added computation is unobservable. s6's is deleted by strength_reduce because nothing consumes the biv's exit value (s13 K40 enumerated the tail and found no possible consumer); s14's is deleted by force_to_mode because it cannot reach the stored bits. In both, free implies T1-failing.
+
+- [s14] The one shape that would break that law and has never been probed: an insn that is free because combine MERGES it into a pattern the target already emits, where both halves compute real values. The loop emits ~45 instructions, so the sub-channel's ceiling is in the right order of magnitude for the +63 requirement.
+
+- [s14] src/code6cac_c2.c was restored to INCLUDE_ASM after every measurement; `git status --short` shows only metrics/events.jsonl modified plus the new rejected/ file.

@@ -309,6 +309,22 @@
  *       reports no FAKE constructs in this body.
  * This body remains the honest ordinary-C best at 15. See hypotheses.md
  * H18/K38/K39/K40 and evidence.md section s13.
+ *
+ * s14 (2026-09-05, synthesis) - UNCHANGED, still 15 / 104 target / 105 build on
+ * the current chassis; fake_ablate reports no FAKE constructs. s14 found a
+ * SECOND free insn_count channel (H19/H20): SImode chain arithmetic on a live
+ * local whose only consumer is a QImode store survives cse1, is counted by
+ * count_loop_regs_set, and is erased after loop_optimize by combine's
+ * force_to_mode (combine.c:5682). At 64 added insns (insn_count 121 vs
+ * threshold 119) the 0x91A2B3C5 movable prints "not desirable" and the sandbox
+ * measures score 0 / 104 == 104 - banked, NOT submitted, at
+ * rejected/combine-foldable-live-value-pads-64-insns-d0-but-inadmissible.c,
+ * because in that channel freeness and inertness are the same predicate (K41).
+ * One measured by-product IS ordinary and IS free: introducing the named
+ * intermediate `v = *src;` ahead of `dst[0x24] = v;` costs +1 insn_count at +0
+ * emitted instructions. The live frontier is combine's MERGE path, where a
+ * counted extra insn folds into an instruction the target already emits and
+ * both halves stay semantically real.
  */
 void func_8003C714(void) {
     u8 buf[4];

@@ -1691,3 +1691,182 @@ banked lever was measured under a FAKE carrier.
 - probe: Mandated kill re-audit: tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c, then applied s12/pb_array_subscript.c and ran sandbox func_8003C714 --disable all.
 - result: fake_ablate: 'no FAKE-annotated constructs found ... nothing to ablate'. pb_array_subscript.c: score 15, build_insns 105, rules_dropped 0 — identical to the s12 record and to candidate.c. K37 stands as a second independent permuter seed, not as an improvement.
 - verdict: CONFIRMED
+
+## s14 (2026-09-05) - synthesis modality
+
+Chassis re-checked FIRST: candidate.c applied over the INCLUDE_ASM line at
+src/code6cac_c2.c:629, `sandbox func_8003C714 --disable all` = score 15,
+target_insns 104, build_insns 105, rules_dropped 0. Unchanged since s1.
+Mandated kill re-audit: `tools/fake_ablate.py` reports no FAKE-annotated
+constructs in candidate.c (nothing to ablate), and s12's K36 chassis
+(s12/pc_second_biv.c) re-measures 15 / 105 on the current chassis - STANDS.
+
+This session merged the ledger and found the one question s5-s13 never asked in
+this form. s5's dead-code probes died at `delete_dead_from_cse`; s6 found the
+loop-carried hole in that fixpoint and s7/s12/s13 closed every carrier for it
+(K21 natural accumulators, K35 moved_once, K36 extra bivs, K40 no tail
+consumer). But ALL of that work is about insns that are free because a pass
+DELETES them. Nobody had tested insns that are free because a pass MERGES or
+MASKS them away - specifically `combine`, which runs at toplev.c:3004, i.e.
+AFTER `loop_optimize` has already consumed insn_count.
+
+**H19 (CONFIRMED) - a SECOND, broad, free insn_count channel exists, and it
+reaches distance 0.** Chain arithmetic on a LIVE local whose only consumer is a
+narrower (QImode) store survives cse1 - cse1 value-numbers, it does not perform
+algebraic cancellation - so `count_loop_regs_set` counts every insn of the
+chain; after `loop_optimize`, combine's `force_to_mode`
+(tools/gcc-2.7.2/combine.c:5682) erases all of them, because none of them can
+affect the 8 bits the store keeps. Measured with the s6 harness re-pointed at
+tmp/grind/func_8003C714/s14 (`sweep.sh` + `gen_xorpair.py` / `gen_pad.py`),
+carrier = `v = *src;` ... `dst[0x24] = v;` with k inserted pairs:
+
+    k=0    57 real insns   asm 107     (the bare `v` local is itself +1 free)
+    k=1    59              asm 107
+    k=2    61              asm 107
+    k=4    65              asm 107
+    k=8    73              asm 107
+    k=16   89              asm 107
+    k=30  117              asm 107     movable still moved
+    k=31  119              asm 107     movable still moved
+    k=32  121  "not desirable"  asm 106
+
+and at k=32 `sandbox func_8003C714 --disable all` prints **score 0,
+target_insns 104, build_insns 104**. Banked at
+rejected/combine-foldable-live-value-pads-64-insns-d0-but-inadmissible.c.
+The k=30/31/32 boundary pins `threshold` at exactly 119 and confirms s11's H17
+window (`insn_count >= 120`) to the instruction.
+
+**H20 (CONFIRMED) - the channel is not xor-specific; four shapes measured
+identical.** `v ^= C; v ^= C;`, `v += C; v -= C;`, `v &= 0xFF; v &= 0xFF;` and
+`v = v << 3; v = v >> 3;` each measure +2 insn_count per pair at +0 emitted
+instructions and each flips the movable to "not desirable" at k=32 (121 insns,
+asm 106). This RE-SCOPES s3's K10 ("byte-neutral masks fold before loop"): a
+mask folds when it sits on the DIVIDED value, but not when it sits on a live
+local ahead of a narrower store. K10 is an instance result about a position, not
+a law about masks.
+
+**K41 (instance) - none of the four measured combine-fold carriers is
+admissible, and the four were chosen to span the channel.** Each is
+value-preserving with respect to the stored byte by construction, so each fails
+cheat-test T1 (no observable effect beyond a simpler form) and T2. No frozen
+SOTN family covers in-loop inert arithmetic; first reach would be a cheat. The
+d0 form was NOT submitted and src/ was restored to INCLUDE_ASM.
+
+**H21 (CONFIRMED, arithmetic) - the original source contained ZERO padding, so
+every distance-0 form on the SHIPPED chassis necessarily carries matter the
+original did not have.** On the original chassis the symbol_ref movable
+(&D_80106A58, savings 1, lifetime 1) MOVED and the 0x91A2B3C5 movable
+(savings 1, lifetime 1) did NOT, so `threshold_orig >= insn_count_orig` and
+`threshold_orig - 3 < insn_count_orig`, i.e. `insn_count_orig` is in
+[threshold_orig - 2, threshold_orig]. With s2's measured `threshold_orig = 58`
+(the soft-float register file, 2*(1+28)) that gives `insn_count_orig` in
+[56, 58] - and our candidate.c body measures insn_count 56 with no padding at
+all. The original body therefore had no carrier; the >= 63 extra RTL insns the
+shipped chassis demands are a chassis artifact, not source. This is recorded as
+an arithmetic CONSEQUENCE of the ledger's own measurements, not as a
+disposition: the CC_FLAGS route stays barred by the standing Judge constraint.
+
+**THE MERGED LAW (s14 synthesis).** Two independent free-insn_count channels are
+now measured, and both are free for the SAME reason: the compiler can prove the
+added computation cannot be observed. s6's channel is free because
+`strength_reduce` deletes a constant-step biv whose exit value it can fold
+(free <=> nothing consumes it, K40). s14's channel is free because
+`force_to_mode` masks off computation that cannot reach the stored bits
+(free <=> it does not change the store). A THIRD shape is conceivable and is the
+only one that would break the pattern: an insn that is free because combine
+MERGES it into an instruction the target already emits, where both halves are
+semantically real. That is the live frontier below.
+
+### FRONTIER after s14 (reset)
+
+1. **THE LIVE ITEM - the merge sub-channel, where freeness and semantic reality
+   are not mutually exclusive.** combine (toplev.c:3004) runs after
+   loop_optimize and merges 2- and 3-insn groups into ONE pattern. If an
+   existing target instruction can be produced by a 2-insn pre-combine group,
+   the extra insn is counted by count_loop_regs_set and costs nothing - and BOTH
+   halves compute real values, so T1 is not automatically failed the way the two
+   deletion channels are. The loop emits ~45 instructions, so the theoretical
+   ceiling of this sub-channel (1-2 absorbed insns per existing insn) covers the
+   +63 requirement. Probe: re-spell the four existing division/modulo statements
+   in decomposed-but-identical forms and read insn_count against emitted asm
+   lines with tmp/grind/func_8003C714/s14/sweep.sh - e.g. `x >> 10` as two
+   ashiftrt steps, `(x % 30) * 100` as shift/add decompositions, `% 60` as
+   `x - (x/60)*60`, each of which GCC re-merges in combine. Note the
+   split-init/compound-assignment precedent
+   ([[split-init-accumulation-sanctioned]], owner feedback) already treats
+   same-variable arithmetic splits as ORDINARY C, which is the admissibility
+   handle the two deletion channels never had. Even a partial win matters: the
+   free ORDER dial (K24) is worth another -6 on the requirement.
+2. **Characterise the +1 free local.** `v = *src;` alone took insn_count 56 -> 57
+   at asm 107. That is one free insn from a single ordinary named intermediate,
+   i.e. the named-intermediate family. If other statements admit the same
+   treatment, several free insns are available from a SANCTIONED family; the
+   requirement is +63, so this alone will not close it, but it is the only
+   measured free insn that is not inert.
+3. **CLOSED RECORDS.** The two deletion channels (s6 biv, s14 force_to_mode) are
+   both proven to reach distance 0 and both proven inadmissible; do not re-derive
+   either. The chassis/threshold=122 root cause and CC_FLAGS remain barred.
+
+## [s14] A second free insn_count channel exists: SImode chain arithmetic on a live local whose only consumer is a QImode store survives cse1, is counted by count_loop_regs_set, and is erased after loop_optimize by combine's force_to_mode - reaching sandbox score 0 on the shipped chassis at 64 added insns.
+- mechanism: cse1 (toplev.c:2865) value-numbers but performs no algebraic cancellation, so `v ^= C; v ^= C;` is not folded there and both insns are in the RTL stream when count_loop_regs_set runs (loop.c:3001-3092). loop.c:1631 then sees threshold 119 against insn_count 121 and declines the 0x91A2B3C5 movable, leaving it in-loop in the target's split lui/lw/ori/mult form. combine (toplev.c:3004) runs after loop_optimize and force_to_mode (combine.c:5682) deletes every chain insn because none of them affect the 8 bits `dst[0x24] = v;` keeps.
+- probe: tmp/grind/func_8003C714/s14/sweep.sh over gen_xorpair.py / gen_pad.py, k = 0,1,2,4,8,16,30,31,32, reading the .loop movable table and the emitted asm line count; then body_xp32.c copied over src/code6cac_c2.c and measured with `sandbox func_8003C714 --disable all`.
+- result: insn_count 57/59/61/65/73/89/117/119/121 against a CONSTANT 107 emitted asm lines up to k=31; at k=32 the movable prints "not desirable", asm drops to 106, and the sandbox measures score 0, target_insns 104, build_insns 104. The k=30/31/32 boundary pins threshold at exactly 119.
+- verdict: CONFIRMED
+
+## [s14] The combine-fold channel is broad, not xor-specific: add/sub pairs, repeated &0xFF masks and shift round-trips all carry insn_count at zero byte cost.
+- mechanism: force_to_mode is a bit-mask analysis, not a pattern match, so it erases any computation whose result cannot reach the live bits of the narrower store, whatever the operator.
+- probe: MODE=addsub / mask / shift through tmp/grind/func_8003C714/s14/gen_pad.py at k = 4, 16, 32.
+- result: all three give 65 / 89 / 121 real insns against asm 107 / 107 / 106, identical to the xor sweep, and all three flip the movable at k=32. s3's K10 ("byte-neutral masks fold before loop") is re-scoped to the position it was measured in (masks on the divided value), not to masks in general.
+- verdict: CONFIRMED
+
+## [s14] K41: one of the four combine-fold carrier shapes measured this session is admissible ordinary C.
+- mechanism: the channel is free precisely when force_to_mode can prove the chain does not reach the stored bits, which is the same condition as the chain having no observable effect
+- probe: applied cheat-tests T1-T6 to each of the four measured shapes (xor pairs, add/sub pairs, repeated masks, shift round-trips) and searched the frozen SOTN family list for in-loop inert arithmetic
+- result: FALSE. All four are value-preserving with respect to the stored byte, so T1 and T2 fail on each; no frozen family covers the construct and first reach of an unsanctioned family is a cheat. The d0 body was banked as a reachability proof only and src/ was restored to INCLUDE_ASM.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s14/body_xp32.c copied over src/code6cac_c2.c (sandbox 0 / 104 / 104) then reverted; no FAKE constructs present
+
+## [s14] The original compile's loop contained no padding, so the >= 63 extra RTL insns the shipped chassis needs are a chassis artifact rather than lost source.
+- mechanism: on the original chassis the &D_80106A58 movable (savings 1, lifetime 1) moved and the 0x91A2B3C5 movable (savings 1, lifetime 1) did not, so loop.c:1631 gives threshold_orig >= insn_count_orig > threshold_orig - 3; s2 measured threshold_orig = 58 (soft-float, 2*(1+28)), bounding insn_count_orig to [56,58].
+- probe: arithmetic over the ledger's own measured quantities (s2 H4 threshold sweep, s7 H11 savings/lifetime pinning, s10 H15) against the candidate body's measured insn_count of 56.
+- result: candidate.c already sits inside the original window at insn_count 56 with zero carrier statements, so the original source had no padding. Recorded as an arithmetic consequence only; the CC_FLAGS route remains barred by the standing Judge constraint and is not re-filed.
+- verdict: CONFIRMED
+
+## [s14] Mandated kill re-audit: s12's K36 chassis is unchanged on the current chassis and candidate.c carries no FAKE construct.
+- mechanism: an instance kill is only as good as the chassis and FAKE state it was measured under
+- probe: tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c; then tmp/grind/func_8003C714/s12/pc_second_biv.c applied and measured with sandbox --disable all
+- result: fake_ablate: "no FAKE-annotated constructs found ... nothing to ablate". pc_second_biv.c: score 15, build_insns 105, rules_dropped 0 - identical to the s12 record. K36 STANDS.
+- verdict: CONFIRMED
+
+## [s14] A second free insn_count channel exists for func_8003C714: SImode chain arithmetic on a LIVE local whose only consumer is a QImode store survives cse1, is counted by count_loop_regs_set, and is erased after loop_optimize by combine's force_to_mode, taking the sandbox to score 0 on the shipped chassis at 64 added insns.
+- mechanism: cse1 (toplev.c:2865) value-numbers but performs no algebraic cancellation, so `v ^= C; v ^= C;` is not folded there and both insns are present in the RTL stream when count_loop_regs_set runs (loop.c:3001-3092). loop.c:1631 then evaluates 119 * 1 * 1 >= insn_count for the 0x91A2B3C5 movable and declines it at insn_count 121, leaving the magic in the loop in the target's split lui / lw / ori / mult form. combine (toplev.c:3004) runs after loop_optimize and force_to_mode (tools/gcc-2.7.2/combine.c:5682) deletes every chain insn, because none of them can affect the 8 bits that `dst[0x24] = v;` keeps.
+- probe: tmp/grind/func_8003C714/s14/sweep.sh over gen_xorpair.py at k = 0,1,2,4,8,16,30,31,32 (shipped cc1, canonical flags, -dL), reading `Loop from A to B: N real insns.` and the moved / not-desirable lines from the .loop dump plus the emitted asm line count; then tmp/grind/func_8003C714/s14/body_xp32.c copied over src/code6cac_c2.c and measured with `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`.
+- result: insn_count 57/59/61/65/73/89/117/119/121 against a CONSTANT 107 emitted asm lines through k=31; at k=32 the movable prints 'not desirable', emitted asm drops to 106, and the sandbox prints score 0, target_insns 104, build_insns 104. The k=30/31/32 rows pin threshold at exactly 119 (119 >= 119 still moves, 119 >= 121 does not), confirming s11's H17 window to the instruction. src/ was restored to INCLUDE_ASM immediately after the measurement.
+- verdict: CONFIRMED
+
+## [s14] The combine-fold channel is a property of the position (live local feeding a narrower store), not of the operator: add/sub pairs, repeated &0xFF masks and shift round-trips all carry insn_count at zero byte cost exactly like xor pairs.
+- mechanism: force_to_mode is a bit-mask analysis rather than a pattern match, so it erases any computation whose result cannot reach the live bits of the narrower store, whatever the operator is.
+- probe: MODE=addsub / mask / shift through tmp/grind/func_8003C714/s14/gen_pad.py at k = 4, 16, 32, same harness and same dump reads.
+- result: All three modes give 65 / 89 / 121 real insns against emitted asm 107 / 107 / 106 - identical to the xor sweep in every cell - and all three flip the 0x91A2B3C5 movable to 'not desirable' at k=32. This re-scopes s3's K10 ('byte-neutral masks fold before loop'), which is true where s3 measured it (masks sitting on the divided value, folded by cse1 into the existing computation) and false for a mask on a live local ahead of a narrower store.
+- verdict: CONFIRMED
+
+## [s14] One of the four combine-fold carrier shapes measured this session (xor pairs, add/sub pairs, repeated &0xFF, shift round-trips) is admissible ordinary C under the frozen family list.
+- mechanism: The channel is free precisely when force_to_mode can prove the chain does not reach the stored bits, which is the same condition as the chain having no observable effect on the function's output; so within this channel freeness and cheat-test T1 failure are the same predicate.
+- probe: Applied the six-test cheat checklist to each of the four measured shapes and searched the frozen SOTN family list for a family covering in-loop inert arithmetic on a live local.
+- result: FALSE for all four shapes. Each is value-preserving with respect to the stored byte, so T1 (semantic purpose) and T2 (human-programmer) fail on each; no frozen family covers the construct and first reach of an unsanctioned family is a cheat. The distance-0 body was banked as a reachability proof at memory/grind/func_8003C714/rejected/combine-foldable-live-value-pads-64-insns-d0-but-inadmissible.c and NOT submitted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s14/body_xp32.c copied over src/code6cac_c2.c (sandbox score 0, 104 target / 104 build) and the three MODE variants swept through cc1; no FAKE constructs present (tools/fake_ablate.py reports none in candidate.c)
+
+## [s14] The original compile's loop contained no carrier statements at all, so the >= 63 extra RTL insns the shipped chassis requires are a chassis artifact rather than source this ledger has failed to recover.
+- mechanism: On the original chassis the &D_80106A58 movable (savings 1, lifetime 1) moved and the 0x91A2B3C5 movable (savings 1, lifetime 1) did not, so loop.c:1631 gives threshold_orig >= insn_count_orig and threshold_orig - 3 < insn_count_orig, bounding insn_count_orig to [threshold_orig - 2, threshold_orig].
+- probe: Arithmetic over the ledger's own measured quantities - s2's H4 flag sweep (threshold_orig = 58 = 2*(1+28) on the soft-float register file), s7's H11 and s10's H15 pinning savings and lifetime at 1 - against the candidate body's measured insn_count of 56.
+- result: insn_count_orig lies in [56, 58] and candidate.c already measures 56 with zero carrier statements, so the original body had no padding. Recorded as an arithmetic consequence only; the CC_FLAGS / chassis route remains barred by the standing Judge constraint and is not re-filed in any shape.
+- verdict: CONFIRMED
+
+## [s14] Mandated kill re-audit: s12's K36 chassis (a second natural index variable) still measures 15 / 105 on the current chassis, and candidate.c carries no FAKE construct, so no banked lever of this ledger was measured while a FAKE carrier occupied a target pseudo.
+- mechanism: An instance kill is only as good as the chassis and FAKE state it was measured under, so the brief mandates re-measuring the closest instance kill before any new probe.
+- probe: `python3 tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c`, then tmp/grind/func_8003C714/s12/pc_second_biv.c applied with s12/apply.py and measured with `sandbox func_8003C714 --disable all`.
+- result: fake_ablate: 'no FAKE-annotated constructs found ... nothing to ablate'. pc_second_biv.c: score 15, build_insns 105, rules_dropped 0 - identical to the s12 record. K36 STANDS. Baseline candidate.c re-measured first at 15 / 104 / 105 (the brief reported the chassis measurement as unavailable).
+- verdict: CONFIRMED

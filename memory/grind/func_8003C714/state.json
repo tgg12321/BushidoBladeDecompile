@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 13,
- "current_modality": "structural",
+ "session_count": 14,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -81,23 +81,29 @@
    "floor": 15,
    "modality": "structural",
    "headline": "Structural: the two loop.c:1631 escape routes that bypass insn_count are CLASS-killed (m->forces skip cannot attach to a constant-load movable; may_not_move's two-BB trigger cannot see a division magi"
+  },
+  {
+   "session": 14,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "Synthesis: a SECOND free insn_count channel found and measured to distance 0 on the shipped chassis - chain arithmetic on a live local feeding a QImode store survives cse1, is counted by loop.c, and i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With K38 and K39 closing both non-arithmetic escapes, the ONLY route to the target arrangement is H17's window insn_count in [120, 122] reached at zero emitted cost, and K40 says every known carrier for that window is dead at loop exit. The one term never independently re-derived from source is whether count_loop_regs_set's 'i'-class count can be inflated by insns that survive cse1 and loop but are merged away by a LATER pass (combine.c, flow.c, jump2) rather than by biv elimination.",
-   "mechanism": "insn_count is computed by count_loop_regs_set before strength reduction (loop.c:3001-3092). s5's BYTE-COUNT COUPLING law claimed everything surviving loop_optimize also survives combine and reload, and s6 falsified it for ONE deletion path (biv elimination inside loop_optimize). combine.c runs after loop and merges 2-3 insn chains into one pattern, so a chain that cse1 cannot fold but combine can would be a second free-count channel that no session has tested.",
-   "next_probe": "Build a sweep of k in {4, 8, 16, 32} in-loop combine-foldable chains whose value IS consumed by an existing store (so cse1's delete_dead_from_cse cannot remove them and s5's K15 harness does not apply) \u2014 e.g. widening/narrowing pairs on the u8 destination, or shift-add pairs feeding the existing sb \u2014 and read insn_count in the .loop dump against build_insns from sandbox. If insn_count rises while build_insns stays at 105 the channel is real and admissible; if build_insns tracks insn_count 1:1 the s5 coupling law holds for combine and the [120,122] window is carrier-empty for ordinary C."
+   "hypothesis": "combine's MERGE path is a third insn_count channel in which freeness does NOT imply inertness: a 2- or 3-insn pre-combine group that folds into a single pattern the target already emits is counted by count_loop_regs_set before loop_optimize and costs nothing after it, while both halves compute real values.",
+   "mechanism": "combine_instructions runs at toplev.c:3004, after loop_optimize at toplev.c:2895, so anything it merges was already counted. Unlike force_to_mode (which erases computation that cannot reach the stored bits) and strength_reduce's biv elimination (which erases computation nothing consumes), a merge preserves the value - so the added insn can be semantically real and the T1/T2 objection that killed both deletion channels does not automatically apply. The [[split-init-accumulation-sanctioned]] owner feedback already treats same-variable split-init and compound-assignment splits as ORDINARY C, which is the admissibility handle the deletion channels never had.",
+   "next_probe": "Re-spell the four existing division/modulo statements in decomposed-but-identical forms and read insn_count against emitted asm lines with tmp/grind/func_8003C714/s14/sweep.sh (one cc1 run per form, no sandbox needed): `x >> 10` as two ashiftrt steps; `% 60` as `x - (x / 60) * 60`; `(x % 30) * 100` decomposed into the shift/add chain GCC itself emits; `/ 1800` as a split-init sequence on a single named variable. Any form whose .loop insn_count rises while emitted asm stays at 107 is a live carrier; measure how many such splits the body admits and compare against the +63 requirement (or +57 if combined with K24's free order dial, which is worth another -6 on threshold)."
   },
   {
-   "hypothesis": "The threshold halving at loop.c:532 (loop_has_call ? 1 : 2) is the only dial that changes the requirement by more than -3 per slot, and with a call in the loop the magic would decline at insn_count >= 59 instead of >= 120 \u2014 a +3 requirement instead of +64.",
-   "mechanism": "threshold 61 for a loop containing a CALL_INSN; slot 1 moves at 61 >= c (needs c <= 61), then threshold 58 and the magic declines at c > 58. The window becomes [59, 61] \u2014 reachable by K36's free index bivs plus a handful of insns rather than by 64 of them.",
-   "next_probe": "s8's K26 dismissed this as 'still hoists' using the wrong arithmetic (it compared 58 against insn_count 56 without adding the call's own in-loop insns). Measure it: put an existing-callee call inside the loop (the target has no jal in its loop, so this is diagnostic only) and read whether the .loop dump reports threshold-driven decline at insn_count in [59,61]. Even if byte-foreclosed, the measurement fixes the exact width of the window under loop_has_call and tells the next session whether any call-free construct sets loop_has_call (prescan_loop) \u2014 e.g. a libcall-expanded operation such as a 64-bit divide or a float op \u2014 which would be an ordinary-C handle on the same dial."
+   "hypothesis": "The named-intermediate family supplies free insn_count in this loop, at +1 per intermediate, and is the only sanctioned family measured to do so.",
+   "mechanism": "`v = *src;` ahead of `dst[0x24] = v;` measured 56 -> 57 insn_count at 107 -> 107 emitted asm lines: the copy is coalesced after loop_optimize but exists when count_loop_regs_set runs. The named-intermediate family (.claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17 clarification in no-new-park-categories.md) has six prongs including once-written/once-read and byte-neutrality, both of which this instance satisfies.",
+   "next_probe": "Sweep how many ordinary named intermediates the body admits without changing emitted bytes - one per loaded value, one per division result, one per stored byte - and read the cumulative .loop insn_count. If the ceiling is small (expected: 4-8) it will not close the +63 gap alone, but it is the free baseline that any merge-path carrier stacks on top of, and it lowers the merge-path requirement by exactly that amount."
   },
   {
-   "hypothesis": "pb_array_subscript.c remains a byte-equivalent second chassis (15 / 105) whose pre-cse1 RTL differs from candidate.c, so any future permuter or solver campaign has two independent seeds.",
-   "mechanism": "cse1 folds the array-subscript address arithmetic into the same givs the index-derived-pointer spelling produces, so the two bodies emit identical instructions while presenting different mutation neighbourhoods.",
-   "next_probe": "If a permuter campaign is re-run (s4 ran 66,016 iterations on the pointer spelling with zero finds), seed it from tmp/grind/func_8003C714/s12/pb_array_subscript.c instead."
+   "hypothesis": "The layer-1 declaration puns flagged in candidate.c are a submission blocker independent of the floor, and will need to be settled before ANY distance-0 body can be filed.",
+   "mechanism": "The brief's auto-scan flags `src = (u8 *)&D_80106A58 + i * 8;` (D_80106A58 is a per-word splat sub-symbol of g_file_disc_type @80106A54, declared `extern u8 g_file_disc_type;`) and `*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;`. The sanctioned fix is the aggregate-merge family at the DECLARATION in include/*.h via an integration handoff, prongs (a)-(e), and prong (c)'s 2026-09-03 amendment requires the sub-symbol rows to be kept with an `alias of <base>+N; retire with func_80035280` suffix because func_80035280 is still INCLUDE_ASM.",
+   "next_probe": "Before any candidate-ready on this function, check whether prong (a) can be satisfied for D_80106A58 - the target's loop uses a single base register `$a2` with a stride-8 increment (`addiu $a2, $a2, 0x8` at 8003C830), which is base-register/stride evidence rather than the forbidden adjacency-of-splat-names evidence. Draft the header-canonical merged declaration and route it as an integration handoff; do not spell it as a per-use cast."
   }
  ],
  "judge_constraints": [
@@ -215,6 +221,14 @@
    "measured_on": "shipped chassis HEAD 2026-09-05, target disassembly asm/funcs/func_8003C714.s read against the statement list of memory/grind/func_8003C714/candidate.c; no FAKE constructs present",
    "predicate_cite": "",
    "result": "Every tail instruction is accounted for by an existing source statement; there is no spare instruction that could read a"
+  },
+  {
+   "session": 14,
+   "statement": "One of the four combine-fold carrier shapes measured this session (xor pairs, add/sub pairs, repeated &0xFF, shift round-trips) is admissible ordinary C under the frozen family list.",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s14/body_xp32.c copied over src/code6cac_c2.c (sandbox score 0, 104 target / 104 build) and the three MODE variants swept through cc1; no FAKE ",
+   "predicate_cite": "",
+   "result": "FALSE for all four shapes. Each is value-preserving with respect to the stored byte, so T1 (semantic purpose) and T2 (hu"
   }
  ]
 }
