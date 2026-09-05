@@ -8462,3 +8462,136 @@ the trailing loop above the flag blocks is far worse (s60f, 51/42).
 - [s60] The pointer-object-free array spelling is the only measured chassis that produces multiple address pseudos: the s59b form is register-for-register identical to the target for its first eight instructions and is exactly one instruction long, the excess being block 2's store folding to lui $at + sb %lo+3($at).
 
 - [s60] Fifteen new forms banked to memory/grind/func_80034F88/rejected/ (s60a..s60n), covering block-scoped pointers, per-block pointer routing, duplicated stores into arms on three different block positions, statement reordering, value-variable splits, and the loop-first reordering.
+
+## E61 -- s61 (structural, 2026-09-05): the floor moves, 10 -> 9
+
+E61.1  CHASSIS CHECK.  memory/grind/func_80034F88/candidate.c (the s60
+pointer-object-free-value-model body) re-measured on HEAD with the s59
+aggregate declaration applied: `sandbox func_80034F88 --disable all` = score
+10, 49 target insns / 49 build insns.  The ledger's floor was current.
+
+E61.2  THE 60-SESSION FLOOR OF 10 IS BROKEN.  Spending the Judge's two-object
+grant ON TOP OF the s59 aggregate declaration and the s60 value model measures
+**score 9, 49/49** (tmp/grind/func_80034F88/s61/v/A.c; the C-variant spelling
+of the same construct is the new candidate.c).  s55b, the last two-object
+measurement, saw 15/17 -- but it was taken on the scalar-symbol chassis where
+the address allocnos additionally carried a local-alloc hard-reg-3 conflict,
+exactly as the s60 frontier note predicted.  On the aggregate chassis that
+conflict is gone and the same construct is worth one instruction more.
+
+E61.3  THE RESIDUAL IS NINE INSTRUCTIONS, ALL IN BLOCK 0, AND IS EXACTLY TWO
+DEFECTS.  Blocks 1 and 2 and the trailing loop are byte-exact in the target's
+order, INCLUDING the target's la-before-block-0's-store hoist at .L80034FC8
+(`lui $a0 / addiu $a0 / sb $v0,0($v1)`).  Objdump comparison (ours vs target):
+
+    lui   $a2            lui   $v1
+    addiu $a2            addiu $v1
+    lbu   $v1, 0($a2)    lbu   $a0, 0($v1)
+    andi  $v1, $v1,0xF8  andi  $a0, $a0,0xF8
+    sb    $v1, 0($a2)    sb    $a0, 0($v1)
+    nop                  lbu   $a0, 0($v1)      <- the block-0 reload
+    ori   $v0, $v1, 1    ori   $v0, $a0, 1
+    addu  $v0, $v1, $0   addu  $v0, $a0, $0
+    sb    $v0, 0($a2)    sb    $v0, 0($v1)
+
+Defect 1: the block-0 address object `q` and the block-0 value `u` hold each
+other's target hard registers ($a2/$v1 instead of $v1/$a0).  Defect 2: the
+block-0 reload is still folded by cse2; the load-delay nop stands in its place,
+which is why the instruction count is 49 with or without it.
+
+E61.4  DEFECT 1 IS PURELY AN ALLOCATION ORDER, AND THE CONFLICT GRAPH ALREADY
+ADMITS THE TARGET.  tools/ra_solver/extract.py on the candidate body
+(tmp/grind/func_80034F88/s61/C.model.json):
+
+    ord pseudo  hardreg nrefs livelen  pri
+     0   73 i     $v1     11     7     47142
+     1   77 u     $v1      8    10     24000
+     2   75 c     $v0     15    19     23684
+     3   74 v     $v1      6    10     12000
+     4   81 r     $a0      6    19      6315   <- target seat, correct
+     5   72 p     $a1      6    34      3529   <- target seat, correct
+     6   76 q     $a2      4    28      2857   <- allocated LAST
+
+    ;; 76 conflicts: 72 75 76 77 81 2 29      (73 and 74 absent)
+    ;; 77 conflicts: 72 75 76 77 2 29         (81 absent)
+
+76 does not conflict with 73 or 74, and 77 does not conflict with 81.  So
+{q, v, i} may all share $v1 and {u, r} may both share $a0 -- which IS the
+target's assignment ($v1 = q + blocks-1/2 value + loop index; $a0 = block-0
+value + blocks-1/2 address).  Only the descending-priority order stops it: 77
+reaches find_reg first and takes $v1.  If 76 were reached before 77, 76 would
+take $v1 (73's seat, no conflict) and 77 would be pushed to $a0 (81's seat, no
+conflict).
+
+E61.5  THE INVERSE SOLVER PRICES DEFECT 1 AT ONE ATOM.
+`inverse.py global ... --goal '{"76": 3}' --depth 2` -> minimal solution size
+1 atom, 2 distinct vectors:
+  (a) [calls_crossed] pseudo 77: 0 -> 1  -- semantically unreachable, block 0's
+      value is computed after the function's only call, and forcing it across
+      would move it to a callee-saved register (extra save/restore insns).
+  (b) [refs_down] pseudo 77: refs 8 -> 2.
+Ten preference atoms are reported FORECLOSED ("$v1 never appears as a hard reg
+in this function's pre-RA RTL, so global.c set_preference can never record a
+preference for it").  Arithmetic for (b): pri = floor_log2(n)*n*10000/livelen,
+so with 76 at 2857 the block-0 value must reach pri < 2857, i.e. 3 refs with
+livelen >= 11, or 2 refs.  The minimum honest ref count for the block-0 value
+is 3 (one def plus the two arm reads the target's `ori $v0,$a0,1` /
+`addu $v0,$a0,$0` pair requires), so the surviving sub-goal is precisely:
+**a 3-reference block-0 value pseudo whose live length is >= 11**.  The
+alternative, lifting 76 above 77's 7500 (the 3-ref case), needs 76 at 8 refs
+with livelen 28; block 0 offers at most 5 (la + four memory accesses).
+
+E61.6  THE MASK-VALUE SPLIT IS FREE ON THIS CHASSIS ONLY IF THE CARRIER IS A
+GLOBAL ALLOCNO.  Giving the mask its own block-local `mv`
+(tmp/grind/func_80034F88/s61/v/H.c) drops the block-0 value to 3 refs (pri
+7500, livelen 4) but local-alloc seats `mv` in $v1 and `;; 76 conflicts` gains
+hard reg 3 -- the same hard-reg block s60 removed.  Carrying the mask in the
+OUTER value variable instead (v/L.c) keeps 76 free of hard-3 but makes 76
+conflict with 74, closing the $v1 seat a different way.  Carrying the mask in
+`c` (v/N.c, v/O.c) avoids both but costs 25 points (34 / 33).
+
+E61.7  cse2's BLOCK-0 STORE-FORWARDING SURVIVES EVERY ZERO-COST INVALIDATOR
+TRIED ON THE TWO-OBJECT CHASSIS.  Spelling the reload as a different lvalue
+(`u = D_80106A70[3];` after `*q = u;`, v/B.c and v/D.c) folds identically (9,
+nop retained).  Re-ordering so the reload follows `c = p[8] & 1;` (v/G.c) folds
+identically.  The s59 FAKE dead re-set (`mv = raw;`, v/E.c) DOES defeat the
+fold on this chassis but costs 6 points (15).  Reusing `c` as the mask carrier
+(v/N.c) genuinely restores the lbu -- the store's value pseudo is overwritten
+by `c = p[8] & 1;` before the reload, so cse2 has no live equivalent -- but it
+costs an instruction (50) and 25 points.  So an ordinary-C invalidator EXISTS;
+what is missing is one that does not also move the value out of its seat.
+
+E61.8  CONTROLS THAT DID NOT MOVE THE SCORE (all 49/49, score 9): reload via
+the array element (B), block-0 value split from blocks-1/2 value (C), B+C (D),
+mask store via the array element (F), reload after the flag test (G), mask in a
+block-local (H), q declared after the values (I), value declared before q (K),
+mask in the outer v (L).  Score 9 is robust across the whole spelling family --
+consistent with E61.4, where the defect is an ordering fact about ONE pseudo's
+reference count, not a spelling fact.
+
+E61.9  Hoisting the loop index's initialisation above the flag blocks (`i = 0;`
+before block 0, `for (; i < 3; i++)`) -- the attempt to make the block-0 value
+conflict with `i` and be pushed off $v1 -- costs three instructions (52) and
+measures 31 (v/J.c).
+
+- [s61] Chassis check: the s60 candidate.c re-measured on HEAD this session with the s59 aggregate declaration applied gives score 10, 49/49 -- the ledger floor was current, and the new floor of 9 is a real improvement measured against it in the same session.
+
+- [s61] New floor 9 (49 target insns / 49 build insns), the first movement since s52. Body saved to memory/grind/func_80034F88/candidate.c with both granted /* FAKE */ annotations at the pointer declarations.
+
+- [s61] All nine residual instructions are inside block 0. Blocks 1 and 2 and the trailing loop now match the target byte-for-byte AND in the target's emission order, including the la for blocks 1-2 being emitted at .L80034FC8 above block 0's store.
+
+- [s61] Measured allocation for the candidate body (tools/ra_solver/extract.py, tmp/grind/func_80034F88/s61/C.model.json): ord 0 pseudo 73 i $v1 (11 refs/7, pri 47142); ord 1 pseudo 77 block-0 value $v1 (8/10, 24000); ord 2 pseudo 75 c $v0 (15/19, 23684); ord 3 pseudo 74 blocks-1/2 value $v1 (6/10, 12000); ord 4 pseudo 81 r $a0 (6/19, 6315); ord 5 pseudo 72 p $a1 (6/34, 3529); ord 6 pseudo 76 q $a2 (4/28, 2857).
+
+- [s61] The conflict graph already admits the target seating: ';; 76 conflicts: 72 75 76 77 81 2 29' (73 and 74 absent) and ';; 77 conflicts: 72 75 76 77 2 29' (81 absent). r ($a0) and p ($a1) are already on their target seats.
+
+- [s61] tools/ra_solver/inverse.py global --goal '{"76": 3}' --depth 2: minimal solution size 1 atom, 2 vectors -- [calls_crossed] 77 0->1 (unreachable) and [refs_down] 77 refs 8->2. Ten preference atoms FORECLOSED: '$v1 never appears as a hard reg in this function's pre-RA RTL, so global.c set_preference can never record a preference for it.'
+
+- [s61] Derived sub-goal from the priority formula: the block-0 value pseudo must reach pri < 2857, i.e. 3 references with live length >= 11 (2 references is below its honest minimum, since the target's `ori $v0,$a0,1` / `addu $v0,$a0,$zero` pair needs two arm reads plus one def). The alternative -- lifting the address object above the 3-ref value's 7500 -- would need 8 references on an object that block 0 can give at most 5 (la plus four memory accesses).
+
+- [s61] Score 9 is robust across nine independent spellings (reload via array element, block-0/blocks-1-2 value split, both together, mask store via element, reload after the flag test, block-local mask carrier, q declared after the values, value declared before q, mask in the outer value local) -- consistent with the defect being a reference-count ordering fact about one pseudo rather than a spelling fact.
+
+- [s61] First ordinary-C defeat of cse2's block-0 store-forwarding on record: reusing the flag-test local `c` as the mask-store carrier overwrites the stored value's pseudo before the reload, and the target's `lbu` appears. It costs a re-seat (33-34), so the open question is an invalidator that does not disturb the seats.
+
+- [s61] The s59 FAKE dead re-set is chassis-specific: it measures 15 here versus 9 for the identical body without it, and should not be carried forward onto the two-object chassis.
+
+- [s61] The header edit (include/code6cac.h:472 `extern u8 D_80106A70[4];` plus the two element-form edits at src/code6cac.c:340,345) remains a discharged, byte-neutral integration handoff, now exercised across roughly 35 further builds this session without incident. src/ was reverted to HEAD at session end.

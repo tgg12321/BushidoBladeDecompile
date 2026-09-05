@@ -6309,3 +6309,192 @@ without the dead re-set. Both kills stand.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: array-declaration chassis on HEAD 2026-09-05; s59b measured with its three dead re-sets present, ablation run against the s59 candidate's single annotated dead store
+
+## s61 (structural, 2026-09-05) -- FLOOR 10 -> 9
+
+Mandated modality: structural.  Chassis: the s59 aggregate declaration
+(`extern u8 D_80106A70[4];` + the two element-form edits in src/code6cac.c)
+plus the s60 value model.  Baseline re-measured on HEAD this session: score 10,
+49/49.
+
+### H61.1 CONFIRMED -- the Judge-granted two-object form is worth one point on
+the aggregate chassis (the s60 frontier's item 1)
+Statement: declaring TWO C pointer objects into the flag byte -- one carrying
+block 0, one carrying blocks 1 and 2 -- lowers the honest floor from 10 to 9 on
+the aggregate declaration, where the same construct measured 15/17 on the
+scalar-symbol chassis at s55.
+Mechanism: global.c:1275 writes exactly one hard register per allocno and GCC
+2.7.2 does no live-range splitting, so the target's two address seats ($v1 in
+block 0, $a0 in blocks 1-2) need two allocnos.  On the s55 chassis both address
+allocnos additionally carried a local-alloc hard-reg-3 conflict from the
+block-local mask quantities; the s59 declaration plus the s60 value model
+removes it, so the second object now buys the seat it could not buy then.
+Probe: tmp/grind/func_80034F88/s61/v/A.c (and C/D/F/G/H/I/K/L, all the same
+score) -> `sandbox func_80034F88 --disable all` = score 9, 49/49.
+Verdict: CONFIRMED.  New candidate.c.
+
+### H61.2 CONFIRMED -- the whole residual is nine instructions in block 0, and
+exactly two defects
+See evidence E61.3 for the instruction-by-instruction table.  Blocks 1 and 2
+and the trailing loop are byte-exact IN THE TARGET'S ORDER, including the
+la-before-block-0's-store hoist at .L80034FC8.  Defect 1: `q` (block-0 address)
+and `u` (block-0 value) hold each other's target hard registers.  Defect 2: the
+block-0 reload is still folded by cse2 (a load-delay nop occupies its slot, so
+the instruction count is 49 either way).
+
+### H61.3 CONFIRMED -- defect 1 is an allocation ORDER, not a conflict
+The measured conflict graph already admits the target assignment: pseudo 76
+(`q`) conflicts with neither 73 (`i`) nor 74 (blocks-1/2 value), and pseudo 77
+(the block-0 value) does not conflict with 81 (`r`).  So {q, v, i} may share
+$v1 and {u, r} may share $a0 -- the target's exact seating.  Only descending
+allocno priority prevents it: 77 (pri 24000) reaches find_reg before 76 (pri
+2857) and takes $v1.  `inverse.py global --goal '{"76": 3}'` returns a
+ONE-ATOM solution, `[refs_down] pseudo 77: refs 8 -> 2`; the only other atom
+(calls_crossed on 77) is semantically unreachable and would force a
+callee-saved seat.  Arithmetic: the block-0 value must reach pri < 2857, i.e.
+3 refs with livelen >= 11 (2 refs is below the honest minimum -- the target's
+`ori $v0,$a0,1` / `addu $v0,$a0,$0` pair needs two arm reads plus one def).
+Artifacts: tmp/grind/func_80034F88/s61/C.model.json,
+tmp/grind/func_80034F88/dumps/code6cac_b.greg.
+
+### H61.4 KILLED (instance) -- reducing the block-0 value to 3 references by
+giving the mask its own block-local carrier does not lower its priority enough,
+and re-creates the hard-reg-3 block on the address object
+Statement: on the two-object aggregate chassis, splitting block 0's mask value
+into its own block-scoped local leaves the block-0 value at priority 7500
+against the address object's 2857 and adds hard register 3 to the address
+allocno's conflict set, so the address object still misses $v1; the score stays
+9.
+Mechanism: local-alloc seats the block-local mask quantity in $v1 before
+global.c runs, which is the same hard-reg block s60 removed by reusing one
+value local; and pri = floor_log2(3)*3*10000/4 = 7500 is still far above the
+address object's 2857.
+Probe: tmp/grind/func_80034F88/s61/v/H.c -> score 9, 49/49; model shows
+`;; 76 conflicts: ... 2 3 29` and `{'pseudo': 78, 'nrefs': 3, 'livelen': 4,
+'pri': 7500}`.
+Verdict: KILLED.  kill_scope: instance.  measured_on: two-object aggregate
+chassis on HEAD 2026-09-05, zero FAKE constructs beyond the two granted pointer
+declarations.
+
+### H61.5 KILLED (instance) -- carrying block 0's mask value in `c` restores
+the cse2-folded reload but costs an instruction and 25 points
+Statement: reusing the flag-test local `c` as block 0's mask-store carrier on
+the two-object aggregate chassis makes cse2 emit the target's block-0 reload,
+but the resulting body measures 34 at 50 instructions (reload before the flag
+test: 33 at 49 instructions), not 9.
+Mechanism: the store's value pseudo is overwritten by `c = p[8] & 1;` before
+the reload, so cse2 has no live equivalent for mem(q) and must emit the lbu;
+but `c` is the highest-priority non-index allocno ($v0, pri ~23000) and
+carrying the mask through it re-seats the whole block.
+Probe: tmp/grind/func_80034F88/s61/v/N.c -> 34 (50 insns);
+tmp/grind/func_80034F88/s61/v/O.c -> 33 (49 insns).  Banked as
+rejected/s61n-*.c and rejected/s61o-*.c.
+Verdict: KILLED.  kill_scope: instance.  measured_on: two-object aggregate
+chassis on HEAD 2026-09-05, no FAKE construct other than the two granted
+pointer declarations.
+
+### H61.6 KILLED (instance) -- the s59 FAKE dead re-set is chassis-specific and
+costs six points here
+Statement: porting the s59 dead re-set of the stored-value local
+(`mv = raw;`) onto the two-object aggregate chassis measures 15 at 49
+instructions, six points worse than the same chassis without it.
+Mechanism: the re-set forces a block-local `raw`/`mv` pair, which local-alloc
+seats and which changes both address allocnos' conflict sets; whatever reload
+it buys is paid for several times over in seats.
+Probe: tmp/grind/func_80034F88/s61/v/E.c -> score 15, 49/49.  Banked as
+rejected/s61e-*.c.
+Verdict: KILLED.  kill_scope: instance.  measured_on: two-object aggregate
+chassis on HEAD 2026-09-05, with the s59 FAKE dead re-set present.
+
+### H61.7 KILLED (instance) -- hoisting the loop index's initialisation above
+the flag blocks to force a conflict with the block-0 value costs three
+instructions
+Statement: writing `i = 0;` before block 0 and `for (; i < 3; i++)` for the
+trailing loop, so that the loop index is live across block 0 and conflicts with
+the block-0 value, produces 52 instructions and measures 31.
+Mechanism: extending the index's live range across the whole body raises its
+live length from 7 to ~35 and re-seats it, and the loop's induction-variable
+setup no longer folds into the pre-loop `addu`.
+Probe: tmp/grind/func_80034F88/s61/v/J.c -> score 31, 52 build insns.  Banked
+as rejected/s61j-*.c.
+Verdict: KILLED.  kill_scope: instance.  measured_on: two-object aggregate
+chassis on HEAD 2026-09-05, zero FAKE constructs beyond the two granted pointer
+declarations.
+
+### H61.8 KILLED (instance) -- KILL RE-AUDIT of s57/s59's cse2 reload finding,
+re-measured on the current chassis with the FAKE ablated
+Statement: on the two-object aggregate chassis the block-0 reload cannot be
+recovered by any zero-cost re-spelling of the reload's lvalue or of its
+position relative to the flag test; the array-element spelling
+(`u = D_80106A70[3];`), the post-flag-test position, and the mask-store-via-
+element spelling all fold identically and all measure 9 with the load-delay nop
+retained.
+Mechanism: cse2 keys the stored MEM on the source pseudo's value class; when
+the reload's destination IS the stored pseudo, the fold is a self-fold that no
+change of lvalue spelling or statement order defeats.  Only overwriting the
+stored value's pseudo (H61.5) defeats it, and that carries a seat cost.
+Probe: tmp/grind/func_80034F88/s61/v/B.c, D.c, F.c, G.c -> all score 9, 49/49;
+`tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate
+rejected/s60b-*.c` reports no FAKE-annotated constructs in the closest banked
+form, so the s60b kill was already FAKE-free.
+Verdict: KILLED.  kill_scope: instance.  measured_on: two-object aggregate
+chassis on HEAD 2026-09-05, FAKE constructs ablated (none present beyond the
+two granted pointer declarations).
+
+## [s61] Declaring two C pointer objects into the flag byte -- one carrying block 0, one carrying flag blocks 1 and 2 -- lowers the honest floor from 10 to 9 on the s59 aggregate declaration, where the same construct measured 15/17 on the s55 scalar-symbol chassis.
+- mechanism: global.c:1275 writes exactly one hard register per allocno and GCC 2.7.2 does no live-range splitting, so the target's two address seats ($v1 in block 0, $a0 in blocks 1-2) require two allocnos. On the s55 chassis both address allocnos additionally carried a local-alloc hard-reg-3 conflict from the block-local mask quantities; the s59 declaration plus the s60 one-reused-value model removes it, so the second object now buys a seat it could not buy then.
+- probe: tmp/grind/func_80034F88/s61/v/A.c (and the C/D/F/G/H/I/K/L spellings) installed in src/code6cac_b.c with the aggregate declaration applied; `& tools/wteng.ps1 main sandbox func_80034F88 --disable all`.
+- result: score 9, 49 target insns / 49 build insns, against a baseline of 10 re-measured on HEAD this session with the same chassis. Blocks 1 and 2 and the trailing loop are byte-exact in the target's order, including the target's la-before-block-0's-store hoist at .L80034FC8. Saved as the new memory/grind/func_80034F88/candidate.c with both granted FAKE annotations.
+- verdict: CONFIRMED
+
+## [s61] The nine residual instructions are all inside block 0 and reduce to exactly two defects: the block-0 address object and the block-0 value hold each other's target hard registers, and the block-0 reload is still folded by cse2.
+- mechanism: The load-delay nop that cc1 emits where the target's reload sits keeps the instruction count at 49 with or without the reload, so the reload costs exactly one point; the remaining eight are the two swapped register seats spread across the la pair, the mask read/andi/store, the two arm results and the flag store.
+- probe: objdump -d of tmp/sandbox/func_80034F88/code6cac_b.o compared instruction-for-instruction against asm/funcs/func_80034F88.s (table in evidence.md E61.3).
+- result: ours lui/addiu $a2 + lbu/andi/sb $v1 + nop + ori/addu $v1 + sb, against target lui/addiu $v1 + lbu/andi/sb $a0 + lbu + ori/addu $a0 + sb. Every other instruction in the function matches, in order.
+- verdict: CONFIRMED
+
+## [s61] The register-seat defect is an allocno-priority ordering, not a conflict: the measured conflict graph already admits the target's seating, and the inverse RA solver prices the fix at one atom, refs_down on the block-0 value pseudo.
+- mechanism: global.c orders allocnos by floor_log2(n_refs)*n_refs/live_length; pseudo 77 (block-0 value, 8 refs / livelen 10, pri 24000) reaches find_reg before pseudo 76 (the block-0 address, 4 refs / livelen 28, pri 2857) and takes $v1. 76 conflicts with neither 73 (loop index, $v1) nor 74 (blocks-1/2 value, $v1), and 77 does not conflict with 81 (blocks-1/2 address, $a0), so {q,v,i} in $v1 and {u,r} in $a0 -- the target's exact seating -- is legal. Reaching 76 first would hand it $v1 and push 77 to $a0.
+- probe: tools/ra_solver/extract.py func_80034F88 code6cac_b --inspect (allocdbg + conflict lists, tmp/grind/func_80034F88/s61/C.model.json), then tools/ra_solver/inverse.py global --goal '{"76": 3}' --depth 2 --top 10.
+- result: minimal solution size 1 atom, 2 distinct vectors: [calls_crossed] 77 0->1 (semantically unreachable -- block 0's value is computed after the function's only call, and forcing it across would take a callee-saved seat and its save/restore insns) and [refs_down] 77 refs 8->2. Ten preference atoms come back FORECLOSED because $v1 never appears as a hard reg in this function's pre-RA RTL, so set_preference can never record it. Arithmetic: the block-0 value needs pri < 2857, i.e. 3 refs with live length >= 11 (the honest floor on its ref count is 3 -- one def plus the two arm reads the target's ori/addu pair requires).
+- verdict: CONFIRMED
+
+## [s61] On the two-object aggregate chassis, giving block 0's mask value its own block-scoped carrier drops the block-0 value to three references but leaves its priority at 7500 against the address object's 2857 and re-adds hard register 3 to the address allocno's conflict set, so the score stays at 9.
+- mechanism: local-alloc seats the block-local mask quantity in $v1 before global.c runs -- the same hard-reg block s60 removed by reusing one value local -- and floor_log2(3)*3*10000/4 = 7500 is still far above 2857.
+- probe: tmp/grind/func_80034F88/s61/v/H.c; sandbox plus tools/ra_solver/extract.py --inspect.
+- result: score 9, 49/49; model shows ';; 76 conflicts: 72 75 76 78 82 2 3 29' (hard reg 3 present) and {'pseudo': 78, 'nrefs': 3, 'livelen': 4, 'pri': 7500}.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-object aggregate chassis (s59 declaration + s60 value model) on HEAD 2026-09-05, no FAKE construct beyond the two granted pointer declarations
+
+## [s61] Carrying block 0's mask value in the flag-test local `c` on the two-object aggregate chassis does restore the cse2-folded block-0 reload, but the resulting bodies measure 34 at 50 instructions and 33 at 49 instructions rather than 9.
+- mechanism: The store's value pseudo is overwritten by `c = p[8] & 1;` before the reload, so cse2 has no live equivalent for the stored MEM and must emit the lbu; but `c` is the highest-priority non-index allocno (pri ~23000, $v0) and routing the mask through it re-seats the whole block.
+- probe: tmp/grind/func_80034F88/s61/v/N.c (reload after the flag test) and v/O.c (reload before it), both measured with sandbox.
+- result: N: score 34, 50 build insns. O: score 33, 49 build insns. Banked as rejected/s61n-c-reused-as-mask-carrier-reload-restored-50insn-score34.c and rejected/s61o-c-reused-as-mask-carrier-reload-before-test-49insn-score33.c. This is nonetheless the first ORDINARY-C invalidator of the block-0 fold on record -- s57's and s59's were FAKE dead re-sets.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-object aggregate chassis on HEAD 2026-09-05, no FAKE construct beyond the two granted pointer declarations
+
+## [s61] Porting the s59 FAKE dead re-set of the stored-value local onto the two-object aggregate chassis measures 15 at 49 instructions, six points worse than the same chassis without it.
+- mechanism: The re-set forces a block-local raw/mv pair that local-alloc seats, changing both address allocnos' conflict sets; whatever reload it buys is paid for several times over in register seats.
+- probe: tmp/grind/func_80034F88/s61/v/E.c measured with sandbox.
+- result: score 15, 49/49, against 9 for the identical body without the re-set. Banked as rejected/s61e-twoobj-s59-dead-reset-invalidator-49insn-score15.c. The s59 invalidator is chassis-specific and should not be carried forward.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-object aggregate chassis on HEAD 2026-09-05, with the s59 FAKE dead re-set present
+
+## [s61] Hoisting the loop index's initialisation above the flag blocks, so the index is live across block 0 and conflicts with the block-0 value, costs three instructions and measures 31.
+- mechanism: Extending the index's live range across the whole body raises its live length from 7 to roughly 35 and re-seats it, and the loop's induction-variable setup no longer folds into the pre-loop addu.
+- probe: tmp/grind/func_80034F88/s61/v/J.c (`i = 0;` before block 0, `for (; i < 3; i++)`) measured with sandbox.
+- result: score 31, 52 build insns vs 49 target. Banked as rejected/s61j-loop-index-hoisted-above-flag-blocks-52insn-score31.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-object aggregate chassis on HEAD 2026-09-05, no FAKE construct beyond the two granted pointer declarations
+
+## [s61] KILL RE-AUDIT (mandated): on the current chassis, with FAKE constructs ablated, the block-0 reload cannot be recovered by re-spelling the reload's lvalue or moving it relative to the flag test -- the array-element spelling, the post-flag-test position and the mask-store-via-element spelling all fold identically and all measure 9 with the load-delay nop retained.
+- mechanism: cse2 keys the stored MEM on the source pseudo's value class; when the reload's destination IS the stored pseudo, the fold is a self-fold that no change of lvalue spelling or statement order defeats. Only overwriting the stored value's pseudo (the c-reuse form above) defeats it, and that carries a seat cost.
+- probe: `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/rejected/s60b-blockscoped-q-scoped-values-blocks12-fold-49insn-score23.c` (the banked form closest to the target) reported no FAKE-annotated constructs, so the s60b kill was already FAKE-free; the re-spelling controls are tmp/grind/func_80034F88/s61/v/B.c, D.c, F.c and G.c.
+- result: All four controls: score 9, 49/49, nop retained where the target has `lbu $a0, 0($v1)`. The s57/s59 conclusion that only a value-side invalidator defeats the fold survives the re-audit; what is new is that an ORDINARY-C value-side invalidator exists (the c-reuse form) and its cost is a register re-seat, not the fold.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-object aggregate chassis on HEAD 2026-09-05, FAKE constructs ablated (none present beyond the two granted pointer declarations)

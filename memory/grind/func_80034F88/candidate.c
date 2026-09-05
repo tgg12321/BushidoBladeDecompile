@@ -1,17 +1,20 @@
-/* s60 (rederive, 2026-09-05) -- SAME OBJECT MODEL AS s59, NEW VALUE MODEL.
- * Honest floor is still 10 (49 target insns / 49 build insns, measured this
- * session on HEAD), but this body carries ZERO FAKE-annotated constructs, ZERO
- * declaration puns, ZERO alias handles and ZERO dead stores -- and it is the
- * first body in 60 sessions in which the address object `q` is NOT hard-reg
- * blocked out of $v1.  The previous (s59) body, which buys the target's
- * block-0 reload with one FAKE dead store at the same score, is preserved at
- * memory/grind/func_80034F88/candidate_s59_fake_reload_variant.c.
+/* s61 (structural, 2026-09-05) -- FLOOR 9.  First improvement in 60 sessions.
+ *
+ * The 60-session floor of 10 is broken by spending the Judge's TWO-OBJECT
+ * grant (decisions.md constraint: "At most TWO C pointer objects may alias
+ * &D_80106A73 (one carrying the mask + flag block 0, one carrying flag blocks
+ * 1 and 2), each declared with a direct `= &D_80106A73` initializer, each
+ * carrying its own /* FAKE ... *​/ annotation at the declaration, with neutral
+ * names") ON TOP OF the s59 aggregate declaration + the s60 value model.  The
+ * frontier note from s60 said the s55b two-object measurement was void because
+ * it had been taken on the old scalar-symbol chassis, where the address
+ * allocnos additionally carried a local-alloc hard-reg-3 conflict.  Redone on
+ * the aggregate chassis, it measures 9, not the 15/17 s55b saw.
  *
  * ============================ REQUIRED DECLARATION =========================
- * Unchanged from s59.  THIS BODY DOES NOT COMPILE AGAINST HEAD's HEADER; it
- * requires one header edit plus two element-form use-site edits in the other
- * TU (an integration handoff, reverted at the end of the session so the tree
- * is clean):
+ * Unchanged from s59/s60.  This body does NOT compile against HEAD's header;
+ * it needs one header edit plus two element-form use-site edits in the other
+ * TU (an integration handoff; reverted at session end so the tree is clean):
  *
  *     include/code6cac.h:472
  *       -  extern u8 D_80106A70;
@@ -19,108 +22,113 @@
  *     src/code6cac.c:340   D_80106A70 = 0x11;  ->  D_80106A70[0] = 0x11;
  *     src/code6cac.c:345   (D_80106A70 & 0xF)  ->  (D_80106A70[0] & 0xF)
  *
- * s59 measured the declaration byte-neutral project-wide (func_8001945C 0/11,
- * func_80019488 0/14, func_80037F40 0/51); s60 re-used it unchanged.
+ * s59 measured the declaration byte-neutral project-wide; s60 and s61 re-used
+ * it across ~35 further builds without incident.
  *
- * ============================ WHAT s60 CHANGED =============================
- * The value model.  s59's block 0 declared four separate s32 locals
- * (raw / mv / v / c).  `raw` and `mv` never crossed a basic-block boundary, so
- * cc1 handed them to LOCAL-ALLOC as block-local quantities -- and local-alloc
- * seated BOTH of them in $v1.  That is what put a hard-register-3 conflict on
- * the address allocno.  Measured directly this session from the instrumented
- * cc1 dumps (tmp/grind/func_80034F88/s60/, dumps regenerated per variant):
+ * ============================ WHAT IS LEFT (9 of 49) =======================
+ * Blocks 1 and 2 and the trailing loop are now BYTE-EXACT, in the target's
+ * order, including the target's la-before-the-block-0-store hoist at
+ * .L80034FC8.  Every one of the nine residual instructions is inside block 0:
  *
- *   s59 body (.lreg):  Register 75 used 2 times across 2 insns in block 0
- *                      Register 76 used 2 times across 2 insns in block 0
- *                      ;; Register 75 in 3.   ;; Register 76 in 3.
- *   s59 body (.greg):  ;; 74 conflicts: 72 74 77 78 82 83 86 87 2 3 29
- *                                                                 ^ hard $v1
+ *   ours                       target
+ *   lui   $a2                  lui   $v1          <- address seat
+ *   addiu $a2                  addiu $v1
+ *   lbu   $v1, 0($a2)          lbu   $a0, 0($v1)  <- value seat
+ *   andi  $v1, $v1, 0xF8       andi  $a0, $a0, 0xF8
+ *   sb    $v1, 0($a2)          sb    $a0, 0($v1)
+ *   nop                        lbu   $a0, 0($v1)  <- the block-0 reload
+ *   ori   $v0, $v1, 1          ori   $v0, $a0, 1
+ *   addu  $v0, $v1, $zero      addu  $v0, $a0, $zero
+ *   sb    $v0, 0($a2)          sb    $v0, 0($v1)
  *
- * Reusing ONE value variable (`v`) for the mask value and for every flag
- * block's value makes every block-0 value pseudo live across the if, so block
- * 0 contains no block-local quantity at all, and the conflict disappears:
+ * i.e. exactly TWO defects remain: (1) the block-0 address object `q` and the
+ * block-0 value `u` hold each other's target hard registers, and (2) the
+ * block-0 reload is still folded away by cse2 (the load-delay nop stands in
+ * its place, which is why the instruction count is 49 either way).
  *
- *   this body (.greg): ;; 74 conflicts: 72 74 75 76 2 29        (no 3)
+ * ============================ DEFECT 1 IS A PRIORITY ORDER =================
+ * Measured with tools/ra_solver/extract.py on THIS body
+ * (tmp/grind/func_80034F88/s61/C.model.json):
  *
- * $v1 is now legal for the address object for the first time in 60 sessions.
+ *   ord pseudo  hardreg  nrefs livelen  pri
+ *    0    73 i     $v1      11     7    47142
+ *    1    77 u     $v1       8    10    24000     <- takes $v1 before q is seen
+ *    2    75 c     $v0      15    19    23684
+ *    3    74 v     $v1       6    10    12000
+ *    4    81 r     $a0       6    19     6315     <- target seat, correct
+ *    5    72 p     $a1       6    34     3529     <- target seat, correct
+ *    6    76 q     $a2       4    28     2857     <- allocated LAST
  *
- * ============================ THE RESIDUAL =================================
- * What remains is ONE inequality in global.c's allocno_compare, and it is now
- * fully priced.  Priority is floor_log2(n_refs) * n_refs / live_length; the
- * measured allocnos of this body are
+ * The conflict graph ALREADY ADMITS the target assignment: 76 does not
+ * conflict with 73 or 74, and 77 does not conflict with 81, so {q,v,i} may all
+ * sit in $v1 and {u,r} may both sit in $a0.  Nothing but the allocation ORDER
+ * prevents it -- if 76 were reached before 77, find_reg would hand 76 $v1
+ * (73's seat, no conflict) and 77 would then be pushed to $a0 (81's seat, no
+ * conflict), which is precisely the target.  tools/ra_solver/inverse.py agrees:
+ * goal {"76": 3} has a ONE-ATOM solution, `[refs_down] pseudo 77: refs 8->2`
+ * (the only other atom, calls_crossed on 77, is semantically unreachable --
+ * block 0's value is computed after the only call).
  *
- *   73  i (loop index)   11 refs / 7 insns  -> 4.71   seated $v1
- *   76  c (result/cond)  15 refs / 18 insns -> 2.50   seated $v0 (prefers 2)
- *   75  v (values)       14 refs / 20 insns -> 2.10   seated $v1
- *   74  q (address)      10 refs / 31 insns -> 0.97   seated $a0
- *   72  p                 6 refs / 34 insns -> 0.35   seated $a1
- *
- * and the emitted order ";; 5 regs to allocate: 73 76 75 74 72" matches that
- * ranking exactly.  The target wants 74 in $v1 and 75 in $a0, i.e. 74 must
- * sort ABOVE 75.  Splitting `v` (s60l/s60m: v for the mask + block 0, w for
- * blocks 1-2) lowers 75 to 2.40 and adds 76=w at 1.20 -- still both above
- * 0.97, so the order does not move.
- *
- * ============================ THE STRUCTURAL LIMIT =========================
- * s60 also established WHY the single-pointer chassis cannot finish, whatever
- * the priorities do.  In the target the flag address occupies TWO different
- * hard registers: $v1 in block 0 (la at 80034F98, last read by the store at
- * 80034FD0) and $a0 in blocks 1 and 2 (la at 80034FC8 and 80034FF0).  A single
- * C pointer object is a single allocno, and global.c:1275 writes exactly one
- * hard register per allocno (reg_renumber[allocno_reg[allocno]] = best_reg);
- * GCC 2.7.2 does no live-range splitting.  So the target's address geometry is
- * only reachable if the address is carried by more than one RA object -- which
- * on this chassis means either the pointer-free array spelling (three
- * rematerialised address pseudos: rejected/s59b-..., 50 insns, block 0
- * register-EXACT) or the Judge-granted two-object form, which has never been
- * measured on the aggregate declaration.
- *
- * FAMILY.  `v` reused for the mask value and the flag values is variable reuse
- * of an ordinary local -- no annotation, no coercion, no dead store.  `q` is a
- * pointer into a declared aggregate.  See evidence.md E60.* and hypotheses.md
- * s60.
+ * FAMILY.  Two pointer objects, each initialised directly from the aggregate,
+ * neither copied from the other, each annotated -- the exact shape the Judge
+ * granted.  `u`/`v`/`c` are ordinary locals; no dead store, no pad, no pun.
  */
 void func_80034F88(void) {
     s32 *p;
     s32 i;
-    u8 *q;
     s32 v;
     s32 c;
 
     p = func_80077D00();
-    q = &D_80106A70[3];
+    {
+        /* FAKE: block-0's own address object, mechanism: global.c:1275 assigns
+         * exactly one hard register per allocno and GCC 2.7.2 does no
+         * live-range splitting, so the target's two address seats ($v1 in
+         * block 0, $a0 in blocks 1-2) are only reachable with two allocnos.
+         * lever-exhaustion: the single-object chassis is measured flat at 10
+         * across s53-s60 (memory/grind/func_80034F88/hypotheses.md), and the
+         * pointer-object-free array spelling costs an instruction
+         * (rejected/s59b-...-50insn-score24.c). */
+        u8 *q = &D_80106A70[3];
+        s32 u;
 
-    v = *q;
-    v = v & 0xF8;
-    *q = v;
-    v = *q;
-    c = p[8] & 1;
-    if (c) {
-        c = v | 1;
-    } else {
-        c = v;
+        u = *q;
+        u = u & 0xF8;
+        *q = u;
+        u = *q;
+        c = p[8] & 1;
+        if (c) {
+            c = u | 1;
+        } else {
+            c = u;
+        }
+        *q = c;
     }
-    *q = c;
+    {
+        /* FAKE: the address object for flag blocks 1 and 2, mechanism: as
+         * above -- a second allocno is what lets $a0 carry blocks 1-2 while
+         * $v1 carries block 0.  lever-exhaustion: as above. */
+        u8 *r = &D_80106A70[3];
 
-    q = &D_80106A70[3];
-    v = *q;
-    c = p[8] & 2;
-    if (c) {
-        c = v | 2;
-    } else {
-        c = v;
-    }
-    *q = c;
+        v = *r;
+        c = p[8] & 2;
+        if (c) {
+            c = v | 2;
+        } else {
+            c = v;
+        }
+        *r = c;
 
-    q = &D_80106A70[3];
-    v = *q;
-    c = p[8] & 4;
-    if (c) {
-        c = v | 4;
-    } else {
-        c = v;
+        r = &D_80106A70[3];
+        v = *r;
+        c = p[8] & 4;
+        if (c) {
+            c = v | 4;
+        } else {
+            c = v;
+        }
+        *r = c;
     }
-    *q = c;
 
     for (i = 0; i < 3; i++) {
         D_80106A70[i] = *((u8 *)p + i + 0x17);

@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 60,
- "current_modality": "rederive",
+ "session_count": 61,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -363,23 +363,29 @@
    "floor": 10,
    "modality": "rederive",
    "headline": "The 60-session $v1 seat race was never a priority race: local-alloc seats two block-local block-0 quantities in $v1 and hard-reg-blocks the address object; reusing one value local removes them, clears"
+  },
+  {
+   "session": 61,
+   "floor": 9,
+   "modality": "structural",
+   "headline": "Floor 10 -> 9 after 60 flat sessions: the Judge-granted two-object form, void on the old chassis, is worth a point on the s59 aggregate declaration; the entire residual is now 9 instructions inside bl"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The Judge-granted TWO-object form has never been measured on the aggregate declaration, and it is now the only pointer-shaped chassis that can carry the target's address geometry: object A holds block 0's address (target $v1), object B holds blocks 1 and 2's (target $a0). s55b reached 49 instructions in the target's exact order at score 15/17 on the OLD scalar-symbol chassis, where the address allocno additionally carried a hard-reg-3 conflict from the block-local mask quantities. On the aggregate chassis, with the value model of the new candidate.c (one reused value local), that conflict is gone -- so the s55b measurement is void and must be redone.",
-   "mechanism": "global.c:1275 assigns one hard register per allocno; two pointer objects are two allocnos and can therefore be seated in $v1 and $a0 respectively. The s59 array declaration plus the s60 value model removes the local-alloc hard-reg-3 conflict that previously made $v1 illegal for either object, which is the precondition s55b never had.",
-   "next_probe": "Rebuild rejected/s55b-twoalias-blockscoped-EXACT-INSN-ORDER-49insn-score17.c and rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c on the aggregate chassis (include/code6cac.h:472 -> `extern u8 D_80106A70[4];` plus the two element-form edits in src/code6cac.c:340,345), with the mask value and all flag values carried by ONE reused local so block 0 has no block-local quantity, both objects initialised directly from &D_80106A70[3] and each annotated per the Judge's two-object grant. Measure with `sandbox func_80034F88 --disable all` and read .greg for the two objects' conflict sets and seats before spending further variants."
+   "hypothesis": "The last register-seat defect falls to a block-0 value pseudo with 3 references and a live length of at least 11 -- the one atom the inverse solver returned. Every 3-reference spelling tried so far has a live length of 4 (its def is the reload, its uses are the two arms), which is why the priority stays at 7500 instead of dropping under the address object's 2857.",
+   "mechanism": "pri = floor_log2(n_refs)*n_refs*10000/live_length in global.c's allocno_compare. At 3 refs the crossover is live_length 11. The block-0 value's live range currently starts at the (folded) reload; starting it at or before the mask read, while keeping the mask's own carrier OUT of local-alloc's block-local set (which otherwise adds hard reg 3 to the address allocno's conflicts, measured in H61.4), would stretch it without adding references.",
+   "next_probe": "On the candidate chassis, spell block 0 so the block-0 value local is DEFINED before the mask store and read only in the two arms -- e.g. define it from the masked expression once (`u = *q & 0xF8;`), store it (`*q = u;`), and let the arms read it directly with no reload statement at all -- then read tmp/grind/func_80034F88/s61/*.model.json for pseudo 77's nrefs/livelen. If livelen still lands under 11, try lengthening it by moving the `c = p[8] & 1;` flag read ABOVE block 0's mask sequence so the value's range spans it. Confirm each attempt keeps ';; 76 conflicts' free of hard reg 3."
   },
   {
-   "hypothesis": "The block-scoped-pointer family (s60a/s60b, 49 instructions, block-0 grouping exactly the target's) is one working blocks-1-and-2 spelling away from the target, and its p-to-$a2 displacement is a side effect of the pointer's short live range outranking p, which more references to p would reverse.",
-   "mechanism": "With the pointer dead after block 0's store, the merge block emits no fresh address, so cse folds blocks 1 and 2 to lui + lbu 3(reg) and lui $at + sb -- 49 instructions but the wrong shape. The target instead materialises a fresh address at the head of each of blocks 1 and 2. What creates such a la in the pointer-free chassis is an extended basic block containing two or more uses of the same address; blocks 1 and 2 currently contain one each because their store lands in the NEXT extended basic block.",
-   "next_probe": "On the s60b chassis, spell blocks 1 and 2 so that each block's extended basic block contains two uses of the flag address -- e.g. the flag READ duplicated into both arms (split-read-defeats-hoist, ordinary C, .claude/rules/split-read-defeats-hoist.md) so the address is referenced after the branch as well as before it. Measure, then read .cse2 to confirm whether an la pseudo is created at each block head, and .lreg for p's reference count."
+   "hypothesis": "The block-0 reload (the ninth point) needs a value-side invalidator that does not re-seat the block. The c-reuse form proves an ordinary-C invalidator exists; what is needed is one whose carrier is not a high-priority allocno.",
+   "mechanism": "cse2 forwards the sb into the lbu whenever the stored value's pseudo is still live and unchanged at the reload. Overwriting that pseudo before the reload defeats the fold. `c` works but is the $v0 allocno at pri ~23000, so routing the mask through it re-seats block 0 (33-34). A carrier that is genuinely re-set between the store and the reload AND is a low-priority or already-block-0-resident allocno would defeat the fold for free.",
+   "next_probe": "On the candidate chassis, carry block 0's mask value in the blocks-1/2 value local `v` and then genuinely re-set `v` before the reload by moving block 1's `v = *r;` read above block 0's reload (statement re-association, ordinary C, split-read-defeats-hoist family). Measure, then read .cse2 to confirm whether the lbu survives, and .greg to confirm whether 76 gained a conflict with 74 (which L.c showed closes the $v1 seat)."
   },
   {
-   "hypothesis": "The header edit (include/code6cac.h:472 `extern u8 D_80106A70[4];` plus src/code6cac.c:340,345 element form) is a discharged, byte-neutral integration handoff that should land on main independently of whether func_80034F88 matches, because it removes the declaration pun the auto-scan flags and every future candidate on this function depends on it.",
-   "mechanism": "The DATA MODEL signal flags `*(&D_80106A70 + i)` as a per-use object-model pun whose sanctioned fix is at the DECLARATION (aggregate-merge prong (d)). s59 measured all three existing consumers at score 0 under the aggregate declaration and s60 re-used it across nineteen further builds without incident, so the edit carries no byte risk.",
-   "next_probe": "Re-apply the three-line edit, run `& tools/wteng.ps1 main verify-oracle` to confirm the full build SHA1 still equals 62efab4f73f992798c43e8c730aa43baa10bb4fa, and route it to the operator as a standalone integration commit before the next candidate is filed."
+   "hypothesis": "The object model may still be one declaration off: the trailing loop writes D_80106A70[0..2] (three colour nibbles, already declared individually as D_80106A70/71/72 in include/code6cac.h) while the flag byte D_80106A73 is a separate census-named object, so the honest aggregate is `extern u8 D_80106A70[3];` plus a separate `extern u8 D_80106A73;` -- which is exactly the symbol pair the target's three la pairs name.",
+   "mechanism": "The current chassis declares `u8 D_80106A70[4]` and reaches the flag byte as element [3], which makes the flag byte and the colour array the same cse value class. Splitting them into two declarations gives cse two unrelated symbol_refs, which changes both the block-0 fold question and the address allocnos' value classes. It also removes the last thing an integration reviewer could call a model stretch (an array whose fourth element is a semantically unrelated flag byte).",
+   "next_probe": "Apply include/code6cac.h `extern u8 D_80106A70[3];` (keeping `extern u8 D_80106A73;` as its own scalar and converting the D_80106A71/D_80106A72 consumers in src/code6cac.c to D_80106A70[1] / D_80106A70[2]), respell the candidate's pointers as `= &D_80106A73`, and measure. Verify byte-neutrality on the other consumers (func_8001945C, func_80019488, func_80037F40) exactly as s59 did for the [4] form before spending further variants."
   }
  ],
  "judge_constraints": [
@@ -401,46 +407,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 42,
-   "statement": "Deleting block 0's uses of q so that the pointer's live range starts later does not move q's allocno: the address constant is still materialised at the top of the function, q keeps $a0, and the symbol",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "p5 = 12 at 50, p6 = 11 at 50. In both, lui a0 / addiu a0 is emitted at 4f48-4f4c immediately after the call -- ahead of "
-  },
-  {
-   "session": 42,
-   "statement": "Handing one flag block back to the bare symbol to shorten q's live range is monotone in the number of blocks handed back and has no minimum below the base body's 10.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "p3 = 16 at 49, p4 = 20 at 50, both-blocks-back = 28. One block back costs 6 points, the other 10, both cost 18. Banked a"
-  },
-  {
-   "session": 42,
-   "statement": "Making the loop counter's allocno live across the flag blocks, so that it holds $v1 and denies that seat to the block-0 value, costs four instructions and moves the score away from the target.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "p7 = 24 at 53 insns: the counter now also conflicts with q and with p, and the allocation degrades by four extra instruc"
-  },
-  {
-   "session": 42,
-   "statement": "Cutting the block-0 value's reference count by having block 1 name it once also shortens its live range, so its allocno_compare key rises instead of falling, and the body loses the target's two-arm va",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "p8 = 13 at 47 insns -- two instructions short of the target, because the else arm's `addu v0,<val>,zero` disappears when"
-  },
-  {
-   "session": 43,
-   "statement": "Moving statements in the C source between the block-0 value's definition and its uses leaves reg_live_length for that pseudo unchanged at 6 references across 9 insns, so s39's 'block-0 value livelen >",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (b0 = 10, 49/49, rules_dropped 0); bodies x1-x5, single declared `u8 *q`, no FAKE construct present.",
-   "predicate_cite": "",
-   "result": "x3 = 13 at 49, x4 = 13 at 49. x4's .lreg still reads 'Register 74 used 6 times across 9 insns' -- identical to b0 -- and"
-  },
   {
    "session": 43,
    "statement": "Spelling block 0 through the bare symbol, so that block 0's address becomes an anonymous block-confined pseudo and q is declared and first assigned at block 1's head, does not give q a copy preference",
@@ -880,6 +846,46 @@
    "measured_on": "array-declaration chassis on HEAD 2026-09-05; s59b measured with its three dead re-sets present, ablation run against the s59 candidate's single annotated dead store",
    "predicate_cite": "",
    "result": "s59b = 50 build insns, score 24, unchanged. fake_ablate: keep-all 10/49, drop-1 10/49 -- the dead re-set buys the block-"
+  },
+  {
+   "session": 61,
+   "statement": "On the two-object aggregate chassis, giving block 0's mask value its own block-scoped carrier drops the block-0 value to three references but leaves its priority at 7500 against the address object's 2",
+   "kill_scope": "instance",
+   "measured_on": "two-object aggregate chassis (s59 declaration + s60 value model) on HEAD 2026-09-05, no FAKE construct beyond the two granted pointer declarations",
+   "predicate_cite": "",
+   "result": "score 9, 49/49; model shows ';; 76 conflicts: 72 75 76 78 82 2 3 29' (hard reg 3 present) and {'pseudo': 78, 'nrefs': 3,"
+  },
+  {
+   "session": 61,
+   "statement": "Carrying block 0's mask value in the flag-test local `c` on the two-object aggregate chassis does restore the cse2-folded block-0 reload, but the resulting bodies measure 34 at 50 instructions and 33 ",
+   "kill_scope": "instance",
+   "measured_on": "two-object aggregate chassis on HEAD 2026-09-05, no FAKE construct beyond the two granted pointer declarations",
+   "predicate_cite": "",
+   "result": "N: score 34, 50 build insns. O: score 33, 49 build insns. Banked as rejected/s61n-c-reused-as-mask-carrier-reload-restor"
+  },
+  {
+   "session": 61,
+   "statement": "Porting the s59 FAKE dead re-set of the stored-value local onto the two-object aggregate chassis measures 15 at 49 instructions, six points worse than the same chassis without it.",
+   "kill_scope": "instance",
+   "measured_on": "two-object aggregate chassis on HEAD 2026-09-05, with the s59 FAKE dead re-set present",
+   "predicate_cite": "",
+   "result": "score 15, 49/49, against 9 for the identical body without the re-set. Banked as rejected/s61e-twoobj-s59-dead-reset-inva"
+  },
+  {
+   "session": 61,
+   "statement": "Hoisting the loop index's initialisation above the flag blocks, so the index is live across block 0 and conflicts with the block-0 value, costs three instructions and measures 31.",
+   "kill_scope": "instance",
+   "measured_on": "two-object aggregate chassis on HEAD 2026-09-05, no FAKE construct beyond the two granted pointer declarations",
+   "predicate_cite": "",
+   "result": "score 31, 52 build insns vs 49 target. Banked as rejected/s61j-loop-index-hoisted-above-flag-blocks-52insn-score31.c."
+  },
+  {
+   "session": 61,
+   "statement": "KILL RE-AUDIT (mandated): on the current chassis, with FAKE constructs ablated, the block-0 reload cannot be recovered by re-spelling the reload's lvalue or moving it relative to the flag test -- the ",
+   "kill_scope": "instance",
+   "measured_on": "two-object aggregate chassis on HEAD 2026-09-05, FAKE constructs ablated (none present beyond the two granted pointer declarations)",
+   "predicate_cite": "",
+   "result": "All four controls: score 9, 49/49, nop retained where the target has `lbu $a0, 0($v1)`. The s57/s59 conclusion that only"
   }
  ],
  "judge_clearances": [
@@ -898,5 +904,6 @@
    "when": "2026-09-05T16:01:32.893378+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-05 11:01 ruling PASS)"
   }
- ]
+ ],
+ "escalation_deferrals": 0
 }
