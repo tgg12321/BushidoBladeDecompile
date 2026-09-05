@@ -22955,3 +22955,89 @@ on `src/system.c` — for any function in that TU — dies at load until `base.c
 two pycparser-hostile GCC extensions named above. `tmp/grind/CD_ready/s86/mkws2.sh` and
 `patchbase.py` are a working, self-validating template for that, and the `-mel`/cpp/extractor
 fixes in them apply to every legacy `tmp/perm_*` workspace in the tree.
+
+## 2026-09-05 — CD_sync (src/system.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (post-unpark window run to exhaustion; the owner's 2026-09-04 Ruling-A probes are all executed and measured; both endgame gates fail)
+
+**Function.** `CD_sync` (aka `cpu_side_move_dir_4`), `src/system.c`, 160 instructions,
+0x80080DB0. Identified as PsyQ 3.5 libcd `bios.c` v1.86 `CD_sync(int mode, u_char *result)`
+(`memory/closer/libcd-identity.md:5`). Committed on `main` as
+`INCLUDE_ASM("asm/funcs", CD_sync);` (src/system.c:376) — no cheat is on `main`.
+
+**Exhaustion.** 125 grind sessions. Honest floor measured live this session at **2/160**
+(`sandbox CD_sync --disable all` on `memory/grind/CD_sync/candidate.c`: `score=2 bi=160
+rd=0`), flat since the s106 chassis. 269 forms are banked in
+`memory/grind/CD_sync/rejected/`, 41 instance kills and 2 class kills in
+`memory/grind/CD_sync/hypotheses.md`, across every modality on the ladder
+(rederive / forensics / structural / synthesis / solver / permuter, plus fresh-seed
+permuter campaigns and the RA- and scheduler-solver campaigns).
+
+**The residual is fully characterised — it is not an unexplored gap.**
+On the folded (seat-exact) chassis the whole 2/160 residual is ONE adjacent
+transposition inside basic block 3: we emit `sll a0,a0,0x2` (the `t0 *= 4` scale) before
+`addu v0,v0,s3` (the `ix` address add); the target emits them in the opposite order. All
+160 register assignments already equal the target's (re-verified this session by
+disassembly diff, `tmp/grind/CD_sync/s125/dis_cand.txt`). Order and seats are ONE dial
+(s123, CONFIRMED): every C form that reaches the target emission order lands on the same
+post-sched1 stream, and local-alloc — whose input is exactly that stream — then produces
+the V2 seat assignment (six divergent register pairs, 6/160). The closing predicate was
+reduced to a NUMBER in s124: `reg_n_refs` on the arg5 loaded value (reg106) must be
+**exactly 3** on the split/order-exact chassis
+(`qty_compare_1`, `tools/gcc-2.7.2/local-alloc.c:1657`: pri(refs 3, span 6) = 5000 seats
+reg106 third of four; refs 2 = 3333 loses the qty-number tiebreak to the scale temp
+reg112; refs 4 = 13333 overshoots into `$v0`, measured 11/161).
+
+**Every known carrier for that predicate is measured dead:**
+- dead store / self-assign to the local (`arg5 = arg5;` ×5 placements) — deleted before
+  `flow.c` counts; QTYDBG still shows refs=2; all five 6/160 (s124).
+- `do { arg5 = *(s32 *)ix; } while (0);` — the sanctioned wrap DOES produce refs exactly 3
+  (`flow.c:2081 reg_n_refs[regno] += loop_depth`, confirmed in QTYDBG on E1/E2), but the
+  loop notes split block 3, ix gains a 7th reference, the t0 chain merges, and the order is
+  destroyed: 11–15/160 over eight placements (s124).
+- folding / merging the t0 chain (`t0 <<= 2`, scale-into-address at C level) — 6–9/160,
+  and the merged chain outranks any refs-3 arg5 on the qty-number tiebreak (s124).
+- pure statement reordering on the folded chassis, re-measured THIS session (s125):
+  P1 6, P2 2, P3 2, P6 2 — the same binary dial, no third value.
+- pass-2 scheduler perturbation atoms — class-killed, no pass-1 preimage
+  (`tools/gcc-2.7.2/sched.c:2198`, s123).
+- the only unspent named carrier is `combine.c:10752-10754`'s byte-neutral refs 2→3 bump.
+  It requires reg106 to be a SOURCE operand in the patterns of both i2 and i3 of a
+  successful combination with its REG_DEAD note landing on i3. reg106 is a source in
+  exactly one insn in the function (`sw v1,0x10($sp)`), and the target's own asm likewise
+  uses the value once, so no byte-neutral C spelling puts it in two surviving patterns.
+
+**Gate (a) — canonical-asm: FAILS.** `python3 tools/scan_hand_coded.py --single CD_sync`
+→ `tier=LOW score=2/8`; the STRONG signals S1 (multu pacing), S2 (empty branch) and S6
+(BIOS jumptable) are all absent; only S4 (front loads) and S5 (cluster, CD_ready
+jaccard 0.64) fire. This matches the 2026-07-09 Judge ruling barring canonical-asm here,
+and the binding judge_constraint forbidding re-surfacing that evidence class.
+
+**Gate (b) — in-hand SOTN-master precedent for the closing construct: FAILS.**
+`docs/reference/sotn-construct-index.md` (sotn-decomp master `aa53500`, 1911 files) indexes
+twelve construct classes — `fake_comment`, `fake_identifier`, `self_assign`,
+`pointer_alias`, `pad_dummy_local`, `new_var_temp`, `nested_exit_label`, `match_comment`,
+`empty_if`, `dup_if_else_arm`, `do_while_zero`, `const_holder`. None of them is a
+byte-neutral `reg_n_refs` carrier, and the two that ARE sanctioned and could have been
+(`self_assign`, `do_while_zero`) are the two measured dead above. The cross-symbol
+arithmetic idiom that the current floor-2 form's chain-extender FAKE depends on was
+already refused by the owner on 2026-07-20 with an explicit no-SOTN-precedent finding;
+this census is the negative re-confirmation, not a new proposal.
+
+**Disposition.** Both endgame-lock AND-gates fail and the honest floor is ≤ 5, so the
+owner's standing auto-ruling (2026-07-27, `.claude/rules/endgame-lock-disposition.md`)
+applies and the item is FORECLOSED silently per the 2026-08-31 ruling
+(`.claude/rules/ordinary-c-judge-decidable.md`). This entry is a proof-of-foreclosure
+record, not a question to the owner.
+
+**Evidence pointers.** `memory/grind/CD_sync/hypotheses.md` (s121 H at :2905, s123 at
+:3115 and :3127, s124 at the tail), `memory/grind/CD_sync/evidence.md`,
+`memory/grind/CD_sync/candidate.c` (2/160), `memory/grind/CD_sync/rejected/` (269 forms),
+`tmp/grind/CD_sync/s125/` (this session's dis/diff and P-form measurements),
+`memory/closer/libcd-groundtruth.md:39,51`.
+
+**Re-activation triggers.** (1) A class grant covering a byte-neutral `reg_n_refs`
+carrier — i.e. an owner extension of the frozen family list that admits a construct able
+to raise references on a loaded value without emitting bytes and without introducing loop
+notes. (2) A toolchain finding that changes local-alloc's qty-number birth-order tiebreak
+or `sched.c`'s LUID tiebreak for this block. (3) Ground-truth PsyQ 3.5 `bios.c` v1.86
+source for `CD_sync` surfacing (the twins `CD_ready` and `CD_datasync` are foreclosed on
+the same shared window, so one such find re-opens all three at once).

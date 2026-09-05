@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 124,
- "current_modality": "synthesis",
+ "session_count": 125,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 0,
@@ -753,23 +753,24 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "The closing predicate is now a NUMBER - reg_n_refs(arg5 value) == 3 exactly on the split/order-exact chassis - and its only byte-neutral carrier is named: combine.c:10752-10754's documented refs 2->3 "
+  },
+  {
+   "session": 125,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "CD_sync disposition: s124's last live carrier (combine.c refs 2->3 bump) is retired by the guard's own source-reference requirement, folded-chassis statement order re-measured as the same binary dial,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Spell the do_timeout block so combine.c:10752-10754 fires on the arg5 loaded value, bumping its reg_n_refs from 2 to 3 with zero emitted bytes and no change to the post-sched1 chain.",
-   "mechanism": "The bump fires when combine successfully merges an i2 into an i3, the register carrying the REG_DEAD note being redistributed is referenced in BOTH patterns, and `place` resolves to i3. reg106 today appears in exactly two insns - the load that defines it and the `sw ...,16(sp)` that consumes it - and no combination touches both, which is why it never fires. refs 3 gives pri 5000 and the target seats (s124 CONFIRMED hypothesis 5).",
-   "next_probe": "On the SPLIT (`t0 *= 4`) order-exact chassis (S3/X1, 6/160 - not the candidate chassis, not the `t0 <<= 2` merged chassis, both measured dead in s124), enumerate spellings in which the arg5 value participates in a two-insn combination that survives recog: an address form absorbing the loaded value, a widening/narrowing pair, a zero_extract, an equality the block already computes. For each require (a) a sandbox score, (b) QTYDBG refs= on reg106, (c) tmp/grind/CD_sync/s123/chainorder.py showing the post-sched1 chain unchanged. Success signature: refs exactly 3, bi 160, order unchanged, score 0."
+   "hypothesis": "A byte-neutral reg_n_refs carrier outside the frozen family list exists for the arg5 loaded value.",
+   "mechanism": "The closing predicate is reg_n_refs(reg106) == 3 exactly on the split/order-exact chassis (s124 CONFIRMED). Every in-family carrier is measured dead: dead-store is deleted before flow.c counts, do-while(0) produces refs 3 but its loop notes split block 3, and combine.c's bump cannot fire with one source reference.",
+   "next_probe": "Blocked by policy, not by measurement: it needs an owner extension of the frozen family list. Re-activation trigger recorded in the decisions.md entry."
   },
   {
-   "hypothesis": "A loop_depth-based refs=3 carrier exists that does not split basic block 3.",
-   "mechanism": "flow.c:2081 multiplies each reference by loop_depth, which is what makes the do-while(0) wrap produce refs exactly 3 (measured, E1/E2). The wrap's cost is not the multiplier but the NOTE_INSN_LOOP_BEG/END pair, which find_basic_blocks turns into block boundaries inside block 3, adding a 7th reference to ix, merging the t0 chain and destroying the order.",
-   "next_probe": "Read flow.c 2060-2100 and 2700-2730 for every path that increments loop_depth and check the .flow dump's block partition (not the score) for each placement: wrap around the whole do_timeout block, wrap outside the block with a compensating refs change on ix, and any non-loop construct that raises loop_depth. Report whether a single-block placement exists at all."
-  },
-  {
-   "hypothesis": "The 3/160 residual class (s123's S1 and S6) is a third vantage whose quantity table has never been read and may carry a tie breakable by a lever the 2- and 6-chassis cannot reach.",
-   "mechanism": "S1/S6 fold the t0 scale into the t0 add on the FOLDED-arg5-address chassis. s124's X-family folded the same scale on the SPLIT-address chassis and got 6, so 3/160 is specific to the folded-address stream: sched1 sees a different input block and local-alloc a different quantity table.",
-   "next_probe": "QTYDBG block 3 plus inverse_compose.py classify on memory/grind/CD_sync/rejected/s123_S1_t0_one_stmt.c and s123_S6_ixshift_first_t0_folded.c; if classify says RA, run inverse.py local --swap on that model and diff the vector list against the S3/V2 one; if it says ORDER, run perturb.py --pass 1 --goal-from-target on the re-extracted model."
+   "hypothesis": "Ground-truth PsyQ 3.5 libcd bios.c v1.86 source for CD_sync settles all three twins at once.",
+   "mechanism": "CD_sync / CD_ready / CD_datasync share one do_timeout window (memory/closer/libcd-groundtruth.md) and all three are now foreclosed at floors 2/2/2 on the same residual class.",
+   "next_probe": "Any surfacing of version-correct PsyQ 3.5 bios.c C; psyz covers PsyQ 4.0 and is version-skewed (memory reference psyq-reference-c-version-skew)."
   }
  ],
  "judge_constraints": [
@@ -1109,6 +1110,22 @@
    "measured_on": "S3/S5 order-exact split chassis and the candidate folded chassis; chain-extender FAKE present plus the do-while(0) wrap itself, pp pointer alias absent",
    "predicate_cite": "",
    "result": "The refs half CONFIRMS: E1 and E2 both dump qty2 reg106 refs=3, exactly the predicted value. Everything else regresses -"
+  },
+  {
+   "session": 125,
+   "statement": "Pure statement-order permutations of the do_timeout block on the FOLDED (seat-exact) candidate chassis - a family previously measured only on the SPLIT address chassis - reach a residual other than th",
+   "kill_scope": "instance",
+   "measured_on": "folded candidate chassis (memory/grind/CD_sync/candidate.c), chain-extender FAKE present, pp pointer alias absent; control re-measured live at 2/160 bi 160 rd 0",
+   "predicate_cite": "",
+   "result": "P1 6, P2 2, P3 2, P6 2 - all bi 160 rd 0. No third value: a permutation either leaves the stream alone (2, seats right, "
+  },
+  {
+   "session": 125,
+   "statement": "The arg5 loaded value (reg106) is a source operand in more than one insn of CD_sync, so combine.c:10752-10754's byte-neutral reg_n_refs 2 -> 3 bump has a spelling that can fire on it.",
+   "kill_scope": "instance",
+   "measured_on": "folded candidate chassis (2/160 live control) and the target asm tmp/grind/CD_sync/s121/CD_sync.tgt.s; chain-extender FAKE present, pp pointer alias absent",
+   "predicate_cite": "",
+   "result": "reg106 appears in exactly two insns: its definition `lw v1,0(v0)` (a SET_DEST, uncounted) and its single consumer `sw v1"
   }
  ],
  "sibling_progress": [

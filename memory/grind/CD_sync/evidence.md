@@ -3610,3 +3610,39 @@ question on the split chassis (V1), not an allocator question.
 - [s124] reg_n_refs provenance settled: accumulated in flow.c (2081/2329/2515/2725, each += loop_depth) during life_analysis, which toplev.c runs before combine_instructions; consumed verbatim by local-alloc.c:297. combine.c is the last pass that can change it, at 2313/2336 (zeroing) and 10752-10754 (the 2->3 bump).
 
 - [s124] Formula confirmations read from source: qty_compare_1 at local-alloc.c:1657-1683 (pri = floor_log2(refs)*refs*size/(death-birth)*10000, tiebreak *q1 - *q2); births 2*this_insn_number minus one for a CLOBBER setter; deaths 2*this_insn_number + output_p. QTYDBG prints size=1 (words), not the 4 earlier ledger prose claimed.
+
+- [s125] Live chassis re-measurement: `memory/grind/CD_sync/candidate.c` applied to
+  src/system.c scores 2/160 bi 160 rd 0 (`sandbox CD_sync --disable all`). The
+  disassembly diff (tmp/grind/CD_sync/s125/dis_cand.txt vs the target) shows the residual
+  is the 54/55 pair inversion ONLY - `sll a0,a0,0x2` where the target has
+  `addu v0,v0,s3` and vice versa - with all 160 register assignments equal to the
+  target's. The third reported line (41, `lui v0,(3932160>>16)` vs `lui v0,60`) is a
+  disassembler-formatting artifact of the same encoding and is not scored.
+- [s125] combine.c:10752-10754's refs 2 -> 3 bump requires the register to be a SOURCE in
+  both PATTERN(i2) and PATTERN(i3); rtlanal.c's reg_referenced_p does not count a plain
+  REG SET_DEST. reg106 (the arg5 loaded value) has exactly one source reference
+  (`sw v1,0x10($sp)`) on our chassis AND in the target's own asm, so the guard cannot fire
+  byte-neutrally. This retires s124's H124-1, the ledger's top live frontier item.
+- [s125] Statement-order permutation on the FOLDED chassis is a binary dial exactly as on
+  the split chassis: P1 6, P2 2, P3 2, P6 2 (bi 160, rd 0 each).
+- [s125] scan_hand_coded --single CD_sync = tier LOW, score 2/8 (S4 + S5 only; S1/S2/S6
+  absent). SOTN construct-index census for a byte-neutral reg_n_refs carrier: negative,
+  twelve indexed classes, none matching.
+- [s125] Function FORECLOSED by the owner's standing auto-ruling (2026-07-27); record
+  filed in docs/grind/decisions.md dated 2026-09-05.
+
+- [s125] Live chassis re-measurement: candidate.c applied to src/system.c scores 2/160 bi 160 rd 0; the driver's dispatch line said 'measurement unavailable', the real current floor is 2.
+
+- [s125] Disassembly diff confirms the entire 2/160 residual is the 54/55 adjacent transposition (`sll a0,a0,0x2` vs `addu v0,v0,s3`) with all 160 register assignments equal to the target's; the third diff line (lui v0,(3932160>>16) vs lui v0,60) is a disassembler-formatting artifact of the same encoding.
+
+- [s125] combine.c:10752-10754's refs bump requires a SOURCE reference in both PATTERN(i2) and PATTERN(i3); reg106 has exactly one source reference on our chassis AND in the target's asm, so no byte-neutral C spelling exists for it.
+
+- [s125] Statement-order permutation on the folded chassis is the same binary dial as on the split chassis: P1 6, P2 2, P3 2, P6 2 (bi 160, rd 0).
+
+- [s125] Gate (a): `python3 tools/scan_hand_coded.py --single CD_sync` = tier LOW, score 2/8; S1 multu pacing, S2 empty branch, S6 BIOS jumptable all absent; only S4 (front loads) and S5 (cluster, CD_ready jaccard 0.64). Canonical-asm gate FAILS, consistent with the 2026-07-09 Judge bar.
+
+- [s125] Gate (b): docs/reference/sotn-construct-index.md (sotn-decomp master aa53500, 1911 files) indexes twelve construct classes - fake_comment, fake_identifier, self_assign, pointer_alias, pad_dummy_local, new_var_temp, nested_exit_label, match_comment, empty_if, dup_if_else_arm, do_while_zero, const_holder. None is a byte-neutral reg_n_refs carrier; the two sanctioned classes that could have been (self_assign, do_while_zero) are exactly the two s124 measured dead. Precedent gate FAILS (negative census).
+
+- [s125] Owner directive 2026-09-04 Ruling A probes are all executed across s117-s125: CD_datasync s58 CD_alarm-struct transplant (s117, link-identical at 2/160 and it DELETED the pp pointer-alias FAKE), sched_solver + ra_solver on the j1/h1 frontier (s121-s123), fresh-seed permuter (earlier windows). None moved the floor below 2.
+
+- [s125] src/system.c was restored to its committed INCLUDE_ASM state at the end of the session; the only dirty file is metrics/events.jsonl (engine-written).

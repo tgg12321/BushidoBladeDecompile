@@ -1,21 +1,3 @@
-/* [s125] DISPOSITION SESSION.  BODY UNCHANGED; floor re-measured live at 2/160
- * (bi 160, rd 0).  The residual was re-confirmed by disassembly diff as the ONE
- * 54/55 adjacent transposition with all 160 register seats already equal to the
- * target's (tmp/grind/CD_sync/s125/dis_cand.txt).
- *
- * s124's top frontier item H124-1 -- combine.c:10752-10754's byte-neutral
- * reg_n_refs 2 -> 3 bump -- is RETIRED this session.  The guard fires only when
- * the register is a SOURCE in the patterns of both i2 and i3 (rtlanal.c's
- * reg_referenced_p does not count a plain REG SET_DEST), and reg106 has exactly
- * one source reference (`sw v1,0x10($sp)`) on our chassis AND in the target's
- * own asm.  A second source reference is a second emitted use, so there is no
- * byte-neutral spelling.  Statement-order permutation on the folded chassis was
- * re-tested (P1 6, P2 2, P3 2, P6 2) and is the same binary dial as on the split
- * chassis.  Both endgame gates fail (scan_hand_coded LOW 2/8; SOTN
- * construct-index census negative), so the function is FORECLOSED under the
- * owner's standing auto-ruling (2026-07-27); record in docs/grind/decisions.md,
- * entry dated 2026-09-05.
- */
 /* [s124] BODY UNCHANGED; floor re-measured live at 2/160 (bi 160, rd 0);
  * fake_ablate re-run: keep-all 2/160, drop-1 15/159, so the chain-extender is
  * still load-bearing and no number below is a FAKE-carrier artifact.
@@ -253,11 +235,11 @@ s32 CD_sync(s32 a0, u8 *a1)
     s32 t0;
     s32 ix;
     t0 = idx_1494[0];
-    ix = idx_1494[1]; /* s106: honest fresh local - the v0 staged-value borrow it replaces is NOT load-bearing (measured 2 == 2, 160/160) */
-    t0 *= 4;
-    t0 = (s32)((u8 *)tbl_125c + t0);
+    ix = idx_1494[1];
     ix <<= 2;
     arg5 = *(s32 *)(ix + (s32)tbl_125c);
+    t0 *= 4;
+    t0 = (s32)((u8 *)tbl_125c + t0);
     printf(&D_800161C8, D_800F19B8.func, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
   }
   CD_flush();
