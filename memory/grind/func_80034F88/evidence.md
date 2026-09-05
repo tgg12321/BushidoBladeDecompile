@@ -8595,3 +8595,106 @@ measures 31 (v/J.c).
 - [s61] The s59 FAKE dead re-set is chassis-specific: it measures 15 here versus 9 for the identical body without it, and should not be carried forward onto the two-object chassis.
 
 - [s61] The header edit (include/code6cac.h:472 `extern u8 D_80106A70[4];` plus the two element-form edits at src/code6cac.c:340,345) remains a discharged, byte-neutral integration handoff, now exercised across roughly 35 further builds this session without incident. src/ was reverted to HEAD at session end.
+
+
+## s62 (structural, 2026-09-05) -- chassis re-measured at 9; object model split; the two defects proven to be one
+
+E62.1  CHASSIS CHECK.  The s61 candidate (two granted pointer objects, `u8
+D_80106A70[4]` declaration) re-measures 9 / 49 target insns / 49 build insns on
+HEAD this session.  The ledger floor was current.
+
+E62.2  THE SPLIT DECLARATION IS FREE AND STRICTLY MORE HONEST (frontier item 3
+CONFIRMED).  `extern u8 D_80106A70[3];` (absorbing the D_80106A71/D_80106A72
+scalars, with their two consumers in src/code6cac.c converted to element form)
+plus `extern u8 D_80106A73;` left as the separate scalar it already is in
+src/code6cac_b.c:128, with the candidate's pointers respelled `= &D_80106A73`:
+score 9, 49/49 -- identical to the [4] form, and the extracted RA model is
+byte-for-byte the same (order [73,77,75,74,81,72,76]; 77 = 8 refs/livelen
+10/pri 24000; 76 = 4/28/2857).  Byte-neutrality of the header change on the
+other consumers re-verified this session: func_8001945C, func_80019488 and
+func_80037F40 each sandbox at score 0.  The [4] declaration should not be
+carried forward; the [3] + separate-scalar pair is the model the target's three
+%hi/%lo(D_80106A73) la pairs and the loop's %hi(D_80106A70) base actually name.
+
+E62.3  EVERY REF-REDUCTION SPELLING OF BLOCK 0 BUYS ITS REF CUT WITH A
+$v1-SEATED BLOCK-LOCAL.  Measured (score, then extract.py / local_extract.py):
+  C  "u = *q & 0xF8; *q = u;" + arms read u, no reload stmt   9  77: 4 refs/8/10000, hard76 [2,3,29]
+  D2 "u = *q & 0xF8; *q = u; u = *q;"                         9  77: 6/9/13333,      hard76 [2,3,29]
+  D4 as D2 with the reload after the flag read                9  77: 6/9/13333,      hard76 [2,3,29]
+  D5 "u = *q; *q = u & 0xF8; u = *q;"                         9  77: 5/7/14285,      hard76 [2,3,29]
+  F  "*q = *q & 0xF8; u = *q;"                                9  77: 3/4/7500,       hard76 [2,3,29]
+  H1 no value local at all, both arms read "*q"               9  78: 4/8/10000,      hard76 [2,3,29]
+In each case local_extract.py shows ONE extra block-0 quantity that local-alloc
+seats at hard reg 3 (F: "blk=0 ord=0 qty=0 reg1=78 birth=6 death=8 refs=2
+got=3"), which is precisely the hard-reg-3 entry that appears in the address
+allocno's hard_conflicts.  A hard conflict with $v1 forecloses the seat outright
+-- no priority change can recover it.  The s61 candidate and H2 are the only
+spellings measured that keep hard76 = [2, 29].
+
+E62.4  ARMS-READ-THE-POINTER IS THE FIRST REF CUT THAT IS FREE (new best RA
+state).  "u = *q; u = u & 0xF8; *q = u;" followed by arms that read "*q"
+directly (duplicate-read-into-arms, ordinary C) measures 9 / 49 with
+hard76 = [2, 29] AND drops the block-0 value allocno from 8 refs/pri 24000 to
+6 refs/livelen 9/pri 13333; the address allocno improves to livelen 26/pri 3076.
+The priority gap the seat needs closed is now 4.3x, down from 8.4x.  Banked as
+the new candidate.c.  The mixed form (one arm reads "*q", the other reads the
+local, H3) costs four instructions: 53 insns, score 13.
+
+E62.5  THE SEAT DEFECT AND THE MISSING RELOAD ARE ONE DEFECT.  The target's
+block-0 reload "lbu $a0, 0($v1)" (80034FB4) sits in the LOAD-DELAY SLOT of
+"lw $v0, 0x20($a1)" (80034FB0) -- legal only because its destination differs
+from the lw's.  K1/K3 (mask carried in "c", so "c = p[8] & 1;" clobbers the
+stored value's pseudo and cse2 cannot forward) DO restore the reload; the
+disassembly shows "lw v0,32(a2); nop; andi v1,v0,1; lbu v0,0(a0)" -- our reload
+lands in $v0, collides with the lw, the scheduler cannot fill the slot, and the
+body costs 50 insns / score 34.  Consequence: the ninth point is not a separate
+lever.  Put the value in $a0 and the reload becomes free.
+
+E62.6  THE TARGET'S SEATING IS SELF-CONSISTENT AND THE ARITHMETIC IS NOW
+CLOSED.  Extracted on K1 (reload present): the address allocno gains a fifth
+reference -> 5 refs / livelen 28 / pri 3571; the block-0 value is 3 refs.  A
+3-reference value has pri 30000/livelen, so it falls below 3571 at livelen >= 9.
+In the target's own emission order the reload stands about five instructions
+above the last arm read (lbu, andi, bnez, ori, addu) -> livelen ~10 -> pri
+~3000.  global.c's descending-priority loop then reaches the ADDRESS allocno
+first, gives it $v1 (it conflicts with neither 73 nor 74), and pushes the value
+to $a0 (it conflicts with neither 81 nor 82, which is why blocks 1-2 keep $a0).
+K1 misses only because its reload is emitted BELOW the flag read (livelen 4,
+pri 7500).  The open sub-goal is therefore exact: a cse2 invalidator that leaves
+the reload at a source position ABOVE the flag read.
+
+E62.7  ONE SUCH INVALIDATOR EXISTS BUT COSTS AN la.  Storing the mask through
+the SYMBOL while reloading through the pointer ("D_80106A73 = u; u = *q;", L3)
+defeats cse2 with the reload in the high position: the reload survives and the
+score is 12 at 50 insns -- the closest non-49 form on record.  The cost is that
+the symbol store re-materialises the address ("lui at; sb v1,0(at)") instead of
+reusing the pointer's register.  The reverse (store through the pointer, reload
+through the symbol) folds identically, as s61 measured.  A full symbol-form
+read-modify-write (L1/L2) costs two instructions (51, score 35).
+
+E62.8  FRONTIER ITEM 2 AS WRITTEN IS SEMANTICALLY INVALID.  Moving block 1's
+"v = *r;" above block 0's reload changes what block 1 reads: block 1 must see
+block 0's SECOND store (the flag-0 result), and hoisting the read above it drops
+bit 0.  No measurement was spent; the probe is retired rather than killed.
+
+- [s62] [s62] Chassis check: the s61 candidate re-measures 9 (49 target insns / 49 build insns) on HEAD this session; the ledger floor was current.
+
+- [s62] [s62] The split declaration `extern u8 D_80106A70[3];` (absorbing D_80106A71/D_80106A72, their two consumers in src/code6cac.c converted to element form) plus the already-separate `extern u8 D_80106A73;` measures score 9 on func_80034F88 and score 0 on func_8001945C, func_80019488 and func_80037F40 -- byte-neutral, and it removes the last model stretch (an array whose fourth element was an unrelated census-named flag byte).
+
+- [s62] [s62] Under the split declaration the extracted RA model is unchanged from the [4] form: order [73,77,75,74,81,72,76]; block-0 value 8 refs / livelen 10 / pri 24000; address object 4 refs / livelen 28 / pri 2857.
+
+- [s62] [s62] New best RA state at the same score: with both arms reading *q, the block-0 value is 6 refs / livelen 9 / pri 13333 (ord 2) and the address object 4 refs / livelen 26 / pri 3076, with hard conflicts [2, 29] -- no local-alloc $v1 block.
+
+- [s62] [s62] Six independent ref-reduction spellings (C, D2, D4, D5, F, H1) all score 9 and all add hard reg 3 to the address object's hard conflicts; local_extract.py names the culprit each time (e.g. F: blk=0 ord=0 qty=0 reg1=78 birth=6 death=8 refs=2 got=3). A hard conflict with $v1 forecloses the seat outright, so priority work on those chassis is wasted.
+
+- [s62] [s62] The target's block-0 reload `lbu $a0, 0($v1)` at 80034FB4 occupies the load-delay slot of `lw $v0, 0x20($a1)` at 80034FB0; it can only sit there because the reload's destination differs from the lw's. K1 restores the reload into $v0, the slot takes a nop, and the body costs 50 insns / score 34.
+
+- [s62] [s62] Seat arithmetic with the reload present (extracted on K1): the address object gains a fifth reference -> 5 refs / livelen 28 / pri 3571, while a 3-reference block-0 value has pri 30000/livelen and so drops below 3571 at livelen >= 9. The target's own emission order puts the reload about five instructions above the last arm read (livelen ~10, pri ~3000), which makes the target's seating self-consistent: the address object is reached first, takes $v1 (no conflict with 73 or 74), and the value is pushed to $a0 (no conflict with 81/82, which is why blocks 1-2 keep $a0).
+
+- [s62] [s62] K1 misses that state only because its reload is emitted BELOW the flag read (livelen 4, pri 7500). The open sub-goal is exactly: a cse2 invalidator that leaves the reload at a source position ABOVE the flag read at zero instruction cost.
+
+- [s62] [s62] Such an invalidator exists but is not free: storing the mask through the symbol while reloading through the pointer (L3) keeps the reload high and measures 50 insns / score 12 -- the closest non-49 form on record -- because the symbol store emits `lui at; sb v1,0(at)` instead of reusing the pointer register. The reverse direction folds identically (s61).
+
+- [s62] [s62] Frontier item 2 as written (moving block 1's `v = *r;` above block 0's reload) is semantically invalid, not merely unmeasured: block 1 must read block 0's second store, and hoisting the read above it drops bit 0. Retired without spending a measurement.
+
+- [s62] [s62] src/, include/ and the tree were restored to HEAD at session end; the split-declaration header edit remains an integration handoff documented in candidate.c.

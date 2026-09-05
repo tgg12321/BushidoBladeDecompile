@@ -6498,3 +6498,89 @@ two granted pointer declarations).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: two-object aggregate chassis on HEAD 2026-09-05, FAKE constructs ablated (none present beyond the two granted pointer declarations)
+
+
+## s62 hypotheses (structural)
+
+H62.1 CONFIRMED -- The honest split declaration ("extern u8 D_80106A70[3];" +
+separate "extern u8 D_80106A73;") is byte-neutral project-wide and chassis-
+neutral for func_80034F88 (score 9, identical RA model).  Adopt it; the [4]
+form is retired.
+
+H62.2 KILLED (instance) -- Cutting the block-0 value allocno's reference count
+by removing statements from the mask chain (C, D2, D4, D5, F, H1) lowers its
+priority but makes local-alloc create a two-reference block-0 quantity that it
+seats in $v1, which adds hard reg 3 to the address allocno's hard conflicts and
+forecloses the $v1 seat regardless of priority.  Measured on the s61 two-object
+aggregate chassis re-based on the split declaration, no FAKE construct beyond
+the two granted pointer declarations; six spellings, all score 9,
+hard76 = [2,3,29] in every one.
+
+H62.3 CONFIRMED -- Letting both arms read "*q" while the mask chain keeps its
+own local cuts the value allocno to 6 refs / pri 13333 with hard76 = [2,29]
+intact.  Same score (9), strictly better RA state; new candidate.c.
+
+H62.4 CONFIRMED -- The missing block-0 reload and the wrong seats are a single
+defect: the target's reload occupies the flag "lw"'s load-delay slot, which
+requires the reload's destination to differ from the lw's destination.  K1 (mask
+in "c") restores the reload into $v0, the slot cannot be filled, and the body
+costs an instruction.
+
+H62.5 KILLED (instance) -- Carrying block 0's mask in the flag local "c" on the
+split-declaration chassis, in either arm spelling (K1 arms read the local, K2
+arms read the pointer, K3 merged mask), restores the reload but re-seats the
+block and costs 1-3 instructions: 50/34, 52/36, 50/34.  Measured on the split-
+declaration two-object chassis, no FAKE construct beyond the two granted
+pointer declarations.
+
+H62.6 KILLED (instance) -- Spelling block 0's read-modify-write through the
+symbol "D_80106A73" instead of the pointer, in whole (L1, L2) or for the store
+only (L3), defeats cse2 in the high reload position but re-materialises the
+address: 51 insns/35, 51/35 and 50/12 respectively.  Measured on the split-
+declaration two-object chassis, no FAKE construct beyond the two granted
+pointer declarations.  L3 is the closest of the three and is banked as
+rejected/s62-symbol-store-ptr-reload-aliasing-50insn-score12.c -- it is the
+only measured form that combines a surviving high-position reload with an
+otherwise target-shaped body.
+
+## [s62] The honest split declaration -- extern u8 D_80106A70[3] absorbing the D_80106A71/D_80106A72 scalars, with extern u8 D_80106A73 left as its own scalar -- is byte-neutral for the other consumers and chassis-neutral for func_80034F88.
+- mechanism: cse sees two unrelated symbol_refs instead of one four-element array whose last element is a semantically unrelated flag byte; the target's three la pairs all name %hi/%lo(D_80106A73) while the trailing loop's base is %hi(D_80106A70), so the split is the model the emitted code actually describes.
+- probe: Applied include/code6cac.h:472-474 -> `extern u8 D_80106A70[3];`, converted src/code6cac.c:340-342,345 to element form, respelled the candidate's two granted pointers as `= &D_80106A73`, then sandboxed func_80034F88 and the three other consumers and re-extracted the RA model.
+- result: func_80034F88 = score 9, 49 target insns / 49 build insns -- identical to the [4] form; func_8001945C, func_80019488 and func_80037F40 each = score 0; the extracted allocation model is unchanged (order [73,77,75,74,81,72,76]; block-0 value 8 refs / livelen 10 / pri 24000; address object 4 refs / livelen 28 / pri 2857). The [4] declaration is retired in favour of the split pair.
+- verdict: CONFIRMED
+
+## [s62] Letting both block-0 arms read *q directly, while the mask chain keeps its own local, cuts the block-0 value allocno from 8 references to 6 and its priority from 24000 to 13333 while leaving the address allocno free of the local-alloc hard-reg-3 block.
+- mechanism: The duplicate read into the branch arms (split-read-defeats-hoist family, ordinary C) removes the reload statement's separate reference pair without splitting the mask chain into a second pseudo, so local-alloc still creates no block-0 quantity for global.c to hard-conflict against.
+- probe: H2 = `u = *q; u = u & 0xF8; *q = u; c = p[8] & 1; if (c) c = *q | 1; else c = *q; *q = c;` on the split-declaration two-object chassis; sandbox plus tools/ra_solver/extract.py.
+- result: score 9, 49/49; block-0 value = 6 refs / livelen 9 / pri 13333 at ord 2; address object = 4 refs / livelen 26 / pri 3076; hard conflicts of the address object stay [2, 29] (no hard reg 3). The priority gap the $v1 seat must close is now 4.3x, down from 8.4x in s61. Banked as the new candidate.c.
+- verdict: CONFIRMED
+
+## [s62] The missing block-0 reload and the two wrong register seats are a single defect, not two independent points: the target's reload sits in the load-delay slot of the flag lw, which requires the reload's destination register to differ from the lw's.
+- mechanism: sched/dbr fills the lw's load-delay slot with the following lbu only when there is no register dependency; the target's lw writes $v0 and its reload writes $a0, so the slot is filled and the body stays at 49 instructions. With our seats the reload also writes $v0 and the slot must take a nop.
+- probe: K1 (mask carried in the flag local `c`, so `c = p[8] & 1;` clobbers the stored value's pseudo and cse2 cannot forward the store into the reload); sandbox plus objdump of the sandbox object.
+- result: The reload survives -- `lw v0,32(a2); nop; andi v1,v0,1; lbu v0,0(a0)` -- but it lands in $v0, collides with the lw, and the body costs an extra instruction: 50 insns, score 34. Fixing the seats therefore also buys the reload; the ninth point needs no lever of its own.
+- verdict: CONFIRMED
+
+## [s62] Cutting the block-0 value allocno's reference count by removing statements from the mask chain (merged mask expression, mask folded into the store, store through the symbol, no value local at all) lowers its priority but makes local-alloc seat a new two-reference block-0 quantity in $v1, which adds hard reg 3 to the address object's hard conflicts.
+- mechanism: Splitting the mask chain leaves a pseudo whose whole live range is inside block 0, so local_alloc's block_alloc assigns it a hard register; $v0 is unavailable (the call's return value is live across that range) so it takes $v1, and global.c then records hard reg 3 as a conflict of the address allocno, foreclosing the seat regardless of priority.
+- probe: Six spellings measured on the split-declaration two-object chassis with sandbox, tools/ra_solver/extract.py and tools/ra_solver/local_extract.py: C, D2, D4, D5, F, H1.
+- result: All six measure score 9 / 49 insns; block-0 value priorities range 7500-14285 (F reaches the wanted 3 references at pri 7500) but every one shows hard76 = [2, 3, 29] and a local quantity with got=3 (F: blk=0 ord=0 qty=0 reg1=78 birth=6 death=8 refs=2 got=3). Only the s61 candidate and H2 keep hard76 = [2, 29].
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration (extern u8 D_80106A70[3] + extern u8 D_80106A73) two-object aggregate chassis on HEAD 2026-09-05, no FAKE construct beyond the two Judge-granted pointer declarations
+
+## [s62] Carrying block 0's mask value in the flag local `c` on the split-declaration chassis restores the block-0 reload but re-seats the block and costs instructions, in all three arm spellings tried.
+- mechanism: `c = p[8] & 1;` overwrites the pseudo cse2 would forward from the store into the reload, so the lbu survives; but `c` is the $v0 allocno at pri ~23000-30909, so block 0's value follows it out of its seat and the reload's destination collides with the flag lw's.
+- probe: K1 (arms read the reloaded local), K2 (arms read *q), K3 (merged mask expression) on the split-declaration two-object chassis; sandbox each.
+- result: K1 = 50 insns / score 34, K2 = 52 / 36, K3 = 50 / 34. All three are worse than the 49-insn score-9 chassis; banked in rejected/.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object aggregate chassis on HEAD 2026-09-05, no FAKE construct beyond the two Judge-granted pointer declarations
+
+## [s62] Spelling block 0's read-modify-write through the symbol D_80106A73 rather than through the pointer defeats cse2 with the reload still in its high source position, but re-materialises the address and costs at least one instruction.
+- mechanism: A store whose address is the symbol_ref itself is emitted as `lui $at; sb reg,%lo(sym)($at)` rather than reusing the pointer's register, so the body gains an la even though cse2 can no longer match the store's address expression to the pointer's and the reload lbu survives.
+- probe: L1 (whole RMW through the symbol, reload after the flag read), L2 (same, reload before the flag read), L3 (store only through the symbol, everything else through the pointer) on the split-declaration two-object chassis; sandbox plus objdump.
+- result: L1 = 51 insns / score 35, L2 = 51 / 35, L3 = 50 / 12. L3's disassembly shows exactly the wanted shape -- `sb v1,0(at); lbu v1,0(a2); bnez ...` with a surviving high-position reload -- and is the closest non-49-instruction form on record; its only defect beyond the seats is the extra `lui at`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object aggregate chassis on HEAD 2026-09-05, no FAKE construct beyond the two Judge-granted pointer declarations
