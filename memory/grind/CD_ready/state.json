@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 83,
- "current_modality": "structural",
+ "session_count": 85,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -507,23 +507,35 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Order-exact base proven a closed scheduling neighbourhood (exhaustive single-atom enumeration: only birth(131)=1 reaches target, and refs/luid/deaths/edge-removal are off-manifold); the FLOOR body, po"
+  },
+  {
+   "session": 84,
+   "modality": "synthesis",
+   "floor": 2,
+   "headline": "s83 floor-body headline corrected: 0 of 729,150 one- and two-atom scheduler settings reach the exact target with the dep graph held fixed, and the s83 edge-removal sweeps were void (missing ref decrement); but the residual IS producible in C - every form naming the D_800A11DC element flips 143 ahead of 120 in both passes at a uniform +12 allocation collateral (a4/a7 = 14/179/0)."
+  },
+  {
+   "session": 85,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "s83's floor-body verdict corrected on both counts: its edge-removal sweeps were void (no INSN_REF_COUNT decrement) and its four 'fix the residual' atoms do not reach the exact target - 0 of 729,150 on"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the four floor-body atoms that put 143 before 120 - pri(120)=4..8, ref(147)=3, pri(143)=1, pri(153)=1 - is spellable in C on the floor body without adding an instruction, and closes the 2-point residual outright.",
-   "mechanism": "Unlike the order-exact base, the floor body's residual is decided in sched2 by INSN_PRIORITY and the reg_n_refs tie-break, with no adjust_priority records in that pass at all. pri(120) = pri(115) + icost(115) - 1 = 2 over the true edge 120<-115, and pri(115) = pri(111) + 2 - 1 = 2 over 115<-111; ref(147) is the reg_n_refs of the arg5 outgoing-argument store's destination, which is exactly what a do-while(0) loop-note wrap around the right statement range perturbs.",
-   "next_probe": "Work the ref(147)=3 atom FIRST - it is the one knob with an established, sanctioned C spelling on this function (the do-while(0) wrap, .claude/rules/do-while-zero-exception.md, already carried by the floor body in three places). Re-run tmp/grind/CD_ready/s84/floorenum.py after each candidate wrap placement to confirm the model predicts 143-before-120 BEFORE spending a sandbox call, then measure with tmp/grind/CD_ready/s83/run.sh. Note the floor body's wrap toolbox was declared DEAD for this pair in an older Judge-constraint note - that verdict was formed without the solver and against a different residual framing, so re-measure rather than inherit it."
+   "hypothesis": "The a4/a7 family (14/179/0, the 143-before-120 transposition already FIXED and the instruction count unchanged) reaches 0 once its +12 of REGISTER-ALLOCATION collateral is paid for - and that collateral, not the scheduler, is now the whole residual of this function.",
+   "mechanism": "Every form that names the D_800A11DC element, and every form that inlines chain A into the call, flips the contested pair in both scheduler passes (a1 16, a3/a4/a7/a8/a9/a10 all 14; non-flipping controls a2 9 and a6 7). None adds an instruction or drops a rule, so the 12 extra differing instructions are register names and their induced ordering - a global.c/local-alloc outcome. The floor body's own scheduler neighbourhood is enumerated and empty (0 of 729,150 one- and two-atom settings with its dep graph held fixed), so further sched-side grinding of the floor body spends measurements on a proven-empty set.",
+   "next_probe": "Take a4 (tmp/grind/CD_ready/s84b/forms/a4.c, banked as rejected/s84-a4-named-D800A11DC-element-flips-pair-costs-12-alloc-14.c) as the working base. Run tools/ra_solver on it (global.c / local-alloc / reload models, then inverse_compose.py classify) against the target seats to get a typed REACHABLE/FORECLOSED verdict plus ranked C-lever vectors for the 12-instruction seat residual. Do NOT re-grind the floor body's sched2 stream."
   },
   {
-   "hypothesis": "pri(120)>=4 on the floor body is reachable by giving chain A's byte load 111 a true in-block predecessor, and unlike on the order-exact base this does NOT contradict the target order.",
-   "mechanism": "pri(120)>=4 requires pri(115)>=4 hence pri(111)>=3, i.e. 111 needs a true in-block predecessor of pri>=2 with icost 2 (a load). The four target-reaching floor streams place 111 variously: pri(143)=1 yields '103 105 124 126 128 130 138 143 111 151 115 120 ...' with 111 in position NINE, behind four loads. That is the structural difference from the order-exact base, where every target-reaching stream pinned 111 to position 3 and made the same requirement self-contradictory.",
-   "next_probe": "Enumerate C forms in which chain A's byte load is sourced from, or sequenced after, an in-block load - e.g. reading idx_1494[0] through an address that the D_800A11DC or arg5 chain has already materialised in-block, or moving the chain A statement group after the printf-argument loads. Predict each offline by editing the node pri/dep fields in tmp/grind/CD_ready/s84/floorenum.py and only measure the forms whose predicted pass-2 stream puts 143 before 120."
+   "hypothesis": "On the floor body the minimal-perturbation door is killing the pass-2-only anti-dependences 138<-128 and 138<-130 (post-reload $2 reuse by the arg5 chain) while simultaneously giving the D_800A11DC chain a lower luid than chain A's addu - the pair is lost twice, for two different reasons, and a form must beat both at once.",
+   "mechanism": "pri(143) = pri(138) + 1 always. In pass 2 pri(138)=2 solely because of those two anti-deps; kill them and pri(143)=2 = pri(120)=2, at which point rank()'s luid fall-through decides - and it currently favours chain A (luid 4/5/7) over the D_800A11DC chain (luid 15/17).",
+   "next_probe": "Enumerate C forms that keep the D_800A11D5 byte load out of the register the arg5 chain's ALU/load lands in AND emit the D_800A11DC chain earlier in RTL order than chain A's addu. Predict each offline first with tmp/grind/CD_ready/s84b/enum2.py by deleting the 138<-128 and 138<-130 edges (the corrected tool decrements the ref count; s83's did not) plus a luid remap, and only measure the forms the model says land."
   },
   {
-   "hypothesis": "The other banked bases have neighbourhoods that have never been enumerated, and at least one is richer still than the floor body's.",
-   "mechanism": "This session showed the solver verdict is BASE-SPECIFIC and that the choice of base determines which levers exist at all: the order-exact base admits one stream via one mechanism (sched1 birthing_insn_p), the floor body admits 20 via another (sched2 pri/refs). No other base has been extracted. progress/s79-y2-struct-chassis-seats-and-transposition-both-correct-a1-load-displaced-5.c is the most interesting untested one - it already has the 120/143 transposition FIXED and every seat correct, with only the printf second-argument load displaced.",
-   "next_probe": "Apply the s79 y2 body and progress/s52-third-base-seats-exact-sll-half-sunk-4.c in turn, run tools/sched_solver/extract.py system --skip-parity into per-base json, and run the floorenum.py sweep against each. Rank the bases by number of reachable streams that fix their own residual, and grind the richest one. Cheap: one extract plus one enumeration per base, no sandbox calls until a form is predicted to land."
+   "hypothesis": "The y2 base (5/179/0, the 56/57 ALU pair already target-exact) has a neighbourhood that has still never been enumerated, and its displaced printf-second-argument load is decided by something other than statement placement.",
+   "mechanism": "y2 is the exact complement of the floor body: it wins the pair and loses one load's position, where the floor body wins everything else and loses the pair. Naming and re-placing the D_800F19B8.func load at five points is byte-inert, so the displacement is not a luid/statement-order effect on that load - it is decided elsewhere in y2's block, and nothing has ever extracted that block.",
+   "next_probe": "Apply y2, run python3 tools/sched_solver/extract.py system --skip-parity into a y2-specific json, identify y2's block-3 insn ids and its own target stream from the -da dump, then run tmp/grind/CD_ready/s84b/exact.py and pair.py against it. If y2's neighbourhood is open where the floor body's is closed, grind y2 rather than the floor body."
   }
  ],
  "judge_constraints": [
@@ -889,6 +901,86 @@
    "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, seed = the order-exact base with all its FAKE constructs present, workspace tmp/grind/CD_ready/s84/perm.",
    "predicate_cite": "",
    "result": "KILLED. 14,542 iterations in 423 s, 0 finds, best never below base_score 40; harvest reported procs_killed: 9, campaign "
+  },
+  {
+   "session": 84,
+   "statement": "One of the four floor-body atoms pri(120)=4..8 / ref(147)=3 / pri(143)=1 / pri(153)=1 emits the EXACT target pass-2 stream on the floor body's extracted block 3.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, floor body (candidate.c, live 2/179/0) with all its FAKE constructs present; block extracted to tmp/grind/CD_ready/s84/floor.sched.json.",
+   "predicate_cite": "",
+   "result": "KILLED. Exhaustive single-atom sweep re-scored against the exact target stream instead of the 'puts 143 before 120' predicate (tmp/grind/CD_ready/s84b/exact.py + enum2.py): 20 nodes x pri 1..9, ref 0..19, luid 0..31, 190 pairwise luid swaps, every corrected edge removal and every edge addition in both kinds -> 0 hits. Each of the four named atoms fixes the adjacency while displacing five or more other insns."
+  },
+  {
+   "session": 84,
+   "statement": "Some 2-atom setting of {pri, ref, luid} on the floor body's pass-2 block 3, with the block's dependence graph held fixed, emits the exact target stream.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, floor body's extracted pass-2 block 3, all floor-body FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "KILLED. 729,150 two-atom combinations enumerated exhaustively (tmp/grind/CD_ready/s84b/pair.py), 0 reach the target. The graph itself must change - which is exactly what the a1/a3/a4/a7 family does."
+  },
+  {
+   "session": 84,
+   "statement": "A pass-1-only perturbation, propagated through the pass-2 luid remap, makes pass 2 emit the exact target stream on the floor body.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, floor body, both passes extracted; two-stage model validated first (pass-2 luid order reproduces the pass-1 stream character for character).",
+   "predicate_cite": "",
+   "result": "KILLED. tmp/grind/CD_ready/s84b/twostage.py: every pass-1 atom enumerated, pass-2 luids re-mapped to the perturbed pass-1 emission order, pass 2 re-run - 91 distinct outcomes, 0 are the target. probe.py additionally shows that handing pass 2 a pass-1 stream with 143 already ahead of 120 still yields 120 first, because pri(143)=3 > pri(120)=2 decides before the luid tie-break."
+  },
+  {
+   "session": 84,
+   "statement": "Staging the D_800A11DC element through an existing function-scope local (status, cnt, i) instead of a fresh block-local avoids the new pseudo and keeps the floor while flipping the 143/120 pair.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, floor body, floor-body FAKE set present, carrier at both the first and the last placement.",
+   "predicate_cite": "",
+   "result": "KILLED. status 22/22, cnt 26/26, i 44/44 against the fresh-block-local a4's 14. All flip the pair; all are dominated because a function-scope carrier is live across the whole body."
+  },
+  {
+   "session": 84,
+   "statement": "The displaced D_800F19B8.func load on the y2 base moves when it is named as a local and placed elsewhere in the block.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, base = progress/s79-y2-struct-chassis-seats-and-transposition-both-correct-a1-load-displaced-5.c re-measured live at 5/179/0, y2's triple nested do-while(0) FAKE set present.",
+   "predicate_cite": "",
+   "result": "KILLED. void *fn = D_800F19B8.func; at five placements (first / before the arg5 staging / before a2i / after arg5 / last) scores 5 at every placement - byte-inert."
+  },
+  {
+   "session": 85,
+   "statement": "One of the four floor-body atoms pri(120)=4..8 / ref(147)=3 / pri(143)=1 / pri(153)=1 emits the EXACT target pass-2 stream on the floor body's extracted block 3.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, floor body (candidate.c, re-measured live at 2/179/0) with all its FAKE constructs present; block extracted to tmp/grind/CD_ready/s84/floor.sched.jso",
+   "predicate_cite": "",
+   "result": "KILLED. 0 atoms reach the exact target. Each of the four named atoms fixes the one adjacency while displacing five or mo"
+  },
+  {
+   "session": 85,
+   "statement": "Some 2-atom setting of {pri, ref, luid} on the floor body's pass-2 block 3, with the block's dependence graph held fixed, emits the exact target stream.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, floor body's extracted pass-2 block 3, all floor-body FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "KILLED. 0 hits. The block's dependence GRAPH has to change, and that is precisely what the a1/a3/a4/a7 C forms do."
+  },
+  {
+   "session": 85,
+   "statement": "A pass-1-only perturbation, propagated through the pass-2 luid remap, makes pass 2 emit the exact target stream on the floor body.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, floor body, both passes extracted, all floor-body FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "KILLED. 91 distinct outcomes, 0 are the target; and even a pass-1 stream with 143 ahead of 120 still yields ... 138 120 "
+  },
+  {
+   "session": 85,
+   "statement": "Staging the D_800A11DC element through an existing function-scope local (status, cnt, i) instead of a fresh block-local avoids the new pseudo and keeps the floor while flipping the 143/120 pair.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, floor body, floor-body FAKE set present, carrier at both the first and the last placement.",
+   "predicate_cite": "",
+   "result": "KILLED. status 22/22, cnt 26/26, i 44/44 against the fresh-block-local a4's 14. All six still flip the pair, and all six"
+  },
+  {
+   "session": 85,
+   "statement": "The displaced D_800F19B8.func load on the y2 base moves when it is named as a local and placed elsewhere in the block.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, s78 struct/no-pp chassis, base = progress/s79-y2-struct-chassis-seats-and-transposition-both-correct-a1-load-displaced-5.c re-measured live at 5/179/0, y2's triple nested do-w",
+   "predicate_cite": "",
+   "result": "KILLED. All five score 5 - byte-inert. The displacement is decided by something other than that load's statement positio"
   }
  ],
  "sibling_progress": [

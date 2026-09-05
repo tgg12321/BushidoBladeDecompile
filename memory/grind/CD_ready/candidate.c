@@ -1,3 +1,42 @@
+/* s84 UPDATE (2026-09-04, synthesis). BODY UNCHANGED (2/179/0, re-measured live at the start
+ * and again at the end of the session). What changed is the DIAGNOSIS, and it points away from
+ * this body.
+ *
+ * 1. s83's floor-body headline is wrong. It scored scheduler atoms by "puts 143 before 120";
+ *    the acceptance test is the EXACT pass-2 stream (the baseline with ONLY 143 and 120
+ *    transposed). Under that test, 0 single atoms reach the target - over all 20 nodes x
+ *    pri 1..9, ref 0..19, luid 0..31, all 190 pairwise luid swaps, all edge removals and all
+ *    edge additions - and 0 of 729,150 two-atom combinations reach it either. s83's four named
+ *    atoms each fix the one adjacency while displacing five or more other insns.
+ *
+ * 2. Two model corrections were needed to get that answer. (a) s83's edge-removal sweeps
+ *    deleted an edge WITHOUT decrementing the predecessor's INSN_REF_COUNT, so those streams
+ *    were not legal schedules - every "no dependence edit reaches the target" row from s83 is
+ *    void; use tmp/grind/CD_ready/s84b/enum2.py. (b) `ref` in the solver json is INSN_REF_COUNT
+ *    (successor count), NOT reg_n_refs - so s83's "ref(147)=3 is the do-while(0) refs lever"
+ *    identification was a mis-attribution.
+ *
+ * 3. The priority arithmetic is now pinned: pri(x) = max over preds p of
+ *    (pri(p) + insn_cost(p,kind,x) - 1), insn_cost = icost(p) on true edges, 1 on anti edges.
+ *    Hence pri(143) = pri(138) + 1 >= 2 always (s83's pri(143)=1 atom is unreachable), and the
+ *    pair is lost TWICE for two different reasons: in pass 1 pri(143) == pri(120) and the luid
+ *    tie-break favours chain A; in pass 2 pri(138) is raised to 2 by the post-reload anti-deps
+ *    138<-128 and 138<-130 ($2 reuse by the arg5 chain), so pri(143)=3 > pri(120)=2 and the
+ *    tie-break is never consulted. A winning form must beat both at once.
+ *
+ * 4. AND THE RESIDUAL IS PRODUCIBLE IN C. Every form that gives the D_800A11DC element its own
+ *    named intermediate, and every form that inlines chain A into the call, flips 143 ahead of
+ *    120 in BOTH passes: a1 16, a3 14, a4 14, a7 14, a8/a9/a10 14 - all 179 insns / 0 rules.
+ *    Non-flipping controls: a2 (names the index, not the element) 9, a6 (chain A moved after
+ *    the arg5 chain) 7. The transposition is cheap; the +12 collateral is REGISTER ALLOCATION.
+ *    Function-scope carriers are strictly worse than a fresh block-local (status 22, cnt 26,
+ *    i 44) and are dead.
+ *
+ * 5. THE FRONTIER THEREFORE LEAVES THIS BODY. This body's scheduler neighbourhood is
+ *    enumerated and empty; a4 (14/179/0, transposition already fixed) is the base with the
+ *    live door, and its residual is an ra_solver question, not a sched_solver one. See
+ *    state.json frontier[0].
+ */
 /* s82 UPDATE (2026-09-04, structural). BODY UNCHANGED (2/179/0, re-measured live). What
  * changed is that the s74/s81 blocking premise is GONE and the single-atom target is exact.
  *

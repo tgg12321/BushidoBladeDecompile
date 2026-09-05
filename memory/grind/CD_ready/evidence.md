@@ -3687,3 +3687,140 @@ the campaign state (dead, no orphan; 4943 iterations logged, best = base_score 4
 - [s83] FRAMING CORRECTION: the floor body's pass-2 block carries no adjust_priority records at all (adjpri: []) while its pass 1 carries 18, and none of the 14 pass-1 birth flips that move the pass-1 stream puts 143 before 120. The floor residual is a sched2 pri/luid/reg_n_refs decision, NOT a birthing_insn_p decision. The birth-lever framing s82 and the discarded s83 built on the order-exact base must not be carried across to the floor body - most likely why the two bases have stayed complementary for 30 sessions.
 
 - [s83] Decisive consequence for lever choice: ref(147)=3 is a reg_n_refs atom, so the do-while(0) refs-weighting lever that is provably off-manifold on the order-exact base is ON-manifold on the floor body. Six sessions of wrap-placement work were spent on the one base where that lever cannot work.
+
+## s84 (synthesis, 2026-09-04) - the s83 floor-body verdict CORRECTED, and the residual measured REACHABLE
+
+- [s84] BASELINE RE-MEASURED LIVE BEFORE AND AFTER EVERY PROBE: candidate.c applied via
+  `python3 memory/grind/CD_ready/apply_s78.py` scores 2 / 179 / 0 on the HEAD chassis. The
+  dispatch brief again read "measurement unavailable"; the live number is 2, unchanged since
+  s78, and every s78-s83 conclusion is chassis-current. src/system.c was restored to the floor
+  body at end of session (the s83 run.sh trap: run.sh leaves the LAST form it scored applied).
+
+- [s84] **A MODEL BUG IN THE s83 SWEEPS. tmp/grind/CD_ready/s84/floorenum.py and
+  .../s84/whatif3.py remove a dependence edge from `blk['deps']` WITHOUT decrementing the
+  predecessor's INSN_REF_COUNT (`nodes[pred]['ref']`).** In sched.c the ref count is exactly the
+  number of successors that must be scheduled before an insn becomes ready (simulate.py:277,
+  `self.ref[prev] -= 1; if self.ref[prev] != 0: ...`), so an edge removed without the matching
+  decrement leaves that predecessor permanently un-ready and the simulated stream is not a legal
+  schedule of the edited graph. **Every `rmdep` / "dependence-edge REMOVALS ... NONE reaches
+  target" row in the s83 evidence - on BOTH the floor body and the order-exact base - was
+  produced by that broken path and is VOID.** Corrected enumerator (decrements the pred's ref on
+  removal, increments it on addition, and additionally enumerates edge ADDITIONS, which s83
+  never tried): tmp/grind/CD_ready/s84b/enum2.py.
+
+- [s84] **THE s83 HEADLINE IS WRONG: THE "FOUR ATOMS THAT FIX THE WHOLE RESIDUAL" DO NOT REACH
+  THE TARGET.** s83 scored atoms by the predicate "puts 143 before 120". The actual acceptance
+  test is the EXACT pass-2 stream, which for the floor body is the baseline with 143 and 120
+  transposed and nothing else moved:
+      baseline 103 105 111 124 151 115 126 128 130 138 120 143 147 153 155 149 157 162 175 177
+      target   103 105 111 124 151 115 126 128 130 138 143 120 147 153 155 149 157 162 175 177
+  Under that test (tmp/grind/CD_ready/s84b/exact.py, exhaustive over all 20 nodes x pri 1..9,
+  ref 0..19, luid 0..31, all 190 pairwise luid swaps, all corrected edge removals and all
+  edge additions in both dependence kinds): **ZERO single atoms reach the target.** s83's four
+  named atoms each put 143 before 120 while displacing five or more other insns - e.g.
+  pri(120)=4 gives `103 105 111 124 151 126 128 130 138 115 143 147 153 120 155 ...`. They were
+  never candidate fixes for the residual; they were candidate fixes for one adjacency inside a
+  stream that then broke six others.
+
+- [s84] **AND NO PAIR OF ATOMS REACHES IT EITHER: 729,150 two-atom combinations over
+  {pri 1..9, ref 0..19, luid 0..31} on all 20 nodes of the floor body's pass-2 block 3, exact-
+  target test, 0 hits** (tmp/grind/CD_ready/s84b/pair.py). The floor body's pass-2 block, with
+  its dependence graph held fixed, does not emit the target order under any 1- or 2-atom setting
+  of the three scheduler quantities a C edit can move.
+
+- [s84] **THE TWO-STAGE MODEL IS VALIDATED AND EXPLAINS WHY: pass-2 LUIDs ARE THE PASS-1
+  EMISSION POSITIONS.** tmp/grind/CD_ready/s84b/twostage.py checks this directly - the pass-2
+  block's luid order is exactly the pass-1 output stream, and re-deriving the pass-2 luids from
+  the pass-1 stream reproduces the observed pass-2 stream character for character. It then
+  enumerates every pass-1 atom, re-maps the pass-2 luids to the perturbed pass-1 stream and
+  re-runs pass 2: **0 of them yield the exact pass-2 target.** Decisively (probe.py), feeding
+  pass 2 a pass-1 stream in which 143 ALREADY precedes 120 still yields `... 138 120 143 147 ...`
+  - pass 2 re-sorts them. The luid tie-break is not what decides this pair in pass 2.
+
+- [s84] **THE PRIORITY ARITHMETIC IS PINNED, AND IT SHOWS THE RESIDUAL IS OVER-DETERMINED.**
+  Fitted against every node of both passes: pri(x) = max over preds p of
+  (pri(p) + insn_cost(p, kind, x) - 1), with insn_cost = icost(p) on true (kind 0) edges and 1
+  on anti/output (kind 14/15) edges - i.e. sched.c's `priority()` over LOG_LINKS, min 1.
+  Applying it to the contested pair:
+    * pri(143) = pri(138) + icost(138) - 1 = pri(138) + 1, so pri(143) >= 2 ALWAYS. s83's
+      "pri(143)=1" atom is not merely unhelpful, it is arithmetically unreachable.
+    * PASS 2: pri(138) = 2, and it is 2 ONLY because of the PASS-2-ONLY anti-dependences
+      138<-128 and 138<-130 (`138 <- [[128,14],[130,14],[105,14]]`, absent in pass 1 where
+      `138 <- [[105,14]]`). Those are post-reload register anti-deps: the arg5 chain's ALU and
+      load reuse $2, which the D_800A11D5 byte load then writes. So pri(143)=3 > pri(120)=2 and
+      143 is scheduled first in the backward pass, hence emitted LAST.
+    * PASS 1: no such anti-dep, pri(138)=1, pri(143)=2 = pri(120)=2 - a TIE - and the luid
+      tie-break (rank() falls through to `luid[y]-luid[x]`, so the higher luid is emitted later)
+      puts 143 last again, because the D_800A11DC chain has luid 15/17 against chain A's 4/5/7.
+    * pri(120) = pri(115) = pri(111) + icost(111) - 1 = 2, and raising it to 3 needs chain A's
+      byte load 111 to acquire a TRUE in-block load predecessor - the same self-contradictory
+      requirement s83 already documented on the order-exact base.
+  **So the pair is lost twice for two different reasons: in pass 1 on LUID ORDER, in pass 2 on
+  the POST-RELOAD $2 ANTI-DEPENDENCE. A form must beat both at once. That is the real statement
+  of this function's residual, and no session before this one had it.**
+
+- [s84] **AND IT IS BEATABLE IN C - MEASURED, NOT INFERRED. EVERY FORM THAT GIVES THE
+  D_800A11DC ELEMENT ITS OWN NAMED INTERMEDIATE FLIPS THE PAIR IN BOTH PASSES.** All at
+  179 build_insns / 0 rules dropped (floor body = 2 for reference):
+      a1  `s32 t2 = D_800A11DC[D_800A11D5];` hoisted FIRST, `t2` passed as arg3     16 - FLIPS
+      a3  the same, hoisted between the t0 chain and the arg5 chain                 14 - FLIPS
+      a4  the same, hoisted last (immediately before the call)                      14 - FLIPS
+      a7  chain A fully inlined into the call argument, no `t0` name                14 - FLIPS
+      a8/a9/a10  chain A partially inlined (3 split points)                     14 each - FLIPS
+      a2  the INDEX named instead (`s32 i2 = D_800A11D5;`), element left inline      9 - no flip
+      a6  chain A moved bodily after the arg5 chain, element left inline             7 - no flip
+  e.g. a4's pass-2 block-3 stream is `... 139 130 143 120 150 158 152` - 143 ahead of 120, the
+  entire 2-point residual gone - and its score is 14 because TWELVE OTHER instructions have
+  moved. **The transposition this ledger has called its residual for thirty sessions is not
+  hard to produce; it costs a uniform +12 of collateral, and that collateral is a REGISTER
+  ALLOCATION effect (insn count and rule count are unchanged in every one of these forms).**
+  This reframes the function: it is not a scheduler problem with no door, it is a scheduler
+  door that is only reachable through an allocation that has not been paid for yet.
+
+- [s84] EXISTING-LOCAL CARRIERS ARE STRICTLY WORSE THAN A FRESH BLOCK-LOCAL, which kills the
+  obvious "avoid the new pseudo" move. Staging the D_800A11DC element through a function-scope
+  local instead of a fresh `s32 t2`, at both the first and the last placement:
+  `status` 22/22, `cnt` 26/26, `i` 44/44 (versus a4's 14). Every one of them still flips the
+  pair; each is dominated by the fresh block-local because the carrier is live across the whole
+  function body and drags the allocation with it. (`saved` was not measured - it is `u8` and
+  would truncate the s32 element, a semantic lie, not a spelling.)
+
+- [s84] THE y2 BASE RE-MEASURED LIVE AT 5 / 179 / 0, AND ITS OWN RESIDUAL IS INERT TO THE
+  OBVIOUS LEVER. progress/s79-y2-...-a1-load-displaced-5.c is the complement of the floor body:
+  the 56/57 ALU pair is already target-exact there and the residual is the displaced
+  `D_800F19B8.func` load (printf's second argument). Naming that load as a local `void *fn` and
+  placing it at five different points in the block (first, before the arg5 staging, before
+  `a2i`, after `arg5`, last) scores **5 at every single placement** - byte-inert. Banked as
+  rejected/s84-y2-named-func-load-first-byte-inert-5.c and
+  rejected/s84-y2-named-func-load-before-a2i-byte-inert-5.c.
+
+- [s84] TOOLING NOTE: progress/s52-third-base-seats-exact-sll-half-sunk-4.c APPLY-ERRs under
+  apply_s78.py (it predates the s78 declaration-directive surface), so the s83 frontier's
+  "rank the bases" probe cannot include it without a port. y2 and the floor body both apply
+  cleanly. `engine diagnose --detail` is unusable here under either name (CD_ready or
+  marionation_Exec) - it wants a prior `engine build` and reports the symbol missing, so the
+  per-instruction diff has to come from the s83 permuter workspace's objdump path instead.
+
+- [s85] Baseline re-measured live before and after every probe: candidate.c applied via apply_s78.py scores 2/179/0 on the HEAD chassis (the dispatch brief again read 'measurement unavailable'). src/system.c was restored to HEAD at end of session.
+
+- [s85] MODEL BUG IN THE s83 SWEEPS: tmp/grind/CD_ready/s84/floorenum.py and whatif3.py delete a dependence edge without decrementing the predecessor's INSN_REF_COUNT (simulate.py:277), so the predecessor never becomes ready and the simulated stream is not a legal schedule of the edited graph. Every 'dependence-edge REMOVALS -> NONE reaches target' row s83 recorded, on BOTH the floor body and the order-exact base, is void. Corrected tool (fixes the decrement, and additionally sweeps edge ADDITIONS, which s83 never tried): tmp/grind/CD_ready/s84b/enum2.py.
+
+- [s85] SECOND MIS-ATTRIBUTION CORRECTED: 'ref' in the sched_solver json is INSN_REF_COUNT - the count of successors that must be scheduled before an insn becomes ready - NOT reg_n_refs. s83's decisive claim that 'ref(147)=3 is a reg_n_refs atom, i.e. the do-while(0) refs-weighting lever is ON-manifold on the floor body' therefore identified the wrong quantity and the wrong lever.
+
+- [s85] The exact acceptance test for the floor body is the baseline pass-2 stream with ONLY 143 and 120 transposed: 103 105 111 124 151 115 126 128 130 138 143 120 147 153 155 149 157 162 175 177. Against it, 0 single atoms land (all 20 nodes x pri 1..9, ref 0..19, luid 0..31, 190 luid swaps, all corrected edge removals, all edge additions) and 0 of 729,150 two-atom {pri,ref,luid} combinations land.
+
+- [s85] TWO-STAGE MODEL VALIDATED: the pass-2 block's luid order is exactly the pass-1 emission stream, and re-deriving the pass-2 luids from the pass-1 stream reproduces the observed pass-2 stream character for character (tmp/grind/CD_ready/s84b/twostage.py). Feeding pass 2 a pass-1 stream with 143 already ahead of 120 still yields 120 first (probe.py) - the luid tie-break is not what decides this pair in pass 2.
+
+- [s85] PRIORITY ARITHMETIC PINNED against every node of both passes: pri(x) = max over preds p of (pri(p) + insn_cost(p,kind,x) - 1), with insn_cost = icost(p) on true (kind 0) edges and 1 on anti/output (kind 14/15) edges. Consequence 1: pri(143) = pri(138) + 1 >= 2 always, so s83's pri(143)=1 atom is arithmetically unreachable, not merely unhelpful.
+
+- [s85] Consequence 2 - THE RESIDUAL IS OVER-DETERMINED AND THAT IS THE REAL STATEMENT OF THIS FUNCTION. In PASS 2, pri(138)=2 only because of the pass-2-only anti-dependences 138<-128 and 138<-130 (post-reload $2 reuse by the arg5 chain; in pass 1 it is 138 <- [[105,14]] alone and pri(138)=1), so pri(143)=3 > pri(120)=2 and 143 is emitted last. In PASS 1 there is no such anti-dep, pri(143)=2 = pri(120)=2, and the rank() luid fall-through puts 143 last anyway because the D_800A11DC chain sits at luid 15/17 against chain A's 4/5/7. A winning form must beat the luid order in pass 1 AND the $2 anti-dependence in pass 2, simultaneously.
+
+- [s85] AND THAT IS MEASURABLY DOABLE IN C. Every form naming the D_800A11DC element flips the pair in both passes - a1 16, a3 14, a4 14 - as does every form inlining chain A into the call - a7/a8/a9/a10 all 14. All are 179 build_insns / 0 rules_dropped, so the uniform +12 over the floor is register names and their induced ordering, i.e. a global.c/local-alloc outcome, not a scheduling one. Controls that do NOT flip: a2 (names the index rather than the element) 9, a6 (chain A moved after the arg5 chain) 7.
+
+- [s85] Function-scope carriers are strictly dominated by a fresh block-local for this flip: status 22/22, cnt 26/26, i 44/44 versus a4's 14, at both placements.
+
+- [s85] y2 (progress/s79-y2-...-5.c) re-measured live at 5/179/0 and its residual is byte-inert to naming and re-placing the D_800F19B8.func load at five positions (5 at every one). y2's block has never been extracted for the solver; it is the third never-enumerated base.
+
+- [s85] TOOLING: progress/s52-third-base-seats-exact-sll-half-sunk-4.c APPLY-ERRs under apply_s78.py (predates the s78 declaration-directive surface) and needs porting before it can join a base comparison. `engine diagnose --detail` is unusable for this function under either name (CD_ready or marionation_Exec) - it wants a prior `engine build` and reports the symbol missing - so per-instruction diffs must come from the s83 permuter workspace's objdump path.
+
+- [s85] No permuter campaign was launched this session; nothing was left running. src/system.c restored to HEAD; the only tracked changes are memory/grind/CD_ready/ ledger files and rejected/ forms.
