@@ -6824,3 +6824,125 @@ Work the s2 body.
 - [s47] cse.c's dest-recording guard (cse.c:7311-7340) plus canon_hash (cse.c:1880-1990) leave only two store-side routes to a surviving reload, both priced (+6 volatile, +2 value-class break); MIPS's insv predicate (mips.md:2901-2912) rules out the ZERO_EXTRACT/bitfield route entirely.
 
 - [s47] fake_ablate on the closest-to-target body reports no FAKE-annotated constructs, so none of this session's seat measurements are confounded by a FAKE carrier.
+
+## s48 (forensics) — the order is solved; the whole residual is ONE local-alloc seat
+
+**Chassis re-measure (mandated).** `s47/s2.c` re-measures **13 at 49** on HEAD
+2026-09-05, reproducing its banked value exactly. `fake_ablate` still reports no
+FAKE-annotated construct anywhere in the bank, so no seat measurement in this
+ledger is FAKE-contaminated (fifth consecutive session).
+
+**The session's result, in one line.** Making the block-0 mask a PLAIN
+straight-line statement (`m = *q & 0xF8; *q = m;`) instead of s39–s47's
+duplicated-into-the-arms store gives blocks 0/1 the target's exact instruction
+ORDER for free, and the entire remaining residual is the `$a0`/`$v1` seat
+exchange caused by one local-alloc decision in BB0.
+
+1. **`str1` — plain straight-line mask, one declared pointer object, no FAKE,
+   no volatile — is 49 insns at score 10 with the target's block-0 order.**
+   `lui/addiu, lbu, move $a1,$v0, andi 0xf8, sb, lw 0x20($a1), <nop>, andi 1,
+   bnez, ori/move, sb`. The target is the same sequence with `lbu $a0,0($v1)`
+   where we carry the `nop` and with the two registers exchanged. This is
+   strictly closer in shape than `candidate.c`'s s39–s47 chassis at the same
+   score, so `candidate.c` was replaced by it.
+
+2. **s47's "volatile costs +6" kill is WRONG and is hereby corrected.** With
+   `extern volatile u8 D_80106A73;`, `volatile u8 *q`, **and u8-typed value and
+   result locals** (`vol3`), the body is **49 instructions, 5 `lbu` / 2 `nop`,
+   score 10** — the target's exact count, multiset AND order, end to end. The
+   +6 s47 measured was three `andi $x,$x,0xff` zero-extends (forced by *s32*
+   value locals: a volatile QI load cannot be folded into `zero_extendqisi2`,
+   so combine leaves the widening as its own insn) plus the extra `j` each of
+   them pushes out of the if/else. `vol1` (s32 locals) = 19 at 55, `vol2`
+   (u8 value, s32 result) = 12 at 49, `vol3` (u8 value + u8 result) = 10 at 49.
+   volatile itself costs ZERO instructions here. Its only effect is to stop
+   cse.c store-forwarding the block-0 store into block 1's read.
+   (The volatile GATE is still unsatisfied — no `volatile_extern_allowlist.txt`
+   grant, no IRQ/MMIO writer in the census — so `vol3` is diagnostic evidence,
+   banked as `memory/grind/func_80034F88/candidate_vol3_volatile_exact_order.c`,
+   not a candidate.)
+
+3. **The residual is named exactly, from the dumps and the models, not
+   inferred.** `local_extract --suggest` on `vol3`: BB0 holds two block-local
+   quantities — the mask value (reg 74, birth 6, death 10, 4 refs) takes hard 3,
+   and the p[8] value (reg 80, birth 14, death 20) takes hard 2. They do NOT
+   overlap; s47's "the two BB0 locals overlap" was an artefact of the
+   arms chassis and is superseded. `find_free_reg`
+   (`tools/gcc-2.7.2/local-alloc.c:2169-2247`) builds
+   `used = fixed_reg_set | regs_live_at[birth..death) | ~reg_class_contents`;
+   hard 2 is in it because the call return `$v0` is still live over [6,10)
+   (the `move $a1,$v0` copy is scheduled after the mask `lbu` — exactly as in
+   the target), MIPS defines **no** `REG_ALLOC_ORDER`
+   (`grep REG_ALLOC_ORDER tools/gcc-2.7.2/config/mips/mips.h` returns no hit), so the
+   scan is numeric from 0 and the mask value takes **hard 3**. That single
+   choice puts hard 3 into the blocks-0/1 address allocno's conflict row
+   (`.greg`: `;; 75 conflicts: 72 75 78 79 83 84 88 89 2 3 29` — 75 is the only
+   allocno with a hard-3 conflict), so `global.c` `find_reg` seats the address
+   at hard 4 = `$a0`. The target seats it at hard 3 = `$v1`.
+
+4. **The allocno order is not the lever.** `nrefs_census` on `vol3`:
+   ord 0 = reg 73 (loop counter, pri 47142) takes hard 3, but it does NOT conflict
+   with the address; ord 1 = reg 75 (address, nrefs 11, livelen 29, pri 11379)
+   takes hard 4; ords 2–7 = the six flag-block value pseudos (nrefs 3, livelen 4,
+   pri 7500 each); ord 8 = reg 72 (`p`, pri 3529) takes hard 5. The address is
+   already the first allocno that wants hard 3; it loses it to a hard-reg
+   conflict written by local-alloc, not to another allocno.
+
+5. **The bare-symbol route to a second address register is dead on this
+   chassis too (kill re-audit of the s47 instance kill).** On this port a bare
+   global access never acquires a `lui/addiu` base register: it lowers to
+   `lui $at` + `%lo(sym)($at)`. Measured: `str2`/`vol5` (bare everywhere)
+   = 29/25 at 47 (cse unifies the addresses and two insns vanish);
+   `str3`/`vol6` (pointer in 0/1, bare in 2/3) = 28/27 at 48/47;
+   `str4`/`vol7` (pointer in block 0 only) = 22/24 at 52/48;
+   `str5`/`vol8` (bare in 0/1, pointer in 2/3) = 29/15 at 47/49, and `vol8`'s
+   block 0 is visibly `lui $v1 / lbu $v1,0($v1) / ... / lui $at / sb $v1,0($at)`
+   — the wrong addressing FORM, not merely the wrong register.
+
+6. **The BANNED multi-handle axis does not close the function either.**
+   Measured (diagnostically, reverted immediately, never proposed):
+   `tw_vol` = two pointer objects on the vol3 chassis = **21 at 49**;
+   `tw_str` = the same without volatile = 21 at 49. `tw_vol` reproduces the
+   target's STRUCTURE exactly — including the second `lui/addiu` pair emitted
+   *before* the block-1 `sb`, which no single-object body can do — but the two
+   address allocnos come out **exchanged**: `nrefs_census` on `tw_vol` gives
+   ord 1 = reg 76 (blocks 2/3 address, nrefs 6, livelen 16, pri 7500) taking hard 3
+   and ord 8 = reg 75 (blocks 0/1 address, nrefs 5, livelen 26, pri 3846) taking
+   hard 4, while the target wants 75 at hard 3 and 76 at hard 4. And reg 75 still carries
+   the same hard-3 conflict from the same BB0 local-alloc decision. So the
+   ban is NOT what is holding this function at 10: the lever is upstream of the
+   handle count, and a ruling-request to reopen the multi-handle axis would
+   have been spent on a body that measures 21.
+
+- [s48] s47/s2.c re-measures 13 at 49 on HEAD 2026-09-05; fake_ablate reports no FAKE-annotated construct to ablate (fifth consecutive session).
+- [s48] str1 (plain straight-line mask `m = *q & 0xF8; *q = m;`, one declared pointer object, no volatile, no FAKE) = score 10 at 49 insns, 4 lbu / 3 nop, and reproduces the target's block-0 instruction ORDER exactly; it replaces the s39-s47 arms chassis as candidate.c.
+- [s48] vol3 (extern volatile u8 D_80106A73 + volatile u8 *q + u8-typed value and result locals) = score 10 at 49 insns with 5 lbu / 2 nop -- the target's exact instruction count, multiset and order end to end; the only difference is the $a0/$v1 seat exchange in blocks 0/1.
+- [s48] s47's banked kill "extern volatile costs +6 instructions (55/56)" is CORRECTED: the +6 was three `andi 0xff` zero-extends forced by s32-typed value locals plus the extra `j` each pushes out of the if/else. vol1 (s32) 19@55, vol2 (u8 value/s32 result) 12@49, vol3 (u8 value+result) 10@49. volatile costs zero instructions on this chassis.
+- [s48] local_extract --suggest on vol3: BB0's two block-local quantities are the mask value (reg 74, birth 6, death 10) taking hard 3 and the p[8] value (reg 80, birth 14, death 20) taking hard 2, and they do NOT overlap; s47's overlap finding was an artefact of the arms chassis.
+- [s48] find_free_reg (local-alloc.c:2169-2247) excludes hard 2 over [6,10) because the call return $v0 is live there, and MIPS defines no REG_ALLOC_ORDER (no hit in tools/gcc-2.7.2/config/mips/mips.h), so the numeric scan hands the mask value hard 3 -- which is the sole source of the hard-3 entry in the address allocno's conflict row (.greg: ";; 75 conflicts: ... 2 3 29").
+- [s48] nrefs_census on vol3: the address allocno (75, nrefs 11, livelen 29, pri 11379) is ord 1 and is already the first allocno that wants hard 3; it loses hard 3 to a local-alloc hard-reg conflict, not to another allocno. Allocno ORDER is therefore not the lever.
+- [s48] Bare-symbol accesses never acquire a lui/addiu base register on this port -- they lower to "lui $at" + "%lo(sym)($at)". Re-measured on the new chassis: str2 29@47, vol5 25@47, str3 28@48, vol6 27@47, str4 22@52, vol7 24@48, str5 29@47, vol8 15@49.
+- [s48] The BANNED two-pointer-object body, measured diagnostically and reverted, is 21 at 49 (tw_vol, volatile) and 21 at 49 (tw_str, non-volatile). It reproduces the target's structure exactly but comes out with the two address allocnos EXCHANGED (nrefs_census: reg 76 pri 7500 to hard 3, reg 75 pri 3846 to hard 4; target wants the reverse), and reg 75 still carries the same hard-3 conflict from the same BB0 local-alloc decision. The multi-handle ban is not what holds this function at 10.
+- [s48] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; git status shows only metrics/events.jsonl modified. No build-pipeline file, rule file, engine file or tool was touched.
+
+- [s48] s47/s2.c re-measures 13 at 49 on HEAD 2026-09-05, reproducing its banked value; fake_ablate reports no FAKE-annotated construct to ablate (fifth consecutive session), so no seat measurement in this ledger is FAKE-contaminated.
+
+- [s48] str1 (plain straight-line `m = *q & 0xF8; *q = m;`, one declared pointer object, no volatile, no FAKE) = score 10 at 49 insns, 4 lbu / 3 nop, and reproduces the target's block-0 instruction ORDER exactly; it is the new candidate.c.
+
+- [s48] vol3 (extern volatile u8 D_80106A73 + volatile u8 *q + u8-typed value and result locals) = score 10 at 49 insns with 5 lbu / 2 nop - the target's exact instruction count, multiset AND order end to end; the only difference is the $a0/$v1 seat exchange in blocks 0/1.
+
+- [s48] s47's kill 'extern volatile costs +6 instructions (55/56)' is corrected: the +6 was three `andi 0xff` zero-extends forced by s32-typed value locals plus the extra `j` each pushes out of the if/else (vol1 19@55, vol2 12@49, vol3 10@49).
+
+- [s48] local_extract --suggest on vol3: BB0's two block-local quantities are the mask value (reg 74, birth 6, death 10, refs 4) at hard 3 and the p[8] value (reg 80, birth 14, death 20) at hard 2, and their spans are disjoint - s47's overlap finding was an artefact of the arms chassis.
+
+- [s48] find_free_reg (tools/gcc-2.7.2/local-alloc.c:2169-2247) excludes hard 2 over [6,10) because the call return $v0 is live there, and MIPS defines no REG_ALLOC_ORDER (no hit for REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h), so the numeric scan hands the mask value hard 3.
+
+- [s48] .greg on vol3: `;; 75 conflicts: 72 75 78 79 83 84 88 89 2 3 29` - reg 75 (the blocks-0/1 address) is the only allocno in the function carrying a hard-3 conflict, and that conflict is written by local-alloc.
+
+- [s48] nrefs_census on vol3: ord 0 reg 73 (loop counter, pri 47142) at hard 3 but no conflict with the address; ord 1 reg 75 (address, nrefs 11, livelen 29, pri 11379) at hard 4; ords 2-7 the six flag-block value pseudos (nrefs 3, livelen 4, pri 7500); ord 8 reg 72 (p, pri 3529) at hard 5. Allocno ORDER is not the lever.
+
+- [s48] Bare-symbol accesses never acquire a lui/addiu base register on this port - they lower to `lui $at` + `%lo(sym)($at)`: str2 29@47, vol5 25@47, str3 28@48, vol6 27@47, str4 22@52, vol7 24@48, str5 29@47, vol8 15@49.
+
+- [s48] The banned two-pointer-object body, measured diagnostically and reverted, is 21 at 49 on both the volatile and non-volatile chassis, with the two address allocnos exchanged relative to the target - the multi-handle ban is not what holds this function at 10.
+
+- [s48] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; `git status --porcelain src/` is empty. No build-pipeline file, rule file, engine file or tool was modified; the only writes are under memory/grind/func_80034F88/ and tmp/grind/func_80034F88/s48/.

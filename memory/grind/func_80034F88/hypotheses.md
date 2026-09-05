@@ -4872,3 +4872,172 @@ this residual, unlike the RA models the ledger has been searching.
 - probe: Read of tools/gcc-2.7.2/cse.c:1880-1990, :6408-6448, :7106-7120, :7286-7365 and tools/gcc-2.7.2/config/mips/mips.md:2901-2924; slices saved to tmp/grind/func_80034F88/s47/cse_guards.txt.
 - result: Of the reachable spellings, the volatile MEM costs +6 instructions (measured this session) and the value-class break costs +2 (s46's v4). Everything else in the guard is FP-only, libcall-only, or blocked by the MIPS insv predicate. The only cost-free route to a surviving reload is therefore not on the store side at all: it is the extended-basic-block boundary -- store inside a conditional arm, read after the join -- which is exactly what the v6 and s2 bodies do.
 - verdict: CONFIRMED
+
+## s48 (forensics) — hypotheses
+
+### H48.1 CONFIRMED — a plain straight-line block-0 mask gives the target's order for free
+**Statement.** Writing block 0 as the ordinary straight-line statement pair
+`m = *q & 0xF8; *q = m;` (instead of s39–s47's `if (c0) { *q = m; } else { *q = m; }`
+EBB-break) makes sched1 emit BB0 in the target's exact order:
+`lui/addiu, lbu, move $a1,$v0, andi 0xf8, sb, lw 0x20($a1), …, andi 1, bnez`.
+**Mechanism.** sched1 computes INSN_PRIORITY as the longest path to the end of a
+BASIC BLOCK. With the store in BB0 the memory dependence `lbu -> andi -> sb`
+keeps the mask chain longest and the `$v0 -> p` copy sinks behind the `lbu`;
+with the store in the arms that chain is cut and the copy outranks the `lbu`.
+**Probe.** `str1` (non-volatile) and `vol3` (volatile) spliced into
+src/code6cac_b.c; `sandbox --disable all` + objdump.
+**Result.** `str1` = **score 10 at 49 insns**, 4 `lbu` / 3 `nop`, block-0 order
+identical to the target. `vol3` = **score 10 at 49 insns**, 5 `lbu` / 2 `nop`,
+identical to the target instruction-for-instruction except the `$a0`/`$v1` seat
+exchange in blocks 0/1.
+
+### H48.2 KILLED (instance) — "extern volatile u8 D_80106A73 costs +6 instructions"
+**Statement.** s47 banked that the volatile declaration reaches the target
+multiset only at 55/56 instructions (score 19/21). Re-measured on the
+straight-line chassis with u8-typed value and result locals, the volatile body
+is 49 instructions at score 10.
+**Mechanism.** The +6 was not volatile. A volatile QI MEM cannot be folded into
+`zero_extendqisi2` by combine, so an s32-typed value local leaves the widening
+as its own `andi $x,$x,0xff`, and that insn displaces the `ori` from the branch
+delay slot, forcing an extra `j` out of each if/else. Three flag blocks x 2 = 6.
+Declaring the value and result locals `u8` removes all six.
+**Probe.** vol1 (s32 value), vol2 (u8 value + s32 result), vol3 (u8 value + u8
+result), all with `extern volatile u8 D_80106A73;` + `volatile u8 *q`.
+**Result.** vol1 = 19 at 55; vol2 = 12 at 49; vol3 = **10 at 49 with 5 lbu /
+2 nop**. The volatile axis is NOT closed on cost. It remains closed on its GATE
+(no `volatile_extern_allowlist.txt` grant for D_80106A73, no IRQ/MMIO writer in
+the census), so vol3 is banked as diagnostic evidence, not as a candidate.
+**kill_scope** instance. **measured_on** straight-line chassis on HEAD
+2026-09-05, file-scope declaration changed to `extern volatile u8 D_80106A73;`,
+one declared pointer object, no FAKE construct present.
+
+### H48.3 CONFIRMED — the whole residual is one local-alloc seat in BB0
+**Statement.** The blocks-0/1 address allocno is seated at hard 4 (`$a0`)
+rather than the target's hard 3 (`$v1`) because local-alloc has already given
+hard 3 to BB0's mask-value quantity, writing hard 3 into the address allocno's
+hard-reg conflict row before global-alloc ever runs.
+**Mechanism.** `find_free_reg` (`tools/gcc-2.7.2/local-alloc.c:2169-2247`)
+builds `used = fixed_reg_set | regs_live_at[birth..death) | ~reg_class_contents`
+and scans hard regs numerically (MIPS defines no `REG_ALLOC_ORDER`). For the
+mask-value quantity (birth 6, death 10) hard 2 is excluded because the call
+return `$v0` is still live over that range — the `move $a1,$v0` copy is
+scheduled after the mask `lbu`, exactly as in the target — so the scan takes
+hard 3. `global.c` `find_reg` then finds hard 3 in the address allocno's
+conflict row and seats it at hard 4.
+**Probe.** `tools/ra_solver/local_extract.py --suggest`, `tools/nrefs_census.py`,
+and the `.lreg` / `.greg` / `.sched` dumps from `tools/grinder/dump.ps1`, all on
+the vol3 body.
+**Result.** `blk=0 ord=0 reg1=74 birth=6 death=10 refs=4 got=3` and
+`blk=0 ord=1 reg1=80 birth=14 death=20 got=2` (the two BB0 locals do NOT
+overlap). `.greg`: `;; 75 conflicts: 72 75 78 79 83 84 88 89 2 3 29` — reg 75
+(the address) is the only allocno carrying a hard-3 conflict. `nrefs_census`:
+reg 75 is allocno ord 1 (nrefs 11, livelen 29, pri 11379) and is already the
+first allocno that wants hard 3.
+
+### H48.4 KILLED (instance) — s47's "the two BB0 local quantities overlap"
+**Statement.** s47 recorded that BB0's `p[8]` load (span 8–12) and the mask's QI
+load (span 10–14) overlap, and made de-overlapping them the live frontier. On
+the straight-line chassis they do not overlap at all, and hard 3 is still taken.
+**Mechanism.** The overlap was produced by the arms chassis, where sched1
+interleaved the `lw` between the mask's `lbu` and its `andi`. Straight-lining
+the mask removes the interleave; the spans become [6,10) and [14,20). The seat
+is unchanged, because the exclusion that matters is the call return in hard 2,
+not the other local.
+**Probe.** `local_extract.py --suggest` on vol3 and on tw_vol.
+**Result.** Both report `birth=6 death=10 got=3` and `birth=14 death=20 got=2`.
+The s47 frontier ("de-overlap the two BB0 locals and hard 3 falls free") is
+therefore void: they are already de-overlapped and hard 3 is still consumed.
+**kill_scope** instance. **measured_on** vol3 and tw_vol bodies on HEAD
+2026-09-05, one/two declared pointer objects, no FAKE construct present.
+
+### H48.5 KILLED (instance) — the bare-symbol route to a second address register
+**Statement.** Handing some or all of the flag blocks back to the bare symbol
+`D_80106A73` (so the address comes from a compiler temp rather than the declared
+pointer) does not produce a second `lui/addiu` base register.
+**Mechanism.** On this port a bare global access is a legitimate address in
+itself, so it lowers to `lui $at` + `%lo(sym)($at)` and never materialises a
+base register; where two such accesses sit in one extended basic block cse
+unifies them and the address materialisation disappears entirely.
+**Probe.** Eight bodies crossing {bare, pointer} x {block 0, block 1, blocks
+2/3} x {volatile, plain}.
+**Result.** str2 29@47, vol5 25@47, str3 28@48, vol6 27@47, str4 22@52,
+vol7 24@48, str5 29@47, vol8 15@49. vol8's block 0 reads
+`lui $v1 / lbu $v1,0($v1) / … / lui $at / sb $v1,0($at)` — the wrong addressing
+FORM, not merely the wrong register.
+**kill_scope** instance. **measured_on** straight-line chassis on HEAD
+2026-09-05, volatile and non-volatile variants, no FAKE construct present.
+
+### H48.6 KILLED (instance) — the BANNED two-pointer-object axis is not the closer
+**Statement.** Restoring a second declared pointer object for flag blocks 2/3
+on the straight-line chassis (measured diagnostically only, reverted
+immediately, never proposed as a candidate) does not reach the target: it
+measures 21 at 49, worse than the single-object body's 10.
+**Mechanism.** The two-object body reproduces the target's structure exactly,
+including the second `lui/addiu` pair emitted before the block-1 `sb` (which no
+single-object body can do), but `allocno_compare` (global.c:615) ranks the
+blocks-2/3 address (nrefs 6, livelen 16, pri 7500) ABOVE the blocks-0/1 address
+(nrefs 5, livelen 26, pri 3846), so the two hard registers come out exchanged
+relative to the target; and the blocks-0/1 address still carries the same hard-3
+conflict written by the same BB0 local-alloc decision as in the single-object
+body.
+**Probe.** tw_vol (volatile) and tw_str (plain), spliced, measured, reverted;
+`nrefs_census` on tw_vol.
+**Result.** tw_vol = 21 at 49 (5 lbu / 2 nop); tw_str = 21 at 49 (4 lbu /
+3 nop). Census: ord 1 reg 76 -> hard 3, ord 8 reg 75 -> hard 4; the target
+wants reg 75 at hard 3 and reg 76 at hard 4. Consequence for the ledger: a
+ruling-request to reopen the multi-handle ban would have been spent on a body
+that measures 21, so the ban is NOT what holds this function at 10.
+**kill_scope** instance. **measured_on** straight-line chassis on HEAD
+2026-09-05, two declared pointer objects, no FAKE construct present.
+
+## [s48] Writing block 0 as the plain straight-line statement pair `m = *q & 0xF8; *q = m;` instead of the s39-s47 `if (c0) { *q = m; } else { *q = m; }` EBB-break makes sched1 emit BB0 in the target's exact instruction order (lui/addiu, lbu, move $a1,$v0, andi 0xf8, sb, lw 0x20($a1), ..., andi 1, bnez).
+- mechanism: sched1 computes INSN_PRIORITY as the longest path to the end of a BASIC BLOCK. With the mask store inside BB0 the memory dependence chain lbu -> andi -> sb keeps the mask load the longest-path insn and the $v0 -> p copy sinks behind it; with the store moved into the arms that chain is cut and the copy outranks the lbu, which is what put the lw ahead of the lbu on the s2 chassis.
+- probe: str1.c (non-volatile) and vol3.c (volatile) spliced into src/code6cac_b.c; `sandbox func_80034F88 --disable all` plus mipsel objdump of tmp/sandbox/func_80034F88/code6cac_b.o.
+- result: str1 = score 10 at 49 insns, 4 lbu / 3 nop, block-0 order identical to asm/funcs/func_80034F88.s. vol3 = score 10 at 49 insns, 5 lbu / 2 nop, identical to the target instruction-for-instruction end to end except the $a0/$v1 seat exchange in blocks 0/1 (and the block-2 lui/addiu pair consequently landing after rather than before the block-1 sb). str1 replaces the s39-s47 chassis as candidate.c: same score, strictly closer shape.
+- verdict: CONFIRMED
+
+## [s48] s47's banked measurement that `extern volatile u8 D_80106A73;` costs +6 instructions (55/56 insns, score 19/21) was a property of the s32-typed value locals on that chassis, not of volatile: with u8-typed value and result locals the volatile body is 49 instructions at score 10.
+- mechanism: A volatile QI MEM cannot be folded into zero_extendqisi2 by combine, so an s32-typed value local leaves the QI->SI widening as its own `andi $x,$x,0xff` insn; that insn displaces the `ori` from the branch delay slot and forces an extra `j` out of each if/else. Three flag blocks x two insns = the six.
+- probe: vol1 (s32 value local), vol2 (u8 value + s32 result), vol3 (u8 value + u8 result), each with the file-scope declaration changed to `extern volatile u8 D_80106A73;` and `volatile u8 *q`.
+- result: vol1 = 19 at 55; vol2 = 12 at 49; vol3 = 10 at 49 with 5 lbu / 2 nop. volatile costs zero instructions on the straight-line chassis; its only effect is to stop cse.c store-forwarding the block-0 mask store into block 1's read, i.e. it restores exactly the reload the target emits at 80034FB4. The axis stays closed on its GATE (no volatile_extern_allowlist.txt grant for D_80106A73, no IRQ/MMIO writer in the census), so vol3 is banked as diagnostic evidence at memory/grind/func_80034F88/candidate_vol3_volatile_exact_order.c, not proposed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: straight-line-mask chassis on HEAD 2026-09-05, file-scope declaration changed to `extern volatile u8 D_80106A73;`, one declared pointer object, no FAKE construct present (fake_ablate reports nothing to ablate)
+
+## [s48] The blocks-0/1 address allocno is seated at hard 4 ($a0) rather than the target's hard 3 ($v1) because local-alloc has already given hard 3 to BB0's mask-value quantity, writing hard 3 into the address allocno's hard-reg conflict row before global-alloc runs.
+- mechanism: find_free_reg (tools/gcc-2.7.2/local-alloc.c:2169-2247) builds used = fixed_reg_set | regs_live_at[birth..death) | ~reg_class_contents and scans hard registers numerically because MIPS defines no REG_ALLOC_ORDER. For the mask-value quantity (birth 6, death 10, 4 refs) hard 2 is excluded, because the call return $v0 is still live over that range - the `move $a1,$v0` copy is scheduled after the mask lbu, exactly as in the target - so the scan takes hard 3. global.c find_reg then finds hard 3 in the address allocno's conflict row and seats the address at hard 4.
+- probe: tools/ra_solver/local_extract.py --suggest, tools/nrefs_census.py, and the .lreg/.greg/.sched dumps produced by tools/grinder/dump.ps1, all on the vol3 body.
+- result: local_extract: `blk=0 ord=0 reg1=74 birth=6 death=10 refs=4 got=3` and `blk=0 ord=1 reg1=80 birth=14 death=20 got=2`. .greg: `;; 75 conflicts: 72 75 78 79 83 84 88 89 2 3 29` - reg 75 (the address) is the ONLY allocno in the function carrying a hard-3 conflict. nrefs_census: reg 75 is allocno ord 1 (nrefs 11, livelen 29, pri 11379) and is already the first allocno that wants hard 3, so allocno ORDER is not the lever; the conflict row is.
+- verdict: CONFIRMED
+
+## [s48] s47's live frontier - that BB0's p[8] load and the mask's QI load overlap and that de-overlapping them frees hard 3 - does not hold on the straight-line chassis: the two BB0 local quantities are already disjoint ([6,10) and [14,20)) and hard 3 is still consumed.
+- mechanism: The overlap s47 measured was produced by the arms chassis, where sched1 interleaved the p[8] lw between the mask's lbu and its andi. Straight-lining the mask removes the interleave. The exclusion that actually decides the seat is the call return in hard 2 over the mask's own span, not a second local.
+- probe: tools/ra_solver/local_extract.py --suggest on the vol3 body and on the two-object tw_vol body.
+- result: Both report birth=6 death=10 got=3 for the mask value and birth=14 death=20 got=2 for the p[8] value - disjoint spans, unchanged seat. The s47 next-probe (sched_solver perturbation to de-overlap the two BB0 locals) is therefore void as written and should not be spent.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: straight-line-mask chassis on HEAD 2026-09-05, vol3 (one declared pointer object) and tw_vol (two declared pointer objects), no FAKE construct present
+
+## [s48] Handing some or all of the flag blocks back to the bare symbol D_80106A73, so that the address comes from a compiler temp rather than the declared pointer, does not produce a second lui/addiu base register on the straight-line chassis.
+- mechanism: On this port a bare global access is itself a legitimate address, so it lowers to `lui $at` plus `%lo(sym)($at)` and never materialises a base register; where two such accesses sit inside one cse extended basic block the addresses unify and the materialisation disappears entirely, shortening the function below 49 insns.
+- probe: Eight bodies crossing {bare, pointer} x {block 0, block 1, blocks 2/3} x {volatile, plain}: str2/vol5 (bare everywhere), str3/vol6 (pointer 0+1, bare 2+3), str4/vol7 (pointer block 0 only), str5/vol8 (bare 0+1, pointer 2+3).
+- result: str2 29@47, vol5 25@47, str3 28@48, vol6 27@47, str4 22@52, vol7 24@48, str5 29@47, vol8 15@49. vol8's block 0 reads `lui $v1 / lbu $v1,0($v1) / ... / lui $at / sb $v1,0($at)` - the wrong addressing FORM, not merely the wrong register. Re-audit of the s47 bare-symbol kill on the new chassis: still dead.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: straight-line-mask chassis on HEAD 2026-09-05, volatile and non-volatile variants, no FAKE construct present
+
+## [s48] Restoring a second declared pointer object for flag blocks 2/3 on the straight-line chassis - measured diagnostically only, reverted immediately, never proposed as a candidate - measures 21 at 49 insns, worse than the single-object body's 10, so the standing multi-handle ban is not what holds this function at floor 10.
+- mechanism: The two-object body reproduces the target's structure exactly, including the second lui/addiu pair emitted before the block-1 sb (which no single-object body can do, since one pseudo takes one hard register). But allocno_compare (global.c:615) ranks the blocks-2/3 address (nrefs 6, livelen 16, pri 7500) above the blocks-0/1 address (nrefs 5, livelen 26, pri 3846), so the two hard registers come out exchanged relative to the target; and the blocks-0/1 address still carries the same hard-3 conflict written by the same BB0 local-alloc decision as in the single-object body.
+- probe: tw_vol (volatile) and tw_str (plain) spliced, measured, immediately reverted; tools/nrefs_census.py on tw_vol.
+- result: tw_vol = 21 at 49 (5 lbu / 2 nop); tw_str = 21 at 49 (4 lbu / 3 nop). Census on tw_vol: ord 1 reg 76 -> hard 3, ord 8 reg 75 -> hard 4, while the target wants reg 75 at hard 3 and reg 76 at hard 4. Consequence for the ledger: a ruling-request to reopen the multi-handle axis would have been spent on a body measuring 21, so no such request was filed this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: straight-line-mask chassis on HEAD 2026-09-05, two declared pointer objects (banned construct, measured diagnostically and reverted, never proposed), no FAKE construct present
+
+## [s48] Hoisting `c0 = p[8] & 1;` above the block-0 mask on the straight-line chassis, so that a BB0 quantity spans the mask's read-modify-write and could take hard 3 ahead of it, measures 14 at 49 on both the plain and the volatile bodies.
+- mechanism: The intent was to give block_alloc a higher-ranked BB0 quantity covering insn range [6,10), so that regs_live_at would carry hard 3 across the mask value's span and push the mask value to hard 4, freeing hard 3 for the address allocno. Instead sched1 re-orders BB0 to issue the p[8] lw ahead of the mask lbu, which is the same order regression the s2 chassis had.
+- probe: x1.c (plain) and x2.c (volatile) - str1/vol3 with c0 hoisted above the mask and reused as flag block 1's condition.
+- result: x1 = 14 at 49, x2 = 14 at 49; both lose the target's block-0 order. Banked as rejected/s48-c0-hoisted-above-mask-straightline-score14-49insn.c and rejected/s48-volatile-c0-hoisted-above-mask-score14-49insn.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: straight-line-mask chassis on HEAD 2026-09-05, one declared pointer object, plain and volatile variants, no FAKE construct present

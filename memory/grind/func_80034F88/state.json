@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 47,
+ "session_count": 48,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -285,23 +285,29 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "First ordinary-C body to reach the target's exact instruction COUNT and MULTISET (49 insns, 5 lbu / 2 nop) by sharing one p[8]&1 between the mask's splitting conditional and flag block 1; the whole re"
+  },
+  {
+   "session": 48,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "Straight-lining the block-0 mask gives the target's exact instruction ORDER for free; with u8-typed value locals the volatile body is 49 insns / 5 lbu / 2 nop / score 10 (s47's '+6 cost' kill was the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the s2 chassis the address takes hard reg 3 (and the whole blocks-0/1 register disposition falls out) as soon as BB0's two block-local quantities stop overlapping, because both would then take hard reg 2 and local-alloc would never consume hard reg 3.",
-   "mechanism": "find_free_reg's exclusion set is regs_live_at over the quantity's span plus the class complement, scanned numerically (local-alloc.c:2169-2171, :2247). Non-overlapping local quantities in one block reuse the same hard register. The two BB0 locals overlap only because sched1 interleaves the p[8] lw between the mask's lbu and its andi; the target's block 0 finishes the mask (lbu, andi, sb) before issuing the lw, which is exactly the non-overlapping order.",
-   "next_probe": "Run tools/sched_solver on the s2 body with the target's block-0 order pinned, and perturb.py --atoms luid,luid_move, to enumerate the C-level orderings that make the mask's lbu chain outrank the $v0-to-p copy chain inside BB0 (currently 2 versus 4 by INSN_PRIORITY, because the mask's sb has been moved into the arms). Then spell the top vectors on s2.c and measure with tmp/grind/func_80034F88/s47/{run.ps1,cnt.sh}."
+   "hypothesis": "The entire remaining residual is one local-alloc decision: BB0's mask-value quantity (birth 6, death 10) must be seated at hard 4 instead of hard 3, which frees hard 3 for the blocks-0/1 address allocno and reproduces the target's whole block-0/1 register disposition.",
+   "mechanism": "find_free_reg (local-alloc.c:2169-2247) scans hard regs numerically (no REG_ALLOC_ORDER on MIPS) over used = fixed_reg_set | regs_live_at[6..10) | ~GR_REGS. Hard 2 is excluded by the live call return $v0. To reach hard 4, hard 3 must ALSO be in regs_live_at over [6,10) at local-alloc time - which at that point can only come from another BB0 quantity that block_alloc ranked ahead of the mask value and that was itself seated at hard 3 with a span covering [6,10).",
+   "next_probe": "Read block_alloc's qty ordering (qty_compare) in tools/gcc-2.7.2/local-alloc.c and enumerate what makes a BB0 quantity outrank the mask value; then spell, on the str1 chassis, C forms that create such a quantity WITHOUT re-ordering BB0 (x1/x2 failed because hoisting the p[8] read re-orders sched1). Candidates worth measuring: a value produced before the mask lbu and consumed after the mask sb that is NOT a memory read (so it carries no memory dependence into the sched1 chain), e.g. an arithmetic derivation of p that the copy loop later consumes. Validate each with local_extract --suggest (want `blk=0 ord=0 ... got=4`) before reading the score."
   },
   {
-   "hypothesis": "A body can keep the mask's sb inside BB0 for sched1 (restoring the lbu -> andi -> sb -> lw memory-dependence chain that gives the target its filled load-delay slot) while still denying cse the store record, if the store and the load are separated by an extended-basic-block boundary that later passes remove.",
-   "mechanism": "cse restarts with an empty hash table at each extended basic block; sched1 computes INSN_PRIORITY within a basic block only. The two passes see different block partitions, so a boundary that exists at cse time and is gone by sched1 time would satisfy both constraints at once. v6/s2 satisfy the cse constraint but lose the sched1 chain because the arms take the sb out of BB0 for good.",
-   "next_probe": "Read cse_end_of_basic_block (tools/gcc-2.7.2/cse.c:8008ff) and enumerate every condition that terminates an EBB, then check the pass order in tools/gcc-2.7.2/toplev.c to identify which of those boundaries is removed between cse and sched1 (jump/cse/loop/cse2/flow/combine/sched). Spell each surviving candidate on the s2 chassis and measure."
+   "hypothesis": "On the non-volatile straight-line chassis the single missing instruction is the block-1 reload, and the only remaining unexplored route to it is a store whose value cse cannot name at all - not an EBB break (which costs the sched1 order) and not volatile (which is gate-blocked).",
+   "mechanism": "cse.c records a MEM dest's value class unless canon_hash sets do_not_record (cse.c:7311-7340 / 1880-1990). s47 enumerated the reachable escapes and priced them; the straight-line chassis changes the price of every one of them, because it no longer has to pay for the arms.",
+   "next_probe": "Re-price s46's value-class break (`*(&D_80106A78 - 5)` style non-unifiable address, +2 insns on the arms chassis) on the str1 chassis, where the +2 may now be absorbed - it was measured only against a body that already carried the arms cost. Note it is a declaration pun and would be a ruling-request even if it measured 0; measure it as diagnosis of how much of the residual is the reload versus the seat."
   },
   {
-   "hypothesis": "The Judge constraints closing the multi-handle axis, and the standing LADDER EXHAUSTED recommendation, remain withdrawn: this session strengthens s46's refutation by producing the target's exact instruction count and multiset from a single declared pointer object with no FAKE construct.",
-   "mechanism": "Every closure argument rests on the premise that the target's blocks 0/1 need two pointer pseudos. s47's s2 body reaches 49 instructions with the target's multiset and byte-identical flag blocks 2/3 using ONE declared pointer object; the remaining difference is a local-alloc seat driven by a scheduling overlap, which is an ordinary-C lever with an exact model.",
-   "next_probe": "Do NOT file a foreclosure record. Keep the item active and spend the next modalities on the sched1 axis above; carry the s2 body, not candidate.c, as the working chassis (score 13 but correct multiset; candidate.c scores 10 with the reload cse'd away)."
+   "hypothesis": "If the block-0 seat is fixed, the single-object body will seat the address at hard 3 in ALL FOUR flag blocks, which matches the target in blocks 0/1 but breaks blocks 2/3 (the target uses $a0 there); the two-object body would then be needed, and it is banned.",
+   "mechanism": "One C pointer object is one pseudo and takes one hard register, but the target holds &D_80106A73 in $v1 across blocks 0/1 and in $a0 across blocks 2/3, with both live at .L80034FC8.",
+   "next_probe": "Before spending a ruling-request on the multi-handle ban, measure the seat fix on the two-object tw_vol/tw_str bodies FIRST (they are already at 21 with the seats exchanged): if the same BB0 lever also flips reg 75 to hard 3 there, tw_str is the body that reaches 0 and the ruling-request is worth filing with a measured score; if it does not, the ban remains irrelevant to the floor and the ladder should continue on the seat axis alone."
   }
  ],
  "judge_constraints": [
@@ -323,46 +329,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 29,
-   "statement": "Moving the `q = &D_80106A73;` re-assignment from the head of block 2 (and of block 3) into the preceding block, between the value select and the store, reproduces the target's join-block emission orde",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD; single `u8 *q` with three assignments, no FAKE-annotated construct present",
-   "predicate_cite": "",
-   "result": "KILLED. v3 = score 21 at 51 insns -- the set now sits after a branch join, cse no longer unifies it into the following b"
-  },
-  {
-   "session": 30,
-   "statement": "CD_sync's FAKE-annotated F1 combine-foldable chain-extender, assigned to this function's single pointer object q (no second pointer object, so outside the standing multi-handle ban), supplies the miss",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD (score 10, 49/49, rules_dropped 0), single u8 *q with three assignments; the chain-extender is the only added construct and no other FAKE-annotated construct is pr",
-   "predicate_cite": "",
-   "result": "All three placements score 14 at 49 build insns. The emitted function bodies are BIT-IDENTICAL to candidate.c: diff tmp/"
-  },
-  {
-   "session": 30,
-   "statement": "A do-while(0) wrap spanning TWO adjacent flag blocks -- a placement the 159-form bank never held -- reaches the block-1 join rotation that the already-banked single-block wraps could not.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD; single u8 *q with three assignments; the do-while(0) wrap is the only added construct, no other FAKE-annotated construct present",
-   "predicate_cite": "",
-   "result": "mask+block1 = score 12 at 50 build insns; block2+block3 = score 10 at 49 (an exact no-op, the region is already byte-exa"
-  },
-  {
-   "session": 30,
-   "statement": "m2c's inverted diamond (compute the positive value first, overwrite it in the negated arm), which the bank holds only on the plain-symbol chassis, restores block 1's missing lbu when crossed with the ",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD, single u8 *q with three assignments, no FAKE-annotated construct present",
-   "predicate_cite": "",
-   "result": "Both spellings score 21 at 45 build insns. The diamond COLLAPSES: four instructions are lost against the target's 49, be"
-  },
-  {
-   "session": 31,
-   "statement": "Block-local variable splits (a named intermediate for the mask value, a separate local for the flag word, or both) add pseudos that survive to register allocation and perturb the allocno set that seat",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD (score 10, 49/49, rules_dropped 0), single `u8 *q` with three assignments, no FAKE-annotated construct present",
-   "predicate_cite": "",
-   "result": "All three score 10 at 49 build insns and `diff base.s vN.s` is EMPTY. The .greg allocator input is character-identical t"
-  },
   {
    "session": 31,
    "statement": "Re-associating the mask so that its value IS block 1's value (dropping the C-level reload) changes the emitted stream.",
@@ -797,6 +763,46 @@
    "measured_on": "v6 and s2 chassis on HEAD 2026-09-05, single declared u8 *q (or none, for the bare-symbol bodies); no FAKE construct present",
    "predicate_cite": "",
    "result": "x1 = 25 at 49 (4 lbu, reload lost), x2 = 18 at 50, x3 = 29 at 53, w1 = 32 at 51, w2 = 14 at 52, w3 = 21 at 52, w4 = 28 a"
+  },
+  {
+   "session": 48,
+   "statement": "s47's banked measurement that `extern volatile u8 D_80106A73;` costs +6 instructions (55/56 insns, score 19/21) was a property of the s32-typed value locals on that chassis, not of volatile: with u8-t",
+   "kill_scope": "instance",
+   "measured_on": "straight-line-mask chassis on HEAD 2026-09-05, file-scope declaration changed to `extern volatile u8 D_80106A73;`, one declared pointer object, no FAKE construct present (fake_ablate reports nothing t",
+   "predicate_cite": "",
+   "result": "vol1 = 19 at 55; vol2 = 12 at 49; vol3 = 10 at 49 with 5 lbu / 2 nop. volatile costs zero instructions on the straight-l"
+  },
+  {
+   "session": 48,
+   "statement": "s47's live frontier - that BB0's p[8] load and the mask's QI load overlap and that de-overlapping them frees hard 3 - does not hold on the straight-line chassis: the two BB0 local quantities are alrea",
+   "kill_scope": "instance",
+   "measured_on": "straight-line-mask chassis on HEAD 2026-09-05, vol3 (one declared pointer object) and tw_vol (two declared pointer objects), no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Both report birth=6 death=10 got=3 for the mask value and birth=14 death=20 got=2 for the p[8] value - disjoint spans, u"
+  },
+  {
+   "session": 48,
+   "statement": "Handing some or all of the flag blocks back to the bare symbol D_80106A73, so that the address comes from a compiler temp rather than the declared pointer, does not produce a second lui/addiu base reg",
+   "kill_scope": "instance",
+   "measured_on": "straight-line-mask chassis on HEAD 2026-09-05, volatile and non-volatile variants, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "str2 29@47, vol5 25@47, str3 28@48, vol6 27@47, str4 22@52, vol7 24@48, str5 29@47, vol8 15@49. vol8's block 0 reads `lu"
+  },
+  {
+   "session": 48,
+   "statement": "Restoring a second declared pointer object for flag blocks 2/3 on the straight-line chassis - measured diagnostically only, reverted immediately, never proposed as a candidate - measures 21 at 49 insn",
+   "kill_scope": "instance",
+   "measured_on": "straight-line-mask chassis on HEAD 2026-09-05, two declared pointer objects (banned construct, measured diagnostically and reverted, never proposed), no FAKE construct present",
+   "predicate_cite": "",
+   "result": "tw_vol = 21 at 49 (5 lbu / 2 nop); tw_str = 21 at 49 (4 lbu / 3 nop). Census on tw_vol: ord 1 reg 76 -> hard 3, ord 8 re"
+  },
+  {
+   "session": 48,
+   "statement": "Hoisting `c0 = p[8] & 1;` above the block-0 mask on the straight-line chassis, so that a BB0 quantity spans the mask's read-modify-write and could take hard 3 ahead of it, measures 14 at 49 on both th",
+   "kill_scope": "instance",
+   "measured_on": "straight-line-mask chassis on HEAD 2026-09-05, one declared pointer object, plain and volatile variants, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "x1 = 14 at 49, x2 = 14 at 49; both lose the target's block-0 order. Banked as rejected/s48-c0-hoisted-above-mask-straigh"
   }
  ]
 }
