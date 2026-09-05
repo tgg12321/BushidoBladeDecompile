@@ -23041,3 +23041,134 @@ notes. (2) A toolchain finding that changes local-alloc's qty-number birth-order
 or `sched.c`'s LUID tiebreak for this block. (3) Ground-truth PsyQ 3.5 `bios.c` v1.86
 source for `CD_sync` surfacing (the twins `CD_ready` and `CD_datasync` are foreclosed on
 the same shared window, so one such find re-opens all three at once).
+
+## 2026-09-04 — OWNER RULING — `main`: the per-function maspsx prefill-label gate is a FIDELITY gate; build it (spends the 2026-09-04 borderline.md policy-question entry)
+
+**Provenance.** Owner (Trenton), 2026-09-04, in conversation, on the question logged by
+the same day's foreclosed-bucket re-evaluation (Ruling D) and `docs/grind/borderline.md`
+2026-09-04 `main` policy-question entry. The question was put in plain terms: *our C for
+main is already correct (Sony's own compiler turns that exact C into the original
+bytes); the 2-byte difference comes from a build tool — Sony's assembler had one small
+quirk our stand-in assembler (maspsx) does not imitate; we already have a precedent (the
+label-nop opt-in list, 2026-09-02); no other function benefits today. Is imitating
+Sony's assembler quirk for main a legitimate build-tool fidelity fix, or faking the
+output?* The owner chose **"Legitimate tool fix: build it."** In the same exchange the
+owner restated the standing posture (recorded in the harness memory
+`no-park-permanently`, restatement 2026-09-04): *"we will ultimately decompile
+everything, there won't be any 'permanent' foreclosure or kicking the can down the
+road. If we are stuck on some items that's fine but they ultimately need to be worked
+to completion, and I don't want to loosen our standards such that every decomp session
+just results in agents foreclosing items that they hit resistance on."* This record
+lands as a standalone `rules:` commit BEFORE the code that spends it
+([[ruling-record-lands-before-code]]) and passed a fresh layer-2 cheat-reviewer.
+
+**What is and is not decided.** This authorizes ONE new per-function maspsx gate list
+under `.claude/rules/maspsx-gate-lists.md` (classification: **fidelity**), the same
+mechanism and growth duty as `maspsx_label_nop_funcs.txt`, with `main` as its first and
+only entry. It does NOT change the C standard, the cheat catalog, the frozen family list,
+the default-FAIL review posture, the sandbox, or any gate; it does NOT pre-accept
+`main`'s candidate, which still passes every completion gate below.
+
+### The mechanism (plain terms first, then the pinned evidence)
+
+Sony's assembler (ASPSX) did the delay-slot filling for the original build. When it
+could fill a branch's delay slot with the instruction sitting at the branch's target
+label, it did so and pointed that branch one word past the label; a branch it could
+NOT fill kept pointing at the label and still executed that instruction on arrival.
+Our stand-in compiler does its own delay-slot filling (GCC's `reorg` pass) and, having
+proven the instruction redundant on the unfilled paths, also deletes the label in front
+of it and points the UNFILLED branches past it. Same program, two branch targets one
+word apart. No C spelling can move an assembler-placed label
+(memory/grind/main/evidence.md s2/s33: 7 escape hatches enumerated, each byte-visible
+or a forbidden family; the permuter is blind because `engine/score.py` masks branch
+targets by design).
+
+Evidence, unchanged from the borderline entry: the residual is exactly two
+branch-displacement words at 0x80017494 and 0x800174B4 (evidence.md:1467-1516,
+whole-EXE verified: with the candidate applied every other byte of the 606,208-byte
+executable matches); `sandbox --disable all` = 0, 189/189, zero rules, zero cheat
+constructs; mechanism pinned three ways (reorg.c:3433 -> redundant_insn ->
+reorg_redirect_jump; instrumented-cc1 DBRDBG trace tmp/grind/main/s2/dbr_trace.txt;
+cc1psx on the identical `ings.i` emits one label with all seven branches on it,
+tmp/grind/main/s2/main_psx.s). The cc1 output (tmp/grind/main/s2/ings.s:1761-1762,
+1946-1994) shows the shape: `li $5,0x1008` / `.L128:`; four branches filled with that
+`li` in their delay slots inside `.set noreorder` blocks, all targeting `.L128`; two
+reorder-mode (unfilled) branches also targeting `.L128` (lines 1970, 1982) where the
+target bytes point one word earlier.
+
+### The gate: `maspsx_prefill_label_funcs.txt` (`--prefill-label-funcs`)
+
+For each function named in the list, maspsx runs one pre-pass over that function's
+lines: for every local label `L` whose immediately preceding instruction `P` is
+verbatim the delay-slot fill of some branch to `L` (the fingerprint of a compiler-side
+fill that moved the label), every UNFILLED (reorder-mode) branch to `L` is retargeted
+to a fresh label emitted immediately before `P`. Nothing else changes: filled branches
+keep their targets and slots; no instruction is added, removed, or reordered; the new
+label emits no bytes. Prototyped against the banked cc1 output for src/ings.c: exactly
+two retargets, one new label, zero other diffs, and a no-op for every unlisted
+function.
+
+Why this is a fidelity gate and not a cheat (the `maspsx-gate-lists` tests):
+- **No C spelling exists** — probe-proven (above), and the cc1psx exhibit shows the
+  original toolchain produced the target from this C. This is evidence about the
+  ASSEMBLER's label placement, not a claim that "the toolchain is the variable"
+  ([[no-compiler-divergence]] forbids that framing; this record does not use it as a
+  reason to stop or to skip C work — the C work is finished).
+- **Narrow and semantically neutral** — the retargeted branch executes an instruction
+  the compiler itself proved redundant on that path (that is WHY reorg moved the
+  label), so program behaviour is identical; the original program executed it there.
+- **Oracle-enforced and per-function** — an entry only "works" if the target bytes
+  have the shape; a read-only census over target asm found 36 sites in 33 matched
+  functions where the target legitimately sits on the post-`P` label, so the gate is
+  opt-in per function and MUST NOT be globalized (same reason as label-nop).
+- **Transparent** — `engine/cheats.py` `MASPSX_GATE_LISTS` classifies it, `queue done`
+  reports the dependency in its payload, `check_completion_integrity.py` lists it,
+  `engine/oracle.py` staleness-watches the file, and net additions require the commit
+  tag `[infra-rule: maspsx-prefill-label]` with target-site evidence.
+
+Against (recorded so the audit trail carries both sides): the gate's selectivity comes
+from the opt-in list, not the pattern (the fill-dup precondition holds at 761 target
+sites); the class was declined on 2026-08-24 and affirmed on 2026-09-01/02; one
+proven beneficiary. The owner weighed this with the plain-terms framing in hand.
+
+### Consequences for `main` (execution, operator lane)
+
+1. Gate implemented and wired (maspsx pre-pass + CLI flag; `Makefile` MASPSX_FLAGS and
+   MASPSX_FLAGS_GP; `engine/buildconfig.py` mirror — [[buildconfig-mirror-drift-false-mismatch]];
+   `engine/cheats.py`; `tools/check_root_cleanliness.py`; `engine/oracle.py`;
+   `engine/dossier.py`; `tools/desync_audit.py`; `tools/naming_wave.py`;
+   `.claude/rules/maspsx-gate-lists.md` row). maspsx unit test + `engine test` green.
+   `verify-oracle --rebuild` green with `main` still INCLUDE_ASM (the gate keys on
+   `.ent main`, which an INCLUDE_ASM body never emits, so it is inert until C lands).
+2. `main`'s candidate (memory/grind/main/candidate.c, applied by
+   memory/grind/main/apply.py) goes through the MANUAL completion path
+   ([[review-discipline-before-commit]]): full build SHA1 == oracle, `sandbox --disable
+   all` = 0, a fresh default-FAIL layer-2 `cheat-reviewer` on the C body (the
+   FAKE-annotated chained accumulation was granted by owner ruling cff7f1f5 with four
+   binding conditions — the reviewer checks them), then `queue done main` (whose
+   payload must report `maspsx_gates` = the new list and the `park_overridden`
+   transparency field), `Match:` commit, ledger closed.
+3. **Ledger supersessions (mechanical, by `grindlib.py supersede-bans`, one needle per
+   entry).** BOTH of main's `banned_constructs` entries and two of its three
+   `judge_constraints` rest on the single factual premise that this candidate cannot
+   reach the oracle, which the gate falsifies by measurement (step 2 records the SHA1):
+   - `banned_constructs[0]` — "Submitting this diff for COMPLETED-C / queue-done commit
+     while state.json judge_constraints still lists: 'candidate form failed full-build
+     SHA1 on main (masked-0 register diff class) - reg-alloc gap is real'";
+   - `banned_constructs[1]` — the ledger's standing-frontier quote "candidate-ready is
+     impossible (true bytes 2 off; driver byte re-verify would discard it)" ...
+     "pre-decided RESOLVED BY STANDING RULING: REFUSED / OWNER";
+   - `judge_constraints[1]` ("candidate form failed full-build SHA1 on main ... reg-alloc
+     gap is real") and `judge_constraints[2]` (the layer-1 FAIL whose sole ground is
+     that same live SHA1 constraint).
+   All four are superseded BY THIS RULING (recorded as `superseded_by` in the ledger),
+   not by any merits re-argument — leaving either ban standing would reproduce the
+   func_8002D518 stale-tripwire deadlock ([[integration-handoff-self-serve]]).
+   `judge_constraints[0]` (chained accumulation frozen pending owner ruling) was
+   already discharged by cff7f1f5 and the annotation is present in the candidate. No
+   other ban or constraint on any function is touched.
+4. `docs/grind/borderline.md` 2026-09-04 `main` entry: disposition updated to
+   "spent by owner ruling 2026-09-04 (this record)".
+5. If the SHA1 does NOT match with the gate (i.e. the mechanism is wrong), nothing
+   lands: the gate list is left empty, `main` stays foreclosed, and the failure is
+   recorded here as a correction.

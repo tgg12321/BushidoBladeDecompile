@@ -1,6 +1,6 @@
 ---
 name: maspsx-gate-lists
-paths: ["maspsx_label_nop_funcs.txt", "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt", "multu_pad_funcs.txt", "engine/cheats.py"]
+paths: ["maspsx_label_nop_funcs.txt", "maspsx_prefill_label_funcs.txt", "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt", "multu_pad_funcs.txt", "engine/cheats.py"]
 description: "Adjudication (2026-07-13 audit) of the five per-function maspsx gate lists: label-nop / expand-lb / expand-dest are FIDELITY shims (no C spelling exists — probe-proven), multu / multu-pad are CHEAT-PATHWAY (a pure-C spelling exists; current entries vestigial/dormant). Engine + integrity checker + commit guard now track them; growth requires the [infra-rule] tag."
 metadata:
   type: rule
@@ -25,6 +25,7 @@ based adjudication and the enforcement that now exists.
 | List | Class | Evidence |
 |---|---|---|
 | `maspsx_label_nop_funcs.txt` | **fidelity** (deferred-global) | ASPSX emitted the load-delay nop across merge labels; upstream maspsx `is_label()` matches `$L` but our cc1 fork emits `.L`, so the nop is silently dropped ([[maspsx-label-nop-gate]], [[maspsx-is-label-dot-prefix]]). No C spelling can emit an assembler hazard nop. Per-function scoping exists ONLY to avoid shifting the indices under index-anchored regfix rules — see "endgame" below. |
+| `maspsx_prefill_label_funcs.txt` | **fidelity** (assembler label placement; owner ruling 2026-09-04) | ASPSX "retarget iff filled": it filled a branch's delay slot with the instruction at the target label and pointed THAT branch one word past it; an unfilled branch kept pointing at the label. Our cc1's reorg does the filling itself and, having proven the instruction redundant on the unfilled paths, deletes the pre-instruction label and retargets the unfilled branches too — two branch words differ, no C spelling can move an assembler label (main: 7 escape hatches probed, permuter blind by design; cc1psx on the identical `ings.i` keeps the single label). The gate re-emits the label before P for opted-in functions only: an unfilled reorder-mode branch to L whose preceding instruction P is verbatim a filled branch's delay slot is retargeted to a fresh `L_pf` label before P. No instruction added/removed/reordered; the label emits no bytes. Per-function because a read-only census found 36 target sites in 33 matched functions that legitimately sit on the post-P label — never globalize. Growth tag: `[infra-rule: maspsx-prefill-label]` + target-site evidence. Record: decisions.md 2026-09-04 OWNER RULING (main). |
 | `expand_lb_funcs.txt` | **fidelity** (unmodeled context) | The target's adjacent `lbu; sll 24; sra 24` (e.g. func_8003047C @ 0x800304AC) is UNREACHABLE from any C in this fork: a 4-spelling probe (2026-07-13, tmp/lb_probe.c — explicit shifts, (s8) cast, plain s8 load, named-temp shifts) all fold to `lb` in combine. The Makefile documents the expansion as ASPSX behavior "in certain contexts" (Makefile:106-108); the per-site list encodes which sites the original expanded. |
 | `expand_dest_funcs.txt` | **fidelity** (assembler-internal) | Which scratch register ($at vs $rdest) the assembler uses to expand a macro load is not controllable from C at all. The list models an ASPSX-internal choice our maspsx doesn't fully capture. |
 | `multu_funcs.txt` | **cheat-pathway; current entries VESTIGIAL** | `mult`→`multu` IS reachable from C (unsigned operand types emit `multu` naturally) — gating a C function through this list instead of fixing the types is a cheat by config. The 2 current entries (func_8007F87C, func_8007FA1C) are DEAD: both are now whole-body canonical asm writing `multu` literally, and glabel bodies never emit `.ent`, so maspsx `current_func` never matches them. |
@@ -61,6 +62,7 @@ gate can inject arbitrary bytes.
 
 label-nop (fidelity): spu_DmaTransfer, cdrom_DmaToRam, gnd_get_fog,
 AllocRobRmd, func_80088740 — COMPLETED-C stands.
+prefill-label (fidelity): main — first and only entry (owner ruling 2026-09-04).
 expand-lb (fidelity): func_8003047C — COMPLETED-C stands.
 expand-dest: func_8007CE0C — in queue (its other debt); the gate entry is
 fidelity and may remain when it completes.
