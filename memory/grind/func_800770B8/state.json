@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 28,
- "current_modality": "forensics",
+ "session_count": 29,
+ "current_modality": "object-model",
  "floor_history": [
   {
    "session": 1,
@@ -171,23 +171,29 @@
    "floor": 5,
    "modality": "forensics",
    "headline": "Forensics falsified s26's RTL fact and s27's LICM attribution, named the exact combine_regs/sched.c decisions, and took the flipped-cursor family from 25 to score 7 with the whole class-C block byte-e"
+  },
+  {
+   "session": 29,
+   "floor": 5,
+   "modality": "object-model",
+   "headline": "OBJECT MODEL audited: three TU declarations are wrong (D_8009BCE4 u8[20], D_8009BD20 u8[2][2] pair table, D_800A35D0 s16[2][2]) and correcting all three is byte-neutral (5/175, whole-TU .text identica"
   }
  ],
  "frontier": [
   {
    "hypothesis": "h3's remaining five rows are only the S-before-C emission order, so a body that keeps the target's A,D,C,S order while still producing a quantity of priority above 3.1428 that overlaps [28,56] and dies before 48 would land at score 2 - the two baseline rows 35/36 alone.",
-   "mechanism": "qty_compare_1 = floor_log2(refs)*refs/(death-birth), local-alloc.c:1660-1683. With the S store last its address temp never becomes a block-local quantity at all (measured: no [44,46] entry in k1's table), and the only candidate left in that window is pc at 6 refs over [36,40] = 3.0. The gap to close is one step: pc needs refs 8 at span 4 or less (3*8/4 = 6.0), or span 2 at refs 4 (4.0), or the chain's span must reach 30 (4*22/30 = 2.93 < 3.0).",
-   "next_probe": "On h3's chassis with the store order restored to A,D,C,S, enumerate ordinary-C spellings that shorten pc's interval or lengthen the chain's by one slot: (a) compute the C pointer immediately before its first store with the D group's second store in between, so pc's birth moves from 36 to 38 and its span drops to 2; (b) give the chain root's sll an earlier first consumer by naming t0*4 where the D group already consumes it; (c) attack from the reload side instead - a quantity of priority above 3.1428 seated at $2 anywhere in [28,48). Read s28/*.qty for each variant BEFORE scoring and accept only those whose block-1 table shows a quantity above 3.1428 overlapping [28,56] and dying before 48."
+   "mechanism": "qty_compare_1 = floor_log2(refs)*refs/(death-birth), local-alloc.c:1660-1683. With the S store last its address temp never becomes a block-local quantity, and the only candidate left in that window is pc at 6 refs over [36,40] = 3.0. The gap is one step: pc needs refs 8 at span 4 or less, or span 2 at refs 4, or the chain's span must reach 30.",
+   "next_probe": "On h3's chassis with the store order restored to A,D,C,S, enumerate ordinary-C spellings that shorten pc's interval or lengthen the chain's by one slot: compute the C pointer immediately before its first store with the D group's second store in between; give the chain root's sll an earlier first consumer by naming t0*4 where the D group already consumes it; or seat a quantity of priority above 3.1428 at $2 anywhere in [28,48). Read the .qty table for each variant BEFORE scoring. Use the object-model-corrected declarations (candidate_objmodel_ALL2.c + patch) as the base - they are byte-neutral and remove every flagged declaration pun."
   },
   {
-   "hypothesis": "The two baseline rows 35/36 (ours sw $zero,48($s1) / sh $zero,52($s1) vs target sw $zero,0x30($v0) / sh $zero,0x34($v0)) are the last residual on both the floor and h3, and they are a store-base spelling question independent of everything class C.",
-   "mechanism": "The target addresses the two prologue clear stores through the freshly returned pointer in $v0 while our body addresses them through the saved $s1 copy; the value is the same object (D_800A36A0 is assigned from it two insns earlier), so this is a C-level question of which name the stores are written through, not an allocation question.",
-   "next_probe": "In the block that assigns p_old / D_800A36A0, enumerate the truthful spellings of the two clear stores - through the func_8006E49C return value directly, through p_old, through D_800A36A0, and with the D_800A36A0 assignment moved after the stores - on BOTH the floor body F and h3. Any spelling that fixes rows 35/36 on F drops the floor to 3 and on h3 drops it to 5; combined with the frontier item above it is the whole function."
+   "hypothesis": "The two baseline rows 35/36 (ours sw $zero,48($s1) / sh $zero,52($s1) vs target sw $zero,0x30($v0) / sh $zero,0x34($v0)) are a store-base spelling question independent of everything class C.",
+   "mechanism": "The target addresses the two prologue clear stores through the freshly returned pointer in $v0 while our body addresses them through the saved $s1 copy; the value is the same object (D_800A36A0 is assigned from it two insns earlier), so this is a C-level question of which name the stores are written through.",
+   "next_probe": "In the block that assigns p_old / D_800A36A0, enumerate the truthful spellings of the two clear stores - through the func_8006E49C return value directly, through p_old, through D_800A36A0, and with the D_800A36A0 assignment moved after the stores - on BOTH the floor body F and h3. Any spelling that fixes rows 35/36 on F drops the floor to 3."
   },
   {
-   "hypothesis": "The sched1 dependency finding is a general lever on this function: which store groups share the ptr local decides where sched1 may place the D-group symbol load, and therefore the entire store-window geometry.",
-   "mechanism": "sched_analyze records REG_DEP_OUTPUT / REG_DEP_ANTI on every reuse of the same pseudo, so a group that reads ptr before the symbol load is written into it pins that load after the group's stores; a group given its own local removes those edges and the load floats to the top of the block. Measured directly: F's symbol-load insn carries six dependency edges, e6's carries none.",
-   "next_probe": "Enumerate the eight assignments of {A, D, C, S} to {ptr, own local} systematically, dump the symbol-load insn's dependency list from the .lreg for each (s28/lreg.py already does this in one cc1 run), and tabulate which combinations keep the load pinned after the A stores. Only combinations that keep the load pinned AND put the C pair in its own local can reach h3's seats without e6's 16 rows of displacement - that table has never been enumerated."
+   "hypothesis": "Which store groups share the ptr local decides where sched1 may place the D-group symbol load, and therefore the entire store-window geometry.",
+   "mechanism": "sched_analyze records REG_DEP_OUTPUT / REG_DEP_ANTI on every reuse of the same pseudo; a group that reads ptr before the symbol load is written into it pins that load after the group's stores; a group given its own local removes those edges and the load floats to the top of the block.",
+   "next_probe": "Enumerate the eight assignments of {A, D, C, S} to {ptr, own local}, dump the symbol-load insn's dependency list from the .lreg for each (s28/lreg.py), and tabulate which combinations keep the load pinned after the A stores while putting the C pair in its own local. Note the s29 C3 result (a fresh row-pointer local for the D group = 35) as one cell of that table."
   }
  ],
  "judge_constraints": [
@@ -377,6 +383,39 @@
    "measured_on": "HEAD 08b2924a chassis, empty do-while(0) prologue fence present, 175/175 insns in both builds",
    "predicate_cite": "",
    "result": "m1 = 29/175, the seats revert. With the C pair on the shared ptr local that pseudo has three deaths, so local-alloc.c:47"
+  },
+  {
+   "session": 29,
+   "statement": "Declaring D_8009BCE4 as the census's 20-byte table (extern u8 D_8009BCE4[20]) and subscripting it directly (D_8009BCE4[idx]) changes func_800770B8's bytes on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD dcd79965 chassis, candidate.c floor body applied, empty do-while(0) prologue fence present, 175/175 (A1) and 172/175 (A2)",
+   "predicate_cite": "",
+   "result": "KILLED - 5/175, .text byte-identical to the floor. The 2-D u8[2][10] / [t0][a2] shape (A2) is 31/172 because the s16 idx"
+  },
+  {
+   "session": 29,
+   "statement": "Declaring D_8009BD20/21 as the pair table extern u8 D_8009BD20[2][2] (func_80074488 reads both bytes with one x*2 index) and reading D_8009BD20[x][1] changes func_800770B8's bytes on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD dcd79965 chassis, floor body, fence present, 175/175",
+   "predicate_cite": "",
+   "result": "KILLED - 5/175; the only object difference is the HI16/LO16 relocation pair naming D_8009BD20 with in-place addend 1, id"
+  },
+  {
+   "session": 29,
+   "statement": "Declaring D_800A35D0 as the per-player pair extern s16 D_800A35D0[2][2] and storing it through a direct subscript (D_800A35D0[t0][1] = 0; D_800A35D0[t0][0] = 0; either order) reproduces the target's r",
+   "kill_scope": "instance",
+   "measured_on": "HEAD dcd79965 chassis, floor body, fence present, 176/175 (C1, C1b), 175/175 (C2)",
+   "predicate_cite": "",
+   "result": "KILLED - 13/176 in both store orders (rows 51-56 are two 3-insn macro stores). The declaration alone with the byte-point"
+  },
+  {
+   "session": 29,
+   "statement": "With D_800A35D0 declared s16[2][2], the row-decay pointer ptr = (u8 *)D_800A35D0[t0] (C1c) or a fresh row-pointer local s16 *pd = D_800A35D0[t0] (C3) keeps the target's rows 49-53 on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD dcd79965 chassis, floor body, fence present, 175/175 both",
+   "predicate_cite": "",
+   "result": "KILLED - C1c 10/175, C3 35/175."
   }
- ]
+ ],
+ "object_model_audited": 29
 }

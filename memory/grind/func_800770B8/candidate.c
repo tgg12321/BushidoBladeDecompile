@@ -1,3 +1,24 @@
+/* s29 UPDATE (2026-09-05, object-model).  BODY UNCHANGED - still the honest floor.
+ * Re-measured live on the HEAD dcd79965 chassis: sandbox func_800770B8 --disable all =
+ * score 5, build_insns 175, target_insns 175.  fake_ablate: one FAKE unit (the prologue
+ * fence), keep-all 5 / drop-1 10.
+ *
+ * THE OBJECT MODEL IS AUDITED AND IS NOT THE RESIDUAL.  Every global this function touches
+ * was checked declared-shape vs evidence (census, sibling asm addressing, this function's
+ * index arithmetic).  Three declarations are wrong at the TU level (D_8009BCE4 is a u8[20]
+ * table, D_8009BD20/21 is a u8[2][2] pair table, D_800A35D0 is an s16[2][2] per-player
+ * pair) and correcting all three is BYTE-NEUTRAL: 5/175, whole-TU .text identical.  The
+ * corrected form lives in candidate_objmodel_ALL2.c + s29-objmodel-ALL2-declaration-
+ * edits.patch; this file keeps the standalone-compiling body so inherited apply scripts
+ * still work.  The five residual rows (35/36 class B, 62-64 class C) contain no symbol,
+ * and every symbol-bearing target row is already byte-exact.  Subscript spellings of the
+ * D_800A35D0 pair are worse for a NEWLY-READ reason: a direct subscript of a global array
+ * with a register index is a legitimate (plus reg (const (plus sym k))) MIPS address in GCC
+ * 2.7.2 and is macro-expanded per store (lui $at/addu/sh), not LICM-hoisted - s10/s12's
+ * attribution only holds for spellings that give the symbol its own pseudo.
+ * Detail: evidence.md [s29] OBJECT MODEL (per-symbol verdicts + premises P1-P5),
+ * hypotheses.md [s29] H1-H6.
+ */
 /* s25 UPDATE (2026-09-05, synthesis).  BODY UNCHANGED - still the honest floor.
  * Re-measured live this session on the current chassis (HEAD 35957733):
  * `sandbox func_800770B8 --disable all` = score 5, build_insns 175, target_insns 175.

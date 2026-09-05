@@ -2583,3 +2583,81 @@ KILL SCOPE: instance.  MEASURED ON: HEAD 08b2924a chassis, prologue fence presen
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 08b2924a chassis, empty do-while(0) prologue fence present, 175/175 insns in both builds
+
+## s29 (2026-09-05, object-model)
+
+- [s29] H1 statement: The brief's DECLARATION PUNS at candidate.c 348/350 (`(&D_8009BCE4)[idx]` on a scalar-declared u8) hide a shape residual - declaring the census's 20-byte table `extern u8 D_8009BCE4[20];` and subscripting it directly changes this function's bytes.
+  mechanism: address materialisation of a global array subscript vs the address-of-scalar cast.
+  probe: s29 A1 (TU-wide declaration edit + `D_8009BCE4[idx]`), sandbox + objdump -dr whole-TU comparison against F.
+  result: KILLED (instance) - 5 / 175, .text byte-identical to F. The corrected declaration is free and is carried in candidate_objmodel_ALL2.c. The 2-D `u8[2][10]` / `[t0][a2]` shape (A2) is 31 / 172 - the idx that `1 << idx` needs stops being materialised.
+  measured_on: HEAD dcd79965 chassis, floor body with the empty do-while(0) prologue fence present, 175/175 (A1) and 172/175 (A2).
+
+- [s29] H2 statement: D_8009BD21 is the [x][1] byte of a `u8 D_8009BD20[2][2]` pair table (func_80074488 reads BD20/BD21 with one x*2 index; func_800747D8 materialises %lo(D_8009BD20) as a base) and declaring it so changes this function's bytes.
+  mechanism: symbol+addend relocation spelling.
+  probe: s29 B1, sandbox + objdump -dr.
+  result: KILLED (instance) - 5 / 175; the only difference is R_MIPS_HI16/LO16 `D_8009BD20` addend 1 vs `D_8009BD21` addend 0, identical linked bytes. Free; carried in candidate_objmodel_ALL2.c.
+  measured_on: HEAD dcd79965 chassis, floor body, fence present, 175/175.
+
+- [s29] H3 statement: D_800A35D0 declared as the per-player pair `s16 D_800A35D0[2][2]` and stored through a direct subscript (`D_800A35D0[t0][1] = 0; D_800A35D0[t0][0] = 0;`) reproduces the target's rows 49-53 (lui/addiu/addu once, two sh).
+  mechanism: expected: same address as the pointer walk. Actual (read from tmp/grind/func_800770B8/s29/dumps_C1/text1b.loop insns 143/155): the subscript's address is (plus reg (const (plus sym 2))) - a legitimate MIPS address in GCC 2.7.2 - so the symbol is never given a pseudo and each store is assembler-macro-expanded to lui $at / addu $at / sh (3 insns each, rows 51-56).
+  probe: s29 C1 and C1b (both store orders), sandbox + fresh dump.ps1 + loop_movables.
+  result: KILLED (instance) - 13 / 176 both orders. loop_movables lists no D_800A35D0 movable, so this is NOT s10/s12's LICM mechanism; the symbol-then-add shape needs the symbol in its own register, i.e. the byte-pointer walk. The declaration alone, with `ptr = (u8 *)D_800A35D0;` decay (C2), is 5 / 175 byte-identical to F, func_80075670's respelled argument included.
+  measured_on: HEAD dcd79965 chassis, floor body, fence present, 176/175 (C1, C1b) and 175/175 (C2).
+
+- [s29] H4 statement: the row-decay pointer `ptr = (u8 *)D_800A35D0[t0];` (C1c) or a fresh row-pointer local `s16 *pd = D_800A35D0[t0];` (C3) keeps rows 49-53 while carrying the corrected declaration.
+  mechanism: C1c gives the symbol its own invariant pseudo - loop.c move_movables hoists it into the preheader ($t4, row 51 `addu $v0,$v1,$t4`), the s12 hoist. C3 adds a second pointer local to the outer-loop body and changes the sched1 dependency geometry of the store window (s28).
+  probe: s29 C1c / C3, sandbox + rows.py.
+  result: KILLED (instance) - C1c 10 / 175, C3 35 / 175.
+  measured_on: HEAD dcd79965 chassis, floor body, fence present, 175/175 both.
+
+- [s29] H5 statement: (kill re-audit) the prologue fence is still the only FAKE unit in the floor body and still load-bearing on this chassis.
+  probe: tools/fake_ablate.py --candidate candidate.c.
+  result: CONFIRMED - keep-all 5 / drop-1 10, one unit, same as s25/s28.
+
+- [s29] H6 statement: after the object-model audit the residual five rows are still class B (35/36) and class C (62-64), and no symbol-bearing row is among them.
+  probe: ALL2 (every declaration corrected) row diff = F's row diff.
+  result: CONFIRMED - the floor argument's premises are recorded in evidence.md [s29] OBJECT MODEL (P1-P5); the object model is not the residual, the s28 frontier stands unchanged.
+
+## [s29] Declaring D_8009BCE4 as the census's 20-byte table (extern u8 D_8009BCE4[20]) and subscripting it directly (D_8009BCE4[idx]) changes func_800770B8's bytes on this chassis.
+- mechanism: address materialisation of a global array subscript vs the address-of-scalar cast
+- probe: s29 A1: TU-wide declaration edit + direct subscript; sandbox + objdump -dr whole-TU comparison against the floor object (tmp/grind/func_800770B8/s29/sweep.log, cmp.log)
+- result: KILLED - 5/175, .text byte-identical to the floor. The 2-D u8[2][10] / [t0][a2] shape (A2) is 31/172 because the s16 idx the 1<<idx mask needs stops being materialised.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD dcd79965 chassis, candidate.c floor body applied, empty do-while(0) prologue fence present, 175/175 (A1) and 172/175 (A2)
+
+## [s29] Declaring D_8009BD20/21 as the pair table extern u8 D_8009BD20[2][2] (func_80074488 reads both bytes with one x*2 index) and reading D_8009BD20[x][1] changes func_800770B8's bytes on this chassis.
+- mechanism: symbol+addend relocation spelling (D_8009BD20+1 vs D_8009BD21+0)
+- probe: s29 B1; sandbox + objdump -dr
+- result: KILLED - 5/175; the only object difference is the HI16/LO16 relocation pair naming D_8009BD20 with in-place addend 1, identical linked bytes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD dcd79965 chassis, floor body, fence present, 175/175
+
+## [s29] Declaring D_800A35D0 as the per-player pair extern s16 D_800A35D0[2][2] and storing it through a direct subscript (D_800A35D0[t0][1] = 0; D_800A35D0[t0][0] = 0; either order) reproduces the target's rows 49-53 on this chassis.
+- mechanism: read from the fresh C1 .loop dump (s29/dumps_C1/text1b.loop insns 143/155): the subscript address is (plus reg (const (plus sym 2))), a legitimate MIPS address in GCC 2.7.2, so the symbol never gets a pseudo and each store is assembler-macro-expanded to lui $at / addu $at / sh; loop_movables lists no D_800A35D0 movable, so this is NOT the s10/s12 LICM mechanism
+- probe: s29 C1 and C1b; sandbox + dump.ps1 + tools/loop_movables.py + rows.py (s29/C1_mov_rows.log)
+- result: KILLED - 13/176 in both store orders (rows 51-56 are two 3-insn macro stores). The declaration alone with the byte-pointer walk kept (ptr = (u8 *)D_800A35D0; C2) is 5/175 and whole-TU byte-identical, func_80075670's respelled argument included.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD dcd79965 chassis, floor body, fence present, 176/175 (C1, C1b), 175/175 (C2)
+
+## [s29] With D_800A35D0 declared s16[2][2], the row-decay pointer ptr = (u8 *)D_800A35D0[t0] (C1c) or a fresh row-pointer local s16 *pd = D_800A35D0[t0] (C3) keeps the target's rows 49-53 on this chassis.
+- mechanism: C1c gives the symbol its own invariant pseudo and loop.c move_movables hoists it into the outer-loop preheader ($t4, row 51 addu $v0,$v1,$t4 - the s12 hoist); C3 adds a second pointer local to the loop body and changes the sched1 dependency geometry of the store window (s28)
+- probe: s29 C1c / C3; sandbox + rows.py
+- result: KILLED - C1c 10/175, C3 35/175.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD dcd79965 chassis, floor body, fence present, 175/175 both
+
+## [s29] Kill re-audit: the prologue do-while(0) fence is still the only FAKE unit in the floor body and is still load-bearing on this chassis.
+- mechanism: sched2 region bounding by the loop notes (candidate.c FAKE annotation)
+- probe: tools/fake_ablate.py --func func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c (s29/fake_ablate_F.log)
+- result: CONFIRMED - one unit, keep-all 5 / drop-1 10, same as s25/s28; no FAKE carrier occupies a class-B or class-C pseudo, so the s26-s28 instance kills stand.
+- verdict: CONFIRMED
+
+## [s29] After correcting every global's declaration (ALL2 = A1 + B1 + C2), the residual is still exactly rows 35/36 (class B) and 62-64 (class C), and no symbol-bearing row is among them.
+- mechanism: every symbol-bearing target row (12-13, 49-53, 98-113, 170-172) is already byte-exact in the floor; class C is a local-alloc operand-1 tie and class B a store-base-name question, neither a function of declarations
+- probe: s29 ALL2 sandbox 5/175 + whole-TU objdump comparison; premises P1-P5 recorded in evidence.md [s29] OBJECT MODEL
+- result: CONFIRMED - the object model is not the residual; the s28 frontier is carried unchanged.
+- verdict: CONFIRMED
