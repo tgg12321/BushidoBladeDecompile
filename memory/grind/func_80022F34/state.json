@@ -1,8 +1,8 @@
 {
  "func": "func_80022F34",
  "file": "code6cac",
- "session_count": 9,
- "current_modality": "escalation",
+ "session_count": 10,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -63,24 +63,45 @@
    "floor": 11,
    "modality": "escalation",
    "headline": "s9 killed the last live frontier at compiler-source level (break_out_memory_refs force_regs every SYMBOL_REF into a pseudo at expand); frontier now empty, both endgame-lock gates FAIL, disposition fil"
+  },
+  {
+   "session": 10,
+   "floor": 0,
+   "modality": "rederive",
+   "headline": "SOLVED in pure C and re-proven on clean HEAD this session: sandbox --disable all = 0 (70/70 insns, rules_dropped 0, zero cheat-asm) and full-tree verify-oracle SHA1 == oracle; blocked ONLY by two out-"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C spelling exists in which expand_expr builds the D_801027BC access address directly as `(mem (plus (reg) (symbol_ref)))` rather than forcing the symbol into a pseudo, giving per-access bytes with no combine fold, no orphaned REG_DEAD note and no phantom slot.",
-   "mechanism": "GO_IF_LEGITIMATE_ADDRESS (tools/gcc-2.7.2/config/mips/mips.h:2325-2349) accepts CONSTANT_ADDRESS + REG under the 'pretend the MIPS supports it' clause, so such a mem is valid at expand time; it is only because expand forces `(set (reg) (symbol_ref))` that combine has to fold the constant back in later, and that fold is what deletes the pseudo's definition and orphans the note. Bypassing the pseudo bypasses the entire mechanism proven in s8.",
-   "next_probe": "Read tools/gcc-2.7.2/expr.c's expand_expr INDIRECT_REF / ARRAY_REF / PLUS_EXPR EXPAND_SUM paths to find the condition under which a symbolic ADDR_EXPR operand is returned as an unforced PLUS rtx; then spell candidate forms and check the `.rtl` dump for the ABSENCE of `(set (reg) (symbol_ref \"D_801027BC\"))` BEFORE spending any sandbox run. Note the disposition has already been filed - only pursue this if the owner returns the item to active."
+   "hypothesis": "Landing the fix needs no further research \u2014 only the two surface grants. Once include/code6cac.h + src/code6cac.c are in a per-function scope_allow line and func_80022F34 is appended to maspsx_label_nop_funcs.txt, the next session applies the four banked edits verbatim and submits candidate-ready.",
+   "mechanism": ".claude/rules/integration-handoff-self-serve.md: the driver widens scope via grindlib.py add-scope-allow on a Judge ESCALATE with escalate_kind=integration-handoff and scope_paths=[\"include/code6cac.h\", \"src/code6cac.c\"]; the maspsx fidelity-gate lists are on that grant's permanent denylist, so that one line is an operator hand-apply.",
+   "next_probe": "Apply tmp/grind/func_80022F34/s10/HANDOFF-header.diff and HANDOFF-maspsx-label-nop.diff, replace src/code6cac.c:2467 with the memory/grind/func_80022F34/candidate.c body, re-run sandbox --disable all (expect 0) and verify-oracle (expect SHA1 == oracle), then submit candidate-ready with the existing self_vet.md."
   },
   {
-   "hypothesis": "Nothing else remains: the per-access fold class and the shared-la class are both closed at mechanism level, and every sanctioned modality is measured dead.",
-   "mechanism": "Fold requires a deletable single-use address pseudo; a note anchor requires a second reference to that same pseudo. Mutually exclusive. A loop always supplies the CODE_LABEL that triggers the USE-at-label fallback (vDIAG/vDIAG2).",
-   "next_probe": "Do NOT re-run: ra_solver/sched_solver (s7 PRE-RA FORECLOSED), permuter (s4/s5, three chassis, ~48k iters), structural placement or control boundaries (s2/s3), switch-label elimination (s7), fold-anchor spellings or temp-ordering/naming variants (s6/s8). Any future session that re-opens this function should start from the expand-path frontier above, not from a new spelling."
+   "hypothesis": "Other queue functions plateauing on a phantom frame slot or an unexplained address pseudo carry the same object-model defect: a symbol indexed with a computed register in the target but declared as a scalar in include/*.h.",
+   "mechanism": "Identical chain: scalar decl forces a per-use pointer pun, the pun builds a symbol-bearing PLUS tree, break_out_memory_refs (explow.c:274) force_regs the SYMBOL_REF, combine folds and orphans the REG_DEAD note, distribute_notes (combine.c:10836) takes the CODE_LABEL fallback, reload homes the pseudo to a stack slot.",
+   "next_probe": "For any function whose dispatch brief prints an INDEXED-ACCESS or DECLARATION-PUNS signal and whose floor is dominated by frame-offset diffs, correct the declaration to an array (with the element type sized from the target's stride, 2-D when the stride exceeds the element width) BEFORE any codegen lever, and re-measure."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Land edits 1/2/4 (header array decls + candidate.c body) under the granted scope; the honest floor is 1 until an operator appends func_80022F34 to maspsx_label_nop_funcs.txt (denylisted for add-scope-allow) \u2014 do NOT stage that file, do not respell around it, and do not treat floor 1 as a plateau needing a new modality.",
+  "integration-handoff EXECUTED (pipeline, 2026-09-05): scope grant: func_80022F34 include/code6cac.h src/code6cac.c. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+ ],
  "origin": "queue",
  "created": "2026-07-23T18:38:12.205527+00:00",
  "exhaustion_base": 9,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 11 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.731591+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.731591+00:00",
+ "object_model_audited": 10,
+ "kills": [
+  {
+   "session": 10,
+   "statement": "A grind session can stage the whole remedy itself on the current grant state, making this a candidate-ready rather than an integration handoff.",
+   "kill_scope": "instance",
+   "measured_on": "clean HEAD chassis at commit cf645f90, no per-function scope_allow grant present for func_80022F34, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "KILLED. Neither surface is stageable by a session at the current grant state: include/*.h requires a driver-issued scope"
+  }
+ ],
+ "escalation_deferrals": 0
 }

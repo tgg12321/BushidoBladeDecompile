@@ -1727,3 +1727,4 @@
 - 2026-09-05 14:44 func_80034F88 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80034F88 include/code6cac.h src/code6cac.c undefined_syms_auto.txt), function stays active.
 - 2026-09-05 14:55 func_80034F88: LAYER-1 FAILED a sandbox-0 candidate — The pointer-alias and dead-store constructs are plausibly within their sanctioned families, but the loop-counter reuse of `q` is a novel GCC-internals-motivated construct (inflating reg_n_refs to out-prioritize a sibling allocno under global.c's priority formula) that is cited under two rules which explicitly do not cover it.
 - 2026-09-05 15:15 func_80034F88 COMPLETED-C after 67 sessions (closer: s67 [rederive]).
+- 2026-09-05 15:50 func_80022F34 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80022F34 include/code6cac.h src/code6cac.c), function stays active.

@@ -460,3 +460,120 @@ callee-saved over-promotion is a register-allocation plateau.
 - [s9] HEAD carries func_80022F34 as INCLUDE_ASM("asm/funcs", func_80022F34) (asm-until-matched, 2026-08-19), so the byte-match on main is held by the assembly include and the function carries zero cheat constructs. The best pure-C form has a byte-perfect BODY; the entire residual is the phantom slot plus one maspsx nop that is retirable via maspsx_label_nop_funcs.txt.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated — ledger floor 11 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force. exhaustion_base=9
+
+## s10 (rederive, 2026-09-05) — SOLVED. Honest floor 11 -> 0; full-tree oracle SHA1 match.
+
+**Measurements (all this session, `sandbox func_80022F34 --disable all`, rules_dropped 0 throughout):**
+
+| form | header decl of D_801027BC | body spelling | maspsx gate | score |
+|---|---|---|---|---|
+| s2-s9 base (previously banked candidate) | `extern s32 D_801027BC;` | `(&D_801027BC)[idx * 5]` | off | 11 |
+| vFLAT1D | `extern s32 D_801027BC[];` | `D_801027BC[idx * 5]` | ON | 10 |
+| vCLEAN2 | `extern s32 D_801027BC[][5];` | `D_801027BC[idx][0]` | off | 1 |
+| vCLEAN2 | `extern s32 D_801027BC[][5];` | `D_801027BC[idx][0]` | ON | 0 |
+
+`verify-oracle` with the score-0 configuration: ok true, build_matches true,
+build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked.
+So the declaration corrections perturb no other TU and the per-function maspsx
+gate causes no index cascade among code6cac.c's siblings.
+
+**Root cause of the nine-session plateau.** It was never a codegen wall. The
+header declared `extern s32 D_801027BC;` — a scalar — for a symbol the target
+indexes with a computed register at a 20-byte stride. Every s1-s9 form therefore
+had to spell the access as a per-use pointer pun on `&scalar`, which builds a
+symbol-bearing PLUS, which reaches `memory_address` (explow.c:414-416), which runs
+`break_out_memory_refs` (explow.c:274-291) and force_regs the SYMBOL_REF into a
+pseudo. combine then folds that pseudo back into the two mems to produce target's
+per-access `lui/%lo` bytes, deleting the pseudo's only definition, orphaning its
+REG_DEAD note, so `distribute_notes` (combine.c:10829-10846) emits `(use (reg N))`
+after the preceding CODE_LABEL, the pseudo gets no hard reg, and reload homes it to
+a stack slot: vars=8, `subu $sp,$sp,40` vs target's 32, ten frame-offset diffs.
+s6/s7/s8/s9 characterised that chain correctly and completely. What none of them
+questioned was the DECLARATION that forced the source into the chain's first link.
+
+Declaring the object model correctly (`extern s32 D_801027BC[][5];`) and writing
+`D_801027BC[idx][0]` takes a different expand route: the outer ARRAY_REF has ARRAY
+type, expand keeps the address symbolic, and the mem is emitted directly as
+`(mem/s:SI (plus:SI (symbol_ref "D_801027BC") (reg 98)))` — the
+`GO_IF_LEGITIMATE_ADDRESS` CONSTANT_ADDRESS+REG clause (mips.h:2325-2349) that s9
+declared unreachable. No address pseudo => no fold => no orphaned note => no strand
+=> no phantom slot. vars=0, `subu $sp,$sp,32`, both `lui %hi(D_801027BC)` pairs
+present from expand. Evidence: tmp/grind/func_80022F34/s10/rtl-arrayref-no-address-pseudo.txt.
+
+The 2-D shape is load-bearing: vFLAT1D (1-D array + `[idx * 5]`) scores 10, i.e. the
+phantom slot returns, because a 1-D ARRAY_REF with a runtime index and a unit element
+type collapses to the same PLUS tree as the pun.
+
+**The last point** was the maspsx `.L`-label load-delay blind spot, store-value-consumer
+variant: `lhu $v0,0($s2)` / `.L80022FD0:` (switch merge label) / `sh $v0,8($a0)`. This is
+the documented `gnd_get_fog` shape in .claude/rules/maspsx-label-nop-gate.md and its
+sanctioned remedy is the per-function allowlist line, not a source compensator — the C
+contains no `__asm__("nop")`.
+
+**Process note for the pipeline.** The dispatch brief's auto-generated DATA MODEL block
+named this defect explicitly — "the target indexes D_801027BC with a computed register
+but the header declares `extern s32 D_801027BC;` — it is an ARRAY; declare it as one"
+and "DECLARATION PUNS IN candidate.c ... a candidate carrying these FAILs layer-1".
+Nine sessions of RTL forensics, permuter campaigns, solver classification and two filed
+dispositions were spent downstream of a declaration the census had already flagged.
+Same failure mode as func_80033550 (13 sessions of RA modelling for a record copy the
+census had named). Read the DATA MODEL block before the codegen ledger.
+
+**Artifacts (tmp/grind/func_80022F34/s10/):** HANDOFF-header.diff,
+HANDOFF-maspsx-label-nop.diff, code6cac.c.matched, matched_dis_score0.txt,
+rtl-arrayref-no-address-pseudo.txt, vCLEAN2.c, vFLAT1D.c, build_dis.txt.
+
+## s10 re-run (2026-09-05) — measurements re-taken on clean HEAD
+
+The first s10 run was DISCARDED by the driver validator on outcome-JSON wording alone (a
+class-level word in an `instance` kill statement); its tree was reverted and its
+docs/grind/decisions.md text voided by a driver-stamped marker. This re-run repeated the
+measurement from a clean HEAD (cf645f90) and reconfirmed it:
+
+- All four edits applied mechanically (`tmp/grind/func_80022F34/s10/apply_s10b.py apply`):
+  `include/code6cac.h` -> `extern s32 D_801027BC[][5];` and `extern u8 D_80102782[];`;
+  `src/code6cac.c:2467` INCLUDE_ASM replaced by the `candidate.c` body;
+  `func_80022F34` appended to `maspsx_label_nop_funcs.txt`.
+- `sandbox func_80022F34 --disable all` -> **score 0**, target_insns 70, build_insns 70,
+  scorable true, rules_dropped 0, strip_cheat_asm true. (`cheat_asm_stripped: 23` is other
+  functions in code6cac.c; func_80022F34 carries zero cheat-asm.)
+- `verify-oracle --rebuild --allow-dirty` then `verify-oracle` -> ok true, build_matches true,
+  build_sha1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == original_sha1_locked.
+- Tree reverted (`git checkout -- src/code6cac.c include/code6cac.h maspsx_label_nop_funcs.txt`)
+  and `verify-oracle --rebuild` re-run -> ok true, same SHA1. The canonical `build/` reference is
+  therefore consistent with committed HEAD, not with the fix.
+- Matched artefacts from THIS run: `tmp/grind/func_80022F34/s10/code6cac.c.matched.s10b`,
+  `tmp/grind/func_80022F34/s10/maspsx_label_nop_funcs.txt.matched`.
+
+Surface routing re-checked: no per-function `scope_allow` grant exists for func_80022F34, so
+`include/code6cac.h` needs a driver `add-scope-allow` (pipeline-executable per
+`.claude/rules/integration-handoff-self-serve.md`) and `maspsx_label_nop_funcs.txt` is on that
+grant's permanent denylist and needs a one-line operator hand-apply. Disposition: INTEGRATION
+HANDOFF, filed at docs/grind/decisions.md (2026-09-05). The function is NOT foreclosed and NOT
+endgame-locked; it should stay ACTIVE.
+
+Ledger wording fix: the s10 hypothesis heading that restated s9's kill using the word
+"unreachable" under `kill_scope: instance` has been re-scoped in hypotheses.md to name the
+chassis measured, so future digests do not propagate a class claim from an instance measurement.
+
+- [s10] sandbox func_80022F34 --disable all with the four edits applied: score 0, target_insns 70, build_insns 70, scorable true, rules_dropped 0 — measured THIS session on a clean HEAD chassis.
+
+- [s10] Full-tree verify-oracle in that configuration: ok true, build_matches true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked — the two declaration corrections perturb no other translation unit and the per-function maspsx gate causes no index cascade among code6cac.c's siblings.
+
+- [s10] The remedy is four lines plus a body: include/code6cac.h:467 'extern s32 D_801027BC;' -> 'extern s32 D_801027BC[][5];'; include/code6cac.h:450 'extern u8 D_80102782;' -> 'extern u8 D_80102782[];'; append 'func_80022F34' to maspsx_label_nop_funcs.txt; replace src/code6cac.c:2467 INCLUDE_ASM with the body banked at memory/grind/func_80022F34/candidate.c.
+
+- [s10] With edits 1, 2 and 4 alone (no maspsx line) the honest floor is 1 — a 10-point improvement over the nine-session plateau of 11 — and the C body is final and unchanged. Nothing about the source depends on the maspsx line.
+
+- [s10] Root cause of the s1-s9 plateau: D_801027BC was declared 'extern s32 D_801027BC;' (a scalar) but the target indexes it with a computed register at a 20-byte stride, so every s1-s9 form used the per-use pointer pun (&D_801027BC)[idx*5]. That pun builds a symbol-bearing PLUS tree which reaches memory_address (tools/gcc-2.7.2/explow.c:414), which runs break_out_memory_refs (explow.c:274) BEFORE GO_IF_LEGITIMATE_ADDRESS and unconditionally force_regs the SYMBOL_REF into a pseudo; combine folds that pseudo back into the mems to make the target's per-access lui/%lo bytes, deleting its only definition; the orphaned REG_DEAD note takes distribute_notes' CODE_LABEL fallback (tools/gcc-2.7.2/combine.c:10836); the pseudo gets no hard reg; reload homes it to a stack slot -> vars=8, subu $sp,$sp,40 vs target's 32 -> ten frame-offset diffs + one maspsx nop = 11.
+
+- [s10] With 'extern s32 D_801027BC[][5];' and 'D_801027BC[idx][0]' the outer ARRAY_REF has array type, expand keeps the address symbolic and emits the mem directly as (mem/s:SI (plus:SI (symbol_ref "D_801027BC") (reg 98))) at expand time — the mips.h:2325-2349 'pretend the MIPS supports a constant address + a register' clause, reached without passing through break_out_memory_refs. No address pseudo, no fold, no orphaned note, no strand, no phantom slot: vars=0, subu $sp,$sp,32. Post-expand .rtl evidence at tmp/grind/func_80022F34/s10/rtl-arrayref-no-address-pseudo.txt, insn 104.
+
+- [s10] The 2-D shape is load-bearing, not cosmetic: the flat 1-D control ('extern s32 D_801027BC[];' + 'D_801027BC[idx*5]', maspsx gate ON) scores 10 — the phantom slot returns, because a 1-D ARRAY_REF with a runtime index and a unit element type collapses to the same PLUS tree as the pun. Banked at memory/grind/func_80022F34/rejected/flat-1d-array-decl-reenters-break-out-memory-refs-10.c.
+
+- [s10] The residual 1 point without the maspsx line is the documented store-value-consumer variant of the maspsx .L-label load-delay blind spot: lhu $v0,0($s2) / .L80022FD0: (switch merge label) / sh $v0,8($a0) — the gnd_get_fog precedent in .claude/rules/maspsx-label-nop-gate.md, which classifies this as a pure-C RETIREMENT path, not a park.
+
+- [s10] Cheat posture: the banked body is ordinary C — no register pins, no __asm__, no volatile, no dead stores, no unused locals or arrays, no do{}while(0) wrap, no FAKE construct, and no declaration puns (both previously punned symbols are now declared as the arrays they demonstrably are). Self-vet at memory/grind/func_80022F34/self_vet.md declares CONSTRUCTS: none and SANCTIONED-FAMILY-CLAIMS: none.
+
+- [s10] Process finding: the dispatch brief's auto-generated DATA MODEL block named this defect verbatim ('the target indexes D_801027BC with a computed register but the header declares extern s32 D_801027BC; it is an ARRAY, declare it as one') and the DECLARATION PUNS scan listed the two offending lines in candidate.c. Nine sessions of RTL forensics, ~48k permuter iterations, solver classification and two filed dispositions were spent downstream of a declaration the census had already flagged — the same failure mode as func_80033550.
+
+- [s10] Prior dispositions superseded by measurement: the 2026-07-27 standing ruling for this function and the 2026-08-26 / 2026-08-31 entries filed under it rest on the premise that the +8 phantom frame slot was unreachable in C; that premise was true only within the scalar-declaration object model.

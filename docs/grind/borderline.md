@@ -617,3 +617,8 @@ SPENT by owner ruling 2026-09-04 (decisions.md "OWNER RULING — `main`: the per
 category: integration-handoff
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-05 — func_80034F88 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80034F88 include/code6cac.h src/code6cac.c undefined_syms_auto.txt; function stays ACTIVE.
+
+## 2026-09-05 — func_80022F34 — integration-handoff
+category: integration-handoff
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-05 — func_80022F34 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: func_80022F34 include/code6cac.h src/code6cac.c; function stays ACTIVE.

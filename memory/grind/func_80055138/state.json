@@ -30,5 +30,15 @@
  ],
  "judge_constraints": [],
  "origin": "queue",
- "created": "2026-07-07T20:35:25.319728+00:00"
+ "created": "2026-07-07T20:35:25.319728+00:00",
+ "sibling_progress": [
+  {
+   "from": "func_80022F34",
+   "floor": 0,
+   "session": 10,
+   "at": "2026-09-05T20:47:24.077090+00:00",
+   "headline": "SOLVED in pure C and re-proven on clean HEAD this session: sandbox --disable all = 0 (70/70 insns, rules_dropped 0, zero cheat-asm) and full-tree verify-oracle SHA1 == oracle; blocked ONLY by two out-",
+   "consumed": null
+  }
+ ]
 }

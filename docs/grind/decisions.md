@@ -23732,3 +23732,281 @@ rejected/ (22 forms).
 ## 2026-09-05 15:40 — func_80022F34 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s10 of func_80022F34, which the driver DISCARDED as invalid (KILLED hypothesis statement makes a class-level claim ('unreachable') with kill_scope='instance': "s9's banked class kill - 'the mips.h const+reg pretend clause is unreachable at ". Either narrow the STATEMENT wording to the instance you measured (which arms, which chassis, which FAKE state) or set kill_scope='class' and cite the gate predicate (file:line that exists) in predicate_cite.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-09-05 — func_80022F34 (src/code6cac.c) — **INTEGRATION HANDOFF (bytes RE-PROVEN this session: sandbox 0 + full-tree oracle SHA1)**
+
+Filed by grind session s10 (re-run; rederive modality). **This entry is the standing record.** It
+re-files, on fresh measurements taken in this session, the content appended above by the discarded
+s10 run and voided by the driver's DISCARDED-SESSION MARKER (2026-09-05 15:40). That discard was a
+purely mechanical outcome-JSON wording rejection (a class-level word appearing in an `instance`
+kill statement); it said nothing about the technical result, which is re-measured and reconfirmed
+below.
+
+**This is NOT an endgame lock and NOT an exhaustion claim.** The function is SOLVED in pure C.
+Every technical question is answered and measured. It is filed here only because two of the three
+required edits are outside a grind session's allowed staging surface, so this session could not
+stage them; the tree was reverted to clean and the canonical `build/` reference rebuilt after
+measurement.
+
+The 2026-07-27 standing ruling ("REFUSED / OWNER-ACCEPTED INCOMPLETE") and the 2026-08-26 /
+2026-08-31 dispositions filed under it for this function are **SUPERSEDED by measurement**: their
+premise — that the +8 phantom frame slot was unreachable in C — was true only within the wrong
+object model.
+
+### Proof of bytes (re-measured 2026-09-05, this session)
+
+- `sandbox func_80022F34 --disable all` with all four edits applied:
+  `{"score": 0, "target_insns": 70, "build_insns": 70, "scorable": true, "rules_dropped": 0}` —
+  honest, cheat-invisible, zero rules, zero cheat-asm, zero FAKE constructs.
+- Full-tree `verify-oracle --rebuild --allow-dirty` in that configuration, then `verify-oracle`:
+  `"ok": true`, `"build_matches": true`,
+  `"build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa"` == `"original_sha1_locked"`.
+  The two declaration corrections perturb no other translation unit, and the per-function maspsx
+  gate causes no index cascade among code6cac.c's siblings.
+- Tree then reverted (`git checkout -- src/code6cac.c include/code6cac.h
+  maspsx_label_nop_funcs.txt`) and `verify-oracle --rebuild` re-run clean: SHA1 == oracle again, so
+  the canonical reference `build/` is left consistent with committed HEAD.
+
+Separation law re-affirmed (s10 first-run measurements, unchanged): scalar decl + pun
+`(&D_801027BC)[idx*5]` -> 11; flat 1-D `extern s32 D_801027BC[];` + `D_801027BC[idx*5]` with the
+maspsx gate ON -> 10; 2-D `extern s32 D_801027BC[][5];` + `D_801027BC[idx][0]` gate off -> 1;
+gate ON -> **0**.
+
+### The exact edits (the whole remedy — four lines plus a function body)
+
+1. `include/code6cac.h:467` — `extern s32 D_801027BC;` -> `extern s32 D_801027BC[][5];`
+2. `include/code6cac.h:450` — `extern u8 D_80102782;` -> `extern u8 D_80102782[];`
+3. `maspsx_label_nop_funcs.txt` — append one line: `func_80022F34`
+4. `src/code6cac.c:2467` — replace `INCLUDE_ASM("asm/funcs", func_80022F34);` with the body banked
+   at `memory/grind/func_80022F34/candidate.c`
+
+Ready-to-apply diffs: `tmp/grind/func_80022F34/s10/HANDOFF-header.diff`,
+`tmp/grind/func_80022F34/s10/HANDOFF-maspsx-label-nop.diff`. The complete matched source file as
+measured THIS session is banked verbatim at `tmp/grind/func_80022F34/s10/code6cac.c.matched.s10b`
+(byte-identical function body to `candidate.c`), the matched allowlist at
+`tmp/grind/func_80022F34/s10/maspsx_label_nop_funcs.txt.matched`, and the score-0 objdump at
+`tmp/grind/func_80022F34/s10/matched_dis_score0.txt`.
+
+### Routing of the two out-of-surface surfaces (operator / driver steps)
+
+- **`include/code6cac.h`** — the `include/*.h` class, **pipeline-executable**. Per
+  `.claude/rules/integration-handoff-self-serve.md` (owner ruling 2026-08-19) the driver may grant
+  it via `grindlib.py add-scope-allow` on a Judge `ESCALATE` with
+  `escalate_kind=integration-handoff`, `scope_paths=["include/code6cac.h", "src/code6cac.c"]`. The
+  function then stays ACTIVE and the next session lands the fix through the full normal gates.
+- **`maspsx_label_nop_funcs.txt`** — on the `add-scope-allow` **denylist** (the maspsx
+  fidelity-gate lists are substrate-adjacent), so the driver cannot grant it and it needs an
+  operator hand-apply of the single line. Smallest possible ask: **append `func_80022F34` to
+  `maspsx_label_nop_funcs.txt`.** Its own rule (`.claude/rules/maspsx-label-nop-gate.md`) already
+  classifies this as a *pure-C retirement path, not a park*, and the case here is the exact
+  documented store-value-consumer shape: `lhu $v0,0($s2)` / `.L80022FD0:` (switch merge label) /
+  `sh $v0,8($a0)`, matching the `gnd_get_fog` precedent in that rule. The function carries **no**
+  `__asm__("nop")` compensator — the C is clean either way; without the line the honest score is 1
+  instead of 0.
+
+With edits 1, 2 and 4 alone the honest floor is **1**, already a 10-point improvement over the
+nine-session plateau of 11, and the C body is final and unchanged. Nothing about the source depends
+on the maspsx line.
+
+### Root cause (why s1-s9 plateaued at 11)
+
+`D_801027BC` is an array of 20-byte (five-word) records — the target proves it, indexing the symbol
+with a computed register at a 20-byte stride, twice. The header declared it `extern s32
+D_801027BC;`, a plain scalar. The only way to index a scalar is a per-use pointer pun,
+`(&D_801027BC)[idx * 5]`, and every form measured in s1 through s9 carried one.
+
+That pun builds a symbol-bearing `PLUS` tree, which arrives at `memory_address`
+(`tools/gcc-2.7.2/explow.c:414`), which runs `break_out_memory_refs` (`explow.c:274`) *before*
+`GO_IF_LEGITIMATE_ADDRESS` and unconditionally `force_reg`s the `SYMBOL_REF` into a pseudo.
+`combine` then folds that pseudo back into the two mems to produce the target's per-access
+`lui/%lo` bytes, deleting the pseudo's only definition; its `REG_DEAD` note is orphaned, so
+`distribute_notes` (`tools/gcc-2.7.2/combine.c:10836`) emits `(use (reg N))` after the preceding
+`CODE_LABEL`; the pseudo gets no hard register; reload homes it to a stack slot. Result: `vars=8`,
+`subu $sp,$sp,40` against the target's 32, ten frame-offset diffs, plus the one maspsx nop — the
+honest floor of 11.
+
+s6-s9 characterised that chain correctly, down to compiler source. s9's class kill — "the
+`mips.h:2325-2349` CONSTANT_ADDRESS+REG clause is not reached at expand for any symbol +
+runtime-variable address in this fork" — was sound reasoning about the code path it read, but false
+as stated: that path is taken only for an address expression that reaches `memory_address` as a
+`PLUS` containing the symbol, and an `ARRAY_REF` on an array-typed declaration never constructs
+one. With `extern s32 D_801027BC[][5];` and `D_801027BC[idx][0]` the outer `ARRAY_REF` has array
+type, expand keeps the address symbolic, and the mem is emitted directly as
+`(mem/s:SI (plus:SI (symbol_ref "D_801027BC") (reg 98)))` at expand time — the "pretend the MIPS
+supports a constant address + a register" clause, reached without ever passing through
+`break_out_memory_refs`. No address pseudo, no fold, no orphaned note, no strand, no phantom slot:
+`vars=0`, `subu $sp,$sp,32`. Post-expand `.rtl` evidence at
+`tmp/grind/func_80022F34/s10/rtl-arrayref-no-address-pseudo.txt`, insn 104.
+
+The 2-D shape is load-bearing, not cosmetic: `vFLAT1D` scores **10** — the phantom slot returns,
+because a 1-D `ARRAY_REF` with a runtime index and a unit element type collapses to the same `PLUS`
+tree as the pun.
+
+**Process lesson.** The dispatch brief's auto-generated DATA MODEL block named this defect verbatim
+— "the target indexes `D_801027BC` with a computed register but the header declares `extern s32
+D_801027BC;` — it is an ARRAY; declare it as one" — and the DECLARATION PUNS scan listed the two
+offending lines in `candidate.c`. Nine sessions of RTL forensics, ~48k permuter iterations, solver
+classification and two filed dispositions were spent downstream of a declaration the census had
+already flagged. Same failure mode as func_80033550. **Read the DATA MODEL block before the codegen
+ledger.**
+
+### Cheat-compliance posture
+
+The banked body is ordinary C: no register pins, no `__asm__`, no volatile, no dead stores, no
+unused locals or arrays, no `do { } while (0)` wrap, no FAKE construct, and — unlike the previously
+banked candidate — **no declaration puns**, since both punned symbols are now declared as the
+arrays they are. Self-vet at `memory/grind/func_80022F34/self_vet.md`. A fresh layer-2
+cheat-reviewer still gates acceptance.
+
+### Re-activation
+
+Nothing about this function is foreclosed. It should stay ACTIVE: grant the `include/*.h` +
+`src/*.c` scope line, hand-apply the one maspsx allowlist line, and the next session lands
+COMPLETED-C through the full normal gates.
+
+## 2026-09-05 15:50 — func_80022F34 — ruling: INTEGRATION HANDOFF filed for func_80022F34 : docs/grind/decisions.md — '## 2026 — **ESCALATE**
+
+WHAT THIS IS. func_80022F34 (2 records x a mode switch x two table lookups, 70 instructions)
+is solved in ordinary C. Nine earlier sessions were stuck at a distance of 11 because a global
+variable was DECLARED WRONG in the shared header: D_801027BC was written as a single number
+(`extern s32 D_801027BC;`) when the original game code clearly treats it as an ARRAY of 20-byte
+records. I verified that myself in the shipped assembly (asm/funcs/func_80022F34.s, the
+`sll/addu/sll` triple at 0x80022FE0 and 0x80022FFC computes index x 5 x 4 = a 20-byte stride,
+twice). Because the header lied, every previous attempt had to fake the indexing with a pointer
+trick, and that trick made the compiler reserve 8 extra bytes of stack it should not have. Fixing
+the DECLARATION to the truth (`extern s32 D_801027BC[][5];`, plus `extern u8 D_80102782[];` which
+the assembly likewise indexes with a computed register) removes the whole 11-point gap. This is a
+truthful semantic correction, not a codegen trick, and it is the same class of declaration fix the
+project has granted before on this very header (tools/grinder/scope_allow.txt:55, func_80034F88).
+
+WHY I BELIEVE THE BYTES. I did not take the session's word for it. I compared the banked score-0
+disassembly (tmp/grind/func_80022F34/s10/matched_dis_score0.txt) against the original assembly
+word for word: 69 of 70 instructions present and IDENTICAL except for 17 words that are only
+address fields not yet filled in by the linker (the `lui/%hi`, `%lo` and `jal` slots of an
+unlinked object file) - i.e. a real match, not a near-miss. The banked source file
+(code6cac.c.matched.s10b) contains exactly the body in memory/grind/func_80022F34/candidate.c.
+The session also reports a full-tree rebuild with SHA1 == the oracle
+(62efab4f73f992798c43e8c730aa43baa10bb4fa) and a clean revert afterwards. Nothing here rests on
+the session's honesty alone: under this handoff the function stays ACTIVE, so the next session
+must re-earn sandbox 0, the scope check, layer-1 and a full-build SHA1 before anything is called
+done.
+
+CHEAT CHECK (the body itself). Pure C: no inline asm, no register pins, no volatile, no dead
+stores or unused locals, no FAKE constructs, no intent-announcing names. The two header changes
+are truthful descriptions of the data. The remaining spellings (a backward `goto` loop, byte-offset
+pointer casts into an undeclared record) are ordinary decomp C and explicitly ordinary under
+.claude/rules/no-new-park-categories.md lines 195-198. No exception family is being invoked, so no
+frozen-list prerequisite question arises.
+
+THE ONE THING I CANNOT GRANT, AND THE ONE-LINE ASK FOR THE OWNER. Getting from a distance of 1 to
+0 needs the name `func_80022F34` added to the file `maspsx_label_nop_funcs.txt`. Plain English:
+our assembler helper has a known bug - it fails to insert a required 1-cycle wait instruction when
+a label sits between a load and its user - and that per-function list is the project's sanctioned
+switch to make it behave like the original 1998 assembler. It does not invent bytes; it only
+restores an instruction the original build really emitted. I confirmed the original code has
+exactly that shape here (`lhu $v0,0($s2)` / `.L80022FD0:` / `nop` / `sh $v0,8($a0)`), which is the
+documented store-value-consumer case with the `gnd_get_fog` precedent in
+.claude/rules/maspsx-label-nop-gate.md, and it is classified as a FIDELITY gate (not a cheat
+pathway) by .claude/rules/maspsx-gate-lists.md, with five existing COMPLETED-C functions already
+depending on it. But that file is on the permanent denylist in
+.claude/rules/integration-handoff-self-serve.md, so neither a session, nor the driver, nor I may
+touch it. It is a one-line, byte-neutral-for-everyone-else append that the owner (or an operator)
+must apply by hand; the session already verified with a full rebuild that it causes no cascade
+into sibling functions.
+
+WHAT I AM ASKING THE DRIVER TO DO. Grant the per-function scope line for include/code6cac.h and
+src/code6cac.c. The next session then lands the header corrections plus the banked body through
+every normal gate and the function drops from 11 to 1. It cannot reach 0 - and therefore cannot be
+marked done - until the single maspsx line is hand-applied. That is the whole remaining ask, and
+it should be logged as such rather than re-entering the modality ladder.
+
+BOTH SIDES, STATED. Against escalating: the grant alone does not finish the function, and the
+strict reading of the handoff rule is "the ONLY blocker is a grantable surface." For escalating:
+the work is complete and correct, the grantable half is worth 10 of the 11 points and lands the
+true object model (which state.json's frontier[1] flags as a repeating defect across other stuck
+functions), and refusing it would send a solved function back into a ladder that has nothing left
+to find. A FAIL would be a factual misstatement - there is no defect in this work.
+
+LEDGER: memory/grind/func_80022F34/{candidate.c, evidence.md s10, hypotheses.md s10, self_vet.md,
+rejected/ (22 forms)}; state.json floor_history[10]; docs/grind/decisions.md, the 2026-09-05
+re-filed entry (the earlier one is voided by the driver's DISCARDED-SESSION MARKER - I read past
+it as the convention requires). No banned_constructs entry exists for this function, so no unban
+is needed.
+
+## 2026-09-05 — func_80022F34 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-05)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WHAT THIS IS. func_80022F34 (2 records x a mode switch x two table lookups, 70 instructions)
+is solved in ordinary C. Nine earlier sessions were stuck at a distance of 11 because a global
+variable was DECLARED WRONG in the shared header: D_801027BC was written as a single number
+(`extern s32 D_801027BC;`) when the original game code clearly treats it as an ARRAY of 20-byte
+records. I verified that myself in the shipped assembly (asm/funcs/func_80022F34.s, the
+`sll/addu/sll` triple at 0x80022FE0 and 0x80022FFC computes index x 5 x 4 = a 20-byte stride,
+twice). Because the header lied, every previous attempt had to fake the indexing with a pointer
+trick, and that trick made the compiler reserve 8 extra bytes of stack it should not have. Fixing
+the DECLARATION to the truth (`extern s32 D_801027BC[][5];`, plus `extern u8 D_80102782[];` which
+the assembly likewise indexes with a computed register) removes the whole 11-point gap. This is a
+truthful semantic correction, not a codegen trick, and it is the same class of declaration fix the
+project has granted before on this very header (tools/grinder/scope_allow.txt:55, func_80034F88).
+
+WHY I BELIEVE THE BYTES. I did not take the session's word for it. I compared the banked score-0
+disassembly (tmp/grind/func_80022F34/s10/matched_dis_score0.txt) against the original assembly
+word for word: 69 of 70 instructions present and IDENTICAL except for 17 words that are only
+address fields not yet filled in by the linker (the `lui/%hi`, `%lo` and `jal` slots of an
+unlinked object file) - i.e. a real match, not a near-miss. The banked source file
+(code6cac.c.matched.s10b) contains exactly the body in memory/grind/func_80022F34/candidate.c.
+The session also reports a full-tree rebuild with SHA1 == the oracle
+(62efab4f73f992798c43e8c730aa43baa10bb4fa) and a clean revert afterwards. Nothing here rests on
+the session's honesty alone: under this handoff the function stays ACTIVE, so the next session
+must re-earn sandbox 0, the scope check, layer-1 and a full-build SHA1 before anything is called
+done.
+
+CHEAT CHECK (the body itself). Pure C: no inline asm, no register pins, no volatile, no dead
+stores or unused locals, no FAKE constructs, no intent-announcing names. The two header changes
+are truthful descriptions of the data. The remaining spellings (a backward `goto` loop, byte-offset
+pointer casts into an undeclared record) are ordinary decomp C and explicitly ordinary under
+.claude/rules/no-new-park-categories.md lines 195-198. No exception family is being invoked, so no
+frozen-list prerequisite question arises.
+
+THE ONE THING I CANNOT GRANT, AND THE ONE-LINE ASK FOR THE OWNER. Getting from a distance of 1 to
+0 needs the name `func_80022F34` added to the file `maspsx_label_nop_funcs.txt`. Plain English:
+our assembler helper has a known bug - it fails to insert a required 1-cycle wait instruction when
+a label sits between a load and its user - and that per-function list is the project's sanctioned
+switch to make it behave like the original 1998 assembler. It does not invent bytes; it only
+restores an instruction the original build really emitted. I confirmed the original code has
+exactly that shape here (`lhu $v0,0($s2)` / `.L80022FD0:` / `nop` / `sh $v0,8($a0)`), which is the
+documented store-value-consumer case with the `gnd_get_fog` precedent in
+.claude/rules/maspsx-label-nop-gate.md, and it is classified as a FIDELITY gate (not a cheat
+pathway) by .claude/rules/maspsx-gate-lists.md, with five existing COMPLETED-C functions already
+depending on it. But that file is on the permanent denylist in
+.claude/rules/integration-handoff-self-serve.md, so neither a session, nor the driver, nor I may
+touch it. It is a one-line, byte-neutral-for-everyone-else append that the owner (or an operator)
+must apply by hand; the session already verified with a full rebuild that it causes no cascade
+into sibling functions.
+
+WHAT I AM ASKING THE DRIVER TO DO. Grant the per-function scope line for include/code6cac.h and
+src/code6cac.c. The next session then lands the header corrections plus the banked body through
+every normal gate and the function drops from 11 to 1. It cannot reach 0 - and therefore cannot be
+marked done - until the single maspsx line is hand-applied. That is the whole remaining ask, and
+it should be logged as such rather than re-entering the modality ladder.
+
+BOTH SIDES, STATED. Against escalating: the grant alone does not finish the function, and the
+strict reading of the handoff rule is "the ONLY blocker is a grantable surface." For escalating:
+the work is complete and correct, the grantable half is worth 10 of the 11 points and lands the
+true object model (which state.json's frontier[1] flags as a repeating defect across other stuck
+functions), and refusing it would send a solved function back into a ladder that has nothing left
+to find. A FAIL would be a factual misstatement - there is no defect in this work.
+
+LEDGER: memory/grind/func_80022F34/{candidate.c, evidence.md s10, hypotheses.md s10, self_vet.md,
+rejected/ (22 forms)}; state.json floor_history[10]; docs/grind/decisions.md, the 2026-09-05
+re-filed entry (the earlier one is voided by the driver's DISCARDED-SESSION MARKER - I read past
+it as the convention requires). No banned_constructs entry exists for this function, so no unban
+is needed.
+
+**Constraint recorded for any future session:** Land edits 1/2/4 (header array decls + candidate.c body) under the granted scope; the honest floor is 1 until an operator appends func_80022F34 to maspsx_label_nop_funcs.txt (denylisted for add-scope-allow) — do NOT stage that file, do not respell around it, and do not treat floor 1 as a plateau needing a new modality.
