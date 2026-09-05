@@ -7157,3 +7157,98 @@ the .greg conflict rows for the installed body -- reusable),
 - [s50] A direct D_80106A73 lvalue compiles to the two-insn assembler macro through $at, never to the target's lui/addiu + 0($reg) form, and additionally moves p from $a1 to $a2.
 
 - [s50] Two-object bodies (banned; diagnosis only) bottom out at 21, so the multi-handle ban is not demonstrably the thing costing the 10 points.
+
+## s51 (structural, 2026-09-05) -- allocation facts measured this session
+
+Chassis check: `sandbox func_80034F88 --disable all` on HEAD with
+`memory/grind/func_80034F88/candidate.c` installed = score 10, 49 build insns
+(target 49). Confirmed twice this session (`p_base_recheck.c` is a
+character-for-character regeneration of the same body and also measures 10/49).
+
+Tooling added: `tmp/grind/func_80034F88/s51/rep.sh` -- installs a body, prints
+sandbox score/insns, then prints the .greg allocation order, the conflict and
+preference rows for the two contested allocnos, the full register dispositions,
+and refs/live_length/allocno_compare priority for every pseudo from .lreg. This
+makes the allocation race readable in one call per body and should be reused.
+
+### The block-0 allocation race, measured on eight shapes
+The target seats the &D_80106A73 address in $v1 (hard 3) for the mask and flag
+block 0, and the masked value in $a0 (hard 4). This body does the inverse. Two
+independent conditions gate the flip and no measured shape satisfies both:
+
+| block-0 shape | masked value refs/len/pri | pointer sorted first? | hard 3 in pointer's conflict row? | seat | score/insns |
+|---|---|---|---|---|---|
+| two-statement mask (candidate.c) | 6 / 9 / 13333 | no | no | 74 in 3, 75 in 4 | 10 / 49 |
+| single-statement mask (r1) | 4 / 8 / 10000 | YES | YES (QI temp reg76 in 3) | 74 in 3, 75 in 4 | 10 / 49 |
+| named raw s32 (w1) | 4 / 8 / 10000 | YES | YES (raw reg75 in 3) | 76 in 4 | 10 / 49 |
+| named raw u8 (w2) | 4 / 8 / 10000 | YES | YES | 76 in 4 | 10 / 49 |
+| raw live across the branch (x2) | -- | -- | YES, in both rows | 74 in 5, 75 in 4 | 17 / 49 |
+
+Pointer allocno constant across all of these: refs=10 live_length=28 pri=10714.
+The relevant local-alloc fact is s44's seat law: the short-lived block-0
+quantity takes $v0 when $v0 is dead across its span and $v1 otherwise. $v0 is
+live across it here because it still carries func_80077D00's return value until
+the `move $a1,$v0`, so the temp always lands on $v1 and always poisons the
+pointer's conflict row. local-alloc runs before global_alloc, so this decision
+is made before the priority sort the single-statement mask wins.
+
+### The block-1 reload is a cse address-equality effect (first reproduction)
+Target 80034FB4 is `lbu $a0,0($v1)` -- a re-read of the flag byte after the
+mask store. Every body in 50 prior sessions emitted a load-delay `nop` there.
+Spelling the mask's address `(&D_80106A70 + 3)` and flag block 0's
+`&D_80106A73` (same byte, two SYMBOL_REFs cse cannot equate) emits the reload
+and gives block 0 the target's exact instruction sequence:
+lui/addiu, lbu, move a1 v0, andi 0xf8, sb, lui/addiu, lw 32(a1), lbu, andi 1,
+bnez, ori, move, sb. Cost: one extra address materialisation (51 insns vs 49)
+and the address/value registers still swapped. Objdump:
+`tmp/grind/func_80034F88/s51/dis_split.txt`. Score 12.
+
+Consequences: the reload needs no `volatile`, no aliasing story and no
+read-duplication -- duplicating the read into both arms of flag block 0, in all
+four spellings, is folded away by cse (the stored value is provably 8-bit clean,
+so the zero_extend folds to the live masked-value pseudo) and measures 10/49 or
+12/46. The open composition problem is that sharing ONE address materialisation
+between the mask and flag block 0 is exactly what lets cse forward the store.
+
+### Address spelling is inert on this chassis (kill re-audit)
+`(&D_80106A70 + 3)` substituted for `&D_80106A73` measures 10/49 in the mask
+alone, in flag blocks 1 and 2 alone, and in both -- identical to the base. The
+s16/s17/s25 measurements of 12-14 for the same substitution were chassis
+artifacts; those kills are re-audited and re-scoped to "neutral, not harmful".
+The practical consequence for the DATA MODEL signal: declaring D_80106A70 as a
+4-byte array is worth carrying only as the pun-free spelling of the trailing
+copy loop (s38's measured-neutral integration handoff), not as a codegen lever.
+
+### Shapes measured and banked this session
+p_base_recheck 10/49, p_mix0_a70 10/49, p_mix12_a70 10/49, p_mix_alt_a70_b1
+10/49, p_mix0_a70_reload 10/49, p_mix0_a70_dup12 18/51, p_mix0_a70_dupall
+20/50, p_mix0_a70_rel_dup12 16/51, q_split_A70mask_A73rest 12/51,
+q_split_A73mask_A70b0 12/51, q_split_A73mask_A70b0_A73b12 12/51,
+q_split_*_noreassign12 32/51, q_split_A70mask_A73b0_dup12 18/53,
+r1_mask1stmt 10/49, r1_dup0 12/46, r2_anon_mask 17/49, r3_two_dup0 12/46,
+r4_mask1stmt_u8 17/50, r5_mask1stmt_reread 10/49, s1 12/46, s2 12/46, s3 10/49,
+s4 10/49, s5 10/49, u1 13/49, u2 13/49, u3 13/49, u4 10/49, u5 13/45,
+v_c 12/46, v_d 10/49, v_e 10/49, v_f 13/45, v_g 10/49, v_h 13/47, v_i 10/49,
+w1 10/49, w2 10/49, w3 10/49, w4 27/52, x1 10/49, x2 17/49, x3 10/49,
+y1_split_dup0 14/52, y2_split_dupall 20/54, y3_split_rev_dup0 14/52,
+y4_split_nodup 12/51. Sources under
+`tmp/grind/func_80034F88/s51/bodies/`; the load-bearing ones are copied into
+`memory/grind/func_80034F88/rejected/` with s51- prefixes.
+
+- [s51] Chassis re-measured at dispatch: candidate.c installed on HEAD gives sandbox score 10, 49 build insns against 49 target insns; a regenerated character-equivalent body measures the same, so the ledger floor of 10 is current.
+
+- [s51] Pointer allocno for &D_80106A73 is invariant across every block-0 shape measured this session: refs=10, live_length=28, allocno_compare priority 10714.
+
+- [s51] Two-statement mask gives the masked value refs=6 len=9 pri=13333 and a pointer conflict row clean of hard 3; single-statement mask and named-raw forms give refs=4 len=8 pri=10000 and a pointer conflict row containing hard 3.
+
+- [s51] In the refs=4 shapes the block-0 temp is seated at hard 3 by local-alloc, not by global_alloc: r1's QI temp reg76 (refs=2 len=4) is '76 in 3' and w1's named raw reg75 (refs=2 len=2) is '75 in 3', in both cases while the pointer allocno is listed ahead of the masked value in ';; regs to allocate'.
+
+- [s51] The target's 80034FB4 lbu is a cse address-equality artifact: giving the mask and flag block 0 two non-equatable SYMBOL_REFs for the same byte emits it, and the resulting block 0 matches the target's instruction sequence at 51 insns / score 12 (tmp/grind/func_80034F88/s51/dis_split.txt).
+
+- [s51] Address spelling ((&D_80106A70 + 3) versus &D_80106A73) is codegen-neutral on this chassis in every placement, voiding the s16/s17/s25 spelling kills as chassis artifacts.
+
+- [s51] 47 distinct bodies were compiled and scored this session; none went below 10 and none reached 49 insns with the target's block-0 registers. Full table in evidence.md under the s51 heading.
+
+- [s51] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) at end of session; no build-file dirt.
+
+- [s51] New reusable tool: tmp/grind/func_80034F88/s51/rep.sh prints score, .greg allocation order, conflict and preference rows, dispositions and per-pseudo refs/live_length/priority in one call per body.

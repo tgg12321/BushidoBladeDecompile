@@ -1,3 +1,38 @@
+/* s51 (structural, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns).
+ * s51 re-scopes the residual again; read this before the s50 note below.
+ *
+ * THE RESIDUAL IS A TWO-CONDITION RACE, AND THE TWO CONDITIONS ARE MUTUALLY
+ * EXCLUSIVE ON EVERY BLOCK-0 SHAPE MEASURED.  The &D_80106A73 allocno reaches
+ * the target's block-0 seat (hard 3 = $v1) only if it is BOTH (i) sorted ahead
+ * of the block-0 masked value by global.c allocno_compare AND (ii) free of
+ * hard 3 in its conflict row.  This body buys (ii): the two-statement mask
+ * expands the load as a zero_extend straight into the masked-value pseudo, so
+ * block 0 holds no extra quantity and the pointer's conflict row is clean --
+ * but the masked value then has refs=6 len=9 pri=13333 against the pointer's
+ * refs=10 len=28 pri=10714, so the masked value is allocated first and takes
+ * $v1.  Every shape that cuts the masked value to refs=4 (single-statement
+ * mask `m = *q & 0xF8;`, or a named `raw = *q; m = raw & 0xF8;`) buys (i) --
+ * the pointer really does sort first, `;; regs to allocate: 73 78 81 85 75 74`
+ * -- but each does it by creating a short-lived block-0 quantity that
+ * local-alloc, which runs BEFORE global_alloc, seats at $v1, putting hard 3
+ * into the pointer's conflict row and losing (ii).  s44's seat law explains
+ * the seat: a block-0-confined quantity takes $v0 when $v0 is dead across its
+ * span and $v1 otherwise, and $v0 here still carries func_80077D00's return
+ * value.  So the next lever is NOT a second allocno (s50's framing): it is
+ * either a refs<=5 block-0 shape that spawns no pseudo, or making $v0 dead
+ * across the temp's span.
+ *
+ * ALSO SETTLED IN s51: the target's block-1 reload (`lbu` at 80034FB4, where
+ * this body emits a load-delay nop) is a pure cse address-equality effect.
+ * Spelling the mask's address `(&D_80106A70 + 3)` and flag block 0's
+ * `&D_80106A73` -- the same byte, two SYMBOL_REFs cse cannot equate -- emits
+ * that reload and reproduces the target's whole block-0 instruction sequence,
+ * at the price of one extra la pair (51 insns, score 12; banked as
+ * rejected/s51-splitspell-mask-A70p3-EMITS-TARGET-RELOAD-51insn-score12.c).
+ * It needs no volatile and no aliasing story.  Conversely the address SPELLING
+ * on its own is codegen-NEUTRAL on this chassis (10/49 in every placement),
+ * which voids the s16/s17/s25 "spelling is not a free dial" kills.
+ */
 /* s50 (rederive, 2026-09-05) -- BODY UNCHANGED from s49 (honest floor 10,
  * 49 insns), but the 50-session-old seat residual is now SOLVED as a mechanism
  * and re-scoped as a DIFFERENT problem.  Read this header before probing.
