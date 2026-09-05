@@ -1,3 +1,15 @@
+/* s34 (synthesis, 2026-09-05): re-measured on HEAD = score 10, 49/49 insns,
+ * rules_dropped 0, cheat_asm_stripped 28.  UNCHANGED.  s34 closed the last
+ * route to a SECOND address pseudo that is not a named C object: the target's
+ * $v1 carrier must be live across the block-1 join label .L80034FC8, and the
+ * two ways to avoid that (expanding the store's address before the branch via
+ * a ternary RHS; duplicating the store into both arms) both lose an
+ * instruction because tools/gcc-2.7.2/reorg.c:3442 deletes the else-arm store
+ * as a redundant delay-slot thread insn -- verified in the dumps (insn 55
+ * survives to .sched2 and is NOTE_INSN_DELETED at .dbr), not inferred.
+ * Ten disproven forms banked as rejected/s34-*.c (d1/d5/d6/d7, e1/e4/e5/e6,
+ * f1/f2; best of them 12 at 46 insns).  See evidence.md "==== s34 ====".
+ */
 /* s33 (synthesis, 2026-09-05): re-measured on HEAD = score 10, 49/49 insns,
  * rules_dropped 0.  UNCHANGED as the best admissible form, but the residual is
  * now factored: s33 reached the target's blocks-0/1 $v1 address seat with a

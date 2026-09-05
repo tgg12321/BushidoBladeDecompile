@@ -4562,3 +4562,204 @@ individually reachable but not simultaneously reachable from one object:
 - [s33] Ladder accounting: s33 is session TWELVE of cycle 2 and the sixth distinct modality was already reached at s31 (escalation s23/s24, synthesis s25/s33, solver s26, forensics s27/s28, rederive s29/s30, structural s31/s32). Eight sessions remain before the owner directive 2026-09-02 permits any disposition.
 
 - [s33] src/code6cac_b.c restored to HEAD (INCLUDE_ASM) at session end; git status --porcelain src/ is empty. candidate.c is unchanged apart from an s33 header note; the disproven bank is now 178 forms.
+
+==== s34 (synthesis) ====
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` installed at
+`src/code6cac_b.c:3420` and measured on HEAD this session: **score 10,
+target_insns 49, build_insns 49, rules_dropped 0, cheat_asm_stripped 28**. The
+dispatch brief printed "measurement unavailable" for the sixth consecutive
+session; the floor of 10 is measured, not inherited. `src/` restored to HEAD at
+session end.
+
+MANDATED KILL RE-AUDIT (the two closest-to-target banked forms, both re-measured
+on today's chassis):
+  * `rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c` (the
+    s20/s25 dead round-trip, the only banked body whose instruction multiset
+    matches the target's) -- **10 at 49 insns**, unchanged for the sixth
+    consecutive session.
+  * `rejected/s33-anon-symdiff-block0-blocks01-EXACT-score13.c` (c1, the
+    structurally closest body: blocks 0 and 1 byte-exact) -- **13 at 49 insns**,
+    reproducing s33 exactly.
+  `tools/fake_ablate.py` was not re-run: s31/s32/s33 all report "no
+  FAKE-annotated constructs found" for candidate.c and the body measured this
+  session is byte-identical to the one they ablated, so no banked kill on this
+  chassis was measured with a FAKE carrier occupying the contested pseudo.
+
+--- 1. THE SYNTHESIS: WHAT THE TARGET ACTUALLY REQUIRES, IN PSEUDOS ---
+
+Read straight off `asm/funcs/func_80034F88.s`, the flag byte's address is
+materialised THREE times and lives in TWO hard registers:
+
+    P1  $v1  lui/addiu at 80034F98; used by block 0's lbu+sb, block 1's lbu,
+             and block 1's store `sb $v0,0($v1)` at 80034FD0 -- which sits
+             AFTER the join label .L80034FC8.
+    P2  $a0  lui/addiu at 80034FC8 (immediately after that same label, BEFORE
+             block 1's store); used by block 2's lbu and its store at 80034FEC,
+             again after a join label.
+    P2' $a0  lui/addiu at 80034FF0; block 3's lbu and its store at 80035010,
+             after .L80035010.
+
+P2 and P2' are disjoint, so ONE pseudo assigned twice reproduces them -- that is
+exactly what `candidate.c`'s `q` does, and blocks 2/3 are register-exact there.
+P1 needs a SECOND pseudo, and its live range crosses a code label, i.e. a cse
+path boundary (s27 gate 5) and a basic-block boundary, so it can be neither a
+local-alloc quantity nor a cse-recovered anonymous temp. `global.c:426` gives one
+pseudo one allocno one hard register, so P1 and P2 cannot be the same C object.
+s33 measured both halves individually reachable from a single named object
+(c1 = P1 correct, base = P2 correct); this session attacked the only remaining
+question: **can the P1 carrier be an anonymous pseudo that survives the join
+label?**
+
+--- 2. ROUTE A -- TERNARY STORE (address expanded before the branch) ---
+
+`expand_assignment` evaluates the destination MEM before the RHS, so writing
+block 1 as `E = c ? (v | 1) : v;` puts the address into a pseudo in the SAME
+basic block as the read, before the conditional -- an anonymous pseudo whose
+live range then crosses the join with no named object. Measured (all with the
+s33 anonymous symbol-difference `*(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 -
+(s32)&D_80106A70))` as the spelling of E):
+
+    d1  block0 anon, block1 anon ternary, blocks 2/3 q      22   48 insns
+    d5  all four blocks anon, ternary stores                18   48 insns
+    d6  block0 anon ternary, blocks 2/3 q ternary           26   50 insns
+    d7  all-q chassis, block 1 ternary only                 12   46 insns
+    d4  CONTROL: block0+block1 anon, statement form         21   50 insns
+        (reproduces s33's c2 exactly, so the harness is sound)
+
+Every ternary body LOSES instructions rather than gaining the seat.
+
+--- 3. ROUTE B -- STORE DUPLICATED INTO BOTH ARMS ---
+
+The sanctioned duplicated-statement-into-arms shape puts the store inside each
+arm, so no address value has to cross the join at all:
+
+    e1  block0 anon, block1 `if (c) { E = v|1; } else { E = v; }`, 2/3 q   22  48
+    e4  e1 with the arms inverted (`if (!c)` first)                        22  48
+    e5  all four blocks anon with duplicated arm stores                    18  48
+    e6  all-q chassis, block 1 duplicated arm stores                       12  46
+
+Identical scores and instruction counts to the matching ternary bodies -- the two
+routes converge on the same RTL.
+
+--- 4. WHY BOTH ROUTES LOSE AN INSTRUCTION -- PASS ATTRIBUTION FROM DUMPS ---
+
+`pwsh tools/grinder/dump.ps1 func_80034F88` on e1, dumps kept at
+`tmp/grind/func_80034F88/s34/dumps_e1/`. Counting `(set (mem:QI` in the
+func_80034F88 slice of each dump (the trailing copy loop's store is `mem/s:QI`
+and is not counted):
+
+    .rtl .jump .cse .loop .cse2 .combine .flow .jump2 .lreg .greg .sched2 -> 5
+    .dbr                                                                 -> 4
+    (insns 21, 45, 55, 91, 125  ->  insns 21, 45, 91, 125;
+     `(note 51 45 57 "" NOTE_INSN_DELETED)` stands where insn 55 was)
+
+So BOTH arm stores survive expand, cse, combine, cross-jump, allocation and both
+scheduler passes, and the else-arm store (insn 55) is deleted in the **delay-slot
+reorg pass**, `tools/gcc-2.7.2/reorg.c:3442` (`prior_insn = redundant_insn
+(trial, insn, delay_list)`; the matcher itself is `redundant_insn` at
+reorg.c:1996). The emitted assembly
+(`tmp/grind/func_80034F88/s34/dumps_e1/code6cac_b.s`) confirms it: `beq $2,$0,.L737`
+with `ori` in the delay slot, ONE `sb`, and `.L737` placed after it -- the false
+path stores nothing. The same shape also drops the block-1 reload (block 0's
+masked value is still live in $v1), so the target's `lbu $a0,0($v1)` at 80034FB4
+is gone too: a 2-instruction loss against the target's 49.
+
+This corrects the natural guess (that cse deletes a store of a value it knows is
+already in memory). cse does not touch these insns; reorg does, and only because
+an arm-local store is a delay-slot thread candidate.
+
+CONSEQUENCE. The target's block-1 store is unconditional at the join with a
+merged value in $v0 -- exactly the `if/else` + `*q = c;` shape `candidate.c`
+already has. Any spelling that moves that store inside an arm (to spare the
+address from crossing the label) is deleted by reorg; any spelling that leaves it
+at the join needs the address live across the label, and an anonymous carrier
+re-materialises there for +1 instruction (d4/c2 = 50 vs the target's 49).
+
+--- 5. TWO MIXED BODIES (anonymous read, named store) ---
+
+    f1  block0 anon, block1 reads via E then `q = &D_80106A73;`, `*q = c;`   14  49
+    f2  f1 with `q = &D_80106A73;` placed before the anonymous read          13  49
+
+f2 collapses onto c1's score, confirming s33's c5 finding from the other side:
+once `q` is materialised anywhere in the block-0/1 region, cse rewrites its
+symbol set into a copy from the anonymous temp, `global.c:1709-1713` records
+`74 preferences: 3`, and `q` takes $v1 for its whole range -- blocks 2/3 included.
+
+--- 6. BOTH s33 FRONTIER ITEMS CLOSED WITH THE c1 .greg ---
+
+`tmp/grind/func_80034F88/s34/dumps_c1/code6cac_b.greg`:
+
+    ;; 9 regs to allocate: 73 80 84 88 74 79 83 87 72
+    ;; 74 conflicts: 72 74 79 80 83 84 87 88 2 29
+    ;; 74 preferences: 3
+    ;; Register dispositions: 72 in 5  73 in 3  74 in 3 ... 79 in 4  83 in 4  87 in 4
+
+  F1 ("is there a pseudo that already crosses the block-1 join that blocks 2/3
+  could consume as an address base?") -- **ANSWERED: exactly one, pseudo 72,
+  which is `p` in $a1** (`72 in 5`), the func_80077D00 return, live across the
+  entire body. Consuming it as an address base for blocks 2/3 requires runtime
+  arithmetic between an unrelated data pointer and a static symbol, which costs
+  instructions and is not ordinary C. No other pseudo spans the join. F1 CLOSED.
+
+  F2 ("is any pseudo seated in $a0 before block 2, to source an $a0 copy
+  preference?") -- **its stated premise is FALSE on the c1 chassis**: 79, 83 and
+  87 are all `in 4` ($a0), and 79 is block 1's loaded byte value, seated in $a0
+  before block 2 exactly as the target's `lbu $a0,0($v1)` is. What does not exist
+  is a legal C copy from a byte VALUE to an address pseudo, so the preference
+  source cannot be spent. F2 CLOSED on the correct ground (no expressible copy),
+  not on the ground s33 recorded (no $a0-seated pseudo).
+
+--- 7. STATE OF THE SEARCH AFTER s34 ---
+
+`candidate.c` is unchanged at 10/49. The admissible-form ceiling is still 10, and
+the residual is stated in its sharpest form yet: the target needs a second
+address pseudo whose live range crosses the block-1 join label; a named C object
+is the only construct measured to produce one; a second named pointer object
+aliasing `&D_80106A73` is the standing Judge ban. Ten new disproven forms banked
+(bank size 188).
+
+- [s34] Chassis re-measured on HEAD (dispatch printed 'measurement unavailable' for the sixth consecutive session): candidate.c at src/code6cac_b.c:3420 = score 10, target_insns 49, build_insns 49, rules_dropped 0, cheat_asm_stripped 28.
+- [s34] KILL RE-AUDIT: the s20/s25 dead round-trip re-measures 10 at 49 insns and s33's c1 re-measures 13 at 49 insns on today's chassis; both banked kills hold unchanged.
+- [s34] The target's address requirement restated in pseudos: P1 in $v1 spans block 0 through block 1's post-label store; P2 in $a0 is materialised twice (blocks 2 and 3), each crossing its own join label. candidate.c's single q reproduces P2 exactly; P1 needs a second pseudo whose live range crosses a code label.
+- [s34] ROUTE A (ternary store, destination address expanded pre-branch by expand_assignment): d1 22/48, d5 18/48, d6 26/50, d7 12/46. None reaches 49 instructions; all lose the target's block-1 reload and its unconditional join store.
+- [s34] ROUTE B (store duplicated into both arms, the sanctioned duplicated-statement-into-arms shape): e1 22/48, e4 22/48, e5 18/48, e6 12/46 -- scores and instruction counts identical to the matching ternary bodies, i.e. the two routes converge on the same RTL.
+- [s34] CONTROL d4 (block 0 + block 1 anonymous, statement form) reproduces s33's c2 at 21/50 exactly, so the s34 harness measures the same thing s33's did.
+- [s34] PASS ATTRIBUTION FROM DUMPS, not inference: in e1 both arm stores (insns 45 and 55) survive .rtl, .jump, .cse, .loop, .cse2, .combine, .flow, .jump2, .lreg, .greg and .sched2 (5 QI stores throughout) and insn 55 becomes '(note 51 45 57 "" NOTE_INSN_DELETED)' at .dbr -- the else-arm store is deleted by the delay-slot reorg pass, tools/gcc-2.7.2/reorg.c:3442 (redundant_insn, defined at reorg.c:1996), NOT by cse.
+- [s34] Because reorg deletes an arm-local store as a redundant delay-slot thread insn, the target's unconditional join store cannot be spelled inside the arms; and leaving it at the join forces an anonymous address to re-materialise there (d4/c2 = 50 insns vs the target's 49). No anonymous carrier for P1 measured this session reaches 49 instructions AND the $v1 seat.
+- [s34] f2 (q materialised before the anonymous read in block 1) scores 13 at 49, the same as c1, confirming s33's c5 result from the other side: any materialisation of q inside the block-0/1 region becomes the copy destination of the anonymous temp and drags q's whole range, blocks 2/3 included, onto $v1.
+- [s34] s33 frontier F1 CLOSED with c1's .greg: the ONLY pseudo whose live range crosses the block-1 join for its own reasons is 72 = p in $a1 (';; Register dispositions: 72 in 5'), the func_80077D00 return; using it as an address base for blocks 2/3 needs runtime arithmetic between an unrelated data pointer and a static symbol.
+- [s34] s33 frontier F2's premise is measured FALSE on the c1 chassis: pseudos 79, 83 and 87 are all seated in $a0 ('79 in 4'), and 79 is block 1's loaded byte value, seated in $a0 before block 2. F2 is closed instead by the absence of any legal C copy from a byte value to an address pseudo.
+- [s34] Ladder accounting: s34 is session THIRTEEN of cycle 2; the six-modality condition was met at s31. Seven sessions remain before the owner directive 2026-09-02 permits any disposition.
+- [s34] HARNESS TRAP (cost the first measurement batch): `bash tools/wsl.sh ...` invoked from the PowerShell tool fails with "wsl: command not found", so the s33 install-and-measure loop silently no-ops the install and every variant re-measures the previously installed body. The s34 runner does the source splice in PowerShell with explicit LF joins instead; tmp/grind/func_80034F88/s34/run.ps1.
+- [s34] src/code6cac_b.c restored to HEAD (INCLUDE_ASM) at session end. candidate.c unchanged apart from an s34 header note; the disproven bank is now 188 forms.
+
+### Artifacts (s34)
+
+`tmp/grind/func_80034F88/s34/`: `variants/{cand,base,c1,c3,rt,d1,d4,d5,d6,d7,e1,e4,e5,e6,f1,f2}.c`,
+`run.ps1`, `install.py`, `ext.py`, `dis.sh`, `dumps_e1/`, `dumps_c1/`, `c1.o`,
+`e1.o`, `code6cac_b.c.orig`.
+
+- [s34] Chassis re-measured on HEAD (dispatch printed 'measurement unavailable' for the sixth consecutive session): candidate.c at src/code6cac_b.c:3420 = score 10, target_insns 49, build_insns 49, rules_dropped 0, cheat_asm_stripped 28.
+
+- [s34] The target's address requirement restated in pseudos, read off asm/funcs/func_80034F88.s: P1 in $v1 (lui/addiu at 80034F98) spans block 0, block 1's lbu and block 1's store at 80034FD0, which sits AFTER the join label .L80034FC8; P2 in $a0 is materialised twice (80034FC8 for block 2, 80034FF0 for block 3), each range also crossing a join label. candidate.c's single q reproduces P2 exactly; P1 requires a SECOND pseudo whose live range crosses a code label.
+
+- [s34] ROUTE A (ternary store, destination address expanded pre-branch): d1 22/48, d5 18/48, d6 26/50, d7 12/46 -- all below the target's 49 instructions.
+
+- [s34] ROUTE B (store duplicated into both arms): e1 22/48, e4 22/48, e5 18/48, e6 12/46 -- identical to the matching ternary bodies, the two routes converge on the same RTL.
+
+- [s34] CONTROL d4 (block 0 + block 1 anonymous, statement form) reproduces s33's c2 at 21/50 exactly, so the s34 harness measures the same thing s33's did.
+
+- [s34] PASS ATTRIBUTION FROM DUMPS: in e1 both arm stores (insns 45, 55) survive .rtl/.jump/.cse/.loop/.cse2/.combine/.flow/.jump2/.lreg/.greg/.sched2 (5 QI stores throughout) and insn 55 is '(note 51 45 57 "" NOTE_INSN_DELETED)' at .dbr -- the else-arm store is deleted by the delay-slot reorg pass, tools/gcc-2.7.2/reorg.c:3442 (redundant_insn at reorg.c:1996), NOT by cse. The same shape also drops the target's block-1 reload, a 2-instruction loss.
+
+- [s34] Consequence: the target's block-1 store is unconditional at the join with a merged value in $v0 (exactly candidate.c's if/else + `*q = c;` shape). Moving it into the arms is deleted by reorg; leaving it at the join forces an anonymous address to re-materialise there for +1 instruction (d4/c2 = 50).
+
+- [s34] f2 (q materialised before the anonymous read in block 1) scores 13 at 49, the same as c1, confirming s33's c5 from the other side: any materialisation of q inside the block-0/1 region becomes the copy destination of the anonymous temp and drags q's whole range, blocks 2/3 included, onto $v1 (global.c:1709-1713, '74 preferences: 3').
+
+- [s34] c1's .greg: ';; 9 regs to allocate: 73 80 84 88 74 79 83 87 72'; ';; 74 preferences: 3'; ';; Register dispositions: 72 in 5  73 in 3  74 in 3 ... 79 in 4  83 in 4  87 in 4'. Pseudo 72 (p, in $a1) is the only allocno spanning the block-1 join; 79/83/87 are all seated in $a0.
+
+- [s34] HARNESS TRAP worth inheriting: `bash tools/wsl.sh ...` invoked from the PowerShell tool fails with 'wsl: command not found', so an s33-style install-and-measure loop silently no-ops every install and re-measures the previously installed body. tmp/grind/func_80034F88/s34/run.ps1 does the splice in PowerShell with explicit LF joins instead.
+
+- [s34] Ladder accounting: s34 is session THIRTEEN of cycle 2; the six-modality condition was met at s31. Seven sessions remain before the owner directive 2026-09-02 permits any disposition.
+
+- [s34] src/code6cac_b.c restored to HEAD (INCLUDE_ASM) at session end; candidate.c unchanged apart from an s34 header note; ten new disproven forms banked (bank size 188).

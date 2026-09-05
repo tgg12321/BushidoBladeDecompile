@@ -3377,3 +3377,122 @@ F3. Ladder accounting. Owner directive 2026-09-02 requires 20 flat sessions and
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-05 (candidate.c = 10, 49/49, rules_dropped 0); dead-arithmetic round-trip construct present, no FAKE-annotated construct
+
+==== s34 (synthesis) ====
+
+MERGED ATTACK (the synthesis this session was dispatched for).
+
+The 33 preceding sessions are consistent and can now be stated as ONE fact plus
+one open question.
+
+  FACT. The target holds &D_80106A73 in two hard registers: $v1 for block 0 plus
+  block 1 (whose store sits after the join label .L80034FC8) and $a0 for blocks 2
+  and 3 (two disjoint ranges, so one pseudo suffices). global.c:426 gives one
+  pseudo one allocno one hard register and GCC 2.7.2 has no live-range splitting,
+  so the body needs TWO address pseudos, and the $v1 one must be live across a
+  code label. candidate.c's single `q` reproduces the $a0 half exactly (blocks 2/3
+  register-exact, s16/s32); s33's c1 reproduces the $v1 half exactly (blocks 0/1
+  byte-exact) by seating an anonymous local-alloc temp in $v1 and letting cse turn
+  q's symbol set into a copy from it (global.c:1709-1713). Neither body gets both,
+  because in each of them the two halves are the SAME C object.
+
+  OPEN QUESTION s34 attacked. Can the second carrier be ANONYMOUS -- a compiler
+  pseudo with no C name -- so that the Judge's one-named-pointer constraint is
+  respected? Two structurally different routes exist and both were measured:
+    (A) make the store's address expand BEFORE the branch (ternary RHS), so the
+        anonymous pseudo is born in block 0's basic block and merely stays live;
+    (B) move the store INSIDE the arms (duplicated-statement-into-arms), so no
+        address value has to cross the join at all.
+  Both are dead, and for the same reason, established from dumps rather than
+  inference: reorg.c:3442 deletes the else-arm store as a redundant delay-slot
+  thread insn (it survives every pass through .sched2 and is a NOTE_INSN_DELETED
+  at .dbr), which also frees the block-1 reload, costing 2 of the target's 49
+  instructions. Leaving the store at the join instead forces the anonymous
+  address to re-materialise there (d4/c2 = 50 insns).
+
+  So the anonymous-carrier route is measured closed on this chassis from both
+  sides, and the residual is exactly: a second NAMED pointer object, which is the
+  standing Judge ban.
+
+FRONTIER RESET (the strongest three for the next ladder pass).
+
+  H-s34-1. The P1 carrier must be a pseudo live across .L80034FC8 that is not
+  `q`. Every construct measured so far that produces such a pseudo is a named C
+  pointer object. The ONE untested class is a carrier not derived from a
+  symbol_ref at all -- an address value computed from a pseudo that already
+  crosses the join. c1's .greg names the only such pseudo: 72 = `p` in $a1.
+  NEXT PROBE: measure whether any ordinary-C expression of the flag byte's
+  address in terms of `p` (the func_80077D00 return) survives cse/combine without
+  being folded back to the bare symbol_ref, and at what instruction cost. If every
+  such spelling either folds to the symbol (collapsing onto the base chassis) or
+  adds an addu/subu, this class is closed and the anonymous-carrier route is
+  exhausted in full.
+
+  H-s34-2. The block-1 reload (`lbu $a0,0($v1)` at 80034FB4, the target's 176th
+  lbu against our 175) appears exactly when block 0's store and block 1's load are
+  spelled through address RTL that cse does NOT equate -- present in c1 and in the
+  score-0 banned body, absent in candidate.c. s29 priced restoring it at ZERO
+  points on the base chassis, which is why it has never been chased.
+  NEXT PROBE: on the base chassis (q for all four blocks, blocks 2/3
+  register-exact), find a spelling of block 0's mask that defeats cse's memory
+  value tracking without changing the address pseudo, and confirm s29's zero
+  pricing by direct measurement rather than by arithmetic on the objdump. If it
+  measures BELOW 10 the residual factorisation is wrong and the ledger's "one
+  missing address allocno" framing must be re-derived.
+
+  H-s34-3. Ladder accounting: s34 is session thirteen of cycle 2 (six modalities
+  reached at s31). Seven flat sessions remain before the owner directive
+  2026-09-02 permits any disposition. When the driver assigns `escalation`, the
+  record to file is LADDER EXHAUSTED (non-endgame residual, floor 10), citing the
+  cse enumeration (s27/s28), the reload pricing (s29), F1 byte-neutrality (s30),
+  the allocator restatement (s31/s32), s33's proof that both seats are
+  individually reachable from one object, and s34's proof that the anonymous
+  second carrier is deleted by reorg on one route and costs an instruction on the
+  other.
+
+KILLS RECORDED THIS SESSION (all instance-scoped; chassis = candidate.c at 10/49
+on HEAD 2026-09-05, no FAKE construct present in any measured body).
+
+  K-s34-A  Spelling block 1's store as a ternary (`E = c ? (v|1) : v;`) so the
+           destination address is expanded before the branch: d1 22/48, d5 18/48,
+           d6 26/50, d7 12/46. KILLED.
+  K-s34-B  Duplicating block 1's store into both arms so no address crosses the
+           join: e1 22/48, e4 22/48, e5 18/48, e6 12/46. KILLED.
+  K-s34-C  Mixing an anonymous read with a named store in block 1: f1 14/49,
+           f2 13/49. KILLED (f2 confirms s33's c5 from the other side).
+
+## [s34] MANDATED KILL RE-AUDIT: the s20/s25 dead round-trip (the only banked body whose instruction multiset matches the target's) and s33's c1 (the structurally closest body, blocks 0/1 byte-exact) both reproduce their banked scores on today's chassis.
+- mechanism: Both bodies re-installed at src/code6cac_b.c:3420 and re-measured with `sandbox func_80034F88 --disable all`; candidate.c itself re-measured first to fix the chassis. candidate.c carries no FAKE-annotated construct (s31/s32/s33 fake_ablate runs, body byte-identical since), so neither kill was measured with a FAKE carrier on the contested pseudo.
+- probe: run.ps1 -names cand,c1,rt
+- result: cand = 10 at 49 build insns / 49 target insns, rules_dropped 0, cheat_asm_stripped 28; rt = 10 at 49; c1 = 13 at 49. Both kills hold unchanged for the sixth consecutive session.
+- verdict: CONFIRMED
+
+## [s34] Spelling block 1's store as a ternary (`E = c ? (v|1) : v;`), so that expand_assignment expands the destination address before the branch and the anonymous address pseudo is born in block 0's basic block, does not produce a body at the target's 49 instructions on this chassis.
+- mechanism: expand_assignment evaluates the destination MEM before the RHS, so the address temp exists pre-branch and merely stays live across the join; the intent was a second address carrier with no C name, respecting the one-named-pointer constraint. Measured against control d4, which reproduces s33's c2 at 21/50 exactly.
+- probe: Four bodies measured with the s33 anonymous symbol-difference as the address spelling: d1 (block0 anon + block1 ternary, blocks 2/3 q), d5 (all four blocks anon ternary), d6 (block0 anon ternary + blocks 2/3 q ternary), d7 (all-q chassis, block 1 ternary only). Artifacts tmp/grind/func_80034F88/s34/variants/d*.c.
+- result: d1 22 at 48 insns, d5 18 at 48, d6 26 at 50, d7 12 at 46. Every ternary body loses instructions instead of gaining the seat; none beats candidate.c's 10.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05 (10, 49/49, rules_dropped 0); four ternary-store bodies, single declared `u8 *q`, no FAKE construct present in any of them
+
+## [s34] Duplicating block 1's store into both if-arms (the duplicated-statement-into-arms shape), so that no address value has to cross the join label at all, does not produce a body at the target's 49 instructions on this chassis: the else-arm store is deleted and the block-1 reload with it.
+- mechanism: Dump-verified pass attribution rather than inference: in e1 both arm stores (insns 45 and 55) survive .rtl, .jump, .cse, .loop, .cse2, .combine, .flow, .jump2, .lreg, .greg and .sched2 (5 `(set (mem:QI` in the func_80034F88 slice throughout), and insn 55 appears as `(note 51 45 57 "" NOTE_INSN_DELETED)` at .dbr. The delay-slot reorg pass deletes it as a redundant thread insn (tools/gcc-2.7.2/reorg.c:3442, matcher `redundant_insn` at reorg.c:1996). cse never touches these insns.
+- probe: Four bodies measured: e1 (block0 anon + block1 arms duplicated, blocks 2/3 q), e4 (arms inverted), e5 (all four blocks anon with duplicated arm stores), e6 (all-q chassis, block 1 arms duplicated); then dump.ps1 on e1 with per-pass QI-store counts. Artifacts tmp/grind/func_80034F88/s34/variants/e*.c and dumps_e1/.
+- result: e1 22 at 48 insns, e4 22 at 48, e5 18 at 48, e6 12 at 46 -- scores and counts identical to the matching ternary bodies, i.e. the two routes converge on the same RTL. The emitted assembly shows `beq $2,$0,.L737` with `ori` in the delay slot, ONE `sb`, and `.L737` after it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05; four duplicated-arm-store bodies, single declared `u8 *q`, no FAKE construct present in any of them
+
+## [s34] Mixing an anonymous read with a named store inside block 1 (read through the symbol-difference expression, store through `q`) does not beat candidate.c on this chassis, and placing `q` before the anonymous read reproduces s33's c1 score exactly.
+- mechanism: Once `q` is materialised anywhere in the block-0/1 region, cse rewrites its symbol set into a register copy from the anonymous temp and global.c:1709-1713 records `74 preferences: 3`, so `q` takes $v1 for its WHOLE range including blocks 2 and 3 -- which candidate.c gets right in $a0. This is s33's c5 result seen from the other side.
+- probe: f1 (anonymous read, then `q = &D_80106A73;`, then `*q = c;`) and f2 (`q` materialised before the anonymous read). Artifacts tmp/grind/func_80034F88/s34/variants/f1.c, f2.c.
+- result: f1 14 at 49 insns, f2 13 at 49 insns (c1's score). Neither reaches 10.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05; two mixed anonymous-read/named-store bodies, single declared `u8 *q`, no FAKE construct present
+
+## [s34] s33 frontier item F1 -- whether any pseudo already crosses the block-1 join for reasons of its own and could be consumed as an address base by blocks 2/3 -- is answered from c1's .greg: exactly one such pseudo exists, 72 = `p` seated in $a1.
+- mechanism: `;; Register dispositions: 72 in 5` with `;; 9 regs to allocate: 73 80 84 88 74 79 83 87 72`; 72 is the func_80077D00 return copy, live across the whole body. Every other allocno's live range is confined to one flag block. Consuming 72 as an address base means runtime arithmetic between an unrelated data pointer and a static symbol, which costs instructions and is not ordinary C.
+- probe: dump.ps1 on the c1 body; tmp/grind/func_80034F88/s34/dumps_c1/code6cac_b.greg.
+- result: F1 closed. Also corrects s33's F2: its premise ('nothing is naturally seated in $a0 before block 2') is FALSE -- 79, 83 and 87 are all `in 4`, and 79 is block 1's loaded byte value in $a0. F2 is closed instead by the absence of any legal C copy from a byte VALUE to an address pseudo.
+- verdict: CONFIRMED
