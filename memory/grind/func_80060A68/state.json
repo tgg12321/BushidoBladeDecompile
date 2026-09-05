@@ -1,8 +1,8 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 24,
- "current_modality": "solver",
+ "session_count": 25,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -147,23 +147,29 @@
    "floor": 2,
    "modality": "solver",
    "headline": "Solver modality: the T1 spine is target's stream with ONE instruction moved, the residual is now a stated scheduler predicate, and the depth-1 full-atom search plus a six-position statement sweep clos"
+  },
+  {
+   "session": 25,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: the pass-2 predecessor set that could satisfy s24's priority predicate is enumerated exhaustively from the extracted model and contains exactly one spellable member (already dead); pass-1 a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The depth-2 pass-2 search over the full atom vocabulary, with the goal stated correctly in PICK order (`--goal-before 30:12 --goal-before 12:35`), has never completed - the s24 run was still going when the one-shot session had to close. It is the single cheapest unspent solver step and it either names a spellable pair or converts the axis into a typed FORECLOSED.",
-   "mechanism": "Depth 1 over 4634 atoms is a clean negative, so if the order is reachable at all it needs two simultaneous input changes - the shape that resolved two of the three banked scheduling residuals in the 2026-08-05 application round (title_mv_exec2 and func_8002C61C), where the first-pass answer was also 'no single-atom vector'.",
-   "next_probe": "Apply memory/grind/func_80060A68/candidate.c (T1) to src, re-run `extract.py text1b`, then run BOTH `--atoms luid,luid_move --depth 2` (cheap, fully spellable) and the unrestricted `--depth 2` via tmp/grind/func_80060A68/s24/run_perturb.py, using --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80060A68/text1b.o. Budget it as the session's first act, in the background, and harvest it in-turn."
+   "hypothesis": "With both halves of s24's predicate now reduced to the same statement-position axis and that axis closed, the only remaining route on the T1 spine is to change the block's PRIORITY PROFILE itself rather than to add a predecessor to uid 12: a spelling of copies 1-3 that lowers pri(35) to 2 or raises pri(12)'s existing pred uid 9, at zero net instructions, would re-open the tie that decides slot 12.",
+   "mechanism": "priority() is computed bottom-up from the block head, so the profile is a function of the head chain shape, not of uid 12. Today uid 35 (`lw $4,12($3)`, copy 2's source-pointer load) sits at pri 3 purely because its preds are uid 9 (1,2) and uid 25 (3,1). If copy 2's source pointer were read through a chain that does not touch the Z0 store's memory - so uid 35 loses the uid 25 memory dependence and falls to pri 2 - then uid 12 (pri 2, luid 17) and uid 35 (pri 2, luid 22) tie, and rank_for_schedule's dependence-class term relative to last_scheduled_insn = uid 30 becomes the discriminator instead of LUID.",
+   "next_probe": "On the T1 spine, sweep spellings that stage copy 2's source pointer ABOVE the Z0 store (e.g. read `*(s32 *)(outer + 0xC)` once into a named local declared before the store and use it for all three copies), measure each with `sandbox func_80060A68 --disable all`, then re-extract the model and read pri(35), pri(28) and pri(12) out of the pass-2 node table BEFORE scoring - the profile, not the score, is the discriminator. Reject immediately anything that moves build_insns off 65."
   },
   {
-   "hypothesis": "pri(12) can be lifted to 3 or 4 only by giving the p10 load a predecessor, and the six statement positions below the Z0 store are all normalised to one cc1 stream - so the remaining lever is to change what uid 9 or uid 16 IS, not where the p10 read sits: any spelling that lengthens the head chain above the p10 read without adding an instruction raises pri(12) by construction.",
-   "mechanism": "pri(insn) = max over preds of (pri(pred) + insn_cost(pred) - 1), floor 1, with ADJUST_COST zeroing anti/output costs. Today the head chain is uid 9 (pri 1) -> uid 12 (pri 2). If `outer`'s value reached the p10 load through one more true dependence link of load cost 2, pri(12) becomes 4 and the pass-2 requirement is met with NO luid change at all - which is the only route that does not run into the six-position collapse.",
-   "next_probe": "Sweep spellings of the `outer = D_800A3468;` head and of the Z0 store's index read that keep the instruction count at 65: read D_800A3468 into a local that is then used for the p10 address; spell the Z0 store's index through a named local declared before the p10 read; and read `*(u16 *)outer` into a local above the p10 read (checking whether cse merges it with the later idx read across the Z0 store). Measure each with sandbox --disable all, then re-extract the model and read pri(12) / luid(12) out of the picks before scoring - the model, not the score, is the discriminator."
+   "hypothesis": "The depth-2 pass-2 solver search with the goal stated in PICK order (`--goal-before 30:12 --goal-before 12:35`) has still never completed - s24's tmp/grind/func_80060A68/s24/depth2_pass2.log is EMPTY on disk. It is the single cheapest unspent step and either names a spellable pair or converts the axis into a typed FORECLOSED.",
+   "mechanism": "Depth 1 over all 4634 atoms is a clean negative, so if the order is reachable at all it needs two simultaneous input changes - the shape that resolved two of the three banked scheduling residuals in the 2026-08-05 application round (title_mv_exec2 and func_8002C61C), where the first-pass answer was also 'no single-atom vector'.",
+   "next_probe": "Apply memory/grind/func_80060A68/candidate.c to src, re-run `extract.py text1b`, then run BOTH `--atoms luid,luid_move --depth 2` (cheap, fully spellable) and the unrestricted `--depth 2` via tmp/grind/func_80060A68/s24/run_perturb.py with --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80060A68/text1b.o. Launch it as the session's FIRST act, in the background, and harvest it in-turn - s24 lost it to the one-shot close."
   },
   {
-   "hypothesis": "E2's PRE-RA residual and T1's scheduling residual are the two halves of one question - E2 has the p10 load at target's exact slot 11 in target's exact seat $a1 but no third load, T1 has three loads with the p10 load seven slots early - so a body that keeps E2's merged-pseudo priority behaviour while re-materialising the third load would be at zero.",
-   "mechanism": "s23's slot-12 law: the merged pseudo wins the priority tie because it has TWO consumers. A distinct load with two source-level consumers that combine folds back to one insn would carry the merged case's priority and the three-load case's insn count. s24 adds the missing number to that law: the merged case's advantage is worth exactly pri 3-with-high-luid or pri 4 on uid 12.",
-   "next_probe": "On the T1 spine, give the +4 halfword a second real consumer that combine folds (the 0x1C store's value re-used in an expression that folds to a copy), measure with sandbox --disable all, and read tmp/grind/func_80060A68/dumps/text1b.combine to confirm the second consumer is folded away and the pass-2 pri(12) in the re-extracted model BEFORE scoring."
+   "hypothesis": "E2's PRE-RA residual and T1's scheduling residual remain the two halves of one question: E2 has the p10 load at target's exact slot 11 in target's exact seat $a1 but no third load, T1 has three loads with the p10 load seven slots early, so a body that keeps E2's merged-pseudo priority behaviour while re-materialising the third load at zero net instructions would be at zero.",
+   "mechanism": "s23's slot-12 law: the merged pseudo wins the priority tie because it has TWO consumers. A distinct load with two source-level consumers that combine folds back to one insn would carry the merged case's priority and the three-load case's instruction count. s24 supplies the missing number: the merged case's advantage is worth exactly pri 3-with-high-LUID or pri 4 on uid 12, and s25 supplies the budget constraint (zero net instructions).",
+   "next_probe": "On the T1 spine give the +4 halfword a second real consumer that combine folds (the 0x1C store's value re-used in an expression that folds to a copy), measure with `sandbox func_80060A68 --disable all`, and read tmp/grind/func_80060A68/dumps/text1b.combine to confirm the second consumer is folded away and the pass-2 pri(12) in the re-extracted model BEFORE scoring."
   }
  ],
  "judge_constraints": [
@@ -547,6 +553,14 @@
    "measured_on": "today's HEAD chassis with the s23 `()` dispatch-call spelling; 6 probe bodies plus the T1 and E2 controls, zero FAKE constructs in any of them; cc1 streams diffed for 3 of the 6",
    "predicate_cite": "",
    "result": "KILLED. All six score 5 / build 67 / target 66 with their three loads at 18 ($a0) / 23 ($v0) / 24 ($a1) - the p10 load L"
+  },
+  {
+   "session": 25,
+   "statement": "A second source-level read of the gp global D_800A3468 placed below the Z0 store survives cse and does materialise the required (pri 3, icost 2) predecessor for the p10 load, but the extra `lw` puts t",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling on the T1 spine (T1 control re-measured 2 / 65 first); 1 probe body plus the T1 control, zero FAKE constructs in either; cc1 stream and both",
+   "predicate_cite": "",
+   "result": "KILLED as a floor move, CONFIRMED as a mechanism. The cse prediction is exactly right - the cc1 stream carries `lw $3,D_"
   }
  ],
  "escalation_deferrals": 0

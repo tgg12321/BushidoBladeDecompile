@@ -3453,3 +3453,95 @@ produced by a statement move, and now has a mechanism for why.
 - [s24] candidate.c is now the T1 body (documented header); the E2 body is preserved undisproven at memory/grind/func_80060A68/e2-spine-floor2-cse-merged.c. Zero FAKE constructs in every body measured this session; none of the five banned constructs is present in any of them.
 
 - [s24] src/text1b.c restored to HEAD (INCLUDE_ASM) at session end; the working tree carries only memory/grind/func_80060A68/ changes.
+
+## s25 (2026-09-04) — forensics: the pass-2 priority table, read out whole, and the closed predecessor enumeration
+
+Chassis: HEAD, T1 body (memory/grind/func_80060A68/candidate.c) applied to src/text1b.c.
+`sandbox func_80060A68 --disable all` → `"score": 2, "target_insns": 66, "build_insns": 65`.
+`tools/sched_solver/extract.py text1b` → `parity=True funcs=492 blocks=1764 picks=14350`.
+`tools/fake_ablate.py` on candidate.c → "no FAKE-annotated constructs found; nothing to ablate".
+Every priority and LUID s24 harvested reproduces digit-for-digit. The s24 kills stand on this chassis.
+
+### The pass-2 block-0 node table (44 insns) — the authoritative input to the residual
+
+Read with tmp/grind/func_80060A68/s25/model_dump.py; full copy at tmp/grind/func_80060A68/s25/model_T1.txt.
+Columns: uid / pass-2 luid / pri / icost / ref.
+
+    145  0  1 1  2      25 19  3 1 22      66 36  9 1  8
+    147  1  1 1 25      28 20  3 2  5      69 37  9 2  3
+      9 15  1 2 19      30 21  4 2 10      73 38  9 2  4
+     16 16  2 2  6      35 22  3 2  6      76 39  8 1  4
+     12 17  2 2  6      32 23  5 1 12      78 40  9 1  5
+     21 18  3 1  3      37 24  5 2 10      81 41 10 1  5
+
+`deps` for the p10 load: `"12": [[147, 0], [9, 0]]` — two true-dependence predecessors,
+uid 147 (pri 1, icost 1 → contributes 1) and uid 9 (pri 1, icost 2 → contributes 2).
+Hence pri(12) = 2. The pick tails:
+
+    ours   pass 2: ... 32, 30, 35, 28, 25, 21, 12, 16, 147, 145, 9
+    target pass 2: ... 32, 30, 12, 35, 28, 25, 21, 16, 147, 145, 9
+
+### The closed enumeration (this session's deliverable)
+
+`priority()` (tools/gcc-2.7.2/sched.c:1495) is `max over LOG_LINKS of pri(pred) + insn_cost(pred) - 1`,
+and MIPS's ADJUST_COST zeroes anti/output link costs, so only a kind-0 dependence can contribute
+more than `pri(pred) - 1`. Adding a dependence TO uid 12 leaves every other insn's priority
+unchanged (priority is a function of an insn's own predecessors only), so the table above is a
+fixed scoring board. Solving `pri(p) + icost(p) - 1` over it:
+
+| target value | insns that deliver it | spellable as a predecessor of the p10 load? |
+|---|---|---|
+| pri(12)=4 | uid 28, uid 35 — both `lw ?,12($3)`, (pri 3, icost 2) | **NO.** Both are loads. The p10 address is `outer + 0x10`, not a function of `*(s32 *)(outer + 0xC)`, and a load-load pair gets no memory dependence. |
+| pri(12)=3 | uid 21 `sll` (3,1); uid 16 `lhu $2,0($3)` (2,2) | **NO.** The p10 address is not a function of `*(u16 *)outer`. |
+| pri(12)=3 | uid 25, the Z0 store (3,1) | **YES**, as a true memory dependence, by placing the p10 read below the store — the six-position family, killed at s24 (all six normalise to one cc1 stream, 67 insns, score 5). |
+| overshoot | uid 30 (4,2) → 5; uid 32 (5,1) → 5 | ranks 12 above uid 30, the wrong side of target's order. |
+
+So on the T1 65-instruction geometry the "raise pri(12)" route has exactly one spellable member,
+and it is already banked dead.
+
+### Pass 1: the birthing bump fires on the p10 load, and that is why the LUID half is closed too
+
+`adjust_priority` (sched.c:2541-2589) runs only while `reload_completed == 0`. Pass-1 `adjpri`
+records `(insn 12, deaths 0, birth 1, pri 2)` and the pass-1 pick list shows uid 12 picked at
+priority 2130706433 (= 0x7F000001 = max_priority): the bump fires on the p10 load. It also fires
+on uid 9, 16, 21, 28, 30, 35 and most of the block; the birth=0 insns are 118, 81, 78, 66, 63, 53,
+25, 32, 46, 39. With the head insns all tied at max_priority, the pass-1 pick order among them is
+decided by LUID descending over the pass-1 INPUT order (pass-1 luids 9=0, 12=1, 16=3, 21=5, 25=7,
+28=8, 30=9, 32=10, 35=11), giving the pick tail 32, 35, 30, 28, 25, 21, 12, 16, 9 and therefore the
+pass-2 luids 9=15, 16=16, 12=17, 21=18, 25=19, 28=20, 30=21, 35=22, 32=23. Raising pass-2 luid(12)
+above 22 therefore requires the p10 read to sit later in the RAW SOURCE ORDER — the identical lever
+s24 swept across six positions and found normalised to one cc1 stream. Both halves of the predicate
+reduce to the same statement-position axis.
+
+### The one new spelling measured, and why it fails on budget rather than on order
+
+`p10 = *(s32 *)(D_800A3468 + 0x10);` written BELOW the Z0 store (body_V1.c) is a second source-level
+read of the same gp global. Prediction: the store to `D_800F10D0($idx)` is a varying gp address that
+`memrefs_conflict_p` cannot disambiguate, so cse cannot reuse the first load and a genuine second
+`lw` materialises, carrying a true memory dependence on the store (pri 3) and thereby becoming the
+(pri 3, icost 2) predecessor the enumeration demands. **The prediction is exactly right** — the cc1
+stream shows `lw $3,D_800A3468 … sw $0,D_800F10D0($2) … lw $4,D_800A3468 … lw $6,16($4)`, and the
+pass-2 profile shifts (four insns at pri 4 where T1 has three at pri 3). It fails on the instruction
+budget instead: build 67 against target 66, score 9. Target's stream is T1's stream plus exactly one
+load-delay NOP, so any body that materialises a 66th REAL instruction is out of budget whatever it
+does to the schedule. That is now the standing constraint on this spine: **the residual must be
+bought with zero net instructions.**
+
+Artifacts: tmp/grind/func_80060A68/s25/{model_dump.py, pass1.py, model_T1.txt, picks_T1.txt,
+picks_V1.txt, cc1_T1.s, cc1_V1.s, body_T1.c, body_V1.c, apply.sh, extract.sh, cap.sh}.
+
+- [s25] HEAD chassis floor re-measured this session: T1 (candidate.c) = score 2, build_insns 65, target_insns 66. The brief's 'measurement unavailable' is resolved to 2.
+
+- [s25] tools/sched_solver/extract.py text1b re-extracts parity=True over 1764 blocks; this function's pass-1 block 0 (42 insns) and pass-2 block 0 (44 insns) both replay BASELINE EXACT, so the model is authoritative on this chassis.
+
+- [s25] Pass-2 block 0 deps for the p10 load are exactly `"12": [[147, 0], [9, 0]]` - uid 147 (pri 1, icost 1 -> contributes 1) and uid 9 (pri 1, icost 2 -> contributes 2), hence pri(12) = 2.
+
+- [s25] The complete pass-2 (pri, icost) board for block 0 is banked in evidence.md; the only (pri 3, icost 2) insns are uid 28 and uid 35, both `lw ?,12($3)` loads.
+
+- [s25] fake_ablate.py reports zero FAKE-annotated constructs in candidate.c, so the s22/s23/s24 instance kills were not measured under a FAKE carrier.
+
+- [s25] NEW MECHANISM DATUM (reusable across this TU): a second source-level read of a gp global placed BELOW a store to a varying gp address is NOT cse-merged - the store invalidates memory - and materialises a real second `lw`. Confirmed in the cc1 stream at tmp/grind/func_80060A68/s25/cc1_V1.s.
+
+- [s25] NEW STANDING CONSTRAINT on the T1 spine: target's instruction stream is this body's stream plus exactly one load-delay NOP, so the residual must be bought with ZERO NET INSTRUCTIONS. Any spelling that materialises a 66th real instruction is out of budget regardless of its effect on the schedule (measured: the gp re-read = 67 insns, score 9).
+
+- [s25] Pass-1 adjpri confirms birthing_insn_p fires on the p10 load (birth=1, bumped to 0x7F000001), so the pass-1 head order is LUID-descending over raw source order - the mechanism behind s24's six-position collapse.

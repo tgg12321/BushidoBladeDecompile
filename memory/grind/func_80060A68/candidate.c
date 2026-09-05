@@ -1,3 +1,36 @@
+/* [s25 2026-09-04 - forensics modality.  BODY UNCHANGED (still the T1 spine); the floor is
+ * still 2 / build 65 / target 66, re-measured on today's HEAD before any probe.  What s25 adds
+ * is the CLOSED ENUMERATION behind s24's predicate, read out of the extracted scheduler model
+ * rather than reasoned about:
+ *
+ *   pri(12) = max over LOG_LINKS of (pri(pred) + insn_cost(pred) - 1)   [sched.c:1495],
+ *   and ADJUST_COST zeroes anti/output costs, so only a TRUE dep can contribute more than
+ *   pri(pred) - 1.  Adding a dep to uid 12 changes no other insn's priority, so the pass-2
+ *   table is a fixed scoring board:
+ *     pri(12)=4 needs a (pri 3, icost 2) true-dep pred -> only uid 28 / uid 35, both
+ *       `lw ?,12($3)`.  Both are LOADS; a load cannot be a true-dep pred of another load and
+ *       the p10 address is not a function of *(s32 *)(outer + 0xC).  NO C SPELLING.
+ *     pri(12)=3 needs (pri 3, icost 1) or (pri 2, icost 2) -> uid 21 (sll), uid 16 (lhu), or
+ *       uid 25 (the Z0 store).  21 and 16 are semantically unreachable; uid 25 is reachable as
+ *       a true MEMORY dep by putting the p10 read below the store - the six-position family
+ *       s24 already killed (one normalised cc1 stream, 67 insns, score 5).
+ *     uid 30 (4,2) and uid 32 (5,1) both give 5, which ranks 12 ABOVE uid 30 - wrong side.
+ *
+ * s25 also read the pass-1 `adjpri` stream: the p10 load IS a birthing insn (birth=1) and IS
+ * bumped to max_priority 0x7F000001, so the pass-1 order among the head insns is LUID-descending
+ * over the raw source order.  That means the OTHER half of the predicate (pass-2 luid(12) > 22)
+ * reduces to the SAME statement-position axis s24 closed.  Both halves now sit on one lever.
+ *
+ * THE NEW STANDING CONSTRAINT.  Target's stream is this body's stream plus exactly one load-delay
+ * NOP, so the residual must be bought with ZERO NET INSTRUCTIONS.  s25 measured the one spelling
+ * that synthesises the required (pri 3, icost 2) predecessor - a SECOND source read of the gp
+ * global, `p10 = *(s32 *)(D_800A3468 + 0x10);` below the Z0 store.  The cse prediction held
+ * exactly (the store to D_800F10D0($idx) is a varying gp address, so the re-read is not merged
+ * and a real second `lw $4,D_800A3468` appears), but it costs an instruction: 67 insns, score 9.
+ * Banked at rejected/gp-global-reread-below-Z0-store-survives-cse-adds-an-lw-score9-67insns.c.
+ *
+ * DISPOSITION.  ACTIVE.  `progress`; the ladder is not exhausted.
+ */
 /* [s24 2026-09-04 - solver modality.  SPINE CHANGE: candidate.c is now the T1 body
  * (the p10 read above the Z0 store), not the E2 body.  Both measure engine score 2 on
  * today's HEAD chassis; T1 is 65 build insns against target's 66, E2 is 66.  The E2 body
