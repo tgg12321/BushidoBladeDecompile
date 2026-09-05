@@ -5839,3 +5839,100 @@ Probe: extract.py + inverse.py on model_v1.json.  The open question is a
 - probe: extract.py on the duplicated-arm build (model_v1.json) and `inverse.py global model_v1.json --goal` with the full disposition, --depth 2 --top 6 (tmp/grind/func_80034F88/s56/inverse_v1.txt).
 - result: Disposition {72:$a1, 73:$v1, 74:$v1, 75:$a0, 76:$v0, 79:$a0, 80:$v1, 81:$v0}; conflicts of 75 drop 79. Minimal solution still 1 atom but the cheapest priority vector is now refs_down(74) 7 -> 3 (cost 5) and refs_up(75) 6 -> 15 (cost 10). The shape is one instruction over so it is not the answer, but 'reproduce this conflict graph at 49 instructions' is a strictly smaller question than the one the ledger has been asking.
 - verdict: CONFIRMED
+
+## s57 hypotheses (forensics, 2026-09-05)
+
+## [s57] The GCC pass that deletes block 0's reload is cse2 -- the second cse run under -frerun-cse-after-loop -- not cse1 and not combine; cse1 keeps the reload alive whenever an assignment to the address variable sits between the mask store and the read.
+- mechanism: cse records a store's MEM in the value class of the store's SOURCE pseudo (cse.c:7310-7327; `sets[i].src_elt == 0` means the dest is not recorded at all). When cse1 processes a `q = &D_80106A73;` set placed between the store and the read, invalidating that register drops every hash entry whose MEM is addressed by it, so the read survives cse1 -- and cse1 then deletes the set itself as redundant. By the time cse2 runs, the invalidator is gone from the stream, nothing invalidates the MEM, cse2 rewrites the load to `(subreg:QI (reg 74) 0)` and combine folds the pair into a register copy that becomes the load-delay nop.
+- probe: Installed tmp/grind/func_80034F88/s57/vB.c (candidate chassis plus `q = &D_80106A73; v = *q;` at the head of flag block 0), ran `pwsh tools/grinder/dump.ps1 func_80034F88`, and sliced the function out of every pass dump (tmp/grind/func_80034F88/s57/f88.vB.{rtl,jump,cse,loop,cse2,flow,combine}.txt). Tracked insn 31 (`set (reg:QI 79) (mem:QI (reg 75))`) pass by pass.
+- result: ALIVE as a mem load in .rtl, .jump, .cse and .loop; REWRITTEN to `(set (reg:QI 79) (subreg:QI (reg/v:SI 74) 0))` in .cse2; folded to `(set (reg 78) (reg 74))` with the load deleted in .combine. This corrects the s52/s54 ledger attribution ("cse forwards the store") to the specific second run, and it names the pass-input requirement: the invalidator must still be present in the cse2 stream.
+- verdict: CONFIRMED
+
+## [s57] An address-side cse invalidator for block 0 cannot be instruction-free on this function, because exactly the sets cse1 is able to delete as redundant are the ones that cost no instruction.
+- mechanism: A second `q = &D_80106A73;` is redundant (the pseudo already holds that SYMBOL_REF), so cse1 deletes it after using it to invalidate; a non-redundant address set materialises a second la pair, which is s51's 51-instruction split-spelling result.
+- probe: tmp/grind/func_80034F88/s57/vA.c (reload into the existing `m`) and vB.c (reload into a fresh `v`), both measured with `sandbox func_80034F88 --disable all` and disassembled.
+- result: Both 49 insns / score 10 and byte-identical to the s56 candidate: the load-delay nop at 4f64 is back, no reload. Banked as rejected/s57-readdr-reassign-block0-cse2-refolds-49insn-score10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s56 candidate.c chassis (single `u8 *q`) on HEAD 2026-09-05, no FAKE construct present
+
+## [s57] Splitting block 0 into raw / stored-value / reload locals and dead-re-setting the STORED-VALUE local (never the mask, never the reload) is a cse2 invalidator that costs zero instructions and produces the target's 80034FB4 reload on the single-pointer chassis.
+- mechanism: cse keys the stored MEM on the store's source pseudo, so with `raw = *q; mv = raw & 0xF8; *q = mv;` the MEM lives in `mv`'s value class. `mv = raw;` after the store changes that quantity, so cse2 cannot forward the store into the following `v = *q;`. The re-set is trivially dead and flow/combine delete it, so the instruction count is unchanged at 49.
+- probe: Built tmp/grind/func_80034F88/s57/vD.c (`mv = raw;`) and vC.c (`mv = 0;`), measured `sandbox func_80034F88 --disable all`, disassembled the sandbox object, and ran `python3 tools/ra_solver/goal_from_tgt.py classify code6cac_b func_80034F88`.
+- result: Both 49 insns / score 10 with `lbu v1,0(a0)` at 4f64 where the s56 candidate emitted a nop. classify reports FIRST DIVERGENCE: RA with `$v1 -> $a0 x6`, `$a0 -> $v1 x5` and ZERO instruction-shape differences -- the first FAKE-alias-free body in 57 sessions to reach RA class (the s56 candidate classifies PRE-RA; only the two-alias score-15 body did before, with a 20-substitution three-cycle rotation). vD is now memory/grind/func_80034F88/candidate.c with the dead store carrying its /* FAKE */ annotation.
+- verdict: CONFIRMED
+
+## [s57] The dead re-set only works when it CHANGES the stored pseudo's value class: re-setting it to the same value, or omitting it, loses the reload.
+- mechanism: cse's invalidation is by quantity, and a set whose source is already in the destination's class leaves the class intact, so cse2 still finds the MEM equivalent.
+- probe: tmp/grind/func_80034F88/s57/vF.c (`mv = raw & 0xF8;`, the same value) and vE.c (the raw/mv/v split with no re-set at all); sandbox plus disassembly.
+- result: Both 49 insns / score 10 with the load-delay nop back at 4f64 and no reload. Banked as rejected/s57-same-value-reset-not-a-cse2-invalidator-49insn-score10.c and rejected/s57-split-raw-mv-v-no-reset-no-reload-49insn-score10.c. The three-local split alone is not the lever; the class-changing dead store is.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s56 candidate.c chassis with the block-0 raw/mv/v split installed, on HEAD 2026-09-05, no FAKE alias objects present
+
+## [s57] KILL RE-AUDIT (mandated, floor flat 3 sessions): the two /* FAKE */ pointer-alias handles on the score-15 two-alias body are not masking a better form, and tools/fake_ablate.py's reported ABLATION WIN on it is a tool artifact.
+- mechanism: The ablation unit for handle A spans its declaration, so removing it leaves `*t` undeclared; the build drops flag block 0 entirely and scores 38 build insns against 49 target insns -- eleven pure deletions, which the distance metric prices below the score-15 body's eleven register substitutions.
+- probe: `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c`, then re-installed the reported winner and disassembled it.
+- result: Grid keep-all 15 / drop-A 11 (38 insns) / drop-B 30 / drop-both 33; the "win" is a truncated function missing block 0 (banked as rejected/s57-ablate-handleA-degenerate-38insn-score11.c). Both handles are load-bearing on that chassis. Separately, the s57 chassis makes the whole two-alias grant unnecessary for the reload, so the ablation question is now moot.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c on HEAD 2026-09-05, both annotated pointer-alias FAKE objects present and then ablated one at a time
+
+### FRONTIER after s57 (strongest three, in order)
+
+1. **Re-run the whole RA/solver stack on the s57 chassis.** model_vD.json gives
+   73 (block-0 value chain, nrefs 11, len 7, pri 47142) -> $v1 and 74 (the
+   &D_80106A73 pointer, nrefs 11, len 29, pri 11379) -> $a0, while the target
+   wants exactly the opposite in block 0 and the SAME assignment in blocks 1
+   and 2. Every s49..s56 solver conclusion was derived on a chassis that either
+   lacked the reload (PRE-RA) or carried two FAKE alias objects, so all of them
+   are chassis-void here. Next probe: `tools/ra_solver/extract.py` +
+   `inverse.py global tmp/grind/func_80034F88/s57/model_vD.json --goal` with the
+   full target disposition, --depth 2, and price the atoms afresh.
+2. **Lower the block-0 value chain's 11 references.** The s56 kill (H56.5,
+   "74's seven references are seven target operands") was measured on the fused
+   mask+reload allocno; the s57 split moves the reload into its own local, so the
+   reference distribution is different and that kill must be re-measured before
+   it is spent. Win condition: pri(value chain) below pri(pointer) = 11379 with
+   the 49-instruction stream intact.
+3. **Declare D_80106A70 as the 4-byte aggregate the DATA MODEL signal names**
+   (still untried in 57 sessions). It is the last declaration pun in
+   candidate.c and it changes what cse can equate between the mask's address and
+   the trailing loop's; measure the in-TU spelling first and check the
+   relocation still resolves to %lo(D_80106A73). Header edit = integration handoff.
+
+## [s57] The GCC pass that deletes block 0's reload is cse2, the second cse run under -frerun-cse-after-loop, not cse1 and not combine; cse1 keeps the reload alive whenever an assignment to the address variable sits between the mask store and the read.
+- mechanism: cse records a store's MEM in the value class of the store's SOURCE pseudo (cse.c:7310-7327 skips recording the destination entirely when sets[i].src_elt == 0; cse.c:7182 only inserts the source when ! rtx_equal_p (SET_SRC, SET_DEST)). When cse1 processes a `q = &D_80106A73;` set placed between the store and the read, invalidating that register drops every hash entry whose MEM is addressed by it, so the read survives cse1 -- and cse1 then deletes the redundant set itself. By the time cse2 runs the invalidator is gone from the stream, nothing invalidates the MEM, cse2 rewrites the load to (subreg:QI (reg 74) 0) and combine folds the pair into a register copy that becomes the load-delay nop.
+- probe: Installed tmp/grind/func_80034F88/s57/vB.c (s56 candidate chassis plus `q = &D_80106A73; v = *q;` at the head of flag block 0), ran `pwsh tools/grinder/dump.ps1 func_80034F88`, sliced the function out of every pass dump (tmp/grind/func_80034F88/s57/f88.vB.{rtl,jump,cse,loop,cse2,flow,combine}.txt) and tracked insn 31 pass by pass.
+- result: insn 31 `(set (reg:QI 79) (mem:QI (reg/v:SI 75)))` is ALIVE as a memory load in .rtl, .jump, .cse and .loop; it is REWRITTEN to `(set (reg:QI 79) (subreg:QI (reg/v:SI 74) 0))` in .cse2; combine then emits `(set (reg/v:SI 78) (reg/v:SI 74))` and marks insn 31 NOTE_INSN_DELETED. This corrects the s52/s54 ledger attribution (which named cse generically) to the specific second run, and it states the pass-input requirement precisely: the invalidator must still be present in the cse2 stream, not merely in cse1's.
+- verdict: CONFIRMED
+
+## [s57] An address-side cse invalidator for block 0 is not instruction-free on the single-pointer chassis: re-assigning `q = &D_80106A73;` between the mask store and the read is deleted by cse1 as redundant, so cse2 re-forwards the store and the reload is lost.
+- mechanism: Exactly the address sets cse1 is able to delete as redundant (the pseudo already holds that SYMBOL_REF) are the ones that cost no instruction; a non-redundant address set materialises a second la pair, which is s51's 51-instruction split-spelling result.
+- probe: tmp/grind/func_80034F88/s57/vA.c (reload into the existing `m`) and vB.c (reload into a fresh `v`), each installed at src/code6cac_b.c:3420 and measured with `sandbox func_80034F88 --disable all`, then disassembled from tmp/sandbox/func_80034F88/code6cac_b.o.
+- result: Both 49 build insns / score 10 and byte-identical to the s56 candidate: the load-delay nop at offset 0x4f64 is back and there is no reload. Banked as rejected/s57-readdr-reassign-block0-cse2-refolds-49insn-score10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s56 candidate.c chassis (single `u8 *q`, one address object) on HEAD 2026-09-05, no FAKE construct present
+
+## [s57] Splitting block 0 into raw / stored-value / reload locals and dead-re-setting the STORED-VALUE local (never the mask value, never the reload) is a cse2 invalidator that costs zero instructions and emits the target's 80034FB4 reload on the single-pointer chassis.
+- mechanism: cse keys the stored MEM on the store's source pseudo, so with `raw = *q; mv = raw & 0xF8; *q = mv;` the MEM lives in mv's value class. The following `mv = raw;` changes that quantity, survives cse1 and loop into the cse2 stream, and is then deleted as trivially dead by flow/combine, so the instruction count stays at 49.
+- probe: Built tmp/grind/func_80034F88/s57/vD.c (`mv = raw;`) and vC.c (`mv = 0;`), measured `sandbox func_80034F88 --disable all`, disassembled the sandbox object, ran `python3 tools/ra_solver/goal_from_tgt.py classify code6cac_b func_80034F88` and extracted the allocation model (tmp/grind/func_80034F88/s57/model_vD.json).
+- result: Both 49 insns / score 10 with `lbu v1,0(a0)` at 0x4f64 where the s56 candidate emitted a nop. classify reports FIRST DIVERGENCE: RA with `$v1 -> $a0 x6`, `$a0 -> $v1 x5` and ZERO instruction-shape differences -- the first body in 57 sessions to reach RA class without FAKE pointer-alias objects (the s56 candidate classifies PRE-RA; the only prior RA-class body was the two-alias score-15 form with 20 substitutions and a three-cycle rotation, spending the Judge's two-handle grant). vD is now memory/grind/func_80034F88/candidate.c, with the dead store carrying a /* FAKE */ annotation naming cse2 as the mechanism; the previous body is preserved as candidate_s56_prera_score10.c.
+- verdict: CONFIRMED
+
+## [s57] The dead re-set works only when it changes the stored pseudo's value class: re-setting that local to the same value, or omitting the re-set while keeping the three-local split, loses the reload.
+- mechanism: cse invalidation is by quantity, and a set whose source is already in the destination's value class leaves the class intact, so cse2 still finds the MEM equivalent and forwards the store.
+- probe: tmp/grind/func_80034F88/s57/vF.c (`mv = raw & 0xF8;`, the same value) and vE.c (the raw/mv/v split with no re-set at all); `sandbox func_80034F88 --disable all` plus disassembly of the sandbox object in each case.
+- result: Both 49 insns / score 10 with the load-delay nop back at 0x4f64 and no reload. Banked as rejected/s57-same-value-reset-not-a-cse2-invalidator-49insn-score10.c and rejected/s57-split-raw-mv-v-no-reset-no-reload-49insn-score10.c. The three-local split alone is not the lever; the class-changing dead store is.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s56 candidate.c chassis with the block-0 raw/mv/v split installed, on HEAD 2026-09-05, no FAKE alias objects present
+
+## [s57] KILL RE-AUDIT (mandated, floor flat 3 sessions): the two /* FAKE */ pointer-alias handles on the score-15 two-alias body are not masking a better form, and tools/fake_ablate.py's reported ABLATION WIN on that body is a tool artifact.
+- mechanism: The ablation unit for handle A spans its declaration, so removing it leaves `*t` undeclared; the build drops flag block 0 entirely and emits 38 instructions against 49 target instructions, and the distance metric prices eleven deletions below the score-15 body's eleven register substitutions.
+- probe: `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c`, then re-installed the reported winner, re-measured with sandbox and disassembled it.
+- result: Grid: keep-all 15 (49 insns) / drop handle A 11 (38 insns) / drop handle B 30 (31 insns) / drop both 33 (20 insns). The reported win is a truncated function missing flag block 0 entirely, banked as rejected/s57-ablate-handleA-degenerate-38insn-score11.c. Both handles are load-bearing on that chassis. The s57 chassis makes the two-alias grant unnecessary for the reload, so the question is now moot as well as answered. Practical tooling note for later sessions: read build_insns before believing an ablation win on this function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c on HEAD 2026-09-05, both annotated pointer-alias FAKE objects present and then ablated one at a time

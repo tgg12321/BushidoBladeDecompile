@@ -8057,3 +8057,75 @@ question than the one this ledger has been asking for 56 sessions.
 - [s56] Duplicated-statement-into-arms measured on this function: one duplication of block 0's store = +1 reg_n_refs, -4 reg_live_length, +1 instruction, no jump2 cross_jump re-merge (50 insns / score 12).
 
 - [s56] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) at the end of the session; the only tree changes are the ledger files and one new rejected form.
+
+## s57 (forensics, 2026-09-05) -- pass attribution for block 0's reload, and a new chassis
+
+FACT 1. The reload at 80034FB4 is deleted by **cse2**, GCC 2.7.2's second cse
+run (-frerun-cse-after-loop), and NOT by cse1 or combine. Traced insn by insn
+through the sliced pass dumps in tmp/grind/func_80034F88/s57/:
+f88.vB.rtl.txt / f88.vB.jump.txt / f88.vB.cse.txt / f88.vB.loop.txt all carry
+`(insn 31 (set (reg:QI 79) (mem:QI (reg/v:SI 75))))`; f88.vB.cse2.txt has it as
+`(set (reg:QI 79) (subreg:QI (reg/v:SI 74) 0))`; f88.vB.combine.txt has
+`(set (reg/v:SI 78) (reg/v:SI 74))` with insn 31 a NOTE_INSN_DELETED. The
+s52/s54 ledger attribution ("cse forwards the store") named the wrong run.
+
+FACT 2. cse records a store's MEM in the value class of the store's SOURCE
+pseudo. cse.c:7310-7327 skips recording the destination entirely when
+`sets[i].src_elt == 0`, and cse.c:7182 only inserts the source when
+`! rtx_equal_p (SET_SRC, SET_DEST)`. So the MEM's recorded value is reachable
+from two sides: the ADDRESS register (invalidated by any set of it) and the
+VALUE register (invalidated by any set that changes its quantity).
+
+FACT 3. The address side is not free. A second `q = &D_80106A73;` between the
+mask store and the read does invalidate -- the reload is alive in f88.vB.cse.txt --
+but cse1 deletes that set as redundant (it is gone by f88.vB.cse2.txt), so cse2
+re-forwards and the reload dies. Any address set cse1 CANNOT delete materialises
+a second la pair; that is s51's 51-instruction split spelling. Measured:
+49 insns / score 10, byte-identical to the s56 candidate.
+
+FACT 4. The value side IS free, and it does not have to touch the mask.
+Splitting block 0 into `raw = *q; mv = raw & 0xF8; *q = mv; mv = raw; v = *q;`
+keys the MEM on `mv`; the dead `mv = raw;` changes that quantity, survives cse1
+and loop into the cse2 stream, and is then deleted as trivially dead by
+flow/combine. Result: 49 instructions with `lbu` at the target's 80034FB4 slot
+(previously a load-delay nop). `mv = 0;` works identically; `mv = raw & 0xF8;`
+(same value) and omitting the re-set both lose the reload.
+
+FACT 5. The new chassis is strictly closer than anything banked.
+`goal_from_tgt.py classify` on it: FIRST DIVERGENCE **RA**, `$v1 -> $a0 x6`,
+`$a0 -> $v1 x5`, ZERO instruction-shape differences. Before s57 the only
+RA-class body was the two-alias score-15 form (20 substitutions, three-cycle
+rotation, two /* FAKE */ pointer-alias objects spending the Judge's two-handle
+grant). The s57 body uses ONE pointer object and one dead store to a local.
+
+FACT 6. ra_solver model tmp/grind/func_80034F88/s57/model_vD.json:
+  73 block-0 value chain  nrefs 11 len  7 pri 47142 -> hard 3 ($v1)
+  74 &D_80106A73 pointer  nrefs 11 len 29 pri 11379 -> hard 4 ($a0)
+  72 p                    nrefs  6 len 34 pri  3529 -> hard 5 ($a1)  [target seat]
+  78/83/87 (flag-block values) pri 14285 -> $v0; 77/82/86 pri 7500 -> $v1
+The residual is the same seat race the ledger has carried since s49, but every
+s49-s56 numeric conclusion was measured on a chassis that either lacked the
+reload or carried two FAKE alias objects, so they are chassis-void here.
+
+FACT 7 (tooling). tools/fake_ablate.py reported an ABLATION WIN on the score-15
+two-alias body (drop handle A: score 11 vs keep-all 15). It is an artifact: the
+ablation removes the `u8 *t = &D_80106A73;` declaration, the build drops flag
+block 0 entirely and emits 38 instructions against 49 target instructions, and
+the distance metric prices eleven deletions below eleven register substitutions.
+Read build_insns before believing an ablation win on this function.
+
+- [s57] HEAD chassis re-measured this session: memory/grind/func_80034F88/candidate.c (s56 body) = score 10, 49 target insns / 49 build insns, confirming the ledger floor of 10.
+
+- [s57] Pass attribution, from sliced dumps: the block-0 reload is a live (mem:QI (reg 75)) load in .rtl, .jump, .cse and .loop, is rewritten to (subreg:QI (reg 74) 0) in .cse2, and is deleted by combine. cse2 is -frerun-cse-after-loop's second cse run.
+
+- [s57] cse.c:7310-7327 skips recording a store's destination when sets[i].src_elt == 0, and cse.c:7182 inserts the source only when ! rtx_equal_p (SET_SRC, SET_DEST) -- so the stored MEM's recorded value is reachable from the address register and from the value register, and invalidating either kills the forwarding.
+
+- [s57] On the two-alias score-15 body the same slices show the mechanism from the other side: cse2 keeps `(insn 33 (set (reg:QI 78) (mem:QI (reg 75))))` alive precisely because `(insn 30 (set (reg 74) (reg 76)))` -- the s55 `m = c;` re-set -- changes reg 74's quantity between the store and the load.
+
+- [s57] New chassis measurement: single `u8 *q`, block 0 split into raw/mv/v with a dead `mv = raw;`, 49 insns / score 10, `lbu v1,0(a0)` present at the target's 80034FB4 slot; goal_from_tgt.py classify => FIRST DIVERGENCE: RA, `$v1 -> $a0 x6`, `$a0 -> $v1 x5`, no instruction-shape difference.
+
+- [s57] ra_solver model tmp/grind/func_80034F88/s57/model_vD.json: 73 (block-0 value chain) nrefs 11 len 7 pri 47142 -> hard 3 ($v1); 74 (&D_80106A73 pointer) nrefs 11 len 29 pri 11379 -> hard 4 ($a0); 72 (p) nrefs 6 len 34 pri 3529 -> hard 5 ($a1, the target seat); 78/83/87 pri 14285 -> $v0; 77/82/86 pri 7500 -> $v1.
+
+- [s57] Consequence for the ledger: every s49-s56 numeric RA conclusion was measured on a chassis that either lacked the target's block-0 reload (PRE-RA) or carried two FAKE pointer-alias objects. They are chassis-relative and must be re-measured on the s57 body before they are spent.
+
+- [s57] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this session ended; only memory/grind/ and tmp/ carry this session's work.
