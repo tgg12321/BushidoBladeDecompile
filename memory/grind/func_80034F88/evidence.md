@@ -8232,3 +8232,130 @@ claim.
 - [s58] Preferences are mechanically foreclosed as a lever: inverse.py emits no preference atoms and states why -- $v1 never appears as a hard reg in this function's pre-RA RTL, so global.c set_preference can never record one. The function's only call takes no arguments, so there is no hard-register copy anywhere to seed a preference.
 
 - [s58] Tooling: fake_ablate.py on candidate.c is flat (keep-all 10 / drop-1 10, both 49 insns). The s57 dead re-set buys the instruction shape and the divergence class (PRE-RA -> RA), not distance; the s57 CONFIRMED entry must not be read as a distance claim.
+
+## s59 (rederive, 2026-09-05) -- THE ARRAY OBJECT MODEL
+
+Chassis check at dispatch: driver measurement unavailable; re-measured HEAD +
+the s58/s57 candidate.c this session = **score 10, 49/49**. Ledger floor 10
+confirmed, nothing had drifted.
+
+**E59.1 -- The declaration change, and that it is free.** `include/code6cac.h:472`
+was changed from `extern u8 D_80106A70;` to `extern u8 D_80106A70[4];`, with the
+two scalar use-sites in the other TU rewritten to element form
+(`src/code6cac.c:340,345` -> `D_80106A70[0]`). `src/code6cac_c_mid.c:205`
+(`(Quad *)&D_80106A70`) needed no change. Every existing consumer still matches
+byte-for-byte with the aggregate declaration in place:
+`sandbox func_8001945C --disable all` = **score 0 (11/11)**,
+`sandbox func_80019488` = **score 0 (14/14)**,
+`sandbox func_80037F40` = **score 0 (51/51)**.
+The relocation is byte-identical too: the assembler emits
+`R_MIPS_HI16/LO16 D_80106A70` with addend 3, which links to the same
+`lui 0x8010 / addiu ...,0x6a73` words the target has at 80034F98/F9C. So the
+object model the DATA MODEL signal has been naming since the census
+(D_80106A70 is a four-byte array; D_80106A73 is its element [3]) is adoptable at
+zero cost to the rest of the project. This retires the "verify the relocation
+still resolves" precondition the s58 frontier attached to this axis.
+
+**E59.2 -- vA: the plain array body (no pointer object at all) = 50 insns,
+score 25.** `D_80106A70[3]` read/modified/written directly in all three flag
+blocks, no locals carried across. cse forwards the store into EVERY following
+read: the disassembly (tmp/grind/func_80034F88/s59/vA.dis.txt) has exactly ONE
+`lbu` of the flag byte in the whole function, THREE `nop`s in the
+`lw $v0,0x20($a1)` load-delay slots that the target fills with reloads, and an
+extra `j` from an inverted branch arm in block 1. Banked as
+rejected/s59a-array-model-plain-cse-forwards-all-3-blocks-50insn-score25.c.
+
+**E59.3 -- vB: the array body + the s57 value-class invalidator in ALL THREE
+blocks = 50 insns, score 24, and BLOCK 0's REGISTER ASSIGNMENT IS THE TARGET'S,
+EXACTLY, WITH NO POINTER OBJECT AND NO ALIAS.** Body: three flag blocks written
+straight on `D_80106A70[3]`, with `c = raw;` (a dead re-set of the stored-value
+local) after the first two stores. Result
+(tmp/grind/func_80034F88/s59/vB.dis.txt):
+
+    4f48 lui  v1,%hi(D_80106A70)     | 80034F98 lui  v1,%hi(D_80106A73)
+    4f4c addiu v1,v1,3               | 80034F9C addiu v1,v1,%lo
+    4f50 lbu  a0,0(v1)               | 80034FA0 lbu  a0,0(v1)
+    4f54 move a1,v0                  | 80034FA4 addu a1,v0,zero
+    4f58 andi a0,a0,0xf8             | 80034FA8 andi a0,a0,0xF8
+    4f5c sb   a0,0(v1)               | 80034FAC sb   a0,0(v1)
+    4f60 lw   v0,0x20(a1)            | 80034FB0 lw   v0,0x20(a1)
+    4f64 lbu  a0,0(v1)               | 80034FB4 lbu  a0,0(v1)
+
+Eight instructions, register-for-register identical to the target, produced by a
+body with ZERO pointer objects. All three reloads are present. The residual is a
+SINGLE instruction: vB materialises the flag address at each BLOCK'S STORE (so
+one `la` serves store-N and read-(N+1)), while the target materialises it at each
+BLOCK'S READ (so one `la` serves read-N and store-N). vB's phase leaves the final
+store with no live address and it pays `lui $at; sb $v1,3($at)` (2 insns) where
+the target pays `sb $v0,0($a0)` (1). Banked as
+rejected/s59b-array-model-no-pointer-object-3-reloads-block0-regs-EXACT-50insn-score24.c.
+THIS IS THE CLOSEST ANY FAKE-ALIAS-FREE FORM HAS COME IN 59 SESSIONS and the
+first evidence that block 0's target seat ($v1 address / $a0 value) is reachable
+without a coercion construct.
+
+**E59.4 -- vC: the proven single-`q` chassis ported onto the array declaration =
+49 insns, score 10, block-0 reload PRESENT, zero declaration puns.** `q` is now
+`&D_80106A70[3]` (a pointer INTO the declared aggregate, not a second name for a
+scalar symbol) and the trailing loop is `D_80106A70[i] = ...` instead of the
+`*(&D_80106A70 + i)` pun that the auto-scan flags. Same floor as the s57/s58
+candidate, strictly cleaner form. This is the new candidate.c. Disassembly in
+tmp/grind/func_80034F88/s59/vC.dis.txt.
+
+**E59.5 -- vD: THE FAKE IS OPTIONAL ON THIS CHASSIS.** vC with the `mv = raw;`
+dead re-set deleted ALSO measures **49 insns / score 10**, with ZERO FAKE
+constructs of any kind. What the dead store buys on the array chassis is only the
+block-0 RELOAD: vD's 4f64 is a `nop` where vC (and the target, at 80034FB4) has
+`lbu`. So the honest floor of 10 is now established as reachable with NO coercion
+whatsoever -- the coercion buys instruction SHAPE, not distance. Banked as
+rejected/s59d-array-model-NO-FAKE-49insn-score10-block0-reload-absent.c.
+
+**E59.6 -- vE: mixing the two spellings is strictly worse.** Array spelling for
+block 0, pointer `q` for blocks 1 and 2 = **51 insns, score 17**. The block-0
+store re-materialises its own address in the merge block AND `q` materialises a
+second one, so the merge block pays two `la` pairs. Banked as
+rejected/s59e-array-block0-pointer-blocks12-51insn-score17.c.
+
+**E59.7 -- THE RESIDUAL, RESTATED ON THE NEW CHASSIS.** On vC the RTL shape is
+the target's: three address materialisations, the first covering the mask pair
+AND flag-block 0, the second covering flag-block 1, the third covering
+flag-block 2 -- exactly the target's `la` at 80034F98 / 80034FC8 / 80034FF0.
+Every arithmetic instruction matches. Two differences remain and they are one
+difference:
+  (a) block 0's seat is inverted -- target address $v1 / value $a0, vC address
+      $a0 / value $v1. Blocks 1 and 2 already agree with the target.
+  (b) consequently block 1's `la` cannot hoist. The target emits
+      `lui $a0; addiu $a0` at 80034FC8/FCC ABOVE block 0's store
+      `sb $v0,0($v1)` at 80034FD0 because the la writes $a0 and the store reads
+      $v1 -- independent, so sched1 moves it up. On vC both are $a0, so the la is
+      anti-dependent on the store and stays below it.
+So the whole 59-session residual is now ONE inequality: block 0's address pseudo
+must be seated in $v1 rather than $a0. The la hoist and the 3-cycle rotation s58
+chased with two FAKE aliases (score 15) both fall out of that one assignment.
+
+**E59.8 -- Siblings.** func_80034708 (same file, same D_80106A73 xref) still has
+no candidate.c after its s1, so there is nothing to transplant; CD_sync and
+CD_datasync were spent at s33/s30 and neither shares a code window with this
+function (different file, different shape). No sibling debt outstanding.
+
+**E59.9 -- Tree state at end of session.** src/code6cac_b.c, src/code6cac.c and
+include/code6cac.h were all reverted to HEAD before the outcome was written; the
+array declaration and its two use-site edits are recorded in candidate.c's header
+as the integration handoff they are.
+
+- [s59] Chassis re-check: HEAD + the inherited s57/s58 candidate.c measures score 10, 49 target insns / 49 build insns on HEAD 2026-09-05. The ledger floor of 10 is current; nothing had drifted.
+
+- [s59] include/code6cac.h:472 `extern u8 D_80106A70;` -> `extern u8 D_80106A70[4];` plus src/code6cac.c:340,345 rewritten to `D_80106A70[0]` leaves all three existing consumers byte-identical: func_8001945C 0 (11/11), func_80019488 0 (14/14), func_80037F40 0 (51/51). src/code6cac_c_mid.c:205 `(Quad *)&D_80106A70` needs no change.
+
+- [s59] The array relocation is byte-identical to the target's: the assembler emits R_MIPS_HI16/LO16 D_80106A70 with addend 3 and the linker folds it to the same lui 0x8010 / addiu 0x6a73 words the target has at 80034F98/80034F9C.
+
+- [s59] New candidate.c (vC) = 49 insns, score 10, block-0 reload present, ZERO declaration puns (the `*(&D_80106A70 + i)` pun the auto-scan flagged is now `D_80106A70[i]`), ONE pointer object which is now a pointer INTO a declared aggregate rather than a second name for a scalar symbol.
+
+- [s59] The honest floor of 10 is reachable with ZERO FAKE constructs of any kind (vD, 49/49 score 10). The dead store in candidate.c buys the target's 80034FB4 reload -- instruction shape, not distance -- and can be dropped without moving the floor.
+
+- [s59] vB (no pointer object at all) reproduces target instructions 80034F98-80034FB4 register-for-register, all three reloads present, and is exactly ONE instruction over: its address materialisations are phased at each block's STORE rather than at each block's READ, so the final store has no live address and pays lui $at + sb ...,3($at) instead of sb ...,0($a0).
+
+- [s59] The 59-session residual, restated on the new chassis: block 0's address pseudo is seated in $a0 with its value in $v1, the inverse of the target ($v1 address, $a0 value); blocks 1 and 2 already agree with the target. Because block 1's la writes the same $a0 the block-0 store reads, the la is anti-dependent on the store and sched1 cannot hoist it above the store as it does in the target at 80034FC8/FCC vs 80034FD0. One seat assignment produces both differences.
+
+- [s59] Sibling duty discharged: func_80034708 (same file, same D_80106A73 xref) still has no candidate.c after its s1, so nothing is transplantable; CD_sync and CD_datasync were spent at s33/s30 and share no code window with this function.
+
+- [s59] Tree reverted to HEAD at end of session: src/code6cac_b.c, src/code6cac.c and include/code6cac.h are all clean; the header edit is recorded as an integration handoff in candidate.c's header.

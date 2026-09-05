@@ -6028,3 +6028,118 @@ Probe: extract.py + inverse.py on model_v1.json.  The open question is a
 - probe: tools/ra_solver/extract.py func_80034F88 code6cac_b on vA (model tmp/grind/func_80034F88/s58/model_vA.json); goal_from_tgt.py goal --model (goal {"74":3,"72":5}); inverse.py global model_vA.json --goal --depth 2 --top 12 (tmp/grind/func_80034F88/s58/inverse_vA.txt); priorities recomputed by hand from the lreg banners and checked against the greg allocation order on all three variants.
 - result: inverse.py returns NEGATIVE at depth 2 within bounds refs +12/-6 and live length +/-2,4,8, and separately forecloses 16 preference atoms because $v1 never appears as a hard reg in this function's pre-RA RTL (the only call, func_80077D00, takes no arguments, so no hard-register copy exists to seed a preference). Its suggested next step -- the local-alloc suggested-register pass -- was measured directly this session and is NOT the assigning mechanism here; the ascending main-pass scan is. The hand recomputation reproduced the greg allocation order exactly on vA, vC and vD, so the priority model is trustworthy for pricing the remaining inequality.
 - verdict: CONFIRMED
+
+## s59 -- rederive: the array object model
+
+**H59.1 CONFIRMED.** Declaring D_80106A70 as the four-byte aggregate the DATA
+MODEL signal names (`extern u8 D_80106A70[4];`) is byte-neutral for every
+existing consumer in the project, and its relocation links to the same words the
+target has for D_80106A73. Probe: header edit + the two element-form use-site
+edits in src/code6cac.c; `sandbox --disable all` on func_8001945C (0, 11/11),
+func_80019488 (0, 14/14), func_80037F40 (0, 51/51). The s58 frontier's
+precondition ("verify the relocation still resolves to %lo(D_80106A73)") is
+discharged: the assembler emits HI16/LO16 D_80106A70 with addend 3 and the linker
+folds it to the identical `lui 0x8010 / addiu 0x6a73` pair.
+
+**H59.2 CONFIRMED.** Porting the s57/s58 single-`q` chassis onto the array
+declaration holds the floor at 10 (49/49) while removing the last declaration pun
+(`*(&D_80106A70 + i)` -> `D_80106A70[i]`) and turning `q` from a second name for
+a scalar symbol into a pointer into a declared aggregate. Measured on HEAD
+2026-09-05 with the one FAKE dead store present. This is the new candidate.c.
+
+**H59.3 CONFIRMED, and it downgrades a FAKE.** On the array chassis the s57
+value-class invalidator (`mv = raw;`) is NOT needed to hold the floor: deleting
+it still measures 49 insns / score 10 (vD). What it buys is the target's block-0
+reload at 80034FB4 -- instruction shape, not distance. So the honest floor of 10
+is reachable on this function with ZERO FAKE constructs of any kind, which was
+not true of any chassis before s59.
+
+**H59.4 KILLED (instance).** Writing all three flag blocks directly on
+`D_80106A70[3]` with no pointer object and no dead re-set does not hold 49
+instructions: cse forwards the mask store into every following read, leaving one
+`lbu` for the whole function and three `nop`s in the load-delay slots the target
+fills with reloads, plus an inverted branch arm that costs a `j`. Measured 50
+insns / score 25 on the array-declaration chassis (HEAD 2026-09-05), no FAKE
+construct present. Form:
+rejected/s59a-array-model-plain-cse-forwards-all-3-blocks-50insn-score25.c.
+
+**H59.5 KILLED (instance) -- but it is the most informative kill of the run.**
+The pointer-object-free array body with the s57 value-class invalidator applied
+to all three blocks reproduces the target's first EIGHT instructions
+register-for-register (address $v1, value $a0, all three reloads present, block 0
+exact) but does not reach 49 instructions: it materialises the flag address at
+each block's STORE rather than at each block's READ, so the final store is left
+with no live address and pays `lui $at; sb $v1,3($at)` where the target pays
+`sb $v0,0($a0)`. Measured 50 insns / score 24 on the array-declaration chassis
+(HEAD 2026-09-05), three dead re-sets of stored-value LOCALS present, no pointer
+or alias object of any kind. Form:
+rejected/s59b-array-model-no-pointer-object-3-reloads-block0-regs-EXACT-50insn-score24.c.
+This is the first demonstration that block 0's target seat ($v1 for the address)
+is reachable without any coercion construct -- the seat race the ledger has
+carried since s49 is NOT a property of the address's register class, it is a
+property of the pointer-carrier chassis.
+
+**H59.6 KILLED (instance).** Mixing spellings -- array accesses for block 0,
+pointer `q` for blocks 1 and 2 -- does not reduce the merge-block address
+pressure: block 0's store re-materialises its own address in the merge block AND
+`q` materialises a second one there, costing two `la` pairs. Measured 51 insns /
+score 17 on the array-declaration chassis (HEAD 2026-09-05), one FAKE dead store
+present. Form: rejected/s59e-array-block0-pointer-blocks12-51insn-score17.c.
+
+**H59.7 (KILL RE-AUDIT, mandated).** The instance kill re-measured was s57's "the
+dead re-set works only when it changes the stored pseudo's value class", carried
+forward onto the new chassis. On the array chassis the re-set is not merely
+class-sensitive, it is OPTIONAL for distance (H59.3): the floor is 10 with or
+without it. The s57 kill therefore stands as an INSTANCE result about the
+single-pointer scalar-symbol chassis only, and its conclusion does not transfer
+to the aggregate chassis. Recorded rather than re-spent.
+
+## [s59] Declaring D_80106A70 as the four-byte aggregate the DATA MODEL signal names (extern u8 D_80106A70[4]) is byte-neutral for every existing consumer in the project, and the flag byte is its element [3] with a relocation that links to the same words the target has for D_80106A73.
+- mechanism: The assembler emits R_MIPS_HI16/LO16 D_80106A70 with addend 3; the linker folds symbol+addend to the identical lui 0x8010 / addiu ...,0x6a73 pair the target has at 80034F98/F9C. The other consumers only ever touch element [0], so element-form rewrites are the same MEM at the same address.
+- probe: include/code6cac.h:472 changed to `extern u8 D_80106A70[4];`, src/code6cac.c:340/345 rewritten to D_80106A70[0]; then `sandbox <f> --disable all` on all three existing consumers.
+- result: func_8001945C score 0 (11/11), func_80019488 score 0 (14/14), func_80037F40 score 0 (51/51). The s58 frontier's precondition ('verify the relocation still resolves to %lo(D_80106A73)') is discharged.
+- verdict: CONFIRMED
+
+## [s59] Porting the s57/s58 single-pointer chassis onto the array declaration holds the floor at 10 with 49 instructions and the target's block-0 reload, while removing the last declaration pun and turning q into a pointer into a declared aggregate rather than a second name for a scalar symbol.
+- mechanism: q = &D_80106A70[3] is ordinary pointer arithmetic on an array object; the trailing loop becomes D_80106A70[i], which is the array access the target's lui $at / addu $at,$at,$v1 / sb %lo($at) sequence at 80035020-80035028 already spells.
+- probe: vC (tmp/grind/func_80034F88/s59/vC.c) installed in src/code6cac_b.c with the header edit; sandbox func_80034F88 --disable all; disassembly compared to asm/funcs/func_80034F88.s.
+- result: score 10, 49 target insns / 49 build insns, lbu present at the 80034FB4-equivalent slot (4f64). Saved as the new memory/grind/func_80034F88/candidate.c.
+- verdict: CONFIRMED
+
+## [s59] On the array chassis the s57 value-class invalidator is not required to hold the floor: deleting the dead re-set still measures 49 instructions and score 10, so the honest floor of 10 is reachable with no FAKE construct of any kind, and the dead store buys only the block-0 reload.
+- mechanism: Distance is unchanged because the reload occupies a load-delay slot that is otherwise a nop; the instruction count is identical either way. The dead store still changes the stored pseudo's value class so cse2 cannot forward the sb into the following lbu (cse.c:7310-7327), which is what materialises the reload.
+- probe: vD = vC with `mv = raw;` deleted (tmp/grind/func_80034F88/s59/vD.c); sandbox func_80034F88 --disable all; disassembly.
+- result: score 10, 49/49, with 4f64 a nop instead of an lbu. Banked as rejected/s59d-array-model-NO-FAKE-49insn-score10-block0-reload-absent.c.
+- verdict: CONFIRMED
+
+## [s59] Writing all three flag blocks directly on D_80106A70[3] with no pointer object and no dead re-set does not hold 49 instructions on the array-declaration chassis: it measures 50 instructions and score 25.
+- mechanism: cse forwards the mask store into every following read because nothing invalidates the recorded MEM, leaving one lbu for the whole function; the three lw $v0,0x20($a1) load-delay slots the target fills with reloads become nops, and block 1's arm inverts and costs a j.
+- probe: vA (tmp/grind/func_80034F88/s59/vA.c) installed with the header edit; sandbox func_80034F88 --disable all; disassembly at tmp/grind/func_80034F88/s59/vA.dis.txt.
+- result: 50 build insns, score 25, exactly one lbu of the flag byte in the whole body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis (extern u8 D_80106A70[4]) on HEAD 2026-09-05, no pointer object and no FAKE construct present
+
+## [s59] The pointer-object-free array body with the s57 value-class invalidator applied to all three flag blocks reproduces the target's first eight instructions register-for-register but does not reach 49 instructions: it measures 50 instructions and score 24.
+- mechanism: Each address materialisation is emitted at a block's STORE (in the branch-merge block, where cse restarts) and is then reused by the NEXT block's read; that phase leaves the final store with no live address, so it pays lui $at + sb $v1,3($at) where the target pays a single sb $v0,0($a0) reusing the third la.
+- probe: vB (tmp/grind/func_80034F88/s59/vB.c) installed with the header edit; sandbox func_80034F88 --disable all; disassembly at tmp/grind/func_80034F88/s59/vB.dis.txt compared instruction-by-instruction to asm/funcs/func_80034F88.s.
+- result: 50 build insns, score 24. Instructions 4f48-4f64 are register-for-register identical to target 80034F98-80034FB4 (lui $v1 / addiu $v1 / lbu $a0,0($v1) / move $a1,$v0 / andi $a0,0xf8 / sb $a0,0($v1) / lw $v0,0x20($a1) / lbu $a0,0($v1)); all three reloads present. First demonstration in 59 sessions that block 0's target seat is reachable with no pointer object, no alias handle and no coercion construct. Banked as rejected/s59b-array-model-no-pointer-object-3-reloads-block0-regs-EXACT-50insn-score24.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis on HEAD 2026-09-05, three dead re-sets of stored-value LOCALS present, zero pointer or alias objects
+
+## [s59] Mixing spellings -- array accesses for block 0 and the pointer q for blocks 1 and 2 -- does not reduce merge-block address pressure and measures 51 instructions, score 17.
+- mechanism: Block 0's store re-materialises its own address in the branch-merge block (cse restarts there) while q materialises a second one in the same block, so that block pays two la pairs instead of one.
+- probe: vE (tmp/grind/func_80034F88/s59/vE.c) installed with the header edit; sandbox func_80034F88 --disable all.
+- result: 51 build insns, score 17. Banked as rejected/s59e-array-block0-pointer-blocks12-51insn-score17.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis on HEAD 2026-09-05, one FAKE dead store to a local present, one pointer object
+
+## [s59] KILL RE-AUDIT (mandated, floor flat 3 sessions): s57's kill that the block-0 dead re-set works only when it changes the stored pseudo's value class was re-measured on the s59 array chassis, and its conclusion does not transfer -- on that chassis the re-set is optional for distance entirely.
+- mechanism: The s57 result was measured on the single-pointer scalar-symbol chassis where the reload was the difference between 49 and 50 instructions. With D_80106A70 declared as an aggregate the reload only fills an otherwise-nop load-delay slot, so its presence or absence does not change the instruction count.
+- probe: vC (with the re-set) and vD (without) both installed and measured with sandbox func_80034F88 --disable all on the array chassis.
+- result: Both 49/49, both score 10. The s57 kill stands as an instance result about the scalar-symbol chassis only; it is not spendable on the aggregate chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s57 single-pointer scalar-symbol chassis vs s59 array-declaration chassis, both on HEAD 2026-09-05; FAKE dead store present in vC, absent in vD
