@@ -5540,3 +5540,74 @@ pointer object, no FAKE construct.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s49/s50 two-statement-mask chassis on HEAD 2026-09-05 with the g1 loop-base re-use and the h1 condition hoist both installed, one declared pointer object q, no FAKE construct present
+
+## [s54] Re-setting the C variable that holds the value stored to *q invalidates cse's record of that memory value WITHOUT touching reg q, so the following read of *q survives as a real lbu through the mask's own address materialisation.
+- mechanism: cse_insn records a store's MEM destination in the value class of the SOURCE register (cse.c:7308-7376). `invalidate (reg m)` on a later SET of that same pseudo removes the register from the class; the `(mem:QI (reg q))` entry survives but has no register member left, so the next read of `*q` cannot be replaced by anything cheaper than the MEM and stays a load. reg q is never written, so no second `lui/addiu` pair is emitted. This is a different invalidation route from the `q = &D_80106A73;` re-assignment that s46-s53 treated as the only one.
+- probe: `m = *q & 0xF8; *q = m; m = p[8]; v = *q; c = p[8] & 1; if (c) c = v | 1; else c = v; *q = c;` on the plateau chassis, flag blocks 1/2 and the loop unchanged; sandbox + objdump + ra_solver ALLOCDBG.
+- result: 49 insns, score 13, three la pairs and four non-forwarded lbu -- the target's block-0 instruction sequence and order exactly (reload in the lw's shadow, no load-delay nop), with flag blocks 1/2, the trailing loop and the epilogue byte-exact. The two-statement mask spelling of the same trick is 50/13 (the reload collides with the lw's destination register and cannot fill the delay slot). Banked as rejected/s54-mreuse-invalidation-TARGET-BLOCK0-STRUCTURE-49insn-score13.c and rejected/s54-mreuse-twostmt-mask-reload-plus-nop-50insn-score13.c. This overturns s53's "co-location law" (a surviving re-read always costs its own la) on the current chassis.
+- verdict: CONFIRMED
+
+## [s54] A constant re-set of the stored value's variable (`m = 0;` / `m = 1;`) in the same slot produces no invalidation and no reload.
+- mechanism: hypothesised that any SET of the pseudo would drop it from the stored MEM's class, making even a value-free re-set (deleted later by flow) a zero-cost invalidator.
+- probe: `m = 0;` and `m = 1;` between the mask store and block 0's read, both mask spellings and both orderings of the condition and the read (six bodies); sandbox + objdump.
+- result: all six build BYTE-IDENTICALLY to the plateau body: 49 insns, score 10, no reload, no extra instruction. The working invalidation needs a re-set whose value block 0 actually consumes; the sanctioned dead-store family therefore buys nothing on this residual. Banked as rejected/s54-constant-dead-reset-NO-INVALIDATION-49insn-score10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: plateau two-statement and single-statement mask chassis on HEAD 2026-09-05, one declared pointer object q, no FAKE construct present
+
+## [s54] On the 49-insn m-re-use chassis the block-0 seat can be bought by lifting the address allocno's global.c priority above the m allocno's, using the sanctioned duplicated-statement and variable-consumption levers.
+- mechanism: allocno_compare = floor_log2(nrefs)*nrefs/livelen*10000 (global.c). Measured on the 49/13 body: q = nrefs 11, len 29, pri 11379 (hard 4); m = nrefs 4, len 4, pri 20000 (hard 3); m is the ONLY conflicting allocno that outranks q, so pri(q) > 20000 or pri(m) < 11379 should hand q hard 3 and cascade the block-0 values onto $a0/$v0 as in the target.
+- probe: nine bodies -- else-arm consumes m (four orderings), condition tested inline as `if (m & 1)`, duplicated store in block 2, in blocks 1+2, and both combined with the else-arm variant; sandbox on each, ra_solver ALLOCDBG on the two most informative.
+- result: no flip. The else-arm variant does move m to nrefs 5 / len 7 / pri 14285 but simultaneously pushes `p` out of $a1 into $a2 (49 insns, score 17); the inline-condition variant is 49/27; each duplicated store adds an instruction because the arms differ and cross-jump does not re-merge them (50/16, 51/19, 51/23, 50/20). The measured gap to the flip is still pri(m) 20000 vs pri(q) 11379, i.e. nrefs(q) >= 15 or a four-reference m with live length >= 8. Banked as rejected/s54-else-arm-uses-m-pri14285-p-to-a2-49insn-score17.c and rejected/s54-mreuse-plus-b2-dupstore-50insn-score16.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 m-re-use single-statement-mask chassis (rejected/s54-mreuse-invalidation-TARGET-BLOCK0-STRUCTURE-49insn-score13.c) on HEAD 2026-09-05, one declared pointer object q, no FAKE construct present
+
+## [s54] Two C pointer objects (BANNED axis, re-measured for diagnosis only) become profitable once the block-0 reload exists, because they give the address two allocnos the way the target's two hard registers imply.
+- mechanism: the target holds &D_80106A73 in $v1 across the mask and block 0 and in $a0 across flag blocks 1/2; one C object is one pseudo and therefore one hard register, so the two-handle shape was the natural way to reach it.
+- probe: mask+block0 on `t`, flag blocks 1/2 on `q`, this session's m-re-use invalidation in block 0; sandbox only, never proposed as a candidate.
+- result: 50 insns, score 24 -- worse than the single-handle 49/13 on the identical chassis, re-confirming s50 finding 3 on the new chassis. The standing multi-handle ban is not what is costing the residual, so no ruling-request is warranted on the strength of the ban. Banked as rejected/s54-BANNED-twohandle-on-reload-chassis-50insn-score24.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 m-re-use chassis on HEAD 2026-09-05 with two declared pointer objects t and q (BANNED construct, diagnosis only), no FAKE construct present
+
+## [s54] FRONTIER (reset)
+1. Lower pri(m) below 11379 on the 49/13 chassis without adding a simultaneously-live value. m is nrefs 4 / len 4; the threshold is nrefs 4 at livelen >= 8, or nrefs 3 at any length. Next probe: shapes that stretch m's SECOND live span (the p[8] value) across more of block 0 while the condition still feeds the branch -- e.g. computing the condition from m after the re-read and after the store value is formed, or letting block 0's join consume m -- reading nrefs/livelen from tools/ra_solver/extract.py BEFORE looking at the score. Win condition: pri(m) < 11379 with `p` still in $a1.
+2. Raise pri(q) above 20000 on the same chassis: nrefs(q) >= 15 at livelen 29. Every duplicated store measured so far costs an instruction because the arms differ; the untried shape is a duplicated statement whose copies ARE identical (so jump2 cross_jump re-merges them, the mechanism duplicated-statement-into-arms.md names) placed so the merge leaves 49 instructions.
+3. Determine whether the block-1 `la` can ever be scheduled ABOVE block 0's store with a single address pseudo (the target emits it at 80034FC8, before the store at 80034FD0). Read .sched/.sched2 on the 49/13 body: if the hoist is impossible with one pseudo, the seat flip alone cannot close the last insns and that fact -- not the 13-point score -- is the next thing to prove.
+
+## [s54] Re-setting the C variable that holds the value stored to *q invalidates cse's record of that memory value without touching reg q, so the following read of *q survives as a real lbu through the mask's own address materialisation.
+- mechanism: cse_insn records a store's MEM destination in the value class of the SOURCE register (cse.c:7308-7376). A later SET of that same pseudo calls invalidate(reg m), removing the register from the class; the (mem:QI (reg q)) entry survives with no register member, so the next read of *q has nothing cheaper to fold to and stays a load. reg q is never written, so no second lui/addiu pair is emitted. This is a different route from the q = &D_80106A73; re-assignment that sessions s46-s53 treated as the only invalidator.
+- probe: m = *q & 0xF8; *q = m; m = p[8]; v = *q; c = p[8] & 1; if (c) c = v | 1; else c = v; *q = c; on the plateau chassis with flag blocks 1/2 and the trailing loop unchanged. sandbox --disable all, objdump of the sandbox object, and tools/ra_solver/extract.py ALLOCDBG.
+- result: 49 insns, score 13, THREE la pairs and FOUR non-forwarded lbu -- the target's block-0 instruction sequence and order exactly (reload in the lw's shadow, no load-delay nop), with flag blocks 1 and 2, the trailing loop and the epilogue byte-exact. The two-statement mask spelling of the same trick is 50/13 (the reload collides with the lw's destination register and cannot fill the delay slot). This overturns the s53 co-location law, which held that a surviving re-read always costs its own la and that the target's 4-reads/3-las shape had no ordinary-C generator. Banked as rejected/s54-mreuse-invalidation-TARGET-BLOCK0-STRUCTURE-49insn-score13.c and rejected/s54-mreuse-twostmt-mask-reload-plus-nop-50insn-score13.c.
+- verdict: CONFIRMED
+
+## [s54] A constant re-set of the stored value's variable (m = 0; or m = 1;) between the mask store and block 0's read produces the same invalidation as a real value re-set.
+- mechanism: Any SET of the pseudo should drop it out of the stored MEM's equivalence class; a constant store would be deleted later by flow, making it a zero-cost invalidator.
+- probe: Six bodies: m = 0; and m = 1; in that slot, both mask spellings (single-statement and two-statement) and both orderings of the condition and the read; sandbox --disable all on each plus objdump on one.
+- result: All six build byte-identically to the plateau body: 49 insns, score 10, no reload, no extra instruction. The invalidation needs a re-set whose value the block actually consumes, so the sanctioned dead-store family is inert on this residual. Banked as rejected/s54-constant-dead-reset-NO-INVALIDATION-49insn-score10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: plateau chassis (memory/grind/func_80034F88/candidate.c) in both single- and two-statement mask spellings on HEAD 2026-09-05, one declared pointer object q, no FAKE construct present
+
+## [s54] On the 49-insn m-re-use chassis the block-0 seat can be bought by lifting the address allocno's global.c priority above the m allocno's with the duplicated-statement and variable-consumption levers.
+- mechanism: global.c allocno_compare = floor_log2(nrefs)*nrefs/livelen*10000. Measured on that chassis: q = nrefs 11, len 29, pri 11379 (hard 4); m = nrefs 4, len 4, pri 20000 (hard 3), and m is the only conflicting allocno that outranks q. So pri(q) > 20000 or pri(m) < 11379 should give q hard 3 and cascade the block-0 values onto $a0/$v0 as in the target.
+- probe: Nine bodies: else-arm consumes m (four orderings), condition tested inline as if (m & 1), duplicated store in block 2, in blocks 1+2, and both duplicated variants combined with the else-arm shape. sandbox on each; ra_solver ALLOCDBG on the two most informative (tmp/grind/func_80034F88/s54/model_t3.json, model_u1.json).
+- result: No flip. The else-arm variant does move m to nrefs 5 / len 7 / pri 14285 but simultaneously pushes p out of $a1 into $a2 (49 insns, score 17); the inline-condition variant is 49/27; every duplicated store costs an instruction because the arms differ and jump2 cross_jump does not re-merge them (50/16, 51/19, 51/23, 50/20). The remaining gap is pri(m) 20000 vs pri(q) 11379: the flip needs nrefs(q) >= 15 at len 29, or m at nrefs 4 with livelen >= 8, or m at nrefs 3. Banked as rejected/s54-else-arm-uses-m-pri14285-p-to-a2-49insn-score17.c and rejected/s54-mreuse-plus-b2-dupstore-50insn-score16.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 m-re-use single-statement-mask chassis (rejected/s54-mreuse-invalidation-TARGET-BLOCK0-STRUCTURE-49insn-score13.c) on HEAD 2026-09-05, one declared pointer object q, no FAKE construct present
+
+## [s54] Two C pointer objects (the BANNED axis, re-measured for diagnosis only) become profitable once the block-0 reload exists, because they give the address the two allocnos the target's two hard registers imply.
+- mechanism: The target holds &D_80106A73 in $v1 across the mask and block 0 and in $a0 across flag blocks 1 and 2; one C object is one pseudo and therefore one hard register, so a second handle was the natural way to reach that split.
+- probe: mask+block0 on t, flag blocks 1/2 on q, with this session's m-re-use invalidation in block 0; sandbox --disable all only, never proposed as a candidate.
+- result: 50 insns, score 24 -- worse than the single-handle 49/13 on the identical chassis, re-confirming s50 finding 3 on the new chassis. The standing multi-handle ban is not what is costing the residual, so no ruling-request is warranted on the strength of the ban. Banked as rejected/s54-BANNED-twohandle-on-reload-chassis-50insn-score24.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s54 m-re-use chassis on HEAD 2026-09-05 with two declared pointer objects t and q (BANNED construct, diagnosis only), no FAKE construct present
+
+## [s54] The s51 split-spelling body, the closest-to-target banked instance kill, still measures 51 insns / score 12 on the current chassis and carries no FAKE construct.
+- mechanism: Mandated kill re-audit: a banked kill is only valid on the chassis and FAKE state it was measured under.
+- probe: Installed rejected/s51-splitspell-mask-A70p3-EMITS-TARGET-RELOAD-51insn-score12.c, ran sandbox --disable all and objdump (tmp/grind/func_80034F88/s54/build_split.txt), then tools/fake_ablate.py on it and on this session's best body.
+- result: 51 insns, score 12 -- byte-for-byte the ledger value; pointer on $a0 at all four sites, values on $v1, four la pairs, flag blocks 1/2 and the loop exact, all 12 differing insns inside block 0. fake_ablate reports 'no FAKE-annotated constructs found' for both bodies. The kill stands as recorded, and it is now superseded in usefulness by the 49/13 m-re-use body.
+- verdict: CONFIRMED

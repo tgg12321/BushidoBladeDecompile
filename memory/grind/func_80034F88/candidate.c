@@ -1,3 +1,49 @@
+/* s54 (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns,
+ * re-measured on HEAD this session: score 10, 49/49).  This body is still the
+ * LOWEST-SCORING form, but it is no longer the closest one structurally: read
+ * rejected/s54-mreuse-invalidation-TARGET-BLOCK0-STRUCTURE-49insn-score13.c
+ * before probing anything.
+ *
+ * 1. THE s53 "CO-LOCATION LAW" IS BROKEN.  s53 concluded that every surviving
+ *    (non-forwarded) re-read of D_80106A73 costs its own `lui/addiu` pair,
+ *    because the only invalidator known to this ledger was re-executing
+ *    `q = &D_80106A73;`.  There is a SECOND cse invalidation route and it is
+ *    free: cse records a store's MEM destination in the value class of the
+ *    SOURCE register (cse.c:7308-7376), so re-setting the C variable that held
+ *    the stored value -- ordinary variable re-use, `m = p[8];` right after
+ *    `*q = m;` -- calls invalidate(reg m), strips the register out of that
+ *    class, and leaves the `(mem:QI (reg q))` entry with no register member.
+ *    The next read of `*q` then has nothing cheaper to fold to and stays a
+ *    real lbu, while reg q is untouched and no second address materialisation
+ *    is emitted.
+ *
+ * 2. THE RESULTING BODY IS 49 INSNS / SCORE 13 AND HAS THE TARGET'S BLOCK-0
+ *    SHAPE EXACTLY: three la pairs, four non-forwarded lbu, the reload in the
+ *    lw's shadow (no load-delay nop), flag blocks 1 and 2, the trailing loop
+ *    and the epilogue byte-exact.  Its entire residual is the block-0 REGISTER
+ *    SEAT: build has q on $a0 with the values on $v1/$v0, the target has q on
+ *    $v1 with the values on $a0/$v0.
+ *
+ * 3. THE SEAT IS ONE MEASURED INEQUALITY.  global.c allocno_compare =
+ *    floor_log2(nrefs)*nrefs/livelen*10000.  On that chassis (ALLOCDBG via
+ *    tools/ra_solver/extract.py, tmp/grind/func_80034F88/s54/model_t3.json):
+ *        q  nrefs 11  len 29  pri 11379  -> hard 4 ($a0)
+ *        m  nrefs  4  len  4  pri 20000  -> hard 3 ($v1), the only conflicting
+ *                                           allocno that outranks q
+ *    so the flip needs nrefs(q) >= 15, or m at nrefs 4 with livelen >= 8 (or
+ *    nrefs 3 at any length).  Nine lifts measured this session all miss:
+ *    else-arm-consumes-m moves m to pri 14285 but pushes p into $a2 (49/17);
+ *    `if (m & 1)` inline 49/27; duplicated stores 50/16, 51/19, 51/23, 50/20
+ *    (each costs an instruction -- the arms differ, so cross-jump does not
+ *    re-merge them).
+ *
+ * 4. TWO DEAD ENDS CLOSED.  A constant re-set (`m = 0;` / `m = 1;`) invalidates
+ *    nothing: six such bodies build byte-identically to THIS one (49/10), so
+ *    the sanctioned dead-store family is inert on this residual.  And the
+ *    BANNED two-handle shape, re-measured on the new reload chassis for
+ *    diagnosis only, is 50/24 -- worse than the single-handle 49/13, so the
+ *    multi-handle ban is still not what costs the 10 points.
+ */
 /* s53 SECOND PASS (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10,
  * 49 insns, re-measured on HEAD this session: score 10, 49/49).  The first s53
  * pass's note follows below; its measurements stand.  Four things are new:

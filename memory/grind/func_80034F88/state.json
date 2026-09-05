@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 53,
+ "session_count": 54,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -321,23 +321,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "The residual is exactly one address materialisation (2 insns): the target's block-0 reload is instruction-count-FREE (it fills the load-delay nop this body wastes), and the block-0 $v1 seat and the su"
+  },
+  {
+   "session": 54,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "cse's store-forwarding is defeated for free by re-setting the STORED VALUE's variable (not the address pointer): first 49-insn body with the target's block-0 reload, 3 la pairs and exact instruction o"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The block-0 $v1 seat and the surviving block-0 reload are separately reachable but have never been held together; a body carrying both would be at or below the split-spelling score of 12 and, if the seat flip absorbs the extra la's scheduling slack, possibly at 49 insns.",
-   "mechanism": "The split spelling (a cse-distinct address value re-assigned into q between the mask store and block 0's read) produces the reload but leaves the pointer on hard 4 ($a0) with 4 la pairs. The do-while(0) wrap plus an explicit read produces the $v1 seat by keeping one extra value live across the mask store, but cse2 re-forwards the read. The two mechanisms act on different passes (cse's value table vs global.c's allocno sort) and have never been combined.",
-   "next_probe": "Build the split-spelling body with the do { <mask> } while (0); wrap added around the mask statements and the block-0 arms consuming the re-read. Read the address allocno's hard register in .greg and check for the block-0 lbu in the objdump BEFORE looking at the score; the win condition is seat $v1 AND an lbu in the lw's delay slot. If both hold at 51, the residual reduces to deleting the block-0 la pair, a strictly smaller question than the one this ledger has been asking."
+   "hypothesis": "Lowering pri(m) below q's 11379 on the 49/13 m-re-use chassis flips the block-0 seat and, with the reload and instruction order already correct, drops the score far below 10.",
+   "mechanism": "m is nrefs 4 / livelen 4 / pri 20000 and is the only conflicting allocno ahead of q (pri 11379). floor_log2(4)*4/livelen*10000 < 11379 needs livelen >= 8 at nrefs 4; nrefs 3 wins at any length because floor_log2(3) is 1.",
+   "next_probe": "Enumerate block-0 shapes that stretch m's SECOND live span (the p[8] value) across more of block 0 without adding a simultaneously-live value -- the failure mode of the else-arm variant was that it added one and pushed p out of $a1. Read nrefs/livelen from tools/ra_solver/extract.py BEFORE looking at the score; win condition is pri(m) < 11379 with p still in $a1."
   },
   {
-   "hypothesis": "The residual is exactly one address materialisation: the target shares ONE la between the mask store and block 0's read while the two MEM references are not cse-equivalent, and every generator of that inequivalence measured so far emits a second la.",
-   "mechanism": "cse records the mask store's (mem:QI (reg q)) value with the source's class (cse.c:7308-7376) and only skips the record when sets[i].src_elt == 0 (cse.c:7327: in_libcall_block, ZERO_EXTRACT/SIGN_EXTRACT dest, volatile source) -- all three measured shut on this target by s52. exp_equiv_p (cse.c:2051) has no MEM case, so declaration flags cannot make the two references inequivalent. The remaining unmeasured route is a basic-block boundary that BOTH cse passes honour, i.e. a CODE_LABEL between the store and the read that cse cannot extend across (LABEL_NUSES != 1, or no preceding BARRIER with -fcse-skip-blocks unable to apply).",
-   "next_probe": "Enumerate ordinary-C block-0 shapes that place a CODE_LABEL with LABEL_NUSES >= 2 between the mask store and block 0's read without emitting an extra jump -- the sanctioned mixed-exit `goto endK` family (cross-jump-store-tail-merge) is the only construct in the frozen list that creates a multiply-referenced label, and cross-jumping re-merges the tails. Read LABEL_NUSES in the .jump dump before scoring; the win condition is a surviving lbu in the lw's delay slot with the la count still 3."
+   "hypothesis": "The address allocno can be lifted to nrefs >= 15 by a duplicated statement whose copies are IDENTICAL, so jump2 cross_jump re-merges them and the lift is instruction-free.",
+   "mechanism": "duplicated-statement-into-arms.md names exactly this mechanism (reg_n_refs priority lift with cross-jump re-merging the copies). Every duplicate measured so far had DIFFERENT arms (*q = v | K vs *q = v), so no merge happened and each cost an instruction.",
+   "next_probe": "Find placements where the duplicated statement is the same rtx in both arms (for instance the flag-block read or the address re-assignment duplicated into both arms of an earlier block) and confirm in the .jump2 dump that cross_jump merged the tails before scoring; win condition is nrefs(q) >= 15 at 49 instructions."
   },
   {
-   "hypothesis": "The block-0 seat flip found this session is cheaper than the duplicated-store lift and may be reproducible without the do-while(0) wrap's one-instruction cost.",
-   "mechanism": "The flip was caused by one extra value (`move $a0,$v0`) being live across the mask store, not by the wrap's loop note: the explicit read alone is inert (measured 49/10, byte-identical) and the wrap alone leaves the pointer on $a0 (measured 50/12). Any ordinary-C shape that keeps one extra value live across the mask store should reproduce the flip, and if that value is one the target already computes the flip is free.",
-   "next_probe": "Keep `p` (or the p[8] load) live across the mask store by hoisting `c = p[8] & 1;` above the mask -- s52 measured a related hoist at 49/25 with a different arm assignment, so re-measure with the arms unchanged and read the address allocno's hard register in .greg before the score. The win condition is seat $v1 at 49 insns."
+   "hypothesis": "With a single address pseudo the block-1 la can never be scheduled above block 0's store, so the seat flip alone may not close the last instructions.",
+   "mechanism": "The target materialises block 1's address at 80034FC8, BEFORE block 0's store at 80034FD0, which requires two live address values; one C object is one pseudo, and the la would clobber the pointer before its last use.",
+   "next_probe": "Read .sched/.sched2 on the 49/13 body to see whether the la is even a candidate for that slot, and if it is not, state that dependency as the next thing to prove or disprove rather than continuing to chase the seat alone."
   }
  ],
  "judge_constraints": [
@@ -359,30 +365,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 36,
-   "statement": "Some assignment of the four flag-byte access sites between the declared pointer `q` and the anonymous symbol-difference expression, other than the five combinations s33 already measured, reaches the t",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (g0 control = 10, 49 build insns, rules_dropped 0); single declared `u8 *q` in every variant, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "KILLED. g1 = 28/48, g5 = 25/48, g6 = 27/48, g7 = 14/49, g8 = 28/48. With s33's c1-c5 and the base, the lattice is closed"
-  },
-  {
-   "session": 36,
-   "statement": "Two anonymous address expressions written with DIFFERENT nestings escape cse's canonicalisation and each get their own full-address pseudo, which is the form the target's blocks 2 and 3 have.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; single declared `u8 *q` covering blocks 0+1, blocks 2/3 anonymous, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "KILLED. g8 = 28 at 48 build insns, the same score and instruction count as g1: cse canonicalises both nestings to the sa"
-  },
-  {
-   "session": 36,
-   "statement": "The inherited claim that an anonymous address carrier costs +1 instruction every time its value must cross a code label.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis 2026-09-05, variant g1 (q covers blocks 0+1, blocks 2/3 anonymous), no FAKE construct present; disassembly of tmp/sandbox/func_80034F88/code6cac_b.o",
-   "predicate_cite": "",
-   "result": "KILLED as a general statement. Each anonymous block emits lui + lbu %lo for the read and lui + sb %lo for the store = fo"
-  },
   {
    "session": 36,
    "statement": "The address object's seat is a two-valued dial between $v1 and $a0, so live-range surgery on `q` can only trade one of those two seats for the other.",
@@ -838,6 +820,30 @@
    "measured_on": "s49/s50 two-statement-mask chassis on HEAD 2026-09-05 with the g1 loop-base re-use and the h1 condition hoist both installed, one declared pointer object q, no FAKE construct present",
    "predicate_cite": "",
    "result": "49 insns, score 26, and the seat did NOT flip -- block 0 is still `lui $a0 / addiu $a0 / lbu $a1,0($a0)`. h1 does not me"
+  },
+  {
+   "session": 54,
+   "statement": "A constant re-set of the stored value's variable (m = 0; or m = 1;) between the mask store and block 0's read produces the same invalidation as a real value re-set.",
+   "kill_scope": "instance",
+   "measured_on": "plateau chassis (memory/grind/func_80034F88/candidate.c) in both single- and two-statement mask spellings on HEAD 2026-09-05, one declared pointer object q, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "All six build byte-identically to the plateau body: 49 insns, score 10, no reload, no extra instruction. The invalidatio"
+  },
+  {
+   "session": 54,
+   "statement": "On the 49-insn m-re-use chassis the block-0 seat can be bought by lifting the address allocno's global.c priority above the m allocno's with the duplicated-statement and variable-consumption levers.",
+   "kill_scope": "instance",
+   "measured_on": "s54 m-re-use single-statement-mask chassis (rejected/s54-mreuse-invalidation-TARGET-BLOCK0-STRUCTURE-49insn-score13.c) on HEAD 2026-09-05, one declared pointer object q, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "No flip. The else-arm variant does move m to nrefs 5 / len 7 / pri 14285 but simultaneously pushes p out of $a1 into $a2"
+  },
+  {
+   "session": 54,
+   "statement": "Two C pointer objects (the BANNED axis, re-measured for diagnosis only) become profitable once the block-0 reload exists, because they give the address the two allocnos the target's two hard registers",
+   "kill_scope": "instance",
+   "measured_on": "s54 m-re-use chassis on HEAD 2026-09-05 with two declared pointer objects t and q (BANNED construct, diagnosis only), no FAKE construct present",
+   "predicate_cite": "",
+   "result": "50 insns, score 24 -- worse than the single-handle 49/13 on the identical chassis, re-confirming s50 finding 3 on the ne"
   }
  ]
 }

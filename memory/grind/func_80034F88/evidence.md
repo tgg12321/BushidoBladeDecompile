@@ -7571,3 +7571,158 @@ src/code6cac_b.c restored to HEAD.  Artifacts: tmp/grind/func_80034F88/s53/
 - [s53] cse.c read this session at 8008-8130: cse_end_of_basic_block scans to a CODE_LABEL unconditionally (8039), breaks at NOTE_INSN_LOOP_END only while !after_loop (8054), and extends across a conditional jump only when LABEL_NUSES (JUMP_LABEL) == 1 and a BARRIER precedes the target (8092-8114).
 
 - [s53] Target insn budget for the closest admissible bodies: split spelling 51 = 49 + 2 (block-0 la); wrap 50 = 49 + 1 (nop); wrap + read 51 = 49 + 1 (nop) + 1 (move). No measured body reaches 49 while carrying either the reload or the $v1 seat.
+
+## [s54] synthesis (2026-09-05) -- the co-location law is BROKEN: the target's block-0 reload is reproduced with THREE la pairs, at 49 instructions
+
+### Chassis check
+`memory/grind/func_80034F88/candidate.c` installed at src/code6cac_b.c:3420 =>
+`sandbox func_80034F88 --disable all` = **score 10, 49 target insns / 49 build
+insns**, identical to the ledger floor.  Every s45-s53 spelling conclusion is
+therefore still chassis-valid and was not re-derived.
+
+### Kill re-audit (mandated)
+The two closest-to-target banked instance kills were re-measured on HEAD:
+  * `rejected/s51-splitspell-mask-A70p3-EMITS-TARGET-RELOAD-51insn-score12.c`
+    -> **51 insns / score 12**, byte-for-byte the ledger value.  Its full
+    disassembly is `tmp/grind/func_80034F88/s54/build_split.txt`: pointer on
+    $a0 for all four sites, values on $v1, FOUR la pairs, flag blocks 1/2 and
+    the trailing loop exact.  All 12 differing insns are inside block 0.
+  * `tools/fake_ablate.py` on that body and on this session's best body:
+    "no FAKE-annotated constructs found; nothing to ablate" -- neither kill was
+    measured behind a FAKE carrier.
+
+### FINDING 1 (the session's result): cse's forwarding is defeated by invalidating the STORED VALUE'S pseudo, not the ADDRESS pseudo -- and that costs no `la`
+s53 stated a "co-location law": every non-forwarded re-read of D_80106A73 in 53
+sessions was accompanied by its own `lui/addiu` pair, because the only known
+invalidator was re-executing `q = &D_80106A73;` (a SET of reg q, which
+invalidates every table entry containing q -- including `(mem:QI (reg q))`).
+The target has FOUR non-forwarded reads but only THREE la pairs, so that law
+said the target's block-0 reload had no ordinary-C generator.
+
+The law is wrong, and the missing generator is a SECOND cse invalidation route.
+`*q = m;` records the store's memory destination with the value class of the
+SOURCE register (cse.c:7308-7376).  Re-setting that source register -- i.e.
+re-using the C variable `m` for the next value block 0 needs -- calls
+`invalidate (reg m)`, which removes reg m from that class.  The `(mem:QI (reg
+q))` entry survives, but its class no longer contains a register, so cse cannot
+replace the following read of `*q` with anything cheaper than the MEM itself:
+**the load stays**.  reg q is untouched, so NO new address materialisation is
+emitted.
+
+Measured, both mask spellings, this session:
+
+    m = *q & 0xF8;  *q = m;
+    m = p[8];          /* re-use of m: invalidates the stored value's class */
+    v = *q;            /* REAL lbu, through the mask's own la */
+    c = p[8] & 1;      /* cse folds this read onto m */
+    if (c) c = v | 1; else c = v;
+    *q = c;
+
+gives (`rejected/s54-mreuse-invalidation-TARGET-BLOCK0-STRUCTURE-49insn-score13.c`,
+scratch `bodies/t3_dead_single.c`):
+
+    build (49 insns)                  target
+    la    $4,D_80106A73               lui/addiu $v1,D_80106A73
+    lbu   $3,0($4)                    lbu  $a0,0($v1)
+    move  $5,$2                       addu $a1,$v0,$zero
+    andi  $3,$3,0x00f8                andi $a0,$a0,0xF8
+    sb    $3,0($4)                    sb   $a0,0($v1)
+    lw    $3,32($5)                   lw   $v0,0x20($a1)
+    lbu   $2,0($4)   <-- THE RELOAD   lbu  $a0,0($v1)   <-- 80034FB4
+    andi  $3,$3,0x0001                andi $v0,$v0,1
+    bne   $3,$0,.L737                 bnez $v0,.L80034FC8
+    ori   $3,$2,0x0001                 ori $v0,$a0,1
+    move  $3,$2                       addu $v0,$a0,$zero
+    sb    $3,0($4)                    sb   $v0,0($v1)
+
+**49 instructions, score 13, three la pairs, four non-forwarded reads, no nop.**
+This is the first body in 54 sessions that carries the target's block-0 reload
+at the target's instruction count and in the target's instruction ORDER; flag
+blocks 1 and 2, the trailing loop and the epilogue are byte-exact.  Its whole
+13-point residual is the block-0 REGISTER SEAT (build q=$a0 / values $v1,$v0;
+target q=$v1 / values $a0,$v0) plus the resulting placement of block 1's `la`
+(the target emits it BEFORE block 0's store; a single address pseudo cannot).
+The two-statement mask spelling of the same trick is one nop worse (50 insns,
+score 13, `rejected/s54-mreuse-twostmt-mask-reload-plus-nop-50insn-score13.c`):
+there the reload lands in the same hard register as the `lw` of p[8] and cannot
+fill the load-delay slot.
+
+### FINDING 2: the invalidating re-set must carry a REAL value; a constant dead store does nothing
+`m = 0;` / `m = 1;` in the same slot (both mask spellings, both orderings,
+`rejected/s54-constant-dead-reset-NO-INVALIDATION-49insn-score10.c`) build
+BYTE-IDENTICALLY to the plateau: 49 insns, score 10, no reload.  So the
+sanctioned dead-store family buys nothing here; the working construct is
+ordinary variable re-use whose value block 0 actually consumes.
+
+### FINDING 3: the residual is now a single numeric inequality in global.c, with both sides measured
+`tools/ra_solver/extract.py` (ALLOCDBG) on the 49/13 body
+(`tmp/grind/func_80034F88/s54/model_t3.json`), allocation order
+`73 74 79 83 87 75 78 82 86 72`:
+
+    pseudo  role                      nrefs  livelen   pri     hard
+    73      loop counter i              11      7     47142     3   (no conflict with 75)
+    74      m (mask value + p[8])        4      4     20000     3   <-- takes $v1 first
+    79/83/87 block store values          5      7     14285     3/2
+    75      q (the address)             11     29     11379     4   <-- wants $v1
+    78/82/86 block re-read values        3      4      7500     2/3
+    72      p                            6     34      3529     5
+
+allocno_compare is `floor_log2(nrefs)*nrefs/livelen*10000` (global.c).  Pseudo
+74 is the ONLY allocno that conflicts with 75 and outranks it, so the flip needs
+either pri(75) > 20000 (nrefs >= 15 at len 29) or pri(74) < 11379 (nrefs 4 at
+len >= 8, or nrefs 3 at any len).  Everything measured this session moves one
+side and breaks something else:
+
+    else-arm consumes m (u1/u4/u6/u7)   m -> nrefs 5 len 7 pri 14285, but p is
+                                        pushed out of $a1 into $a2       49/17
+    condition tested inline `if (m & 1)` (u3)                            49/27
+    duplicated store, block 2 only (e3)                                  50/16
+    duplicated store, blocks 1+2 (e1)                                    51/19
+    duplicated store + else-arm m (e2/e4)                            51/23, 50/20
+    q re-used as the trailing loop base (s52 g1, old chassis)         no flip
+
+No measured lift reaches the threshold, and each duplicated store costs an
+instruction (the arms differ, so cross-jump does not re-merge them).
+
+### FINDING 4: the BANNED two-handle axis is still not the thing that costs the residual
+Diagnosis only (never a candidate): mask+block0 on `t`, flag blocks 1/2 on `q`,
+with this session's reload mechanism
+(`rejected/s54-BANNED-twohandle-on-reload-chassis-50insn-score24.c`): **50
+insns, score 24** -- worse than the single-handle 49/13 on the same chassis.
+This re-confirms s50 finding 3 on the NEW chassis: the standing multi-handle
+ban is not what is costing the 10 points.
+
+### Session end state
+src/code6cac_b.c restored to `INCLUDE_ASM("asm/funcs", func_80034F88);`.
+candidate.c is UNCHANGED (the plateau body is still the lowest-scoring form at
+10; the new 49/13 body is banked in rejected/ as the structural chassis).
+Artifacts: tmp/grind/func_80034F88/s54/ (bodies/, model_v2.json, model_t3.json,
+model_u1.json, build_split.txt, build_v2_reuse_m_raw.txt).
+
+- [s54] Chassis re-confirmed: candidate.c = score 10, 49/49 on HEAD 2026-09-05.
+- [s54] Kill re-audit: s51 split-spelling body re-measured 51/12 unchanged; fake_ablate reports no FAKE constructs in it or in this session's best body.
+- [s54] cse's store-forwarding of D_80106A73 is defeated by re-setting the C variable that held the STORED VALUE (`m = p[8];` after `*q = m;`), which drops the register from the stored MEM's equivalence class while leaving reg q untouched -- so the re-read survives with NO extra la. This is the generator the s53 "co-location law" said did not exist.
+- [s54] The m-re-use body with a single-statement mask is 49 insns / score 13 and reproduces the target's block-0 instruction sequence and ORDER exactly (3 la pairs, 4 non-forwarded lbu, no load-delay nop); its entire residual is the block-0 register seat.
+- [s54] A constant re-set (`m = 0;`) in the same slot does NOT invalidate: 49 insns, score 10, byte-identical to the plateau -- the invalidating re-set must carry a value the block actually consumes.
+- [s54] global.c numbers on the 49/13 chassis: q = nrefs 11, len 29, pri 11379, hard 4; m = nrefs 4, len 4, pri 20000, hard 3; m is the ONLY conflicting allocno that outranks q. Flip needs pri(q) > 20000 (nrefs >= 15) or pri(m) < 11379 (nrefs 4 at len >= 8, or nrefs 3).
+- [s54] Two pointer objects on the reload chassis (BANNED, diagnosis only) = 50 insns / score 24, worse than the single-handle 49/13.
+
+- [s54] Chassis re-confirmed: memory/grind/func_80034F88/candidate.c installed at src/code6cac_b.c:3420 gives sandbox --disable all = score 10, 49 target insns / 49 build insns on HEAD 2026-09-05.
+
+- [s54] cse records a store's MEM destination in the value class of the SOURCE register (cse.c:7308-7376); re-setting that source pseudo strips the register out of the class, leaving the MEM entry with no register member, so the next read of the same address stays a load while reg q is untouched and no extra la is emitted.
+
+- [s54] The m-re-use body with a single-statement mask is 49 insns / score 13 and reproduces the target's block-0 instruction sequence and order exactly: three la pairs, four non-forwarded lbu, the reload in the lw's shadow with no load-delay nop, and flag blocks 1/2, the trailing loop and the epilogue byte-exact.
+
+- [s54] The two-statement mask spelling of the same trick is 50 insns / score 13: the reload lands in the same hard register as the lw of p[8] and therefore cannot fill the load-delay slot.
+
+- [s54] A constant re-set (m = 0; / m = 1;) in that slot invalidates nothing -- six bodies build byte-identically to the plateau (49/10) -- so the sanctioned dead-store family is inert on this residual.
+
+- [s54] global.c allocno_compare is floor_log2(nrefs)*nrefs/livelen*10000; on the 49/13 chassis q = nrefs 11, len 29, pri 11379 (hard 4) and m = nrefs 4, len 4, pri 20000 (hard 3), with m the only conflicting allocno that outranks q (tmp/grind/func_80034F88/s54/model_t3.json).
+
+- [s54] The loop counter i (pri 47142, hard 3) does NOT conflict with the address allocno, so it is not a blocker; only the m allocno stands between q and hard 3.
+
+- [s54] Nine priority lifts measured on that chassis all miss the flip: else-arm-consumes-m 49/17 (m to pri 14285 but p pushed into $a2), if (m & 1) inline 49/27, duplicated stores 50/16, 51/19, 51/23, 50/20 (each costs an instruction because the arms differ and cross_jump does not re-merge them).
+
+- [s54] Two pointer objects on the reload chassis (BANNED, diagnosis only) measure 50 insns / score 24, worse than the single-handle 49/13 -- the multi-handle ban is not what costs the residual.
+
+- [s54] Kill re-audit: the s51 split-spelling body re-measures 51/12 unchanged and fake_ablate finds no FAKE construct in it or in this session's best body.
