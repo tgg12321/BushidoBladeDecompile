@@ -23322,3 +23322,114 @@ restored to HEAD before this record was filed.
 ## 2026-09-05 06:11 — func_80034F88 — ruling: func_80034F88 has been at an honest floor of 10 for nineteen sessions, and the r — **FAIL**
 
 NO. The proposed body is verbatim state.json banned_constructs entries 1 AND 2 (entry 2 bans these same per-flag-block handles 'treated as ordinary program logic rather than a register-allocation lever' — today's exact framing), and the multi-handle axis was closed by my 2026-09-04 15:09 ruling (decisions.md:22578). The emission-vs-RA reframing names no new defect: that ruling's ground was the C TEXT, not the pass name — two handles on one byte have no distinguishing semantic reading, and this ledger's own s22/s24 SOTN-master census returns ZERO instances, so it is a family extension beyond pointer-alias-fake-exception (ONE redundant handle) = FAIL(CONSTRUCT), never an escalate. Verified myself: rejected/three-pointer-objects-judge-FAIL-score0.c reaches 0 only with qm live alongside q1/q2; the honest one-per-block spelling (rejected/three-copy-handles-one-per-block-score27.c) measures 27, and two-objects-block1-fresh-handle measures 13 — worse than the single-object floor of 10 in candidate.c. CONFIRMED on the fallback: with the alias axis closed and the ladder spent, the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record is the correct disposition — file it; do not re-open this axis.
+
+## 2026-09-05 — func_80034F88 (src/code6cac_b.c) — **LADDER EXHAUSTED (non-endgame residual, floor 10): FORECLOSED**
+
+PROOF-OF-FORECLOSURE RECORD (owner ruling 2026-08-31,
+`.claude/rules/ordinary-c-judge-decidable.md` — a recorded disposition, not a
+question to the owner). Filed by grind session s42 (synthesis) on the Judge's
+explicit direction in the 2026-09-05 06:11 ruling (decisions.md:23322):
+"CONFIRMED on the fallback: with the alias axis closed and the ladder spent, the
+LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record is the
+correct disposition — file it; do not re-open this axis."
+
+The honest floor is **10**, above `ENDGAME_LOCK_MAX_FLOOR = 5`, so the
+2026-07-27 standing ruling is NOT this function's subject (owner ruling
+2026-09-02, "foreclosure mechanics") and no endgame-lock status is claimed here.
+
+**Ladder accounting.** Cycle 2 of the ladder ran s23–s42: twenty sessions with
+the honest floor flat at 10, across the modalities forensics, rederive,
+structural, synthesis, solver, permuter and escalation (the ">= 6 distinct
+modalities" condition was met at s31). The owner's 2026-09-02 directive is
+therefore satisfied.
+
+**State on main.** `src/code6cac_b.c:3420` carries
+`INCLUDE_ASM("asm/funcs", func_80034F88);` — the function has never had a cheat
+committed on main. The best admissible pure-C body is
+`memory/grind/func_80034F88/candidate.c` (one C pointer object, no FAKE
+construct of any kind; `tools/fake_ablate.py` reports nothing to ablate),
+re-measured this session at **score 10, 49 target insns / 49 build insns,
+rules_dropped 0** with `sandbox func_80034F88 --disable all`.
+
+**The residual, stated exactly.** Read block by block off
+`asm/funcs/func_80034F88.s`, the target materialises `&D_80106A73` into an
+allocatable register THREE times — `lui/addiu $v1` at 80034F98/9C for blocks
+0–1, `lui/addiu $a0` at 80034FC8/CC for block 2, and `lui/addiu $a0` again at
+80034FF0/F4 for block 3 — with $v1 and $a0 holding the same address
+simultaneously across `.L80034FC8` (the block-2 materialisation is scheduled
+above block 1's `sb $v0,0($v1)` at 80034FD0). The one-object body has a single
+address pseudo seated in $a0: blocks 2/3 are register-exact and blocks 0/1 are a
+$v1<->$a0 rotation of (address, byte value), plus a `nop`/`lbu` swap in a
+load-delay slot that s37 priced at zero instructions. That rotation is the
+entire 10-point residual.
+
+**(i) Gate evidence — both endgame-lock AND-gates fail.**
+- Canonical-asm gate: `python3 tools/scan_hand_coded.py --single func_80034F88`
+  returns **tier=LOW score=0/8** (re-run and recorded in s22, s23 and s24;
+  outputs at `tmp/grind/func_80034F88/s22|s23|s24/scan_hand_coded.txt`). No
+  STRONG signal (S1/S2/S6), so the canonical-asm grant path is closed.
+- Precedent gate: the SOTN-master census run in s22 and s24 (permissive pass,
+  `tmp/grind/func_80034F88/s22/sotn_census.py`; index gate at
+  `tmp/grind/func_80034F88/s24/sotn_index_gate2.txt`) returns **ZERO** instances
+  of multiple C pointer objects aliasing one byte-sized global. A negative
+  census is a FAILED gate, not an open question, so no coercion/spelling family
+  is available for the residual.
+
+**(ii) Evidence pointers — why no admissible C form remains.**
+- The only construct ever measured to emit the target's second and third
+  `lui+addiu` materialisations is a further `u8 *q = &D_80106A73;` pointer
+  object: `memory/grind/func_80034F88/rejected/three-pointer-objects-judge-FAIL-score0.c`
+  reaches distance 0 and is a ruled cheat (Judge 2026-08-13, re-affirmed
+  2026-09-04 15:09 at decisions.md:22578 and 2026-09-05 06:11 at
+  decisions.md:23322; recorded in `state.json` `banned_constructs` entries 1 and
+  2, which cover both the pointer-alias-family framing and the
+  ordinary-program-logic framing).
+- Every non-pointer spelling of the address has been measured and is dead:
+  bare symbol and symbol-difference (s40 a1/a2, 28 at 48, byte-identical to each
+  other), p-derived additive arithmetic (s41 n1/n2/n3 — cancelled in combine by
+  `simplify_plus_minus`, `tools/gcc-2.7.2/cse.c:4250`), `static inline` helpers
+  (s37, eleven bodies, best 13 at 50; s40 h1, 30 at 49), one- and two-slot
+  aggregates (s18 — single-slot bit-identical to the scalar body, two-slot 35 at
+  58), the `&D_80106A70[3]` array model (s25, 12, differing only in the known
+  false LO16-addend distance), and anonymous symbol-derived carriers (s33–s35 —
+  deleted at the join by `reorg.c:3442` on one route, +1 instruction on the
+  other).
+- The allocator side is exhausted from both directions.
+  `tools/gcc-2.7.2/global.c:635` orders allocnos by
+  `floor_log2(n_refs)*n_refs*size/live_length`; s39 reduced the residual to a
+  2619-point priority gap (value m: 6 refs / 9 live / pri 13333 versus pointer
+  q: 10 refs / 28 live / pri 10714) after removing the local-alloc hard-reg
+  conflict. Reference-count lifts: s39 (redundant re-materialisations are
+  deleted, q caps at 10 refs) and s42 v1 (the trailing copy loop, the only free
+  source of extra refs, costs the loop's own three-instruction
+  `lui %hi / addu $at / sb %lo($at)` address form → 30 at 48). Live-length
+  lifts: s37 k1–k5 (byte-inert or worse) and s42 v2/v3 (value chaining
+  lengthens the ranges but deletes the target's flag-byte reloads → 24 at 45 and
+  24 at 47). One pseudo is one allocno (`global.c:426`) with one hard register
+  (`global.c:1275`) and GCC 2.7.2 has no live-range splitting, so even a won
+  seat only TRADES blocks 0/1 for blocks 2/3 (s32, s35).
+- 188 disproven forms were banked before this session and three more were added
+  by s42, all under `memory/grind/func_80034F88/rejected/`; the full measurement
+  narrative is `memory/grind/func_80034F88/evidence.md` (sections s1–s42) and
+  `hypotheses.md`.
+
+**(iii) Re-activation triggers.** This record is a disposition, not a verdict on
+the C's existence:
+1. A Judge or owner grant that admits a SECOND C pointer object naming
+   `&D_80106A73` (a widening of `pointer-alias-fake-exception` beyond ONE
+   redundant handle, or a new sanctioned family covering per-block address
+   materialisation). The matching body is already banked and measures ZERO, so
+   the function would complete in a single session.
+2. A toolchain finding that some ordinary-C construct emits
+   `lui $r,%hi(SYM); addiu $r,$r,%lo(SYM)` into an allocatable register without
+   naming a pointer object. The measured-dead list above is what a new candidate
+   must not be a respelling of.
+3. Any SOTN-master precedent that turns the negative census positive.
+
+Nothing here is surfaced to the owner and nothing waits on one (owner rulings
+2026-08-18 `judge-sole-gate` and 2026-08-31 `ordinary-c-judge-decidable`). The
+driver forecloses the queue item silently and the queue advances.
+
+## 2026-09-05 06:21 — func_80034F88 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s41 of func_80034F88, which the driver DISCARDED as invalid (owner-gated: a foreclosure disposition (standing ruling / ladder exhausted) requires `escalation` modality (driver-declared exhaustion), not `structural`. A dead axis in this modality is a `progress` outcome with the kills banked ΓÇö the ladder still has untried modalities.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
