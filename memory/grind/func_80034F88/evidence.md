@@ -6731,3 +6731,96 @@ Readings:
 - [s46] v6's single extra instruction is a load-delay nop caused by sched1 priority: moving the sb into the arms removes the sb -> lw memory dependence that made the lbu BB0's longest-path insn, so move $a1,$v0 is emitted before the lbu instead of sinking into its delay slot.
 
 - [s46] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; git status shows no modified build-pipeline file, rule file, engine file or tool. The only ledger writes are memory/grind/func_80034F88/{evidence.md,hypotheses.md,candidate.c header comment} and six new rejected/ forms.
+
+## s47 (forensics) — the residual is now thirteen instructions wide and its remaining lever is a local-alloc seat
+
+**Chassis re-audit (mandated).** The brief's CHASSIS CHECK printed "measurement
+unavailable", so both anchors were re-measured before any new probe:
+`s46/a1.c` = **score 10 at 49 insns**, 4 `lbu` / 3 `nop`; `s46/v6.c` = **score
+12 at 50 insns**, 5 `lbu` / 3 `nop`. Both reproduce their banked values exactly.
+`tools/fake_ablate.py` on the closest-to-target body reports *no FAKE-annotated
+constructs found ... nothing to ablate* — no FAKE carrier occupies any contested
+pseudo, so every s46/s47 seat measurement is a clean one.
+
+**The session's result.** Sharing ONE `c0 = p[8] & 1` between the mask block's
+splitting conditional and flag block 1's own conditional (`s2.c`, and the
+equivalent `t2.c` with `c0` computed before the pointer) yields a body that is
+**49 instructions with the target's exact multiset — 5 `lbu`, 2 `nop`**. That
+is the first time in this ledger that an ordinary-C body has matched the
+target's instruction COUNT and MULTISET simultaneously; s46's v4 reached the
+multiset only at 51 instructions and only through a magic-offset pun that was
+never submittable. Flag blocks 2 and 3, the copy loop and the epilogue are
+byte-identical to the target. The entire residual is the thirteen instructions
+of blocks 0 and 1.
+
+**What is left, precisely.** Two things, and they are the same thing:
+
+    ours (s2)   lui a0 ; addiu a0 ; move a1,v0 ; lw v0,0x20(a1) ; lbu v1,0(a0)
+                andi v0,1 ; andi v1,0xf8 ; sb v1,0(a0) ; lbu v1,0(a0) ; bnez v0
+                ori v0,v1,1 / move v0,v1 ; sb v0,0(a0)
+    target      lui v1 ; addiu v1 ; lbu a0,0(v1) ; addu a1,v0,0 ; andi a0,0xf8
+                sb a0,0(v1) ; lw v0,0x20(a1) ; lbu a0,0(v1) ; andi v0,1 ; bnez v0
+                ori v0,a0,1 / addu v0,a0,0 ; [lui a0 ; addiu a0] ; sb v0,0(v1)
+
+The address is in `$a0` and the values in `$v1`; the target has them the other
+way round. `tools/ra_solver/local_extract.py --suggest` on the s2 body
+(`s47/ra_local_s2.txt`) shows why: BB0 carries exactly TWO block-local
+quantities — the `p[8]` load (reg 77, span 8–12) and the mask's QImode load
+(reg 78, span 10–14) — and they OVERLAP, so `find_free_reg`'s numeric scan
+(`local-alloc.c:2169-2171`, `:2247`) hands hard reg 2 to 77 and hard reg 3 to
+78. Hard reg 3 is therefore already in the address pseudo's conflict row by the
+time global alloc reaches it (`nrefs_census`: address pseudo 76, nrefs 12,
+livelen 33, priority 10909, allocno rank 4 → hard 4). They overlap only because
+sched1 emits the `lw p[8]` between the mask's `lbu` and its `andi`. **De-overlap
+the two BB0 locals and both take hard reg 2, hard reg 3 falls free, and the
+address takes it.** That is one lever, it is a scheduling lever, and
+`tools/sched_solver` models it exactly.
+
+**Two axes closed with measurements.**
+- `extern volatile u8 D_80106A73;` DOES reproduce the target's 5-`lbu` / 2-`nop`
+  multiset — and costs six instructions (19 at 55 on the uniform body, 21 at 56
+  on v6), because `MEM_VOLATILE_P` → `do_not_record` (`cse.c:1943`) also blocks
+  cse from unifying the three address materialisations. The volatile axis is
+  dead on cost, before the two-prong gate is even consulted (and it would fail:
+  no `volatile_extern_allowlist.txt` grant, no IRQ/MMIO writer in the census).
+- s39's SImode round-trip (`m = *q; m = m & 0xF8;`) is codegen-INERT on the v6
+  chassis — byte-identical output. It only ever moved anything while the store
+  sat in BB0.
+
+**The cse guard, enumerated once so no session re-derives it.** A QImode store
+to a global escapes cse's hash table only via `flag_float_store` (FP only),
+`in_libcall_block`, `sets[i].src_elt == 0`, a paradoxical-SUBREG dest, or a
+`ZERO_EXTRACT` dest (`cse.c:7311-7340`). `src_elt == 0` needs `do_not_record`
+from `canon_hash`: volatile MEM, PRE/POST_INC/DEC, CALL, `UNSPEC_VOLATILE`,
+volatile `ASM_OPERANDS`, or a non-fixed hard reg under `SMALL_REGISTER_CLASSES`
+(undefined on MIPS). `ZERO_EXTRACT` is unreachable because MIPS's `insv`
+expander FAILs on any field that is not 32 bits wide and byte-aligned
+(`mips.md:2901-2912`), so a 3-bit flag-field write lowers to a plain MEM SET.
+Of the reachable spellings, volatile costs +6 and the value-class break costs +2
+(s46 v4). **The only free route is the EBB boundary** — store inside a
+conditional arm, read after the join — which is what v6/s2 already do.
+
+**Chassis note for the next session.** `candidate.c` (score 10, 49 insns) is
+still the lowest-SCORING body, but it has the WRONG multiset (4 `lbu`; the
+reload is cse'd away). `rejected/s47-shared-cond-mask-store-in-arms-EXACT-TARGET-MULTISET-49insn-score13.c`
+scores 13 and is far closer to the target's shape. Score-distance and
+shape-distance are not the same ordering here; do not read "13 > 10" as "worse".
+Work the s2 body.
+
+- [s47] Chassis confirmed on HEAD 2026-09-05: a1 = score 10 at 49 insns (4 lbu / 3 nop); v6 = score 12 at 50 insns (5 lbu / 3 nop); honest floor unchanged at 10.
+
+- [s47] s2/t2 (one shared c0 = p[8] & 1 driving both the mask's splitting conditional and flag block 1) = score 13 at 49 insns with 5 lbu and 2 nop -- the target's exact instruction count AND multiset, from ordinary C, one declared pointer object, no FAKE construct, no pun.
+
+- [s47] In s2 the target and our body agree instruction-for-instruction from flag block 2 onward; the residual is the thirteen instructions of blocks 0/1, where address and value registers are swapped ($a0/$v1 instead of $v1/$a0) and sched1 orders the copy and lw ahead of the mask's lbu.
+
+- [s47] local_extract --suggest on s2: BB0 carries two block-local quantities, reg 77 (p[8] load, span 8-12) -> hard 2 and reg 78 (mask QImode load, span 10-14) -> hard 3; their spans overlap, which is why hard 3 is consumed.
+
+- [s47] nrefs_census on s2: the address pseudo is 76 (nrefs 12, livelen 33, priority 10909, allocno rank 4) and takes hard 4 because hard 3 is already in its conflict row; the .greg row for the equivalent v6 pseudo 75 reads ';; 75 conflicts: 72 74 75 80 81 84 85 88 89 2 3 29'.
+
+- [s47] extern volatile u8 D_80106A73 reaches the target multiset but at 55/56 instructions (score 19/21) -- the volatile axis is closed on measured cost, before its two-prong gate is even reached.
+
+- [s47] s39's SImode round-trip is byte-identical to the inline mask on the v6 chassis (diff of the disassembled objects is empty), so that confirmed s39 finding is chassis-specific and carries no lever here.
+
+- [s47] cse.c's dest-recording guard (cse.c:7311-7340) plus canon_hash (cse.c:1880-1990) leave only two store-side routes to a surviving reload, both priced (+6 volatile, +2 value-class break); MIPS's insv predicate (mips.md:2901-2912) rules out the ZERO_EXTRACT/bitfield route entirely.
+
+- [s47] fake_ablate on the closest-to-target body reports no FAKE-annotated constructs, so none of this session's seat measurements are confounded by a FAKE carrier.
