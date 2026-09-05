@@ -1,3 +1,10 @@
+/* s45 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns.
+ * BODY UNCHANGED -- still the best measured form.  s45 executed s44's
+ * Frontier A (the unread preference records) and it REFRAMES the residual:
+ * the discriminator between this body and the score-0 banned body is which
+ * hard register LOCAL-ALLOC hands block 0's quantities, not global.c's
+ * allocno rank.  See evidence.md s45.
+ */
 /* s44 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns.
  * BODY UNCHANGED.  s44 read the OBJDUMP of this body against the target for
  * the first time and it CORRECTS the ledger:

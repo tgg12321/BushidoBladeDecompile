@@ -4314,3 +4314,94 @@ spending a probe on a brief-listed "next probe", or it will re-derive s37-s40.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present
+
+## Frontier after s45
+
+- **A.** LOCAL-ALLOC, NOT GLOBAL-ALLOC. s45's dumps show the discriminator between the base body and the score-0 banned body is which hard register `local-alloc.c` hands block 0's block-confined quantities: in the score-0 body block 0's POINTER is a block-confined quantity seated in `$v1` and block 0's byte VALUE is seated in `$a0`; in every single-object body the block-0 byte value is the block-confined quantity and local-alloc seats it in `$v1`, which is what puts hard reg 3 into `q`'s conflict row. The target's own disposition pair (address `$v1`, value `$a0`) is the score-0 pair. Next probe: read `local-alloc.c`'s quantity ordering (`qty_order`, `qty_compare`) and `find_free_reg`'s `qty_phys_copy_sugg` / `qty_phys_sugg` path, and identify the ordinary-C property of block 0 that makes its byte value take `$a0` rather than `$v1` -- e.g. whether an additional block-0-confined quantity of higher local priority can be made to take `$v1` legitimately, or whether the suggestion for `$a0` comes from a copy the source can create.
+- **B.** EXIT #5 (`regs_someone_prefers`). `find_reg` pass 0 excludes registers preferred by lower-priority conflicting allocnos (global.c:1001, built at global.c:911-931). If `q` (75) or `p` (72) carried a hard-reg full preference for reg 3, pseudo 74 would skip `$v1` in pass 0, take `$a0`, and `q` would get `$v1` -- **without changing the allocno order at all**, so none of s39's four numeric exits has to be forced. The only generator is `set_preference` (global.c:1700-1754), which needs a copy insn between `q` and a pseudo local-alloc has already renumbered to reg 3. y1/y2 show an anonymous block-0 address does NOT produce that copy (GCC re-materialises the symbol for `q`). Next probe: find an ordinary-C construct that puts a copy edge between `q` and a block-0-confined quantity without declaring a second pointer object -- the obvious candidate class is a copy through a NON-pointer quantity that is nonetheless in the same reg (e.g. an integer local that block 0 computes and block 1 consumes and that combine turns into a register copy).
+- **C.** Do not re-attack the "stretch the block-0 value's live range" exit by statement order: s45 measured `reg_live_length[74]` invariant at 6 refs / 9 insns under two different source orderings (x3, x4), because it is computed after combine re-normalises the insn order.
+
+## [s45] MANDATED KILL RE-AUDIT: the base body re-measures at 10 / 49 on today's chassis, and the two closest-to-target banked bodies (m1, rt) re-measure at 10 / 49 as well; the chassis still carries no FAKE construct for `fake_ablate.py` to ablate.
+
+- probe: `sandbox func_80034F88 --disable all` with `memory/grind/func_80034F88/candidate.c` spliced in; then `.greg`/`.lreg` dumps of `m1` (`rejected/s43-mask-folded-single-stmt-localalloc-v1-score10.c`) and `rt` (`rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c`).
+- result: b0 = 10 at 49, m1 = 10 at 49 chassis-consistent, rt = 10 at 49 chassis-consistent. As s41/s42 recorded, no FAKE construct is present in the base chassis, so no banked kill on it was measured with a FAKE carrier occupying the contested pseudo.
+- verdict: CONFIRMED.
+
+## [s45] In the base body neither contested allocno carries ANY hard-register preference, and pseudo 74 takes `$v1` purely as the lowest-numbered register free in `find_reg`'s pass 0.
+
+- mechanism: global.c:1052 (`find_reg` pass-0 scan) with `regs_someone_prefers[74]` empty, `hard_reg_copy_preferences[74]` empty and conflicts `{2,29}`.
+- probe: `BB2_FINDREG_DEBUG=74` and `=75` on the base body via `tmp/grind/func_80034F88/s45/fr.sh`; `.greg` preference lines for the same body.
+- result: pseudo 74 -- conflicts `2 29`, someone_prefers empty, own_copy_prefs empty, pass0_used `0 1 2 16..23 26..31`, so reg 3 is chosen; pseudo 75 -- conflicts `2 3 29`, pass0_used adds 3, so reg 4 is chosen. `.greg` prints preference lines only for 77/80/84 (all `2`).
+- verdict: CONFIRMED.
+
+## [s45] There is a FIFTH numeric exit from the seat swap that s39's four-exit enumeration could not see: a hard-reg full preference for reg 3 on a lower-priority conflicting allocno (`q` or `p`) makes pseudo 74 skip `$v1` in pass 0, without any change to the allocno order.
+
+- mechanism: `prune_preferences` (global.c:911-931) builds `regs_someone_prefers[a]` from the `hard_reg_full_preferences` of lower-priority conflicting allocnos; `find_reg` ORs that set into the pass-0 exclusion mask (global.c:1001). Generator: `set_preference` (global.c:1700-1754), whose `reg_renumber[src] >= 0` branch treats a locally-allocated pseudo as a hard register.
+- probe: source read plus the FINDREGDBG dumps above (which print `someone_prefers` explicitly), and the score-0 body's `;; 77 preferences: 3` line, which is that generator firing.
+- result: the exit is real and is the mechanism the score-0 banned body uses. No ordinary-C generator for it has been found yet on a single-object chassis.
+- verdict: CONFIRMED.
+
+## [s45] Every measured body that WINS the allocno priority race loses on `q`'s conflict row for the same reason: the spelling that cuts the block-0 value's reference count also makes block 0's byte value a block-0-confined quantity, which local-alloc seats in `$v1` while `q` is live.
+
+- mechanism: local-alloc seats block-confined quantities before global alloc runs; a locally-allocated quantity live across `q`'s range puts its hard register into `q`'s `hard_reg_conflicts` row (global.c `record_conflicts` via `reg_renumber`).
+- probe: `.greg`/`.lreg` of m1 and rt against b0.
+- result: m1's order is `73 78 81 85 75 74 ...` (q FIRST) but `75 conflicts: ... 2 3 29`; rt's q (74, 15 refs) is allocated second overall but `74 conflicts: ... 2 3 29`; b0's q row is clean (`... 2 29`) and it loses the order race instead. Block-0-confined quantities in m1 (76) and rt (75, 76) are all seated in hard reg 3.
+- verdict: CONFIRMED.
+
+## [s45] Moving statements in the C source between the block-0 value's definition and its uses does not change `reg_live_length` for that pseudo, so s39's "m livelen >= 12" exit is not reachable by statement order.
+
+- mechanism: `reg_live_length` is recomputed by flow.c after combine has re-normalised insn order, so a source-level reordering that combine undoes leaves the allocno geometry untouched.
+- probe: x3 (block-1's `p[8]` load hoisted between the value's def and the mask) and x4 (block-0's store moved inside block 1, after the condition), both measured and both dumped.
+- result: x3 = 13 at 49; x4 = 13 at 49. x4's `.lreg` reads `Register 74 used 6 times across 9 insns` -- identical to b0 -- and its `.greg` allocation order, conflict rows and dispositions are identical to b0's. Hoisting the condition all the way to function scope (x1/x2) does insert instructions but collapses the body to 45 insns (13); hoisting two conditions (x5) gives 25 at 40.
+- verdict: KILLED (instance).
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05 (b0 = 10, 49/49, rules_dropped 0); bodies x1-x5, single declared `u8 *q`, no FAKE construct present.
+
+## [s45] Spelling block 0 through the bare symbol so that its address is an anonymous block-confined pseudo does not give `q` a copy preference for reg 3: GCC re-materialises `&D_80106A73` at the top of the function for `q` rather than copying block 0's temp into it.
+
+- mechanism: `set_preference` (global.c:1700-1754) only fires on an actual copy insn; with no named block-0 pointer there is no value for cse to forward into `q`, so the address is re-emitted and no preference edge exists.
+- probe: y1 (block 0 = `D_80106A73 = D_80106A73 & 0xF8;`, `q` declared and first assigned at block 1's head) and y2 (same with a named `u8` mask local), measured and dumped.
+- result: y1 = 16 at 51, y2 = 16 at 51. y1's `.greg`: `q` is pseudo 74, disposition 4, conflict row `... 2 3 29`, and NO `74 preferences:` line at all; the block-0 quantity in hard reg 3 is 79 (`2 times across 6 insns in block 0`).
+- verdict: KILLED (instance).
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05; bodies y1/y2, single declared `u8 *q`, no FAKE construct present.
+- kill_scope: instance
+
+## [s43] MANDATED KILL RE-AUDIT: the base body and the two banked bodies closest to the target re-measure at their banked values on today's chassis, and the chassis still carries no FAKE construct for fake_ablate.py to ablate.
+- mechanism: Chassis-relative re-measurement of banked scores before spending any new probe, as required when the floor has been flat.
+- probe: sandbox func_80034F88 --disable all with memory/grind/func_80034F88/candidate.c spliced over the INCLUDE_ASM line; then .greg/.lreg dumps of m1 (rejected/s43-mask-folded-single-stmt-localalloc-v1-score10.c) and rt (rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c).
+- result: b0 = 10 at 49/49, rules_dropped 0. m1 and rt both dump the allocno geometry their banked entries describe (m1: q allocated FIRST but conflict row carries hard reg 3; rt: q at 15 refs allocated second but conflict row carries hard reg 3). s41/s42 already established fake_ablate has nothing to ablate on this chassis, so no banked kill was measured with a FAKE carrier occupying the contested pseudo.
+- verdict: CONFIRMED
+
+## [s43] In the base body neither contested allocno carries any hard-register preference, and pseudo 74 (the block-0 flag-byte value) takes $v1 purely as the lowest-numbered register free in find_reg's pass-0 scan.
+- mechanism: global.c:1052 find_reg pass-0 scan, with regs_someone_prefers[74] empty, hard_reg_copy_preferences[74] empty, and hard_reg_conflicts[74] = {2,29}.
+- probe: BB2_FINDREG_DEBUG=74 and =75 on the base body through tmp/grind/func_80034F88/s45/fr.sh (instrumented cc1 tools/gcc-2.7.2/cc1, granted by docs/grind/decisions.md:14784), plus the ';; NN preferences:' lines in tmp/grind/func_80034F88/s45/b0/code6cac_b.greg.
+- result: pseudo 74 -- conflicts '2 29', someone_prefers empty, own_copy_prefs empty, own_full_prefs empty, pass0_used '0 1 2 16..23 26..31' so reg 3 is the first free candidate. pseudo 75 (q) -- conflicts '2 3 29', pass0_used adds 3, so reg 4 is taken. .greg prints preference lines only for 77/80/84, all for hard reg 2. Nineteen sessions of allocno_compare analysis were reading only half of the selection rule.
+- verdict: CONFIRMED
+
+## [s43] A fifth numeric exit from the seat swap exists that s39's four-exit enumeration could not see: a hard-register full preference for reg 3 on a lower-priority conflicting allocno (q or p) makes pseudo 74 skip $v1 in find_reg's pass 0 and land on $a0, leaving $v1 for q, with the allocno order left exactly as it is.
+- mechanism: prune_preferences (global.c:911-931) builds regs_someone_prefers[a] from the hard_reg_full_preferences of lower-priority conflicting allocnos; find_reg ORs that set into the pass-0 exclusion mask (global.c:1001). The only generator is set_preference (global.c:1700-1754), whose reg_renumber[src] >= 0 branch treats a pseudo already renumbered by local-alloc exactly like a hard register.
+- probe: Source read of global.c against the FINDREGDBG dumps (which print someone_prefers explicitly for pseudos 74 and 75), cross-checked against the score-0 banned body's ';; 77 preferences: 3' line, which is that generator firing.
+- result: The exit is real and it is precisely the mechanism the score-0 banned body uses. It does not require winning the priority race that s39/s41/s43 spent three sessions on. No ordinary-C generator for it has been found yet on a single-object chassis -- see the two kills below for the two routes closed this session.
+- verdict: CONFIRMED
+
+## [s43] Every measured body that wins the allocno priority race loses on q's conflict row for one shared reason: the spelling that cuts the block-0 value's reference count also makes block 0's byte value a block-0-confined quantity, and local-alloc seats that quantity in $v1 while q is live.
+- mechanism: local-alloc runs before global alloc and renumbers block-confined quantities; a renumbered quantity live across q's range puts its hard register into q's hard_reg_conflicts row, which find_reg then honours unconditionally.
+- probe: Side-by-side .greg/.lreg of m1 and rt against b0 (tmp/grind/func_80034F88/s45/{b0,m1,rt}/code6cac_b.{lreg,greg}).
+- result: m1's allocation order is '73 78 81 85 75 74 80 84 72' -- q IS first -- but '75 conflicts: 72 74 75 78 80 81 84 85 2 3 29'. rt's q (pseudo 74, 15 refs / 30 insns) is allocated second overall but '74 conflicts: ... 2 3 29'. b0's q row is clean ('... 2 29') and it loses the order race instead. The block-0-confined quantities are seated in hard reg 3 in both m1 (76) and rt (75, 76). The score-0 banned body inverts this: block 0's POINTER is the block-confined quantity (seated 3) and block 0's byte VALUE is seated 4, and the blocks-1 global pointer inherits ';; 77 preferences: 3' by copy. The target's own disposition pair -- address $v1, value $a0, block-0 value dead after 80034FAC because block 1 reloads at 80034FB4 -- is the score-0 pair, so the residual is a LOCAL-ALLOC seat question, not a global-alloc rank question.
+- verdict: CONFIRMED
+
+## [s43] Moving statements in the C source between the block-0 value's definition and its uses leaves reg_live_length for that pseudo unchanged at 6 references across 9 insns, so s39's 'block-0 value livelen >= 12' exit is not reachable by statement order on this chassis.
+- mechanism: reg_live_length is recomputed by flow.c after combine has re-normalised the insn order, so a source-level reordering that combine undoes never reaches the allocno geometry that allocno_compare (global.c:635) sorts on.
+- probe: x3 (block-1's p[8] load hoisted between the value's definition and the mask) and x4 (block-0's store moved inside block 1, after the condition), both measured with sandbox --disable all and both dumped; x1/x2 (condition hoisted to function scope) and x5 (two conditions hoisted) measured as the insert-real-instructions comparison.
+- result: x3 = 13 at 49, x4 = 13 at 49. x4's .lreg still reads 'Register 74 used 6 times across 9 insns' -- identical to b0 -- and its .greg allocation order ('73 77 80 84 74 75 79 83 72'), conflict rows and dispositions are identical to b0's as well. x1 = 13 at 45, x2 = 13 at 45, x5 = 25 at 40: inserting real instructions does move the geometry but collapses the body. All five banked in memory/grind/func_80034F88/rejected/.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05 (b0 = 10, 49/49, rules_dropped 0); bodies x1-x5, single declared `u8 *q`, no FAKE construct present.
+
+## [s43] Spelling block 0 through the bare symbol, so that block 0's address becomes an anonymous block-confined pseudo and q is declared and first assigned at block 1's head, does not give q a copy preference for reg 3.
+- mechanism: set_preference (global.c:1700-1754) fires only on an actual copy insn. With no named block-0 pointer there is no value for cse to forward into q, so GCC re-materialises &D_80106A73 at the top of the function for q and no preference edge is ever created.
+- probe: y1 (block 0 = `D_80106A73 = D_80106A73 & 0xF8;`, q declared and first assigned at block 1's head) and y2 (same with a named u8 mask local), measured with sandbox --disable all and dumped.
+- result: y1 = 16 at 51, y2 = 16 at 51. y1's .greg shows q as pseudo 74 with disposition 4, conflict row '72 74 77 78 81 82 85 86 2 3 29' (hard reg 3 still present), and no '74 preferences:' line at all; the block-0 quantity occupying hard reg 3 is pseudo 79 ('2 times across 6 insns in block 0'). The copy edge the score-0 body gets for free requires block 0's address to be a NAMED object whose value cse can forward, which is the banned multi-handle shape. Both bodies banked in memory/grind/func_80034F88/rejected/.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05; bodies y1/y2, single declared `u8 *q`, no FAKE construct present.

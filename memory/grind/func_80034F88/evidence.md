@@ -6144,3 +6144,163 @@ for the base body; that read, not another spelling, is the next cheap step.
 - [s42] New measurements: p1 10/49, p2 10/49, p3 16/49, p4 20/50, p5 12/50, p6 11/50, p7 24/53, p8 13/47.
 
 - [s42] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file was modified.
+
+## s45 (synthesis, 2026-09-05; dispatched as "session 35" -- the digest lags the ledger by ten sessions) -- Frontier A executed: the residual is a LOCAL-ALLOC seat, not a global-alloc rank
+
+Floor unchanged: **10 at 49 insns**.  Every measurement is
+`sandbox func_80034F88 --disable all` with the body spliced over
+`INCLUDE_ASM("asm/funcs", func_80034F88);` in `src/code6cac_b.c`; `src/` was
+restored to HEAD before the outcome was written.  Splice/measure harness:
+`tmp/grind/func_80034F88/s45/{splice.py,run.ps1,slice.py}`; FINDREGDBG harness
+`tmp/grind/func_80034F88/s45/fr.sh` (instrumented cc1 `tools/gcc-2.7.2/cc1`,
+instrumentation granted by docs/grind/decisions.md:14784).
+
+### The preference records, read for the first time (this was s44's Frontier A)
+`.greg` prints `;; NN preferences: R` lines, and the instrumented cc1 prints the
+full pass-0/pass-1 exclusion sets under `BB2_FINDREG_DEBUG=<pseudo>`.  For the
+base body `b0` (= `memory/grind/func_80034F88/candidate.c`):
+
+```
+;; 9 regs to allocate: 73 77 80 84 74 75 79 83 72
+;; 74 conflicts: 72 74 75 77 2 29                 (NO preferences line)
+;; 75 conflicts: 72 74 75 77 79 80 83 84 2 29     (NO preferences line)
+;; 77/80/84 preferences: 2
+;; dispositions: 72 in 5   73 in 3   74 in 3   75 in 4  ...
+
+FINDREGDBG func=func_80034F88 pseudo=74   conflicts: 2 29
+  someone_prefers: (empty)  own_copy_prefs: (empty)  own_full_prefs: (empty)
+  used_so_far: 0..15 24..29 31
+  pass0_used:  0 1 2 16..23 26..31         -> lowest free = 3
+FINDREGDBG func=func_80034F88 pseudo=75   conflicts: 2 3 29
+  someone_prefers: (empty)  own_copy_prefs: (empty)  own_full_prefs: (empty)
+  pass0_used:  0 1 2 3 16..23 26..31       -> lowest free = 4
+```
+
+So in `b0` neither contested allocno carries any preference at all: 74 (the
+block-0 flag-byte value) takes `$v1` simply as the lowest-numbered register free
+in `find_reg`'s pass 0 (global.c:1052), and 75 (`q`) then takes `$a0`.  Nineteen
+sessions of `allocno_compare` analysis were reading only half of the selection
+rule.
+
+### NEW EXIT #5, which s39's four-exit enumeration structurally could not see
+`find_reg`'s pass 0 excludes `regs_someone_prefers[allocno]` (global.c:1001; the
+set is built in `prune_preferences`, global.c:911-931).
+`regs_someone_prefers[74]` is the union of `hard_reg_full_preferences` over
+LOWER-priority allocnos that conflict with 74 -- here 75 (`q`) and 72 (`p`).  If
+either carried a full preference for hard reg 3, pass 0 would skip `$v1` for 74,
+find `$a0` free, and succeed there; `q` would then take `$v1`.  That is the
+target's disposition, reached **with the allocno order left exactly as it is**.
+This is a fifth numeric exit alongside s39's four (q nrefs>=13, q livelen<=22,
+m nrefs<=4, m livelen>=12), and unlike those four it does not require winning
+the priority race at all.  Its only generator is `set_preference`
+(global.c:1700-1754), which fires on a copy insn where one side is a hard
+register **or a pseudo that local-alloc has already renumbered** -- so the
+question it poses is: which hard register does local-alloc give block 0's
+quantities?
+
+### Why every order-race winner still loses -- read off .greg, not inferred
+| body | q allocno | order | q's conflict row | disposition |
+|---|---|---|---|---|
+| b0  | 75, 10 refs / 28 insns | 74 **before** 75 | `... 2 29` (clean) | q in 4, value in 3 |
+| m1  | 75, 10 refs / 28 insns | 75 **before** 74 | `... 2 3 29` | q in 4, value in 3 |
+| rt  | 74, 15 refs / 30 insns | 74 second overall | `... 2 3 29` | q in 4, value in 3 |
+| z0 (score-0, BANNED) | 77, 3 refs / 14 insns | -- | clean, **`77 preferences: 3`** | q in 3, value in 4 |
+
+`m1` and `rt` DO win the priority race (m1: folding the mask into one statement
+cuts the block-0 value to 4 refs, key 10000 against q's 10714, and the `.greg`
+order really does become `73 78 81 85 75 74 ...` with q first; rt: the dead
+round-trip lifts q to 15 refs / key 15000 and it is allocated second overall).
+Both then lose on the conflict row, and the cause is identical in both: the
+spelling that cuts the value's references also makes block 0's byte value a
+**block-0-confined quantity**, local-alloc seats that quantity in `$v1`
+(m1 `Register 76 ... in block 0`, disposition 3; rt `Register 75`/`76 ... in
+block 0`, dispositions 3/3), and it is live while `q` is live, so hard reg 3
+enters `q`'s conflict row.  The "two-clause conjunction" s41 recorded now has a
+mechanism instead of a description.
+
+### What the score-0 (banned) body actually does -- and it is NOT an allocno-rank story
+`z0` = `rejected/macro-respelling-of-banned-four-handle-score0-DO-NOT-SUBMIT.c`.
+Its `.lreg`/`.greg` (dumped for the first time as a preference read):
+- `Register 74 used 4 times across 16 insns in block 0; pointer` -> **block 0's
+  POINTER is itself a block-confined quantity**, and local-alloc seats it in
+  hard reg **3**.
+- `Register 75 ... 2 times across 4 insns in block 0; 1 bytes` -> block 0's byte
+  VALUE is seated in hard reg **4**.
+- `Register 77 ... 3 refs / 14 insns; pointer` (the blocks-1 global pointer)
+  carries `;; 77 preferences: 3` and is allocated into 3.  The copy from the
+  locally-allocated block-0 pointer is what created that preference
+  (global.c:1725 `set_preference`, whose `reg_renumber[src] >= 0` branch treats
+  a locally-allocated pseudo exactly like a hard register); the copy then
+  coalesces away.
+
+### The target re-derived through that lens
+In the target the block-0 value is DEAD after `sb a0,0(v1)` at 80034FAC --
+block 1 RELOADS at 80034FB4.  Its allocno therefore carries ~3 references all
+confined to block 0, i.e. in the original compilation block 0's byte value was a
+block-confined quantity seated in **`$a0`** while block 0's address was seated in
+**`$v1`** -- the same disposition pair `z0` produces, and the exact opposite of
+the pair local-alloc produces in every single-object body measured across 45
+sessions.  **The residual is a local-alloc seat question.**  Sessions s32-s44
+attacked `global.c` exclusively; `local-alloc.c`'s quantity ordering and its
+`qty_phys_copy_sugg` / `find_free_reg` path have never been read for this
+function.
+
+### Measurements (all new this session)
+| body | what it changes vs b0 | score | insns |
+|---|---|---|---|
+| x1 | block-1 condition hoisted to function scope (to stretch pseudo 74) | 13 | 45 |
+| x2 | block-0 store moved after the hoisted condition | 13 | 45 |
+| x3 | block-1's `p[8]` load hoisted between the value's def and the mask | 13 | 49 |
+| x4 | block-0 store moved inside block 1, after the condition | 13 | 49 |
+| x5 | block-1 AND block-2 conditions hoisted | 25 | 40 |
+| y1 | block 0 through the BARE SYMBOL (no pointer object at all), q first assigned at block 1's head | 16 | 51 |
+| y2 | as y1 but block 0's mask through a named `u8` local | 16 | 51 |
+
+- **x3/x4 kill the "stretch the value's live range by source statement order"
+  exit outright.**  x4's `.lreg` still reads `Register 74 used 6 times across 9
+  insns` -- byte-for-byte the same allocno geometry as b0 -- and its `.greg`
+  allocation order (`73 77 80 84 74 75 79 83 72`), conflict rows and
+  dispositions are IDENTICAL to b0's.  `reg_live_length` is computed after
+  combine has re-normalised the insn order, so moving statements between the
+  value's definition and its uses in the C source does not reach it.  s39's exit
+  "m livelen >= 12" is therefore not addressable by statement order at all; only
+  by inserting real instructions, which x1/x2/x5 do at the cost of collapsing
+  the body (45 / 45 / 40 insns).
+- **y1/y2 close the anonymous-block-0-address route to the preference exit.**
+  Spelling block 0 with no pointer object does make block 0's address an
+  anonymous pseudo, but y1's `.greg` shows `q` (74) still in `$a0`, still
+  carrying hard reg 3 in its conflict row, and still with NO preference for 3:
+  GCC re-materialises `&D_80106A73` at the top of the function for `q` instead
+  of copying block 0's temp into it, so `set_preference` never fires.  The copy
+  edge that `z0` gets for free needs block 0's address to be a *named* object
+  whose value cse can forward -- which is the banned multi-handle shape.
+
+### Housekeeping
+- `src/code6cac_b.c` was restored to HEAD (`INCLUDE_ASM`) before this outcome was
+  written; no build-pipeline file was modified.
+- The dispatch digest again lagged badly (dispatched as "session 35" with an
+  s34-era frontier while the ledger stood at s44).  Run
+  `grep -n '^## \[s' memory/grind/func_80034F88/hypotheses.md | tail` before
+  spending a probe on a brief-listed "next probe".
+- Ladder accounting: the six-modality condition was met at s31; the LADDER
+  EXHAUSTED record drafted by s42 still needs filing by an `escalation`-modality
+  session (s42's owner-gated outcome was discarded for filing one from
+  `structural`; s44 and s45 are `synthesis`, so neither files one).
+
+- [s43] [s45] Kill re-audit on today's chassis: b0 (= memory/grind/func_80034F88/candidate.c) = 10 at 49/49, rules_dropped 0; m1 and rt reproduce their banked allocno geometry. No FAKE construct is present for fake_ablate.py to ablate (as s41/s42 recorded).
+
+- [s43] [s45] The .greg preference lines and the BB2_FINDREG_DEBUG exclusion sets were read for the first time (this was s44's Frontier A). In the base body pseudo 74 (block-0 flag-byte value) has conflicts {2,29}, empty someone_prefers, empty copy/full preferences, and pass0_used {0,1,2,16..23,26..31} -- it takes $v1 as the lowest free register in find_reg's pass 0 (global.c:1052). Pseudo 75 (q) then has 3 in its pass-0 mask and takes $a0. .greg prints preference lines only for 77/80/84, all for hard reg 2.
+
+- [s43] [s45] NEW EXIT #5 that s39's four-exit allocno_compare enumeration structurally could not see: regs_someone_prefers[74] containing reg 3 makes pass 0 skip $v1 for 74, succeed on $a0, and leave $v1 for q -- with the allocno ORDER unchanged. Built at global.c:911-931 (prune_preferences) from the hard_reg_full_preferences of LOWER-priority conflicting allocnos (q=75, p=72); consumed at global.c:1001. Sole generator: set_preference, global.c:1700-1754, whose reg_renumber[src] >= 0 branch treats a locally-allocated pseudo as a hard register.
+
+- [s43] [s45] The two-clause conjunction s41 described now has a mechanism read off the dumps. m1's allocation order is '73 78 81 85 75 74 80 84 72' (q FIRST -- the priority race IS winnable) but '75 conflicts: ... 2 3 29'; rt's q is allocated second overall but '74 conflicts: ... 2 3 29'; b0's q row is clean ('... 2 29') and loses the order race. In m1 and rt the hard-reg-3 entry comes from a block-0-CONFINED byte quantity that local-alloc seats in $v1 (m1 reg 76; rt regs 75 and 76) while q is live.
+
+- [s43] [s45] The score-0 banned body's advantage is NOT allocno rank. Its .lreg/.greg show block 0's POINTER is itself a block-confined quantity ('Register 74 used 4 times across 16 insns in block 0; pointer') seated by local-alloc in hard reg 3, block 0's byte VALUE seated in hard reg 4, and the blocks-1 global pointer allocno carrying ';; 77 preferences: 3' -- a copy preference inherited from that locally-allocated block-0 pointer -- so it takes $v1 and the copy coalesces away.
+
+- [s43] [s45] TARGET RE-DERIVATION: the target's block-0 value is dead after `sb a0,0(v1)` at 80034FAC because block 1 reloads at 80034FB4, so its allocno carries ~3 references confined to block 0. In the original compilation block 0's byte value was therefore a block-confined quantity seated in $a0 while block 0's address sat in $v1 -- the same disposition pair the score-0 body produces, and the exact opposite of the pair local-alloc produces in every single-object body measured in 45 sessions. The residual is a LOCAL-ALLOC seat question; sessions s32-s44 attacked global.c exclusively and local-alloc.c's quantity ordering and qty_phys_copy_sugg/find_free_reg path have never been read for this function.
+
+- [s43] [s45] reg_live_length for the block-0 value is invariant under source statement order: x4 (block-0 store moved inside block 1 after the condition) still dumps 'Register 74 used 6 times across 9 insns' and an allocation order, conflict-row set and disposition set identical to b0's, because flow.c recomputes it after combine re-normalises the insn order. s39's 'm livelen >= 12' exit is therefore not addressable by statement order.
+
+- [s43] [s45] New measurements: x1 13/45, x2 13/45, x3 13/49, x4 13/49, x5 25/40, y1 16/51, y2 16/51. All seven banked in memory/grind/func_80034F88/rejected/ with s45- prefixes.
+
+- [s43] [s45] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file was modified. Ladder accounting: the six-modality condition was met at s31; the LADDER EXHAUSTED record drafted by s42 still needs filing by an escalation-modality session (s42's owner-gated outcome was discarded for filing one from structural; s44 and s45 are synthesis).
