@@ -6425,3 +6425,146 @@ preference (s46 exit #6) -- routes through that same missing quantity.
 - [s44] candidate.c's `m` local is codegen-inert; the uniform spelling banked at rejected/s46-uniform-four-block-reload-no-m-BYTE-IDENTICAL-TO-b0-score10.c emits the same 49 instructions and is the recommended submission body. A note recording this was added to candidate.c's header comment (the body is unchanged, so the review body key is unchanged).
 
 - [s44] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file was modified. Ladder accounting unchanged: the six-modality condition was met at s31 and the LADDER EXHAUSTED (non-endgame residual, floor 10) record still awaits an `escalation`-modality session -- this session was dispatched as `synthesis`, so it does not file one.
+
+## s47 (synthesis, 2026-09-05; dispatched as "session 45") -- THE TWO-PSEUDO PROOF: the single-C-pointer-object chassis is arithmetically incapable of the target's register geometry, and the last unread splitting mechanism (update_equiv_regs / reload rematerialisation) is read and closed
+
+Floor unchanged: **10 at 49 insns**.  All measurements are
+`sandbox func_80034F88 --disable all` with the body spliced over
+`INCLUDE_ASM("asm/funcs", func_80034F88);` in `src/code6cac_b.c`; `src/` was
+restored to HEAD before this was written.  Harness in
+`tmp/grind/func_80034F88/s45x/{splice.py,run.ps1,od.sh,od.py}`.
+
+### KILL RE-AUDIT (mandated; both prongs run)
+- `run.ps1 memory/grind/func_80034F88/candidate.c` -> **score 10, build_insns 49**
+  on today's HEAD.  Chassis unmoved.
+- `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b
+  --candidate memory/grind/func_80034F88/candidate.c` -> *"no FAKE-annotated
+  constructs found ... nothing to ablate"* (fourth consecutive confirmation:
+  s41, s42, s46, s47).
+- The two closest-to-target banked instance kills re-measured at their banked
+  values: `rejected/s44-block0-load-symbol-q-before-store-score11.c` ->
+  **11 at 50**; `rejected/s39-block1-reads-symbol-directly-score11.c` ->
+  **11 at 50**.  No banked kill is chassis-stale or FAKE-contaminated.
+
+### THE OBJDUMP FACT THE LEDGER NEVER STATED: the target uses TWO different hard registers for the flag-byte ADDRESS
+
+Read directly off `asm/funcs/func_80034F88.s`:
+
+- `80034F98/80034F9C  lui/addiu $v1, D_80106A73` -- base for the block-0 `lbu`
+  (80034FA0), the block-0 `sb` (80034FAC), the block-1 reload `lbu` (80034FB4)
+  and the block-1 `sb` (80034FD0).  It DIES at 80034FD0.
+- `80034FC8/80034FCC  lui/addiu $a0, D_80106A73` -- base for block 2's `lbu`
+  (80034FD8) and `sb` (80034FEC).
+- `80034FF0/80034FF4  lui/addiu $a0, D_80106A73` -- re-materialised for block 3.
+
+So the target holds the flag-byte address in **$v1 across blocks 0-1** and in
+**$a0 across blocks 2-3**, and the two ranges overlap by two insns (the $a0
+materialisation at 80034FC8/FCC is scheduled ahead of the block-1 store at
+80034FD0, which still uses $v1).  The VALUE registers mirror the swap: block
+0/1 value in `$a0`, block 2/3 value in `$v1`.
+
+`tmp/grind/func_80034F88/s44/b0.o.txt` shows the base body doing the same thing
+with ONE register: `lui/addiu $a0` three times, value in `$v1` throughout.
+That is why blocks 2 and 3 are already register-exact, blocks 0 and 1 are
+exactly reversed, and the residual is exactly 10 rather than 5 or 20.
+
+**A pseudo gets exactly one hard register.**  GCC 2.7.2 has no live-range
+splitting: `global_alloc` sets `reg_renumber[]` once per allocno and
+`local_alloc` seats a quantity once.  The target's address therefore lives in
+**two distinct pseudos**, not one.  Every body this ledger has measured on the
+single-declared-`u8 *q` chassis has exactly one, so its best possible outcome is
+"one half of the flag blocks in the right register" -- which is precisely the
+observed 10.
+
+### WHERE A SECOND POINTER PSEUDO CAN COME FROM IN C -- enumerated and measured
+
+1. **A second declared/assigned C pointer object.**  Judge-CLOSED for this
+   function (multi-handle axis; three separate constraints in the brief).
+2. **The bare symbol, hoisted into a pseudo by cse/loop.**  MEASURED DEAD this
+   session and explained from compiler source:
+   - `z1a` (blocks 0 AND 1 spelled through the bare symbol `D_80106A73`, with
+     `q` declared and first assigned at block 2's head and reassigned at block
+     3 -- i.e. the exact C shape of the target's two-range geometry, using only
+     ONE declared pointer object): **25 at 49**.
+   - `z1b` (same, but block 1 re-reads `D_80106A73` instead of reusing the
+     masked `m`, matching the target's 80034FB4 reload): **25 at 49**.
+   - The objdump of `z1a` (`tmp/grind/func_80034F88/s45x/z1a.txt`) shows WHY:
+     every bare-symbol access is emitted as its own `lui $at` + memory-op macro
+     pair (`lui at,0x0 ; sb v1,0(at)`, four times), never as a shared base
+     register.  cse never hoists the address because on this target a
+     `SYMBOL_REF` **is** a legitimate memory address --
+     `GO_IF_LEGITIMATE_ADDRESS` accepts it unconditionally at
+     **`tools/gcc-2.7.2/config/mips/mips.h:2300`** (`if (CONSTANT_ADDRESS_P
+     (xinsn)) goto ADDR;`, and `CONSTANT_ADDRESS_P` accepts `SYMBOL_REF`) -- so
+     the address expression carries no cost for cse to eliminate and no pseudo
+     is ever created for it.  This is a structural property of the port, not of
+     any one spelling.
+   - Consistent with the older banked forms:
+     `symbol-only-no-pointer-score29.c` (29),
+     `s40-roundtrip-q-blocks01-directsymbol23-score28.c` (28, the mirror split),
+     `s44-block2-via-bare-symbol-score20.c` (20),
+     `s44-block3-via-bare-symbol-score16.c` (16).
+3. **A pointer derived from a DIFFERENT symbol with a non-zero addend** (e.g.
+   declaring `D_80106A70` as an array and reaching the flag byte as
+   `D_80106A70[3]`).  This forecloses on bytes, not on allocation: the target's
+   accesses are all `0($reg)` with `%lo(D_80106A73)` folded into the base,
+   whereas an array-base pointer emits `3($reg)` with `%lo(D_80106A70)`.
+   Already banked in shape as `distinct-symbol-addend-four-bases-score28.c` (28).
+4. **A compiler-side split of one pseudo into two hard registers.**  The last
+   unread mechanism; READ THIS SESSION and CLOSED.  `update_equiv_regs`
+   (local-alloc.c:947-1116) is the only pass between flow and reload that
+   touches a pseudo with a constant equivalence, and its only action is
+   *deletion*: when `reg_n_refs[regno] == 2 && reg_basic_block[regno] < 0` it
+   records `reg_equiv_replacement[regno] = SET_SRC (set)`
+   (**local-alloc.c:1080-1082**), then substitutes the constant back into the
+   single use and turns the initialising insn into a `NOTE_INSN_DELETED`
+   (**local-alloc.c:1102-1115**).  It never creates a second register; it
+   removes one.  Its other effect, `reg_live_length[regno] *= 2`
+   (local-alloc.c:1064), only reweights global-alloc priority and is
+   inapplicable here: `q` is set three times, so it carries no single REG_EQUIV.
+   Reload rematerialisation of an equivalent constant is the same substitution,
+   and `q` is never spilled on any measured body.
+
+### CONSEQUENCE
+
+The residual is no longer a heuristic story about allocno rank, conflict rows,
+`regs_someone_prefers` or copy preferences (s39/s41/s43/s45/s46 enumerated all
+six `find_reg` exits, and each one routes through a missing block-0-confined
+pointer quantity).  It is an **arity** fact: the target needs two pointer
+pseudos; C creates a pointer pseudo aliasing `&D_80106A73` only by naming a
+pointer object (route 2 disproven by measurement plus mips.h:2300, route 3
+forecloses on bytes, route 4 disproven from local-alloc source); and the second
+pointer object is the axis the Judge closed three times.  The floor of 10 on the
+single-object chassis is therefore structural, and the non-alias ladder for this
+function has no remaining generator that this session can name.
+
+- [s47] Kill re-audit on today's chassis: candidate.c = 10 at 49; the two closest-to-target banked kills (s44-block0-load-symbol-q-before-store, s39-block1-reads-symbol-directly) both re-measure at 11 at 50; fake_ablate reports no FAKE-annotated construct to ablate (fourth consecutive session).
+- [s47] Read off asm/funcs/func_80034F88.s: the target materialises &D_80106A73 into $v1 at 80034F98/F9C (used by blocks 0 and 1, dead at 80034FD0) and into $a0 at 80034FC8/FCC and again at 80034FF0/FF4 (used by blocks 2 and 3). The address occupies TWO distinct hard registers, and the value registers mirror the swap ($a0 in blocks 0/1, $v1 in blocks 2/3).
+- [s47] GCC 2.7.2 has no live-range splitting: one pseudo receives exactly one hard register. The target's two address registers therefore require TWO pointer pseudos. The base body (s44/b0.o) has one, which is why blocks 2/3 are already register-exact, blocks 0/1 are exactly reversed, and the residual is exactly 10.
+- [s47] z1a (blocks 0 AND 1 through the bare symbol, single declared `u8 *q` first assigned at block 2's head and reassigned at block 3 -- the exact C shape of the target's two-range geometry with one declared object) measures 25 at 49; z1b (same with block 1 re-reading the symbol, matching the target's 80034FB4 reload) also measures 25 at 49.
+- [s47] z1a's objdump shows every bare-symbol access emitted as its own `lui $at` + memory-op macro pair, never a shared base register. Mechanism read from source: GO_IF_LEGITIMATE_ADDRESS accepts a SYMBOL_REF address unconditionally (tools/gcc-2.7.2/config/mips/mips.h:2300), so the address costs nothing for cse to eliminate and no pseudo is created for it. Bare-symbol spelling cannot supply a pointer pseudo on this target.
+- [s47] The last unread splitting mechanism is closed from source: update_equiv_regs (local-alloc.c:947-1116) only ever DELETES a constant-equivalent pseudo (reg_equiv_replacement at local-alloc.c:1080-1082; substitution + NOTE_INSN_DELETED at local-alloc.c:1102-1115); it never creates a second hard register. `q` is never spilled, so reload rematerialisation cannot split it either.
+- [s47] Synthesis: the residual is an ARITY fact, not an allocation-heuristic fact. Two pointer pseudos are required; C generates a pointer pseudo aliasing &D_80106A73 only by naming a pointer object; the second object is Judge-closed. Frontier reset to (i) a ruling-request asking whether the two-register geometry reopens the multi-handle axis, (ii) the header-declaration axis (aggregate-merge) as the only untried non-alias surface, (iii) the LADDER EXHAUSTED record for an escalation-modality session.
+- [s47] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file was modified.
+
+- [s45] Kill re-audit on today's chassis: candidate.c = 10 at 49; rejected/s44-block0-load-symbol-q-before-store-score11.c = 11 at 50; rejected/s39-block1-reads-symbol-directly-score11.c = 11 at 50; tools/fake_ablate.py reports no FAKE-annotated construct to ablate (fourth consecutive session after s41, s42, s46).
+
+- [s45] Read off asm/funcs/func_80034F88.s: the target materialises &D_80106A73 into $v1 at 80034F98/F9C (base for the block-0 lbu at 80034FA0, the block-0 sb at 80034FAC, the block-1 reload lbu at 80034FB4 and the block-1 sb at 80034FD0, where it dies) and into $a0 at 80034FC8/FCC and again at 80034FF0/FF4 (blocks 2 and 3). The two ranges overlap by two instructions.
+
+- [s45] The target's value registers mirror the address swap: block 0/1 value in $a0, block 2/3 value in $v1. The base body (tmp/grind/func_80034F88/s44/b0.o.txt) uses $a0 for all three address materialisations and $v1 for every value, so blocks 2/3 are register-exact and blocks 0/1 are exactly reversed.
+
+- [s45] GCC 2.7.2 assigns exactly one hard register per pseudo (no live-range splitting), so the target's two address registers require two pointer pseudos. A chassis with one declared pointer object can therefore seat at most half the flag blocks correctly, which is a quantitative explanation of the 10-point floor that has been flat since s26.
+
+- [s45] z1a (blocks 0 AND 1 through the bare symbol, single declared `u8 *q` first assigned at block 2's head and reassigned at block 3) = 25 at 49; z1b (same, with block 1 re-reading the symbol to match the target's 80034FB4 reload) = 25 at 49. This is the first body measured with the target's exact two-range C shape under the one-object constraint.
+
+- [s45] z1a's disassembly (tmp/grind/func_80034F88/s45x/z1a.txt) shows every bare-symbol access emitted as its own lui $at + memory-op macro pair, never a shared base register; a shared base (a1) appears only in blocks 2/3 where the declared pointer lives. Mechanism from source: GO_IF_LEGITIMATE_ADDRESS accepts a SYMBOL_REF address unconditionally (tools/gcc-2.7.2/config/mips/mips.h:2300), so the address costs nothing for cse to eliminate and no pseudo is created for it.
+
+- [s45] update_equiv_regs (tools/gcc-2.7.2/local-alloc.c:947-1116) only ever DELETES a constant-equivalent pseudo: reg_equiv_replacement is set at local-alloc.c:1080-1082 and the initialiser is turned into NOTE_INSN_DELETED at local-alloc.c:1102-1115. Nothing between flow and reload creates a second hard register for one pseudo, and q is never spilled on any measured body.
+
+- [s45] Synthesis: the residual is an ARITY fact rather than an allocation-heuristic fact. The six find_reg exits enumerated by s39/s41/s43/s45/s46 all route through a missing block-0-confined pointer quantity; s47 shows why that quantity cannot exist -- C creates a pointer pseudo aliasing &D_80106A73 only by naming a pointer object, and the second object is the Judge-closed multi-handle axis.
+
+- [s45] A pointer derived from a different symbol with a non-zero addend (declaring D_80106A70 as an array and reaching the flag byte as D_80106A70[3]) forecloses on bytes, not on allocation: the target's accesses are all 0($reg) with %lo(D_80106A73) folded into the base, whereas an array-base pointer emits 3($reg) with %lo(D_80106A70). Already banked in shape as rejected/distinct-symbol-addend-four-bases-score28.c (28).
+
+- [s45] candidate.c's BODY is unchanged this session (only the header comment gained the s47 note), so its review body key is unchanged. The preferred submission spelling remains rejected/s46-uniform-four-block-reload-no-m-BYTE-IDENTICAL-TO-b0-score10.c, and the `*(&D_80106A70 + i)` loop line remains a declaration pun that layer-1 will FAIL until the header declaration is fixed.
+
+- [s45] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file, rule file, engine file or tool was modified. Ladder accounting unchanged: the six-modality condition was met at s31 and the floor has been flat at 10 since s26.

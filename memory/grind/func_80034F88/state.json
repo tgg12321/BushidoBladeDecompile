@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 44,
+ "session_count": 45,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -267,23 +267,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Seat law found and measured both ways: a block-0-confined quantity takes $v0 when $v0 is dead across its span and $v1 otherwise (local-alloc.c:2169-2171 + numeric scan), which is what puts hard reg 3 "
+  },
+  {
+   "session": 45,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "Arity proof: the target holds &D_80106A73 in TWO hard registers ($v1 blocks 0-1, $a0 blocks 2-3), so it needs two pointer pseudos; both non-alias generators of a second pointer pseudo are closed this "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The single remaining unmeasured way to give block 0 a second local-alloc quantity ahead of the byte value is to make block 0 compute a NON-pointer quantity that local-alloc seats in 3 while $v0 is still live, pushing the byte value to 4 and leaving q's conflict row to be decided by whether that quantity is live across q.",
-   "mechanism": "Seat law (local-alloc.c:2169-2171, numeric scan at local-alloc.c:2247): a quantity reaches reg 4 only when 2 and 3 are both excluded across its span, and 3 can only be excluded by an earlier block-0-confined quantity. a2 proved a second block-0 quantity can exist and be seated; it just seated at 2 because $v0 had died.",
-   "next_probe": "Build bodies that add a block-0-confined INTEGER computation (not a pointer, not a use of p) whose live range starts before the byte load and ends inside block 0 -- e.g. the mask constant staged through a named local, or the byte value split into two names with the first dying at the store -- and read the .lreg 'in block 0' seats plus the .greg dispositions BEFORE judging by score. The success signature is `74/76 conflicts` WITHOUT hard reg 3, or a q disposition of 3."
+   "hypothesis": "The Judge's three closures of the multi-handle axis were all framed against a second pointer object presented as a register-allocation LEVER; s47 reframes it as an EMISSION fact read off the shipped code (two address registers with overlapping ranges, which no single C object can express). Whether that reframing changes the classification is the one question this ledger cannot answer for itself.",
+   "mechanism": "GCC 2.7.2 gives one hard register per pseudo; the target uses $v1 for the blocks-0/1 address and $a0 for the blocks-2/3 address; the only C generator of a second pointer pseudo aliasing &D_80106A73 is a second declared pointer object (bare-symbol route killed this session at mips.h:2300, compiler-split route killed at local-alloc.c:1080-1115, different-symbol-addend route forecloses on the 0($reg) vs 3($reg) byte difference).",
+   "next_probe": "Emit a `ruling-request` (NOT a candidate-ready -- the driver discards a candidate that re-declares a banned construct before the Judge sees it) asking: given that the target itself holds &D_80106A73 in two hard registers with overlapping live ranges, does a second C pointer object covering blocks 0-1 while `q` covers blocks 2-3 remain a banned coercion, or is it the only C spelling of the shipped object model? Cite the s47 arity proof and the two closed non-alias routes."
   },
   {
-   "hypothesis": "Whether q's materialisation can be kept out of block 0 at all is the true gate on every find_reg exit; s44's p5 and s45's y1/y2 measured it only through source placement and the bare symbol.",
-   "mechanism": "The address constant is hoisted to function entry (cse/loop treat it as loop-invariant), which is why q is live across block 0 in every body and why block-0 quantities always conflict with it. If q's live range genuinely began at block 1, block-0 quantities would stop poisoning its row.",
-   "next_probe": "Read the .cse/.loop dump slices for a1 to find WHICH pass emits the entry materialisation of &D_80106A73 (cse2 vs loop vs expand), then test whether an ordinary-C construct that makes the address non-loop-invariant at that pass point (not an additive pun -- s45 proved combine's simplify_plus_minus cancels those) delays it. If the dump shows the materialisation is emitted at expand time, this hypothesis is closed and the frontier reduces to item 1."
+   "hypothesis": "The header-declaration axis is the only untried non-alias surface, and it must be worked regardless of the residual because candidate.c currently carries a declaration pun that makes it layer-1-unsubmittable.",
+   "mechanism": "D_80106A70 is declared `extern u8 D_80106A70;` in code6cac.h but the copy loop indexes it with a computed register (addu $at, $at, $v1 at 80035024), and D_80106A73 has no header declaration at all. Declaring the word as an array or a record changes the RTL the flag blocks start from and retires the `*(&D_80106A70 + i)` pun at the declaration rather than the use site (aggregate-merge family prong (a) is satisfied by the loop's stride evidence).",
+   "next_probe": "Draft the header change (`extern u8 D_80106A70[4];` or a named record) as an integration handoff, splice a body that spells the loop as D_80106A70[i] and the flag blocks as D_80106A70[3] plus the pointer variants, and measure. Expect the flag blocks to foreclose on the 3($reg) offset; the point of the probe is the pun retirement and the loop's byte-neutrality, not the residual."
   },
   {
-   "hypothesis": "The ladder record for this function is complete enough to file: five find_reg seat routes are enumerated and measured, every one of them routes through a block-0-confined pointer quantity, and the multi-handle axis that would supply it is Judge-closed.",
-   "mechanism": "docs/grind/decisions.md already carries the standing-ruling entries; the driver's own accounting shows the six-modality condition was met at s31 and the floor has been flat at 10 since s26.",
-   "next_probe": "When an `escalation`-modality session is dispatched, file the LADDER EXHAUSTED (non-endgame residual, floor 10) record -- NOT the endgame-lock title, since 10 > ENDGAME_LOCK_MAX_FLOOR=5 (owner ruling 2026-09-02) -- citing the s46 seat law, the four-exit enumeration, scan_hand_coded tier=LOW 0/8, and the negative SOTN census, with re-activation triggers = a class grant covering a second address handle, or a toolchain finding that changes local-alloc's seat order."
+   "hypothesis": "The LADDER EXHAUSTED record is now writable with a structural predicate rather than an enumeration argument.",
+   "mechanism": "Six modalities were met at s31, the floor has been flat at 10 since s26, and s47 supplies the missing predicate: the target needs two pointer pseudos, and every non-alias C generator of the second one is closed with a file:line.",
+   "next_probe": "When an `escalation`-modality session is dispatched, file `## <date> -- func_80034F88 -- **LADDER EXHAUSTED (non-endgame residual, floor 10): FORECLOSED**` (never the endgame-lock title: 10 > ENDGAME_LOCK_MAX_FLOOR=5, owner ruling 2026-09-02), citing the s47 arity proof (mips.h:2300 + local-alloc.c:1080-1115), the six-exit find_reg enumeration, scan_hand_coded tier=LOW 0/8, and the negative SOTN census; re-activation triggers = a class grant covering a second address handle, or a toolchain finding that gives GCC 2.7.2 live-range splitting."
   }
  ],
  "judge_constraints": [
@@ -305,22 +311,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 27,
-   "statement": "From a single `u8 *q`, some assignment pattern reaches the target's instruction multiset -- four surviving byte loads at three address materialisations.",
-   "kill_scope": "class",
-   "measured_on": "candidate.c score-10 single-object chassis installed at src/code6cac_b.c:3420 on HEAD (sandbox re-measured this session: score 10, 49 target / 49 build, rules_dropped 0); every form carries exactly ca",
-   "predicate_cite": "tools/gcc-2.7.2/cse.c:1905",
-   "result": "KILLED with two exact identities rather than a saturation count. surviving lbu == number of assignments to q, and build "
-  },
-  {
-   "session": 27,
-   "statement": "An input other than the address quantity can stop cse forwarding block 0's stored byte into block 1's load, and the original source used it.",
-   "kill_scope": "class",
-   "measured_on": "target asm asm/funcs/func_80034F88.s plus the s27 dump slices of tmp/grind/func_80034F88/dumps/ on the candidate.c score-10 chassis at HEAD; no FAKE construct present",
-   "predicate_cite": "tools/gcc-2.7.2/cse.c:7328",
-   "result": "KILLED for all five. The dumps show the rewrite literally: .jump insn 29 (set (reg:QI 80) (mem:QI (reg/v:SI 74))) become"
-  },
   {
    "session": 27,
    "statement": "The s26 frontier route -- carrying the address in a pointer-typed value derived from `p` or from another live object that reaches 0x80106A73, rather than a second object aliasing D_80106A73.",
@@ -779,6 +769,22 @@
    "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (re-measured 10 at 49 this session; tools/fake_ablate.py reports no FAKE-annotated construct to ablate); body a2, single declared `u8 *q`, no FAKE const",
    "predicate_cite": "",
    "result": "14 at 49 (four points worse than the floor); dispositions 72 in 5 / 73 in 3 / 75 in 3 / 76 in 4 (q) / 77 in 2 / 78 in 3."
+  },
+  {
+   "session": 45,
+   "statement": "Spelling blocks 0 and 1 through the bare symbol D_80106A73 while a single declared `u8 *q` covers blocks 2 and 3 -- the exact C shape of the target's two-range address geometry using only one declared",
+   "kill_scope": "class",
+   "measured_on": "candidate.c-derived score-10 chassis on HEAD 2026-09-05 (base re-measured 10 at 49 this session); single declared `u8 *q`; no FAKE constructs present (fake_ablate reports nothing to ablate)",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:2300",
+   "result": "z1a = 25 at 49, z1b = 25 at 49. The disassembly shows four separate `lui at,0x0` macro pairs across blocks 0/1 and a sha"
+  },
+  {
+   "session": 45,
+   "statement": "No GCC 2.7.2 pass between flow and reload splits one pointer pseudo across two hard registers, so the second address register the target uses cannot be produced by the compiler from a single C pointer",
+   "kill_scope": "class",
+   "measured_on": "compiler source read (tools/gcc-2.7.2/local-alloc.c), cross-checked against the score-10 chassis on HEAD 2026-09-05 where q is never spilled; no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1080",
+   "result": "No mechanism exists that hands one pseudo two hard registers; the only equivalence-driven transformation removes a regis"
   }
  ]
 }

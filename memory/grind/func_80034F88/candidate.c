@@ -1,3 +1,31 @@
+/* s47 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns.
+ * BODY UNCHANGED (the review body key is therefore unchanged).
+ *
+ * s47 replaces the ledger's heuristic account of the residual with an ARITY
+ * proof read off the target: asm/funcs/func_80034F88.s materialises
+ * &D_80106A73 into $v1 at 80034F98 (serving blocks 0 and 1, dead at the
+ * 80034FD0 store) and into $a0 at 80034FC8 and again at 80034FF0 (serving
+ * blocks 2 and 3).  Two hard registers => two pointer pseudos, because GCC
+ * 2.7.2 has no live-range splitting.  This body declares ONE pointer object,
+ * so it can seat at most half the flag blocks correctly -- it seats blocks
+ * 2/3 exactly and blocks 0/1 reversed, which IS the 10.
+ *
+ * The two non-alias routes to a second pointer pseudo were closed this
+ * session: bare-symbol accesses never acquire a base register on this port
+ * (GO_IF_LEGITIMATE_ADDRESS accepts SYMBOL_REF unconditionally,
+ * tools/gcc-2.7.2/config/mips/mips.h:2300; measured: blocks 0+1 through the
+ * bare symbol with q covering blocks 2/3 = 25 at 49), and no pass between
+ * flow and reload can split one pseudo across two hard registers
+ * (update_equiv_regs only deletes a constant-equivalent pseudo,
+ * local-alloc.c:1080-1115).
+ *
+ * NOTE for whoever submits this function: the uniform four-block spelling
+ * banked at rejected/s46-uniform-four-block-reload-no-m-BYTE-IDENTICAL-TO-b0-
+ * score10.c emits the same 49 instructions with fewer constructs and is the
+ * preferred body; and the `*(&D_80106A70 + i)` loop line here is a declaration
+ * pun that layer-1 will FAIL -- the fix is at the header declaration, not the
+ * use site.
+ */
 /* s45 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns.
  * BODY UNCHANGED -- still the best measured form.  s45 executed s44's
  * Frontier A (the unread preference records) and it REFRAMES the residual:
