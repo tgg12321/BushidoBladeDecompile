@@ -1,7 +1,0 @@
-{
- "floor": 2,
- "measured": "2026-08-25",
- "source": "ledger floor s1-s10 (candidate.c score 2/66)",
- "banked_body": "retired-chassis-2026-08/body.c",
- "rules_retired": 2
-}
