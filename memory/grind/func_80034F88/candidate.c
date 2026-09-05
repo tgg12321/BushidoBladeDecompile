@@ -1,3 +1,11 @@
+/* s48 NOTE (2026-09-05, solver): the residual is PRE-RA, not RA.  classify
+ * reports 49 vs 49 insns with DIFFERENT multisets -- the target emits a block-1
+ * reload (lbu at 80034FB4) that cse.c store-forwards away here, and our body
+ * carries a nop in its place.  This body is still the score-10 floor and is
+ * kept unchanged so 48 sessions of .lreg/.greg pseudo numbering stays citable,
+ * but the live frontier has moved to the v6 shape in
+ * rejected/s48-mask-store-only-into-arms-reload-restored-score12-50insn.c,
+ * which restores the reload and the target block-0/1 registers at 50 insns. */
 /* s47 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns.
  * BODY UNCHANGED (the review body key is therefore unchanged).
  *

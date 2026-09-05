@@ -6568,3 +6568,166 @@ function has no remaining generator that this session can name.
 - [s45] candidate.c's BODY is unchanged this session (only the header comment gained the s47 note), so its review body key is unchanged. The preferred submission spelling remains rejected/s46-uniform-four-block-reload-no-m-BYTE-IDENTICAL-TO-b0-score10.c, and the `*(&D_80106A70 + i)` loop line remains a declaration pun that layer-1 will FAIL until the header declaration is fixed.
 
 - [s45] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file, rule file, engine file or tool was modified. Ladder accounting unchanged: the six-modality condition was met at s31 and the floor has been flat at 10 since s26.
+
+## s48 (solver, 2026-09-05; dispatched as "session 46") -- THE RESIDUAL IS PRE-RA, NOT RA: cse.c forwards the block-0 mask store into block-1's reload, and the missing `lbu` is the whole story
+
+Floor unchanged: **10 at 49 insns** (candidate.c re-measured on today's HEAD).
+All measurements are `sandbox func_80034F88 --disable all` with the body
+spliced over `INCLUDE_ASM("asm/funcs", func_80034F88);`; `src/` was restored to
+HEAD before this was written.  Harness: `tmp/grind/func_80034F88/s45x/splice.py`
+plus a new runner `tmp/grind/func_80034F88/s46/{run.ps1,cnt.sh,slice.py}`.
+
+### KILL RE-AUDIT (mandated)
+- `run.ps1 memory/grind/func_80034F88/candidate.c` -> **score 10, build_insns 49**.
+- `tools/fake_ablate.py` was already confirmed clean four sessions running
+  (s41/s42/s46/s47); no FAKE construct exists on the chassis, so no banked kill
+  can be FAKE-contaminated.
+- The two closest banked kills (s44-block0-load-symbol-q-before-store,
+  s39-block1-reads-symbol-directly) were re-measured at 11/50 by s47 on this
+  same chassis and are not stale.
+
+### THE CLASSIFIER VERDICT THAT OVERTURNS TEN SESSIONS OF FRAMING
+
+`python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_80034F88
+--target-object build/src/code6cac_b.o --ours-object
+tmp/grind/func_80034F88/s46/ours_cand.o`
+(report: `tmp/grind/func_80034F88/s46/classify.txt`):
+
+    func_80034F88 (code6cac_b): honest 49 insns, target 49 insns
+    FIRST DIVERGENCE: PRE-RA
+      instruction shapes present in ONE stream only (registers blanked):
+        ours only  : nop
+        target only: lbu #,0(#)
+
+The two streams are the same LENGTH but not the same MULTISET.  The target
+contains one `lbu` that our body does not emit, and our body contains one `nop`
+where the target does not.  Sessions s38-s47 all reasoned as though the residual
+were a pure register-seat problem on a fixed instruction multiset; it is not,
+and no RA or scheduler model can express it.  **The s47 "arity proof" (two
+pointer pseudos required, therefore the non-alias ladder is exhausted) is
+withdrawn**: it was derived from an RA-only reading of a residual whose first
+divergence is upstream of RA.
+
+### WHICH INSTRUCTION, AND WHICH PASS EATS IT (read from the dumps, not guessed)
+
+The target reloads the flag byte at the head of flag block 1:
+
+    80034FAC  sb   $a0, 0($v1)      <- block-0 mask store
+    80034FB0  lw   $v0, 0x20($a1)
+    80034FB4  lbu  $a0, 0($v1)      <- BLOCK-1 RELOAD (the missing insn)
+
+Our body does not, and the vacated load-delay slot after the `lw` becomes a
+`nop`.  `pwsh tools/grinder/dump.ps1 func_80034F88` on the a1 body (slices at
+`tmp/grind/func_80034F88/s46/{rtl,cse,combine}_slice.txt`):
+
+- `.rtl` insn 29 is the honest reload:
+  `(set (reg:QI 80) (mem:QI (reg/v:SI 74)))`, consumed by insn 30
+  `(set (reg/v:SI 77) (zero_extend:SI (reg:QI 80)))`.
+- `.cse` insn 29 has already been rewritten to
+  `(set (reg:QI 80) (subreg:QI (reg:SI 76) 0))` -- **cse.c store-forwarded the
+  block-0 mask store (insn 20,
+  `(set (mem:QI (reg 74)) (subreg:QI (reg:SI 76) 0))`) into the block-1 load.**
+- `.combine` folds 29+30 into `(set (reg 77) (reg 76))` and turns insn 29 into
+  `NOTE_INSN_DELETED`; the copy is later coalesced away by the allocator.
+
+The pass is **cse.c**, and the block-1 value pseudo therefore never becomes an
+independent quantity -- which is exactly why every RA study since s38 found the
+block-0 value and the block-1 value fighting over one seat.
+
+### WHY BLOCKS 2 AND 3 KEEP THEIR RELOADS AND BLOCK 1 DOES NOT
+
+The `.cse` dump prints its extended-basic-block partition:
+
+    ;; Processing block from 2 to 46, 13 sets.     <- block-0 store AND block-1 load
+    ;; Processing block from 49 to 80, 8 sets.     <- block 2
+    ;; Processing block from 83 to 114, 8 sets.    <- block 3
+
+Blocks 2 and 3 begin after the join `code_label` of the preceding flag test, so
+cse restarts with an empty table and their `lbu`s survive.  Block 1's load sits
+inside the same EBB as the block-0 store, so cse has the stored value in hand.
+The residual is a cse extended-basic-block boundary problem, not an allocator
+problem.
+
+### SEVEN NEW MEASUREMENTS THAT LOCATE THE LEVER
+
+| body | shape | score / insns | lbu / nop |
+|---|---|---|---|
+| a1 (base) | uniform four-block reload, one `u8 *q` | 10 / 49 | 4 / 3 |
+| v1 | + `q = &D_80106A73;` re-assigned at block-1's head | 10 / 49 | 4 / 3 |
+| v3 | block-1 read duplicated into both arms (split-read shape) | 10 / 49 | 4 / 3 |
+| v4 | block-0 mask through a NON-UNIFIABLE address (`*(&D_80106A78 - 5)`, diagnostic only) | 15 / 51 | **5 / 2** |
+| v5 | whole block-0 mask duplicated into both arms of `if (p[8] & 1)` | 18 / 50 | **5 / 3** |
+| v6 | mask load+`&0xF8` unconditional, only the STORE duplicated into the arms | **12 / 50** | **5 / 3** |
+| v8 | v6 with the splitting condition `if (m)` | 14 / 53 | -- |
+| v9 | mask fully inside the arms, condition on the raw byte | 19 / 53 | -- |
+
+Readings:
+
+1. **Ordinary reorderings do not defeat the forwarding.**  Re-assigning `q`
+   (v1) and duplicating the block-1 READ into the arms (v3) both leave 4 `lbu`
+   and score exactly 10 -- cse's table is keyed on the address VALUE, and every
+   spelling that keeps one pointer pseudo hands it the same value class.
+2. **Address-value non-unification restores the target multiset.**  v4 reaches
+   5 `lbu` / 2 `nop` because cse cannot prove
+   `(plus (symbol_ref D_80106A78) (const_int -5))` equal to
+   `(symbol_ref D_80106A73)`.  It costs +2 insns (a second `lui`/`addiu`), so it
+   is diagnostic only, but it is the first body in 48 sessions to reproduce the
+   target's instruction multiset.
+3. **v4 and v5 reproduce the target's block-0/1 REGISTERS exactly, with no
+   allocator lever at all.**  v5's opening is
+   `lui $v1 / addiu $v1 / lbu $a0,0($v1) / andi $a0 / sb $a0,0($v1) / lw /
+   lbu $a0,0($v1) / andi / bnez / ori $v0,$a0 / move $v0,$a0 / sb $v0,0($v1)`
+   -- address in `$v1`, value in `$a0`, i.e. the target's disposition, obtained
+   purely by restoring the reload.  The 10-session hunt for a
+   "block-0-confined pointer quantity" was chasing a consequence, not a cause.
+4. **A duplicated-into-arms STORE gives the EBB break for almost free.**  v6
+   puts only `*q = m;` in the two arms of `if (p[8] & 1)`; the branch, its `lw`
+   and its `andi` all disappear (cse2 unifies the condition with flag block 1's
+   own `p[8] & 1`, and jump2 cross-jumps the identical arms).  Net cost is
+   **one insn**, and that insn is the load-delay `nop`, not the branch.
+5. **The remaining insn is a sched1 priority artefact.**  In the base body BB0
+   holds the chain `lbu -> andi -> sb -> lw -> andi -> bnez` (the `sb` blocks
+   the `lw` by memory dependence), so the `lbu` is the longest-path insn and the
+   `$v0 -> p` copy sinks into its load-delay slot -- which is exactly what the
+   target does (`move $a1,$v0` at 80034FA4).  Moving the `sb` into the arms
+   breaks that chain, the copy's path to the branch becomes the longest one, and
+   sched1 emits `move $a1,$v0` BEFORE the `lbu`, leaving the slot empty.
+6. **The splitting condition is load-bearing.**  v8 (`if (m)`) and v9 (condition
+   on the raw byte) are not absorbed by cse2/jump2 and their branches survive at
+   +4 insns (53).  Only a condition textually identical to flag block 1's own
+   `p[8] & 1` collapses to zero cost.
+
+- [s48] classify (object-level, target=build/src/code6cac_b.o) reports FIRST DIVERGENCE: **PRE-RA** at 49 vs 49 insns -- ours has an extra `nop`, the target an extra `lbu #,0(#)`. The residual is an instruction-multiset difference, so RA and scheduler models cannot express it and the s47 arity/exhaustion conclusion is withdrawn.
+- [s48] Pass attribution from the dumps: cse.c store-forwards the block-0 mask store (`.rtl` insn 20) into block-1's reload (`.rtl` insn 29 becomes `(set (reg:QI 80) (subreg:QI (reg:SI 76) 0))` in `.cse`), and combine folds 29+30 into a copy and deletes 29 (`.combine`). The target keeps that `lbu` at 80034FB4.
+- [s48] The `.cse` EBB partition explains the asymmetry: block-1's load is inside the same extended basic block as the block-0 store (`;; Processing block from 2 to 46`), while blocks 2 and 3 start after their join code_labels (`from 49 to 80`, `from 83 to 114`) and therefore keep their reloads.
+- [s48] v1 (q re-assigned at block-1's head) and v3 (block-1 read duplicated into both arms) both measure 10 at 49 with 4 lbu / 3 nop: ordinary reorderings that keep ONE pointer pseudo cannot defeat cse's store forwarding, because cse keys on the address value class.
+- [s48] v4 (block-0 mask through the non-unifiable address `*(&D_80106A78 - 5)`, diagnostic only) measures 15 at 51 with **5 lbu / 2 nop** -- the target's exact instruction multiset, and the first body in 48 sessions to reach it.
+- [s48] v4 and v5 reproduce the target's block-0/1 register disposition exactly (address `$v1`, value `$a0`, `move $v0,$a0`, `sb $v0,0($v1)`) with no allocator lever present. Restoring the reload is sufficient to produce the seat the ledger spent s38-s47 trying to buy from find_reg.
+- [s48] v5 (whole mask duplicated into both arms of `if (p[8] & 1)`) = 18 at 50, 5 lbu / 3 nop. v6 (only the STORE `*q = m;` duplicated into the arms) = **12 at 50**, 5 lbu / 3 nop -- the branch, its `lw` and its `andi` are all removed because the condition is textually flag block 1's own `p[8] & 1`; the ONLY surviving cost is one load-delay nop.
+- [s48] v8 (`if (m)`) = 14 at 53 and v9 (condition on the raw byte) = 19 at 53: a splitting condition that is not the same expression as flag block 1's own test is NOT absorbed, and the branch survives at +4 insns.
+- [s48] The v6 residual is a sched1 priority artefact, not an allocation one: with the `sb` moved into the arms, BB0 loses the memory dependence `sb -> lw` that made the `lbu` the longest-path insn, so `move $a1,$v0` outranks the `lbu` and no longer sinks into its load-delay slot.
+- [s48] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file, rule file, engine file or tool was modified.
+
+- [s46] Kill re-audit on today's chassis: memory/grind/func_80034F88/candidate.c re-measures score 10 at 49 build_insns; fake_ablate has reported no FAKE-annotated construct to ablate for four consecutive sessions (s41, s42, s46, s47), so no banked kill is FAKE-contaminated.
+
+- [s46] inverse_compose.py classify (object-level path, target build/src/code6cac_b.o) reports FIRST DIVERGENCE: PRE-RA at 49 vs 49 instructions: ours only 'nop', target only 'lbu #,0(#)'. RA and scheduler models cannot express an instruction-multiset difference.
+
+- [s46] The missing instruction is identified off asm/funcs/func_80034F88.s as the block-1 reload lbu $a0,0($v1) at 80034FB4, sitting in the load-delay slot of lw $v0,0x20($a1) at 80034FB0; our body emits a nop there.
+
+- [s46] Pass attribution read from cc1 -da dumps, not guessed: .rtl insn 29 (set (reg:QI 80) (mem:QI (reg 74))) has already become (set (reg:QI 80) (subreg:QI (reg:SI 76) 0)) in .cse -- cse.c store-forwarded the block-0 mask store (insn 20) -- and .combine folds 29+30 into (set (reg 77) (reg 76)) with insn 29 marked NOTE_INSN_DELETED.
+
+- [s46] The .cse dump's extended-basic-block partition shows block-1's load inside the same EBB as the block-0 store (';; Processing block from 2 to 46'), while flag blocks 2 and 3 start after their join code_labels ('from 49 to 80', 'from 83 to 114') and therefore keep their reloads. The asymmetry the ledger attributed to allocation is a cse EBB effect.
+
+- [s46] v1 (q re-assigned at block-1's head) = 10 at 49 with 4 lbu / 3 nop, and v3 (block-1 read duplicated into both arms) = 10 at 49 with 4 lbu / 3 nop: ordinary reorderings that keep one pointer pseudo cannot defeat cse store forwarding, because cse keys on the address value class.
+
+- [s46] v4 (mask through the non-unifiable address *(&D_80106A78 - 5), diagnostic only) = 15 at 51 with 5 lbu / 2 nop -- the target's exact instruction multiset, reached for the first time in 48 sessions.
+
+- [s46] v4 and v5 reproduce the target's flag block 0/1 registers exactly (address $v1, value $a0, ori $v0,$a0, move $v0,$a0, sb $v0,0($v1)) with no allocator lever, no second declared pointer object and no FAKE construct. Restoring the reload alone produces the seat that s38-s47 tried to buy from find_reg.
+
+- [s46] v5 (whole mask duplicated into both arms of if (p[8] & 1)) = 18 at 50 with 5 lbu / 3 nop; v6 (only the store *q = m; duplicated into the arms) = 12 at 50 with 5 lbu / 3 nop, where the branch, its lw and its andi are all removed because the condition is textually flag block 1's own p[8] & 1.
+
+- [s46] v8 (condition if (m)) = 14 at 53 and v9 (condition on the raw byte) = 19 at 53: the splitting condition must duplicate an expression the following code already computes, or the branch survives at +4 insns.
+
+- [s46] v6's single extra instruction is a load-delay nop caused by sched1 priority: moving the sb into the arms removes the sb -> lw memory dependence that made the lbu BB0's longest-path insn, so move $a1,$v0 is emitted before the lbu instead of sinking into its delay slot.
+
+- [s46] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; git status shows no modified build-pipeline file, rule file, engine file or tool. The only ledger writes are memory/grind/func_80034F88/{evidence.md,hypotheses.md,candidate.c header comment} and six new rejected/ forms.

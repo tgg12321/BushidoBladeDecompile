@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 45,
- "current_modality": "synthesis",
+ "session_count": 46,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -273,23 +273,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Arity proof: the target holds &D_80106A73 in TWO hard registers ($v1 blocks 0-1, $a0 blocks 2-3), so it needs two pointer pseudos; both non-alias generators of a second pointer pseudo are closed this "
+  },
+  {
+   "session": 46,
+   "floor": 10,
+   "modality": "solver",
+   "headline": "classify says PRE-RA, not RA: the target emits a block-1 reload (lbu at 80034FB4) that cse.c store-forwards away here; restoring it reproduces the target's block-0/1 registers with no allocator lever,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The Judge's three closures of the multi-handle axis were all framed against a second pointer object presented as a register-allocation LEVER; s47 reframes it as an EMISSION fact read off the shipped code (two address registers with overlapping ranges, which no single C object can express). Whether that reframing changes the classification is the one question this ledger cannot answer for itself.",
-   "mechanism": "GCC 2.7.2 gives one hard register per pseudo; the target uses $v1 for the blocks-0/1 address and $a0 for the blocks-2/3 address; the only C generator of a second pointer pseudo aliasing &D_80106A73 is a second declared pointer object (bare-symbol route killed this session at mips.h:2300, compiler-split route killed at local-alloc.c:1080-1115, different-symbol-addend route forecloses on the 0($reg) vs 3($reg) byte difference).",
-   "next_probe": "Emit a `ruling-request` (NOT a candidate-ready -- the driver discards a candidate that re-declares a banned construct before the Judge sees it) asking: given that the target itself holds &D_80106A73 in two hard registers with overlapping live ranges, does a second C pointer object covering blocks 0-1 while `q` covers blocks 2-3 remain a banned coercion, or is it the only C spelling of the shipped object model? Cite the s47 arity proof and the two closed non-alias routes."
+   "hypothesis": "The v6 chassis (mask store duplicated into two arms of flag block 1's own condition) reaches the target multiset and only loses one instruction to an unfilled load-delay slot; a sched1 priority change that restores the sb -> lw dependence, or any other way to make the mask's lbu BB0's longest-path insn, should close it.",
+   "mechanism": "sched.c computes INSN_PRIORITY as the longest path to the end of the basic block. In the base body the mask's sb blocks the p[8] lw by memory dependence, so lbu -> andi -> sb -> lw -> andi -> bnez outranks the $v0-to-p copy and the copy sinks into the lbu's load-delay slot exactly as the target does at 80034FA4. Duplicating the sb into the arms shortens BB0's chain and inverts the ranking.",
+   "next_probe": "Run tools/sched_solver on the v6 chassis with --target tgt.head.s pinned to the target's block-0 order, and perturb.py --atoms luid,luid_move first; then spell the top vectors, e.g. keeping a memory-dependent statement in BB0 after the mask load, or duplicating the p[8] read rather than the store. This is the first residual in this function's history that a scheduler model actually owns."
   },
   {
-   "hypothesis": "The header-declaration axis is the only untried non-alias surface, and it must be worked regardless of the residual because candidate.c currently carries a declaration pun that makes it layer-1-unsubmittable.",
-   "mechanism": "D_80106A70 is declared `extern u8 D_80106A70;` in code6cac.h but the copy loop indexes it with a computed register (addu $at, $at, $v1 at 80035024), and D_80106A73 has no header declaration at all. Declaring the word as an array or a record changes the RTL the flag blocks start from and retires the `*(&D_80106A70 + i)` pun at the declaration rather than the use site (aggregate-merge family prong (a) is satisfied by the loop's stride evidence).",
-   "next_probe": "Draft the header change (`extern u8 D_80106A70[4];` or a named record) as an integration handoff, splice a body that spells the loop as D_80106A70[i] and the flag blocks as D_80106A70[3] plus the pointer variants, and measure. Expect the flag blocks to foreclose on the 3($reg) offset; the point of the probe is the pun retirement and the loop's byte-neutrality, not the residual."
+   "hypothesis": "There may be a spelling that denies cse the store record without moving the store into a conditional arm at all -- i.e. one that keeps flag block 0's mask store and flag block 1's load in BB0 (so the delay slot is filled as in the base body) while breaking cse's address value class or its EBB.",
+   "mechanism": "cse forwards only when the store and the load are in the same extended basic block AND the addresses hash to the same value class. v4 broke the second condition at a cost of +2 insns; v5/v6 broke the first at a cost of +1. A construct that breaks either one for free has not yet been enumerated.",
+   "next_probe": "Read tools/gcc-2.7.2/cse.c's cse_insn store-recording path and cse_end_of_basic_block, and enumerate every condition under which a QImode store is NOT inserted into the table or an EBB terminates. Then spell each condition in C on the a1 chassis and measure lbu/nop counts with tmp/grind/func_80034F88/s46/{run.ps1,cnt.sh}."
   },
   {
-   "hypothesis": "The LADDER EXHAUSTED record is now writable with a structural predicate rather than an enumeration argument.",
-   "mechanism": "Six modalities were met at s31, the floor has been flat at 10 since s26, and s47 supplies the missing predicate: the target needs two pointer pseudos, and every non-alias C generator of the second one is closed with a file:line.",
-   "next_probe": "When an `escalation`-modality session is dispatched, file `## <date> -- func_80034F88 -- **LADDER EXHAUSTED (non-endgame residual, floor 10): FORECLOSED**` (never the endgame-lock title: 10 > ENDGAME_LOCK_MAX_FLOOR=5, owner ruling 2026-09-02), citing the s47 arity proof (mips.h:2300 + local-alloc.c:1080-1115), the six-exit find_reg enumeration, scan_hand_coded tier=LOW 0/8, and the negative SOTN census; re-activation triggers = a class grant covering a second address handle, or a toolchain finding that gives GCC 2.7.2 live-range splitting."
+   "hypothesis": "The Judge constraints closing the multi-handle axis, and the s47 LADDER EXHAUSTED recommendation, were both written against the RA framing that this session's classify verdict withdraws; the function should not be foreclosed on that basis.",
+   "mechanism": "Every Judge closure and the s47 foreclosure argument rest on the premise that the target needs two pointer pseudos and that a second declared pointer object is the only generator. This session shows the target's register disposition follows from restoring one cse-eaten load, with a single declared pointer object and no FAKE construct present.",
+   "next_probe": "Do NOT file the LADDER EXHAUSTED record. The pre-RA axis is newly opened and has a measured 12-at-50 body one instruction from the target's shape; keep the item active and continue on the sched1 and cse axes above."
   }
  ],
  "judge_constraints": [
@@ -311,22 +317,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 27,
-   "statement": "The s26 frontier route -- carrying the address in a pointer-typed value derived from `p` or from another live object that reaches 0x80106A73, rather than a second object aliasing D_80106A73.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis at HEAD; forms a1/a2/a3/a5/a7/a8/a11/a12 in tmp/grind/func_80034F88/s27/variants/; a single `u8 *q` in every form and no other FAKE-family construct",
-   "predicate_cite": "",
-   "result": "KILLED. The only record covering the byte is 0x80106A70..0x80106A73 itself (three default-colour nibbles plus the flag b"
-  },
-  {
-   "session": 27,
-   "statement": "The single `u8 *q` pointer alias in candidate.c is masking a lever (the mandated FAKE-ablation re-audit).",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis at HEAD; ablated body banked at memory/grind/func_80034F88/rejected/pointer-alias-ablated-plain-symbol-47insn-score29.c",
-   "predicate_cite": "",
-   "result": "KILLED. fake_ablate.py reports 'no FAKE-annotated constructs found' -- candidate.c's `u8 *q` is un-annotated, so the too"
-  },
   {
    "session": 28,
    "statement": "No bitfield spelling of the flag byte reaches cse.c:7004's ZERO_EXTRACT/SIGN_EXTRACT SET_DEST gate on this target, so that gate cannot be the cse input that kept block 1's byte reload alive in the ori",
@@ -785,6 +775,22 @@
    "measured_on": "compiler source read (tools/gcc-2.7.2/local-alloc.c), cross-checked against the score-10 chassis on HEAD 2026-09-05 where q is never spilled; no FAKE constructs present",
    "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1080",
    "result": "No mechanism exists that hands one pseudo two hard registers; the only equivalence-driven transformation removes a regis"
+  },
+  {
+   "session": 46,
+   "statement": "Re-assigning q at flag block 1's head, and duplicating flag block 1's read into both arms of its own conditional, each leave the block-1 reload eliminated at 4 lbu / 3 nop and the score at 10.",
+   "kill_scope": "instance",
+   "measured_on": "a1 chassis (uniform four-block reload, single declared u8 *q, byte-identical to s44/b0.o) on HEAD 2026-09-05; no FAKE construct present, fake_ablate clean four sessions running",
+   "predicate_cite": "",
+   "result": "v1 = score 10 at 49 insns, 4 lbu / 3 nop. v3 = score 10 at 49 insns, 4 lbu / 3 nop. Banked as rejected/s48-q-reassigned-"
+  },
+  {
+   "session": 46,
+   "statement": "On the v6 chassis, replacing the splitting condition p[8] & 1 with m or with the raw flag byte leaves the branch in the emitted code at four extra instructions.",
+   "kill_scope": "instance",
+   "measured_on": "v6 chassis (mask load unconditional, mask store duplicated into arms, single declared u8 *q) on HEAD 2026-09-05; no FAKE construct present",
+   "predicate_cite": "",
+   "result": "v8 = score 14 at 53 insns; v9 = score 19 at 53 insns. Banked as rejected/s48-mask-store-arms-cond-on-m-branch-survives-s"
   }
  ]
 }

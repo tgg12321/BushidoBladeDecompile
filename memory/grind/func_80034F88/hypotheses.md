@@ -4595,3 +4595,184 @@ spending a probe on a brief-listed "next probe", or it will re-derive s37-s40.
 - kill_scope: class
 - measured_on: compiler source read (tools/gcc-2.7.2/local-alloc.c), cross-checked against the score-10 chassis on HEAD 2026-09-05 where q is never spilled; no FAKE constructs present
 - predicate_cite: tools/gcc-2.7.2/local-alloc.c:1080
+
+## s48 (solver, 2026-09-05) -- hypotheses
+
+### H48.1 CONFIRMED -- the residual's first divergence is PRE-RA, not RA
+**Statement.** Our best body and the target have the same instruction COUNT (49)
+but not the same instruction MULTISET: the target emits one `lbu #,0(#)` that we
+do not, and we emit one `nop` that it does not.
+**Mechanism.** `tools/ra_solver/inverse_compose.py classify` compares
+register-blanked objdump streams; a multiset difference is by construction
+upstream of both the allocator and the scheduler, which only rename and reorder
+a fixed multiset.
+**Probe.** `classify code6cac_b func_80034F88 --target-object
+build/src/code6cac_b.o --ours-object tmp/grind/func_80034F88/s46/ours_cand.o`.
+**Result.** FIRST DIVERGENCE: PRE-RA. Consequence: the s47 arity proof and its
+"non-alias ladder exhausted" conclusion are withdrawn -- they were an RA-only
+reading of a pre-RA residual.
+
+### H48.2 CONFIRMED -- cse.c is the pass that eats the target's `lbu`
+**Statement.** The missing instruction is flag block 1's reload of the flag byte
+(target 80034FB4), and it is removed by cse.c store-forwarding the block-0 mask
+store into it; combine then folds the surviving zero_extend into a copy.
+**Mechanism.** cse records a store's source as the value of the destination MEM
+and substitutes it into later loads of the same address value class.
+**Probe.** `pwsh tools/grinder/dump.ps1 func_80034F88` on the a1 body; compare
+`.rtl` insn 29 `(set (reg:QI 80) (mem:QI (reg 74)))` against `.cse` insn 29
+`(set (reg:QI 80) (subreg:QI (reg:SI 76) 0))` and `.combine` (29 becomes
+NOTE_INSN_DELETED, 30 becomes `(set (reg 77) (reg 76))`).
+**Result.** Confirmed; slices banked at
+`tmp/grind/func_80034F88/s46/{rtl,cse,combine}_slice.txt`.
+
+### H48.3 CONFIRMED -- blocks 2/3 keep their reloads only because they start a new cse EBB
+**Statement.** The asymmetry between flag block 1 (reload eaten) and flag blocks
+2 and 3 (reloads kept) is a cse extended-basic-block partition effect.
+**Mechanism.** cse restarts with an empty table at each EBB; blocks 2 and 3
+begin after the join `code_label` of the preceding flag test.
+**Probe.** The `.cse` dump's own partition header for this function.
+**Result.** `;; Processing block from 2 to 46` covers the block-0 store AND
+block-1's load; `from 49 to 80` and `from 83 to 114` start blocks 2 and 3.
+
+### H48.4 KILLED (instance) -- keeping one pointer pseudo and reordering the C does not defeat cse store-forwarding
+**Statement.** On the a1 chassis, re-assigning `q = &D_80106A73;` at flag block
+1's head, and duplicating flag block 1's READ into both arms of its own
+conditional, each leave the block-1 reload eliminated (4 `lbu`, 3 `nop`) and the
+score at 10.
+**Mechanism.** cse keys the memory table on the address VALUE class; two
+spellings that both denote the one pointer pseudo hand cse the same class, so
+the recorded store value is substituted either way.
+**Probe.** v1 and v3, spliced over INCLUDE_ASM and scored with
+`sandbox --disable all`; `lbu`/`nop` counted from the sandbox object.
+**Result.** v1 = 10 at 49 (4 lbu / 3 nop); v3 = 10 at 49 (4 lbu / 3 nop).
+Banked as `rejected/s48-q-reassigned-at-block1-head-still-forwards-score10.c`
+and `rejected/s48-block1-split-read-into-arms-still-forwards-score10.c`.
+**kill_scope.** instance.
+**measured_on.** a1 chassis (uniform four-block reload, single declared `u8 *q`)
+on HEAD 2026-09-05; no FAKE construct present.
+
+### H48.5 CONFIRMED -- an address expression cse cannot unify restores the target's exact instruction multiset
+**Statement.** Spelling flag block 0's mask through an address expression that
+cse cannot prove equal to `&D_80106A73` restores the block-1 reload and yields
+the target's multiset (5 `lbu`, 2 `nop`).
+**Mechanism.** cse cannot prove `(plus (symbol_ref D_80106A78) (const_int -5))`
+equal to `(symbol_ref D_80106A73)`, so the store is not recorded against the
+load's address class.
+**Probe.** v4 (`*(&D_80106A78 - 5) = *(&D_80106A78 - 5) & 0xF8;`, purely
+diagnostic -- a magic-offset pun, never submittable).
+**Result.** 15 at 51, 5 `lbu` / 2 `nop`. Costs +2 insns for the second
+`lui`/`addiu`. Banked as
+`rejected/s48-block0-mask-via-nonunifiable-symbol-RESTORES-RELOAD-score15-51insn.c`.
+
+### H48.6 CONFIRMED -- restoring the reload is by itself sufficient to produce the target's block-0/1 register disposition
+**Statement.** Bodies that keep the block-1 reload emit the target's registers
+in flag blocks 0 and 1 -- address in `$v1`, value in `$a0`, `move $v0,$a0`,
+`sb $v0,0($v1)` -- with no allocator lever, no second declared pointer object
+and no FAKE construct.
+**Mechanism.** With the reload present, block 1's value is an independent pseudo
+instead of a coalesced copy of block 0's, so the two no longer compete for one
+seat; the seat the ledger spent s38-s47 trying to buy from `find_reg` falls out.
+**Probe.** objdump of v4 and v5.
+**Result.** Confirmed on both. This is the direct refutation of the s45/s47
+"two pointer pseudos are required" reading.
+
+### H48.7 CONFIRMED -- duplicating only the mask STORE into two arms buys the cse EBB break for one instruction
+**Statement.** `m = *q & 0xF8; if (p[8] & 1) { *q = m; } else { *q = m; }`
+restores the reload (5 `lbu`) at a total cost of ONE instruction; the branch,
+its `lw` and its `andi` are all removed.
+**Mechanism.** The condition is textually flag block 1's own `p[8] & 1`, so cse2
+unifies the two computations and jump2 cross-jumps the identical arms, leaving
+the branch dead. The store's presence inside a conditional arm is what denies
+cse a record of the MEM at the join.
+**Probe.** v6.
+**Result.** 12 at 50, 5 `lbu` / 3 `nop`. Banked as
+`rejected/s48-mask-store-only-into-arms-reload-restored-score12-50insn.c`.
+This is the closest body yet to the target's SHAPE, though its score is worse
+than the 10-point floor.
+
+### H48.8 KILLED (instance) -- a splitting condition other than flag block 1's own test is not absorbed
+**Statement.** On the v6 chassis, replacing the splitting condition `p[8] & 1`
+with `m` or with the raw flag byte leaves the branch in the output at +4 insns.
+**Mechanism.** Only a condition that duplicates an expression the following code
+already computes can be unified by cse2 and then deleted by jump2; a fresh
+condition has no duplicate to merge with.
+**Probe.** v8 (`if (m)`) and v9 (mask fully inside the arms, condition on the
+raw byte).
+**Result.** v8 = 14 at 53; v9 = 19 at 53. Banked as
+`rejected/s48-mask-store-arms-cond-on-m-branch-survives-score14-53insn.c` and
+`rejected/s48-mask-in-arms-cond-on-raw-byte-score19-53insn.c`.
+**kill_scope.** instance.
+**measured_on.** v6 chassis (mask load unconditional, store duplicated into
+arms, single declared `u8 *q`) on HEAD 2026-09-05; no FAKE construct present.
+
+### H48.9 CONFIRMED -- v6's one surviving instruction is a sched1 priority artefact, not an allocation one
+**Statement.** v6's extra `nop` is an unfilled load-delay slot after the mask's
+`lbu`, caused by sched1 emitting the `$v0 -> p` copy before the `lbu`.
+**Mechanism.** In the base body BB0 holds `lbu -> andi -> sb -> lw -> andi ->
+bnez`, and the `sb` blocks the `lw` by memory dependence, making the `lbu` the
+longest-path insn so the copy sinks into its delay slot (the target's
+`move $a1,$v0` at 80034FA4). Moving the `sb` into the conditional arms breaks
+that chain; the copy's path to the branch becomes longest and it is emitted
+first.
+**Probe.** objdump of v6 vs the base body a1.
+**Result.** Confirmed. The next lever is therefore a sched1 priority question on
+the v6 chassis, addressable with `tools/sched_solver` -- a model that DOES own
+this residual, unlike the RA models the ledger has been searching.
+
+## [s46] The first divergence between our best body and the target is PRE-RA: both streams are 49 instructions but the multisets differ, ours carrying an extra nop and the target an extra lbu #,0(#).
+- mechanism: inverse_compose.py classify compares register-blanked objdump streams sourced from objects; an instruction-multiset difference is by construction upstream of both global/local alloc and sched.c, which only rename and reorder a fixed multiset.
+- probe: python3 tools/ra_solver/inverse_compose.py classify code6cac_b func_80034F88 --target-object build/src/code6cac_b.o --ours-object tmp/grind/func_80034F88/s46/ours_cand.o (report tmp/grind/func_80034F88/s46/classify.txt)
+- result: FIRST DIVERGENCE: PRE-RA. 'ours only: nop', 'target only: lbu #,0(#)'. Sessions s38-s47 modelled the residual as a pure register-seat problem on a fixed multiset; that framing is wrong, and the s47 'two pointer pseudos are required, therefore the non-alias ladder is exhausted' proof is withdrawn as an RA-only reading of a pre-RA residual.
+- verdict: CONFIRMED
+
+## [s46] The missing instruction is flag block 1's reload of the flag byte, and cse.c removes it by store-forwarding the block-0 mask store into it; combine then folds the surviving zero_extend into a register copy and deletes the load.
+- mechanism: cse.c records a store's source as the value of the destination MEM and substitutes it into later loads whose address falls in the same value class; combine.c then merges the copy with its zero_extend consumer.
+- probe: pwsh tools/grinder/dump.ps1 func_80034F88 on the a1 body; compare .rtl insn 29 against .cse insn 29 and .combine (slices at tmp/grind/func_80034F88/s46/{rtl,cse,combine}_slice.txt).
+- result: .rtl insn 29 is (set (reg:QI 80) (mem:QI (reg/v:SI 74))); in .cse it has already become (set (reg:QI 80) (subreg:QI (reg:SI 76) 0)), i.e. the block-0 store's value; in .combine insn 29 is NOTE_INSN_DELETED and insn 30 is (set (reg 77) (reg 76)). Pass attribution is cse.c, read from the dump rather than hypothesised.
+- verdict: CONFIRMED
+
+## [s46] Flag blocks 2 and 3 keep their reloads while flag block 1 does not because blocks 2 and 3 begin a fresh cse extended basic block after the join code_label of the preceding flag test.
+- mechanism: cse.c restarts with an empty hash table at each extended basic block, so a store recorded in an earlier block is not available for forwarding after a join.
+- probe: The .cse dump's own extended-basic-block partition header for func_80034F88.
+- result: ';; Processing block from 2 to 46' spans the block-0 store AND block-1's load; ';; Processing block from 49 to 80' and ';; Processing block from 83 to 114' start blocks 2 and 3. The residual is a cse EBB-boundary problem, not an allocator problem.
+- verdict: CONFIRMED
+
+## [s46] Re-assigning q at flag block 1's head, and duplicating flag block 1's read into both arms of its own conditional, each leave the block-1 reload eliminated at 4 lbu / 3 nop and the score at 10.
+- mechanism: cse keys its memory table on the address VALUE class, so any spelling that still denotes the single pointer pseudo hands cse the same class and the recorded store value is substituted regardless of statement order or arm duplication.
+- probe: v1 (q = &D_80106A73; re-inserted at block 1's head) and v3 (block-1 read duplicated into both arms), spliced over INCLUDE_ASM and scored with sandbox --disable all; lbu/nop counted from the sandbox object.
+- result: v1 = score 10 at 49 insns, 4 lbu / 3 nop. v3 = score 10 at 49 insns, 4 lbu / 3 nop. Banked as rejected/s48-q-reassigned-at-block1-head-still-forwards-score10.c and rejected/s48-block1-split-read-into-arms-still-forwards-score10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: a1 chassis (uniform four-block reload, single declared u8 *q, byte-identical to s44/b0.o) on HEAD 2026-09-05; no FAKE construct present, fake_ablate clean four sessions running
+
+## [s46] Spelling flag block 0's mask through an address expression cse cannot unify with &D_80106A73 restores the block-1 reload and reproduces the target's exact instruction multiset of 5 lbu and 2 nop.
+- mechanism: cse cannot prove (plus (symbol_ref D_80106A78) (const_int -5)) equal to (symbol_ref D_80106A73), so the mask store is never recorded against the load's address value class and the load survives to the assembler.
+- probe: v4: *(&D_80106A78 - 5) = *(&D_80106A78 - 5) & 0xF8; for the mask, q = &D_80106A73 for the three flag blocks. Purely diagnostic -- a magic-offset pun that is not submittable.
+- result: score 15 at 51 insns, 5 lbu / 2 nop -- the target's multiset, reached for the first time in 48 sessions. The +2 insns are the second lui/addiu materialisation. Banked as rejected/s48-block0-mask-via-nonunifiable-symbol-RESTORES-RELOAD-score15-51insn.c.
+- verdict: CONFIRMED
+
+## [s46] Restoring the block-1 reload is by itself sufficient to produce the target's flag block 0/1 register disposition, with no allocator lever, no second declared pointer object and no FAKE construct.
+- mechanism: With the reload present, block 1's value is an independent pseudo rather than a coalesced copy of block 0's, so the two values no longer compete for one hard register; the address then takes $v1 and the value $a0 exactly as the target does.
+- probe: objdump of v4 and v5 (tmp/grind/func_80034F88/s46/v4.txt, v5.txt) against asm/funcs/func_80034F88.s at 80034F98-80034FD0.
+- result: Both emit lui/addiu $v1, lbu $a0,0($v1), andi $a0, sb $a0,0($v1), lw, lbu $a0,0($v1), andi, bnez, ori $v0,$a0, move $v0,$a0, sb $v0,0($v1) -- the target's registers. This directly refutes the s45/s47 reading that the target's two address registers require two declared pointer pseudos and that the Judge-closed multi-handle axis is the only generator.
+- verdict: CONFIRMED
+
+## [s46] Duplicating only the mask STORE into the two arms of if (p[8] & 1), with the mask load and AND left unconditional, restores the block-1 reload at a total cost of one instruction, because the branch, its lw and its andi are all removed.
+- mechanism: The splitting condition is textually flag block 1's own p[8] & 1, so cse2 unifies the two computations and jump2 cross-jumps the identical arms, leaving the branch dead; putting the store inside a conditional arm is what denies cse a record of the MEM at the join.
+- probe: v6: m = *q & 0xF8; if (p[8] & 1) { *q = m; } else { *q = m; } followed by the unchanged three flag blocks and copy loop.
+- result: score 12 at 50 insns, 5 lbu / 3 nop. Closest body yet to the target's SHAPE although its score is above the 10-point floor; the single extra instruction is a load-delay nop, not the branch. Banked as rejected/s48-mask-store-only-into-arms-reload-restored-score12-50insn.c.
+- verdict: CONFIRMED
+
+## [s46] On the v6 chassis, replacing the splitting condition p[8] & 1 with m or with the raw flag byte leaves the branch in the emitted code at four extra instructions.
+- mechanism: Only a condition that duplicates an expression the following code already computes can be unified by cse2 and then deleted by jump2; a fresh condition has no duplicate to merge with and its compare, load and branch all survive.
+- probe: v8 (if (m) { *q = m; } else { *q = m; }) and v9 (mask fully inside the arms, condition on the raw byte).
+- result: v8 = score 14 at 53 insns; v9 = score 19 at 53 insns. Banked as rejected/s48-mask-store-arms-cond-on-m-branch-survives-score14-53insn.c and rejected/s48-mask-in-arms-cond-on-raw-byte-score19-53insn.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v6 chassis (mask load unconditional, mask store duplicated into arms, single declared u8 *q) on HEAD 2026-09-05; no FAKE construct present
+
+## [s46] v6's one surviving extra instruction is an unfilled load-delay slot after the mask's lbu, produced by sched1 emitting the $v0-to-p copy ahead of the lbu once the mask store leaves the entry basic block.
+- mechanism: In the base body BB0 holds the chain lbu -> andi -> sb -> lw -> andi -> bnez and the sb blocks the lw by memory dependence, making the lbu the longest-path insn so the copy sinks into its delay slot -- which is what the target does with move $a1,$v0 at 80034FA4. Moving the sb into the conditional arms breaks that chain and the copy's path to the branch becomes the longest.
+- probe: objdump of v6 (tmp/grind/func_80034F88/s46/v6.txt) against the base body a1 (tmp/grind/func_80034F88/s46/a1.o.txt).
+- result: Base emits lui/addiu $a0, lbu $v1,0($a0), move $a1,$v0, andi; v6 emits lui/addiu $a0, move $a1,$v0, lbu $v1,0($a0), nop, andi. The next lever is a sched1 priority question on the v6 chassis, which tools/sched_solver models exactly -- unlike the RA models the ledger has been searching for ten sessions.
+- verdict: CONFIRMED
