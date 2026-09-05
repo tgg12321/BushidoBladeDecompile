@@ -4906,3 +4906,239 @@ exactly one is permitted. Five new disproven forms banked (bank size 193).
 - [s36] Ladder accounting: s35 is session FOURTEEN of cycle 2 and the six-modality condition was met at s31 (escalation s23/s24, synthesis s25/s33/s34/s35, solver s26, forensics s27/s28, rederive s29/s30, structural s31/s32). Six sessions remain before the owner directive 2026-09-02 permits any disposition.
 
 - [s36] Five new disproven forms banked in memory/grind/func_80034F88/rejected/ (s35-q-blocks01-anon-blocks23-score28.c, s35-q-block0-only-anon-123-score25.c, s35-qinit-punned-blocks01-anon23-score27.c, s35-qinit-punned-full-coverage-score14.c, s35-two-distinct-anon-spellings-score28-IDENTICAL-TO-g1.c); bank size is now 193.
+
+==== s37 (synthesis) ====
+
+(Session-numbering note: `state.json` recorded `session_count` 36 at dispatch and
+the previous session tagged its bullets both `[s35]` and `[s36]`. This session is
+tagged **s37** and its scratch is `tmp/grind/func_80034F88/s37/`, so nothing
+overwrites the earlier directory.)
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` regenerated as
+variant `h0` and spliced into `src/code6cac_b.c:3420`: **score 10, build_insns
+49**. The dispatch brief again printed "measurement unavailable", so the floor of
+10 is measured this session, not inherited. `src/code6cac_b.c` restored to HEAD at
+session end (`git status --porcelain src/` empty).
+
+--- 1. THE 10 POINTS, READ OFF THE DISASSEMBLY INSTRUCTION BY INSTRUCTION ---
+
+The base body's own objdump (`tmp/grind/func_80034F88/s37/h0.txt`) against
+`asm/funcs/func_80034F88.s`, both 49 instructions, prologue through block 1:
+
+    target                          h0 (candidate.c)
+    lui   v1,%hi(D_80106A73)        lui   a0,%hi(D_80106A73)
+    addiu v1,v1,%lo                 addiu a0,a0,%lo
+    lbu   a0,0(v1)                  lbu   v1,0(a0)
+    move  a1,v0                     move  a1,v0
+    andi  a0,a0,0xf8                andi  v1,v1,0xf8
+    sb    a0,0(v1)                  sb    v1,0(a0)
+    lw    v0,0x20(a1)               lw    v0,32(a1)
+    lbu   a0,0(v1)      <- reload   nop                 <- load-delay filler
+    andi  v0,v0,0x1                 andi  v0,v0,0x1
+    bnez  v0,.L80034FC8             bnez  v0,L
+     ori  v0,a0,0x1                  ori  v0,v1,0x1
+    addu  v0,a0,$zero               move  v0,v1
+    lui   a0,%hi ; addiu a0         (materialised after the sb instead)
+    sb    v0,0(v1)                  sb    v0,0(a0)
+
+Blocks 2 and 3 are register-exact in the base body (the ledger's standing claim,
+re-confirmed here). So the entire 10-point residual sits in blocks 0/1 and is
+exactly three facts:
+
+  (i)   the blocks-0/1 base is `$a0` where the target has `$v1`;
+  (ii)  the blocks-0/1 byte value is `$v1` where the target has `$a0` -- the
+        residual is a pure $v1 <-> $a0 ROTATION, not a missing computation;
+  (iii) the target's block-1 reload `lbu $a0,0($v1)` occupies the load-delay slot
+        of `lw $v0,0x20($a1)`, where the base body emits a bare `nop`.
+
+(iii) sharpens s29's pricing from the other side: the reload is not merely "worth
+zero points", it is worth zero INSTRUCTIONS -- the slot is already paid for by a
+nop. It is also the fourth reference to the blocks-0/1 address pseudo, which
+matters for (i) and (ii) through the priority formula below.
+
+--- 2. WHY THE ROTATION HAPPENS, FROM THE BASE BODY'S OWN .greg ---
+
+`pwsh tools/grinder/dump.ps1 func_80034F88` with h0 installed;
+`tmp/grind/func_80034F88/dumps/code6cac_b.greg`, func_80034F88 block:
+
+    ;; 9 regs to allocate: 73 78 82 86 74 77 81 85 72
+    ;; 73 conflicts: 72 73 2 29
+    ;; 74 conflicts: 72 74 77 78 81 82 85 86 2 3 29
+    ;; Register dispositions: 72 in 5  73 in 3  74 in 4  ...
+
+`74` is `q` (the single declared pointer), seated in **4 = $a0**; `73` is block 0's
+byte value, seated in **3 = $v1**. The allocation ORDER is the whole story: 73
+heads the sorted list, finds `$v0` blocked by the live call return and takes
+`$v1`; when `74` is reached fifth it conflicts with both 2 and 3 and takes `$a0`.
+The sort key is `allocno_compare` (`tools/gcc-2.7.2/global.c:635`):
+
+    pri = (floor_log2(allocno_n_refs) * allocno_n_refs / allocno_live_length)
+          * 10000 * allocno_size
+
+so the short-lived block-0 value outranks the long-lived pointer, and the pointer
+loses `$v1` by ORDER, not by conflict -- 73 and 74 do not conflict with each other.
+
+CONSEQUENCE, and an independent re-derivation of the ledger's standing
+factorisation (from the priority formula and the dispositions, not from the
+earlier conflict-graph argument): the base chassis needs its address in `$v1` for
+blocks 0/1 and in `$a0` for blocks 2/3. `global.c:426` gives one pseudo exactly
+one hard register, so no re-ordering, re-prioritising or live-range surgery on the
+single `q` can produce both seats. This also explains WHY the address loses the
+seat, which s31/s32 left implicit.
+
+--- 3. THE NEW AXIS: A `static inline` HELPER FUNCTION ---
+
+The one construct that multiplies address pseudos WITHOUT the source declaring
+more than one pointer object is a helper function inlined at each call site:
+GCC 2.7.2's `integrate.c` copies the callee's RTL with fresh pseudos per call
+site, so three calls to a helper holding `u8 *q = &D_80106A73;` yield three
+address pseudos from ONE textual declaration. It is also the spelling a human
+would reach for given three identical flag-set blocks, and the project already
+ships the idiom (`src/main.c:1069` `static inline void vmSetStartAddr`, and
+`src/main.c:2187` `static inline void _memcpy`). This axis had never been measured
+on this function; the bank's
+`macro-respelling-of-banned-four-handle-score0-DO-NOT-SUBMIT.c` is a TEXTUAL macro
+expanding to four block-scoped declarations, which is a different construct.
+
+Eleven bodies measured (`tmp/grind/func_80034F88/s37/variants/h1..h11.c`, scored
+with `sandbox func_80034F88 --disable all`):
+
+    h1   ptr-helper, blocks 1/2/3, fresh result local            31   48
+    h2   ptr-helper, blocks 2/3 (blocks 0/1 keep caller q)       30   49
+    h3   ptr-helper for all four sites (mask has its own helper) 31   48
+    h4   symbol-helper, blocks 1/2/3, caller q for block 0       26   47
+    h5   symbol-helper, no pointer object anywhere               30   44
+    h6   CONTROL: no helper, all four sites on the plain symbol  29   47
+    h7   symbol-helper blocks 2/3, caller q for blocks 0/1       29   46
+    h8   ptr-helper (candidate.c's reuse shape), blocks 2/3      24   49
+    h9   ptr-helper (reuse shape), blocks 1/2/3                  13   50
+    h10  symbol-helper (reuse shape), blocks 2/3                 28   48
+    h11  ptr-helper (reuse shape), block 3 only                  16   49
+
+The best is h9 at 13 -- three points ABOVE the base floor and one instruction long.
+The axis does not reach 10.
+
+WHY IT FAILS, from h2's disassembly (`tmp/grind/func_80034F88/s37/h2.txt`, the
+49-instruction member): inlining fires (no `jal` to the helper in the object and no
+out-of-line copy emitted), and it does produce a SECOND full-address
+materialisation -- `lui a1 / addiu a1` at +0x44, after block 1's store. But the two
+inlined copies are then merged by cse into a single STORE base in `$a1`, while each
+inlined READ is folded by combine into a bare `lui vX` + `lbu 0(vX)` pair, losing
+the target's reused-full-address read base. Worse, the helper's address pseudo
+takes `$a1` and displaces `p` into `$a0` -- the same double loss s35 measured for
+the shortened-`q` quadrant (g1). The helper multiplies pseudos, but not into the
+seats the target uses.
+
+Side result worth inheriting: h9's helper mirrors candidate.c's block shape
+exactly, i.e. the condition PARAMETER is reused as the merged value, which is what
+emits the target's `addu v0,a0,$zero` select move. That reuse is worth 11-18 points
+inside the family (h1 31 -> h9 13; h2 30 -> h8 24), so the reuse idiom is confirmed
+load-bearing independently of the helper question.
+
+--- 4. TWO SMALLER RESULTS ---
+
+(a) **Duplicate-read-into-arms is byte-neutral on block 1.** The frozen sanctioned
+family "duplicate-read into branch arms"
+(`.claude/rules/split-read-defeats-hoist.md`) applied to block 1 only with no
+pre-read (`if (c) { c = *q | 1; } else { c = *q; }`) measures **10 at 49** -- and
+its objdump is BIT-IDENTICAL to the base body's (`diff h0.txt h15.txt` empty). cse
+collapses the arm reads back onto block 0's stored value, so the family cannot
+restore the reload here. The pre-read variant (h14, read kept for the else arm) is
+19 at 51; all three blocks at once is 29 at 55 (h16) / 25 at 53 (h17).
+
+(b) **Feeding the trailing copy loop off `q` does not lift its priority usefully.**
+`q[i - 3]` (h13) and `*(q - 3 + i)` (h12) -- the idiom the file itself already uses
+at `src/code6cac_b.c:4044` (`(&D_80106A73) - 3`) -- both measure **30 at 48**: the
+loop loses its own `lui %hi(D_80106A70) / addu / sb %lo` materialisation, which
+costs more than the extra references to `q` buy.
+
+--- 5. STATE OF THE SEARCH AFTER s37 ---
+
+`candidate.c` unchanged at 10/49. The residual is now stated at instruction
+granularity (blocks 0/1 only: a $v1<->$a0 rotation plus a free reload slot), its
+allocator cause is derived from the base body's own dispositions plus
+`global.c:635`'s priority formula, and the strongest remaining ordinary-C
+construct for producing a second address pseudo from a single declaration -- a
+`static inline` helper -- is measured across eleven bodies and does not reach the
+floor. Six new disproven forms banked (bank size 199).
+
+- [s37] Chassis re-measured on HEAD (the dispatch brief printed 'measurement unavailable' for the eighth consecutive session): the candidate body, regenerated as variant h0, = score 10, build_insns 49. src/code6cac_b.c restored to HEAD at session end; `git status --porcelain src/` empty.
+- [s37] The 10-point residual is localised to blocks 0/1 at instruction granularity by diffing h0's own objdump against asm/funcs/func_80034F88.s: (i) the blocks-0/1 base is $a0 where the target has $v1; (ii) the blocks-0/1 byte value is $v1 where the target has $a0 -- a pure $v1<->$a0 rotation; (iii) the target's block-1 reload `lbu $a0,0($v1)` sits in the load-delay slot of `lw $v0,0x20($a1)`, where the base body emits a bare `nop`. Blocks 2/3 are register-exact.
+- [s37] The reload therefore costs ZERO instructions (its slot is already spent on a nop), a stronger statement than s29's arithmetic pricing; it is also the fourth reference to the blocks-0/1 address pseudo.
+- [s37] The base body's own .greg (tmp/grind/func_80034F88/dumps/code6cac_b.greg): ';; 9 regs to allocate: 73 78 82 86 74 77 81 85 72'; ';; 73 conflicts: 72 73 2 29'; ';; Register dispositions: 72 in 5  73 in 3  74 in 4'. q is pseudo 74 seated in $a0; block 0's byte value is pseudo 73 seated in $v1. 73 and 74 do NOT conflict -- q loses $v1 purely to allocation ORDER, because allocno_compare (tools/gcc-2.7.2/global.c:635) sorts by floor_log2(n_refs)*n_refs/live_length and the short-lived value outranks the long-lived pointer.
+- [s37] Independent re-derivation of the standing factorisation: the base chassis needs its address in $v1 for blocks 0/1 and in $a0 for blocks 2/3; global.c:426 gives one pseudo one hard register, so no re-ordering or live-range surgery on the single q can produce both seats.
+- [s37] NEW AXIS MEASURED AND KILLED -- a `static inline` helper function. GCC 2.7.2's integrate.c copies the callee RTL with fresh pseudos per call site, so N calls to a helper holding `u8 *q = &D_80106A73;` give N address pseudos from ONE textual declaration; the idiom is ordinary C and already ships in this project (src/main.c:1069, src/main.c:2187). Eleven bodies: h1 31/48, h2 30/49, h3 31/48, h4 26/47, h5 30/44, h6 (control, plain symbol, no helper) 29/47, h7 29/46, h8 24/49, h9 13/50, h10 28/48, h11 16/49. Best is 13, three points above the floor.
+- [s37] Mechanism of that failure, from h2's disassembly: inlining fires (no jal, no out-of-line copy) and does emit a second full-address materialisation, but cse merges the inlined copies into ONE store base in $a1 while combine folds each inlined READ into a bare lui + lbu %lo pair, losing the target's reused-full-address read base; and the helper's address pseudo takes $a1, displacing p out of the target's $a1 into $a0.
+- [s37] The condition-parameter-reused-as-merged-value shape (candidate.c's idiom, which emits the target's `addu v0,a0,$zero` select move) is worth 11-18 points inside the helper family (h1 31 -> h9 13; h2 30 -> h8 24), confirming the reuse idiom is load-bearing independently of the helper question.
+- [s37] The frozen sanctioned family 'duplicate-read into branch arms' is BYTE-NEUTRAL on block 1 here: `if (c) { c = *q | 1; } else { c = *q; }` (h15) measures 10 at 49 and its objdump is bit-identical to the base body's (empty diff). cse collapses the arm reads onto block 0's stored value, so the family cannot restore the reload. Pre-read variant h14 19/51; all three blocks h16 29/55, h17 25/53.
+- [s37] Feeding the trailing copy loop off q -- `q[i - 3]` (h13) and `*(q - 3 + i)` (h12), the idiom src/code6cac_b.c:4044 already uses -- measures 30 at 48 for both: the loop loses its own lui %hi(D_80106A70) / addu / sb %lo materialisation, which costs more than the extra references to q buy.
+- [s37] Ladder accounting: this is session FIFTEEN of cycle 2 (state.json session_count 36 at dispatch); the six-modality condition was met at s31. Five sessions remain before the owner directive 2026-09-02 permits any disposition.
+- [s37] Six new disproven forms banked in memory/grind/func_80034F88/rejected/ (s37-inline-helper-ptr-blocks23-score30.c, s37-inline-helper-symbol-no-pointer-anywhere-score30.c, s37-inline-helper-ptr-blocks123-reuse-shape-score13.c, s37-inline-helper-ptr-block3-only-score16.c, s37-q-as-copy-loop-base-score30.c, s37-dupread-both-arms-all-three-blocks-score29.c); bank size is now 199.
+
+### Artifacts (s37)
+
+`tmp/grind/func_80034F88/s37/`: `variants/{h0..h18}.c`, `gen.py`, `gen2.py`,
+`gen3.py`, `run.ps1`, `dis.sh`, `h0.txt`, `h2.txt`, `h15.txt`, per-variant `.o`
+files, `code6cac_b.c.orig`. Allocation dump:
+`tmp/grind/func_80034F88/dumps/code6cac_b.greg` (base body installed).
+
+--- 6. LATE ADDITION: THE ALLOCNO-ORDER LEVER, PROBED AND MEASURED BYTE-INERT ---
+
+Section 2 identified the ordering of block 0's byte-value allocno (73) ahead of
+the pointer allocno (74) as the proximate cause of the `$v1 <-> $a0` rotation, and
+`allocno_compare`'s formula
+`floor_log2(n_refs)*n_refs/live_length` as the only handle on it. Reference count
+cannot be raised for free (every reference is an instruction), so the free
+parameter is the VALUE allocno's LIVE LENGTH: lengthen it and its priority falls
+below the pointer's. Five bodies (`tmp/grind/func_80034F88/s37/gen4.py`,
+variants `k1`-`k5`):
+
+    k1  block 0's masked value kept in a local and merged by block 1
+        (block 1 does not re-read the byte at all)                    10   49
+    k2  the same shared value carried on into block 2                 13   49
+    k3  p[8] hoisted into a local before block 0 (F2 scheduling probe) 20   47
+    k4  block 1's byte read moved ahead of its p[8] condition read    10   49
+    k5  block 0's mask split into `m = *q; m = m & 0xF8; *q = m;`     10   49
+
+k1, k4 and k5 all TIE the floor at 10/49 -- and all three disassemble
+BIT-IDENTICALLY to the base body (`diff h0.txt k1.txt` / `k4.txt` / `k5.txt` all
+empty). Lengthening the value pseudo's C-level live range does not lengthen its
+RTL live range: cse forwards block 0's stored value into block 1 in the base body
+anyway, so k1's "shared value" and the base's "re-read that gets forwarded" are
+the same RTL. The allocno-order lever is therefore not reachable from statement
+structure at zero instruction cost; the two bodies that DO change 73's range
+(k2, k3) change the instruction stream and score worse.
+
+This extends s31's "seven bodies tie at 10 and emit a bit-identical stream" to
+TEN bodies (s31's seven, plus s37's h15, k1, k4, k5), and it is the sharpest
+statement of the base basin's rigidity so far: three structurally different
+spellings of block 0/1's value flow, plus one sanctioned duplicate-read arm
+rewrite, all collapse to the identical 49 instructions.
+
+- [s37] The allocno-ORDER lever (demote block 0's byte-value allocno below the pointer allocno in allocno_compare by lengthening its live range) is measured BYTE-INERT: k1 (value kept in a local and merged by block 1, no re-read) 10/49, k4 (byte read moved ahead of the p[8] condition read) 10/49 and k5 (mask split into `m = *q; m = m & 0xF8; *q = m;`) 10/49 all disassemble bit-identically to the base body. cse forwards block 0's stored value into block 1 in the base body anyway, so the C-level "longer live range" is the same RTL. k2 (shared value carried into block 2) 13/49 and k3 (p[8] hoisted before block 0) 20/47 do change the stream, and both score worse.
+- [s37] Bit-identical-tie count for this basin is now TEN bodies: s31's seven, plus s37's h15 (duplicate-read arms), k1, k4 and k5.
+- [s37] Three further disproven forms banked (s37-block0-value-lives-across-block1-score10-BIT-IDENTICAL.c, s37-p8-hoisted-before-block0-score20.c, s37-block0-mask-split-two-statements-score10-BIT-IDENTICAL.c); bank size is 202. Artifacts add `s37/gen4.py`, `s37/variants/{k1..k5}.c`, `s37/{k1,k4,k5}.txt`.
+
+- [s37] Chassis re-measured on HEAD (the dispatch brief printed 'measurement unavailable' for the eighth consecutive session): the candidate body, regenerated as variant h0, scores 10 at 49 build_insns, rules_dropped 0. src/code6cac_b.c restored to HEAD at session end; `git status --porcelain src/` empty.
+
+- [s37] KILL RE-AUDIT: the base body itself is the closest-to-target banked form (49/49 instructions) and re-measures 10; `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c` again reports no FAKE-annotated construct, so no banked kill on this chassis was measured with a FAKE carrier occupying the contested pseudo.
+
+- [s37] The 10-point residual is localised at instruction granularity to blocks 0/1: (i) their base is $a0 where the target has $v1; (ii) their byte value is $v1 where the target has $a0 -- a pure rotation, no missing computation; (iii) the target's block-1 reload `lbu $a0,0($v1)` fills the load-delay slot of `lw $v0,0x20($a1)` that the base body wastes on a `nop`, so the reload costs ZERO instructions. Blocks 2/3 are register-exact.
+
+- [s37] From the base body's own .greg: ';; 9 regs to allocate: 73 78 82 86 74 77 81 85 72'; ';; 73 conflicts: 72 73 2 29'; ';; Register dispositions: 72 in 5  73 in 3  74 in 4'. q (74) loses $v1 to allocation ORDER, not conflict: allocno_compare (tools/gcc-2.7.2/global.c:635) sorts by floor_log2(n_refs)*n_refs/live_length, so the short-lived block-0 value is allocated first, finds $v0 blocked by the live call return and takes $v1.
+
+- [s37] NEW AXIS KILLED -- the `static inline` helper. Eleven bodies: h1 31/48, h2 30/49, h3 31/48, h4 26/47, h5 30/44, h6 (control, plain symbol, no helper) 29/47, h7 29/46, h8 24/49, h9 13/50, h10 28/48, h11 16/49. Inlining fires (no jal, no out-of-line copy) and emits a second full-address materialisation, but cse merges the inlined copies into one store base in $a1, combine folds each inlined read into a bare lui + lbu %lo pair, and the helper's address pseudo displaces p out of the target's $a1.
+
+- [s37] The condition-parameter-reused-as-merged-value shape (candidate.c's idiom, which emits the target's `addu v0,a0,$zero` select move) is worth 11-18 points inside the helper family (h1 31 -> h9 13; h2 30 -> h8 24), so the reuse idiom is load-bearing independently of the helper question.
+
+- [s37] The allocno-ORDER lever is byte-inert from statement structure: k1 (block 0's value merged by block 1 with no re-read) 10/49, k4 (byte read ahead of the p[8] condition read) 10/49 and k5 (mask split into two statements) 10/49 all disassemble BIT-IDENTICALLY to the base body. k2 13/49 and k3 (p[8] hoisted before block 0) 20/47 change the stream and score worse.
+
+- [s37] The frozen sanctioned family 'duplicate-read into branch arms' is byte-neutral on block 1 here: h15 measures 10 at 49 with an objdump bit-identical to the base body's; cse collapses the arm reads onto block 0's stored value.
+
+- [s37] Feeding the trailing copy loop off q (`q[i - 3]` h13, `*(q - 3 + i)` h12 -- the idiom src/code6cac_b.c:4044 already uses) measures 30 at 48 for both: the loop loses its own lui %hi(D_80106A70) / addu / sb %lo materialisation.
+
+- [s37] The bit-identical-tie count for this basin is now TEN bodies (s31's seven, plus s37's h15, k1, k4, k5) -- the sharpest statement so far of how rigid the base basin is under statement restructuring.
+
+- [s37] Ladder accounting: this is session fifteen of cycle 2 (state.json session_count 36 at dispatch); the six-modality condition was met at s31. Five sessions remain before the owner directive 2026-09-02 permits any disposition.
+
+- [s37] Nine new disproven forms banked in memory/grind/func_80034F88/rejected/ (four s37-inline-helper-*, s37-q-as-copy-loop-base-score30, s37-dupread-both-arms-all-three-blocks-score29, s37-block0-value-lives-across-block1-score10-BIT-IDENTICAL, s37-p8-hoisted-before-block0-score20, s37-block0-mask-split-two-statements-score10-BIT-IDENTICAL); bank size is now 202.

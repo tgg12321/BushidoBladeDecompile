@@ -12,6 +12,16 @@
  * blocks 0+1 it takes $a1 and displaces p out of the target's $a1 into $a0.
  * Five disproven forms banked as rejected/s35-*.c (bank size 193).
  * See evidence.md "==== s35 (synthesis) ====".
+ * s37 (2026-09-05): re-measured on HEAD at score 10 / 49 insns. The 10 points
+ * are now localised to blocks 0/1 alone: a pure $v1<->$a0 rotation (the base
+ * seats q in $a0 and block 0's byte value in $v1; the target has them the other
+ * way round) plus the target's block-1 reload, which costs ZERO instructions
+ * because it fills the load-delay slot this body wastes on a nop. Blocks 2/3 are
+ * register-exact. Cause read from this body's own .greg: q (pseudo 74) and the
+ * block-0 value (pseudo 73) do not conflict; 73 is simply allocated FIRST by
+ * allocno_compare (tools/gcc-2.7.2/global.c:635) and takes $v1. s37 killed two
+ * new axes on this chassis -- a static inline helper (11 bodies, best 13) and
+ * the allocno-order lever (k1/k4/k5 tie at 10 and are bit-identical to this body).
  */
 /* s34 (synthesis, 2026-09-05): re-measured on HEAD = score 10, 49/49 insns,
  * rules_dropped 0, cheat_asm_stripped 28.  UNCHANGED.  s34 closed the last

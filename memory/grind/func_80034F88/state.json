@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 36,
- "current_modality": "synthesis",
+ "session_count": 37,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -219,23 +219,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Synthesis s35: the q-coverage lattice is enumerated end to end (all five remaining quadrants 14-28, minimum stays the base 10) and two inherited framings are corrected by disassembly -- an anonymous c"
+  },
+  {
+   "session": 37,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "Synthesis s37: the 10 points are localised to blocks 0/1 as a pure $v1<->$a0 rotation plus a reload that costs ZERO instructions (it fills a load-delay slot the base wastes on a nop); the cause is all"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's blocks 2/3 need a REUSED full-address value (one lui+addiu, then both lbu and sb at 0(reg)); every anonymous spelling measured emits two separate %hi materialisations instead, at the same instruction count. The untested question is whether an ordinary-C expression that is not a declared pointer object can produce a full-address value REUSED by both the read and the store inside one block.",
-   "mechanism": "cse folds a constant symbol address back into the MEM's %lo when it can (giving lui+lbu %lo) and only forces a full-address pseudo when the address is not CONSTANT_ADDRESS_P at expand (s33's pseudo 75). g1's disassembly shows the fold happening independently at the read and at the store, so the value is never reused.",
-   "next_probe": "Spell blocks 2/3 with an address expression that is non-constant at expand AND appears once as an lvalue base for both read and store within a single statement -- a compound read-modify-write on the anonymous expression (E |= K;) rather than the read/branch/store triple. Measure whether the RMW form emits lui+addiu+lbu+sb with a reused base, and at what score."
+   "hypothesis": "The other side of allocno_compare is untried: SHORTENING the pointer allocno's live range while its uses still span all four flag blocks (s32 moved q's first assignment into block 1, losing block 0; s35's g1 shortened q to blocks 0/1 and cost p its $a1 seat -- neither is a single q whose SET is late but whose USES still cover every site).",
+   "mechanism": "global.c:635 ranks by floor_log2(n_refs)*n_refs/live_length, so a shorter live range raises the pointer's priority; if it sorts ahead of block 0's byte value (pseudo 73) it is allocated first and takes $v1, which is the target's blocks-0/1 seat.",
+   "next_probe": "Bodies placing `q = &D_80106A73;` at the last legal point before block 0's mask (after the p[8] read, in a tighter scope), and spellings of block 0's mask that defer the address's first reference. Read the `.greg` ORDER line (';; N regs to allocate: ...') rather than the score alone -- a reordering that does not move the score still moves the search."
   },
   {
-   "hypothesis": "Live-range surgery on `q` is a three-seat problem, not two: g1 put q in $a1 and pushed p to $a0. If p's seat can be pinned to $a1 by ordinary C, the address object's remaining choice may narrow to $v1/$a0 and re-open quadrants s35 measured only in their p-displaced form.",
-   "mechanism": "global.c allocates by allocno priority; p and the address object are the only two long-lived pseudos, and tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so their relative priority decides which takes $a0 and which $a1.",
-   "next_probe": "Re-measure the g1/g5/g6 quadrants with p given an extra early use (or the s31 type-narrowing spelling) so its allocno priority rises above the address object's, and check whether p holds $a1 while the address object falls into $v1."
+   "hypothesis": "The load-delay slot the target fills with its block-1 reload already exists in the base body (it holds a nop); what is missing is an insn the delay-slot pass is willing to put there.",
+   "mechanism": "reorg.c fills load-delay/branch slots. k3 shows the slot cannot be created or moved by hoisting the `lw` (20 at 47, two instructions short), and every construct that has ever emitted the reload also changed the address rtx and lost the seat (s17, s34 f1/f2, s35 g1).",
+   "next_probe": "Dump `.dbr` for the BASE body -- the ledger has only ever dumped it for s34's e1 -- and read which insns reorg considered for that slot and why none qualified. That names the gate the reload has to pass, which no session has yet read at the predicate level."
   },
   {
-   "hypothesis": "Cycle 2 of the ladder needs six more flat sessions before any disposition; the modality-count condition was met at s31.",
-   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; s35 is session fourteen of the cycle.",
-   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the cse enumeration (s27/s28), the reload pricing (s29/s35), F1 byte-neutrality (s30), the allocator restatement (s31/s32), s33's proof that both seats are individually reachable from one object, s34's reorg.c:3442 proof, and s35's end-to-end closure of the q-coverage lattice; then return owner-gated."
+   "hypothesis": "Cycle 2 needs five more flat sessions before any disposition; the modality-count condition was met at s31.",
+   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; this is session fifteen of the cycle.",
+   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the cse enumeration (s27/s28), the reload pricing (s29/s37), F1 byte-neutrality (s30), the allocator restatement (s31/s32/s37), s33's two-seats-from-one-object proof, s34's reorg.c:3442 result, s35's q-coverage lattice, and s37's inline-helper and allocno-order kills; then return owner-gated."
   }
  ],
  "judge_constraints": [
@@ -586,6 +592,38 @@
    "measured_on": "HEAD chassis 2026-09-05 (floor control g0 = 10 at 49); bodies s17-b1-read-direct-symbol, s34-f1 and s35-g1, single declared `u8 *q`, no FAKE construct present",
    "predicate_cite": "",
    "result": "KILLED. Every measured body that restores the reload is above the floor: 11 at 50 (s17), 14 at 49 (s34 f1); g1 shows the"
+  },
+  {
+   "session": 37,
+   "statement": "A `static inline` helper function called once per flag block gives each call site its own address pseudo from a SINGLE textual pointer declaration, so eleven such bodies on this chassis reach the base",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (h0 control re-measured 10 at 49, rules_dropped 0); eleven inline-helper bodies, single declared pointer per helper, no FAKE construct present (fake_abl",
+   "predicate_cite": "",
+   "result": "Best is h9 at 13 (50 insns) -- three points above the base floor and one instruction long. Full table: h1 31/48, h2 30/4"
+  },
+  {
+   "session": 37,
+   "statement": "Demoting block 0's byte-value allocno below the pointer allocno in allocno_compare, by lengthening the value's live range at zero instruction cost, wins `q` the $v1 seat on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; single declared `u8 *q`, no FAKE construct present; k1/k4/k5 verified bit-identical to the base body by objdump diff",
+   "predicate_cite": "",
+   "result": "k1, k4 and k5 all tie at 10/49 and disassemble BIT-IDENTICALLY to the base body (diff h0.txt against k1.txt / k4.txt / k"
+  },
+  {
+   "session": 37,
+   "statement": "The frozen sanctioned family 'duplicate-read into branch arms' restores the target's block-1 reload, which the base body is missing.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; single declared `u8 *q`, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "h15 measures 10 at 49 and its disassembly is bit-identical to the base body's (empty diff) -- cse collapses both arm rea"
+  },
+  {
+   "session": 37,
+   "statement": "Feeding the trailing copy loop off `q` (`q[i - 3]`, the idiom src/code6cac_b.c:4044 already uses) raises the pointer allocno's reference count enough to reorder it ahead of block 0's byte value in all",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; single declared `u8 *q`, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Both measure 30 at 48. The loop gives up its own `lui %hi(D_80106A70) / addu at,at,v1 / sb %lo(D_80106A70)(at)` material"
   }
  ]
 }
