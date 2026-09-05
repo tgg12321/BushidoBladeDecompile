@@ -4371,3 +4371,194 @@ rejected/s32-q-materialised-after-flagread-score14.c.
 - [s32] The two barriers trade against each other on this function: the live-range shortening that deletes the hard-reg conflict is the same change that lowers the address allocno's priority below allocnos 78/81/85, which conflict with it and take $v1.
 
 - [s32] In the target, block 0's mask temp sits in $a0 while the call return is still live in $v0 (`addu $a1,$v0,$zero` follows the first lbu), which under raw allocation order means $v1 was already occupied when local-alloc reached that quantity -- i.e. the target's block-0/1 address was seated before local-alloc's block-0 quantities, which a single q spanning blocks 0-3 cannot be, since it is necessarily a global allocno and global-alloc runs second.
+
+==== s33 (synthesis) ====
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` installed at
+`src/code6cac_b.c:3420` and measured on HEAD this session: **score 10,
+target_insns 49, build_insns 49, rules_dropped 0, cheat_asm_stripped 27**. The
+dispatch brief printed "measurement unavailable" for the fifth consecutive
+session; the floor of 10 is measured, not inherited. `src/` restored to HEAD at
+session end (`git status --porcelain src/` empty).
+
+MANDATED KILL RE-AUDIT. (a) The banked form closest to the target -- the s20/s25
+dead round-trip `q = q + 3; q = q - 3;`
+(`rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c`, the only
+body whose instruction multiset matches the target's) -- re-measures **10 at 49
+insns** on today's chassis. The kill holds for the fifth consecutive session.
+(b) `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b
+--candidate memory/grind/func_80034F88/candidate.c` again reports "no
+FAKE-annotated constructs found ... nothing to ablate", so no banked kill on
+this chassis was measured with a FAKE carrier occupying the contested pseudo.
+
+--- 1. THE FIRST .greg OF THE SCORE-0 BANNED BODY, AND WHAT IT ACTUALLY SAYS ---
+
+Thirty-two sessions have described the score-0 three-object body
+(`rejected/three-pointer-objects-judge-FAIL-score0.c`, Judge FAIL 2026-08-13) as
+"three allocnos beat one". Nobody had ever dumped its allocator input. Installed
+and re-measured this session: **score 0 at 49/49 on HEAD** (the banned body still
+matches). `pwsh tools/grinder/dump.ps1 func_80034F88` on it, sliced to
+`tmp/grind/func_80034F88/s33/greg_t3.txt` / `lreg_t3.txt`:
+
+  * The three surviving `(set (reg) (symbol_ref "D_80106A73"))` sets go to
+    pseudos **80, 82, 82**. The FOURTH source-level assignment (`q1`) does NOT
+    survive as a symbol_ref set -- cse rewrote it into a register COPY from 80.
+  * Pseudo **80 is NOT in the allocno list** (`;; 10 regs to allocate: 73 78 79
+    77 74 75 76 82 72 81`). It is a LOCAL-ALLOC quantity: born and dead inside
+    block 0's basic block. Local-alloc seats it in **$v1** -- `$v0` is taken by
+    the live `func_80077D00` return and `tools/gcc-2.7.2/config/mips/mips.h`
+    defines no `REG_ALLOC_ORDER`, so allocation is raw register order.
+  * Pseudo **81** (`q1`, the blocks-0/1 handle) is a global allocno carrying
+    `;; 81 preferences: 3` and `;; 81 conflicts: 72 74 77 81 29` -- **no hard-reg
+    conflict on register 3**. It is allocated LAST of the ten and still takes
+    $v1, because the preference exists and nothing conflicting holds $v1.
+
+So the score-0 body's mechanism is not "more allocnos". It is exactly two facts:
+**(i) a block-0-confined LOCAL-ALLOC pseudo seats $v1; (ii) the blocks-0/1
+address allocno is the DESTINATION of a cse-created copy from it, which
+`tools/gcc-2.7.2/global.c:1709-1713` (`set_preference`, reg_renumber mapping)
+turns into a hard-reg preference for $v1 and which carries no hard-reg-3
+conflict.** s31 named that preference mechanism from the base body's dumps; this
+is the first time it has been seen doing the actual work.
+
+--- 2. THE MECHANISM REPRODUCED WITH **ONE** DECLARED POINTER OBJECT (c1) ---
+
+Fact (i) needs a pseudo, not a C object. An address expression that is not
+`CONSTANT_ADDRESS_P` at expand time is forced into a compiler temp; cse folds it
+afterwards, so the temp costs nothing. Spelled as an anonymous symbol difference
+in the mask statement, with `q` first assigned in block 1:
+
+    *(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70)) &= 0xF8;
+
+**c1 measures score 13 at 49 build insns** and its `.greg`
+(`tmp/grind/func_80034F88/s33/greg_c1.txt`) is the result this session exists
+for:
+
+    base   ;; 74 conflicts: 72 74 77 78 81 82 85 86 2 3 29     74 in 4   ($a0)
+    c1     ;; 74 conflicts: 72 74 79 80 83 84 87 88 2 29
+           ;; 74 preferences: 3                                74 in 3   ($v1)
+
+The hard-reg conflict on register 3 that s31/s32 measured on **every** body with
+`q` live across block 0 is GONE, and the single declared pointer object is seated
+in **$v1** -- the target's seat, reached for the first time in 33 sessions
+without a second named handle. Pseudo 75 (the anonymous temp) is local-alloc'd to
+$v1 exactly as pseudo 80 is in the banned body. The prologue stays
+`addiu sp,sp,-24`, so unlike s30's chain-extender there is no phantom frame slot.
+
+**Blocks 0 and 1 are now BYTE-EXACT with the target.** Disassembly
+`tmp/grind/func_80034F88/s33/c1.txt` against `asm/funcs/func_80034F88.s`:
+
+    lui v1 / addiu v1 / lbu a0,0(v1) / move a1,v0 / andi a0,0xf8 / sb a0,0(v1)
+    lw v0,0x20(a1) / lbu a0,0(v1) / andi v0,1 / bnez / ori v0,a0,1 / move v0,a0
+    [L] sb v0,0(v1)
+
+-- identical to the target through 0x80034FD0, including the block-1 `lbu` that
+has been missing since s1 and the `$v1` base / `$a0` value convention.
+
+--- 3. WHY c1 IS 13 AND NOT 0 -- THE RESIDUAL MOVED, IT DID NOT CLOSE ---
+
+`q` is one C object, hence one pseudo, hence one allocno, hence ONE hard register
+(`tools/gcc-2.7.2/global.c:426`). Its $v1 preference therefore also drags blocks
+2 and 3 -- which are register-exact on candidate.c -- onto $v1, where the target
+uses $a0. All 13 points are now in blocks 2/3, and the 3-instruction
+lui/addiu-vs-sb rotation at the block-1 join is a CONSEQUENCE of that, not a
+separate defect: with block 2 sharing $v1, its address materialisation cannot be
+hoisted above block 1's store.
+
+Four follow-ups pin the boundaries of the new family (all banked in `rejected/`):
+
+    c2  block 0 AND block 1 anonymous, q for blocks 2/3      21   50 insns
+    c3  q in block 1 only, blocks 0/2/3 anonymous            14   48 insns
+    c4  block 0 anonymous, q in blocks 1+2, block 3 anon     13   49 insns
+    c5  `q = &D_80106A73;` placed BEFORE the anonymous mask  10   49 insns
+
+c5 is the control that isolates the lever: moving q's materialisation above the
+anonymous expression makes the TEMP the copy destination instead of q, and the
+body collapses back to the base chassis exactly. Declaration/materialisation
+ORDER, not the expression, is what assigns the seat.
+
+c2 is the one that closes the route. Block 1's store sits after the diamond's
+join label, and a code label is a cse path boundary (s27 gate 5), so an anonymous
+address re-materialises there (+1 insn, 50 vs the target's 49). **An anonymous
+address temp cannot survive a code label; only a named C object can.** The
+target needs a $v1 value spanning blocks 0-1 (two labels) and a separate $a0
+value spanning blocks 2-3, i.e. TWO pseudos that each survive a cse path
+boundary -- which is two named C objects, the standing ban.
+
+--- 4. THE RESIDUAL, RESTATED FOR THE NEXT SESSION ---
+
+The 10-point residual is no longer "one missing address allocno" as a single
+lump. It factors into two independent seats, and s33 measured that they are
+individually reachable but not simultaneously reachable from one object:
+
+    blocks 0-1 address in $v1   -- REACHED (c1), one object, zero-instruction cost
+    blocks 2-3 address in $a0   -- REACHED (candidate.c), one object
+    both at once                -- needs two pseudos surviving two cse path
+                                   boundaries = two named objects (banned)
+
+- [s33] Chassis re-measured on HEAD: candidate.c = score 10, 49 target / 49 build insns, rules_dropped 0, cheat_asm_stripped 27. Fifth consecutive session confirming the floor by direct measurement; the dispatch brief again printed "measurement unavailable".
+
+- [s33] KILL RE-AUDIT: the s20/s25 dead round-trip re-measures 10 at 49 insns on today's chassis (kill holds), and fake_ablate again finds no FAKE-annotated construct in candidate.c.
+
+- [s33] The Judge-FAILed three-object body still measures score 0 at 49/49 on HEAD, and its .greg was dumped for the first time in 33 sessions (tmp/grind/func_80034F88/s33/greg_t3.txt).
+
+- [s33] The score-0 body's mechanism is NOT "three allocnos beat one": its qm (pseudo 80) is absent from the allocno list, i.e. a block-0-confined LOCAL-ALLOC quantity that local-alloc seats in $v1 (raw register order, $v0 held by the live call return, no REG_ALLOC_ORDER in mips.h); cse rewrites q1's `= &D_80106A73` into a register copy from it; global.c:1709-1713 turns that copy into `;; 81 preferences: 3`; and 81 carries NO hard-reg conflict on register 3, so it takes $v1 even though it is allocated last of ten.
+
+- [s33] That mechanism is reproducible with ONE declared pointer object. c1 addresses the mask through an anonymous symbol difference `*(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70))`, which is not CONSTANT_ADDRESS_P at expand and is forced into a compiler temp (pseudo 75) that dies inside block 0.
+
+- [s33] c1's .greg is the first in 33 sessions to print `74 preferences: 3` and `74 in 3` for the address object, with the hard-reg-3 conflict absent (`74 conflicts: 72 74 79 80 83 84 87 88 2 29` vs base's `... 2 3 29`). The construct costs zero instructions and zero frame bytes (prologue stays addiu sp,sp,-24; contrast s30's chain-extender phantom slot).
+
+- [s33] c1 makes blocks 0 and 1 BYTE-EXACT with the target through 0x80034FD0, including the block-1 lbu missing since s1 and the $v1-base/$a0-value convention. Score 13 at 49 build insns; all 13 differing instructions are in blocks 2/3.
+
+- [s33] The seat swap MOVED rather than closed: q is one C object = one pseudo = one allocno = one hard register (global.c:426), so its $v1 preference also pulls blocks 2/3 off the target's $a0. The block-1-join lui/addiu-vs-sb rotation is a consequence of block 2 sharing $v1, not an independent defect.
+
+- [s33] c5 is the isolating control: placing `q = &D_80106A73;` BEFORE the anonymous mask expression returns the body to exactly 10 at 49 -- the temp becomes the copy destination and q keeps $a0. Materialisation ORDER is the lever, not the expression.
+
+- [s33] c2 closes the route: with block 1 also anonymous, its post-join store re-materialises the address (21 at 50 insns) because a code label is a cse path boundary (s27 gate 5). An anonymous address temp cannot survive a label; only a named C object can.
+
+- [s33] Family boundary measured: c1 13/49, c2 21/50, c3 14/48, c4 13/49, c5 10/49. The admissible floor is unchanged at 10 and candidate.c is unchanged.
+
+### Artifacts (s33)
+
+`tmp/grind/func_80034F88/s33/`: `variants/{base,t3,c1,c2,c3,c4,c5,rt}.c`,
+`greg_base.txt`, `greg_t3.txt`, `greg_c1.txt`, `lreg_base.txt`, `lreg_t3.txt`,
+`lreg_c1.txt`, `c1.txt` (objdump), `install.py`, `ext.py`, `dis.sh`,
+`code6cac_b.c.orig`. New rejected forms:
+`rejected/s33-anon-symdiff-block0-blocks01-EXACT-score13.c`, `rejected/s33-c2.c`,
+`rejected/s33-c3.c`, `rejected/s33-c4.c`, `rejected/s33-c5.c`.
+
+- [s33] Chassis re-measured on HEAD (the dispatch brief printed 'measurement unavailable' for the fifth consecutive session): candidate.c at src/code6cac_b.c:3420 = score 10, target_insns 49, build_insns 49, rules_dropped 0, cheat_asm_stripped 27.
+
+- [s33] The Judge-FAILed three-object body still measures score 0 at 49/49 on HEAD, and its allocator input was dumped for the first time in 33 sessions (tmp/grind/func_80034F88/s33/greg_t3.txt, lreg_t3.txt).
+
+- [s33] In that body only THREE (set (reg) (symbol_ref "D_80106A73")) sets survive, to pseudos 80, 82, 82; the fourth source-level assignment was rewritten by cse into a register copy from pseudo 80 -- the zero-cost fourth quantity s27 predicted.
+
+- [s33] Pseudo 80 is absent from ';; 10 regs to allocate: 73 78 79 77 74 75 76 82 72 81', i.e. it is a block-0-confined LOCAL-ALLOC quantity, and local-alloc seats it in $v1 because $v0 holds the live func_80077D00 return and tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER.
+
+- [s33] Allocno 81 (the blocks-0/1 handle) carries ';; 81 preferences: 3' via global.c:1709-1713 and ';; 81 conflicts: 72 74 77 81 29' with NO hard-reg 3; it is allocated last of ten and still takes $v1. The winning mechanism is the local-alloc seat plus the copy preference, not the allocno count.
+
+- [s33] That mechanism is reproducible with ONE declared pointer object: c1 addresses the mask through the anonymous symbol difference *(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70)), which is not CONSTANT_ADDRESS_P at expand and is forced into compiler temp pseudo 75, dying inside block 0.
+
+- [s33] c1's .greg is the first in 33 sessions to print '74 preferences: 3' and '74 in 3' for the declared address object, with the hard-reg-3 conflict gone ('74 conflicts: 72 74 79 80 83 84 87 88 2 29' vs base's '... 2 3 29').
+
+- [s33] c1's blocks 0 and 1 are BYTE-EXACT with the target through 0x80034FD0 (tmp/grind/func_80034F88/s33/c1.txt vs asm/funcs/func_80034F88.s), including the block-1 lbu that has been missing since s1 and the $v1-base/$a0-value convention.
+
+- [s33] The construct costs zero instructions and zero frame bytes -- c1's prologue stays addiu sp,sp,-24 -- unlike the s30 CD_sync F1 chain-extender, whose entire 4-point cost was a phantom frame slot.
+
+- [s33] c1 scores 13 at 49 build insns because q is one C object = one pseudo = one allocno = one hard register (global.c:426): the $v1 preference also pulls blocks 2 and 3, register-exact on candidate.c, off the target's $a0. All 13 differing instructions are in blocks 2/3.
+
+- [s33] The lui/addiu-vs-sb rotation at the block-1 join is a CONSEQUENCE of block 2 sharing $v1 (its address materialisation cannot be hoisted above block 1's store), not an independent defect -- correcting the s29/s32 framing that treated it as a separate 3-instruction gap.
+
+- [s33] c5 isolates the lever: placing q = &D_80106A73; BEFORE the anonymous mask expression returns the body to exactly 10 at 49, because the temp becomes the copy destination and q keeps $a0. Materialisation ORDER, not the expression, assigns the seat.
+
+- [s33] c2 (21 at 50 insns) and c3 (14 at 48 insns) close the anonymous route for the later blocks: their accesses sit after diamond join labels, which are cse path boundaries, so an anonymous address re-materialises there instead of being reused.
+
+- [s33] Residual restated: blocks 0-1 in $v1 is REACHED (c1) and blocks 2-3 in $a0 is REACHED (candidate.c), each from a single declared object; both at once needs two pseudos each surviving a cse path boundary, i.e. two named C objects, the standing ban.
+
+- [s33] KILL RE-AUDIT: the s20/s25 dead round-trip re-measures 10 at 49 on today's chassis (fifth consecutive confirmation) and fake_ablate again finds no FAKE-annotated construct in candidate.c.
+
+- [s33] The s32 frontier item 'raise the address allocno's ref count to eight on a 17-insn live range' is RETIRED -- s33 reached the $v1 seat without touching ref counts, and the two-barrier framing is superseded: the hard-reg conflict is deletable at zero cost and priority never fires once a preference exists.
+
+- [s33] Ladder accounting: s33 is session TWELVE of cycle 2 and the sixth distinct modality was already reached at s31 (escalation s23/s24, synthesis s25/s33, solver s26, forensics s27/s28, rederive s29/s30, structural s31/s32). Eight sessions remain before the owner directive 2026-09-02 permits any disposition.
+
+- [s33] src/code6cac_b.c restored to HEAD (INCLUDE_ASM) at session end; git status --porcelain src/ is empty. candidate.c is unchanged apart from an s33 header note; the disproven bank is now 178 forms.

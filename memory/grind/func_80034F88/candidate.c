@@ -1,3 +1,13 @@
+/* s33 (synthesis, 2026-09-05): re-measured on HEAD = score 10, 49/49 insns,
+ * rules_dropped 0.  UNCHANGED as the best admissible form, but the residual is
+ * now factored: s33 reached the target's blocks-0/1 $v1 address seat with a
+ * SINGLE declared pointer object (rejected/s33-anon-symdiff-block0-blocks01-
+ * EXACT-score13.c, blocks 0 and 1 byte-exact, score 13) by putting a
+ * local-alloc-confined compiler temp in front of q; the seat swap then moved to
+ * blocks 2/3, which this body gets right.  Both halves are individually
+ * reachable from one object; jointly they need two pseudos surviving two cse
+ * path boundaries, i.e. two named objects (global.c:426) -- the standing ban.
+ */
 /* MIGRATION NOTE (operator, 2026-09-01): main carries INCLUDE_ASM for this
  * function (asm-until-matched, owner ruling 2026-08-19). Any "HEAD"/"main"
  * state claims in the comments below predate that migration and describe the

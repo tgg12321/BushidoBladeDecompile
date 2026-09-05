@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 32,
- "current_modality": "structural",
+ "session_count": 33,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -195,23 +195,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "The $v1 seat has TWO barriers, not one: shortening the address allocno's live range provably deletes the hard-reg conflict s31 named, and the same change drops it below the competing allocnos in globa"
+  },
+  {
+   "session": 33,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "Synthesis s33: the score-0 banned body's .greg was dumped for the first time and its mechanism is NOT 'three allocnos beat one' -- it is a block-0-confined local-alloc pseudo seating $v1 plus a cse-cr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The $v1 seat is gated by a two-sided trade on the address allocno: a live range long enough to cover blocks 0-3 gives it a hard-reg conflict on $v1 from block-0 local quantities; a live range short enough to drop that conflict puts its allocno_compare priority below the block-value allocnos that then take $v1.",
-   "mechanism": "local-alloc runs before global-alloc and seats block-0 quantities in raw register order ($v0, $v1) because mips.h defines no REG_ALLOC_ORDER; global.c:635-655 then orders the remaining allocnos by floor_log2(n_refs)*n_refs/live_length.",
-   "next_probe": "The only opening the arithmetic leaves is raising the address allocno's ref count to eight on a 17-insn live range without adding an instruction. Every ref through q measured so far is a memory access that costs an instruction on a 49-insn body, so this needs a ref that survives to allocation but folds away before final -- check the .combine dump for such a q-referencing form before spending a session on it."
+   "hypothesis": "Blocks 2-3 need an $a0-seated address value that is a DIFFERENT pseudo from the $v1-seated blocks-0/1 value, and both must survive a cse path boundary at a code label.",
+   "mechanism": "global.c:426 -- one C object is one pseudo is one allocno is one hard register; and an anonymous address temp re-materialises at each cse path boundary (measured c2 = 50 insns, c3 = 48 insns), so it cannot be the second carrier.",
+   "next_probe": "Read c1's .flow and .greg live-range tables for any pseudo that ALREADY crosses the block-1 join for reasons of its own (p, the call return copy, a value temp), and test whether an ordinary-C expression in blocks 2/3 can be made to consume it as an address base without adding an instruction. If no such pseudo exists, F1 is the admissible ceiling and 10 is the floor."
   },
   {
-   "hypothesis": "Structural respelling of block 0 permutes which local quantity holds $v1 but does not reduce block 0 below two local quantities overlapping the address allocno.",
-   "mechanism": "Block 0 contains the mask's load temp, the mask's and-result and the flag-word temp; local-alloc seats them $v0 then $v1 in raw order, so at least one lands on $v1 across the address's range.",
-   "next_probe": "None on the block-0 respelling axis -- three bodies (base, mask-via-symbol, q-materialised-late) print byte-identical conflict sets. A session wanting to move this must reduce block 0 to ONE local quantity, and no single-object spelling measured so far does."
+   "hypothesis": "The mirror of the s33 trick -- an $a0 preference for the blocks-2/3 address -- would let c1's chassis keep its correct blocks 0-1 and fix its blocks 2-3.",
+   "mechanism": "A hard-reg preference is recorded by global.c:1709-1713 only for a copy whose other operand is already seated. Nothing in this function is naturally seated in $a0 before block 2 (the call return is $v0, p is $a1), so the preference source does not currently exist.",
+   "next_probe": "On the c1 chassis, dump .greg and check every 'preferences:' line for a pseudo seated in $a0 before block 2. Only if one exists should a session spend measurements on spellings that copy from it; otherwise record the absence and close F2."
   },
   {
-   "hypothesis": "The ladder's second cycle needs nine more sessions before disposition; the modality-count condition was already satisfied at s31.",
-   "mechanism": "Owner directive 2026-09-02 requires 20 flat sessions and >= 6 modalities before any disposition; s32 is session eleven of the cycle.",
-   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the completed cse enumeration (s27/s28), s29's reload pricing, s30's F1 byte-neutrality, s31's allocator-input restatement and s32's two-barrier measurement, then return owner-gated."
+   "hypothesis": "Cycle 2 of the ladder needs eight more sessions before any disposition; the modality-count condition was met at s31.",
+   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; s33 is session twelve of the cycle.",
+   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the completed cse enumeration (s27/s28), s29's reload pricing, s30's F1 byte-neutrality, s31/s32's allocator restatement, and s33's proof that both halves of the seat split are individually reachable from one declared object but not jointly, then return owner-gated."
   }
  ],
  "judge_constraints": [
@@ -439,6 +445,30 @@
    "measured_on": "candidate.c score-10 chassis on HEAD with block 0's mask spelled as a direct symbol RMW; single u8 *q with three assignments, no FAKE-annotated construct present",
    "predicate_cite": "",
    "result": "16 at 51 insns -- reproduces the banked score. The mask temps do move to $v0, but block-0 local 79 takes $v1 in their pl"
+  },
+  {
+   "session": 33,
+   "statement": "With blocks 0-1 seated correctly by the anonymous local-alloc temp, blocks 2-3 keep their $a0 seats, so a one-declared-object body in this family reaches the target's full register assignment.",
+   "kill_scope": "class",
+   "measured_on": "candidate.c score-10 chassis on HEAD (re-measured this session: 10, 49/49, rules_dropped 0, cheat_asm_stripped 27); bodies c1-c5, each with the single declared `u8 *q` plus (c1-c4) an anonymous symbol",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:426",
+   "result": "c1 = 13/49, c2 = 21/50, c3 = 14/48, c4 = 13/49, c5 = 10/49. The seat swap MOVES rather than closes: all 13 of c1's diffe"
+  },
+  {
+   "session": 33,
+   "statement": "An anonymous (undeclared) address temp can also carry the blocks-2/3 address, giving two independently-seated address values from one declared object.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD, bodies c2 and c3; single declared `u8 *q` plus anonymous symbol-difference addresses, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "c2 = 21 at 50 build insns, c3 = 14 at 48. Block 1's store and every block-2/3 access sit AFTER a diamond join label, and"
+  },
+  {
+   "session": 33,
+   "statement": "MANDATED KILL RE-AUDIT: the s20/s25 dead round-trip -- the only banked body whose instruction multiset matches the target's -- still measures 10 on the current chassis and is still not a submission ro",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (candidate.c = 10, 49/49, rules_dropped 0); dead-arithmetic round-trip construct present, no FAKE-annotated construct",
+   "predicate_cite": "",
+   "result": "10 at 49 build insns -- unchanged for the fifth consecutive session. fake_ablate reports 'no FAKE-annotated constructs f"
   }
  ]
 }
