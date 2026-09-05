@@ -3441,3 +3441,249 @@ whole basin depends on. The arg5 chain's path length is structurally fixed.
 - [s82] sched_solver models CD_ready exactly: extract.py reports parity=True for the system TU and simulate.py scores 60/60 blocks order-exact and clock-exact across both passes, so the offline perturbation results above are model-exact predictions, not estimates.
 
 - [s82] The probe-2 permuter workspace recipe is stale in two further ways beyond the -mel and cc1-path fixes already applied; both faults are named and mechanical, and the campaign is still un-run.
+
+
+## s83 (structural, 2026-09-04) - RECOVERED FROM THE DISCARDED PRIOR s83
+The prior s83 process was DISCARDED by the driver validator for a SCOPE VIOLATION (it edited
+docs/tooling_incidents.md, outside the allowed surface). Its measurements were real and its
+scratch survived at tmp/grind/CD_ready/s83/{evidence_add.md,hyp_add.md}; the entries below are
+those deltas merged verbatim by the replacement s83 session, which independently re-verified
+the campaign state (dead, no orphan; 4943 iterations logged, best = base_score 40).
+
+- [s83] BASELINES RE-MEASURED LIVE BEFORE ANY PROBE, on the HEAD chassis, all applied with
+  `python3 memory/grind/CD_ready/apply_s78.py`: candidate.c = 2/179/0,
+  progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c = 6/179/0, and the
+  s82 closest kill rejected/s82-chainA-load-staged-through-status-birthing-8.c = 8/179/0. No
+  chassis drift from s78-s82.
+
+- [s83] THE MANDATED KILL RE-AUDIT COULD NOT BE RUN WITH tools/fake_ablate.py, AND THIS IS A
+  STANDING TOOL LIMITATION ON THIS FUNCTION, NOT A ONE-OFF. `python3 tools/fake_ablate.py
+  --func CD_ready --file system --candidate <form>.c --max-variants 30` correctly ENUMERATES
+  the 7 FAKE units (the do_timeout wrap, the two staged-value v0 lines, the 0xFF constant
+  holder, the sys_GetVblankCount wrap, the nested idx_1496 wrap, the check2 wrap) but every one
+  of the 30 variants scores ERR - INCLUDING `keep-all.c`, the unmodified control. Cause:
+  CD_ready's forms are not plain function bodies, they are apply_s78.py inputs carrying
+  declaration-surface directives (`//REPLALL:extern u8 *D_800A147C; => extern volatile ...`,
+  `//DROPALL:...`, `//INS_BEFORE:...typedef struct { s32 timeout; s32 count; void *func; }
+  CD_alarm;@@extern CD_alarm D_800F19B8;`). fake_ablate's splice path does not understand those
+  directives, so it splices a body that references `D_800F19B8.timeout` against a plain
+  `extern s32 D_800F19B8;` declaration and the compile fails before scoring. ANY future session
+  told to ablate on CD_ready must do it BY HAND through apply_s78.py; do not spend turns
+  re-discovering this.
+
+- [s83] KILL RE-AUDIT DISCHARGED BY HAND ON THE CLOSEST s82 INSTANCE KILL (k10, 8/179/0), AND
+  THE KILL IS NOT CARRIER-MASKED. Two hand ablations, both applied through apply_s78.py and
+  scored with the sandbox:
+    m1  k10 with the staged-value v0 FAKE removed entirely (arg5 written as the single
+        expression `*(s32 *)((idx_1494[1] << 2) + (s32)tbl_125c)`)          8 / 179 / 0
+    m2  k10 with the outer do_timeout do-while(0) removed                  17 / 179 / 0
+  m1 reproduces k10's score exactly, so the /* FAKE */ staging carrier was NOT sitting on the
+  pseudo the birthing lever was trying to move - the s82 kill stands on its own. m2 reproduces
+  s81's independent finding that the outer wrap is worth ~10-13 points of unrelated seat value
+  (tbl_125c in $s5) and is not part of the contested tie. Banked as
+  rejected/s83-k10-ablate-staged-value-fake-8.c and rejected/s83-k10-ablate-outer-wrap-17.c.
+
+- [s83] **KILLED (instance): the s82 frontier's fused-chain-A probe.** The frontier asked for a
+  spelling that sets birth(131)=1 by REMOVING chain A's first write instead of adding a name -
+  i.e. the byte load folded into the address expression so the source names only one pseudo.
+  Three spellings on the order-exact base, all 179 instructions / 0 rules dropped:
+    f1  `t0 = (s32)((u8 *)tbl_125c + idx_1494[0] * 4);` as ONE statement, after the
+        arg5 chain (which is unchanged and still first)                     9 / 179 / 0
+    f3  the same fused expression named as a pointer `s32 *t0p`             9 / 179 / 0
+    f2  chain A fully inlined into the call argument, no `t0` name at all
+        (`*(s32 *)((u8 *)tbl_125c + idx_1494[0] * 4)`)                     14 / 179 / 0
+  f1 and f3 are byte-identical to each other. The block-3 uid streams show the direction is
+  wrong rather than merely unhelpful: on f1/f3 sched1 emits `111 148 113 116 118 122 144 125
+  135 127 140 150 152 146` and sched2 emits `111 148 122 113 116 125 118 127 144 135 152 140
+  150 146` - the two passes now diverge in four places instead of one, and the arg5 store (148)
+  has been dragged to the top of the block. Fusing the chain does not remove a pseudo; it
+  renames the byte-load result into an anonymous one and leaves the set count unchanged, so the
+  birthing test at sched.c:2526 is still not satisfied while the dependence graph is stirred.
+  Banked as rejected/s83-fused-chainA-single-statement-9.c,
+  rejected/s83-fused-chainA-pointer-typed-9.c, rejected/s83-fused-chainA-inlined-in-call-14.c.
+
+- [s83] CONTROL, MEASURED WHILE BUILDING THE PERMUTER SEED: THE CD_alarm STRUCT MODEL IS WORTH
+  4 POINTS AND IS NOT COSMETIC. De-structuring the order-exact base (dropping the
+  `//INS_BEFORE` CD_alarm typedef and spelling the three fields as the original
+  `D_800F19B8`/`D_800F19BC`/`D_800F19C0` externs, everything else identical) scores 10/179/0
+  against the struct form's 6. Banked as rejected/s83-ns-destructured-order-exact-base-10.c.
+  This closes the question of whether the s78 struct transplant could be dropped to simplify a
+  permuter workspace: it cannot.
+
+- [s83] **THE OWNER DIRECTIVE'S PROBE 2 IS UNBLOCKED. THE FRESH-FLAG PERMUTER WORKSPACE NOW
+  BUILDS AND ITS SCORER IS VALIDATED AGAINST THE SANDBOX.** Working copy:
+  tmp/grind/CD_ready/s83/mkws.sh (build) + tmp/grind/CD_ready/s83/perm/ (workspace). s82
+  diagnosed two faults and both diagnoses were wrong in detail; the real fault list is four
+  items, all now fixed:
+    (1) EXTRACTION WINDOW. s82 believed the maspsx stream "opens the fragment at .frame with no
+        .ent". It does not: the stream carries `.ent<TAB>CD_ready` at COLUMN 0 (no leading
+        tab), followed by `.set noreorder` and `CD_ready:`. The old awk keyed on a
+        leading-tab `.ent` pattern, missed it, and instead matched its `^CD_ready:$`
+        alternative - so extraction started one line INSIDE the function, at `.frame`, and the
+        `.end` exit test (also tab-anchored) never fired, which is what dragged the sibling
+        `.include "asm/funcs/CD_cw.s"` lines in. Fix: anchor on
+        `/^[ \t]*[.]ent[ \t]+CD_ready[ \t]*$/` and exit on the matching `[.]end`. The s82 note's
+        second fault (sibling includes) is a SYMPTOM of this, not an independent fault.
+    (2) PRELUDE. The hand-written `.set noat` + `.set noreorder` prelude is wrong for this
+        stream: the extracted fragment already contains its own `.set noreorder` immediately
+        after `.ent`, and the added `.set noat` makes `as` reject the four la-style macros in
+        the body (`macro used $at after ".set noat"`). Fix: empty prelude.
+    (3) ADDEND-RESOLVING SCORER - the thing the owner directive named. The CD_alarm struct
+        model emits `sw $0,D_800F19B8+4` / `sw $2,D_800F19B8+8` / `lw $3,D_800F19B8+4` /
+        `lw $5,D_800F19B8+8`, which assemble to `4(at)` / `8(at)` forms, while the target's own
+        asm uses %hi/%lo on `D_800F19BC` and `D_800F19C0` with offset 0. Same addresses after
+        relocation; the engine sandbox counts them equal, a standalone objdump diff does not,
+        and it inflates the workspace score by exactly 5. Fix, applied to the extracted fragment
+        only and never to the build: `sed -e 's/D_800F19B8+4/D_800F19BC/g' -e
+        's/D_800F19B8+8/D_800F19C0/g'`. With it the workspace's objdump diff against
+        asm/funcs/CD_ready.s is 6 differing instructions - EXACTLY the sandbox's score of 6, and
+        exactly the six register names s81 listed (lbu/sll/lw/addu/sw/lw at slots 51-67).
+    (4) pycparser CANNOT PARSE THE cpp'd system.c - three blockers, all outside CD_ready and all
+        safe to rewrite because compile.sh extracts only CD_ready's fragment:
+          - `inline int ENCODE_BCD(n) { ... }` inside CdIntToPos is a GCC NESTED function and
+            pycparser has no grammar for it. Hoist to file scope as
+            `static int ENCODE_BCD(int n) { ... }` and delete the nested copy;
+          - the implicit-int parameter in that same declarator (`(n)` -> `(int n)`);
+          - two file-scope `__asm__(` blocks written as MULTI-LINE string literals in
+            src/system.c (the `glabel D_80081F1C` block at src/system.c:749 and its twin near
+            src/system.c:794). cpp passes them through with "missing terminating" warnings and
+            pycparser dies on the bare `"`. Delete both blocks from base.c.
+  A TRAP THAT COST THIS SESSION FOUR TURNS AND WILL COST THE NEXT ONE THE SAME:
+  tmp/grind/CD_ready/s8*/run.sh LEAVES THE LAST FORM IT SCORED APPLIED TO src/system.c, and
+  mkws.sh cpp's whatever is in src/system.c at that moment. Validating right after a run.sh
+  batch therefore validates the WRONG body - it presented as a genuine 8-vs-6 scorer divergence
+  with a transposed lbu pair and a 9-slot a1 displacement, and it was simply ns.c still sitting
+  in the tree. Always re-apply the seed immediately before mkws.sh and confirm with a sandbox
+  call.
+
+## s83-REPLACEMENT (structural, 2026-09-04) - own measurements
+
+- [s83r] BASELINE RE-MEASURED LIVE ON THE HEAD CHASSIS BEFORE ANY PROBE: candidate.c applied
+  via `python3 memory/grind/CD_ready/apply_s78.py` scores 2 / 179 / 0. No chassis drift from
+  s78-s82. The dispatch brief's CHASSIS CHECK read "measurement unavailable"; the live number
+  is 2 and every s78-s82 conclusion remains chassis-current.
+
+- [s83r] **OWNER DIRECTIVE PROBE 2 IS EXECUTED AND MEASURED NEGATIVE.** The fresh-flag permuter
+  window seeded from the order-exact base (progress/s80-g7-order-100pct-target-exact-a1-in-
+  place-pure-seat-swap-6.c) ran to completion in-turn and was `harvest --stop`ped in the same
+  turn (no orphan). Workspace tmp/grind/CD_ready/s84/perm (copied from the validated s83
+  workspace, campaign.log/meta cleared for a fresh-seed window), label
+  s84-order-exact-base-freshseed, -j 8, base_score 40: **14,542 iterations, 0 finds, best never
+  below base_score 40.** Added to the 4,943 iterations the discarded prior s83 logged on the
+  same workspace, the order-exact base has now absorbed ~19,485 permuter iterations across two
+  independent fresh-seed windows with ZERO candidate below its own base score. Probe 2 is
+  discharged; it should not be re-run on THIS seed. `procs_killed: 9` at harvest, campaign dead,
+  no orphan left behind.
+
+- [s83r] **THE ORDER-EXACT BASE'S BLOCK-3 SCHEDULING NEIGHBOURHOOD IS EXHAUSTIVELY ENUMERATED,
+  AND birth(131)=1 IS ITS ONLY DOOR.** Using the sched_solver simulator against the pinned
+  tmp/sched_solver_work/system.sched.json pass-1 block 3 (the block carrying insn 148), every
+  SINGLE-ATOM edit of the model was enumerated and scored against the target stream
+  `103 105 111 115 152 117 120 122 148 126 139 131 144 154 156 150 158 163 176 178`
+  (tmp/grind/CD_ready/s84/whatif3.py, whatif4.py):
+    * pri raises, all 20 nodes x values 1..7       -> ONLY pri(131)=4 and pri(148)=1 reach target
+    * reg_n_refs changes, all nodes x values 0..19 -> NONE reaches target
+    * luid shifts, all nodes x values 0..31        -> NONE reaches target
+    * pairwise luid SWAPS, all 190 pairs           -> NONE reaches target
+    * adjust_priority birth flips, all nodes       -> ONLY birth(131)=1 reaches target
+    * adjust_priority deaths changes, all nodes    -> NONE reaches target
+    * dependence-edge REMOVALS, every edge in the block -> NONE reaches target
+  This is the mechanical explanation for five sessions of flat results. The refs-weighting
+  lever (what a do-while(0) wrap actually moves) and the statement-reordering lever (what luid
+  actually moves) CANNOT produce the target stream on this base's dependence graph at all -
+  they were never near-misses, they were off-manifold. s75's parity theorem, s80's loop-note
+  wrap-placement sweep and s81's arg5-respelling sweep were all searching a knob the model says
+  has no reachable setting on this base.
+
+- [s83r] AND THE TWO SURVIVING PRIORITY ATOMS ARE SELF-INCONSISTENT WITH THE TARGET ORDER, so
+  birth(131)=1 is not merely the cheapest door on this base, it is the only one. The block's
+  dependence map is `'131': [[105,14],[111,15],[126,0]]`, `'126': [[105,14],[111,0]]`,
+  `'148': [[105,0],[122,0]]`, with pri(succ) = pri(pred) + icost(pred) - 1 over TRUE (cost-0)
+  edges only (MIPS ADJUST_COST zeroes the 14/15-cost anti/output edges).
+    * pri(131)>=4 requires pri(126)>=4, hence pri(111)>=3, hence chain A's byte load 111 must
+      acquire a TRUE in-block predecessor of pri>=2 (a load). But every stream that reaches the
+      target emits 111 in position 3, ahead of every load in the block; an insn cannot both
+      depend on an in-block load and precede it. The requirement contradicts its own goal.
+    * pri(148)<=1 requires 148 to lose its true dependence on 122 (pri(122)=2 already being the
+      floor, pri(148)=pri(122)+2-1=3 cannot fall below 2 while the edge exists). The edge-removal
+      sweep above measured exactly that edit - remove 148<-122 - and it does NOT reach the
+      target stream. So the graph edit that would produce the atom does not produce the order.
+  Net: on the order-exact base, the target order is reachable only through reg_n_sets[reg/v 104]
+  == 1 (sched.c:2526), which s82 (seven split-the-writes spellings) and the discarded s83 (three
+  fuse-away-the-first-write spellings) both measured to cost a pseudo.
+
+- [s83r] ALSO ON THE ORDER-EXACT BASE: ALL 20 LEGAL STATEMENT INTERLEAVINGS OF CHAIN A AND THE
+  arg5 CHAIN WERE ENUMERATED OFFLINE AND NONE REACHES THE TARGET
+  (tmp/grind/CD_ready/s84/whatif5.py). Holding the intra-chain orders that C semantics force
+  (A1 `t0 = idx_1494[0]` < A2 `t0 *= 4` < A3 `t0 = tbl + t0`; B1 `v0 = idx_1494[1]` < B2
+  `v0 <<= 2` < B3 `arg5 = *(s32 *)(v0 + tbl)`), there are exactly 20 interleavings, and they
+  collapse to only THREE distinct block-3 streams, none of them the target. This is the direct
+  offline disproof of the mandated structural modality on this base: statement re-association
+  of the two chains is not a knob that reaches the answer here, and no further sandbox
+  measurement of a re-ordering is warranted on the order-exact base.
+
+- [s83r] **THE FLOOR BODY IS NOT A CLOSED NEIGHBOURHOOD - IT HAS 20 REACHABLE ALTERNATIVE
+  STREAMS, AND FOUR ATOMS FIX THE WHOLE RESIDUAL. THIS IS THE SESSION'S ACTIONABLE FINDING.**
+  tmp/grind/CD_ready/s84/floor.sched.json was extracted fresh from the FLOOR body (candidate.c
+  applied to src/system.c, `python3 tools/sched_solver/extract.py system --skip-parity`) - the
+  first time in this ledger that the solver has been pointed at the score-2 body rather than at
+  a higher-scoring base. Its block 3 has 20 insns and these streams:
+      pass1  103 105 111 124 151 115 126 128 130 138 120 147 143 153 155 149 157 162 175 177
+      pass2  103 105 111 124 151 115 126 128 130 138 120 143 147 153 155 149 157 162 175 177
+  (the 147/143 transposition between the passes is s82's named sched1/sched2 divergence, here
+  observed on the floor body for the first time). Insn identities, read off the -da dump
+  tmp/grind/CD_ready/s83/d/floorchk.s: chain A is 111 lbu -> 115 sll -> 120 `addu $4,$4,$21`
+  (a0 += tbl_125c, feeding `lw $7,0($4)` = 155); the D_800A11DC chain is 138 lbu -> 143
+  `sll $2,$2,2` (feeding `lw $6,D_800A11DC($2)` = 153); the arg5 chain is 124 -> 126 -> 128 ->
+  130 -> 147. **The entire 2-point residual is that the build emits 120 before 143 while the
+  target wants 143 before 120** (build slots 56/57 = `addu $4,$4,$21` then `sll $2,$2,2`).
+  Exhaustive single-atom enumeration on the floor body (tmp/grind/CD_ready/s84/floorenum.py,
+  floorbirth.py) finds **20 distinct alternative pass-2 streams**, of which these four put 143
+  before 120 - i.e. these are the candidate fixes for the whole residual:
+      pri(120) = 4,5,6,7,8   -> 103 105 111 124 151 126 128 130 138 115 143 147 153 120 155 149 ...
+      ref(147) = 3           -> 103 105 111 124 151 126 128 130 138 115 143 153 120 147 155 149 ...
+      pri(143) = 1           -> 103 105 124 126 128 130 138 143 111 151 115 120 147 153 155 149 ...
+      pri(153) = 1           -> 103 105 124 111 126 128 130 138 151 143 147 153 115 120 155 149 ...
+  Contrast with the order-exact base, where the same sweep found exactly THREE atoms and ONE
+  stream. The floor body's neighbourhood is an order of magnitude richer, and - decisively -
+  **ref(147)=3 is a reg_n_refs atom**, i.e. the do-while(0) refs-weighting lever that is
+  provably off-manifold on the order-exact base is ON-manifold on the floor body.
+
+- [s83r] SECONDARY, AND A FRAMING CORRECTION FOR EVERY FUTURE SESSION: the floor body's pass-2
+  block carries NO adjust_priority records at all (`adjpri: []`), while its pass 1 carries 18.
+  Pass-1 birth flips move the pass-1 stream in 14 measured ways (e.g. birth(120)=1,
+  birth(143)=0, birth(147)=1/2) but NONE of them puts 143 before 120. So on the floor body the
+  residual is a **sched2-only** decision driven by pri / luid / reg_n_refs, not by
+  birthing_insn_p - the opposite of the order-exact base, where birthing_insn_p is the only
+  door. The birth-lever framing that s82 and the discarded s83 built on the order-exact base
+  must NOT be carried across to the floor body; they are different mechanisms in different
+  passes, and that mismatch is the most likely reason the two bases have stayed complementary
+  for 30 sessions.
+
+- [s83] Baseline re-measured live on the HEAD chassis before any probe: candidate.c applied via apply_s78.py scores 2/179/0. The dispatch brief's CHASSIS CHECK read 'measurement unavailable'; the live number is 2 and every s78-s82 conclusion remains chassis-current.
+
+- [s83] The prior s83 process was discarded by the driver for a scope violation (it edited docs/tooling_incidents.md). Its measurements survived in tmp/grind/CD_ready/s83/{evidence_add.md,hyp_add.md} and have been merged verbatim into evidence.md and hypotheses.md by this session, clearly attributed. Its campaign (pid 261837) was independently verified DEAD with no orphan before this session launched its own; its six rejected/s83-*.c forms were already banked.
+
+- [s83] RECOVERED FROM THE DISCARDED s83 - a standing tool limitation: tools/fake_ablate.py CANNOT run on CD_ready. It correctly enumerates the FAKE units but every variant scores ERR including the unmodified keep-all control, because CD_ready's forms are apply_s78.py inputs carrying declaration-surface directives (//REPLALL, //DROPALL, //INS_BEFORE) that fake_ablate's splice path does not understand. Any future ablation on this function must be done by hand through apply_s78.py.
+
+- [s83] RECOVERED FROM THE DISCARDED s83: the mandated kill re-audit was discharged by hand on the closest s82 instance kill (k10, 8/179/0) and the kill is NOT carrier-masked - k10 minus the staged-value v0 FAKE still scores 8, and k10 minus the outer do_timeout do-while(0) scores 17.
+
+- [s83] RECOVERED FROM THE DISCARDED s83: the CD_alarm struct model is worth 4 points and is not cosmetic - de-structuring the order-exact base scores 10 against the struct form's 6, so a permuter workspace may not be simplified by dropping it.
+
+- [s83] Exhaustive single-atom enumeration on the order-exact base's pass-1 block 3 covered pri (20 nodes x 7 values), reg_n_refs (20 x 20), luid (20 x 32), all 190 pairwise luid swaps, birth and deaths over every adjpri node, and removal of every dependence edge. Exactly three atoms reach the target stream, all priority atoms: birth(131)=1, pri(131)=4, pri(148)=1.
+
+- [s83] Both surviving priority atoms are self-inconsistent with the target order. pri(131)>=4 needs chain A's byte load 111 to gain a true in-block load predecessor, but the target emits 111 in position 3 ahead of every load in the block. pri(148)<=1 needs 148 to lose its true dependence on 122, and removing that exact edge does not reach the target stream. So birth(131)=1 (reg_n_sets == 1, sched.c:2526) is the only door on this base, and s82 plus the discarded s83 measured every spelling of it to cost a pseudo.
+
+- [s83] All 20 legal statement interleavings of chain A and the arg5 chain collapse to only three distinct block-3 streams on the order-exact base, none of them the target - the mandated structural modality's primary lever disproved offline for this base without spending a sandbox measurement.
+
+- [s83] Owner directive probe 2 executed and measured negative: 14,542 fresh-seed iterations, 0 finds, best never below base_score 40, harvested and --stopped in the same turn (procs_killed 9, no orphan). With the discarded s83's 4,943 iterations on the identical workspace that is ~19,485 iterations on the order-exact base with zero improvement.
+
+- [s83] FIRST TIME IN 83 SESSIONS THE SOLVER HAS BEEN POINTED AT THE SCORE-2 FLOOR BODY: tmp/grind/CD_ready/s84/floor.sched.json. Its block-3 streams are pass1 '103 105 111 124 151 115 126 128 130 138 120 147 143 153 155 149 157 162 175 177' and pass2 '... 138 120 143 147 153 ...'; the 147/143 transposition between passes is s82's named sched1/sched2 divergence, observed on the floor body for the first time.
+
+- [s83] The floor body's entire 2-point residual is one adjacency: build emits 120 (addu $4,$4,$21, chain A, feeding lw $7,0($4)) before 143 (sll $2,$2,2, the D_800A11DC chain, feeding lw $6,D_800A11DC($2)); the target wants 143 first. Insn identities read off the -da dump tmp/grind/CD_ready/s83/d/floorchk.s.
+
+- [s83] The floor body's neighbourhood is an order of magnitude richer than the order-exact base's: 20 distinct alternative pass-2 streams reachable by single atoms versus one. Four atoms put 143 before 120 and therefore fix the whole residual: pri(120)=4..8, ref(147)=3, pri(143)=1, pri(153)=1.
+
+- [s83] FRAMING CORRECTION: the floor body's pass-2 block carries no adjust_priority records at all (adjpri: []) while its pass 1 carries 18, and none of the 14 pass-1 birth flips that move the pass-1 stream puts 143 before 120. The floor residual is a sched2 pri/luid/reg_n_refs decision, NOT a birthing_insn_p decision. The birth-lever framing s82 and the discarded s83 built on the order-exact base must not be carried across to the floor body - most likely why the two bases have stayed complementary for 30 sessions.
+
+- [s83] Decisive consequence for lever choice: ref(147)=3 is a reg_n_refs atom, so the do-while(0) refs-weighting lever that is provably off-manifold on the order-exact base is ON-manifold on the floor body. Six sessions of wrap-placement work were spent on the one base where that lever cannot work.

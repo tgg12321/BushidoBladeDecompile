@@ -1,7 +1,7 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 82,
+ "session_count": 83,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -501,23 +501,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "The sched1/sched2 divergence that gated every solver atom is PROVEN to exist on the order-exact base, its cause is named (birthing_insn_p / adjust_priority), and the single perturbation that flips the"
+  },
+  {
+   "session": 83,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Order-exact base proven a closed scheduling neighbourhood (exhaustive single-atom enumeration: only birth(131)=1 reaches target, and refs/luid/deaths/edge-removal are off-manifold); the FLOOR body, po"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A spelling that raises pri(131) to >= 4, or lowers pri(148) to <= 1, reaches the same flip WITHOUT adding a pseudo - these are dependence-graph priority atoms rather than liveness atoms, so they never touch reg_n_sets and cannot drag the allocation (and therefore sched2) with them, which is exactly what killed all seven of this session forms.",
-   "mechanism": "priority(insn) = max over preds of (priority(pred) + insn_cost(pred,link,insn) - 1). pri(131) = pri(126) + 1 - 1 and pri(126) = pri(111) + 2 - 1 = 2 because insn 111 has no in-block predecessor; pri(148) = pri(122) + 2 - 1 = 3 because insn 122 is a load. Raising pri(111) to >= 3 (chain A byte load acquiring an in-block predecessor chain) lifts pri(131) with it; MIPS ADJUST_COST zeroes anti/output dependence costs, so only true data dependences can carry the latency.",
-   "next_probe": "Enumerate C forms in which chain A byte load depends on an in-block computation without adding an instruction - e.g. sourcing idx_1494 (reg/v 76) from a value produced inside the do_timeout block rather than hoisted, or re-associating the two chains so that chain A producer sits deeper in the dependence graph than chain B producer. Predict each form pass-1 order OFFLINE first with tmp/grind/CD_ready/s82/whatif.py by editing the node pri fields, and only spend a sandbox measurement on the forms the model says reach 117 120 122 148 126 139 131 144 154."
+   "hypothesis": "One of the four floor-body atoms that put 143 before 120 - pri(120)=4..8, ref(147)=3, pri(143)=1, pri(153)=1 - is spellable in C on the floor body without adding an instruction, and closes the 2-point residual outright.",
+   "mechanism": "Unlike the order-exact base, the floor body's residual is decided in sched2 by INSN_PRIORITY and the reg_n_refs tie-break, with no adjust_priority records in that pass at all. pri(120) = pri(115) + icost(115) - 1 = 2 over the true edge 120<-115, and pri(115) = pri(111) + 2 - 1 = 2 over 115<-111; ref(147) is the reg_n_refs of the arg5 outgoing-argument store's destination, which is exactly what a do-while(0) loop-note wrap around the right statement range perturbs.",
+   "next_probe": "Work the ref(147)=3 atom FIRST - it is the one knob with an established, sanctioned C spelling on this function (the do-while(0) wrap, .claude/rules/do-while-zero-exception.md, already carried by the floor body in three places). Re-run tmp/grind/CD_ready/s84/floorenum.py after each candidate wrap placement to confirm the model predicts 143-before-120 BEFORE spending a sandbox call, then measure with tmp/grind/CD_ready/s83/run.sh. Note the floor body's wrap toolbox was declared DEAD for this pair in an older Judge-constraint note - that verdict was formed without the solver and against a different residual framing, so re-measure rather than inherit it."
   },
   {
-   "hypothesis": "A spelling that sets birth(131)=1 while leaving the pseudo count and the post-reload dependency graph of the order-exact base intact exists - the seven measured forms all failed for the SAME single reason (an extra pseudo), not for seven different reasons.",
-   "mechanism": "birthing_insn_p needs reg_n_sets[SET_DEST] == 1 (sched.c:2526). Today reg/v 104 is written by insn 111 and insn 131. Any split of those two writes across two names adds a pseudo. The unexplored direction is to REMOVE the first write instead of adding a name: a form in which chain A byte load feeds the shift directly as a subexpression, so the only pseudo the source names is the address.",
-   "next_probe": "Build the fused single-statement chain A (t0 = (s32)((u8 *)tbl_125c + idx_1494[0] * 4); with no separate byte-load statement, and the arg5 chain unchanged and still first), plus the variant that keeps the byte load as an unnamed subexpression inside the shift. Score with the sandbox, then dump both passes with schedord.sh and compare the pseudo count in the .lreg dump against the order-exact base - the diagnostic that separates the mechanism firing but costing a pseudo from the mechanism firing for free."
+   "hypothesis": "pri(120)>=4 on the floor body is reachable by giving chain A's byte load 111 a true in-block predecessor, and unlike on the order-exact base this does NOT contradict the target order.",
+   "mechanism": "pri(120)>=4 requires pri(115)>=4 hence pri(111)>=3, i.e. 111 needs a true in-block predecessor of pri>=2 with icost 2 (a load). The four target-reaching floor streams place 111 variously: pri(143)=1 yields '103 105 124 126 128 130 138 143 111 151 115 120 ...' with 111 in position NINE, behind four loads. That is the structural difference from the order-exact base, where every target-reaching stream pinned 111 to position 3 and made the same requirement self-contradictory.",
+   "next_probe": "Enumerate C forms in which chain A's byte load is sourced from, or sequenced after, an in-block load - e.g. reading idx_1494[0] through an address that the D_800A11DC or arg5 chain has already materialised in-block, or moving the chain A statement group after the printf-argument loads. Predict each offline by editing the node pri/dep fields in tmp/grind/CD_ready/s84/floorenum.py and only measure the forms whose predicted pass-2 stream puts 143 before 120."
   },
   {
-   "hypothesis": "The owner directive probe 2 (fresh-flag permuter window seeded from the order-exact base) is still the largest unspent axis and is now two mechanical fixes away from running.",
-   "mechanism": "progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c has the target exact instruction sequence with no extra pseudo and no a1 displacement; its residual is six register names and nothing else. tmp/grind/CD_ready/s82/mkws.sh already carries the -mel fix and the correct tools/gcc-2.7.2/build/cc1 path, mirroring engine/buildconfig.py.",
-   "next_probe": "In mkws.sh, (a) change the awk extraction window to bracket the CD_ready fragment in the maspsx stream by its own label and the following function label rather than by .ent, and (b) strip the sibling INCLUDE_ASM include lines from the stream before assembling. Validate that the scorer reproduces 6 for the order-exact base and 2 for the floor body, then run fresh-seed windows with python3 tools/permuter_campaign.py wait --dir tmp/grind/CD_ready/s82/perm, harvesting and --stop inside the same turn. Mind memory/project/grinder-nonmatchings-scope-break.md."
+   "hypothesis": "The other banked bases have neighbourhoods that have never been enumerated, and at least one is richer still than the floor body's.",
+   "mechanism": "This session showed the solver verdict is BASE-SPECIFIC and that the choice of base determines which levers exist at all: the order-exact base admits one stream via one mechanism (sched1 birthing_insn_p), the floor body admits 20 via another (sched2 pri/refs). No other base has been extracted. progress/s79-y2-struct-chassis-seats-and-transposition-both-correct-a1-load-displaced-5.c is the most interesting untested one - it already has the 120/143 transposition FIXED and every seat correct, with only the printf second-argument load displaced.",
+   "next_probe": "Apply the s79 y2 body and progress/s52-third-base-seats-exact-sll-half-sunk-4.c in turn, run tools/sched_solver/extract.py system --skip-parity into per-base json, and run the floorenum.py sweep against each. Rank the bases by number of reachable streams that fix their own residual, and grind the richest one. Cheap: one extract plus one enumeration per base, no sandbox calls until a form is predicted to land."
   }
  ],
  "judge_constraints": [
@@ -851,6 +857,38 @@
    "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, order-exact base applied to src/system.c.",
    "predicate_cite": "",
    "result": "Both faults are mechanical and now diagnosed; the campaign itself remains un-run. The next session can fix the extractio"
+  },
+  {
+   "session": 83,
+   "statement": "On the order-exact base's block-3 dependence graph, some setting of reg_n_refs, some statement reordering (single luid shift or pairwise luid swap), some adjust_priority deaths value, or some dependen",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the order-exact base progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c with all of that base's FAKE constructs present;",
+   "predicate_cite": "",
+   "result": "KILLED. Of that entire enumeration only three atoms reach the target stream - birth(131)=1, pri(131)=4, pri(148)=1 - and"
+  },
+  {
+   "session": 83,
+   "statement": "pri(131)>=4 or pri(148)<=1 can be produced on the order-exact base by a C form that changes the block's true-dependence structure without adding an instruction.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the order-exact base's pass-1 block 3 as extracted in tmp/sched_solver_work/system.sched.json, all base FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "KILLED. pri(131)>=4 requires pri(126)>=4 hence pri(111)>=3, hence chain A's byte load 111 must acquire a true in-block p"
+  },
+  {
+   "session": 83,
+   "statement": "Some legal interleaving of chain A (t0 = idx_1494[0] / t0 *= 4 / t0 = tbl + t0) with the arg5 chain (v0 = idx_1494[1] / v0 <<= 2 / arg5 = *(s32 *)(v0 + tbl)) produces the target block-3 stream on the ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, on the order-exact base's pass-1 block 3, all base FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "KILLED. The 20 interleavings collapse to only THREE distinct block-3 streams and none is the target. Two of the three di"
+  },
+  {
+   "session": 83,
+   "statement": "The owner directive's probe 2 - the fresh-flag permuter window seeded from progress/s80-g7-order-100pct-target-exact-a1-in-place-pure-seat-swap-6.c - produces a candidate scoring below the seed's own ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-04, the s78 struct/no-pp chassis, seed = the order-exact base with all its FAKE constructs present, workspace tmp/grind/CD_ready/s84/perm.",
+   "predicate_cite": "",
+   "result": "KILLED. 14,542 iterations in 423 s, 0 finds, best never below base_score 40; harvest reported procs_killed: 9, campaign "
   }
  ],
  "sibling_progress": [
