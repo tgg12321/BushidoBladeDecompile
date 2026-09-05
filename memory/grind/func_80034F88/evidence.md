@@ -9151,3 +9151,43 @@ the source read must be `*((u8 *)p + (s32)q + 0x17)` rather than
 - [s66] The tree is back at HEAD: include/code6cac.h, src/code6cac.c and src/code6cac_b.c are unmodified, the function is still committed as INCLUDE_ASM("asm/funcs", func_80034F88);, and verify-oracle re-confirms ok true with build == oracle.
 
 - [s66] Constructs the next session's layer-1 and Judge will rule on (all four already in candidate.c, all FAKE-annotated with what + mechanism + lever-exhaustion): two pointer aliases on &D_80106A73 (Judge-granted at docs/grind/decisions.md:23437), the `u = 0;` cse2 invalidator (dead-store family), and the variable reuse staging the loop counter through block 0's pointer (variable-reuse family; SOTN PSX precedent `// fake reuse of i?` at docs/reference/sotn-construct-index.md:92).
+
+## s67 (2026-09-05, forensics dispatch executed as the s66 landing) — CANDIDATE-READY
+
+- The pipeline scope grant s66 was waiting on is committed:
+  `tools/grinder/scope_allow.txt` carries
+  `func_80034F88 include/code6cac.h src/code6cac.c undefined_syms_auto.txt`.
+  The out-of-scope Judge constraint from s66's first dispatch is therefore
+  superseded for exactly these paths, which are both scope-checked AND staged
+  into the Match commit.
+- The banked s66 body was installed unchanged and re-proven THIS session:
+  `sandbox func_80034F88 --disable all` = score 0, 49 target / 49 build
+  instructions, rules_dropped 0; `verify-oracle` = ok true, build_sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked.
+- Prong (c) of the aggregate merge is now complete in the same candidate: no C
+  code anywhere names D_80106A71 or D_80106A72, and both surviving
+  `undefined_syms_auto.txt` rows carry
+  `/* alias of D_80106A70+N; retire with func_8001BE20 */` for the
+  still-INCLUDE_ASM sibling. The comment syntax follows the committed precedent
+  at undefined_syms_auto.txt:527-528 (the func_800620B8 aliases).
+- `memory/grind/func_80034F88/self_vet.md` is written against this diff: four
+  claimed families (pointer-alias-fake-exception, dead-store-fake-exception,
+  variable reuse, per-word-splat aggregate merge), each with a quoted scope
+  sentence and a resolvable citation, and an ANNOTATION-CONFORMANCE block
+  carrying all four `/* FAKE: ... */` lines verbatim. Both mechanical driver
+  gates pass locally: `grindlib.validate_self_vet` -> (True, '') and
+  `grindlib.check_banned_constructs` -> (True, '').
+- TOOLING HAZARD FIXED (see hypotheses.md s67): `s63/apply.py` mojibakes every
+  non-ASCII character in the files it rewrites (read_text without an encoding on
+  this Windows host, then .encode() to UTF-8). It is invisible to the sandbox and
+  the oracle because it only touches comments, but it inflates the header and
+  src/code6cac.c diffs from 4 and 8 lines to 6 and 40 lines of corrupted prose.
+  Use `tmp/grind/func_80034F88/s67/apply_utf8.py` instead.
+- The one construct a reviewer is most likely to press on is the variable reuse:
+  the copy loop's counter is staged through `q`, which is itself a FAKE pointer
+  alias. The vet argues bound 2 of staged-value-reused-variable is satisfied
+  because `q` was not invented in order to be borrowed — it performs three
+  byte-materializing memory operations and predates the borrow by ten sessions —
+  and bound 3 because the pointer value is dead from `*q = c;` onward. If layer-1
+  disagrees, the correct next move is a `ruling-request` on that exact question
+  (never a respelling: verdicts are body-keyed).

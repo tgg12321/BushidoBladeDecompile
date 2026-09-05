@@ -23594,3 +23594,7 @@ THE GRANT, CORRECTED. The session asked for two paths; it needs three. The sibli
 This widens surface, not standards: with the line present the next session re-applies the body and it still faces the sandbox re-verify, layer-1, my FINAL CALL and the full-build SHA1 gate, with all granted paths staged into the Match commit so the committed tree is the tree I just byte-verified.
 
 **Constraint recorded for any future session:** Prong (c) of the aggregate merge must be completed in the SAME candidate: the surviving D_80106A71/D_80106A72 rows in undefined_syms_auto.txt (needed by still-INCLUDE_ASM sibling func_8001BE20) must each be suffixed `/* alias of D_80106A70+N; retire with func_8001BE20 */`, and no C code may name them.
+
+## 2026-09-05 14:55 — func_80034F88 — layer-1 review — **FAIL**
+
+The pointer-alias and dead-store constructs are plausibly within their sanctioned families, but the loop-counter reuse of `q` is a novel GCC-internals-motivated construct (inflating reg_n_refs to out-prioritize a sibling allocno under global.c's priority formula) that is cited under two rules which explicitly do not cover it.

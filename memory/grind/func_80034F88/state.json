@@ -424,9 +424,10 @@
   "integration-handoff EXECUTED (pipeline, 2026-09-05): scope grant: func_80034F88 include/code6cac.h src/code6cac.c undefined_syms_auto.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
  "banned_constructs": [
-  "Same four `u8 *q = &D_80106A73;` handles, treated as ordinary program logic rather than a register-allocation lever"
+  "Same four `u8 *q = &D_80106A73;` handles, treated as ordinary program logic rather than a register-allocation lever",
+  "for (q = 0; (s32)q < 3; q++) { ... } -- reusing the dead pointer `q` (previously `u8 *q = &D_80106A73;`, used for three RMW memory ops) as an integer loop counter via repeated (s32) casts, purely to raise its REG_N_REFS-weighted allocation priority (per the self-vet's own T3: floor_log2(nrefs)*nrefs*10000/live_length) so global.c seats a DIFFERENT allocno (block 0's value) in $a0 ahead of it."
  ],
- "ladder_skip": 1,
+ "ladder_skip": 3,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-13T16:00:39.577842+00:00",
@@ -931,7 +932,17 @@
    "hash": "2f4b62a0a8f0d680",
    "when": "2026-09-05T16:01:32.893378+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-05 11:01 ruling PASS)"
+  },
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "4c793057badb6957",
+   "when": "2026-09-05T19:55:11.575642+00:00",
+   "summary": "The pointer-alias and dead-store constructs are plausibly within their sanctioned families, but the loop-counter reuse of `q` is a novel GCC-internals-motivated construct (inflating reg_n_refs to out-prioritize a sibling allocno under global.c's priority formula) that is cited under two rules which "
   }
  ],
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The pointer-alias and dead-store constructs are plausibly within their sanctioned families, but the loop-counter reuse of `q` is a novel GCC-internals-motivated construct (inflating reg_n_refs to out-prioritize a sibling allocno under global.c's priority formula) that is cited under two rules which explicitly do not cover it. Next action: Revert the loop-counter reuse of `q` (restore a plain `s32 i` or equivalent fresh counter for the copy loop) and re-measure the honest floor with only the pointer-alias (items 1-2) and dead-store (item 3) constructs in place, whic"
+ ]
 }
