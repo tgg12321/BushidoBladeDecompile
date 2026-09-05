@@ -1,3 +1,40 @@
+/* s23 UPDATE (2026-09-05, structural).  BODY UNCHANGED — still the honest floor.
+ * Re-measured live this session on the current chassis (commit 0f03be29):
+ * `sandbox func_800770B8 --disable all` = score 5, build_insns 175, target_insns 175.
+ * Plain flipped base = 29/175.  fake_ablate: one FAKE unit (the prologue fence),
+ * keep-all 5 / drop-1 10.
+ *
+ * WHAT s23 CHANGED — CLASS C IS NO LONGER FORECLOSED, AND ITS PRICE IS NOT +24 ROWS.
+ * The flipped cursor base combined with a store-group source order that does not put
+ * group A first emits the target's rows 55-64 BYTE-EXACT, including the class-C row
+ * 62 `addu $v1,$v1,$v0` and rows 63/64's `addiu $a3,$v1,0x6A` / `addiu $a1,$v1,0x7E` —
+ * correct TIE and correct SEATS together, at 175 instructions.  Best such build is
+ * order C,A,D,S at 12/175 (rejected/s23-classC-SOLVED-flip-plus-C-group-first-
+ * 175insn-score12.c); order D,A,C,S is 14/175.  An exhaustive 24-permutation sweep of
+ * the four outer-loop store groups on the flipped base is completely regular: every
+ * A-first order is 29, every C-first or D-first order reaches the target's seats.
+ *
+ * WHY IT IS NOT BANKED AS THE CANDIDATE.  The 12-object's residual is class B's two
+ * rows plus rows 40-54, which carry exactly the target's instruction multiset in the
+ * reordered sequence.  Stores cannot be scheduled across each other in either
+ * scheduler pass, so source store order IS emission store order, and the target's
+ * emission pins the target's source order to A-first — the one order that cannot
+ * produce the seats under the flip.  Thirteen builds hoisting pointers, symbol
+ * addresses, index temporaries and single stores move the score to 20-25 but never
+ * reach the discriminator.
+ *
+ * TWO STANDING FRONTIER ITEMS ARE RETIRED AS MIS-ATTRIBUTIONS.
+ *   - s22's "the merged shift+sum quantity's span must grow past ~23 insns": two fresh
+ *     .lreg dumps (s23/X.lreg, s23/fCADS.lreg) show pseudos 107/108/109/110 carry
+ *     IDENTICAL refs and spans in the 29-object and the 12-object and differ only in
+ *     the seats, so qty_compare's ratio (local-alloc.c:1630-1657) is equal in both and
+ *     cannot be the selector.  The selector is the equal-priority tie-break "sort by
+ *     qty number" (qty_compare_1, local-alloc.c:1681-1683) — the insn-scan position.
+ *   - the frontier's "the shift's value is freshly born": false.  The floor body's rows
+ *     40-61 are already byte-exact with the target, including the shared
+ *     t0*4 -> t0*5 -> t0*10 chain at rows 42/54/56/61.
+ * Detail: evidence.md [s23], hypotheses.md [s23].
+ */
 /* s21 UPDATE (2026-09-05, rederive).  BODY UNCHANGED.  Re-measured on the MOVED
  * chassis (func_80060A68 landed as matched C in this same TU, commit 27441fa5):
  * `sandbox func_800770B8 --disable all` = score 5, build_insns 175, target_insns 175.

@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -135,23 +135,29 @@
    "floor": 5,
    "modality": "structural",
    "headline": "Frontier item #2 closed negative on the plain flip base (17 builds, costs stack); 20 more builds re-type class C from an operand-order residual to a local-alloc quantity-PRIORITY residual \u2014 the cursor"
+  },
+  {
+   "session": 23,
+   "floor": 5,
+   "modality": "structural",
+   "headline": "Class C is SOLVED in pure C at 175 insns for the first time in 23 sessions \u2014 the flipped cursor base plus any store-group order that does not put group A first emits the target's rows 55-64 byte-exact"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's cursor sum sits in $v1 because its merged shift+sum quantity is ordered AFTER the reload quantity in local-alloc's qty_order, and a C form in which the shift's VALUE is genuinely produced ~20 insns earlier (consumed by a target-present earlier statement, not merely declared earlier) drops the merged quantity's priority below the reload's and hands the reload $v0.",
-   "mechanism": "local-alloc.c:1630-1657 qty_compare = floor_log2(n_refs)*n_refs*size/(death-birth); local-alloc.c:1240-1298 block_alloc combine_regs merges the sum into the shift. Measured today: merged shift+sum ~10 refs / ~3 insns (~10.0) vs reload 4 refs / 6 insns (~1.33); reordering needs the merged span past ~23 insns at unchanged refs. s21's v6/v8 moved the shift STATEMENT to the outer-loop top and did not move the pseudo's birth, so declaration position alone is spent.",
-   "next_probe": "Find a target-present earlier statement in the same basic block whose value is honestly the t0*10 chain (the target's rows 54-59 already build t0*4 -> t0*5 in $v1 and share it with the D_800A35D0 and 0x40/0x42 store groups) and spell the cursor so its sum merges with THAT long-lived chain quantity rather than with a freshly born shift pseudo \u2014 e.g. deriving the cursor from the same named intermediate the 0x40/0x42 group uses. Verify the merge with a .lreg dump ('used N times across M insns') before scoring."
+   "hypothesis": "Class C is now buyable at 175 insns; the open question is whether the ~10 rows of store-reorder collateral can be refunded by a device that makes block_alloc's insn scan meet the reload's pseudo before the t0*4 chain's pseudo while the STORES stay in the target's A,D,C,S order.",
+   "mechanism": "qty_compare_1's equal-priority tie-break (local-alloc.c:1681-1683) sorts equal-ratio quantities by qty number, and qty numbers are assigned in block_alloc's insn-scan order (local-alloc.c:1240-1298). The 24-permutation sweep shows the scan position of the STORES is what moves it; 13 builds show address-computation hoists move it only partially (29 -> 20-25). What has NOT been tried is moving the reload's pseudo earlier rather than the chain's later: e.g. spelling the cursor block so the D_800A36A0 re-read is emitted before group A's stores while the cursors themselves stay after them.",
+   "next_probe": "On the flipped base with the target's A,D,C,S store order, stage the cursor block's D_800A36A0 re-read into its own named local declared at the top of the outer-loop body (distinct from the existing `base` local so no reload is deleted), then vary its declaration/assignment position across the four store groups. Confirm with a .lreg dump that pseudo 109's scan position has moved ahead of 107's BEFORE scoring, and check build_insns stays 175 (a shared reload would collapse to 174, the s18fx failure mode)."
   },
   {
-   "hypothesis": "Class B's two rows (35/36, the target's `$v0` base for the 0x30/0x34 stores) are reachable without a surviving CODE_LABEL if the call's return value and p_old are separate C-level quantities whose local-alloc merge leaves the return value live across the two stores.",
-   "mechanism": "cse.c:8038-8063 forecloses the cse2 extended-basic-block split without a label, and s17/s20 priced every label device at >= +18 rows on all three bases. But rows 35/36 are a BASE-REGISTER choice ($s1 vs $v0), which is an allocation question in local-alloc/global-alloc, not necessarily the cse2 split the ledger has been attacking.",
-   "next_probe": "Dump .lreg/.greg around the call block and read which quantity the 0x30/0x34 stores' base belongs to on the floor body; then try spellings in which the func_8006E49C result is consumed by the two stores directly while `p_old`/`D_800A36A0` are written from a separate copy, measuring each with sandbox. This re-opens class B on the allocation axis rather than the cse2 axis."
+   "hypothesis": "With class C reachable at 175, the two classes may now be separable: the 12-object's only non-reorder residual is class B's rows 35/36, so a class-B device that was priced as unaffordable while class C also cost 24 rows may now be affordable.",
+   "mechanism": "s17 priced every surviving-CODE_LABEL device for class B at >= +18 rows against a 175 == 175 zero-slack budget, and s22 re-measured the same price structure on the plain flip base (B1 +18, C1 +25) where it stacked with the flip's own 24 rows. On the fCADS base the flip's collateral is 0 rows, so the stacking premise no longer holds and the device prices must be re-measured rather than inherited.",
+   "next_probe": "Re-run the s20/s22 device x slack cross-product (transform definitions in tmp/grind/func_800770B8/s22/gen_cross.py, devices B1/C1/D/G/E/P/Q) on the fCADS base instead of the plain flip base, and record whether any device's cost is refunded now that the base carries no rotation collateral. Then re-test the class-B raw-result store spellings (s7/s8 forms, which collapsed to 170 insns on the floor base) on fCADS, since the surrounding allocation has changed."
   },
   {
-   "hypothesis": "The four reachable objects are the whole reachable set for the cursor block, so the residual is 5 until a lever that changes a quantity's SPAN without emitting an instruction exists.",
-   "mechanism": "local-alloc.c:1630-1657 qty_compare plus local-alloc.c:1240-1298 combine_regs; 33 builds this session and at least 22 earlier spellings collapse onto {5, 25/171, 26, 29, and strictly worse}.",
-   "next_probe": "Before conceding, run tools/ra_solver inverse.py local with the goal stated as the FULL target disposition for pseudos 108/109/110 (reload -> $2, merged shift+sum -> $3) rather than the class-B subset s5/s17 used, and read whether the solver reports any reachable perturbation of qty birth/death/refs; classify the verdict with inverse_compose.py classify before spelling anything."
+   "hypothesis": "The 9/176 five-wide-row-index object is one instruction from a second independent route to class C, and that instruction is a constant-fold ordering rather than an allocation decision.",
+   "mechanism": "a1 emits `addiu $v0,$v1,106 / addiu $v1,$v1,126 / addu $a3,$a0,$v0 / addu $a1,$a0,$v1` (two base additions) where the target emits `addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E` (one). GCC folded the 0x6A/0x7E constants into the index before adding the base, which is a combine.c/expand fold decision, not local-alloc. Its rows 40-56 are otherwise byte-exact with the target, including row 56.",
+   "next_probe": "Read tmp/grind/func_800770B8/dumps/text1b.combine for the a1 body to name the pass that sinks the base addition past the constant, then look for a spelling that keeps the t0*5 chain visible (which the b1-b6 row-base intermediates destroyed, all returning 5/175) while materialising the row base once \u2014 e.g. an s16 row pointer whose two uses are `row[0x35 + a2]` and `row[0x3F + a2]` inside the inner loop rather than two hoisted cursors."
   }
  ],
  "judge_constraints": [
@@ -205,6 +211,30 @@
    "measured_on": "HEAD chassis 2026-09-05; documentary probe over both siblings' candidate.c and their global sets, no builds.",
    "predicate_cite": "",
    "result": "NEGATIVE on transplant. Zero global overlap \u2014 CD_sync and CD_datasync touch D_800161B8/C8, D_80016240, D_800A11B4/B8/D5/"
+  },
+  {
+   "session": 23,
+   "statement": "The seat choice between the merged shift+sum quantity and the reload quantity is decided by qty_compare's refs/span ratio, so it can be moved by changing either quantity's reference count or live span",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (src/text1b.c at commit 0f03be29, func_80060A68 already matched in the same TU); floor re-verified 5/175/175 with the single annotated do-while(0) prologue fence present and no",
+   "predicate_cite": "",
+   "result": "The two builds carry IDENTICAL reference and span counts for every pseudo in the pair \u2014 Register 107 'used 4 times acros"
+  },
+  {
+   "session": 23,
+   "statement": "The store-group reorder that buys class C can be replaced by an address-spelling change that leaves the stores in the target's order, so class C can be had without its ~10 rows of reorder collateral.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (commit 0f03be29); floor re-verified 5/175/175 with the single annotated do-while(0) prologue fence present and no other FAKE construct; 17 builds.",
+   "predicate_cite": "",
+   "result": "Pointer hoists perturb the scan partially (29 falls to 20-25) but never reach the discriminator; only moving the STORES "
+  },
+  {
+   "session": 23,
+   "statement": "The standing frontier item's premise that the cursor shift's value is freshly born about three insns before the add, and that a target-present earlier statement consuming a t0*4 chain would extend it,",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (commit 0f03be29); floor re-verified 5/175/175 with the single annotated do-while(0) prologue fence present and no other FAKE construct; 13 builds plus a full row listing.",
+   "predicate_cite": "",
+   "result": "The premise is FALSE. The floor body's rows 40-61 are already byte-exact with the target, including row 42 `sll $v1,$a1,"
   }
  ]
 }

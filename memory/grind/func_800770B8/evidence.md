@@ -2711,3 +2711,166 @@ rejected/s22-flipbase-B1-label-device-additive-47.c.
 - [s22] Two free respellings of the second cursor are now banked as byte-neutral on the floor body: `p_7e = p_6a + 10` (z2) and `p_7e = (s16 *)((s32)p_6a + 0x14)` (z4), both 5/175. So is staging the shift into a fresh named local while keeping the sum reload-first (y1, y6, both 5/175).
 
 - [s22] Sibling sweep complete: CD_datasync, CD_sync and (from s21) CD_ready all have zero code overlap with this function. CD_sync candidate.c:232 carries the sanctioned F1 combine-foldable chain-extender FAKE, the only byte-neutral reg_n_refs lever known in the project — recorded as a technique pointer, not proposed, because this residual needs span rather than refs.
+
+## [s23] structural — CLASS C IS SOLVED IN PURE C AT 175 INSNS (first time in 23 sessions); its price is a store-group source reorder
+
+Chassis re-verification, first action of the session. `memory/grind/func_800770B8/candidate.c`
+applied to src/text1b.c with the two byte-neutral caller-side edits it documents
+(prototype `s32 func_800770B8(s32, s32, s32);`, call site `(s32)&D_8009BD24`):
+`sandbox func_800770B8 --disable all` = **score 5, build_insns 175, target_insns 175**.
+Plain flipped base X = **29/175**. Mandated FAKE re-audit re-run on this chassis:
+`tools/fake_ablate.py --func func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c`
+reports ONE FAKE unit (the empty `do { } while (0);` prologue fence, line 206),
+keep-all 5 / drop-1 10 — unchanged, load-bearing, prologue-scoped.
+
+72 fresh builds this session. Scratch: `tmp/grind/func_800770B8/s23/`.
+
+### THE RESULT
+
+`tmp/grind/func_800770B8/s23/v/fCADS.c` — the plain flipped cursor base with the
+outer loop's four store groups written in the source order **C, A, D, S** instead of
+**A, D, C, S** — measures **12/175** and its row diff against `asm/funcs/func_800770B8.s`
+shows rows **55-64 byte-exact**, including the row that has been the class-C residual
+since s6:
+
+        row 62   ours `addu $v1,$v1,$v0`   target `addu $v1,$v1,$v0`
+        row 63   ours `addiu $a3,$v1,106`  target `addiu $a3,$v1,0x6A`
+        row 64   ours `addiu $a1,$v1,126`  target `addiu $a1,$v1,0x7E`
+
+Class C is therefore NOT unreachable and NOT priced at +24 rows of preheader rotation.
+The tie AND both seats are simultaneously correct at 175 instructions. The residual on
+that build is (a) class B's two rows 35/36, unchanged, and (b) the reorder itself: rows
+40-54 contain exactly the same instruction multiset as the target in a different order,
+because the C group's two `sh` stores now precede group A's five.
+
+Banked: `rejected/s23-classC-SOLVED-flip-plus-C-group-first-175insn-score12.c` and
+`rejected/s23-classC-SOLVED-flip-plus-D-group-first-175insn-score14.c`.
+
+### THE DISCRIMINATOR, MEASURED EXHAUSTIVELY
+
+All 24 permutations of the four outer-loop store groups were built on the flipped base
+(`gen_f.py`; A = the `t0*2` group storing 0x10/0x8/0xC/0x14/0x3C, D = the `D_800A35D0`
+group, C = the `0x40/0x42` group, S = the `0x68` byte store):
+
+    fADCS 29  fADSC 29  fACDS 29  fACSD 29  fASDC 38  fASCD 29
+    fDACS 14  fDASC 16  fDCAS 22  fDCSA 23  fDSAC 38  fDSCA 37
+    fCADS 12  fCASD 13  fCDAS 16  fCDSA 17  fCSAD 22  fCSDA 38
+    fSADC 29  fSACD 29  fSDAC 38  fSDCA 37  fSCAD 35  fSCDA 38
+
+The rule is sharp and has no exception in 24 builds: **every order whose first
+`t0`-indexed store group is A produces the 29-object (correct tie, swapped seats);
+every order in which D or C precedes A produces the target's tie AND the target's
+seats.** S is inert (S-then-A is still 29).
+
+### WHY s22's PRIORITY MODEL IS FALSIFIED (and what replaces it)
+
+s22 predicted the seat flip would need the merged shift+sum quantity's span to grow past
+~23 insns at unchanged reference count. Two `.lreg` dumps taken this session
+(`tmp/grind/func_800770B8/s23/X.lreg`, `s23/fCADS.lreg`, via `pwsh tools/grinder/dump.ps1`)
+show the four pseudos carry **IDENTICAL** reference and span counts in the 29-object and
+in the 12-object:
+
+    Register 107 (t0*5)     used 4 times across 3 insns in block 1   (both)
+    Register 108 (t0*10)    used 4 times across 2 insns in block 1   (both)
+    Register 109 (reload)   used 4 times across 6 insns in block 1   (both)
+    Register 110 (the sum)  used 6 times across 3 insns in block 1   (both)
+
+and only the seats differ:
+
+    X      ;; Register 107 in 2. / 108 in 2. / 109 in 3. / 110 in 2.
+    fCADS  ;; Register 107 in 3. / 108 in 3. / 109 in 2. / 110 in 3.
+
+So `qty_compare`'s ratio (local-alloc.c:1630-1657) is numerically equal in both builds and
+CANNOT be what orders them. The order therefore comes from `qty_compare_1`'s documented
+tie-break — "If qtys are equally good, sort by qty number" (local-alloc.c:1681-1683) — or
+from the suggested-hard-register list `qty_sugg_compare` handles first; either way the
+selector is the **position at which each pseudo is first encountered in the block's insn
+scan**, which store-group source order moves and which reference counting does not.
+s22's "span must exceed 23 insns" instruction is retired. The X dump also nails the RTL:
+`(insn 185 ... (set (reg:SI 110) (plus:SI (reg:SI 108) (reg:SI 109))))` with REG_DEAD on
+both — the flip really does put the shift in operand 1, exactly as s18 predicted.
+
+### WHY THE PRICE CANNOT BE REFUNDED BY SPELLING (13 builds)
+
+The reorder's ~10 rows of collateral are store rows, and stores cannot be scheduled across
+each other by sched1 or sched2 (unknown aliasing), so **source store order is emission
+store order** and the target's emission (A's five `sh` first) pins the target's source
+order to A-first. Every attempt to obtain the discriminator without moving the stores was
+measured and fails:
+
+  - hoisting the D group's *pointer* above group A, stores left in place: e1 40, e6 28.
+  - hoisting only the `D_800A35D0` symbol address: e2 31, e3 31.
+  - hoisting `s32 q4 = t0 * 4;` above group A: c1 29 (the sll is re-sunk to its use).
+  - hoisting group C's pointer, stores in place: g1 25; both pointers hoisted: g3 20.
+  - respelling group A base-first (`base + (t0 * 2)`): g2 29, g4 25.
+  - splitting a group so only ONE store crosses: h1 28, h2 42, h4 30; hoisting only the
+    1-insn 0x68 store: h3 29.
+  - the same 24-order sweep's A-first half, six independent builds, all 29.
+
+Pointer hoists move the score to 20-25 (so they perturb the scan partially) but never
+reach the discriminator; only moving the STORES does.
+
+### FLIP-SPELLING INVARIANCE RE-CONFIRMED ON THE A-FIRST BASE (4 builds)
+
+`i1` `(s16 *)((t0*5)*2 + (s32)D_800A36A0)` 29; `i2` `u8 *row = (u8 *)((t0*10) + (s32)D_800A36A0)`
+29; `i4` named `s32 off = t0*10;` 29; `i3` `(t0*5) + (s16 *)D_800A36A0` collapses back to
+base-first and measures 5. Consistent with s15's eleven flip spellings: on an A-first
+source order every flip spelling is one build.
+
+### A SEPARATE NEW OBJECT: THE 5-WIDE ROW INDEX (7 builds)
+
+Writing the two cursors as an index into a 5-wide `s16` row —
+`(s16 *)(D_800A36A0 + 0x6A) + (t0 * 5)` — produces a **new 176-insn object at score 9**
+(a1, a3, a5, a6, a7 all identical). Its rows 40-56 are byte-exact with the target
+*including* row 56 `addu $v1,$v1,$a1`, but it adds the base pointer twice
+(`addu $a3,$a0,$v0` / `addu $a1,$a0,$v1`) instead of once-plus-two-`addiu`, which is the
++1 instruction. Introducing a row-base intermediate to force the single base add
+(b1-b6: `(s16 *)D_800A36A0 + t0*5` then `row + 0x35`, and four other spellings) returns
+exactly the floor object 5/175 in all six cases. Banked
+`rejected/s23-t0x5-row-index-two-base-adds-176insn-score9.c`. Note this also documents
+that the shared `t0*4 -> t0*5 -> <<1` chain the frontier hoped to build is ALREADY present
+in the floor body (floor rows 42/54/56/61 are byte-exact with the target); the frontier's
+premise that the shift's value is "freshly born" was wrong.
+
+### FACTS BANKED
+
+- [s23] Floor re-verified live: candidate.c = 5/175/175; plain flip X = 29/175. FAKE
+  ablation keep-all 5 / drop-1 10 (one unit, the prologue fence).
+- [s23] Class C is SOLVED in pure C at 175 insns for the first time: any store-group
+  source order that does not put group A first, on the flipped cursor base, emits the
+  target's `addu $v1,$v1,$v0` with the target's seats. Best such build fCADS = 12/175.
+- [s23] Exhaustive 24-permutation sweep of the four store groups on the flipped base:
+  A-first is 29 in all six of its orders; C-first {12,13,16,17,22,38}; D-first
+  {14,16,22,23,38,37}; S-first behaves as A-first.
+- [s23] The `.lreg` reference/span counts of pseudos 107/108/109/110 are IDENTICAL in the
+  29-object and the 12-object, so `qty_compare`'s ratio cannot be the selector; the
+  selector is the insn-scan position tie-break (`qty_compare_1`, local-alloc.c:1681-1683).
+  s22's "grow the merged quantity's span past 23 insns" instruction is retired.
+- [s23] Stores are unmovable across each other in both scheduler passes, so source store
+  order == emission store order; the target's emission fixes the target's source order at
+  A-first, and 13 builds show no address-spelling substitute for moving the stores.
+- [s23] The shared `t0*4 -> t0*5 -> t0*10` chain is already byte-exact in the floor body
+  (rows 42/54/56/61); the standing frontier item's premise that the shift's value is
+  freshly born ~3 insns before the add is false.
+- [s23] Spelling the cursors as a 5-wide `s16` row index is a genuinely new object,
+  9/176, whose only defect is two base additions instead of one.
+
+- [s23] Floor re-verified live on the current chassis (commit 0f03be29): memory/grind/func_800770B8/candidate.c = score 5, build_insns 175, target_insns 175. Plain flipped base = 29/175.
+
+- [s23] Mandated FAKE kill re-audit re-run this session: tools/fake_ablate.py reports ONE FAKE unit in the candidate (the empty do-while(0) prologue fence, line 206), keep-all 5 / drop-1 10 — load-bearing, prologue-scoped, occupying none of pseudos 107/108/109/110.
+
+- [s23] CLASS C IS SOLVED AT 175 INSTRUCTIONS. tmp/grind/func_800770B8/s23/v/fCADS.c (flipped cursor base, store groups written C,A,D,S) = 12/175 and its rows 55-64 are byte-exact with asm/funcs/func_800770B8.s, including row 62 `addu $v1,$v1,$v0`, row 63 `addiu $a3,$v1,0x6A` and row 64 `addiu $a1,$v1,0x7E`. Banked rejected/s23-classC-SOLVED-flip-plus-C-group-first-175insn-score12.c.
+
+- [s23] Exhaustive 24-permutation sweep of the outer loop's four store groups on the flipped base: fADCS 29, fADSC 29, fACDS 29, fACSD 29, fASDC 38, fASCD 29, fDACS 14, fDASC 16, fDCAS 22, fDCSA 23, fDSAC 38, fDSCA 37, fCADS 12, fCASD 13, fCDAS 16, fCDSA 17, fCSAD 22, fCSDA 38, fSADC 29, fSACD 29, fSDAC 38, fSDCA 37, fSCAD 35, fSCDA 38. Rule with no exception: A-first gives the correct tie with swapped seats (29); any order in which D or C precedes A gives the target's tie AND the target's seats.
+
+- [s23] Two fresh .lreg dumps (s23/X.lreg vs s23/fCADS.lreg) show pseudos 107 (t0*5), 108 (t0*10), 109 (the D_800A36A0 reload) and 110 (the sum) with IDENTICAL refs and spans in the 29-object and the 12-object, differing only in the seats. qty_compare's ratio (local-alloc.c:1630-1657) is therefore equal in both and cannot be the selector; the selector is the equal-priority tie-break in qty_compare_1 (local-alloc.c:1681-1683). s22's 'grow the merged quantity's span past 23 insns' instruction is retired.
+
+- [s23] The X dump confirms the flip's RTL directly: (insn 185 (set (reg:SI 110) (plus:SI (reg:SI 108) (reg:SI 109)))) with REG_DEAD on both operands — the shift really does occupy operand 1 under the flip, as s18 predicted.
+
+- [s23] Stores cannot be scheduled across one another in sched1 or sched2 (unknown aliasing), so source store order IS emission store order; the target's emission pins its source order to A-first. 13 builds hoisting pointers, symbol addresses, index temporaries and single stores move the score from 29 to 20-25 but never reach the discriminator.
+
+- [s23] The floor body's rows 40-61 are already byte-exact with the target, including the shared t0*4 -> t0*5 -> t0*10 chain at rows 42/54/56/61 — so the standing frontier item's premise that the shift's value is freshly born is false.
+
+- [s23] A genuinely new object: spelling the cursors as a 5-wide s16 row index, `(s16 *)(D_800A36A0 + 0x6A) + (t0 * 5)`, gives 9/176 (a1, a3, a5, a6, a7 all identical). Its rows 40-56 are byte-exact including row 56 `addu $v1,$v1,$a1`; its only defect is two base additions instead of one base addition plus two addiu. Six row-base intermediates that force the single base add (b1-b6) all return the floor object 5/175. Banked rejected/s23-t0x5-row-index-two-base-adds-176insn-score9.c.
+
+- [s23] 72 fresh builds this session; src/text1b.c restored to its pristine committed state after every sweep (git status clean at session end).
