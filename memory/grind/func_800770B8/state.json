@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 24,
+ "session_count": 25,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -147,23 +147,29 @@
    "floor": 5,
    "modality": "synthesis",
    "headline": "s23's frontier item #1 executed in full and killed (20 builds: staging the reload buys nothing, staging the shift is byte-inert at every position); class B re-foreclosed with 4 fresh raw/copy spelling"
+  },
+  {
+   "session": 25,
+   "floor": 5,
+   "modality": "synthesis",
+   "headline": "Floor re-verified 5/175/175; BOTH standing frontier items executed and killed (12 builds); the class-C tie and seats are now read straight out of local-alloc.c and the seat decision is reduced to a nu"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The property that makes the target's 0x5C site emit shift-as-operand-1 from a base-first source is that the sum is consumed directly as a MEM base with two constant offsets, rather than materialised into two pointer variables that are live into the inner loop; spelling the cursor site the same way reaches class C without the flip and without the store-group reorder.",
-   "mechanism": "Both sites are `(plus (reload) (shift))` in the same basic-block family and both are written base-first in our source, yet the 0x5C site ties to the shift (target row 89, which our floor already matches) and the cursor site ties to the reload (target row 65, our residual). The only structural difference on the consumer side is that the cursor's sum feeds two `addiu` that create loop-live pointer variables, so the sum's pseudo has two non-MEM uses across a loop boundary rather than two MEM-base uses in straight-line code; that changes which operand carries the REG_DEAD note combine_regs (local-alloc.c:1784-1946) sees, and hence which operand the dest ties to.",
-   "next_probe": "Build the cursor block so that the row base is consumed as a MEM base rather than as two live pointers: (a) drop p_6a/p_7e entirely and write the inner loop as `*(s16 *)(rowp + 0x6A + a2*2) = -1; *(s16 *)(rowp + 0x7E + a2*2) = 0;` with `u8 *rowp = D_800A36A0 + t0*10;`, and (b) the same with the inner loop unrolled/rewritten so that rowp's only uses are MEM bases. Both change the inner loop's instruction count, so measure build_insns first and price the delta against the s20 slack devices (device D is +1 insn for +1 row) before scoring. Confirm the tie with a .lreg dump (pwsh tools/grinder/dump.ps1 func_800770B8) before reading the score."
+   "hypothesis": "Class C closes at 175 instructions on the target's A-first store order if a C form lengthens the merged chain+sum quantity's live span past ~22 insns (equivalently: grows the chain-root t0*4 pseudo's own span from 10 to ~18) while the cursor stays flip-spelled so the sum ties to the shift.",
+   "mechanism": "Measured this session: Q = {chain root, t0*5, t0*10, sum} has a fixed 22 references, so its qty_compare_1 priority is 88/span (local-alloc.c:1660-1683) and the blocking short 4-refs/2-insn quantity sits at 4.0. X (chain-root span 10) is 6.3 and takes $2; fCADS (chain-root span 18) is 3.8 and is pushed to $3, which is the target's seat. Only the span is free \u2014 the reference count is identical in every build measured so far.",
+   "next_probe": "The chain root dies at the t0*5 addu, so the span must be grown at the death end, not the birth end (naming is byte-inert, s24 + s25's eight y-builds). Enumerate C forms that give t0*4 a real later consumer inside the SAME basic block: (a) derive the S group's 0x68 address from the C-group pointer (`base + t0*4`) rather than from `base + t0`, which keeps A-first stores and pushes a t0*4-derived value past the cursor; (b) derive one of the D-group stores' address from the C-group pointer; (c) place group C's *pointer* computation after the cursor's t0*5 add while its stores stay in place. Read the resulting `Register N used R times across S insns` line for the chain root in the .lreg dump BEFORE scoring \u2014 the criterion is span >= ~18 on that pseudo \u2014 and only then look at the score."
   },
   {
-   "hypothesis": "The second structural difference between the two sites -- addend `t0*2` (an sll of a plain sign-extended register) versus addend `t0*10` (an sll of a plus) -- is what decides the operand order, so respelling the cursor's index so its RTL def is an sll of a plain register reaches class C on the A-first store order.",
-   "mechanism": "GCC 2.7.2 canonicalises commutative operands by complexity during combine/expand; a pseudo whose def is a nested plus may be ordered differently from one whose def is a simple shift. s23 proved the t0*4 -> t0*5 -> t0*10 chain is already byte-exact in the floor body, so any respelling must preserve those four rows while changing only the def shape feeding the final add.",
-   "next_probe": "Introduce a real s16 row index (`s16 t5 = (s16)(t0 * 5);`) so the cursor's addend is `t5 * 2` -- an sll of a plain sign-extended register, matching the 0x5C site's shape -- and measure build_insns (the extra sll/sra may cost 1-2 insns; price against the s20 slack devices). Read tmp/grind/func_800770B8/dumps/text1b.combine for both sites in the SAME build to see whether the plus-vs-shift def shape is what the canonicalisation keys on before spending more builds."
+   "hypothesis": "The non-local-reload route (confirmed this session to flip the tie from a base-first source) reaches the target's seats if the ejected reload can be made to land in $v0 instead of $t0, because global-alloc rather than local-alloc then chooses its hard register.",
+   "mechanism": "Once reg_basic_block < 0 the reload is allocated by global.c, whose ordering is by allocno priority and whose hard-register choice honours the conflict graph and any hard-reg suggestion. z2n seats it in $t0; the target has it in $v0. tools/ra_solver models global.c exactly and can be asked, from the z2n dump, what would have to change for allocno(reload) to take $2.",
+   "next_probe": "Take the z2n build (176/42, tie already correct), dump .greg, and run tools/ra_solver's global.c model plus inverse_compose.py classify on the reload's allocno to get a REACHABLE/FORECLOSED verdict and a ranked C-lever vector for seating it in $v0. Note z2n is +1 insn, so pair any REACHABLE verdict with the z1 shared-reload variant (174, -1 insn) or an s20 slack device before scoring."
   },
   {
-   "hypothesis": "Class B's 170-insn collapse can be avoided if p_old's second live range is forced to survive copy propagation by a use the raw pseudo cannot serve, so the target's $s1/$v0 split becomes reachable at 175 instructions.",
-   "mechanism": "s17 and s24 both show that every spelling reaching the raw pseudo lets copy propagation delete p_old's second range, removing the copy plus four dependents (175 -> 170). The target keeps both, so in the original source p_old's second range must have a use that is not substitutable by the raw result -- the candidates are a later read of p_old (none survives in our body) or a use inside a region the propagator will not cross.",
-   "next_probe": "Enumerate every later reader of the new pointer in the function body (the outer loop reads D_800A36A0, not p_old) and test spellings in which ONE of those readers goes through p_old rather than through the global -- e.g. the outer loop's `u8 *base = D_800A36A0;` replaced by `u8 *base = (u8 *)p_old;` in the first iteration only is not expressible, but `*(s32 *)q = ...`-style splits are; measure build_insns first, since any spelling that deletes a reload lands at 174 and any that adds one lands at 176."
+   "hypothesis": "The numeric span criterion can be turned from an estimate into an exact threshold by reading qty_birth/qty_death directly instead of inferring them from post-sched2 rows.",
+   "mechanism": "The .lreg dump prints per-PSEUDO reference counts and spans but not per-QUANTITY birth/death, and the row numbering I compared is post-sched2 while local-alloc sees the post-sched1 order; the ~14 vs ~23 span figures are therefore estimates, and the exact crossing point between Q and the blocking 4-refs/2-insn quantity is not yet pinned.",
+   "next_probe": "Use the instrumented cc1 (tools/gcc-2.7.2/cc1, -Instrumented on tools/grinder/dump.ps1) or the .sched dump's insn ordering to compute qty_birth/qty_death for Q and for the blocking quantity in X, fCADS and the floor F, then state the exact span threshold. That converts frontier item 1 from 'lengthen by about eight insns' into a build-count-free predicate any later session can test against a .lreg dump before it spends a score."
   }
  ],
  "judge_constraints": [
@@ -265,6 +271,30 @@
    "measured_on": "HEAD chassis 2026-09-05 (commit 6bbdefda); floor re-verified 5/175/175 with the annotated do-while(0) prologue fence present.",
    "predicate_cite": "",
    "result": "Both measure 175 insns / score 29. The add still prints reload-first (`addu $v0,$v1,$v0`), and the loop head reorganises"
+  },
+  {
+   "session": 25,
+   "statement": "The property that makes the target's 0x5C site emit shift-as-operand-1 from a base-first source is that its sum is consumed directly as a MEM base with two constant offsets rather than materialised in",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (src/text1b.c at commit 35957733, func_80060A68 already matched in the same TU); floor re-verified 5/175/175 with the single annotated do-while(0) prologue fence present; both ",
+   "predicate_cite": "",
+   "result": "172 insns / score 46 in BOTH spellings. The form deletes three instructions the target has (one of the two addiu cursor "
+  },
+  {
+   "session": 25,
+   "statement": "The second structural difference between the two add sites \u2014 addend t0*2 (an sll of a plain sign-extended register) versus addend t0*10 (an sll of a plus) \u2014 is what decides the operand order, so respe",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (commit 35957733); floor re-verified 5/175/175 with the annotated do-while(0) prologue fence present.",
+   "predicate_cite": "",
+   "result": "Falsified twice. By inspection the floor's own row-61 `sll $v1,$v1,1` is an (ashift (reg) (const_int 1)) of the plain t0"
+  },
+  {
+   "session": 25,
+   "statement": "The chain's birth position is C-controllable by naming any of its three members (t0*2, t0*4, t0*10) in a statement that precedes the D_800A36A0 read.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (commit 35957733); floor re-verified 5/175/175 with the annotated do-while(0) prologue fence present; eight builds across two declaration orders and both cursor bases.",
+   "predicate_cite": "",
+   "result": "Byte-inert in all eight builds: y1f, y2f, y3f, y4f all exactly 29/175 (byte-identical to the plain flip X) and y1n, y2n,"
   }
  ]
 }

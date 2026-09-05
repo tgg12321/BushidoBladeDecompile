@@ -1,3 +1,42 @@
+/* s25 UPDATE (2026-09-05, synthesis).  BODY UNCHANGED - still the honest floor.
+ * Re-measured live this session on the current chassis (HEAD 35957733):
+ * `sandbox func_800770B8 --disable all` = score 5, build_insns 175, target_insns 175.
+ * Plain flipped base X = 29/175.  fake_ablate: one FAKE unit (the prologue fence),
+ * keep-all 5 / drop-1 10.  s23's fCADS re-measured live at 12/175, rows 55-64 still
+ * byte-exact.
+ *
+ * BOTH STANDING FRONTIER ITEMS ARE EXECUTED AND NEGATIVE.
+ *   - "consume the cursor sum as a MEM base like the 0x5C control site": p1n/p1f =
+ *     172 insns / score 46 in both spellings, and the premise is independently false -
+ *     the target's cursor sum has exactly two REGISTER uses (its rows 66/67
+ *     `addiu $a3,$v1,0x6A` / `addiu $a1,$v1,0x7E`), the same shape this body emits.
+ *   - "respell the addend as an sll of a plain register": the floor's row-61
+ *     `sll $v1,$v1,1` ALREADY is an ashift of a plain register, identical in shape to
+ *     the 0x5C site's row-87 sll; the s16 row-index spelling costs an insn (n5n 176/7,
+ *     n5f 176/30) and does not move the tie.
+ *
+ * THE TIE AND THE SEATS ARE NOW READ OUT OF local-alloc.c, NOT INFERRED.
+ *   TIE: block_alloc's tying loop (local-alloc.c:1240-1299) walks operands 1..n with
+ *   `if (win) break;`, so the sum's dest ties to RTL operand 1 - the operand the source
+ *   names first - unless combine_regs (local-alloc.c:1784-1946) refuses, which it does
+ *   when reg_qty[used] < 0 (reg_basic_block < 0 or reg_n_deaths != 1, set at
+ *   local-alloc.c:470-477), when the used pseudo has no REG_DEAD note here, or when the
+ *   dest already has a quantity.  MEASURED: making the reload non-local flips the tie
+ *   onto the shift from a BASE-FIRST source (z2n 176/42), and base-first and flipped
+ *   then measure byte-identically - but global-alloc seats the ejected reload in $t0.
+ *   SEATS: three fresh .lreg dumps show F and X with byte-identical pseudo tables.  The
+ *   merged chain+sum quantity Q = {chain root, t0*5, t0*10, sum} always has 22 refs, so
+ *   floor_log2(22)*22 = 88 is fixed and only Q's span varies against the blocking short
+ *   4-refs/2-insn quantity at priority 4.0:  X chain-root span 10, Q ~14, 6.3 > 4.0, Q
+ *   takes $2 (wrong seat);  fCADS chain-root span 18, Q ~23, 3.8 < 4.0, the short qty
+ *   takes $2 and Q is pushed to $3 with the reload in $2 - the target's seats.
+ *   So class C closes on the target's A-first store order iff Q's span exceeds ~22
+ *   insns while the sum stays tied to the shift.  This supersedes s23's qty-number
+ *   tie-break attribution.  Naming chain members does not move their birth: hoisting
+ *   `s32 o2 = t0*2;` / `s32 o4 = t0*4;` above the D_800A36A0 read is byte-inert in all
+ *   eight builds (y1f-y4f 29/175, y1n-y4n 5/175).
+ * Detail: evidence.md [s25], hypotheses.md [s25].
+ */
 /* s23 UPDATE (2026-09-05, structural).  BODY UNCHANGED — still the honest floor.
  * Re-measured live this session on the current chassis (commit 0f03be29):
  * `sandbox func_800770B8 --disable all` = score 5, build_insns 175, target_insns 175.

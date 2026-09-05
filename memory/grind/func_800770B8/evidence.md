@@ -3026,3 +3026,169 @@ nor the flip.
 - [s24] WITHIN-FUNCTION CONTROL named for the first time in 24 sessions: target row 89 `addu $v1,$v1,$v0` (post-inner-loop, the base for the 0x5C/0x60 stores) is the same shift-first shape as class C's row 65, and the floor body matches it byte-exactly from the base-first source `*(s16 *)(D_800A36A0 + (t0 * 2) + 0x5C) = 0;`.
 
 - [s24] 31 fresh builds this session; src/text1b.c restored to its pristine committed state after every sweep (git status --porcelain clean at session end apart from the engine's own metrics/events.jsonl).
+
+## [s25] synthesis — FLOOR 5 (re-verified); BOTH standing frontier items EXECUTED AND NEGATIVE; the class-C SEAT decision is read directly out of local-alloc.c and reduced to a NUMERIC criterion for the first time in 25 sessions
+
+Chassis re-verification, first action. `tmp/grind/func_800770B8/s25/pristine_text1b.c`
+byte-equals `git show HEAD:src/text1b.c`. `memory/grind/func_800770B8/candidate.c` applied
+with the two byte-neutral caller-side edits it documents (prototype
+`s32 func_800770B8(s32, s32, s32);`, call site `(s32)&D_8009BD24`): **score 5,
+build_insns 175, target_insns 175**. Plain flipped base X = **29/175**, unchanged.
+16 fresh builds + 3 fresh `.lreg` dumps this session. Scratch:
+`tmp/grind/func_800770B8/s25/`. src/text1b.c restored to pristine after every sweep.
+
+Mandated FAKE kill re-audit, re-run on THIS chassis:
+`tools/fake_ablate.py --func func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c`
+reports **one** FAKE unit (the empty `do { } while (0);` prologue fence, line 243),
+**keep-all 5 / drop-1 10** — unchanged from s23/s24, still load-bearing, still
+prologue-scoped. The closest-to-target instance kill (s23's fCADS, 12/175) was
+re-measured live this session and re-confirmed at 12/175 with rows 55-64 byte-exact.
+
+### THE TIE IS NOW READ OUT OF THE COMPILER SOURCE, NOT INFERRED
+
+`local-alloc.c:1240-1299` (block_alloc's tying loop) walks the insn's operands
+`for (i = 1; i < insn_n_operands; i++)`, calls `combine_regs (r1, r0, ...)` on each,
+and does `if (win) break;`. So the destination of `(set (reg S) (plus (reg A) (reg B)))`
+ties to **RTL operand 1 — the operand the C source names first** — whenever
+`combine_regs` accepts it. `combine_regs` (local-alloc.c:1784-1946) refuses in exactly
+three C-reachable ways:
+  1. `reg_qty[ureg] < 0` — the used pseudo is not local-alloc-eligible. `local_alloc`
+     (local-alloc.c:470-477) sets `reg_qty[i] = -1` for any pseudo with
+     `reg_basic_block[i] < 0` (referenced in more than one basic block) **or**
+     `reg_n_deaths[i] != 1`.
+  2. no `REG_DEAD` note for the used pseudo at this insn — i.e. it is used again later.
+  3. `reg_qty[sreg] >= -1` — the destination pseudo already carries a quantity.
+Any of the three makes the loop fall through to operand 2, so the dest ties to the
+SECOND-named operand. This is the mechanism behind s21's empirical "the operand a body
+names first is the one the sum ties to", and it names the escape hatches for the first
+time.
+
+### ESCAPE HATCH 1 MEASURED: THE TIE IS DECOUPLABLE FROM SOURCE OPERAND ORDER (4 builds)
+
+`z1`/`z2` make the cursor's `D_800A36A0` reload non-local by giving it a reference after
+the inner loop (the post-loop `0x5C`/`0x60` stores), so `reg_basic_block < 0`,
+`reg_qty = -1`, and `combine_regs` skips operand 1:
+
+    z1n (both post-loop stores through the reload, BASE-first cursor)   174 / 49
+    z1f (same, FLIPPED cursor)                                          174 / 49
+    z2n (only the 0x5C store through it, BASE-first cursor)             176 / 42
+    z2f (same, FLIPPED cursor)                                          176 / 42
+
+The base-first and flipped spellings measure **byte-identically** in both pairs — proof
+that once the reload is non-local the source operand order stops mattering, exactly as
+the source predicts. `s25/z2n` rows 60-62 print
+`lw $t0,0($gp)` / `sll $v0,$v0,1` / `addu $v0,$t0,$v0`: the tie HAS moved onto the shift
+from a plainly base-first source. The price is that the reload leaves local-alloc
+entirely and global-alloc seats it in `$t0` instead of `$v0`, and the shared-reload
+spelling deletes the post-loop `lw` (174). Banked
+`rejected/s25-classC-nonlocal-reload-tie-flips-reload-ejected-to-t0-176insn-score42.c`
+and `rejected/s25-classC-nonlocal-reload-shared-with-0x5C-site-174insn-score49.c`.
+
+### THE SEAT DECISION, QUANTIFIED FROM THREE .lreg DUMPS
+
+Three fresh dumps this session (`s25/F.lreg`, `s25/X.lreg`, `s25/fCADS.lreg`, via
+`pwsh tools/grinder/dump.ps1 func_800770B8`). F and X have **byte-identical pseudo
+tables** — every `Register N used R times across S insns` line agrees — and differ only
+in the allocation result:
+
+    pseudo                      F (floor)   X (flip)   fCADS (flip + C-first)
+    chain root  t0*4            in 3        in 2       (renumbered 89) in 3
+    107  t0*5                   in 3        in 2       in 3
+    108  t0*10                  in 3        in 2       in 3
+    109  D_800A36A0 reload      in 2        in 3       in 2   <- target
+    110  the cursor sum         in 2        in 2       in 3   <- target
+
+so the rule is: **the quantity the sum merges into takes `$2`, except in fCADS.** The
+merge follows the tie (F: sum+reload; X and fCADS: sum+chain). What separates X from
+fCADS is `qty_compare_1`'s priority `floor_log2(refs)*refs*size/(death-birth)`
+(local-alloc.c:1660-1683) evaluated on the merged quantity Q = {chain root, 107, 108, 110}:
+refs 8+4+4+6 = **22** in both, so `floor_log2(22)*22 = 88`, and the only free variable is
+Q's live span. In X the chain root's own span is 10 insns; in fCADS the C-group store move
+stretches it to **18** (`Register 89 used 8 times across 18 insns` vs
+`Register 93 used 8 times across 10 insns`). The blocking quantity is the short
+4-refs/2-insn pseudo in the same window, priority `floor_log2(4)*4/2 = 4.0`:
+
+    X      Q span ~14  ->  88/14 = 6.3  >  4.0  ->  Q allocated first, takes $2   (wrong seat)
+    fCADS  Q span ~23  ->  88/23 = 3.8  <  4.0  ->  the short qty takes $2 first,
+                                                     Q is pushed to $3 and the reload
+                                                     then finds $2 free   (TARGET seats)
+
+This replaces s23's "the selector is the qty-number tie-break" with a numeric criterion
+that predicts all three measured builds. **Class C closes on the target's A-first store
+order iff the merged chain+sum quantity's live span exceeds ~22 insns** (equivalently: the
+chain-root pseudo's span must grow from 10 to ~18) while the sum stays tied to the shift.
+Lowering Q's reference count is not an alternative route: dropping the chain root from Q
+leaves 14 refs but shrinks the span proportionally (42/8 = 5.3), still above 4.0.
+
+### BOTH STANDING FRONTIER ITEMS EXECUTED AND NEGATIVE (12 builds)
+
+**Frontier #1 — "spell the cursor site like the 0x5C control site, sum consumed as a MEM
+base rather than materialised into two live pointers".** `p1n`/`p1f` write the inner loop
+as `*(s16 *)(rowp + (a2*2) + 0x6A) = -1; *(s16 *)(rowp + (a2*2) + 0x7E) = 0;` off a single
+`rowp`: **172 insns / score 46** in both spellings. The form deletes three instructions
+(one of the two `addiu` cursor pointers and one inner-loop `addu`) and the target keeps
+them, so the shape is not the target's however it seats. The frontier's premise is also
+now known to be wrong on its own terms: the target's cursor sum has exactly two register
+uses (rows 66/67 `addiu $a3,$v1,0x6A` / `addiu $a1,$v1,0x7E`), i.e. the SAME consumption
+shape our floor already emits — the two sites differ, but our cursor site already matches
+the target's cursor site in that respect. Banked
+`rejected/s25-classC-cursor-sum-as-mem-base-172insn-score46.c`.
+
+**Frontier #2 — "respell the cursor's addend so its RTL def is an sll of a plain
+sign-extended register instead of an sll of a plus".** Falsified twice over. By
+inspection: the floor's own `sll $v1,$v1,1` at row 61 IS an `(ashift (reg) (const_int 1))`
+of the plain t0*5 pseudo, structurally identical to the 0x5C site's `sll $v1,$v1,1` at
+row 87 — the two defs never differed. By measurement: `n5n` (`s16 t5 = (s16)(t0*5);` then
+`t5 * 2`) = **176 / 7**, `n5f` = **176 / 30**; the s16 round trip costs one instruction and
+the tie does not move. Banked
+`rejected/s25-classC-s16-row-index-addend-176insn-score7.c`.
+
+### THE NAMED-OFFSET FAMILY IS NOW DEAD FOR t0*2 AND t0*4 AS WELL AS t0*10 (8 builds)
+
+s24 retired "move the chain's pseudo by naming it" for the `t0*10` shift. This session
+extends it to the two earlier chain members. Hoisting `s32 o2 = t0 * 2;` and/or
+`s32 o4 = t0 * 4;` to the top of the outer-loop body (before the `D_800A36A0` read) and
+routing groups A/C/D through them is **byte-inert in all eight builds**: `y1f`-`y4f` all
+measure exactly 29/175 (byte-identical to the plain flip X) and `y1n`-`y4n` all measure
+exactly 5/175 (byte-identical to the floor F), in both declaration orders. GCC re-sinks
+every one of the three `sll`s to its use, so no chain member's birth position is
+C-controllable by naming or statement position. Banked
+`rejected/s25-classC-named-offset-locals-o2-o4-byte-inert-A-first.c`.
+
+### FACTS BANKED
+
+- [s25] Floor re-verified live on the current chassis (HEAD 35957733): memory/grind/func_800770B8/candidate.c = score 5, build_insns 175, target_insns 175; plain flip X = 29/175. Mandated FAKE re-audit re-run: one unit (the prologue fence), keep-all 5 / drop-1 10, unchanged.
+- [s25] Mandated kill re-audit on the closest-to-target banked form: s23's fCADS (flip + C,A,D,S store order) re-measured live at 12/175 on this chassis, rows 55-64 still byte-exact including the class-C `addu $v1,$v1,$v0`.
+- [s25] The class-C TIE is now read directly out of the compiler: block_alloc's tying loop (local-alloc.c:1240-1299) walks operands 1..n with `if (win) break;`, so the sum's dest ties to RTL operand 1 — the operand the C source names first — unless combine_regs (local-alloc.c:1784-1946) refuses. It refuses when (a) reg_qty[used] < 0, which local_alloc (local-alloc.c:470-477) sets for reg_basic_block < 0 or reg_n_deaths != 1; (b) the used pseudo carries no REG_DEAD note at the insn; (c) the dest pseudo already has a quantity.
+- [s25] Escape hatch (a) MEASURED and CONFIRMED: making the cursor's D_800A36A0 reload non-local (a reference after the inner loop) flips the tie onto the shift FROM A BASE-FIRST SOURCE. z1n/z1f = 174/49 and z2n/z2f = 176/42, with base-first and flipped spellings byte-identical in each pair — once the reload is non-local, source operand order stops mattering. z2n rows 60-62 print `lw $t0` / `sll $v0,$v0,1` / `addu $v0,$t0,$v0`. Price: the reload leaves local-alloc and global-alloc seats it in $t0, not $v0.
+- [s25] Three fresh .lreg dumps (s25/F.lreg, s25/X.lreg, s25/fCADS.lreg): F and X carry BYTE-IDENTICAL pseudo tables and differ only in the allocation result, so the seat swap is purely an allocation-order effect of which quantity the sum merges into.
+- [s25] The seat decision is now numeric. The merged chain+sum quantity Q = {chain root, t0*5, t0*10, sum} has 22 references in every build, so floor_log2(22)*22 = 88 and only Q's span varies; the blocking short quantity (4 refs / 2 insns) has priority 4.0. X: chain-root span 10, Q span ~14, priority 6.3 > 4.0 -> Q takes $2 (wrong seat). fCADS: chain-root span 18 (Register 89 used 8 times across 18 insns), Q span ~23, priority 3.8 < 4.0 -> the short quantity takes $2, Q is pushed to $3 and the reload finds $2 = the target's seats. This supersedes s23's "the selector is qty_compare_1's qty-number tie-break".
+- [s25] Reducing Q's reference count is NOT an alternative to lengthening its span: dropping the chain root leaves 14 refs but the span shrinks proportionally (42/8 = 5.3), still above the blocking 4.0.
+- [s25] Frontier item #1 (cursor sum consumed as a MEM base rather than two live pointers) EXECUTED: p1n/p1f = 172 insns / score 46 in both spellings; the form deletes three instructions the target has. Its premise is independently false — the target's cursor sum has exactly two register uses (the two addiu at target rows 66/67), the same consumption shape our floor already emits.
+- [s25] Frontier item #2 (respell the cursor addend as an sll of a plain sign-extended register) EXECUTED and falsified twice: by inspection the floor's row-61 `sll $v1,$v1,1` is already an ashift of a plain register, structurally identical to the 0x5C control site's row-87 `sll $v1,$v1,1`; by measurement n5n = 176/7 and n5f = 176/30 (the s16 round trip costs an instruction and the tie does not move).
+- [s25] The named-offset family is dead for the whole chain, not just t0*10: hoisting `s32 o2 = t0*2;` and/or `s32 o4 = t0*4;` above the D_800A36A0 read and routing groups A/C/D through them is byte-inert in all eight builds (y1f-y4f exactly 29/175, y1n-y4n exactly 5/175, both declaration orders). GCC re-sinks every chain sll to its use.
+- [s25] 16 fresh builds and 3 fresh .lreg dumps this session; src/text1b.c restored to its pristine committed state after every sweep.
+
+- [s25] Floor re-verified live on the current chassis (HEAD 35957733): memory/grind/func_800770B8/candidate.c = score 5, build_insns 175, target_insns 175; plain flipped base X = 29/175.
+
+- [s25] Mandated FAKE kill re-audit re-run this session: tools/fake_ablate.py reports ONE FAKE unit (the empty do-while(0) prologue fence, line 243), keep-all 5 / drop-1 10 — unchanged from s23/s24, load-bearing, prologue-scoped.
+
+- [s25] Mandated kill re-audit on the closest-to-target banked form: s23's fCADS (flip + C,A,D,S store order) re-measured live at 12/175 on this chassis, rows 55-64 still byte-exact including the class-C `addu $v1,$v1,$v0`.
+
+- [s25] The class-C TIE is now read directly out of the compiler rather than inferred: block_alloc's tying loop (local-alloc.c:1240-1299) walks operands 1..n with `if (win) break;`, so the sum's dest ties to RTL operand 1 — the operand the C source names first — unless combine_regs (local-alloc.c:1784-1946) refuses. It refuses when (a) reg_qty[used] < 0, which local_alloc (local-alloc.c:470-477) sets for reg_basic_block < 0 or reg_n_deaths != 1; (b) the used pseudo carries no REG_DEAD note at the insn; (c) the dest pseudo already has a quantity.
+
+- [s25] Escape hatch (a) MEASURED: making the cursor's D_800A36A0 reload non-local flips the tie onto the shift FROM A BASE-FIRST SOURCE (z2n rows 60-62 `lw $t0` / `sll $v0,$v0,1` / `addu $v0,$t0,$v0`), and base-first and flipped spellings then measure byte-identically (z1n = z1f = 174/49, z2n = z2f = 176/42). Price: global-alloc seats the ejected reload in $t0, not $v0.
+
+- [s25] Three fresh .lreg dumps (s25/F.lreg, s25/X.lreg, s25/fCADS.lreg): F and X carry BYTE-IDENTICAL pseudo tables and differ only in the allocation result, so the seat swap is purely an allocation-order effect.
+
+- [s25] The seat decision is now numeric: Q = {chain root, t0*5, t0*10, sum} always has 22 refs, so floor_log2(22)*22 = 88 is fixed and only Q's span varies against the blocking short 4-refs/2-insn quantity at priority 4.0. X: chain-root span 10, Q ~14, 6.3 > 4.0 -> Q takes $2 (wrong seat). fCADS: chain-root span 18, Q ~23, 3.8 < 4.0 -> the short quantity takes $2 and Q is pushed to $3 with the reload in $2 (the target's seats). Class C therefore closes on the target's A-first store order iff Q's span exceeds ~22 insns while the sum stays tied to the shift.
+
+- [s25] Reducing Q's reference count is NOT an alternative to lengthening its span: dropping the chain root leaves 14 refs but the span shrinks proportionally (42/8 = 5.3), still above the blocking 4.0.
+
+- [s25] Standing frontier item #1 EXECUTED and negative: consuming the cursor sum as a MEM base (p1n/p1f) = 172 insns / score 46 in both spellings, deleting three instructions the target has; and its premise is independently false — the target's cursor sum has exactly two register uses (target rows 66/67), the same shape our floor emits.
+
+- [s25] Standing frontier item #2 EXECUTED and negative: the floor's row-61 `sll $v1,$v1,1` is already an ashift of a plain register, structurally identical to the 0x5C control site's row-87 sll, so there was no def-shape difference to respell; the s16 row-index spelling measures 176/7 (base-first) and 176/30 (flipped).
+
+- [s25] The named-offset family is dead for the whole chain, not just t0*10: hoisting `s32 o2 = t0*2;` and/or `s32 o4 = t0*4;` above the D_800A36A0 read and routing groups A/C/D through them is byte-inert in all eight builds (y1f-y4f exactly 29/175, y1n-y4n exactly 5/175, both declaration orders).
+
+- [s25] 16 fresh builds and 3 fresh .lreg dumps this session; src/text1b.c restored to its pristine committed state after every sweep (git status clean apart from the ledger edits and the engine's own metrics/events.jsonl).
