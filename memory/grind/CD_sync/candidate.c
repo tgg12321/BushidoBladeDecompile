@@ -1,3 +1,36 @@
+/* [s121] BODY UNCHANGED; floor still 2/160 (re-measured live this session,
+ * bi 160 rd 0).  What changed is the DIAGNOSIS, and it moves the frontier off
+ * the scheduler entirely.
+ *
+ * 1. This body's residual is ONE adjacent transposition in block 3, identical
+ *    in sched1 and sched2: ours emits uid 120 (the t0 chain's `sll`, from
+ *    `t0 *= 4;`) then uid 130 (the ix chain's reload-materialised `addu`, from
+ *    the folded `*(s32 *)(ix + (s32)tbl_125c)`); the target emits 130 then 120.
+ *    Both are INSN_PRIORITY 2 and ready together, so rank_for_schedule decides
+ *    on INSN_LUID descending -- i.e. on SOURCE STATEMENT ORDER, nothing else.
+ *    perturb.py finds 36 pass-2 / 31 pass-1 single luid atoms that reach the
+ *    goal; all of them are plain statement moves.
+ *
+ * 2. AND ONE OF THEM IS ALREADY BANKED.  progress/s121-V2-order-exact-RA-only-6.c
+ *    (= s120's V2_ixfirst_folded, which s120 recorded as a bare "6/160") is
+ *    ORDER-EXACT in BOTH scheduler passes for block 3.  ra_solver's
+ *    inverse_compose classify calls its FIRST DIVERGENCE `RA -- same
+ *    instructions, different registers`, six pairs, the t0 address and the arg5
+ *    value exchanged between $a0 and $v1.
+ *
+ * 3. So the s115-s120 "order-vs-seat is one binary variable" equation is RETIRED:
+ *    a form exists with the order and not the seats.  The live question is a
+ *    local-alloc tie -- blk=3 qty1 reg113 (t0 addr) birth 18 death 24 refs 2 and
+ *    qty2 reg106 (arg5) birth 20 death 26 refs 2, equal pri, broken by qty
+ *    number.  inverse.py local --swap 1,2 says REACHABLE at 1 atom, 21 vectors.
+ *    Rank #1 (refs_down on the t0 address) is measured dead (folding the add
+ *    into printf's 4th argument = 14/160, six spellings).  The live vectors are
+ *    live_extend on qty 1 and refs_up on qty 2.
+ *
+ * 4. Do NOT use `goalmap.py --target asm/funcs/CD_sync.s`: asm_body() skips
+ *    every `/*`-prefixed line, so the target parses as one instruction and every
+ *    block falsely reports "GOAL == OURS".  Object mode only.
+ */
 /* CD_sync candidate - s118 (2026-09-04).  Honest floor 2/160, build_insns 160,
  * rules_dropped 0, measured live this session on HEAD's src/system.c.
  *

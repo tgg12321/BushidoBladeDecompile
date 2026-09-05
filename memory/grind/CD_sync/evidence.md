@@ -3213,3 +3213,87 @@ question on the split chassis (V1), not an allocator question.
 - [s120] Exiling a non-t0 block-3 quantity is dead: ix 4, arg5 6, arg3 17, arg4 12, ix+arg5 9. E1 (ix) proves the t0 chain keeps $a0 whenever it stays block-local.
 
 - [s120] Natural-C subscript and inlined-argument rederives are all 9-14/160 against a 2/160 control.
+
+## s121 (rederive, 2026-09-04) — the residual is now a typed RA question, not a scheduling one
+
+- [s121] Chassis re-measured live at session start: `memory/grind/CD_sync/candidate.c`
+  = 2/160 bi 160 rd 0; `tmp/grind/CD_sync/s120/forms/V1_ixfirst_nolocalborrow.c`
+  = 6/160 bi 160 rd 0. Ledger floor 2 confirmed on HEAD.
+- [s121] The sched_solver and ra_solver suites BOTH run on CD_sync in OBJECT mode
+  (`--target-object build/src/system.o --ours-object tmp/sandbox/CD_sync/system.o`).
+  `extract.py system` reports parity=True (80 funcs, 424 blocks, 2174 picks) and
+  `simulate.py --func CD_sync` scores 52/52 blocks order-exact AND clock-exact in
+  both passes, so the scheduler model is exact for this function.
+- [s121] TRAP, cost a third of this session: `goalmap.py --target asm/funcs/CD_sync.s`
+  silently produces a FALSE NEGATIVE. `asm_body()` (tools/sched_solver/goalmap.py:106)
+  skips every line starting with `/*`, which is every splat body line, so the target
+  parses as ONE instruction (`tgt=1`) and EVERY block prints "GOAL == OURS (identity)".
+  Use object mode. In object mode the alignment is 160-vs-160, 159 equal, 1 moved.
+- [s121] The 2/160 residual, at RTL-UID level: block 3 slots 6/7. Ours emits uid 120
+  then uid 130; the target emits 130 then 120. Both have INSN_PRIORITY 2, both become
+  ready in the same cycle, and rank_for_schedule falls through to INSN_LUID descending.
+  From the extracted dependence graph (not inferred): chain A = 112 -> 120 -> 125 -> 157,
+  chain B = 116 -> 127 -> 130 -> 132 -> 149. So uid 120 is the t0 chain's `sll` (from
+  `t0 *= 4;`) and uid 130 is the ix chain's reload-materialised `addu` (from the folded
+  `*(s32 *)(ix + (s32)tbl_125c)`), NOT the other way round. The uid->asm-text column
+  printed by tmp/grind/CD_sync/s121/show.py mislabels these two exactly because they are
+  the transposed pair — always read the deps.
+- [s121] perturb.py depth-1 luid search: 36 single atoms reach the pass-2 goal, 31 reach
+  the pass-1 goal, intersection 26. Every one of them is a pure source-statement move
+  (raise luid(120) above luid(130), or lower luid(130) below luid(120)). The order fix
+  needs no construct at all.
+- [s121] THE ORDER IS SOLVED, AND IT IS NOT SUFFICIENT. `V2_ixfirst_folded` — banked in
+  s120 as a bare "6/160" with no order analysis — is ORDER-EXACT in BOTH sched1 and
+  sched2 for block 3. `inverse_compose.py classify` on it prints
+  `FIRST DIVERGENCE: RA — same instructions, different registers` with exactly six
+  pairs: ours `addu v1,v1,s3 / lbu v1,0(s2) / lw a0,0(v0) / lw a3,0(v1) / sll v1,v1,0x2 /
+  sw a0,16(sp)`, target `addu a0,a0,s3 / lbu a0,0(s2) / lw a3,0(a0) / lw v1,0(v0) /
+  sll a0,a0,0x2 / sw v1,16(sp)`. This retires the s115-s120 framing in which "order" and
+  "seats" were two outcomes of one binary variable: a form exists that has the order and
+  not the seats, and the seats question survives it intact.
+- [s121] BB2_QTY_DEBUG on V2, blk=3: `qty=1 reg113 birth=18 death=24 refs=2 got=3`
+  ($v1, the t0 address) and `qty=2 reg106 birth=20 death=26 refs=2 got=4` ($a0, the arg5
+  value); the target wants them exchanged. Equal refs and equal spans mean qty_compare_1
+  (tools/gcc-2.7.2/local-alloc.c:1660) ties, and the qty-number (birth-order) tiebreak
+  decides against us. Raw dump: tmp/grind/CD_sync/s121/V2/qty.txt.
+- [s121] `inverse.py local --func CD_sync --block 3 --swap 1,2 --depth 2` returns
+  REACHABLE, minimal solution size 1 atom, 21 distinct vectors, in three classes:
+  refs_down on qty 1 (rank #1), live_extend on qty 1 (ranks #2-#5: dies later 24->25 or
+  24->26, born earlier 18->17 or 18->16), refs_up on qty 2 (rank #8). The tool prints its
+  own LOCAL-MODE CAVEAT (measured on camera_set_zoom 2026-08-05): a birth/span vector is
+  a claim about ALLOC-time order, which is not known to equal emission order, so each
+  vector is NECESSARY, not SUFFICIENT, until re-derived from a QTYDBG dump of the actual
+  spelled candidate. Full listing: tmp/grind/CD_sync/s121/inverse_local.txt.
+- [s121] Rank #1 (refs_down on the t0 address) is DEAD as a spelling: six ways of folding
+  the add into printf's 4th-argument MEM all measure 14/160 (M1-M6). The target's own
+  bytes contain a 2-reference t0 address (`addu $a0,$a0,$s3` then `lw $a3,0($a0)`), so
+  removing the reference removes the instruction. The vector is a model artifact.
+- [s121] Also dead on the order-exact chassis: block declaration order (N3 6, N4 6),
+  a dedicated `s32 *ap` pointer local for the arg5 address (N6 6), reading Intr.sync after
+  the ix group (N5 7), and the upstream SOTN bios.c fully-inlined call shape (N1 14,
+  N2 14). The rederive modality's remaining structural sources for this window are spent:
+  s114 already established the upstream body is in hand, and s121 measured it.
+- [s121] Mandated kill re-audit via tools/fake_ablate.py: candidate.c 2 with the
+  chain-extender FAKE / 15 without; V2 6 with / 19 without. Both chassis scores are real,
+  not FAKE-carrier artifacts.
+- [s121] Sibling sweep: CD_ready s84's finding (block-3 scheduler neighbourhood enumerated
+  and empty; its residual is an ra_solver question, not a sched_solver one) now holds for
+  CD_sync too, by an independent derivation. func_80045294's candidate.c carries no shared
+  window with this function (different TU, different call shape) and has nothing to
+  transplant.
+
+- [s121] Chassis re-measured live: memory/grind/CD_sync/candidate.c = 2/160 bi 160 rd 0; s120's V1_ixfirst_nolocalborrow = 6/160. Ledger floor 2 confirmed on HEAD.
+
+- [s121] The sched_solver and ra_solver suites both run on CD_sync in OBJECT mode (--target-object build/src/system.o --ours-object tmp/sandbox/CD_sync/system.o). extract.py system reports parity=True (80 funcs, 424 blocks, 2174 picks) and simulate.py --func CD_sync scores 52/52 blocks order-exact and clock-exact in both passes, so the scheduler model is exact for this function.
+
+- [s121] TRAP for future sessions: goalmap.py --target asm/funcs/CD_sync.s is a false-negative generator. asm_body() (tools/sched_solver/goalmap.py:106) skips every line beginning with /*, which is every splat body line, so the target parses as ONE instruction (tgt=1) and EVERY block prints 'GOAL == OURS (identity)'. Object mode aligns 160-vs-160 with 159 equal and 1 moved.
+
+- [s121] Block-3 dependence graph, read from the model rather than inferred: chain A = 112 (lbu Intr.sync) -> 120 (sll) -> 125 (addu) -> 157 (lw a3); chain B = 116 (lbu Intr.ready) -> 127 (sll) -> 130 (folded addu) -> 132 (lw) -> 149 (sw 16(sp)). The uid->asm-text column printed by show.py mislabels 120 and 130 precisely because they are the transposed pair.
+
+- [s121] V2_ixfirst_folded is order-exact in both scheduler passes for block 3 and its first divergence is RA, six register pairs. This is the first form in 121 sessions that has the target's emission order without the target's seats, and it retires the s115-s120 claim that order and seats are two outcomes of one binary variable.
+
+- [s121] QTYDBG on V2 blk=3: qty=1 reg113 (t0 address) birth 18 death 24 refs 2 got $v1; qty=2 reg106 (arg5 value) birth 20 death 26 refs 2 got $a0. Equal refs and equal spans tie qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) and the qty-number birth-order tiebreak decides against us.
+
+- [s121] inverse.py local --swap 1,2 --depth 2 returns REACHABLE at 1 atom with 21 distinct vectors in three classes: refs_down on qty 1 (measured dead this session, six spellings at 14/160), live_extend on qty 1, refs_up on qty 2.
+
+- [s121] Sibling sweep: CD_ready s84 concluded independently that its analogous block-3 scheduler neighbourhood is enumerated and empty and that its residual is an ra_solver question; s121 reaches the same conclusion for CD_sync by a different route. func_80045294 shares no window with this function and has nothing to transplant.

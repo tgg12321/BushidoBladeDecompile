@@ -2764,3 +2764,188 @@ best available spelling of this block, not an inherited stylistic accident.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: pp-free CD_alarm-struct chassis, chain-extender FAKE present, pp absent; control 2/160
+
+## s121 (rederive)
+
+### Harness note — the solver suite now runs on CD_sync (object mode)
+Both solvers work on this function in OBJECT mode, which is the supported path
+for an INCLUDE_ASM-routed target (owner ruling 2026-08-25):
+
+    bash tmp/grind/CD_sync/s121/b.sh <form.c>              # apply + sandbox
+    python3 tools/sched_solver/extract.py system           # parity=True
+    bash    tools/sched_solver/mkasm.sh system
+    python3 tools/sched_solver/perturb.py tmp/sched_solver_work/system.sched.json \
+        --func CD_sync --pass {1,2} --goal-from-target system \
+        --target-object build/src/system.o \
+        --ours-object  tmp/sandbox/CD_sync/system.o --atoms luid,luid_move --depth 1
+    python3 tools/ra_solver/inverse_compose.py classify system CD_sync \
+        --target-object build/src/system.o --ours-object tmp/sandbox/CD_sync/system.o
+    python3 tools/ra_solver/inverse.py local tmp/ra_solver_work/system.local.json \
+        --func CD_sync --block 3 --swap 1,2 --depth 2
+
+WARNING for future sessions: goalmap.py's CLI flag `--target asm/funcs/CD_sync.s`
+DOES NOT WORK. `asm_body()` skips every line beginning with `/*`, which is every
+splat body line, so the target parses as ONE instruction and every block then
+silently reports "GOAL == OURS (identity)". That is a false negative, not a
+result — it cost the first third of this session. Object mode aligns 160-vs-160
+with 159 equal / 1 moved. `tmp/grind/CD_sync/s121/show.py` prints the per-slot
+ours-vs-target listing with texts, luids and priorities, plus the block-3
+dependence graph.
+
+### H121-1 CONFIRMED — the 2/160 residual named at RTL-UID level
+Statement: on the folded candidate chassis the whole residual is one adjacent
+transposition in block 3, present identically in sched1 AND sched2: ours emits
+uid 120 (the t0 chain's `sll`, luid 7) then uid 130 (the ix chain's
+reload-materialised `addu`, luid 11); the target emits 130 then 120.
+Mechanism: both are pri 2 and become ready together; `rank_for_schedule` falls
+through to INSN_LUID descending, and our source order gives luid(120) <
+luid(130). The dependence graph from the extracted model settles the
+identification that s118-s120 had to infer: chain A = 112 (`lbu` Intr.sync)
+-> 120 -> 125 -> 157 (`lw a3`), chain B = 116 (`lbu` Intr.ready) -> 127 -> 130
+-> 132 (`lw`) -> 149 (`sw ...,16(sp)`). (The uid->asm-text column of show.py
+mislabels 120 and 130 precisely BECAUSE they are the transposed pair; read the
+deps, not the text.)
+Probe: perturb.py, both passes, atoms luid+luid_move, depth 1.
+Result: pass 2 = 36 single atoms reach the goal, pass 1 = 31; the intersection
+is 26. Every winning atom either raises luid(120) above luid(130) or lowers
+luid(130) below luid(120) — i.e. the order fix is an ORDINARY SOURCE STATEMENT
+MOVE, with no construct of any kind.
+- verdict: CONFIRMED
+
+### H121-2 CONFIRMED — the ORDER half of the order-vs-seat equation is SOLVED
+Statement: `V2_ixfirst_folded` (the s120 form that puts the whole ix group
+before `t0 *= 4`, banked then as a bare "6/160" with no order analysis) is
+ORDER-EXACT in BOTH sched1 and sched2 for block 3, and its entire residual is
+register allocation.
+Probe: apply V2, re-extract, `show.py` (PASS 1 same True / PASS 2 same True for
+block 3), then `inverse_compose.py classify`.
+Result: classify prints `FIRST DIVERGENCE: RA — same instructions, different
+registers`, six pairs: ours `addu v1,v1,s3 / lbu v1,0(s2) / lw a0,0(v0) /
+lw a3,0(v1) / sll v1,v1,0x2 / sw a0,16(sp)` vs target `addu a0,a0,s3 /
+lbu a0,0(s2) / lw a3,0(a0) / lw v1,0(v0) / sll a0,a0,0x2 / sw v1,16(sp)`.
+BB2_QTY_DEBUG on V2, blk=3: qty=1 reg113 birth=18 death=24 refs=2 got=3 ($v1),
+qty=2 reg106 birth=20 death=26 refs=2 got=4 ($a0); the target wants the
+exchange. Both spans 6, both refs 2 -> `qty_compare_1`
+(tools/gcc-2.7.2/local-alloc.c:1660) ties and the qty-number (birth-order)
+tiebreak hands $v1 to the t0-address quantity.
+`fake_ablate.py` on V2: 6 with the chain-extender, 19 without — the 6 is NOT a
+FAKE-carrier artifact. (Control: candidate 2 with, 15 without.)
+Banked as memory/grind/CD_sync/progress/s121-V2-order-exact-RA-only-6.c.
+- verdict: CONFIRMED
+
+### H121-3 KILLED (instance) — s119/s120 frontier item 1's identification of the sched1-vs-sched2 pair
+Statement: the insn pair that sched1 and sched2 order differently in block 3 is
+`lw a3,0(t0)` versus `sw arg5,16(sp)`, so making sched1 emit the store before
+the load is the closing lever.
+Measured on the split (V1_ixfirst_nolocalborrow) chassis, control 6/160 bi 160
+rd 0, chain-extender FAKE present, pp absent, from the extracted sched model:
+sched1 emits ... 141, 130, **150, 146**, 156, 158 ... and sched2 emits
+... 141, 130, **146, 150**, 156, 158 ... uid 150 IS `sw reg106,16(sp)` but uid
+146 is `sll reg119 = reg116 << 2` — the scale of the D_800A11D5 index for
+printf's THIRD argument — and the `lw a3` is uid 158, which does not move
+between the passes at all. The predicate "emit the sw before the lw a3" is
+therefore not the divergence, and H120-4's INSN_PRIORITY(lw)=2-beats-
+INSN_PRIORITY(sw)=1 story does not describe this block.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split V1 chassis (tmp/grind/CD_sync/s120/forms/V1_ixfirst_nolocalborrow.c), chain-extender FAKE present, pp absent, control 6/160 bi 160 rd 0; sched model tmp/sched_solver_work/system.sched.json, parity=True, simulate 52/52 order-exact and clock-exact
+
+### H121-4 CONFIRMED — the remaining residual is a typed, REACHABLE local-alloc question
+Statement: `inverse.py local --func CD_sync --block 3 --swap 1,2` returns a
+REACHABLE verdict at minimal solution size 1 atom with 21 distinct vectors.
+Baseline `{0:$v0, 1:$v1, 2:$a0, 3:$v0}`, goal `qty 1: $v1 -> $a0, qty 2:
+$a0 -> $v1`. Ranked classes: #1 `refs_down qty 1: refs 2->1`; #2-#5
+`live_extend qty 1` (dies later 24->25 / 24->26, born earlier 18->17 / 18->16);
+#8 `refs_up qty 2: refs 2->3`. The tool's own LOCAL-MODE CAVEAT applies: a
+birth/span vector is a claim about ALLOC-time order, which is not known to
+equal emission order, so each is NECESSARY not SUFFICIENT until re-derived from
+a QTYDBG dump of the spelled candidate. Full listing:
+tmp/grind/CD_sync/s121/inverse_local.txt.
+- verdict: CONFIRMED
+
+### H121-5 KILLED (instance) — the #1 ranked vector (refs_down on the t0 address)
+Statement: dropping the t0-address quantity to one reference by folding the add
+into printf's 4th-argument MEM (`*(s32 *)(t0 + (s32)tbl_125c)`) removes it from
+block 3's contended quantity set and leaves the arg5 value to take $v1.
+Measured on the V2 order-exact chassis (control 6/160), chain-extender FAKE
+present, pp absent: M1 (ix folded, t0 folded, ix-first) 14/160, M2 (same,
+t0-first) 14, M3 (ix split-add, t0 folded, ix-first) 14, M4 (same, t0-first)
+14, M5 (t0 fully inlined including the scale) 14, M6 (t0 folded, candidate
+statement order) 14 — all bi 160 rd 0. The target's own bytes contain a
+2-reference t0 address (`addu $a0,$a0,$s3` then `lw $a3,0($a0)`), so refs_down
+is a model vector with no faithful spelling here: removing the reference
+removes the instruction.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: V2 order-exact chassis (memory/grind/CD_sync/progress/s121-V2-order-exact-RA-only-6.c), chain-extender FAKE present, pp absent; control 6/160 bi 160 rd 0
+
+### H121-6 KILLED (instance) — declaration order, pointer-locals and full inlining on the order-exact chassis
+Statement: on the V2 order-exact chassis the local-alloc tie is broken by the
+block's declaration order, by giving the arg5 address its own pointer local, by
+reading Intr.sync after the ix group, or by writing the whole call in the
+upstream SOTN bios.c fully-inlined shape.
+Measured on the V2 chassis, chain-extender FAKE present, pp absent, control
+6/160: N3 (V2 control, arg5/t0/ix decl order) 6, N4 (t0/ix/arg5 decl order) 6,
+N6 (arg5 address in an `s32 *ap` local) 6, N5 (Intr.sync read moved after the
+ix group) 7, N1 (`printf(fmt, D_800F19B8.func, D_800A11DC[D_800A11D5],
+tbl_125c[idx_1494[0]], tbl_125c[idx_1494[1]])`, no locals at all) 14, N2 (arg5
+staged, arg4 inlined) 14 — all bi 160 rd 0. Declaration order is inert for the
+qty tiebreak here, and the fully-inlined upstream shape loses the order as well
+as the seats.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: V2 order-exact chassis, chain-extender FAKE present, pp absent; control 6/160 bi 160 rd 0
+
+### H121-7 CONFIRMED — mandated kill re-audit: the chain-extender FAKE is load-bearing on BOTH chassis
+Probe: `tools/fake_ablate.py --func CD_sync --file system --candidate <form>`.
+Result: candidate.c 2/160 bi 160 with the FAKE, 15/159 without; V2 6/160 with,
+19/159 without. Neither chassis's score is a FAKE-carrier artifact.
+- verdict: CONFIRMED
+
+## [s121] On the folded candidate chassis the entire 2/160 residual is one adjacent transposition in block 3, present identically in sched1 and sched2: ours emits uid 120 (the t0 chain's sll, from `t0 *= 4;`) then uid 130 (the ix chain's reload-materialised addu, from the folded `*(s32 *)(ix + (s32)tbl_125c)`), while the target emits 130 then 120.
+- mechanism: Both insns carry INSN_PRIORITY 2 and become ready in the same cycle, so sched.c's rank_for_schedule falls through past the priority and dependence-class keys to INSN_LUID descending. LUID is source statement order, so the pair's emission order is decided by where the two statements sit in the C. The dependence graph extracted from the instrumented cc1 settles the identification s118-s120 had to infer: chain A = 112 (lbu Intr.sync) -> 120 -> 125 -> 157 (lw a3), chain B = 116 (lbu Intr.ready) -> 127 -> 130 -> 132 (lw) -> 149 (sw ...,16(sp)).
+- probe: tools/sched_solver/extract.py system (parity=True; simulate.py --func CD_sync = 52/52 blocks order-exact AND clock-exact), then perturb.py --func CD_sync --pass 1 and --pass 2 --goal-from-target system --target-object build/src/system.o --ours-object tmp/sandbox/CD_sync/system.o --atoms luid,luid_move --depth 1; per-slot listing via tmp/grind/CD_sync/s121/show.py.
+- result: 36 single luid atoms reach the pass-2 goal, 31 reach the pass-1 goal, intersection 26. Every winning atom is a pure source-statement move (raise luid(120) above luid(130), or lower luid(130) below luid(120)); no construct of any kind is implicated. Also recorded: goalmap.py's CLI --target asm/funcs/CD_sync.s is a FALSE NEGATIVE generator (asm_body skips every /*-prefixed line, so the target parses as ONE instruction and every block reports GOAL == OURS); object mode is the only correct path and aligns 160-vs-160 with 159 equal / 1 moved.
+- verdict: CONFIRMED
+
+## [s121] V2_ixfirst_folded - the s120 form that moves the whole ix group ahead of `t0 *= 4;`, banked then as a bare 6/160 with no order analysis - is order-exact in BOTH sched1 and sched2 for block 3, and its entire remaining residual is register allocation.
+- mechanism: Moving the arg5 statement group earlier lowers luid(130) below luid(120), which is exactly the perturb.py atom class that reaches the goal in both passes; the emission order then equals the target's for all 20 insns of the block and for all 160 of the function.
+- probe: Apply V2, re-run extract.py + mkasm.sh, read tmp/grind/CD_sync/s121/show.py (PASS 1 same True / PASS 2 same True for block 3), then tools/ra_solver/inverse_compose.py classify system CD_sync --target-object build/src/system.o --ours-object tmp/sandbox/CD_sync/system.o; BB2_QTY_DEBUG via tmp/grind/CD_sync/s121/qd.sh; tools/fake_ablate.py for the FAKE re-audit.
+- result: classify prints FIRST DIVERGENCE: RA - same instructions, different registers, with exactly six pairs (ours addu v1,v1,s3 / lbu v1,0(s2) / lw a0,0(v0) / lw a3,0(v1) / sll v1,v1,0x2 / sw a0,16(sp) against target addu a0,a0,s3 / lbu a0,0(s2) / lw a3,0(a0) / lw v1,0(v0) / sll a0,a0,0x2 / sw v1,16(sp)). QTYDBG blk=3: qty=1 reg113 (t0 address) birth 18 death 24 refs 2 got $v1, qty=2 reg106 (arg5 value) birth 20 death 26 refs 2 got $a0; the target wants the exchange. Equal refs and equal spans tie qty_compare_1 and the qty-number birth-order tiebreak decides against us. fake_ablate: V2 is 6 with the chain-extender and 19 without, so the 6 is not a FAKE-carrier artifact (control: candidate 2 with, 15 without). This retires the s115-s120 framing in which order and seats were two outcomes of one binary variable - a form now exists that has the order and not the seats. Banked as memory/grind/CD_sync/progress/s121-V2-order-exact-RA-only-6.c.
+- verdict: CONFIRMED
+
+## [s121] The block-3 insn pair that sched1 and sched2 order differently is `lw a3,0(t0)` versus `sw arg5,16(sp)`, so the closing lever is a perturbation that makes sched1 emit the store before the load.
+- mechanism: s119/s120 frontier item 1 held that INSN_PRIORITY(lw a3)=2 beats INSN_PRIORITY(sw)=1 while both are ready together, so sched1 always takes the load first and sched2 swaps them back.
+- probe: Read the extracted pass-1 and pass-2 pick streams for block 3 on the split V1 chassis directly out of tmp/sched_solver_work/system.sched.json (tmp/grind/CD_sync/s121/blk.py), then name each uid from the .sched RTL dump.
+- result: The passes do differ by exactly one transposition, but it is uid 150 against uid 146: sched1 emits ... 141, 130, 150, 146, 156, 158 ... and sched2 emits ... 141, 130, 146, 150, 156, 158 ... uid 150 is indeed `sw reg106,16(sp)`, but uid 146 is `sll reg119 = reg116 << 2` - the scale of the D_800A11D5 index for printf's THIRD argument. The `lw a3` is uid 158 and does not move between the passes at all. The named predicate therefore does not describe this block, and the INSN_PRIORITY story attached to it does not hold.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split V1 chassis (tmp/grind/CD_sync/s120/forms/V1_ixfirst_nolocalborrow.c), chain-extender FAKE present, pp pointer alias absent, control 6/160 bi 160 rd 0; sched model parity=True, simulate 52/52 order-exact and clock-exact
+
+## [s121] The local-alloc tie on the order-exact V2 chassis is a typed, reachable question: inverse.py local --func CD_sync --block 3 --swap 1,2 returns a solution at minimal size 1 atom.
+- mechanism: local-alloc.c qty_compare_1 ranks by floor_log2(refs)*refs*size/(death-birth)*10000 with a qty-number tiebreak; with both contended quantities at refs 2 and span 6 the ranking is a pure tie and any single perturbation of refs or of birth/death on either quantity resolves it.
+- probe: tools/ra_solver/local_extract.py system, then inverse.py local tmp/ra_solver_work/system.local.json --func CD_sync --block 3 --swap 1,2 --depth 2 --top 8 (output banked at tmp/grind/CD_sync/s121/inverse_local.txt).
+- result: REACHABLE, 21 distinct 1-atom vectors from baseline {0:$v0, 1:$v1, 2:$a0, 3:$v0} to goal qty1 $v1->$a0 / qty2 $a0->$v1, in three classes: refs_down on qty 1 (rank #1), live_extend on qty 1 (ranks #2-#5: dies later 24->25 or 24->26, born earlier 18->17 or 18->16), refs_up on qty 2 (rank #8). The tool's own LOCAL-MODE CAVEAT applies - a birth/span vector is a claim about alloc-time order, not emission order, so each vector is necessary but not sufficient until re-derived from a QTYDBG dump of the spelled candidate.
+- verdict: CONFIRMED
+
+## [s121] The top-ranked vector, dropping the t0-address quantity to one reference by folding its add into printf's 4th-argument MEM (`*(s32 *)(t0 + (s32)tbl_125c)`), removes it from block 3's contended quantity set and leaves the arg5 value to take $v1.
+- mechanism: A folded address materialises only during reload, so the pseudo never enters local-alloc's block quantity list - the same mechanism that makes the ix chain's add invisible on the current candidate chassis.
+- probe: Six spellings measured with sandbox --disable all on the V2 order-exact chassis: M1 (ix folded + t0 folded, ix-first), M2 (same, t0-first), M3 (ix split-add + t0 folded, ix-first), M4 (same, t0-first), M5 (t0 fully inlined including the scale), M6 (t0 folded, candidate statement order). Forms in tmp/grind/CD_sync/s121/forms/.
+- result: 14, 14, 14, 14, 14, 14 /160, all bi 160 rd 0, against a 6/160 control. The target's own bytes contain a two-reference t0 address (addu $a0,$a0,$s3 then lw $a3,0($a0)), so on this function refs_down has no faithful spelling: removing the reference removes the instruction. The vector is a model artifact.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: V2 order-exact chassis (memory/grind/CD_sync/progress/s121-V2-order-exact-RA-only-6.c), chain-extender FAKE present, pp absent; control 6/160 bi 160 rd 0
+
+## [s121] On the V2 order-exact chassis the local-alloc tie is broken by the block's local declaration order, by giving the arg5 address its own pointer local, by reading Intr.sync after the ix group, or by writing the call in the upstream SOTN bios.c fully-inlined shape.
+- mechanism: The rederive modality's premise for this window: pseudo-numbering and quantity-creation order follow declaration and first-reference order, so a structurally different spelling of the same block may reverse the qty-number tiebreak.
+- probe: N3 (V2 control, arg5/t0/ix declaration order), N4 (t0/ix/arg5 declaration order), N6 (arg5 address in its own `s32 *ap` local), N5 (Intr.sync read moved after the ix group), N1 (no locals at all: printf(fmt, D_800F19B8.func, D_800A11DC[D_800A11D5], tbl_125c[idx_1494[0]], tbl_125c[idx_1494[1]])), N2 (arg5 staged, arg4 inlined). Forms in tmp/grind/CD_sync/s121/forms/.
+- result: N3 6, N4 6, N6 6, N5 7, N1 14, N2 14, all /160 bi 160 rd 0, against a 6/160 control. Declaration order is inert for this tiebreak, the pointer local is inert, and the fully-inlined upstream shape loses the order as well as the seats. Combined with s114 (the upstream body is already in hand) and s120's X/Y/Z sweep, the rederive modality's structural sources for this window are spent.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: V2 order-exact chassis, chain-extender FAKE present, pp absent; control 6/160 bi 160 rd 0
+
+## [s121] Mandated kill re-audit: the combine-foldable chain-extender FAKE is still load-bearing on both the folded candidate chassis and the V2 order-exact chassis.
+- mechanism: flow.c records the extra reg_n_refs before combine.c folds the SYMBOL_REF difference, so the construct changes allocation while emitting zero bytes; ablation should therefore move the score if the effect is real and leave it if a later chassis change has made it inert.
+- probe: tools/fake_ablate.py --func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c, and again with tmp/grind/CD_sync/s120/forms/V2_ixfirst_folded.c.
+- result: candidate.c 2/160 bi 160 with the FAKE and 15/159 without; V2 6/160 with and 19/159 without. Neither chassis's score is a FAKE-carrier artifact, so both this session's control numbers and the V2 diagnosis stand on their own.
+- verdict: CONFIRMED
