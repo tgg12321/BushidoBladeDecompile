@@ -748,6 +748,16 @@
  * exactly (e1, 13 at 49). Do not re-spell block 0; the open exit is stretching
  * m's live range to 12 from its END while keeping it one multi-block pseudo.
  */
+/* s46 NOTE (2026-09-05): this body's `m` local is CODEGEN-INERT.  The uniform
+ * four-block spelling with no `m` at all -- `*q = *q & 0xF8;` then, per bit,
+ * `c = p[8] & K; v = *q; if (c) c = v | K; else c = v; *q = c;` -- measures the
+ * same 10 at 49 and its object is BYTE-IDENTICAL to this one (objdump diff
+ * empty; tmp/grind/func_80034F88/s46/cmp.sh against s44/b0.o).  It is banked as
+ * rejected/s46-uniform-four-block-reload-no-m-BYTE-IDENTICAL-TO-b0-score10.c
+ * and is the spelling to SUBMIT if this function ever becomes submittable:
+ * fewer constructs, a cleaner human-programmer-test answer, identical bytes.
+ * This file is kept unchanged because 45 sessions of .lreg/.greg analysis cite
+ * its pseudo numbering (b0). */
 void func_80034F88(void) {
     s32 *p;
     s32 i;

@@ -6304,3 +6304,124 @@ function.
 - [s43] [s45] New measurements: x1 13/45, x2 13/45, x3 13/49, x4 13/49, x5 25/40, y1 16/51, y2 16/51. All seven banked in memory/grind/func_80034F88/rejected/ with s45- prefixes.
 
 - [s43] [s45] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file was modified. Ladder accounting: the six-modality condition was met at s31; the LADDER EXHAUSTED record drafted by s42 still needs filing by an escalation-modality session (s42's owner-gated outcome was discarded for filing one from structural; s44 and s45 are synthesis).
+
+## s46 (synthesis, 2026-09-05; dispatched as "session 44" -- the digest still lags the ledger) -- the LOCAL-ALLOC SEAT LAW, measured both ways, and a second find_reg exit read from source
+
+Floor unchanged: **10 at 49 insns**.  All measurements are
+`sandbox func_80034F88 --disable all` with the body spliced over
+`INCLUDE_ASM("asm/funcs", func_80034F88);` in `src/code6cac_b.c`; `src/` was
+restored to HEAD before this was written.  Harness copied from s45 into
+`tmp/grind/func_80034F88/s46/{splice.py,slice.py,run.ps1,cmp.sh}`.
+
+### KILL RE-AUDIT (mandated; both prongs run)
+- `run.ps1 memory/grind/func_80034F88/candidate.c` -> **score 10, build_insns 49**
+  on today's HEAD.  The chassis has not moved; every banked instance kill is
+  still measured against a live 10/49 base.
+- `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b
+  --candidate memory/grind/func_80034F88/candidate.c` -> *"no FAKE-annotated
+  constructs found ... nothing to ablate"*.  Third consecutive session (s41,
+  s42, s46) confirming the ledger's kills were all measured FAKE-free, so no
+  banked kill is contaminated by a FAKE carrier occupying a contested pseudo.
+
+### a1 -- the plainest human spelling ties the floor and is BYTE-IDENTICAL to b0
+`a1` deletes the named `m` entirely and spells all four flag blocks
+identically (`*q = *q & 0xF8;` then, per bit, `c = p[8] & K; v = *q;
+if (c) c = v | K; else c = v; *q = c;`).  Measured **10 at 49**, and
+`mipsel-linux-gnu-objdump -d` of its object against `s44/b0.o` (script
+`tmp/grind/func_80034F88/s46/cmp.sh`) prints **IDENTICAL** -- the two bodies
+emit the same 49 instructions.  This matters twice: (i) `candidate.c`'s `m`
+variable is codegen-inert, so the submittable spelling of this function is the
+uniform one (fewer constructs, better human-programmer-test answer, same
+bytes) -- banked as
+`rejected/s46-uniform-four-block-reload-no-m-BYTE-IDENTICAL-TO-b0-score10.c`
+and recommended as the body to submit if this function ever becomes
+submittable; (ii) a1's `.lreg`/`.greg` geometry is NOT b0's (a1 has THREE
+block-0-confined quantities 75/76/79 and allocates q FIRST -- order
+`73 78 82 86 74 77 81 85 72` -- while b0 has fewer and allocates q fourth), so
+two materially different allocations can converge on the same emitted stream.
+
+### THE LOCAL-ALLOC SEAT LAW (new; the mechanism behind 45 sessions of "q's row has a 3")
+`find_free_reg` (local-alloc.c:2135) builds its exclusion set as
+`for (ins = born_index; ins < dead_index; ins++) IOR_HARD_REG_SET (used,
+regs_live_at[ins]);` (**local-alloc.c:2169-2171**) and then scans hard registers
+**numerically** (local-alloc.c:2247, no `REG_ALLOC_ORDER` on this target).  At
+local-alloc time NO global pseudo has a hard register yet, so among the low
+allocatable registers `regs_live_at` can only contain **$v0 (2)** -- the return
+value of `func_80077D00`, live from the call until the copy insn
+`(set (reg p) (reg:SI 2 v0))`.  Therefore a block-0-confined quantity takes
+**reg 2 if $v0 is dead across its span and reg 3 otherwise**, and reg 3 is
+exactly what then enters `q`'s `hard_reg_conflicts` row and denies `$v1` to
+`q` in `find_reg` regardless of allocno rank.
+Measured both ways this session:
+- **a1** (no use of `p` inside block 0): sched1 gives the `$v0 -> p` copy
+  priority 0 *within block 0* (p has no consumer in that basic block, and
+  sched.c computes priority over the block only), so the copy is emitted last,
+  $v0 is live across the byte load, and block-0 quantities 75 and 76 are both
+  seated in **3**.  `.greg`: `74 conflicts: ... 2 3 29`, dispositions
+  `72 in 5  73 in 3  74 in 4 (q)  75 in 3  76 in 3  77 in 3` -- q is allocated
+  FIRST among the contenders and still loses `$v1`, purely on the conflict row.
+- **a2** (`c0 = p[8] & 1;` hoisted to the top so `p` IS consumed inside block 0,
+  otherwise m1's mask-folded body): the copy moves up, $v0 dies early, and
+  block-0 quantity 77 is seated in **2** for the first time in the ledger.
+  Score **14 at 49**.  Dispositions: `72 in 5  73 in 3  75 in 3  76 in 4 (q)
+  77 in 2  78 in 3`.  The law's converse holds -- but the *byte value*
+  quantity 78 then takes 3 (2 is occupied by 77, 3 is the next free number),
+  so q still lands in 4.  Freeing $v0 relocates the problem one register; it
+  does not solve it.
+
+### SECOND find_reg EXIT, read from source (call it exit #6)
+After the two-pass scan picks `best_reg`, `find_reg` **overrides** it with a
+register from `hard_reg_copy_preferences[allocno]` if that register is free and
+class-compatible (**global.c:1096-1127**).  This is a second, independent route
+to a seat that no session had read: it needs no priority win and no conflict-row
+change, only a copy preference on the allocno itself.  a1 shows the machinery
+live: `;; 77 preferences: 3` and `77 in 3` -- a global allocno inheriting reg 3
+from a copy off a locally-allocated block-0 quantity, via `set_preference`
+(global.c:1709-1735, the `reg_renumber[src] >= 0` branch).  For the residual it
+is inert for the same reason exit #5 is: the only copy edge that could hand
+`q` a preference for 3 is a copy from a block-0-confined POINTER temp, i.e. a
+second C object aliasing `&D_80106A73` -- the axis the Judge closed.
+
+### The target re-derived once more, now with the seat law
+In the target block 0's byte value sits in **$a0 (4)**, which under the seat law
+requires BOTH 2 and 3 to be excluded across its span: 2 by $v0 (the `addu $a1,
+$v0, $zero` copy at 80034FA4 is inside the value's span, exactly as in our
+bodies), and 3 by ANOTHER block-0-confined quantity allocated before it.  The
+only candidate for that quantity is block 0's ADDRESS -- which in the target is
+also read in block 1 (`sb $v0, 0($v1)` at 80034FD0) and therefore cannot be
+block-confined unless block 1's pointer is a DIFFERENT pseudo that global alloc
+later seats in 3 by copy preference.  That is precisely the score-0 banned
+body's shape (`;; 77 preferences: 3`, block-0 pointer local at 3, block-0 value
+at 4).  So the seat law converts s40's "two registers hold &D_80106A73
+simultaneously at .L80034FC8" from an observation into a mechanism: the target
+needs a block-0-confined pointer quantity, a single C pointer object cannot
+supply one (its materialisation is hoisted to function entry -- s44 p5, s45 y1 --
+and its live range spans all four blocks), and every remaining exit in find_reg
+-- rank (s39), conflicts (s41/s43), someone_prefers (s45 exit #5), copy
+preference (s46 exit #6) -- routes through that same missing quantity.
+
+- [s46] Kill re-audit on today's chassis: candidate.c = 10 at 49; fake_ablate reports no FAKE-annotated construct to ablate. No banked kill is FAKE-contaminated.
+- [s46] The uniform four-block reload body with NO named `m` (a1) scores 10 at 49 and its object is BYTE-IDENTICAL to s44/b0.o (objdump diff empty, tmp/grind/func_80034F88/s46/cmp.sh). candidate.c's `m` is codegen-inert; a1 is the preferred submission spelling. a1's .greg geometry nevertheless differs from b0's (three block-0 quantities, q allocated first), so identical score AND identical bytes can come from different allocations.
+- [s46] SEAT LAW: local-alloc's find_free_reg excludes only regs_live_at over the quantity's span (local-alloc.c:2169-2171) and scans numerically (local-alloc.c:2247); at that point no global pseudo is renumbered, so the only low register that can be excluded in this function is $v0 (2), live from the call to the `$v0 -> p` copy. A block-0-confined quantity therefore takes 2 if $v0 is dead across its span and 3 otherwise -- and 3 is what poisons q's conflict row.
+- [s46] The seat law was measured in BOTH directions: a1 (no use of p in block 0; sched1 sinks the copy because p has no consumer in that basic block) -> quantities 75/76 in reg 3, q in 4, score 10; a2 (`c0 = p[8] & 1;` hoisted so p IS consumed in block 0) -> quantity 77 in reg 2 (first time in the ledger), but the byte-value quantity 78 then takes 3 and q still lands in 4, score 14 at 49.
+- [s46] NEW EXIT #6, read from source: after the two-pass scan, find_reg overrides best_reg with a register from hard_reg_copy_preferences if it is free and class-compatible (global.c:1096-1127). a1 exhibits it live (`;; 77 preferences: 3`, disposition 3). Like exit #5 its only generator for q would be a copy from a block-0-confined pointer temp = the Judge-banned second handle.
+- [s46] Consequence for the record: the target's block-0 value at $a0 requires TWO exclusions (2 from $v0, 3 from a prior block-0 quantity), so the target's block 0 must contain a block-confined POINTER quantity. A single C pointer object cannot supply one, so all four find_reg exits (rank, conflicts, someone_prefers, copy preference) route through the same missing quantity.
+- [s46] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file was modified. Ladder accounting unchanged: the six-modality condition was met at s31; the LADDER EXHAUSTED (non-endgame residual, floor 10) record still needs filing by an `escalation`-modality session.
+
+- [s44] KILL RE-AUDIT (both prongs, mandated): memory/grind/func_80034F88/candidate.c re-measures 10 at 49 on today's HEAD, and tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c reports 'no FAKE-annotated constructs found ... nothing to ablate'. Third consecutive session (s41, s42, s46) confirming no banked kill is FAKE-contaminated.
+
+- [s44] New measurements: a1 (uniform four-block reload, no named m) = 10 at 49 and BYTE-IDENTICAL to s44/b0.o; a2 (m1 mask-fold with c0 = p[8] & 1 hoisted) = 14 at 49.
+
+- [s44] SEAT LAW (new, source-cited): local-alloc's find_free_reg excludes only regs_live_at over the quantity's span (local-alloc.c:2169-2171) and scans hard registers numerically (local-alloc.c:2247). At local-alloc time no global pseudo is renumbered, so $v0 (2) -- live from the call to the $v0 -> p copy -- is the only low register that can be excluded in this function; a block-0-confined quantity therefore takes 2 if $v0 is dead across its span and 3 otherwise.
+
+- [s44] sched1 explains why $v0 stays live: INSN_PRIORITY is computed within a basic block, and p has no consumer inside block 0, so the $v0 -> p copy is emitted last in that block (as in the target, addu $a1,$v0,$zero at 80034FA4, after the lbu at 80034FA0).
+
+- [s44] The seat law was measured in both directions -- a1's block-0 quantities 75/76 seat in 3 (q in 4), a2's block-0 quantity 77 seats in 2 for the first time in the ledger, but its byte-value quantity 78 then takes 3 and q still lands in 4.
+
+- [s44] NEW EXIT #6: find_reg overrides best_reg with a copy-preferred register after the two-pass scan (global.c:1096-1127); a1 exhibits it live (';; 77 preferences: 3', disposition 3), preference generated by set_preference's reg_renumber[src] >= 0 branch (global.c:1709-1735).
+
+- [s44] Enumeration of find_reg's seat routes is now complete: allocno rank (s39), hard_reg_conflicts (s41/s43), regs_someone_prefers (s45 exit #5), hard_reg_copy_preferences override (s46 exit #6). All four route through a block-0-confined pointer quantity that a single C pointer object cannot supply.
+
+- [s44] candidate.c's `m` local is codegen-inert; the uniform spelling banked at rejected/s46-uniform-four-block-reload-no-m-BYTE-IDENTICAL-TO-b0-score10.c emits the same 49 instructions and is the recommended submission body. A note recording this was added to candidate.c's header comment (the body is unchanged, so the review body key is unchanged).
+
+- [s44] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file was modified. Ladder accounting unchanged: the six-modality condition was met at s31 and the LADDER EXHAUSTED (non-endgame residual, floor 10) record still awaits an `escalation`-modality session -- this session was dispatched as `synthesis`, so it does not file one.

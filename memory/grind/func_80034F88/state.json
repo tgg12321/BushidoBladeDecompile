@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 43,
+ "session_count": 44,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -261,23 +261,29 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Synthesis s45: the preference records were read for the first time and they reframe the residual -- pseudo 74 takes $v1 with NO preference at all, purely as find_reg's lowest free pass-0 register, and"
+  },
+  {
+   "session": 44,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "Seat law found and measured both ways: a block-0-confined quantity takes $v0 when $v0 is dead across its span and $v1 otherwise (local-alloc.c:2169-2171 + numeric scan), which is what puts hard reg 3 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is decided in local-alloc.c, not global.c: the discriminator between the base body and the score-0 banned body is which hard register local-alloc hands block 0's block-confined quantities (score-0/target: address $v1, value $a0; every single-object body: value $v1, which is what puts hard reg 3 in q's conflict row).",
-   "mechanism": "local-alloc renumbers block-confined quantities before global alloc; its choices become hard_reg_conflicts entries for every global allocno live across them, and (via global.c:1725 set_preference) the only source of hard-register preferences in this function.",
-   "next_probe": "Read local-alloc.c's quantity ordering (qty_order / qty_compare) and find_free_reg's qty_phys_copy_sugg / qty_phys_sugg path, then identify the ordinary-C property of block 0 that makes its byte value take $a0 rather than $v1 -- e.g. whether a higher-local-priority block-0 quantity can legitimately be made to occupy $v1, or whether the $a0 suggestion comes from a copy the source can create."
+   "hypothesis": "The single remaining unmeasured way to give block 0 a second local-alloc quantity ahead of the byte value is to make block 0 compute a NON-pointer quantity that local-alloc seats in 3 while $v0 is still live, pushing the byte value to 4 and leaving q's conflict row to be decided by whether that quantity is live across q.",
+   "mechanism": "Seat law (local-alloc.c:2169-2171, numeric scan at local-alloc.c:2247): a quantity reaches reg 4 only when 2 and 3 are both excluded across its span, and 3 can only be excluded by an earlier block-0-confined quantity. a2 proved a second block-0 quantity can exist and be seated; it just seated at 2 because $v0 had died.",
+   "next_probe": "Build bodies that add a block-0-confined INTEGER computation (not a pointer, not a use of p) whose live range starts before the byte load and ends inside block 0 -- e.g. the mask constant staged through a named local, or the byte value split into two names with the first dying at the store -- and read the .lreg 'in block 0' seats plus the .greg dispositions BEFORE judging by score. The success signature is `74/76 conflicts` WITHOUT hard reg 3, or a q disposition of 3."
   },
   {
-   "hypothesis": "Exit #5 (regs_someone_prefers) is reachable on a single-object chassis if some ordinary-C construct puts a copy edge between q (or p) and a block-0-confined quantity that local-alloc has already seated in reg 3.",
-   "mechanism": "global.c:1700-1754 set_preference fires on a copy insn where one side is a pseudo with reg_renumber >= 0; global.c:911-931 then propagates that preference into regs_someone_prefers of the higher-priority conflicting allocno, and global.c:1001 makes pass 0 avoid it.",
-   "next_probe": "y1/y2 showed an ANONYMOUS block-0 address does not produce the copy (GCC re-materialises the symbol for q). Try copy edges through a NON-pointer quantity instead -- an integer local that block 0 computes and block 1 consumes, which combine turns into a register copy -- and check the .greg for a '75 preferences: 3' line before judging by score."
+   "hypothesis": "Whether q's materialisation can be kept out of block 0 at all is the true gate on every find_reg exit; s44's p5 and s45's y1/y2 measured it only through source placement and the bare symbol.",
+   "mechanism": "The address constant is hoisted to function entry (cse/loop treat it as loop-invariant), which is why q is live across block 0 in every body and why block-0 quantities always conflict with it. If q's live range genuinely began at block 1, block-0 quantities would stop poisoning its row.",
+   "next_probe": "Read the .cse/.loop dump slices for a1 to find WHICH pass emits the entry materialisation of &D_80106A73 (cse2 vs loop vs expand), then test whether an ordinary-C construct that makes the address non-loop-invariant at that pass point (not an additive pun -- s45 proved combine's simplify_plus_minus cancels those) delays it. If the dump shows the materialisation is emitted at expand time, this hypothesis is closed and the frontier reduces to item 1."
   },
   {
-   "hypothesis": "Do not re-attack the block-0 value's live length by statement order; the remaining order-race exits (q nrefs >= 13, value nrefs <= 4) are already banked dead on this chassis, so the order race should be treated as closed and the conflict-row/preference clause attacked instead.",
-   "mechanism": "reg_live_length is recomputed post-combine (flow.c), so source order does not reach allocno_compare's key (global.c:635); the two reference-count exits both force a block-0-confined quantity into $v1 (s45's m1/rt reading).",
-   "next_probe": "Judge every future body by the .greg dispositions of the address pseudo and the block-0 value pseudo, not by score -- s44 showed two bodies can score 10 and be byte-identical, and s45 shows two bodies can score 10 with different conflict rows. cmp against tmp/grind/func_80034F88/s44/b0.o first."
+   "hypothesis": "The ladder record for this function is complete enough to file: five find_reg seat routes are enumerated and measured, every one of them routes through a block-0-confined pointer quantity, and the multi-handle axis that would supply it is Judge-closed.",
+   "mechanism": "docs/grind/decisions.md already carries the standing-ruling entries; the driver's own accounting shows the six-modality condition was met at s31 and the floor has been flat at 10 since s26.",
+   "next_probe": "When an `escalation`-modality session is dispatched, file the LADDER EXHAUSTED (non-endgame residual, floor 10) record -- NOT the endgame-lock title, since 10 > ENDGAME_LOCK_MAX_FLOOR=5 (owner ruling 2026-09-02) -- citing the s46 seat law, the four-exit enumeration, scan_hand_coded tier=LOW 0/8, and the negative SOTN census, with re-activation triggers = a class grant covering a second address handle, or a toolchain finding that changes local-alloc's seat order."
   }
  ],
  "judge_constraints": [
@@ -299,14 +305,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 26,
-   "statement": "A direct (non-pointer) access to D_80106A73 creates a fresh address pseudo per use, so spelling the later flag blocks as `D_80106A73 |= 2;` yields the target's second live address value without declar",
-   "kill_scope": "class",
-   "measured_on": "candidate.c score-10 single-object chassis at HEAD; the five hybrid bodies carry candidate.c's single `u8 *q` pointer alias and no other FAKE construct; banked at memory/grind/func_80034F88/rejected/h",
-   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:2369",
-   "result": "The premise is false. CONSTANT_ADDRESS_P accepts SYMBOL_REF, so a direct global access is already a legitimate address: "
-  },
   {
    "session": 27,
    "statement": "From a single `u8 *q`, some assignment pattern reaches the target's instruction multiset -- four surviving byte loads at three address materialisations.",
@@ -773,6 +771,14 @@
    "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; bodies y1/y2, single declared `u8 *q`, no FAKE construct present.",
    "predicate_cite": "",
    "result": "y1 = 16 at 51, y2 = 16 at 51. y1's .greg shows q as pseudo 74 with disposition 4, conflict row '72 74 77 78 81 82 85 86 "
+  },
+  {
+   "session": 44,
+   "statement": "Making $v0 die early by giving `p` a consumer inside block 0 (c0 = p[8] & 1 hoisted above the pointer and mask statements) does not deliver $v1 to q on this single-pointer-object chassis; it measures ",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (re-measured 10 at 49 this session; tools/fake_ablate.py reports no FAKE-annotated construct to ablate); body a2, single declared `u8 *q`, no FAKE const",
+   "predicate_cite": "",
+   "result": "14 at 49 (four points worse than the floor); dispositions 72 in 5 / 73 in 3 / 75 in 3 / 76 in 4 (q) / 77 in 2 / 78 in 3."
   }
  ]
 }
