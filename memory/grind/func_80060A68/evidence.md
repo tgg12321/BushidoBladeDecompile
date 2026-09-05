@@ -4091,3 +4091,37 @@ reading each table through the address of its first word: both score 0/66 and bo
 reproduce the oracle SHA1. candidate.c now carries the array declarations, so the body has
 no use-site spelling of an object model left in it: every access is a member reference, an
 array subscript, a call, or a scalar assignment.
+
+## [s29b 2026-09-05] solver — measurements
+
+- Chassis re-measure (brief said "measurement unavailable"): candidate.c applied to src/text1b.c,
+  `sandbox func_80060A68 --disable all` = score 0, target_insns 66, build_insns 66, scorable true.
+  `verify-oracle` = ok true, build_matches true, build_sha1 =
+  62efab4f73f992798c43e8c730aa43baa10bb4fa = original_sha1_locked.
+- `tools/ra_solver/inverse_compose.py classify text1b func_80060A68` REFUSES (zero-rule guard:
+  no regfix/asmfix rules => src-derived tgt.s cannot carry the target stream => a text-stream
+  classify would be a FICTITIOUS PRE-RA verdict). The guard names the object-level route.
+- `tools/ra_solver/goal_from_tgt.py classify text1b func_80060A68` =>
+  "ours 66 insns, target 66 insns [object-level: replace_with_asmfile-safe] / NO DIVERGENCE: the
+  two streams are identical." Both solver axes (RA seat, scheduler order) are closed by verdict.
+  Saved at tmp/grind/func_80060A68/s29/solver_classify.txt.
+- Object-model evidence, read from COMMITTED MATCHED C in src/text1b.c (INCLUDE_ASM tree), with no
+  reference to codegen:
+    :3358  extern s32 *D_800A3468;   <- matched sibling func_80061064 already types it a pointer
+    :3315  D_800A3468 = 0x1F800000;  :3740  D_800A3468 = (s32)&D_800F116C;
+    :3406 :3423 :3457 :3472 :3492 :3506 :3521 :3562 :3599 :3628 :3659 :3694 :3709 :3722
+           D_800A3468 = (s32)v1;     <- v1 is a callee's returned pointer at every one
+    :3369 :3432 :3530 :3637 :3670 :3750   member at +0x14 always receives a pointer
+    :3433 :3531 :3638 :3671 :3751  *(s32 *)D_800A3468 = 0x210009 / 0x210005 / 0x210010 /
+           0x210002 / 0x210014       <- whole word written as ONE constant; low halfword is the
+           index this function `lhu`s, bit 21 (0x200000) is the flag it tests.  :3371 writes the
+           same word as a bare loop counter.
+  The header comment inherited from the prior session cited :3452/:3469/:3503/:3361/:3415/:3479 for
+  these facts; those line numbers were WRONG and are corrected in candidate.c this session.
+- Model-robustness sweep (all on today's HEAD chassis, all zero FAKE / zero volatile / zero asm):
+    candidate.c (block struct + union + array decls)                       0 / 66, 66 insns
+    alt-...-tables-through-address-of-first-word.c                         0 / 66, 66 insns
+    alt-...-two-halfwords-plus-cast-flag-read.c (no union at all)          0 / 66, 66 insns
+    alt-...-file-scope-struct-renamed-members.c (NEW s29b, V1.c)           0 / 66, 66 insns
+    offset-0 read spelled as an integer cast (contradicts :3358)          11 / 66  (s29 H-s29-3)
+  The bytes track the object model, not the spelling.

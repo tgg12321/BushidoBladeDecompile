@@ -2880,3 +2880,86 @@ build_insns 66 / target_insns 66; `verify-oracle` ok true, build_sha1 ==
 banked at alt-s29-score0-tables-through-address-of-first-word.c. candidate.c carries the
 array declarations because that puts the object model at the declaration rather than at
 each use site, which is what the declaration-pun audit asks for.
+
+## [s29b 2026-09-05] solver — the RA/sched axes are closed by a typed verdict, and the
+## object model survives a robustness test; the residual is a RULING question, not a search
+
+This session inherited a body at `memory/grind/func_80060A68/candidate.c` that the previous
+session measured at score 0, and a driver ban list that now contains an entry reading "The entire
+struct-typed rewrite of D_800A3468's target object, replacing 28 sessions of cast-through-pointer
+arithmetic with member references". That ban was written from the 2026-09-05 01:09 layer-1 FAIL.
+Because the driver rejects a `candidate-ready` whose self-vet re-declares a banned construct
+BEFORE any review runs, and because the role contract states that a layer-1 FAIL on a body the
+worker believes is ordinary C has exactly one correct move, this session does not resubmit. It
+re-measures, closes its mandated modality's axes with a typed verdict, tests the layer-1
+objection's central factual claim, and emits a ruling request.
+
+**H-s29b-1 (CONFIRMED). The banked body still measures 0 and still reproduces the oracle.**
+`& tools/wteng.ps1 main sandbox func_80060A68 --disable all` on today's HEAD chassis, with
+candidate.c applied to src/text1b.c in place of the `INCLUDE_ASM` line, prints
+`score 0, target_insns 66, build_insns 66, scorable true`. `verify-oracle` on the same tree
+prints `ok true`, `build_matches true`,
+`build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked`. The CHASSIS CHECK
+block in this session's brief said "measurement unavailable"; it is now measured. The honest floor
+for this function is 0 for this body and 2 for the ban-free cast-through-integer chassis.
+
+**H-s29b-2 (CONFIRMED, class-strength typed verdict). Both solver axes are closed: there is no
+RA residual and no scheduler residual left to search.**
+The mandated first solver step, `inverse_compose.py classify text1b func_80060A68`, refuses on
+this function with the zero-rule guard (no regfix/asmfix rules means the src-derived `tgt.s`
+cannot carry the target's stream and a text-stream classify would report a FICTITIOUS PRE-RA
+verdict — the guard's own wording; see docs/grind/inverse-compose-2026-08-06.md). Routed through
+the object-level path the guard names, `tools/ra_solver/goal_from_tgt.py classify text1b
+func_80060A68` reports:
+    func_80060A68 (text1b): ours 66 insns, target 66 insns  [object-level: replace_with_asmfile-safe]
+    NO DIVERGENCE: the two streams are identical.
+This is the strongest verdict the solver suite can return and it retires the solver modality for
+this function permanently: with the two streams identical there is no register seat and no
+emission-order tie for `tools/ra_solver` or `tools/sched_solver` to invert. Every RA/scheduler
+frontier item this ledger has carried since s24 — the M-family allocno-displacement item, the
+`reg_equiv_mem` rematerialisation item, the `INSN_PRIORITY` and readiness predicates of s24/s25/s26
+— is answered, not by being defeated, but by ceasing to exist on this chassis. Artifact:
+tmp/grind/func_80060A68/s29/solver_classify.txt.
+
+**H-s29b-3 (CONFIRMED). The pointer typing of D_800A3468 is not this session's invention: it is
+already the declared type of the same symbol in committed, matched C in the same file.**
+`src/text1b.c:3358` (INCLUDE_ASM tree) reads `extern s32 *D_800A3468;`, inside the matched sibling
+`func_80061064`. Sixteen further sites assign a pointer value into the symbol (a callee's returned
+pointer at :3406/:3423/:3457/:3472/:3492/:3506/:3521/:3562/:3599/:3628/:3659/:3694/:3709/:3722,
+the scratchpad base 0x1F800000 at :3315, `&D_800F116C` at :3740) and none ever stores a
+non-address. The member at +0x14 receives a pointer at :3369/:3432/:3530/:3637/:3670/:3750. The
+whole 32-bit word at offset 0 is written as ONE constant at five sites — 0x210009, 0x210005,
+0x210010, 0x210002, 0x210014 — in every one of which the low halfword is the character index this
+function reads with `lhu` and bit 21 is the flag it tests at the tail; :3371 writes the same word
+as a bare loop counter. That is the union at offset 0, evidenced entirely from sibling source with
+no reference to codegen. NOTE: the header comment candidate.c carried into this session cited
+:3452/:3469/:3503/:3361/:3415/:3479 for these facts; those line numbers were WRONG (they land on
+`extern` declarations and unrelated statements). The citations are corrected in candidate.c this
+session. The mechanism paragraph the 01:09 layer-1 FAIL objected to is deliberately left VERBATIM —
+removing it would be respelling to dodge a finding, which the contract forbids, and comments do not
+change the body key in any case.
+
+**H-s29b-4 (KILLED, instance). The 2026-09-05 01:09 layer-1 finding's central factual claim — that
+the struct/union declaration was selected by score sweep among spellings — is false as stated: the
+bytes are determined by the object MODEL and are invariant across faithful spellings of it.**
+Four structurally distinct faithful spellings of the same model were measured on today's HEAD
+chassis and all four are 0/66, 66 insns:
+  (a) candidate.c — block-scope struct, union at offset 0, tables declared `extern T name[]`.
+  (b) alt-s29-score0-tables-through-address-of-first-word.c — same model, tables read as
+      `(&D_800F10D0)[i]` through the address of their first word instead of as arrays.
+  (c) alt-s29-score0-two-halfwords-plus-cast-flag-read.c — offset 0 declared as `u16 idx; u16 u02;`
+      with the flag test spelled as a cast, i.e. NO union at all.
+  (d) alt-s29-score0-file-scope-struct-renamed-members.c (NEW this session, tmp/.../s29/V1.c) —
+      the struct hoisted to FILE scope, every member renamed (`st`/`status`/`index`/`srcW`/`srcH`/
+      `outByte`/`w18`/`w20`), the unused words typed `u32` instead of `s32`.
+Selection among spellings would show the score moving with the spelling; it does not. The single
+spelling that DOES regress (11/66, banked s29 H-s29-3) is the one that contradicts :3358's
+committed pointer declaration by reading offset 0 through an integer cast — i.e. the regression
+tracks fidelity to the file's own object model, which is the opposite of a sweep.
+kill_scope: instance. measured_on: today's HEAD chassis, four bodies plus the cast control, zero
+FAKE constructs, zero volatile, zero inline asm, one local (`result`) in every body.
+
+**Frontier: none that is a search.** The function has a body that matches and reproduces the oracle
+SHA1; the solver suite reports the streams identical; the object model is evidenced from committed
+sibling C and is invariant across faithful spellings. What remains is a classification question a
+grind session may not self-approve, and it is asked in this session's outcome JSON.

@@ -7,15 +7,39 @@
  *
  * WHAT CHANGED after 28 sessions of cast-through-integer geometry: the global at 0x800A3468 is a
  * POINTER, not an integer that happens to hold an address, and the object it points at gets a
- * declared shape.  src/text1b.c itself is the evidence: :3452, :3469 and :3503 assign a callee's
- * returned pointer into it, :3361 assigns the scratchpad base, :3415 stores a pointer into the
- * field at +0x14, and :3479 writes the whole word at offset 0 as the single constant 0x210009 -
- * whose low halfword 9 is the index this function loads with `lhu` and whose bit 21 is the flag
- * this function tests at the tail.  One storage location written whole and read at two widths is
- * what the union at offset 0 declares.  The three tables are declared as the arrays the census
- * already documents them to be (24-entry flag table; per-index offset table; per-character
- * combo-id table), so every access in the body is a member reference or an array subscript and
- * nothing is spelled as pointer arithmetic through a cast.
+ * declared shape.  src/text1b.c's own COMMITTED, MATCHED C is the evidence, independently of any
+ * codegen observation (line numbers below are against the INCLUDE_ASM tree, i.e. src/text1b.c as
+ * committed at s29):
+ *   - :3358 `extern s32 *D_800A3468;` -- the matched sibling func_80061064 ALREADY declares this
+ *     exact global with a pointer type.  The pointer typing is not this session's invention; it is
+ *     the file's existing, accepted declaration for the same symbol.
+ *   - Sixteen sites assign a POINTER into it: `D_800A3468 = (s32)v1;` where v1 is a callee's
+ *     returned pointer (:3406, :3423, :3457, :3472, :3492, :3506, :3521, :3562, :3599, :3628,
+ *     :3659, :3694, :3709, :3722), plus :3315 `= 0x1F800000` (the scratchpad base) and :3740
+ *     `= (s32)&D_800F116C`.  Nothing ever stores a non-address into it.
+ *   - :3369 `*(s32 **)((s32)D_800A3468 + 0x14) = ...` and :3432 / :3530 / :3637 / :3670 / :3750 --
+ *     the member at +0x14 always receives a pointer to a byte buffer; this function stores one byte
+ *     through it (`sb`), which is what `s8 *p14` declares.
+ *   - :3433, :3531, :3638, :3671, :3751 write the WHOLE 32-bit word at offset 0 as a single
+ *     constant -- 0x210009, 0x210005, 0x210010, 0x210002, 0x210014.  In every one of the five the
+ *     low halfword is the character index this function loads with `lhu`, and bit 21 (0x200000) is
+ *     the flag this function tests at the tail.  :3371 writes the same word as a bare loop index.
+ *     One storage location written whole at five sites and read at two widths here is what the
+ *     union at offset 0 declares.
+ * The three tables are declared as the arrays the naming census already documents them to be
+ * (24-entry flag table; per-index offset table; per-character combo-id table), so every access in
+ * the body is a member reference or an array subscript and nothing is spelled as pointer
+ * arithmetic through a cast.
+ *
+ * ROBUSTNESS OF THE MODEL (s29, measured on today's HEAD chassis).  The object model, not a swept
+ * spelling, determines the bytes: FOUR structurally distinct faithful spellings of this same model
+ * all measure 0/66 -- this body; the tables spelled through the address of their first word
+ * (alt-s29-score0-tables-through-address-of-first-word.c); offset 0 declared as two u16 members
+ * with the flag test cast instead of a union
+ * (alt-s29-score0-two-halfwords-plus-cast-flag-read.c); and a FILE-scope struct with every member
+ * renamed and the unused words typed u32 (alt-s29-score0-file-scope-struct-renamed-members.c).
+ * The spelling that regresses (11/66) is the one that CONTRADICTS :3358's committed pointer
+ * declaration by reading offset 0 through an integer cast.
  *
  * WHY THAT REACHES THE TARGET STREAM (observation, recorded for the next reader - not the reason
  * any construct is here):
