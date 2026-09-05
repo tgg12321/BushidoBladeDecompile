@@ -3297,3 +3297,95 @@ question on the split chassis (V1), not an allocator question.
 - [s121] inverse.py local --swap 1,2 --depth 2 returns REACHABLE at 1 atom with 21 distinct vectors in three classes: refs_down on qty 1 (measured dead this session, six spellings at 14/160), live_extend on qty 1, refs_up on qty 2.
 
 - [s121] Sibling sweep: CD_ready s84 concluded independently that its analogous block-3 scheduler neighbourhood is enumerated and empty and that its residual is an ra_solver question; s121 reaches the same conclusion for CD_sync by a different route. func_80045294 shares no window with this function and has nothing to transplant.
+
+## s122 (structural, 2026-09-04) — the contended quantities were MIS-IDENTIFIED for six sessions; the corrected map closes the C-level lever space on the V2 chassis
+
+- [s122] CHASSIS re-measured live: `progress/s121-V2-order-exact-RA-only-6.c` = 6/160
+  bi 160 rd 0 (P5 control); `memory/grind/CD_sync/candidate.c` unchanged at 2/160
+  (ledger floor confirmed; body untouched this session).
+- [s122] **CORRECTION, load-bearing.** s118-s121 called block 3's two contended
+  local-alloc quantities "the t0 ADDRESS chain (reg113)" and "the arg5 value
+  (reg106)". The post-sched1 RTL (`gccdump.lreg` of the V2 chassis,
+  tmp/grind/CD_sync/s122/P5_v2_control/gccdump.lreg:446-505) says otherwise:
+    * `(insn 127) reg113 = reg107 << 2`  — qty1 is the **t0 SCALE result**
+      (`t0 *= 4;`), live 127 -> 132 only.
+    * `(insn 123) reg106 = mem(reg111)`  — qty2 is the arg5 loaded VALUE,
+      live 123 -> 149 (`sw reg106,16(sp)`).
+    * The t0 **ADDRESS** lives in `reg107` — the /v pseudo of the C variable
+      `t0`, written twice (insn 112 `t0 = idx_1494[0]`, insn 132
+      `t0 = tbl + scale`) and read at insn 157 (`lw a3,0(reg107)`). It is NOT
+      one of the four quantities local-alloc contends over in this block; it
+      inherits $v1 from the qty1 merge.
+    * qty0 = {reg108,reg111} the ix chain (birth 10 death 20 refs 6, gets $v0);
+      qty3 = {reg117,reg120} the arg3 D_800A11DC[D_800A11D5] chain (22/30
+      refs 4, gets $v0).
+  Every "live_extend qty 1" vector inherited from inverse.py therefore means
+  *move the `sll`/`addu` INSNS*, not *restructure the C variable that holds the
+  address* — which is exactly why the C-side spellings measured this session
+  are inert (below).
+- [s122] Post-sched1 emission order of block 3 on V2 (reverse of the picks list;
+  the picks list in system.sched.json is END-FIRST — a trap: `perturb.py
+  --goal-before A:B` is in PICKS order, so "emit A before B" is
+  `--goal-before B:A`):
+  104,106,112,116,153,118,121,123,127,140? — precisely:
+  `104,106,112(lbu t0i),116(lbu ix),153(a1),118(sll ix),121(addu ix addr),
+  127(sll t0 scale),123(lw arg5),140(lbu arg3 idx),132(addu t0 addr),
+  149(sw arg5,16(sp)),145(sll arg3),155(lw a2),157(lw a3),151(a0),159(call)`.
+  local-alloc's birth/death numbering is `2*pos + 4` on this stream, which
+  reproduces the QTYDBG table exactly (qty1 127->132 = 18/24, qty2 123->149 =
+  20/26).
+- [s122] **Four structurally distinct C spellings produce a BYTE-IDENTICAL
+  block-3 quantity table.** P1 (the `t0` variable also carries the ix index
+  first), P3 (`t0` carries the arg5 value first), Q3 (a dedicated `s32 *ap`
+  pointer local for the arg5 address) and P5 (the V2 control) all dump
+  `qty0 birth10/death20/refs6 got=2 · qty3 22/30/4 got=2 · qty1 18/24/2 got=3 ·
+  qty2 20/26/2 got=4`. Scores 9, 7, 6, 6. The variable-identity ("merge/reuse
+  one variable so the range spans both") vector that inverse.py ranks #2-#5
+  cannot reach qty1/qty2 at all, because those pseudos are compiler-generated
+  intermediates whose live ranges are fixed by insn positions, not by C
+  variable identity.
+- [s122] `perturb.py --pass 1 --block 3 --goal-before 132:149` (i.e. make sched1
+  EMIT the arg5 store before the t0 address addu — the span change that flips
+  the qty1/qty2 priority order) searches 1091 single atoms and returns
+  **25 reaching vectors, NONE of them a `luid` atom**: 20 `add_dep`/`del_dep`
+  edges and 5 `cost` atoms (`cost 112 := 12`, `cost 127 := 3`, `cost 127 := 12`,
+  `cost 149 := 3/12`, `cost 155 := 12`). Every dep atom orders one of our chain
+  insns against 149/155/123 — i.e. against the printf ARGUMENT-SETUP insns,
+  which the front end emits last in the block, so no C statement can be placed
+  after them; and the cost atoms are instruction-selection changes (a load or a
+  multiply where the target has a shift) that would change the emitted bytes.
+  This is the model-level reason s120's fifteen source orders were inert:
+  statement order is a `luid` atom, and the luid class does not contain the fix.
+  Raw: tmp/grind/CD_sync/s122/perturb_p1_goal.txt.
+- [s122] Also measured on the V2 chassis (all bi 160 rd 0, control 6): P1 9,
+  P2 (single variable, no `ix` local) 10, P3 7, P4 (mirror: `ix` carries the t0
+  index; bi=161, an extra insn) 9, Q1 (separate index/scale/address variables) 9,
+  Q2 (t0 address as one statement) 9, Q3 6. Banked as
+  memory/grind/CD_sync/rejected/s122_*.c.
+- [s122] HARNESS NOTE: `tmp/grind/CD_sync/s117/run.ps1 -forms <array>` only ever
+  processes the FIRST element when it is invoked from the Windows-side agent
+  shell (the child `pwsh -File tools/wteng.ps1` call terminates the parent
+  loop). Drive it one form per invocation from a bash `for` loop
+  (`powershell.exe -NoProfile -File .../run.ps1 -forms <one path>`); s122 lost
+  three turns to this. `qd.sh`/`qfull.sh` must run INSIDE WSL
+  (`bash tools/wsl.sh "bash tmp/grind/CD_sync/s122/qd.sh <form> <tag>"`).
+- [s122] `qfull.sh` (new, tmp/grind/CD_sync/s122/qfull.sh) dumps BB2_QTY_DEBUG
+  for the FULL src/system.c rather than the s118 mini TU: the CD_sync block-3
+  table is identical in both, so the mini harness every session since s118 has
+  relied on is faithful for this function.
+
+- [s122] Chassis re-measured live: V2 (progress/s121-V2-order-exact-RA-only-6.c) = 6/160 bi 160 rd 0; candidate.c body unchanged, floor 2/160; src/system.c restored to HEAD at end of session.
+
+- [s122] CORRECTION to six sessions of ledger prose: block-3 qty1 = reg113 = the t0 SCALE result (live insn 127 -> 132), qty2 = reg106 = the arg5 loaded value (insn 123 -> the sw at 149). The t0 ADDRESS is reg107, the C variable t0's own /v pseudo, read at lw a3,0(reg107) (insn 157), and it is not among the four quantities local-alloc ranks.
+
+- [s122] local-alloc birth/death numbering on this function is 2*post-sched1-emission-position + 4; that reproduces the QTYDBG table exactly and is how a future session should map a quantity to an insn.
+
+- [s122] TRAP: the picks array in system.sched.json is END-FIRST (the block is scheduled backwards), so emission order is its reverse and perturb.py --goal-before A:B means 'B is emitted before A'. Reading it forwards inverts every conclusion.
+
+- [s122] Four structurally distinct C spellings of the do_timeout block (variable reused for the ix index, variable reused for the arg5 value, dedicated pointer local, control) yield a byte-identical block-3 quantity table on the V2 chassis.
+
+- [s122] perturb.py pass-1 goal 'emit the arg5 sw before the t0 addu': 25 reaching vectors out of 1091 atoms, none in the luid (statement-order) class; all are dependence edges against the call's argument-setup insns, or instruction-cost changes.
+
+- [s122] Full-TU vs mini-TU QTYDBG tables for CD_sync are identical, so the s118 mini harness every session since has relied on is faithful for this function.
+
+- [s122] HARNESS: tmp/grind/CD_sync/s117/run.ps1 -forms <array> processes only the FIRST element when invoked from the agent's Windows shell; drive it one form per invocation from a bash for-loop. qd.sh/qfull.sh must run inside WSL via tools/wsl.sh.

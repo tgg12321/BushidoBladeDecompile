@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 121,
- "current_modality": "rederive",
+ "session_count": 122,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 0,
@@ -735,23 +735,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "The order half of the six-session order-vs-seat equation is SOLVED and proven insufficient: V2_ixfirst_folded is order-exact in both scheduler passes and its whole residual is one local-alloc tie, whi"
+  },
+  {
+   "session": 122,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Block 3's contended quantities were mis-named for six sessions - qty1 is the t0 SCALE result, not the address - and with the corrected map both C-side lever classes (variable-identity live_extend, sta"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C-reachable live_extend on qty 1 (the t0-address quantity: born earlier 18->17/16, or dying later 24->25/26) breaks the local-alloc tie on the V2 order-exact chassis without disturbing its target-exact emission order, giving 0/160.",
-   "mechanism": "qty_compare_1 ties only while both quantities sit at refs 2 / span 6; lengthening qty 1's span lowers its priority below qty 2's, so the arg5 value is allocated first and takes $v1 while the t0 address falls to $a0 - the target seats. Ranked #2-#5 by inverse.py local, cost 2, no construct required by the tool's own lever mapping ('variable identity: merge/reuse one variable so the range spans both, or move the last use later').",
-   "next_probe": "Spell each of the four live_extend deltas on memory/grind/CD_sync/progress/s121-V2-order-exact-RA-only-6.c, then for every form BOTH (a) re-run tmp/grind/CD_sync/s121/qd.sh and require the QTYDBG blk=3 table to show the intended birth/death change, and (b) re-run extract.py + show.py and require PASS 1 and PASS 2 to stay 'same True' for block 3. The tool's LOCAL-MODE CAVEAT means a form that scores worse without moving the QTYDBG numbers has not tested the vector at all."
+   "hypothesis": "On the FOLDED candidate chassis (2/160 - correct seats, one transposition of the final order) there exist pass-2-ONLY perturbation atoms: s121 found 36 atoms reaching the pass-2 goal and 31 reaching the pass-1 goal with intersection 26, leaving ~10 atoms that fix the FINAL order without perturbing the pass-1 stream local-alloc consumes - exactly what is needed, since the good spans are a pass-1 property.",
+   "mechanism": "local-alloc reads the post-sched1 stream; sched2 runs after reload and only reorders. An atom that reaches the pass-2 goal but is NOT in the pass-1 reaching set leaves the pass-1 births/deaths (t0 scale 16/24, arg5 20/26 on the folded chassis) intact and therefore keeps the target seats while fixing the transposition.",
+   "next_probe": "Re-extract the model with candidate.c applied, run perturb.py --pass 1 and --pass 2 with --goal-from-target, take the set DIFFERENCE (pass-2 reaching minus pass-1 reaching), keep only luid atoms, spell each as a statement move, and for every spelling require (a) a sandbox score and (b) a BB2_QTY_DEBUG dump showing qty1/qty2 still at 16/24 and 20/26."
   },
   {
-   "hypothesis": "refs_up on qty 2 (the arg5 value, refs 2->3) breaks the same tie from the other side on the V2 order-exact chassis.",
-   "mechanism": "pri(arg5) at refs 3 / span 6 is 20000 against the t0 address's 13333, so the tie disappears and arg5 is allocated first. inverse.py ranks it #8 and maps it to duplicated-statement-into-arms (SANCTIONED, with prerequisites) and split-read-defeats-hoist; it also warns explicitly that dead stores are INERT for a reg_n_refs lift because flow.c deletes them before the references are counted.",
-   "next_probe": "Kept as the FALLBACK to frontier item 1, not the first move. Any carrier is a SECOND FAKE construct on a body that already carries the chain-extender, so if a spelling measures 0 the correct outcome is a ruling-request naming both constructs together and quoting the duplicated-statement-into-arms scope sentence - never a silent candidate-ready."
+   "hypothesis": "One of the 25 pass-1 reaching atoms on the V2 chassis has a byte-neutral C spelling after all, most plausibly the add_dep 112 <- 123 / 132 <- 149 memory-edge class, if a load in the block can be made to look like it may alias the outgoing-argument stack slot.",
+   "mechanism": "sched.c builds memory dependences conservatively from the pre-sched insn order; the two printf argument loads (155, 157) already carry true deps on the sw at 149 for exactly this reason, so an aliasing relationship - not a statement move - is what the model is asking for.",
+   "next_probe": "Re-run perturb.py --depth 2 on the same goal to see whether a two-atom vector uses only spellable inputs, and separately test whether reading one of the block's values through a differently-typed pointer creates the 112<-123 edge without adding an insn; reject any spelling that changes build_insns."
   },
   {
-   "hypothesis": "A depth-2 vector, or a vector outside inverse.py's default search bounds (refs delta +4/-2), reaches the goal where every depth-1 vector has a dead spelling.",
-   "mechanism": "The tool states its own bounds and that 'a vector outside these bounds exists but is not searched'. With refs_down measured dead as a spelling and refs_up gated behind a second FAKE, the depth-1 space is thinner than the 21-vector count suggests.",
-   "next_probe": "Re-run inverse.py local with --depth 2 --top 30 and cross every candidate vector against the sched_solver model before spelling it, accepting only vectors that leave block 3's emission order untouched (PASS 1 and PASS 2 'same True' in show.py). Also worth one pass of tools/ra_solver/inverse_reload.py: the ix chain's add is reload-materialised on the folded chassis, so reload's retry may be a modelled input this block's tie is sensitive to."
+   "hypothesis": "inverse.py local, re-run with the CORRECTED quantity identification, ranks a vector on the SCALE result (qty1 = reg113, refs 2, three-insn range) that previous sessions never evaluated because they were spelling against the address instead.",
+   "mechanism": "The address pseudo reg107 inherits its seat from the qty1 merge, so every C-level lever aimed at the address was aimed one pseudo too far downstream; refs/span vectors on the scale result itself were never enumerated against the target's own instruction sequence.",
+   "next_probe": "Re-run tools/ra_solver/inverse.py local on the V2 model with --swap 1,2 and read every vector as a statement about reg113/reg106, checking each against the target's own instruction sequence for a faithful spelling BEFORE measuring; cross-check any survivor against the pass-1 sched model so it does not disturb block 3's emission order."
   }
  ],
  "judge_constraints": [
@@ -1027,6 +1033,22 @@
    "measured_on": "V2 order-exact chassis, chain-extender FAKE present, pp absent; control 6/160 bi 160 rd 0",
    "predicate_cite": "",
    "result": "N3 6, N4 6, N6 6, N5 7, N1 14, N2 14, all /160 bi 160 rd 0, against a 6/160 control. Declaration order is inert for this"
+  },
+  {
+   "session": 122,
+   "statement": "Reusing one C variable so its live range spans an earlier value and the t0 chain - inverse.py's ranked #2-#5 live_extend vectors, whose lever mapping is 'merge/reuse one variable so the range spans bo",
+   "kill_scope": "instance",
+   "measured_on": "V2 order-exact chassis (memory/grind/CD_sync/progress/s121-V2-order-exact-RA-only-6.c), chain-extender FAKE present, pp pointer alias absent; control 6/160 bi 160 rd 0",
+   "predicate_cite": "",
+   "result": "9, 10, 7, 9 (bi 161), 9, 9, 6 /160 - and the block-3 quantity table is byte-identical in P1, P3, Q3 and the control (qty"
+  },
+  {
+   "session": 122,
+   "statement": "Some source-statement order on the V2 chassis makes sched1 emit the arg5 store (uid 149) before the t0 address addu (uid 132), the span change that flips the qty1/qty2 priority order and hence the $v1",
+   "kill_scope": "instance",
+   "measured_on": "V2 order-exact chassis, sched model tmp/sched_solver_work/system.sched.json (parity=True, CD_sync 52/52 blocks order- and clock-exact), chain-extender FAKE present, pp absent; control 6/160 bi 160 rd ",
+   "predicate_cite": "",
+   "result": "25 reaching vectors, ZERO of them luid: 20 add_dep/del_dep edges and 5 cost atoms (cost 112:=12, cost 127:=3, cost 127:="
   }
  ],
  "sibling_progress": [

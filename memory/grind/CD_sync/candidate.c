@@ -1,3 +1,20 @@
+/* [s122] BODY UNCHANGED; floor still 2/160.  The s118-s121 NAMING of block 3's
+ * contended local-alloc quantities was WRONG and is corrected here (post-sched1
+ * RTL, tmp/grind/CD_sync/s122/P5_v2_control/gccdump.lreg:446-505):
+ *   qty1 = reg113 = the t0 SCALE result (`sll reg113 = reg107 << 2`), live for
+ *          three insns only (127 -> 132);
+ *   qty2 = reg106 = the arg5 loaded value (123 -> the `sw ...,16(sp)` at 149);
+ *   the t0 ADDRESS is reg107, the /v pseudo of the C variable `t0`, and it is
+ *          NOT one of the four quantities local-alloc ranks in this block.
+ * Consequence: every "live_extend qty 1" vector means MOVE THE INSNS, not
+ * restructure the C variable -- and four structurally distinct spellings (the
+ * `t0` variable reused for the ix index / for the arg5 value / a dedicated
+ * `s32 *ap` pointer local / the control) produce a BYTE-IDENTICAL quantity
+ * table on the V2 chassis.  Also: perturb.py --pass 1 --goal-before 132:149
+ * returns 25 reaching vectors and ZERO luid atoms, so source-statement order
+ * provably does not contain the span fix on that chassis.  See hypotheses.md
+ * H122-1..H122-3.
+ */
 /* [s121] BODY UNCHANGED; floor still 2/160 (re-measured live this session,
  * bi 160 rd 0).  What changed is the DIAGNOSIS, and it moves the frontier off
  * the scheduler entirely.

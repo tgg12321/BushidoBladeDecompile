@@ -2949,3 +2949,81 @@ Result: candidate.c 2/160 bi 160 with the FAKE, 15/159 without; V2 6/160 with,
 - probe: tools/fake_ablate.py --func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c, and again with tmp/grind/CD_sync/s120/forms/V2_ixfirst_folded.c.
 - result: candidate.c 2/160 bi 160 with the FAKE and 15/159 without; V2 6/160 with and 19/159 without. Neither chassis's score is a FAKE-carrier artifact, so both this session's control numbers and the V2 diagnosis stand on their own.
 - verdict: CONFIRMED
+
+## s122 (structural, 2026-09-04)
+
+### H122-1 CONFIRMED — block 3's contended quantities are compiler intermediates, and the ledger's six-session naming of them was wrong
+Statement: local-alloc's qty1 (reg113) in block 3 is the result of the t0 SCALE
+(`sll reg113 = reg107 << 2`, insn 127, live to insn 132) and qty2 (reg106) is the
+arg5 loaded value (`lw reg106 = mem(reg111)`, insn 123, live to the
+`sw reg106,16(sp)` insn 149). The t0 ADDRESS is reg107 — the /v pseudo of the C
+variable `t0`, defined twice and read at `lw a3,0(reg107)` (insn 157) — and it is
+not one of the four quantities local-alloc ranks in this block.
+Probe: BB2_QTY_DEBUG + `-da` on the V2 chassis, reading
+tmp/grind/CD_sync/s122/P5_v2_control/gccdump.lreg:446-505 (post-sched1 RTL) and
+matching it against the QTYDBG births/deaths (numbering = 2*emission_pos + 4).
+Also verified on the FULL src/system.c compile (tmp/grind/CD_sync/s122/qfull.sh):
+identical table, so the s118 mini-TU harness is faithful.
+- verdict: CONFIRMED
+
+### H122-2 KILLED (instance) — variable-identity merge as a live_extend carrier
+Statement: reusing one C variable so its live range spans both an earlier value
+and the t0 chain (inverse.py's ranked #2-#5 "live_extend qty 1" vectors, whose
+lever mapping is "merge/reuse one variable so the range spans both") moves qty1's
+birth or death on the V2 order-exact chassis.
+Probe: P1 (`t0` carries the ix index first, then the t0 chain), P2 (one variable
+for everything, no `ix` local), P3 (`t0` carries the arg5 value first), P4 (mirror:
+`ix` carries the t0 index), Q1 (separate index/scale/address variables), Q2 (t0
+address as a single statement), Q3 (dedicated `s32 *ap` pointer local for the arg5
+address); sandbox on each, and BB2_QTY_DEBUG on P1/P3/Q3 against the P5 control.
+Result: scores 9, 10, 7, 9 (bi 161), 9, 9, 6 against a 6/160 control — and the
+QTYDBG block-3 table is BYTE-IDENTICAL in P1, P3, Q3 and the control
+(`qty0 10/20 refs6 got=2 · qty3 22/30 refs4 got=2 · qty1 18/24 refs2 got=3 ·
+qty2 20/26 refs2 got=4`). Per the tool's own LOCAL-MODE CAVEAT this is the
+"has not tested the vector" signature — and H122-1 says why: qty1/qty2 are
+intermediates, so C variable identity cannot reach them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: V2 order-exact chassis (memory/grind/CD_sync/progress/s121-V2-order-exact-RA-only-6.c), chain-extender FAKE present, pp absent; control 6/160 bi 160 rd 0
+
+### H122-3 KILLED (instance) — the luid/statement-order class contains the span fix
+Statement: some source-statement order on the V2 chassis makes sched1 emit the
+arg5 store (uid 149) before the t0 address addu (uid 132), which is the span
+change that flips the qty1/qty2 priority order and hence the $v1/$a0 seats.
+Probe: `perturb.py tmp/sched_solver_work/system.sched.json --func CD_sync
+--pass 1 --block 3 --goal-before 132:149 --depth 1 --max 60` (note: the picks
+list is END-FIRST, so "emit 149 before 132" is `--goal-before 132:149`);
+1091 single atoms searched.
+Result: 25 reaching vectors and NOT ONE is a `luid` atom — 20 are `add_dep`/
+`del_dep` edges and 5 are `cost` atoms. Every dep atom orders one of our chain
+insns against uid 149/155/123, the printf argument-setup insns the front end
+emits last in the block, so no C statement can be placed after them; the cost
+atoms (`cost 127 := 3`, `cost 112 := 12`, …) are instruction-selection changes
+that would alter the emitted bytes. This is the model-level explanation of
+s120's fifteen inert source orders. Artifact:
+tmp/grind/CD_sync/s122/perturb_p1_goal.txt.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: V2 order-exact chassis, sched model tmp/sched_solver_work/system.sched.json (parity=True, 52/52 blocks order- and clock-exact), chain-extender FAKE present, pp absent; control 6/160
+
+## [s122] local-alloc's block-3 qty1 (reg113) is the result of the t0 scale insn (sll reg113 = reg107 << 2, insn 127, dead at insn 132) and qty2 (reg106) is the arg5 loaded value (insn 123, dead at the sw ...,16(sp) insn 149); the t0 ADDRESS lives in reg107, the /v pseudo of the C variable t0, and is not one of the four quantities local-alloc ranks in this block.
+- mechanism: local-alloc numbers births/deaths as 2*emission_position+4 over the post-sched1 insn stream; reading the .lreg RTL and matching those numbers against the QTYDBG table identifies each quantity uniquely, where prior sessions inferred the mapping from the C statements.
+- probe: BB2_QTY_DEBUG + -da on the V2 chassis; read tmp/grind/CD_sync/s122/P5_v2_control/gccdump.lreg:446-505; cross-check with a full-src/system.c dump via the new tmp/grind/CD_sync/s122/qfull.sh.
+- result: Confirmed and reproduced on both the s118 mini TU and the full TU (identical tables, so the mini harness is faithful). Post-sched1 emission order of block 3 on V2: 104,106,112,116,153,118,121,127,123,140,132,149,145,155,157,151,159. qty0={reg108,reg111} ix chain 10/20 refs6 $v0; qty3={reg117,reg120} arg3 chain 22/30 refs4 $v0; qty1 18/24 refs2 $v1 (target wants $a0); qty2 20/26 refs2 $a0 (target wants $v1).
+- verdict: CONFIRMED
+
+## [s122] Reusing one C variable so its live range spans an earlier value and the t0 chain - inverse.py's ranked #2-#5 live_extend vectors, whose lever mapping is 'merge/reuse one variable so the range spans both' - moves qty1's birth or death on the V2 order-exact chassis.
+- mechanism: GCC 2.7.2 gives one pseudo per C local, so merging two values into one variable should merge their live ranges and lengthen the quantity's span, lowering its qty_compare_1 priority below the arg5 value's and reversing the allocation order.
+- probe: Seven forms measured with sandbox --disable all on the V2 chassis (control 6/160): P1 t0 carries the ix index first, P2 one variable and no ix local, P3 t0 carries the arg5 value first, P4 mirror (ix carries the t0 index), Q1 separate index/scale/address variables, Q2 t0 address as one statement, Q3 dedicated s32 *ap pointer local; plus BB2_QTY_DEBUG on P1/P3/Q3 against the control.
+- result: 9, 10, 7, 9 (bi 161), 9, 9, 6 /160 - and the block-3 quantity table is byte-identical in P1, P3, Q3 and the control (qty0 10/20 refs6 got=2, qty3 22/30 refs4 got=2, qty1 18/24 refs2 got=3, qty2 20/26 refs2 got=4). Per the tool's LOCAL-MODE CAVEAT that is the 'the vector was never actually tested' signature, and H122-1 gives the reason: qty1/qty2 are compiler-generated intermediates whose ranges are fixed by insn positions, not by C variable identity. Forms banked as memory/grind/CD_sync/rejected/s122_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: V2 order-exact chassis (memory/grind/CD_sync/progress/s121-V2-order-exact-RA-only-6.c), chain-extender FAKE present, pp pointer alias absent; control 6/160 bi 160 rd 0
+
+## [s122] Some source-statement order on the V2 chassis makes sched1 emit the arg5 store (uid 149) before the t0 address addu (uid 132), the span change that flips the qty1/qty2 priority order and hence the $v1/$a0 seats.
+- mechanism: Statement order is exactly the luid atom of the scheduler model; if the luid class contained a reaching vector, a plain reordering of the do_timeout block would produce the target seats with no construct at all.
+- probe: python3 tools/sched_solver/perturb.py tmp/sched_solver_work/system.sched.json --func CD_sync --pass 1 --block 3 --goal-before 132:149 --depth 1 --max 60 (the picks list is END-FIRST, so 'emit 149 before 132' is --goal-before 132:149); 1091 single atoms searched.
+- result: 25 reaching vectors, ZERO of them luid: 20 add_dep/del_dep edges and 5 cost atoms (cost 112:=12, cost 127:=3, cost 127:=12, cost 149:=3/12, cost 155:=12). Every dep atom orders one of our chain insns against uid 149/155/123 - the printf argument-setup insns the front end emits last in the block, so no C statement can be placed after them - and the cost atoms are instruction-selection changes that would alter the emitted bytes. This is the model-level explanation of s120's fifteen inert source orders. Artifact tmp/grind/CD_sync/s122/perturb_p1_goal.txt.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: V2 order-exact chassis, sched model tmp/sched_solver_work/system.sched.json (parity=True, CD_sync 52/52 blocks order- and clock-exact), chain-extender FAKE present, pp absent; control 6/160 bi 160 rd 0
