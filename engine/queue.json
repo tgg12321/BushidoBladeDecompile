@@ -1603,18 +1603,6 @@
       "hand_coded_tier": "LOW"
     },
     {
-      "func": "main",
-      "file": "ings",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "unparked_from": "DECLINED 2026-08-24 (decisions.md escalation-packet rulings, packet 3): maspsx ASPSX-parity branch-target fill refused \u2014 self-healing transform, full fill-algorithm reimplementation required, ~120 already-correct census sites at risk. Residual (2-byte reorg branch-target gap) provably unreachable under the frozen pipeline. Re-decision triggers: census candidates regrow, or ASPSX fill semantics become documented.",
-      "unpark_reason": "owner ruling 2026-08-30 (decisions.md escalation-batch entry): ruling 9 \u2014 returns to active; 2026-08-24 maspsx branch-fill DECLINE stands",
-      "escalation": "OWNER-ACCEPTED INCOMPLETE (logged to borderline.md per ruling 2026-08-18): docs/grind/decisions.md:14884 - 2026-08-30 - main (src/ings.c) - OWNER-ESCALATION - ESCALATED WITH DECISION PACKET (queue-routing question only; explicitly does NOT re-open the 2026-08-24 maspsx branch-fill DECLINE and lowers no standard)",
-      "foreclosure": "FORECLOSED (migration, owner ruling 2026-08-31 (ordinary-c-judge-decidable, 73bee8f8)): 2-byte reorg branch-retarget residual (decisions.md 2026-08-30 main packet); the maspsx branch-fill DECLINE (decisions.md:10303) stands and the packet's queue-routing question is mooted by the foreclosed state. Re-activated on a fidelity ruling or owner unpark."
-    },
-    {
       "func": "func_80045294",
       "file": "text1a_c",
       "distance": 1,
@@ -1671,11 +1659,11 @@
     }
   ],
   "counts": {
-    "total": 188,
+    "total": 187,
     "active": 182,
     "by_status": {
       "active": 182,
-      "foreclosed": 6
+      "foreclosed": 5
     },
     "by_verdict": {
       "C": 155,
