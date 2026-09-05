@@ -3455,3 +3455,169 @@ price of the C-first order is localised to one 15-row window and nothing leaks p
 - [s27] Source position of a pointer computation is inert (ten builds, two qty tables); only store order and pointer death count reach sched1's placement of the chain root sll.
 
 - [s27] Sibling sweep not re-spent: CD_datasync, CD_ready and CD_sync were checked at s22 and have zero code overlap with this function; none of their candidates touches a store-group / qty-priority residual of this shape.
+
+## [s28] forensics -- s26's RTL fact falsified, s27's LICM attribution falsified, and the flipped family taken from 25 to 7
+
+- [s28] Floor re-verified at **5 / 175 build insns / 175 target insns** on the HEAD
+  08b2924a chassis (`tmp/grind/func_800770B8/s28/pristine_text1b.c` byte-equals
+  `git show HEAD:src/text1b.c`; `memory/grind/func_800770B8/candidate.c` applied via
+  `s28/apply.py` plus its two documented byte-neutral caller-side edits).  Every
+  banked s27 number reproduces exactly: X 29, e6 29, e3 28, cX_c 25, all 175/175.
+
+- [s28] **s26's central RTL fact is FALSIFIED.**  s26 recorded that at the cursor add
+  "the shift is operand 1 in both" and concluded "source operand order does not survive
+  into RTL operand order".  A fresh side-by-side `.lreg` of F and cX_c
+  (`s28/F.lreg:635`, `s28/cX_c.lreg:640`, produced by `s28/lreg.py`) shows the opposite:
+
+      F     (insn 185 (set (reg:SI 110) (plus:SI (reg:SI 109) (reg:SI 108))))
+            109 = the D_800A36A0 reload (insn 183), 108 = the t0*10 shift (insn 181)
+      cX_c  (insn 185 (set (reg:SI 111) (plus:SI (reg:SI 109) (reg:SI 110))))
+            109 = the t0*10 shift (insn 181), 110 = the D_800A36A0 reload (insn 183)
+
+  Same insn UID, both with REG_DEAD on both operands, and operand 1 SWAPS with the
+  source spelling.  s26 read the two sites' pseudo numbers as if the numbering were
+  stable; it is not -- the reload and the shift trade numbers between F and X.  The
+  base-first cursor puts the RELOAD in operand 1; the flipped cursor puts the SHIFT
+  there.  Source operand order at this site DOES survive into RTL.
+
+- [s28] **The pass and the decision are now named exactly.**  `block_alloc`'s tying loop
+  (local-alloc.c:1239-1298) walks `for (i = 1; i < insn_n_operands; i++)`, calls
+  `combine_regs (r1, r0, ...)` (local-alloc.c:1295) and `break`s on the FIRST success.
+  `addsi3_internal` has no matching constraint, so `must_match_0 == -1` and both
+  operands are eligible -- operand 1 simply wins.  Therefore:
+    * F  -> the destination is tied to the RELOAD, joins the reload's quantity, and is
+      emitted in that quantity's hard register ($v0): `addu $v0,$v0,$v1`.
+    * X / cX_c / h3 -> the destination is tied to the SHIFT and joins the merged
+      22-ref chain quantity.
+  The TARGET emits `addu $v1,$v1,$v0` with the destination in the chain's register, so
+  **the original C spelled the cursor shift-first**; the base-first floor body cannot
+  reach the target's row 62 by any seat change, only by the flip.
+
+- [s28] **F's SEATS are already the target's.**  F block 1:
+  `[12,14] r4 -> $2`, `[48,56] r10 (reload+dest) -> $2`, `[28,52] r16 (chain) -> $3`,
+  `[10,44] r12 -> $4`, `[6,46] r14 -> $5`.  The chain sits in $3 = $v1 and the reload in
+  $2 = $v0 -- exactly the target -- which is why F's rows 33-61 and 65+ are byte-exact.
+  F's whole class-C residual is the TIE, not the seating.  Conversely X/cX_c have the
+  right tie and the wrong seating: the merge grows the chain to 22 refs / [28,56]
+  (priority 4*22/28 = 3.1428) and shrinks the reload to 4 refs / [48,52] (2.0), so the
+  chain is allocated first and takes $2.
+
+- [s28] **s27's LICM attribution is FALSIFIED.**  s27 recorded that in e6 "loop.c hoists
+  `lui/addiu %hi/%lo(D_800A35D0)` out of the outer loop".  `tools/loop_movables.py`
+  reports on F and on e6 are **line-for-line identical** (`s28/mov.sh` output; same three
+  loops, same movables, same thresholds, same decisions), and both `.lreg` dumps place the
+  `(set (reg) (symbol_ref "D_800A35D0"))` insn INSIDE the outer loop (after
+  `NOTE_INSN_LOOP_BEG 100`: F at `F.lreg:559`, e6 at `e6.lreg:507`).  Nothing is hoisted
+  out of a loop in either body.  What differs is the insn's POSITION WITHIN THE BLOCK, and
+  the dumps name the mechanism outright -- the dependency lists on that insn:
+
+      F   ... (insn_list:REG_DEP_OUTPUT 116 (insn_list:REG_DEP_ANTI 119 (... 122 125 128 131 ...)))
+      e6  ... (nil)
+
+  In F the symbol is loaded into the SAME pseudo (`ptr`) that the group-A stores read, so
+  `sched_analyze` records one output dependency and five anti-dependencies against insns
+  116-131 (the A stores) and sched1 cannot float the load ahead of them.  In e6 group A
+  uses its own local `pa`, the dependency list is empty, and sched1 lifts the load to the
+  top of the block.  **The construct that pins the D-group symbol in F is the reuse of one
+  `ptr` local across store groups, and the pass is sched.c's dependency construction, not
+  loop.c's `move_movables`.**
+
+- [s28] **e6's 32 differing rows attributed in full** (`s28/rows2.py`, which canonicalises
+  the `li`/`move`/`nop` assembler aliases so a cosmetic spelling never reads as a residual):
+    * 2 rows -- 35/36, the baseline `$s1` vs `$v0` store base, present in the FLOOR too;
+    * 2 rows -- 38/39, the displaced `lui`/`addiu %hi/%lo(D_800A35D0)` pair itself;
+    * 14 rows -- 40-58, the store-window displacement that pair drags with it;
+    * 14 rows -- 37, 63, 65, 66, 67, 69, **77, 82, 90, 104, 113, 114, 119, 126**: PURELY the
+      inner-loop counter's $a2 -> $a3 rename.
+  s27's frontier item #3 guessed the rename was 5 rows (37/63/65-67) and confined to the
+  first loop.  It is 14 rows and it propagates into the SECOND loop (77-126), including the
+  delay-slot fill at 126 that degrades to `nop`.  So of e6's 32 rows, only 16 are the
+  geometry and 14 are one derivative register rename -- confirming s27's frontier item #3
+  and roughly doubling its estimate of how derivative the collateral is.
+
+- [s28] **cX_c's 25 rows are ONE seat, not 25 residuals.**  Its rows 40-58 all differ only
+  because the chain quantity sits in $v0 instead of $v1; rows 60-64 differ for the same
+  reason.  Only rows 35/36 are independent.  That reframes the whole flipped family: it was
+  never 20 points of geometry away, it was one local-alloc seat away.
+
+- [s28] **NEW BEST FLIPPED-FAMILY BODY: h3 = score 7 / 175 / 175.**  cX_c (flipped cursor +
+  the C-group pointer in its own local `pc`) with the 0x68 byte store moved ahead of the C
+  pair -- store order A, D, S, C.  Its block-1 table (`s28/h3.qty`) is the target's:
+
+      ord=0 [12,14] r4  -> $2      ord=1 [36,38] r4  -> $2   (the S-store address temp)
+      ord=2 [28,56] r22 -> $3      ord=3 [48,52] r4  -> $2   (the cursor reload)
+
+  The S temp prices 2*4/2 = **4.0**, above the chain's 3.1428, so it is allocated first,
+  holds $2 across [36,38] which lies inside the chain's [28,56], and dies at 38 -- before
+  the reload's birth at 48.  The chain is forced to $3 = $v1 and the reload finds $2 = $v0.
+  Rows 60-64 come out byte-exact, and so does the entire store window 40-53.  h3's residual
+  is 7 rows: the baseline 35/36 plus five rows (54, 55, 57, 58, 59) that are purely the
+  S-before-C emission order.  Banked
+  `rejected/s28-classC-paid-ADSC-store-order-flip-175insn-score7.c` -- **a frontier body,
+  not a dead one.**
+
+- [s28] Both of h3's ingredients are load-bearing and were measured separately:
+  dropping `pc` while keeping the A,D,S,C order (m1) scores **29** -- with the C pair on the
+  shared `ptr` local that pseudo has three deaths, local-alloc.c:472 punts it to
+  global-alloc, and it never enters the quantity table; keeping `pc` with the S store last
+  (cX_c) scores **25** -- `pc` is then 6 refs over [36,40] = 3.0, just below 3.1428.
+  Swapping the two C stores (m2) is byte-inert at 7; putting the S store between the two D
+  stores (m3) costs 33.
+
+- [s28] **Naming the S-store address is byte-inert on every base**: `ps = base + t0;` gives
+  cX_c 25, X 29, F 5, h3 7 -- unchanged in all four.  The blocking quantity comes from the
+  store ORDER, not from the name.  Banked
+  `rejected/s28-named-S-address-byte-inert-on-every-base-175insn.c`.
+
+- [s28] Other flipped-family spellings measured this session, all 175/175: h1 (D address as
+  one expression instead of two `ptr` assignments) 26; h2 (D stores swapped) 25; h4 (cX_c
+  plus a separate `pd`) 28 -- h4 DOES get the target's seats via a [18,30] r16 blocker
+  (5.33) but pays the sched1 displacement; h5 (C pointer re-reading the global) 15 at 176
+  insns; h6 (cX_c plus `pa`) 28.
+
+- [s28] KILL RE-AUDIT (mandated, floor flat 3 sessions).  `tools/fake_ablate.py` on the
+  closest form to the target -- h3 -- reports one FAKE unit (the empty `do { } while (0);`
+  prologue fence) and it is LOAD-BEARING: 7 with it, 12 without.  No s27 kill was measured
+  with a FAKE carrier occupying a target pseudo; the fence sits in the prologue and the
+  class-C quantities live in block 1.  s27's four instance kills (source position of a
+  pointer computation inert; chain birth without the D_800A35D0 displacement; named C/D
+  pointer hoists) were all re-measured indirectly this session -- every base score they
+  rest on (F 5, X 29, cX_c 25, e6 29, e3 28) reproduces byte-for-byte on the current
+  chassis, so they stand as instance kills.
+
+- [s28] 16 fresh scoring builds, 5 instrumented-cc1 qty runs, 3 `.lreg` dumps, 2
+  `loop_movables` reports, 1 fake_ablate ladder.  src/text1b.c restored to pristine after
+  every sweep; `git status` clean apart from the ledger edits and the engine's own
+  metrics/events.jsonl.
+
+- [s28] Floor re-verified live at 5 / 175 build insns / 175 target insns on the HEAD 08b2924a chassis; tmp/grind/func_800770B8/s28/pristine_text1b.c byte-equals git show HEAD:src/text1b.c. Every banked s27 score reproduces exactly: X 29, e6 29, e3 28, cX_c 25, all 175/175.
+
+- [s28] s26's RTL fact is falsified. At insn 185 the floor body reads (set (reg 110) (plus (reg 109 = D_800A36A0 reload) (reg 108 = t0*10 shift))) and cX_c reads (set (reg 111) (plus (reg 109 = shift) (reg 110 = reload))). Source operand order DOES survive into RTL operand order at the cursor add; the reload and the shift merely trade pseudo numbers between the two bodies, which is what s26 misread.
+
+- [s28] The class-C tie is decided at local-alloc.c:1239-1298: block_alloc walks operands from index 1 upward, calls combine_regs at :1295 and breaks on the first success. addsi3_internal has no matching constraint (must_match_0 == -1), so operand 1 always gets first refusal and the destination joins its quantity.
+
+- [s28] The target emits addu $v1,$v1,$v0 with the destination in the chain's register, which requires the operand-1 tie to hit the SHIFT - so the original C spelled the cursor shift-first, and the base-first floor cursor cannot reach row 62 by any seating change.
+
+- [s28] The floor body F already has the target's SEATS: block 1 is [12,14] r4 -> $2, [48,56] r10 (reload+dest) -> $2, [28,52] r16 (chain) -> $3, [10,44] r12 -> $4, [6,46] r14 -> $5. F's entire class-C residual is the tie, not the allocation.
+
+- [s28] s27's LICM attribution is falsified. tools/loop_movables.py reports for F and e6 are line-for-line identical, and in both bodies the (symbol_ref "D_800A35D0") set sits inside the outer loop (F.lreg:559, e6.lreg:507, both after NOTE_INSN_LOOP_BEG 100). Nothing is hoisted out of a loop; the pair only moves position within the block.
+
+- [s28] The real mechanism pinning that symbol load in F is sched.c dependency construction: in F the load targets the same ptr pseudo the group-A stores read, so it carries REG_DEP_OUTPUT 116 and REG_DEP_ANTI 119/122/125/128/131 and sched1 cannot float it ahead of them. In e6 group A uses its own pa local, the dependency list is (nil), and sched1 lifts the load to the top of the block.
+
+- [s28] e6's 32 differing rows decompose as 2 baseline (35/36) + 2 displaced-symbol rows (38/39) + 14 store-window rows (40-58) + 14 pure $a2/$a3 rename rows (37, 63, 65, 66, 67, 69, 77, 82, 90, 104, 113, 114, 119, 126). s27's frontier item #3 estimated 5 rename rows in the first loop; the rename in fact propagates into the second loop.
+
+- [s28] cX_c's 25 differing rows are one seat, not 25 residuals: rows 40-58 and 60-64 differ only because the chain quantity sits in $v0 instead of $v1. Only rows 35/36 are independent.
+
+- [s28] NEW BEST FLIPPED-FAMILY BODY: h3 = 7/175/175 (previous best 25). Flipped cursor + the C-group pointer in its own local pc + the 0x68 byte store emitted ahead of the C pair (store order A,D,S,C). Its block-1 table is the target's: ord=0 [12,14] r4 -> $2, ord=1 [36,38] r4 -> $2, ord=2 [28,56] r22 -> $3, ord=3 [48,52] r4 -> $2. Rows 40-53 and 60-64 are byte-exact; residual = rows 35/36 plus 54, 55, 57, 58, 59, all of which are the S-before-C emission order.
+
+- [s28] The seat criterion is now exact and doubly confirmed: a block-local quantity whose qty_compare_1 priority exceeds the merged chain quantity's, whose interval overlaps the chain's, and which dies before the cursor reload's birth at 48, forces the chain into $3 and hands the reload $2. h3's blocker is the S-store address temp (4 refs over [36,38] = 4.0); h4's is a separate D-group pointer (16 refs over [18,30] = 5.33, also the target's seats but 28 points of sched1 collateral).
+
+- [s28] Both of h3's ingredients are load-bearing: without pc the order alone scores 29 (the shared ptr local has three deaths and local-alloc.c:472 keeps it out of the quantity table); with pc but the S store last (cX_c) it scores 25 (pc is 6 refs over [36,40] = 3.0, just under 3.1428).
+
+- [s28] Naming the S-store address (ps = base + t0;) is byte-inert on every base measured: cX_c 25, X 29, F 5, h3 7 - all unchanged.
+
+- [s28] Other flipped-family spellings measured, all 175/175 unless noted: h1 (D address as one expression) 26, h2 (D stores swapped) 25, h4 (cX_c + separate pd) 28, h5 (C pointer re-reading the global) 15 at 176 insns, h6 (cX_c + pa) 28, m2 (C stores swapped on h3) 7, m3 (S between the D stores) 33.
+
+- [s28] KILL RE-AUDIT (mandated): tools/fake_ablate.py on h3, the closest form to the target, reports one FAKE unit - the empty do { } while (0); prologue fence - and it is load-bearing, 7 with it and 12 without. No s27 kill was measured with a FAKE carrier occupying a class-C pseudo; the fence sits in the prologue while the class-C quantities live in block 1. Every base score the s27 kills rest on (F 5, X 29, cX_c 25, e6 29, e3 28) reproduces byte-for-byte on the current chassis, so those instance kills stand.
+
+- [s28] 16 fresh scoring builds, 5 instrumented-cc1 quantity runs, 3 .lreg dumps, 2 loop_movables reports and 1 fake_ablate ladder this session. src/text1b.c restored to pristine after every sweep; git status clean apart from the ledger edits and the engine's own metrics/events.jsonl.
