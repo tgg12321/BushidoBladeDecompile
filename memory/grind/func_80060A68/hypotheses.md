@@ -2963,3 +2963,27 @@ FAKE constructs, zero volatile, zero inline asm, one local (`result`) in every b
 SHA1; the solver suite reports the streams identical; the object model is evidenced from committed
 sibling C and is invariant across faithful spellings. What remains is a classification question a
 grind session may not self-approve, and it is asked in this session's outcome JSON.
+
+## s29 — H-s29-1: the Judge-cleared struct-typed body reaches score 0 on today's HEAD
+
+STATEMENT: applying memory/grind/func_80060A68/candidate.c — the body cleared by the
+2026-09-05 01:20 Judge PASS ruling (docs/grind/decisions.md:23184, hash 5f78d844c1029e78) —
+verbatim to src/text1b.c yields honest pure-C distance 0 and a full-build SHA1 equal to the
+oracle, on today's HEAD chassis, with zero FAKE constructs present.
+
+MECHANISM: the body models the object at D_800A3468 as a declared struct reached through a
+declared pointer, consistent with src/text1b.c:3461's committed `extern s32 *D_800A3468;`
+in the matched sibling func_80061064. Every access becomes a member reference or an array
+subscript, which is the shape the target stream was compiled from; the prior 28 sessions'
+chassis read offset 0 through an integer cast, contradicting that declaration.
+
+PROBE: candidate.c applied at src/text1b.c:3138 replacing the INCLUDE_ASM line;
+`sandbox func_80060A68 --disable all`; then `verify-oracle --rebuild --allow-dirty` and
+`verify-oracle`.
+
+RESULT: score 0, build_insns 66 / target_insns 66, scorable true, strip_cheat_asm true,
+rules_dropped 0. verify-oracle ok true, build_sha1 == original_sha1_locked ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true.
+
+VERDICT: CONFIRMED. Honest floor 0. The function is submitted candidate-ready with the
+cleared body unrespelled and self_vet.md written against it.

@@ -683,6 +683,13 @@
    "hash": "5f78d844c1029e78",
    "when": "2026-09-05T06:20:23.476757+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-05 01:20 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "5f78d844c1029e78",
+   "when": "2026-09-05T06:25:44.055898+00:00",
+   "summary": "final call: Same body (5f78d844c1029e78) I cleared at 2026-09-05T06:20 (docs/grind/decisions.md 01:20 ruling); no defect that ruling did not consider. Re-verified myself: HEAD src/text1b.c:3358 already declares `"
   }
  ],
  "judge_clearances": [

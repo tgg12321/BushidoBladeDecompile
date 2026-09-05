@@ -4125,3 +4125,56 @@ array subscript, a call, or a scalar assignment.
     alt-...-file-scope-struct-renamed-members.c (NEW s29b, V1.c)           0 / 66, 66 insns
     offset-0 read spelled as an integer cast (contradicts :3358)          11 / 66  (s29 H-s29-3)
   The bytes track the object model, not the spelling.
+
+## s29 (2026-09-05) — MATCH CONFIRMED ON HEAD, JUDGE-CLEARED BODY SUBMITTED
+
+The dispatched modality for this session was `solver`, but the ledger's premise for any
+further searching was already falsified before a probe could be useful: a Judge PASS
+ruling dated 2026-09-05 01:20 (docs/grind/decisions.md:23184, clearance hash
+5f78d844c1029e78 recorded in state.json) had already cleared the body sitting in
+memory/grind/func_80060A68/candidate.c, and that body is the struct-typed re-modelling of
+D_800A3468's object rather than any of the 28 sessions of cast-through-integer geometry.
+The correct action under the pipeline's own rules is therefore to submit the cleared body
+EXACTLY, not to respell it and not to spend the session on the RA/scheduler residual the
+frontier described — that residual belongs to the Pt2/M1 cast-through-integer chassis,
+which this body abandons entirely.
+
+MEASURED THIS SESSION, on HEAD, with candidate.c applied verbatim at src/text1b.c:3138 in
+place of the `INCLUDE_ASM("asm/funcs", func_80060A68);` line:
+
+  - `sandbox func_80060A68 --disable all` -> score 0, build_insns 66, target_insns 66,
+    scorable true, strip_cheat_asm true, rules_dropped 0. Cheat-stripping was ON and no
+    rules were dropped, so this is the honest pure-C distance. The honest floor for this
+    function is therefore 0, not 2; every floor-2 entry in the history above is a
+    statement about the cast-through-integer chassis only.
+  - `verify-oracle` (after `--rebuild --allow-dirty`) -> ok true, build_sha1
+    62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, build_matches true.
+    The full clean-driver build and link byte-match the original executable with this C in
+    the tree, so the match is not a per-function scoring artefact.
+
+Why the model, and not a spelling, is doing the work (this is the part that generalises to
+sibling functions in this file): the file's own committed, MATCHED C already declares
+`extern s32 *D_800A3468;` at src/text1b.c:3461 inside func_80061064 — a POINTER type.
+Sixteen matched sites store callee-returned pointers into the global; the member at +0x14
+always receives a byte-buffer pointer and is stored through with `sb`; the word at offset 0
+is written whole at five matched sites as single 32-bit constants whose low halfword is
+exactly the character index this function loads with `lhu` and whose bit 21 (0x200000) is
+exactly the flag this function tests at its tail. Declaring that object's shape makes every
+access in this function a member reference or an array subscript, which is what the target
+stream is compiled from. Four structurally distinct faithful spellings of that same model
+all measure 0/66 (this body, plus the three alt-s29-score0-*.c files on disk); the spelling
+that regresses to 11/66 is the one that contradicts :3461's committed pointer declaration by
+reading offset 0 through an integer cast. The ledger's 28 sessions of RA/scheduler frontier
+work were all conducted on that contradicting model, which is why the residual never closed
+from inside it.
+
+Ledger consequence: the "KILL RE-AUDIT REQUIRED" instruction and the three live frontier
+items (M-family reload rematerialisation, struct-on-Pt2, cse block-boundary separators) are
+all moot as written — items 1 and 3 are properties of the cast-through-integer chassis, and
+item 2 ("a struct-typed chassis has never been built on the Pt2 statement order") is
+answered by this body in the strongest available form: the struct-typed chassis does not
+need the Pt2 statement order at all.
+
+Artifacts: tmp/grind/func_80060A68/s29/measurements.md (raw tool output),
+tmp/grind/func_80060A68/s29/text1b.c.orig (pre-edit source snapshot),
+memory/grind/func_80060A68/self_vet.md (this session's vet of the submitted body).
