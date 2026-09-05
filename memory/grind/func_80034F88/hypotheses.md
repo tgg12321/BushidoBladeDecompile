@@ -3680,3 +3680,114 @@ on HEAD 2026-09-05, no FAKE construct present in any measured body).
 - probe: `pwsh tools/grinder/dump.ps1 func_80034F88` with the base body installed (dump kept at tmp/grind/func_80034F88/dumps/code6cac_b.greg), and `s37/dis.sh h0` compared line by line with the target listing.
 - result: CONFIRMED. Blocks 2/3 are register-exact. The target's `lbu $a0,0($v1)` at 80034FB4 sits in the load-delay slot of `lw $v0,0x20($a1)` where the base body emits a bare `nop`, so the reload costs zero instructions -- a stronger statement than s29's arithmetic pricing. Combined with global.c:426 (one pseudo, one hard register), this re-derives the standing factorisation independently: the chassis needs the address in $v1 for blocks 0/1 and in $a0 for blocks 2/3, which one pseudo cannot supply, and it supplies the missing WHY that s31/s32 left implicit.
 - verdict: CONFIRMED
+
+==== s38 (synthesis) ====
+
+MERGED ATTACK AFTER s38 (this supersedes the s37 statement of the mechanism).
+
+The residual is 10 differing instructions, all in blocks 0/1, and it is a pure
+$v1 <-> $a0 rotation of (blocks-0/1 address, blocks-0/1 byte value) plus a
+`nop`/`lbu` swap that costs nothing (s37 section 1; re-confirmed by direct diff
+this session -- b0 and rt differ by exactly that one instruction).
+
+The CAUSE is now read from RTL rather than inferred, and s37's version of it is
+withdrawn:
+
+  * NOT allocno priority.  Pseudo 73, the top-priority allocno seated in $v1
+    (pri 47142), is the trailing copy loop's induction variable `i`, which the
+    TARGET also seats in $v1.  It never competed with `q`, and the two do not
+    conflict.
+  * IT IS A LOCAL-ALLOC HARD-REGISTER SEAT.  Block 0's masked byte is a
+    single-basic-block quantity, so local-alloc assigns it the hard register $v1
+    before global-alloc runs -- visible in the .greg RTL as
+    `(set (reg:QI 3 v1) (mem:QI (reg/v:SI 4 a0)))`.  `q` is live across it, so
+    `q` carries a hard-reg-3 conflict and `find_reg` can never give it $v1.
+    $v0 is unavailable to that quantity because the call return is still live
+    (the `a1 = v0` copy is scheduled after block 0's store).
+  * The priority dial is measured impotent against that conflict: in `rt`, `q`
+    rises to pri 15000 and sorts SECOND overall (ord 4 -> 1) and still gets $a0.
+
+Consequence for the search: every remaining lever on the blocks-0/1 seat has to
+act on LOCAL-alloc's choice for block 0's byte quantity, not on global-alloc's
+sort.  Bodies that lengthen/shorten C-level live ranges (s37 k1/k4/k5) are
+byte-inert because cse normalises them to the same RTL; bodies that add
+references (rt) move the sort without moving the seat.  The two seats still need
+two pseudos (global.c:426) and one C object gives one pseudo, so the standing
+factorisation is unchanged -- but the next probe is now specific and cheap.
+
+FRONTIER RESET (strongest three for the next ladder pass):
+
+1. LOCAL-ALLOC, NOT GLOBAL-ALLOC, IS THE CONTESTED PASS.  Find an ordinary-C
+   spelling of block 0's read-mask-store whose temporary is NOT a block-local
+   quantity that local-alloc seats in hard $v1 before global runs (or one whose
+   copy-preference steers it to $a0, as the target has it).
+   Mechanism: local-alloc.c's `find_free_reg` / `qty_phys_reg` assignment runs
+   before global.c; the resulting `(reg:QI 3 v1)` in the pre-global RTL is what
+   creates q's hard-reg-3 conflict row.
+   Next probe: the instrumented cc1 prints the quantity table under
+   `BB2_QTY_DEBUG=1` (`QTYDBG blk=... qty=... reg1=... birth=... death=...
+   refs=... got=...`, local-alloc.c:1585; the local-alloc instrumentation is
+   GRANTED for this function by decisions.md:14784).  The hook has NO function
+   tag, so `tmp/grind/func_80034F88/s38/qtydbg_b0.txt` covers the whole TU and
+   the func_80034F88 rows cannot be picked out; the next session should compile
+   a REDUCED TU (this function alone plus its externs) so the QTYDBG rows are
+   unambiguous, identify block 0's quantity, and read what determines `got=3`.
+   Then look for a C shape that changes it.
+
+2. THE PUN-FREE BODY IS THE REAL CANDIDATE, AND IT NEEDS A HEADER LINE.
+   `memory/grind/func_80034F88/candidate_arraydecl_pun_free.c` is bit-identical
+   to candidate.c and carries no declaration pun, but only compiles with
+   `include/code6cac.h:472` changed to `extern u8 D_80106A70[3];`.
+   Mechanism: none -- measured codegen-neutral (empty objdump diff).
+   Next probe: none needed; carry it forward.  If a future session ever reaches
+   distance 0, submit THAT body and file the header line as an integration
+   handoff, because the brief's auto-scan FAILs the punned spelling at layer 1
+   regardless of score.
+
+3. LADDER ACCOUNTING.  s38 is session sixteen of cycle 2; four flat sessions
+   remain before the owner directive 2026-09-02 permits any disposition.
+   Mechanism: owner directive 2026-09-02 (decisions.md 'foreclosure mechanics')
+   requires 20 flat sessions and >= 6 distinct modalities; the modality
+   condition was met at s31.
+   Next probe: when the driver assigns `escalation`, file the LADDER EXHAUSTED
+   (non-endgame residual, floor 10) foreclosure record citing the cse
+   enumeration (s27/s28), the reload pricing (s29, direct-diff confirmed s38),
+   F1 byte-neutrality (s30), the allocator restatement (s31/s32), s33's
+   two-seats-individually-reachable result, s34's reorg.c:3442 dump proof,
+   s35's end-to-end q-coverage lattice, s37's inline-helper family, and s38's
+   correction that the barrier is a local-alloc hard-reg seat rather than a
+   global priority order.
+
+## [s38] Pseudo 73 -- the top-priority allocno (nrefs=11, livelen=7, pri=47142) that takes $v1 in the base body, which s37 identified as 'block 0's byte value' and made the centre of its allocation-ORDER explanation -- is actually `i`, the induction variable of the trailing three-byte copy loop.
+- mechanism: flow.c weights loop-body references by loop depth, so a 3-iteration loop counter with 4 textual references reaches nrefs=11 over livelen=7 and tops allocno_compare's sort (tools/gcc-2.7.2/global.c:635). The target seats `i` in $v1 as well (asm/funcs/func_80034F88.s, addu $v1,$zero,$zero at 80035014 and addiu $v1,$v1,0x1 at 8003502C), so the seat is correct and uncontested.
+- probe: pwsh tools/grinder/dump.ps1 func_80034F88 with the candidate body installed, then read every mention of reg 73 in the func's segment of tmp/grind/func_80034F88/dumps/code6cac_b.lreg: insn 122 (set reg 73 ...), insn 142 (set (mem/s:QI (plus:SI (reg 73) ...))), insn 148 (set reg 73 (plus reg 73 ...)), and (lt:SI (reg 73) ...) -- the loop's init, indexed store, increment and exit test.
+- result: CONFIRMED by direct RTL read. s37's mechanism ('the short-lived block-0 value outranks the long-lived pointer, so q loses $v1 to allocation order') describes a competition that does not exist: allocnos 73 and 74 do not conflict, and 73 holds a register the target also gives to the same value.
+- verdict: CONFIRMED
+
+## [s38] q (pseudo 74) cannot receive $v1 in the single-pointer-object chassis because LOCAL-alloc seats block 0's masked byte in the hard register $v1 before global allocation runs, giving q a hard-reg-3 conflict; the barrier is that conflict, not global allocno priority.
+- mechanism: Block 0's masked byte is a single-basic-block quantity, so local-alloc assigns it a hard register (local-alloc.c find_free_reg / qty_phys_reg) before global.c is entered. $v0 is unavailable to it because the call return is still live -- the `a1 = v0` copy (insn 11) is scheduled after block 0's store (insn 20) -- so it takes $v1. q is live across it and therefore appears in the .greg conflict row `;; 74 conflicts: 72 74 77 78 81 82 85 86 2 3 29` with hard reg 3, which find_reg honours.
+- probe: Read the pre-global RTL in tmp/grind/func_80034F88/dumps/code6cac_b.greg: insn 17 `(set (reg:QI 3 v1) (mem:QI (reg/v:SI 4 a0)))`, insn 18 `(set (reg:SI 3 v1) (and:SI (subreg:SI (reg:QI 3 v1) 0) (const_int 248)))`, insn 20 `(set (mem:QI (reg/v:SI 4 a0)) (subreg:QI (reg:SI 3 v1) 0))` -- block 0's value is already a hard register there. Cross-checked against the instrumented-cc1 allocno tables in tmp/grind/func_80034F88/s38/allocdbg_b0.txt and allocdbg_rt_c1.txt.
+- result: CONFIRMED. This replaces the inherited priority account with a mechanically different one, and it re-points the search: priority is a dial reachable from C (reference count, live length) while a hard-register conflict created by an earlier pass is not.
+- verdict: CONFIRMED
+
+## [s38] Raising q's global allocno priority so that it is allocated before the competing allocnos does not change its hard register on this chassis: in the banked round-trip body q reaches nrefs=15, livelen=30, pri=15000 and moves from sort position 4 to position 1, and still receives $a0.
+- mechanism: allocno_compare (tools/gcc-2.7.2/global.c:635) decides only the ORDER in which find_reg is called; find_reg still refuses any hard register in the allocno's hard-reg conflict set, and q's conflict with reg 3 is created earlier by local-alloc (hypothesis 2), so no sort position makes $v1 eligible.
+- probe: Installed rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c as variant rt and ran the instrumented cc1 with BB2_ALLOC_DEBUG=1 (tmp/grind/func_80034F88/s38/allocdbg_rt_c1.txt); compared its allocno table and dispositions against the base body's (allocdbg_b0.txt). Sandbox: rt = 10 at 49 insns, unchanged.
+- result: KILLED as a seat lever on this chassis. rt's sort position is 1 of 9 (behind only the loop counter) and its hardreg is still 4 ($a0). The same body's objdump differs from the base's by exactly one instruction (our `nop` becomes `lbu $v1,0($a0)`), confirming by direct diff -- not by arithmetic, as s29 did -- that the block-1 reload is instruction-free and lands in the rotated register.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05 (b0 = 10, 49/49, rules_dropped 0); variant rt = the banked dead-arithmetic round-trip, single declared `u8 *q`, no FAKE-annotated construct present (fake_ablate: nothing to ablate)
+
+## [s38] Declaring D_80106A70 as an array (`extern u8 D_80106A70[3];` at include/code6cac.h:472) and spelling the trailing copy loop `D_80106A70[i] = *((u8 *)p + i + 0x17);` removes candidate.c's declaration pun at zero codegen cost.
+- mechanism: None at codegen level -- the array-element access and the pointer-arithmetic pun lower to the same address rtx, so the emitted stream is unchanged. The change matters for review, not for bytes: the dispatch brief's auto-scan treats the punned spelling as a layer-1 FAIL condition and names the declaration as the sanctioned fix.
+- probe: Edited include/code6cac.h:472 to the array declaration, spliced variant a1 (base body with the indexed loop) into src/code6cac_b.c, and ran `sandbox func_80034F88 --disable all` -> 10 at 49 insns; then diffed the two objdumps (`diff tmp/grind/func_80034F88/s38/b0.txt tmp/grind/func_80034F88/s38/a1.txt`) -> empty. Header restored to HEAD afterwards.
+- result: CONFIRMED, bit-identical. D_80106A70 is referenced in exactly two places project-wide (the header line and this loop), so the fix is a one-line, one-symbol integration handoff. Banked as memory/grind/func_80034F88/candidate_arraydecl_pun_free.c; any future candidate-ready for this function should be that body plus the header line rather than candidate.c.
+- verdict: CONFIRMED
+
+## [s38] Spelling the copy loop's SOURCE operand as an index, `((u8 *)p)[i + 0x17]` instead of `*((u8 *)p + i + 0x17)`, measures 12 at 49 instructions on the array-declared chassis.
+- mechanism: The indexed source form changes how the loop's address arithmetic is associated, costing two register matches at the same instruction count; the destination-side array spelling is neutral (hypothesis 4) but the source-side one is not.
+- probe: Variant a2 (array declaration + indexed destination + indexed source) spliced and scored with `sandbox func_80034F88 --disable all`.
+- result: KILLED for this chassis; keep the pointer-arithmetic spelling on the source operand. Banked as rejected/s38-loop-source-byte-array-indexed-score12.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c score-10 chassis on HEAD 2026-09-05 with include/code6cac.h:472 temporarily set to `extern u8 D_80106A70[3];`; single declared `u8 *q`, no FAKE-annotated construct present

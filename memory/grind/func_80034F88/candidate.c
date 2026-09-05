@@ -1,3 +1,27 @@
+/* s38 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns
+ * (variant b0). UNCHANGED. Two results the next session must not re-derive.
+ *
+ * (1) s37's causal story is WITHDRAWN. Pseudo 73 -- the top-priority allocno
+ * (pri 47142) seated in $v1 -- is NOT block 0's byte value; the .lreg RTL shows
+ * it is `i`, the trailing copy loop's induction variable, which the TARGET also
+ * seats in $v1. It never competed with q. The real barrier, read from the .greg
+ * RTL before global allocation, is LOCAL-alloc: block 0's masked byte is a
+ * single-basic-block quantity that local-alloc puts in the hard register $v1
+ * (`(set (reg:QI 3 v1) (mem:QI (reg/v:SI 4 a0)))`), so q -- live across it --
+ * carries a hard-reg-3 conflict and find_reg can never give it $v1. Proof that
+ * global PRIORITY is not the dial: in the banked round-trip body q rises to
+ * pri 15000 and sorts second overall (ord 4 -> 1) and still takes $a0.
+ *
+ * (2) THIS FILE'S DECLARATION PUN IS REMOVABLE AT ZERO COST, and a future
+ * candidate-ready should NOT use this file. With include/code6cac.h:472 changed
+ * from `extern u8 D_80106A70;` to `extern u8 D_80106A70[3];` and the trailing
+ * loop spelled `D_80106A70[i] = *((u8 *)p + i + 0x17);`, the body measures 10 at
+ * 49 with a BIT-IDENTICAL objdump. That pun-free body is banked at
+ * memory/grind/func_80034F88/candidate_arraydecl_pun_free.c; the header line is
+ * a one-symbol INTEGRATION HANDOFF. This file keeps the punned spelling only
+ * because it is what compiles against HEAD's header unmodified.
+ * See evidence.md "==== s38 (synthesis) ====".
+ */
 /* s35 (synthesis, 2026-09-05): re-measured on HEAD = score 10, 49 build insns,
  * rules_dropped 0.  UNCHANGED.  s35 closed the q-coverage lattice end to end:
  * the five settings s33 left unmeasured (q covering blocks 0+1 with 2/3

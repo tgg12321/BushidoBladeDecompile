@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 37,
+ "session_count": 38,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -225,23 +225,29 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "Synthesis s37: the 10 points are localised to blocks 0/1 as a pure $v1<->$a0 rotation plus a reload that costs ZERO instructions (it fills a load-delay slot the base wastes on a nop); the cause is all"
+  },
+  {
+   "session": 38,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "s37's causal story withdrawn: the $v1-stealing top-priority pseudo is the copy loop's induction variable, and the real barrier is a LOCAL-alloc hard-reg seat (q's priority won outright and the seat di"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The other side of allocno_compare is untried: SHORTENING the pointer allocno's live range while its uses still span all four flag blocks (s32 moved q's first assignment into block 1, losing block 0; s35's g1 shortened q to blocks 0/1 and cost p its $a1 seat -- neither is a single q whose SET is late but whose USES still cover every site).",
-   "mechanism": "global.c:635 ranks by floor_log2(n_refs)*n_refs/live_length, so a shorter live range raises the pointer's priority; if it sorts ahead of block 0's byte value (pseudo 73) it is allocated first and takes $v1, which is the target's blocks-0/1 seat.",
-   "next_probe": "Bodies placing `q = &D_80106A73;` at the last legal point before block 0's mask (after the p[8] read, in a tighter scope), and spellings of block 0's mask that defer the address's first reference. Read the `.greg` ORDER line (';; N regs to allocate: ...') rather than the score alone -- a reordering that does not move the score still moves the search."
+   "hypothesis": "The contested pass is LOCAL-alloc, not global-alloc: block 0's masked byte is a block-local quantity that local-alloc seats in hard $v1, which is what creates q's hard-reg-3 conflict. An ordinary-C spelling of block 0's read-mask-store whose temporary is either not block-local or carries a copy-preference for $a0 (as the target has it) would remove the conflict without adding a C object.",
+   "mechanism": "local-alloc.c assigns qty_phys_reg for single-block quantities before global.c runs; the resulting `(set (reg:QI 3 v1) ...)` in the pre-global RTL is a hard register that find_reg must respect. Bodies that only move C-level live ranges (s37 k1/k4/k5) are byte-inert because cse normalises them to the same RTL, and bodies that only add references (rt) move the sort without moving the seat.",
+   "next_probe": "The instrumented cc1 prints the quantity table under BB2_QTY_DEBUG=1 (`QTYDBG blk=... qty=... reg1=... birth=... death=... refs=... got=...`, tools/gcc-2.7.2/local-alloc.c:1585), but the hook carries NO function tag, so this session's whole-TU capture (tmp/grind/func_80034F88/s38/qtydbg_b0.txt) cannot be attributed. Compile a REDUCED translation unit containing only func_80034F88 and its externs so the QTYDBG rows are unambiguous, identify block 0's quantity, read what drives its `got=3`, and only then search for a C shape that changes it."
   },
   {
-   "hypothesis": "The load-delay slot the target fills with its block-1 reload already exists in the base body (it holds a nop); what is missing is an insn the delay-slot pass is willing to put there.",
-   "mechanism": "reorg.c fills load-delay/branch slots. k3 shows the slot cannot be created or moved by hoisting the `lw` (20 at 47, two instructions short), and every construct that has ever emitted the reload also changed the address rtx and lost the seat (s17, s34 f1/f2, s35 g1).",
-   "next_probe": "Dump `.dbr` for the BASE body -- the ledger has only ever dumped it for s34's e1 -- and read which insns reorg considered for that slot and why none qualified. That names the gate the reload has to pass, which no session has yet read at the predicate level."
+   "hypothesis": "The body a future candidate-ready should submit is memory/grind/func_80034F88/candidate_arraydecl_pun_free.c plus the one-line header change, not candidate.c: the two are bit-identical, and only the former is free of the declaration pun the brief's auto-scan FAILs at layer 1.",
+   "mechanism": "None at codegen level -- measured neutral (empty objdump diff). The header line `extern u8 D_80106A70[3];` at include/code6cac.h:472 is outside a grind session's surface, so it is an integration handoff, not a src edit.",
+   "next_probe": "Carry it forward unchanged; re-measure it alongside candidate.c on whatever chassis the next session finds, and if any body ever reaches distance 0, port that body to the array spelling before submitting."
   },
   {
-   "hypothesis": "Cycle 2 needs five more flat sessions before any disposition; the modality-count condition was met at s31.",
-   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; this is session fifteen of the cycle.",
-   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the cse enumeration (s27/s28), the reload pricing (s29/s37), F1 byte-neutrality (s30), the allocator restatement (s31/s32/s37), s33's two-seats-from-one-object proof, s34's reorg.c:3442 result, s35's q-coverage lattice, and s37's inline-helper and allocno-order kills; then return owner-gated."
+   "hypothesis": "Cycle 2 of the ladder needs four more flat sessions before any disposition is permitted.",
+   "mechanism": "Owner directive 2026-09-02 (docs/grind/decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; the modality condition was met at s31 and s38 is session sixteen of the cycle.",
+   "next_probe": "When the driver assigns escalation modality, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the cse enumeration (s27/s28), the reload pricing (s29, now direct-diff confirmed by s38), F1 byte-neutrality (s30), the allocator restatement (s31/s32), s33's proof that both seats are individually reachable from one object, s34's reorg.c:3442 dump proof, s35's end-to-end q-coverage lattice, s37's inline-helper family, and s38's correction that the barrier is a local-alloc hard-register seat rather than a global-allocno priority order; then return owner-gated."
   }
  ],
  "judge_constraints": [
@@ -624,6 +630,22 @@
    "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; single declared `u8 *q`, no FAKE construct present",
    "predicate_cite": "",
    "result": "Both measure 30 at 48. The loop gives up its own `lui %hi(D_80106A70) / addu at,at,v1 / sb %lo(D_80106A70)(at)` material"
+  },
+  {
+   "session": 38,
+   "statement": "Raising q's global allocno priority so that it is allocated before the competing allocnos does not change its hard register on this chassis: in the banked round-trip body q reaches nrefs=15, livelen=3",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (b0 = 10, 49/49, rules_dropped 0); variant rt = the banked dead-arithmetic round-trip, single declared `u8 *q`, no FAKE-annotated construct present (fak",
+   "predicate_cite": "",
+   "result": "KILLED as a seat lever on this chassis. rt's sort position is 1 of 9 (behind only the loop counter) and its hardreg is s"
+  },
+  {
+   "session": 38,
+   "statement": "Spelling the copy loop's SOURCE operand as an index, `((u8 *)p)[i + 0x17]` instead of `*((u8 *)p + i + 0x17)`, measures 12 at 49 instructions on the array-declared chassis.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 with include/code6cac.h:472 temporarily set to `extern u8 D_80106A70[3];`; single declared `u8 *q`, no FAKE-annotated construct present",
+   "predicate_cite": "",
+   "result": "KILLED for this chassis; keep the pointer-arithmetic spelling on the source operand. Banked as rejected/s38-loop-source-"
   }
  ]
 }

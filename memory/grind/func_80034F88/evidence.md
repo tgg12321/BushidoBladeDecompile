@@ -5142,3 +5142,191 @@ rewrite, all collapse to the identical 49 instructions.
 - [s37] Ladder accounting: this is session fifteen of cycle 2 (state.json session_count 36 at dispatch); the six-modality condition was met at s31. Five sessions remain before the owner directive 2026-09-02 permits any disposition.
 
 - [s37] Nine new disproven forms banked in memory/grind/func_80034F88/rejected/ (four s37-inline-helper-*, s37-q-as-copy-loop-base-score30, s37-dupread-both-arms-all-three-blocks-score29, s37-block0-value-lives-across-block1-score10-BIT-IDENTICAL, s37-p8-hoisted-before-block0-score20, s37-block0-mask-split-two-statements-score10-BIT-IDENTICAL); bank size is now 202.
+
+==== s38 (synthesis) ====
+
+(Session-numbering note: the dispatch brief called this "session 35", but the
+ledger already carries `==== s35 ====` and `==== s37 ====` blocks from earlier
+runs and `state.json` records a higher `session_count`. This session is tagged
+**s38** and its scratch is `tmp/grind/func_80034F88/s38/`, so nothing overwrites
+an earlier directory.)
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` spliced into
+`src/code6cac_b.c` as variant `b0`: **score 10, build_insns 49**. The dispatch
+brief printed "measurement unavailable" for the NINTH consecutive session, so the
+floor of 10 is measured this session, not inherited. `src/code6cac_b.c` and
+`include/code6cac.h` are both restored to HEAD at session end
+(`git status --porcelain src/ include/` empty).
+
+MANDATED KILL RE-AUDIT (the two closest-to-target banked forms, re-measured on
+today's chassis):
+  * `rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c` (the
+    s20/s25 dead round-trip, the only banked body whose instruction multiset
+    matches the target's) -- **10 at 49 insns**, unchanged.  Its disassembly
+    differs from the base body by exactly ONE instruction
+    (`diff s38/b0.txt s38/rt.txt`: our `nop` at +0x4f64 becomes
+    `lbu $v1,0($a0)`), confirming for the first time by direct diff that the
+    reload is free and lands in the WRONG register ($v1/$a0 rotated).
+  * `rejected/s33-anon-symdiff-block0-blocks01-EXACT-score13.c` (c1) --
+    **13 at 49**, reproducing s33/s34/s35 exactly.
+  * `tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate
+    memory/grind/func_80034F88/candidate.c` -> "no FAKE-annotated constructs
+    found ... nothing to ablate".  No banked kill on this chassis was measured
+    with a FAKE carrier occupying the contested pseudo.
+
+--- 1. THE INHERITED CAUSAL STORY WAS WRONG: PSEUDO 73 IS THE LOOP COUNTER ---
+
+s37 read the base body's `.greg` header line
+`;; 9 regs to allocate: 73 78 82 86 74 77 81 85 72` and identified **pseudo 73
+(seated in $v1, the top-priority allocno) as "block 0's byte value"**, then built
+its whole causal account on that: "q loses $v1 to allocation ORDER, because
+allocno_compare sorts the short-lived block-0 value ahead of the long-lived
+pointer".  That attribution is FALSE, and this session read it off the RTL rather
+than inferring it.
+
+`pwsh tools/grinder/dump.ps1 func_80034F88` with `b0` installed; the function's
+segment of `tmp/grind/func_80034F88/dumps/code6cac_b.lreg` mentions
+`(reg/v:SI 73)` in exactly these insns:
+
+    (insn 122 ... (set (reg/v:SI 73) ...))                      ; i = 0
+    (insn 142 ... (set (mem/s:QI (plus:SI (reg/v:SI 73) ...     ; D_80106A70[i] store
+    (insn 148 ... (set (reg/v:SI 73) (plus:SI (reg/v:SI 73) ... ; i++
+    ...            (lt:SI (reg/v:SI 73) ...                     ; i < 3
+
+**Pseudo 73 is `i`, the induction variable of the trailing three-byte copy
+loop** -- not block 0's byte value.  Its nrefs of 11 over a live length of 7 is
+the loop-depth weighting flow.c applies to loop-body references, which is why it
+tops the priority sort.  And it is CORRECT: the target seats `i` in $v1 too
+(`addu $v1,$zero,$zero` / `addiu $v1,$v1,0x1` at 80035014 / 8003502C).  The loop
+counter competes with nothing; s37's "short-lived block-0 value outranks the
+long-lived pointer" describes a competition that does not exist.
+
+--- 2. THE REAL BARRIER, WITH EXACT NUMBERS: LOCAL-ALLOC, NOT GLOBAL PRIORITY ---
+
+The instrumented cc1 (`tools/gcc-2.7.2/cc1`, BB2_ALLOC_DEBUG=1, granted for this
+function by decisions.md:14784) prints the full allocno table.  Base body
+(`tmp/grind/func_80034F88/s38/allocdbg_b0.txt`):
+
+    ord=0 pseudo=73 hardreg=3  nrefs=11 livelen=7  pri=47142   <- i (loop)
+    ord=1 pseudo=78 hardreg=2  nrefs=5  livelen=7  pri=14285   <- p[8]&1 cond
+    ord=2 pseudo=82 hardreg=2  nrefs=5  livelen=7  pri=14285
+    ord=3 pseudo=86 hardreg=2  nrefs=5  livelen=7  pri=14285
+    ord=4 pseudo=74 hardreg=4  nrefs=10 livelen=29 pri=10344   <- q
+    ord=5 pseudo=77 hardreg=3  nrefs=3  livelen=4  pri=7500
+    ord=6 pseudo=81 hardreg=3  nrefs=3  livelen=4  pri=7500
+    ord=7 pseudo=85 hardreg=3  nrefs=3  livelen=4  pri=7500
+    ord=8 pseudo=72 hardreg=5  nrefs=6  livelen=34 pri=3428    <- p
+
+and the `.greg` conflict rows are
+
+    ;; 73 conflicts: 72 73 2 29
+    ;; 74 conflicts: 72 74 77 78 81 82 85 86 2 3 29
+
+`73` and `74` do NOT conflict.  `74` (q) carries a HARD-REG conflict with reg 3
+($v1) which `73` does not.  The source of that hard conflict is visible in the
+same `.greg` dump's RTL, BEFORE global allocation runs:
+
+    (insn 14 (set (reg/v:SI 4 a0) (symbol_ref:SI ("D_80106A73"))))
+    (insn 17 (set (reg:QI 3 v1) (mem:QI (reg/v:SI 4 a0))))
+    (insn 18 (set (reg:SI 3 v1) (and:SI (subreg:SI (reg:QI 3 v1) 0) (const_int 248))))
+    (insn 20 (set (mem:QI (reg/v:SI 4 a0)) (subreg:QI (reg:SI 3 v1) 0)))
+
+Block 0's masked byte is already a HARD register, `$v1`, at that point: it is a
+single-basic-block quantity, so **local-alloc seats it in $v1 before global-alloc
+ever looks at `q`**, and `q` -- live across it -- therefore hard-conflicts with
+$v1 and can never be given that seat by `find_reg`.  ($v0 is unavailable to that
+quantity because the call return is still live: insn 11, `a1 = v0`, is scheduled
+AFTER insn 20.)
+
+**This replaces the priority story with a stronger one, and the difference is
+operational:** priority is a dial a session can push on from C (reference count,
+live length); a hard-register conflict is not.  The proof that priority is NOT
+the barrier is already in the bank: in the round-trip body `rt`, q's own numbers
+rise to `nrefs=15 livelen=30 pri=15000` and it moves from **ord=4 to ord=1** --
+allocated before every allocno except the loop counter -- and it STILL takes
+`hardreg=4` ($a0).  Winning the sort does not win the seat.
+
+--- 3. WHAT THE TARGET DOES, RE-READ AT INSTRUCTION LEVEL ---
+
+`asm/funcs/func_80034F88.s` (49 insns) holds &D_80106A73 in $v1 for blocks 0+1
+(80034F98..80034FD0) and materialises it AGAIN into $a0 for block 2 (80034FC8)
+and a third time into $a0 for block 3 (80034FF0); block 0/1's byte value is $a0
+and blocks 2/3's is $v1; `i` is $v1.  So the target's blocks-0/1 address is a
+global pseudo that WON $v1, which means in the original compile block 0's byte
+quantity was NOT local-allocated to $v1 -- it took $a0.  With a single C object
+that seat is unreachable for the reason in section 2, and the second seat needs a
+second pseudo (global.c:426), i.e. the banned second object.  The residual
+factorisation the ledger has carried since s16 is therefore re-derived a fifth
+time, now from local-alloc rather than from global priority.
+
+--- 4. THE DECLARATION PUN IS REMOVABLE AT ZERO CODEGEN COST ---
+
+The dispatch brief's auto-scan flags `candidate.c`'s trailing loop
+`*(&D_80106A70 + i) = *((u8 *)p + i + 0x17);` as a DECLARATION PUN against
+`extern u8 D_80106A70;` (include/code6cac.h:472) and states that a candidate
+carrying it FAILs layer-1; the sanctioned fix is at the declaration.  Measured
+this session for the first time:
+
+    include/code6cac.h:472  extern u8 D_80106A70;  ->  extern u8 D_80106A70[3];
+    loop body               *(&D_80106A70 + i) = ...  ->  D_80106A70[i] = ...
+
+    a1  score 10  build_insns 49   and  `diff s38/b0.txt s38/a1.txt` is EMPTY
+
+The pun-free body is **bit-identical** to the punned one.  D_80106A70 is
+referenced in exactly two places project-wide (`grep -rn D_80106A70 include src`
+= the header line and this loop), so the header change is a one-line, one-symbol
+INTEGRATION HANDOFF with no other build-file impact.  The pun-free body is banked
+at `memory/grind/func_80034F88/candidate_arraydecl_pun_free.c`; `candidate.c`
+keeps the punned spelling only because it is the form that compiles against
+HEAD's header unmodified.
+
+The array spelling must stay on the DESTINATION operand only: writing the source
+byte as `((u8 *)p)[i + 0x17]` measures **12 at 49** (banked as
+`rejected/s38-loop-source-byte-array-indexed-score12.c`).
+
+--- 5. STATE OF THE SEARCH AFTER s38 ---
+
+`candidate.c` unchanged at 10/49.  The causal account of the residual is
+corrected and sharpened: the blocking fact is a LOCAL-ALLOC hard-register seat
+($v1 taken by block 0's block-local masked byte before global runs), not a
+global-allocno priority ordering, and the priority dial is measured impotent even
+when it is won outright (rt: ord 4 -> 1, seat unchanged).  The layer-1
+declaration-pun blocker is closed at zero cost, contingent on a one-line header
+handoff.  One new disproven form banked (bank size 203).
+
+- [s38] Chassis re-measured on HEAD (dispatch printed 'measurement unavailable' for the ninth consecutive session): the candidate body, spliced as variant b0, = score 10, build_insns 49. src/code6cac_b.c and include/code6cac.h restored to HEAD at session end; `git status --porcelain src/ include/` empty.
+- [s38] KILL RE-AUDIT: rt (the s20/s25 dead round-trip) re-measures 10 at 49 and c1 (s33's anon-symdiff block 0) re-measures 13 at 49; fake_ablate again reports no FAKE-annotated construct in candidate.c. NEW: `diff s38/b0.txt s38/rt.txt` shows the two bodies differ by EXACTLY ONE instruction -- our `nop` becomes `lbu $v1,0($a0)` -- the first direct-diff confirmation that the block-1 reload is instruction-free and lands in the rotated register.
+- [s38] CORRECTION TO s37: pseudo 73 -- the top-priority allocno (nrefs=11, livelen=7, pri=47142) that takes $v1 -- is NOT 'block 0's byte value'. The .lreg RTL shows reg 73 in `(set (reg/v:SI 73) ...)`, `(mem/s:QI (plus:SI (reg/v:SI 73) ...))`, `(set (reg/v:SI 73) (plus:SI (reg/v:SI 73) ...))` and `(lt:SI (reg/v:SI 73) ...)`: it is `i`, the induction variable of the trailing three-byte copy loop, and its nrefs of 11 is flow.c's loop-depth weighting. The target seats `i` in $v1 as well (80035014 / 8003502C), so it is CORRECT and competes with nothing. s37's mechanism ('the short-lived block-0 value outranks the long-lived pointer in allocno_compare') describes a competition that does not exist.
+- [s38] THE REAL BARRIER, read from the .greg RTL before global allocation: block 0's masked byte is already the HARD register $v1 -- `(insn 17 (set (reg:QI 3 v1) (mem:QI (reg/v:SI 4 a0))))`, `(insn 18 (set (reg:SI 3 v1) (and:SI (subreg:SI (reg:QI 3 v1) 0) (const_int 248))))`, `(insn 20 (set (mem:QI (reg/v:SI 4 a0)) (subreg:QI (reg:SI 3 v1) 0)))`. It is a single-basic-block quantity, so LOCAL-alloc seats it in $v1 before global-alloc considers q; q is live across it and therefore carries the hard-reg-3 conflict listed in `;; 74 conflicts: 72 74 77 78 81 82 85 86 2 3 29`. $v0 is not available to that quantity because the call return is still live (insn 11, `a1 = v0`, is scheduled after insn 20).
+- [s38] The global-priority dial is measured IMPOTENT for the seat: in the round-trip body rt, q's allocno rises to nrefs=15 livelen=30 pri=15000 and moves from ord=4 to ord=1 (ahead of every allocno except the loop counter), and it still receives hardreg=4 ($a0). Winning allocno_compare does not win $v1, because the obstruction is a hard-register conflict created by local-alloc, not a sort order.
+- [s38] Base-body allocno table (instrumented cc1, BB2_ALLOC_DEBUG, tmp/grind/func_80034F88/s38/allocdbg_b0.txt): 73/$v1 nrefs=11 livelen=7 pri=47142 (i); 78,82,86/$v0 nrefs=5 livelen=7 pri=14285 (the three p[8]&mask conditions); 74/$a0 nrefs=10 livelen=29 pri=10344 (q); 77,81,85/$v1 nrefs=3 livelen=4 pri=7500 (the three block values); 72/$a1 nrefs=6 livelen=34 pri=3428 (p). c1's table is also banked (allocdbg_rt_c1.txt): there q reaches hardreg=3 ($v1) and the per-block values move to $a0, which is exactly why c1's blocks 0/1 are byte-exact and its blocks 2/3 are not.
+- [s38] THE DECLARATION PUN IS REMOVABLE AT ZERO COST. With include/code6cac.h:472 changed from `extern u8 D_80106A70;` to `extern u8 D_80106A70[3];` and the trailing loop spelled `D_80106A70[i] = *((u8 *)p + i + 0x17);`, variant a1 measures 10 at 49 and its objdump is BIT-IDENTICAL to the punned base (`diff s38/b0.txt s38/a1.txt` empty). D_80106A70 is referenced in exactly two places project-wide (the header line and this loop), so the fix is a one-line INTEGRATION HANDOFF. Banked as memory/grind/func_80034F88/candidate_arraydecl_pun_free.c; any future candidate-ready should be that body plus the header line.
+- [s38] The array spelling is destination-only: writing the loop's SOURCE byte as `((u8 *)p)[i + 0x17]` instead of `*((u8 *)p + i + 0x17)` measures 12 at 49 (banked as rejected/s38-loop-source-byte-array-indexed-score12.c).
+- [s38] Ladder accounting: this is session SIXTEEN of cycle 2; the six-modality condition was met at s31. Four sessions remain before the owner directive 2026-09-02 permits any disposition.
+- [s38] One new disproven form banked; bank size is now 203.
+
+### Artifacts (s38)
+
+`tmp/grind/func_80034F88/s38/`: `variants/{b0,rt,c1,a1,a2}.c`, `run.ps1`,
+`splice.py`, `allocdbg.sh`, `ad.sh`, `dis.sh`, `allocdbg_b0.txt`,
+`allocdbg_rt_c1.txt`, `qtydbg_b0.txt`, `b0.txt`, `a1.txt`, `rt.txt`,
+`code6cac_b.c.orig`, per-variant `.o` files.  Allocation dump:
+`tmp/grind/func_80034F88/dumps/code6cac_b.{lreg,greg}` (base body installed).
+
+- [s38] Chassis re-measured this session (the dispatch brief printed 'measurement unavailable' for the ninth consecutive session): candidate.c spliced as variant b0 = score 10, build_insns 49, rules_dropped 0. src/code6cac_b.c and include/code6cac.h both restored to HEAD at session end; `git status --porcelain src/ include/` empty.
+
+- [s38] KILL RE-AUDIT: rt (the s20/s25 dead round-trip, the banked form whose instruction multiset matches the target's) re-measures 10 at 49; c1 (s33's anon-symdiff block 0, blocks 0/1 byte-exact) re-measures 13 at 49; `tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c` again reports no FAKE-annotated construct, so no banked kill on this chassis was measured with a FAKE carrier occupying the contested pseudo.
+
+- [s38] Base-body allocno table from the instrumented cc1 (BB2_ALLOC_DEBUG=1, tools/gcc-2.7.2/cc1; the local-alloc/allocation instrumentation is granted for this function by docs/grind/decisions.md:14784): ord0 pseudo73 hardreg3 nrefs11 livelen7 pri47142 (i); ord1-3 pseudos 78/82/86 hardreg2 nrefs5 livelen7 pri14285 (the three p[8]&mask conditions); ord4 pseudo74 hardreg4 nrefs10 livelen29 pri10344 (q); ord5-7 pseudos 77/81/85 hardreg3 nrefs3 livelen4 pri7500 (the three block values); ord8 pseudo72 hardreg5 nrefs6 livelen34 pri3428 (p).
+
+- [s38] The .greg conflict rows show `;; 73 conflicts: 72 73 2 29` and `;; 74 conflicts: 72 74 77 78 81 82 85 86 2 3 29`: pseudos 73 and 74 do NOT conflict with each other, and only 74 carries the hard-reg-3 ($v1) conflict.
+
+- [s38] In c1's allocno table q does reach hardreg=3 ($v1) and the per-block values move to $a0 -- which is exactly why c1's blocks 0/1 are byte-exact and its blocks 2/3 (which the base gets right) are not. One pseudo, one hard register (global.c:426), so the two seats the target uses are not simultaneously reachable from one C object.
+
+- [s38] Direct-diff result new this session: `diff s38/b0.txt s38/rt.txt` is a single hunk -- our `nop` at +0x4f64 versus `lbu $v1,0($a0)`. The target's block-1 reload is instruction-free (it fills a load-delay slot the base wastes) and differs from the target only in the rotated register.
+
+- [s38] The array-declared, pun-free body measures 10 at 49 with an objdump bit-identical to the punned base (`diff s38/b0.txt s38/a1.txt` empty); `grep -rn D_80106A70 include src` returns exactly two lines (include/code6cac.h:472 and this function's loop), so the declaration fix has no other build-file impact.
+
+- [s38] Ladder accounting: this is session sixteen of cycle 2 (the ledger's own numbering; the dispatch brief called it 'session 35' while the ledger already carried s35 and s37 blocks, so this session is tagged s38 and its scratch is tmp/grind/func_80034F88/s38/). The six-modality condition was met at s31; four flat sessions remain before the owner directive 2026-09-02 permits any disposition.
+
+- [s38] One new disproven form banked (rejected/s38-loop-source-byte-array-indexed-score12.c); bank size is now 203.
