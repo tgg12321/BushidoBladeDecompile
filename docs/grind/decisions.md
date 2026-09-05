@@ -23606,3 +23606,129 @@ The 14:44 Judge ruling governs. A layer-1 finding is reviewer opinion, never pre
 ## 2026-09-05 15:15 — func_80034F88 — final call — **PASS**
 
 My own 2026-09-05 20:07 ruling on this exact body (4c793057badb6957) binds and I found no defect it missed. Constructs: two /* FAKE */ pointer aliases to D_80106A73 (pointer-alias-fake-exception), one /* FAKE */ dead store u=0 (dead-store-fake-exception), and the loop-counter reuse of q (no-new-park-categories.md:185 variable-reuse, bounded by staged-value-reused-variable) - all annotated with named GCC-pass mechanisms and exhaustion pointers into hypotheses.md s53-s67. Decisive fact I re-verified myself: asm/funcs/func_80034F88.s:6-21 keeps &D_80106A73 in $v1 through the block-0 sb and then reuses $v1 as the loop counter/index at :40-:50, so the C reuse mirrors the original's own object, not an invented lift. New this call, the integration surface: the aggregate merge clears every prong of no-new-park-categories.md:238 - (a)/(b) the indexed store at :44-:46 (addu $at,$at,$v1; sb %lo(D_80106A70)($at)) is base+index addressing in the original binary and the declaration is a flat u8[3]; (c) no C names D_80106A71/A72 (grep over src/include clean; only the func_8001BE20 INCLUDE_ASM sibling does) and the surviving splat rows carry the exact 2026-09-03-amendment suffix; (d) header-canonical at include/code6cac.h:472, and the TU-local spelling was banked inadmissible in rejected/; (e) both consumers in src/code6cac.c converted, full rebuild SHA1 == oracle (evidence.md s67). All four touched paths are covered by the tools/grinder/scope_allow.txt func_80034F88 grant. No build-time output rewriting anywhere in the diff.
+
+## 2026-09-05 — func_80022F34 (src/code6cac.c) — **INTEGRATION HANDOFF (bytes PROVEN, sandbox 0 + full-tree oracle SHA1)**
+
+Filed by grind session s10 (rederive modality). **This is NOT an endgame lock and NOT an
+exhaustion claim.** The function is SOLVED in pure C. Every technical question is answered and
+measured. It is filed here only because two of the three required edits are outside a grind
+session's allowed surface, so the session could not stage them; the tree was reverted to clean
+after measurement.
+
+The 2026-07-27 standing ruling ("REFUSED / OWNER-ACCEPTED INCOMPLETE") and the 2026-08-26 /
+2026-08-31 dispositions filed under it for this function are **SUPERSEDED by measurement**: their
+premise — that the +8 phantom frame slot was unreachable in C — was true only within the wrong
+object model. See "What s1-s9 missed" below.
+
+### Proof of bytes (all measured 2026-09-05, this session)
+
+| form | header decl of `D_801027BC` | body spelling | maspsx label-nop gate | `sandbox --disable all` |
+|---|---|---|---|---|
+| s2-s9 banked candidate | `extern s32 D_801027BC;` | `(&D_801027BC)[idx * 5]` | off | 11 |
+| vFLAT1D | `extern s32 D_801027BC[];` | `D_801027BC[idx * 5]` | ON | 10 |
+| vCLEAN2 | `extern s32 D_801027BC[][5];` | `D_801027BC[idx][0]` | off | **1** |
+| vCLEAN2 | `extern s32 D_801027BC[][5];` | `D_801027BC[idx][0]` | ON | **0** |
+
+Score-0 run: `{"score": 0, "target_insns": 70, "build_insns": 70, "scorable": true,
+"rules_dropped": 0}` — honest, cheat-invisible, zero rules, zero cheat-asm, zero FAKE constructs.
+
+Full-tree `verify-oracle` in the score-0 configuration: `"ok": true`, `"build_matches": true`,
+`"build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa"` == `"original_sha1_locked"`. The two
+declaration corrections perturb no other translation unit, and the per-function maspsx gate causes
+no index cascade among code6cac.c's siblings.
+
+### The exact edits (the whole remedy — four lines plus a function body)
+
+1. `include/code6cac.h:467` — `extern s32 D_801027BC;` -> `extern s32 D_801027BC[][5];`
+2. `include/code6cac.h:450` — `extern u8 D_80102782;` -> `extern u8 D_80102782[];`
+3. `maspsx_label_nop_funcs.txt` — append one line: `func_80022F34`
+4. `src/code6cac.c:2467` — replace `INCLUDE_ASM("asm/funcs", func_80022F34);` with the body banked
+   at `memory/grind/func_80022F34/candidate.c`
+
+Ready-to-apply diffs: `tmp/grind/func_80022F34/s10/HANDOFF-header.diff`,
+`tmp/grind/func_80022F34/s10/HANDOFF-maspsx-label-nop.diff`. The complete matched source file is
+banked verbatim at `tmp/grind/func_80022F34/s10/code6cac.c.matched`, and the score-0 objdump at
+`tmp/grind/func_80022F34/s10/matched_dis_score0.txt`.
+
+### Routing of the two out-of-surface surfaces
+
+- **`include/code6cac.h`** — the `include/*.h` class, **pipeline-executable**. Per
+  `.claude/rules/integration-handoff-self-serve.md` (owner ruling 2026-08-19) the driver may grant
+  it via `grindlib.py add-scope-allow` on a Judge `ESCALATE` with
+  `escalate_kind=integration-handoff`, `scope_paths=["include/code6cac.h", "src/code6cac.c"]`. The
+  function then stays ACTIVE and the next session lands the fix through the full normal gates.
+- **`maspsx_label_nop_funcs.txt`** — on the `add-scope-allow` **denylist** ("the maspsx
+  fidelity-gate lists ... assembler-behavior gates are substrate-adjacent"), so the driver cannot
+  grant it and it needs an operator/owner hand-apply of the single line. This is the one genuinely
+  owner-facing item in this entry, and it is the smallest possible ask: **append `func_80022F34`
+  to `maspsx_label_nop_funcs.txt`.** Its own rule
+  (`.claude/rules/maspsx-label-nop-gate.md`) already classifies this as a *pure-C retirement path,
+  not a park*, and the case here is the exact documented store-value-consumer shape:
+  `lhu $v0,0($s2)` / `.L80022FD0:` (switch merge label) / `sh $v0,8($a0)`, matching the
+  `gnd_get_fog` precedent in that rule. The function carries **no** `__asm__("nop")` compensator —
+  the C is clean either way; without the line the honest score is 1 instead of 0.
+
+Note that with edits 1, 2 and 4 alone the honest floor is **1**, already an 11-point improvement
+over the nine-session plateau, and the C body is final and unchanged. Nothing about the source
+depends on the maspsx line.
+
+### What s1-s9 missed (recorded so the pattern is not repeated)
+
+`D_801027BC` is an array of 20-byte (five-word) records — the target proves it, indexing the symbol
+with a computed register at a 20-byte stride, twice. The header declared it `extern s32
+D_801027BC;`, a plain scalar. The only way to index a scalar is a per-use pointer pun,
+`(&D_801027BC)[idx * 5]`, and every form measured in s1 through s9 carried one.
+
+That pun builds a symbol-bearing `PLUS` tree, which arrives at `memory_address`
+(`tools/gcc-2.7.2/explow.c:414-416`), which runs `break_out_memory_refs`
+(`explow.c:274-291`) *before* `GO_IF_LEGITIMATE_ADDRESS` and unconditionally `force_reg`s the
+`SYMBOL_REF` into a pseudo. `combine` then folds that pseudo back into the two mems to produce the
+target's per-access `lui/%lo` bytes, deleting the pseudo's only definition; its `REG_DEAD` note is
+orphaned, so `distribute_notes` (`combine.c:10829-10846`) emits `(use (reg N))` after the preceding
+`CODE_LABEL`; the pseudo gets no hard register; reload homes it to a stack slot. Result: `vars=8`,
+`subu $sp,$sp,40` against the target's 32, and ten frame-offset diffs — plus the one maspsx nop:
+the honest floor of 11.
+
+s6, s7, s8 and s9 characterised that chain **correctly and completely**, down to compiler source.
+s9's class kill — "the `mips.h:2325-2349` CONSTANT_ADDRESS+REG clause is unreachable at expand for
+any symbol + runtime-variable address in this fork" — was sound reasoning about the code path it
+read. It is nonetheless false as stated, because that path is only taken for an address expression
+that reaches `memory_address` as a `PLUS` containing the symbol, and an `ARRAY_REF` on an
+array-typed declaration never constructs one. With `extern s32 D_801027BC[][5];` and
+`D_801027BC[idx][0]`, the outer `ARRAY_REF` has array type, expand keeps the address symbolic, and
+the mem is emitted directly as `(mem/s:SI (plus:SI (symbol_ref "D_801027BC") (reg 98)))` at expand
+time — the "pretend the MIPS supports a constant address + a register" clause, reached without ever
+passing through `break_out_memory_refs`. No address pseudo, no fold, no orphaned note, no strand,
+no phantom slot: `vars=0`, `subu $sp,$sp,32`. Post-expand `.rtl` evidence at
+`tmp/grind/func_80022F34/s10/rtl-arrayref-no-address-pseudo.txt`, insn 104.
+
+The 2-D shape is load-bearing, not cosmetic: `vFLAT1D` (`extern s32 D_801027BC[];` +
+`D_801027BC[idx * 5]`) scores **10** — the phantom slot returns, because a 1-D `ARRAY_REF` with a
+runtime index and a unit element type collapses to the same `PLUS` tree as the pun.
+
+The dispatch brief's auto-generated DATA MODEL block named this defect verbatim — "the target
+indexes `D_801027BC` with a computed register but the header declares `extern s32 D_801027BC;` — it
+is an ARRAY; declare it as one" — and the DECLARATION PUNS scan listed the two offending lines in
+`candidate.c`. Nine sessions of RTL forensics, ~48k permuter iterations, solver classification and
+two filed dispositions were spent downstream of a declaration the census had already flagged. This
+is the same failure mode as func_80033550 (13 sessions of RA modelling for a record copy the census
+had named since 2026-05-17). **Read the DATA MODEL block before the codegen ledger.**
+
+### Cheat-compliance posture
+
+The banked body is ordinary C: no register pins, no `__asm__`, no volatile, no dead stores, no
+unused locals or arrays, no `do { } while (0)` wrap, no FAKE construct, and — unlike the previously
+banked candidate — **no declaration puns**, since both punned symbols are now declared as the arrays
+they are. Self-vet at `memory/grind/func_80022F34/self_vet.md`. A fresh layer-2 cheat-reviewer still
+gates acceptance.
+
+### Ledger
+
+`memory/grind/func_80022F34/` — candidate.c (matched body + full rationale), evidence.md (s10
+section: measurement table, root cause, artifact list), hypotheses.md (three s10 entries: the
+confirmed object-model hypothesis, the 1-D control kill, and the falsification of s9's class kill),
+rejected/ (22 forms).
+
+## 2026-09-05 15:40 — func_80022F34 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s10 of func_80022F34, which the driver DISCARDED as invalid (KILLED hypothesis statement makes a class-level claim ('unreachable') with kill_scope='instance': "s9's banked class kill - 'the mips.h const+reg pretend clause is unreachable at ". Either narrow the STATEMENT wording to the instance you measured (which arms, which chassis, which FAKE state) or set kill_scope='class' and cite the gate predicate (file:line that exists) in predicate_cite.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
