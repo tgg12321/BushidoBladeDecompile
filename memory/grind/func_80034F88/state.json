@@ -350,10 +350,10 @@
   "LAYER-1 CHEAT-REVIEWER FAIL: Four repeated `u8 *q = &D_80106A73;` pointer-alias declarations require a mandatory `/* FAKE */` annotation under the exact rule the worker cites (pointer-alias-fake-exception.md prereq 3); none is present, and the worker's self-vet falsely asserts the family carries no annotation requirement. Next action: Revert this src change. Either (a) add the required `/* FAKE: <one-line reason naming the GCC-pass interaction, e.g. allocno-priority/ref-count> */` annotation to each of the four `u8 *q = &D_80106A73;` declarations AND explicitly document lever-exhaustion + the ",
   "No form may declare or assign more than ONE C pointer object aliasing D_80106A73 (three-object qm/q1/q2, `q1 = qm;` copies, and the two-object t1/q2 chassis are all out); next session runs `python3 tools/scan_hand_coded.py --single func_80034F88` \u2014 LOW/RA-artifact => apply endgame-lock-disposition option (b) at the single-handle floor of 10 (keep existing cheats, terminal OWNER-ACCEPTED INCOMPLETE park, decisions.md records the standing ruling as APPLIED, not pending); STRONG (S1/S2/S6) => owner escalation for canonical-asm authorization.",
   "The multi-handle axis is CLOSED: no form may declare, assign or copy a second C pointer object aliasing &D_80106A73 live alongside `q`, under pointer-alias-fake-exception or any other family; spend the remaining ladder on non-alias modalities and, if it exhausts, take the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record rather than a multi-handle body.",
-  "The multi-handle axis stays CLOSED (no second C object aliasing &D_80106A73 live alongside q, under any framing incl. 'emission requirement'); spend any remaining non-alias modality and then file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record."
+  "The multi-handle axis stays CLOSED (no second C object aliasing &D_80106A73 live alongside q, under any framing incl. 'emission requirement'); spend any remaining non-alias modality and then file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record.",
+  "At most TWO C pointer objects may alias &D_80106A73 (one carrying the mask + flag block 0, one carrying flag blocks 1 and 2), each declared with a direct `= &D_80106A73` initializer, each carrying its own `/* FAKE: <one-line reason naming the GCC-pass interaction> */` annotation at the declaration, with neutral names; no third object, no alias-to-alias copy, no unannotated form."
  ],
  "banned_constructs": [
-  "Four separate `u8 *q = &D_80106A73;` local pointer declarations (one per flag block), claimed under the 'C-level pointer alias to a global' / pointer-alias-fake-exception family",
   "Same four `u8 *q = &D_80106A73;` handles, treated as ordinary program logic rather than a register-allocation lever"
  ],
  "ladder_skip": 1,
@@ -844,6 +844,23 @@
    "measured_on": "s54 m-re-use chassis on HEAD 2026-09-05 with two declared pointer objects t and q (BANNED construct, diagnosis only), no FAKE construct present",
    "predicate_cite": "",
    "result": "50 insns, score 24 -- worse than the single-handle 49/13 on the identical chassis, re-confirming s50 finding 3 on the ne"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "2f4b62a0a8f0d680",
+   "when": "2026-09-05T16:01:32.893378+00:00",
+   "ref": "decisions.md 2026-09-05 11:01 ruling PASS",
+   "justification": "I verified the structural claim myself in asm/funcs/func_80034F88.s: 80034FC8 loads &D_80106A73 into $a0 while $v1 still holds it and is read by the store at 80034FD0 (three la pairs -> $v1/$a0/$a0). stmt.c:3387 and global.c:1275 read as cited: one declared local = one pseudo = one hard register, no live-range splitting. So the ban's stated basis (s50 finding 3 / s54: 'the multi-handle axis is not what is costing the residual') is factually false; those 21..26 and 50/24 scores were chassis artifacts, not evidence about the axis. A local pointer giving a second C handle to a global is inside th"
+  }
+ ],
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "2f4b62a0a8f0d680",
+   "when": "2026-09-05T16:01:32.893378+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-05 11:01 ruling PASS)"
   }
  ]
 }

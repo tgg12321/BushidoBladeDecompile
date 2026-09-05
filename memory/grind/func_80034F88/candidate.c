@@ -1,3 +1,65 @@
+/* s55 (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns,
+ * re-measured on HEAD this session: score 10, 49/49).  s55 does two things:
+ * it removes the FAKE-shaped dead store from the closest-to-target chassis,
+ * and it converts the 55-session residual into a STRUCTURAL contradiction
+ * with the standing multi-handle ban.  Read this before probing anything.
+ *
+ * 1. THE s54 INVALIDATION IS AVAILABLE IN PLAIN ORDINARY C.  s54 reached the
+ *    target's block-0 instruction sequence (49 insns, score 13) only with a
+ *    dead store `m = p[8];` whose value nothing consumed.  The same cse
+ *    invalidation is produced by SPLITTING the condition across two ordinary
+ *    statements, so that every value written is consumed:
+ *        m = *q & 0xF8;  *q = m;
+ *        m = p[8];       -- re-set of the stored value's variable: invalidates
+ *        v = *q;         -- survives as a real lbu, no la of its own
+ *        m &= 1;         -- split-init / compound assignment: ORDINARY C
+ *        if (m) { m = v | 1; } else { m = v; }  *q = m;
+ *    Measured 49 insns / score 13, byte-identical to s54's dead-store body.
+ *    Banked as rejected/s55-ordinaryC-mreuse-invalidation-NO-DEAD-STORE-
+ *    49insn-score13.c.  Four spellings of it (single/two-statement mask,
+ *    separate or shared result variable, function- or block-scoped reload)
+ *    all measure 49/13, so 13 is a hard floor for that whole family.
+ *
+ * 2. THE ORDER OF THE INVALIDATOR AND THE READ IS LOAD-DELAY-SLOT CRITICAL.
+ *    The invalidating set must precede the read, but the CONDITION's `andi`
+ *    must follow it: `m = p[8] & 1; v = *q;` (invalidator and andi fused into
+ *    one statement) is 50 insns / 13, because the andi takes the lw's
+ *    load-delay slot and the reload can no longer fill it.  Splitting the
+ *    condition is what buys the 49th instruction.
+ *
+ * 3. EVERY REMAINING DIFFERENCE IS INSIDE THE MASK + BLOCK 0, AND IT IS A
+ *    THREE-WAY REGISTER ROTATION PLUS ONE ORDERING.  Aligned objdump of the
+ *    49/13 body against the target (tmp/grind/func_80034F88/s55/build_c1.txt):
+ *    flag blocks 1 and 2, the trailing loop and the epilogue are byte-exact;
+ *    12 of the 13 points are the register naming of build 4f48..4f78 --
+ *        build:  q=$a0   mask/cond/result=$v1   reload=$v0
+ *        target: q=$v1   mask=$a0, reload=$a0   cond/result=$v0
+ *    -- and the 13th is that the target materialises flag block 1's address
+ *    (80034FC8) BEFORE flag block 0's store (80034FD0), where the build emits
+ *    the store first.
+ *
+ * 4. THE TARGET HOLDS &D_80106A73 IN TWO HARD REGISTERS AT ONCE, WHICH ONE C
+ *    POINTER OBJECT CANNOT DO.  At 80034FC8 the target loads the address into
+ *    $a0 while $v1 still holds the same address and is still needed by the
+ *    store at 80034FD0.  The target's three `la` pairs land on $v1, $a0, $a0
+ *    -- two distinct hard registers for one address.  A C local that never has
+ *    its address taken gets exactly one pseudo (tools/gcc-2.7.2/stmt.c:3387)
+ *    and a pseudo gets exactly one hard register (global.c:1275); GCC 2.7.2
+ *    has no live-range splitting.  So NO body with a single C pointer object
+ *    aliasing &D_80106A73 can emit those bytes, whatever its priorities are.
+ *    That also explains item 3's ordering point directly: with one pseudo the
+ *    block-1 `la` is anti-dependent on block 0's store (sched.c:1720) and can
+ *    never be scheduled above it.
+ *
+ * 5. CONSEQUENCE FOR THE STANDING BAN.  s50 finding 3 and s54 concluded from
+ *    SCORES (two-object bodies measured 21..26, then 50/24) that the
+ *    multi-handle ban "is not what is costing the residual".  That inference
+ *    is now contradicted by structure: the ban forbids the only object model
+ *    the target's bytes admit.  The two-object bodies measured badly because
+ *    their priorities were wrong on the chassis they were measured on, not
+ *    because the axis is wrong.  s55 therefore files a ruling-request rather
+ *    than another spelling pass; see hypotheses.md [s55].
+ */
 /* s54 (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns,
  * re-measured on HEAD this session: score 10, 49/49).  This body is still the
  * LOWEST-SCORING form, but it is no longer the closest one structurally: read

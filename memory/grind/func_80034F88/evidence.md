@@ -7726,3 +7726,89 @@ model_u1.json, build_split.txt, build_v2_reuse_m_raw.txt).
 - [s54] Two pointer objects on the reload chassis (BANNED, diagnosis only) measure 50 insns / score 24, worse than the single-handle 49/13 -- the multi-handle ban is not what costs the residual.
 
 - [s54] Kill re-audit: the s51 split-spelling body re-measures 51/12 unchanged and fake_ablate finds no FAKE construct in it or in this session's best body.
+
+## s55 (synthesis, 2026-09-05) -- floor 10 (unchanged); the residual is re-typed from a priority race to an object-model contradiction
+
+**Chassis re-audit.** The plateau body (`memory/grind/func_80034F88/candidate.c`)
+measures 49 build insns / 49 target insns / score 10 on HEAD 2026-09-05, and
+s54's closest-to-target body
+(`rejected/s54-mreuse-invalidation-TARGET-BLOCK0-STRUCTURE-49insn-score13.c`)
+measures 49/49 / score 13. Both are byte-for-byte their recorded values, so no
+banked kill in this ledger is void on chassis grounds.
+
+**The 49/13 chassis is now ordinary C.** s54 reached the target's block-0
+instruction sequence only through a dead store, `m = p[8];`, whose value nothing
+consumed. Splitting the condition across two ordinary statements supplies the
+identical cse invalidation with every value consumed:
+
+    q = &D_80106A73;
+    m = *q & 0xF8;
+    *q = m;
+    m = p[8];        /* re-set of the stored value's variable: invalidates */
+    v = *q;          /* survives as a real lbu, no la of its own */
+    m &= 1;          /* ordinary split-init / compound assignment */
+    if (m) { m = v | 1; } else { m = v; }
+    *q = m;
+
+49 build insns, score 13, build byte-identical to s54's dead-store body. Four
+further spellings (separate result variable; two-statement mask; function-scoped
+reload variable; blocks 1/2 sharing one pair of value variables) all measure
+49/13, so 13 is a hard floor for the whole family. Banked as
+`rejected/s55-ordinaryC-mreuse-invalidation-NO-DEAD-STORE-49insn-score13.c`.
+This matters for admissibility rather than for the floor: the closest-to-target
+chassis now carries no dead store, no FAKE construct and no pun beyond the
+pre-existing trailing-loop one.
+
+**Statement order inside block 0 is load-delay-slot critical.** The invalidating
+SET must precede the read, but the condition's `andi` must follow it. Fusing
+them (`m = p[8] & 1; v = *q;`) is 50 insns / score 13 in all three spellings
+measured, because the andi takes the lw's load-delay slot and the reload can no
+longer fill it. Splitting the condition is exactly what buys the 49th
+instruction.
+
+**Where the 13 points sit.** Aligned objdump of the 49/13 body against
+`asm/funcs/func_80034F88.s` (`tmp/grind/func_80034F88/s55/build_c1.txt`): flag
+blocks 1 and 2, the trailing loop and the epilogue are byte-exact. Twelve of the
+thirteen points are the register naming of build 4f48..4f78 --
+
+    build:   q = $a0    mask / cond / result = $v1    reload = $v0
+    target:  q = $v1    mask = $a0, reload = $a0      cond / result = $v0
+
+-- and the thirteenth is that the target materialises flag block 1's address at
+80034FC8, BEFORE flag block 0's store at 80034FD0, where every body in this
+ledger emits the store first.
+
+**THE STRUCTURAL FINDING.** The target holds `&D_80106A73` in two hard registers
+at once. Its three `la` pairs land on $v1 (80034F98), $a0 (80034FC8) and $a0
+(80034FF0), and at 80034FC8..80034FD0 the $a0 value and the $v1 value are both
+live. A C local whose address is never taken gets exactly one pseudo
+(`tools/gcc-2.7.2/stmt.c:3387`) and a pseudo receives exactly one hard register
+(`tools/gcc-2.7.2/global.c:1275`); GCC 2.7.2 has no live-range splitting.
+Therefore no body with a single C pointer object aliasing that address can emit
+the target's bytes, at any allocation priority. The same fact settles s54's
+frontier item 3 without a scheduler dump: with one pseudo the block-1 `la` is a
+SET of the register block 0's store still reads, and `sched.c:1720` makes it
+anti-dependent on that store, so it can never be scheduled above it.
+
+**Consequence for the standing ban.** s50 finding 3 and s54 concluded from
+SCORES (two-object bodies at 21..26, then 50/24) that "the standing multi-handle
+ban is not what is costing the residual". That inference is now contradicted by
+structure: the ban forbids the only object model the target's bytes admit. The
+two-object bodies measured badly because their priorities were wrong on the
+chassis they were measured on, not because the axis is wrong -- and none of them
+was built on the s55 ordinary-C invalidation chassis, which is the first chassis
+in this ledger whose flag blocks 1/2, loop and epilogue are all byte-exact with
+`p` in $a1. s55 therefore files a **ruling-request** instead of another spelling
+pass. If the ruling refuses the second handle, the honest disposition is a
+LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record, because
+the byte-match is then unreachable under the constraint set.
+
+**Also killed this session (all instance kills, all on the s55 chassis, HEAD
+2026-09-05, one declared pointer object, no FAKE construct):** sharing the
+condition/result and reload variables across two or three flag blocks (five
+bodies, every one 49 insns / score 33; ALLOCDBG on the shared body shows the
+value allocno at nrefs 17 / livelen 20 / pri 34000, far ABOVE the pointer's
+10645, and `p` evicted from $a1 into $a2); one-armed block 0 (`if (m) v |= 1;`
+with no else) at 47 insns / score 33, cse deleting the missing arm's re-store;
+and the mask variable used as block 0's condition only, with the result in a
+separate variable, at 49 insns / score 27 in both mask spellings.
