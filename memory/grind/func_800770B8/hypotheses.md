@@ -2661,3 +2661,151 @@ KILL SCOPE: instance.  MEASURED ON: HEAD 08b2924a chassis, prologue fence presen
 - probe: s29 ALL2 sandbox 5/175 + whole-TU objdump comparison; premises P1-P5 recorded in evidence.md [s29] OBJECT MODEL
 - result: CONFIRMED - the object model is not the residual; the s28 frontier is carried unchanged.
 - verdict: CONFIRMED
+
+## [s30] escalation
+
+### H-s30-1 (CONFIRMED - the session's headline)
+STATEMENT: the flipped-cursor body with the C-group pointer in its own local and the target's
+A,D,C,S store order (o1 = cX_c) already emits the target's exact INSTRUCTION ORDER for the whole
+store window, and its 25 differing rows are one local-alloc register seat.
+MECHANISM: qty_compare_1 (local-alloc.c:1660-1683) ranks the merged chain quantity ([28,56],
+22 refs, 4*22/28 = 3.1428) above the C pointer ([36,40], 6 refs, 2*6/4 = 3.0), so find_free_reg
+hands the chain $2 and every row that reads it prints with $v0/$v1 exchanged.
+PROBE: s28/rows2.py row-attribution diff of o1 against asm/funcs/func_800770B8.s, plus the target's
+own rows 40-64 transcribed from the .s; block-1 quantity table from BB2_QTY_DEBUG (s30/o1.qty).
+RESULT: rows 55 (`addu $a0,$a0,$a1`) and 59 (`sb $t0,0x68($a0)`) are already byte-exact; the other
+23 rows carry the right opcodes and the wrong base register.
+
+### H-s30-2 (CONFIRMED)
+STATEMENT: the target's class-C seat IS reachable in the target's own A,D,C,S store order - giving
+either the A group or the D group its own pointer local produces chain [12,56] (priority 2.0) and
+seats the chain in $3 and the cursor reload in $2.
+MECHANISM: freeing the D group from group A's `ptr` pseudo removes the REG_DEP_OUTPUT/REG_DEP_ANTI
+edges sched_analyze records against the group-A stores, so sched1 floats the t0*4 shift to the top
+of the block; the chain quantity's interval grows from span 28 to span 44 and its qty_compare_1
+priority falls from 3.1428 to 2.0, below the C pointer's 3.0.
+PROBE: p1 (A on `pa`) and q1 (D on `pd`), both A,D,C,S, scored and their block-1 quantity tables
+read with BB2_QTY_DEBUG (s30/p1.qty, s30/q1.qty).
+RESULT: both score 28/175 with ord=1 pc [36,40] -> $2, ord=2 chain [12,56] -> $3, ord=3 reload
+[48,52] -> $2 - the target's seats.  The 28 rows are the sched1 displacement of the
+%hi/%lo(D_800A35D0) pair, not the seat.
+
+### H-s30-3 (KILLED, instance)
+STATEMENT: naming the S store's pointer (`ps = base + t0;`) and placing its assignment before the
+C group reproduces the target's cluster of three address computations while leaving the `sb` after
+the C stores.
+MECHANISM: the target emits `addu $v0,$a0,$v1` / `addu $a0,$a0,$a1` / `addu $v1,$v1,$a1` as a
+cluster and only then the two `sh` and the `sb`, so the S pointer is live across the C stores; a
+C-level name placed earlier was expected to give that pseudo the same interval.
+PROBE: y1-y5, five assignment positions (before the C pointer, after it, at the top of the loop
+body, between groups A and D, immediately before the C stores), all on the A,D,C,S flipped base;
+block-1 quantity table read for y2.
+RESULT: 25/175 in all five, and y2's quantity table is LINE-FOR-LINE IDENTICAL to o1's.  The
+address computation's emission position is decided by sched1, not by the statement position of its
+C-level name.
+KILL SCOPE: instance.  MEASURED ON: HEAD 6c9ca9fa chassis, flipped-cursor A,D,C,S base with the
+C group on its own `pc` local, empty do-while(0) prologue fence present, 175/175 in all five.
+
+### H-s30-4 (KILLED, instance)
+STATEMENT: naming the shared `t0 * 4` shift as an `s32` local at the top of the loop body gives the
+chain quantity an earlier birth, lengthening its interval past span 30 so the C pointer's 3.0
+outranks it.
+MECHANISM: qty_compare_1's denominator is death - birth; the target emits `sll $v1,$a1,2` before
+any group-A store, so an earlier first reference should reproduce that interval.
+PROBE: w1 (named at the top), w2 (named just before group D), w4 (t0*4 and t0*10 both named),
+w5 (t0*10 only); block-1 quantity table read for w1.
+RESULT: 25/175 in all four; w1's table is line-for-line identical to o1's (chain still [28,56]).
+CSE had already shared the shift, so naming it adds no reference and moves no interval.
+KILL SCOPE: instance.  MEASURED ON: HEAD 6c9ca9fa chassis, flipped-cursor A,D,C,S base with `pc`,
+prologue fence present, 175/175 in all four.
+
+### H-s30-5 (KILLED, instance)
+STATEMENT: splitting the C pair onto two once-used pointer locals turns one 6-ref/span-4 quantity
+(3.0) into two 4-ref/span-2 quantities (4.0), each of which outranks the chain.
+MECHANISM: qty_compare_1 rewards short intervals; a once-written once-read pointer is the same
+shape as h3's blocking S-address temp.
+PROBE: x1 (`pc = base + (t0*4); sh 0x42; pc2 = base + (t0*4); sh 0x40;`).
+RESULT: 25/175, unchanged - cse.c refolds the second computation onto the first pseudo, so only one
+quantity ever exists.
+KILL SCOPE: instance.  MEASURED ON: HEAD 6c9ca9fa chassis, flipped-cursor A,D,C,S base, prologue
+fence present, 175/175.
+
+### H-s30-6 (KILLED, instance)
+STATEMENT: hoisting the C-pointer assignment above group A gives the t0*4 shift an early consumer,
+floating it to the top of the block the way the target does, without freeing the D group's symbol
+load.
+MECHANISM: sched1 emits an insn when it is ready and highest-priority; a second early consumer of
+the shift was expected to raise its INSN_PRIORITY.
+PROBE: v1 (C pointer above group A), v2 (between groups A and D), v4 (v1 with the pointer spelled
+shift-first), v3 (v1 plus the D group on its own local).
+RESULT: v1/v2/v4 = 25/175 (inert); v3 = 28/175 (the pd symbol float).  The shift's emission
+position tracks the D group's pseudo sharing, not the number of C-level consumers.
+KILL SCOPE: instance.  MEASURED ON: HEAD 6c9ca9fa chassis, flipped-cursor base, prologue fence
+present, 175/175 in all four.
+
+### H-s30-7 (KILLED, instance)
+STATEMENT: some store-group order other than A,D,S,C reaches h3's blocking quantity while keeping
+the target's C-before-S order.
+MECHANISM: the blocker is the S store's address temp, which only enters block_alloc's quantity
+table when the S store is emitted between two other groups.
+PROBE: the full six-way store-order sweep on the flipped base with the C group on `pc` (A,D,C,S /
+D,A,C,S / A,C,D,S / C,A,D,S / D,C,A,S / C,D,A,S), plus the local-assignment sweep (A on `pa`,
+D on `pd`, C back on `ptr`) and the C-store swap.
+RESULT: 25, 14, 39, 30, 36, 36 and 28 / 28 / 29 / 25 - all 175/175.  Every order that keeps C
+before S either leaves the chain at 3.1428 (25) or wins the seat by floating the D symbol pair
+(14 / 28).  Only A,D,S,C (h3, 7) produces the blocker, and it pays five rows for the S-before-C
+emission order.
+KILL SCOPE: instance.  MEASURED ON: HEAD 6c9ca9fa chassis, flipped-cursor base with the empty
+do-while(0) prologue fence present, 175/175 in all fourteen builds.
+
+## [s30] The flipped-cursor body with the C-group pointer in its own local and the target's A,D,C,S store order (o1 = cX_c) already emits the target's exact instruction order for the whole store window, and its 25 differing rows are one local-alloc register seat.
+- mechanism: qty_compare_1 (local-alloc.c:1660-1683) = floor_log2(refs)*refs*size/(death-birth) ranks the merged chain quantity ([28,56], 22 refs, 4*22/28 = 3.1428) above the C pointer ([36,40], 6 refs, 2*6/4 = 3.0), so find_free_reg hands the chain $2 and every row reading it prints with $v0/$v1 exchanged.
+- probe: Transcribed the target's rows 40-64 straight out of asm/funcs/func_800770B8.s; row-attribution diff of o1 against it with s28/rows2.py (alias-canonicalising); block-1 quantity table from the instrumented cc1 with BB2_QTY_DEBUG (tmp/grind/func_800770B8/s30/o1.qty).
+- result: Rows 55 (addu $a0,$a0,$a1, the S pointer) and 59 (sb $t0,0x68($a0)) are already byte-exact; the other 23 rows carry the right opcodes with the wrong base register. The target's order is A,D,C,S with the sb last; the three address computations are emitted as a cluster before the C stores; and the cursor is GCC's synth_mult for 10 (t0*4 + t0, then <<1) reusing the same t0*4 pseudo, which our C spelling t0 * 10 already reproduces.
+- verdict: CONFIRMED
+
+## [s30] The target's class-C seat is reachable in the target's own A,D,C,S store order: giving either the A group or the D group its own pointer local produces chain [12,56] and seats the chain in $3 with the cursor reload in $2.
+- mechanism: Freeing the D group from group A's ptr pseudo removes the REG_DEP_OUTPUT/REG_DEP_ANTI edges sched_analyze records against the group-A stores, so sched1 floats the t0*4 shift to the top of the block; the chain quantity's interval grows from span 28 to span 44 and its qty_compare_1 priority falls from 3.1428 to 2.0, below the C pointer's 3.0.
+- probe: p1 (A group on its own local pa) and q1 (D group on its own local pd), both in A,D,C,S order on the flipped-cursor base; scored, then their block-1 quantity tables read with BB2_QTY_DEBUG (s30/p1.qty, s30/q1.qty).
+- result: Both score 28/175/175 with ord=1 pc [36,40] -> $2, ord=2 chain [12,56] -> $3, ord=3 reload [48,52] -> $2, which are the target's seats. Their 28 rows are the sched1 displacement of the %hi/%lo(D_800A35D0) pair (the s28/e6 mechanism), not the seat. The D-first orders o2/p2/q2 win the same seat for 14, of which 11 rows are purely the D group emitted before group A.
+- verdict: CONFIRMED
+
+## [s30] Naming the S store's pointer (ps = base + t0;) and placing its assignment before the C group reproduces the target's cluster of three address computations while leaving the sb after the C stores.
+- mechanism: The target emits addu $v0,$a0,$v1 / addu $a0,$a0,$a1 / addu $v1,$v1,$a1 as a cluster and only then the two sh and the sb, so the S pointer is live across the C stores; a C-level name placed earlier was expected to give that pseudo the same interval and hence h3's blocking priority with the target's store order.
+- probe: y1-y5, five assignment positions (before the C pointer, after it, at the top of the loop body, between groups A and D, immediately before the C stores) on the A,D,C,S flipped base; block-1 quantity table read for y2.
+- result: 25/175/175 in all five, and y2's quantity table is line-for-line identical to o1's. The address computation's emission position is decided by sched1, not by the statement position of its C-level name.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6c9ca9fa chassis; flipped-cursor A,D,C,S base with the C group on its own pc local; the empty do-while(0) prologue fence present (the body's only FAKE unit, in block 0, no FAKE carrier on any block-1 pseudo); 175/175 in all five builds.
+
+## [s30] Naming the shared t0 * 4 shift as an s32 local at the top of the loop body gives the chain quantity an earlier birth, lengthening its interval past span 30 so the C pointer's 3.0 outranks it.
+- mechanism: qty_compare_1's denominator is death - birth; the target emits sll $v1,$a1,2 before any group-A store, so an earlier first reference to the shift should reproduce that interval and drop the chain's priority below 3.0.
+- probe: w1 (named at the top of the loop body), w2 (named just before group D), w4 (t0*4 and t0*10 both named), w5 (t0*10 only); block-1 quantity table read for w1.
+- result: 25/175/175 in all four; w1's quantity table is line-for-line identical to o1's, chain still [28,56]. cse.c had already shared the shift, so naming it adds no reference and moves no interval. Naming t0*2 instead (w3) is not inert and costs 44 rows.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6c9ca9fa chassis; flipped-cursor A,D,C,S base with the C group on pc; empty do-while(0) prologue fence present; 175/175 in all four builds.
+
+## [s30] Splitting the C pair onto two once-used pointer locals turns one 6-ref/span-4 quantity (3.0) into two 4-ref/span-2 quantities (4.0), each of which outranks the chain.
+- mechanism: qty_compare_1 rewards short intervals; a once-written once-read pointer is the same shape as h3's blocking S-address temp, which prices 2*4/2 = 4.0 against the chain's 3.1428.
+- probe: x1 (pc = base + (t0*4); sh 0x42; pc2 = base + (t0*4); sh 0x40;), scored on the flipped A,D,C,S base.
+- result: 25/175/175, unchanged from o1 - cse.c refolds the second computation onto the first pseudo, so only one quantity ever exists and no extra insn is emitted either.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6c9ca9fa chassis; flipped-cursor A,D,C,S base; empty do-while(0) prologue fence present; 175/175.
+
+## [s30] Hoisting the C-pointer assignment above group A gives the t0*4 shift an early consumer, floating it to the top of the block the way the target does, without freeing the D group's symbol load.
+- mechanism: sched1's list scheduler emits an insn when it is ready and highest-priority; a second early consumer of the shift was expected to raise its INSN_PRIORITY enough to fill the lw's delay slot the way the target's sll $v1,$a1,2 does, while the D group keeps the shared ptr local that pins the symbol load behind group A's stores.
+- probe: v1 (C pointer above group A), v2 (between groups A and D), v4 (v1 with the pointer spelled shift-first), v3 (v1 plus the D group on its own local).
+- result: v1/v2/v4 = 25/175/175, byte-inert; v3 = 28/175/175, the pd symbol float. The shift's emission position tracks the D group's pseudo sharing, not the number of C-level consumers of the shift.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6c9ca9fa chassis; flipped-cursor base; empty do-while(0) prologue fence present; 175/175 in all four builds.
+
+## [s30] Some store-group order other than A,D,S,C reaches h3's blocking quantity while keeping the target's C-before-S order.
+- mechanism: The blocker is the S store's address temp, which only enters block_alloc's quantity table (local-alloc.c:472 admits a pseudo only at reg_n_deaths == 1) when the S store is emitted between two other store groups; every order that keeps C before S leaves that temp merged into base's quantity.
+- probe: Full six-way store-order sweep on the flipped base with the C group on pc (A,D,C,S / D,A,C,S / A,C,D,S / C,A,D,S / D,C,A,S / C,D,A,S), plus the local-assignment sweep on A,D,C,S (A on its own pa, D on its own pd, C back on the shared ptr), the C-store swap and the base-cast-first S spelling.
+- result: 25, 14, 39, 30, 36, 36 and 28 / 28 / 29 / 25 / 25 - all 175/175. Every order keeping C before S either leaves the chain at 3.1428 (25) or wins the seat by floating the D symbol pair (14 / 28). Only A,D,S,C (h3, score 7) produces the blocker, and it pays five rows for the S-before-C emission order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6c9ca9fa chassis; flipped-cursor base with the empty do-while(0) prologue fence present; 175/175 in all fourteen builds.

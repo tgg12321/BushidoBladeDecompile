@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800770B8",
-      "file": "text1b",
-      "distance": 5,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 '## 2026-09-01 \u2014 func_800770B8 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' (appended this session, s20; records the executed Ruling-A named probe, both failed endgame gates, and the re-activation triggers)",
-      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force."
-    },
-    {
       "func": "func_80034F88",
       "file": "code6cac_b",
       "distance": 10,
@@ -1646,17 +1636,28 @@
       "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
       "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:18614 \u2014 ## 2026-09-01 \u2014 func_80017848 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**",
       "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md:21464 - 2026-09-03 func_80017848 (src/ings.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED"
+    },
+    {
+      "func": "func_800770B8",
+      "file": "text1b",
+      "distance": 5,
+      "verdict": "C",
+      "rules": 0,
+      "status": "foreclosed",
+      "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 '## 2026-09-01 \u2014 func_800770B8 \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' (appended this session, s20; records the executed Ruling-A named probe, both failed endgame gates, and the re-activation triggers)",
+      "unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
+      "foreclosure": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md '## 2026-09-05 - func_800770B8 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' (appended this session; both endgame-lock gates FAILED: scan_hand_coded tier=LOW score=0/8, and zero SOTN-master precedent hits with no closing construct in hand to seek precedent for)"
     }
   ],
   "counts": {
     "total": 186,
-    "active": 181,
+    "active": 180,
     "by_status": {
-      "active": 181,
-      "foreclosed": 5
+      "active": 180,
+      "foreclosed": 6
     },
     "by_verdict": {
-      "C": 154,
+      "C": 153,
       "ASM-PARTIAL": 27
     }
   }

@@ -1,3 +1,41 @@
+/* s30 UPDATE (2026-09-05, escalation).  BODY UNCHANGED - still the honest floor.
+ * Re-measured live on the HEAD 6c9ca9fa chassis: sandbox func_800770B8 --disable all =
+ * score 5, build_insns 175, target_insns 175.  h3 (rejected/s28-classC-paid-ADSC-...) = 7
+ * and cX_c/o1 = 25 both reproduce exactly, so the s28 frontier is current, not inherited.
+ *
+ * THE TARGET'S STORE WINDOW IS NOW TRANSCRIBED, not inferred (asm/funcs/func_800770B8.s
+ * rows 40-64; full read-out in evidence.md [s30]).  Three facts:
+ *   - the store-group order is A, D, C, S with the `sb` LAST, so h3's five extra rows are
+ *     purely its S-before-C order;
+ *   - the three address computations are emitted as a CLUSTER (C pointer, S pointer, chain
+ *     root) and only then the two `sh` and the `sb` - the S pointer is live across the C
+ *     stores and reuses base's register;
+ *   - the cursor is GCC's synth_mult for 10 (`t0*4 + t0`, then `<<1`) reusing the same t0*4
+ *     pseudo the D and C pointers use, which the C spelling `t0 * 10` already reproduces.
+ *
+ * o1 (flipped cursor + C group on its own `pc` + A,D,C,S) EMITS THE TARGET'S EXACT
+ * INSTRUCTION ORDER: rows 55 and 59 are byte-exact and all 25 differing rows are ONE
+ * local-alloc seat (chain [28,56] r22 = 3.1428 beats pc [36,40] r6 = 3.0 at
+ * local-alloc.c:1660-1683 and takes $2).
+ *
+ * THE CLASS-C RESIDUAL IS A TWO-HORNED DILEMMA, both horns measured in s30:
+ *   HORN 1 - a short blocker in [28,48).  Only the S store's address temp qualifies (4 refs
+ *     / span 2 / 4.0) and only when the S store is emitted BEFORE the C stores: h3, score 7.
+ *   HORN 2 - lengthen the chain's interval so pc's 3.0 wins.  Needs the t0*4 shift floated to
+ *     the top of the block ([12,56], 2.0), which happens exactly when the D group stops
+ *     sharing group A's `ptr` pseudo: p1 / q1 (A or D on its own local, A,D,C,S) DO win the
+ *     target's seats, and score 28 because the same freeing floats the %hi/%lo(D_800A35D0)
+ *     pair; the D-first orders o2/p2/q2 win it for 14.
+ * The target has the shift floated WITHOUT the symbol floated.  Separating those two sched1
+ * decisions is the single open lever - it turns q1/p1 into a score-2 body.
+ *
+ * BYTE-INERT ON THIS CHASSIS (13 spellings, all 25/175, w1 and y2 dump-verified identical
+ * quantity tables): naming the S pointer at any of five positions; spelling the C pointer
+ * shift-first; swapping the C stores; naming t0*4, t0*10 or both; splitting the C pair onto
+ * two once-used locals (cse refolds them); hoisting the C-pointer assignment above group A.
+ * Statement POSITION of a pure address computation does not move bytes here - only which
+ * LOCAL each store group uses and the ORDER of the store groups do.
+ */
 /* s29 UPDATE (2026-09-05, object-model).  BODY UNCHANGED - still the honest floor.
  * Re-measured live on the HEAD dcd79965 chassis: sandbox func_800770B8 --disable all =
  * score 5, build_insns 175, target_insns 175.  fake_ablate: one FAKE unit (the prologue

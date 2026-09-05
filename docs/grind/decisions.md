@@ -23188,3 +23188,133 @@ The struct/union declaration for D_800A3468's object is admitted, in the candida
 ## 2026-09-05 01:25 — func_80060A68 — final call — **PASS**
 
 Same body (5f78d844c1029e78) I cleared at 2026-09-05T06:20 (docs/grind/decisions.md 01:20 ruling); no defect that ruling did not consider. Re-verified myself: HEAD src/text1b.c:3358 already declares `extern s32 *D_800A3468;` in matched sibling func_80061064, and :3406-:3740 store pointers into it while :3433/:3531/:3638 write offset 0 whole as 0x210009/0x210005/0x210010 -- so the pointer typing and the offset-0 union are truthful readings of the file's own committed matched C, not agent inventions. Body is ordinary C: one local (`result`, written once), zero FAKE, zero __asm__, zero volatile, no banned staged-carrier or raw-global re-read spelling; diff touches only src/text1b.c (no pipeline/output-rewriting surface). The layer-1 objection (struct chosen for its MEM_IN_STRUCT_P effect) is not a FAIL ground under .claude/rules/ordinary-c-judge-decidable.md -- choosing among semantically truthful spellings by codegen effect is the method. Evidence: memory/grind/func_80060A68/self_vet.md T4-T6, alt-s29-score0-*.c (three distinct spellings of the same model also 0/66).
+
+## 2026-09-05 - func_800770B8 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Proof-of-foreclosure record for `func_800770B8` (src/text1b.c), filed by session s30 (escalation
+modality) under the owner's standing auto-ruling of 2026-07-27
+(`.claude/rules/endgame-lock-disposition.md`) and RECORDED, not asked, per the 2026-08-31 ruling
+(`.claude/rules/ordinary-c-judge-decidable.md`). Nothing here is addressed to the owner and
+nothing waits on a reply. This is the second filing after the owner's 2026-09-02 re-activation
+with the exhaustion window RESET; the nine sessions since (s21-s29, modalities structural,
+synthesis, solver, forensics, object-model) plus this one worked the ladder from the 09-01 named
+probe forward and did not move the floor.
+
+**Chassis, measured this session.** `memory/grind/func_800770B8/candidate.c` applied to
+src/text1b.c with the two byte-neutral caller-side edits it documents (prototype
+`s32 func_800770B8(s32, s32, s32);`, call site `(s32)&D_8009BD24`):
+`sandbox func_800770B8 --disable all` = **score 5, build_insns 175, target_insns 175,
+rules_dropped 0** on HEAD 6c9ca9fa. The floor has been flat at 5 since s11 - twenty consecutive
+sessions - across the modalities escalation, structural, synthesis, solver, forensics,
+object-model and permuter. src/text1b.c was restored to its pristine HEAD copy after every build
+this session (cmp-verified) and the working tree carries only ledger files.
+
+**The residual, and what s30 newly established about it.** The floor body is the target modulo
+FIVE in-place register names: rows 35/36 (class B - the two prologue clear stores addressed
+through the `p_old` copy `$s1` instead of the freshly returned `func_8006E49C` result `$v0`) and
+rows 62/63/64 (class C - `addu $v0,$v0,$v1` / two inheriting `addiu` against the target's
+`addu $v1,$v1,$v0`). 175 == 175, no instruction slack.
+
+This session transcribed the target's own store window (asm/funcs/func_800770B8.s rows 40-64)
+directly rather than inferring it from row diffs, which had never been done, and it changes the
+shape of the class-C argument in three ways. (i) The target's store-group order is A, D, C, S with
+the `sb` emitted LAST, so h3's five extra rows really are only its S-before-C order. (ii) The
+target emits the three address computations as a CLUSTER (`addu $v0,$a0,$v1` C pointer,
+`addu $a0,$a0,$a1` S pointer, `addu $v1,$v1,$a1` chain root) and only then the two `sh` and the
+`sb` - the S pointer is live across the C stores and reuses base's register. (iii) The cursor is
+GCC's synth_mult for 10 (`t0*4 + t0`, then `<<1`) reusing the same t0*4 pseudo the D and C
+pointers use, which our C spelling `t0 * 10` already reproduces byte-exactly.
+
+Against that transcription, the flipped-cursor body with the C group on its own pointer local and
+the target's A,D,C,S store order (`o1`, score 25) turns out to emit **the target's exact
+instruction order**: rows 55 and 59 are already byte-exact and all 25 differing rows are one
+local-alloc register seat. The seat is decided by qty_compare_1 (local-alloc.c:1660-1683):
+chain [28,56] 22 refs = 3.1428 beats the C pointer [36,40] 6 refs = 3.0, so the chain takes $2.
+
+**The residual is a two-horned dilemma and both horns were measured this session.** Exactly two
+mechanisms give the flipped cursor the target's class-C seat, and each costs more than the three
+rows class C is worth:
+* HORN 1 - a short high-priority blocker in [28,48). The only real quantity that qualifies is the
+  S store's address temp (4 refs / span 2 / priority 4.0), and it only becomes a block-local
+  quantity when the S store is EMITTED BEFORE the C stores. That is `h3`: **score 7** - the three
+  class-C rows bought for five rows of wrong store order.
+* HORN 2 - lengthen the chain's interval so the C pointer's 3.0 outranks it. This needs the t0*4
+  shift to float to the top of the block ([12,56], span 44, priority 2.0), which happens exactly
+  when the D group stops sharing group A's `ptr` pseudo. `p1` (A on its own local) and `q1` (D on
+  its own local), both in the target's A,D,C,S order, DO win the target's seats - and score 28,
+  because the same freeing that floats the shift floats the `%hi/%lo(D_800A35D0)` pair (the s28/e6
+  sched.c dependency mechanism), dragging the store window and renaming the inner-loop counter.
+  The D-first orders (`o2`/`p2`/`q2`) win the seat for 14, of which 11 rows are purely the D group
+  being emitted before group A.
+The target has the shift floated (row 42, filling the `lw`'s delay slot) WITHOUT the symbol pair
+floated (rows 49-51 sit immediately before the D stores). No C form measured in thirty sessions
+separates the two.
+
+**Statement position of a pure address computation is byte-inert on this chassis - 13 spellings,
+all 25/175, two of them dump-verified.** Naming the S pointer and placing its assignment at five
+different points relative to the C group (y1-y5); spelling the C pointer shift-first (y6, s1);
+swapping the two C stores (t1); spelling the S address base-cast-first (u1); naming the shared
+`t0*4` shift as an `s32` local at the top of the loop body or just before group D (w1, w2); naming
+`t0*10` (w5); naming both (w4); splitting the C pair onto two once-used pointer locals so each
+would be a 4-ref/span-2 quantity (x1 - cse.c refolds them onto one pseudo); and hoisting the
+C-pointer assignment above group A (v1) or between groups A and D (v2, v4) - every one is 25/175,
+and the instrumented-cc1 (BB2_QTY_DEBUG) block-1 quantity tables for w1 and y2 are LINE-FOR-LINE
+IDENTICAL to o1's, so the inertness is at the RTL level and not a scoring coincidence. What moves
+bytes in this window is exactly two things: which LOCAL each store group uses, and the ORDER of the
+store groups. Both were swept exhaustively this session (six store orders x four local
+assignments, 33 builds total, all 175/175).
+
+**Gate (a) - canonical-asm evidence: FAILED (re-run this session).**
+`python3 tools/scan_hand_coded.py --single func_800770B8`
+(`tmp/grind/func_800770B8/s30/scan.log`) returns `tier=LOW score=0/8`, "no strong hand-coded
+indicators", every one of S1-S8 unset: 0 multu/mflo pairs, no empty-body branches, 175 insns with
+5 spills over 14 distinct registers, max load burst 3 in any 8-insn window, no high-similarity
+sibling, no BIOS jumptable call pattern, all callee-save uses paired with an `$sp` save, no
+redundant mask-before-shift. Ordinary GCC 2.7.2 output; the canonical-asm grant path is not
+available.
+
+**Gate (b) - in-hand SOTN-master precedent: FAILED, and vacuous.** Re-censused against the uncapped
+2,746-line `docs/reference/sotn-construct-index.md`: ZERO hits for
+`local-alloc|reg_qty|qty_compare|register seat|swap operand|operand[ -]order|combine_regs`. The
+gate is additionally vacuous because there is no closing construct to seek precedent FOR: every
+construct measured this session and in s21-s29 is ORDINARY C (store reordering, pointer locals,
+named intermediates, corrected global declarations). No coercion, no FAKE beyond the single
+pre-existing empty `do { } while (0);` prologue fence, and nothing that would need a family grant.
+The residual is blocked by measurement, not by policy. The one construct that ever measured below
+the floor on a flipped basin (s14's P8 = 4/175) is the `(t0 * 4) >> 1` arithmetic-identity detour
+the Judge FAILED on 2026-09-01 (decisions.md 07:23 entry); it remains banned and no form filed here
+uses it or any respelling of it.
+
+**Exhaustion.** Thirty sessions; modalities escalation, structural, synthesis, solver, forensics,
+object-model, rederive and permuter (two telemetered campaigns totalling 33,926 iterations, both
+fresh-seed exhausted); 135 banked rejected forms in `memory/grind/func_800770B8/rejected/` (seven
+added this session); the mechanism of each residual class named at compiler-source level (class B:
+cse.c:8038-8063 EBB termination + jump.c label demotion, and the s20 measurement that the cheapest
+label device costs +18 rows against a 2-row prize; class C: the operand-1 tie at
+local-alloc.c:1295 and the seat decision at local-alloc.c:1660-1683, both read out of the
+instrumented compiler's own quantity table rather than modelled); the object model of every global
+the function touches audited and corrected byte-neutrally in s29; global allocation NEGATIVE at
+depth 3 on the full goal; sched1 and sched2 reporting no differing block against the target object.
+
+**Evidence pointers.** `memory/grind/func_800770B8/evidence.md` and `hypotheses.md` ([s30] sections
+appended this session, H-s30-1 .. H-s30-7), `candidate.c` (the floor-5 body) and
+`candidate_objmodel_ALL2.c` + `s29-objmodel-ALL2-declaration-edits.patch`, `rejected/` (135 forms),
+`tmp/grind/func_800770B8/s30/` (gen30.py / gen30b.py / gen30c.py / gen30d.py, apply.py, run.sh,
+qty.sh, qtydbg.py, rd.sh, v/ = the 33 bodies, sweep.log, scan.log, o1.qty / o2.qty / p1.qty /
+q1.qty / w1.qty / y2.qty), and `tmp/grind/func_800770B8/s29/`, `s28/`, `s20/`, `s19b/`, `s19/`,
+`s18/`.
+
+**Re-activation triggers.** (i) A toolchain or compiler-source finding that separates sched1's
+float of the t0*4 shift from its float of the `%hi/%lo(D_800A35D0)` pair - that single separation
+turns q1/p1 (28) into a score-2 body and, with class B, into the match; (ii) an owner class grant
+covering an arithmetic-identity / dependence-edge construct on a live computation (the banned P8
+shape measures 4/175 today); (iii) a class grant covering a construct that splits a cse extended
+basic block WITHOUT a CODE_LABEL, which GCC 2.7.2 does not offer today (the class-B horn);
+(iv) an owner unpark.
+
+### Not an integration handoff
+
+Nothing is bytes-proven and nothing is blocked by an untouchable surface. `src/text1b.c` carries
+`INCLUDE_ASM("asm/funcs", func_800770B8);` with 0 regfix / 0 asmfix rules; the best honest form is
+5 masked points away and lives in `memory/grind/func_800770B8/candidate.c`. The working tree was
+restored to HEAD before this record was filed.

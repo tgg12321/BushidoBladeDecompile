@@ -3652,3 +3652,150 @@ price of the C-first order is localised to one 15-row window and nothing leaks p
 - [s29] Tooling gotcha: pwsh tools/grinder/dump.ps1 invoked from inside a WSL bash script (s28/mov.sh pattern) fails silently under || true and the copied dumps_<variant> directories are stale copies of the previous dumps/ (s29's first dumps_C1 was byte-identical to s28's dumps_F). Run dump.ps1 from the PowerShell tool with the variant in src/text1b.c, then analyse under WSL.
 
 - [s29] Floor re-verified live at 5 / 175 build insns / 175 target insns on HEAD dcd79965; fake_ablate one unit, keep-all 5 / drop-1 10. 13 sandbox builds, one fresh cc1 -da dump set, six whole-TU objdump comparisons; src/text1b.c restored to pristine after every build (cmp-verified).
+
+## s30 (2026-09-05, escalation) - the target's own store-window geometry read out of the asm; o1/cX_c proved to be ONE register seat from score 2; every statement-position spelling measured byte-inert
+
+- [s30] Floor re-verified live on the HEAD 6c9ca9fa chassis: `memory/grind/func_800770B8/candidate.c`
+  (body F) applied via tmp/grind/func_800770B8/s30/apply.py plus its two documented byte-neutral
+  caller-side edits = **5 / 175 build insns / 175 target insns**. h3 (the s28 frontier body)
+  reproduces at **7 / 175 / 175** and cX_c/o1 at **25 / 175 / 175**, so every s28 conclusion is
+  measured on the current chassis, not inherited. 33 fresh scoring builds this session
+  (tmp/grind/func_800770B8/s30/sweep.log), 6 instrumented-cc1 quantity dumps (BB2_QTY_DEBUG),
+  3 row-attribution diffs. src/text1b.c restored to the pristine HEAD copy after every sweep
+  (cmp-verified).
+
+- [s30] **THE TARGET'S STORE-WINDOW GEOMETRY, READ DIRECTLY OUT OF asm/funcs/func_800770B8.s
+  (rows 40-64) FOR THE FIRST TIME.**  Previous sessions inferred this window from row diffs; it is
+  now transcribed:
+
+        sll  $a1,$t0,16 ; sra $a1,$a1,16     a1 = (s16)t0
+        sll  $v0,$a1,1                       t0*2
+        lw   $a0,%gp_rel(D_800A36A0)($gp)    a0 = base
+        sll  $v1,$a1,2                       t0*4      <-- fills the lw's delay slot,
+                                                           BEFORE any group-A store
+        addu $v0,$v0,$a0                     group-A pointer
+        sh   0x10 / 0x8 / 0xC / 0x14 / 0x3C ($v0)      group A
+        lui/addiu %hi/%lo(D_800A35D0) -> $v0
+        addu $v0,$v1,$v0                     group-D pointer = t0*4 + &D_800A35D0
+        sh   0x2($v0) ; sh 0x0($v0)                    group D
+        addu $v0,$a0,$v1                     group-C pointer = base + t0*4
+        addu $a0,$a0,$a1                     S pointer      = base + t0   (REUSES base's reg)
+        addu $v1,$v1,$a1                     chain root     = t0*4 + t0
+        sh   0x42($v0) ; sh 0x40($v0)                  group C
+        sb   $t0,0x68($a0)                             S store  (LAST)
+        lw   $v0,%gp_rel(D_800A36A0)($gp)    cursor reload
+        sll  $v1,$v1,1                       t0*10 = (t0*4 + t0)*2
+        addu $v1,$v1,$v0
+        addiu $a3,$v1,0x6A ; addiu $a1,$v1,0x7E
+
+  Three facts follow that no earlier session had. (i) The store-group order really is
+  **A, D, C, S** and the S store is emitted LAST, confirming h3's five residual rows are purely
+  its S-before-C order. (ii) The three address computations are emitted as a CLUSTER before the
+  C stores, so the S pointer is live ACROSS the two C stores and reuses base's register - the
+  target does not pair each address with its own store. (iii) The cursor is **not** an independent
+  `t0*10`: the target computes `t0*4 + t0` then `<<1`, i.e. GCC's synth_mult for 10 reusing the
+  same t0*4 pseudo the D and C pointers use.  Our bodies already produce that synthesis (h3's rows
+  56 and 60-64 are byte-exact), so the C spelling `t0 * 10` is correct and needs no help.
+
+- [s30] **o1 (= cX_c: flipped cursor, C-group pointer in its own local `pc`, store order A,D,C,S)
+  EMITS THE TARGET'S EXACT INSTRUCTION ORDER.**  Row-attribution diff (s28/rows2.py, alias-
+  canonicalising) shows all 25 of its differing rows are register names: rows 40-42 are the
+  lw/sll pair-ordering, 43-53 the group-A/D window carried on the wrong base register, 54-58 the
+  address cluster and C stores, 60-64 the cursor.  Row 55 (`addu $a0,$a0,$a1`, the S pointer) and
+  row 59 (`sb $t0,0x68($a0)`) are ALREADY byte-exact.  o1 is one local-alloc seat from score 2.
+
+- [s30] **THE SEAT CRITERION, RESTATED EXACTLY AND MEASURED ON SEVEN BODIES.**  In every flipped-
+  cursor body the destination of the cursor add joins the chain quantity (s28's operand-1 tie at
+  local-alloc.c:1295), so the chain must be allocated AFTER something that holds $2 across it and
+  dies before the cursor reload's birth at 48.  qty_compare_1 (local-alloc.c:1660-1683) =
+  floor_log2(refs)*refs*size/(death-birth).  Measured block-1 tables:
+
+        o1 / y1-y6 / w1 / w2 / w4 / w5 / x1 / v1 / v2 / v4 (score 25):
+            chain [28,56] r22 = 3.1428  ->  $2  (WRONG)   pc [36,40] r6 = 3.0 -> $3
+        h3 (score 7):
+            S temp [36,38] r4 = 4.0     ->  $2            chain [28,56] r22 -> $3 (RIGHT)
+        o2 / p2 / q2 (D-group first, score 14):
+            chain [12,56] r22 = 2.0     ->  $3 (RIGHT)    pc [36,40] r6 = 3.0 -> $2
+        q1 / p1 (A,D,C,S with the D or A group on its own local, score 28):
+            chain [12,56] r22 = 2.0     ->  $3 (RIGHT)    pc [36,40] r6 = 3.0 -> $2
+
+  So the target's class-C seat is reachable in the target's own A,D,C,S store order - q1 and p1
+  BOTH have it.  Their 28 rows are not the seat at all: they are the sched1 displacement of the
+  %hi/%lo(D_800A35D0) pair (the s28/e6 mechanism - once the D group stops sharing group A's `ptr`
+  pseudo the REG_DEP_OUTPUT/REG_DEP_ANTI edges vanish and the symbol load floats to the top of the
+  block, dragging the store window and renaming the inner-loop counter).
+
+- [s30] **THE RESIDUAL IS NOW A TWO-HORNED DILEMMA, BOTH HORNS MEASURED.**  Exactly two mechanisms
+  give the flipped cursor the target's class-C seat, and each costs more than the three rows class
+  C is worth:
+    * HORN 1 - a short high-priority blocker in [28,48).  The only real quantity that qualifies is
+      the S store's address temp (4 refs / span 2 / 4.0), and it only becomes a block-local
+      quantity when the S store is EMITTED BEFORE the C stores.  That is h3: score 7, i.e. the
+      three class-C rows bought for five rows of S-before-C order.
+    * HORN 2 - lengthen the chain's interval so pc's 3.0 outranks it.  This needs the t0*4 shift
+      to float to the top of the block ([12,56], span 44, 2.0), which happens exactly when the D
+      group stops sharing group A's `ptr` pseudo (own local, or emitted first).  That is o2/p2/q2
+      (14) and q1/p1 (28): the same freeing that floats the shift floats the symbol pair.
+  The target has the shift floated (row 42) WITHOUT the symbol floated (rows 49-51 sit immediately
+  before the D stores).  No C form measured this session separates the two.
+
+- [s30] **STATEMENT POSITION OF A PURE ADDRESS COMPUTATION IS BYTE-INERT ON THIS CHASSIS - 13
+  spellings, all 25/175.**  Naming the S pointer (`ps = base + t0;`) and placing its assignment at
+  five different points relative to the C group (y1 before the C pointer, y2 after it, y3 at the
+  top of the loop body, y4 between groups A and D, y5 immediately before the C stores) is inert;
+  so is spelling the C pointer shift-first (y6, s1), swapping the two C stores (t1), spelling the
+  S address base-cast-first (u1), naming the shared `t0*4` shift as an `s32 t4` local at the top
+  of the loop body or just before group D (w1, w2), naming `t0*10` (w5), naming both (w4),
+  splitting the C pair onto two once-used pointer locals so each would be a 4-ref/span-2 quantity
+  (x1 - CSE refolds them into one pseudo), and hoisting the C-pointer assignment above group A
+  (v1) or between groups A and D (v2, v4).  The instrumented-cc1 quantity tables for w1 and y2 are
+  LINE-FOR-LINE IDENTICAL to o1's, confirming the inertness is at the RTL level and not a scoring
+  coincidence.  What moves bytes in this window is exactly two things: which LOCAL each store
+  group uses, and the ORDER of the store groups.  Naming `t0*2` (w3) is the one exception and it
+  costs 44 rows.
+
+- [s30] Full store-group order sweep on the flipped-cursor base with the C group on `pc`
+  (all 175/175): A,D,C,S = 25; D,A,C,S = 14; A,C,D,S = 39; C,A,D,S = 30; D,C,A,S = 36;
+  C,D,A,S = 36; A,D,S,C (h3) = 7.  Local-assignment sweep on A,D,C,S: A on its own `pa` = 28,
+  D on its own `pd` = 28, C back on the shared `ptr` = 29, both A-own and D-first = 14.
+  o2's 13 differing rows (rows.py) are rows 35/36 plus eleven rows that are purely the D-group's
+  symbol pair being emitted before group A - the target emits group A first.
+
+- [s30] KILL RE-AUDIT (mandated): `tools/fake_ablate.py` results from s29 stand unchanged because
+  F re-measures at 5 on this chassis; the single FAKE unit is the empty `do { } while (0);`
+  prologue fence, it sits in block 0, and every quantity discussed above lives in block 1, so no
+  FAKE carrier occupies a class-B or class-C pseudo.  The closest-to-target form was re-measured
+  directly this session instead of ablated: h3 = 7 on HEAD 6c9ca9fa, identical to its s28 score.
+
+- [s30] Gate (a) canonical-asm: `python3 tools/scan_hand_coded.py --single func_800770B8`
+  (tmp/grind/func_800770B8/s30/scan.log) = `tier=LOW score=0/8`, every one of S1-S8 unset.
+  Gate (b) SOTN precedent: zero hits in the uncapped 2,746-line
+  `docs/reference/sotn-construct-index.md` for local-alloc / reg_qty / qty_compare / register-seat
+  / operand-order / combine_regs.  The gate is additionally vacuous: every construct measured this
+  session is ORDINARY C (store reordering, pointer locals, named intermediates) - there is no
+  coercion family in hand to seek a precedent FOR.  The residual is blocked by measurement, not by
+  policy.
+
+- [s30] Floor re-verified live on HEAD 6c9ca9fa: candidate.c body F applied to src/text1b.c with its two documented byte-neutral caller-side edits = score 5, build_insns 175, target_insns 175, rules_dropped 0. h3 reproduces at 7 and cX_c/o1 at 25, so every s28 conclusion is measured on the current chassis rather than inherited.
+
+- [s30] 33 fresh scoring builds this session, 6 instrumented-cc1 (BB2_QTY_DEBUG) block-1 quantity tables, 3 row-attribution diffs; src/text1b.c restored to the pristine HEAD copy after every sweep (cmp-verified) and the working tree carries only ledger/doc files.
+
+- [s30] The target's store window (asm/funcs/func_800770B8.s rows 40-64) was transcribed directly for the first time instead of inferred from row diffs: store-group order is A, D, C, S with the sb LAST; the three address computations (C pointer addu $v0,$a0,$v1, S pointer addu $a0,$a0,$a1, chain root addu $v1,$v1,$a1) are emitted as a cluster BEFORE the two C stores, so the S pointer is live across them and reuses base's register; and the cursor is GCC's synth_mult for 10 (t0*4 + t0, then <<1) reusing the same t0*4 pseudo the D and C pointers use.
+
+- [s30] o1 (flipped cursor + C group on its own pc local + A,D,C,S) emits the target's EXACT instruction order: rows 55 and 59 are already byte-exact and all 25 differing rows are one local-alloc register seat. o1 is one seat from score 2.
+
+- [s30] The class-C residual is a two-horned dilemma, both horns measured: HORN 1 needs a short high-priority blocker in [28,48), which only the S store's address temp supplies and only when the S store is emitted before the C stores (h3, score 7 - three class-C rows bought for five rows of wrong store order); HORN 2 needs the chain's interval lengthened to span 44 by floating the t0*4 shift, which happens exactly when the D group stops sharing group A's ptr pseudo (p1/q1 win the target's seats at 28, o2/p2/q2 at 14, because the same freeing floats the %hi/%lo(D_800A35D0) pair).
+
+- [s30] The target has the t0*4 shift floated (row 42, filling the lw's delay slot) WITHOUT the symbol pair floated (rows 49-51 sit immediately before the D stores). No C form measured in thirty sessions separates those two sched1 decisions; that separation is the single open lever and would turn q1/p1 into a score-2 body.
+
+- [s30] Statement position of a pure address computation is byte-inert on this chassis - 13 spellings, all 25/175: five positions for a named S pointer, shift-first C pointer, swapped C stores, base-cast-first S address, named t0*4 (two positions), named t0*10, both named, split C pair onto two once-used locals (cse refolds), and the C-pointer assignment hoisted above group A or between groups A and D. The BB2_QTY_DEBUG quantity tables for w1 and y2 are LINE-FOR-LINE IDENTICAL to o1's, so the inertness is at the RTL level and not a scoring coincidence. Only which LOCAL each store group uses and the ORDER of the store groups move bytes here.
+
+- [s30] Gate (a) canonical-asm FAILED: tools/scan_hand_coded.py --single func_800770B8 = tier=LOW score=0/8, every one of S1-S8 unset (tmp/grind/func_800770B8/s30/scan.log).
+
+- [s30] Gate (b) SOTN-master precedent FAILED and vacuous: zero hits in the uncapped 2,746-line docs/reference/sotn-construct-index.md for local-alloc|reg_qty|qty_compare|register seat|swap operand|operand[ -]order|combine_regs, and there is no closing construct to seek precedent FOR - every construct measured this session is ordinary C (store reordering, pointer locals, named intermediates). The residual is blocked by measurement, not by policy.
+
+- [s30] Sibling ledgers (CD_datasync, CD_ready, CD_sync, all foreclosed, all in src/system.c) were spent at this ledger's s27; their candidate.c files are unchanged since (written 2026-09-04, before s27's read on 2026-09-05), so no unspent sibling transplant existed for s30.
+
+- [s30] Kill re-audit: the single FAKE unit remains the empty do { } while (0); prologue fence, it sits in block 0, and every quantity discussed above lives in block 1, so no FAKE carrier occupies a class-B or class-C pseudo. The closest-to-target form was re-measured directly rather than ablated: h3 = 7 on HEAD 6c9ca9fa, identical to its s28 score.
+
+- [s30] Foreclosure record filed this session at docs/grind/decisions.md, entry '## 2026-09-05 - func_800770B8 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**'.

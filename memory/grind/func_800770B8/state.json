@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 29,
- "current_modality": "object-model",
+ "session_count": 30,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -177,23 +177,29 @@
    "floor": 5,
    "modality": "object-model",
    "headline": "OBJECT MODEL audited: three TU declarations are wrong (D_8009BCE4 u8[20], D_8009BD20 u8[2][2] pair table, D_800A35D0 s16[2][2]) and correcting all three is byte-neutral (5/175, whole-TU .text identica"
+  },
+  {
+   "session": 30,
+   "floor": 5,
+   "modality": "escalation",
+   "headline": "Target's store window transcribed for the first time: o1 already emits the target's exact instruction order and is ONE local-alloc seat from score 2; both mechanisms that win that seat were measured a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "h3's remaining five rows are only the S-before-C emission order, so a body that keeps the target's A,D,C,S order while still producing a quantity of priority above 3.1428 that overlaps [28,56] and dies before 48 would land at score 2 - the two baseline rows 35/36 alone.",
-   "mechanism": "qty_compare_1 = floor_log2(refs)*refs/(death-birth), local-alloc.c:1660-1683. With the S store last its address temp never becomes a block-local quantity, and the only candidate left in that window is pc at 6 refs over [36,40] = 3.0. The gap is one step: pc needs refs 8 at span 4 or less, or span 2 at refs 4, or the chain's span must reach 30.",
-   "next_probe": "On h3's chassis with the store order restored to A,D,C,S, enumerate ordinary-C spellings that shorten pc's interval or lengthen the chain's by one slot: compute the C pointer immediately before its first store with the D group's second store in between; give the chain root's sll an earlier first consumer by naming t0*4 where the D group already consumes it; or seat a quantity of priority above 3.1428 at $2 anywhere in [28,48). Read the .qty table for each variant BEFORE scoring. Use the object-model-corrected declarations (candidate_objmodel_ALL2.c + patch) as the base - they are byte-neutral and remove every flagged declaration pun."
+   "hypothesis": "A C form exists that lets sched1 float the t0*4 shift to the top of the store block (giving the chain quantity span 44 and priority 2.0, so the C pointer's 3.0 wins the seat) while the %hi/%lo(D_800A35D0) pair stays pinned immediately before the D stores - which is exactly the target's geometry. That form scores 2 (rows 35/36 only).",
+   "mechanism": "sched.c dependency construction: the symbol load is pinned in F/o1 only because it targets the same ptr pseudo the group-A stores read (REG_DEP_OUTPUT 116 + REG_DEP_ANTI 119/122/125/128/131). Giving the D group its own local removes those edges from BOTH the symbol load and the shift at once (p1/q1 = 28). The shift itself has no memory dependency; only its consumer's pseudo sharing keeps it late.",
+   "next_probe": "Enumerate C forms that split the D group's TWO computations across different locals - the symbol into the shared ptr (staying pinned) and the t0*4 add into a fresh local, e.g. `pd = t4_of_ptr...` spellings where the symbol is written to ptr and the sum to pd, and the mirror where the symbol goes to pd and the index add to ptr. Read the .sched dependency list of the (symbol_ref D_800A35D0) insn and the sll insn separately for each (s28/lreg.py), and score. Start from o1 (25) and p1/q1 (28) as the two endpoints."
   },
   {
-   "hypothesis": "The two baseline rows 35/36 (ours sw $zero,48($s1) / sh $zero,52($s1) vs target sw $zero,0x30($v0) / sh $zero,0x34($v0)) are a store-base spelling question independent of everything class C.",
-   "mechanism": "The target addresses the two prologue clear stores through the freshly returned pointer in $v0 while our body addresses them through the saved $s1 copy; the value is the same object (D_800A36A0 is assigned from it two insns earlier), so this is a C-level question of which name the stores are written through.",
-   "next_probe": "In the block that assigns p_old / D_800A36A0, enumerate the truthful spellings of the two clear stores - through the func_8006E49C return value directly, through p_old, through D_800A36A0, and with the D_800A36A0 assignment moved after the stores - on BOTH the floor body F and h3. Any spelling that fixes rows 35/36 on F drops the floor to 3."
+   "hypothesis": "A third real reference to the C-group pointer would lift its quantity from 6 refs / span 4 (3.0) to 8 refs / span 6 (3*8/6 = 4.0), above the chain's 3.1428, winning the seat in the target's A,D,C,S order with no sched1 collateral at all - score 2.",
+   "mechanism": "qty_compare_1, local-alloc.c:1660-1683. h3 proves a 4.0 quantity in this window wins; x1 proves cse refolds a duplicated address, so the third reference must be a genuine third USE of the same pointer value, not a second computation of it.",
+   "next_probe": "Audit the D_800A36A0 record for any other field the target reads or writes at base + t0*4 + k inside this window (rows 40-64 and the immediately following block), and for any spelling in which the stride-2 0x5C/0x60 stores or the group-A 0x3C store can truthfully be addressed off the stride-4 pointer. If none exists, record the absence as a class result with the record layout as the predicate."
   },
   {
-   "hypothesis": "Which store groups share the ptr local decides where sched1 may place the D-group symbol load, and therefore the entire store-window geometry.",
-   "mechanism": "sched_analyze records REG_DEP_OUTPUT / REG_DEP_ANTI on every reuse of the same pseudo; a group that reads ptr before the symbol load is written into it pins that load after the group's stores; a group given its own local removes those edges and the load floats to the top of the block.",
-   "next_probe": "Enumerate the eight assignments of {A, D, C, S} to {ptr, own local}, dump the symbol-load insn's dependency list from the .lreg for each (s28/lreg.py), and tabulate which combinations keep the load pinned after the A stores while putting the C pair in its own local. Note the s29 C3 result (a fresh row-pointer local for the D group = 35) as one cell of that table."
+   "hypothesis": "Class B (rows 35/36) is still a store-base spelling question independent of everything class C, and any spelling that fixes it drops the floor from 5 to 3 and h3 from 7 to 5.",
+   "mechanism": "The target addresses the two prologue clear stores through the freshly returned func_8006E49C pointer in $v0 while our body addresses them through the saved copy $s1; the value is the same object (D_800A36A0 is assigned from it two insns earlier), so this is a C-level question of which name the stores are written through. s20 measured the cheapest cse-EBB-splitting label device at +18 rows against a 2-row prize.",
+   "next_probe": "In the block that assigns p_old / D_800A36A0, enumerate the truthful spellings of the two clear stores - through the func_8006E49C return value directly, through p_old, through D_800A36A0, and with the D_800A36A0 assignment moved after the stores - on BOTH the floor body F and h3, WITHOUT any label device. s7 banked one such spelling as byte-neutral on F; re-measure it on h3, where the surrounding schedule now differs."
   }
  ],
  "judge_constraints": [
@@ -415,6 +421,46 @@
    "measured_on": "HEAD dcd79965 chassis, floor body, fence present, 175/175 both",
    "predicate_cite": "",
    "result": "KILLED - C1c 10/175, C3 35/175."
+  },
+  {
+   "session": 30,
+   "statement": "Naming the S store's pointer (ps = base + t0;) and placing its assignment before the C group reproduces the target's cluster of three address computations while leaving the sb after the C stores.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6c9ca9fa chassis; flipped-cursor A,D,C,S base with the C group on its own pc local; the empty do-while(0) prologue fence present (the body's only FAKE unit, in block 0, no FAKE carrier on any blo",
+   "predicate_cite": "",
+   "result": "25/175/175 in all five, and y2's quantity table is line-for-line identical to o1's. The address computation's emission p"
+  },
+  {
+   "session": 30,
+   "statement": "Naming the shared t0 * 4 shift as an s32 local at the top of the loop body gives the chain quantity an earlier birth, lengthening its interval past span 30 so the C pointer's 3.0 outranks it.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6c9ca9fa chassis; flipped-cursor A,D,C,S base with the C group on pc; empty do-while(0) prologue fence present; 175/175 in all four builds.",
+   "predicate_cite": "",
+   "result": "25/175/175 in all four; w1's quantity table is line-for-line identical to o1's, chain still [28,56]. cse.c had already s"
+  },
+  {
+   "session": 30,
+   "statement": "Splitting the C pair onto two once-used pointer locals turns one 6-ref/span-4 quantity (3.0) into two 4-ref/span-2 quantities (4.0), each of which outranks the chain.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6c9ca9fa chassis; flipped-cursor A,D,C,S base; empty do-while(0) prologue fence present; 175/175.",
+   "predicate_cite": "",
+   "result": "25/175/175, unchanged from o1 - cse.c refolds the second computation onto the first pseudo, so only one quantity ever ex"
+  },
+  {
+   "session": 30,
+   "statement": "Hoisting the C-pointer assignment above group A gives the t0*4 shift an early consumer, floating it to the top of the block the way the target does, without freeing the D group's symbol load.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6c9ca9fa chassis; flipped-cursor base; empty do-while(0) prologue fence present; 175/175 in all four builds.",
+   "predicate_cite": "",
+   "result": "v1/v2/v4 = 25/175/175, byte-inert; v3 = 28/175/175, the pd symbol float. The shift's emission position tracks the D grou"
+  },
+  {
+   "session": 30,
+   "statement": "Some store-group order other than A,D,S,C reaches h3's blocking quantity while keeping the target's C-before-S order.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6c9ca9fa chassis; flipped-cursor base with the empty do-while(0) prologue fence present; 175/175 in all fourteen builds.",
+   "predicate_cite": "",
+   "result": "25, 14, 39, 30, 36, 36 and 28 / 28 / 29 / 25 / 25 - all 175/175. Every order keeping C before S either leaves the chain "
   }
  ],
  "object_model_audited": 29
