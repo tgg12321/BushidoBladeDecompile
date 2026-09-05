@@ -1,3 +1,30 @@
+/* s21 UPDATE (2026-09-05, rederive).  BODY UNCHANGED.  Re-measured on the MOVED
+ * chassis (func_80060A68 landed as matched C in this same TU, commit 27441fa5):
+ * `sandbox func_800770B8 --disable all` = score 5, build_insns 175, target_insns 175.
+ * The TU-mate landing is byte-neutral for this function.
+ *
+ * WHAT s21 CLOSED.  s18-forensics left the instruction "start from THIS body (which
+ * already has the target's class-C seats, $2 = reload, $3 = shift) and attack the tie,
+ * not from the flip and attack the collateral".  That instruction is now answered
+ * NEGATIVE: the tie and the seats are the SAME bit of C, read twice.  Eleven fresh
+ * builds staging the D_800A36A0 reload and/or the t0*10 shift into their own preceding
+ * statements, at several hoist positions, in both the pointer and the integer domain,
+ * with p_7e derived three different ways, land on exactly TWO objects - 29/175 for every
+ * spelling whose tree names the SHIFT first, 5/175 (byte-identical to this body) for
+ * every spelling whose tree names the RELOAD first.  The .lreg dumps say why: expand
+ * numbers the two pseudos in the REVERSE of the source tree's operand order (floor body
+ * reg 108 = the sll / reg 109 = the lw; flipped body the spans swap), and find_free_reg
+ * hands $2 to the LATER-numbered quantity in both.  So the operand a body names first is
+ * always born second and always lands in $2, and block_alloc's ordered combine_regs loop
+ * (local-alloc.c:1240-1298) then ties the sum to that same first-named operand.  The
+ * target needs the tie on the shift AND the shift in $3 - one bit set both ways at once.
+ * Banked rejected/s21-classC-staged-reload-flip-*, s21-classC-staged-shift-flip-*,
+ * s21-classC-int-domain-pointer-first-*.  Detail: evidence.md [s21].
+ *
+ * ALSO SPENT: the CD_ready (marionation_Exec) sibling pairing.  It shares NO code window
+ * with this function; every mention of it in this ledger is the do-while-zero rule's
+ * "Confirmed application" policy citation.  Nothing to transplant.
+ */
 /* candidate.c - func_800770B8 (src/text1b.c) - s15 synthesis, 2026-09-01
  * Measured THIS form on today's chassis (s15, first action of the session):
  *     sandbox func_800770B8 --disable all = 5   (175 build insns / 175 target insns)

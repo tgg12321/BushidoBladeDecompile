@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 20,
- "current_modality": "escalation",
+ "session_count": 21,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -123,13 +123,29 @@
    "floor": 5,
    "modality": "escalation",
    "headline": "Owner Ruling-A named probe EXECUTED (36 builds): 175-insn surviving-label bodies DO exist (zero-slack premise falsified) but score is additive too \u2014 best label build 43 vs floor 5, CABD ceiling 10; bo"
+  },
+  {
+   "session": 21,
+   "floor": 5,
+   "modality": "rederive",
+   "headline": "Floor re-verified at 5 on the MOVED chassis (func_80060A68 landed in the same TU); s18's standing class-C instruction is answered NEGATIVE - 11 fresh builds plus two .lreg dumps show the operand-order"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Nothing remains attackable in pure C on today's chassis. Class B is foreclosed by DEVICE PRICE (+18 rows minimum for 2 rows of gain) rather than by the insn budget \u2014 the ruling's 'zero slack' objection is answered and does not reopen it; class C has no C-reachable combine_regs gate; the CABD and flipped-ABCD basins bottom out at 10 and 7 against a floor of 5.",
-   "mechanism": "cse.c:8038-8063 (only CODE_LABEL / NOTE_INSN_SETJMP end a cse2 EBB) + jump.c pass-1 label demotion for class B; local-alloc.c:1240-1298 block_alloc operand tying (all ten combine_regs gates typed in s18) for class C.",
-   "next_probe": "Only a re-activation trigger changes this: an owner class grant covering the banned arithmetic-identity / dependence-edge construct (measures 4/175 today), a grant or compiler finding that splits a cse2 extended basic block WITHOUT a CODE_LABEL, a toolchain finding that alters block_alloc operand tying, or an owner unpark."
+   "hypothesis": "The decomp.me corpus contains a GCC-2.7.2 PS1 body whose address arithmetic emits `addu Rdst,Rshift,Rreload` with the reload in the LOWER-numbered hard register - i.e. a spelling that ties the sum to the shift without the shift also taking $2 - which would break s21's one-bit-two-senses coupling.",
+   "mechanism": "local-alloc.c:1240-1298 block_alloc's ordered combine_regs loop decides the tie; find_free_reg over qty_order decides the seat. s21 showed both follow the same source bit in THIS geometry, but a different surrounding geometry (a third live quantity competing for $2, or one of the pair spanning a call) could split them.",
+   "next_probe": "Run tools/decomp_me_scrape.py for the corpus, grep the scraped C+asm pairs for a three-operand address addu whose dest ties the second-named operand, and transplant that geometry onto the p_6a/p_7e block."
+  },
+  {
+   "hypothesis": "Class B's 2+2 split and class C's tie are payable TOGETHER but not separately: a body that pays the flip's +24 rows also removes some of class B's cost, so the flipped basin plus one of the s20 label devices dips below 5.",
+   "mechanism": "cse.c:8038-8063 (only a CODE_LABEL or NOTE_INSN_SETJMP ends a cse2 extended basic block) for class B; local-alloc.c:1240-1298 for class C. s20 measured the cross-product on the FLOOR base and on the flipped-CABD base but never on the plain flipped-ABCD base with the s21 staged spellings in place.",
+   "next_probe": "Re-run the s20 device x slack cross-product on the plain flip base (29/175), which s20 covered only via the CABD variant; the s21 sweep confirms all flip spellings share one object, so the cross-product needs to run once, not once per spelling."
+  },
+  {
+   "hypothesis": "Nothing else is attackable in pure C on today's chassis: class B is foreclosed by device price (>= +18 rows of collateral for 2 rows of gain, s17/s20), and class C is foreclosed by the s21 coupling result.",
+   "mechanism": "cse.c:8038-8063 + jump.c pass-1 label demotion (class B); local-alloc.c:1240-1298 plus the expand/find_free_reg numbering coupling measured in s21 (class C).",
+   "next_probe": "Only a re-activation trigger changes this: an owner class grant covering the banned arithmetic-identity / dependence-edge construct (measures 4/175 today), a grant or compiler finding that splits a cse2 extended basic block without a CODE_LABEL, or a toolchain finding that alters block_alloc operand tying or find_free_reg's qty ordering."
   }
  ],
  "judge_constraints": [
@@ -142,5 +158,23 @@
  "created": "2026-09-01T07:44:32.913912+00:00",
  "exhaustion_base": 20,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.593946+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.593946+00:00",
+ "kills": [
+  {
+   "session": 21,
+   "statement": "Class C's operand-order tie and the two quantities' hard-register SEATS can be decoupled in C, because the tie follows the source tree's operand order while the seats follow pseudo birth order, and bi",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (src/text1b.c after func_80060A68 landed as matched C in the same TU, commit 27441fa5); floor re-verified 5/175/175 with the single annotated do-while(0) prologue fence present",
+   "predicate_cite": "",
+   "result": "NEGATIVE and total. All 11 builds land on exactly TWO objects: 29/175 for every spelling whose tree names the SHIFT firs"
+  },
+  {
+   "session": 21,
+   "statement": "The unspent sibling ledger CD_ready (aka marionation_Exec, src/system.c, foreclosed at floor 2, candidate rewritten 2026-09-04) shares a code window with func_800770B8 whose spelling can be transplant",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05; documentary probe over the sibling's candidate.c and this ledger's citations, no builds.",
+   "predicate_cite": "",
+   "result": "NEGATIVE - the link is a mis-classification, not a code relationship. CD_ready is a marionation dispatch body with no ca"
+  }
+ ]
 }
