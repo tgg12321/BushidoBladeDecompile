@@ -23437,3 +23437,160 @@ Text appended above by session s41 of func_80034F88, which the driver DISCARDED 
 ## 2026-09-05 11:01 — func_80034F88 — ruling: The standing Judge constraint on func_80034F88 CLOSES the multi-handle axis: no  — **PASS**
 
 I verified the structural claim myself in asm/funcs/func_80034F88.s: 80034FC8 loads &D_80106A73 into $a0 while $v1 still holds it and is read by the store at 80034FD0 (three la pairs -> $v1/$a0/$a0). stmt.c:3387 and global.c:1275 read as cited: one declared local = one pseudo = one hard register, no live-range splitting. So the ban's stated basis (s50 finding 3 / s54: 'the multi-handle axis is not what is costing the residual') is factually false; those 21..26 and 50/24 scores were chassis artifacts, not evidence about the axis. A local pointer giving a second C handle to a global is inside the frozen pointer-alias-fake-exception family (owner ruling 2026-07-01), and its prerequisites hold: exhaustion is documented over 55 sessions incl. the direct-symbol form (s50, 25..30), and the GCC-pass interaction is named and verified. Prereq 3 (the annotation) is the one the earlier layer-1 FAIL turned on and must be satisfied. I therefore narrow my predecessors' closure to permit EXACTLY TWO annotated alias objects on the s55 ordinary-C chassis; the unannotated / 'ordinary program logic' framing stays banned (banned_constructs entry 2 stands), as do three-object forms and alias-to-alias copies. NOTE: this PASS clears the CONSTRUCT axis only. candidate.c today is the single-object 49-insn/score-10 plateau, which is not the body in question and is not submittable (score != 0); it is not cleared as a completion. LADDER EXHAUSTED is not the disposition yet - frontier item 2 is now open.
+
+## 2026-09-05 — func_80034F88 (src/code6cac_b.c) — **INTEGRATION HANDOFF (bytes proven, blocked only by declaration scope)**
+
+**THIS IS NOT AN EXHAUSTION RECORD.** `func_80034F88` byte-matches. Session 66
+took the honest floor from 2 to **0** and verified it twice, in the strongest
+available way. What blocks it from landing is not a residual, a plateau or a
+disallowed construct — it is that the honest declaration the body needs lives
+in a file this function's candidates are not currently allowed to edit.
+
+### The measurement
+
+With `memory/grind/func_80034F88/candidate.c` installed via
+`python3 tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c`:
+
+- `sandbox func_80034F88 --disable all` → **score 0, target_insns 49,
+  build_insns 49** (cheat-invisible: `strip_cheat_asm: true`, `rules_dropped: 0`).
+- Full clean-driver `build` → SHA1 **62efab4f73f992798c43e8c730aa43baa10bb4fa
+  == the locked oracle**, so the declaration change is byte-neutral for every
+  other consumer in the project by the strongest proof the pipeline has.
+
+The tree was returned to HEAD afterwards (`verify-oracle` re-confirmed
+`ok: true`, build == oracle), per asm-until-matched: the function is still
+committed as `INCLUDE_ASM("asm/funcs", func_80034F88);` and no C is on main.
+
+### What closed the bytes (the C-level finding, for the record)
+
+s65 fitted GCC 2.7.2's `global.c` allocation priority exactly —
+`pri = floor_log2(nrefs) * nrefs * 10000 / live_length` — and reduced the
+residual to one question: block 0's address object reaches the target `$v1`
+seat iff it is allocated before block 0's value allocno (pri 17500), i.e. iff
+`floor_log2(n)*n > 49`, i.e. **n >= 16 references**, against the five it
+carries. s65 measured every obvious byte-neutral reference lift dead
+(duplicated store into arms, split reads, merged mask). s66 found the free one:
+block 0's address object and the copy loop's counter are **one C variable**, so
+the loop's eleven counter references (flow.c weights per-insn references by loop
+depth) land on that allocno, and they land *after* its last pointer use, so its
+live length rises only 14 → 21 rather than spanning dead space. Measured model
+(`tmp/grind/func_80034F88/s66/z2.model.json`): 16 refs / len 21 / **pri 30476**,
+allocated second, takes `$v1`; block 0's value (7 refs, pri 17500) is then
+allocated third, finds `$v0` and `$v1` held, and `find_reg`'s ascending scan
+gives it `$a0` — the target register, with no conflict lever at all. Seven of
+seven allocnos land on their target seats. This retires the s64 conflict route,
+which capped at score 2 because `global.c:1275` gives one allocno one hard
+register.
+
+### The blocker, stated precisely
+
+The target's copy loop stores through
+`lui $at,%hi(D_80106A70); addu $at,$at,$v1; sb $v0,%lo(D_80106A70)($at)`
+(`asm/funcs/func_80034F88.s:44-46`) — an indexed store into a **three-byte
+array** whose elements splat invented as `D_80106A70` / `D_80106A71` /
+`D_80106A72`. The body must therefore index a declared array. That declaration
+is the per-word-splat-symbol → aggregate merge family
+(`.claude/rules/no-new-park-categories.md:238`), whose prong (d) is explicit:
+*"spelled at the canonical declaration in the shared header, never TU-local,
+never a per-use pointer pun"*. The canonical declaration is
+`include/code6cac.h:472-474`, and completing the merge (prong (c)) converts the
+two remaining consumers at `src/code6cac.c:340-342` and `src/code6cac.c:345`
+to element form. Both paths are outside this function's candidate scope.
+
+s66 also measured the TU-local spelling — a block-scope
+`extern u8 D_80106A70[3];` inside the function — and it likewise reaches
+**score 0 / 49 insns with a full-build oracle SHA1 match**, touching only
+`src/code6cac_b.c`. It is nonetheless **banked as inadmissible**
+(`memory/grind/func_80034F88/rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c`)
+because it fails prong (d) on its face and prong (c) as well. Recording it here
+so no later session re-derives it and mistakes it for an in-scope win: the
+in-scope spelling exists, and it is not allowed.
+
+### THE GRANT THE DRIVER EXECUTES
+
+One line in `tools/grinder/scope_allow.txt`:
+
+    func_80034F88 include/code6cac.h src/code6cac.c
+
+Both paths are in the self-serve allowed class
+(`_SCOPE_GRANT_ALLOWED_RE`, `tools/grinder/grindlib.py:465`, admits
+`include/*.h` and `src/*.c`) and neither is on `_SCOPE_GRANT_DENY`. Direct
+precedents already in that file: `replay_camera_Init include/code6cac.h` and
+`special_camera_get_rot_dir include/code6cac.h` (the same header, for the same
+kind of honest array declaration), and `func_80061250 src/text1b.c
+src/text1b_b.c` (a grant of a second `src/*.c` for exactly this
+merge-the-consumers reason). Per `integration-handoff-self-serve` (owner ruling
+2026-08-19) this widens **surface, not standards**: with the line present the
+next session re-applies `candidate.c`, and the body still faces the driver's
+own sandbox re-verify, layer-1, the Judge's FINAL CALL and the full-build SHA1
+gate, with both granted paths staged into the Match commit so the committed
+tree is exactly the byte-verified tree.
+
+### Exact operator steps, if done by hand instead
+
+1. Add the `scope_allow.txt` line above.
+2. `python3 tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c`
+   (rewrites `include/code6cac.h:472-474` to `extern u8 D_80106A70[3];`,
+   converts the two `src/code6cac.c` consumers to element form, and installs
+   the body over the `INCLUDE_ASM` line).
+3. `engine sandbox func_80034F88 --disable all` → expect score 0, 49/49.
+4. `engine verify-oracle --rebuild` → expect the oracle SHA1.
+5. Fresh layer-2 `cheat-reviewer` on the C (four FAKE constructs to rule on:
+   two pointer aliases on `&D_80106A73` — already Judge-granted at
+   `docs/grind/decisions.md:23437` — the `u = 0;` cse2 invalidator, and the
+   variable reuse that stages the loop counter through the block-0 pointer),
+   then `queue done func_80034F88`.
+
+### Re-activation
+
+Nothing here waits on the owner. The function stays ACTIVE; the grant is the
+whole of the remaining work, and the floor is 0.
+
+## 2026-09-05 14:44 — func_80034F88 — ruling: INTEGRATION HANDOFF filed for func_80034F88 : docs/grind/decisions.md:23441 -- 2 — **ESCALATE**
+
+WHAT I DID. I did not take the session's word for the bytes. I installed its candidate myself (tmp/grind/func_80034F88/s63/apply.py), scored it, built the whole game, and put the tree back.
+
+1. `sandbox func_80034F88 --disable all` -> score 0, target_insns 49, build_insns 49, strip_cheat_asm true, rules_dropped 0. That is the cheat-blind score: nothing hidden in the C can flatter it.
+2. Full clean-driver `build` -> SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle. So the function matches AND the shared-header change is harmless to every other file in the project, proved the strongest way we have.
+3. I restored include/code6cac.h, src/code6cac.c, src/code6cac_b.c and re-ran verify-oracle: ok true, build == oracle. Nothing of mine is left in the tree; the function is still committed as INCLUDE_ASM.
+
+THE C IS LEGITIMATE (I ruled on it, so layer-1 and the FINAL CALL are not left guessing). Four constructs, each annotated with what it is, which compiler pass it acts through, and where the exhaustion is banked:
+ - Two pointer handles on D_80106A73 (`q`, `r`), each a direct `= &D_80106A73` initializer with its own /* FAKE */ line. This is exactly the two-object form I granted this morning (docs/grind/decisions.md 2026-09-05 11:01; state.json judge_constraints entry 5), inside the frozen pointer-alias-fake-exception family. No third object, no alias-to-alias copy. The standing banned_constructs entry bans the FOUR-handle, unannotated 'ordinary program logic' form; that ban is untouched and correctly does not reach this body.
+ - `u = 0;` - a dead store, frozen dead-store-fake-exception family (owner ruling 2026-07-01), mechanism named (cse2 store-to-load forwarding), exhaustion cited (hypotheses.md s57-s62).
+ - The copy loop's counter is the same C variable as block 0's dead pointer handle. That is the frozen 'variable reuse for codegen control' entry (no-new-park-categories.md:185), whose PSX SOTN precedent is the `// fake reuse of i?` sites - correct index lines are docs/reference/sotn-construct-index.md:153 (src/st/lib/cutscene.c) and :360 (src/st/no3/cutscene.c), NOT the :92 the ledger cites; the lib_psp twin at :258 is PSP and does not count. Both values are real and used, the loop is in the target's own bytes, and the form is byte-neutral (49/49). Corroborating: the target itself carries the address in $v1 through 80034FD0 and then zeroes $v1 as the loop counter (asm/funcs/func_80034F88.s:5,41), which is what one reused variable looks like.
+Nothing here is a build-time output rewrite, a register pin, or hardcoded asm; rules_dropped is 0.
+
+WHY IT CANNOT LAND TODAY. The target stores into a THREE-BYTE ARRAY with a runtime index (`lui $at,%hi(D_80106A70); addu $at,$at,$v1; sb ...` at asm/funcs/func_80034F88.s:44-46), so the C must index a declared array. Splat invented three separate one-byte names for it. Merging them into `extern u8 D_80106A70[3];` is the frozen per-word-splat-symbol -> aggregate merge family (no-new-park-categories.md:238) and its prongs hold on independent evidence: the indexed store in the original binary, the two consumers that write [0]/[1]/[2] and pack them into nibbles (src/code6cac.c:340-345), and the committed naming-census line named_syms.txt:873 describing exactly that 12-bit packed triplet - all of which predate this byte-chase. Prong (d) forbids spelling it TU-local, so the declaration must go at its canonical extern, include/code6cac.h:472-474, and the two consumers in src/code6cac.c convert to element form. The session measured the TU-local shortcut at score 0 as well and correctly banked it as inadmissible (rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c) rather than shipping it. That is the whole blocker: a file the candidate is not allowed to edit, not a residual and not a disallowed construct.
+
+THE GRANT, CORRECTED. The session asked for two paths; it needs three. The sibling func_8001BE20 is still INCLUDE_ASM and its assembly reads D_80106A71 and D_80106A72 (asm/funcs/func_8001BE20.s:211,250), so those two rows must SURVIVE in undefined_syms_auto.txt:977-978. Under the merge family's 2026-09-03 prong-(c) amendment a surviving row is only compliant if it carries the `/* alias of <base>+N; retire with <sibling> */` suffix - an edit to undefined_syms_auto.txt, which the requested two-path grant does not cover. I have therefore set scope_paths to include it. All three match the self-serve allowed classes (tools/grinder/grindlib.py:465) and none is on the denylist; the same combination is already granted to func_80038170, func_80033550 and func_80062020, and include/code6cac.h alone to replay_camera_Init and special_camera_get_rot_dir.
+
+This widens surface, not standards: with the line present the next session re-applies the body and it still faces the sandbox re-verify, layer-1, my FINAL CALL and the full-build SHA1 gate, with all granted paths staged into the Match commit so the committed tree is the tree I just byte-verified.
+
+## 2026-09-05 — func_80034F88 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-05)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WHAT I DID. I did not take the session's word for the bytes. I installed its candidate myself (tmp/grind/func_80034F88/s63/apply.py), scored it, built the whole game, and put the tree back.
+
+1. `sandbox func_80034F88 --disable all` -> score 0, target_insns 49, build_insns 49, strip_cheat_asm true, rules_dropped 0. That is the cheat-blind score: nothing hidden in the C can flatter it.
+2. Full clean-driver `build` -> SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle. So the function matches AND the shared-header change is harmless to every other file in the project, proved the strongest way we have.
+3. I restored include/code6cac.h, src/code6cac.c, src/code6cac_b.c and re-ran verify-oracle: ok true, build == oracle. Nothing of mine is left in the tree; the function is still committed as INCLUDE_ASM.
+
+THE C IS LEGITIMATE (I ruled on it, so layer-1 and the FINAL CALL are not left guessing). Four constructs, each annotated with what it is, which compiler pass it acts through, and where the exhaustion is banked:
+ - Two pointer handles on D_80106A73 (`q`, `r`), each a direct `= &D_80106A73` initializer with its own /* FAKE */ line. This is exactly the two-object form I granted this morning (docs/grind/decisions.md 2026-09-05 11:01; state.json judge_constraints entry 5), inside the frozen pointer-alias-fake-exception family. No third object, no alias-to-alias copy. The standing banned_constructs entry bans the FOUR-handle, unannotated 'ordinary program logic' form; that ban is untouched and correctly does not reach this body.
+ - `u = 0;` - a dead store, frozen dead-store-fake-exception family (owner ruling 2026-07-01), mechanism named (cse2 store-to-load forwarding), exhaustion cited (hypotheses.md s57-s62).
+ - The copy loop's counter is the same C variable as block 0's dead pointer handle. That is the frozen 'variable reuse for codegen control' entry (no-new-park-categories.md:185), whose PSX SOTN precedent is the `// fake reuse of i?` sites - correct index lines are docs/reference/sotn-construct-index.md:153 (src/st/lib/cutscene.c) and :360 (src/st/no3/cutscene.c), NOT the :92 the ledger cites; the lib_psp twin at :258 is PSP and does not count. Both values are real and used, the loop is in the target's own bytes, and the form is byte-neutral (49/49). Corroborating: the target itself carries the address in $v1 through 80034FD0 and then zeroes $v1 as the loop counter (asm/funcs/func_80034F88.s:5,41), which is what one reused variable looks like.
+Nothing here is a build-time output rewrite, a register pin, or hardcoded asm; rules_dropped is 0.
+
+WHY IT CANNOT LAND TODAY. The target stores into a THREE-BYTE ARRAY with a runtime index (`lui $at,%hi(D_80106A70); addu $at,$at,$v1; sb ...` at asm/funcs/func_80034F88.s:44-46), so the C must index a declared array. Splat invented three separate one-byte names for it. Merging them into `extern u8 D_80106A70[3];` is the frozen per-word-splat-symbol -> aggregate merge family (no-new-park-categories.md:238) and its prongs hold on independent evidence: the indexed store in the original binary, the two consumers that write [0]/[1]/[2] and pack them into nibbles (src/code6cac.c:340-345), and the committed naming-census line named_syms.txt:873 describing exactly that 12-bit packed triplet - all of which predate this byte-chase. Prong (d) forbids spelling it TU-local, so the declaration must go at its canonical extern, include/code6cac.h:472-474, and the two consumers in src/code6cac.c convert to element form. The session measured the TU-local shortcut at score 0 as well and correctly banked it as inadmissible (rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c) rather than shipping it. That is the whole blocker: a file the candidate is not allowed to edit, not a residual and not a disallowed construct.
+
+THE GRANT, CORRECTED. The session asked for two paths; it needs three. The sibling func_8001BE20 is still INCLUDE_ASM and its assembly reads D_80106A71 and D_80106A72 (asm/funcs/func_8001BE20.s:211,250), so those two rows must SURVIVE in undefined_syms_auto.txt:977-978. Under the merge family's 2026-09-03 prong-(c) amendment a surviving row is only compliant if it carries the `/* alias of <base>+N; retire with <sibling> */` suffix - an edit to undefined_syms_auto.txt, which the requested two-path grant does not cover. I have therefore set scope_paths to include it. All three match the self-serve allowed classes (tools/grinder/grindlib.py:465) and none is on the denylist; the same combination is already granted to func_80038170, func_80033550 and func_80062020, and include/code6cac.h alone to replay_camera_Init and special_camera_get_rot_dir.
+
+This widens surface, not standards: with the line present the next session re-applies the body and it still faces the sandbox re-verify, layer-1, my FINAL CALL and the full-build SHA1 gate, with all granted paths staged into the Match commit so the committed tree is the tree I just byte-verified.
+
+**Constraint recorded for any future session:** Prong (c) of the aggregate merge must be completed in the SAME candidate: the surviving D_80106A71/D_80106A72 rows in undefined_syms_auto.txt (needed by still-INCLUDE_ASM sibling func_8001BE20) must each be suffixed `/* alias of D_80106A70+N; retire with func_8001BE20 */`, and no C code may name them.

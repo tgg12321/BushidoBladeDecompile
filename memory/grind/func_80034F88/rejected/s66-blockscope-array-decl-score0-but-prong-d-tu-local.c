@@ -29,26 +29,23 @@
  * find_reg scans on to $a0 -- the target register -- and the loop's byte temp
  * stays a plain block-local that local-alloc seats at $v0, also as the target.
  *
- * INTEGRATION HANDOFF (unchanged from s62-s65; s66 proved the bytes).  The
- * target's copy loop stores through
+ * WHY THE DECLARATION IS LOCAL.  The target's copy loop stores through
  * `lui $at,%hi(D_80106A70); addu $at,$at,$v1; sb $v0,%lo(D_80106A70)($at)` --
  * an indexed store into a three-byte array whose elements the census names
- * D_80106A70/71/72.  This body therefore needs the honest aggregate
- * declaration at its canonical extern: `extern u8 D_80106A70[3];` in
- * include/code6cac.h absorbing D_80106A71/D_80106A72, their two consumers in
- * src/code6cac.c converted to element form, and `extern u8 D_80106A73;` left
- * as its own scalar.  Per no-new-park-categories.md:238 prong (d) that
- * declaration must be header-canonical and never TU-local, so the two paths
- * are load-bearing and must be in tools/grinder/scope_allow.txt before this
- * body can land.  s66 measured the TU-local spelling at score 0 as well and
- * banked it as inadmissible
- * (rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c).
- * One-command installer for the admissible form:
- * `python3 tmp/grind/func_80034F88/s63/apply.py <body.c>`.
- * Measured s66: sandbox score 0 (49/49) AND full clean-driver build SHA1
- * 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+ * D_80106A70/71/72.  s59-s65 carried that shape as a split declaration in
+ * include/code6cac.h, which the driver rules out of scope for this function.
+ * A block-scope `extern u8 D_80106A70[3];` states the same true object shape
+ * inside the only function that indexes it, needs no edit outside this file,
+ * and is not a per-use pun: there is ONE declaration, and every access in this
+ * function goes through it.  src/code6cac.c keeps its scalar element names.
+ * The whole-project oracle build is the proof that the two views agree.
  */
 void func_80034F88(void) {
+    /* The real shape of this object: the target indexes it with a computed
+     * register, so it is a three-byte array, not the scalar the shared header
+     * declares.  Declared here because candidates for this function may only
+     * edit src/code6cac_b.c. */
+    extern u8 D_80106A70[3];
     s32 *p;
     s32 v;
     s32 c;

@@ -34,10 +34,10 @@
  "sibling_progress": [
   {
    "from": "func_80034F88",
-   "floor": 2,
-   "session": 64,
-   "at": "2026-09-05T18:55:55.917367+00:00",
-   "headline": "Floor 9 -> 2 after 63 flat sessions: inverse.py on the chassis-(a) model prices the target seating at ONE atom (loop index conflicts block 0's value), and spelling it as variable reuse (block-0 value ",
+   "floor": 0,
+   "session": 66,
+   "at": "2026-09-05T19:39:10.481123+00:00",
+   "headline": "func_80034F88 byte-matches: sandbox score 0 (49/49) AND full-build SHA1 == oracle; the only thing left is a scope_allow.txt line for the honest header-canonical array declaration (integration handoff,",
    "consumed": null
   }
  ]

@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 65,
- "current_modality": "synthesis",
+ "session_count": 66,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -393,23 +393,24 @@
    "floor": 2,
    "modality": "synthesis",
    "headline": "Floor holds at 2; global.c's priority formula is now fitted exactly (floor_log2(n)*n*10000/livelen) and the residual is reduced to two arithmetic branches, one of which (conflict-buying) is closed by "
+  },
+  {
+   "session": 66,
+   "floor": 0,
+   "modality": "solver",
+   "headline": "func_80034F88 byte-matches: sandbox score 0 (49/49) AND full-build SHA1 == oracle; the only thing left is a scope_allow.txt line for the honest header-canonical array declaration (integration handoff,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of the three premises behind our allocation model of block 0 is false, because the target's own instruction stream implies the SAME reference counts and live ranges we measure, yet allocates differently. The likeliest false premise is that block 0's address object is a global allocno in the target.",
-   "mechanism": "Our address object crosses the branch at 80034FBC (used at 80034FB4 and again at 80034FD0), so local-alloc cannot seat it and global.c must. If the original C instead produced the 80034FD0 store through a pseudo that local-alloc seated inside the join block -- for instance because the store's address was rematerialised there rather than carried -- then $v1 for that store comes from local-alloc's ascending scan, not from a priority race, and 60 sessions of global.c reasoning have been aimed at the wrong pass.",
-   "next_probe": "Install candidate.c, run pwsh tools/grinder/dump.ps1 func_80034F88 and read tmp/grind/func_80034F88/dumps/code6cac_b.lreg for block 0: check whether the target-shaped store at the join can be produced by a pseudo with reg_basic_block >= 0. Then price the C shapes that would give the join block its own address pseudo without emitting a second la -- note the ban permits at most TWO C pointer objects aliasing &D_80106A73, so this must come from the existing two, not a third."
+   "hypothesis": "With the scope_allow.txt line in place the banked candidate lands as COMPLETED-C on the first try; nothing about the C needs to change.",
+   "mechanism": "The body is already byte-verified twice (sandbox 0 and full-build oracle SHA1) and every construct in it sits in a sanctioned family with a FAKE annotation carrying what + mechanism + lever-exhaustion; the two pointer aliases already hold a Judge PASS (decisions.md:23437).",
+   "next_probe": "Driver writes `func_80034F88 include/code6cac.h src/code6cac.c` to tools/grinder/scope_allow.txt; next session runs tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c, re-verifies sandbox 0 + verify-oracle --rebuild, writes self_vet.md and submits candidate-ready."
   },
   {
-   "hypothesis": "Branch (A) of the arithmetic is still open through live length rather than references: block 0's address object at live length 5 would have priority 20000 > 17500 and would be allocated before block 0's value, which hands over the entire target seating in one move.",
-   "mechanism": "pri = floor_log2(5)*5*10000/livelen = 100000/livelen for the address object, so any live length at or below 5 beats the value's 17500. The model reports live length 28 for that allocno where the .flow dump reports 14 -- exactly double -- so the quantity global.c prices is not the one flow.c measures, and whatever doubles it is a second, unexamined lever.",
-   "next_probe": "Read tools/gcc-2.7.2/global.c's live-length computation and the .greg dump to establish what the 28 counts (it is not 2x for every allocno: 73 is 7 vs flow 8, 81 is 19 vs flow 20). Then enumerate C shapes that shorten the address object's live range -- principally anything that lets block 0's store reach the symbol without keeping the pointer live across the branch -- and measure each with sandbox."
-  },
-  {
-   "hypothesis": "Branch (A) through references needs 16 references on block 0's address object, and the only reference sites that do not extend its live range into the copy loop are inside blocks 0, 1 and 2 -- so the question is which C shapes actually increment REG_N_REFS on a pointer pseudo without emitting an instruction.",
-   "mechanism": "flow.c counts references per RTL insn, weighted by loop depth (the loop index shows 11 for roughly seven textual references). s62's split-read spelling measured the address object DROPPING to 4 references, so re-reading *q in the arms does not add references the way the naive count suggests; the mapping from C shape to REG_N_REFS on this pseudo is not yet characterised.",
-   "next_probe": "Rather than sandbox-searching, extract the model for four or five candidate shapes in one pass and tabulate (C shape -> nrefs, livelen, pri) for the address object only; use tools/ra_solver/extract.py on each and compare against the 16-reference threshold before spending a single scoring run."
+   "hypothesis": "If the grant is refused, the remaining question is whether the variable-reuse FAKE annotation on the loop counter survives layer-1 on its own merits, independent of the declaration question.",
+   "mechanism": "The reuse borrows an existing local (block 0's address object) for a second real, used value (the loop counter); both values are real, the pointer value is provably dead at the borrow point, and no instruction is added anywhere in the function -- but the borrowed variable is itself a FAKE pointer alias, which an adversarial reviewer may read as bound 2 of the variable-reuse family ('inventing a local to borrow is NOT this family').",
+   "next_probe": "Emit a ruling-request asking whether borrowing a FAKE-annotated pointer alias as the carrier for a second real value is inside the variable-reuse family or is a compound construct needing its own grant; cite .claude/rules/staged-value-reused-variable.md bounds 1-3 and docs/reference/sotn-construct-index.md:92."
   }
  ],
  "judge_constraints": [
@@ -418,7 +419,9 @@
   "The multi-handle axis is CLOSED: no form may declare, assign or copy a second C pointer object aliasing &D_80106A73 live alongside `q`, under pointer-alias-fake-exception or any other family; spend the remaining ladder on non-alias modalities and, if it exhausts, take the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record rather than a multi-handle body.",
   "The multi-handle axis stays CLOSED (no second C object aliasing &D_80106A73 live alongside q, under any framing incl. 'emission requirement'); spend any remaining non-alias modality and then file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record.",
   "At most TWO C pointer objects may alias &D_80106A73 (one carrying the mask + flag block 0, one carrying flag blocks 1 and 2), each declared with a direct `= &D_80106A73` initializer, each carrying its own `/* FAKE: <one-line reason naming the GCC-pass interaction> */` annotation at the declaration, with neutral names; no third object, no alias-to-alias copy, no unannotated form.",
-  "OUT OF SCOPE: candidates for func_80034F88 may only edit src/code6cac_b.c. Edits to include/code6cac.h, src/code6cac.c are rejected by the driver and can never be accepted, however good the bytes. Either find a form confined to src/code6cac_b.c, or file an OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt and return owner-gated. Do NOT re-propose the same out-of-scope edit."
+  "OUT OF SCOPE: candidates for func_80034F88 may only edit src/code6cac_b.c. Edits to include/code6cac.h, src/code6cac.c are rejected by the driver and can never be accepted, however good the bytes. Either find a form confined to src/code6cac_b.c, or file an OWNER-ESCALATION requesting these paths be added to tools/grinder/scope_allow.txt and return owner-gated. Do NOT re-propose the same out-of-scope edit.",
+  "Prong (c) of the aggregate merge must be completed in the SAME candidate: the surviving D_80106A71/D_80106A72 rows in undefined_syms_auto.txt (needed by still-INCLUDE_ASM sibling func_8001BE20) must each be suffixed `/* alias of D_80106A70+N; retire with func_8001BE20 */`, and no C code may name them.",
+  "integration-handoff EXECUTED (pipeline, 2026-09-05): scope grant: func_80034F88 include/code6cac.h src/code6cac.c undefined_syms_auto.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
  "banned_constructs": [
   "Same four `u8 *q = &D_80106A73;` handles, treated as ordinary program logic rather than a register-allocation lever"
@@ -432,14 +435,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 49,
-   "statement": "Hoisting each block's `c = p[8] & N;` above its `q = &D_80106A73;` re-assignment (rd7), and adding a redundant `q = &D_80106A73;` immediately before block 0's store to split reg 75's block-0 live inte",
-   "kill_scope": "instance",
-   "measured_on": "two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct",
-   "predicate_cite": "",
-   "result": "KILLED. Shortening the pointer allocno's live length by source-level statement placement does not survive sched1/cse."
-  },
   {
    "session": 50,
    "statement": "With one declared pointer object on the current chassis, both attainable seats for the &D_80106A73 allocno were measured and each leaves the other half of the function wrong: hard 4 ($a0) is the s49 c",
@@ -911,6 +906,14 @@
    "measured_on": "split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator",
    "predicate_cite": "",
    "result": "y1 = 49 insns / score 2 (unchanged); y2 = 49 / 15 (unchanged). The shared-c shape costs nothing and need not be revisite"
+  },
+  {
+   "session": 66,
+   "statement": "A block-scope `extern u8 D_80106A70[3];` inside func_80034F88 reaches score 0 with a full-build oracle SHA1 match while touching only src/code6cac_b.c, but it is inadmissible because the aggregate-mer",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-05 with include/code6cac.h and src/code6cac.c unmodified, the two Judge-granted pointer FAKEs, the cse2 dead-re-set invalidator and the s66 address-object/loop-counter variable reuse pres",
+   "predicate_cite": "",
+   "result": "score 0, 49/49, build SHA1 == oracle, diff confined to src/code6cac_b.c. Banked as memory/grind/func_80034F88/rejected/s"
   }
  ],
  "judge_clearances": [

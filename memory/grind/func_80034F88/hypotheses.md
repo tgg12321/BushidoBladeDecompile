@@ -6864,3 +6864,33 @@ spellings 52 instructions / score 31.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: split-declaration two-object chassis (extern u8 D_80106A70[3] + extern u8 D_80106A73) on HEAD 2026-09-05, two granted pointer FAKEs + the cse2 dead-re-set invalidator, with the address-object/loop-counter merge in place
+
+## s66 (second dispatch, solver) -- re-measurement after the out-of-scope constraint was banked
+
+## [s66b] The s66 match re-measures at score 0 / 49 of 49 instructions on HEAD 2026-09-05, and the whole-project clean-driver build SHA1 equals the locked oracle with it installed.
+- mechanism: The first s66 dispatch's candidate was rejected on SCOPE (it edits include/code6cac.h and src/code6cac.c), not on bytes, so the bytes had to be re-established before any disposition was written.
+- probe: python3 tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c, then sandbox func_80034F88 --disable all, then a full clean-driver build; tree returned to HEAD and verify-oracle re-confirmed ok afterwards.
+- result: score 0, target_insns 49, build_insns 49, rules_dropped 0, strip_cheat_asm true; build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. The address-object/loop-counter variable reuse is the whole of the fix and it is byte-neutral for every other consumer of D_80106A70/71/72.
+- verdict: CONFIRMED
+
+## [s66b] A block-scope `extern u8 D_80106A70[3];` inside func_80034F88 reaches the same score 0 with a full-build oracle SHA1 match while touching only src/code6cac_b.c, but it is inadmissible: the aggregate-merge family requires the declaration to be header-canonical.
+- mechanism: GCC 2.7.2 accepts a block-scope extern array declaration that contradicts the file-scope `extern u8 D_80106A70;` at include/code6cac.h:472 and honours the block-scope one, so the copy loop emits the target's lui/addu/%lo indexed store with no header edit. But .claude/rules/no-new-park-categories.md:238 prong (d) reads "spelled at the canonical declaration in the shared header, never TU-local, never a per-use pointer pun", and prong (c) requires the merge to be complete (D_80106A71/D_80106A72 removed from C). The TU-local spelling fails both on its face.
+- probe: tmp/grind/func_80034F88/s66b/i1_blockscope_array.c installed over the INCLUDE_ASM line with include/code6cac.h and src/code6cac.c left at HEAD; sandbox plus a full clean-driver build.
+- result: score 0, 49/49, build SHA1 == oracle, git diff confined to src/code6cac_b.c. Banked as rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c. The conclusion is not "no in-scope form exists" -- one does and it measures 0 -- it is that the only in-scope spelling is the one the aggregate-merge family names as disallowed, which is precisely what makes this an integration handoff rather than a residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-05 with include/code6cac.h and src/code6cac.c unmodified, the two Judge-granted pointer FAKEs, the cse2 dead-re-set invalidator and the s66 address-object/loop-counter variable reuse present
+
+## [s66] The s66 candidate re-measures at score 0 / 49 of 49 instructions on HEAD 2026-09-05, and the whole-project clean-driver build SHA1 equals the locked oracle with it installed.
+- mechanism: The first s66 dispatch's candidate was rejected on SCOPE (it edits include/code6cac.h and src/code6cac.c), not on bytes, so the bytes had to be re-established from scratch before any disposition was written. The fix itself is one variable reuse: block 0's address object and the copy loop's counter are one C variable, which lifts that allocno from 5 references / priority 3571 to 16 references / priority 30476 (live length only 14 -> 21, because the counter references fall after the pointer's last use), so global.c seats it in $v1 ahead of block 0's value allocno at priority 17500 and find_reg's ascending scan sends that value to $a0 -- the target register -- with no conflict lever.
+- probe: python3 tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c, then sandbox func_80034F88 --disable all, then a full clean-driver build; tree returned to HEAD and verify-oracle re-run afterwards.
+- result: score 0, target_insns 49, build_insns 49, rules_dropped 0, strip_cheat_asm true; build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle. Tree restored: verify-oracle ok true, build == oracle, git status clean over src/ and include/. Seven of seven allocnos on target seats per tmp/grind/func_80034F88/s66/z2.model.json.
+- verdict: CONFIRMED
+
+## [s66] A block-scope `extern u8 D_80106A70[3];` inside func_80034F88 reaches score 0 with a full-build oracle SHA1 match while touching only src/code6cac_b.c, but it is inadmissible because the aggregate-merge family requires that declaration to be header-canonical and the merge to be complete.
+- mechanism: GCC 2.7.2 accepts a block-scope extern array declaration that contradicts the file-scope `extern u8 D_80106A70;` at include/code6cac.h:472 and honours the block-scope one, so the copy loop emits the target's lui/addu/%lo indexed store with no header edit. But .claude/rules/no-new-park-categories.md:238 prong (d) reads 'spelled at the canonical declaration in the shared header, never TU-local, never a per-use pointer pun', and prong (c) requires the merge to be complete (D_80106A71/D_80106A72 removed from C). The TU-local spelling fails both on its face, so submitting it would be a layer-1 FAIL on a named prong and would spend the body.
+- probe: tmp/grind/func_80034F88/s66b/i1_blockscope_array.c installed over the INCLUDE_ASM line with include/code6cac.h and src/code6cac.c left at HEAD; sandbox func_80034F88 --disable all plus a full clean-driver build; git diff --stat over src and include to confirm the single-file diff.
+- result: score 0, 49/49, build SHA1 == oracle, diff confined to src/code6cac_b.c. Banked as memory/grind/func_80034F88/rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c. Recorded explicitly so no later session re-derives it and mistakes it for an in-scope win: the in-scope spelling exists and measures 0, and it is the one the family names as disallowed. That is what makes this an integration handoff rather than a residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-05 with include/code6cac.h and src/code6cac.c unmodified, the two Judge-granted pointer FAKEs, the cse2 dead-re-set invalidator and the s66 address-object/loop-counter variable reuse present

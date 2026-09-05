@@ -9110,3 +9110,44 @@ Spelling is load-bearing in two places: the bound must be the signed `(s32)q < 3
 (a `q < (u8 *)3` bound emits `sltu` where the target has `slti`, score 1), and
 the source read must be `*((u8 *)p + (s32)q + 0x17)` rather than
 `((u8 *)p)[(s32)q + 0x17]` (score 2).
+
+## s66 (second dispatch) -- the function byte-matches; only the declaration's FILE is unresolved
+
+- `memory/grind/func_80034F88/candidate.c` measures **score 0, 49/49 instructions**
+  and a full clean-driver build SHA1 of `62efab4f73f992798c43e8c730aa43baa10bb4fa`
+  (== the locked oracle) when installed with
+  `python3 tmp/grind/func_80034F88/s63/apply.py`. Re-measured this session; the
+  tree was then returned to HEAD and `verify-oracle` re-confirmed `ok: true`.
+- The fix is one variable reuse: block 0's address object and the copy loop's
+  counter are the same C variable, which lifts that allocno from 5 references /
+  priority 3571 to 16 references / priority 30476 (live length only 14 -> 21,
+  because the counter references come after the pointer's last use), so
+  `global.c` seats it in `$v1` ahead of block 0's value allocno (pri 17500) and
+  that value scans on to `$a0`. Seven of seven allocnos land on target seats
+  (`tmp/grind/func_80034F88/s66/z2.model.json`).
+- The body needs `extern u8 D_80106A70[3];` at its canonical extern
+  (`include/code6cac.h:472-474`) with the two `src/code6cac.c` consumers
+  converted to element form. Those two paths are out of this function's
+  candidate scope, so the disposition is an INTEGRATION HANDOFF recorded at
+  `docs/grind/decisions.md:23441`, requesting one `tools/grinder/scope_allow.txt`
+  line: `func_80034F88 include/code6cac.h src/code6cac.c`.
+- A TU-local spelling of the same declaration (block-scope
+  `extern u8 D_80106A70[3];`) also measures 0 with an oracle SHA1 match and
+  touches only `src/code6cac_b.c`, but is inadmissible under aggregate-merge
+  prongs (c) and (d) (`.claude/rules/no-new-park-categories.md:238`). Banked at
+  `rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c` so it is
+  not re-derived as an in-scope win.
+
+- [s66] func_80034F88 BYTE-MATCHES. memory/grind/func_80034F88/candidate.c installed via tmp/grind/func_80034F88/s63/apply.py measures sandbox score 0, target_insns 49, build_insns 49, rules_dropped 0, strip_cheat_asm true; full clean-driver build SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle.
+
+- [s66] The declaration change is byte-neutral for every other consumer of D_80106A70/71/72 by the strongest proof the pipeline has -- the whole-project oracle build, not a per-function score.
+
+- [s66] The blocker is a file, not a construct: the body must index a declared three-byte array (the target stores through lui $at,%hi(D_80106A70); addu $at,$at,$v1; sb $v0,%lo(D_80106A70)($at) at asm/funcs/func_80034F88.s:44-46), and .claude/rules/no-new-park-categories.md:238 prong (d) requires that declaration at its canonical extern, include/code6cac.h:472-474, with prong (c) converting the two consumers at src/code6cac.c:340-342 and :345 to element form.
+
+- [s66] The requested grant is one line, self-serve class: `func_80034F88 include/code6cac.h src/code6cac.c` in tools/grinder/scope_allow.txt. Both paths match _SCOPE_GRANT_ALLOWED_RE at tools/grinder/grindlib.py:465 and neither is on _SCOPE_GRANT_DENY. Direct precedents already in that file: `replay_camera_Init include/code6cac.h` and `special_camera_get_rot_dir include/code6cac.h` (same header, same kind of honest array declaration) and `func_80061250 src/text1b.c src/text1b_b.c` (a second src/*.c granted for exactly this merge-the-consumers reason).
+
+- [s66] The TU-local escape route was measured, not assumed: a block-scope extern array declaration reaches score 0 with an oracle SHA1 match touching only src/code6cac_b.c, and is banked as inadmissible under prongs (c) and (d) at rejected/s66-blockscope-array-decl-score0-but-prong-d-tu-local.c.
+
+- [s66] The tree is back at HEAD: include/code6cac.h, src/code6cac.c and src/code6cac_b.c are unmodified, the function is still committed as INCLUDE_ASM("asm/funcs", func_80034F88);, and verify-oracle re-confirms ok true with build == oracle.
+
+- [s66] Constructs the next session's layer-1 and Judge will rule on (all four already in candidate.c, all FAKE-annotated with what + mechanism + lever-exhaustion): two pointer aliases on &D_80106A73 (Judge-granted at docs/grind/decisions.md:23437), the `u = 0;` cse2 invalidator (dead-store family), and the variable reuse staging the loop counter through block 0's pointer (variable-reuse family; SOTN PSX precedent `// fake reuse of i?` at docs/reference/sotn-construct-index.md:92).

@@ -50,3 +50,6 @@ func_80062020 include/game.h src/text1b_b.c undefined_syms_auto.txt
 # get_alarm: pipeline scope grant 2026-09-04 (judge ESCALATE integration-handoff,
 # integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
 get_alarm volatile_extern_allowlist.txt
+# func_80034F88: pipeline scope grant 2026-09-05 (judge ESCALATE integration-handoff,
+# integration-handoff-self-serve owner ruling 2026-08-19; packet in docs/grind/decisions.md).
+func_80034F88 include/code6cac.h src/code6cac.c undefined_syms_auto.txt
