@@ -5438,3 +5438,105 @@ pointer object, no FAKE construct.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s49/s50/s51 two-statement-mask chassis and the b0-dup chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct present
+
+## [s53] The surviving re-reads of D_80106A73 in flag blocks 1 and 2 are produced by cse invalidating REG q at the `q = &D_80106A73;` re-assignment, not by the control-flow join that s46-s52 credited: deleting block 1's re-assignment while leaving the join label and every other statement in place makes block 1's `lbu` disappear and be replaced by a load-delay nop.
+- mechanism: cse_insn invalidates every value-table entry containing a register when that register is SET, so the `(mem:QI (reg q))` entry recorded for the preceding `*q = <value>;` store (cse.c:7310-7360) is destroyed by the next `q = &D_80106A73;`. The join label alone does not end cse's extended-basic-block path in a way that drops the entry.
+- probe: s51's split-spelling body with block 1's `q = &D_80106A73;` statement deleted -- `rejected/s53-splitspell-drop-b1-reassign-b1-read-FORWARDED-49insn-score14.c`. Also the block-2 variant, `rejected/s53-splitspell-drop-b2-reassign-49insn-score22.c`.
+- result: block 1's `lbu` at build offset 4f88 is replaced by a load-delay nop; 49 insns, score 14 (block-2 variant 49 insns, score 22). The 49/14 body is the first 49-instruction body in this ledger that carries a genuine non-forwarded flag-byte re-read.
+- verdict: CONFIRMED
+
+## [s53] Re-read survival and address materialisation are CO-LOCATED on every form measured in this ledger, so a body cannot yet produce the target's block-0 shape, in which the 80034FB4 re-read shares $v1 with the mask and has no `lui/addiu` pair of its own: the two generators of a surviving re-read each emit an la at the read's site, and the same-value re-assignment that emits no la is deleted by cse and invalidates nothing.
+- mechanism: the invalidating statement IS the materialising statement. `q = <different address value>` invalidates reg q and emits an la (s51 split spelling, 51/12). `q = <same address value>` in straight-line code is deleted by cse before it can invalidate (s52, 49/10). The target needs an invalidation of the recorded `(mem:QI (reg q))` between 80034FAC and 80034FB4 that costs zero instructions; the only remaining non-register route is a memory write that may alias, and there is no instruction between those two addresses in the target.
+- probe: aligned objdump of the plateau body against the target (tmp/grind/func_80034F88/s53/build.txt) plus the two drop-re-assignment bodies above and the re-measured s51 split-spelling body; cse.c:7310-7340 (the complete non-recording condition list), cse.c:7182 (the `rtx_equal_p (SET_SRC, SET_DEST)` path to src_elt == 0) and cse.c:2051 (`exp_equiv_p` has no MEM case) read directly.
+- result: the target has four non-forwarded `lbu`s of D_80106A73 (80034FA0, 80034FB4, 80034FD8, 80034FFC) but only three la pairs (80034F98, 80034FC8, 80034FF0). No body measured in 53 sessions reproduces that ratio. `exp_equiv_p` compares mode and operands only, so MEM_IN_STRUCT_P / RTX_UNCHANGING_P cannot separate two reads through one address pseudo; the struct/array-member-on-one-side idea is closed at the RTL level without a measurement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49/s50/s51/s52 two-statement-mask chassis (memory/grind/func_80034F88/candidate.c) and s51's split-spelling chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct present
+
+## [s53] Pairing s52's g1 (q re-used as the trailing loop's base pointer, pointer allocno priority 12857) with s52's h1 (block 1's condition hoisted into block 0, masked-value priority 13333 -> 12000) does not flip the block-0 seat, even though 12857 > 12000 predicts a flip: h1 restructures block 0's branch into `beqz/j` with the arms split across an unconditional jump and pushes `p` out of $a1 into $a2, so the allocno set global_alloc sorts is not the set the priority model assumed.
+- mechanism: the s52 priority model treats h1 as a pure live-length extension of the masked value (len 9 -> 10 at fixed refs 6). It is not: hoisting the block-1 condition adds a simultaneously live value, which changes the register pressure global_alloc sees and re-shapes block 0's control flow at the jump-optimisation stage, so the pointer allocno's own refs/length also move.
+- probe: `rejected/s53-g1-plus-h1-no-seat-flip-49insn-score26.c` -- the plateau body with `n = p[8] & 2;` hoisted above flag block 0 (h1) and the trailing loop rewritten as `q = &D_80106A70; ... q[i] = ...` (g1).
+- result: 49 insns, score 26. Block 0 still emits `lui $a0 / addiu $a0 / lbu $a1,0($a0)` -- the pointer is still at hard 4, the seat did not flip, and the extra live value costs the $a1/$a2 assignment of `p` on top.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-05 on the s49/s50 two-statement-mask chassis with s52's g1 loop rewrite and s52's h1 condition hoist both applied, one declared pointer object, no FAKE construct present
+
+## [s53] `&D_80106A70 + 3` and `&D_80106A73` are byte-identical spellings of the same address after linking, so the split-spelling penalty measured in s51 is entirely the EXTRA `la` pair and never the la's contents.
+- mechanism: %hi(D_80106A70) == %hi(D_80106A73) == 0x8010 and %lo(D_80106A70) + 3 == %lo(D_80106A73) == 0x6A73, so `lui $x,%hi(D_80106A70); addiu $x,$x,%lo(D_80106A70)+3` links to the same two words as the target's `la` of D_80106A73.
+- probe: relocation arithmetic against the target words at 80034F98/80034F9C, plus the s53 drop-re-assignment builds whose mask la shows `lui $a0,0x0 / addiu $a0,$a0,3` pre-link.
+- result: confirmed. A future form that needs two cse-distinct address values but only three materialisations is blocked by the la COUNT, not by the spelling, and the spelling is free.
+- verdict: CONFIRMED
+
+## [s53] The target's block-0 reload costs zero instructions: it fills the load-delay slot the plateau body wastes on a nop, so the split-spelling body's entire excess is one `la` pair.
+- mechanism: the plateau build emits `lw v0,32(a1)` / `nop` / `andi` where the target emits `lw` / `lbu $a0,0($v1)` / `andi`; maspsx's load-delay nop and the target's reload occupy the same slot. The s51 split-spelling build has no nop there and is 51 insns = 49 + the block-0 `lui/addiu` pair, with every other instruction (blocks 1 and 2, the loop, the epilogue) matching the target register-for-register.
+- probe: objdump of the plateau build and of `tmp/grind/func_80034F88/s53/base_split.c`'s build, compared insn-for-insn against asm/funcs/func_80034F88.s (tmp/grind/func_80034F88/s53/build.txt).
+- result: CONFIRMED. Plateau 49/10 with a nop at build 4f64; split 51/12 with the reload at build 4f6c and no nop. Residual re-sized from "a seat race" to "exactly one address materialisation, 2 instructions".
+- verdict: CONFIRMED
+
+## [s53] Adding an explicit block-0 read (`v = *q;` with both arms consuming `v`) to the plateau body changes nothing in the emitted code.
+- mechanism: cse folds the read onto the masked pseudo (the store's recorded `(mem:QI (reg q))` value) and combine erases the resulting `zero_extend(subreg:QI(m))`, so no instruction, no live value and no allocation change results.
+- probe: plateau chassis with `v = *q;` inserted between the mask store and block 0's condition, arms rewritten to `v | 1` / `v`; sandbox + objdump.
+- result: 49 insns, score 10, build byte-identical to the plateau. Banked as rejected/s53b-explicit-b0-read-INERT-49insn-score10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49/s50 two-statement-mask chassis (memory/grind/func_80034F88/candidate.c) on HEAD 2026-09-05, one declared pointer object `q`, no FAKE construct present
+
+## [s53] Wrapping the mask statements in `do { ... } while (0);` produces the block-0 reload on the current chassis.
+- mechanism: cse_end_of_basic_block breaks at NOTE_INSN_LOOP_END while `! after_loop` (cse.c:8054), so the wrap should end cse1's basic block between the mask store and block 0's read and stop the store-to-load forwarding.
+- probe: `do { m = *q; m &= 0xF8; *q = m; } while (0);` on the current chassis, arms unchanged; sandbox + objdump.
+- result: 50 insns, score 12; the read is still forwarded and the one extra instruction is a load-delay nop at the mask's own `lbu` (the wrap displaces `move a1,v0` out of that slot). cse2 runs with after_loop non-zero and re-forwards, reproducing s7's dump finding on this chassis. Banked as rejected/s53b-dowhile0-mask-wrap-costs-one-nop-50insn-score12.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49/s50 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object `q`, the `do { } while (0);` wrap being the only FAKE-family construct present
+
+## [s53] The block-0 hard seat ($v1) and the surviving block-0 reload are separately controllable levers, and no measured body holds both.
+- mechanism: the `do { } while (0);` wrap around the mask PLUS an explicit block-0 read keeps `move $a0,$v0` alive across the mask store, which adds a simultaneously-live value and moves the address pointer onto hard 3 ($v1) -- the target's block-0 seat, with block 0's store emitted as `sb $v0,0($v1)` exactly as at target 80034FD0 -- without any duplicated store and without the reg_n_refs priority lift s50/s52 needed. The read itself is still forwarded.
+- probe: wrap + explicit read on the current chassis; sandbox + objdump; compare against the split-spelling body (reload survives, seat stays $a0) and the plateau (neither).
+- result: 51 insns, score 20, seat $v1, no reload. Banked as rejected/s53b-dowhile0-mask-plus-b0read-SEAT-v1-no-reload-51insn-score20.c. The three measured points are: split spelling 51/12 (reload, no seat), wrap+read 51/20 (seat, no reload), plateau 49/10 (neither).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49/s50 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object `q`, `do { } while (0);` wrap present as the only FAKE-family construct
+
+## [s53] The target's block-0 reload at 80034FB4 costs zero instructions on this chassis, because the plateau body emits a load-delay nop at exactly that site; consequently the s51 split-spelling body's entire 2-instruction excess is its block-0 lui/addiu pair.
+- mechanism: maspsx inserts a load-delay nop between `lw $v0,0x20($a1)` and its consuming `andi` in the plateau build (build 4f60/4f64/4f68); the target schedules its block-0 `lbu $a0,0($v1)` into that same slot. The split-spelling build has no nop there -- its reload fills the slot -- so 51 = 49 + lui + addiu, and every other insn it emits (flag blocks 1 and 2, the trailing loop, the epilogue) matches the target register-for-register.
+- probe: Installed candidate.c, measured sandbox (score 10, 49/49) and captured objdump; installed tmp/grind/func_80034F88/s53/base_split.c, measured sandbox (score 12, 51 build insns) and captured objdump; compared both insn-for-insn against asm/funcs/func_80034F88.s.
+- result: CONFIRMED. Plateau: 4f60 lw / 4f64 nop / 4f68 andi. Split: 4f60 lui / 4f64 addiu / 4f68 lw / 4f6c lbu / 4f70 andi. The residual is re-sized from 'a global.c allocno_compare seat race' (the s49-s52 framing) to 'exactly one address materialisation'.
+- verdict: CONFIRMED
+
+## [s53] Deleting flag block 1's `q = &D_80106A73;` re-assignment from the s51 split-spelling body, leaving the join label and every other statement in place, makes block 1's lbu disappear and be replaced by a load-delay nop.
+- mechanism: A SET of the address pseudo makes cse invalidate every value-table entry containing that pseudo, including the `(mem:QI (reg q))` value the preceding store recorded; without the re-assignment the entry survives and the read is store-forwarded.
+- probe: Split-spelling body minus block 1's re-assignment; sandbox + objdump (measured in this session's first pass, banked before the validator discard).
+- result: 49 insns, score 14 -- the first 49-insn body in this ledger carrying a genuine non-forwarded flag-byte re-read. Banked as rejected/s53-splitspell-drop-b1-reassign-b1-read-FORWARDED-49insn-score14.c; the block-2 variant is 49 insns, score 22.
+- verdict: CONFIRMED
+
+## [s53] Adding an explicit block-0 read (`v = *q;` between the mask store and the condition, with both arms consuming `v` instead of the masked local) changes the emitted code of the plateau body.
+- mechanism: If cse did not store-forward the read, the arms would consume a reloaded byte the way the target's do, and the read would materialise as an lbu in the lw's delay slot.
+- probe: Plateau chassis with the explicit read inserted and both arms rewritten; sandbox + objdump.
+- result: 49 insns, score 10, build byte-identical to the plateau -- no lbu, no move, no extra live value, no seat change. cse folds the read onto the masked pseudo and combine erases the zero_extend(subreg:QI). Banked as rejected/s53b-explicit-b0-read-INERT-49insn-score10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49/s50 two-statement-mask chassis (memory/grind/func_80034F88/candidate.c) on HEAD 2026-09-05, one declared pointer object q, no FAKE construct present
+
+## [s53] Wrapping the three mask statements in `do { ... } while (0);` on the current chassis produces the target's block-0 reload.
+- mechanism: cse_end_of_basic_block breaks at NOTE_INSN_LOOP_END while `! after_loop` (cse.c:8054), so the wrap should end cse1's basic block between the mask store and block 0's read and stop the store-to-load forwarding.
+- probe: `do { m = *q; m &= 0xF8; *q = m; } while (0);` on the current chassis, arms unchanged; sandbox + objdump.
+- result: 50 insns, score 12. The read is still forwarded and the one extra instruction is a load-delay nop at the mask's own lbu (build 4f58), because the wrap displaces `move a1,v0` out of that slot. cse2 runs with after_loop non-zero and re-forwards, reproducing s7's dump finding on this chassis and s30's 'any wrap spanning the mask store costs one instruction'. Banked as rejected/s53b-dowhile0-mask-wrap-costs-one-nop-50insn-score12.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49/s50 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object q, the do { } while (0) wrap being the only FAKE-family construct present
+
+## [s53] The `do { <mask> } while (0);` wrap combined with an explicit block-0 read yields both the target's block-0 hard seat and a surviving block-0 reload.
+- mechanism: The wrap keeps `move $a0,$v0` alive across the mask store, adding a simultaneously-live value; that alone could move the address pointer onto hard 3 ($v1) while the loop-note boundary suppresses the forwarding.
+- probe: Wrap plus explicit read on the current chassis; sandbox + objdump; compared against the split-spelling body and the plateau.
+- result: 51 insns, score 20. The seat DOES flip: the pointer takes hard 3 ($v1) and block 0's store is emitted as `sb $v0,0($v1)`, exactly as at target 80034FD0, with no duplicated store and no reg_n_refs priority lift -- but the read is still forwarded, materialising as `move $a0,$v0` rather than an lbu. Banked as rejected/s53b-dowhile0-mask-plus-b0read-SEAT-v1-no-reload-51insn-score20.c. Three measured points now bracket the residual: split spelling 51/12 (reload, seat $a0), wrap+read 51/20 (seat $v1, no reload), plateau 49/10 (neither).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49/s50 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object q, do { } while (0) wrap present as the only FAKE-family construct
+
+## [s53] Pairing g1 (q re-used as the trailing loop's base pointer, pointer allocno refs 12 / len 28 / pri 12857) with h1 (block 1's condition hoisted into block 0, masked value len 9 -> 10, pri 13333 -> 12000) flips the block-0 seat, as s52's priority arithmetic predicted.
+- mechanism: global.c allocno_compare sorts by priority; 12857 > 12000 should make the address allocno sort ahead of the masked value and take hard 3.
+- probe: g1+h1 body built and measured (this session's first pass); sandbox plus .lreg/.greg read.
+- result: 49 insns, score 26, and the seat did NOT flip -- block 0 is still `lui $a0 / addiu $a0 / lbu $a1,0($a0)`. h1 does not merely lengthen the masked value's live range: it restructures block 0 into `beqz / j` with the arms split across an unconditional jump and pushes `p` out of $a1 into $a2, so the allocno set global_alloc sorts is not the set the model assumed. Banked as rejected/s53-g1-plus-h1-no-seat-flip-49insn-score26.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s49/s50 two-statement-mask chassis on HEAD 2026-09-05 with the g1 loop-base re-use and the h1 condition hoist both installed, one declared pointer object q, no FAKE construct present

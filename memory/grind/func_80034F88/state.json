@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 52,
- "current_modality": "structural",
+ "session_count": 53,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -315,23 +315,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "cse named as the pass that kills block 0's reload (dumps: mem:QI 8->7 at .cse) and its only non-volatile escape (a ZERO_EXTRACT/bit-field dest) measured non-existent on this target; the seat race redu"
+  },
+  {
+   "session": 53,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "The residual is exactly one address materialisation (2 insns): the target's block-0 reload is instruction-count-FREE (it fills the load-delay nop this body wastes), and the block-0 $v1 seat and the su"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual is one inequality with the pointer side pinned; the unmeasured side is a join-form block 0 whose masked value has FIVE references instead of six.",
-   "mechanism": "The masked value's six references are def(lbu), the use and def of the '&=', the mask 'sb', the arm 'ori' and the arm 'move'. The target's block-0 mask value has only four because its arms consume the RELOADED byte instead of the masked pseudo. Dropping one reference at len 9 gives pri 11111, still above the pointer's 10714, but at len 10 it gives 10000 and the seat flips; s52 showed len 10 is reachable (h1) at the cost of an extra live value, so a five-reference block 0 is the cheaper half of that pair.",
-   "next_probe": "Enumerate join-form block-0 shapes in which one arm sources its value from something cse folds onto the masked-value pseudo WITHOUT contributing a reference to it -- an arm whose value is built from a separate variable that copy-propagation later coalesces, or a block 0 in which the mask's 'sb' operand and one arm's operand are the same RTL reference. Read reg74's refs in .lreg before the score; the win condition is refs 5 with len >= 10."
+   "hypothesis": "The block-0 $v1 seat and the surviving block-0 reload are separately reachable but have never been held together; a body carrying both would be at or below the split-spelling score of 12 and, if the seat flip absorbs the extra la's scheduling slack, possibly at 49 insns.",
+   "mechanism": "The split spelling (a cse-distinct address value re-assigned into q between the mask store and block 0's read) produces the reload but leaves the pointer on hard 4 ($a0) with 4 la pairs. The do-while(0) wrap plus an explicit read produces the $v1 seat by keeping one extra value live across the mask store, but cse2 re-forwards the read. The two mechanisms act on different passes (cse's value table vs global.c's allocno sort) and have never been combined.",
+   "next_probe": "Build the split-spelling body with the do { <mask> } while (0); wrap added around the mask statements and the block-0 arms consuming the re-read. Read the address allocno's hard register in .greg and check for the block-0 lbu in the objdump BEFORE looking at the score; the win condition is seat $v1 AND an lbu in the lw's delay slot. If both hold at 51, the residual reduces to deleting the block-0 la pair, a strictly smaller question than the one this ledger has been asking."
   },
   {
-   "hypothesis": "g1 (q reused as the trailing loop's base pointer) is the first measured pointer-reference lift that does not touch a flag block, and it misses the flip by only 476 priority points.",
-   "mechanism": "g1 buys refs 12 at len 28 for pri 12857 against the masked value's 13333. One further pointer reference inside the loop region takes it to refs 13 / len 28 / pri 13928 and flips the seat. It currently costs 7 points because a pointer-based loop emits 'sb $v0,0($reg)' with an increment instead of the target's 'lui $at / addu $at,$at,$v1 / sb $v0,%lo(D_80106A70)($at)' direct-symbol indexing.",
-   "next_probe": "Measure whether any loop spelling through q reproduces the target's direct-symbol-plus-index loop form (q as a base with the index kept in the addressing expression, q re-derived per iteration, q reused only for the final store). If one does, the seat lift and the loop bytes are simultaneously satisfiable; read the pointer's refs/len in .lreg before the score."
+   "hypothesis": "The residual is exactly one address materialisation: the target shares ONE la between the mask store and block 0's read while the two MEM references are not cse-equivalent, and every generator of that inequivalence measured so far emits a second la.",
+   "mechanism": "cse records the mask store's (mem:QI (reg q)) value with the source's class (cse.c:7308-7376) and only skips the record when sets[i].src_elt == 0 (cse.c:7327: in_libcall_block, ZERO_EXTRACT/SIGN_EXTRACT dest, volatile source) -- all three measured shut on this target by s52. exp_equiv_p (cse.c:2051) has no MEM case, so declaration flags cannot make the two references inequivalent. The remaining unmeasured route is a basic-block boundary that BOTH cse passes honour, i.e. a CODE_LABEL between the store and the read that cse cannot extend across (LABEL_NUSES != 1, or no preceding BARRIER with -fcse-skip-blocks unable to apply).",
+   "next_probe": "Enumerate ordinary-C block-0 shapes that place a CODE_LABEL with LABEL_NUSES >= 2 between the mask store and block 0's read without emitting an extra jump -- the sanctioned mixed-exit `goto endK` family (cross-jump-store-tail-merge) is the only construct in the frozen list that creates a multiply-referenced label, and cross-jumping re-merges the tails. Read LABEL_NUSES in the .jump dump before scoring; the win condition is a surviving lbu in the lw's delay slot with the la count still 3."
   },
   {
-   "hypothesis": "The target's 80034FB4 reload of the SAME address through the SAME register is the signature of MEM_VOLATILE_P, and s52 has measured every non-volatile generator shut on a shared address -- but the volatile gate as written fails, so this is a characterisation of the residual and not a probe.",
-   "mechanism": "cse suppresses the store-to-load equivalence only for src_elt == 0 (libcall block, ZERO_EXTRACT dest, volatile source); the bit-field/ZERO_EXTRACT route is measured non-existent on this target, leaving volatile as the only mechanism that produces the reload without a second address materialisation. But D_80106A73 has no identified IRQ writer and its use-site is an ordinary read-modify-write, so both prongs of legitimate-volatile-interrupt-touched fail, and the sandbox strips a non-allowlisted extern volatile, so the honest floor cannot move even if a grant existed.",
-   "next_probe": "Do NOT re-measure volatile. Carry this as the standing characterisation of the block-0 residual; if a later session needs a disposition record, this is the evidence line for it."
+   "hypothesis": "The block-0 seat flip found this session is cheaper than the duplicated-store lift and may be reproducible without the do-while(0) wrap's one-instruction cost.",
+   "mechanism": "The flip was caused by one extra value (`move $a0,$v0`) being live across the mask store, not by the wrap's loop note: the explicit read alone is inert (measured 49/10, byte-identical) and the wrap alone leaves the pointer on $a0 (measured 50/12). Any ordinary-C shape that keeps one extra value live across the mask store should reproduce the flip, and if that value is one the target already computes the flip is free.",
+   "next_probe": "Keep `p` (or the p[8] load) live across the mask store by hoisting `c = p[8] & 1;` above the mask -- s52 measured a related hoist at 49/25 with a different arm assignment, so re-measure with the arms unchanged and read the address allocno's hard register in .greg before the score. The win condition is seat $v1 at 49 insns."
   }
  ],
  "judge_constraints": [
@@ -353,34 +359,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 35,
-   "kill_scope": "instance",
-   "statement": "Two anonymous address expressions written with DIFFERENT nestings escape cse's canonicalisation and each get their own full-address pseudo.",
-   "measured_on": "HEAD chassis 2026-09-05, variant g8 vs g1; single declared `u8 *q` covering blocks 0+1, blocks 2/3 anonymous, no FAKE construct present",
-   "result": "g8 = 28 at 48, identical to g1's single spelling -- cse canonicalises both nestings to the same address rtx."
-  },
-  {
-   "session": 35,
-   "kill_scope": "instance",
-   "statement": "The inherited claim that an anonymous address carrier costs +1 instruction every time its value must cross a code label.",
-   "measured_on": "HEAD chassis 2026-09-05, variant g1 disassembly (tmp/grind/func_80034F88/s35/g1.txt), no FAKE construct present",
-   "result": "Anonymously-addressed blocks 2/3 emit lui+lbu and lui+sb = 4 insns each, exactly the target's lui/addiu/lbu/sb count. The carrier is instruction-count-neutral there; the +1 seen in c2/d4 belongs specifically to block 1's post-join store."
-  },
-  {
-   "session": 35,
-   "kill_scope": "instance",
-   "statement": "The address object's seat is a two-valued dial between $v1 and $a0, so live-range surgery on `q` only trades one of those seats for the other.",
-   "measured_on": "HEAD chassis 2026-09-05, variant g1 (q covers blocks 0+1 only), no FAKE construct present",
-   "result": "q takes $a1 and p is displaced to $a0 -- the address object and p compete for the same two argument registers, so shortening q's range can also lose the target's p seat."
-  },
-  {
-   "session": 35,
-   "kill_scope": "instance",
-   "statement": "A spelling of block 0's mask that restores block 1's reload without introducing a second address pseudo lands BELOW 10.",
-   "measured_on": "HEAD chassis 2026-09-05 (floor control g0 = 10 at 49); bodies s17-b1-read-direct-symbol (11/50), s34-f1 (14/49), s35-g1 (48 insns without the reload); single declared `u8 *q`, no FAKE construct present",
-   "result": "Every banked body that emits the reload is above the floor; g1 shows the reload is the single instruction separating 48 from 49 in the anonymous quadrants."
-  },
   {
    "session": 36,
    "statement": "Some assignment of the four flag-byte access sites between the declared pointer `q` and the anonymous symbol-difference expression, other than the five combinations s33 already measured, reaches the t",
@@ -828,6 +806,38 @@
    "measured_on": "s49/s50/s51 two-statement-mask chassis and the b0-dup chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct present",
    "predicate_cite": "",
    "result": "KILLED. Extends s50's H50.5 and s51's condition-re-association kills from the masked value to the POINTER allocno and fr"
+  },
+  {
+   "session": 53,
+   "statement": "Adding an explicit block-0 read (`v = *q;` between the mask store and the condition, with both arms consuming `v` instead of the masked local) changes the emitted code of the plateau body.",
+   "kill_scope": "instance",
+   "measured_on": "s49/s50 two-statement-mask chassis (memory/grind/func_80034F88/candidate.c) on HEAD 2026-09-05, one declared pointer object q, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "49 insns, score 10, build byte-identical to the plateau -- no lbu, no move, no extra live value, no seat change. cse fol"
+  },
+  {
+   "session": 53,
+   "statement": "Wrapping the three mask statements in `do { ... } while (0);` on the current chassis produces the target's block-0 reload.",
+   "kill_scope": "instance",
+   "measured_on": "s49/s50 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object q, the do { } while (0) wrap being the only FAKE-family construct present",
+   "predicate_cite": "",
+   "result": "50 insns, score 12. The read is still forwarded and the one extra instruction is a load-delay nop at the mask's own lbu "
+  },
+  {
+   "session": 53,
+   "statement": "The `do { <mask> } while (0);` wrap combined with an explicit block-0 read yields both the target's block-0 hard seat and a surviving block-0 reload.",
+   "kill_scope": "instance",
+   "measured_on": "s49/s50 two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object q, do { } while (0) wrap present as the only FAKE-family construct",
+   "predicate_cite": "",
+   "result": "51 insns, score 20. The seat DOES flip: the pointer takes hard 3 ($v1) and block 0's store is emitted as `sb $v0,0($v1)`"
+  },
+  {
+   "session": 53,
+   "statement": "Pairing g1 (q re-used as the trailing loop's base pointer, pointer allocno refs 12 / len 28 / pri 12857) with h1 (block 1's condition hoisted into block 0, masked value len 9 -> 10, pri 13333 -> 12000",
+   "kill_scope": "instance",
+   "measured_on": "s49/s50 two-statement-mask chassis on HEAD 2026-09-05 with the g1 loop-base re-use and the h1 condition hoist both installed, one declared pointer object q, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "49 insns, score 26, and the seat did NOT flip -- block 0 is still `lui $a0 / addiu $a0 / lbu $a1,0($a0)`. h1 does not me"
   }
  ]
 }

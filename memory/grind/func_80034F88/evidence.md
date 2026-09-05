@@ -7322,3 +7322,252 @@ y4_split_nodup 12/51. Sources under
 - [s52] A redundant 'q = &D_80106A73;' inserted between the mask and flag block 0 is deleted outright: 49 insns, score 10, pointer refs unchanged at 10.
 
 - [s52] Twenty-one bodies measured this session; sixteen banked to memory/grind/func_80034F88/rejected/s52-*. src/code6cac_b.c restored to HEAD (git status clean apart from the ledger and metrics).
+
+## [s53] synthesis (2026-09-05) -- HEAD floor re-measured 10 (49 target / 49 build insns)
+
+### Chassis check
+`sandbox func_80034F88 --disable all` with `memory/grind/func_80034F88/candidate.c`
+installed at src/code6cac_b.c:3420 => score 10, target_insns 49, build_insns 49.
+Identical to the ledger's recorded floor, so every s45-s52 spelling conclusion is
+still chassis-valid and was NOT re-derived.
+
+### Kill re-audit (mandated; floor flat since s44)
+The instance kill whose form sits closest to the target is s51's split-spelling
+body (`rejected/s51-splitspell-mask-A70p3-EMITS-TARGET-RELOAD-51insn-score12.c`),
+the only banked form that emits the target's 80034FB4 re-read.  Re-measured on
+HEAD this session: **51 insns, score 12** -- byte-for-byte the ledger's number.
+`tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate <that
+file>` reports "no FAKE-annotated constructs found; nothing to ablate", so the
+kill was not measured behind a FAKE carrier and stands as recorded.
+
+### The exact 10-point residual, read off the objdump (tmp/grind/func_80034F88/s53/build.txt)
+Baseline build vs target, aligned:
+
+    target                          this body
+    lui   $v1,%hi(D_80106A73)       lui   $a0,%hi(D_80106A73)
+    addiu $v1,$v1,%lo(D_80106A73)   addiu $a0,$a0,%lo(D_80106A73)
+    lbu   $a0,0($v1)                lbu   $v1,0($a0)
+    addu  $a1,$v0,$zero             move  $a1,$v0
+    andi  $a0,$a0,0xF8              andi  $v1,$v1,0xF8
+    sb    $a0,0($v1)                sb    $v1,0($a0)
+    lw    $v0,0x20($a1)             lw    $v0,0x20($a1)
+    lbu   $a0,0($v1)   <-- re-read  nop                <-- load-delay nop
+    andi  $v0,$v0,1                 andi  $v0,$v0,1
+    bnez  $v0,.L                    bnez  $v0,.L
+     ori  $v0,$a0,1                  ori  $v0,$v1,1
+    addu  $v0,$a0,$zero             move  $v0,$v1
+    lui   $a0,%hi / addiu $a0,%lo   sb    $v0,0($a0)
+    sb    $v0,0($v1)                lui   $a0,%hi / addiu $a0,%lo
+
+Blocks 1 and 2 and the trailing loop are already byte-exact.  The whole residual
+is (i) the $v1/$a0 swap in block 0 and (ii) the missing re-read, and (ii) costs
+nothing in instruction count because the slot it belongs in is currently a
+load-delay nop.  The target's block-1 `la` is scheduled ABOVE the block-0 store
+only because block 0's store goes through $v1 while the la writes $a0; that
+ordering difference is a consequence of (i), not an independent problem.
+
+### FINDING 1 (new; corrects the s46-s52 pass attribution): the surviving re-reads
+### in flag blocks 1 and 2 are produced by cse invalidating REG q, not by the join
+Every session since s46 has explained blocks 1/2's surviving `lbu`s as "cse's
+store-forwarding does not cross the control-flow join".  That explanation is
+wrong.  The reads survive because each of those blocks re-executes
+`q = &D_80106A73;`, and a SET of reg q makes cse invalidate every hash-table
+entry that contains reg q -- which includes the `(mem:QI (reg q))` entry the
+preceding `*q = <value>;` store recorded at cse.c:7310-7360.
+
+PROOF (measured this session, not argued): take s51's split-spelling body and
+delete ONLY block 1's `q = &D_80106A73;` statement, leaving the join label, the
+arms and the store untouched.  Block 1's `lbu` vanishes and a load-delay nop
+appears in its place (build offset 4f88), exactly the way block 0's does in the
+plateau body.  49 insns, score 14.  Banked as
+`rejected/s53-splitspell-drop-b1-reassign-b1-read-FORWARDED-49insn-score14.c`.
+Deleting block 2's re-assignment instead gives 49 insns / score 22
+(`rejected/s53-splitspell-drop-b2-reassign-49insn-score22.c`).
+
+That 49/14 body is the first 49-INSN body in this ledger that carries a genuine
+non-forwarded flag-byte re-read: it is off the plateau by register assignment
+and la placement, not by instruction count.
+
+### FINDING 2 (the residual, sharply stated): re-read and `la` are CO-LOCATED,
+### and the target's block 0 is the one site where they are not
+Under Finding 1 the invalidation and the address materialisation are the SAME C
+statement, so on every form measured in 53 sessions a surviving re-read at site
+S is accompanied by a `lui/addiu` pair at site S.  The target has FOUR
+non-forwarded `lbu`s of D_80106A73 --
+
+    80034FA0  mask read      through $v1
+    80034FB4  block 0 read   through $v1   <-- no materialisation of its own
+    80034FD8  block 1 read   through $a0
+    80034FFC  block 2 read   through $a0
+
+-- but only THREE `la` pairs (80034F98 -> $v1, 80034FC8 -> $a0, 80034FF0 ->
+$a0).  So the target's block-0 read is invalidated at ZERO instruction cost,
+sharing the mask's address register.  The three generators known to this ledger
+all cost something:
+
+  * address-value change (split spelling `&D_80106A70 + 3` vs `&D_80106A73`):
+    emits an extra `la` pair -- 51 insns, score 12 (s51, re-measured s53);
+  * same-value re-assignment in straight-line code: deleted by cse, invalidates
+    nothing -- 49 insns, score 10 (s52-redundant-q-assign-deleted-by-cse);
+  * cse's own non-recording escapes at cse.c:7327 (`sets[i].src_elt == 0`):
+    in_libcall_block, ZERO_EXTRACT/SIGN_EXTRACT SET_DEST, volatile source --
+    all three measured shut on this target by s52 (no insv on GCC 2.7.2 MIPS,
+    so a bit-field declaration produces SImode word arithmetic and zero
+    `zero_extract`; volatile fails both prongs of
+    legitimate-volatile-interrupt-touched and is stripped by the sandbox).
+
+Read directly this session: cse.c:7310-7340 gives the complete list of
+conditions under which a store's destination is NOT entered into the value
+table (flag_float_store on a float mode, in_libcall_block,
+`sets[i].src_elt == 0`, paradoxical-SUBREG dest with an extend source), and
+cse.c:7182 shows the one further path to `src_elt == 0` that s52 did not name:
+`rtx_equal_p (SET_SRC (sets[i].rtl), SET_DEST (sets[i].rtl))`, i.e. a literal
+self-store `*q = *q;`, which GCC removes as a no-op before it can help.
+`exp_equiv_p` (cse.c:2051) has NO MEM case: it compares mode and operands only,
+so MEM_IN_STRUCT_P and RTX_UNCHANGING_P cannot make two reads of the same
+address pseudo inequivalent.  That closes the "spell one side as a struct/array
+member" idea at the RTL level rather than by measurement.
+
+### Byte fact worth keeping: `&D_80106A70 + 3` is a BYTE-IDENTICAL spelling
+%hi(D_80106A70) == %hi(D_80106A73) == 0x8010 and %lo(D_80106A70) + 3 ==
+%lo(D_80106A73) == 0x6A73, so `lui $x,%hi(D_80106A70); addiu $x,$x,%lo(...)+3`
+links to the same two words as the target's `la` of D_80106A73.  The
+split-spelling penalty is entirely the EXTRA la, never its contents -- so a
+future form that needs two cse-distinct address values but only three
+materialisations is not blocked by the spelling, only by the count.
+
+### FINDING 3: the last unmeasured combination of s52's priority model is dead
+s52's frontier proposed pairing g1 (q re-used as the trailing loop's base
+pointer: pointer allocno refs 12, live length 28, priority 12857) with h1
+(block 1's condition hoisted into block 0: masked value length 9 -> 10,
+priority 13333 -> 12000), on the arithmetic that 12857 > 12000 flips the
+block-0 seat without any duplicated store in flag blocks 1 or 2 -- which is
+what wrecked every previously measured flip.  MEASURED: 49 insns, score 26, and
+the seat did NOT flip (block 0 is still `lui $a0 / addiu $a0 / lbu $a1,0($a0)`).
+h1 does not merely lengthen the masked value's live range: it restructures
+block 0 into `beqz ... / j ...` with the arms split across an unconditional
+jump, and it pushes `p` out of $a1 into $a2, so the allocno set global_alloc
+sorts is not the set the priority model assumed.  Banked as
+`rejected/s53-g1-plus-h1-no-seat-flip-49insn-score26.c`.
+
+### Session end state
+src/code6cac_b.c carries candidate.c for measurement only and is restored to
+HEAD (`INCLUDE_ASM("asm/funcs", func_80034F88);`) before the outcome is written.
+Artifacts: tmp/grind/func_80034F88/s53/.
+
+## s53 (synthesis, 2026-09-05) -- SECOND PASS: the residual is exactly TWO instructions, and the seat and the reload are separately controllable levers
+
+The first s53 pass (its findings are recorded above and in the candidate.c
+header) was discarded by the driver validator on an outcome-wording violation,
+not on its measurements; the ledger text, the candidate and the three
+`rejected/s53-*` forms it banked are intact and are NOT re-derived here.  This
+pass re-measured the chassis, then added four measurements that the ledger did
+not have.
+
+Chassis re-confirmed on HEAD 2026-09-05 with `memory/grind/func_80034F88/candidate.c`
+installed: `sandbox func_80034F88 --disable all` = **score 10, 49 target insns /
+49 build insns**.  src/code6cac_b.c is restored to
+`INCLUDE_ASM("asm/funcs", func_80034F88);` before this entry was written.
+
+### FINDING A (new, and it re-sizes the whole residual): the target's block-0 reload is INSTRUCTION-COUNT-FREE, and the split-spelling body's ONLY excess is the block-0 `la` pair
+Objdump of the plateau body (tmp/grind/func_80034F88/s53/build.txt, captured
+this session) against the target, insn for insn:
+
+    target 80034FB0  lw   $v0,0x20($a1)      build 4f60  lw   v0,32(a1)
+    target 80034FB4  lbu  $a0,0($v1)         build 4f64  nop        <-- HERE
+    target 80034FB8  andi $v0,$v0,1          build 4f68  andi v0,v0,0x1
+
+The plateau body emits a LOAD-DELAY NOP at exactly the site where the target
+emits its block-0 reload.  Both bodies are 49 insns.  So the reload does not
+cost an instruction on this chassis -- it consumes a slot the plateau body is
+already wasting.  Confirmed from the other side: the s51 split-spelling body
+(`tmp/grind/func_80034F88/s53/base_split.c`, re-measured this session at 51
+insns / score 12) has **no nop there** -- its reload fills the same slot --
+
+    build 4f60 lui a0 / 4f64 addiu a0   <-- the ONLY excess, 2 insns
+    build 4f68 lw v0,32(a1)
+    build 4f6c lbu v1,0(a0)             <-- the reload, in the delay slot
+
+and every other instruction of that body, including the whole of flag blocks 1
+and 2 (`lbu v1,0(a0)` / `ori v0,v1,K` / `move v0,v1` / `sb v0,0(a0)`), the
+trailing loop and the epilogue, matches the target register-for-register.  The
+residual of the closest-to-target admissible body is therefore EXACTLY ONE
+ADDRESS MATERIALISATION -- 2 instructions, `lui`+`addiu` -- and nothing else.
+This supersedes the vaguer "co-location law" framing of the first s53 pass with
+a number: the target performs FOUR non-forwarded flag-byte reads with THREE
+`la` pairs; every admissible body measured in 53 sessions needs one `la` per
+non-forwarded read.
+
+### FINDING B: an explicit block-0 read is codegen-INERT on the plateau chassis
+`v = *q;` inserted between the mask store and block 0's arms, with both arms
+consuming `v` instead of `m` (banked as
+`rejected/s53b-explicit-b0-read-INERT-49insn-score10.c`): **49 insns, score 10,
+build byte-identical to the plateau** -- no `move`, no extra live value, no seat
+change.  cse folds the read onto the masked pseudo and combine erases the
+`zero_extend(subreg:QI)` wrapper, exactly as s52 predicted.  So the plateau body
+and the explicit-read body are the same program to the back end; asking for the
+read costs nothing and buys nothing.
+
+### FINDING C: `do { <mask> } while (0);` costs exactly one nop on this chassis and does not produce the reload
+Wrapping the three mask statements in the sanctioned `do { ... } while (0);`
+form, arms unchanged (`rejected/s53b-dowhile0-mask-wrap-costs-one-nop-50insn-score12.c`):
+**50 insns, score 12**.  The one extra instruction is a load-delay nop at the
+mask's own `lbu` (build 4f58): the wrap displaces `move a1,v0` out of that slot,
+where the plateau body had scheduled it.  The block-0 read is still forwarded.
+This reproduces s30's "any wrap spanning the mask store costs one instruction"
+on the CURRENT (s49/s50 two-statement-mask) chassis, and it re-confirms s7's
+dump finding that cse2 -- which runs with `after_loop` non-zero and therefore
+ignores the `NOTE_INSN_LOOP_END` break at cse.c:8054 -- undoes the cse1 boundary
+the wrap creates.
+
+### FINDING D (the useful one): the block-0 SEAT and the surviving RELOAD are SEPARATELY controllable, and no measured body holds both
+The same wrap WITH the explicit block-0 read (`rejected/s53b-dowhile0-mask-plus-b0read-SEAT-v1-no-reload-51insn-score20.c`),
+51 insns / score 20, emits:
+
+    4f48 lui  v1 / 4f4c addiu v1        <-- pointer seated in $v1
+    4f54 lbu  v0,0(v1)
+    4f60 sb   v0,0(v1)
+    4f64 move a0,v0                     <-- the read, still FORWARDED
+    4f80 sb   v0,0(v1)                  <-- block 0's store through $v1
+
+i.e. the address pointer takes **hard 3 ($v1) -- the target's block-0 seat** --
+and block 0's store is `sb $v0,0($v1)` exactly as at target 80034FD0.  The read
+is nevertheless forwarded (materialised as `move $a0,$v0`, not an `lbu`).  The
+seat flip is caused by the wrap AND the read jointly: Finding B shows the read
+alone is inert, and Finding C shows the wrap alone leaves the pointer in $a0.
+
+So this ledger now has two independent levers with disjoint effects:
+
+    split spelling (s51)      -> the reload SURVIVES,  seat stays $a0, 51/12
+    wrap + explicit read      -> the seat becomes $v1, read forwarded, 51/20
+    plateau                   -> neither,                              49/10
+
+and no measured body holds both at once, let alone at 49 insns.  That is the
+sharpest statement of the residual this ledger has: it is no longer "one
+inequality in global.c allocno_compare" (s49-s52's framing) -- the $v1 seat is
+now reachable WITHOUT any duplicated store and without a priority lift, by a
+sanctioned construct.  What is missing is holding it together with the reload
+inside 49 instructions.
+
+### Session end state
+src/code6cac_b.c restored to HEAD.  Artifacts: tmp/grind/func_80034F88/s53/
+(build.txt disassemblies, base_split.c) and tmp/grind/func_80034F88/s53b/
+(the three probe bodies).
+
+- [s53] Chassis re-confirmed this session: candidate.c installed at src/code6cac_b.c:3420 gives sandbox --disable all = score 10, 49 target insns / 49 build insns. src restored to INCLUDE_ASM before the outcome was written.
+
+- [s53] The plateau body emits a load-delay nop (build 4f64) at exactly the site of the target's block-0 reload (80034FB4 lbu $a0,0($v1)); both bodies are 49 insns, so the reload is instruction-count-free on this chassis.
+
+- [s53] The s51 split-spelling body (51 insns, score 12, re-measured this session) differs from the target by exactly one lui/addiu pair: its reload occupies the same delay slot, and its flag blocks 1 and 2, trailing loop and epilogue match the target register-for-register.
+
+- [s53] The target performs FOUR non-forwarded flag-byte reads (80034FA0, 80034FB4, 80034FD8, 80034FFC) with THREE la pairs (80034F98 -> $v1, 80034FC8 -> $a0, 80034FF0 -> $a0); every admissible body measured in this ledger needs one la per non-forwarded read.
+
+- [s53] An explicit block-0 read is codegen-inert on the plateau chassis: 49 insns, score 10, build byte-identical (rejected/s53b-explicit-b0-read-INERT-49insn-score10.c).
+
+- [s53] do { <mask> } while (0); costs exactly one instruction (a load-delay nop at the mask's lbu, displacing `move a1,v0`) and does not defeat the forwarding, because cse2 runs with after_loop non-zero and the cse.c:8054 NOTE_INSN_LOOP_END break does not apply to it (50 insns, score 12).
+
+- [s53] The wrap plus an explicit block-0 read seats the address pointer on hard 3 ($v1) -- the target's block-0 seat, with sb $v0,0($v1) as at 80034FD0 -- with no duplicated store and no reg_n_refs priority lift (51 insns, score 20). This is the first seat flip in this ledger that does not require the duplicated-store lift s50/s52 measured.
+
+- [s53] cse.c read this session at 8008-8130: cse_end_of_basic_block scans to a CODE_LABEL unconditionally (8039), breaks at NOTE_INSN_LOOP_END only while !after_loop (8054), and extends across a conditional jump only when LABEL_NUSES (JUMP_LABEL) == 1 and a BARRIER precedes the target (8092-8114).
+
+- [s53] Target insn budget for the closest admissible bodies: split spelling 51 = 49 + 2 (block-0 la); wrap 50 = 49 + 1 (nop); wrap + read 51 = 49 + 1 (nop) + 1 (move). No measured body reaches 49 while carrying either the reload or the $v1 seat.

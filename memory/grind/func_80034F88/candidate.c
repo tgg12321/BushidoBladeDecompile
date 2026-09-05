@@ -1,3 +1,105 @@
+/* s53 SECOND PASS (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10,
+ * 49 insns, re-measured on HEAD this session: score 10, 49/49).  The first s53
+ * pass's note follows below; its measurements stand.  Four things are new:
+ *
+ * A. THE TARGET'S BLOCK-0 RELOAD COSTS ZERO INSTRUCTIONS.  This body emits a
+ *    LOAD-DELAY NOP at exactly the site where the target emits its block-0
+ *    reload (build 4f64 nop <-> target 80034FB4 `lbu $a0,0($v1)`), between the
+ *    `lw $v0,0x20($a1)` and the `andi`.  The s51 split-spelling body has no nop
+ *    there -- its reload fills the same slot -- so that body's ENTIRE 2-insn
+ *    excess (51 vs 49) is the block-0 `lui/addiu` pair, and every other
+ *    instruction it emits, flag blocks 1 and 2 and the trailing loop included,
+ *    matches the target register-for-register.  The residual is therefore
+ *    exactly ONE ADDRESS MATERIALISATION, not a seat race and not a reload.
+ *
+ * B. AN EXPLICIT BLOCK-0 READ IS INERT HERE.  `v = *q;` with both arms
+ *    consuming `v` builds byte-identically to this body (49/10): cse folds it
+ *    onto the masked pseudo and combine erases the zero_extend.
+ *
+ * C. `do { <mask> } while (0);` COSTS ONE NOP AND DOES NOT PRODUCE THE RELOAD
+ *    on this chassis (50/12): the wrap displaces `move a1,v0` out of the mask
+ *    lbu's delay slot, and cse2 (after_loop non-zero, so the cse.c:8054
+ *    NOTE_INSN_LOOP_END break does not apply) re-forwards the read.
+ *
+ * D. THE SEAT AND THE RELOAD ARE SEPARATELY CONTROLLABLE.  The wrap PLUS the
+ *    explicit read seats the address pointer on hard 3 ($v1) -- the target's
+ *    block-0 seat, with block 0's store emitted as `sb $v0,0($v1)` exactly as
+ *    at target 80034FD0 -- with NO duplicated store and NO reg_n_refs priority
+ *    lift, at 51/20, and the read still forwarded.  Three measured points:
+ *        split spelling   51/12   reload survives, seat $a0
+ *        wrap + read      51/20   seat $v1,        read forwarded
+ *        this body        49/10   neither
+ *    The open question is a body holding both inside 49 instructions.
+ */
+/* s53 (synthesis, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns,
+ * re-measured on HEAD this session: score 10, 49/49).  s53 is a merge pass; it
+ * names the ACTUAL mechanism behind flag blocks 1 and 2's surviving re-reads,
+ * which every session from s46 onward has mis-attributed, and it converts the
+ * block-0 residual into a single sharply-stated impossibility-shaped gap.
+ *
+ * 1. THE RE-READ MECHANISM IS REG-INVALIDATION, NOT THE JOIN LABEL AND NOT THE
+ *    ADDRESS SPELLING.  Blocks 1 and 2 each re-read the flag byte in this body
+ *    (`lbu` survives) while block 0 does not.  s46-s52 attributed that to cse
+ *    store-forwarding being broken by the control-flow join.  It is not.  The
+ *    surviving reads exist because each of those blocks re-executes
+ *    `q = &D_80106A73;`, and a SET of reg q makes cse invalidate every table
+ *    entry containing reg q -- including the `(mem:QI (reg q))` value the mask
+ *    store recorded.  PROOF (this session): take s51's split-spelling body and
+ *    DELETE block 1's `q = &D_80106A73;` while leaving the join label and every
+ *    other statement in place.  Block 1's `lbu` disappears and is replaced by a
+ *    load-delay nop (build 4f88), exactly the way block 0's does in this body.
+ *    Banked as rejected/s53-splitspell-drop-b1-reassign-b1-read-FORWARDED-
+ *    49insn-score14.c (49 insns, score 14 -- the first 49-insn body in this
+ *    ledger that carries a genuine non-forwarded flag-byte re-read).
+ *
+ * 2. THE CONSEQUENCE IS A CO-LOCATION LAW, AND IT IS EXACTLY WHAT THE TARGET
+ *    VIOLATES.  Under mechanism (1) the invalidation and the address
+ *    materialisation are the SAME statement, so on every form measured in 53
+ *    sessions a surviving re-read at site S is accompanied by an `la` pair
+ *    (lui/addiu) at site S.  The target has FOUR non-forwarded `lbu`s of
+ *    D_80106A73 (80034FA0 mask, 80034FB4 block 0, 80034FD8 block 1, 80034FFC
+ *    block 2) but only THREE `la` pairs (80034F98 -> $v1, 80034FC8 -> $a0,
+ *    80034FF0 -> $a0): its block-0 re-read at 80034FB4 has no materialisation
+ *    of its own and shares $v1 with the mask.  So the target needs an
+ *    invalidation of the mask's recorded memory value that costs ZERO
+ *    instructions, and no such generator has been found: an address-value
+ *    change costs an la (s51 split-spelling, 51 insns/12, re-measured this
+ *    session and byte-for-byte unchanged), a same-value re-assignment is
+ *    deleted by cse and invalidates nothing (s52, 49/10), and cse's own
+ *    src_elt==0 escapes (cse.c:7327) are libcall block / ZERO_EXTRACT dest /
+ *    volatile source, all three measured shut on this target by s52.
+ *
+ *    Note the la's assemble identically either way: %hi(D_80106A70) ==
+ *    %hi(D_80106A73) == 0x8010 and %lo(D_80106A70)+3 == %lo(D_80106A73) ==
+ *    0x6A73, so `&D_80106A70 + 3` is a BYTE-IDENTICAL spelling of
+ *    `&D_80106A73`.  The split-spelling cost is purely the extra la, never the
+ *    la's contents.
+ *
+ * 3. THE PRIORITY MODEL'S LAST UNMEASURED COMBINATION IS DEAD.  s52's frontier
+ *    proposed pairing g1 (q re-used as the trailing loop's base: pointer refs
+ *    12, len 28, pri 12857) with h1 (block 1's condition hoisted into block 0:
+ *    masked value len 9 -> 10, pri 13333 -> 12000), on the arithmetic that
+ *    12857 > 12000 flips the seat with no duplicated store in blocks 1/2.
+ *    Measured: 49 insns, score 26, NO flip.  h1 does not simply lengthen the
+ *    masked value -- it restructures block 0's branch into `beqz/j` with the
+ *    two arms split across a jump, and it pushes `p` out of $a1 into $a2, so
+ *    the allocno set global_alloc sorts is not the set the model assumed.
+ *    Banked as rejected/s53-g1-plus-h1-no-seat-flip-49insn-score26.c.
+ *
+ * 4. WHAT A FUTURE SESSION SHOULD ATTACK.  The residual is now ONE question:
+ *    what ordinary-C statement, between `*q = m;` and flag block 0's read of
+ *    the same byte, invalidates cse's recorded `(mem:QI (reg q))` without
+ *    emitting an instruction?  Everything that invalidates reg q emits an la;
+ *    everything that invalidates memory emits a store.  The two untried
+ *    surfaces are (a) invalidation of the MEM entry by an aliasing write that
+ *    the target already contains -- there is none between 80034FAC and
+ *    80034FB4 -- and (b) a DECLARATION-level change that makes the mask store
+ *    and the block-0 read two different rtx while sharing one address pseudo,
+ *    which exp_equiv_p (cse.c:2051) forbids because it compares only operands
+ *    and MEM_IN_STRUCT_P / RTX_UNCHANGING_P are flags, not operands.  If both
+ *    are confirmed shut, the honest disposition of this function is a LADDER
+ *    EXHAUSTED foreclosure record at floor 10, not another spelling pass.
+ */
 /* s52 (structural, 2026-09-05) -- BODY UNCHANGED (honest floor 10, 49 insns,
  * re-measured on HEAD this session).  s52 closes the block-1 reload question
  * that s50 and s51 left open, and it closes it against us.
