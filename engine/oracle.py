@@ -113,7 +113,8 @@ def dirty_build_inputs() -> list[str]:
     """
     out = _git(["status", "--porcelain", "--untracked-files=no"])
     watch_prefixes = ("src/", "include/")
-    watch_files = set(CONFIG_FILES) | {"Makefile", "maspsx_label_nop_funcs.txt"}
+    watch_files = set(CONFIG_FILES) | {"Makefile", "maspsx_label_nop_funcs.txt",
+                                       "maspsx_prefill_label_funcs.txt"}
     dirty = []
     for line in out.splitlines():
         path = line[3:].strip().strip('"')

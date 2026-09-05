@@ -54,7 +54,8 @@ MASPSX_FLAGS = (
     "--sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb "
     "--expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt "
     "--expand-dest-funcs=expand_dest_funcs.txt "
-    "--label-nop-funcs=maspsx_label_nop_funcs.txt"
+    "--label-nop-funcs=maspsx_label_nop_funcs.txt "
+    "--prefill-label-funcs=maspsx_prefill_label_funcs.txt"
 )
 # MUST mirror Makefile MASPSX_FLAGS_GP verbatim (the 2026-08-05 text1a landing
 # brought it to full parity with MASPSX_FLAGS — 7 options — and dropped the
@@ -66,7 +67,8 @@ MASPSX_FLAGS_GP = (
     "--sdata-funcs=sdata_funcs.txt --sdata-exclude=sdata_exclude.txt --expand-lb "
     "--expand-lb-funcs=expand_lb_funcs.txt --multu-funcs=multu_funcs.txt "
     "--expand-dest-funcs=expand_dest_funcs.txt "
-    "--label-nop-funcs=maspsx_label_nop_funcs.txt"
+    "--label-nop-funcs=maspsx_label_nop_funcs.txt "
+    "--prefill-label-funcs=maspsx_prefill_label_funcs.txt"
 )
 
 # -- Per-file opt-ins (C file stem, no path/extension) ----------------------

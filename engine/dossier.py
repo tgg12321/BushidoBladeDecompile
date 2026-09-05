@@ -93,8 +93,9 @@ def _canonical_listed(names: list[str]) -> bool:
 
 def _memberships(names: list[str]) -> list[str]:
     out = []
-    for f in ("maspsx_label_nop_funcs.txt", "expand_lb_funcs.txt",
-              "expand_dest_funcs.txt", "multu_funcs.txt", "multu_pad_funcs.txt"):
+    for f in ("maspsx_label_nop_funcs.txt", "maspsx_prefill_label_funcs.txt",
+              "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt",
+              "multu_pad_funcs.txt"):
         t = _read(f)
         if any(re.search(r"^" + re.escape(n) + r"\s*$", t, re.M) for n in names):
             out.append(f)

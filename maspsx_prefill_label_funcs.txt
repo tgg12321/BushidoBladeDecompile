@@ -1,0 +1,18 @@
+# maspsx per-function prefill-label gate — FIDELITY class (owner ruling 2026-09-04,
+# docs/grind/decisions.md "OWNER RULING — main: the per-function maspsx prefill-label
+# gate is a FIDELITY gate"; .claude/rules/maspsx-gate-lists.md).
+#
+# ASPSX "retarget iff filled": the original assembler filled a branch's delay slot
+# with the instruction at its target label and pointed THAT branch one word past it;
+# a branch it could not fill kept pointing at the label. Our cc1's reorg does the
+# filling itself and, having proven the instruction redundant on the unfilled paths,
+# deletes the pre-instruction label and retargets the unfilled branches too. For the
+# functions below, maspsx re-emits the label before that instruction and points the
+# unfilled branches at it. One name per line; `#` comments. Net additions require the
+# commit tag [infra-rule: maspsx-prefill-label] plus target-site evidence. Never
+# globalize (36 target sites in 33 matched functions legitimately sit past the
+# instruction).
+#
+# main — asm/funcs/main.s: bne @0x80017494 and bnez @0x800174B4 target .L80017278
+#        (the loop-head `addiu a1,0x1008`), every filled branch targets .L8001727C.
+main

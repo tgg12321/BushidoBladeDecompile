@@ -257,6 +257,118 @@ def is_label(line: str):
     return re.match(r"\$L(b|e)?\d+:$", line)
 
 
+# ── Per-function prefill-label gate (owner ruling 2026-09-04, `main`) ────────
+# ASPSX parity, "retarget iff filled": the original assembler filled a branch's
+# delay slot with the instruction at its target label and pointed THAT branch
+# one word past it; a branch it could not fill kept pointing at the label and
+# so still executed the instruction. Our cc1 does its own delay-slot filling
+# (reorg) and, having proven the instruction redundant on the unfilled paths
+# (reorg.c fill_slots_from_thread / redundant_insn), deletes the label in
+# front of it and retargets the UNFILLED branches too. Same program, two branch
+# words apart; no C spelling can move an assembler label. For opted-in
+# functions only (maspsx_prefill_label_funcs.txt — the per-function gates are
+# the established mechanism, .claude/rules/maspsx-gate-lists.md): an unfilled
+# reorder-mode branch to L whose immediately preceding instruction P is
+# verbatim the delay-slot fill of a `.set noreorder` branch to L is retargeted
+# to a fresh `L_pf` label emitted before P. Filled branches, their slots and
+# every other line are untouched; the new label emits no bytes. NEVER
+# globalize: a target-asm census found 36 sites in 33 matched functions that
+# legitimately sit on the post-P label.
+_PF_BRANCH_RE = re.compile(r"^(b|beq|bne|beqz|bnez|blez|bgtz|bltz|bgez|bltzal|bgezal|j)\t(.*)$")
+_PF_LABEL_RE = re.compile(r"^(\.L\d+):$")
+
+
+def _pf_strip(line: str) -> str:
+    return line.split("#", 1)[0].strip()
+
+
+def _pf_branch_target(line: str):
+    m = _PF_BRANCH_RE.match(_pf_strip(line))
+    if not m:
+        return None
+    t = m.group(2).split(",")[-1].strip()
+    return t if _PF_LABEL_RE.match(t + ":") else None
+
+
+def _pf_is_code(line: str) -> bool:
+    s = _pf_strip(line)
+    return bool(s) and not s.startswith(".") and not s.endswith(":")
+
+
+def apply_prefill_label_gate(lines, func_set, tag="_pf"):
+    """Return (new_lines, retargeted_count). `lines` are the stripped asm lines
+    exactly as MaspsxProcessor holds them. Inert (returns a copy, 0) when
+    `func_set` is empty or names no function in the input."""
+    lines = list(lines)
+    if not func_set:
+        return lines, 0
+    func = None
+    reorder = True
+    labels = {}            # label -> line index
+    filled = {}            # label -> {delay-slot insn text of filled branches}
+    unfilled = []          # (line index, label) of reorder-mode branches
+    for i, line in enumerate(lines):
+        if line.startswith(".ent\t"):
+            func = line.split("\t")[1].strip()
+            reorder = True
+            continue
+        if line.startswith(".end\t"):
+            func = None
+            continue
+        if line == ".set\tnoreorder":
+            reorder = False
+            continue
+        if line == ".set\treorder":
+            reorder = True
+            continue
+        if func not in func_set:
+            continue
+        m = _PF_LABEL_RE.match(line)
+        if m:
+            labels[m.group(1)] = i
+            continue
+        t = _pf_branch_target(line)
+        if t is None:
+            continue
+        if reorder:
+            unfilled.append((i, t))
+        else:
+            j = i + 1
+            while j < len(lines) and not _pf_is_code(lines[j]):
+                j += 1
+            if j < len(lines):
+                filled.setdefault(t, set()).add(_pf_strip(lines[j]))
+    inserts = {}           # index of P -> new label line
+    retarget = {}          # branch line index -> (old label, new label)
+    for label, idx in labels.items():
+        p = idx - 1
+        while p >= 0 and not _pf_strip(lines[p]):
+            p -= 1
+        if p < 0 or not _pf_is_code(lines[p]):
+            continue
+        if _pf_strip(lines[p]) not in filled.get(label, ()):
+            continue
+        victims = [i for (i, t) in unfilled if t == label]
+        if not victims:
+            continue
+        new = label + tag
+        inserts[p] = new + ":"
+        for i in victims:
+            retarget[i] = (label, new)
+    out = []
+    for i, line in enumerate(lines):
+        if i in inserts:
+            out.append(inserts[i])
+        if i in retarget:
+            old, new = retarget[i]
+            head, sep, comment = line.partition("#")
+            head = re.sub(r"(,|\t)" + re.escape(old) + r"\s*$",
+                          lambda m: m.group(1) + new, head)
+            line = head + (sep + comment if sep else "")
+        out.append(line)
+    return out, len(retarget)
+
+
 def is_instruction(line: str, ignore_nop=False, ignore_set=False, ignore_label=False):
     if len(line) == 0:
         return False
@@ -402,6 +514,7 @@ class MaspsxProcessor:
         multu_func_list=None,
         expand_dest_func_list=None,
         label_nop_func_list=None,
+        prefill_label_func_list=None,
         sdata_sym_list=None,
         sdata_func_list=None,
         sdata_exclude_map=None,
@@ -425,6 +538,9 @@ class MaspsxProcessor:
         # index-anchored regfix/asmfix rules (the saTan4FireDisp cascade). The jalr-
         # consumer case below is always-on (it doesn't cascade).
         self.label_nop_func_set = set(label_nop_func_list) if label_nop_func_list else set()
+        # Functions that opt in to the ASPSX "retarget iff filled" prefill-label
+        # gate (apply_prefill_label_gate above; owner ruling 2026-09-04, `main`).
+        self.prefill_label_func_set = set(prefill_label_func_list) if prefill_label_func_list else set()
 
         self.nop_at_expansion = nop_at_expansion
         self.nop_mflo_mfhi = nop_mflo_mfhi
@@ -565,6 +681,12 @@ class MaspsxProcessor:
         self.sdata_entries = {}
 
         self.preprocess_lines()
+
+        # Prefill-label gate (per-function, keyed on `.ent`; inert otherwise).
+        # Runs on the raw lines BEFORE any expansion so it sees cc1's branch
+        # and label text exactly as emitted.
+        if self.prefill_label_func_set:
+            self.lines, _ = apply_prefill_label_gate(self.lines, self.prefill_label_func_set)
 
         # Inject external .sdata symbols (for GP-relative addressing of externs)
         for sym in self.sdata_sym_list:

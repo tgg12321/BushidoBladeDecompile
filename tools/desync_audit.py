@@ -87,6 +87,7 @@ KEYED = {
     "regfix_stage2.txt": r"^\s*([A-Za-z_]\w*)\s*:",
     "inline_asm_canonical.txt": r"^\s*([A-Za-z_]\w*)\b",
     "maspsx_label_nop_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
+    "maspsx_prefill_label_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
     "expand_lb_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
     "expand_dest_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",
     "multu_funcs.txt": r"^\s*([A-Za-z_]\w*)\s*$",

@@ -33,6 +33,12 @@ def main() -> None:
                              "load-delay nop for the LOAD-CONSUMER case (load -> .L-label -> "
                              "load-from-same-reg). Per-function-scoped: enabling it globally "
                              "shifts maspsx indices and breaks other functions' index-anchored rules.")
+    parser.add_argument("--prefill-label-funcs", type=str, default=None,
+                        help="Path to file listing functions that opt in to the ASPSX "
+                             "'retarget iff filled' prefill-label gate: an unfilled reorder-mode "
+                             "branch to a label whose preceding instruction is verbatim a filled "
+                             "branch's delay slot is retargeted to a fresh label before that "
+                             "instruction (owner ruling 2026-09-04). Per-function-scoped; never global.")
     parser.add_argument("--macro-inc", action="store_true")
     parser.add_argument("--dont-expand-li", action="store_true")
     parser.add_argument("--force-stdin", action="store_true")
@@ -194,6 +200,12 @@ def main() -> None:
         with open(args.label_nop_funcs, "r", encoding="utf") as f:
             label_nop_func_list = [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
+    prefill_label_func_list = []
+    if args.prefill_label_funcs:
+        with open(args.prefill_label_funcs, "r", encoding="utf") as f:
+            prefill_label_func_list = [line.strip().split()[0] for line in f
+                                       if line.strip() and not line.startswith("#")]
+
     maspsx_processor = MaspsxProcessor(
         in_lines,
         sdata_limit=sdata_limit,
@@ -215,6 +227,7 @@ def main() -> None:
         multu_func_list=multu_func_list,
         expand_dest_func_list=expand_dest_func_list,
         label_nop_func_list=label_nop_func_list,
+        prefill_label_func_list=prefill_label_func_list,
         sdata_sym_list=sdata_sym_list,
         sdata_func_list=sdata_func_list,
         sdata_exclude_map=sdata_exclude_map,
