@@ -167,9 +167,9 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-08-19T12:58:09.910403+00:00",
- "exhaustion_base": 13,
- "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.403898+00:00",
+ "exhaustion_base": 22,
+ "last_unpark_reason": "owner ruling 2026-09-04 (decisions.md foreclosed-bucket re-evaluation, Ruling A): window RESET; probes: dispatch call spelled `()` per func_80060B70 (src/text1b.c:3174) + callee prototype (:4042), measured on E2/T1/Q2/M2 with QTYDBG re-read; sibling inventory diff vs func_80060B70. All 5 bans + judge_constraints stand.",
+ "last_unpark_at": "2026-09-05T03:33:19.085184+00:00",
  "kills": [
   {
    "session": 14,
@@ -499,5 +499,6 @@
    "predicate_cite": "",
    "result": "The split never materialises as two separable instructions. P1 and P3 are byte-IDENTICAL to the A0/E2 control (empty dif"
   }
- ]
+ ],
+ "escalation_deferrals": 0
 }
