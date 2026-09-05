@@ -3027,3 +3027,110 @@ tmp/grind/CD_sync/s122/perturb_p1_goal.txt.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: V2 order-exact chassis, sched model tmp/sched_solver_work/system.sched.json (parity=True, CD_sync 52/52 blocks order- and clock-exact), chain-extender FAKE present, pp absent; control 6/160 bi 160 rd 0
+
+## s123 (structural, 2026-09-04)
+
+### H123-1 KILLED (class) — the "pass-2-only perturbation atom" frontier is empty by construction
+Statement: the s121/s122 frontier item 1 held that on the folded candidate chassis
+there exist perturbation atoms which reach the sched2 (final-order) goal without
+perturbing the sched1 stream that local-alloc consumes, so the block-3
+transposition could be fixed while keeping the correct register seats.  Applying
+each pass-2-reaching atom to the pass-1 block and comparing outputs appears to
+find six such atoms (`luid swap 120<->125`, `luid swap 127<->130`,
+`luid swap 130<->153`, `luid_move 120 before 125`, `luid_move 130 before 127`,
+`luid_move 130 before 153`), but every one of them is an artifact of comparing
+two DIFFERENT luid spaces, and the class it names is empty.
+Mechanism: `sched_analyze` re-assigns `INSN_LUID` by walking the current insn
+chain at the start of EVERY scheduling pass
+(tools/gcc-2.7.2/sched.c:2198, `INSN_LUID (insn) = luid++;`).  Pass 1's luids
+therefore index the post-combine chain and pass 2's luids index the POST-SCHED1
+chain.  Reload does not reorder (verified: the .lreg and .greg chains are
+identical to the .sched chain), so every scheduler input in pass 2 — order,
+luids, and the dependence graph — is a function of sched1's output plus the
+register assignment.  A perturbation that leaves sched1's output unchanged
+therefore leaves pass 2's entire input unchanged, and its output with it.  A
+"pass-2-only" atom cannot exist; the six apparent ones are pass-2 luid renumbers
+with no pass-1 preimage.
+Probe: tmp/grind/CD_sync/s123/diff_atoms.py (enumerate_atoms on the pass-2
+block 3, keep the 39 that reach the goalmap-derived target order, re-apply each
+to the pass-1 block, compare); then the pass-by-pass chain dump
+(tmp/grind/CD_sync/s123/chainorder — .rtl/.jump/.cse/.loop/.cse2/.flow/.combine/
+.sched/.lreg/.greg), which shows the post-combine chain is
+104,106,112,116,120,125,127,130,132,140,145,149,151,153,155,157 (= the C source
+order) while the model's pass-2 luid order is
+104,106,112,116,153,127,120,130,132,140,125,149,145,155,157,151 (= sched1's
+OUTPUT).  Two different spaces; the atom names a chain position, not a statement.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/sched.c:2198
+- measured_on: folded candidate chassis (memory/grind/CD_sync/candidate.c),
+  chain-extender FAKE present, pp absent; control 2/160 bi 160 rd 0; sched model
+  tmp/sched_solver_work/system.sched.json re-extracted this session, parity=True
+
+### H123-2 CONFIRMED — every C form that reaches block 3's target emission order lands on ONE post-sched1 stream, and that stream carries V2's wrong seats
+Statement: block-3 order and block-3 seats are not two independent dials on this
+chassis.  All 31 pass-1 atoms that reach the target's block-3 order produce the
+SAME output stream, so local-alloc — whose input is exactly that stream — makes
+the same decision for all of them; the target order therefore always comes with
+the V2 seat assignment (score 6/160, an RA-only divergence of six instructions).
+Mechanism: local-alloc numbers births and deaths as 2*emission_position+4 over
+the post-sched1 chain (H122-1), so two forms with identical post-sched1 chains
+have identical quantity tables by construction; the C-level differences between
+them have already been consumed by the scheduler.
+Probe: five structurally distinct spellings of the block, all measured with
+`sandbox CD_sync --disable all` on the candidate chassis (control 2/160):
+S3 (arg5 address split into `ix`, `t0 *= 4` placed between the ix addu and the
+arg5 load), S5 (address split, both t0 insns between), S7 (address split, t0 pair
+last), S9 (t0 scale between the ix shift and the ix addu) — 6, 6, 6, 6 — and
+S4 (same as S3 with a dedicated `s32 ad` local) — 7.  S3 is an address SPLIT,
+not the group MOVE that produced V2, and `inverse_compose.py classify` on S3
+prints the identical verdict and the identical six pairs as s121 recorded for
+V2: FIRST DIVERGENCE RA, ours addu v1,v1,s3 / lbu v1,0(s2) / lw a0,0(v0) /
+lw a3,0(v1) / sll v1,v1,0x2 / sw a0,16(sp) against target addu a0,a0,s3 /
+lbu a0,0(s2) / lw a3,0(a0) / lw v1,0(v0) / sll a0,a0,0x2 / sw v1,16(sp).
+Two other spellings that do NOT reach the target order (S1, the t0 scale folded
+into the t0 add as one statement; S6, the same with the ix shift hoisted) score
+3/160 — a third residual class, neither 2 nor 6.
+- verdict: CONFIRMED
+
+### H123-3 KILLED (instance) — mandated kill re-audit: s122's Q3 pointer-local lever on the CURRENT chassis
+Statement: s122's Q3 (a dedicated `s32 *ap` pointer local carrying the arg5
+address), measured inert at 6 == 6 on the V2 order-exact chassis, moves the score
+when transplanted onto the folded candidate chassis, where the contended
+quantities sit at different emission positions.
+Probe: S8_q3_ap_pointer_on_candidate.c — the candidate block with
+`ap = (s32 *)(ix + (s32)tbl_125c); arg5 = *ap;` replacing the folded read —
+measured with `sandbox CD_sync --disable all`; plus
+`tools/fake_ablate.py --func CD_sync --file system --candidate
+memory/grind/CD_sync/candidate.c` for the FAKE-state half of the re-audit.
+Result: S8 = 2/160 bi 160 rd 0, exactly the control, so the pointer local is
+inert on this chassis too.  fake_ablate: keep-all 2/160 bi 160, drop-1 15/159 —
+the chain-extender FAKE is still load-bearing and the 2 is not a carrier
+artifact, so both this session's control and the S-form deltas stand on their own.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: folded candidate chassis (memory/grind/CD_sync/candidate.c),
+  chain-extender FAKE present, pp pointer alias absent; control 2/160 bi 160 rd 0
+
+## [s123] On the folded candidate chassis there exist perturbation atoms that reach the sched2 (final-order) goal without perturbing the sched1 stream local-alloc consumes, so the block-3 transposition can be fixed while the correct register seats are kept.
+- mechanism: sched_analyze re-assigns INSN_LUID by walking the current insn chain at the start of every scheduling pass, so pass-1 luids index the post-combine chain and pass-2 luids index the post-sched1 chain; reload does not reorder this block (.lreg/.greg chains identical to the .sched chain), so sched2's entire input - order, luids and dependence graph - is a function of sched1's output plus the register assignment, and a perturbation leaving sched1's output unchanged leaves sched2's output unchanged.
+- probe: tmp/grind/CD_sync/s123/diff_atoms.py: enumerate_atoms on CD_sync pass-2 block 3 of a freshly extracted model (parity=True), keep the 39 atoms reaching the goalmap-derived target order (build/src/system.o vs tmp/sandbox/CD_sync/system.o), re-apply each to the pass-1 block and compare outputs; then dump the insn chain after every pass (tmp/grind/CD_sync/s123/chainorder + chainorder.py) and compare the post-combine chain with the model's pass-2 luid order.
+- result: The differential appears to find six qualifying atoms (luid swap 120<->125, 127<->130, 130<->153; luid_move 120 before 125, 130 before 127, 130 before 153) but all six are artifacts of comparing two different luid spaces. The post-combine chain is 104,106,112,116,120,125,127,130,132,140,145,149,151,153,155,157 - exactly the C statement order - while the model's pass-2 luid order is 104,106,112,116,153,127,120,130,132,140,125,149,145,155,157,151 - exactly sched1's output. A pass-2 luid atom names a chain position reload hands to sched2, not a C statement, and has no pass-1 preimage. This withdraws the frontier item s121 and s122 both carried.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: folded candidate chassis (memory/grind/CD_sync/candidate.c), chain-extender FAKE present, pp pointer alias absent; control re-measured live at 2/160 bi 160 rd 0; sched model tmp/sched_solver_work/system.sched.json re-extracted this session, parity=True
+- predicate_cite: tools/gcc-2.7.2/sched.c:2198
+
+## [s123] Every C form that reaches block 3's target emission order lands on one and the same post-sched1 stream, so local-alloc - whose input is exactly that stream - makes the same decision for all of them and the target order always arrives with the V2 seat assignment.
+- mechanism: local-alloc numbers quantity births and deaths as 2*emission_position+4 over the post-sched1 chain (H122-1), so two forms with identical post-sched1 chains have identical quantity tables by construction; the C-level differences between them have already been consumed by the scheduler, and all 31 pass-1 atoms reaching the target order produce the identical output stream.
+- probe: Five structurally distinct spellings of the do_timeout block measured with `sandbox CD_sync --disable all` on the candidate chassis (control 2/160): S3 (arg5 address split into ix, `t0 *= 4` placed between the ix addu and the arg5 load), S5 (address split, both t0 insns between), S7 (address split, t0 pair after the load), S9 (t0 scale between the ix shift and the ix addu), S4 (S3 plus a dedicated `s32 ad` local); then tools/ra_solver/inverse_compose.py classify on S3.
+- result: S3 6, S5 6, S7 6, S9 6, S4 7 - all bi 160 rd 0. S3 is an address SPLIT, structurally unlike V2's group move, yet classify prints the identical verdict and the identical six pairs s121 recorded for V2: FIRST DIVERGENCE RA, ours addu v1,v1,s3 / lbu v1,0(s2) / lw a0,0(v0) / lw a3,0(v1) / sll v1,v1,0x2 / sw a0,16(sp) against target addu a0,a0,s3 / lbu a0,0(s2) / lw a3,0(a0) / lw v1,0(v0) / sll a0,a0,0x2 / sw v1,16(sp). Order and seats are one dial, not two. Two forms that do NOT reach the target order (S1, the t0 scale folded into the t0 add as one statement; S6, the same with the ix shift hoisted) score 3/160 - a third residual level not previously seen.
+- verdict: CONFIRMED
+
+## [s123] s122's Q3 lever - a dedicated `s32 *ap` pointer local carrying the arg5 address, measured inert at 6 == 6 on the V2 order-exact chassis - moves the score when transplanted onto the folded candidate chassis, where the contended quantities sit at different emission positions.
+- mechanism: The mandated kill re-audit: an instance kill is only as good as the chassis and FAKE state it was measured under, so the closest-to-target banked kill is re-run on the current chassis and with every FAKE construct ablated.
+- probe: tmp/grind/CD_sync/s123/forms/S8_q3_ap_pointer_on_candidate.c (the candidate block with `ap = (s32 *)(ix + (s32)tbl_125c); arg5 = *ap;` replacing the folded read) measured with `sandbox CD_sync --disable all`; plus `python3 tools/fake_ablate.py --func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c`.
+- result: S8 = 2/160 bi 160 rd 0, exactly the control - the pointer local is inert on this chassis too, so the s122 kill survives the re-audit. fake_ablate: keep-all 2/160 bi 160, drop-1 15/159, so the combine-foldable chain-extender FAKE is still load-bearing and none of this session's numbers are a carrier artifact.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: folded candidate chassis (memory/grind/CD_sync/candidate.c), chain-extender FAKE present, pp pointer alias absent; control 2/160 bi 160 rd 0

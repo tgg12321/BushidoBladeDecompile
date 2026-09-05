@@ -3389,3 +3389,90 @@ question on the split chassis (V1), not an allocator question.
 - [s122] Full-TU vs mini-TU QTYDBG tables for CD_sync are identical, so the s118 mini harness every session since has relied on is faithful for this function.
 
 - [s122] HARNESS: tmp/grind/CD_sync/s117/run.ps1 -forms <array> processes only the FIRST element when invoked from the agent's Windows shell; drive it one form per invocation from a bash for-loop. qd.sh/qfull.sh must run inside WSL via tools/wsl.sh.
+
+## s123 (structural, 2026-09-04) — floor 2/160, unchanged
+
+- [s123] CONTROL re-measured live: `memory/grind/CD_sync/candidate.c` applied to
+  src/system.c scores **2/160, build_insns 160, rules_dropped 0**.  The dispatch
+  brief reported "measurement unavailable"; the ledger's floor of 2 is correct
+  and the chassis has NOT changed since s122.
+- [s123] **The frontier item the last three sessions were pointing at does not
+  exist.**  s121 recorded "36 atoms reach the pass-2 goal, 31 reach the pass-1
+  goal, intersection 26, so ~10 atoms fix the FINAL order without perturbing the
+  pass-1 stream local-alloc consumes".  That subtraction compares two different
+  luid spaces.  `sched_analyze` re-numbers `INSN_LUID` by walking the *current*
+  insn chain at the start of every scheduling pass
+  (tools/gcc-2.7.2/sched.c:2198), so pass-1 luids index the post-combine chain
+  and pass-2 luids index the post-sched1 chain.  Measured on this chassis:
+  post-combine chain (= sched1 input) is
+  `104,106,112,116,120,125,127,130,132,140,145,149,151,153,155,157`, which is
+  exactly the C statement order, while the model's pass-2 luid order is
+  `104,106,112,116,153,127,120,130,132,140,125,149,145,155,157,151`, which is
+  exactly sched1's OUTPUT.  A pass-2 "luid atom" is therefore a statement about
+  a chain position reload hands to sched2, not about a C statement.
+- [s123] Reload does not reorder this block: the `.lreg` and `.greg` chains are
+  identical to the `.sched` chain (artifact tmp/grind/CD_sync/s123/chainorder,
+  regenerable with s123/chainorder.py).  Consequence, and this is the load-bearing
+  structural fact of the session: **sched2's entire input — order, luids and the
+  dependence graph — is a function of sched1's output plus the register
+  assignment.**  Any perturbation that leaves sched1's output unchanged leaves
+  sched2's output unchanged.  The class "atom that fixes the final order while
+  leaving the pass-1 stream intact" is empty by construction, not merely unfound.
+- [s123] The dual of that fact closes the other direction too.  All 31 pass-1
+  atoms that reach block 3's target order produce the SAME output stream, and
+  local-alloc's input is exactly that stream (its births/deaths are
+  2*emission_position+4, H122-1).  So every C form that reaches the target order
+  gets the same quantity table and the same seats — the V2 seats, which are
+  wrong.  Measured: five structurally distinct spellings on the candidate chassis
+  (control 2/160), none of them V2's group-move:
+    S3 arg5 address split into `ix`, `t0 *= 4` between the ix addu and the load — 6/160
+    S5 address split, both t0 insns between                                      — 6/160
+    S7 address split, t0 pair after the load                                     — 6/160
+    S9 t0 scale between the ix shift and the ix addu                             — 6/160
+    S4 as S3 but with a dedicated `s32 ad` local                                 — 7/160
+  and `inverse_compose.py classify` on S3 prints the SAME verdict and the SAME
+  six register pairs s121 recorded for V2 (ours addu v1,v1,s3 / lbu v1,0(s2) /
+  lw a0,0(v0) / lw a3,0(v1) / sll v1,v1,0x2 / sw a0,16(sp) vs target
+  addu a0,a0,s3 / lbu a0,0(s2) / lw a3,0(a0) / lw v1,0(v0) / sll a0,a0,0x2 /
+  sw v1,16(sp)).  Different C, identical residual.
+- [s123] Two forms that do NOT reach the target order sit at a third residual
+  level: S1 (`t0 = (s32)((u8 *)tbl_125c + t0 * 4);` as one statement) and S6
+  (the same with `ix <<= 2;` hoisted above it) both score **3/160**, bi 160.
+  Neither 2 nor 6 — a previously unseen point, worth a look by a later session
+  that wants a third vantage on the same six-register knot.
+- [s123] Mandated kill re-audit executed.  s122's Q3 (dedicated `s32 *ap` pointer
+  local for the arg5 address, inert at 6==6 on the V2 chassis) transplanted onto
+  the folded candidate chassis: **2/160, exactly the control** — inert here too.
+  `fake_ablate.py` on candidate.c: keep-all 2/160 bi 160, drop-1 15/159, so the
+  combine-foldable chain-extender remains load-bearing and none of this session's
+  numbers are a FAKE-carrier artifact.
+- [s123] Where this leaves the function.  The order/seat pair is now understood
+  as ONE dial, not two: order is decided by sched1 from the C statement order,
+  and the seats are decided by local-alloc from sched1's output, so choosing the
+  order chooses the seats.  Reaching 0 needs a lever that changes local-alloc's
+  ranking WITHOUT changing the post-sched1 chain — i.e. a change to a quantity's
+  `refs` or to its birth/death that is invisible to the scheduler.  On the V2/S3
+  stream the two tied quantities are the t0 scale result and the arg5 loaded
+  value, both refs 2, both span 6; inverse.py's `refs_up on qty 2` vector
+  (rank #8) is the only one of the 21 that has never been spelled, and refs_down
+  on qty 1 is measured dead (s121, six spellings, 14/160).
+- [s123] Artifacts: tmp/grind/CD_sync/s123/diff_atoms.py (the pass-1/pass-2 atom
+  differential that exposed the luid-space error), s123/chainorder +
+  s123/chainorder.py, s123/gen.py, s123/forms/*.c, s123/results.txt.  Forms
+  banked as memory/grind/CD_sync/rejected/s123_*.c.
+
+- [s123] Control re-measured live this session: memory/grind/CD_sync/candidate.c applied to src/system.c scores 2/160, build_insns 160, rules_dropped 0. The dispatch brief's chassis check printed 'measurement unavailable'; the ledger floor of 2 is correct and the chassis is unchanged since s122.
+
+- [s123] CD_sync block 3's insn chain is identical after flow, combine, sched1, lreg and greg except for the single sched1 reordering: post-combine 104,106,112,116,120,125,127,130,132,140,145,149,151,153,155,157 (= the C statement order) and post-sched1 104,106,112,116,153,127,120,130,132,140,125,149,145,155,157,151. Reload adds no reordering. Artifact tmp/grind/CD_sync/s123/chainorder.
+
+- [s123] uid map for the block, read from the .sched RTL: 112 t0=idx_1494[0]; 116 ix=idx_1494[1]; 120 reg112=t0<<2; 125 reg107=reg112+tbl; 127 ix<<=2; 130 reg113=ix+tbl (folded arg5 address); 132 arg5=mem(reg113); 140 zext(D_800A11D5); 145 reg120=reg117<<2; 149 sw arg5,16(sp); 151 a0=&D_800161C8; 153 a1=D_800F19B8.func; 155 a2; 157 a3=mem(reg107).
+
+- [s123] The entire 2/160 residual is one adjacent transposition: ours emits 120 then 130, the target emits 130 then 120, in sched1 and sched2 alike.
+
+- [s123] Because sched2's luids come from sched1's output (sched.c:2198) and reload does not reorder, order and seats are ONE dial on this chassis: choosing block 3's emission order chooses local-alloc's input and therefore the seats.
+
+- [s123] Four order-reaching spellings that are NOT V2's group move (S3/S5/S7/S9, all arg5-address splits or scale-interleavings) score 6/160 and S3 reproduces V2's exact six-register RA divergence; a fifth with an extra local scores 7/160.
+
+- [s123] Two spellings that fold the t0 scale into the t0 add (S1 alone, S6 with the ix shift hoisted) score 3/160 bi 160 - a residual level distinct from both 2 and 6, unexamined so far.
+
+- [s123] s122's Q3 pointer-local kill re-audited on the current chassis: 2/160, inert, kill stands. fake_ablate on candidate.c: 2/160 with the chain-extender, 15/159 without.

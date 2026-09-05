@@ -1,3 +1,32 @@
+/* [s123] BODY UNCHANGED; floor re-measured live at 2/160 (bi 160, rd 0).
+ * The s121/s122 frontier item this body was carrying - "there are ~10
+ * perturbation atoms that reach the sched2 goal without perturbing the sched1
+ * stream local-alloc consumes" - is WITHDRAWN.  It came from subtracting a
+ * pass-1 atom set from a pass-2 atom set, and the two are different luid spaces:
+ * sched_analyze re-numbers INSN_LUID by walking the current insn chain at the
+ * start of EVERY pass (tools/gcc-2.7.2/sched.c:2198), so pass-1 luids index the
+ * post-combine chain (= the C statement order) and pass-2 luids index sched1's
+ * OUTPUT.  Reload does not reorder this block (.lreg/.greg chains == .sched
+ * chain), so sched2's whole input is a function of sched1's output plus the
+ * allocation: a pass-2-only atom cannot exist.
+ *
+ * The dual closes the other side.  Every pass-1 atom that reaches block 3's
+ * target order yields the SAME output stream, and local-alloc's input IS that
+ * stream (births/deaths = 2*emission_position+4), so the target order always
+ * comes with the V2 seats.  Four structurally different spellings that reach it
+ * (S3/S5/S7/S9 - arg5-address splits, not V2's group move) all score 6/160, and
+ * classify on S3 prints V2's exact six register pairs.  ORDER AND SEATS ARE ONE
+ * DIAL.  Closing needs a lever that moves a local-alloc quantity's refs or
+ * birth/death while leaving the post-sched1 chain untouched; on the V2/S3 stream
+ * the only such vector never spelled is inverse.py's rank-#8 refs_up on qty 2
+ * (the arg5 loaded value).  See hypotheses.md H123-1..H123-3.
+ *
+ * Also this session: the s122 Q3 pointer-local lever re-audited on THIS chassis
+ * is inert (2 == 2), fake_ablate keeps the chain-extender load-bearing
+ * (2/160 with, 15/159 without), and two non-order-reaching forms (the t0 scale
+ * folded into the t0 add, with and without the ix shift hoisted) sit at 3/160 -
+ * a third residual level nobody has looked at.
+ */
 /* [s122] BODY UNCHANGED; floor still 2/160.  The s118-s121 NAMING of block 3's
  * contended local-alloc quantities was WRONG and is corrected here (post-sched1
  * RTL, tmp/grind/CD_sync/s122/P5_v2_control/gccdump.lreg:446-505):

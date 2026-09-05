@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 122,
+ "session_count": 123,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -741,23 +741,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Block 3's contended quantities were mis-named for six sessions - qty1 is the t0 SCALE result, not the address - and with the corrected map both C-side lever classes (variable-identity live_extend, sta"
+  },
+  {
+   "session": 123,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "The pass-2-only atom frontier is empty by construction (sched.c:2198 re-numbers luids per pass), and its dual proves block-3's target order and the target's seats are ONE dial: four fresh order-reachi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the FOLDED candidate chassis (2/160 - correct seats, one transposition of the final order) there exist pass-2-ONLY perturbation atoms: s121 found 36 atoms reaching the pass-2 goal and 31 reaching the pass-1 goal with intersection 26, leaving ~10 atoms that fix the FINAL order without perturbing the pass-1 stream local-alloc consumes - exactly what is needed, since the good spans are a pass-1 property.",
-   "mechanism": "local-alloc reads the post-sched1 stream; sched2 runs after reload and only reorders. An atom that reaches the pass-2 goal but is NOT in the pass-1 reaching set leaves the pass-1 births/deaths (t0 scale 16/24, arg5 20/26 on the folded chassis) intact and therefore keeps the target seats while fixing the transposition.",
-   "next_probe": "Re-extract the model with candidate.c applied, run perturb.py --pass 1 and --pass 2 with --goal-from-target, take the set DIFFERENCE (pass-2 reaching minus pass-1 reaching), keep only luid atoms, spell each as a statement move, and for every spelling require (a) a sandbox score and (b) a BB2_QTY_DEBUG dump showing qty1/qty2 still at 16/24 and 20/26."
+   "hypothesis": "The only lever that can close this function changes a local-alloc quantity's refs or birth/death WITHOUT changing the post-sched1 chain, and on the V2/S3 order-exact stream the one such vector never spelled is inverse.py's rank-#8 refs_up on qty 2 (the arg5 loaded value, refs 2, span 6).",
+   "mechanism": "qty_compare_1 ranks by floor_log2(refs)*refs*size/(death-birth)*10000 with a qty-number tiebreak; with both contended quantities at refs 2 and span 6 the ranking is a pure tie, and raising the arg5 value's reference count is the one perturbation that reverses it without touching an emission position - refs_down on the other quantity is measured dead (s121, six spellings, 14/160).",
+   "next_probe": "Re-run tools/ra_solver/inverse.py local on a freshly extracted S3/V2 model, read the refs_up-on-qty-2 vector against the target's own instruction sequence, and enumerate byte-neutral C spellings that give the arg5 loaded value a third reference (a second consumer that combine folds away, a sub-word re-read of the same local, a duplicated read into the two exit arms); require for each (a) a sandbox score and (b) a BB2_QTY_DEBUG dump showing the post-sched1 chain unchanged."
   },
   {
-   "hypothesis": "One of the 25 pass-1 reaching atoms on the V2 chassis has a byte-neutral C spelling after all, most plausibly the add_dep 112 <- 123 / 132 <- 149 memory-edge class, if a load in the block can be made to look like it may alias the outgoing-argument stack slot.",
-   "mechanism": "sched.c builds memory dependences conservatively from the pre-sched insn order; the two printf argument loads (155, 157) already carry true deps on the sw at 149 for exactly this reason, so an aliasing relationship - not a statement move - is what the model is asking for.",
+   "hypothesis": "The 3/160 forms (S1 = `t0 = (s32)((u8 *)tbl_125c + t0 * 4);` as one statement, S6 = the same with `ix <<= 2;` hoisted) are a third residual class whose divergence is not the 120/130 transposition, and one of them may be one atom from zero in a direction neither the 2 nor the 6 chassis can reach.",
+   "mechanism": "Folding the scale into the add removes insn 120 from the chain as a separate statement-level entity, so sched1 sees a different input block entirely; the resulting stream is neither ours nor V2's and its local-alloc quantity table has never been read.",
+   "next_probe": "Apply S1 and S6, run inverse_compose.py classify to name the FIRST DIVERGENCE for each, dump BB2_QTY_DEBUG for block 3, and if classify says RA run inverse.py local --swap on that model; if it says ORDER run perturb.py --pass 1 --goal-from-target on the re-extracted model."
+  },
+  {
+   "hypothesis": "One of the 25 pass-1 reaching atoms on the V2 chassis has a byte-neutral C spelling after all, most plausibly the add_dep memory-edge class, if a load in the block can be made to look like it may alias the outgoing-argument stack slot.",
+   "mechanism": "sched.c builds memory dependences conservatively from the pre-sched insn order; the two printf argument loads already carry true deps on the sw at 149 for exactly this reason, so an aliasing relationship - not a statement move - is what the model is asking for, and an aliasing change is invisible to the emitted bytes.",
    "next_probe": "Re-run perturb.py --depth 2 on the same goal to see whether a two-atom vector uses only spellable inputs, and separately test whether reading one of the block's values through a differently-typed pointer creates the 112<-123 edge without adding an insn; reject any spelling that changes build_insns."
-  },
-  {
-   "hypothesis": "inverse.py local, re-run with the CORRECTED quantity identification, ranks a vector on the SCALE result (qty1 = reg113, refs 2, three-insn range) that previous sessions never evaluated because they were spelling against the address instead.",
-   "mechanism": "The address pseudo reg107 inherits its seat from the qty1 merge, so every C-level lever aimed at the address was aimed one pseudo too far downstream; refs/span vectors on the scale result itself were never enumerated against the target's own instruction sequence.",
-   "next_probe": "Re-run tools/ra_solver/inverse.py local on the V2 model with --swap 1,2 and read every vector as a statement about reg113/reg106, checking each against the target's own instruction sequence for a faithful spelling BEFORE measuring; cross-check any survivor against the pass-1 sched model so it does not disturb block 3's emission order."
   }
  ],
  "judge_constraints": [
@@ -1049,6 +1055,22 @@
    "measured_on": "V2 order-exact chassis, sched model tmp/sched_solver_work/system.sched.json (parity=True, CD_sync 52/52 blocks order- and clock-exact), chain-extender FAKE present, pp absent; control 6/160 bi 160 rd ",
    "predicate_cite": "",
    "result": "25 reaching vectors, ZERO of them luid: 20 add_dep/del_dep edges and 5 cost atoms (cost 112:=12, cost 127:=3, cost 127:="
+  },
+  {
+   "session": 123,
+   "statement": "On the folded candidate chassis there exist perturbation atoms that reach the sched2 (final-order) goal without perturbing the sched1 stream local-alloc consumes, so the block-3 transposition can be f",
+   "kill_scope": "class",
+   "measured_on": "folded candidate chassis (memory/grind/CD_sync/candidate.c), chain-extender FAKE present, pp pointer alias absent; control re-measured live at 2/160 bi 160 rd 0; sched model tmp/sched_solver_work/syst",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2198",
+   "result": "The differential appears to find six qualifying atoms (luid swap 120<->125, 127<->130, 130<->153; luid_move 120 before 1"
+  },
+  {
+   "session": 123,
+   "statement": "s122's Q3 lever - a dedicated `s32 *ap` pointer local carrying the arg5 address, measured inert at 6 == 6 on the V2 order-exact chassis - moves the score when transplanted onto the folded candidate ch",
+   "kill_scope": "instance",
+   "measured_on": "folded candidate chassis (memory/grind/CD_sync/candidate.c), chain-extender FAKE present, pp pointer alias absent; control 2/160 bi 160 rd 0",
+   "predicate_cite": "",
+   "result": "S8 = 2/160 bi 160 rd 0, exactly the control - the pointer local is inert on this chassis too, so the s122 kill survives "
   }
  ],
  "sibling_progress": [
