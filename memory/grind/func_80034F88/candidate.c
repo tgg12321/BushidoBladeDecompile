@@ -1,3 +1,18 @@
+/* s35 (synthesis, 2026-09-05): re-measured on HEAD = score 10, 49 build insns,
+ * rules_dropped 0.  UNCHANGED.  s35 closed the q-coverage lattice end to end:
+ * the five settings s33 left unmeasured (q covering blocks 0+1 with 2/3
+ * anonymous; q covering block 0 only; both with q initialised through the
+ * punned symbol-difference expression; and two DIFFERENT anonymous spellings in
+ * blocks 2/3) score 28/48, 25/48, 27/48, 14/49 and 28/48 respectively, so the
+ * minimum over the whole lattice is this body.  Two inherited framings were
+ * corrected by disassembly (tmp/grind/func_80034F88/s35/g1.txt): an anonymous
+ * carrier is instruction-count-NEUTRAL in blocks 2/3 (lui+lbu / lui+sb = 4
+ * insns, the same as the target's lui/addiu/lbu/sb) and is wrong only in FORM;
+ * and shortening q's live range is not a two-seat dial -- with q covering
+ * blocks 0+1 it takes $a1 and displaces p out of the target's $a1 into $a0.
+ * Five disproven forms banked as rejected/s35-*.c (bank size 193).
+ * See evidence.md "==== s35 (synthesis) ====".
+ */
 /* s34 (synthesis, 2026-09-05): re-measured on HEAD = score 10, 49/49 insns,
  * rules_dropped 0, cheat_asm_stripped 28.  UNCHANGED.  s34 closed the last
  * route to a SECOND address pseudo that is not a named C object: the target's

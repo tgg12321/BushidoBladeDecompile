@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 34,
+ "session_count": 36,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -207,23 +207,35 @@
    "floor": 10,
    "modality": "synthesis",
    "headline": "Synthesis s34: the target needs a second address pseudo live across the block-1 join label, and both routes to an ANONYMOUS one are now measured dead -- reorg.c:3442 deletes an arm-local store (dump-v"
+  },
+  {
+   "session": 35,
+   "modality": "synthesis",
+   "floor": 10,
+   "note": "Synthesis s35: the q-coverage lattice (which flag-byte access sites go through the declared pointer vs the anonymous symbol-difference expression) is enumerated end to end -- all five remaining quadrants measured 14-28, minimum stays the base 10 -- and two inherited framings are corrected by disassembly: an anonymous carrier is instruction-count-NEUTRAL in blocks 2/3 (4 insns, same as the target), and shortening q's live range displaces p out of $a1."
+  },
+  {
+   "session": 36,
+   "floor": 10,
+   "modality": "synthesis",
+   "headline": "Synthesis s35: the q-coverage lattice is enumerated end to end (all five remaining quadrants 14-28, minimum stays the base 10) and two inherited framings are corrected by disassembly -- an anonymous c"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The P1 carrier must be a pseudo live across .L80034FC8 that is not `q`; every construct measured so far that produces one is a named C pointer object. The one untested class is a carrier not derived from a symbol_ref at all -- an address computed from a pseudo that already crosses the join, which c1's .greg identifies uniquely as 72 = `p` in $a1.",
-   "mechanism": "global.c:426 gives one pseudo one hard register and GCC 2.7.2 has no live-range splitting, so a second seat needs a second pseudo; s34 showed anonymous symbol-derived temps either die at the label (d4/c2, +1 insn) or lose the join store to reorg.c:3442 when moved into the arms.",
-   "next_probe": "Measure whether any ordinary-C expression of the flag byte's address written in terms of `p` (the func_80077D00 return) survives cse/combine without being folded back to the bare symbol_ref, and at what instruction cost. If every such spelling either folds to the symbol (collapsing onto the base chassis) or adds an addu/subu, the anonymous-carrier route is exhausted in full and the residual is provably a second named object."
+   "hypothesis": "The target's blocks 2/3 need a REUSED full-address value (one lui+addiu, then both lbu and sb at 0(reg)); every anonymous spelling measured emits two separate %hi materialisations instead, at the same instruction count. The untested question is whether an ordinary-C expression that is not a declared pointer object can produce a full-address value REUSED by both the read and the store inside one block.",
+   "mechanism": "cse folds a constant symbol address back into the MEM's %lo when it can (giving lui+lbu %lo) and only forces a full-address pseudo when the address is not CONSTANT_ADDRESS_P at expand (s33's pseudo 75). g1's disassembly shows the fold happening independently at the read and at the store, so the value is never reused.",
+   "next_probe": "Spell blocks 2/3 with an address expression that is non-constant at expand AND appears once as an lvalue base for both read and store within a single statement -- a compound read-modify-write on the anonymous expression (E |= K;) rather than the read/branch/store triple. Measure whether the RMW form emits lui+addiu+lbu+sb with a reused base, and at what score."
   },
   {
-   "hypothesis": "The block-1 reload (target's `lbu $a0,0($v1)` at 80034FB4, the 176th lbu against our 175) appears exactly when block 0's store and block 1's load are spelled through address RTL that cse does NOT equate -- present in c1 and in the score-0 banned body, absent in candidate.c. s29 priced restoring it at ZERO points by arithmetic on the objdump, never by direct measurement.",
-   "mechanism": "cse substitutes block 0's stored (masked) value for block 1's load when both mems hash to the same address; c1 breaks the equality by addressing block 0 through an anonymous symbol-difference temp, which is why its block 1 carries the reload.",
-   "next_probe": "On the base chassis (q for all four blocks, blocks 2/3 register-exact), find a spelling of block 0's mask that defeats cse's memory-value tracking WITHOUT changing the address pseudo, and measure it. If it lands below 10 the ledger's 'one missing address allocno' factorisation is wrong and must be re-derived."
+   "hypothesis": "Live-range surgery on `q` is a three-seat problem, not two: g1 put q in $a1 and pushed p to $a0. If p's seat can be pinned to $a1 by ordinary C, the address object's remaining choice may narrow to $v1/$a0 and re-open quadrants s35 measured only in their p-displaced form.",
+   "mechanism": "global.c allocates by allocno priority; p and the address object are the only two long-lived pseudos, and tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so their relative priority decides which takes $a0 and which $a1.",
+   "next_probe": "Re-measure the g1/g5/g6 quadrants with p given an extra early use (or the s31 type-narrowing spelling) so its allocno priority rises above the address object's, and check whether p holds $a1 while the address object falls into $v1."
   },
   {
-   "hypothesis": "Cycle 2 of the ladder needs seven more flat sessions before any disposition; the modality-count condition was met at s31.",
-   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; s34 is session thirteen of the cycle.",
-   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the cse enumeration (s27/s28), the reload pricing (s29), F1 byte-neutrality (s30), the allocator restatement (s31/s32), s33's proof that both seats are individually reachable from one object, and s34's dump-verified proof that the anonymous second carrier is deleted by reorg on one route and costs an instruction on the other; then return owner-gated."
+   "hypothesis": "Cycle 2 of the ladder needs six more flat sessions before any disposition; the modality-count condition was met at s31.",
+   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; s35 is session fourteen of the cycle.",
+   "next_probe": "When the driver assigns escalation modality after the session count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record in docs/grind/decisions.md citing the cse enumeration (s27/s28), the reload pricing (s29/s35), F1 byte-neutrality (s30), the allocator restatement (s31/s32), s33's proof that both seats are individually reachable from one object, s34's reorg.c:3442 proof, and s35's end-to-end closure of the q-coverage lattice; then return owner-gated."
   }
  ],
  "judge_constraints": [
@@ -499,6 +511,81 @@
    "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; two mixed anonymous-read/named-store bodies, single declared `u8 *q`, no FAKE construct present",
    "predicate_cite": "",
    "result": "f1 14 at 49 insns, f2 13 at 49 insns (c1's score). Neither reaches 10."
+  },
+  {
+   "session": 35,
+   "kill_scope": "instance",
+   "statement": "Some assignment of the four flag-byte access sites between the declared pointer `q` and the anonymous symbol-difference expression, other than the five combinations s33 already measured, reaches the target's two-seat register assignment.",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (g0 control = 10, 49 build insns, rules_dropped 0); five new quadrant bodies g1/g5/g6/g7/g8, single declared `u8 *q`, no FAKE construct present",
+   "result": "g1 28/48, g5 25/48, g6 27/48, g7 14/49, g8 28/48; with s33's c1-c5 and the base the lattice is closed and its minimum is the base setting q:0123 = 10."
+  },
+  {
+   "session": 35,
+   "kill_scope": "instance",
+   "statement": "Two anonymous address expressions written with DIFFERENT nestings escape cse's canonicalisation and each get their own full-address pseudo.",
+   "measured_on": "HEAD chassis 2026-09-05, variant g8 vs g1; single declared `u8 *q` covering blocks 0+1, blocks 2/3 anonymous, no FAKE construct present",
+   "result": "g8 = 28 at 48, identical to g1's single spelling -- cse canonicalises both nestings to the same address rtx."
+  },
+  {
+   "session": 35,
+   "kill_scope": "instance",
+   "statement": "The inherited claim that an anonymous address carrier costs +1 instruction every time its value must cross a code label.",
+   "measured_on": "HEAD chassis 2026-09-05, variant g1 disassembly (tmp/grind/func_80034F88/s35/g1.txt), no FAKE construct present",
+   "result": "Anonymously-addressed blocks 2/3 emit lui+lbu and lui+sb = 4 insns each, exactly the target's lui/addiu/lbu/sb count. The carrier is instruction-count-neutral there; the +1 seen in c2/d4 belongs specifically to block 1's post-join store."
+  },
+  {
+   "session": 35,
+   "kill_scope": "instance",
+   "statement": "The address object's seat is a two-valued dial between $v1 and $a0, so live-range surgery on `q` only trades one of those seats for the other.",
+   "measured_on": "HEAD chassis 2026-09-05, variant g1 (q covers blocks 0+1 only), no FAKE construct present",
+   "result": "q takes $a1 and p is displaced to $a0 -- the address object and p compete for the same two argument registers, so shortening q's range can also lose the target's p seat."
+  },
+  {
+   "session": 35,
+   "kill_scope": "instance",
+   "statement": "A spelling of block 0's mask that restores block 1's reload without introducing a second address pseudo lands BELOW 10.",
+   "measured_on": "HEAD chassis 2026-09-05 (floor control g0 = 10 at 49); bodies s17-b1-read-direct-symbol (11/50), s34-f1 (14/49), s35-g1 (48 insns without the reload); single declared `u8 *q`, no FAKE construct present",
+   "result": "Every banked body that emits the reload is above the floor; g1 shows the reload is the single instruction separating 48 from 49 in the anonymous quadrants."
+  },
+  {
+   "session": 36,
+   "statement": "Some assignment of the four flag-byte access sites between the declared pointer `q` and the anonymous symbol-difference expression, other than the five combinations s33 already measured, reaches the t",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05 (g0 control = 10, 49 build insns, rules_dropped 0); single declared `u8 *q` in every variant, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "KILLED. g1 = 28/48, g5 = 25/48, g6 = 27/48, g7 = 14/49, g8 = 28/48. With s33's c1-c5 and the base, the lattice is closed"
+  },
+  {
+   "session": 36,
+   "statement": "Two anonymous address expressions written with DIFFERENT nestings escape cse's canonicalisation and each get their own full-address pseudo, which is the form the target's blocks 2 and 3 have.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c score-10 chassis on HEAD 2026-09-05; single declared `u8 *q` covering blocks 0+1, blocks 2/3 anonymous, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "KILLED. g8 = 28 at 48 build insns, the same score and instruction count as g1: cse canonicalises both nestings to the sa"
+  },
+  {
+   "session": 36,
+   "statement": "The inherited claim that an anonymous address carrier costs +1 instruction every time its value must cross a code label.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05, variant g1 (q covers blocks 0+1, blocks 2/3 anonymous), no FAKE construct present; disassembly of tmp/sandbox/func_80034F88/code6cac_b.o",
+   "predicate_cite": "",
+   "result": "KILLED as a general statement. Each anonymous block emits lui + lbu %lo for the read and lui + sb %lo for the store = fo"
+  },
+  {
+   "session": 36,
+   "statement": "The address object's seat is a two-valued dial between $v1 and $a0, so live-range surgery on `q` can only trade one of those two seats for the other.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05, variant g1, single declared `u8 *q` covering blocks 0+1, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "KILLED. q takes $a1 and p (the func_80077D00 return, which the target keeps in $a1) is displaced to $a0. The address obj"
+  },
+  {
+   "session": 36,
+   "statement": "A spelling of block 0's mask that restores block 1's reload without introducing a second address pseudo lands BELOW 10, which would falsify the ledger's 'one missing address allocno' factorisation.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-05 (floor control g0 = 10 at 49); bodies s17-b1-read-direct-symbol, s34-f1 and s35-g1, single declared `u8 *q`, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "KILLED. Every measured body that restores the reload is above the floor: 11 at 50 (s17), 14 at 49 (s34 f1); g1 shows the"
   }
  ]
 }

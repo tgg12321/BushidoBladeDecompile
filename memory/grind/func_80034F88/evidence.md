@@ -4763,3 +4763,146 @@ aliasing `&D_80106A73` is the standing Judge ban. Ten new disproven forms banked
 - [s34] Ladder accounting: s34 is session THIRTEEN of cycle 2; the six-modality condition was met at s31. Seven sessions remain before the owner directive 2026-09-02 permits any disposition.
 
 - [s34] src/code6cac_b.c restored to HEAD (INCLUDE_ASM) at session end; candidate.c unchanged apart from an s34 header note; ten new disproven forms banked (bank size 188).
+
+==== s35 (synthesis) ====
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` installed at
+`src/code6cac_b.c:3420` and measured on HEAD this session (variant `g0`, a
+byte-for-byte regeneration of the candidate body): **score 10, build_insns 49**.
+The dispatch brief printed "measurement unavailable" for the SEVENTH consecutive
+session; the floor of 10 is measured, not inherited. `src/` restored to HEAD at
+session end (`git status --porcelain src/` empty).
+
+MANDATED KILL RE-AUDIT (the two closest-to-target banked forms, both re-measured
+on today's chassis):
+  * `rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c` (the
+    s20/s25 dead round-trip, the only banked body whose instruction multiset
+    matches the target's) -- **10 at 49 insns**, seventh consecutive session
+    unchanged.
+  * `rejected/s33-anon-symdiff-block0-blocks01-EXACT-score13.c` (c1, blocks 0/1
+    byte-exact) -- **13 at 49 insns**, reproducing s33/s34 exactly.
+  * `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b
+    --candidate memory/grind/func_80034F88/candidate.c` -> "no FAKE-annotated
+    constructs found ... nothing to ablate". No banked kill on this chassis was
+    measured with a FAKE carrier occupying the contested pseudo.
+
+--- 1. THE MERGED ATTACK, AND THE ONE HOLE LEFT IN IT ---
+
+Merging s16/s17 (residual localisation), s27/s28 (cse input enumeration),
+s29 (reload pricing), s31/s32 (allocator restatement), s33 (the local-alloc /
+preference mechanism, c1-c5) and s34 (ternary / arm-duplication / mixed bodies,
+reorg.c:3442) leaves ONE search axis with a finite parameter: which of the four
+flag-byte access sites (block 0's mask, block 1, block 2, block 3) go through the
+single declared pointer object `q`, and which go through the anonymous
+symbol-difference expression
+`*(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70))`.
+The ledger already held five points of that lattice:
+
+    q:0123  anon:none   base / candidate.c   10   49    <- floor
+    q:123   anon:0      s33 c1               13   49    blocks 0/1 byte-exact
+    q:23    anon:01     s33 c2               21   50
+    q:1     anon:023    s33 c3               14   48
+    q:12    anon:03     s33 c4               13   49
+
+s35 measured the REMAINING quadrants, closing the lattice:
+
+    q:01    anon:23                                     g1   28   48
+    q:0     anon:123                                    g5   25   48
+    q:01    anon:23, q initialised through the pun      g6   27   48
+    q:0123  q initialised AND re-assigned through it    g7   14   49
+    q:01    anon:23, two DIFFERENT anon spellings       g8   28   48
+
+Every quadrant is >= the base's 10. The q-coverage lattice is enumerated end to
+end and its minimum is `q:0123` = candidate.c = 10.
+
+--- 2. TWO SUBSTANTIVE CORRECTIONS TO THE INHERITED FRAMING ---
+
+(a) **"An anonymous address costs +1 instruction per label crossing" is FALSE as
+a general statement.** It was generalised from s33's c2 (50 insns). g1's
+disassembly (`tmp/grind/func_80034F88/s35/g1.txt`) shows blocks 2 and 3, spelled
+anonymously, emit
+
+    lui  v0,%hi   /  lbu v0,%lo(v0)        (read)
+    lui  at,%hi   /  sb  v1,%lo(at)        (store)
+
+= FOUR instructions per block, exactly the count of the target's
+`lui / addiu / lbu / sb` for the same block. The anonymous carrier is
+instruction-count-NEUTRAL in blocks 2/3; it is wrong only in FORM (two separate
+%hi materialisations instead of one reused full address) and therefore in
+register assignment. g1's single missing instruction (48 vs 49) is block 1's
+reload, the same one candidate.c is missing -- not a label re-materialisation.
+The +1 in c2/d4 is specific to block 1's post-join store, where the address must
+be produced a second time INSIDE the join block.
+
+(b) **`q`'s hard register is not a two-valued dial ($v1 vs $a0).** g1 shows a
+third seat: with `q` covering only blocks 0+1, `q` takes **$a1** and `p` is
+displaced to **$a0** -- both pseudos move, and the target's `p` in $a1 is lost as
+well. This is the first body in the bank where shortening `q`'s range displaces
+`p`. It confirms s16's stray note ("a block-1-only live range wins $a1 not $v1")
+and generalises it: the address object and `p` compete for the same two argument
+registers, so live-range surgery on `q` can cost the seat twice.
+
+--- 3. THE "DISTINCT ANONYMOUS SPELLINGS" IDEA, KILLED ---
+
+The one mechanism-level idea s33/s34 left implicit was that two anonymous address
+expressions written DIFFERENTLY might escape cse's canonicalisation and each get
+its own full-address pseudo -- which is what the target's blocks 2 and 3 have.
+g8 spells block 2 as `(s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70)`
+and block 3 as `(s32)&D_80106A73 + ((s32)&D_80106A70 - (s32)&D_80106A70)`.
+g8 measures **28 at 48**, the same outcome as g1's single spelling: cse
+canonicalises both to the same address rtx. Distinct spelling is not a lever.
+
+--- 4. THE BLOCK-1 RELOAD FRONTIER ITEM, ANSWERED FROM THE BANK ---
+
+The inherited frontier asked for "a spelling of block 0's mask that defeats cse's
+memory-value tracking WITHOUT changing the address pseudo -- if it lands below 10
+the one-missing-address-allocno factorisation is wrong". Every measured body that
+actually restores the reload is now in hand and all are ABOVE 10:
+`rejected/b1-read-direct-symbol-reload-priced-at-1-score11.c` (s17) = 11 at 50;
+s34's f1 (anonymous read, named store) = 14 at 49; and g1 shows the reload is the
+single instruction separating 48 from 49 in the anonymous quadrants. The
+factorisation stands: the reload is not separable value from the address seat.
+
+--- 5. STATE OF THE SEARCH AFTER s35 ---
+
+`candidate.c` unchanged at 10/49. The residual is unchanged in substance and
+sharper in statement: the target needs a full-address pseudo for blocks 0/1 in
+$v1 AND a second full-address pseudo for blocks 2/3 in $a0; the anonymous carrier
+can supply the instruction COUNT but never the reused-full-address FORM, and the
+only construct measured to supply that form is a named C pointer object, of which
+exactly one is permitted. Five new disproven forms banked (bank size 193).
+
+- [s35] Chassis re-measured on HEAD (dispatch printed 'measurement unavailable' for the seventh consecutive session): the candidate body = score 10, build_insns 49.
+- [s35] KILL RE-AUDIT: the s20/s25 dead round-trip re-measures 10 at 49 and s33's c1 re-measures 13 at 49 on today's chassis; both banked kills hold unchanged. fake_ablate again reports no FAKE-annotated construct in candidate.c.
+- [s35] The q-coverage lattice (which of the four flag-byte access sites go through the declared pointer `q` versus the anonymous symbol-difference expression) is now ENUMERATED END TO END. New quadrants: g1 q:01/anon:23 = 28 at 48; g5 q:0/anon:123 = 25 at 48; g6 (punned q initialiser, q:01) = 27 at 48; g7 (punned q initialiser, full coverage) = 14 at 49; g8 (two distinct anon spellings) = 28 at 48. Minimum over the whole lattice is the base q:0123 = 10.
+- [s35] CORRECTION to the inherited framing: an anonymous address is NOT '+1 instruction per label crossing'. g1's disassembly shows blocks 2/3 spelled anonymously emit lui+lbu for the read and lui+sb for the store = 4 insns per block, exactly the target's lui/addiu/lbu/sb count. The anonymous carrier is instruction-count-neutral there and wrong only in FORM (two %hi materialisations instead of one reused full address). The +1 seen in c2/d4 is specific to block 1's post-join store.
+- [s35] CORRECTION: `q`'s seat is not a two-valued $v1/$a0 dial. In g1 (q covering blocks 0+1 only) `q` takes $a1 and `p` is displaced to $a0, so live-range surgery on the address object can cost the target's `p` seat as well.
+- [s35] The 'two DIFFERENT anonymous spellings each get their own pseudo' idea is KILLED: g8 spells blocks 2 and 3 with different symbol-difference nestings and reproduces g1's 28 at 48 -- cse canonicalises both to the same address rtx.
+- [s35] The inherited frontier item 'find a mask spelling that restores block 1's reload without a second address pseudo, and if it lands below 10 the factorisation is wrong' is ANSWERED from the bank: every measured body that restores the reload is above 10 (s17 direct-symbol read = 11 at 50; s34 f1 = 14 at 49), and g1 shows the reload is the single instruction separating 48 from 49 in the anonymous quadrants. The factorisation stands.
+- [s35] Ladder accounting: s35 is session FOURTEEN of cycle 2; the six-modality condition was met at s31. Six sessions remain before the owner directive 2026-09-02 permits any disposition.
+- [s35] src/code6cac_b.c restored to HEAD (INCLUDE_ASM) at session end; `git status --porcelain src/` empty. candidate.c unchanged apart from an s35 header note; five new disproven forms banked (bank size 193).
+
+### Artifacts (s35)
+
+`tmp/grind/func_80034F88/s35/`: `variants/{g0,g1,g5,g6,g7,g8,rt,c1}.c`, `gen.py`,
+`run.ps1`, `g1.txt` (g1 disassembly), `code6cac_b.c.orig`, and the per-variant `.o` files.
+
+- [s36] Chassis re-measured on HEAD this session (the dispatch brief printed 'measurement unavailable' for the seventh consecutive session): the candidate body = score 10, build_insns 49, rules_dropped 0. src/code6cac_b.c restored to HEAD (INCLUDE_ASM) at session end; `git status --porcelain src/` is empty.
+
+- [s36] KILL RE-AUDIT: the s20/s25 dead round-trip re-measures 10 at 49 and s33's c1 re-measures 13 at 49 on today's chassis; both banked kills hold unchanged. tools/fake_ablate.py again reports no FAKE-annotated construct in candidate.c, so no banked kill on this chassis was measured with a FAKE carrier occupying the contested pseudo.
+
+- [s36] The q-coverage lattice -- which of the four flag-byte access sites (block 0's mask, blocks 1, 2, 3) go through the single declared pointer `q` versus the anonymous symbol-difference expression *(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70)) -- is now enumerated END TO END. Inherited points: q:0123 = 10/49 (base), q:123 = 13/49 (c1), q:23 = 21/50 (c2), q:1 = 14/48 (c3), q:12 = 13/49 (c4). New s35 points: q:01 = 28/48 (g1), q:0 = 25/48 (g5), q:01 with punned q initialiser = 27/48 (g6), q:0123 with punned initialiser at every materialisation = 14/49 (g7), q:01 with two distinct anonymous spellings = 28/48 (g8). The minimum over the whole lattice is the base setting, candidate.c, at 10.
+
+- [s36] CORRECTION to the framing s33/s34 handed forward: an anonymous address carrier is NOT '+1 instruction per label crossing'. g1's disassembly shows the anonymously-addressed blocks 2 and 3 emit lui + lbu %lo (read) and lui + sb %lo (store) = 4 instructions per block, exactly the count of the target's lui/addiu/lbu/sb. The carrier is instruction-count-neutral there and is wrong only in FORM -- two separate %hi materialisations instead of one reused full address -- hence in register assignment. The +1 measured in c2/d4 belongs specifically to block 1's post-join store, where the address must be produced a second time inside the join block.
+
+- [s36] CORRECTION: `q`'s seat is not a two-valued $v1/$a0 dial. In g1 (q covering blocks 0+1 only) q takes $a1 and p is displaced from the target's $a1 into $a0 -- the address object and p compete for the same two argument registers, so live-range surgery on q can cost the target's p seat as well as failing to win the address seat.
+
+- [s36] The 'two DIFFERENT anonymous spellings each get their own full-address pseudo' idea is killed: g8 spells blocks 2 and 3 with different symbol-difference nestings and reproduces g1's 28 at 48 exactly -- cse canonicalises both to the same address rtx.
+
+- [s36] The inherited frontier item 'find a mask spelling that restores block 1's reload without a second address pseudo; if it lands below 10 the factorisation is wrong' is answered from the bank: every measured body that emits the reload is above the floor (s17 direct-symbol read = 11 at 50; s34 f1 = 14 at 49), and g1 shows the reload is the single instruction separating 48 from 49 in the anonymous quadrants.
+
+- [s36] Residual restated after s35: the target needs a full-address pseudo for blocks 0/1 seated in $v1 AND a second full-address pseudo for blocks 2/3 seated in $a0. The anonymous carrier can supply the instruction COUNT (g1) but never the reused-full-address FORM; the only construct measured to supply that form is a named C pointer object, of which exactly one is permitted under the standing Judge constraint.
+
+- [s36] Ladder accounting: s35 is session FOURTEEN of cycle 2 and the six-modality condition was met at s31 (escalation s23/s24, synthesis s25/s33/s34/s35, solver s26, forensics s27/s28, rederive s29/s30, structural s31/s32). Six sessions remain before the owner directive 2026-09-02 permits any disposition.
+
+- [s36] Five new disproven forms banked in memory/grind/func_80034F88/rejected/ (s35-q-blocks01-anon-blocks23-score28.c, s35-q-block0-only-anon-123-score25.c, s35-qinit-punned-blocks01-anon23-score27.c, s35-qinit-punned-full-coverage-score14.c, s35-two-distinct-anon-spellings-score28-IDENTICAL-TO-g1.c); bank size is now 193.
