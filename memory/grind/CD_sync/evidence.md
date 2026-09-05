@@ -3476,3 +3476,137 @@ question on the split chassis (V1), not an allocator question.
 - [s123] Two spellings that fold the t0 scale into the t0 add (S1 alone, S6 with the ix shift hoisted) score 3/160 bi 160 - a residual level distinct from both 2 and 6, unexamined so far.
 
 - [s123] s122's Q3 pointer-local kill re-audited on the current chassis: 2/160, inert, kill stands. fake_ablate on candidate.c: 2/160 with the chain-extender, 15/159 without.
+
+## s124 (synthesis, 2026-09-04) - floor 2/160; the closing predicate becomes a number, and its byte-neutral carrier is named
+
+- [s124] CONTROL re-measured live: `memory/grind/CD_sync/candidate.c` applied to
+  src/system.c = **2/160, build_insns 160, rules_dropped 0**.  `fake_ablate.py`
+  re-run: keep-all 2/160, drop-1 15/159 - the combine-foldable chain-extender is
+  still load-bearing and nothing below is a FAKE-carrier artifact.  The dispatch
+  brief again printed "measurement unavailable"; the ledger floor of 2 is right.
+- [s124] **KILL RE-AUDIT, and it voids an s121 verdict.**  s121 recorded
+  "rank #1, refs_down on qty 1, is DEAD (six spellings, 14/160)" - but s122
+  proved s121 had MIS-IDENTIFIED qty 1: it is the t0 SCALE result reg112, not
+  the t0 address.  s121's six spellings folded the ADDRESS add into printf's 4th
+  argument, i.e. they tested a quantity local-alloc does not rank.  The correct
+  test of that vector is to fold the SCALE into the address, and it had never
+  been run on an ORDER-REACHING chassis.  Eight forms (X1-X8) do exactly that:
+  X1/X2/X3/X4 (ix-address split + `t0 = (s32)((u8 *)tbl_125c + t0 * 4)`) all
+  score **6/160 bi 160**; X5/X6 (mirror: ix scale folded, t0 address split) and
+  X7/X8 (both chains folded) score **7/160**.  QTYDBG on X1 shows the block-3
+  quantity table is BYTE-IDENTICAL to V2/S3's:
+  `qty0 reg108 10/20 refs6 got=2 . qty3 reg119 22/30 refs4 got=2 .
+   qty1 reg112 18/24 refs2 got=3 . qty2 reg106 20/26 refs2 got=4`.
+  C-level statement folding of the scale does NOT remove the scale temp from
+  local-alloc's table.  The kill stands, now measured against the right object.
+- [s124] **NEW STRUCTURAL DIAL: `t0 *= 4` vs `t0 <<= 2`.**  Read from X1's
+  `.sched` RTL: insn 125 is `(set (reg 112) (ashift (reg/v 107) 2))` carrying
+  `REG_EQUAL (mult (reg 107) 4)` - the compound assignment `t0 *= 4` expands as
+  a MULT, and expand_expr gives the product a FRESH pseudo instead of writing
+  the variable in place; `ix <<= 2` (a shift) writes reg108 in place, which is
+  why the ix chain is one 6-ref pseudo and the t0 chain is two.  Consequence,
+  from the `.lreg` register file: "Register 107 used 4 times across 11 insns in
+  block 3; **dies in 2 places**" and reg107 is absent from the `;; Register N
+  in R` list - i.e. the two-death condition makes local-alloc SKIP the t0
+  ADDRESS entirely and hand it to global-alloc, where it inherits reg112's seat.
+  Respelling `t0 <<= 2` merges the whole chain into one local quantity
+  (`qty0 reg107 birth 8 death 32 refs 6 got=3`, pri 5000).  Measured: B0
+  (candidate chassis) 7, B1/B2/B3 (order-exact chassis) 6, B4 7, B5 (mirror,
+  `ix *= 4`) 9.  **The merged chassis is strictly worse for closing** - a
+  5000-pri t0 chain ties any refs-3 arg5 (also 5000) and wins the qty-number
+  tiebreak - so the closing chassis is the SPLIT (`t0 *= 4`) one.
+- [s124] **THE CLOSING PREDICATE IS EXACTLY THREE REFERENCES ON reg106.**  On
+  the split + order-exact stream the four quantities are ix (refs 6, span 10,
+  pri 12000), arg3 (refs 4, span 8, 10000), reg112 the t0 scale temp (refs 2,
+  span 6, 3333) and reg106 the arg5 loaded value (refs 2, span 6, 3333); the
+  3333 tie goes to reg112 on qty number (born one position earlier) and it takes
+  $v1.  pri(refs 3, span 6) = floor_log2(3)*3*1/6*10000 = 5000, which slots
+  reg106 THIRD - after ix and arg3, before reg112 - giving ix $v0, arg3 $v0,
+  arg5 $v1, reg112 $a0, and reg107 $a0 (its second live range overlaps arg5's
+  $v1 range, so global-alloc cannot reuse $v1).  That is all six divergent
+  register pairs in the target's spelling.  **Overshoot measured**: C1/C2
+  (`arg5 |= 1;`) give reg106 refs 4, pri 13333, it is allocated FIRST and takes
+  $v0 - 11/161.  So ">= 3" is wrong; the target is 3 exactly.
+- [s124] **Carrier 1 for refs=3 - dead-store / self-assign - is DEAD, measured
+  at the mechanism.**  `arg5 = arg5;` after the load (A1), after the t0 addu
+  (A2), doubled (A4), `ix = arg5;` (A3) and the S5-stream variant (A5) all score
+  6/160 bi 160 == the S3 control, and QTYDBG shows **refs still 2** on A1, A3
+  and A4.  These stores are deleted before flow.c ever counts a reference, so
+  the whole dead-store family is not a reg_n_refs carrier in this block.
+- [s124] **Carrier 2 for refs=3 - `do { } while (0)` - WORKS on refs and fails
+  on everything else.**  `do { arg5 = *(s32 *)ix; } while (0);` produces
+  **refs exactly 3** on reg106 (QTYDBG E1 `qty2 reg106 18/26 refs=3`, E2
+  `20/26 refs=3`), by flow.c:2081 `reg_n_refs[regno] += loop_depth`.  But the
+  loop notes split basic block 3, so ix picks up a 7th reference
+  (`qty0 reg108 refs=7`), the t0 chain merges into reg107 refs 6 (pri 5454)
+  even with `t0 *= 4`, and the emission order is destroyed: E1 14, E2 12,
+  E3 12, E4 11, plus dedicated-address-local variants F1 15, F2 13, F3 14,
+  F4 14 - all bi 160.  The wrap is a valid refs lever and an invalid order
+  lever, simultaneously.
+- [s124] **THE UNSPENT CARRIER, named.**  `tools/gcc-2.7.2/combine.c:10752-10754`:
+  "If the register is used in both I2 and I3 and it dies in I3, we might have
+  added another reference to it.  If reg_n_refs was 2, bump it to 3. ... The
+  reason this is done is because local-alloc.c treats 2 references as a special
+  case."  That is a documented refs 2 -> 3 bump with ZERO emitted bytes and no
+  change to the insn stream - precisely the perturbation the s123 frontier said
+  must exist ("a lever that changes local-alloc's ranking without changing the
+  post-sched1 chain").  It fires when combine successfully merges an i2 into an
+  i3 where the register appears in both patterns and its REG_DEAD note is placed
+  on i3.  reg106 today appears in only two insns (the load that defines it and
+  the `sw ...,16(sp)` that consumes it), which is why it never fires.
+- [s124] Where reg_n_refs comes from, settled: it is accumulated in flow.c
+  (2081 / 2329 / 2515 / 2725, each `+= loop_depth`), i.e. during life_analysis,
+  which `toplev.c` runs at ~2973 BEFORE `combine_instructions` (~3004), and
+  local-alloc copies it verbatim at `local-alloc.c:297`
+  (`qty_n_refs[qty] = reg_n_refs[regno]`).  combine.c is therefore the LAST pass
+  that can change it, and it does so at exactly two sites: 2313/2336 (zeroing an
+  eliminated register) and 10752-10754 (the 2 -> 3 bump).
+- [s124] Formula confirmations from the source rather than inference:
+  `qty_compare_1` is local-alloc.c:1657-1683 (pri = floor_log2(refs)*refs*size /
+  (death-birth) * 10000, tiebreak `*q1 - *q2`); births are
+  `2*this_insn_number - (setter is a CLOBBER)` (reg_is_set, ~local-alloc.c:2031)
+  and deaths `2*this_insn_number + output_p` (~local-alloc.c:2119).  QTYDBG
+  prints `size=1` (words), not 4 - earlier ledger prose saying size 4 was
+  arithmetically harmless but wrong.
+- [s124] Artifacts: tmp/grind/CD_sync/s124/{gen.py,gen2.py..gen6.py,b.sh,qd.sh},
+  forms/*.c, results.txt, and the QTYDBG/-da dumps X1/, A1/, A3/, A4/, B1/,
+  C1/, C2/, D1/, E1/, E2/.  Seventeen forms banked as
+  memory/grind/CD_sync/rejected/s124_*.c.
+
+- [s124] Control re-measured live: candidate.c = 2/160 bi 160 rd 0; fake_ablate keep-all 2/160 drop-1 15/159.
+
+- [s124] s121's 'refs_down on qty 1 is dead' was measured against the quantity s122 later proved mis-identified; re-tested correctly (fold the t0 SCALE, not the address, on an order-reaching chassis) it is still dead - X1-X4 6/160, X5-X8 7/160 - and X1's block-3 quantity table is byte-identical to V2/S3's.
+
+- [s124] `t0 *= 4` expands as a MULT into a fresh pseudo, so the t0 chain is two pseudos and the address pseudo 'dies in 2 places' and is skipped by local-alloc (global-alloc seats it); `t0 <<= 2` merges the chain into one 6-ref local quantity of pri 5000, which is strictly worse for closing.  B0 7, B1/B2/B3 6, B4 7, B5 9.
+
+- [s124] The closing predicate is refs(reg106) == 3 EXACTLY (pri 5000, allocation rank 3 of 4).  refs 4 overshoots: allocated first, takes $v0 (C1/C2 = 11/161).  refs 2 is today's 6/160.
+
+- [s124] Dead stores and self-assignments to the local do NOT raise reg_n_refs (QTYDBG refs=2 on A1/A3/A4, scores 6 == control): they are deleted before flow.c counts.
+
+- [s124] `do { arg5 = *(s32 *)ix; } while (0);` DOES give reg106 refs exactly 3 (flow.c:2081 loop_depth), but the loop notes split block 3, add a 7th ref to ix, merge the t0 chain and destroy the order: 11-15/160 across E1-E4 and F1-F4.
+
+- [s124] combine.c:10752-10754 bumps reg_n_refs 2 -> 3, byte-neutrally, when a register is used in both i2 and i3 of a successful combination and its REG_DEAD note is placed on i3 - the comment says it exists 'because local-alloc.c treats 2 references as a special case'.  This is the one carrier for the refs=3 predicate that emits nothing.
+
+- [s124] reg_n_refs is accumulated in flow.c during life_analysis (before combine), consumed verbatim at local-alloc.c:297; combine.c is the last pass that can change it, at 2313/2336 (zero) and 10752 (2->3 bump).
+
+- [s124] Control re-measured live this session: memory/grind/CD_sync/candidate.c applied to src/system.c = 2/160, build_insns 160, rules_dropped 0. The dispatch brief printed 'measurement unavailable'; the ledger floor of 2 is correct and the chassis is unchanged since s122.
+
+- [s124] fake_ablate.py --func CD_sync --file system --candidate memory/grind/CD_sync/candidate.c: keep-all 2/160 bi 160, drop-1 15/159. The combine-foldable chain-extender is still load-bearing and no s124 number is a FAKE-carrier artifact.
+
+- [s124] s121's kill 'refs_down on qty 1 is dead (six spellings, 14/160)' was measured against the quantity s122 later proved mis-identified. Re-tested correctly - fold the t0 SCALE, not the address, on an order-reaching chassis - it is still dead (X1-X4 6/160, X5-X8 7/160) and X1's block-3 quantity table is byte-identical to V2/S3's.
+
+- [s124] `t0 *= 4` expands as a MULT and expand_expr gives the product a fresh pseudo (reg112, REG_EQUAL (mult (reg 107) 4)), so the t0 chain is TWO pseudos and the address pseudo reg107 'dies in 2 places' (.lreg register file) and is skipped by local-alloc in favour of global-alloc. `t0 <<= 2` writes in place and merges the chain into one 6-ref local quantity (reg107 birth 8 death 32, pri 5000).
+
+- [s124] The merged (`t0 <<= 2`) chassis is strictly worse for closing than the split one: a 5000-pri t0 chain ties any refs-3 arg5 (also 5000) and wins the qty-number tiebreak. B0 7, B1 6, B2 6, B3 6, B4 7, B5 9.
+
+- [s124] THE CLOSING PREDICATE IS reg_n_refs(reg106) == 3 EXACTLY. pri(refs 3, span 6) = 5000 slots the arg5 value third of four, after ix (12000) and arg3 (10000) and before the t0 scale temp (3333), which yields ix $v0, arg3 $v0, arg5 $v1, reg112 $a0, reg107 $a0 - the target's six register pairs. refs 4 overshoots: C1/C2 measure reg106 at ord=0 in $v0, 11/161.
+
+- [s124] Dead stores and self-assignments to the arg5 local do NOT raise reg_n_refs: A1/A3/A4 dump refs=2 unchanged and score 6/160, exactly the S3 control. They are deleted before flow.c counts.
+
+- [s124] `do { arg5 = *(s32 *)ix; } while (0);` DOES produce refs exactly 3 (QTYDBG E1 and E2), by flow.c:2081 `reg_n_refs[regno] += loop_depth` - but its loop notes split basic block 3, add a 7th reference to ix, merge the t0 chain and destroy the emission order: E1 14, E2 12, E3 12, E4 11, F1 15, F2 13, F3 14, F4 14.
+
+- [s124] tools/gcc-2.7.2/combine.c:10752-10754 bumps reg_n_refs from 2 to 3 with zero emitted bytes when a register is referenced in both i2 and i3 of a successful combination and its REG_DEAD note is placed on i3; the in-source comment says it exists 'because local-alloc.c treats 2 references as a special case'. This is the only known carrier that satisfies the s123 requirement of changing local-alloc's ranking without changing the post-sched1 chain.
+
+- [s124] reg_n_refs provenance settled: accumulated in flow.c (2081/2329/2515/2725, each += loop_depth) during life_analysis, which toplev.c runs before combine_instructions; consumed verbatim by local-alloc.c:297. combine.c is the last pass that can change it, at 2313/2336 (zeroing) and 10752-10754 (the 2->3 bump).
+
+- [s124] Formula confirmations read from source: qty_compare_1 at local-alloc.c:1657-1683 (pri = floor_log2(refs)*refs*size/(death-birth)*10000, tiebreak *q1 - *q2); births 2*this_insn_number minus one for a CLOBBER setter; deaths 2*this_insn_number + output_p. QTYDBG prints size=1 (words), not the 4 earlier ledger prose claimed.

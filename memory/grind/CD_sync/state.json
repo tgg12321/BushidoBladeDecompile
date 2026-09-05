@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 123,
- "current_modality": "structural",
+ "session_count": 124,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 0,
@@ -747,23 +747,29 @@
    "floor": 2,
    "modality": "structural",
    "headline": "The pass-2-only atom frontier is empty by construction (sched.c:2198 re-numbers luids per pass), and its dual proves block-3's target order and the target's seats are ONE dial: four fresh order-reachi"
+  },
+  {
+   "session": 124,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "The closing predicate is now a NUMBER - reg_n_refs(arg5 value) == 3 exactly on the split/order-exact chassis - and its only byte-neutral carrier is named: combine.c:10752-10754's documented refs 2->3 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The only lever that can close this function changes a local-alloc quantity's refs or birth/death WITHOUT changing the post-sched1 chain, and on the V2/S3 order-exact stream the one such vector never spelled is inverse.py's rank-#8 refs_up on qty 2 (the arg5 loaded value, refs 2, span 6).",
-   "mechanism": "qty_compare_1 ranks by floor_log2(refs)*refs*size/(death-birth)*10000 with a qty-number tiebreak; with both contended quantities at refs 2 and span 6 the ranking is a pure tie, and raising the arg5 value's reference count is the one perturbation that reverses it without touching an emission position - refs_down on the other quantity is measured dead (s121, six spellings, 14/160).",
-   "next_probe": "Re-run tools/ra_solver/inverse.py local on a freshly extracted S3/V2 model, read the refs_up-on-qty-2 vector against the target's own instruction sequence, and enumerate byte-neutral C spellings that give the arg5 loaded value a third reference (a second consumer that combine folds away, a sub-word re-read of the same local, a duplicated read into the two exit arms); require for each (a) a sandbox score and (b) a BB2_QTY_DEBUG dump showing the post-sched1 chain unchanged."
+   "hypothesis": "Spell the do_timeout block so combine.c:10752-10754 fires on the arg5 loaded value, bumping its reg_n_refs from 2 to 3 with zero emitted bytes and no change to the post-sched1 chain.",
+   "mechanism": "The bump fires when combine successfully merges an i2 into an i3, the register carrying the REG_DEAD note being redistributed is referenced in BOTH patterns, and `place` resolves to i3. reg106 today appears in exactly two insns - the load that defines it and the `sw ...,16(sp)` that consumes it - and no combination touches both, which is why it never fires. refs 3 gives pri 5000 and the target seats (s124 CONFIRMED hypothesis 5).",
+   "next_probe": "On the SPLIT (`t0 *= 4`) order-exact chassis (S3/X1, 6/160 - not the candidate chassis, not the `t0 <<= 2` merged chassis, both measured dead in s124), enumerate spellings in which the arg5 value participates in a two-insn combination that survives recog: an address form absorbing the loaded value, a widening/narrowing pair, a zero_extract, an equality the block already computes. For each require (a) a sandbox score, (b) QTYDBG refs= on reg106, (c) tmp/grind/CD_sync/s123/chainorder.py showing the post-sched1 chain unchanged. Success signature: refs exactly 3, bi 160, order unchanged, score 0."
   },
   {
-   "hypothesis": "The 3/160 forms (S1 = `t0 = (s32)((u8 *)tbl_125c + t0 * 4);` as one statement, S6 = the same with `ix <<= 2;` hoisted) are a third residual class whose divergence is not the 120/130 transposition, and one of them may be one atom from zero in a direction neither the 2 nor the 6 chassis can reach.",
-   "mechanism": "Folding the scale into the add removes insn 120 from the chain as a separate statement-level entity, so sched1 sees a different input block entirely; the resulting stream is neither ours nor V2's and its local-alloc quantity table has never been read.",
-   "next_probe": "Apply S1 and S6, run inverse_compose.py classify to name the FIRST DIVERGENCE for each, dump BB2_QTY_DEBUG for block 3, and if classify says RA run inverse.py local --swap on that model; if it says ORDER run perturb.py --pass 1 --goal-from-target on the re-extracted model."
+   "hypothesis": "A loop_depth-based refs=3 carrier exists that does not split basic block 3.",
+   "mechanism": "flow.c:2081 multiplies each reference by loop_depth, which is what makes the do-while(0) wrap produce refs exactly 3 (measured, E1/E2). The wrap's cost is not the multiplier but the NOTE_INSN_LOOP_BEG/END pair, which find_basic_blocks turns into block boundaries inside block 3, adding a 7th reference to ix, merging the t0 chain and destroying the order.",
+   "next_probe": "Read flow.c 2060-2100 and 2700-2730 for every path that increments loop_depth and check the .flow dump's block partition (not the score) for each placement: wrap around the whole do_timeout block, wrap outside the block with a compensating refs change on ix, and any non-loop construct that raises loop_depth. Report whether a single-block placement exists at all."
   },
   {
-   "hypothesis": "One of the 25 pass-1 reaching atoms on the V2 chassis has a byte-neutral C spelling after all, most plausibly the add_dep memory-edge class, if a load in the block can be made to look like it may alias the outgoing-argument stack slot.",
-   "mechanism": "sched.c builds memory dependences conservatively from the pre-sched insn order; the two printf argument loads already carry true deps on the sw at 149 for exactly this reason, so an aliasing relationship - not a statement move - is what the model is asking for, and an aliasing change is invisible to the emitted bytes.",
-   "next_probe": "Re-run perturb.py --depth 2 on the same goal to see whether a two-atom vector uses only spellable inputs, and separately test whether reading one of the block's values through a differently-typed pointer creates the 112<-123 edge without adding an insn; reject any spelling that changes build_insns."
+   "hypothesis": "The 3/160 residual class (s123's S1 and S6) is a third vantage whose quantity table has never been read and may carry a tie breakable by a lever the 2- and 6-chassis cannot reach.",
+   "mechanism": "S1/S6 fold the t0 scale into the t0 add on the FOLDED-arg5-address chassis. s124's X-family folded the same scale on the SPLIT-address chassis and got 6, so 3/160 is specific to the folded-address stream: sched1 sees a different input block and local-alloc a different quantity table.",
+   "next_probe": "QTYDBG block 3 plus inverse_compose.py classify on memory/grind/CD_sync/rejected/s123_S1_t0_one_stmt.c and s123_S6_ixshift_first_t0_folded.c; if classify says RA, run inverse.py local --swap on that model and diff the vector list against the S3/V2 one; if it says ORDER, run perturb.py --pass 1 --goal-from-target on the re-extracted model."
   }
  ],
  "judge_constraints": [
@@ -1071,6 +1077,38 @@
    "measured_on": "folded candidate chassis (memory/grind/CD_sync/candidate.c), chain-extender FAKE present, pp pointer alias absent; control 2/160 bi 160 rd 0",
    "predicate_cite": "",
    "result": "S8 = 2/160 bi 160 rd 0, exactly the control - the pointer local is inert on this chassis too, so the s122 kill survives "
+  },
+  {
+   "session": 124,
+   "statement": "Folding the t0 scale into the t0 address at C level (the correct spelling of inverse.py's refs_down-on-qty-1 vector under s122's corrected quantity map) removes the scale temp from local-alloc's block",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (memory/grind/CD_sync/candidate.c, 2/160) and the S3/V2 order-exact split chassis (6/160); chain-extender FAKE present in all eight forms, pp pointer alias absent",
+   "predicate_cite": "",
+   "result": "X1 6, X2 6, X3 6, X4 6, X5 7, X6 7, X7 7, X8 7 - all build_insns 160, rules_dropped 0, against a live control of 2/160 o"
+  },
+  {
+   "session": 124,
+   "statement": "Respelling `t0 *= 4;` as `t0 <<= 2;` merges the t0 chain into a single local-alloc quantity and improves the score on the candidate or the order-exact chassis.",
+   "kill_scope": "instance",
+   "measured_on": "candidate chassis (2/160) and the S3/S5/S7/S9 order-exact chassis (6/160); chain-extender FAKE present, pp pointer alias absent",
+   "predicate_cite": "",
+   "result": "B0 7, B1 6, B2 6, B3 6, B4 7, B5 9, all bi 160. The merge is real - B1's block 3 becomes qty0 reg107 birth 8 death 32 re"
+  },
+  {
+   "session": 124,
+   "statement": "A dead store or self-assignment to the arg5 local raises reg_n_refs on the arg5 loaded value from 2 to 3.",
+   "kill_scope": "instance",
+   "measured_on": "S3 order-exact split chassis (6/160 control); chain-extender FAKE present, pp pointer alias absent",
+   "predicate_cite": "",
+   "result": "All five score 6/160 bi 160, exactly the A0 S3 control, and QTYDBG shows qty2 reg106 birth 20 death 26 refs=2 unchanged "
+  },
+  {
+   "session": 124,
+   "statement": "Wrapping the arg5 load in `do { ... } while (0);` raises reg_n_refs on the arg5 loaded value to exactly 3 without disturbing block 3.",
+   "kill_scope": "instance",
+   "measured_on": "S3/S5 order-exact split chassis and the candidate folded chassis; chain-extender FAKE present plus the do-while(0) wrap itself, pp pointer alias absent",
+   "predicate_cite": "",
+   "result": "The refs half CONFIRMS: E1 and E2 both dump qty2 reg106 refs=3, exactly the predicted value. Everything else regresses -"
   }
  ],
  "sibling_progress": [

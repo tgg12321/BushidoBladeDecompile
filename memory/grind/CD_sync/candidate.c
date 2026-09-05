@@ -1,3 +1,64 @@
+/* [s124] BODY UNCHANGED; floor re-measured live at 2/160 (bi 160, rd 0);
+ * fake_ablate re-run: keep-all 2/160, drop-1 15/159, so the chain-extender is
+ * still load-bearing and no number below is a FAKE-carrier artifact.
+ *
+ * WHAT THIS SESSION ADDS: the closing predicate is now a NUMBER, and the
+ * mechanism that produces it is named.
+ *
+ * 1. The t0 chain is TWO pseudos, not one, and that is a C-level dial nobody
+ *    had turned.  `t0 *= 4;` expands as a MULT, so expand_expr targets a FRESH
+ *    pseudo (reg112) for the scale and the C variable's own pseudo (reg107)
+ *    dies twice -- "dies in 2 places" in the .lreg register file, which is the
+ *    condition that makes local-alloc SKIP reg107 and hand it to global-alloc.
+ *    `t0 <<= 2;` writes in place, so the whole t0 chain becomes ONE local
+ *    quantity (reg107, refs 6, birth 8 death 32, pri 5000).  Measured:
+ *    B0 (candidate chassis) 7, B1/B2/B3 (order-exact chassis) 6, B4 7,
+ *    B5 (mirror, ix *= 4) 9.  The merged chassis is STRICTLY WORSE for
+ *    closing, because a 5000-pri t0 chain outranks any refs-3 arg5 (also 5000)
+ *    on the qty-number tiebreak.  The closing chassis is the SPLIT one.
+ *
+ * 2. On the SPLIT + order-exact stream (S3/X1, 6/160) the four block-3
+ *    quantities are ix (refs 6, span 10, pri 12000), arg3 (refs 4, span 8,
+ *    10000), the t0 scale temp reg112 (refs 2, span 6, 3333) and the arg5
+ *    loaded value reg106 (refs 2, span 6, 3333).  reg112 wins the 3333 tie on
+ *    qty number and takes $v1; arg5 gets $a0; reg107 follows reg112 into $v1
+ *    out of global-alloc.  The target wants the opposite.
+ *
+ * 3. THE PREDICATE IS EXACTLY THREE REFERENCES ON reg106 -- not ">= 3".
+ *    pri(refs 3, span 6) = 5000, which slots arg5 THIRD (after ix and arg3,
+ *    before reg112): ix $v0, arg3 $v0, arg5 $v1, reg112 $a0, and reg107's
+ *    second range overlaps arg5's $v1 range so global-alloc must give it $a0 --
+ *    all six of the divergent register pairs, in the target's spelling.
+ *    Measured overshoot: C1/C2 give reg106 refs 4 (pri 13333), it is allocated
+ *    FIRST and takes $v0 (11/161).  Measured undershoot: refs 2 is today's 6.
+ *
+ * 4. TWO CARRIERS FOR refs=3 MEASURED, BOTH DEAD AS SPELLED:
+ *    - dead store / self-assign to the local (`arg5 = arg5;`, `ix = arg5;`,
+ *      doubled) leaves refs at 2 in QTYDBG -- these are deleted before flow.c
+ *      counts, so the whole dead-store family is not a refs carrier here.
+ *    - `do { arg5 = *(s32 *)ix; } while (0);` DOES produce refs exactly 3
+ *      (flow.c:2081 `reg_n_refs[regno] += loop_depth`), confirmed in QTYDBG on
+ *      E1/E2 -- but the loop notes split block 3, so ix picks up a 7th ref, the
+ *      t0 chain merges anyway, and the order is destroyed: 11-15/160 over four
+ *      placements plus a dedicated-address-local variant.
+ *
+ * 5. THE UNSPENT CARRIER, and it is a named byte-neutral GCC mechanism:
+ *    combine.c:10752-10754 -- "If the register is used in both I2 and I3 and it
+ *    dies in I3 ... if reg_n_refs was 2, bump it to 3.  The reason this is done
+ *    is because local-alloc.c treats 2 references as a special case."  That is
+ *    a refs 2 -> 3 bump with ZERO emitted bytes and zero change to the insn
+ *    stream.  Spelling the do_timeout block so the arg5 value is referenced in
+ *    both halves of a successful combine, with its REG_DEAD note landing on i3,
+ *    is the next session's target.  See hypotheses.md H124-1..H124-3.
+ *
+ * Also killed this session: folding the t0 scale into the t0 address at C level
+ * (S1's device) on an ORDER-REACHING chassis does not remove the scale temp
+ * from local-alloc's table -- X1's block-3 quantity table is byte-identical to
+ * V2/S3's and all eight X forms score 6 or 7.  This is the correct re-test of
+ * the "refs_down on qty 1" vector under s122's corrected quantity map, which
+ * s121 had measured against the MIS-IDENTIFIED quantity (the address, not the
+ * scale result); that kill is now re-established on the right target.
+ */
 /* [s123] BODY UNCHANGED; floor re-measured live at 2/160 (bi 160, rd 0).
  * The s121/s122 frontier item this body was carrying - "there are ~10
  * perturbation atoms that reach the sched2 goal without perturbing the sched1
