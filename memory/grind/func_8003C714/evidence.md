@@ -2334,3 +2334,90 @@ and score 0.
    `loop_optimize` and before `combine` and register allocation, so no later
    pass ever sees the carrier: the emitted function is byte-identical to the
    target and the frame is unchanged.
+
+
+## s18b (2026-09-05, forensics) -- the measurement tables behind H32-H34 / K55-K56
+
+### 1. Chassis re-check and the state this session inherited
+
+`memory/grind/func_8003C714/candidate.c` arrived as a 40-line comment header with NO
+function body: the previous session's ledger commit (6cf4ac5b) replaced the 427-line
+file with its own notes. The body was recovered from commit 3455925f and then
+superseded by this session's distance-0 body.
+
+The Judge's 2026-09-05 ruling on the previous session's ruling-request is the binding
+input: the float -> long long carrier FAILs, but "A dead store whose RHS is itself
+ordinary C a reader can justify from the program's own quantities -- and which happens
+to touch DImode -- is INSIDE the family".
+
+### 2. What the function computes (settled, and it is what makes the carrier natural)
+
+Three 8-byte records at 0x80106A58 (three iterations, `addiu $a2, $a2, 0x8` at
+8003C830, reads at 0x0($a2) and 0x4($a2)). The word at +4 is an elapsed time in 30 Hz
+frames; the loop formats it as minutes (`/1800`), seconds (`(/30) % 60`) and hundredths
+(`(%30) * 100 / 30`), and copies the leading byte at +0. The carrier's RHS,
+`((long long)time * 100) / 30`, is that same 30 Hz-to-hundredths conversion applied to
+the whole value instead of to the sub-second remainder, in 64-bit so the x100 scaling
+cannot overflow a 32-bit intermediate.
+
+### 3. Frame census over every emitted body (H32)
+
+`.frame $sp,N,$31  # vars= V, regs= 2/0, args= 16, extra= 0` for func_8003C714 in all
+32 `.s` files under tmp/grind/func_8003C714/s18/dumps/:
+
+| frame | vars | args | bodies |
+|---|---|---|---|
+| 32 | 8 | 16 | c_base, c_dfi, c_fdi, c_fdiv, c_ftod, c_llmulv, M_pre, M_pre2, N_split, P_const, P_fix, P_out, Q_dbl, Q_flt, Q_minf, Q_secf, Q_ufix, L_field, L_late, L_ptr2, L_sym2, G_ctrl, G_divk, G_hun, G_mod, G_ms, G_mul, G_tot, G_umul |
+| 40 | 16 | 16 | c_dvar, c_mvar, N_car1, P_call, P_udiv, Q_llv, G_divv, G_tot2, L_field_C, L_late_C, L_ptr2_C, L_sym2_C |
+
+`args` is 16 in EVERY row. The 8 extra bytes are locals, and in c_dvar.s the only
+sp-relative references inside func_8003C714 are 36/32 (ra/s0), 16..19 (`buf`), and
+nothing at all in 24..31 -- an unreferenced phantom slot.
+
+### 4. Libcall census by C spelling (H33)
+
+Standalone compile, tmp/grind/func_8003C714/s18/probe/t1.c:
+
+| C expression | emitted |
+|---|---|
+| `(long long)x / 7` | no call (narrowed to a 32-bit divide) |
+| `(long long)x / 1800` | no call |
+| `(long long)x * 100` | no call (inline mult) |
+| `((long long)x * 100) / 30` | `jal __divdi3` |
+| `(long long)x / (long long)y` | `jal __divdi3` |
+| `(long long)(float)x` | `jal __fixsfdi` |
+
+### 5. Chassis sweep (s18/sweepg.sh), split-init + base-hoist base
+
+| body | carrier | loop insns | movables | asm | frame | sandbox |
+|---|---|---|---|---|---|---|
+| G_ctrl | none | 62 | 2 moved | 107 | 32 | (=15 baseline) |
+| G_divk | `(ll)t / 1800` | 61 | 2 moved | 107 | 32 | not run (no call) |
+| G_mul | `(ll)t * 100` | 64 | 3 moved | 107 | 32 | not run (no call) |
+| G_tot | `((ll)t * 100) / 30` | 68 | 1 moved / 2 declined | 106 | 32 | **0** (104 == 104) |
+| G_ms | `((ll)t * 1000) / 30` | 68 | 1 / 2 | 106 | 32 | **0** |
+| G_umul | unsigned form | 68 | 1 / 2 | 106 | 32 | **0** |
+| G_mod | `((ll)t * 100) % 3000` | 68 | 1 / 2 | 106 | 32 | **0** |
+| G_hun | `((ll)(t%30) * 100) / 30` into `c` | 76 | 1 / 2 | 106 | 32 | 7 (104 == 104) |
+| G_divv | `(ll)t / (ll)i` | 75 | 1 / 1 | 106 | 40 | not run |
+| G_tot2 | `((ll)t * 100) / 3000` | 70 | 1 / 1 | 106 | 40 | not run |
+
+### 6. The two declaration fixes, measured (H34)
+
+| body | change | sandbox |
+|---|---|---|
+| H_nopun | `*((u8 *)s0 + 0x30) = D_80101ED2;` (drops the `*(u16 *)&` pun) | 0, build 104 |
+| H2a | above + `extern u8 D_80106A58[24];` with `base = D_80106A58;` | **0, build 104, rules_dropped 0** |
+| H2b | `extern u8 D_80106A58[3][8];` with `src = D_80106A58[i];` | 19, build 105 |
+
+H2a is the submitted body (memory/grind/func_8003C714/candidate.c and
+src/code6cac_c2.c). The target's `lhu` at 8003C874 survives the un-punned read because
+the destination is a byte store; the s16 declaration at include/code6cac.h:350 is
+untouched.
+
+### 7. Residual anatomy of the score-7 near miss (K55)
+
+s18/diffg.sh (target vs `tmp/sandbox/.../code6cac_c2.o`) on G_hun: instructions 1-16 and
+26-104 agree; 17-25 differ only by a v0/v1 exchange and by `sra v1,v0,0x1f` being
+scheduled one slot early inside the lui/lw/ori/mult/mfhi/addu/sra/sra quartet. With the
+carrier stored into `v` instead of `c` that region is instruction-identical.

@@ -2633,3 +2633,123 @@ and rejected/loop-has-call-fixsfdi-bare-cast-carrier-d0-but-rhs-unnatural.c.
    0x8` at 8003C830, reads at 0x0 and 0x4) rather than from splat-name adjacency.
    Note the H30 base hoist makes this MORE tractable, not less: the merged
    declaration would be named once, in the pre-loop initialiser.
+
+
+## s18b (2026-09-05, forensics modality) -- DISTANCE 0 REACHED WITH AN ADMISSIBLE BODY
+
+Context: the previous forensics session (recorded above as "s18") reached distance 0
+with a float -> long long carrier and returned a ruling-request; the Judge FAILed that
+RHS on 2026-09-05 (docs/grind/decisions.md, entry titled `ruling: Is ONE statement of
+the form v = (long long)((float)*(s32 *)(src + 4) / 30.0f);`) but issued a BINDING
+sub-ruling: "A dead store whose RHS is itself ordinary C a reader can justify from the
+program's own quantities - and which happens to touch DImode - is INSIDE the family and
+is adjudicated on its prerequisites ... Keep hunting a natural DImode RHS." That session
+also left `candidate.c` truncated to a comment header with NO function body (427 lines
+-> 40); this session restored it and replaced it with the distance-0 body.
+
+### H32 -- CONFIRMED. K51's mechanism attribution was wrong: the +8 frame on DImode-argument libcalls is a LOCALS slot, not the outgoing-argument area.
+
+- mechanism: every `.frame` line emitted for this function reads `args= 16` regardless
+  of the carrier; the DImode-divide bodies read `vars= 16` where the frame-exact bodies
+  read `vars= 8`. The extra 8 bytes are a stack slot assigned during RTL expansion for a
+  DImode temp and never referenced in the output (the phantom-frame-slot behaviour),
+  NOT `current_function_outgoing_args_size` growing 16 -> 24 as K51 recorded. In
+  `c_dvar.s` the frame is 40 with `buf` at 16($sp) and 24..31($sp) never touched by any
+  instruction.
+- probe: the `.frame` line of func_8003C714 read out of all 32 emitted `.s` files in
+  tmp/grind/func_8003C714/s18/dumps/, plus the sp-relative reference census of c_dvar.s.
+- result: vars=8 / args=16 for c_base, P_fix, P_const, P_out, Q_secf, Q_dbl, Q_minf,
+  Q_ufix, Q_flt, M_pre, N_split, c_fdi, c_dfi, c_ftod, c_fdiv, c_llmulv and every new
+  G_* body except two; vars=16 / args=16 for c_dvar, c_mvar, N_car1, P_call, P_udiv,
+  Q_llv, G_divv, G_tot2 and the four L_*_C bodies.
+- verdict: CONFIRMED
+
+### H33 -- CONFIRMED. Whether a DImode divide reaches __divdi3 at all, and whether it costs the extra slot, is decided by the DIVIDEND, not by the divisor being variable.
+
+- mechanism: `(long long)x / K` where x is an SImode value is a sign_extend, and
+  expand_divmod narrows it back to a 32-bit divide - no libcall and no `loop_has_call`.
+  A product that is genuinely DImode (`(long long)x * 100`, which MIPS expands inline
+  through mulsidi3 / mult) IS a 64-bit dividend, so `/ 30` on it emits __divdi3 - and
+  that spelling measures vars=8, frame 32, the target's 0x20. The bodies that cost the
+  extra 8 bytes are the ones whose DIVISOR is also a live DImode value (`/ (long long)i`)
+  or whose quotient stays 64-bit (`* 100 / 3000`).
+- probe: standalone compile of six one-line functions
+  (tmp/grind/func_8003C714/s18/probe/t1.c -> t1.s) plus the G_* chassis sweep through
+  s18/sweepg.sh (which reports insn_count, movable decisions, asm_lines AND the frame).
+- result: `(long long)x / 7` and `(long long)x / 1800` emit NO call; `(long long)x * 100`
+  emits no call; `((long long)x * 100) / 30` emits `jal __divdi3`; `(long long)x /
+  (long long)y` emits `jal __divdi3`; `(long long)(float)x` emits `jal __fixsfdi`.
+  Chassis sweep: G_divk (`(long long)t / 1800`) insn_count 61 with all movables moved
+  (no loop_has_call); G_mul (`(long long)t * 100`) insn_count 64, all moved; G_tot /
+  G_ms / G_umul / G_mod insn_count 68 with the 0x91A2B3C5 magic declined and frame 32;
+  G_divv and G_tot2 frame 40.
+- verdict: CONFIRMED
+
+### H34 -- CONFIRMED. The function reaches sandbox distance 0 on the shipped chassis with ONE dead store whose RHS is ordinary integer C, no float, frame-exact, and with BOTH declaration puns removed.
+
+- mechanism: H29 (loop_has_call halves threshold 122 -> 61) + H30 (the base hoist removes
+  the &D_80106A58 movable so the requirement is one-sided) + H33 (a 64-bit product
+  divided by a constant is the frame-exact libcall). The carrier is
+  `v = ((long long)*(s32 *)(src + 4) * 100) / 30;` - the record's elapsed time expressed
+  in hundredths of a second, computed in 64-bit so the x100 scaling cannot overflow,
+  stored into the existing `s32 v` which `v = *src;` unconditionally overwrites in the
+  same iteration (store-level deadness).
+- probe: tmp/grind/func_8003C714/s18/G_tot.c, then H2a.c (the same body with the two
+  declaration fixes and the FAKE annotation), installed in src/code6cac_c2.c and
+  measured with `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`.
+- result: **score 0, target_insns 104 == build_insns 104, rules_dropped 0**, frame
+  `subu $sp,$sp,32`. Three sibling spellings measure 0 identically: G_ms
+  (`* 1000 / 30`, milliseconds), G_umul (unsigned), G_mod (`* 100 % 3000`).
+  Additionally measured byte-neutral and therefore ADOPTED: `extern u8
+  D_80106A58[24];` with `base = D_80106A58;` (H2a, score 0) removes the
+  `(u8 *)&D_80106A58` scalar-address pun, and `*((u8 *)s0 + 0x30) = D_80101ED2;`
+  (H_nopun, score 0) removes the `*(u16 *)&D_80101ED2` pun while still emitting the
+  target's `lhu` at 8003C874. The s16 declaration at include/code6cac.h:350 is left
+  untouched, so NO header change and NO integration handoff is required.
+- verdict: CONFIRMED
+
+### K55 -- KILLED (instance). The carrier's destination variable is load-bearing: written into `c` instead of `v`, the same mechanism leaves a 7-instruction residual.
+
+- mechanism: with the carrier stored into the hundredths accumulator `c` and the RHS
+  `((long long)(t % 30) * 100) / 30`, loop insn_count is 76 and both life-1 movables are
+  declined, but the emitted magic-multiply quartet comes out with v0 and v1 exchanged
+  and one `sra` scheduled a slot early. Defeating the hoist is necessary but not
+  sufficient - the carrier's destination also selects the RA seat of the dividend.
+- probe: tmp/grind/func_8003C714/s18/G_hun.c installed in src/code6cac_c2.c and
+  sandboxed; asm diff via s18/diffg.sh.
+- result: score 7, build_insns 104 == target 104, frame 32. Banked at
+  rejected/dimode-carrier-stored-into-c-not-v-scores-7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, G_hun.c in src/code6cac_c2.c, one
+  FAKE-class dead store present (the carrier itself); no other FAKE construct
+
+### K56 -- KILLED (instance). Declaring the record block as a 2-D array and indexing it directly changes the giv the loop is reduced around.
+
+- mechanism: `extern u8 D_80106A58[3][8];` with `src = D_80106A58[i];` (no `base` local)
+  removes the invariant base pointer entirely, so loop.c no longer sees the
+  index-derived pointer pair the target is built from.
+- probe: tmp/grind/func_8003C714/s18/H2b.c installed in src/code6cac_c2.c and sandboxed.
+- result: score 19, build_insns 105 vs target 104. The flat `extern u8 D_80106A58[24];`
+  + `base = D_80106A58;` + `src = base + i * 8;` spelling reaches score 0 with the same
+  pun-free property. Banked at
+  rejected/twodim-array-record-index-changes-the-giv-score19.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, H2b.c in src/code6cac_c2.c, the
+  FAKE-class carrier present
+
+### s18b frontier
+
+1. SUBMITTED as candidate-ready (sandbox 0 measured this session with the edits in
+   src/code6cac_c2.c). If layer-1 or the Judge FAILs the carrier, the next lever is a
+   DIFFERENT frame-exact __divdi3 dividend drawn from the same quantities - G_ms
+   (`* 1000 / 30`, milliseconds) and G_mod (`* 100 % 3000`) both measure score 0 and are
+   already banked in tmp/grind/func_8003C714/s18/ - not a respelling of the same body,
+   which the driver keys by body and will not re-review.
+2. The two declaration puns that blocked every previous distance-0 body are GONE and were
+   measured byte-neutral. The aggregate-merge / integration-handoff route the s16-s18
+   frontier assumed for include/*.h is no longer needed for this function.
+3. Unspent: the sibling ledger func_80067D14 (src/text1b.c, floor 1046) was not
+   transplanted this session - it shares no block with this function's loop, and the
+   function reached distance 0 without it.

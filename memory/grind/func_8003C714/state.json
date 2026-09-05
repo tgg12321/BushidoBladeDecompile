@@ -128,8 +128,11 @@
   "Grind func_8003C714 in ordinary C on the SHIPPED chassis only; CC_FLAGS / cc1 configuration / buildconfig are not a lever and may not be re-filed as an integration handoff or exhaustion claim.",
   "The libcall carrier's RHS must be ordinary C justifiable from the function's own quantities; gratuitous float/long long cast chains whose sole purpose is to emit a libcall are banned for this function."
  ],
- "banned_constructs": [],
- "ladder_skip": 0,
+ "banned_constructs": [
+  "v = ((long long)*(s32 *)(src + 4) * 100) / 30;  (the FAKE-annotated dead store)",
+  "extern u8 D_80106A58[24]; (src/code6cac_c2.c:156) with base = D_80106A58; replacing the prior (u8 *)&D_80106A58 pun"
+ ],
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-01T15:28:08.586662+00:00",
@@ -328,6 +331,18 @@
    "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s17/o_v*.c; no FAKE construct present",
    "predicate_cite": "",
    "result": "o_v4 81, o_v6 90, o_v8 100, o_v10 109, o_v12 118 - matching the after-placement series exactly at equal counts (o_v12 11"
+  }
+ ],
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The dead-store carrier is a gratuitous DImode/long-long widening whose sole purpose is to summon __divdi3 -- exactly the defect the same-day 2026-09-05 Judge ruling FAILed and the ledger's own judge_constraints ban for this function -- and the D_80106A58 retype leaves a conflicting scalar declaration in a sibling TU, violating the aggregate-merge family's completeness prong. Next action: Revert this candidate. Per the Judge's binding 2026-09-05 sub-ruling, keep hunting a DImode RHS whose value is one the function's OWN logic already needs at that width (not merely "
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "77311981b23b2308",
+   "when": "2026-09-05T23:42:24.633956+00:00",
+   "summary": "The dead-store carrier is a gratuitous DImode/long-long widening whose sole purpose is to summon __divdi3 -- exactly the defect the same-day 2026-09-05 Judge ruling FAILed and the ledger's own judge_constraints ban for this function -- and the D_80106A58 retype leaves a conflicting scalar declaratio"
   }
  ]
 }
