@@ -2823,3 +2823,60 @@ merely re-spells a banned carrier is still banned.
   halfword store in source, and the idx re-read must sit after the 0x1C store. The answer is a
   conjunction of the type and the order, not the type alone.
   kill_scope: instance. measured_on: today's HEAD chassis, struct-typed bodies, zero FAKE constructs.
+
+## [s29] synthesis — the function CLOSES
+
+**H-s29-1 (CONFIRMED).** D_800A3468 is a pointer-typed global, and writing every access
+to the object it points at as a struct member reference — with NO local holding the object
+pointer — produces the target bytes exactly.
+*Mechanism:* cse caches the pointer load in $v1 and re-loads it after each invalidating
+event (a store through the pointer, the `jalr`, the `sb`), which is what emits the target's
+three `lw ?,0x10($v1)` reads and its two post-call `%gp_rel(D_800A3468)` reloads
+(tools/gcc-2.7.2/cse.c:1703-1719); MEM_IN_STRUCT_P on the member references satisfies
+`true_dependence`'s struct escape (tools/gcc-2.7.2/sched.c:826-841) and frees the offset-0
+index read from the two `%gp_rel` scalar stores.
+*Probe:* memory/grind/func_80060A68/candidate.c → `sandbox --disable all` score 0,
+build_insns 66 / target_insns 66; `verify-oracle` build_sha1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked.
+
+**H-s29-2 (KILLED, instance).** Keeping s28's `struct Ob *ob = (struct Ob *)D_800A3468;`
+local and only rewriting the layer-1-flagged tail store to `*(s8 *)ob->p14 = result;`
+recovers the match.
+*Result:* 30/66. `ob` is then live across the `jalr` and is allocated a callee-saved
+register, whereas the target reloads `%gp_rel(D_800A3468)` twice after the call — the
+target proves no source local holds the object pointer across the call. Body at
+rejected/s29-struct-local-ob-pointer-live-across-call-p14-member-score30.c.
+*measured_on:* today's HEAD chassis (s28 struct-typed body, `ob` local), zero FAKE
+constructs.
+
+**H-s29-3 (KILLED, instance).** With the object reached directly through the pointer
+global, the offset-0 field may be declared `s32 status` and its index read spelled
+`*(u16 *)&D_800A3468->status`.
+*Result:* 11/66, 66 insns, and the entire residual is slots 21..32 — the window where the
+two `%gp_rel` stores, the three halfword stores and the three 0x10 reloads interleave. The
+cast makes that read a bare MEM (MEM_IN_STRUCT_P == 0), so `true_dependence`'s struct
+escape does not fire and the read cannot cross the `%gp_rel` stores. Declaring offset 0 as
+`union { s32 w; u16 h; } id;` (candidate.c) or as `u16 idx; u16 u02;` with the flag test
+cast (alt-s29-score0-two-halfwords-plus-cast-flag-read.c) — statement order IDENTICAL in
+all three — scores 0/66. Body at
+rejected/s29-global-struct-pointer-but-offset0-read-cast-spelled-not-member-score11.c.
+*measured_on:* today's HEAD chassis (pointer-global chassis, no object local), zero FAKE
+constructs.
+
+**Frontier: none.** The function matches and the full build reproduces the oracle SHA1.
+
+
+**H-s29-4 (CONFIRMED).** The three tables can be declared as arrays at the DECLARATION
+(`extern s32 D_800F10D0[];`, `extern u8 D_8009BA60[];`,
+`extern s32 chractar_use_pset_combo_id_table[];`) and read as plain subscripts, instead of
+being read through the address of their first word at each use site
+(`(&D_800F10D0)[i]`), with NO change to the emitted bytes.
+*Mechanism:* an extern array of unspecified extent and an extern scalar whose address is
+taken produce the same `lui`/`addiu`-based indexed addressing here; neither is eligible for
+the small-data section, so the -G handling does not diverge.
+*Probe:* candidate.c with array declarations -> `sandbox --disable all` score 0,
+build_insns 66 / target_insns 66; `verify-oracle` ok true, build_sha1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa. The use-site spelling that also scores 0 is
+banked at alt-s29-score0-tables-through-address-of-first-word.c. candidate.c carries the
+array declarations because that puts the object model at the declaration rather than at
+each use site, which is what the declaration-pun audit asks for.

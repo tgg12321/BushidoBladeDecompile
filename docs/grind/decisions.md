@@ -23176,3 +23176,7 @@ proven beneficiary. The owner weighed this with the plain-terms framing in hand.
 ## 2026-09-05 00:52 — func_80060A68 — layer-1 review — **FAIL**
 
 Undisclosed redundant global re-read (`(s32)D_800A3468 + 0x14` instead of `ob->p14`) is the exact CSE-defeat mechanism the ledger already named and killed in session 25 -- unannotated, undisclosed, and misrepresented by the self-vet's own blanket claims.
+
+## 2026-09-05 01:09 — func_80060A68 — layer-1 review — **FAIL**
+
+The struct/union declaration for D_800A3468's object is admitted, in the candidate's own header comment, to have been chosen because it flips GCC's MEM_IN_STRUCT_P/true_dependence aliasing conclusion (cse.c:1703-1719, sched.c:826-841) versus a bare-MEM spelling measured the same session (11/66 vs 0/66) -- this is GCC-internals-motivated spelling selection by score sweep, the exact mechanism session 28's own frontier note flagged as unvetted and which has never cleared a family ruling.

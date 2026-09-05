@@ -4020,3 +4020,74 @@ by a load-delay nop at slot 10 and the p10 load is still stranded at slot 4.  sc
   MODEL block reports per function. Sibling func_80045294 (src/text1a_c.c, foreclosed at floor 1
   since its s52) and every function in the 2026-08-18 shared-brief BLOB cluster should be re-checked
   against this predicate before any of them is treated as settled.
+
+## [s29] synthesis — MATCH (score 0, 66/66, verify-oracle SHA1 == oracle)
+
+**Result.** func_80060A68 closes. `sandbox func_80060A68 --disable all` = score 0,
+build_insns 66, target_insns 66; `verify-oracle` = build_sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == original_sha1_locked, build_matches true.
+The body is at memory/grind/func_80060A68/candidate.c and carries zero FAKE constructs,
+zero staged/named-intermediate locals, zero volatile, zero inline asm, and exactly one
+local (`result`, the dispatch call's return value).
+
+**What s28's chassis was missing.** s28 handed over a struct-typed body that already
+scored 0 but was layer-1 FAILed (decisions.md 2026-09-05 00:52) for
+`*(s8 *)*(s32 *)((s32)D_800A3468 + 0x14) = result;` — re-deriving `p14`'s address from
+the raw global instead of using the `ob` pointer the body already held. That body's whole
+geometry depended on that re-read, so the fix was not a one-line edit: with the tail
+rewritten to `*(s8 *)ob->p14 = result;` and everything else held fixed, the body regresses
+to **30/66** (rejected/s29-struct-local-ob-pointer-live-across-call-p14-member-score30.c).
+The reason is visible in the target: after the `jalr`, the target RELOADS
+`%gp_rel(D_800A3468)` twice (80060B2C for the `p14` store, 80060B40 for the flag test).
+A source local holding the object pointer would be live across the call and would be
+allocated a callee-saved register instead; the target proves no such local exists.
+
+**The correct object model, from the file rather than from the bytes.** src/text1b.c
+already treats D_800A3468 as a POINTER global: `D_800A3468 = (s32)v1;` (:3452, :3469,
+:3503), `D_800A3468 = 0x1F800000;` (:3361, the scratchpad), a pointer stored into
+`+ 0x14` (:3415), and the entire offset-0 word written as `0x210009` (:3479) — whose low
+halfword is the index this function loads with `lhu` and whose bit 21 is the 0x200000 flag
+it tests at the tail. Declared `extern struct Ob *D_800A3468;` with every access written
+as a member reference, and with offset 0 declared `union { s32 w; u16 h; } id;`, the
+function needs no object local at all, and the target's instruction stream falls out:
+
+  * cse caches the pointer load in $v1 for the straight-line prologue, and each store made
+    THROUGH that pointer invalidates cse's memory table (tools/gcc-2.7.2/cse.c:1703-1719),
+    so the `p10` read preceding each of the 0x18 / 0x1A / 0x1C stores becomes its own
+    `lw ?,0x10($v1)` — the target's three, with no source statement written twice and
+    nothing staged. The `jalr` and the `sb` through `p14` invalidate it again, producing
+    the two tail reloads.
+  * Member references set MEM_IN_STRUCT_P, which is what lets the offset-0 index read and
+    the `%gp_rel(D_800A3478)` / `%gp_rel(D_800A347C)` scalar stores be disambiguated by
+    `true_dependence`'s struct escape (tools/gcc-2.7.2/sched.c:826-841): the escape needs
+    the read to be MEM_IN_STRUCT_P with a varying address and the store to be neither.
+    Measured directly: the SAME body with offset 0 declared `s32 status` and read as
+    `*(u16 *)&D_800A3468->status` — a cast, so a bare MEM — scores **11/66**
+    (rejected/s29-global-struct-pointer-but-offset0-read-cast-spelled-not-member-score11.c),
+    and the whole residual is the 12-slot window 21..32 where the two `%gp_rel` stores and
+    the three halfword stores interleave with the 0x10 reloads. As a member (union or
+    plain `u16 idx`), 0/66. This is the first direct A/B on this function isolating
+    MEM_IN_STRUCT_P from statement order: the statement order is IDENTICAL in the 11/66 and
+    the 0/66 bodies.
+
+**Two spellings both match**, and the alternate is banked at
+memory/grind/func_80060A68/alt-s29-score0-two-halfwords-plus-cast-flag-read.c: offset 0 as
+`u16 idx; u16 u02;` with the flag test spelled `*(s32 *)D_800A3468` also gives 0/66. The
+union spelling was chosen for candidate.c because it needs no cast anywhere in the body.
+
+**Consequences for the ledger.** Every one of the 53 instance kills banked s1..s28 was
+measured on a chassis in which the object was reached through an integer local
+(`outer`/`ob`) and its fields through casts. Both of that chassis's properties are now
+known to be wrong about the original: the object pointer is not a local at all (the target's
+post-call reloads prove it), and casts suppress the MEM_IN_STRUCT_P disambiguation that the
+whole read-window geometry depended on. The carrier/staging search that produced the five
+banned constructs was searching for a way to make the WRONG chassis emit the right stream.
+
+
+**Declaration-site spelling of the three tables (s29, re-measured on the same chassis).**
+`extern s32 D_800F10D0[]; extern u8 D_8009BA60[]; extern s32
+chractar_use_pset_combo_id_table[];` with plain subscript reads is byte-identical to
+reading each table through the address of its first word: both score 0/66 and both
+reproduce the oracle SHA1. candidate.c now carries the array declarations, so the body has
+no use-site spelling of an object model left in it: every access is a member reference, an
+array subscript, a call, or a scalar assignment.
