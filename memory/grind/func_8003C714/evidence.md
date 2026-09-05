@@ -1327,3 +1327,100 @@ measured from it this session.
 - [s11] force_movables (loop.c:1193-1225) can only link m->forces to an EARLIER movable, so the loop.c:1594 '(! m->forces || m->forces->done)' skip cannot be used to suppress a movable; and the STRICT_LOW_PART partial-movable path at loop.c:832-900 is unreachable on MIPS, so two movables can never share a regno inside one scan_loop call.
 
 - [s11] Carrier cost table, all ordinary C with no FAKE constructs: candidate.c 105 insns / score 15; varE.c (carrier 'D_800A37B8 = 5;') 112 / 18; varD.c (carrier 'D_800A37B8 = 0x12345678;') 113 / 19.
+
+
+## s12 (2026-09-05) - structural modality
+
+### s12.0 Chassis re-check (first action)
+`memory/grind/func_8003C714/candidate.c` applied over the `INCLUDE_ASM` line in
+src/code6cac_c2.c and measured with `sandbox func_8003C714 --disable all`:
+score 15, target_insns 104, build_insns 105, rules_dropped 0,
+cheat_asm_stripped 9. Identical to the s11 record except that
+cheat_asm_stripped moved 10 -> 9 (a TU-level count from neighbouring functions,
+not this body). The ledger floor of 15 is therefore CURRENT, and every banked
+spelling conclusion is still measured on this chassis.
+
+### s12.1 Mandated kill re-audit (K33, the instance kill that sat closest to the target)
+- `tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate
+  memory/grind/func_8003C714/candidate.c` -> "no FAKE-annotated constructs found
+  ... nothing to ablate". The honest body carries no FAKE carrier, so no banked
+  lever was measured while a FAKE construct occupied its pseudo.
+- s11's leanest moved_once carrier (`tmp/grind/func_8003C714/s11/varE.c`,
+  inner loop `j = 0; do { D_800A37B8 = 5; j += 1; } while (j < 2);` placed
+  between the `dst` computation and the first division) re-measured on the
+  current chassis: score 18, build_insns 112. Byte-for-byte the same result s11
+  recorded (+7 emitted instructions over the honest 105). K33 STANDS.
+
+### s12.2 The moved_once channel is byte-foreclosed by the target's own control flow (NEW, class)
+This closes the s11 frontier's item 1 ("a moved_once carrier that emits zero net
+bytes would close the function").
+Chain, each link measured or read from the compiler source this session:
+1. `moved_once[regno] = 1` is written at exactly one place, loop.c:1912 (grep of
+   tools/gcc-2.7.2/loop.c), inside scan_loop and only after a movable has been
+   MOVED out of some loop. The array is alloca'd and bzero'd per function at
+   loop.c:343-344, so it starts clear.
+2. scan_loop refuses to process any loop whose scan_start is not a CODE_LABEL:
+   loop.c:568-576 prints "Loop from %d to %d is phony." and returns. So the
+   carrier must be a loop that has a real top CODE_LABEL and a backward jump to
+   it - which is precisely why `rejected/dowhile0-inner-loop-is-phony.c` failed,
+   and why no `do { } while (0)` spelling can carry the flag.
+3. A loop that satisfies (2) emits that label and that backward branch. Measured
+   directly on the leanest known carrier: with varE.c applied,
+   `tmp/grind/func_8003C714/dumps/code6cac_c2.s` contains TWO labels and TWO
+   backward branches inside func_8003C714 (.L141 / `bne $2,$0,.L141` for the
+   carrier, .L133 / `bne $2,$0,.L133` for the real loop). No pass after
+   loop_optimize removes it: flag_unroll_loops is off in the shipped CC_FLAGS
+   ("-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin
+   -w -mel", engine/buildconfig.py:43), and a >=2-trip loop cannot be folded to
+   straight-line code without unrolling.
+4. The TARGET's bytes contain exactly ONE label and ONE branch:
+   `asm/funcs/func_8003C714.s` has `.L8003C754:` at line 18 and
+   `bnez $v0, .L8003C754` at line 77, and no other label, branch or jump besides
+   the final return. So the shipped function has exactly one loop.
+Consequence: any construct that sets moved_once adds a second loop to the
+emitted code, and the target has no second loop. The whole moved_once /
+insn_count-doubling route (s11 H16, the cheapest known route to the target's
+movable arrangement, requiring only insn_count >= 59) is byte-foreclosed
+independently of how lean the carrier body is. What remains of loop.c:1631 is
+the no-carrier window H17 measured, insn_count in [120, 122], i.e. +64 RTL insns
+at zero emitted cost - the requirement s6 could only meet with inadmissible
+balanced-biv noise.
+
+### s12.3 Structural sweep - five ordinary-C spellings of the body, all measured
+Bodies and the apply script in `tmp/grind/func_8003C714/s12/`; each applied with
+`s12/apply.py` and measured with `sandbox func_8003C714 --disable all`.
+| body | spelling | score | build_insns |
+|---|---|---|---|
+| candidate.c | index-derived pointers, `i += 1`, limit 3 | 15 | 105 |
+| pa_biv_step4.c | biv steps by 4 to 12; `src = base + i*2`, `dst = s0 + i` | 21 | 105 |
+| pb_array_subscript.c | no pointer locals; `out[i*4 + 0x21]`, `base[i*8 + 4]` | 15 | 105 |
+| pc_second_biv.c | second natural index `k += 8` feeding `src` | 15 | 105 |
+| pd_three_indices.c | third natural index `m += 4` feeding `dst` | 23 | 107 |
+Findings:
+- pb is a BYTE-EQUIVALENT alternative spelling of the honest body (same score,
+  same instruction count): the array-subscript form and the index-derived-pointer
+  form converge after cse1, so future permuter seeds may use either.
+- pc is byte-equivalent AND insn_count-equivalent. Its `.loop` dump
+  (`Loop from 28 to 149: 56 real insns`, movables 77/83/90 all moved) shows why:
+  the second index becomes a verified biv (reg 74, const 8) that replaces the
+  `i * 8` giv multiply and is then eliminated, so the loop's RTL insn count is
+  unchanged at 56. A natural extra induction variable is free in BYTES and free
+  in insn_count - it buys nothing on the loop.c:1631 gate.
+- pd shows the free ride ends at two indices: a third index costs +2 emitted
+  instructions (107) and score 23.
+- pa changes the biv's scale rather than adding one; the byte count stays at 105
+  but the emitted arrangement moves further from the target (21).
+
+- [s12] Chassis floor re-measured this session: candidate.c scores 15 (target 104 / build 105, rules_dropped 0, cheat_asm_stripped 9).
+
+- [s12] asm/funcs/func_8003C714.s contains exactly one label (.L8003C754, line 18) and exactly one branch (bnez $v0, .L8003C754 at line 77) besides the return - the shipped function has exactly one loop.
+
+- [s12] moved_once is alloca'd and bzero'd per function at loop.c:343-344 and written at exactly one site, loop.c:1912; scan_loop rejects any loop whose scan_start is not a CODE_LABEL at loop.c:568-576.
+
+- [s12] With s11/varE.c applied, the emitted func_8003C714 in tmp/grind/func_8003C714/s12/varE_carrier.s carries TWO labels (.L133, .L141) and TWO backward branches.
+
+- [s12] Shipped CC_FLAGS (engine/buildconfig.py:43) = '-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel' - no -funroll-loops, so a >=2-trip loop's backward branch always survives to emission.
+
+- [s12] Structural sweep, all ordinary C, all measured with sandbox --disable all: candidate 15/105, pa_biv_step4 21/105, pb_array_subscript 15/105, pc_second_biv 15/105 (insn_count still 56), pd_three_indices 23/107.
+
+- [s12] The .loop dump for pc_second_biv shows the added index recognised as biv reg 74 (const 8), 'biv 74 was eliminated', and the loop still at 56 real insns with movables 77 (life 1), 83 (life 1), 90 (life 31) all moved.

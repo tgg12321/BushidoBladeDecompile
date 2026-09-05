@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 15,
    "modality": "rederive",
    "headline": "Rederive: read the .loop MOVABLE TABLE instead of inheriting it - the admissible insn_count window is [120,122] not '>=120' (H17), and s7's K20 is corrected: the moved_once doubling reproduces the tar"
+  },
+  {
+   "session": 12,
+   "floor": 15,
+   "modality": "structural",
+   "headline": "Structural: the moved_once insn_count-doubling channel (s11's headline frontier item) is CLASS-killed - every carrier is a second emitted loop and the target has exactly one label and one branch - and"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A moved_once carrier that emits zero net bytes would close the function on the shipped chassis with ordinary C, because the carrier arrangement already reproduces the target's movable table exactly and only costs +7 instructions.",
-   "mechanism": "With the carrier between the base-address computation and the first division, the requirement is only 2*insn_count > 116 and insn_count <= 122 (insn_count >= 59, i.e. +3 RTL insns over the baseline 56) - fifteen times cheaper than the +64 the s6 balanced-biv form needed. The blocker is purely that moved_once[] is written only at loop.c:1912, so the carrier must be a real loop and a real loop emits a backward branch.",
-   "next_probe": "Enumerate loop shapes whose control flow is fully removed AFTER loop_optimize: (a) an inner loop whose biv is eliminated by strength_reduce and whose remaining compare is folded by cse2/jump2 (check the .jump2 and .cse2 dumps, not the .loop dump); (b) a do{...}while(0) whose body begins with a CODE_LABEL that survives jump_optimize, which would defeat the 'is phony' rejection at loop.c:566-576 that killed rejected/dowhile0-inner-loop-is-phony.c - note do-while(0) is a SANCTIONED family (.claude/rules/do-while-zero-exception.md) so a byte-free instance would be admissible with a FAKE annotation. Measure byte cost with sandbox, and confirm 'halved since already moved' appears in the .loop dump."
+   "hypothesis": "With the moved_once channel class-killed (K35), the ONLY remaining loop.c:1631 route is H17's no-carrier window - insn_count in [120,122] with zero emitted bytes - and the only measured free insn_count channel is loop-carried arithmetic deleted by biv elimination (s6), which in every spelling found so far is semantically inert padding.",
+   "mechanism": "count_loop_regs_set counts RTL insns in the loop before strength reduction; s6 measured that balanced loop-carried pairs survive cse1, are counted, and are then deleted inside loop_optimize for zero bytes. K21 says only CONSTANT-step bivs get folded away, and K36 now adds that a natural extra index is count-neutral because it displaces the giv multiply it replaces.",
+   "next_probe": "Ask whether any SEMANTICALLY REAL loop-carried value this function could plausibly have computed is a constant-step biv: the data at &D_80106A58 is read, not accumulated, and the tail (func_8001CD68 through gpu_DisableDisplay) consumes no per-entry total, so the honest answer is probably no. Settle it by enumerating what a post-loop consumer would have to look like in the target's 23-instruction tail (8003C844..8003C89C) - if no tail instruction can consume an accumulator, the free-insn_count channel is admissible-form-empty and the whole loop.c:1631 axis is closed for ordinary C."
   },
   {
-   "hypothesis": "An insn_count-inflation attack must land in the 3-wide window [120,122] (no carrier) or make 2*insn_count land in (116,122] (with a carrier); a form that overshoots breaks the match from the other side by declining the base-address hoist.",
-   "mechanism": "The base address is movable slot 1 at threshold 122 and the /1800 magic is slot 2 at threshold 119; both have lifetime 1 and savings 1, so they can only be separated by an insn_count strictly between them. Measured directly: at effective insn_count 126 both printed 'not desirable' and the preheader lost its lui/addiu $a2 pair.",
-   "next_probe": "Any future free-insn_count candidate must be swept across k and the .loop dump checked for the four-line pattern 'base moved / magic not desirable / 0x88888889 moved', not just for a lower sandbox score. Re-check whether s6's balanced-biv sweep has any k in [120,122] other than 121 - the window's width bounds how much slack a natural carrier is allowed."
+   "hypothesis": "The last unmeasured admission trigger for the 0x91A2B3C5 movable is count_loop_regs_set's two-basic-block rule (loop.c:3036-3040: n_times_set[regno] > 0 with last_set[regno] == 0 sets may_not_move), which needs ONE pseudo set in two different basic blocks inside the loop - distinct from K23's two-BB experiment, where combine_movables MATCHED two distinct pseudos and raised savings to 2 instead.",
+   "mechanism": "may_not_move keeps an insn out of the movable list entirely, which is exactly the target's arrangement (magic in-loop as a split lui/ori pair) and costs nothing on the desirability arithmetic. The open question is purely whether cse1 can leave the magic constant in ONE pseudo that is SET (not merely used) in two basic blocks of the loop.",
+   "next_probe": "Build a two-arm loop body where the /1800 division appears in both arms, then read the .cse and .loop dumps rather than the score: check whether the magic appears as one regno with n_times_set 2 (may_not_move fires, no movable printed) or as two regnos joined by combine_movables (K23's outcome). If it is always the latter, the admission axis is closed with a source-level predicate rather than another spelling census."
   },
   {
-   "hypothesis": "A second loop LATER in the function that assigns an invariant to the same user variable our loop assigns would set moved_once without nesting, and might reuse control flow the function already has.",
-   "mechanism": "loop_optimize scans loops in reverse order, so a sibling loop appearing after ours is scanned first; if it hoists a pseudo that our loop also sets exactly once, moved_once[regno] is already set when our loop is scanned. Unlike the nested case the carrier's set would not need to sit inside our loop's preheader.",
-   "next_probe": "Confirm with a diagnostic that a later sibling loop assigning the same C local an invariant really produces ONE pseudo (not two) - RTL may split the variable. If it does, the question becomes whether the function's post-loop tail (func_8001CD68 through gpu_DisableDisplay, 8003C844..8003C89C, 23 instructions) can host a zero-byte loop; the shipped tail is straight-line, so the honest answer is probably no, but the pseudo-identity question is cheap to settle and it is the only non-nested route to moved_once."
+   "hypothesis": "pb_array_subscript.c is a byte-equivalent second chassis for this function (15 / 105), so any future permuter or solver campaign has two independent seeds whose RTL converges after cse1.",
+   "mechanism": "cse1 folds the array-subscript address arithmetic into the same givs the index-derived-pointer spelling produces, so the two bodies emit identical instructions while presenting different pre-cse RTL to a permuter's mutations.",
+   "next_probe": "If a permuter campaign is ever re-run (s4 ran 66,016 iterations on the pointer spelling with zero finds), seed it from tmp/grind/func_8003C714/s12/pb_array_subscript.c instead, so the mutation neighbourhood differs from the exhausted one."
   }
  ],
  "judge_constraints": [
@@ -155,6 +161,30 @@
    "measured_on": "ledger state at 2026-09-05, memory/grind/func_80067D14/ contains no candidate.c",
    "predicate_cite": "",
    "result": "Nothing to transplant; recorded so a later session does not re-spend the sweep until that sibling banks a body."
+  },
+  {
+   "session": 12,
+   "statement": "Setting moved_once[regno] requires a movable to be moved out of some other loop (its only write is loop.c:1912) and scan_loop processes a loop only when its scan_start is a CODE_LABEL (loop.c:568-576 ",
+   "kill_scope": "class",
+   "measured_on": "shipped chassis HEAD 2026-09-05, candidate.c and s11/varE.c applied in src/code6cac_c2.c, no FAKE constructs present (fake_ablate.py reports none in candidate.c)",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1912",
+   "result": "Target has one label and one branch; varE (the leanest known carrier) emits two of each and costs +7 instructions. The m"
+  },
+  {
+   "session": 12,
+   "statement": "Replacing the i*8 scaling with a second natural index variable (k += 8, src = (u8 *)&D_80106A58 + k) builds byte-identically to the honest body at score 15 / 105 insns and leaves loop.c's insn_count u",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, s12/pc_second_biv.c and s12/pd_three_indices.c applied in src/code6cac_c2.c, no FAKE constructs present, sandbox = 15 and 23",
+   "predicate_cite": "",
+   "result": "pc: 15 / 105 insns, insn_count 56 (unchanged). pd: 23 / 107 insns. The natural-biv route buys nothing on the loop.c:1631"
+  },
+  {
+   "session": 12,
+   "statement": "Spelling the loop body with array subscripts on two pre-loop base pointers (out[i*4 + 0x21] = *(s32 *)(base + i*8 + 4) / 1800, ...) instead of per-iteration index-derived pointers measures score 15 at",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, s12/pb_array_subscript.c and s12/pa_biv_step4.c applied in src/code6cac_c2.c, no FAKE constructs present, sandbox = 15 and 21",
+   "predicate_cite": "",
+   "result": "pb: 15 / 105 (byte-equivalent alternative spelling, useful as a second permuter seed). pa: 21 / 105."
   }
  ]
 }

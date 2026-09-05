@@ -246,6 +246,35 @@
  *       carrier must be a CONST_INT invariant.
  * This body remains the honest ordinary-C best at 15. See hypotheses.md
  * H16/H17/K33/K34 and evidence.md section s11.
+ *
+ * [s12 2026-09-05 UPDATE, structural modality] Chassis re-checked first: this
+ * body still scores 15 (104 target / 105 build, rules_dropped 0). BODY
+ * UNCHANGED. s12 closed the s11 frontier's headline item and swept the
+ * structural spelling axis:
+ *   K35 (CLASS) the moved_once insn_count-doubling channel is BYTE-FORECLOSED.
+ *       moved_once is written only at loop.c:1912, reachable only from
+ *       scan_loop, which returns early ("is phony") unless the loop's
+ *       scan_start is a CODE_LABEL (loop.c:568-576). So every carrier is a
+ *       second real loop and emits a second top label plus a backward branch
+ *       (measured on s11/varE.c: .L141 + bne alongside .L133 + bne). The
+ *       TARGET contains exactly one label (.L8003C754) and one branch (bnez at
+ *       8003C83C), and CC_FLAGS has no -funroll-loops, so nothing deletes a
+ *       >=2-trip loop's branch. s11's cheap requirement (insn_count >= 59) is
+ *       therefore diagnostic only; the live requirement is H17's no-carrier
+ *       window insn_count in [120, 122] at zero emitted cost.
+ *   K36 a second NATURAL index variable ('k += 8' feeding src) is byte-free AND
+ *       insn_count-free: it becomes verified biv reg 74 (const 8), replaces the
+ *       i*8 giv multiply, is eliminated, and the .loop dump still reads
+ *       "56 real insns". A third index costs +2 emitted instructions.
+ *   K37 the array-subscript spelling of the body (out[i*4+0x21] = ... on two
+ *       pre-loop base pointers) is BYTE-EQUIVALENT to this body (15 / 105) -
+ *       useful as an alternative permuter seed, not an improvement; re-scaling
+ *       the biv to step 4 measures 21 at 105.
+ *   K33 re-audited on the current chassis and STANDS (18 / 112); fake_ablate
+ *       reports no FAKE constructs in this body, so no banked lever was
+ *       measured under a FAKE carrier.
+ * This body remains the honest ordinary-C best at 15. See hypotheses.md
+ * K35/K36/K37 and evidence.md section s12.
  */
 void func_8003C714(void) {
     u8 buf[4];

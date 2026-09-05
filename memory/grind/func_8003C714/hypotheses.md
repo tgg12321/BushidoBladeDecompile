@@ -1484,3 +1484,84 @@ CONFIRMED.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: ledger state at 2026-09-05, memory/grind/func_80067D14/ contains no candidate.c
+
+## s12 (2026-09-05, structural modality)
+
+### K35 - KILLED (class). No moved_once carrier can be byte-neutral, because every carrier is a second emitted loop and the target has exactly one.
+Statement: setting `moved_once[regno]` requires a movable to be MOVED out of some other loop
+(the flag's only write is loop.c:1912), and scan_loop processes a loop only when its scan_start
+is a CODE_LABEL (loop.c:568-576, "is phony" early return), so every carrier is a second loop with
+its own top label and backward branch in the emitted code; func_8003C714's target
+(asm/funcs/func_8003C714.s) contains exactly one label (.L8003C754, line 18) and one branch
+(bnez $v0 at line 77), so no moved_once carrier can be byte-neutral on this chassis and the
+loop.c:1609 insn_count doubling is unreachable for a matching body.
+kill_scope: class. predicate_cite: tools/gcc-2.7.2/loop.c:1912.
+measured_on: shipped chassis (HEAD 2026-09-05), candidate.c and s11/varE.c applied in
+src/code6cac_c2.c, no FAKE constructs present; varE's emitted asm in
+tmp/grind/func_8003C714/dumps/code6cac_c2.s carries the second label .L141 and its `bne`, and
+CC_FLAGS (engine/buildconfig.py:43) contains no -funroll-loops, so nothing after loop_optimize
+can delete a >=2-trip loop's backward branch.
+Consequence: s11's H16 arrangement (requirement insn_count >= 59) is a diagnostic result only.
+The live requirement returns to H17's no-carrier window, insn_count in [120, 122] with zero
+emitted cost.
+
+### K36 - KILLED (instance). A natural extra induction variable is free in bytes but yields ZERO insn_count.
+Statement: replacing the `i * 8` scaling with a second natural index (`k += 8`, `src =
+(u8 *)&D_80106A58 + k`) builds byte-identically to the honest body (score 15, 105 insns) and its
+.loop dump still reports "Loop from 28 to 149: 56 real insns" - the new index is recognised as
+biv reg 74 (const 8), replaces the giv multiply, and is eliminated, so loop.c's insn_count is
+unchanged; a third index (`m += 4` for dst) costs +2 emitted instructions (107 insns, score 23).
+kill_scope: instance. measured_on: shipped chassis (HEAD 2026-09-05), s12/pc_second_biv.c and
+s12/pd_three_indices.c applied in src/code6cac_c2.c, no FAKE constructs present, `sandbox
+func_8003C714 --disable all` = 15 and 23, .loop dump read at
+tmp/grind/func_8003C714/dumps/code6cac_c2.loop:4223.
+
+### K37 - KILLED (instance). The array-subscript spelling of the body is byte-equivalent, not better.
+Statement: spelling the loop body with array subscripts on two pre-loop base pointers
+(`out[i*4 + 0x21] = *(s32 *)(base + i*8 + 4) / 1800; ...`) instead of per-iteration index-derived
+pointers measures score 15 at 105 build_insns, identical to candidate.c, while re-scaling the biv
+to step 4 (`i += 4`, limit 12, `src = base + i*2`, `dst = s0 + i`) measures 21 at the same 105
+insns.
+kill_scope: instance. measured_on: shipped chassis (HEAD 2026-09-05), s12/pb_array_subscript.c and
+s12/pa_biv_step4.c applied in src/code6cac_c2.c, no FAKE constructs present, `sandbox
+func_8003C714 --disable all` = 15 and 21.
+
+### K33 re-audit (mandated) - STANDS
+s11's leanest moved_once carrier (s11/varE.c) re-measured on the current chassis: score 18,
+build_insns 112, unchanged from s11. `tools/fake_ablate.py` reports no FAKE-annotated constructs
+in candidate.c, so no banked lever was measured under a FAKE carrier.
+
+## [s12] The moved_once insn_count-doubling channel (s11 H16) is byte-foreclosed: every carrier is a second emitted loop (loop.c:568-576 phony gate -> loop.c:1912 flag write) and the target function contains exactly one label and one branch.
+
+## [s12] A second natural index variable is byte-free AND insn_count-free (it becomes an eliminated biv that replaces the giv multiply), so the natural-biv route cannot inflate insn_count toward the [120,122] window.
+
+## [s12] Setting moved_once[regno] requires a movable to be moved out of some other loop (its only write is loop.c:1912) and scan_loop processes a loop only when its scan_start is a CODE_LABEL (loop.c:568-576 'is phony' early return), so every carrier is a second loop that emits its own top label and backward branch, while the target func_8003C714 contains exactly one label (.L8003C754) and one branch (bnez at 8003C83C); therefore no moved_once carrier can be byte-neutral on this chassis.
+- mechanism: loop.c:1609 doubles scan_loop's local insn_count for a movable whose regno already carries moved_once, which is the cheapest known route to the target's movable arrangement (s11 H16 dropped the requirement from insn_count > 119 to insn_count >= 59). But the flag can only be set by a genuine scan_loop move in another loop, and a loop that survives the phony gate has a real top CODE_LABEL and a real backward jump. With s11/varE.c applied the emitted func_8003C714 carries a second label .L141 and a second 'bne $2,$0,.L141' beside the real loop's .L133/bne; the shipped CC_FLAGS (engine/buildconfig.py:43) has no -funroll-loops, so no pass after loop_optimize can fold a >=2-trip loop into straight-line code.
+- probe: grep of tools/gcc-2.7.2/loop.c for the moved_once write (line 1912) and the phony gate (lines 568-576); grep of asm/funcs/func_8003C714.s for labels/branches (exactly one of each); regeneration of tmp/grind/func_8003C714/dumps/code6cac_c2.s with s11/varE.c applied and a label/branch count of the emitted function; re-measurement of varE.c with sandbox (18 / 112 insns).
+- result: Target has one label and one branch; varE (the leanest known carrier) emits two of each and costs +7 instructions. The moved_once route is closed for a matching body; the live loop.c:1631 requirement returns to H17's no-carrier window, insn_count in [120,122] at zero emitted cost.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: shipped chassis HEAD 2026-09-05, candidate.c and s11/varE.c applied in src/code6cac_c2.c, no FAKE constructs present (fake_ablate.py reports none in candidate.c)
+- predicate_cite: tools/gcc-2.7.2/loop.c:1912
+
+## [s12] Replacing the i*8 scaling with a second natural index variable (k += 8, src = (u8 *)&D_80106A58 + k) builds byte-identically to the honest body at score 15 / 105 insns and leaves loop.c's insn_count unchanged at 56, because the new index becomes verified biv reg 74 (const 8), replaces the giv multiply and is eliminated; a third index (m += 4 for dst) costs +2 emitted instructions at score 23 / 107.
+- mechanism: count_loop_regs_set counts 'i'-class insns between loop start and end before strength reduction, so an added induction variable could in principle inflate insn_count for free. Measured: it does not, because the biv displaces the giv multiply it replaces (net zero RTL insns) and is then eliminated by strength_reduce.
+- probe: tmp/grind/func_8003C714/s12/pc_second_biv.c and pd_three_indices.c applied with s12/apply.py, measured with sandbox func_8003C714 --disable all, and the .loop dump read at tmp/grind/func_8003C714/dumps/code6cac_c2.loop:4223 ('Loop from 28 to 149: 56 real insns', movables 77/83/90 all moved).
+- result: pc: 15 / 105 insns, insn_count 56 (unchanged). pd: 23 / 107 insns. The natural-biv route buys nothing on the loop.c:1631 gate.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, s12/pc_second_biv.c and s12/pd_three_indices.c applied in src/code6cac_c2.c, no FAKE constructs present, sandbox = 15 and 23
+
+## [s12] Spelling the loop body with array subscripts on two pre-loop base pointers (out[i*4 + 0x21] = *(s32 *)(base + i*8 + 4) / 1800, ...) instead of per-iteration index-derived pointers measures score 15 at 105 build_insns, identical to candidate.c, and re-scaling the biv to step 4 (i += 4 to 12, src = base + i*2, dst = s0 + i) measures 21 at the same 105 insns.
+- mechanism: Structural modality levers: declaration order, statement re-association and subscript-vs-pointer spelling. cse1 converges the array-subscript and index-derived-pointer forms to the same RTL, so the byte output is identical; changing the biv's scale instead re-shapes the givs and moves the emitted arrangement away from the target.
+- probe: tmp/grind/func_8003C714/s12/pb_array_subscript.c and pa_biv_step4.c applied with s12/apply.py and measured with sandbox func_8003C714 --disable all.
+- result: pb: 15 / 105 (byte-equivalent alternative spelling, useful as a second permuter seed). pa: 21 / 105.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, s12/pb_array_subscript.c and s12/pa_biv_step4.c applied in src/code6cac_c2.c, no FAKE constructs present, sandbox = 15 and 21
+
+## [s12] The mandated kill re-audit reproduces s11's K33 exactly on the current chassis: the leanest moved_once carrier (s11/varE.c) still measures score 18 at 112 build_insns, and tools/fake_ablate.py finds no FAKE-annotated constructs in candidate.c, so no banked lever of this ledger was measured while a FAKE carrier occupied its pseudo.
+- mechanism: An instance kill is only as good as the chassis and FAKE state it was measured under; the brief mandates re-measuring the closest instance kill before new probes.
+- probe: candidate.c applied and measured (15 / 105 / rules_dropped 0 / cheat_asm_stripped 9), then s11/varE.c applied and measured, then tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c.
+- result: Floor 15 current; K33 stands at 18 / 112; ablation not applicable (no FAKE constructs).
+- verdict: CONFIRMED
