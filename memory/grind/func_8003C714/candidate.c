@@ -325,6 +325,22 @@
  * emitted instructions. The live frontier is combine's MERGE path, where a
  * counted extra insn folds into an instruction the target already emits and
  * both halves stay semantically real.
+ *
+ * s15 UPDATE (2026-09-05): the merge path measured EMPTY (K42 - every
+ * decomposition of the divisions is already the RTL the expanders emit,
+ * 56 insns / 107 asm, identical to this body).  Two s15 results replace it:
+ *   (a) the requirement is a TWO-TERM budget, not a fixed number -
+ *       insn_count + 3*(movables moved ahead of the 0x91A2B3C5 movable)
+ *       >= 120 (H22; loop.c:1631 with the loop.c:1719 threshold decrement).
+ *   (b) split-init accumulation is a FREE and ORDINARY channel worth +7
+ *       (H23): a = X; a = a / 1800; dst[0x21] = a; and the same for the
+ *       other two divisions takes insn_count 56 -> 63 with the emitted
+ *       bytes UNCHANGED (sandbox score 15 / build_insns 105, identical to
+ *       this body).  That form is banked at
+ *       rejected/splitinit-ceiling-63-ordinary-c-byte-neutral-but-54-short.c
+ *       and is the better starting chassis for the next session; this file
+ *       stays the MINIMAL body because it is the cleaner submission shape.
+ * Remaining deficit: 54 counted insns, or 18 emitted-free moved movables.
  */
 void func_8003C714(void) {
     u8 buf[4];

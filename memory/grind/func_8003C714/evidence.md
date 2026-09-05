@@ -1728,3 +1728,195 @@ Judge constraint and is not re-filed in any shape.
 - [s14] The one shape that would break that law and has never been probed: an insn that is free because combine MERGES it into a pattern the target already emits, where both halves compute real values. The loop emits ~45 instructions, so the sub-channel's ceiling is in the right order of magnitude for the +63 requirement.
 
 - [s14] src/code6cac_c2.c was restored to INCLUDE_ASM after every measurement; `git status --short` shows only metrics/events.jsonl modified plus the new rejected/ file.
+
+## s15 (2026-09-05) - synthesis modality
+
+Chassis re-measured FIRST this session: the `s_max` body (candidate.c plus
+byte-neutral split-init accumulation) applied over the INCLUDE_ASM line at
+src/code6cac_c2.c and run through `sandbox func_8003C714 --disable all` prints
+**score 15, target_insns 104, build_insns 105, rules_dropped 0** - unchanged
+from s1, and identical to candidate.c's own bytes. src/ was restored to
+INCLUDE_ASM immediately afterwards (`git diff --stat src/code6cac_c2.c` clean).
+Mandated kill re-audit: `python3 tools/fake_ablate.py --func func_8003C714
+--file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c` reports
+"no FAKE-annotated constructs found ... nothing to ablate", so no banked lever
+in this ledger was measured while a FAKE carrier occupied a target pseudo
+(third consecutive session to confirm this; it need not be re-run).
+
+Harness: tmp/grind/func_8003C714/s15/{mk.py,gen_q.py,gen_r.py,gen_s.py,
+gen_t.py,sweep.sh}. `sweep.sh` is the s14 harness with the .loop segment
+correctly bounded to func_8003C714 (s14's awk ran `,0` to EOF and therefore
+counted `moved to` / `not desirable` lines belonging to the four functions that
+follow func_8003C714 in code6cac_c2.c; the s14 tables' moved/notdesirable
+columns are inflated by that, though its insn_count and asm_lines columns are
+sound). One cc1 -dL run per form, no sandbox needed.
+
+### s15-A. The movable table, read directly (settles the ORDER question)
+
+`tmp/grind/func_8003C714/s15/dumps/r_base.seg`, the candidate.c body:
+
+    Loop from 25 to 146: 56 real insns.
+    Insn 33: regno 78 (life 1),  move-insn savings 1  moved to 203
+    Insn 46: regno 84 (life 1),  move-insn savings 1  moved to 205
+    Insn 60: regno 91 (life 31), move-insn savings 1  moved to 207
+
+Three movables, processed in insn order. regno 78 is the `&D_80106A58`
+symbol_ref (it is the `add (reg:SI 78)` of the src giv at insn 35); regno 84 is
+the 0x91A2B3C5 magic for `/1800` - **the one the target leaves in the loop**;
+regno 91 (life 31) is the 0x88888889 magic for `/30`, which the target DOES
+hoist (`lui $a3, 0x8888 / ori $a3, 0x8989` at 8003C740-8003C744, before
+`lui/addiu $a2, %hi/%lo(D_80106A58)` at 8003C748-8003C74C).
+
+So on the shipped chassis exactly ONE movable (regno 78) is processed before
+ours, i.e. `threshold` has already taken one `threshold -= 3` (loop.c:1719)
+when regno 84 is judged: 122 - 3 = 119. That is the exact number s14's k=30/31
+vs k=32 boundary pinned empirically, now confirmed from the movable list rather
+than inferred.
+
+### s15-B. THE THRESHOLD DIAL IS REAL AND LINEAR (H22)
+
+s14 treated the requirement as a fixed "insn_count >= 120". It is not fixed -
+`threshold` is a running variable decremented by 3 for every movable MOVED
+before ours, so the requirement is
+
+    insn_count + 3 * (extra movables moved ahead of regno 84) >= 120
+
+Measured by inserting m dial steps (`w0 = (s32)s0 * 3; w1 = w0 * 5; ...`, each
+step = 2 counted insns and 2 moved movables) at the TOP of the loop body and
+sweeping the s14 xor-pad k to locate the "not desirable" flip
+(tmp/grind/func_8003C714/s15/dumps/q_m*_k*):
+
+    | dial m | extra moved | last insn_count still MOVED | first NOT DESIRABLE |
+    |--------|-------------|-----------------------------|---------------------|
+    | 0      | 0           | 119 (k=31), 117, 115        | 121 (k=32)          |
+    | 1      | 2           | 113 (k=27), 111, 109        | 115 (k=28)          |
+    | 2      | 4           | -                           | 109 (k=24)          |
+    | 3      | 6           | -                           | 107 (k=22)          |
+
+Boundary 120 -> 114 for two extra moved movables is exactly -3 each, and the
+m=2 / m=3 rows are consistent with -12 and -18. The dial is linear and it is
+the ONLY multiplier in the gate: with `savings` and `lifetime` both pinned at 1
+(s10 H15 / s13) the desirability test at loop.c:1631 reduces to
+`threshold >= insn_count`, and threshold is only ever written at loop.c:532
+(initialisation) and loop.c:1719 / loop.c:1904 (`threshold -= 3`).
+
+Consequence: this ledger has been quoting the wrong requirement since s11. With
+K24's movable-ORDER dial spent (get BOTH regno 78 and regno 91 moved before
+regno 84 - the -6 cap s8 measured, now explained: there are only three movables
+and two of them can precede ours), threshold at the decision is 122 - 6 = 116
+and the requirement is **insn_count >= 117**, not 120.
+
+### s15-C. THE MERGE SUB-CHANNEL IS EMPTY (K42) - s14's #1 frontier item closed
+
+s14 hypothesised a third free-insn_count channel in which freeness does not
+imply inertness: a 2-3 insn pre-combine group that combine merges back into a
+pattern the target already emits. Measured on all four decomposable operations
+in this loop (tmp/grind/func_8003C714/s15/dumps/r_*):
+
+    r_base    56 insns / 107 asm   dst[0x22] = (x / 30) % 60;  etc (candidate.c)
+    r_mod60   56       / 107       q = x/30; dst[0x22] = q - (q/60)*60;
+    r_mod30   56       / 107       r = x - (x/30)*30; dst[0x23] = (r*100)/30;
+    r_mul100  56       / 107       ((r<<6)+(r<<5)+(r<<2)) / 30
+    r_ni3     56       / 107       a = x/1800; dst[0x21] = a;  (x3)
+
+Every decomposition measures IDENTICAL insn_count and identical emitted asm.
+The reason is structural, not accidental: `%` expands to div+mult+sub and
+`*100` expands to the shift/add chain at RTL EXPANSION time, i.e. before cse1
+and long before count_loop_regs_set, so writing the decomposition by hand adds
+nothing to count. There is no pre-combine group to buy here. The merge
+sub-channel is empty for this loop and s14's frontier item 1 is closed.
+
+Two other re-spellings measured badly and are noted so they are not retried:
+`r_nit` (one named intermediate `t = *(s32*)(src+4);` read three times) drops to
+43 insns / 85 asm - cse collapses the three loads, LOSING 13 counted insns and
+22 emitted instructions; `r_both` (both modulos written out, sharing one `x/30`)
+drops to 51 / 98 for the same reason.
+
+### s15-D. THE ORDINARY-C FREE CEILING IS EXACTLY 63 (H23)
+
+The one form that DOES add counted insns for free is split-init /
+compound-assignment accumulation, which owner feedback
+[[split-init-accumulation-sanctioned]] classes as ORDINARY C (no FAKE, no
+family claim needed). `a = X; a = a / 1800; dst[0x21] = a;` measures 57 where
+`a = X / 1800; dst[0x21] = a;` measures 56. Stacking it across the body
+(tmp/grind/func_8003C714/s15/dumps/s_*):
+
+    s_base (candidate.c)                        56 insns / 107 asm
+    s_a    (statement 1 split)                  58       / 107
+    s_ab   (statements 1+2 split)               60       / 107
+    s_c    (statement 3 split alone)            60       / 107
+    s_max  (all three + `v = *src;`)            63       / 107
+
+s_max was applied to src/ and measured in the real sandbox: **score 15,
+build_insns 105 - byte-identical to candidate.c**, so the +7 is genuinely free
+and not a harness artefact. Banked at
+rejected/splitinit-ceiling-63-ordinary-c-byte-neutral-but-54-short.c.
+
+63 is a SATURATION point, not a partial sweep. Four further split families were
+measured on top of s_max and every one of them stayed at exactly 63 / 107
+(tmp/grind/func_8003C714/s15/dumps/t_*):
+
+    t_off     o8 = i*8; src = base + o8;  o4 = i*4; dst = ... + o4;   63 / 107
+    t_addr    v = *src; v = v + 0;                                    63 / 107
+    t_mul     c = c * 4; c = c * 25;   (instead of c = c * 100)       63 / 107
+    t_bsplit  d = b/60; d = d*60; b = b - d;  (instead of b = b%60)   63 / 107
+
+cse1 folds all of them back. The split-init channel yields +7 and stops.
+
+### s15-E. The closed-form residual, as of s15
+
+    requirement:  insn_count + 3*extra_moved >= 120
+    best ordinary insn_count:            63   (s15-D, saturated)
+    best ordinary extra_moved:            1   (K24's order dial, cap 2 total)
+    best ordinary position:        63 + 3 = 66  vs 120 required
+    deficit:                             54 counted insns, or 18 free moved
+                                         movables, or any mix at 1:3
+
+Two carriers are known to close it and both are inadmissible: s6's
+constant-step biv noise and s14's force_to_mode xor pad (both reach sandbox 0,
+both inert).
+
+### s15-F. loop_has_call is not a lever (K43, class)
+
+`threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532) -
+a call inside the loop HALVES the initial threshold from 122 to 61, which with
+the s15-D ceiling of 63 would close the whole gap outright. It cannot be
+reached: `loop_has_call` is written in exactly one place, `prescan_loop` at
+loop.c:2202, and only for `GET_CODE (insn) == CALL_INSN`. No non-call construct
+sets it (volatile refs set the separate `loop_has_volatile` at loop.c:2209,
+which does not appear in the threshold expression), and a CALL_INSN emits a
+`jal` the target's loop does not contain. This formalises the older
+rejected/threshold-term-only-movable-by-cheat-or-by-a-call-in-the-loop.c as a
+predicate-cited class result.
+
+### s15-G. A refinement of s14's H21 (the original chassis arithmetic)
+
+s14 derived `insn_count_orig` in [56,58] from `threshold_orig = 58`. s15-A adds
+the missing ORDER term: on the original chassis the target hoists TWO movables
+(0x88888889 then &D_80106A58) before leaving regno 84 in the loop, so the
+threshold seen by each is 58, 55 and 52 in turn. The three inequalities are
+`58 >= n`, `55 >= n` and `52 < n`, giving **`insn_count_orig` in [53, 55]** -
+strictly TIGHTER than s14's [56,58], and strictly BELOW candidate.c's measured
+56. The original source body was therefore at least one RTL insn SMALLER than
+candidate.c, not equal to it. This is recorded as arithmetic only; the CC_FLAGS
+route that would make it actionable stays barred by the standing Judge
+constraint, and it does not help on the shipped chassis (where the requirement
+runs the other way).
+
+- [s15] Chassis measured THIS session: sandbox func_8003C714 --disable all = score 15, target_insns 104, build_insns 105, rules_dropped 0. src/code6cac_c2.c restored to INCLUDE_ASM afterwards; git status shows no src/ modification.
+
+- [s15] The .loop movable table for the candidate.c body: three movables, 'Insn 33: regno 78 (life 1) moved to 203', 'Insn 46: regno 84 (life 1) moved to 205', 'Insn 60: regno 91 (life 31) moved to 207'. regno 84 is the 0x91A2B3C5 /1800 magic - the one the target leaves in the loop - and it is judged SECOND, i.e. at threshold 122-3 = 119.
+
+- [s15] Threshold-dial table (dumps q_m*_k*): boundary insn_count 120 at 0 extra moved movables, 114 at 2, flip observed at 109 with 4 and at 107 with 6. Exactly -3 per extra moved movable.
+
+- [s15] Split-init ceiling table (dumps s_*): candidate.c 56/107, one statement split 58/107, two 60/107, all three plus v = *src 63/107. s_max verified in the real sandbox at score 15 / build_insns 105.
+
+- [s15] Split-init saturation (dumps t_*): offset intermediates, v = v + 0, c*4 then c*25, and a written-out modulo-60 all measure exactly 63/107 on top of s_max - cse1 folds every one of them back.
+
+- [s15] Merge-channel table (dumps r_*): r_mod60, r_mod30, r_mul100 and r_ni3 all measure 56/107, identical to r_base on both axes.
+
+- [s15] The residual budget as of s15: need insn_count + 3*extra_moved >= 120; ordinary C reaches 63 + 3*1 = 66; deficit 54 counted insns, or 18 emitted-free moved movables, or any 1:3 mix.
+
+- [s15] Tooling correction for the ledger: s14's sweep.sh awk ran '/^;; Function func_8003C714/,0' to end of file, so its moved / not-desirable columns also counted the four functions that follow func_8003C714 in code6cac_c2.c. Its insn_count and asm_lines columns are unaffected. s15's sweep.sh bounds the segment at the next ';; Function' line.
+
+- [s15] loop_has_call (loop.c:532, the factor that would halve threshold to 61) is assigned in exactly one place, loop.c:2202, under GET_CODE (insn) == CALL_INSN; loop_has_volatile is a separate variable that does not enter the threshold expression.

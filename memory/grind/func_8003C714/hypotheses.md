@@ -1870,3 +1870,232 @@ semantically real. That is the live frontier below.
 - probe: `python3 tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c`, then tmp/grind/func_8003C714/s12/pc_second_biv.c applied with s12/apply.py and measured with `sandbox func_8003C714 --disable all`.
 - result: fake_ablate: 'no FAKE-annotated constructs found ... nothing to ablate'. pc_second_biv.c: score 15, build_insns 105, rules_dropped 0 - identical to the s12 record. K36 STANDS. Baseline candidate.c re-measured first at 15 / 104 / 105 (the brief reported the chassis measurement as unavailable).
 - verdict: CONFIRMED
+
+## s15 (2026-09-05) - synthesis modality
+
+Chassis re-checked FIRST: sandbox score 15 / 104 / 105 with the s15 `s_max`
+body in src/ (byte-identical to candidate.c); src/ restored to INCLUDE_ASM.
+Mandated kill re-audit: fake_ablate reports no FAKE constructs in candidate.c,
+nothing to ablate - the third consecutive confirmation, so this branch of the
+re-audit is closed and future sessions should not spend a turn on it.
+
+This session did the merge that s14 asked for and then found the term s14's
+merge had missed. s14 wrote the requirement as a CONSTANT ("insn_count >= 120").
+It is not a constant: `threshold` in `move_movables` is a running variable that
+loses 3 for every movable moved BEFORE the one being judged. Reading the
+movable table instead of inheriting the number (s15-A) settles both the
+constant and the order, and turns the requirement into a two-term budget.
+
+### CONFIRMED
+
+- **H22 - the threshold dial is real, linear, and worth 3 counted insns per
+  extra moved movable.** Requirement is `insn_count + 3*extra_moved >= 120`,
+  measured boundary 120 at m=0, 114 at m=1 (two extra moved movables), and
+  consistent flips at m=2 (109) and m=3 (107). Predicate: loop.c:1631 with
+  loop.c:1719 / loop.c:1904 as the only writers of `threshold`. This re-scopes
+  every "+63 insns needed" statement in this ledger from s11 onward: with
+  K24's order dial spent the real requirement is insn_count >= 117.
+- **H23 - split-init accumulation is a FREE and ORDINARY insn_count channel
+  worth exactly +7, and it saturates there.** 56 -> 63 counted insns at 107
+  emitted asm lines unchanged, verified in the real sandbox at score 15 /
+  build_insns 105 (byte-identical to candidate.c). Four further split families
+  measured on top of it all stay at 63. This is the ledger's FIRST admissible
+  free channel - the two known distance-0 carriers (s6 biv noise, s14
+  force_to_mode pad) are both inert and both inadmissible.
+- **H24 (arithmetic) - the original body was SMALLER than candidate.c.**
+  Adding the order term to s14's H21 tightens `insn_count_orig` from [56,58] to
+  [53,55], below candidate.c's 56. Recorded as arithmetic; not actionable while
+  the CC_FLAGS route is barred, and it points the wrong way on this chassis.
+
+### KILLED
+
+- **K42 (instance) - the combine MERGE sub-channel yields zero free insn_count
+  in this loop.** All four hand-decompositions of the loop's division / modulo /
+  multiply-by-100 statements measure insn_count 56 and asm_lines 107, identical
+  to candidate.c on both axes: the decomposition IS the RTL the expanders emit,
+  so nothing extra is counted before loop_optimize and nothing is left for
+  combine to merge. Measured on the shipped chassis (HEAD 2026-09-05) with no
+  FAKE construct present, dumps r_mod60 / r_mod30 / r_mul100 / r_ni3. Banked at
+  rejected/division-modulo-decompositions-are-already-the-emitted-rtl.c. This
+  closes s14's frontier item 1.
+- **K43 (class) - `loop_has_call` cannot be set by any non-call construct**, so
+  the threshold cannot be halved from 122 to 61. `loop_has_call` is assigned in
+  exactly one place, and only under `GET_CODE (insn) == CALL_INSN`.
+  predicate_cite: tools/gcc-2.7.2/loop.c:2202. Measured on the shipped chassis
+  by source reading plus the loop.c:532 threshold expression.
+- **K44 (instance) - a chain of distinct loop-invariant locals cannot buy the
+  threshold dial**, because cse1 folds a constant-xor chain whose links are all
+  loop-invariant down to one insn: chain lengths 2/4/8/12/16/20/24 all measure
+  insn_count 57, +1 moved movable, asm_lines 110. (Contrast s14's H19, where
+  the identical shape on a loop-VARIANT local survived cse1 at +2 per pair -
+  invariance is what enables the fold.) Measured on the shipped chassis with no
+  FAKE construct present, dumps p_inv2..p_inv24. Banked at
+  rejected/invariant-xor-chain-collapses-at-cse1-to-one-movable.c.
+- **K45 (instance) - a single named intermediate read three times LOSES
+  insn_count**, it does not add it: `t = *(s32*)(src+4);` used by all three
+  divisions measures 43 insns / 85 asm (cse collapses the three loads). Same
+  for sharing one `x/30` across both modulo statements (51 / 98). Measured on
+  the shipped chassis, dumps r_nit / r_both. Corroborates the older
+  rejected/single-read-v-local-loses-16-insns.c.
+
+### THE BUDGET, restated for s16 (this is the whole problem in four lines)
+
+    need:      insn_count + 3*extra_moved >= 120
+    have:      63 (ordinary split-init, saturated) + 3*1 (K24 order dial) = 66
+    deficit:   54 counted insns, or 18 free moved movables, or any 1:3 mix
+    forbidden: inert padding (s6 biv noise, s14 force_to_mode pad) - both
+               reach sandbox 0, both fail T1/T2
+
+### FRONTIER after s15 (reset)
+
+1. **THE LIVE ITEM - is there a moved movable that costs zero emitted bytes?**
+   This is now the highest-leverage unknown in the ledger, because H22 prices
+   one at 3 counted insns and 18 of them close the whole gap. A movable is
+   hoisted to the preheader; it is free iff its preheader insn disappears
+   afterwards. Two mechanisms could do that and neither has been measured:
+   (a) the hoisted def becomes DEAD because its in-loop use is erased after
+   loop_optimize (combine's force_to_mode, i.e. s14's channel applied to an
+   INVARIANT rather than a variant local - note K44 shows the naive spelling
+   folds at cse1, so the chain must be non-foldable, e.g. distinct operators
+   or a value cse1 cannot constant-fold); (b) the hoisted def is COALESCED with
+   an existing preheader insn by regmove/local-alloc. Probe: build a single
+   invariant carrier of each shape, read tmp/grind/.../dumps/*.seg for a fourth
+   `moved to` line, and read asm_lines for the byte cost. A shape that measures
+   +1 counted insn, +1 moved, and 107 asm lines is the whole ballgame; if every
+   shape that is free is also inert, that is a strong, citable statement that
+   the two-term budget cannot be paid in ordinary C, and it is what an
+   escalation entry would have to say.
+2. **Re-derive the 15-instruction residual from the dumps rather than from
+   s1's H2.** H2 ("the entire d15 residual is the const placement plus the
+   mfhi-temp seat") has never been re-verified in 14 sessions, and it is the
+   weakest verdict in the ledger under the CONTRADICTION RULE: it is the single
+   assumption that makes the loop.c hoist the only thing worth attacking. Probe:
+   apply s_max, run `pwsh tools/grinder/dump.ps1 func_8003C714`, and diff the
+   .greg / .sched output against asm/funcs/func_8003C714.s instruction by
+   instruction. If any of the 15 is independent of the const placement, it is
+   separately closable and the budget above is not the only front.
+3. **The declaration puns remain a submission blocker** (unchanged from s14,
+   restated because it is a hard gate on ANY distance-0 body): the brief's
+   auto-scan flags `src = (u8 *)&D_80106A58 + i * 8;` and
+   `*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;`. The sanctioned fix is the
+   aggregate-merge family at the DECLARATION in include/*.h via an integration
+   handoff, prongs (a)-(e), with prong (c)'s 2026-09-03 amendment requiring the
+   sub-symbol rows to carry an `alias of g_file_disc_type+4; retire with
+   func_80035280` suffix. Prong (a) looks satisfiable: the target's loop walks a
+   single base register `$a2` with `addiu $a2, $a2, 0x8` at 8003C830, which is
+   base-register/stride evidence rather than the forbidden
+   adjacency-of-splat-names evidence.
+
+## [s15] The move decision in move_movables is a two-term budget, not a fixed insn_count target: threshold loses 3 for every movable moved ahead of the one being judged, so the requirement for the 0x91A2B3C5 movable is insn_count + 3*extra_moved >= 120
+- mechanism: loop.c:1631 desirability test with savings and lifetime pinned at 1; threshold written only at loop.c:532, loop.c:1719 and loop.c:1904
+- probe: inserted m invariant dial steps at the top of the loop body and swept the s14 xor-pad k to locate the "not desirable" flip; dumps tmp/grind/func_8003C714/s15/dumps/q_m*_k*
+- result: boundary insn_count 120 at m=0 (moved at 119, not desirable at 121), 114 at m=1 (moved at 113, not desirable at 115), flips at 109 for m=2 and 107 for m=3 - exactly -3 per extra moved movable
+- verdict: CONFIRMED
+
+## [s15] The shipped chassis has exactly three movables, and exactly one of them (the &D_80106A58 symbol_ref) is processed before the 0x91A2B3C5 magic constant, so the threshold at the decision is 122-3 = 119 and K24's order dial (worth -6) is capped by there being only two other movables
+- mechanism: movables are appended to the list in insn order in scan_loop; loop.c:1719 decrements threshold once per moved movable
+- probe: read the movable table out of the .loop dump segment (tmp/grind/func_8003C714/s15/dumps/r_base.seg) instead of inheriting the number
+- result: "Insn 33: regno 78 (life 1) moved to 203 / Insn 46: regno 84 (life 1) moved to 205 / Insn 60: regno 91 (life 31) moved to 207"; regno 84 is the /1800 magic, regno 91 (life 31) the thrice-used /30 magic the target also hoists
+- verdict: CONFIRMED
+
+## [s15] Split-init / compound-assignment accumulation is a free AND ordinary insn_count channel worth exactly +7 in this loop, and it saturates at 63
+- mechanism: each split writes a named local that cse1 keeps until after count_loop_regs_set and that local-alloc later coalesces, so it is counted and not emitted; classed ORDINARY C by owner feedback [[split-init-accumulation-sanctioned]]
+- probe: stacked splits across the three division statements plus `v = *src;` (dumps s_a / s_ab / s_c / s_max), then four further split families on top (dumps t_off / t_addr / t_mul / t_bsplit), and applied s_max to src/ for a real sandbox measurement
+- result: 56 -> 58 -> 60 -> 63 counted insns at asm_lines 107 throughout; sandbox score 15, target 104, build 105 (byte-identical to candidate.c); all four further families stay at exactly 63
+- verdict: CONFIRMED
+
+## [s15] The combine MERGE sub-channel - s14's frontier item 1 - yields zero free insn_count in this loop, because the hand-decompositions of the division, modulo and multiply-by-100 statements are already the RTL the expanders emit
+- mechanism: `%` expands to div+mult+sub and `*100` to a shift/add chain at RTL expansion, i.e. before cse1 and long before count_loop_regs_set at loop.c
+- probe: four decompositions measured against candidate.c on both axes; dumps r_mod60 / r_mod30 / r_mul100 / r_ni3
+- result: all four measure insn_count 56 and asm_lines 107, identical to r_base; banked at rejected/division-modulo-decompositions-are-already-the-emitted-rtl.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, candidate.c body in tmp/grind/func_8003C714/s15/r_*.c, no FAKE construct present
+
+## [s15] The loop_has_call term that would halve the initial threshold from 122 to 61 cannot be set by any construct other than a real CALL_INSN
+- mechanism: loop.c:532 computes threshold as (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs); loop_has_call has exactly one assignment site
+- probe: read prescan_loop in tools/gcc-2.7.2/loop.c end to end and grepped every reference to loop_has_call and loop_has_volatile
+- result: loop_has_call = 1 only under GET_CODE (insn) == CALL_INSN at loop.c:2202; volatile refs set the separate loop_has_volatile at loop.c:2209, which does not appear in the threshold expression; a CALL_INSN emits a jal the target's loop does not contain
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/loop.c:2202
+- measured_on: shipped chassis HEAD 2026-09-05, compiler source reading, no FAKE construct present
+
+## [s15] A chain of distinct loop-invariant locals cannot buy extra moved movables for the threshold dial, because cse1 folds a constant-xor chain whose links are all loop-invariant down to a single insn
+- mechanism: cse1 constant-folds when both operands are invariant; s14's H19 survived only because its carrier was loop-VARIANT
+- probe: chain lengths 2, 4, 8, 12, 16, 20 and 24 swept through the s15 harness; dumps p_inv2 .. p_inv24
+- result: every length measures insn_count 57, exactly one extra moved movable and asm_lines 110 - no scaling at all; banked at rejected/invariant-xor-chain-collapses-at-cse1-to-one-movable.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s15/p_inv*.c, no FAKE construct present
+
+## [s15] A single named intermediate read three times, and a shared x/30 quotient, both LOSE counted insns rather than adding them
+- mechanism: cse collapses the repeated loads / repeated division, deleting counted insns before loop_optimize
+- probe: r_nit (t = *(s32*)(src+4) read by all three divisions) and r_both (one q = x/30 feeding both modulo statements)
+- result: r_nit 43 insns / 85 asm; r_both 51 insns / 98 asm - both far below candidate.c's 56 / 107 and both wrong on bytes
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s15/r_nit.c and r_both.c, no FAKE construct present
+
+## [s15] The move decision in move_movables is a two-term budget, not a fixed insn_count target: threshold loses 3 for every movable moved ahead of the one being judged, so the requirement for the 0x91A2B3C5 movable is insn_count + 3*extra_moved >= 120.
+- mechanism: loop.c:1631 desirability test (threshold * savings * lifetime >= insn_count) with savings and lifetime pinned at 1 by s10 H15 / s13; threshold is written only at loop.c:532 (initialisation to (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 122) and at loop.c:1719 / loop.c:1904, both 'threshold -= 3', once per MOVED movable.
+- probe: Inserted m invariant dial steps (w0 = (s32)s0 * 3; w1 = w0 * 5; ...) at the top of the loop body, each contributing 2 counted insns and 2 moved movables, then swept the s14 xor-pad k to locate the 'not desirable' flip. Dumps tmp/grind/func_8003C714/s15/dumps/q_m*_k*.
+- result: Boundary insn_count 120 at m=0 (still moved at 119 = k31, not desirable at 121 = k32); 114 at m=1 (still moved at 113 = k27, not desirable at 115 = k28); flips at 109 for m=2 and 107 for m=3. Exactly -3 per extra moved movable, linear across the range. Combined with the movable table read in s15-A this re-scopes every '+63 insns needed' statement from s11 onward: with K24's order dial spent the real requirement is insn_count >= 117.
+- verdict: CONFIRMED
+
+## [s15] The shipped chassis has exactly three movables and exactly one of them (the &D_80106A58 symbol_ref, regno 78) is processed before the 0x91A2B3C5 magic constant (regno 84), so threshold at the decision is 122-3 = 119 and K24's order dial is capped at -6 because there are only two other movables.
+- mechanism: scan_loop appends movables to the list in insn order; loop.c:1719 decrements threshold once per moved movable, so the count of movables PRECEDING ours in that list is the whole order term.
+- probe: Read the movable table straight out of the .loop dump segment (tmp/grind/func_8003C714/s15/dumps/r_base.seg) rather than inheriting the inherited number.
+- result: 'Insn 33: regno 78 (life 1), move-insn savings 1 moved to 203 / Insn 46: regno 84 (life 1) moved to 205 / Insn 60: regno 91 (life 31) moved to 207'. regno 84 is the /1800 magic the target leaves in the loop; regno 91 (life 31) is the thrice-used /30 magic 0x88888889 that the target also hoists (8003C740-8003C744). Confirms s14's empirically pinned threshold of 119 from the compiler's own bookkeeping.
+- verdict: CONFIRMED
+
+## [s15] Split-init / compound-assignment accumulation is a free AND ordinary insn_count channel worth exactly +7 in this loop, and it saturates at 63.
+- mechanism: Each split writes a named local that cse1 keeps until after count_loop_regs_set runs and that local-alloc later coalesces, so the insn is counted by loop.c but never emitted. Owner feedback [[split-init-accumulation-sanctioned]] classes same-variable split-init and compound-assignment splits as ORDINARY C, so no FAKE annotation and no family claim is needed.
+- probe: Stacked splits across the three division statements plus the v = *src named intermediate (dumps s_a / s_ab / s_c / s_max), then four further split families on top of s_max (dumps t_off / t_addr / t_mul / t_bsplit), then applied s_max to src/code6cac_c2.c and ran the real sandbox.
+- result: 56 -> 58 -> 60 -> 63 counted insns with asm_lines 107 throughout; sandbox func_8003C714 --disable all on s_max prints score 15, target_insns 104, build_insns 105 - byte-identical to candidate.c, so the +7 is real and not a harness artefact. All four further split families (offset intermediates, v = v + 0, c*4 then c*25, modulo-60 re-decomposition) stay at exactly 63 / 107: cse1 folds them back. This is the ledger's first admissible free channel; the two known distance-0 carriers (s6 biv noise, s14 force_to_mode pad) are both inert and inadmissible. Banked at rejected/splitinit-ceiling-63-ordinary-c-byte-neutral-but-54-short.c.
+- verdict: CONFIRMED
+
+## [s15] Adding the movable-order term to s14's H21 tightens the original chassis arithmetic: insn_count_orig lies in [53,55], below candidate.c's measured 56, so the original source body was at least one RTL insn smaller than candidate.c rather than equal to it.
+- mechanism: On the original chassis the target hoists 0x88888889 and then &D_80106A58 before leaving regno 84 in the loop, so with threshold_orig = 58 the thresholds seen by the three movables are 58, 55 and 52; the three loop.c:1631 outcomes give 58 >= n, 55 >= n and 52 < n.
+- probe: Applied the s15-A order finding to the inequality system s14 wrote in H21 and re-solved it.
+- result: insn_count_orig in [53,55] (s14 had [56,58]). Recorded as arithmetic only: the CC_FLAGS route that would make it actionable stays barred by the standing Judge constraint, and on the shipped chassis the requirement runs the other way.
+- verdict: CONFIRMED
+
+## [s15] Every hand-decomposition of this loop's division, modulo and multiply-by-100 statements measures identical insn_count and identical emitted asm to candidate.c, so no counted insn is available from combine's merge path in these four positions.
+- mechanism: Modulo expands to div+mult+sub and multiply-by-100 expands to a shift/add chain at RTL EXPANSION time, i.e. before cse1 and long before count_loop_regs_set, so writing the decomposition by hand adds nothing to the count and leaves combine nothing extra to merge.
+- probe: Four decompositions measured against candidate.c on both axes: (x/30)%60 as q - (q/60)*60; x%30 as x - (x/30)*30; r*100 as (r<<6)+(r<<5)+(r<<2); and once-written once-read named intermediates on each division result. Dumps r_mod60 / r_mod30 / r_mul100 / r_ni3.
+- result: All four measure insn_count 56 and asm_lines 107, identical to r_base. This closes s14's frontier item 1 - the merge sub-channel it designated as the only channel where freeness need not imply inertness is empty in these positions. Banked at rejected/division-modulo-decompositions-are-already-the-emitted-rtl.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, candidate.c body plus the four decompositions in tmp/grind/func_8003C714/s15/r_*.c, no FAKE construct present (fake_ablate reports nothing to ablate in candidate.c)
+
+## [s15] The loop_has_call term that would halve the initial threshold from 122 to 61 is set only by a real CALL_INSN, so no non-call construct can reach it.
+- mechanism: loop.c:532 computes threshold as (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs); loop_has_call has exactly one assignment site, inside prescan_loop, guarded by GET_CODE (insn) == CALL_INSN. Volatile references set the separate loop_has_volatile at loop.c:2209, which does not appear in the threshold expression, and a CALL_INSN emits a jal that the target's loop does not contain.
+- probe: Read prescan_loop in tools/gcc-2.7.2/loop.c end to end and grepped every reference to loop_has_call and loop_has_volatile in the file.
+- result: Confirmed single assignment site under the CALL_INSN guard. This formalises the older rejected/threshold-term-only-movable-by-cheat-or-by-a-call-in-the-loop.c as a predicate-cited class result: the single largest term in the gate (worth -61 on the requirement, which the s15-D ceiling of 63 would otherwise cover outright) is unreachable.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: shipped chassis HEAD 2026-09-05, compiler source reading against the loop.c:532 threshold expression, no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/loop.c:2202
+
+## [s15] A chain of distinct loop-invariant locals does not scale the number of moved movables, because cse1 folds a constant-xor chain whose links are all loop-invariant down to a single insn.
+- mechanism: cse1 constant-folds when both operands are invariant. s14's H19 carrier survived cse1 only because it sat on a loop-VARIANT local; invariance is exactly what enables the fold, so the shape that would buy the H22 threshold dial is the shape cse1 destroys.
+- probe: Swept chain lengths 2, 4, 8, 12, 16, 20 and 24 of the form w0 = (s32)s0 ^ C0; w1 = w0 ^ C1; ... with the final value consumed by the tail store. Dumps p_inv2 .. p_inv24.
+- result: Every length measures insn_count 57, exactly one extra moved movable and asm_lines 110 - no scaling with chain length at all. Banked at rejected/invariant-xor-chain-collapses-at-cse1-to-one-movable.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s15/p_inv*.c, no FAKE construct present
+
+## [s15] A single named intermediate read three times, and a shared x/30 quotient feeding both modulo statements, both lose counted insns and emitted instructions rather than adding them.
+- mechanism: cse collapses the repeated loads and the repeated division before loop_optimize, deleting counted insns as well as emitted ones.
+- probe: r_nit (t = *(s32*)(src + 4) read by all three divisions) and r_both (one q = x/30 feeding both the /30 and %30 statements), measured against candidate.c.
+- result: r_nit measures 43 insns / 85 asm; r_both measures 51 insns / 98 asm - both far below candidate.c's 56 / 107 and both wrong on bytes. Corroborates the older rejected/single-read-v-local-loses-16-insns.c on the current chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s15/r_nit.c and r_both.c, no FAKE construct present
+
+## [s15] Mandated kill re-audit: candidate.c carries no FAKE-annotated construct on the current chassis, and the s_max body derived from it still measures score 15 / target 104 / build 105.
+- mechanism: tools/fake_ablate.py inspects the candidate for FAKE annotations and re-measures with each ablated; the sandbox re-measures the honest cheat-stripped distance on the current HEAD.
+- probe: python3 tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c, plus a real sandbox run with the s_max body applied over the INCLUDE_ASM line and src/ restored afterwards.
+- result: fake_ablate: 'no FAKE-annotated constructs found in memory/grind/func_8003C714/candidate.c; nothing to ablate'. Sandbox: score 15, target_insns 104, build_insns 105, rules_dropped 0. Third consecutive session to confirm this branch; future sessions need not re-run it.
+- verdict: CONFIRMED

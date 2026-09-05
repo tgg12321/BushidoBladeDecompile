@@ -1,7 +1,7 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -87,23 +87,29 @@
    "floor": 15,
    "modality": "synthesis",
    "headline": "Synthesis: a SECOND free insn_count channel found and measured to distance 0 on the shipped chassis - chain arithmetic on a live local feeding a QImode store survives cse1, is counted by loop.c, and i"
+  },
+  {
+   "session": 15,
+   "floor": 15,
+   "modality": "synthesis",
+   "headline": "Synthesis: the hoist requirement is a TWO-TERM budget, not a fixed insn_count - threshold loses 3 per movable moved ahead of ours (H22, measured boundary 120/114/109/107 at m=0/1/2/3) - and split-init"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "combine's MERGE path is a third insn_count channel in which freeness does NOT imply inertness: a 2- or 3-insn pre-combine group that folds into a single pattern the target already emits is counted by count_loop_regs_set before loop_optimize and costs nothing after it, while both halves compute real values.",
-   "mechanism": "combine_instructions runs at toplev.c:3004, after loop_optimize at toplev.c:2895, so anything it merges was already counted. Unlike force_to_mode (which erases computation that cannot reach the stored bits) and strength_reduce's biv elimination (which erases computation nothing consumes), a merge preserves the value - so the added insn can be semantically real and the T1/T2 objection that killed both deletion channels does not automatically apply. The [[split-init-accumulation-sanctioned]] owner feedback already treats same-variable split-init and compound-assignment splits as ORDINARY C, which is the admissibility handle the deletion channels never had.",
-   "next_probe": "Re-spell the four existing division/modulo statements in decomposed-but-identical forms and read insn_count against emitted asm lines with tmp/grind/func_8003C714/s14/sweep.sh (one cc1 run per form, no sandbox needed): `x >> 10` as two ashiftrt steps; `% 60` as `x - (x / 60) * 60`; `(x % 30) * 100` decomposed into the shift/add chain GCC itself emits; `/ 1800` as a split-init sequence on a single named variable. Any form whose .loop insn_count rises while emitted asm stays at 107 is a live carrier; measure how many such splits the body admits and compare against the +63 requirement (or +57 if combined with K24's free order dial, which is worth another -6 on threshold)."
+   "hypothesis": "There may exist a moved movable that costs zero emitted bytes. H22 prices one at 3 counted insns, so 18 of them close the entire remaining deficit - this is now the highest-leverage unknown in the ledger.",
+   "mechanism": "A movable is hoisted into the preheader, so it is free iff its preheader insn disappears afterwards. Two mechanisms could do that and neither has been measured: (a) the hoisted def becomes DEAD because its in-loop use is erased after loop_optimize by combine's force_to_mode (tools/gcc-2.7.2/combine.c:5682) - i.e. s14's channel applied to an INVARIANT rather than a variant local; note K44 shows the naive constant-xor spelling folds at cse1, so the carrier must be non-foldable (distinct operators, or a value cse1 cannot constant-fold); (b) the hoisted def is COALESCED into an existing preheader insn by regmove or local-alloc.",
+   "next_probe": "Build one invariant carrier of each shape with tmp/grind/func_8003C714/s15/{mk.py,sweep.sh}, read the .seg dump for a fourth 'moved to' line, and read asm_lines for the byte cost. A shape measuring +1 counted insn, +1 moved movable and 107 asm lines is decisive. If every shape that is free is also inert, that is the strong citable statement that the two-term budget cannot be paid in ordinary C - which is exactly what an eventual foreclosure record would have to establish."
   },
   {
-   "hypothesis": "The named-intermediate family supplies free insn_count in this loop, at +1 per intermediate, and is the only sanctioned family measured to do so.",
-   "mechanism": "`v = *src;` ahead of `dst[0x24] = v;` measured 56 -> 57 insn_count at 107 -> 107 emitted asm lines: the copy is coalesced after loop_optimize but exists when count_loop_regs_set runs. The named-intermediate family (.claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17 clarification in no-new-park-categories.md) has six prongs including once-written/once-read and byte-neutrality, both of which this instance satisfies.",
-   "next_probe": "Sweep how many ordinary named intermediates the body admits without changing emitted bytes - one per loaded value, one per division result, one per stored byte - and read the cumulative .loop insn_count. If the ceiling is small (expected: 4-8) it will not close the +63 gap alone, but it is the free baseline that any merge-path carrier stacks on top of, and it lowers the merge-path requirement by exactly that amount."
+   "hypothesis": "s1's H2 - that the entire 15-instruction residual is the 0x91A2B3C5 const placement plus the mfhi-temp seat - has never been re-verified in fourteen sessions and is the weakest verdict in the ledger under the CONTRADICTION RULE, because it is the single assumption that makes the loop.c hoist the only thing worth attacking.",
+   "mechanism": "If any of the 15 differing instructions is independent of the const placement, it is separately closable and the s15-E budget is not the only front; if all 15 really are downstream of the hoist, the budget is the whole problem and the frontier collapses to item 1.",
+   "next_probe": "Apply the s_max body (rejected/splitinit-ceiling-63-ordinary-c-byte-neutral-but-54-short.c), run pwsh tools/grinder/dump.ps1 func_8003C714, and diff the .greg / .sched output against asm/funcs/func_8003C714.s instruction by instruction, classifying each of the 15 as const-placement-dependent or not."
   },
   {
-   "hypothesis": "The layer-1 declaration puns flagged in candidate.c are a submission blocker independent of the floor, and will need to be settled before ANY distance-0 body can be filed.",
-   "mechanism": "The brief's auto-scan flags `src = (u8 *)&D_80106A58 + i * 8;` (D_80106A58 is a per-word splat sub-symbol of g_file_disc_type @80106A54, declared `extern u8 g_file_disc_type;`) and `*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;`. The sanctioned fix is the aggregate-merge family at the DECLARATION in include/*.h via an integration handoff, prongs (a)-(e), and prong (c)'s 2026-09-03 amendment requires the sub-symbol rows to be kept with an `alias of <base>+N; retire with func_80035280` suffix because func_80035280 is still INCLUDE_ASM.",
-   "next_probe": "Before any candidate-ready on this function, check whether prong (a) can be satisfied for D_80106A58 - the target's loop uses a single base register `$a2` with a stride-8 increment (`addiu $a2, $a2, 0x8` at 8003C830), which is base-register/stride evidence rather than the forbidden adjacency-of-splat-names evidence. Draft the header-canonical merged declaration and route it as an integration handoff; do not spell it as a per-use cast."
+   "hypothesis": "The two declaration puns flagged by the brief's auto-scan remain a hard submission blocker on ANY distance-0 body, independent of the floor.",
+   "mechanism": "candidate.c:342 'src = (u8 *)&D_80106A58 + i * 8;' uses a per-word splat sub-symbol of g_file_disc_type @80106A54, and candidate.c:354 '*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;' reads an s16-declared symbol through a pun. The sanctioned fix is the aggregate-merge family at the DECLARATION in include/*.h via an integration handoff, prongs (a)-(e), with prong (c)'s 2026-09-03 amendment requiring the sub-symbol rows to carry an 'alias of g_file_disc_type+4; retire with func_80035280' suffix because func_80035280 is still INCLUDE_ASM. A per-use cast is an auto-FAIL.",
+   "next_probe": "Prong (a) looks satisfiable from base-register/stride evidence rather than the forbidden adjacency-of-splat-names evidence: the target's loop walks a single base register $a2 with 'addiu $a2, $a2, 0x8' at 8003C830. Draft the header-canonical merged declaration and route it as an integration handoff before any candidate-ready."
   }
  ],
  "judge_constraints": [
@@ -229,6 +235,38 @@
    "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s14/body_xp32.c copied over src/code6cac_c2.c (sandbox score 0, 104 target / 104 build) and the three MODE variants swept through cc1; no FAKE ",
    "predicate_cite": "",
    "result": "FALSE for all four shapes. Each is value-preserving with respect to the stored byte, so T1 (semantic purpose) and T2 (hu"
+  },
+  {
+   "session": 15,
+   "statement": "Every hand-decomposition of this loop's division, modulo and multiply-by-100 statements measures identical insn_count and identical emitted asm to candidate.c, so no counted insn is available from com",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, candidate.c body plus the four decompositions in tmp/grind/func_8003C714/s15/r_*.c, no FAKE construct present (fake_ablate reports nothing to ablate in candidate.c)",
+   "predicate_cite": "",
+   "result": "All four measure insn_count 56 and asm_lines 107, identical to r_base. This closes s14's frontier item 1 - the merge sub"
+  },
+  {
+   "session": 15,
+   "statement": "The loop_has_call term that would halve the initial threshold from 122 to 61 is set only by a real CALL_INSN, so no non-call construct can reach it.",
+   "kill_scope": "class",
+   "measured_on": "shipped chassis HEAD 2026-09-05, compiler source reading against the loop.c:532 threshold expression, no FAKE construct present",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:2202",
+   "result": "Confirmed single assignment site under the CALL_INSN guard. This formalises the older rejected/threshold-term-only-movab"
+  },
+  {
+   "session": 15,
+   "statement": "A chain of distinct loop-invariant locals does not scale the number of moved movables, because cse1 folds a constant-xor chain whose links are all loop-invariant down to a single insn.",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s15/p_inv*.c, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Every length measures insn_count 57, exactly one extra moved movable and asm_lines 110 - no scaling with chain length at"
+  },
+  {
+   "session": 15,
+   "statement": "A single named intermediate read three times, and a shared x/30 quotient feeding both modulo statements, both lose counted insns and emitted instructions rather than adding them.",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s15/r_nit.c and r_both.c, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "r_nit measures 43 insns / 85 asm; r_both measures 51 insns / 98 asm - both far below candidate.c's 56 / 107 and both wro"
   }
  ]
 }
