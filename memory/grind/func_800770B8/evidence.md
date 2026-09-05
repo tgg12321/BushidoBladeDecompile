@@ -2874,3 +2874,155 @@ premise that the shift's value is "freshly born" was wrong.
 - [s23] A genuinely new object: spelling the cursors as a 5-wide s16 row index, `(s16 *)(D_800A36A0 + 0x6A) + (t0 * 5)`, gives 9/176 (a1, a3, a5, a6, a7 all identical). Its rows 40-56 are byte-exact including row 56 `addu $v1,$v1,$a1`; its only defect is two base additions instead of one base addition plus two addiu. Six row-base intermediates that force the single base add (b1-b6) all return the floor object 5/175. Banked rejected/s23-t0x5-row-index-two-base-adds-176insn-score9.c.
 
 - [s23] 72 fresh builds this session; src/text1b.c restored to its pristine committed state after every sweep (git status clean at session end).
+
+## [s24] synthesis — FLOOR 5 (re-verified on the moved chassis); the s23 frontier's item #1 is EXECUTED AND NEGATIVE, its shift-staging half is byte-inert, class B is re-foreclosed with four fresh spellings, and a WITHIN-FUNCTION CONTROL for class C is named for the first time
+
+Chassis re-verification, first action. `tmp/grind/func_800770B8/s24/pristine_text1b.c`
+byte-equals `git show HEAD:src/text1b.c` (HEAD = 6bbdefda, one commit newer than the
+s23 ledger's 0f03be29). `memory/grind/func_800770B8/candidate.c` applied with the two
+byte-neutral caller-side edits it documents (prototype `s32 func_800770B8(s32, s32,
+s32);`, call site `(s32)&D_8009BD24`): **score 5, build_insns 175, target_insns 175**.
+Plain flipped base X = **29/175**, unchanged. 31 fresh builds this session;
+src/text1b.c restored to pristine after every sweep (`git status --porcelain` clean at
+session end apart from the engine's own metrics/events.jsonl).
+
+Mandated FAKE kill re-audit, re-run on THIS chassis:
+`tools/fake_ablate.py --func func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c`
+reports **one** FAKE unit (the empty `do { } while (0);` prologue fence, line 243),
+**keep-all 5 / drop-1 10** — unchanged from s23, still load-bearing, still
+prologue-scoped, still occupying none of pseudos 107/108/109/110.
+
+### THE FIVE RESIDUAL ROWS, PRINTED (s24/F.rows)
+
+Everything else in the 175 rows differs only in assembler spelling (`move` vs
+`addu $x,$y,$zero`, `li` vs `addiu $x,$zero,N`), which is byte-identical. The five
+real rows are exactly:
+
+    row 35   ours `sw $zero,48($s1)`   target `sw    $zero, 0x30($v0)`   class B
+    row 36   ours `sh $zero,52($s1)`   target `sh    $zero, 0x34($v0)`   class B
+    row 62   ours `addu $v0,$v0,$v1`   target `addu  $v1, $v1, $v0`      class C
+    row 63   ours `addiu $a3,$v0,106`  target `addiu $a3, $v1, 0x6A`     class C
+    row 64   ours `addiu $a1,$v0,126`  target `addiu $a1, $v1, 0x7E`     class C
+
+### THE s23 FRONTIER'S ITEM #1 IS EXECUTED IN FULL AND IS NEGATIVE (20 builds)
+
+The item asked for the reload's pseudo to be moved ahead of the chain's pseudo while
+the stores stay in the target's A,D,C,S order. Both halves were built as a
+five-position x two-spelling cross-product (`s24/gen_j.py`, bodies in `s24/v/`,
+log `s24/sweep.log`).
+
+**J = stage the reload** (`u8 *rb;` declared at the top of the outer-loop body,
+`rb = D_800A36A0;` assigned at position k, cursors reading `rb`):
+
+    position        base-first (jN)      flipped (jF)
+    before group A  174 / 41             174 / 41
+    after  group A  174 / 41             174 / 41
+    after  group D  175 / 40             175 / 42
+    after  group C  175 / 26             175 / 29
+    after  group S  175 /  5  (== F)     175 / 29  (== X)
+
+Two facts fall out. (a) The reload survives only if the assignment sits after group
+**D** — group A's five `sh` stores through a `base`-derived pointer do NOT kill CSE of
+the `D_800A36A0` gp-relative load, so positions 0 and 1 collapse `rb` onto `base` and
+delete an instruction (174), the s18fx/s19 failure mode. (b) No surviving position
+produces the target's seats; the best is 26, five times the floor. Banked
+`rejected/s24-classC-staged-reload-after-groupC-175insn-score26.c`.
+
+**M = stage the shift** (`s32 sh;` declared at the top of the loop body,
+`sh = t0 * 10;` assigned at position k, cursors reading `sh`): **completely byte-inert
+at every one of the five positions.** mF0-mF4 all measure 29/175, byte-identical to
+the plain flip X; mN0-mN4 all measure 5/175, byte-identical to the floor F. GCC
+re-sinks the `sll` to its use, so the chain pseudo's birth position is not
+C-controllable by naming or by statement position. This is a stronger statement than
+s23's single `i4` datum and it retires the whole "move the chain's pseudo" family.
+Banked `rejected/s24-classC-named-t0x10-shift-local-inert-at-every-store-group-position.c`.
+
+### CLASS B RE-FORECLOSED WITH FOUR NEW SPELLINGS (8 builds)
+
+Class B is now precisely typed from the row diff: the target keeps **two** registers
+holding the `func_8006E49C` result — `$s1` (the `p_old` copy; used for the
+`sw $s1,%gp_rel(D_800A36A0)` global store and the `sw $v1,0x4($s1)` store, dead after
+it) and `$v0` (the raw result pseudo; used for the 0x30 and 0x34 stores). Our floor
+uses `$s1` for all four.
+
+The obvious source shape for that split had never been built: name the raw result in
+a fresh local `q`, assign `p_old = q` (the copy insn the target prints at its row 30),
+and route only the 0x30/0x34 stores through `q`. The prediction was that
+`combine_regs` cannot coalesce the copy because `q` is live past it, so both registers
+survive at 175 insns. **Measured false in four spellings** (b1 `s32 *q`, b2 `u8 *q`,
+b3 with the 0x4 store re-read through the global, b4 with the global assigned from
+`q`): all four measure **170 insns / score 23**, and all four measure 170/47 when
+composed with the cursor flip. The row diff of b1 (`s24/b1.rows`) shows why: `p_old`'s
+SECOND live range is copy-propagated away before allocation, `$s1` disappears from the
+entire post-call region, and the prologue re-seats `$s0/$s1/$s2/$s3` — the copy plus
+four dependents vanish. This is exactly the failure s17 recorded ("every spelling that
+actually reaches the raw pseudo collapses the function to 170 instructions"), now
+re-confirmed on the current chassis with spellings the bank did not hold. Banked
+`rejected/s24-classB-raw-plus-copy-both-live-collapses-170insn-score23.c`.
+
+### ROUTING THE 0x68 STORE THROUGH THE SECOND RELOAD IS NOT A NON-FLIP ROUTE (2 builds)
+
+`sN1`/`sF1`: assign `rb = D_800A36A0;` after group C and make group S's
+`*(u8 *)(rb + t0 + 0x68) = (u8)t0;` store use it, so the reload's pseudo carries a use
+that is not the cursor add. Both measure 175/29. The row diff (`s24/sN1.rows`) shows
+the whole loop head reorganises — the `lw` is hoisted above group A's stores and the
+`sb` sinks past the cursor block — and the add still prints reload-first
+(`addu $v0,$v1,$v0`). Giving the reload an EARLIER use does not defeat the operand-1
+tie; the `combine_regs` gate needs a use AFTER the add, and s18fx already priced that
+at 174 insns / score 49.
+
+### THE NEW LEAD: A WITHIN-FUNCTION CONTROL FOR CLASS C
+
+Class C's divergent insn is the target's row 65 `addu $v1,$v1,$v0` (shift as operand
+1). **The same function contains a SECOND instance of that exact shape that our floor
+body already matches byte-exactly**: target row 89 `addu $v1,$v1,$v0`, the base for
+the post-inner-loop `sh $zero,0x5C($v1)` / `sh $v0,0x60($v1)` stores, fed by
+`sll $v1,$v1,1` (t0*2) at row 87 and `lw $v0,%gp_rel(D_800A36A0)` at row 88. Our
+source for it is the plainly BASE-FIRST spelling
+`*(s16 *)(D_800A36A0 + (t0 * 2) + 0x5C) = 0;` — and it emits shift-first, matching.
+
+So "a base-first source spelling forces reload-as-operand-1" is FALSE as a general
+statement: it holds at the cursor site and fails at the 0x5C site, in the same
+function, in the same compilation. The ledger has never named this control. The two
+sites differ in exactly two respects: (i) at the 0x5C site the sum is consumed
+directly as a MEM base with two constant offsets, while at the cursor site the sum is
+materialised into two pointer variables via `addiu +0x6A` / `+0x7E` because those
+pointers are live into the inner loop; and (ii) at the 0x5C site the addend is
+`t0 * 2`, whose RTL def is a single `sll` of a plain sign-extended register, while at
+the cursor site the addend is `t0 * 10`, whose def is an `sll` of a `plus`
+(`t0*4 + t0`). Whatever distinguishes them is a C-reachable property, and it is the
+strongest remaining lead on class C because it needs neither the store-group reorder
+nor the flip.
+
+### FACTS BANKED
+
+- [s24] Floor re-verified live on the moved chassis (HEAD 6bbdefda): candidate.c = score 5, build_insns 175, target_insns 175; plain flip X = 29/175. FAKE ablation keep-all 5 / drop-1 10, one unit (the prologue fence).
+- [s24] The five residual rows printed exactly: rows 35/36 (`sw`/`sh` through `$s1` where the target uses `$v0`) = class B; rows 62/63/64 (`addu $v0,$v0,$v1` plus two `addiu` off `$v0` where the target uses `$v1`) = class C. Every other row differs only in assembler pseudo-op spelling and is byte-identical.
+- [s24] The s23 frontier item #1 ("move the reload's pseudo earlier while the stores stay A,D,C,S") is EXECUTED as a 5-position x 2-spelling cross-product and is NEGATIVE: 174/41 at the two positions before group D (the reload CSEs onto `base` and is deleted), 175/40-42 after D, 175/26 base-first and 175/29 flipped after C, no-op after S. No position reaches the target's seats and none beats the floor.
+- [s24] Group A's five `sh` stores through a `base`-derived pointer do NOT kill CSE of the gp-relative `D_800A36A0` load: a second named read of the global placed after group A still collapses onto `base` and deletes an instruction. The earliest position at which a second reload survives is after group D.
+- [s24] Staging the cursor's `t0 * 10` shift into a named `s32 sh;` local is BYTE-INERT at all five statement positions across the store groups: mF0-mF4 are byte-identical to the plain flip (29/175) and mN0-mN4 are byte-identical to the floor (5/175). GCC re-sinks the `sll` to its use, so the chain pseudo's birth position is not C-controllable by naming or statement position.
+- [s24] Class B is exactly: the target holds the `func_8006E49C` result in TWO registers, `$s1` (the `p_old` copy, feeding the global store and the 0x4 store, dead immediately after) and `$v0` (the raw result, feeding the 0x30/0x34 stores). Four fresh spellings that name the raw result in a local `q` and keep the `p_old = q` copy live all collapse to 170 insns / score 23 (170/47 under the flip); b1's row diff shows `p_old`'s second live range copy-propagated away, `$s1` gone from the post-call region and the prologue re-seated. Re-confirms s17's foreclosure on the current chassis with spellings the bank did not hold.
+- [s24] Giving the second `D_800A36A0` reload an earlier use (routing group S's 0x68 byte store through it) does not defeat the operand-1 tie: 175/29 both base-first and flipped, the add still prints reload-first, and the loop head reorganises (lw hoisted above group A, sb sunk past the cursor block). The `combine_regs` gate needs a use AFTER the add, which s18fx priced at 174/49.
+- [s24] WITHIN-FUNCTION CONTROL, named for the first time: the target's row 89 `addu $v1,$v1,$v0` (post-inner-loop, base for the 0x5C/0x60 stores) is the SAME shift-first shape as class C's row 65, and our floor body matches it byte-exactly from a plainly base-first source spelling `*(s16 *)(D_800A36A0 + (t0 * 2) + 0x5C) = 0;`. "Base-first spelling forces reload-as-operand-1" is therefore false in general; it holds at the cursor site and fails at the 0x5C site in the same compilation. The two sites differ in (i) sum-consumed-as-MEM-base vs sum-materialised-into-two live pointer variables and (ii) addend `t0*2` (an `sll` of a plain reg) vs `t0*10` (an `sll` of a `plus`).
+
+- [s24] Floor re-verified live on the moved chassis (HEAD 6bbdefda, one commit newer than the s23 ledger entry): memory/grind/func_800770B8/candidate.c = score 5, build_insns 175, target_insns 175. Plain flipped base X = 29/175.
+
+- [s24] Mandated FAKE kill re-audit re-run this session: tools/fake_ablate.py reports ONE FAKE unit (the empty do-while(0) prologue fence, line 243), keep-all 5 / drop-1 10 -- unchanged, load-bearing, prologue-scoped, occupying none of pseudos 107/108/109/110.
+
+- [s24] The five residual rows are now printed exactly (s24/F.rows): rows 35/36 `sw $zero,0x30($s1)` / `sh $zero,0x34($s1)` where the target uses $v0 (class B), and rows 62/63/64 `addu $v0,$v0,$v1` plus two addiu off $v0 where the target uses $v1 (class C). Every other row differs only in assembler pseudo-op spelling (move vs addu, li vs addiu) and is byte-identical.
+
+- [s24] s23 frontier item #1 executed as a 5-position x 2-spelling cross-product (20 builds). Staging the reload: 174/41 at the two positions before group D, 175/40 and 175/42 after D, 175/26 and 175/29 after C, no-op after S. No position reaches the target's seats; best surviving score 26.
+
+- [s24] Group A's five sh stores through a base-derived pointer do NOT kill CSE of the gp-relative D_800A36A0 load: a second named read placed after group A still collapses onto `base` and deletes an instruction (174). The earliest position at which a second reload survives is after group D.
+
+- [s24] Staging the cursor's t0*10 shift into a named `s32 sh;` local is BYTE-INERT at all five statement positions: mF0-mF4 all exactly 29/175 (byte-identical to the plain flip) and mN0-mN4 all exactly 5/175 (byte-identical to the floor). GCC re-sinks the sll to its use, so the chain pseudo's birth position is not C-controllable by naming or statement position. This retires the 'move the chain's pseudo' family, not just s23's single i4 datum.
+
+- [s24] Class B is now exactly typed: the target holds the func_8006E49C result in TWO registers, $s1 (the p_old copy, feeding the global store and the 0x4 store, dead immediately after) and $v0 (the raw result, feeding the 0x30/0x34 stores). Four fresh spellings that name the raw result in a local q and keep the `p_old = q` copy live all collapse to 170 insns / score 23 (170/47 under the flip).
+
+- [s24] The b1 row diff (s24/b1.rows) names the class-B collapse mechanism concretely: p_old's second live range is copy-propagated away before allocation, $s1 disappears from the entire post-call region and the prologue re-seats $s0/$s1/$s2/$s3 -- the copy plus four dependents vanish. Re-confirms s17's foreclosure on the current chassis.
+
+- [s24] Routing group S's 0x68 byte store through the second reload (sN1/sF1) is 175/29 in both spellings; the add still prints reload-first and the loop head reorganises (lw hoisted above group A, sb sunk past the cursor block). An earlier use does not clear the reload's REG_DEAD note at the add.
+
+- [s24] WITHIN-FUNCTION CONTROL named for the first time in 24 sessions: target row 89 `addu $v1,$v1,$v0` (post-inner-loop, the base for the 0x5C/0x60 stores) is the same shift-first shape as class C's row 65, and the floor body matches it byte-exactly from the base-first source `*(s16 *)(D_800A36A0 + (t0 * 2) + 0x5C) = 0;`.
+
+- [s24] 31 fresh builds this session; src/text1b.c restored to its pristine committed state after every sweep (git status --porcelain clean at session end apart from the engine's own metrics/events.jsonl).
