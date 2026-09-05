@@ -337,12 +337,12 @@ void func_8001924C(s16 *arg0, s32 arg1) {
 }
 INCLUDE_ASM("asm/funcs", func_80019310);
 void func_8001945C(void) {
-    D_80106A70 = 0x11;
-    D_80106A71 = 0x44;
-    D_80106A72 = 0x88;
+    D_80106A70[0] = 0x11;
+    D_80106A70[1] = 0x44;
+    D_80106A70[2] = 0x88;
 }
 s32 func_80019488(void) {
-    return (D_80106A70 & 0xF) | ((D_80106A71 & 0xF) << 4) | ((D_80106A72 & 0xF) << 8);
+    return (D_80106A70[0] & 0xF) | ((D_80106A70[1] & 0xF) << 4) | ((D_80106A70[2] & 0xF) << 8);
 }
 void func_800194C0(s32 arg0) {
     D_800A3912 = arg0 & 0xF;

@@ -1,6 +1,6 @@
 # SELF-VET — func_80034F88
 
-Session 67 (forensics dispatch; the frontier was a landing, not a probe — the
+Session 67 (rederive dispatch; the frontier was a landing, not a probe — the
 pipeline scope grant that s66 was blocked on is now present in
 tools/grinder/scope_allow.txt). Bytes re-proven THIS session with the edits in
 place: `sandbox func_80034F88 --disable all` = score 0, target_insns 49,

@@ -951,6 +951,13 @@
    "hash": "4c793057badb6957",
    "when": "2026-09-05T20:07:19.690944+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-05 15:07 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "4c793057badb6957",
+   "when": "2026-09-05T20:15:16.332743+00:00",
+   "summary": "final call: My own 2026-09-05 20:07 ruling on this exact body (4c793057badb6957) binds and I found no defect it missed. Constructs: two /* FAKE */ pointer aliases to D_80106A73 (pointer-alias-fake-exception), one"
   }
  ],
  "escalation_deferrals": 0,
