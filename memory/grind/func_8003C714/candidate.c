@@ -362,6 +362,38 @@
  * This file is unchanged; it remains the minimal, cleanest submission shape.
  */
 
+/* s17 (2026-09-05, solver modality) - READ THIS FIRST. Chassis re-checked:
+ * this body still scores 15 (104 target / 105 build, rules_dropped 0), and the
+ * solver classifier (goal_from_tgt.py classify, objects) still reports only the
+ * consequent RA ($t2->$t1 x10, $t1->$v0 x2) and nop-only SCHED components.
+ * BODY UNCHANGED - but the axis is no longer closed.
+ *
+ * s17 found a THIRD free insn_count channel and MEASURED THE WHOLE FUNCTION TO
+ * SANDBOX DISTANCE 0 with it on the shipped chassis (score 0, 104 == 104):
+ * a DEAD DImode (long long) division emits a LIBCALL BLOCK that cse1's
+ * delete_dead_from_cse is forbidden to remove (cse.c:8708), so loop.c counts it
+ * at full price, and flow.c then deletes the whole block for zero emitted bytes
+ * (libcall_dead_p, flow.c:1827 / deletion at flow.c:1503,1551 - before combine
+ * and before register allocation). Thirteen of them on top of s15's split-init
+ * body take insn_count 63 -> 122, inside H17's window [120,122].
+ * That form is INADMISSIBLE (invented dead code, not the same-value dead-store
+ * family) and was NOT submitted; it is banked at
+ * rejected/dead-dimode-libcall-block-13x-free-insn-count-d0-but-inadmissible.c.
+ * The remaining problem is purely one of finding a SEMANTICALLY REAL carrier
+ * for this channel, not of reachability. See hypotheses.md H26-H28 / K48-K50.
+ *
+ * s17 also closed the s16 frontier's headline item: the cse2 / post-strength-
+ * reduction redundancy channel is EMPTY (K49). Six address-arithmetic
+ * respellings (explicit i*4 / i*8 offset locals, four independently computed
+ * store addresses, an offset local reused by all four stores, a duplicated dst
+ * pointer, a separate src+4 pointer) all leave insn_count pinned at 56 (63 with
+ * split-init) and asm_lines at 107: cse1 folds every address redundancy BEFORE
+ * loop.c counts it, so nothing is ever counted at full price for cse2 to
+ * delete. And placing carriers BEFORE the magic buys nothing (K50): a movable
+ * that is DECLINED does not decrement threshold (loop.c:1719 runs only on the
+ * moved path), so a high insn_count makes the earlier carriers decline and the
+ * order dial self-limits.
+ */
 void func_8003C714(void) {
     u8 buf[4];
     s32 *s0;

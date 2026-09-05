@@ -2331,3 +2331,149 @@ This session attacked the two live frontier items s15 left and settled both.
 - probe: Re-read s14's sweep table and its sandbox result against the residual claim instead of spending a session diffing dumps instruction by instruction, then re-pointed the CONTRADICTION-RULE re-audit at the next-weakest verdict.
 - result: The k=32 body measured sandbox score 0, target_insns 104, build_insns 104. A body whose only difference from candidate.c is the hoist decision scores 0, so all 15 residual instructions are downstream of it and the hoist really is the whole problem. The re-audit then moved to s15's movable-order cap, which is where the false verdict actually was (see the first hypothesis above).
 - verdict: CONFIRMED
+
+## s17 (2026-09-05, solver modality)
+
+### H26 -- CONFIRMED. A dead libcall block is a FREE and UNBOUNDED insn_count channel.
+
+`delete_dead_from_cse` is forbidden to touch a libcall block (`cse.c:8708`), so
+a DEAD libcall survives cse1 and is still in the insn stream when
+`count_loop_regs_set` runs; `flow.c` then removes the whole block via
+`libcall_dead_p` (flow.c:1827; consulted flow.c:1482-1484; deleted
+flow.c:1503/1551), and `flow` runs after `loop_optimize` and before `combine`
+and register allocation. On MIPS1 there is no DImode divide instruction, so
+`(long long)i / K` expands to such a block.
+
+Measured on the shipped chassis, all at the baseline asm_lines of 107: one
+statement with a `long long` destination is worth +9.5 insn_count on average
+(56 -> 67 -> 76 -> 85 -> 94 -> 103 -> 113 -> 123 -> 133 for 1..8 statements);
+one statement truncated into an existing `s32` local is worth +5
+(85, 90, 95 at 5/6/7 statements; 109, 113, 118, 122, 126 at 10..14).
+`(long long)i * K` is also a libcall (+11); `K << i` in DImode is not (+0).
+
+This is the THIRD free channel for this function (s6 balanced biv noise, s14
+combine `force_to_mode` pad, s17 libcall block) and the first that is
+frame-exact as well as byte-exact.
+
+### H27 -- CONFIRMED. The whole function reaches sandbox distance 0 on the SHIPPED chassis through this channel.
+
+`t_v13` = the s15 split-init body plus thirteen `v = (long long)i / K;`
+statements. insn_count 122, inside the H17 window [120, 122]. The `.loop`
+movable table prints the target arrangement exactly (`&D_80106A58` moved,
+`0x91A2B3C5` **not desirable**, `0x88888889` moved), and
+`sandbox func_8003C714 --disable all` measures **score 0, target 104 == build
+104, rules_dropped 0**. Banked, NOT submitted, at
+`rejected/dead-dimode-libcall-block-13x-free-insn-count-d0-but-inadmissible.c`:
+thirteen invented dead 64-bit divisions fail cheat-checklist tests T1/T2/T3, and
+they are not the frozen list "dead stores / self-assigns to LOCALS or PARAMS"
+family, which is a same-value re-store of a value the function already holds
+(`.claude/rules/dead-store-fake-exception.md`), not a fresh division by an
+arbitrary prime.
+
+Consequence for the ledger: s1 H2 is now confirmed a third time, and the
+function is a pure ADMISSIBILITY problem. Reachability, register allocation,
+scheduling and frame layout are all settled -- a byte-exact, frame-exact d0
+body exists on the shipped chassis and the only open question is whether a
+SEMANTICALLY REAL carrier for the same channel can be spelled.
+
+### K48 -- KILLED (instance). Dead SImode divisions reach the same insn_count but are not byte-free.
+
+`ctl_v13` (thirteen dead `v = i / K;`, no `long long`) also measures insn_count
+122 and also declines the `0x91A2B3C5` movable, but sandbox reports score 19 at
+build_insns 105: one emitted instruction survives per body, so the channel is
+priced. Freeness is a property of the libcall block deletion in `flow.c`, not of
+dead code in general -- which is why s5 K15 measured dead ALU chains at +0
+count while these measure at full price.
+
+### K49 -- KILLED (instance). The cse2 / post-strength-reduction redundancy channel is empty.
+
+Six address-arithmetic respellings designed so that the redundancy appears only
+after `strength_reduce` (explicit `i*4` / `i*8` offset locals; four
+independently computed store addresses; one offset local reused by all four
+store addresses; a duplicated `dst` pointer; a separate `src+4` pointer; each
+also combined with split-init) all leave insn_count pinned at 56 (63 with
+split-init) and asm_lines at 107. cse1 folds the duplicated address arithmetic
+before `loop_optimize` counts it, so nothing is counted at full price for cse2
+to delete. The only spelling that adds count (`w_src2`, +2) adds 3 emitted
+instructions. This closes the s16 frontier headline item.
+
+### K50 -- KILLED (instance). Placing carriers before the magic buys no threshold reduction.
+
+`o_v4/6/8/10/12` place the carriers ahead of the divisions so their divisor
+constants become movables earlier in the movable list. Measured insn_counts are
+identical to the same carrier counts placed after the divisions (`o_v12` 118 =
+`t_v12` 118) and the `0x91A2B3C5` decision is unchanged. `threshold -= 3`
+(loop.c:1719) executes only on the *moved* path, so once insn_count is large the
+earlier carriers are themselves declined and contribute nothing. The order dial
+and the insn_count dial cannot be stacked.
+
+### s17 frontier
+
+1. The channel needs a SEMANTICALLY REAL carrier. A libcall block is free only
+   while its result is dead (a live one emits `jal __divdi3`), so freeness and
+   deadness coincide exactly as in s14 K41. The unexamined shape is a libcall
+   whose result is real but whose *value* the compiler can prove dead at flow
+   time without the source statement being dead -- e.g. a DImode value written
+   into a local that a later, unconditional store overwrites with a genuinely
+   computed value, which is the sanctioned dead-store family only if the
+   overwritten value is the SAME value. Probe: spell the three divisions so one
+   of them is naturally computed twice (once in DImode, once in SImode) with the
+   DImode copy overwritten by the SImode one, and check whether the DImode block
+   is still `libcall_dead_p` and still counted.
+2. The carrier requirement is now only 59 counted insns above the split-init
+   base (63 -> 122), and each libcall statement is worth 5 or 9.5. Any
+   admissible construct worth even 20 insn_count would cut the carrier count to
+   a handful. Probe: sweep the OTHER libcall-generating constructs available in
+   ordinary C on this target (DImode multiply, DImode modulo, DImode compare,
+   `float`/`double` arithmetic if any expands to a libcall here) for their
+   insn_count-per-statement rate, so that the cheapest admissible spelling is
+   known before the next admissibility argument is built.
+3. The two declaration puns in candidate.c remain a hard submission blocker on
+   ANY distance-0 body (`src = (u8 *)&D_80106A58 + i * 8;` and
+   `*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;`); the sanctioned fix is the
+   aggregate-merge family at the DECLARATION in `include/*.h` routed as an
+   integration handoff, with prong (a) satisfied from the target base-register
+   stride evidence (`addiu $a2, $a2, 0x8` at 8003C830 with reads at 0x0 and
+   0x4). Unchanged from s16; still unspent.
+
+## [s17] A DEAD DImode (long long) division inside the loop is a free insn_count carrier: its libcall block survives cse1's delete_dead_from_cse, is counted by count_loop_regs_set at full price, and is then deleted whole by flow.c for zero emitted bytes.
+- mechanism: cse.c:8708 (delete_dead_from_cse) explicitly refuses to delete insns that are part of a libcall block, so unlike the dead ALU chains killed at s5 K15 the block is still in the stream at loop_optimize. flow.c's libcall_dead_p (flow.c:1827, consulted at flow.c:1482-1484, deletion at flow.c:1503/1551) then removes the whole REG_LIBCALL/REG_RETVAL block, and flow runs after loop_optimize and before combine and before register allocation. On MIPS1 there is no DImode divide instruction, so (long long)i / K expands to exactly such a block.
+- probe: tmp/grind/func_8003C714/s17/sweep.sh over x_ll1, x_ll2, y_ll3..y_ll8 (long long destination) and r_v5..t_v14 (result truncated into the existing s32 local v), reading insn_count from the -dL loop dump and asm_lines from the emitted .s.
+- result: insn_count 56 -> 67, 76, 85, 94, 103, 113, 123, 133 for 1..8 statements with a long long destination (about +9.5 each) and 85, 90, 95, 109, 113, 118, 122, 126 for 5..14 statements truncated into an existing s32 local (about +5 each). asm_lines stays at the baseline 107 in every case. Controls: (long long)i * K is also a libcall (+11); a DImode shift by a variable is not (+0).
+- verdict: CONFIRMED
+
+## [s17] Through that channel the whole function reaches sandbox distance 0 on the shipped chassis, byte-exact and frame-exact, confirming s1's H2 that all 15 residual instructions are downstream of the loop.c hoist decision.
+- mechanism: Thirteen dead libcall blocks on top of the s15 split-init body take loop insn_count from 63 to 122, inside H17's admissible window [120,122]: the &D_80106A58 movable still moves (threshold 122 >= 122), the 0x91A2B3C5 magic is declined (threshold 119 < 122) and stays in-loop as the target's lui/lw/ori/mult quartet, and the 0x88888889 magic (lifetime 35) still moves. The blocks then vanish in flow, so RA and sched never see them.
+- probe: tmp/grind/func_8003C714/s17/t_v13.c copied over src/code6cac_c2.c, then `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`; movable table read from s17/dumps/t_v13.seg.
+- result: score 0, target_insns 104, build_insns 104, rules_dropped 0. Movable table: Insn 33 regno 82 (life 1) moved; Insn 47 regno 87 (life 1) NOT DESIRABLE; Insn 65 regno 93 (life 35) moved. No __divdi3 call and no other trace of the thirteen statements in the emitted function. NOT SUBMITTED: thirteen invented dead 64-bit divisions fail cheat-checklist T1/T2/T3 and are not the frozen list's dead-store family (which covers a same-value re-store of a value the function already holds, .claude/rules/dead-store-fake-exception.md), so this is a first reach of an unsanctioned family. Banked at memory/grind/func_8003C714/rejected/dead-dimode-libcall-block-13x-free-insn-count-d0-but-inadmissible.c. An intermediate spelling with a dedicated `long long q` local (z_s6, 6 statements, insn_count 120) also declines the magic and matches the instruction count but measures score 26 because the DImode local reserves 8 further frame bytes (0x28 vs the target's 0x20).
+- verdict: CONFIRMED
+
+## [s17] The thirteen-statement carrier written in SImode instead of DImode reaches the same insn_count and the same hoist decision but is not byte-free on this chassis.
+- mechanism: Without the libcall block there is no whole-block flow.c deletion; one emitted instruction per body survives the later passes, so the carrier is priced rather than free. This is why s5's K15 measured dead ALU chains at +0 insn_count while these measure at full price - the two behaviours have different causes.
+- probe: tmp/grind/func_8003C714/s17/ctl_v13.c (t_v13 with the (long long) casts removed) installed in src/code6cac_c2.c and measured with sandbox --disable all.
+- result: insn_count 122, notdesirable 1 on the 0x91A2B3C5 movable, asm_lines 107 - but sandbox score 19 at build_insns 105 versus the target's 104.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s17/ctl_v13.c copied over src/code6cac_c2.c; no FAKE construct present (fake_ablate reports none in candidate.c or in the split-init base)
+
+## [s17] The six address-arithmetic respellings measured this session, which were designed so that their redundancy appears only after strength_reduce, leave loop insn_count unchanged, so no insn is counted at full price for cse2 to delete.
+- mechanism: cse1 runs before loop_optimize and folds duplicated address arithmetic within the single-basic-block loop body, so the duplicate address computations are already gone when count_loop_regs_set runs. The s16 frontier's premise - that such a computation would be counted at full price and deleted later by rerun-cse-after-loop - fails at its first step.
+- probe: tmp/grind/func_8003C714/s17/w_off.c, w_addr4.c, w_offreuse.c, w_dst2.c, w_src2.c, w_split_off.c, w_split_addr4.c swept with s17/sweep.sh against the w_base and w_split controls.
+- result: w_base 56/107; w_off 56/107; w_addr4 56/107; w_offreuse 56/107; w_dst2 56/107; w_split 63/107; w_split_off 63/107; w_split_addr4 63/107. The only spelling that adds count, w_src2 at 58, also adds 3 emitted instructions (asm_lines 110).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, insn_count from -dL loop dumps and asm_lines from the emitted .s; no FAKE construct present
+
+## [s17] Placing the carriers before the divisions, so their divisor constants become movables earlier in the movable list, produced insn_counts and hoist decisions identical to the same carriers placed after them.
+- mechanism: loop.c:1719 executes `threshold -= 3` only on the moved path. Once insn_count is large the earlier carrier movables are themselves declined, so they contribute no threshold reduction. The order dial (s15 H22) and the insn_count dial therefore cannot be stacked.
+- probe: tmp/grind/func_8003C714/s17/o_v4.c, o_v6.c, o_v8.c, o_v10.c, o_v12.c (carriers ahead of the divisions) swept against r_v5..t_v14 (carriers after).
+- result: o_v4 81, o_v6 90, o_v8 100, o_v10 109, o_v12 118 - matching the after-placement series exactly at equal counts (o_v12 118 = t_v12 118), with the 0x91A2B3C5 decision unchanged and asm_lines 107 throughout.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s17/o_v*.c; no FAKE construct present
+
+## [s17] The s15 split-init ceiling re-audited on the current chassis is unchanged: insn_count 63 at the baseline asm_lines of 107, with no FAKE construct present in it or in candidate.c.
+- mechanism: Mandated kill re-audit of the instance kill sitting closest to the target. tools/fake_ablate.py reports no FAKE-annotated constructs in either file, so neither the split-init result nor the candidate floor was measured with a FAKE carrier occupying a pseudo.
+- probe: s17/sweep.sh on w_split.c (the s15 body regenerated) plus fake_ablate.py --func func_8003C714 --file code6cac_c2 on candidate.c and on rejected/splitinit-ceiling-63-ordinary-c-byte-neutral-but-54-short.c.
+- result: w_split 63 real insns / asm_lines 107, identical to the s15 record; candidate.c re-measured at sandbox score 15, target 104, build 105, rules_dropped 0; fake_ablate finds nothing to ablate in either file. The kill stands and split-init was used as the base chassis for every s17 probe.
+- verdict: CONFIRMED

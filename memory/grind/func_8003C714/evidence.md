@@ -2066,3 +2066,157 @@ and eight extra instructions instead, no match line in the dump.
 - [s16] count_loop_regs_set (loop.c:2989-3092) counts every insn with GET_RTX_CLASS == 'i' between the LOOP_BEG and LOOP_END notes, including standalone CLOBBER insns which emit nothing; no ordinary-C source of bulk standalone CLOBBERs inside a loop body was identified this session, but this is a channel the ledger had never named.
 
 - [s16] moved_once[] (which doubles insn_count at loop.c:1609-1613) is allocated and zeroed once per FUNCTION in loop_optimize (loop.c:344-345), not per loop, so the doubling is in principle available to any second loop that re-moves the same pseudo - the same channel s12's K35 closed from the byte-cost side, recorded here from the allocation side so a future session does not re-derive the lifetime of the array.
+
+## s17 (2026-09-05, solver modality)
+
+Chassis first. `sandbox func_8003C714 --disable all` on HEAD with `INCLUDE_ASM`
+in place reports `no_c_body`; with `memory/grind/func_8003C714/candidate.c`
+spliced over line 629 of `src/code6cac_c2.c` it reports **score 15, target_insns
+104, build_insns 105, rules_dropped 0, cheat_asm_stripped 10** -- identical to
+s10-s16. The ledger floor of 15 is confirmed on the chassis this session ran on.
+
+Solver-modality opener (mandated step 1). `inverse_compose.py classify` refuses
+this function (zero-rule, no rule-carried `tgt.s`) and routes to the object
+classifier; `python3 tools/ra_solver/goal_from_tgt.py classify code6cac_c2
+func_8003C714` reports `ours 105 insns, target 104 insns` with a **nop-only
+SCHED component (ours 1, target 0)** and an **RA component `$t2 -> $t1 x10`,
+`$t1 -> $v0 x2`**. That is byte-for-byte the same verdict s7 recorded, and s6
+K18 already measured every seat landing correctly once the hoist is defeated --
+so no RA or scheduler search was opened. The residual is one `loop.c` decision.
+
+### Kill re-audit (mandated: floor flat, instance kills exist)
+
+The instance kill sitting closest to the target is the s15 split-init ceiling
+(`rejected/splitinit-ceiling-63-ordinary-c-byte-neutral-but-54-short.c`,
+insn_count 63 at zero byte cost). Re-measured on the current chassis with the
+s17 harness: **`w_split` -> 63 real insns, asm_lines 107** -- identical to the
+baseline body 107, i.e. still free and still ordinary C. `fake_ablate.py`
+finds no FAKE construct in candidate.c or in the split-init form, so neither
+was measured under a FAKE carrier. The kill stands as recorded, and split-init
+was used as the base chassis for every s17 probe.
+
+### Harness
+
+`tmp/grind/func_8003C714/s17/mk17*.py` generate whole-file variants of
+`src/code6cac_c2.c` from `s16/ORIG_code6cac_c2.c` (verified byte-identical to
+HEAD this session); `s17/sweep.sh` is the s16 sweep re-pointed at s17 and prints
+`insn_count | moved | notdesirable | asm_lines` from the `-dL` loop dump and the
+emitted `.s`. `s17/install.py` splices a body-only file into `src/`;
+`s17/diffasm.sh` disassembles the sandbox object.
+
+### Probe 1 -- the s16 frontier headline item (post-strength-reduction / cse2 redundancy) measures EMPTY
+
+The s16 frontier proposed that a computation which only becomes redundant after
+`strength_reduce` rewrites the address arithmetic would be counted by `loop.c`
+at full price and then deleted by `cse2` (`rerun-cse-after-loop`) for free. Six
+spellings of exactly that shape were measured:
+
+| variant | spelling | insn_count | asm_lines |
+|---|---|---|---|
+| `w_base` | candidate.c body (control) | 56 | 107 |
+| `w_off` | `soff = i*8; off = i*4;` explicit offset locals | 56 | 107 |
+| `w_addr4` | all four stores addressed independently as `*((u8*)s0 + i*4 + K)` | 56 | 107 |
+| `w_offreuse` | one `off = i*4` local reused by all four store addresses | 56 | 107 |
+| `w_dst2` | a second `dst2 = (u8*)s0 + i*4` pointer, stores split across the two | 56 | 107 |
+| `w_src2` | a separate `src2 = base + i*8 + 4` pointer for the three divisions | 58 | 110 |
+| `w_split` | s15 split-init (control) | 63 | 107 |
+| `w_split_off`, `w_split_addr4` | split-init plus the above | 63 | 107 |
+
+Every byte-neutral spelling is also count-neutral: cse1 folds the duplicated
+address arithmetic *before* `loop_optimize` counts it, so nothing is ever
+counted at full price for cse2 to delete. The single spelling that does add
+count (`w_src2`, +2) also adds 3 emitted instructions. The channel is empty.
+
+### Probe 2 -- a THIRD free insn_count channel: the DEAD LIBCALL BLOCK
+
+`cse.c:8708` (`delete_dead_from_cse`) contains an explicit refusal --
+"Don't delete any insns that are part of a libcall block" -- so a libcall block
+whose result is dead is *not* removed by cse1, unlike every dead ALU chain the
+ledger killed at K15/K16. `flow.c` deletes it instead: `libcall_dead_p`
+(flow.c:1827), consulted at flow.c:1482-1484, with the whole block deleted at
+flow.c:1503/1551 -- and `flow` runs *after* `loop_optimize`, *before* `combine`
+and *before* register allocation. On MIPS1 a DImode division has no
+instruction, so `(long long)i / K` expands to exactly such a block.
+
+Measured (all at asm_lines 107 = the baseline value, i.e. byte-free):
+
+| variant | carrier | insn_count | moved / not-desirable |
+|---|---|---|---|
+| `x_ll1` | 1 x `q = (long long)i / 7;`, `q` a dead `long long` local | 67 | 4 / 0 |
+| `x_ll2` | 2 x | 76 | 5 / 0 |
+| `y_ll3..y_ll8` | 3..8 x | 85, 94, 103, 113, 123, 133 | -- |
+| `x_llshift` | `q = 123456789012LL << i;` | 56 | 3 / 0 |
+| `x_llmul` | `q = (long long)i * 1234567891011LL;` | 67 | 4 / 0 |
+| `r_v5..t_v14` | 5..14 x `v = (long long)i / K;` into the *existing* s32 local | 85, 90, 95, 109, 113, 118, 122, 126 | -- |
+
+A DImode *destination* is worth about +9.5 insn_count per statement; truncating
+the result into an existing s32 local is worth about +5. A DImode shift by a
+variable is worth 0 (it is not a libcall on this target).
+
+### The distance-0 measurement
+
+`z_s6` (split-init plus 6 x `q = (long long)i / K;`) lands insn_count exactly
+120 with the target movable arrangement -- `&D_80106A58` moved, `0x91A2B3C5`
+**not desirable**, `0x88888889` (lifetime 35) moved -- and the sandbox measures
+**score 26 at build_insns 104**: the instruction *count* matches but the frame
+is 0x28 instead of the target 0x20, because the `long long q` local reserves
+8 further frame bytes ([[phantom-frame-slots-gcc272]]) and every `sw`/`lw`
+offset shifts.
+
+`t_v13` removes the extra local by truncating into the existing `v`: split-init
+plus **13 x `v = (long long)i / K;`** gives insn_count **122**, inside the H17
+admissible window [120, 122], with the movable table reading
+
+    Insn 33:  regno 82 (life 1)  moved to 342        <- &D_80106A58
+    Insn 47:  regno 87 (life 1)  not desirable       <- 0x91A2B3C5
+    Insn 65:  regno 93 (life 35) moved to 344        <- 0x88888889
+
+and `sandbox func_8003C714 --disable all` measures **score 0, target_insns 104,
+build_insns 104, rules_dropped 0**. The emitted function contains no `__divdi3`
+call and no other trace of the thirteen statements. This is the first
+distance-0 measurement for this function that is byte-free *and* frame-exact.
+
+It is **not submitted**: thirteen invented dead 64-bit divisions have no
+semantic purpose (T1), no programmer would write them (T2), the only account of
+their presence is a GCC-internals one (T3), and they are not the frozen list
+"dead stores / self-assigns to LOCALS or PARAMS" family, which covers a
+same-value re-store of a value the function already holds
+(`.claude/rules/dead-store-fake-exception.md`), not a fresh division by an
+arbitrary prime. Banked at
+`rejected/dead-dimode-libcall-block-13x-free-insn-count-d0-but-inadmissible.c`.
+
+### Probe 3 -- control: the freeness belongs to the libcall block, not to dead code
+
+`ctl_v13` is `t_v13` with `(long long)` deleted, i.e. thirteen dead **SImode**
+divisions. It also reaches insn_count 122 and also defeats the hoist -- but it
+is **not** byte-free: sandbox **score 19 at build_insns 105**, asm_lines 107.
+So a dead SImode division leaves one emitted instruction behind, while the
+DImode libcall block is erased whole. The distinction is the `flow.c`
+whole-block `libcall_dead_p` deletion, and it is what separates this channel
+from the dead-ALU channel the ledger killed at K15.
+
+### Probe 4 -- the order dial self-limits
+
+`o_v4 / o_v6 / o_v8 / o_v10 / o_v12` place the carriers *before* the divisions,
+so their divisor constants become movables ahead of `0x91A2B3C5`. Results are
+identical to the same counts placed after (`o_v12` 118 = `t_v12` 118). The
+reason is `loop.c:1719`: `threshold -= 3` runs only on the *moved* path, and
+once insn_count is high the earlier carriers are themselves declined -- so a
+declined movable buys no threshold reduction and the order dial cannot be
+stacked underneath a large insn_count.
+
+- [s17] Chassis re-measured this session: candidate.c spliced over src/code6cac_c2.c line 629 gives sandbox score 15, target_insns 104, build_insns 105, rules_dropped 0, cheat_asm_stripped 10 - the ledger floor of 15 is correct on this chassis.
+
+- [s17] Solver classifier (mandated step 1): inverse_compose.py classify refuses this zero-rule function and routes to goal_from_tgt.py classify, which reports ours 105 / target 104 with a nop-only SCHED component and an RA component $t2 -> $t1 x10, $t1 -> $v0 x2 - identical to the s7 verdict, and s6 K18 already measured every seat landing correctly once the hoist is defeated, so no RA or scheduler search was opened.
+
+- [s17] cse.c:8708 in delete_dead_from_cse refuses to delete any insn that is part of a libcall block; flow.c's libcall_dead_p (flow.c:1827) removes the whole block at flow.c:1503/1551. flow runs after loop_optimize and before combine and before register allocation, which is why the block is counted by loop.c and costs zero emitted bytes.
+
+- [s17] Per-statement insn_count rate of the channel on this chassis: about +9.5 with a long long destination, about +5 when the result is truncated into an existing s32 local, +11 for a DImode multiply by a wide constant, +0 for a DImode shift by a variable (not a libcall on this target).
+
+- [s17] The distance-0 form (t_v13) needs insn_count 122 = 63 (s15 split-init) + 13 carriers; its movable table prints the target's exact arrangement and the sandbox measures score 0 at 104 == 104 with rules_dropped 0.
+
+- [s17] A DImode local used as the carrier destination costs 8 extra frame bytes even though every insn referencing it is deleted (z_s6: instruction count matches at 104 but the frame is 0x28 vs the target's 0x20, sandbox score 26) - consistent with [[phantom-frame-slots-gcc272]]. Truncating into an existing s32 local avoids it entirely.
+
+- [s17] Dead SImode divisions are NOT equivalent: ctl_v13 reaches the same insn_count 122 and the same hoist decision but measures score 19 at build_insns 105, so the freeness belongs specifically to the flow.c whole-block libcall deletion.
+
+- [s17] The declined-movable path does not decrement threshold (loop.c:1719 runs only on the moved path), so the s15 order dial cannot be stacked underneath a large insn_count - carriers placed before the magic measure identically to carriers placed after it.

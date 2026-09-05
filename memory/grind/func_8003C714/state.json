@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 16,
- "current_modality": "synthesis",
+ "session_count": 17,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -99,23 +99,29 @@
    "floor": 15,
    "modality": "synthesis",
    "headline": "Synthesis: the movable-ORDER term is NOT capped at -6 as s15 recorded - mixed-operator invariant chains manufacture unlimited extra movables and flip the 0x91A2B3C5 hoist with zero inert padding at 12"
+  },
+  {
+   "session": 17,
+   "floor": 15,
+   "modality": "solver",
+   "headline": "Solver: a THIRD free insn_count channel found and measured to sandbox distance 0 (score 0, 104 == 104, frame-exact) on the shipped chassis - a DEAD DImode libcall block survives cse1 (cse.c:8708 prote"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Every construct measured across s6-s16 falls into exactly one of three buckets - free but inert (inadmissible), semantically real but priced in emitted bytes, or folded away by cse1 before loop.c counts it. The unexamined escape is a construct in the THIRD bucket that is nevertheless counted: an insn present when count_loop_regs_set runs and deleted afterwards by a pass that is not combine's force_to_mode.",
-   "mechanism": "cse2 (rerun-cse-after-loop) runs after loop_optimize. A computation that is not redundant before loop but becomes redundant once strength_reduce has rewritten the address arithmetic into givs would be counted by loop.c at full price, deleted by cse2 at zero byte cost, and remain semantically real - which is exactly the combination that the inert channels (s6 biv noise, s14 force_to_mode pad) can never have and that the priced channels (s16 mixed-op chains) can never afford.",
-   "next_probe": "Write the loop's address arithmetic in forms whose redundancy only appears post-strength-reduction - an explicit 'off = i * 4;' offset local reused where the dst giv will land, an explicit 'soff = i * 8;' for the src walk, and a pointer written as base + off rather than base + i*4 - and sweep insn_count against asm_lines with tmp/grind/func_8003C714/s16/sweep.sh. A shape measuring insn_count > 56 at asm_lines 107 is a new free ordinary channel; combined with H26 only ~16 units are needed, since the order dial supplies 3 per movable."
+   "hypothesis": "The libcall channel needs a SEMANTICALLY REAL carrier; freeness and deadness currently coincide because a live libcall emits jal __divdi3.",
+   "mechanism": "libcall_dead_p only fires when the block's result register is dead at flow time. A source statement can still be real while its VALUE is dead - e.g. a DImode computation written into a local that a later unconditional store overwrites - and if the overwritten value is the same value the function already computes, that is the sanctioned same-value dead-store family rather than invented dead code.",
+   "next_probe": "Spell one of the three divisions so its result is naturally computed twice, once in DImode and once in SImode, with the DImode copy overwritten by the SImode one before any read; check the .loop dump for whether the DImode block is still counted and the flow dump for whether libcall_dead_p still fires, then measure sandbox. If it holds, the carrier count needed is (122 - 63) / 9.5, i.e. about 6."
   },
   {
-   "hypothesis": "The insn_count-doubling channel at loop.c:1609-1613 remains the single largest unspent term in the gate (63 counted insns would become 126, closing the whole requirement in one step), and s12's class kill of it rests on the claim that every carrier is a second EMITTED loop.",
-   "mechanism": "moved_once[] is function-scoped (allocated and zeroed once in loop_optimize at loop.c:344-345), so the doubling fires whenever the magic's pseudo was already moved out of some other loop in the same function. s12 measured nested-loop carriers and priced them in bytes; what has never been measured is whether a second loop elsewhere in the function can share the magic pseudo, or whether any loop-shaped construct exists that loop.c sees but that jump2 or flow deletes before final.",
-   "next_probe": "Re-read s12's rejected/movedonce-inner-loop-carrier-costs-7-insns.c and inner-loop-moved-once-doubling-inflates-lifetime.c to see which carriers were actually measured, then measure the one shape they did not: a SECOND, non-nested loop earlier in the function that also divides by 1800, checking the .cse1 and .loop dumps for whether the two divisions share one const pseudo. If they do, moved_once fires on our loop for free."
+   "hypothesis": "A cheaper admissible carrier may exist among the other libcall-generating constructs available in ordinary C on this target, which would cut the carrier count from 13 to a handful.",
+   "mechanism": "The requirement is only 59 counted insns above the split-init base of 63, and the per-statement rate varies by a factor of two between spellings already measured (+5 vs +9.5 vs +11 vs +0). A construct worth 20 or more per statement would need three carriers, which is a far easier admissibility argument than thirteen.",
+   "next_probe": "Sweep DImode modulo, DImode multiply-by-variable, DImode compare, DImode conversion to and from float, and float/double arithmetic through s17/sweep.sh for insn_count-per-statement and asm_lines, so the cheapest free spelling is known before the next admissibility argument is built."
   },
   {
-   "hypothesis": "The two declaration puns in candidate.c are a hard submission blocker on ANY distance-0 body, independent of the floor, and the sanctioned fix is an integration handoff rather than a grind edit.",
-   "mechanism": "candidate.c 'src = (u8 *)&D_80106A58 + i * 8;' uses a per-word splat sub-symbol of g_file_disc_type @80106A54, and '*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;' reads an s16-declared symbol through a pun. The aggregate-merge family requires the merge at the DECLARATION in include/*.h, prongs (a)-(e), with prong (c)'s 2026-09-03 amendment requiring the sub-symbol rows to carry an 'alias of g_file_disc_type+4; retire with func_80035280' suffix because func_80035280 is still INCLUDE_ASM. A per-use cast is an auto-FAIL.",
-   "next_probe": "Prong (a) is satisfiable from base-register/stride evidence rather than the forbidden adjacency-of-splat-names evidence: the target walks a single base register with 'addiu $a2, $a2, 0x8' at 8003C830 and reads 0x0($a2) and 0x4($a2), i.e. an 8-byte stride over a two-field record. Draft the header-canonical merged declaration and route it as an integration handoff before any candidate-ready."
+   "hypothesis": "The two declaration puns in candidate.c remain a hard submission blocker on ANY distance-0 body, independent of the floor.",
+   "mechanism": "src = (u8 *)&D_80106A58 + i * 8 uses a per-word splat sub-symbol of g_file_disc_type @80106A54, and *((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2 reads an s16-declared symbol through a pun. The aggregate-merge family requires the merge at the DECLARATION in include/*.h with prongs (a)-(e), and prong (c)'s 2026-09-03 amendment requires the sub-symbol rows to carry an alias-of suffix because func_80035280 is still INCLUDE_ASM. A per-use cast is an auto-FAIL.",
+   "next_probe": "Prong (a) is satisfiable from base-register/stride evidence rather than splat-name adjacency: the target walks a single base register with addiu $a2, $a2, 0x8 at 8003C830 and reads 0x0($a2) and 0x4($a2), an 8-byte stride over a two-field record. Draft the header-canonical merged declaration and route it as an integration handoff before any candidate-ready."
   }
  ],
  "judge_constraints": [
@@ -297,6 +303,30 @@
    "measured_on": "shipped chassis HEAD 2026-09-05, compiler source reading against this session's .loop movable tables, no FAKE construct present",
    "predicate_cite": "",
    "result": "Every input is pinned. Notably the conditional-execution attack is closed in a way the ledger had only assumed: a divisi"
+  },
+  {
+   "session": 17,
+   "statement": "The thirteen-statement carrier written in SImode instead of DImode reaches the same insn_count and the same hoist decision but is not byte-free on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s17/ctl_v13.c copied over src/code6cac_c2.c; no FAKE construct present (fake_ablate reports none in candidate.c or in the split-init base)",
+   "predicate_cite": "",
+   "result": "insn_count 122, notdesirable 1 on the 0x91A2B3C5 movable, asm_lines 107 - but sandbox score 19 at build_insns 105 versus"
+  },
+  {
+   "session": 17,
+   "statement": "The six address-arithmetic respellings measured this session, which were designed so that their redundancy appears only after strength_reduce, leave loop insn_count unchanged, so no insn is counted at",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, insn_count from -dL loop dumps and asm_lines from the emitted .s; no FAKE construct present",
+   "predicate_cite": "",
+   "result": "w_base 56/107; w_off 56/107; w_addr4 56/107; w_offreuse 56/107; w_dst2 56/107; w_split 63/107; w_split_off 63/107; w_spl"
+  },
+  {
+   "session": 17,
+   "statement": "Placing the carriers before the divisions, so their divisor constants become movables earlier in the movable list, produced insn_counts and hoist decisions identical to the same carriers placed after ",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s17/o_v*.c; no FAKE construct present",
+   "predicate_cite": "",
+   "result": "o_v4 81, o_v6 90, o_v8 100, o_v10 109, o_v12 118 - matching the after-placement series exactly at equal counts (o_v12 11"
   }
  ]
 }
