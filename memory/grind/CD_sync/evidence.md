@@ -2727,3 +2727,167 @@ g1/h1/i1..i5/j1/j2/k1/k2/l1/m1.c with their full `-da` dump sets and ALLOCDBG st
 - [s116] Both self-reuse chains are load-bearing for the block's whole shape: a separate address local (h4/n2/n4), a named intermediate for the scale or the add (f2/h2/h3), array indexing with no locals (m2/m3/m4), or folding the t0 address into the call (f1) all score 15/160. f3 at 8 is the only intermediate. This is why the obvious reference-count levers are unavailable today.
 
 - [s116] Gate evidence for a future disposition: scan_hand_coded tier=LOW 2/8 (unchanged since s107), and the SOTN-precedent census for the closing construct came back negative in s98/s106 - both endgame-lock AND-gates therefore stand FAILED. No foreclosure record was filed this session because the owner's 2026-09-02 ruling re-activated CD_sync with the exhaustion window RESET and directed the ladder be worked from its next rung, and that rung (F2) produced a CONFIRMED lever that removed a residual sixty sessions had ruled locked. The axis is not exhausted: the wall named this session (block-local quantity ranking inside local-alloc) has never been attacked.
+
+
+## s117 (2026-09-04) — rederive: sibling transplant + the QTY_CMP_PRI tie
+
+Chassis re-verified live this session: j1 (duplicated arms, scalar model,
+renamed calls) = 3/160 bi 160 rd 0; the floor body (goto shape, chain-extender)
+= 2/160 bi 160 rd 0. All measurements below are on HEAD's src/system.c with
+CD_sync spliced by tmp/grind/CD_sync/s117/apply.py (region-scoped: it edits only
+CD_sync's own declaration block, never CD_datasync's duplicate copies).
+
+**FIRST: the banked candidate did not compile.** Its body still called
+sys_VSync / tslTm2LoadImage_2 / debug_printf / cdrom_ClearIrq /
+sys_GetVblankCount / func_80080828. None of those names survive in HEAD. The
+correct names, read off asm/funcs/CD_sync.s jal targets, are VSync / puts /
+printf / CD_flush / CheckCallback / getintr. candidate.c is repaired.
+
+### H117-1 CONFIRMED — CD_datasync s58's CD_alarm struct transplants onto CD_sync link-identically and deletes the pp FAKE
+
+The owner directive's first probe. Declaring
+typedef struct { s32 timeout; s32 count; char \*func; } CD_alarm; extern CD_alarm D_800F19B8;
+(dropping the per-word D_800F19BC / D_800F19C0 externs from C) and reading
+D_800F19B8.func directly in the printf call **instead of** the
+pp = (void \*\*)&D_800F19C0; ... \*pp pointer alias:
+
+- on the j1 duplicated-arms chassis: 3 -> 3 (A0 vs A1), and the objdump
+  comparison is 212 records with **5 differences, every one an addend**
+  (sw zero,0(at) -> sw zero,4(at); sw v0,0(at) -> sw v0,8(at);
+  lw v1,0(v1) -> lw v1,4(v1); sw v0,0(at) -> sw v0,4(at);
+  lw a1,0(a1) -> lw a1,8(a1)), all against R_MIPS_LO16 D_800F19B8
+  resolving to the same addresses the named per-word symbols resolve to.
+  Identical registers, identical order, identical insn count.
+- on the floor (goto) chassis: 2 -> 2, banked as
+  progress/s117-alarm-struct-nopp-2.c.
+
+On the SCALAR model dropping pp costs 6 points (s115_m1 = 9). Under the
+struct model the member MEM (mem (const (plus (symbol_ref D_800F19B8) 8)))
+gets the early argument load that the alias had to buy, exactly the mechanism
+CD_datasync s58 recorded. Net: **the floor form loses one FAKE** (only the
+combine-foldable chain-extender remains) and loses the pp DECLARATION-PUN
+that the dispatch auto-scan flags on this file. Unlike CD_datasync, the engine
+sandbox did NOT inflate the struct score here — score.py masked all five
+addends, so 2 is 2, and the objdump check confirms it independently.
+
+### H117-2 KILLED (instance) — the CD_intr struct member read collapses idx_1495
+
+Sony's typedef struct { u8 sync; u8 ready; u8 x2; u8 x3; } CD_intr; gives the
+target's own 1($s2) do_timeout read as ORDINARY C (idx_1494->ready), which
+would have retired the chain-extender FAKE. It does not survive: the moment
+do_timeout reads through the base pointer, idx_1495 is left with its single
+callback-site reference and stops being seated in $s4, rotating the whole
+callee-saved assignment.
+
+- B1 (idx_1495 = &idx_1494->ready, do_timeout reads idx_1494->ready) 20/160.
+- B3 (idx_1495 = &D_800A1494.ready, same read) 20/160.
+- B2 / B4 (same declarations, do_timeout keeps \*idx_1495) 3/160 — i.e. the
+  CD_intr declaration is byte-INERT; it is the READ SITE that costs 17 points.
+- A3 (scalar idx_1494[1] in both duplicated arms) 20/160.
+- A4 (A3 + s112's success-block placement of the idx_1495 init) 18/160.
+
+All measured on the pp-free struct chassis; one FAKE present (the chain-extender)
+in the floor forms, none in A3/B1/B3, which is precisely why those collapse.
+
+### H117-3 KILLED (instance) — removing pp does not decouple order-exactness from the $a0/$v1 seat exchange
+
+CD_datasync s58 predicted that block 3 with one pseudo fewer might reprice the
+local-alloc fixed point. It does not. Seven order-fixing spellings on the
+pp-free struct chassis all land on 6/160 (was 7/160 with pp — the pp removal is
+worth exactly the same 1 point everywhere):
+C1 h1-style ix address split 6 · C2 e3-style ix-first split 6 ·
+C3 k1-style chain-order swap 6 · C4 scale-between-address-and-load 6 ·
+E1 both addresses split 6 · E3 ix-split/t0-scale-last 6 ·
+E4 ix-split/load-then-t0-address 6.
+Seat-exact spellings all land on 2 (A5, E2). The behaviour is strictly
+bimodal, the same bimodality CD_datasync s57 recorded. C1's residual is a PURE
+register exchange, verified instruction-for-instruction: order-exact for all
+160, with t0's chain in $v1 and printf's arg5 value in $a0 where the target has
+them the other way round (indices 49, 55, 56, 59, 61, 65).
+
+### H117-4 KILLED (instance) — reference-count edits on the order-exact chassis
+
+- D1 (t0's addu+load folded into the printf argument) 14/160.
+- D2 (t0's whole chain folded into the printf argument) 14/160.
+- D3 (dead ix = arg5; after the load) 6/160 — byte-INERT, and a dead store, so
+  it is not a lever and is not banked as a form.
+- D4 (arg5 read inline at the call instead of through a local) 9/160.
+- E5 (t0's address staged through ix after its own last use) 14/160.
+
+### H117-5 CONFIRMED (mechanism) — the contested seat is a QTY_CMP_PRI TIE, not a reference-count inversion
+
+The standing frontier's model ("arg5 at 2 references = 4000 loses to the t0
+chain's 4 references = 5000; lift arg5 to 3 references") is **wrong about which
+quantities are contested**. Measured with the instrumented cc1's BB2_QTY_DEBUG
+hook (tools/gcc-2.7.2/cc1, local-alloc.c) on a single-function TU — new
+reusable tooling, tmp/grind/CD_sync/s117/mini.sh + qtyrun.sh, which extracts
+CD_sync plus its own declaration block into tmp/grind/CD_sync/s117/mini.c and
+reproduces the full-TU codegen exactly (pseudo numbering restarts per function,
+so the qty table is TU-independent; verified against the full-TU dump). The
+whole-TU stderr stream is unusable for this because QTYDBG lines carry no
+function name — segmenting it by blk resets gives 19 candidate segments and
+CD_sync is not identifiable among them. The mini-TU is the tool.
+
+do_timeout is basic block 3. Four quantities:
+
+| form | qty | reg | birth | death | span | refs | got |
+|---|---|---|---|---|---|---|---|
+| A5 (seat-exact, 2) | 0 | 113 | 10 | 20 | 10 | 6 | $v0 |
+| A5 | 3 | 120 | 22 | 30 | 8 | 4 | $v0 |
+| A5 | **2** (arg5 value) | 106 | 20 | 26 | **6** | 2 | **$v1** |
+| A5 | **1** (t0 address) | 112 | 16 | 24 | **8** | 2 | **$a0** |
+| C2 (order-exact, 6) | 0 | 108 | 10 | 20 | 10 | 6 | $v0 |
+| C2 | 3 | 119 | 22 | 30 | 8 | 4 | $v0 |
+| C2 | **1** (t0 address) | 112 | 18 | 24 | **6** | 2 | **$v1** |
+| C2 | **2** (arg5 value) | 106 | 20 | 26 | **6** | 2 | **$a0** |
+
+(C1 is identical to C2 in this table.)
+
+QTY_CMP_PRI = floor_log2(refs) \* refs \* size \* 10000 / (death - birth):
+
+- A5: qty1 = 1\*2\*10000/8 = **2500**, qty2 = 1\*2\*10000/6 = **3333**
+  -> qty2 allocated first, takes the lowest free hard reg $v1(3); qty1 takes
+  $a0(4). TARGET SEATS.
+- C1/C2: qty1 = 3333, qty2 = 3333. **EXACT TIE.** qty_compare_1 falls through
+  to \*q1 - \*q2, i.e. the quantity INDEX, and qty1 < qty2, so the t0 address is
+  allocated first and takes $v1. WRONG SEATS.
+
+**The entire order-vs-seat two-body problem is one luid.** Making the emission
+order exact moves qty1's BIRTH from 16 to 18 — one luid, nothing else in the
+table changes, not a single ref count, not qty2's range — and that single luid
+converts a 3333-vs-2500 win into a 3333-vs-3333 tie that is lost on index.
+This supersedes every reference-count framing of this residual since s108.
+
+### Closing condition (numeric, for the next session)
+
+On an ORDER-EXACT emission, achieve ANY ONE of:
+
+- (a) qty1 birth <= 16 (span >= 8): pri <= 2500 < 3333;
+- (b) qty2 refs >= 3 (span unchanged at 6): pri = floor_log2(3)\*3\*10000/6 = 5000 > 3333;
+- (c) qty2 death <= 24 (span <= 4): pri >= 5000;
+- (d) qty2's quantity INDEX below qty1's, which wins the tie outright.
+
+(a) is the one the measurement says is one luid away. (d) is untouched by any
+session and is the cheapest to test, because qty numbers are handed out in
+local-alloc's block scan order: anything that makes the arg5-value pseudo's
+first reference precede the t0-address pseudo's first reference flips it. Note
+the table already shows this is NOT simply emission order — in C2 the arg5 lw
+is emitted two insns BEFORE the t0 addu, yet qty1 still births at 18 and qty2
+at 20, so birth is not 2x the in-block insn index and the luid mapping needs
+reading out of the .lreg/.sched pair before (d) can be aimed. That
+reconciliation is the first job of the next session and it is a dump read, not
+a sandbox run.
+
+- [s117] The banked candidate.c could not be compiled at all: its body still called sys_VSync / tslTm2LoadImage_2 / debug_printf / cdrom_ClearIrq / sys_GetVblankCount / func_80080828, none of which survive in HEAD's src/system.c. The live names, read off asm/funcs/CD_sync.s jal targets, are VSync / puts / printf / CD_flush / CheckCallback / getintr. candidate.c is repaired and re-measured live at 2/160 bi 160 rd 0.
+
+- [s117] Chassis re-verified live at dispatch (the brief's CHASSIS CHECK said 'measurement unavailable'): j1 duplicated-arms 3/160, floor goto body 2/160, both bi 160 rd 0.
+
+- [s117] The 2-point residual read off the bytes with tmp/grind/CD_sync/s117/cmp.py is exactly the index 54/55 transposition — target 'addu $v0,$v0,$s3 ; sll $a0,$a0,2', ours 'sll $a0,$a0,2 ; addu $v0,$v0,$s3'. All other 158 instructions match including every register.
+
+- [s117] The order-exact C1 residual is a clean two-quantity register exchange, not a code difference: differing indices are 49 (lbu a0 vs lbu v1), 55, 56, 59, 61, 65 — six instructions, all the same opcodes, with $a0 and $v1 swapped between the t0 chain and printf's arg5 value.
+
+- [s117] engine/score.py masked all five R_MIPS_LO16 addends produced by the CD_alarm struct model on CD_sync, so the struct scores need no correction here — unlike CD_datasync s58, where the same model read +5 false points. Always confirm with the objdump record comparison rather than assuming either behaviour.
+
+- [s117] New reusable tooling for this function and its twins: tmp/grind/CD_sync/s117/apply.py (region-scoped declaration+body splice that cannot touch CD_datasync's duplicate decl block), b.sh (batch score + objdump + addend-normalised dump), cmp.py (normalised target-vs-build instruction diff that resolves hex/decimal and GNU-vs-PsyQ mnemonic aliases), mini.sh + qtyrun.sh (single-function TU + BB2_QTY_DEBUG quantity table).
+
+- [s117] The CD_intr declaration is byte-inert on this function (B2/B4 = 3/160, identical to the scalar B-line control), so a future session may adopt Sony's object model for D_800A1494 for free — it just cannot use it to replace the chain-extender at the do_timeout read site.

@@ -1,8 +1,8 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 116,
- "current_modality": "escalation",
+ "session_count": 117,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 0,
@@ -705,23 +705,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "The 54/55 sll/addu pair inversion - the residual sixty sessions called theorem-locked - is DEAD: three C spellings on the j1 chassis emit the target's exact order; the remaining wall is a newly-named,"
+  },
+  {
+   "session": 117,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Owner directive executed: CD_datasync s58's CD_alarm struct transplants onto CD_sync link-identically and DELETES the pp pointer-alias FAKE at the same floor of 2/160; and BB2_QTY_DEBUG finally names "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "arg5's block-local quantity can be ranked above the t0 chain's on the h1 base - giving arg5 $v1 and the t0 chain $a0 - without breaking either self-reuse chain, which would take h1 from 7 to 1.",
-   "mechanism": "local-alloc QTY_CMP_PRI = floor_log2(refs)*refs*size*10000/(death-birth); find_reg walks hard regs ascending (no REG_ALLOC_ORDER in mips.h). Today the t0 chain (4 references, born at the lbu at index 49, dying at lw a3 at index 65) outranks arg5 (2 references, born at lw v1 at 56, dying at sw at 61). arg5 at 3 references would be floor_log2(3)*3*10000/5 = 6000 and the t0 chain at 3 references would be 1*3*10000/16 = 1875 - either side of the inversion suffices. Every reference-count edit measured in s116 also broke a self-reuse chain and cost 8 points; the un-probed shapes are ones that add or remove a reference WITHOUT introducing a new named local: a duplicated-statement-into-arms carrier placed inside the do_timeout block itself, and sub-word or re-associated spellings of the existing statements.",
-   "next_probe": "On h1 (7/160, order already correct), enumerate reference-count edits that keep both `t0 *= 4; t0 = (s32)((u8 *)tbl_125c + t0);` and `ix <<= 2; ix += (s32)tbl_125c; arg5 = *(s32 *)ix;` textually intact. Before spending a sandbox run, read the .lreg dump for the block and count the actual qty births/deaths/references for the t0 and arg5 quantities - s116 inferred these from the emitted registers, never read them, and the model predicted the target's own allocation incorrectly, so the first task is to reconcile the model against h1's dump."
+   "hypothesis": "On an order-exact emission, giving the arg5-value quantity (qty2, reg 106) a lower quantity INDEX than the t0-address quantity (qty1, reg 112) wins the 3333-vs-3333 tie outright and delivers the target seats at zero instruction cost, taking the order-exact chassis from 6 to 0.",
+   "mechanism": "qty_compare_1 falls through to *q1 - *q2 on a QTY_CMP_PRI tie, and local-alloc hands out quantity numbers in its block scan order. No session has ever aimed at the index rather than at the priority. The measurement shows the index is currently NOT simply the emitted order \u2014 in C2 the arg5 lw is emitted two instructions before the t0 addu, yet qty1 still births at 18 and qty2 at 20 \u2014 so birth is not 2x the in-block instruction index.",
+   "next_probe": "FIRST reconcile the luid mapping: run pwsh tools/grinder/dump.ps1 CD_sync -Instrumented on C1 (memory/grind/CD_sync/rejected/s117_C1_struct_h1_ix_addr_split.c) and read the .sched/.lreg pair for block 3 to establish which insn each of birth 16/18/20/24/26 corresponds to and which pseudo takes qty1 vs qty2. Only then enumerate the C spellings that move the arg5-value pseudo's FIRST reference ahead of the t0-address pseudo's. This is a dump read before any sandbox run."
   },
   {
-   "hypothesis": "The sched1 tie at the contested clock can be broken by INSN_PRIORITY rather than by INSN_LUID, which would deliver the target order on the j1 emission order and therefore WITHOUT the six-point register exchange - taking j1 from 3 to 1.",
-   "mechanism": "rank_for_schedule compares INSN_PRIORITY first and only falls through to INSN_LUID on a tie. The two chains are tied because [sll a0][addu a0][lw a3][jal] and [addu v0][lw v1][sw][jal] have equal-cost paths. If the arg5 chain's path cost were one unit longer - or the t0 chain's one shorter - addu v0 would win the clock on j1's emission order, where the registers are already correct.",
-   "next_probe": "Run tools/sched_solver (order- and clock-exact, both passes) on j1's and h1's .sched dumps for the block holding normalized indices 49-66 and read out the two INSN_PRIORITY values and the exact insn_cost of each dependence link; then ask tools/ra_solver/inverse_compose.py classify for the C-lever vectors that change one path cost without changing the emitted insn set. s116 did not run either solver - this is the F2 frontier's original prescription, still un-executed."
+   "hypothesis": "On an order-exact emission, restoring qty1's span to 8 (birth <= 16, priority <= 2500) recovers the seat-exact allocation while keeping the order, taking C1 from 6 to 0 \u2014 condition (a) of the closing condition, and the one the measurement says is a single luid away.",
+   "mechanism": "A5 and C2 differ ONLY in qty1's birth (16 vs 18); every other field of the block-3 quantity table is identical. Whatever the address split does to shorten qty1 by one luid is the entire cost of order-exactness, so any spelling that keeps the split's scheduling effect while restoring the earlier birth closes both halves at once.",
+   "next_probe": "Enumerate order-exact spellings that keep the ix address split but change WHERE the t0 address quantity is created: t0's address computed from a different base expression, the split written as pointer arithmetic on tbl_125c instead of s32 arithmetic, and the split expressed with the scale folded into the subscript. Score each, and for every one that stays order-exact read the block-3 qty table with tmp/grind/CD_sync/s117/qtyrun.sh BEFORE reading the score \u2014 accept only qty1 birth <= 16 with build_insns 160."
   },
   {
-   "hypothesis": "The 1-point seat trade (index 50: our lbu v0,0(s4) against the target's lbu v0,1(s2)) can be retired on the duplicated-arms chassis by denying p78's REG_EQUIV note so that a 2-reference idx_1495 still reaches the (208, 531) band.",
-   "mechanism": "Restoring ix = idx_1494[1] in both duplicated copies moves two references from p78 to p77: p78 falls to 2 references (108 with the note on, 217 with it denied - in band) and p77 rises to 9 references (1421), which then outranks p80's 952 and steals $s1. s112's success-block placement denies the note at zero instruction cost on the n3 chassis but has never been measured on the duplicated-arms chassis; p80 would additionally need to clear 1421, which the i1 split-init does at 3636 for 2 instructions, or a 3-reference p80 would do at 1428 for less if a byte-neutral third reference exists.",
-   "next_probe": "On j1, restore ix = idx_1494[1] in both copies, move the idx_1495 initialisation into the success block (the s112 n3 placement), and read the ALLOCDBG table plus the .lreg note grep (tmp/grind/CD_sync/s116/notes.sh) BEFORE scoring: accept only build_insns 160 with no REG_EQUIV const (plus (symbol_ref D_800A1494) 1) and pri(p78) in (208, 531). If p77 at 1421 then outranks p80, measure the cheapest p80 lift that reaches 1429 rather than reaching for i1's split-init."
+   "hypothesis": "The arg5-value quantity can reach 3 references on an order-exact emission (priority 5000, condition (b)) through the duplicated-statement-into-arms family rather than through a new local, since reference counts are per-block and the duplicated-arms chassis gives do_timeout two independent copies.",
+   "mechanism": "flow.c builds reg_n_refs before combine (s109), and duplicated-statement-into-arms is a sanctioned family whose copies cross-jump re-merge to identical bytes (s114 measured the whole do_timeout region byte-neutral on this function). A third reference lifts qty2 from 3333 to 5000 and wins the tie without touching any span.",
+   "next_probe": "Build the order-exact do_timeout body (C1's split) on the j1 DUPLICATED-ARMS chassis with the CD_alarm struct model \u2014 this session only measured order-exactness on the goto chassis \u2014 and read the block-3 qty table for both arms. If either arm shows qty2 at 3 references, score it; s114 already established the duplication itself is byte-neutral at build_insns 160."
   }
  ],
  "judge_constraints": [
@@ -885,6 +891,30 @@
    "measured_on": "HEAD asm/funcs/CD_sync.s, 160 insns, no candidate spliced",
    "predicate_cite": "",
    "result": "HAND_CODED: tier=LOW score=2/8 (CD_sync, 160 insns) - only S4 (four loads in an 8-insn window at insn 49) and S5 (one ap"
+  },
+  {
+   "session": 117,
+   "statement": "Sony's CD_intr struct model (typedef struct { u8 sync; u8 ready; u8 x2; u8 x3; }) lets do_timeout read the target's own 1($s2) byte as ordinary C (idx_1494->ready), retiring the combine-foldable chain",
+   "kill_scope": "instance",
+   "measured_on": "pp-free CD_alarm-struct chassis (memory/grind/CD_sync/progress/s117-alarm-struct-nopp-2.c), control 2/160 bi 160 rd 0; FAKE state = chain-extender present in the control, ZERO FAKE constructs in B1/B3",
+   "predicate_cite": "",
+   "result": "B1 20/160, B3 20/160, A3 20/160, A4 18/160 \u2014 while B2 3/160 and B4 3/160 prove the CD_intr DECLARATION itself is byte-in"
+  },
+  {
+   "session": 117,
+   "statement": "Deleting the pp pseudo from the do_timeout block reprices local-alloc's fixed point enough to let an order-exact emission keep the target's $a0/$v1 seats, closing the order-vs-seat two-body problem.",
+   "kill_scope": "instance",
+   "measured_on": "pp-free CD_alarm-struct chassis (progress/s117-alarm-struct-nopp-2.c), control 2/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted",
+   "predicate_cite": "",
+   "result": "All seven order-exact forms 6/160 bi 160 rd 0; both seat-exact forms 2/160. The pp removal is worth exactly 1 point unif"
+  },
+  {
+   "session": 117,
+   "statement": "Reference-count edits inside the do_timeout block on the order-exact pp-free chassis lift the arg5 quantity's allocation priority above the t0 chain's and recover the target seats.",
+   "kill_scope": "instance",
+   "measured_on": "C1 order-exact pp-free struct chassis (memory/grind/CD_sync/rejected/s117_C1_struct_h1_ix_addr_split.c), control 6/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted",
+   "predicate_cite": "",
+   "result": "D1 14/160, D2 14/160, D3 6/160 (byte-INERT, and a dead store, so not banked as a form), D4 9/160, E5 14/160. None reache"
   }
  ],
  "sibling_progress": [
@@ -894,8 +924,9 @@
    "session": 45,
    "at": "2026-09-04T19:05:13.566558+00:00",
    "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
-   "consumed": null
+   "consumed": 117
   }
  ],
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "object_model_audited": 117
 }
