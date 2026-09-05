@@ -8129,3 +8129,106 @@ Read build_insns before believing an ablation win on this function.
 - [s57] Consequence for the ledger: every s49-s56 numeric RA conclusion was measured on a chassis that either lacked the target's block-0 reload (PRE-RA) or carried two FAKE pointer-alias objects. They are chassis-relative and must be re-measured on the s57 body before they are spent.
 
 - [s57] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this session ended; only memory/grind/ and tmp/ carry this session's work.
+
+## s58 evidence (forensics, 2026-09-05) — the residual is now a two-gate register race with measured numbers
+
+**E58.1 — There exists a 49-instruction body that matches the target's whole
+instruction stream in shape AND order.** `rejected/s58-twoalias-ORDER-EXACT-3cycle-rotation-49insn-score15.c`
+(= tmp/grind/func_80034F88/s58/vA.c). It is the s55 two-annotated-alias scaffold
+with block 0 spelled as the s57 raw/mv/v split plus the `mv = raw;` value-side
+cse2 invalidator. Build vs target, instruction by instruction:
+
+    build 0x4f48 lui/addiu $a1,D_80106A73   target 80034F98 lui/addiu $v1
+    build 0x4f50 lbu   $v1,0($a1)           target 80034FA0 lbu   $a0,0($v1)
+    build 0x4f54 move  $a2,$v0              target 80034FA4 addu  $a1,$v0,$zero
+    build 0x4f58 andi  $v1,$v1,0xf8         target 80034FA8 andi  $a0,$a0,0xF8
+    build 0x4f5c sb    $v1,0($a1)           target 80034FAC sb    $a0,0($v1)
+    build 0x4f60 lw    $v0,32($a2)          target 80034FB0 lw    $v0,0x20($a1)
+    build 0x4f64 lbu   $v1,0($a1)           target 80034FB4 lbu   $a0,0($v1)   <- the reload
+    build 0x4f68 andi/bnez/ori/move         target 80034FB8..FC4              identical
+    build 0x4f78 lui/addiu $a0,D_80106A73   target 80034FC8 lui/addiu $a0     <- la BEFORE the store
+    build 0x4f80 sb    $v0,0($a1)           target 80034FD0 sb    $v0,0($v1)
+    ... blocks 1, 2 and the trailing loop are register-for-register identical ...
+
+Score 15. The ONLY divergence is a 3-cycle register rotation:
+$a1 -> $v1 (handle A, x7), $v1 -> $a0 (block-0 values, x7), $a2 -> $a1 (p, x6).
+`goal_from_tgt.py classify` = FIRST DIVERGENCE: RA, zero shape differences.
+The two levers are orthogonal: two pointer pseudos buy the ORDER (a single
+pseudo makes block 1's `la` a set of the register block 0's store reads, so the
+dependence forbids hoisting it), the value-side dead re-set buys the RELOAD.
+
+**E58.2 — The target's register goal, as pseudos.** `goal_from_tgt.py goal
+--model` on vA: `{"74": 3, "72": 5}` = handle A -> $v1, p -> $a1; the block-0
+value chain must follow to $a0, where it shares a hard register with handle B
+(the two do not conflict: `82 conflicts: 72 74 77 78 82 2 29`).
+
+**E58.3 — GATE 1 is local-alloc, not global.c** (this corrects the ledger's
+long-running "global.c priority race" framing for the order-exact chassis).
+On vA the block-0 raw and mask values are block-local quantities (2 refs / 2
+insns each, `block_alloc` priority 10000), local-alloc's ascending `find_free_reg`
+scan gives them $v1 ($0/$1 fixed, $2 live with the call return, $3 free), and
+global.c's `dump_conflicts` — printed BEFORE the assignment loop — already shows
+`74 conflicts: ... 2 3 29` on the handle-A allocno. Dumps:
+tmp/grind/func_80034F88/s58/f88.vA.lreg.txt (`;; Register 75 in 3.`,
+`;; Register 76 in 3.`) and f88.vA.greg.txt. Reproduced at renumbered pseudos on
+vB (values hoisted to function scope), bytes unchanged.
+
+**E58.4 — GATE 2 is global.c's priority order, and it survives the removal of
+gate 1.** Two ways of making every block-0 value pseudo span >1 basic block
+(vC: variable reuse into blocks 1/2; vD: one `v` with `v = 0;` as the
+invalidator, no raw/mask locals at all) both delete hard reg 3 from the pointer
+allocno's conflict set and both still emit the same bytes: the value chain
+(7 refs / 8 insns, priority 17500) is allocated far ahead of the pointer
+(5 refs / 28 insns, priority 3571) and takes $v1 by ordinary conflict.
+vC is strictly worse structurally — it makes the block-1/2 value pseudos
+overlap handle A, a conflict the target's disposition forbids.
+
+**E58.5 — The two gates cannot be separated by any blocker.** Handle A is born
+at the `la` feeding 80034FA0 and dies at the store 80034FD0; the block-0 value
+chain is born at the reload 80034FB4 and dies at 80034FC4, strictly inside.
+A hard-reg-3 conflict can only come from a range that overlaps, and every range
+overlapping the value chain overlaps the pointer. So the target's assignment
+cannot be produced by blocking $v1 — only by allocation ORDER.
+
+**E58.6 — The order route, priced.** GCC 2.7.2 priority (verified by hand
+against the greg allocation order on all three variants: vA `73 84 78 83 77 82
+74 72`, vC `73 77 74 75 76 82 78 72`, vD `73 82 75 76 81 80 74 72`) is
+`floor_log2(refs) * refs * size * 10000 / live_length`. For handle A
+(live_length 28) to outrank the block-0 value chain (17500) it needs
+`floor_log2(r)*r > 49`, i.e. **r >= 16 references against the 5 the target's
+instruction stream contains**; or live_length <= 5 against a pointer spanning
+all of block 0. On the vA (local-alloc) gate the equivalent bar is a
+block-0-local quantity with `floor_log2(r)*r > 4` (r >= 4) over the mask's
+4-insn window, seated at $v1 ahead of raw/mask.
+
+**E58.7 — Preferences are mechanically foreclosed.** `inverse.py` emits none
+and says why: "$v1 never appears as a hard reg in this function's pre-RA RTL,
+so global.c set_preference can never record a preference for it." The
+function's only call, `func_80077D00()`, takes no arguments, so there is no
+hard-register copy anywhere to seed a preference. `inverse.py global --goal
+'{"74":3,"72":5}' --depth 2` on model_vA.json = NEGATIVE within bounds
+refs +12/-6, live length +/-2,4,8 (tmp/grind/func_80034F88/s58/inverse_vA.txt).
+
+**E58.8 — Tooling note.** `fake_ablate.py` on the current candidate.c is flat
+(keep-all 10 / drop-1 10, both 49 insns): the s57 dead re-set buys the
+instruction SHAPE (reload instead of a load-delay nop) and the divergence CLASS
+(PRE-RA -> RA), not distance. Do not read the s57 CONFIRMED entry as a distance
+claim.
+
+- [s58] A 49-instruction body exists that matches the target's ENTIRE instruction stream in shape and ORDER: rejected/s58-twoalias-ORDER-EXACT-3cycle-rotation-49insn-score15.c (= tmp/grind/func_80034F88/s58/vA.c). Its only divergence is a 3-cycle register rotation ($a1->$v1 x7, $v1->$a0 x7, $a2->$a1 x6). It scores 15 only because the engine metric prices register substitutions, not structure -- the score-10 candidate.c is structurally FARTHER (it emits the store before block 1's la and, without its FAKE, no reload at all).
+
+- [s58] The two levers that produce that stream are orthogonal and both are needed: two pointer pseudos buy the ORDER (with one pseudo, block 1's la is a set of the register block 0's store reads, so the dependence forbids hoisting it), and the s57 value-side dead re-set buys the RELOAD (cse2 invalidation).
+
+- [s58] The target register goal as pseudos (goal_from_tgt.py goal --model on model_vA.json): {"74": 3, "72": 5} -- handle A to $v1, p to $a1 -- with the block-0 value chain following to $a0, where it legally shares a hard register with handle B (they do not conflict: `82 conflicts: 72 74 77 78 82 2 29`).
+
+- [s58] GATE 1 is local-alloc: block 0's raw and mask are block-local quantities (2 refs / 2 insns, block_alloc priority 10000) and local-alloc's ascending find_free_reg gives them $v1, which appears as hard reg 3 in the handle-A allocno's conflict set in the greg dump BEFORE global.c's assignment loop runs (f88.vA.lreg.txt `;; Register 75 in 3.`, `;; Register 76 in 3.`; f88.vA.greg.txt `74 conflicts: 72 74 77 78 82 2 3 29`).
+
+- [s58] GATE 2 is global.c's priority order and it survives the removal of gate 1: globalizing the block-0 value pseudos (vC by variable reuse, vD by a single value variable with a `v = 0;` invalidator) deletes hard reg 3 from the pointer's conflict set, and the bytes do not change -- the value chain (priority 17500) still takes $v1 ahead of the pointer (3571).
+
+- [s58] The gates cannot be separated: handle A's live range strictly contains the block-0 value chain's, so any hard-reg-3 blocker that reaches the value chain also reaches the pointer. Only allocation ORDER remains.
+
+- [s58] The order route is priced with a verified formula. GCC 2.7.2 allocation priority = floor_log2(refs)*refs*size*10000/live_length; recomputed by hand it reproduces the greg allocation order exactly on all three s58 variants (vA `73 84 78 83 77 82 74 72`, vC `73 77 74 75 76 82 78 72`, vD `73 82 75 76 81 80 74 72`). Handle A (live_length 28) needs floor_log2(r)*r > 49, i.e. >= 16 references against the 5 the target's stream contains; on the vA local-alloc gate the equivalent bar is a block-0-local quantity with floor_log2(r)*r > 4 (r >= 4) over the mask's 4-insn window.
+
+- [s58] Preferences are mechanically foreclosed as a lever: inverse.py emits no preference atoms and states why -- $v1 never appears as a hard reg in this function's pre-RA RTL, so global.c set_preference can never record one. The function's only call takes no arguments, so there is no hard-register copy anywhere to seed a preference.
+
+- [s58] Tooling: fake_ablate.py on candidate.c is flat (keep-all 10 / drop-1 10, both 49 insns). The s57 dead re-set buys the instruction shape and the divergence class (PRE-RA -> RA), not distance; the s57 CONFIRMED entry must not be read as a distance claim.

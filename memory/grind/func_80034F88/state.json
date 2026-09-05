@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 57,
+ "session_count": 58,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -345,23 +345,29 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "cse2 (not cse1, not combine) is the pass that deletes block 0's reload, and a zero-cost value-side invalidator reproduces the target's whole 49-instruction stream on the single-pointer chassis: the fi"
+  },
+  {
+   "session": 58,
+   "floor": 10,
+   "modality": "forensics",
+   "headline": "First body in 58 sessions that reproduces the target's ENTIRE instruction stream in shape AND order (49/49, block-1 la above block-0's store, block-0 reload present); the whole residual is a 3-cycle r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The whole RA/solver stack re-run on the s57 chassis prices the residual differently from s56, because the block-0 value and the reload are now separate C locals and the pointer no longer shares an allocno with a FAKE alias.",
-   "mechanism": "model_vD.json allocates the block-0 value chain (pri 47142) before the pointer (pri 11379), so the value takes $v1 and the pointer takes $a0 -- the exact inverse of the target's block 0, while blocks 1 and 2 already match. The seat race is the same inequality the ledger has carried since s49 but with different numbers on both sides.",
-   "next_probe": "python3 tools/ra_solver/extract.py func_80034F88 code6cac_b, then inverse.py global tmp/grind/func_80034F88/s57/model_vD.json --goal with the full target disposition, --depth 2 --top 10; price every atom afresh and check each against the 49-instruction constraint before scoring."
+   "hypothesis": "Handle A can be given references without being given instructions, closing the one remaining inequality pri(handle A) > pri(block-0 value chain).",
+   "mechanism": "reg_n_refs is counted at .flow over surviving RTL operands. The s57 dead re-set is an existence proof that an insn deleted before assembly can still change a pass decision -- but its references are gone by .flow, so it does not help here. The question is which byte-neutral C shapes leave a pointer pseudo with extra operand references at .flow time: sub-word reads of the pointer, duplicated reads into the branch arms (split-read-defeats-hoist), and re-reads through the same handle are the untried candidates.",
+   "next_probe": "Read tmp/grind/func_80034F88/dumps/code6cac_b.flow for the exact reg_n_refs accounting of handle A on the vA chassis (install rejected/s58-twoalias-ORDER-EXACT-3cycle-rotation-49insn-score15.c first, then `pwsh tools/grinder/dump.ps1 func_80034F88`), then enumerate the C shapes that add operands surviving to .flow and measure each with `sandbox func_80034F88 --disable all`, rejecting any that moves off 49 instructions."
   },
   {
-   "hypothesis": "The s56 kill H56.5 ('allocno 74's seven references are seven target operands, so refs_down is unavailable') is void on the s57 chassis and must be re-measured.",
-   "mechanism": "H56.5 counted references on the FUSED mask+reload allocno of the two-alias body. The s57 split puts the mask value, the raw byte and the reload in three separate locals, so the reference distribution across allocnos is different even though the target operand count is unchanged.",
-   "next_probe": "Re-count reg_n_refs per pseudo from the .lreg dump of the s57 body against asm/funcs/func_80034F88.s 80034FA0-80034FC4, then look for a byte-neutral C shape that puts pri(block-0 value chain) below pri(pointer) = 11379 while keeping 49 instructions."
+   "hypothesis": "The local-alloc gate can be attacked ON the order-exact chassis rather than removed: a real block-0-local quantity with block_alloc priority above 10000, whose range covers the mask window, would take $v1 in local-alloc and push raw/mask onto $a0 -- exactly the target's assignment -- while leaving handle A's conflict set free of hard reg 3.",
+   "mechanism": "block_alloc assigns in priority order and post_mark_life makes each assignment visible in the `used` set of every later overlapping quantity. The bar is floor_log2(r)*r > 4 over a ~4-insn window, i.e. 4 or more operand references. It must be a REAL value (a dead local or an unused array is frame coercion and is forbidden), and it must not add an instruction.",
+   "next_probe": "Enumerate block 0's quantities from tmp/grind/func_80034F88/s58/f88.vA.lreg.txt (pseudos 75, 76, 81 with their refs/insn spans), then look for a byte-neutral re-spelling of block 0's existing arithmetic (the p[8] load, the mask, the flag OR) that concentrates 4+ references into one block-local pseudo spanning the mask; measure and re-dump the greg conflict line for handle A each time."
   },
   {
-   "hypothesis": "Declaring D_80106A70 as the 4-byte aggregate the DATA MODEL signal names, with the flag byte as element 3, removes the last declaration pun and changes what cse can equate between the mask's address and the trailing loop's.",
-   "mechanism": "The trailing loop already writes *(&D_80106A70 + i) for i < 3 and the flag byte is the fourth byte of the same object; an array declaration makes both handles ordinary array-element addresses. Untried in 57 sessions and now cheap to evaluate, because the s57 chassis no longer needs any address-side trick to keep the reload.",
-   "next_probe": "Spell the aggregate in-TU first and verify the relocation still resolves to %lo(D_80106A73), then measure on the s57 body; the include/code6cac.h edit is an integration handoff, not a src-only change."
+   "hypothesis": "Declaring D_80106A70 as the 4-byte aggregate the DATA MODEL signal names removes the last declaration pun in candidate.c and changes what cse can equate between the mask's address and the trailing loop's.",
+   "mechanism": "The trailing loop writes *(&D_80106A70 + i) for i < 3 and the flag byte D_80106A73 is the fourth byte of the same object; an array declaration makes both handles ordinary array-element addresses. Untried in 58 sessions.",
+   "next_probe": "Spell the aggregate in-TU first and verify the relocation still resolves to %lo(D_80106A73), then measure on the order-exact vA chassis; the include/code6cac.h edit is an integration handoff, not a src-only change."
   }
  ],
  "judge_constraints": [
@@ -383,14 +389,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 39,
-   "statement": "On the round-trip chassis, q's reference count cannot be raised above 10 by adding a redundant `q = &D_80106A73;` re-materialisation in block 1.",
-   "kill_scope": "instance",
-   "measured_on": "round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present; fake_ablate.py reports nothing to ablate",
-   "predicate_cite": "",
-   "result": "w1 = 10 at 49, and its allocno table is numerically identical to v2's: q still ord=5 pseudo=75 hardreg=4 nrefs=10 livele"
-  },
   {
    "session": 39,
    "statement": "On the round-trip chassis, m's reference count of 6 cannot be reduced by interposing a copy of m for block 1's arms to read.",
@@ -862,6 +860,14 @@
    "measured_on": "rejected/s55b-twoalias-TARGET-VALUE-PAIRING-49insn-score15.c on HEAD 2026-09-05, both annotated pointer-alias FAKE objects present and then ablated one at a time",
    "predicate_cite": "",
    "result": "Grid: keep-all 15 (49 insns) / drop handle A 11 (38 insns) / drop handle B 30 (31 insns) / drop both 33 (20 insns). The "
+  },
+  {
+   "session": 58,
+   "statement": "Making every block-0 value pseudo span more than one basic block, so that no block-local quantity exists to claim $v1, removes hard reg 3 from the pointer allocno's conflict set but does not deliver $",
+   "kill_scope": "instance",
+   "measured_on": "the s58 order-exact two-alias chassis (vA) on HEAD 2026-09-05, both annotated pointer-alias FAKE objects present plus the block-0 value-side dead re-set; vC and vD are the globalized variants of that ",
+   "predicate_cite": "",
+   "result": "Both 49 insns / score 15 and byte-identical to vA. vC: `74 conflicts: 72 74 77 78 82 2 29` (hard 3 gone), order 73 77 74"
   }
  ],
  "judge_clearances": [

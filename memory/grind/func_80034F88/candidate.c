@@ -1,3 +1,15 @@
+/* s58 NOTE (forensics, 2026-09-05): this body is still the best-SCORING form
+ * (49 insns, honest floor 10) and is kept as candidate.c for that reason, but it
+ * is NOT the structurally closest one any more.  s58 built
+ * rejected/s58-twoalias-ORDER-EXACT-3cycle-rotation-49insn-score15.c, which
+ * reproduces the target's ENTIRE instruction stream in shape AND order (block
+ * 1's `la` above block 0's store, plus the block-0 reload) and whose only
+ * residual is a 3-cycle register rotation.  It scores 15 because the metric
+ * prices register substitutions, not structure.  Start RA work from THAT body;
+ * see evidence.md E58.1-E58.8 and hypotheses.md s58.  s58 also ablated the
+ * FAKE-annotated dead re-set below: the grid is flat (10/10), so the lever buys the
+ * instruction shape and the divergence class, not distance.
+ */
 /* s57 (forensics, 2026-09-05) -- NEW CHASSIS.  Honest floor still 10, 49
  * instructions, but this body is NOT the s49..s56 body: it is the first form in
  * 57 sessions that reproduces the TARGET'S BLOCK-0 INSTRUCTION SHAPE (the
