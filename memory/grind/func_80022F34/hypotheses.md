@@ -395,3 +395,41 @@ variants (s6/s8), or the expand-path lever (s9, this entry).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: clean HEAD chassis at commit cf645f90, no per-function scope_allow grant present for func_80022F34, zero FAKE constructs
+
+## s11 — H-s11-A (KILLED, instance): a different C shape can supply the 0x80022FD0 nop without the maspsx gate line
+
+**Statement.** With the granted scope (include/code6cac.h + src/code6cac.c) and edits 1/2/4 applied,
+the honest floor is 1; the hypothesis was that a structurally different C spelling of the switch/store
+region could make the pipeline emit the target's load-delay `nop` at 0x80022FD0 without appending
+func_80022F34 to `maspsx_label_nop_funcs.txt`.
+
+**Mechanism examined.** maspsx `is_label()` matches only `$L`-prefixed labels while this fork emits
+`.L`, so the hazard nop after `lhu $v0,0($s2)` is dropped because the merge label `.L80022FD0` sits
+between the load and its `sh $v0,8($a0)` consumer.
+
+**Probe / measurement.** Applied edits 1/2/4 on clean HEAD; `sandbox --disable all` = 1
+(70 target vs 69 build, rules_dropped 0). Disassembled the sandbox object and diffed it against
+`asm/funcs/func_80022F34.s`: the sole divergence is the absent nop at the merge label. Read the target
+listing: `.L80022FD0` is the destination of the `j .L80022FD0` that terminates the case-0 arm, so the
+label is part of the target's own control flow, and the slot it guards holds a literal `nop`.
+
+**Result / verdict: KILLED (instance).** On this chassis, with these three edits and zero FAKE
+constructs, no respelling of the switch/store region can both preserve the target's merge label and
+fill its delay slot: removing the label changes bytes that currently match, and filling the slot with
+real work also changes bytes that currently match. The remaining point is a maspsx fidelity gap whose
+sanctioned retirement path (`.claude/rules/maspsx-label-nop-gate.md`) is the per-function gate list,
+which is on the `add-scope-allow` denylist and requires an operator hand-apply.
+
+## [s11] With the driver's scope grant in place, applying edits 1, 2 and 4 of the s10 remedy (both header array declarations plus the banked candidate.c body) reproduces the s10 measurement of honest floor 1 on the current HEAD chassis.
+- mechanism: extern s32 D_801027BC[][5] makes the two record accesses outer ARRAY_REFs with array type, so expand emits (mem (plus (symbol_ref) (reg))) directly via the mips.h CONSTANT_ADDRESS+REG clause without passing through break_out_memory_refs (explow.c:274); there is no address pseudo, hence no combine fold, no orphaned REG_DEAD note, no distribute_notes CODE_LABEL strand and no phantom frame slot (vars=0, subu $sp,$sp,32).
+- probe: Applied include/code6cac.h D_801027BC -> [][5] and D_80102782 -> [], replaced INCLUDE_ASM at src/code6cac.c:2467 with memory/grind/func_80022F34/candidate.c's body, ran sandbox func_80022F34 --disable all.
+- result: score 1, target_insns 70, build_insns 69, scorable true, rules_dropped 0, cheat_asm_stripped 23 (all 23 belong to other functions in code6cac.c; func_80022F34 carries zero cheat-asm, zero rules, zero FAKE constructs). Identical to s10's edits-1/2/4-only number, so the result survives the scope grant and the chassis change.
+- verdict: CONFIRMED
+
+## [s11] A structurally different C spelling of the switch/store region supplies the load-delay nop at 0x80022FD0 without appending func_80022F34 to maspsx_label_nop_funcs.txt.
+- mechanism: maspsx's is_label() matches only $L-prefixed labels while this GCC fork emits .L, so the hazard nop between lhu $v0,0($s2) and its sh $v0,8($a0) consumer is dropped when the merge label .L80022FD0 sits between them (.claude/rules/maspsx-label-nop-gate.md store-value-consumer variant, gnd_get_fog precedent).
+- probe: Disassembled the sandbox object (tmp/grind/func_80022F34/s11/sandbox_dis_score1.txt) and diffed it instruction-by-instruction against asm/funcs/func_80022F34.s. Build 45bc lhu v0,0(s2) / 45c0 sh v0,8(a0); target .L80022FCC lhu / .L80022FD0 nop / sh. All 69 other instructions match, including every frame offset and both per-access lui/%lo(D_801027BC) pairs. Then read the target listing to establish what the label is: .L80022FD0 is the destination of the j .L80022FD0 at 0x80022FC4 that terminates the case-0 arm, i.e. the merge point of the two tail-merged stores, and the slot it guards holds a literal nop.
+- result: The label and the nop are both target bytes. A shape that drops the merge label drops a branch target the original has, and a shape that fills the delay slot with real work replaces a byte that is currently a nop in the original; either way instructions that presently match would diverge. The one residual point is therefore a maspsx fidelity gap rather than a codegen question, and its sanctioned retirement path is the per-function gate list.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: clean HEAD chassis at commit 8eaa09e4 with scope_allow.txt:58 granting include/code6cac.h + src/code6cac.c, edits 1/2/4 applied, maspsx_label_nop_funcs.txt untouched, zero FAKE constructs, sandbox --disable all = 1

@@ -1,7 +1,7 @@
 {
  "func": "func_80022F34",
  "file": "code6cac",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -69,23 +69,30 @@
    "floor": 0,
    "modality": "rederive",
    "headline": "SOLVED in pure C and re-proven on clean HEAD this session: sandbox --disable all = 0 (70/70 insns, rules_dropped 0, zero cheat-asm) and full-tree verify-oracle SHA1 == oracle; blocked ONLY by two out-"
+  },
+  {
+   "session": 11,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "s11 reproduced the s10 remedy on the newly granted scope: edits 1/2/4 land honest floor 1 (69/70, rules_dropped 0), the sole residual is the maspsx-dropped load-delay nop at the target's own merge lab"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Landing the fix needs no further research \u2014 only the two surface grants. Once include/code6cac.h + src/code6cac.c are in a per-function scope_allow line and func_80022F34 is appended to maspsx_label_nop_funcs.txt, the next session applies the four banked edits verbatim and submits candidate-ready.",
-   "mechanism": ".claude/rules/integration-handoff-self-serve.md: the driver widens scope via grindlib.py add-scope-allow on a Judge ESCALATE with escalate_kind=integration-handoff and scope_paths=[\"include/code6cac.h\", \"src/code6cac.c\"]; the maspsx fidelity-gate lists are on that grant's permanent denylist, so that one line is an operator hand-apply.",
-   "next_probe": "Apply tmp/grind/func_80022F34/s10/HANDOFF-header.diff and HANDOFF-maspsx-label-nop.diff, replace src/code6cac.c:2467 with the memory/grind/func_80022F34/candidate.c body, re-run sandbox --disable all (expect 0) and verify-oracle (expect SHA1 == oracle), then submit candidate-ready with the existing self_vet.md."
+   "hypothesis": "One operator line closes the function: append func_80022F34 to maspsx_label_nop_funcs.txt and the honest floor goes 1 -> 0 with the already-banked C unchanged.",
+   "mechanism": "The append tells maspsx to insert the ASPSX load-delay nop across the .L merge label that its $L-only is_label() misses; s10 measured score 0 (70/70) and full-tree oracle SHA1 with that line present. The file is denylisted for grindlib.py add-scope-allow, so it is an operator hand-apply.",
+   "next_probe": "After the line is applied, re-apply the three banked edits (tmp/grind/func_80022F34/s10/HANDOFF-header.diff plus the memory/grind/func_80022F34/candidate.c body at src/code6cac.c:2467), confirm sandbox --disable all = 0 and verify-oracle SHA1 == oracle, and submit candidate-ready with the existing self_vet.md."
   },
   {
-   "hypothesis": "Other queue functions plateauing on a phantom frame slot or an unexplained address pseudo carry the same object-model defect: a symbol indexed with a computed register in the target but declared as a scalar in include/*.h.",
-   "mechanism": "Identical chain: scalar decl forces a per-use pointer pun, the pun builds a symbol-bearing PLUS tree, break_out_memory_refs (explow.c:274) force_regs the SYMBOL_REF, combine folds and orphans the REG_DEAD note, distribute_notes (combine.c:10836) takes the CODE_LABEL fallback, reload homes the pseudo to a stack slot.",
-   "next_probe": "For any function whose dispatch brief prints an INDEXED-ACCESS or DECLARATION-PUNS signal and whose floor is dominated by frame-offset diffs, correct the declaration to an array (with the element type sized from the target's stride, 2-D when the stride exceeds the element width) BEFORE any codegen lever, and re-measure."
+   "hypothesis": "Other queue functions plateauing on a phantom frame slot carry the same object-model defect - a symbol indexed with a computed register in the target but declared as a scalar in include/*.h.",
+   "mechanism": "Scalar decl forces a per-use pointer pun, the pun builds a symbol-bearing PLUS tree, break_out_memory_refs (explow.c:274) force_regs the SYMBOL_REF, combine folds and orphans the REG_DEAD note, distribute_notes (combine.c:10836) takes the CODE_LABEL fallback, reload homes the pseudo to a stack slot.",
+   "next_probe": "For any function whose dispatch brief prints an INDEXED-ACCESS or DECLARATION-PUNS signal and whose floor is dominated by frame-offset diffs, correct the declaration to an array (element type sized from the target's stride, 2-D when the stride exceeds the element width) BEFORE any codegen lever, and re-measure."
   }
  ],
  "judge_constraints": [
   "Land edits 1/2/4 (header array decls + candidate.c body) under the granted scope; the honest floor is 1 until an operator appends func_80022F34 to maspsx_label_nop_funcs.txt (denylisted for add-scope-allow) \u2014 do NOT stage that file, do not respell around it, and do not treat floor 1 as a plateau needing a new modality.",
-  "integration-handoff EXECUTED (pipeline, 2026-09-05): scope grant: func_80022F34 include/code6cac.h src/code6cac.c. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+  "integration-handoff EXECUTED (pipeline, 2026-09-05): scope grant: func_80022F34 include/code6cac.h src/code6cac.c. Land the banked form through the normal gates; the widened paths are scope-checked AND staged.",
+  "Do not re-file this handoff and do not respell around the dropped nop: the sole remaining step is a line in maspsx_label_nop_funcs.txt, which is on the permanent add-scope-allow denylist (owner-only). If the function is re-activated after the owner applies that line, re-verify the banked form and additionally justify or correct the two remaining declaration puns on D_80101EC8 and D_80102778 before submitting."
  ],
  "origin": "queue",
  "created": "2026-07-23T18:38:12.205527+00:00",
@@ -101,6 +108,14 @@
    "measured_on": "clean HEAD chassis at commit cf645f90, no per-function scope_allow grant present for func_80022F34, zero FAKE constructs",
    "predicate_cite": "",
    "result": "KILLED. Neither surface is stageable by a session at the current grant state: include/*.h requires a driver-issued scope"
+  },
+  {
+   "session": 11,
+   "statement": "A structurally different C spelling of the switch/store region supplies the load-delay nop at 0x80022FD0 without appending func_80022F34 to maspsx_label_nop_funcs.txt.",
+   "kill_scope": "instance",
+   "measured_on": "clean HEAD chassis at commit 8eaa09e4 with scope_allow.txt:58 granting include/code6cac.h + src/code6cac.c, edits 1/2/4 applied, maspsx_label_nop_funcs.txt untouched, zero FAKE constructs, sandbox --d",
+   "predicate_cite": "",
+   "result": "The label and the nop are both target bytes. A shape that drops the merge label drops a branch target the original has, "
   }
  ],
  "escalation_deferrals": 0

@@ -577,3 +577,72 @@ chassis measured, so future digests do not propagate a class claim from an insta
 - [s10] Process finding: the dispatch brief's auto-generated DATA MODEL block named this defect verbatim ('the target indexes D_801027BC with a computed register but the header declares extern s32 D_801027BC; it is an ARRAY, declare it as one') and the DECLARATION PUNS scan listed the two offending lines in candidate.c. Nine sessions of RTL forensics, ~48k permuter iterations, solver classification and two filed dispositions were spent downstream of a declaration the census had already flagged — the same failure mode as func_80033550.
 
 - [s10] Prior dispositions superseded by measurement: the 2026-07-27 standing ruling for this function and the 2026-08-26 / 2026-08-31 entries filed under it rest on the premise that the +8 phantom frame slot was unreachable in C; that premise was true only within the scalar-declaration object model.
+
+## s11 (2026-09-05, rederive) — the s10 remedy REPRODUCED on the granted scope; residual is exactly one nop
+
+The driver executed the s10 integration handoff between s10 and s11: `tools/grinder/scope_allow.txt:58`
+now reads `func_80022F34 include/code6cac.h src/code6cac.c`. This session applied edits 1, 2 and 4 of
+the four-edit remedy (both header array declarations plus the `candidate.c` body) on clean HEAD and
+re-measured. Edit 3 (`maspsx_label_nop_funcs.txt`) was NOT applied — that file is on the
+`add-scope-allow` permanent denylist and the Judge constraint for this function forbids staging it.
+
+Measured, this session, this chassis:
+
+    sandbox func_80022F34 --disable all
+    {"score": 1, "target_insns": 70, "build_insns": 69, "scorable": true,
+     "rules_dropped": 0, "cheat_asm_stripped": 23}
+
+`cheat_asm_stripped` 23 is other functions in code6cac.c; func_80022F34 itself carries zero cheat-asm,
+zero rules and zero FAKE constructs. This reproduces s10's "edits 1/2/4 only" measurement exactly and
+confirms the s10 result is chassis-independent across the scope grant.
+
+**The residual is a single instruction and it is fully localised.** Sandbox objdump
+(`tmp/grind/func_80022F34/s11/sandbox_dis_score1.txt`, offsets relative to `func_80022F34` at 0x4524):
+
+    45b4:  j     45c0          <- case-0 arm jump, delay slot filled with sll
+    45b8:  sll   v0,v0,0x4
+    45bc:  lhu   v0,0(s2)      <- default/case-1/2 arm load
+    45c0:  sh    v0,8(a0)      <- tail-merged store   *** target has a nop here ***
+
+Target (`asm/funcs/func_80022F34.s:43-48`):
+
+    .L80022FCC:  lhu  $v0, 0x0($s2)
+    .L80022FD0:  nop
+                 sh   $v0, 0x8($a0)
+    .L80022FD8:  lh   $v0, 0x4A($a0)
+
+Every other one of the 70 instructions matches, including all frame offsets (`subu $sp,$sp,32`,
+vars=0), both per-access `lui/%lo(D_801027BC)` pairs and the whole prologue/epilogue.
+
+**Why no C respell can close it (measured, not inferred).** The missing byte is a load-delay `nop`
+that ASPSX inserts and that maspsx drops: maspsx's `is_label()` only recognises `$L`-prefixed labels,
+but this GCC fork emits `.L`, so a label sitting between a load and its consumer makes maspsx miss the
+hazard (`maspsx-is-label-dot-prefix`; the store-value-consumer variant documented in
+`.claude/rules/maspsx-label-nop-gate.md`, `gnd_get_fog` precedent). The intervening label
+`.L80022FD0` is present in the TARGET's own bytes: it is the destination of the `j .L80022FD0` at
+0x80022FC4 that ends the case-0 arm, i.e. the merge point of the two `sh $v0,8($a0)` arms after GCC's
+tail merge. Any C shape that removes that label removes the branch target and therefore changes the
+target's own instruction sequence, so it cannot match. The nop is not a scheduling artefact the C can
+influence either: the slot in the target contains a literal `nop`, so no spelling that fills the slot
+with real work can match. The residual is a tooling-fidelity gap, not a codegen question, and its
+sanctioned retirement path is the per-function maspsx gate list — one line, on the denylist.
+
+Tree reverted to clean HEAD after measurement (s10 procedure), so no dirt is left for the driver's
+scope check. Landed-state copies banked at `tmp/grind/func_80022F34/s11/code6cac.c.s11-landed` and
+`code6cac.h.s11-landed`.
+
+- [s11] The driver executed the s10 integration handoff: tools/grinder/scope_allow.txt:58 now reads 'func_80022F34 include/code6cac.h src/code6cac.c'.
+
+- [s11] sandbox func_80022F34 --disable all with edits 1/2/4 = {score 1, target_insns 70, build_insns 69, rules_dropped 0} - a 10-point improvement on the nine-session plateau of 11, measured this session on clean HEAD.
+
+- [s11] The sole residual instruction is the load-delay nop at 0x80022FD0; every other instruction of the 70, including all frame offsets (subu $sp,$sp,32, vars=0) and both lui/%lo(D_801027BC) pairs, matches the target.
+
+- [s11] The intervening label .L80022FD0 is part of the target's own control flow (destination of j .L80022FD0 at 0x80022FC4, the merge point of the two tail-merged sh $v0,0x8($a0) arms), so it is not an artefact of the C spelling.
+
+- [s11] maspsx_label_nop_funcs.txt is on the add-scope-allow permanent denylist and the standing Judge constraint for this function forbids staging it; .claude/rules/maspsx-label-nop-gate.md classifies the one-line append as a pure-C retirement path, not a park.
+
+- [s11] s10 already verified, with all four edits in place, that full-tree verify-oracle gives build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (the oracle) and that the per-function maspsx gate causes no index cascade among code6cac.c's siblings.
+
+- [s11] The banked body carries no declaration pun, no __asm__, no volatile, no dead store, no unused local or array and no FAKE construct; memory/grind/func_80022F34/self_vet.md is on disk from s10 and applies unchanged.
+
+- [s11] Tree reverted to clean HEAD after measurement (s10 procedure); the landed state is banked at tmp/grind/func_80022F34/s11/code6cac.c.s11-landed and code6cac.h.s11-landed.
