@@ -1,8 +1,8 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 48,
- "current_modality": "forensics",
+ "session_count": 49,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -291,23 +291,29 @@
    "floor": 10,
    "modality": "forensics",
    "headline": "Straight-lining the block-0 mask gives the target's exact instruction ORDER for free; with u8-typed value locals the volatile body is 49 insns / 5 lbu / 2 nop / score 10 (s47's '+6 cost' kill was the "
+  },
+  {
+   "session": 49,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "Rederive collapses the residual to one global.c allocno_compare comparison: a two-statement block-0 mask removes hard 3 from the address allocno's conflict row for the first time in 49 sessions, and t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The entire remaining residual is one local-alloc decision: BB0's mask-value quantity (birth 6, death 10) must be seated at hard 4 instead of hard 3, which frees hard 3 for the blocks-0/1 address allocno and reproduces the target's whole block-0/1 register disposition.",
-   "mechanism": "find_free_reg (local-alloc.c:2169-2247) scans hard regs numerically (no REG_ALLOC_ORDER on MIPS) over used = fixed_reg_set | regs_live_at[6..10) | ~GR_REGS. Hard 2 is excluded by the live call return $v0. To reach hard 4, hard 3 must ALSO be in regs_live_at over [6,10) at local-alloc time - which at that point can only come from another BB0 quantity that block_alloc ranked ahead of the mask value and that was itself seated at hard 3 with a span covering [6,10).",
-   "next_probe": "Read block_alloc's qty ordering (qty_compare) in tools/gcc-2.7.2/local-alloc.c and enumerate what makes a BB0 quantity outrank the mask value; then spell, on the str1 chassis, C forms that create such a quantity WITHOUT re-ordering BB0 (x1/x2 failed because hoisting the p[8] read re-orders sched1). Candidates worth measuring: a value produced before the mask lbu and consumed after the mask sb that is NOT a memory read (so it carries no memory dependence into the sched1 chain), e.g. an arithmetic derivation of p that the copy loop later consumes. Validate each with local_extract --suggest (want `blk=0 ord=0 ... got=4`) before reading the score."
+   "hypothesis": "An ordinary-C block-0 mask exists that has NO block-0-local quantity (the two-statement property) AND leaves the masked-value allocno with priority below the pointer allocno's 10714 -- i.e. refs<=4 at live_length 9, or live_length>=12 at refs 6.",
+   "mechanism": "global.c allocno_compare, pri = floor_log2(n_refs)*n_refs/live_length*10000. The two-statement mask costs the masked value two defs (6 refs: def, def+use, sb use, ior use, move use). Cutting a reference or lengthening the range flips the order with reg 75 and the pointer takes hard 3.",
+   "next_probe": "Enumerate block-0 arm shapes that reference `m` fewer times while keeping the target's bnez / ori-in-delay-slot / addu / sb skeleton -- e.g. an arm whose value derives from the stored expression rather than from `m`. Measure each with tmp/grind/func_80034F88/s49/ra.py and read reg74's refs/len BEFORE reading the score; the goal number is pri(74) < 10714."
   },
   {
-   "hypothesis": "On the non-volatile straight-line chassis the single missing instruction is the block-1 reload, and the only remaining unexplored route to it is a store whose value cse cannot name at all - not an EBB break (which costs the sched1 order) and not volatile (which is gate-blocked).",
-   "mechanism": "cse.c records a MEM dest's value class unless canon_hash sets do_not_record (cse.c:7311-7340 / 1880-1990). s47 enumerated the reachable escapes and priced them; the straight-line chassis changes the price of every one of them, because it no longer has to pay for the arms.",
-   "next_probe": "Re-price s46's value-class break (`*(&D_80106A78 - 5)` style non-unifiable address, +2 insns on the arms chassis) on the str1 chassis, where the +2 may now be absorbed - it was measured only against a body that already carried the arms cost. Note it is a declaration pun and would be a ruling-request even if it measured 0; measure it as diagnosis of how much of the residual is the reload versus the seat."
+   "hypothesis": "The pointer allocno's priority can be raised above 13333 by ordinary C -- refs>=13 at live_length 28, or live_length<=22 at refs 10.",
+   "mechanism": "Same formula. Reg 75 currently has 4 defs (initial assignment plus three re-assignments) and 9 memory uses across four flag blocks, spread over 28 live insn positions in four disjoint intervals; block 0's interval is roughly 13 of the 28.",
+   "next_probe": "rd7 (condition hoisted above the re-assignment) and rd8 (extra re-assignment before block 0's store) are already killed -- sched1 and cse undo both. The untried direction is reducing the number of insns reg 75 is live ACROSS inside block 0, i.e. changing what sits between the mask lbu and block 0's store, not where the address is assigned. Reg 75 must stay ONE pseudo: the multi-handle axis is closed by Judge ruling."
   },
   {
-   "hypothesis": "If the block-0 seat is fixed, the single-object body will seat the address at hard 3 in ALL FOUR flag blocks, which matches the target in blocks 0/1 but breaks blocks 2/3 (the target uses $a0 there); the two-object body would then be needed, and it is banned.",
-   "mechanism": "One C pointer object is one pseudo and takes one hard register, but the target holds &D_80106A73 in $v1 across blocks 0/1 and in $a0 across blocks 2/3, with both live at .L80034FC8.",
-   "next_probe": "Before spending a ruling-request on the multi-handle ban, measure the seat fix on the two-object tw_vol/tw_str bodies FIRST (they are already at 21 with the seats exchanged): if the same BB0 lever also flips reg 75 to hard 3 there, tw_str is the body that reaches 0 and the ruling-request is worth filing with a measured score; if it does not, the ban remains irrelevant to the floor and the ladder should continue on the seat axis alone."
+   "hypothesis": "The block-1 reload is a separate residual worth roughly 1 of the 10 points and needs its own admissible escape; it is NOT a prerequisite for the seat.",
+   "mechanism": "cse.c store-forwards the mask store to block 0's re-read. Both known escapes are inadmissible (volatile-coercion-by-cast; a declaration pun on D_80106A78) and both were measured this session to cost more than they buy while leaving the seat unchanged.",
+   "next_probe": "Do not spend a session on this before the seat is fixed. Once reg 75 sits at hard 3, re-measure and see what the remaining score is; the reload may then be the entire remainder, at which point its price is worth re-deriving against a body that is otherwise exact."
   }
  ],
  "judge_constraints": [
@@ -329,38 +335,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 31,
-   "statement": "Re-associating the mask so that its value IS block 1's value (dropping the C-level reload) changes the emitted stream.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD, single `u8 *q` with three assignments, no FAKE-annotated construct present",
-   "predicate_cite": "",
-   "result": "Both 10 at 49 insns with an EMPTY asm diff against base -- the C change has no RTL to change."
-  },
-  {
-   "session": 31,
-   "statement": "Collapsing the three block-scoped v/c pairs into one function-scope pair changes the allocator's input enough to re-seat the address object.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD, single `u8 *q` with three assignments, no FAKE-annotated construct present",
-   "predicate_cite": "",
-   "result": "Both 10 at 49 insns and v8's asm is BIT-IDENTICAL to base. v8's .greg drops the global allocno count from NINE to FIVE ("
-  },
-  {
-   "session": 31,
-   "statement": "The address object is excluded from $v1 because $v0 is live across block 0 (the call's return copy is scheduled after the mask sequence), pushing the block-0 value quantity into $v1 in local-alloc; gi",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD with block 1's flag-word read hoisted above the mask; single `u8 *q` with three assignments, no FAKE-annotated construct present",
-   "predicate_cite": "",
-   "result": "14 at 49 insns. $v0 IS freed for the block-0 value (`75 in 2`, `76 preferences: 3`), but a different local-alloc pseudo "
-  },
-  {
-   "session": 31,
-   "statement": "Type narrowing of the OTHER object -- p declared `u8 *`, the flag word read as *(s32 *)(p + 0x20), the copy loop as p[i + 0x17] -- reaches the target's addressing without touching the alias axis.",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD with p narrowed to u8 *; single `u8 *q` with three assignments, no FAKE-annotated construct present",
-   "predicate_cite": "",
-   "result": "12 at 49 insns -- two points worse than base."
-  },
   {
    "session": 31,
    "statement": "An init-then-conditional-or spelling (c = *q; if (p[8] & K) c |= K; *q = c;) with an empty else arm reproduces the target's join-and-store shape.",
@@ -803,6 +777,38 @@
    "measured_on": "straight-line-mask chassis on HEAD 2026-09-05, one declared pointer object, plain and volatile variants, no FAKE construct present",
    "predicate_cite": "",
    "result": "x1 = 14 at 49, x2 = 14 at 49; both lose the target's block-0 order. Banked as rejected/s48-c0-hoisted-above-mask-straigh"
+  },
+  {
+   "session": 49,
+   "statement": "On the straight-line-mask chassis, restoring the target's block-1 reload via a volatile-qualified read (*(volatile u8 *)q) or via a non-unifiable address expression (*(&D_80106A78 - 5)) leaves the blo",
+   "kill_scope": "instance",
+   "measured_on": "straight-line-mask chassis (s48 candidate) on HEAD 2026-09-05, one declared pointer object, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Both escapes put the lbu back at the target's position and neither moves a register. The reload and the seat are indepen"
+  },
+  {
+   "session": 49,
+   "statement": "With both block-0-local quantities removed, reg 75 still takes hard 4 because global.c allocno_compare ranks the masked-value allocno (refs=6, live_length=9, priority 13333) above the pointer allocno ",
+   "kill_scope": "instance",
+   "measured_on": "two-statement-mask chassis (s49 candidate) on HEAD 2026-09-05, one declared pointer object, no FAKE construct",
+   "predicate_cite": "",
+   "result": "KILLED for this body. Thresholds computed from the formula: lower reg 74 to refs<=4 at len 9 (8888) or len>=12 at refs 6"
+  },
+  {
+   "session": 49,
+   "statement": "Six spellings of a single-statement block-0 mask -- & 0xF8, & ~7, & -8, & 0x1F8, & 0xFFF8 and (*q >> 3) << 3 -- each leave a 2-reference block-0-local temp that local-alloc seats at hard 3, so each me",
+   "kill_scope": "instance",
+   "measured_on": "one-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct",
+   "predicate_cite": "",
+   "result": "KILLED as a route to deleting the block-0-local temp. This is one horn of the measured dilemma; the other horn is the pr"
+  },
+  {
+   "session": 49,
+   "statement": "Hoisting each block's `c = p[8] & N;` above its `q = &D_80106A73;` re-assignment (rd7), and adding a redundant `q = &D_80106A73;` immediately before block 0's store to split reg 75's block-0 live inte",
+   "kill_scope": "instance",
+   "measured_on": "two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct",
+   "predicate_cite": "",
+   "result": "KILLED. Shortening the pointer allocno's live length by source-level statement placement does not survive sched1/cse."
   }
  ]
 }

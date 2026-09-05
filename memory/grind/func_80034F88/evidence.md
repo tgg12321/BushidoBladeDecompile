@@ -6946,3 +6946,159 @@ exchange caused by one local-alloc decision in BB0.
 - [s48] The banned two-pointer-object body, measured diagnostically and reverted, is 21 at 49 on both the volatile and non-volatile chassis, with the two address allocnos exchanged relative to the target - the multi-handle ban is not what holds this function at 10.
 
 - [s48] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; `git status --porcelain src/` is empty. No build-pipeline file, rule file, engine file or tool was modified; the only writes are under memory/grind/func_80034F88/ and tmp/grind/func_80034F88/s48/.
+
+## s49 (rederive, 2026-09-05) -- the residual is now a single global.c priority comparison
+
+Baseline re-measured at dispatch on HEAD with the s48 candidate installed:
+`sandbox func_80034F88 --disable all` = **score 10, 49 target insns / 49 build
+insns**.  The dispatch brief reported "measurement unavailable"; the ledger's
+recorded floor of 10 is correct.
+
+### 1. The block-1 reload is NOT the cause of the seat swap (kills the s46/s47/s48 premise)
+
+Frontier item 2 of the s48 ledger asserted that the missing block-1 reload
+(`lbu $a0,0($v1)` at 80034FB4) was the remaining lever, on the theory that it
+adds a fourth reference to the blocks-0/1 address pseudo and splits the value
+range.  Both banked escapes were re-priced on the CURRENT (straight-line-mask)
+chassis this session and BOTH restore the reload without moving a single
+register:
+
+| body | spelling of the escape | insns | score | blocks-0/1 address | blocks-0/1 value |
+|---|---|---|---|---|---|
+| candidate (s48) | none -- cse forwards the store | 49 | 10 | `$a0` | `$v1` |
+| `d_volread` | `v = *(volatile u8 *)q;` | 51 | 13 | `$a0` | `$v1` |
+| `d_addrbreak` | `v = *(&D_80106A78 - 5);` | 50 | 11 | `$a0` | `$v1` |
+
+`d_volread` costs +2 (`andi $v1,$v1,0xff` because the volatile QI read is not
+folded, plus a `j` because the branch structure changes).  `d_addrbreak` costs
++1 (its own `lui`, because the reload goes through a second address).  Neither
+changes the disposition of the address pseudo.  The reload and the seat are two
+INDEPENDENT residuals, and the seat is the larger one.  (Both spellings are
+inadmissible anyway -- volatile-coercion-by-cast and a declaration pun -- they
+were run as diagnosis only and are banked in `rejected/` for that value.)
+
+### 2. What actually blocks hard 3, read out of the allocator dumps
+
+`pwsh tools/grinder/dump.ps1 func_80034F88`, dumps in
+`tmp/grind/func_80034F88/dumps/`.  Reg 75 is the `&D_80106A73` pointer pseudo;
+the target seats it at hard 3 (`$v1`) across blocks 0/1, we seat it at hard 4
+(`$a0`).
+
+On the s48 body the `.greg` conflict row is
+
+    ;; 75 conflicts: 72 75 78 79 82 83 86 87 2 3 29
+
+i.e. **hard 3 is a CONFLICT**, and `.lreg` says why:
+
+    Register 74 used 3 times across 6 insns in block 0
+    Register 76 used 2 times across 4 insns in block 0; 1 bytes
+    ;; Register 74 in 3.   ;; Register 76 in 3.
+
+Two block-0-LOCAL quantities -- reg 76, the QImode temp holding the raw `lbu`
+result, and reg 74, the masked value -- are seated by local-alloc at hard 3
+before global_alloc ever runs.  `find_free_reg` (local-alloc.c:2169-2247) builds
+`used` = fixed_reg_set | regs_live_at[born..dead) | ~GR_REGS, scans hard regs
+NUMERICALLY (mips.h defines no `REG_ALLOC_ORDER`; verified by grep this
+session), and hard 2 is excluded because the call return `$v0` is still live at
+the mask `lbu`.  So a block-0-local quantity ALWAYS lands on hard 3, and hard 3
+always ends up in reg 75's conflict row.
+
+### 3. Both block-0-local quantities can be deleted by ordinary C
+
+Two source edits, each ordinary C, remove them:
+
+  1. split the mask into two statements -- `m = *q; m &= 0xF8;` instead of
+     `m = *q & 0xF8;`.  The single-statement form is narrowed by `fold` to a
+     QImode AND (the constant fits in QI), which is what materialises the
+     QImode temp reg 76.  Two statements keep one SImode pseudo.
+  2. let block 0's arms consume `m` directly instead of re-reading `v = *q;`.
+     The re-read was cse-forwarded to `m` anyway and survived only as
+     `(set (reg 78) (reg 74))`, a copy that kept `m` block-0-local.
+
+With both edits (the new `candidate.c`) the conflict row becomes
+
+    ;; 75 conflicts: 72 74 75 77 79 80 83 84 2 29
+
+**hard 3 is gone from reg 75's conflicts.**  This is the first body in 49
+sessions where the target's seat is legal for the address allocno.  Emitted
+instruction order, count (49) and multiset are unchanged from s48; score is
+still 10.
+
+### 4. What is left: allocno_compare, with exact numbers
+
+`global.c allocno_compare` sorts by
+
+    pri = floor_log2(n_refs) * n_refs / live_length * 10000
+
+On the new candidate (`.lreg` counts):
+
+    reg 74 (masked value m):    refs=6   len=9    pri=13333
+    reg 75 (&D_80106A73 ptr):   refs=10  len=28   pri=10714
+
+so `;; 9 regs to allocate: 73 77 80 84 74 75 79 83 72` -- 74 is allocated
+BEFORE 75, takes the lowest free hard reg (2 excluded by the live `$v0`), i.e.
+hard 3, and 75 falls to hard 4.  The target's compile must have had the
+opposite order.
+
+There is no third-allocno route: any allocno that conflicts with 74 also
+conflicts with 75 (74's live range is contained in 75's), so nothing can be
+introduced that pushes 74 off hard 3 without also pushing 75 off it.  The only
+route is the priority comparison itself.
+
+Thresholds, from the formula (all measured, not inferred):
+  - lower 74: `refs <= 4` at len 9 (pri 8888), or `len >= 12` at refs 6 (10000).
+    `refs = 5` at len 9 gives 11111 and is still NOT enough.
+  - raise 75: `refs >= 13` at len 28 (13928), or `len <= 22` at refs 10 (13636).
+
+### 5. The dilemma both mask spellings sit in
+
+  (a) ONE-STATEMENT mask -- `m = *q & 0xF8;` and every equivalent tried this
+      session (`& ~7`, `& -8`, `& 0x1F8`, `& 0xFFF8`, `(*q >> 3) << 3`): the
+      allocno ORDER is already correct (`... 75 74 ...`), 74 drops to 4 refs,
+      but fold still narrows the load and the 2-ref block-0-local QImode temp
+      takes hard 3, so 75 is blocked.  All five spellings measured score 10 with
+      `75 in 4` and a block-0-local at hard 3.
+  (b) TWO-STATEMENT mask (the new candidate): no block-0-local at all, but the
+      masked value is a 6-ref/9-length global that outranks the pointer.
+
+A winning form needs BOTH: no block-0-local quantity AND pri(75) > pri(74).
+
+### 6. Things measured this session that do NOT move either number
+
+  - `rd7`: computing `c = p[8] & N;` before each `q = &D_80106A73;`
+    re-assignment.  sched1 normalises the order back; reg 75 stays refs=10
+    len=28.
+  - `rd8`: an extra `q = &D_80106A73;` immediately before block 0's store, to
+    split reg 75's block-0 live interval.  cse deletes the redundant def; refs
+    and length are unchanged.
+  - `fake_ablate` on the candidate: "no FAKE-annotated constructs found" -- the
+    kill re-audit has nothing to ablate, the chassis carries no FAKE carrier.
+
+Artifacts: `tmp/grind/func_80034F88/s49/bodies/*.c`,
+`tmp/grind/func_80034F88/s49/ra.py` (prints allocno refs/length/priority and
+the .greg conflict rows for the installed body -- reusable),
+`tmp/grind/func_80034F88/s49/install.py` + `m.sh` (install-and-score harness),
+`tmp/grind/func_80034F88/s49/fake_ablate.txt`,
+`tmp/grind/func_80034F88/dumps/code6cac_b.{lreg,greg}`.
+
+- [s49] Dispatch chassis re-measured: sandbox func_80034F88 --disable all = score 10, 49 target insns / 49 build insns on HEAD with the s48 candidate installed (the brief reported 'measurement unavailable'; the ledger floor of 10 is correct).
+
+- [s49] The whole residual is two facts: (i) the blocks-0/1 &D_80106A73 pointer allocno (reg 75) must be seated at hard 3 ($v1) instead of hard 4 ($a0), and (ii) the block-1 reload must survive cse. This session proves (ii) does not cause (i).
+
+- [s49] mips.h defines no REG_ALLOC_ORDER (grep over tools/gcc-2.7.2/config/mips/mips.h returns nothing), so both find_free_reg (local-alloc.c:2251) and global.c scan hard registers numerically from 0.
+
+- [s49] Any block-0-local quantity in this function is seated at hard 3 by local-alloc, because hard 2 is excluded by the call return $v0 still being live at the mask lbu and the scan is numeric.
+
+- [s49] The s48 candidate carried TWO block-0-local quantities (.lreg: reg 74 '3 times across 6 insns in block 0', reg 76 '2 times across 4 insns in block 0; 1 bytes'; tail: ';; Register 74 in 3.' and ';; Register 76 in 3.'), which is what put hard 3 into reg 75's conflict row.
+
+- [s49] The new candidate's .greg conflict row for the pointer allocno is ';; 75 conflicts: 72 74 75 77 79 80 83 84 2 29' -- hard 3 absent. The s48 row was ';; 75 conflicts: 72 75 78 79 82 83 86 87 2 3 29'.
+
+- [s49] global.c allocno_compare priority is floor_log2(n_refs) * n_refs / live_length * 10000; on the new candidate reg 74 = 6 refs / 9 length / 13333 and reg 75 = 10 refs / 28 length / 10714, giving the allocation order '73 77 80 84 74 75 79 83 72'.
+
+- [s49] No third-allocno route exists on this body: reg 74's live range is contained in reg 75's, so every allocno that conflicts with 74 also conflicts with 75.
+
+- [s49] The candidate emits the target's exact block-0/1 instruction order, count (49) and multiset; the diff is register names plus the missing block-1 reload and the cascaded position of block 2's lui/addiu pair.
+
+- [s49] tools/fake_ablate.py on the candidate reports 'no FAKE-annotated constructs found' -- the mandated kill re-audit had no FAKE carrier to ablate, so it was discharged instead by re-pricing the s46/s47 reload escapes on the current chassis (first hypothesis above).
+
+- [s49] tmp/grind/func_80034F88/s49/ra.py is a reusable one-command reader: it prints the allocation order, every .greg conflict/preference row, the register dispositions, and refs/live_length/allocno priority for every pseudo of the installed body.

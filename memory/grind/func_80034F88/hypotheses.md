@@ -5041,3 +5041,122 @@ that measures 21, so the ban is NOT what holds this function at 10.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: straight-line-mask chassis on HEAD 2026-09-05, one declared pointer object, plain and volatile variants, no FAKE construct present
+
+## s49 (rederive, 2026-09-05)
+
+### H49.1 -- KILLED (instance)
+**Statement.** On the straight-line-mask chassis, restoring the target's block-1
+reload (`lbu` at 80034FB4) via a volatile-qualified read (`*(volatile u8 *)q`)
+or via a non-unifiable address expression (`*(&D_80106A78 - 5)`) leaves the
+blocks-0/1 address in `$a0` and the blocks-0/1 value in `$v1`, i.e. it does not
+change the register disposition that the s48 frontier attributed to it.
+**Mechanism.** The s48 frontier argued the reload adds a fourth reference to the
+address allocno and splits the value range, lifting the address in
+`global.c allocno_compare`.  Measured: the volatile spelling does add the ref
+(the reload reads through the same pointer) and the disposition is unchanged;
+the address spelling routes the reload through its own `lui` and is likewise
+unchanged.
+**Probe.** `d_volread.c` -> 51 insns / score 13; `d_addrbreak.c` -> 50 insns /
+score 11; objdump of both in the s49 transcript; baseline 49 / 10.
+**Measured on.** straight-line-mask chassis (s48 candidate) on HEAD 2026-09-05,
+one declared pointer object, no FAKE construct present.
+
+### H49.2 -- CONFIRMED
+**Statement.** Splitting the block-0 mask into `m = *q; m &= 0xF8;` and letting
+block 0's arms consume `m` directly (instead of re-reading `v = *q;`) removes
+hard 3 from reg 75's conflict row in `.greg`, making the target's `$v1` seat
+legal for the `&D_80106A73` pointer allocno for the first time in this ledger.
+**Mechanism.** The single-statement mask is narrowed by `fold` to a QImode AND
+(the constant fits in QI), producing a QImode block-0-local temp; the `v = *q;`
+re-read is cse-forwarded and survives as a register copy that keeps the masked
+value block-0-local.  `find_free_reg` (local-alloc.c:2169-2247) seats any
+block-0-local quantity at hard 3 (hard 2 is excluded by the live call return
+`$v0`, and mips.h defines no `REG_ALLOC_ORDER`, so the scan is numeric).  Delete
+both block-0-local quantities and hard 3 stops entering reg 75's conflicts.
+**Probe.** `.greg` for the s48 body: `;; 75 conflicts: ... 2 3 29`; for the new
+candidate: `;; 75 conflicts: ... 2 29`.  Score, insn count, insn order all
+unchanged (49 / 10).
+
+### H49.3 -- KILLED (instance)
+**Statement.** With the block-0-local quantities removed, reg 75 still takes
+hard 4 because `global.c allocno_compare` ranks the masked-value allocno
+(refs=6, live_length=9, pri=13333) above the pointer allocno (refs=10,
+live_length=28, pri=10714), so the masked value is allocated first and takes
+hard 3.
+**Mechanism.** `pri = floor_log2(n_refs) * n_refs / live_length * 10000`
+(global.c allocno_compare).  Allocation order printed by `.greg` as
+`;; 9 regs to allocate: 73 77 80 84 74 75 79 83 72`.  74's live range is
+contained in 75's, so no allocno can be introduced that conflicts with 74 but
+not with 75 -- the priority comparison is the only route.
+**Probe.** `.lreg`/`.greg` of the s49 candidate; refs/length/priority table
+produced by `tmp/grind/func_80034F88/s49/ra.py`.
+**Measured on.** two-statement-mask chassis (s49 candidate) on HEAD 2026-09-05,
+one declared pointer object, no FAKE construct.
+
+### H49.4 -- KILLED (instance)
+**Statement.** Five spellings of a single-statement block-0 mask -- `& 0xF8`,
+`& ~7`, `& -8`, `& 0x1F8`, `& 0xFFF8`, and `(*q >> 3) << 3` -- all leave a
+2-reference block-0-local temp that local-alloc seats at hard 3, so all six
+measure score 10 with the address at `$a0`, even though in these bodies the
+allocno order is already the target's (`... 75 74 ...`).
+**Mechanism.** `fold` narrows `(int)(u8)x & C` to a QImode AND whenever C's
+significant bits fit in QImode; `combine`'s `simplify_and_const_int` reduces the
+wider constants (`0x1F8`, `0xFFF8`, `-8`) back to `0xF8` via nonzero_bits before
+the narrowing decision is visible in the emitted code, so the QImode temp
+survives in every spelling.
+**Probe.** `rd1/e1/e2/e3/e4.c`, each measured 49 insns / score 10 with a
+block-0-local at hard 3 and `75 in 4`.
+**Measured on.** one-statement-mask chassis on HEAD 2026-09-05, one declared
+pointer object, no FAKE construct.
+
+### H49.5 -- KILLED (instance)
+**Statement.** Two source rearrangements aimed at shortening the pointer
+allocno's live length -- hoisting each block's `c = p[8] & N;` above its
+`q = &D_80106A73;` re-assignment (`rd7`), and adding a redundant
+`q = &D_80106A73;` immediately before block 0's store to split reg 75's block-0
+interval (`rd8`) -- leave reg 75 at refs=10, live_length=28, pri=10714.
+**Mechanism.** sched1 re-normalises the emission order in the first case; cse
+deletes the redundant address def in the second, so neither reaches the
+`reg_live_length` accounting that `allocno_compare` reads.
+**Probe.** `rd7.c`, `rd8.c`, both 49 insns / score 10; `ra.py` output identical
+to the candidate's.
+**Measured on.** two-statement-mask chassis on HEAD 2026-09-05, one declared
+pointer object, no FAKE construct.
+
+## [s49] On the straight-line-mask chassis, restoring the target's block-1 reload via a volatile-qualified read (*(volatile u8 *)q) or via a non-unifiable address expression (*(&D_80106A78 - 5)) leaves the blocks-0/1 address in $a0 and the blocks-0/1 value in $v1 -- the register disposition the s48 frontier attributed to the missing reload does not change.
+- mechanism: The s48 frontier argued the reload adds a fourth reference to the address allocno and splits the value range, lifting the address in global.c allocno_compare. Measured: the volatile spelling does add that reference (the reload reads through the same pointer) and the disposition is unchanged; the address spelling routes the reload through its own lui and is likewise unchanged.
+- probe: d_volread.c -> 51 insns / score 13; d_addrbreak.c -> 50 insns / score 11; baseline 49 insns / score 10. objdump of block 0 inspected for both bodies.
+- result: Both escapes put the lbu back at the target's position and neither moves a register. The reload and the seat are independent residuals, and the seat is the larger one. Both spellings are inadmissible anyway (volatile-coercion-by-cast; a declaration pun on D_80106A78) and were run purely as diagnosis; they are banked in rejected/ for that value.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: straight-line-mask chassis (s48 candidate) on HEAD 2026-09-05, one declared pointer object, no FAKE construct present
+
+## [s49] Splitting the block-0 mask into `m = *q; m &= 0xF8;` and letting block 0's arms consume `m` directly instead of re-reading `v = *q;` removes hard 3 from reg 75's conflict row in .greg, making the target's $v1 seat legal for the &D_80106A73 pointer allocno.
+- mechanism: The single-statement mask is narrowed by fold to a QImode AND (the constant's significant bits fit in QI), producing a QImode block-0-local temp; the `v = *q;` re-read is cse-forwarded and survives only as a register copy that keeps the masked value block-0-local. find_free_reg (local-alloc.c:2169-2247) seats any block-0-local quantity at hard 3, because hard 2 is excluded by the live call return $v0 at the mask lbu and mips.h defines no REG_ALLOC_ORDER so the scan is numeric. Deleting both block-0-local quantities stops hard 3 entering reg 75's conflict set.
+- probe: pwsh tools/grinder/dump.ps1 func_80034F88; .greg for the s48 body reads ';; 75 conflicts: 72 75 78 79 82 83 86 87 2 3 29', for the new candidate ';; 75 conflicts: 72 74 75 77 79 80 83 84 2 29'. Score, instruction count and emitted order unchanged at 49 / 10.
+- result: CONFIRMED. First body in this ledger where the address allocno is legally seatable at the target's hard 3. Banked as the new memory/grind/func_80034F88/candidate.c.
+- verdict: CONFIRMED
+
+## [s49] With both block-0-local quantities removed, reg 75 still takes hard 4 because global.c allocno_compare ranks the masked-value allocno (refs=6, live_length=9, priority 13333) above the pointer allocno (refs=10, live_length=28, priority 10714), so the masked value is allocated first and takes hard 3.
+- mechanism: allocno_compare computes pri = floor_log2(n_refs) * n_refs / live_length * 10000 (global.c). The .greg allocation order is ';; 9 regs to allocate: 73 77 80 84 74 75 79 83 72'. Reg 74's live range is contained in reg 75's, so no allocno can be introduced that conflicts with 74 but not with 75; the priority comparison is the only route to the target's seat on this body.
+- probe: tmp/grind/func_80034F88/s49/ra.py on the installed candidate: reg74 refs=6 len=9 pri=13333, reg75 refs=10 len=28 pri=10714, dispositions '74 in 3  75 in 4'.
+- result: KILLED for this body. Thresholds computed from the formula: lower reg 74 to refs<=4 at len 9 (8888) or len>=12 at refs 6 (10000) -- refs=5 at len 9 gives 11111 and is NOT enough; or raise reg 75 to refs>=13 at len 28 (13928) or len<=22 at refs 10 (13636).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-statement-mask chassis (s49 candidate) on HEAD 2026-09-05, one declared pointer object, no FAKE construct
+
+## [s49] Six spellings of a single-statement block-0 mask -- & 0xF8, & ~7, & -8, & 0x1F8, & 0xFFF8 and (*q >> 3) << 3 -- each leave a 2-reference block-0-local temp that local-alloc seats at hard 3, so each measures score 10 with the address at $a0, even though in these bodies the allocno order is already the target's (75 before 74).
+- mechanism: fold narrows (int)(u8)x & C to a QImode AND whenever C's significant bits fit in QImode, and combine's simplify_and_const_int reduces the wider constants (0x1F8, 0xFFF8, -8) back to 0xF8 through nonzero_bits, so the narrowing and the QImode temp survive in every spelling tried.
+- probe: rd1/e1/e2/e3/e4.c plus the original single-statement form, each 49 insns / score 10, each with a block-0-local quantity at hard 3 and '75 in 4' in .greg.
+- result: KILLED as a route to deleting the block-0-local temp. This is one horn of the measured dilemma; the other horn is the priority hypothesis above.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: one-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct
+
+## [s49] Hoisting each block's `c = p[8] & N;` above its `q = &D_80106A73;` re-assignment (rd7), and adding a redundant `q = &D_80106A73;` immediately before block 0's store to split reg 75's block-0 live interval (rd8), both leave reg 75 at refs=10, live_length=28, priority 10714.
+- mechanism: sched1 re-normalises the emission order in the first case, and cse deletes the redundant address def in the second, so neither reaches the reg_live_length accounting that allocno_compare reads.
+- probe: rd7.c and rd8.c, both 49 insns / score 10; ra.py output identical to the candidate's for regs 74 and 75.
+- result: KILLED. Shortening the pointer allocno's live length by source-level statement placement does not survive sched1/cse.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: two-statement-mask chassis on HEAD 2026-09-05, one declared pointer object, no FAKE construct
