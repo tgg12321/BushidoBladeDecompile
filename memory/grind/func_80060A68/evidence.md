@@ -3545,3 +3545,159 @@ picks_V1.txt, cc1_T1.s, cc1_V1.s, body_T1.c, body_V1.c, apply.sh, extract.sh, ca
 - [s25] NEW STANDING CONSTRAINT on the T1 spine: target's instruction stream is this body's stream plus exactly one load-delay NOP, so the residual must be bought with ZERO NET INSTRUCTIONS. Any spelling that materialises a 66th real instruction is out of budget regardless of its effect on the schedule (measured: the gp re-read = 67 insns, score 9).
 
 - [s25] Pass-1 adjpri confirms birthing_insn_p fires on the p10 load (birth=1, bumped to 0x7F000001), so the pass-1 head order is LUID-descending over raw source order - the mechanism behind s24's six-position collapse.
+
+---
+
+## [s26 2026-09-04, forensics] THE RESIDUAL IS A **READINESS** CONSTRAINT, NOT A PRIORITY CONSTRAINT — s24/s25's predicate is superseded
+
+This is the single most important correction in the ledger to date and it should be read
+before any further work on the T1 spine.  s24 stated the residual as an INSN_PRIORITY
+predicate (`pri(12)=3 with pass-2 luid(12) > 22, or pri(12)=4`) and s25 spent a whole
+session exhaustively enumerating the pass-2 (pri, icost) board looking for a predecessor
+that could satisfy it.  **That predicate can never fire, because uid 12 is not in the ready
+list at the pick where it would have to compete.**
+
+Measured, not inferred — read straight out of the extracted pass-2 pick trace for
+func_80060A68 block 0 on today's HEAD chassis with candidate.c (the T1 spine) applied
+(`tools/sched_solver/extract.py text1b` -> `parity=True funcs=492 blocks=1764 picks=14350`):
+
+    PICK insn 30  clock 44  ready [[30, 4, 21], [35, 3, 22]]
+    PICK insn 35  clock 45  ready [[35, 3, 22]]
+    PICK insn 12  clock 49  ready [[12, 2, 17]]
+
+At clock 44 (where uid 30 is picked) and at clock 45 (where uid 35 is picked — the slot
+target gives to uid 12) **uid 12 does not appear in the ready list at all.**
+`rank_for_schedule` (sched.c:2407-2464) is only consulted among READY insns, so
+INSN_PRIORITY(12) is irrelevant at those two picks: raising it to 3, to 4, or to 4000
+would not put uid 12 on the list.  s25's board enumeration was answering the wrong
+question, and this is also the reason the solver's only depth-1 vector, across two
+sessions and 4634 atoms, was `del_dep 25 <- 12` and nothing else.
+
+WHY uid 12 IS NOT READY.  The pass-2 dependence table for block 0 is
+
+    uid  9  luid 15  pri 1  icost 2  deps  -                      lw $3,D_800A3468
+    uid 16  luid 16  pri 2  icost 2  deps [[147,0],[9,0]]         lhu $2,0($3)
+    uid 12  luid 17  pri 2  icost 2  deps [[147,0],[9,0]]         lw $5,16($3)   <- THE P10 LOAD
+    uid 21  luid 18  pri 3  icost 1  deps [[16,0]]                sll
+    uid 25  luid 19  pri 3  icost 1  deps [[147,15],[9,14],[12,14],[16,14],[21,0]]   sw $0,D_800F10D0($2)
+    uid 28  luid 20  pri 3  icost 2  deps [[147,0],[21,14],[9,0],[25,0]]             lw $2,12($3)
+    uid 30  luid 21  pri 4  icost 2  deps [[147,0],[25,0],[28,0]]                    lw $2,0($2)
+    uid 35  luid 22  pri 3  icost 2  deps [[147,0],[9,0],[25,0]]                     lw $4,12($3)
+    uid 32  luid 23  pri 5  icost 1  deps [[147,15],[25,15],[9,0],[30,0]]            sw $2,32($3)
+
+`deps[25]` contains `[12, 14]` — dependence kind 14 is REG_DEP_ANTI.  **The Z0 store
+carries an ANTI-dependence on the p10 load** (write-after-read on memory).  sched.c builds
+the block BACKWARDS, so an insn becomes ready only when every insn that depends on it has
+already been scheduled; uid 12 therefore cannot enter the ready list until uid 25 is
+scheduled, and uid 25 is not scheduled until picks 28 and 35 are already behind it.  Target
+picks uid 12 BEFORE uid 35, which means in target's compilation **the anti-dependence
+25 <- 12 does not exist at all.**
+
+## [s26] THE GATE PREDICATE, AND ITS SOURCE-SIDE INPUT ENUMERATION
+
+The dep is created at `sched.c:1783`, `if (anti_dependence (XEXP (pending_mem, 0), dest))`.
+`anti_dependence` is `sched.c:845-868`; it returns 0 — i.e. NO dep — on exactly four routes:
+
+  (a) `RTX_UNCHANGING_P (mem)` on the p10 LOAD.  GCC 2.7.2 sets RTX_UNCHANGING_P only for
+      reads of readonly DECLs and for constant-pool refs; a `const`-qualified pointer deref
+      does not get it.  NO C SPELLING for a load through a runtime pointer.
+  (b) `MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem)` — BOTH memrefs volatile.  The p10 load is
+      a deref of a local pointer and the Z0 store is a write to the game-state global
+      D_800F10D0; making both volatile changes emitted bytes elsewhere in the body and is a
+      family question (`legitimate-volatile-interrupt-touched` two-prong gate), not a free
+      lever.  UNMEASURED — see the frontier.
+  (c) `memrefs_conflict_p (...) == 0` (sched.c:614-760).  The p10 load's address is
+      `(plus (reg outer) 16)` with `outer` a PSEUDO holding a gp-loaded pointer, and the
+      store's address is the `D_800F10D0 + idx*4` symbolic form.  The one escape that could
+      apply is the "base addresses are distinct objects" branch at sched.c:697-705, which
+      requires `find_symbolic_term` to succeed on BOTH sides; it returns 0 for a
+      pseudo-based address, so the function returns 1 (conflict).  The source-side input
+      that would change this is an address for the p10 load whose RTL base is a SYMBOL_REF
+      rather than a pseudo.
+  (d) The two MEM_IN_STRUCT_P / rtx_addr_varies_p asymmetry prongs.  **Both are dead for
+      THIS pair independent of any C spelling**, and this is a class fact:
+        prong 1 needs `! rtx_addr_varies_p (mem)` on the p10 LOAD — its address is
+          `(plus (reg outer) 16)`, and `rtx_addr_varies_p` is true for any address
+          containing a non-frame REG.  `outer` is a runtime value read from gp; it cannot be
+          made a compile-time-invariant address in any C spelling of this function.
+        prong 2 needs `! rtx_addr_varies_p (x)` on the Z0 STORE — its address contains the
+          runtime index `*(u16 *)outer`.  Same argument.
+      So MEM_IN_STRUCT_P is NOT a lever here: no arrangement of struct-typed vs
+      scalar-typed access can open either prong while both addresses vary.
+
+## [s26] MEASURED: THE COPY-2 SOURCE-POINTER HOIST FAMILY (12 bodies, zero FAKE constructs)
+
+The s25 frontier's item 1 proposed lowering pri(35) to 2 by staging copy 2's source pointer
+above the Z0 store so uid 35 loses its uid-25 memory dependence, on the theory that
+rank_for_schedule's dependence-CLASS term would then discriminate.  Two independent reasons
+that is now closed, one derived and one measured:
+
+DERIVED.  With `last_scheduled_insn = uid 30`, the class test (sched.c:2422-2443) asks
+whether the candidate is in `LOG_LINKS (30)`.  `deps[30] = [[147,0],[25,0],[28,0]]` — neither
+uid 12 nor uid 35 is a predecessor of uid 30, so both classify 3 and the term is a tie; the
+comparator falls through to `INSN_LUID (tmp) - INSN_LUID (tmp2)` (sched.c:2462), which is the
+statement-position axis s24 already closed.  The class term cannot be the discriminator.
+
+MEASURED (all on today's HEAD chassis, T1 spine, `sandbox func_80060A68 --disable all`):
+
+    W1  c2p read hoisted above Z0 store, copy 2 only          score 4   66 insns
+    W2  ditto, copies 2+3                                     score 5   66 insns
+    W3  ditto, copy 1 only                                    score 6   64 insns
+    W4  ditto, copies 1+2                                     score 6   64 insns
+    W5  ditto, hoist placed above the p10 read                score 4   66 insns
+    W6  ditto, copy 3 only                                    score 7   66 insns
+    W7  ditto, all three copies                               score 7   64 insns
+    X1  c2p AND p10 both read below the Z0 store (c2p first)  score 7   67 insns
+    X2  ditto, p10 first                                      score 7   67 insns
+    X3  p10 above store, c2p read BELOW store, copy 2 via it  score 4   65 insns
+    X4  p10 read below the store, no c2p local (control)      score 5   67 insns
+    X5  both below, copies 2+3 via c2p                        score 8   67 insns
+    T1  control (candidate.c)                                 score 2   65 insns
+
+W1 IS A NEW SPINE AND WORTH RECORDING PROPERLY.  Its object has **exactly 66 instructions
+and is a pure permutation of target's exact instruction multiset** — the first body in 26
+sessions with that property (T1 is 65 and is missing one load-delay nop; E2 is 66 but is
+missing a load and carries an extra nop).  Raw diff is 4 and every instruction from
+`lw v0,0(v0)` to the end is byte-identical to target:
+
+    ours(W1): lw v1,0(gp) | addiu sp | sw ra | lw a1,16(v1) | lhu v0,0(v1) | lw a0,12(v1)
+              | sll | lui at | addu at | sw zero | lw v0,12(v1) | nop | lw v0,0(v0) | ...
+    target  : lw v1,0(gp) | addiu sp | sw ra | nop | lhu v0,0(v1)
+              | sll | lui at | addu at | sw zero | lw v0,12(v1) | lw a0,12(v1) | lw a1,16(v1) | lw v0,0(v0) | ...
+
+But its extracted pass-2 model makes it a WORSE solver target, not a better one.  The hoist
+drags BOTH the p10 load and the copy-2 pointer load to the block-head chain, where both sit
+at pri 2 (uid 12 luid 16, uid 15 luid 18) behind three pri-3 insns (uid 24 sll, uid 28 the
+Z0 store, uid 31 the surviving copy-1 pointer load).  W1's goal is `pick 12, then 15, then
+31` after uid 33, so it now needs TWO insns lifted over the pri-3 wall instead of one.  W1's
+model is banked at tmp/grind/func_80060A68/s26/W1.sched.json and dumped at
+tmp/grind/func_80060A68/s26/model_W1.txt.
+
+X3 IS THE OTHER NEAR MISS AND IT DIES TO CSE, NOT TO THE SCHEDULER.  Reading the copy-2
+source pointer into a single-write local BELOW the Z0 store keeps the instruction count at
+65 (unlike the 67-insn six-position family), and puts a `lw a0,12(v1)` at target's slot 9.
+But cse merges that local with copy 1's inline read of the same address, so only ONE
+`lw ?,12(v1)` survives where target has two (slots 9 and 10) — the merged load is followed
+by a load-delay nop at slot 10 and the p10 load is still stranded at slot 4.  score 4.
+
+- [s26] Chassis re-measured at dispatch: candidate.c (T1 spine) applied to src/text1b.c gives sandbox score 2, target_insns 66, build_insns 65 -- unchanged from the ledger's recorded floor.
+
+- [s26] The pass-2 pick trace for func_80060A68 block 0 is: PICK insn 30 clock 44 ready [[30,4,21],[35,3,22]]; PICK insn 35 clock 45 ready [[35,3,22]]; PICK insn 12 clock 49 ready [[12,2,17]]. uid 12 is not on the ready list at either of the two picks target uses for it.
+
+- [s26] deps[25] = [[147,15],[9,14],[12,14],[16,14],[21,0]] -- dependence kind 14 is REG_DEP_ANTI, so the Z0 store is anti-dependent on the p10 load; sched.c builds the block backwards so uid 12 cannot join the ready list until uid 25 is scheduled.
+
+- [s26] deps[30] = [[147,0],[25,0],[28,0]] -- neither uid 12 nor uid 35 is a LOG_LINKS predecessor of uid 30, so rank_for_schedule's dependence-class term is a tie (both class 3) at the critical pick and the comparator falls through to LUID.
+
+- [s26] The anti-dependence is created at tools/gcc-2.7.2/sched.c:1783 and gated by anti_dependence at sched.c:845-868. Its four zero-return routes are: RTX_UNCHANGING_P on the read (no C spelling for a runtime-pointer deref under GCC 2.7.2); both memrefs MEM_VOLATILE_P (unmeasured, family question); memrefs_conflict_p == 0; and the two MEM_IN_STRUCT_P / rtx_addr_varies_p prongs (class-killed this session at sched.c:862).
+
+- [s26] memrefs_conflict_p's only applicable escape for this pair is the distinct-symbolic-base branch at sched.c:697-705, which requires find_symbolic_term to succeed on BOTH addresses; the p10 load's base is a pseudo holding a gp-loaded pointer, so it returns 0 and the function reports a conflict.
+
+- [s26] Copy-2 source-pointer hoist sweep (12 bodies, zero FAKE constructs, today's HEAD chassis): W1 4/66, W2 5/66, W3 6/64, W4 6/64, W5 4/66, W6 7/66, W7 7/64, X1 7/67, X2 7/67, X3 4/65, X4 5/67, X5 8/67; T1 control 2/65.
+
+- [s26] W1's object is 66 instructions and a pure permutation of target's exact instruction multiset -- the first such body in 26 sessions. ours: ... sw ra | lw a1,16(v1) | lhu v0,0(v1) | lw a0,12(v1) | sll | lui | addu | sw zero | lw v0,12(v1) | nop | lw v0,0(v0) ... ; target: ... sw ra | nop | lhu v0,0(v1) | sll | lui | addu | sw zero | lw v0,12(v1) | lw a0,12(v1) | lw a1,16(v1) | lw v0,0(v0) ... Everything from lw v0,0(v0) onward is identical.
+
+- [s26] W1's pass-2 model (parity=True, banked) shows the hoist strands both the p10 load (uid 12, pri 2, luid 16) and the copy-2 pointer load (uid 15, pri 2, luid 18) in the block-head chain behind three pri-3 insns (uid 24 sll, uid 28 the Z0 store, uid 31 the surviving copy-1 pointer load), so W1's goal needs TWO insns lifted over the pri-3 wall.
+
+- [s26] tools/sched_solver/goalmap.py (and the s24 fork) still cannot auto-derive an object-mode goal for this function even when the tree carries the 66-instruction W1 body: it reports hon=65 / honobj |A|=67 and aborts before emitting a goal, so goal derivation for this function remains manual.
+
+- [s26] The depth-2 pass-2 solver search (frontier item 2 from s25, in both the luid,luid_move and the full-atom vocabularies) was launched as this session's first act and ran 22 minutes without emitting a line; it was stopped cleanly before the turn ended and no solver process remains. It is now analytically superseded: luid perturbations cannot change READINESS, which is a function of the dependence graph, so no luid vector can put uid 12 on the ready list at clock 44/45.

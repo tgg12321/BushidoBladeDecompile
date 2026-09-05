@@ -1,7 +1,7 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 25,
+ "session_count": 26,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -153,23 +153,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics: the pass-2 predecessor set that could satisfy s24's priority predicate is enumerated exhaustively from the extracted model and contains exactly one spellable member (already dead); pass-1 a"
+  },
+  {
+   "session": 26,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics: the T1 residual is a READINESS constraint (the Z0 store's REG_DEP_ANTI on the p10 load), not the INSN_PRIORITY predicate s24/s25 worked under -- uid 12 is absent from the ready list at both"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With both halves of s24's predicate now reduced to the same statement-position axis and that axis closed, the only remaining route on the T1 spine is to change the block's PRIORITY PROFILE itself rather than to add a predecessor to uid 12: a spelling of copies 1-3 that lowers pri(35) to 2 or raises pri(12)'s existing pred uid 9, at zero net instructions, would re-open the tie that decides slot 12.",
-   "mechanism": "priority() is computed bottom-up from the block head, so the profile is a function of the head chain shape, not of uid 12. Today uid 35 (`lw $4,12($3)`, copy 2's source-pointer load) sits at pri 3 purely because its preds are uid 9 (1,2) and uid 25 (3,1). If copy 2's source pointer were read through a chain that does not touch the Z0 store's memory - so uid 35 loses the uid 25 memory dependence and falls to pri 2 - then uid 12 (pri 2, luid 17) and uid 35 (pri 2, luid 22) tie, and rank_for_schedule's dependence-class term relative to last_scheduled_insn = uid 30 becomes the discriminator instead of LUID.",
-   "next_probe": "On the T1 spine, sweep spellings that stage copy 2's source pointer ABOVE the Z0 store (e.g. read `*(s32 *)(outer + 0xC)` once into a named local declared before the store and use it for all three copies), measure each with `sandbox func_80060A68 --disable all`, then re-extract the model and read pri(35), pri(28) and pri(12) out of the pass-2 node table BEFORE scoring - the profile, not the score, is the discriminator. Reject immediately anything that moves build_insns off 65."
+   "hypothesis": "Target IS the 'p10 read below the Z0 store' regime -- that is the only regime in which the read has a RAW dep on the store and becomes ready in time -- and our bodies in that regime are 67 instructions where target is 66. The whole residual therefore reduces to a single un-diagnosed instruction of overhead in the below-store family, not to a scheduler tie.",
+   "mechanism": "With the p10 read below the store, sched.c:1783 creates a true (RAW) memory dependence 12 <- 25 instead of the anti-dependence 25 <- 12, so uid 12 becomes ready before uid 25 is scheduled and can take target's slot. s24 killed the six below-store positions on SCORE (all 67 insns, score 5, one normalised cc1 stream) but never diagnosed WHERE the 67th instruction comes from -- and s25's zero-net-instruction budget constraint says that extra instruction is the entire remaining gap.",
+   "next_probe": "Apply memory/grind/func_80060A68/rejected/s24-v2_p10_after_copy1-...-67insns.c (or regenerate X4 from tmp/grind/func_80060A68/s26/x/X4.c, score 5 / 67 insns), run `pwsh tools/grinder/dump.ps1 func_80060A68`, and diff its .cse/.combine/.sched dumps against the T1 dumps to name the pass that introduces the 67th instruction. Then diff the raw insn stream against target with tmp/grind/func_80060A68/s24/dumpdiff.py to identify WHICH instruction is extra. Removing that one instruction while keeping the below-store position closes the function; every other axis on this spine is now measured dead."
   },
   {
-   "hypothesis": "The depth-2 pass-2 solver search with the goal stated in PICK order (`--goal-before 30:12 --goal-before 12:35`) has still never completed - s24's tmp/grind/func_80060A68/s24/depth2_pass2.log is EMPTY on disk. It is the single cheapest unspent step and either names a spellable pair or converts the axis into a typed FORECLOSED.",
-   "mechanism": "Depth 1 over all 4634 atoms is a clean negative, so if the order is reachable at all it needs two simultaneous input changes - the shape that resolved two of the three banked scheduling residuals in the 2026-08-05 application round (title_mv_exec2 and func_8002C61C), where the first-pass answer was also 'no single-atom vector'.",
-   "next_probe": "Apply memory/grind/func_80060A68/candidate.c to src, re-run `extract.py text1b`, then run BOTH `--atoms luid,luid_move --depth 2` (cheap, fully spellable) and the unrestricted `--depth 2` via tmp/grind/func_80060A68/s24/run_perturb.py with --target-object build/src/text1b.o --ours-object tmp/sandbox/func_80060A68/text1b.o. Launch it as the session's FIRST act, in the background, and harvest it in-turn - s24 lost it to the one-shot close."
+   "hypothesis": "The only two unclosed routes through anti_dependence (sched.c:845-868) are memrefs_conflict_p returning 0 and the both-memrefs-volatile route; the former needs the p10 load's RTL base to be a SYMBOL_REF so find_symbolic_term succeeds on both sides at sched.c:697-705.",
+   "mechanism": "memrefs_conflict_p reaches its distinct-symbolic-base branch only when both addresses are PLUS forms whose symbolic term can be found. Our p10 load's base is a pseudo holding the gp-loaded `outer` pointer; the Z0 store's base is the symbol D_800F10D0. If the p10 value could be read through an expression whose address RTL carries a symbol base (e.g. through a differently-declared global rather than through `outer`), the branch would compare two distinct symbols and return 0, deleting the anti-dep and putting uid 12 on the ready list at clock 44.",
+   "next_probe": "Enumerate the declared shapes of D_800A3468 and the +0x10 member in the DATA MODEL block of the brief and in include/*.h, and test whether any faithful spelling gives the p10 read a symbol-based address (it is read as *(s32 *)(D_800A3468 + 0x10), so the candidate is a spelling that keeps the symbol in the address rather than materialising `outer` first). Measure each with `sandbox func_80060A68 --disable all` and, before scoring, re-extract the model and check whether deps[25] still contains [12, 14] -- the dep, not the score, is the discriminator."
   },
   {
-   "hypothesis": "E2's PRE-RA residual and T1's scheduling residual remain the two halves of one question: E2 has the p10 load at target's exact slot 11 in target's exact seat $a1 but no third load, T1 has three loads with the p10 load seven slots early, so a body that keeps E2's merged-pseudo priority behaviour while re-materialising the third load at zero net instructions would be at zero.",
-   "mechanism": "s23's slot-12 law: the merged pseudo wins the priority tie because it has TWO consumers. A distinct load with two source-level consumers that combine folds back to one insn would carry the merged case's priority and the three-load case's instruction count. s24 supplies the missing number: the merged case's advantage is worth exactly pri 3-with-high-LUID or pri 4 on uid 12, and s25 supplies the budget constraint (zero net instructions).",
-   "next_probe": "On the T1 spine give the +4 halfword a second real consumer that combine folds (the 0x1C store's value re-used in an expression that folds to a copy), measure with `sandbox func_80060A68 --disable all`, and read tmp/grind/func_80060A68/dumps/text1b.combine to confirm the second consumer is folded away and the pass-2 pri(12) in the re-extracted model BEFORE scoring."
+   "hypothesis": "W1 (66 instructions, pure permutation of target's multiset) is the correct spine for a future solver session even though it scores 4, because it is the only body whose residual the sched_solver can express without an instruction-count change; its goal is `pick 12, then 15, then 31` after uid 33.",
+   "mechanism": "tools/sched_solver models an exact permutation of an identical instruction multiset; T1 (65 insns) and E2 (66 insns but a different multiset) both require an insn to be added or removed, which no scheduler atom can express. W1's model is already extracted and validated (parity=True) and banked at tmp/grind/func_80060A68/s26/W1.sched.json.",
+   "next_probe": "Run tmp/grind/func_80060A68/s24/run_perturb.py against tmp/grind/func_80060A68/s26/W1.sched.json with the goal stated MANUALLY as `--pass 2 --block 0 --goal-before 33:12 --goal-before 12:15 --goal-before 15:31` (goalmap cannot auto-derive it -- see evidence), depth 1 first, then depth 2 restricted to luid,luid_move. Expect the same anti-dependence wall; the value is a typed FORECLOSED verdict on the 66-insn geometry rather than another guess."
   }
  ],
  "judge_constraints": [
@@ -561,6 +567,30 @@
    "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling on the T1 spine (T1 control re-measured 2 / 65 first); 1 probe body plus the T1 control, zero FAKE constructs in either; cc1 stream and both",
    "predicate_cite": "",
    "result": "KILLED as a floor move, CONFIRMED as a mechanism. The cse prediction is exactly right - the cc1 stream carries `lw $3,D_"
+  },
+  {
+   "session": 26,
+   "statement": "s24's INSN_PRIORITY predicate is not the binding constraint on the T1 spine: uid 12 (the p10 load) is absent from the pass-2 ready list at both of the picks where it would have to compete, because uid",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis, candidate.c (T1 spine with the s23 () dispatch-call spelling) applied to src/text1b.c; sandbox re-measured this session at score 2 / target_insns 66 / build_insns 65; zero FAKE c",
+   "predicate_cite": "",
+   "result": "KILLED as a predicate. The trace reads: PICK insn 30 clock 44 ready [[30,4,21],[35,3,22]]; PICK insn 35 clock 45 ready ["
+  },
+  {
+   "session": 26,
+   "statement": "The two MEM_IN_STRUCT_P / rtx_addr_varies_p asymmetry prongs of anti_dependence cannot suppress the 25 <- 12 dependence for this memref pair, because each prong requires one of the two addresses to be",
+   "kill_scope": "class",
+   "measured_on": "source-level evaluation of the gate predicate against the two memrefs this function must emit; chassis-independent, since it turns only on both addresses being runtime-computed",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:862",
+   "result": "KILLED. Prong 1 needs ! rtx_addr_varies_p on the p10 LOAD, whose base is the pseudo `outer` holding a value read from gp"
+  },
+  {
+   "session": 26,
+   "statement": "Staging copy 2's source pointer through a single-write local above the Z0 store does not open the tie s25's frontier item 1 predicted: rank_for_schedule's dependence-class term is a tie at the critica",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling; 12 probe bodies plus the T1 control, zero FAKE constructs in any of them; W1's model re-extracted with parity=True and banked at tmp/grind/",
+   "predicate_cite": "",
+   "result": "KILLED. Scores / build_insns: W1 4/66, W2 5/66, W3 6/64, W4 6/64, W5 4/66, W6 7/66, W7 7/64, X1 7/67, X2 7/67, X3 4/65, "
   }
  ],
  "escalation_deferrals": 0

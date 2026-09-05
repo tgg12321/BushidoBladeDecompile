@@ -1,3 +1,59 @@
+/* [s26 2026-09-04 - forensics modality.  BODY UNCHANGED (still the T1 spine); the floor is still
+ * 2 / build 65 / target 66, re-measured on today's HEAD chassis before any probe.  s26 CORRECTS
+ * THE FRAMING s24 AND s25 WORKED UNDER, and that correction is the session's deliverable.
+ *
+ * THE RESIDUAL IS A READINESS CONSTRAINT, NOT A PRIORITY CONSTRAINT.  s24 stated the residual as
+ * an INSN_PRIORITY predicate on uid 12 (the p10 load) and s25 exhaustively enumerated the pass-2
+ * (pri, icost) board searching for a predecessor that could satisfy it.  That predicate can never
+ * fire.  Read straight out of the pass-2 pick trace (extract.py text1b -> parity=True, 1764
+ * blocks; this block replays BASELINE EXACT):
+ *
+ *     PICK insn 30  clock 44  ready [[30, 4, 21], [35, 3, 22]]
+ *     PICK insn 35  clock 45  ready [[35, 3, 22]]
+ *     PICK insn 12  clock 49  ready [[12, 2, 17]]
+ *
+ * uid 12 IS NOT ON THE READY LIST at either of the two picks where target places it.
+ * rank_for_schedule (sched.c:2407) is only consulted among ready insns, so INSN_PRIORITY(12) is
+ * irrelevant there - 3, 4 or 4000 would all change nothing.  The cause is
+ * deps[25] = [[147,15],[9,14],[12,14],[16,14],[21,0]]: dependence kind 14 is REG_DEP_ANTI, so the
+ * Z0 store is ANTI-DEPENDENT on the p10 load, and because sched.c builds the block backwards
+ * uid 12 cannot join the ready list until uid 25 is scheduled - two picks too late.  Target's
+ * compilation must not carry that anti-dependence at all.  This is also why the only depth-1
+ * solver vector ever returned, across two sessions and 4634 atoms, was "del_dep 25 <- 12".
+ *
+ * THE GATE IS anti_dependence AT sched.c:845-868 (called from sched.c:1783).  It returns 0 - no
+ * dependence - on four routes only:
+ *   (a) RTX_UNCHANGING_P on the load.  No C spelling for a runtime-pointer deref; GCC 2.7.2 sets
+ *       it only for readonly DECLs and constant-pool refs.
+ *   (b) BOTH memrefs MEM_VOLATILE_P.  UNMEASURED, and a family question (the two-prong
+ *       legitimate-volatile-interrupt-touched gate), not a free lever.  This is frontier item 1.
+ *   (c) memrefs_conflict_p == 0.  The distinct-symbolic-base escape at sched.c:697-705 needs
+ *       find_symbolic_term to succeed on BOTH sides, and the p10 load's base is a pseudo holding
+ *       a gp-loaded pointer, so it returns 0 and the function reports a conflict.
+ *   (d) The two MEM_IN_STRUCT_P / rtx_addr_varies_p asymmetry prongs.  CLASS-KILLED this session
+ *       (predicate sched.c:862): each prong requires ONE of the two addresses to be NON-varying,
+ *       and both of this body's memrefs are runtime-computed, so no arrangement of struct-typed
+ *       versus scalar-typed access opens either one.
+ *
+ * s25 FRONTIER ITEM 1 IS CLOSED, derived and measured.  Derived: at the critical pick
+ * last_scheduled_insn = uid 30, and deps[30] = [[147,0],[25,0],[28,0]] contains neither uid 12
+ * nor uid 35, so rank_for_schedule's dependence-CLASS term is a tie (both class 3) and the
+ * comparator falls through to LUID at sched.c:2462 - the statement-position axis s24 already
+ * closed.  Measured: 12 bodies staging copy 2's (and other copies') source pointer through a
+ * single-write local above or below the Z0 store score 4 to 8; nothing at or below 2.
+ *
+ * A NEW SPINE WORTH KNOWING ABOUT.  W1 (copy 2's source pointer hoisted into a single-write
+ * local above the Z0 store) is 66 instructions and a PURE PERMUTATION of target's exact
+ * instruction multiset - the first such body in 26 sessions - byte-identical from the
+ * "lw v0,0(v0)" onward, raw diff 4, engine score 4.  Its extracted model is banked at
+ * tmp/grind/func_80060A68/s26/W1.sched.json.  It is NOT a better solver target: the hoist
+ * strands BOTH the p10 load and the copy-2 pointer load in the block-head pri-2 chain, so its
+ * goal needs TWO insns lifted over the pri-3 wall instead of one.  Banked at
+ * rejected/s26-W1-copy2-ptr-hoisted-above-Z0-store-...-score4-66insns.c.
+ *
+ * DISPOSITION.  ACTIVE.  This is a "progress" session: the floor is unchanged at 2 and the
+ * ladder is not exhausted.
+ */
 /* [s25 2026-09-04 - forensics modality.  BODY UNCHANGED (still the T1 spine); the floor is
  * still 2 / build 65 / target 66, re-measured on today's HEAD before any probe.  What s25 adds
  * is the CLOSED ENUMERATION behind s24's predicate, read out of the extracted scheduler model
