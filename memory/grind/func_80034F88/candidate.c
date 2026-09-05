@@ -1,3 +1,35 @@
+/* s44 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns.
+ * BODY UNCHANGED.  s44 read the OBJDUMP of this body against the target for
+ * the first time and it CORRECTS the ledger:
+ *
+ *   - This body ALREADY emits all three of the target's lui+addiu
+ *     materialisations of &D_80106A73 (4f48, 4f7c, 4fa0), from the ONE
+ *     declared `u8 *q` re-assigned the same constant at the heads of blocks
+ *     2 and 3.  The s41/s42 claim that three materialisations require three
+ *     pointer objects is WRONG; do not rest a foreclosure record on it.
+ *   - Blocks 2 and 3, the copy loop, the prologue and the epilogue are
+ *     register-exact and instruction-exact against the target ALREADY.
+ *   - The entire 10-point residual is ONE register swap in blocks 0/1: the
+ *     target seats the flag-byte ADDRESS in $v1 and the block-0/1 VALUE in
+ *     $a0; this body does the reverse.  The `.L` ordering difference is a
+ *     consequence of that swap, not a separate defect.
+ *   - The target's block-1 reload (80034FB4) sits in the load-delay slot this
+ *     body fills with a nop, so it costs nothing: rt (which has the reload)
+ *     and this body (which does not) are both 49 insns and both score 10.
+ *
+ * Measured dead this session (all banked in rejected/): duplicate read into
+ * block 1's arms (p1/p2 -- cse forwards it, objects BYTE-IDENTICAL to this
+ * one); block 3 or block 2 handed back to the bare symbol (16 / 20); block 0
+ * addressed through the symbol to start q's live range later (12 / 11 -- the
+ * address is still materialised at the top of the function); the loop counter
+ * initialised at the top so its allocno conflicts with the flag blocks (24 at
+ * 53); block 1 naming the block-0 value once instead of twice (13 at 47).
+ *
+ * NEXT: read the hard-register PREFERENCE records in .lreg/.greg, which no
+ * session has done -- every session since s32 has attacked allocno_compare's
+ * SORT ORDER instead.  And `cmp` any new object against b0.o before writing
+ * it up: a body can score 10 because it is byte-identical to this one.
+ */
 /* s42 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns.
  * BODY UNCHANGED.  THIS IS THE FINAL SESSION OF LADDER CYCLE 2 -- the
  * LADDER EXHAUSTED (non-endgame residual, floor 10) foreclosure record was

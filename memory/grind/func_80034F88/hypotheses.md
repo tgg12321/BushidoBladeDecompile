@@ -4204,3 +4204,113 @@ spending a probe on a brief-listed "next probe", or it will re-derive s37-s40.
 - probe: The seven bodies of this session plus their ALLOCDBG tables, reduced to the inequalities floor_log2(r)*r/L > 1.3333 for q and 2*r'/L' < 1.0714 for the block-0 value.
 - result: Exit (i): q at nrefs >= 13 with livelen 28 -- known ref sources all dead (same-constant re-set contributes zero refs; `q[i-3]` copy-loop destination 30; `u8 *r = q - 3;` 19 at 50). Exit (ii): q at livelen <= 21 with nrefs 10 -- unmoved by a source-level hoist (e1). Exit (iii): the block-0 value at livelen >= 12 with 6 refs (>= 10 at 5 refs, >= 8 at 4 refs) while remaining ONE multi-block pseudo -- attacked from the middle (s39 x1/x3) and the front (e1), never from the END, which is the frontier this session hands over.
 - verdict: CONFIRMED
+
+## [s44] MANDATED KILL RE-AUDIT: the four banked bodies closest to the target all re-measure at their banked values on today's chassis.
+- mechanism: Instance kills are chassis-relative; the re-audit rule requires the closest-to-target banked forms to be re-measured on the current chassis and with FAKE constructs ablated before any new probe is spent.
+- probe: Spliced and scored b0 (regeneration of memory/grind/func_80034F88/candidate.c), rt (rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c), t1 (rejected/s39-block1-reads-symbol-directly-score11.c) and m1 (rejected/s43-mask-folded-single-stmt-localalloc-v1-score10.c) with `sandbox func_80034F88 --disable all`.
+- result: b0 = 10 at 49, rt = 10 at 49, t1 = 11 at 50, m1 = 10 at 49 -- every one identical to its banked value. The chassis is unchanged and, per s41/s42, carries no FAKE construct for fake_ablate.py to remove.
+- verdict: CONFIRMED
+
+## [s44] The base body already emits all three of the target's `lui`+`addiu` materialisations of `&D_80106A73` from ONE declared pointer object, so the s41/s42 "three materialisations require three pointer objects" factorisation is wrong and the whole 10-point residual is a single register swap in blocks 0/1.
+- mechanism: cse does not unify the same-constant re-assignments of `q` at the heads of blocks 2 and 3 into one register-held value; it re-materialises the address at each one, which is why the base body carries `lui/addiu` at 4f48, 4f7c and 4fa0. What differs from the target is only WHICH hard registers the blocks-0/1 address and the blocks-0/1 flag-byte value receive: the target seats the address in $v1 and the value in $a0, the base body the reverse. The `.L` ordering difference (target schedules mat2 ahead of block 1's store) is a consequence of that swap, because in the target the store uses $v1 and so does not conflict with mat2's destination.
+- probe: `mipsel-linux-gnu-objdump -d` on tmp/grind/func_80034F88/s44/b0.o, compared instruction-for-instruction against asm/funcs/func_80034F88.s; the full table is in the s44 section of evidence.md. Blocks 2 and 3, the trailing copy loop, the prologue and the epilogue are register-exact and instruction-exact in both.
+- result: Confirmed. Also confirmed by direct measurement for the first time (s29 priced it by arithmetic only): the target's block-1 reload at 80034FB4 occupies the load-delay slot that the base body fills with a `nop`, so both bodies are 49 instructions and both score 10 -- rt HAS the reload, b0 does not, and they are worth the same. The reload is a passenger of the seat assignment, not a lever.
+- verdict: CONFIRMED
+
+## [s44] Duplicating block 1's flag-byte read into one of its arms (the duplicated-read-into-arms spelling) stretches nothing, because cse forwards the arm read back to the block-0 value and the body collapses onto the base body byte-for-byte.
+- mechanism: cse enters the mem stored by block 0 into its hash table keyed on the address rtx; block 1's arm read hashes to the same address and is replaced by the stored register. The QI census over the cc1 dumps names the pass: the p1 body reaches .rtl and .jump with FOUR flag-byte loads (the count the target has) and leaves .cse with THREE, and the count never changes again through .loop, .cse2, .combine and .greg.
+- probe: p1 (block 1's THEN arm reads `*q`, else arm keeps `m`) and p2 (mirror, ELSE arm reads `*q`), each scored with `sandbox func_80034F88 --disable all`, their objects compared with `cmp` against b0.o, plus `pwsh tools/grinder/dump.ps1 func_80034F88` on p1 and a `(mem:QI` census of the `;; Function func_80034F88` slice of every dump.
+- result: p1 = 10 at 49 and p2 = 10 at 49, and BOTH objects are byte-identical to b0.o. This closes s43's Frontier A for the only ordinary consumer this function has: after block 1's store the flag byte holds `m | bit`, not `m`, so no later block can legitimately re-read `m`'s value, and a re-read inside block 1 is forwarded away. Banked as rejected/s44-block1-thenarm-duplicate-read-cse-forwarded-score10-IDENTICAL.c and rejected/s44-block1-elsearm-duplicate-read-cse-forwarded-score10-IDENTICAL.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 re-measured 10 at 49), single declared `u8 *q`, no FAKE constructs present; fake_ablate has nothing to ablate on this chassis
+
+## [s44] Deleting block 0's uses of `q` in order to start the pointer's live range later does not move q's allocno: the address constant is still materialised at the top of the function, q keeps $a0, and the symbol-addressed block-0 access costs an extra instruction.
+- mechanism: s43's e1 attacked exit (ii) -- q at live_length <= 21 -- by hoisting a computation out of q's range and the scheduler put it back. p5/p6 attack the same exit from the opposite end, by removing q's earliest references entirely so that its live range cannot begin before block 1. The address materialisation is a constant load with no dependences, so the first scheduling pass places it immediately after the call regardless of where the source assigns the pointer.
+- probe: p5 (block 0 wholly through the bare symbol, `q` first assigned inside block 1) and p6 (block 0's load through the symbol, `q` assigned immediately before block 0's store), scored with `sandbox func_80034F88 --disable all` and disassembled.
+- result: p5 = 12 at 50, p6 = 11 at 50. In both, `lui a0 / addiu a0` is emitted at 4f48-4f4c immediately after the call -- ahead of the symbol-addressed block-0 load -- and q still receives $a0; the symbol-addressed load adds one `lui`. Banked as rejected/s44-block0-wholly-symbol-q-from-block1-score12.c and rejected/s44-block0-load-symbol-q-before-store-score11.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49), single declared `u8 *q`, no FAKE constructs present
+
+## [s44] Handing one flag block back to the bare symbol to shorten `q`'s live range is monotone in the number of blocks handed back and has no minimum below the base body's 10.
+- mechanism: A block addressed through the bare symbol emits `lui $at` with `%lo` folded into each memory operand, which removes two references and several insns of live length from q's allocno but also removes the target's `lui`+`addiu` address form for that block.
+- probe: p3 (q covers blocks 0/1/2; block 3 through the symbol) and p4 (q covers blocks 0/1/3; block 2 through the symbol), scored with `sandbox func_80034F88 --disable all`; read together with s40's a1/a2, which handed back BOTH blocks 2 and 3 and measured 28 at 48.
+- result: p3 = 16 at 49, p4 = 20 at 50. One block back costs 6 points, the other 10, and both back costs 18: the axis is monotone away from the target. Banked as rejected/s44-block3-via-bare-symbol-score16.c and rejected/s44-block2-via-bare-symbol-score20.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49), single declared `u8 *q`, no FAKE constructs present
+
+## [s44] Making the loop counter's allocno live across the flag blocks (so that it holds $v1 and pushes the block-0 value off that seat) costs four instructions and moves the score away from the target.
+- mechanism: The .lreg records for the base body show the loop counter as pseudo 73, 11 references across 7 insns (the highest allocno_compare key in the function, 47142), and it takes $v1 before either the block-0 value or `q` is considered; the block-0 value then takes $v1 too because the two do not conflict. Initialising the counter at the top of the function (ordinary split-init, `i = 0;` before the call and `for (; i < 3; i++)`) makes it conflict with every flag-block quantity, which should deny $v1 to the block-0 value.
+- probe: p7 (`i = 0;` hoisted above `p = func_80077D00();`, loop spelled `for (; i < 3; i++)`), scored with `sandbox func_80034F88 --disable all`.
+- result: p7 = 24 at 53 insns. The counter's live range now spans the call and the whole body, so it also conflicts with `q` and with `p`, and the allocation degrades by four extra instructions. Banked as rejected/s44-loop-counter-init-hoisted-to-top-score24.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49), single declared `u8 *q`, no FAKE constructs present
+
+## [s44] Cutting the block-0 value's reference count by having block 1 name it once (`c = m; if (cond) c = c | 1;`) also shortens its live range, so the allocno_compare key rises instead of falling, and the body loses the target's two-arm shape.
+- mechanism: allocno_compare's key is floor_log2(refs)*refs/live_length (tools/gcc-2.7.2/global.c:635); the base body's block-0 value is 6 refs over 9 insns (13333) against q's 10 over 28 (10714). Every reference removed from the value is also a point at which it was still live, so refs and live_length fall together and the quotient does not improve -- the arithmetic reason the s43 four-reference spellings and this five-reference spelling both fail, independent of the local-alloc splitting that s43 identified.
+- probe: p8 (block 1 spelled `c = m; if (p[8] & 1) { c = c | 1; }`, one reference to `m` instead of two), scored with `sandbox func_80034F88 --disable all`.
+- result: p8 = 13 at 47 insns -- two instructions SHORT of the target, because the else arm's `addu v0,<val>,zero` disappears when the conditional or-in replaces the two-arm value selection. Banked as rejected/s44-block1-single-m-ref-conditional-or-score13.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49), single declared `u8 *q`, no FAKE constructs present
+
+## Frontier after s44
+
+- **A.** THE UNREAD INSTRUMENT: hard-register PREFERENCES, not allocno rank. Every session from s32 on has attacked `allocno_compare`'s sort order; nobody has read the preference records that `local-alloc.c` builds and `global.c` consults when it picks a hard register for an allocno it has already ordered. In the target the blocks-0/1 VALUE shares $a0 with the blocks-2/3 ADDRESS materialisations -- the sharing pattern a copy-derived preference produces -- while in the base body the value shares $v1 with the loop counter. Next probe: dump `.lreg` and `.greg` for b0 and for the score-0 four-handle body side by side and diff the preference/`regs_may_share` records, not the allocate lists; then look for an ordinary-C spelling that gives the block-0 value a copy relationship with a quantity already seated in $a0.
+- **B.** The seat swap is now known to be the WHOLE residual (10 points, one register pair) and the reload is known to be free. Any future probe should be judged by whether it changes the hard register of pseudo 74 (the block-0 value) or pseudo 75 (`q`) in the `.greg` dispositions -- a score that stays at 10 with the same two dispositions is the base body wearing a different shirt, and p1/p2 show that can be literally byte-identical. Check `cmp` against b0.o before writing a body up.
+- **C.** Housekeeping (third repeat): the dispatch digest lags the ledger badly -- this run was dispatched as "session 35" with an s34-era frontier while the ledger is at s44. Run `grep -n '^## \[s' memory/grind/func_80034F88/hypotheses.md | tail` before spending a probe on a brief-listed "next probe". The LADDER EXHAUSTED record drafted by s42 still needs re-filing by an `escalation`-modality session; s42's owner-gated outcome was discarded for filing one from `structural`, and s44 is `synthesis`, so it does not file one either.
+
+## [s42] MANDATED KILL RE-AUDIT: the four banked bodies closest to the target re-measure at their banked values on today's chassis.
+- mechanism: Instance kills are chassis-relative, so the closest-to-target banked forms must be re-measured before any new probe is spent; s41/s42 already established that fake_ablate.py finds no FAKE construct in this chassis to ablate.
+- probe: Spliced and scored b0 (regeneration of memory/grind/func_80034F88/candidate.c), rt (rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c), t1 (rejected/s39-block1-reads-symbol-directly-score11.c) and m1 (rejected/s43-mask-folded-single-stmt-localalloc-v1-score10.c) with `sandbox func_80034F88 --disable all`.
+- result: b0 = 10 at 49, rt = 10 at 49, t1 = 11 at 50, m1 = 10 at 49 -- every one identical to its banked value. Chassis unchanged.
+- verdict: CONFIRMED
+
+## [s42] The base body already emits all three of the target's lui+addiu materialisations of &D_80106A73 from ONE declared pointer object, so the s41/s42 'three materialisations require three pointer objects' factorisation is wrong, and the whole 10-point residual is a single register swap in blocks 0/1 (target: address in $v1, value in $a0; base body: the reverse).
+- mechanism: cse does not unify the same-constant re-assignments of q at the heads of blocks 2 and 3 into one register-held value; it re-materialises the address at each one (4f48, 4f7c, 4fa0 in b0.o). The .L ordering difference is a consequence of the seat swap: in the target block 1's store uses $v1 so mat2 into $a0 can be scheduled ahead of it.
+- probe: mipsel-linux-gnu-objdump -d on tmp/grind/func_80034F88/s44/b0.o compared instruction-for-instruction with asm/funcs/func_80034F88.s; full table in the s44 section of memory/grind/func_80034F88/evidence.md.
+- result: Blocks 2 and 3, the trailing copy loop, the prologue and the epilogue are already register-exact and instruction-exact. Also measured for the first time (s29 priced it by arithmetic only): the target's block-1 reload at 80034FB4 occupies the load-delay slot that b0 fills with a nop, so rt (with the reload) and b0 (without it) are both 49 insns and both score 10 -- the reload is free and is a passenger of the seat assignment, not a lever.
+- verdict: CONFIRMED
+
+## [s42] Duplicating block 1's flag-byte read into one of its arms produces an object byte-identical to the base body, because cse forwards the arm read back to the block-0 value.
+- mechanism: cse enters the mem stored by block 0 into its hash table keyed on the address rtx; block 1's arm read hashes to the same address and is replaced by the stored register. A (mem:QI census over the cc1 dumps names the pass: the body reaches .rtl and .jump with FOUR flag-byte loads (the count the target has) and leaves .cse with THREE, unchanged thereafter through .loop, .cse2, .combine and .greg.
+- probe: p1 (block 1's THEN arm reads *q, else arm keeps m) and p2 (mirror, ELSE arm reads *q) scored with `sandbox func_80034F88 --disable all`, objects compared with cmp against b0.o, plus `pwsh tools/grinder/dump.ps1 func_80034F88` on p1 and a per-pass mem:QI census of the function slice.
+- result: p1 = 10 at 49, p2 = 10 at 49, and BOTH objects are byte-identical to b0.o. This closes s43's Frontier A for the only ordinary consumer the function has: after block 1's store the flag byte holds m|bit, not m, so no later block can legitimately consume m, and a re-read inside block 1 is forwarded away. Banked as rejected/s44-block1-thenarm-duplicate-read-cse-forwarded-score10-IDENTICAL.c and rejected/s44-block1-elsearm-duplicate-read-cse-forwarded-score10-IDENTICAL.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 re-measured 10 at 49, rules_dropped 0); single declared `u8 *q`; no FAKE constructs present, fake_ablate has nothing to ablate on this chassis
+
+## [s42] Deleting block 0's uses of q so that the pointer's live range starts later does not move q's allocno: the address constant is still materialised at the top of the function, q keeps $a0, and the symbol-addressed block-0 access costs an extra instruction.
+- mechanism: s43's e1 attacked the live-length exit by hoisting a computation out of q's range and the scheduler put it back; p5/p6 attack it from the opposite end by removing q's earliest references entirely. The address materialisation is a dependence-free constant load, so the first scheduling pass places it immediately after the call regardless of where the source assigns the pointer.
+- probe: p5 (block 0 wholly through the bare symbol, q first assigned inside block 1) and p6 (block 0's load through the symbol, q assigned immediately before block 0's store), scored with `sandbox func_80034F88 --disable all` and disassembled.
+- result: p5 = 12 at 50, p6 = 11 at 50. In both, lui a0 / addiu a0 is emitted at 4f48-4f4c immediately after the call -- ahead of the symbol-addressed block-0 load -- and q still receives $a0. Banked as rejected/s44-block0-wholly-symbol-q-from-block1-score12.c and rejected/s44-block0-load-symbol-q-before-store-score11.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present
+
+## [s42] Handing one flag block back to the bare symbol to shorten q's live range is monotone in the number of blocks handed back and has no minimum below the base body's 10.
+- mechanism: A block addressed through the bare symbol emits lui $at with %lo folded into each memory operand, removing two references and several insns of live length from q's allocno but also removing the target's lui+addiu address form for that block.
+- probe: p3 (q covers blocks 0/1/2, block 3 through the symbol) and p4 (q covers blocks 0/1/3, block 2 through the symbol), scored with `sandbox func_80034F88 --disable all`, read together with s40's a1/a2 which handed back both blocks and measured 28 at 48.
+- result: p3 = 16 at 49, p4 = 20 at 50, both-blocks-back = 28. One block back costs 6 points, the other 10, both cost 18. Banked as rejected/s44-block3-via-bare-symbol-score16.c and rejected/s44-block2-via-bare-symbol-score20.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present
+
+## [s42] Making the loop counter's allocno live across the flag blocks, so that it holds $v1 and denies that seat to the block-0 value, costs four instructions and moves the score away from the target.
+- mechanism: The .lreg records for the base body show the loop counter as pseudo 73 (11 references across 7 insns, the function's highest allocno_compare key at 47142); it takes $v1 first, and the block-0 value then also takes $v1 because the two do not conflict. Initialising the counter at the top of the function (ordinary split-init) makes it conflict with every flag-block quantity.
+- probe: p7 (`i = 0;` hoisted above `p = func_80077D00();`, loop spelled `for (; i < 3; i++)`), scored with `sandbox func_80034F88 --disable all`.
+- result: p7 = 24 at 53 insns: the counter now also conflicts with q and with p, and the allocation degrades by four extra instructions. Banked as rejected/s44-loop-counter-init-hoisted-to-top-score24.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present
+
+## [s42] Cutting the block-0 value's reference count by having block 1 name it once also shortens its live range, so its allocno_compare key rises instead of falling, and the body loses the target's two-arm value selection.
+- mechanism: allocno_compare's key is floor_log2(refs)*refs/live_length (tools/gcc-2.7.2/global.c:635); the base body's block-0 value is 6 refs over 9 insns (13333) against q's 10 over 28 (10714). Every reference removed is also a point at which the value was still live, so refs and live_length fall together and the quotient does not improve -- an arithmetic reason distinct from the local-alloc splitting s43 identified.
+- probe: p8 (block 1 spelled `c = m; if (p[8] & 1) { c = c | 1; }`, one reference to m instead of two), scored with `sandbox func_80034F88 --disable all`.
+- result: p8 = 13 at 47 insns -- two instructions short of the target, because the else arm's `addu v0,<val>,zero` disappears when a conditional or-in replaces the two-arm value selection. Banked as rejected/s44-block1-single-m-ref-conditional-or-score13.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present

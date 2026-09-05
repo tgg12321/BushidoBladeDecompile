@@ -5985,3 +5985,162 @@ bodies; the conflict rows quoted above are transcribed in this section).
 - [s41] Threshold arithmetic on this chassis: q wins allocno_compare at nrefs >= 13 (livelen 28) or livelen <= 21 (nrefs 10); the block-0 value loses at livelen >= 12 (6 refs), >= 10 (5 refs), >= 8 (4 refs).
 
 - [s41] Process note: the dispatch digest lagged the ledger by eight sessions again (dispatched as 'session 35' with an s34-era frontier while the ledger is at s42); the previous session's owner-gated foreclosure was discarded because a foreclosure disposition requires escalation modality, so the LADDER EXHAUSTED record it drafted still needs re-filing by an escalation-modality session.
+
+## s44 (synthesis, 2026-09-05; dispatched as "session 35" -- the digest lags the ledger by nine sessions) -- the residual re-derived from the OBJDUMP, not from the allocno tables
+
+Floor unchanged: **10 at 49 insns**.  Every measurement below is
+`sandbox func_80034F88 --disable all` with the body spliced over
+`INCLUDE_ASM("asm/funcs", func_80034F88);` in `src/code6cac_b.c`; `src/` was
+restored to HEAD before the outcome was written.
+
+### KILL RE-AUDIT (mandated -- all four re-measure at their banked values)
+| body | this session | banked |
+|---|---|---|
+| b0 (= `memory/grind/func_80034F88/candidate.c`) | 10 at 49 | 10 at 49 |
+| rt (`rejected/roundtrip-fresh-pseudo-target-census-score10-DEAD-ARITH.c`) | 10 at 49 | 10 at 49 |
+| t1 (`rejected/s39-block1-reads-symbol-directly-score11.c`) | 11 at 50 | 11 at 50 |
+| m1 (`rejected/s43-mask-folded-single-stmt-localalloc-v1-score10.c`) | 10 at 49 | 10 at 49 |
+
+s41/s42 already established `fake_ablate.py` finds nothing to ablate on this
+chassis (the body carries no FAKE construct), so no banked kill on it was
+measured with a FAKE carrier occupying the contested pseudo.
+
+### THE CORRECTION s44 MAKES TO THE LEDGER (read this before re-reading s41/s42)
+s41 and s42 recorded the residual as an **emission requirement**: "the target
+materialises `&D_80106A73` into an allocatable register THREE times and the
+only C construct that emits that lui+addiu pair is an assignment of the
+address to a declared pointer object", concluding that three materialisations
+need three pointer objects.  **The first half of that is true; the conclusion
+is false, and the base body already disproves it.**  Disassembly of `b0.o`
+(`tmp/grind/func_80034F88/s44/b0.o`, banked; produced this session, never read
+in s41/s42, which reasoned from allocno tables and score arithmetic):
+
+```
+b0 (score 10, 49 insns)                     TARGET (asm/funcs/func_80034F88.s)
+ 4f48 lui   a0,%hi(SYM)                     80034F98 lui   v1,%hi(SYM)
+ 4f4c addiu a0,a0,%lo(SYM)      <-- mat1    80034F9C addiu v1,v1,%lo(SYM)   <-- mat1
+ 4f50 lbu   v1,0(a0)                        80034FA0 lbu   a0,0(v1)
+ 4f54 move  a1,v0                           80034FA4 addu  a1,v0,zero
+ 4f58 andi  v1,v1,0xf8                      80034FA8 andi  a0,a0,0xF8
+ 4f5c sb    v1,0(a0)                        80034FAC sb    a0,0(v1)
+ 4f60 lw    v0,32(a1)                       80034FB0 lw    v0,0x20(a1)
+ 4f64 nop                       <-- (1)     80034FB4 lbu   a0,0(v1)      <-- reload
+ 4f68 andi  v0,v0,0x1                       80034FB8 andi  v0,v0,0x1
+ 4f6c bnez  v0,.L                           80034FBC bnez  v0,.L
+ 4f70  ori  v0,v1,0x1                       80034FC0  ori  v0,a0,0x1
+ 4f74 move  v0,v1                           80034FC4 addu  v0,a0,zero
+.L:                                        .L:
+ 4f78 sb    v0,0(a0)            <-- (2)     80034FC8 lui   a0,%hi(SYM)
+ 4f7c lui   a0,%hi(SYM)                     80034FCC addiu a0,a0,%lo(SYM)  <-- mat2
+ 4f80 addiu a0,a0,%lo(SYM)      <-- mat2    80034FD0 sb    v0,0(v1)
+ ... blocks 2 and 3 REGISTER-EXACT and instruction-exact in both, with mat3 ...
+ ... the trailing copy loop and epilogue REGISTER-EXACT in both ...
+```
+
+Facts this establishes, none of which were on the ledger:
+- **The base body already emits all three `lui`+`addiu` materialisations of
+  `&D_80106A73`** (4f48, 4f7c, 4fa0), from ONE declared `u8 *q` that is
+  re-assigned the same constant at the head of blocks 2 and 3.  cse does not
+  unify the re-sets into one register-held value; it re-materialises the
+  address at each one.  The "three materialisations require three pointer
+  objects" step in s41/s42 is therefore wrong, and any future foreclosure
+  record must not rest on it.
+- **The entire 10-point residual is one register swap in blocks 0/1**: the
+  target puts the ADDRESS in `$v1` and the block-0/1 flag-byte VALUE in `$a0`;
+  the base body puts the address in `$a0` and the value in `$v1`.  Blocks 2
+  and 3, the copy loop, the prologue and the epilogue are already
+  byte-identical.
+- **The ordering difference at `.L` is a consequence of the swap, not an
+  independent defect.**  In the target mat2 (into `$a0`) can be scheduled
+  ahead of block 1's store because that store uses `$v1`; in b0 the store uses
+  `$a0`, so mat2 must follow it.  Fix the seats and the order follows.
+- **The block-1 reload is worth exactly one instruction slot and it is free.**
+  The target's `lbu a0,0(v1)` at 80034FB4 sits in the load-delay slot of the
+  preceding `lw`; b0 emits a `nop` there.  Both bodies are 49 insns.  This
+  confirms s29's arithmetic pricing of the reload at ZERO by direct
+  measurement for the first time: `rt` (which HAS the reload) and `b0` (which
+  does not) both score 10.  The reload is not a lever; it is a passenger of
+  the seat assignment.
+
+### Pass census by QI memory reference (new instrument -- cheaper than the allocno tables)
+`pwsh tools/grinder/dump.ps1 func_80034F88` on the p1 body, then counting
+`(mem:QI` inside the `;; Function func_80034F88` slice of each dump
+(`tmp/grind/func_80034F88/dumps/`):
+
+| pass | QI stores | QI loads | insns in slice |
+|---|---|---|---|
+| .rtl / .jump | 4 | **4** | 37 |
+| .cse / .loop / .cse2 | 4 | **3** | 34 |
+| .combine / .greg | 4 | 3 | 30 |
+
+The target contains four flag-byte loads (80034FA0, 80034FB4, 80034FD8,
+80034FFC).  A source with four loads reaches `.rtl` with four and **cse
+deletes one**: block 1's load is forwarded from block 0's store because both
+mems hash to the same address rtx.  This is the load-count statement of the
+same wall the ledger has been describing in allocation terms.
+
+### Measurements (all new this session)
+| body | what it changes vs b0 | score | insns |
+|---|---|---|---|
+| p1 | block 1's THEN arm reads `*q` (else arm keeps `m`) -- duplicate read into arms | 10 | 49 |
+| p2 | mirror: block 1's ELSE arm reads `*q` | 10 | 49 |
+| p3 | q covers blocks 0/1/2; block 3 addressed through the bare symbol | 16 | 49 |
+| p4 | q covers blocks 0/1/3; block 2 addressed through the bare symbol | 20 | 50 |
+| p5 | block 0 wholly through the bare symbol; q first assigned inside block 1 | 12 | 50 |
+| p6 | block 0's LOAD through the symbol; q assigned just before block 0's store | 11 | 50 |
+
+- **p1 and p2 are BYTE-IDENTICAL to b0** (`cmp` on the .o files).  cse forwards
+  the arm read back to `m`, so the body collapses onto the base body before
+  allocation: the duplicate-read-into-arms spelling cannot stretch the block-0
+  value's live range, because after forwarding it IS the base body.  Frontier A
+  of s43 ("stretch `m` from the END with a real ordinary use") is closed for
+  every consumer that is a re-read of the same byte, which is the only ordinary
+  consumer this function has -- the flag byte's value after block 1's store is
+  `m | bit`, not `m`, so no later block can legitimately consume `m` itself.
+- **p5/p6 close exit (ii) from a direction e1 did not test.**  s43's e1 tried to
+  SHORTEN q's live range by hoisting a computation out of it; p5/p6 shorten it
+  by deleting q's uses from block 0 entirely.  The disassembly shows the
+  materialisation is still emitted at the top of the function (p5: `lui a0` /
+  `addiu a0` at 4f48-4f4c, immediately after the call, before the
+  symbol-addressed load at 4f54-4f58), q still receives `$a0`, and the
+  symbol-addressed block-0 load costs one extra `lui` (50 insns).  Source-level
+  placement of the pointer's definition does not move the allocno: the address
+  constant is materialised at the top of the function regardless.
+- **p3/p4 price the "give a block back to the symbol" axis.**  s40 measured
+  BOTH blocks 2 and 3 on the symbol at 28.  Dropping only block 3 costs 6
+  points (16), only block 2 costs 10 (20).  The axis is monotone and has no
+  minimum below 10.
+
+### What s44 hands the next session
+The residual is ONE seat swap in blocks 0/1 and nothing else.  Both sides of
+`allocno_compare` have now been attacked from every measured direction, but
+the OBJDUMP framing opens a question the allocation framing never asked: the
+base body and the target differ in which of two pseudos (address, value) gets
+`$v1`, and every body measured so far leaves the value pseudo ranked first.
+The untried lever is the VALUE pseudo's hard-register PREFERENCE rather than
+its rank -- global.c gives an allocno a preference from copy insns
+(`reg_preferred_class` / the `regs_may_share` and copy-propagation machinery in
+`local-alloc.c`), and the target's block-0 value shares `$a0` with the blocks
+2/3 ADDRESS materialisations, which is exactly the sharing pattern a copy
+preference produces.  No session has yet read the `.lreg` preference records
+for the base body; that read, not another spelling, is the next cheap step.
+
+- [s42] Kill re-audit on today's chassis: b0 = 10 at 49, rt = 10 at 49, t1 = 11 at 50, m1 = 10 at 49 -- all equal to their banked values; the chassis carries no FAKE construct (fake_ablate has nothing to ablate, per s41/s42).
+
+- [s42] LEDGER CORRECTION: the base body (one declared `u8 *q`, re-assigned the same constant at the heads of blocks 2 and 3) already emits all THREE of the target's lui+addiu materialisations of &D_80106A73, at 4f48, 4f7c and 4fa0 of tmp/grind/func_80034F88/s44/b0.o. The s41/s42 conclusion that three materialisations require three pointer objects is false and must not carry a future foreclosure record.
+
+- [s42] The entire 10-point residual is one register swap in blocks 0/1: the target seats the flag-byte address in $v1 and the block-0/1 value in $a0, the base body the reverse. Blocks 2 and 3, the copy loop, the prologue and the epilogue are already register-exact and instruction-exact.
+
+- [s42] The `.L` ordering difference (the target schedules the blocks-2/3 materialisation ahead of block 1's store) is a consequence of that swap, because the target's block-1 store uses $v1 and therefore does not conflict with the materialisation's $a0 destination.
+
+- [s42] The target's block-1 reload at 80034FB4 occupies the load-delay slot that the base body fills with a nop, so it costs nothing: rt (which has the reload) and b0 (which does not) are both 49 insns and both score 10. This is the first direct measurement of s29's arithmetic pricing of the reload at zero.
+
+- [s42] Per-pass (mem:QI census of the function slice of the cc1 dumps: .rtl and .jump carry 4 flag-byte loads (the target's count), .cse leaves 3, and .loop/.cse2/.combine/.greg never change it -- cse is the pass that forwards block 1's load out of a four-load source.
+
+- [s42] p1/p2 (duplicate read into block 1's arms) produce objects BYTE-IDENTICAL to b0.o -- a score of 10 does not imply a distinct body, so any future write-up must cmp against b0.o first.
+
+- [s42] .lreg for the base body: pseudo 72 = p (6 refs / 33 insns), 73 = i (11 / 7), 74 = block-0 value (6 / 9), 75 = q (10 / 28); the only local-alloc quantities (78, 83, 87, 89, 91, 93) are ALL seated in hard reg 2 ($v0), so q's conflict row is clean in this body and the seat is lost on sort order alone.
+
+- [s42] New measurements: p1 10/49, p2 10/49, p3 16/49, p4 20/50, p5 12/50, p6 11/50, p7 24/53, p8 13/47.
+
+- [s42] src/code6cac_b.c was restored to HEAD (INCLUDE_ASM) before this outcome was written; no build-pipeline file was modified.

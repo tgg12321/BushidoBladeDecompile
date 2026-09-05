@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 41,
+ "session_count": 42,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -249,23 +249,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Synthesis: the $v1 seat is a two-clause conjunction (no hard-reg-3 conflict AND q ahead of the block-0 value in allocno_compare); seven bodies measure both clauses and show every spelling that wins on"
+  },
+  {
+   "session": 42,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Objdump of the base body corrects the ledger: it ALREADY emits all three lui+addiu materialisations from one pointer object, and the whole 10-point residual is a single $v1/$a0 seat swap in blocks 0/1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Exit (iii): a block-0 spelling in which ONE multi-block pseudo carries both the loaded byte and the masked byte (so q's conflict row stays free of hard reg 3) but whose live_length reaches 12 or more, demoting it below q's 10714.",
-   "mechanism": "allocno_compare (tools/gcc-2.7.2/global.c:635) divides by live_length, and live lengths are counted after the first scheduling pass; stretching the range from the middle (s39 x1/x3) and from the front (s43 e1) both compact back, but stretching it from the END -- giving the masked value a real ordinary consumer after block 1's store -- has never been measured.",
-   "next_probe": "Enumerate the consumers of the block-0 masked value that the target's own 49 instructions still permit (block 1's stored value, the copy-loop bound or its source index) and spell each as ordinary C that keeps m one multi-block pseudo; score each and read nrefs/livelen/pri from the BB2_ALLOC_DEBUG table rather than from the score alone."
+   "hypothesis": "The seat is decided by hard-register PREFERENCE, not by allocno rank -- an instrument no session has read. In the target the blocks-0/1 VALUE shares $a0 with the blocks-2/3 ADDRESS materialisations, which is the sharing pattern a copy-derived preference produces; in the base body the value shares $v1 with the loop counter.",
+   "mechanism": "global.c orders allocnos with allocno_compare (tools/gcc-2.7.2/global.c:635) and THEN picks a hard register for each, consulting the preference/`regs_may_share` records that local-alloc.c builds from copy insns. Every session from s32 on has attacked the ordering; none has read the preference records.",
+   "next_probe": "Dump .lreg and .greg for b0 and for the score-0 four-handle body (rejected/three-pointer-objects-judge-FAIL-score0.c) side by side and diff the PREFERENCE records rather than the allocate lists; then look for an ordinary-C spelling that gives the block-0 value a copy relationship with a quantity already seated in $a0."
   },
   {
-   "hypothesis": "Exit (i): three more SURVIVING references to q at zero instruction cost.",
-   "mechanism": "floor_log2(13)*13/28 = 13928 > 13333, so q at 13 references wins the seat outright with its live range unchanged; but same-constant re-sets are deleted before flow counts them (s41 n2, s43 d1) and every real extra use measured so far changes the emitted address form.",
-   "next_probe": "Identify a use of the flag-byte pointer that the TARGET's stream already contains but our body currently spells through the symbol or through a value, and re-spell it through q; measure the reference count in the ALLOCDBG table before judging by score."
+   "hypothesis": "Any body whose .greg dispositions for pseudo 74 (block-0 value) and pseudo 75 (q) are unchanged is the base body in different clothing, whatever its source looks like.",
+   "mechanism": "p1/p2 measured 10 at 49 and their objects are byte-identical to b0.o, because cse collapsed the source difference before allocation; scores alone cannot distinguish a new body from the base one.",
+   "next_probe": "Make `cmp <new>.o b0.o` and a .greg disposition diff the FIRST check on any future variant, before scoring it up as a distinct measurement."
   },
   {
-   "hypothesis": "Housekeeping: the digest lag and the discarded-disposition loop are costing whole sessions.",
-   "mechanism": "The driver generates the brief from the last COMMITTED ledger, and this function's ledger commits lag; separately, a foreclosure record filed from a non-escalation modality is discarded by the validator.",
-   "next_probe": "Every session: run `grep -n '^## \\[s' memory/grind/func_80034F88/hypotheses.md | tail` before spending a probe on a brief-listed next probe; and file no foreclosure record unless the mandated modality is escalation."
+   "hypothesis": "The LADDER EXHAUSTED (non-endgame residual, floor 10) record drafted by s42 still needs re-filing, and s44's objdump correction means it must be re-worded: the residual is a seat swap, not an emission requirement, so the s41/s42 'three pointer objects are required' argument cannot appear in it.",
+   "mechanism": "Owner directive 2026-09-02 requires 20 flat sessions and >= 6 modalities before a disposition, and a foreclosure disposition requires `escalation` modality (s42's owner-gated outcome was discarded for filing one from `structural`; s44 is `synthesis`).",
+   "next_probe": "When the driver assigns `escalation`, file the record citing the s44 objdump correction, the cse enumeration (s27/s28), the reload's measured zero cost (s44), and the allocno-order inequality with its three exits (s43), and drop the emission-requirement framing entirely."
   }
  ],
  "judge_constraints": [
@@ -287,30 +293,6 @@
  "last_unpark_at": "2026-09-03T01:44:08.697914+00:00",
  "object_model_audited": 25,
  "kills": [
-  {
-   "session": 25,
-   "statement": "The fresh address pseudo that s20 created before block 1 with a dead round-trip (`q = q + 3; q = q - 3;`) can be moved to the block-1/block-2 boundary, where it would give blocks 2-3 a different hard ",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 single-object chassis on HEAD (src/code6cac_b.c:3420 INCLUDE_ASM replaced by the body, rules_dropped 0); diagnostic dead-pointer-arithmetic construct present in all four forms, ne",
-   "predicate_cite": "",
-   "result": "Round-trip ADDED after block 1's store with blocks 2/3 keeping their own `q = &D_80106A73;`: score 10 at 49 insns, and t"
-  },
-  {
-   "session": 25,
-   "statement": "Two different address expressions for the same byte -- symbol_ref(D_80106A73)+0 in blocks 0-1 and symbol_ref(D_80106A70)+3 in blocks 2-3 -- give the one C object two allocnos, because cse cannot unify",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 single-object chassis on HEAD, no FAKE construct present",
-   "predicate_cite": "",
-   "result": "Score 12 at 49 insns -- two points WORSE than the base chassis, the two points being the differing %hi/%lo symbol in the"
-  },
-  {
-   "session": 25,
-   "statement": "Declaring 0x80106A70..73 as ONE aggregate (`extern u8 D_80106A70[4];`) makes the flag byte and the copy-loop destination members of one object, which gives the function a second naturally-live base an",
-   "kill_scope": "instance",
-   "measured_on": "candidate.c score-10 chassis on HEAD with include/code6cac.h:472-474 patched to `extern u8 D_80106A70[4];`, no FAKE construct present; header and src restored to HEAD before session end",
-   "predicate_cite": "",
-   "result": "SPLIT: hygiene CONFIRMED, lever KILLED. w2 = score 10 at 49 insns, exactly the base chassis -- so removing candidate.c's"
-  },
   {
    "session": 25,
    "statement": "Sibling func_80034708 (same TU, same global D_80106A73) holds a spelling of the shared flag-byte access that transplants onto this chassis and drops the floor.",
@@ -745,6 +727,46 @@
    "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49), single declared `u8 *q`, no FAKE constructs present",
    "predicate_cite": "",
    "result": "e1 = 13 at 49, and q comes out with nrefs=10 livelen=28 pri=10714 -- digit for digit the base body's -- while p's live l"
+  },
+  {
+   "session": 42,
+   "statement": "Duplicating block 1's flag-byte read into one of its arms produces an object byte-identical to the base body, because cse forwards the arm read back to the block-0 value.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 re-measured 10 at 49, rules_dropped 0); single declared `u8 *q`; no FAKE constructs present, fake_ablate has nothing to ablate on this chassis",
+   "predicate_cite": "",
+   "result": "p1 = 10 at 49, p2 = 10 at 49, and BOTH objects are byte-identical to b0.o. This closes s43's Frontier A for the only ord"
+  },
+  {
+   "session": 42,
+   "statement": "Deleting block 0's uses of q so that the pointer's live range starts later does not move q's allocno: the address constant is still materialised at the top of the function, q keeps $a0, and the symbol",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "p5 = 12 at 50, p6 = 11 at 50. In both, lui a0 / addiu a0 is emitted at 4f48-4f4c immediately after the call -- ahead of "
+  },
+  {
+   "session": 42,
+   "statement": "Handing one flag block back to the bare symbol to shorten q's live range is monotone in the number of blocks handed back and has no minimum below the base body's 10.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "p3 = 16 at 49, p4 = 20 at 50, both-blocks-back = 28. One block back costs 6 points, the other 10, both cost 18. Banked a"
+  },
+  {
+   "session": 42,
+   "statement": "Making the loop counter's allocno live across the flag blocks, so that it holds $v1 and denies that seat to the block-0 value, costs four instructions and moves the score away from the target.",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "p7 = 24 at 53 insns: the counter now also conflicts with q and with p, and the allocation degrades by four extra instruc"
+  },
+  {
+   "session": 42,
+   "statement": "Cutting the block-0 value's reference count by having block 1 name it once also shortens its live range, so its allocno_compare key rises instead of falling, and the body loses the target's two-arm va",
+   "kill_scope": "instance",
+   "measured_on": "candidate.c round-trip chassis on HEAD 2026-09-05 (b0 = 10 at 49); single declared `u8 *q`; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "p8 = 13 at 47 insns -- two instructions short of the target, because the else arm's `addu v0,<val>,zero` disappears when"
   }
  ]
 }
