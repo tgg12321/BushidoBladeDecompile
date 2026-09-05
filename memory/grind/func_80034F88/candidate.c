@@ -1,65 +1,58 @@
-/* s64 (synthesis, 2026-09-05) -- FLOOR 9 -> 2.  49/49 instructions; the ENTIRE
- * residual is TWO instructions inside the copy loop, and it is one register
- * field in each of them:
+/* s66 (solver, 2026-09-05) -- FLOOR 2 -> 0.  49/49 instructions, byte-identical
+ * to asm/funcs/func_80034F88.s.
  *
- *      ours                     target
- *      lbu  $a0, 0x17($v0)      lbu  $v0, 0x17($v0)
- *      sb   $a0, %lo(D_..)($at) sb   $v0, %lo(D_..)($at)
+ * WHAT CLOSED IT.  s65 fitted GCC 2.7.2's global.c allocation priority exactly
+ * (pri = floor_log2(nrefs) * nrefs * 10000 / live_length) and reduced the whole
+ * residual to two arithmetic branches.  Branch (A) said: block 0's address
+ * object reaches the target seating iff it carries at least SIXTEEN references,
+ * because it must be allocated before block 0's value (pri 17500) and its
+ * five references at live length 28 only price at 3571.  s65 measured the
+ * obvious byte-neutral reference lifts (duplicated store into arms, split
+ * reads) dead.  This session found the one that is free: the address object
+ * and the copy loop's counter are ONE variable, so the loop's eleven counter
+ * references land on the address allocno.  Measured model
+ * (tmp/grind/func_80034F88/s66/z2.model.json):
  *
- * EVERY other instruction in the function -- including all three la pairs, the
- * block-0 reload in the load-delay slot of the flag lw, and all seven register
- * seats that 63 sessions could not reach ($v1 for block 0's address, $a0 for
- * block 0's value, $a1 for p) -- is byte-identical to the target.
+ *   ord0 p74 c (flag/result)      19 refs / len 21 / pri 36190 -> $v0  TARGET
+ *   ord1 p76 q (address + index)  16 refs / len 21 / pri 30476 -> $v1  TARGET
+ *   ord2 p75 u (block-0 value)     7 refs / len  8 / pri 17500 -> $a0  TARGET
+ *   ord3 p73 v (blocks-1/2 value)  6 refs / len 10 / pri 12000 -> $v1  TARGET
+ *   ord4 p80 r (blocks-1/2 addr)   6 refs / len 19 / pri  6315 -> $a0  TARGET
+ *   ord5 p72 p                     6 refs / len 34 / pri  3529 -> $a1  TARGET
  *
- * INTEGRATION HANDOFF (unchanged from s62/s63): this body needs the split
+ * The block-0 value no longer has to be blocked out of $v1 by a conflict (the
+ * s64 loop-index-conflict route, which capped at score 2 because one allocno
+ * gets one hard register): $v1 is simply already taken by the higher-priority
+ * address/counter allocno when it is allocated, so it scans on to $a0 -- which
+ * is what the target does -- and the copy loop's byte temp is a plain
+ * block-local that local-alloc seats at $v0, also as the target has it.
+ * Sixteen references is exactly the threshold s65 computed; the merge supplies
+ * 5 + 11 = 16 with no extra instruction anywhere in the function.
+ *
+ * INTEGRATION HANDOFF (unchanged from s62-s65): this body needs the split
  * declaration in include/code6cac.h -- `extern u8 D_80106A70[3];` absorbing
  * D_80106A71/D_80106A72 (their two consumers in src/code6cac.c converted to
- * element form) with `extern u8 D_80106A73;` left as its own scalar.  Measured
- * byte-neutral project-wide (s62, s63).  One-command installer:
+ * element form) with `extern u8 D_80106A73;` left as its own scalar in
+ * src/code6cac_b.c.  Measured byte-neutral project-wide (s62, s63, and the
+ * full-build oracle check this session).  One-command installer:
  * `python3 tmp/grind/func_80034F88/s63/apply.py <body.c>`.
- *
- * HOW THE SEAT WAS FINALLY REACHED (the s64 result).  tools/ra_solver/
- * inverse.py run on the chassis-(a) model (mask+reload in ONE local) with the
- * goal {block-0 address: $v1, block-0 value: $a0, p: $a1} returns
- * "minimal solution size: 1 atom" and its cheapest vector is
- *   [conflict_add] pseudo 73 (the loop index): conflict +77 (block 0's value)
- * with the named C lever "(variable identity) reuse one variable across both
- * regions".  Spelled: the block-0 value local `u` is hoisted to function scope
- * and REUSED as the copy loop's byte temp.  Measured allocation afterwards
- * (tmp/grind/func_80034F88/s64/a1.model.json):
- *   ord0 p73 index   pri 47142 -> $v1
- *   ord1 p76 value+loop temp (11 refs / livelen 10) pri 33000 -> $a0   (TARGET)
- *   ord2 p75 c       pri 23684 -> $v0
- *   ord3 p74 v       pri 12000 -> $v1   (TARGET)
- *   ord4 p81 r       pri  6315 -> $a0   (TARGET)
- *   ord5 p77 q       pri  3571 -> $v1   (TARGET -- block 0's address, the seat
- *                                        the whole grind has been chasing)
- *   ord6 p72 p       pri  3529 -> $a1   (TARGET)
- *
- * WHY THIS SPELLING IS CAPPED AT 2, AND WHAT THE NEXT SESSION MUST CHANGE.
- * The conflict is bought by making block 0's value live across the loop, and
- * the only byte-free way to be live there is to BE the loop's byte temp.  But
- * GCC 2.7.2 gives one hard register per allocno (global.c:1275) and the target
- * needs that value in $a0 in block 0 and in $v0 in the loop.  So the
- * loop-index conflict route cannot go below 2 by any spelling.  The next
- * session needs a DIFFERENT source for the same conflict: an allocno seated at
- * $v1 that block 0's value can overlap without borrowing its register.  The
- * only other $v1 allocno in the function is p74 (blocks 1/2's value); s64
- * measured that reusing `u` in block 2 (rejected/s64-u-reused-block2-score10.c)
- * does NOT create that conflict, because `u` is dead throughout block 1.
  */
 void func_80034F88(void) {
     s32 *p;
-    s32 i;
     s32 v;
     s32 c;
     s32 u;
 
     p = func_80077D00();
     {
-        /* FAKE: block-0's own address object, mechanism: global.c:1275 assigns
-         * exactly one hard register per allocno and GCC 2.7.2 does no
-         * live-range splitting. lever-exhaustion: hypotheses.md s53-s60. */
+        /* FAKE: block-0's own address object, also carrying the copy loop's
+         * counter below, mechanism: global.c allocation priority
+         * floor_log2(nrefs)*nrefs*10000/live_length -- the loop's eleven
+         * counter references lift this allocno from 5 refs / pri 3571 to
+         * 16 refs / pri 30476, so it is seated in $v1 before block 0's value
+         * allocno (pri 17500) is considered and that value scans on to $a0.
+         * lever-exhaustion: hypotheses.md s53-s65 (the reference-lift branch
+         * is s65's branch (A); its other spellings are banked dead). */
         u8 *q = &D_80106A73;
 
         u = *q;
@@ -76,34 +69,36 @@ void func_80034F88(void) {
             c = u;
         }
         *q = c;
-    }
-    {
-        /* FAKE: the address object for flag blocks 1 and 2, mechanism: as
-         * above. lever-exhaustion: as above. */
-        u8 *r = &D_80106A73;
+        {
+            /* FAKE: the address object for flag blocks 1 and 2, mechanism:
+             * global.c:1275 assigns exactly one hard register per allocno and
+             * GCC 2.7.2 does no live-range splitting, so blocks 1/2 cannot be
+             * reached from the block-0 object. lever-exhaustion: as above. */
+            u8 *r = &D_80106A73;
 
-        v = *r;
-        c = p[8] & 2;
-        if (c) {
-            c = v | 2;
-        } else {
-            c = v;
+            v = *r;
+            c = p[8] & 2;
+            if (c) {
+                c = v | 2;
+            } else {
+                c = v;
+            }
+            *r = c;
+
+            r = &D_80106A73;
+            v = *r;
+            c = p[8] & 4;
+            if (c) {
+                c = v | 4;
+            } else {
+                c = v;
+            }
+            *r = c;
         }
-        *r = c;
 
-        r = &D_80106A73;
-        v = *r;
-        c = p[8] & 4;
-        if (c) {
-            c = v | 4;
-        } else {
-            c = v;
+        for (q = 0; (s32)q < 3; q++) {
+            c = *((u8 *)p + (s32)q + 0x17);
+            D_80106A70[(s32)q] = c;
         }
-        *r = c;
-    }
-
-    for (i = 0; i < 3; i++) {
-        u = *((u8 *)p + i + 0x17);
-        D_80106A70[i] = u;
     }
 }

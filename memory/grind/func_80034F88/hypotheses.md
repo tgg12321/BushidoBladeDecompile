@@ -6842,3 +6842,25 @@ spellings 52 instructions / score 31.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator
+
+## s66 hypotheses (solver)
+
+## [s66] KILL RE-AUDIT + chassis check: the s65/s64 candidate re-measures at score 2 / 49 build instructions on HEAD 2026-09-05 with the split declaration applied.
+- mechanism: the dispatch brief again reported the HEAD honest floor as "measurement unavailable"; every s64/s65 verdict is keyed to the score-2 split-declaration chassis, so it had to be re-measured before anything was spent.
+- probe: python3 tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c, then sandbox func_80034F88 --disable all.
+- result: score 2, target_insns 49, build_insns 49. Chassis unchanged.
+- verdict: CONFIRMED
+
+## [s66] THE MATCH. Making block 0's address object and the copy loop's counter ONE C variable supplies exactly the sixteen references s65's branch (A) computed, seats that allocno in $v1 before block 0's value is considered, and takes the function to score 0.
+- mechanism: s65 fitted global.c's allocation priority as floor_log2(nrefs)*nrefs*10000/live_length and showed the address object reaches the target seating iff it is allocated before block 0's value (pri 17500), i.e. iff floor_log2(n)*n > 49, i.e. n >= 16 references. The loop counter contributes eleven references (flow.c weights them by loop depth) on top of the address object's five, and it contributes them AFTER the address object's last use, so the merged allocno's live length rises only from 14 to 21 rather than spanning dead space. The merged allocno prices at 16 refs / livelen 21 / pri 30476 and is allocated second, taking $v1. Block 0's value allocno (7 refs, pri 17500) is then allocated third and finds $v0 held by the flag/result allocno and $v1 held by the merged allocno, so find_reg's ascending scan gives it $a0 -- the target register -- with no conflict lever at all. The copy loop's byte temp is left as a plain block-local that local-alloc seats at $v0, which is also what the target does. This retires s64's loop-index-conflict route, whose cap at score 2 came from block 0's value having to BE the loop's byte temp (one allocno, one hard register, global.c:1275).
+- probe: Four spellings of the merge on the split-declaration chassis, each sandboxed, with tools/ra_solver/extract.py run on the winner: z1 (`for (q = (u8 *)0; (s32)q < 3; q = (u8 *)((s32)q + 1))`), z2 (`for (q = 0; (s32)q < 3; q++)`), z3 (bound spelled as `q < (u8 *)3`), z4 (source read spelled as `((u8 *)p)[(s32)q + 0x17]`).
+- result: z1 = score 0, z2 = score 0 (49/49 both), z3 = score 1, z4 = score 2. z2 is the banked candidate (fewest casts). Model tmp/grind/func_80034F88/s66/z2.model.json: ord0 p74 c 19 refs/len 21/pri 36190 -> $v0; ord1 p76 q 16 refs/len 21/pri 30476 -> $v1; ord2 p75 u 7/8/17500 -> $a0; ord3 p73 v 6/10/12000 -> $v1; ord4 p80 r 6/19/6315 -> $a0; ord5 p72 p 6/34/3529 -> $a1. Seven of seven target seats. Full clean-driver `build` = SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, so the split declaration is byte-neutral project-wide by the strongest available proof.
+- verdict: CONFIRMED
+
+## [s66] Spelling the merged loop counter's BOUND as a pointer comparison, or the source read as a subscript of the record pointer, both cost the match even though the merge itself survives.
+- mechanism: `q < (u8 *)3` makes GCC compare with sltu rather than slti (the target has `slti $v0, $v1, 0x3`), and `((u8 *)p)[(s32)q + 0x17]` folds the +0x17 into the index expression before the addu, changing which pseudo the loop's address temp is.
+- probe: z3_ptr_cmp_ptr.c and z4_ptrdiff_index.c on the split-declaration chassis, sandboxed.
+- result: z3 = 49 insns / score 1; z4 = 49 insns / score 2. Banked as rejected/s66-q-index-bound-cast-to-pointer-score1.c and rejected/s66-q-index-source-subscript-form-score2.c. The signed bound test and the `*((u8 *)p + index + 0x17)` source form are both load-bearing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis (extern u8 D_80106A70[3] + extern u8 D_80106A73) on HEAD 2026-09-05, two granted pointer FAKEs + the cse2 dead-re-set invalidator, with the address-object/loop-counter merge in place

@@ -9068,3 +9068,45 @@ false, and finding which one is the highest-value probe left:
 - [s65] Merged-mask spelling re-creates a block-local $v1 quantity giving hard_conflicts[address] = [2, 3, 29] -- s62's D-family kill re-measured on the current chassis, now with the extracted model as evidence.
 
 - [s65] OPEN CONTRADICTION for the next session: our refs and live lengths for the block-0 address (5 refs) and the block-0 value (7 refs) are exactly what the TARGET's own instruction stream implies -- count them at 80034F98..80034FD0 and 80034FA0..80034FC4 -- yet the target's seats differ from ours. One of three modelling premises must be false, and identifying which is now the highest-value probe.
+
+## s66 (solver) — MATCHED, score 0, full build SHA1 == oracle
+
+The 65-session residual closed on s65's own arithmetic. s65 established that
+global.c prices an allocno at `floor_log2(nrefs) * nrefs * 10000 / live_length`
+and that block 0's address object reaches the target's `$v1` seat only if it is
+allocated before block 0's value (pri 17500) — i.e. only with **at least 16
+references**. Every reference lift s65 tried cost instructions. The free one is
+that the address object and the copy loop's counter are the **same C variable**:
+the counter's eleven loop-depth-weighted references land on the address allocno,
+and they land *after* the address's last use, so live length rises only 14 → 21.
+Measured: 16 refs / len 21 / **pri 30476**, allocated at ord 1 into `$v1`.
+
+With `$v1` already taken when block 0's value is allocated (and `$v0` held by
+the flag/result allocno), `find_reg`'s ascending scan hands the value `$a0` —
+the target register — with no conflict lever at all. That is the structural
+difference from s64's route, which bought the same seat with a conflict against
+the loop index and was therefore capped at score 2: there, block 0's value had
+to *be* the loop's byte temp, and one allocno gets one hard register
+(global.c:1275). Here the byte temp is a plain block-local that local-alloc
+seats at `$v0`, exactly as the target has it.
+
+All seven allocnos land on their target registers
+(tmp/grind/func_80034F88/s66/z2.model.json):
+
+    ord0 p74 c (flag/result)      19 refs / len 21 / pri 36190 -> $v0
+    ord1 p76 q (address + index)  16 refs / len 21 / pri 30476 -> $v1
+    ord2 p75 u (block-0 value)     7 refs / len  8 / pri 17500 -> $a0
+    ord3 p73 v (blocks-1/2 value)  6 refs / len 10 / pri 12000 -> $v1
+    ord4 p80 r (blocks-1/2 addr)   6 refs / len 19 / pri  6315 -> $a0
+    ord5 p72 p (record pointer)    6 refs / len 34 / pri  3529 -> $a1
+
+`sandbox func_80034F88 --disable all` = **score 0, 49/49**. A full clean-driver
+`build` produced SHA1 `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle,
+which also settles the s62/s63 integration question: the split declaration
+(`extern u8 D_80106A70[3]` + `extern u8 D_80106A73`, with the two consumers in
+src/code6cac.c converted to element form) is byte-neutral project-wide.
+
+Spelling is load-bearing in two places: the bound must be the signed `(s32)q < 3`
+(a `q < (u8 *)3` bound emits `sltu` where the target has `slti`, score 1), and
+the source read must be `*((u8 *)p + (s32)q + 0x17)` rather than
+`((u8 *)p)[(s32)q + 0x17]` (score 2).

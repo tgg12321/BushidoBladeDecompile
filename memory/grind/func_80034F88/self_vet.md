@@ -1,164 +1,132 @@
-# SELF-VET — func_80034F88
+# SELF-VET — func_80034F88 (session 66, solver)
 
-Diff scope: `src/code6cac_b.c` lines 3899-3956 (the whole body of
-func_80034F88) — nothing else in the tree is touched.  Honest score measured
-this session: `sandbox func_80034F88 --disable all` → **score 0**, 49 build
-insns vs 49 target insns, `rules_dropped: 30`, `cheat_asm_stripped: 317`.
+Measured this session: `sandbox func_80034F88 --disable all` = **score 0**,
+target_insns 49, build_insns 49; and a full clean-driver `build` =
+**SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle**.
 
-The new body, in full:
-
-```c
-void func_80034F88(void) {
-    s32 *p;
-    s32 i;
-
-    p = func_80077D00();
-    {
-        u8 *q = &D_80106A73;
-
-        *q &= 0xF8;
-    }
-
-    {
-        u8 *q = &D_80106A73;
-        s32 v;
-        s32 c;
-
-        c = p[8] & 1;
-        v = *q;
-        if (c) {
-            c = v | 1;
-        } else {
-            c = v;
-        }
-        *q = c;
-    }
-    /* ... the same block again for bit 2 and for bit 4 ... */
-
-    for (i = 0; i < 3; i++) {
-        *(&D_80106A70 + i) = *((u8 *)p + i + 0x17);
-    }
-}
-```
-
-The previous body in `src/` carried THREE `asm volatile("" ::: "memory")`
-scheduling barriers (a forbidden family).  This diff DELETES all three; it adds
-no inline asm, no register pin, no volatile qualifier, no cast, no dead store,
-no unused declaration and no re-assignment of a variable to a value it already
-holds.  It also removes the construct s10 and s11 both flagged as unvetted (the
-second `ptr2 = &D_80106A73;` redundant re-assignment) — that construct is NOT
-present in this form and the 9- and 13-point bodies that carried it are
-superseded.
-
-CONSTRUCTS: block-scoped `u8 *q = &D_80106A73;` local pointer in each of the
-four flag blocks (read and written through); block-scoped `s32 v` holding the
-loaded flag byte; block-scoped `s32 c` holding first the tested flag bit and
-then the byte value to be stored (a REUSE of one local for two values);
-two-arm `if (c) { c = v | K; } else { c = v; }` select; `*q &= 0xF8;` mask;
-the pre-existing copy loop `*(&D_80106A70 + i) = *((u8 *)p + i + 0x17);`
-(unchanged from the s3-era body, not introduced here).
+CONSTRUCTS: (1) `u8 *q = &D_80106A73;` local pointer alias; (2) `u8 *r = &D_80106A73;` local pointer alias, reassigned once; (3) `u = 0;` dead store to a local (cse2 value invalidator); (4) NEW THIS SESSION — the existing local `q` reused as the copy loop's counter (`for (q = 0; (s32)q < 3; q++)`); (5) declaration change `extern u8 D_80106A70[3];` in include/code6cac.h with its two consumers in src/code6cac.c converted to element form.
 
 ## T1 semantic purpose
-- `q`: yes.  It is the address the block's `lbu` and `sb` both use; delete it
-  and the block cannot read or write the byte.  Observable.
-- `v`: yes.  It holds the loaded byte and is consumed in BOTH arms of the
-  if/else (`v | K` and `v`).  Delete it and the value being stored is wrong.
-- `c`: yes, in both of its roles.  Its first value (`p[8] & K`) decides the
-  branch; its second value is the byte that is stored.  Both are read.  There
-  is no assignment to `c` whose value is never used, and no path on which `c`
-  is written and then not stored.
-- The `if/else` with an explicit else arm: yes — the else arm supplies the
-  stored value on the not-set path.  Removing it changes what is stored.
-- `*q &= 0xF8;`: yes — it clears the three flag bits before they are recomputed.
-- Block scoping: it has no effect on the function's OUTPUT, but it is not a
-  construct in the coercion sense — it declares no object that is unused and
-  emits nothing.  It is the ordinary C spelling of four self-contained,
-  copy-pasted flag blocks.  Every object it declares is read and written.
+(1)(2) Both pointers are the address through which every read and write of the
+flag byte in their block is performed; delete them and the function does not
+compile. They have a real semantic purpose, but their SPLIT into two objects is
+codegen-motivated, which is why both carry FAKE annotations (the Judge granted
+exactly this two-object shape on 2026-09-05).
+(3) `u = 0;` is genuinely dead — its stored value is never read; it exists only
+so cse2 does not forward the preceding `sb` into the following `lbu`. It is
+annotated FAKE and claimed under the dead-store family, not passed off as logic.
+(4) The reuse is not dead: q's second life IS the loop counter, read three times
+per iteration (source offset, destination index, bound test) and incremented.
+Removing the reuse means introducing a second variable, i.e. the construct is a
+choice of WHICH variable holds a real, live, used value — the value itself is
+load-bearing.
+(5) The array declaration is the DATA MODEL's own instruction for this symbol
+(the target indexes D_80106A70 with a computed register). It is measured
+byte-neutral project-wide and the full-build SHA1 proves it.
 
 ## T2 human-programmer
-Yes for every construct.  The function's specification is "clear the three
-flag bits of D_80106A73, then set each of them from the corresponding bit of
-p[8], then copy three bytes from p+0x17 to D_80106A70".  Three near-identical
-copy-pasted blocks, each with its own local pointer to the byte it is editing
-and its own scratch locals, is the ordinary way that gets written in this
-codebase's era and style; `src/code6cac_b.c` already contains sibling
-functions written as repeated per-flag blocks with local pointers into the
-same region (e.g. func_8003504C immediately below, which declares `u8 *src;
-u8 *ptr; s8 *base;` and walks the same bytes).  A reader would not ask "why is
-this here?" about any line: every declaration is used, every statement's value
-is stored or branched on.
-The one line a reader might question is the double duty of `c` — it is a
-condition, then it is a byte value.  That is the reuse declared under T5
-below; it is a legitimate scratch-variable idiom (the value is still live and
-read in both roles), not a dead construct, but I am claiming it as a
-sanctioned family rather than asserting it is beyond question.
+(1)(2)(4) are the ones a reader would question. (1)/(2): a human writes one
+pointer, not two — this is why the two-object form is FAKE-annotated and was put
+to the Judge, who PASSed it on 2026-09-05 after verifying in the target asm that
+80034FC8 loads a SECOND copy of &D_80106A73 into $a0 while $v1 still holds the
+first and is read by the store at 80034FD0. The target's own instruction stream
+carries two live address registers; the two C objects are the transcription of
+that, not an invention.
+(4) Reusing a pointer local as an integer counter is NOT what a human would write
+from the specification, and I do not claim otherwise. It is claimed as a
+match-hack under the variable-reuse family, annotated FAKE, with the mechanism
+and the exhaustion ledger named at the declaration. It is behaviourally exact:
+the counter values 0, 1, 2 are the only values q holds in its second life, and q
+is never dereferenced there.
+(3) A human would not write `u = 0;` there either; annotated FAKE, dead-store
+family.
+(5) A human absolutely writes this: the symbol is a 3-element table copied by a
+loop, and declaring it as an array is more honest than three splat scalars.
 
 ## T3 GCC-internals justification
-The body's justification is program logic; it does not need a GCC-internals
-story to read correctly, and nothing in it is present only for an internals
-reason.  For completeness, the MEASURED explanation for why this spelling
-reaches the target where the s1-s11 forms did not (recorded in evidence.md, and
-offered as evidence rather than as a justification) is: giving each block its
-own byte local stops one pseudo's live range from spanning block 2's base, so
-the allocator can reuse block 1's byte register for block 2's base exactly as
-the target does.  That is a description of WHY the natural spelling turns out
-to be the right one — it is not a construct that exists for the sake of the
-allocator.  No line here was added to defeat a pass; the diff is strictly
-SMALLER in construct count than the bodies it replaces (three scheduling
-barriers deleted, one redundant re-assignment deleted).
+Yes, and stated openly rather than hidden. (4) works because global.c's
+allocation priority is floor_log2(nrefs)*nrefs*10000/live_length, and merging the
+address object with the loop counter takes that allocno from 5 refs / pri 3571 to
+16 refs / pri 30476 (measured, tmp/grind/func_80034F88/s66/z2.model.json), so it
+is seated in $v1 before block 0's value allocno (pri 17500) is considered, and
+the value then scans on to $a0 as the target has it. (3) works because of cse2
+(cse.c) store-to-load forwarding. This is precisely why both carry
+`/* FAKE: ... */` annotations naming the pass — the policy's required response to
+a GCC-internals mechanism is to annotate it and claim a sanctioned family, which
+is what is done here, not to present the construct as program logic.
 
 ## T4 permuter/search provenance
-No permuter.  The form came from reading the side-by-side instruction stream
-(tmp/grind/func_80034F88/s12/sbs_d3.txt) against the target, identifying that
-every INSTRUCTION was already in the target's position and all residual points
-were register naming in blocks 2/3, and deriving the live-range explanation
-from that.  The structural sweeps that followed (waves F/G/H/I/J, 57 forms)
-were CONFIRMATIONS of that derivation and then a search for the most natural
-spelling that still scores 0 — i.e. search was used to make the body simpler,
-not to make it match.  The submitted form is the simplest of the seven
-zero-scoring spellings found, not one that survives only because a detector
-misses it.
+No permuter or auto-search was run this session. The construct came from the s65
+ledger's own arithmetic (branch (A): the address object needs at least 16
+references) plus the mandated solver reading of the target asm; it was spelled by
+hand and then confirmed by extracting the real RA model with
+tools/ra_solver/extract.py. It does not depend on any detector missing a
+spelling.
 
 ## T5 family check
-Two constructs touch the frozen SOTN-accepted list; both are claimed
-explicitly below rather than argued around.  Nothing in the body matches any
-entry of the forbidden-family catalog: no register-asm pin, no hardcoded-`$N`
-asm, no scheduling barrier (three were REMOVED), no volatile of any spelling,
-no alias rename, no unused local or array, no dead store or self-assign, no
-dead conditional store, no empty-body `if`, no `if (1)`, no dead goto or label
-pad, no DImode chain, no goto-end accumulator, no opaque `one` variable, no
-`do { } while (0)`, no redundant width cast, no `.ld` change.
+(1)(2) pointer-alias-fake-exception, and additionally covered by a dated Judge
+PASS ruling on the two-object shape (2026-09-05, docs/grind/decisions.md).
+(3) dead-store-fake-exception (a dead store to a LOCAL).
+(4) variable reuse for codegen control — the first entry on the frozen
+SOTN-accepted list, whose text names RA explicitly. It is a borrow of an EXISTING
+local (bound 2 of staged-value-reused-variable): q exists for block 0's flag-byte
+accesses and is not invented in order to be borrowed.
+(5) ordinary C — an array declared as an array.
+No construct in the diff matches a forbidden-family entry: there is no register
+pin, no `__asm__`, no scheduling barrier, no volatile, no unused local or array,
+no dead parameter assignment, no alias rename, no `if (1)` wrapper, no goto pad,
+no redundant width cast, and no third C object aliasing &D_80106A73.
+STANDING BAN CHECK: the banned construct recorded for this function is "the same
+four `u8 *q = &D_80106A73;` handles, treated as ordinary program logic rather
+than a register-allocation lever". This body has TWO such objects, not four, and
+both are annotated as register-allocation levers — the shape the Judge granted on
+2026-09-05.
 
 ## T6 naming-announces-intent
-No name in the diff announces coercion intent.  The identifiers are `p`, `i`,
-`q`, `v`, `c` — a pointer, a loop index, an address handle, a value and a
-condition/result scratch.  There is no `pad`, `dummy`, `unused`, `spill`,
-`fake`, `tmp`, `slack` or `_buf`.  Every one of them is read after it is
-written.
+Names are `p` (the record pointer returned by func_80077D00), `q` and `r` (the
+two address objects), and `u`, `v`, `c` (values). None is `pad`, `dummy`,
+`unused`, `spill`, `slack` or similar, and every one of them is read.
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: Variable reuse for codegen control
-  SCOPE: "reusing one C variable for two unrelated values to influence loop-invariant detection or RA"
-  PRECEDENT: `.claude/rules/no-new-park-categories.md:170`
-  (This covers `c` carrying the tested flag bit and then the byte value.  Both
-  values are live and consumed; this is the "reuse", not a dead store.
-  Measured load-bearing: the same body with a separate result local scores 30
-  at 44 insns — tmp/grind/func_80034F88/s12/variants/j1.c.)
+  FAMILY: variable reuse for codegen control
+  SCOPE: "reusing one C variable for two unrelated values to influence loop-invariant detection or RA."
+  PRECEDENT: .claude/rules/no-new-park-categories.md:185
 
-  FAMILY: C-level pointer alias to a global
-  SCOPE: "C-level pointer aliases to globals"
-  PRECEDENT: `.claude/rules/no-new-park-categories.md:233`
-  (This covers the four `u8 *q = &D_80106A73;` handles.  Note the carve-out as
-  written is for UNUSED aliases and requires a FAKE annotation for those; the
-  handles here are each dereferenced for a real load and a real store, so they
-  are ordinary live C pointers and are a fortiori inside the family's scope.
-  I claim it anyway because four handles to one byte is the construct s10 and
-  s11 flagged as needing classification, and I would rather declare it than
-  rely on it reading as unremarkable.)
+  FAMILY: pointer alias (second handle to a global)
+  SCOPE: "NARROW SANCTIONED EXCEPTION (owner ruling 2026-07-01): a C-level local pointer alias (second handle) to a global — `Type* t = &g_Thing;`, `s16 (*p)[] = &D_xxx;`, FakePrim-style reinterpret views — is allowed as a LAST-RESORT lever with `/* FAKE: ... */` annotation + lever-exhaustion."
+  PRECEDENT: .claude/rules/pointer-alias-fake-exception.md:5
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct.  Neither claimed family
-requires a `/* FAKE */` annotation under its rule (the 2026-06-02 resolutions
-attach the annotation requirement to the `do { } while (0)` carve-out and the
-2026-07-01 last-resort additions; the variable-reuse and live-pointer-alias
-spellings used here are not last-resort dead constructs and carry no
-annotation requirement).  No `/* FAKE */` line is emitted.
+  FAMILY: dead store / self-assignment to a LOCAL
+  SCOPE: "NARROW SANCTIONED EXCEPTION (owner ruling 2026-07-01): a dead store / self-assignment to a LOCAL or PARAMETER, annotated `/* FAKE: ... */`, is allowed as a LAST-RESORT codegen lever after documented lever-exhaustion."
+  PRECEDENT: .claude/rules/dead-store-fake-exception.md:6
+
+ANNOTATION-CONFORMANCE:
+  /* FAKE: block-0's own address object, also carrying the copy loop's counter below, mechanism: global.c allocation priority floor_log2(nrefs)*nrefs*10000/live_length -- the loop's eleven counter references lift this allocno from 5 refs / pri 3571 to 16 refs / pri 30476, so it is seated in $v1 before block 0's value allocno (pri 17500) is considered and that value scans on to $a0. lever-exhaustion: hypotheses.md s53-s65 (the reference-lift branch is s65's branch (A); its other spellings are banked dead). */
+  /* FAKE: cse2 value invalidator, mechanism: cse2 (cse.c) forwards the sb into the following lbu only while the stored value's pseudo still holds it. lever-exhaustion: hypotheses.md s57-s62. */
+  /* FAKE: the address object for flag blocks 1 and 2, mechanism: global.c:1275 assigns exactly one hard register per allocno and GCC 2.7.2 does no live-range splitting, so blocks 1/2 cannot be reached from the block-0 object. lever-exhaustion: as above. */
+  All three carry what + a named GCC pass + a lever-exhaustion pointer. The
+  variable-reuse construct (4) is annotated inside the first of these, at the
+  declaration of the variable it reuses.
+
+## RE-VERIFICATION STAMP (session 66, second dispatch)
+
+The first s66 process wrote this vet and the ledger but exited without an
+outcome JSON, so the driver discarded it and re-dispatched session 66 with
+`src/` reverted to HEAD. This session re-installed the banked body
+(`python3 tmp/grind/func_80034F88/s63/apply.py memory/grind/func_80034F88/candidate.c`)
+and re-measured every claim above from scratch rather than trusting the
+uncommitted files:
+
+- `& tools/wteng.ps1 main sandbox func_80034F88 --disable all` →
+  **score 0, target_insns 49, build_insns 49, scorable true, strip_cheat_asm true.**
+- `& tools/wteng.ps1 main build` → SHA1
+  **62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH.**
+- All three cited rule locations were re-read and resolve:
+  `.claude/rules/no-new-park-categories.md:185` is inside the
+  "Variable reuse for codegen control" ALLOWED bullet and carries the quoted
+  scope sentence verbatim; `.claude/rules/pointer-alias-fake-exception.md:5`
+  and `.claude/rules/dead-store-fake-exception.md:6` are the two rules'
+  `description:` lines and carry their quoted scope sentences verbatim.
+
+Nothing in the vet above was changed; the measurements are re-derived, not
+inherited.
