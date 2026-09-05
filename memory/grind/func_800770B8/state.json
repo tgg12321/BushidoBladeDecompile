@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 26,
- "current_modality": "synthesis",
+ "session_count": 27,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -159,23 +159,29 @@
    "floor": 5,
    "modality": "synthesis",
    "headline": "Class C's seat decision is now read straight out of GCC's own qty table (BB2_QTY_DEBUG): s25's span-threshold model is falsified and replaced by an exact interval-containment criterion, and the floor "
+  },
+  {
+   "session": 27,
+   "floor": 5,
+   "modality": "solver",
+   "headline": "Class C's divergent row 62 emitted BYTE-EXACT (addu $v1,$v1,$v0) on the target's A-first store order for the first time, by splitting the reused ptr local so local-alloc.c:472's reg_n_deaths==1 gate s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Class C closes on the target's A-first store order by moving the SHORT quantity into the chain's interval rather than moving the chain: the chain occupies [26,56] and the reload [48,52] in every A-first build, so any 4-ref, 2-unit throwaway quantity born in (26,48) satisfies containment.",
-   "mechanism": "block_alloc allocates in qty_order; a 4-ref/2-unit quantity has priority 4.0 and is allocated before the 22-ref chain (3.14), taking $2. If its interval sits inside the chain's, $2 is still busy when the chain is allocated, the chain falls to $3, and the reload -- born at 48, after the short quantity died -- finds $2. Today's short quantity is born at 12, two units before the chain starts.",
-   "next_probe": "Enumerate ordinary-C forms that create a short-lived throwaway value in the MIDDLE of the store block rather than before it: the S-group address (base + t0) computed into a named local declared between the D and C groups; the &D_800A35D0 symbol address named in its own local so its lui/addiu pair forms a 4-ref quantity after the chain root's birth; a named local for the group-A pointer reused for a later group. Run tmp/grind/func_800770B8/s26/qty.sh on each and ACCEPT ONLY variants whose block-1 table shows a refs<=4 quantity with birth > 26 and death < 48 -- score only those. This is one cc1 run per candidate, so the sweep is cheap."
+   "hypothesis": "On cX_c (flip plus separate C pointer, no LICM hoist, 25/175) the class-C seats flip as soon as the chain+sum quantity's span reaches 30, because 88/30 = 2.93 falls below pc's 3.0 and pc [34,38] then takes $2 first, dies at 38, and leaves $2 free for the reload at 48.",
+   "mechanism": "qty_compare_1 = floor_log2(22)*22/span for the chain; the numerator is fixed at 88 because the chain's membership (t0*4, t0*5, t0*10, sum) is fixed by the target's own instructions. Span is [28,56]; it grows if the chain root's sll is born two units earlier or the sum acquires a use two units later.",
+   "next_probe": "Enumerate ordinary-C forms that add exactly one insn-slot between the sum's two consumers or shave one off the chain root's birth WITHOUT the LICM hoist: (a) reorder the two D-group stores so the D pointer's death moves and sched1 refills the slot; (b) spell the S store so its addu lands between the two addiu; (c) give the C group's pointer a third genuine use so pc reaches refs 8 at span 6 (priority 4.0, above 3.1428), which closes it from the other side. Run tmp/grind/func_800770B8/s27/qty.sh on each and accept only a variant whose block-1 table shows chain span at least 30, or a refs>=8 blocker inside [28,56] dying before 48; score only those."
   },
   {
-   "hypothesis": "There is a store-order perturbation strictly weaker than fCADS that starts the chain quantity at 12 while leaving group A's five stores emitted first, i.e. buys containment without fCADS's 15-row price.",
-   "mechanism": "fCADS buys chain birth 12 by putting group C first, and its whole 12-point cost is confined to rows 40-54 (measured this session). The s23 sweep permuted WHOLE groups only; splitting a group's address computation from its stores was never tried, and sched1 sinks the t0*4 sll to its first consumer -- which can be a pointer computation whose stores stay put.",
-   "next_probe": "Build the split-group shapes on the flipped cursor: (a) C's pointer computed first with C's stores left after D; (b) D's lui/addiu/addu first with D's stores after A; (c) both. Read the block-1 qty table for chain birth 12 AND a refs<=4 quantity fully inside [12,48] before scoring. Note s26 proved a named-pointer LOCAL does not do this on its own (d1/d2/d3 all keep birth 26-28), so the address computation must acquire a consumer that forces sched1 to place it early, not merely a name."
+   "hypothesis": "e6's chain birth of 12 can be kept while the lui/addiu %hi/%lo(D_800A35D0) pair stays inside the outer loop, which would leave rows 38-43 and 52-58 at the target's spelling and pay class C outright.",
+   "mechanism": "loop.c hoists the symbol because, once pa is split off, the pseudo holding &D_800A35D0 is set once in the loop. Keeping it non-hoistable requires a second in-loop set of the SAME pseudo, not merely a longer-lived variable - e8's attempt (giving ptr a fourth def via the S-store base) kept the seats but cost 7 more points.",
+   "next_probe": "Try the D group spelled so the symbol's pseudo is written twice per iteration with both writes real (D and C groups sharing ONE local while A uses pa: ptr = (u8 *)&D_800A35D0; ptr = t0*4 + ptr; D stores; ptr = base + t0*4; C stores), and the mirror where A and D share ptr while only C is split. Check the row window for lui/addiu still inside the loop AND the qty table for chain birth at most 26 before scoring."
   },
   {
-   "hypothesis": "The C-level difference that makes the floor body's 0x5C site satisfy the containment criterion (sum quantity [4,26] containing short [8,12], reload [16,20] taking $2) can be transplanted onto the cursor site, closing class C with no flip and no store reorder.",
-   "mechanism": "Both sites compile from base-first C to identical RTL, and block 3 of the FLOOR body already produces exactly the interval nesting the cursor site needs. The geometric difference is that at the 0x5C site the sum quantity is born at 4 -- at the top of its block -- whereas at the cursor site it is born at 26-28, after the whole store block.",
-   "next_probe": "Diff block 1 and block 3 of s26/F.qty and the corresponding .lreg insn streams to identify which pseudo is born at 4 in block 3 and why the tie fires there, then look for the C construct that reproduces it in block 1. Concretely: block 3's t0*2 shift feeds both the sp[t0] address (addu $a1,$v1,$t3 at target row 89) and the 0x5C base, i.e. the shift has a SECOND consumer that is not the add -- the cursor's t0*10 shift has only one. Test whether giving the cursor's shift a second real consumer (a value the target also computes) moves the sum quantity's birth to the shift."
+   "hypothesis": "The 29-point collateral of e6 is separable: rows 37/63/65-67 are only the inner-loop counter's rename from $a2 to $a3, which is a knock-on of the hoisted symbol occupying $a2, not an independent residual.",
+   "mechanism": "The hoisted &D_800A35D0 lives across the whole outer loop and takes $a2 in global-alloc, pushing the inner-loop counter to $a3 and the C pointer into $a2. Remove the hoist and both revert.",
+   "next_probe": "Diff e6's row window against F's row by row and attribute every one of the 29 points to (i) the hoist's own two rows, (ii) the D/C addu displacement, or (iii) the counter rename. If (iii) is purely derivative, the true price of e6's geometry is far below 29 and a partial fix to the hoist is worth far more than the raw score suggests."
   }
  ],
  "judge_constraints": [
@@ -325,6 +331,22 @@
    "measured_on": "HEAD d8215bb2 chassis, floor body (candidate.c) applied, empty do-while(0) prologue fence present",
    "predicate_cite": "",
    "result": "KILLED as an explanation. The flip spelling does change the outcome, but not by changing RTL operand order; any further "
+  },
+  {
+   "session": 27,
+   "statement": "On the e6 and e3 bodies the chain quantity's early birth can be obtained without also hoisting the D_800A35D0 address computation out of the outer loop.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d71d9209 chassis (src/text1b.c byte-equals git show HEAD:src/text1b.c and s27/pristine_text1b.c); floor's single FAKE construct, the empty do-while(0) prologue fence, present in e6, e3, e8 and cX",
+   "predicate_cite": "",
+   "result": "KILLED for the forms tried. The hoist is what buys the early birth and also what costs the points: rows 40-43 and 52-58 "
+  },
+  {
+   "session": 27,
+   "statement": "The source POSITION of a store group's pointer computation inside the outer-loop body moves the chain quantity's birth.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d71d9209 chassis, empty do-while(0) prologue fence present in every variant, 175/175 insns in all ten builds",
+   "predicate_cite": "",
+   "result": "KILLED. Every one of the ten reproduces its base build exactly (10/175 on the F side, 20/175 on the X side), and the blo"
   }
  ]
 }

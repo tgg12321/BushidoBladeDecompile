@@ -2353,3 +2353,104 @@ Source operand order is not preserved into RTL operand order here.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD d8215bb2 chassis, floor body (candidate.c) applied, empty do-while(0) prologue fence present
+
+## [s27] solver — class C's seat+merge pair SOLVED on the target's A-first store order for the first time (row 62 byte-exact), at the price of a LICM hoist
+
+**The residual, re-read precisely.** The floor body F is byte-identical to the
+target for rows 33-61 and 65+. The whole class-C residual is rows 62/63/64, and
+row 62 is the only real one: ours `addu $v0,$v0,$v1`, target `addu $v1,$v1,$v0`.
+In BOTH, `rd == rs`, so the destination is tied to operand 1 by `combine_regs`.
+What differs is (i) WHICH source operand the sum merges with and (ii) which
+hard register the merged quantity gets:
+
+| body | sum merges into | chain qty | reload qty | row 62 |
+|---|---|---|---|---|
+| F (base-first cursor) | the RELOAD -> qty [48,56] refs10 | 16 refs [28,52] -> `$3` | merged | `addu $v0,$v0,$v1` |
+| X (flipped cursor)    | the CHAIN  -> qty [28,56] refs22 | 22 refs -> `$2` | 4 refs [48,52] -> `$3` | `addu $v0,$v0,$v1` |
+| TARGET                | the CHAIN | 22 refs -> `$3` | 4 refs -> `$2` | `addu $v1,$v1,$v0` |
+
+So the target needs the X merge (flipped cursor) AND the F seats, and neither
+body has both. Numerically, with `qty_compare_1` = `floor_log2(refs)*refs/span`:
+chain 22 refs over [28,56] = **3.1428**, reload 4 refs over [48,52] = 2.0, and
+the t0*2 blocker 4 refs over [12,14] = 4.0 but disjoint from the chain. The
+chain therefore takes `$2` unopposed. The seat flips iff some quantity with
+priority > 3.1428 holds `$2` across part of [28,56] and is dead before 48.
+
+**H-s27-1 — CONFIRMED (measured).** Giving each store group its own pointer
+local (instead of reusing one `ptr`) creates new block-1 quantities, because
+`local-alloc.c:472` punts any pseudo with `reg_n_deaths != 1` to global-alloc:
+the shared `ptr` dies in 3 places and is invisible to `block_alloc`, so today
+it cannot block anything. With `pa`/`pd`/`pc` separated the qty table gains
+`pa` 16 refs [12,24] (prio 5.33), `pd` 6 refs [28,32] (3.0) and `pc` 6 refs
+[34,38] (3.0). Measured `sX_all0` = 20/175, `sF_all0` = 10/175, `cF_c`
+(base-first + separate C pointer only) = **5/175, byte-identical to the floor**.
+*Measured on:* HEAD d71d9209 chassis, floor's empty do-while(0) prologue FAKE
+present in every variant. *Artifacts:* `s27/{F,X,sX_all0,sF_all0,cF_c,cX_c}.qty`.
+
+**H-s27-2 — CONFIRMED (measured), the session's result.** Separating ONLY the
+A-group pointer (`pa`) on the flipped cursor moves the chain quantity's birth
+from 28 to 12 and hands the target's seats: chain 22 refs [12,56] -> `$3`,
+reload [48,52] -> `$2`, with `pa` 16 refs [18,30] (prio 5.33) taking `$2` first
+and dying at 30, before the reload's birth. `e6` and `e3` both emit **row 62 as
+`addu $v1,$v1,$v0`, byte-exact, at 175 insns on the target's A,D,C,S store
+order** — the first time class C's divergent row has been paid without fCADS's
+store reorder. Rows 55-56, 59, 60, 61 are byte-exact too.
+*Measured on:* HEAD d71d9209 chassis, prologue do-while(0) FAKE present;
+`e6` 29/175, `e3` 28/175, `s27/e6.qty`, `s27/e3.qty`, row window in the outcome.
+
+**H-s27-3 — KILLED (instance).** That the chain's early birth in `e6`/`e3` can
+be had without also moving the `D_800A35D0` address computation. Separating
+`pa` leaves `ptr` with only 2-3 defs, and loop-invariant motion then hoists the
+`lui/addiu %hi/%lo(D_800A35D0)` pair OUT of the outer loop (rows 38-39, before
+the loop-top `sll`), which is exactly what lets the D-group `addu` float up to
+row 43 and drags the `sll $v1,$a1,2` with it. The hoist is what buys the early
+birth AND what costs the 29 points: it displaces rows 40-43 and 52-58 and
+renames the inner-loop counter from `$a2` to `$a3` (rows 37, 63, 65-67).
+Attempting to defeat the hoist by giving `ptr` a fourth in-loop def (the S-store
+base, `e8`) keeps the target seats but costs more (36/175).
+*Measured on:* HEAD d71d9209 chassis, prologue FAKE present; `e6` 29, `e8` 36,
+`cX_c` 25 (no hoist, chain birth 28, seats still wrong).
+
+**H-s27-4 — KILLED (instance).** That the SOURCE POSITION of a group's pointer
+computation moves the chain's birth. Ten variants (`pF_df pF_cf pF_dcf pF_dpre
+pF_allf` and the X counterparts) place the `pd`/`pc` computations anywhere from
+the top of the loop body to their original position; every one is bit-identical
+to the corresponding `s*_all0` build (scores 10 / 20) and the qty tables of
+`pX_df` and `pX_dcf` are line-for-line identical to `sX_all0`'s. Re-confirms
+s26-3 with a different construct: only the STORE order and the pointer's
+death-count reach sched1's placement of the `sll`.
+*Measured on:* HEAD d71d9209 chassis, prologue FAKE present.
+
+## [s27] The entire class-C residual is one instruction, row 62, and it is a combine_regs merge choice plus a seat: in both our floor body and the target rd==rs, so the destination ties to operand 1; the floor merges the sum into the RELOAD (10-ref [48,56] quantity seated $2) while the target merges it into the CHAIN (22-ref quantity seated $3) with the reload alone in $2.
+- mechanism: combine_regs (local-alloc.c:1784-1946) merges an add's destination with a source operand that dies there; qty_compare_1 (local-alloc.c:1660-1683) then ranks quantities by floor_log2(refs)*refs*size/(death-birth) and find_free_reg seats each in the lowest hard reg free across its whole range. The flipped cursor spelling moves the merge from the reload to the chain; the seats are decided independently.
+- probe: Row window of the floor build against asm/funcs/func_800770B8.s (tmp/grind/func_800770B8/s27/rowwin.py 36 68) plus the block-1 qty tables of F, X and fCADS (s27/F.qty, s27/X.qty and s26/fCADS.qty) read against the qty_compare_1 formula.
+- result: Rows 33-61 and 65+ are byte-identical to the target in the floor body; the only real divergence is row 62 and the two addiu that inherit its destination. Numbers: chain 22 refs [28,56] = 3.1428, reload 4 refs [48,52] = 2.0, t0*2 4 refs [12,14] = 4.0 but disjoint from the chain. The chain takes $2 unopposed.
+- verdict: CONFIRMED
+
+## [s27] The single reused ptr local carries all three store-group addresses, dies in three places, and is therefore punted out of local allocation entirely by the reg_n_deaths==1 gate, so it cannot block the chain quantity; giving each store group its own pointer local restores it to block_alloc as one to three fresh quantities.
+- mechanism: local-alloc.c:472 gates quantity creation on reg_n_deaths==1, punting multi-death pseudos to global_alloc, which runs after block_alloc has already seated the chain and the reload.
+- probe: Block-1 quantity tables of F and X account for every block-local pseudo EXCEPT the ptr pseudo (28 refs) - five quantities in each. Twelve builds separating the pointers (sF_all0/1, sF_d0/1, sF_dc0/1 and the X counterparts) plus BB2_QTY_DEBUG runs on sX_all0, sF_all0, cF_c and cX_c.
+- result: With the pointers split the table gains pa 16 refs [12,24] (priority 5.33), pd 6 refs [28,32] (3.0) and pc 6 refs [34,38] (3.0). cF_c (base-first plus a separate C-group pointer only) measures 5/175 - byte-identical to the floor, a free spelling. sF_all0 10/175, sX_all0 20/175, cX_c 25/175.
+- verdict: CONFIRMED
+
+## [s27] Separating only the A-group pointer on the flipped cursor moves the chain quantity's birth from 28 to 12 and seats the chain in $3 with the reload in $2, emitting row 62 as addu $v1,$v1,$v0 byte-exact at 175 instructions with the target's A,D,C,S store order intact.
+- mechanism: pa becomes a 16-ref [18,30] quantity at priority 5.33, is allocated before the 22-ref chain (2.0 once the chain's span reaches 44), holds $2 across part of the chain's range and dies at 30 - before the reload's birth at 48 - so the chain falls to $3 and the reload finds $2.
+- probe: e6 (X plus a separate pa) and e3 (X plus separate pa and pc): scoring builds plus BB2_QTY_DEBUG block-1 tables (s27/e6.qty, s27/e3.qty) and row windows 36-68 against asm/funcs/func_800770B8.s.
+- result: e6 29/175 and e3 28/175, both printing row 62 as addu $v1,$v1,$v0 with rows 55, 56, 59, 60 and 61 also byte-exact. First payment of class C's divergent row without fCADS's store-group reorder (s26 measured fCADS at 12/175 with 12 rows of collateral in the store window).
+- verdict: CONFIRMED
+
+## [s27] On the e6 and e3 bodies the chain quantity's early birth can be obtained without also hoisting the D_800A35D0 address computation out of the outer loop.
+- mechanism: With pa split out, ptr no longer carries the A-group assignment, and loop-invariant motion hoists the lui/addiu %hi/%lo(D_800A35D0) pair to the loop preheader; that frees the D-group addu to float to row 43, which drags the chain root sll $v1,$a1,2 to row 42 and is precisely what gives the chain birth 12 instead of 28.
+- probe: Row windows 36-68 of e6 and e3 (lui/addiu at rows 38-39, ahead of the loop-top sll at row 40); cX_c as the no-hoist control (chain still [28,56], seats still wrong, 25/175); e8, which gives ptr a fourth in-loop def (the S-store base) to try to defeat the hoist.
+- result: KILLED for the forms tried. The hoist is what buys the early birth and also what costs the points: rows 40-43 and 52-58 are displaced and the inner-loop counter is renamed $a2 to $a3 (rows 37, 63, 65-67). e8 keeps the target seats but scores 36/175, worse than e6's 29. cX_c has no hoist, chain birth 28, priority 3.1428 against pc's 3.0, and the seats do not flip.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d71d9209 chassis (src/text1b.c byte-equals git show HEAD:src/text1b.c and s27/pristine_text1b.c); floor's single FAKE construct, the empty do-while(0) prologue fence, present in e6, e3, e8 and cX_c alike; all builds 175/175 insns
+
+## [s27] The source POSITION of a store group's pointer computation inside the outer-loop body moves the chain quantity's birth.
+- mechanism: If GCC kept an address computation at its declaration position, computing the D-group or C-group pointer ahead of the A-group stores would give the chain root sll an early first consumer and move its birth ahead of the A pointer's quantity.
+- probe: Ten builds: pF_df, pF_cf, pF_dcf, pF_dpre, pF_allf and the five X counterparts, spanning every arrangement of the pa/pd/pc computations from the top of the loop body to their original positions, plus BB2_QTY_DEBUG runs on pX_df and pX_dcf.
+- result: KILLED. Every one of the ten reproduces its base build exactly (10/175 on the F side, 20/175 on the X side), and the block-1 qty tables of pX_df and pX_dcf are line-for-line identical to sX_all0's, chain birth 26 in all. Only the STORE order and the pointer's death count reach sched1's placement of the sll. Re-confirms s26-3 with a different construct.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d71d9209 chassis, empty do-while(0) prologue fence present in every variant, 175/175 insns in all ten builds

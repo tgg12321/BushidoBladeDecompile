@@ -3374,3 +3374,84 @@ price of the C-first order is localised to one 15-row window and nothing leaks p
 - [s26] fCADS's 12 points are localised: the only genuine differing rows (discounting cosmetic move/addu-$zero and li/addiu-$zero disassembly aliases) are the long-known rows 35-36 and the contiguous store-group window rows 40-54. Rows 55-64, including the class-C addu $v1,$v1,$v0, are byte-exact and nothing leaks past row 54.
 
 - [s26] 6 fresh scoring builds, 5 instrumented-cc1 qty runs, 1 fresh -da dump set. src/text1b.c restored to pristine after every sweep; git status clean apart from the ledger edits and the engine's own metrics/events.jsonl.
+
+## [s27] solver — the class-C residual reduced to ONE numeric inequality, and paid for the first time on the target's store order
+
+- [s27] Floor re-verified at **5 / 175 insns / 175 target insns** on the HEAD
+  d71d9209 chassis (`memory/grind/func_800770B8/candidate.c` applied via
+  `tmp/grind/func_800770B8/s27/apply.py`, `sandbox func_800770B8 --disable all`).
+  `s27/pristine_text1b.c` byte-equals `git show HEAD:src/text1b.c`.
+- [s27] The floor body is byte-identical to `asm/funcs/func_800770B8.s` for
+  instruction rows 33-61 (including `sll $v1,$a1,0x2`, the `lui/addiu
+  %hi/%lo(D_800A35D0)` pair, `addu $v0,$v1,$v0`, `addu $v0,$a0,$v1`,
+  `addu $a0,$a0,$a1`, `addu $v1,$v1,$a1`, `sb $t0,0x68($a0)`, the `lw` reload and
+  `sll $v1,$v1,1`). The ENTIRE class-C residual is row 62 plus the two `addiu`
+  that inherit its destination: ours `addu $v0,$v0,$v1`, target
+  `addu $v1,$v1,$v0`. `rd == rs` in both, so both are `combine_regs` merges of the
+  add's destination with operand 1; the divergence is WHICH operand the sum merges
+  with and which hard register that quantity is seated in.
+- [s27] The seat decision is now a single inequality. `qty_compare_1`
+  (local-alloc.c:1660-1683) ranks by `floor_log2(refs)*refs*size/(death-birth)`.
+  On the flipped cursor the chain+sum quantity is 22 refs over [28,56] =
+  **3.1428**; the reload is 4 refs over [48,52] = 2.0; the only quantity that
+  outranks the chain today is the t0*2 pseudo, 4 refs over [12,14] = 4.0, and it
+  is DISJOINT from the chain, so `find_free_reg` hands the chain `$2` unopposed.
+  The target's seats appear iff some quantity with priority > 3.1428 holds `$2`
+  somewhere inside [28,56] and is dead before the reload's birth at 48.
+- [s27] `local-alloc.c:472`'s `reg_n_deaths == 1` gate is why the current body has
+  no such quantity: the single reused `ptr` local carries all three store-group
+  addresses, dies in 3 places, and is punted to global-alloc entirely — it is
+  absent from `block_alloc`'s quantity table (5 quantities in block 1 for both F
+  and X, accounting for every pseudo EXCEPT `ptr`). Giving each group its own
+  pointer local restores it to local-alloc as 1-3 fresh quantities.
+- [s27] **Separating only the A-group pointer on the flipped cursor delivers the
+  target's seats.** `e6` (X + `pa`): chain 22 refs [12,56] -> `$3`, reload 4 refs
+  [48,52] -> `$2`, blocked by `pa` 16 refs [18,30] (prio 5.33) which dies at 30.
+  Row 62 comes out **`addu $v1,$v1,$v0` — byte-exact** — at 175 insns with the
+  target's A,D,C,S store order intact. `e3` (X + `pa` + `pc`) does the same.
+  This is the first time class C's divergent row has been paid without fCADS's
+  store-group reorder (s26 measured fCADS at 12/175 with the row paid but 12 rows
+  of collateral in the store window).
+- [s27] The price is a loop-invariant hoist, and it is what buys the early birth.
+  With `pa` split out, `ptr` no longer carries the A assignment and loop.c hoists
+  `lui/addiu %hi/%lo(D_800A35D0)` out of the outer loop (rows 38-39, ahead of the
+  loop-top `sll $a1,$t0,16`). That lets the D-group `addu` float to row 43, which
+  drags the chain root `sll $v1,$a1,2` to row 42 and gives the chain birth 12
+  instead of 28. Collateral: rows 40-43 and 52-58 displaced and the inner-loop
+  counter renamed `$a2`->`$a3` (rows 37, 63, 65-67). `e6` = 29/175, `e3` = 28/175.
+- [s27] Without the hoist the seats stay wrong by a 5% margin. `cX_c` (flip +
+  separate C pointer only, no hoist) keeps the chain at [28,56] / 3.1428 and puts
+  `pc` at 6 refs over [34,38] = **3.0** — ordered second, so it gets `$3` and
+  changes nothing (25/175). The gap to close is exactly `chain span >= 30`
+  (88/30 = 2.93 < 3.0) or `pc/pd refs >= 8 at span <= 6`.
+- [s27] `cF_c` — the base-first floor body with the C-group pointer moved into its
+  own local `pc` — measures **5/175, byte-identical to the floor**. A free
+  spelling; banked as `rejected/s27-classC-separate-C-pointer-byte-neutral-on-base-first-175insn-score5.c`.
+- [s27] Source POSITION of a pointer computation is inert. Ten variants moving the
+  `pd`/`pc` computations to the top of the loop body, ahead of the A stores, or in
+  every intermediate arrangement (`pF_df pF_cf pF_dcf pF_dpre pF_allf` + X
+  counterparts) all reproduce their base build exactly (10 / 20), and the qty
+  tables of `pX_df`/`pX_dcf` are identical to `sX_all0`'s line for line.
+- [s27] Sibling sweep: CD_datasync, CD_ready and CD_sync were re-checked at s22 and
+  have zero code overlap with this function; nothing in their s50-s60 candidates
+  touches a store-group/qty-priority residual of this shape. Not re-spent.
+
+- [s27] Floor re-verified at 5 / 175 build insns / 175 target insns on the HEAD d71d9209 chassis; tmp/grind/func_800770B8/s27/pristine_text1b.c byte-equals git show HEAD:src/text1b.c.
+
+- [s27] The floor body matches asm/funcs/func_800770B8.s byte-for-byte at instruction rows 33-61 and 65 onward; the whole class-C residual is row 62 (ours addu $v0,$v0,$v1, target addu $v1,$v1,$v0) plus the two addiu that inherit its destination.
+
+- [s27] The class-C seat decision is one inequality: chain+sum 22 refs over [28,56] = 3.1428 under qty_compare_1, reload 4 refs over [48,52] = 2.0, t0*2 4 refs over [12,14] = 4.0 but disjoint. The target's seats appear iff some quantity with priority above 3.1428 holds $2 inside [28,56] and dies before 48.
+
+- [s27] local-alloc.c:472's reg_n_deaths==1 gate punts the shared ptr local (3 deaths, 28 refs) out of local allocation entirely - block 1 has exactly five quantities in both F and X, covering every block-local pseudo except ptr.
+
+- [s27] e6 (flipped cursor plus a separate A-group pointer) emits row 62 as addu $v1,$v1,$v0, byte-exact, at 175 insns on the target's A,D,C,S store order: chain 22 refs [12,56] to $3, reload [48,52] to $2, blocked by pa 16 refs [18,30] at priority 5.33 which dies at 30. e3 reproduces it. Scores 29 and 28.
+
+- [s27] The early chain birth in e6/e3 is bought by a loop-invariant hoist of lui/addiu %hi/%lo(D_800A35D0) to the preheader (rows 38-39), which also costs the points: rows 40-43 and 52-58 displaced, inner-loop counter renamed $a2 to $a3.
+
+- [s27] cX_c (flip plus separate C pointer, no hoist) leaves the chain at [28,56] / 3.1428 against pc's 6 refs over [34,38] = 3.0 and does not flip the seats (25/175). Closing the gap needs chain span at least 30 (88/30 = 2.93) or a blocker with refs at least 8 at span at most 6.
+
+- [s27] cF_c - the base-first floor body with the C-group pointer moved into its own local - measures 5/175 and is byte-identical to the floor: a free spelling, banked in rejected/.
+
+- [s27] Source position of a pointer computation is inert (ten builds, two qty tables); only store order and pointer death count reach sched1's placement of the chain root sll.
+
+- [s27] Sibling sweep not re-spent: CD_datasync, CD_ready and CD_sync were checked at s22 and have zero code overlap with this function; none of their candidates touches a store-group / qty-priority residual of this shape.
