@@ -2241,3 +2241,115 @@ Returned to active under Ruling A. Ground: both class closures are price argumen
 - probe: Three fresh .lreg dumps in one session (s25/F.lreg, s25/X.lreg, s25/fCADS.lreg via pwsh tools/grinder/dump.ps1), compared pseudo-table line by line and allocation line by line.
 - result: F and X carry byte-identical pseudo tables and differ only in the allocation, so the swap is purely an allocation-order effect of which quantity the sum merges into. Q = {chain root, t0*5, t0*10, sum} has 8+4+4+6 = 22 refs in every build, so floor_log2(22)*22 = 88 is constant and only Q's span varies; the blocking quantity is the short 4-refs/2-insn pseudo at priority floor_log2(4)*4/2 = 4.0. X: chain-root span 10 (`Register 93 used 8 times across 10 insns`), Q span ~14, 88/14 = 6.3 > 4.0, so Q is allocated first and takes $2 (wrong seat). fCADS: chain-root span 18 (`Register 89 used 8 times across 18 insns`), Q span ~23, 88/23 = 3.8 < 4.0, so the short quantity takes $2 first, Q is pushed to $3, and the reload then finds $2 free — the target's seats. Predicts all three builds; supersedes s23's qty-number tie-break attribution. Lowering Q's refs is not an alternative: dropping the chain root leaves 14 refs but shrinks the span proportionally (42/8 = 5.3, still above 4.0).
 - verdict: CONFIRMED
+
+## [s26] synthesis — frontier reset around the measured qty-interval criterion
+
+**Instrument added (use it before spending any score).**
+`tmp/grind/func_800770B8/s26/qty.sh <variant...>` runs the instrumented cc1
+(`tools/gcc-2.7.2/cc1`) with `BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1` and writes
+`s26/<variant>.qty`, containing every block-1 quantity's `birth/death/refs` and the
+`qty_order` allocation sequence with the hard register each one received. A class-C
+hypothesis is now testable with ONE cc1 run and no sandbox score.
+
+**H-s26-1 — CONFIRMED (measured).** The class-C seat outcome is decided by interval
+containment in `block_alloc`'s allocation loop, not by `qty_compare_1` priority alone.
+Target seats appear iff the merged 22-ref chain+sum quantity is allocated while `$2` is
+already held by a shorter, higher-priority quantity whose `[birth,death]` lies inside the
+chain's, and that shorter quantity is dead before the cursor reload's birth (48).
+Measured: X short `[12,14]` / chain `[28,56]` disjoint -> chain takes `$2` (score 29);
+fCADS short `[20,22]` / chain `[12,56]` containing -> chain `$3`, reload `$2` (score 12,
+rows 55-64 byte-exact).
+*Kill scope:* n/a (confirmation). *Measured on:* HEAD d8215bb2 chassis, floor body's single
+FAKE (the empty do-while(0) prologue fence) present in every variant.
+
+**H-s26-2 — KILLED (instance).** s25's model that the seat flip is bought by growing the
+merged quantity's span past ~22 at fixed reference count. X's merged quantity already spans
+28 (priority 3.14 < the blocking 4.0) and is already ordered second, and it still loses the
+seat. The span condition is necessary but not sufficient; containment is the binding one.
+*Measured on:* HEAD d8215bb2 chassis; `s26/X.qty`, `s26/F.qty`, `s26/fCADS.qty`.
+
+**H-s26-3 — KILLED (instance).** On the target's A,D,C,S store order, hoisting the
+`t0*4`-consuming group pointers into named locals at the top of the outer-loop body moves
+the chain quantity's birth ahead of the short quantity. Six builds (d1f 40, d2f 25, d3f 20,
+d1n 35, d2n 5, d3n 10; all 175 insns) and four qty runs: the chain's birth stays 26-28 in
+every flipped variant and the hoist only splits a new 6-ref quantity off the named pointer.
+sched1 sinks the `sll` to its first consumer, so the chain root's birth tracks the STORE
+order, not the declaration order.
+*Measured on:* HEAD d8215bb2 chassis, prologue do-while(0) FAKE present.
+*Banked:* `rejected/s26-classC-named-CD-pointer-hoist-does-not-move-chain-qty-birth-175insn-score20.c`,
+`rejected/s26-classC-named-C-pointer-hoist-byte-neutral-on-base-first-175insn-score5.c`.
+
+**H-s26-4 — KILLED (instance).** The s21/s25 model that the cursor add ties to "the operand
+the C source names first". A fresh `-da` dump shows the cursor add (insn 185) and the
+matching 0x5C control add (insn 263) have identical RTL — `(plus (reg SHIFT) (reg RELOAD))`
+with the shift as operand 1 and REG_DEAD on both operands — from base-first C at BOTH sites.
+Source operand order is not preserved into RTL operand order here.
+*Measured on:* HEAD d8215bb2 chassis; `tmp/grind/func_800770B8/dumps/text1b.lreg` (floor body).
+
+### FRONTIER FOR s27 (all three are qty-table probes first, score second)
+
+1. **Make the short quantity land INSIDE the chain's interval instead of moving the chain.**
+   The chain's interval on every A-first order is `[26,56]` and the reload's is `[48,52]`, so
+   the criterion is satisfied by ANY 4-ref, 2-unit quantity born in `(26,48)`. Today's short
+   quantity is born at 12. Enumerate ordinary-C forms that create a short-lived throwaway
+   value in the middle of the store block — e.g. computing the S-group address
+   (`base + t0`) from a named local declared between the D and C groups, or naming the
+   `&D_800A35D0` symbol address in its own local so its lui/addiu pair forms a 4-ref
+   quantity after the chain root's birth. Read `s26/<v>.qty` and accept only a variant whose
+   block-1 table shows a `refs<=4` quantity with `26 < birth` and `death < 48`; only then
+   score it.
+
+2. **Find the minimal store-order perturbation that starts the chain at 12.** fCADS (C
+   first) buys birth 12 for a 12-point price confined to rows 40-54. Sweep the intermediate
+   shapes that keep group A's five stores emitted first but give `t0*4` a consumer before
+   them — e.g. C's POINTER computed first with C's stores left after D, or the D group's
+   `lui/addiu/addu` first with its stores after A — and read the qty table for chain
+   birth 12 plus a short quantity inside. The s23 24-order sweep only covered whole-group
+   permutations; splitting a group's address computation from its stores is untried.
+
+3. **Re-examine the 0x5C control site with the qty instrument.** That site emits the
+   target's `addu $v1,$v1,$v0` from base-first C with identical RTL, so its quantity
+   geometry is a WORKED EXAMPLE of the criterion inside this same function, and `s26/F.qty`
+   already contains it — block 3 of the FLOOR body reads
+
+       ord=0  qty1 reg1=158  [ 8,12]  refs  8  -> $2
+       ord=1  qty0 reg1=140  [ 4,26]  refs 24  -> $3     (the sum quantity)
+       ord=2  qty3 reg1=149  [24,26]  refs  4  -> $2
+       ord=3  qty2 reg1=137  [16,20]  refs  4  -> $2     (the reload)
+
+   which is the criterion satisfied exactly: the 24-ref sum quantity `[4,26]` CONTAINS the
+   short `[8,12]` that took `$2` first, so it falls to `$3`, and the reload `[16,20]` — born
+   after `[8,12]` died — finds `$2`. So the target's geometry is already produced by ordinary
+   base-first C elsewhere in this same function; the task is to reproduce that interval
+   nesting at the cursor site. Diff the two blocks' insn streams and identify which C-level
+   difference makes the sum quantity start at 4 in block 3 and at 26-28 in block 1.
+
+## [s26] The class-C seat outcome is decided by interval containment in local-alloc block_alloc's allocation loop: the target's seats appear iff the merged 22-ref chain+sum quantity is allocated while $2 is already held by a shorter higher-priority quantity whose [birth,death] lies inside the chain quantity's, and that short quantity is dead before the cursor reload's birth.
+- mechanism: BB2_SUGG_DEBUG (local-alloc.c:1437) and BB2_QTY_DEBUG (local-alloc.c:1585) in the instrumented cc1 print every quantity's qty_birth/qty_death/qty_n_refs and the qty_order allocation sequence with the hard register each quantity received. Block 1 measured: X = short qty [12,14] refs 4 -> $2, chain+sum [28,56] refs 22 -> $2 (disjoint, so $2 is free again), reload [48,52] -> $3. fCADS = short [20,22] -> $2, chain+sum [12,56] CONTAINS it -> $3, reload [48,52] finds $2 = the target's seats.
+- probe: tmp/grind/func_800770B8/s26/qtydbg.py + qty.sh run on F, X and fCADS; qty tables banked as s26/F.qty, s26/X.qty, s26/fCADS.qty. Scores re-measured live the same session: F 5/175, X 29/175, fCADS 12/175.
+- result: CONFIRMED. The criterion predicts all three builds, and the floor body's own 0x5C control site (block 3 of F.qty) satisfies it independently: the 24-ref sum quantity [4,26] contains the short [8,12] that took $2, falls to $3, and the reload [16,20] finds $2 -- which is why that site already emits the target's addu $v1,$v1,$v0 from base-first C.
+- verdict: CONFIRMED
+
+## [s26] s25's model that the class-C seat flip is bought by growing the merged chain+sum quantity's live span past about 22 units at fixed reference count.
+- mechanism: s25 estimated the spans from post-sched2 row numbering and computed qty_compare_1 priorities of 6.3 (X) versus 4.0 (the blocking short quantity), concluding the merged quantity was still being ordered first. The compiler's own numbers show X's merged quantity spans [28,56] = 28, priority floor_log2(22)*22/28 = 3.14, and it is already ordered SECOND (ord=1) behind the short quantity's 4.0 -- the ordering s25 said still had to be bought is already in hand, and X still loses the seat.
+- probe: s26/X.qty and s26/F.qty block-1 tables, read against the qty_compare_1 formula at local-alloc.c:1660-1683.
+- result: KILLED as a sufficient criterion. Span > 22 is necessary (it is what orders the chain second) but every A-first build already has it; the binding condition is containment, not span.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d8215bb2 chassis (src/text1b.c byte-equals git show HEAD:src/text1b.c and s25's pristine copy); floor body's single FAKE construct, the empty do-while(0) prologue fence, present in F, X and fCADS alike
+
+## [s26] On the target's A,D,C,S store order, hoisting the t0*4-consuming group pointers into named locals at the top of the outer-loop body moves the merged chain quantity's birth ahead of the short quantity, buying containment without touching any store.
+- mechanism: Three shapes (d1 = named D-group pointer, d2 = named C-group pointer, d3 = both), each on the base-first and flipped cursor spellings; stores left in the target's A,D,C,S order in all six. If GCC kept the hoisted address computation at its declaration position the chain root's sll would be born ahead of group A's insns and the merged quantity would start early enough to contain the short 4-ref quantity.
+- probe: 6 scoring builds (d1f 40/175, d2f 25/175, d3f 20/175, d1n 35/175, d2n 5/175, d3n 10/175; plain flip X = 29, floor F = 5) plus 4 qty runs (s26/d1f.qty, d2f.qty, d3f.qty, d2n.qty).
+- result: KILLED. The chain quantity's birth stays at 26-28 in every flipped variant; the hoist only splits a NEW 6-ref quantity off the named pointer (d1f [30,34], d2f [36,40], d3f two of them), and in d3f the short quantity grows to 16 refs / [12,24] while the chain still starts at 26. sched1 sinks the sll to its first consumer, so the chain root's birth tracks the STORE order rather than the declaration order. Side result worth keeping: d2n is byte-identical to the floor, so naming the C-group pointer is a free spelling on the base-first cursor.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d8215bb2 chassis, 175/175 insns in all six builds, empty do-while(0) prologue fence present in every variant
+
+## [s26] The s21/s25 model that the cursor add ties its destination to the operand the C source names first, so that the base-first spelling is what puts the tie on the D_800A36A0 reload.
+- mechanism: A fresh -da dump of the floor body shows the cursor add and the matching 0x5C control add carry structurally identical RTL -- (set (reg D) (plus (reg SHIFT) (reg RELOAD))) with the SHIFT as operand 1 and REG_DEAD notes on both operands -- even though both sites are spelled base-first in C. Source operand order is not preserved into RTL operand order at either site, so the differing tie cannot be attributed to it; what differs is the quantity state combine_regs (local-alloc.c:1784-1946) sees.
+- probe: pwsh tools/grinder/dump.ps1 func_800770B8 with the floor body applied; insn 185 (cursor) and insn 263 (0x5C control) read out of tmp/grind/func_800770B8/dumps/text1b.lreg via s26/rtlwin.py.
+- result: KILLED as an explanation. The flip spelling does change the outcome, but not by changing RTL operand order; any further attack must target the qty intervals rather than the source operand order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d8215bb2 chassis, floor body (candidate.c) applied, empty do-while(0) prologue fence present

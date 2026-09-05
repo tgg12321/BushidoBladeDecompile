@@ -3192,3 +3192,185 @@ C-controllable by naming or statement position. Banked
 - [s25] The named-offset family is dead for the whole chain, not just t0*10: hoisting `s32 o2 = t0*2;` and/or `s32 o4 = t0*4;` above the D_800A36A0 read and routing groups A/C/D through them is byte-inert in all eight builds (y1f-y4f exactly 29/175, y1n-y4n exactly 5/175, both declaration orders).
 
 - [s25] 16 fresh builds and 3 fresh .lreg dumps this session; src/text1b.c restored to its pristine committed state after every sweep (git status clean apart from the ledger edits and the engine's own metrics/events.jsonl).
+
+## [s26] synthesis — FLOOR 5 (re-verified); the class-C seat decision is READ OUT OF THE COMPILER'S OWN qty TABLE for the first time, and s25's span-threshold model is FALSIFIED and replaced by an exact OVERLAP criterion
+
+Chassis re-verification, first action. `git show HEAD:src/text1b.c` byte-equals the working
+tree and byte-equals `tmp/grind/func_800770B8/s25/pristine_text1b.c`, so the chassis is
+unchanged from s25 (HEAD is d8215bb2; s24/s25 commits are ledger-only). `F` (=
+`memory/grind/func_800770B8/candidate.c` body) re-measured live: **score 5, build_insns 175,
+target_insns 175**. 6 fresh scoring builds + 5 fresh instrumented-cc1 runs + 1 fresh `-da`
+dump set this session. Scratch: `tmp/grind/func_800770B8/s26/`. src/text1b.c restored to
+pristine after every sweep.
+
+### THE INSTRUMENT: BB2_QTY_DEBUG / BB2_SUGG_DEBUG PRINT qty_birth / qty_death / qty_n_refs EXACTLY
+
+This closes s25's frontier item #3 ("turn the span estimate into an exact threshold") on the
+first probe. The instrumented cc1 at `tools/gcc-2.7.2/cc1` already carries two print-only
+hooks in `local-alloc.c` that no prior session on this function used:
+
+  * `BB2_SUGG_DEBUG` (`local-alloc.c:1437-1460`) dumps, for every quantity of every block,
+    `func= blk= qty= reg1= birth= death= refs= size= mode= minclass= altclass= calls=
+    chgsize= ncopysugg= nsugg=` — i.e. the COMPLETE `qty_compare_1` input vector, taken
+    before the suggested-register pass can perturb it.
+  * `BB2_QTY_DEBUG` (`local-alloc.c:1585`) dumps one line per quantity in `qty_order`
+    ORDER — `blk= ord= qty= reg1= birth= death= refs= got=` — i.e. the allocation sequence
+    and the hard register each quantity actually received.
+
+Runner: `tmp/grind/func_800770B8/s26/qtydbg.py` (applies a variant, runs the project's exact
+`cpp | cc1` front half from `engine.buildconfig` with both env vars set, keeps the
+`func_800770B8` slice by tracking the `func=` field of the interleaved SUGGDBG lines) driven
+by `s26/qty.sh`. One run per variant, no scoring needed. Outputs `s26/<name>.qty`.
+**Any later session can now test a class-C hypothesis without spending a score.**
+
+### THE MEASURED qty TABLES — BLOCK 1 (the outer-loop body)
+
+    F (floor, base-first cursor, A,D,C,S stores)   score 5 / 175
+      ord=0  qty2 reg1=89   birth 12  death 14  refs  4  -> $2
+      ord=1  qty4 reg1=110  birth 48  death 56  refs 10  -> $2     (sum MERGED WITH RELOAD)
+      ord=2  qty3 reg1=108  birth 28  death 52  refs 16  -> $3     (chain, no sum)
+      ord=3  qty1 reg1=100  birth 10  death 44  refs 12  -> $4
+      ord=4  qty0 reg1=86   birth  6  death 46  refs 14  -> $5
+
+    X (plain flip, A,D,C,S stores)                 score 29 / 175
+      ord=0  qty2 reg1=89   birth 12  death 14  refs  4  -> $2
+      ord=1  qty3 reg1=110  birth 28  death 56  refs 22  -> $2     (chain+sum MERGED)
+      ord=2  qty4 reg1=109  birth 48  death 52  refs  4  -> $3     (reload alone)
+      ord=3  qty1 reg1=100  birth 10  death 44  refs 12  -> $3
+      ord=4  qty0 reg1=86   birth  6  death 46  refs 14  -> $4
+
+    fCADS (flip + C,A,D,S stores)                  score 12 / 175, rows 55-64 byte-exact
+      ord=0  qty3 reg1=93   birth 20  death 22  refs  4  -> $2
+      ord=1  qty2 reg1=110  birth 12  death 56  refs 22  -> $3     (chain+sum MERGED)
+      ord=2  qty4 reg1=109  birth 48  death 52  refs  4  -> $2     (reload alone) TARGET
+      ord=3  qty1 reg1=100  birth 10  death 44  refs 12  -> $4
+      ord=4  qty0 reg1=86   birth  6  death 46  refs 14  -> $5
+
+### s25's SPAN-THRESHOLD MODEL IS FALSIFIED; THE REAL CRITERION IS AN OVERLAP TEST
+
+s25 inferred from post-sched2 row numbering that X's merged quantity had span ~14 (priority
+88/14 = 6.3) and that class C would close once that span passed ~22. The compiler's own
+numbers say otherwise: **X's merged quantity already spans 28** (birth 28, death 56), its
+priority is 88/28 = 3.14, it is **already ordered SECOND** behind the short 4-ref quantity
+(priority `floor_log2(4)*4*1/2` = 4.0) — exactly the ordering s25 said we still had to buy.
+X nevertheless loses the seat.
+
+The actual discriminator is *interval containment*, not priority:
+
+  * X: the short quantity occupies `[12,14]` and the merged chain occupies `[28,56]`. They
+    are DISJOINT, so when the chain is allocated (ord=1) `$2` is free again and it takes it.
+    The reload `[48,52]` is then allocated third, conflicts with the chain, and gets `$3`.
+  * fCADS: the merged chain occupies `[12,56]` and CONTAINS the short quantity's `[20,22]`.
+    `$2` is therefore still busy when the chain is allocated, the chain falls to `$3`, and
+    the reload `[48,52]` — which starts long after the short quantity died at 22 — finds
+    `$2` free. Those are the target's seats.
+
+So the class-C seat condition, stated exactly and for the first time, is:
+
+> On a flipped-cursor body the target's seats appear iff (i) the merged 22-ref chain+sum
+> quantity is ordered after some short high-priority quantity (satisfied whenever its span
+> exceeds 22, already true in every A-first build measured), AND (ii) that short quantity's
+> `[birth,death]` lies strictly INSIDE the chain quantity's `[birth,death]`, AND (iii) the
+> short quantity is dead before the reload's birth (48).
+
+Equivalently, in terms of C: the chain root `t0*4` must be BORN (post-sched1) ahead of some
+4-ref throwaway quantity that itself dies before the cursor's `D_800A36A0` reload. In X the
+chain root is born at 12 but is NOT merged into the sum's quantity — the merged quantity
+starts at 28, at the `t0*5` add — whereas in fCADS the chain root's death coincides with the
+`t0*5` add, the tie fires there, and the merged quantity inherits birth 12.
+
+### THE RTL AT THE TWO ADD SITES IS IDENTICAL — THE "SOURCE NAMES IT FIRST" MODEL IS WRONG
+
+s21/s25 modelled the class-C tie as "the sum ties to RTL operand 1 = the operand the C
+source names first". A fresh `-da` dump of the floor body F
+(`tmp/grind/func_800770B8/dumps/text1b.lreg`, via `pwsh tools/grinder/dump.ps1
+func_800770B8`) shows that is not what the RTL contains. The cursor site and the 0x5C
+control site — one of which matches the target and one of which does not — carry
+**structurally identical** plus insns, both with the SHIFT as operand 1 and both with
+REG_DEAD on both operands, even though both are spelled base-first in the source:
+
+    (insn 185 ... (set (reg:SI 110) (plus:SI (reg:SI 108) (reg:SI 109))))   ; cursor site
+        (expr_list:REG_DEAD (reg:SI 108) (expr_list:REG_DEAD (reg:SI 109) (nil)))
+    (insn 263 ... (set (reg:SI 140) (plus:SI (reg:SI 139) (reg:SI 137))))   ; 0x5C site
+        (expr_list:REG_DEAD (reg:SI 139) (expr_list:REG_DEAD (reg:SI 137) (nil)))
+
+(108/139 = the shift, 109/137 = the `D_800A36A0` reload.) Source operand order does not
+survive into RTL operand order at either site — the shift is operand 1 in both. What differs
+between the two sites is the QUANTITY STATE that `combine_regs` (local-alloc.c:1784-1946)
+sees when it is asked to tie the destination, which is exactly what the qty tables above
+measure. Any future session must attack the qty intervals, not the source operand order.
+
+### PROBE: NAMED C-/D-GROUP POINTER HOISTS DO NOT MOVE THE CHAIN QUANTITY'S BIRTH (6 builds + 4 qty runs)
+
+The obvious ordinary-C way to buy condition (ii) on the target's A-first store order is to
+hoist the `t0*4`-consuming pointer computations into named locals at the top of the
+outer-loop body while leaving every STORE in the target's A,D,C,S order — a pointer local,
+no reordered store, no added value. Three shapes, on both cursor spellings:
+
+    d1  `u8 *pd = (u8 *)&D_800A35D0 + (t0 * 4);` hoisted, D stores in place
+    d2  `u8 *pc = base + (t0 * 4);`              hoisted, C stores in place
+    d3  both
+
+    d1f 40/175   d2f 25/175   d3f 20/175      (flipped cursor; plain flip X = 29)
+    d1n 35/175   d2n  5/175   d3n 10/175      (base-first cursor; floor F = 5)
+
+All six keep 175 insns. `d2n` is **byte-identical to the floor** — naming the C-group
+pointer is a free spelling on the base-first cursor. But the qty tables show none of them
+buys the criterion: the merged chain quantity's birth stays at 26-28 in every flipped
+variant, and the hoist merely splits a NEW 6-ref quantity off the named pointer:
+
+    d1f  short [12,14] refs 4 -> $2 ; chain [26,54] refs 22 -> $2 ; new [30,34] refs 6 -> $3
+    d2f  short [12,14] refs 4 -> $2 ; chain [28,56] refs 22 -> $2 ; new [36,40] refs 6 -> $3
+    d3f  short [12,24] refs 16 -> $2 ; chain [26,54] refs 22 -> $2 ; two new 6-ref qtys -> $3
+
+In d3f the short quantity even grows to 16 refs and `[12,24]`, and the chain at `[26,54]`
+still starts two units after it dies. **Hoisting the pointer into a local moves the pointer,
+not the shift**: the chain root's birth is set by where sched1 places the `sll`, and sched1
+sinks it to its first consumer, which on an A-first store order is always after group A's
+insns. Banked
+`rejected/s26-classC-named-CD-pointer-hoist-does-not-move-chain-qty-birth-175insn-score20.c`
+and `rejected/s26-classC-named-C-pointer-hoist-byte-neutral-on-base-first-175insn-score5.c`.
+
+### fCADS's 12 POINTS ARE ENTIRELY THE STORE-GROUP BLOCK (rows 40-54)
+
+Full row diff of fCADS (`s26/rowdiff.sh fCADS`, cosmetic `move`/`addu $zero` and
+`li`/`addiu $zero` disassembly aliases discounted): the only genuine differences are the
+long-known rows 35-36 (the `$s1` vs `$v0` store base) and the contiguous block **rows
+40-54**, i.e. the A/D/C pointer computations and their stores, reordered. Rows 55-64 —
+including the class-C `addu $v1,$v1,$v0` — are byte-exact, re-confirming s23/s25. So the
+price of the C-first order is localised to one 15-row window and nothing leaks past row 54.
+
+### FACTS BANKED
+
+- [s26] Chassis unchanged from s25 (HEAD d8215bb2, working tree byte-equals `git show HEAD:src/text1b.c`); floor re-verified live at score 5 / build_insns 175 / target_insns 175 with `memory/grind/func_800770B8/candidate.c` applied plus its two documented byte-neutral caller-side edits.
+- [s26] NEW INSTRUMENT, transferable to every RA question in this project: the instrumented cc1 (`tools/gcc-2.7.2/cc1`) has env-gated `BB2_SUGG_DEBUG` (local-alloc.c:1437) and `BB2_QTY_DEBUG` (local-alloc.c:1585) hooks that print, per block, every quantity's `qty_birth / qty_death / qty_n_refs / qty_min_class / suggestions` AND the `qty_order` allocation sequence with the hard register each quantity got. Runner: `tmp/grind/func_800770B8/s26/qtydbg.py` + `s26/qty.sh`. One cc1 run per variant; no score needed to test a local-alloc hypothesis.
+- [s26] s25's frontier item #3 is CLOSED: the spans are no longer estimated from post-sched2 rows. Measured block-1 tables are recorded above for F, X, fCADS, d1f, d2f, d3f.
+- [s26] s25's numeric seat model is FALSIFIED. X's merged chain+sum quantity spans [28,56] = 28, not ~14; its priority is 88/28 = 3.14, already BELOW the blocking short quantity's 4.0, and it is already allocated SECOND. Growing the span further cannot be the missing ingredient because the ordering s25 wanted to buy is already in hand.
+- [s26] THE REAL CRITERION IS INTERVAL CONTAINMENT. X: short qty [12,14], chain [28,56] — disjoint, so $2 is free again at ord=1 and the chain takes it (wrong seats). fCADS: chain [12,56] CONTAINS short [20,22], so $2 is busy, the chain falls to $3, and the reload [48,52] (dead-short-qty window) finds $2 — the target's seats. Condition, exactly: (i) chain span > 22 so it is ordered after the short qty; (ii) short qty's [birth,death] strictly inside the chain's; (iii) short qty dead before the reload's birth (48).
+- [s26] The merged quantity's BIRTH is the chain root's birth only when the tie fires at the `t0*5` add. In X the chain root (born 12) stays a separate 4-ref quantity and the merged quantity starts at 28; in fCADS the chain root is inside the merged quantity, which is why fCADS's merged interval starts at 12.
+- [s26] RTL FACT that supersedes the s21/s25 "source names it first" tie model: in a fresh `-da` dump of the floor body, the cursor add (insn 185) and the 0x5C control add (insn 263) are structurally IDENTICAL — `(set (reg D) (plus (reg SHIFT) (reg RELOAD)))` with REG_DEAD on both operands — even though both sites are spelled base-first in C. Source operand order does not survive into RTL operand order at either site; the difference is quantity state seen by `combine_regs`, not operand order.
+- [s26] Named-pointer hoists of the t0*4-consuming group pointers, stores untouched in A,D,C,S order, do NOT move the chain quantity's birth: d1f 40, d2f 25, d3f 20 (flip) and d1n 35, d2n 5, d3n 10 (base-first), all 175 insns; chain birth stays 26-28 in every flipped variant while a NEW 6-ref quantity splits off the named pointer. `d2n` is byte-identical to the floor (a free spelling). sched1 sinks the `sll` to its first consumer, so the chain root's birth follows the STORE order, not the declaration.
+- [s26] fCADS's 12 points are localised: the only genuine differing rows are the known 35-36 and the contiguous store-group window rows 40-54; rows 55-64 (class C, incl. `addu $v1,$v1,$v0`) are byte-exact and nothing leaks past row 54.
+- [s26] 6 fresh scoring builds, 5 instrumented-cc1 qty runs, 1 fresh `-da` dump set; src/text1b.c restored to pristine after every sweep (git status clean apart from the engine's own metrics/events.jsonl).
+
+- [s26] Chassis unchanged from s25 (HEAD d8215bb2; s24/s25 commits are ledger-only). Working tree byte-equals git show HEAD:src/text1b.c and s25's pristine copy. Floor re-verified live: candidate.c plus its two documented byte-neutral caller-side edits = score 5, build_insns 175, target_insns 175.
+
+- [s26] NEW INSTRUMENT, transferable to every RA question in this project: the instrumented cc1 (tools/gcc-2.7.2/cc1) carries env-gated BB2_SUGG_DEBUG (local-alloc.c:1437) and BB2_QTY_DEBUG (local-alloc.c:1585) hooks that print, per basic block, every quantity's qty_birth/qty_death/qty_n_refs/qty_min_class/suggestions AND the qty_order allocation sequence with the hard register each quantity got. Runner tmp/grind/func_800770B8/s26/qtydbg.py + s26/qty.sh: one cc1 run per variant, no sandbox score needed to test a local-alloc hypothesis. No prior session on this function used these hooks.
+
+- [s26] s25's frontier item #3 ('turn the span estimate into an exact threshold') is CLOSED on the first probe: qty_birth/qty_death are now read directly instead of inferred from post-sched2 row numbering.
+
+- [s26] Block-1 qty tables measured this session. F (floor): [12,14] refs 4 -> $2; [48,56] refs 10 -> $2 (sum merged with the reload); [28,52] refs 16 -> $3; [10,44] refs 12 -> $4; [6,46] refs 14 -> $5. X (plain flip): [12,14] refs 4 -> $2; [28,56] refs 22 -> $2; [48,52] refs 4 -> $3. fCADS: [20,22] refs 4 -> $2; [12,56] refs 22 -> $3; [48,52] refs 4 -> $2 (target seats).
+
+- [s26] The class-C seat condition, stated exactly: (i) the merged 22-ref chain+sum quantity's span exceeds 22 so it is ordered after the short 4-ref quantity (priority 4.0); (ii) the short quantity's [birth,death] lies strictly INSIDE the chain quantity's; (iii) the short quantity is dead before the cursor reload's birth at 48. X satisfies (i) and (iii) but not (ii); fCADS satisfies all three.
+
+- [s26] The merged quantity's birth equals the chain root's birth only when the tie fires at the t0*5 add. In X the chain root (born 12) stays a separate 4-ref quantity and the merged quantity starts at 28; in fCADS the chain root is inside the merged quantity, which is why fCADS's interval starts at 12.
+
+- [s26] The floor body ALREADY produces the target's interval geometry at the 0x5C control site from ordinary base-first C: F.qty block 3 reads ord=0 [8,12] refs 8 -> $2, ord=1 [4,26] refs 24 -> $3 (the sum quantity, contains [8,12]), ord=2 [24,26] refs 4 -> $2, ord=3 [16,20] refs 4 -> $2 (the reload). That is the criterion satisfied, in this same function, with no flip and no store reorder.
+
+- [s26] RTL fact superseding the 'source names it first' tie model: the cursor add (insn 185) and the 0x5C control add (insn 263) are structurally identical -- (plus (reg SHIFT) (reg RELOAD)), shift as operand 1, REG_DEAD on both operands -- from base-first C at BOTH sites.
+
+- [s26] Named-pointer hoists of the t0*4-consuming group pointers with every store left in A,D,C,S order: d1f 40, d2f 25, d3f 20 (flipped cursor; X = 29) and d1n 35, d2n 5, d3n 10 (base-first; F = 5), all 175 insns. Chain quantity birth stays 26-28 in every flipped variant; the hoist splits a new 6-ref quantity off the named pointer instead. d2n is byte-identical to the floor.
+
+- [s26] fCADS's 12 points are localised: the only genuine differing rows (discounting cosmetic move/addu-$zero and li/addiu-$zero disassembly aliases) are the long-known rows 35-36 and the contiguous store-group window rows 40-54. Rows 55-64, including the class-C addu $v1,$v1,$v0, are byte-exact and nothing leaks past row 54.
+
+- [s26] 6 fresh scoring builds, 5 instrumented-cc1 qty runs, 1 fresh -da dump set. src/text1b.c restored to pristine after every sweep; git status clean apart from the ledger edits and the engine's own metrics/events.jsonl.

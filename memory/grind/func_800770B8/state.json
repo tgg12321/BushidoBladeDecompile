@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 25,
+ "session_count": 26,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -153,23 +153,29 @@
    "floor": 5,
    "modality": "synthesis",
    "headline": "Floor re-verified 5/175/175; BOTH standing frontier items executed and killed (12 builds); the class-C tie and seats are now read straight out of local-alloc.c and the seat decision is reduced to a nu"
+  },
+  {
+   "session": 26,
+   "floor": 5,
+   "modality": "synthesis",
+   "headline": "Class C's seat decision is now read straight out of GCC's own qty table (BB2_QTY_DEBUG): s25's span-threshold model is falsified and replaced by an exact interval-containment criterion, and the floor "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Class C closes at 175 instructions on the target's A-first store order if a C form lengthens the merged chain+sum quantity's live span past ~22 insns (equivalently: grows the chain-root t0*4 pseudo's own span from 10 to ~18) while the cursor stays flip-spelled so the sum ties to the shift.",
-   "mechanism": "Measured this session: Q = {chain root, t0*5, t0*10, sum} has a fixed 22 references, so its qty_compare_1 priority is 88/span (local-alloc.c:1660-1683) and the blocking short 4-refs/2-insn quantity sits at 4.0. X (chain-root span 10) is 6.3 and takes $2; fCADS (chain-root span 18) is 3.8 and is pushed to $3, which is the target's seat. Only the span is free \u2014 the reference count is identical in every build measured so far.",
-   "next_probe": "The chain root dies at the t0*5 addu, so the span must be grown at the death end, not the birth end (naming is byte-inert, s24 + s25's eight y-builds). Enumerate C forms that give t0*4 a real later consumer inside the SAME basic block: (a) derive the S group's 0x68 address from the C-group pointer (`base + t0*4`) rather than from `base + t0`, which keeps A-first stores and pushes a t0*4-derived value past the cursor; (b) derive one of the D-group stores' address from the C-group pointer; (c) place group C's *pointer* computation after the cursor's t0*5 add while its stores stay in place. Read the resulting `Register N used R times across S insns` line for the chain root in the .lreg dump BEFORE scoring \u2014 the criterion is span >= ~18 on that pseudo \u2014 and only then look at the score."
+   "hypothesis": "Class C closes on the target's A-first store order by moving the SHORT quantity into the chain's interval rather than moving the chain: the chain occupies [26,56] and the reload [48,52] in every A-first build, so any 4-ref, 2-unit throwaway quantity born in (26,48) satisfies containment.",
+   "mechanism": "block_alloc allocates in qty_order; a 4-ref/2-unit quantity has priority 4.0 and is allocated before the 22-ref chain (3.14), taking $2. If its interval sits inside the chain's, $2 is still busy when the chain is allocated, the chain falls to $3, and the reload -- born at 48, after the short quantity died -- finds $2. Today's short quantity is born at 12, two units before the chain starts.",
+   "next_probe": "Enumerate ordinary-C forms that create a short-lived throwaway value in the MIDDLE of the store block rather than before it: the S-group address (base + t0) computed into a named local declared between the D and C groups; the &D_800A35D0 symbol address named in its own local so its lui/addiu pair forms a 4-ref quantity after the chain root's birth; a named local for the group-A pointer reused for a later group. Run tmp/grind/func_800770B8/s26/qty.sh on each and ACCEPT ONLY variants whose block-1 table shows a refs<=4 quantity with birth > 26 and death < 48 -- score only those. This is one cc1 run per candidate, so the sweep is cheap."
   },
   {
-   "hypothesis": "The non-local-reload route (confirmed this session to flip the tie from a base-first source) reaches the target's seats if the ejected reload can be made to land in $v0 instead of $t0, because global-alloc rather than local-alloc then chooses its hard register.",
-   "mechanism": "Once reg_basic_block < 0 the reload is allocated by global.c, whose ordering is by allocno priority and whose hard-register choice honours the conflict graph and any hard-reg suggestion. z2n seats it in $t0; the target has it in $v0. tools/ra_solver models global.c exactly and can be asked, from the z2n dump, what would have to change for allocno(reload) to take $2.",
-   "next_probe": "Take the z2n build (176/42, tie already correct), dump .greg, and run tools/ra_solver's global.c model plus inverse_compose.py classify on the reload's allocno to get a REACHABLE/FORECLOSED verdict and a ranked C-lever vector for seating it in $v0. Note z2n is +1 insn, so pair any REACHABLE verdict with the z1 shared-reload variant (174, -1 insn) or an s20 slack device before scoring."
+   "hypothesis": "There is a store-order perturbation strictly weaker than fCADS that starts the chain quantity at 12 while leaving group A's five stores emitted first, i.e. buys containment without fCADS's 15-row price.",
+   "mechanism": "fCADS buys chain birth 12 by putting group C first, and its whole 12-point cost is confined to rows 40-54 (measured this session). The s23 sweep permuted WHOLE groups only; splitting a group's address computation from its stores was never tried, and sched1 sinks the t0*4 sll to its first consumer -- which can be a pointer computation whose stores stay put.",
+   "next_probe": "Build the split-group shapes on the flipped cursor: (a) C's pointer computed first with C's stores left after D; (b) D's lui/addiu/addu first with D's stores after A; (c) both. Read the block-1 qty table for chain birth 12 AND a refs<=4 quantity fully inside [12,48] before scoring. Note s26 proved a named-pointer LOCAL does not do this on its own (d1/d2/d3 all keep birth 26-28), so the address computation must acquire a consumer that forces sched1 to place it early, not merely a name."
   },
   {
-   "hypothesis": "The numeric span criterion can be turned from an estimate into an exact threshold by reading qty_birth/qty_death directly instead of inferring them from post-sched2 rows.",
-   "mechanism": "The .lreg dump prints per-PSEUDO reference counts and spans but not per-QUANTITY birth/death, and the row numbering I compared is post-sched2 while local-alloc sees the post-sched1 order; the ~14 vs ~23 span figures are therefore estimates, and the exact crossing point between Q and the blocking 4-refs/2-insn quantity is not yet pinned.",
-   "next_probe": "Use the instrumented cc1 (tools/gcc-2.7.2/cc1, -Instrumented on tools/grinder/dump.ps1) or the .sched dump's insn ordering to compute qty_birth/qty_death for Q and for the blocking quantity in X, fCADS and the floor F, then state the exact span threshold. That converts frontier item 1 from 'lengthen by about eight insns' into a build-count-free predicate any later session can test against a .lreg dump before it spends a score."
+   "hypothesis": "The C-level difference that makes the floor body's 0x5C site satisfy the containment criterion (sum quantity [4,26] containing short [8,12], reload [16,20] taking $2) can be transplanted onto the cursor site, closing class C with no flip and no store reorder.",
+   "mechanism": "Both sites compile from base-first C to identical RTL, and block 3 of the FLOOR body already produces exactly the interval nesting the cursor site needs. The geometric difference is that at the 0x5C site the sum quantity is born at 4 -- at the top of its block -- whereas at the cursor site it is born at 26-28, after the whole store block.",
+   "next_probe": "Diff block 1 and block 3 of s26/F.qty and the corresponding .lreg insn streams to identify which pseudo is born at 4 in block 3 and why the tie fires there, then look for the C construct that reproduces it in block 1. Concretely: block 3's t0*2 shift feeds both the sp[t0] address (addu $a1,$v1,$t3 at target row 89) and the 0x5C base, i.e. the shift has a SECOND consumer that is not the add -- the cursor's t0*10 shift has only one. Test whether giving the cursor's shift a second real consumer (a value the target also computes) moves the sum quantity's birth to the shift."
   }
  ],
  "judge_constraints": [
@@ -295,6 +301,30 @@
    "measured_on": "HEAD chassis 2026-09-05 (commit 35957733); floor re-verified 5/175/175 with the annotated do-while(0) prologue fence present; eight builds across two declaration orders and both cursor bases.",
    "predicate_cite": "",
    "result": "Byte-inert in all eight builds: y1f, y2f, y3f, y4f all exactly 29/175 (byte-identical to the plain flip X) and y1n, y2n,"
+  },
+  {
+   "session": 26,
+   "statement": "s25's model that the class-C seat flip is bought by growing the merged chain+sum quantity's live span past about 22 units at fixed reference count.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d8215bb2 chassis (src/text1b.c byte-equals git show HEAD:src/text1b.c and s25's pristine copy); floor body's single FAKE construct, the empty do-while(0) prologue fence, present in F, X and fCADS",
+   "predicate_cite": "",
+   "result": "KILLED as a sufficient criterion. Span > 22 is necessary (it is what orders the chain second) but every A-first build al"
+  },
+  {
+   "session": 26,
+   "statement": "On the target's A,D,C,S store order, hoisting the t0*4-consuming group pointers into named locals at the top of the outer-loop body moves the merged chain quantity's birth ahead of the short quantity,",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d8215bb2 chassis, 175/175 insns in all six builds, empty do-while(0) prologue fence present in every variant",
+   "predicate_cite": "",
+   "result": "KILLED. The chain quantity's birth stays at 26-28 in every flipped variant; the hoist only splits a NEW 6-ref quantity o"
+  },
+  {
+   "session": 26,
+   "statement": "The s21/s25 model that the cursor add ties its destination to the operand the C source names first, so that the base-first spelling is what puts the tie on the D_800A36A0 reload.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d8215bb2 chassis, floor body (candidate.c) applied, empty do-while(0) prologue fence present",
+   "predicate_cite": "",
+   "result": "KILLED as an explanation. The flip spelling does change the outcome, but not by changing RTL operand order; any further "
   }
  ]
 }
