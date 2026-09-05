@@ -275,6 +275,40 @@
  *       measured under a FAKE carrier.
  * This body remains the honest ordinary-C best at 15. See hypotheses.md
  * K35/K36/K37 and evidence.md section s12.
+ *
+ * [s13 2026-09-05 UPDATE, structural modality] Chassis re-checked first: this
+ * body still scores 15 (104 target / 105 build, rules_dropped 0,
+ * cheat_asm_stripped 9). BODY UNCHANGED. s13 closed the two escape routes out of
+ * loop.c:1631 that do NOT go through insn_count, and settled the free-carrier
+ * question at the target's tail:
+ *   H18 the move test is three OR'd conditions; already_moved (loop.c:1630) is
+ *       reachable only after another movable loading the SAME register moved,
+ *       and the m->forces disjunct (loop.c:1632) is a FORCE-to-move, not an
+ *       escape. So the gate really is `threshold >= insn_count` with savings and
+ *       lifetime pinned at 1, and H17's window [120, 122] is complete.
+ *       threshold is written only at loop.c:1719/1904, both `-= 3`, once per
+ *       MOVED movable regardless of m->consec - the order dial's slope is
+ *       exactly -3 per hoist.
+ *   K38 (CLASS) the m->forces SKIP path (loop.c:1594) cannot reach this movable.
+ *       force_movables (loop.c:1221) attaches `forces` only when the movable's
+ *       setting insn is the last insn mentioning an earlier movable's register;
+ *       all three movables here are `(set (reg) <const_int|symbol_ref>)` and
+ *       mention no other register, so no forces pointer can ever be attached.
+ *   K39 (CLASS) the may_not_move two-basic-block trigger (loop.c:3037, last_set
+ *       cleared only at a CODE_LABEL/JUMP_INSN, loop.c:3089) cannot fire for a
+ *       division magic: each division site expands a FRESH pseudo, so
+ *       n_times_set is 1. Measured on an explicit two-arm spelling: two pseudos,
+ *       may_not_move silent, combine_movables MATCHES them and pushes savings
+ *       1->2 and lifetime 1->2 (product 119 -> 476, the wrong way), at +13
+ *       emitted instructions (score 27 / 118).
+ *   K40 the target's 23-instruction tail (8003C844..8003C8B0) maps 1:1 onto the
+ *       eight source statements below it, with no register read that the loop
+ *       could have left live - so the free insn_count carrier s6 found has no
+ *       semantically-real spelling here; every carrier is dead at loop exit.
+ *   K37 re-audited on the current chassis and STANDS (15 / 105); fake_ablate
+ *       reports no FAKE constructs in this body.
+ * This body remains the honest ordinary-C best at 15. See hypotheses.md
+ * H18/K38/K39/K40 and evidence.md section s13.
  */
 void func_8003C714(void) {
     u8 buf[4];

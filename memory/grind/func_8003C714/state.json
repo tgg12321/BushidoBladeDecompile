@@ -1,7 +1,7 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,23 +75,29 @@
    "floor": 15,
    "modality": "structural",
    "headline": "Structural: the moved_once insn_count-doubling channel (s11's headline frontier item) is CLASS-killed - every carrier is a second emitted loop and the target has exactly one label and one branch - and"
+  },
+  {
+   "session": 13,
+   "floor": 15,
+   "modality": "structural",
+   "headline": "Structural: the two loop.c:1631 escape routes that bypass insn_count are CLASS-killed (m->forces skip cannot attach to a constant-load movable; may_not_move's two-BB trigger cannot see a division magi"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With the moved_once channel class-killed (K35), the ONLY remaining loop.c:1631 route is H17's no-carrier window - insn_count in [120,122] with zero emitted bytes - and the only measured free insn_count channel is loop-carried arithmetic deleted by biv elimination (s6), which in every spelling found so far is semantically inert padding.",
-   "mechanism": "count_loop_regs_set counts RTL insns in the loop before strength reduction; s6 measured that balanced loop-carried pairs survive cse1, are counted, and are then deleted inside loop_optimize for zero bytes. K21 says only CONSTANT-step bivs get folded away, and K36 now adds that a natural extra index is count-neutral because it displaces the giv multiply it replaces.",
-   "next_probe": "Ask whether any SEMANTICALLY REAL loop-carried value this function could plausibly have computed is a constant-step biv: the data at &D_80106A58 is read, not accumulated, and the tail (func_8001CD68 through gpu_DisableDisplay) consumes no per-entry total, so the honest answer is probably no. Settle it by enumerating what a post-loop consumer would have to look like in the target's 23-instruction tail (8003C844..8003C89C) - if no tail instruction can consume an accumulator, the free-insn_count channel is admissible-form-empty and the whole loop.c:1631 axis is closed for ordinary C."
+   "hypothesis": "With K38 and K39 closing both non-arithmetic escapes, the ONLY route to the target arrangement is H17's window insn_count in [120, 122] reached at zero emitted cost, and K40 says every known carrier for that window is dead at loop exit. The one term never independently re-derived from source is whether count_loop_regs_set's 'i'-class count can be inflated by insns that survive cse1 and loop but are merged away by a LATER pass (combine.c, flow.c, jump2) rather than by biv elimination.",
+   "mechanism": "insn_count is computed by count_loop_regs_set before strength reduction (loop.c:3001-3092). s5's BYTE-COUNT COUPLING law claimed everything surviving loop_optimize also survives combine and reload, and s6 falsified it for ONE deletion path (biv elimination inside loop_optimize). combine.c runs after loop and merges 2-3 insn chains into one pattern, so a chain that cse1 cannot fold but combine can would be a second free-count channel that no session has tested.",
+   "next_probe": "Build a sweep of k in {4, 8, 16, 32} in-loop combine-foldable chains whose value IS consumed by an existing store (so cse1's delete_dead_from_cse cannot remove them and s5's K15 harness does not apply) \u2014 e.g. widening/narrowing pairs on the u8 destination, or shift-add pairs feeding the existing sb \u2014 and read insn_count in the .loop dump against build_insns from sandbox. If insn_count rises while build_insns stays at 105 the channel is real and admissible; if build_insns tracks insn_count 1:1 the s5 coupling law holds for combine and the [120,122] window is carrier-empty for ordinary C."
   },
   {
-   "hypothesis": "The last unmeasured admission trigger for the 0x91A2B3C5 movable is count_loop_regs_set's two-basic-block rule (loop.c:3036-3040: n_times_set[regno] > 0 with last_set[regno] == 0 sets may_not_move), which needs ONE pseudo set in two different basic blocks inside the loop - distinct from K23's two-BB experiment, where combine_movables MATCHED two distinct pseudos and raised savings to 2 instead.",
-   "mechanism": "may_not_move keeps an insn out of the movable list entirely, which is exactly the target's arrangement (magic in-loop as a split lui/ori pair) and costs nothing on the desirability arithmetic. The open question is purely whether cse1 can leave the magic constant in ONE pseudo that is SET (not merely used) in two basic blocks of the loop.",
-   "next_probe": "Build a two-arm loop body where the /1800 division appears in both arms, then read the .cse and .loop dumps rather than the score: check whether the magic appears as one regno with n_times_set 2 (may_not_move fires, no movable printed) or as two regnos joined by combine_movables (K23's outcome). If it is always the latter, the admission axis is closed with a source-level predicate rather than another spelling census."
+   "hypothesis": "The threshold halving at loop.c:532 (loop_has_call ? 1 : 2) is the only dial that changes the requirement by more than -3 per slot, and with a call in the loop the magic would decline at insn_count >= 59 instead of >= 120 \u2014 a +3 requirement instead of +64.",
+   "mechanism": "threshold 61 for a loop containing a CALL_INSN; slot 1 moves at 61 >= c (needs c <= 61), then threshold 58 and the magic declines at c > 58. The window becomes [59, 61] \u2014 reachable by K36's free index bivs plus a handful of insns rather than by 64 of them.",
+   "next_probe": "s8's K26 dismissed this as 'still hoists' using the wrong arithmetic (it compared 58 against insn_count 56 without adding the call's own in-loop insns). Measure it: put an existing-callee call inside the loop (the target has no jal in its loop, so this is diagnostic only) and read whether the .loop dump reports threshold-driven decline at insn_count in [59,61]. Even if byte-foreclosed, the measurement fixes the exact width of the window under loop_has_call and tells the next session whether any call-free construct sets loop_has_call (prescan_loop) \u2014 e.g. a libcall-expanded operation such as a 64-bit divide or a float op \u2014 which would be an ordinary-C handle on the same dial."
   },
   {
-   "hypothesis": "pb_array_subscript.c is a byte-equivalent second chassis for this function (15 / 105), so any future permuter or solver campaign has two independent seeds whose RTL converges after cse1.",
-   "mechanism": "cse1 folds the array-subscript address arithmetic into the same givs the index-derived-pointer spelling produces, so the two bodies emit identical instructions while presenting different pre-cse RTL to a permuter's mutations.",
-   "next_probe": "If a permuter campaign is ever re-run (s4 ran 66,016 iterations on the pointer spelling with zero finds), seed it from tmp/grind/func_8003C714/s12/pb_array_subscript.c instead, so the mutation neighbourhood differs from the exhausted one."
+   "hypothesis": "pb_array_subscript.c remains a byte-equivalent second chassis (15 / 105) whose pre-cse1 RTL differs from candidate.c, so any future permuter or solver campaign has two independent seeds.",
+   "mechanism": "cse1 folds the array-subscript address arithmetic into the same givs the index-derived-pointer spelling produces, so the two bodies emit identical instructions while presenting different mutation neighbourhoods.",
+   "next_probe": "If a permuter campaign is re-run (s4 ran 66,016 iterations on the pointer spelling with zero finds), seed it from tmp/grind/func_8003C714/s12/pb_array_subscript.c instead."
   }
  ],
  "judge_constraints": [
@@ -185,6 +191,30 @@
    "measured_on": "shipped chassis HEAD 2026-09-05, s12/pb_array_subscript.c and s12/pa_biv_step4.c applied in src/code6cac_c2.c, no FAKE constructs present, sandbox = 15 and 21",
    "predicate_cite": "",
    "result": "pb: 15 / 105 (byte-equivalent alternative spelling, useful as a second permuter seed). pa: 21 / 105."
+  },
+  {
+   "session": 13,
+   "statement": "The m->forces skip path at loop.c:1594 ('! m->forces || m->forces->done'), which would leave a movable in the loop at zero insn_count cost, cannot be reached by any constant-materialisation movable in",
+   "kill_scope": "class",
+   "measured_on": "shipped chassis HEAD 2026-09-05, memory/grind/func_8003C714/candidate.c applied over the INCLUDE_ASM line in src/code6cac_c2.c (sandbox score 15, 104 target / 105 build, rules_dropped 0); no FAKE cons",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1221",
+   "result": "Route closed for every constant-materialisation movable. The .loop table for the baseline prints no 'forces' annotation "
+  },
+  {
+   "session": 13,
+   "statement": "The may_not_move admission trigger at loop.c:3037 (n_times_set[regno] > 0 && last_set[regno] == 0, with last_set zeroed only at a CODE_LABEL or JUMP_INSN, loop.c:3089) cannot fire for a division's mag",
+   "kill_scope": "class",
+   "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s13/pa_twobb_div.c applied in src/code6cac_c2.c; no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:3037",
+   "result": "score 27, build_insns 118 (+13 emitted instructions). Movable table: 'Insn 50: regno 84 (life 2), move-insn savings 2 mo"
+  },
+  {
+   "session": 13,
+   "statement": "In this function the free insn_count carrier s6 measured (balanced constant-step bivs, counted by count_loop_regs_set and then deleted by biv elimination for zero emitted bytes) has no semantically-re",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, target disassembly asm/funcs/func_8003C714.s read against the statement list of memory/grind/func_8003C714/candidate.c; no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Every tail instruction is accounted for by an existing source statement; there is no spare instruction that could read a"
   }
  ]
 }

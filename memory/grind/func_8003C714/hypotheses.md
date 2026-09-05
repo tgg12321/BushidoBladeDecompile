@@ -1565,3 +1565,129 @@ in candidate.c, so no banked lever was measured under a FAKE carrier.
 - probe: candidate.c applied and measured (15 / 105 / rules_dropped 0 / cheat_asm_stripped 9), then s11/varE.c applied and measured, then tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c.
 - result: Floor 15 current; K33 stands at 18 / 112; ablation not applicable (no FAKE constructs).
 - verdict: CONFIRMED
+
+
+## s13 (2026-09-05) - structural modality
+
+**H18 (CONFIRMED, source-level).** The desirability test at loop.c:1631 is one of
+THREE OR'd move conditions, and the two non-arithmetic ones are structurally
+unavailable to this function. `already_moved[regno]` (loop.c:1630) is set only
+after some other movable loading the SAME register was moved (loop.c:1910), which
+cannot happen before the magic is itself tested. The third disjunct
+(loop.c:1632-1633) is a FORCE-to-move, not an escape. That leaves
+`threshold * savings * m->lifetime >= insn_count`, and s10's H15 + K29 pin
+savings and lifetime at 1, so the gate is exactly `threshold >= insn_count` and
+H17's window `insn_count in [120, 122]` is the complete statement of the
+requirement. Also re-derived: loop.c:1719 and loop.c:1904 are the only writes to
+`threshold`, both `threshold -= 3` and both once per MOVED movable irrespective
+of `m->consec`, so the order dial's slope is exactly -3 per hoist (matching
+K30's measured +3 emitted instructions per slot).
+
+**K38 (CLASS KILL) - the `m->forces` skip route cannot reach a constant-load
+movable.** `move_movables` skips a movable outright when
+`m->forces && ! m->forces->done` (loop.c:1594), which would leave the 0x91A2B3C5
+load in the loop at zero insn_count cost. `m->forces` is written in exactly one
+place, `force_movables` at loop.c:1221, and only for a movable `m` whose setting
+insn is the last insn mentioning an earlier movable's register
+(`INSN_UID (m->insn) == regno_last_uid[m1->regno]`). The dump shows this loop's
+three movables are `(set (reg 78) (symbol_ref "D_80106A58"))`,
+`(set (reg 84) (const_int -1851608123))` and
+`(set (reg 91) (const_int -2004318071))` - none of them mentions any register
+other than its own destination, so no earlier movable's register can have its
+last use there and the `forces` pointer can never be attached. Additionally
+`force_movables` doubles the FORCING movable's savings and adds the forced
+movable's lifetime to it (loop.c:1221-1223), so the shape would drive `m1` to
+`done` and loop.c:1632 would then force-move the magic. The route is closed for
+every constant-materialisation movable, which is what the /1800 magic is on this
+target.
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/loop.c:1221
+- measured_on: shipped chassis HEAD 2026-09-05, baseline candidate.c applied,
+  no FAKE constructs present (fake_ablate: nothing to ablate); RTL read from
+  tmp/grind/func_8003C714/s13/baseline.loop insns 203/205/207.
+
+**K39 (CLASS KILL) - the `may_not_move` two-basic-block admission trigger cannot
+fire for a division magic.** `count_loop_regs_set` sets `may_not_move[regno]`
+when `n_times_set[regno] > 0 && last_set[regno] == 0` (loop.c:3037), and
+`last_set` is zeroed only at a CODE_LABEL or JUMP_INSN (loop.c:3089-3090), so the
+trigger requires ONE pseudo SET twice with a label or jump between the sets.
+Every division site expands its magic constant into a FRESH pseudo, and cse1's
+only transform is to replace USES of an equivalent value - it never adds a second
+SET to an existing pseudo - so a magic-constant pseudo's `n_times_set` is 1.
+Measured on the explicit two-basic-block spelling
+(`rejected/twobb-division-gives-two-matched-pseudos-not-may-not-move.c`: the
+/1800 division duplicated into both arms of an in-loop `if (i != 0)`, else arm
+perturbed so jump.c cannot cross-jump them): the `.loop` table prints
+`Insn 50: regno 84 (life 2), move-insn savings 2  moved to 232` and
+`Insn 71: regno 92 (life 1), done move-insn matches 50` - two distinct pseudos,
+`may_not_move` silent, and `combine_movables` (loop.c:1245, gate
+`n_times_used[m->regno] == 1`) matching them and raising the surviving movable's
+savings 1 -> 2 and lifetime 1 -> 2. The desirability product therefore moves the
+WRONG way, 119 -> 476, while the extra basic block costs +13 emitted
+instructions (score 27, build_insns 118). This supplies the mechanism s8's K23
+inferred from scores only.
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/loop.c:3037
+- measured_on: shipped chassis HEAD 2026-09-05, s13/pa_twobb_div.c applied in
+  src/code6cac_c2.c, no FAKE constructs present.
+
+**K40 (instance) - the target's post-loop tail has no instruction that could
+consume a loop-carried accumulator.** The s12 frontier asked whether any
+semantically real loop-carried value could supply the free insn_count that s6
+measured (balanced constant-step bivs, deleted by biv elimination for zero
+bytes). The answer is decided by the target's 23-instruction tail
+(8003C844..8003C8B0), enumerated instruction by instruction this session: it is
+`func_8001CD68(buf)`, three byte stores from `buf`, one byte store from
+`D_80101ED2`, the four-argument `disp_SetFramebufferMode(1,0,0,0)` setup, the
+`D_800A37B8 = 0` / `D_800A3834 = 0x1F` stores, the `gpu_DisableDisplay()` call
+and the epilogue - a 1:1 map onto the eight source statements candidate.c
+already carries, with no register read that the loop could have left live. A
+loop-carried accumulator in this function is therefore dead at the loop exit,
+which is the inert-padding shape s6 already banked as inadmissible.
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, target disassembly
+  asm/funcs/func_8003C714.s read against candidate.c's statement list; no FAKE
+  constructs present.
+
+**K37 re-audit (STANDS).** s12's array-subscript chassis re-measured on the
+current chassis: score 15, build_insns 105, rules_dropped 0 - byte-equivalent to
+candidate.c. `fake_ablate` reports no FAKE constructs in candidate.c, so no
+banked lever was measured under a FAKE carrier.
+
+## [s13] The move decision at loop.c:1631 is three OR'd conditions, and the two that do not involve insn_count are not escapes: already_moved[regno] (loop.c:1630) is written only at loop.c:1910 after another movable loading the SAME register was moved, and the m->forces disjunct at loop.c:1632 is a force-TO-move. With savings and lifetime pinned at 1 (s10 H15/K29) the gate reduces exactly to 'threshold >= insn_count', so H17's window insn_count in [120,122] is the complete requirement. threshold is written only at loop.c:1719 and loop.c:1904, both 'threshold -= 3', both once per MOVED movable regardless of m->consec, so the movable-order dial's slope is exactly -3 per hoist.
+- mechanism: move_movables reads m->savings = n_times_used[regno] (loop.c:793), and n_times_used is a straight bcopy of n_times_set (loop.c:597), so savings counts SETS and has floor 1; m->lifetime (loop.c:791) is a difference of monotone LUIDs with floor 1. The product's minimum is therefore threshold itself.
+- probe: Read loop.c:505-545 (threshold formula), 760-900 (movable record construction), 1185-1245 (force_movables/combine_movables), 1570-1660 (move_movables head + desirability), 1710-1725 and 1896-1910 (the two threshold decrements); cross-checked against the regenerated baseline .loop movable table for the candidate body.
+- result: Confirmed from compiler source. threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 122 here, 61 with a call in the loop; the -3 decrement fires once per moved movable and never scales with m->consec, so a consec-group movable buys -3 while emitting several preheader instructions. No cheaper order dial exists than the +3-emitted-instructions-per-slot slope K30 already measured.
+- verdict: CONFIRMED
+
+## [s13] The m->forces skip path at loop.c:1594 ('! m->forces || m->forces->done'), which would leave a movable in the loop at zero insn_count cost, cannot be reached by any constant-materialisation movable in this loop, because force_movables (loop.c:1221) attaches the forces pointer only to a movable whose setting insn is the last insn mentioning an earlier movable's register, and all three movables here are (set (reg) <const_int|symbol_ref>) mentioning no register but their own destination.
+- mechanism: force_movables walks movables m1 and finds the first later non-done movable m with INSN_UID (m->insn) == regno_last_uid[m1->regno]; only then does it set m->forces = m1. A set from a CONST_INT or SYMBOL_REF references no source register, so it can never be the last-mention insn of another pseudo. force_movables additionally does m1->savings += m1->savings and m1->lifetime += m->lifetime, which makes the forcing movable strictly more desirable, so even if the shape existed m1 would reach done and loop.c:1632's third disjunct would force-move the magic.
+- probe: Regenerated the candidate's cc1 dumps with tools/grinder/dump.ps1 and read the post-loop RTL of the three hoisted insns in tmp/grind/func_8003C714/s13/baseline.loop: insn 203 = (set (reg:SI 78) (symbol_ref "D_80106A58")), insn 205 = (set (reg:SI 84) (const_int -1851608123) = 0x91A2B3C5), insn 207 = (set (reg:SI 91) (const_int -2004318071) = 0x88888889). Then traced every write of m->forces in tools/gcc-2.7.2/loop.c (grep: only line 1221).
+- result: Route closed for every constant-materialisation movable. The .loop table for the baseline prints no 'forces' annotation on any of the three movables, consistent with the source analysis. This is the last non-arithmetic escape from loop.c:1631 and it is now enumerated rather than assumed.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: shipped chassis HEAD 2026-09-05, memory/grind/func_8003C714/candidate.c applied over the INCLUDE_ASM line in src/code6cac_c2.c (sandbox score 15, 104 target / 105 build, rules_dropped 0); no FAKE constructs present (tools/fake_ablate.py reports nothing to ablate)
+- predicate_cite: tools/gcc-2.7.2/loop.c:1221
+
+## [s13] The may_not_move admission trigger at loop.c:3037 (n_times_set[regno] > 0 && last_set[regno] == 0, with last_set zeroed only at a CODE_LABEL or JUMP_INSN, loop.c:3089) cannot fire for a division's magic constant, because each division site expands its magic into a fresh pseudo with n_times_set 1; what fires instead is combine_movables (loop.c:1245), which matches the two pseudos and raises the surviving movable's savings 1->2 and lifetime 1->2, moving the desirability product from 119 to 476.
+- mechanism: count_loop_regs_set only marks a register unmovable when it sees a second SET of the same regno with no preceding set in the current basic block. A magic constant is materialised by expmed at each division site into a new pseudo, and cse1's only transform is to replace USES of an equivalent value, never to add a second SET to an existing pseudo, so the same regno is never set twice. combine_movables' own gate is n_times_used[m->regno] == 1, which these single-set pseudos satisfy exactly.
+- probe: Built tmp/grind/func_8003C714/s13/pa_twobb_div.c: the /1800 division duplicated into both arms of an in-loop 'if (i != 0)', with the else arm perturbed to (t + 1) / 1800 so jump.c cannot cross-jump the arms back together. Measured with sandbox --disable all and read the regenerated .loop movable table.
+- result: score 27, build_insns 118 (+13 emitted instructions). Movable table: 'Insn 50: regno 84 (life 2), move-insn savings 2 moved to 232' and 'Insn 71: regno 92 (life 1), done move-insn matches 50' — two distinct pseudos, may_not_move silent, combine_movables matching them. This reproduces s8's K23 outcome and now supplies its mechanism from the dump instead of from the score. Separately, the branch cost is structural: any interior basic-block split needs an emitted branch or an extra referenced label (jump.c deletes unreferenced labels), and the target function contains exactly one CODE_LABEL (.L8003C754) and one branch (bnez at 8003C83C) besides its five jal and the closing jr $ra. Banked as memory/grind/func_8003C714/rejected/twobb-division-gives-two-matched-pseudos-not-may-not-move.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s13/pa_twobb_div.c applied in src/code6cac_c2.c; no FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/loop.c:3037
+
+## [s13] In this function the free insn_count carrier s6 measured (balanced constant-step bivs, counted by count_loop_regs_set and then deleted by biv elimination for zero emitted bytes) has no semantically-real spelling, because the target's 23-instruction post-loop tail maps 1:1 onto the eight source statements candidate.c already carries and reads no register the loop could have left live.
+- mechanism: A loop-carried accumulator only earns its instructions if a post-loop consumer reads it. strength_reduce deletes a biv whose exit value it can fold, i.e. a constant-step biv, and the resulting construct is byte-free precisely when nothing consumes it — which is the inert-padding shape s6 banked as inadmissible.
+- probe: Enumerated asm/funcs/func_8003C714.s from 8003C844 to 8003C8B0 instruction by instruction and mapped each onto candidate.c's post-loop statements: jal func_8001CD68 + addiu $a0,$sp,0x10; lhu 0x10($sp)/sb 0x2D($s0); lbu 0x12($sp)/sb 0x2E($s0); lbu 0x13($sp)/sb 0x2F($s0); lui+lhu D_80101ED2/sb 0x30($s0); the four addiu/addu argument setups plus jal disp_SetFramebufferMode; addiu $v0,0x1F plus the two lui+sw / lui+sh global stores; jal gpu_DisableDisplay; and the five-instruction epilogue.
+- result: Every tail instruction is accounted for by an existing source statement; there is no spare instruction that could read an accumulator, and no argument slot fed from a loop-carried value. Any loop-carried carrier added to reach H17's insn_count window would therefore be dead at loop exit. Recorded as K40.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, target disassembly asm/funcs/func_8003C714.s read against the statement list of memory/grind/func_8003C714/candidate.c; no FAKE constructs present
+
+## [s13] s12's K37 (the array-subscript chassis, tmp/grind/func_8003C714/s12/pb_array_subscript.c) re-measured on the current chassis is still byte-equivalent to candidate.c, and candidate.c carries no FAKE construct, so no banked lever in this ledger was measured while a FAKE carrier occupied a target pseudo.
+- mechanism: cse1 folds the array-subscript address arithmetic into the same givs the index-derived-pointer spelling produces, so the two bodies present different pre-cse RTL and identical post-cse RTL.
+- probe: Mandated kill re-audit: tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c, then applied s12/pb_array_subscript.c and ran sandbox func_8003C714 --disable all.
+- result: fake_ablate: 'no FAKE-annotated constructs found ... nothing to ablate'. pb_array_subscript.c: score 15, build_insns 105, rules_dropped 0 — identical to the s12 record and to candidate.c. K37 stands as a second independent permuter seed, not as an improvement.
+- verdict: CONFIRMED
