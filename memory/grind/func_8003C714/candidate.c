@@ -184,6 +184,40 @@
  *  (lui v0 / lw v1 / ori v0 / mult). With the hoist gone, t1 frees and the mfhi
  *  temp (our t2, target t1) is expected to fall into place -> plausibly d0.
  *  See hypotheses.md for the attack frontier on that single decision.
+ *
+ * [s10 2026-09-05 UPDATE, rederive modality] Chassis re-checked first and again
+ * at session end: this body still scores 15 (104 target / 105 build,
+ * rules_dropped 0). BODY UNCHANGED. s10 re-derived the loop.c:1631 inequality
+ * from the compiler source instead of inheriting it, and corrected two ledger
+ * claims:
+ *   H15 `m->savings` counts SETS of the invariant pseudo in the loop, not uses
+ *       (loop.c:793 reads n_times_used, which loop.c:597 bcopies from
+ *       n_times_set). The .loop dump proves it: the /30 magic is read by four
+ *       in-loop mults and still prints `savings 1`. The two magics differ ONLY
+ *       in m->lifetime (31 vs 1), so no spelling aimed at the constant's USE
+ *       count can move the gate.
+ *   K29 m->lifetime has a hard floor of 1 (loop.c:791 differences monotone
+ *       luids; a 0 needs a reader-less set, which cse1 deletes pre-loop), so
+ *       the LHS is bounded below by `threshold` itself.
+ *   K30 s8's frontier item 3 was WRONG: a FOURTH ordinary-C movable exists.
+ *       Giving the +4 field its own index-derived pointer makes
+ *       `&D_80106A58 + 4` a distinct invariant, m->forces-chained to the base,
+ *       and pushes the 0x91A2B3C5 magic to movable slot 3 (threshold 116).
+ *       Measured price: score 28 at 108 build_insns, i.e. +3 emitted
+ *       instructions per movable slot, closing the desirability gap by only 5
+ *       (63 -> 58). At that slope K14's ~13-invariant crossover costs ~+39
+ *       emitted instructions against a 104-instruction target.
+ *   K31 loop.c:649 `may_not_optimize` is a FOURTH admission gate K23 never
+ *       enumerated, and K23's premise (repeated source expressions always give
+ *       distinct pseudos) is false - a doubly-materialised base gives ONE
+ *       pseudo with n_times_set 2. But statement order does not trip
+ *       reg_used_between_p, and the gate cannot reach the /1800 pseudo without
+ *       a second in-loop division.
+ *   K32 the project's only matched mm:ss.cc formatter, func_8001CD68
+ *       (src/code6cac.c:1121-1139), uses a DIFFERENT expression shape and is
+ *       not transplantable; it confirms this body's `(t/30) % 60` by contrast.
+ * This body remains the honest ordinary-C best at 15. See hypotheses.md
+ * H15/K29-K32 and evidence.md section s10.
  */
 void func_8003C714(void) {
     u8 buf[4];

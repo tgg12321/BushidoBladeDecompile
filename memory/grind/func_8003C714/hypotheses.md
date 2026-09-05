@@ -1288,3 +1288,118 @@ rather than re-opening any axis above.
 - probe: Applied memory/grind/func_8003C714/candidate.c over the INCLUDE_ASM line in src/code6cac_c2.c (tmp/grind/func_8003C714/s9/apply.py), then `& tools/wteng.ps1 main sandbox func_8003C714 --disable all`.
 - result: score 15, target_insns 104, build_insns 105, scorable true, rules_dropped 0, cheat_asm_stripped 10 — bit-for-bit the s3/s4/s5/s6/s7/s8 measurement. No chassis drift; the whole ledger is chassis-current. src/code6cac_c2.c was reverted to INCLUDE_ASM afterwards.
 - verdict: CONFIRMED
+
+---
+
+## s10 (2026-09-05) — rederive modality
+
+### H15 — CONFIRMED (source + dump)
+**Statement.** `m->savings` in the loop.c:1631 desirability test counts SETS of
+the invariant pseudo inside the loop, not uses. `loop.c:793` reads
+`n_times_used[regno]`, and `loop.c:597` fills `n_times_used` with a `bcopy` of
+`n_times_set` (produced by `count_loop_regs_set`).
+**Evidence.** Baseline `.loop` table on this chassis prints `savings 1` for the
+0x88888889 (/30) magic even though four in-loop `mult`s read it, and `savings 2`
+for a base symbol materialised twice in the s10.2 variant.
+**Consequence.** The two magics differ only in `m->lifetime` (31 vs 1). Every
+spelling whose intent is "make the /1800 constant be consumed fewer times" is
+inert. Corrects the rationale (not the number) in s7's H11.
+
+### K29 — KILLED (class): lifetime cannot be pushed below 1
+**Statement.** `m->lifetime` for the 0x91A2B3C5 movable cannot be made 0 by any
+C spelling, so the LHS of loop.c:1631 is bounded below by `threshold` itself.
+**Mechanism.** `loop.c:791` computes lifetime as a difference of `uid_luid`
+values, and `loop_optimize` assigns luids strictly monotonically (+1 per
+non-line-number insn); a 0 requires the pseudo to be mentioned in exactly one
+insn, i.e. a set with no reader, which cse1/`delete_dead_from_cse` delete before
+`loop_optimize`.
+**predicate_cite.** tools/gcc-2.7.2/loop.c:791
+**measured_on.** shipped chassis, candidate.c body, no FAKE constructs, floor 15.
+
+### K30 — KILLED (instance): the movable-slot dial is not capped at three, but costs +3 emitted instructions per slot
+**Statement.** Adding a fourth ordinary-C movable (giving the +4 time field its
+own index-derived pointer, so `&D_80106A58 + 4` becomes its own invariant,
+`m->forces`-chained to the base) pushes the 0x91A2B3C5 magic to movable slot 3
+and its threshold to 116, but the build measures 28 at 108 build_insns.
+**Mechanism.** loop.c:1719/1904 `threshold -= 3` per moved movable; the added
+invariant also raises insn_count 56 → 58, so the gap `threshold - insn_count`
+closes by 5 per movable (63 → 58) while the preheader grows.
+**Result.** Directly contradicts s8's frontier item 3 ("None visible. s8
+measured the loop has exactly three movables"). The dial exists and is ordinary
+C; at −5 gap per slot the crossover is ~13 added invariants (agreeing with s4's
+K14), which prices out at roughly +39 emitted instructions against a
+104-instruction target.
+**measured_on.** shipped chassis, s10 variant applied in src/, no FAKE
+constructs, score 28 / 108 insns.
+**Form.** rejected/extra-movable-dial-costs-3-insns-per-slot.c
+
+### K31 — KILLED (instance): `may_not_optimize` is a fourth admission gate, but statement order does not trip it
+**Statement.** Placing a reader of a doubly-materialised invariant pseudo
+between its two sets did not set `may_not_optimize` for that pseudo in this
+loop; the movable still printed `moved` (life 3 → 7, savings 2).
+**Mechanism.** loop.c:649 gates the movable scan on `! may_not_optimize[regno]`;
+`count_loop_regs_set` sets it when the pseudo is set in two basic blocks
+(loop.c:3037) or set twice with `reg_used_between_p` true between the sets
+(loop.c:3044). K23's premise that repeated source-level expressions always yield
+DISTINCT pseudos is false — the repeated base symbol yields one pseudo with
+`n_times_set == 2` — but GCC keeps each set adjacent to its own consumer, so no
+reader lands strictly between them.
+**Result.** Even if trippable, it cannot reach this residual: it would have to
+fire on the 0x91A2B3C5 pseudo, needing a second in-loop `/1800` (~+7 emitted
+instructions) or a second materialisation split across a branch, and the target
+loop has exactly one division by 1800 and no conditional branch.
+**measured_on.** shipped chassis, s10 reordered variant applied in src/, no FAKE
+constructs, insn_count 58.
+
+### K32 — KILLED (instance): no transplantable sibling shape
+**Statement.** The project's only matched mm:ss.cc formatter, `func_8001CD68`
+(`src/code6cac.c:1121-1139`), uses a different expression shape
+(`val/30 - minutes*60`, centiseconds re-read from the global) than the one
+`func_8003C714`'s bytes require, so it supplies no alternative body.
+**Mechanism.** The target recomputes `(t/30)/60` with the 0x88888889 magic at
+shift 5 (8003C79C..8003C7B8) rather than reusing the `/1800` quotient — the
+signature of `(t / 30) % 60`, which candidate.c already spells.
+**Result.** The sibling confirms candidate.c's expression shape by contrast. The
+only other 0x91A2B3C5 carriers in the image (`func_80035280`, `func_80067D14`)
+are both still `INCLUDE_ASM`, so the project has no matched in-loop precedent
+for this constant.
+**measured_on.** shipped chassis, source survey (grep over asm/funcs + src).
+
+## [s10] m->savings in the loop.c:1631 desirability test is the number of times the invariant pseudo is SET inside the loop, not the number of times it is used, so the 0x91A2B3C5 and 0x88888889 magics are distinguished only by m->lifetime.
+- mechanism: loop.c:793 sets m->savings = n_times_used[regno]; loop.c:597 initialises n_times_used as a straight bcopy of n_times_set, which count_loop_regs_set fills with SET counts for the loop range. Uses never enter the term.
+- probe: Regenerated the .loop dump for the banked candidate on the shipped chassis (pwsh tools/grinder/dump.ps1 func_8003C714) and read the movable table at tmp/grind/func_8003C714/dumps/code6cac_c2.loop:4223, cross-checked against loop.c:597/791/793.
+- result: The /30 magic (regno 91) is read by four in-loop mults and still prints savings 1, identical to the once-read /1800 magic (regno 84). It hoists on life 31 vs the /1800 magic's life 1. Corrects the rationale behind s7's H11 (the number 1 was right, the reason was not) and makes inert every spelling whose intent is to change how often the constant is consumed.
+- verdict: CONFIRMED
+
+## [s10] m->lifetime for the 0x91A2B3C5 movable has a hard floor of 1, so the left-hand side of loop.c:1631 is bounded below by threshold itself.
+- mechanism: loop.c:791 computes lifetime as uid_luid[regno_last_uid] - uid_luid[regno_first_uid]; loop_optimize assigns luids strictly monotonically (+1 per non-line-number insn), so two distinct insns differ by at least 1. A lifetime of 0 requires the pseudo to be mentioned in exactly one insn, i.e. a set with no reader, which cse1 and delete_dead_from_cse remove before loop_optimize runs.
+- probe: Read tools/gcc-2.7.2/loop.c:791 and the luid assignment in loop_optimize; confirmed against the baseline dump, which prints life 1 for both regno 78 and regno 84.
+- result: Lifetime is pinned at 1 for the magic, so the gate reduces to threshold >= insn_count. With threshold 122 (loop.c:532, n_non_fixed_regs 60, no CALL_INSN in the loop so the loop_has_call halving branch is not reachable) and at most three threshold -= 3 decrements available, the LHS bottoms out around 116 against insn_count 56-58.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: shipped chassis, candidate.c body applied in src/code6cac_c2.c, no FAKE constructs, sandbox 15 (104/105)
+- predicate_cite: tools/gcc-2.7.2/loop.c:791
+
+## [s10] A fourth ordinary-C movable exists in this loop: reading the +4 time field through its own index-derived pointer makes &D_80106A58 + 4 a distinct loop invariant, m->forces-chained to the base, which pushes the 0x91A2B3C5 magic to movable slot 3 and its threshold to 116 - and the build measures 28 at 108 build_insns.
+- mechanism: Each moved movable applies threshold -= 3 (loop.c:1719 and loop.c:1904) before the next is tested. The added invariant also raises the loop's insn_count from 56 to 58, so the desirability gap threshold - insn_count closes by 5 per movable slot while the preheader grows by the hoisted set.
+- probe: Replaced *(s32 *)(src + 4) with a separate tsrc = (s32 *)((u8 *)&D_80106A58 + 4 + i * 8) pointer in src/code6cac_c2.c, ran sandbox func_8003C714 --disable all, then regenerated and read the .loop movable table.
+- result: Movable table became four entries: Insn 33 regno 79 (life 3, savings 2) base; Insn 41 regno 82 (life 1, forces 33, savings 1) base+4 - NEW; Insn 54 regno 88 (life 1) 0x91A2B3C5; Insn 68 regno 95 (life 31) 0x88888889. Loop from 25 to 154: 58 real insns. Score 15 -> 28, build_insns 105 -> 108. This directly contradicts s8's frontier item 3 (None visible; s8 measured the loop has exactly three movables). The dial is ordinary C and not capped at three, but at -5 gap per slot the ~13-invariant crossover measured by s4's K14 prices out at roughly +39 emitted instructions against a 104-instruction target. Form banked at rejected/extra-movable-dial-costs-3-insns-per-slot.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis, s10 four-movable variant applied in src/code6cac_c2.c, no FAKE constructs, sandbox 28 (104/108)
+
+## [s10] Reordering the loop body so a reader of a doubly-materialised invariant pseudo sits between its two sets did not set may_not_optimize for that pseudo: the movable still printed moved, with life 3 -> 7 and savings 2.
+- mechanism: loop.c:649 gates the movable scan on ! may_not_optimize[REGNO (SET_DEST (set))]; count_loop_regs_set raises that flag when the pseudo is set in two basic blocks (loop.c:3037) or set twice with reg_used_between_p true between the sets (loop.c:3044). GCC keeps each materialisation adjacent to its own consumer, so no reader lands strictly between the two sets.
+- probe: Took the four-movable variant and moved dst[0x24] = *src (a reader of the base pseudo) to sit between the src and tsrc materialisations; regenerated the .loop dump and read the movable table.
+- result: Entry became 'Insn 33: regno 79 (life 7), move-insn savings 2  moved' - still a movable. Two corrections to s8's K23 nonetheless: (a) may_not_optimize is a FOURTH admission gate its enumeration of 'exactly three tests' omitted, and (b) K23's premise that repeated source-level expressions always yield DISTINCT pseudos is false, since the doubly-materialised base yields ONE pseudo with n_times_set 2. Reaching the 0x91A2B3C5 pseudo with this gate would need a second in-loop division by 1800 (~+7 emitted instructions) or a second materialisation split across a branch, and the target loop has one division by 1800 and no conditional branch.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis, s10 reordered four-movable variant applied in src/code6cac_c2.c, no FAKE constructs, insn_count 58
+
+## [s10] The project's only matched mm:ss.cc formatter, func_8001CD68 at src/code6cac.c:1121-1139, spells its seconds term as val/30 - minutes*60 and re-reads the global for the centiseconds term, which the target's bytes for func_8003C714 contradict, so it yields no alternative body to transplant.
+- mechanism: func_8003C714's target recomputes (t/30)/60 with the 0x88888889 magic at shift 5 at 8003C79C..8003C7B8 instead of reusing the /1800 quotient - the signature of (t / 30) % 60, which the banked candidate already spells.
+- probe: Grepped asm/funcs for the 0x91A2B3C5 magic and src/*.c for 1800; read src/code6cac.c:1100-1140 and compared its expression shape against the target disassembly.
+- result: The sibling confirms the banked body's expression shape by contrast rather than replacing it. The only other 0x91A2B3C5 carriers in the image are func_80035280 and func_80067D14, both still INCLUDE_ASM, so the project holds no matched in-loop precedent for this constant.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis, source survey (grep over asm/funcs and src) plus target disassembly read

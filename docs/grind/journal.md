@@ -1729,3 +1729,4 @@
 - 2026-09-05 15:15 func_80034F88 COMPLETED-C after 67 sessions (closer: s67 [rederive]).
 - 2026-09-05 15:50 func_80022F34 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_80022F34 include/code6cac.h src/code6cac.c), function stays active.
 - 2026-09-05 16:00 func_80022F34 JUDGE ESCALATE (ruling request, integration-handoff (REFUSED: no executable remedy in verdict)) — refused + FORECLOSED silently (owner ruling 2026-08-31).
+- 2026-09-05 16:21 func_8003C714 s10 [rederive] floor=15: Rederive: loop.c:1631 re-derived from compiler source, correcting two inherited claims - m->savings counts SETS not uses (H15), and a FOURTH ordinary-C movable DOES exist (K30, contradicting s8 frontier item 3), priced at +3 emitted insns per movable slot for only -5 of desirability gap.

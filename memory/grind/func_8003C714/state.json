@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 9,
- "current_modality": "escalation",
+ "session_count": 10,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 15,
    "modality": "escalation",
    "headline": "Disposition session: both endgame-lock AND-gates FAIL (scan_hand_coded tier=LOW 0/8; SOTN precedent census for the closing loop-carried counting construct returns 0 hits) \u2014 foreclosure record filed at"
+  },
+  {
+   "session": 10,
+   "floor": 15,
+   "modality": "rederive",
+   "headline": "Rederive: loop.c:1631 re-derived from compiler source, correcting two inherited claims - m->savings counts SETS not uses (H15), and a FOURTH ordinary-C movable DOES exist (K30, contradicting s8 fronti"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A class grant covering /* FAKE */-annotated loop-carried counting carriers would close this function immediately \u2014 the closing body is already written and already measured at distance 0.",
-   "mechanism": "count_loop_regs_set takes insn_count before move_movables and before strength_reduce, so a loop-carried constant-step biv is COUNTED and then deleted by biv elimination inside loop_optimize for zero emitted bytes; 32 balanced pairs take the loop 56 -> 121 real insns byte-identically and flip the 0x91A2B3C5 movable to 'not desirable' at >= 120.",
-   "next_probe": "None from inside a grind session \u2014 this is an owner-only extension of the frozen family list. If it ever lands, restore memory/grind/func_8003C714/rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c, re-measure, and add the FAKE annotation."
+   "hypothesis": "A class grant covering /* FAKE */-annotated loop-carried counting carriers would close this function immediately - the closing body is already written and already measured at distance 0 (s6).",
+   "mechanism": "count_loop_regs_set takes insn_count before move_movables and before strength_reduce, so a loop-carried constant-step biv is COUNTED and then deleted by biv elimination inside loop_optimize for zero emitted bytes; 32 balanced pairs take the loop 56 -> 121 real insns byte-identically and flip the 0x91A2B3C5 movable to not-desirable at >= 120. s10 confirms the target arithmetic term by term: savings and lifetime are both pinned at 1, so only insn_count can move.",
+   "next_probe": "None from inside a grind session - this is an owner-only extension of the frozen family list. If it ever lands, restore memory/grind/func_8003C714/rejected/balanced-biv-noise-64-insns-d0-but-inadmissible.c, re-measure, and add the FAKE annotation."
   },
   {
-   "hypothesis": "A toolchain finding that changes n_non_fixed_regs on the shipped chassis without a CC_FLAGS edit (i.e. evidence the original build's cc1 was configured soft-float, making -msoft-float chassis FIDELITY rather than a chassis change) would let the honest candidate.c body match as-is.",
-   "mechanism": "loop.c:532 threshold = 2*(1+n_non_fixed_regs) is 122 with FP regs free and 58 with them fixed; after the post-first-hoist `threshold -= 3` the magic faces 55 against insn_count 56 and stays in-loop in the target's split lui/ori form.",
-   "next_probe": "None from inside a grind session (barred by this function's binding judge constraint and by .claude/rules/no-compiler-divergence.md). Any such finding must also resolve the s2 conflict where the same configuration regresses func_800324D0 from 0 to 3, and the earlier INTEGRATION HANDOFF entries built on this axis were correctly FAILed (decisions.md 2026-09-01 18:33)."
+   "hypothesis": "A toolchain finding that changes n_non_fixed_regs on the shipped chassis without a CC_FLAGS edit (evidence that the original build's cc1 was configured for a no-FPU target, making -msoft-float chassis FIDELITY rather than a chassis change) would let the honest candidate.c body match as-is.",
+   "mechanism": "loop.c:532 threshold = 2*(1+n_non_fixed_regs) is 122 with FP regs free and 58 with them fixed; after one threshold -= 3 the magic faces 55 against insn_count 56 and stays in-loop in the target's split lui/ori form. s10's reading of loop.c:597/791/793 shows this is the only remaining free term, since savings and lifetime are both structurally 1.",
+   "next_probe": "None from inside a grind session (barred by this function's binding judge constraint and by .claude/rules/no-compiler-divergence.md). Any such finding must also resolve the s2 conflict where the same configuration regresses func_800324D0 from 0 to 3."
   },
   {
-   "hypothesis": "A fourth ordinary-C movable in this loop would take the s8 K24 movable-ORDER dial past its measured -6 cap.",
-   "mechanism": "Each movable moved before the magic decrements threshold by 3 (loop.c:1719/1904); with only three movables the dial bottoms out at 116 against a requirement of < 56.",
-   "next_probe": "None visible. s8 measured the loop has exactly three movables, and s7 K22 measured that free extra hoists do not exist (a step constant big enough to be hoisted disqualifies biv elimination at ~9 emitted instructions; one small enough to stay free folds into addiu and creates no movable)."
+   "hypothesis": "A hoisted invariant whose preheader insn is deleted AFTER loop_optimize would make the movable-slot dial byte-free, and s10 measured the dial closes the gap by 5 per slot, so about 12 such invariants would decline the 0x91A2B3C5 movable at zero byte cost.",
+   "mechanism": "move_movables emits each moved invariant into the preheader and decrements threshold by 3 (loop.c:1719/1904) while its in-loop set also raised insn_count. If the preheader insn's only consumer is removed later inside loop_optimize (strength reduction / biv elimination) or by cse2 as redundant with an existing preheader value, flow deletes it and the slot is free.",
+   "next_probe": "Enumerate invariants whose sole in-loop consumer is deleted by strength_reduce, and check whether any is NOT already covered by s7's K22 (which measured that a hoistable step constant makes the biv increment a register and disqualifies biv elimination at ~9 emitted instructions). If K22 does not cover the case where the invariant feeds a giv ADDRESS rather than a biv step, measure that shape - the s10 four-movable dump shows givs at insns 52/66/97/137 all combining, which is where such an invariant would land."
   }
  ],
  "judge_constraints": [
@@ -86,5 +92,39 @@
  "created": "2026-09-01T15:28:08.586662+00:00",
  "exhaustion_base": 9,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 15 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.756125+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.756125+00:00",
+ "kills": [
+  {
+   "session": 10,
+   "statement": "m->lifetime for the 0x91A2B3C5 movable has a hard floor of 1, so the left-hand side of loop.c:1631 is bounded below by threshold itself.",
+   "kill_scope": "class",
+   "measured_on": "shipped chassis, candidate.c body applied in src/code6cac_c2.c, no FAKE constructs, sandbox 15 (104/105)",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:791",
+   "result": "Lifetime is pinned at 1 for the magic, so the gate reduces to threshold >= insn_count. With threshold 122 (loop.c:532, n"
+  },
+  {
+   "session": 10,
+   "statement": "A fourth ordinary-C movable exists in this loop: reading the +4 time field through its own index-derived pointer makes &D_80106A58 + 4 a distinct loop invariant, m->forces-chained to the base, which p",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis, s10 four-movable variant applied in src/code6cac_c2.c, no FAKE constructs, sandbox 28 (104/108)",
+   "predicate_cite": "",
+   "result": "Movable table became four entries: Insn 33 regno 79 (life 3, savings 2) base; Insn 41 regno 82 (life 1, forces 33, savin"
+  },
+  {
+   "session": 10,
+   "statement": "Reordering the loop body so a reader of a doubly-materialised invariant pseudo sits between its two sets did not set may_not_optimize for that pseudo: the movable still printed moved, with life 3 -> 7",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis, s10 reordered four-movable variant applied in src/code6cac_c2.c, no FAKE constructs, insn_count 58",
+   "predicate_cite": "",
+   "result": "Entry became 'Insn 33: regno 79 (life 7), move-insn savings 2  moved' - still a movable. Two corrections to s8's K23 non"
+  },
+  {
+   "session": 10,
+   "statement": "The project's only matched mm:ss.cc formatter, func_8001CD68 at src/code6cac.c:1121-1139, spells its seconds term as val/30 - minutes*60 and re-reads the global for the centiseconds term, which the ta",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis, source survey (grep over asm/funcs and src) plus target disassembly read",
+   "predicate_cite": "",
+   "result": "The sibling confirms the banked body's expression shape by contrast rather than replacing it. The only other 0x91A2B3C5 "
+  }
+ ]
 }
