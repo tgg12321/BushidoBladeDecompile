@@ -1,71 +1,82 @@
-/* s62 (structural, 2026-09-05) -- FLOOR 9, on a CLEANER object model.
+/* s63 (synthesis, 2026-09-05) -- FLOOR 9 (unchanged; chassis re-measured 9,
+ * 49/49, this session).  The BODY below is unchanged from s62 (it is still the
+ * lowest-scoring form on record).  What changed is the DIAGNOSIS, and it is
+ * the sharpest it has ever been -- read this header before touching the C.
  *
- * Score is unchanged from s61 (9, 49/49) but two things improved and both are
- * inheritance for the next session:
+ * INTEGRATION HANDOFF (unchanged from s62): this body needs the split
+ * declaration in include/code6cac.h -- `extern u8 D_80106A70[3];` absorbing
+ * D_80106A71/D_80106A72 (their two consumers in src/code6cac.c converted to
+ * element form) with `extern u8 D_80106A73;` left as its own scalar.  Measured
+ * byte-neutral again this session (the apply script is
+ * tmp/grind/func_80034F88/s63/apply.py).
  *
- * 1. THE DECLARATION IS NOW HONEST.  s59-s61 declared `extern u8
- *    D_80106A70[4];` and reached the flag byte as element [3] -- an array whose
- *    fourth element is a semantically unrelated census-named flag byte.  This
- *    session measured the SPLIT model the data model actually supports:
+ * 1. THE RESIDUAL IS EXACTLY A 3-CYCLE REGISTER ROTATION, AND A 49/49 BODY
+ *    THAT REPRODUCES THE TARGET'S WHOLE INSTRUCTION STREAM EXISTS.  Add the
+ *    s57-family cse2 invalidator (a dead re-set of the stored-value local
+ *    between block 0's store and its reload) to this body and the build
+ *    reproduces the target's entire 49-instruction stream, instruction for
+ *    instruction, INCLUDING the block-0 reload in the load-delay slot of the
+ *    flag lw and block 1's la in its target position.  The only difference is
+ *    a 3-cycle register rotation, worth 15 engine points but exactly three
+ *    register substitutions:
+ *        ours          target        role
+ *        $a1     ->    $v1           block-0 address object (`q`)
+ *        $v1     ->    $a0           block-0 value
+ *        $a2     ->    $a1           `p` (the func_80077D00 result)
+ *    Blocks 1-2's address ($a0) and value ($v1), the loop index ($v1) and the
+ *    $v0 temp already match.  The 9-point score of the body below is a
+ *    DIFFERENT, structurally farther state (no reload, load-delay nop); the
+ *    15-point rotation body is the one to grind.  It is banked at
+ *    rejected/s63-mask-in-blocks12-local-BEST-RA-49insn-score15.c.
  *
- *      include/code6cac.h:472-474
- *        -  extern u8 D_80106A70;
- *        -  extern u8 D_80106A71;
- *        -  extern u8 D_80106A72;
- *        +  extern u8 D_80106A70[3];
- *      src/code6cac.c:340-342  D_80106A70/71/72 = ...  ->  D_80106A70[0..2] = ...
- *      src/code6cac.c:345      the same three reads   ->  element form
+ * 2. THE WHOLE ROTATION IS ONE SEAT: block 0's ADDRESS allocno must reach $v1.
+ *    Simulated on the extracted model: if it does, every other register in the
+ *    function falls into the target seat by find_reg's own ascending scan
+ *    (value -> $a0, p -> $a1).  Nothing else needs to move.
  *
- *    plus `extern u8 D_80106A73;` staying the separate scalar it already is in
- *    src/code6cac_b.c:128.  This is exactly the symbol pair the target's three
- *    la pairs name (all three are %hi/%lo(D_80106A73); the loop's base is
- *    %hi(D_80106A70)).  Measured byte-neutral: func_8001945C, func_80019488 and
- *    func_80037F40 all sandbox at score 0 under it, and func_80034F88 measures
- *    9 -- identical RA model to the [4] form (order [73,77,75,74,81,72,76],
- *    same nrefs/livelen/pri).  The [4] form should not be carried forward.
+ * 3. THE s63 LAW -- BLOCK 0's MASK VALUE TAKES $v1 AHEAD OF THE ADDRESS BY
+ *    THREE DIFFERENT MECHANISMS, AND THE C SPELLING ONLY CHOOSES WHICH.
+ *    Measured this session, three ways, all 49 insns / score 15:
+ *      (a) mask + reload in ONE local  -> one value allocno, 7 refs / livelen
+ *          8 / pri 17500, allocated at ord 2 and takes $v1 on PRIORITY.
+ *          (hard conflicts of the address object stay clean: [2, 29].)
+ *      (b) mask in its OWN local, reload in a second local -> the value
+ *          allocno is 3 refs / livelen 4 / pri 7500 (the ref cut works!) but
+ *          the mask becomes a BLOCK-LOCAL quantity that local-alloc seats in
+ *          $v1, which re-adds hard reg 3 to the address object's conflicts
+ *          ([2, 3, 29]).  LOCAL-ALLOC takes the seat.
+ *      (c) mask carried in the SAME local blocks 1-2 use -> no block-local
+ *          quantity at all (address hard conflicts back to [2, 29]) and the
+ *          value allocno stays 3 refs / livelen 4, but the mask carrier is now
+ *          allocno 74 (10 refs / pri 23076), it CONFLICTS with the address
+ *          object, and it takes $v1 at ord 1.  A CONFLICT takes the seat.
+ *    (a)(b)(c) are the whole spelling axis for the mask.  Every one of them
+ *    puts something in $v1 before the address object gets its turn.
  *
- * 2. THE BLOCK-0 VALUE PSEUDO IS HALFWAY TO ITS TARGET PRIORITY.  Letting the
- *    two arms read `*q` directly (duplicate-read-into-arms, ordinary C) instead
- *    of a reloaded local drops the block-0 value allocno from 8 refs / pri
- *    24000 (s61) to 6 refs / livelen 9 / pri 13333, WITHOUT re-introducing the
- *    local-alloc hard-reg-3 block on the address allocno.  Address allocno 76
- *    is at pri 3076 (livelen 26).  See evidence E62.2/E62.3 for why every other
- *    ref-reduction spelling measured this session (C/D2/D5/F/H1) buys the ref
- *    cut at the price of a $v1-seated block-local, which forecloses the seat
- *    outright.
+ * 4. THE TARGET SEATS ITS MASK VALUE IN $a0 (80034FA0-80034FAC: lbu $a0 /
+ *    andi $a0 / sb $a0), i.e. the target is chassis (b) -- a separate mask
+ *    carrier, block-local, and LOCAL-ALLOC gave it $a0, not $v1.  So the one
+ *    unanswered question in this function is now a local_alloc question and
+ *    not a global.c question:
  *
- * RESIDUAL (unchanged in shape from s61, 9 of 49, all inside block 0):
- *   ours                       target
- *   lui/addiu $a2              lui/addiu $v1     <- address seat
- *   lbu   $v1, 0($a2)          lbu   $a0, 0($v1) <- value seat
- *   andi  $v1, $v1, 0xF8       andi  $a0, $a0, 0xF8
- *   sb    $v1, 0($a2)          sb    $a0, 0($v1)
- *   nop                        lbu   $a0, 0($v1) <- the block-0 reload
- *   ori   $v0, $v1, 1          ori   $v0, $a0, 1
- *   move  $v0, $v1             addu  $v0, $a0, $zero
- *   sb    $v0, 0($a2)          sb    $v0, 0($v1)
+ *      why does block_alloc's find_free_reg pick $a0 over $v1 for block 0's
+ *      mask quantity in the original, when on our (b) chassis it picks $v1?
  *
- * THE TWO DEFECTS ARE ONE DEFECT (s62's main finding).  The target's reload
- * `lbu $a0, 0($v1)` at 80034FB4 sits in the LOAD-DELAY SLOT of
- * `lw $v0, 0x20($a1)`; it can only sit there because its destination ($a0)
- * differs from the lw's ($v0).  K1/K3 (mask carried in `c`, so the flag read
- * clobbers the stored value's pseudo and cse2 cannot forward) DO restore the
- * reload -- but with our seats the reload lands in $v0, collides with the lw,
- * and the scheduler emits the nop anyway: 50 insns, score 34.  So fixing the
- * seats and restoring the reload are not two independent points; the reload is
- * free the moment the value sits in $a0.
+ *    find_free_reg's `used` set is fixed_reg_set | union(regs_live_at
+ *    [birth..death]); $v0 is already excluded on our chassis (the
+ *    func_80077D00 return value is still live across block 0's lbu, which is
+ *    why every extracted address allocno carries hard conflict 2).  Either
+ *    something makes $v1 live across the mask window in the original, or the
+ *    quantity is taking a SUGGESTED register through qty_phys_copy_sugg /
+ *    qty_phys_sugg (the pass local_alloc.py reports but does not score).
+ *    tools/ra_solver/local_extract.py --suggest dumps exactly those rows.
  *
- * AND THE SEAT ARITHMETIC CLOSES ON ITSELF (E62.5).  With the reload present
- * the address allocno gains a fifth reference (5 refs / livelen 28 -> pri
- * 3571, measured on K1), while a 3-reference block-0 value whose def is the
- * reload has pri 30000/livelen.  In the TARGET's own emission order the reload
- * stands ~5 insns above the last arm read, i.e. livelen ~10 -> pri ~3000 <
- * 3571: the address allocno is reached FIRST by global.c's descending-priority
- * loop, takes $v1 (no conflict with 73/74), and the value is pushed to $a0
- * (no conflict with 81/82, which is why blocks 1-2 keep $a0).  The target
- * state is self-consistent; what is missing is a cse2 invalidator that leaves
- * the reload at a source position ABOVE the flag read, so its live range is
- * long instead of 4.
+ * 5. WHAT THE INVERSE SOLVER SAYS ABOUT (c) (tmp/grind/func_80034F88/s63/
+ *    inverse_z2.txt): minimum 2 atoms, and every emitted vector pairs
+ *    "calls_crossed 74: 0->1" with "refs_up 76: 5->8..15".  Both atoms are
+ *    expensive-to-impossible in C here; (c) is therefore the wrong chassis to
+ *    grind even though its RA state looks the cleanest.  Grind (b), and grind
+ *    it at local-alloc.
  */
 void func_80034F88(void) {
     s32 *p;

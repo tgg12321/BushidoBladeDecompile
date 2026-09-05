@@ -8698,3 +8698,152 @@ bit 0.  No measurement was spent; the probe is retired rather than killed.
 - [s62] [s62] Frontier item 2 as written (moving block 1's `v = *r;` above block 0's reload) is semantically invalid, not merely unmeasured: block 1 must read block 0's second store, and hoisting the read above it drops bit 0. Retired without spending a measurement.
 
 - [s62] [s62] src/, include/ and the tree were restored to HEAD at session end; the split-declaration header edit remains an integration handoff documented in candidate.c.
+
+## s63 (synthesis, 2026-09-05) -- the residual is a 3-cycle rotation around ONE seat, and the mask value takes that seat three different ways
+
+E63.1  CHASSIS CHECK.  The s62 candidate (split declaration `extern u8
+D_80106A70[3];` + `extern u8 D_80106A73;`, two granted pointer objects, both
+block-0 arms reading `*q`) re-measures **score 9 / 49 target insns / 49 build
+insns** on HEAD this session.  The ledger floor was current; the dispatch
+digest's "measurement unavailable" is a driver artefact, not a chassis change.
+The apply script (header + src/code6cac.c element form + body) is banked at
+tmp/grind/func_80034F88/s63/apply.py so no future session has to re-derive it.
+
+E63.2  KILL RE-AUDIT (mandated).  The two closest-to-target instance kills whose
+`measured_on` named a superseded chassis were re-measured on the current
+split-declaration chassis:
+  * s61's "port the s59 FAKE dead re-set of the stored-value local onto the
+    two-object chassis" -> **15 at 49 insns** (s61 recorded 15 on the [4]
+    aggregate chassis).  Kill stands, verbatim.
+  * s62's L3 (mask stored through the symbol, reload read through the pointer)
+    -> **12 at 50 insns**.  Kill stands, verbatim.
+Neither verdict was chassis-sensitive.  Banked as
+tmp/grind/func_80034F88/s63/body_v1_deadreset_reload_high.c and
+body_l3_symbol_store_ptr_reload.c.
+
+E63.3  THE RESIDUAL, READ FROM THE OBJDUMP, IS EXACTLY THREE REGISTER
+SUBSTITUTIONS.  The dead-re-set body (E63.2, score 15) builds 49 instructions
+that match the target's stream one-for-one -- the block-0 reload in the
+load-delay slot of `lw $v0,0x20(p)`, block 1's `la` between the arm's `move`
+and block 0's second store, the `move p,$v0` after block 0's `lbu`, the whole
+loop.  Side by side (ours | target):
+
+    lui/addiu $a1        | lui/addiu $v1     block-0 address object
+    lbu   $v1, 0($a1)    | lbu   $a0, 0($v1) block-0 value (mask)
+    move  $a2, $v0       | addu  $a1, $v0, $zero   p
+    andi  $v1, $v1, 0xf8 | andi  $a0, $a0, 0xF8
+    sb    $v1, 0($a1)    | sb    $a0, 0($v1)
+    lw    $v0, 32($a2)   | lw    $v0, 0x20($a1)
+    lbu   $v1, 0($a1)    | lbu   $a0, 0($v1) the block-0 reload
+    andi  $v0, $v0, 1    | andi  $v0, $v0, 0x1
+    bnez  $v0            | bnez  $v0
+    ori   $v0, $v1, 1    | ori   $v0, $a0, 0x1
+    move  $v0, $v1       | addu  $v0, $a0, $zero
+    lui/addiu $a0        | lui/addiu $a0     blocks-1/2 address object  (MATCH)
+    sb    $v0, 0($a1)    | sb    $v0, 0($v1)
+
+The divergence is a 3-cycle rotation: block-0 address $a1->$v1, block-0 value
+$v1->$a0, p $a2->$a1.  Blocks-1/2's address ($a0), blocks-1/2's value ($v1),
+the loop index ($v1) and the $v0 temp already sit in the target's registers.
+The engine metric prices this at 15 while the reload-free body below it prices
+at 9 -- the 9 is structurally FARTHER from the target, exactly as s58 warned.
+
+E63.4  THE WHOLE ROTATION IS ONE SEAT.  Replaying find_reg by hand on the
+extracted model: if block 0's ADDRESS allocno takes $v1, then at its own turn
+the block-0 value finds $v0 hard-excluded and $v1 conflict-blocked and lands in
+$a0 (it conflicts with neither blocks-1/2 allocno, which is why they keep $a0
+and $v1), and `p` -- which conflicts with everything -- finds 2/3/4 taken and
+lands in $a1.  Every remaining defect in this function is that ONE seat.
+
+E63.5  THE s63 LAW: BLOCK 0's MASK VALUE TAKES $v1 AHEAD OF THE ADDRESS BY
+THREE DIFFERENT MECHANISMS, AND THE C SPELLING ONLY CHOOSES WHICH.  All three
+chassis below carry the reload, all three build 49 instructions, all three
+score 15; the allocation numbers are from tools/ra_solver/extract.py:
+  (a) MASK AND RELOAD IN ONE LOCAL (body_v1_deadreset_reload_high.c):
+      one block-0 value allocno, 7 refs / livelen 8 / **pri 17500**, sorted to
+      ord 2 and it takes $v1 on PRIORITY.  Address allocno 5 refs / livelen 28
+      / pri 3571, hard conflicts [2, 29] (clean).
+  (b) MASK IN ITS OWN LOCAL, RELOAD IN A SECOND LOCAL (body_w1_split_mask_
+      reload.c, and w2/w3/w4 = flag-read-first, else-arm-reads-*q, merged mask
+      expression -- four spellings, all identical):
+      the block-0 value allocno drops to **3 refs / livelen 4 / pri 7500** (the
+      ref cut works), but the mask is now a BLOCK-LOCAL quantity and
+      local-alloc seats it in $v1, which puts hard reg 3 back into the address
+      allocno's conflicts ([2, 3, 29]).  LOCAL-ALLOC takes the seat.
+  (c) MASK CARRIED IN THE SAME LOCAL BLOCKS 1-2 USE (body_z2_mask_in_v.c):
+      no block-local quantity anywhere in block 0 -- the address allocno's hard
+      conflicts are back to [2, 29] -- AND the block-0 value allocno stays at
+      3 refs / livelen 4 / pri 7500.  Both s62 defects are gone at once, the
+      best RA state ever recorded here.  But the mask carrier is now allocno 74
+      (10 refs / livelen 13 / **pri 23076**), it CONFLICTS with the address
+      allocno (conflicts[76] = [72,74,75,76,77,81]) and it takes $v1 at ord 1.
+      A CONFLICT takes the seat.
+There is no fourth place to put a mask value: it is either in the reload's
+local, in its own local, or in another block's local.
+
+E63.6  THE INVERSE SOLVER PRICES CHASSIS (c) AT TWO ATOMS, BOTH BAD.
+`inverse.py global` on the (c) model with goal {77:$a0, 76:$v1, 72:$a1}
+(tmp/grind/func_80034F88/s63/inverse_z2.txt): "minimal solution size: 2
+atom(s) -- 25 distinct vector(s)", and every emitted vector is
+`calls_crossed 74: 0->1` paired with `refs_up 76: 5->8..15`.  Preferences stay
+mechanically FORECLOSED (no hard reg for $v0/$a0/$a1 appears in this function's
+pre-RA RTL).  A call-crossing restructure is not available (the function's only
+call is the first statement) and +3 refs on the address object means three more
+memory accesses through `q`.  Chassis (c) is the wrong one to grind despite the
+clean numbers.
+
+E63.7  THE TARGET IS CHASSIS (b), AND ITS MASK QUANTITY IS SEATED IN $a0.  The
+target's block 0 is `lbu $a0 / andi $a0 / sb $a0` at 80034FA0-80034FAC and its
+reload is `lbu $a0` at 80034FB4: the mask value and the reload value share a
+register but the mask dies inside the first basic block, i.e. it is a
+block-local quantity that local-alloc seated at **$a0**, while on our (b)
+chassis the identical quantity is seated at **$v1**.  This retypes the last
+open question in this function from a global.c priority question (where s49-s62
+lived) to a **local_alloc/block_alloc find_free_reg question**:
+
+    why does find_free_reg pick $a0 over $v1 for block 0's mask quantity in the
+    original, when on our (b) chassis it picks $v1?
+
+find_free_reg's `used` = fixed_reg_set | union(regs_live_at[birth..death]).
+$v0 is already excluded on our chassis (func_80077D00's return value is still
+live across block 0's `lbu`, which is why every extracted address allocno
+carries hard conflict 2).  So either something in the original makes $v1 live
+across the mask window, or the quantity is taking a SUGGESTED register through
+qty_phys_copy_sugg / qty_phys_sugg -- the pass tools/ra_solver/local_alloc.py
+reports but does not score, and which `local_extract.py --suggest` dumps.
+
+E63.8  FORMS MEASURED AND KILLED THIS SESSION (all on the split-declaration
+two-object chassis): the mask local reused for the flag test (`u = p[8] & 1;`
+between the store and the reload) collapses the body to 47 insns / score 33;
+block 1's pointer declaration moved into the window between the reload and the
+arms (to lengthen the value's live range for free) costs an instruction, 50
+insns / score 19; the same plus the loop index's initialisation hoisted into
+that window, 52 insns / score 31; the block-0 value used in only ONE arm (the
+other arm re-reading `*q`) splits into 51 insns / score 11 in the else-arm form
+and folds back to the 3-reference shape in the then-arm form.
+
+- [s63] Chassis check: the s62 split-declaration candidate re-measures 9 (49/49) on HEAD; tmp/grind/func_80034F88/s63/apply.py is the banked one-command chassis installer (header + src/code6cac.c element form + body).
+- [s63] KILL RE-AUDIT: s61's dead-re-set port re-measures 15 at 49 insns and s62's L3 re-measures 12 at 50 insns on the current chassis -- both kills stand verbatim, neither was chassis-sensitive.
+- [s63] The dead-re-set body reproduces the target's ENTIRE 49-instruction stream and its whole divergence is a 3-cycle register rotation: block-0 address $a1->$v1, block-0 value $v1->$a0, p $a2->$a1. Blocks-1/2's address and value, the loop index and the $v0 temp already match.
+- [s63] Hand-replaying find_reg on the extracted model shows the rotation is ONE seat: give block 0's address allocno $v1 and the value falls into $a0 and p falls into $a1 by find_reg's own ascending scan, with no other change.
+- [s63] THE s63 LAW: block 0's mask value takes $v1 ahead of the address object by three different mechanisms, and the C spelling only chooses which -- (a) mask+reload in one local: 7 refs / pri 17500, takes it on PRIORITY; (b) mask in its own local: value drops to 3 refs / pri 7500 but the mask becomes block-local and LOCAL-ALLOC seats it in $v1 (hard conflict 3 on the address); (c) mask in the blocks-1/2 local: no block-local quantity and value still 3 refs, but the carrier becomes a 10-ref / pri 23076 allocno that CONFLICTS with the address and takes $v1 at ord 1.
+- [s63] Chassis (c) is the best RA state ever recorded here (address hard conflicts [2,29] AND block-0 value at 3 refs simultaneously -- the two s62 defects gone at once) and is still score 15; inverse.py prices its fix at 2 atoms, every vector pairing calls_crossed 74:0->1 with refs_up 76:5->8..15, both unavailable in C.
+- [s63] The target is chassis (b): its mask value is a block-local quantity seated at $a0 (lbu/andi/sb $a0 at 80034FA0-FAC) where ours is seated at $v1. The last open question in this function is therefore a local_alloc find_free_reg question, not a global.c priority question.
+
+- [s63] Chassis check: the s62 split-declaration candidate re-measures score 9 / 49 target insns / 49 build insns on HEAD; tmp/grind/func_80034F88/s63/apply.py is the banked one-command chassis installer (include/code6cac.h split declaration + src/code6cac.c element form + body), so no future session re-derives it.
+
+- [s63] The dead-re-set body reproduces the target's ENTIRE 49-instruction stream and its whole divergence is a 3-cycle register rotation: block-0 address $a1->$v1, block-0 value $v1->$a0, p $a2->$a1. The score-9 body without the invalidator is structurally FARTHER (no reload, load-delay nop).
+
+- [s63] THE s63 LAW: block 0's mask value takes $v1 ahead of the address object by three different mechanisms, and the C spelling only chooses which. (a) mask+reload in one local: one value allocno, 7 refs / livelen 8 / pri 17500, takes $v1 on PRIORITY, address hard conflicts clean [2,29]. (b) mask in its own local: value drops to 3 refs / livelen 4 / pri 7500 but the mask becomes block-local and LOCAL-ALLOC seats it in $v1, address hard conflicts [2,3,29]. (c) mask in the blocks-1/2 local: no block-local quantity and value still 3 refs, but the carrier becomes a 10-ref / pri 23076 allocno that CONFLICTS with the address and takes $v1 at ord 1.
+
+- [s63] There is no fourth place for a mask value: it sits in the reload's local, in its own local, or in another block's local -- (a)(b)(c) exhaust the spelling axis, and all three build 49 instructions at score 15.
+
+- [s63] Chassis (c) is the best RA state ever recorded on this function (address hard conflicts [2,29] AND block-0 value at 3 references simultaneously). inverse.py global prices its fix at a minimum of 2 atoms over 25 vectors, every one pairing calls_crossed 74:0->1 with refs_up 76:5->8..15; the function's only call is its first statement so the call-crossing atom is unavailable, and +3 refs on the address object means three more memory accesses.
+
+- [s63] The target is chassis (b): its mask value is a block-local quantity seated at $a0 (lbu/andi/sb $a0 at 80034FA0-FAC, reload lbu $a0 at 80034FB4) where the identical quantity on our (b) chassis is seated at $v1. The last open question in this function is therefore a local_alloc/block_alloc find_free_reg question, not a global.c priority question -- the first time in 63 sessions the residual has moved out of global.c.
+
+- [s63] find_free_reg's `used` = fixed_reg_set | union(regs_live_at[birth..death]); $v0 is already excluded on our chassis because func_80077D00's return value is still live across block 0's lbu (which is why every extracted address allocno carries hard conflict 2). So the target either makes $v1 live across the mask window or the quantity takes a SUGGESTED register through qty_phys_copy_sugg / qty_phys_sugg -- rows local_alloc.py reports but does not score, dumped by local_extract.py --suggest.
+
+- [s63] Priority arithmetic for the seat, measured: pri = floor_log2(refs)*refs/livelen*10000. The address object is 5 refs / livelen 28 / 3571. A 3-reference block-0 value needs livelen >= 9 to fall below it; a 2-reference value needs livelen >= 6; raising the address object instead needs 8 references (the floor_log2 2->3 jump) since 7 refs only reaches 2500.
+
+- [s63] src/, include/ and the tree were restored to HEAD at session end; the split-declaration header edit remains an integration handoff documented in candidate.c and scripted in s63/apply.py.

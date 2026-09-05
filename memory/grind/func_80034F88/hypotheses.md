@@ -6584,3 +6584,86 @@ otherwise target-shaped body.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: split-declaration two-object aggregate chassis on HEAD 2026-09-05, no FAKE construct beyond the two Judge-granted pointer declarations
+
+## s63 hypotheses (synthesis)
+
+## [s63] KILL RE-AUDIT: s61's dead-re-set-port kill and s62's L3 kill both re-measure unchanged on the current split-declaration two-object chassis.
+- verdict: KILLED (instance)
+- probe: re-applied both bodies via tmp/grind/func_80034F88/s63/apply.py and sandboxed.
+- result: dead re-set = score 15 / 49 insns (s61 recorded 15); L3 = score 12 / 50 insns (s62 recorded 12). Neither verdict was chassis-sensitive.
+- measured_on: split-declaration (extern u8 D_80106A70[3] + extern u8 D_80106A73) two-object chassis on HEAD 2026-09-05, with each form's own FAKE constructs present.
+
+## [s63] Splitting block 0's mask value and its reload into two separate locals cuts the block-0 value allocno to three references but makes the mask a block-local quantity that local-alloc seats in $v1, so the address object regains hard conflict 3.
+- verdict: KILLED (instance)
+- probe: four spellings (w1 reload-then-flag-read, w2 flag-read-then-reload, w3 else-arm reads *q, w4 merged mask expression), each sandboxed and each extracted with tools/ra_solver/extract.py.
+- result: all four build 49 instructions and score 15. The value allocno is 3 refs / livelen 4 / pri 7500 in every one, and the address allocno's hard conflicts are [2, 3, 29] in every one -- local_alloc, not global.c, holds the seat on this chassis.
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, with the granted pointer FAKEs and the s57-family cse2 dead-re-set invalidator present.
+
+## [s63] Carrying block 0's mask value in the same local that blocks 1 and 2 use removes the local-alloc $v1 block AND keeps the block-0 value at three references, but the carrier itself becomes a 10-reference allocno that conflicts with the address object and takes $v1 first.
+- verdict: KILLED (instance)
+- probe: body_z2_mask_in_v.c -- `v` carries the mask, `w` carries the reload, blocks 1 and 2 keep `v`; sandbox + extract.py + inverse.py global with goal {77:$a0, 76:$v1, 72:$a1}.
+- result: 49 insns, score 15. Address allocno hard conflicts [2, 29] (clean) and block-0 value 3 refs / livelen 4 / pri 7500 -- both s62 defects gone at once, the best RA state on record. The mask carrier is allocno 74 at 10 refs / livelen 13 / pri 23076, conflicts[76] contains 74, and 74 takes $v1 at ord 1. inverse.py: minimum 2 atoms, every vector = calls_crossed 74:0->1 + refs_up 76:5->8..15.
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, with the granted pointer FAKEs and the cse2 dead-re-set invalidator present.
+
+## [s63] Lengthening the block-0 value's live range for free -- by moving block 1's pointer declaration, or the loop index's initialisation, into the window between the reload and the flag arms -- costs instructions instead.
+- verdict: KILLED (instance)
+- probe: body_y1_r_la_between.c (block 1's `u8 *r = &D_80106A73;` declared in a nested scope opened immediately after block 0's reload) and body_y2_r_la_plus_index.c (the same plus `i = 0;` with the loop respelled `for (; i < 3; i++)`).
+- result: y1 = 50 insns / score 19; y2 = 52 insns / score 31. The `la` does move into the window but is re-emitted rather than relocated.
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, granted pointer FAKEs + cse2 dead-re-set invalidator present.
+
+## [s63] Reusing block 0's mask local as the flag-test carrier, and restricting the block-0 value to a single arm, both leave the 49-instruction shape.
+- verdict: KILLED (instance)
+- probe: body_v5_reuse_u_for_flag.c (`u = p[8] & 1;` between the store and a second local's reload) and body_x1_w_in_else_only.c / body_x2_w_in_then_only.c (only one arm reads the reload local, the other re-reads `*q`).
+- result: v5 = 47 insns / score 33 (the reload is folded back out); x1 = 51 insns / score 11; x2 = 49 insns / score 15 with the value allocno unchanged at 3 refs.
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, granted pointer FAKEs + cse2 dead-re-set invalidator present.
+
+## [s63] The whole remaining residual is a 3-cycle register rotation around ONE seat -- block 0's address allocno reaching $v1 -- and the target reaches that seat at LOCAL-ALLOC, not at global.c.
+- verdict: CONFIRMED
+- probe: objdump of the score-15 dead-re-set build against asm/funcs/func_80034F88.s instruction by instruction; hand replay of find_reg on the extracted model; read of the target's own block-0 registers.
+- result: the 49-instruction stream matches the target one-for-one and diverges only as block-0 address $a1->$v1, block-0 value $v1->$a0, p $a2->$a1. Granting the address allocno $v1 makes the other two fall out of find_reg's ascending scan unaided. The target's mask value is a block-local quantity seated at $a0 (80034FA0-FAC), where the identical quantity on our chassis (b) is seated at $v1 -- so the open question is find_free_reg's `used` set / the suggested-register pass, not allocno priority.
+
+## [s63] KILL RE-AUDIT: s61's dead-re-set-port kill and s62's L3 kill both re-measure unchanged on the current split-declaration two-object chassis.
+- mechanism: Both kills were recorded on chassis that the ledger has since replaced (the [4] aggregate declaration for s61), so under the mandated re-audit their verdicts could no longer be spent without re-measurement.
+- probe: Re-applied both bodies with tmp/grind/func_80034F88/s63/apply.py (header + src/code6cac.c element form + body in one command) and sandboxed each.
+- result: Dead re-set = score 15 / 49 build insns (s61 recorded 15). L3 = score 12 / 50 build insns (s62 recorded 12). Neither verdict was chassis-sensitive; both kills stand verbatim.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration (extern u8 D_80106A70[3] + extern u8 D_80106A73) two-object chassis on HEAD 2026-09-05, each form carrying its own FAKE constructs (two granted pointer declarations, plus the cse2 dead-re-set in the first form)
+
+## [s63] Splitting block 0's mask value and its reload into two separate C locals cuts the block-0 value allocno to three references but makes the mask a block-local quantity that local-alloc seats in $v1, so the address object regains hard conflict 3.
+- mechanism: A pseudo whose live range lies wholly inside one basic block never becomes a global allocno; block_alloc assigns it, and find_free_reg's ascending scan lands on $v1 because $v0 is excluded by the still-live func_80077D00 return value. The chosen hard register then enters the overlapping address allocno's hard_conflicts before global.c runs, which forecloses the seat outright regardless of priority.
+- probe: Four spellings measured and extracted: w1 (reload then flag read), w2 (flag read then reload), w3 (else arm re-reads *q), w4 (merged mask expression). sandbox + tools/ra_solver/extract.py on each.
+- result: All four build 49 instructions and score 15. In every one the block-0 value allocno is 3 refs / livelen 4 / pri 7500 -- the reference cut works -- and in every one the address allocno's hard conflicts are [2, 3, 29]. The ref-reduction lever and the hard-conflict lever are coupled through the same C spelling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, with the two granted pointer FAKEs and the s57-family cse2 dead-re-set invalidator present
+
+## [s63] Carrying block 0's mask value in the same local that blocks 1 and 2 use removes the local-alloc $v1 block and keeps the block-0 value at three references, but the carrier itself becomes a ten-reference allocno that conflicts with the address object and takes $v1 at ord 1.
+- mechanism: Reusing the blocks-1/2 local for the mask makes that pseudo cross a basic-block boundary, so block 0 contains no block-local quantity at all and the hard-reg-3 entry disappears; but the same reuse gives the carrier 10 references (pri 23076), and because it is live where the address pointer is live it conflicts with the address allocno and is reached first by global.c's descending-priority loop.
+- probe: body_z2_mask_in_v.c (v carries the mask and blocks 1-2, w carries the block-0 reload) -- sandbox, tools/ra_solver/extract.py, and tools/ra_solver/inverse.py global with goal {77:$a0, 76:$v1, 72:$a1}.
+- result: 49 insns, score 15. Address allocno hard conflicts [2, 29] (clean) AND block-0 value 3 refs / livelen 4 / pri 7500 -- the two s62 defects are gone simultaneously, the best RA state on record here. But conflicts[76] contains 74, and 74 (10 refs / livelen 13 / pri 23076) takes $v1 at ord 1. inverse.py: minimal solution 2 atoms, 25 vectors, every one pairing calls_crossed 74:0->1 with refs_up 76:5->8..15; preferences remain mechanically foreclosed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, with the two granted pointer FAKEs and the cse2 dead-re-set invalidator present
+
+## [s63] Lengthening the block-0 value's live range for free, by moving block 1's pointer declaration or the loop index's initialisation into the window between the reload and the flag arms, costs instructions instead.
+- mechanism: With three references the block-0 value needs live length >= 9 for its priority (floor_log2(3)*3/livelen*10000) to fall below the address object's 3571; the window between the reload and the arms holds only lw/andi/bnez, giving live length 4. Any statement moved into that window would have to be one the body already emits.
+- probe: body_y1_r_la_between.c (block 1's `u8 *r = &D_80106A73;` declared in a nested scope opened right after the reload) and body_y2_r_la_plus_index.c (the same plus `i = 0;` with the loop respelled `for (; i < 3; i++)`).
+- result: y1 = 50 insns / score 19; y2 = 52 insns / score 31. The la does move into the window but is re-emitted rather than relocated, so the window is bought with an instruction each time.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator present
+
+## [s63] Reusing block 0's mask local as the flag-test carrier, and restricting the block-0 value to a single arm, both leave the 49-instruction shape without moving the seat.
+- mechanism: Reusing the mask local for `p[8] & 1` clobbers the stored value before the reload but also puts the flag read above the reload, which folds the reload back out; restricting the value to one arm was aimed at a two-reference allocno (pri < 3571 needs live length >= 6 there).
+- probe: body_v5_reuse_u_for_flag.c, body_x1_w_in_else_only.c, body_x2_w_in_then_only.c -- sandbox on each, extract.py on x2/w3.
+- result: v5 = 47 insns / score 33 (reload gone). x1 = 51 insns / score 11. x2 = 49 insns / score 15 with the value allocno still at 3 references -- the other arm's `*q` re-folds onto the same pseudo, so the reference count never reaches two.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: split-declaration two-object chassis on HEAD 2026-09-05, two granted pointer FAKEs + cse2 dead-re-set invalidator present
+
+## [s63] The whole remaining residual is a 3-cycle register rotation around one seat -- block 0's address allocno reaching $v1 -- and the target reaches that seat at local-alloc, not at global.c.
+- mechanism: find_reg assigns in descending priority with an ascending hard-register scan. Grant the address allocno $v1 and the block-0 value finds $v0 hard-excluded and $v1 conflict-blocked and lands in $a0; p, which conflicts with everything, finds 2/3/4 taken and lands in $a1. The target's own block 0 is `lbu $a0 / andi $a0 / sb $a0` at 80034FA0-FAC with the reload `lbu $a0` at 80034FB4, i.e. a block-local mask quantity that block_alloc seated at $a0 where ours seats it at $v1.
+- probe: objdump of the score-15 dead-re-set build diffed instruction-by-instruction against asm/funcs/func_80034F88.s; hand replay of find_reg on the extracted model; read of the target's block-0 registers.
+- result: The 49-instruction stream matches the target one-for-one (reload in the load-delay slot of the flag lw, block 1's la in position, the `move p,$v0` after block 0's lbu) and diverges only as block-0 address $a1->$v1, block-0 value $v1->$a0, p $a2->$a1 -- three register substitutions, priced 15 by the engine metric. Blocks-1/2's address and value, the loop index and the $v0 temp already match. The last open question is find_free_reg's `used` set and the qty_phys_copy_sugg/qty_phys_sugg suggested-register pass, not allocno priority.
+- verdict: CONFIRMED
