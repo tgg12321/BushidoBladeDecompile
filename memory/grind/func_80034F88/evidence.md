@@ -5508,3 +5508,154 @@ next session inherits a live arithmetic target instead of a foreclosure.
 - [s39] Ladder accounting: this is session seventeen of cycle 2 (the ledger's own numbering; the dispatch brief again said 'session 35' while the ledger already carried s35/s37/s38, so this session is tagged s39). The six-modality condition was met at s31; three flat sessions remain before owner directive 2026-09-02 permits any disposition.
 
 - [s39] Five new disproven forms banked in memory/grind/func_80034F88/rejected/; bank size is now 208.
+
+==== s40 (synthesis) ====
+
+(Session-numbering note: the dispatch brief again called this "session 35"; the
+ledger already carries s35/s37/s38/s39 blocks, so this session is tagged **s40**
+and its scratch is `tmp/grind/func_80034F88/s40/`.)
+
+CHASSIS RE-MEASURE. `memory/grind/func_80034F88/candidate.c` (the s39 round-trip
+body) spliced as variant `b0`: **score 10, build_insns 49**. The dispatch brief
+printed "measurement unavailable" for the ELEVENTH consecutive session, so the
+floor is measured here, not inherited. `src/code6cac_b.c` is restored to HEAD at
+session end (`git status --porcelain src/ include/` empty).
+
+MANDATED KILL RE-AUDIT. The instance kill re-measured this session is s39's `t1`
+(`rejected/s39-block1-reads-symbol-directly-score11.c`) -- the banked form that is
+STRUCTURALLY closest to the target, because it is the only one whose block 1
+reloads the flag byte from memory the way the target's `lbu $a0,0($v1)` at
+80034FB4 does. It re-measures **11 at 50**, unchanged from s39.
+`fake_ablate.py` again reports no FAKE-annotated construct in `candidate.c`, so
+no banked kill on this chassis was measured with a FAKE carrier on the contested
+pseudo.
+
+--- 1. THE S39 FRONTIER IS ARITHMETICALLY INCOMPLETE: FLIPPING q INTO $v1
+    CANNOT REACH ZERO ---
+
+s39 restated the whole residual as "make pri(q) > pri(m) in
+`global.c:635 allocno_compare`, and q takes $v1". That is a correct description
+of why blocks 0/1 are register-swapped, but it is NOT a route to a byte match,
+and this session's first job was to read the target's register geometry per
+block instead of per function. Read straight off `asm/funcs/func_80034F88.s`:
+
+    block 0   lui/addiu $v1 = &D_80106A73 ; lbu $a0,0($v1) ; andi $a0 ; sb $a0,0($v1)
+    block 1   lbu $a0,0($v1) ; ... ; sb $v0,0($v1)          <- SAME address register
+    block 2   lui/addiu $a0 = &D_80106A73 ; lbu $v1,0($a0) ; sb $v0,0($a0)
+    block 3   lui/addiu $a0 = &D_80106A73 ; lbu $v1,0($a0) ; sb $v0,0($a0)
+
+The target therefore holds `&D_80106A73` in **two different general registers**:
+`$v1` for blocks 0-1 and `$a0` for blocks 2-3. They are simultaneously live: at
+`.L80034FC8` the block-2 materialisation (`lui $a0` / `addiu $a0`, 80034FC8 and
+80034FCC) is scheduled ABOVE block 1's store `sb $v0,0($v1)` (80034FD0), so both
+registers hold the address across those three instructions.
+
+GCC 2.7.2 gives one pseudo exactly one hard register
+(`tools/gcc-2.7.2/global.c:1275`, `reg_renumber[allocno_reg[allocno]] = best_reg;`;
+one allocno per pseudo at `global.c:426`) and has no live-range splitting. A
+single C pointer object is a single pseudo, so on the single-object chassis the
+address occupies ONE register for all four blocks. Our build puts it in `$a0`,
+which is right for blocks 2/3 and wrong for blocks 0/1 -- exactly the 10-point
+residual. Winning the priority fight s39 described would put it in `$v1`, which
+is right for blocks 0/1 and wrong for blocks 2/3: the same two register-swapped
+blocks, relocated, not removed. The single-object chassis has a FLOOR, and 10 is
+it. s39's frontier items 1 and 2 are retired as routes to zero (they remain
+correct descriptions of the allocator's behaviour).
+
+Direct corroboration, measured this session rather than inferred: variant `qL`
+(round-trip chassis, trailing copy loop addressed off `q[i-3]` to buy q
+references) moves the allocno table exactly the way s39's formula predicts --
+q rises to `nrefs=12 livelen=36 pri=10000` and displaces the loop counter
+(pseudo 73) from `$v1` to `$a0` -- yet the score goes UP to **30 at 48**, and the
+objdump shows q seated in `$a1`, with blocks 2/3 now materialising `$a1` instead
+of `$a0`. Table in `tmp/grind/func_80034F88/s40/ad_qL.txt`.
+
+--- 2. AN ADDRESS ONLY LANDS IN AN ALLOCATABLE REGISTER IF THE C SOURCE NAMES A
+    POINTER OBJECT ---
+
+The obvious repair to section 1 is to let q cover blocks 0/1 only and let blocks
+2/3 get their own address WITHOUT a second declared pointer (which the standing
+Judge constraint forbids). Two spellings were measured on the round-trip
+chassis:
+
+  * `a1` -- blocks 2/3 through the anonymous symbol-difference expression
+    `*(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70))`:
+    **28 at 48**.
+  * `a2` -- blocks 2/3 through the bare symbol (`v = D_80106A73; ... D_80106A73 = c;`):
+    **28 at 48**, and byte-for-byte the same stream as `a1`, which proves the
+    symbol-difference expression constant-folds to the plain `symbol_ref` before
+    address selection.
+
+Their disassembly (`s40/a1.txt`) is the point: blocks 2/3 emit
+
+    lui $v0,%hi ; lbu $v0,%lo($v0)      and      lui $at,%hi ; sb $v1,%lo($at)
+
+-- four instructions per block, the same COUNT as the target's
+lui/addiu/lbu/sb, but with the address folded into each memory operand and
+expanded through the assembler temporary `$at`, never held in an allocatable
+register. That is the general behaviour, not an accident of this spelling: a
+`symbol_ref` is a legitimate MIPS address, so a mem whose address is a bare
+symbol never forces the address into a pseudo; the address becomes a
+register-held VALUE (the `lui`+`addiu` pair) only when the C source uses
+`&D_80106A73` as a value -- i.e. assigns it to a pointer object. The target does
+that twice.
+
+`h1` closes the last non-declaration route: blocks 2/3 replaced by two expansions
+of a `static inline` helper that declares its OWN `u8 *q` (so the caller still
+declares only one pointer object). **30 at 49.** Inlining fires (no call in the
+`.o`), but the two expansions SHARE one store base -- and it is `$a1`, the same
+register the caller's q gets -- while both reads fold back to bare `lui`+%lo; the
+block shape also degrades to `beqz`+`nop`. Inlining does not buy a second
+register-held address. This reproduces s37's result on the new chassis, where it
+had been measured only on the retired `*q &= 0xF8` one.
+
+--- 3. WHAT THE RESIDUAL ACTUALLY IS, RESTATED ---
+
+Not a priority gap and not an ineligibility: a PSEUDO-COUNT requirement. The
+target's byte stream requires two pseudos holding `&D_80106A73`, live
+simultaneously at `.L80034FC8`; every measured ordinary-C way to create the
+second one either (a) declares a second pointer object -- the score-0 body
+(`rejected/three-pointer-objects-judge-FAIL-score0.c`), which the Judge has ruled
+a cheat and the standing constraint bans -- or (b) produces no register-held
+address at all (a1/a2, and the whole anonymous-carrier family measured in
+s33/s34/s35), or (c) costs instructions (s33 c1 at 13, s34's +1-insn carriers).
+The 10-point floor of the single-object chassis is therefore a property of the
+chassis, and the ladder's remaining question is not "which C lever moves the
+allocator" but "does any sanctioned family supply a second address pseudo".
+
+- [s40] Chassis re-measured on HEAD (dispatch printed 'measurement unavailable' for the eleventh consecutive session): candidate body b0 = score 10, build_insns 49. src/ restored to HEAD; `git status --porcelain src/ include/` empty.
+- [s40] KILL RE-AUDIT: s39's t1 (`rejected/s39-block1-reads-symbol-directly-score11.c`, the only banked form whose block 1 reloads the byte from memory like the target's 80034FB4 `lbu $a0,0($v1)`) re-measures 11 at 50, unchanged. fake_ablate reports no FAKE construct in candidate.c.
+- [s40] READ OFF THE TARGET ASM: `&D_80106A73` lives in TWO general registers -- $v1 across blocks 0-1 (lui/addiu at 80034F98/80034F9C) and $a0 across blocks 2-3 (lui/addiu at 80034FC8/80034FCC and 80034FF0/80034FF4) -- and they are simultaneously live, because the block-2 materialisation is scheduled above block 1's store `sb $v0,0($v1)` at 80034FD0.
+- [s40] Therefore the s39 frontier is not a route to zero: GCC 2.7.2 assigns one hard register per pseudo (global.c:1275) with no live-range splitting, so a single C pointer object supplies ONE address register for all four blocks. Our build puts it in $a0 (right for blocks 2/3, wrong for 0/1); flipping it to $v1 would be right for 0/1 and wrong for 2/3. Same two swapped blocks, relocated.
+- [s40] Measured corroboration: variant qL (loop addressed off q[i-3]) moves the table exactly as s39's formula predicts (q nrefs 12, livelen 36, pri 10000; loop counter displaced from $v1 to $a0) and the score RISES to 30 at 48, with q seated in $a1.
+- [s40] a1 (blocks 2/3 anonymous symbol-difference) and a2 (blocks 2/3 bare symbol) both measure 28 at 48 and emit an IDENTICAL stream: the symbol-difference expression constant-folds to the plain symbol_ref. Both spell blocks 2/3 as `lui $v0/$at` + %lo-folded lbu/sb -- four insns per block, the same count as the target's lui/addiu/lbu/sb, but with no address in an allocatable register.
+- [s40] Generalisation supported by a1/a2 and by the whole s33-s35 anonymous-carrier family: a bare symbol_ref is a legitimate MIPS address, so a mem addressed by it never forces the address into a pseudo; `&D_80106A73` becomes a register-held value (lui+addiu) only where the C source uses it AS a value, i.e. assigns it to a pointer object.
+- [s40] h1 (blocks 2/3 as two expansions of a static inline helper declaring its own `u8 *q`) = 30 at 49 on the round-trip chassis: inlining fires but the two expansions share ONE store base, and it is $a1 -- the same register the caller's q takes -- while both reads fold to bare lui+%lo. Inlining does not buy a second register-held address. Reproduces s37's old-chassis result on the new chassis.
+- [s40] RESTATEMENT: the residual is a pseudo-COUNT requirement (two address pseudos live at .L80034FC8), not a priority gap and not an ineligibility. 10 is the floor of the single-object chassis, not a plateau within it.
+- [s40] Ladder accounting: session EIGHTEEN of cycle 2; the six-modality condition was met at s31. Two flat sessions remain before owner directive 2026-09-02 permits any disposition.
+- [s40] Four new disproven forms banked; bank size is now 212.
+
+### Artifacts (s40)
+`tmp/grind/func_80034F88/s40/`: `variants/{b0,t1,a1,a2,qL,h1}.c`, `run.ps1`, `dis.sh`,
+`ad.sh`, `{b0,t1,a1,qL,h1}.txt` (objdumps), `ad_qL.txt` (instrumented-cc1 allocno table
+for qL), `code6cac_b.c.orig`.
+
+- [s40] [s40] Chassis re-measured on HEAD (the dispatch brief printed 'measurement unavailable' for the eleventh consecutive session): the candidate body b0 = score 10, build_insns 49. src/code6cac_b.c restored to HEAD at session end; `git status --porcelain src/ include/` empty.
+
+- [s40] [s40] Target register geometry, read block by block off asm/funcs/func_80034F88.s: blocks 0-1 address D_80106A73 through $v1, blocks 2-3 through $a0, and both registers hold the address simultaneously at .L80034FC8 because the block-2 lui/addiu pair is scheduled above block 1's store `sb $v0,0($v1)` (80034FD0).
+
+- [s40] [s40] The residual is a PSEUDO-COUNT requirement, not a priority gap (s39) and not an ineligibility (s31/s38): two pseudos must hold &D_80106A73 simultaneously, and GCC 2.7.2 gives one allocno per pseudo (global.c:426) exactly one hard register (global.c:1275) with no live-range splitting.
+
+- [s40] [s40] Measured corroboration that the priority route cannot reach zero: variant qL (loop addressed off q[i-3]) moves the allocno table exactly as s39's formula predicts (q nrefs 12, livelen 36, pri 10000; loop counter displaced from $v1 to $a0) and the score RISES to 30 at 48, with q seated in $a1 and blocks 2/3 materialising $a1.
+
+- [s40] [s40] a1 (blocks 2/3 anonymous symbol-difference) and a2 (blocks 2/3 bare symbol) both measure 28 at 48 and emit an IDENTICAL stream: the symbol-difference expression constant-folds to the plain symbol_ref. Both spell blocks 2/3 as lui + %lo-folded lbu/sb through $at/$v0 -- four insns per block, the same count as the target's lui/addiu/lbu/sb, but with no address in an allocatable register.
+
+- [s40] [s40] Generalisation supported by a1/a2 and by the s33-s35 anonymous-carrier family: a bare symbol_ref is a legitimate MIPS address, so a mem addressed by it never forces the address into a pseudo; &D_80106A73 becomes a register-held value (lui+addiu) only where the C source uses it AS a value, i.e. assigns it to a pointer object. The target does that twice.
+
+- [s40] [s40] h1 (blocks 2/3 as two expansions of a static inline helper declaring its own pointer) = 30 at 49 on the round-trip chassis: inlining fires but the two expansions share ONE store base -- $a1, the same register the caller's q takes -- and both reads fold to bare lui+%lo.
+
+- [s40] [s40] Kill re-audit: s39's t1 re-measures 11 at 50, unchanged; fake_ablate.py finds no FAKE-annotated construct in candidate.c.
+
+- [s40] [s40] candidate.c body is UNCHANGED (still the s39 round-trip spelling at 10/49); only its header comment was updated with the two-address-register finding. Four new disproven forms banked; bank size is now 212.
+
+- [s40] [s40] Ladder accounting: this is session EIGHTEEN of cycle 2 (the ledger's own numbering -- the dispatch brief again said 'session 35' while the ledger already carried s35/s37/s38/s39). The six-modality condition was met at s31; two flat sessions remain before owner directive 2026-09-02 permits any disposition.

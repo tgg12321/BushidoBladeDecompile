@@ -3914,3 +3914,123 @@ one, and must state the four numeric flip thresholds and which pass pins each.
 - probe: Spliced rejected/s37-block0-value-lives-across-block1-score10-BIT-IDENTICAL.c as variant k1, scored it, dumped its .greg, and ran `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c`.
 - result: k1 = 10 at 49, unchanged from s37, and bit-identical to b0. Its .greg still carries hard reg 3 in q's conflict row because k1 keeps `m = *q & 0xF8;` as one statement, which still spawns the single-basic-block QImode load pseudo. fake_ablate reports no FAKE-annotated construct in candidate.c.
 - verdict: CONFIRMED
+
+==== s40 (synthesis) — FRONTIER RESET ====
+
+s39's frontier items 1 and 2 ("cut m's references to 4", "shorten q's live length
+to <= 22") are RETIRED AS ROUTES TO ZERO. They are accurate descriptions of why
+blocks 0/1 are register-swapped, but achieving either would relocate the
+mismatch to blocks 2/3 rather than remove it — see evidence.md
+"==== s40 (synthesis) ====" section 1. The target holds `&D_80106A73` in TWO
+general registers ($v1 across blocks 0-1, $a0 across blocks 2-3, simultaneously
+live at `.L80034FC8`), and a single C pointer object is a single pseudo with a
+single hard register (global.c:1275). The single-object chassis therefore has a
+FLOOR of 10, and the ladder's question is no longer "which lever moves the
+allocator" but "does any sanctioned family supply a SECOND address pseudo".
+
+--- FRONTIER 1 (the only open technical question): a second register-held
+address pseudo without a second declared C pointer object.
+Mechanism: `&D_80106A73` becomes a register-held value (the target's `lui`+`addiu`
+pair) only where the C source uses the address AS a value; a mem addressed by a
+bare `symbol_ref` is a legitimate MIPS address and is expanded through the
+assembler temporary `$at` instead (measured this session: a1/a2 both 28 at 48
+with an identical stream; the symbol-difference expression constant-folds to the
+plain symbol). Measured dead so far: bare symbol (a2), symbol-difference (a1),
+the whole s33/s34/s35 anonymous-carrier family, and `static inline` helpers that
+declare their own pointer (h1, 30 at 49 — both expansions share one store base
+in $a1 and their reads fold to bare lui+%lo).
+Next probe: the remaining untried shapes are addresses that are NOT legitimate
+constants and so must be forced into a pseudo — an address whose displacement or
+base comes from a runtime quantity that provably equals a constant (e.g. derived
+from `p`, or from the loop counter after the loop). Every such spelling measured
+to date added an instruction (s34), so the probe must be run for INSN COUNT
+first (a 49-insn body) and only then for register seating; anything at 48 or 50
+is not a candidate. If all such spellings either fold to the bare symbol or add
+an instruction, the second-pseudo requirement is reachable only by declaring a
+second pointer object, which the standing Judge constraint bans.
+
+--- FRONTIER 2: re-audit the ban itself, not the codegen.
+Mechanism: the score-0 body (`rejected/three-pointer-objects-judge-FAIL-score0.c`)
+byte-matches and is a Judge-ruled cheat; the layer-1 FAIL that preceded it was an
+ANNOTATION-FORMAT failure (four `u8 *q = &D_80106A73;` declarations carrying no
+`/* FAKE */` line under pointer-alias-fake-exception prereq 3), and the Judge
+constraint that followed closed the multi-handle axis outright. s40 supplies
+something neither review had: a measured demonstration that the second pointer
+object is not a register-allocation lever at all but the only C construct that
+emits the target's second `lui`+`addiu` address materialisation.
+Next probe: NOT a code probe. If a future session is assigned `escalation`, the
+LADDER EXHAUSTED record must lead with the two-address-register reading of the
+target asm and the a1/a2/h1 measurements, because that is the argument that
+distinguishes "the ladder has not been worked" from "the residual is one
+construct the Judge has ruled out". A `ruling-request` asking whether a second
+pointer object may be spelled as ordinary program logic (blocks 2/3 addressed by
+their own handle) is the other admissible move — but note the standing constraint
+already answers it NO, so only a materially new framing (this one) justifies
+asking again.
+
+--- FRONTIER 3 (bookkeeping): ladder accounting.
+This is session EIGHTEEN of cycle 2; the six-modality condition was met at s31.
+TWO flat sessions remain before owner directive 2026-09-02 permits any
+disposition.
+
+## [s40] The target holds `&D_80106A73` in two distinct general registers, simultaneously live, so no body in which a single C pointer object supplies the flag-byte address for all four blocks can produce the target byte stream.
+- mechanism: Read off asm/funcs/func_80034F88.s: blocks 0-1 address the byte through $v1 (lui/addiu at 80034F98/80034F9C), blocks 2-3 through $a0 (lui/addiu at 80034FC8/80034FCC and 80034FF0/80034FF4), and the block-2 materialisation is scheduled ABOVE block 1's store `sb $v0,0($v1)` at 80034FD0, so both registers hold the address at once. GCC 2.7.2 creates one allocno per pseudo (global.c:426) and gives each allocno exactly one hard register (global.c:1275, `reg_renumber[allocno_reg[allocno]] = best_reg;`), and 2.7.2 has no live-range splitting, so one pointer object yields one address register for the whole function.
+- probe: Re-read the target disassembly block by block against the base body's objdump (s40/b0.txt, re-measured 10 at 49 this session); then measured variant qL (round-trip chassis, trailing loop addressed off `q[i-3]`), which raises q's allocno priority exactly as s39's formula prescribes, and read its allocno table from the instrumented cc1.
+- result: qL moves q to nrefs=12 livelen=36 pri=10000 and displaces the loop counter from $v1 to $a0, but q seats in $a1 and the score RISES to 30 at 48 (s40/ad_qL.txt, s40/qL.txt). Winning the priority fight does not produce two address registers; it moves the one address register around. The s39 frontier's target state (q in $v1) would make blocks 0/1 exact and blocks 2/3 wrong — the same 10-point shape, relocated.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/global.c:1275
+- measured_on: round-trip chassis (candidate.c as of s39) on HEAD 2026-09-05, single declared `u8 *q`, no FAKE constructs present; fake_ablate.py reports nothing to ablate
+
+## [s40] Letting q cover blocks 0/1 only and spelling blocks 2/3 without a pointer object does not create the target's second register-held address: the bare symbol and the symbol-difference expression both emit %lo-folded memory operands through the assembler temporary $at.
+- mechanism: A `symbol_ref` is a legitimate MIPS address, so a mem addressed by it is never forced into a pseudo; the address becomes a register-held value (lui+addiu) only where the C source uses `&D_80106A73` AS a value, i.e. assigns it to a pointer object.
+- probe: Variants a1 (blocks 2/3 through `*(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70))`) and a2 (blocks 2/3 through the bare symbol) on the round-trip chassis; sandbox scores plus objdump.
+- result: a1 = 28 at 48, a2 = 28 at 48, and the two streams are byte-identical — the symbol-difference expression constant-folds to the plain symbol. Blocks 2/3 emit `lui $v0` + `lbu %lo($v0)` and `lui $at` + `sb %lo($at)`: four insns per block, the same COUNT as the target's lui/addiu/lbu/sb, with no address in an allocatable register. q takes $a1 and p takes $a0. Banked as rejected/s40-roundtrip-q-blocks01-anon23-score28.c and rejected/s40-roundtrip-q-blocks01-directsymbol23-score28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as of s39) on HEAD 2026-09-05, single declared `u8 *q` covering blocks 0/1, no FAKE constructs present
+
+## [s40] A `static inline` helper that declares its own pointer, expanded for blocks 2/3, does not buy a second register-held address on the round-trip chassis.
+- mechanism: Inlining creates a fresh pseudo per expansion, but cse merges the two expansions' address values into one and the reads fall back to %lo-folded operands, so only one address survives allocation.
+- probe: Variant h1 = the round-trip chassis with blocks 2/3 replaced by two calls to `static inline void bb2_set_flag(s32 c, s32 bit)` whose body declares `u8 *q = &D_80106A73;`.
+- result: h1 = 30 at 49. Inlining fires (no call in the .o), but both expansions share ONE store base and it is $a1 — the same register the caller's q takes — while both reads fold to bare `lui`+%lo, and the block shape degrades to beqz+nop. Reproduces s37's old-chassis result (30 at 49) on the new chassis. Banked as rejected/s40-roundtrip-inline-helper-blocks23-score30.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as of s39) on HEAD 2026-09-05, one pointer object in the caller plus the helper's own, no FAKE constructs present
+
+## [s40] MANDATED KILL RE-AUDIT — s39's t1 (block 1 reads the symbol directly, so block 0's value becomes single-basic-block and block 1 reloads from memory) re-measures unchanged on today's chassis.
+- mechanism: Re-run of the banked form that is structurally closest to the target — the only one whose block 1 reloads the flag byte the way the target's `lbu $a0,0($v1)` at 80034FB4 does — per the kill re-audit rule.
+- probe: Spliced rejected/s39-block1-reads-symbol-directly-score11.c as variant t1, scored it, and ran `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c`.
+- result: t1 = 11 at 50, identical to s39. fake_ablate reports no FAKE-annotated construct in candidate.c, so the banked kills on this chassis were not measured with a FAKE carrier occupying the contested pseudo.
+- verdict: CONFIRMED
+
+## [s40] The target holds &D_80106A73 in two distinct general registers, simultaneously live, so no body in which a single C pointer object supplies the flag-byte address for all four blocks can produce the target byte stream.
+- mechanism: Read off asm/funcs/func_80034F88.s: blocks 0-1 address the byte through $v1 (lui/addiu at 80034F98/80034F9C), blocks 2-3 through $a0 (lui/addiu at 80034FC8/80034FCC and 80034FF0/80034FF4), and the block-2 materialisation is scheduled ABOVE block 1's store `sb $v0,0($v1)` at 80034FD0, so both registers hold the address at once. GCC 2.7.2 creates one allocno per pseudo (global.c:426) and gives each allocno exactly one hard register (global.c:1275, reg_renumber[allocno_reg[allocno]] = best_reg), with no live-range splitting, so one pointer object yields one address register for the whole function.
+- probe: Re-read the target disassembly block by block against the base body's objdump (s40/b0.txt, re-measured 10 at 49 this session); then measured variant qL (round-trip chassis with the trailing copy loop addressed off q[i-3]), which raises q's allocno priority exactly as s39's formula prescribes, and read its allocno table from the instrumented cc1 (BB2_ALLOC_DEBUG=1).
+- result: qL moves q to nrefs=12 livelen=36 pri=10000 and displaces the loop counter (pseudo 73) from $v1 to $a0, but q seats in $a1 and the score RISES to 30 at 48 insns (s40/ad_qL.txt, s40/qL.txt). Winning the priority fight does not produce two address registers; it moves the one address register around. The state s39's frontier aimed at (q in $v1) would make blocks 0/1 exact and blocks 2/3 wrong -- the same 10-point shape, relocated. s39's frontier items 1 and 2 are therefore retired as routes to zero.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: round-trip chassis (memory/grind/func_80034F88/candidate.c as of s39) on HEAD 2026-09-05, single declared `u8 *q`, no FAKE constructs present; fake_ablate.py reports nothing to ablate
+- predicate_cite: tools/gcc-2.7.2/global.c:1275
+
+## [s40] With q covering blocks 0/1 only, spelling blocks 2/3 through the bare symbol (a2) or through the symbol-difference expression (a1) emits %lo-folded memory operands through the assembler temporary $at instead of the target's lui+addiu address register, and both measure 28 at 48 insns.
+- mechanism: A symbol_ref is a legitimate MIPS address, so a mem addressed by it is never forced into a pseudo; the address becomes a register-held value (lui+addiu) only where the C source uses &D_80106A73 AS a value, i.e. assigns it to a pointer object.
+- probe: Variants a1 (blocks 2/3 through *(u8 *)((s32)&D_80106A70 + ((s32)&D_80106A73 - (s32)&D_80106A70))) and a2 (blocks 2/3 through the bare symbol) on the round-trip chassis; sandbox scores plus objdump.
+- result: a1 = 28 at 48, a2 = 28 at 48, and the two streams are byte-identical -- the symbol-difference expression constant-folds to the plain symbol before address selection. Blocks 2/3 emit `lui $v0` + `lbu %lo($v0)` and `lui $at` + `sb %lo($at)`: four insns per block, the same COUNT as the target's lui/addiu/lbu/sb, but with no address in an allocatable register. q takes $a1, p takes $a0. Banked as rejected/s40-roundtrip-q-blocks01-anon23-score28.c and rejected/s40-roundtrip-q-blocks01-directsymbol23-score28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as of s39) on HEAD 2026-09-05, single declared `u8 *q` covering blocks 0/1, no FAKE constructs present
+
+## [s40] Replacing blocks 2/3 with two expansions of a static inline helper that declares its own `u8 *q` measures 30 at 49 on the round-trip chassis: both expansions share one store base in $a1 and their reads fold to bare lui+%lo.
+- mechanism: Inlining creates a fresh pseudo per expansion, but cse merges the two expansions' address values into one and the reads fall back to %lo-folded operands, so only one address survives allocation -- and it lands in the same register the caller's q takes.
+- probe: Variant h1 = the round-trip chassis with blocks 2/3 replaced by two calls to `static inline void bb2_set_flag(s32 c, s32 bit)` whose body declares `u8 *q = &D_80106A73;`; sandbox score plus objdump.
+- result: h1 = 30 at 49. Inlining fires (no call in the .o) but buys no second register-held address, and the block shape degrades to beqz+nop. Reproduces s37's old-chassis result on the new (round-trip) chassis, where it had never been measured. Banked as rejected/s40-roundtrip-inline-helper-blocks23-score30.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: round-trip chassis (candidate.c as of s39) on HEAD 2026-09-05, one pointer object in the caller plus the helper's own, no FAKE constructs present
+
+## [s40] MANDATED KILL RE-AUDIT -- s39's t1 (block 1 reads the symbol directly, so block 0's value becomes a single-basic-block quantity and block 1 reloads the flag byte from memory the way the target's `lbu $a0,0($v1)` at 80034FB4 does) re-measures unchanged on today's chassis.
+- mechanism: Re-run of the banked form that is structurally closest to the target, per the kill re-audit rule, together with a FAKE-ablation check on the candidate.
+- probe: Spliced rejected/s39-block1-reads-symbol-directly-score11.c as variant t1 and scored it; ran `python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c`.
+- result: t1 = 11 at 50, identical to s39's measurement. fake_ablate reports `no FAKE-annotated constructs found ... nothing to ablate`, so no banked kill on this chassis was measured with a FAKE carrier occupying the contested pseudo.
+- verdict: CONFIRMED

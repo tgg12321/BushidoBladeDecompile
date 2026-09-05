@@ -1,7 +1,7 @@
 {
  "func": "func_80034F88",
  "file": "code6cac_b",
- "session_count": 39,
+ "session_count": 40,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -237,23 +237,29 @@
    "floor": 10,
    "modality": "rederive",
    "headline": "The hard-reg-$v1 conflict that 8 sessions called the residual's root cause is a property of the SPELLING of block 0, not of the function: an SImode round-trip removes it and leaves a 2619-point allocn"
+  },
+  {
+   "session": 40,
+   "floor": 10,
+   "modality": "rederive",
+   "headline": "The target holds &D_80106A73 in TWO general registers simultaneously live at .L80034FC8, so the single-C-object chassis has a FLOOR of 10, not a plateau: s39's priority-flip frontier would relocate th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "There is a C spelling in which block 1 still consumes m (so m stays a global allocno and no local quantity is seated in $v1) but m carries only 4 references instead of 6, putting pri(m) at 8888 below q's 10714 and giving q the $v1 seat the target uses.",
-   "mechanism": "m's six references are the zero_extend def (1), the in-place mask `m = m & 0xF8` (dest + src = 2), the store `*q = m` (1) and block 1's two arm uses (2). global.c:635 divides floor_log2(nrefs)*nrefs by live_length, so 4 references at live length 9 scores 8888. global.c:426 then gives q the lowest free hard register, which is $v1 with $v0 held by the call return.",
-   "next_probe": "Search for an expression whose RTL is one zero_extend insn plus one AND insn that writes m without reading it a second time, and that does not spawn a second pseudo the way `m = *q & 0xF8;` does (k1). Also re-run the u8-typed variants of m on THIS chassis -- every previous u8 experiment (scores 19-23) was measured on the `*q &= 0xF8;` chassis and so never reached the reference-count question. Read the number off tmp/grind/func_80034F88/s39/ad.sh, not off the score: several bodies with different tables have identical bytes."
+   "hypothesis": "The only open technical question is a SECOND register-held address pseudo produced without declaring a second C pointer object. Bare symbol, symbol-difference, the s33-s35 anonymous carriers and static-inline helpers are all measured dead.",
+   "mechanism": "&D_80106A73 becomes a register-held value (the target's lui+addiu pair) only where the C source uses the address as a value; a mem addressed by a bare symbol_ref is a legitimate MIPS address and is expanded through the assembler temporary $at instead.",
+   "next_probe": "Try address expressions that are NOT legitimate constants and so must be forced into a pseudo -- an address whose base or displacement comes from a runtime quantity that provably equals a constant (derived from `p`, or from the loop counter). Every such spelling measured to date added an instruction (s34), so screen on INSN COUNT first: only a 49-insn body is a candidate, and anything at 48 or 50 is out before its registers are read."
   },
   {
-   "hypothesis": "q's live length can be pushed from 28 down to 22 or less without removing q from any of the four blocks, which alone flips allocno_compare (13636 > 13333).",
-   "mechanism": "global.c accumulates live_length over the insns an allocno is actually live, so dead gaps do not count; q is already dead between block 1's store and block 2's re-materialisation and again between blocks 2 and 3. x1 showed the number is steerable -- it moved m's live length from 9 to 7 in one statement move -- so the derivative is real, it was simply pushed on the wrong allocno.",
-   "next_probe": "Generate bodies that move the p[8] read, the `a1 = v0` copy and the block-1 condition around inside blocks 0-1, and for each read q's live_length directly from ad.sh rather than inferring from the objdump. The target metric is q livelen, not score; a body that scores worse but moves q's live length is a better lead than a body that ties at 10."
+   "hypothesis": "If no such spelling exists, the residual is reachable only by declaring a second pointer object for blocks 2/3 -- which the standing Judge constraint bans and which the score-0 body already demonstrates byte-matches.",
+   "mechanism": "s40 supplies what neither the layer-1 FAIL (an annotation-format failure) nor the Judge constraint had: a measured demonstration that the second pointer object is not a register-allocation lever but the only C construct that emits the target's second lui+addiu address materialisation.",
+   "next_probe": "Not a code probe. A `ruling-request` framing the second handle as the only source of the target's second address materialisation is admissible ONCE on that new framing; otherwise, when the driver assigns `escalation` after two more flat sessions, the LADDER EXHAUSTED (non-endgame residual, floor 10) record must lead with the two-address-register reading and the a1/a2/h1/qL measurements."
   },
   {
-   "hypothesis": "Ladder accounting -- three flat sessions remain before owner directive 2026-09-02 permits any disposition, and the disposition record, if it is ever written, must be re-drafted.",
-   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities; the modality condition was met at s31 and this is session seventeen of cycle 2.",
-   "next_probe": "If the driver assigns `escalation` after the count is met, file the LADDER EXHAUSTED (non-endgame residual, floor 10) record -- but it must cite the s39 priority-gap statement with its four numeric flip thresholds and the pass that pins each, NOT the retired 's31/s38: q is ineligible for $v1' formulation, which this session disproved."
+   "hypothesis": "Ladder accounting: session eighteen of cycle 2, six-modality condition met at s31, two flat sessions remain before owner directive 2026-09-02 permits any disposition.",
+   "mechanism": "Owner directive 2026-09-02 (decisions.md 'foreclosure mechanics') requires 20 flat sessions and at least 6 distinct modalities before any disposition.",
+   "next_probe": "Spend the remaining two sessions on frontier 1's insn-count screen; do not re-run the allocator-priority probes, which s40 retired as routes to zero."
   }
  ],
  "judge_constraints": [
@@ -692,6 +698,30 @@
    "measured_on": "round-trip chassis (candidate.c as rewritten this session), single declared `u8 *q`, no FAKE constructs present",
    "predicate_cite": "",
    "result": "w2 = 13 at 47 insns, w3 = 13 at 47 insns. Banked as rejected/s39-block1-init-then-conditional-or-score13.c and rejected/"
+  },
+  {
+   "session": 40,
+   "statement": "The target holds &D_80106A73 in two distinct general registers, simultaneously live, so no body in which a single C pointer object supplies the flag-byte address for all four blocks can produce the ta",
+   "kill_scope": "class",
+   "measured_on": "round-trip chassis (memory/grind/func_80034F88/candidate.c as of s39) on HEAD 2026-09-05, single declared `u8 *q`, no FAKE constructs present; fake_ablate.py reports nothing to ablate",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1275",
+   "result": "qL moves q to nrefs=12 livelen=36 pri=10000 and displaces the loop counter (pseudo 73) from $v1 to $a0, but q seats in $"
+  },
+  {
+   "session": 40,
+   "statement": "With q covering blocks 0/1 only, spelling blocks 2/3 through the bare symbol (a2) or through the symbol-difference expression (a1) emits %lo-folded memory operands through the assembler temporary $at ",
+   "kill_scope": "instance",
+   "measured_on": "round-trip chassis (candidate.c as of s39) on HEAD 2026-09-05, single declared `u8 *q` covering blocks 0/1, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "a1 = 28 at 48, a2 = 28 at 48, and the two streams are byte-identical -- the symbol-difference expression constant-folds "
+  },
+  {
+   "session": 40,
+   "statement": "Replacing blocks 2/3 with two expansions of a static inline helper that declares its own `u8 *q` measures 30 at 49 on the round-trip chassis: both expansions share one store base in $a1 and their read",
+   "kill_scope": "instance",
+   "measured_on": "round-trip chassis (candidate.c as of s39) on HEAD 2026-09-05, one pointer object in the caller plus the helper's own, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "h1 = 30 at 49. Inlining fires (no call in the .o) but buys no second register-held address, and the block shape degrades"
   }
  ]
 }

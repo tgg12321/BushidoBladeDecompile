@@ -1,3 +1,30 @@
+/* s40 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns
+ * (variant b0).  BODY UNCHANGED.  One result the next session must not
+ * re-derive, and it retires the s39 frontier.
+ *
+ * THE SINGLE-OBJECT CHASSIS HAS A FLOOR OF 10; IT IS NOT A PLATEAU WITHIN IT.
+ * Read block by block off asm/funcs/func_80034F88.s, the target holds
+ * &D_80106A73 in TWO general registers -- $v1 across blocks 0-1 (lui/addiu at
+ * 80034F98/80034F9C) and $a0 across blocks 2-3 (lui/addiu at 80034FC8/80034FCC
+ * and 80034FF0/80034FF4) -- and they are SIMULTANEOUSLY LIVE, because the
+ * block-2 materialisation is scheduled above block 1's store `sb $v0,0($v1)` at
+ * 80034FD0.  GCC 2.7.2 creates one allocno per pseudo (global.c:426) and gives
+ * each allocno exactly one hard register (global.c:1275), with no live-range
+ * splitting, so this one `q` supplies ONE address register for all four blocks.
+ * It currently gets $a0, which is right for blocks 2/3 and wrong for blocks 0/1
+ * -- that IS the 10-point residual.  s39's frontier (win the allocno_compare
+ * priority fight so q takes $v1) would make blocks 0/1 exact and blocks 2/3
+ * wrong: the same 10-point shape, relocated.  Measured, not inferred: variant
+ * qL raises q to pri 10000 / nrefs 12, displaces the loop counter out of $v1,
+ * and scores 30 (tmp/grind/func_80034F88/s40/ad_qL.txt).
+ *
+ * Consequently the only open technical question is a SECOND address pseudo, and
+ * s40 measured that a bare symbol_ref never produces one: blocks 2/3 spelled by
+ * the plain symbol (a2) or the symbol-difference expression (a1) both emit
+ * %lo-folded operands through $at (28 at 48, identical streams), and a static
+ * inline helper with its own pointer shares one base in $a1 (h1, 30 at 49).
+ * See evidence.md "==== s40 (synthesis) ====" and hypotheses.md's s40 frontier.
+ */
 /* s38 (synthesis, 2026-09-05): re-measured on HEAD at score 10 / 49 insns
  * (variant b0). UNCHANGED. Two results the next session must not re-derive.
  *
