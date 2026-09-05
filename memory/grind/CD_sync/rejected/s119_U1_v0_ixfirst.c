@@ -1,36 +1,3 @@
-/* CD_sync candidate - s118 (2026-09-04).  Honest floor 2/160, build_insns 160,
- * rules_dropped 0, measured live this session on HEAD's src/system.c.
- *
- * THIS BODY REPLACES the s117 scalar/pp body that used to sit here.  It is the
- * pp-FREE CD_alarm-struct chassis (s117 hypothesis H117-1, CONFIRMED): the
- * per-word D_800F19BC / D_800F19C0 externs are dropped and D_800F19B8 is
- * declared as `typedef struct { s32 timeout; s32 count; char *func; } CD_alarm;`
- * so the printf argument is a member MEM.  Same 2/160 as the scalar body, but
- *   - ONE FAKE construct instead of two (the `void **pp` pointer alias is gone),
- *   - no declaration pun for the dispatch auto-scan to flag.
- * The five R_MIPS_LO16 addend differences the struct model produces are all
- * masked by engine/score.py and were verified addend-only against objdump
- * records in s117, so 2 is 2.
- *
- * The leading //REPL: / //DROP: lines are the declaration-surface directives
- * consumed by tmp/grind/CD_sync/s117/apply.py (region-scoped so CD_datasync's
- * duplicate declaration block is never touched).  They are also valid C
- * comments, so this file reads as the body plus a decl-surface manifest.
- *
- * RESIDUAL (unchanged since s115): a single transposition at target indices
- * 54/55 - target `addu $v0,$v0,$s3 ; sll $a0,$a0,2`, ours the other way round.
- * All 158 other instructions match including every register.  See
- * hypotheses.md s117/s118 for the local-alloc quantity table that governs it.
- *
- * [s119] The floor form is still this one (2/160).  But the STRUCTURALLY
- * closest form in the ledger is now memory/grind/CD_sync/progress/
- * s119-T1-status-borrow-4.c (4/160): it is order-exact for all 160
- * instructions AND seats printf's 5th argument in $v1 (the target seat) with
- * refs=2 and no loop-note wrap, by carrying the do_timeout t0 address in the
- * existing function-wide local `status' so that pseudo is exiled from
- * local-alloc.  Its entire residual is ONE register: the t0 chain sits in $s0
- * where the target has $a0 (indices 49/55/59/65).  See hypotheses.md s119.
- */
 //REPL:extern s32 D_800F19B8; => typedef struct { s32 timeout; s32 count; char *func; } CD_alarm; extern CD_alarm D_800F19B8;
 //DROP:extern s32 D_800F19BC;
 //DROP:extern void *D_800F19C0;
@@ -74,15 +41,15 @@ s32 CD_sync(s32 a0, u8 *a1)
 
   {
     s32 arg5;
-    s32 t0;
     s32 ix;
-    t0 = idx_1494[0];
-    ix = idx_1494[1]; /* s106: honest fresh local - the v0 staged-value borrow it replaces is NOT load-bearing (measured 2 == 2, 160/160) */
-    t0 *= 4;
-    t0 = (s32)((u8 *)tbl_125c + t0);
+    v0 = idx_1494[0];
+    ix = idx_1494[1];
     ix <<= 2;
-    arg5 = *(s32 *)(ix + (s32)tbl_125c);
-    printf(&D_800161C8, D_800F19B8.func, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
+    ix += (s32)tbl_125c;
+    v0 *= 4;
+    v0 = (s32)((u8 *)tbl_125c + v0);
+    arg5 = *(s32 *)ix;
+    printf(&D_800161C8, D_800F19B8.func, D_800A11DC[D_800A11D5], *(s32 *)v0, arg5);
   }
   CD_flush();
   v0 = -1;

@@ -2974,3 +2974,120 @@ not break the tie even if it were free.
 - [s118] The floor is unchanged at 2/160 (build_insns 160, rules_dropped 0). candidate.c has been REPLACED with the pp-free CD_alarm-struct body (s117 progress form): same 2/160, one FAKE instead of two, and the D_800F19C0 declaration pun the dispatch auto-scan flagged is gone.
 
 - [s118] New reusable tooling: tmp/grind/CD_sync/s118/dump.sh (full -da dump set from the mini TU), dumpenv.sh (same with an arbitrary list of BB2_*_DEBUG hooks), mkmini.py, blocks.py (segment any cc1 dump into basic blocks and print luid/position/uid per insn), b.sh.
+
+### H119-1 CONFIRMED - N1 (the best do-while(0) wrap form, 5/160) already has BOTH target seats
+
+BB2_QTY_DEBUG on N1: reg106 (arg5 value) birth 18 death 26 refs 4 got=3 ($v1),
+reg112 (t0 scale temp) birth 16 death 24 refs 3 got=4 ($a0). s118's frontier
+item 3 is answered: N1's whole 5-point residual is code motion across the
+NOTE_INSN_LOOP_BEG pair, not allocation.
+
+### H119-2 CONFIRMED - a local-alloc quantity's reference count is the SUM over every pseudo tied into it
+
+local-alloc.c:1932 `qty_n_refs[sqty] += reg_n_refs[sreg];` inside combine_regs.
+block_alloc calls combine_regs for EVERY operand that dies in an insn whose
+operand 0 carries an `=' constraint and is not earlyclobber (local-alloc.c:
+1210-1300, calls at 1295/1331/1336/1346) - not only for register-to-register
+copies. This explains the s117 table entry the ledger never accounted for:
+A5's qty0 reports refs=6 for reg113, a two-reference `plus' temp, because
+reg108 (4 refs) dies into it; C1's single-pseudo spelling of the same value
+reports the same 6.
+Two negative corollaries measured this session: a LOAD cannot tie (its source
+is a MEM, not a REG), so the arg5 pseudo cannot inherit refs from the address
+pseudo that dies at the load; and an explicit C copy never reaches local-alloc
+(H119-3).
+
+### H119-3 KILLED (instance) - an explicit copy local for the arg5 value
+
+R5 (`arg5b = arg5;` then pass arg5b) is 6/160 with a quantity table identical
+to the C1 control (reg106 refs 2). cse propagates the copy away long before
+flow counts references.
+
+### H119-4 KILLED (instance) - printf argument-evaluation order does not move qty2's death (s117 closing condition (c))
+
+Q1 (stage `*(s32 *)t0`) 6 · Q2 (stage the D_800A11DC subscript) 13 ·
+Q3 (both) 11 at bi 159 · Q4 (t0 address after the arg5 load) 6 ·
+Q5 (stage the t0 deref before the arg5 load) 7 · Q6 (subscript first) 13 ·
+Q7 (subscript between) 14.
+Q4's quantity table is byte-for-byte C1's, i.e. moving the t0 address statement
+across the arg5 load in the SOURCE changes nothing in the post-sched1 stream.
+Q1 does reach got=3 for reg106 but only by restructuring the entire t0 chain
+(11 raw instruction diffs).
+
+### H119-5 CONFIRMED - THE SESSION'S RESULT: exiling the t0 address to global-alloc wins the arg5 seat with refs=2, no wrap, no new construct
+
+Carrying the do_timeout t0 address in an EXISTING function-wide local (rather
+than a fresh block-scope local) makes that pseudo multi-block, so local-alloc
+never sees it: block 3 drops from four quantities to three and the
+3333-vs-3333 qty_compare_1 tie that has governed this residual since s108
+simply does not occur. The arg5 value is then allocated after the D_800A11D5
+index quantity and takes the lowest free hard register, $v1 - the target seat -
+with refs=2, on an order-exact emission, with ZERO extra references, ZERO loop
+notes and ZERO new FAKE constructs.
+
+  S2 (borrow `status', C1 statement order)                  5/160
+  T1 (borrow `status', ix-chain-first order)                 4/160
+  T2 (borrow `status', literal target statement order)       4/160
+
+T1/T2's residual is FIVE instructions and they are ALL THE SAME REGISTER:
+
+  idx 49  T: lbu  a0,0(s2)      O: lbu  s0,0(s2)
+  idx 55  T: sll  a0,a0,2       O: sll  s0,s0,2
+  idx 59  T: addu a0,a0,s3      O: addu s0,s0,s3
+  idx 65  T: lw   a3,0(a0)      O: lw   a3,0(s0)
+
+Every other instruction of all 160 matches, including every register and the
+complete emission order. This is the first form in 119 sessions that is
+simultaneously ORDER-EXACT and ARG5-SEAT-EXACT. The two-body problem is over;
+what is left is one allocno's register class.
+
+### H119-6 KILLED (instance) - no existing local, borrowed for the t0 address, gets $a0
+
+MIPS defines no REG_ALLOC_ORDER (tools/gcc-2.7.2/config/mips/mips.h), so
+global.c's find_reg walks hard registers ascending and would take $a0(4) the
+moment $v0/$v1 are spoken for. Every one of the nine borrow candidates lands on
+one of exactly two outcomes instead:
+
+  status  $s0 (callee-saved: live across the getintr callback calls)  T1/T2 4
+  v0      $a3                                                        U1_v0 7
+  cnt     $a3 (+2 diffs from cnt's own uses at idx 38/42)            U1_cnt 8
+  temp 10 · i 16 · dst 15 · src 15 · saved 16 (bi 162) · new_var 37 (bi 162)
+
+The mechanism is that a borrowed variable's live range is FUNCTION-WIDE, so it
+overlaps every point at which $a0/$a1/$a2 are set for the other calls in the
+function (VSync, the two callbacks, printf's own argument setup). $a3 does not
+have that conflict because $a3 is written exactly once in the whole function -
+at index 65, which is the allocno's own death.
+
+- [s119] The closing form must therefore give the t0 address a live range that
+  is (i) invisible to local-alloc (multi-block) yet (ii) free of the $a0
+  conflict, or else keep it block-local and break the qty_compare_1 tie in the
+  arg5 value's favour by a byte-neutral asymmetry. Both are now precisely
+  stated for the first time.
+- [s119] New reusable tooling: tmp/grind/CD_sync/s119/qd.sh (apply a form,
+  rebuild the mini TU and take a BB2_QTY_DEBUG + BB2_SUGG_DEBUG dump in ONE
+  WSL call - the s118 scripts had to be run inside WSL by hand), d.sh (score +
+  objdump + normalised target diff for one form), b.sh (batch scorer).
+- [s119] Forensic read of A5's gccdump.sched vs gccdump.sched2: sched2 DOES
+  reorder this block (it swaps uid145 `sll' and uid149 `sw ...,16(sp)' into the
+  target's order), so post-reload scheduling is a live degree of freedom here;
+  but the 120/130 pair that produces A5's 54/55 transposition is an exact
+  INSN_PRIORITY tie (both final_pri=2, RANKDBG val=0) resolved by list position,
+  which is the same variable as the source statement order. That is why
+  order-exactness and A5's qty1 birth of 16 cannot be had at once.
+
+- [s119] [s119] N1 (5/160, do-while(0) wrap) already carries BOTH target seats: reg106 got=3 ($v1), reg112 got=4 ($a0). s118 frontier item 3 answered - the wrap family's residual is entirely code motion, not allocation.
+
+- [s119] [s119] local-alloc.c:1932 sums qty_n_refs across a tie and block_alloc ties operand 0 with any DYING pseudo operand of a 2+-operand insn (calls at local-alloc.c:1295/1331/1336/1346), which is why A5's two-reference reg113 temp reports qty refs=6.
+
+- [s119] [s119] A load cannot tie (its source is a MEM), and an explicit C copy never survives cse to local-alloc (R5 = 6/160 with a C1-identical quantity table), so neither route lifts the arg5 quantity's reference count.
+
+- [s119] [s119] BREAKTHROUGH: carrying the t0 address in an existing function-wide local removes the arg5-vs-t0 quantity tie completely - block 3 has three local quantities instead of four and the arg5 value takes $v1 with refs=2, no loop note and no new FAKE. S2 5/160, T1 and T2 4/160.
+
+- [s119] [s119] T1/T2's residual is FIVE instructions and all five are one register: indices 49/55/59/65 have the t0 chain in $s0 where the target has $a0. Emission order is exact for all 160 instructions and every other register matches. The order-vs-seat two-body problem that governed s108-s118 no longer applies to this chassis; what remains is one allocno's register class.
+
+- [s119] [s119] MIPS has no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so global.c's find_reg is a plain ascending walk. status -> $s0 (live across the callback calls); v0 and cnt -> $a3; the function-wide live range of any borrowable local conflicts with $a0/$a1/$a2 at the VSync / callback / printf argument setups, while $a3 is written exactly once in the function (index 65, the allocno's own death).
+
+- [s119] [s119] Forensic read of A5's gccdump.sched vs gccdump.sched2: sched2 does reorder this block (it swaps uid145 sll and uid149 sw ...,16(sp) into the target's order), so post-reload scheduling is a live degree of freedom; but the uid120/uid130 pair behind A5's 54/55 transposition is an exact INSN_PRIORITY tie (both final_pri=2, RANKDBG val=0) resolved by list position, i.e. by the source statement order - which is why A5's qty1 birth of 16 and order-exactness cannot coexist.
+
+- [s119] [s119] Floor unchanged at 2/160 (candidate.c, the pp-free CD_alarm-struct goto body). src/system.c reverted to HEAD at end of session; new progress forms banked under memory/grind/CD_sync/progress/.

@@ -1,7 +1,7 @@
 {
  "func": "cpu_side_move_dir_4",
  "file": "system",
- "session_count": 118,
+ "session_count": 119,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -717,23 +717,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Luid map reconciled (closing conditions (a) and (d) collapse into the emission-order variable); do-while(0) proven to be a per-statement reg_n_refs multiplier that wins the arg5 $v1 seat for the first"
+  },
+  {
+   "session": 119,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Exiling the do_timeout t0 address into an existing function-wide local removes the 3333-vs-3333 local-alloc tie entirely and seats printf's 5th argument in $v1 with refs=2, no wrap and no new FAKE: T1"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The arg5-value pseudo can be given its third flow-time reference WITHOUT a NOTE_INSN_LOOP_BEG in the block - by a reference that flow.c counts and combine.c then folds away - which would deliver condition (b)'s 5000-vs-3333 win on the C1 order-exact chassis with zero code-motion barrier, i.e. 6 -> 0.",
-   "mechanism": "reg_n_refs is built by flow.c before combine (local-alloc.c:297 consumes it), which is exactly why the banked chain-extender FAKE works for idx_1495: a link-constant SYMBOL_REF difference is emitted as a real subsi3/addsi3 pair at flow time (expr.c expand_expr), is unfoldable in cse.c (s97), and is folded to nothing by combine.c - byte-neutral but reference-visible. Applying the same carrier to the arg5 value lifts reg106 from 2 to 3+ references while leaving the t0 temp at 2 and leaving the insn stream free of loop notes.",
-   "next_probe": "On the C1 chassis (rejected/s117_C1_struct_h1_ix_addr_split.c, control 6/160), spell an extra combine-folded reference to arg5 - e.g. arg5 staged through an expression carrying a link-constant symbol difference that cancels, or the printf argument written as a second read of the same pseudo through such a difference - and read block 3's qty table with tmp/grind/CD_sync/s118/dumpenv.sh C1x BB2_SUGG_DEBUG,BB2_QTY_DEBUG BEFORE reading the score: accept only reg106 refs >= 3 with reg112 refs still 2 and build_insns 160. NOTE this would be a SECOND FAKE construct in the same family as the existing chain-extender; if it measures 0 the correct outcome is a ruling-request naming both constructs, not a silent candidate-ready."
+   "hypothesis": "A borrow variable whose live range avoids the $a0/$a1/$a2 argument-setup points exists, or can be produced by moving an EXISTING local's other use, and would give T1/T2's t0 chain $a0 and close the function at 0/160.",
+   "mechanism": "global.c's find_reg is an ascending hard-register walk (no REG_ALLOC_ORDER on MIPS), so $a0 is taken as soon as the allocno stops conflicting with it. The conflict comes from the borrowed variable being live at the VSync / callback / printf argument setups; $a3 escapes only because it is written once, at index 65.",
+   "next_probe": "Dump global.c's conflict matrix for the T1 chassis (instrumented cc1 -da gccdump.greg plus the ALLOCDBG hooks) and read WHICH insn creates the $a0 conflict for the status allocno. Then enumerate: (i) the remaining unborrowed locals and the two parameters, (ii) restructuring the C so the borrowed variable's other live range ends before the poll loop's callback calls, (iii) borrowing a variable whose only other use sits inside the if (CheckCallback()) region. Accept only bi 160 rd 0 with indices 49/55/59/65 in $a0."
   },
   {
-   "hypothesis": "Condition (c) - shrinking the arg5 quantity's span to <= 4 by moving its death earlier - is the only remaining numeric route that needs no extra reference, and it is reachable if the stack-slot store 'sw reg106,16(sp)' can be emitted one insn earlier without disturbing indices 49-56.",
-   "mechanism": "qty2 dies at its store into the outgoing-argument slot (block-3 insn n12, luid 26). Death at luid <= 24 gives span <= 4 and priority >= 5000, beating the t0 temp's 3333 outright with refs unchanged at 2, so no FAKE carrier is involved at all. The store's position is decided by the order in which expand emits the call's argument setup.",
-   "next_probe": "Enumerate C spellings that change the ORDER of printf's argument evaluation without changing the arguments: the fifth argument computed into its local later or earlier relative to the third and fourth, the D_800A11DC[D_800A11D5] subscript staged into a local before the call, and the *(s32 *)t0 dereference staged likewise. Score each on the C1 chassis and read block 3's qty table; accept only qty2 death <= 24 with build_insns 160 and indices 49-56 unchanged."
+   "hypothesis": "Keeping the t0 address block-local (so it can take $a0 from local-alloc, as the target does) while breaking the 3333-vs-3333 qty_compare_1 tie in the arg5 value's favour by a byte-neutral asymmetry that is not a loop note.",
+   "mechanism": "The target's own emission order gives both quantities span 6 and refs 2, so the target's compilation cannot have had refs 2/2 - its arg5 quantity must have had refs >= 3 or a shorter span. s119 killed the copy route (cse deletes it) and the argument-order route (no death movement); local-alloc.c:1932 tying is the only reference-summing path left, and a load cannot tie.",
+   "next_probe": "Enumerate C shapes in which the arg5 VALUE is produced by an arithmetic insn rather than a bare load, with a source operand that dies in that insn - e.g. the table read combined with a link-constant delta that combine folds - and read block 3's qty table with tmp/grind/CD_sync/s119/qd.sh BEFORE scoring: accept only reg106 refs >= 3 with reg112 refs still 2 and bi 160. Any such carrier is a second FAKE in the chain-extender family; if it measures 0 the correct outcome is a ruling-request naming both constructs, not a silent candidate-ready."
   },
   {
-   "hypothesis": "The 3-point cost of the do-while(0) carrier is entirely the two code-motion effects named this session, and both are separately attackable: the D_800F19B8.func load sinking behind the wrap head, and the exchanged lbu pair at indices 49/50.",
-   "mechanism": "NOTE_INSN_LOOP_BEG blocks hoisting out of the wrap. If the printf can sit OUTSIDE the wrap while both of arg5's references remain inside it - impossible with the value passed directly, but not obviously impossible if the argument slot is written inside the wrap - the barrier stops mattering. The exchanged lbu pair is an independent, smaller residual worth isolating on its own.",
-   "next_probe": "Start from N1 (memory/grind/CD_sync/rejected/s118_N1_ixfirst_t0scale_wrap_addu_load_printf.c, 5/160) and dump its block 3 with tmp/grind/CD_sync/s118/dumpenv.sh: confirm whether reg106 is already seated in $v1 there. If it is, the whole 5-point residual is code motion and NOT allocation, and the next enumeration is wrap-boundary geometries only - which is a much smaller space than the seat search that consumed s108-s117."
+   "hypothesis": "sched2 can be made to repair the last register-class difference or the A5 54/55 transposition, because it demonstrably reorders this block after allocation.",
+   "mechanism": "A5's gccdump.sched vs gccdump.sched2 shows sched2 swapping uid145 and uid149 into the target's order. sched2 runs on hard registers, so its dependency graph and tie-breaks differ from sched1's and are separately attackable.",
+   "next_probe": "Run tools/sched_solver on the T1 chassis's post-reload stream (extract.py + simulate.py) and on A5's, and ask specifically whether any C-reachable change to sched2's ready-list ordering moves uid120/uid130 without changing sched1's output - i.e. whether the two passes can be decoupled at all on this block."
   }
  ],
  "judge_constraints": [
@@ -937,6 +943,30 @@
    "measured_on": "A5 and C1 pp-free CD_alarm-struct chassis, chain-extender FAKE present; controls 2/160 and 6/160; the for(;;) forms build at 165 insns",
    "predicate_cite": "",
    "result": "L1 67 at build_insns 165, L2 70 at build_insns 165 - loop.c optimises the now-real loop and the function grows five inst"
+  },
+  {
+   "session": 119,
+   "statement": "An explicit second local carrying the arg5 value (arg5b = arg5) survives cse and gives local-alloc a copy to tie, lifting the arg5 quantity's reference count.",
+   "kill_scope": "instance",
+   "measured_on": "C1 order-exact pp-free CD_alarm-struct chassis (memory/grind/CD_sync/rejected/s117_C1_struct_h1_ix_addr_split.c), control 6/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted",
+   "predicate_cite": "",
+   "result": "6/160, byte-identical to the C1 control, quantity table identical (reg106 birth 20 death 26 refs 2 got=4). cse propagate"
+  },
+  {
+   "session": 119,
+   "statement": "Re-ordering printf's argument evaluation (staging the 3rd or 4th argument into a local, or moving the t0 address computation across the arg5 load) shrinks the arg5 quantity's span to 4 or less, s117 c",
+   "kill_scope": "instance",
+   "measured_on": "C1 order-exact pp-free CD_alarm-struct chassis, control 6/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted",
+   "predicate_cite": "",
+   "result": "Q1 6, Q2 13, Q3 11 (bi 159), Q4 6, Q5 7, Q6 13, Q7 14. Q4's quantity table is byte-for-byte C1's, so moving the t0 addre"
+  },
+  {
+   "session": 119,
+   "statement": "One of the nine existing locals, borrowed for the t0 address, gets $a0 from global-alloc on the T1/T2 chassis.",
+   "kill_scope": "instance",
+   "measured_on": "C1 order-exact pp-free CD_alarm-struct chassis with the C1 / ix-first / target statement orders, chain-extender FAKE present and pp deleted; controls C1 6/160 and T1 4/160; all forms bi 160 rd 0 excep",
+   "predicate_cite": "",
+   "result": "Every borrow lands on one of two outcomes and neither is $a0: status gets callee-saved $s0 (T1/T2 4/160, five diffs all "
   }
  ],
  "sibling_progress": [

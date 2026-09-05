@@ -2576,3 +2576,87 @@ a sandbox run.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: A5 and C1 pp-free CD_alarm-struct chassis, chain-extender FAKE present; controls 2/160 and 6/160; the for(;;) forms build at 165 insns
+
+## [s119] N1's 5-point residual is code motion only: the do-while(0) wrap chassis already seats the arg5 value in $v1 and the t0-scale temp in $a0.
+- mechanism: frontier item 3 from s118. If reg106 is already at got=3 on N1, the whole remaining 5 points are the NOTE_INSN_LOOP_BEG code-motion barrier and not allocation.
+- probe: BB2_QTY_DEBUG + BB2_SUGG_DEBUG on the mini TU for N1 (tmp/grind/CD_sync/s119/N1/qty.txt; new tooling tmp/grind/CD_sync/s119/qd.sh = apply + mkmini + instrumented dump in one WSL call).
+- result: "QTYDBG blk=3 ord=2 qty=2 reg1=106 birth=18 death=26 refs=4 got=3" and "ord=3 qty=1 reg1=112 birth=16 death=24 refs=3 got=4". reg106 = $v1, reg112 = $a0, i.e. the TARGET seats. N1's 5 points are 100% code motion.
+- verdict: CONFIRMED
+
+## [s119] local-alloc TIES a quantity dest with any dying pseudo operand of a 2+-operand insn and SUMS their reference counts (local-alloc.c:1932), so a quantity refs value is not the dest pseudo own refs.
+- mechanism: block_alloc (local-alloc.c:1210-1300) treats any insn whose operand 0 has an = constraint and is not earlyclobber as tie-able and calls combine_regs (local-alloc.c:1295/1331/1336/1346) for each operand that dies in the insn; combine_regs folds SREG into UREG quantity and accumulates qty_n_calls_crossed and qty_n_refs.
+- probe: read local-alloc.c:1190-1300 and 1890-1945; cross-checked against the s117/s118 quantity tables, where A5 qty0 reports refs=6 for reg113 (a two-reference plus temp) because reg108 (4 refs) dies into it, matching C1 single-pseudo reg108 refs=6.
+- result: CONFIRMED by construction and by the table. Negative corollary measured here: a LOAD does not tie (its source is a MEM, not a REG), so the arg5 pseudo cannot inherit refs from the address pseudo that dies at the load.
+- verdict: CONFIRMED
+
+## [s119] An explicit second local carrying the arg5 value (arg5b = arg5;) survives cse and gives local-alloc a copy to tie, lifting the quantity reference count.
+- mechanism: local-alloc.c:1932 sums refs across a tie, so a surviving copy would give the arg5 quantity 2+2 refs and priority 13333 against the t0 temp 3333.
+- probe: R5_copy_local on the C1 order-exact pp-free CD_alarm-struct chassis, scored and dumped (tmp/grind/CD_sync/s119/R5/qty.txt).
+- result: 6/160, byte-identical to the C1 control, and the quantity table is identical to C1 (reg106 birth 20 death 26 refs 2 got=4). cse propagates the copy away before flow ever counts it, so no tie and no reference lift.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: C1 order-exact pp-free CD_alarm-struct chassis (memory/grind/CD_sync/rejected/s117_C1_struct_h1_ix_addr_split.c), control 6/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted
+
+## [s119] Re-ordering printf argument EVALUATION (staging the 3rd/4th argument into a local, or moving the t0 address computation across the arg5 load) shrinks the arg5 quantity span to <= 4 (s117 closing condition (c)) or otherwise repairs the seat.
+- mechanism: s118 frontier item 2. qty2 dies at its store into the outgoing-argument slot; that store position is decided by the order in which expand emits the call argument setup, so an argument-order change should move the death.
+- probe: seven spellings on the C1 chassis, scored with sandbox --disable all and dumped with BB2_QTY_DEBUG: Q1 (*(s32 *)t0 staged into a local before the call), Q2 (D_800A11DC[D_800A11D5] staged), Q3 (both staged), Q4 (t0 address computed after the arg5 load), Q5 (t0 deref staged before the arg5 load), Q6 (subscript staged first), Q7 (subscript staged between).
+- result: Q1 6, Q2 13, Q3 11 (bi 159, wrong length), Q4 6, Q5 7, Q6 13, Q7 14. Q4 quantity table is byte-for-byte C1 (qty1 reg112 18-24 refs2 got=3, qty2 reg106 20-26 refs2 got=4): moving the t0 address statement across the arg5 load in C changes NOTHING in the post-sched1 stream. Q1 does reach got=3 for reg106 but only by restructuring the whole t0 chain (11 instruction diffs, 6 masked points). No argument-order spelling moved qty2 death.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: C1 order-exact pp-free CD_alarm-struct chassis, control 6/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted
+
+## [s119] Carrying the do_timeout t0 ADDRESS in an existing function-wide local exiles that pseudo from local-alloc to global-alloc, leaving the arg5 value as the sole contender for $v1 - and it wins the target seat with refs=2, no wrap and no new FAKE.
+- mechanism: local-alloc only allocates pseudos confined to one basic block. A variable also referenced outside do_timeout has a multi-block live range, so its pseudo never enters block 3 quantity list; block 3 then has three quantities instead of four and qty_compare_1 is no longer a 3333-vs-3333 tie between the t0 temp and the arg5 value. The arg5 value is allocated after the D_800A11D5 index quantity and takes the lowest free hard register, $v1(3).
+- probe: nine borrow candidates x two statement orders on the C1 order-exact pp-free CD_alarm-struct chassis, scored with sandbox --disable all, with BB2_QTY_DEBUG tables for the winners (tmp/grind/CD_sync/s119/S2/qty.txt): status, temp, cnt, i, v0, new_var, dst, src, saved.
+- result: S2 (status, C1 statement order) 5/160 with "QTYDBG blk=3 ord=2 qty=1 reg1=106 birth=20 death=26 refs=2 got=3" - THREE quantities in block 3 and the arg5 value in $v1, the target seat, on an order-exact emission with zero extra references and zero new constructs. T1 (status, ix-chain-first order) and T2 (status, literal target order) both score 4/160 and their residual is FIVE instructions that are ALL THE SAME ONE REGISTER: target lbu $a0,0($s2) / sll $a0,$a0,2 / addu $a0,$a0,$s3 / lw $a3,0($a0) at indices 49/55/59/65 against ours in $s0. Every other instruction of all 160 matches, including every register and the complete emission order. First form in this ledger that is simultaneously order-exact AND arg5-seat-exact.
+- verdict: CONFIRMED
+
+## [s119] Some existing local, borrowed for the t0 address, gets $a0 from global-alloc and closes the function.
+- mechanism: MIPS defines no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so global.c find_reg walks hard registers in ascending number and would take $a0(4) as soon as $v0/$v1 are taken - unless the allocno conflicts with $a0.
+- probe: all nine borrow candidates measured above, plus the ix-chain-first and target-order statement variants for the five s32 candidates (U1/U2 series).
+- result: KILLED. Every borrow lands on exactly two outcomes and neither is $a0. status (live across the getintr callback calls) gets the callee-saved $s0: T1/T2 4/160, five diffs, all $s0-for-$a0. v0 and cnt (crossing no call) get the caller-saved $a3: U1_v0 7/160 with the identical five-diff shape in $a3, U1_cnt 8/160 (same shape plus two diffs from cnt own uses at indices 38/42). temp 10, i 16, dst 15, src 15, saved 16 (bi 162), new_var 37 (bi 162). Mechanism: the borrowed variable live range is function-wide, so it overlaps every point where $a0/$a1/$a2 are set for the other calls in the function (VSync, the two callbacks, printf) - a conflict $a3 does not have, since $a3 is written exactly once in the whole function, at index 65, which is the allocno own death.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: C1 order-exact pp-free CD_alarm-struct chassis with the ix-first / target statement orders, chain-extender FAKE present and pp deleted; controls C1 6/160 and T1 4/160, all forms bi 160 rd 0 except saved/new_var (bi 162)
+
+## [s119] N1 (the best do-while(0) wrap form, 5/160) already has the arg5 value in $v1 and the t0 scale temp in $a0, so its residual is code motion rather than allocation.
+- mechanism: s118 frontier item 3: if reg106 is already got=3 on N1, the NOTE_INSN_LOOP_BEG pair is the only remaining cost.
+- probe: BB2_QTY_DEBUG + BB2_SUGG_DEBUG on the single-function mini TU for N1 via new tooling tmp/grind/CD_sync/s119/qd.sh.
+- result: QTYDBG blk=3 ord=2 qty=2 reg1=106 birth=18 death=26 refs=4 got=3 and ord=3 qty=1 reg1=112 birth=16 death=24 refs=3 got=4 - reg106 in $v1, reg112 in $a0, the target seats. Confirmed: all 5 points are code motion.
+- verdict: CONFIRMED
+
+## [s119] A local-alloc quantity's reference count is the SUM of reg_n_refs over every pseudo tied into it, and block_alloc ties operand 0 with ANY dying pseudo operand, not only with register-to-register copies.
+- mechanism: local-alloc.c:1932 qty_n_refs[sqty] += reg_n_refs[sreg] inside combine_regs; block_alloc calls combine_regs at local-alloc.c:1295/1331/1336/1346 for every operand that dies in an insn whose operand 0 has an = constraint and is not earlyclobber.
+- probe: Read local-alloc.c:1190-1300 and 1890-1945 and cross-checked against the banked s117 quantity tables.
+- result: Confirmed by construction and by the table: A5's qty0 reports refs=6 for reg113, a two-reference plus temp, because reg108 (4 refs) dies into it, matching C1's single-pseudo reg108 refs=6. Corollary: a LOAD cannot tie (its source is a MEM), so the arg5 pseudo cannot inherit refs from the address pseudo dying at its load.
+- verdict: CONFIRMED
+
+## [s119] An explicit second local carrying the arg5 value (arg5b = arg5) survives cse and gives local-alloc a copy to tie, lifting the arg5 quantity's reference count.
+- mechanism: local-alloc.c:1932 sums refs across a tie, so a surviving copy would give the arg5 quantity 2+2 refs and priority 13333 against the t0 temp's 3333.
+- probe: R5_copy_local scored with sandbox --disable all and dumped with BB2_QTY_DEBUG (tmp/grind/CD_sync/s119/R5/qty.txt).
+- result: 6/160, byte-identical to the C1 control, quantity table identical (reg106 birth 20 death 26 refs 2 got=4). cse propagates the copy away before flow counts references.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: C1 order-exact pp-free CD_alarm-struct chassis (memory/grind/CD_sync/rejected/s117_C1_struct_h1_ix_addr_split.c), control 6/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted
+
+## [s119] Re-ordering printf's argument evaluation (staging the 3rd or 4th argument into a local, or moving the t0 address computation across the arg5 load) shrinks the arg5 quantity's span to 4 or less, s117 closing condition (c).
+- mechanism: s118 frontier item 2: qty2 dies at its store into the outgoing-argument slot, whose position is set by the order expand emits the call's argument setup.
+- probe: Seven spellings Q1-Q7 on the C1 chassis, scored with sandbox --disable all, with BB2_QTY_DEBUG tables for Q1/Q4/Q5.
+- result: Q1 6, Q2 13, Q3 11 (bi 159), Q4 6, Q5 7, Q6 13, Q7 14. Q4's quantity table is byte-for-byte C1's, so moving the t0 address statement across the arg5 load in C changes nothing in the post-sched1 stream; no spelling moved qty2's death from luid 26.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: C1 order-exact pp-free CD_alarm-struct chassis, control 6/160 bi 160 rd 0; FAKE state = chain-extender only, pp deleted
+
+## [s119] Carrying the do_timeout t0 address in an existing function-wide local exiles that pseudo from local-alloc to global-alloc, removes the 3333-vs-3333 qty_compare_1 tie and seats printf's 5th argument in $v1 with refs=2, no wrap and no new construct.
+- mechanism: local-alloc only allocates pseudos confined to one basic block, so a variable also referenced outside do_timeout never enters block 3's quantity list; block 3 drops from four quantities to three and the arg5 value, allocated after the D_800A11D5 index quantity, takes the lowest free hard register $v1(3).
+- probe: Nine borrow candidates crossed with three statement orders on the C1 order-exact pp-free CD_alarm-struct chassis, scored with sandbox --disable all, with BB2_QTY_DEBUG for S2 and normalised target diffs for S2/T1/T2 via tmp/grind/CD_sync/s119/d.sh.
+- result: S2 (borrow status, C1 order) 5/160 with QTYDBG blk=3 ord=2 qty=1 reg1=106 birth=20 death=26 refs=2 got=3 - three quantities and the arg5 value in the target seat. T1 (ix-chain-first) and T2 (literal target statement order) both 4/160 bi 160 rd 0, and their residual is five instructions that are all the same one register: target lbu $a0,0($s2) / sll $a0,$a0,2 / addu $a0,$a0,$s3 / lw $a3,0($a0) at indices 49/55/59/65 against ours in $s0. All 160 instructions otherwise match, registers and emission order included. First form in this ledger that is simultaneously order-exact and arg5-seat-exact.
+- verdict: CONFIRMED
+
+## [s119] One of the nine existing locals, borrowed for the t0 address, gets $a0 from global-alloc on the T1/T2 chassis.
+- mechanism: MIPS defines no REG_ALLOC_ORDER in tools/gcc-2.7.2/config/mips/mips.h, so global.c's find_reg walks hard registers ascending and would take $a0(4) once $v0/$v1 are taken, unless the allocno conflicts with $a0.
+- probe: All nine borrow candidates (status, temp, cnt, i, v0, new_var, dst, src, saved) plus ix-first and target-order statement variants for the five s32 candidates (S and U series), scored with sandbox --disable all and diffed against the target.
+- result: Every borrow lands on one of two outcomes and neither is $a0: status gets callee-saved $s0 (T1/T2 4/160, five diffs all $s0-for-$a0) because it is live across the getintr callback calls; v0 and cnt get caller-saved $a3 (U1_v0 7/160 with the identical five-diff shape, U1_cnt 8/160 plus two diffs from cnt's own uses at indices 38/42); temp 10, i 16, dst 15, src 15, saved 16 (bi 162), new_var 37 (bi 162). The borrowed variable's live range is function-wide, so it overlaps every point where $a0/$a1/$a2 are set for VSync, the two callbacks and printf's own argument setup - a conflict $a3 escapes because $a3 is written exactly once in the whole function, at index 65, which is the allocno's own death.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: C1 order-exact pp-free CD_alarm-struct chassis with the C1 / ix-first / target statement orders, chain-extender FAKE present and pp deleted; controls C1 6/160 and T1 4/160; all forms bi 160 rd 0 except saved and new_var (bi 162)
