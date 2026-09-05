@@ -92,6 +92,39 @@
  *
  * DISPOSITION.  ACTIVE.  `progress`; the floor is unchanged at 2 but the residual is now two
  * instructions in one slot pair and is a CSE-fold question, not a scheduler-readiness question.
+ *
+ * [s28 2026-09-05 - rederive modality.  BODY UNCHANGED (still Pt2, still 2 / 66 / 66 on today's HEAD,
+ * re-measured twice this session as the CTRL and V11 controls).  s28 spent itself killing six
+ * structurally distinct re-derivations of the block, 47 measured bodies, zero FAKE constructs in any
+ * of them except one deliberate control:
+ *   1. +2 read hoisted into / above the copy block  (Q-family, 6 bodies, best 6/65)
+ *   2. fully symmetric three-parallel-halfword-statements shape (Y-family, 8 bodies, best 6/66)
+ *   3. +4 read hoisted into / above the copy block  (Z-family, 8 bodies, best 4/65)
+ *   4. the D_800F10D0 zero store sunk into the read window as the second separator
+ *      (V-family, 7 bodies, best 16/65 - the last untried in-function store, now closed)
+ *   5. the 0x1C / 0x1A stores hoisted as the first separator so the +4 read takes slot 11
+ *      (N-family, 8 bodies, best 7/66)
+ *   6. the +0 halfword staged through a fresh local so cse merges the {+0, +2} pair instead of the
+ *      {+2, +4} pair - the merge partition target's register picture implies, produced for the first
+ *      time here (M-family, 6 bodies, best 5/65).  All 65 insns: the twice-used merged pseudo keeps
+ *      a hard register, so reload never rematerialises it into target's two `lw a0,0x10(v1)`.  The
+ *      remaining lever on that axis is register PRESSURE across slots 19-24, not statement order.
+ * plus PGPQ, which rewrites the D_800A3478 store through a pointer alias to the global and measures
+ * IDENTICALLY to the plain extern (3/66 both) - s27's frontier item 1 is answered negative and it
+ * did not cost the pointer-alias FAKE family to answer it.
+ *
+ * The s28 dump read closes the other open frontier item: tmp/grind/func_80060A68/dumps/text1b.sched2
+ * contains exactly TWO 0x10 loads for this function - insn 53 -> $a1 (the +4 read, target's slot-11
+ * seat) and insn 46 -> $a0 (the +0 read, carrying a REG_EQUIV mem note).  Target's slots 19 and 22
+ * are two rematerialised loads of the same address into $a0, which needs THREE pseudos; we have two,
+ * because cse folded the +2 read onto insn 53's pseudo.  The residual is upstream of allocation, so
+ * ra_solver / inverse_compose have nothing to classify here - do not spend a session on that.
+ *
+ * TARGET GEOMETRY, now nailed down and not to be re-derived: all three `lw ?,0x10($v1)` (slots 11,
+ * 19, 22) are ABOVE the gp store at slot 26; the 0x18 `sh` is at slot 23 (above it) and the 0x1A and
+ * 0x1C `sh` are at slots 27 and 32 (below it).  So the source window that must hold all three reads
+ * contains exactly ONE store.  cse.c:1701 needs one separator per merged pair.  Every store in the
+ * function has now been tried as the second separator and every one regresses.]
  */
 void func_80060A68(void) {
     extern s32 D_800A3468;

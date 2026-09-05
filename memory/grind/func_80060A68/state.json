@@ -1,7 +1,7 @@
 {
  "func": "func_80060A68",
  "file": "text1b",
- "session_count": 27,
+ "session_count": 28,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -165,23 +165,30 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "New spine Pt2/P18 (66 insns, target's exact count) reaches target's slot-11 `lw a1,16(v1)` seat for the first time in 27 sessions; the whole residual is now two instructions in one slot pair, caused b"
+  },
+  {
+   "session": 28,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "rederive: six structurally distinct re-derivations measured (47 bodies) \u2014 all regress; the cse merge PARTITION is now provably controllable from C (M-family merges {+0,+2} for the first time), so the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Pgp/P1A is the better solver target of the two near-misses: it already has all three 0x10 loads distinct and diverges from target in exactly ONE instruction's position and seat (slot 26 in $v0 versus slot 11 in $a1), and its blocker is a single named dependence - the LOG_LINKS edge from the `sw ?,D_800A3478` gp store to the third 0x10 load.",
-   "mechanism": "The dep is created at sched.c:1783 and gated by memrefs_conflict_p at sched.c:697-705: the gp store's address is a SYMBOL_REF and the 0x10 load's is a pseudo holding the gp-loaded `outer` pointer, so find_symbolic_term succeeds on only one side and the function must report a conflict. Unlike the anti-dependence s24-s26 chased on the T1 spine, this is a plain memory dep on a store whose ADDRESS SPELLING is under source control: `D_800A3478` is written as a bare extern in this body, and the DATA MODEL block shows it has no header declaration, so alternative faithful spellings of that store's address (through a pointer local already holding a symbol-based address, or through an aggregate that makes both sides symbol-based) have never been enumerated for this function.",
-   "next_probe": "Apply memory/grind/func_80060A68/rejected/s27-Pgp-p10-after-the-D_800A3478-store-three-loads-but-strands-at-slot26-score3.c, run `pwsh tools/grinder/dump.ps1 func_80060A68`, and confirm in the .sched dump that the third 0x10 load's LOG_LINKS still contain the gp-store uid. Then enumerate faithful spellings of `D_800A3478 = outer + 0x18;` that change the store's address RTL (the two-prong question is whether find_symbolic_term can be made to succeed on BOTH sides, or fail on both), measure each with `sandbox func_80060A68 --disable all`, and check the LOG_LINKS - the dep, not the score, is the discriminator."
+   "hypothesis": "On the M-family chassis (M1/M2, 5/65) the cse merge partition is already target's \u2014 one pseudo shared by the +0 and +2 reads, one for the +4 read. The only missing step is that the shared pseudo keeps a hard register instead of being rematerialised twice from its REG_EQUIV memory. Raising register pressure across its live range (target slots 19-24) should force reload to emit target's two `lw a0,0x10(v1)`.",
+   "mechanism": "GCC 2.7.2's reload rematerialises a pseudo from reg_equiv_mem rather than spilling it to the stack when the pseudo loses its allocno. The M1 body's shared pseudo currently wins its allocno; a competing value that is live across slots 19-24 would displace it. Faithful competitors already exist in the statement set \u2014 the `idx = *(u16 *)outer` read, the `outer + 0x20` address for D_800A347C, and the temp2 / temp_a1 halfwords \u2014 and moving any of them earlier lengthens a live range through that window without inventing anything.",
+   "next_probe": "Apply memory/grind/func_80060A68/rejected/s28-M1-*.c, run `pwsh tools/grinder/dump.ps1 func_80060A68` and read text1b.greg for the func_80060A68 block: record which allocno wins each hard register across the +0/+2 window and what the shared pseudo's allocno priority is. Then sweep the position of `idx`, `D_800A347C = outer + 0x20;` and the temp_a1 read earlier into that window (statement-order only, gen.py already supports every position) and measure each with `sandbox func_80060A68 --disable all`; the discriminator is build_insns going 65 -> 66/67 with the extra insn being a `lw a0,0x10(v1)`, not the score alone. This is also the first residual on this function that tools/ra_solver actually models \u2014 run `inverse_compose.py classify text1b func_80060A68` on the M1 chassis, not on Pt2.",
+   "note": "s27's frontier item 3 (classify the Pt2 residual with ra_solver) is RETIRED: the s28 sched2 read shows Pt2 has only two pseudos, so allocation has nothing to decide there."
   },
   {
-   "hypothesis": "On the Pt2/P18 spine the residual is one cse fold, and the separator does not have to be a store in the 0x10-read window: s20's class kill says a STORE or a CALL defeats the fold, and the call-based half of that predicate has never been probed on this function.",
-   "mechanism": "cse.c:1701 invalidates the memory hash table on a store it cannot disambiguate and on any call. The dispatch call `((s32 (*)(void)) ...)()` sits far below the window, but the function's only other memory writes in the window are the copy block and the 0x18 halfword store. The unexplored axis is whether any faithful re-expression of the +2 read makes cse hash it differently WITHOUT inventing a construct - for example if the +2 halfword genuinely belongs to the same aggregate read the target's source used, per the DATA MODEL block's note that none of D_800A3468's members have a header declaration.",
-   "next_probe": "Apply candidate.c (Pt2), run `pwsh tools/grinder/dump.ps1 func_80060A68`, and read the .cse dump at the point the second 0x10 load disappears to identify the exact hash-table entry that is reused. Then test declared shapes for the object at `outer` (a struct typedef with members at 0x0, 0xC, 0x10, 0x14, 0x18, 0x1A, 0x1C, 0x20, 0x24, 0x28) - note s5's struct-typed-inner-reads body re-measures 6/66 on the current chassis, so a struct chassis is NOT free and must be built on the Pt2 statement order, not the s5 one."
+   "hypothesis": "A struct-typed chassis has never been built on the Pt2 statement order \u2014 s5's struct-typed body (6/66 on today's HEAD) used the s5 statement order, which is three sessions of geometry behind. Declaring the object at `outer` with members at 0x0, 0xC, 0x10, 0x14, 0x18, 0x1A, 0x1C, 0x20, 0x24, 0x28 sets MEM_IN_STRUCT_P on every access and changes what cse's and sched's disambiguation can prove.",
+   "mechanism": "MEM_IN_STRUCT_P participates in memrefs_conflict_p's and cse's aliasing decisions, so the same statement order can produce a different fold and a different dependence set once the accesses are struct references rather than casts through an integer. The DATA MODEL block records that none of D_800A3468's members has a header declaration, so the declared shape is genuinely undetermined and a struct is a faithful, ordinary-C hypothesis rather than a coercion.",
+   "next_probe": "Add a file-local struct typedef for the object at `outer` and re-express candidate.c's statement set as member accesses WITHOUT changing statement order (Pt2 order exactly), measure with `sandbox func_80060A68 --disable all`, then repeat on the M1 order. Read the .cse dump to see whether the {+2, +4} fold still happens, and the .sched dump to see whether the gp store's dependence on the 0x10 load survives \u2014 the fold and the dep, not the score, are the discriminators."
   },
   {
-   "hypothesis": "The Pt2 spine is now a clean 66-instruction pure-permutation-plus-one-substitution target for tools/ra_solver and tools/sched_solver, which W1 was proposed for at s26 but with a two-insn goal; Pt2's goal is a single instruction.",
-   "mechanism": "s26 banked W1 (66 insns, pure permutation, score 4) as the only solver-expressible spine, but its goal needed TWO insns lifted over a pri-3 wall. Pt2 is also 66 insns and strictly closer: its only divergence is one `nop`/`lw a0,16(v1)` substitution plus the $a1/$a0 seat on the consumer. `inverse_compose.py classify` has never been run on it, and the residual is now half RA (which seat the +2 pointer gets) and half cse (whether a second pseudo exists at all) rather than a scheduler tie.",
-   "next_probe": "With candidate.c applied, run `python3 tools/ra_solver/inverse_compose.py classify text1b func_80060A68` and `tools/ra_solver/goal_from_tgt.py classify text1b func_80060A68` to get a typed REACHABLE/FORECLOSED verdict on the Pt2 residual, and do the same for the Pgp body. Compare the two classifications: they are the two halves of the same answer and a REACHABLE verdict on either one closes the function."
+   "hypothesis": "cse's memory hash table is flushed at basic-block boundaries, so a branch between two identical reads defeats the fold where no store can. The function's only branch is the trailing `if (*(s32 *)D_800A3468 & 0x200000)`, but no session has enumerated whether any faithful control flow can sit inside the read window.",
+   "mechanism": "cse_basic_block processes an extended basic block and reinitialises its tables at a label or a jump; the s20 class kill named 'a store or a call' from cse.c:1701 but that predicate is about invalidation within a block, not about block boundaries, so control flow is a third, never-measured route to the same separator.",
+   "next_probe": "Enumerate faithful control flow for this window \u2014 there is no conditional in the target's straight-line prologue, so the honest first step is to confirm from the target asm that slots 0-32 contain no branch (they do not) and then close this axis in the ledger as unavailable, OR find a faithful early-out implied by the callee contract. Budget one turn: this is the cheapest remaining axis to eliminate and it should be eliminated rather than left as an open frontier item."
   }
  ],
  "judge_constraints": [
@@ -605,6 +612,46 @@
    "measured_on": "today's HEAD chassis with the s23 `()` dispatch-call spelling; 10 separator bodies plus the Pc3 / P18 / Pt2 / Pgp / P1A position bodies and the T1 and X4 controls, zero FAKE constructs in any of them",
    "predicate_cite": "",
    "result": "KILLED for every separator this statement inventory can supply. Splitting or relocating copy 3 shatters the copy block's"
+  },
+  {
+   "session": 28,
+   "statement": "Moving one of the three 0x10 pointer reads out of the read window and up into or above the copy block, so a copy store supplies the missing cse separator, does not buy the third distinct load at a pri",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling; 15 probe bodies plus the candidate.c control, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "KILLED on this chassis. The four bodies that do reach 67 build insns (Q10, Q11, Q23, Q24 \u2014 the third distinct load DOES "
+  },
+  {
+   "session": 28,
+   "statement": "The fully symmetric three-parallel-halfword-statements shape, with each of the 0x18 / 0x1A / 0x1C stores written inline with its own read so that each statement's store separates the next read, is not",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling; 16 probe bodies plus the candidate.c control, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "KILLED on this chassis. Every member that puts a second halfword store above the gp store pays 4 to 11 points for it; th"
+  },
+  {
+   "session": 28,
+   "statement": "The D_800F10D0[*(u16 *)outer] = 0 zero store \u2014 the one store in the function s27's second-separator sweep never tried \u2014 cannot be sunk into the read window to act as the second cse separator on this c",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling; 8 probe bodies including the candidate.c control re-run in the same batch, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "KILLED on this chassis by a wide margin \u2014 every member costs 14 to 18 points. This closes the last untried in-function s"
+  },
+  {
+   "session": 28,
+   "statement": "s27's frontier item 1 is answered negative: rewriting the D_800A3478 = outer + 0x18 store through a C-level pointer alias to the global leaves the store's address a SYMBOL_REF at dependence-build time",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling; 2 probe bodies, one of which carries the pointer-alias construct \u2014 the only FAKE-family construct measured this session, and it is not pres",
+   "predicate_cite": "",
+   "result": "KILLED. PGP re-measures 3/66, reproducing s27's recorded value; PGPQ measures 3/66 with identical build and target insn "
+  },
+  {
+   "session": 28,
+   "statement": "Making cse merge the {+0, +2} pair instead of the {+2, +4} pair, by staging the +0 halfword through a fresh local so the 0x18 store falls below the +2 read, produces the merge partition target's regis",
+   "kill_scope": "instance",
+   "measured_on": "today's HEAD chassis with the s23 () dispatch-call spelling; 6 probe bodies plus the candidate.c sched2 dump, zero FAKE constructs in any of them",
+   "predicate_cite": "",
+   "result": "KILLED on this chassis. Every member builds 65 instructions, so only two 0x10 loads reach the object: the merged pseudo "
   }
  ],
  "escalation_deferrals": 0
