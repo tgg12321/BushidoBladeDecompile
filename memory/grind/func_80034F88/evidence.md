@@ -8359,3 +8359,106 @@ as the integration handoff they are.
 - [s59] Sibling duty discharged: func_80034708 (same file, same D_80106A73 xref) still has no candidate.c after its s1, so nothing is transplantable; CD_sync and CD_datasync were spent at s33/s30 and share no code window with this function.
 
 - [s59] Tree reverted to HEAD at end of session: src/code6cac_b.c, src/code6cac.c and include/code6cac.h are all clean; the header edit is recorded as an integration handoff in candidate.c's header.
+
+## s60 -- rederive: the value model, and why the single-pointer chassis is
+## structurally short of the target
+
+**E60.1 (dump-proven, new).** The 60-session "$v1 seat race" on the address
+object is not a priority race at all on the s59 chassis -- it is a HARD-REGISTER
+CONFLICT created by LOCAL-ALLOC before global.c ever runs. With the s59
+candidate installed (array declaration, single `q`, four block-0 locals),
+tmp/grind/func_80034F88/dumps/code6cac_b.lreg reports
+
+    Register 75 used 2 times across 2 insns in block 0;  ;; Register 75 in 3.
+    Register 76 used 2 times across 2 insns in block 0;  ;; Register 76 in 3.
+
+(reg 75 = `raw`, reg 76 = `mv`, identified from the .greg RTL: insn 20 sets
+reg 75 to the zero_extend of the flag byte, insn 22 sets reg 76 to
+`reg 75 & 248`), and code6cac_b.greg then reports
+
+    ;; 74 conflicts: 72 74 77 78 82 83 86 87 2 3 29
+
+i.e. the address allocno 74 conflicts with HARD REG 3 ($v1). $v1 was therefore
+never available to `q`, whatever its priority. Every earlier session's priority
+arithmetic on this seat was measuring the wrong gate.
+
+**E60.2 (new form, floor-neutral, strictly cleaner).** Reusing ONE ordinary
+local for the mask value and for every flag block's value makes each block-0
+value pseudo live across the if, so block 0 contains no block-local quantity and
+local-alloc has nothing to seat in $v1. Measured on the same chassis:
+
+    ;; 74 conflicts: 72 74 75 76 2 29          (no hard reg 3)
+
+`sandbox func_80034F88 --disable all` = score 10, 49/49 -- the floor is
+unchanged, but the body carries no FAKE-annotated construct, no dead store, no
+declaration pun and no alias handle. This is the new candidate.c.
+
+**E60.3 (the residual, fully priced).** With the conflict gone the seat is
+decided purely by global.c's allocno_compare ordering, priority =
+floor_log2(n_refs) * n_refs / live_length. Measured for the new body:
+
+    73  i   11/7  -> 4.71   $v1        76  c   15/18 -> 2.50   $v0
+    75  v   14/20 -> 2.10   $v1        74  q   10/31 -> 0.97   $a0
+    72  p    6/34 -> 0.35   $a1
+    emitted order: ";; 5 regs to allocate: 73 76 75 74 72"
+
+The target needs 74 above 75. Splitting the value variable (rejected/s60l, s60m:
+`v` for the mask + block 0, `w` for blocks 1-2) gives 75 = 8/10 -> 2.40 and
+76 = w 6/10 -> 1.20; both still outrank q at 0.97 and the order is unchanged.
+Raising q instead needs floor_log2(r)*r > 65 at live_length 31, i.e. 17 refs
+against the 10 the body has.
+
+**E60.4 (structural, and it reframes the whole function).** The target carries
+the flag address in TWO different hard registers that are live in overlapping
+regions of the same function: $v1 for block 0 (la at 80034F98, last read by the
+store at 80034FD0) and $a0 for blocks 1 and 2 (la at 80034FC8, which sched1
+hoists ABOVE that same store precisely because the two registers are
+independent, and la at 80034FF0). A single C pointer object is a single allocno;
+global.c:1275 writes exactly one hard register per allocno
+(`reg_renumber[allocno_reg[allocno]] = best_reg;`) and GCC 2.7.2 performs no
+live-range splitting. So no single-pointer body can produce the target's address
+geometry, however the priorities are arranged. The two routes that CAN are (a)
+the pointer-free array spelling, where cse rematerialises a fresh address pseudo
+per extended basic block -- rejected/s59b-... is 50 insns with block 0
+register-for-register EXACT -- and (b) the Judge-granted two-object form, which
+has never been measured on the aggregate declaration.
+
+**E60.5 (kill re-audit, mandated).** The instance kill re-measured is s59's
+"pointer-object-free array body reaches block-0 register-exactness but not 49
+instructions" (rejected/s59b-...), the banked form that sits closest to the
+target. Re-installed on the CURRENT chassis this session: 50 build insns, score
+24 -- unchanged, the kill stands. FAKE ablation of the closest FAKE-carrying
+form (`tools/fake_ablate.py --candidate memory/grind/func_80034F88/candidate.c`,
+the s59 body) reports keep-all 10/49 and drop-1 10/49: the single dead re-set is
+inert for distance, confirming H59.3 on a second measurement.
+
+**E60.6 (negative, banked).** On the pointer-free array chassis the remaining
+one-instruction excess is block 2's store folding to `lui $at; sb %lo+3($at)`
+because no address pseudo survives into it. Three routes to give it one were
+measured and all hold 50 or worse: routing block 2 through `q` turns the la into
+a `move` (rejected/s60c, 50/23); routing only block 2's store through `q` is
+byte-identical to doing nothing (s60c2, 50/24); duplicating block 2's store into
+the arms is NOT re-merged by jump2 and costs a `j` (s60d, 50/28). Duplicating
+block 0's store into the arms is likewise not re-merged and additionally pushes
+`p` from $a1 to $a2 (s60g, 50/34).
+
+**E60.7 (negative, banked).** Block-scoping `q` so it covers only block 0 gives
+the target's block-0 GROUPING (the address survives the branch and carries the
+post-if store) at 49 instructions, but blocks 1 and 2 then lose their address
+pseudos entirely -- their reads fold to `lui; lbu 3(reg)` and their stores to
+`lui $at; sb` -- and `p` is displaced to $a2 (s60a 49/33, s60b 49/23). Moving
+the trailing loop above the flag blocks is far worse (s60f, 51/42).
+
+- [s60] Chassis re-measured at session start: the s59 candidate body plus the include/code6cac.h array edit gives score 10, 49 target insns / 49 build insns on HEAD 2026-09-05. The dispatch brief's 'measurement unavailable' is resolved: floor is 10.
+
+- [s60] The hard-register gate, dump-proven: on the s59 chassis .lreg shows 'Register 75 used 2 times across 2 insns in block 0' and 'Register 76 used 2 times across 2 insns in block 0' with ';; Register 75 in 3.' / ';; Register 76 in 3.', and .greg shows ';; 74 conflicts: 72 74 77 78 82 83 86 87 2 3 29'. Reg 75 is the zero_extend of the flag byte (insn 20), reg 76 is reg75 & 248 (insn 22) -- i.e. the mask statement's raw and masked values.
+
+- [s60] The gate is removable by ordinary C: reusing one value local for the mask and all three flag values yields ';; 74 conflicts: 72 74 75 76 2 29' -- no hard reg 3 -- at score 10, 49/49, with zero FAKE-annotated constructs, zero dead stores, zero alias handles and zero declaration puns. New candidate.c.
+
+- [s60] The residual is now one priority inequality, fully priced from the dumps. Measured allocnos of the new candidate (priority = floor_log2(n_refs)*n_refs/live_length): 73 i 11/7 -> 4.71 seated $v1; 76 c 15/18 -> 2.50 seated $v0; 75 v 14/20 -> 2.10 seated $v1; 74 q 10/31 -> 0.97 seated $a0; 72 p 6/34 -> 0.35 seated $a1. Emitted order ';; 5 regs to allocate: 73 76 75 74 72' matches exactly.
+
+- [s60] The target's flag address occupies TWO hard registers with overlapping live ranges: $v1 from 80034F98 to the store at 80034FD0, and $a0 from 80034FC8 (read at 80034FD8, stored through at 80034FEC) plus a third la at 80034FF0. sched1's hoist of the 80034FC8 la above the 80034FD0 store is a CONSEQUENCE of that register independence, not a separate phenomenon.
+
+- [s60] The pointer-object-free array spelling is the only measured chassis that produces multiple address pseudos: the s59b form is register-for-register identical to the target for its first eight instructions and is exactly one instruction long, the excess being block 2's store folding to lui $at + sb %lo+3($at).
+
+- [s60] Fifteen new forms banked to memory/grind/func_80034F88/rejected/ (s60a..s60n), covering block-scoped pointers, per-block pointer routing, duplicated stores into arms on three different block positions, statement reordering, value-variable splits, and the loop-first reordering.

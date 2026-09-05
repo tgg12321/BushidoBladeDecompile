@@ -6143,3 +6143,169 @@ to the aggregate chassis. Recorded rather than re-spent.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s57 single-pointer scalar-symbol chassis vs s59 array-declaration chassis, both on HEAD 2026-09-05; FAKE dead store present in vC, absent in vD
+
+## s60 -- rederive: value-model re-derivation
+
+**H60.1 CONFIRMED.** The $v1 seat on the address object was blocked by a
+local-alloc hard-register conflict, not by allocno priority: on the s59 chassis
+regs 75 (`raw`) and 76 (`mv`) are block-local 2-ref quantities in block 0 and
+local-alloc seats both in $v1, so allocno 74 (`q`) carries a hard-reg-3
+conflict. Probe: `pwsh tools/grinder/dump.ps1 func_80034F88` with the s59
+candidate installed; read .lreg (register table + ";; Register 75 in 3.") and
+.greg (";; 74 conflicts: ... 2 3 29"). See evidence E60.1.
+
+**H60.2 CONFIRMED.** Reusing one ordinary local for the mask value and for every
+flag block's value removes every block-local quantity from block 0 and with it
+the hard-reg-3 conflict on `q`, at an unchanged floor of 10 (49/49) and with
+zero FAKE-annotated constructs, zero dead stores, zero declaration puns.
+Probe: vR3c/vR3d installed with the header edit; sandbox; dumps re-read
+(";; 74 conflicts: 72 74 75 76 2 29"). New candidate.c.
+
+**H60.3 KILLED (instance).** Splitting the reused value variable so that the
+mask and block 0 use `v` while blocks 1 and 2 use `w` does not lift the address
+allocno above the value allocnos in global.c's allocno_compare order.
+
+**H60.4 KILLED (class).** A body in which one C pointer object carries the flag
+address for all three flag blocks cannot reproduce the target's address
+registers, because the target holds that address in $v1 across block 0 and in
+$a0 across blocks 1 and 2 while global.c:1275 assigns exactly one hard register
+per allocno and GCC 2.7.2 splits no live ranges.
+
+**H60.5 KILLED (instance).** Giving block 2's store a live address pseudo on the
+pointer-free array chassis -- by routing block 2 through `q`, by routing only
+its store through `q`, or by duplicating the store into both arms -- holds the
+body at 50 instructions in all three spellings.
+
+**H60.6 KILLED (instance).** Duplicating block 0's store into both arms on the
+pointer-free array chassis is not re-merged by jump2 and additionally displaces
+`p` from $a1 to $a2.
+
+**H60.7 KILLED (instance).** Block-scoping the pointer object so it covers only
+block 0 buys the target's block-0 grouping at 49 instructions but collapses
+blocks 1 and 2's address pseudos and displaces `p` to $a2.
+
+**H60.8 (KILL RE-AUDIT, mandated).** s59b re-measured on the current chassis:
+50 insns / score 24, unchanged. fake_ablate on the s59 candidate: 10/49 with and
+without the dead re-set. Both kills stand.
+
+## [s60] The $v1 seat on the address object is blocked by a local-alloc hard-register conflict, not by allocno priority: two block-local 2-reference quantities in block 0 (the mask's raw and masked values) are seated in $v1 by local-alloc, which puts hard reg 3 in the address allocno's conflict set before global.c runs.
+- mechanism: local_alloc runs before global_alloc and assigns block-local quantities first; its assignments become hard_reg_conflicts for every global allocno live at the same point. The address object is live across the mask, so $v1 becomes illegal for it regardless of priority.
+- probe: pwsh tools/grinder/dump.ps1 func_80034F88 with the s59 candidate installed; tmp/grind/func_80034F88/dumps/code6cac_b.lreg register table and ";; Register 75 in 3."/";; Register 76 in 3."; code6cac_b.greg conflict listing.
+- result: ";; 74 conflicts: 72 74 77 78 82 83 86 87 2 3 29" -- hard reg 3 present. reg 75 = zero_extend of the flag byte (insn 20), reg 76 = reg75 & 248 (insn 22).
+- verdict: CONFIRMED
+
+## [s60] Reusing one ordinary local for the mask value and for every flag block's value makes every block-0 value pseudo cross a basic-block boundary, so block 0 contains no block-local quantity, and the address object's hard-reg-3 conflict disappears at an unchanged floor of 10 with no FAKE-annotated construct of any kind.
+- mechanism: a pseudo used in both arms of the if is live across a basic-block boundary, so local-alloc leaves it to global.c; with nothing block-local left in block 0, local-alloc seats nothing in $v1 there and the address allocno's conflict set loses hard reg 3.
+- probe: vR3c / vR3d (tmp/grind/func_80034F88/s60/) installed with the include/code6cac.h array edit; sandbox func_80034F88 --disable all; dumps re-read.
+- result: score 10, 49 target insns / 49 build insns; ";; 74 conflicts: 72 74 75 76 2 29". Saved as the new memory/grind/func_80034F88/candidate.c; the s59 FAKE-carrying variant preserved at candidate_s59_fake_reload_variant.c.
+- verdict: CONFIRMED
+
+## [s60] Splitting the reused value variable so the mask and block 0 use one local and blocks 1 and 2 use another does not lift the address allocno above the value allocnos in global.c's allocno_compare order.
+- mechanism: priority is floor_log2(n_refs)*n_refs/live_length. Splitting lowers the block-0 value allocno from 14 refs/20 insns (2.10) to 8 refs/10 insns (2.40) and adds a second value allocno at 6 refs/10 insns (1.20); the address allocno stays at 10 refs/31 insns (0.97), below both.
+- probe: vS1 and vS2 installed with the header edit; sandbox; dumps read for the allocno table and the ";; N regs to allocate:" order.
+- result: both 49/49 score 10; emitted order ";; 6 regs to allocate: 73 77 75 76 74 72" with the address object still fourth. Banked as rejected/s60l-..., rejected/s60m-....
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis (extern u8 D_80106A70[4]) on HEAD 2026-09-05, one pointer object, zero FAKE constructs
+
+## [s60] A body in which one C pointer object carries the flag address for all three flag blocks cannot reproduce the target's address registers, because the target holds that address in $v1 across block 0 and in $a0 across blocks 1 and 2, while global.c writes exactly one hard register per allocno and GCC 2.7.2 splits no live ranges.
+- mechanism: global.c:1275 executes reg_renumber[allocno_reg[allocno]] = best_reg once per allocno; a C pointer variable is one pseudo and therefore one allocno no matter how many times it is reassigned, since GCC 2.7.2 has no live-range splitting pass. The target's la at 80034F98 writes $v1 and is read by the store at 80034FD0, while the la at 80034FC8 writes $a0 and is read at 80034FD8 and 80034FEC -- two registers carrying the same address value in the same function.
+- probe: read of asm/funcs/func_80034F88.s against the .greg register dispositions of every single-pointer variant measured this session (vC, vR3c, vR3d, vS1, vS2, vS3), plus the disassembly of the pointer-free chassis (rejected/s59b-...) which does produce three distinct address pseudos and reaches block-0 register-exactness.
+- result: every single-pointer variant seats the address object in exactly one register for all three blocks and therefore diverges from the target in at least two registers (score 10 floor). The pointer-free spelling reaches block-0 exactness but is one instruction long. Only a multi-object or rematerialised-address chassis can carry the target's geometry. NOTE the escape hatch this leaves open: cse may rematerialise the address into extra pseudos even when a pointer object exists, so a mixed body is not covered by this predicate.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: array-declaration chassis on HEAD 2026-09-05, one pointer object, zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/global.c:1275
+
+## [s60] Giving block 2's store a live address pseudo on the pointer-free array chassis -- by routing block 2 through the pointer object, by routing only its store through the pointer object, or by duplicating the store into both arms -- holds the body at 50 instructions in all three spellings.
+- mechanism: block 2's store folds to lui $at + sb %lo+3($at) because cse restarts at the branch-merge label and no address pseudo survives into it. Routing block 2 through the pointer object gives cse an equivalent register, so the pointer's own la degenerates to a move (still one insn over); duplicating the store into the arms is not re-merged by jump2 and costs a j.
+- probe: v1 / v2 / v3 (tmp/grind/func_80034F88/s60/) on the vB pointer-free chassis with the header edit; sandbox; disassembly of v1 read against asm/funcs/func_80034F88.s.
+- result: 50/23, 50/24, 50/28 respectively. Banked as rejected/s60c-..., s60c2-..., s60d-....
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pointer-object-free array chassis (rejected/s59b form) on HEAD 2026-09-05, three dead re-sets of stored-value locals present
+
+## [s60] Duplicating block 0's store into both arms on the pointer-free array chassis is not re-merged by jump2 and additionally displaces p from $a1 to $a2.
+- mechanism: the two arms differ in the register holding the stored value (one arm stores the ori result, the other the raw reload), so cross_jump has no identical tail to merge; the extra j and the second sb keep the body at 50 while the longer arm live ranges push p down the allocation order.
+- probe: vU1 installed with the header edit; sandbox; disassembly.
+- result: 50 build insns, score 34, beqz + j + two sb at 4f6c-4f7c and "move a2,v0" for p. Banked as rejected/s60g-....
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pointer-object-free array chassis on HEAD 2026-09-05, three dead re-sets of stored-value locals present
+
+## [s60] Block-scoping the pointer object so that it covers only block 0 buys the target's block-0 grouping at 49 instructions but collapses blocks 1 and 2's address pseudos and displaces p to $a2.
+- mechanism: with the pointer object dead after block 0's store, the branch-merge block no longer needs a fresh la, so cse folds blocks 1 and 2's reads to lui + lbu 3(reg) and their stores to lui $at + sb; the pointer's short live range also raises it above p in the allocation order, pushing p to $a2.
+- probe: v6, v10, v11 (block-scoped pointer, with and without the dead re-set, with and without block-scoped value locals) installed with the header edit; sandbox; disassembly of v6 and v11.
+- result: 49/33, 48/28, 49/23. Banked as rejected/s60a-..., s60i-..., s60b-....
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis on HEAD 2026-09-05, one block-scoped pointer object, dead re-set present in v6/v11 and absent in v10
+
+## [s60] KILL RE-AUDIT (mandated, floor flat 3 sessions): s59's pointer-object-free array body, the banked form closest to the target, re-measures identically on the current chassis, and the s59 candidate's single FAKE construct is inert for distance under ablation.
+- mechanism: re-installation of the exact banked form plus a mechanical ablation run, to test whether either verdict was chassis- or carrier-dependent.
+- probe: rejected/s59b-... re-installed with the header edit and re-measured with sandbox func_80034F88 --disable all; python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c (the s59 body).
+- result: s59b = 50 build insns, score 24, unchanged. fake_ablate: keep-all 10/49, drop-1 10/49 -- the dead re-set buys the block-0 reload only, never distance. Both kills stand as recorded.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis on HEAD 2026-09-05; s59b measured with its three dead re-sets present, ablation run against the s59 candidate's single annotated dead store
+
+## [s60] The $v1 seat on the address object is blocked by a local-alloc hard-register conflict, not by allocno priority: two block-local 2-reference quantities in block 0 (the mask's raw and masked values) are seated in $v1 by local-alloc, which puts hard reg 3 in the address allocno's conflict set before global.c runs.
+- mechanism: local_alloc runs before global_alloc and assigns block-local quantities first; its assignments become hard_reg_conflicts for every global allocno live at the same point. The address object is live across the mask statement, so $v1 becomes illegal for it regardless of its priority.
+- probe: pwsh tools/grinder/dump.ps1 func_80034F88 with the s59 candidate installed; read tmp/grind/func_80034F88/dumps/code6cac_b.lreg (register table plus ';; Register 75 in 3.' / ';; Register 76 in 3.') and code6cac_b.greg (conflict listing plus the post-RA RTL identifying reg 75 as the zero_extend of the flag byte at insn 20 and reg 76 as reg75 & 248 at insn 22).
+- result: ';; 74 conflicts: 72 74 77 78 82 83 86 87 2 3 29' -- hard reg 3 present in the address allocno's conflict set. Every earlier session's priority arithmetic on this seat (s56, s58) was pricing the wrong gate: no priority the pointer could reach would have made $v1 legal.
+- verdict: CONFIRMED
+
+## [s60] Reusing one ordinary local for the mask value and for every flag block's value makes every block-0 value pseudo cross a basic-block boundary, so block 0 contains no block-local quantity, and the address object's hard-reg-3 conflict disappears at an unchanged floor of 10 with no FAKE-annotated construct of any kind.
+- mechanism: A pseudo used in both arms of the if is live across a basic-block boundary, so local-alloc leaves it to global.c; with nothing block-local remaining in block 0, local-alloc seats nothing in $v1 there and the address allocno's conflict set loses hard reg 3.
+- probe: vR3c / vR3d (tmp/grind/func_80034F88/s60/) installed with the include/code6cac.h array edit; `sandbox func_80034F88 --disable all`; dumps regenerated and re-read.
+- result: score 10, 49 target insns / 49 build insns; ';; 74 conflicts: 72 74 75 76 2 29' -- no hard reg 3. First body in 60 sessions in which $v1 is legal for the address object, and it carries no dead store, no alias handle, no declaration pun and no annotation. Saved as the new memory/grind/func_80034F88/candidate.c; the s59 FAKE-carrying variant preserved at candidate_s59_fake_reload_variant.c.
+- verdict: CONFIRMED
+
+## [s60] A body in which one C pointer object carries the flag address for all three flag blocks cannot reproduce the target's address registers, because the target holds that address in $v1 across block 0 and in $a0 across blocks 1 and 2, while global.c writes exactly one hard register per allocno and GCC 2.7.2 splits no live ranges.
+- mechanism: global.c:1275 executes reg_renumber[allocno_reg[allocno]] = best_reg once per allocno; a C pointer variable is one pseudo and therefore one allocno however many times it is reassigned, since GCC 2.7.2 has no live-range splitting pass. In the target the la at 80034F98 writes $v1 and is read by the store at 80034FD0, while the la at 80034FC8 writes $a0 and is read at 80034FD8 and 80034FEC -- the same address value in two hard registers, with overlapping live ranges.
+- probe: asm/funcs/func_80034F88.s read against the .greg register dispositions of every single-pointer variant measured this session (vC, vR3c, vR3d, vS1, vS2, vS3) and against the disassembly of the pointer-object-free chassis (rejected/s59b-...), which does produce three distinct address pseudos and reaches block-0 register-for-register exactness.
+- result: Every single-pointer variant seats the address object in one register for all three blocks and therefore diverges in at least two registers (the score-10 floor). Note the escape this predicate deliberately leaves open: cse can rematerialise the address into extra pseudos even when a pointer object exists, so a MIXED body is not covered -- the two routes that can carry the target's geometry are the pointer-free array spelling and the Judge-granted two-object form, neither of which has been measured to completion on the aggregate declaration.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: array-declaration chassis (extern u8 D_80106A70[4]) on HEAD 2026-09-05, one pointer object, zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/global.c:1275
+
+## [s60] Splitting the reused value variable so the mask and block 0 use one local and blocks 1 and 2 use another does not lift the address allocno above the value allocnos in global.c's allocno_compare order.
+- mechanism: Priority is floor_log2(n_refs)*n_refs/live_length. Splitting lowers the block-0 value allocno from 14 refs/20 insns (2.10) to 8 refs/10 insns (2.40) and adds a second value allocno at 6 refs/10 insns (1.20); the address allocno stays at 10 refs/31 insns (0.97), below both. Raising the address instead needs floor_log2(r)*r > 65 at live_length 31, i.e. 17 references against the 10 the body has.
+- probe: vS1 and vS2 installed with the header edit; sandbox; dumps read for the allocno table and the ';; N regs to allocate:' order.
+- result: Both 49/49 score 10; emitted order ';; 6 regs to allocate: 73 77 75 76 74 72' with the address object still fourth. Banked as rejected/s60l-..., rejected/s60m-....
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis on HEAD 2026-09-05, one pointer object, zero FAKE constructs
+
+## [s60] Giving block 2's store a live address pseudo on the pointer-object-free array chassis -- by routing block 2 through the pointer object, by routing only its store through the pointer object, or by duplicating the store into both arms -- holds the body at 50 instructions in all three spellings.
+- mechanism: Block 2's store folds to lui $at + sb %lo+3($at) because cse restarts its table at the branch-merge label and no address pseudo survives into it. Routing block 2 through the pointer object gives cse an equivalent register already in hand, so the pointer's own la degenerates to a `move` and the body is still one instruction long; duplicating the store into the arms is not re-merged by jump2 and costs a `j`.
+- probe: v1 / v2 / v3 (tmp/grind/func_80034F88/s60/) on the s59b pointer-free chassis with the header edit; sandbox; disassembly of v1 read against asm/funcs/func_80034F88.s.
+- result: 50/23, 50/24, 50/28 respectively. Banked as rejected/s60c-..., s60c2-..., s60d-....
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pointer-object-free array chassis (the s59b form) on HEAD 2026-09-05, three dead re-sets of stored-value locals present
+
+## [s60] Duplicating block 0's store into both arms on the pointer-object-free array chassis is not re-merged by jump2 and additionally displaces p from $a1 to $a2.
+- mechanism: The two arms differ in the register holding the stored value (one stores the ori result, the other the raw reload), so cross_jump has no identical tail to merge; the extra j and the second sb keep the body at 50 while the longer arm live ranges push p down the allocation order.
+- probe: vU1 installed with the header edit; sandbox; disassembly at tmp/grind/func_80034F88/s60/vU1.dis.txt.
+- result: 50 build insns, score 34: beqz + j + two sb at 4f6c-4f7c and `move a2,v0` for p. Banked as rejected/s60g-....
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: pointer-object-free array chassis on HEAD 2026-09-05, three dead re-sets of stored-value locals present
+
+## [s60] Block-scoping the pointer object so that it covers only block 0 buys the target's block-0 grouping at 49 instructions but collapses blocks 1 and 2's address pseudos and displaces p to $a2.
+- mechanism: With the pointer object dead after block 0's store, the branch-merge block no longer needs a fresh address, so cse folds blocks 1 and 2's reads to lui + lbu 3(reg) and their stores to lui $at + sb; the pointer's short live range also raises it above p in the allocation order, pushing p to $a2.
+- probe: v6, v10, v11 (block-scoped pointer, with and without the dead re-set, with and without block-scoped value locals) installed with the header edit; sandbox; disassembly of v6 and v11.
+- result: 49/33, 48/28, 49/23. This is the first family that reproduces the target's block-0 GROUPING (the address surviving the branch and carrying the post-if store) at the right instruction count, so it is worth re-attacking from the blocks-1-and-2 side rather than discarding. Banked as rejected/s60a-..., s60i-..., s60b-....
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis on HEAD 2026-09-05, one block-scoped pointer object, dead re-set present in v6/v11 and absent in v10
+
+## [s60] KILL RE-AUDIT (mandated, floor flat 3 sessions): the s59 pointer-object-free array body, the banked form closest to the target, re-measures identically on the current chassis, and the s59 candidate's single FAKE construct is inert for distance under ablation.
+- mechanism: Re-installation of the exact banked form plus a mechanical ablation run, to test whether either verdict was chassis- or FAKE-carrier-dependent.
+- probe: rejected/s59b-array-model-no-pointer-object-3-reloads-block0-regs-EXACT-50insn-score24.c re-installed with the header edit and re-measured with `sandbox func_80034F88 --disable all`; python3 tools/fake_ablate.py --func func_80034F88 --file code6cac_b --candidate memory/grind/func_80034F88/candidate.c (the s59 body).
+- result: s59b = 50 build insns, score 24, unchanged. fake_ablate: keep-all 10/49, drop-1 10/49 -- the dead re-set buys the block-0 reload only, never distance. Both kills stand as recorded; neither was carrier- or chassis-dependent.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: array-declaration chassis on HEAD 2026-09-05; s59b measured with its three dead re-sets present, ablation run against the s59 candidate's single annotated dead store
