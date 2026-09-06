@@ -29,7 +29,7 @@ index 18f9dd76..091a4968 100644
 +
  #endif /* GAME_H */
 diff --git a/src/text1a_c.c b/src/text1a_c.c
-index 8e8b8318..33d6b24f 100644
+index 8e8b8318..1a850586 100644
 --- a/src/text1a_c.c
 +++ b/src/text1a_c.c
 @@ -1098,12 +1098,6 @@ extern void func_80052C10(void);
@@ -45,7 +45,7 @@ index 8e8b8318..33d6b24f 100644
  extern s32 stage_GetId(void);
  s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
      s32 v0;
-@@ -1111,82 +1105,87 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
+@@ -1111,82 +1105,84 @@ s32 func_80044670(s16 *a0, s16 a1, s32 a2) {
         j/nop pairs in the stage-id switch (NOTE_INSN_LOOP_BEG sets
         LABEL_OUTSIDE_LOOP_P, suppressing the invert-jump peephole) */
      do { } while (0);
@@ -163,27 +163,24 @@ index 8e8b8318..33d6b24f 100644
 +    Rec4473C *src;
 +    Rec4473C *dst;
 +    s32 i;
-+    Rec4473C *tmp;
-+    s32 n;
 +
-+    D_800A9CF8.unk10 = (s32)game_GetCharData();
-+    src = (Rec4473C *)D_800A9CF8.unk10;
++    D_800A9CF8.unk10 = (s32)(src = (Rec4473C *)game_GetCharData());
 +    dst = (Rec4473C *)D_800A9CF8.unkC;
-+    for (i = 0; i < D_800A9CF8.unk6; i++, dst++, src++) {
++    for (i = 0; i < D_800A9CF8.unk6; dst++, src++, i++) {
 +        dst->unk0 = 0;
 +        dst->unk1 = 0;
 +        dst->unk2 = 0;
 +        dst->unk4 = D_800A9CF8.unk0;
-+        dst->unk6 = 0;
 +        dst->unk8 = 0;
-+        dst->unkA = 4;
 +        dst->unkC = 0;
++        dst->unkA = 4;
 +        dst->unk10 = 0;
 +        dst->unk12 = 0;
 +        dst->unk14 = 0;
 +        dst->unk4C = src->unk2C;
 +        dst->unk50 = src->unk30;
 +        dst->unk54 = src->unk34;
++        dst->unk6 = 0;
 +        dst->unk58 = -1;
      }
 -    while (var_a2 < *(s16 *)(var_a3 + 6));
@@ -191,7 +188,7 @@ index 8e8b8318..33d6b24f 100644
  }
  extern void func_800417D0(s32 *);
  INCLUDE_ASM("asm/funcs", func_80044800);
-@@ -1199,12 +1198,12 @@ void func_80044B30(s32 a0, s32 a1) {
+@@ -1199,12 +1195,12 @@ void func_80044B30(s32 a0, s32 a1) {
      s8 *p;
      s16 stage;
  
@@ -207,7 +204,7 @@ index 8e8b8318..33d6b24f 100644
      if (stage == 4) goto case4;
      if (stage == 0x12) goto set_zero;
      goto do_store;
-@@ -1222,10 +1221,10 @@ set_zero:
+@@ -1222,10 +1218,10 @@ set_zero:
  do_store:
      *(s32 *)(p + 0x5C) = a1;
      *(s32 *)(p + 0x58) = 0;
@@ -220,7 +217,7 @@ index 8e8b8318..33d6b24f 100644
          s32 idx = *(s16 *)(p + 0x8);
          *(s16 *)(p + 0x12) = (s16)a1;
          *(s8 *)(p + 0x0) = 0;
-@@ -1236,18 +1235,15 @@ do_store:
+@@ -1236,18 +1232,15 @@ do_store:
          *(u16 *)(p + 0x4) = cf8;
          ((FuncPtr44B30)D_800F66A0[idx])((s16 *)(p + 0x10), (s16 *)(p + 0x18));
      }

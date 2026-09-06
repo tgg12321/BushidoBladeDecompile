@@ -40,10 +40,10 @@
    "next_probe": "Feed traceC's pre-sched block-0 chain to tools/sched_solver and ask it to enumerate the minimal insn-attribute change that flips T-2 to the store, then run tools/ra_solver inverse_compose.py classify on the resulting seat assignment to get a REACHABLE / FORECLOSED verdict on the combined (order + seats) requirement before any further C is spelled."
   }
  ],
- "judge_constraints": [],
- "banned_constructs": [
-  "`typedef struct { ... } Unk800A9CF8Header; extern Unk800A9CF8Header D_800A9CF8;` declared at file scope in src/text1a_c.c (not in include/game.h)"
+ "judge_constraints": [
+  "integration-handoff EXECUTED (pipeline, 2026-09-06): scope grant: func_8004473C include/game.h undefined_syms_auto.txt named_syms.txt; cleared 1 superseded ban(s). Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
+ "banned_constructs": [],
  "kills": [
   {
    "session": 1,

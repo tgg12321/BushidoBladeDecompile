@@ -395,3 +395,83 @@ measured_on: merged-struct chassis (TU-local aggregate decl), form Z1, no FAKE c
   diagnostic: they localised the fix to "remove the standalone copy insn from block 0", which the
   hand-written chained assignment then does legitimately.
 - verdict: CONFIRMED
+
+## s5 (2026-09-06, synthesis) — the merged attack, and why the frontier is now a single scope line
+
+**Merged read of s1-s4.** s1 found the object model (the seven per-word splat scalars at
+0x800A9CF8..0x800A9D0F are ONE 0x18-byte header, proven by base-register addressing in
+func_8004473C itself and independently in func_80044800) and that dropped the honest floor
+40 -> 13. s2 and s3 then spent two full sessions attributing the residual 13 to a single
+`sched.c` `birthing_insn_p` boost and enumerating ~40 block-0 statement orderings against it,
+on the belief — recorded in s1 and never re-tested — that the LOOP BODY was already byte-exact.
+That belief was false, and it is the whole reason the function sat at 13 for three sessions.
+s4 re-permuted the loop body with a fast standalone scorer and found three independent
+ordinary-C levers: the store order inside the body (13 -> 9), the comma-increment order
+`dst++, src++, i++` (9 -> 7), and the chained assignment
+`D_800A9CF8.unk10 = (s32)(src = (Rec4473C *)game_GetCharData());` which removes the boosted
+copy insn from block 0 entirely (7 -> 0).
+
+**H-s5-1 (CONFIRMED, measured this session).** The header-canonical placement of the aggregate
+declaration is byte-neutral at zero. Probe: apply `candidate_merge.patch` (typedef + extern in
+include/game.h) plus the s4 body to a clean HEAD; `sandbox --disable all` = 0 at 49/49 and
+full-tree `verify-oracle` = oracle SHA1. This closes the only technical question the layer-1
+FAIL raised: complying with the aggregate-merge family's header-canonical prong costs nothing.
+
+**H-s5-2 (CONFIRMED by construction).** The remaining obstacle is not codegen, not policy and not
+a construct — it is the single-stem scope gate in `grind.ps1` (`Invoke-CandidatePath`), which
+rejects any candidate touching a build input other than `src/text1a_c.c` unless the function has a
+`tools/grinder/scope_allow.txt` line. func_8004473C has none. The sanctioned remedy is the
+integration handoff (owner ruling 2026-08-19): the Judge returns ESCALATE with
+`escalate_kind=integration-handoff` and `scope_paths=["include/game.h"]`, the driver appends the
+grant, the function STAYS ACTIVE, and the next session lands the banked patch through the full
+normal gates (driver sandbox-0 re-verify, scope check, layer-1, Judge, full-build SHA1).
+
+**KILL RE-AUDIT (mandated, resolved).** Every one of the ten instance kills in state.json was
+measured on the floor-13 chassis — i.e. on the premise that the loop body was fixed and only
+block 0 could move. s4 falsified that premise and reached 0. Re-measuring any of those kills with
+`fake_ablate.py` would spend a session constraining a chassis that no longer exists (and none of
+them named a FAKE construct — every measurement in s1-s4 was ordinary C). The correct disposition
+is supersession, recorded here, not re-measurement.
+
+**Frontier for the next session (one item, in order):**
+1. Land `memory/grind/func_8004473C/candidate_merge.patch` once the scope grant for
+   `include/game.h` exists. Apply it to a clean HEAD, confirm `sandbox --disable all` = 0 and
+   `verify-oracle` = oracle, write `self_vet.md` claiming the aggregate-merge family with the
+   header-canonical prong now MET (that is the ground the layer-1 FAIL rested on), and return
+   candidate-ready. The banned construct (TU-local declaration) is NOT re-declared by that body:
+   the declaration lives in include/game.h.
+
+## s6 (driver session 4, synthesis modality) — merged attack + routing correction
+
+Nothing in the search space needed re-opening this session: the function measures ZERO. The whole
+synthesis product is (a) an independent re-verification of the s5 bytes claim by a session that did
+not author it, and (b) the identification of the *mechanical* reason s5 was discarded, plus the
+routing that does work.
+
+**H-s6-1 (CONFIRMED).** The s5 bytes claim is true and reproducible from clean HEAD by another
+session: patch applies cleanly, sandbox `--disable all` = 0 at 49/49 with 0 rules dropped, and the
+full-tree rebuild SHA1s to the oracle. See evidence.md [s6].
+
+**H-s6-2 (CONFIRMED).** `owner-gated` is structurally unavailable to func_8004473C, so re-filing
+the handoff under any title is futile: grind.ps1:1288 requires a decisions.md line matching
+`OWNER-ESCALATION|CANONICAL-ASM GRANT PATH` that also names the function, and this function has no
+such history. `ruling-request` reaches the identical integration-handoff executor
+(grind.ps1:1371 -> Invoke-JudgeRuling -> Invoke-JudgeEscalation, grind.ps1:469) with no line-regex
+gate. This session therefore returns `ruling-request`.
+
+**H-s6-3 (CONFIRMED).** The remedy needs THREE scope paths and ONE unban, not just the header:
+`include/game.h` (the declaration move that fixes the layer-1 FAIL ground),
+`undefined_syms_auto.txt` + `named_syms.txt` (prong (c) housekeeping: the seven per-word rows must
+STAY, annotated `/* alias of D_800A9CF8+N; retire with func_80044800 */`, because the still-
+INCLUDE_ASM sibling func_80044800 references them), and
+`unban_construct=Unk800A9CF8Header` (grindlib.py:316 tripwire, see evidence.md [s6]).
+
+**KILL RE-AUDIT:** dispositioned by supersession in the s5 section above and NOT re-opened. All ten
+instance kills were measured on the floor-13 chassis; that chassis is gone — the function is at 0.
+No kill named a FAKE construct (every s1-s5 measurement was ordinary C), so `fake_ablate.py` has no
+carrier to ablate here.
+
+**Frontier — one item.** Unchanged from s5, now with the working routing attached: get the scope
+grant + unban via the Judge ESCALATE(integration-handoff) path, then apply
+`candidate_merge.patch` to clean HEAD, re-measure, write self_vet.md claiming the per-word-splat ->
+aggregate merge family with the header-canonical prong MET, and return candidate-ready.

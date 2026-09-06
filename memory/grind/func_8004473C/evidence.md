@@ -399,3 +399,75 @@ Z7 (src and dst both inner-block scoped) **13 / 50**.
   per-word rows in undefined_syms_auto.txt stay while `func_80044800` is still INCLUDE_ASM,
   per the 2026-09-03 amendment, and want the `/* alias of D_800A9CF8+N; retire with
   func_80044800 */` suffix.
+
+## s5 (2026-09-06, synthesis) — bytes RE-PROVEN in the HEADER-CANONICAL configuration
+
+The s4 session reached distance 0 but was layer-1 FAILed on ONE ground: the aggregate
+declaration sat TU-locally in src/text1a_c.c, which is an unmet mandatory prong of the
+aggregate-merge family (header-canonical, complete, never TU-local — `no-new-park-categories.md`
+2026-08-17 entry). That exact TU-local spelling is now a driver-enforced BANNED construct for
+this function. This session closed the remaining question: does the header-canonical placement
+still produce the bytes?
+
+**Measured this session, from a clean HEAD, with `candidate_merge.patch` applied (which puts
+`Unk800A9CF8Header` + `extern Unk800A9CF8Header D_800A9CF8;` in include/game.h, deletes the six
+per-word `extern` scalars from src/text1a_c.c and rewrites the three C sibling users) and the s4
+matched body in place:**
+
+- `sandbox func_8004473C --disable all` -> `{"score": 0, "target_insns": 49, "build_insns": 49,
+  "scorable": true, "rules_dropped": 0}`. Honest, cheat-invisible, zero rules. (The run reports
+  `cheat_asm_stripped: 6`; those six lines belong to OTHER functions still carrying m2c cheat
+  bodies in the same TU, not to func_8004473C — the s4/s5 body has no `__asm__`, no register
+  pins, no pads, no FAKE construct.)
+- Full-tree `verify-oracle --rebuild --allow-dirty` -> `"ok": true`,
+  `"build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa"` ==
+  `"original_sha1_now"` == `"original_sha1_locked"`. Every sibling TU and every other user of the
+  seven per-word symbols is byte-neutral under the merge.
+
+So the header-canonical variant is byte-identical to the TU-local variant AT ZERO, not merely at
+the old floor of 13 (s3 had only shown the equivalence at 13). **The function is SOLVED.** The
+sole remaining obstacle is that `include/game.h` is outside a grind session's allowed edit
+surface, so no session can stage the fix; the tree was reverted to clean after measurement.
+
+Artifacts: `tmp/grind/func_8004473C/s4/text1a_c.c.matched` (the complete matched TU),
+`tmp/grind/func_8004473C/s4/HANDOFF-include-game-h.diff` (the header hunk alone),
+`memory/grind/func_8004473C/candidate_merge.patch` (REGENERATED this session — it now carries
+BOTH the header-canonical merge AND the s4 matched body, so the next session applies exactly one
+patch and is at 0).
+
+- [s5] Header-canonical placement of the D_800A9CF8 aggregate (include/game.h) measures score 0 / 49 of 49 instructions AND full-tree oracle SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. The layer-1 FAIL ground (TU-local declaration) is fixed by a one-hunk move that costs nothing in bytes.
+- [s5] The ONLY blocker left is scope: `include/game.h` is not in this function's `tools/grinder/scope_allow.txt` line. The remedy is the pipeline-executable integration handoff (.claude/rules/integration-handoff-self-serve.md, owner ruling 2026-08-19) — a Judge ESCALATE with escalate_kind=integration-handoff and scope_paths=["include/game.h"]. No new construct, no new family, no owner question.
+- [s5] KILL RE-AUDIT resolved by supersession: every instance kill in state.json was measured on a floor-13 chassis whose residual s4 dissolved (the loop body was never byte-exact — `dst->unk6 = 0` late plus `dst->unkC` before `dst->unkA` is worth 4, and the comma order `dst++, src++, i++` a further 2). Re-measuring those kills has no value: the chassis they constrain no longer exists, because the function measures 0.
+
+- [s6 / driver session 4, synthesis] INDEPENDENT RE-VERIFICATION of the s5 bytes claim, from a
+  clean HEAD, by a session that did not author it: `git apply memory/grind/func_8004473C/candidate_merge.patch`
+  (clean apply, 2 files, include/game.h + src/text1a_c.c) then
+  `sandbox func_8004473C --disable all` -> `"score": 0, "target_insns": 49, "build_insns": 49,
+  "scorable": true, "rules_dropped": 0` (artifact tmp/grind/func_8004473C/s4/sandbox_merged_s4.json),
+  then `verify-oracle --rebuild --allow-dirty` -> `"ok": true`,
+  `build_sha1 == original_sha1_now == original_sha1_locked == 62efab4f73f992798c43e8c730aa43baa10bb4fa`
+  (artifact tmp/grind/func_8004473C/s4/verify_oracle_s4.txt). The claim holds. The tree was
+  reverted (`git checkout -- include/game.h src/text1a_c.c`) before this session ended; only
+  ledger files are dirty.
+- [s6] ROUTING DEFECT that discarded s5, diagnosed and avoided: s5 returned `owner-gated` with an
+  `INTEGRATION HANDOFF`-titled entry. `tools/grinder/grind.ps1:1288` gates EVERY `owner-gated`
+  outcome on a decisions.md LINE that matches `OWNER-ESCALATION|CANONICAL-ASM GRANT PATH` *and*
+  contains the function name — so the `INTEGRATION HANDOFF` branch at grind.ps1:1409 is
+  unreachable for a function that has no legacy OWNER-ESCALATION history. func_8004473C has none
+  (it is 4 sessions old), so `owner-gated` can NEVER validate here regardless of merit. The
+  precedents that did route this way (func_80022F34, func_80034F88, func_80033550, func_80062020)
+  all carry pre-2026-08-19 OWNER-ESCALATION entries that satisfy the line regex incidentally.
+- [s6] The routing that DOES work for a first-time handoff: `result: "ruling-request"`.
+  grind.ps1:1371 -> Invoke-JudgeRuling -> on an `ESCALATE` verdict, Invoke-JudgeEscalation
+  (grind.ps1:469) executes `escalate_kind=integration-handoff` exactly as the owner-gated branch
+  would have: it appends the `scope_paths` line to tools/grinder/scope_allow.txt, applies
+  `unban_construct`, constrains the function to land the banked form, and keeps it ACTIVE. No
+  decisions.md line-regex is consulted anywhere on that path.
+- [s6] The standing ban MUST be cleared as part of the grant, or the compliant next session is
+  auto-discarded too. `check_banned_constructs` (grindlib.py:316) trips when >=50% of the ban
+  phrase's content words appear in the vet's CONSTRUCTS: block. The banked ban is "typedef struct
+  { ... } Unk800A9CF8Header; extern Unk800A9CF8Header D_800A9CF8; declared at file scope in
+  src/text1a_c.c (not in include/game.h)"; a self-vet for the header-canonical form necessarily
+  declares `typedef`, `struct`, `Unk800A9CF8Header`, `extern`, `D_800A9CF8`, `include/game.h` —
+  well past the threshold. `unban_construct=Unk800A9CF8Header` is therefore part of the remedy,
+  not a nicety.

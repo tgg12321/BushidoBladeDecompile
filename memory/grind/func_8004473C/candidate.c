@@ -22,6 +22,19 @@
  *      `move a2,zero / lui a1; lw a1,12 / lui v1; lh v1,6 / lui a0; addiu a0,a0,16 / blez v1 /
  *      sw v0,0(a0) / addiu a3,a0,-16` - the target verbatim, store in the delay slot, no nop.
  *
+ * s5 UPDATE (2026-09-06): the declaration placement question is CLOSED. With
+ * candidate_merge.patch applied (typedef + `extern Unk800A9CF8Header D_800A9CF8;` in
+ * include/game.h, per-word externs deleted from src/text1a_c.c, three C siblings rewritten to
+ * members) and this body in place, `sandbox --disable all` = 0 at 49/49 and a full-tree
+ * `verify-oracle --rebuild` returns build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+ * original_sha1_locked. So the HEADER-CANONICAL spelling — prong (d) of the aggregate-merge
+ * family, and the sole ground of the 2026-09-06 04:14 layer-1 FAIL — is byte-identical at zero,
+ * not merely at the old floor of 13. The two typedefs below are reproduced here only so this
+ * file stands alone; in the landed form Unk800A9CF8Header and the extern live in include/game.h
+ * and ONLY Rec4473C stays TU-local (it is a local record type, not a merged splat symbol).
+ * Do NOT submit the TU-local declaration again: it is a driver-enforced banned construct for
+ * this function. Apply candidate_merge.patch instead — it is the complete byte-verified diff.
+ *
  * CHASSIS: still requires the D_800A9CF8 aggregate merge (per-word splat symbols ->
  * Unk800A9CF8Header) established in s1 from base+offset evidence. The declaration is TU-LOCAL
  * here ONLY because a grind session's edit surface is src/text1a_c.c + memory/ + tmp/;
