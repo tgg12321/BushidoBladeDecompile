@@ -1,48 +1,45 @@
 /*
- * CANDIDATE -- func_8003C714 (src/code6cac_c2.c) -- s18b (2026-09-05, forensics)
+ * CANDIDATE -- func_8003C714 (src/code6cac_c2.c) -- s19 (2026-09-05, rederive)
  *
- * MEASURED THIS SESSION: `sandbox func_8003C714 --disable all` = score 0,
- * target_insns 104 == build_insns 104, rules_dropped 0, frame `subu $sp,$sp,32`
- * == the target's 0x20, on the SHIPPED chassis with this exact body in
- * src/code6cac_c2.c together with the one declaration change noted below.
+ * MEASURED THIS SESSION on the shipped chassis: this exact body, dropped over
+ * the `INCLUDE_ASM("asm/funcs", func_8003C714);` line at src/code6cac_c2.c:629
+ * with NO other edit anywhere in the tree, scores
+ *   sandbox func_8003C714 --disable all = 15  (target_insns 104, build_insns 105)
  *
- * WHAT THIS FUNCTION IS. It formats three stored records (8 bytes each, base
- * 0x80106A58) into a display struct: dst[0x21] = minutes, dst[0x22] = seconds,
- * dst[0x23] = hundredths, dst[0x24] = the record's leading byte. The time field
- * at +4 is a 30 Hz frame count (1800 frames = 1 minute, 30 = 1 second).
+ * WHY THIS BODY REPLACES THE s18b CANDIDATE. The s18b candidate reached
+ * distance 0 but only by carrying (a) a FAKE-annotated DImode dead store whose
+ * sole purpose was to summon __divdi3, and (b) a retype of D_80106A58 to
+ * `extern u8 D_80106A58[24]`. BOTH are on this function's banned_constructs
+ * list, so that body can never be submitted. This session proved that NEITHER
+ * is load-bearing: the same distance 0 is reachable from THIS body plus pure
+ * insn_count padding, with `base = (u8 *)&D_80106A58;` unchanged and the
+ * `extern s32 D_80106A58;` declaration at src/code6cac_c2.c:156 untouched.
+ * The two "declaration puns" the brief listed as a hard submission blocker are
+ * therefore NOT part of the residual at all -- they were artefacts of the s18b
+ * carrier, not of the match. See hypotheses.md s19 (H35/K57) and evidence.md s19.
  *
- * THE ONE LEVER. All 15 instructions of the old floor are downstream of ONE
- * loop.c decision: whether the 0x91A2B3C5 division magic for /1800 is hoisted
- * out of the loop. The target does NOT hoist it -- it materialises
- * lui/lw/ori/mult in-loop at 8003C754..8003C760. loop.c:532 sets
+ * WHAT THE RESIDUAL IS, EXACTLY (all numbers measured this session from the
+ * -dL loop dump, tmp/grind/func_8003C714/dumps/code6cac_c2.loop):
+ *   Loop from 28 to 170: 62 real insns.
+ *   Insn 48: regno 87 (life 1), move-insn savings 1  moved to 225   <- 0x91A2B3C5
+ *   Insn 66: regno 93 (life 35), move-insn savings 1 moved to 227   <- 0x88888889
+ * The target hoists reg 93 (lui/ori in the preheader at 8003C740) and does NOT
+ * hoist reg 87 (lui/ori materialised in-loop at 8003C754/8003C75C). All 15
+ * residual instructions are that one difference. loop.c:1631 moves a movable
+ * iff `threshold * savings * m->lifetime >= insn_count`, and loop.c:532 sets
  * `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` = 122 with no
- * call in the loop and 61 with one, and prescan_loop (loop.c:2202) sets
- * loop_has_call for ANY CALL_INSN between the loop notes. A DImode divide with
- * a genuinely 64-bit dividend expands to a __divdi3 libcall block; while its
- * result is dead, flow.c deletes the whole block (libcall_dead_p, flow.c:1827)
- * AFTER loop_optimize and BEFORE combine and register allocation, so the call
- * halves the threshold and costs zero emitted bytes. The single FAKE-annotated
- * dead store is that carrier; everything else in the body is ordinary C.
- *
- * TWO DECLARATION CHANGES, both inside src/code6cac_c2.c, both measured
- * byte-neutral this session, and both of which REMOVE a declaration pun the
- * brief flagged (so no include/*.h change and no integration handoff is needed):
- *   - line 156: `extern s32 D_80106A58;` -> `extern u8 D_80106A58[24];`, so the
- *     loop base is `base = D_80106A58;` instead of the old `(u8 *)&D_80106A58`
- *     scalar-address pun. Evidence for the shape: the target walks ONE base
- *     register with `addiu $a2, $a2, 0x8` at 8003C830 and reads 0x0($a2) and
- *     0x4($a2) -- three 8-byte records, 24 bytes.
- *   - `*((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2;` -> `= D_80101ED2;`. The s16
- *     declaration at include/code6cac.h:350 is left untouched and the plain read
- *     still emits the target's `lhu` at 8003C874 (measured: score 0 either way).
- *
- * REJECTED THIS SESSION (banked in rejected/): the identical carrier stored into
- * `c` instead of `v` (score 7 -- destination selects the RA seat), and an
- * `extern u8 D_80106A58[3][8];` / `src = D_80106A58[i];` spelling (score 19 --
- * it changes the giv the loop is strength-reduced around). See hypotheses.md
- * s18b (H32-H34, K55-K56).
+ * call in the loop, 61 with one. reg 87 sits at savings 1 / lifetime 1, both
+ * already at their floor, so the ONLY two ways to leave it in the loop are
+ *   (A) loop_has_call = 1  -> need insn_count >= 62, and the baseline is
+ *       ALREADY 62, so a single byte-free CALL_INSN in the loop is sufficient
+ *       on its own (margin is exactly one insn); or
+ *   (B) no call             -> need insn_count >= 123, i.e. +61 RTL insns in
+ *       the loop that emit no bytes.
+ * Route (B) was believed capped at insn_count 64 by s18. It is NOT: see the two
+ * new rejected/ forms, which reach 123 and measure sandbox 0. What blocks (B)
+ * is admissibility, not reachability -- the padding has to be something a
+ * programmer would actually write.
  */
-
 void func_8003C714(void) {
     u8 buf[4];
     s32 *s0;
@@ -57,23 +54,10 @@ void func_8003C714(void) {
     gpu_InitDisplay();
     func_80060758();
     i = 0;
-    base = D_80106A58;
+    base = (u8 *)&D_80106A58;
     do {
         src = base + i * 8;
         dst = (u8 *)s0 + i * 4;
-        /* FAKE: dead store -- the record's elapsed time expressed in hundredths of a
-         * second (the record holds 30 Hz frames; the x100 scaling is done in 64-bit so
-         * it cannot overflow), stored into v and unconditionally overwritten by
-         * `v = *src;` below.  mechanism: the DImode divide expands to a __divdi3
-         * libcall block, whose CALL_INSN makes prescan_loop set loop_has_call
-         * (loop.c:2202) and so halves the LICM hoist threshold at loop.c:532
-         * (122 -> 61), which is what leaves the 0x91A2B3C5 division magic materialised
-         * in-loop as the target's lui/lw/ori/mult quartet; flow.c's libcall_dead_p
-         * (flow.c:1827) then deletes the whole block after loop_optimize and before
-         * combine and register allocation, so it costs zero emitted bytes.
-         * lever-exhaustion: memory/grind/func_8003C714/hypotheses.md K1-K54 and
-         * rejected/ (30 disproven forms) over 18 sessions. */
-        v = ((long long)*(s32 *)(src + 4) * 100) / 30;
         a = *(s32 *)(src + 4);
         a = a / 1800;
         dst[0x21] = a;

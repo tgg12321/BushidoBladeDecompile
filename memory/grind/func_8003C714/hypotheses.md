@@ -2932,3 +2932,138 @@ session re-derives the ordering property and mistakes it for an opening.
 - probe: python3 tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c: keep-all score 3 / build_insns 104; drop-1 score 18 / build_insns 105.
 - result: CONFIRMED. s17's measurement is not stale - the carrier is still worth exactly 15 - but the recorded d0 is a property of the body PLUS the declaration retype, and the retype is itself the layer-1 FAIL finding. A future session quoting d0 must carry both halves and must expect the declaration half to be litigated separately under the aggregate-merge family.
 - verdict: CONFIRMED
+
+
+## s19 (2026-09-05) -- rederive
+
+### H35 / CONFIRMED -- the loop.c:1631 inequality has exactly two open dials, and their
+### numeric values are 122/61 (threshold) against 62 (baseline insn_count)
+STATEMENT. On the shipped chassis the 15-instruction residual is entirely the
+non-hoist of the 0x91A2B3C5 movable (reg 87, `Insn 48: regno 87 (life 1),
+move-insn savings 1`), and loop.c:1631's test `threshold * savings * lifetime >=
+insn_count` evaluates to `122 * 1 * 1 >= 62` with no call in the loop and
+`61 * 1 * 1 >= 62` (false) with one. savings and lifetime are already at their
+floor for a move-insn movable, so the only reachable dials are loop_has_call and
+insn_count.
+MECHANISM. loop.c:532 `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`;
+loop.c:897 sets `m->savings = 1` for a move-insn movable; `m->lifetime =
+uid_luid[regno_last_uid] - uid_luid[regno_first_uid]` is >= 1 for any set-then-read
+pseudo. n_non_fixed_regs = 60 is pinned empirically by two loops in the same
+translation unit: code6cac_c2.loop:8337 prints five life-1/savings-1 movables as
+`not desirable` at insn_count 72 (so threshold < 72, i.e. that loop has a call
+and threshold = 61), while ours moves a life-1/savings-1 movable at insn_count 62
+(so threshold >= 62). Only n_non_fixed_regs = 60 satisfies both.
+PROBE. -dL dump of the clean body; read `Loop from 28 to 170: 62 real insns` and
+the two movable lines; cross-read the neighbouring loop's `not desirable` lines.
+RESULT. CONFIRMED. Corrects s18's framing in one important way: with a call the
+requirement is insn_count >= 62 and the baseline ALREADY is 62, so a byte-free
+CALL_INSN is sufficient by itself and buys nothing else; the s17/s18b DImode
+carrier was paying thirteen statements for a CALL_INSN it could have got from
+any libcall.
+
+### K57 / KILLED (instance) -- "the free insn_count ceiling is 64"
+STATEMENT. The s18 measurement that sixteen ordinary-C shapes reach at most
+insn_count 64 without adding a call is a property of those sixteen shapes, not a
+ceiling: a dead scalar chain written into a local that is never read reaches
+insn_count 134 and measures sandbox score 0 on this chassis with no call, no
+DImode, no declaration change and no annotated construct of any kind.
+MECHANISM. cse1 (which runs before loop_optimize) performs no dead-code
+elimination, so a chain of ordinary integer statements whose destination local
+is never read survives into loop.c and is counted by count_loop_regs_set
+(loop.c:3007 `++count`); flow.c then deletes the whole chain after
+loop_optimize, so it costs zero emitted bytes. The s18 shapes were all
+byte-materialising or live shapes, which cse1 folds.
+PROBE. Chain length sweep against `sandbox func_8003C714 --disable all`:
+N=40 -> 15, N=45 -> 15, N=48 -> 15, N=50 -> 15, N=52 -> 0. At N=60 the dump
+reads `Loop from 28 to 365: 134 real insns` with
+`Insn 243: regno 112 (life 1), move-insn savings 1 not desirable` and the
+0x88888889 movable still `moved to 420`. A dead constant-division chain reaches
+the same place in eight statements (N=4 -> 15, N=6 -> 15, N=8 -> 0), i.e. about
+7.6 counted insns per dead division.
+RESULT. KILLED (instance): the CEILING claim is dead, not the axis. The axis is
+open and reachable; what is missing is an admissible spelling of ~61 counted,
+byte-free insns. Forms banked at
+rejected/dead-scalar-chain-52-stmts-insncount-123-d0-but-inadmissible.c and
+rejected/dead-division-chain-8-stmts-insncount-123-d0-but-inadmissible.c.
+kill_scope: instance. measured_on: shipped chassis HEAD 2026-09-05, no FAKE
+construct present in either form.
+
+### K58 / KILLED (instance) -- the two declaration puns are not part of the residual
+STATEMENT. Both distance-0 forms measured this session keep
+`extern s32 D_80106A58;` at src/code6cac_c2.c:156 exactly as HEAD has it, spell
+the loop base as `base = (u8 *)&D_80106A58;`, and write
+`*((u8 *)s0 + 0x30) = D_80101ED2;` with no `*(u16 *)&` pun, and they still
+measure score 0 / build_insns 104 == target_insns 104.
+MECHANISM. The `extern u8 D_80106A58[24];` retype in the s18b candidate was
+required by that candidate's DImode carrier (it changed how the carrier's
+dividend was addressed), not by the match. With the carrier gone the plain
+pointer-cast base produces identical bytes.
+PROBE. b_n52.c and d_n8.c (tmp/grind/func_8003C714/s19/) compiled over
+src/code6cac_c2.c with no other tree edit; sandbox score 0 both times.
+RESULT. KILLED (instance). The brief's third frontier item -- "the two
+declaration puns remain a hard submission blocker on ANY distance-0 body" -- is
+false on this chassis. No aggregate-merge integration handoff for
+g_file_disc_type is needed for func_8003C714. (func_80035280 may still want one
+on its own merits; that is a different function.)
+kill_scope: instance. measured_on: shipped chassis HEAD 2026-09-05, no FAKE
+construct present.
+
+### K59 / KILLED (instance) -- the matched sibling's spelling does not transplant
+STATEMENT. func_8001CD68 (src/code6cac.c:1122, COMPLETED-C, the function
+func_8003C714 calls right after its loop) formats the same 30 Hz frame count as
+`minutes = val / 1800; seconds = val / 30 - minutes * 60;
+centiseconds = (val % 30) * 100 / 30;` with a `val > 0x2BF1F` clamp; that
+`seconds` spelling reuses `minutes`, whereas func_8003C714's target asm
+recomputes `x / 30` and takes `% 60` of it (0x88888889 with sra 5 at 8003C79C,
+then t*60 subtracted at 8003C7B4..8003C7C4), and the target loop carries no
+clamp branch.
+MECHANISM. Byte-level: reusing `minutes` would emit one fewer division and one
+fewer load inside the loop; the clamp would emit a branch and a second exit.
+PROBE. Instruction-by-instruction read of asm/funcs/func_8003C714.s against
+src/code6cac.c:1122-1138.
+RESULT. KILLED (instance) as a transplant, CONFIRMED as arithmetic
+corroboration -- the candidate's `(x/30) % 60` and `(x % 30) * 100 / 30` are the
+right expressions.
+kill_scope: instance. measured_on: shipped chassis HEAD 2026-09-05, source
+comparison against a COMPLETED-C sibling; no FAKE construct present.
+
+### CONFIRMED -- func_80035280 shares the loop byte for byte
+asm/funcs/func_80035280.s (still INCLUDE_ASM) carries the identical loop body:
+0x88888889 hoisted to the preheader (8003531C/80035320), 0x91A2B3C5 in-loop
+(80035330/80035338), the same four stores at +0x21..+0x24 of the func_80077D00
+record, the same 8-byte record stride and `slti 3` tail, 58 emitted insns
+against our 56. The idiom that leaves the /1800 magic in the loop is therefore
+inside the shared loop body and is not a consequence of anything in
+func_8003C714's surrounding code (func_80035280 has a preceding loop;
+func_8003C714 has none, and both behave the same). Any admissible padding found
+for one is the padding for the other.
+
+## [s19] The 15-instruction residual is exactly the non-hoist of the 0x91A2B3C5 movable (reg 87, life 1, savings 1), and loop.c:1631 evaluates as 122*1*1 >= 62 with no call in the loop and 61*1*1 >= 62 (false) with one; savings and lifetime are already at their floor for a move-insn movable, so the reachable dials are loop_has_call and insn_count only.
+- mechanism: loop.c:532 sets threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs); loop.c:897 sets m->savings = 1 for a move-insn movable; m->lifetime = luid(last use) - luid(def) = 1 here. n_non_fixed_regs = 60 is pinned empirically inside this same translation unit: the loop printed at code6cac_c2.loop:8337 shows five life-1/savings-1 movables marked not desirable at insn_count 72 (threshold < 72, i.e. that loop has a call, threshold 61), while our loop moves a life-1/savings-1 movable at insn_count 62 (threshold >= 62). Only n_non_fixed_regs = 60 satisfies both.
+- probe: pwsh tools/grinder/dump.ps1 func_8003C714 on the clean ordinary-C body; read 'Loop from 28 to 170: 62 real insns', 'Insn 48: regno 87 (life 1), move-insn savings 1 moved to 225', 'Insn 66: regno 93 (life 35), move-insn savings 1 moved to 227', and the const_int -1851608123 / -2004318071 sets in the .cse dump.
+- result: CONFIRMED. This corrects the s18 framing: with a call in the loop the requirement is insn_count >= 62 and the baseline ALREADY is 62, so a byte-free CALL_INSN is sufficient on its own and buys nothing beyond itself - the s17/s18b DImode carrier paid thirteen statements for a CALL_INSN any libcall would have supplied. Without a call the requirement is insn_count >= 123, i.e. +61 counted insns that emit no bytes.
+- verdict: CONFIRMED
+
+## [s19] The s18 measurement that ordinary-C shapes reach at most insn_count 64 without adding a call is a property of the sixteen shapes s18 swept: a chain of ordinary integer statements written into a local that is never read reaches insn_count 134 and measures sandbox score 0 on this chassis with no call, no DImode, no annotated construct and no declaration change.
+- mechanism: cse1 runs before loop_optimize and performs no dead-code elimination, so a dead scalar chain survives into loop.c and is counted by count_loop_regs_set's ++count; flow.c deletes the chain after loop_optimize, so it costs zero emitted bytes. The s18 shapes were live or byte-materialising shapes, which cse1 folds inside our single-basic-block loop.
+- probe: Chain-length sweep against sandbox func_8003C714 --disable all: N=40 -> 15, N=45 -> 15, N=48 -> 15, N=50 -> 15, N=52 -> 0. At N=60 the -dL dump reads 'Loop from 28 to 365: 134 real insns' with 'Insn 243: regno 112 (life 1), move-insn savings 1 not desirable' while the 0x88888889 movable is still 'moved to 420' - the target's exact asymmetry. A dead constant-division chain reaches the same place in eight statements (N=4 -> 15, N=6 -> 15, N=8 -> 0), about 7.6 counted insns per dead division.
+- result: KILLED as a ceiling claim. The axis itself is open and measured reachable; what is missing is an admissible spelling of roughly 61 counted, byte-free insns. Both padded forms are banked in rejected/ as inadmissible (52 dead statements / 8 dead divisions are not code a programmer would write).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, sandbox re-measured this session at score 15 / target_insns 104 / build_insns 105 for the clean body; no FAKE construct present in any measured form
+
+## [s19] Both distance-0 forms measured this session keep 'extern s32 D_80106A58;' at src/code6cac_c2.c:156 exactly as HEAD has it, spell the loop base as base = (u8 *)&D_80106A58, and store D_80101ED2 without a (u16 *)& pun, and they still measure score 0 with build_insns 104 == target_insns 104.
+- mechanism: The 'extern u8 D_80106A58[24];' retype in the s18b candidate was required by that candidate's DImode carrier (it changed how the carrier's dividend was addressed), not by the match. With the carrier removed the plain pointer-cast base produces identical bytes.
+- probe: tmp/grind/func_8003C714/s19/b_n52.c and d_n8.c dropped over the INCLUDE_ASM line at src/code6cac_c2.c:629 with no other tree edit; sandbox score 0 in both cases.
+- result: KILLED. The brief's third frontier item - the two declaration puns as a hard submission blocker - does not hold on this chassis: a distance-0 body can be built here without touching a declaration, and no aggregate-merge integration handoff for g_file_disc_type is needed for func_8003C714 (func_80035280 may still want one on its own merits).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05; no FAKE construct present, no header edit, src/code6cac_c2.c:156 unchanged
+
+## [s19] The COMPLETED-C sibling func_8001CD68 (src/code6cac.c:1122), which func_8003C714 calls immediately after its loop and which formats the same 30 Hz frame count, spells seconds as 'val / 30 - minutes * 60' and carries a 'val > 0x2BF1F' clamp, neither of which appears in func_8003C714's target bytes.
+- mechanism: The target recomputes x / 30 inside the loop and takes % 60 of it (0x88888889 with sra 5 at 8003C79C, then t*60 subtracted at 8003C7B4..8003C7C4) rather than reusing the already-computed minutes; reusing minutes would emit one fewer division and one fewer load, and the clamp would emit a branch and a second exit that the target loop does not have.
+- probe: Instruction-by-instruction read of asm/funcs/func_8003C714.s against src/code6cac.c:1122-1138.
+- result: KILLED as a transplant; CONFIRMED as corroboration that the candidate's (x/30) % 60 and (x % 30) * 100 / 30 are the right expressions for this loop.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, byte-level comparison against a COMPLETED-C sibling; no FAKE construct present

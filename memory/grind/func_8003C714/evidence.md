@@ -2611,3 +2611,141 @@ The ordering fact is recorded here so no future session re-derives it.
 - [s18] fake_ablate on candidate.c: keep-all 3 / 104, drop-1 18 / 105 - the FAKE carrier is worth exactly 15 on the current chassis, and the recorded d0 also needs the line-156 extern u8 D_80106A58[24] retype that the ablation harness does not carry.
 
 - [s18] New artifact banked: memory/grind/func_8003C714/rejected/free-insncount-ceiling-is-64-not-63-still-59-short.c - the best ordinary-C byte-neutral shape found, insn_count 64 against the 123 required.
+
+
+## s19 (2026-09-05) -- rederive: the insn_count route is OPEN; the declaration puns are NOT part of the residual
+
+### Chassis re-measurement
+`sandbox func_8003C714 --disable all` on HEAD with the clean ordinary-C body
+(memory/grind/func_8003C714/candidate.c as rewritten this session, i.e. the s18b
+body with the FAKE DImode dead store REMOVED and `base = (u8 *)&D_80106A58;`
+restored, no declaration change anywhere): score 15, target_insns 104,
+build_insns 105, rules_dropped 0. Ledger floor 15 confirmed on the current
+chassis.
+
+### The full quantitative model, read out of the -dL loop dump (not inferred)
+`tmp/grind/func_8003C714/dumps/code6cac_c2.loop`, function func_8003C714:
+
+    Loop from 28 to 170: 62 real insns.
+    Continue at insn 160.
+    Insn 48: regno 87 (life 1), move-insn savings 1  moved to 225
+    Insn 66: regno 93 (life 35), move-insn savings 1  moved to 227
+
+From `tmp/grind/func_8003C714/dumps/code6cac_c2.cse`:
+    (insn 48 ... (set (reg:SI 87) (const_int -1851608123)))   == 0x91A2B3C5  (/1800)
+    (insn 66 ... (set (reg:SI 93) (const_int -2004318071)))   == 0x88888889  (/30, /60)
+
+loop.c:1631 is the whole residual:
+    if (already_moved[regno]
+        || (threshold * savings * m->lifetime) >= insn_count
+        || (m->forces && m->forces->done && n_times_used[m->forces->regno] == 1))
+loop.c:532: `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`.
+
+Empirical calibration of n_non_fixed_regs from this same dump, WITHOUT guessing:
+the neighbouring function whose loop is printed at code6cac_c2.loop:8337
+("Loop from 145 to 358: 72 real insns") has five movables all at life 1 /
+savings 1 and all printed `not desirable`, which requires threshold < 72; our
+own loop moves a life-1 savings-1 movable at insn_count 62, which requires
+threshold >= 62. The only pair consistent with both is n_non_fixed_regs = 60,
+i.e. threshold = 122 without a call and 61 with one. (The neighbour's loop
+contains calls; ours does not.)
+
+Consequences, both of which are NEW relative to the s18 ledger:
+  * With a call in the loop the requirement is `insn_count >= 62`, and the
+    baseline insn_count is ALREADY 62. The margin is exactly one instruction.
+    The libcall carrier of s17/s18b was therefore never buying insn_count -- it
+    was buying nothing but the CALL_INSN itself.
+  * Without a call the requirement is `insn_count >= 123`, i.e. +61 RTL insns
+    that emit no bytes.
+reg 87 is at savings 1 and lifetime 1, which are the floor values for a
+`move-insn` movable (loop.c:897 sets savings = 1; lifetime = luid(last use) -
+luid(def) >= 1 for any register that is set and then read). There is no third
+dial in the inequality.
+
+### The s18 "free insn_count ceiling is 64" number is an instance result, not a ceiling
+Two padding families were built this session and both reach insn_count 123 and
+measure sandbox score 0 with NO call, NO DImode, NO `__asm__`, NO register pin
+and NO declaration change:
+
+  1. Dead scalar chain on a local `t` that is written from the record's frame
+     count and never read (`t = t * 3; t = t ^ 0x55; t = t + 7; t = t - 3;
+     t = t | 2;` cycled). Sweep of chain length N against sandbox score:
+        N=40 -> 15   N=45 -> 15   N=48 -> 15   N=50 -> 15   N=52 -> 0
+     At N=60 the loop dump reads `Loop from 28 to 365: 134 real insns.` and
+     `Insn 243: regno 112 (life 1), move-insn savings 1 not desirable` -- the
+     0x91A2B3C5 movable stays in the loop while the 0x88888889 movable
+     (`Insn 261: regno 118 (life 35) ... moved to 420`) is still hoisted, which
+     is exactly the target's asymmetry.
+     Banked: rejected/dead-scalar-chain-52-stmts-insncount-123-d0-but-inadmissible.c
+
+  2. Dead division chain on the same local (`t = t / 7; t = t / 11; ...`).
+     Sweep: N=4 -> 15   N=6 -> 15   N=8 -> 0.
+     A constant division expands to roughly 7.6 RTL insns at loop.c time, so
+     eight dead divisions clear the +61 gap.
+     Banked: rejected/dead-division-chain-8-stmts-insncount-123-d0-but-inadmissible.c
+
+Both forms use `base = (u8 *)&D_80106A58;` and leave `extern s32 D_80106A58;`
+at src/code6cac_c2.c:156 exactly as HEAD has it, and both write
+`*((u8 *)s0 + 0x30) = D_80101ED2;` without a `*(u16 *)&` pun. They still score 0.
+**The two declaration puns the brief lists as a hard submission blocker are not
+part of the residual.** They were required by the s18b DImode carrier, not by
+the match. Any future distance-0 body can be built without touching a
+declaration, and no integration handoff for an aggregate merge of
+g_file_disc_type is needed for THIS function.
+
+### Why redundancy (as opposed to dead code) cannot be the padding
+cse1 runs before loop_optimize and our loop is a single basic block, so any
+redundant-but-live expression is folded away before loop.c counts it. cse1 does
+NOT perform dead-code elimination -- the dead chains above prove this directly,
+since they survive cse1 intact and are counted at loop.c time and then removed
+(flow.c, after loop_optimize) at zero byte cost. So the byte-free insn_count
+filler is necessarily DEAD code, and the admissibility question is entirely
+"what dead computation would a programmer have written here".
+
+### Sibling evidence: func_80035280 has a byte-identical loop
+`asm/funcs/func_80035280.s` (still INCLUDE_ASM, reads the same base
+D_80106A58) contains the identical loop body instruction for instruction:
+0x88888889 hoisted into the preheader at 8003531C/80035320, 0x91A2B3C5
+materialised in-loop at 80035330/80035338, the same four stores to +0x21..+0x24
+of a func_80077D00 record, the same `addiu $a2, $a2, 0x8` / `addiu $a1, $a1, 4`
+/ `slti 3` tail. Its loop spans 80035330..80035418 = 58 emitted insns, the same
+size as ours. Whatever source idiom produces the non-hoist is therefore SHARED
+between the two functions and is contained inside the loop body itself (it is
+not something in func_8003C714's surrounding code), and solving one solves both.
+This also rules out any explanation that depends on func_80035280's extra
+preceding loop (bnez .L800352F0 at 80035310), because func_8003C714 has no
+second loop and reaches the same result.
+
+### Matched-sibling spelling census (rederive)
+`func_8001CD68` (src/code6cac.c:1122) is COMPLETED-C, is the function
+func_8003C714 calls immediately after the loop, and formats the same 30 Hz
+frame count:
+    s32 minutes = val / 1800;
+    s32 seconds = val / 30 - minutes * 60;
+    s32 centiseconds = (D_800A3858 % 30) * 100 / 30;
+plus a `if (val > 0x2BF1F)` clamp to 99:59:99. Its `seconds` spelling
+(`val/30 - minutes*60`) is NOT what func_8003C714 emits -- the target
+recomputes `x/30` and then takes `% 60` off it (mult by 0x88888889 with sra 5,
+then t*60 subtracted, at 8003C79C..8003C7C4), so the loop body genuinely is
+`(x/30) % 60` and not the sibling's reuse of `minutes`. The clamp does not
+appear in the loop either (the target loop has no branch other than its own
+back edge). Transplanting the sibling's spelling is therefore ruled out on
+bytes, and the current candidate body is confirmed as the correct arithmetic.
+
+- [s19] Chassis re-measured this session: the clean ordinary-C body (no FAKE store, base = (u8 *)&D_80106A58, no declaration change) scores 15 with target_insns 104 / build_insns 105. Ledger floor 15 confirmed.
+
+- [s19] loop dump for func_8003C714: 'Loop from 28 to 170: 62 real insns.' / 'Insn 48: regno 87 (life 1), move-insn savings 1  moved to 225' (0x91A2B3C5, /1800) / 'Insn 66: regno 93 (life 35), move-insn savings 1  moved to 227' (0x88888889, /30 and /60). The target hoists reg 93 and leaves reg 87 in the loop.
+
+- [s19] threshold = 122 without a call and 61 with one (n_non_fixed_regs = 60, pinned by the code6cac_c2.loop:8337 neighbour that prints five life-1/savings-1 movables not desirable at insn_count 72).
+
+- [s19] With a call the requirement is insn_count >= 62 and the baseline is already 62 - the margin is exactly one instruction, so a byte-free CALL_INSN alone is sufficient.
+
+- [s19] Without a call the requirement is insn_count >= 123, and that is REACHABLE byte-free: a 52-statement dead scalar chain and an 8-statement dead constant-division chain both measure sandbox score 0 (build_insns 104 == target_insns 104).
+
+- [s19] Density measurements for byte-free counted insns: about 1.2 per dead scalar statement, about 7.6 per dead constant division.
+
+- [s19] cse1 performs no dead-code elimination (the dead chains survive it and are counted at loop.c time), but it does fold redundant live expressions inside our single-basic-block loop, so the byte-free insn_count filler has to be dead code rather than redundant code.
+
+- [s19] asm/funcs/func_80035280.s carries a byte-identical loop body (0x88888889 hoisted at 8003531C, 0x91A2B3C5 in-loop at 80035330, same four stores at +0x21..+0x24, same 8-byte stride, same slti 3 tail, 58 insns against our 56). The idiom that leaves the /1800 magic in the loop is shared between the two functions and lives inside the loop body itself; func_80035280's extra preceding loop is not the explanation, since func_8003C714 has no second loop and behaves the same.
+
+- [s19] func_8001CD68 (COMPLETED-C, src/code6cac.c:1122) is the matched sibling formatter; its spelling does not transplant (it reuses minutes for seconds and carries a 0x2BF1F clamp), but it corroborates the candidate's arithmetic.

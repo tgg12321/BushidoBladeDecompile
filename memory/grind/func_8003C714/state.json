@@ -1,7 +1,7 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 18,
+ "session_count": 19,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -111,23 +111,29 @@
    "floor": 15,
    "modality": "rederive",
    "headline": "Rederive: the whole 18-session residual reduces to one inequality read out of loop.c source - insn_count must reach 123 (no call) or 62 (call), because the magic movable's savings and lifetime are BOT"
+  },
+  {
+   "session": 19,
+   "floor": 15,
+   "modality": "rederive",
+   "headline": "Rederive: the insn_count axis is OPEN, not capped at 64 - a dead scalar chain reaches insn_count 134 and sandbox 0 with no call, no DImode and no declaration change, so the two declaration puns are no"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "combine_movables' match/done path is unexplored: a movable that combine_movables marks 'done ... matches N' is skipped by the move test at loop.c:1584 entirely, never reaching the threshold inequality at all.",
-   "mechanism": "loop.c:1245-1290 pairs movables that load the same value into different pseudos, setting the later one's match pointer and done flag and folding its lifetime and savings into the survivor. move_movables' outer guard is 'if (!m->done && ...)', so a matched movable is never tested against threshold * savings * lifetime. This session observed the shape in the wild: c_innerfirst's dump prints 'Insn 82: regno 94 (life 1), done move-insn matches 33' alongside a survivor whose savings had risen to 2. The unknown is what the pass emits for a matched movable when the SURVIVOR itself is not moved, and whether reg_map's substitution can leave the constant materialised in-loop byte-neutrally.",
-   "next_probe": "Force a second in-loop pseudo holding 0x91A2B3C5 (for example by spelling a second division by 1800 whose dividend cse1 cannot prove equal to the first), read the .loop dump for the match/done lines and for whether the survivor is 'not desirable', and measure asm_lines and sandbox. Then repeat with the survivor placed so it fails the threshold test, to see whether both copies stay in-loop and what that costs in bytes."
+   "hypothesis": "The residual is now a pure admissibility question with a measured price tag: roughly 61 counted byte-free insns of DEAD computation in the loop, or one byte-free CALL_INSN. The cheapest measured currency is the dead constant division at about 7.6 counted insns each - eight of them suffice.",
+   "mechanism": "cse1 does not DCE, so dead integer arithmetic on a local that is never read survives into loop.c's count_loop_regs_set and is then removed by flow.c after loop_optimize at zero byte cost. loop.c:1631 then evaluates 122*1*1 >= insn_count as false once insn_count reaches 123, leaving the 0x91A2B3C5 movable materialised in-loop exactly as the target has it.",
+   "next_probe": "Hunt for a NATURAL dead quantity of roughly the right size rather than more padding families. The strongest lead is that func_80035280 shares the loop byte for byte, so the dead computation is part of the shared record-formatting idiom: sweep every BB2 reader/writer of the 8-byte records at 0x80106A58 and of the +0x21..+0x24 fields of the func_80077D00 record for a wider or per-record quantity (a running total, a rank comparison, a per-record checksum) that this loop computes and does not store. Six to eight dead constant divisions, or one dead division-heavy sub-expression, is the size to look for."
   },
   {
-   "hypothesis": "The threshold-halving route is now purely an admissibility question, and the only admissible version of it would be a value this function genuinely computes and genuinely discards.",
-   "mechanism": "The two class kills recorded this session (loop.c:2199 and flow.c:1484) show that any byte-free CALL_INSN in the loop must be a libcall block with a dead result. The Judge's standing constraint bans gratuitous float/long-long cast chains whose sole purpose is to emit a libcall, and the 2026-09-05 layer-1 FAIL rejected the DImode dead store. So the axis is not blocked by mechanism but by the absence of a natural dead DImode or float quantity in a function that formats a 30 Hz frame count into minutes, seconds and hundredths.",
-   "next_probe": "Before spending another carrier design on this, settle the semantics question from outside the compiler: sweep the other BB2 call sites that write the same display struct (offsets 0x21-0x24 and 0x2D-0x30 of the func_80077D00 record) and the sibling record readers of D_80106A58 - func_80035280 is still INCLUDE_ASM and reads the same base - for evidence that the original code computed a wider intermediate (a centisecond total, a rank, a checksum) that this function does not store. A negative census is itself a citable result for the eventual foreclosure record."
+   "hypothesis": "A single byte-free CALL_INSN in the loop still closes the function on its own, and now provably needs to buy nothing else (baseline insn_count 62 >= 61 already).",
+   "mechanism": "prescan_loop (loop.c:2199-2203) sets loop_has_call for any CALL_INSN between the loop notes; loop.c:532 halves the threshold to 61; flow.c's libcall_dead_p deletes a libcall block with a dead result after loop_optimize and before combine, so it emits nothing. The Judge's standing constraint bans gratuitous float / long long cast chains whose only purpose is to summon a libcall, so the carrier's RHS must be a quantity the function genuinely computes.",
+   "next_probe": "Because insn_count no longer needs to be bought, the carrier can be the SMALLEST possible libcall rather than the 13-statement DImode block s17 built - a single soft-float operation on a naturally-float quantity, for example. Establish first whether the shared idiom has any float in it by checking whether any BB2 function that writes these same record fields uses soft-float libcalls; a negative census is itself citable for the eventual foreclosure record."
   },
   {
-   "hypothesis": "The two declaration puns in candidate.c remain a hard submission blocker on ANY distance-0 body, independent of the floor, and this session's ablation shows the d0 result is load-bearing on one of them.",
-   "mechanism": "candidate.c needs extern u8 D_80106A58[24] at src/code6cac_c2.c:156 to reach 0 - the body alone measures 3 - and D_80106A58 is a per-word splat sub-symbol of g_file_disc_type at 0x80106A54. The aggregate-merge family requires the merge at the DECLARATION in include/*.h with prongs (a)-(e), and prong (c)'s 2026-09-03 amendment requires the sub-symbol rows to carry an alias-of suffix because func_80035280 is still INCLUDE_ASM. A per-use cast is an auto-FAIL, and the current spelling is also on this function's banned_constructs list.",
-   "next_probe": "Prong (a) is satisfiable from base-register and stride evidence rather than splat-name adjacency: the target walks one base register with addiu $a2, $a2, 0x8 at 8003C830 and reads 0x0($a2) and 0x4($a2), an 8-byte stride over a two-field record. Draft the header-canonical merged declaration with the alias-of suffix on the sub-symbol rows and route it as an integration handoff before any candidate-ready, so that a future d0 body is not blocked on it a second time."
+   "hypothesis": "The two declaration puns are off the frontier entirely and should not be re-litigated: a distance-0 body exists on this chassis with src/code6cac_c2.c:156 untouched.",
+   "mechanism": "Measured directly this session - both padded d0 forms keep extern s32 D_80106A58 and the (u8 *)& base cast and still produce build_insns 104 == target_insns 104.",
+   "next_probe": "None needed for func_8003C714. If a future session wants the aggregate merge, it belongs to func_80035280's own record, not to this function's submission path."
   }
  ],
  "judge_constraints": [
@@ -361,6 +367,30 @@
    "measured_on": "compiler source tools/gcc-2.7.2/flow.c at the frozen toolchain revision; no chassis dependence",
    "predicate_cite": "tools/gcc-2.7.2/flow.c:1484",
    "result": "KILLED. Together with the prescan_loop kill this makes the threshold-halving route identically the route 'add a computat"
+  },
+  {
+   "session": 19,
+   "statement": "The s18 measurement that ordinary-C shapes reach at most insn_count 64 without adding a call is a property of the sixteen shapes s18 swept: a chain of ordinary integer statements written into a local ",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, sandbox re-measured this session at score 15 / target_insns 104 / build_insns 105 for the clean body; no FAKE construct present in any measured form",
+   "predicate_cite": "",
+   "result": "KILLED as a ceiling claim. The axis itself is open and measured reachable; what is missing is an admissible spelling of "
+  },
+  {
+   "session": 19,
+   "statement": "Both distance-0 forms measured this session keep 'extern s32 D_80106A58;' at src/code6cac_c2.c:156 exactly as HEAD has it, spell the loop base as base = (u8 *)&D_80106A58, and store D_80101ED2 without",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05; no FAKE construct present, no header edit, src/code6cac_c2.c:156 unchanged",
+   "predicate_cite": "",
+   "result": "KILLED. The brief's third frontier item - the two declaration puns as a hard submission blocker - does not hold on this "
+  },
+  {
+   "session": 19,
+   "statement": "The COMPLETED-C sibling func_8001CD68 (src/code6cac.c:1122), which func_8003C714 calls immediately after its loop and which formats the same 30 Hz frame count, spells seconds as 'val / 30 - minutes * ",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, byte-level comparison against a COMPLETED-C sibling; no FAKE construct present",
+   "predicate_cite": "",
+   "result": "KILLED as a transplant; CONFIRMED as corroboration that the candidate's (x/30) % 60 and (x % 30) * 100 / 30 are the righ"
   }
  ],
  "reviewer_history": [
