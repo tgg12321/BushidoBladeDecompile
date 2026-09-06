@@ -141,3 +141,67 @@ func_8008B488 is INCLUDE_ASM, so the prototype has no caller-side codegen.
 - [s2] The divmod-coalesce-reuse-var spelling is NOT required here: plain `oct = absdiff / 1536; rem = absdiff % 1536;` = 0. But `%` is load-bearing (`absdiff - oct * 1536` = 36) and so is the quotient-first statement order (`%` before `/` = 37).
 
 - [s2] MATCHED: floor 0, full-build verify-oracle ok:true, pure C, no FAKE constructs, no sanctioned-family claim. self_vet.md written.
+
+## s2b (2026-09-06, permuter-modality session; sweep_variants substitute) — floor 2 -> 0 WITHOUT the banned casts
+
+The prior s2 body reached 0 with per-arm `(u16)` casts; layer-1 FAILed it and both
+the cast and "per-arm (u16) narrowing for a second static set" are now BANNED for
+this function. This session re-opened the residual from the score-2 chassis (u16
+`base`/`atten` written in both arms, widened once at the call = 2) and attacked it
+with a DIFFERENT lever: put the second static set on a BORROWED pre-existing local
+instead of on the call receiver.
+
+- CHASSIS RE-MEASURED at session start: `inline u32 _spu_2pitch(u32,u32)` + the
+  s1 vF body = score 2 (matches the ledger). Sibling still 0.
+- SIBLING SIGNATURE PROBE (new, kills a natural hypothesis): the post-join
+  `andi $a2,$v0,0xFFFF` is NOT the callee truncating a `u16` parameter. Declaring
+  `inline u32 _spu_2pitch(u16 atten, u32 rem)` gives sandbox _spu_2pitch = 1 and
+  _spu_note2pitch = 22. The andi is the CALLER-side widening of a u16 value into
+  the u32 parameter, exactly as s1 attributed it.
+- 24 hand-written forms swept (tmp/grind/_spu_note2pitch/s2/sweep_results.txt):
+    0   `u16 atten` arms + `diff = atten;` + `_spu_2pitch(diff, ...)`   <-- CHOSEN
+    0   same staging with the arms writing a dead u16 PARAM (cen_fine / cen_note /
+        note / fine) instead of a fresh `atten`
+    0   `u16 up` / `u16 dn` per arm + `atten = up;` / `atten = dn;` duplicated
+        into the arms (a second spelling of the banned "two sets on the receiver")
+    2   baseline vF; `_spu_2pitch(atten & 0xFFFF, ...)`; decl-order permutations;
+        arms into a dead u16 param staged through a FRESH u32 receiver
+    3   no u16 anywhere (arms write `diff` directly — no andi is emitted at all)
+    5   staged through `absdiff`
+    6   clamp written as a return ternary
+    8   staged through `tgt`; `_spu_2pitch(diff >= 0 ? up : dn, ...)`
+   16   staged through `pitch` (actual overlaps the call target; integrate.c:1305)
+   18   vF with the rem abs hoisted into a named s32 local
+   28   staged through `cen` or `oct`
+   37   the `_spu_2pitch` call duplicated into both arms
+   37   the whole tail (call + clamp + return) duplicated into both arms
+- WHAT THE SWEEP PROVES about the mechanism: a FRESH u32 receiver written once
+  after the join scores 2 even when the arms write a dead u16 param (i.e. the
+  arms' set count is irrelevant); staging the same value through a PRE-EXISTING
+  two-set local scores 0. So the property that matters is exactly
+  `reg_n_sets[dest of the andi] > 1`, confirming s1's attribution
+  (tools/gcc-2.7.2/sched.c:2504-2535 birthing_insn_p / adjust_priority) from a
+  second, independent direction.
+- WHICH local matters: only `diff` gives 0. `absdiff` = 5, `tgt` = 8, `cen` = 28,
+  `oct` = 28, `pitch` = 16. `diff` is the variable the target keeps in $a2 across
+  the sign branch, so borrowing it reproduces the seat as well as the order
+  (`andi $a2,$v0,0xFFFF`). The staging point is safe: `diff`'s last read is the
+  `if (diff >= 0)` arm selection, and nothing reads it afterwards.
+- FAMILY: this is .claude/rules/staged-value-reused-variable.md verbatim — a real,
+  immediately-consumed value staged through an existing currently-dead local to fix
+  instruction order, whose Origin section names `sched.c adjust_priority ->
+  birthing_insn_p` / `reg_n_sets[regno] == 1` as THE mechanism. FAKE-annotated in
+  the body; self_vet.md carries the six-test vet and the bounds check.
+- FINAL: sandbox _spu_note2pitch --disable all = 0, sandbox _spu_2pitch = 0, full
+  `verify-oracle` ok:true, with memory/grind/_spu_note2pitch/candidate.c in place
+  in src/main.c.
+
+- [s2b] The post-join `andi $a2,$v0,0xFFFF` is caller-side widening, not a callee u16 parameter: `inline u32 _spu_2pitch(u16 atten, u32 rem)` measures sibling 1 / note2pitch 22.
+
+- [s2b] The residual is decided purely by `reg_n_sets` of the andi's DESTINATION, not by how many sets the arms' variable has: a fresh u32 receiver written once after the join scores 2 even when the arms write a multi-set dead u16 param, while staging the same value through the pre-existing two-set `diff` scores 0.
+
+- [s2b] Carrier choice is not free: staging through `diff` = 0, `absdiff` = 5, `tgt` = 8, `pitch` = 16, `cen` = 28, `oct` = 28. `diff` is the local the target keeps in $a2 across the sign branch.
+
+- [s2b] Duplicating the call (37) or the whole tail (37) into both arms is far worse than the baseline 2 — jump2 cross-jumping does not re-merge a duplicated inlined body here.
+
+- [s2b] MATCHED without any banned construct: floor 0, verify-oracle ok:true, one FAKE-annotated staged-value-reused-variable borrow (`diff = atten;`) as the only exception-family construct.

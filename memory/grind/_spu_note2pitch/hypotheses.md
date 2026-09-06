@@ -103,3 +103,43 @@
 
 ## [s2] H8 (s1 frontier 2, respell the sibling to make `ratio`'s init single-set) — not needed; never measured, and now moot: the residual closed from the caller side without touching the sibling, which stays byte-identical with only the GNU89 `inline` keyword added.
 - verdict: CONFIRMED (moot)
+
+## s2b (2026-09-06, permuter modality -> sweep_variants; the banned-cast rework)
+
+## [s2b] The target's post-join `andi $a2,$v0,0xFFFF` is the callee truncating a `u16` first parameter of `_spu_2pitch`, so declaring the sibling `inline u32 _spu_2pitch(u16 atten, u32 rem)` produces it without any caller-side construct.
+- mechanism: integrate.c would emit the parameter truncation inside the integrated copy rather than the caller emitting a widening.
+- probe: change the sibling's first parameter to u16, sandbox both _spu_2pitch and _spu_note2pitch.
+- result: sandbox _spu_2pitch = 1 (the sibling's own bytes break) and _spu_note2pitch = 22. The andi is caller-side widening.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06 with the s1 vF body (u16 base widened at the call); no FAKE constructs present
+
+## [s2b] Duplicating the `_spu_2pitch` call, or the whole call+clamp+return tail, into both arms of the sign branch gives per-arm widenings that jump2 cross-jumping re-merges into the target's single post-join andi.
+- mechanism: jump2 cross-jump tail merging of two identical arm tails (the mechanism s2 credited for the banned per-arm-cast form).
+- probe: forms vB_call_dup_arms and vE_return_dup_arms, sandbox _spu_note2pitch --disable all.
+- result: 37 and 37 (baseline 2). The integrated copy is duplicated and not re-merged.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06 with the inline _spu_2pitch chassis; no FAKE constructs present
+
+## [s2b] Cast-free respellings that keep a single post-join widening (mask at the call `atten & 0xFFFF`, declaration-order permutations, a ternary actual `diff >= 0 ? up : dn`, a named local for the rem abs, the clamp as a return ternary) reach the target order.
+- mechanism: none of them changes reg_n_sets of the andi's destination; sched.c adjust_priority still boosts the single-set parm-copy pseudo.
+- probe: forms vD_mask_at_call, vI_declorder, vG_ternary_actual, vF_named_absrem, vH_clamp_expr, sandbox each.
+- result: 2, 2, 8, 18, 6. None improves on the baseline 2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06 with the inline _spu_2pitch chassis; no FAKE constructs present
+
+## [s2b] Making the arms write a multi-set variable is what defeats the birthing boost, so writing them into a dead u16 PARAMETER (already set once by the call) and widening once into a fresh u32 receiver reaches the target order without any borrow.
+- mechanism: if the arms' own set count mattered, a 3-set u16 param would suffice.
+- probe: form vY_atten_from_cenfine (`cen_fine` written in both arms, `atten = cen_fine;` once after the join), sandbox.
+- result: 2 — identical to the baseline. The set count that matters is that of the andi's DESTINATION, not of its source.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06 with the inline _spu_2pitch chassis; no FAKE constructs present
+
+## [s2b] Staging the widened octave attenuation through the pre-existing, currently-dead local `diff` (`diff = atten; pitch = _spu_2pitch(diff, ...);`) makes the andi's destination two-set, so sched.c adjust_priority does not boost it, the pair falls to the LUID tie-break, and the function matches byte-for-byte without any cast.
+- mechanism: tools/gcc-2.7.2/sched.c:2504-2535 birthing_insn_p (`reg_n_sets[i] == 1` on a live dest) feeding adjust_priority's LAUNCH_PRIORITY boost; the backward list scheduler emits a boosted insn LAST, which is the wrong order for this pair. Family: .claude/rules/staged-value-reused-variable.md.
+- probe: forms vR_diff_recv / vY_diff_recv_atten and the carrier sweep (absdiff, tgt, cen, oct, pitch), sandbox _spu_note2pitch --disable all, then sandbox _spu_2pitch and full verify-oracle.
+- result: `diff` = 0; absdiff = 5; tgt = 8; pitch = 16; cen = 28; oct = 28. With `diff`: sandbox _spu_note2pitch = 0, sandbox _spu_2pitch = 0, verify-oracle ok:true.
+- verdict: CONFIRMED

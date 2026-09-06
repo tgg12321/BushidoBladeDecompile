@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "_spu_note2pitch",
-      "file": "main",
-      "distance": 39,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800644FC",
       "file": "text1b",
       "distance": 39,
@@ -1624,14 +1616,14 @@
     }
   ],
   "counts": {
-    "total": 183,
-    "active": 175,
+    "total": 182,
+    "active": 174,
     "by_status": {
-      "active": 175,
+      "active": 174,
       "foreclosed": 8
     },
     "by_verdict": {
-      "C": 148,
+      "C": 147,
       "ASM-PARTIAL": 27
     }
   }

@@ -74,6 +74,13 @@
    "hash": "9b2590129810b97d",
    "when": "2026-09-06T05:17:40.361686+00:00",
    "summary": "The down-shift arm's `(u16)(0x1000 >> oct)` cast is a self-admitted no-op width cast whose sole purpose is to give `atten` a second static set that defeats sched.c's birthing_insn_p reg_n_sets==1 boost -- a redundant-width-cast GCC-internals lever, a family the 2026-07-01/2026-08-18 SOTN surveys exp"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "2d6fc71a77264cd3",
+   "when": "2026-09-06T05:34:47.541110+00:00",
+   "summary": "final call: Diff touches src/main.c only (no pipeline/output-rewriting surface). Constructs: (a) GNU89 `inline` on the sibling _spu_2pitch \u2014 ordinary C, and the target's tail IS the integrated copy (hypotheses H2"
   }
  ]
 }

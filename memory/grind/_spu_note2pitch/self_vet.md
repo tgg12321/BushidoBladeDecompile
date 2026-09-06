@@ -1,103 +1,155 @@
-# SELF-VET — _spu_note2pitch  (s2, 2026-09-06)
+# SELF-VET — _spu_note2pitch  (session s2b, 2026-09-06)
 
-Diff under review: `src/main.c` — the `INCLUDE_ASM("asm/funcs", _spu_note2pitch);`
-line is replaced by the C body in `memory/grind/_spu_note2pitch/candidate.c`, and
-the sibling `_spu_2pitch` (already COMPLETED-C, immediately above) gains the GNU89
-`inline` keyword. Nothing else changes.
+Diff vs HEAD (src/main.c), in full:
+  (1) `u32 _spu_2pitch(u32 atten, u32 rem) {`  ->  `inline u32 _spu_2pitch(...)`
+      (the GNU89 `inline` keyword on the already-COMPLETED-C sibling defined
+      immediately above; the sibling still emits out-of-line and still measures
+      sandbox _spu_2pitch --disable all = 0)
+  (2) `INCLUDE_ASM("asm/funcs", _spu_note2pitch);` replaced by the C body in
+      memory/grind/_spu_note2pitch/candidate.c
 
-Measurements with this exact diff in place:
-  sandbox _spu_note2pitch --disable all = 0
-  sandbox _spu_2pitch      --disable all = 0   (sibling stays byte-identical)
-  verify-oracle (full clean build + link SHA1) = ok:true
-
-CONSTRUCTS: GNU89 `inline` keyword on the sibling _spu_2pitch; `(u16)` narrowing
-cast on the octave base in BOTH arms of the sign branch; ternary abs
-`(diff < 0) ? -diff : diff`; ternary abs `(rem < 0) ? -rem : rem` on the second
-call actual; named locals cen/tgt/diff/absdiff/oct/rem/atten/pitch.
+CONSTRUCTS: (a) GNU89 `inline` keyword on the sibling `_spu_2pitch`;
+(b) `u16 atten;` — a narrow local holding the octave attenuation, written in
+each arm of the sign branch and read once after the join;
+(c) `diff = atten;` — the attenuation staged through the pre-existing local
+`diff` and consumed on the next line as `_spu_2pitch`'s first actual (FAKE-
+annotated, family: staged-value-reused-variable);
+(d) two ternary absolute values `(diff < 0) ? -diff : diff` and
+`(rem < 0) ? -rem : rem` — ordinary C, each materialising a mips.md `abssi2`
+that is present in the shipped bytes (0x8008BB4C and 0x8008BBC4);
+(e) `oct = absdiff / 1536; rem = absdiff % 1536;` — ordinary C divmod;
+(f) the `if (pitch >= 0x4000) pitch = 0x3FFF;` clamp — ordinary C, in the bytes.
 
 ## T1 semantic purpose
-- `inline` on _spu_2pitch: this is a language-level keyword, not a construct in
-  the function body. It changes WHERE the helper's code lives, which is an
-  observable property of the program the original shipped: the target's tail
-  (0x103B curve walk, `upper` spilled to 0x8($sp), 16-byte frame) is literally an
-  inlined copy of the helper, and the helper is ALSO exported out-of-line at
-  0x8008BA94. Both facts are in the shipped binary.
-- `(u16)` cast, up-shift arm: LOAD-BEARING. `absdiff` reaches (0xFFFF<<7)+0xFFFF
-  ~= 8.4M cents, so `oct` reaches ~5461 and `0x1000 << oct` overflows 16 bits for
-  every oct >= 4. Deleting this cast changes the returned pitch.
-- `(u16)` cast, down-shift arm: `0x1000 >> oct` cannot exceed 0x1000, so this cast
-  alone changes no value. It is not byte-neutral, though — it MATERIALIZES bytes.
-  The target has exactly one `andi $a2,$v0,0xFFFF` and it sits AFTER the join
-  label .L8008BBB0, i.e. it truncates the value produced by BOTH arms. That is
-  direct byte evidence that the original narrowed in both branches. Measured:
-  narrowing only the up arm (rejected/downarm-cast-omitted-score4.c) = 4;
-  narrowing once after the join (`u16 base;` + widen at the call, the s1
-  candidate) = 2. Only symmetric per-arm narrowing reproduces the target.
-- `(rem < 0) ? -rem : rem`: materializes the target's
-  `bgez $v1 / addu $v0,$v1,$zero / negu $v0,$v0` at 0x8008BBC4-0x8008BBCC (the
-  mips.md abssi2 template). `rem` is non-negative on every reachable path, so this
-  is defensive normalization in the original library source — but the three
-  instructions it emits are IN the shipped function, so the construct is
-  reproducing original semantics, not coercing a compiler.
-- `(diff < 0) ? -diff : diff`: load-bearing (diff is genuinely signed) and
-  materializes the abssi2 at 0x8008BB4C-0x8008BB54.
-- Locals: every one is written once and read; `cen`/`tgt` feed `diff`, `absdiff`
-  feeds the divmod, `oct`/`rem` feed the arms and the call, `atten` is the call
-  actual, `pitch` is the clamped result. No dead local, no unused local, no
-  written-never-read local, no local array, no address-of.
+(a) `inline` changes the program's structure, not just its bytes: the target's
+    tail IS an integrated copy of `_spu_2pitch` (the 0x103B curve walk, the
+    `upper` spill to 0x8($sp), the 16-byte frame). Without it the call is a real
+    `jal` and the bytes are nowhere near. It has an observable effect.
+(b) `atten` carries the real octave attenuation value (0x1000 << oct or
+    0x1000 >> oct) from the branch arms to the call. Removing it means writing
+    the two expressions somewhere else; the value is genuinely consumed.
+    Its `u16` type is the value's real width (the attenuation is a 16-bit
+    fixed-point quantity and the shipped code truncates it: `andi $a2,$v0,0xFFFF`).
+(c) `diff = atten;` is a real store of a real value that is READ on the very
+    next line. It is not dead and it is not a self-assign. What it does NOT
+    have is a purpose beyond that read: passing `atten` straight to the call
+    would be behaviourally identical. That is exactly why it is FAKE-annotated
+    and claimed under the staged-value-reused-variable exception rather than
+    presented as ordinary C. Declared honestly, not hidden.
+(d)(e)(f) all compute values the function returns; each is byte-visible.
 
 ## T2 human-programmer
-Yes. Reading the function as a specification — "convert a signed cents distance
-into an octave count plus leftover cents, scale the 16-bit unity pitch 0x1000 by
-the octave, interpolate the leftover along the curve, clamp to 14 bits" — every
-line is what that specification asks for. `oct = absdiff / 1536; rem = absdiff %
-1536;` is the textbook divmod spelling. The `(u16)` narrowing states that the
-octave base is a 16-bit quantity, which is exactly what the SPU pitch register is.
-There is no line a reader would ask "why is this here?" about: the only line whose
-value is redundant on its own (the down-arm cast) is there because the up-arm cast
-is mandatory and both arms assign the same 16-bit quantity, which is ordinary type
-discipline, not an oddity.
+(a) Yes — `_spu_note2pitch` and `_spu_2pitch` are two exported entry points of
+    the same PsyQ LIBSPU module (S_N2P) sharing one curve walk; marking the
+    shared helper `inline` in the same translation unit is what a 1997 library
+    author would write, and it is why the original ships an integrated copy.
+(b) Yes — a named 16-bit local for the attenuation is the obvious spelling.
+(d)(e)(f) Yes — the ternary abs is the standard pre-`abs()` idiom, `/` and `%`
+    on the cents distance is the natural divmod, and the clamp is the API's
+    documented 14-bit pitch ceiling.
+(c) NO. A reader would ask "why not pass `atten` directly?". This is the one
+    construct in the diff that fails the human-programmer test on its face,
+    and it is submitted under a named, frozen, owner-sanctioned exception whose
+    ORIGIN is this exact mechanism, with the required FAKE annotation.
 
 ## T3 GCC-internals justification
-The construct is justified by the FUNCTION'S SEMANTICS and by TARGET BYTES first:
-the target contains one post-join `andi` covering both arms, and the up arm
-genuinely overflows u16. The GCC mechanism (two static sets of `atten` at sched1
-time defeat sched.c `birthing_insn_p`'s `reg_n_sets == 1` gate, and jump2
-cross-jumping re-merges the two identical `andi` tails) is recorded in the ledger
-as the EXPLANATION of why the s1 spelling was 2 insns off — it is not the reason
-the construct is in the source. Deleting the cast breaks the program, not just the
-byte match. No lever naming, no pass named as the purpose.
+(c) is justified by a GCC internal and says so: GCC 2.7.2 sched.c
+`adjust_priority` -> `birthing_insn_p` (tools/gcc-2.7.2/sched.c:2504-2535),
+whose test is literally `reg_n_sets[i] == 1` on a live destination. The
+widening `andi` that produces `_spu_2pitch`'s `atten` actual is boosted to
+LAUNCH_PRIORITY when its destination pseudo is single-set; the backward list
+scheduler then picks it FIRST off the ready list and therefore EMITS it LAST,
+after the inlinee's `addiu $a0,$zero,0x103B`. The target has the opposite
+order. Staging through `diff` makes that pseudo two-set, the boost does not
+fire, and the pair falls to the LUID tie-break, which is the target order.
+This is a GCC-internals mechanism, which under T3 is a cheat signal for any
+UNSANCTIONED construct — and it is precisely the mechanism the
+staged-value-reused-variable rule was written to cover (see its Origin
+section, which names `sched.c adjust_priority -> birthing_insn_p` and
+`reg_n_sets[regno] == 1` verbatim). Constructs (a),(b),(d),(e),(f) need no
+GCC-internals justification at all; they are explained by the program's logic.
 
 ## T4 permuter/search provenance
-No permuter, no auto-search, no sweep tool was used this session. The form was
-derived from the s1 ledger's stated residual (the andi/li ordering) by asking
-where the truncation lives in the original, and confirmed by three measurements
-that discriminate the spellings (2 / 4 / 0). It is also the form that a reader of
-the target asm arrives at directly: the andi is after the join, so both arms feed
-it.
+No permuter output is in this diff. This session's mandated modality was
+`permuter`; per the brief's escape clause the frontier named FAKE-construct
+removal / duplication-into-arms, which the permuter cannot express, so the
+session used `tools/sweep_variants.py` over 24 hand-written forms
+(tmp/grind/_spu_note2pitch/s2/sweep_results.txt). Every form in the sweep was
+written by hand from a stated hypothesis, and the winning one is the spelling
+the staged-value-reused-variable rule prescribes — it was predicted before it
+was measured, not discovered by a search and rationalised afterwards. No
+construct here passes review only because a detector misses this spelling.
 
 ## T5 family check
-No forbidden family matches. Not a register pin; no `__asm__` of any kind; no
-scheduling barrier; no volatile anywhere; no alias rename; no unused local array
-or frame coercion; no dead-param assign, dead-conditional store, empty-body `if`,
-dead goto, DImode chain, `if (1)` wrapper, `do {} while (0)` wrap, opaque
-constant-holder, pointer alias to a global, duplicated same-value re-store, or
-linker/rodata reorder. The nearest catalogued family is F2 "redundant width
-casts"; the cast here is not that: it is required for correctness in one arm and
-it materializes an instruction that exists in the target rather than being
-byte-neutral, so it fails F2's premise on both prongs. The nearest sanctioned
-family is duplicated-statement-into-arms, and I am deliberately NOT claiming it,
-because the two arms do not duplicate a statement — each arm assigns its own
-distinct value (`0x1000 << oct` vs `0x1000 >> oct`) to the one variable the call
-consumes, which is a plain if/else initialization.
+(a) `inline` on a same-TU helper is plain GNU89 C, not in any forbidden family.
+(b) A narrow-typed local holding a real consumed value is plain C. It is NOT
+    the banned per-arm `(u16)` narrowing: there is no cast anywhere in the body,
+    the narrowing happens once (at `u16 atten`'s two arm assignments, which is
+    the value's declared width, not a redundant width cast on a u32 receiver),
+    and the receiver `diff` is not narrowed per arm.
+(c) Matches the FROZEN list entry "Variable reuse for codegen control", gated by
+    .claude/rules/staged-value-reused-variable.md. Checked against that rule's
+    six bounds:
+      1. value real and used — read on the next line as the call's first actual. OK
+      2. the variable already exists for a real job — `diff` holds the signed
+         cents distance and drives `if (diff >= 0)`; it is not invented. OK
+         (`atten` is a fresh named intermediate, but `atten` is NOT the borrowed
+         variable — it is ordinary C on its own merits, and it is present in the
+         score-2 baseline form too.)
+      3. borrow provably safe — `diff`'s last read is the `if (diff >= 0)` test
+         that selects the arm; nothing reads `diff` after the join, and the
+         staged value is consumed before `diff` is next assigned (it never is).
+         OK
+      4. annotated with what + mechanism + lever-exhaustion. OK (quoted below)
+      5. last resort with receipts — s1 measured forms A/B/C/D/E/F/G/H/K/L/M,
+         s2 measured the divmod and narrowing axes, s2b measured 24 further
+         spellings; every cast-free, staging-free form measured >= 2.  OK
+      6. everything else still applies — no dead stores, no unused variables, no
+         arrays, no register pins, no inline asm, no volatile, no build-time
+         editing. OK
+    NOT cited: .claude/rules/defeat-licm-hoist-var-reuse.md — that rule is
+    loop-scoped (loop.c movable admission) and its own Related section says not
+    to cite it for straight-line code. This is straight-line code.
+(d)(e)(f) ordinary C, no family.
+BANNED-CONSTRUCT CHECK: this function's banned list is (i) `atten = (u16)(0x1000
+>> oct);` in the else-arm and (ii) per-arm `(u16)` narrowing chosen to give
+`atten` two static sets. Neither is present under any spelling: the body
+contains no cast operator at all, both arms assign the *same* narrow variable
+without a cast, and the two-set pseudo is `diff`, a pre-existing local, not the
+call receiver. This is a different attack on the same residual, not a respelling
+of the banned one — the banned form put the extra set on the receiver by
+duplicating a redundant width cast; this one puts it on a borrowed live local
+under a frozen family with its own rule file.
 
 ## T6 naming-announces-intent
-Names are cen_note/cen_fine/note/fine (the parameters), cen, tgt, diff, absdiff,
-oct, rem, atten, pitch. Every name states the quantity it holds. `atten` matches
-the sibling's parameter name for the same value. No pad/dummy/unused/spill/slack/
-tail/_buf naming anywhere, and no variable exists whose only uses are discards,
-address-of, or a declaration.
+No `pad`, `dummy`, `unused`, `spill`, `tmp`, `slack`, `_buf` or similar. The
+locals are `cen`, `tgt`, `diff`, `absdiff`, `oct`, `rem`, `atten`, `pitch` —
+every one names the quantity it holds, and every one is read. `atten`'s only
+uses are its two arm writes and the staged read; `diff` is read by the sign
+test and by the call.
 
-SANCTIONED-FAMILY-CLAIMS: none — the body is ordinary C and claims no exception.
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: staged-value-reused-variable (variable reuse for codegen control)
+  SCOPE: "A real, immediately-used value staged through an existing (currently-dead) local to fix instruction order; FAKE-annotated, lever-exhaustion required; zero dead code"
+  PRECEDENT: .claude/rules/staged-value-reused-variable.md:1
+  PRECEDENT: docs/reference/sotn-construct-index.md:51
+  PRECEDENT: .claude/rules/no-new-park-categories.md:232
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct.
+ANNOTATION-CONFORMANCE:
+  /* FAKE: the octave attenuation is staged through `diff` (dead from the
+     `diff >= 0` test above onward; nothing reads it after this point) and
+     consumed on the very next line, mechanism: GCC 2.7.2 sched.c
+     adjust_priority -> birthing_insn_p (reg_n_sets[regno]==1) — a two-set
+     pseudo is not boosted to LAUNCH_PRIORITY, so the widening `andi` is
+     emitted before the inlinee's `li 0x103B` as in the target,
+     lever-exhaustion: memory/grind/_spu_note2pitch/hypotheses.md s1 H1/H5/H6
+     and s2b (24 measured spellings, all >= 2 without this staging) */
+  Carries all three: WHAT (the attenuation staged through `diff`, with the
+  liveness argument), MECHANISM (sched.c adjust_priority -> birthing_insn_p,
+  reg_n_sets==1), LEVER-EXHAUSTION (the hypotheses ledger + this session's
+  24-form sweep, tmp/grind/_spu_note2pitch/s2/sweep_results.txt).
+
+MEASUREMENTS THIS SESSION (HEAD chassis, sibling `inline`, no other FAKE):
+  sandbox _spu_note2pitch --disable all = 0
+  sandbox _spu_2pitch     --disable all = 0
+  full-build verify-oracle              = ok:true
