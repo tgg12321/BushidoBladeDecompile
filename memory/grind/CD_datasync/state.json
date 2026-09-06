@@ -881,6 +881,14 @@
    "at": "2026-09-05T19:39:10.478122+00:00",
    "headline": "func_80034F88 byte-matches: sandbox score 0 (49/49) AND full-build SHA1 == oracle; the only thing left is a scope_allow.txt line for the honest header-canonical array declaration (integration handoff,",
    "consumed": null
+  },
+  {
+   "from": "func_800770B8",
+   "floor": 3,
+   "session": 31,
+   "at": "2026-09-06T22:17:04.967151+00:00",
+   "headline": "Class B CLOSED after 31 sessions: floor 5 -> 3. A dead store to the local p_old between the 0x4 store and the 0x30/0x34 clears denies local-alloc's combine_regs its reg_n_deaths==1 precondition, so th",
+   "consumed": null
   }
  ]
 }

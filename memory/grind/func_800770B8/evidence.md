@@ -3799,3 +3799,88 @@ price of the C-first order is localised to one 15-row window and nothing leaks p
 - [s30] Kill re-audit: the single FAKE unit remains the empty do { } while (0); prologue fence, it sits in block 0, and every quantity discussed above lives in block 1, so no FAKE carrier occupies a class-B or class-C pseudo. The closest-to-target form was re-measured directly rather than ablated: h3 = 7 on HEAD 6c9ca9fa, identical to its s28 score.
 
 - [s30] Foreclosure record filed this session at docs/grind/decisions.md, entry '## 2026-09-05 - func_800770B8 - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**'.
+
+## [s31] (rederive, 2026-09-06) — the honest floor is 3; class B is closed
+
+**Chassis re-measurement.** HEAD 2fbaa47a. `sandbox func_800770B8 --disable all` on the
+inherited floor body F = score 5, build_insns 175, target_insns 175; on the h3 chassis
+(rejected/s28-classC-paid-ADSC-...) = 7. Both reproduce, so the s30 frontier was current.
+
+**The banked body is now score 3.** `memory/grind/func_800770B8/candidate.c` (applied with
+the two documented byte-neutral caller-side edits: prototype `s32 func_800770B8(s32, s32,
+s32);`, call site `(s32)&D_8009BD24`) measures **3 / 175 / 175**. `tools/fake_ablate.py`
+reports TWO orthogonal FAKE units: keep-all 3, drop the dead store 5, drop the do-while(0)
+prologue fence 8, drop both 10 (`tmp/grind/func_800770B8/ablate/`).
+
+**Row-level residual, transcribed.** With a target-vs-ours row differ that normalises the
+`move`/`addu` and `li`/`addiu` aliases (`tmp/grind/func_800770B8/s31/rows2.py`), the floor
+body F has exactly FIVE differing rows and the banked s31 body has exactly THREE:
+
+    F   35 sw $zero,0x30($s1)   | sw $zero, 0x30($v0)      <- class B, CLOSED in s31
+    F   36 sh $zero,0x34($s1)   | sh $zero, 0x34($v0)      <- class B, CLOSED in s31
+    s31 62 addu $v0,$v0,$v1     | addu $v1, $v1, $v0       <- class C
+    s31 63 addiu $a3,$v0,106    | addiu $a3, $v1, 0x6A     <- class C (follows 62)
+    s31 64 addiu $a1,$v0,126    | addiu $a1, $v1, 0x7E     <- class C (follows 62)
+
+Class C is now a ONE-INSN question: the load and the shift already sit in the target's
+seats ($v0 and $v1); only the sum's DEST register differs, and rows 63/64 are pure
+consequences of it.
+
+**Class B's mechanism, named from the dumps.** `pwsh tools/grinder/dump.ps1 func_800770B8`
+on the d1 body; `tmp/grind/func_800770B8/dumps/text1b.lreg`. The target's prologue window
+(asm/funcs/func_800770B8.s rows 29-38) is:
+
+    addu $v1,$s1,$zero        ; $v1 = the OLD p_old (arg0+0x58)
+    addu $s1,$v0,$zero        ; $s1 = a COPY of the func_8006E49C return value
+    ...
+    sw   $s1, %gp_rel(D_800A36A0)($gp)
+    sw   $v1, 0x4($s1)
+    sw   $zero, 0x30($v0)     ; the clears go through the RAW return value
+    sh   $zero, 0x34($v0)
+
+`$s1` is dead after row 36 and every later reference to the record is a fresh
+`lw %gp_rel(D_800A36A0)` (rows 44, 63, 88, 133, 149, 158, 162, 165) — so there is no
+truthful later USE of `p_old` anywhere in the function that could supply the second death
+naturally. That is the fact that makes the dead store the only remaining lever for class B,
+and it is a new fact: no prior session had transcribed the target's `$s1` liveness.
+
+**Class C's mechanism, named from the dumps.** In `.lreg`, the class-C sum is
+
+    (insn 186 (set (reg:SI 109) (mem:SI (symbol_ref:SI ("D_800A36A0")))))
+    (insn 184 (set (reg:SI 108) (ashift:SI (reg:SI 107) (const_int 1))))
+    (insn 188 (set (reg:SI 110) (plus:SI (reg:SI 109) (reg:SI 108))))   ; BOTH die here
+    (insn 190 (set (reg/v:SI 102) (plus:SI (reg:SI 110) (const_int 106))))
+    (insn 205 (set (reg/v:SI 111) (plus:SI (reg:SI 110) (const_int 126))))
+
+`block_alloc`'s tying loop (local-alloc.c:1240-1299) walks recog_operand 1..n and breaks on
+the first `combine_regs` win, so insn 188's dest ties to reg 109 (the reload) and inherits
+its seat. Two independent ways of denying that tie were measured this session, and BOTH
+work at the tie level:
+  * making the shift the ptrop operand (f1/f2) — flips the tie, wrong seats, 27;
+  * denying reg 109 the `reg_qty >= -2` precondition of local-alloc.c:469-477 by giving it
+    a second death / a second basic block (g1) — flips the tie WITH the target's seats:
+    **rows 60-78 are byte-exact**, the first time in 31 sessions that rows 62-64 have been
+    emitted correctly on the A-first store order. Score 39, priced entirely in rows 38-59
+    (loop head) and 79-89 (the 0x5C/0x60 block).
+
+**Artifacts.** `tmp/grind/func_800770B8/s31/` — gen_b.py / gen_e.py / gen_f.py / gen_g.py /
+gen_final.py (the 26 bodies, in `v/`), run.sh, apply.py, rowdiff.sh, rows2.py (alias-
+normalising row differ), dis.sh, slice.py (dump slicer), bank.py, ledger.py, sweep.log.
+Dumps: `tmp/grind/func_800770B8/dumps/text1b.lreg` (and .combine/.sched/.greg, same run).
+Ablation: `tmp/grind/func_800770B8/ablate/`.
+
+- [s31] HEAD 2fbaa47a chassis re-measured live: floor body F = score 5 / 175 / 175; h3 = 7. Both inherited numbers reproduce.
+
+- [s31] The banked candidate.c (with its two documented byte-neutral caller-side edits) measures score 3 / 175 / 175 - the first floor drop since s22.
+
+- [s31] fake_ablate on the banked body: TWO orthogonal FAKE units. keep-all 3, drop the dead store 5, drop the do-while(0) prologue fence 8, drop both 10.
+
+- [s31] The residual is now exactly three rows, all consequences of one tie: ours `addu $v0,$v0,$v1 / addiu $a3,$v0,106 / addiu $a1,$v0,126`, target `addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E`. The load and the shift ALREADY sit in the target's seats; only the sum's dest differs.
+
+- [s31] NEW FACT (target liveness, transcribed from asm/funcs/func_800770B8.s): $s1 - the p_old copy - is dead after row 36, and every later reference to the record is a fresh lw %gp_rel(D_800A36A0) (rows 44, 63, 88, 133, 149, 158, 162, 165). There is therefore NO truthful later use of p_old anywhere in the function that could supply the second death naturally, which is what forces class B onto the dead-store family.
+
+- [s31] Class C's insn read out of tmp/grind/func_800770B8/dumps/text1b.lreg: insn 186 loads D_800A36A0 into reg 109, insn 184 shifts reg 107 into reg 108, insn 188 is `(set (reg 110) (plus (reg 109) (reg 108)))` with BOTH operands carrying REG_DEAD notes there; insns 190/205 add the 106/126 constants off reg 110.
+
+- [s31] Two independent denials of that tie were measured and BOTH work at the tie level: the ptrop route (f1/f2, right tie / wrong seats / +24 loop-head rows) and the local-alloc reg_qty route (g1, right tie AND right seats, rows 60-78 byte-exact, priced in rows 38-59 and 79-89).
+
+- [s31] Both f1 and g1 pay the SAME rows 38-59 loop-head reschedule, so that collateral is a property of the flipped tie itself, not of either spelling.

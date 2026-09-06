@@ -1,3 +1,57 @@
+/* s31 UPDATE (2026-09-06, rederive).  FLOOR 5 -> 3.  CLASS B IS CLOSED.
+ * Measured live on the HEAD 2fbaa47a chassis: this body =
+ * `sandbox func_800770B8 --disable all` = score 3, build_insns 175, target_insns 175.
+ * The previous floor body (this file without the `p_old = prev;` dead store) re-measures
+ * 5/175/175 on the same chassis, so the 2-point drop is this session's, not inherited.
+ * fake_ablate: TWO orthogonal FAKE units, keep-all 3 / drop-dead-store 5 /
+ * drop-do-while 8 / drop-both 10 (tmp/grind/func_800770B8/ablate/).
+ *
+ * WHAT CLOSED CLASS B (rows 35/36).  The target issues the two prologue clear stores
+ * (0x30 / 0x34) through the RAW func_8006E49C return value in $v0 while the 0x4 store
+ * issues through the saved copy in $s1.  Our body issued all three through $s1 because
+ * the call-result pseudo and the p_old pseudo are a pure copy pair whose used side has
+ * reg_n_deaths == 1, so local-alloc.c's combine_regs coalesces them into one quantity.
+ * A dead store to `p_old` placed BETWEEN the 0x4 store and the clears gives the pseudo a
+ * second death, combine_regs refuses, and the two live ranges get the target's two seats.
+ * Sanctioned family: dead store to a LOCAL (.claude/rules/dead-store-fake-exception.md,
+ * owner ruling 2026-07-01), annotated inline.  POSITION IS LOAD-BEARING: the same dead
+ * store placed AFTER both clears is byte-inert (s31 d7, 5/175), and the SAME-VALUE
+ * spellings are byte-inert too - `p_old = p_old;` (d4), `p_old = (s32 *)((u8 *)p_old);`
+ * (d6) and `p_old = (s32 *)D_800A36A0;` (d5) all measure 5/175, because GCC deletes the
+ * self-assign and cse refolds the global re-read to the same pseudo.  Only a store of a
+ * DIFFERENT value reaches the reg_n_deaths gate; `p_old = prev;` (the previous record
+ * pointer, a live value, mirroring SOTN's `dest = val1; // fake`) is the spelling banked
+ * here.  Nine truthful re-spellings of the whole block were measured first and are all 5
+ * or worse (s31 c1-c9; c1/c4/c5/c9 collapse the callee-save at 170 insns).
+ *
+ * THE WHOLE RESIDUAL IS NOW CLASS C - THREE ROWS, ONE TIE.
+ *   ours   lw $v0,D_800A36A0 ; sll $v1,$v1,1 ; addu $v0,$v0,$v1 ; addiu $a3,$v0,0x6A ...
+ *   target lw $v0,D_800A36A0 ; sll $v1,$v1,1 ; addu $v1,$v1,$v0 ; addiu $a3,$v1,0x6A ...
+ * Identical seats for the load and the shift; only the sum's DEST differs.  In the .lreg
+ * dump this is insn 188 `(set (reg 110) (plus (reg 109 = the reload) (reg 108 = the
+ * shift)))`; block_alloc's tying loop (local-alloc.c:1240-1299) walks operands 1..n with
+ * `if (win) break;`, so the dest ties to the reload and takes its seat.
+ *
+ * TWO MECHANISMS THAT FLIP THAT TIE ARE NOW MEASURED (both cost more than they buy):
+ *   f1/f2 - the c-typeck ptrop route (`(u8 *)(t0*10) + (s32)D_800A36A0 + 0x6A`, and the
+ *     fully-integer `(t0*10) + (s32)D_800A36A0 + 0x6A`): both 27/175.  They DO flip the
+ *     tie, but they seat the load and the shift the other way round ($v0<->$v1) AND they
+ *     reschedule the loop head (rows 38-59).  s9 banked this at score 33 on an older
+ *     chassis; re-audited here, still dead.
+ *   g1 - the local-alloc reg_qty route: name the reload in a local that is SET TWICE
+ *     (once for p_6a/p_7e, once for the 0x5C/0x60 stores that already reload the global),
+ *     so reg_n_deaths == 2 / reg_basic_block == -1 and local-alloc.c:469-477 sets
+ *     reg_qty = -1, which makes combine_regs refuse operand 1 and the tie fall through to
+ *     the shift.  39/175 - but rows 60 THROUGH 78 ARE BYTE-EXACT, class C included: this
+ *     is the first form in 31 sessions that emits rows 62-64 with the target's seats.
+ *     Its price is entirely elsewhere: rows 38-59 (the loop head reschedules exactly as
+ *     in f1) and rows 79-89 (the 0x5C/0x60 block, perturbed by the named local).
+ * The open lever is therefore narrow and named: reach reg_qty[reload] == -1 WITHOUT a
+ * long-lived named local.  g4 (two reads of the global into the same local inside one
+ * block) is refolded by cse and byte-inert at 3; g2 (reusing `base`) 35; g3 (second set
+ * in the tail block) 33.
+ * Detail: evidence.md [s31], hypotheses.md [s31].
+ */
 /* s30 UPDATE (2026-09-05, escalation).  BODY UNCHANGED - still the honest floor.
  * Re-measured live on the HEAD 6c9ca9fa chassis: sandbox func_800770B8 --disable all =
  * score 5, build_insns 175, target_insns 175.  h3 (rejected/s28-classC-paid-ADSC-...) = 7
@@ -367,6 +421,23 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         p_old = (s32 *)func_8006E49C(r, D_800A35D8);
         D_800A36A0 = (u8 *)p_old;
         *(s32 *)((u8 *)p_old + 4) = (s32)prev;
+        /* FAKE: dead store to the local `p_old` (its stored value is never read;
+           GCC DCEs the store - insn count is 175 with and without it).  Without
+           it the func_8006E49C result pseudo and the p_old pseudo are a single
+           copy pair whose used side has reg_n_deaths == 1, so local-alloc.c's
+           combine_regs (local-alloc.c:1784-1946, gated by the reg_qty init at
+           local-alloc.c:469-477) coalesces them into ONE quantity and both the
+           0x4 store and the two 0x30/0x34 clears issue through $s1; the target
+           issues the clears through the raw return value in $v0 (rows 35/36).
+           The extra set gives the pseudo a second death, combine_regs refuses,
+           and the two live ranges get the target's two seats.
+           mechanism: GCC 2.7.2 local-alloc.c combine_regs / reg_n_deaths gate.
+           lever-exhaustion: hypotheses.md class B, s7/s8/s20/s24 (raw-vs-copy
+           store-base spellings), s31 c1-c9 (nine further truthful spellings of
+           the same block, all 5 or worse) and s31 d4-d7 (self-assign, cast
+           self-assign, same-value re-store from the global, and the same dead
+           store placed after the clears - all four byte-inert at 5). */
+        p_old = prev;
         *(s32 *)(D_800A36A0 + 0x30) = 0;
         *(s16 *)(D_800A36A0 + 0x34) = 0;
     }

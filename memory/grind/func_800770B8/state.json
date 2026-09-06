@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 30,
- "current_modality": "escalation",
+ "session_count": 31,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -183,23 +183,29 @@
    "floor": 5,
    "modality": "escalation",
    "headline": "Target's store window transcribed for the first time: o1 already emits the target's exact instruction order and is ONE local-alloc seat from score 2; both mechanisms that win that seat were measured a"
+  },
+  {
+   "session": 31,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "Class B CLOSED after 31 sessions: floor 5 -> 3. A dead store to the local p_old between the 0x4 store and the 0x30/0x34 clears denies local-alloc's combine_regs its reg_n_deaths==1 precondition, so th"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C form exists that lets sched1 float the t0*4 shift to the top of the store block (giving the chain quantity span 44 and priority 2.0, so the C pointer's 3.0 wins the seat) while the %hi/%lo(D_800A35D0) pair stays pinned immediately before the D stores - which is exactly the target's geometry. That form scores 2 (rows 35/36 only).",
-   "mechanism": "sched.c dependency construction: the symbol load is pinned in F/o1 only because it targets the same ptr pseudo the group-A stores read (REG_DEP_OUTPUT 116 + REG_DEP_ANTI 119/122/125/128/131). Giving the D group its own local removes those edges from BOTH the symbol load and the shift at once (p1/q1 = 28). The shift itself has no memory dependency; only its consumer's pseudo sharing keeps it late.",
-   "next_probe": "Enumerate C forms that split the D group's TWO computations across different locals - the symbol into the shared ptr (staying pinned) and the t0*4 add into a fresh local, e.g. `pd = t4_of_ptr...` spellings where the symbol is written to ptr and the sum to pd, and the mirror where the symbol goes to pd and the index add to ptr. Read the .sched dependency list of the (symbol_ref D_800A35D0) insn and the sll insn separately for each (s28/lreg.py), and score. Start from o1 (25) and p1/q1 (28) as the two endpoints."
+   "hypothesis": "A C form exists that makes the class-C reload pseudo fail local-alloc.c:469-477 (reg_qty = -1) WITHOUT introducing a long-lived named local - which would keep g1's byte-exact rows 60-78 while leaving rows 79-89 (the 0x5C/0x60 block) untouched. That form scores 3 minus the class-C rows plus only the rows 38-59 loop-head cost, and if the loop head can be held, it is a score-0 body.",
+   "mechanism": "local-alloc.c:469-477 sets reg_qty = -1 when reg_basic_block < 0 OR reg_n_deaths != 1; g1 satisfied both at once (two sets AND uses straddling the inner loop). Only ONE is needed. g4 proves two reads inside a single basic block are refolded by cse and never materialise a second set, so the second death has to come from a read the cse table cannot merge - i.e. one separated from the first by a store or a call, which the inner loop's own stores already provide.",
+   "next_probe": "Enumerate spellings that give the reload exactly ONE of the two disqualifiers: (a) reg_n_deaths == 2 with both uses in the SAME block by placing the second read after the inner loop's first store but keeping the 0x5C/0x60 stores as anonymous global reads; (b) reg_basic_block == -1 with a single set, by reading the global into a local BEFORE the p_6a/p_7e block and using it once more in the immediately following block only. Read reg_n_deaths / reg_basic_block for the reload pseudo straight out of the .lreg dump for each build (tmp/grind/func_800770B8/s31/slice.py) rather than inferring from the score."
   },
   {
-   "hypothesis": "A third real reference to the C-group pointer would lift its quantity from 6 refs / span 4 (3.0) to 8 refs / span 6 (3*8/6 = 4.0), above the chain's 3.1428, winning the seat in the target's A,D,C,S order with no sched1 collateral at all - score 2.",
-   "mechanism": "qty_compare_1, local-alloc.c:1660-1683. h3 proves a 4.0 quantity in this window wins; x1 proves cse refolds a duplicated address, so the third reference must be a genuine third USE of the same pointer value, not a second computation of it.",
-   "next_probe": "Audit the D_800A36A0 record for any other field the target reads or writes at base + t0*4 + k inside this window (rows 40-64 and the immediately following block), and for any spelling in which the stride-2 0x5C/0x60 stores or the group-A 0x3C store can truthfully be addressed off the stride-4 pointer. If none exists, record the absence as a class result with the record layout as the predicate."
+   "hypothesis": "The rows 38-59 loop-head reschedule that BOTH class-C fixes pay is a separable sched1 decision, not a fixed price of the flipped tie.",
+   "mechanism": "In f1 and g1 the loop-top `lw %gp_rel(D_800A36A0)` moves one slot earlier (ours row 40 vs target row 41) and the group-A pointer re-seats from $v0 to $a1, propagating through rows 42-59. sched.c's ready-list priority for the loop-top load changes once the downstream sum's quantity changes seat, so this is the same sched1/local-alloc coupling s28-s30 named on the flipped-cursor chassis - but now on the A-first chassis, where the rest of the window is already byte-exact.",
+   "next_probe": "Take g1 as the base (rows 60-78 byte-exact) and vary ONLY the loop head: the position of `u8 *base = D_800A36A0;`, whether group A is addressed off `base` or off a re-read, and the statement order of the A/D/C/S groups. Diff the .sched dump's ready-list for the loop-top load between d1F and g1 to name which dependency edge changed."
   },
   {
-   "hypothesis": "Class B (rows 35/36) is still a store-base spelling question independent of everything class C, and any spelling that fixes it drops the floor from 5 to 3 and h3 from 7 to 5.",
-   "mechanism": "The target addresses the two prologue clear stores through the freshly returned func_8006E49C pointer in $v0 while our body addresses them through the saved copy $s1; the value is the same object (D_800A36A0 is assigned from it two insns earlier), so this is a C-level question of which name the stores are written through. s20 measured the cheapest cse-EBB-splitting label device at +18 rows against a 2-row prize.",
-   "next_probe": "In the block that assigns p_old / D_800A36A0, enumerate the truthful spellings of the two clear stores - through the func_8006E49C return value directly, through p_old, through D_800A36A0, and with the D_800A36A0 assignment moved after the stores - on BOTH the floor body F and h3, WITHOUT any label device. s7 banked one such spelling as byte-neutral on F; re-measure it on h3, where the surrounding schedule now differs."
+   "hypothesis": "Class B's dead store may be replaceable by an ordinary-C form if the second death can come from a real program value - the one candidate not yet enumerated is the record's own back-pointer field being read back rather than kept in `prev`.",
+   "mechanism": "The dead store is only needed because p_old has exactly one death. Any truthful construct that re-sets p_old (e.g. walking the record list, or re-reading *(s32 *)((u8 *)p_old + 4)) supplies the same second death without a FAKE annotation.",
+   "next_probe": "Audit the callers and the record layout at D_800A36A0 + 0x4 for a genuine list-walk shape in the surrounding functions (func_8006E49C, func_80076FF8, func_8006E950): if any of them establishes that this block is a push onto a linked list, the natural C for the push may reassign p_old on its own. If no such shape exists, record the absence with the record layout as the predicate and keep the annotated dead store."
   }
  ],
  "judge_constraints": [
@@ -461,6 +467,22 @@
    "measured_on": "HEAD 6c9ca9fa chassis; flipped-cursor base with the empty do-while(0) prologue fence present; 175/175 in all fourteen builds.",
    "predicate_cite": "",
    "result": "25, 14, 39, 30, 36, 36 and 28 / 28 / 29 / 25 / 25 - all 175/175. Every order keeping C before S either leaves the chain "
+  },
+  {
+   "session": 31,
+   "statement": "In the class-B block on this chassis, `p_old = p_old;`, `p_old = (s32 *)((u8 *)p_old);`, `p_old = (s32 *)D_800A36A0;`, and `p_old = prev;` moved AFTER both clears each measure 5/175/175 - i.e. none of",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2fbaa47a chassis, floor body F, do-while(0) prologue fence present, 175/175 in all four builds",
+   "predicate_cite": "",
+   "result": "All four 5/175/175. This is why the banked spelling stores a DIFFERENT (live) value at a position between the 0x4 store "
+  },
+  {
+   "session": 31,
+   "statement": "The c-typeck ptrop-flip spellings `(s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A)` and the fully integer-domain `(s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A)` measure 27/175 on the class-B-fixed cha",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2fbaa47a chassis, d1 body (dead store present, do-while(0) fence present), 175/175 in all three builds",
+   "predicate_cite": "",
+   "result": "f1 27, f2 27, f3 3. s9 banked this family at score 33 on an older chassis; re-audited here per the kill-re-audit directi"
   }
  ],
  "object_model_audited": 29,

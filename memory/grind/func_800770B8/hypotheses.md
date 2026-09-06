@@ -2809,3 +2809,108 @@ do-while(0) prologue fence present, 175/175 in all fourteen builds.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 6c9ca9fa chassis; flipped-cursor base with the empty do-while(0) prologue fence present; 175/175 in all fourteen builds.
+
+## [s31] (rederive, 2026-09-06) — owner directive: class-B store-base spellings first
+
+### H1 CONFIRMED — class B closes on a dead store to the local `p_old`, placed between the 0x4 store and the clears
+- statement: on the HEAD 2fbaa47a chassis, adding `p_old = prev;` between
+  `*(s32 *)((u8 *)p_old + 4) = (s32)prev;` and the 0x30/0x34 clears makes rows 35/36
+  byte-exact (`sw $zero,0x30($v0)` / `sh $zero,0x34($v0)`) and drops the honest floor
+  from 5 to 3 at 175/175 insns.
+- mechanism: the func_8006E49C result pseudo and the `p_old` pseudo are a pure copy pair.
+  local-alloc.c:469-477 gives a pseudo `reg_qty = -2` (local-allocatable) only when
+  `reg_basic_block >= 0 && reg_n_deaths == 1`; with one death, combine_regs
+  (local-alloc.c:1784-1946) coalesces the copy into ONE quantity, so cse's canonical
+  register for the D_800A36A0 re-reads and the 0x4 store's base are the same seat ($s1).
+  A second SET of `p_old` makes `reg_n_deaths == 2`, combine_regs refuses, the two live
+  ranges stay distinct, and the raw result keeps $v0 for the clears while the copy keeps
+  $s1 for the global store and the 0x4 store — the target's shape.
+- probe: 26 builds. c1-c9 = nine truthful re-spellings of the whole block (clears before
+  the copy; everything through `p_old`; everything through `D_800A36A0`; the global
+  assigned after the 0x4 store; the call result landing in the global with `p_old` copied
+  back; chained assignment; a fresh local re-read from the global; a raw local `q` used
+  for the clears) measured on BOTH the floor body F and the h3 chassis. d1/d2/d3 = the
+  same block with a dead reassignment of `p_old` (`= prev`, `= (s32 *)arg0`, `= 0`).
+  d4-d7 = the same-value / self-assign / late-position spellings.
+- result: F 5, h3 7 (both reproduce). c2/c6/c7/c8 5 (inert — the spelling of the clears
+  does not matter, cse always canonicalises onto the p_old seat); c3 7; c1/c4/c5/c9
+  23-25 at 170 insns (dropping `p_old` reuse for a fresh local for the call result
+  collapses the callee-save prologue, 5 insns short — the s7 finding, re-confirmed).
+  d1/d2/d3 ALL 3 at 175/175 — the value stored does not matter, only that a set exists
+  there. Banked: candidate.c now carries the `p_old = prev;` spelling, annotated
+  `/* FAKE: ... */` per .claude/rules/dead-store-fake-exception.md.
+- verdict: CONFIRMED.
+
+### H2 KILLED (instance) — same-value re-stores and self-assignments do not reach the gate
+- statement: on the HEAD 2fbaa47a chassis with the do-while(0) prologue fence present,
+  `p_old = p_old;` (d4), `p_old = (s32 *)((u8 *)p_old);` (d6) and
+  `p_old = (s32 *)D_800A36A0;` (d5) in the class-B block each measure 5/175/175, and
+  `p_old = prev;` moved AFTER both clears (d7) also measures 5/175/175.
+- mechanism: GCC deletes `x = x` before flow.c records a second death, and cse refolds
+  the `D_800A36A0` re-read to the same pseudo so d5 is a self-assign too; d7 is after the
+  last use, so the death that matters is already spent.
+- measured_on: HEAD 2fbaa47a chassis, floor body F, do-while(0) fence present, 175/175 in
+  all four builds.
+- verdict: KILLED (instance). This is why the banked spelling stores a DIFFERENT value.
+
+### H3 KILLED (instance) — the c-typeck ptrop flip re-audited on the class-B-fixed chassis
+- statement: `(s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A)` (f1) and the fully
+  integer-domain `(s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A)` (f2) both measure 27/175
+  on the d1 (class-B-fixed) chassis; the no-cast pointer-domain addend-first spelling
+  `(s16 *)((t0 * 10) + D_800A36A0 + 0x6A)` (f3) is byte-inert at 3.
+- mechanism: c-typeck.c:1988/2695 puts the POINTER-typed side in ptrop unconditionally, so
+  only a cast that makes the shift pointer-typed (or an int-domain sum) reaches
+  `(plus shift base)`. It does flip the tie — but it seats the reload and the shift the
+  other way round ($v0<->$v1) and reschedules the loop head (rows 38-59 differ).
+- measured_on: HEAD 2fbaa47a chassis, d1 body (dead store present, do-while(0) fence
+  present), 175/175 in all three builds.
+- verdict: KILLED (instance). s9's banked score-33 result re-audited and still negative;
+  the price is 24 rows against a 3-row prize.
+
+### H4 CONFIRMED — the local-alloc reg_qty route emits rows 60-78 BYTE-EXACT, class C included
+- statement: naming the second D_800A36A0 reload in a local `b2` that is SET TWICE (once
+  before `p_6a`/`p_7e`, once again before the 0x5C/0x60 stores, which already reload the
+  global) makes rows 60 through 78 byte-exact — including the class-C rows 62-64
+  `addu $v1,$v1,$v0` / `addiu $a3,$v1,0x6A` / `addiu $a1,$v1,0x7E` — at 175/175. Whole-
+  function score 39: the price is rows 38-59 (the loop head reschedules exactly as in f1)
+  and rows 79-89 (the 0x5C/0x60 block, perturbed by the named local).
+- mechanism: two sets => `reg_n_deaths == 2`, and uses straddling the inner loop =>
+  `reg_basic_block == -1`; either alone makes local-alloc.c:469-477 assign
+  `reg_qty = -1`, so block_alloc's tying loop (local-alloc.c:1240-1299, `if (win) break;`)
+  cannot tie the sum's dest to operand 1 (the reload) and falls through to operand 2 (the
+  t0*10 shift) — which is the target's dest. Read out of the .lreg dump: insn 188
+  `(set (reg 110) (plus (reg 109) (reg 108)))`, both operands dying at that insn.
+- probe: g1 (fresh `b2`, two sets), g2 (reusing the existing `base` local), g3 (second set
+  in the tail block), g4 (two reads into the same local inside ONE basic block).
+- result: g1 39, g2 35, g3 33, g4 3 (byte-inert — cse merges same-block re-reads, so the
+  second set never materialises). f4 (single read of `b2` shared with the 0x5C block) 53
+  at 163 insns — sharing collapses two real loads.
+- verdict: CONFIRMED as a mechanism; not banked as the candidate because of the price.
+
+## [s31] Adding `p_old = prev;` between `*(s32 *)((u8 *)p_old + 4) = (s32)prev;` and the 0x30/0x34 clears makes target rows 35/36 byte-exact and drops the honest floor from 5 to 3 at 175/175 insns.
+- mechanism: The func_8006E49C result pseudo and the p_old pseudo are a pure copy pair. local-alloc.c:469-477 marks a pseudo local-allocatable (reg_qty = -2) only when reg_basic_block >= 0 && reg_n_deaths == 1; with one death, combine_regs (local-alloc.c:1784-1946) coalesces the copy into ONE quantity, so the 0x4 store and both clears issue through the same seat ($s1). A second SET of p_old makes reg_n_deaths == 2, combine_regs refuses, and the two live ranges take the target's two seats ($s1 for the global store + the 0x4 store, $v0 for the clears).
+- probe: 26 builds. c1-c9: nine truthful re-spellings of the whole block (clears before the copy; all through p_old; all through D_800A36A0; global assigned after the 0x4 store; call result into the global with p_old copied back; chained assignment; fresh local re-read from the global; raw local q for the clears), each on BOTH the floor body F and the h3 chassis. d1/d2/d3: the same block with a dead reassignment of p_old (= prev / = (s32 *)arg0 / = 0).
+- result: F 5, h3 7 (both reproduce on HEAD 2fbaa47a). c2/c6/c7/c8 = 5 (inert: the spelling of the clears does not matter, cse always canonicalises onto the p_old seat); c3 = 7; c1/c4/c5/c9 = 23-25 at 170 insns (a fresh local for the call result collapses the callee-save prologue). d1/d2/d3 ALL = 3 at 175/175. The banked candidate carries the `p_old = prev;` spelling with a full /* FAKE: ... */ annotation naming what, the GCC pass, and the lever-exhaustion ledger, per .claude/rules/dead-store-fake-exception.md. fake_ablate: two orthogonal FAKE units, keep-all 3 / drop dead store 5 / drop do-while(0) fence 8 / drop both 10.
+- verdict: CONFIRMED
+
+## [s31] In the class-B block on this chassis, `p_old = p_old;`, `p_old = (s32 *)((u8 *)p_old);`, `p_old = (s32 *)D_800A36A0;`, and `p_old = prev;` moved AFTER both clears each measure 5/175/175 - i.e. none of these four spellings reaches the reg_n_deaths gate.
+- mechanism: GCC deletes `x = x` before flow.c records a second death; cse refolds the D_800A36A0 re-read to the same pseudo, so the same-value restore is a self-assign too; and a set placed after the last use is after the death that matters.
+- probe: d4/d5/d6/d7, one build each, sandbox func_800770B8 --disable all.
+- result: All four 5/175/175. This is why the banked spelling stores a DIFFERENT (live) value at a position between the 0x4 store and the clears - both the value and the position are load-bearing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2fbaa47a chassis, floor body F, do-while(0) prologue fence present, 175/175 in all four builds
+
+## [s31] The c-typeck ptrop-flip spellings `(s16 *)((u8 *)(t0 * 10) + (s32)D_800A36A0 + 0x6A)` and the fully integer-domain `(s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A)` measure 27/175 on the class-B-fixed chassis, and the no-cast addend-first pointer spelling measures 3 (byte-inert).
+- mechanism: c-typeck.c:1988/2695 put the POINTER-typed side in ptrop unconditionally, so only a cast making the shift pointer-typed (or an int-domain sum) reaches (plus shift base). The flip happens, but it seats the reload and the shift the other way round ($v0<->$v1) and reschedules the loop head (rows 38-59 all differ).
+- probe: f1/f2/f3 on the d1 body; sandbox plus an alias-normalised row differ (tmp/grind/func_800770B8/s31/rows2.py).
+- result: f1 27, f2 27, f3 3. s9 banked this family at score 33 on an older chassis; re-audited here per the kill-re-audit directive and still negative - 24 rows of collateral against a 3-row prize.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2fbaa47a chassis, d1 body (dead store present, do-while(0) fence present), 175/175 in all three builds
+
+## [s31] Naming the second D_800A36A0 reload in a local that is SET TWICE (once for p_6a/p_7e, once again for the 0x5C/0x60 stores, which already reload the global) emits target rows 60 through 78 byte-exact - including class C's rows 62-64 addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E - at 175/175, whole-function score 39.
+- mechanism: Two sets give reg_n_deaths == 2 and the two uses straddle the inner loop so reg_basic_block == -1; either alone makes local-alloc.c:469-477 set reg_qty = -1, so block_alloc's tying loop (local-alloc.c:1240-1299, `if (win) break;`) cannot tie the sum's dest to operand 1 (the reload, .lreg insn 188 `(set (reg 110) (plus (reg 109) (reg 108)))`) and falls through to operand 2 (the t0*10 shift) - the target's dest, with the target's seats.
+- probe: g1 (fresh local b2, two sets), g2 (reusing the existing `base` local), g3 (second set in the tail block), g4 (two reads into one local inside ONE basic block), f4 (single read shared with the 0x5C block).
+- result: g1 39 (rows 60-78 byte-exact; price is rows 38-59, the same loop-head reschedule f1 pays, plus rows 79-89 where the named local perturbs the 0x5C/0x60 block), g2 35, g3 33, g4 3 (byte-inert - cse merges same-block re-reads so the second set never materialises), f4 53 at 163 insns (sharing collapses two real loads). Not banked as the candidate, but this is the first form in 31 sessions to emit rows 62-64 correctly on the target's A-first store order.
+- verdict: CONFIRMED
