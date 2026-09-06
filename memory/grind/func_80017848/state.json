@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 36,
- "current_modality": "escalation",
+ "session_count": 37,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -219,23 +219,29 @@
    "floor": 3,
    "modality": "escalation",
    "headline": "Floor re-audited at 3 (127/127); s35 frontier item 1 measured dead on the floor-carrier chassis, both endgame-lock gates FAIL, foreclosure record filed at decisions.md:21464."
+  },
+  {
+   "session": 37,
+   "floor": 3,
+   "modality": "solver",
+   "headline": "Floor re-audited at 3 (127/127) on the drifted chassis (anchor now src/ings.c:820); the owner's 2026-09-06 directive is executed and answered: the preheader copy geometry built as standalone scratch T"
   }
  ],
  "frontier": [
   {
+   "hypothesis": "A basic-block boundary between the preheader copy and the base add that leaves no instruction behind (a CODE_LABEL whose only jump is removed after combine has run) would break the LOG_LINK flow.c builds per block and keep the copy at zero instruction cost - the one combine escape (E-s32-4, escape #8) whose order-incompatibility was argued from labels that survive to the assembler.",
+   "mechanism": "flow.c resets reg_next_use at every basic-block start, so combine only sees a copy->add LOG_LINK when both sit in one block; combine.c:1458 then deletes the copy locally (s37 class kill). A label alive at flow/combine time but deleted by jump2 or reorg would leave target's instruction order intact.",
+   "next_probe": "Enumerate which post-combine passes delete labels in tools/gcc-2.7.2 (jump.c jump_optimize second pass, reorg.c) and whether any C-level control shape (a two-way branch whose arms cross-jump to identical bytes in jump2) can place such a label between q = p and base = sh + q; measure on the BASE chassis with dumps."
+  },
+  {
    "hypothesis": "A family grant covering a construct that can place a use-once register copy at a join-successor preheader without paying for its own address expression would re-open the residual; no such family is on the frozen list today.",
-   "mechanism": "Loop 2's guard block is a JOIN (loop 1's skip branch blez $v0, .L8001791C at asm/funcs/func_80017848.s:62 lands on it), so cse's extended basic block cannot reach loop 2's preheader and the redundant load is never folded to a copy there; every C-level spelling of the copy at that point has been measured dead.",
-   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff copy POSITION against target with tmp/grind/func_80017848/s36/dis.sh."
+   "mechanism": "Loop 2's guard block is a join (loop 1's skip branch lands on it), so cse's extended basic block cannot reach loop 2's preheader and the redundant load is never folded to a copy there; every C-level spelling of the copy at that point has been measured dead, and s37 proves combine's deletion of the loop-1 copy is context-free.",
+   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff copy position against target with tmp/grind/func_80017848/s37/dis.sh."
   },
   {
-   "hypothesis": "An SOTN-master (PSX / GCC 2.7.2) precedent exhibiting the copy-then-redefine-source preheader idiom in a NON-nested-loop context would convert the s18 decomp.me twin (scratch 19TpT, func_8009C6D8, matching) into a citable precedent and re-open gate (b).",
-   "mechanism": "Gate (b) requires an in-hand SOTN-master file:line or commit; the present census over docs/reference/sotn-construct-index.md is negative, and 19TpT's free copy depends on an enclosing loop keeping the source live - a precondition this function has been measured unable to buy (tail re-reads through a live local cost 19-22; fabricating an enclosing loop is the s12 duplicated-region family at 35).",
+   "hypothesis": "An SOTN-master (PSX / GCC 2.7.2) precedent exhibiting the copy-then-redefine-source preheader idiom in a non-nested-loop context would convert the s18 decomp.me twin (scratch 19TpT) into a citable precedent and re-open gate (b).",
+   "mechanism": "Gate (b) requires an in-hand SOTN-master file:line or commit; the present census over docs/reference/sotn-construct-index.md is negative.",
    "next_probe": "Re-run the construct-index census after any index regeneration, filtering PSX-tagged entries for a preheader reg-reg copy whose source is redefined by the very next add."
-  },
-  {
-   "hypothesis": "Premise (2) - that combine deletes a use-once reg-reg copy whose single in-block use is the next-but-one insn - has never been tested on minimal geometry outside this function; a negative there would name the protecting context.",
-   "mechanism": "Every measurement supporting premise (2) is an enumeration over this function's chassis space; a standalone function isolates the copy from this function's 15 locals, two loops, argument moves and call, all of which change LOG_LINK order, cuid distances and combine's reg_last_set bookkeeping.",
-   "next_probe": "Compile a scratch TU expanding to exactly (set r_b r_a) / (set r_c (mem ...)) / (set r_d (plus r_e r_b)) in one block under the project's exact CC_FLAGS plus -da, and read .cse2 / .combine. Carried forward unspent from s35 - it is a toolchain finding of the kind that would re-activate this item."
   }
  ],
  "judge_constraints": [],
@@ -520,6 +526,22 @@
    "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s34/body_Q1.c; BASE 3 at 127/127; no FAKE constructs anywhere in the tree",
    "predicate_cite": "",
    "result": "Q1 = 14 at 127/127, exactly its banked s34 number. fake_ablate prints 'no FAKE-annotated constructs found ... nothing to"
+  },
+  {
+   "session": 37,
+   "statement": "Some context specific to this function's chassis (its 15 locals, two loops, argument moves, call, LOG_LINK order, cuid distances, combine's reg_last_set bookkeeping) is what lets combine delete the pr",
+   "kill_scope": "class",
+   "measured_on": "standalone scratch TUs under the exact project CC_FLAGS, plus BASE re-audited at 3 (127/127) over the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs anywhere",
+   "predicate_cite": "tools/gcc-2.7.2/combine.c:1458",
+   "result": "m5 and m4 both put the exact geometry in .cse2 (copy insn 71/70 with its destination promoted to canonical by cse.c:826 "
+  },
+  {
+   "session": 37,
+   "statement": "The solver's object-level classify on the BASE chassis types the floor-3 residual as a register-seat (RA) permutation that inverse.py can search.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s37/body_BASE.c; BASE 3 at 127/127; no FAKE constructs",
+   "predicate_cite": "",
+   "result": "classify prints FIRST DIVERGENCE: RA because the three differing instructions share opcodes, but they sit at different p"
   }
  ],
  "escalation_deferrals": 0

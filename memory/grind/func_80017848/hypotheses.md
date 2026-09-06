@@ -3513,3 +3513,91 @@ to target. Cell scores: `tmp/grind/func_80017848/s34/scores.txt`.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD src/ings.c:719 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s34/body_Q1.c; BASE 3 at 127/127; no FAKE constructs anywhere in the tree
+
+## s37 hypotheses (2026-09-06, solver; owner directive executed first)
+
+- H-s37-1 (KILLED, class): Frontier item 3 / owner directive 2026-09-06: some
+  context specific to this function's chassis (its 15 locals, two loops,
+  argument moves, call, LOG_LINK order, cuid distances, combine's reg_last_set
+  bookkeeping) is what lets combine delete the promoted use-once preheader
+  copy, so on minimal geometry outside the function a copy of the shape
+  `(set b a) / (set c (mem)) / (set d (plus e b))` with b dead in the add
+  would survive combine and name the protecting context.
+  mechanism: if the deletion depended on chassis context, a 3-insn scratch TU
+  reproducing the geometry at cse2 output would keep the copy through
+  .combine.
+  probe: tmp/grind/func_80017848/s37/mini/m4_iso_loop.c, m5_iso_noloop.c,
+  m6_iso_notpromoted.c (plus m1/m2/m3 shape controls), compiled with the
+  project's exact CC_FLAGS and -da; .cse2 / .flow / .combine read insn by insn
+  (tmp/grind/func_80017848/s37/mini/*.cse2 etc., flattened with flat.py).
+  result: m5 and m4 both put the exact geometry in .cse2 (copy insn 71 / 70
+  with the destination promoted by cse.c:826, the add reading the copy
+  destination, REG_DEAD on the add) and both lose the copy in .combine; the
+  final assembly has no move. The deletion is decided by combine.c:1458
+  (`added_sets_2 = ! dead_or_set_p (i3, i2dest)` = 0 because the destination
+  dies in the add, so i2 is folded and deleted) and needs no context at all.
+  There is no protecting context to name; frontier item 3 is closed.
+  kill_scope: class
+  predicate_cite: tools/gcc-2.7.2/combine.c:1458
+  measured_on: standalone scratch TUs under the exact project CC_FLAGS
+  (canonical cc1), plus the BASE chassis re-audited at 3 (127/127) over the
+  HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs anywhere.
+
+- H-s37-2 (KILLED, instance): The solver's object-level classify on the BASE
+  chassis types the floor-3 residual as a register-seat (RA) permutation that
+  inverse.py can search.
+  mechanism: solver modality rule (1) - classify triages PRE-RA / RA / SCHED /
+  IDENTICAL by comparing the honest and target streams.
+  probe: `inverse_compose.py classify ings func_80017848 --target-object
+  build/src/ings.o --ours-object tmp/sandbox/func_80017848/ings.o` with BASE
+  applied (tmp/grind/func_80017848/s37/classify_BASE.txt), read against the
+  positional diff from dis.sh.
+  result: classify prints `FIRST DIVERGENCE: RA` because the three differing
+  instructions have the same opcodes, but they are at different POSITIONS
+  (BASE: `move` in the loop-1 exit tail and `lw` in the loop-2 preheader;
+  target: `lw` in the tail and `move` in the preheader). No seat permutation
+  turns a move into a load, so the residual is not RA-searchable on this
+  chassis; this agrees with s31's empty goal derivation. inverse.py not run.
+  kill_scope: instance
+  measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_BASE.c, BASE 3
+  at 127/127, no FAKE constructs.
+
+- H-s37-3 (CONFIRMED): The floor and residual survive the chassis drift
+  (main decompiled into ings.c; anchor moved 719 -> 820): BASE = 3 at
+  127/127 with the byte-identical residual diff recorded in s36.
+
+- H-s37-4 (CONFIRMED, dump-read): target's preheader add can coexist with a
+  cse-produced copy of the guard's load only if the guard add's pseudo is
+  invalidated before the preheader - m2/m3 (no invalidation) fold the
+  preheader add into the guard's add pseudo outright (insn 79 reads reg 86)
+  and the copy dies at flow; m4/m5 (candidate's `t` reassignment) keep the
+  add. candidate.c's `t = sh + p; t = *(s32 *)(t + 0x1C)` is load-bearing.
+
+## [s37] Some context specific to this function's chassis (its 15 locals, two loops, argument moves, call, LOG_LINK order, cuid distances, combine's reg_last_set bookkeeping) is what lets combine delete the promoted use-once preheader copy; on minimal geometry outside the function a copy of the shape (set b a)/(set c (mem))/(set d (plus e b)) with b dead in the add would survive combine and name the protecting context (frontier item 3, owner directive 2026-09-06).
+- mechanism: If the deletion depended on chassis context, a three-insn scratch TU reproducing the geometry at cse2 output would keep the copy through .combine.
+- probe: tmp/grind/func_80017848/s37/mini/m4_iso_loop.c, m5_iso_noloop.c, m6_iso_notpromoted.c plus m1/m2/m3 shape controls, compiled with the project's exact CC_FLAGS (canonical tools/gcc-2.7.2/build/cc1) and -da; .cse2/.flow/.combine read insn by insn via flat.py.
+- result: m5 and m4 both put the exact geometry in .cse2 (copy insn 71/70 with its destination promoted to canonical by cse.c:826 make_regs_eqv, the add reading the copy destination, REG_DEAD on the add, LOG_LINK add->copy in .flow) and both lose the copy in .combine; final assembly has no move. The deletion is combine.c:1458: added_sets_2 = !dead_or_set_p(i3, i2dest) is 0 because the destination dies in the add, so i2 is substituted and deleted. m6 (unpromoted control) never carries the copy to cse2. No protecting context exists; frontier item 3 is closed.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: standalone scratch TUs under the exact project CC_FLAGS, plus BASE re-audited at 3 (127/127) over the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs anywhere
+- predicate_cite: tools/gcc-2.7.2/combine.c:1458
+
+## [s37] The solver's object-level classify on the BASE chassis types the floor-3 residual as a register-seat (RA) permutation that inverse.py can search.
+- mechanism: Solver modality rule (1): inverse_compose.py classify triages PRE-RA / RA / SCHED / IDENTICAL from the honest and target streams.
+- probe: inverse_compose.py classify ings func_80017848 --target-object build/src/ings.o --ours-object tmp/sandbox/func_80017848/ings.o with BASE applied (report tmp/grind/func_80017848/s37/classify_BASE.txt), read against the positional diff from s37/dis.sh (T.txt vs B.txt).
+- result: classify prints FIRST DIVERGENCE: RA because the three differing instructions share opcodes, but they sit at different positions: BASE has the move in loop 1's exit tail and the lw in loop 2's preheader, target has the lw in the tail and the move in the preheader. No seat permutation turns a move into a load, so the residual is positional, not RA-searchable on this chassis, agreeing with s31's empty goal derivation; inverse.py was not run.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s37/body_BASE.c; BASE 3 at 127/127; no FAKE constructs
+
+## [s37] The floor and residual survive the chassis drift since s36 (main decompiled into ings.c, func_80016A8C prototype changed, anchor moved from line 719 to 820).
+- mechanism: Driver-mandated chassis re-audit before any probe.
+- probe: sandbox func_80017848 --disable all with body_BASE.c (identical to candidate.c's body) applied over the new anchor; dis.sh normalised diff.
+- result: 3 at 127 target / 127 build insns, scorable; the residual diff is the same three instructions s36 recorded.
+- verdict: CONFIRMED
+
+## [s37] Target's preheader add can coexist with a cse-produced copy of the guard's load only if the guard add's own pseudo is invalidated before the preheader; candidate.c's t = sh + p; t = *(s32 *)(t + 0x1C) reassignment is load-bearing.
+- mechanism: cse hashes registers by quantity (canon_hash/exp_equiv_p), so once the copy destination is in the guard load's quantity the preheader add matches the guard's add unless that add's destination has been invalidated.
+- probe: m2/m3 (promoted copy, no invalidation) versus m4/m5 (candidate's t reassignment), .cse2 dumps.
+- result: m2/m3: cse2 folds the preheader add away entirely (insn 79 reads the guard's add pseudo reg 86) and the copy dies at flow; m4/m5 keep the add reading the copy destination.
+- verdict: CONFIRMED

@@ -984,3 +984,19 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * which target seats in two different hard registers (a0/v1 vs a2), measured at
  * 14 (Q1) and 15 (Q2) on the join chassis and 10 (K1) / 14 (AK) elsewhere.
  */
+/* [s37 SOLVER ADDENDUM - body unchanged, still 3 at 127/127, re-measured on the
+ * drifted chassis (main landed in ings.c; anchor now src/ings.c:820).]
+ * The owner's 2026-09-06 directive was executed: the preheader copy geometry
+ * (set b a)/(set c mem)/(set d (plus e b)) was built as standalone scratch TUs
+ * under the exact project flags (tmp/grind/func_80017848/s37/mini/). With the
+ * copy destination promoted by cse.c:826 the geometry appears verbatim in
+ * .cse2 and combine deletes the copy in isolation exactly as it does here
+ * (combine.c:1458, i2dest dead in i3). There is no protecting context in this
+ * chassis; frontier item 3 is closed as a class kill. The object-level
+ * classify reports RA for the residual, but the diff is positional (BASE has
+ * the move in loop 1's exit tail and the load in loop 2's preheader, target the
+ * reverse), so the residual is not a seat permutation and inverse.py has no
+ * goal - agreeing with s31. m2/m3 also show that the `t = sh + p; t = *(t+0x1C)`
+ * guard reassignment is load-bearing: without it cse2 folds the preheader add
+ * into the guard's add pseudo entirely.
+ */

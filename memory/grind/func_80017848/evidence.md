@@ -4298,3 +4298,104 @@ scorable**. The floor is unchanged for the ninth consecutive session.
 - [s36] Cumulative exhaustion: 35 prior sessions, 237 banked rejected forms, 32 instance kills + 1 class kill (predicate tools/gcc-2.7.2/local-alloc.c:251), five permuter campaigns totalling 180,472 iterations with zero engine-scored improvements on four chassis.
 
 - [s36] src/ings.c was restored to the committed HEAD INCLUDE_ASM anchor after the last measurement; git status shows only ledger / decisions / metrics changes plus the three new rejected/ cells.
+
+## s37 (2026-09-06, modality `solver`; owner directive 2026-09-06 executed first)
+
+- [s37] CHASSIS RE-AUDIT. src/ings.c drifted since s36: `main` was decompiled
+  into ings.c and func_80016A8C's prototype changed, moving the
+  `INCLUDE_ASM("asm/funcs", func_80017848);` anchor from line 719 to line 820.
+  `sandbox func_80017848 --disable all` with the unchanged candidate body
+  (tmp/grind/func_80017848/s37/body_BASE.c, identical to candidate.c's body)
+  applied over the new anchor = **3 at 127 target / 127 build insns, scorable**.
+  The floor and the residual are unchanged by the drift. The residual, from
+  tmp/grind/func_80017848/s37/dis.sh (normalised diff T.txt vs B.txt): loop-1
+  exit tail target `lw a0,12(s2)` vs build `addu a0,a3,zero`; loop-2 preheader
+  target `addu a3,a0,zero ; lw a2,16(s2) ; addu a0,a1,a3` vs build
+  `lw v0,12(s2) ; lw a2,16(s2) ; addu a0,a1,v0`. No FAKE construct anywhere.
+
+- [s37] OWNER DIRECTIVE (foreclosed-bucket review 2026-09-06), EXECUTED: the
+  loop-1-exit / loop-2-preheader copy geometry was built as minimal scratch
+  translation units under the project's exact CC_FLAGS
+  (`-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin
+  -w -mel`, canonical tools/gcc-2.7.2/build/cc1, plus `-da`), files in
+  tmp/grind/func_80017848/s37/mini/ (m0..m6 .c, every pass dump, runner
+  run.sh, flattener flat.py). Findings, each read from the dumps:
+  (1) m5_iso_noloop: `b` first mentioned in an earlier basic block (a loop
+      back-edge boundary), then `a = *(ctx+0xC); t = (sa<<6)+a; t = *(t+0x1C);
+      if (t<=0) return; b = a; c = *(ctx+0x10); d = (sa<<6)+b;`. The .cse2 dump
+      holds EXACTLY the frontier's geometry: insn 71 `(set (reg/v 77) (reg/v 76))`
+      (the copy, dest promoted to canonical by cse.c:826 make_regs_eqv), insn 74
+      `(set (reg/v 78) (mem ctx+16))`, insn 78 `(set (reg/v 79) (plus (reg 87)
+      (reg/v 77)))` reading the COPY DESTINATION. .flow: LOG_LINK 78 -> 71,
+      REG_DEAD reg76 on 71, REG_DEAD reg77 on 78. .combine: insn 71 is GONE and
+      insn 78 reads reg76 directly. Final .s: `addu $2,$5,$3` with no move.
+      So combine deletes the promoted use-once copy on minimal geometry, with
+      nothing but the three insns present. The mechanism is try_combine's
+      ordinary two-insn path: `added_sets_2 = ! dead_or_set_p (i3, i2dest)`
+      (tools/gcc-2.7.2/combine.c:1458) is 0 because flow put REG_DEAD reg77 on
+      the add, so i2 is not re-added and is deleted.
+  (2) m4_iso_loop: identical geometry with the add feeding a do/while loop
+      (target's shape). Same outcome: insn 70 (the copy) present in .cse2 with
+      the add reading the copy dest; absent in .combine; final .s preheader is
+      `lw $4,16($4) ; addu $5,$5,$7` with no move.
+  (3) m6_iso_notpromoted (control, `b` has no earlier mention): cse2 already has
+      the add reading `a` (a stays canonical) and no copy insn survives to
+      .cse2 at all. This is the ordinary non-promoted case.
+  (4) m2/m3 (promoted copy but WITHOUT the `t` reassignment that invalidates
+      the guard add's pseudo): cse2 folds the preheader add away entirely,
+      insn 79 `(set (reg 90) (mem (plus (reg 86) 36)))` reads the GUARD's add
+      pseudo reg 86 directly, and the copy dies at flow. This is a dump-level
+      proof that target's preheader add can only coexist with a cse-produced
+      copy of the guard's load when the guard add's own pseudo has been
+      invalidated before the preheader (candidate.c's `t = sh + p; t =
+      *(s32*)(t+0x1C)` reassignment is load-bearing, not cosmetic).
+  (5) m0_twoloop (the naive two-loop spelling alone): the preheader comes out
+      as `move $10,$2 ; lw $9,16($4) ; move $8,$3 ; addu $2,$10,$7` and the loop
+      bottom tests `slt $2,$7,$8` against a HOISTED bound register. Target
+      reloads the bound (`lw v0,28(a0)`) every iteration and copies the LOAD,
+      not the guard's add. The naive shape is therefore two invariants further
+      from target than the candidate's hand-hoisted chassis, which is why the
+      ledger's chassis exists.
+  CONCLUSION for the directive: premise (2) is CONFIRMED outside this function
+  and frontier item 3 is CLOSED. There is NO protecting context in the 15-local
+  chassis: combine's deletion of a promoted use-once reg-reg copy whose
+  destination carries a REG_DEAD note on the consuming add is decided locally
+  by combine.c:1458 and happens identically in a 3-insn scratch TU. The
+  "protecting context" the frontier hoped to name does not exist; the only
+  ways a copy of that shape reaches the assembler remain the three the ledger
+  already priced: i2dest not dead in i3 (a second use, escape #1, measured at
+  +1 instruction or byte-neutral), no LOG_LINK (a basic-block boundary between
+  copy and add, escape #8, incompatible with target's instruction order per
+  E-s32-7), and use_crosses_set_p (escape #9, Q1 = 14 from the seat merge).
+
+- [s37] SOLVER MODALITY, rule (1) executed: `inverse_compose.py classify ings
+  func_80017848 --target-object build/src/ings.o --ours-object
+  tmp/sandbox/func_80017848/ings.o` on the BASE chassis (report:
+  tmp/grind/func_80017848/s37/classify_BASE.txt) reports `FIRST DIVERGENCE:
+  RA, same instructions, different registers` and names inverse.py as the next
+  tool. That verdict is a mis-triage of THIS residual and must not be spent:
+  the classifier matched opcode multisets (`addu a0,a1,v0 / lw v0,12(s2) / move
+  a0,a3` against `addu a0,a1,a3 / lw a0,12(s2) / move a3,a0`), but the diff
+  in dis.sh shows the instructions sit at DIFFERENT positions: BASE has the
+  `move` in loop 1's exit tail and the `lw` in loop 2's preheader, target has
+  the `lw` in the exit tail and the `move` in the preheader. No register
+  renaming maps a `move` to a `lw`, so the residual is positional (which pass
+  emits which instruction where), not a seat permutation; s31's empty RA goal
+  on the exact-stream form said the same thing from the model side. inverse.py
+  was therefore not run - a goal derived from this classify would be the
+  func_80041188-s2 subset-goal failure mode.
+
+- [s37] src/ings.c restored to tmp/grind/func_80017848/s37/ings.orig.c (HEAD)
+  after the last measurement; git status shows only ledger / metrics changes.
+
+- [s37] Chassis drift: src/ings.c anchor INCLUDE_ASM("asm/funcs", func_80017848); now at line 820 (was 719); BASE unchanged = 3 at 127/127 scorable.
+
+- [s37] Residual (s37/dis.sh): loop-1 exit tail target lw a0,12(s2) vs build addu a0,a3,zero; loop-2 preheader target addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3 vs build lw v0,12(s2) / lw a2,16(s2) / addu a0,a1,v0.
+
+- [s37] Owner directive executed: seven scratch TUs (m0..m6) under exact CC_FLAGS with -da in tmp/grind/func_80017848/s37/mini/; m4/m5 reproduce the frontier's three-insn geometry verbatim at .cse2 and combine deletes the copy in isolation (combine.c:1458); no protecting context exists.
+
+- [s37] m0 (naive two-loop spelling alone) hoists the loop bound into a register and copies the guard's add (move $10,$2 / lw $9,16($4) / move $8,$3), two invariants further from target than the candidate's hand-hoisted chassis.
+
+- [s37] Solver classify (object path) reports FIRST DIVERGENCE: RA on BASE, but the differing instructions are positionally swapped (move vs lw between exit tail and preheader), so the RA verdict is a mis-triage and no inverse.py goal exists; consistent with s31.
+
+- [s37] src/ings.c restored to HEAD after the last measurement; no FAKE constructs anywhere; fake_ablate remains vacuous (s36).
