@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -93,23 +93,29 @@
    "floor": 20,
    "modality": "synthesis",
    "headline": "Synthesis: complete source-level census of GCC 2.7.2's eight frame-vars producers - exactly one is zero-traffic and it is the pad family; s14 frontier items 1-3 all closed negative, and the ledger's p"
+  },
+  {
+   "session": 16,
+   "floor": 20,
+   "modality": "synthesis",
+   "headline": "Synthesis: the residual was mis-stated for fifteen sessions - it is var_size + args_size == 56, not get_frame_size() == 32 (mips.c:4557); a body with the call widened to 14 args reaches the target's e"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The combine-orphan phantom is the only zero-traffic producer whose multiplicity is not fixed by a declaration, and no session has asked what makes SetDrawEnv carry three orphans where this body carries one.",
-   "mechanism": "combine.c:10832-10841 plants an orphan (use (reg P)) when distribute_notes cannot rehome a REG_DEAD note; P then has no set and no constraint-bearing reference, regclass leaves it unseated and alter_reg (reload1.c:2404) pays 8 bytes for zero emitted insns.",
-   "next_probe": "Dump SetDrawEnv and SetDrawEnv2 (.combine, .lreg) via pwsh tools/grinder/dump.ps1 on src/display.c and run tmp/grind/func_800480C0/s6/count_uses.py to extract the defining RTL shape of each of the three orphans; then test whether any shape can be spelled onto this body's four narrow-field sites at zero byte cost. If all three turn out to be the same (ashift (subreg (reg:HI))) producer that s9 closed on this body with a cited predicate, the zero-traffic phantom route becomes a class kill with a cite and the ledger's last non-pad axis is closed."
+   "hypothesis": "The four-zero-traffic-slot requirement is the whole question now, and it has never been attacked from the ALIGNMENT side: alter_reg asks assign_stack_local for the pseudo's mode size, which is why each SImode orphan costs 8 bytes - a wider-mode orphan would be worth 8 or 16 on its own, so one or two orphans could reach 32.",
+   "mechanism": "reload1.c:2382-2385 calls assign_stack_local (GET_MODE (reg), total_size, -1) for any pseudo with reg_renumber < 0 and reg_n_refs > 0; the slot size follows the pseudo's MODE, and the s8 tree census found the only bodies above three phantoms are func_80042874 / func_80042A88 (src/text1a_c.c, vars=48, 6 phantoms), both class-B DImode HILO.",
+   "next_probe": "Dump func_80042874 (src/text1a_c.c) with the instrumented cc1 (pwsh tools/grinder/dump.ps1) and read the .lreg/.greg plus the emitted sp histogram: are its six orphan slots 8 or 16 bytes each, and does the class-B producer require a mult insn in the emitted stream or only a DImode pseudo that combine leaves unset? If a DImode orphan can be produced without a mult, two of them would reach exactly 32 zero-traffic bytes on a mult-free body."
   },
   {
-   "hypothesis": "The single store that any referenced donated object emits could coincide with a store the target already ships, making a referenced (and therefore honest) donated object byte-neutral.",
-   "mechanism": "The target's only sp-relative store outside the register saves is sw $v0,0x10($sp), the fifth outgoing argument at offset 16; frame layout order (outgoing args below vars) decides whether a donated object can ever be placed at offset 16 rather than 24.",
-   "next_probe": "Read the frame-layout code in tools/gcc-2.7.2/function.c that orders args, vars and regs for STACK_GROWS_DOWNWARD with ARGS_GROW_DOWNWARD unset, and confirm whether a frame object can precede the outgoing-args block. If it cannot, the i8 measurement (score 13, one store at offset 24) is the permanent price of any referenced donation and that closes the donation route with a layout cite rather than by enumeration."
+   "hypothesis": "The ledger's cap of one combine orphan on this body may be a cap on the SPELLING rather than on the body: every measured spelling reported an orphan count of 0 or 1 and was scored as a whole, and nobody has stacked two independent instances of the one construct that does produce an orphan.",
+   "mechanism": "The orphan is planted per REG_DEAD note that distribute_notes cannot rehome (combine.c:10832-10841); multiplicity is the count of qualifying sites, so two independent sites of the same shape should plant two.",
+   "next_probe": "Take s2's folded loop-guard compare (guard = count - 1; if (guard != -1)), the one spelling on this body that measures vars= 8, and stack a second independent instance of the SAME construct on a different value (and then a third and fourth), reading the orphan-USE count from a -da .combine with tmp/grind/func_800480C0/s6/count_uses.py rather than reading the frame alone. Four such slots is exactly 32 zero-traffic bytes."
   },
   {
-   "hypothesis": "caller-save.c:315 is the one census entry never measured on this body: its slots are 4 bytes each and are allocated inside reload's iteration, so a slot allocated in one iteration can survive an allocation change that removes the need for the save.",
-   "mechanism": "setup_save_areas allocates a stack slot per call-clobbered hard register that is the home of a pseudo with reg_n_calls_crossed > 0, sized by regno_save_mode (SImode, 4 bytes) rather than by alter_reg's -1 alignment, and it runs before the final reload decisions.",
-   "next_probe": "Bodies with exactly ten and eleven call-crossing values (d1 used twelve and went straight to spills), reading the vars term and the sp-offset histogram to see whether any 4-byte caller-save slot is left untouched; eight untouched 4-byte slots would be a second zero-traffic route to 32."
+   "hypothesis": "Some part of the shipped 0x58 prologue constant may come from a source other than compute_frame_size, in which case the 56-byte sum this session pinned would be attacking the wrong quantity.",
+   "mechanism": "compute_frame_size adds current_function_pretend_args_size to the total only under ABI_64BIT (mips.c:4530), so it is inert here, but the maspsx/prologue_fix stages between cc1 and as also rewrite prologue constants for this project.",
+   "next_probe": "Trace the 0x58 in asm/funcs/func_800480C0.s back through the build stages for a control function: confirm whether the emitted addiu $sp,$sp,-0x58 is written directly from compute_frame_size's total_size or whether any post-cc1 stage (maspsx, tools/prologue_fix) can adjust it, and whether prologue_config.json carries any entry that could account for frame bytes outside compute_frame_size."
   }
  ],
  "judge_constraints": [
@@ -484,6 +490,38 @@
    "measured_on": "HEAD e18d7715, a5 control installed over the INCLUDE_ASM line with the base candidate's single FAKE present; the sibling-breakage half is an argument from integrate.c:2092 plus the s9 census, not a fr",
    "predicate_cite": "",
    "result": "a5 (helper declared, never called) is completely inert - vars= 0, 72 insns - so only an expansion donates. Since every e"
+  },
+  {
+   "session": 16,
+   "statement": "current_function_outgoing_args_size can be raised above 24 without emitting an instruction, so the 56 bytes can be bought from the outgoing-args side instead of the frame-vars side.",
+   "kill_scope": "class",
+   "measured_on": "HEAD a5ebaa6f, bodies e1/e2/e3/e4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present",
+   "predicate_cite": "tools/gcc-2.7.2/calls.c:2400",
+   "result": "The stores are contiguous and unconditional: e2 args= 32 stores at 16/20/24, e3 args= 40 at 16..36, e4 args= 56 at 16..5"
+  },
+  {
+   "session": 16,
+   "statement": "The single store that a referenced donated object emits can be made to land at offset 16 and coincide with the target's own sw $v0,0x10($sp), making the donation byte-neutral (s15 frontier item 2).",
+   "kill_scope": "class",
+   "measured_on": "HEAD a5ebaa6f, histograms of the s15 i8/a3 and s16 f7 emitted bodies with the base candidate's single FAKE present",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:1651",
+   "result": "No declared, donated or spilled frame object can be placed below args_size at any size, so the i8 body's surviving sw $4"
+  },
+  {
+   "session": 16,
+   "statement": "setup_save_areas allocates 4-byte caller-save slots on this body that survive an allocation change and go untouched, giving zero-traffic frame bytes at 4-byte granularity (s15 frontier item 3).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a5ebaa6f, bodies f7..f11 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present",
+   "predicate_cite": "",
+   "result": "vars= 40/48/56/64/72 with unalloc= 5/6/7/8/9 and regs= 10/0 at every level: vars tracks the unallocated-pseudo count one"
+  },
+  {
+   "session": 16,
+   "statement": "A parameter of this function can be given a stack home that GCC charges to this frame and that no instruction writes, making assign_parms a zero-traffic producer of the 32 bytes.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a5ebaa6f, bodies g1..g4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present",
+   "predicate_cite": "",
+   "result": "All four read .frame $sp,56 # vars= 0, regs= 8/0, args= 24. g3 costs 7 extra instructions storing $a0-$a3 but charges th"
   }
  ],
  "ladder_skip": 0,

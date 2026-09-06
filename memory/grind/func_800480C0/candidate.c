@@ -3,6 +3,57 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s16 (synthesis, 2026-09-05, chassis HEAD a5ebaa6f) - BODY UNCHANGED. Floor
+ * re-measured 20 with this body installed over the INCLUDE_ASM line (74 target
+ * insns, 74 build insns, rules_dropped 0). Mandated kill re-audit re-run on the
+ * current chassis: candidate keep-all 20 / drop-1 32, s14 i9 20 / 32, s14 i8
+ * 13 / 26 - the single FAKE unit is load-bearing in all three and masks no lever
+ * (tmp/grind/func_800480C0/s16/fake_ablate_reaudit.txt).
+ * THE SESSION'S STRUCTURAL RESULT: the residual is NOT get_frame_size equal to
+ * 32. Fifteen sessions read the shipped frame as vars 32 plus args 24, but
+ * mips.c:4557 places the callee-saved block at args_size + extra_size +
+ * var_size + gp_reg_size - 4 and mips.c:4475 totals the frame as var_size +
+ * args_size + gp_reg_rounded, so the shipped listing constrains only the SUM
+ * var_size + args_size == 56. Measured end to end: body e4, whose single call
+ * carries 14 arguments, reads .frame sp,88 - vars= 0, regs= 8/0, args= 56 -
+ * the target's exact frame total, exact register count and exact save offsets
+ * 0x38..0x54, with ZERO frame vars.
+ * THE DECOMPOSITION IS NEVERTHELESS RESOLVED, BY MEASUREMENT RATHER THAN BY
+ * ASSUMPTION: every argument word past the fourth is stored, contiguously, into
+ * offsets 16..args_size-1 (e2 args 32 stores at 16,20,24; e3 args 40 stores at
+ * 16..36; e4 args 56 stores at 16..52). An args_size of 32/40/48/56 therefore
+ * puts 2/4/6/8 stores inside the target's untouched 0x18-0x37 window, and the
+ * target has exactly one sp-relative store outside its register saves. So the
+ * target really is args 24 plus vars 32 - now a measured fact. e4 scores 22
+ * against the candidate's 20 despite a byte-exact frame, and a fabricated
+ * argument list on a five-parameter callee fails cheat-checklist T1 and T2
+ * anyway, so the outgoing-args axis is dead twice over.
+ * TWO CENSUS ENTRIES CLOSED BY MEASUREMENT, LEAVING NONE UNMEASURED:
+ *   caller-save.c:315 (s15 frontier 3) - five pressure levels f7..f11 (7 to 11
+ *     extra call-crossing values) give vars 40/48/56/64/72 tracking unalloc
+ *     5/6/7/8/9 one for one, every slot 8-byte aligned and touched twice. No
+ *     4-byte caller-save slot appears at any level: global alloc spills instead
+ *     of caller-saving once the callee-saved file is exhausted.
+ *   function.c:3605 and 3888 assign_parms - g1..g4 (an unused 32-byte struct
+ *     parameter in seventh position, an unused s32 seventh parameter, the same
+ *     struct in FIRST position, and the struct read once) all read vars= 0.
+ *     Parameter homes live in the CALLER's frame under REG_PARM_STACK_SPACE,
+ *     so assign_parms cannot charge this frame at all.
+ * s15 FRONTIER 2 CLOSED WITH A CITE: mips.h:1651 defines STARTING_FRAME_OFFSET
+ * as current_function_outgoing_args_size, so frame objects are allocated ABOVE
+ * the outgoing-args block and no frame object can ever be placed below it. The
+ * i8 body's surviving store at offset 24 could not have been made to coincide
+ * with the target's store at offset 16.
+ * WHERE THIS LEAVES THE ATTACK: var_size + args_size must be 56; args_size is
+ * pinned to 24 by the single-store evidence; therefore var_size is 32, and
+ * alter_reg slots are 8-byte aligned (reload1.c:2382-2385), so an allocation
+ * route needs FOUR zero-traffic slots. This body caps at one across roughly 85
+ * measured spellings, the mult-free tree maximum is three (s8 census over 1096
+ * functions), and four is attested nowhere without a mult in the stream. The
+ * only zero-traffic producer that reaches 32 in one step remains a declared
+ * unreferenced 32-byte local - the pad, banned here and granted to three
+ * siblings.
+ */
 /* s15 (synthesis, 2026-09-05, chassis HEAD e18d7715) - BODY UNCHANGED, floor
  * re-measured 20 with this body installed over the INCLUDE_ASM line (74/74,
  * rules_dropped 0; probe reads .frame sp,56 - vars= 0, regs= 8/0, args= 24,

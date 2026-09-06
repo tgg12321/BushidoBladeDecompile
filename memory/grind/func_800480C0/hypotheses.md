@@ -1430,3 +1430,208 @@ aggregate. That is the shape three siblings ship under an owner grant.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD e18d7715, a5 control installed over the INCLUDE_ASM line with the base candidate's single FAKE present; the sibling-breakage half is an argument from integrate.c:2092 plus the s9 census, not a fresh sibling build
+
+## s16 - synthesis (2026-09-05, chassis HEAD a5ebaa6f, candidate.c + its one FAKE `arg0 = 0;`)
+
+Modality: synthesis. The whole ledger was re-read before any probe; the mandated kill
+re-audit was re-run on the current chassis on the candidate and on the two
+closest-to-target instance kills (s14 i8 at 13 and i9 at 20) and all three reproduce s15
+exactly. The session's structural contribution is that the residual was MIS-STATED for
+fifteen sessions: it is not `get_frame_size() == 32` but `var_size + args_size == 56`, and
+`current_function_outgoing_args_size` is a ninth producer that the s15 census - which
+grepped only for `assign_stack_local` / `assign_stack_temp` - could not see. The split is
+then resolved back to (24, 32) by measurement rather than by assumption, and the last two
+unmeasured census entries are closed.
+
+### KILL RE-AUDIT (mandated; run first)
+- **RE-MEASURED ON HEAD a5ebaa6f, VERDICT UNCHANGED.** candidate keep-all 20 (74/74,
+  rules_dropped 0) / drop-1 32; s14 i9 20 / 32; s14 i8 13 / 26. One FAKE unit each, load
+  bearing in each, occupying no lever's target pseudo. Artifacts
+  `tmp/grind/func_800480C0/s16/fake_ablate_reaudit.txt`.
+
+### H-s16-1 (CONFIRMED, and it corrects fifteen sessions) - the frame decomposition was under-determined
+STATEMENT: the shipped `.frame $sp,88` with saves at 0x38-0x54 does not imply
+`get_frame_size() == 32`; MIPS lays the callee-saved block at
+`args_size + extra_size + var_size + gp_reg_size - 4`, so only the SUM is observable.
+MECHANISM: `tools/gcc-2.7.2/config/mips/mips.c:4557` (gp_sp_offset) and mips.c:4475
+(total_size) both take `var_size` and `args_size` additively; `MIPS_STACK_ALIGN` rounds each
+to 8. Five pairs sum to 56: (24,32), (32,24), (40,16), (48,8), (56,0).
+PROBE: `bodies/e4_widen_existing_call14.c` - the body's ONE call widened to fourteen
+arguments, no second call site - measured with `tmp/grind/func_800480C0/s16/probe.sh`, plus
+`bodies/e2_call7.c`, `e3_call10.c`, `e1_call14.c` as a scaling ladder.
+RESULT: e4 reads `.frame $sp,88,$31 # vars= 0, regs= 8/0, args= 56, extra= 0` at 81 insns,
+with the eight register saves at 56/60/64/68/72/76/80/84 - the target's exact save offsets -
+and ZERO frame vars. The scaling ladder confirms the rounding: 7 args -> `args= 32`,
+10 -> 40, 14 -> 56. The target's frame total, register count and save offsets are all
+reachable with `get_frame_size() == 0`.
+
+### H-s16-2 (KILLED, class) - the outgoing-args area as a zero-traffic substitute for frame vars
+STATEMENT: `current_function_outgoing_args_size` can be raised above 24 without emitting an
+instruction, so the 56 bytes can be bought from the args side instead of the vars side.
+MECHANISM: `current_function_outgoing_args_size` is raised at exactly three sites, all
+inside `expand_call` / `emit_library_call` (`tools/gcc-2.7.2/calls.c:1400`, `calls.c:2400`,
+`calls.c:2750`); each is reached only by expanding a real call, and every argument word past
+the fourth is written into the block by `store_one_arg` before the call.
+PROBE: the e1/e2/e3/e4 ladder above, with the sp-offset histogram of each emitted body, and
+a sandbox score on the frame-exact e4.
+RESULT: the stores are contiguous and unconditional - e2 `args= 32` stores at 16/20/24, e3
+`args= 40` at 16..36, e4 `args= 56` at 16..52, one `sw` per word with no gaps. Any
+`args_size` above 24 therefore places 2/4/6/8 stores inside the target's untouched
+0x18-0x37 window, and `asm/funcs/func_800480C0.s` carries exactly one sp-relative store
+outside its register saves. e4 scores **22** (83 build insns vs 74) despite a byte-exact
+frame - worse than the candidate's 20 - a marginal cost of one instruction per four bytes
+against the pad family's zero. A separate call site is worse (e1 90 insns, plus a `jal` the
+target does not have). Independently, a fabricated argument list on a callee whose real
+signature has five parameters fails cheat-checklist T1 and T2.
+COROLLARY, and the reason this hypothesis was worth spending: because every raise costs a
+visible store, the target's `args_size` is pinned to 24 and its `var_size` to 32. The
+decomposition the ledger has assumed since s2 is now measured.
+VERDICT: KILLED. kill_scope: class. predicate_cite: `tools/gcc-2.7.2/calls.c:2400`.
+measured_on: HEAD a5ebaa6f, bodies e1/e2/e3/e4 installed one at a time over the INCLUDE_ASM
+line, base candidate's single FAKE (`arg0 = 0;`) present.
+
+### H-s16-3 (KILLED, class) - a frame object placed below the outgoing-args block
+STATEMENT (s15 frontier 2): the single store that a referenced donated object emits could be
+made to land at offset 16 and coincide with the target's own `sw $v0,0x10($sp)`, making the
+donation byte-neutral.
+MECHANISM: `assign_stack_local` starts allocating at `STARTING_FRAME_OFFSET`, which
+`tools/gcc-2.7.2/config/mips/mips.h:1651` defines as
+`current_function_outgoing_args_size` (plus a word only under `TARGET_ABICALLS`, which is
+off here - the probes read `extra= 0`).
+PROBE: read of mips.h:1645-1655 and mips.c:4444-4560, cross-checked against the measured
+histograms: every var slot in every body measured this session and last sits at an offset
+>= args_size (i8 at 24, a3 at 24, f7's five slots at 24/32/40/48/56).
+RESULT: frame objects are allocated strictly ABOVE the outgoing-args block, so no declared,
+donated or spilled object can be placed at offset 16 at any size. The i8 body's surviving
+`sw $4,24($sp)` could never have been moved to coincide with the target's store.
+VERDICT: KILLED. kill_scope: class. predicate_cite:
+`tools/gcc-2.7.2/config/mips/mips.h:1651`. measured_on: HEAD a5ebaa6f, histograms of the
+s15 i8/a3 and s16 f7 emitted bodies with the base candidate FAKE present.
+
+### H-s16-4 (KILLED, instance) - the caller-save area as a zero-traffic producer (s15 frontier 3)
+STATEMENT: `setup_save_areas` allocates a 4-byte slot per call-clobbered hard register that
+homes a call-crossing pseudo, and a slot allocated in one reload iteration can survive an
+allocation change that removes the need for the save, leaving untouched 4-byte frame bytes.
+MECHANISM: `tools/gcc-2.7.2/caller-save.c:315` sizes its slots by `regno_save_mode`
+(SImode, 4 bytes) rather than by `alter_reg`'s -1 alignment, and runs before the final
+reload decisions.
+PROBE: `bodies/f7_cc7.c` .. `bodies/f11_cc11.c` - 7, 8, 9, 10 and 11 extra values live
+across the in-loop call to func_800482C8, filling the gap below s15's d1 at twelve - each
+measured with probe.sh, plus the sp-offset histogram of f7.
+RESULT: `vars= 40/48/56/64/72` with `unalloc= 5/6/7/8/9` and `regs= 10/0` at every level.
+Vars tracks the unallocated-pseudo count one for one at exactly 8 bytes each, so every byte
+comes from `alter_reg` (`reload1.c:2382-2385`), never from a 4-byte `regno_save_mode` slot;
+no 4-byte-granular offset appears at any level, and f7's five slots at 24/32/40/48/56 are
+each touched exactly twice. Once the callee-saved file is exhausted this compiler's global
+allocator spills rather than caller-saves, so the caller-save area is 0 bytes at every
+pressure level reachable on this body.
+VERDICT: KILLED. kill_scope: instance. measured_on: HEAD a5ebaa6f, bodies f7..f11 installed
+one at a time over the INCLUDE_ASM line, base candidate's single FAKE present.
+
+### H-s16-5 (KILLED, instance) - assign_parms as a producer of untouched frame bytes
+STATEMENT: a parameter of this function can be given a stack home that GCC charges to this
+frame and that no caller-side or callee-side instruction ever writes.
+MECHANISM: `function.c:3605` / `function.c:3888` call `assign_stack_local` for a parameter
+whose incoming location is unsuitable, feeding `DECL_FRAME_SIZE` exactly as `expand_decl`
+does - the last entry of the s15 census never measured on this body.
+PROBE: `bodies/g1_param_struct32_unused.c` (an unused 32-byte by-value struct as a 7th
+parameter), `g2_param_s32_unused.c` (an unused s32 7th parameter),
+`g3_param_struct32_first_unused.c` (the same struct in FIRST position, so its
+register-passed words need a home) and `g4_param_struct32_read_once.c`.
+RESULT: all four read `.frame $sp,56 # vars= 0, regs= 8/0, args= 24`. g3 costs 7 extra
+instructions storing `$a0-$a3`, but charges them to the CALLER's frame: under
+`REG_PARM_STACK_SPACE` a MIPS o32 parameter home lives above this function's frame, never
+inside it. With this measurement the s15 eight-site census has no unmeasured entry left.
+VERDICT: KILLED. kill_scope: instance. measured_on: HEAD a5ebaa6f, bodies g1..g4 installed
+one at a time over the INCLUDE_ASM line, base candidate's single FAKE present.
+
+### s15 FRONTIER ITEM 1 - NOT RE-RUN, BECAUSE s9 ALREADY ANSWERED IT
+s15 proposed dumping SetDrawEnv to learn what makes it carry three combine orphans where
+this body carries one. The s9 forensics table already answers it: SetDrawEnv's three
+(pseudos 140/137/128) and func_80041AC8's three (115/105/85) are byte-for-byte the same
+class-A producer - combine deleting the `ashift` half of a shift-pair sign extension of an
+HImode pseudo after substituting its MEMORY equivalent, which is why both bodies ship an
+`lh`. Multiplicity is just the count of qualifying sites; this body has none, because its
+four halfword values come from `lhu` through a base register advanced by `addiu` between
+each load and its `sll/sra` pair, and its four s16 parameters have no memory home. Spending
+a dump here would have re-derived s9 rather than adding a measurement.
+
+### THE MERGED ATTACK, as this session leaves it
+`var_size + args_size == 56` (mips.c:4557). `args_size` is pinned to 24 because every
+argument word past the fourth is stored (H-s16-2), so `var_size == 32` - measured, no
+longer assumed. `alter_reg` slots are 8-byte aligned (reload1.c:2382-2385), so an allocation
+route needs FOUR zero-traffic slots; this body caps at one across roughly 85 measured
+spellings, the mult-free tree maximum over 1096 functions is three (s8), and four is
+attested nowhere without a mult in the emitted stream. Nine producer sites are now
+enumerated and every one is measured on this body; exactly one reaches 32 bytes in a single
+step at zero emitted instructions - `expand_decl` of an unreferenced local aggregate, the
+pad family, banned here by the 2026-09-02 Judge ruling and granted by owner ruling to the
+three siblings that carry the identical untouched window.
+
+### FRONTIER FOR s17 (reset to three)
+1. The four-zero-traffic-slot requirement is now the whole question, and it has never been
+   attacked from the ALIGNMENT side. `alter_reg` (`reload1.c:2382-2385`) asks
+   `assign_stack_local` for the pseudo's mode size with alignment -1, which is why each
+   orphan costs 8 bytes rather than 4; if a DImode or larger mode orphan exists the same
+   single orphan would be worth 8 or 16. Next probe: look for a zero-traffic orphan in a
+   mode wider than SImode - the two 6-phantom mult bodies func_80042874 / func_80042A88
+   (src/text1a_c.c, vars=48) are class-B DImode HILO and are the tree's only instance;
+   dump one with the instrumented cc1 and read whether its orphan slots are 8 or 16 bytes
+   each and whether the producer needs a `mult` insn in the emitted stream or only a DImode
+   pseudo that combine leaves unset.
+2. Nothing in the ledger has ever measured what a SECOND zero-traffic orphan would cost on
+   THIS body if the first is present - every spelling reported orphan counts of 0 or 1 and
+   was scored as a whole. Next probe: take the one spelling that does produce an orphan
+   (s2's folded loop-guard compare, `guard = count - 1; if (guard != -1)`, vars= 8) and
+   stack a second independent instance of the SAME construct on a different value, reading
+   the orphan-USE count from a `-da` .combine with s6's count_uses.py rather than the frame
+   alone; the ledger's cap of one may be a cap on the SPELLING rather than on the body.
+3. The producer census is closed for `get_frame_size` and for
+   `current_function_outgoing_args_size`, but not for `current_function_pretend_args_size`,
+   which `compute_frame_size` adds to the total only under `ABI_64BIT` (mips.c:4530) and
+   which is therefore inert here - and not for the possibility that the shipped `.frame`
+   directive itself is not what the assembler used. Next probe: confirm from
+   `asm/funcs/func_800480C0.s` and the maspsx stage whether the 0x58 in the shipped
+   prologue is reproduced from the `.frame` pseudo-op or from the literal
+   `addiu $sp,$sp,-0x58`, i.e. whether any part of the 56 bytes could come from a source
+   other than compute_frame_size.
+
+## [s16] The shipped .frame $sp,88 with saves at 0x38-0x54 does not imply get_frame_size() == 32: MIPS lays the callee-saved block at args_size + extra_size + var_size + gp_reg_size - 4, so only the SUM var_size + args_size is observable and five pairs sum to 56.
+- mechanism: tools/gcc-2.7.2/config/mips/mips.c:4557 (gp_sp_offset) and mips.c:4475 (total_size) both take var_size and args_size additively, each rounded by MIPS_STACK_ALIGN to 8 (mips.h:2063).
+- probe: bodies/e4_widen_existing_call14.c - the body's ONE call widened to fourteen arguments, no second call site - measured with tmp/grind/func_800480C0/s16/probe.sh, plus the scaling ladder e2_call7 / e3_call10 / e1_call14.
+- result: e4 reads .frame $sp,88,$31 # vars= 0, regs= 8/0, args= 56, extra= 0 at 81 cc1 insns, with the eight register saves at 56/60/64/68/72/76/80/84 - i.e. 0x38..0x54, the target's exact save offsets - and ZERO frame vars. The ladder confirms the rounding: 7 args -> args= 32, 10 -> 40, 14 -> 56. The target's frame total, register count and save offsets are all reachable with get_frame_size() == 0, so the ledger's fifteen-session framing of the residual as a 32-byte vars gap was one decomposition out of five.
+- verdict: CONFIRMED
+
+## [s16] current_function_outgoing_args_size can be raised above 24 without emitting an instruction, so the 56 bytes can be bought from the outgoing-args side instead of the frame-vars side.
+- mechanism: current_function_outgoing_args_size is raised at exactly three sites, all inside expand_call / emit_library_call (calls.c:1400, calls.c:2400, calls.c:2750); each is reached only by expanding a real call, and store_one_arg writes every argument word past the fourth into the block before the call.
+- probe: The e1/e2/e3/e4 ladder above with the sp-offset histogram of each emitted body (tmp/grind/func_800480C0/s16/last_e*.s), plus a sandbox score on the frame-exact e4.
+- result: The stores are contiguous and unconditional: e2 args= 32 stores at 16/20/24, e3 args= 40 at 16..36, e4 args= 56 at 16..52 - one sw per word, no gaps. Any args_size above 24 therefore places 2/4/6/8 stores inside the target's untouched 0x18-0x37 window, and asm/funcs/func_800480C0.s carries exactly one sp-relative store outside its register saves. e4 scores 22 (83 build insns vs the target's 74) despite a byte-exact frame - worse than the candidate's 20 - a marginal cost of one instruction per four bytes of frame, against the pad family's zero; a separate call site is worse still (e1 at 90 insns plus a jal the target does not have). Independently, a fabricated argument list on a callee whose real signature has five parameters fails cheat-checklist T1 and T2. The corollary is the session's most useful product: because every raise costs a visible store, the target's args_size is pinned to 24 and its var_size to 32, so the decomposition the ledger has assumed since s2 is now measured rather than assumed.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD a5ebaa6f, bodies e1/e2/e3/e4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present
+- predicate_cite: tools/gcc-2.7.2/calls.c:2400
+
+## [s16] The single store that a referenced donated object emits can be made to land at offset 16 and coincide with the target's own sw $v0,0x10($sp), making the donation byte-neutral (s15 frontier item 2).
+- mechanism: assign_stack_local begins allocating at STARTING_FRAME_OFFSET, which mips.h:1651 defines as current_function_outgoing_args_size (plus a word only under TARGET_ABICALLS, which is off here - every probe reads extra= 0), so frame objects sit strictly above the outgoing-args block.
+- probe: Read of mips.h:1645-1655 and mips.c:4444-4560, cross-checked against the measured sp-offset histograms of every var-carrying body in the ledger: s15 i8 at 24, s15 a3 at 24, s16 f7's five slots at 24/32/40/48/56.
+- result: No declared, donated or spilled frame object can be placed below args_size at any size, so the i8 body's surviving sw $4,24($sp) - the closest any legal-shaped body has come, at score 13 - could never have been moved to offset 16. s15 frontier item 2 is closed with a source cite rather than by enumeration.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD a5ebaa6f, histograms of the s15 i8/a3 and s16 f7 emitted bodies with the base candidate's single FAKE present
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:1651
+
+## [s16] setup_save_areas allocates 4-byte caller-save slots on this body that survive an allocation change and go untouched, giving zero-traffic frame bytes at 4-byte granularity (s15 frontier item 3).
+- mechanism: caller-save.c:315 sizes its slots by regno_save_mode (SImode, 4 bytes) rather than by alter_reg's -1 alignment, and setup_save_areas runs before the final reload decisions, so a slot allocated for a call-crossing pseudo can outlive the need for the save.
+- probe: bodies/f7_cc7.c .. f11_cc11.c - 7, 8, 9, 10 and 11 extra values live across the in-loop call to func_800482C8, filling the gap below s15's d1 at twelve - each measured with probe.sh, plus the sp-offset histogram of f7.
+- result: vars= 40/48/56/64/72 with unalloc= 5/6/7/8/9 and regs= 10/0 at every level: vars tracks the unallocated-pseudo count one for one at exactly 8 bytes each, so on these five bodies every frame byte came from alter_reg (reload1.c:2382-2385) and no 4-byte-granular offset appeared at any level. f7's five slots at 24/32/40/48/56 are each touched exactly twice, one store and one load. At every pressure level reachable on this body the global allocator spilled rather than caller-saved once the callee-saved file was exhausted, and the caller-save area measured 0 bytes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a5ebaa6f, bodies f7..f11 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present
+
+## [s16] A parameter of this function can be given a stack home that GCC charges to this frame and that no instruction writes, making assign_parms a zero-traffic producer of the 32 bytes.
+- mechanism: function.c:3605 and function.c:3888 call assign_stack_local for a parameter whose incoming location is unsuitable, feeding DECL_FRAME_SIZE exactly as expand_decl does - the last entry of the s15 eight-site census never measured on this body.
+- probe: bodies/g1_param_struct32_unused.c (an unused 32-byte by-value struct as a 7th parameter), g2_param_s32_unused.c (an unused s32 7th parameter), g3_param_struct32_first_unused.c (the same struct in FIRST position so its register-passed words need a home) and g4_param_struct32_read_once.c, each measured with probe.sh.
+- result: All four read .frame $sp,56 # vars= 0, regs= 8/0, args= 24. g3 costs 7 extra instructions storing $a0-$a3 but charges them to the CALLER's frame: under REG_PARM_STACK_SPACE a MIPS o32 parameter home lives above this function's frame, not inside it. On these four bodies assign_parms contributed 0 frame bytes, and with this measurement the s15 producer census has no unmeasured entry left on this body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a5ebaa6f, bodies g1..g4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present
