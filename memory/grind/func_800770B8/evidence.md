@@ -4179,3 +4179,115 @@ qty.sh, qtydbg.py, sweep.log, `*.qty` (12 BB2_QTY_DEBUG tables), f2_fn.lreg, row
 - [s33] OWNER DIRECTIVE executed: the class-B prologue store-base spellings and the record-layout audit for a third use of the C pointer were both already spent on this exact chassis by s31 (class B closed, floor 5 -> 3) and s32 (func_8006E49C / func_80076FF8 / func_8006E950 show no list-walk shape; the natural s16-table readings of the 0x6A/0x7E record cost 176 insns). This session ran the standing frontier item 1 instead and replaced its guesswork with the exact criterion above.
 
 - [s33] src/text1b.c was restored to the pristine HEAD copy after every sweep and after the qty runs; git status on src/ and include/ is clean at end of session.
+
+## [s34] (synthesis, 2026-09-06) — the class-C seat is reached WITHOUT the operand flip, and "extra local = extra quantity" is read out of local-alloc.c
+
+**Chassis re-measured live.** HEAD de9606ac; `src/text1b.c` byte-identical to the s33 pristine
+copy. Banked `candidate.c` body (floor body F + the class-B dead store + the do-while(0) prologue
+fence) applied with its two documented byte-neutral caller-side edits:
+`sandbox func_800770B8 --disable all` = **3 / 175 / 175**, residual rows 62/63/64 only. The
+operand-flip body f2 re-measured 27, e3 (s33's best-shaped body) re-measured 26. 21 scoring
+builds + 19 `BB2_QTY_DEBUG` cc1 runs + 2 `-da` dump runs this session; `src/text1b.c` restored to
+the pristine HEAD copy after every sweep (`git status` on src/ and include/ clean at end).
+
+**KILL RE-AUDIT, executed.** The instance kill closest to the target was s33's e3 (26, the
+target's class-C registers at 175 insns, entire residual = one extra quantity). It was re-measured
+on this chassis (still 26) and then resolved FORENSICALLY rather than re-guessed: `dump.py e3`
++ `slice.py` give `tmp/grind/func_800770B8/s34/e3_fn.lreg`, in which **reg86 IS `dp` itself** —
+insn 137 `(set (reg/v:SI 86) (symbol_ref D_800A35D0))`, insn 145 `(set (reg 86) (plus (reg 94)
+(reg 86)))`, dead at insn 151. sched1 hoists 137/143/145 to the TOP of the loop-body block (the
+.lreg insn chain is post-sched1), which is what drags the chain's birth from 28 to 12 — and is
+also why `dp` is live in $a2 across the whole A-store group, which the target never is. So e3's
+residual is not a bookkeeping artefact: it is a real extra live value.
+
+**WHY AN EXTRA LOCAL USUALLY MEANS AN EXTRA QUANTITY (local-alloc.c:472).** `local_alloc` sets
+`reg_qty[i] = -2` (eligible for a block quantity) only for pseudos with
+`reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`. That is why the floor body's `ptr` (4 defs ->
+3 REG_DEAD notes) never appears in the blk=1 table at all: it is punted to global-alloc. `dp` in
+e3 has exactly ONE death (the intermediate value is consumed by a set of the same reg, so no
+REG_DEAD note is emitted at insn 145), which is precisely why it earns the sixth quantity.
+
+**h1 KILLS THE s33 FRONTIER'S ITEM 1.** h1 = e3 + `dp` given a second live range in a later block
+(the 0x5C/0x60 pair spelled through `dp`). Its blk=1 table is EXACTLY the shape s33 predicted
+would be a score-0 body — five quantities, merged chain+dest birth12 death56 refs22 -> $v1,
+reload 48-52 -> $v0, reg101 -> $a0, reg87 -> $a1 — and it scores **42**. Removing `dp` from
+local-alloc does not remove the VALUE: global-alloc still seats it in $a2 across the A group,
+rows 38-43 and 55/56 are unchanged from e3, and the 0x5C/0x60 block gets worse. h4 (same trick
+plus the tail pointer through `dp`) has the identical table and scores 50. **The qty table is
+necessary, not sufficient: a body can hold the target's whole local-alloc assignment and still be
+42 points away.**
+
+**THE SESSION'S REAL FINDING — the class-C seat is reachable with NO flip and NO new quantity.**
+Two independent families were found, both starting from the floor body:
+
+1. **p2 (24/175/175) — name the second `D_800A36A0` read in a local taken BEFORE the sb store.**
+   `u8 *rb;` ... `rb = D_800A36A0;` placed between the C-group stores and
+   `*(u8 *)(base + t0 + 0x68) = (u8)t0;`, with `p_6a`/`p_7e` built off `rb`. That moves the
+   reload's birth from 48 to 42, which drops the merged dest+reload quantity's qty_compare_1
+   priority from 3.75 to 30/14 = 2.14, below the chain's 2.67. The chain therefore sorts FIRST,
+   takes $v0, and the dest+reload quantity conflicts with it and takes $v1 — so **rows 62, 63 and
+   64 come out BYTE-EXACT (`addu $v1,$v1,$v0` / `addiu $a3,$v1,0x6A` / `addiu $a1,$v1,0x7E`) for
+   the first time on a body with no operand flip, no extra quantity and no FAKE construct.** Its
+   whole 24-point residual is a SECOND, much smaller tie: inserting the reload ahead of the sb
+   pushes both `reg87` (sign-extended t0, birth6) and `reg101` (base + base+t0) two luids later,
+   and their priorities become 3*14/42 = 1.000 and 3*12/36 = 1.000 — an EXACT tie that
+   qty_compare_1 breaks by quantity index, handing $a0 to t0 and $a1 to base+t0, i.e. the mirror
+   image of the target. In the floor body the same pair is 42/40 vs 36/34 = 1.05 vs 1.06 and
+   base+t0 wins $a0.
+
+2. **s2 (13/175/175) / s4 (12/175/175) — move the D_800A35D0 group ahead of the A group and take
+   the second `D_800A36A0` read into the EXISTING `ptr` local.** Because `ptr` has three deaths it
+   is invisible to local-alloc, so the dest is no longer merged with the reload; combine_regs ties
+   it to the chain instead, and with the D group first the chain is born at 12. blk=1 then holds
+   only FOUR quantities: merged chain+dest birth12 death56 refs22 -> **$v1**, reg100 -> $a0,
+   reg86 -> $a1, and the short t0*4 temp -> $v0. Rows 54 through 64 are byte-exact except row 62's
+   operand order, and adding the flip (s4) fixes that too. The entire remaining residual is the D
+   group's own emission position (rows 38-53: the target materialises %hi/%lo(D_800A35D0) at rows
+   49/50, between the A stores and the D stores).
+
+**Everything else measured this session.** h2 (dp reused for the C group) 27, h3 (dp reused for
+the sb address) 32, h5 43; p3 (reload named before the C group, birth 36) 38, p4 (reload named
+before the D group) 39 at 174 insns, p6 (reload named immediately before the p_6a block — birth
+stays 48) **3, byte-inert**, p7 (sb also taken through rb) 27, p8 (reload named immediately AFTER
+the sb — birth stays 48) **3, byte-inert**, p9 (reload named between the two C stores) 38, p10
+(p8 with rb declared before base) 3; q1 (sb moved ahead of the C group) / q2 / q3 tables all
+wrong; r1 (p2 + sb ahead of the C stores) 5; q5/q6/q7 (D group after the sb, D+C after the sb,
+D and C swapped) leave the chain's birth at 26-28; r8a/r8b/r8c (reload into `ptr`, three
+placements) all 27 with merged chain+dest at birth 28; s1 (D group first, reload untouched) 15;
+s3 (r8 + e3's dp) 27.
+
+**Artifacts.** `tmp/grind/func_800770B8/s34/` — apply.py, run.sh, rows.sh, qty.sh, qtydbg.py,
+dump.py, slice.py, rowsall.py, onlydiff.py, gen_h.py, gen_p.py, gen_p2.py, gen_q.py, gen_r.py,
+gen_s.py, gen_t.py, v/ (24 bodies), sweep.log, `*.qty` (19 BB2_QTY_DEBUG tables), e3_fn.lreg,
+base_fn.lreg, rows_e3.txt, rows_base.txt, rows_p2.txt, rows_h1.txt, rows_s2.txt.
+
+- [s34] Chassis re-verified live on HEAD de9606ac: the banked candidate body = 3/175/175 (residual rows 62/63/64), f2 = 27, e3 = 26.
+- [s34] local-alloc.c:472 gates block quantities on `reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`: that is why the floor body's multi-def `ptr` never appears in the blk=1 qty table, and why any freshly named single-death local (e3's `dp`) adds one.
+- [s34] e3's sixth quantity is `dp` itself (e3_fn.lreg insns 137/145/151); sched1 hoists the whole dp chain to the top of the loop-body block, which is what moves the merged quantity's birth to 12 AND what leaves &D_800A35D0+t0*4 live in $a2 across the A stores - a value the target never has live.
+- [s34] KILLED: giving `dp` a second live range so local-alloc.c:472 refuses it a quantity (h1, h4) produces EXACTLY the qty table s33 predicted to be score 0 and measures 42 and 50 - global-alloc still seats the value in $a2. A correct blk=1 quantity table is necessary but not sufficient.
+- [s34] p2 (24/175/175): naming the second D_800A36A0 read in a local taken BEFORE the sb store moves the reload's birth 48 -> 42, drops the dest+reload quantity below the chain in qty_compare_1, and emits target rows 62/63/64 BYTE-EXACT with five quantities, no operand flip and no FAKE construct.
+- [s34] p2's residual is a second qty_compare_1 tie: the inserted reload pushes reg87 (t0) and reg101 (base + base+t0) two luids later, making their priorities exactly 1.000 and 1.000, so the index tiebreak swaps $a0/$a1 against the target. In the floor body the same pair is 1.05 vs 1.06 and base+t0 wins $a0.
+- [s34] The reload's position is a THREE-slot window: before the C group = birth 36 (p3, 38), between the C stores and the sb = birth 42 (p2, 24), after the sb or immediately before the p_6a block = birth 48 and byte-inert (p8/p6/p10, all 3).
+- [s34] s2 (13/175/175) and s4 (12/175/175): moving the D group ahead of the A group and taking the second D_800A36A0 read into the existing multi-death `ptr` local gives blk=1 only FOUR quantities with the merged chain+dest at birth 12 seated in $v1 - the target's assignment - and rows 54-64 byte-exact (row 62's operand order needs the flip, which s4 supplies). The residual is entirely the D group's emission position.
+- [s34] r8a/r8b/r8c: routing the second D_800A36A0 read through `ptr` alone makes combine_regs tie the dest to the CHAIN instead of the reload without any source-level operand flip (merged refs 22), but with the D group left in place the birth stays 28 and all three placements score 27.
+- [s34] src/text1b.c was restored to the pristine HEAD copy after every sweep; git status on src/ and include/ is clean at end of session.
+
+- [s34] Chassis re-verified live on HEAD de9606ac: the banked candidate body (with its two documented byte-neutral caller-side edits) = 3/175/175, residual rows 62/63/64; the operand-flip body f2 = 27; s33's e3 = 26.
+
+- [s34] local-alloc.c:472 gates block quantities on `reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`. That is why the floor body's four-times-assigned `ptr` never appears in the blk=1 qty table (it is punted to global-alloc), and why any freshly named single-death local adds one quantity.
+
+- [s34] e3's sixth quantity is `dp` itself: tmp/grind/func_800770B8/s34/e3_fn.lreg insn 137 sets reg86 from (symbol_ref D_800A35D0), insn 145 adds reg94 (t0*4) into it, insn 151 kills it. The .lreg insn chain is post-sched1, so sched1 is the pass that hoists the dp chain to the top of the loop-body block -- that hoist is both what moves the merged quantity's birth to 12 and what leaves the D address live in $a2 across the A stores.
+
+- [s34] A correct blk=1 quantity table is necessary but not sufficient: h1 and h4 hold exactly the table s33 predicted would be score 0 and measure 42 and 50.
+
+- [s34] p2 = 24/175/175 is the first body in 34 sessions to emit target rows 62/63/64 byte-exact with no operand flip, no extra quantity and no new FAKE construct; the lever is purely WHERE the second D_800A36A0 read is taken.
+
+- [s34] p2's residual is one exact qty_compare_1 tie: reg87 (t0) 3*14/42 = 1.000 vs reg101 (base + base+t0) 3*12/36 = 1.000, broken by quantity index in favour of t0, swapping $a0/$a1 against the target. The floor body's same pair is 1.05 vs 1.06.
+
+- [s34] The named-reload placement window is one source slot wide: birth 36 (before the C group) 38, birth 42 (between the C stores and the sb) 24, birth 48 (after the sb, or immediately before the p_6a block) byte-inert at 3.
+
+- [s34] s2 = 13/175/175 and s4 = 12/175/175: the D group moved ahead of the A group plus the second D_800A36A0 read taken into `ptr` gives blk=1 only FOUR quantities, the merged chain+dest born at 12 and seated in $v1, and rows 54-64 byte-exact (row 62's operand order needs the flip, which s4 supplies). The residual is entirely the D group's emission position.
+
+- [s34] Routing the second D_800A36A0 read through `ptr` alone (r8a/r8b/r8c, 27) reproduces the operand flip's combine_regs effect -- the dest ties to the chain rather than the reload -- in ordinary C with no flip written.
+
+- [s34] src/text1b.c was restored to the pristine HEAD copy after every sweep; git status on src/ and include/ is clean at end of session.

@@ -1,3 +1,34 @@
+/* s34 (synthesis — 2026-09-06).  BODY UNCHANGED; floor still 3/175/175 (re-measured live on
+ * HEAD de9606ac with the two documented byte-neutral caller-side edits; residual rows 62/63/64).
+ *
+ * s33's frontier item 1 is CLOSED and NEGATIVE.  e3's sixth quantity is `dp` itself (proved by
+ * reading tmp/grind/func_800770B8/s34/e3_fn.lreg: insn 137 sets reg86 from the symbol_ref, 145
+ * adds t0*4 into it, 151 kills it).  local-alloc.c:472 only grants a block quantity to pseudos
+ * with reg_basic_block >= 0 && reg_n_deaths == 1, so giving `dp` a second live range removes it
+ * from the qty table — h1/h4 do exactly that, produce EXACTLY the five-quantity table s33
+ * predicted would be score 0, and measure 42 and 50, because global-alloc still seats the value
+ * in $a2 across the A stores.  A correct blk=1 table is necessary, not sufficient.
+ *
+ * THE NEW LEAD (no FAKE construct, nothing moved, five quantities): the class-C seat does not
+ * need the operand flip at all.  Naming the SECOND D_800A36A0 read in a local taken between the
+ * C-group stores and the sb store —
+ *      u8 *rb;  ...  rb = D_800A36A0;
+ *      s16 *p_6a = (s16 *)(rb + (t0 * 10) + 0x6A);
+ *      s16 *p_7e = (s16 *)(rb + (t0 * 10) + 0x7E);
+ * — moves the reload's birth 48 -> 42, drops the merged dest+reload quantity's qty_compare_1
+ * priority from 3.75 to 2.14 (below the chain's 2.67), so the chain sorts first and takes $v0 and
+ * the dest+reload quantity takes $v1.  Target rows 62/63/64 come out BYTE-EXACT.  Score 24
+ * (rejected/s34-named-reload-before-sb-classC-rows-exact-but-a0a1-tiebreak-24.c).  Its whole
+ * residual is a SECOND qty_compare_1 tie: the inserted reload pushes reg87 (t0) and reg101
+ * (base + base+t0) two luids later, making their priorities exactly 1.000 and 1.000, and the
+ * index tiebreak swaps $a0/$a1 against the target.  Any body that holds the reload at birth <= 44
+ * while leaving reg101's death at 44 (or pushing reg87's to >= 50) is a predicted score-0 body.
+ *
+ * SECOND LEAD: s2 (13) / s4 (12) — the D group moved ahead of the A group plus the second
+ * D_800A36A0 read taken into the EXISTING multi-death `ptr` local.  That gives blk=1 only FOUR
+ * quantities with the merged chain+dest born at 12 and seated in $v1 (the target's assignment)
+ * and rows 54-64 byte-exact; the residual is entirely the D group's emission position.
+ */
 /* s33 (structural — 2026-09-06).  BODY UNCHANGED; floor still 3/175/175 (re-measured live
  * on HEAD 35950580 with the two documented byte-neutral caller-side edits).  The class-C
  * seat decision is no longer a hypothesis: it is a closed-form predicate on GCC's own

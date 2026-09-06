@@ -3249,3 +3249,101 @@ do-while(0) prologue fence present, 175/175 in all fourteen builds.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store, do-while(0) prologue fence present; 175/175 in all five builds
+
+## [s34] (synthesis, 2026-09-06) — the frontier is reset onto two non-FAKE families
+
+Chassis: HEAD de9606ac, floor body F + the class-B dead store + the do-while(0) prologue fence
+= 3/175/175 (residual rows 62/63/64). All scores below are `sandbox --disable all` on that chassis
+at 175/175 insns unless noted.
+
+### [s34] KILLED (instance) — removing e3's sixth quantity by denying it a local-alloc quantity does not remove the value
+s33's frontier item 1 said e3 was "one quantity from a score-0 body". Executed: `dp` was given a
+second live range (h1: the 0x5C/0x60 pair spelled through `dp`, a later block, so
+`reg_basic_block[dp] < 0`; h4: the same plus the tail pointer). Both produce EXACTLY the predicted
+blk=1 table — five quantities, merged chain+dest birth12 death56 refs22 -> $v1, reload 48-52 ->
+$v0, reg101 -> $a0, reg87 -> $a1 — and measure 42 and 50. Global-alloc simply seats `dp` in $a2
+anyway, and rows 38-43/55/56 are unchanged from e3. h2 (dp reused for the C group, 2 deaths in the
+same block) 27, h3 (dp reused for the sb address) 32, h5 43.
+measured_on: HEAD de9606ac, floor body + class-B dead store + do-while(0) fence, 175/175.
+
+### [s34] CONFIRMED — the class-C seat needs no operand flip: it is a qty_compare_1 priority
+### inversion driven by WHERE the second D_800A36A0 read is taken
+p2 = the floor body plus `u8 *rb;` and `rb = D_800A36A0;` placed between the C-group stores and
+the sb store, with `p_6a`/`p_7e` built off `rb`. The reload's birth moves 48 -> 42, its merged
+dest+reload quantity's priority falls 3.75 -> 2.14, below the chain's 2.67; the chain sorts first
+and takes $v0, the dest+reload quantity conflicts with it and takes $v1. Target rows 62/63/64 come
+out byte-exact (`addu $v1,$v1,$v0` / `addiu $a3,$v1,0x6A` / `addiu $a1,$v1,0x7E`). Score 24.
+No FAKE construct, no extra quantity, no store moved.
+
+### [s34] CONFIRMED — p2's whole residual is a second, exact qty_compare_1 tie
+Inserting the reload ahead of the sb pushes reg87 (sign-extended t0, birth 6) and reg101
+(base + base+t0, birth 10) two luids later; their priorities become 3*14/(48-6) = 1.000 and
+3*12/(46-10) = 1.000. qty_compare_1 breaks the tie by quantity index, so t0 takes $a0 and base+t0
+takes $a1 — the mirror of the target. The floor body's same pair is 42/40 = 1.05 vs 36/34 = 1.06,
+and base+t0 wins $a0. Any body that keeps the reload at birth <= 44 while leaving reg101's death
+at 44 (or reg87's at >= 50) is predicted to be a score-0 body.
+
+### [s34] KILLED (instance) — the reload's useful placement window is exactly one source slot wide
+Placements measured: before the C group (birth 36) 38; between the two C stores (birth 38) 38;
+between the C stores and the sb (birth 42) 24; immediately after the sb (birth 48) 3, byte-inert;
+immediately before the p_6a block (birth 48) 3, byte-inert; declaration order of `rb` byte-inert.
+Also: p4 (before the D group) 39 at 174 insns; p7 (sb address also taken through rb) 27; r1 (p2
+with the sb moved ahead of the C stores, to shorten reg101's span) 5.
+measured_on: HEAD de9606ac, floor body + class-B dead store + do-while(0) fence, 175/175 except p4.
+
+### [s34] CONFIRMED — routing the second D_800A36A0 read through the existing `ptr` local reproduces the operand flip's combine_regs effect in ordinary C
+`ptr` has three REG_DEAD notes, so local-alloc.c:472 refuses it a quantity and it is global.
+With `ptr = D_800A36A0;` feeding p_6a/p_7e, combine_regs can no longer tie the dest to the reload
+and ties it to the CHAIN instead (merged refs 22) — the same merge the source-level operand flip
+produces, with no flip written. r8a/r8b/r8c (three placements) all 27 because the chain's birth
+stays 28.
+
+### [s34] CONFIRMED — s2/s4: four quantities, the target's seats, and only the D group's position left
+s2 = the floor body with the D_800A35D0 group moved ahead of the A group AND the second
+D_800A36A0 read taken into `ptr`. blk=1 holds only FOUR quantities: merged chain+dest birth12
+death56 refs22 -> $v1 (the target's seat), reg100 -> $a0, reg86 -> $a1, short t0*4 temp -> $v0.
+Rows 54-64 are byte-exact except row 62's operand order; s4 (s2 + the flip) fixes that and scores
+12. s1 (D group first, reload untouched) 15. The residual is entirely the D group's emission
+position: the target materialises %hi/%lo(D_800A35D0) at rows 49/50, between the A stores and the
+D stores.
+
+### [s34] KILLED (instance) — store-group reorders that do not put the D group first leave the chain's birth at 26-28
+q5 (D group after the sb), q6 (D and C after the sb), q7 (D and C swapped) all keep the merged
+quantity's birth at 26-28 and score no better than the floor.
+measured_on: HEAD de9606ac, floor body + class-B dead store + do-while(0) fence, 175/175.
+
+## [s34] Giving e3's `dp` a second live range so local-alloc.c:472 refuses it a block quantity produces the exact five-quantity table s33 predicted would be a score-0 body, and the two spellings measured (h1: the 0x5C/0x60 pair through dp, a later block; h4: h1 plus the tail pointer through dp) score 42 and 50.
+- mechanism: local_alloc sets reg_qty[i] = -2 only for pseudos with reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1 (local-alloc.c:472). A second live range disqualifies dp, so it leaves the blk=1 qty table -- but the VALUE &D_800A35D0 + t0*4 is still live across the whole A-store group because sched1 hoists its two defining insns to the top of the block, so global-alloc seats it in $a2 anyway. The target has no value live there at all.
+- probe: gen_h.py built h1..h5 from e3; qty.sh printed each blk=1 table (h1/h4 match the predicted target table exactly: merged chain+dest birth12 death56 refs22 -> $v1, reload 48-52 -> $v0, reg101 -> $a0, reg87 -> $a1); run.sh scored them; rows.sh h1 shows rows 38-43 and 55/56 unchanged from e3.
+- result: h1 42, h4 50, h2 27, h3 32, h5 43 -- all at 175/175 insns. The blk=1 quantity table is necessary but NOT sufficient: a body can hold the target's entire local-alloc assignment and still be 42 points away. e3's residual is a real extra live value, not a bookkeeping artefact.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD de9606ac chassis, floor body F + the class-B dead store + the do-while(0) prologue fence (both FAKE constructs present, as in candidate.c); 175/175 insns
+
+## [s34] Naming the second D_800A36A0 read in a local taken between the C-group stores and the sb store (p2: `u8 *rb; ... rb = D_800A36A0;` with p_6a/p_7e built off rb) emits the target's rows 62, 63 and 64 byte-exact with five quantities, no operand flip and no new FAKE construct.
+- mechanism: The reload's birth moves 48 -> 42, so the merged dest+reload quantity's qty_compare_1 priority (local-alloc.c:1660, floor_log2(refs)*refs*size/(death-birth)) falls from 3*10/8 = 3.75 to 3*10/14 = 2.14, below the t0*4->t0*5->t0*10 chain's 4*16/24 = 2.67. find_free_reg therefore hands $v0 to the chain first, and the dest+reload quantity conflicts with it and takes $v1 -- which is the target's assignment for `addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E`.
+- probe: gen_p.py/gen_p2.py built p2/p3/p4/p6/p7/p8/p9/p10; qty.sh printed each blk=1 table; run.sh scored them; rows.sh p2 confirms rows 62/63/64 identical to asm/funcs/func_800770B8.s.
+- result: p2 = 24/175/175 with rows 62/63/64 byte-exact -- the first non-flip body in 34 sessions to reach the class-C seat. Its whole residual is a SECOND, exact qty_compare_1 tie: the inserted reload pushes reg87 (sign-extended t0, birth 6) and reg101 (base + base+t0, birth 10) two luids later, making their priorities 3*14/42 = 1.000 and 3*12/36 = 1.000; the index tiebreak then hands $a0 to t0 and $a1 to base+t0, the mirror of the target (the floor body's same pair is 1.05 vs 1.06 and base+t0 wins $a0).
+- verdict: CONFIRMED
+
+## [s34] The useful placement window for the named reload is exactly one source slot wide: before the C group gives birth 36 (p3, 38), between the C stores and the sb gives birth 42 (p2, 24), and after the sb or immediately before the p_6a block gives birth 48 and is byte-inert (p8/p6/p10, all 3).
+- mechanism: The reload's luid is what sets the merged dest+reload quantity's priority; only births <= 44 push it below the chain's 2.67, and every slot that achieves that also inserts the lw ahead of the sb store, shifting reg87's and reg101's deaths two luids later and creating the 1.000/1.000 tie.
+- probe: Six placements built by gen_p.py/gen_p2.py, each triaged with qty.sh (blk=1 table) before scoring with run.sh; plus p4 (before the D group) and p7 (sb address also through rb) and r1 (p2 with the sb moved ahead of the C stores).
+- result: p3 38, p9 38, p2 24, p6 3 (byte-inert), p8 3 (byte-inert), p10 3, p4 39 at 174 insns, p7 27, r1 5. Declaration order of `rb` is byte-inert.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD de9606ac chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; 175/175 except p4 (174)
+
+## [s34] Routing the second D_800A36A0 read through the EXISTING multi-death `ptr` local makes combine_regs tie the dest to the chain instead of to the reload, reproducing the source-level operand flip's effect in ordinary C, and combined with the D group moved ahead of the A group it gives blk=1 only four quantities with the merged chain+dest born at 12 and seated in $v1.
+- mechanism: `ptr` carries three REG_DEAD notes, so local-alloc.c:472 refuses it a quantity and it is allocated globally; block_alloc's tying loop can then only tie the dest (the plus) to the chain operand. Putting the D_800A35D0 group first makes the t0*4 shift the block's second insn, so the merged quantity is born at 12, conflicts with the short t0*4 temp holding $v0, and takes $v1.
+- probe: gen_r.py (r8a/r8b/r8c: three placements of `ptr = D_800A36A0;` on the floor body) and gen_s.py/gen_t.py (s1 = D group first; s2 = s1 + the ptr reload; s3 = ptr reload + e3's dp; s4 = s2 + the operand flip), each qty-triaged then scored.
+- result: r8a/r8b/r8c all 27 (merged chain+dest, but birth stays 28); s1 15; s2 13 with rows 54-64 byte-exact except row 62's operand order; s4 12; s3 27. s2/s4's entire residual is the D group's emission position -- the target materialises %hi/%lo(D_800A35D0) at rows 49/50, between the A stores and the D stores, while s2 emits it first.
+- verdict: CONFIRMED
+
+## [s34] Store-group reorders that do not put the D_800A35D0 group first leave the merged quantity's birth at 26-28: the D group moved after the sb (q5), D and C both moved after the sb (q6), and D and C swapped (q7) score 15 or worse and none reaches the target's seat.
+- mechanism: The merged quantity's birth is the luid of the sll that first computes t0*4, which cse shares between the D address, the C address and the t0*5 chain. Only a source position that puts a t0*4 consumer ahead of the A group moves that sll into the first few luids of the block.
+- probe: gen_q.py built q5/q6/q7 on the floor body; qty.sh printed each blk=1 table; run.sh scored them.
+- result: q5 birth 26, q6 birth 28, q7 birth 26; scores 15, worse, worse. Also q1/q2/q3 (the sb store moved ahead of the C group or the D group, with the named reload) all produce wrong tables.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD de9606ac chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; 175/175
