@@ -1,0 +1,24 @@
+{
+ "func": "func_800644FC",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-06T05:34:51.612723+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "73d89429a5e16152",
+   "when": "2026-09-06T05:55:54.754114+00:00",
+   "summary": "final call: PASS. Constructs: (1) object-model declaration fixes `extern s32 D_800A3454[]` / `extern SVECTOR D_800F1000[][10]` -- truthful semantic readings backed by measured target addressing (evidence.md OBJEC"
+  }
+ ]
+}
