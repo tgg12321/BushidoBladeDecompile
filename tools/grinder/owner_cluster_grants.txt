@@ -27,3 +27,4 @@ func_800325E0 cop2-addressing-preamble-cluster.md (owner ruling 2026-08-17; regi
 # 2026-09-02 per owner Ruling A (decisions.md 2026-09-02 OWNER RULING):
 func_80031890 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)
 func_8002FF20 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)
+func_80019310 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-06 foreclosed-bucket review)
