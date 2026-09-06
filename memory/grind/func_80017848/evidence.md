@@ -4767,3 +4767,101 @@ scorable**. The floor is unchanged for the ninth consecutive session.
 - [s40] Reading checks banked: reg_live_length goes negative only for setjmp-live pseudos (flow.c:1240, :1260); update_equiv_regs only doubles a REG_EQUIV pseudo's live length (local-alloc.c:1064); global.c:583's -2 parameter case has no setter in this tree; so no unallocated pseudo exists for reload1.c:5851's find_equiv_reg copy path. cse_set_around_loop (cse.c:7909) needs REG_LOOP_TEST_P (jump.c:2253, duplicated exit tests only) and plants its copy before the guard, and duplicated while/for loops hoist the bound because NOTE_INSN_LOOP_VTOP resets maybe_never at loop.c:936 - the reason s28's W-forms lost.
 
 - [s40] Rejected bank now 240: s40_call_arg_reader_q_lnk_entry_live_seats_t0_t1.c (scratch-TU form) and s40_return_arm_reads_q_crossjump_tail_keeps_read_costs_15.c.
+
+## s41 (2026-09-06, modality `rederive`; owner directive already executed s37/s38/s39/s40)
+
+- [s41] CHASSIS RE-AUDIT. HEAD src/ings.c carries the anchor `INCLUDE_ASM("asm/funcs",
+  func_80017848);` at line 820 (unchanged since s37). body_BASE.c (candidate.c's body,
+  byte-identical to s40's) over the anchor: `sandbox func_80017848 --disable all` = **3 at
+  127/127, scorable**. Mandated kill re-audit: Q1 (the exact-instruction-stream form,
+  s40/body_Q1.c) re-measured **14 at 127/127** - unchanged. No FAKE construct exists in any
+  form of this function, so tools/fake_ablate.py is vacuous (same as s29-s40). Q1's
+  normalised diff (tmp/grind/func_80017848/s41 via dis.sh): seats only - p(X)=a1, sh=a0,
+  q(Y)=v0, links(=p reused)=a1, base=a0 against target X=a0, sh=a1, Y=a3, links=a2, base=a0.
+  Q1's Y is v0 because it is a block-local pseudo (copy -> add) and local-alloc's
+  find_free_reg takes the lowest free register; target's Y in a3 is not local.
+
+- [s41] RE-DERIVATION CELLS (four un-banked shapes, tmp/grind/func_80017848/s41/body_*.c,
+  measured through s41/cells.ps1, all on the HEAD chassis, no FAKE constructs):
+    M1  BASE with loop 1's tail `p = q;` relocated to right after `base = sh + q`   12 at 125
+    M2  M1 plus loop 2 spelled like loop 1 (named q/lnk, `p = q;` after its add)     14 at 125
+    F1  both loops `for (i = 0;; i++) { if (i >= count) break; ... }`                 22 at 119
+    G1  both loops `i = 0; goto testK; do { ...; i++; testK:; } while (i < count);`   43 at 117
+  M1 diff (s41/B_M1.txt vs T.txt): cse deletes the relocated `p = q` (q is known equal to
+  p in that extended block), so p becomes live across loop 1; loop 2's guard no longer
+  reloads slots, BOTH preheader copies vanish (`addu a0,a0,a1` reads the guard's load
+  directly) and p/sh swap seats to a1/a0. So a same-value re-store of p inside the copy's
+  own extended basic block is not a flow-time reader of q at all - cse removes it before
+  flow, exactly as s39's J1/P4 showed for the between-copy-and-add position. G1 diff
+  (s41/B_G1.txt): the guard block collapses to `sll v0,s4,6 / lw a0,12(s2) / lw a1,16(s2) /
+  j <bottom test> / addu a0,v0,a0`, the frame drops from 64 to 48 bytes (the two-step
+  guard's phantom slots go with the guard), and the bottom test keeps its `lw` (loop.c
+  never runs LICM on an invalid loop). F1: exit test at the loop top, no rotation - the
+  guard-add/base-add pair and the bottom bound reload are gone.
+
+- [s41] READING CHECKS banked (tools/gcc-2.7.2, canonical sources):
+  (a) global.c set_preference (global.c:1671-1740) resolves BOTH operands through
+      reg_renumber before testing for a hard register, so a pseudo copied to/from a
+      LOCAL-ALLOC pseudo that local-alloc already seated inherits that seat as a
+      hard_reg_copy_preferences bit; find_reg (global.c:1080-1110) then prefers that
+      register over the lowest free one. This is the only route to a3 for a copy
+      destination that is NOT live across its loop body. In this function no local qty
+      can reach a3: local-alloc's find_free_reg takes the lowest register not busy in
+      the block, global pseudos are invisible to it, and every block here holds a single
+      local chain (v0). The only hard-register a3 write in the RTL is the entry copy of
+      slot_b's parameter pseudo, which crosses the call and is seated in s3.
+  (b) regs_someone_prefers (global.c:877-935) collects hard_reg_full_preferences of
+      LOWER-priority conflicting allocnos; the only pseudos with v0/a0 preferences here
+      (the call's argument pseudos and the call-result pseudo) never overlap a preheader
+      copy destination unless it is live across the call, which a3 (call-clobbered) forbids.
+      So s40's conclusion stands on a second, independent reading: target's a3 requires the
+      copy destination to conflict with v0,v1,a0,a1,a2, i.e. to be live across its loop.
+  (c) duplicate_loop_exit_test (jump.c:2163-2342) emits NOTE_INSN_LOOP_VTOP directly
+      before the ORIGINAL exit code at the loop bottom (jump.c:2338), and scan_loop resets
+      maybe_never there (loop.c:936-937); the may_trap_p gate at loop.c:715-716 is the only
+      thing keeping a bound load in a loop, so a source `while`/`for` bound is hoisted
+      whenever it is invariant (no store, no call in the loop - true here). The target's
+      per-iteration `lw v0,28(a0)` therefore rules out every while/for spelling with an
+      invariant bound, independent of s28's W-cells.
+  (d) loop.c find_and_verify_loops marks a loop invalid on setjmp, forced labels,
+      REG_LABEL uses, or a jump into it from outside (loop.c:2253-2322, :2596). G1 is the
+      C spelling of the last case; measured 43 - the invalid loop also loses the guard.
+  (e) optimize_reg_copy_1 (local-alloc.c:700-870) re-points the add at the copy destination
+      only after combine kept the copy; it moves SRC's death to the copy and, if DEST dies
+      inside the scanned range, moves DEST's death to SRC's old death insn. So the
+      instruction stream `copy / lw links / add reads copy-dest` is reachable in two ways
+      only: DEST live past the add at flow time (added_sets_2 keeps the copy; target's
+      seats), or the use_crosses_set_p refusal (Q1; DEST local, seat v0).
+
+- [s41] Artifacts: tmp/grind/func_80017848/s41/{body_BASE,body_Q1,body_M1,body_M2,body_F1,
+  body_G1}.c, s41/cells.ps1, s41/dis.sh, s41/norm.py, s41/apply_win.py, s41/T.txt,
+  s41/B.txt (last cell), s41/B_M1.txt, s41/B_G1.txt, s41/raw_build.txt, s41/ings.orig.c,
+  s41/write_ledger.py.
+
+- [s41] Rejected bank now 244: s41_p_eq_q_after_base_add_cse_folds_costs_12.c,
+  s41_both_loops_p_eq_q_after_base_add_costs_14.c, s41_for_break_at_top_no_rotation_costs_22.c,
+  s41_goto_into_loop_invalid_no_guard_costs_43.c.
+
+- [s41] Chassis: anchor src/ings.c:820 unchanged; BASE = 3 at 127/127 scorable; Q1 = 14 at
+  127/127; no FAKE constructs anywhere; src/ings.c restored from s41/ings.orig.c
+  (git diff --quiet passes).
+
+- [s41] Chassis: anchor src/ings.c:820 unchanged since s37; BASE = 3 at 127/127 scorable; Q1 = 14 at 127/127; no FAKE constructs anywhere; src/ings.c restored from s41/ings.orig.c (git diff --quiet passes).
+
+- [s41] Owner directive 2026-09-06 (minimal-TU forensics of the copy geometry) was executed in s37 and extended s38-s40; s41 acknowledges it and adds chassis-level shape measurements plus allocator reading checks, no new scratch TU was needed.
+
+- [s41] M1/M2: a same-value p = q re-store after the base add is deleted by cse before flow (q known equal to p in the copy's own extended basic block), so it is not a reader; the deletion additionally makes p live across loop 1 and removes loop 2's slots reload (build 125 insns).
+
+- [s41] F1: for(;;) with break at the top is never rotated by expand/jump1, so the guard-add/base-add pair and the bottom bound reload disappear (119 insns).
+
+- [s41] G1: a goto into the loop body invalidates the loop (loop.c:2596) and drops the duplicate exit test; the guard block becomes a plain jump to the bottom test and the frame shrinks 64 -> 48 (117 insns), confirming by measurement that the guard two-step is what buys the 64-byte frame.
+
+- [s41] Reading (a): global.c set_preference resolves reg_renumber of both operands, so the a3 seat could come from a copy to/from a local-alloc pseudo already in a3 or from hard register a3; neither exists in this function's RTL (only local chain is v0; only hard a3 write is the entry parameter copy seated s3).
+
+- [s41] Reading (b): regs_someone_prefers only carries preferences of lower-priority conflicting allocnos; the v0/a0-preferring pseudos (call args, call result) cannot conflict with a preheader copy destination without crossing the call, which a3 (call-clobbered) forbids.
+
+- [s41] Reading (c): duplicate_loop_exit_test emits NOTE_INSN_LOOP_VTOP directly before the original bottom exit code (jump.c:2338) and scan_loop resets maybe_never there (loop.c:936-937), so any while/for loop with an invariant bound hoists it (loop.c:715-716 is the only trap gate) - target's per-iteration lw v0,28(a0) rules out every while/for spelling independent of s28's W-cells.
+
+- [s41] Reading (e): optimize_reg_copy_1 (local-alloc.c:700-870) re-points the add at the copy destination and moves death notes; the copy / lw links / add-reads-copy stream is reachable only via a flow-time-live destination (target seats) or the use_crosses_set_p refusal (Q1, destination local, seat v0).
+
+- [s41] Rejected bank now 244 entries.

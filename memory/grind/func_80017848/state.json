@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 40,
+ "session_count": 41,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -243,23 +243,29 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis; two new byte-free-reader classes for the preheader copy measured and killed (call-argument reader dies on entry liveness vs the a2/a3 hard args; re"
+  },
+  {
+   "session": 41,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis and Q1 at 14; four un-banked rederive shapes measured dead (same-value p = q after the base add is cse-deleted, 12/14; for(;;)+break-at-top loses ro"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A flow-time reader of loop 2's copy destination that is a no-op move tied to a3 whose own consumer is byte-free would satisfy both the seat (global allocno live across the loop) and combine's added_sets_2 refusal; the only byte-free consumer class not yet measured is a hard-register USE at the call for a pseudo that is ALSO defined on the loop-skip paths without bytes.",
-   "mechanism": "global.c set_preference ties a pseudo copied into a hard argument register; the m9a failure is purely the entry-liveness conflict in block 0, so the question is whether any C spelling defines the argument pseudo on the skip paths at zero bytes (e.g. from a value already sitting in a3/a2 on those paths).",
-   "next_probe": "On the m9a scratch TU, define q on the skip paths from a value the target already holds there and read .greg for the seat; if every definition costs an instruction, bank as an instance kill and close the call-argument class."
+   "hypothesis": "A flow-time reader of loop 2's copy destination that is a no-op move tied to a3 whose own consumer is byte-free would satisfy both the seat and combine's added_sets_2 refusal; the only byte-free consumer class still unmeasured is a hard-register USE at the call for a pseudo that is ALSO defined on the loop-skip paths without bytes.",
+   "mechanism": "global.c set_preference ties a pseudo copied into a hard argument register; m9a's failure is purely the block-0 entry-liveness conflict, so the open question is whether any C spelling defines the argument pseudo on the skip paths at zero bytes.",
+   "next_probe": "On the s40 m9a scratch TU define q on the skip paths from a value the target already holds there and read .greg for the seat; if every definition costs an instruction, bank as an instance kill and close the call-argument class."
   },
   {
-   "hypothesis": "The two a3 copies are global allocnos because their destination pseudo is live across the loop by way of a reader that combine removed AFTER flow computed REG_BASIC_BLOCK/REG_DEAD (combine does not recompute reg_basic_block), so a reader that combine folds into another insn while the copy itself is not retried could leave a global, dead-at-add pseudo.",
-   "mechanism": "combine.c distribute_notes drops a REG_DEAD note it cannot place across a label; reg_basic_block is only computed by flow (flow.c mark_set_1 / mark_used_regs) and never updated by combine.",
+   "hypothesis": "The two a3 copies are global allocnos because their destination pseudo is live across the loop by way of a reader that combine removed AFTER flow computed REG_BASIC_BLOCK/REG_DEAD, so a reader combine folds into another insn while the copy itself is not retried could leave a global, dead-at-add pseudo.",
+   "mechanism": "combine.c distribute_notes drops a REG_DEAD note it cannot place across a label; reg_basic_block is computed only by flow and never updated by combine.",
    "next_probe": "Scratch TU on the m9a geometry with a loop-body reader of q that combine can fold into an existing insn (an address arithmetic use) and inspect .combine for whether the copy is retried and .greg for the seat; expected outcome is that the folded reader still reads q's register, i.e. an instance kill by dump."
   },
   {
    "hypothesis": "A family grant covering a construct that places a use-once register copy at a join-successor preheader without paying for its own address expression would re-open the residual; no such family is on the frozen list today.",
-   "mechanism": "s37-s40 prove combine's deletion, the block-boundary escape, the interposer escape, the reload producer, the call-argument reader and the cross-jump reader are all context-free.",
-   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff against target with tmp/grind/func_80017848/s40/dis.sh."
+   "mechanism": "s37-s41 prove combine's deletion, the block-boundary escape, the interposer escape, the reload producer, the call-argument reader, the cross-jump reader, the same-block re-store reader and the allocator preference route are all context-free.",
+   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff against target with tmp/grind/func_80017848/s41/dis.sh."
   }
  ],
  "judge_constraints": [],
@@ -632,6 +638,30 @@
    "measured_on": "scratch TU m9c under project flags plus HEAD src/ings.c:820 anchor with body_M9C.c; BASE 3 at 127/127; no FAKE constructs",
    "predicate_cite": "jump.c:2525",
    "result": "m9c .s cross-jumps both arms into one tail .L19: j .L17 / move $2,$5 - the read survives in the merged tail. Chassis: 15"
+  },
+  {
+   "session": 41,
+   "statement": "A same-value re-store p = q placed in the preheader directly after the base add (loop 1 only in M1, both loops in M2) is a flow-time reader of q that keeps the cse-produced copy alive past the add and",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_M1.c / body_M2.c; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "M1 = 12 at 127/125, M2 = 14 at 127/125. cse deletes the re-store before flow (q is known equal to p in that extended blo"
+  },
+  {
+   "session": 41,
+   "statement": "Both scan loops written as for (i = 0;; i++) { if (i >= count) break; ... } (exit test at the loop top, no rotation, no duplicated exit test) reproduce target's guard-add / base-add pair and the per-i",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_F1.c; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "22 at 127/119. The loop is not rotated, the bound test sits at the top and only one address add survives. Banked as reje"
+  },
+  {
+   "session": 41,
+   "statement": "Both scan loops written as i = 0; goto testK; do { body; i++; testK:; } while (i < count); (a jump into the loop that makes loop.c mark the loop invalid, so no LICM and no VTOP) keep the bound in the ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_G1.c; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "43 at 127/117. The guard block collapses to sll / lw / lw / j bottom-test / addu with no blez and no guard add, the fram"
   }
  ],
  "escalation_deferrals": 0

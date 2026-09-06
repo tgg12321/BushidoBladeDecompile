@@ -1036,3 +1036,12 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * guard reassignment is load-bearing: without it cse2 folds the preheader add
  * into the guard's add pseudo entirely.
  */
+/* [s41 ADDENDUM - body unchanged, re-measured 3 at 127/127 on the HEAD chassis.]
+ * s41 (rederive) measured four un-banked shapes, all dead: a same-value `p = q;`
+ * re-store after the base add (M1 = 12, M2 = 14; cse deletes it before flow so it is
+ * not a reader), for(;;)+break-at-top loops (F1 = 22, no rotation) and goto-into-loop
+ * invalid loops (G1 = 43, the guard block vanishes). Reading checks in evidence.md
+ * close the global.c preference route to the a3 seat: set_preference only sees hard
+ * registers and local-alloc seats, none of which can be a3 here. The residual is
+ * still exactly one byte-free flow-time reader of each preheader copy destination.
+ */
