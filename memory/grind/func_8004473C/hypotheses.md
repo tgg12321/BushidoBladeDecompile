@@ -342,3 +342,56 @@ measured_on: merged-struct chassis (TU-local aggregate decl), form Z1, no FAKE c
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: merged-struct chassis with the aggregate declared TU-locally in src/text1a_c.c, form Z1, no FAKE constructs, sandbox --disable all = 30
+
+## [s4] MATCHED. The residual was three independent ordinary-C levers, not one: loop-body statement order, comma-increment order, and expressing the header store and the source-pointer definition as ONE chained assignment.
+- mechanism: s3 attributed the whole block-0 divergence to sched1 boosting the standalone copy
+  insn `src = <call temp>` to LAUNCH_PRIORITY (birthing_insn_p, tools/gcc-2.7.2/sched.c:2505), so
+  it won the T-2 ready slot and pushed the count load next to `blez`, forcing a load-delay nop.
+  Writing `D_800A9CF8.unk10 = (s32)(src = (Rec4473C *)game_GetCharData());` makes expand emit the
+  global store directly from the call-result pseudo, so no separate user-copy insn exists in
+  block 0 to be boosted - without adding a second set, without a live biv, and without any FAKE
+  carrier. The two order levers are independent of that: the loop body is NOT byte-exact as s1-s3
+  recorded, and its schedule responds to source statement order and to the comma order of the
+  for-increment.
+- probe: a fast local scorer (tmp/grind/func_8004473C/s4b/sc.py, engine score_func against
+  tmp/perm_4473C_s4a/target.o, validated 13/50 == the sandbox floor) driving four hand-written
+  searches: greedy_fc.py / greedy2.py (single-move + swap greedy with random restarts over the
+  15 loop-body statements), search2.py (pre-loop order x 6 increment permutations), search3.py
+  (A/A2/A3/C/C2 chassis re-audit on the new body order), search5.py / search6.py (nine candidate
+  pre-loop chains x increment orders). Two permuter campaigns with telemetry
+  (tmp/perm_4473C_s4b on the S1 chassis, tmp/perm_4473C_s4c on the score-9 chassis).
+- result: 13 -> 9 (unk6 to position 13 and unkC ahead of unkA) -> 7 (`dst++, src++, i++`) -> 0
+  with the chained assignment. `sandbox func_8004473C --disable all` = score 0, build_insns 49,
+  target_insns 49; `verify-oracle` on the applied tree = ok true, build_sha1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle, so all four sibling functions in
+  the TU are byte-neutral under the aggregate merge as well.
+- verdict: CONFIRMED
+
+## [s4] KILL RE-AUDIT: the W-family biv-survival kill (s3, H11) still holds on the current chassis, and the A-chassis kill from s2 does NOT.
+- mechanism: an instance kill is chassis-relative. W1's cost is structural (a surviving biv plus
+  a giv, each with its own `addiu ...,0x68`), so it does not move with statement order; the
+  A-chassis kills ("wrong anchor") were measured under the OLD loop-body order and were stale.
+- probe: W1 re-measured verbatim through the s4 harness; four fresh flat-pointer anchors
+  (V1 at +0x2C with sp[0..2], V3 via `&((Rec4473C *)...)->unk2C`, V4 at +0x30 with sp[-1..1],
+  V5 as an s8* walker) measured for comparison; then search3.py re-measured chassis A/A2/A3
+  on the new body order.
+- result: W1 = 23 at 52 insns, unchanged from s3 - kill re-confirmed. V1/V3/V4/V5 = 20 at 52 -
+  every biv-survival spelling pays the same two extra instructions. But chassis A2
+  (`src = call; dst = D.unkC; D.unk10 = (s32)src;`) went from the s2-banked 15 to 7 at 49 insns
+  once the new body/increment order was applied, i.e. the s2 A-chassis kills were stale exactly
+  as the kill-re-audit rule predicts.
+- verdict: CONFIRMED
+
+## [s4] A permuter campaign on the form-C chassis and on the S1 (indexed-src) chassis produces only cheat-family proposals; the two that reach the target's bytes are a float round-trip and a redundant store to a global.
+- mechanism: the permuter's transformation set includes semantically-void casts and redundant
+  stores, which reach the right RTL shape by removing the boostable copy insn. Both are outside
+  the frozen family list (the dead-store family is LOCALS/PARAMS only; a cast that is not a real
+  conversion is the redundant-cast family), so neither is submittable.
+- probe: tmp/perm_4473C_s4b (S1 chassis, 13,590 iterations, base permuter score 595, stopped at
+  the no-novel-find window) and tmp/perm_4473C_s4c (score-9 chassis, 43,041 iterations, base 515,
+  51 finds), every find re-scored with the engine metric.
+- result: best engine-metric finds were `(float)` cast folding src to 0 (score 3, semantically
+  wrong) and `D_800A9CF8.unk10 += 0;` (score 0, cheat). Both banked in rejected/. Their VALUE was
+  diagnostic: they localised the fix to "remove the standalone copy insn from block 0", which the
+  hand-written chained assignment then does legitimately.
+- verdict: CONFIRMED

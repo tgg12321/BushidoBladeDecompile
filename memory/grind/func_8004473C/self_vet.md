@@ -1,66 +1,99 @@
-# SELF-VET — func_8004473C
+# SELF-VET — func_8004473C  (s4, 2026-09-06)
 
-CONSTRUCTS: aggregate-merge declaration `Unk800A9CF8Header D_800A9CF8` in include/game.h
-(+ the alias-suffixed splat rows in undefined_syms_auto.txt); TU-local `Rec4473C` record
-typedef; assignment-expression `D_800A9CF8.unk10 = (s32)(src = (Rec4473C *)game_GetCharData());`;
-for-increment order `dst++, i++, src++`; loop-body statement order (`dst->unkC` before
-`dst->unkA`, `dst->unk6 = 0;` placed after `dst->unk54 = src->unk34;`).
+CONSTRUCTS: (1) chained assignment `D_800A9CF8.unk10 = (s32)(src = (Rec4473C *)game_GetCharData());`;
+(2) loop-body statement order (`dst->unk6 = 0;` second-to-last, `dst->unkC = 0;` before
+`dst->unkA = 4;`); (3) comma-increment order `dst++, src++, i++`; (4) the `Unk800A9CF8Header`
+aggregate merge of the per-word splat symbols D_800A9CF8/D_800A9CFA/D_800A9CFC/D_800A9CFE/
+D_800A9D00/D_800A9D04/D_800A9D08 (chassis, inherited from s1); (5) the `Rec4473C` stride-0x68
+record typedef. NO FAKE construct, no inline asm, no register pin, no volatile, no dead store,
+no dead local, no pad, no opaque variable, no cast that is not a real type conversion.
 
 ## T1 semantic purpose:
-- Aggregate merge: yes. The seven splat per-word scalars are one 0x18-byte object in the
-  original binary (base+offset addressing, see prong (a) evidence below); the struct is the
-  declaration of that object and every member access is a real read/write of program state.
-- `Rec4473C`: yes. It is the record type of the two 0x68-stride tables the function copies
-  between; every member named is loaded or stored.
-- Assignment-expression: yes. Both effects are needed by the program - the call result is
-  published to `D_800A9CF8.unk10` AND kept in `src` for the copy loop. It is one statement
-  doing exactly the two things the function must do; there is no discarded value, no dead
-  read and no extra object.
-- Increment order / statement order: these are not constructs, they are the order of
-  statements that all have observable effect (fifteen field stores and three pointer/counter
-  increments). Reordering independent stores does not add or remove anything.
-## T2 human-programmer: yes for all. `x = (T)(p = f());` is a common C idiom for "store it and
-keep it"; a record typedef and a header struct for a header block are how anyone would write
-this; the field-store order is just an order, and no reader would ask "why is this here?" about
-any line - every line writes a field the function is specified to write.
-## T3 GCC-internals justification: the C is justified by program logic alone - it assigns the
-table pointer, publishes it, and copies fifteen fields per entry. GCC internals appear in this
-session's ledger only as the EXPLANATION of why one legal spelling emits the original's bytes
-and another does not (sched1 T-slots, birthing_insn_p, local-alloc/global-alloc seating); no
-construct here exists to steer a pass. Removing any of them changes what the function does
-(the merge) or nothing at all (statement order) - none of them is a no-op inserted for codegen.
-## T4 permuter/search provenance: no permuter, no auto-search. Every form this session was
-hand-derived from the cc1 -da .sched/.lreg dumps and measured with
-`sandbox func_8004473C --disable all`; the winning body is the natural spelling the dumps
-predicted, not a survivor of a random search.
-## T5 family check: no forbidden family is touched. There is no register pin, no `__asm__`, no
-scheduling barrier, no volatile, no dead store, no dead local, no pad array, no alias rename,
-no empty `if`, no `do{}while(0)`, no opaque arithmetic, no width cast for its own sake, and no
-build-time asm rewriting. The only construct that needs a sanctioned family is the aggregate
-merge (claimed below); everything else is ordinary C that any reader would take at face value.
-## T6 naming-announces-intent: no name in the diff is `pad`/`dummy`/`unused`/`spill`/`tmp`/
-`slack`. `src`, `dst`, `i` are the loop's real roles; `Rec4473C` / `Unk800A9CF8Header` are
-address-derived type names in this repo's existing convention (cf. `Unk800F1198Record`);
-the struct's `padXX` members are genuine layout padding inside a 0x68-byte hardware record,
-not frame coercion, and no address of them is taken.
+(1) Both halves are observable: `src` is the game_GetCharData() table the loop reads from, and
+the header field unk10 must record that same pointer for the sibling func_80044B30, which reads
+`D_800A9CF8.unk10 + a0 * 0x68`. Writing it as one assignment expression is a spelling of the
+same two effects, not an added effect; removing either half changes behaviour.
+(2)/(3) Statement order and comma-operator order are the program's own text; every statement
+stores a value the function is required to store, and every increment advances a pointer or the
+counter the loop needs. Nothing is added or removed relative to the natural body.
+(4) The aggregate replaces seven splat-invented per-word names with the one object they
+actually denote; every field is read or written by this TU (unk0/unk2/unk4/unk6/unk8/unkC/
+unk10 across func_80044670, func_8004473C, func_80044B30, func_80044C70).
+(5) `Rec4473C` is the record type of the two stride-0x68 tables; every named field is accessed.
+
+## T2 human-programmer:
+Yes for all five. `g.field = (s32)(p = get());` is a common C idiom for "publish the pointer and
+keep it"; a reader asks nothing about it. The field-store order and `dst++, src++, i++` are
+choices a human makes freely, with no reader-visible "why is this here?". A struct for a
+header the code addresses as base+offset, and a record type for a stride-0x68 table, are what a
+programmer would have written in the first place — the per-word `D_<addr>` names are splat's
+invention, not the original source's.
+
+## T3 GCC-internals justification:
+The candidate does NOT rest on a GCC internal for its right to exist. Each construct is
+justified by the program: the chained assignment is how the pointer is published and kept, the
+statement order is the initialisation order, the increment order is the loop's own text. GCC
+internals appear in the ledger only as the EXPLANATION of why the previous spellings cost extra
+instructions (sched1's birthing_insn_p boost of a standalone copy insn); that explanation is
+diagnostic, not the semantic warrant, and no construct here exists solely to steer a pass. The
+constructs would all still be in the source if the compiler scheduled differently.
+
+## T4 permuter/search provenance:
+A permuter campaign ran this session and its two best proposals were REJECTED as cheats and
+banked: `(float)` round-trip of the pointer (PERM_float_cast_folds_src_to_zero.c — semantically
+wrong, folds src to 0) and a redundant store to the GLOBAL (`D_800A9CF8.unk10 += 0;` /
+`D_800A9CF8.unk10 = (s32)src;` — PERM_dead_global_selfstore.c; the sanctioned dead-store family
+is LOCALS/PARAMS only, so this is a first reach of an unsanctioned family). Neither is in the
+diff. The submitted chained-assignment form was written BY HAND (tmp/grind/func_8004473C/s4b/
+search6.py, form `O4_embedded_assign`) as the ordinary-C hypothesis for what the rejected
+global self-store was doing mechanically, and it measures 0 on its own merits. Levers (2) and
+(3) came from an exhaustive hand-written statement-order sweep, not from auto-search output.
+
+## T5 family check:
+(1)/(2)/(3)/(5) are ordinary C and match NO family in the forbidden catalog: no register pin,
+no `__asm__`, no scheduling barrier, no volatile in any spelling, no dead/self store, no dead
+conditional or empty-body `if`, no `if (1)`, no dead goto or label pad, no DImode chain, no
+alias rename, no opaque constant variable, no redundant width cast (`(s32)` of a pointer and
+`(Rec4473C *)` of an `s32` are real conversions consumed by the assignment; `(float)` was the
+permuter's proposal and is rejected), no linker/rodata reordering. (4) is the sanctioned
+per-word-splat-symbol -> aggregate-merge family; claim below.
+
+## T6 naming-announces-intent:
+No name in the diff announces coercion intent. The locals are `src`, `dst`, `i` — each read and
+each carrying the value its name states. There is no `pad`, `_pad`, `dummy`, `unused`, `spill`,
+`sp_*`, `_buf`, `tail`, `slack` or `_frame_pad`. (The `pad18`/`pad38`/`pad60` members of
+`Rec4473C` are struct layout filler for unmapped bytes of a real 0x68 record — they are never
+declared as locals, never addressed and never stored to; they exist so the mapped members land
+at their measured offsets.)
 
 SANCTIONED-FAMILY-CLAIMS:
-  FAMILY: per-word splat symbol -> aggregate merge
+  FAMILY: Per-word splat symbol -> aggregate merge
   SCOPE: "two or more splat-invented `D_<addr>` scalars may be replaced by a single aggregate declaration."
   PRECEDENT: .claude/rules/no-new-park-categories.md:238
-  Prongs: (a) independent, predating evidence - in the ORIGINAL binary func_8004473C forms
-    `%lo(D_800A9D08)` in $a0 and reads D_800A9CF8 / D_800A9CFE as `lhu 0($a3)` / `lh 6($a3)`
-    with `$a3 = $a0 - 0x10`, and the INCLUDE_ASM sibling func_80044800 forms `%lo(D_800A9D04)`
-    in $v1 and reads D_800A9CFA as `$v1 - 0xA`: base+offset addressing of one object from two
-    different functions, not symbol adjacency (recorded in s1's evidence.md, before this
-    session). (b) the declaration is the documented shape - a flat 0x18-byte header of scalars
-    at 0/2/4/6/8/0xC/0x10/0x14, no magic stride index. (c) complete under the 2026-09-03
-    amendment: no C code names any merged per-word symbol; the six rows stay in
-    undefined_syms_auto.txt suffixed `/* alias of D_800A9CF8+N; retire with func_80044800 */`
-    because the still-`INCLUDE_ASM` sibling func_80044800 references D_800A9CFE/D_800A9D00/
-    D_800A9D04 in its assembly. (d) spelled at the canonical declaration in include/game.h,
-    next to the existing `Unk800F1198Record` merge, never TU-local, never a per-use pointer pun.
-    (e) byte-neutrality: the three C siblings rewritten to members (func_80044670,
-    func_80044B30, func_80044C70) were re-measured at their prior distance by s1; the full
-    `verify-oracle --rebuild` and the layer-2 cheat-reviewer are the driver's/operator's step.
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct
+  PRONGS: (a) object model established before this byte-chasing session — the naming census
+    rows quoted in the dispatch DATA MODEL block ("header state at -0x12 from buffer base",
+    "header pointer at -0xC from buffer base", "struct field accessed at base+0 and base-0x10")
+    plus the base+offset addressing in the shipped binary (`addiu a0,&D+0x10` then
+    `addiu a3,a0,-0x10`, target insns 10/11/14), recorded in evidence.md in s1. (b) the merged
+    declaration is a header/record struct, which is the shape the evidence shows; no magic
+    stride index. (c) every merged per-word symbol is removed from C — no C code in the tree
+    names D_800A9CFA/D_800A9CFC/D_800A9CFE/D_800A9D00/D_800A9D04/D_800A9D08 any more; the
+    `undefined_syms_auto.txt` rows are still referenced by the still-`INCLUDE_ASM` sibling
+    `asm/funcs/func_80044800.s`, which the 2026-09-03 amendment at
+    .claude/rules/no-new-park-categories.md:252 expressly allows, and adding the required
+    `/* alias of D_800A9CF8+N; retire with func_80044800 */` suffix is an operator packaging
+    step: that file is OUTSIDE a grind session's edit surface (the previous session on this
+    function was discarded for editing exactly it). (d) NOT YET SATISFIED IN THIS DIFF AND
+    DECLARED PLAINLY: the aggregate is declared TU-locally in src/text1a_c.c because
+    include/game.h is outside a grind session's edit surface. `memory/grind/func_8004473C/
+    candidate_merge.patch` is the header-canonical variant (declaration in include/game.h),
+    which s3 measured byte-identical; moving the two typedefs + the `extern` there is the
+    one operator step needed to close prong (d), and it changes no bytes. (e) byte-neutrality
+    for every other consumer is verified: `verify-oracle` on the applied tree returns
+    ok=true, build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa == the locked oracle, so
+    all four sibling functions in the TU still match; layer-2 cheat-reviewer is the driver's step.
+
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct. The diff contains no construct from any family
+that mandates a `/* FAKE */` annotation. (The `do { } while (0);` with its FAKE comment inside
+`func_80044670` is pre-existing at HEAD, is untouched by this diff, and is not part of this
+candidate.)

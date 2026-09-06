@@ -368,3 +368,34 @@ Z7 (src and dst both inner-block scoped) **13 / 50**.
 - [s3] The seat half and the order half are mutually exclusive in every form measured across s1-s3. The target's SEATS need the stored value to be a block-0-local temp consumed only by the store and one copy (form C: reg75 local with a $v0 copy suggestion, allocated first by local-alloc, which pushes the count temp to $v1; global.c then gives the multi-block src $v0 and the copy is deleted). The target's ORDER needs the walker's defining insn to be non-birthing, which so far always means a second set - i.e. a live biv costing an extra walking register and its increment.
 
 - [s3] Twelve form-C statement orderings across three sessions (S0, C4-C7, D1-D3, F2, F4, S4, S5, S6, B2, Z6, Z7) emit byte-identical 13 / 50 output. The emitted instruction SET is already the target's; re-spelling statement order on that chassis is exhausted.
+
+## s4 (2026-09-06) — MATCHED, honest floor 13 -> 0
+
+- **The matching body** (memory/grind/func_8004473C/candidate.c, applied in src/text1a_c.c):
+  `D_800A9CF8.unk10 = (s32)(src = (Rec4473C *)game_GetCharData());` then
+  `dst = (Rec4473C *)D_800A9CF8.unkC;` then
+  `for (i = 0; i < D_800A9CF8.unk6; dst++, src++, i++)` with the 15 stores in the order
+  unk0, unk1, unk2, unk4, unk8, unkC, unkA, unk10, unk12, unk14, unk4C, unk50, unk54, unk6, unk58.
+- **Measurements:** `sandbox func_8004473C --disable all` = score 0, build_insns 49,
+  target_insns 49. `verify-oracle` = ok true, build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa
+  == original_sha1_locked (whole tree, all siblings byte-neutral under the aggregate merge).
+- **Corrected inheritance:** s1-s3 recorded the loop body as "byte-exact" and therefore stopped
+  permuting it. That was wrong and it cost three sessions: `dst->unk6 = 0;` at position 13 plus
+  `dst->unkC = 0;` before `dst->unkA = 4;` is worth 4 points on its own (13 -> 9), and the
+  comma order `dst++, src++, i++` a further 2 (9 -> 7).
+- **Tooling that made it cheap** (reusable for any function in this TU): a standalone scorer
+  `tmp/grind/func_8004473C/s4b/sc.py` calling `engine.score.score_func` against
+  `tmp/perm_4473C_s4a/target.o` through `tmp/perm_4473C_s4a/compile.sh`. ~0.4 s per candidate
+  versus a full sandbox run, and validated to agree with `sandbox --disable all` at 13/50 and
+  again at 9/50 and 0/49. The greedy searchers built on it are greedy_fc.py, greedy2.py,
+  greedy3.py, search2.py..search6.py in the same directory.
+- **HEAD context:** HEAD carried a register-pinned m2c body for func_8004473C
+  (`register ... asm("v0")`, `s32 _sp_pad[2]`, `__asm__ volatile("" : "=m"(_sp_pad[0]))`).
+  The s4 diff deletes all of it; the function is now pure C.
+- **Packaging still open (operator step, outside a grind session's edit surface):** the
+  `Unk800A9CF8Header` / `Rec4473C` typedefs and `extern Unk800A9CF8Header D_800A9CF8;` sit
+  TU-locally in src/text1a_c.c. `candidate_merge.patch` moves them to include/game.h
+  (prong (d) of the aggregate-merge family); s3 measured that variant byte-identical. The
+  per-word rows in undefined_syms_auto.txt stay while `func_80044800` is still INCLUDE_ASM,
+  per the 2026-09-03 amendment, and want the `/* alias of D_800A9CF8+N; retire with
+  func_80044800 */` suffix.

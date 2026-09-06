@@ -41,7 +41,9 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "`typedef struct { ... } Unk800A9CF8Header; extern Unk800A9CF8Header D_800A9CF8;` declared at file scope in src/text1a_c.c (not in include/game.h)"
+ ],
  "kills": [
   {
    "session": 1,
@@ -124,9 +126,21 @@
    "result": "30 at 51 instructions - loop.c builds a different address chain and the loop body diverges. Worse than the s2-banked ind"
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-06T05:55:59.277089+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The per-word-splat-to-aggregate merge is submitted with the struct declared TU-locally in src/text1a_c.c, which is a self-admitted, unmet mandatory prong of the only family that could sanction the restructuring. Next action: Do not commit this diff. Move the Unk800A9CF8Header typedef and the `extern Unk800A9CF8Header D_800A9CF8;` declaration into include/game.h (the shared header), delete the TU-local copy from src/text1a_c.c, and re-verify byte-identity (the ledger already claims memory/grind/func_8004473C/candidate_merge.patch measured this header-canonical varia"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "ca17f281f09a7feb",
+   "when": "2026-09-06T09:14:03.998928+00:00",
+   "summary": "The per-word-splat-to-aggregate merge is submitted with the struct declared TU-locally in src/text1a_c.c, which is a self-admitted, unmet mandatory prong of the only family that could sanction the restructuring."
+  }
+ ]
 }
