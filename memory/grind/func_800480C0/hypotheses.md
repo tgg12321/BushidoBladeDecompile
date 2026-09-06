@@ -2122,3 +2122,123 @@ base candidate's single FAKE (`arg0 = 0;`) present in the measured bodies.
 - probe: tools/fake_ablate.py returned ERR / bi None for BOTH variants this session, and did so on the s20 candidate too (git show HEAD:memory/grind/func_800480C0/candidate.c), so the failure is tool-side; the ablation was performed directly instead. tmp/grind/func_800480C0/s21/bodies/base_nofake.c is the candidate body with the single arg0 = 0; line deleted, installed over the INCLUDE_ASM line and scored with sandbox --disable all.
 - result: CONFIRMED. keep-all scores 20 at build_insns 74; drop-1 scores 32 at build_insns 73. Identical to the s19 and s20 numbers - the eighth chassis on which this ablation has reproduced. The FAKE is load-bearing and masks no lever. Tool-health note banked for the next session: fake_ablate.py needs looking at before it is trusted again on this function.
 - verdict: CONFIRMED
+
+## s22 (structural, 2026-09-05, chassis HEAD b4a92a26)
+
+Floor at session start: **20**, re-measured with the s1..s21 candidate installed over
+src/text1b.c:129. Floor at session end: **1** (see H22-1 — the score-1 form is NOT
+submittable; the honest construct-free floor is still 20).
+
+### H22-1 — CONFIRMED. A donation carrier that reaches the target's exact frame leaves exactly one instruction of residual.
+- **Statement:** the clean s1..s21 body plus a byte-neutral `static __inline__ s32
+  sxadd(s16 v, s32 b)` helper carrying a WRITTEN `u32 t[8]`, substituted at all four
+  sign-extend-and-add sites, reaches `.frame $sp,88 # vars= 32, regs= 8/0, args= 24` and
+  scores 1.
+- **Mechanism:** integrate.c:2085-2092 donates the inline callee's `DECL_FRAME_SIZE`
+  verbatim, so a 32-byte helper local moves `get_frame_size()` 0 -> 32 with the caller's
+  stream untouched; the single divergence is the last store into the donated block, which
+  flow.c's `insn_dead_p` cannot prove dead for a frame MEM with no DECL to reason from.
+- **Probe:** `s22/bodies/k4_base_donate32w.c`; sandbox `"score": 1`, build_insns 75,
+  target_insns 74, rules_dropped 0; frame in `s22/sweep_log.txt`.
+- **Verdict:** CONFIRMED. Banked as memory/grind/func_800480C0/candidate.c behind an
+  explicit NOT-SUBMITTABLE banner (`t[8]` is a frame-coercion carrier failing T1/T2/T6 and
+  outside the oracle-gated written-never-read carve-out, since the TARGET contains no such
+  store).
+
+### H22-2 — CONFIRMED. The barred unwritten pad is worth exactly that one instruction.
+- **Probe:** `s22/bodies/k7_base_donate32_unwritten.c` (same helper, array declared and never
+  written): sandbox `"score": 0`, build_insns 74. Re-confirms s20's h1 on chassis b4a92a26.
+- **Verdict:** CONFIRMED; form barred by the standing Judge constraint
+  (docs/grind/decisions.md:20349). Banked as
+  `rejected/s22-unwritten-pad-score0-barred-by-judge-constraint.c`.
+
+### H22-3 — CONFIRMED. A free 8-byte ST_REGS phantom exists on this body; it costs the delay slot, not an instruction.
+- **Statement:** spelling the entry guard so that the guard pseudo IS the loop counter
+  (`guard = count - 1; if (guard != -1) { ... } while ((guard--) != 0);`) yields `vars= 8` at
+  73 raw cc1 insns — exactly the clean body's 73.
+- **Mechanism:** the `.lreg` header prints `Register 92 used 2 times across 2 insns in
+  block 0; dies in 0 places; ST_REGS or none`, and 92 appears nowhere in the printed RTL:
+  regclass leaves the entry-guard comparison pseudo in ST_REGS, global.c cannot seat it, and
+  reload's `alter_reg` pays 8 bytes for it at zero instruction cost.
+- **Cost:** having the subtraction available before the branch lets reorg.c fill the delay
+  slot with `addu $17,$2,-1`, deleting the target's `nop` after `lw $s1,0($s0)` and its
+  separate `addiu $s1,$s1,-0x1`. g1 alone scores 25; g1 + a 24-byte written donation (k1,
+  target-exact frame, 74/74) scores 6.
+- **Verdict:** CONFIRMED as a producer; this REFINES s19's "the phantom half costs an
+  instruction", which was an instance result on s19's copy-back spellings.
+
+### H22-4 — KILLED (instance). Multiple guard-split sites do not stack the ST_REGS phantom on this body.
+- **Probe:** one site (`g1_guard_is_counter`), two (`s1_two_splits`), three
+  (`s3_three_splits`) — all `vars= 8`, never 16 or 32. Repeated with the `arg0 = 0;` FAKE
+  ablated (`nf_g1_guard_is_counter`, `nf_s3_three_splits`, `nf_x3_guard_split`): identical.
+  `tools/fake_ablate.py` on g1: keep-all 25 / drop-1 36 (FAKE load-bearing on the score,
+  irrelevant to the frame) — `s22/fake_ablate.txt`.
+- **Verdict:** KILLED, instance scope, on chassis b4a92a26 both with and without the FAKE.
+  Retires the live-frontier "four class-A orphans x 8 bytes" arithmetic for these spellings.
+
+### H22-5 — KILLED (instance). No manufactured narrow-width spelling produces a combine orphan-USE here.
+- **Statement:** the three in-TU orphan producers share a source shape this body does not
+  have, and seven spellings that try to manufacture it all print zero orphan USEs.
+- **Mechanism:** combine.c:10836-10841 plants `(insn (use (reg P)))` only when a REG_DEAD
+  note's backward scan from i3 deletes P's def and then runs past the block's opening
+  jump/label. The exemplars (`func_800493E4` r98 after the `lbu` test's jump_insn,
+  `func_80057CC8` r171 after a code_label, `func_80049584` r85) all get there from a NARROW
+  value loaded from memory, tested, and RE-READ inside the taken block. func_800480C0 loads
+  and consumes each of its four halfwords inside one iteration, and its `count`/`base_addr`/
+  `p` are full words with no width conversion.
+- **Probe:** `x1_u16_chain`, `x2_u16_chain_loopscope`, `x4_ptr_split`, `x5_count_s16`,
+  `w1_sx_before_if`, `w2_direct_params`, `w3_s16_before_if` — orphans=0 on every one; census
+  of all 247 functions in the TU's `.combine` dump found exactly the three named above.
+- **Verdict:** KILLED, instance scope, chassis b4a92a26, FAKE present (frames re-measured
+  FAKE-ablated on the representative bodies with identical results).
+
+### H22-6 — KILLED (instance). No ordinary structural lever moves `vars` off zero.
+- **Probe:** function-scope vs block-scope declarations (`v2_fnscope`), permuted declaration
+  order (`v7_declorder`), `sx_*` narrowed to s16 (`v3_sx_s16`), re-associated sums
+  (`v4_reassoc`), named sum intermediates (`v5_named_sums`), four loop-condition spellings
+  (`c1`..`c4`), two entry-guard spellings (`c5`, `c6`), narrowed counter (`x5_count_s16`),
+  per-read pointer split (`x4_ptr_split`, which instead regresses to `regs= 9`). All
+  `vars= 0`. Full table in `s22/sweep_log.txt`.
+- **Verdict:** KILLED, instance scope, chassis b4a92a26 with the FAKE present.
+
+## [s22] The clean s1..s21 body plus a byte-neutral static __inline__ sxadd helper carrying a WRITTEN u32 t[8], substituted at all four sign-extend-and-add sites, reaches the target's exact frame and scores 1.
+- mechanism: integrate.c:2085-2092 donates the inline callee's DECL_FRAME_SIZE verbatim, so a 32-byte helper local moves get_frame_size() from 0 to 32 with the caller's instruction stream untouched; the sole divergence is the last store into the donated block, which flow.c insn_dead_p cannot prove dead for a frame MEM that has no DECL to reason from.
+- probe: tmp/grind/func_800480C0/s22/bodies/k4_base_donate32w.c installed over src/text1b.c:129; sandbox func_800480C0 --disable all
+- result: sandbox score 1, build_insns 75, target_insns 74, rules_dropped 0; raw cc1 .frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0 - the target's exact 0x58 decomposition. NOT SUBMITTABLE: t[8] is a frame-coercion carrier failing checklist T1/T2/T6 and outside the oracle-gated written-never-read carve-out in .claude/rules/dead-vars-local-array.md, because the TARGET bytes contain no such store. Banked as candidate.c behind an explicit NOT-SUBMITTABLE banner; the construct-free body (score 20) is preserved at memory/grind/func_800480C0/clean_body_score20.c.
+- verdict: CONFIRMED
+
+## [s22] The same donation form with the helper's block left unwritten scores 0 at 74/74 on this chassis, so the write/no-write distinction on the donated block is the entire remaining gap.
+- mechanism: An unwritten frame object carries zero traffic, so get_frame_size() is charged 32 bytes and not one instruction is emitted; this is the unwritten-pad family and nothing else separates it from k4.
+- probe: tmp/grind/func_800480C0/s22/bodies/k7_base_donate32_unwritten.c; sandbox func_800480C0 --disable all
+- result: sandbox score 0, build_insns 74. Re-confirms s20's h1 on chassis b4a92a26. The form is barred for this function by the standing Judge constraint (docs/grind/decisions.md:20349) pending an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS; banked to rejected/ and NOT proposed.
+- verdict: CONFIRMED
+
+## [s22] Spelling the entry guard so the guard pseudo is itself the loop counter yields an 8-byte frame slot at the clean body's own raw instruction count, and the slot is an ST_REGS comparison pseudo.
+- mechanism: regclass leaves the entry-guard comparison pseudo in ST_REGS (the .lreg header prints 'Register 92 used 2 times across 2 insns in block 0; dies in 0 places; ST_REGS or none' and 92 appears nowhere in the printed RTL), global.c cannot seat it in a GR, and reload's alter_reg pays 8 frame bytes for it at zero instruction cost. It is not free on the stream: with the subtraction available before the branch, reorg.c fills the delay slot with addu $17,$2,-1 and deletes the target's nop plus its separate addiu $s1,$s1,-0x1.
+- probe: tmp/grind/func_800480C0/s22/bodies/g1_guard_is_counter.c (vars= 8 at 73 raw insns vs the clean body's 73 at vars= 0) and k1_g1_donate24.c (target-exact frame at 74/74)
+- result: g1 alone scores 25; g1 plus a 24-byte written donation scores 6. This REFINES s19's 'the phantom half costs an instruction', which was an instance result on s19's copy-back spellings - the frame charge itself is free, the delay-slot fill is what costs.
+- verdict: CONFIRMED
+
+## [s22] Adding a second and a third guard-split site to the g1 spelling leaves the frame at vars= 8 rather than 16 or 32.
+- mechanism: Only one entry-guard comparison pseudo ever reaches regclass unseated on this body; the extra split sites fold into ordinary arithmetic and never produce a second ST_REGS pseudo, so alter_reg pays for exactly one 8-byte slot.
+- probe: g1_guard_is_counter.c (1 site), s1_two_splits.c (2 sites), s3_three_splits.c (3 sites), plus the FAKE-ablated nf_g1_guard_is_counter.c / nf_s3_three_splits.c / nf_x3_guard_split.c; frames in tmp/grind/func_800480C0/s22/sweep_log.txt; tools/fake_ablate.py on g1 in s22/fake_ablate.txt (keep-all 25 / drop-1 36)
+- result: vars= 8 on all six bodies. The live-frontier 'four class-A orphans x 8 bytes = 32' arithmetic has no spelling in this family on this body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis HEAD b4a92a26, bodies installed one at a time over the INCLUDE_ASM line at src/text1b.c:129; measured both with the arg0 = 0 dead-param-store FAKE present and with it ablated (identical frames)
+
+## [s22] Seven manufactured narrow-width spellings produce zero combine orphan-USE insns on this body, and the three in-TU functions that do produce one share a source shape this function does not contain.
+- mechanism: combine.c:10836-10841 plants (insn (use (reg P))) only when a REG_DEAD note's backward scan from i3 deletes P's defining insn and then runs past the block's opening jump or label. The three exemplars in text1b.c (func_800493E4 r98 planted after the lbu test's jump_insn, func_80057CC8 r171 planted after a code_label, func_80049584 r85) all reach that state from a narrow u8/s16 value loaded from memory, tested, and re-read inside the taken block, so the redundant width conversion on the second read strands. func_800480C0 loads and consumes each of its four halfwords inside a single loop iteration and its count/base_addr/p are full words with no width conversion.
+- probe: x1_u16_chain.c, x2_u16_chain_loopscope.c, x4_ptr_split.c, x5_count_s16.c, w1_sx_before_if.c, w2_direct_params.c, w3_s16_before_if.c, swept with tmp/grind/func_800480C0/s22/sweep.py; plus a census of all 247 functions in the TU's .combine dump
+- result: orphans=0 on every manufactured body; exactly 3 of 247 functions in text1b.c carry a bare (use (reg:SI N)) and each buys exactly vars= 8. x4_ptr_split additionally regresses the register mask to regs= 9.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis HEAD b4a92a26, bodies installed one at a time over src/text1b.c:129 with the arg0 = 0 FAKE present; representative frames re-measured FAKE-ablated with identical results
+
+## [s22] Fifteen ordinary structural spellings of this body - declaration scope and order, type narrowing, statement re-association, named sum intermediates, four loop-condition forms and two entry-guard forms - all leave the frame at vars= 0.
+- mechanism: stmt.c expand_decl gives every non-addressable non-volatile scalar local a pseudo unconditionally, so no ordinary declaration-level lever can reach assign_stack_local; the only frame charges available are alter_reg on an unseated pseudo and the integrate.c inline-callee donation.
+- probe: v2_fnscope.c, v7_declorder.c, v3_sx_s16.c, v4_reassoc.c, v5_named_sums.c, c1_post_dec_ne_m1.c, c2_pre_dec.c, c3_ge0.c, c4_gt.c, c5_guard_gt0.c, c6_guard_ne0_unsigned.c, x5_count_s16.c, x4_ptr_split.c, w1/w2/w3; full table tmp/grind/func_800480C0/s22/sweep_log.txt
+- result: vars= 0 on all of them; several regress the stream (c1/c2/c7 to 75 raw insns and regs= 9, x4 to regs= 9). The only structural construct that moves vars at all on this body is the entry-guard subtraction split, capped at 8 bytes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis HEAD b4a92a26, bodies installed one at a time over src/text1b.c:129 with the arg0 = 0 FAKE present

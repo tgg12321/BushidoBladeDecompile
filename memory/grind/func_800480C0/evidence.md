@@ -1901,3 +1901,149 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s21] Sibling invariance re-confirmed from the bytes: all four func_800482C8 callers in this TU reserve the identical untouched window sp+0x18..0x37 - func_80047EE8 (.frame 0x48, 4 regs), func_80047FBC (0x50, 6 regs), func_800480C0 (0x58, 8 regs), func_800481E8 (0x48, 4 regs). Three carry ('pre_pad', 8) rows at engine/volatile_cheats.py:757, :758 and :767 and ship volatile u32 pre_pad[8]; at src/text1b.c:35, :85 and :166. func_800480C0 is the only member without a row.
 
 - [s21] FAKE re-audit (mandated) done by hand because tools/fake_ablate.py returns ERR/None for both variants this session, including on the s20 candidate: keep-all 20 at 74 insns, drop-1 32 at 73 insns. The arg0 = 0; FAKE is load-bearing and masks no lever - eighth chassis reproducing.
+
+## s22 (structural, 2026-09-05, chassis HEAD b4a92a26) — the residual is ONE instruction
+
+Chassis re-measured at session start: the s1..s21 candidate body installed over the
+`INCLUDE_ASM("asm/funcs", func_800480C0);` line at src/text1b.c:129 scores **20**
+(74 target insns / 74 build insns, rules_dropped 0), raw cc1
+`.frame $sp,56,$31 # vars= 0, regs= 8/0, args= 24, extra= 0`. The dispatch brief's
+"measurement unavailable" was again a driver-side gap. The ledger floor of 20 is correct.
+
+Harness for the whole session: `tmp/grind/func_800480C0/s22/sweep.py` (installs a body,
+runs cpp|cc1 -da into a per-body dump dir, prints raw cc1 insn count, the count of bare
+`(use (reg:XX N))` orphan insns in the `.combine` dump for this function, and the
+function's own `.frame` line, then restores src/text1b.c). Driver `s22/go.sh`; full
+25-body log `s22/sweep_log.txt`. All 25 bodies are kept under `s22/bodies/`.
+
+### F1 — floor 1. The residual is a single `sw`, not twenty sp-relative operands.
+
+`s22/bodies/k4_base_donate32w.c` = the clean s1..s21 body, **unchanged**, plus
+
+```c
+static __inline__ s32 sxadd(s16 v, s32 b)
+{
+    u32 t[8];
+    t[0] = (u32)(s32)v;
+    return (s32)t[0] + b;
+}
+```
+
+substituted at all four sign-extend-and-add call arguments (s21's r4 already measured the
+bare `sxadd` helper byte-neutral). It builds
+`.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0` — **the target's exact frame
+and its exact 0x58** — and `sandbox func_800480C0 --disable all` prints
+**`"score": 1`, build_insns 75, target_insns 74, rules_dropped 0**.
+
+The one divergent instruction is the surviving `sw` into the donated block. This is s21's
+frontier item 1 measured end to end rather than inferred: a REFERENCED donation carrier
+keeps exactly one store, because GCC 2.7.2 never deletes the last store to a frame object.
+s21 saw three of four store/load pairs fold and one store survive; s22 shows the survivor
+costs exactly one point of distance and nothing else.
+
+### F2 — the barred pad is worth exactly that one instruction, re-confirmed on this chassis.
+
+`s22/bodies/k7_base_donate32_unwritten.c` — identical to k4 except the helper's array is
+left unwritten (`u32 t[8];` declared, `return (s32)v + b;`) — scores **0 at 74/74** on
+chassis b4a92a26. That is the unwritten-pad family barred for this function by the standing
+Judge constraint (docs/grind/decisions.md:20349) pending an owner row in
+`engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS`. Banked as
+`rejected/s22-unwritten-pad-score0-barred-by-judge-constraint.c`.
+
+The k4/k7 pair is the cleanest statement of this function's whole situation that the ledger
+has ever held: **write the donated block and you are one instruction away; leave it unwritten
+and you match; there is nothing else left in the gap.**
+
+### F3 — a genuinely FREE 8-byte phantom exists; s19's "the phantom costs an insn" was instance-scoped.
+
+`s22/bodies/g1_guard_is_counter.c` spells the entry guard as
+`guard = count - 1; if (guard != -1) { ... } while ((guard--) != 0);` — the guard pseudo IS
+the loop counter, so unlike s19's spellings nothing is copied back at the loop head. It
+builds `vars= 8` at **73 raw cc1 insns, exactly the clean body's 73**.
+
+The phantom is identified for the first time. The `.lreg` header prints, for this body only:
+
+    Register 92 used 2 times across 2 insns in block 0; dies in 0 places; ST_REGS or none.
+
+and register 92 appears nowhere in the printed RTL. It is the entry-guard comparison pseudo:
+`regclass` leaves it in **ST_REGS**, `global.c` cannot seat it in a GR, and reload's
+`alter_reg` pays 8 frame bytes for it at zero instruction cost. The clean body has zero such
+pseudos (`vars= 0`).
+
+It is free on the frame but NOT on the stream: with the subtraction available before the
+branch, `reorg.c` fills the delay slot with `addu $17,$2,-1`, which deletes the target's
+`nop` after `lw $s1,0($s0)` and its separate `addiu $s1,$s1,-0x1`. g1 alone scores 25
+(build 73). g1 plus a 24-byte written donation (`k1_g1_donate24.c`) reaches the target's
+exact frame at 74/74 and scores **6** — five stream divergences, all of them in that
+four-instruction guard window. Banked as
+`rejected/s22-free-strregs-phantom-costs-delay-slot-nop.c`.
+
+### F4 — the ST_REGS phantom is a singleton on this body (kills the "four orphans" arithmetic).
+
+One split site (`g1`), two (`s1_two_splits`, an extra `off = ((s32)(arg1 << 16)) >> 14;`
+before the pointer add) and three (`s3_three_splits`, additionally splitting
+`woff = ((u32)word >> 2) << 2` inside the loop) **all print `vars= 8`** — never 16, never 32.
+Re-measured with the `arg0 = 0;` FAKE ablated (`nf_base`, `nf_g1_guard_is_counter`,
+`nf_s3_three_splits`, `nf_x3_guard_split`): byte-identical frame results, so this is not a
+FAKE-masking artefact. `tools/fake_ablate.py` on g1 confirms the FAKE is load-bearing on the
+SCORE (keep-all 25 / drop-1 36) while being irrelevant to the frame
+(`s22/fake_ablate.txt`).
+
+Consequence: the live-frontier item "four class-A combine orphans, 8 bytes each" has no
+spelling on this body — the family saturates at one slot however many split sites exist.
+
+### F5 — the combine orphan-USE producer is absent here, and its in-TU exemplars do not transplant.
+
+Census of the whole `.combine` dump for the clean body: of **247 functions in text1b.c,
+exactly three** carry a bare `(use (reg:SI N))` for a pseudo >= 64 —
+`func_800493E4` (r98, `vars= 8`), `func_80049584` (r85, `vars= 8`),
+`func_80057CC8` (r171, `vars= 8`). Each buys exactly one 8-byte slot.
+
+Reading the RTL around each orphan: in `func_800493E4` the USE is planted immediately after
+the `jump_insn` that tests the `lbu` result; in `func_80057CC8` immediately after a
+`code_label`. Both match `combine.c:10836-10841` exactly — a `REG_DEAD` note whose backward
+scan from i3 deleted the defining insn and then ran off the top of the block. The shared
+SOURCE shape is a **narrow (u8/s16) value loaded from memory, tested, and re-read inside the
+taken block**, so the redundant width conversion on the second read is what strands
+(`func_800493E4`: `temp_v1 = D_80099CC8[idx]; if (temp_v1 != 0xFF) { D_800EF980[temp_v1] = 1; ... }`).
+
+func_800480C0 has no such value. All four halfwords are loaded and consumed inside a single
+iteration of the loop body; `count`, `base_addr` and `p` are full words with no width
+conversion. Seven manufactured spellings all print `orphans=0`:
+`x1_u16_chain` / `x2_u16_chain_loopscope` (u16 load + separate s16 cast at each of the four
+sites, block scope and loop scope), `x4_ptr_split` (a dedicated `s16 *q` walking the four
+halfwords — also regresses to `regs= 9`), `x5_count_s16`, `w2_direct_params`,
+`w3_s16_before_if`, `w1_sx_before_if`. Banked as
+`rejected/s22-u16-conversion-chain-no-combine-orphan.c` and
+`rejected/s22-per-read-pointer-split-adds-a-saved-reg.c`.
+
+### F6 — no ordinary structural lever moves `vars` at all.
+
+`vars= 0` on every one of: function-scope vs block-scope declaration of all locals
+(`v2_fnscope`), declaration order permuted (`v7_declorder`), `sx_*` narrowed to s16
+(`v3_sx_s16`), the four sums re-associated (`v4_reassoc`), the four sums named into fresh
+block locals (`v5_named_sums`), the loop condition re-spelled four ways
+(`c1_post_dec_ne_m1`, `c2_pre_dec`, `c3_ge0`, `c4_gt`), the entry guard re-spelled
+(`c5_guard_gt0`, `c6`), and the counter narrowed (`x5_count_s16`). The ONLY structural
+construct that moves `vars` on this body is the entry-guard subtraction split, and it is
+capped at 8 bytes (F4).
+
+- [s22] Chassis re-measured at session start: the s1..s21 candidate body scores 20 (74/74, rules_dropped 0) with raw cc1 .frame $sp,56 # vars= 0, regs= 8/0, args= 24. The dispatch brief's 'measurement unavailable' was a driver-side gap, not a broken body.
+
+- [s22] FLOOR 20 -> 1. tmp/grind/func_800480C0/s22/bodies/k4_base_donate32w.c scores 1 at build_insns 75 / target_insns 74 with the target's exact .frame $sp,88 # vars= 32, regs= 8/0, args= 24, extra= 0.
+
+- [s22] The entire residual is now ONE instruction - the single surviving sw into the donated block - rather than the twenty sp-relative operands the ledger has carried for twenty-one sessions.
+
+- [s22] k7_base_donate32_unwritten.c (same body, helper's block declared and never written) scores 0 at 74/74 on chassis b4a92a26, so the write/no-write distinction on the donated block IS the whole remaining gap. That form is the Judge-barred unwritten pad and is banked to rejected/, not proposed.
+
+- [s22] The 8-byte phantom is identified for the first time: an ST_REGS entry-guard comparison pseudo (.lreg header 'Register 92 used 2 times across 2 insns in block 0; dies in 0 places; ST_REGS or none'), absent from the clean body and present in every guard-split spelling.
+
+- [s22] The ST_REGS phantom is free on the FRAME (73 raw insns, same as the clean body) but costs the branch delay slot: reorg.c fills it with addu $17,$2,-1 and deletes the target's nop plus its separate addiu $s1,$s1,-0x1. g1 scores 25; g1 + a 24-byte written donation (k1) reaches the target-exact frame at 74/74 and scores 6.
+
+- [s22] The ST_REGS phantom is a singleton on this body - 1, 2 and 3 split sites all give vars= 8 - so the 'four class-A orphans' frontier arithmetic has no spelling here.
+
+- [s22] Census of the whole TU: exactly 3 of 247 functions in text1b.c carry a bare (use (reg:SI N)) combine orphan, each worth exactly vars= 8, and all three come from a narrow value read on both sides of a branch - a shape func_800480C0 does not have.
+
+- [s22] 45 bodies swept for raw insn count, orphan-USE count and .frame in one table: tmp/grind/func_800480C0/s22/sweep_log.txt.
+
+- [s22] src/text1b.c was restored to its HEAD INCLUDE_ASM state after every measurement; git status on src/ is clean at session end.

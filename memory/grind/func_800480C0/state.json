@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 21,
- "current_modality": "rederive",
+ "session_count": 22,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -129,23 +129,29 @@
    "floor": 20,
    "modality": "rederive",
    "headline": "Rederive: fresh m2c reproduces the candidate's shape exactly and text1b.c has ZERO static/inline helpers, but the helper axis s20 killed was mis-scoped - a helper carrying the body's OWN computation i"
+  },
+  {
+   "session": 22,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Structural: floor 20 -> 1. A byte-neutral inline helper carrying a written 32-byte local reaches the target's exact .frame $sp,88 # vars=32,regs=8/0,args=24 and leaves ONE instruction (the last store "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The single surviving sw in the referenced-carrier form is not a property of the array spelling but of GCC 2.7.2 never deleting the LAST store to a frame object, so no referenced (non-strippable) donation carrier of any shape can reach zero traffic on this body.",
-   "mechanism": "r7/r8 fold three of four store/load pairs and keep exactly one store, and r9/r10/r11 (a single site) keep one too, which is consistent with each write killing the previous write at the same frame address and the final write having no successor to kill it. GCC 2.7.2's flow.c insn_dead_p treats a MEM destination as live unless it can prove the object dead, and a donated assign_stack_temp block has no DECL to make that proof from.",
-   "next_probe": "Read tools/gcc-2.7.2/flow.c insn_dead_p / mark_set_1 for the MEM-destination case and confirm whether a store to a frame object is EVER deleted; if it is, the enabling condition is the last unmeasured route to a zero-traffic referenced carrier, and if it is not, this closes the referenced half of the donation disjunction as a class kill with a predicate cite instead of the instance kill s21 could justify."
+   "hypothesis": "The surviving store into a referenced donation carrier can be made to coincide with an instruction the target already emits, converting k4's score 1 into a match without an unwritten block.",
+   "mechanism": "k4's build is the target's 74 instructions plus one sw at sp+0x18 into the donated block. The target's only sp store in the window is the 5th outgoing argument, sw $v0, 0x10($sp), emitted in the jal delay slot. If the donated object could BE the outgoing-argument home - a helper whose 32-byte local is what supplies the 5th argument, or a carrier written through the same address expression the argument store uses - the two stores merge and the residual closes. Nobody has tried to make the donated block and the argument block the same object; s17 already measured that an outgoing-args block survives deletion of its call, which is the adjacent mechanism.",
+   "next_probe": "Start from tmp/grind/func_800480C0/s22/bodies/k4_base_donate32w.c and vary WHERE the helper's 32-byte local is written: (a) written from the value that becomes the 5th argument, (b) written through a pointer the caller also uses, (c) written in the helper that computes the 5th argument only (k6 is the one-site variant, already at target-exact frame and 74 raw insns). Screen with s22/sweep.py for .frame $sp,88 at 73 raw insns, then sandbox; anything below 1 is a match."
   },
   {
-   "hypothesis": "Four class-A combine orphans (8 bytes each, reload1.c:2382-2385) would buy the same 32 bytes at zero instruction cost, and they have still never been enumerated at the four narrow sign-extend sites with what-if lifts.",
-   "mechanism": "combine.c:10832-10841 distribute_notes plants an orphan (insn (use (reg P))) when the defining insn is rewritten away; P then has no set and no constraint-bearing reference, regclass leaves it ST_REGS, find_reg cannot seat it and alter_reg pays 8 bytes for nothing. s9 measured that each such orphan is paid for with an emitted lh on this tree's other bodies, which would cost bytes here - that prediction is still untested ON this body, and s7 killed only the specific HImode sign-extend spelling, not the enumeration.",
-   "next_probe": "Run tools/nrefs_census.py --func func_800480C0 --file text1b with what-if lifts on each loop pseudo, then count orphan USEs directly on each resulting .combine dump with tmp/grind/func_800480C0/s6/count_uses.py; the target is orphanUSE=4 at 72 cc1 insns with no lh appearing."
+   "hypothesis": "A donation carrier can be a 32-byte local that the algorithm genuinely reads, so that its traffic replaces rather than adds instructions.",
+   "mechanism": "integrate.c:2085-2092 donates DECL_FRAME_SIZE regardless of what the local is; the cost is only the traffic that survives. Every s21/s22 carrier so far has been an invented array whose stores are pure overhead. A carrier holding a value the four call arguments already need - e.g. the four sign-extended halfwords staged through a real 8-word buffer - would have its stores accounted against instructions the target emits, not added to them.",
+   "next_probe": "Enumerate carriers whose element writes correspond one-to-one with instructions in asm/funcs/func_800480C0.s (the four sll/sra pairs and the four addu), sweep for .frame $sp,88 at 73 raw insns with s22/sweep.py, then sandbox. Note this is exactly the shape the written-never-read carve-out in .claude/rules/dead-vars-local-array.md WOULD sanction if the target bytes contained the stores - so check the target listing first and stop if they do not."
   },
   {
-   "hypothesis": "The honest record is now complete on mechanism, and the disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS rather than a spelling.",
-   "mechanism": "The standing Judge constraint (docs/grind/decisions.md:20349) bars the unwritten pad for this body in any spelling until an owner ruling adds its row, and .claude/rules/no-new-park-categories.md:340-342 makes the family a closed per-function enumeration. s21 closed the last open family (donation) on a mechanism: the donated block must carry zero traffic to be byte-neutral, and a zero-traffic frame object is the pad.",
-   "next_probe": "Do NOT re-spell the pad. Whichever session reaches the escalation modality should cite s21's r5/r6 (the target's exact .frame $sp,88 # vars= 32, regs= 8/0, args= 24 with the 74-instruction stream untouched, through an honest value-flowing helper) as the cleanest proof that the residual is exactly the 32-byte get_frame_size charge, alongside s20's h1 score-0 measurement, s19's additivity, and the s21 sibling-invariance table showing func_800480C0 is the only one of four identical-window siblings without a row."
+   "hypothesis": "The record is now strong enough that the disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS rather than another spelling, and s22 is the proof.",
+   "mechanism": "s22's k4/k7 pair reduces the whole question to one sentence: with the donated 32-byte block WRITTEN the build is the target plus exactly one store (score 1); with it UNWRITTEN the build is byte-identical (score 0). GCC 2.7.2 never deletes the last store to a frame object, so no referenced carrier of any shape measured so far reaches zero traffic. The standing Judge constraint (docs/grind/decisions.md:20349) bars the unwritten form for this function until an owner row names it, and .claude/rules/no-new-park-categories.md:340-342 makes the family a closed per-function enumeration.",
+   "next_probe": "Do NOT re-spell the pad. Whichever session reaches the escalation modality should cite s22's k4 (score 1, target-exact frame, one surviving sw) and k7 (score 0) as the tightest possible statement of the residual, alongside s21's sibling-invariance table showing func_800480C0 is the only one of four identical-window siblings without a row."
   }
  ],
  "judge_constraints": [
@@ -153,30 +159,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 4,
-   "statement": "A frame term other than var_size (extra_size, pretend_args_size, or a larger register-save area) can supply the target's +32 bytes on this mips1 -mno-abicalls build",
-   "kill_scope": "class",
-   "measured_on": "HEAD 8395e8f4, all 27 s2/s3/s4 spellings plus the compiler source predicate",
-   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:4464",
-   "result": "total_size = var_size + args_size + gp_reg_rounded exactly on this configuration; growing the save area (regs= 9/0, fram"
-  },
-  {
-   "session": 5,
-   "statement": "One unallocated pseudo reserves 4 bytes of vars (s3's model), so the target's 32 untouched bytes need eight phantom slots",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 118e147d, all 32 src/*.c TUs compiled with the project cc1 (tools/gcc-2.7.2/build/cc1) and the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_ALLOC_DEBUG=1); no FAKE construct involved - the census r",
-   "predicate_cite": "",
-   "result": "The relation is exactly vars = 8 * unallocated_pseudos with no rounding term: func_80042874 6 phantoms/48 bytes, func_80"
-  },
-  {
-   "session": 5,
-   "statement": "The DImode HILO scratch of mult/div is a second, independent 8-byte phantom producer usable on func_800480C0",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 118e147d, target listing asm/funcs/func_800480C0.s plus the s5 tree census; no FAKE construct involved",
-   "predicate_cite": "",
-   "result": "The producer is real and confirmed elsewhere in the tree, but asm/funcs/func_800480C0.s contains ZERO mult/multu/div/div"
-  },
   {
    "session": 5,
    "statement": "Folding a guard onto BOTH of this body's conditional branches (the entry test and the do-while backedge) raises phantom multiplicity to two",
@@ -632,6 +614,30 @@
    "measured_on": "HEAD 16834fcf, bodies tmp/grind/func_800480C0/s21/bodies/{r5_sxadd_donate32,r6_recbase_donate32,r7_sxadd_t1write,r8_sxadd_t_last,r9_sxaddt_+,r10_sxaddt_+,r11_sxaddt_+}.c installed one at a time over t",
    "predicate_cite": "",
    "result": "KILLED on the mechanism, with both halves of the disjunction measured. (a) The donation fires exactly: r5 and r6 both ma"
+  },
+  {
+   "session": 22,
+   "statement": "Adding a second and a third guard-split site to the g1 spelling leaves the frame at vars= 8 rather than 16 or 32.",
+   "kill_scope": "instance",
+   "measured_on": "chassis HEAD b4a92a26, bodies installed one at a time over the INCLUDE_ASM line at src/text1b.c:129; measured both with the arg0 = 0 dead-param-store FAKE present and with it ablated (identical frames",
+   "predicate_cite": "",
+   "result": "vars= 8 on all six bodies. The live-frontier 'four class-A orphans x 8 bytes = 32' arithmetic has no spelling in this fa"
+  },
+  {
+   "session": 22,
+   "statement": "Seven manufactured narrow-width spellings produce zero combine orphan-USE insns on this body, and the three in-TU functions that do produce one share a source shape this function does not contain.",
+   "kill_scope": "instance",
+   "measured_on": "chassis HEAD b4a92a26, bodies installed one at a time over src/text1b.c:129 with the arg0 = 0 FAKE present; representative frames re-measured FAKE-ablated with identical results",
+   "predicate_cite": "",
+   "result": "orphans=0 on every manufactured body; exactly 3 of 247 functions in text1b.c carry a bare (use (reg:SI N)) and each buys"
+  },
+  {
+   "session": 22,
+   "statement": "Fifteen ordinary structural spellings of this body - declaration scope and order, type narrowing, statement re-association, named sum intermediates, four loop-condition forms and two entry-guard forms",
+   "kill_scope": "instance",
+   "measured_on": "chassis HEAD b4a92a26, bodies installed one at a time over src/text1b.c:129 with the arg0 = 0 FAKE present",
+   "predicate_cite": "",
+   "result": "vars= 0 on all of them; several regress the stream (c1/c2/c7 to 75 raw insns and regs= 9, x4 to regs= 9). The only struc"
   }
  ],
  "ladder_skip": 0,
@@ -640,5 +646,6 @@
  "created": "2026-09-02T09:18:48.346901+00:00",
  "exhaustion_base": 11,
  "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated \u2014 ledger floor 20 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.780732+00:00"
+ "last_unpark_at": "2026-09-03T01:44:08.780732+00:00",
+ "escalation_deferrals": 0
 }
