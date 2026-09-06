@@ -1761,3 +1761,143 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s20] Mandated FAKE re-audit, seventh consecutive chassis: fake_ablate.py on the banked candidate reads keep-all 20 / drop-1 32 - the single arg0 = 0; unit is load-bearing and masks no lever.
 
 - [s20] The three in-file siblings func_80047EE8, func_80047FBC and func_800481E8 hold (pre_pad, 8) grants (volatile u32 pre_pad[8], 32 bytes) for the identical untouched sp+0x18..0x37 window; this session's h1 measurement shows func_800480C0's residual is the same 32-byte object and nothing else.
+
+
+## s21 (rederive, 2026-09-05, chassis HEAD 16834fcf)
+
+- [s21] CHASSIS RE-MEASURED. The dispatch brief read "measurement unavailable"; with
+  `memory/grind/func_800480C0/candidate.c`'s body installed over the `INCLUDE_ASM` line the
+  sandbox prints `"score": 20, "target_insns": 74, "build_insns": 74, "rules_dropped": 0`.
+  The ledger floor of 20 is intact on this chassis and the candidate body still compiles.
+- [s21] REDERIVE LEG 1 (fresh m2c). `python3 tools/m2c/m2c.py --valid-syntax --target
+  mipsel-gcc-c -f func_800480C0 asm/funcs/func_800480C0.s`
+  (`tmp/grind/func_800480C0/s21/m2c_fresh.txt`), run with no reference to the ledger,
+  recovers the candidate's shape line for line: the same
+  `base + ((*(base + ((idx<<16)>>14)) >> 2) * 4)` locate-prologue, the same `count = *p++`
+  guard, the same four `lhu`-then-sign-extend record reads with the pointer advanced
+  4/2/2/2 between them, and the same five-argument tail call. It declares NO local aggregate
+  and no object of any kind that could carry a frame charge. A structurally different C shape
+  for this body does not exist at the level m2c recovers; the 32-byte `vars` charge has no
+  representation in the recovered source and must come from a declaration the shipped bytes
+  do not witness.
+- [s21] REDERIVE LEG 2 (donation census - frontier item 1 of s20, CLOSED NEGATIVE).
+  `src/text1b.c` (6,700+ lines, 583 function definitions) contains ZERO `static` and ZERO
+  `__inline__`/`inline` function definitions - every `static` hit in the file is the struct
+  field name `p_static` or prose in a comment. It also contains no local aggregate of 25..32
+  bytes shared between func_800480C0 and any other function in the TU (the only 32-byte
+  locals are `u8 sp30[32]` at lines 3881 and 3938, both private to unrelated bodies). The
+  construct is not foreign to the project - `src/main.c:1069` and `src/main.c:2187` define
+  `static inline` helpers - but it is foreign to THIS translation unit. Any inline-callee
+  donation carrier for func_800480C0 would therefore have to be a helper invented for this
+  function alone, with no second caller to make its 32-byte local genuine. s20's frontier
+  item 1 is answered.
+- [s21] BUT THE HELPER AXIS IS NOT WHAT s20 MEASURED, AND THE DIFFERENCE MATTERS. s20's kill
+  ("all value-flowing call sites perturb the stream") was measured on helpers ADDED to the
+  body. A helper that carries computation the body ALREADY performs is byte-neutral, and two
+  independent ones are now measured on this chassis:
+    r3 `static __inline__ s32 rec_base(s32 base, u32 word) { return base + (((u32)word>>2)<<2); }`
+       substituted at BOTH of its sites (the locate-prologue and the loop's `new_var`):
+       `"score": 20, "build_insns": 74, "rules_dropped": 0`.
+    r4 `static __inline__ s32 sxadd(s16 v, s32 b) { return (s32)v + b; }` substituted at ALL
+       FOUR of the loop's sign-extend-and-add sites:
+       `"score": 20, "build_insns": 74, "rules_dropped": 0`.
+  Raw cc1 for r4 prints `.frame $sp,56,$31 # vars= 0, regs= 8/0, args= 24, extra= 0`, term
+  for term identical to the candidate's. Honest, value-flowing, four-times-per-iteration
+  inline helpers are free on this body.
+- [s21] AND THE integrate.c DONATION FIRES THROUGH THEM, EXACTLY. Giving either byte-neutral
+  helper an unreferenced `u32 t[8]` makes raw cc1 print
+  `.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0` for func_800480C0 - THE
+  TARGET'S EXACT FRAME LINE - with the 74-instruction stream untouched
+  (r5 = sxadd + t[8], r6 = rec_base + t[8]; instrument
+  `tmp/grind/func_800480C0/s21/frame.sh`, listings
+  `tmp/grind/func_800480C0/s21/r5_sxadd_donate32.s` and `r6_recbase_donate32.s`).
+  This is a strictly better platform than s20's h1 (whose carrier was a discarded statement
+  `pack_off(arg1, 0);`): here the call is real, its value flows into the target's own
+  arguments, and it executes four times per loop iteration.
+- [s21] AND IT CLOSES THE FAMILY ANYWAY, BY THE SAME MEASUREMENT. Both r5 and r6 score 20,
+  not 0: the carrier `u32 t[8]` is unreferenced, so `engine/volatile_cheats.py`'s
+  `_LOCAL_ARRAY_DECL_RE` (2 <= N <= 64, no reference to the name in the body) recognises it
+  as the frame-pad family and strips it before scoring. Relocating the pad from the function
+  into a helper it calls does not make the pad honest and does not move the honest floor -
+  it is the same construct at one remove, and the stripper says so.
+- [s21] THE PRICE OF MAKING THE CARRIER REFERENCED IS EXACTLY ONE INSTRUCTION, AND IT IS
+  STRUCTURAL. r7 (`u32 t[8]; t[0] = (u32)(s32)v; return (s32)t[0] + b;` inside sxadd, all
+  four sites) builds 75 instructions and the sandbox scores 1. Reading the listing
+  (`tmp/grind/func_800480C0/s21/r7_sxadd_t1write.s`), the ENTIRE delta against the target is
+  a single `sw $2,24($sp)` - a store into sp+0x18, the first word of the target's untouched
+  window. Three of the four inline sites fold their store/load pair away completely; the
+  fourth cannot, because all four sites write the same frame address t[0] and each write
+  kills the previous one, leaving the LAST write with nothing to kill it. r8 (`t[7]` instead
+  of `t[0]`) is identical: 75 insns, score 1. Restricting the array-carrying helper to a
+  single site is worse, not better - r9/r10/r11 (the a1v, a2v and a3v sites respectively)
+  each build 75 insns and score 5.
+- [s21] SO THE 20 -> 1 GAP IS A DETECTOR GAP, NOT A FLOOR, AND IT IS REPORTED HERE RATHER
+  THAN SPENT. r7's score of 1 is lower than any number ever measured on this function, and
+  it is NOT this session's floor and NOT proposed as a candidate. `u32 t[8]` in which only
+  t[0] is ever written or read is an eight-word aggregate holding one scalar: it fails
+  cheat-checklist T1 (seven of its eight words have no semantic purpose), T2 (no programmer
+  writes it), T5 (it is the `dead-vars-local-array` family - forbidden as of 2026-05-31,
+  with a carve-out only for a WRITTEN-never-read array whose stores appear in the TARGET
+  bytes, and this array's one store is precisely an instruction the target does NOT have),
+  and it materialises a byte the target does not contain, so it cannot match regardless.
+  The reportable finding is that the sandbox's cheat-stripper does not recognise a frame pad
+  that has been moved into a `static __inline__` helper and given one referenced element -
+  `_LOCAL_ARRAY_DECL_RE` keys on the name being unreferenced, and one live element defeats
+  it. Any future session that finds itself at "score 1 with an array in a helper" is looking
+  at this gap and must not bank it as progress.
+- [s21] THE DONATION FAMILY IS THEREFORE CLOSED ON A MECHANISM, NOT ON A CENSUS. For the
+  integrate.c:2085-2092 donation to buy the 32 bytes byte-neutrally the donated block must
+  carry ZERO traffic, and a frame object carries zero traffic only if it is never written -
+  which is the unwritten-pad family, banned here by the 2026-09-02 Judge ruling and granted
+  by owner ruling to all three of this function's in-file siblings. Making the object
+  written costs exactly one store that no fold can remove. Both halves of that disjunction
+  are now measured on this chassis rather than argued.
+- [s21] Helper-carried-computation is byte-neutral only where the computation is a leaf
+  expression. r1/r2 (the shared locate-prologue `find_list(base, idx)` factored into a
+  helper, with and without the candidate's `arg0 = 0;` FAKE) both build 73 instructions -
+  one FEWER than the target - and score 25. Inlining the prologue lets GCC fold the
+  `move $18,$16` base copy the target keeps, so the prologue is not available as a donation
+  carrier even though it is the fragment all four siblings genuinely share.
+- [s21] SIBLING INVARIANCE RE-CONFIRMED FROM THE BYTES. All four func_800482C8 callers in
+  this TU reserve the identical untouched window sp+0x18..0x37: func_80047EE8 (.frame 0x48,
+  4 regs), func_80047FBC (0x50, 6 regs), func_800480C0 (0x58, 8 regs), func_800481E8 (0x48,
+  4 regs). Three of the four carry `("pre_pad", 8)` rows in
+  `engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS` (lines 757, 758, 767) and ship
+  `volatile u32 pre_pad[8];` in `src/text1b.c` (lines 35, 85, 166). func_800480C0 is the
+  only member of the group without a row.
+- [s21] MANDATED FAKE RE-AUDIT, RE-RUN BY HAND BECAUSE THE TOOL IS BROKEN THIS SESSION.
+  `python3 tools/fake_ablate.py --func func_800480C0 --file text1b --candidate <c>` returns
+  `ERR / bi None` for BOTH variants (keep-all and drop-1) on this chassis, and it does so on
+  the s20 candidate too (`git show HEAD:memory/grind/func_800480C0/candidate.c`), so the
+  failure is tool-side and not a property of this session's header edit
+  (`tmp/grind/func_800480C0/s21/fake_ablate.txt`). The ablation was therefore performed
+  directly: `tmp/grind/func_800480C0/s21/bodies/base_nofake.c` is the candidate body with the
+  single `arg0 = 0;` FAKE line deleted, and installed over the INCLUDE_ASM line it scores 32
+  at build_insns 73 against the keep-all body's 20 at 74. The FAKE is load-bearing, masks no
+  lever, and reproduces the s19/s20 numbers exactly - the eighth chassis on which it has done
+  so. Tool-health note for the next session: fake_ablate.py needs looking at before it is
+  trusted again on this function.
+
+- [s21] Chassis re-measured: with candidate.c's body installed over the INCLUDE_ASM line the sandbox prints score 20, target_insns 74, build_insns 74, rules_dropped 0. The brief's 'measurement unavailable' was a driver-side gap; the ledger floor of 20 is intact and the body still compiles.
+
+- [s21] A fresh m2c decompile (tmp/grind/func_800480C0/s21/m2c_fresh.txt), run with no ledger input, recovers the candidate's shape line for line and declares no aggregate of any kind. There is no structurally different C shape for these bytes at the level m2c recovers.
+
+- [s21] src/text1b.c defines ZERO static and ZERO inline functions across 583 function definitions, and holds no 25..32-byte local aggregate shared with func_800480C0. s20's frontier item 1 (find an honest donation carrier in this TU) is closed negative.
+
+- [s21] s20's kill of the helper axis was scoped to helpers ADDED to the body. A helper carrying the body's OWN computation is byte-neutral: static __inline__ s32 sxadd(s16 v, s32 b) { return (s32)v + b; } at all four sign-extend-and-add sites scores 20 at 74 insns with .frame $sp,56 # vars= 0, regs= 8/0, args= 24 identical to the candidate's, and static __inline__ s32 rec_base(s32 base, u32 word) does the same at both of its sites.
+
+- [s21] Giving either byte-neutral helper an unreferenced u32 t[8] makes raw cc1 print .frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0 for func_800480C0 - THE TARGET'S EXACT FRAME LINE - with the 74-instruction stream untouched. The integrate.c:2085-2092 donation fires perfectly through an honest, value-flowing, four-times-per-iteration call site, which is a strictly better platform than s20's discarded-statement h1.
+
+- [s21] It closes the family anyway: the unreferenced carrier is the frame pad at one remove and engine/volatile_cheats.py _LOCAL_ARRAY_DECL_RE strips it, so r5/r6 score 20 not 0. Relocating the pad into a helper does not make it honest and does not move the honest floor.
+
+- [s21] Making the carrier referenced costs exactly one instruction that no fold removes: u32 t[8]; t[0] = (u32)(s32)v; return (s32)t[0] + b; builds 75 insns and scores 1, the whole delta being a single sw $2,24($sp) into sp+0x18. All four inline sites write the same frame address, each write kills the previous one, and the LAST write has nothing to kill it; the other three store/load pairs fold away completely.
+
+- [s21] THAT SCORE OF 1 IS A DETECTOR GAP, NOT A FLOOR, AND IS DELIBERATELY NOT PROPOSED. An eight-word array holding one scalar fails cheat-checklist T1/T2/T5 (dead-vars-local-array, whose carve-out requires the dead stores to appear in the TARGET bytes) and materialises a byte the target does not contain. The sandbox's stripper keys on the array name being unreferenced, so one live element defeats it - a future session landing on 'score 1 with an array inside a helper' is looking at this gap and must not bank it as progress. Banked as rejected/s21-referenced-helper-array-leaves-one-surviving-store.c.
+
+- [s21] The donation family is therefore closed on a MECHANISM rather than a census: a donated block buys the 32 bytes byte-neutrally only if it carries zero traffic, and a frame object carries zero traffic only if it is never written - which is the unwritten pad this function is barred from until an owner row exists.
+
+- [s21] Helper-carried computation is byte-neutral only for leaf expressions: factoring the locate-prologue (the fragment all four siblings genuinely share) into find_list(base, idx) builds 73 instructions - one FEWER than the target - and scores 25, because inlining it lets GCC fold the move $18,$16 base copy the target keeps.
+
+- [s21] Sibling invariance re-confirmed from the bytes: all four func_800482C8 callers in this TU reserve the identical untouched window sp+0x18..0x37 - func_80047EE8 (.frame 0x48, 4 regs), func_80047FBC (0x50, 6 regs), func_800480C0 (0x58, 8 regs), func_800481E8 (0x48, 4 regs). Three carry ('pre_pad', 8) rows at engine/volatile_cheats.py:757, :758 and :767 and ship volatile u32 pre_pad[8]; at src/text1b.c:35, :85 and :166. func_800480C0 is the only member without a row.
+
+- [s21] FAKE re-audit (mandated) done by hand because tools/fake_ablate.py returns ERR/None for both variants this session, including on the s20 candidate: keep-all 20 at 74 insns, drop-1 32 at 73 insns. The arg0 = 0; FAKE is load-bearing and masks no lever - eighth chassis reproducing.

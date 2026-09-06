@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -123,23 +123,29 @@
    "floor": 20,
    "modality": "rederive",
    "headline": "Rederive proves the whole residual is a 32-byte get_frame_size charge - a 32-byte inline-callee donation at a value-free site builds byte-exact (sandbox 0, 74/74) with the candidate's stream untouched"
+  },
+  {
+   "session": 21,
+   "floor": 20,
+   "modality": "rederive",
+   "headline": "Rederive: fresh m2c reproduces the candidate's shape exactly and text1b.c has ZERO static/inline helpers, but the helper axis s20 killed was mis-scoped - a helper carrying the body's OWN computation i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The donation family has exactly one surviving honest form: a static __inline__ helper this function has a real reason to call, whose 25..32-byte local is genuinely consumed by a DIFFERENT caller in src/text1b.c. Since every value-flowing placement is now measured to perturb the stream, that helper's call here would also have to be value-free - which no honest helper is - so the census is expected to close the family, and closing it by measurement is what remains.",
-   "mechanism": "integrate.c:2085-2092 donates DECL_FRAME_SIZE per expansion, snapshotted pre-optimisation at integrate.c:345, so the donated block survives here even when constant propagation removes its traffic; but the value-flow kill above shows the call must not feed a value into this function's dataflow, and a helper called purely for effect has no effect to give.",
-   "next_probe": "Grep src/text1b.c for every static/inline helper and every repeated expression shared between func_800480C0 and a COMPLETED-C function in the same TU, and for any local aggregate of 25..32 bytes; if none is both shared with this function and genuinely needed by the other caller, record that as the closing measurement for the donation family and stop re-spelling it."
+   "hypothesis": "The single surviving sw in the referenced-carrier form is not a property of the array spelling but of GCC 2.7.2 never deleting the LAST store to a frame object, so no referenced (non-strippable) donation carrier of any shape can reach zero traffic on this body.",
+   "mechanism": "r7/r8 fold three of four store/load pairs and keep exactly one store, and r9/r10/r11 (a single site) keep one too, which is consistent with each write killing the previous write at the same frame address and the final write having no successor to kill it. GCC 2.7.2's flow.c insn_dead_p treats a MEM destination as live unless it can prove the object dead, and a donated assign_stack_temp block has no DECL to make that proof from.",
+   "next_probe": "Read tools/gcc-2.7.2/flow.c insn_dead_p / mark_set_1 for the MEM-destination case and confirm whether a store to a frame object is EVER deleted; if it is, the enabling condition is the last unmeasured route to a zero-traffic referenced carrier, and if it is not, this closes the referenced half of the donation disjunction as a class kill with a predicate cite instead of the instance kill s21 could justify."
   },
   {
-   "hypothesis": "Four class-A combine orphans (8 bytes each, reload1.c:2382-2385) would buy the same 32 bytes at zero instruction cost, and they have never been enumerated at the four narrow sign-extend sites with what-if lifts.",
-   "mechanism": "combine.c:10832-10841 distribute_notes plants an orphan (insn (use (reg P))) when the defining insn is rewritten away; P then has no set and no constraint-bearing reference, regclass leaves it ST_REGS, find_reg cannot seat it and alter_reg pays 8 bytes for nothing. s9 measured that each such orphan is paid for with an emitted lh on this tree's other bodies, which would cost bytes here - that prediction is untested ON this body.",
+   "hypothesis": "Four class-A combine orphans (8 bytes each, reload1.c:2382-2385) would buy the same 32 bytes at zero instruction cost, and they have still never been enumerated at the four narrow sign-extend sites with what-if lifts.",
+   "mechanism": "combine.c:10832-10841 distribute_notes plants an orphan (insn (use (reg P))) when the defining insn is rewritten away; P then has no set and no constraint-bearing reference, regclass leaves it ST_REGS, find_reg cannot seat it and alter_reg pays 8 bytes for nothing. s9 measured that each such orphan is paid for with an emitted lh on this tree's other bodies, which would cost bytes here - that prediction is still untested ON this body, and s7 killed only the specific HImode sign-extend spelling, not the enumeration.",
    "next_probe": "Run tools/nrefs_census.py --func func_800480C0 --file text1b with what-if lifts on each loop pseudo, then count orphan USEs directly on each resulting .combine dump with tmp/grind/func_800480C0/s6/count_uses.py; the target is orphanUSE=4 at 72 cc1 insns with no lh appearing."
   },
   {
-   "hypothesis": "If the donation census closes negative, the honest record is complete: the residual is a single 32-byte zero-traffic frame object, identical to the one three in-file siblings hold (pre_pad, 8) grants for, and the disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS rather than a spelling.",
-   "mechanism": "The standing Judge constraint (docs/grind/decisions.md:20349) bars the unwritten pad for this body in any spelling until an owner ruling adds its row; .claude/rules/no-new-park-categories.md:340-342 makes the family a closed per-function enumeration.",
-   "next_probe": "Do NOT re-spell the pad. Whichever session reaches the escalation modality should cite s20's h1 measurement (score 0, listing identical but for the .frame line) as the proof that the residual is exactly the 32-byte charge, plus s19's additivity and phantom-cost measurements, in the foreclosure record."
+   "hypothesis": "The honest record is now complete on mechanism, and the disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS rather than a spelling.",
+   "mechanism": "The standing Judge constraint (docs/grind/decisions.md:20349) bars the unwritten pad for this body in any spelling until an owner ruling adds its row, and .claude/rules/no-new-park-categories.md:340-342 makes the family a closed per-function enumeration. s21 closed the last open family (donation) on a mechanism: the donated block must carry zero traffic to be byte-neutral, and a zero-traffic frame object is the pad.",
+   "next_probe": "Do NOT re-spell the pad. Whichever session reaches the escalation modality should cite s21's r5/r6 (the target's exact .frame $sp,88 # vars= 32, regs= 8/0, args= 24 with the 74-instruction stream untouched, through an honest value-flowing helper) as the cleanest proof that the residual is exactly the 32-byte get_frame_size charge, alongside s20's h1 score-0 measurement, s19's additivity, and the s21 sibling-invariance table showing func_800480C0 is the only one of four identical-window siblings without a row."
   }
  ],
  "judge_constraints": [
@@ -147,38 +153,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 3,
-   "statement": "The (args=56, vars=0) frame decomposition is layout-equivalent to (args=24, vars=32) on this body but is not reachable from any call this function makes.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD f3ba5f78, all 21 s2+s3 spellings, annotated dead-store present in the s3 set",
-   "predicate_cite": "",
-   "result": "args reads 24 in every spelling (MIPS_STACK_ALIGN(20) for the single 5-word call to func_800482C8). Reaching 56 needs a "
-  },
-  {
-   "session": 4,
-   "statement": "Widening the phantom slot by giving the folded loop-guard a DImode (long long) carrier enlarges vars beyond 8 on this body",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 8395e8f4, pad-free bodies, bare `arg0 = 0;` dead param store present (cc1 sees it with or without the FAKE comment), instrumented cc1 tools/gcc-2.7.2/cc1 BB2_ALLOC_DEBUG",
-   "predicate_cite": "",
-   "result": "all four report .frame $sp,56 # vars= 0 and unalloc_pseudos=0 - the DImode compare residue is allocated, so the phantom "
-  },
-  {
-   "session": 4,
-   "statement": "Placing folded guards in distinct basic blocks, including inside the loop body, raises phantom multiplicity above one and reserves 16 bytes",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 8395e8f4, pad-free bodies, bare `arg0 = 0;` dead param store present, instrumented-cc1 BB2_ALLOC_DEBUG census",
-   "predicate_cite": "",
-   "result": "every spelling reported unalloc_pseudos = 0 or 1 and vars = 0 or 8; none reached 2 phantoms or 16 bytes. The one spellin"
-  },
-  {
-   "session": 4,
-   "statement": "A permuter campaign on this function finds a form scoring below the 20-objdump-diff baseline",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 8395e8f4, candidate chassis (annotated dead param store present) and the vars=8 guard chassis, decomp-permuter with --stack-diffs, ~50k total iterations",
-   "predicate_cite": "",
-   "result": "campaign A best 442 = 74 insns / 20 objdump diffs / frame 64 - EQUAL to the baseline, not better. Campaign B best 583 = "
-  },
   {
    "session": 4,
    "statement": "A frame term other than var_size (extra_size, pretend_args_size, or a larger register-save area) can supply the target's +32 bytes on this mips1 -mno-abicalls build",
@@ -626,6 +600,38 @@
    "measured_on": "HEAD a4c735da, bodies h1_stmt_tail.c / h2_stmt_ifend.c / d1_cand_donate32.c installed one at a time over the INCLUDE_ASM line, candidate FAKE present",
    "predicate_cite": "",
    "result": "Both byte-neutral placements are discarded statements and fail T1 and T2 outright. Not proposed, not submitted. Recorded"
+  },
+  {
+   "session": 21,
+   "statement": "A fresh m2c decompile, run without reference to twenty sessions of ledger, recovers a structurally different C shape for func_800480C0 than the one candidate.c spells.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 16834fcf, target listing asm/funcs/func_800480C0.s, m2c run with no ledger input; candidate body installed over the INCLUDE_ASM line for the comparison half, FAKE arg0 = 0; present there only.",
+   "predicate_cite": "",
+   "result": "m2c returns the candidate's shape line for line: the same locate-prologue arg0 + ((*(arg0 + ((arg1 << 0x10) >> 0xE)) >> "
+  },
+  {
+   "session": 21,
+   "statement": "The inline-callee frame donation (integrate.c:2085-2092) has an honest carrier in src/text1b.c - a static or inline helper this function has a real reason to call, whose 25..32-byte local is genuinely",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 16834fcf, src/text1b.c at HEAD with func_800480C0 represented as INCLUDE_ASM; a source census, no build and no FAKE constructs involved.",
+   "predicate_cite": "",
+   "result": "src/text1b.c defines ZERO static functions and ZERO inline functions. Every 'static' token in the file is either the str"
+  },
+  {
+   "session": 21,
+   "statement": "s20's kill of value-flowing donation call sites is a kill of the whole helper axis, so no inline helper can be added to this body without perturbing its 74-instruction stream.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 16834fcf, bodies tmp/grind/func_800480C0/s21/bodies/{r1_helper_prologue,r2_helper_prologue_nofake,r3_helper_recbase,r4_helper_sxadd}.c installed one at a time over the INCLUDE_ASM line; candidate",
+   "predicate_cite": "",
+   "result": "KILLED, and the correction is load-bearing. r3 scores 20 at build_insns 74, rules_dropped 0. r4 scores 20 at build_insns"
+  },
+  {
+   "session": 21,
+   "statement": "Because a byte-neutral honest helper exists on this body, the integrate.c donation can buy the target's 32-byte vars charge through it without the banned pad.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 16834fcf, bodies tmp/grind/func_800480C0/s21/bodies/{r5_sxadd_donate32,r6_recbase_donate32,r7_sxadd_t1write,r8_sxadd_t_last,r9_sxaddt_+,r10_sxaddt_+,r11_sxaddt_+}.c installed one at a time over t",
+   "predicate_cite": "",
+   "result": "KILLED on the mechanism, with both halves of the disjunction measured. (a) The donation fires exactly: r5 and r6 both ma"
   }
  ],
  "ladder_skip": 0,

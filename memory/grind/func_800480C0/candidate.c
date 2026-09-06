@@ -3,6 +3,43 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s21 (rederive, 2026-09-05, chassis HEAD 16834fcf) - BODY UNCHANGED; floor re-measured 20
+ * with this body installed over the INCLUDE_ASM line (74 target insns, 74 build insns,
+ * rules_dropped 0, raw cc1 .frame $sp,56 # vars= 0, regs= 8/0, args= 24). The dispatch
+ * brief's "measurement unavailable" was a driver-side gap, not a broken body.
+ * s21 executed the rederive modality on all three legs and closed s20's frontier item 1.
+ * (1) A FRESH m2c DECOMPILE, run with no ledger input, recovers THIS body's shape line for
+ * line and declares no aggregate of any kind (tmp/grind/func_800480C0/s21/m2c_fresh.txt) -
+ * there is no structurally different C shape for these bytes.
+ * (2) DONATION CENSUS, CLOSED NEGATIVE: src/text1b.c defines ZERO static and ZERO inline
+ * functions across 583 function definitions, and holds no 25..32-byte local aggregate shared
+ * with this function, so an inline-callee donation carrier here would have to be a helper
+ * invented for this one function with no second caller to make its 32-byte local genuine.
+ * (3) BUT s20's KILL OF THE HELPER AXIS WAS TOO WIDE, AND THE CORRECTION IS THE SESSION'S
+ * REAL FINDING. s20 measured only helpers ADDED to the body. A helper carrying computation
+ * this body ALREADY performs is BYTE-NEUTRAL: `static __inline__ s32 sxadd(s16 v, s32 b)
+ * { return (s32)v + b; }` substituted at all four sign-extend-and-add sites scores 20 at 74
+ * insns with a .frame line identical to this one, and so does `rec_base` at both of its
+ * sites. Giving either helper an unreferenced `u32 t[8]` then makes raw cc1 print the
+ * TARGET'S EXACT `.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0` with the
+ * 74-instruction stream untouched - the integrate.c:2085-2092 donation fires perfectly
+ * through an honest, value-flowing, four-times-per-iteration call site.
+ * (4) AND THAT IS WHAT CLOSES THE FAMILY. The unreferenced carrier is the frame pad at one
+ * remove and the sandbox strips it (score stays 20). Making it referenced costs exactly one
+ * instruction no fold can remove - `u32 t[8]; t[0] = (u32)(s32)v; return (s32)t[0] + b;`
+ * builds 75 insns and scores 1, the whole delta being a single `sw $2,24($sp)` into the
+ * target's untouched window, because all four inline sites write the same frame address and
+ * the LAST write has nothing to kill it. THAT SCORE OF 1 IS A DETECTOR GAP, NOT A FLOOR, AND
+ * IS DELIBERATELY NOT PROPOSED: an eight-word array holding one scalar fails cheat-checklist
+ * T1/T2/T5 (dead-vars-local-array, whose carve-out requires the dead stores to appear in the
+ * TARGET bytes) and materialises a byte the target does not contain. It is banked as
+ * rejected/s21-referenced-helper-array-leaves-one-surviving-store.c so no later session
+ * mistakes it for progress; the stripper keys on the array name being unreferenced and one
+ * live element defeats it.
+ * NET: the donation family is now closed on a MECHANISM rather than a census - a donated
+ * block buys the 32 bytes byte-neutrally only if it carries zero traffic, and a frame object
+ * carries zero traffic only if it is never written, which is the unwritten pad this function
+ * is barred from until an owner row exists. Floor stays 20. */
 /* s20 (rederive, 2026-09-05, chassis HEAD a4c735da) - BODY UNCHANGED, floor re-measured
  * 20 with this body installed over the INCLUDE_ASM line (74 target insns, 74 build insns,
  * rules_dropped 0; raw cc1 reads .frame $sp,56 - vars= 0, regs= 8/0, args= 24, 72 insns,
