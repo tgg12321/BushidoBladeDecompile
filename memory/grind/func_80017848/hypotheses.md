@@ -3853,3 +3853,63 @@ to target. Cell scores: `tmp/grind/func_80017848/s34/scores.txt`.
 - probe: s39/cells.ps1 BASE,Q1,P4 with sandbox --disable all; src/ings.c restored from s39/ings.orig.c; git diff --quiet passes.
 - result: BASE 3, Q1 14, P4 4 - all identical to s38.
 - verdict: CONFIRMED
+
+## s40 hypotheses (2026-09-06, rederive; owner directive executed s37/s38/s39)
+
+## [s40] A pseudo that is passed to the function's only call as a 3rd/4th argument gives loop 2's cse-produced preheader copy a byte-free second reader (the arg move ties to a2/a3 by hard-reg copy preference), so the copy survives combine, the add reads it, and the copy destination lands in a3.
+- mechanism: combine.c:1458 added_sets_2 keeps the copy when its destination is not dead at the add; global.c set_preference ties a pseudo copied into a hard argument register to that register, so the arg move is deleted as a no-op (jump.c:441); local-alloc optimize_reg_copy_1 (local-alloc.c:700) makes the add read the copy.
+- probe: scratch TU m9a (BASE body with loop 1's tail removed, loop 2 re-reading p, `extern s32 math_Distance3D(s32 *, s32 *, u8 *, u8 *)`, call passing `lnk, q`) built under project flags with -da; read .s/.greg (tmp/grind/func_80017848/s40/mini/m9a_call_arg_reader.*).
+- result: pass-level shape REPRODUCED (`move $9,$5 / lw $8,16($18) / addu $3,$2,$9`) but q = t1 and lnk = t0, with `move $6,$8 / move $7,$9` paid at the call: q and lnk are live at function entry on the loop-skip paths, so global_conflicts records them against the still-live incoming a2/a3 argument registers in block 0. Defining them on the skip paths costs an instruction target lacks. Not portable to the chassis without editing math_Distance3D's definition (outside this function's scope), and dead on the seat regardless.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone scratch TU m9a under the exact project CC_FLAGS (canonical build/cc1), plus BASE re-audited at 3 (127/127) on the HEAD src/ings.c:820 anchor; no FAKE constructs
+
+## [s40] Frontier item 1: a real statement in each loop's return arm that reads the copy destination is merged by jump2's cross-jump into the shared return-0 tail and thereby disappears without bytes, giving the copy a byte-free second reader.
+- mechanism: jump.c:1950-2061 cross-jump merges identical post-RA insn sequences reaching the same label; the merge test is rtx_renumbered_equal_p at jump.c:2525, so only IDENTICAL insns merge and a merged read is still a read.
+- probe: m9c scratch TU (`return (s32)q;` in both arms, loop 2 naming q) with -da dumps, then the same body on the chassis (s40/body_M9C.c) via sandbox --disable all.
+- result: m9c .s cross-jumps both arms into one tail `.L19: j .L17 / move $2,$5` - the read survives in the tail. Chassis: 15 at 127/129 (two extra instructions). Target's tail `j .L80017A1C / addu v0,zero,zero` reads no register, so no return-arm reader of a3 can exist in target.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: jump.c:2525
+- measured_on: scratch TU m9c under project flags plus HEAD src/ings.c:820 anchor with body_M9C.c; BASE 3 at 127/127; no FAKE constructs
+
+## [s40] Target's a3 seat for both preheader copies is produced by global.c's pass-0 selection for a copy destination that conflicts with v0,v1,a0,a1,a2 (i.e. is live across its loop body), and a copy destination whose only use is the same-block base add is instead a LOCAL pseudo that local-alloc puts in v0.
+- mechanism: global.c:993-1001 pass 0 skips conflicting, never-used and someone-preferred registers and takes the lowest remaining; local-alloc.c:472-475 admits single-block single-death pseudos, combine_regs refuses a tie when the copy source is global (local-alloc.c:1827), find_free_reg takes the lowest free hard register (no REG_ALLOC_ORDER in mips.h).
+- probe: instrumented cc1 on the BASE body: BB2_FINDREG_DEBUG=80 (loop 1's copy dest reg80) in s40/ifr80/cc1.log; .lreg/.greg dispositions in s40/icand.
+- result: reg80: conflicts {2,3,4,5,6,18,19,29}, someone_prefers empty, a3 first pass-0-eligible -> 80 in 7. Loop 2's load pseudo reg113: local, `in 2` (v0). So target's two a3 copies are two global allocnos each live across its own loop, i.e. each has a flow-time reader after or inside the loop that left no bytes.
+- verdict: CONFIRMED
+
+## [s40] The floor and residual survive unchanged on the HEAD chassis this session.
+- mechanism: Driver-mandated chassis re-audit before any probe.
+- probe: sandbox func_80017848 --disable all with body_BASE.c applied over the src/ings.c:820 anchor; dis.sh normalised diff.
+- result: 3 at 127 target / 127 build, scorable; same three-instruction positional residual as s36-s39.
+- verdict: CONFIRMED
+
+## [s40] A pseudo passed to the function's only call as a 3rd/4th argument gives loop 2's cse-produced preheader copy a byte-free second reader (arg move tied to a2/a3 by hard-reg copy preference), so the copy survives combine, the add reads it, and the copy destination lands in a3.
+- mechanism: combine.c:1458 added_sets_2 keeps the copy when its destination is not dead at the add; global.c set_preference ties a pseudo copied into a hard argument register to that register so the arg move is deleted as a no-op (jump.c:441); local-alloc.c:700 optimize_reg_copy_1 makes the add read the copy.
+- probe: Scratch TU m9a (BASE body, loop 1 tail removed, loop 2 re-reading p, extern math_Distance3D widened to 4 params, call passing lnk, q) built under exact project flags with -da; read .s/.greg (tmp/grind/func_80017848/s40/mini/m9a_call_arg_reader.*).
+- result: Pass-level shape reproduced (move $9,$5 / lw $8,16($18) / addu $3,$2,$9 = target's copy, links load, add-reads-copy) but seats wrong: q=t1, lnk=t0, base=v1, and the call pays move $6,$8 / move $7,$9. q and lnk are live at function entry on the loop-skip paths, so global_conflicts records them against the still-live incoming a2/a3 argument registers in block 0. Defining them on the skip paths would cost an instruction target lacks. Not portable to the chassis without widening math_Distance3D's definition (outside this function's scope).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone scratch TU m9a under the exact project CC_FLAGS (canonical build/cc1), plus BASE re-audited at 3 (127/127) on the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs
+
+## [s40] Frontier item 1: a real statement in each loop's return arm that reads the copy destination is merged by jump2's cross-jump into the shared return-0 tail and thereby disappears without bytes, giving the copy a byte-free second reader.
+- mechanism: jump.c:1950-2061 cross-jump merges identical post-RA insn sequences reaching the same label; the merge test is rtx_renumbered_equal_p at jump.c:2525, so only identical insns merge and a merged read is still a read.
+- probe: m9c scratch TU (return (s32)q; in both arms, loop 2 naming q) with -da dumps, then the same body on the chassis (tmp/grind/func_80017848/s40/body_M9C.c) via sandbox --disable all.
+- result: m9c .s cross-jumps both arms into one tail .L19: j .L17 / move $2,$5 - the read survives in the merged tail. Chassis: 15 at 127/129 (two extra instructions). Target's tail j .L80017A1C / addu v0,zero,zero reads no register, so no return-arm reader of a3 can exist in target. Banked as rejected/s40_return_arm_reads_q_crossjump_tail_keeps_read_costs_15.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: scratch TU m9c under project flags plus HEAD src/ings.c:820 anchor with body_M9C.c; BASE 3 at 127/127; no FAKE constructs
+- predicate_cite: jump.c:2525
+
+## [s40] Target's a3 seat for both preheader copies is produced by global.c's pass-0 selection for a copy destination that conflicts with v0,v1,a0,a1,a2 (live across its loop body), while a copy destination whose only use is the same-block base add is a LOCAL pseudo that local-alloc puts in v0.
+- mechanism: global.c:993-1001 pass 0 skips conflicting, never-used and someone-preferred registers and takes the lowest remaining; local-alloc.c:472-475 admits single-block single-death pseudos, combine_regs refuses a tie when the copy source is global (local-alloc.c:1827), find_free_reg takes the lowest free hard register (no REG_ALLOC_ORDER in mips.h).
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1, codegen-identical to build/cc1 on the TU) on the BASE body: BB2_FINDREG_DEBUG=80 (loop 1's copy dest reg80) in tmp/grind/func_80017848/s40/ifr80/cc1.log; .lreg/.greg dispositions in s40/icand.
+- result: reg80: conflicts {2,3,4,5,6,18,19,29}, someone_prefers empty, own prefs empty, a3 is the first pass-0-eligible register -> 80 in 7. Loop 2's load pseudo reg113 is local and gets v0 (Register 113 in 2). Hence target's two a3 copies are two global allocnos each live across its own loop, i.e. each has a flow-time reader after or inside the loop that left no bytes; every visible post-loop instruction reads only v0/v1/a0/a1/a2/s-regs.
+- verdict: CONFIRMED
+
+## [s40] The floor and residual survive unchanged on the HEAD chassis this session.
+- mechanism: Driver-mandated chassis re-audit before any probe.
+- probe: sandbox func_80017848 --disable all with body_BASE.c applied over the src/ings.c:820 anchor; s40/dis.sh normalised diff.
+- result: 3 at 127 target / 127 build, scorable; same three-instruction positional residual as s36-s39 (tail move vs lw, preheader lw+add vs copy+add).
+- verdict: CONFIRMED

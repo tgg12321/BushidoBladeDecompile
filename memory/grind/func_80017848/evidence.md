@@ -4648,3 +4648,122 @@ scorable**. The floor is unchanged for the ninth consecutive session.
 - [s39] reload's find_equiv_reg copy path (reload1.c:5851) requires an unallocated pseudo; global leaves none here (s6/s7 free, no spill traffic), so reload is not target's copy producer.
 
 - [s39] With s37/s38/s39 together, every mechanism for a use-once (set Q P) to reach the assembler is measured dead, priced at +1 instruction, priced at 14 seat points (Q1), or forbidden; the unexplained facts are now target-side (both loops carry the copy with no visible a3 reader; loop 1's exit tail re-reads p and recomputes sh on the loop path only).
+
+## s40 (2026-09-06, modality `rederive`; owner directive already executed s37/s38/s39)
+
+- [s40] CHASSIS RE-AUDIT. HEAD src/ings.c carries the anchor
+  `INCLUDE_ASM("asm/funcs", func_80017848);` at line 820 (unchanged since s37).
+  tmp/grind/func_80017848/s40/body_BASE.c (candidate.c's body, byte-identical to
+  s39's) applied over the anchor: `sandbox func_80017848 --disable all` = **3 at
+  127 target / 127 build, scorable**. The residual is the same three instructions
+  (dis.sh diff): build has `addu a0,a3,zero` at loop 1's exit tail where target
+  has `lw a0,0xC(s2)`, and `lw v0,0xC(s2)` / `addu a0,a1,v0` at loop 2's
+  preheader where target has `addu a3,a0,zero` / `addu a0,a1,a3`. No FAKE
+  construct in any cell; fake_ablate remains vacuous. src/ings.c restored from
+  s40/ings.orig.c; `git diff --quiet -- src/ings.c` passes.
+
+- [s40] RE-DERIVATION LEG 1 - A CALL ARGUMENT AS THE COPY'S BYTE-FREE SECOND
+  READER (new reader class, never in the ledger). Reasoning that led here:
+  target's copy destination a3 is the 4th MIPS argument register, and a pseudo
+  passed to a call in a3 has its arg move tied to a3 by global's hard-reg copy
+  preference so the move leaves no bytes. Scratch TU m9a (full BASE body, loop 1's
+  `p = q` tail removed, loop 2 re-reading p with the s37 t-reassignment guard and a
+  named `q`/`lnk` preheader, `extern s32 math_Distance3D(s32 *, s32 *, u8 *, u8 *)`,
+  call `math_Distance3D(pa, pb, lnk, q)`; built under the exact project flags with
+  -da, tmp/grind/func_80017848/s40/mini/m9a_call_arg_reader.*). RESULT: the
+  mechanism is REAL at the pass level - loop 2's preheader is
+  `move $9,$5 / lw $8,16($18) / addu $3,$2,$9`, i.e. the cse-produced copy
+  survives combine (q not dead at the add because the call reads it) and the add
+  reads the copy destination (optimize_reg_copy_1) - target's exact three-insn
+  shape. But the SEATS are wrong: q = t1 ($9), lnk = t0 ($8), base = v1, and the
+  call site pays `move $6,$8 / move $7,$9`. Cause, by reading global.c
+  global_conflicts: q and lnk are live at function ENTRY on the two loop-skip
+  paths (the call reads them whether or not either loop ran), so they are in
+  basic_block_live_at_start[0] where the incoming hard argument registers a2/a3
+  are still live (the `(set s3 (reg a3))` param copy has not executed yet) and
+  global records a conflict with a2/a3, forcing them into t0/t1. Any variant that
+  defines q on the skip paths costs an instruction there (the skip path
+  `.L80017974` holds no a3 write in target). Instance kill; the entry-liveness
+  conflict is the predicate a future variant must escape.
+
+- [s40] RE-DERIVATION LEG 2 - FRONTIER ITEM 1 (a reader of the copy destination
+  in the loop-body return arm, merged by jump2's cross-jump into the shared
+  return-0 tail) EXECUTED on minimal geometry with dumps AND on the chassis.
+  m9c (tmp/grind/func_80017848/s40/mini/m9c_return_arm_reader.*): both loops'
+  `return 0` arms replaced by `return (s32)q;` with loop 2 naming `q`.
+  .s: the two arms ARE cross-jumped into one tail `.L19: j .L17 / move $2,$5`,
+  but the tail CARRIES THE READ (`move $2,$5`) - cross-jump only merges insns
+  that are rtx_renumbered_equal_p (jump.c:2525), so identical reads merge into
+  one read, they never vanish. On the chassis (body_M9C.c, loop 1 already named
+  q): **15 at 127/129** - the shared tail becomes a register read and costs two
+  instructions (banked as
+  rejected/s40_return_arm_reads_q_crossjump_tail_keeps_read_costs_15.c).
+  CLASS KILL: a reader that reaches the merged return tail leaves its read in the
+  tail; target's tail `j .L80017A1C / addu v0,zero,zero` reads no register, so no
+  return-arm reader of a3 exists in target. Predicate: jump.c:2525.
+
+- [s40] THE a3 SEAT, MEASURED FROM THE ALLOCATOR ITSELF (instrumented cc1
+  tools/gcc-2.7.2/cc1, harness s40/idump.sh, CODEGEN-IDENTICAL to build/cc1 on the
+  whole TU in both runs). On the BASE body loop 1's copy is insn 83
+  `(set (reg 80) (reg 79))`, its tail reader insn 141 `(set (reg 79) (reg 80))`.
+  BB2_FINDREG_DEBUG=80 (s40/ifr80/cc1.log):
+      conflicts: 2 3 4 5 6 18 19 29   (v0 v1 a0 a1 a2 s2 s3 sp)
+      someone_prefers: (none)   own_copy_prefs: (none)
+      used_so_far: 0-19 24-29 31   pass0_used: 0-6 18-23 26-31
+      -> a3 (7) is the lowest register that is neither conflicting nor
+         first-used, so find_reg's pass 0 (global.c:993-1001) takes it.
+  reg80 conflicts with v0/v1/a0/a1/a2 ONLY because it is live across the whole
+  loop-1 body (its reader is the exit tail). Loop 2's preheader load pseudo
+  reg113, whose only use is the base add in the same block, is LOCAL and
+  local-alloc gives it v0 (`Register 113 in 2` in .lreg; local-alloc.c:472-475
+  admits it, combine_regs cannot tie it to the global source pseudo because
+  reg_qty[src] < 0, local-alloc.c:1827, and find_free_reg takes the lowest free
+  register - MIPS defines no REG_ALLOC_ORDER). CONSEQUENCE, now measured rather
+  than inferred: target's a3 in BOTH preheaders means both copy destinations were
+  GLOBAL allocnos that conflict with v0,v1,a0,a1,a2, i.e. each is live across its
+  own loop body - each has a flow-time reader after (or inside) its loop. Every
+  visible instruction after either loop reads only v0/v1/a0/a1/a2/s-regs, so that
+  reader left no bytes. Combined with s37-s39, the whole residual reduces to ONE
+  question: which flow-time reader of a pseudo vanishes without bytes AND without
+  a no-op-move tie (a tie to a3 would need its own byte-free reader - regress).
+  The call-argument reader (leg 1) was the last untried instance of that class
+  and dies on entry liveness; the cross-jump reader (leg 2) dies on jump.c:2525.
+
+- [s40] READING CHECKS banked so no session re-derives them: (a) the reload
+  find_equiv_reg copy path (reload1.c:5848-5853) also fires when `old` is a MEM,
+  but an add with a MEM operand never reaches reload on MIPS (expand loads it into
+  a pseudo; combine/validate_replace_rtx must recog), and an unallocated pseudo
+  cannot arise here: reg_live_length is set negative ONLY for setjmp-live pseudos
+  (flow.c:1240, :1260), update_equiv_regs merely doubles the live length of a
+  REG_EQUIV pseudo (local-alloc.c:1064), the `-2 parameter` case in global.c:583
+  has no setter in this source tree, and find_reg cannot fail with t0-t9 free.
+  (b) cse_set_around_loop (cse.c:7909) only fires on REG_LOOP_TEST_P regs, which
+  jump.c:2253 sets on the ORIGINAL exit-test pseudos of a duplicated while/for
+  loop; it plants the copy AFTER the pre-loop load (before the guard), not in the
+  preheader, and the duplicated form hoists the bound because NOTE_INSN_LOOP_VTOP
+  (emitted before the original exit code by duplicate_loop_exit_test) resets
+  maybe_never at loop.c:936 - the exact reason s28's W1/W2/W3 hoisted the bound.
+  So the guard+do/while chassis is not merely the best-scoring form, it is the
+  only loop shape whose bound stays in the loop bottom.
+
+- [s40] Artifacts: tmp/grind/func_80017848/s40/mini/m9a_call_arg_reader.{c,s,rtl,
+  jump,cse,loop,cse2,flow,combine,sched,lreg,greg,sched2,jump2,dbr},
+  s40/mini/m9c_return_arm_reader.{same set}, s40/mini/run.sh, s40/idump.sh,
+  s40/icand/ings.i.{lreg,greg,combine,...} + cc1.log, s40/ifr80/cc1.log,
+  s40/body_{BASE,Q1,P4,M9C}.c, s40/cells.ps1, s40/dis.sh, s40/ings.orig.c.
+
+- [s40] Chassis: anchor src/ings.c:820 unchanged; BASE = 3 at 127/127 scorable; M9C = 15 at 127/129; no FAKE constructs; src/ings.c restored to HEAD.
+
+- [s40] Chassis: anchor src/ings.c:820 unchanged; BASE = 3 at 127/127 scorable; M9C = 15 at 127/129; no FAKE constructs anywhere; src/ings.c restored to HEAD (git diff --quiet passes).
+
+- [s40] Owner directive 2026-09-06 (minimal-TU forensics of the copy geometry) was executed in s37 and extended in s38/s39; s40 extends it with m9a/m9c on the full-body minimal TU plus an allocator-level dump of the seat.
+
+- [s40] m9a: a call-argument reader reproduces target's copy / links-load / add-reads-copy shape at the pass level, but the arg pseudos are live at entry on the loop-skip paths and conflict with the incoming a2/a3 hard registers (global.c global_conflicts, block 0), so they seat in t0/t1 and the call pays two moves.
+
+- [s40] m9c: cross-jump merges the two return arms but the merged tail keeps the read (move $2,$5); jump.c:2525 rtx_renumbered_equal_p only merges identical insns. Chassis cost 15 at 127/129. Class kill of the brief's frontier item 1.
+
+- [s40] Allocator dump (BB2_FINDREG_DEBUG=80): loop 1's copy destination gets a3 because it conflicts with v0,v1,a0,a1,a2,s2,s3,sp and a3 is the lowest already-used non-conflicting register in find_reg pass 0; loop 2's load pseudo reg113 is local and gets v0. Target's a3 in both preheaders therefore requires both copy destinations to be global allocnos live across their loop bodies.
+
+- [s40] Reading checks banked: reg_live_length goes negative only for setjmp-live pseudos (flow.c:1240, :1260); update_equiv_regs only doubles a REG_EQUIV pseudo's live length (local-alloc.c:1064); global.c:583's -2 parameter case has no setter in this tree; so no unallocated pseudo exists for reload1.c:5851's find_equiv_reg copy path. cse_set_around_loop (cse.c:7909) needs REG_LOOP_TEST_P (jump.c:2253, duplicated exit tests only) and plants its copy before the guard, and duplicated while/for loops hoist the bound because NOTE_INSN_LOOP_VTOP resets maybe_never at loop.c:936 - the reason s28's W-forms lost.
+
+- [s40] Rejected bank now 240: s40_call_arg_reader_q_lnk_entry_live_seats_t0_t1.c (scratch-TU form) and s40_return_arm_reads_q_crossjump_tail_keeps_read_costs_15.c.

@@ -1,3 +1,15 @@
+/* [s40 REDERIVE NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
+ * (anchor src/ings.c:820).]  Two new reader classes for the preheader copy were
+ * measured and killed: a call-argument reader (m9a: copy+add shape reproduced,
+ * but q/lnk are live at entry on the loop-skip paths and collide with the
+ * incoming a2/a3 hard registers, seats t0/t1) and a return-arm reader merged by
+ * cross-jump (m9c, chassis 15 at 127/129: jump.c:2525 merges only identical
+ * insns, the tail keeps the read).  The a3 seat was measured from global.c's
+ * own pass-0 sets (reg80: conflicts v0,v1,a0,a1,a2,s2,s3,sp; a3 first eligible):
+ * target's two a3 copies are global allocnos live across their loops, so each
+ * has a flow-time reader that left no bytes.  Details: evidence.md/hypotheses.md
+ * s40 sections.
+ */
 /* [s39 FORENSICS NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
  * (anchor src/ings.c:820).]  Frontier item 1 (an interposer reading the copy
  * destination so the add loses its LOG_LINK) is CLOSED as a class kill: the
