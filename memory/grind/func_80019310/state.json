@@ -7,7 +7,8 @@
  "frontier": [],
  "judge_constraints": [
   "Cite each island's Sony macro NAME + inline_c.h LINE RANGE, and cite the added \"memory\" clobber to the func_8002D320 precedent (src/code6cac_b.c:935) rather than claiming it is the SDK macro's own clobber list.",
-  "RESUBMISSION REJECTED (driver, body df4741401a310eb2): this exact body (comments/whitespace ignored) was already FAILed by the Judge at FINAL CALL; the driver rejects it without review. A comments-only or citation-only re-file is the SAME body. Only a later Judge PASS ruling (ruling-request) can clear it \u2014 change the construct or ask the precise question."
+  "RESUBMISSION REJECTED (driver, body df4741401a310eb2): this exact body (comments/whitespace ignored) was already FAILed by the Judge at FINAL CALL; the driver rejects it without review. A comments-only or citation-only re-file is the SAME body. Only a later Judge PASS ruling (ruling-request) can clear it \u2014 change the construct or ask the precise question.",
+  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 4 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)"
  ],
  "banned_constructs": [],
  "kills": [],
