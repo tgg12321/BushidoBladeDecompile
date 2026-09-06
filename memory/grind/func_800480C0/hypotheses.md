@@ -2343,3 +2343,59 @@ constraint (docs/grind/decisions.md:20349) until an owner ruling adds the row.
 - probe: `build-c text1b` with the body installed, then a word-by-word objdump comparison against asm/funcs/func_800480C0.s (tmp/grind/func_800480C0/s23/cmp.py -> c1_bytes.txt); plus `sandbox func_800480C0 --disable all` on both this body and s22's k7_base_donate32_unwritten.c.
 - result: build/src/text1b.o sha1 441ad473138db80847e60b0f8e2a8c2b07014ee8 for BOTH this one-line form and s22's k7 helper form; the comparison prints `build insns 74 target 74` with exactly one differing word (index 58, 0c000000 vs 0c0120b2 - the un-relocated jal func_800482C8 target in an unlinked object). Sandbox: 20 for both. This is byte-for-byte the (pre_pad, 8) shape already granted to the identical-window text1b.c siblings func_80047EE8 and func_80047FBC at engine/volatile_cheats.py:757-758, and remains barred here by the standing Judge constraint at docs/grind/decisions.md:20349.
 - verdict: CONFIRMED
+
+## s24 (synthesis, 2026-09-05, chassis HEAD 3baaedfe)
+
+## [s24] The pad form's byte-identity is an object-level claim that may not survive linking.
+KILLED (instance). Measured directly: with the pad form installed, `build` produces
+build/bb2.exe sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa, equal to the oracle, MATCH.
+The identity holds through the full link, which is the evidence bar the 2026-08-22 and
+2026-09-02 allowlist grants each applied to their own functions.
+measured_on: chassis HEAD 3baaedfe, memory/grind/func_800480C0/candidate.c installed over
+src/text1b.c:129, the pad plus the single `arg0 = 0;` FAKE present.
+
+## [s24] The s22/s23 "floor 1" written-carrier body is a submittable honest form.
+KILLED (instance). Re-measured at score 1 (75 build / 74 target) on this chassis, but the
+carrier is `static __inline__ s32 sxadd(s16 v, s32 b) { u32 t[8]; t[0] = (u32)(s32)v;
+return (s32)t[0] + b; }` - an eight-word staging array for the value `(s32)v + b`. No
+observable effect on output (T1), no reader writes it from the specification (T2), and its
+only explanation is the integrate.c frame donation (T3). It is the unwritten pad's own
+family with the volatile removed and no sanctioning ruling behind it. The number localises
+the residual to one instruction; it is not a body anyone can file.
+measured_on: chassis HEAD 3baaedfe, tmp/grind/func_800480C0/s22/bodies/k4_base_donate32w.c
+installed over src/text1b.c:129, `arg0 = 0;` FAKE present.
+
+## [s24] The inherited frontier item "mixed args/vars partitions such as (24,32) or (16,40) have never been probed" is an open axis.
+KILLED (instance). It was measured in s18 and this merge retires it: bodies b6/b7/b8/b10
+(the in-loop call widened to 6/7/8/10 live arguments) read args= 24/32/32/40 with
+outgoing-argument stores at {16,20} / {16,20,24} / {16,20,24,28} / {16,20,24,28,32,36}, and
+the long-long alignment-hole variants c1/c2 place the hole at 0x14, below the window.
+args_size is a function of the argument count, not a free parameter that trades against
+var_size; every partition above (24,32) writes inside sp+0x18..0x37.
+measured_on: chassis HEAD e25a492f (s18 bodies b6/b7/b8/b10, c1_ll6th, c2_ll6th7th); the
+frame results were identical with and without the `arg0 = 0;` FAKE.
+
+## [s24] LIVE - the residual is a single allowlist row, and the evidence for it is now stronger than the evidence any of the three granted siblings carried.
+The construct is `volatile u32 pre_pad[8];` as the first local. The bytes are proven through
+the full link on this chassis. The immediately-preceding function in the same file is
+line-for-line the same body with the same construct and a granted row. The 2026-09-02 Judge
+FAIL rests on the enumeration being closed - procedurally correct, and silent on whether this
+function belongs in it. This is a ruling question, not a spelling question, and re-spelling it
+is forbidden by the standing Judge constraint in any case.
+
+## [s24] LIVE - the last honest unmeasured codegen axis is phantom multiplicity across distinct BASIC BLOCKS, and it is weak.
+reload1.c:2404 pays 8 frame bytes per pseudo global.c cannot seat. s22 varied the number of
+guard-split SITES (1, 2, 3 - all vars= 8, all in block 0); s17 additionally measured a second
+folded guard on the loop-exit test (vars= 8, 76 insns) and the exit fold alone (vars= 0), so one
+non-entry block has in fact been tried and added nothing. Four phantoms in four blocks would
+reach 32 bytes at zero frame traffic, but every additional block costs a branch, and s22 F3
+measured that even the free-on-the-frame g1 phantom costs the target's delay-slot nop. The
+arithmetic puts a four-block spelling well above 74 instructions before it is written.
+
+## [s24] LIVE - no session has asked whether a pass OTHER than flow.c can delete the last store to a referenced frame object.
+s23's class kill is precise about flow.c (insn_dead_p at tools/gcc-2.7.2/flow.c:1740-1741 needs a
+later same-address store in the same block; last_mem_set is cleared at a CALL, cleared at any
+memory read, and never recorded for sp-based stores). It does not cover combine.c insn merging or
+jump.c cross-jumping / tail-merge, both of which delete insns for reasons unrelated to liveness.
+The probe is cheap: take the s22 k4 dumps already on disk and count `(set (mem ...))` insns per
+pass across .combine and .jump2 rather than only across .cse2/.flow as s23's cnt.py did.

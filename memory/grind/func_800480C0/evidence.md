@@ -2152,3 +2152,100 @@ capped at 8 bytes (F4).
 - [s23] Frame arithmetic re-derived from compute_frame_size (tools/gcc-2.7.2/config/mips/mips.c:4443-4475): total = var_size + args_size + extra_size(0) + gp_reg_size(32), and every saved-register slot sits at args_size + extra_size + var_size + gp_reg_size - 4 and downward. Only the SUM var_size + args_size == 56 is observable in the bytes, so args=56/vars=0 would be byte-identical - but s18 already measured that the 7th outgoing-argument word stores into sp+0x18. args=24 / vars=32 with one carrier store is the measured optimum of the whole family.
 
 - [s23] s22 frontier item 2 is measured dead: an honest u32 buf[8] that the four halfwords genuinely stage through reaches vars= 32 at 77 raw insns against the target's 74.
+
+## s24 (synthesis, 2026-09-05, chassis HEAD 3baaedfe) - the merge, and the one fact that reframes 24 sessions
+
+### The chassis, re-measured (the dispatch brief again said "measurement unavailable")
+
+- `sandbox func_800480C0 --disable all` with `tmp/grind/func_800480C0/s22/bodies/k4_base_donate32w.c`
+  installed over the `INCLUDE_ASM` line at src/text1b.c:129 prints **`"score": 1, target_insns 74,
+  build_insns 75, rules_dropped 0`**. The ledger floor of 1 is correct on chassis 3baaedfe; s22's
+  measurement reproduces exactly.
+- The same sandbox with the s23 pad form installed prints **`"score": 20, target_insns 74,
+  build_insns 74`** - the allowlist-strip artefact, reproduced.
+- `tools/fake_ablate.py` given a candidate that carries a preceding `static __inline__` helper returns
+  `ERR/None` for both variants (`tmp/grind/func_800480C0/s24/fake_ablate_k4.txt`): the tool installs
+  only the function body and cannot carry the helper definition. Recorded as a tool limitation, not a
+  result. The FAKE-ablation of the *pad* form is unchanged from the s14-s19 audits (one unit,
+  `arg0 = 0;`, load-bearing on the score, irrelevant to the frame).
+
+### THE NEW FACT: the immediately-preceding sibling is line-for-line this same function.
+
+`func_80047FBC` at **src/text1b.c:83** - COMPLETED-C on main, layer-2 passed, allowlist row granted -
+is the *same body* as this candidate, statement for statement:
+
+  * `volatile u32 pre_pad[8];` as its FIRST local (line 85), FAKE-annotated to the 2026-08-18 ruling;
+  * the same `arg0 = 0;` cse2 FAKE, with the same stated mechanism (defeating cse2 canonical-register
+    substitution over the {arg0, p, base_addr} equivalence class);
+  * the same local set (`u32 *p; s32 base_addr; s32 count; s32 new_var;`), the same
+    `p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));` pointer walk, the same
+    `count = *(p++); if (count != 0) { ... } while ((count--) != 0);` loop skeleton, the same four
+    halfword reads with the same p += 2 interleave, and the same 5-argument call to `func_800482C8`.
+
+The ONLY difference is the signature: `func_80047FBC` takes four s16 parameters and reuses arg2/arg3
+pairwise across the four sums; `func_800480C0` takes six and uses each once. Everything else is
+identical.
+
+`func_80047EE8` (src/text1b.c:19) and `func_800481E8` (src/text1b.c:140) are the same family and also
+ship `volatile u32 pre_pad[8];`. Their granted rows sit at **engine/volatile_cheats.py:757, :758 and
+:767**. func_800480C0 sits at src/text1b.c:129, physically BETWEEN func_80047FBC and func_800481E8,
+and is the single hole in a run of four consecutive sibling functions - three granted, one not.
+
+### THE FULL-LINK PROOF, produced this session (not inferred, not an object-level claim)
+
+With the pad form installed over the INCLUDE_ASM line:
+
+    build-c text1b  -> build/src/text1b.o sha1 441ad473138db80847e60b0f8e2a8c2b07014ee8
+    s23/cmp.py      -> build insns 74  target 74  raw differing words: 1
+                       [ 58] build=0c000000 target=0c0120b2   (un-relocated jal func_800482C8)
+    build           -> build/bb2.exe sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa
+                       want           62efab4f73f992798c43e8c730aa43baa10bb4fa   MATCH
+
+That is the *operator-grade* evidence the 2026-08-22 ("parked-but-proven audit") and 2026-09-02
+("foreclosed-bucket disposition") grants each required before adding a row - the full linked EXE, not
+a per-object comparison. Banked at `tmp/grind/func_800480C0/s24/pad_full_build.txt` and
+`tmp/grind/func_800480C0/s24/pad_bytes.txt`. `src/text1b.c` was restored to its HEAD INCLUDE_ASM state
+after the measurement; `git status --porcelain src/` is empty at session end.
+
+### THE CORRECTION THIS MERGE OWES THE LEDGER
+
+s22 and s23 recorded "floor 1" as *the honest floor*, and the live frontier inherited that phrasing
+without qualification. It is true as a sandbox number and false as a disposition: the body that carries
+it is not submittable. k4's donation carrier is
+
+    static __inline__ s32 sxadd(s16 v, s32 b) { u32 t[8]; t[0] = (u32)(s32)v; return (s32)t[0] + b; }
+
+- an eight-word array staged through for a value that is `(s32)v + b`. It has no observable effect on
+the function's output (checklist T1), no reader would write it from the specification (T2), and its
+only explanation is the integrate.c frame donation (T3). It fails the cheat checklist exactly as the
+unwritten pad does, minus the `volatile` and minus the sanctioning ruling. **The floor-1 measurement is
+a diagnostic that localises the residual to one instruction; it is not a candidate.** Every future
+session should read the ledger's "floor 1" that way.
+
+So the two honest end-states of this function are, in full:
+  (a) the construct-free body - semantically correct, 74/74 instructions, **score 20**, the 20 being
+      entirely the `addiu $sp,-56` vs `-88` frame constant plus the sp-relative operands that constant
+      shifts; and
+  (b) the pad body - byte-identical through the full link, **score 20** for the allowlist reason.
+They are the SAME C plus one declaration, and they measure the same, which is the cleanest possible
+statement that nothing about this function is a codegen question any more.
+
+### FRONTIER ITEM 3 IS RETIRED BY THE MERGE (it was already answered, in s18)
+
+The inherited frontier carried "mixed partitions such as (24,32) or (16,40) have never been probed".
+s18 measured them: widening the in-loop call to 6/7/8/10 live arguments reads `args= 24/32/32/40` with
+outgoing-argument stores at {16,20} / {16,20,24} / {16,20,24,28} / {16,20,24,28,32,36}, and the
+alignment-hole variants (c1_ll6th, c2_ll6th7th) put the hole at 0x14, below the window. The seventh
+argument word is the boundary: it is the first that both raises `args_size` above 24 and lands a store
+at 0x18. `args_size` is not a free parameter that can be traded against `var_size` - it is a function
+of the argument count, and every partition above (24,32) writes inside sp+0x18..0x37. Nothing in that
+item was open.
+
+- [s24] Chassis 3baaedfe re-measured: k4 (the s22 written-carrier form) scores 1 at 75 build / 74 target; the s23 pad form scores 20 at 74/74. Ledger floor 1 confirmed; the brief's "measurement unavailable" was a driver-side gap for the third session running.
+- [s24] DECISIVE: func_80047FBC (src/text1b.c:83, COMPLETED-C on main) is line-for-line the same body as this candidate - same `volatile u32 pre_pad[8];` first local, same `arg0 = 0;` cse2 FAKE with the same stated mechanism, same locals, same pointer walk, same loop, same 5-arg call to func_800482C8 - differing ONLY in taking four s16 parameters reused pairwise instead of six used once.
+- [s24] func_800480C0 (src/text1b.c:129) sits physically between func_80047FBC (:83) and func_800481E8 (:140); func_80047EE8 (:19) completes the family. All three siblings ship `volatile u32 pre_pad[8];` with granted rows at engine/volatile_cheats.py:757, :758 and :767. func_800480C0 is the one hole in a run of four consecutive functions from the same original source.
+- [s24] FULL-LINK BYTE PROOF produced this session (the sibling grants' own evidence bar): with the pad form installed, `build` prints build/bb2.exe sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH. Object-level: text1b.o sha1 441ad473138db80847e60b0f8e2a8c2b07014ee8, 74/74 words, one differing word (the un-relocated jal of an unlinked object).
+- [s24] CORRECTION: "floor 1" is a diagnostic, not a candidate. The s22 k4 carrier `u32 t[8]` staged through `sxadd` for a value that is `(s32)v + b` fails checklist T1/T2/T3 exactly as the unwritten pad does, minus the volatile and minus the ruling. The two honest end-states of this function both measure 20 and differ by one declaration.
+- [s24] Frontier item 3 (mixed args/vars partitions) is retired by the merge, not by a new probe: s18's b6/b7/b8/b10 + c1/c2 table already measured that args_size is a function of the argument count and that every partition above (24,32) lands stores inside sp+0x18..0x37.
+- [s24] tools/fake_ablate.py cannot ablate a body that carries a preceding `static __inline__` helper - it installs the function body only and both variants return ERR/None (tmp/grind/func_800480C0/s24/fake_ablate_k4.txt). Tool limitation, recorded so a later session does not read it as a result.
+- [s24] candidate.c rewritten to the pad form with an accurate representation banner (fixes the standing "STALE HEAD CLAIMS" consistency warning: main carries INCLUDE_ASM, the candidate asserts nothing about main) and with the pad line correctly FAKE-annotated - the s23 rejected/ header wrongly said the form carried "no FAKE" while the body kept the `arg0 = 0;` unit.

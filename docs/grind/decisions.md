@@ -24271,3 +24271,192 @@ Ordinary C, no exception family claimed or needed. The only device is the loop-a
 ## 2026-09-05 20:10 — func_8003D39C — final call — **PASS**
 
 Ordinary C, no sanctioned-family claim needed: 2D subscript into Sprt8Prim D_800A3930[2][32], PsyQ setlen ((u8*)p)[3]=3 (same idiom as the matched func_8003D330 four lines above, src/code6cac_c2.c:1005), and the OTag addPrim tail. No FAKE, no volatile, no asm, no dead local. Verified myself: sandbox --disable all = 0 with rules_dropped 0; asm/funcs/func_8003D39C.s contains BOTH sb $v0,0x7($a0) and sw $v0,0x4($a0), so p->code=0x74 is the original program's redundancy, not an added lever; and undefined_syms_auto.txt:279-280 puts D_800A3930..D_800A3D30 at exactly 0x400 = 2*32*16, so the array type subsumes no neighbouring symbol. Statement-order choice (x0/y0 before the colour store) is semantically neutral and truthful per ordinary-c-judge-decidable. Evidence in hypotheses.md [s3] and evidence.md. ONE non-blocking defect to repair on commit: the write path mojibake-corrupted the em-dash (E2 80 94 -> C3 A2 E2 82 AC E2 80 9D) on three UNRELATED pre-existing comment lines in src/code6cac_c2.c (the func_8003C42C FAKE annotation at :547 and the kengo notes at :718 and :1134). Byte-inert, but it degrades a FAKE audit line — restore those three lines to their HEAD bytes before committing.
+
+## 2026-09-05 23:32 — func_800480C0 — ruling: func_800480C0 is byte-identical to the target when its otherwise construct-free  — **ESCALATE**
+
+WHAT WAS BUILT. func_800480C0 (src/text1b.c) is solved. With the body banked at
+memory/grind/func_800480C0/candidate.c installed, a full clean driver build produces
+build/bb2.exe with SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa - byte-for-byte the
+original game executable (tmp/grind/func_800480C0/s24/pad_full_build.txt). All 74
+instructions of the function match. There is nothing left to figure out about this
+function's code.
+
+THE ONE THING STANDING IN THE WAY. The body's first line declares a small unused local
+variable - `volatile u32 pre_pad[8];` - whose only job is to make the compiler reserve 32
+bytes of unused space on the stack, because the original game's function reserves exactly
+that same 32 bytes and never touches it. This is a recognised, owner-granted technique in
+this project (the "phantom-frame-slot volatile pad", owner ruling 2026-08-18,
+.claude/rules/no-new-park-categories.md:422-434). The project's scoring tool deliberately
+deletes such pads when it measures a function, UNLESS the function has a one-line entry in
+a list inside engine/volatile_cheats.py. func_800480C0 has no entry. So the scoring tool
+reports "20 instructions wrong" for a function that is in fact perfect. The pipeline's
+driver refuses to advance any function whose score is not 0 (tools/grinder/grind.ps1:618),
+so this correct, finished function can never be submitted until that one line exists.
+
+WHY THIS IS THE SAME TECHNIQUE ALREADY GRANTED, NOT A NEW ONE. The function immediately
+above this one in the same source file - func_80047FBC, src/text1b.c:83 - is already
+finished and committed, and it is the SAME FUNCTION with a different argument list. I read
+both bodies side by side: identical first local (the same pre_pad[8]), identical second
+construct, identical local variables, identical pointer walk, identical loop, identical
+five-argument call to func_800482C8; the only difference is that one takes six 16-bit
+parameters used once each and the other takes four used twice each. func_80047FBC holds
+its allowlist entry at engine/volatile_cheats.py:758. Its neighbours func_80047EE8 (:757)
+and func_800481E8 (:767) are the same family and hold theirs. func_800480C0 is the single
+hole in a run of four consecutive functions that came from one block of the original
+source. I verified independently that the original assembly
+(asm/funcs/func_800480C0.s, frame size 0x58) contains ZERO reads or writes anywhere in the
+sp+0x18..0x37 range - the reserved-but-untouched region the pad reproduces - so the factual
+precondition for the technique holds. 104 alternative spellings are banked as failures in
+memory/grind/func_800480C0/rejected/, and the session's measurements show every honest
+alternative costs at least one extra instruction (tools/gcc-2.7.2/flow.c:1741 - the
+compiler will never delete the last write to a stack object).
+
+WHY THE PREVIOUS RULING WAS WRONG ON THIS POINT. The 2026-09-02 Judge ruling
+(docs/grind/decisions.md:20351) FAILed this construct by quoting
+no-new-park-categories.md:340-342 - "applies to func_8001E404, func_8001E6E4, func_8003CF84
+ONLY; any further use requires a fresh owner ruling". That sentence is from the 2026-08-17
+per-function carve-out, and it was SUPERSEDED on the same rule page by the 2026-08-18
+general family at :422-425, which says in terms: "Supersedes the per-function 2026-08-17/18
+leading/trailing-pad carve-outs with a general family." Deciding a later grant against an
+earlier, superseded refusal is exactly the failure mode the dated-rulings rule exists to
+prevent. The owner's own words agree: the commit that granted the most recent row
+(5480a91e, spending owner ruling 32705f13, both 2026-09-02) describes it as applying
+"EXISTING sanctioned paths ... no extension". Adding a row is an APPLICATION of a granted
+family, not an extension of it. So this is not FAIL(CONSTRUCT), and the standing
+judge_constraint forbidding the pad here is narrowed by this ruling: the pad is not a cheat
+in this function.
+
+WHY I AM NOT SIMPLY PASSING IT. I cannot write the row, and neither can the driver. The
+file is engine/volatile_cheats.py, and the pipeline's mechanical scope-grant filter
+(tools/grinder/grindlib.py:465) admits only include/*.h, src/*.c and root-level *.txt -
+everything under engine/ is refused by path class, and
+.claude/rules/integration-handoff-self-serve.md:63 and :71 keep changes to a gate's own
+allowlist on the owner-only list. All eight existing rows were written by the owner
+personally (git log confirms). A bare PASS would tell the pipeline "submit this", and the
+driver's score-0 gate would then discard the session as invalid, burning sessions on a
+finished function - which is why I am filing the packet instead.
+
+THE PRECISE GRANT REQUESTED. One line, in engine/volatile_cheats.py, inside
+_SANCTIONED_UNWRITTEN_PADS, alongside the three text1b.c siblings that already have one:
+
+    "func_800480C0": frozenset({("pre_pad", 8)}),
+
+Nothing else changes. The row affects only how the measuring tool scores this function; it
+has no effect on the compiled game bytes at all - the owner's own 2026-08-22 grant comment
+records that principle (engine/volatile_cheats.py:759-765), and the byte proof above was
+produced without any row.
+
+AFTER THE GRANT. The candidate is applied to src/text1b.c line 129 (replacing the
+INCLUDE_ASM line), the score reads 0, and the function passes every normal gate unchanged.
+One cleanup at integration: the pad's annotation in candidate.c is spelled `/* FAKE: ... */`
+and must be `!FAKE` to match the family's prerequisite and the three siblings on main.
+
+IF THE GRANT IS DECLINED. Then the correct disposition is a foreclosure record, NOT the
+construct-free body at score 20 - a score-20 body is not a completion under the completion
+standard, and the session's measurements show no zero-cost honest producer exists.
+
+EVIDENCE PATHS: memory/grind/func_800480C0/{candidate.c,evidence.md,hypotheses.md,
+rejected/ (104 forms),state.json}; tmp/grind/func_800480C0/s24/{pad_full_build.txt,
+pad_bytes.txt}; src/text1b.c:83-129 (the identical sibling and the INCLUDE_ASM line);
+engine/volatile_cheats.py:746-777; .claude/rules/no-new-park-categories.md:422-434;
+docs/grind/decisions.md:20282 (the original handoff packet) and :20351 (the superseded
+ruling).
+
+## 2026-09-05 — func_800480C0 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-05)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+WHAT WAS BUILT. func_800480C0 (src/text1b.c) is solved. With the body banked at
+memory/grind/func_800480C0/candidate.c installed, a full clean driver build produces
+build/bb2.exe with SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa - byte-for-byte the
+original game executable (tmp/grind/func_800480C0/s24/pad_full_build.txt). All 74
+instructions of the function match. There is nothing left to figure out about this
+function's code.
+
+THE ONE THING STANDING IN THE WAY. The body's first line declares a small unused local
+variable - `volatile u32 pre_pad[8];` - whose only job is to make the compiler reserve 32
+bytes of unused space on the stack, because the original game's function reserves exactly
+that same 32 bytes and never touches it. This is a recognised, owner-granted technique in
+this project (the "phantom-frame-slot volatile pad", owner ruling 2026-08-18,
+.claude/rules/no-new-park-categories.md:422-434). The project's scoring tool deliberately
+deletes such pads when it measures a function, UNLESS the function has a one-line entry in
+a list inside engine/volatile_cheats.py. func_800480C0 has no entry. So the scoring tool
+reports "20 instructions wrong" for a function that is in fact perfect. The pipeline's
+driver refuses to advance any function whose score is not 0 (tools/grinder/grind.ps1:618),
+so this correct, finished function can never be submitted until that one line exists.
+
+WHY THIS IS THE SAME TECHNIQUE ALREADY GRANTED, NOT A NEW ONE. The function immediately
+above this one in the same source file - func_80047FBC, src/text1b.c:83 - is already
+finished and committed, and it is the SAME FUNCTION with a different argument list. I read
+both bodies side by side: identical first local (the same pre_pad[8]), identical second
+construct, identical local variables, identical pointer walk, identical loop, identical
+five-argument call to func_800482C8; the only difference is that one takes six 16-bit
+parameters used once each and the other takes four used twice each. func_80047FBC holds
+its allowlist entry at engine/volatile_cheats.py:758. Its neighbours func_80047EE8 (:757)
+and func_800481E8 (:767) are the same family and hold theirs. func_800480C0 is the single
+hole in a run of four consecutive functions that came from one block of the original
+source. I verified independently that the original assembly
+(asm/funcs/func_800480C0.s, frame size 0x58) contains ZERO reads or writes anywhere in the
+sp+0x18..0x37 range - the reserved-but-untouched region the pad reproduces - so the factual
+precondition for the technique holds. 104 alternative spellings are banked as failures in
+memory/grind/func_800480C0/rejected/, and the session's measurements show every honest
+alternative costs at least one extra instruction (tools/gcc-2.7.2/flow.c:1741 - the
+compiler will never delete the last write to a stack object).
+
+WHY THE PREVIOUS RULING WAS WRONG ON THIS POINT. The 2026-09-02 Judge ruling
+(docs/grind/decisions.md:20351) FAILed this construct by quoting
+no-new-park-categories.md:340-342 - "applies to func_8001E404, func_8001E6E4, func_8003CF84
+ONLY; any further use requires a fresh owner ruling". That sentence is from the 2026-08-17
+per-function carve-out, and it was SUPERSEDED on the same rule page by the 2026-08-18
+general family at :422-425, which says in terms: "Supersedes the per-function 2026-08-17/18
+leading/trailing-pad carve-outs with a general family." Deciding a later grant against an
+earlier, superseded refusal is exactly the failure mode the dated-rulings rule exists to
+prevent. The owner's own words agree: the commit that granted the most recent row
+(5480a91e, spending owner ruling 32705f13, both 2026-09-02) describes it as applying
+"EXISTING sanctioned paths ... no extension". Adding a row is an APPLICATION of a granted
+family, not an extension of it. So this is not FAIL(CONSTRUCT), and the standing
+judge_constraint forbidding the pad here is narrowed by this ruling: the pad is not a cheat
+in this function.
+
+WHY I AM NOT SIMPLY PASSING IT. I cannot write the row, and neither can the driver. The
+file is engine/volatile_cheats.py, and the pipeline's mechanical scope-grant filter
+(tools/grinder/grindlib.py:465) admits only include/*.h, src/*.c and root-level *.txt -
+everything under engine/ is refused by path class, and
+.claude/rules/integration-handoff-self-serve.md:63 and :71 keep changes to a gate's own
+allowlist on the owner-only list. All eight existing rows were written by the owner
+personally (git log confirms). A bare PASS would tell the pipeline "submit this", and the
+driver's score-0 gate would then discard the session as invalid, burning sessions on a
+finished function - which is why I am filing the packet instead.
+
+THE PRECISE GRANT REQUESTED. One line, in engine/volatile_cheats.py, inside
+_SANCTIONED_UNWRITTEN_PADS, alongside the three text1b.c siblings that already have one:
+
+    "func_800480C0": frozenset({("pre_pad", 8)}),
+
+Nothing else changes. The row affects only how the measuring tool scores this function; it
+has no effect on the compiled game bytes at all - the owner's own 2026-08-22 grant comment
+records that principle (engine/volatile_cheats.py:759-765), and the byte proof above was
+produced without any row.
+
+AFTER THE GRANT. The candidate is applied to src/text1b.c line 129 (replacing the
+INCLUDE_ASM line), the score reads 0, and the function passes every normal gate unchanged.
+One cleanup at integration: the pad's annotation in candidate.c is spelled `/* FAKE: ... */`
+and must be `!FAKE` to match the family's prerequisite and the three siblings on main.
+
+IF THE GRANT IS DECLINED. Then the correct disposition is a foreclosure record, NOT the
+construct-free body at score 20 - a score-20 body is not a completion under the completion
+standard, and the session's measurements show no zero-cost honest producer exists.
+
+EVIDENCE PATHS: memory/grind/func_800480C0/{candidate.c,evidence.md,hypotheses.md,
+rejected/ (104 forms),state.json}; tmp/grind/func_800480C0/s24/{pad_full_build.txt,
+pad_bytes.txt}; src/text1b.c:83-129 (the identical sibling and the INCLUDE_ASM line);
+engine/volatile_cheats.py:746-777; .claude/rules/no-new-park-categories.md:422-434;
+docs/grind/decisions.md:20282 (the original handoff packet) and :20351 (the superseded
+ruling).
+
+**Constraint recorded for any future session:** The phantom-frame-slot pad IS sanctioned for func_800480C0 (2026-08-18 general family; the 2026-09-02 FAIL cited the superseded 2026-08-17 per-function scope) - the prior judge_constraint forbidding it here is narrowed and void; do NOT chase honest producers for the sp+0x18..0x37 region, and do not resubmit until the engine/volatile_cheats.py row exists.

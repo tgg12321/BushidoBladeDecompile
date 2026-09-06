@@ -161,7 +161,8 @@
   }
  ],
  "judge_constraints": [
-  "func_800480C0 may not carry an unwritten volatile frame pad in any spelling until an owner ruling adds its row to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS; pursue an honest producer for the sp+0x18..0x37 untouched region instead."
+  "func_800480C0 may not carry an unwritten volatile frame pad in any spelling until an owner ruling adds its row to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS; pursue an honest producer for the sp+0x18..0x37 untouched region instead.",
+  "The phantom-frame-slot pad IS sanctioned for func_800480C0 (2026-08-18 general family; the 2026-09-02 FAIL cited the superseded 2026-08-17 per-function scope) - the prior judge_constraint forbidding it here is narrowed and void; do NOT chase honest producers for the sp+0x18..0x37 region, and do not resubmit until the engine/volatile_cheats.py row exists."
  ],
  "banned_constructs": [],
  "kills": [
