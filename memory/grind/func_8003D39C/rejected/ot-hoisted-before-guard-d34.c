@@ -8,14 +8,13 @@ typedef struct {
 extern Sprt8Prim D_800A3930[];
 void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     s32 n = D_800A3358;
-    u8 *q;
     Sprt8Prim *p;
-    OTag *ot;
+    OTag *ot = (OTag *)D_800A374C;
 
     if (n == 0x20) return;
     D_800A3358 = n + 1;
-    q = (u8 *)&D_800A3930[n];
-    p = (Sprt8Prim *)(q + (D_800A3218 << 9));
+    p = &D_800A3930[n];
+    p = (Sprt8Prim *)((u8 *)p + (D_800A3218 << 9));
     ((u8 *)p)[3] = 3;
     p->code = 0x74;
     p->u0 = (ch & 7) * 8 - 0x40;
@@ -24,7 +23,6 @@ void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
     *(u32 *)&p->r0 = (color >> 1) | 0x74000000;
     p->x0 = x;
     p->y0 = y;
-    ot = (OTag *)D_800A374C;
     ((OTag *)p)->addr = ot->addr;
     ot->addr = (u32)p;
 }

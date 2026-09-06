@@ -14,8 +14,8 @@ void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
 
     if (n == 0x20) return;
     D_800A3358 = n + 1;
-    q = (u8 *)&D_800A3930[n];
-    p = (Sprt8Prim *)(q + (D_800A3218 << 9));
+    q = (u8 *)&D_800A3930[n] + (D_800A3218 << 9);
+    p = (Sprt8Prim *)q;
     ((u8 *)p)[3] = 3;
     p->code = 0x74;
     p->u0 = (ch & 7) * 8 - 0x40;

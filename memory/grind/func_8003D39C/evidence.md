@@ -39,3 +39,115 @@
 - [s1] Distinct SYMBOL_REF memrefs never conflict (tools/gcc-2.7.2/sched.c:775-779), so sw D_800A3358 vs lw D_800A3218 carries no dependence; the target order must come from INSN_PRIORITY/rank
 
 - [s1] The lui 0x7400 delay-slot fill is sched2 work and already matches
+
+## s2 (2026-09-05, structural) — chassis: asm-until-matched, INCLUDE_ASM on main, no FAKE constructs anywhere
+Chassis re-measured at session start: v5 (the s1 candidate) still scores **16** with `sandbox --disable all`,
+so every s1 conclusion was tested against the same chassis it was banked on.
+
+### NEW FLOOR 16 -> 15
+The winning edit is purely structural: the array address is carried by **two distinct pointer
+variables** instead of one variable assigned twice.
+
+    u8 *q;
+    ...
+    D_800A3358 = n + 1;
+    q = (u8 *)&D_800A3930[n];                       /* base + n*16, byte pointer   */
+    p = (Sprt8Prim *)(q + (D_800A3218 << 9));       /* + buffer-select displacement */
+
+(v5 was `p = &D_800A3930[n]; p = (Sprt8Prim *)((u8 *)p + (D_800A3218 << 9));` — the SAME
+association, the SAME two statements, but one variable. That spelling is 16.)
+
+Floor history this session (all `sandbox func_8003D39C --disable all`):
+  v5   baseline (one pointer var, two statements)                              16  (chassis re-confirmed)
+  v8   `if (n != 0x20) { ... }` instead of the early return, v5 body           16  (block restructure is inert)
+  v9   `s32 sel = D_800A3218 << 9;` hoisted above the address, v5 body         16
+  v13  `s32 idx = D_800A3218;` named before the address, v5 body               16
+  v11  `OTag *ot = (OTag *)D_800A374C;` hoisted into the declarations          34  (large regression — the
+       OT load must stay at its source position at the bottom; banked rejected)
+  v22  `q = (u8 *)&D_800A3930[n] + (D_800A3218 << 9); p = (Sprt8Prim *)q;`     16  (one variable does all the
+       arithmetic, the second is a pure copy -> coalesced away; banked rejected)
+  **v10 two pointer variables (above)                                          15**
+  v15  `(D_800A3218 << 9) + q` (operand order swapped)                         15
+  v16  extra `s32 off = D_800A3218 << 9;` on top of v10                        15
+  v18  q computed before the `D_800A3358 = n + 1;` store                       15
+  v19  `Sprt8Prim *q = &D_800A3930[n];` (typed q instead of u8 *q)             15
+  v20  v10 inside `if (n != 0x20) { ... }`                                     15
+  v21  v10 + `s32 sel = D_800A3218;`                                           15
+  v23  `s32 next = n + 1; D_800A3358 = next;` (named increment)                15
+  v24  v23 with `next` declared BEFORE `n`                                     15
+  v25  `q/p/ot` declared before `n`                                            15
+  v26  the `D_800A3358 = n + 1;` store moved to AFTER the p computation        15
+  v27  `q = (u8 *)(D_800A3930 + n);`                                           15
+  v28  v23 with the store moved to after the p computation                     15
+  v29  `u32 n` instead of `s32 n` (type narrowing/signedness)                  15
+  v31  `if (D_800A3358 == 0x20) return; n = D_800A3358;` (split init)          15
+
+So 15 is a broad plateau: once the address is carried by two pointer pseudos, NOTHING in the
+statement-order / declaration-order / named-intermediate / type-narrowing lever set moves it.
+
+### What the 16 -> 15 edit actually fixed (sched1 pick order, tools/sched_solver)
+`extract.py code6cac_c2` on both chassis, pass 1, block 1 (45 insns, UIDs stable across the two):
+  v5  picks tail: `42, 40, 28, 26, 39, 142, 141, 36, 34, 32`
+  v10 picks tail: `42, 40, 36, 39, 34, 32, 28, 26, 142, 141`
+  target-implied:  `42, 40, 39, 36, 34, 32, 28, 26, 142, 141`
+Emission is the reverse of the pick order, so v10 already places the 0xFFFFFF mask lui/ori, the
+`addiu n+1` and the `sw D_800A3358` at the head exactly as the target does — the whole
+`mask; addiu; sw; sll; la; addu` prefix is now in the right ORDER. Only the 36/39 pair is
+transposed in pass 1.
+NOTE (load-bearing, and surprising): the dumped pass-1 *inputs* — dependence graph, REG_NOTE
+kinds, LUIDs and INSN_PRIORITYs — are **byte-identical between v5 and v10** (see the two dumps in
+tmp/grind/func_8003D39C/s2/), yet the pick sequence differs. The v5->v10 improvement therefore does
+NOT come from any of the atoms `perturb.py` models; it comes from an input the SCHEDDBG stream does
+not print (ready-list construction / insn cost / unit). Any future "the scheduler inputs are the
+same so the order must be the same" argument on this function is wrong.
+
+### The residual at 15 is a REGISTER-SEAT effect, not a scheduling effect
+Normalised positional diff (tmp/grind/func_8003D39C/s2/norm.py; 55 vs 55 insns):
+    target                          ours (v10)
+    move t0,a0 / t1,a1 / t2,a3      move t1,a0 / t2,a1 / t0,a3     (3 arg copies, seats rotated)
+    lw   v1,D_800A3358              lw   a0,D_800A3358             (n seat: v1 vs a0)
+    addiu v0,v1,1                   addiu v0,a0,1
+    sw   v0,D_800A3358              sll  a0,a0,4                   <-- the sw slides 4 insns later
+    sll  v0,v1,4                    la   v1
+    la   v1                         addu a0,a0,v1
+    addu v0,v0,v1                   sw   v0,D_800A3358
+    lw   a0,D_800A3218              lw   v0,D_800A3218
+    sll  a0,a0,9                    sll  v0,v0,9
+MECHANISM: in the TARGET `n` lives in v1 and the `n*16` temp is allocated **v0 — the same register
+that holds `n + 1`**. That creates a WAR/anti-dependence that PINS `sw v0` before `sll v0,v1,4`,
+which is why the target's sw sits immediately after the addiu. In OURS `n` lives in a0 and the
+`n*16` temp reuses **a0** (n's own register, since n dies there), leaving `v0` (= n+1) free, so
+sched2 is at liberty to sink the `sw` past the la/addu — and it does.
+So the remaining 15 bytes are downstream of ONE allocation decision: which pseudo the `n*16` temp
+is coalesced onto (n's register vs the n+1 register). The arg-copy seat rotation
+(x/y/color -> t0/t1/t2 vs t1/t2/t0) is the same allocator's doing.
+
+- [s2] FLOOR 16 -> 15: the address must be carried by TWO distinct pointer variables
+  (`u8 *q = (u8 *)&D_800A3930[n]; p = (Sprt8Prim *)(q + (D_800A3218 << 9));`), not one variable
+  assigned twice; a single variable doing all the arithmetic with a pure-copy second variable (v22)
+  is coalesced away and scores 16
+- [s2] At floor 15 the sched1 pick order matches the target except for a single 36/39 transposition;
+  the pass-1 dependence graph / LUIDs / priorities are IDENTICAL between the 16 and the 15 chassis,
+  so the sched-model atom set does not explain the win
+- [s2] The residual is an RA seat question: target allocates the `n*16` temp onto the `n+1` register
+  (v0) creating the anti-dep that pins the sw early; ours allocates it onto `n`'s own register (a0)
+- [s2] 15 is flat across the whole structural lever set (14 spellings: statement order, declaration
+  order, named intermediates, operand order, type narrowing, if-block vs early return, split init)
+- [s2] Hoisting the `ot = (OTag *)D_800A374C;` load into the declarations costs 19 bytes (15 -> 34);
+  the OT load must stay at its source position
+
+- [s2] Chassis re-measured at session start: the s1 candidate (v5) still scores 16 with sandbox --disable all, so every s1 conclusion was banked on the same chassis it was tested on.
+
+- [s2] NEW FLOOR 15. The edit is purely structural and ordinary C: u8 *q; ... D_800A3358 = n + 1; q = (u8 *)&D_800A3930[n]; p = (Sprt8Prim *)(q + (D_800A3218 << 9)); -- the same association and the same two statements as v5, but two distinct pointer variables instead of one variable assigned twice.
+
+- [s2] At floor 15 the sched1 pick order matches the target except for a single 36/39 transposition (ours 42,40,36,39,34,32,28,26,142,141 vs target-implied 42,40,39,36,34,32,28,26,142,141).
+
+- [s2] The pass-1 dependence graph, REG_NOTE kinds, LUIDs and INSN_PRIORITY values dumped by SCHEDDBG are byte-identical between the floor-16 and the floor-15 chassis while the pick sequence differs -- so the sched_solver atom set does not model whatever the two-pointer-variable spelling changed. Do not argue 'same inputs therefore same order' on this function.
+
+- [s2] GCC 2.7.2 priority() (tools/gcc-2.7.2/sched.c:1497) is backward: priority(insn) = max over LOG_LINKS preds x of (priority(x) + insn_cost(x,link,insn) - 1), floor 1. That is why the n*16+base chain (32,34 -> 36) sits at priority 1 while the load-fed idx chain (39 -> 40) reaches 2, and it is why the address chain loses the ready-list tie in the floor-16 spelling.
+
+- [s2] The floor-15 residual is a REGISTER-SEAT effect, not a scheduling one: the target keeps n in v1 and allocates the n*16 temp onto v0 -- the same register that holds n + 1 -- so the WAR anti-dependence pins sw v0,D_800A3358 immediately after addiu v0,v1,1. Ours keeps n in a0 and reuses a0 for the n*16 temp (n dies there), leaving v0 free, so sched2 sinks the sw four instructions later past the la/addu.
+
+- [s2] The three arg-copy seats (x/y/color -> t0/t1/t2 in the target, t1/t2/t0 in ours) are the same allocator's output and should move together with the n*16 coalescing decision, not separately.
+
+- [s2] Hoisting the OT-head load into the declaration block regresses the score from 15 to 34 -- the OT load must stay at its source position at the bottom of the body.

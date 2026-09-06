@@ -56,3 +56,106 @@ KILLED (instance) H-postinc (frontier 3, measured s1): `if (D_800A3358 == 0x20) 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: v3/v5 pure-C chassis sched models, no FAKE constructs
+
+## s2 (structural) — floor 16 -> 15 (v10 is the new candidate.c)
+
+## [s2] The array address carried by TWO distinct pointer variables (u8 *q then Sprt8Prim *p) beats the one-variable-assigned-twice spelling
+- mechanism: two pointer pseudos survive to sched1 as two separate address computations; the pick
+  order of pass-1 block 1 changes from `42,40,28,26,39,142,141,36,34,32` to
+  `42,40,36,39,34,32,28,26,142,141`, putting the mask lui/ori, the addiu and the sw at the head
+  exactly as the target does. (The dumped scheduler INPUTS are identical between the two spellings,
+  so the effect is upstream of the modelled atoms.)
+- probe: v10 vs v5 sandbox + `extract.py code6cac_c2` pass-1 block-1 pick dumps
+- result: 16 -> 15; the `mask; addiu; sw; sll; la; addu` prefix now matches in order
+- verdict: CONFIRMED
+
+## [s2] A single pointer variable doing the whole address arithmetic with a second variable as a pure copy (v22) does not reach 15 on this chassis
+- mechanism: `q = (u8 *)&D_800A3930[n] + (D_800A3218 << 9); p = (Sprt8Prim *)q;` leaves one
+  address pseudo after copy-coalescing, so the schedule is v5's
+- probe: v22 sandbox
+- result: 16 (banked rejected/single-pointer-var-one-expression-d16.c)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v22 pure-C chassis, no FAKE constructs
+
+## [s2] Hoisting the OT-head load (ot = (OTag *)D_800A374C) into the declaration block costs 19 bytes
+- mechanism: the load's LUID moves to the top of the block, the addPrim tail loses the register
+  seats that made the whole tail byte-identical since v5
+- probe: v11 sandbox
+- result: 34 (banked rejected/ot-hoisted-before-guard-d34.c)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v11 pure-C chassis, no FAKE constructs
+
+## [s2] On the v10 chassis (floor 15) no statement-order, declaration-order, named-intermediate, operand-order, type-narrowing or block-shape spelling moves the floor
+- mechanism: the residual is decided by which pseudo the `n*16` temp is coalesced onto (n's own
+  register vs the `n+1` register), which none of these levers touches
+- probe: 14 measured spellings v15,v16,v18,v19,v20,v21,v23,v24,v25,v26,v27,v28,v29,v31 — all 15
+- result: flat 15 across every one
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v10 (floor-15) pure-C chassis, no FAKE constructs
+
+## [s2] On the v5 chassis no SINGLE scheduler-input atom (6051 atoms: luid, luid_move, add_dep, del_dep, cost, unit) reproduces the target's full pass-1 block-1 pick order
+- mechanism: reaching the target head needs both a priority lift on the n*16+base chain AND the
+  39/36 rank flip; the depth-1 conjunction search finds 11 vectors satisfying the three key pairwise
+  sub-goals (add_dep 34<-39, 34<-40, 36<-39, 36<-40, cost 32:=2/3, cost 34:=2/3/12) but none of
+  them yields the full order
+- probe: perturb.py --goal-order (full 45-insn target order) --depth 1 over all atoms, plus
+  --goal-before 39:28 / 32:28 / 28:142 conjunction (tmp/grind/func_8003D39C/s2/gb_out.txt)
+- result: NO single atom reaches the full order; the 11 conjunction vectors all leave 36/39 or 34/32
+  transposed
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v5 (floor-16) pass-1 sched model, no FAKE constructs
+
+## Frontier for s3
+1. RA-SOLVER, not scheduling. The residual is one coalescing choice: the target puts the `n*16`
+   temp in the SAME hard register as `n + 1` (v0) so the WAR anti-dependence pins `sw v0` before
+   `sll v0,v1,4`; ours puts it in n's own register (a0). Classify with
+   `tools/ra_solver/inverse_compose.py classify` on the v10 chassis (local-alloc / reload models)
+   and ask for the C-lever vector that moves the `n*16` temp off n's allocno.
+2. The arg-copy seat rotation (x/y/color -> t0/t1/t2 in the target, t1/t2/t0 in ours) is the same
+   allocator's output and should fall out of (1); measure it as a joint goal, not separately.
+3. Pass-2 (post-reload) scheduling on the v10 chassis has NOT been modelled this session. The
+   pass-1 order is already one transposition from the target while the FINAL order differs more,
+   so `extract.py` + `simulate.py --pass 2` on v10 is a cheap unexplored read: it will say whether
+   the sw sink is a sched2 decision that a cost/dep atom could flip, or purely the seat.
+
+## [s2] The array address carried by two distinct pointer variables (u8 *q = (u8 *)&D_800A3930[n]; p = (Sprt8Prim *)(q + (D_800A3218 << 9));) beats the one-variable-assigned-twice spelling that s1 banked
+- mechanism: two pointer pseudos survive to sched1 as two separate address computations; pass-1 block-1 pick order moves from 42,40,28,26,39,142,141,36,34,32 to 42,40,36,39,34,32,28,26,142,141, which puts the 0xFFFFFF mask lui/ori, the addiu n+1 and the sw D_800A3358 at the head exactly as the target does
+- probe: v10 vs v5 sandbox --disable all, plus tools/sched_solver/extract.py code6cac_c2 pass-1 block-1 dumps on both chassis
+- result: 16 -> 15; the mask/addiu/sw/sll/la/addu prefix is now in the target's order. NOTE the dumped scheduler INPUTS (dep graph, REG_NOTE kinds, LUIDs, INSN_PRIORITY) are identical between the two spellings, so the win is upstream of every atom perturb.py models.
+- verdict: CONFIRMED
+
+## [s2] A single pointer variable doing the whole address arithmetic with a second variable as a pure copy (q = (u8 *)&D_800A3930[n] + (D_800A3218 << 9); p = (Sprt8Prim *)q;) does not reach 15
+- mechanism: copy-coalescing leaves one address pseudo, so the schedule is v5's
+- probe: v22 sandbox --disable all
+- result: 16; banked as memory/grind/func_8003D39C/rejected/single-pointer-var-one-expression-d16.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v22 pure-C chassis, no FAKE constructs
+
+## [s2] Hoisting the OT-head load (ot = (OTag *)D_800A374C) into the declaration block costs 19 bytes
+- mechanism: the load's LUID moves to the top of the block and the addPrim tail loses the a1/a2/a3 seats that made it byte-identical from v5 onward
+- probe: v11 sandbox --disable all
+- result: 34; banked as memory/grind/func_8003D39C/rejected/ot-hoisted-before-guard-d34.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v11 pure-C chassis, no FAKE constructs
+
+## [s2] On the v10 floor-15 chassis, statement order, declaration order, named intermediates, operand order, type narrowing and if-block-vs-early-return all leave the score at 15
+- mechanism: the residual is decided by which pseudo the n*16 temp is coalesced onto (n's own register vs the n+1 register); none of these levers touches that decision
+- probe: 14 measured spellings v15 v16 v18 v19 v20 v21 v23 v24 v25 v26 v27 v28 v29 v31, each applied to src/code6cac_c2.c and scored with sandbox --disable all
+- result: every one scored exactly 15; 15 is a broad plateau for the structural lever set
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v10 (floor-15) pure-C chassis, no FAKE constructs
+
+## [s2] On the v5 floor-16 chassis no single scheduler-input atom out of 6051 (luid, luid_move, add_dep, del_dep, cost, unit) reproduces the target's full pass-1 block-1 pick order
+- mechanism: reaching the target head needs both a priority lift on the n*16+base chain and the 39/36 rank flip; the depth-1 conjunction search finds 11 vectors satisfying the three key pairwise sub-goals (add_dep 34<-39, 34<-40, 36<-39, 36<-40, cost 32:=2/3, cost 34:=2/3/12) but every one of them still leaves 36/39 or 34/32 transposed
+- probe: tools/sched_solver/perturb.py --goal-order (full 45-insn target pick order) --depth 1 over all atoms; plus --goal-before 39:28 --goal-before 32:28 --goal-before 28:142 conjunction
+- result: NO single atom reaches the full order; the 11 conjunction vectors are enumerated in tmp/grind/func_8003D39C/s2/gb_out.txt
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v5 (floor-16) pass-1 sched model, no FAKE constructs
