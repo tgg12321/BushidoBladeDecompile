@@ -6,16 +6,13 @@
  "floor_history": [],
  "frontier": [],
  "judge_constraints": [
-  "Cite each island's Sony macro NAME + inline_c.h LINE RANGE, and cite the added \"memory\" clobber to the func_8002D320 precedent (src/code6cac_b.c:935) rather than claiming it is the SDK macro's own clobber list."
+  "Cite each island's Sony macro NAME + inline_c.h LINE RANGE, and cite the added \"memory\" clobber to the func_8002D320 precedent (src/code6cac_b.c:935) rather than claiming it is the SDK macro's own clobber list.",
+  "RESUBMISSION REJECTED (driver, body df4741401a310eb2): this exact body (comments/whitespace ignored) was already FAILed by the Judge at FINAL CALL; the driver rejects it without review. A comments-only or citation-only re-file is the SAME body. Only a later Judge PASS ruling (ruling-request) can clear it \u2014 change the construct or ask the precise question."
  ],
  "banned_constructs": [],
  "kills": [],
- "ladder_skip": 0,
- "pending_fixup": {
-  "kind": "citation",
-  "detail": "Cite each island's Sony macro NAME + inline_c.h LINE RANGE, and cite the added \"memory\" clobber to the func_8002D320 precedent (src/code6cac_b.c:935) rather than claiming it is the SDK macro's own clobber list.",
-  "set": "2026-09-06T10:55:01.793927+00:00"
- },
+ "ladder_skip": 10,
+ "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-06T10:30:51.029033+00:00",
  "review_ledger": [
@@ -25,6 +22,13 @@
    "hash": "df4741401a310eb2",
    "when": "2026-09-06T10:54:32.818288+00:00",
    "summary": "final call: The constructs are legitimate and I verified the family holds: func_80019310 is named by the 2026-09-01 widened-anchor owner grant (docs/grind/decisions.md:18082; cop2-addressing-preamble-cluster.md:1"
+  },
+  {
+   "layer": "driver",
+   "verdict": "REJECT",
+   "hash": "df4741401a310eb2",
+   "when": "2026-09-06T10:59:42.201161+00:00",
+   "summary": "resubmission of a Judge-FAILed body (no review spent)"
   }
  ]
 }

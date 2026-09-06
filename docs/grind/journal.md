@@ -1769,3 +1769,5 @@
 - 2026-09-06 04:57 _addque2 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: _addque2 volatile_extern_allowlist.txt include/gpu.h undefined_syms_auto.txt named_syms.txt), function stays active.
 - 2026-09-06 05:07 _addque2 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-06 05:30 _spu_Fr_ COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-06 05:55 func_80019310: judge FAILED a bytes-proven candidate — The constructs are legitimate and I verified the family holds: func_80019310 is named by the 2026-09-01 widened-anchor o
+- 2026-09-06 05:59 func_80019310: driver REJECTED a resubmitted Judge-FAILed body (hash df4741401a310eb2) — no review spent; next modality 'recon'.
