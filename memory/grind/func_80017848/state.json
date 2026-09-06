@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 44,
- "current_modality": "synthesis",
+ "session_count": 45,
+ "current_modality": "object-model",
  "floor_history": [
   {
    "session": 1,
@@ -267,23 +267,29 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "Floor re-audited at 3 (127/127); frontier items 1 and 2 measured dead (F1a/F1b/F2 = 6, F2b = 12); NEW dump-proven mechanism: a loop-body read of the copy destination that combine folds to a constant A"
+  },
+  {
+   "session": 45,
+   "floor": 3,
+   "modality": "object-model",
+   "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis; OBJECT MODEL audit banked: the function references no global, its data model is the 52-byte object block from matched sibling func_80017D84 (s16 li"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A NATURAL loop-body expression on the byte index or the record pointer whose RTL combine proves constant or unreachable (e.g. a sentinel/range check on the zero-extended byte index against a constant outside 0..255 such as idx == -1 or idx >= 0x100, with the copy destination read inside the folded arm) reproduces target's copies AND seats the copy destination in a3, provided the 2.7.2 front end leaves the comparison to RTL.",
-   "mechanism": "combine.c simplify_comparison folds the compare via nonzero_bits(lbu) = 0xFF and turns the conditional jump unconditional; the dead arm's read of q is deleted by jump2 after global allocation, so flow's liveness (q live across the loop) is what global.c allocates from (E-s44-3); the seat is a3 iff q's priority (global.c:615) sorts after sh and lnk, which a def + add + one loop-weight read over a >=10-insn range does in U4's geometry (E-s44-4).",
-   "next_probe": "On U4: idx = *(u8 *)(base + i + 0x24); if (idx == -1 or idx > 0xFF) { <statement reading q that a human would write, e.g. a fallback record pointer> } then the existing check; verify in .rtl that the compare reaches RTL (not tree-folded), in .combine that the jump folds, in .jump2 that the arm is deleted, in cc1.log ALLOCDBG that q sorts after sh/lnk; bank the seat and the score. If the front end folds it, measure the same with a u8-typed local instead of s32."
+   "hypothesis": "A NATURAL loop-body expression on the byte index or the record pointer whose RTL combine proves constant or unreachable reproduces target's copies and seats the copy destination in a3, provided the 2.7.2 front end leaves the comparison to RTL. Object-model constraint from s45: the reader must NOT be a re-read of the record pointer or of &recs[slot_a] (cse merges those into base before flow); it has to be a value derived from q that cse cannot canonicalise.",
+   "mechanism": "combine.c simplify_comparison folds via nonzero_bits(lbu) = 0xFF and the dead arm's read of q is deleted by jump2 after global allocation, so flow's liveness keeps q live across the loop (E-s44-3); seat a3 iff q's global.c:615 priority sorts after sh and lnk (E-s44-4).",
+   "next_probe": "On U4: idx = *(u8 *)(base + i + 0x24); if (idx == -1 or idx > 0xFF) { <statement reading q> } then the existing check; verify in .rtl that the compare reaches RTL, in .combine that the jump folds, in .jump2 that the arm is deleted, in cc1.log ALLOCDBG q's priority and seat."
   },
   {
-   "hypothesis": "A byte-free instrument that adds no cross-block pseudo and reads no pre-existing pseudo (so sh/lnk keep U4's priorities 11428/8333) seats the copy destination in a3 and scores the loop-1 residual at 0, confirming that priority order is the ONLY remaining variable once a combine-folded reader exists.",
-   "mechanism": "E-s44-4: q with 4 weighted refs over >=10 insns has priority <= 8000 in U4's geometry, below lnk's 8333 and sh's 11428, so find_reg reaches a3; M6 failed only because its in-loop read of sh stretched sh to 5555 and M7 because its named idx became a global pseudo.",
-   "next_probe": "Instrument (cheat, measurement only): compute the fold source from a value already live across the loop without extending anything, e.g. y = (base & i) & 0 is folded at the tree level (useless) - instead use a u8-typed temp declared and consumed within the first loop block (idx local to that block) and z = q & (idx & 0x100) placed in the SAME block before the return check, consumed in the lhu address; read ALLOCDBG for q's priority and seat; if a3, bank 'priority order confirmed' and move to the natural-spelling search."
+   "hypothesis": "A byte-free instrument that adds no cross-block pseudo and reads no pre-existing pseudo (so sh/lnk keep U4's priorities 11428/8333) seats the copy destination in a3 and scores the loop-1 residual at 0, confirming that priority order is the only remaining variable once a combine-folded reader exists.",
+   "mechanism": "E-s44-4: q with 4 weighted refs over >=10 insns has priority <= 8000 in U4's geometry, below lnk's 8333 and sh's 11428, so find_reg reaches a3.",
+   "next_probe": "Instrument (cheat, measurement only): a u8-typed temp declared and consumed within the first loop block and z = q & (idx & 0x100) in the same block before the return check, consumed in the lhu address; read ALLOCDBG for q's priority and seat."
   },
   {
-   "hypothesis": "GCC 2.7.2's C front end (fold-const / c-typeck) does NOT fold comparisons of an int-typed local holding a zero-extended byte against out-of-range constants, so such a check reaches RTL and combine (not the front end) removes it - the precondition for frontier item 1.",
-   "mechanism": "fold-const.c in 2.7.2 folds range comparisons only through type ranges of the operand's TREE type; an s32 local has full range, a u8-typed local does not.",
-   "next_probe": "Scratch TU under project flags with -da: s32 idx = *(u8 *)p; if (idx == -1) return 1; return 0; and the u8-typed variant; grep .rtl for the compare and .combine/.jump2 for its removal; bank which typing keeps the compare in RTL."
+   "hypothesis": "GCC 2.7.2's C front end does NOT fold comparisons of an int-typed local holding a zero-extended byte against out-of-range constants, so such a check reaches RTL and combine (not the front end) removes it.",
+   "mechanism": "fold-const.c folds range comparisons only through the operand's TREE type range; an s32 local has full range, a u8-typed local does not.",
+   "next_probe": "Scratch TU under project flags with -da: s32 idx = *(u8 *)p; if (idx == -1) return 1; return 0; and the u8-typed variant; grep .rtl for the compare and .combine/.jump2 for its removal."
   }
  ],
  "judge_constraints": [],
@@ -297,38 +303,6 @@
  "last_unpark_reason": "owner 2026-09-06 foreclosed-bucket review: FORENSICS probe first - build the minimal scratch translation unit holding only the loop-1-exit/loop-2-preheader copy geometry under the exact project flags and read .cse2/.combine dumps to name the protecting context (ledger frontier item 3, marked unspent since s35). Test the pass decision in isolation, not inside the 15-local chassis.",
  "last_unpark_at": "2026-09-06T16:57:06.708297+00:00",
  "kills": [
-  {
-   "session": 28,
-   "statement": "No pass in GCC 2.7.2 other than cse.c:7969 (cse_set_around_loop), loop.c's movable/giv/biv emitters, reload1.c's reload emission, flow.c's auto-inc rewriter, jump.c's if-conversion paths, unroll.c and",
-   "kill_scope": "class",
-   "measured_on": "source census of tools/gcc-2.7.2 at the frozen toolchain revision; no build involved, no FAKE constructs present",
-   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:251",
-   "result": "loop.c 14, reload1.c 13, unroll.c 9, jump.c 7, integrate.c 2, cse.c 1, flow.c 1, everything else 0. unroll.c's 9 are unr"
-  },
-  {
-   "session": 28,
-   "statement": "Writing loop 1 and/or loop 2 as a source-level while loop with body-inline invariants, so that jump.c's duplicate_loop_exit_test fires and opens cse_set_around_loop's REG_LOOP_TEST_P gate, puts no reg",
-   "kill_scope": "instance",
-   "measured_on": "candidate chassis (memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor), floor 3 at 127/127; zero FAKE constructs present in any cell",
-   "predicate_cite": "",
-   "result": "W1 = 29 at 120 build insns, W2 = 19 at 123, W3 = 21 at 123. The gate DID open: NOTE_INSN_LOOP_VTOP (emitted only by dupl"
-  },
-  {
-   "session": 28,
-   "statement": "loop.c's fourteen move emitters are not the producer of target's preheader copy addu $a3, $a0, $zero at 0x800178D0.",
-   "kill_scope": "instance",
-   "measured_on": "target listing asm/funcs/func_80017848.s against the frozen tools/gcc-2.7.2/loop.c; no build, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "Target's loops are not strength-reduced: the address is recomputed from scratch every iteration as addu $v0, $a0, $v1 (0"
-  },
-  {
-   "session": 29,
-   "statement": "reload1.c's reload/inheritance emission is the producer of target's preheader copies at 0x800178D0 and 0x80017930 (the s28 frontier's last unmeasured producer).",
-   "kill_scope": "instance",
-   "measured_on": "candidate chassis (memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor), floor 3 at 127/127, rules_dropped 0, zero FAKE constructs present",
-   "predicate_cite": "",
-   "result": "88 insns in, 88 insns out, and comm -13 over the sorted UID lists is EMPTY - reload added nothing whatsoever to this fun"
-  },
   {
    "session": 29,
    "statement": "Giving the preheader copy's destination a second SET (reg_n_sets == 2, one copy statement per loop writing one shared local q) is what keeps combine from substituting the copy away.",
@@ -776,7 +750,40 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_M2.c / body_M2a.c / body_M3.c / body_M3a.c / body_M4.c / body_M4a.c (U4-derived instruments); BASE re-audited at 3 (127/127); no FAKE constructs",
    "predicate_cite": "",
    "result": "M2 45 at 135 / M2a 38 at 131 (sra + bne survive); M3 14 at 133 / M3a 16 at 132 (y = 0 computed, bne v0,zero kept, reader"
+  },
+  {
+   "session": 45,
+   "statement": "Declaring the 0x40-byte record and 0x10-byte link arrays as structs on top of the typed context (full typing) over the BASE preheader/exit-tail shape, with the tail written through typed pointers, rea",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O2.c (BASE-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "37 at 127/126 (R30B = 7). The six ctx->recs loads survive every RTL pass identically in O2 and R30B; the +30 is global.c"
+  },
+  {
+   "session": 45,
+   "statement": "Full typing (context + record + link structs) over the symmetric U4 chassis (no exit tail, unconditional reload, two-step guard per loop) reaches the floor.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O3.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "43 at 127/122, five instructions SHORT: with typed indexing cse folds the per-loop record-pointer re-reads and base sums"
+  },
+  {
+   "session": 45,
+   "statement": "The fully natural typed form (one record pointer per loop, for-loops reading rec->na / rec->nb, combined && top guard, tail through the typed pointers) reaches the floor.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O4.c; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "47 at 127/118, nine instructions SHORT: the record pointer and the links pointer are cse-shared across the guards, both "
+  },
+  {
+   "session": 45,
+   "statement": "The s30 struct-typed-record cell B kill (7) is stale on the HEAD chassis (mandated kill re-audit).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus s30 body_B.c; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "7 at 127/127, tying s30 exactly; fake_ablate reports no FAKE-annotated construct to ablate (no form of this function has"
   }
  ],
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "object_model_audited": 45
 }

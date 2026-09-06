@@ -1,3 +1,18 @@
+/* [s45 OBJECT-MODEL NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
+ * (anchor src/ings.c:820).]  Owner-directed object-model audit banked as
+ * evidence.md "OBJECT MODEL:" (s45).  This function references no global; its
+ * data model is the 52-byte object block ctx (matched sibling func_80017D84,
+ * src/ings.c:824-843: s16 link count at +6, 0x40-byte record array at +0xC,
+ * 0x10-byte link array at +0x10).  Typing ctx as a struct (O1) is byte-IDENTICAL
+ * to this body; typing the record/link arrays costs 7 (s30 B re-audit), 37 (O2,
+ * full typing + typed tail: global.c seats the guard and preheader loads both in
+ * v1 and reorg deletes the preheader load), 43 (O3, symmetric U4 typed, 5 insns
+ * short) and 47 (O4, natural for-loop typed, 9 insns short) because typed
+ * indexing lets cse share the record pointer the target reloads in every block.
+ * The raw u8 * + literal-offset idiom below is the matched sibling's idiom on
+ * this object and is evidence-consistent; the residual (E-s42-1) is unchanged
+ * and is not an object-model artifact.  Premises P1-P5 listed in evidence.md.
+ */
 /* [s44 SYNTHESIS NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
  * (anchor src/ings.c:820); U4 re-audited 6 at 125.]  Frontier items 1 and 2
  * measured dead (F1a/F1b/F2 = 6, F2b = 12; E-s44-1/2).  NEW MECHANISM, dump-

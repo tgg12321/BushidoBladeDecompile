@@ -4256,3 +4256,86 @@ to target. Cell scores: `tmp/grind/func_80017848/s34/scores.txt`.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_M2.c / body_M2a.c / body_M3.c / body_M3a.c / body_M4.c / body_M4a.c (U4-derived instruments); BASE re-audited at 3 (127/127); no FAKE constructs
+
+
+## s45 (object-model, 2026-09-06)
+
+Chassis re-measured first: BASE = **3** at 127/127 on the HEAD src/ings.c:820
+chassis. fake_ablate: no FAKE constructs in candidate.c (vacuous). Kill
+re-audit: s30 cell B re-measured as R30B = 7 at 127/127 (ties s30).
+
+## [s45] Declaring the 52-byte context object as a struct (s16 nlink at +6, u8 *recs at +0xC, u8 *links at +0x10, per the matched sibling func_80017D84) and replacing every *(T *)(ctx + off) with a member access, including a natural ctx->nlink tail, is byte-neutral over the BASE body.
+- mechanism: the member loads are the same (mem:SI (plus s2 12)) / (mem:HI (plus s2 6)) rtx as the casts; GCC 2.7.2's MIPS movhi (lhu) vs extendhisi2 (lh) reproduces the target's lhu/lh split for a plain s16 field.
+- probe: cell O1 (tmp/grind/func_80017848/s45/body_O1.c) through cells.ps1; objects compared with cmp.
+- result: 3 at 127/127 and obj_O1.o is byte-IDENTICAL to obj_BASE.o. The context object's declared shape matches the evidence; typing it neither helps nor costs.
+- verdict: CONFIRMED
+
+## [s45] Declaring the 0x40-byte record and 0x10-byte link arrays as structs on top of the typed context (full typing) over the BASE preheader/exit-tail shape, with the tail written through typed pointers, reaches the floor.
+- mechanism: struct indexing feeds (plus (mult slot_a 64) recs) address trees to cse/combine and could keep the preheader reload while re-associating the base add the way the target has it.
+- probe: cell O2 (s45/body_O2.c) measured, disassembled (s45/D_O2.txt) and dumped with the instrumented cc1 (s45/iO2, CODEGEN-IDENTICAL); loads of 0xC(s2) tracked per pass with s45/loads12.py against s30 cell B (s45/iR30B).
+- result: 37 at 127/126 (R30B = 7). The six ctx->recs loads survive every RTL pass identically in O2 and R30B; the +30 is global.c seating the guard load (insn 29) and the preheader load (insn 64) both in v1, after which reorg.c redundant_insn deletes the preheader load (present in .sched2, ABSENT in .dbr) and duplicates sll v0,s4,6 into the second guard's delay slot. Typed indexing also cse-merges the loop base into the guard's address sum (addu a0,a1,zero) so the target's separate base add reading a copy cannot appear.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O2.c (BASE-derived); BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s45] Full typing (context + record + link structs) over the symmetric U4 chassis (no exit tail, unconditional reload, two-step guard per loop) reaches the floor.
+- mechanism: U4 is the natural symmetric geometry (E-s42-3, 6 at 125); typed records might keep its per-loop reloads while changing the base association.
+- probe: cell O3 (s45/body_O3.c) through cells.ps1; s45/D_O3.txt.
+- result: 43 at 127/122 - five instructions SHORT: with typed indexing cse folds the per-loop record-pointer re-reads and base sums into the guard temps. Worse than U4's 6 in both score and count.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O3.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s45] The fully natural typed form (one record pointer per loop, for-loops reading rec->na / rec->nb, combined && top guard, tail through the typed pointers) reaches the floor.
+- mechanism: the object-model directive's premise - the residual could be a declaration artifact that disappears once the code is written the way a human would against the real types.
+- probe: cell O4 (s45/body_O4.c) through cells.ps1.
+- result: 47 at 127/118 - nine instructions SHORT: the record pointer and the links pointer are cse-shared across the guards, both loops and the tail, and none of the target's seven 0xC(s2) reloads survive. The shipped source re-reads the pointer per block, which is the matched sibling func_80017D84's raw u8 * idiom on the same object.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O4.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s45] The s30 struct-typed-record cell B kill is stale on the HEAD chassis (kill re-audit).
+- mechanism: instance kills are chassis-relative; the anchor moved from src/ings.c:719 to :820 since s30.
+- probe: cell R30B = s30/body_B.c unchanged, through cells.ps1; s45/D_R30B.txt; fake_ablate on candidate.c (s45/fake_ablate.txt).
+- result: 7 at 127/127, tying s30 exactly; fake_ablate finds no FAKE construct to ablate. The kill stands on the current chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus s30 body_B.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s45] Declaring the 52-byte context object as a struct (s16 nlink at +6, u8 *recs at +0xC, u8 *links at +0x10, per matched sibling func_80017D84) and replacing every *(T *)(ctx + off) with a member access, including a natural ctx->nlink tail, is byte-neutral over the BASE body.
+- mechanism: The member loads are the same (mem:SI (plus s2 12)) / (mem:HI (plus s2 6)) rtx as the casts; GCC 2.7.2's MIPS movhi (lhu) vs extendhisi2 (lh) reproduces the target's lhu/lh split for a plain s16 field.
+- probe: Cell O1 (tmp/grind/func_80017848/s45/body_O1.c) via cells.ps1; cmp of obj_O1.o against obj_BASE.o.
+- result: 3 at 127/127 and the object file is byte-identical to BASE. The context object's declared shape MATCHES the evidence; typing it neither helps nor costs.
+- verdict: CONFIRMED
+
+## [s45] Declaring the 0x40-byte record and 0x10-byte link arrays as structs on top of the typed context (full typing) over the BASE preheader/exit-tail shape, with the tail written through typed pointers, reaches the floor.
+- mechanism: Struct indexing feeds (plus (mult slot_a 64) recs) address trees to cse/combine and could keep the preheader reload while re-associating the base add the way the target has it.
+- probe: Cell O2 (s45/body_O2.c) measured, disassembled (s45/D_O2.txt) and dumped with the instrumented cc1 (s45/iO2, CODEGEN-IDENTICAL); the 0xC(s2) loads tracked per pass with s45/loads12.py against s30 cell B (s45/iR30B).
+- result: 37 at 127/126 (R30B = 7). The six ctx->recs loads survive every RTL pass identically in O2 and R30B; the +30 is global.c seating the guard load (insn 29) and the preheader load (insn 64) both in v1, after which reorg.c redundant_insn deletes the preheader load (present in .sched2, ABSENT in .dbr) and duplicates sll v0,s4,6 into the second guard's delay slot. Typed indexing also cse-merges the loop base into the guard's address sum (addu a0,a1,zero).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O2.c (BASE-derived); BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s45] Full typing (context + record + link structs) over the symmetric U4 chassis (no exit tail, unconditional reload, two-step guard per loop) reaches the floor.
+- mechanism: U4 is the natural symmetric geometry (E-s42-3, 6 at 125); typed records might keep its per-loop reloads while changing the base association.
+- probe: Cell O3 (s45/body_O3.c) via cells.ps1; s45/D_O3.txt.
+- result: 43 at 127/122, five instructions SHORT: with typed indexing cse folds the per-loop record-pointer re-reads and base sums into the guard temps. Worse than U4's 6 in score and count.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O3.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s45] The fully natural typed form (one record pointer per loop, for-loops reading rec->na / rec->nb, combined && top guard, tail through the typed pointers) reaches the floor.
+- mechanism: The object-model directive's premise: the residual could be a declaration artifact that disappears once the code is written the way a human would against the real types.
+- probe: Cell O4 (s45/body_O4.c) via cells.ps1.
+- result: 47 at 127/118, nine instructions SHORT: the record pointer and the links pointer are cse-shared across the guards, both loops and the tail, and none of the target's seven 0xC(s2) reloads survive. The shipped source re-reads the pointer per block, which is the matched sibling func_80017D84's raw u8 * idiom on the same object.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_O4.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s45] The s30 struct-typed-record cell B kill (7) is stale on the HEAD chassis (mandated kill re-audit).
+- mechanism: Instance kills are chassis-relative; the anchor moved from src/ings.c:719 to :820 since s30.
+- probe: Cell R30B = s30/body_B.c unchanged, via cells.ps1; s45/D_R30B.txt; tools/fake_ablate.py on candidate.c (s45/fake_ablate.txt).
+- result: 7 at 127/127, tying s30 exactly; fake_ablate reports no FAKE-annotated construct to ablate (no form of this function has ever carried one). The kill stands on the current chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus s30 body_B.c; BASE re-audited at 3 (127/127); no FAKE constructs

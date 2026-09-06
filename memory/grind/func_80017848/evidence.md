@@ -5218,3 +5218,129 @@ and needs no annotation, otherwise the disposition is unchanged.
 - [s44] Sibling func_8005E54C has no candidate.c and shares no block with this function; nothing to transplant.
 
 - [s44] Repo-wide idiom scan (s44/idiom2.py): no other function, matched or not, carries the addu a3,a0,zero / addu a0,a1,a3 preheader pair; the two matched functions with a kept copy-then-add (func_800200DC, func_80037F40) are hard-register copies (call return / incoming parameter), a different mechanism.
+
+
+## s45 (object-model, 2026-09-06)
+
+Chassis re-measured first: BASE (candidate.c body over the src/ings.c:820
+INCLUDE_ASM anchor) = **3** at 127/127. `python3 tools/fake_ablate.py --func
+func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c`
+reports "no FAKE-annotated constructs found" (s45/fake_ablate.txt) - no form of
+this function has ever carried a FAKE construct, so ablation is vacuous. Kill
+re-audit: the closest banked instance kill to the target that touches the
+object model is s30 cell B (struct-typed record/link over the BASE shape,
+rejected/s30_struct_typed_record_candidate_shape_costs_7.c); re-measured on the
+HEAD chassis as cell R30B = **7** at 127/127, tying s30 exactly. src/ings.c is
+restored after every cell (git status clean).
+
+### OBJECT MODEL: per-symbol verdicts (owner directive, object-model audit)
+
+This function references NO global symbol. Its entire data model is reached
+through the first parameter `ctx` ($a0 -> $s2) and one callee,
+`math_Distance3D`. The audit therefore covers the object `ctx` points at and
+the two arrays it owns, with the evidence sources the directive names.
+
+1. **`ctx` (parameter, 52-byte object block) - MATCHES.** Evidence: census
+   `named_syms.txt:437-440` ("Object table helpers ... index g_file_data_buf
+   with stride 0x34"); the matched sibling `func_80017D84` (src/ings.c:824-843)
+   allocates one such block `p` and writes `+0` handle (s32), `+4` record count
+   (u16), `+6` link count (`*(s16 *)(p + 6) = 0`), `+8` s32, `+0xC` = heap base
+   `c`, `+0x10` = `c + (nrec << 6)`; the only caller `func_80017A44`
+   (asm/funcs/func_80017A44.s:197) passes that block in $a0 with $a2/$a3 = two
+   `lh` slot indices. Declared shape in the candidate: `u8 *ctx` + literal
+   offsets. Corrected declaration measured: `typedef struct { s32 handle; u16
+   nrec; s16 nlink; s32 unk8; u8 *recs; u8 *links; } ObjCtx;` with every
+   `*(T *)(ctx + off)` replaced by a member access, tail written `ctx->nlink`
+   naturally (cell O1, s45/body_O1.c) = **3 at 127/127 and `cmp obj_O1.o
+   obj_BASE.o` IDENTICAL**. Typing the context is byte-neutral.
+2. **`ctx+0x6` link counter - MATCHES, natural `s16`.** Evidence in this
+   function's own asm: `lh $v1,6($s2)` where the value is widened for the link
+   address (`sll 4`), `lhu` where it is truncated into the `sb` stores and in
+   the `lhu/addiu/sh` increment. That split is exactly GCC 2.7.2 MIPS codegen
+   for a plain `s16` field: `movhi` from memory is `lhu`, `extendhisi2` is
+   `lh`. The candidate's `*(u16 *)` spellings and O1's `ctx->nlink` produce the
+   same bytes (O1 identical object).
+3. **`ctx+0xC` record array, stride 0x40 - declared shape MISMATCH (raw
+   `u8 *`), measured: typed declaration COSTS.** Evidence for the shape: own asm
+   `sll 6` indexing; sibling init loop in `func_80017A44` (`addiu $s0,$s0,0x40`,
+   stores at +0/+4/+8 (pos, fed to `math_Distance3D` as `s32 *`), +0xC/+0x10/
+   +0x14 zero, +0x18 from an `lh` (the sign-tested field), +0x1C and +0x20 zero
+   = the two counts, +0x24 / +0x2C the two 8-byte index lists); `func_80017D84`
+   sizes the array as `nrec << 6`. Corrected declaration: `typedef struct {
+   s32 pos[3]; s32 unkC[3]; s32 f18; s32 na; s32 nb; u8 la[8]; u8 lb[8]; s32
+   unk34[3]; } ObjRec;` (0x40). Measured, all on the HEAD chassis:
+   - R30B (s30 B re-audit: typed records/links, raw ctx, BASE shape) = **7**
+     at 127/127;
+   - O2 (typed ctx + records + links, BASE shape, typed tail) = **37** at
+     127/126;
+   - O3 (full typing over the symmetric U4 chassis) = **43** at 127/122;
+   - O4 (the natural typed form: one record pointer per loop, `for (i = 0;
+     i < rec->na; i++)`, `&` top guard) = **47** at 127/118.
+   Mechanism (dumps s45/iO2, s45/iR30B, script s45/loads12.py): the six
+   `ctx->recs` loads (insns 29/64/167/229/283/308) survive every RTL pass in
+   both O2 and R30B, so the typed form does NOT change what cse keeps at the
+   preheader; O2's extra +30 is global.c seating both the guard load (29) and
+   the preheader load (64) in $v1, after which reorg.c `redundant_insn`
+   deletes the preheader load (insn 64 present in .sched2, ABSENT in .dbr)
+   and copies `sll $v0,$s4,6` into the second guard's delay slot - the same
+   reorg mechanism as E-s42-2, triggered by a seat coincidence the typed tail
+   induces (`addu $v0,$v0,$s0` operand flip). The natural typed forms O3/O4
+   are 5 and 9 instructions SHORT because holding one typed record pointer
+   lets cse share it across the guards, the loops and the tail, whereas the
+   target reloads `0xC($s2)` in every block (7 loads). The matched sibling
+   `func_80017D84` reaches its bytes with the same raw `u8 *` + literal-offset
+   idiom on this very object, so the raw idiom is the evidence-consistent
+   spelling of the shipped source, not a mismatch to correct.
+4. **`ctx+0x10` link array, stride 0x10 - MATCHES modulo spelling.** Evidence:
+   own asm `sll 4`; fields +0 dist (sw), +4 read `lhu` (loop 1) / +6 read `lh`
+   (loop 2), +8 `dist*3`, +0xC owner; the tail writes +4/+6 as ONE packed `sw`
+   of `(slot_a << 16) | slot_b` (`sll/or/sw`), so the shipped source stores the
+   pair as an s32 while the loops read the halves. Corrected declaration
+   `typedef struct { s32 dist; u16 b; s16 a; s32 dist3; s32 owner; } ObjLink;`
+   measured only in combination (R30B/O2/O3/O4 above; s30 cell D = 7 with the
+   typed link reads inside the loop bodies only). No residual instruction
+   involves a link field; both idioms are byte-exact there.
+5. **`math_Distance3D(s32 *, s32 *)` on record +0 - MATCHES** (tail call
+   sequence identical in every cell).
+6. **`g_file_data_buf` - NOT REFERENCED** by this function (the block pointer
+   arrives as a parameter); out of scope.
+
+### PREMISES the floor-3 argument rests on (explicit, attackable)
+
+- P1. The whole residual is the two preheader reg-reg copies `addu $a3,$a0,
+  $zero` and their consumers (base add reading $a3; loop-1 exit `lw` vs BASE's
+  `move`) - E-s42-1. Object-model changes move SEATS and cse canonicals
+  (R30B/O2) but never create a surviving copy on their own: O2's
+  `addu $a3,$v1,$zero` survives only because `p = q` reads it, the same device
+  BASE already spends.
+- P2. Target reads `0xC($s2)` freshly in every block (guard block, loop-1
+  preheader, loop-1 exit, loop-2 base, tail x3 = 7 loads). Any source that
+  holds one typed record pointer across blocks lets cse fold them (O3 -5,
+  O4 -9 instructions), so the shipped source re-reads the pointer per use or
+  per block, which is what the raw idiom and BASE do.
+- P3. The copy destination must be live past the base add at flow time with
+  no byte-producing reader (E-s44-3). The object model cannot supply that
+  reader: a natural in-loop read of the record pointer or of `&recs[slot_a]`
+  is cse-merged into `base` (same value) before flow (R30B/O2 base =
+  `addu $a0,$a1,$zero` copy of the guard sum).
+- P4. The link half-word fields are read as u16/s16 and written as one packed
+  s32; byte-exact in both idioms, carries no residual.
+- P5. The counter at `ctx+6` is a natural `s16` (movhi/extendhisi2 split);
+  carries no residual.
+
+### Facts
+
+- [s45] Floor re-audited at 3 (127/127) on the HEAD src/ings.c:820 chassis; fake_ablate vacuous (no FAKE constructs ever); src/ings.c restored.
+- [s45] OBJECT MODEL audit complete (above): ctx typed = byte-identical object (O1); typed records cost 7/37/43/47 (R30B/O2/O3/O4); no global symbol is referenced; the raw u8 * idiom is the matched sibling func_80017D84's idiom on the same object.
+- [s45] Pass attribution for O2 vs R30B (+30): identical RTL through .lreg; global.c seats guard load and preheader load both in v1; reorg.c redundant_insn deletes the preheader load (insn 64 in .sched2, absent in .dbr). Not an object-model effect - a seat coincidence.
+- [s45] Artifacts: tmp/grind/func_80017848/s45/{body_BASE.c, body_R30B.c, body_O1.c .. body_O4.c, obj_*.o, src_*.c, B_*.txt, D_*.txt, raw_*.txt, T.txt, iO2/, iR30B/, loads12.py, fake_ablate.txt, cells.ps1, post.sh, idump.sh, apply_win.py, norm.py, bank.py, ledger.py}.
+
+- [s45] OBJECT MODEL: no global symbol is referenced; ctx is the 52-byte object block of matched sibling func_80017D84 (src/ings.c:824-843; census named_syms.txt:437 stride 0x34) - MATCHES, typed struct byte-identical (O1); ctx+6 s16 link counter - MATCHES (lh/lhu split = movhi vs extendhisi2 on a plain s16); ctx+0xC 0x40-byte record array (sibling func_80017A44 init loop addiu s0,s0,0x40; fields pos[3]/unkC[3]/f18/na/nb/la[8]/lb[8]) - declared raw u8 *, typed declaration MEASURED 7/37/43/47 (R30B/O2/O3/O4), raw idiom is the matched sibling's idiom on this object; ctx+0x10 0x10-byte link array (dist, u16 b, s16 a, dist3, owner; tail packs a/b as one sw) - MATCHES modulo spelling, no residual instruction touches a link field; math_Distance3D on record +0 - MATCHES; g_file_data_buf - NOT REFERENCED.
+
+- [s45] Premises of the floor-3 argument (evidence.md s45 P1-P5): the residual is the two preheader copies and their consumers (E-s42-1) and object-model changes move seats/cse canonicals but never create a surviving copy; target reloads 0xC(s2) in every block (7 loads) so the source re-reads per block; the copy destination needs a byte-free reader live at flow (E-s44-3) which no natural typed re-read supplies (cse merges it into base); link half-word read/packed write and the s16 counter carry no residual.
+
+- [s45] Pass attribution O2 vs R30B (+30): RTL identical through .lreg (loads 29/64/167/229/283/308 all survive); global.c seats insn 29 and 64 both in v1; reorg.c redundant_insn deletes insn 64 (present in .sched2, absent in .dbr). A seat coincidence, not an object-model effect.
+
+- [s45] Floor re-audited at 3 (127/127) on the HEAD src/ings.c:820 chassis; fake_ablate vacuous; src/ings.c restored (git status shows only ledger files).
+
+- [s45] Owner directive (2026-09-06 scratch-TU forensics of the preheader copy geometry) was executed in s37 and extended in s38-s44 per the ledger; acknowledged, not re-run.
