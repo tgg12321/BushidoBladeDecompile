@@ -26,7 +26,9 @@ param(
     # off most; execution sessions grind pre-built frontiers on Opus. This
     # also keeps Fable's separate per-model allowance from stalling the
     # pipeline (the 2026-08-12 incident: five 429 wait cycles over 2.5 h).
-    [string]$Model = 'claude-opus-5[1m]',
+    # 2026-09-06: owner switched the execution lane to Fable 5.1 as well
+    # (spare Fable allowance); the Judge lane stays on Opus per 2026-08-12.
+    [string]$Model = 'claude-fable-5-1[1m]',
     # 2026-09-01: Fable 5.1 released; the `claude-fable-5[1m]` alias still
     # resolves to Fable 5 (probed via `claude -p --output-format json`), so the
     # recon lane is pinned to the new id explicitly. Judge/execution lanes are
