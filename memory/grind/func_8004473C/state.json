@@ -1,31 +1,37 @@
 {
  "func": "func_8004473C",
  "file": "text1a_c",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 13,
    "modality": "recon",
    "headline": "Object-model fix (D_800A9CF8 header struct, base+offset evidence) drops honest floor 40 -> 13; loop body byte-exact; residual is pre-loop sched1/local-alloc coupling fully attributed (birthing-leaf re"
+  },
+  {
+   "session": 2,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "Residual fully localised to ONE sched1 birthing_insn_p boost; form A3 measures the allocation half at 13 with the target's 49-instruction count and the target's register seats."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C spelling exists in which src's pseudo has two live sets at flow time with the second set becoming a no-op move after allocation (e.g. src derived on both arms of the count check from the same temp), demoting the reload copy from birthing and yielding the target order at 0.",
-   "mechanism": "sched.c birthing_insn_p requires reg_n_sets==1; with 2 sets the copy keeps priority 1, the store wins T-2 by potential_hazard, the count load is blocked one cycle after the store and lands before addr/store.",
-   "next_probe": "Spell 2-3 such forms, sandbox each, verify in .flow that reg 72 keeps 2 sets and in .sched that insn 20 shows priority (1) at T-2."
+   "hypothesis": "Form C needs ONLY reg_n_sets[src] >= 2 at flow time (or src not live at block-0 exit); every other byte it produces is already the target's, so this is the cheapest close.",
+   "mechanism": "Without the birthing boost the store wins T-2 by potential_hazard, the src copy then beats the address insn at T-3 on LUID, the address insn takes T-4 and the count load T-5, giving forward order count/addr/copy/store with the copy a deleted $v0<-$v0 no-op.",
+   "next_probe": "Run tools/sched_solver on block 0 of the s1 dumpsC pre-sched chain and have it enumerate the minimal insn-attribute change that flips T-2 to the store, then run tools/ra_solver inverse_compose.py classify on the resulting seat assignment. Do this BEFORE spelling more C - twenty spellings across two sessions have now landed on 13."
   },
   {
-   "hypothesis": "tools/sched_solver on block 0 of form C can enumerate exactly which attribute change (boost removal vs. added block-0 consumer) yields the target order, and tools/ra_solver classify can confirm the local-temp seat, before more spellings are burned.",
-   "mechanism": "order-exact scheduler model + local-alloc model on the banked pre-sched chain (dumpsC .combine).",
-   "next_probe": "Run the solvers on dumpsC, map the winning vector to C, measure."
+   "hypothesis": "Form A closes if the pre-check count pseudo is NOT remapped by duplicate_loop_exit_test, because the copied load would then set the same pseudo as the in-loop load and reg_n_sets would be 2, removing its boost at T-4.",
+   "mechanism": "jump.c:2163 remaps only when regno_first_uid[reg] is the exit-test insn AND regno_last_uid[reg] is inside the exit code; a loop shape in which the bound temp is referenced outside the exit code skips the remap.",
+   "next_probe": "Re-read duplicate_loop_exit_test with the loop body in hand, construct one or two ordinary loop shapes whose bound temp escapes the exit code, and CHECK reg_n_sets in the .flow dump before spending a sandbox run."
   },
   {
-   "hypothesis": "If src's second set cannot be produced, a form where the reload copy has a block-0 consumer other than the store (dst or i derived from the temp) is the last ordinary-C lever; probability low because the target block 0 has no extra insns.",
-   "mechanism": "a consumer removes the copy from the T-2 ready list; the consumer must itself be deleted/merged later.",
-   "next_probe": "One measurement per shape; kill with the sched trace."
+   "hypothesis": "A3 already has the target's schedule, seats and instruction count (49); only the hoisted anchor is wrong. Any ordinary-C form that keeps A3's schedule while materialising &D_800A9CF8+0x10 before the dst load closes the function.",
+   "mechanism": "cse/loop relate the LICM-hoisted &D_800A9CF8 to the first register-form address of the object in the function; with the dst load first that is &D+0xC, so the store falls back to a symbol-direct sw through $at.",
+   "next_probe": "Diff A3's .cse2/.loop dumps against A0's to see exactly which insn establishes the anchor, then look for a statement shape that needs the +0x10 address first without reintroducing the address insn that beat the copy at T-3 in A0."
   }
  ],
  "judge_constraints": [],
@@ -62,6 +68,30 @@
    "measured_on": "merged-struct chassis, forms F5/F6/F7, no FAKE constructs, sandbox --disable all = 17/19/19",
    "predicate_cite": "",
    "result": "17 / 19 / 19 \u2014 allocation regresses exactly as predicted."
+  },
+  {
+   "session": 2,
+   "statement": "Reordering the store statement and the dst load to fix the schedule keeps the hoisted &D_800A9CF8 anchor on &D+0x10 as the target needs.",
+   "kill_scope": "instance",
+   "measured_on": "merged-struct chassis, forms A0/A3, no FAKE constructs, sandbox --disable all = 15 / 13",
+   "predicate_cite": "",
+   "result": "A0 15 - right anchor and right order, wrong seats. A3 13 at 49 insns - right seats, but the anchor moves to &D+0xC (addi"
+  },
+  {
+   "session": 2,
+   "statement": "Loop-shape, indexing and declaration-order rewrites give src a second surviving set on the form-C chassis and so defeat the birthing test.",
+   "kill_scope": "instance",
+   "measured_on": "merged-struct chassis, forms S1-S6/B2/B4/B5/B6, no FAKE constructs, sandbox --disable all = 13..34",
+   "predicate_cite": "",
+   "result": "S1 18 (49 insns, loop body changed); S2 34; S3 23 (52 insns - forcing a zero-offset biv use costs two address adds inste"
+  },
+  {
+   "session": 2,
+   "statement": "Writing the count guard explicitly so jump.c duplicate_loop_exit_test never fires gives the pre-check count temp a second set on the form-A chassis.",
+   "kill_scope": "instance",
+   "measured_on": "merged-struct chassis, forms A1/B1, no FAKE constructs, sandbox --disable all = 19 / 17",
+   "predicate_cite": "",
+   "result": "19 and 17, both worse than plain form A (15); the explicit guard also perturbs the preheader ordering and the delay slot"
   }
  ],
  "ladder_skip": 0,

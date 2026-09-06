@@ -1,9 +1,18 @@
-/* CANDIDATE — func_8004473C (s1, 2026-09-06). Honest floor 13 (sandbox --disable all).
- * Requires the aggregate merge in include/game.h (Unk800A9CF8Header D_800A9CF8) and the
- * sibling rewrites in src/text1a_c.c — apply memory/grind/func_8004473C/candidate_merge.patch
- * to a clean tree (git apply) to reproduce this exact state. Residual: pre-loop scheduling
- * only (count load lands after the store; i=0 slides into the blez delay slot); every
- * loop-body byte matches. See evidence.md H2/H3 for the exact mechanism. */
+/* CANDIDATE - func_8004473C (s2, 2026-09-06). Honest floor 13 (sandbox --disable all),
+ * unchanged from s1; this is the form-C body. Requires the aggregate merge in
+ * include/game.h (Unk800A9CF8Header D_800A9CF8) and the sibling rewrites in
+ * src/text1a_c.c - apply memory/grind/func_8004473C/candidate_merge.patch to a clean
+ * tree (git apply) to reproduce this exact state.
+ *
+ * Residual (s2, fully attributed): ONE sched1 decision. Every register seat this form
+ * produces is already the target's; only block-0 ORDER differs, because the copy insn
+ * `src = <call temp>` is a once-set live leaf, gets birthing_insn_p's LAUNCH_PRIORITY
+ * boost (sched.c:2505/2584) and takes the blez delay slot ahead of the store. See
+ * evidence.md s2 and hypotheses.md H4/H5 - form A3 measures the mirror half (13 at the
+ * target's 49 instructions with the target's seats, wrong address anchor).
+ *
+ * Two unused locals (tmp, n) that the s1 copy of this file carried have been dropped:
+ * they were dead scalars with no semantic purpose. */
 extern void *game_GetCharData(void);
 /* Per-entry record (stride 0x68) shared by the D_800A9CF8.unkC table and the
  * game_GetCharData() table; the sibling func_80044B30 walks both with the
@@ -38,8 +47,6 @@ void func_8004473C(void)
     Rec4473C *src;
     Rec4473C *dst;
     s32 i;
-    Rec4473C *tmp;
-    s32 n;
 
     D_800A9CF8.unk10 = (s32)game_GetCharData();
     src = (Rec4473C *)D_800A9CF8.unk10;

@@ -1761,3 +1761,4 @@
 - 2026-09-06 00:34 _spu_note2pitch COMPLETED-C after 2 sessions (closer: s2 [permuter]).
 - 2026-09-06 00:55 func_800644FC COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-06 01:34 func_8004473C s1 [recon] floor=13: Object-model fix (D_800A9CF8 header struct, base+offset evidence) drops honest floor 40 -> 13; loop body byte-exact; residual is pre-loop sched1/local-alloc coupling fully attributed (birthing-leaf reload copy vs copy-suggested call temp).
+- 2026-09-06 01:59 func_8004473C s2 [structural] floor=13: Residual fully localised to ONE sched1 birthing_insn_p boost; form A3 measures the allocation half at 13 with the target's 49-instruction count and the target's register seats.
