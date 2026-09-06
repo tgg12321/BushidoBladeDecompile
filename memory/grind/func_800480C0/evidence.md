@@ -1684,3 +1684,80 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s19] The target restores exactly eight registers ($ra,$s6,$s5,$s4,$s3,$s2,$s1,$s0 at 0x54..0x38, asm/funcs/func_800480C0.s:67-74), so gp_reg_size = 32 and var_size + args_size = 56 with no register-mask freedom; a 9-register mask needs var+args = 52 (not 8-aligned) and a 10-register mask would print ten restores.
 
 - [s19] Empirical cross-check of the mask/restore identity over twelve banked probe listings: the printed 'regs= N' equals the emitted restore count in every one (candidate regs=8 with 8 restores + the 2 incoming-parameter loads at 0x68/0x6C; b6 regs=9 with 9).
+
+## s20 (rederive, 2026-09-05, chassis HEAD a4c735da) - the residual is measured, not inferred
+
+- **[s20] A byte-exact build of func_800480C0 exists.** `tmp/grind/func_800480C0/s20/bodies/h1_stmt_tail.c`
+  (the banked candidate body verbatim, with `s32 arg4/arg5` + `(s16)` casts, plus a
+  `static __inline__ s32 pack_off(s32 v, s32 n)` whose `u32 t[8]` is written only under
+  `if (n != 0)`, called as the discarded statement `pack_off(arg1, 0);` after the loop)
+  scores `{"score": 0, "target_insns": 74, "build_insns": 74, "rules_dropped": 0}` under
+  `sandbox func_800480C0 --disable all`. Its raw cc1 listing
+  (`s20/last_h1_stmt_tail.s`) differs from the candidate's (`s20/last_candidate.s`) in
+  exactly ONE line: `.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24` versus
+  `.frame $sp,56,$31 # vars= 0, ...`. **The whole residual of this function is a 32-byte
+  `get_frame_size()` charge; there is no second defect.** Fifteen sessions had this as an
+  inference; it is now a measurement.
+- **[s20] The producer is s19's frontier item 1 executed: inline-callee frame donation.**
+  `integrate.c:2085-2092` charges `assign_stack_temp (BLKmode, DECL_FRAME_SIZE (map->fndecl), 1)`
+  at every expansion, and `DECL_FRAME_SIZE` is snapshotted pre-optimisation
+  (`integrate.c:345`), so a `static __inline__` helper carrying a 32-byte local donates the
+  full 32 bytes to this frame while constant propagation deletes all of its traffic on this
+  call path. Ladder measured on this body: donate16 -> vars 16, donate24 -> vars 24
+  (s19 p3), donate32 -> vars 32 (s20 d1/h1). `get_frame_size()` is the plain sum.
+- **[s20] But the donation is byte-neutral ONLY at a value-free call site, which makes every
+  byte-neutral spelling a relocated pad.** Ten placements measured (all reach
+  `.frame $sp,88 # vars= 32`; the differences are entirely in the stream):
+  | body | placement | cc1 insns | sandbox |
+  |---|---|---|---|
+  | h1_stmt_tail | `pack_off(arg1, 0);` after the loop (result discarded) | 72 | **0** |
+  | h2_stmt_ifend | same, last statement of the `if (count != 0)` block | 72 | (listing identical to h1) |
+  | d3_donate32_entryshift | wraps `(((s32)(arg1 << 16)) >> 14)` | 72 | 6 |
+  | f1_d3_s32args45 | d3 + `s32 arg4/arg5` | 72 | 6 |
+  | g8_sxarg4_s32args | wraps `arg4` at `sx_arg4 =` | 72 | 6 |
+  | g3_sxarg5_s32args | wraps `arg5` | 72 | (same shape as g8) |
+  | e6_donate32_newvar | wraps the whole `new_var` expression | 72 | 16 |
+  | d2_cand_donate32_livehelper | helper computes `(word>>2)<<2` | 72 | 16 |
+  | e1_donate32_stmtcall | discarded call at the TOP of the function | 72 | (all 8 saves cluster) |
+  | f3/g1/g6/g7 | register-param and loop-body value sites | 73 | - |
+  The failure modes are stable: a value-flowing site at the entry hoists the two incoming
+  parameter loads (`lw $3,104($sp)` / `lw $4,108($sp)`) above the eight register saves and
+  costs a load-delay `nop` (build_insns 75); a value-flowing site in the loop hoists the
+  `srl/sll/addu` that forms `new_var` to the loop head. Only a discarded call leaves the
+  scheduler's decisions untouched - and a discarded call to a side-effect-free helper fails
+  cheat-checklist T1 (no observable effect) and T2 (no human writes it).
+- **[s20] DETECTOR GAP recorded for the pipeline (engine/ is denylisted; not acted on).**
+  `engine/volatile_cheats.py::find_unused_local_arrays` strips a fixed-size local array only
+  when it is never referenced *inside its own function body*. `u32 t[8]` referenced inside
+  the helper's dead `if (n != 0)` arm therefore survives stripping, and the cheat-invisible
+  scorer printed 0 for what is a relocated pad. The control is d1_cand_donate32.c, the same
+  helper with an UNREFERENCED `u32 t[8]`: stripped by the sandbox, score 20 (the array does
+  reach `.frame $sp,88` in raw cc1). **The honest floor for this function is still 20**; this
+  session does not claim 0.
+- **[s20] Ordinary-C result: m2c's rederive shape is byte-neutral and is a prerequisite for
+  any donation.** `s32 arg4, s32 arg5` with `(s16)` casts at the two sign-extend sites (the
+  only structural delta s10's fresh m2c produced) compiles LINE-FOR-LINE IDENTICAL to the
+  banked candidate (`s20/last_k1_cand_s32args45.s` vs `last_candidate.s`, zero diff). Under a
+  donation it is load-bearing: with `s16` parameters cc1 emits `lhu $3,104($sp)` /
+  `lhu $4,108($sp)` where the target emits `lw`, costing two extra diffs (d3 vs f1).
+- **[s20] Mandated FAKE re-audit, seventh consecutive chassis:** `fake_ablate.py` on the
+  banked candidate reads keep-all 20 / drop-1 32 - the single `arg0 = 0;` unit is
+  load-bearing and masks no lever (`s20/fake_ablate.txt`).
+- **[s20] Instruments:** `tmp/grind/func_800480C0/s20/probe.sh` (s19's, re-pathed),
+  `runall.sh` (batch, callable through `tools/wsl.sh` - note that a `for` loop written
+  inline in a `wsl.sh` argument is expanded by Git Bash first and silently installs nothing;
+  use the script file).
+
+- [s20] A byte-exact build of func_800480C0 exists on this chassis: s20/bodies/h1_stmt_tail.c scores 0 (74/74, rules_dropped 0) under sandbox --disable all, and its cc1 listing differs from the banked candidate's by one line - the .frame directive. The function's entire residual is a 32-byte get_frame_size charge.
+
+- [s20] Frame-donation ladder on this body (integrate.c:2085-2092): a static __inline__ helper with a 16/24/32-byte local gives vars 16/24/32 with zero emitted instructions; get_frame_size() is the plain sum, confirming s19's additivity finding without the instruction-costing phantom half.
+
+- [s20] Byte-neutrality of the donation depends entirely on the call site: the two discarded-statement sites (after the loop; end of the if-block) leave the stream bit-identical, while all eight value-flowing sites perturb it (sandbox 6 at entry sites via hoisted incoming-parameter loads plus a load-delay nop, 16 at loop sites via a hoisted new_var srl/sll/addu, or +1 cc1 insn at register-parameter sites).
+
+- [s20] DETECTOR GAP (recorded, not acted on - engine/ is denylisted): engine/volatile_cheats.py::find_unused_local_arrays only strips arrays never referenced inside their own function body, so a 32-byte array referenced in an inline helper's dead arm survives cheat-stripping and the honest-floor scorer reported 0 for a relocated pad. Control: the same helper with an unreferenced array is stripped and reads 20.
+
+- [s20] m2c's s32 arg4/arg5 + (s16)-cast rederive shape compiles line-for-line identically to the banked candidate, and is a prerequisite for any donation spelling (s16 stack params emit lhu where the target emits lw).
+
+- [s20] Mandated FAKE re-audit, seventh consecutive chassis: fake_ablate.py on the banked candidate reads keep-all 20 / drop-1 32 - the single arg0 = 0; unit is load-bearing and masks no lever.
+
+- [s20] The three in-file siblings func_80047EE8, func_80047FBC and func_800481E8 hold (pre_pad, 8) grants (volatile u32 pre_pad[8], 32 bytes) for the identical untouched sp+0x18..0x37 window; this session's h1 measurement shows func_800480C0's residual is the same 32-byte object and nothing else.

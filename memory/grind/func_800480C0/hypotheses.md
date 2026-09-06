@@ -1994,3 +1994,60 @@ base candidate's single FAKE (`arg0 = 0;`) present in the measured bodies.
 - probe: sandbox func_800480C0 --disable all with candidate.c installed over the INCLUDE_ASM line; tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c; tmp/grind/func_800480C0/s19/probe.sh on candidate.c.
 - result: Sandbox: score 20, target_insns 74, build_insns 74, rules_dropped 0, cheat_asm_stripped 162. Probe: .frame $sp,56,$31 # vars= 0, regs= 8/0, args= 24, extra= 0, insns=72, unalloc=0. Ablation (tmp/grind/func_800480C0/s19/fake_ablate.txt): one FAKE unit, keep-all 20 at 74 build insns, drop-1 32 at 73. Sixth consecutive chassis with the identical reading; the dispatch chassis check's 'measurement unavailable' resolves to 20.
 - verdict: CONFIRMED
+
+## s20 (rederive) hypotheses
+
+- **H-s20-1 CONFIRMED (instance -> the function's whole residual).** *The residual of
+  func_800480C0 is exactly a 32-byte `get_frame_size()` charge and contains no second
+  defect.* Probe: install `s20/bodies/h1_stmt_tail.c` (candidate body + a 32-byte inline
+  donation at a value-free site) over the `INCLUDE_ASM` line and run
+  `sandbox func_800480C0 --disable all`. Result: `score 0`, 74/74, rules_dropped 0; raw cc1
+  listing differs from the candidate's by the single `.frame` line. Measured on HEAD
+  a4c735da with the candidate's single FAKE (`arg0 = 0;`) present.
+- **H-s20-2 KILLED (instance).** *A value-flowing call site for the inline-callee donation
+  keeps this function's stream unperturbed.* Ten placements measured; every site whose value
+  reaches the program moved instructions (entry sites hoist the two incoming-parameter loads
+  above the register saves and add a load-delay nop, sandbox 6; loop sites hoist the
+  `new_var` srl/sll/addu, sandbox 16; register-param sites cost one insn). Only the two
+  discarded-statement sites are byte-neutral. Measured on HEAD a4c735da, bodies
+  `s20/bodies/{d2,d3,e1,e5,e6,f1,f3,g1,g3,g5,g6,g7,g8,h1,h2}.c`, candidate FAKE present.
+- **H-s20-3 KILLED (instance).** *The inline-callee donation family contains an honest
+  spelling for this body.* Every byte-neutral spelling is `pack_off(arg1, 0);` - a discarded
+  call to a side-effect-free helper whose 32-byte local nothing on this path needs, i.e. the
+  banned unwritten pad relocated into a callee. It fails cheat-checklist T1 and T2 on its own
+  terms. Banked in `rejected/s20-inline-donation-dead-tail-call-bytes0-but-relocated-pad.c`.
+  Measured on HEAD a4c735da with the candidate FAKE present. (Instance, not class: the kill
+  is of the spellings reachable on THIS body - a helper with a genuine 25..32-byte local and
+  a genuine reason to be called from here would re-open it, which is why frontier item 1 is
+  restated below in its only surviving form.)
+- **H-s20-4 CONFIRMED (instance).** *m2c's `s32 arg4/arg5` + `(s16)`-cast shape is
+  byte-neutral on this body.* k1 listing is line-for-line identical to the candidate's; under
+  a donation it is required (s16 params make cc1 emit `lhu` where the target emits `lw`).
+
+## [s20] The residual of func_800480C0 is exactly a 32-byte get_frame_size() charge and contains no second defect.
+- mechanism: integrate.c:2085-2092 charges assign_stack_temp (BLKmode, DECL_FRAME_SIZE (map->fndecl), 1) at every inline expansion and DECL_FRAME_SIZE is snapshotted pre-optimisation at integrate.c:345, so a static __inline__ helper carrying a 32-byte local donates the full block to this frame while constant propagation deletes all of its traffic on this call path; mips.c:4475 then totals the frame as var_size + args_size + gp_reg_rounded = 32 + 24 + 32 = 88.
+- probe: Installed tmp/grind/func_800480C0/s20/bodies/h1_stmt_tail.c (the banked candidate body verbatim, with s32 arg4/arg5 + (s16) casts, plus static __inline__ s32 pack_off(s32 v, s32 n) whose u32 t[8] is written only under if (n != 0), invoked as the discarded statement pack_off(arg1, 0); after the loop) over the INCLUDE_ASM line and ran sandbox func_800480C0 --disable all.
+- result: score 0, target_insns 74, build_insns 74, scorable true, rules_dropped 0. The raw cc1 listing s20/last_h1_stmt_tail.s differs from the candidate's s20/last_candidate.s in exactly one line: .frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24 versus .frame $sp,56,$31 # vars= 0. Donation ladder on this body: 16 bytes -> vars 16, 24 -> vars 24, 32 -> vars 32. Fifteen sessions of frame-decomposition inference are now a measurement.
+- verdict: CONFIRMED
+
+## [s20] A value-flowing call site for the inline-callee donation keeps this function's stream unperturbed.
+- mechanism: The inlined expansion introduces a pseudo on the dataflow path at its call site, which changes sched.c's list-scheduling decisions for the surrounding block: at entry sites the two incoming-parameter loads lw $3,104($sp) / lw $4,108($sp) hoist above the eight callee-saved stores and a load-delay nop appears after lw $2,0($16); at loop sites the srl/sll/addu that forms new_var hoists to the loop head.
+- probe: Measured ten placements of the same 32-byte helper (all reaching .frame $sp,88 # vars= 32) with tmp/grind/func_800480C0/s20/probe.sh plus the full scorer: entry shift (d3, f1), stack params sx_arg4/sx_arg5 (g8, g3), loop new_var (e6, d2), discarded call at top (e1), register params and loop values (f3, g1, g5, g6, g7), and the two discarded-statement sites (h1, h2).
+- result: d3/f1/g8 sandbox 6 with build_insns 75; e6/d2 sandbox 16; e1 clusters all eight register saves; f3/g1/g6/g7 cost one cc1 insn (73 vs 72). Only h1 and h2 - the discarded call after the loop and at the end of the if-block - leave the listing bit-identical to the candidate apart from the .frame line.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a4c735da, bodies tmp/grind/func_800480C0/s20/bodies/*.c installed one at a time over the INCLUDE_ASM line, the base candidate's single FAKE (arg0 = 0;) present in every body
+
+## [s20] The inline-callee donation family contains an honest spelling for this body.
+- mechanism: Cheat-checklist T1/T2 applied to the only byte-neutral spellings: pack_off(arg1, 0); is a discarded call to a side-effect-free helper, so it has no observable effect on the function's output and no human programmer writes it; the helper's u32 t[8] is an object nothing on this path needs, i.e. the unwritten leading pad relocated into a callee, which is the construct the standing Judge constraint (docs/grind/decisions.md:20349) bars for this function in any spelling.
+- probe: Enumerated the byte-neutral placements from the previous hypothesis and applied the six-test checklist to each; banked the score-0 body in memory/grind/func_800480C0/rejected/s20-inline-donation-dead-tail-call-bytes0-but-relocated-pad.c rather than proposing it.
+- result: Both byte-neutral placements are discarded statements and fail T1 and T2 outright. Not proposed, not submitted. Recorded detector gap: engine/volatile_cheats.py::find_unused_local_arrays strips a fixed-size local array only when it is unreferenced inside its own function body, so t[8] referenced in the helper's dead if (n != 0) arm survives stripping and the cheat-invisible scorer printed 0 for a relocated pad; the control d1_cand_donate32.c with an UNREFERENCED t[8] is stripped and scores 20. The honest floor stays 20 and this session claims no improvement.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD a4c735da, bodies h1_stmt_tail.c / h2_stmt_ifend.c / d1_cand_donate32.c installed one at a time over the INCLUDE_ASM line, candidate FAKE present
+
+## [s20] m2c's rederive shape - s32 arg4/arg5 with (s16) casts at the two sign-extend sites - is byte-neutral on the banked candidate body.
+- mechanism: The parameters are consumed only through a full-word sll/sra 16 pair, so widening the declared type and casting at the use site produces the same RTL; under a donation it is load-bearing because s16 stack parameters make cc1 select lhu $3,104($sp) / lhu $4,108($sp) where the target emits lw (this GCC fork's narrow-stack-parameter behaviour, .claude/rules/narrow-stack-param-subword-offset.md).
+- probe: Built k1_cand_s32args45.c (candidate body, s32 arg4/arg5, sx_arg4 = (s16)arg4; sx_arg5 = (s16)arg5;) and diffed its cc1 listing against last_candidate.s; separately compared d3 (s16 params) with f1 (s32 params) under the donation.
+- result: k1 is line-for-line identical to the candidate (zero diff, .frame $sp,56 # vars= 0, 72 insns). Under the donation, s16 params emit lhu and s32 params emit lw, worth two diffs. Kept out of candidate.c only because review verdicts are body-keyed and the banked body should stay unchanged.
+- verdict: CONFIRMED

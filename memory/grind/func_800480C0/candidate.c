@@ -3,6 +3,51 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s20 (rederive, 2026-09-05, chassis HEAD a4c735da) - BODY UNCHANGED, floor re-measured
+ * 20 with this body installed over the INCLUDE_ASM line (74 target insns, 74 build insns,
+ * rules_dropped 0; raw cc1 reads .frame $sp,56 - vars= 0, regs= 8/0, args= 24, 72 insns,
+ * unalloc= 0). Mandated FAKE re-audit re-run on this chassis
+ * (tmp/grind/func_800480C0/s20/fake_ablate.txt): one FAKE unit (arg0 = 0;), keep-all 20 /
+ * drop-1 32 - load-bearing, masking no lever, identical on seven chassis now.
+ * THE SESSION'S RESULT, and it is the largest single step this function has taken:
+ * (1) A BYTE-EXACT BUILD EXISTS AND THE RESIDUAL IS PROVEN TO BE EXACTLY A 32-BYTE
+ * get_frame_size() CHARGE AND NOTHING ELSE. s19's frontier item 1 (inline-callee frame
+ * donation, integrate.c:2085-2092) was executed to a measurement instead of an argument.
+ * Body tmp/grind/func_800480C0/s20/bodies/h1_stmt_tail.c - THIS candidate's body verbatim,
+ * plus a `static __inline__ s32 pack_off(s32 v, s32 n)` carrying `u32 t[8]` written only
+ * under `if (n != 0)`, invoked as the discarded statement `pack_off(arg1, 0);` after the
+ * loop - prints `"score": 0`, target_insns 74, build_insns 74, rules_dropped 0 from
+ * `sandbox func_800480C0 --disable all`, and its raw cc1 listing is LINE-FOR-LINE IDENTICAL
+ * to this candidate's except `.frame $sp,88 # vars= 32` in place of `.frame $sp,56 # vars= 0`
+ * (tmp/grind/func_800480C0/s20/last_h1_stmt_tail.s). Fifteen sessions of frame-decomposition
+ * inference are now a measured fact: nothing but the 32 vars bytes stands between this C and
+ * the shipped function.
+ * (2) BUT EVERY BYTE-NEUTRAL PLACEMENT OF THAT DONATION IS A DEAD STATEMENT, i.e. the pad
+ * relocated into a helper, and h1 is therefore banked in rejected/ and NOT proposed. Ten
+ * placements were measured (tmp/grind/func_800480C0/s20/bodies/): every site where the
+ * helper's value FLOWS into the program perturbs the stream - entry shift d3 and stack-param
+ * sx_arg4 g8 score 6 (the two incoming-parameter loads hoist above the register saves and a
+ * load-delay nop appears, build_insns 75); loop new_var e6 and d2 score 16 (the srl/sll/addu
+ * for new_var hoists to the loop head); statement-call-at-TOP e1 clusters all eight saves;
+ * register-param placements f3/g1/g6/g7 cost one insn (73). Only the two value-free sites -
+ * the discarded call at the end of the function (h1) and at the end of the if-block (h2) -
+ * leave the stream bit-identical. A discarded call to a side-effect-free helper fails
+ * cheat-checklist T1 and T2 outright, so the donation family closes the same way the pad
+ * family did: it reaches the bytes only by carrying an object nothing on this path needs.
+ * (3) DETECTOR GAP, RECORDED FOR THE PIPELINE (not acted on - engine/ is denylisted): the
+ * sandbox's find_unused_local_arrays only strips arrays never referenced in their own
+ * function body, so `u32 t[8]` referenced inside the helper's dead `if (n != 0)` arm
+ * survives stripping and the honest-floor scorer printed 0 for a relocated pad. Compare the
+ * same helper with an UNREFERENCED `u32 t[8]` (d1): stripped, score 20. The honest floor for
+ * this function is therefore still 20, not 0, and this session does not claim otherwise.
+ * (4) ORDINARY-C RESULT WORTH KEEPING: m2c's own rederive shape - `s32 arg4, s32 arg5` with
+ * `(s16)` casts at the sign-extend sites (s10) - is BYTE-NEUTRAL on this body (k1, listing
+ * line-for-line identical to this candidate) and is REQUIRED under any donation: with s16
+ * parameters the donated frame makes cc1 emit `lhu $3,104($sp)` / `lhu $4,108($sp)` where the
+ * target emits `lw`, costing two further diffs. Kept out of this candidate only because the
+ * body is verdict-keyed and unchanged bodies inherit their prior review state.
+ * Artifacts: tmp/grind/func_800480C0/s20/{probe.sh,runall.sh,fake_ablate.txt,bodies/,last_*.s},
+ * rejected/s20-*.c. */
 /* s18 (forensics, 2026-09-05, chassis HEAD e25a492f) - BODY UNCHANGED, floor re-measured
  * 20 with this body installed over the INCLUDE_ASM line (74 target insns, 74 build insns).
  * Mandated FAKE re-audit re-run on this chassis: one FAKE unit (arg0 = 0;), keep-all 20 /

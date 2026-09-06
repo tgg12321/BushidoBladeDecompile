@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 19,
- "current_modality": "forensics",
+ "session_count": 20,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -117,23 +117,29 @@
    "floor": 20,
    "modality": "forensics",
    "headline": "Frame charges are additive - an 8-byte combine-orphan phantom plus a 24-byte inline-callee donation prints the target's exact .frame $sp,88 # vars=32, regs=8/0, args=24 - but the phantom half costs on"
+  },
+  {
+   "session": 20,
+   "floor": 20,
+   "modality": "rederive",
+   "headline": "Rederive proves the whole residual is a 32-byte get_frame_size charge - a 32-byte inline-callee donation at a value-free site builds byte-exact (sandbox 0, 74/74) with the candidate's stream untouched"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With the phantom half now measured to cost one instruction and the register-mask route class-dead, the only vars=32 producer left that is byte-neutral on this body is a SINGLE 25..32-byte charge, and the one honest spelling never tried is an inline-callee donation whose donated object is genuinely live at a DIFFERENT call site of the same helper (s14 frontier 1, retired by argument in s15 rather than by measurement on a real sibling).",
-   "mechanism": "integrate.c:2085-2092 charges assign_stack_temp (BLKmode, DECL_FRAME_SIZE (map->fndecl), 1) per expansion and DECL_FRAME_SIZE is snapshotted pre-optimisation at integrate.c:345, so a helper whose 25..32-byte local is live in a sibling's expansion still donates the full block here while constant propagation removes its traffic on this path - the only donation spelling that is not a relocated pad, because the object has a real consumer somewhere in the TU.",
-   "next_probe": "Scan src/text1b.c for a real repeated expression shared between func_800480C0 and a COMPLETED-C sibling in the same TU, factor it into one static __inline__ helper carrying the 25..32-byte local the sibling genuinely needs, and measure BOTH functions with tmp/grind/func_800480C0/s19/probe.sh plus the full scorer - the sibling must stay byte-identical while this function reads vars= 32 at 72 cc1 insns. If no sibling shares such an expression, that is itself the closing measurement for the donation family."
+   "hypothesis": "The donation family has exactly one surviving honest form: a static __inline__ helper this function has a real reason to call, whose 25..32-byte local is genuinely consumed by a DIFFERENT caller in src/text1b.c. Since every value-flowing placement is now measured to perturb the stream, that helper's call here would also have to be value-free - which no honest helper is - so the census is expected to close the family, and closing it by measurement is what remains.",
+   "mechanism": "integrate.c:2085-2092 donates DECL_FRAME_SIZE per expansion, snapshotted pre-optimisation at integrate.c:345, so the donated block survives here even when constant propagation removes its traffic; but the value-flow kill above shows the call must not feed a value into this function's dataflow, and a helper called purely for effect has no effect to give.",
+   "next_probe": "Grep src/text1b.c for every static/inline helper and every repeated expression shared between func_800480C0 and a COMPLETED-C function in the same TU, and for any local aggregate of 25..32 bytes; if none is both shared with this function and genuinely needed by the other caller, record that as the closing measurement for the donation family and stop re-spelling it."
   },
   {
-   "hypothesis": "Because the candidate's stream is already the target's length, the residual may not need a NEW frame object at all: a spelling that keeps the same 72 instructions but makes one existing loop value unallocatable would buy 8 bytes at zero instruction cost, and four such would buy 32 - s15's H-s15-4 reached four unallocated pseudos but only in the spill regime (+36 insns).",
-   "mechanism": "reload1.c:2382-2385 pays 8 bytes for any pseudo with reg_renumber < 0 && reg_n_refs > 0, and the zero-traffic version of that state is the combine orphan (no set, no constraint-bearing reference, regclass leaves it ST_REGS - combine.c:10832-10841). s17 capped orphan multiplicity at one for GUARD spellings; orphans planted at the four narrow sign-extends or at the pointer advances have not been enumerated with tools/nrefs_census.py what-if lifts.",
-   "next_probe": "Run tools/nrefs_census.py --func func_800480C0 --file text1b with what-if lifts on each loop pseudo to find which references could be dropped without changing the emitted stream, then use tmp/grind/func_800480C0/s6/count_uses.py on the .combine dump of each resulting body to count orphan USEs directly rather than inferring them from unalloc; the target is orphanUSE=4 at 72 cc1 insns."
+   "hypothesis": "Four class-A combine orphans (8 bytes each, reload1.c:2382-2385) would buy the same 32 bytes at zero instruction cost, and they have never been enumerated at the four narrow sign-extend sites with what-if lifts.",
+   "mechanism": "combine.c:10832-10841 distribute_notes plants an orphan (insn (use (reg P))) when the defining insn is rewritten away; P then has no set and no constraint-bearing reference, regclass leaves it ST_REGS, find_reg cannot seat it and alter_reg pays 8 bytes for nothing. s9 measured that each such orphan is paid for with an emitted lh on this tree's other bodies, which would cost bytes here - that prediction is untested ON this body.",
+   "next_probe": "Run tools/nrefs_census.py --func func_800480C0 --file text1b with what-if lifts on each loop pseudo, then count orphan USEs directly on each resulting .combine dump with tmp/grind/func_800480C0/s6/count_uses.py; the target is orphanUSE=4 at 72 cc1 insns with no lh appearing."
   },
   {
-   "hypothesis": "If both remaining producers close negative, the honest record for this function is that every zero-instruction 32-byte producer reachable on this body is either the banned unwritten pad or dead code, and the disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS rather than a spelling.",
-   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS carries (\"pre_pad\", 8) rows for func_80047EE8, func_80047FBC, func_800481E8 and func_80041688 for this identical untouched-window shape; func_800480C0 is barred by the standing Judge constraint in this ledger (docs/grind/decisions.md:20349) until an owner ruling adds its row.",
-   "next_probe": "Do NOT re-spell the pad - the Judge constraint is body-keyed and binding. Spend the remaining ladder modalities on frontier items 1 and 2 above; if both close negative, the foreclosure record should cite s19's two measurements (frame additivity confirmed, phantom costs one instruction) as the proof that the 8+24 and register-mask routes are exhausted."
+   "hypothesis": "If the donation census closes negative, the honest record is complete: the residual is a single 32-byte zero-traffic frame object, identical to the one three in-file siblings hold (pre_pad, 8) grants for, and the disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS rather than a spelling.",
+   "mechanism": "The standing Judge constraint (docs/grind/decisions.md:20349) bars the unwritten pad for this body in any spelling until an owner ruling adds its row; .claude/rules/no-new-park-categories.md:340-342 makes the family a closed per-function enumeration.",
+   "next_probe": "Do NOT re-spell the pad. Whichever session reaches the escalation modality should cite s20's h1 measurement (score 0, listing identical but for the .frame line) as the proof that the residual is exactly the 32-byte charge, plus s19's additivity and phantom-cost measurements, in the foreclosure record."
   }
  ],
  "judge_constraints": [
@@ -141,22 +147,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 2,
-   "statement": "Honest phantom-slot structural producers reach vars=8 on this body across 13 measured spellings, one quarter of the 32 vars bytes the target reserves, and the best spelling carrying the 8 bytes scores",
-   "kill_scope": "instance",
-   "measured_on": "HEAD c8e81f83, pad-free bodies, only FAKE construct present is the banked `arg0 = 0;` dead store; 13 spellings measured with the cc1 `# vars=` gradient plus sandbox --disable all",
-   "predicate_cite": "",
-   "result": "Every spelling measured vars= 0 or vars= 8; none reached 16 or 32 (tmp/grind/func_800480C0/s2/frame_ladder.txt). The var"
-  },
-  {
-   "session": 3,
-   "statement": "Phantom-slot production on this body is one ST_REGS-classed compare residue worth a 4-byte alter_reg slot (vars=8), and eight further structural spellings each produced exactly zero or one such unallo",
-   "kill_scope": "instance",
-   "measured_on": "HEAD f3ba5f78, pad-free bodies, only FAKE construct present is the annotated `arg0 = 0;` dead param store; 8 new spellings via the instrumented-cc1 BB2_ALLOC_DEBUG phantom census plus sandbox --disabl",
-   "predicate_cite": "",
-   "result": "Every spelling reported unalloc_pseudos = 0 or 1 and .frame vars = 0 or 8; none reached 2 phantoms or 16 bytes. With s2'"
-  },
   {
    "session": 3,
    "statement": "The (args=56, vars=0) frame decomposition is layout-equivalent to (args=24, vars=32) on this body but is not reachable from any call this function makes.",
@@ -620,6 +610,22 @@
    "measured_on": "HEAD e0174a57, compiler source in tools/gcc-2.7.2 plus the twelve banked probe listings under tmp/grind/func_800480C0/s18 and s19; base candidate's single FAKE (arg0 = 0;) present in the measured bodi",
    "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:4680",
    "result": "regs= N equals the restore count in every listing (candidate regs=8 with ten lw ...($sp) = 8 restores plus the two incom"
+  },
+  {
+   "session": 20,
+   "statement": "A value-flowing call site for the inline-callee donation keeps this function's stream unperturbed.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a4c735da, bodies tmp/grind/func_800480C0/s20/bodies/*.c installed one at a time over the INCLUDE_ASM line, the base candidate's single FAKE (arg0 = 0;) present in every body",
+   "predicate_cite": "",
+   "result": "d3/f1/g8 sandbox 6 with build_insns 75; e6/d2 sandbox 16; e1 clusters all eight register saves; f3/g1/g6/g7 cost one cc1"
+  },
+  {
+   "session": 20,
+   "statement": "The inline-callee donation family contains an honest spelling for this body.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a4c735da, bodies h1_stmt_tail.c / h2_stmt_ifend.c / d1_cand_donate32.c installed one at a time over the INCLUDE_ASM line, candidate FAKE present",
+   "predicate_cite": "",
+   "result": "Both byte-neutral placements are discarded statements and fail T1 and T2 outright. Not proposed, not submitted. Recorded"
   }
  ],
  "ladder_skip": 0,
