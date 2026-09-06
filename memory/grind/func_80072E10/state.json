@@ -1,0 +1,24 @@
+{
+ "func": "func_80072E10",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-06T11:57:27.774212+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "d1f47014f6f9c69e",
+   "when": "2026-09-06T12:04:30.540396+00:00",
+   "summary": "final call: The only construct at issue is typing the primitive reached through ctx->0xC as a POLY_G4 and writing its vertices as struct fields. That typing is TRUE of the program, verified by me, not taken from "
+  }
+ ]
+}
