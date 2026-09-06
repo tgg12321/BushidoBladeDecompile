@@ -43,10 +43,15 @@ are blocks with live hard registers — incoming argument regs, the call-clobber
 set around a `CALL_INSN`, the return value — which an empty liveness map cannot
 know.
 
-**Known hook gaps for the next extension** (both in `local-alloc.c` `block_alloc`,
-same env-gated-fprintf pattern): the QTYDBG line does not print `qty_size` (so
-DImode qtys are mispriced in the ORDER check — the likeliest cause of the ~4-5%
-order misses) nor the suggestion sets.
+**Hook-gap note (CLOSED 2026-08-06, corrected 2026-09-06):** the QTYDBG line
+itself still omits `qty_size` and the suggestion sets, but `BB2_SUGG_DEBUG`
+(`local_extract.py --suggest`, section 7 of `cc1_hooks.patch.md`) prints every
+`qty_compare_1` input per qty (`size`, `mode`, classes, `calls`, `chgsize`,
+both suggestion sets) and `SUGGDBG-FFR` the scanned hard-reg sets. Join on
+`qty` to price the ORDER check exactly. Do NOT cite this paragraph as an
+"un-run instrument" re-activation trigger: CD_sync s108/s109/s118/s120 already
+consumed the full table (block 3: `ncopysugg=0 nsugg=0`, size 4, tie on qty
+index).
 
 ### Applying it — worked example
 
