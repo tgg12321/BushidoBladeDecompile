@@ -1,2 +1,0 @@
-regfix.txt:2149: func_8003D39C: reorder 1,2,0 @ 0-2
-regfix.txt:2151: func_8003D39C: reorder 6,14,7,8,9,10,11,13,12 @ 6-14

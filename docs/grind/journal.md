@@ -1742,3 +1742,4 @@
 - 2026-09-05 19:16 func_8003C714 s19 [rederive] floor=15: Rederive: the insn_count axis is OPEN, not capped at 64 - a dead scalar chain reaches insn_count 134 and sandbox 0 with no call, no DImode and no declaration change, so the two declaration puns are not part of the residual and the requirement is now exactly quantified (+61 byte-free counted insns, or one byte-free CALL_INSN).
 - 2026-09-05 19:41 func_8003C714 COMPLETED-C after 20 sessions (closer: s20 [structural]).
 - 2026-09-05 19:57 func_8003D39C s2 [structural] floor=15: Floor 16 -> 15: the array address must be carried by TWO distinct pointer variables; the residual is now one RA coalescing choice (n*16 temp onto n's register instead of the n+1 register), flat across 14 further structural spellings.
+- 2026-09-05 20:10 func_8003D39C COMPLETED-C after 3 sessions (closer: s3 [structural]).
