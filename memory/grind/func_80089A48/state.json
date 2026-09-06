@@ -1,0 +1,30 @@
+{
+ "func": "func_80089A48",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [
+  "`typedef struct { volatile u16 raw[0x100]; } SpuRXXRaw; extern SpuRXXRaw D_800F7298;` replacing `extern volatile u16 D_800F7298[];`, accessed as `D_800F7298.raw[addr]`",
+  "Self-vet's characterization of D_800A28A0/D_800A2CD4 volatile status as 'ungranted debt' identical to D_800F7298"
+ ],
+ "kills": [],
+ "ladder_skip": 10,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-06T12:04:35.188361+00:00",
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The D_800F7298 array-to-struct retype is a synthetic single-member aggregate wrap whose sole documented purpose is to force GCC's register-base addressing mode instead of symbol+offset addressing \u2014 a new spelling of codegen-mechanism manipulation, not a genuine object-model correction. Next action: Revert the D_800F7298 declaration to the plain array form and pursue a closing form that does not depend on wrapping the symbol in a synthetic aggregate to change its addressing mode. If a genuine object-model correction exists (e.g. typing D_800F7298 as the existing Spu"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "7dcd54fd3a7c2e97",
+   "when": "2026-09-06T12:25:43.553883+00:00",
+   "summary": "The D_800F7298 array-to-struct retype is a synthetic single-member aggregate wrap whose sole documented purpose is to force GCC's register-base addressing mode instead of symbol+offset addressing \u2014 a new spelling of codegen-mechanism manipulation, not a genuine object-model correction."
+  }
+ ]
+}
