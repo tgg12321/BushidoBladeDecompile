@@ -1,8 +1,0 @@
-regfix.txt:211: func_8003C714: $10 <-> $9 @ 20-66
-regfix.txt:212: func_8003C714: subst "\$9" "$2" @ 19
-regfix.txt:213: func_8003C714: delete @ 13
-regfix.txt:214: func_8003C714: delete @ 14
-regfix.txt:215: func_8003C714: delete @ 18
-regfix.txt:216: func_8003C714: insert "lui	$2,(0x91a2b3c5 >> 16) & 0xFFFF" @ 15
-regfix.txt:217: func_8003C714: insert_after "ori	$2,$2,0xb3c5" @ 16
-regfix.txt:218: func_8003C714: reorder 13,14,11,12 @ 11-14
