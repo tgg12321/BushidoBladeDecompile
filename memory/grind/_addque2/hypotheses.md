@@ -20,3 +20,11 @@
 2. If the Judge refuses the volatile grant: the residual is exactly 18 = reorg delay-slot
    filler (reorg.c:752) + sched volatile serialization; no sanctioned non-volatile
    family reproduces a store that refuses a delay slot — file the negative census then.
+
+## s1b (2026-09-06, recon, post-grant)
+- H6 with the Ruling 4 grant for D_80103680 held and the aggregate header-canonical, the
+  banked body measures honest 0 -- CONFIRMED (sandbox 0 at 184/184, cheat_asm_stripped 146,
+  verify-oracle ok). Frontier item 1 closed; candidate-ready.
+
+## Frontier (post-grant)
+(empty -- candidate submitted)

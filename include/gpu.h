@@ -67,4 +67,24 @@ extern void gpu_DisableDisplay(void);
 extern void gpu_EnableDisplay(void);
 extern void gpu_InitDisplay(void);
 
+/* PsyQ libgpu packet queue (sys.c `static volatile struct QueueItem`): 64
+ * records of 0x60 bytes {callback, argument pointer, word count, 21 data
+ * words}. Evidence for the aggregate: the original code of _addque2 and
+ * _exeque scales the queue index by 0x60 (x3 then sll 5) and adds it to
+ * these addresses, and the copy loop parks &D_8010368C in a base register
+ * and stores through base + i*4 + slot*0x60 -- one object addressed by
+ * base + offset, not symbol adjacency. Replaces the splat per-word scalars
+ * D_80103680 / D_80103684 / D_80103688 / D_8010368C (the +4/+8/+C rows stay
+ * in the symbol config as aliases until _exeque leaves INCLUDE_ASM).
+ * volatile: Sony's own qualifier on this object (the queue is drained by
+ * _exeque from DMA-IRQ context); grant in volatile_extern_allowlist.txt. */
+typedef struct GpuQueueItem {
+    /* 0x00 */ s32 (*func)(s32 *, s32);
+    /* 0x04 */ s32 *arg;
+    /* 0x08 */ s32 count;
+    /* 0x0C */ s32 data[21];
+} GpuQueueItem; /* size 0x60 */
+
+extern volatile GpuQueueItem D_80103680[64];
+
 #endif /* GPU_H */

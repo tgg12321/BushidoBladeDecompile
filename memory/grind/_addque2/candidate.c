@@ -1,40 +1,20 @@
-/* _addque2 — CANDIDATE (session 1, 2026-09-06) — sandbox 0/184 with the volatile
- * queue LIVE (--keep-cheat-asm), full verify-oracle ok (SHA1 62efab4f...), honest
- * (detector-stripped, un-granted) floor 18. BLOCKED ONLY by an integration handoff:
- *   1. volatile_extern_allowlist.txt entry for D_80103680 (Ruling 4, commit c80d976e —
- *      same class as the D_8009BF68 / D_8009BF78 grants at allowlist lines 75-76).
- *   2. aggregate-merge prong (d): move `typedef struct GpuQueueItem` + the extern to
- *      include/gpu.h (TU-local here only because include/ is outside session scope).
- *   3. prong (c) amendment 2026-09-03: rows D_80103684 / D_80103688 / D_8010368C stay in
- *      undefined_syms_auto.txt + named_syms.txt (asm/funcs/_exeque.s still names them)
- *      suffixed "alias of D_80103680+N; retire with _exeque".
- * DECLARATION CHANGES in src/display.c that are part of the recipe (all measured):
- *   - line 720  `extern s32 *D_8009BF48;`  -> `extern volatile s32 *D_8009BF48;`
- *       (GPU_STATUS 0x1F801814 pointee; 29 -> 22; the later site :747 was already volatile;
- *        .loop dump showed loop.c hoisting the read out of the spin-wait otherwise)
- *   - lines 732 + 795 `extern s32 *D_8009BF54;` -> `extern volatile s32 *D_8009BF54;`
- *       (DMA2_CHCR 0x1F8010A8 pointee; 22 -> 20; _reset still byte-identical: oracle ok)
- *   - the four `extern s32 D_80103680/84/88/8C;` per-word scalars REMOVED; the
- *     `extern u8 D_80103680[];` view removed; _reset's memset takes `(u8 *)D_80103680`.
- *   - `extern volatile GpuQueueItem D_80103680[64];` (20 -> 2; the SOTN original is
- *     `static volatile struct QueueItem D_80037F54[0x40]`, sys.c:95 of the
- *     sotn-decomp clone at C:/Users/Trenton/Desktop/sotn-decomp)
- *   - copy loop spelled `arg[i]` not `*p++` (2 -> 0; loop.c giv init order).
- * Reference shape: sotn-decomp src/main/psxsdk/libgpu/sys.c:744 `_addque2`.
- * Exact verified diff: tmp/grind/_addque2/s1/candidate-diff.txt (also copied to
- * memory/grind/_addque2/s1-candidate-diff.txt).
- */
+/* _addque2 candidate -- s1 (2026-09-06, recon; grant executed). Honest sandbox 0 (184/184),
+ * verify-oracle ok (build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa) with the
+ * granted-path edits live:
+ *   include/gpu.h              GpuQueueItem typedef + `extern volatile GpuQueueItem D_80103680[64];`
+ *   volatile_extern_allowlist  D_80103680 Ruling 4 grant line
+ *   undefined_syms_auto.txt    alias-suffix rows for D_80103684/88/8C (retire with _exeque)
+ *   named_syms.txt             same alias suffix on the three census rows
+ *   src/display.c              body below + `volatile s32 *` pointee on D_8009BF48 (:720)
+ *                              and D_8009BF54 (:732/:795), four per-word externs removed,
+ *                              `(u8 *)` cast on _reset's memset.
+ * Full diff: memory/grind/_addque2/s1-granted-path-diff.txt. */
 /* ADDQUE2-BEGIN */
 /* LIBGPU/SYS `_addque2` — reference sotn-decomp src/main/psxsdk/libgpu/sys.c:744
  * (older library revision: per-store re-index of the volatile queue head,
  * 0x60-byte slots = func / arg / count / 21 data words). */
-typedef struct GpuQueueItem {
-    /* 0x00 */ s32 (*func)(s32 *, s32);
-    /* 0x04 */ s32 *arg;
-    /* 0x08 */ s32 count;
-    /* 0x0C */ s32 data[21];
-} GpuQueueItem; /* size 0x60 */
-extern volatile GpuQueueItem D_80103680[64]; /* g_gpu_packet_queue_base: 64 x 0x60 */
+/* GpuQueueItem + `extern volatile GpuQueueItem D_80103680[64];` live in
+ * include/gpu.h (aggregate-merge prong (d): header-canonical). */
 
 s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     s32 i;

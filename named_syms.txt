@@ -1001,8 +1001,8 @@ g_type_descriptor_table_8008EA00                        = 0x8008EA00;  /* 16-byt
 g_status_flag_record_table_80099D88                     = 0x80099D88;  /* 12-byte stride; u16 record indexed by `idx`; bit-tested with 0xBF00 mask */
 
 /* === GPU packet buffer + shadow tables (2026-05-17) === */
-g_gpu_packet_buffer_64x96                               = 0x80103684;  /* 64 entries x 96 bytes; OT-link/packet queue; indexed by D_8009BF78 */
-g_gpu_packet_buffer_data_8010368C                       = 0x8010368C;  /* +8 from g_gpu_packet_buffer_64x96; per-entry data start */
+g_gpu_packet_buffer_64x96                               = 0x80103684;  /* 64 entries x 96 bytes; OT-link/packet queue; indexed by D_8009BF78; alias of D_80103680+0x4 (GpuQueueItem.arg, include/gpu.h); retire with _exeque */
+g_gpu_packet_buffer_data_8010368C                       = 0x8010368C;  /* +8 from g_gpu_packet_buffer_64x96; per-entry data start; alias of D_80103680+0xC (GpuQueueItem.data, include/gpu.h); retire with _exeque */
 g_gpu_packet_write_idx                                  = 0x8009BF78;  /* increments by 1 with & 0x3F mask (64 entries) */
 g_gpu_packet_read_idx                                   = 0x8009BF7C;  /* paired with write_idx; equality test for buffer empty */
 g_gpu_packet_pending_target                             = 0x8009BF70;  /* set to arg3 of submit function */
@@ -2555,7 +2555,7 @@ g_status_up_data_buf_plus_4                             = 0x801027C0;  /* +4 fro
 g_voice_slot_24_arr_b_plus_4                            = 0x80102A7E;  /* +4 from g_voice_slot_24_arr_b (0x80102A7A) */
 g_voice_slot_24_arr_b_plus_6                            = 0x80102A80;  /* +6 from g_voice_slot_24_arr_b (0x80102A7A) */
 g_voice_slot_24_arr_b_plus_8                            = 0x80102A82;  /* +8 from g_voice_slot_24_arr_b (0x80102A7A) */
-g_gpu_packet_buffer_64x96_plus_4                        = 0x80103688;  /* +4 from g_gpu_packet_buffer_64x96 (0x80103684) */
+g_gpu_packet_buffer_64x96_plus_4                        = 0x80103688;  /* +4 from g_gpu_packet_buffer_64x96 (0x80103684); alias of D_80103680+0x8 (GpuQueueItem.count, include/gpu.h); retire with _exeque */
 g_file_disc_type_plus_4                                 = 0x80106A58;  /* +4 from g_file_disc_type (0x80106A54) */
 g_file_flags_plus_5                                     = 0x80106A78;  /* +5 from g_file_flags (0x80106A73) */
 g_active_slot_flags_12_plus_2                           = 0x80106A82;  /* +2 from g_active_slot_flags_12 (0x80106A80) */

@@ -74,3 +74,23 @@ _reset's two stores through it still build to the oracle bytes.
 - Artifacts: tmp/grind/_addque2/s1/{h1,h3,h4}_pairdiff.txt, candidate-diff.txt
   (git diff -U0 of src/display.c), display_h5_gname_score0.c, display_h3.c,
   tmp/grind/_addque2/dumps/display.{loop,sched,combine}.
+
+## s1b (2026-09-06, recon, post-grant) -- honest 0 / 184, verify-oracle ok
+
+- Chassis: HEAD 62179a6c (handoff commit). INCLUDE_ASM baseline unchanged (184).
+- Applied s1-candidate-diff.txt verbatim (`git apply --unidiff-zero`), then the granted-path
+  edits: GpuQueueItem typedef + `extern volatile GpuQueueItem D_80103680[64];` moved from the
+  TU into include/gpu.h (prong d); D_80103680 grant line appended to
+  volatile_extern_allowlist.txt (Ruling 4, census + codegen prongs quoted inline);
+  undefined_syms_auto.txt rows D_80103684/88/8C suffixed `alias of D_80103680+N; retire with
+  _exeque` (func_8004473C precedent, commit f27569e7); named_syms.txt rows :1004/:1005/:2558
+  carry the same suffix. undefined_syms_auto.txt addresses are KEPT (asm/funcs/_exeque.s still
+  references all four symbols; _reset.s too though _reset is C).
+- Measured: canonical -> pure-C target (distance 0); `sandbox _addque2 --disable all` ->
+  score 0, 184/184, cheat_asm_stripped 146 (= the baseline with a C body; the volatile queue
+  is no longer stripped, so the honest floor is 0, not 18); `verify-oracle` -> ok,
+  build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa.
+- OBJECT MODEL: unchanged from s1 (MISMATCH -> fixed by the header aggregate; every other
+  symbol MATCHES as declared). No new signal.
+- Artifacts: tmp/grind/_addque2/s1/granted-path-diff.txt (full git diff of the five
+  files), tmp/grind/_addque2/s1/body.c, tmp/grind/_addque2/s1/apply_grant.py.

@@ -1,0 +1,181 @@
+diff --git a/include/gpu.h b/include/gpu.h
+index ba3da35f..29498a4a 100644
+--- a/include/gpu.h
++++ b/include/gpu.h
+@@ -67,4 +67,24 @@ extern void gpu_DisableDisplay(void);
+ extern void gpu_EnableDisplay(void);
+ extern void gpu_InitDisplay(void);
+ 
++/* PsyQ libgpu packet queue (sys.c `static volatile struct QueueItem`): 64
++ * records of 0x60 bytes {callback, argument pointer, word count, 21 data
++ * words}. Evidence for the aggregate: the original code of _addque2 and
++ * _exeque scales the queue index by 0x60 (x3 then sll 5) and adds it to
++ * these addresses, and the copy loop parks &D_8010368C in a base register
++ * and stores through base + i*4 + slot*0x60 -- one object addressed by
++ * base + offset, not symbol adjacency. Replaces the splat per-word scalars
++ * D_80103680 / D_80103684 / D_80103688 / D_8010368C (the +4/+8/+C rows stay
++ * in the symbol config as aliases until _exeque leaves INCLUDE_ASM).
++ * volatile: Sony's own qualifier on this object (the queue is drained by
++ * _exeque from DMA-IRQ context); grant in volatile_extern_allowlist.txt. */
++typedef struct GpuQueueItem {
++    /* 0x00 */ s32 (*func)(s32 *, s32);
++    /* 0x04 */ s32 *arg;
++    /* 0x08 */ s32 count;
++    /* 0x0C */ s32 data[21];
++} GpuQueueItem; /* size 0x60 */
++
++extern volatile GpuQueueItem D_80103680[64];
++
+ #endif /* GPU_H */
+diff --git a/named_syms.txt b/named_syms.txt
+index 1f3c5e31..420e81b9 100644
+--- a/named_syms.txt
++++ b/named_syms.txt
+@@ -1001,8 +1001,8 @@ g_type_descriptor_table_8008EA00                        = 0x8008EA00;  /* 16-byt
+ g_status_flag_record_table_80099D88                     = 0x80099D88;  /* 12-byte stride; u16 record indexed by `idx`; bit-tested with 0xBF00 mask */
+ 
+ /* === GPU packet buffer + shadow tables (2026-05-17) === */
+-g_gpu_packet_buffer_64x96                               = 0x80103684;  /* 64 entries x 96 bytes; OT-link/packet queue; indexed by D_8009BF78 */
+-g_gpu_packet_buffer_data_8010368C                       = 0x8010368C;  /* +8 from g_gpu_packet_buffer_64x96; per-entry data start */
++g_gpu_packet_buffer_64x96                               = 0x80103684;  /* 64 entries x 96 bytes; OT-link/packet queue; indexed by D_8009BF78; alias of D_80103680+0x4 (GpuQueueItem.arg, include/gpu.h); retire with _exeque */
++g_gpu_packet_buffer_data_8010368C                       = 0x8010368C;  /* +8 from g_gpu_packet_buffer_64x96; per-entry data start; alias of D_80103680+0xC (GpuQueueItem.data, include/gpu.h); retire with _exeque */
+ g_gpu_packet_write_idx                                  = 0x8009BF78;  /* increments by 1 with & 0x3F mask (64 entries) */
+ g_gpu_packet_read_idx                                   = 0x8009BF7C;  /* paired with write_idx; equality test for buffer empty */
+ g_gpu_packet_pending_target                             = 0x8009BF70;  /* set to arg3 of submit function */
+@@ -2555,7 +2555,7 @@ g_status_up_data_buf_plus_4                             = 0x801027C0;  /* +4 fro
+ g_voice_slot_24_arr_b_plus_4                            = 0x80102A7E;  /* +4 from g_voice_slot_24_arr_b (0x80102A7A) */
+ g_voice_slot_24_arr_b_plus_6                            = 0x80102A80;  /* +6 from g_voice_slot_24_arr_b (0x80102A7A) */
+ g_voice_slot_24_arr_b_plus_8                            = 0x80102A82;  /* +8 from g_voice_slot_24_arr_b (0x80102A7A) */
+-g_gpu_packet_buffer_64x96_plus_4                        = 0x80103688;  /* +4 from g_gpu_packet_buffer_64x96 (0x80103684) */
++g_gpu_packet_buffer_64x96_plus_4                        = 0x80103688;  /* +4 from g_gpu_packet_buffer_64x96 (0x80103684); alias of D_80103680+0x8 (GpuQueueItem.count, include/gpu.h); retire with _exeque */
+ g_file_disc_type_plus_4                                 = 0x80106A58;  /* +4 from g_file_disc_type (0x80106A54) */
+ g_file_flags_plus_5                                     = 0x80106A78;  /* +5 from g_file_flags (0x80106A73) */
+ g_active_slot_flags_12_plus_2                           = 0x80106A82;  /* +2 from g_active_slot_flags_12 (0x80106A80) */
+diff --git a/src/display.c b/src/display.c
+index b46f2946..90aae823 100644
+--- a/src/display.c
++++ b/src/display.c
+@@ -717,7 +717,7 @@ u32 _param(u32 a0) {
+ void _addque(s32 a0, s32 a1, s32 a2) {
+     _addque2(a0, a1, 0, a2);
+ }
+-extern s32 *D_8009BF48;
++extern volatile s32 *D_8009BF48;
+ extern volatile s32 D_8009BF78;
+ extern volatile s32 D_8009BF7C;
+ extern s32 set_alarm();
+@@ -729,28 +729,69 @@ s32 SetIntrMask(s32);                         /* extern */
+ extern u8 D_8009BE75;
+ extern s32 D_8009BE7C;
+ extern s32 D_8009BE80;
+-extern s32 *D_8009BF54;
++extern volatile s32 *D_8009BF54;
+ extern volatile s32 D_8009BF68[];
+ extern s32 *D_8009BF6C;
+ extern s32 D_8009BF70;
+ extern s32 D_8009BF80;
+-extern s32 D_80103680;
+-extern s32 D_80103684;
+-extern s32 D_80103688;
+-extern s32 D_8010368C;
+ 
+-INCLUDE_ASM("asm/funcs", _addque2);
++/* ADDQUE2-BEGIN */
++/* LIBGPU/SYS `_addque2` — reference sotn-decomp src/main/psxsdk/libgpu/sys.c:744
++ * (older library revision: per-store re-index of the volatile queue head,
++ * 0x60-byte slots = func / arg / count / 21 data words). */
++/* GpuQueueItem + `extern volatile GpuQueueItem D_80103680[64];` live in
++ * include/gpu.h (aggregate-merge prong (d): header-canonical). */
++
++s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
++    s32 i;
++
++    set_alarm();
++    while (((D_8009BF78 + 1) & 0x3F) == D_8009BF7C) {
++        if (get_alarm() != 0) {
++            return -1;
++        }
++        _exeque();
++    }
++    D_8009BF80 = SetIntrMask(0);
++    D_8009BE7C = 1;
++    if (D_8009BE75 == 0 ||
++        (D_8009BF78 == D_8009BF7C && !(*D_8009BF54 & 0x01000000) && D_8009BE80 == 0)) {
++        while (!(*D_8009BF48 & 0x04000000)) {
++        }
++        func(arg, count);
++        D_8009BF68[0] = (s32)func;
++        D_8009BF6C = (s32)arg;
++        D_8009BF70 = count;
++        SetIntrMask(D_8009BF80);
++        return 0;
++    }
++    DMACallback(2, _exeque);
++    if (len != 0) {
++        for (i = 0; i < len / 4; i++) {
++            D_80103680[D_8009BF78].data[i] = arg[i];
++        }
++        D_80103680[D_8009BF78].arg = D_80103680[D_8009BF78].data;
++    } else {
++        D_80103680[D_8009BF78].arg = arg;
++    }
++    D_80103680[D_8009BF78].count = count;
++    D_80103680[D_8009BF78].func = func;
++    D_8009BF78 = (D_8009BF78 + 1) & 0x3F;
++    SetIntrMask(D_8009BF80);
++    _exeque();
++    return (D_8009BF78 - D_8009BF7C) & 0x3F;
++}
++/* ADDQUE2-END */
+ INCLUDE_ASM("asm/funcs", _exeque);
+ extern void memset(u8 *a0, u8 a1, s32 a2);
+ extern s32 SetIntrMask(s32);
+ extern s32 _version(s32);
+ extern volatile s32 *D_8009BF48;
+-extern s32 *D_8009BF54;
++extern volatile s32 *D_8009BF54;
+ extern volatile s32 D_8009BF7C;
+ extern volatile s32 D_8009BF78;
+ extern s32 D_8009BF88;
+ extern u8 D_800F189C[];
+-extern u8 D_80103680[];
+ extern s32 g_str_gpu_timeout;
+ extern s32 D_80016044;
+ extern volatile u32 *g_gpu_dma_madr;
+@@ -770,7 +811,7 @@ s32 _reset(s32 arg0) {
+         *D_8009BF64 |= 0x800;
+         *D_8009BF48 = 0;
+         memset(D_800F189C, 0, 0x100);
+-        memset(D_80103680, 0, 0x1800);
++        memset((u8 *)D_80103680, 0, 0x1800);
+         break;
+     case 1:
+     case 3:
+diff --git a/undefined_syms_auto.txt b/undefined_syms_auto.txt
+index 49443235..eeb5c5f6 100644
+--- a/undefined_syms_auto.txt
++++ b/undefined_syms_auto.txt
+@@ -962,10 +962,10 @@ D_80103608 = 0x80103608;
+ D_80103624 = 0x80103624;
+ D_80103658 = 0x80103658;
+ D_8010367E = 0x8010367E;
+-D_80103680 = 0x80103680;
+-D_80103684 = 0x80103684;
+-D_80103688 = 0x80103688;
+-D_8010368C = 0x8010368C;
++D_80103680 = 0x80103680; /* base of volatile GpuQueueItem[64] (include/gpu.h); per-word aliases below retire with _exeque */
++D_80103684 = 0x80103684; /* alias of D_80103680+0x4; retire with _exeque */
++D_80103688 = 0x80103688; /* alias of D_80103680+0x8; retire with _exeque */
++D_8010368C = 0x8010368C; /* alias of D_80103680+0xC; retire with _exeque */
+ D_80104E80 = 0x80104E80;
+ D_80104E88 = 0x80104E88;
+ D_80104F38 = 0x80104F38;
+diff --git a/volatile_extern_allowlist.txt b/volatile_extern_allowlist.txt
+index 52727017..49972c65 100644
+--- a/volatile_extern_allowlist.txt
++++ b/volatile_extern_allowlist.txt
+@@ -74,3 +74,4 @@ D_800A1500    # cdread.c .tslmode — same §3 grant.
+ # `git show cd19d7a2^:docs/closer/rulings.md` lines 68-83) — NO IRQ prong required.
+ D_8009BF68    # get_alarm second debug printf arg 1 (LIBGPU SYS.OBJ module state) — RULING 4 class grant (commit c80d976e), function-specific Judge PASS docs/grind/decisions.md 2026-09-04 13:48. Codegen prong: target emits the UNFOLDED lui/addiu %lo(D_8009BF68)/lw 0($v0) at asm/funcs/get_alarm.s:0x8007DD3C-DD44 while the SAME printf folds the non-volatile adjacent siblings D_8009BF6C and D_8009BF70 to lui/lw %lo four and six insns later = the MEM_VOLATILE_P fold-block signature (dump tmp/grind/get_alarm/dumps/display.combine, insn 73 -> single consumer insn 81 flagged mem/s/v, reg REG_DEAD there). Non-volatile spelling measured floor 9 (memory/grind/get_alarm/rejected/); with the grant the function measures honest sandbox 0. Census prong: consumers = get_alarm.s, _addque2.s (sole writer), _exeque.s only.
+ D_8009BF78    # LIBGPU SYS.OBJ que HEAD index — sibling at -4 of the already-granted D_8009BF7C que tail index above, same module, same five consumers. RULING 4 class grant (commit c80d976e; ground-truth codegen, no IRQ prong required — D_8009BF78 is written synchronously by _addque2 @0x8007D688, so the IRQ carve-out is deliberately NOT claimed for it). Codegen prong: with (a) and the g_gpu_dma_madr pointed-to-type correction live, the non-volatile spelling of this decl measures floor 5 and the volatile spelling measures floor 0 (91/91) — measured s45/s46, memory/grind/get_alarm/rejected/s45-two-lever-bf68-madr-volatile-score5.c. Consumers: _addque2, _exeque, _reset, _sync (paired spin-wait `while (D_8009BF78 != D_8009BF7C)` src/display.c:796), get_alarm.
++D_80103680    # LIBGPU SYS.OBJ packet queue (64 x 0x60-byte GpuQueueItem, include/gpu.h) -- RULING 4 class grant (commit c80d976e), Judge ESCALATE->integration-handoff executed docs/grind/decisions.md 2026-09-06 04:57. Original semantics: SOTN sys.c:58 declares the same object `static volatile struct QueueItem`. Codegen prong: non-volatile aggregate measures honest 18 (memory/grind/_addque2/rejected/nonvolatile-queue-aggregate-score18.c), volatile measures 0 (184/184) -- reorg.c:752 refuses the volatile slot store as a delay-slot filler and sched.c:811-873 serializes the volatile refs, the target's exact shape. Census prong: consumers = _addque2 (0x8007D3F8, sole writer), _exeque (0x8007D6D8, IRQ-context reader), _reset (0x8007D9C4, memset), all inside the verbatim LIBGPU/SYS region 0x8007AE7C-0x8007DF10 (memory/closer/psyq-library-census.md). IRQ carve-out deliberately NOT claimed.

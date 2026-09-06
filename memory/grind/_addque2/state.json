@@ -14,5 +14,14 @@
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-06T09:37:41.527252+00:00"
+ "created": "2026-09-06T09:37:41.527252+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "eef301c07428ae43",
+   "when": "2026-09-06T10:07:02.110253+00:00",
+   "summary": "final call: Constructs: (1) GpuQueueItem[64] aggregate merge of D_80103680/84/88/8C \u2014 frozen family 'Per-word splat symbol \u2192 aggregate merge' (.claude/rules/no-new-park-categories.md:238); I independently verifie"
+  }
+ ]
 }
