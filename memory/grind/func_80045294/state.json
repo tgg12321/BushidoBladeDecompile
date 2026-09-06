@@ -384,7 +384,8 @@
   }
  ],
  "judge_constraints": [
-  "OWNER RULING 2026-07-20 (decisions.md): escalation REFUSED (option b). Canonical-asm refused \u2014 scan_hand_coded 0/8, the 2-insn residual is a sched1/sched2 LUID artifact (ordinary GCC output, no hand-coded evidence). Per 2026-07-20 standing policy (endgame-lock-disposition): INCOMPLETE-owner-accepted, prologue_fix retained to hold the byte-match (NOT sanctioned), parked, eligible for re-attempt only via a genuine pure-C lever. Do not re-propose asm or a coercion for this function."
+  "OWNER RULING 2026-07-20 (decisions.md): escalation REFUSED (option b). Canonical-asm refused \u2014 scan_hand_coded 0/8, the 2-insn residual is a sched1/sched2 LUID artifact (ordinary GCC output, no hand-coded evidence). Per 2026-07-20 standing policy (endgame-lock-disposition): INCOMPLETE-owner-accepted, prologue_fix retained to hold the byte-match (NOT sanctioned), parked, eligible for re-attempt only via a genuine pure-C lever. Do not re-propose asm or a coercion for this function.",
+  "candidate form failed full-build SHA1 on main (masked-0 register diff class) \u2014 reg-alloc gap is real"
  ],
  "origin": "queue",
  "created": "2026-07-19T01:19:29.988705+00:00",
