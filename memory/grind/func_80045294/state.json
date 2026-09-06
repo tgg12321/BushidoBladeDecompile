@@ -382,9 +382,9 @@
  ],
  "origin": "queue",
  "created": "2026-07-19T01:19:29.988705+00:00",
- "exhaustion_base": 49,
- "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.379854+00:00",
+ "exhaustion_base": 60,
+ "last_unpark_reason": "owner 2026-09-06 foreclosed-bucket review: ONE forensics probe - read the greg allocno ordering and check whether a hard_reg_copy_preference can seat the non-call-crossing loop-1 counter on s0 without a live-range change (ledger frontier item 2); abandon immediately if the preference sets are empty.",
+ "last_unpark_at": "2026-09-06T12:59:29.911266+00:00",
  "kills": [
   {
    "session": 50,
@@ -594,5 +594,6 @@
    "predicate_cite": "",
    "result": "build_insns 84, target_insns 83, score 2. The extra store is not deleted with the rest of the dead block, so this lever "
   }
- ]
+ ],
+ "escalation_deferrals": 0
 }
