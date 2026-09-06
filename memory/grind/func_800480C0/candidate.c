@@ -3,6 +3,48 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s13 (structural, 2026-09-05, chassis HEAD 3c8d48d6) - BODY UNCHANGED. ONE
+ * REAL DEFECT FIXED IN THIS HEADER: the s12 line describing the split-cursor
+ * form wrote the two pointer types as u32-star-slash-u16-star, which embeds a
+ * C comment terminator and closed this comment block early. install.py splices
+ * this file VERBATIM over the INCLUDE_ASM line, so the candidate has been
+ * UNCOMPILABLE since the s12 ledger commit: cc1 reported
+ * `src/text1b.c:145: parse error before '='` and emitted no func_800480C0, and
+ * the sandbox answered `scorable: false - func_800480C0 not found in
+ * text1b.o`. That is why the s13 dispatch CHASSIS CHECK read 'measurement
+ * unavailable'. With the text fixed the floor re-measures 20 (74/74,
+ * rules_dropped 0) and the probe reads .frame $sp,56 - vars= 0, regs= 8/0,
+ * args= 24, 72 insns, unalloc=0. LEDGER RULE: never write a comment
+ * terminator inside candidate.c prose.
+ * MANDATED FAKE RE-AUDIT on this chassis (tmp/grind/func_800480C0/s13/
+ * fake_ablate.txt): one FAKE unit (arg0 = 0;), keep-all 20 / drop-1 32 -
+ * load-bearing, masking no lever.
+ * SEVEN NEW FORMS (tmp/grind/func_800480C0/s13/{runall.txt,rung.txt,runr.txt},
+ * banked in rejected/ as s13-*):
+ *   i1/i2/i3 static __inline__ helper chassis (4 / 2 / 6 integrate.c
+ *     expansions of sx_sum and scaled) - ALL codegen-transparent: vars=0,
+ *     regs=8, 72 insns, unalloc=0. A producer class never previously tried on
+ *     this body, and it is dead.
+ *   i5 inline pre_dec() guard expanded at BOTH branch sites - vars=8, regs=8,
+ *     73 insns, unalloc=1. Slightly better than s5's two-branch guard, which
+ *     needed a NINTH callee-saved register for the same 8 bytes, but still one
+ *     phantom of the four the target needs.
+ *   g2 distinct constants on the two branches - vars=0, regs=9, unalloc=0.
+ *   g3 shifted entry guard (count-2 != -2) - vars=0, regs=8, 71 insns.
+ *   r1 redundant equal-valued second entry guard - cse2/jump deletes compare
+ *     AND constant together: vars=8, unalloc=1.
+ *   r2 redundant shifted second entry guard - three extra emitted insns (76)
+ *     for the same single phantom.
+ * THE CLASS-B PHANTOM IS NOW NAMED AT RTL LEVEL (s13/dumps/i5.flow insns
+ * 64-65, i5.lreg): it is a compare CONSTANT pseudo,
+ * (set (reg:SI 93) (const_int -1)) feeding a branch_equality, printed
+ * 'used 2 times across 2 insns in block 0; dies in 0 places; ST_REGS or none'.
+ * A second one needs another entry-block compare against a non-zero constant
+ * with a degenerate live range; on this body g2 measures that the backedge's
+ * constant is loop-invariant and gets a hard register instead.
+ * Instruments: tmp/grind/func_800480C0/s13/{probe.sh,dump.sh,runall.sh,
+ * rung.sh,runr.sh,bodies/,dumps/}.
+ */
 /* s12 (structural, 2026-09-05, chassis HEAD 2dba1d48) - BODY UNCHANGED, floor
  * re-measured 20 (74/74, rules_dropped 0) with this body installed over the
  * INCLUDE_ASM line; src/text1b.c restored from HEAD afterwards. Mandated FAKE
@@ -14,7 +56,7 @@
  *    b1 new_var declared in the loop block      b2 all locals at function scope
  *    b3 for(;;) + inline break (67-72 insns)    b4 pre-test `while ((count--)!=0)`
  *       (67 insns - deletes the guard the target ships)
- *    b5 split u32*/u16* cursors (regs=9, frame 64)
+ *    b5 split u32-ptr / u16-ptr cursors (regs=9, frame 64)
  *    b6 integer offset cursor instead of a pointer
  *    b7 new_var computed first in the body (statement re-association)
  *    b8 unsigned loop counter (74 insns but regs=9, frame 64)

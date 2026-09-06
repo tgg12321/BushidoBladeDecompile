@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,23 +75,29 @@
    "floor": 20,
    "modality": "structural",
    "headline": "Structural: 14 new forms all vars=0/unalloc=0, and the combine orphan-USE producer's own documented precondition (a second HImode use of the widened field) is now measured negative ON this body, not m"
+  },
+  {
+   "session": 13,
+   "floor": 20,
+   "modality": "structural",
+   "headline": "Found and fixed the reason the chassis check read 'measurement unavailable' - the candidate's s12 header comment embedded a C comment terminator and the body had been uncompilable since that commit; f"
   }
  ],
  "frontier": [
   {
    "hypothesis": "An owner ruling adding the ('pre_pad', 8) row for func_800480C0 to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS completes this function with zero further grinding.",
-   "mechanism": "The bytes are already proven end-to-end: with the row honoured, `sandbox --disable all` reads 0 and the full clean-driver build SHA1s to the oracle (tmp/grind/func_800480C0/s1/build.log). The three in-file siblings (func_80047EE8, func_80047FBC, func_800481E8) received identical rows under the 2026-08-20 / 2026-08-22 owner rulings after the same bytes proof, and all four shipped frames reserve the identical untouched 0x18-0x37 window.",
-   "next_probe": "No probe. Operator steps are enumerated verbatim at docs/grind/decisions.md:20330-20345. A grind session may not write engine/ - it is on the scope-grant denylist at .claude/rules/integration-handoff-self-serve.md:63 and is mechanically refused by _SCOPE_GRANT_ALLOWED_RE (tools/grinder/grindlib.py:401). Do NOT re-file this as an INTEGRATION HANDOFF: that shape was Judge-FAILed at docs/grind/decisions.md:20349."
+   "mechanism": "The bytes are already proven end to end: with the row honoured, `sandbox --disable all` reads 0 and the full clean-driver build SHA1s to the oracle (tmp/grind/func_800480C0/s1/build.log). The three in-file siblings (func_80047EE8, func_80047FBC, func_800481E8) received identical rows under the 2026-08-20 / 2026-08-22 owner rulings after the same bytes proof, and all four shipped frames reserve the identical untouched 0x18-0x37 window.",
+   "next_probe": "No probe. Operator steps are enumerated verbatim at docs/grind/decisions.md:20330-20345. A grind session may not write engine/ (scope-grant denylist, .claude/rules/integration-handoff-self-serve.md:63). Do NOT re-file this as an INTEGRATION HANDOFF: that shape was Judge-FAILed at docs/grind/decisions.md:20349."
   },
   {
-   "hypothesis": "No known phantom producer in this tree can reach four unallocated pseudos on a body of this shape, so the honest producer of the 32-byte window is a toolchain finding still to be made on some other function.",
-   "mechanism": "Producer 1 (folded loop-guard compare) caps at one phantom here across the s2-s6 guard forms; producer 3 (live named locals on multi-read fields) has no site - every field this body reads is read once; and producer 2 (combine orphan-USE) is now measured negative WITH its precondition supplied, not merely without it (s12 d1/d2). The tree-wide mult-free ceiling measured in s8 is three (SetDrawEnv, SetDrawEnv2, func_80041AC8).",
-   "next_probe": "Cross-function, not per-function. If a future session on another queue item finds an ordinary-C body that reaches four unallocated pseudos at one block head - especially one whose narrow loads survive as lhu+sll+sra rather than folding to lh - re-open this function and transplant the producer shape. Do NOT re-spell class A, class B, the DImode route, or the structural axes: s4 (~50k permuter iters), s6-s9 (forensics), s10 (55 forms) and s12 (14 forms) closed all of them."
+   "hypothesis": "No known phantom producer in this tree reaches four unallocated pseudos on a body of this shape, so the honest producer of the 32-byte window is a toolchain finding still to be made on some other function.",
+   "mechanism": "Producer 1 (class B) is now RTL-named as a single entry-block compare-constant pseudo and is bounded by this body having exactly one pre-loop conditional branch, with the backedge constant measured allocated (s13 g2); producer 2 (combine orphan USE) is measured negative even with its documented precondition supplied (s12 d1/d2); producer 3 (live named locals on multi-read fields) has no site; and integrate.c inline expansion is now measured codegen-transparent (s13 i1/i2/i3). The tree-wide mult-free ceiling measured in s8 is three.",
+   "next_probe": "Cross-function, not per-function. On another queue item, look for an ordinary-C body that reaches four unallocated pseudos at one block head - in particular one carrying several entry-block compares against distinct non-zero constants, or a producer outside the combine/compare pair - and transplant the producer shape back here. Do NOT re-spell class A, class B, the DImode route, the inline-helper route, or the structural axes: s4 (~50k permuter iters), s6-s9, s10 (55 forms), s12 (14) and s13 (7) closed them."
   },
   {
-   "hypothesis": "A general class grant converting the per-function unwritten-pad enumeration into a family predicate - 'allocated-but-never-touched leading vars window with zero target stores, in a TU where sibling functions already hold grants' - would cover this function without a per-function row.",
-   "mechanism": "The enumeration has grown to eight rows by six separate owner rulings, at least four of which (func_80047EE8, func_80047FBC, func_800481E8 and this function) are members of one four-function batch-loader family in one TU with the identical 0x18-0x37 window and identical args=0x18 / callee-saved base 0x38 layout.",
-   "next_probe": "Owner-only. Nothing for a grind session to measure: the frozen family list is owner-only to extend (.claude/rules/no-new-park-categories.md), and the 2026-08-31 ordinary-c-judge-decidable ruling makes a session-side extension attempt a FAIL(CONSTRUCT) rather than an escalation."
+   "hypothesis": "Other grind ledgers may carry the same latent defect this session found here: candidate.c header prose containing a C comment terminator, which silently makes the banked body uncompilable and turns the driver's chassis check into 'measurement unavailable'.",
+   "mechanism": "install.py (and the driver's equivalent) splice candidate.c verbatim over the INCLUDE_ASM line, so every header comment is compiled. A terminator inside prose truncates the TU and the sandbox then reports the function missing from the object rather than a score, which reads like a lost floor rather than a broken comment.",
+   "next_probe": "One grep over memory/grind/*/candidate.c for a comment terminator occurring inside a comment block (e.g. a slash immediately following a star inside prose), on any session that has spare turns; the fix is textual and does not touch any body."
   }
  ],
  "judge_constraints": [
@@ -386,6 +392,22 @@
    "measured_on": "HEAD 2dba1d48, bodies at tmp/grind/func_800480C0/s12/diag/ installed one at a time over the INCLUDE_ASM line, annotated `arg0 = 0;` FAKE present.",
    "predicate_cite": "",
    "result": "d1 `vars= 0 / unalloc=0`, 66 insns; d2 `vars= 0 / unalloc=0`, 71 insns. Combine re-forms the narrow loads as `lh` and fo"
+  },
+  {
+   "session": 13,
+   "statement": "Routing this body's arithmetic through static __inline__ helpers, so that GCC 2.7.2's integrate.c expands them into the caller, produces frame and allocation results identical to the flat candidate on",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 3c8d48d6, bodies at tmp/grind/func_800480C0/s13/bodies/i{1,2,3}*.c installed one at a time over the INCLUDE_ASM line; the annotated FAKE `arg0 = 0;` present in each",
+   "predicate_cite": "",
+   "result": "KILLED. All three emit .frame $sp,56 # vars= 0, regs= 8/0, args= 24 with insns=72 and unalloc=0, i.e. the flat candidate"
+  },
+  {
+   "session": 13,
+   "statement": "The class-B phantom on this body is one SImode constant pseudo feeding a branch_equality compare with a degenerate entry-block live range, and the four spellings tried this session that aimed to add a",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 3c8d48d6, bodies at tmp/grind/func_800480C0/s13/bodies/{i5,g2,g3,r1,r2}*.c installed one at a time over the INCLUDE_ASM line; the annotated FAKE `arg0 = 0;` present in each; RTL attribution from ",
+   "predicate_cite": "",
+   "result": "KILLED for multiplicity. i5 = vars 8 / regs 8 / unalloc 1 / 73 insns - a small improvement in that it reaches the 8-byte"
   }
  ],
  "ladder_skip": 0,

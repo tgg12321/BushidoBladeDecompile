@@ -1021,3 +1021,28 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s12] Frame algebra: target .frame $sp,88 = args 24 + vars 32 + regs 32 (8 saved words). GCC 2.7.2 offers at most nine callee-saved GP registers ($s0-$s7 + $ra), so no `regs=` value can absorb the missing 32 bytes - the residual is `vars` and nothing else. Two of this session's forms reach regs=9 (frame 64) and none reach frame 88.
 
 - [s12] Owner directive 2026-09-02 governs the disposition: the ledger floor 20 exceeds ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never this function's subject and the ladder runs a second full cycle before any disposition. This session is a progress outcome, not a foreclosure.
+
+## s13 (structural, 2026-09-05, chassis HEAD 3c8d48d6)
+- THE CANDIDATE HAS BEEN UNCOMPILABLE SINCE THE s12 LEDGER COMMIT. The s12 header line `b5 split u32*<slash>u16* cursors` embedded a comment terminator inside `u32*<slash>`, closing the header block early; cc1 hit `src/text1b.c:145: parse error before '='` and never emitted func_800480C0, so the sandbox answered `scorable: false / func_800480C0 not found in text1b.o`. That, not a codegen regression, is why the dispatch CHASSIS CHECK printed "measurement unavailable". Fixed in place (`u32-ptr / u16-ptr`), BODY UNCHANGED. Standing lesson: candidate.c headers are compiled - ledger prose may never contain a comment terminator.
+- Floor re-measured on the fixed candidate: sandbox `score 20`, target_insns 74, build_insns 74, rules_dropped 0. fake_ablate: one FAKE unit (`arg0 = 0;`), keep-all 20 / drop-1 32 (tmp/grind/func_800480C0/s13/fake_ablate.txt) - unchanged from s8/s11/s12 and masking no lever.
+- NEW PRODUCER CLASS TESTED AND DEAD: `static __inline__` helper expansion (integrate.c). Three bodies (4, 2 and 6 expansions) reproduce the flat candidate's codegen exactly: vars=0, regs=8, args=24, 72 insns, unalloc=0.
+- CLASS-B PHANTOM NOW NAMED AT THE RTL LEVEL. s13/dumps/i5.flow insns 64-65: `(set (reg:SI 93) (const_int -1))` plus a `branch_equality` against it; i5.lreg: `Register 93 used 2 times across 2 insns in block 0; dies in 0 places; ST_REGS or none`. The phantom is a compare CONSTANT pseudo with a degenerate entry-block live range, not a vague "compare residue".
+- THE MULTIPLICITY CEILING NOW HAS A MEASURED MECHANISM, three ways: (a) g2 gives the backedge branch its own distinct constant and that constant is ALLOCATED instead (vars=0, regs=9, unalloc=0) because it is loop-invariant and live across the loop; (b) r1 duplicates the entry test on an equal-valued pseudo and cse2/jump deletes compare and constant together (still unalloc=1); (c) r2 duplicates it on a shifted-but-equivalent pseudo and pays three extra emitted instructions for the same single phantom.
+- ONE SMALL IMPROVEMENT OVER THE BANKED GUARD FORMS: i5 (`static __inline__ s32 pre_dec(s32)` expanded at both branch sites) reaches vars=8 with regs=8 and 73 insns, where s5's two-branch guard needed a NINTH callee-saved register (regs=9, frame 72). Banked at rejected/s13-inline-guard-both-sites-still-one-phantom.c. Still 8 of the 32 bytes the target reserves, so it does not lower the floor.
+- Instruments: tmp/grind/func_800480C0/s13/{probe.sh,runall.sh,rung.sh,runr.sh,dump.sh,write_ledger.py,bodies/,dumps/,fake_ablate.txt,runall.txt,rung.txt,runr.txt}.
+
+- [s13] Chassis HEAD 3c8d48d6: honest floor for func_800480C0 is 20 (target_insns 74, build_insns 74, rules_dropped 0) with the fixed candidate installed over the INCLUDE_ASM line.
+
+- [s13] The dispatch-time 'measurement unavailable' was caused by the candidate's own s12 header comment: a pointer-type description embedded a C comment terminator, so cc1 failed with 'src/text1b.c:145: parse error before =' and text1b.o contained no func_800480C0. Standing lesson for every grind ledger: candidate.c header prose is compiled and may never contain a comment terminator.
+
+- [s13] fake_ablate on this chassis: one FAKE unit (`arg0 = 0;`), keep-all 20 / drop-1 32 - load-bearing, masking no lever (tmp/grind/func_800480C0/s13/fake_ablate.txt).
+
+- [s13] static __inline__ helper expansion (integrate.c) is codegen-transparent on this body: 4, 2 and 6 expansions all give vars=0 / regs=8 / args=24 / 72 insns / unalloc=0, identical to the flat candidate.
+
+- [s13] The class-B phantom is a compare CONSTANT pseudo, not a vague compare residue: s13/dumps/i5.flow insns 64-65 give (set (reg:SI 93) (const_int -1)) feeding a branch_equality, and i5.lreg prints 'Register 93 used 2 times across 2 insns in block 0; dies in 0 places; ST_REGS or none'.
+
+- [s13] Giving the loop backedge its own distinct compare constant does not add a phantom - the constant is loop-invariant, gets a hard register, takes a ninth callee-saved slot and erases the entry phantom (g2: vars=0, regs=9, unalloc=0).
+
+- [s13] A redundant second entry-block guard on an equal-valued pseudo is deleted whole by cse2/jump (r1: still unalloc=1); on a shifted-but-equivalent pseudo it survives as three extra emitted instructions and still yields one phantom (r2: 76 insns, unalloc=1).
+
+- [s13] New best guard form: i5 reaches vars=8 with regs=8 and 73 insns, whereas s5's two-branch guard needed regs=9 / frame 72 for the same 8 bytes; it still supplies only one of the four phantoms the target's 32-byte window requires, so the floor is unchanged at 20.
