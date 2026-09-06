@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 13,
- "current_modality": "structural",
+ "session_count": 14,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -81,23 +81,29 @@
    "floor": 20,
    "modality": "structural",
    "headline": "Found and fixed the reason the chassis check read 'measurement unavailable' - the candidate's s12 header comment embedded a C comment terminator and the body had been uncompilable since that commit; f"
+  },
+  {
+   "session": 14,
+   "floor": 20,
+   "modality": "synthesis",
+   "headline": "Found a third producer of frame vars the ledger never named - inline-callee frame donation (integrate.c:2085-2092) - which reaches the target's exact .frame $sp,88 (vars=32, regs=8, args=24) at the ca"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An owner ruling adding the ('pre_pad', 8) row for func_800480C0 to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS completes this function with zero further grinding.",
-   "mechanism": "The bytes are already proven end to end: with the row honoured, `sandbox --disable all` reads 0 and the full clean-driver build SHA1s to the oracle (tmp/grind/func_800480C0/s1/build.log). The three in-file siblings (func_80047EE8, func_80047FBC, func_800481E8) received identical rows under the 2026-08-20 / 2026-08-22 owner rulings after the same bytes proof, and all four shipped frames reserve the identical untouched 0x18-0x37 window.",
-   "next_probe": "No probe. Operator steps are enumerated verbatim at docs/grind/decisions.md:20330-20345. A grind session may not write engine/ (scope-grant denylist, .claude/rules/integration-handoff-self-serve.md:63). Do NOT re-file this as an INTEGRATION HANDOFF: that shape was Judge-FAILed at docs/grind/decisions.md:20349."
+   "hypothesis": "A shared static __inline__ helper whose 32-byte local is genuinely live at a different call site, and dead only on func_800480C0's path, is the first donation spelling that is not a relocated frame pad - the object is load-bearing in the program while integrate.c:2085-2092 still charges this function's frame.",
+   "mechanism": "DECL_FRAME_SIZE is a pre-optimisation snapshot, so the donation is charged per expansion regardless of what survives; ordinary constant propagation at this call site removes the object's traffic here while another caller keeps it live.",
+   "next_probe": "Census src/text1b.c's COMPLETED-C bodies for an existing ~32-byte local aggregate that could be factored into a shared inline helper, and test with tmp/grind/func_800480C0/s14/probe.sh whether the sibling stays byte-identical while this function gains 32 untouched bytes. If a real candidate exists the construct is a ruling-request (shared utility with a call-site-constant flag), never a self-approved submission."
   },
   {
-   "hypothesis": "No known phantom producer in this tree reaches four unallocated pseudos on a body of this shape, so the honest producer of the 32-byte window is a toolchain finding still to be made on some other function.",
-   "mechanism": "Producer 1 (class B) is now RTL-named as a single entry-block compare-constant pseudo and is bounded by this body having exactly one pre-loop conditional branch, with the backedge constant measured allocated (s13 g2); producer 2 (combine orphan USE) is measured negative even with its documented precondition supplied (s12 d1/d2); producer 3 (live named locals on multi-read fields) has no site; and integrate.c inline expansion is now measured codegen-transparent (s13 i1/i2/i3). The tree-wide mult-free ceiling measured in s8 is three.",
-   "next_probe": "Cross-function, not per-function. On another queue item, look for an ordinary-C body that reaches four unallocated pseudos at one block head - in particular one carrying several entry-block compares against distinct non-zero constants, or a producer outside the combine/compare pair - and transplant the producer shape back here. Do NOT re-spell class A, class B, the DImode route, the inline-helper route, or the structural axes: s4 (~50k permuter iters), s6-s9, s10 (55 forms), s12 (14) and s13 (7) closed them."
+   "hypothesis": "A local array is not the only route to DECL_FRAME_SIZE == 32 in the callee, and a struct-by-value parameter has a different traffic profile - function.c:3605 and function.c:3888 give an inline callee a frame-resident stack home for a parameter, and function.c:1347 does the same for an addressable scalar, both feeding DECL_FRAME_SIZE exactly as an array does.",
+   "mechanism": "A struct-by-value parameter that the inliner maps straight into pseudos may donate its 32-byte stack home with no store at all, which an array cannot, because the traffic comes from assign_parms rather than from an expanded reference in the body.",
+   "next_probe": "A static __inline__ helper taking a 32-byte struct by value (and a variant with several addressable scalars) called from the loop, measured with tmp/grind/func_800480C0/s14/probe.sh, reading the vars term and the insn count."
   },
   {
-   "hypothesis": "Other grind ledgers may carry the same latent defect this session found here: candidate.c header prose containing a C comment terminator, which silently makes the banked body uncompilable and turns the driver's chassis check into 'measurement unavailable'.",
-   "mechanism": "install.py (and the driver's equivalent) splice candidate.c verbatim over the INCLUDE_ASM line, so every header comment is compiled. A terminator inside prose truncates the TU and the sandbox then reports the function missing from the object rather than a score, which reads like a lost floor rather than a broken comment.",
-   "next_probe": "One grep over memory/grind/*/candidate.c for a comment terminator occurring inside a comment block (e.g. a slash immediately following a star inside prose), on any session that has spare turns; the fix is textual and does not touch any body."
+   "hypothesis": "Two cheap calibrations bound how much freedom the donation route gives: whether GCC 2.7.2 at -O2 auto-inlines a static helper with no __inline__ keyword, and whether the donated size is exactly sizeof or rounded.",
+   "mechanism": "If auto-inlining works the helper reads as ordinary factoring rather than a codegen device, and if the size is exact then the donated object must be shaped to exactly 32 bytes rather than merely at least 32.",
+   "next_probe": "Two probe.sh runs - the i9 helper with __inline__ removed, and the same helper with u32 t[7] (28 bytes) - reading the vars term of the .frame comment."
   }
  ],
  "judge_constraints": [
@@ -408,6 +414,38 @@
    "measured_on": "HEAD 3c8d48d6, bodies at tmp/grind/func_800480C0/s13/bodies/{i5,g2,g3,r1,r2}*.c installed one at a time over the INCLUDE_ASM line; the annotated FAKE `arg0 = 0;` present in each; RTL attribution from ",
    "predicate_cite": "",
    "result": "KILLED for multiplicity. i5 = vars 8 / regs 8 / unalloc 1 / 73 insns - a small improvement in that it reaches the 8-byte"
+  },
+  {
+   "session": 14,
+   "statement": "An inline-callee frame donation whose donated object is live on the inlined path emits at least one store, so the i8 spelling lands at 73 insns instead of the target's 74-insn stream.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 298b7f40, body installed over the INCLUDE_ASM line; the base candidate's single FAKE (arg0 = 0;) present, no other FAKE construct.",
+   "predicate_cite": "",
+   "result": "vars=32 as required but insns=73 with sw $4,24($sp) inside the loop, and a small scheduling shift around it. The target "
+  },
+  {
+   "session": 14,
+   "statement": "Splitting a shift into two shifts across separate statements through a named variable leaves a middle insn for combine to merge and orphan, at the loop mask, the four narrow sign-extends, and the entr",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 298b7f40, bodies at tmp/grind/func_800480C0/s14/bodies/t{1,2,3,4}*.c installed one at a time over the INCLUDE_ASM line; base candidate's single FAKE (arg0 = 0;) present in each.",
+   "predicate_cite": "",
+   "result": "All four print .frame $sp,56,$31 # vars= 0, regs= 8/0, args= 24 at 72 insns - byte-identical to the banked candidate. cs"
+  },
+  {
+   "session": 14,
+   "statement": "Giving the loop's five pointer advances named constant variables initialised in the entry block leaves each constant pseudo with a single use that combine absorbs into an immediate field, stranding it",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 298b7f40, bodies/n1_five_step_consts.c installed over the INCLUDE_ASM line; base candidate's single FAKE (arg0 = 0;) present.",
+   "predicate_cite": "",
+   "result": ".frame $sp,64 # vars= 0, regs= 10/0, insns=78, unalloc=3. The constants are materialised into live callee-saved register"
+  },
+  {
+   "session": 14,
+   "statement": "An inline callee with 6 or 8 parameters forces some arguments through memory and donates an incoming-args block to the caller's frame via integrate.c:2118-2131.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 298b7f40, bodies at tmp/grind/func_800480C0/s14/bodies/i6_inline6_argblock.c and i7_inline8_argblock.c installed one at a time over the INCLUDE_ASM line; base candidate's single FAKE (arg0 = 0;) ",
+   "predicate_cite": "",
+   "result": "Both print .frame $sp,56 # vars= 0, regs= 8/0, args= 24 at 71 insns. The inliner maps every parameter straight to a pseu"
   }
  ],
  "ladder_skip": 0,

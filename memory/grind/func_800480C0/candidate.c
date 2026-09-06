@@ -3,6 +3,36 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s14 (synthesis, 2026-09-05, chassis HEAD 298b7f40) - BODY UNCHANGED, floor
+ * re-measured 20 with this body installed over the INCLUDE_ASM line (72 insns,
+ * .frame $sp,56 - vars= 0, regs= 8/0, args= 24, unalloc=0); src/text1b.c
+ * restored from HEAD afterwards. Mandated FAKE re-audit re-run on this chassis
+ * (tmp/grind/func_800480C0/s14/fake_ablate.txt): one FAKE unit (arg0 = 0;),
+ * keep-all 20 / drop-1 32 - load-bearing, masking no lever.
+ * THE SESSION'S FINDING, which reframes the whole residual: a THIRD producer of
+ * frame vars exists besides the two phantom classes, and it hits the target
+ * frame exactly. GCC 2.7.2 integrate.c:2085-2092 allocates
+ * assign_stack_temp (BLKmode, DECL_FRAME_SIZE (inlinee), 1) in the CALLER for
+ * every inline expansion, and DECL_FRAME_SIZE is snapshotted pre-optimisation
+ * at integrate.c:345, so a static __inline__ helper carrying a 32-byte local
+ * donates 32 bytes of vars here whether or not anything survives to touch them.
+ * Measured: .frame $sp,88 - vars= 32, regs= 8/0, args= 24, i.e. the target
+ * decomposition, at the candidate's own 72 insns, and the full scorer prints
+ * score 0 for the i11 spelling. THAT SPELLING IS NOT PROPOSED: its array is
+ * written inside a never-taken if, which is the banned dead-conditional-store
+ * family and a relocated frame pad. All four donation spellings are banked in
+ * rejected/s14-inline-*. The honest sub-question is now narrow and is written
+ * up as frontier item 1 in hypotheses.md.
+ * ALSO KILLED THIS SESSION: split shifts written across separate STATEMENTS
+ * (four forms, all codegen-transparent at 72 insns - s6 had only killed the
+ * one-expression spelling) and cross-block named step constants (six extra
+ * insns, regs=10, vars=0, because combine has no LOG_LINK across basic blocks).
+ * INSTRUMENT CORRECTION: the probe's unalloc column counts hardreg=-1 pseudos,
+ * which INCLUDES reg_equiv_constant pseudos that pay zero frame bytes
+ * (reload1.c:2382-2385). Only the vars term of the .frame comment is ground
+ * truth. LEDGER RULE, still in force: never write a comment terminator inside
+ * candidate.c prose.
+ */
 /* s13 (structural, 2026-09-05, chassis HEAD 3c8d48d6) - BODY UNCHANGED. ONE
  * REAL DEFECT FIXED IN THIS HEADER: the s12 line describing the split-cursor
  * form wrote the two pointer types as u32-star-slash-u16-star, which embeds a

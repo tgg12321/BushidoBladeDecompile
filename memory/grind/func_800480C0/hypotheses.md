@@ -1122,3 +1122,113 @@ owner grants, not an unfound spelling.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 3c8d48d6, bodies at tmp/grind/func_800480C0/s13/bodies/{i5,g2,g3,r1,r2}*.c installed one at a time over the INCLUDE_ASM line; the annotated FAKE `arg0 = 0;` present in each; RTL attribution from s13/dumps/i5.{flow,lreg}
+
+## s14 - synthesis (2026-09-05, chassis HEAD 298b7f40)
+
+### Merged attack after re-reading the whole ledger
+
+Thirteen sessions framed the 32-byte `vars` residual as a PHANTOM-COUNT problem: four
+unallocated pseudos are needed, this body reaches at most one, and the tree-wide mult-free
+ceiling is three (SetDrawEnv). s14 accepts that framing as correct for phantoms and adds the
+finding that phantoms are not the only producer of `vars`. Reading the compiler instead of the
+tree turned up a third producer that the ledger had never named, and it reaches the target frame
+exactly on the first try.
+
+The gating fact is `tools/gcc-2.7.2/reload1.c:2382-2385`: `alter_reg` pays for a pseudo only when
+`reg_renumber < 0 && reg_n_refs > 0 && reg_equiv_constant == 0 && reg_equiv_memory_loc == 0`, and
+pays `assign_stack_local (mode, total_size, -1)` - alignment -1 = BIGGEST_ALIGNMENT, which is why
+one phantom is 8 bytes. But `get_frame_size()` is fed by every `assign_stack_local` /
+`assign_stack_temp` call in the function, and `tools/gcc-2.7.2/integrate.c:2085-2092` makes one
+per inline expansion: `assign_stack_temp (BLKmode, DECL_FRAME_SIZE (map->fndecl), 1)`, a verbatim
+copy of the inline callee's own frame, `keep=1`. `DECL_FRAME_SIZE` is snapshotted pre-optimisation
+at `integrate.c:345`. So a `static __inline__` helper with a 32-byte local donates 32 bytes of
+`vars` to func_800480C0 whether or not anything survives to touch them - measured
+`.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24`, and at 72 insns (the candidate's own count)
+the full scorer prints score 0.
+
+Three of the four donation spellings measured are frame-pad respellings (unreferenced array, dead
+load, dead-conditional-store) and are banked in rejected/, not proposed - the standing Judge
+constraint on this function bans an unwritten frame pad in any spelling, and relocating it into an
+inline helper is a spelling, not a family. The one spelling with a live use (i8) emits the one
+`sw` that GCC 2.7.2 cannot remove (`flow.c:1740-1742` deletes a memory store only when a later
+store to the identical address follows). That is the whole shape of what is left.
+
+### Frontier reset
+
+1. **A shared inline helper whose 32-byte local is genuinely live at a DIFFERENT call site, and
+   dead only on this one, is the first donation spelling that is not a relocated pad.** The
+   object would be load-bearing in the program; at func_800480C0's call site ordinary constant
+   propagation removes its traffic while `integrate.c:2085-2092` still charges the frame.
+   *Next probe:* census text1b.c for a COMPLETED-C sibling that already owns a ~32-byte local
+   aggregate (`grep -n "\[8\]\|\[16\]\|\[32\]" src/text1b.c` around the pure-C bodies), and test
+   whether factoring it into a `static __inline__` helper leaves that sibling byte-identical while
+   donating 32 untouched bytes here. If a candidate exists, the construct is a genuine
+   ruling-request (shared utility with a call-site-constant flag), NOT a self-approvable form.
+
+2. **The array is not the only route to `DECL_FRAME_SIZE == 32`, and the alternatives have
+   different traffic profiles.** `function.c:3605` / `function.c:3888` give an inline callee a
+   frame-resident stack home for a parameter, and `function.c:1347` (`put_var_into_stack`) for an
+   addressable scalar; both feed `DECL_FRAME_SIZE` the same way an array does.
+   *Next probe:* a `static __inline__` helper taking a 32-byte struct BY VALUE (or with several
+   addressable scalars) called from the loop, measuring `# vars=` and insns with
+   `tmp/grind/func_800480C0/s14/probe.sh`. A struct-by-value parameter that the inliner maps
+   straight into pseudos may donate 32 bytes with no store at all, which an array cannot.
+
+3. **Calibration that bounds how much freedom the donation gives.** Unknown: whether GCC 2.7.2 at
+   -O2 auto-inlines a `static` helper with no `__inline__` keyword (which would make the helper
+   look like ordinary factoring rather than a codegen device), and whether the donated size is
+   exactly `sizeof` or rounded.
+   *Next probe:* two probe.sh runs - the i9 helper with `__inline__` removed, and the same helper
+   with `u32 t[7]` (28 bytes) - reading the `# vars=` term. Cheap, and it decides the shape of
+   every item-1 and item-2 form.
+
+### Do NOT re-spell
+
+Class A (combine orphan USE), class B (entry-block compare constant), the DImode route, the
+inline-helper-with-empty-frame route, the structural axes, split shifts as ONE EXPRESSION (s6) or
+ACROSS STATEMENTS (s14 t1-t4), and cross-block named step constants (s14 n1) are all measured
+dead: s4 (~50k permuter iterations), s6-s9, s10 (55 forms), s12 (14), s13 (7), s14 (5).
+
+## [s14] A static __inline__ helper carrying a 32-byte local donates 32 bytes of vars to func_800480C0 via integrate.c:2085-2092 (assign_stack_temp of DECL_FRAME_SIZE, keep=1), producing the target's exact frame decomposition .frame $sp,88 with vars=32, regs=8/0, args=24.
+- mechanism: copy_rtx_and_substitute's VIRTUAL_STACK_VARS_REGNUM case allocates a verbatim copy of the inline callee's frame in the caller for every expansion; DECL_FRAME_SIZE is snapshotted pre-optimisation at integrate.c:345, so the caller pays for inlinee frame objects even when every reference to them is later deleted.
+- probe: tmp/grind/func_800480C0/s14/probe.sh on bodies i8/i9/i10/i11 (helper pack_off with a u32 t[8] local, called from the loop in place of the inline mask expression), plus the full scorer on i9 and i11.
+- result: All four print .frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24. i8 (real use of t[0]) emits one surviving sw $4,24($sp) at 73 insns; i9 (unreferenced array), i10 (dead load) and i11 (store inside a never-taken if) emit 72 insns, the banked candidate's own count. Full scorer: i9 prints score 20 because the sandbox cheat-stripper removes the unreferenced array; i11 prints score 0 with target_insns 74, build_insns 74, rules_dropped 0. i11 is a banned construct (dead-conditional-store plus a parameter that is literal 0 at its only call site) and is banked in rejected/, not proposed.
+- verdict: CONFIRMED
+
+## [s14] An inline-callee frame donation whose donated object is live on the inlined path emits at least one store, so the i8 spelling lands at 73 insns instead of the target's 74-insn stream.
+- mechanism: GCC 2.7.2's only dead-store rule for memory is flow.c:1740-1742, which deletes a store only when a later store to the identical address follows with no intervening memory reference; the last store to an address always survives, and cse can fold the loads but not the store.
+- probe: bodies/i8_inline_localarray_frame.c through tmp/grind/func_800480C0/s14/probe.sh, with the emitted stream read out of tmp/grind/func_800480C0/s14/last_i8_inline_localarray_frame.s.
+- result: vars=32 as required but insns=73 with sw $4,24($sp) inside the loop, and a small scheduling shift around it. The target stream contains no store in the 0x18-0x37 window.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 298b7f40, body installed over the INCLUDE_ASM line; the base candidate's single FAKE (arg0 = 0;) present, no other FAKE construct.
+
+## [s14] Splitting a shift into two shifts across separate statements through a named variable leaves a middle insn for combine to merge and orphan, at the loop mask, the four narrow sign-extends, and the entry arg1 shift.
+- mechanism: s6 killed the one-expression spelling because the tree folder collapses constant-shift-of-constant-shift before RTL; separate statements through a named variable are not foldable at tree level, so two RTL shift insns exist and a 3-insns-in-2-insns-out combine could strand the intermediate's REG_DEAD note at the block head (combine.c:10820-10841).
+- probe: Four bodies t1 (loop >>2 split), t2 (all four sign-extends split as e = (s32)raw << 8; e = e << 8; e = e >> 16), t3 (entry arg1 << 16 >> 14 split), t4 (all of them), each through tmp/grind/func_800480C0/s14/probe.sh.
+- result: All four print .frame $sp,56,$31 # vars= 0, regs= 8/0, args= 24 at 72 insns - byte-identical to the banked candidate. cse/combine merge the split pair with no orphan (use) planted, so no phantom appears at any of the six split sites.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 298b7f40, bodies at tmp/grind/func_800480C0/s14/bodies/t{1,2,3,4}*.c installed one at a time over the INCLUDE_ASM line; base candidate's single FAKE (arg0 = 0;) present in each.
+
+## [s14] Giving the loop's five pointer advances named constant variables initialised in the entry block leaves each constant pseudo with a single use that combine absorbs into an immediate field, stranding its REG_DEAD note and producing phantoms.
+- mechanism: The class-B phantom s13 named is an entry-block compare constant absorbed at its single use; five singly-used advance constants would repeat that shape at five sites.
+- probe: bodies/n1_five_step_consts.c (adv4=4 and four adv2*=2, declared and initialised before the entry test, used once each in the loop) through tmp/grind/func_800480C0/s14/probe.sh.
+- result: .frame $sp,64 # vars= 0, regs= 10/0, insns=78, unalloc=3. The constants are materialised into live callee-saved registers and the pointer advances become addu instead of addiu, costing six extra instructions. Combine builds LOG_LINKs within a basic block only, so a constant defined in the entry block is never absorbed at a use inside the loop. The unalloc=3 with vars=0 also corrects the ledger's instrument: reg_equiv_constant pseudos are unallocated but pay zero frame bytes (reload1.c:2382-2385).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 298b7f40, bodies/n1_five_step_consts.c installed over the INCLUDE_ASM line; base candidate's single FAKE (arg0 = 0;) present.
+
+## [s14] An inline callee with 6 or 8 parameters forces some arguments through memory and donates an incoming-args block to the caller's frame via integrate.c:2118-2131.
+- mechanism: copy_rtx_and_substitute's VIRTUAL_INCOMING_ARGS_REGNUM case allocates assign_stack_temp (BLKmode, FUNCTION_ARGS_SIZE (inlinee), 1) whenever the inlinee's saved RTL references the incoming-args pointer.
+- probe: bodies/i6_inline6_argblock.c (6-parameter emit_rec helper) and bodies/i7_inline8_argblock.c (8-parameter emit_rec8), each through tmp/grind/func_800480C0/s14/probe.sh.
+- result: Both print .frame $sp,56 # vars= 0, regs= 8/0, args= 24 at 71 insns. The inliner maps every parameter straight to a pseudo, so the inlinee's RTL never references virtual_incoming_args and the block is never allocated. Parameter count alone does not trigger the args-block donation.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 298b7f40, bodies at tmp/grind/func_800480C0/s14/bodies/i6_inline6_argblock.c and i7_inline8_argblock.c installed one at a time over the INCLUDE_ASM line; base candidate's single FAKE (arg0 = 0;) present.
+
+## [s14] The banked candidate still measures a floor of 20 on the current chassis and its single FAKE unit (arg0 = 0;) is load-bearing rather than masking a lever.
+- mechanism: Mandated kill re-audit: a lever measured while a FAKE carrier occupies its target pseudo is not a kill, so the closest banked form is re-measured with the FAKE ablated before anything new is proposed.
+- probe: tmp/grind/func_800480C0/s14/probe.sh on candidate.c, the full scorer with candidate.c installed, and tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c.
+- result: probe: .frame $sp,56 # vars= 0, regs= 8/0, args= 24, insns=72, unalloc=0. Scorer: score 20, target_insns 74, build_insns 74, rules_dropped 0. Ablation: one FAKE unit, keep-all 20 at 74 build insns, drop-1 32 at 73 - the FAKE is load-bearing and masks no lever, identical to the s12 and s13 audits. The s13 comment-terminator repair holds and the dispatch chassis check's measurement-unavailable reading is resolved.
+- verdict: CONFIRMED

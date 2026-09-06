@@ -1046,3 +1046,119 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s13] A redundant second entry-block guard on an equal-valued pseudo is deleted whole by cse2/jump (r1: still unalloc=1); on a shifted-but-equivalent pseudo it survives as three extra emitted instructions and still yields one phantom (r2: 76 insns, unalloc=1).
 
 - [s13] New best guard form: i5 reaches vars=8 with regs=8 and 73 insns, whereas s5's two-branch guard needed regs=9 / frame 72 for the same 8 bytes; it still supplies only one of the four phantoms the target's 32-byte window requires, so the floor is unchanged at 20.
+
+## s14 - synthesis (2026-09-05, chassis HEAD 298b7f40)
+
+- [s14] CHASSIS RE-MEASURED AND THE s13 REPAIR HOLDS. The banked candidate compiles again:
+  `tmp/grind/func_800480C0/s14/probe.sh` on `memory/grind/func_800480C0/candidate.c` prints
+  `.frame $sp,56,$31 # vars= 0, regs= 8/0, args= 24, extra= 0 | insns=72 | unalloc=0`, and the
+  full scorer (`sandbox func_800480C0 --disable all`) prints `"score": 20, "target_insns": 74,
+  "build_insns": 74, "rules_dropped": 0`. The dispatch CHASSIS CHECK's "measurement unavailable"
+  was the s12 comment-terminator defect that s13 fixed; nothing else has drifted.
+
+- [s14] MANDATED FAKE RE-AUDIT RE-RUN ON THIS CHASSIS (`tools/fake_ablate.py --func func_800480C0
+  --file text1b --candidate memory/grind/func_800480C0/candidate.c`,
+  `tmp/grind/func_800480C0/s14/fake_ablate.txt`): exactly one FAKE unit (`arg0 = 0;`), keep-all
+  score 20 / 74 insns, drop-1 score 32 / 73 insns. The FAKE is load-bearing and masks no lever,
+  identical to the s12 and s13 audits.
+
+- [s14] THE EXACT COMPILER PREDICATE FOR A FRAME-COSTING PSEUDO IS NOW QUOTED, NOT INFERRED.
+  `tools/gcc-2.7.2/reload1.c:2382-2385` (`alter_reg`): a pseudo gets an
+  `assign_stack_local (GET_MODE (regno_reg_rtx[i]), total_size, -1)` slot iff
+  `reg_renumber[i] < 0 && reg_n_refs[i] > 0 && reg_equiv_constant[i] == 0 &&
+  reg_equiv_memory_loc[i] == 0`. The `-1` alignment argument is why one phantom costs 8 bytes
+  (BIGGEST_ALIGNMENT) rather than 4, confirming s5's empirical 8-bytes-per-phantom measurement
+  from the source. IMPORTANT CORRECTION TO THE LEDGER'S INSTRUMENT: the probe's `unalloc` column
+  (BB2_ALLOC_DEBUG hardreg=-1) is NOT the same quantity as frame cost - a pseudo with
+  `reg_equiv_constant` is unallocated but pays zero bytes. `n1_five_step_consts.c` measures
+  `unalloc=3, vars=0`. Only the `# vars=` term in the `.frame` comment is ground truth.
+
+- [s14] SPLIT-SHIFT-ACROSS-STATEMENTS IS CODEGEN-TRANSPARENT (4 forms, all
+  `.frame $sp,56 # vars= 0, regs= 8/0, args= 24`, insns=72, i.e. byte-identical to the banked
+  candidate). s6 killed the split shift written as ONE EXPRESSION (`((word>>1)>>1)<<2`) because
+  the tree folder collapses constant-shift-of-constant-shift; s14 tested the untried spelling
+  where the split is across separate STATEMENTS through a named variable, which the tree folder
+  cannot merge, at four sites: the loop's `>>2` mask (t1), all four narrow sign-extends written
+  as `e = (s32)raw << 8; e = e << 8; e = e >> 16;` (t2), the entry `arg1 << 16 >> 14` (t3), and
+  all of them together (t4). Every one produces the same 72 insns and vars=0: cse/combine merge
+  the pair with no orphan `(use)` planted, so the 3-insns-in-2-insns-out route to a combine
+  orphan does not fire on this body. Bodies at `tmp/grind/func_800480C0/s14/bodies/t{1,2,3,4}*.c`,
+  banked in `rejected/s14-*-codegen-transparent.c`.
+
+- [s14] CROSS-BLOCK CONSTANT PSEUDOS DO NOT BECOME PHANTOMS, BECAUSE COMBINE DOES NOT CROSS BLOCK
+  BOUNDARIES. `n1_five_step_consts.c` gives the loop's five pointer advances named constant
+  variables (`adv4=4`, four `adv2*=2`) declared and initialised in the entry block. Result:
+  `.frame $sp,64 # vars= 0, regs= 10/0`, insns=78, unalloc=3 - the constants are materialised as
+  live callee-saved registers and the adds become `addu` instead of `addiu`, costing six extra
+  instructions. A constant defined in one basic block and used in another has no LOG_LINK, so
+  combine never absorbs it into an immediate field and no REG_DEAD note is ever orphaned.
+
+- [s14] **A THIRD PHANTOM-INDEPENDENT PRODUCER OF `vars` EXISTS AND IT REACHES THE TARGET FRAME
+  EXACTLY: INLINE-CALLEE FRAME DONATION.** `tools/gcc-2.7.2/integrate.c:2085-2092`
+  (`copy_rtx_and_substitute`, VIRTUAL_STACK_VARS_REGNUM case) allocates
+  `assign_stack_temp (BLKmode, DECL_FRAME_SIZE (map->fndecl), 1)` in the CALLER's frame for every
+  inline expansion - a full copy of the inlinee's own frame, with `keep=1` so it is never
+  released. `DECL_FRAME_SIZE` is snapshotted at `integrate.c:345` when the inline function's RTL
+  is saved, i.e. BEFORE any optimisation, so the caller pays for inlinee frame objects even when
+  every reference to them is deleted afterwards. Measured on this body with a
+  `static __inline__ s32 pack_off(u32 word)` helper carrying a `u32 t[8]` local, replacing the
+  loop's `new_var = base_addr + (((u32)word >> 2) << 2);` with `base_addr + pack_off(word)`:
+  `.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0` - **the target's frame
+  decomposition exactly, for the first time in fourteen sessions without a frame pad.**
+
+- [s14] THE DONATION IS SIZE-EXACT AND DOES NOT REQUIRE THE OBJECT TO BE REFERENCED. Four helper
+  variants, all `.frame $sp,88 # vars= 32, regs= 8/0, args= 24`:
+  i8 (`t[0] = word >> 2; return t[0] << 2;` - a real use) insns=73, one surviving
+  `sw $4,24($sp)`; i9 (`u32 t[8];` declared, never referenced) insns=72; i10 (`v = t[0];` dead
+  load) insns=72; i11 (`if (keep) { t[0] = word; }` with `keep` passed literal 0) insns=72. The
+  three zero-traffic variants have the SAME instruction count as the banked candidate, which
+  scores 20 purely on sp-relative operands.
+
+- [s14] **i11 MEASURES score 0 ON THE FULL SCORER** (`sandbox func_800480C0 --disable all`,
+  `tmp/grind/func_800480C0/s14/sandbox_i11.txt`): `"score": 0, "target_insns": 74,
+  "build_insns": 74, "rules_dropped": 0`. src/text1b.c was restored from HEAD immediately after.
+  This is a bytes-proven form. It is ALSO squarely inside the forbidden-family catalog
+  (dead-conditional-store, plus a parameter that is constant-0 at its only call site), so it is
+  banked in `rejected/` and NOT proposed. It is recorded because it pins down what the residual
+  actually is: the entire remaining 20-point gap is `get_frame_size() == 32`, and one C-level
+  construct that produces it end-to-end is now measured rather than hypothesised.
+
+- [s14] ENGINE FINDING WORTH THE OWNER'S ATTENTION: the sandbox's cheat-stripper CATCHES the
+  plain unreferenced array inside the inline helper - i9 installs and still prints `"score": 20`
+  with `cheat_asm_stripped: 163` - but does NOT catch i11, whose array is textually written
+  inside a never-taken `if`. So a dead-conditional-store into an inline helper's local array is
+  invisible to the honest-floor instrument in the way `[[unannotated-fake-inflates-honest-floor]]`
+  describes in reverse: it would report a floor of 0 for a construct the Judge bans. Recorded, not
+  exploited.
+
+- [s14] WHY NO HONEST SPELLING OF THE DONATION WAS FOUND THIS SESSION, WITH THE COMPILER PREDICATE:
+  a byte-neutral donation needs the donated object to emit ZERO caller-side insns. Loads from it
+  are removable (cse folds a load after a store; a load into a dead register is deleted by flow),
+  but STORES are not: `tools/gcc-2.7.2/flow.c:1740-1742` is GCC 2.7.2's only dead-store rule for
+  memory - `if (GET_CODE (r) == MEM && last_mem_set && ! MEM_VOLATILE_P (r) &&
+  rtx_equal_p (r, last_mem_set)) return 1;` - which deletes a store ONLY when a later store to the
+  identical address follows with no intervening memory reference. The last store to any address
+  always survives. So an inlinee frame object that is live on the inlined path always materialises
+  at least one `sw`, exactly as i8 measured (73 insns), and a zero-traffic donation requires the
+  object to be dead on that path - which is the frame-pad construct in a different location, not a
+  new family. The open question this leaves is narrow and is recorded as the s14 frontier.
+
+- [s14] reload1.c:2382-2385 is the exact predicate for a frame-costing pseudo: reg_renumber < 0 && reg_n_refs > 0 && reg_equiv_constant == 0 && reg_equiv_memory_loc == 0, with assign_stack_local aligned -1 (BIGGEST_ALIGNMENT), which is the source-level confirmation of s5's empirical 8-bytes-per-phantom measurement.
+
+- [s14] The probe's unalloc column is NOT frame cost: n1_five_step_consts.c measures unalloc=3 with vars=0 because reg_equiv_constant pseudos are unallocated but pay nothing. Only the vars term of the .frame comment is ground truth for this residual.
+
+- [s14] integrate.c:2085-2092 allocates a verbatim copy of an inline callee's frame in the caller (assign_stack_temp BLKmode DECL_FRAME_SIZE, keep=1), and integrate.c:345 snapshots DECL_FRAME_SIZE before optimisation - a producer of vars independent of both phantom classes and of any frame pad in this function's own body.
+
+- [s14] The donation reaches this function's exact target frame: .frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, measured on four separate helper spellings.
+
+- [s14] The i11 spelling scores 0 on the full scorer (target_insns 74, build_insns 74, rules_dropped 0), confirming that the entire 20-point residual is get_frame_size() == 32 and nothing else. It is a banned construct (dead-conditional-store plus a constant-0 parameter), banked in rejected/, not proposed.
+
+- [s14] Engine finding: the sandbox cheat-stripper removes an unreferenced array inside an inline helper (i9 still scores 20, cheat_asm_stripped 163) but does not remove one written inside a never-taken if (i11 scores 0, cheat_asm_stripped 162). A dead-conditional-store into an inline callee's local array is invisible to the honest-floor instrument. Recorded, not exploited.
+
+- [s14] flow.c:1740-1742 is GCC 2.7.2's only dead-store rule for memory (a store is dead only when a later store to the identical address follows), so an inlinee frame object that is live on the inlined path always materialises at least one sw - measured as i8's 73 insns with sw $4,24($sp).
+
+- [s14] Split shifts across separate statements are codegen-transparent at all six sites tried (72 insns, vars=0), closing the spelling s6 had only tested as a single expression.
+
+- [s14] Combine builds LOG_LINKs within a basic block only, so an entry-block constant is never absorbed at a use inside the loop; named advance constants materialise as live registers and cost six insns.
+
+- [s14] src/text1b.c was restored from HEAD after every install; the working tree is clean of src edits at session end.
