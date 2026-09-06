@@ -552,9 +552,9 @@
  ],
  "origin": "queue",
  "created": "2026-07-07T06:07:47.638269+00:00",
- "exhaustion_base": 77,
- "last_unpark_reason": "owner ruling 2026-09-04 (decisions.md foreclosed-bucket re-evaluation, Ruling A): window RESET; probes: CD_datasync s58 CD_alarm-struct transplant onto vAT1 (addend-resolving scorer); fresh-flag permuter window seeded from r3/b2 (frontier[0], never run). All judge_constraints stand.",
- "last_unpark_at": "2026-09-04T22:08:22.284897+00:00",
+ "exhaustion_base": 86,
+ "last_unpark_reason": "owner 2026-09-06 foreclosed-bucket review: two named unrun probes, SOLVER modality. (1) frontier item 0: run tools/ra_solver/local_extract.py system --func <CD_ready> (with --suggest) + local_alloc.py on the a4 base - the block_alloc model has never been extracted for THIS function; say whether any quantity re-pricing reaches the a3/a0 + v1/v0 seat exchange. (2) frontier item 1: apply rejected/s86",
+ "last_unpark_at": "2026-09-06T14:41:15.863609+00:00",
  "kills": [
   {
    "session": 69,
