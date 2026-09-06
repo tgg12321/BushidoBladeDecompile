@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 32,
+ "session_count": 33,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -195,23 +195,29 @@
    "floor": 3,
    "modality": "structural",
    "headline": "Class C localised to ONE insn: the .lreg dumps of the floor body and the operand-flip body differ in exactly one line (insn 188's plus operand order), and u4 (flip + D-store hoist) emits rows 54-64 by"
+  },
+  {
+   "session": 33,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "Class-C seat reduced to a closed-form qty_compare_1 predicate (merged chain+dest must be born at <=12); four pure-C bodies now emit the target's rows 62-64 registers at 175 insns, smallest is one rena"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A pure-C form exists that gives insn 188 the target's operand order (chain first) AND leaves local-alloc's qty_compare_1 ordering where the floor body already has it for rows 38-61 - which would be a score-0 body, since u4 proves the seats are reachable and the floor body proves the rest of the block is already exact.",
-   "mechanism": "The whole residual is now one decision inside block_alloc: with the dest tied to the chain (local-alloc.c:1240-1299), the merged chain+dest quantity's live length grows by three insns and qty_compare_1 (tools/gcc-2.7.2/local-alloc.c) hands it and the reload the opposite hard registers. u4 restores the target's assignment by adding one more quantity to the block's sort, but it does so with a store hoist that changes the emission order.",
-   "next_probe": "Take f2 (the flip, 27) as the base and add a quantity to the loop-body block WITHOUT moving any store: e.g. a genuinely-used local holding the sp[t0] address, the arg2 mask, or the D_800A35D0 base, declared and consumed inside the loop body; and separately vary the live length of the COMPETING quantities (the first D_800A36A0 load, t0*4, t0*2) rather than the chain's. Read reg_qty / qty ordering for regs 108/109/110 straight out of the .lreg dump for each build with tmp/grind/func_800770B8/s32/slice.py instead of inferring from the score, and diff the .greg dump of each build against u4.greg to see which quantity's seat moved."
+   "hypothesis": "e3 is one quantity from a score-0 body: removing its sixth quantity (reg86, birth6 death36 refs10, seated in $a2) while keeping the merged quantity's birth at 12 restores reg87 -> $a0 and reg101 -> $a1 and leaves the class-C block already byte-exact.",
+   "mechanism": "Naming the D group's pointer stops ptr's reuse from folding the D address chain into an existing quantity, so one pseudo that combine_regs previously tied away now stands alone and takes the next free hard register, shifting reg87/reg101 down one seat each. Identifying that pseudo names the statement that has to change.",
+   "next_probe": "pwsh tools/grinder/dump.ps1 func_800770B8 with e3 applied; slice the ;; Function func_800770B8 region of the .lreg dump and find every mention of reg 86 to identify which value it holds. Then sweep spellings that let combine_regs tie it back into an existing quantity (write the D address into ptr but read the stores through dp, or keep the symbol address in the same local across both statements) while re-checking merged birth stays 12 with tmp/grind/func_800770B8/s33/qty.sh. Reject anything whose qty table shows more than five quantities in blk=1."
   },
   {
-   "hypothesis": "u4's 11-row residual can be paid down from the other side: with the class-C block already byte-exact, a spelling exists that keeps the D-first store order's ALLOCATION while restoring the target's A-then-D emission order.",
-   "mechanism": "The store order is fixed by GCC's refusal to reorder a store through an unknown pointer past a store to a known symbol, so the only route is to make the two groups NOT alias-ordered - e.g. by giving the group-A pointer a declared type that lets GCC prove independence, or by making the D group's stores unconditionally sink.",
-   "next_probe": "Re-check the alias decision in the .sched dump for u4: read the REG_DEP_ANTI / true-dependence edges between insns 125/128 (the D stores) and 139-151 (the A stores) and confirm they are memory dependencies rather than register ones. If they are memory dependencies, record that as the predicate closing this route; if not, sweep spellings that separate the two groups' memory."
+   "hypothesis": "A body exists that keeps the floor body's exact five-quantity set in blk=1 and still has the merged chain+dest quantity born at <= 12, which by the criterion is a score-0 body.",
+   "mechanism": "The birth is where cse/expand first emits the sll t0,2. Every spelling tried this session that moved it to 12 also added a quantity; every spelling that kept five quantities left it at 26-28. The remaining unexplored axis is making the A group's own address expression consume t0*4-derived material naturally, or reordering the two statements inside the existing ptr reuse.",
+   "next_probe": "Sweep the D-group two-statement build written back onto ptr but with the symbol address and the scaled index swapped between the two statements (ptr = (u8 *)(t0 * 4); ptr = ptr + (s32)&D_800A35D0;) and the same for the C group; qty-dump each and keep only tables with five quantities in blk=1 and merged birth <= 14. Do NOT score bodies whose qty table already disqualifies them."
   },
   {
-   "hypothesis": "The 176-insn table readings (y1 = 7, y3 = 43) are one fold away from the target's shape, and a spelling exists that keeps the natural s16-table reading of the record while emitting the target's one addu plus two addiu.",
-   "mechanism": "GCC folds the +53 / +63 element offsets into the index before scaling and adding the base, producing two addu; the target adds the base first and then applies 0x6A / 0x7E as addiu displacements. Keeping the constants OUT of the index expression should restore the target's split.",
-   "next_probe": "Spell the table reading as `s16 *tbl = (s16 *)D_800A36A0; s16 *row = &tbl[t0 * 5]; p_6a = row + 53; p_7e = row + 63;` and the variant with the row pointer typed u8 *, and measure insn count first - anything at 176 is out regardless of score."
+   "hypothesis": "b1's 18 is reachable without the LICM hoist, which would make the s16[2][2] record reading of D_800A35D0 (the object model s29 already established) usable as a second lever alongside the flip.",
+   "mechanism": "loop.c hoists the %hi/%lo(D_800A35D0) pair because with the s16 index scaling the symbol address becomes a plain loop-invariant addend; keeping the address materialised inside the loop needs it to be an operand of something loop.c will not move.",
+   "next_probe": "Dump .loop for b1 and confirm the hoisted insn is the %hi/%lo pair; then measure the s16 record reading with the address rebuilt in two statements (s16 *dp = (s16 *)&D_800A35D0; dp = dp + (t0 * 2);) and check both the insn count (must stay 175) and the qty table."
   }
  ],
  "judge_constraints": [
@@ -505,6 +511,38 @@
    "measured_on": "HEAD df705f93 chassis, floor body F + the class-B dead store (score 3), do-while(0) prologue fence present; 175/175 in every build except u3, y1 and y3 (176).",
    "predicate_cite": "",
    "result": "As listed; none is below the floor's 3 and none reaches u4's seats."
+  },
+  {
+   "session": 33,
+   "statement": "On the operand-flip body a separate C-group pointer local produces a quantity with birth36 death40 refs6 whose qty_compare_1 priority is 3.00 against the merged quantity's 3.14, so it sorts second and",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 35950580 chassis, floor body F + the class-B dead store + the operand flip, do-while(0) prologue fence present; 175/175 in all four builds",
+   "predicate_cite": "",
+   "result": "a1 23, b4 23, d5 23, a10 23; every qty table shows the merged quantity at ord=1 with got=2."
+  },
+  {
+   "session": 33,
+   "statement": "Declaring an address local as the loop body's first statement does not move the chain quantity's birth: naming t0*4 in an s32 initialised first (d1), building the D-group pointer there (d3, d4), build",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 35950580 chassis, floor body F + the class-B dead store + the operand flip, do-while(0) prologue fence present; 175/175 in all seven builds",
+   "predicate_cite": "",
+   "result": "d1 27, d2 47, d3 38, d4 38, d5 23, d6 38, a3 27, all 175/175."
+  },
+  {
+   "session": 33,
+   "statement": "The loop-body quantity probes that add a real consumed value measured this session either lose a lw %gp_rel(D_800A36A0) reload the target keeps, or score at or above the plain operand flip: sharing t0",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 35950580 chassis, floor body F + the class-B dead store, do-while(0) prologue fence present; 175/175 except a5 (171), a8 (173), a6/a7/a11/a12/c3 (174)",
+   "predicate_cite": "",
+   "result": "a4 47, a5 23 at 171, a6 47 at 174, a7 39 at 174, a8 62 at 173, a9 29, a11 47 at 174, a12 44 at 174, b7 42, b8 28, c1 3 ("
+  },
+  {
+   "session": 33,
+   "statement": "Reading the D_800A35D0 group as the s16[2][2] record it is scores 18 with the cp local (the session's best score) but is off the target's path: its rows 30/31 are lui $t4 / addiu $t4 OUTSIDE the t0 lo",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 35950580 chassis, floor body F + the class-B dead store, do-while(0) prologue fence present; 175/175 in all five builds",
+   "predicate_cite": "",
+   "result": "b1 18 with 29 differing rows including the hoisted address pair, b9 38, b10 33, d4 38, d6 38, all 175/175."
   }
  ],
  "object_model_audited": 29,

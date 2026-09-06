@@ -4057,3 +4057,125 @@ u4.sched.
 - [s32] Operand-order flips of the OTHER address groups are byte-inert or near-inert on the floor body (A group 4, C group 4, S store 3) and do not counteract the flip's reseat when combined with it (z5-z9 all 27).
 
 - [s32] src/text1b.c was restored to the pristine HEAD copy after every sweep and after the dump runs; git status on src/ and include/ is clean at end of session.
+
+
+## [s33] (structural, 2026-09-06) — the class-C seat is now a CLOSED-FORM predicate on GCC's qty table
+
+**Chassis re-measured live.** HEAD 35950580 + the banked `candidate.c` body applied with its two
+documented byte-neutral caller-side edits: `sandbox func_800770B8 --disable all` = **3 / 175 / 175**,
+residual rows 62/63/64. 35 scoring builds + 12 `BB2_QTY_DEBUG` cc1 runs this session;
+`src/text1b.c` restored to the pristine HEAD copy after every sweep (`git status` clean at end).
+
+**OWNER DIRECTIVE, executed and answered.** The directive asked for (1) a re-measure of the class-B
+prologue store-base spellings on the h3 chassis and (2) a record-layout audit for a genuine third use
+of the C pointer. Both were already spent by s31/s32 on this exact chassis and the ledger records
+them (s31 closed class B, floor 5 -> 3; s32 evidence closes the "third use / list-walk" audit against
+`func_8006E49C` / `func_80076FF8` / `func_8006E950`, and measured the natural s16-record readings of
+the 0x6A/0x7E table at 176 insns). This session therefore executed the standing frontier item 1 (add
+a quantity to the loop-body block WITHOUT moving a store) and, in doing so, replaced the guesswork
+with an exact criterion.
+
+**THE CRITERION (read straight out of GCC's own tables, not inferred).** `local-alloc.c:1660`
+`qty_compare_1` sorts blk=1's quantities by `floor_log2(refs)*refs*size / (death-birth)`, and
+`find_free_reg` then hands out ascending first-free hard registers. `BB2_QTY_DEBUG=1` on the
+instrumented `tools/gcc-2.7.2/cc1` prints the whole table. For the loop-body block (blk=1):
+
+    floor body (score 3, 5 quantities)
+      ord0 qty2 reg89  birth=12 death=14 refs=4   pri 4.00  got $v0
+      ord1 qty4 reg110 birth=48 death=56 refs=10  pri 3.75  got $v0   <- dest MERGED WITH THE RELOAD
+      ord2 qty3 reg108 birth=28 death=52 refs=16  pri 2.67  got $v1   <- the t0*4->t0*5->t0*10 chain
+      ord3 qty1 reg100 birth=10 death=44 refs=12  pri 1.06  got $a0
+      ord4 qty0 reg86  birth= 6 death=46 refs=14  pri 1.05  got $a1
+
+    f2 = the operand flip (score 27, 5 quantities)
+      ord0 qty2 reg89  birth=12 death=14 refs=4   pri 4.00  got $v0
+      ord1 qty3 reg110 birth=28 death=56 refs=22  pri 3.14  got $v0   <- dest MERGED WITH THE CHAIN
+      ord2 qty4 reg109 birth=48 death=52 refs=4   pri 2.00  got $v1   <- the reload, alone
+      ord3 qty1 reg100 birth=10 death=44 refs=12  pri 1.06  got $v1
+      ord4 qty0 reg86  birth= 6 death=46 refs=14  pri 1.05  got $a0
+
+The RTL identities (from s32's `.lreg` read, re-confirmed here in `f2_fn.lreg`): insn 186 sets
+reg109 = `(mem (symbol_ref D_800A36A0))` (the reload); insn 183 sets reg107 = reg93+reg86 with
+`REG_EQUAL (mult reg86 5)`; insn 184 sets reg108 = reg107<<1 with `REG_EQUAL (mult reg86 10)`;
+insn 188 sets reg110 = the plus. The chain QUANTITY is reg93(t0*4, 8 refs) + reg107(4) + reg108(4),
+i.e. 16 refs born with the `sll t0,2`; the flip adds reg110's 6 refs to it (22) instead of to the
+reload's 4 (10).
+
+**WHAT THE TARGET NEEDS, stated exactly.** The target's rows 62-64 are
+`addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E`: the dest is merged with the CHAIN
+(so the flip is required) AND the merged quantity must get **$v1** while the reload gets **$v0**,
+with reg100 -> $a0 and reg86 -> $a1 unchanged. Since `find_free_reg` is deterministic, f2's table
+CANNOT produce that: the merged quantity is sorted second and takes the first free register.
+The merged quantity must therefore either sort BELOW the reload, or be born early enough to
+conflict with whatever already holds $v0. Both reduce to **merged.birth <= ~14** (with refs 22 and
+death 56, `4*22/(56-birth) < 2.00` requires birth < 12).
+
+**FOUR BODIES NOW PRODUCE THE TARGET'S CLASS-C SEATS (all 175/175).** a2 (26), b5 (26), b6 (26) and
+**e3 (26)** all have merged `birth=12 death=56 refs=22 -> got $v1` and reload `48-52 -> got $v0`:
+
+    e3 (score 26, 6 quantities)
+      ord0 qty4 reg90  birth=18 death=20 refs=4   got $v0
+      ord1 qty2 reg111 birth=12 death=56 refs=22  got $v1   <- TARGET seat
+      ord2 qty5 reg110 birth=48 death=52 refs=4   got $v0   <- TARGET seat
+      ord3 qty3 reg101 birth=16 death=44 refs=12  got $a0
+      ord4 qty1 reg87  birth= 8 death=46 refs=14  got $a1
+      ord5 qty0 reg86  birth= 6 death=36 refs=10  got $a2   <- THE ONE EXTRA QUANTITY
+
+**e3 is one quantity away from the whole function.** e3 is the floor body + the operand flip + a
+single rename: the D_800A35D0 group is built through its own `u8 *dp` local instead of borrowing
+`ptr`. Nothing is moved, no store changes position, the insn count stays 175. That rename alone
+drags the chain quantity's birth from 28 to 12 and hands the class-C block the target's registers.
+Its entire residual is the sixth quantity (reg86, birth 6, death 36, 10 refs) which takes $a2 and
+pushes reg87/reg101 down a seat.
+
+**The two-statement address build is the lever, not the name.** `dp = (u8 *)&D_800A35D0;
+dp = (t0 * 4) + dp;` (e3, 26) and `dp = (u8 *)&D_800A35D0; dp = dp + (t0 * 4);` (f3, 26) both work;
+folding it to one statement `dp = (u8 *)&D_800A35D0 + (t0 * 4);` (f1) loses the early birth and
+scores 38. Declaring `dp` before `ptr` (f2x) is byte-identical to e3 at 26.
+
+**Everything else measured this session (175/175 unless noted).** Extra-quantity probes on the flip
+body that do NOT move the birth: separate C-group local `cp` (a1 23, its quantity is birth 36
+death 40 refs 6 = pri 3.00, just under the merged 3.14 so it sorts second and changes nothing);
+`cp` hoisted above the D group (b4 23); `cp` computed as the first statement (d5 23); named `t4`
+shared by the D and C groups (a3 27, table identical to f2); named `t2` (a4 47); named `dbase`
+(a9 29); `cp`+`t4` (a10 23); the 0x5C/0x60 pair through a record pointer (a11 47 at 174, b8 28);
+A-group stores addressed straight off `base` (e6 27). Insn-count failures: shared `c10` (a5 171),
+`base` carrying the 0x5C/0x60 pair (a6 47 at 174), `base` carrying the chain (a7 39 at 174), both
+(a8 62 at 173), a12 44 at 174, c3 49 at 174. Controls on the FLOOR body: `cp` alone is byte-inert
+(c1 3); all three pointers named costs 28 (c2); the s16-record D-group reading costs 33 (b10).
+Best score of the session: **b1 = 18** (cp + the D group read as `s16 *dp = (s16 *)&D_800A35D0 +
+(t0*2); dp[1]=0; dp[0]=0;`), but it is not on the path - LICM hoists the `lui/addiu %hi/%lo
+(D_800A35D0)` pair out of the loop entirely (rows 30/31 become `lui $t4` / `addiu $t4`), which the
+target does not do.
+
+**Artifacts.** `tmp/grind/func_800770B8/s33/` - gen_a.py, gen_b.py, gen_d.py, gen_e.py, gen_f.py
+(the 34 bodies in `v/`), apply.py, run.sh, mismatch.sh, rows2.py, rowsall.py, onlydiff.py,
+qty.sh, qtydbg.py, sweep.log, `*.qty` (12 BB2_QTY_DEBUG tables), f2_fn.lreg, rows_a1.txt.
+
+- [s33] Chassis re-verified live on HEAD 35950580: banked candidate body = 3/175/175, f2 = 27/175/175.
+- [s33] The class-C hard-register decision is a closed-form predicate: in blk=1 the merged chain+dest quantity must sort below the reload (or be born early enough to conflict with the current $v0 holder), which with refs=22 and death=56 means birth <= ~12 instead of the flip body's 28.
+- [s33] BB2_QTY_DEBUG=1 on tools/gcc-2.7.2/cc1 prints qty_compare_1's whole input and output per block (QTYDBG blk/ord/qty/reg1/birth/death/refs/got); tmp/grind/func_800770B8/s33/qty.sh + qtydbg.py drive it for one named body and it is far cheaper than scoring for triaging a seat question.
+- [s33] Four bodies (a2, b5, b6, e3) now emit the target's class-C registers ($v1 for the merged chain+dest, $v0 for the reload) at 175 insns; e3 does it with the smallest possible source change.
+- [s33] e3 = floor body + operand flip + the D_800A35D0 group built through its own `u8 *dp` local instead of borrowing `ptr`. No store moves, no insn added, score 26, and its ENTIRE residual is one extra quantity (reg86, birth 6, death 36, refs 10) taking $a2.
+- [s33] The lever is the TWO-STATEMENT address build, not the name: `dp = (u8 *)&D_800A35D0; dp = (t0*4) + dp;` (26) and `dp = ...; dp = dp + (t0*4);` (26) both move the birth to 12, while the one-statement fold `dp = (u8 *)&D_800A35D0 + (t0*4);` scores 38.
+- [s33] Adding a short quantity in the (28,48) window does NOT work unless its priority beats the merged quantity's 3.14: the `cp` local's quantity measures pri 3.00 (birth 36, death 40, refs 6) and sorts second, leaving the merged quantity first (a1/b4/d5 all 23).
+- [s33] Declaring an address local as the loop body's FIRST statement does not move the chain quantity's birth (d1 t4 27 birth 28, d5 cp 23 birth 28, d3 dp 38 birth 26, d4 38, d6 38).
+- [s33] b1 (cp + the s16[2][2] record reading of D_800A35D0) is the session's best score at 18/175/175 but is off-path: it lets LICM hoist the D_800A35D0 %hi/%lo pair out of the t0 loop, which the target keeps inside.
+
+- [s33] Chassis re-verified live on HEAD 35950580: the banked candidate body (with its two documented byte-neutral caller-side edits) = 3/175/175, residual rows 62/63/64; the operand-flip body f2 = 27/175/175.
+
+- [s33] BB2_QTY_DEBUG=1 on the instrumented tools/gcc-2.7.2/cc1 prints qty_compare_1's entire input and output per basic block (QTYDBG blk/ord/qty/reg1/birth/death/refs/got). tmp/grind/func_800770B8/s33/qty.sh + qtydbg.py drive it for one named body; it is one cc1 run, cheaper than a scoring build, and it is the correct triage tool for any remaining register-seat question on this function.
+
+- [s33] The class-C residual is a closed-form predicate: with the operand flip present the merged chain+dest quantity has refs 22 and death 56, so floor_log2(22)*22/(56-birth) < 2.00 (the reload's priority) requires birth < 12. The flip body has birth 28.
+
+- [s33] Four bodies (a2, b5, b6, e3) now show merged birth=12 death=56 refs=22 -> $v1 and reload birth=48 death=52 refs=4 -> $v0, which is the target's assignment for rows 62-64, all at 175 insns.
+
+- [s33] e3 - the floor body plus the operand flip plus building the D_800A35D0 group through its own u8 *dp local instead of borrowing ptr - scores 26/175/175 and its ENTIRE residual is one extra quantity (reg86, birth6 death36 refs10) taking $a2 and pushing reg87/reg101 down one seat.
+
+- [s33] The lever is the two-statement address build, not the name: dp = (u8 *)&D_800A35D0; dp = (t0 * 4) + dp; scores 26 and dp = (u8 *)&D_800A35D0; dp = dp + (t0 * 4); scores 26, while the one-statement fold dp = (u8 *)&D_800A35D0 + (t0 * 4); scores 38. Declaration order (dp before ptr) is byte-inert.
+
+- [s33] Adding a short quantity in the (28,48) window is not sufficient on its own: the cp local's quantity measures pri 3.00 (birth36 death40 refs6) against the merged quantity's 3.14, so it sorts second (a1/b4/d5/a10 all 23).
+
+- [s33] OWNER DIRECTIVE executed: the class-B prologue store-base spellings and the record-layout audit for a third use of the C pointer were both already spent on this exact chassis by s31 (class B closed, floor 5 -> 3) and s32 (func_8006E49C / func_80076FF8 / func_8006E950 show no list-walk shape; the natural s16-table readings of the 0x6A/0x7E record cost 176 insns). This session ran the standing frontier item 1 instead and replaced its guesswork with the exact criterion above.
+
+- [s33] src/text1b.c was restored to the pristine HEAD copy after every sweep and after the qty runs; git status on src/ and include/ is clean at end of session.

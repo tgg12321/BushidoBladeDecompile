@@ -3114,3 +3114,138 @@ do-while(0) prologue fence present, 175/175 in all fourteen builds.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD df705f93 chassis, floor body F + the class-B dead store (score 3), do-while(0) prologue fence present; 175/175 in every build except u3, y1 and y3 (176).
+
+
+## [s33] (structural, 2026-09-06) — the seat question is now arithmetic
+
+### H1 CONFIRMED — the class-C seat is decided by qty_compare_1's priority on exactly five quantities
+- statement: in the loop-body block (blk=1) the floor body has five quantities and the operand flip
+  moves the dest's 6 refs from the reload quantity to the chain quantity, taking the chain quantity
+  from `birth=28 death=52 refs=16` (pri 2.67, sorted 3rd, seat $v1) to `birth=28 death=56 refs=22`
+  (pri 3.14, sorted 2nd, seat $v0); the target needs that merged quantity in $v1 and the reload
+  alone in $v0, which `find_free_reg` can only produce if the merged quantity sorts below the
+  reload or is born early enough to conflict with the current $v0 holder - i.e. `birth <= ~12`.
+- mechanism: `tools/gcc-2.7.2/local-alloc.c:1660` `qty_compare_1` ranks by
+  `floor_log2(refs)*refs*size/(death-birth)`; `find_free_reg` then assigns ascending first-free
+  hard registers in that order. `combine_regs` (local-alloc.c:1784-1946) is what merges the dest
+  into one operand's quantity, and the tying loop at local-alloc.c:1240-1299 picks operand 1 first,
+  which is why the source-level operand order decides which quantity grows.
+- probe: `BB2_QTY_DEBUG=1` on the instrumented `tools/gcc-2.7.2/cc1` via
+  `tmp/grind/func_800770B8/s33/qty.sh`, on the floor body, f2 and ten further bodies; tables in
+  `tmp/grind/func_800770B8/s33/*.qty`.
+- result: the tables above; every score in this session is predicted by them.
+- verdict: CONFIRMED
+
+### H2 CONFIRMED — four pure-C bodies now emit the target's class-C registers at 175 insns
+- statement: a2, b5, b6 and e3 all show `merged birth=12 death=56 refs=22 -> $v1` and
+  `reload birth=48 death=52 refs=4 -> $v0`, which is the target's assignment for rows 62-64; e3
+  reaches it with a single rename (the D_800A35D0 group built through its own `u8 *dp` local
+  instead of borrowing `ptr`), moving no store and adding no instruction.
+- mechanism: giving the D group its own two-statement address build stops `ptr`'s reuse from
+  keeping the `sll t0,2` late, so the chain quantity is born at insn 6 of the block instead of
+  insn 14; at birth 12 its priority is 2.00, it ties with the reload and loses the seat race.
+- probe: e3/a2/b5/b6 scored and qty-dumped; controls c1 (cp alone on the floor body, byte-inert 3),
+  f1 (one-statement dp, 38), f3 (dp = dp + t0*4, 26), f2x (declaration order swapped, 26).
+- result: e3 26, a2 26, b5 26, b6 26, all 175/175.
+- verdict: CONFIRMED
+
+### H3 KILLED (instance) — adding one short quantity in the (28,48) window does not outrank the merged quantity
+- statement: on the operand-flip body, a separate C-group pointer local produces a quantity with
+  `birth=36 death=40 refs=6` whose qty_compare_1 priority is 3.00 against the merged quantity's
+  3.14, so it sorts second and the merged quantity still takes $v0; the three spellings measured
+  (`cp` in place, `cp` hoisted above the D group, `cp` as the loop body's first statement) all
+  score 23.
+- mechanism: `floor_log2(6)*6/(40-36) = 3.00 < floor_log2(22)*22/(56-28) = 3.14`.
+- probe: a1, b4, d5, a10, one scoring build and one qty dump each.
+- result: a1 23, b4 23, d5 23, a10 23; every one has `merged ... got=2`.
+- measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store + the operand flip,
+  do-while(0) prologue fence present; 175/175 in all four builds.
+- verdict: KILLED (instance)
+
+### H4 KILLED (instance) — declaring an address local as the loop body's first statement does not move the chain quantity's birth
+- statement: naming `t0*4` in an `s32 t4` initialised as the loop body's first statement (d1),
+  building the D-group pointer there (d3, d4), building the C-group pointer there (d5), and the
+  combination with the s16 record reading (d6) all leave the merged quantity's birth at 26 or 28.
+- mechanism: the birth is set by where cse/expand emits the `sll t0,2`, which follows the first
+  place the value is CONSUMED by an addressing expression, not the declaration point; d1's qty
+  table is byte-identical to a3's and to f2's.
+- probe: d1, d2, d3, d4, d5, d6, a3, one scoring build each plus qty dumps for d1/d3/d5/a3.
+- result: d1 27, d2 47, d3 38, d4 38, d5 23, d6 38, a3 27, all 175/175.
+- measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store + the operand flip,
+  do-while(0) prologue fence present; 175/175 in all seven builds.
+- verdict: KILLED (instance)
+
+### H5 KILLED (instance) — the loop-body quantity probes that add a real consumed value either change the insn count or score worse
+- statement: on the flip body, sharing `t0*10` between the chain and the flag index (a5) drops to
+  171 insns; letting `base` carry the 0x5C/0x60 pair (a6), the chain (a7), both (a8), or the
+  all-named-pointer variant with the pair (a12) drop to 173/174 insns; naming `t0*2` (a4 47),
+  naming the D_800A35D0 base (a9 29), the 0x5C/0x60 record pointer (a11 47 at 174, b8 28), the
+  A-group stores addressed straight off `base` (e6 27) and all three pointers named (a2 26, c2 28
+  on the floor body) are all at or above the plain flip's 27 except where the class-C seats flip.
+- mechanism: every one of these either removes a `lw %gp_rel(D_800A36A0)` reload the target keeps
+  (the insn-count failures) or leaves the merged quantity's priority above the reload's.
+- probe: a2, a4, a5, a6, a7, a8, a9, a11, a12, b7, b8, c1, c2, c3, e6, one scoring build each.
+- result: as listed.
+- measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store, do-while(0) prologue
+  fence present; 175/175 except a5 (171), a8 (173), a6/a7/a11/a12/c3 (174).
+- verdict: KILLED (instance)
+
+### H6 KILLED (instance) — the s16[2][2] record reading of D_800A35D0 is off-path because LICM hoists its address
+- statement: reading the D group as `s16 *dp = (s16 *)&D_800A35D0 + (t0 * 2); dp[1] = 0; dp[0] = 0;`
+  scores 18 with the `cp` local (b1, the session's best) and 38/33 without it (b9 on the flip body,
+  b10 on the floor body), but b1's rows 30/31 are `lui $t4 / addiu $t4` OUTSIDE the t0 loop - the
+  `%hi/%lo(D_800A35D0)` pair has been hoisted by LICM, which the target keeps inside the loop at
+  rows 49/50.
+- mechanism: with the index expression `t0 * 2` scaled by `sizeof(s16)` the symbol address becomes
+  a loop-invariant operand of a plain `plus`, which `loop.c` moves out; the u8 two-statement build
+  keeps it as a separate in-loop set.
+- probe: b1, b9, b10, d4, d6 scored; b1's differing rows read with
+  `tmp/grind/func_800770B8/s33/mismatch.sh`.
+- result: b1 18 (29 differing rows incl. the hoist), b9 38, b10 33, d4 38, d6 38, all 175/175.
+- measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store; 175/175 in all five
+  builds.
+- verdict: KILLED (instance)
+
+## [s33] The class-C hard-register decision is decided by qty_compare_1's priority over exactly five quantities in the loop-body block: the operand flip moves the dest's 6 refs from the reload quantity (birth48 death56 refs10, pri 3.75, seat $v0) to the chain quantity (birth28 death56 refs22, pri 3.14, seat $v0), and the target's assignment (merged chain+dest in $v1, reload alone in $v0) is only reachable if the merged quantity sorts below the reload or is born early enough to conflict with the current $v0 holder, i.e. birth <= ~12.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:1660 qty_compare_1 ranks by floor_log2(refs)*refs*size/(death-birth) and find_free_reg assigns ascending first-free hard registers in that order; combine_regs (local-alloc.c:1784-1946) is what merges the dest into one operand's quantity and the tying loop at local-alloc.c:1240-1299 tries operand 1 first, which is why the source-level operand order decides which quantity grows.
+- probe: BB2_QTY_DEBUG=1 on the instrumented tools/gcc-2.7.2/cc1 via tmp/grind/func_800770B8/s33/qty.sh + qtydbg.py, on the floor body, the operand-flip body f2, and ten further bodies; the 12 tables are in tmp/grind/func_800770B8/s33/*.qty.
+- result: The tables predict every score measured this session. Floor body blk=1: ord0 reg89 12-14 refs4 -> $v0; ord1 reg110 48-56 refs10 -> $v0; ord2 reg108 28-52 refs16 -> $v1; ord3 reg100 10-44 refs12 -> $a0; ord4 reg86 6-46 refs14 -> $a1. f2: ord0 reg89 -> $v0; ord1 reg110 28-56 refs22 -> $v0; ord2 reg109 48-52 refs4 -> $v1; ord3 reg100 -> $v1; ord4 reg86 -> $a0.
+- verdict: CONFIRMED
+
+## [s33] Four pure-C bodies (a2, b5, b6, e3) emit the target's class-C registers at 175 insns - merged chain+dest birth12 death56 refs22 in $v1 and the reload 48-52 in $v0 - and the smallest of them, e3, is the floor body plus the operand flip plus one rename: the D_800A35D0 group built through its own u8 *dp local instead of borrowing ptr, with no store moved and no instruction added.
+- mechanism: Giving the D group its own two-statement address build stops ptr's reuse from keeping the sll t0,2 late, so the chain quantity is born at insn 6 of the block instead of insn 14; at birth 12 its qty_compare_1 priority falls to 2.00, it ties with the reload and loses the first-free seat to it.
+- probe: e3, a2, b5, b6 scored and qty-dumped; controls c1 (cp alone on the floor body, byte-inert at 3), f1 (dp folded to one statement), f3 (dp = dp + t0*4), f2x (declaration order swapped).
+- result: e3 26, a2 26, b5 26, b6 26, all 175/175, all with the target's two class-C seats. f1 38 (the fold loses the early birth), f3 26, f2x 26. e3's entire residual is a SIXTH quantity (reg86, birth6 death36 refs10) that takes $a2 and pushes reg87/reg101 down one seat.
+- verdict: CONFIRMED
+
+## [s33] On the operand-flip body a separate C-group pointer local produces a quantity with birth36 death40 refs6 whose qty_compare_1 priority is 3.00 against the merged quantity's 3.14, so it sorts second and the merged quantity still takes $v0; the three placements measured (in place, hoisted above the D group, as the loop body's first statement) each score 23.
+- mechanism: floor_log2(6)*6/(40-36) = 3.00 is below floor_log2(22)*22/(56-28) = 3.14, so the added quantity never gets a register before the merged one.
+- probe: a1, b4, d5, a10 - one scoring build and one BB2_QTY_DEBUG dump each.
+- result: a1 23, b4 23, d5 23, a10 23; every qty table shows the merged quantity at ord=1 with got=2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store + the operand flip, do-while(0) prologue fence present; 175/175 in all four builds
+
+## [s33] Declaring an address local as the loop body's first statement does not move the chain quantity's birth: naming t0*4 in an s32 initialised first (d1), building the D-group pointer there (d3, d4), building the C-group pointer there (d5) and the combination with the s16 record reading (d6) all leave the merged quantity's birth at 26 or 28.
+- mechanism: The birth is set by where cse/expand emits the sll t0,2, which follows the first place the value is consumed by an addressing expression rather than the declaration point; d1's qty table is byte-identical to a3's and to f2's.
+- probe: d1, d2, d3, d4, d5, d6, a3 - one scoring build each, qty dumps for d1, d3, d5, a3.
+- result: d1 27, d2 47, d3 38, d4 38, d5 23, d6 38, a3 27, all 175/175.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store + the operand flip, do-while(0) prologue fence present; 175/175 in all seven builds
+
+## [s33] The loop-body quantity probes that add a real consumed value measured this session either lose a lw %gp_rel(D_800A36A0) reload the target keeps, or score at or above the plain operand flip: sharing t0*10 with the flag index drops to 171 insns, letting base carry the 0x5C/0x60 pair or the chain drops to 173/174, and naming t0*2, the D_800A35D0 base, the 0x5C/0x60 record pointer or addressing the A group straight off base all measure 27 or worse.
+- mechanism: The insn-count failures all remove the second D_800A36A0 reload, which is the pseudo the target loads separately; the rest leave the merged quantity's priority above the reload's.
+- probe: a2, a4, a5, a6, a7, a8, a9, a11, a12, b7, b8, c1, c2, c3, e6 - one scoring build each.
+- result: a4 47, a5 23 at 171, a6 47 at 174, a7 39 at 174, a8 62 at 173, a9 29, a11 47 at 174, a12 44 at 174, b7 42, b8 28, c1 3 (byte-inert control), c2 28, c3 49 at 174, e6 27.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store, do-while(0) prologue fence present; 175/175 except a5 (171), a8 (173), a6/a7/a11/a12/c3 (174)
+
+## [s33] Reading the D_800A35D0 group as the s16[2][2] record it is scores 18 with the cp local (the session's best score) but is off the target's path: its rows 30/31 are lui $t4 / addiu $t4 OUTSIDE the t0 loop, so LICM has hoisted the %hi/%lo(D_800A35D0) pair that the target keeps inside the loop at rows 49/50.
+- mechanism: With the index expression t0*2 scaled by sizeof(s16) the symbol address becomes a loop-invariant operand of a plain plus, which loop.c moves out of the loop; the u8 two-statement build keeps it as a separate in-loop set.
+- probe: b1, b9, b10, d4, d6 scored; b1's differing rows read with tmp/grind/func_800770B8/s33/mismatch.sh.
+- result: b1 18 with 29 differing rows including the hoisted address pair, b9 38, b10 33, d4 38, d6 38, all 175/175.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 35950580 chassis, floor body F + the class-B dead store, do-while(0) prologue fence present; 175/175 in all five builds

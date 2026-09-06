@@ -1,3 +1,36 @@
+/* s33 (structural — 2026-09-06).  BODY UNCHANGED; floor still 3/175/175 (re-measured live
+ * on HEAD 35950580 with the two documented byte-neutral caller-side edits).  The class-C
+ * seat decision is no longer a hypothesis: it is a closed-form predicate on GCC's own
+ * quantity table, read with BB2_QTY_DEBUG=1 on tools/gcc-2.7.2/cc1
+ * (tmp/grind/func_800770B8/s33/qty.sh + qtydbg.py — one cc1 run per body, cheaper than a
+ * scoring build and the right triage tool for any remaining seat question).
+ *
+ * In the loop-body block (blk=1) qty_compare_1 (local-alloc.c:1660) ranks quantities by
+ * floor_log2(refs)*refs*size/(death-birth) and find_free_reg hands out ascending first-free
+ * hard registers in that order:
+ *
+ *   THIS BODY (3):   merged dest+RELOAD  birth48 death56 refs10  pri 3.75 -> $v0
+ *                    chain               birth28 death52 refs16  pri 2.67 -> $v1
+ *   f2 = the flip(27): merged dest+CHAIN birth28 death56 refs22  pri 3.14 -> $v0  (WRONG)
+ *                    reload              birth48 death52 refs4   pri 2.00 -> $v1
+ *   TARGET NEEDS:    merged dest+CHAIN                                    -> $v1
+ *                    reload                                              -> $v0
+ *
+ * so the flip is REQUIRED (it is what merges the dest into the chain) and the merged
+ * quantity must additionally be born at <= ~12 instead of 28, which makes its priority
+ * 2.00, ties it with the reload and loses it the first-free seat.
+ *
+ * FOUR BODIES NOW DO EXACTLY THAT at 175 insns (a2, b5, b6, e3 — all 26).  The smallest is
+ * e3 = this body + the operand flip + ONE rename: the D_800A35D0 group built through its own
+ * `u8 *dp` local instead of borrowing `ptr`.  No store moves, no instruction is added, and
+ * its whole residual is a SIXTH quantity (reg86, birth6 death36 refs10) that takes $a2 and
+ * pushes reg87/reg101 down one seat.  The lever is the TWO-statement address build
+ * (`dp = (u8 *)&D_800A35D0; dp = (t0 * 4) + dp;`) — folding it to one statement scores 38.
+ * Banked at rejected/s33-dp-named-two-stmt-target-classC-seats-but-extra-a2-quantity-26.c.
+ *
+ * Next session: kill e3's sixth quantity (identify reg86 in e3's .lreg and fold it back into
+ * an existing quantity) while keeping merged.birth = 12.  That is a score-0 body.
+ */
 /* s32 (structural, second run — 2026-09-06).  BODY UNCHANGED; floor still 3/175/175.
  * 46 scoring builds + 3 cc1 -da dump runs this session; src/text1b.c restored to the
  * pristine HEAD copy after every sweep.  THE RESIDUAL IS NOW LOCALISED TO A SINGLE GCC
