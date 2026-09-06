@@ -1048,7 +1048,8 @@
  "escalation_deferrals": 0,
  "object_model_audited": 78,
  "reviewer_history": [
-  "LAYER-1 CHEAT-REVIEWER FAIL: The local `volatile u8 *idx_1496` pointer-carried alias is a non-sanctioned respelling of extern-volatile CSE-defeat that bypasses the allowlist/citation gate entirely; the self-vet itself admits it doesn't fit the sanctioned form. Next action: Revert the local pointer-carried `volatile u8 *idx_1496` construct. If the completion byte genuinely needs CSE-defeat, respell it as an `extern volatile u8 D_800A1496;` (or equivalent scalar) declaration at the actual global address, satisfy the full legitimate-volatile-interrupt-touched checklist (IRQ-writer citation with v"
+  "LAYER-1 CHEAT-REVIEWER FAIL: The local `volatile u8 *idx_1496` pointer-carried alias is a non-sanctioned respelling of extern-volatile CSE-defeat that bypasses the allowlist/citation gate entirely; the self-vet itself admits it doesn't fit the sanctioned form. Next action: Revert the local pointer-carried `volatile u8 *idx_1496` construct. If the completion byte genuinely needs CSE-defeat, respell it as an `extern volatile u8 D_800A1496;` (or equivalent scalar) declaration at the actual global address, satisfy the full legitimate-volatile-interrupt-touched checklist (IRQ-writer citation with v",
+  "LAYER-1 CHEAT-REVIEWER FAIL: Submitted body has no verified prior ruling (mechanical ledger contradicts the self-vet's Judge-PASS defense) and introduces an unjustified declaration-level aggregate-merge (CD_alarm struct) the self-vet never runs through the aggregate-merge family test. Next action: Revert to INCLUDE_ASM for CD_ready. Before resubmitting: (1) obtain and cite a Judge ruling keyed to the ACTUAL body hash that will be submitted (5bfc09280b92f34b or its successor), not a whole-file-fallback hash under a different function name; (2) either drop the CD_alarm struct merge and keep the "
  ],
  "review_ledger": [
   {
@@ -1064,10 +1065,20 @@
    "hash": "574d045477c4995d",
    "when": "2026-09-06T16:33:08.479478+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-06 11:33 ruling PASS)"
+  },
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "5bfc09280b92f34b",
+   "when": "2026-09-06T16:38:44.061784+00:00",
+   "summary": "Submitted body has no verified prior ruling (mechanical ledger contradicts the self-vet's Judge-PASS defense) and introduces an unjustified declaration-level aggregate-merge (CD_alarm struct) the self-vet never runs through the aggregate-merge family test."
   }
  ],
- "banned_constructs": [],
- "ladder_skip": 2,
+ "banned_constructs": [
+  "Reliance on the 2026-09-06T16:33 Judge PASS ruling (body=574d045477c4995d) to clear this submission",
+  "`typedef struct { s32 timeout; s32 count; void *func; } CD_alarm; extern CD_alarm D_800F19B8;` replacing the three flat externs `D_800F19B8`/`D_800F19BC`/`D_800F19C0`"
+ ],
+ "ladder_skip": 4,
  "judge_clearances": [
   {
    "hash": "574d045477c4995d",

@@ -4046,3 +4046,6 @@ ON-manifold on the floor body.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, H3 body with its full FAKE set (outer wrap, t0-before-wrap, tb/pB/src/arg5, nested clear wraps, new_var holders, pointer aliases)
+
+- [s88c] CONFIRMED: the Judge-cleared VB body (candidate.c, s88b) re-measures 0/179/179 with `sandbox CD_ready --disable all` (rules_dropped 0) and verify-oracle ok:true on the 2026-09-06 HEAD chassis when applied verbatim through apply_s78.py; submitted as candidate-ready with self_vet.md. Probe: apply + sandbox + verify-oracle, no edits to the body.
+- [s88c] CONFIRMED (tooling fact, not codegen): the driver's Judge clearance for this body is keyed 574d045477c4995d (candidate.c whole-file hash, function named marionation_Exec) while the submission is keyed by src/system.c's CD_ready body 5bfc09280b92f34b, so review_disposition returns `fresh` and layer-1 re-runs despite the PASS ruling. Probe: grindlib.py body-hash on both files. Mitigation for future sessions: name the function CD_ready inside candidate.c before a ruling-request so the clearance key equals the submission key.
