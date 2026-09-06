@@ -1,3 +1,28 @@
+//INS_BEFORE:extern u8 D_800A1494;|extern volatile u8 g_cd_status_a;@@extern volatile u8 g_cd_status_c;
+/* s88-rederive UPDATE (2026-09-06, second s88 dispatch, after the 11:10 layer-1 FAIL of body H3).
+ * MATCH RE-PROVEN WITHOUT THE BANNED CONSTRUCT: sandbox 0/179/0 (--disable all, rules_dropped 0)
+ * and verify-oracle ok:true / build_matches:true with THIS body in src/system.c. Body = H3 with one
+ * change: the three status-byte pointers are `volatile u8 *` because they are taken from the TU's
+ * EXISTING declaration `extern volatile u8 g_cd_status_a;` (src/system.c, on main since 7e182728,
+ * used by the matched CD_flush and cdrom_IrqHandler - the latter with the identical
+ * `volatile u8 *s1 = &g_cd_status_b; volatile u8 *s3 = s1 - 1;` idiom). No cast, no local
+ * qualifier on a non-volatile object: `volatile u8 *idx_1494 = &g_cd_status_a; idx_1495 = 1 + idx_1494;
+ * idx_1496 = idx_1494 + 2;`. Ground truth: Sony libcd `static volatile CD_intr Intr`
+ * (memory/closer/libcd-identity.md:28). Same address as D_800A1494 (symbol_addrs.txt:85), so the
+ * relocations link to the same bytes.
+ * WHY THE VOLATILE IS LOAD-BEARING (named this session, tmp/grind/CD_ready/s88/R1.*): with a
+ * non-volatile idx_1496 (R1) both scheduler passes emit the check2 block identically (sb; move a1,s4;
+ * la a0; li v1,7; beqz a1) but reorg's fill_simple_delay_slots hoists `move a1,s4` over the sb into
+ * the `beqz a2` delay slot (2/178). With the volatile store, mark_set_resources sets set.volatil and
+ * reorg.c:760 resource_conflicts_p rejects EVERY later candidate, leaving the slot nop = the target.
+ * The check1 arm is nop either way (its first candidates are the sb and a 2-instruction `la`).
+ * ALTERNATIVE SPELLINGS MEASURED: VA (chain pointers cast to plain u8 *, idx_1496 = &g_cd_status_a + 2)
+ * also 0/179 - the volatile on the two chain loads is byte-inert on this chassis; VD
+ * (idx_1496 = &g_cd_status_c, its own symbol) = 2/180 - the separate la loses `addiu s3,s2,2`.
+ * OUTCOME: ruling-request (the driver's BANNED CONSTRUCTS entry names `volatile u8 *idx_1496 ...
+ * idx_1496 = idx_1494 + 2`, which this body still spells - with its type now sourced from the
+ * declaration - so a candidate-ready would be auto-discarded).
+ */
 /* s88 UPDATE (2026-09-06, forensics). MATCH: sandbox 0/179/0 (cheat-invisible, --disable all) and
  * verify-oracle ok:true (full build SHA1 == oracle) with this body in src/system.c. The 87-session
  * residual (chain A's shift emitted before chain B's address in both scheduler passes, coupled to a
@@ -296,8 +321,8 @@ s32 marionation_Exec(s32 a0, u8 *a1)
 {
   s32 v0;
   s32 cnt;
-  u8 *idx_1494;
-  u8 *idx_1495;
+  volatile u8 *idx_1494;
+  volatile u8 *idx_1495;
   volatile u8 *idx_1496;
   int new_var;
   int new_var3;
@@ -310,9 +335,9 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   s32 i;
   D_800F19B8.timeout = sys_VSync(-1) + 0x3C0;
   tbl_125c = D_800A125C; /* FAKE: pointer alias to the CD_intstr table per pointer-alias-fake-exception, mechanism: the base is held in s5 across the poll loop as in the target; lever-exhaustion: direct-subscript spellings s66 s07 (14) */
-  idx_1494 = (u8 *)&D_800A1494; /* FAKE: pointer alias to the IRQ-mutated 3-byte status block (the original's Intr struct; the aggregate merge is foreclosed for this function by Ruling D, decisions.md:18287) per pointer-alias-fake-exception, mechanism: the base is held in s2 as in the target; lever-exhaustion: type-level spellings s60 (4/180) */
-  idx_1495 = 1 + idx_1494; /* FAKE: second handle (+1) per pointer-alias-fake-exception, mechanism: base register s6 for the ready byte in the callback block as in the target; lever-exhaustion: s60 */
-  idx_1496 = idx_1494 + 2; /* volatile u8 *: the IRQ-set completion byte polled in the goto-loop spin-wait (legitimate-volatile-interrupt-touched two-prong: IRQ writer = the CD callback, use-site = spin-wait read); the declaration-level spelling measured 4/178 at s78 (F3); FAKE pointer alias per pointer-alias-fake-exception */
+  idx_1494 = &g_cd_status_a; /* FAKE: pointer alias to the libcd Intr status block per pointer-alias-fake-exception (owner ruling 2026-07-01); the pointer's volatile type is the TU's declaration `extern volatile u8 g_cd_status_a;` (src/system.c, on main since 7e182728; ground truth `static volatile CD_intr Intr`, memory/closer/libcd-identity.md:28) - no cast, no local qualifier; mechanism: the base is held in s2 across the poll loop as in the target; lever-exhaustion: type-level direct spellings s60 (4/180), s88 VD (&g_cd_status_c: 2/180) */
+  idx_1495 = 1 + idx_1494; /* FAKE: second handle (+1) per pointer-alias-fake-exception, mechanism: base register s6 for the ready byte in the callback block as in the target (the idiom cdrom_IrqHandler ships on main: `volatile u8 *s3 = s1 - 1;`, src/system.c:766); lever-exhaustion: s60 */
+  idx_1496 = idx_1494 + 2; /* FAKE: third handle (+2) per pointer-alias-fake-exception, mechanism: base register s3 (`addiu s3,s2,2`) for the completion byte as in the target; the volatile store `*(idx_1496 - 1) = 0` in check2 is load-bearing through reorg.c:760 (resource_conflicts_p: a volatile store sets set.volatil, so fill_simple_delay_slots takes nothing into the `beqz a2` slot - the target's nop); lever-exhaustion: s88 R1 (non-volatile idx_1496: 2/178, reorg hoists `move a1,s4` into the slot) */
   D_800F19B8.count = 0;
   D_800F19B8.func = &D_80016248;
   loop:

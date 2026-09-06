@@ -4026,3 +4026,23 @@ ON-manifold on the floor body.
 - probe: H4, H5, H6 applied and measured (tmp/grind/CD_ready/s88/H4.c, H5.c, H6.c).
 - result: H4 = 30 (byte loads and seats scrambled), H5 = 2 (exactly the s80-s87 floor residual, 115 before 128), H6 = 9. The v0 staging FAKE is NOT load-bearing (H3 = 0 with a fresh tb) and is retired from the body.
 - verdict: CONFIRMED
+
+## [s88b] The banned `volatile u8 *idx_1496` qualifier is load-bearing ONLY through reorg's delay-slot fill of the check2 `beqz a2`, and only on the ready-byte clear store
+- mechanism: reorg.c:363/668 mark_set_resources sets res->volatil for a MEM_VOLATILE_P store; reorg.c:760 resource_conflicts_p returns TRUE whenever either side has volatil set, so once fill_simple_delay_slots has scanned past the volatile `sb zero,-1(s3)` every later fall-through candidate conflicts and the slot stays nop (target). Non-volatile: the sb is rejected (memory) but `move a1,s4` (448) is accepted.
+- probe: R1 = H3 with `u8 *idx_1496`; sandbox + sbs full range + sched1/sched2 dumps (tmp/grind/CD_ready/s88/R1.*) compared with H2.sched2.
+- result: R1 2/178/0; block 24's sched2 emission is identical with and without the qualifier (436 448 451 454 457); the only diff is the check2 delay slot + the displaced move. The printf window and every seat are unaffected.
+- verdict: CONFIRMED
+
+## [s88b] The volatile can be sourced from the TU's existing `extern volatile u8 g_cd_status_a;` declaration (no cast, no local qualifier) and the byte match holds
+- mechanism: `volatile u8 *idx_1494 = &g_cd_status_a;` carries the declared type to `idx_1495 = 1 + idx_1494` and `idx_1496 = idx_1494 + 2`; cse.c:1781 use_related_value rewrites the +1/+2 symbol offsets as `addiu` from the s2 base (the original's Intr member-address derivation); the two chain loads become volatile QI mems but on the H3 chain spelling they still expand to the same lbu insns (VA == VB).
+- probe: VA (chain pointers cast to plain, idx_1496 = &g_cd_status_a + 2), VB (all three volatile, no casts), VD (idx_1496 = &g_cd_status_c); sandbox --disable all; verify-oracle on VB.
+- result: VA 0/179/0; VB 0/179/0 with verify-oracle ok:true build_matches:true; VD 2/180/0 (separate la loses `addiu s3,s2,2`). The s60 "all three Intr pointers volatile = 8/179" kill is chassis-relative and does not hold on H3.
+- verdict: CONFIRMED
+
+## [s88b] `volatile u8 *idx_1496 = &g_cd_status_c;` (the byte's own symbol, the s60 type-level spelling) reaches 0 on the H3 chassis
+- mechanism: a pointer taken from a separate symbol is materialised by its own `la` (lui/addiu); cse cannot relate `g_cd_status_c` to the register holding `&g_cd_status_a` because related values require the same symbol_ref.
+- probe: VD, sandbox --disable all, sbs full range.
+- result: 2/180/0: `lui/addiu s3` replaces `addiu s3,s2,2` (+1 insn) and shifts a nop. KILLED.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, H3 body with its full FAKE set (outer wrap, t0-before-wrap, tb/pB/src/arg5, nested clear wraps, new_var holders, pointer aliases)
