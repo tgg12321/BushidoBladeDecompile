@@ -1,3 +1,15 @@
+/* [s39 FORENSICS NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
+ * (anchor src/ings.c:820).]  Frontier item 1 (an interposer reading the copy
+ * destination so the add loses its LOG_LINK) is CLOSED as a class kill: the
+ * mechanism is real (m8a) but every same-value interposer is removed by cse2
+ * before flow (cse.c:6730; m8e/m8f/m8g; J1 = 4 = P4 on the join chassis) and a
+ * value-computing one is an instruction target lacks unless jump2's no-op-move
+ * deletion (jump.c:441) applies, which needs a later a3 reader that does not
+ * exist.  reload's find_equiv_reg copy path (reload1.c:5851) needs an
+ * unallocated pseudo and none exists here.  m8b shows a combine-surviving copy
+ * can still vanish at RA (Q given P's released register).  Details:
+ * memory/grind/func_80017848/evidence.md and hypotheses.md, s39 sections.
+ */
 /* [s38 ADDENDUM 2026-09-06, forensics - body unchanged, still 3 at 127/127 on the
  * HEAD src/ings.c:820 anchor.]  Frontier item 1 (escape #8 with a vanishing label)
  * is closed on minimal geometry: a real forward branch between the copy and the

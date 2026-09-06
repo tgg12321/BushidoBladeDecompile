@@ -4522,3 +4522,129 @@ scorable**. The floor is unchanged for the ninth consecutive session.
 - [s38] s31's unread move producers (jump.c x7, flow.c x1) are gated off for this target: BRANCH_COST 1 (mips.h:2937), no HAVE_conditional_move, no AUTO_INC_DEC (rtl.h:658, mips.h:2175/2179), or run before combine.
 
 - [s38] src/ings.c restored to HEAD after the last measurement; no FAKE constructs anywhere; fake_ablate vacuous.
+
+## s39 (2026-09-06, modality `forensics`; owner directive already executed s37/s38)
+
+- [s39] CHASSIS RE-AUDIT. HEAD src/ings.c carries the anchor
+  `INCLUDE_ASM("asm/funcs", func_80017848);` at line 820 (unchanged since
+  s37). tmp/grind/func_80017848/s39/body_BASE.c (candidate.c's body) applied
+  over the anchor: `sandbox func_80017848 --disable all` = **3 at 127 target /
+  127 build, scorable**. Kill re-audit (mandated): body_Q1.c = **14 at
+  127/127** (identical to s34/s35/s38). The join chassis
+  candidate_alt_join_p4_4.c (body_P4.c) = **4 at 127/125**. No FAKE construct
+  anywhere in any cell; fake_ablate remains vacuous. src/ings.c restored from
+  s39/ings.orig.c after the last cell; `git diff --quiet -- src/ings.c` passes.
+
+- [s39] FRONTIER ITEM 1 (interposer redirecting flow's LOG_LINK) EXECUTED on
+  s37's m5 geometry under the exact project CC_FLAGS with -da
+  (tmp/grind/func_80017848/s39/mini/, runner run.sh, all dumps kept):
+  (a) m8a_interposer_load: `b = a; x = *(s32 *)(b + 8); c = *(ctx+0x10);
+      d = (sa<<6) + b;` with x consumed once at the end. .cse2: copy insn 71
+      `(set (reg/v 77) (reg/v 76))`, interposer 74 `(set 83 (mem (plus 77 8)))`,
+      links load 77, add 81 `(plus (reg 88) (reg/v 77))`. .flow: insn 74 carries
+      `(insn_list 71)`; insn 81 has NO LOG_LINK to 71 (flow.c:2101 links a set
+      only to the NEAREST later same-block use, which is now the interposer),
+      REG_DEAD 77 sits on 81. .combine: insn 71 UNTOUCHED, 74 and 81 still read
+      77 - combine's copy->interposer attempt substitutes 76 into 74 but 77 is
+      not dead there, so added_sets_2 = 1 (combine.c:1458), the PARALLEL fails
+      recog and with i1 == 0 no split path exists (combine.c:1990 requires i1),
+      so it is undone. Final .s: `blez $2,.L7 ; move $8,$3` (copy, in the
+      delay slot because this geometry has no i=0 to fill it) `; addu $2,$5,$8`
+      (the add reads the copy destination) `; lw $3,16($4) ... lw $3,8($8)` -
+      the interposer is a real instruction, scheduled after the add.
+      So the frontier's mechanism is REAL and reproduces target's copy+add
+      shape at the pass level, at the price of one instruction.
+  (b) m8b_interposer_arith: interposer `x = (s32)b + sb`. .combine ends with
+      71/74/81 all present and 74/81 reading 77 (same as m8a). But final .s
+      has NO move: `addu $2,$5,$4` / `addu $4,$4,$6` - global gave pseudo 77
+      the register $4 that 76 released at the copy, the copy became
+      `(set $4 $4)` and jump2 deleted it as a no-op move (jump.c:441).
+      LESSON banked: survival through combine is necessary but not sufficient;
+      target's copy is a real instruction because its source register a0 is
+      taken by the add's destination, which forces Q into a different seat.
+  (c) m8e_roundtrip_add_reads_a: interposer `a = b` (re-sets the copy's own
+      source) with the add reading a. .cse2 already lacks insn 74: cse
+      canonicalised `a = b` to a set whose source equals its destination
+      (cse.c:6730 prices such a source at -1 and the insn is deleted) and
+      rewrote the add to read 77, so flow sees the bare copy->add pair and
+      combine deletes 71 as in s37 m5. Final .s: `addu $2,$5,$3`, no move.
+  (d) m8f (same, add reads b): identical outcome; `a = b` is dead at flow.
+  (e) m8g_fresh_third_var: interposer `e = b` into a never-mentioned pointer,
+      add reads e. .cse2 again lacks insn 74 (canonicalised away) and the add
+      reads 77; combine deletes 71. Final .s identical to m8e.
+  (f) m8c / m8d (second use of b AFTER the add, escape #1 controls): the copy
+      survives (`move $8,$3 ; addu $2,$5,$8 ; ... lw $3,48($8)`), i.e. the
+      known +1-instruction price.
+  CONCLUSION: an interposer that keeps combine away from the copy must (1) sit
+  in the copy's basic block and read Q (flow.c:2101), (2) compute a value
+  distinct from Q's - every same-value register copy is removed by cse2 before
+  flow runs (cse.c:6730, m8e/m8f/m8g) - and therefore (3) reaches the
+  assembler as an instruction unless jump2 deletes it as a no-op move
+  (jump.c:441), which needs its destination to share Q's hard register AND be
+  read later by an instruction that reads a3. Target's preheader block holds
+  only `lw a2,0x10(s2)` (reads s2) and the add, and no instruction after the
+  add reads a3 anywhere in the function (loop 2 body/bottom: v0/v1/a0/a2/s3;
+  .L80017974 onward: s0/s1/s4/s3/s2/a0/a1). Frontier item 1 is CLOSED as a
+  class kill.
+
+- [s39] THE ROUND-TRIP ON THE REAL CHASSIS. J1 = P4 (join chassis) with
+  `q = *(u8 **)(ctx + 0xC); p = q; lnk = ...; base = sh + p;` in BOTH loops
+  (tmp/grind/func_80017848/s39/body_J1.c) = **4 at 127/125**, byte-identical
+  to P4: cse2 removes `p = q` exactly as m8e predicted. Banked as
+  rejected/s39_join_roundtrip_p_eq_q_add_reads_p_costs_4.c.
+
+- [s39] A SECOND POST-COMBINE COPY PRODUCER READ AND CLOSED: reload's
+  input-reload path (reload1.c:5848-5853) calls find_equiv_reg and, when a
+  hard register already holds the reloaded value, emits `gen_move_insn
+  (reloadreg, oldequiv)` - a reg-reg copy combine never sees. Its gate is
+  `reg_renumber[REGNO (old)] < 0` (reload1.c:5851): the pseudo must have
+  received NO hard register from global. global.c:350-368 only ORDERS
+  preference by regs_used_so_far; global.c:1172-1190 shows a call-crossing
+  allocno takes any free callee-saved register before caller-saves kicks in,
+  and target's prologue saves only s0-s5 (s6/s7 free), so no pseudo of this
+  function is left unallocated; the 127-instruction target carries no
+  sp-relative spill traffic either. The reload copy producer is therefore not
+  target's producer (class kill, predicate reload1.c:5851).
+
+- [s39] WHERE THIS LEAVES THE COPY QUESTION. With s37 (combine.c:1458 deletes
+  the promoted use-once copy locally), s38 (block boundary, volatile,
+  post-combine jump/flow producers, can_combine_p refusal list) and s39
+  (interposer, round-trip, reload find_equiv_reg) every mechanism by which a
+  `(set Q P)` whose only reader is the base add could reach the assembler is
+  now either measured dead, priced at +1 instruction, priced at 14 seat
+  points (use_crosses_set_p, Q1), or forbidden. The remaining unexplained
+  facts are target-side: BOTH loops carry the copy with no visible second
+  reader of a3, and loop 1's exit tail re-reads p from memory and recomputes
+  sh on the loop path only. The next session should stop attacking the copy's
+  survival and instead attack what makes the target's Q have a SECOND READER
+  that leaves no bytes: the only unmeasured candidate class is a reader that
+  jump2's cross-jump (jump.c:1950-2061, runs after reload) merges into the
+  shared `.L800178AC` return-0 tail - which reads no register, so a class
+  kill is the likely outcome and should be banked by dump, not by reading.
+
+- [s39] Artifacts: tmp/grind/func_80017848/s39/mini/m8{a,b,c,d,e,f,g}*.c and
+  their .rtl/.jump/.cse/.loop/.cse2/.flow/.combine/.sched/.lreg/.greg/.sched2/
+  .jump2/.dbr/.s dumps; s39/body_{BASE,Q1,P4,J1}.c; s39/cells.ps1;
+  s39/ings.orig.c.
+
+- [s39] Chassis: anchor src/ings.c:820 unchanged; BASE = 3 at 127/127 scorable; Q1 = 14 at 127/127; P4 = 4 at 127/125; J1 = 4 at 127/125.
+
+- [s39] Frontier item 1 (interposer) closed as a class kill: an interposer must read Q in the copy's block (flow.c:2101), must compute a distinct value (cse2 deletes same-value copies, cse.c:6730), and so costs an instruction unless jump2 no-op deletion applies (jump.c:441), which needs a later a3 reader target lacks.
+
+- [s39] m8b: a copy that survives combine can still vanish when global gives Q the register P released; target's copy is real only because the add's destination takes a0.
+
+- [s39] reload1.c:5851 find_equiv_reg copy path needs an unallocated pseudo; none exists here (s6/s7 free, no spill traffic), so reload is not target's copy producer.
+
+- [s39] Chassis: anchor src/ings.c:820 unchanged; BASE = 3 at 127/127 scorable; Q1 = 14 at 127/127; P4 = 4 at 127/125; J1 = 4 at 127/125; no FAKE constructs; src/ings.c restored to HEAD.
+
+- [s39] Owner directive 2026-09-06 was executed in s37 (m0-m6) and extended in s38 (m7a/m7b); s39 extends it again with m8a-m8g on the same minimal geometry; nothing in the directive remains unexecuted.
+
+- [s39] m8a reproduces target's copy+add shape at the pass level (flow gives the interposer the LOG_LINK, combine leaves the copy, final move + addu reading the copy destination) at the price of the interposer instruction.
+
+- [s39] Every same-value interposer (a = b, e = b, p = q on the chassis) is canonicalised away by cse2 before flow (cse.c:6730), so it never redirects the LOG_LINK.
+
+- [s39] m8b: a copy that survives combine still vanishes when global gives Q the register P released (jump2 no-op deletion, jump.c:441); target's copy is a real instruction because the add's destination takes a0.
+
+- [s39] reload's find_equiv_reg copy path (reload1.c:5851) requires an unallocated pseudo; global leaves none here (s6/s7 free, no spill traffic), so reload is not target's copy producer.
+
+- [s39] With s37/s38/s39 together, every mechanism for a use-once (set Q P) to reach the assembler is measured dead, priced at +1 instruction, priced at 14 seat points (Q1), or forbidden; the unexplained facts are now target-side (both loops carry the copy with no visible a3 reader; loop 1's exit tail re-reads p and recomputes sh on the loop path only).

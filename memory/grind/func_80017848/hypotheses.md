@@ -3757,3 +3757,99 @@ to target. Cell scores: `tmp/grind/func_80017848/s34/scores.txt`.
 - kill_scope: class
 - measured_on: source reading of the frozen cc1 tree and mips target files; no FAKE constructs involved
 - predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:2937
+
+## s39 hypotheses (2026-09-06, forensics; owner directive executed s37/s38)
+
+- H-s39-1 (KILLED, class): Frontier item 1 - an insn between the preheader
+  copy and the base add that reads the copy destination redirects flow's
+  reg_next_use so the add has no LOG_LINK to the copy, combine's
+  copy->interposer attempt is undone (added_sets_2 = 1, no i1 split), and the
+  copy stays in target's position at zero instruction cost.
+  mechanism: flow.c:2101 links a set only to the nearest later same-block
+  use; combine.c:1458 added_sets_2; combine.c:1990 split requires i1.
+  probe: tmp/grind/func_80017848/s39/mini/m8a (load interposer), m8b
+  (arithmetic interposer), m8e/m8f (round-trip a = b), m8g (fresh third
+  pointer e = b), exact project CC_FLAGS with -da; .cse2/.flow/.combine/.s
+  read; J1 (round-trip in both loops on the P4 join chassis) measured with
+  sandbox.
+  result: the mechanism is real (m8a: add has no LOG_LINK, insn 71 untouched
+  by combine, final `move $8,$3 ; addu $2,$5,$8`) but the interposer is an
+  instruction target does not have (`lw $3,8($8)`). Every same-value
+  interposer (m8e/m8f/m8g, J1 = 4 = P4) is canonicalised away by cse2 before
+  flow (cse.c:6730), so no zero-byte interposer reaches flow; a
+  value-computing interposer survives to the assembler unless jump2 deletes
+  it as a no-op move (jump.c:441), which requires a later reader of a3 that
+  target lacks. m8b adds: even a surviving copy vanishes when global gives Q
+  the register P released.
+  kill_scope: class
+  predicate_cite: tools/gcc-2.7.2/flow.c:2101
+  measured_on: standalone scratch TUs under the exact project CC_FLAGS
+  (canonical cc1, -O2 -G0 -mcpu=3000 -mips1 -mel) plus J1 on the P4 join
+  chassis over the HEAD src/ings.c:820 anchor; BASE re-audited at 3
+  (127/127); no FAKE constructs anywhere.
+
+- H-s39-2 (KILLED, class): reload's input-reload path emits target's copy:
+  find_equiv_reg finds P's value already in a0 and reload emits
+  `gen_move_insn (reloadreg, oldequiv)` = `addu a3,a0,zero` for the add's
+  operand, a producer combine never sees.
+  mechanism: reload1.c:5848-5853 (oldequiv via find_equiv_reg) gated on
+  `reg_renumber[REGNO (old)] < 0` (reload1.c:5851).
+  probe: source reading of reload1.c:5826-5860 and global.c:350-368,
+  1172-1190 against target's prologue (saves s0-s5 only) and instruction
+  stream (no sp-relative spill traffic in 127 insns).
+  result: the gate needs a pseudo global left unallocated; global hands a
+  call-crossing allocno any free callee-saved register (s6/s7 are free here)
+  and a non-crossing one any of 16 caller-saved registers, so no pseudo of
+  this function is unallocated and the path cannot fire.
+  kill_scope: class
+  predicate_cite: tools/gcc-2.7.2/reload1.c:5851
+  measured_on: source reading of the frozen cc1 tree plus target's prologue
+  and instruction census; BASE re-audited at 3 (127/127); no FAKE constructs.
+
+- H-s39-3 (KILLED, instance): Writing the round-trip `p = q` between the
+  cse-produced copy and the base add (add reads p) in both loops of the join
+  chassis keeps each loop's preheader copy in target's position.
+  mechanism: the interposer would take the copy's LOG_LINK.
+  probe: tmp/grind/func_80017848/s39/body_J1.c over the HEAD anchor, sandbox
+  --disable all; control body_P4.c.
+  result: J1 = 4 at 127/125, byte-identical to P4 = 4 at 127/125; cse2
+  removes the round-trip before flow (m8e dump: insn 74 absent at .cse2).
+  kill_scope: instance
+  measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_J1.c and
+  body_P4.c; BASE re-audited at 3 (127/127); no FAKE constructs.
+
+- H-s39-4 (CONFIRMED): The floor and residual survive unchanged on the HEAD
+  chassis: BASE = 3 at 127/127, Q1 = 14 at 127/127 (kill re-audit passes,
+  not stale), P4 = 4 at 127/125.
+
+## [s39] Frontier item 1: an insn between the preheader copy and the base add that reads the copy destination redirects flow's reg_next_use so the add has no LOG_LINK to the copy, combine's copy->interposer attempt is undone, and the copy stays in target's position at zero instruction cost.
+- mechanism: flow.c:2101 links a set only to the nearest later same-block use; combine.c:1458 added_sets_2 with no i1 split (combine.c:1990); cse.c:6730 removes same-value register copies before flow; jump.c:441 is the only post-combine deleter of a surviving move.
+- probe: Scratch TUs tmp/grind/func_80017848/s39/mini/m8a (load interposer), m8b (arithmetic), m8e/m8f (round-trip a = b), m8g (fresh third pointer) under exact CC_FLAGS with -da; .cse2/.flow/.combine/.s read; J1 = round-trip in both loops on the P4 join chassis measured with sandbox.
+- result: m8a: add has no LOG_LINK, combine leaves insn 71, final move $8,$3 ; addu $2,$5,$8 plus the interposer lw $3,8($8) as a real instruction. m8e/m8f/m8g: insn 74 already absent at .cse2, combine deletes the copy. J1 = 4 at 127/125 = P4. m8b: copy survives combine but global gives 77 the register 76 released and jump2 deletes the no-op. No zero-byte interposer reaches flow; a value-computing one is an instruction target lacks unless a later a3 reader exists, and none does.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: standalone scratch TUs under the exact project CC_FLAGS (canonical cc1) plus J1 on the P4 join chassis over the HEAD src/ings.c:820 anchor; BASE re-audited at 3 (127/127); no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/flow.c:2101
+
+## [s39] reload's input-reload path emits target's preheader copy via find_equiv_reg (a hard register already holding P's value becomes oldequiv and reload emits gen_move_insn(reloadreg, oldequiv)), a producer combine never sees.
+- mechanism: reload1.c:5848-5853, gated on reg_renumber[REGNO (old)] < 0 at reload1.c:5851; global.c:350-368 and 1172-1190 allocate any free register (callee-saved for call-crossing allocnos) before leaving a pseudo unallocated.
+- probe: Source reading of reload1.c:5826-5860 and global.c against target's prologue (saves s0-s5 only; s6/s7 free) and its 127-instruction stream (no sp-relative spill traffic).
+- result: The gate needs an unallocated pseudo; this function has none, so the reload copy producer cannot be target's producer.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen cc1 tree plus target prologue/instruction census; BASE re-audited at 3 (127/127); no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/reload1.c:5851
+
+## [s39] Writing the round-trip p = q between the cse-produced copy and the base add (add reads p) in both loops of the join chassis keeps each preheader copy in target's position.
+- mechanism: the interposer would take the copy's LOG_LINK (flow.c:2101).
+- probe: tmp/grind/func_80017848/s39/body_J1.c over the HEAD anchor, sandbox --disable all; control body_P4.c.
+- result: J1 = 4 at 127/125, byte-identical to P4 = 4; cse2 removes the round-trip before flow (m8e: insn 74 absent at .cse2). Banked as rejected/s39_join_roundtrip_p_eq_q_add_reads_p_costs_4.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_J1.c and body_P4.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s39] The floor and residual survive unchanged on the HEAD chassis: BASE = 3 at 127/127, Q1 = 14 at 127/127 (kill re-audit, not stale), P4 = 4 at 127/125.
+- mechanism: chassis re-audit mandated by the brief; anchor src/ings.c:820 unchanged since s37.
+- probe: s39/cells.ps1 BASE,Q1,P4 with sandbox --disable all; src/ings.c restored from s39/ings.orig.c; git diff --quiet passes.
+- result: BASE 3, Q1 14, P4 4 - all identical to s38.
+- verdict: CONFIRMED

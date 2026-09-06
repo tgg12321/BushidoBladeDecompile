@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 38,
+ "session_count": 39,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -231,18 +231,24 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis and Q1 re-measured 14; owner directive acknowledged (executed s37, extended by m7a/m7b); frontier item 1 (vanishing block boundary, escape #8) close"
+  },
+  {
+   "session": 39,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis; frontier item 1 (LOG_LINK-redirecting interposer) executed on minimal geometry and closed as a class kill (real mechanism, but same-value interpose"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An insn between the copy and the base add that USES the copy destination redirects flow.c's reg_next_use so the add's LOG_LINK points at that insn instead of the copy, and combine's attempt on that insn fails (copy destination still live for the add), leaving the copy in target's position with the add reading it.",
-   "mechanism": "flow.c:2084 links a SET to reg_next_use[regno], the NEAREST later use in the block; a copy->interposer combination with the destination live afterwards makes added_sets_2 = 1 (combine.c:1458) and, with i1 == 0, no PARALLEL split exists (combine.c:1995 requires i1), so it is undone.",
-   "next_probe": "Scratch TU m8 on the m5 geometry: b = a; x = <expr using b>; c = *(ctx+0x10); d = sh + b; with x consumed once; read .flow LOG_LINKS on the add and .combine; then ask whether any byte-free interposer exists in target (the only instruction between target's copy and add is the links load, which reads ctx, so the probe most likely converts this into a class kill citing flow.c:2084)."
+   "hypothesis": "Target's copy destination has a SECOND reader whose bytes are removed after register allocation by jump2's cross-jump (jump.c:1950-2061, runs after reload), merged into the shared return-0 tail .L800178AC.",
+   "mechanism": "cross-jump deletes one of two identical post-RA instruction sequences that reach the same label; a reader of a3 inside a loop-body return arm would survive flow/combine (second use) and could disappear only if its allocated bytes equal the shared tail, which is j .L80017A1C ; addu v0,zero,zero and reads no register.",
+   "next_probe": "Scratch TU on the m8 geometry with a real return-arm statement reading b in each loop body, then read .jump2 (cross-jump) and .dbr; on the chassis measure one such arm in loop 2 with sandbox and diff with s39/dis.sh. Expected outcome: class kill citing jump.c:1950ff (the merged tail cannot contain an a3 read), to be banked by dump rather than by reading."
   },
   {
    "hypothesis": "A family grant covering a construct that can place a use-once register copy at a join-successor preheader without paying for its own address expression would re-open the residual; no such family is on the frozen list today.",
-   "mechanism": "Loop 2's guard block is a join, so cse cannot fold the redundant load to a copy there, and every measured C spelling of the copy at that point is dead; s37/s38 prove combine's deletion and the block-boundary escape are context-free.",
-   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff copy position against target with tmp/grind/func_80017848/s38/dis.sh."
+   "mechanism": "s37/s38/s39 prove combine's deletion, the block-boundary escape, the interposer escape and the reload producer are context-free; only a sanctioned construct with a second byte-free reader could change the pass input.",
+   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff copy position against target with tmp/grind/func_80017848/s39/dis.sh."
   },
   {
    "hypothesis": "An SOTN-master (PSX / GCC 2.7.2) precedent exhibiting the copy-then-redefine-source preheader idiom in a non-nested-loop context would convert the s18 decomp.me twin (scratch 19TpT) into a citable precedent and re-open gate (b).",
@@ -580,6 +586,30 @@
    "measured_on": "source reading of the frozen cc1 tree and mips target files; no FAKE constructs involved",
    "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:2937",
    "result": "jump.c:907/951/1008 are gated on ! reload_completed && BRANCH_COST >= 3 (resp. 4) and BRANCH_COST is 1 for -mcpu=3000; :"
+  },
+  {
+   "session": 39,
+   "statement": "Frontier item 1: an insn between the preheader copy and the base add that reads the copy destination redirects flow's reg_next_use so the add has no LOG_LINK to the copy, combine's copy->interposer at",
+   "kill_scope": "class",
+   "measured_on": "standalone scratch TUs under the exact project CC_FLAGS (canonical cc1) plus J1 on the P4 join chassis over the HEAD src/ings.c:820 anchor; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/flow.c:2101",
+   "result": "m8a: add has no LOG_LINK, combine leaves insn 71, final move $8,$3 ; addu $2,$5,$8 plus the interposer lw $3,8($8) as a "
+  },
+  {
+   "session": 39,
+   "statement": "reload's input-reload path emits target's preheader copy via find_equiv_reg (a hard register already holding P's value becomes oldequiv and reload emits gen_move_insn(reloadreg, oldequiv)), a producer",
+   "kill_scope": "class",
+   "measured_on": "source reading of the frozen cc1 tree plus target prologue/instruction census; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/reload1.c:5851",
+   "result": "The gate needs an unallocated pseudo; this function has none, so the reload copy producer cannot be target's producer."
+  },
+  {
+   "session": 39,
+   "statement": "Writing the round-trip p = q between the cse-produced copy and the base add (add reads p) in both loops of the join chassis keeps each preheader copy in target's position.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_J1.c and body_P4.c; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "J1 = 4 at 127/125, byte-identical to P4 = 4; cse2 removes the round-trip before flow (m8e: insn 74 absent at .cse2). Ban"
   }
  ],
  "escalation_deferrals": 0
