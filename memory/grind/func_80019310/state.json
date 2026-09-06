@@ -1,0 +1,30 @@
+{
+ "func": "func_80019310",
+ "file": "code6cac",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "Cite each island's Sony macro NAME + inline_c.h LINE RANGE, and cite the added \"memory\" clobber to the func_8002D320 precedent (src/code6cac_b.c:935) rather than claiming it is the SDK macro's own clobber list."
+ ],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": {
+  "kind": "citation",
+  "detail": "Cite each island's Sony macro NAME + inline_c.h LINE RANGE, and cite the added \"memory\" clobber to the func_8002D320 precedent (src/code6cac_b.c:935) rather than claiming it is the SDK macro's own clobber list.",
+  "set": "2026-09-06T10:55:01.793927+00:00"
+ },
+ "origin": "queue",
+ "created": "2026-09-06T10:30:51.029033+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "FAIL",
+   "hash": "df4741401a310eb2",
+   "when": "2026-09-06T10:54:32.818288+00:00",
+   "summary": "final call: The constructs are legitimate and I verified the family holds: func_80019310 is named by the 2026-09-01 widened-anchor owner grant (docs/grind/decisions.md:18082; cop2-addressing-preamble-cluster.md:1"
+  }
+ ]
+}
