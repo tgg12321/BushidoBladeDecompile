@@ -642,3 +642,8 @@ disposition taken: driver-executed per integration-handoff-self-serve (owner rul
 category: integration-handoff
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-06 — _addque2 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: driver-executed per integration-handoff-self-serve (owner ruling 2026-08-19): scope grant: _addque2 volatile_extern_allowlist.txt include/gpu.h undefined_syms_auto.txt named_syms.txt; function stays ACTIVE.
+
+## 2026-09-06 — func_80019310 — policy-question
+category: policy-question
+evidence: session-filed disposition: docs/grind/decisions.md 2026-09-06 entry 'func_80019310 (src/code6cac.c) - blocked at the operator registry row (bytes PROVEN, Judge PASS on record, LOW scan tier)': operator step = add the func_80019310 row to tools/grinder/owner_cluster_grants.txt (2026-09-01 widened-anchor grant, decisions.md:18119) then unpark; see the entry's Routing note.
+disposition taken: FORECLOSED silently (owner ruling 2026-08-31 — no pending states, no packets); re-attemptable if a later owner ruling spends this entry.

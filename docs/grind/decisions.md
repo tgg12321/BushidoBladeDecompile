@@ -24674,3 +24674,65 @@ body hash df4741401a310eb2 — see the Judge FAIL on record in state.json review
 ## 2026-09-06 06:05 — func_80019310 — ruling: Body hash df4741401a310eb2 (memory/grind/func_80019310/candidate.c, identical to — **PASS**
 
 Citation defect cured; no construct objection remains. I read candidate.c and verified every cite against the header itself (tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/inline_c.h): gte_ldv0 :16-20 (no clobber list), gte_SetRotMatrix :297-310 and gte_SetTransMatrix :360-369 (publish only $12/$13/$14), gte_mvmva :816-817 over gte_mvmva_core :809-814, gte_stlvnl :1111-1117 (its own "memory" at :1116) -- all exact, and the ADDED-clobber disclosure matches the text. Decisive fact I verified: src/code6cac_b.c:935 is literally `: : "r"(vin) : "$12", "memory"` on a committed lwc2 read island (func_8002D320), and decisions.md:20650 (func_800300B4 PASS) accepted that addition -- so the three added "memory" clobbers are truthful-and-precedented, not GCC steering by a false statement (ordinary-c-judge-decidable). Family holds: func_80019310 is a named carrier of the 2026-09-01 widened-anchor grant (decisions.md:18119, cop2-addressing-preamble-cluster.md:154, record header :18082) with condition 3 as clarified by Ruling A 2026-09-02; I decoded .word 0x4A480012 by hand = cop2 MVMVA sf=1/mx=rot/v=V0/cv=TR/lm=0, i.e. the gte_rtv0-class command, same form as the committed .word 0x4A486012 at src/code6cac_b.c:934. Zero pins, zero free-standing aliasing, zero barriers, zero FAKE; git diff --stat = src/code6cac.c + ledger + metrics only (no Makefile, pipeline .txt, or output-rewriting surface). Body df4741401a310eb2 MAY BE SUBMITTED: this clears it for bytes + FINAL CALL with layer-1 skipped. Not a fail ground and unchanged from the 05:55 note: the Ruling C grant door (grindlib.py:1493) will still return None (scan LOW, no owner_cluster_grants.txt row) -- an operator registry row, outside session scope. Evidence: memory/grind/func_80019310/evidence.md s1-fixup + s2.
+
+## 2026-09-06 — func_80019310 (src/code6cac.c) — **CANONICAL-ASM GRANT PATH: blocked at the operator registry row (bytes PROVEN, Judge PASS on record, LOW scan tier)**
+
+Filed by grind session s3 (recon modality). **This is NOT an exhaustion claim, NOT an endgame lock,
+and NOT a question to the owner.** It is a proof-of-foreclosure record of the integration-handoff
+kind: the function is SOLVED (pure-C body + four PsyQ SDK GTE macro islands, sandbox 0), the Judge
+has already PASSed the exact body, and the ONLY missing piece is one line in a file that no grind
+session may write.
+
+### State of proof (all re-measured this session on HEAD 12427b10)
+
+- Body: `memory/grind/func_80019310/candidate.c`, hash `df4741401a310eb2`. Judge clearance on record
+  (docs/grind/decisions.md 2026-09-06 06:05 ruling PASS; `state.json` judge_clearances).
+- `sandbox func_80019310 --disable all` = score 0, 81/81 target/build insns, rules_dropped 0
+  (`tmp/grind/func_80019310/s3/sandbox_final_stripped.json`). `canonical` = ASM-PARTIAL, 14/81
+  cop2 insns. Zero pins, zero aliasing blocks, zero scheduling barriers, zero `/* FAKE */`.
+- `tools/scan_hand_coded.py --single func_80019310` = tier LOW 2/8 (S3 no spills, S4 front loads;
+  none of the STRONG signals S1/S2/S6 is present), the known GTE-wrapper-misroute artifact the
+  2026-09-01 grant record itself names ("the LOW whole-function scan tier is the known
+  GTE-wrapper-misroute artifact", decisions.md:18082 block).
+- The Judge constraint's other branch, "the islands are C-expressible (respell them in C)", is
+  measured DEAD on this chassis: island 1 (gte_SetRotMatrix) respelled as five C word loads plus
+  cop2-only `ctc2` islands scores 41 (80/81). GCC 2.7.2 seats the loads in $a2/$a0/$a1/$v1/$v0 as a
+  block ahead of the transfers, while the target holds them in $t5-$t7 through the `addu $t4`
+  preamble in the macro's interleaved lw/ctc2 text order (`tmp/grind/func_80019310/s3/thin1_objcmp.txt`,
+  hypotheses.md H10). Same class result as func_800203B4 s6 (12/4/8), now on this function.
+
+### Why the driver refused the merge, and why no session can cure it
+
+`grant_canonical_asm` (tools/grinder/grindlib.py:1493) has two evidence doors: STRONG scan tier, or a
+row naming the function in `tools/grinder/owner_cluster_grants.txt`. The tier is LOW and the
+registry has no `func_80019310` row (only `func_80031890` and `func_8002FF20` were added on
+2026-09-02 under the same grant). The registry header states it is OPERATOR-MAINTAINED ONLY, and
+both `tools/` and `inline_asm_canonical.txt` are on the add-scope-allow denylist, so an
+ESCALATE(integration-handoff) scope widening cannot reach them; the Judge stated this at 05:55 and
+again at 06:05. The owner grant that admits this function already exists: the 2026-09-01 widened-anchor
+GRANT names `func_80019310` as a confirmed handwritten-tagged carrier (decisions.md:18119;
+.claude/rules/cop2-addressing-preamble-cluster.md:154). Nothing is being asked of the owner; the
+ruling is landed. The missing surface is purely clerical.
+
+### The exact operator step (the whole remedy)
+
+1. Append ONE row to `tools/grinder/owner_cluster_grants.txt`, same shape as the two 2026-09-02 rows:
+   `func_80019310 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)`
+2. Re-activate the function (`queue unpark func_80019310 --reason "registry row added"`) if the
+   driver foreclosed it on this entry.
+3. The next session submits `candidate.c` EXACTLY (the Judge clearance skips layer-1); the driver
+   re-proves bytes, runs FINAL CALL, and its grant door then writes the `inline_asm_canonical.txt`
+   line itself (tier "OWNER-CLUSTER"). Honest bucket: COMPLETED-INLINE-ASM-CANONICAL.
+
+### Routing note (why the outcome's escalation_ref is worded as it is)
+
+The driver's CANONICAL-ASM GRANT PATH branch (grind.ps1:1398) keeps a function ACTIVE so the next
+session can "author the whole-body form"; it presumes a STRONG tier the driver will grant on the
+Judge's verdict. Here the form is already authored and cleared, and the tier is LOW, so that branch
+would re-dispatch sessions that cannot act until the registry row exists. The session therefore
+cites this entry in `escalation_ref` without that branch's keyword so the driver takes its
+borderline-log + silent-foreclosure branch instead (the disposition the role prompt names for a
+non-STRONG tier). Re-activation triggers: the registry row above, OR a future toolchain/rule change
+that lets a session write the row itself. Evidence pointers:
+`memory/grind/func_80019310/evidence.md` (s1, s1-fixup, s2, s3), `hypotheses.md` (H1-H10),
+`rejected/` (four disproven forms plus the thin-island probe), `tmp/grind/func_80019310/s3/`.

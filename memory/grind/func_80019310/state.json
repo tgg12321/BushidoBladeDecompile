@@ -1,17 +1,47 @@
 {
  "func": "func_80019310",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "func_80019310 is solved (sandbox 0, 81/81, Judge PASS on body df4741401a310eb2); merge is blocked ONLY by a missing operator row in tools/grinder/owner_cluster_grants.txt (scan tier LOW, no session ma"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "After the operator adds the owner_cluster_grants.txt row, submitting candidate.c EXACTLY reaches COMPLETED-INLINE-ASM-CANONICAL through the normal gates.",
+   "mechanism": "Judge clearance df4741401a310eb2 skips layer-1; grant door returns tier OWNER-CLUSTER and writes the inline_asm_canonical.txt line.",
+   "next_probe": "apply candidate.c, sandbox --disable all == 0, candidate-ready with self_vet.md."
+  }
+ ],
  "judge_constraints": [
   "Cite each island's Sony macro NAME + inline_c.h LINE RANGE, and cite the added \"memory\" clobber to the func_8002D320 precedent (src/code6cac_b.c:935) rather than claiming it is the SDK macro's own clobber list.",
   "RESUBMISSION REJECTED (driver, body df4741401a310eb2): this exact body (comments/whitespace ignored) was already FAILed by the Judge at FINAL CALL; the driver rejects it without review. A comments-only or citation-only re-file is the SAME body. Only a later Judge PASS ruling (ruling-request) can clear it \u2014 change the construct or ask the precise question.",
   "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 4 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)"
  ],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "gte_SetRotMatrix island respelled as five C word loads plus cop2-only ctc2 islands (the Judge constraint's 'islands C-expressible' alternative), measured on this chassis with islands 2-4 unchanged.",
+   "kill_scope": "instance",
+   "measured_on": "s3 chassis HEAD 12427b10, body_thin1.c (island 1 thinned, islands 2-4 as candidate.c), zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "score 41 (80/81). Loads in $a2/$a0/$a1/$v1/$v0 ahead of all ctc2; $t0=arg1 copy respelled as move; island-2 reload lost."
+  },
+  {
+   "session": 1,
+   "statement": "Sibling func_800187F4 has a spelling transplantable onto this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "s3 chassis HEAD 12427b10, candidate.c body df4741401a310eb2, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "Nothing to transplant in either direction; this candidate is already at 0."
+  }
+ ],
  "ladder_skip": 10,
  "pending_fixup": null,
  "origin": "queue",
@@ -46,5 +76,6 @@
    "ref": "decisions.md 2026-09-06 06:05 ruling PASS",
    "justification": "Citation defect cured; no construct objection remains. I read candidate.c and verified every cite against the header itself (tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/inline_c.h): gte_ldv0 :16-20 (no clobber list), gte_SetRotMatrix :297-310 and gte_SetTransMatrix :360-369 (publish only $12/$13/$14), gte_mvmva :816-817 over gte_mvmva_core :809-814, gte_stlvnl :1111-1117 (its own \"memory\" at :1116) -- all exact, and the ADDED-clobber disclosure matches the text. Decisive fact I verified: src/code6cac_b.c:935 is literally `: : \"r\"(vin) : \"$12\", \"memory\"` on a committed lwc2 rea"
   }
- ]
+ ],
+ "object_model_audited": 1
 }
