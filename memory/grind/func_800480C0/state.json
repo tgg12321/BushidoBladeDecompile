@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -87,23 +87,29 @@
    "floor": 20,
    "modality": "synthesis",
    "headline": "Found a third producer of frame vars the ledger never named - inline-callee frame donation (integrate.c:2085-2092) - which reaches the target's exact .frame $sp,88 (vars=32, regs=8, args=24) at the ca"
+  },
+  {
+   "session": 15,
+   "floor": 20,
+   "modality": "synthesis",
+   "headline": "Synthesis: complete source-level census of GCC 2.7.2's eight frame-vars producers - exactly one is zero-traffic and it is the pad family; s14 frontier items 1-3 all closed negative, and the ledger's p"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A shared static __inline__ helper whose 32-byte local is genuinely live at a different call site, and dead only on func_800480C0's path, is the first donation spelling that is not a relocated frame pad - the object is load-bearing in the program while integrate.c:2085-2092 still charges this function's frame.",
-   "mechanism": "DECL_FRAME_SIZE is a pre-optimisation snapshot, so the donation is charged per expansion regardless of what survives; ordinary constant propagation at this call site removes the object's traffic here while another caller keeps it live.",
-   "next_probe": "Census src/text1b.c's COMPLETED-C bodies for an existing ~32-byte local aggregate that could be factored into a shared inline helper, and test with tmp/grind/func_800480C0/s14/probe.sh whether the sibling stays byte-identical while this function gains 32 untouched bytes. If a real candidate exists the construct is a ruling-request (shared utility with a call-site-constant flag), never a self-approved submission."
+   "hypothesis": "The combine-orphan phantom is the only zero-traffic producer whose multiplicity is not fixed by a declaration, and no session has asked what makes SetDrawEnv carry three orphans where this body carries one.",
+   "mechanism": "combine.c:10832-10841 plants an orphan (use (reg P)) when distribute_notes cannot rehome a REG_DEAD note; P then has no set and no constraint-bearing reference, regclass leaves it unseated and alter_reg (reload1.c:2404) pays 8 bytes for zero emitted insns.",
+   "next_probe": "Dump SetDrawEnv and SetDrawEnv2 (.combine, .lreg) via pwsh tools/grinder/dump.ps1 on src/display.c and run tmp/grind/func_800480C0/s6/count_uses.py to extract the defining RTL shape of each of the three orphans; then test whether any shape can be spelled onto this body's four narrow-field sites at zero byte cost. If all three turn out to be the same (ashift (subreg (reg:HI))) producer that s9 closed on this body with a cited predicate, the zero-traffic phantom route becomes a class kill with a cite and the ledger's last non-pad axis is closed."
   },
   {
-   "hypothesis": "A local array is not the only route to DECL_FRAME_SIZE == 32 in the callee, and a struct-by-value parameter has a different traffic profile - function.c:3605 and function.c:3888 give an inline callee a frame-resident stack home for a parameter, and function.c:1347 does the same for an addressable scalar, both feeding DECL_FRAME_SIZE exactly as an array does.",
-   "mechanism": "A struct-by-value parameter that the inliner maps straight into pseudos may donate its 32-byte stack home with no store at all, which an array cannot, because the traffic comes from assign_parms rather than from an expanded reference in the body.",
-   "next_probe": "A static __inline__ helper taking a 32-byte struct by value (and a variant with several addressable scalars) called from the loop, measured with tmp/grind/func_800480C0/s14/probe.sh, reading the vars term and the insn count."
+   "hypothesis": "The single store that any referenced donated object emits could coincide with a store the target already ships, making a referenced (and therefore honest) donated object byte-neutral.",
+   "mechanism": "The target's only sp-relative store outside the register saves is sw $v0,0x10($sp), the fifth outgoing argument at offset 16; frame layout order (outgoing args below vars) decides whether a donated object can ever be placed at offset 16 rather than 24.",
+   "next_probe": "Read the frame-layout code in tools/gcc-2.7.2/function.c that orders args, vars and regs for STACK_GROWS_DOWNWARD with ARGS_GROW_DOWNWARD unset, and confirm whether a frame object can precede the outgoing-args block. If it cannot, the i8 measurement (score 13, one store at offset 24) is the permanent price of any referenced donation and that closes the donation route with a layout cite rather than by enumeration."
   },
   {
-   "hypothesis": "Two cheap calibrations bound how much freedom the donation route gives: whether GCC 2.7.2 at -O2 auto-inlines a static helper with no __inline__ keyword, and whether the donated size is exactly sizeof or rounded.",
-   "mechanism": "If auto-inlining works the helper reads as ordinary factoring rather than a codegen device, and if the size is exact then the donated object must be shaped to exactly 32 bytes rather than merely at least 32.",
-   "next_probe": "Two probe.sh runs - the i9 helper with __inline__ removed, and the same helper with u32 t[7] (28 bytes) - reading the vars term of the .frame comment."
+   "hypothesis": "caller-save.c:315 is the one census entry never measured on this body: its slots are 4 bytes each and are allocated inside reload's iteration, so a slot allocated in one iteration can survive an allocation change that removes the need for the save.",
+   "mechanism": "setup_save_areas allocates a stack slot per call-clobbered hard register that is the home of a pseudo with reg_n_calls_crossed > 0, sized by regno_save_mode (SImode, 4 bytes) rather than by alter_reg's -1 alignment, and it runs before the final reload decisions.",
+   "next_probe": "Bodies with exactly ten and eleven call-crossing values (d1 used twelve and went straight to spills), reading the vars term and the sp-offset histogram to see whether any 4-byte caller-save slot is left untouched; eight untouched 4-byte slots would be a second zero-traffic route to 32."
   }
  ],
  "judge_constraints": [
@@ -446,6 +452,38 @@
    "measured_on": "HEAD 298b7f40, bodies at tmp/grind/func_800480C0/s14/bodies/i6_inline6_argblock.c and i7_inline8_argblock.c installed one at a time over the INCLUDE_ASM line; base candidate's single FAKE (arg0 = 0;) ",
    "predicate_cite": "",
    "result": "Both print .frame $sp,56 # vars= 0, regs= 8/0, args= 24 at 71 insns. The inliner maps every parameter straight to a pseu"
+  },
+  {
+   "session": 15,
+   "statement": "An inline callee whose frame comes from an address-taken parameter or from address-taken scalars, rather than from a declared array, donates its frame to func_800480C0 without emitting a caller-side i",
+   "kill_scope": "instance",
+   "measured_on": "HEAD e18d7715, bodies a3/a4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present",
+   "predicate_cite": "",
+   "result": "a3 reads .frame $sp,72 # vars= 16, regs= 8/0, args= 24 at 73 insns, and the diff against the candidate is exactly one ad"
+  },
+  {
+   "session": 15,
+   "statement": "GCC 2.7.2 at -O2 auto-inlines a static helper with no __inline__ keyword, and the donated frame size equals sizeof of the callee's object exactly.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD e18d7715, bodies a1/a2/a6/a7 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE present",
+   "predicate_cite": "",
+   "result": "Both halves false. a1 emits a real call (.frame $sp,64 # vars= 0, regs= 10/0, 75 insns) - no auto-inlining without -finl"
+  },
+  {
+   "session": 15,
+   "statement": "A BLKmode conditional expression (cond ? structA : structB) charges the frame in the C front end at parse time, so writing one in an unevaluated context reserves frame bytes with no RTL emitted at all",
+   "kill_scope": "class",
+   "measured_on": "HEAD e18d7715, bodies2/c1..c4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE present",
+   "predicate_cite": "tools/gcc-2.7.2/c-typeck.c:3513",
+   "result": "All four bodies read .frame $sp,56 # vars= 0, regs= 8/0, args= 24 at 71-72 insns - no frame charge of any kind. The sour"
+  },
+  {
+   "session": 15,
+   "statement": "A shared static __inline__ helper whose 32-byte local is genuinely live at another call site, and dead only on func_800480C0's path, is a donation spelling that is not a relocated frame pad.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD e18d7715, a5 control installed over the INCLUDE_ASM line with the base candidate's single FAKE present; the sibling-breakage half is an argument from integrate.c:2092 plus the s9 census, not a fr",
+   "predicate_cite": "",
+   "result": "a5 (helper declared, never called) is completely inert - vars= 0, 72 insns - so only an expansion donates. Since every e"
   }
  ],
  "ladder_skip": 0,

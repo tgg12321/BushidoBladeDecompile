@@ -1232,3 +1232,201 @@ dead: s4 (~50k permuter iterations), s6-s9, s10 (55 forms), s12 (14), s13 (7), s
 - probe: tmp/grind/func_800480C0/s14/probe.sh on candidate.c, the full scorer with candidate.c installed, and tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c.
 - result: probe: .frame $sp,56 # vars= 0, regs= 8/0, args= 24, insns=72, unalloc=0. Scorer: score 20, target_insns 74, build_insns 74, rules_dropped 0. Ablation: one FAKE unit, keep-all 20 at 74 build insns, drop-1 32 at 73 - the FAKE is load-bearing and masks no lever, identical to the s12 and s13 audits. The s13 comment-terminator repair holds and the dispatch chassis check's measurement-unavailable reading is resolved.
 - verdict: CONFIRMED
+
+## s15 - synthesis (2026-09-05, chassis HEAD e18d7715, candidate.c + its one FAKE `arg0 = 0;`)
+
+Modality: synthesis. The whole ledger was re-read; the mandated kill re-audit was run on the
+candidate and on the two closest-to-target instance kills (s14 i8 and i9) before any new probe.
+Frontier items 2 and 3 from s14 were both executed to a measurement; frontier item 1 is retired
+by argument plus a measured control. The session's structural contribution is a COMPLETE
+source-level census of the producers of frame `vars` in this compiler, which converts fifteen
+sessions of "producer classes we have thought of" into a closed list of eight sites.
+
+### KILL RE-AUDIT (mandated; run first)
+- **RE-MEASURED, VERDICT UNCHANGED.** candidate: sandbox 20 (74/74, rules_dropped 0), probe
+  vars=0 / 72 insns. s14 i9 (donation with an unreferenced 32-byte local): vars=32 / 72 insns,
+  sandbox 20 (the array is stripped). s14 i8 (donation with a written 32-byte local):
+  vars=32 / 73 probe insns, sandbox **13** / 75 build insns. All three carry exactly one FAKE
+  unit and `tools/fake_ablate.py` reports it load-bearing in each (20/32, 20/32, 13/26), so no
+  kill in this ledger was measured with a FAKE carrier occupying a lever's target pseudo.
+  Artifacts `tmp/grind/func_800480C0/s15/{floor.txt,fake_ablate_i8_i9.txt,run_a.txt}`.
+- NEW FACT FROM THE RE-AUDIT: i8's 13 is the lowest score ever measured on this function and it
+  shows the exact price of the residual - a correct frame costs 20 points, and a single
+  surviving `sw` inside the untouched window costs 13. It is not proposed and not a floor:
+  an eight-word array holding one scalar intermediate fails T1/T2 and is the
+  dead-vars-local-array family.
+
+### H-s15-1 (KILLED, instance) - the addressable-parameter donation (s14 frontier 2)
+STATEMENT: an inline callee whose frame comes from an address-taken parameter or from
+address-taken scalars, rather than from a declared array, donates its frame to this caller
+without emitting a caller-side instruction.
+MECHANISM: `function.c:1347` (put_var_into_stack) and `function.c:3605`/`3888` (assign_parms)
+both feed `DECL_FRAME_SIZE` exactly as `expand_decl` does, and the inliner maps actual
+arguments into pseudos, so the stack home might be paid for and never referenced.
+PROBE: `bodies/a3_addr_of_param.c` (one address-taken parameter) and
+`bodies/a4_eight_addressable_scalars.c` (eight address-taken scalars), measured with
+`tmp/grind/func_800480C0/s15/probe.sh`.
+RESULT: a3 reads `.frame $sp,72 # vars= 16, regs= 8/0, args= 24` at 73 insns; the diff against
+the candidate is exactly one added instruction, `sw $4,24($sp)` - a store into the first word
+of the very window the target leaves untouched - plus a scheduler reshuffle of the sign-extend
+block. a4 reaches the target decomposition `vars= 32, regs= 8/0, args= 24` but at 80 insns,
+eight more than the candidate. Taking a parameter's address makes the parameter live in memory,
+and the store that establishes its home is emitted in the CALLER after inlining.
+VERDICT: KILLED. kill_scope: instance. measured_on: HEAD e18d7715, bodies at
+tmp/grind/func_800480C0/s15/bodies/a3,a4 installed one at a time over the INCLUDE_ASM line,
+base candidate's single FAKE (`arg0 = 0;`) present.
+
+### H-s15-2 (KILLED, instance) - the two donation calibrations (s14 frontier 3)
+STATEMENT: GCC 2.7.2 at -O2 auto-inlines a `static` helper with no `__inline__` keyword, and the
+donated frame size equals `sizeof` of the callee's object exactly.
+MECHANISM: if auto-inlining fires, the helper reads as ordinary factoring rather than as a
+codegen device; if the size is exact, a donated object must be shaped to exactly 32 bytes.
+PROBE: `bodies/a1_autoinline_no_keyword.c` (keyword removed), `bodies/a2_size28.c`
+(`u32 t[7]`, 28 bytes), `bodies/a6_size16.c` (`u32 t[4]`), `bodies/a7_two_expansions_16.c`.
+RESULT: BOTH HALVES FALSE. a1 emits a real call - `.frame $sp,64 # vars= 0, regs= 10/0`,
+75 insns - so this compiler does not auto-inline without `-finline-functions` and the
+`__inline__` keyword is load-bearing for the whole donation route. a2 (28 bytes) reads
+`vars= 32`: the donation is ROUNDED UP to the 8-byte frame boundary, so a donated object of
+25..32 bytes all give 32. a6 (16 bytes) reads `vars= 16` at 72 insns, so the donation is
+proportional and byte-neutral at any size; a7's second expansion had a constant argument and
+folded away, leaving `vars= 16`, so per-expansion stacking remains unconfirmed.
+VERDICT: KILLED. kill_scope: instance. measured_on: HEAD e18d7715, bodies at
+tmp/grind/func_800480C0/s15/bodies/a1,a2,a6,a7, base candidate FAKE present.
+
+### H-s15-3 (KILLED, class) - the unevaluated BLKmode conditional as a zero-RTL frame charge
+STATEMENT: a BLKmode conditional expression (`cond ? structA : structB`) charges the frame in
+the C front end at parse time, so writing one in an unevaluated context reserves frame bytes
+with no RTL emitted at all.
+MECHANISM: `c-typeck.c:3536` builds a `tempvar` for a BLKmode `COND_EXPR` and calls
+`assign_stack_local` on it unconditionally, before the fold and before any expansion - the only
+site in the entire compiler that could charge the frame for an expression that is never
+evaluated, and therefore the only theoretical escape from the flow.c store-survival rule.
+PROBE: `bodies2/c1_sizeof_blk_cond.c` (a `sizeof` of a 32-byte struct conditional),
+`c2_sizeof_blk_cond_used.c` (the same conditional feeding a real use),
+`c4_sizeof_blk_cond_16.c` (16-byte variant), `c3_sizeof_plain_struct.c` (control).
+RESULT: all four read `.frame $sp,56 # vars= 0, regs= 8/0, args= 24` at 71-72 insns - no charge
+of any kind. Reading the source explains it: the entire block from `c-typeck.c:3513` is inside
+`#if 0`, so the BLKmode-conditional tempvar path does not exist in GCC 2.7.2. No spelling of a
+struct conditional can charge this function's frame.
+VERDICT: KILLED. kill_scope: class. predicate_cite: `tools/gcc-2.7.2/c-typeck.c:3513`.
+measured_on: HEAD e18d7715, bodies2/c1..c4 installed one at a time, base candidate FAKE present.
+
+### H-s15-4 (CONFIRMED, and it corrects the ledger) - four alter_reg slots ARE reachable here
+STATEMENT: the ledger's "phantom ceiling of 1 on this body" is a ceiling of the zero-traffic
+regime only; under register pressure this body reaches four unallocated pseudos and exactly
+`vars= 32`.
+MECHANISM: `reload1.c:2382-2385` gives any pseudo with `reg_renumber < 0 && reg_n_refs > 0` an
+`assign_stack_local` slot aligned -1, i.e. 8 bytes each, whether the pseudo is a zero-traffic
+combine orphan or an ordinary spill.
+PROBE: `bodies3/d1_twelve_call_crossing.c` - twelve extra values live across the in-loop call to
+func_800482C8.
+RESULT: `.frame $sp,96 # vars= 32, regs= 10/0, args= 24`, unalloc=4, 108 insns. The sp-offset
+histogram of the emitted body puts the four slots at 24/32/40/48 - exactly the target's
+untouched window - each touched twice, one store and one load. So the multiplicity the target
+needs is reachable, but only in the regime where every slot is a real spill: 36 extra
+instructions, two extra callee-saved registers, and eight memory references inside bytes the
+target never touches. Recorded as CONFIRMED because the mechanism fired; it is not a lever.
+
+### H-s15-5 (KILLED, instance) - the shared-helper donation (s14 frontier 1)
+STATEMENT: a `static __inline__` helper whose 32-byte local is genuinely live at another call
+site, and dead only on func_800480C0's path, is a donation spelling that is not a relocated
+frame pad.
+MECHANISM: `DECL_FRAME_SIZE` is a pre-optimisation snapshot charged per expansion, so the
+sibling keeps the object load-bearing while this function still gains 32 untouched bytes.
+PROBE/RESULT: retired without spending a full sibling build, on two measured grounds.
+(1) The donation is charged at EVERY expansion (`integrate.c:2092`, `keep=1`), so any second
+caller inside this tree gains the same 32 bytes; the three siblings that would be the natural
+second callers (func_80047EE8, func_80047FBC, func_800481E8) are COMPLETED-C at their current
+frames and a donation would move them, so no live second caller exists that the construct does
+not break. s9 already established the family has exactly four members and no fifth caller.
+(2) Even granting a second caller, byte-neutrality HERE still requires the object to be
+unreferenced on THIS path: a5 (`bodies/a5_struct_byval_param.c`, a helper declared but never
+called) measures completely inert, a3/a4/i8 measure that any reference costs an insn inside the
+untouched window, and `flow.c:1740-1742` is the reason the last store to an address always
+survives. A "live elsewhere, dead here" object is the dead-vars-local-array construct with a
+second caller bolted on, not a different family.
+VERDICT: KILLED. kill_scope: instance. measured_on: HEAD e18d7715, a5 control measured with the
+base candidate FAKE present; the sibling-breakage half is an argument from integrate.c:2092 and
+the s9 census, not a fresh build.
+
+### THE MERGED ATTACK, as this session leaves it
+The residual is one quantity, `get_frame_size() == 32`, proven end-to-end by s14's i11 at
+score 0. Frame `vars` in GCC 2.7.2 has exactly eight producer sites (evidence.md s15 census),
+and for this body they now partition cleanly:
+  - ZERO-TRAFFIC, ANY MULTIPLICITY: `stmt.c:3412` expand_decl of an unreferenced local
+    aggregate. This is the frame-pad family. Banned for this function (Judge 2026-09-02);
+    granted by owner ruling to three siblings; bytes already proven (s1 build.log SHA1 match).
+  - ZERO-TRAFFIC, MULTIPLICITY CAPPED: the combine-orphan phantom (`reload1.c:2404` reached via
+    `combine.c:10832`). ~75 spellings across s2-s15 cap it at ONE on this body; the tree-wide
+    maximum on a mult-free body is three (SetDrawEnv/SetDrawEnv2/func_80041AC8). Four has no
+    precedent in this tree.
+  - TRAFFIC-BEARING: everything else - reload spills (d1, four slots but eight memory refs),
+    parameter homes and address-taken scalars (a3/a4), referenced donated objects (i8), BLKmode
+    expand temps (need a call or a copy).
+  - NOT A PRODUCER AT ALL: the BLKmode-conditional front-end path (`#if 0`).
+The only remaining way this function matches in ordinary C is a zero-traffic producer with
+multiplicity four, and the census says the only such producer is a declared unreferenced
+aggregate. That is the shape three siblings ship under an owner grant.
+
+### FRONTIER FOR s16 (reset to three)
+1. The combine-orphan phantom is the ONLY zero-traffic producer whose multiplicity is not
+   fixed by a declaration, and the tree maximum is three. Nobody has yet asked WHAT makes
+   SetDrawEnv carry three where this body carries one. Next probe: dump SetDrawEnv's .combine
+   and .lreg (`pwsh tools/grinder/dump.ps1` on src/display.c) and run s6's count_uses.py to
+   extract the three orphans' defining RTL shapes, then test whether any of the three shapes
+   can be spelled onto this body's four narrow-field sites at zero byte cost. If the answer is
+   that all three come from the same `(ashift (subreg (reg:HI)))` producer s9 already closed
+   here, the zero-traffic phantom route is class-dead and the ledger can say so with a cite.
+2. The i8 measurement (score 13, frame exactly right, one surviving `sw $4,24($sp)`) is the
+   closest any legal-shaped body has come. Next probe: ask whether the surviving store can be
+   made to coincide with a store the target ALREADY ships - the target's only sp-relative store
+   outside the register saves is `sw $v0,0x10($sp)`, the fifth outgoing argument at offset 16.
+   A donated object placed so that its single store lands at 16 rather than 24 would be
+   byte-neutral; frame layout order (args below vars) says it cannot, but the layout is
+   `function.c` code that has never been read for this question, and the answer is one grep.
+3. The producer census has one entry nobody has measured on this body: `caller-save.c:315`.
+   Its slots are allocated per call-clobbered hard register that is the home of a call-crossing
+   pseudo, sized by `regno_save_mode` (4 bytes each, not 8), and `setup_save_areas` runs inside
+   reload's iteration - so a slot allocated in one iteration can survive an allocation change
+   that removes the need for the save. Next probe: a body with exactly ten to twelve
+   call-crossing values (d1 used twelve and produced spills instead), reading `vars` and the
+   sp-offset histogram to see whether any 4-byte caller-save slot is ever left untouched.
+
+## [s15] An inline callee whose frame comes from an address-taken parameter or from address-taken scalars, rather than from a declared array, donates its frame to func_800480C0 without emitting a caller-side instruction.
+- mechanism: function.c:1347 (put_var_into_stack) and function.c:3605/3888 (assign_parms stack home) feed DECL_FRAME_SIZE exactly as expand_decl does, and integrate.c maps actual arguments into pseudos, so the donated home might be charged and never referenced.
+- probe: tmp/grind/func_800480C0/s15/bodies/a3_addr_of_param.c (one address-taken parameter) and a4_eight_addressable_scalars.c (eight address-taken scalars), each installed over the INCLUDE_ASM line and measured with tmp/grind/func_800480C0/s15/probe.sh.
+- result: a3 reads .frame $sp,72 # vars= 16, regs= 8/0, args= 24 at 73 insns, and the diff against the candidate is exactly one added instruction, sw $4,24($sp) - a store into the first word of the 0x18-0x37 window the target leaves untouched - plus a scheduler reshuffle of the sign-extend block. a4 reaches the target decomposition vars= 32, regs= 8/0, args= 24 but at 80 insns, eight more than the candidate. Taking a parameter's address makes it live in memory and the store establishing its home is emitted in the caller after inlining. Closes s14 frontier item 2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e18d7715, bodies a3/a4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present
+
+## [s15] GCC 2.7.2 at -O2 auto-inlines a static helper with no __inline__ keyword, and the donated frame size equals sizeof of the callee's object exactly.
+- mechanism: If auto-inlining fires the helper reads as ordinary factoring rather than a codegen device; if the donated size is exact the donated object must be shaped to exactly 32 bytes rather than merely at least 32.
+- probe: tmp/grind/func_800480C0/s15/bodies/{a1_autoinline_no_keyword.c,a2_size28.c,a6_size16.c,a7_two_expansions_16.c} measured with probe.sh.
+- result: Both halves false. a1 emits a real call (.frame $sp,64 # vars= 0, regs= 10/0, 75 insns) - no auto-inlining without -finline-functions, so the __inline__ keyword is load-bearing for the whole donation route. a2 (28-byte local) reads vars= 32: the donation is rounded up to the 8-byte frame boundary. a6 (16-byte local) reads vars= 16 at 72 insns, so the donation is proportional and byte-neutral at any size but always with a dead object; a7's second expansion folded away (constant argument), leaving vars= 16, so per-expansion stacking is unconfirmed. Closes s14 frontier item 3.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e18d7715, bodies a1/a2/a6/a7 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE present
+
+## [s15] A BLKmode conditional expression (cond ? structA : structB) charges the frame in the C front end at parse time, so writing one in an unevaluated context reserves frame bytes with no RTL emitted at all.
+- mechanism: c-typeck.c:3536 builds a tempvar for a BLKmode COND_EXPR and calls assign_stack_local on it unconditionally, before the fold and before any expansion - the only site in the compiler that could charge the frame for an expression that is never evaluated, and therefore the only theoretical escape from flow.c's store-survival rule.
+- probe: tmp/grind/func_800480C0/s15/bodies2/{c1_sizeof_blk_cond.c,c2_sizeof_blk_cond_used.c,c3_sizeof_plain_struct.c,c4_sizeof_blk_cond_16.c} measured with probe.sh, plus a read of the enclosing source.
+- result: All four bodies read .frame $sp,56 # vars= 0, regs= 8/0, args= 24 at 71-72 insns - no frame charge of any kind. The source explains it: the entire block is inside an #if 0 that opens at tools/gcc-2.7.2/c-typeck.c:3513, so the BLKmode-conditional tempvar path does not exist in this compiler and no spelling of a struct conditional can charge a frame.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD e18d7715, bodies2/c1..c4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE present
+- predicate_cite: tools/gcc-2.7.2/c-typeck.c:3513
+
+## [s15] The ledger's phantom ceiling of one on this body bounds the zero-traffic regime only; under register pressure the body reaches four unallocated pseudos and exactly vars= 32.
+- mechanism: reload1.c:2382-2385 gives every pseudo with reg_renumber < 0 and reg_n_refs > 0 an assign_stack_local slot aligned -1 (8 bytes), whether that pseudo is a zero-traffic combine orphan or an ordinary reload spill.
+- probe: tmp/grind/func_800480C0/s15/bodies3/d1_twelve_call_crossing.c - twelve extra values live across the in-loop call to func_800482C8 - measured with probe.sh, then the sp-offset histogram of tmp/grind/func_800480C0/s15/last_d1_twelve_call_crossing.s.
+- result: .frame $sp,96 # vars= 32, regs= 10/0, args= 24 with unalloc=4 at 108 insns. The histogram puts the four slots at offsets 24/32/40/48 - exactly the target's untouched window - each touched twice, one store and one load. The multiplicity the target needs is therefore reachable on this body, but only in the regime where every slot is a real spill: 36 extra instructions, two extra callee-saved registers and eight memory references inside bytes the target never touches.
+- verdict: CONFIRMED
+
+## [s15] A shared static __inline__ helper whose 32-byte local is genuinely live at another call site, and dead only on func_800480C0's path, is a donation spelling that is not a relocated frame pad.
+- mechanism: DECL_FRAME_SIZE is a pre-optimisation snapshot charged per expansion (integrate.c:2092, keep=1), so a sibling keeps the object load-bearing while this function still gains 32 untouched bytes.
+- probe: tmp/grind/func_800480C0/s15/bodies/a5_struct_byval_param.c as the declaration-only control, plus the integrate.c:2092 per-expansion charge and the s9 caller census.
+- result: a5 (helper declared, never called) is completely inert - vars= 0, 72 insns - so only an expansion donates. Since every expansion is charged, any second caller inside this tree gains the same 32 bytes, and the only candidate second callers are the three COMPLETED-C siblings (func_80047EE8, func_80047FBC, func_800481E8) whose frames the donation would move; s9 established the family has exactly four members and no fifth caller. And even granting a second caller, byte-neutrality here still requires the object to be unreferenced on this path (a3/a4/i8 each cost an insn inside the untouched window; flow.c:1740-1742 keeps the last store to an address alive), so the construct is the dead local aggregate with a second caller bolted on. Closes s14 frontier item 1.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e18d7715, a5 control installed over the INCLUDE_ASM line with the base candidate's single FAKE present; the sibling-breakage half is an argument from integrate.c:2092 plus the s9 census, not a fresh sibling build

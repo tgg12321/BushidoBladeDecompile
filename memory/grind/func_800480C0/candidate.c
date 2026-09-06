@@ -3,6 +3,61 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s15 (synthesis, 2026-09-05, chassis HEAD e18d7715) - BODY UNCHANGED, floor
+ * re-measured 20 with this body installed over the INCLUDE_ASM line (74/74,
+ * rules_dropped 0; probe reads .frame sp,56 - vars= 0, regs= 8/0, args= 24,
+ * 72 insns, unalloc=0). src/text1b.c restored from HEAD after every install.
+ * MANDATED KILL RE-AUDIT run on the candidate AND on the two closest-to-target
+ * instance kills (s14 i8 and i9): one FAKE unit each, load-bearing in each,
+ * keep-all/drop-1 = 20/32, 20/32 and 13/26 respectively
+ * (tmp/grind/func_800480C0/s15/fake_ablate_i8_i9.txt). NOTE THE 13: the s14 i8
+ * donation helper whose 32-byte local is actually WRITTEN is not stripped by
+ * the sandbox and scores 13 at 75 build insns - the lowest number ever measured
+ * on this function. It is NOT a floor and NOT proposed: an eight-word array
+ * holding one scalar intermediate fails cheat-checklist T1 and T2 and is the
+ * dead-vars-local-array family. It is the tightest measurement of the price of
+ * the residual - a correct frame is worth 20 points, one surviving store inside
+ * the untouched window costs 13.
+ * THE SESSION'S STRUCTURAL RESULT: a COMPLETE source-level census of every
+ * producer of frame vars in this compiler (grep of assign_stack_local and
+ * assign_stack_temp over tools/gcc-2.7.2). Eight sites exist, no ninth:
+ * expand_decl of a local aggregate (stmt.c:3412), put_var_into_stack
+ * (function.c:1347), assign_parms homes (function.c:3605 and 3888), expand-time
+ * BLKmode temps (calls.c and expr.c), inline-callee donation (integrate.c:2092),
+ * alter_reg (reload1.c:2404), the caller-save area (caller-save.c:315), and a
+ * group unreachable in ordinary C (trampolines, setjmp, inline-asm operands,
+ * builtin_apply). EXACTLY ONE of them is zero-traffic at arbitrary size, and it
+ * is the frame-pad family. Full partition in hypotheses.md s15.
+ * FIVE HYPOTHESES CLOSED, ALL MEASURED (bodies in
+ * tmp/grind/func_800480C0/s15/bodies, bodies2, bodies3; banked as rejected/s15-):
+ *   a3 address-taken parameter in the inline helper - donates vars= 16 but adds
+ *      exactly one insn, sw 4,24(sp), a store INTO the target's untouched
+ *      window. a4 eight address-taken scalars - reaches vars= 32 at 80 insns.
+ *      s14 frontier item 2 closed negative.
+ *   a1 static WITHOUT the inline keyword - not auto-inlined at -O2, a real call
+ *      is emitted (75 insns, regs= 10). a2 (28-byte local) reads vars= 32, so
+ *      the donation is ROUNDED UP to 8 bytes, not exact. a6 (16-byte local)
+ *      reads vars= 16 at 72 insns - proportional and byte-neutral at any size,
+ *      but always with a dead object. s14 frontier item 3 closed.
+ *   c1-c4 the BLKmode conditional (cond ? structA : structB) - the one front-end
+ *      site that would charge the frame at PARSE time for an expression that is
+ *      never evaluated - is DEAD CODE: c-typeck.c:3513 wraps it in if-zero. All
+ *      four bodies read vars= 0. CLASS kill with a cite.
+ *   d1 twelve values live across the in-loop call - vars= 32 with FOUR
+ *      alter_reg slots, correcting the ledger's phantom-ceiling-of-one claim:
+ *      the ceiling of one bounds the ZERO-TRAFFIC regime only. All four slots
+ *      (offsets 24, 32, 40, 48) carry a store and a load, at 108 insns.
+ *   a5 an inline helper declared but never called is completely inert, which
+ *      with integrate.c:2092 charging every expansion retires s14 frontier
+ *      item 1 (the shared helper live at another call site would move the
+ *      COMPLETED-C siblings' frames too).
+ * WHERE THIS LEAVES THE ATTACK: the residual is one quantity, get_frame_size
+ * equal to 32, and the only zero-traffic producer with unbounded multiplicity
+ * is a declared unreferenced aggregate - the pad, banned here and granted to
+ * three siblings. The only open zero-traffic alternative is the combine-orphan
+ * phantom, capped at one on this body and at three tree-wide. Frontier for s16
+ * is written out in hypotheses.md.
+ */
 /* s14 (synthesis, 2026-09-05, chassis HEAD 298b7f40) - BODY UNCHANGED, floor
  * re-measured 20 with this body installed over the INCLUDE_ASM line (72 insns,
  * .frame $sp,56 - vars= 0, regs= 8/0, args= 24, unalloc=0); src/text1b.c
