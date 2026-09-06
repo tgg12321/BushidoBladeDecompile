@@ -24476,3 +24476,77 @@ PASS. Constructs: (1) object-model declaration fixes `extern s32 D_800A3454[]` /
 ## 2026-09-06 04:14 — func_8004473C — layer-1 review — **FAIL**
 
 The per-word-splat-to-aggregate merge is submitted with the struct declared TU-locally in src/text1a_c.c, which is a self-admitted, unmet mandatory prong of the only family that could sanction the restructuring.
+
+## 2026-09-06 — func_8004473C (src/text1a_c.c) — **INTEGRATION HANDOFF (bytes PROVEN this session: sandbox 0 at 49/49 + full-tree oracle SHA1)**
+
+Filed by grind session s5 (synthesis modality). **This is NOT an endgame lock, NOT an exhaustion
+claim, and NOT a question to the owner.** The function is SOLVED in pure C — no inline asm, no
+register pins, no pads, no `volatile`, no dead stores, no `/* FAKE */` construct of any kind. It is
+filed here only because ONE of the required edits (`include/game.h`) is outside a grind session's
+allowed edit surface, so no session can stage it; the tree was reverted to clean after measurement.
+
+### Proof of bytes (measured 2026-09-06, this session, from a clean HEAD)
+
+Configuration: `memory/grind/func_8004473C/candidate_merge.patch` applied — it moves the
+`Unk800A9CF8Header` typedef and `extern Unk800A9CF8Header D_800A9CF8;` into `include/game.h`,
+deletes the six per-word `extern` scalars from `src/text1a_c.c`, rewrites the three C sibling users
+(`func_80044670`, `func_80044B30`, `func_80044C70`) to members, and replaces the register-pinned
+m2c body of `func_8004473C` with the matched pure-C body.
+
+- `sandbox func_8004473C --disable all` -> `{"score": 0, "target_insns": 49, "build_insns": 49,
+  "scorable": true, "rules_dropped": 0}` — honest, cheat-invisible, zero rules. (The same run
+  reports `cheat_asm_stripped: 6`; those six lines belong to OTHER functions in the TU that still
+  carry m2c cheat bodies, not to `func_8004473C`, whose body contains no `__asm__` and no pins.)
+- Full-tree `verify-oracle --rebuild --allow-dirty` -> `"ok": true`,
+  `"build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa"` == `"original_sha1_now"` ==
+  `"original_sha1_locked"`. Every other TU and every other consumer of the seven per-word symbols is
+  byte-neutral under the merge.
+
+### Why this is filed rather than submitted as candidate-ready
+
+The 2026-09-06 04:14 layer-1 review FAILed the s4 submission on exactly one ground: the aggregate
+declaration was TU-local in `src/text1a_c.c`, an unmet mandatory prong (d) of the per-word-splat →
+aggregate merge family (`.claude/rules/no-new-park-categories.md`, 2026-08-17 entry: "spelled at the
+canonical declaration in the shared header, never TU-local"). That FAIL was correct. That TU-local
+spelling is now a driver-enforced banned construct for this function, and the compliant spelling
+requires `include/game.h`, which `Invoke-CandidatePath`'s single-stem gate rejects without a
+`tools/grinder/scope_allow.txt` line. s3 had only shown header-vs-TU-local equivalence at floor 13;
+this session shows it AT ZERO, so complying with prong (d) provably costs nothing in bytes.
+
+### The exact remedy (the whole thing)
+
+1. `tools/grinder/scope_allow.txt` — one driver-written line:
+   `func_8004473C include/game.h undefined_syms_auto.txt named_syms.txt`
+2. Next session applies `memory/grind/func_8004473C/candidate_merge.patch` to a clean HEAD (it is
+   the complete, byte-verified diff: `include/game.h` + `src/text1a_c.c`), re-measures, writes
+   `self_vet.md` claiming the aggregate-merge family with prong (d) MET, and returns
+   candidate-ready through the full normal gates.
+3. Prong (c) housekeeping, needing the two root-level `*.txt` paths: the per-word rows
+   `D_800A9CF8`/`D_800A9CFA`/`D_800A9CFC`/`D_800A9CFE`/`D_800A9D00`/`D_800A9D04`/`D_800A9D08` in
+   `undefined_syms_auto.txt:302-308` and their census names in `named_syms.txt` (lines 1742-1743,
+   2135-2136, 2269-2270, 2488) must STAY, because the still-`INCLUDE_ASM` sibling `func_80044800`
+   references them from `asm/funcs/func_80044800.s`. Per the 2026-09-03 amendment to prong (c) they
+   are satisfied by suffixing each row `/* alias of D_800A9CF8+N; retire with func_80044800 */`.
+   No C code names any of them once the patch is applied.
+
+### Routing
+
+All three paths are in the `add-scope-allow` allowed classes (`include/*.h`, root-level
+`*.txt`) and none is on the denylist. Per `.claude/rules/integration-handoff-self-serve.md` (owner
+ruling 2026-08-19) this is pipeline-executable: the Judge verifies the bytes claim above and returns
+`ESCALATE` with `escalate_kind=integration-handoff`,
+`scope_paths=["include/game.h", "undefined_syms_auto.txt", "named_syms.txt"]`. The function then
+STAYS ACTIVE and lands through the normal gates. Direct precedents: func_80033550 (2026-09-03),
+func_80062020 (2026-09-03), func_80034F88 / func_80022F34 (2026-09-05) — all in
+`tools/grinder/scope_allow.txt`.
+
+### Evidence pointers
+
+`memory/grind/func_8004473C/evidence.md` (s5 section), `hypotheses.md` (s5 section),
+`candidate.c` (the matched body), `candidate_merge.patch` (the complete byte-verified diff),
+`tmp/grind/func_8004473C/s4/text1a_c.c.matched` (the whole matched TU),
+`tmp/grind/func_8004473C/s4/HANDOFF-include-game-h.diff` (the header hunk alone).
+
+## 2026-09-06 04:20 — func_8004473C — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s4 of func_8004473C, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_8004473C). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
