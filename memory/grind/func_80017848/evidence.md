@@ -4865,3 +4865,111 @@ scorable**. The floor is unchanged for the ninth consecutive session.
 - [s41] Reading (e): optimize_reg_copy_1 (local-alloc.c:700-870) re-points the add at the copy destination and moves death notes; the copy / lw links / add-reads-copy stream is reachable only via a flow-time-live destination (target seats) or the use_crosses_set_p refusal (Q1, destination local, seat v0).
 
 - [s41] Rejected bank now 244 entries.
+
+## s42 (2026-09-06, modality `structural`; owner directive already executed s37-s41)
+
+Chassis: HEAD `src/ings.c:820` INCLUDE_ASM anchor with each cell body pasted in
+by `tmp/grind/func_80017848/s42/apply_win.py`; `candidate.c` (= s42/body_BASE.c)
+re-measured **3 at 127/127** first (E-s42-0). No FAKE constructs exist in any
+form of this function, so `tools/fake_ablate.py` is vacuous. All cell bodies,
+normalised diffs (`B_<cell>.txt` vs `T.txt`), and instrumented cc1 dumps
+(`i<cell>/ings.i.*`, canonical build/cc1 verified CODEGEN-IDENTICAL on every
+cell) are in `tmp/grind/func_80017848/s42/`.
+
+### E-s42-0 - chassis re-audit + kill re-audit (quote THIS floor)
+BASE = 3 at 127/127; Q1 (the exact-stream escape-#9 form, closest instance kill)
+= 14 at 127/127. Both unchanged from s41, so the Q1 kill is not stale.
+
+### E-s42-1 - CORRECTION: the true BASE residual, from a fresh normalised diff
+`s41/B.txt` was NOT the BASE stream (it lacks loop 1's copy; it is the last
+cell s41 ran). The fresh diff of BASE (`s42/B_BASE.txt` vs `T.txt`) shows loop 1
+is INSTRUCTION-EXACT (p=a0, sh=a1, q=a3, links=a2, base=a0, `addu a3,a0,zero`
+present), and the whole 3-point residual is:
+  (a) loop-1 exit tail: target `lw a0,12(s2)` vs BASE `addu a0,a3,zero`
+      (the `p = q;` device is a real move, target reloads p);
+  (b) loop-2 preheader: target `addu a3,a0,zero` vs BASE `lw v0,12(s2)`;
+  (c) loop-2 base add: target `addu a0,a1,a3` vs BASE `addu a0,a1,v0`.
+Everything else, including the join geometry (blez landing on `addu v0,a1,a0`,
+`lw/sll` on the fall-through only), already matches.
+
+### E-s42-2 - MECHANISM, dump-proven: target's tail geometry is reorg.c's
+### redundant-insn thread redirect, NOT a C-level exit tail
+Cell U1 writes an UNCONDITIONAL `p = *(u8 **)(ctx + 0xC);` in the join block
+before loop 2's guard (no `p = q`). Final asm (`s42/raw_U1.txt`): the loop-1
+`blez v0` targets 0x1468 = `sll v0,s4,6`, one instruction PAST the join block's
+`lw a0,12(s2)` at 0x1464. Dumps (`s42/iU1_sched2_insns.txt`,
+`s42/iU1_dbr_insns.txt`): in `.sched2` `code_label 140` precedes insn 143
+(`(set (reg a0) (mem (plus s2 12)))`); in `.dbr` label 140 is gone, a NEW
+`code_label 380` sits after insn 143, and jump_insn 79 (the blez) now carries
+`label_ref 380`. This is `reorg.c:3442-3459` (`fill_slots_from_thread`: a
+thread insn `redundant_insn` with an insn before the branch on a NON-owned
+thread sets `new_thread = next_active_insn (trial)`) followed by
+`reorg.c:3714-3716` (`get_label_before (new_thread)` + `reorg_redirect_jump`).
+The guard-1 block's own `lw a0,12(s2)` makes the join block's identical load
+redundant on the taken path. In target BOTH `lw a0,12(s2)` and `sll a1,s4,6`
+are skipped because both are register-identical to guard 1's; in U1 only the
+lw is skipped because U1's sh2 landed in v0. CONSEQUENCE: target's C needs no
+`p = q` exit tail; loop 2's guard is plausibly written exactly like loop 1's.
+
+### E-s42-3 - the NATURAL SYMMETRIC CHASSIS measures 6 at 127/125 (U4/U4b)
+U4 = no exit tail; unconditional reload + `i = 0; sh2 = slot_a << 6;
+t2 = sh2 + p; t2 = *(s32 *)(t2 + 0x20); if (i < t2)` (DISTINCT two-step local
+per loop); loop 2 preheader `q = p; base = sh2 + q` (U4b: fresh read; identical
+bytes). Diff vs target is EXACTLY the two `addu a3,a0,zero` copies, the two base
+adds reading a0 for a3, and loop 2's links seat (a1 for a2, a consequence of the
+missing copy). `iU4/ings.i.cse2` has both copies (insns 83 and 162, both
+`(set (reg/v:SI 80) ...)`); `iU4/ings.i.combine` has neither. Same body as
+s34's `candidate_alt_join_shape_6.c` modulo declaration order (diffed).
+Intermediate cells: U1/U2 = 9 at 124 (loop 2 guard inline, so the join-block
+load makes the preheader read redundant and cse folds base2 into the guard's
+address temp); U3/U3b = 32 at 125 (SHARED `t` two-step across both loops =
+the s9 t-reuse seat rotation, t->v1, i->a0, p->v0).
+
+### E-s42-4 - BASE's loop-1 copy is bought ENTIRELY by the `p = q` read (U5)
+U5 = BASE + `p = *(u8 **)(ctx + 0xC);` right after `p = q;` (inside the
+if-body): 4 at 127/126. The tail becomes target's `lw a0,12(s2)` but `p = q` is
+now a dead store, flow deletes it BEFORE counting its read of q (flow.c
+`insn_dead_p` path skips `mark_used_regs` for dead insns), loop 1's copy dies in
+combine. A dead-store reader is not a reader.
+
+### E-s42-5 - reader / producer classes closed by reading this session
+(i) `combine.c:803-930` (`can_combine_p`) read end-to-end: the only refusal
+predicates a use-once same-block copy `q = p` -> `base = sh + q` can trip are
+`use_crosses_set_p` (escape #9, merges p with the intervening def) and
+`REG_NO_CONFLICT` notes (multi-word no-conflict blocks only, optabs); the
+`last_call_cuid` and `REG_INC`/`REG_RETVAL`/`ASM_OPERANDS` paths need a call,
+autoinc, libcall or asm between the copy and the add. Nothing new.
+(ii) reload's input-reload copy producer (`reload1.c:5843-5851`,
+`find_equiv_reg` -> `gen_move_insn (reloadreg, oldequiv)`) fires only for
+`GET_CODE (old) == MEM` or an UNALLOCATED pseudo. A MEM operand in the add at
+reload time can only come from `local-alloc.c:1079-1082`
+(`reg_n_refs == 2 && reg_basic_block < 0 && REG_EQUIV`), and REG_EQUIV notes are
+created only by `function.c:3838-3854` (stack-passed parameters) or by
+`local-alloc.c:1051-1055` for `reg_basic_block >= 0` (LOCAL) pseudos. A global
+pseudo can therefore never carry the note in this 4-register-arg function:
+the reload copy producer is unreachable here (class kill, H-s42-6).
+(iii) `global.c:414-432`: every pseudo with refs and `reg_live_length != -1`
+gets an allocno; -1 is set only through the equiv machinery above; so no
+pseudo of this function is left unallocated for reload to rematerialise.
+(iv) USE insns (`function.c:3066` `use_variable`) are emitted only under
+`obey_regdecls` (stmt.c:3268/3499), i.e. -O0: no byte-free flow-time USE
+exists at -O2.
+
+- [s42] Floor re-audited at 3 (127/127) on the HEAD chassis; Q1 re-measured 14 (127/127); no FAKE constructs.
+- [s42] s41/B.txt was not BASE; the true 3-point residual is (a) tail `lw a0,12(s2)` vs `addu a0,a3,zero`, (b) loop-2 preheader `addu a3,a0,zero` vs `lw v0,12(s2)`, (c) `addu a0,a1,a3` vs `addu a0,a1,v0`. Loop 1 is instruction-exact in BASE.
+- [s42] DUMP-PROVEN: target's join geometry (lw/sll on the fall-through only, blez landing on the guard add) is produced by reorg.c:3442-3459 + :3714-3716 (redundant-insn thread redirect) from an UNCONDITIONAL reload in the join block: U1's .sched2 has label 140 before the reload insn 143, .dbr has new label 380 after it with the blez retargeted. No `p = q` exit tail is needed for the tail bytes.
+- [s42] The natural symmetric chassis (U4: unconditional reload, distinct two-step guard per loop, `q = p` copies) is 6 at 127/125 with a residual of exactly the two use-once copies (cse2 insns 83/162 present, gone in .combine) and the consequent links seat; it equals s34's join-shape form.
+- [s42] U5 (BASE + reload after `p = q`) = 4 at 126: the dead `p = q` is deleted by flow before its read counts, so BASE's loop-1 copy is bought entirely by that read.
+- [s42] Reload's find_equiv_reg copy producer is unreachable in this function (class kill): it needs a MEM operand or an unallocated pseudo at reload time; MEM operands come only from local-alloc.c:1079-1082 which needs a REG_EQUIV on a GLOBAL pseudo, and REG_EQUIV is created only for stack params (function.c:3838-3854) or LOCAL pseudos (local-alloc.c:1051-1055).
+
+- [s42] Floor re-audited at 3 (127/127) on the HEAD src/ings.c:820 chassis; Q1 14 (127/127); no FAKE constructs exist.
+
+- [s42] CORRECTION: s41/B.txt was not the BASE stream. In BASE loop 1 is instruction-exact (p=a0, sh=a1, q=a3, links=a2, addu a3,a0,zero present); the 3-point residual is the exit tail (target lw a0,12(s2) vs move), loop 2's addend (target copy into a3 vs lw v0,12(s2)) and loop 2's base add reading v0.
+
+- [s42] DUMP-PROVEN: target's join geometry is reorg.c:3442-3459 + :3714-3716 redundant-insn thread redirect on an UNCONDITIONAL reload in the join block (U1: .sched2 label 140 before reload insn 143; .dbr new label 380 after it, blez retargeted). The p = q exit tail is not what target does there.
+
+- [s42] Natural symmetric chassis U4 (unconditional reload, distinct two-step guard per loop, q = p copies) = 6 at 127/125; residual is exactly the two use-once copies (cse2 insns 83/162, deleted by combine) plus the consequent links seat; equals s34's join-shape form.
+
+- [s42] U5 (BASE + reload after p = q) = 4 at 126: a dead-store reader is deleted by flow before its read counts; BASE's loop-1 copy is bought entirely by the p = q read.
+
+- [s42] Class kill: reload's find_equiv_reg copy producer is unreachable here (needs a MEM operand or unallocated pseudo; REG_EQUIV on a global pseudo only exists for stack parameters, function.c:3838-3854; local-alloc.c:1079).

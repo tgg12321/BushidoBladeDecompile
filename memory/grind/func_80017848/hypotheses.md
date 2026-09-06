@@ -3987,3 +3987,111 @@ to target. Cell scores: `tmp/grind/func_80017848/s34/scores.txt`.
 - probe: Read global.c:340-372, :877-935, :952-1110, :1671-1740 and local-alloc.c:1784-1900 against the target stream; cross-checked with s40's BB2_FINDREG_DEBUG=80 dump (own_copy_prefs empty, someone_prefers empty).
 - result: No local qty can be seated in a3 here (find_free_reg takes the lowest register not busy in the block, global pseudos are invisible to local-alloc, every block holds one local chain in v0); the only hard a3 write is the entry copy of the slot_b parameter pseudo (seated s3, crosses the call); the only v0/a0-preferring pseudos (call arguments, call result) cannot overlap a preheader copy without crossing the call. The preference route is closed by reading, and s40's live-across-the-loop requirement is confirmed on an independent second reading.
 - verdict: CONFIRMED
+
+## s42 hypotheses (2026-09-06, structural; owner directive already executed s37-s41)
+
+## [s42] The floor and residual survive unchanged on the HEAD chassis this session, and the closest-to-target instance kill (Q1) is not stale.
+- mechanism: Driver-mandated chassis re-audit and kill re-audit before any probe; no FAKE construct exists in any form of this function so fake_ablate is vacuous.
+- probe: sandbox func_80017848 --disable all with s42/body_BASE.c and s42/body_Q1.c over the src/ings.c:820 anchor; s42/dis.sh normalised diff.
+- result: BASE 3 at 127/127, Q1 14 at 127/127. The fresh BASE diff shows loop 1 instruction-exact and the residual = tail `lw a0,12(s2)` vs `addu a0,a3,zero`, loop-2 `addu a3,a0,zero` vs `lw v0,12(s2)`, `addu a0,a1,a3` vs `addu a0,a1,v0` (s41/B.txt was not the BASE stream).
+- verdict: CONFIRMED
+
+## [s42] Target's loop-1-exit tail geometry (`lw a0,12(s2); sll a1,s4,6` executed on the fall-through only, the loop-1 blez landing on `addu v0,a1,a0`) is produced by reorg.c's redundant-insn thread redirect from an UNCONDITIONAL reload of p in the join block, not by a C-level exit tail.
+- mechanism: reorg.c:3442-3459 fill_slots_from_thread: a thread insn that redundant_insn() matches against an insn before the branch, on a thread the branch does not own, advances new_thread past it; reorg.c:3714-3716 then emits a label before new_thread and redirects the jump. Guard 1's own `lw a0,12(s2)` / `sll a1,s4,6` make the join block's identical pair redundant on the taken path.
+- probe: cell U1 (BASE minus `p = q`, plus `p = *(u8 **)(ctx + 0xC);` unconditionally before loop 2); final asm s42/raw_U1.txt; instrumented dumps s42/iU1_sched2_insns.txt and s42/iU1_dbr_insns.txt.
+- result: blez targets 0x1468 = `sll v0,s4,6`, one past the join block's `lw a0,12(s2)` (0x1464). .sched2: code_label 140 precedes insn 143 (the reload). .dbr: label 140 gone, new code_label 380 after insn 143, jump_insn 79 carries label_ref 380. Only the lw is skipped in U1 (its sh2 landed in v0, not a1); in target both lw and sll are register-identical to guard 1's and both are skipped.
+- verdict: CONFIRMED
+
+## [s42] An unconditional reload of p before loop 2 with loop 2's guard written inline (`if (i < *(s32 *)(sh2 + p + 0x20))`) keeps the loop-2 base add.
+- mechanism: the join-block load makes the preheader's read of ctx+0xC redundant, so cse folds `sh2 + q` into the guard's still-available address temp.
+- probe: cells U1 and U2 (U2 adds explicit `q = p;` in loop 2's preheader) on the HEAD chassis via s42/run_cell.ps1.
+- result: U1 = U2 = 9 at 127/124: loop 1's copy dies (no flow-time reader), loop 2's guard becomes `sll v0; addu a0,v0,a0; lw v0,32(a0)` with the guard dest reused as base and no base add. Banked as rejected/s42_unconditional_reload_l2_inline_guard_base_folds_costs_9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U1.c / body_U2.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] On the symmetric chassis, spelling loop 2's guard as a two-step through the SAME local `t` that loop 1's guard uses reproduces target's guard/base pair.
+- mechanism: the two-step overwrites the guard's address value so cse cannot fold the base add into it.
+- probe: cells U3 (explicit `q = p` base) and U3b (fresh-read base).
+- result: 32 at 127/125 for both: `t` shared across both loops becomes a long-lived global allocno that outranks i/p/sh (t->v1, i->a0, p->v0), the s9 t-reuse rotation on this chassis. Banked as rejected/s42_symmetric_shared_t_twostep_seat_rotation_costs_32.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U3.c / body_U3b.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] The natural symmetric chassis (no exit tail, unconditional reload, distinct two-step local t2 for loop 2's guard, `q = p; base = sh2 + q` in loop 2's preheader) reproduces target except for the two preheader copies.
+- mechanism: with reorg supplying the tail geometry, the only remaining divergence should be the two use-once copies combine deletes.
+- probe: cells U4 (explicit copy) and U4b (fresh-read base), normalised diffs s42/B_U4.txt; dumps s42/iU4/ings.i.cse2 and .combine.
+- result: 6 at 127/125 for both. Diff vs target is exactly: both `addu a3,a0,zero` absent, both base adds `addu a0,a1,a0`, loop 2's links in a1 not a2 (consequence of the missing copy: sh dies at the add before the links load). cse2 holds both copies (insns 83 and 162 into reg/v 80); .combine holds neither. Body equals s34's candidate_alt_join_shape_6.c modulo declaration order. Banked as rejected/s42_natural_symmetric_reload_both_copies_die_in_combine_costs_6.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U4.c / body_U4b.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] Writing the reload `p = *(u8 **)(ctx + 0xC);` directly after BASE's `p = q;` exit tail keeps q's flow-time read (so loop 1's copy) while making the tail target's `lw a0,12(s2)`.
+- mechanism: `p = q` would still be scanned as a use of q by flow even though its value is immediately overwritten.
+- probe: cell U5 on the HEAD chassis; diff s42/B_U5.txt.
+- result: 4 at 127/126. The tail is now `lw a0,12(s2)` (positional match) but `p = q` is a dead store: flow.c's insn_dead_p path deletes it before mark_used_regs runs on it, q has no reader, loop 1's copy dies in combine (`addu a0,a1,a0`). Loop 2 unchanged from BASE. Banked as rejected/s42_p_eq_q_then_reload_dead_store_read_uncounted_costs_4.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U5.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] Reload's input-reload copy producer (find_equiv_reg supplying a hard register that already holds the addend's value, emitted as gen_move_insn (reloadreg, oldequiv)) cannot fire for either preheader copy in this function because every form fails the predicate that a MEM operand or an unallocated pseudo reaches reload.
+- mechanism: reload1.c:5843-5851 requires GET_CODE (old) == MEM or a pseudo with reg_renumber < 0. The MIPS addsi3 predicates force expand to load a MEM addend into a pseudo; the only pass that puts a MEM back into an add is local-alloc.c:1079-1082 (reg_n_refs == 2 && reg_basic_block < 0 with a REG_EQUIV note), and REG_EQUIV notes are created only by function.c:3838-3854 for stack-passed parameters and by local-alloc.c:1051-1055 for reg_basic_block >= 0 (LOCAL) pseudos; global.c:414-432 allocates every other pseudo with refs. This function has four register parameters and no stack parameter.
+- probe: read reload1.c:5800-5870, reload.c:5348-5420 (find_equiv_reg), local-alloc.c:1030-1115, global.c:396-432, and grep of every REG_EQUIV emitter in the tree (function.c only).
+- result: the producer s39 named is closed by predicate, not by trial: no C spelling of this function can present reload with a MEM addend or an unallocated addend pseudo.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: local-alloc.c:1079
+- measured_on: GCC 2.7.2 source under tools/gcc-2.7.2 (reload1.c, reload.c, local-alloc.c, global.c, function.c); BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] The floor and residual survive unchanged on the HEAD chassis this session, and the closest-to-target instance kill (Q1) is not stale.
+- mechanism: Driver-mandated chassis re-audit and kill re-audit; no FAKE construct exists so fake_ablate is vacuous.
+- probe: sandbox --disable all with s42/body_BASE.c and body_Q1.c over src/ings.c:820; s42/dis.sh normalised diff.
+- result: BASE 3 at 127/127, Q1 14 at 127/127. Fresh BASE diff: loop 1 instruction-exact; residual = tail lw a0,12(s2) vs addu a0,a3,zero, loop-2 addu a3,a0,zero vs lw v0,12(s2), addu a0,a1,a3 vs addu a0,a1,v0. s41/B.txt was not the BASE stream.
+- verdict: CONFIRMED
+
+## [s42] Target's loop-1-exit tail geometry (lw a0,12(s2); sll a1,s4,6 on the fall-through only, loop-1 blez landing on addu v0,a1,a0) is produced by reorg.c's redundant-insn thread redirect from an UNCONDITIONAL reload of p in the join block, not by a C-level exit tail.
+- mechanism: reorg.c:3442-3459 fill_slots_from_thread advances new_thread past a thread insn that redundant_insn matches against an insn before the branch on a non-owned thread; reorg.c:3714-3716 emits a label there and redirects the jump. Guard 1's own lw/sll make the join block's identical pair redundant on the taken path.
+- probe: Cell U1 (unconditional reload, no p = q); s42/raw_U1.txt; instrumented dumps s42/iU1_sched2_insns.txt vs s42/iU1_dbr_insns.txt.
+- result: blez targets 0x1468, one past the join block's lw a0,12(s2) at 0x1464. .sched2 has code_label 140 before reload insn 143; .dbr has label 140 gone, new code_label 380 after insn 143, jump_insn 79 retargeted to label_ref 380.
+- verdict: CONFIRMED
+
+## [s42] An unconditional reload of p before loop 2 with loop 2's guard written inline keeps the loop-2 base add (cells U1/U2).
+- mechanism: The join-block load makes the preheader read of ctx+0xC redundant, so cse folds sh2 + q into the guard's available address temp.
+- probe: Cells U1 and U2 on the HEAD chassis via s42/run_cell.ps1.
+- result: 9 at 127/124 for both: loop 1's copy dies, loop 2's guard dest is reused as base and the base add vanishes. Banked as rejected/s42_unconditional_reload_l2_inline_guard_base_folds_costs_9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U1.c / body_U2.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] On the symmetric chassis, a two-step loop-2 guard through the SAME local t that loop 1's guard uses reproduces target's guard/base pair (cells U3/U3b).
+- mechanism: The two-step overwrites the guard address so cse cannot fold the base add into it.
+- probe: Cells U3 (explicit q = p) and U3b (fresh-read base).
+- result: 32 at 127/125 for both: shared t becomes a long-lived global allocno outranking i/p/sh (t->v1, i->a0, p->v0), the s9 t-reuse rotation. Banked as rejected/s42_symmetric_shared_t_twostep_seat_rotation_costs_32.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U3.c / body_U3b.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] The natural symmetric chassis (no exit tail, unconditional reload, distinct two-step local t2 for loop 2's guard, q = p copies) reproduces target except for the two preheader copies (cells U4/U4b).
+- mechanism: With reorg supplying the tail geometry, the only remaining divergence should be the two use-once copies combine deletes.
+- probe: Cells U4 and U4b; diffs s42/B_U4.txt; dumps s42/iU4/ings.i.cse2 and .combine.
+- result: 6 at 127/125 for both. Diff vs target is exactly both addu a3,a0,zero absent, both base adds reading a0, loop 2's links in a1 not a2. cse2 holds both copies (insns 83 and 162 into reg/v 80); .combine holds neither. Equals s34's candidate_alt_join_shape_6.c modulo declaration order. Banked as rejected/s42_natural_symmetric_reload_both_copies_die_in_combine_costs_6.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U4.c / body_U4b.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] Writing the reload p = *(u8 **)(ctx + 0xC) directly after BASE's p = q exit tail keeps q's flow-time read (loop 1's copy) while making the tail target's lw a0,12(s2) (cell U5).
+- mechanism: p = q would still be scanned as a use of q by flow although immediately overwritten.
+- probe: Cell U5 on the HEAD chassis; diff s42/B_U5.txt.
+- result: 4 at 127/126: the tail is target's lw but p = q is a dead store deleted by flow before its read counts, so loop 1's copy dies in combine; loop 2 unchanged. Banked as rejected/s42_p_eq_q_then_reload_dead_store_read_uncounted_costs_4.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_U5.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s42] Reload's input-reload copy producer (find_equiv_reg supplying a hard register already holding the addend value, emitted as gen_move_insn (reloadreg, oldequiv)) cannot fire for either preheader copy in this function because every form fails the predicate that a MEM operand or an unallocated pseudo reaches reload.
+- mechanism: reload1.c:5843-5851 requires GET_CODE (old) == MEM or reg_renumber < 0; MIPS addsi3 predicates force expand to load a MEM addend into a pseudo; the only pass that puts a MEM back into an add is local-alloc.c:1079-1082 (reg_n_refs == 2 && reg_basic_block < 0 with a REG_EQUIV note); REG_EQUIV notes come only from function.c:3838-3854 (stack-passed params) or local-alloc.c:1051-1055 (LOCAL pseudos); global.c:414-432 allocates every other pseudo with refs. This function has four register parameters.
+- probe: Read reload1.c:5800-5870, reload.c:5348-5420, local-alloc.c:1030-1115, global.c:396-432; grep of every REG_EQUIV emitter (function.c only).
+- result: The producer s39 named is closed by predicate: no C spelling of this function presents reload with a MEM addend or an unallocated addend pseudo.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: GCC 2.7.2 source under tools/gcc-2.7.2; BASE re-audited at 3 (127/127); no FAKE constructs
+- predicate_cite: local-alloc.c:1079

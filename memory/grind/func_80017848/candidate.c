@@ -1,3 +1,19 @@
+/* [s42 STRUCTURAL NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
+ * (anchor src/ings.c:820).]  Fresh normalised diff: loop 1 is instruction-exact;
+ * the whole residual is (a) the exit tail (target reloads p with lw a0,12(s2),
+ * this body's `p = q;` is a real move), (b) loop 2's addend (target copies p
+ * into a3, this body loads into v0), (c) loop 2's base add reading v0 for a3.
+ * DUMP-PROVEN this session: target's tail geometry (lw/sll on the fall-through
+ * only, blez landing on the guard add) is reorg.c:3442-3459/3714-3716's
+ * redundant-insn thread redirect acting on an UNCONDITIONAL reload in the join
+ * block, so the `p = q;` device is NOT what target does there; it is what buys
+ * loop 1's copy (U5 proves that: reload after `p = q` -> dead store -> copy
+ * dies, 4 at 126).  The natural symmetric chassis (U4, s42/body_U4.c: no tail,
+ * unconditional reload, distinct two-step t2 guard, `q = p` copies) is 6 at 125
+ * with a residual of exactly the two use-once copies combine deletes.  Reload's
+ * find_equiv_reg copy producer is closed by predicate (local-alloc.c:1079).
+ * Details: evidence.md/hypotheses.md s42 sections.
+ */
 /* [s40 REDERIVE NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
  * (anchor src/ings.c:820).]  Two new reader classes for the preheader copy were
  * measured and killed: a call-argument reader (m9a: copy+add shape reproduced,
