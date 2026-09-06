@@ -3894,3 +3894,91 @@ ON-manifold on the floor body.
 - probe: a4 (tmp/grind/CD_ready/s84b/forms/a4.c) applied and re-measured live at 14/179/0, then `tools/ra_solver/inverse_compose.py classify system CD_ready --work tmp/grind/CD_ready/s86/inv --target-object tmp/perm_cdr86_r3/target.o --ours-object tmp/sandbox/CD_ready/system.o`, then `tools/ra_solver/extract.py CD_ready system` + `simulate.py tmp/ra_solver_work/CD_ready.model.json`.
 - result: CONFIRMED. classify reports FIRST DIVERGENCE: RA - 179 vs 179 insns, residual = a $a3<->$a0 exchange over four insns (addu ..,s5 / lbu ..,0(s2) / sll ..,0x2 / lw a3,0(..)) plus a $v1<->$v0 exchange over four insns (addu at,at,.. / lbu ..,@lo(0x11d5) / lui ..,@hi(0x800a) / lw ..,0(v0)), nothing else. simulate.py reports `sort order: MATCH` and `dispositions: 19/19 match`: global.c is fully explained and none of the 19 global pseudos holds any of the four contested call-clobbered registers. The exchange therefore belongs to local-alloc, so the correct next backend is local_extract.py + local_alloc.py on a4's block, NOT inverse.py global as the s84 frontier instructed - a correction that supersedes that frontier's next_probe wording. Combined with s85's exhaustive negative on the complementary floor body (0 of 729,150 one- and two-atom scheduler settings), both of this function's bases are now typed.
 - verdict: CONFIRMED
+
+## [s87] Quantity re-pricing (refs/size/priority) on the a4 base reaches the $a3<->$a0 + $v1<->$v0 seat exchange.
+- mechanism: local-alloc.c block_alloc sorts quantities by qty_compare_1 and hands each the first free hard register in ascending order; if a re-pricing could reorder the allocation so that chain A's shift got $4 and the D_800A11D5 chain shared $2 with chain B's address, the a4 collateral would be a priority question.
+- probe: a4 applied (14/179/0 live); `tools/ra_solver/local_extract.py system --func CD_ready --suggest` then `local_alloc.py system --func CD_ready --verbose` (ORDER 14/14, ASSIGN 14/18); SUGGDBG-FFR used sets read per quantity (tmp/grind/CD_ready/s87/a4.sugg.json); sched1 position of insn 152 read from a4.sched/a4.lreg.
+- result: KILLED. Hard reg 4 is in the find_free_reg used set of EVERY block-3 quantity because sched1 emits `la a0` (152) at block position 8 (scheduled last, T-19, pri 1), and the $2-sharing half needs qty2's birth (134) >= qty1's death (130) whereas they overlap [20,26]. Neither is a qty_compare input; both are pass-1 emission positions. The allocation order can be permuted arbitrarily and $4 never becomes free for qty0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, a4 body (tmp/grind/CD_ready/s84b/forms/a4.c) with its full FAKE set, block-3 quantity table extracted from the instrumented cc1.
+
+## [s87] The s86 honest-4 form is a genuine fourth base whose residual is disjoint from the floor's and y2's.
+- mechanism: score alone is a misleading gradient here (CD_datasync s23); a form at 4 could carry the floor's order defect plus something else, or a completely different residual.
+- probe: rejected/s86-permuter-r3-basin-freshflags-47k-iters-honest-4.c applied (4/179/0 live), positional objdump diff (tmp/grind/CD_ready/s87/sbs.py) and `inverse_compose.py classify` against tmp/perm_cdr86_r3/target.o; block-3 qty table and .greg read.
+- result: CONFIRMED. FIRST DIVERGENCE: RA; the ORDER is target-exact (all 179 slots, a1 load at 53-54 included) and the residual is one seat - chain A's t0 (reg/v 98) in $7 vs $4 - with the shift temp already in $4. Cause: `la a0` (147) emitted at position 28, before `lw a3,0(98)` (153), so $4 conflicts with t0.
+- verdict: CONFIRMED
+
+## [s87] With the printf inside a do-while(0) wrap, passing the a1 argument as a direct memory read (no pseudo copy) puts `la a0` last and gives every register its target seat.
+- mechanism: sched.c:2081-2095 turns the first insn after the wrap's loop note into a full barrier; after it the only cost-1 insn feeding the call is `la a0`, so at T-5 of the backward pass it is alone in the ready list, is scheduled first and emitted last, and hard reg 4 is free across chain A's whole range for local-alloc and global.c.
+- probe: vB = h4 with `a1v` deleted and `(void *)(*pp)` passed directly; sandbox + sbs + local_extract (tmp/grind/CD_ready/s87/vB.*).
+- result: CONFIRMED at 4/180/0: all 179 target instructions in the target's order and registers except `lui a1 / lw a1`, which is emitted after the barrier (slot 62-63 instead of 53-54) and leaves a load-delay nop at 53. Banked progress/s87-vB-h4-a1-via-pp-direct-all-seats-exact-a1-load-after-barrier-4.c.
+- verdict: CONFIRMED
+
+## [s87] A direct global read of the a1 argument inside the nested printf wrap (vA `(void *)D_800F19C0`, vC `D_800F19B8.func`) places the a1 load early without reintroducing a T-5 copy.
+- mechanism: if expand emitted the hard-register load directly the a1 insn would be a cost-2 load (ready at T-6) and `la a0` would still be alone at T-5.
+- probe: vA and vC applied and measured; vA's sched1 trace and block RTL read (tmp/grind/CD_ready/s87/vA.sched, vA.lreg).
+- result: KILLED. vA = 8/180/0: calls.c precomputes the expensive MEM into pseudo 107 inside the loop (insn 134 becomes the barrier) and the copy 147 (pri 5) beats `la a0` (pri 4) at T-5, so `la a0` is emitted before the sw again. vC = 11/178/0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, h4 body with its 4-deep nested do-while(0) wraps around the printf and its full FAKE set.
+
+## [s87] On the floor body, a fresh single-set pseudo for chain A's address (`ta = (s32)((u8 *)tbl_125c + t0)`) makes insn 120 a birthing insn, pushes it past the sw in pass 1, and flips the arg5-value/chain-A-shift tie toward the target seats without other damage.
+- mechanism: birthing_insn_p (sched.c:2505-2526) boosts an insn whose SET_DEST is a single-set live pseudo; a boosted 120 is scheduled ahead of 147 (pri 3) in the backward pass, lengthening Q_A's span to 8 (pri 4.0 < Q_V's 5.33) so Q_V is allocated first and takes $3, leaving $4 for Q_A.
+- probe: F4 (floor + ta) and F5 (g7 order + ta), sandbox + sched1 traces (tmp/grind/CD_ready/s87/F4.sched, F5.sched).
+- result: KILLED on this spelling. 120 IS boosted and IS scheduled at T-9 ahead of 147 in both, and the arg5 value does take $3 - but t0 becomes single-set (the `t0 *= 4` copy is propagated away; combine.c:2309/2332 decrements reg_n_sets when it removes a set), so 111 is boosted as well and the chain A byte load is emitted at slot 54 instead of 51. F4 = 9/179/0, F5 = 9/179/0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor body (F4) and s80 g7 statement order (F5), full floor FAKE set present.
+
+## [s87] Sharing one variable between chain A's byte load and the D_800A11B4 callback's first-argument load (the target's second `lbu $a0,0($s2)`) keeps t0 multi-set at zero byte cost, so a fresh `ta` can boost 120 while 111 stays unboosted.
+- mechanism: reg_n_sets is counted on the surviving RTL; a second REAL load into the same pseudo in another block would give 111 a sibling set that DCE cannot remove, while the callback's `(set (reg 4) (reg t0))` copy would be eliminated at reload and add an $a0 copy preference.
+- probe: P5a (function-scope t0, callback spelled `t0 = *idx_1494; D_800A11B4(t0, ...)`, chain A unchanged) and P5b (P5a + ta); sandbox + traces (tmp/grind/CD_ready/s87/P5a.sched, P5b.sched).
+- result: KILLED. P5a = 5/179/0: the callback block is byte-identical but t0 lands in $7 in block 3. P5b = 9/179/0 with 111 boosted again: combine merges the callback's load and copy into a direct `(set (reg 4 a0) (mem))`, so t0 is single-set at sched1 regardless of the shared spelling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor body with full FAKE set, t0 hoisted to function scope.
+
+## [s87] Quantity re-pricing (refs/size/priority) on the a4 base reaches the $a3<->$a0 + $v1<->$v0 seat exchange.
+- mechanism: block_alloc sorts quantities by qty_compare_1 and find_free_reg hands out the first free hard register ascending; if allocation order alone decided the seats, a refs/size change would flip them.
+- probe: a4 applied (14/179/0 live); tools/ra_solver/local_extract.py system --func CD_ready --suggest; local_alloc.py --verbose (ORDER 14/14 blocks, ASSIGN 14/18 qtys); SUGGDBG-FFR used sets read per block-3 quantity; sched1 position of insn 152 read from the .sched/.lreg dumps.
+- result: Hard reg 4 is in the find_free_reg used set of every block-3 quantity because sched1 emits la a0 (insn 152, pri 1) at block position 8, scheduled last in the backward pass; the $v1/$v0 half needs qty2's birth (insn 134) >= qty1's death (insn 130) and they overlap [20,26]. Both are pass-1 position facts, not qty_compare inputs; permuting the allocation order never frees $4 for qty0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, a4 body (tmp/grind/CD_ready/s84b/forms/a4.c) with its full FAKE set; block-3 quantity table from the instrumented cc1 (tmp/grind/CD_ready/s87/a4.local.json, a4.sugg.json)
+
+## [s87] The s86 honest-4 form is a genuine fourth base whose residual is disjoint from the floor's (56/57 order) and y2's (displaced a1 load).
+- mechanism: Score is a misleading gradient on this function; the residual composition, not the number, decides whether a form is a new base.
+- probe: rejected/s86-permuter-r3-basin-freshflags-47k-iters-honest-4.c applied (4/179/0 live); positional objdump diff (tmp/grind/CD_ready/s87/sbs.py) and inverse_compose.py classify against tmp/perm_cdr86_r3/target.o; block-3 qty table and .greg read.
+- result: FIRST DIVERGENCE: RA. Order is target-exact in all 179 slots including the a1 load at 53-54; the residual is one seat, chain A's t0 (reg/v 98, two sets) in $7 vs $4, while the shift temp reg106 already holds $4. Cause: la a0 (insn 147) is emitted at position 28, before lw a3,0(98) at 153, so $4 conflicts with t0 (.greg: 98 conflicts ... 4). The order-exactness comes from the nested do-while(0) loop notes making insn 141 a scheduling barrier (sched.c:2081-2095): every chain insn precedes it, every call-argument insn follows it, and la a0 carries REG_DEP_OUTPUT 141.
+- verdict: CONFIRMED
+
+## [s87] With the printf inside a do-while(0) wrap, passing the a1 argument as a direct memory read (no pseudo copy) puts la a0 last and gives every register its target seat.
+- mechanism: After the barrier the only cost-1 insn feeding the call is la a0; at T-5 of the backward pass it is alone in the ready list, is scheduled first and emitted last, so hard reg 4 is free across chain A's whole range. The pseudo copy of a1v in h4 was what beat it: equal priority (both inherit the barrier's pri 4), equal class, and rank_for_schedule's INSN_LUID fall-through (sched.c:2462) prefers the copy because register args are emitted a0, a1, a2, a3.
+- probe: vB = h4 with a1v deleted and (void *)(*pp) passed directly; sandbox, side-by-side objdump, local_extract dumps (tmp/grind/CD_ready/s87/vB.*).
+- result: 4/180/0: all 179 target instructions in the target's order and registers, chain A in $a0 with lw a3,0(a0) and la a0 last, except lui a1/lw a1 emitted after the barrier (slot 62-63 instead of 53-54) leaving a load-delay nop at 53. Block-3 seats: reg110 [20,30] refs 21 -> $2, reg99 -> $2, reg97 [18,28] refs 9 -> $3, reg105 [16,22] -> $4. Banked progress/s87-vB-h4-a1-via-pp-direct-all-seats-exact-a1-load-after-barrier-4.c.
+- verdict: CONFIRMED
+
+## [s87] A direct global read of the a1 argument inside the nested printf wrap (vA: (void *)D_800F19C0; vC: D_800F19B8.func) places the a1 load early without reintroducing a T-5 copy.
+- mechanism: If expand emitted the hard-register load directly, the a1 insn would be a cost-2 load ready at T-6 and la a0 would remain alone at T-5.
+- probe: vA and vC built from h4, applied and measured; vA's sched1 trace and block RTL read (tmp/grind/CD_ready/s87/vA.sched, vA.lreg).
+- result: vA = 8/180/0: inside the loop calls.c precomputes the expensive MEM argument into pseudo 107 (insn 134 becomes the barrier) and the copy 147 (pri 5) beats la a0 (pri 4) at T-5, so la a0 is emitted before the sw again. vC = 11/178/0. On this chassis a wrap containing the printf cannot place the a1 load ahead of the chains, which says the target's block has no loop note between the a1 load and the call sequence - the floor's wrap geometry.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, h4 body with its 4-deep nested do-while(0) wraps around the printf and its full FAKE set
+
+## [s87] On the floor body a fresh single-set pseudo for chain A's address (ta = (s32)((u8 *)tbl_125c + t0)) makes insn 120 a birthing insn, pushes it past the sw in pass 1, and flips the arg5-value/chain-A-shift local-alloc tie toward the target seats without other damage.
+- mechanism: birthing_insn_p (sched.c:2505-2526) boosts an insn whose SET_DEST is a single-set live pseudo; boosted, 120 is scheduled ahead of the sw (pri 3) in the backward pass, Q_A's span grows to 8 (pri 4.0 < Q_V's 5.33), Q_V allocates first and takes $3, leaving $4 for Q_A.
+- probe: F4 (floor + ta) and F5 (s80 g7 order + ta), sandbox plus sched1 traces (tmp/grind/CD_ready/s87/F4.sched, F5.sched).
+- result: F4 = 9/179/0, F5 = 9/179/0. 120 is boosted and scheduled at T-9 ahead of 147 exactly as predicted and the arg5 value takes $3, but t0 becomes single-set (the t0 *= 4 copy is propagated away and combine.c:2309/2332 decrements reg_n_sets when it removes a set), so 111 is boosted as well and the chain A byte load moves from slot 51 to 54. Requirement sharpened: 120's destination single-set AND 111's destination multi-set with the second set surviving cse/combine at zero byte cost.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor body (F4) and the s80 g7 statement order (F5), full floor FAKE set present
+
+## [s87] Sharing one variable between chain A's byte load and the D_800A11B4 callback's first-argument load (the target's second lbu $a0,0($s2) at asm/funcs/CD_ready.s:123) keeps t0 multi-set at zero byte cost, so a fresh ta can boost 120 while 111 stays unboosted.
+- mechanism: A second real load into the same pseudo in another block would be a set DCE cannot remove, while the callback's (set (reg 4) (reg t0)) copy would vanish at reload and add an $a0 copy preference.
+- probe: P5a (function-scope t0, callback spelled t0 = *idx_1494; D_800A11B4(t0, ...), chain A unchanged) and P5b (P5a + ta); sandbox plus traces (tmp/grind/CD_ready/s87/P5a.sched, P5b.sched).
+- result: P5a = 5/179/0: the callback block is byte-identical but t0 lands in $7 in block 3. P5b = 9/179/0 with 111 boosted again: combine merges the callback's load and copy into a direct (set (reg 4 a0) (mem)), so t0 is single-set at sched1 regardless of the shared spelling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor body with full FAKE set, t0 hoisted to function scope

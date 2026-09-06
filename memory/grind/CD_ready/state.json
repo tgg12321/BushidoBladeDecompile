@@ -1,8 +1,8 @@
 {
  "func": "marionation_Exec",
  "file": "system",
- "session_count": 86,
- "current_modality": "escalation",
+ "session_count": 87,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 0,
@@ -525,23 +525,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "The owner directive's never-run second probe is executed in full \u2014 a rebuilt, self-validating fresh-flag permuter window (85,653 iterations over r3 and b2) reaches honest 4 and honest 2 but never belo"
+  },
+  {
+   "session": 87,
+   "floor": 2,
+   "modality": "solver",
+   "headline": "Both owner-directive probes executed: block_alloc extracted on a4 (no re-pricing reaches the seat exchange - hard reg 4 is in every block-3 used set because sched1 emits printf's la a0 at position 8),"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "a4's residual is a local-alloc seat exchange ($a3<->$a0 and $v1<->$v0) on an instruction stream and order that are already target-exact, and local_alloc.py can say whether any quantity re-pricing reaches it.",
-   "mechanism": "classify types the residual as RA and simulate.py shows global.c fully explains a4's assignment (19/19 dispositions), so the exchange is decided in block_alloc's find_free_reg ascending scan under qty_compare ordering - the one model in the stack that has never been extracted for this function.",
-   "next_probe": "Apply a4, run tools/ra_solver/local_extract.py system --func <CD_ready's index> and local_alloc.py to get the per-quantity blk/ord/qty/birth/death/refs/got rows for a4's contested block, then ask what quantity set would make find_free_reg hand the contested pair $a0 and $v0. Note the README's known hook gap (QTYDBG does not print qty_size), which mis-prices DImode quantities in the ORDER check."
+   "hypothesis": "A statement order and pseudo structure exists on the floor's wrap geometry (no inner wrap) whose pass-1 emission is 111 124 151 126 128 115 130 138 ... with insn 120 after the sw 147 (or the sw within two slots of 130), which by the extracted qty_compare inputs gives Q_V $3 and Q_A $4 and by pass-2 luid inheritance gives the target order.",
+   "mechanism": "Pass-2 luids are pass-1 emission positions and every contested pair ties on priority, so pass 2 is decided by pass-1 order; local-alloc seats are decided by births/deaths in that same order (s87 seat-coupling arithmetic). The two demands are stated exactly and can be searched mechanically before any C is written.",
+   "next_probe": "Run tools/sched_solver on the floor's pass-1 block-3 graph (tmp/grind/CD_ready/s87/floor.sched) enumerating luid permutations that respect the dependence DAG plus boost-set choices for 111/115/120/126/128/130, filter emissions by 128 < 115 < 130 and by the local-alloc replay (local_alloc.py logic on the resulting births/deaths) yielding Q_V -> $3, Q_A -> $4, then map each surviving luid order to a statement order and measure. The luid order alone (g7) is known to give the order at 6; the search is for the boost/span combination."
   },
   {
-   "hypothesis": "The r3 permuter basin's single find (honest 4) is a fourth base, strictly between the floor (2) and r3 (5), whose residual composition has never been read.",
-   "mechanism": "In 47.5k iterations the r3 basin produced exactly one improving form and then went 27 minutes with none, which is the signature of a narrow basin with a distinct fixed point rather than a plateau. s79's y2 result showed that a form at the same SCORE can carry a completely different residual SHAPE, and score alone is a known-misleading gradient on this function (CD_datasync s23).",
-   "next_probe": "Apply rejected/s86-permuter-r3-basin-freshflags-47k-iters-honest-4.c and read its objdump residual against the target with tmp/grind/CD_ready/s79/adiff2.py, then classify it with inverse_compose.py classify. If its residual is disjoint from both the floor body's (the 56/57 ALU pair) and y2's (the displaced a1-argument load), it is a genuine fourth base worth extracting."
+   "hypothesis": "Insn 120 can be made a birthing insn (single-set destination) while 111's destination stays multi-set at zero byte cost, by a second set of t0 that cse/combine cannot fold away - e.g. t0 also carrying a value that is genuinely used twice, or a set in a block combine cannot merge across.",
+   "mechanism": "F4/F5 proved the 120-boost half works exactly as modelled (120 scheduled at T-9 ahead of the sw, arg5 value in $3); the only collateral is 111's boost from t0 becoming single-set, and P5b showed the obvious second-load spelling is combined away because the callback's copy is adjacent to its load.",
+   "next_probe": "Spell the callback byte so its load cannot merge into the hard-reg copy: e.g. read *idx_1494 into t0 once and use t0 both as the D_800A11B4 argument and in the status test that follows (a real second use blocks combine's single-use substitution), then add ta; read the .combine dump to confirm two surviving sets of t0 before scoring."
   },
   {
-   "hypothesis": "The three-twin libcd cluster (CD_ready, CD_sync, CD_datasync) shares one unknown - the original spelling of the do_timeout window - and all three sit at floor 2, so the cluster is decided together or not at all.",
-   "mechanism": "All three are masked-identical to PsyQ 3.5 libcd objects and share the same printf/timeout block; every session that has moved one has moved it only within its own basin. The shared window is the only remaining structure none of the three has recovered.",
-   "next_probe": "Not a grind lever: recovery of the libcd bios.c source spelling upstream (psyz / sozud) or an engine/score.py addend-resolution change. Both are recorded as re-activation triggers in the foreclosure entry."
+   "hypothesis": "vB is the best permuter seed this function has ever had (one displaced instruction, all seats right), and a fresh-flag window from it will explore a1-load placements the hand search did not.",
+   "mechanism": "s86's self-validating workspace builder (tmp/grind/CD_ready/s86/mkws2.sh + patchbase.py) is proven on this TU; vB's basin is disjoint from r3's and b2's.",
+   "next_probe": "Build a workspace from progress/s87-vB-...-4.c with mkws2.sh, launch tools/permuter_campaign.py, wait in-turn, harvest --stop, and classify every novel find with sbs.py before crediting its score."
   }
  ],
  "judge_constraints": [
@@ -995,6 +1001,38 @@
    "measured_on": "HEAD chassis 2026-09-04/05, s78 struct/no-pp chassis; seeds carry their own full FAKE sets (r3 11 units, b2 its de-boost carrier); candidate.c floor body re-verified live at 2/179/0 before and after t",
    "predicate_cite": "",
    "result": "KILLED for this window. The r3 basin (permuter base_score 35 = honest 5) produced exactly ONE novel find in 47.5k iterat"
+  },
+  {
+   "session": 87,
+   "statement": "Quantity re-pricing (refs/size/priority) on the a4 base reaches the $a3<->$a0 + $v1<->$v0 seat exchange.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-06, s78 struct/no-pp chassis, a4 body (tmp/grind/CD_ready/s84b/forms/a4.c) with its full FAKE set; block-3 quantity table from the instrumented cc1 (tmp/grind/CD_ready/s87/a4.loca",
+   "predicate_cite": "",
+   "result": "Hard reg 4 is in the find_free_reg used set of every block-3 quantity because sched1 emits la a0 (insn 152, pri 1) at bl"
+  },
+  {
+   "session": 87,
+   "statement": "A direct global read of the a1 argument inside the nested printf wrap (vA: (void *)D_800F19C0; vC: D_800F19B8.func) places the a1 load early without reintroducing a T-5 copy.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-06, s78 struct/no-pp chassis, h4 body with its 4-deep nested do-while(0) wraps around the printf and its full FAKE set",
+   "predicate_cite": "",
+   "result": "vA = 8/180/0: inside the loop calls.c precomputes the expensive MEM argument into pseudo 107 (insn 134 becomes the barri"
+  },
+  {
+   "session": 87,
+   "statement": "On the floor body a fresh single-set pseudo for chain A's address (ta = (s32)((u8 *)tbl_125c + t0)) makes insn 120 a birthing insn, pushes it past the sw in pass 1, and flips the arg5-value/chain-A-sh",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor body (F4) and the s80 g7 statement order (F5), full floor FAKE set present",
+   "predicate_cite": "",
+   "result": "F4 = 9/179/0, F5 = 9/179/0. 120 is boosted and scheduled at T-9 ahead of 147 exactly as predicted and the arg5 value tak"
+  },
+  {
+   "session": 87,
+   "statement": "Sharing one variable between chain A's byte load and the D_800A11B4 callback's first-argument load (the target's second lbu $a0,0($s2) at asm/funcs/CD_ready.s:123) keeps t0 multi-set at zero byte cost",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor body with full FAKE set, t0 hoisted to function scope",
+   "predicate_cite": "",
+   "result": "P5a = 5/179/0: the callback block is byte-identical but t0 lands in $7 in block 3. P5b = 9/179/0 with 111 boosted again:"
   }
  ],
  "sibling_progress": [

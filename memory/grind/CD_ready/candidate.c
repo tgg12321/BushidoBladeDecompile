@@ -1,3 +1,17 @@
+/* s87 UPDATE (2026-09-06, solver). BODY UNCHANGED (2/179/0, re-measured live; residual = slots
+ * 55-57, chain A's shift 115 emitted before chain B's 126/128 in both passes by INSN_LUID).
+ * Both owner-directive probes executed: (1) local_extract/local_alloc on a4 - NO re-pricing
+ * reaches the seat exchange, hard reg 4 is in every block-3 used set because sched1 emits
+ * `la a0` at position 8; (2) the honest-4 form's residual is ONE seat (t0 in $7 vs $4) on a
+ * target-exact order, produced by a do-while(0) LOOP-NOTE BARRIER (sched.c:2081) at the a2i
+ * shift. NEW BASE vB (progress/s87-vB-...-4.c): h4 with a1 passed as `*pp` directly - every
+ * seat target-exact, order target-exact except the a1 load after the barrier. Measured dead
+ * this session: vA/vC (a1 direct inside the wrap: precomputed copy beats la a0), F4/F5 (fresh
+ * address pseudo boosts 120 but makes t0 single-set -> 111 boosted), P5a/P5b (t0 shared with
+ * the callback byte: combine merges the callback load+copy, t0 single-set anyway). Exact
+ * requirement for a match, from the floor's sched1/sched2 traces + qty table: pass-1 emission
+ * 128 < 115 < 130 AND (Q_A span >= 8 | Q_V span <= 4 | Q_V refs +2). See evidence.md s87.
+ */
 /* s84 UPDATE (2026-09-04, synthesis). BODY UNCHANGED (2/179/0, re-measured live at the start
  * and again at the end of the session). What changed is the DIAGNOSIS, and it points away from
  * this body.
