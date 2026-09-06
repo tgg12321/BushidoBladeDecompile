@@ -205,3 +205,140 @@ measured_on: merged-struct chassis, forms A1/B1, no FAKE constructs, sandbox --d
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: merged-struct chassis, forms A1/B1, no FAKE constructs, sandbox --disable all = 19 / 17
+
+## s3 (2026-09-06, structural)
+
+### H9 — Form C's block-0 defect is exactly ONE ready-list decision (insn 20 winning T-2) — CONFIRMED, now trace-complete
+Mechanism: `schedule_block` (tools/gcc-2.7.2/sched.c:2674-2727) selects from the ready list in
+groups of equal `INSN_PRIORITY`; `potential_hazard`'s memory-op preference and `actual_hazard`'s
+queuing only reorder insns WITHIN a group, so an insn raised to LAUNCH_PRIORITY by
+`adjust_priority` (sched.c:2584, via `birthing_insn_p` sched.c:2505) is a singleton group and is
+taken unconditionally. `adjust_priority` runs once per insn at launch (sched.c:2645).
+Probe: full `-da` capture of the form-C TU into tmp/grind/func_8004473C/s3/traceC; block-0
+schedule read T-1..T-9 and reconciled instruction-for-instruction with the sandbox object.
+Result: form C's forward block-0 order is `call, i=0, dst, reg75=$v0, addr(&D+0x10), store,
+count, reg72=reg75, blez`; the target's is `i=0, dst, count, addr, store`. Every instruction
+form C emits is already one of the target's (same anchor `addiu $a0,$a0,0x10`, same
+`addiu $a3,$a0,-0x10`, same seats); the only extra byte is the load-delay `nop` forced by the
+count load landing immediately before `blez`. Hand-replaying the trace with insn 20 unboosted
+gives the target's order, puts the store last before the branch (so reorg fills the delay slot
+with it) and removes the nop — 49 instructions, the target's bytes.
+Verdict: CONFIRMED
+
+### H10 — A walker pointer with a surviving second set removes the boost and yields the target's block-0 order — CONFIRMED by measurement (W1)
+Mechanism: `birthing_insn_p` needs `reg_n_sets[dest] == 1`. loop.c leaves a biv's own register
+live (instead of folding it entirely into givs) when some access has add_val 0 relative to the
+biv, so a walker anchored at the LAST accessed field and read at `[-2]/[-1]/[0]` keeps both its
+init and its increment, giving `reg_n_sets == 2`.
+Probe: W1 — `s32 *sp = (s32 *)(D_800A9CF8.unk10 + 0x34); ... sp += 0x1A;` with the three source
+reads spelled `sp[-2] / sp[-1] / sp[0]`. sandbox --disable all + objdump.
+Result: 23 / 52. Block 0 emits `move a2,zero / lui a1; lw a1,12 / lui v0; lh v0,6 / lui a0;
+addiu a0,a0,16 / blez v0 / sw v1,0(a0) / addiu t0,a0,-16` — the target's order, the target's
+`&D+0x10` anchor, the store in the delay slot and NO load-delay nop, for the first time in this
+grind. The boost is therefore confirmed as the entire ordering story.
+Verdict: CONFIRMED
+
+### H11 — The biv-survival walker (W-family) can be made byte-neutral — KILLED (instance)
+Mechanism: if loop.c keeps the biv register live it must also keep a giv for any access whose
+add_val is not 0; with reads at -8/-4/0 relative to the biv only the last is add_val 0, so the
+loop carries the biv AND a giv, each with its own `addiu ...,0x68`. The walker's init also
+becomes a source-level statement in block 0 rather than a loop.c preheader giv init, and the
+call-result temp is then live into the preheader, so it is multi-block and global.c allocates
+it after local-alloc has already given `$v0` to the block-0-local pre-check count temp.
+Probe: W1 (sp anchored at +0x34), W2 (sp init inside the for-init), W3 (A-chassis: `sp =
+(s32 *)game_GetCharData(); D.unk10 = (s32)sp; sp += 0xD;`), W9 (dst loaded before sp),
+W13 (`src = (Rec4473C *)D_800A9CF8.unk10; sp = &src->unk34;` — combine merges the copy into
+the add). sandbox --disable all on each, plus objdump of W1 and its `.lreg` register list.
+Result: W1 / W2 / W9 / W13 all 23 at 52 instructions with byte-identical output (+3 insns: the
+undeleted `move v1,v0` and the second walking pointer's increment pair); W3 32 / 52. `.lreg`
+confirms the seat mechanism: `Register 95 used 2 times across 4 insns in block 0` (count, local)
+vs `Register 75 used 4 times across 12 insns` listed live at the start of basic block 1.
+Verdict: KILLED
+kill_scope: instance
+measured_on: merged-struct chassis (TU-local aggregate decl), forms W1/W2/W3/W9/W13, no FAKE constructs, sandbox --disable all = 23/23/32/23/23
+
+### H12 — Declaration scope can renumber `src`'s pseudo so cse2 canonicalises the preheader giv onto the call-result temp and deletes the copy — KILLED (instance)
+Mechanism: pseudo numbers are assigned in declaration-expansion order, and cse2 canonicalises an
+equivalence class onto its representative register; if `src`'s pseudo were created after expand's
+call-result temp, the preheader's `reg97 = reg_src + 52` might be rewritten onto the temp,
+leaving `src` dead and the copy insn deleted by flow.
+Probe: Z6 (`src` declared in an inner block placed after the store statement), Z7 (`src` and
+`dst` both inner-block scoped); sandbox --disable all, plus the `.flow` RTL for the copy chain.
+Result: both 13 / 50 with output byte-identical to plain form C. The `.flow` chain is unchanged:
+`(insn 20 (set (reg/v:SI 72) (reg:SI 75)))` with `REG_DEAD reg 75`, feeding
+`(insn 145 (set (reg:SI 97) (plus (reg/v:SI 72) (const_int 52))))` with `REG_DEAD reg/v 72` in
+the preheader — the two registers die at each other's boundary, so neither direction of copy
+propagation is available, and the two insns are in different basic blocks so combine cannot
+merge them either.
+Verdict: KILLED
+kill_scope: instance
+measured_on: merged-struct chassis (TU-local aggregate decl), forms Z6/Z7, no FAKE constructs, sandbox --disable all = 13 / 13
+
+### H13 — Computing the source pointer inside the loop body (block-scoped, indexed) removes the block-0 copy without disturbing the loop — KILLED (instance)
+Mechanism: a loop-body-local `Rec4473C *src = (Rec4473C *)D_800A9CF8.unk10 + i;` would be
+LICM'd/strength-reduced by loop.c, so no user pseudo would need a block-0 copy at all.
+Probe: Z1; sandbox --disable all.
+Result: 30 / 51 — loop.c builds a different address chain and the loop body diverges. Worse than
+the S1 indexed form (18 / 49) already banked in s2.
+Verdict: KILLED
+kill_scope: instance
+measured_on: merged-struct chassis (TU-local aggregate decl), form Z1, no FAKE constructs, sandbox --disable all = 30
+
+### Frontier for s4
+1. The two halves are now separately MEASURED and, in every form tried, mutually exclusive:
+   the target's SEATS need the stored value to be a block-0-local temp whose only consumers are
+   the store and one copy (form C: reg75 local with a `$v0` copy suggestion, allocated first by
+   local-alloc, pushing the count temp to `$v1`, then global.c gives the multi-block `src` `$v0`
+   and the copy is deleted); the target's ORDER needs the walker's defining insn to be
+   non-birthing (W1: `reg_n_sets == 2`, which costs a live biv plus a second walking register).
+   The next probe should attack the ALLOCATION side of W1 rather than the order side of form C:
+   find a spelling in which the walker has two sets AND the call-result temp still dies inside
+   block 0. Concretely, check whether any ordinary form makes the loop's source giv init
+   (`addiu $a0,$v0,0x34`) come from the call-result temp while a separately-set walker supplies
+   the second set — e.g. read the `.loop` dump for which pseudo loop.c chooses as the giv base
+   when two candidate pointers exist.
+2. Un-probed disjunct of `birthing_insn_p`: the boost also requires the dest's bit in
+   `bb_live_regs` at LAUNCH time. `src` is live-out of block 0 only because the preheader giv
+   init (insn 145) reads it. If any ordinary form puts that giv init in block 0 without adding
+   an instruction (i.e. loop.c emits it before the branch), `src` would be dead at block-0 exit
+   and the boost would vanish with no second set required. Read the `.loop` dump to see what
+   decides preheader vs pre-branch placement of the giv init before spelling anything.
+3. Do NOT re-spell form C's statement order again: S0/C4-C7/D1-D3/F2/F4/S4/S5/S6/B2/Z6/Z7 —
+   twelve orderings across three sessions — all emit byte-identical 13 / 50 output. The
+   emitted instruction SET is already the target's; only the schedule differs.
+
+## [s3] Form C's block-0 divergence is exactly one sched1 ready-list decision: insn 20 (the src copy) wins T-2 because birthing_insn_p raises it to LAUNCH_PRIORITY, and schedule_block selects in groups of equal INSN_PRIORITY so a boosted insn is an unbeatable singleton group.
+- mechanism: adjust_priority (tools/gcc-2.7.2/sched.c:2584) raises a ready insn to LAUNCH_PRIORITY when birthing_insn_p (sched.c:2505) holds - dest is a REG whose bb_live_regs bit is set and whose reg_n_sets is 1 - and it is called exactly once per insn at launch (sched.c:2645). schedule_block's selection loop (sched.c:2674-2727) walks the ready list in groups of EQUAL priority, so potential_hazard's memory-op preference and actual_hazard's queuing only reorder insns WITHIN a group and can never outrank a boosted singleton.
+- probe: Full -da capture of the form-C TU with the instrumented cc1 into tmp/grind/func_8004473C/s3/traceC; the whole block-0 backward schedule read T-1..T-9 and reconciled instruction-for-instruction against the sandbox object; sched.c 2400-2470 (rank_for_schedule), 2490-2600 (birthing_insn_p/adjust_priority) and 2670-2727 (selection loop) read in source; the .flow RTL for insns 11/13/15/20/25/28/145/151 extracted.
+- result: Form C's forward block-0 order is call, i=0, dst-load, reg75=$v0, addr(&D+0x10), store, count-load, reg72=reg75, blez. The target's is i=0, dst, count, addr, store with both copies deleted. Every instruction form C emits is already one of the target's - same anchor, same addiu $a3,$a0,-0x10, same seats, byte-exact loop body - and the single extra instruction is the load-delay nop forced by the count load landing immediately before blez. Replaying the trace with insn 20 unboosted gives the target's order, makes the store the last real insn before the branch (so reorg fills the delay slot with it) and removes the nop: 49 instructions, the target's bytes.
+- verdict: CONFIRMED
+
+## [s3] Giving the source walker a surviving second set (reg_n_sets == 2) removes the birthing boost and makes sched1 emit the target's block-0 order, the &D_800A9CF8+0x10 anchor and the store in the blez delay slot.
+- mechanism: birthing_insn_p requires reg_n_sets[dest] == 1. loop.c leaves a biv's own register live instead of folding it entirely into givs when some access has add_val 0 relative to the biv, so a walker anchored at the LAST accessed field and read at [-2]/[-1]/[0] keeps both its init and its increment.
+- probe: Form W1: s32 *sp = (s32 *)(D_800A9CF8.unk10 + 0x34); the three source reads spelled sp[-2] / sp[-1] / sp[0]; sp += 0x1A in the for-increment. sandbox --disable all plus objdump of tmp/sandbox/func_8004473C/text1a_c.o and the .lreg register list from tmp/grind/func_8004473C/s3/traceW1.
+- result: 23 at 52 instructions, but block 0 emits move a2,zero / lui a1; lw a1,12 / lui v0; lh v0,6 / lui a0; addiu a0,a0,16 / blez v0 / sw v1,0(a0) / addiu t0,a0,-16 - the target's order, the target's anchor, the store in the delay slot and NO load-delay nop, for the first time in this grind. The boost is therefore confirmed as the entire ordering story rather than an inference from one ready list.
+- verdict: CONFIRMED
+
+## [s3] The biv-survival walker family (W1/W2/W3/W9/W13) is byte-neutral apart from the scheduling effect it buys.
+- mechanism: If loop.c keeps the biv register live it must still keep a giv for every access whose add_val is not 0, so with reads at -8/-4/0 the loop carries the biv AND a giv, each with its own addiu ...,0x68. The walker's init also becomes a source-level block-0 statement rather than a loop.c preheader giv init, which leaves the call-result temp live into the preheader; it is then multi-block, and global.c allocates it only after local-alloc has handed $v0 to the block-0-local pre-check count temp.
+- probe: W1 (sp anchored at +0x34), W2 (sp init inside the for-init), W3 (A-chassis: sp = (s32 *)game_GetCharData(); D.unk10 = (s32)sp; sp += 0xD), W9 (dst loaded before sp), W13 (src = (Rec4473C *)D_800A9CF8.unk10; sp = &src->unk34, where combine merges the copy into the add). sandbox --disable all on each; objdump of W1; W1's .lreg register list.
+- result: W1 / W2 / W9 / W13 all 23 at 52 instructions with byte-identical output - three extra instructions: the undeleted move v1,v0 plus the second walking pointer and its increment. W3 32 at 52. The .lreg confirms the seat mechanism directly: 'Register 95 used 2 times across 4 insns in block 0' (the count temp, local) versus 'Register 75 used 4 times across 12 insns' with no block tag and reg 75 listed in 'Basic block 1: Registers live at start: 29 30 72 73 74 75 76'.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: merged-struct chassis with the aggregate declared TU-locally in src/text1a_c.c, forms W1/W2/W3/W9/W13, no FAKE constructs, sandbox --disable all = 23 / 23 / 32 / 23 / 23
+
+## [s3] Declaring src in an inner block after the store statement renumbers its pseudo so that cse2 canonicalises the preheader giv init onto the call-result temp and the copy insn dies.
+- mechanism: Pseudo numbers are assigned in declaration-expansion order and cse2 canonicalises an equivalence class onto its representative register, so a src pseudo created after expand's call-result temp might let the preheader's reg97 = reg_src + 52 be rewritten onto the temp, leaving src dead and the copy deleted by flow.
+- probe: Z6 (src declared in an inner block placed after the store statement) and Z7 (src and dst both inner-block scoped); sandbox --disable all plus the .flow RTL for the copy chain.
+- result: Both 13 at 50 instructions with output byte-identical to plain form C. The .flow chain is unchanged: (insn 20 (set (reg/v:SI 72) (reg:SI 75))) carries REG_DEAD reg 75 and feeds (insn 145 (set (reg:SI 97) (plus (reg/v:SI 72) (const_int 52)))) which carries REG_DEAD reg/v 72 - the two registers die at each other's boundary so neither direction of copy propagation is available, and the two insns sit in different basic blocks so combine cannot merge them.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: merged-struct chassis with the aggregate declared TU-locally in src/text1a_c.c, forms Z6/Z7, no FAKE constructs, sandbox --disable all = 13 / 13
+
+## [s3] Computing the source pointer inside the loop body as a block-scoped indexed expression removes the block-0 copy insn without disturbing the loop body.
+- mechanism: A loop-body-local Rec4473C *src = (Rec4473C *)D_800A9CF8.unk10 + i would be LICM'd and strength-reduced by loop.c, so no user pseudo would need a copy in block 0 at all.
+- probe: Form Z1; sandbox --disable all.
+- result: 30 at 51 instructions - loop.c builds a different address chain and the loop body diverges. Worse than the s2-banked indexed form S1 (18 / 49).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: merged-struct chassis with the aggregate declared TU-locally in src/text1a_c.c, form Z1, no FAKE constructs, sandbox --disable all = 30

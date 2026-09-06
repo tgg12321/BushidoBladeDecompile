@@ -1,18 +1,48 @@
-/* CANDIDATE - func_8004473C (s2, 2026-09-06). Honest floor 13 (sandbox --disable all),
- * unchanged from s1; this is the form-C body. Requires the aggregate merge in
- * include/game.h (Unk800A9CF8Header D_800A9CF8) and the sibling rewrites in
- * src/text1a_c.c - apply memory/grind/func_8004473C/candidate_merge.patch to a clean
- * tree (git apply) to reproduce this exact state.
+/* CANDIDATE - func_8004473C (s3, 2026-09-06). Honest floor 13 (sandbox --disable all,
+ * build_insns 50 vs the target's 49). Unchanged from s1/s2; this is the form-C body.
  *
- * Residual (s2, fully attributed): ONE sched1 decision. Every register seat this form
- * produces is already the target's; only block-0 ORDER differs, because the copy insn
- * `src = <call temp>` is a once-set live leaf, gets birthing_insn_p's LAUNCH_PRIORITY
- * boost (sched.c:2505/2584) and takes the blez delay slot ahead of the store. See
- * evidence.md s2 and hypotheses.md H4/H5 - form A3 measures the mirror half (13 at the
- * target's 49 instructions with the target's seats, wrong address anchor).
+ * CHASSIS: requires the D_800A9CF8 aggregate merge. s3 measured that the declaration can be
+ * TU-LOCAL (the typedef below plus `extern Unk800A9CF8Header D_800A9CF8;` placed in
+ * src/text1a_c.c immediately before func_80044670) with byte-identical results, which keeps a
+ * grind session inside its allowed edit surface; include/game.h placement is a packaging step
+ * for the final candidate only. memory/grind/func_8004473C/candidate_merge.patch reproduces
+ * the header-canonical variant plus the sibling rewrites (git apply to a clean tree).
  *
- * Two unused locals (tmp, n) that the s1 copy of this file carried have been dropped:
- * they were dead scalars with no semantic purpose. */
+ * RESIDUAL (s3, trace-complete): every instruction this form emits is already one of the
+ * target's - same &D_800A9CF8+0x10 anchor (addiu $a0,$a0,0x10 / addiu $a3,$a0,-0x10 /
+ * sw $v0,0($a0)), same seats (dst $a1, src $v0, count $v1, i $a2, addiu $a0,$v0,0x34,
+ * addiu $v1,$a1,0x58), byte-exact loop body. Only the block-0 ORDER differs, and the extra
+ * 50th instruction is the load-delay nop forced by `lh $v1,6` landing immediately before
+ * `blez $v1`.
+ *
+ * The whole divergence is ONE sched1 ready-list decision. In
+ * tmp/grind/func_8004473C/s3/traceC/text1a_c.sched the T-2 ready list is
+ * `15 (1) 20 (7f000001) 25 (1) 129 (1)`: insn 20 (`(set (reg/v:SI 72) (reg:SI 75))`, the
+ * `src = <call temp>` copy) is a once-set live leaf, birthing_insn_p (sched.c:2505) holds,
+ * adjust_priority (sched.c:2584) raises it to LAUNCH_PRIORITY, and since schedule_block
+ * selects in groups of equal priority (sched.c:2674-2727) it wins T-2 outright. Without that
+ * boost the store wins T-2 on potential_hazard, the addr insn takes T-3, the count load T-4,
+ * the store becomes the last real insn before the branch (so reorg fills the delay slot with
+ * it) and the nop disappears - 49 instructions and the target's bytes.
+ *
+ * W1 (memory/grind/func_8004473C/rejected/W1_sp_biv_survives_two_walkers.c) is the measured
+ * proof of that: giving the source walker a surviving second set removes the boost and emits
+ * the target's block-0 order, anchor and delay slot exactly - at the cost of a second walking
+ * pointer in the loop (23 / 52). */
+
+typedef struct {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;   /* stage id (stage_GetId) */
+    s16 unk6;   /* entry count */
+    s32 unk8;
+    s32 unkC;   /* entry table (stride 0x68) */
+    s32 unk10;  /* game_GetCharData() table (stride 0x68) */
+    s32 unk14;
+} Unk800A9CF8Header;
+
+extern Unk800A9CF8Header D_800A9CF8;
+
 extern void *game_GetCharData(void);
 /* Per-entry record (stride 0x68) shared by the D_800A9CF8.unkC table and the
  * game_GetCharData() table; the sibling func_80044B30 walks both with the

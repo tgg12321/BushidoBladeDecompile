@@ -1762,3 +1762,4 @@
 - 2026-09-06 00:55 func_800644FC COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-06 01:34 func_8004473C s1 [recon] floor=13: Object-model fix (D_800A9CF8 header struct, base+offset evidence) drops honest floor 40 -> 13; loop body byte-exact; residual is pre-loop sched1/local-alloc coupling fully attributed (birthing-leaf reload copy vs copy-suggested call temp).
 - 2026-09-06 01:59 func_8004473C s2 [structural] floor=13: Residual fully localised to ONE sched1 birthing_insn_p boost; form A3 measures the allocation half at 13 with the target's 49-instruction count and the target's register seats.
+- 2026-09-06 03:00 func_8004473C s3 [structural] floor=13: Block-0 schedule now trace-complete: form C's ONLY defect is insn 20 winning T-2 on its birthing boost; W1 measures the first form with the target's order, anchor and delay slot, proving the mechanism and localising the residual to a seats-vs-order tradeoff.

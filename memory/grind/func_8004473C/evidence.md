@@ -210,3 +210,161 @@ B5 for-increment reordered `src++, dst++, i++` 14 · B6 while + increments at bo
 - [s2] duplicate_loop_exit_test (jump.c:2163) remaps an exit-test pseudo to a FRESH register only when regno_first_uid[reg] == INSN_UID(exit-test insn) AND the reg's last uid falls inside the exit code; if either fails the copy reuses the SAME pseudo, which would make reg_n_sets 2 and remove the boost. That no-remap path is the one untried structural route to killing form A's boost.
 
 - [s2] New measurements this session (all ordinary C, merged-struct chassis, no FAKE constructs): S0 13, S1 18/49, S2 34, S3 23/52, S4 13, S5 13, S6 13, A0 15, A1 19, A2 15, A3 13/49, A4 15, A5 15, A6 15, B1 17, B2 13, B3 15, B4 15, B5 14, B6 14.
+
+## s3 (2026-09-06, structural) — the block-0 schedule is now EXACT, and the lever is split in two
+
+Chassis re-verified at session start: `candidate_merge.patch` applies to HEAD; the aggregate
+declaration was placed TU-LOCALLY in src/text1a_c.c this session (typedef + `extern
+Unk800A9CF8Header D_800A9CF8;` immediately before `func_80044670`) instead of include/game.h,
+because include/game.h is outside a grind session's allowed edit surface. **Measured
+identical: form C = 13 at build_insns 50.** The header-canonical placement is therefore a
+packaging decision for the eventual candidate, not a codegen input; a future session can
+measure entirely inside src/text1a_c.c and stay in scope.
+
+### The complete sched1 block-0 trace for form C (first time captured end-to-end)
+
+`tmp/grind/func_8004473C/s3/traceC/text1a_c.sched`, lines 11824-11852. The dump gives the
+whole backward schedule, not just one ready list:
+
+    ;; ready list at T-1: 130 (7fffff9b), now 130                                 -> 130 jump
+    ;; ready list at T-2: 15 (1) 20 (7f000001) 25 (1) 129 (1), now 20 129 25 15   -> 20
+    ;; launching 128 before 20 with no stalls at T-3
+    ;; ready list at T-3: 129 (1) 25 (1) 15 (1) 128 (7f000001), now 128 129 25 15 -> 128
+    ;; ready list at T-4: 129 (1) 25 (1) 15 (1), now 129 25 15
+    ;; insn 15 has a greater potential hazard, now 15 129 25                      -> 15
+    ;; ready list at T-5: 129 (1) 25 (1) 11 (7f000001) 13 (7f000001), now 13 11 . -> 13
+    ;; ready list at T-6: 11 (7f000001) 129 (1) 25 (1), now 11 129 25             -> 11
+    ;; ready list at T-7: 129 (1) 25 (1), now 129 25
+    ;; insn 25 has a greater potential hazard, now 25 129                         -> 25
+    ;; ready list at T-8: 129 (1), now 129                                        -> 129
+    ;; ready list at T-9: 9 (7f000001), now 9                                     -> 9
+
+Reading rule (established this session, verified against the emitted bytes): the scheduler
+takes ready[0] AFTER the potential-hazard re-sort, and T-1 is the LAST insn in forward order.
+So form C's forward block-0 order is
+
+    9 call, 129 i=0, 25 dst-load, 11 (reg75 = $v0), 13 addr(&D+0x10), 15 store,
+    128 count-load, 20 (reg72 = reg75), 130 blez
+
+and after both copies are deleted as no-ops that is exactly what the sandbox object contains:
+`lui a1; lw a1,12 / lui a0; addiu a0,a0,16 / sw v0,0(a0) / lui v1; lh v1,6 / nop / blez v1 /
+move a2,zero`.
+
+**The target's forward order is `129 i=0, 25 dst, 128 count, 13 addr, 15 store` with the two
+copies anywhere before their uses.** Diffed against form C, the ONLY thing that has to change
+is that insn 20 must not win T-2. Re-running the trace by hand with insn 20 unboosted gives:
+T-2 store 15 (potential_hazard promotes it inside the priority-1 group), T-3 addr 13 (boosted,
+`&D+0x10` is once-set and live-out), T-4 count 128 (boosted), T-5/T-6 the two copies, T-7 dst,
+T-8 i=0 — i.e. forward `i=0, dst, count, addr, store`, the store becomes the last real insn
+before the branch so reorg fills the delay slot with it, and the count load is no longer
+adjacent to `blez` so the load-delay nop disappears. That is 49 instructions and the target's
+bytes.
+
+### The exact RTL (from tmp/grind/func_8004473C/s3/traceC/text1a_c.flow)
+
+    (insn 11  (set (reg:SI 75) (reg:SI 2 v0))                        REG_DEAD $v0
+    (insn 13  (set (reg:SI 76) (const (plus (symbol_ref "D_800A9CF8") 16)))
+    (insn 15  (set (mem/s:SI (reg:SI 76)) (reg:SI 75))
+    (insn 20  (set (reg/v:SI 72) (reg:SI 75))                        REG_DEAD reg 75
+    (insn 25  (set (reg/v:SI 73) (mem/s:SI (const (plus (symbol_ref "D_800A9CF8") 12))))
+    (insn 28  (set (reg/v:SI 74) (const_int 0))
+    (insn 145 (set (reg:SI 97) (plus (reg/v:SI 72) (const_int 52)))  REG_DEAD reg/v 72  [preheader]
+    (insn 151 (set (reg:SI 98) (plus (reg/v:SI 73) (const_int 88)))                     [preheader]
+
+reg72 = `src`, reg73 = `dst`, reg74 = `i`, reg75 = expand's call-result temp, reg76 = the
+`&D_800A9CF8+0x10` anchor. reg75 is DEAD at insn 20 and reg72 is DEAD at insn 145, so the
+copy cannot be propagated away by cse2 in either direction, and insn 20 and insn 145 sit in
+different basic blocks so combine cannot merge them either.
+
+### Mechanism confirmations read out of sched.c this session
+
+- `adjust_priority` is called exactly ONCE per insn, at launch time (`sched.c:2645`, inside
+  the launch loop) — the boost is not re-evaluated, so `bb_live_regs` at launch is what
+  decides it.
+- `schedule_block`'s selection loop (`sched.c:2674-2727`) walks the ready list in groups of
+  EQUAL `INSN_PRIORITY`. A boosted insn is a singleton group and is taken immediately; the
+  `potential_hazard` "prefer the memory op" rule and `actual_hazard` queuing only ever apply
+  WITHIN a group. So a LAUNCH_PRIORITY insn cannot be beaten by anything except another
+  LAUNCH_PRIORITY insn with a higher LUID, or by being queued by `actual_hazard`
+  (function-unit busy), which no ordinary reg-reg move in this block can be.
+- `duplicate_loop_exit_test` (`jump.c:2228-2256`) re-read and confirmed: the remap to a fresh
+  `gen_reg_rtx` fires iff `regno_first_uid[reg] == INSN_UID(exit-test insn)` AND some insn
+  strictly inside the exit code is `regno_last_uid[reg]`. For this loop's bound temp both
+  always hold.
+
+### W1 — the first form that reproduces the target's block-0 order, anchor AND delay slot
+
+`W1` replaces the `Rec4473C *src` walker with `s32 *sp` anchored at +0x34 and read as
+`sp[-2] / sp[-1] / sp[0]`, advanced `sp += 0x1A`. The add_val-0 access (`sp[0]`) is what makes
+loop.c leave the biv register live, so `reg_n_sets[sp] == 2`, `birthing_insn_p` fails, and the
+schedule comes out as predicted:
+
+    move v1,v0             <- the call-result copy, NOT deleted
+    addiu a3,v1,52         <- sp init, in block 0 (target has this add in the preheader)
+    move a2,zero           <- i = 0             }
+    lui a1; lw a1,12       <- dst               }  the target's
+    lui v0; lh v0,6        <- count (no nop!)   }  block-0 order,
+    lui a0; addiu a0,a0,16 <- anchor +0x10      }  anchor and
+    blez v0                                     }  delay slot,
+     sw v1,0(a0)           <- store in the slot }  verbatim
+    addiu t0,a0,-16
+
+This is the measured proof that the birthing boost is the whole ordering story. Its own
+residual (23 / 52 insns) is structural to the biv-survival trick and is NOT a near miss:
+because the surviving biv does not absorb the two remaining reads, the loop carries TWO
+walking pointers with TWO increments (`$a3` the biv read at 0, `$a0 = $a3+48` the giv read at
+-4/0), and the call-result temp stays live into the preheader, so it is multi-block, global.c
+seats it in `$v1` and the block-0-local pre-check count temp takes `$v0` — the exact mirror of
+the target. W9 (dst loaded before sp) and W13 (`src = (Rec*)D.unk10; sp = &src->unk34;`, where
+combine merges the copy into the add) both emit byte-identical 23/52 output.
+
+### The allocation half, now stated precisely (from the .lreg register lists)
+
+Form C works on seats because reg75 is a **block-0-local** qty carrying a `$v0` hard-reg copy
+suggestion from insn 11, so local-alloc seats it first ($v0), the block-0-local count temp is
+pushed to `$v1`, and global.c then gives the multi-block reg72 `$v0` by copy preference, which
+is why insn 20 becomes a deleted `$v0 <- $v0`. In W1 (and in A0) the value that survives into
+the preheader IS the call-result temp itself, so it is multi-block, global.c runs after
+local-alloc has already handed `$v0` to the count temp, and the seats rotate. W1's `.lreg`
+shows this directly: `Register 95 used 2 times across 4 insns in block 0` (the count, local)
+vs `Register 75 used 4 times across 12 insns` with no block tag, and reg 75 listed in
+`Basic block 1: Registers live at start: 29 30 72 73 74 75 76`.
+
+**So the two halves are now separately measured and mutually exclusive in every form tried:**
+(a) the seats need the stored value to be a block-0-local temp whose only consumers are the
+store and one copy — that forces the walker to be a fresh once-set pseudo, i.e. birthing;
+(b) the order needs the walker's defining insn to be non-birthing — which so far always means
+giving the walker a second set, which makes it the live biv and costs a second walking
+register plus its increment.
+
+### Measurements this session (all ordinary C, merged-struct chassis, no FAKE constructs)
+
+S0 form C control **13 / 50** - A3 **13 / 49** (re-measured; anchor `&D+0xC`, store degenerates
+to `lui $at; sw $v0,16($at)`, delay slot `move a2,zero`) - W1 **23 / 52** - W2 (sp init in the
+for-init) **23 / 52** - W3 (A-chassis sp, `sp += 0xD` after the store) **32 / 52** -
+W9 (dst before sp) **23 / 52** - W13 (`src` reload then `sp = &src->unk34`) **23 / 52** -
+Z1 (block-scoped `src = (Rec*)D.unk10 + i` inside the loop) **30 / 51** -
+Z6 (src declared in an inner block after the store) **13 / 50** -
+Z7 (src and dst both inner-block scoped) **13 / 50**.
+
+- [s3] The TU-local aggregate declaration (typedef + extern in src/text1a_c.c) measures identically to the include/game.h placement (form C = 13 / 50), so the merge can be measured entirely inside a grind session's allowed edit surface; header-canonical placement is a packaging step for the final candidate only.
+- [s3] Form C's complete sched1 block-0 schedule is captured in tmp/grind/func_8004473C/s3/traceC/text1a_c.sched (T-1..T-9). Forward order: call, i=0, dst-load, reg75=$v0, addr &D+0x10, store, count-load, reg72=reg75, blez. The target's is call, i=0, dst-load, count-load, addr, store (plus the two copies, both deleted). The single divergence is insn 20 winning T-2 on its birthing LAUNCH_PRIORITY.
+- [s3] sched.c's selection loop (2674-2727) processes the ready list in groups of EQUAL INSN_PRIORITY; potential_hazard's memory-op preference and actual_hazard's queuing only reorder WITHIN a group. A LAUNCH_PRIORITY insn is therefore a singleton group and is unbeatable except by another boosted insn with a higher LUID. adjust_priority is called once, at launch (sched.c:2645), so bb_live_regs at launch time is decisive.
+- [s3] In form C, reg75 is REG_DEAD at insn 20 and reg72 is REG_DEAD at insn 145 (the preheader giv init reg97 = reg72 + 52), and insns 20 and 145 are in different basic blocks. cse2 cannot propagate the copy away in either direction and combine cannot merge it, so the copy insn is structurally present in block 0 for every form-C spelling measured.
+- [s3] W1 (s32 *sp anchored at +0x34, read sp[-2]/sp[-1]/sp[0], sp += 0x1A) is the FIRST measured form that reproduces the target's block-0 order, the &D+0x10 anchor and the store-in-the-blez-delay-slot all at once, because the add_val-0 access keeps the biv live (reg_n_sets == 2) and kills the birthing boost. Its residual is 23 / 52: the surviving biv does not absorb the other two reads, so the loop carries two walking pointers with two increments, and the call-result temp becomes multi-block so the seats rotate ($v1 for src, $v0 for the count).
+- [s3] Declaration scope does not move pseudo numbering in a way that helps: Z6/Z7 (src, and src+dst, declared in an inner block after the store) emit output byte-identical to plain form C at 13 / 50.
+- [s3] The seat half and the order half are mutually exclusive in every form measured across s1-s3: the seats require the stored value to be a block-0-local temp consumed only by the store and one copy (which forces the walker to be a fresh once-set = birthing pseudo), while the order requires the walker's defining insn to be non-birthing (which so far always means a second set, i.e. a live biv costing an extra walking register and increment).
+
+- [s3] The aggregate merge can be declared TU-LOCALLY in src/text1a_c.c (typedef plus extern Unk800A9CF8Header D_800A9CF8 immediately before func_80044670) with byte-identical results to the include/game.h placement - form C measures 13 at build_insns 50 either way. That keeps every future measurement inside a grind session's allowed edit surface; header-canonical placement is a packaging step for the final candidate only. (The previous session was discarded for a scope violation on undefined_syms_auto.txt; this route removes the need to touch anything outside src/text1a_c.c.)
+
+- [s3] Form C's complete sched1 block-0 schedule is now on record (tmp/grind/func_8004473C/s3/traceC/text1a_c.sched, T-1..T-9). Forward order: call, i=0, dst-load, reg75=$v0, addr &D+0x10, store, count-load, reg72=reg75, blez. The reading rule - the scheduler takes ready[0] after the potential-hazard re-sort, and T-1 is the LAST insn in forward order - was verified by reconciling the schedule against the emitted bytes.
+
+- [s3] sched.c's selection loop (2674-2727) processes the ready list in groups of EQUAL INSN_PRIORITY; potential_hazard's memory-op preference and actual_hazard's queuing only reorder within a group. A LAUNCH_PRIORITY insn is a singleton group and is unbeatable except by another boosted insn with a higher LUID. adjust_priority is called once, at launch (sched.c:2645), so bb_live_regs at launch time is decisive.
+
+- [s3] In form C the copy chain is structurally locked: (insn 20 (set (reg/v:SI 72) (reg:SI 75))) carries REG_DEAD reg 75, and the preheader's (insn 145 (set (reg:SI 97) (plus (reg/v:SI 72) (const_int 52)))) carries REG_DEAD reg/v 72. Each register dies at the other's boundary so cse2 cannot propagate the copy away in either direction, and the two insns are in different basic blocks so combine cannot merge them.
+
+- [s3] W1 (s32 *sp anchored at +0x34, read sp[-2]/sp[-1]/sp[0], advanced sp += 0x1A) is the first measured form that reproduces the target's block-0 ORDER, the &D_800A9CF8+0x10 anchor and the store-in-the-blez-delay-slot simultaneously, because the add_val-0 access keeps the biv live (reg_n_sets == 2) and defeats the birthing boost.
+
+- [s3] The seat half and the order half are mutually exclusive in every form measured across s1-s3. The target's SEATS need the stored value to be a block-0-local temp consumed only by the store and one copy (form C: reg75 local with a $v0 copy suggestion, allocated first by local-alloc, which pushes the count temp to $v1; global.c then gives the multi-block src $v0 and the copy is deleted). The target's ORDER needs the walker's defining insn to be non-birthing, which so far always means a second set - i.e. a live biv costing an extra walking register and its increment.
+
+- [s3] Twelve form-C statement orderings across three sessions (S0, C4-C7, D1-D3, F2, F4, S4, S5, S6, B2, Z6, Z7) emit byte-identical 13 / 50 output. The emitted instruction SET is already the target's; re-spelling statement order on that chassis is exhausted.
