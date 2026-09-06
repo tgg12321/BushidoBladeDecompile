@@ -3067,3 +3067,78 @@ for one is the padding for the other.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: shipped chassis HEAD 2026-09-05, byte-level comparison against a COMPLETED-C sibling; no FAKE construct present
+
+## s20 (2026-09-05, structural) — SOLVED: distance 0 on the shipped chassis in ordinary C
+
+### H36 — CONFIRMED — a loop-and-a-half puts a CALL_INSN inside the loop notes at zero byte cost
+**Statement.** Writing the loop's exit as `i += 1; if (i >= 3) { func_8001CD68(buf); break; } } while (1);`
+instead of `i += 1; } while (i < 3); func_8001CD68(buf);` places the existing
+`func_8001CD68` CALL_INSN between the NOTE_INSN_LOOP_BEG/END pair without changing
+the emitted control flow, sets `loop_has_call = 1`, halves the LICM threshold from
+122 to 61, and leaves the 0x91A2B3C5 movable in the loop exactly as the target has it.
+
+**Mechanism (pass-attributed, not inferred).** `prescan_loop`
+(tools/gcc-2.7.2/loop.c:2199-2203) sets `loop_has_call` for any CALL_INSN between the
+loop notes; loop.c:532 computes `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`
+with `n_non_fixed_regs` fixed at 60 for this target, so 122 without a call and 61 with
+one; loop.c:1631 hoists a movable iff `threshold * savings * m->lifetime >= insn_count`.
+The 0x91A2B3C5 constant is at savings 1 / lifetime 1 — both already at their floor —
+so it is decided purely by `threshold >= insn_count`.
+
+**Probe / measurement.** Body = the s19 candidate with only the exit spelling changed;
+applied over the INCLUDE_ASM line at src/code6cac_c2.c:629 with no other edit in the
+tree. `sandbox func_8003C714 --disable all` printed
+`{"score": 0, "target_insns": 104, "build_insns": 104}`.
+`pwsh tools/grinder/dump.ps1 func_8003C714` regenerated with this body reads:
+```
+Loop from 28 to 184: 64 real insns.
+Insn 48: regno 87 (life 1), move-insn savings 1 not desirable
+Insn 66: regno 93 (life 35), move-insn savings 1  moved to 234
+```
+i.e. 61*1*1 = 61 < 64 leaves 0x91A2B3C5 in the loop, and 61*1*35 = 2135 >= 64 still
+hoists 0x88888889 — the target's exact split. insn_count rises 62 -> 64 because the
+call and its argument setup are now counted inside the loop; the emitted loop is
+unchanged (`slti $v0, $t0, 0x3; bnez $v0, .L8003C754` with `addiu $a1, $a1, 0x4` in
+the delay slot, falling through to `jal func_8001CD68`).
+
+**Why 19 sessions missed it.** The whole ledger treated route (A) ("one byte-free
+CALL_INSN in the loop") as requiring a call that emits no bytes — i.e. a dead libcall —
+and therefore as an admissibility problem (s17's DImode `__divdi3` block, layer-1
+FAILed 2026-09-05). The call does not have to be byte-free: it only has to be
+*inside the loop notes*. `func_8001CD68` is a call the function already makes,
+immediately after the loop, and moving its source position inside the loop's terminal
+`if` changes zero emitted instructions. Route (A)'s cost was never 13 statements of
+DImode; it was one `break`.
+
+**Admissibility.** No forbidden-family construct, no sanctioned-family claim, no
+`/* FAKE */`, no declaration change (`extern s32 D_80106A58;` at src/code6cac_c2.c:156
+untouched), no padding, no dead code. Full six-test vet in
+memory/grind/func_8003C714/self_vet.md.
+
+### K58 — KILLED (class) — dead invariant/constant carriers cannot supply extra movables for the threshold order dial
+**Statement.** Dead loop-invariant register sets written with DISTINCT destination
+pseudos — 24 dead constant-holder locals, and 1..6 dead invariant constant divisions
+`e_k = ((s32)s0) / D_k` — do not raise insn_count and do not add movables, because
+cse1 erases them before loop_optimize runs.
+**Predicate.** `delete_dead_from_cse` (tools/gcc-2.7.2/cse.c:8684) walks insns
+backwards and deletes every insn whose single SET destination is a pseudo with a zero
+use count, decrementing use counts as it goes, so a dead chain of distinct pseudos is
+erased in full; only libcall blocks are exempted (cse.c:8708-8712) and only reused
+pseudos survive (their use counts are nonzero at every set).
+**Measured on.** Shipped chassis HEAD 2026-09-05, no FAKE construct present:
+o_n8/o_n16/o_n24 (constant holders) all sandbox 15 / build_insns 105 with the -dL dump
+still at "62 real insns"; i_n1..i_n6 (invariant divisions) all sandbox 15 /
+build_insns 105 with the dump at "62 real insns"; c_n4..c_n20 (invariant chain rooted
+at `(s32)s0`) all 15/105; m_n1..m_n5 (invariant divisions accumulated into a dead
+reused `t`) 15/105 with the dump at "62 real insns"; C_distinct_variant (distinct
+pseudos rooted at the loop-variant load) 17/105 with the dump at "61 real insns".
+**Consequence.** Combined with s16's measurement that LIVE invariant movables cost
+12 bytes each, the loop.c:1719/1904 `threshold -= 3` order dial has no byte-free
+carrier: an extra movable is either deleted before loop.c (no effect) or emits bytes.
+Superseded in practice by H36, which needs no order term at all.
+
+### K59 — CONFIRMED (re-audit, mandated by the brief) — s19's d_n10 still reaches 0 on this chassis
+Re-measured `tmp/grind/func_8003C714/s19/d_n10.c` (ten dead constant divisions on a
+single reused `t` rooted at the loop-variant load) unchanged on HEAD 2026-09-05:
+`{"score": 0, "build_insns": 104}`. The s19 insn_count channel is real and still live;
+it is superseded by H36 only on admissibility grounds, not on reachability.

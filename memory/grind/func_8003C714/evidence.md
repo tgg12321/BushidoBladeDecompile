@@ -2749,3 +2749,55 @@ bytes, and the current candidate body is confirmed as the correct arithmetic.
 - [s19] asm/funcs/func_80035280.s carries a byte-identical loop body (0x88888889 hoisted at 8003531C, 0x91A2B3C5 in-loop at 80035330, same four stores at +0x21..+0x24, same 8-byte stride, same slti 3 tail, 58 insns against our 56). The idiom that leaves the /1800 magic in the loop is shared between the two functions and lives inside the loop body itself; func_80035280's extra preceding loop is not the explanation, since func_8003C714 has no second loop and behaves the same.
 
 - [s19] func_8001CD68 (COMPLETED-C, src/code6cac.c:1122) is the matched sibling formatter; its spelling does not transplant (it reuses minutes for seconds and carries a 0x2BF1F clamp), but it corroborates the candidate's arithmetic.
+
+## §s20 (2026-09-05, structural) — the residual was one LICM decision, and the carrier was a `break`
+
+### Target-vs-build diff, established first thing this session
+Applying the s19 candidate and disassembling `tmp/sandbox/func_8003C714/code6cac_c2.o`
+shows the build and the target are instruction-identical except for the LICM split:
+the build hoists BOTH magic constants into the preheader (`lui/ori t1` for 0x91A2B3C5
+and `lui/ori a3` for 0x88888889), leaving a bare `nop` in the load-delay slot after
+`lw v1,4(a2)`; the target hoists only 0x88888889 and materialises 0x91A2B3C5 in-loop
+at 8003C754/8003C75C, using the `ori` to fill that delay slot. That single difference
+is worth +1 instruction (105 vs 104) and the whole score-15 register rename cascade
+($v0/$t1 vs $t1/$t2).
+
+### The sibling that shares the loop
+`grep -l 91A2B3C5 asm/funcs/` returns func_8001CD68, func_80035280, func_8003C714,
+func_80067D14. func_80035280 (asm/funcs/func_80035280.s:48-110) carries this loop
+BYTE FOR BYTE — same three `lw 4($a2)` reloads, same /1800, /30%60, %30*100/30
+sequence, same `sb` at 0x21/0x22/0x23/0x24, same `addiu $a2,8` / `addiu $a1,4` /
+`slti 3` tail, same in-loop 0x91A2B3C5 and hoisted 0x88888889. It is a shared
+record-formatting idiom, and func_80035280 is a useful cross-check for any future
+work on the same loop.
+
+### The decisive measurement
+Body: the s19 candidate with ONE change — the trailing `func_8001CD68(buf)` moved
+inside the loop's terminal `if (i >= 3) { ...; break; }` and the back-edge written
+`} while (1);`.
+```
+sandbox func_8003C714 --disable all  ->  {"score": 0, "target_insns": 104, "build_insns": 104}
+tmp/grind/func_8003C714/dumps/code6cac_c2.loop:
+    Loop from 28 to 184: 64 real insns.
+    Insn 48: regno 87 (life 1), move-insn savings 1 not desirable
+    Insn 66: regno 93 (life 35), move-insn savings 1  moved to 234
+```
+Against the s19 baseline of the same dump (`Loop from 28 to 170: 62 real insns` with
+insn 48 "moved to 225"). loop.c:532 threshold 122 -> 61 via loop_has_call; loop.c:1631
+then leaves the savings-1/lifetime-1 movable in the loop.
+
+### The order-dial sweep that failed, and why (banked as K58)
+| form | n | sandbox | build_insns | -dL "real insns" |
+|---|---|---|---|---|
+| dead constant-holder locals p0..pN | 8/16/24 | 15 | 105 | 62 |
+| dead invariant divisions `((s32)s0)/D` | 1..6 | 15 | 105 | 62 |
+| dead invariant chain rooted at `(s32)s0` | 4/8/16/20 | 15 | 105 | — |
+| invariant divisions accumulated into dead reused `t` | 1..5 | 15 | 105 | 62 |
+| distinct-pseudo chain rooted at the VARIANT load | 10 | 17 | 105 | 61 |
+| s19 d_n10: reused `t` rooted at the VARIANT load | 10 | **0** | 104 | (123+) |
+The discriminator is the use count, not invariance: `delete_dead_from_cse`
+(cse.c:8684) erases a dead chain of distinct pseudos in full, cascading backwards,
+but every set of a REUSED pseudo has a nonzero use count and survives to loop.c.
+Scripts: tmp/grind/func_8003C714/s20/gen_order.py, gen_chain.py, gen_inv.py,
+gen_mix.py; forms o_n*.c, c_n*.c, i_n*.c, m_n*.c, C_distinct_variant.c,
+D_single_invariant.c, E1_call_in_loop_notes.c.

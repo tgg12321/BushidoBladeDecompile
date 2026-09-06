@@ -403,6 +403,13 @@
    "hash": "77311981b23b2308",
    "when": "2026-09-05T23:42:24.633956+00:00",
    "summary": "The dead-store carrier is a gratuitous DImode/long-long widening whose sole purpose is to summon __divdi3 -- exactly the defect the same-day 2026-09-05 Judge ruling FAILed and the ledger's own judge_constraints ban for this function -- and the D_80106A58 retype leaves a conflicting scalar declaratio"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "d42543ec00bda8cd",
+   "when": "2026-09-06T00:41:32.120728+00:00",
+   "summary": "final call: Ordinary C, no exception family claimed or needed. The only device is the loop-and-a-half exit spelling (call moved into the terminal `if (i >= 3) { ...; break; }` of a `while (1)`), which is semantic"
   }
  ]
 }

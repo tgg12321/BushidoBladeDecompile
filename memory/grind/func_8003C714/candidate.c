@@ -1,44 +1,62 @@
 /*
- * CANDIDATE -- func_8003C714 (src/code6cac_c2.c) -- s19 (2026-09-05, rederive)
+ * CANDIDATE -- func_8003C714 (src/code6cac_c2.c) -- s20 (2026-09-05, structural)
  *
- * MEASURED THIS SESSION on the shipped chassis: this exact body, dropped over
- * the `INCLUDE_ASM("asm/funcs", func_8003C714);` line at src/code6cac_c2.c:629
- * with NO other edit anywhere in the tree, scores
- *   sandbox func_8003C714 --disable all = 15  (target_insns 104, build_insns 105)
+ * MEASURED THIS SESSION on the shipped chassis HEAD: this exact body, dropped
+ * over the `INCLUDE_ASM("asm/funcs", func_8003C714);` line at
+ * src/code6cac_c2.c:629 with NO other edit anywhere in the tree, scores
+ *   sandbox func_8003C714 --disable all = 0   (target_insns 104, build_insns 104)
  *
- * WHY THIS BODY REPLACES THE s18b CANDIDATE. The s18b candidate reached
- * distance 0 but only by carrying (a) a FAKE-annotated DImode dead store whose
- * sole purpose was to summon __divdi3, and (b) a retype of D_80106A58 to
- * `extern u8 D_80106A58[24]`. BOTH are on this function's banned_constructs
- * list, so that body can never be submitted. This session proved that NEITHER
- * is load-bearing: the same distance 0 is reachable from THIS body plus pure
- * insn_count padding, with `base = (u8 *)&D_80106A58;` unchanged and the
- * `extern s32 D_80106A58;` declaration at src/code6cac_c2.c:156 untouched.
- * The two "declaration puns" the brief listed as a hard submission blocker are
- * therefore NOT part of the residual at all -- they were artefacts of the s18b
- * carrier, not of the match. See hypotheses.md s19 (H35/K57) and evidence.md s19.
+ * WHAT CHANGED FROM THE s19 CANDIDATE (which measured 15). Exactly one thing:
+ * the loop is spelled as a loop-and-a-half. The s19 body ended the loop with
+ *     i += 1;
+ *   } while (i < 3);
+ *   func_8001CD68(buf);
+ * this body ends it with
+ *     i += 1;
+ *     if (i >= 3) {
+ *         func_8001CD68(buf);
+ *         break;
+ *     }
+ *   } while (1);
+ * Nothing else differs -- same statements, same declarations, same
+ * `base = (u8 *)&D_80106A58;`, same `extern s32 D_80106A58;` at line 156, no
+ * padding, no dead stores, no FAKE construct, no `volatile`, no header edit.
  *
- * WHAT THE RESIDUAL IS, EXACTLY (all numbers measured this session from the
- * -dL loop dump, tmp/grind/func_8003C714/dumps/code6cac_c2.loop):
- *   Loop from 28 to 170: 62 real insns.
- *   Insn 48: regno 87 (life 1), move-insn savings 1  moved to 225   <- 0x91A2B3C5
- *   Insn 66: regno 93 (life 35), move-insn savings 1 moved to 227   <- 0x88888889
- * The target hoists reg 93 (lui/ori in the preheader at 8003C740) and does NOT
- * hoist reg 87 (lui/ori materialised in-loop at 8003C754/8003C75C). All 15
- * residual instructions are that one difference. loop.c:1631 moves a movable
- * iff `threshold * savings * m->lifetime >= insn_count`, and loop.c:532 sets
- * `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` = 122 with no
- * call in the loop, 61 with one. reg 87 sits at savings 1 / lifetime 1, both
- * already at their floor, so the ONLY two ways to leave it in the loop are
- *   (A) loop_has_call = 1  -> need insn_count >= 62, and the baseline is
- *       ALREADY 62, so a single byte-free CALL_INSN in the loop is sufficient
- *       on its own (margin is exactly one insn); or
- *   (B) no call             -> need insn_count >= 123, i.e. +61 RTL insns in
- *       the loop that emit no bytes.
- * Route (B) was believed capped at insn_count 64 by s18. It is NOT: see the two
- * new rejected/ forms, which reach 123 and measure sandbox 0. What blocks (B)
- * is admissibility, not reachability -- the padding has to be something a
- * programmer would actually write.
+ * WHY IT MATCHES (pass-attributed from tmp/grind/func_8003C714/dumps/code6cac_c2.loop,
+ * regenerated this session with this body in place):
+ *   Loop from 28 to 184: 64 real insns.
+ *   Insn 48: regno 87 (life 1), move-insn savings 1 not desirable     <- 0x91A2B3C5
+ *   Insn 66: regno 93 (life 35), move-insn savings 1  moved to 234    <- 0x88888889
+ * The whole 19-session residual was one LICM decision. loop.c:1631 hoists a
+ * movable iff `threshold * savings * m->lifetime >= insn_count`, and
+ * loop.c:532 sets `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`
+ * = 122 with no call in the loop, 61 with one. The 0x91A2B3C5 constant sits at
+ * savings 1 / lifetime 1 (both at their floor), so with no call in the loop
+ * 122 >= 62 hoists it -- which is what every previous session measured, and is
+ * the sole source of all 15 residual instructions.
+ *
+ * Moving `func_8001CD68(buf)` inside the loop's terminal `if` puts a CALL_INSN
+ * between the NOTE_INSN_LOOP_BEG/END pair, so prescan_loop (loop.c:2199-2203)
+ * sets loop_has_call = 1 and threshold halves to 61. Then
+ *   0x91A2B3C5:  61 * 1 * 1  = 61  <  64  -> "not desirable", stays in the loop
+ *   0x88888889:  61 * 1 * 35 = 2135 >= 64 -> moved to the preheader
+ * which is exactly the target's split (lui/ori for 0x88888889 at 8003C740, and
+ * lui/ori for 0x91A2B3C5 in-loop at 8003C754/8003C75C filling the load-delay
+ * slot after `lw $v1, 4($a2)`). insn_count rises 62 -> 64 because the call and
+ * its argument setup are now counted inside the loop.
+ *
+ * The emitted control flow is unchanged: `slti $v0, $t0, 0x3; bnez $v0, .L8003C754`
+ * with `addiu $a1, $a1, 0x4` in the delay slot, falling through to
+ * `jal func_8001CD68`. The loop-and-a-half is a source-level exit spelling, not
+ * an emitted extra branch -- the byte count is 104 == 104 and score 0.
+ *
+ * ADMISSIBILITY. This body contains no construct from any forbidden family and
+ * claims no sanctioned-family carve-out: no dead store, no constant holder, no
+ * unused local, no padding chain, no long long / float cast, no `volatile`, no
+ * declaration change, no `/* FAKE * /` annotation needed. It is a loop-and-a-half
+ * -- the ordinary C idiom for "do the last thing on the way out" -- and it is
+ * the ONLY byte-free carrier of loop_has_call found in 20 sessions. See
+ * memory/grind/func_8003C714/self_vet.md.
  */
 void func_8003C714(void) {
     u8 buf[4];
@@ -73,8 +91,11 @@ void func_8003C714(void) {
         v = *src;
         dst[0x24] = v;
         i += 1;
-    } while (i < 3);
-    func_8001CD68(buf);
+        if (i >= 3) {
+            func_8001CD68(buf);
+            break;
+        }
+    } while (1);
     *((u8 *)s0 + 0x2D) = *(u16 *)buf;
     *((u8 *)s0 + 0x2E) = buf[2];
     *((u8 *)s0 + 0x2F) = buf[3];
