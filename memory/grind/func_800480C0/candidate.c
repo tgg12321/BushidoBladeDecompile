@@ -509,6 +509,34 @@
  *  Instruments: tmp/grind/func_800480C0/s6/{probe.sh,runall.sh,dumpall.sh,
  *  count_uses.py}. probe.sh restores src/text1b.c from HEAD around every
  *  measurement, which the s3 probe did not. */
+/* s19 (forensics, 2026-09-05, chassis HEAD e0174a57) - BODY UNCHANGED, floor re-measured
+ * 20 with this body installed over the INCLUDE_ASM line (74 target insns, 74 build insns,
+ * rules_dropped 0). Mandated FAKE re-audit re-run: one FAKE unit (arg0 = 0;), keep-all 20 /
+ * drop-1 32 - load-bearing, masking no lever, identical on six chassis now.
+ * THE SESSION'S TWO FINDINGS, both frontier items executed to a measurement.
+ * (1) FRAME CHARGES ARE ADDITIVE, AND 8 + 24 REACHES THE TARGET FRAME. The s17 m1 folded
+ * entry guard (one combine orphan, vars= 8) combined with a static __inline__ helper carrying
+ * a 24-byte local (integrate.c:2085-2092 donates DECL_FRAME_SIZE verbatim) prints
+ * .frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0 - the target's exact
+ * decomposition and its exact 0x58 - at 73 cc1 insns. The 16-byte donation gives vars= 24 and
+ * the 32-byte donation vars= 40, so get_frame_size() is the plain sum of the alter_reg slot
+ * (reload1.c:2382-2385, 8 bytes via function.c:687) and the donated block. No earlier session
+ * had reached the target frame from two producers.
+ * (2) AND IT STILL LOSES, ON THE STREAM RATHER THAN THE FRAME, WHICH RETIRES THE THREE-WAY
+ * SPLIT. The phantom half is not free here: every folded-guard spelling puts the guard value
+ * in a second pseudo and has to move it back at the loop head (addu $4,$17,-1 ... addu $17,$4)
+ * where the target spends one addiu $s1,$s1,-0x1, so the combined body emits 73 instructions
+ * against the target's 72 non-nop instructions and scores 25 - worse than this candidate's 20.
+ * This candidate's stream already matches the target's length exactly; the residual is the 20
+ * sp-relative operands and nothing else, so any producer costing an instruction is out.
+ * (3) THE REGISTER-MASK ROUTE IS CLASS-DEAD. gp_reg_size == 4 * popcount(mask) by construction
+ * (mips.c:4479-4486) and save_restore_insns emits one memory reference per bit (mips.c:4680);
+ * the prologue is RTL (mips.md:6029) but the EPILOGUE IS PRINTED TEXT (mips.md:6056 expander
+ * commented out, mips.h:2036 -> function_epilogue, mips.c:5174 save_restore_insns(FALSE,...,
+ * file)), so no pass can delete a restore. The target prints eight restores, therefore
+ * gp_reg_size = 32 and var_size + args_size = 56 with no register-mask freedom at all.
+ * Bodies tmp/grind/func_800480C0/s19/bodies/p{0..4}.c, listings s19/last_p*.s,
+ * ablation s19/fake_ablate.txt. */
 void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
 {
     u32 *p;

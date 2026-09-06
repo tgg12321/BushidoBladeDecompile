@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 18,
+ "session_count": 19,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -111,23 +111,29 @@
    "floor": 20,
    "modality": "forensics",
    "headline": "Forensics closes the outgoing-args axis s17 reopened: the 7th argument word is the boundary (args_size stays 24 through 6 args, and the 7th's store lands at sp+0x18 inside the target's untouched windo"
+  },
+  {
+   "session": 19,
+   "floor": 20,
+   "modality": "forensics",
+   "headline": "Frame charges are additive - an 8-byte combine-orphan phantom plus a 24-byte inline-callee donation prints the target's exact .frame $sp,88 # vars=32, regs=8/0, args=24 - but the phantom half costs on"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The only remaining unmeasured zero-instruction producer is a THREE-way split (one alter_reg phantom at 8 bytes plus 24 bytes from somewhere else), since compute_frame_size constrains only the sum: this body demonstrably supports exactly one combine orphan at 73 insns (s17 m1), so a 24-byte partner would suffice.",
-   "mechanism": "mips.c:4475 totals var_size + args_size + gp_reg_rounded and the s18 boundary result pins args_size at 24 for reachable calls, so the 32 bytes must come entirely from var_size - but var_size need not come from ONE object. function.c:687 rounds each alter_reg slot to 8 bytes (BIGGEST_ALIGNMENT 64, mips.h:1082), so 8 + 24 is arithmetically identical to 32.",
-   "next_probe": "Install the s17 m1 folded-entry-guard body (vars= 8, 73 insns) and add, one at a time, each honest 24-byte candidate: a 24-byte unreferenced aggregate is the banned pad and is excluded, so the only untried partners are a static __inline__ helper whose OWN frame is 24 bytes (integrate.c:2092 donates DECL_FRAME_SIZE verbatim - s14/s15 killed the 32-byte donation because the inlinee's local had to be live, but a 24-byte donation may admit a shape whose traffic folds), and a 6-argument live call combined with the phantom (args stays 24 by the s18 measurement, so this is a control, not a lever). Measure with s18/probe.sh; the m1 body's 73 insns leave exactly one instruction of headroom against the target's 74."
+   "hypothesis": "With the phantom half now measured to cost one instruction and the register-mask route class-dead, the only vars=32 producer left that is byte-neutral on this body is a SINGLE 25..32-byte charge, and the one honest spelling never tried is an inline-callee donation whose donated object is genuinely live at a DIFFERENT call site of the same helper (s14 frontier 1, retired by argument in s15 rather than by measurement on a real sibling).",
+   "mechanism": "integrate.c:2085-2092 charges assign_stack_temp (BLKmode, DECL_FRAME_SIZE (map->fndecl), 1) per expansion and DECL_FRAME_SIZE is snapshotted pre-optimisation at integrate.c:345, so a helper whose 25..32-byte local is live in a sibling's expansion still donates the full block here while constant propagation removes its traffic on this path - the only donation spelling that is not a relocated pad, because the object has a real consumer somewhere in the TU.",
+   "next_probe": "Scan src/text1b.c for a real repeated expression shared between func_800480C0 and a COMPLETED-C sibling in the same TU, factor it into one static __inline__ helper carrying the 25..32-byte local the sibling genuinely needs, and measure BOTH functions with tmp/grind/func_800480C0/s19/probe.sh plus the full scorer - the sibling must stay byte-identical while this function reads vars= 32 at 72 cc1 insns. If no sibling shares such an expression, that is itself the closing measurement for the donation family."
   },
   {
-   "hypothesis": "The 32 bytes may not be a frame OBJECT at all: gp_reg_rounded is the only other term, and MUST_SAVE_REGISTER (mips.h) decides which registers enter it - a register the target saves for a reason our body does not reproduce would move 32 bytes without any frame object.",
-   "mechanism": "mips.c:4478-4485 accumulates gp_reg_size over MUST_SAVE_REGISTER and mips.c:4547 places the save block at args_size + extra_size + var_size + gp_reg_size - 4. Both the target and the candidate save eight registers at 0x38..0x54, so this looks closed - but the SAVE OFFSETS are derived from the same sum, and nobody has checked whether a ninth saved register whose save/restore pair is later deleted (e.g. by reorg.c or by the epilogue scheduler) could leave gp_reg_size raised. b6/b7 both measured regs= 9/0 and regs= 10/0 with visible extra saves, so the deletion half is the untested part.",
-   "next_probe": "Grep tools/gcc-2.7.2/config/mips/mips.c for every write to the frame's mask/gp_reg_size after compute_frame_size runs, and check whether mips_expand_prologue or the .frame emission can ever disagree with the emitted save set; if any path can, construct a body that forces a register into the mask without a save insn and measure it with s18/probe.sh."
+   "hypothesis": "Because the candidate's stream is already the target's length, the residual may not need a NEW frame object at all: a spelling that keeps the same 72 instructions but makes one existing loop value unallocatable would buy 8 bytes at zero instruction cost, and four such would buy 32 - s15's H-s15-4 reached four unallocated pseudos but only in the spill regime (+36 insns).",
+   "mechanism": "reload1.c:2382-2385 pays 8 bytes for any pseudo with reg_renumber < 0 && reg_n_refs > 0, and the zero-traffic version of that state is the combine orphan (no set, no constraint-bearing reference, regclass leaves it ST_REGS - combine.c:10832-10841). s17 capped orphan multiplicity at one for GUARD spellings; orphans planted at the four narrow sign-extends or at the pointer advances have not been enumerated with tools/nrefs_census.py what-if lifts.",
+   "next_probe": "Run tools/nrefs_census.py --func func_800480C0 --file text1b with what-if lifts on each loop pseudo to find which references could be dropped without changing the emitted stream, then use tmp/grind/func_800480C0/s6/count_uses.py on the .combine dump of each resulting body to count orphan USEs directly rather than inferring them from unalloc; the target is orphanUSE=4 at 72 cc1 insns."
   },
   {
-   "hypothesis": "With args pinned, referenced producers excluded and the donation/phantom routes capped, the honest producer for this function really is the declared-and-never-referenced local aggregate that the three text1b siblings were granted, and the residual's disposition is an owner row rather than a spelling.",
-   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS carries (\"pre_pad\", 8) rows for func_80047EE8, func_80047FBC, func_800481E8 and func_80041688 for this identical 32-byte untouched window; func_800480C0 is barred by the standing Judge constraint in this ledger until an owner ruling adds its row.",
-   "next_probe": "Do NOT re-spell the pad - the Judge constraint is binding and body-keyed. Spend the remaining ladder modalities on frontier items 1 and 2; if both close negative, the honest record is that the only producers reaching the target frame at zero instruction cost are the banned pad and dead code, with the s16/s17/s18 measurements as proof and an owner row in _SANCTIONED_UNWRITTEN_PADS as the re-activation trigger."
+   "hypothesis": "If both remaining producers close negative, the honest record for this function is that every zero-instruction 32-byte producer reachable on this body is either the banned unwritten pad or dead code, and the disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS rather than a spelling.",
+   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS carries (\"pre_pad\", 8) rows for func_80047EE8, func_80047FBC, func_800481E8 and func_80041688 for this identical untouched-window shape; func_800480C0 is barred by the standing Judge constraint in this ledger (docs/grind/decisions.md:20349) until an owner ruling adds its row.",
+   "next_probe": "Do NOT re-spell the pad - the Judge constraint is body-keyed and binding. Spend the remaining ladder modalities on frontier items 1 and 2 above; if both close negative, the foreclosure record should cite s19's two measurements (frame additivity confirmed, phantom costs one instruction) as the proof that the 8+24 and register-mask routes are exhausted."
   }
  ],
  "judge_constraints": [
@@ -135,14 +141,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 1,
-   "statement": "Removing the arg0 = 0 dead store (pad still stripped) measures 32 on this chassis, so the store is load-bearing for this body",
-   "kill_scope": "instance",
-   "measured_on": "HEAD dd2808d5, candidate body with volatile pre_pad[8] present but detector-stripped, arg0=0 removed",
-   "predicate_cite": "",
-   "result": "32 vs 20 with the store"
-  },
   {
    "session": 2,
    "statement": "Honest phantom-slot structural producers reach vars=8 on this body across 13 measured spellings, one quarter of the 32 vars bytes the target reserves, and the best spelling carrying the 8 bytes scores",
@@ -606,6 +604,22 @@
    "measured_on": "target listing asm/funcs/func_800480C0.s at HEAD e25a492f - a property of the shipped bytes, independent of any installed body or FAKE state.",
    "predicate_cite": "",
    "result": "Every hit is accounted for: two addiu $sp frame adjustments, 8 register saves at 0x38..0x54, 8 restores, two INCOMING-pa"
+  },
+  {
+   "session": 19,
+   "statement": "The s17 m1 folded-entry-guard body, which supplies the 8-byte half of the split, emits the guard value into a second pseudo and moves it back at the loop head, so with a 24-byte donation added its str",
+   "kill_scope": "instance",
+   "measured_on": "HEAD e0174a57, bodies tmp/grind/func_800480C0/s19/bodies/p{0,1,2,3,4}.c installed one at a time over the INCLUDE_ASM line in src/text1b.c and reverted after each; base candidate's single FAKE (arg0 = ",
+   "predicate_cite": "",
+   "result": "73 emitted instructions against the target's 72 non-nop instructions. The target's entry sequence is beqz $s1,.L800481BC"
+  },
+  {
+   "session": 19,
+   "statement": "Every register counted in gp_reg_size emits a restore instruction that no optimisation pass can remove, so the target's eight restores pin gp_reg_size at 32 and var_size + args_size at 56 for every C ",
+   "kill_scope": "class",
+   "measured_on": "HEAD e0174a57, compiler source in tools/gcc-2.7.2 plus the twelve banked probe listings under tmp/grind/func_800480C0/s18 and s19; base candidate's single FAKE (arg0 = 0;) present in the measured bodi",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:4680",
+   "result": "regs= N equals the restore count in every listing (candidate regs=8 with ten lw ...($sp) = 8 restores plus the two incom"
   }
  ],
  "ladder_skip": 0,

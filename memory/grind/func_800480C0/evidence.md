@@ -1589,3 +1589,98 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s18] Forensic instruments banked: nrefs_census shows every allocno seated (ords 0..10, no hardreg=-1) so there is no allocation residual - consistent with s17's PRE-RA solver verdict; loop_movables shows an EMPTY movable table (loop insns 78..162, insn_count=34, loop_has_call=True, threshold=61) so loop.c is not a lever on this body; label_census confirms 2 labels and eight referenced callee-saved registers ($s0=26 $s1=9 $s2=5 $s3=4 $s4=4 $s5=4 $s6=4 $s7=0), which the candidate already reproduces.
 
 - [s18] Net effect on the frontier: with args pinned at 24 and referenced producers excluded, the residual is again exactly 'an unreferenced 25..32-byte frame object with zero emitted instructions', and the four zero-instruction producers are the banned pad, a single 8-byte alter_reg phantom, inline-callee frame donation (killed) and dead code (a cheat).
+
+## s19 (forensics) - facts added
+
+- MANDATED KILL RE-AUDIT, current chassis e0174a57. `sandbox func_800480C0 --disable all` with
+  candidate.c installed over the INCLUDE_ASM line prints `"score": 20, target_insns 74,
+  build_insns 74, rules_dropped 0, cheat_asm_stripped 162`. `tools/fake_ablate.py --func
+  func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c`
+  (`tmp/grind/func_800480C0/s19/fake_ablate.txt`) reports exactly one FAKE unit (`arg0 = 0;`),
+  keep-all **20** (74 build insns) / drop-1 **32** (73 build insns). Sixth consecutive chassis
+  with the identical reading: the FAKE is load-bearing and occupies no lever's target pseudo.
+  The dispatch chassis check's "measurement unavailable" is resolved to 20.
+
+- FRAME CHARGES COMPOSE. This was the ledger's live frontier item 1 (the three-way split) and
+  it is now measured, not argued. Five bodies through `tmp/grind/func_800480C0/s19/probe.sh`
+  (`s19/bodies/p*.c`, listings `s19/last_p*.s`, driver `s19/runall.sh`):
+
+  | body | frame | vars | insns | unalloc |
+  |---|---|---|---|---|
+  | p0 = s17 m1 folded entry guard (combine orphan only) | 64 | 8 | 73 | 1 |
+  | p3 = candidate + a 24-byte inline donation | 80 | 24 | 72 | 0 |
+  | p2 = m1 + a 16-byte donation | 80 | 24 | 73 | 1 |
+  | **p1 = m1 + a 24-byte donation** | **88** | **32** | **73** | **1** |
+  | p4 = m1 + a 32-byte donation | 96 | 40 | 73 | 1 |
+
+  `reload1.c:2382-2385`'s alter_reg slot and `integrate.c:2085-2092`'s `assign_stack_temp` of
+  `DECL_FRAME_SIZE` are independent calls into `assign_stack_local`, so `get_frame_size()` is
+  their sum with no interaction: 8 + 24 = 32 exactly, and p1 prints the TARGET'S EXACT FRAME
+  DECOMPOSITION `.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0` - 0x58, the
+  target's own `addiu $sp,$sp,-0x58`. No previous session had reached that decomposition from
+  two producers.
+
+- AND THE THREE-WAY SPLIT STILL LOSES, ON THE INSTRUCTION STREAM RATHER THAN THE FRAME. A
+  mnemonic-level diff of `s19/last_p1_m1_donate24.s` against `asm/funcs/func_800480C0.s`
+  (alias table subu/addiu, move/addu, li/addiu, b/beq; nops ignored) gives 73 emitted
+  instructions against the target's 72 non-nop instructions, and the surplus is localised:
+  the target's entry test is `beqz $s1,.L800481BC` / `addiu $s0,$s0,0x4` / `addiu $s1,$s1,-0x1`,
+  while every folded-guard spelling emits the guard value into a SECOND pseudo
+  (`addu $4,$17,-1`) and then has to move it back at the loop head (`addu $17,$4`). That is
+  one instruction more than the target for the same semantics. So the 8-byte alter_reg phantom
+  IS NOT FREE ON THIS BODY: it costs exactly one instruction, and the candidate's stream
+  already matches the target's length (72 cc1 insns / 74 build insns, score 20 = the 20
+  sp-relative operands alone). The full-scorer reading for p1 is `"score": 25, target_insns 74,
+  build_insns 74` - worse than the candidate's 20, because the sandbox strips the unreferenced
+  donation array and the guard's surplus insn stays.
+
+- CONSEQUENCE FOR FRONTIER ITEM 1: the search for an honest 24-byte partner is moot on this
+  body. Even with a perfect 24-byte producer the 8-byte half costs an instruction the target
+  does not spend, so the vars=32 decompositions measured reachable here are one 32-byte charge
+  (donation or pad) or four 8-byte spills (s15 H-s15-4, +36 insns) - not 8+24.
+
+- FRONTIER ITEM 2 (a ninth register in the mask whose save is deleted) IS CLOSED, CLASS. Three
+  facts from the compiler source, all in this tree:
+  (a) `compute_frame_size` derives `gp_reg_size` and `mask` from the same `MUST_SAVE_REGISTER`
+      loop (`tools/gcc-2.7.2/config/mips/mips.c:4479-4486`), so `gp_reg_size == 4 *
+      popcount(mask)` by construction;
+  (b) `save_restore_insns` emits exactly one memory reference per set bit
+      (`mips.c:4680`, the `BITSET_P (mask, regno - GP_REG_FIRST)` loop);
+  (c) the PROLOGUE half is RTL (`mips.md:6029` -> `mips_expand_prologue`, called from
+      `thread_prologue_and_epilogue_insns` AFTER `reload_completed = 1`, `toplev.c:3096-3103`)
+      so it is at least theoretically deletable - but the EPILOGUE half is NOT RTL: the
+      `epilogue` expander is commented out (`mips.md:6056`), `FUNCTION_EPILOGUE`
+      (`mips.h:2036`) calls `function_epilogue`, and `mips.c:5174` calls
+      `save_restore_insns (FALSE, tmp_rtx, tsize, file)` with a live FILE*, i.e. the restores
+      are PRINTED AT FINAL directly from `current_frame_info.mask`. No optimisation pass can
+      touch printed text, so the number of restore instructions in the shipped bytes equals
+      `popcount(mask)`.
+  `asm/funcs/func_800480C0.s` restores exactly eight registers ($ra,$s6,$s5,$s4,$s3,$s2,$s1,$s0
+  at 0x54..0x38, lines 67-74), so `popcount(mask) == 8`, `gp_reg_size == 32`, and
+  `var_size + args_size == 56` is not negotiable by any register-mask route. Empirical
+  cross-check over all twelve banked probe listings (s18 b6/b7/b8/b10/c1/c2 and s19
+  candidate/p0..p4): the printed `regs= N` field equals the emitted restore count in every one
+  (candidate regs=8 with ten `lw ...($sp)` = 8 restores + the 2 incoming-parameter loads at
+  0x68/0x6C; b6 regs=9 with eleven).
+
+- [s19] Mandated kill re-audit on chassis e0174a57: sandbox 20 (74/74, rules_dropped 0); fake_ablate reports one FAKE unit (arg0 = 0;), keep-all 20 / drop-1 32 - load-bearing, masking no lever, unchanged over six chassis.
+
+- [s19] Frame charges from different producers are ADDITIVE with no interaction: the s17 m1 combine-orphan phantom (vars=8) plus a 24-byte integrate.c inline-callee donation gives vars=32 and prints the target's exact `.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0`; the 16-byte donation gives vars=24 and the 32-byte donation vars=40, i.e. `get_frame_size()` is the plain sum of the alter_reg slot and `assign_stack_temp (BLKmode, DECL_FRAME_SIZE, 1)`.
+
+- [s19] The 8-byte alter_reg phantom costs one instruction on this body: every folded-guard spelling puts the guard value in a second pseudo and moves it back at the loop head (`addu $4,$17,-1` ... `addu $17,$4`) where the target spends a single `addiu $s1,$s1,-0x1`, so p1's 73 cc1 insns exceed the target's 72 non-nop insns and its full-scorer reading is 25, worse than the candidate's 20.
+
+- [s19] gp_reg_size cannot be raised without visible saves AND restores: `mips.c:4479-4486` ties `gp_reg_size` to `popcount(mask)`, `mips.c:4680` emits one memory reference per mask bit, and the epilogue half is printed at final (`mips.md:6056` epilogue expander commented out, `mips.h:2036` -> `function_epilogue`, `mips.c:5174` `save_restore_insns (FALSE, ..., file)`), so no pass can delete a restore. The target's eight restores pin `gp_reg_size = 32` and therefore `var_size + args_size = 56`.
+
+- [s19] Chassis e0174a57 honest floor is 20 (sandbox: score 20, target_insns 74, build_insns 74, rules_dropped 0, cheat_asm_stripped 162), and the candidate's single FAKE (arg0 = 0;) ablates 20 -> 32, i.e. load-bearing and masking no lever - the sixth chassis with that reading.
+
+- [s19] get_frame_size() is the plain sum of independent producers: m1's combine-orphan alter_reg slot (8) plus a 24-byte integrate.c inline-callee donation gives vars=32 and prints .frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0 - the target's exact decomposition; 16-byte donation gives vars=24, 32-byte gives vars=40.
+
+- [s19] The 8-byte alter_reg phantom is NOT free on this body: every folded-guard spelling seats the guard value in a second pseudo and moves it back at the loop head (addu $4,$17,-1 ... addu $17,$4) where the target spends a single addiu $s1,$s1,-0x1, so the combined body emits 73 instructions against the target's 72 non-nop and scores 25, worse than the candidate's 20.
+
+- [s19] The candidate's instruction stream already matches the target's length exactly (72 cc1 insns / 74 build insns); the entire residual is the 20 sp-relative operands, so any frame producer that costs even one instruction is disqualified on this body.
+
+- [s19] gp_reg_size == 4 * popcount(mask) by construction (mips.c:4479-4486) and save_restore_insns emits one memory reference per bit (mips.c:4680); the prologue is RTL (mips.md:6029, expanded after reload_completed at toplev.c:3096-3103) but the epilogue is PRINTED TEXT (mips.md:6056 expander commented out, mips.h:2036 -> function_epilogue, mips.c:5174 save_restore_insns(FALSE,...,file)), so no pass can delete a restore.
+
+- [s19] The target restores exactly eight registers ($ra,$s6,$s5,$s4,$s3,$s2,$s1,$s0 at 0x54..0x38, asm/funcs/func_800480C0.s:67-74), so gp_reg_size = 32 and var_size + args_size = 56 with no register-mask freedom; a 9-register mask needs var+args = 52 (not 8-aligned) and a 10-register mask would print ten restores.
+
+- [s19] Empirical cross-check of the mask/restore identity over twelve banked probe listings: the printed 'regs= N' equals the emitted restore count in every one (candidate regs=8 with 8 restores + the 2 incoming-parameter loads at 0x68/0x6C; b6 regs=9 with 9).

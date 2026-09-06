@@ -1878,3 +1878,119 @@ s14/s15/s16 on three earlier chassis. Candidate floor re-measured 20 this sessio
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: target listing asm/funcs/func_800480C0.s at HEAD e25a492f - a property of the shipped bytes, independent of any installed body or FAKE state.
+
+## s19 - forensics (2026-09-05, chassis HEAD e0174a57, candidate.c + its one FAKE `arg0 = 0;`)
+
+Modality: forensics. The mandated kill re-audit was run first; then the ledger's two live
+frontier items were both executed to a measurement. Frontier item 1 (the three-way 8+24 split)
+is CONFIRMED to reach the target frame and KILLED on the instruction stream; frontier item 2
+(a mask register whose save is deleted) is KILLED class from the compiler source with an
+empirical cross-check.
+
+### KILL RE-AUDIT (mandated; run first)
+- **RE-MEASURED, VERDICT UNCHANGED.** candidate.c on chassis e0174a57: sandbox
+  `"score": 20, target_insns 74, build_insns 74, rules_dropped 0`; probe
+  `.frame $sp,56,$31 # vars= 0, regs= 8/0, args= 24, extra= 0`, insns=72, unalloc=0.
+  `tools/fake_ablate.py` (`tmp/grind/func_800480C0/s19/fake_ablate.txt`): one FAKE unit
+  (`arg0 = 0;`), keep-all 20 / drop-1 32. Sixth consecutive chassis with this reading, so no
+  kill in this ledger was taken with a FAKE carrier sitting on a lever's target pseudo.
+
+### H-s19-1 (CONFIRMED) - frame charges from different producers are additive
+STATEMENT: an alter_reg phantom slot and an integrate.c inline-callee frame donation are
+independent calls into assign_stack_local, so their frame charges add, and 8 + 24 reaches the
+target's exact frame decomposition.
+MECHANISM: `reload1.c:2382-2385` gives an unallocated pseudo an `assign_stack_local` slot
+rounded to 8 bytes (`function.c:687`, BIGGEST_ALIGNMENT 64 at `mips.h:1082`), and
+`integrate.c:2085-2092` allocates `assign_stack_temp (BLKmode, DECL_FRAME_SIZE (map->fndecl), 1)`
+per inline expansion; `compute_frame_size` reads only the total `get_frame_size()`, so nothing
+distinguishes one 32-byte object from 8 + 24.
+PROBE: five bodies through `tmp/grind/func_800480C0/s19/probe.sh` - p0 (the s17 m1 folded entry
+guard alone), p2 (m1 + a `static __inline__` helper with `u32 t[4]`), p1 (m1 + `u32 t[6]`),
+p4 (m1 + `u32 t[8]`), plus the p3 control (candidate + `u32 t[6]`, no guard).
+RESULT: p0 vars=8/73 insns; p3 vars=24/72; p2 vars=24/73; **p1 vars=32, `.frame $sp,88,$31 #
+vars= 32, regs= 8/0, args= 24, extra= 0`, 73 insns, unalloc=1**; p4 vars=40/73. The sum is
+exact at every size. p1 is the first body in nineteen sessions to reach the target's frame from
+two producers rather than one.
+VERDICT: CONFIRMED.
+
+### H-s19-2 (KILLED, instance) - the three-way split loses on the stream, not the frame
+STATEMENT: the s17 m1 folded-entry-guard body, which supplies the 8-byte half of the split,
+emits the guard value into a second pseudo and moves it back at the loop head, so this body's
+stream is one instruction longer than the target's even when the frame is exactly right.
+MECHANISM: the phantom is a combine orphan planted by `distribute_notes`
+(`combine.c:10832-10841`) on an intermediate the guard creates; that intermediate is a real
+live value in the C, so regalloc gives it its own hard register and a copy is needed to merge
+it with the loop counter at the loop head.
+PROBE: mnemonic-level diff of `tmp/grind/func_800480C0/s19/last_p1_m1_donate24.s` against
+`asm/funcs/func_800480C0.s` (alias table subu/addiu, move/addu, li/addiu, b/beq; nops ignored),
+plus the full scorer on p1 with the body installed over the INCLUDE_ASM line.
+RESULT: 73 emitted instructions against the target's 72 non-nop instructions. The target's
+entry sequence is `beqz $s1,.L800481BC` / `addiu $s0,$s0,0x4` / `addiu $s1,$s1,-0x1`; p1 emits
+`addu $16,$16,4` / `beq $17,$0,.L16` / `addu $4,$17,-1` and then `addu $17,$4` at the loop head.
+Full scorer: `"score": 25, target_insns 74, build_insns 74, rules_dropped 0,
+cheat_asm_stripped 163` - WORSE than the candidate's 20, because the sandbox strips the
+unreferenced donation array (leaving the frame wrong) while the guard's surplus instruction
+stays. The candidate's own stream already matches the target's length exactly, so on this body
+a producer that costs an instruction is disqualified regardless of what it does to the frame.
+VERDICT: KILLED. kill_scope: instance. measured_on: HEAD e0174a57, bodies
+tmp/grind/func_800480C0/s19/bodies/p{0,1,2,3,4}.c installed one at a time over the INCLUDE_ASM
+line; base candidate's single FAKE (`arg0 = 0;`) present in each, no other FAKE construct.
+Banked at memory/grind/func_800480C0/rejected/s19-phantom-plus-24byte-donation-target-frame-wrong-stream.c
+and s19-donation24-alone-vars24-short-of-32.c.
+
+### H-s19-3 (KILLED, class) - no register can sit in the frame mask without an emitted restore
+STATEMENT: every register counted in gp_reg_size emits a restore instruction that no
+optimisation pass can remove, so the target's eight restores pin gp_reg_size at 32 and
+var_size + args_size at 56 for every C body this compiler can produce.
+MECHANISM: `compute_frame_size` builds `gp_reg_size` and `mask` in one loop over
+`MUST_SAVE_REGISTER` (`mips.c:4479-4486`), so `gp_reg_size == 4 * popcount(mask)` identically;
+`save_restore_insns` emits exactly one memory reference per set bit (`mips.c:4680`). The
+prologue half IS RTL - `mips.md:6029` expands `prologue` via `mips_expand_prologue`, generated
+in `thread_prologue_and_epilogue_insns` after `reload_completed = 1` (`toplev.c:3096-3103`) -
+which is what made the deletion loophole formally open. The epilogue half is NOT: the
+`epilogue` expander is commented out (`mips.md:6056`), `FUNCTION_EPILOGUE` (`mips.h:2036`)
+calls `function_epilogue`, and `mips.c:5174` calls `save_restore_insns (FALSE, tmp_rtx, tsize,
+file)` with a live FILE*, printing the restores as text at final directly from
+`current_frame_info.mask`. Text emitted at final is not visible to any pass.
+PROBE: source reading of the four sites above, plus an empirical cross-check over all twelve
+banked probe listings (s18 b6/b7/b8/b10/c1/c2 and s19 candidate/p0..p4) comparing the printed
+`regs= N` field against the emitted restore count, and a re-read of the target's own restore
+block (`asm/funcs/func_800480C0.s:67-74`).
+RESULT: `regs= N` equals the restore count in every listing (candidate regs=8 with ten
+`lw ...($sp)` = 8 restores plus the two incoming-parameter loads at 0x68/0x6C; b6 regs=9 with
+eleven). The target restores exactly eight registers, so popcount(mask) = 8, gp_reg_size = 32,
+and the arithmetic closes: a 9-register mask would need var+args = 52, which is not a multiple
+of 8 after `MIPS_STACK_ALIGN`, and a 10-register mask reaching the same 0x54 top-of-block would
+have to print ten restores where the target prints eight.
+VERDICT: KILLED. kill_scope: class. predicate_cite: `tools/gcc-2.7.2/config/mips/mips.c:4680`.
+measured_on: HEAD e0174a57, compiler source in tools/gcc-2.7.2 plus the twelve banked listings;
+base candidate's single FAKE (`arg0 = 0;`) present in the measured bodies.
+
+## [s19] An alter_reg phantom slot and an integrate.c inline-callee frame donation are independent calls into assign_stack_local, so their frame charges add and 8 + 24 reaches the target's exact frame decomposition.
+- mechanism: reload1.c:2382-2385 gives an unallocated pseudo an assign_stack_local slot rounded to 8 bytes (function.c:687, BIGGEST_ALIGNMENT 64 at mips.h:1082); integrate.c:2085-2092 allocates assign_stack_temp (BLKmode, DECL_FRAME_SIZE (map->fndecl), 1) per inline expansion; compute_frame_size (mips.c:4463) reads only the total get_frame_size(), so nothing distinguishes one 32-byte object from 8 + 24.
+- probe: Five bodies through tmp/grind/func_800480C0/s19/probe.sh (instrumented cc1, BB2_ALLOC_DEBUG), each installed over the INCLUDE_ASM line and reverted after: p0 = the s17 m1 folded entry guard alone; p2 = m1 + a static __inline__ helper with u32 t[4]; p1 = m1 + u32 t[6]; p4 = m1 + u32 t[8]; p3 control = candidate + u32 t[6] with no guard.
+- result: p0 vars=8 at 73 insns (unalloc=1); p3 vars=24 at 72 (unalloc=0); p2 vars=24 at 73; p1 vars=32 printing .frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0 at 73 insns (unalloc=1) - the target's exact decomposition and its exact 0x58; p4 vars=40 at 73. The sum is exact at every donated size. First body in nineteen sessions to reach the target frame from two producers rather than one.
+- verdict: CONFIRMED
+
+## [s19] The s17 m1 folded-entry-guard body, which supplies the 8-byte half of the split, emits the guard value into a second pseudo and moves it back at the loop head, so with a 24-byte donation added its stream is one instruction longer than the target's while its frame is exactly right.
+- mechanism: The phantom is a combine orphan planted by distribute_notes (combine.c:10832-10841) on the intermediate the folded guard creates; that intermediate is a real live value in the C, so regalloc seats it in its own hard register and a copy is required to merge it with the loop counter at the loop head.
+- probe: Mnemonic-level diff of tmp/grind/func_800480C0/s19/last_p1_m1_donate24.s against asm/funcs/func_800480C0.s (alias table subu/addiu, move/addu, li/addiu, b/beq; nops ignored), plus the full scorer 'sandbox func_800480C0 --disable all' with p1 installed over the INCLUDE_ASM line.
+- result: 73 emitted instructions against the target's 72 non-nop instructions. The target's entry sequence is beqz $s1,.L800481BC / addiu $s0,$s0,0x4 / addiu $s1,$s1,-0x1; p1 emits addu $16,$16,4 / beq $17,$0,.L16 / addu $4,$17,-1 and then addu $17,$4 at the loop head. Full scorer: score 25, target_insns 74, build_insns 74, rules_dropped 0, cheat_asm_stripped 163 - worse than the candidate's 20, because the sandbox strips the unreferenced donation array (leaving the frame wrong) while the guard's surplus instruction stays. The candidate's own stream already matches the target's length exactly (72 cc1 insns / 74 build insns, score 20 = the 20 sp-relative operands alone), so on this body a producer that costs an instruction is disqualified whatever it does to the frame. Bodies banked at memory/grind/func_800480C0/rejected/s19-phantom-plus-24byte-donation-target-frame-wrong-stream.c and s19-donation24-alone-vars24-short-of-32.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e0174a57, bodies tmp/grind/func_800480C0/s19/bodies/p{0,1,2,3,4}.c installed one at a time over the INCLUDE_ASM line in src/text1b.c and reverted after each; base candidate's single FAKE (arg0 = 0;) present in every body, no other FAKE construct.
+
+## [s19] Every register counted in gp_reg_size emits a restore instruction that no optimisation pass can remove, so the target's eight restores pin gp_reg_size at 32 and var_size + args_size at 56 for every C body this compiler can produce.
+- mechanism: compute_frame_size builds gp_reg_size and mask in one loop over MUST_SAVE_REGISTER (mips.c:4479-4486), so gp_reg_size == 4 * popcount(mask) identically; save_restore_insns emits exactly one memory reference per set bit (mips.c:4680). The prologue half IS RTL - mips.md:6029 expands 'prologue' via mips_expand_prologue, generated in thread_prologue_and_epilogue_insns after reload_completed = 1 (toplev.c:3096-3103) - which is what left the deletion loophole formally open. The epilogue half is not: the 'epilogue' expander is commented out (mips.md:6056), FUNCTION_EPILOGUE (mips.h:2036) calls function_epilogue, and mips.c:5174 calls save_restore_insns (FALSE, tmp_rtx, tsize, file) with a live FILE*, printing the restores as text at final directly from current_frame_info.mask. Text emitted at final is invisible to every pass.
+- probe: Source reading of the four sites above in tools/gcc-2.7.2, an empirical cross-check over all twelve banked probe listings (s18 b6/b7/b8/b10/c1/c2 and s19 candidate/p0..p4) comparing the printed 'regs= N' field against the emitted restore count, and a re-read of the target's own restore block (asm/funcs/func_800480C0.s:67-74).
+- result: regs= N equals the restore count in every listing (candidate regs=8 with ten lw ...($sp) = 8 restores plus the two incoming-parameter loads at 0x68/0x6C; b6 regs=9 with eleven). The target restores exactly eight registers ($ra,$s6,$s5,$s4,$s3,$s2,$s1,$s0 at 0x54..0x38), so popcount(mask) = 8 and gp_reg_size = 32. The arithmetic closes the neighbours too: a 9-register mask would need var+args = 52, not a multiple of 8 after MIPS_STACK_ALIGN, and a 10-register mask reaching the same 0x54 top-of-block would have to print ten restores where the target prints eight. The ledger's frontier item 2 is retired.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD e0174a57, compiler source in tools/gcc-2.7.2 plus the twelve banked probe listings under tmp/grind/func_800480C0/s18 and s19; base candidate's single FAKE (arg0 = 0;) present in the measured bodies.
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:4680
+
+## [s19] The banked candidate still measures a floor of 20 on the current chassis and its single FAKE unit (arg0 = 0;) is load-bearing rather than masking a lever.
+- mechanism: Mandated kill re-audit: a lever measured while a FAKE carrier occupies its target pseudo is not a kill, so the closest banked form is re-measured on the current chassis with the FAKE ablated before anything new is proposed.
+- probe: sandbox func_800480C0 --disable all with candidate.c installed over the INCLUDE_ASM line; tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c; tmp/grind/func_800480C0/s19/probe.sh on candidate.c.
+- result: Sandbox: score 20, target_insns 74, build_insns 74, rules_dropped 0, cheat_asm_stripped 162. Probe: .frame $sp,56,$31 # vars= 0, regs= 8/0, args= 24, extra= 0, insns=72, unalloc=0. Ablation (tmp/grind/func_800480C0/s19/fake_ablate.txt): one FAKE unit, keep-all 20 at 74 build insns, drop-1 32 at 73. Sixth consecutive chassis with the identical reading; the dispatch chassis check's 'measurement unavailable' resolves to 20.
+- verdict: CONFIRMED
