@@ -1,17 +1,17 @@
-# Hypothesis ledger — func_8003D39C
+# Hypothesis ledger â€” func_8003D39C
 
-## s1 (recon) — floor 39 (pinned, pre-migration cheat body) → 16 (pure C, v5 in candidate.c)
-CONFIRMED  H-assoc: the array address must be two statements (`p = &D_800A3930[n]; p = (Sprt8Prim*)((u8*)p + (D_800A3218 << 9));`) — a single expression (with or without a (u8*) cast) is reassociated by fold to (idx<<9 + base) + n*16. Measured 26 → 27 (association fixed; other diffs opened).
-CONFIRMED  H-bitfield-addprim: the OT link must be the OTag bitfield form `((OTag*)p)->addr = ot->addr; ot->addr = (u32)p;` (same as func_8003D330). Measured 25/27 → 16; whole tail byte-identical incl. a1/a2/a3 seats.
-KILLED (instance) H-mask-local: `u32 rgb_mask = 0xFFFFFF` local with the manual and/or tail — reached 25 but is superseded by the bitfield form (masks come from the expander). Measured on v4 chassis, no FAKE.
-KILLED (instance) H-incr-position: moving `D_800A3358 = n + 1;` after the address computation changes nothing (16 → 16, identical sched1 order). Measured on v5/v6, no FAKE.
-KILLED (instance) H-luid-head: sched_solver depth-1 over all luid/luid_move atoms on the v5 pass-1 block-1 model — no statement reorder yields the target head; only add_dep/cost atoms do (gb_G2.txt, goal_d1.txt).
+## s1 (recon) â€” floor 39 (pinned, pre-migration cheat body) â†’ 16 (pure C, v5 in candidate.c)
+CONFIRMED  H-assoc: the array address must be two statements (`p = &D_800A3930[n]; p = (Sprt8Prim*)((u8*)p + (D_800A3218 << 9));`) â€” a single expression (with or without a (u8*) cast) is reassociated by fold to (idx<<9 + base) + n*16. Measured 26 â†’ 27 (association fixed; other diffs opened).
+CONFIRMED  H-bitfield-addprim: the OT link must be the OTag bitfield form `((OTag*)p)->addr = ot->addr; ot->addr = (u32)p;` (same as func_8003D330). Measured 25/27 â†’ 16; whole tail byte-identical incl. a1/a2/a3 seats.
+KILLED (instance) H-mask-local: `u32 rgb_mask = 0xFFFFFF` local with the manual and/or tail â€” reached 25 but is superseded by the bitfield form (masks come from the expander). Measured on v4 chassis, no FAKE.
+KILLED (instance) H-incr-position: moving `D_800A3358 = n + 1;` after the address computation changes nothing (16 â†’ 16, identical sched1 order). Measured on v5/v6, no FAKE.
+KILLED (instance) H-luid-head: sched_solver depth-1 over all luid/luid_move atoms on the v5 pass-1 block-1 model â€” no statement reorder yields the target head; only add_dep/cost atoms do (gb_G2.txt, goal_d1.txt).
 
 ## Frontier for s2
-1. Lengthen the priority chain of the n*16+base computation (needs INSN_PRIORITY(36) ≥ 2 so it out-ranks the sw at the stale sort) with an ordinary-C spelling that leaves no extra instruction after RA — e.g. the index passing through a coalescable copy (`s32 i = n;` used only in the index), a sub-word/typed index, or the array base taken through a typed pointer variable. Probe: recompile, `extract.py code6cac_c2`, check block-1 head picks; sandbox.
-2. Alternative: make the sw of D_800A3358 not ready at the 42-pick sort by giving it a successor among {39,36,34,32}. Distinct plain symbols cannot conflict (sched.c:775), so this needs the count and the buffer-select to share an address base (one struct / one array) — only worth probing with base-register evidence per the aggregate-merge rule; otherwise dead.
-3. Post-increment spelling `p = &D_800A3930[D_800A3358++]` (no local n at all; CSE keeps the value across the compare) — cheap probe, checks whether expand_increment's temp copy adds the missing chain insn (frontier 1 mechanism).
-KILLED (instance) H-postinc (frontier 3, measured s1): `if (D_800A3358 == 0x20) return; p = &D_800A3930[D_800A3358++];` with no local n — sandbox 16, block-1 head byte-for-byte the same as v5 (expand_increment adds no chain insn; CSE keeps the loaded value). Measured on v7 = v5 chassis, no FAKE. Frontier 3 is closed; s2 starts at frontier 1/2.
+1. Lengthen the priority chain of the n*16+base computation (needs INSN_PRIORITY(36) â‰¥ 2 so it out-ranks the sw at the stale sort) with an ordinary-C spelling that leaves no extra instruction after RA â€” e.g. the index passing through a coalescable copy (`s32 i = n;` used only in the index), a sub-word/typed index, or the array base taken through a typed pointer variable. Probe: recompile, `extract.py code6cac_c2`, check block-1 head picks; sandbox.
+2. Alternative: make the sw of D_800A3358 not ready at the 42-pick sort by giving it a successor among {39,36,34,32}. Distinct plain symbols cannot conflict (sched.c:775), so this needs the count and the buffer-select to share an address base (one struct / one array) â€” only worth probing with base-register evidence per the aggregate-merge rule; otherwise dead.
+3. Post-increment spelling `p = &D_800A3930[D_800A3358++]` (no local n at all; CSE keeps the value across the compare) â€” cheap probe, checks whether expand_increment's temp copy adds the missing chain insn (frontier 1 mechanism).
+KILLED (instance) H-postinc (frontier 3, measured s1): `if (D_800A3358 == 0x20) return; p = &D_800A3930[D_800A3358++];` with no local n â€” sandbox 16, block-1 head byte-for-byte the same as v5 (expand_increment adds no chain insn; CSE keeps the loaded value). Measured on v7 = v5 chassis, no FAKE. Frontier 3 is closed; s2 starts at frontier 1/2.
 
 ## [s1] The array address must be two statements (p = &D_800A3930[n]; p = (Sprt8Prim*)((u8*)p + (D_800A3218 << 9))) because fold reassociates the single-expression form
 - mechanism: fold-const STRIP_NOPS + PLUS reassociation puts (idx<<9 + base) first; separate statements keep (n*16 + base) then + idx<<9 as the target does
@@ -57,7 +57,7 @@ KILLED (instance) H-postinc (frontier 3, measured s1): `if (D_800A3358 == 0x20) 
 - kill_scope: instance
 - measured_on: v3/v5 pure-C chassis sched models, no FAKE constructs
 
-## s2 (structural) — floor 16 -> 15 (v10 is the new candidate.c)
+## s2 (structural) â€” floor 16 -> 15 (v10 is the new candidate.c)
 
 ## [s2] The array address carried by TWO distinct pointer variables (u8 *q then Sprt8Prim *p) beats the one-variable-assigned-twice spelling
 - mechanism: two pointer pseudos survive to sched1 as two separate address computations; the pick
@@ -90,7 +90,7 @@ KILLED (instance) H-postinc (frontier 3, measured s1): `if (D_800A3358 == 0x20) 
 ## [s2] On the v10 chassis (floor 15) no statement-order, declaration-order, named-intermediate, operand-order, type-narrowing or block-shape spelling moves the floor
 - mechanism: the residual is decided by which pseudo the `n*16` temp is coalesced onto (n's own
   register vs the `n+1` register), which none of these levers touches
-- probe: 14 measured spellings v15,v16,v18,v19,v20,v21,v23,v24,v25,v26,v27,v28,v29,v31 — all 15
+- probe: 14 measured spellings v15,v16,v18,v19,v20,v21,v23,v24,v25,v26,v27,v28,v29,v31 â€” all 15
 - result: flat 15 across every one
 - verdict: KILLED
 - kill_scope: instance
@@ -159,3 +159,23 @@ KILLED (instance) H-postinc (frontier 3, measured s1): `if (D_800A3358 == 0x20) 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: v5 (floor-16) pass-1 sched model, no FAKE constructs
+
+## [s3] The `D_800A3218 << 9` buffer displacement is the first subscript of a two-dimensional array `Sprt8Prim D_800A3930[2][32]`, not an addend
+- mechanism: 1 << 9 = 512 = 32 * sizeof(Sprt8Prim); the symbol region 0x800A3930 ends exactly at the next symbol D_800A3D30 (+0x400 = 2 * 32 * 16), so the object is a double-buffered array of 32 SPRT_8 primitives and the natural C address is a single two-subscript expression
+- probe: v32 â€” `extern Sprt8Prim D_800A3930[2][32]; p = &D_800A3930[D_800A3218][n];` applied to src/code6cac_c2.c, sandbox --disable all
+- result: 15 -> 6. The entire address head becomes byte-identical, including the n=v1 seat and the `sw v0,D_800A3358` position that s2 had modelled as an RA coalescing choice; the only residual left was the parameter seat rotation.
+- verdict: CONFIRMED
+
+## [s3] The parameter hard-register seat rotation (x/y/color -> t0/t1/t2 vs t1/t2/t0) is decided by the SOURCE ORDER of the field stores that consume the parameters
+- mechanism: global.c `allocno_compare` sorts allocnos by floor_log2(n_refs)*n_refs/live_length; x, y and color each have n_refs = 2, so live_length is the only discriminator. With `color` consumed by the packed-colour store two statements before x/y were stored, color had the shortest live range, sorted first, and took the first register in the allocation order (t0). Moving `p->x0 = x; p->y0 = y;` above the colour store makes x and y die first, the three priorities tie, and the qsort tie-break by allocno number restores declaration order 72(x),73(y),75(color) -> t0,t1,t2.
+- probe: v36/v37/v39 (x0/y0 stores placed before the packed-colour store, before the clut store, and immediately after the code store) vs v32; the `;; 5 regs to allocate: 76 74 75 72 73` line read from tmp/grind/func_8003D39C/dumps/code6cac_c2.greg
+- result: 6 -> 0 for all three placements. v38 (x0/y0 hoisted above `p->code = 0x74;`) is 2, so the placement window is bounded below by the code store.
+- verdict: CONFIRMED
+
+## [s3] The s2 mechanism story â€” that the floor-15 residual required coalescing the n*16 temp onto the n+1 allocno â€” described a correlation, not the cause
+- mechanism: the sw position, the n=v1 seat and the addu operand order are all emitted correctly once the address is spelled as a two-dimensional subscript, with no coalescing lever present in the C at all; the pointer-variable spellings s1/s2 swept (v5..v31, v33, v34, v35) were all searching inside a wrong object model for D_800A3930
+- probe: v32 (2D subscript) vs v33 (2D array but buffer pointer taken first) vs v34/v35 (2D array declared, address still hand-split) â€” sandbox --disable all
+- result: v33/v34/v35 all score 15 exactly like the hand-split v10; only the single two-subscript expression moves it. So the lever is the SHAPE OF THE ADDRESS EXPRESSION, and the RA-coalescing framing predicted nothing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: v32/v33/v34/v35 pure-C chassis, no FAKE constructs

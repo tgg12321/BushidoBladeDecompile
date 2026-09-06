@@ -544,7 +544,7 @@ void func_8003C42C(void) {
         } while (i < n);
     }
     v0 = counts[0];
-    /* FAKE: D_800A382D store duplicated into all three arms — cross-jump
+    /* FAKE: D_800A382D store duplicated into all three arms â€” cross-jump
        re-merges them at the join with the sb scheduled ahead of the
        disp_SetFramebufferMode arg setup (single join store gets deferred
        past the arg moves by sched2) */
@@ -715,7 +715,7 @@ void func_8003C714(void) {
     D_800A3834 = 0x1F;
     gpu_DisableDisplay();
 }
-/* kengo:LOW  |  su_menu_edit/_SetCurrentCursor  |  104i  |  PS2 UI — reverted */
+/* kengo:LOW  |  su_menu_edit/_SetCurrentCursor  |  104i  |  PS2 UI â€” reverted */
 void func_8003C8B4(void) {
     s32 ret;
 
@@ -1008,8 +1008,34 @@ void func_8003D330(void) {
     p->addr = ot->addr;
     ot->addr = (u32)p;
 }
-extern u32 D_800A3930;
-INCLUDE_ASM("asm/funcs", func_8003D39C);
+typedef struct {
+    u32 tag;
+    u8 r0, g0, b0, code;
+    s16 x0, y0;
+    u8 u0, v0;
+    u16 clut;
+} Sprt8Prim;
+extern Sprt8Prim D_800A3930[2][32];
+void func_8003D39C(s32 x, s32 y, s32 ch, s32 color) {
+    s32 n = D_800A3358;
+    Sprt8Prim *p;
+    OTag *ot;
+
+    if (n == 0x20) return;
+    D_800A3358 = n + 1;
+    p = &D_800A3930[D_800A3218][n];
+    ((u8 *)p)[3] = 3;
+    p->code = 0x74;
+    p->x0 = x;
+    p->y0 = y;
+    p->u0 = (ch & 7) * 8 - 0x40;
+    p->v0 = (ch >> 5) * 8 - 0x20;
+    p->clut = ((ch >> 3) & 3) << 6 | 0x773F;
+    *(u32 *)&p->r0 = (color >> 1) | 0x74000000;
+    ot = (OTag *)D_800A374C;
+    ((OTag *)p)->addr = ot->addr;
+    ot->addr = (u32)p;
+}
 void func_8003D478(s32 x, s32 y, u8 *str, s32 color) {
     s32 ch;
     s32 start_x = x;
@@ -1105,7 +1131,7 @@ void func_8003D52C(u8 *fmt, s32 first_arg, ...) {
     }
 }
 
-/* kengo:LOW  |  su_menu_home/_DispSleepMenuTex  |  146i  |  PS2 UI — reverted */
+/* kengo:LOW  |  su_menu_home/_DispSleepMenuTex  |  146i  |  PS2 UI â€” reverted */
 void func_8003D774(s32 arg0, s32 arg1) {
     s32 *ptr = (s32 *)((u8 *)&D_800A3D40 + arg1 * 24);
     ptr[0] = arg0;
