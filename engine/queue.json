@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "_spu_Fr_",
-      "file": "main",
-      "distance": 43,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80019310",
       "file": "code6cac",
       "distance": 44,
@@ -1592,15 +1584,15 @@
     }
   ],
   "counts": {
-    "total": 179,
-    "active": 171,
+    "total": 178,
+    "active": 170,
     "by_status": {
-      "active": 171,
+      "active": 170,
       "foreclosed": 8
     },
     "by_verdict": {
-      "C": 144,
-      "ASM-PARTIAL": 27
+      "ASM-PARTIAL": 27,
+      "C": 143
     }
   }
 }

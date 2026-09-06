@@ -91,9 +91,12 @@ extern s32 spu_TransferData(s32, s32);
 extern s32 D_800A2D2C;
 extern s32 D_800A2D30;
 extern s32 D_800A2D34;
-extern s32 *D_800A2CE0;
-extern s32 *D_800A2CE4;
-extern s32 *D_800A2CE8;
+/* Sony _spu_madr/_spu_bcr/_spu_chcr: pointers to the SPU DMA (ch4) MMIO
+ * registers 0x1F8010C0/C4/C8 (asm/data/7D920.data.s); pointee volatile per
+ * mmio-volatile-type-level. */
+extern volatile s32 *D_800A2CE0;
+extern volatile s32 *D_800A2CE4;
+extern volatile s32 *D_800A2CE8;
 
 /* --- Functions 0x80083BE4 - 0x8008D060 (text4 segment) --- */
 
@@ -1700,7 +1703,21 @@ INCLUDE_ASM("asm/funcs", _spu_FwriteByIO);
    so naming it here makes it read as a C function and flood the queue as an
    unscorable distance -1 item, which sorts to the very top. */
 INCLUDE_ASM("asm/funcs", _spu_FiDMA);
-INCLUDE_ASM("asm/funcs", _spu_Fr_);
+/* PsyQ 4.0 LIBSPU spu.c: _spu_Fr_ — unreferenced in BB2 (dead code carried
+   by the linked Sony object; SpuRGetAllKeysStatus/S_SCA precedent).
+   C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_r_); this build's
+   WASTE_TIME() is the out-of-line _spu_Fw1ts call. */
+void _spu_Fr_(s32 addr, u16 mode, s32 size) {
+    *(volatile u16 *)(D_800A2CDC + 0x1A6) = mode;
+    _spu_Fw1ts();
+    *(volatile u16 *)(D_800A2CDC + 0x1AA) = *(volatile u16 *)(D_800A2CDC + 0x1AA) | 0x30;
+    _spu_Fw1ts();
+    _spu_FsetDelayR();
+    *D_800A2CE0 = addr;
+    *D_800A2CE4 = (size << 16) | 0x10;
+    D_800A2D2C = 1;
+    *D_800A2CE8 = 0x1000200;
+}
 /* PsyQ 4.0 LIBSPU spu.c: _spu_t — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_t) */
 typedef char *va_list;
