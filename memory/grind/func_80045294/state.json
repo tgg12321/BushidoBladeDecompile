@@ -650,5 +650,14 @@
    "result": "shift 75 in every pass; corrects the s60 claim that the carrier split the block for the shift."
   }
  ],
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "81ffc657b8baf7cd",
+   "when": "2026-09-06T14:41:11.750625+00:00",
+   "summary": "final call: One sanctioned construct: the `i++; i--;` cancellation pair, F6 family (no-new-park-categories.md:402-411, verified line-exact) \u2014 the ESTABLISHED shape itself, not the banned `+= 2 / -= 1` respelling "
+  }
+ ]
 }

@@ -2159,3 +2159,53 @@ helper scripts `apply.py`, `cc1dump.sh`, `sched_loop.sh`, `sched_N3.sh`.
 - [s61] cse_main re-processes a block from its start whenever a jump is altered (cse.c:8360-8373), which is why stacked carriers (N4) fold together in cse1.
 
 - [s61] s60 correction: the if-mask carrier's body set only sum, so cse1 wrote 75 into the shift; that form never carried the target operand.
+
+
+## [s63] structural - the s62 "byte-fail" was a LINK failure on a stale callee name; the F6 body full-builds to the oracle SHA1
+
+**What the driver recorded.** After s62 submitted the F6 body (`tmp/grind/func_80045294/s62/FINAL_f6_pair.c`,
+sandbox 0/83, layer-1 PASS at 09:27:36), the driver ran `retire` (exit 1, "no rules keyed by this function" -
+expected, zero rules) and then `verify-oracle --rebuild --allow-dirty`; 9 seconds later (`tmp/grind/grind.log:2304`,
+09:27:45) it logged "FULL-BUILD SHA1 FAILED after retire" and banked the constraint "candidate form failed
+full-build SHA1 on main (masked-0 register diff class) - reg-alloc gap is real". No `verify-oracle` event exists
+in `metrics/events.jsonl` between the retire (14:27:38Z) and the restore verify (14:28:19Z, ok true), which means
+the dirty verify died BEFORE `MET.record_event` - an exception, not a SHA1 mismatch.
+
+**Reproduced this session.** Applying `FINAL_f6_pair.c` over `src/text1a_c.c:1438` and running the same command
+(`tmp/grind/func_80045294/s63/verify_f6_dirty.txt`):
+`RuntimeError: link failed ... mipsel-linux-gnu-ld: build/src/text1a_c.o: in function func_80045294:
+src/text1a_c.c:(.text+0x2e0c): undefined reference to gpu_DrawSync`. The candidate had carried `gpu_DrawSync(0)`
+since the early sessions; the naming wave retired that name and the symbol is `DrawSync`
+(`include/code6cac.h:511: extern void DrawSync(s32);`; the target's own bytes are `jal DrawSync` at 0x80045310,
+`asm/funcs/func_80045294.s`). `engine/score.py` masks jal targets, so the sandbox printed 0 while the link was
+impossible. No `gpu_DrawSync` exists anywhere in `src/*.c` or `include/*.h` except this candidate.
+
+**With the callee corrected (`DrawSync(0)`, one-token change, no other edit):**
+- `sandbox func_80045294 --disable all` = **score 0, target_insns 83, build_insns 83, rules_dropped 0**.
+- `verify-oracle --rebuild --allow-dirty` = **ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa ==
+  expected, build_matches true** (`tmp/grind/func_80045294/s63/verify_f6_drawsync.txt`). Bytes are proven on main
+  by a full clean-driver build+link, this session, with the edit in place in src/.
+
+**Therefore the banked constraint "reg-alloc gap is real" is a misdiagnosis** (the driver's failure branch labels
+every non-zero verify exit as the masked-0 register class; here the exit came from a link error). The s62 F6 body
+is byte-exact; the only defect was a stale identifier. The stale body is banked at
+`rejected/s63-stale-callee-gpu_DrawSync-link-fail-not-a-reg-gap.c` so nobody resubmits it.
+
+**Owner directive (2026-09-06, preference-set probe).** Executed and closed in s61 (evidence above: BB2_FINDREG_DEBUG=75
+shows empty own_copy_prefs / own_full_prefs / someone_prefers for the loop-1 counter; set_preference at global.c:1718
+records nothing for a pseudo-to-pseudo copy). Acknowledged here so the consistency audit sees it; not re-run.
+
+**Sibling ledgers.** CD_sync (src/system.c) and func_80017848 (src/ings.c) share no block, table, or callee with this
+function (s17 and s28 notes above; func_80017848's ledger cites this function only for the inverse_compose mis-typing
+hazard). No transplant exists to measure; the bytes-proven form above supersedes the question.
+
+**Kill re-audit (flat-floor rule).** The closest instance kill (s61 N2, shift re-canonicalised to 75 in cse2) is
+superseded by the F6 measurement: the pair keeps `i` out of the copy's cse quantity through BOTH cse passes
+without any label or loop note, which is exactly the "byte-free cse1/cse2 asymmetry" frontier 1 asked for - it is
+not an asymmetry at all but an invalidation that both passes repeat. `tools/fake_ablate.py` finds no `/* FAKE`
+unit in the body (it does not recognise the `!FAKE` spelling the F6 rule prescribes); ablating the pair by hand is
+the candidate.c of s61 = score 1, already banked.
+
+- [s63] The s62 byte-fail constraint is a misdiagnosis: the dirty verify-oracle raised `RuntimeError: link failed ... undefined reference to gpu_DrawSync` (engine/pipeline.py:130) 9 s after retire, with no verify-oracle event recorded; the sandbox masks jal targets so it scored 0.
+- [s63] With `DrawSync(0)` (include/code6cac.h:511) in place of the retired `gpu_DrawSync`, the F6 body gives sandbox 0/83 and `verify-oracle --rebuild --allow-dirty` ok true, SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle - bytes proven on main this session.
+- [s63] The F6 `i++; i--;` pair is the byte-free cse1/cse2 mechanism frontier 1 was looking for: cse_insn invalidates the self-referencing destination in both passes, and combine cancels the pair back into the copy in the same insn slot, so the copy-first LUID order for the sched.c:2464 tiebreak survives.

@@ -1,3 +1,12 @@
+/* s63 NOT A C-FORM REJECTION - STALE CALLEE NAME. This is the s62 F6 body exactly as the driver
+   verified it on 2026-09-06 09:27: sandbox 0/83, layer-1 PASS, then `verify-oracle --rebuild --allow-dirty`
+   raised RuntimeError 'link failed: undefined reference to gpu_DrawSync' (engine/pipeline.py:130) 9 s after
+   retire. `gpu_DrawSync` was retired by the naming wave; the symbol is `DrawSync` (include/code6cac.h:511,
+   target bytes `jal DrawSync` at asm/funcs/func_80045294.s 0x80045310). The sandbox masks jal targets, so the
+   score was 0 while the link was impossible. The driver's constraint 'masked-0 register diff class - reg-alloc
+   gap is real' is a misdiagnosis: with `DrawSync(0)` the same body full-builds to SHA1
+   62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (tmp/grind/func_80045294/s63/verify_f6_drawsync.txt).
+   Do not resubmit a body naming gpu_DrawSync. */
 void func_80045294(s32 a0, s32 a1) {
     s32 sum = 0;
     s32 i = a0;
@@ -18,8 +27,8 @@ void func_80045294(s32 a0, s32 a1) {
        cse2 both keep the pair and the copy; combine.c cancels the pair back
        into the plain copy in the same insn slot, keeping copy-before-shift
        order for the sched.c:2464 LUID tiebreak.
-       lever-exhaustion: memory/grind/func_80045294/hypotheses.md (s1-s63,
-       87 banked rejected forms; s62 D1-D10 show every constant or
+       lever-exhaustion: memory/grind/func_80045294/hypotheses.md (s1-s62,
+       80 banked rejected forms; s62 D1-D10 show every constant or
        negation chain is re-folded by cse.c:5020/5497 and scores 1). */
     i++;
     i--;
@@ -40,7 +49,7 @@ void func_80045294(s32 a0, s32 a1) {
     if (sum != 0) {
         s32 idx;
 
-        DrawSync(0);
+        gpu_DrawSync(0);
         func_800520B8(s4, s5, sum);
 
         i = a0;

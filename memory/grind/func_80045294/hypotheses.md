@@ -2084,3 +2084,18 @@ sliced per pass into `tmp/grind/func_80045294/s59/dumps_{C,J,L}/fn.<pass>`:
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-06 chassis, s60 C_ifmask_carrier geometry, zero FAKE constructs
+
+
+## [s63] CONFIRMED - the s62 F6 body with the callee spelled `DrawSync` full-builds to the oracle SHA1; the banked "reg-alloc gap" constraint was a link error
+- statement: The driver's 2026-09-06 09:27 "FULL-BUILD SHA1 FAILED" on the s62 F6 body was `RuntimeError: link failed: undefined reference to gpu_DrawSync` (a retired symbol name the candidate carried since early sessions), not a register difference; replacing the callee with `DrawSync` (include/code6cac.h:511, the target's `jal DrawSync`) gives sandbox 0/83 and a full clean build with SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+- mechanism: engine/pipeline.py:130 raises on ld failure before engine/cli.py:131 records the verify-oracle event; tools/grinder/grind.ps1:784 labels every non-zero verify exit as the masked-0 register class; engine/score.py masks jal targets so the sandbox cannot see an unresolvable callee.
+- probe: tmp/grind/func_80045294/s63/verify_f6_dirty.txt (reproduction of the link failure) and tmp/grind/func_80045294/s63/verify_f6_drawsync.txt (ok true after the one-token fix); sandbox events in metrics/events.jsonl.
+- result: sandbox 0, target_insns 83, build_insns 83, rules_dropped 0; verify-oracle ok true, build_matches true. Candidate in place in src/text1a_c.c:1438-1506.
+- verdict: CONFIRMED
+
+## [s63] CONFIRMED - the `i++; i--;` pair is a cse1/cse2-symmetric invalidation, which is the mechanism frontier 1 (s61) asked for
+- statement: Frontier 1 asked for a byte-free way to keep the shift out of the copy's cse quantity in BOTH cse passes without a loop note or a surviving label; the F6 pair does it because cse_insn invalidates the self-referencing destination `i` in each pass identically (no asymmetry needed), and combine cancels the pair in place, preserving copy-before-shift LUID order for sched.c:2464.
+- mechanism: cse.c cse_insn invalidate + remove_invalid_refs on `i = i + 1` / `i = i - 1`; combine.c cancels the pair into the plain copy; sched.c:2464 tiebreak sees copy LUID < shift LUID.
+- probe: s62 dumps_D9 (tmp/grind/func_80045294/s62/dumps_D9/) per-pass operand grep; sandbox 0 this session.
+- result: shift on reg 72 ($s2) in cse1, cse2, combine, greg and final; emitted body byte-identical to the target.
+- verdict: CONFIRMED
