@@ -5,7 +5,9 @@
  "current_modality": null,
  "floor_history": [],
  "frontier": [],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Submit only the SpuUnion form verified here (D_800F7420 untouched, no other symbol retyped); the synthetic single-member SpuRXXRaw wrapper remains banned."
+ ],
  "banned_constructs": [
   "`typedef struct { volatile u16 raw[0x100]; } SpuRXXRaw; extern SpuRXXRaw D_800F7298;` replacing `extern volatile u16 D_800F7298[];`, accessed as `D_800F7298.raw[addr]`",
   "Self-vet's characterization of D_800A28A0/D_800A2CD4 volatile status as 'ungranted debt' identical to D_800F7298"
@@ -25,6 +27,21 @@
    "hash": "7dcd54fd3a7c2e97",
    "when": "2026-09-06T12:25:43.553883+00:00",
    "summary": "The D_800F7298 array-to-struct retype is a synthetic single-member aggregate wrap whose sole documented purpose is to force GCC's register-base addressing mode instead of symbol+offset addressing \u2014 a new spelling of codegen-mechanism manipulation, not a genuine object-model correction."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "3d9403702d133b3a",
+   "when": "2026-09-06T12:52:27.364557+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-06 07:52 ruling PASS)"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "3d9403702d133b3a",
+   "when": "2026-09-06T12:52:27.364557+00:00",
+   "ref": "decisions.md 2026-09-06 07:52 ruling PASS",
+   "justification": "The SpuUnion typing of D_800F7298 is ordinary C and may be submitted as the body now in candidate.c. Basis: it has a truthful semantic reading (a register-number-indexed image of the SPU register file; index 0xC4 = KEY-ON, and this function's own 0xCA/0xCC indices land at the matching SPU regs), so under ordinary-c-judge-decidable Ruling 1(3) it cannot be FAILed for having been chosen after observing codegen. Layer-1's FAIL ground (reviewer_history: 'sole documented purpose is to force register-base addressing') is exactly the retired motive test, and layer-1 itself named this remedy. Verified"
   }
  ]
 }
