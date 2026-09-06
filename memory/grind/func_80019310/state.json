@@ -29,6 +29,21 @@
    "hash": "df4741401a310eb2",
    "when": "2026-09-06T10:59:42.201161+00:00",
    "summary": "resubmission of a Judge-FAILed body (no review spent)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "df4741401a310eb2",
+   "when": "2026-09-06T11:05:16.317341+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-06 06:05 ruling PASS)"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "df4741401a310eb2",
+   "when": "2026-09-06T11:05:16.317341+00:00",
+   "ref": "decisions.md 2026-09-06 06:05 ruling PASS",
+   "justification": "Citation defect cured; no construct objection remains. I read candidate.c and verified every cite against the header itself (tmp/grind/motion_SetMotion/s7/repos/rood-reverse/include/psx/inline_c.h): gte_ldv0 :16-20 (no clobber list), gte_SetRotMatrix :297-310 and gte_SetTransMatrix :360-369 (publish only $12/$13/$14), gte_mvmva :816-817 over gte_mvmva_core :809-814, gte_stlvnl :1111-1117 (its own \"memory\" at :1116) -- all exact, and the ADDED-clobber disclosure matches the text. Decisive fact I verified: src/code6cac_b.c:935 is literally `: : \"r\"(vin) : \"$12\", \"memory\"` on a committed lwc2 rea"
   }
  ]
 }
