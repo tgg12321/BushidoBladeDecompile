@@ -1072,6 +1072,13 @@
    "hash": "5bfc09280b92f34b",
    "when": "2026-09-06T16:38:44.061784+00:00",
    "summary": "Submitted body has no verified prior ruling (mechanical ledger contradicts the self-vet's Judge-PASS defense) and introduces an unjustified declaration-level aggregate-merge (CD_alarm struct) the self-vet never runs through the aggregate-merge family test."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "81190eb7276955af",
+   "when": "2026-09-06T16:57:02.447397+00:00",
+   "summary": "final call: Ruled fresh on body 81190eb7276955af (not on the 2026-09-06T16:33 clearance, which the ban forbids relying on and which keys a different body). Every construct sits in a frozen family with prerequisit"
   }
  ],
  "banned_constructs": [
