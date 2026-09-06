@@ -4973,3 +4973,112 @@ exists at -O2.
 - [s42] U5 (BASE + reload after p = q) = 4 at 126: a dead-store reader is deleted by flow before its read counts; BASE's loop-1 copy is bought entirely by the p = q read.
 
 - [s42] Class kill: reload's find_equiv_reg copy producer is unreachable here (needs a MEM operand or unallocated pseudo; REG_EQUIV on a global pseudo only exists for stack parameters, function.c:3838-3854; local-alloc.c:1079).
+
+## s43 (2026-09-06, modality `structural`; owner directive already executed s37-s42)
+
+Chassis: HEAD `src/ings.c:820` INCLUDE_ASM anchor with each cell body pasted in
+by `tmp/grind/func_80017848/s43/apply_win.py` (cells.ps1 / cellsd.ps1 /
+post.sh); `candidate.c` (= s43/body_BASE.c, s42's body) re-measured **3 at
+127/127** first, and s42's natural symmetric chassis U4 re-measured **6 at
+127/125** (E-s43-0). No FAKE constructs exist in any form of this function, so
+`tools/fake_ablate.py` is vacuous. Cell bodies, normalised diffs (`D_<cell>.txt`
+= diff of `T.txt` vs `B_<cell>.txt`), raw objdumps and instrumented cc1 dumps
+(`i<cell>/ings.i.*`, CODEGEN-IDENTICAL to build/cc1 on every dumped cell) are in
+`tmp/grind/func_80017848/s43/`.
+
+### E-s43-0 - chassis re-audit + kill re-audit (quote THIS floor)
+BASE = 3 at 127/127; U4 (closest natural form, s42) = 6 at 127/125. Both
+unchanged from s42. src/ings.c restored to HEAD after every cell
+(`git diff --quiet -- src/ings.c` passes at session end).
+
+### E-s43-1 - W1: loop-1 exit tail INSIDE the if-body is a seat swap (12)
+U4 with `p = *(u8 **)(ctx + 0xC); sh = slot_a << 6;` written after loop 1 inside
+the guard's then-block (join reload removed, loop 2's two-step guard through the
+same `sh`, `sh2` deleted): 12 at 127/125. D_W1.txt: both guards become
+`lw a1,12(s2) / sll a0,s4,6 / addu v0,a0,a1` (target `a0/a1/addu v0,a1,a0`),
+both preheaders `addu a0,a0,a1` (no copy), loop 2's links seat a1. Reusing `sh`
+and `p` across the tail gives each pseudo two definitions whose union of
+conflicts rotates the seats; the copies are deleted exactly as in U4. So the
+join-block reload of U4 (with reorg's redundant-insn redirect, E-s42-2) is the
+better spelling and the tail-in-if spelling is dead on this chassis.
+
+### E-s43-2 - W2: a C self-assignment of the copy destination emits NO RTL
+U4 + `q = q;` at the top of both loop bodies (intended as a loop-carried
+flow-time reader that would keep q live across the body and seat it in a3):
+6 at 127/125, object identical to U4. `iW2/ings.i.rtl` contains zero insns of
+the shape `(set (reg/v:SI N) (reg/v:SI N))` (grep across .rtl/.jump/.cse/.loop/
+.cse2/.flow/.combine: 0 in every pass). Mechanism: `expr.c:2845` store_expr
+emits a move only when `temp != target`; expand_expr of the VAR_DECL with the
+variable's own DECL_RTL as target returns that rtx, so nothing is emitted.
+Reading also closes the fallback: even an emitted self-set could not seed its
+own liveness, because propagate_block (`flow.c:1590`, `if (! insn_is_dead)
+mark_used_regs`) never marks the uses of an insn that is dead under the current
+`old` set, in the non-final passes as well as the final one, so life_analysis
+converges on the least fixpoint in which the self-set is dead. A loop-carried
+self-use is therefore not a reader class at all (class kill, H-s43-2).
+
+### E-s43-3 - the sanctioned do/while(0) wrap, measured for the first time here
+Four placements on U4, both loops each:
+  X1 wrap around the copy statement only ................ 6 at 127/125
+  X2 wrap around the whole then-block (preheader+loop) .. 6 at 127/125
+  X4 wrap around the three preheader statements ......... 6 at 127/125
+  X3 wrap around the inner do/while statement only ...... 10 at 127/125
+X2's and X4's raw objdumps are byte-identical (address-stripped diff empty) and
+carry U4's exact residual (both copies absent, `addu a0,a1,a0` twice, loop-2
+links in a1). X3 (D_X3.txt): loop 1's `sh` seats a2 and `lnk` a1
+(`sll a2,s4,6 / addu v0,a2,a0 / lw a1,16(s2) / addu a0,a2,a0`), loop 2's links
+a1, still no copy anywhere - the wrap's extra loop_depth re-weights flow's
+reg_n_refs / reg_live_length for the pseudos referenced inside it and rotates
+global's allocation order, but the copy is gone before allocation (combine).
+The wrap changes nothing combine sees: its loop label is unreferenced once the
+`while (0)` test folds, jump1 deletes it before cse, so the copy and the add
+stay one basic block with a LOG_LINK.
+
+### E-s43-4 - reading banked: the a3 seat cannot come from pass-0 exclusion
+`global.c:919-928` (prune_preferences): `regs_someone_prefers[allocno]` is the
+union of `hard_reg_full_preferences` of allocnos LATER in `allocno_order`
+(lower priority) that conflict with it. `global.c:899-910`: each allocno's own
+preferences are first pruned by its conflicts and, when it crosses a call, by
+`call_used_reg_set`. The only pseudos preferring a0-a3 are the four parameter
+copies (`(set s2..s5 (reg a0..a3))`); all four cross the call, so their a0-a3
+copy preferences are pruned before they can be merged into anyone's
+regs_someone_prefers. `global.c:1000` (`IOR_COMPL (used, regs_used_so_far)`)
+cannot exclude v0/a0 either because both are seeded used by local-alloc qtys
+(the guard temps in v0, the call's a0 argument). Hence find_reg's pass 0 gives
+the copy destination v0 unless v0 and a0 are in `hard_reg_conflicts`, and a0
+enters that set only if q is live when `base` is born (q not dead at the add)
+while v0 enters it only through the loop body's temps. Third independent
+confirmation of s40's requirement; the allocator route is closed by reading.
+
+### E-s43-5 - reading banked: what a byte-free flow-time reader would need
+(i) `flow.c:1590`: only non-dead insns mark uses, so the reader must be an insn
+whose destination is itself needed (or a jump/store/call). (ii) cse2 processes
+the guard block and the preheader as one extended basic block and knows q == p
+there, while combine only links within the basic block; any algebraic reader
+combine could fold away, cse2 folds first and flow then deletes the reader
+before its use counts. (iii) After RA the only deleters are no-op moves
+(jump.c:437-455, reload) and reorg's redundant-insn redirect (E-s42-2), so a
+byte-free reader chain must end in a no-op move whose destination is read by an
+instruction target has - and no instruction of target after either preheader
+add reads a3. This is the s40 conclusion restated with the pass predicates that
+enforce it; it is why the frontier below points at the guard-block placement
+(conflicts without a reader) and the grant-rescan item, not at another reader.
+
+- [s43] Floor re-audited at 3 (127/127) on the HEAD chassis; U4 re-audited at 6 (127/125); no FAKE constructs; src/ings.c restored.
+- [s43] W1 (exit tail reload + sh recompute inside the if, no join reload) = 12: p<->sh seat swap in both guards, no copy.
+- [s43] W2 (`q = q;` in both loop bodies) = 6 with ZERO self-set insns in .rtl: expr.c:2845 store_expr emits no move for a self-assignment; flow.c:1590 would not let a self-set seed liveness anyway (class kill).
+- [s43] do/while(0) wrap (sanctioned family) measured for the first time on this function: X1/X2/X4 = 6 (objects identical to U4), X3 (inner loop only) = 10 (seat rotation sh->a2, lnk->a1); no placement keeps the copy.
+- [s43] Reading: global.c:919-928 + :899-910 close the pass-0 preference route (parameter prefs pruned as call-crossing; someone_prefers is lower-priority only); the a3 seat needs hard_reg_conflicts with v0 and a0, i.e. q live past the base add.
+- [s43] Artifacts: tmp/grind/func_80017848/s43/{body_*.c, D_*.txt, B_*.txt, raw_*.txt, T.txt, iW1/, iW2/, iX2/, iX3/, cells.ps1, cellsd.ps1, post.sh, apply_win.py, norm.py, idump.sh, ings.orig.c, bank.py}.
+
+- [s43] Floor re-audited at 3 (127/127) on the HEAD src/ings.c:820 chassis; U4 re-audited at 6 (127/125); no FAKE constructs exist; src/ings.c restored to HEAD (git diff --quiet passes).
+
+- [s43] W1 (exit-tail reload + sh recompute inside the if, no join reload) = 12: p<->sh seat swap in both guards, no copy (D_W1.txt).
+
+- [s43] W2 (`q = q;` in both loop bodies) = 6 with ZERO self-set insns in iW2/ings.i.rtl: expr.c:2845 store_expr emits no move for a self-assignment; flow.c:1590 would not let a self-set seed liveness anyway.
+
+- [s43] do/while(0) wrap measured for the first time on this function: X1/X2/X4 = 6 (X2/X4 objects byte-identical to each other and carrying U4's residual), X3 (inner loop only) = 10 with seat rotation sh->a2, lnk->a1; no placement keeps the copy (D_X2.txt, D_X3.txt, iX2/, iX3/).
+
+- [s43] Reading: global.c:919-928 (someone_prefers = lower-priority conflicting allocnos only) + global.c:899-910 (call-crossing parameter preferences pruned) + global.c:344-372/:1000 (v0/a0 seeded used) close the pass-0 preference route to a3; the a3 seat needs hard_reg_conflicts with v0 and a0, i.e. q live past the base add.
+
+- [s43] Reading: a byte-free flow-time reader must be a non-dead insn (flow.c:1590), cannot be an algebraic fold (cse2 sees the guard->preheader extended block and folds first), and after RA can only vanish as a no-op move or by reorg's redundant-insn redirect; no instruction of target after either preheader add reads a3.

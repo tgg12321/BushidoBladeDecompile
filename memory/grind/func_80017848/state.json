@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 42,
+ "session_count": 43,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -255,13 +255,19 @@
    "floor": 3,
    "modality": "structural",
    "headline": "Floor re-audited at 3 (127/127); s41's residual record corrected (loop 1 is exact; residual = tail lw-vs-move + loop-2 addend copy-vs-load); DUMP-PROVEN that target's tail/join geometry is reorg.c's r"
+  },
+  {
+   "session": 43,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis and U4 at 6; six new structural cells killed: tail-in-if reload (12, seat swap), C self-assign reader (class kill: expr.c store_expr emits no RTL), "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "On the natural symmetric chassis (s42/body_U4.c, 6 at 125) a reader of q placed in loop 1's OWN return-0 arm (reachable only from loop 1's beq, so q is defined on every path to it) gives q a flow-time use past the base add and across the loop body (seat a3), while cross-jump (jump.c after reload) merges the arm into the shared return-0 tail at zero bytes only if the reader leaves no instruction after RA.",
-   "mechanism": "flow.c liveness: a use in the exit arm makes q live from the copy through the loop body; combine keeps the copy (added_sets_2); global.c conflicts with v0/v1/a0/a1/a2 seat q in a3; the arm's insns must be byte-identical to the other return-0 arms for jump.c cross-jump to merge them.",
-   "next_probe": "On U4 write loop 1's exit as a distinct arm reading q (candidate readers: a return of a value cse cannot fold to 0 without bytes, or a no-op move to a pseudo seated in a3); read .flow for q's liveness and .jump2 for the merge; if every reader leaves an instruction, bank as an instance kill of the exit-arm reader class (s40 measured one spelling at 15; this generalises it)."
+   "hypothesis": "Placing the copy `q = p` in the guard block immediately after the guard load and BEFORE the two-step address (`t = sh + p`) seats q in a3 by conflicts alone (q live while t/v0 is born, while p/a0 is still live to the guard add, and while i/v1, sh/a1, lnk/a2 are live) with no post-loop reader, and the copy is scheduled into neither the load-delay nop nor the blez delay slot.",
+   "mechanism": "global.c hard_reg_conflicts from global_conflicts' live sets (conflicts recorded at each birth while q is live); the copy and the add are then in different basic blocks so flow.c:2084 gives the add no LOG_LINK and combine never tries it; the cost is sched2/reorg filling target's unfilled `sll zero,zero,0` after `lw v0,28(v0)` (E-s32-7 measured a copy placed after the guard's address computation, not this earlier position - verify the s32 cell before spending the measurement).",
+   "next_probe": "On U4 move `q = *(u8 **)(ctx + 0xC)` (or `q = p`) to directly after `p = *(u8 **)(ctx + 0xC);` and before `sh = slot_a << 6;` in loop 1 only; read .greg for q's conflicts/seat and .sched2/.dbr for where the copy lands; if it fills the nop, bank as an instance kill of the guard-block placement with the scheduler as the predicate (sched.c dependency on the lw result vs the copy's independence)."
   },
   {
    "hypothesis": "A single pseudo q written in both preheaders and read once after loop 2 would seat in a3 and keep both copies, and its entry-liveness on the loop-skip paths (s40 m9a) can be cut only by a definition in guard 1's block that cse does not fold into the preheader copy.",
@@ -269,9 +275,9 @@
    "next_probe": "On U4 measure guard 1 loading into q (q = *(u8 **)(ctx + 0xC)) with p = q in the preheader and base = sh + p (roles swapped), reader after loop 2; read .greg for the seats; expected instance kill (q in a0, copy dest p short-lived in v0)."
   },
   {
-   "hypothesis": "A family grant covering a construct that places a use-once register copy at a join-successor preheader without paying for its own address expression would re-open the residual; no such family is on the frozen list today.",
-   "mechanism": "s37-s42 prove combine's deletion, the block-boundary escape, the interposer escape, the reload producer (now a class kill), the call-argument reader, the cross-jump reader, the same-block re-store reader, the dead-store reader and the allocator preference route are all context-free.",
-   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the U4 chassis (not BASE: U4's tail is the natural one) with the granted construct spelling both preheader copies, then diff with tmp/grind/func_80017848/s42/dis.sh."
+   "hypothesis": "A family grant covering a construct that places a use-once register copy at a join-successor preheader without paying for its own address expression would re-open the residual; no such family is on the frozen list today (s43 adds: the do/while(0) wrap, the one sanctioned family with 'any codegen effect', is measured inert around the copy in every placement).",
+   "mechanism": "s37-s43 prove combine's deletion, the block-boundary escape, the interposer escape, the reload producer, the call-argument reader, the cross-jump reader, the same-block re-store reader, the dead-store reader, the self-assign reader, the do/while(0) wrap and the allocator preference route are all context-free.",
+   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the U4 chassis with the granted construct spelling both preheader copies, then diff with tmp/grind/func_80017848/s43/post.sh."
   }
  ],
  "judge_constraints": [],
@@ -708,6 +714,38 @@
    "measured_on": "GCC 2.7.2 source under tools/gcc-2.7.2; BASE re-audited at 3 (127/127); no FAKE constructs",
    "predicate_cite": "local-alloc.c:1079",
    "result": "The producer s39 named is closed by predicate: no C spelling of this function presents reload with a MEM addend or an un"
+  },
+  {
+   "session": 43,
+   "statement": "Writing loop 1's exit tail (reload of p and recompute of sh) inside the guard's then-block instead of an unconditional join-block reload keeps U4's seats and target's join geometry.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_W1.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "12 at 127/125: both guards swap to lw a1,12(s2) / sll a0,s4,6 / addu v0,a0,a1, both preheaders addu a0,a0,a1 with no cop"
+  },
+  {
+   "session": 43,
+   "statement": "A C self-assignment `q = q;` of the copy destination inside the loop body is a loop-carried flow-time reader that keeps q live across the body and vanishes as a no-op move after allocation.",
+   "kill_scope": "class",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_W2.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/expr.c:2845",
+   "result": "6 at 127/125, object identical to U4; zero (set (reg N) (reg N)) insns in .rtl or any later dump. expr.c:2845 store_expr"
+  },
+  {
+   "session": 43,
+   "statement": "The sanctioned do { } while (0); wrap placed around the preheader copy alone (X1), the whole guard then-block (X2), or the three preheader statements (X4), in both loops, keeps the use-once copy or mo",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_X1.c / body_X2.c / body_X4.c (U4-derived); BASE re-audited at 3 (127/127); wraps unannotated measurement cells, no other FAKE constructs",
+   "predicate_cite": "",
+   "result": "X1 = X2 = X4 = 6 at 127/125; X2 and X4 raw objdumps byte-identical to each other and to U4's residual. The while(0) test"
+  },
+  {
+   "session": 43,
+   "statement": "The do { } while (0); wrap around the inner scan loop only, with the preheader outside the wrap, changes global's allocation order enough to seat the copy destination in a3.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_X3.c (U4-derived); BASE re-audited at 3 (127/127); wrap unannotated measurement cell, no other FAKE constructs",
+   "predicate_cite": "",
+   "result": "10 at 127/125: loop 1's sh seats a2 and lnk a1 (sll a2,s4,6 / addu v0,a2,a0 / lw a1,16(s2) / addu a0,a2,a0), loop 2's li"
   }
  ],
  "escalation_deferrals": 0

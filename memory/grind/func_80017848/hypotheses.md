@@ -4095,3 +4095,78 @@ to target. Cell scores: `tmp/grind/func_80017848/s34/scores.txt`.
 - kill_scope: class
 - measured_on: GCC 2.7.2 source under tools/gcc-2.7.2; BASE re-audited at 3 (127/127); no FAKE constructs
 - predicate_cite: local-alloc.c:1079
+
+## [s43] The floor and residual survive unchanged on the HEAD chassis this session, and s42's natural symmetric chassis U4 is not stale.
+- mechanism: chassis re-audit mandated by the brief; the residual is the two use-once preheader copies combine deletes (E-s42-1/E-s42-3).
+- probe: s43/body_BASE.c and s43/body_U4.c applied over the src/ings.c:820 anchor, sandbox --disable all.
+- result: BASE = 3 at 127/127, U4 = 6 at 127/125, both identical to s42. CONFIRMED.
+
+## [s43] Writing loop 1's exit tail (reload of p and recompute of sh) inside the guard's then-block instead of an unconditional join-block reload reproduces target's join geometry with the same seats as U4.
+- mechanism: the tail-in-if spelling gives the same instruction stream on both paths (E-s42-2 showed reorg's redirect produces target's fall-through-only lw/sll from a join reload); the question was whether the two-definition pseudos p and sh keep U4's seats.
+- probe: cell W1 (s43/body_W1.c), D_W1.txt, iW1/.
+- result: KILLED (instance). 12 at 127/125: both guards swap to lw a1,12(s2) / sll a0,s4,6 / addu v0,a0,a1, both preheaders addu a0,a0,a1 (no copy), loop-2 links a1. Measured on the HEAD src/ings.c:820 chassis, U4-derived body, no FAKE constructs. Banked as rejected/s43_exit_tail_reload_inside_if_seat_swap_costs_12.c.
+
+## [s43] A C self-assignment `q = q;` of the copy destination inside the loop body is a loop-carried flow-time reader that keeps q live across the body (a3 seat) and vanishes as a no-op move after allocation.
+- mechanism (proposed): a self-set both uses and sets q, so q would be live-in at the loop top and not dead at the base add (combine keeps the copy, added_sets_2), and the post-RA `addu a3,a3,zero` is deleted by jump2.
+- probe: cell W2 (s43/body_W2.c) = U4 + `q = q;` at the top of both loop bodies; iW2/ dumps grepped for self-set insns in every pass.
+- result: KILLED (class). 6 at 127/125, object identical to U4; zero `(set (reg N) (reg N))` insns in .rtl and every later dump. expr.c:2845 (store_expr: a move is emitted only when `temp != target`) means a self-assignment never reaches RTL in any spelling that expands the variable to its own DECL_RTL; and flow.c:1590 (uses of a dead insn are never marked, in every propagate_block pass) means an emitted self-set could not seed its own liveness either. Measured on the HEAD src/ings.c:820 chassis, no FAKE constructs. Banked as rejected/s43_self_assign_q_eq_q_in_loop_body_emits_no_rtl.c.
+
+## [s43] The sanctioned `do { } while (0);` wrap (owner ruling 2026-07-06, any codegen effect incl. register allocation) placed around the preheader copy, the preheader statements, or the whole then-block keeps the use-once copy or moves the copy destination's seat.
+- mechanism (proposed): the wrap adds NOTE_INSN_LOOP_BEG/END and a loop label around the wrapped statements, which could (a) leave a basic-block boundary between copy and add (no LOG_LINK, escape #8) or (b) change loop_depth so flow's reg_n_refs/reg_live_length weighting re-orders global's allocation.
+- probe: cells X1 (copy only), X2 (whole then-block), X4 (three preheader statements), each in both loops, on U4; D_X2.txt, iX2/.
+- result: KILLED (instance). X1 = X2 = X4 = 6 at 127/125; X2 and X4 raw objdumps byte-identical to each other and to U4's residual. The `while (0)` test folds at expand, the loop label is unreferenced and deleted by jump1 before cse, so the copy and the add remain one basic block and combine deletes the copy as before; no seat changes because the wrapped pseudos' weights change identically. Measured on the HEAD src/ings.c:820 chassis, U4-derived bodies, wraps unannotated (measurement cells). Banked as rejected/s43_dowhile0_wrap_{copy_only,whole_then_block,preheader_stmts}_*.c.
+
+## [s43] The `do { } while (0);` wrap around the inner scan loop only (preheader outside the wrap) changes the allocation order enough to seat the copy destination in a3 or otherwise moves toward target.
+- mechanism (proposed): only the loop-body pseudos gain loop_depth weight, so the preheader pseudos' relative priority drops and find_reg's order changes.
+- probe: cell X3 (s43/body_X3.c), D_X3.txt, iX3/.
+- result: KILLED (instance). 10 at 127/125: loop 1's sh seats a2 and lnk a1 (sll a2,s4,6 / addu v0,a2,a0 / lw a1,16(s2) / addu a0,a2,a0), loop 2's links a1, no copy in either preheader - the copy is deleted by combine before any allocation-order effect can matter. Measured on the HEAD src/ings.c:820 chassis, no FAKE constructs. Banked as rejected/s43_dowhile0_wrap_inner_loop_only_seat_rotation_costs_10.c.
+
+## [s43] find_reg's pass-0 exclusions (regs_someone_prefers / regs_used_so_far) can give the copy destination the a3 seat without it being live across the loop body.
+- mechanism: global.c:1000-1001 excludes registers not yet used and registers some other allocno prefers in pass 0.
+- probe: reading global.c:882-930 (prune_preferences) and :344-372 (regs_used_so_far seed) against this function's pseudos.
+- result: CONFIRMED-DEAD by reading (no measurement needed): regs_someone_prefers merges only LOWER-priority conflicting allocnos' preferences (global.c:919-928); the only a0-a3-preferring pseudos are the four parameter copies, all call-crossing, whose preferences global.c:899-910 prunes by call_used_reg_set; v0 and a0 are seeded used by local-alloc qtys. The a3 seat requires hard_reg_conflicts with v0 AND a0, i.e. q live when base is born. Third independent confirmation of s40/s41.
+
+## [s43] The floor and residual survive unchanged on the HEAD chassis this session, and s42's natural symmetric chassis U4 is not stale.
+- mechanism: Chassis re-audit; residual = the two use-once preheader copies combine deletes.
+- probe: s43/body_BASE.c and s43/body_U4.c over the src/ings.c:820 anchor, sandbox --disable all.
+- result: BASE = 3 at 127/127; U4 = 6 at 127/125; both identical to s42.
+- verdict: CONFIRMED
+
+## [s43] Writing loop 1's exit tail (reload of p and recompute of sh) inside the guard's then-block instead of an unconditional join-block reload keeps U4's seats and target's join geometry.
+- mechanism: Both paths carry the same instruction stream; the two-definition pseudos p and sh were expected to keep U4's seats.
+- probe: Cell W1 (s43/body_W1.c), D_W1.txt, iW1/ dumps.
+- result: 12 at 127/125: both guards swap to lw a1,12(s2) / sll a0,s4,6 / addu v0,a0,a1, both preheaders addu a0,a0,a1 with no copy, loop-2 links a1.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_W1.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s43] A C self-assignment `q = q;` of the copy destination inside the loop body is a loop-carried flow-time reader that keeps q live across the body and vanishes as a no-op move after allocation.
+- mechanism: A self-set would use and set q, making q live-in at the loop top and not dead at the base add (combine added_sets_2 keeps the copy); the post-RA self-move would be deleted by jump2.
+- probe: Cell W2 (s43/body_W2.c) = U4 + `q = q;` at the top of both loop bodies; iW2/ dumps grepped for self-set insns in every pass.
+- result: 6 at 127/125, object identical to U4; zero (set (reg N) (reg N)) insns in .rtl or any later dump. expr.c:2845 store_expr emits a move only when temp != target, so a self-assignment never reaches RTL; flow.c:1590 never marks the uses of a dead insn in any propagate_block pass, so an emitted self-set could not seed its own liveness either.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_W2.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/expr.c:2845
+
+## [s43] The sanctioned do { } while (0); wrap placed around the preheader copy alone (X1), the whole guard then-block (X2), or the three preheader statements (X4), in both loops, keeps the use-once copy or moves the copy destination's seat.
+- mechanism: The wrap's NOTE_INSN_LOOP_BEG/END and loop label could leave a block boundary between copy and add (no LOG_LINK) or change loop_depth weighting of reg_n_refs/reg_live_length for global's allocation order.
+- probe: Cells X1, X2, X4 on U4 (s43/body_X{1,2,4}.c), D_X2.txt, iX2/ dumps, raw objdump comparison.
+- result: X1 = X2 = X4 = 6 at 127/125; X2 and X4 raw objdumps byte-identical to each other and to U4's residual. The while(0) test folds at expand, the loop label is unreferenced and deleted by jump1 before cse, the copy and the add stay one basic block and combine deletes the copy.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_X1.c / body_X2.c / body_X4.c (U4-derived); BASE re-audited at 3 (127/127); wraps unannotated measurement cells, no other FAKE constructs
+
+## [s43] The do { } while (0); wrap around the inner scan loop only, with the preheader outside the wrap, changes global's allocation order enough to seat the copy destination in a3.
+- mechanism: Only the loop-body pseudos gain loop_depth weight, lowering the preheader pseudos' relative priority.
+- probe: Cell X3 (s43/body_X3.c), D_X3.txt, iX3/ dumps.
+- result: 10 at 127/125: loop 1's sh seats a2 and lnk a1 (sll a2,s4,6 / addu v0,a2,a0 / lw a1,16(s2) / addu a0,a2,a0), loop 2's links a1, no copy in either preheader; the copy is deleted by combine before allocation order can matter.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_X3.c (U4-derived); BASE re-audited at 3 (127/127); wrap unannotated measurement cell, no other FAKE constructs
+
+## [s43] find_reg's pass-0 exclusions (regs_someone_prefers / regs_used_so_far) can give the copy destination the a3 seat without it being live across the loop body.
+- mechanism: global.c:1000-1001 excludes not-yet-used registers and registers preferred by other allocnos in pass 0.
+- probe: Reading global.c:882-930 (prune_preferences) and :344-372 (regs_used_so_far seed) against this function's pseudos.
+- result: Dead by reading: regs_someone_prefers merges only lower-priority conflicting allocnos' preferences (global.c:919-928); the only a0-a3-preferring pseudos are the four call-crossing parameter copies whose preferences global.c:899-910 prunes by call_used_reg_set; v0 and a0 are seeded used by local-alloc qtys. The a3 seat requires hard_reg_conflicts with v0 and a0, i.e. q live when base is born. Third independent confirmation of s40/s41.
+- verdict: CONFIRMED

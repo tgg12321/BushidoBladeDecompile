@@ -1,3 +1,20 @@
+/* [s43 STRUCTURAL NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
+ * (anchor src/ings.c:820); U4 re-audited 6 at 125.]  Six new cells, all dead:
+ * W1 (loop-1 exit tail reload+sh recompute INSIDE the if, no join reload) = 12,
+ * a p<->sh seat swap in both guards; W2 (`q = q;` in the loop bodies as a
+ * loop-carried reader) = 6 and emits NO RTL at all (expr.c:2845 store_expr skips
+ * a move whose source rtx is the target) - class kill; the sanctioned
+ * do/while(0) wrap measured for the first time on this function around the
+ * copy (X1), the whole then-block (X2), the preheader statements (X4) - all
+ * exactly 6, objects identical to U4 - and around the inner loop only (X3) =
+ * 10 (loop_depth re-weights the loop-1 pseudos, seats rotate, still no copy).
+ * Reading banked: global.c:919-928 collects regs_someone_prefers from
+ * LOWER-priority conflicting allocnos only and :899-910 prunes the parameter
+ * pseudos' a0-a3 copy preferences as call-crossing, so the a3 seat cannot come
+ * from pass-0 exclusion (third independent confirmation of s40's requirement
+ * that the copy destination be live across its loop body).  Details:
+ * evidence.md/hypotheses.md s43 sections.
+ */
 /* [s42 STRUCTURAL NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
  * (anchor src/ings.c:820).]  Fresh normalised diff: loop 1 is instruction-exact;
  * the whole residual is (a) the exit tail (target reloads p with lw a0,12(s2),
