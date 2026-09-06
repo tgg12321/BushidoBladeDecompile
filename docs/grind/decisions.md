@@ -24744,3 +24744,106 @@ Q1 (spelling): PASS - ordinary C, no FAKE, no family claim needed. `off = i * 0x
 Q2 (artifact): direction, not a grant. I verified the mislabel myself: asm/funcs/func_8002C61C.s:180,205 encode 0C00C624 = `addiu $a2,$a2,0xC`, identical to the literal `0xC` splat emitted one instruction earlier at :176/:201, and `D_1F80000C = 0x1F80000C;` is an auto-detected false positive in undefined_syms_auto.txt. So the defect is in the reference disassembly, NOT in engine/score.py - its HI16/LO16 pairing rule (engine/score.py:109) is correct and project-wide; do not weaken shared measurement logic to make one function print 0. But nothing about that blocks proving this function NOW: the oracle is the only truth (CLAUDE.md non-negotiable #2) and `engine build` (full clean-driver build -> SHA1, engine/cli.py:55/134) works on a dirty tree - the session reached for a tooling change without running the one command that settles the question. Run it first. Once SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa is banked, the .s/undefined_syms_auto.txt correction is a commit surface a grind session may not stage and comes back as an integration-handoff ESCALATE (scope: asm/funcs/func_8002C61C.s, asm/funcs/func_80029454.s, asm/6CAC.s, undefined_syms_auto.txt) - I am not granting it here because the handoff prerequisite (bytes PROVEN) is not yet met: sandbox is 2 and evidence.md itself records full-build SHA1 as unproven in-session.
 
 Housekeeping: candidate.c declares ProbeRec but never uses it, and the working tree src/code6cac_b.c currently carries six duplicated ProbeScr/ProbeRec typedef blocks (would not compile). Clean both before submission.
+
+## 2026-09-06 — func_8002C61C (src/code6cac_b.c) — OWNER-ESCALATION: INTEGRATION HANDOFF (bytes PROVEN this session: full-tree oracle SHA1 MATCH + sandbox 0 against the corrected reference; sole blocker = a splat mislabel in asm/funcs/*.s, a denylisted surface)
+
+Filed by grind session s1b (recon modality) per the Judge's 2026-09-06 06:44 ruling ("bring the
+.s/undefined_syms_auto.txt D_1F80000C correction back as an integration-handoff ESCALATE once the
+SHA1 is banked"). **This is NOT an endgame lock, NOT an exhaustion claim, and NOT a policy
+question.** The function is SOLVED in pure C: no inline asm, no register pins, no pads, no volatile,
+no dead stores, no `/* FAKE */` construct, no sanctioned-family claim. The C is
+`memory/grind/func_8002C61C/candidate.c` (body hash `5e2fa09ac0d7e10d`, the record-base spelling
+the Judge directed; self_vet.md written).
+
+### Proof of bytes (measured this session, HEAD a8e39d0e)
+- `engine build` with candidate.c installed in src/code6cac_b.c (nothing else touched):
+  `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want — MATCH`
+  (`tmp/grind/func_8002C61C/s1b/engine_build.txt`). The whole game rebuilds byte-identical.
+- `sandbox func_8002C61C --disable all` on the HEAD reference: **2** at 284/284, rules 0. Object-level
+  comparison (`s1b/byteproof_recbase.txt`): 221 words exact, 63 differ only in unresolved relocation
+  fields, 0 real mismatches; both loop increments encode `24c6000c` in build AND target.
+- `sandbox` against a corrected reference: **0** at 284/284 (`s1b/sandbox_corrected_ref.txt`,
+  metrics event 2026-09-06T11:48:38). The correction was the two `.s` operands below, applied
+  temporarily and fully reverted (`git checkout`, pre-session reference object restored).
+
+### The blocker, in plain words
+splat mislabelled a loop increment. In the original disassembly `asm/funcs/func_8002C61C.s:180,205`
+the instruction `addiu $a2,$a2,0xC` (add 12) is printed as `addiu $a2,$a2,%lo(D_1F80000C)` because
+splat paired an unrelated `lui $a2,0x1F80` with it and invented a symbol `D_1F80000C` (recorded in
+`undefined_syms_auto.txt:3`). The linked bytes are the same either way (%lo(0x1F80000C) == 12), which
+is why the full build matches. But the sandbox scores the C against that disassembly, and its
+relocation rule (engine/score.py `_resolve_named_pair`, ruled CORRECT by the Judge — do not touch it)
+cannot resolve an unpaired LO16, so the reference immediate reads 0 and two phantom units remain
+forever. No C can print 0 here; only the reference text can be corrected.
+
+### Why the driver cannot execute this itself
+`asm/` is on the add-scope-allow denylist (.claude/rules/integration-handoff-self-serve.md, "Path
+denylist"), so a Judge ESCALATE with `scope_paths=[asm/funcs/...]` is refused mechanically and the
+driver will foreclose this entry silently with candidate.c preserved. `undefined_syms_auto.txt` IS in
+the allowed class but is useless alone (the .s operands must be literalised first or the link fails).
+The correction alters ZERO linked bytes (all 14 words stay 0x24C6000C), so it is not a substrate,
+oracle, or build-flag change — it is a typo fix in generated reference text.
+
+### Exact operator steps (byte-neutral; about two minutes)
+1. In WSL from the repo root:
+   `sed -i 's/%lo(D_1F80000C)/0xC/' asm/funcs/func_8002C61C.s asm/funcs/func_80029454.s asm/6CAC.s`
+   (14 operands: func_8002C61C.s:180,205; func_80029454.s:41,718,752,1068,1101; 6CAC.s x7 —
+   6CAC.s is not linked by the Makefile/bb2.ld, consistency only). Patch for this function's file:
+   `tmp/grind/func_8002C61C/s1b/reference_fix_func_8002C61C.s.patch`.
+2. Delete line 3 of `undefined_syms_auto.txt` (`D_1F80000C = 0x1F80000C;`) — AFTER step 1.
+3. `& tools/wteng.ps1 main verify-oracle --rebuild` -> expect ok=true, SHA1 unchanged (nothing linked
+   changed). Commit as `asm: drop splat false-positive D_1F80000C (literal loop increment 0xC)`.
+4. `& tools/wteng.ps1 main queue unpark func_8002C61C --reason "reference corrected"` if the driver
+   foreclosed it on this entry.
+5. The next grind session installs candidate.c, gets sandbox 0 on HEAD, and submits candidate-ready
+   through every normal gate (layer-1, Judge, driver SHA1 re-verify). Sibling func_80029454 (still
+   INCLUDE_ASM, 5 of the same mislabels) loses 5 phantom units from its floor at the same time.
+
+Evidence pointers: `memory/grind/func_8002C61C/{evidence.md (s1, s1b), hypotheses.md (H1-H8),
+candidate.c, candidate_cleared_body_7deeac5ed5627ab5.c, self_vet.md, rejected/}`,
+`tmp/grind/func_8002C61C/s1/` (probes, byteproof.py) and `tmp/grind/func_8002C61C/s1b/`.
+
+## 2026-09-06 06:57 — func_8002C61C — ruling: INTEGRATION HANDOFF filed for func_8002C61C : docs/grind/decisions.md 2026-09-06 — **ESCALATE**
+
+BYTES: PROVEN, verified by me, not taken from the session. (1) tmp/grind/func_8002C61C/s1b/engine_build.txt: full clean-driver build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH. (2) I diffed the function body in s1b/src_with_candidate.c (the tree that produced that SHA1) against memory/grind/func_8002C61C/candidate.c: byte-for-byte the same body, so the banked form IS the form that rebuilt the game. (3) s1b/byteproof_recbase.txt: 221 words exact, 63 reloc-field-only, 0 real mismatches. The C is ordinary: no inline asm, no volatile, no pads, no dead stores, no /* FAKE */, no sanctioned-family claim needed. It is the record-base spelling my 2026-09-06 06:44 ruling directed, with the unused ProbeRec typedef dropped and the working tree clean (src/code6cac_b.c back to INCLUDE_ASM, no stray build-file dirt).
+
+THE BLOCKER, IN PLAIN WORDS. This function is finished. The only thing standing between it and 'done' is a typo in the project's own reference printout of the original game code. Long ago, the tool that disassembled the game (splat) looked at one instruction -- 'add 12 to a register' -- and guessed that the 12 was really the tail end of a memory address, so it printed the instruction as 'add the low half of D_1F80000C' and invented a symbol named D_1F80000C to go with it (undefined_syms_auto.txt line 3). I checked the raw machine code myself: asm/funcs/func_8002C61C.s lines 180 and 205 both hold the word 0C00C624, which is exactly 'addiu $a2,$a2,12' -- the identical instruction that splat printed as a plain 12 four lines earlier at :175 and :200. So the guess is wrong; the number really is just twelve.
+The final game still builds correctly either way (low-half-of-0x1F80000C == 12), which is why the SHA1 matches. But our scoring tool compares the compiled C against that printed reference, and it cannot resolve a half-address that has no matching first half, so it reads the reference number as 0 instead of 12. Result: a permanent, fictitious score of 2 for a function that is byte-perfect. No C anyone can write will ever score 0 here -- only the reference text can be corrected. I ruled at 06:44 that the scorer itself (engine/score.py) is CORRECT and must not be weakened for one function; that still stands.
+
+WHY THIS NEEDS YOU RATHER THAN THE PIPELINE. I read tools/grinder/grindlib.py:466-493: the driver's self-serve scope grant accepts only include/*.h, src/*.c and root-level *.txt, and refuses the WHOLE request if any path is outside that -- anything under asm/ is on the severe-blocker denylist (.claude/rules/integration-handoff-self-serve.md). Correcting the reference needs the .s files, so the pipeline cannot do it. Granting only undefined_syms_auto.txt would be worse than nothing: deleting that symbol while the .s files still name it breaks the link. And the driver's first merge gate is a sandbox score of 0 (tools/grinder/grind.ps1:619), so leaving the function active just spins sessions forever on work that is already done. I am therefore filing this the honest way: the driver will refuse the grant, log this packet to docs/grind/borderline.md and foreclose the entry with candidate.c preserved -- which is precisely the recorded owner-pending state for a solved function whose last surface is owner-only. It re-activates the moment you make the fix below.
+
+THE FIX (about two minutes; changes ZERO bytes in the built game):
+1. In WSL from the repo root: sed -i 's/%lo(D_1F80000C)/0xC/' asm/funcs/func_8002C61C.s asm/funcs/func_80029454.s asm/6CAC.s   (14 operands; all 14 words stay 0x24C6000C).
+2. Then delete line 3 of undefined_syms_auto.txt (D_1F80000C = 0x1F80000C;).
+3. & tools/wteng.ps1 main verify-oracle --rebuild -- expect ok=true, SHA1 unchanged. Commit as 'asm: drop splat false-positive D_1F80000C (literal loop increment 0xC)'.
+4. & tools/wteng.ps1 main queue unpark func_8002C61C --reason "reference corrected".
+The next grind session reinstalls memory/grind/func_8002C61C/candidate.c, gets sandbox 0, and goes through every normal gate. Sibling func_80029454 (still INCLUDE_ASM) carries 5 of the same mislabels and loses 5 phantom units from its floor at the same time -- this is a shared reference defect, not a one-function favour.
+
+Evidence: memory/grind/func_8002C61C/{state.json, hypotheses.md, evidence.md, candidate.c, self_vet.md, rejected/}, tmp/grind/func_8002C61C/s1b/{engine_build.txt, byteproof_recbase.txt, reference_fix_func_8002C61C.s.patch}, decisions.md 2026-09-06 entries.
+
+## 2026-09-06 — func_8002C61C — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-06)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+BYTES: PROVEN, verified by me, not taken from the session. (1) tmp/grind/func_8002C61C/s1b/engine_build.txt: full clean-driver build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == want, MATCH. (2) I diffed the function body in s1b/src_with_candidate.c (the tree that produced that SHA1) against memory/grind/func_8002C61C/candidate.c: byte-for-byte the same body, so the banked form IS the form that rebuilt the game. (3) s1b/byteproof_recbase.txt: 221 words exact, 63 reloc-field-only, 0 real mismatches. The C is ordinary: no inline asm, no volatile, no pads, no dead stores, no /* FAKE */, no sanctioned-family claim needed. It is the record-base spelling my 2026-09-06 06:44 ruling directed, with the unused ProbeRec typedef dropped and the working tree clean (src/code6cac_b.c back to INCLUDE_ASM, no stray build-file dirt).
+
+THE BLOCKER, IN PLAIN WORDS. This function is finished. The only thing standing between it and 'done' is a typo in the project's own reference printout of the original game code. Long ago, the tool that disassembled the game (splat) looked at one instruction -- 'add 12 to a register' -- and guessed that the 12 was really the tail end of a memory address, so it printed the instruction as 'add the low half of D_1F80000C' and invented a symbol named D_1F80000C to go with it (undefined_syms_auto.txt line 3). I checked the raw machine code myself: asm/funcs/func_8002C61C.s lines 180 and 205 both hold the word 0C00C624, which is exactly 'addiu $a2,$a2,12' -- the identical instruction that splat printed as a plain 12 four lines earlier at :175 and :200. So the guess is wrong; the number really is just twelve.
+The final game still builds correctly either way (low-half-of-0x1F80000C == 12), which is why the SHA1 matches. But our scoring tool compares the compiled C against that printed reference, and it cannot resolve a half-address that has no matching first half, so it reads the reference number as 0 instead of 12. Result: a permanent, fictitious score of 2 for a function that is byte-perfect. No C anyone can write will ever score 0 here -- only the reference text can be corrected. I ruled at 06:44 that the scorer itself (engine/score.py) is CORRECT and must not be weakened for one function; that still stands.
+
+WHY THIS NEEDS YOU RATHER THAN THE PIPELINE. I read tools/grinder/grindlib.py:466-493: the driver's self-serve scope grant accepts only include/*.h, src/*.c and root-level *.txt, and refuses the WHOLE request if any path is outside that -- anything under asm/ is on the severe-blocker denylist (.claude/rules/integration-handoff-self-serve.md). Correcting the reference needs the .s files, so the pipeline cannot do it. Granting only undefined_syms_auto.txt would be worse than nothing: deleting that symbol while the .s files still name it breaks the link. And the driver's first merge gate is a sandbox score of 0 (tools/grinder/grind.ps1:619), so leaving the function active just spins sessions forever on work that is already done. I am therefore filing this the honest way: the driver will refuse the grant, log this packet to docs/grind/borderline.md and foreclose the entry with candidate.c preserved -- which is precisely the recorded owner-pending state for a solved function whose last surface is owner-only. It re-activates the moment you make the fix below.
+
+THE FIX (about two minutes; changes ZERO bytes in the built game):
+1. In WSL from the repo root: sed -i 's/%lo(D_1F80000C)/0xC/' asm/funcs/func_8002C61C.s asm/funcs/func_80029454.s asm/6CAC.s   (14 operands; all 14 words stay 0x24C6000C).
+2. Then delete line 3 of undefined_syms_auto.txt (D_1F80000C = 0x1F80000C;).
+3. & tools/wteng.ps1 main verify-oracle --rebuild -- expect ok=true, SHA1 unchanged. Commit as 'asm: drop splat false-positive D_1F80000C (literal loop increment 0xC)'.
+4. & tools/wteng.ps1 main queue unpark func_8002C61C --reason "reference corrected".
+The next grind session reinstalls memory/grind/func_8002C61C/candidate.c, gets sandbox 0, and goes through every normal gate. Sibling func_80029454 (still INCLUDE_ASM) carries 5 of the same mislabels and loses 5 phantom units from its floor at the same time -- this is a shared reference defect, not a one-function favour.
+
+Evidence: memory/grind/func_8002C61C/{state.json, hypotheses.md, evidence.md, candidate.c, self_vet.md, rejected/}, tmp/grind/func_8002C61C/s1b/{engine_build.txt, byteproof_recbase.txt, reference_fix_func_8002C61C.s.patch}, decisions.md 2026-09-06 entries.
+
+

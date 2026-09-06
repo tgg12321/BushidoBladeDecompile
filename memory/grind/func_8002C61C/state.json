@@ -1,10 +1,23 @@
 {
  "func": "func_8002C61C",
  "file": "code6cac_b",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 2,
+   "modality": "recon",
+   "headline": "func_8002C61C bytes PROVEN: oracle SHA1 MATCH with the Judge-directed record-base C; sandbox 2 on HEAD is entirely a splat %lo(D_1F80000C) mislabel (sandbox 0 vs corrected reference); INTEGRATION HAND"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Once the reference correction lands, candidate.c prints sandbox 0 on HEAD and passes candidate-ready through the normal gates.",
+   "mechanism": "Measured this session against the corrected reference (score 0); layer-1/Judge on ordinary C.",
+   "next_probe": "Reinstall memory/grind/func_8002C61C/candidate.c, sandbox --disable all, submit candidate-ready with the existing self_vet.md."
+  }
+ ],
  "judge_constraints": [
   "Before any tooling/reference edit, prove the candidate with `engine build` (SHA1 == oracle); spell loop-3 destinations against the record base D_80101EC8 + off + field offset, drop the unused ProbeRec typedef and the duplicated typedef blocks in src/code6cac_b.c, and bring the .s/undefined_syms_auto.txt D_1F80000C correction back as an integration-handoff ESCALATE once the SHA1 is banked - never by editing engine/score.py."
  ],
@@ -30,5 +43,6 @@
    "when": "2026-09-06T11:44:57.563407+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-06 06:44 ruling PASS)"
   }
- ]
+ ],
+ "object_model_audited": 1
 }

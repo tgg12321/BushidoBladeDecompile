@@ -1,16 +1,7 @@
-/* func_8002C61C candidate — s1 (recon, 2026-09-06). sandbox --disable all = 2, where the 2 is a
-   score.py artifact (unpaired %lo(D_1F80000C) reloc in the target .s at 8002C8B4/8002C914; both
-   words encode 24c6000c in build and target — tmp/grind/func_8002C61C/s1/byteproof.py: 0 real
-   mismatches). Loop-3 dst uses byte-offset+symbol addressing: the ONLY spelling that produces
-   `sw v0,%lo(SYM)($at)` with $at=%hi(SYM)+off — see evidence.md OBJECT MODEL entry. */
+/* func_8002C61C candidate - s1b (recon, 2026-09-06). Loop-3 destinations spelled against the
+   record base D_80101EC8 + off + field offset per the 2026-09-06 06:44 Judge ruling (off = i * 0x44C
+   is the record stride; +0x174 midpoint, +0x18C centroid). */
 typedef struct { Vec3i j[22]; } ProbeScr;               /* scratchpad per-char block, stride 0x108 */
-typedef struct {
-    u8 pad0[0x174];
-    Vec3i mid;                                            /* +0x174 */
-    u8 pad1[0x18C - 0x180];
-    Vec3i cen;                                            /* +0x18C */
-    u8 pad2[0x44C - 0x198];
-} ProbeRec;                                               /* stride 0x44C */
 #define SCR ((ProbeScr *)0x1F800078)
 void func_8002C61C(void) {
     u8 *s1 = (u8 *)&D_80101EC8;
@@ -93,12 +84,12 @@ void func_8002C61C(void) {
         s32 off;
         for (i = 0; i < 2; i++) {
             off = i * 0x44C;
-            *(s32 *)((u8 *)&D_80102054 + off) = (SCR[i].j[5].x + SCR[i].j[6].x + SCR[i].j[7].x) / 3;
-            *(s32 *)((u8 *)&D_80102058 + off) = (SCR[i].j[5].y + SCR[i].j[6].y + SCR[i].j[7].y) / 3;
-            *(s32 *)((u8 *)&D_8010205C + off) = (SCR[i].j[5].z + SCR[i].j[6].z + SCR[i].j[7].z) / 3;
-            *(s32 *)((u8 *)&D_8010203C + off) = (SCR[i].j[8].x + SCR[i].j[9].x) / 2;
-            *(s32 *)((u8 *)&D_80102040 + off) = (SCR[i].j[8].y + SCR[i].j[9].y) / 2;
-            *(s32 *)((u8 *)&D_80102044 + off) = (SCR[i].j[8].z + SCR[i].j[9].z) / 2;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x18C) = (SCR[i].j[5].x + SCR[i].j[6].x + SCR[i].j[7].x) / 3;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x190) = (SCR[i].j[5].y + SCR[i].j[6].y + SCR[i].j[7].y) / 3;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x194) = (SCR[i].j[5].z + SCR[i].j[6].z + SCR[i].j[7].z) / 3;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x174) = (SCR[i].j[8].x + SCR[i].j[9].x) / 2;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x178) = (SCR[i].j[8].y + SCR[i].j[9].y) / 2;
+            *(s32 *)((u8 *)&D_80101EC8 + off + 0x17C) = (SCR[i].j[8].z + SCR[i].j[9].z) / 2;
         }
     }
 

@@ -47,3 +47,43 @@ H5 OPEN (tooling, not C) — the remaining 2 units are `addiu a2,a2,%lo(D_1F8000
    score.py unpaired-LO16 resolution); after it the candidate should print 0 unchanged.
 3. Once 1+2 are cleared: header-side naming (PracticeMenuRec fields at +0x174/+0x18C/+0x210/
    +0x234, scratchpad record type) is cosmetic — codegen is fixed by the spellings above.
+
+## s1b (2026-09-06, recon) — floor 2 on HEAD reference (= 0 real; sandbox 0 vs corrected reference; oracle SHA1 MATCH)
+
+H6 CONFIRMED — the record-base loop-3 spelling (`(u8 *)&D_80101EC8 + off + 0x18C` etc., Judge
+   constraint 2026-09-06 06:44) is byte-identical to the per-word spelling: sandbox 2 -> 2 on the
+   HEAD reference, 0 real mismatches at object level, full-build SHA1 == oracle. Body hash
+   5e2fa09ac0d7e10d (candidate.c).
+
+H7 CONFIRMED — the residual 2 is entirely the reference mislabel: with asm/funcs/func_8002C61C.s
+   :180,205 `%lo(D_1F80000C)` -> `0xC` and the reference object rebuilt, sandbox prints 0 (284/284).
+   Reverted after measurement. No C lever remains; the next action is the reference correction
+   (operator steps in docs/grind/decisions.md, 2026-09-06 INTEGRATION HANDOFF entry).
+
+H8 CONFIRMED — sibling func_80029454 (s1, no candidate.c) has nothing to transplant; it shares the
+   D_1F80000C artifact 5x (asm/funcs/func_80029454.s:41,718,752,1068,1101) and inherits the same fix.
+
+## Frontier (next session)
+1. AFTER the reference correction lands (owner hand-applies; asm/ is denylisted for driver scope
+   grants): reinstall candidate.c, expect sandbox 0 on HEAD, submit candidate-ready with
+   self_vet.md as written. Nothing else to probe.
+2. If the correction has NOT landed: do not re-measure — the floor is pinned at 2 phantom units by
+   the reference, and every C axis is closed (H1-H7). Re-file nothing; wait for the unpark.
+
+## [s1] The record-base loop-3 spelling `(u8 *)&D_80101EC8 + off + field` mandated by the 2026-09-06 06:44 Judge constraint is byte-identical to the per-word cleared body and links to the oracle.
+- mechanism: Same address expression after cse/loop.c giv reduction: symbol+register addressing with one reduced giv `off = i*0x44C`; the symbol only changes the HI16/LO16 addend, which the linker folds to the same words.
+- probe: Installed body 5e2fa09ac0d7e10d in src/code6cac_b.c; sandbox --disable all; byteproof.py object comparison; `engine build` full-tree SHA1.
+- result: sandbox 2 (284/284, same as per-word body); 0 real word mismatches (221 exact, 63 reloc-field-only); engine build sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle MATCH (tmp/grind/func_8002C61C/s1b/engine_build.txt).
+- verdict: CONFIRMED
+
+## [s1] The residual 2 is entirely the reference disassembly's unpaired %lo(D_1F80000C) on the two loop increments; with those two operands literalised to 0xC the sandbox prints 0.
+- mechanism: engine/score.py _resolve_named_pair rewrites LO16 immediates only when paired with an R_MIPS_HI16 lui; the lui here is a literal 0x1F80 so the reference immediate stays 0 while the C build emits 12 (%lo(0x1F80000C) == 12, linked words identical).
+- probe: Temporarily replaced the two operands in asm/funcs/func_8002C61C.s, rebuilt build/src/code6cac_b.o from HEAD src via build-c, reinstalled candidate, sandbox; then reverted the .s and restored the original reference object.
+- result: score 0, 284/284 (tmp/grind/func_8002C61C/s1b/sandbox_corrected_ref.txt; metrics event 2026-09-06T11:48:38). Tree verified clean of asm/ dirt afterwards.
+- verdict: CONFIRMED
+
+## [s1] Sibling func_80029454 (s1, floor 1024, no candidate.c) has nothing to transplant onto this chassis; it shares the D_1F80000C mislabel five times.
+- mechanism: Same splat lui/addiu false pairing on its own loop increments (asm/funcs/func_80029454.s:41,718,752,1068,1101).
+- probe: Checked memory/grind/func_80029454/ for candidate.c (absent); grep of every %lo(D_1F80000C) in the repo.
+- result: No transplant possible; the handoff's reference correction covers its .s so its future floor drops 5 phantom units.
+- verdict: CONFIRMED

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002C61C",
-      "file": "code6cac_b",
-      "distance": 44,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80072E10",
       "file": "text1b",
       "distance": 44,
@@ -1582,17 +1574,26 @@
       "rules": 0,
       "status": "foreclosed",
       "foreclosure": "FORECLOSED (logged to borderline.md; owner ruling 2026-08-31): docs/grind/decisions.md 2026-09-06 entry 'func_80019310 (src/code6cac.c) - blocked at the operator registry row (bytes PROVEN, Judge PASS on record, LOW scan tier)': operator step = add the func_80019310 row to tools/grinder/owner_cluster_grants.txt (2026-09-01 widened-anchor grant, decisions.md:18119) then unpark; see the entry's Routing note."
+    },
+    {
+      "func": "func_8002C61C",
+      "file": "code6cac_b",
+      "distance": 44,
+      "verdict": "C",
+      "rules": 0,
+      "status": "foreclosed",
+      "foreclosure": "FORECLOSED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-08-31): 2026-09-06 \u2014 func_8002C61C \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
     }
   ],
   "counts": {
     "total": 178,
-    "active": 169,
+    "active": 168,
     "by_status": {
-      "active": 169,
-      "foreclosed": 9
+      "active": 168,
+      "foreclosed": 10
     },
     "by_verdict": {
-      "C": 143,
+      "C": 142,
       "ASM-PARTIAL": 26
     }
   }

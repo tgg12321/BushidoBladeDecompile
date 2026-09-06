@@ -1773,3 +1773,4 @@
 - 2026-09-06 05:59 func_80019310: driver REJECTED a resubmitted Judge-FAILed body (hash df4741401a310eb2) — no review spent; next modality 'recon'.
 - 2026-09-06 06:08 func_80019310: MERGE REFUSED after judge PASS — 4 unallowlisted inline-asm island(s), no grant door; constraint banked.
 - 2026-09-06 06:15 func_80019310 s1 [recon] OWNER-GATED — borderline-logged, foreclosed: func_80019310 is solved (sandbox 0, 81/81, Judge PASS on body df4741401a310eb2); merge is blocked ONLY by a missing operator row in tools/grinder/owner_cluster_grants.txt (scan tier LOW, no session may write tools/). Disposition entry filed in docs/grind/decisions.md; the C-respelling alternative named in the Judge constraint measured dead (41).
+- 2026-09-06 06:57 func_8002C61C JUDGE ESCALATE (ruling request, integration-handoff (REFUSED: no executable remedy in verdict)) — refused + FORECLOSED silently (owner ruling 2026-08-31).

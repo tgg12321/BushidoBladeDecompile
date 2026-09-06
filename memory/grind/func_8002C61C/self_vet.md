@@ -1,0 +1,10 @@
+# SELF-VET — func_8002C61C
+CONSTRUCTS: none (ordinary C only: u8* record-base locals s1/s0, u16 `mode` local with an equality chain, Vec3i* block-copy index loops, a once-per-iteration byte-offset local `off = i * 0x44C` used as `(u8 *)&D_80101EC8 + off + <field>`, a `ProbeScr` scratchpad record typedef with `#define SCR ((ProbeScr *)0x1F800078)`, a `saved` s16 local re-checked after a call)
+## T1 semantic purpose: every statement writes or reads a real field; `off` is the record stride offset selecting player 0/1's record (0x44C is the census stride); `mode`/`saved`/`diff` are consumed values; no dead stores, no pads, no volatile, no asm, no dead locals.
+## T2 human-programmer: yes — "for each of the two players, write the centroid/midpoint of the scratchpad joints into that player's record" is exactly what a programmer writes; the byte-offset idiom is the one this TU's matched siblings already use (src/code6cac_b.c func_8002C0DC: `(u8 *)&D_80101EC8 + i * 0x44C`).
+## T3 GCC-internals justification: the ledger explains WHY the alternatives diverge (loop.c giv reduction), but the construct's justification is the program logic (record base + stride + field offset, Judge-confirmed 2026-09-06 06:44: "semantically truthful reading"); removing the compiler reasoning leaves correct, readable code.
+## T4 permuter/search provenance: no permuter output in the diff; every form was hand-derived from the census object model and measured.
+## T5 family check: no forbidden family matched — no pins, no asm, no barriers, no volatile coercion, no dead locals/arrays, no dead param stores, no alias renames, no width casts beyond the field-type dereference.
+## T6 naming-announces-intent: names are `s1`, `s0`, `i`, `mode`, `off`, `diff`, `saved`, `dst_a`, `dst_b`, `src`, `SCR` — domain names, none from the coercion list.
+SANCTIONED-FAMILY-CLAIMS: none (ordinary C; Judge PASS 2026-09-06 06:44 on the per-word body 7deeac5ed5627ab5 ruled "no FAKE, no family claim needed" and directed the record-base spelling carried here, body 5e2fa09ac0d7e10d)
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct
