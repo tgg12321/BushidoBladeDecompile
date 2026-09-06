@@ -1,8 +1,8 @@
 {
  "func": "func_8003C714",
  "file": "code6cac_c2",
- "session_count": 17,
- "current_modality": "solver",
+ "session_count": 18,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,29 @@
    "floor": 15,
    "modality": "solver",
    "headline": "Solver: a THIRD free insn_count channel found and measured to sandbox distance 0 (score 0, 104 == 104, frame-exact) on the shipped chassis - a DEAD DImode libcall block survives cse1 (cse.c:8708 prote"
+  },
+  {
+   "session": 18,
+   "floor": 15,
+   "modality": "rederive",
+   "headline": "Rederive: the whole 18-session residual reduces to one inequality read out of loop.c source - insn_count must reach 123 (no call) or 62 (call), because the magic movable's savings and lifetime are BOT"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The libcall channel needs a SEMANTICALLY REAL carrier; freeness and deadness currently coincide because a live libcall emits jal __divdi3.",
-   "mechanism": "libcall_dead_p only fires when the block's result register is dead at flow time. A source statement can still be real while its VALUE is dead - e.g. a DImode computation written into a local that a later unconditional store overwrites - and if the overwritten value is the same value the function already computes, that is the sanctioned same-value dead-store family rather than invented dead code.",
-   "next_probe": "Spell one of the three divisions so its result is naturally computed twice, once in DImode and once in SImode, with the DImode copy overwritten by the SImode one before any read; check the .loop dump for whether the DImode block is still counted and the flow dump for whether libcall_dead_p still fires, then measure sandbox. If it holds, the carrier count needed is (122 - 63) / 9.5, i.e. about 6."
+   "hypothesis": "combine_movables' match/done path is unexplored: a movable that combine_movables marks 'done ... matches N' is skipped by the move test at loop.c:1584 entirely, never reaching the threshold inequality at all.",
+   "mechanism": "loop.c:1245-1290 pairs movables that load the same value into different pseudos, setting the later one's match pointer and done flag and folding its lifetime and savings into the survivor. move_movables' outer guard is 'if (!m->done && ...)', so a matched movable is never tested against threshold * savings * lifetime. This session observed the shape in the wild: c_innerfirst's dump prints 'Insn 82: regno 94 (life 1), done move-insn matches 33' alongside a survivor whose savings had risen to 2. The unknown is what the pass emits for a matched movable when the SURVIVOR itself is not moved, and whether reg_map's substitution can leave the constant materialised in-loop byte-neutrally.",
+   "next_probe": "Force a second in-loop pseudo holding 0x91A2B3C5 (for example by spelling a second division by 1800 whose dividend cse1 cannot prove equal to the first), read the .loop dump for the match/done lines and for whether the survivor is 'not desirable', and measure asm_lines and sandbox. Then repeat with the survivor placed so it fails the threshold test, to see whether both copies stay in-loop and what that costs in bytes."
   },
   {
-   "hypothesis": "A cheaper admissible carrier may exist among the other libcall-generating constructs available in ordinary C on this target, which would cut the carrier count from 13 to a handful.",
-   "mechanism": "The requirement is only 59 counted insns above the split-init base of 63, and the per-statement rate varies by a factor of two between spellings already measured (+5 vs +9.5 vs +11 vs +0). A construct worth 20 or more per statement would need three carriers, which is a far easier admissibility argument than thirteen.",
-   "next_probe": "Sweep DImode modulo, DImode multiply-by-variable, DImode compare, DImode conversion to and from float, and float/double arithmetic through s17/sweep.sh for insn_count-per-statement and asm_lines, so the cheapest free spelling is known before the next admissibility argument is built."
+   "hypothesis": "The threshold-halving route is now purely an admissibility question, and the only admissible version of it would be a value this function genuinely computes and genuinely discards.",
+   "mechanism": "The two class kills recorded this session (loop.c:2199 and flow.c:1484) show that any byte-free CALL_INSN in the loop must be a libcall block with a dead result. The Judge's standing constraint bans gratuitous float/long-long cast chains whose sole purpose is to emit a libcall, and the 2026-09-05 layer-1 FAIL rejected the DImode dead store. So the axis is not blocked by mechanism but by the absence of a natural dead DImode or float quantity in a function that formats a 30 Hz frame count into minutes, seconds and hundredths.",
+   "next_probe": "Before spending another carrier design on this, settle the semantics question from outside the compiler: sweep the other BB2 call sites that write the same display struct (offsets 0x21-0x24 and 0x2D-0x30 of the func_80077D00 record) and the sibling record readers of D_80106A58 - func_80035280 is still INCLUDE_ASM and reads the same base - for evidence that the original code computed a wider intermediate (a centisecond total, a rank, a checksum) that this function does not store. A negative census is itself a citable result for the eventual foreclosure record."
   },
   {
-   "hypothesis": "The two declaration puns in candidate.c remain a hard submission blocker on ANY distance-0 body, independent of the floor.",
-   "mechanism": "src = (u8 *)&D_80106A58 + i * 8 uses a per-word splat sub-symbol of g_file_disc_type @80106A54, and *((u8 *)s0 + 0x30) = *(u16 *)&D_80101ED2 reads an s16-declared symbol through a pun. The aggregate-merge family requires the merge at the DECLARATION in include/*.h with prongs (a)-(e), and prong (c)'s 2026-09-03 amendment requires the sub-symbol rows to carry an alias-of suffix because func_80035280 is still INCLUDE_ASM. A per-use cast is an auto-FAIL.",
-   "next_probe": "Prong (a) is satisfiable from base-register/stride evidence rather than splat-name adjacency: the target walks a single base register with addiu $a2, $a2, 0x8 at 8003C830 and reads 0x0($a2) and 0x4($a2), an 8-byte stride over a two-field record. Draft the header-canonical merged declaration and route it as an integration handoff before any candidate-ready."
+   "hypothesis": "The two declaration puns in candidate.c remain a hard submission blocker on ANY distance-0 body, independent of the floor, and this session's ablation shows the d0 result is load-bearing on one of them.",
+   "mechanism": "candidate.c needs extern u8 D_80106A58[24] at src/code6cac_c2.c:156 to reach 0 - the body alone measures 3 - and D_80106A58 is a per-word splat sub-symbol of g_file_disc_type at 0x80106A54. The aggregate-merge family requires the merge at the DECLARATION in include/*.h with prongs (a)-(e), and prong (c)'s 2026-09-03 amendment requires the sub-symbol rows to carry an alias-of suffix because func_80035280 is still INCLUDE_ASM. A per-use cast is an auto-FAIL, and the current spelling is also on this function's banned_constructs list.",
+   "next_probe": "Prong (a) is satisfiable from base-register and stride evidence rather than splat-name adjacency: the target walks one base register with addiu $a2, $a2, 0x8 at 8003C830 and reads 0x0($a2) and 0x4($a2), an 8-byte stride over a two-field record. Draft the header-canonical merged declaration with the alias-of suffix on the sub-symbol rows and route it as an integration handoff before any candidate-ready, so that a future d0 body is not blocked on it a second time."
   }
  ],
  "judge_constraints": [
@@ -331,6 +337,30 @@
    "measured_on": "shipped chassis HEAD 2026-09-05, tmp/grind/func_8003C714/s17/o_v*.c; no FAKE construct present",
    "predicate_cite": "",
    "result": "o_v4 81, o_v6 90, o_v8 100, o_v10 109, o_v12 118 - matching the after-placement series exactly at equal counts (o_v12 11"
+  },
+  {
+   "session": 18,
+   "statement": "The sixteen structurally different ordinary-C shapes swept this session reach at most insn_count 64 without adding an emitted instruction: inline-expression, split-init, u8/s16/s8 locals, struct-typed",
+   "kill_scope": "instance",
+   "measured_on": "shipped chassis HEAD 2026-09-05, sandbox re-measured this session at score 15 / target_insns 104 / build_insns 105 / rules_dropped 0 with tmp/grind/func_8003C714/s18/a_u8tail.c installed over the INCL",
+   "predicate_cite": "",
+   "result": "KILLED as measured, with one positive: the ordinary-C byte-neutral ceiling is 64, one higher than the 63 s15 recorded. T"
+  },
+  {
+   "session": 18,
+   "statement": "loop_has_call is set by exactly one construct, a CALL_INSN between the loop notes; no volatile reference, memory clobber, inline asm or nested-loop note sets it.",
+   "kill_scope": "class",
+   "measured_on": "compiler source tools/gcc-2.7.2/loop.c at the frozen toolchain revision; no chassis dependence",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:2199",
+   "result": "KILLED. Any future proposal to reach the 61 threshold has to produce a CALL_INSN; there is no cheaper or quieter spellin"
+  },
+  {
+   "session": 18,
+   "statement": "A CALL_INSN present in the loop when loop_optimize runs and absent from the emitted function must sit inside a REG_LIBCALL/REG_RETVAL block whose result register is dead.",
+   "kill_scope": "class",
+   "measured_on": "compiler source tools/gcc-2.7.2/flow.c at the frozen toolchain revision; no chassis dependence",
+   "predicate_cite": "tools/gcc-2.7.2/flow.c:1484",
+   "result": "KILLED. Together with the prescan_loop kill this makes the threshold-halving route identically the route 'add a computat"
   }
  ],
  "reviewer_history": [

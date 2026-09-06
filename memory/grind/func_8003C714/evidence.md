@@ -2421,3 +2421,193 @@ s18/diffg.sh (target vs `tmp/sandbox/.../code6cac_c2.o`) on G_hun: instructions 
 26-104 agree; 17-25 differ only by a v0/v1 exchange and by `sra v1,v0,0x1f` being
 scheduled one slot early inside the lui/lw/ori/mult/mfhi/addu/sra/sra quartet. With the
 carrier stored into `v` instead of `c` that region is instruction-identical.
+
+## s18 (rederive, 2026-09-05) — the hoist predicate re-derived from loop.c source, and a measured sweep of structurally different C shapes
+
+### Chassis re-measurement (the brief reported "measurement unavailable")
+`sandbox func_8003C714 --disable all` with the ordinary-C body
+`tmp/grind/func_8003C714/s18/a_u8tail.c` installed over the INCLUDE_ASM line in
+`src/code6cac_c2.c`: **score 15, target_insns 104, build_insns 105,
+rules_dropped 0, cheat_asm_stripped 9 (all from sibling functions in the TU)**.
+The chassis is unchanged from the ledger's recorded floor of 15. src was restored
+to HEAD immediately afterwards (`git status --porcelain` clean except
+`metrics/events.jsonl`).
+
+### FAKE-ablation re-audit (mandated by the brief's KILL RE-AUDIT block)
+`python3 tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate
+memory/grind/func_8003C714/candidate.c`:
+
+| variant | score | build_insns | removed |
+|---|---|---|---|
+| keep-all | 3 | 104 | (none) |
+| drop-1 | 18 | 105 | the `/* FAKE: dead store */` DImode carrier |
+
+Two things this settles. (1) The FAKE carrier is load-bearing on the CURRENT
+chassis: removing it costs exactly 15 points, the same delta s17 recorded, so
+s17's measurement is not stale. (2) `keep-all` scores 3, not 0, because
+`fake_ablate.py` splices the candidate body into the SHIPPED `src/code6cac_c2.c`
+and therefore does not carry candidate.c's second edit, the
+`extern s32 D_80106A58;` to `extern u8 D_80106A58[24];` retype at line 156. The
+banked "distance 0" is a property of the body PLUS that declaration change; the
+body alone is distance 3. Any future session quoting the d0 result must carry
+both halves — and the declaration half is itself a layer-1 FAIL finding (see the
+brief's DECLARATION PUNS block).
+
+### The divergence, re-derived from the emitted asm (not inherited)
+`tmp/grind/func_8003C714/s18/dumps/v_split.s` vs `asm/funcs/func_8003C714.s`.
+The ONLY structural difference is the placement of the 0x91A2B3C5 division magic
+for the /1800:
+
+    ours (preheader):   move $8,$0 / li $9,0x91a20000 / ori $9,$9,0xb3c5 /
+                        li $7,0x88880000 / ori $7,$7,0x8889 / la $6,D_80106A58 /
+                        move $5,$16      then in-loop: lw $3,4($6) / mult $3,$9
+    target (preheader): addu $t0,$zero,$zero / lui $a3 / ori $a3 / lui $a2 /
+                        addiu $a2 / addu $a1,$s0
+                        then in-loop: lui $v0 / lw $v1,0x4($a2) / ori $v0 /
+                        mult $v1,$v0
+
+The target's in-loop lui/ori pair also fills the lw-to-mult load-delay slot,
+which is why the shipped build is 105 insns against the target's 104 even though
+it hoists two insns out: our version needs an extra assembler nop. The remaining
+score of 15 is the register-allocation cascade that follows from the hoist. The
+0x88888889 magic for the /30 is hoisted in BOTH (it is shared by four
+divisions); the D_80106A58 base is a giv init in both. So there is exactly one
+lever, and s6-s17's attribution of the whole residual to this single loop.c
+decision is confirmed independently this session.
+
+### The predicate, read out of the compiler source
+`tools/gcc-2.7.2/loop.c:1629-1633` (move_movables):
+
+    if (already_moved[regno]
+        || (threshold * savings * m->lifetime) >= insn_count
+        || (m->forces && m->forces->done
+            && n_times_used[m->forces->regno] == 1))
+      { ...hoist... }
+
+with `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` at
+loop.c:532 (= 122 without a call, 61 with one; n_non_fixed_regs = 60 on this
+target).
+
+The three inputs, each pinned to its definition:
+
+  - `savings` = `m->savings = n_times_used[regno]` (loop.c:793), and
+    `n_times_used` is a bcopy of `n_times_set` taken at loop.c:597 AFTER
+    `count_loop_regs_set` has run, i.e. it is the number of SETS of the pseudo
+    inside the loop, not the number of uses. s10's H15 is confirmed. A division
+    magic has exactly one set, so **savings = 1**, and it can never be less: a
+    pseudo with zero sets in the loop is not a movable at all.
+  - `m->lifetime` = `uid_luid[regno_last_uid[regno]] - uid_luid[regno_first_uid
+    [regno]]` (loop.c:791). uid_luid is assigned `++i` per non-line-note insn
+    (loop.c:406), so two distinct insns always differ by at least 1. A movable
+    is by construction mentioned in at least two insns (its set and its use), so
+    **lifetime >= 1** — and 1 is exactly what the .loop dump reports for this
+    movable in every shape measured this session.
+  - `already_moved` and the `m->forces` disjunct were class-killed in s13.
+
+**Therefore the target's non-hoist requires `122 * 1 * 1 < insn_count`, i.e.
+insn_count >= 123 with no call in the loop, or `61 * 1 * 1 < insn_count`, i.e.
+insn_count >= 62 with a call in the loop.** This is a closed-form restatement of
+the whole 18-session problem, and it removes "make the movable cheaper" from the
+search space entirely: both of its factors are already at their floor, and the
+floor is structural rather than chassis-relative.
+
+### loop_has_call has exactly one source
+`prescan_loop` (loop.c:2158-2210) sets `loop_has_call = 1` in exactly one place,
+`loop.c:2199`, on `GET_CODE (insn) == CALL_INSN`. Nothing else in that function
+touches it: volatile references set `loop_has_volatile`, stores set
+`unknown_address_altered` / `num_mem_sets`, nested loop notes bump
+`loops_enclosed`. So there is no volatile-, asm-, or memory-shaped substitute for
+a call, and the "halve the threshold" route is literally "put a CALL_INSN between
+the loop notes".
+
+Combined with flow.c: a CALL_INSN present at loop_optimize time and absent from
+the emitted function must be inside a REG_LIBCALL/REG_RETVAL block deleted at
+flow.c:1484 via `libcall_dead_p` (flow.c:1827), whose precondition is that the
+block's result register is dead. That is why every carrier this ledger has found
+on this axis is invented dead code, and why the same-day 2026-09-05 Judge ruling
+and the layer-1 FAIL both landed on "gratuitous widening to summon a libcall".
+
+### The sweep: insn_count vs emitted bytes for structurally different C shapes
+Harness `tmp/grind/func_8003C714/s18/sweep.sh` (cpp -> cc1 -O2 -G0 -mel -dL, then
+the `.loop` segment for func_8003C714), generators `mk18.py`, `mk18b.py`,
+`mk18c.py`. "insn_count" is loop.c's count as printed by the dump ("N real
+insns"); asm_lines is the emitted function's instruction count (target 104,
+shipped-chassis ordinary C 105-107).
+
+| shape | insn_count | asm_lines | note |
+|---|---|---|---|
+| v_base (inline expressions, no locals) | 56 | 107 | the minimal natural body |
+| v_split (s15 split-init) | 63 | 107 | +7 free |
+| a_u8tail (split-init plus `u8 w; w = v; dst[0x24] = w;`) | **64** | **107** | +8 free — new ceiling |
+| a_basevar / a_idxsplit / a_cmul25x4 / a_s16store | 63 | 107 | free, no gain |
+| a_bmodsub / a_cmodsub (`x % k` written `x - (x/k)*k`) | 62 | 107 | byte-neutral, LOSES one |
+| a_bothmodsub | 61 | 107 | byte-neutral, loses two |
+| a_headsplit | 64 | 108 | costs a byte |
+| v_treuse (one `s32 t` re-read three times) | 56 | 107 | free, loses 7 |
+| v_struct (record and output as struct pointers) | 56 | 107 | codegen identical to v_base |
+| v_structwalk (advancing struct pointers, no index) | 53 | 111 | costs 4 |
+| v_u8 (a,b,c,v as u8) | 59 | 95 | semantics change (`% 60` on a truncated value) |
+| v_s16 (a,b,c,v as s16) | 78 | 118 | +22 insn_count for +11 bytes |
+| v_s8 | 77 | 118 | same |
+| b_for / b_while / b_dowh | 63 | 107 | **loop SHAPE is irrelevant to insn_count** |
+| b_rev (count down from 2) | 62 | 106 | byte-changing |
+| b_inner (natural inner loop over the four output bytes) | 67 outer | 117 | see below |
+| c_innerfirst (inner loop placed first) | 82 outer | 116 | see below |
+
+Three results worth carrying forward:
+
+1. **The ordinary-C byte-neutral ceiling is 64, not the 63 s15 recorded.** The
+   extra insn is a named `u8` intermediate feeding a QImode store; it is a plain
+   register copy the allocator coalesces. Every free channel found this session
+   is worth about +1 counted insn per added statement, so reaching 123 in
+   ordinary C would take on the order of 59 invented statements.
+2. **Loop shape is not a lever.** `for`, `while` and `do/while` spellings of the
+   same body all produce insn_count 63 and the identical 107-insn output;
+   count_loop_regs_set's range (`loop_top ? loop_top : loop_start` .. `end`,
+   loop.c:592) never reaches outside the loop body and test.
+3. **Sub-word locals are the largest natural insn_count channel found (+22), but
+   they cost 11 emitted insns**, because the sign-extension is only redundant
+   when the value's single consumer is a narrowing store; where the C semantics
+   make the truncation observable (`b = (s16)(b/30); b = b % 60;`) the extend
+   survives to final.
+
+### The moved_once doubling, re-measured with an order refinement (s12's kill stands)
+loop.c:1609-1612 doubles `insn_count` in place when `moved_once[regno]` is set,
+and because `insn_count` is a local of move_movables the doubling PERSISTS for
+every movable processed after it. s12 killed this channel on the grounds that
+every carrier is a second emitted loop; this session adds the ordering fact.
+In `b_inner` (inner loop placed after the divisions) the dump shows
+
+    Loop from 25 to 182: 67 real insns.
+    Insn 33: regno 83 (life 1), move-insn savings 1  moved to 246     <- our magic
+    ...
+    Insn 238: regno 138 (life 12), savings 1 halved since already moved  moved to 251
+
+i.e. the doubling fires, but on the LAST movable, long after our magic has
+already been hoisted. The refinement is that a carrier placed textually BEFORE
+the divisions would double insn_count for our magic too, halving the requirement
+from 123 to 62 pre-doubling — which the natural body already exceeds at 63. The
+attempt at that (`c_innerfirst`) did not reproduce it: with the inner loop first,
+its invariant was hoisted clear out of the outer loop and no "halved since
+already moved" line appears in the outer scan at all. Either way the carrier is
+an emitted inner loop (asm_lines 116-117 against the target's 104, and the target
+has exactly one label and one backward branch), so s12's class kill is intact.
+The ordering fact is recorded here so no future session re-derives it.
+
+- [s18] Chassis re-measured this session: sandbox func_8003C714 --disable all = score 15, target_insns 104, build_insns 105, rules_dropped 0, with the ordinary-C body tmp/grind/func_8003C714/s18/a_u8tail.c installed; src/code6cac_c2.c restored to HEAD afterwards and git status is clean apart from metrics/events.jsonl and the ledger files.
+
+- [s18] The emitted divergence was re-derived from asm rather than inherited: ours puts li/ori for 0x91A2B3C5 in the preheader and needs an assembler nop between lw and mult; the target puts lui/ori inside the loop where they also fill the load-delay slot. The 0x88888889 magic for the /30 is hoisted in BOTH (four divisions share it, lifetime 31) and D_80106A58 is a giv init in both. Exactly one lever, confirming s6-s17's attribution independently.
+
+- [s18] loop.c:1631's hoist test is threshold * savings * lifetime >= insn_count, with threshold 122 (no call) or 61 (call) from loop.c:532; savings = in-loop SET count (loop.c:793 reading the loop.c:597 bcopy) = 1; lifetime = uid_luid span (loop.c:791) with uid_luid incrementing per insn (loop.c:406), hence >= 1. So the non-hoist requires insn_count >= 123, or >= 62 with a call.
+
+- [s18] Sweep of sixteen structurally different C shapes: v_base 56 insns / 107 asm; v_split 63 / 107; a_u8tail 64 / 107 (new byte-neutral ceiling, +1 over s15's 63, the extra insn being a named u8 intermediate before a QImode store); a_bmodsub and a_cmodsub 62 / 107 (modulo-as-subtraction is byte-neutral but loses counted insns); v_s16 78 / 118 and v_s8 77 / 118 (sub-word locals are the largest natural channel at +22 but cost 11 emitted insns); v_struct 56 / 107 (struct-typed access is codegen-identical to pointer casts); v_structwalk 53 / 111; b_for, b_while and b_dowh all 63 / 107.
+
+- [s18] Loop shape is not a lever at all: for, while and do-while spellings of the same body give identical insn_count and identical output, because count_loop_regs_set's range (loop_top ? loop_top : loop_start .. end, loop.c:592) never reaches outside the loop body and test.
+
+- [s18] prescan_loop sets loop_has_call at exactly one site, loop.c:2199, on GET_CODE (insn) == CALL_INSN; volatile references, stores and nested-loop notes set different flags that do not feed threshold.
+
+- [s18] flow.c deletes a CALL_INSN only via the libcall path at flow.c:1484 guarded by libcall_dead_p (flow.c:1827), whose precondition is a dead result register, so any byte-free call carrier is necessarily an invented dead computation.
+
+- [s18] fake_ablate on candidate.c: keep-all 3 / 104, drop-1 18 / 105 - the FAKE carrier is worth exactly 15 on the current chassis, and the recorded d0 also needs the line-156 extern u8 D_80106A58[24] retype that the ablation harness does not carry.
+
+- [s18] New artifact banked: memory/grind/func_8003C714/rejected/free-insncount-ceiling-is-64-not-63-still-59-short.c - the best ordinary-C byte-neutral shape found, insn_count 64 against the 123 required.

@@ -2753,3 +2753,182 @@ also left `candidate.c` truncated to a comment header with NO function body (427
 3. Unspent: the sibling ledger func_80067D14 (src/text1b.c, floor 1046) was not
    transplanted this session - it shares no block with this function's loop, and the
    function reached distance 0 without it.
+
+## s18 (rederive, 2026-09-05)
+
+### H35 — CONFIRMED (closed form for the whole residual)
+**Statement.** The target's failure to hoist the 0x91A2B3C5 magic requires
+loop.c's `insn_count` for this loop to be at least 123 when the loop contains no
+CALL_INSN, or at least 62 when it contains one; no other input to the decision
+can be moved.
+
+**Mechanism.** loop.c:1629-1633 hoists when
+`already_moved[regno] || (threshold * savings * m->lifetime) >= insn_count ||
+(m->forces && m->forces->done && n_times_used[m->forces->regno] == 1)`.
+threshold is `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` = 122 or 61
+(loop.c:532). `savings` is `n_times_used[regno]` (loop.c:793), which is a copy of
+the in-loop SET count taken at loop.c:597, hence 1 for a magic constant and never
+0 (a pseudo with no set in the loop is not a movable). `m->lifetime` is a
+difference of uid_luids (loop.c:791) and uid_luid increments once per non-line-
+note insn (loop.c:406), so a movable — which is mentioned in at least its set and
+its use — always has lifetime >= 1. The first and third disjuncts were
+class-killed in s13. So the product is pinned at its minimum of 122 (or 61) and
+only insn_count is free.
+
+**Probe.** Read loop.c:406, 532, 592-597, 780-800, 1590-1640 and prescan_loop
+(2158-2210) directly; cross-checked against the `.loop` movable tables for
+sixteen distinct C shapes swept this session, all of which report the magic
+movable as `(life 1) ... savings 1`.
+
+**Result.** CONFIRMED. This supersedes the several ledger entries that discuss
+"making the movable cheaper" or "shrinking its lifetime" as open axes: they are
+already at the floor, and the floor is a property of the pass, not of the
+chassis. The entire remaining search space is insn_count.
+
+### H36 — KILLED (instance)
+**Statement.** The sixteen structurally different ordinary-C shapes swept this
+session — inline-expression, split-init, u8/s16/s8 locals, struct-typed record
+and output pointers, advancing struct pointers, single-read temporaries,
+modulo-as-subtraction, multiply decomposition, split base/offset addressing,
+for / while / do-while / reverse loop forms — reach at most insn_count 64 without
+adding an emitted instruction, against the 123 that H35 requires.
+
+**Mechanism.** Every byte-neutral channel measured is a register-to-register
+copy or a narrowing store that local-alloc coalesces, worth about +1 counted insn
+apiece. Channels worth more (sub-word arithmetic locals, +22) are worth more
+precisely because their extend/truncate insns are semantically observable and
+therefore survive combine into the emitted code (+11 asm insns).
+
+**Probe.** `tmp/grind/func_8003C714/s18/sweep.sh` over `v_*.c`, `a_*.c`, `b_*.c`,
+`c_innerfirst.c`; insn_count from the `-dL` loop dumps, asm_lines from the
+emitted `.s`. Full table in evidence.md s18.
+
+**measured_on.** shipped chassis HEAD 2026-09-05 (sandbox re-measured this
+session at score 15 / target 104 / build 105 with `a_u8tail.c` installed); no
+FAKE construct present in any swept shape.
+
+**kill_scope.** instance.
+
+**Result.** KILLED as measured. The one positive is that the byte-neutral
+ordinary-C ceiling is 64, one higher than the 63 s15 recorded: the extra insn is
+a named `u8` intermediate between the record's leading byte and its QImode store.
+Banked as `rejected/free-insncount-ceiling-is-64-not-63-still-59-short.c`.
+
+### H37 — KILLED (class)
+**Statement.** loop_has_call is set by exactly one construct, a CALL_INSN between
+the loop notes, so no volatile reference, no memory clobber, no inline asm and no
+nested-loop note can halve the threshold in its place.
+
+**Mechanism.** prescan_loop (loop.c:2158-2210) assigns `loop_has_call = 1` at
+loop.c:2199 under `else if (GET_CODE (insn) == CALL_INSN)` and nowhere else in
+the function; the sibling branches set `loop_has_volatile`,
+`unknown_address_altered`, `num_mem_sets` and `loops_enclosed` instead, and none
+of those feeds threshold at loop.c:532.
+
+**Probe.** Full read of prescan_loop against the assignment sites of
+`loop_has_call` across loop.c.
+
+**measured_on.** compiler source `tools/gcc-2.7.2/loop.c` at the frozen
+toolchain revision; no chassis dependence.
+
+**predicate_cite.** `tools/gcc-2.7.2/loop.c:2199`
+
+**kill_scope.** class.
+
+**Result.** KILLED. Any future proposal to reach the 61-threshold must produce a
+CALL_INSN; there is no cheaper spelling of the same effect.
+
+### H38 — KILLED (class)
+**Statement.** A CALL_INSN that is present in the loop when loop_optimize runs
+and absent from the emitted function must sit inside a REG_LIBCALL/REG_RETVAL
+block whose result register is dead.
+
+**Mechanism.** flow.c deletes a call only through the libcall path at
+flow.c:1484, `... && libcall_dead_p (PATTERN (insn), old, note, insn)`, whose
+body (flow.c:1827) requires the block's result to be dead at that point. GCC
+2.7.2 has no pure/const call attribute and no other pass removes a CALL_INSN.
+Hoisting an invariant libcall out of the loop with move_movables does not help:
+the call is then emitted in the preheader, which the target does not contain.
+
+**Probe.** Read of the CALL_INSN handling in flow.c around 1470-1500 and of
+libcall_dead_p; cross-checked against the ledger's own carriers (s14, s17), every
+one of which is a dead DImode value.
+
+**measured_on.** compiler source `tools/gcc-2.7.2/flow.c` at the frozen toolchain
+revision; no chassis dependence.
+
+**predicate_cite.** `tools/gcc-2.7.2/flow.c:1484`
+
+**kill_scope.** class.
+
+**Result.** KILLED. Together with H37 this says the threshold-halving route is
+identically the route "add a computation whose value is dead", which is the
+construct the 2026-09-05 Judge ruling and the layer-1 FAIL both rejected for this
+function. The remaining question on this axis is therefore purely one of
+admissibility, not of mechanism: is there a value this function genuinely
+computes and genuinely discards? Nothing in the emitted bytes suggests one.
+
+### H39 — CONFIRMED (ordering refinement to s12's kill)
+**Statement.** The moved_once doubling at loop.c:1609-1612 mutates
+move_movables' local `insn_count` and therefore applies to every movable
+processed after the doubling movable, so a carrier placed textually before the
+divisions would halve H35's requirement from 123 to 62 pre-doubling — but the
+carrier is still an emitted inner loop, so s12's class kill stands.
+
+**Mechanism.** `insn_count *= 2;` is an assignment to the function-local
+parameter, not a local recomputation, and movables are processed in the order
+scan_loop appended them, which is the order they appear in the loop body.
+
+**Probe.** `b_inner.c` (inner loop after the divisions) shows the doubling firing
+on the last movable only: `Insn 238: regno 138 (life 12), savings 1 halved since
+already moved`, while our magic (Insn 33) was already hoisted. `c_innerfirst.c`
+(inner loop first) did not reproduce the doubling at all — the inner loop's
+invariant was hoisted clear out of the outer loop — and cost 116 emitted insns
+against the target's 104.
+
+**Result.** CONFIRMED as a mechanism, dead as a lever. Recorded so that no future
+session re-derives the ordering property and mistakes it for an opening.
+
+## [s18] The target's failure to hoist the 0x91A2B3C5 magic requires loop.c's insn_count for this loop to be at least 123 when the loop contains no CALL_INSN, or at least 62 when it contains one; the other two inputs to the hoist decision are pinned at their minimum.
+- mechanism: loop.c:1629-1633 hoists when already_moved[regno] || (threshold * savings * m->lifetime) >= insn_count || (m->forces && m->forces->done && n_times_used[m->forces->regno] == 1). threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 122 or 61 (loop.c:532, n_non_fixed_regs = 60). savings = n_times_used[regno] (loop.c:793), which loop.c:597 bcopies from the in-loop SET count after count_loop_regs_set, so it is 1 for a division magic and can never be 0 (a pseudo with no in-loop set is not a movable). m->lifetime is a uid_luid difference (loop.c:791) and uid_luid increments once per non-line-note insn (loop.c:406), so a movable - mentioned in at least its set and its use - always has lifetime >= 1. The first and third disjuncts were class-killed in s13.
+- probe: Direct read of loop.c:406, 532, 592-597, 660-800, 1529-1640 and prescan_loop 2158-2210, cross-checked against the .loop movable tables of sixteen distinct C shapes swept this session, every one of which reports the magic movable as '(life 1) ... savings 1'.
+- result: CONFIRMED. This closes off the family of ideas that tries to make the movable itself cheaper (shorten its lifetime, reduce its savings, change where the constant is created): both factors are already at a floor that is a property of the pass rather than of the chassis. The only free variable left in the inequality is insn_count.
+- verdict: CONFIRMED
+
+## [s18] The sixteen structurally different ordinary-C shapes swept this session reach at most insn_count 64 without adding an emitted instruction: inline-expression, split-init, u8/s16/s8 locals, struct-typed record and output pointers, advancing struct pointers, a single re-read temporary, modulo written as subtraction, multiply decomposition, split base/offset addressing, and for / while / do-while / reverse loop forms.
+- mechanism: Every byte-neutral channel measured is a register-to-register copy or a narrowing store that local-alloc coalesces, worth about +1 counted insn apiece. The channels worth more (sub-word arithmetic locals, +22 counted insns) are worth more precisely because their extend/truncate insns are semantically observable and therefore survive combine into the emitted code, costing +11 asm insns.
+- probe: tmp/grind/func_8003C714/s18/sweep.sh over v_*.c, a_*.c, b_*.c and c_innerfirst.c; insn_count taken from the -dL loop dumps ('N real insns'), asm_lines from the emitted .s. Full table in evidence.md s18. Best byte-neutral shape a_u8tail.c: insn_count 64, asm_lines 107, sandbox score 15 / target 104 / build 105.
+- result: KILLED as measured, with one positive: the ordinary-C byte-neutral ceiling is 64, one higher than the 63 s15 recorded. The extra insn is a named u8 intermediate between the record's leading byte and its QImode store. Loop shape turned out to be entirely irrelevant (for / while / do-while all give exactly 63 and the identical 107-insn output), and modulo-as-subtraction is byte-neutral but LOSES counted insns. Banked as rejected/free-insncount-ceiling-is-64-not-63-still-59-short.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: shipped chassis HEAD 2026-09-05, sandbox re-measured this session at score 15 / target_insns 104 / build_insns 105 / rules_dropped 0 with tmp/grind/func_8003C714/s18/a_u8tail.c installed over the INCLUDE_ASM line; no FAKE construct present in any swept shape
+
+## [s18] loop_has_call is set by exactly one construct, a CALL_INSN between the loop notes; no volatile reference, memory clobber, inline asm or nested-loop note sets it.
+- mechanism: prescan_loop assigns loop_has_call = 1 in exactly one place, under 'else if (GET_CODE (insn) == CALL_INSN)', and its sibling branches set loop_has_volatile, unknown_address_altered, num_mem_sets and loops_enclosed instead - none of which feeds threshold at loop.c:532.
+- probe: Full read of prescan_loop (loop.c:2158-2210) against every assignment site of loop_has_call in loop.c.
+- result: KILLED. Any future proposal to reach the 61 threshold has to produce a CALL_INSN; there is no cheaper or quieter spelling of the same effect.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: compiler source tools/gcc-2.7.2/loop.c at the frozen toolchain revision; no chassis dependence
+- predicate_cite: tools/gcc-2.7.2/loop.c:2199
+
+## [s18] A CALL_INSN present in the loop when loop_optimize runs and absent from the emitted function must sit inside a REG_LIBCALL/REG_RETVAL block whose result register is dead.
+- mechanism: flow.c removes a call only through the libcall path at flow.c:1484, guarded by libcall_dead_p (flow.c:1827), whose precondition is that the block's result is dead at that point. GCC 2.7.2 has no pure/const call attribute and no other pass deletes a CALL_INSN. Hoisting an invariant libcall out with move_movables does not help either: the call is then emitted in the preheader, which the target does not contain.
+- probe: Read of the CALL_INSN handling in flow.c around 1470-1500 and of libcall_dead_p, cross-checked against this ledger's own carriers (s14 and s17), every one of which is a dead DImode value.
+- result: KILLED. Together with the prescan_loop kill this makes the threshold-halving route identically the route 'add a computation whose value is dead' - the construct the 2026-09-05 Judge ruling and the layer-1 FAIL both rejected for this function. The remaining question on this axis is purely admissibility, not mechanism.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: compiler source tools/gcc-2.7.2/flow.c at the frozen toolchain revision; no chassis dependence
+- predicate_cite: tools/gcc-2.7.2/flow.c:1484
+
+## [s18] The moved_once doubling at loop.c:1609-1612 mutates move_movables' local insn_count, so it applies to every movable processed after the doubling movable, and a carrier placed textually before the divisions would halve the requirement from 123 to 62 pre-doubling.
+- mechanism: insn_count *= 2 assigns to the function parameter rather than to a per-movable temporary, and movables are processed in the order scan_loop appended them, which is the order they appear in the loop body.
+- probe: b_inner.c (inner loop placed after the divisions) shows the doubling firing on the last movable only - 'Insn 238: regno 138 (life 12), savings 1 halved since already moved' - while our magic (Insn 33) had already been hoisted. c_innerfirst.c (inner loop placed first) did not reproduce the doubling at all: the inner loop's invariant was hoisted clear out of the outer loop, and the shape cost 116 emitted insns against the target's 104.
+- result: CONFIRMED as a mechanism and dead as a lever: every carrier for it is still a second emitted loop, and the target has exactly one label and one backward branch, so s12's class kill is intact. Recorded so no future session re-derives the ordering property and mistakes it for an opening.
+- verdict: CONFIRMED
+
+## [s18] Re-audit of the closest banked form: ablating the single FAKE DImode carrier from memory/grind/func_8003C714/candidate.c costs exactly 15 points on the current chassis, and the banked distance-0 result additionally depends on candidate.c's extern u8 D_80106A58[24] retype, without which the body alone measures 3.
+- mechanism: tools/fake_ablate.py splices the candidate body into the SHIPPED src/code6cac_c2.c and therefore does not carry the line-156 declaration change, so its keep-all variant is the body-only measurement.
+- probe: python3 tools/fake_ablate.py --func func_8003C714 --file code6cac_c2 --candidate memory/grind/func_8003C714/candidate.c: keep-all score 3 / build_insns 104; drop-1 score 18 / build_insns 105.
+- result: CONFIRMED. s17's measurement is not stale - the carrier is still worth exactly 15 - but the recorded d0 is a property of the body PLUS the declaration retype, and the retype is itself the layer-1 FAIL finding. A future session quoting d0 must carry both halves and must expect the declaration half to be litigated separately under the aggregate-merge family.
+- verdict: CONFIRMED
