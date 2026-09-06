@@ -3,6 +3,52 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s17 (solver, 2026-09-05, chassis HEAD eab57aaf) - BODY UNCHANGED, floor re-measured
+ * 20 with this body installed over the INCLUDE_ASM line (74 target insns, 74 build
+ * insns, rules_dropped 0; probe reads .frame sp,56 - vars= 0, regs= 8/0, args= 24,
+ * 72 cc1 insns, unalloc= 0). Mandated FAKE re-audit re-run on this chassis: one FAKE
+ * unit (arg0 = 0;), keep-all 20 / drop-1 32 - load-bearing, masking no lever.
+ * SOLVER VERDICT (the modality's deliverable): inverse_compose.py classify REFUSES this
+ * function (zero-rule guard - it would print a fictitious PRE-RA verdict) and names
+ * goal_from_tgt.py classify as the object-level route. That returns FIRST DIVERGENCE:
+ * PRE-RA, 'next tool: none - the residual is upstream of every model'. The only shapes
+ * present in one stream are the frame constant and the sp displacements derived from it.
+ * The RA and scheduler layers are foreclosed as the site of this residual; the solver
+ * suite should not be re-run on this function.
+ * THE SESSION'S FINDING, which reopens an axis sixteen sessions had closed by inference:
+ * THE RESIDUAL IS NOT NECESSARILY var_size == 32. current_function_outgoing_args_size is
+ * set by expand_call at RTL-generation time and never revised, so when jump.c later
+ * deletes a call as unreachable the outgoing-args block it sized SURVIVES into
+ * compute_frame_size (mips.c:4467) while its argument stores vanish with the block that
+ * held them. An outgoing-args block can be allocated with no stores inside it. Measured:
+ * a 14-argument call placed after this function's return - or jumped over by a forward
+ * goto, or after a for (;;) {} - yields .frame sp,88 - vars= 0, regs= 8/0, args= 56 at
+ * 72 cc1 insns, the candidate's own count, and sandbox --disable all prints score 0
+ * (74/74, rules_dropped 0). The same call left REACHABLE costs 97 insns, which is the
+ * effect s16 correctly predicted for a live call and wrongly generalised to the block.
+ * s16's 'args_size is pinned to 24 by the single-store evidence' is therefore SUPERSEDED:
+ * the single store pins live argument traffic, not the block's size, and args=24/var=32
+ * and args=56/var=0 are byte-indistinguishable (mips.c:4547 places the saved-register
+ * block at a sum, and the shipped body's one non-save sp reference, sw v0,0x10(sp), lies
+ * in the first 24 bytes under either reading).
+ * THOSE FORMS ARE NOT PROPOSED AND ARE NOT THIS CANDIDATE. A call to a 14-parameter extern
+ * that does not exist in the game, sitting in code that can never execute, fails
+ * cheat-checklist T1, T2 and T5 (first reach of a dead-code-to-inflate-outgoing-args
+ * family). Both spellings are banked in rejected/s17-BYTES-0-BUT-CHEAT-*.c. What they buy
+ * the next session is a price signal: every var_size=32 producer costs instructions unless
+ * it is the banned pad, whereas the args_size=56 route costs ZERO. The open question is
+ * narrow - is there an ordinary-C construct that raises current_function_outgoing_args_size
+ * to 56 without leaving a live call?
+ * ALSO CLOSED THIS SESSION: frontier item 2 (orphan multiplicity) - copy chains of depth
+ * 1..4 all give exactly one orphan, a second folded guard on the loop-exit test adds none,
+ * and two/three/four NESTED folded guards give vars= 0, destroying the single orphan
+ * rather than doubling it. Frontier item 1 (alter_reg alignment) - reload1.c:2404 passes
+ * align == -1, function.c:687 rounds to BIGGEST_ALIGNMENT, mips.h:1082 sets that to 64,
+ * so DImode buys the same 8 bytes as SImode; func_80042874's six phantoms in vars= 48
+ * confirm 8 bytes each. Frontier item 3 (a post-cc1 stage writing 0x58) - all three
+ * prologue_fix config files are empty and every rewriter is gated on the function being
+ * named in one of them.
+ */
 /* s16 (synthesis, 2026-09-05, chassis HEAD a5ebaa6f) - BODY UNCHANGED. Floor
  * re-measured 20 with this body installed over the INCLUDE_ASM line (74 target
  * insns, 74 build insns, rules_dropped 0). Mandated kill re-audit re-run on the

@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 16,
- "current_modality": "synthesis",
+ "session_count": 17,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -99,23 +99,29 @@
    "floor": 20,
    "modality": "synthesis",
    "headline": "Synthesis: the residual was mis-stated for fifteen sessions - it is var_size + args_size == 56, not get_frame_size() == 32 (mips.c:4557); a body with the call widened to 14 args reaches the target's e"
+  },
+  {
+   "session": 17,
+   "floor": 20,
+   "modality": "solver",
+   "headline": "Solver types the residual PRE-RA (RA/sched foreclosed); measured that an outgoing-args block survives deletion of its call, so the residual is args_size=56/var_size=0 as much as var_size=32 - and the "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The four-zero-traffic-slot requirement is the whole question now, and it has never been attacked from the ALIGNMENT side: alter_reg asks assign_stack_local for the pseudo's mode size, which is why each SImode orphan costs 8 bytes - a wider-mode orphan would be worth 8 or 16 on its own, so one or two orphans could reach 32.",
-   "mechanism": "reload1.c:2382-2385 calls assign_stack_local (GET_MODE (reg), total_size, -1) for any pseudo with reg_renumber < 0 and reg_n_refs > 0; the slot size follows the pseudo's MODE, and the s8 tree census found the only bodies above three phantoms are func_80042874 / func_80042A88 (src/text1a_c.c, vars=48, 6 phantoms), both class-B DImode HILO.",
-   "next_probe": "Dump func_80042874 (src/text1a_c.c) with the instrumented cc1 (pwsh tools/grinder/dump.ps1) and read the .lreg/.greg plus the emitted sp histogram: are its six orphan slots 8 or 16 bytes each, and does the class-B producer require a mult insn in the emitted stream or only a DImode pseudo that combine leaves unset? If a DImode orphan can be produced without a mult, two of them would reach exactly 32 zero-traffic bytes on a mult-free body."
+   "hypothesis": "An ordinary-C construct exists that raises current_function_outgoing_args_size to 56 without leaving a live call - which would reach the target frame at zero instruction cost, the price no var_size producer can match outside the banned pad.",
+   "mechanism": "expand_call fixes current_function_outgoing_args_size during RTL generation and compute_frame_size (mips.c:4467) reads it at the end; anything that sizes the block and is then removed, folded or never emitted keeps the bytes. This session only found spellings whose removal mechanism is jump.c deleting unreachable code, which is dead code and a cheat.",
+   "next_probe": "Enumerate the non-dead-code routes to a 56-byte outgoing block and measure each with tmp/grind/func_800480C0/s17/probe.sh: (a) grep include/ and src/ for a REAL BB2 callee taking 14 or more words of arguments, and check whether any of them is plausibly reachable from this routine's data (the func_800482C8 family's four members are the obvious starting point); (b) a struct-by-value argument list on the existing five-parameter call, where the copy is later dead-store-eliminated; (c) an emit_library_call path (64-bit shift/divide, emit_block_move) that sizes the block; (d) a static __inline__ helper whose internal many-argument call constant-folds away inside the inline expansion, where the source-level call site is a real one."
   },
   {
-   "hypothesis": "The ledger's cap of one combine orphan on this body may be a cap on the SPELLING rather than on the body: every measured spelling reported an orphan count of 0 or 1 and was scored as a whole, and nobody has stacked two independent instances of the one construct that does produce an orphan.",
-   "mechanism": "The orphan is planted per REG_DEAD note that distribute_notes cannot rehome (combine.c:10832-10841); multiplicity is the count of qualifying sites, so two independent sites of the same shape should plant two.",
-   "next_probe": "Take s2's folded loop-guard compare (guard = count - 1; if (guard != -1)), the one spelling on this body that measures vars= 8, and stack a second independent instance of the SAME construct on a different value (and then a third and fourth), reading the orphan-USE count from a -da .combine with tmp/grind/func_800480C0/s6/count_uses.py rather than reading the frame alone. Four such slots is exactly 32 zero-traffic bytes."
+   "hypothesis": "The var_size=32 route and the args_size=56 route may not be the only two: since compute_frame_size constrains only var_size + args_size == 56, intermediate splits (args 32 / var 24, args 40 / var 16, args 48 / var 8) are equally byte-identical and each needs only 3, 2 or 1 zero-traffic slot respectively.",
+   "mechanism": "mips.c:4475 and 4547 both depend on the sum only; a single combine orphan is worth 8 bytes (function.c:687, BIGGEST_ALIGNMENT 64) and this body demonstrably supports exactly one, so an args_size of 48 would need just that one orphan - the one construct already measured working on this body at 73 insns.",
+   "next_probe": "Measure the m1 folded-entry-guard body (vars= 8, 73 insns) combined with an outgoing-args block of 48 bytes, and the base body with blocks of 32 and 40, to confirm the sum arithmetic holds and to find which split needs the least fabrication. Then hunt an honest producer for THAT block size rather than for 56 - a 12-word call is a far more plausible real BB2 signature than a 14-word one, and only one honest orphan is needed alongside it."
   },
   {
-   "hypothesis": "Some part of the shipped 0x58 prologue constant may come from a source other than compute_frame_size, in which case the 56-byte sum this session pinned would be attacking the wrong quantity.",
-   "mechanism": "compute_frame_size adds current_function_pretend_args_size to the total only under ABI_64BIT (mips.c:4530), so it is inert here, but the maspsx/prologue_fix stages between cc1 and as also rewrite prologue constants for this project.",
-   "next_probe": "Trace the 0x58 in asm/funcs/func_800480C0.s back through the build stages for a control function: confirm whether the emitted addiu $sp,$sp,-0x58 is written directly from compute_frame_size's total_size or whether any post-cc1 stage (maspsx, tools/prologue_fix) can adjust it, and whether prologue_config.json carries any entry that could account for frame bytes outside compute_frame_size."
+   "hypothesis": "The honest producer for var_size=32 really is a declared-and-never-referenced 32-byte local aggregate (stmt.c:3412 allocates the slot for an aggregate whether or not it is referenced), which is what the original source most likely carried and what the two immediate text1b.c siblings func_80047EE8 and func_80047FBC were granted.",
+   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS carries (\"pre_pad\", 8) rows for func_80047EE8, func_80047FBC, func_800481E8 and func_80041688 for this same 32-byte untouched region; func_800480C0 is barred from the family by the standing Judge constraint in this ledger until an owner ruling adds its row.",
+   "next_probe": "Do NOT re-spell the pad - the Judge constraint is binding and body-keyed. If the args_size hunt above closes negative as well, the honest record to file is that the only two producers reaching the target frame at zero instruction cost are the banned pad and dead code, with the s17 measurements as the proof, and the re-activation trigger is an owner row in _SANCTIONED_UNWRITTEN_PADS."
   }
  ],
  "judge_constraints": [
@@ -522,6 +528,46 @@
    "measured_on": "HEAD a5ebaa6f, bodies g1..g4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present",
    "predicate_cite": "",
    "result": "All four read .frame $sp,56 # vars= 0, regs= 8/0, args= 24. g3 costs 7 extra instructions storing $a0-$a3 but charges th"
+  },
+  {
+   "session": 17,
+   "statement": "The func_800480C0 residual is a register-allocation or scheduling divergence that the ra_solver / sched_solver models can attack.",
+   "kill_scope": "class",
+   "measured_on": "HEAD eab57aaf, candidate.c installed over the INCLUDE_ASM line, its single FAKE unit (arg0 = 0;) present; sandbox --disable all = 20, 74/74 insns, rules_dropped 0",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:4475",
+   "result": "KILLED. The solver suite has nothing to search here: ours and target agree on 74 instructions, on every opcode and on ev"
+  },
+  {
+   "session": 17,
+   "statement": "The target's untouched sp+0x14..0x37 window requires 32 bytes of frame VARS, so args_size is pinned to 24 by the shipped body's single non-save sp store.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD eab57aaf, bodies q1/q2/r1/r2 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each; src/text1b.c restored from HEAD after every install",
+   "predicate_cite": "",
+   "result": "KILLED as stated. current_function_outgoing_args_size is set by expand_call during RTL generation and never revised, so "
+  },
+  {
+   "session": 17,
+   "statement": "The ledger's cap of one combine orphan on this body is a cap on the SPELLING, so stacking two, three or four independent instances of the folded-compare construct would plant two, three or four orphan",
+   "kill_scope": "instance",
+   "measured_on": "HEAD eab57aaf, bodies m1/m2/m3, n1..n4, o2/o3/o4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each",
+   "predicate_cite": "",
+   "result": "KILLED on this body. m2 still reads vars= 8 (one orphan) at regs= 9 and 76 insns, and m3 reads vars= 0 - the loop-bottom"
+  },
+  {
+   "session": 17,
+   "statement": "An alter_reg phantom slot for a pseudo of a mode wider than SImode is worth 16 bytes rather than 8, so one or two wide orphans could reach 32 zero-traffic frame bytes.",
+   "kill_scope": "class",
+   "measured_on": "source-level, tools/gcc-2.7.2 as pinned at HEAD eab57aaf; corroborated by the s8 census figure vars= 48 over six phantoms in func_80042874",
+   "predicate_cite": "tools/gcc-2.7.2/function.c:687",
+   "result": "KILLED. Every alter_reg slot is rounded to 8 bytes on this target, so a DImode orphan is worth exactly what an SImode or"
+  },
+  {
+   "session": 17,
+   "statement": "Some part of the shipped 0x58 prologue constant may come from a post-cc1 stage rather than from compute_frame_size, in which case the 56-byte var+args sum is the wrong quantity to attack.",
+   "kill_scope": "class",
+   "measured_on": "HEAD eab57aaf, tools/prologue_config.json = {} and both funcs lists comment-only",
+   "predicate_cite": "tools/prologue_fix.py:14",
+   "result": "KILLED. No post-cc1 stage touches this function's prologue; the 0x58 is written by compute_frame_size and nothing downst"
   }
  ],
  "ladder_skip": 0,

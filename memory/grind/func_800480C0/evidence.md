@@ -1423,3 +1423,62 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s16] s15 frontier item 1 needed no new dump: the s9 forensics table already shows SetDrawEnv's three orphans (140/137/128) and func_80041AC8's three (115/105/85) are byte-for-byte the same class-A producer - combine deleting the ashift half of a shift-pair sign extension of an HImode pseudo after substituting its MEMORY equivalent, which is why both bodies ship an lh. This body has no qualifying site: its four halfword values come from lhu through a base advanced by addiu between each load and its sll/sra pair, and its four s16 parameters have no memory home.
 
 - [s16] Merged statement after sixteen sessions: var_size + args_size == 56, args_size is pinned to 24, therefore var_size == 32; alter_reg slots are 8-byte aligned (reload1.c:2382-2385) so an allocation route needs FOUR zero-traffic slots, this body caps at one across roughly 85 measured spellings, the mult-free tree maximum over 1096 functions is three (s8 census), and four is attested nowhere without a mult in the emitted stream. Of the nine producer sites now enumerated and all measured on this body, exactly one reaches 32 bytes in one step at zero emitted instructions: expand_decl of an unreferenced local aggregate - the pad, banned here by the 2026-09-02 Judge ruling and granted by owner ruling to the three siblings carrying the identical untouched window.
+
+## s17 (solver) - facts added
+
+- SOLVER VERDICT, TYPED: tools/ra_solver/inverse_compose.py classify refuses this function
+  (zero-rule guard) and names tools/ra_solver/goal_from_tgt.py classify as the object-level
+  route; that returns FIRST DIVERGENCE: PRE-RA, "the residual is upstream of every model".
+  The RA and scheduler layers are foreclosed as the residual's site. Do not re-run the solver
+  suite on func_800480C0.
+- THE FRAME RESIDUAL HAS TWO BYTE-IDENTICAL DECOMPOSITIONS, NOT ONE. compute_frame_size
+  (mips.c:4475) totals var_size + args_size + extra_size + gp_reg_rounded and places the
+  saved-register block at args_size + extra_size + var_size + gp_reg_size - 4 (mips.c:4547),
+  both of which depend only on the SUM. The shipped body has exactly one non-save $sp
+  reference (sw $v0,0x10($sp), asm/funcs/func_800480C0.s:62), which lies in the first 24
+  bytes under either reading. args=24/var=32 and args=56/var=0 are indistinguishable in bytes.
+- AN OUTGOING-ARGS BLOCK CAN BE ALLOCATED WITH NO ARGUMENT STORES IN IT.
+  current_function_outgoing_args_size is set by expand_call during RTL generation and is never
+  revised; when jump.c later deletes the call as unreachable, the block it sized survives into
+  compute_frame_size while its stores do not. MEASURED: a 14-argument call placed after the
+  function's return (or jumped over by a forward goto, or after a for (;;) {}) yields
+  .frame $sp,88 - vars= 0, regs= 8/0, args= 56 at 72 insns, the candidate's own instruction
+  count; the same call left reachable costs 97 insns. sandbox --disable all prints
+  score 0 for that body (74/74, rules_dropped 0). The forms are CHEATS (dead code, T1/T2/T5)
+  and are banked only as rejected/s17-BYTES-0-BUT-CHEAT-*.c - but they prove the residual is
+  reachable at ZERO instruction cost through args_size, which no var_size producer except the
+  banned pad has ever managed.
+- s16's "args_size is pinned to 24 by the single-store evidence" is SUPERSEDED. The single
+  store pins only live argument traffic, not the block's size.
+- COMBINE-ORPHAN MULTIPLICITY IS CAPPED AT ONE ON THIS BODY. Copy chains of depth 1-4 all give
+  exactly one orphan (vars= 8, 73 insns); a second folded guard on the loop-exit test adds
+  none (vars= 8, 76 insns) and the exit fold alone gives zero; two, three and four NESTED
+  folded guards give vars= 0 - the extra branch destroys the single orphan rather than
+  doubling it, because the forward scan of combine.c:10835-10841 finds a reference before the
+  CODE_LABEL.
+- AN alter_reg SLOT IS 8 BYTES FOR EVERY MODE THIS TARGET HAS. reload1.c:2404 passes
+  align == -1, whose branch in assign_stack_local rounds the size up to
+  BIGGEST_ALIGNMENT / BITS_PER_UNIT (function.c:687); mips.h:1082 sets BIGGEST_ALIGNMENT 64.
+  DImode buys the same 8 bytes as SImode. func_80042874's six phantoms in vars= 48 confirm it.
+- NO POST-cc1 STAGE CAN CHANGE THIS FRAME CONSTANT. tools/prologue_config.json is {};
+  tools/delay_slot_ra_funcs.txt and tools/frame_fix_funcs.txt hold only comments; every
+  prologue_fix rewriter, including apply_frame_fix, is gated on the function being named in
+  one of them.
+
+- [s17] Mandated kill re-audit re-run on chassis eab57aaf: tools/fake_ablate.py on candidate.c reports one FAKE unit (arg0 = 0;), keep-all 20 / drop-1 32 - load-bearing and masking no lever, unchanged from the s14/s15/s16 audits on three earlier chassis. Candidate floor re-measured 20 this session; HEAD (INCLUDE_ASM) measures 74.
+
+- [s17] Solver verdict, typed and recorded: inverse_compose.py classify refuses func_800480C0 (zero-rule guard) and names goal_from_tgt.py classify; that reports FIRST DIVERGENCE PRE-RA with 'next tool: none - the residual is upstream of every model'. The one-stream-only shapes are exclusively addiu -56 vs -88, sw 24..52 vs sw 56..84, and lw 44..52 vs lw 84/104/108.
+
+- [s17] The frame residual has TWO byte-identical decompositions, not one. compute_frame_size totals var_size + args_size + extra_size + gp_reg_rounded (mips.c:4475) and places the callee-saved block at args_size + extra_size + var_size + gp_reg_size - 4 (mips.c:4547); both depend only on the SUM. asm/funcs/func_800480C0.s has one jal and exactly one non-save sp reference, sw $v0,0x10($sp) at line 62, saves at 0x38..0x54 and incoming-parameter loads at 0x68/0x6C. args=24/var=32 and args=56/var=0 are indistinguishable in bytes.
+
+- [s17] An outgoing-args block can be allocated with no argument stores in it: current_function_outgoing_args_size is fixed by expand_call at RTL-generation time and is never revised, so a call jump.c later deletes as unreachable leaves its block behind. Measured .frame $sp,88 - vars= 0, regs= 8/0, args= 56 at 72 cc1 insns for a 14-argument call after return, after a forward goto, and (73 insns) after for (;;) {}; the same call left reachable costs 97 insns.
+
+- [s17] engine sandbox func_800480C0 --disable all with the after-return body installed printed "score": 0, target_insns 74, build_insns 74, rules_dropped 0, cheat_asm_stripped 162. The body is a CHEAT (fabricated 14-parameter extern called from code that can never execute; fails T1, T2 and T5 as a first reach of a dead-code-to-inflate-outgoing-args family) and is banked only as memory/grind/func_800480C0/rejected/s17-BYTES-0-BUT-CHEAT-unreachable-14arg-call-after-return.c. It is not proposed and src/text1b.c was restored from HEAD after the measurement.
+
+- [s17] s16's conclusion that args_size is pinned to 24 by the single-store evidence is SUPERSEDED: the single store pins live argument traffic, not the block's size.
+
+- [s17] Combine-orphan multiplicity is capped at one on this body: copy chains of depth 1-4 all give exactly one orphan at 73 insns; a second folded guard on the loop-exit test adds none (vars= 8, 76 insns) and the exit fold alone gives zero; two, three and four nested folded guards give vars= 0, the extra branch destroying the single orphan because the forward scan of combine.c:10835-10841 finds a reference before the CODE_LABEL.
+
+- [s17] Every alter_reg slot is 8 bytes for every mode this target has: reload1.c:2404 passes align == -1, function.c:687 rounds the size to BIGGEST_ALIGNMENT / BITS_PER_UNIT, and mips.h:1082 sets BIGGEST_ALIGNMENT 64. func_80042874's six phantoms in vars= 48 confirm 8 bytes each.
+
+- [s17] No post-cc1 stage can change this function's frame constant: tools/prologue_config.json is {}, tools/delay_slot_ra_funcs.txt and tools/frame_fix_funcs.txt are comment-only, and every prologue_fix rewriter including apply_frame_fix is gated on the function being named in one of them.

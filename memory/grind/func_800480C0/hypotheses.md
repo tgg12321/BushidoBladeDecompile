@@ -1635,3 +1635,167 @@ three siblings that carry the identical untouched window.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD a5ebaa6f, bodies g1..g4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present
+
+
+## s17 (solver, 2026-09-05, chassis HEAD eab57aaf) - THE RESIDUAL HAS A SECOND DECOMPOSITION, AND IT IS FREE
+
+Mandated solver step first. `inverse_compose.py classify text1b func_800480C0` REFUSES to
+run on this function (zero-rule since rules-to-zero 2026-08-25: with no regfix/asmfix rules
+the src-derived tgt.s cannot carry the target stream, so the text classifier would emit a
+fictitious PRE-RA verdict). The object-level route it names,
+`tools/ra_solver/goal_from_tgt.py classify text1b func_800480C0`, returns:
+
+    FIRST DIVERGENCE: PRE-RA
+      next tool: none - the residual is upstream of every model
+      ours only : addiu #,#,-56 ; sw #,24..52(#) ; lw #,44..52(#)
+      target only: addiu #,#,-88 ; sw #,56..84(#) ; lw #,84(#),104(#),108(#)
+
+So the RA and scheduler layers are FORECLOSED as the site of this residual: the two streams
+differ in nothing but the frame constant and every $sp displacement derived from it. That is
+the solver modality's typed verdict for this function and it should not be re-run.
+
+### THE SESSION'S RESULT: args_size, not var_size
+
+Sixteen sessions have hunted 32 bytes of zero-traffic frame VARS. s16 pinned args_size to 24
+by arguing that any larger outgoing-args block would put argument stores inside the target's
+untouched window. THAT INFERENCE IS WRONG, and this session measured why.
+
+current_function_outgoing_args_size is set by expand_call at RTL-generation time and is
+never revised. If the call insn is afterwards deleted - by jump.c as unreachable - the
+outgoing-args block it sized REMAINS in compute_frame_size (mips.c:4467,
+args_size = MIPS_STACK_ALIGN (current_function_outgoing_args_size)), while its argument
+stores are gone with the block that held them. An outgoing-args block can therefore be
+allocated with no stores in it at all.
+
+Measured end to end (bodies in tmp/grind/func_800480C0/s17/bodies, table in
+tmp/grind/func_800480C0/s17/measurements.txt):
+
+  - q1 (a 14-argument extern called after `for (;;) {}`): .frame $sp,88 - vars= 0, regs= 8/0,
+    args= 56, at 73 insns.
+  - r1 (the same call placed after the function's `return;`): .frame $sp,88 - vars= 0,
+    regs= 8/0, args= 56, at 72 insns - the candidate's own instruction count.
+  - r2 (the same call jumped over by a forward `goto`): identical, 72 insns.
+  - q2 (the control: the same call left REACHABLE): args= 56 as well, but 97 insns - the ten
+    argument stores cost 25 insns, which is the effect s16 correctly predicted for a live call.
+
+`sandbox func_800480C0 --disable all` with r1 installed over the INCLUDE_ASM line prints
+**"score": 0**, target_insns 74, build_insns 74, rules_dropped 0, cheat_asm_stripped 162.
+
+The two decompositions are byte-indistinguishable and both are now measured, not inferred:
+compute_frame_size (mips.c:4475, 4547) places the callee-saved block at
+args_size + extra_size + var_size + gp_reg_size - 4, which depends only on the SUM, and the
+shipped body (asm/funcs/func_800480C0.s) has exactly one non-save $sp reference,
+`sw $v0,0x10($sp)`, which lands inside the first 24 bytes either way. args=24/var=32 and
+args=56/var=0 produce the identical 74 instructions.
+
+WHAT CHANGES: the two routes have completely different PRICES. Every var_size=32 producer
+measured in sixteen sessions costs instructions unless it is the banned frame pad. The
+args_size=56 route costs ZERO instructions. The honest-producer hunt should move to
+outgoing_args_size.
+
+WHAT DOES NOT CHANGE: r1/r2 are CHEATS and are not proposed. A call to a 14-parameter extern
+that does not exist in the game, placed in code that can never execute, fails cheat-checklist
+T1 (no observable effect), T2 (no programmer writes it) and T5 (no sanctioned family covers
+dead-code-to-inflate-outgoing-args; first reach of the family). Both are banked in
+memory/grind/func_800480C0/rejected/s17-BYTES-0-BUT-CHEAT-*.c. The open question they leave is
+sharp and narrow: **is there an ordinary-C construct that raises
+current_function_outgoing_args_size to 56 without leaving a live call?** Every spelling found
+this session needs dead code; a next session should look for one that does not (a real
+many-parameter BB2 callee in a genuinely-guarded path; a libcall or block-move that sizes the
+block; an inline expansion whose internal call constant-folds away).
+
+### FRONTIER ITEM 2 (stack multiple combine orphans) - KILLED ON THIS BODY
+
+The orphan-USE producer is combine.c:10835-10841: a REG_DEAD note that distribute_notes
+cannot rehome, when the forward scan reaches a CODE_LABEL, becomes (use reg) after the
+label; the pseudo then has reg_n_refs > 0, no allocation, and alter_reg (reload1.c:2404) buys
+it a stack slot. Frontier item 2 asked whether multiplicity is a property of the SPELLING
+rather than the body. Measured, three independent ways, all negative:
+
+  - m1 (the s2 folded entry guard, `g0 = count - 1; if (g0 != -1)`) reproduces vars= 8, one
+    orphan, 73 insns.
+  - m2 adds a second folded guard on the loop-exit test: vars STAYS 8 (one orphan), regs rises
+    to 9, insns to 76. m3 (the exit fold alone) reads vars= 0 - the loop-bottom compare is not
+    an orphan site at all.
+  - n1..n4, copy chains of depth 1, 2, 3 and 4 feeding the entry compare, ALL read vars= 8 at
+    73 insns. cse/copy-prop collapses the chain before combine sees it, so chain depth cannot
+    multiply orphans.
+  - o2/o3/o4, two/three/four NESTED folded guards, all read vars= 0 at 76/78/80 insns. A
+    second branch does not double the orphan, it DESTROYS the one - the extra branch gives the
+    forward scan a reference before it reaches the label.
+
+So on this body the orphan count is capped at one across every multiplicity spelling tried,
+and four 8-byte slots are not reachable that way.
+
+### FRONTIER ITEM 1 (the ALIGNMENT side of alter_reg) - KILLED BY SOURCE
+
+alter_reg calls assign_stack_local (GET_MODE (regno_reg_rtx[i]), total_size, -1)
+(reload1.c:2404) with total_size = MAX (inherent_size, reg_max_ref_width[i])
+(reload1.c:2389). The align == -1 branch of assign_stack_local sets
+alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT and rounds the size UP to it
+(function.c:687). BIGGEST_ALIGNMENT is 64 on this target (mips.h:1082), so a slot is 8 bytes
+for SImode AND for DImode alike: a wider-mode orphan buys nothing. The ledger's own s8 census
+corroborates it arithmetically - func_80042874 carries six phantoms in vars= 48, i.e. 8 bytes
+each, no 16-byte slot anywhere. Frontier item 1's premise ("a wider-mode orphan would be worth
+8 or 16 on its own") is false; a dump of func_80042874 is not needed and should not be spent.
+
+### FRONTIER ITEM 3 (the 0x58 from a post-cc1 stage) - CLOSED NEGATIVE
+
+The Makefile pipeline is cpp | cc1 | prologue_fix | maspsx | multu_pad | as (Makefile:149).
+tools/prologue_fix.py reads three config files and rewrites a function's prologue only when
+that function is NAMED in one of them: tools/prologue_config.json is {}, and
+tools/delay_slot_ra_funcs.txt and tools/frame_fix_funcs.txt contain only comment lines. Its
+frame-size rewriter apply_frame_fix fires only under `if func_name in frame_fix_funcs`. No
+post-cc1 stage can adjust this function's frame constant; the 0x58 comes from
+compute_frame_size and nowhere else. (It is also a tools/ surface an agent may not edit, so
+even a non-empty list would be an integration matter, not a lever.)
+
+### MANDATED KILL RE-AUDIT (chassis eab57aaf)
+
+`tools/fake_ablate.py --func func_800480C0 --file text1b --candidate candidate.c`: one FAKE
+unit (arg0 = 0;), keep-all 20 / drop-1 32. Load-bearing, masking no lever - unchanged from
+s14/s15/s16 on three earlier chassis. Candidate floor re-measured 20 this session; HEAD
+(INCLUDE_ASM) measures 74.
+
+## [s17] The func_800480C0 residual is a register-allocation or scheduling divergence that the ra_solver / sched_solver models can attack.
+- mechanism: tools/ra_solver/inverse_compose.py classify triages a residual PRE-RA / RA / SCHED / IDENTICAL from the two instruction streams; a PRE-RA verdict means no allocation or ordering model applies.
+- probe: inverse_compose.py classify text1b func_800480C0 refused (zero-rule guard: with regfix/asmfix empty the src-derived tgt.s cannot carry the target stream, so it would print a fictitious PRE-RA verdict) and named the object-level route. tools/ra_solver/goal_from_tgt.py classify text1b func_800480C0 returned FIRST DIVERGENCE: PRE-RA, 'next tool: none - the residual is upstream of every model', with the one-stream-only shapes being exactly addiu -56 vs -88 and every sp displacement derived from that constant.
+- result: KILLED. The solver suite has nothing to search here: ours and target agree on 74 instructions, on every opcode and on every register, and disagree only on the frame constant and the sp offsets it induces. This is a class result for the solver modality on this function - the residual is produced before register allocation runs, by compute_frame_size, so neither the global/local/reload models nor either scheduler pass can move it. Do not spend another solver session on func_800480C0.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD eab57aaf, candidate.c installed over the INCLUDE_ASM line, its single FAKE unit (arg0 = 0;) present; sandbox --disable all = 20, 74/74 insns, rules_dropped 0
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:4475
+
+## [s17] The target's untouched sp+0x14..0x37 window requires 32 bytes of frame VARS, so args_size is pinned to 24 by the shipped body's single non-save sp store.
+- mechanism: s16 argued that any outgoing-args block larger than 24 bytes would place argument stores at offsets 16..args_size-1, i.e. inside the target's untouched window, because e2/e3/e4 measured every argument word past the fourth stored contiguously into that range.
+- probe: Built a 14-argument extern call and placed it three ways where jump.c deletes it after expand_call has already sized the block: after the function's return (r1), jumped over by a forward goto (r2), and after a for (;;) {} (q1). All three read .frame $sp,88 - vars= 0, regs= 8/0, args= 56; r1 and r2 at 72 cc1 insns, the candidate's own count, q1 at 73. Control q2 with the same call left reachable read args= 56 at 97 insns (the ten argument stores cost 25 insns). r1 installed over the INCLUDE_ASM line made engine sandbox func_800480C0 --disable all print score 0, target_insns 74, build_insns 74, rules_dropped 0, cheat_asm_stripped 162.
+- result: KILLED as stated. current_function_outgoing_args_size is set by expand_call during RTL generation and never revised, so a block whose call is later deleted as unreachable survives into compute_frame_size (mips.c:4467) with no stores inside it. The single store therefore pins live argument traffic, not the block's size, and args=24/var=32 and args=56/var=0 are byte-indistinguishable: mips.c:4547 places the saved-register block at args_size + extra_size + var_size + gp_reg_size - 4, a function of the SUM only, and the shipped body's one non-save sp reference (sw $v0,0x10($sp), asm/funcs/func_800480C0.s:62) lies in the first 24 bytes under either reading. The spellings that measure 0 are CHEATS and are not proposed - a call to a 14-parameter extern that does not exist in the game, in code that can never execute, fails cheat-checklist T1 (no observable effect), T2 (no programmer writes it) and T5 (first reach of a dead-code-to-inflate-outgoing-args family); both are banked in rejected/s17-BYTES-0-BUT-CHEAT-*.c. What they establish is a price: every var_size=32 producer measured in sixteen sessions costs instructions unless it is the banned frame pad, whereas reaching the target frame through args_size costs zero.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD eab57aaf, bodies q1/q2/r1/r2 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each; src/text1b.c restored from HEAD after every install
+
+## [s17] The ledger's cap of one combine orphan on this body is a cap on the SPELLING, so stacking two, three or four independent instances of the folded-compare construct would plant two, three or four orphan slots.
+- mechanism: The orphan is planted per REG_DEAD note that distribute_notes cannot rehome when its forward scan reaches a CODE_LABEL (combine.c:10835-10841); multiplicity should be the count of qualifying sites, and four 8-byte alter_reg slots would be exactly the 32 zero-traffic bytes wanted.
+- probe: Four spelling families measured with the instrumented cc1: m1 (the s2 folded entry guard) reproduced vars= 8 / one orphan / 73 insns; m2 added a second folded guard on the loop-exit test and m3 used the exit fold alone; n1..n4 fed the entry compare through copy chains of depth 1, 2, 3 and 4; o2/o3/o4 nested two, three and four folded guards.
+- result: KILLED on this body. m2 still reads vars= 8 (one orphan) at regs= 9 and 76 insns, and m3 reads vars= 0 - the loop-bottom compare is not an orphan site at all, because the forward scan finds a reference before any label. n1 through n4 all read vars= 8 at 73 insns, identical at every depth: cse and copy propagation collapse the chain before combine sees it, so chain depth cannot multiply REG_DEAD notes. o2/o3/o4 read vars= 0 at 76/78/80 insns - a second branch does not double the orphan, it DESTROYS the one, for the same reason m3 has none. Orphan count on this body is capped at one across every multiplicity spelling tried, so four 8-byte slots are not reachable this way.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD eab57aaf, bodies m1/m2/m3, n1..n4, o2/o3/o4 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each
+
+## [s17] An alter_reg phantom slot for a pseudo of a mode wider than SImode is worth 16 bytes rather than 8, so one or two wide orphans could reach 32 zero-traffic frame bytes.
+- mechanism: Frontier item 1 held that alter_reg asks assign_stack_local for the pseudo's mode size, so the slot size follows the mode.
+- probe: Read the source path end to end: reload1.c:2389 computes total_size = MAX (inherent_size, reg_max_ref_width[i]) and reload1.c:2404 calls assign_stack_local (GET_MODE (regno_reg_rtx[i]), total_size, -1); the align == -1 branch of assign_stack_local sets alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT and rounds the size UP to it (function.c:687); mips.h:1082 defines BIGGEST_ALIGNMENT 64.
+- result: KILLED. Every alter_reg slot is rounded to 8 bytes on this target, so a DImode orphan is worth exactly what an SImode orphan is worth and no wider integer mode exists in this configuration. The ledger's own s8 tree census corroborates it arithmetically: func_80042874 carries six phantoms in vars= 48, i.e. 8 bytes each, with no 16-byte slot anywhere. The 32-byte requirement therefore needs FOUR orphans no matter how the pseudos are typed, and the instrumented-cc1 dump of func_80042874 that frontier item 1 asked for need not be spent.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source-level, tools/gcc-2.7.2 as pinned at HEAD eab57aaf; corroborated by the s8 census figure vars= 48 over six phantoms in func_80042874
+- predicate_cite: tools/gcc-2.7.2/function.c:687
+
+## [s17] Some part of the shipped 0x58 prologue constant may come from a post-cc1 stage rather than from compute_frame_size, in which case the 56-byte var+args sum is the wrong quantity to attack.
+- mechanism: The build pipeline runs cpp | cc1 | prologue_fix | maspsx | multu_pad | as (Makefile:149), and tools/prologue_fix.py carries an apply_frame_fix rewriter that adjusts a function's frame size.
+- probe: Read prologue_fix.py's main() and inspected its three config files. Every rewriter is gated on the function being named: reorder_prologue under `if func_name in config`, apply_delay_slot_ra under `if func_name in delay_slot_ra_funcs`, apply_frame_fix under `if func_name in frame_fix_funcs`. tools/prologue_config.json contains {}, tools/delay_slot_ra_funcs.txt and tools/frame_fix_funcs.txt contain only comment lines, and regfix.txt / asmfix.txt do not exist (rules-to-zero, 2026-08-25).
+- result: KILLED. No post-cc1 stage touches this function's prologue; the 0x58 is written by compute_frame_size and nothing downstream can adjust it. The var_size + args_size == 56 constraint is the right quantity. (tools/ is also a surface an agent may not edit, so a non-empty list would be an integration matter rather than a lever.)
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD eab57aaf, tools/prologue_config.json = {} and both funcs lists comment-only
+- predicate_cite: tools/prologue_fix.py:14
