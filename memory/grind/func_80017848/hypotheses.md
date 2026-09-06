@@ -3601,3 +3601,159 @@ to target. Cell scores: `tmp/grind/func_80017848/s34/scores.txt`.
 - probe: m2/m3 (promoted copy, no invalidation) versus m4/m5 (candidate's t reassignment), .cse2 dumps.
 - result: m2/m3: cse2 folds the preheader add away entirely (insn 79 reads the guard's add pseudo reg 86) and the copy dies at flow; m4/m5 keep the add reading the copy destination.
 - verdict: CONFIRMED
+
+## s38 hypotheses (2026-09-06, forensics; owner directive acknowledged)
+
+- H-s38-1 (KILLED, instance): Frontier item 1 - a basic-block boundary
+  between the preheader copy and the base add that leaves no instruction
+  behind (a CODE_LABEL whose only jump is removed after combine) keeps the
+  copy at zero instruction cost in target's position.
+  mechanism: flow.c:2084 links a set only to a use with the same BLOCK_NUM,
+  so a boundary between copy and add denies combine the copy->add LOG_LINK.
+  probe: tmp/grind/func_80017848/s38/mini/m7a_fwd_branch.c (a real forward
+  conditional between copy and add) and m7b_loop_hoist.c (the add written in
+  the do/while body so the loop-top label sits between them), exact project
+  CC_FLAGS with -da; .cse2/.flow/.combine/.loop read with flat.py; plus the
+  post-combine label-deletion sites enumerated from toplev.c:3004-3167 and
+  jump.c:270/437-455/1950-2061.
+  result: m7a keeps the copy (no LOG_LINK on the add, combine never touches
+  insn 71) but emits it as `move $2,$3` in the branch delay slot, before the
+  branch - target's copy follows the guard branch and its delay slot with the
+  load-delay nop unfilled. m7b: loop.c hoists the links load and the add to
+  immediately after the copy, the LOG_LINK is back and combine deletes the
+  copy. Zero-residue label deletion after combine exists only through
+  jump2's no-op-move path (jump.c:449), which in C is a conditional around a
+  register self-copy (dead-conditional-store family).
+  kill_scope: instance
+  measured_on: standalone scratch TUs under the exact project CC_FLAGS
+  (canonical cc1, -O2 -G0 -mcpu=3000 -mips1 -mel), BASE re-audited at 3
+  (127/127) over the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE
+  constructs anywhere.
+
+- H-s38-2 (KILLED, class): A volatile-qualified read of the links pointer
+  between the copy and the base add would make combine.c:985-988 refuse the
+  copy->add combination, leaving target's use-once copy in place.
+  mechanism: can_combine_p returns 0 when any insn strictly between i2 and
+  i3 satisfies volatile_insn_p, and target's links load sits exactly there.
+  probe: read tools/gcc-2.7.2/rtlanal.c:1366 volatile_insn_p.
+  result: `case MEM: return 0;` - volatile_insn_p answers 1 only for
+  UNSPEC_VOLATILE and volatile ASM_OPERANDS. A MEM_VOLATILE_P load is
+  invisible to this refusal (that is volatile_refs_p, rtlanal.c:1429, which
+  combine.c:985 does not call). Only `asm volatile` reaches the clause, a
+  forbidden family (s17 R5).
+  kill_scope: class
+  predicate_cite: tools/gcc-2.7.2/rtlanal.c:1366
+  measured_on: source reading of the frozen cc1 tree; no build needed.
+
+- H-s38-3 (KILLED, instance): The Q1 kill (escape #9, target's exact
+  127-instruction stream with a 14-point seat residual) is stale on the
+  drifted chassis.
+  mechanism: instance kills are chassis-relative; the anchor moved 719 -> 820
+  between s35 and s37.
+  probe: tmp/grind/func_80017848/s38/body_Q1.c applied over the HEAD anchor,
+  sandbox --disable all.
+  result: 14 at 127/127, identical to s34/s35. Not stale.
+  kill_scope: instance
+  measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_Q1.c; BASE
+  re-audited at 3 (127/127); no FAKE constructs.
+
+- H-s38-4 (CONFIRMED): The floor survives unchanged: BASE = 3 at 127/127 on
+  the HEAD chassis (anchor line 820), residual the same three instructions
+  s31 named.
+
+- H-s38-5 (KILLED, class): One of the jump.c / flow.c emit_move_insn sites the
+  s31 census left unread produces a plain reg-reg copy after combine for this
+  target.
+  mechanism: a post-combine copy producer would explain a use-once copy that
+  combine never saw.
+  probe: read jump.c:840-1010 (three sites), :1100-1150, :1240-1320,
+  :1380-1430, flow.c:2228-2242, mips.h:2937 (BRANCH_COST), mips.h:2175/2179 and
+  rtl.h:647-658 (AUTO_INC_DEC).
+  result: jump.c:907/951/1008 need `! reload_completed && BRANCH_COST >= 3/4`
+  and BRANCH_COST is 1 for -mcpu=3000; :1144 is HAVE_conditional_move (absent
+  on MIPS I); :1313/:1429 are jump1 store-flag conversions that run before
+  combine; flow.c:2239 is under AUTO_INC_DEC, undefined for MIPS. No site can
+  emit a copy after combine here.
+  kill_scope: class
+  predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:2937
+  measured_on: source reading of the frozen cc1 tree and mips target files.
+
+## [s38] Frontier item 1: a basic-block boundary between the preheader copy and the base add whose label is removed after combine keeps the copy at zero instruction cost in target's position (escape #8 with a vanishing label).
+- mechanism: flow.c:2084 links a set only to a use in the same BLOCK_NUM, so a boundary between copy and add denies combine the copy->add LOG_LINK; if the label later vanished with no residue the copy would survive for free.
+- probe: tmp/grind/func_80017848/s38/mini/m7a_fwd_branch.c (real forward conditional between copy and add) and m7b_loop_hoist.c (links load and add written inside the do/while body), exact CC_FLAGS with -da, dumps read with flat.py; post-combine label deleters enumerated from toplev.c:3004-3167 and jump.c:270, :437-455, :1950-2061.
+- result: m7a keeps the copy (no LOG_LINK on insn 87, combine leaves insn 71) but emits it in the branch delay slot BEFORE the branch, while target's copy follows the guard branch and its delay slot with the load-delay nop unfilled; m7b's back-edge label is undone by loop.c hoisting the links load and the add into the copy's block (insn 146 links to 70; combine deletes the copy). The only post-combine zero-residue label deletion is jump2's no-op-move path (jump.c:449), whose C spelling is a conditional around a register self-copy - the dead-conditional-store family. Item closed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone scratch TUs under the exact project CC_FLAGS (canonical cc1), plus BASE re-audited at 3 (127/127) over the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs anywhere
+
+## [s38] A volatile-qualified read of the links pointer between the copy and the base add makes combine.c:985-988 refuse the copy->add combination and leaves target's use-once copy in place.
+- mechanism: can_combine_p returns 0 when an insn strictly between i2 and i3 satisfies volatile_insn_p, and target's links load sits exactly between the copy and the add.
+- probe: read tools/gcc-2.7.2/rtlanal.c:1366 (volatile_insn_p) against combine.c:985.
+- result: volatile_insn_p has `case MEM: return 0;` and returns 1 only for UNSPEC_VOLATILE and volatile ASM_OPERANDS; a MEM_VOLATILE_P load is invisible to the clause (that is volatile_refs_p, rtlanal.c:1429, which combine does not call here). Only asm volatile reaches it - a forbidden family (s17 R5).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen cc1 tree
+- predicate_cite: tools/gcc-2.7.2/rtlanal.c:1366
+
+## [s38] The Q1 instance kill (escape #9 in both loops, target's exact 127-instruction stream, 14 seat points) is stale on the drifted chassis.
+- mechanism: instance kills are chassis-relative and the anchor moved from line 719 to 820 since s35.
+- probe: tmp/grind/func_80017848/s38/body_Q1.c applied over the HEAD anchor, sandbox func_80017848 --disable all.
+- result: 14 at 127/127, identical to s34 and s35.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_Q1.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s38] The floor and residual survive unchanged on the HEAD chassis this session.
+- mechanism: mandated chassis re-audit before any probe.
+- probe: body_BASE.c (identical to candidate.c's function body) applied over the src/ings.c:820 anchor, sandbox --disable all.
+- result: 3 at 127 target / 127 build, scorable.
+- verdict: CONFIRMED
+
+## [s38] One of the jump.c or flow.c emit_move_insn sites left unread by the s31 census produces a plain reg-reg copy after combine on this target.
+- mechanism: a post-combine copy producer would explain a use-once copy that combine never saw.
+- probe: read jump.c:840-1010, :1100-1150, :1240-1320, :1380-1430, flow.c:2228-2242, mips.h:2937, mips.h:2175/2179, rtl.h:647-658.
+- result: jump.c:907/951/1008 are gated on `! reload_completed && BRANCH_COST >= 3` (resp. 4) and BRANCH_COST is 1 for -mcpu=3000; :1144 needs HAVE_conditional_move (absent on MIPS I); :1313/:1429 are jump1 store-flag conversions that run before combine; flow.c:2239 is under AUTO_INC_DEC, undefined for MIPS. None can emit a copy after combine here.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen cc1 tree and the mips target files
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:2937
+
+## [s38] Frontier item 1: a basic-block boundary between the preheader copy and the base add whose label is removed after combine keeps the copy at zero instruction cost in target's position (escape #8 with a vanishing label), measured as a forward branch (m7a) and a loop back-edge (m7b) on minimal geometry.
+- mechanism: flow.c:2084 links a set only to a use in the same BLOCK_NUM, so a boundary between copy and add denies combine the copy->add LOG_LINK; if the label later vanished with no residue the copy would survive for free.
+- probe: tmp/grind/func_80017848/s38/mini/m7a_fwd_branch.c and m7b_loop_hoist.c built with the exact project CC_FLAGS and -da; .cse2/.flow/.combine/.loop read with flat.py; post-combine label deleters enumerated from toplev.c:3004-3167 and jump.c:270, :437-455, :1950-2061.
+- result: m7a: insn 87 (add) has no LOG_LINK, combine leaves copy insn 71, but the final .s emits the copy as move $2,$3 in the branch delay slot BEFORE the branch, whereas target's copy follows the guard branch and its delay slot with the load-delay nop unfilled. m7b: loop.c hoists the links load and the add to immediately after the copy (insns 144-146 before NOTE_INSN_LOOP_BEG), insn 146 links to insn 70, combine deletes the copy, final preheader lw $4,16($4); addu $5,$5,$7. The only post-combine zero-residue label deletion is jump2's no-op-move path (jump.c:449), whose C spelling is a conditional around a register self-copy (dead-conditional-store family). Item closed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone scratch TUs under the exact project CC_FLAGS (canonical cc1), plus BASE re-audited at 3 (127/127) over the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs anywhere
+
+## [s38] A volatile-qualified read of the links pointer between the copy and the base add makes combine.c:985-988 refuse the copy->add combination and leaves target's use-once copy in place.
+- mechanism: can_combine_p returns 0 when an insn strictly between i2 and i3 satisfies volatile_insn_p, and target's links load sits exactly between the copy and the add.
+- probe: Read tools/gcc-2.7.2/rtlanal.c:1366 (volatile_insn_p) against combine.c:985-988.
+- result: volatile_insn_p has case MEM: return 0; and returns 1 only for UNSPEC_VOLATILE and volatile ASM_OPERANDS; a MEM_VOLATILE_P load is invisible to the clause (that is volatile_refs_p, rtlanal.c:1429, which this clause does not call). Only asm volatile reaches it, a forbidden family (s17 R5). C volatile is inert here.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen cc1 tree; no FAKE constructs involved
+- predicate_cite: tools/gcc-2.7.2/rtlanal.c:1366
+
+## [s38] The Q1 instance kill (escape #9 in both loops, target's exact 127-instruction stream with a 14-point seat residual) is stale on the drifted chassis (anchor 719 -> 820).
+- mechanism: Instance kills are chassis-relative; the mandated kill re-audit re-measures the closest-to-target banked kill on the current chassis.
+- probe: tmp/grind/func_80017848/s38/body_Q1.c applied over the HEAD anchor; sandbox func_80017848 --disable all.
+- result: 14 at 127/127, identical to s34 and s35. Not stale; FAKE ablation vacuous (no FAKE constructs in any form of this function).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_Q1.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s38] The floor and residual survive unchanged on the HEAD chassis this session.
+- mechanism: Mandated chassis re-audit before any probe.
+- probe: body_BASE.c (identical to candidate.c's function body) applied over the src/ings.c:820 anchor; sandbox --disable all.
+- result: 3 at 127 target / 127 build, scorable; residual is the same three instructions s31 named.
+- verdict: CONFIRMED
+
+## [s38] One of the jump.c or flow.c emit_move_insn sites left unread by the s31 census produces a plain reg-reg copy after combine on this target.
+- mechanism: A post-combine copy producer would explain a use-once copy that combine never saw.
+- probe: Read jump.c:840-1010, :1100-1150, :1240-1320, :1380-1430, flow.c:2228-2242, mips.h:2937 (BRANCH_COST), mips.h:2175/2179 and rtl.h:647-658 (AUTO_INC_DEC).
+- result: jump.c:907/951/1008 are gated on ! reload_completed && BRANCH_COST >= 3 (resp. 4) and BRANCH_COST is 1 for -mcpu=3000; :1144 needs HAVE_conditional_move (absent on MIPS I); :1313/:1429 are jump1 store-flag conversions that run before combine; flow.c:2239 is under AUTO_INC_DEC, which rtl.h defines only with HAVE_PRE/POST_INCREMENT, both commented out in mips.h. None can emit a copy after combine here.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: source reading of the frozen cc1 tree and mips target files; no FAKE constructs involved
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:2937

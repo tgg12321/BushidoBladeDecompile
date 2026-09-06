@@ -4399,3 +4399,126 @@ scorable**. The floor is unchanged for the ninth consecutive session.
 - [s37] Solver classify (object path) reports FIRST DIVERGENCE: RA on BASE, but the differing instructions are positionally swapped (move vs lw between exit tail and preheader), so the RA verdict is a mis-triage and no inverse.py goal exists; consistent with s31.
 
 - [s37] src/ings.c restored to HEAD after the last measurement; no FAKE constructs anywhere; fake_ablate remains vacuous (s36).
+
+## s38 (2026-09-06, modality `forensics`; owner directive 2026-09-06 acknowledged)
+
+- [s38] CHASSIS RE-AUDIT. HEAD src/ings.c carries the anchor
+  `INCLUDE_ASM("asm/funcs", func_80017848);` at line 820 (unchanged since
+  s37). The candidate body (tmp/grind/func_80017848/s38/body_BASE.c, byte-
+  identical to candidate.c's function body) applied over the anchor scores
+  `sandbox func_80017848 --disable all` = **3 at 127 target / 127 build,
+  scorable**. Floor 3 stands. No FAKE construct anywhere; fake_ablate remains
+  vacuous.
+
+- [s38] KILL RE-AUDIT (mandated: closest instance kill re-measured on the
+  current chassis). Q1 (s34, tmp/grind/func_80017848/s38/body_Q1.c, escape #9
+  fired in both loops by writing the links read into `p`) = **14 at 127/127**
+  on the current chassis, identical to s34 and s35. The kill is not stale:
+  the instruction stream is target's and the 14 points are register seats.
+
+- [s38] OWNER DIRECTIVE (2026-09-06 foreclosed-bucket review) - explicit
+  acknowledgment for the driver's consistency audit: the directive was
+  EXECUTED in s37 (scratch TUs m0..m6 under exact CC_FLAGS, .cse2/.combine
+  read, answer: no protecting context exists; combine.c:1458 deletes the
+  promoted use-once copy on three-insn geometry) and is EXTENDED this session
+  by m7a/m7b (below). Nothing in the directive remains unexecuted.
+
+- [s38] FRONTIER ITEM 1 (escape #8: a basic-block boundary between the
+  preheader copy and the base add whose label vanishes after combine),
+  measured on minimal geometry under the exact project flags
+  (tmp/grind/func_80017848/s38/mini/, runner run.sh, all -da dumps kept):
+  (a) m7a_fwd_branch: s37's m5 geometry with a REAL forward conditional
+      (`if (sb < 0) return -1;`) between `b = a` and the base add. .cse2:
+      copy insn 71 `(set (reg/v 77) (reg/v 76))`, jump_insn 74, links load 83,
+      add 87 `(plus (reg 87) (reg/v 77))` reading the copy destination.
+      .flow: insn 87 has NO LOG_LINK (insn_list nil) because flow.c:2084
+      only links a set to a use with the same BLOCK_NUM; REG_DEAD 77 sits on
+      87 anyway. .combine: insn 71 untouched (combine never tries it). Final
+      .s: `bltz $6,.L8 ; move $2,$3` - the copy is emitted in the branch's
+      delay slot, i.e. in the PREDECESSOR block, and the add `addu $2,$5,$2`
+      reads the copy destination. So escape #8 is real at the pass level,
+      but the copy lands before/inside the branch. Target's guard is
+      `lw v0,28(v0) ; nop ; blez v0 ; addu v1,zero,zero ; addu a3,a0,zero` -
+      the load-delay nop is unfilled and the copy follows the delay slot, so
+      no branch can sit between target's copy and add. Confirms E-s32-7 on
+      minimal geometry.
+  (b) m7b_loop_hoist: copy `b = a` in the preheader, links load and base add
+      written INSIDE the do/while body (loop-top label between copy and add
+      at RTL generation). .loop: loop.c hoists them as insns 144/145/146
+      immediately after the copy (insn 70) and before NOTE_INSN_LOOP_BEG -
+      the same basic block. .flow: insn 146 carries `(insn_list 70)` and
+      REG_DEAD 77. .combine: the copy is gone. Final .s preheader:
+      `lw $4,16($4) ; addu $5,$5,$7` with no move. A back-edge label cannot
+      separate them because every invariant is hoisted into the copy's block.
+  (c) Post-combine label deleters, enumerated from toplev.c pass order
+      (combine 3004 -> sched1 3033 -> local_alloc/global/reload 3082 ->
+      sched2 3117 -> jump2 3142 `jump_optimize (insns, 1, 1, 0)` -> reorg
+      3167): jump2 deletes unreferenced labels at jump.c:270-276, deletes
+      no-op moves at jump.c:437-455 (delete_computation at :449), and
+      cross-jumps at jump.c:1950-2061 (which CREATES labels, the wrong
+      direction). The pre-flow jump pass at toplev.c:2929 runs the same
+      jump_optimize with cross_jump=0, noop_moves=0, so a jump that is
+      deletable at jump2 but not before flow can only be one whose
+      jumped-over block became no-op moves after reload. In C that block is
+      a conditional whose whole body is a register self-copy - the
+      dead-conditional-store family (forbidden). A REAL conditional keeps
+      its branch bytes (m7a). Frontier item 1 is therefore closed.
+
+- [s38] THE s31 MOVE-PRODUCER CENSUS LEFTOVER IS CLOSED BY READING. s31 left
+  jump.c (7 emit/gen_move_insn sites) and flow.c (1 site) unread. Read this
+  session: jump.c:907 and :951 and :1008 are the "if (...) x = exp" hoists
+  gated on `! reload_completed && BRANCH_COST >= 3` (resp. >= 4); mips.h:2937
+  defines BRANCH_COST as 1 for every cpu except R4000/R6000 (2), so under
+  -mcpu=3000 they never fire. jump.c:1144/1146 are the HAVE_conditional_move
+  path (absent on MIPS I). jump.c:1313 and :1429 are the store-flag
+  conversions of `if (c) x = a; else x = b;` into compare-result arithmetic,
+  run in jump1 BEFORE combine, so any move they emit is subject to the same
+  deletion. flow.c:2239 is inside `#ifdef AUTO_INC_DEC`, and rtl.h:658
+  defines AUTO_INC_DEC only when HAVE_PRE/POST_INCREMENT is defined;
+  mips.h:2175/2179 leave both commented out. No post-combine producer of a
+  plain `(set (reg) (reg))` exists in this cc1 for this target.
+
+- [s38] can_combine_p REFUSAL ENUMERATION for i2 = `(set q p)` into i3 =
+  `(set base (plus sh q))` with pseudos, both in one block (combine.c
+  882-1030): stack-pointer / field-assignment / self-set-with-REG_EQUAL /
+  CALL src / call-argument / REG_INC / REG_RETVAL (n/a); `succ &&
+  reg_used_between_p` (:903, three-insn only); `! all_adjacent &&
+  use_crosses_set_p (src)` (:914-917, escape #9, priced Q1 = 14);
+  REG_NO_CONFLICT on i3 (:920-922, DImode only - s17 R6); `INSN_CUID (insn) <
+  last_call_cuid && ! CONSTANT_P (src)` (:929, a CALL between copy and add -
+  none in target); hard-register dest/src (:943-956, n/a);
+  `volatile_insn_p` on an insn strictly between i2 and i3 (:985-988). The
+  last one was checked because target's links load sits exactly between the
+  copy and the add: rtlanal.c:1366 volatile_insn_p returns 0 for `case MEM`
+  and 1 only for UNSPEC_VOLATILE / volatile ASM_OPERANDS, so a volatile-
+  qualified C load of the links pointer would NOT save the copy; only an
+  `asm volatile` would, which is a forbidden family (s17 R5 already said so
+  on policy grounds; this is the toolchain-side confirmation that C volatile
+  is inert here). With LOG_LINK absence (m7a/m7b) and dead_or_set_p (s37
+  m4/m5) also measured, every refusal clause is now either n/a to this
+  geometry, priced, or forbidden.
+
+- [s38] src/ings.c restored to tmp/grind/func_80017848/s38/ings.orig.c (HEAD)
+  after the Q1 measurement; `git diff --quiet -- src/ings.c` passes.
+
+- [s38] Chassis: anchor src/ings.c:820 unchanged; BASE = 3 at 127/127 scorable; Q1 = 14 at 127/127 on the same chassis (kill re-audit passes).
+
+- [s38] Owner directive 2026-09-06 acknowledged and executed (s37 m0-m6, extended by s38 m7a/m7b); no protecting context exists for the promoted use-once copy.
+
+- [s38] Frontier item 1 (vanishing block boundary, escape #8) closed: a forward branch keeps the copy but emits it in the predecessor block (m7a), a back-edge is undone by loop.c hoisting into the copy's block (m7b), and the only post-combine zero-residue label deletion is jump2's no-op-move path (jump.c:449), whose C spelling is a dead conditional self-copy.
+
+- [s38] s31's unread move producers (jump.c x7, flow.c x1) are all gated off for this target (BRANCH_COST 1, no conditional move, no AUTO_INC_DEC) or run before combine.
+
+- [s38] rtlanal.c:1366 volatile_insn_p ignores volatile MEMs, so combine.c:985 cannot be reached from C volatile on the links load; only asm volatile reaches it (forbidden).
+
+- [s38] Chassis: src/ings.c anchor INCLUDE_ASM("asm/funcs", func_80017848); at line 820 (unchanged since s37); BASE = 3 at 127/127 scorable; Q1 = 14 at 127/127 on the same chassis.
+
+- [s38] Owner directive 2026-09-06 acknowledged: executed in s37 (m0-m6) and extended in s38 (m7a/m7b); combine.c:1458 deletes the promoted use-once copy with no protecting context.
+
+- [s38] Frontier item 1 (escape #8 with a vanishing label) closed: m7a keeps the copy but emits it in the branch delay slot before the branch; m7b's back-edge is undone by loop.c hoisting into the copy's block; the only post-combine zero-residue label deletion is jump2's no-op-move path (jump.c:449), whose C form is a dead conditional self-copy.
+
+- [s38] can_combine_p refusal clauses fully enumerated for this geometry (combine.c:882-1030): :903 succ-only, :914 use_crosses_set_p (Q1 = 14), :920 REG_NO_CONFLICT (DImode), :929 call-crossing (no call in target between copy and add), :985 volatile_insn_p (asm/UNSPEC only per rtlanal.c:1366), plus LOG_LINK absence (m7a/m7b) and dead_or_set_p (s37 m4/m5).
+
+- [s38] s31's unread move producers (jump.c x7, flow.c x1) are gated off for this target: BRANCH_COST 1 (mips.h:2937), no HAVE_conditional_move, no AUTO_INC_DEC (rtl.h:658, mips.h:2175/2179), or run before combine.
+
+- [s38] src/ings.c restored to HEAD after the last measurement; no FAKE constructs anywhere; fake_ablate vacuous.

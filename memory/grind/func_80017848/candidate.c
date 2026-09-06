@@ -1,3 +1,15 @@
+/* [s38 ADDENDUM 2026-09-06, forensics - body unchanged, still 3 at 127/127 on the
+ * HEAD src/ings.c:820 anchor.]  Frontier item 1 (escape #8 with a vanishing label)
+ * is closed on minimal geometry: a real forward branch between the copy and the
+ * base add keeps the copy but emits it BEFORE the branch (m7a), a loop back-edge
+ * is undone by loop.c hoisting into the copy's block (m7b), and the only
+ * post-combine zero-residue label deletion is jump2's no-op-move path
+ * (jump.c:449) whose C form is a dead conditional self-copy.  combine.c:985's
+ * volatile_insn_p refusal does not see C volatile loads (rtlanal.c:1366).  The
+ * can_combine_p refusal list is fully enumerated in evidence.md s38.  Q1 (escape
+ * #9) re-measured 14 at 127/127 on this chassis.  Details: memory/grind/
+ * func_80017848/evidence.md and hypotheses.md, s38 sections.
+ */
 /* CANDIDATE - func_80017848, s9 (2026-08-18, rederive).  sandbox --disable all = 3
  * FLOOR 5 -> 3 (variant V1_sh2_both).  Residual is 3 differing instructions, all
  * of them in loop 1's EXIT TAIL and loop 2's PREHEADER.  Loop 1's preheader -

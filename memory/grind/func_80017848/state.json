@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 37,
- "current_modality": "solver",
+ "session_count": 38,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -225,18 +225,24 @@
    "floor": 3,
    "modality": "solver",
    "headline": "Floor re-audited at 3 (127/127) on the drifted chassis (anchor now src/ings.c:820); the owner's 2026-09-06 directive is executed and answered: the preheader copy geometry built as standalone scratch T"
+  },
+  {
+   "session": 38,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis and Q1 re-measured 14; owner directive acknowledged (executed s37, extended by m7a/m7b); frontier item 1 (vanishing block boundary, escape #8) close"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A basic-block boundary between the preheader copy and the base add that leaves no instruction behind (a CODE_LABEL whose only jump is removed after combine has run) would break the LOG_LINK flow.c builds per block and keep the copy at zero instruction cost - the one combine escape (E-s32-4, escape #8) whose order-incompatibility was argued from labels that survive to the assembler.",
-   "mechanism": "flow.c resets reg_next_use at every basic-block start, so combine only sees a copy->add LOG_LINK when both sit in one block; combine.c:1458 then deletes the copy locally (s37 class kill). A label alive at flow/combine time but deleted by jump2 or reorg would leave target's instruction order intact.",
-   "next_probe": "Enumerate which post-combine passes delete labels in tools/gcc-2.7.2 (jump.c jump_optimize second pass, reorg.c) and whether any C-level control shape (a two-way branch whose arms cross-jump to identical bytes in jump2) can place such a label between q = p and base = sh + q; measure on the BASE chassis with dumps."
+   "hypothesis": "An insn between the copy and the base add that USES the copy destination redirects flow.c's reg_next_use so the add's LOG_LINK points at that insn instead of the copy, and combine's attempt on that insn fails (copy destination still live for the add), leaving the copy in target's position with the add reading it.",
+   "mechanism": "flow.c:2084 links a SET to reg_next_use[regno], the NEAREST later use in the block; a copy->interposer combination with the destination live afterwards makes added_sets_2 = 1 (combine.c:1458) and, with i1 == 0, no PARALLEL split exists (combine.c:1995 requires i1), so it is undone.",
+   "next_probe": "Scratch TU m8 on the m5 geometry: b = a; x = <expr using b>; c = *(ctx+0x10); d = sh + b; with x consumed once; read .flow LOG_LINKS on the add and .combine; then ask whether any byte-free interposer exists in target (the only instruction between target's copy and add is the links load, which reads ctx, so the probe most likely converts this into a class kill citing flow.c:2084)."
   },
   {
    "hypothesis": "A family grant covering a construct that can place a use-once register copy at a join-successor preheader without paying for its own address expression would re-open the residual; no such family is on the frozen list today.",
-   "mechanism": "Loop 2's guard block is a join (loop 1's skip branch lands on it), so cse's extended basic block cannot reach loop 2's preheader and the redundant load is never folded to a copy there; every C-level spelling of the copy at that point has been measured dead, and s37 proves combine's deletion of the loop-1 copy is context-free.",
-   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff copy position against target with tmp/grind/func_80017848/s37/dis.sh."
+   "mechanism": "Loop 2's guard block is a join, so cse cannot fold the redundant load to a copy there, and every measured C spelling of the copy at that point is dead; s37/s38 prove combine's deletion and the block-boundary escape are context-free.",
+   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the BASE chassis with the newly granted construct spelling loop 2's preheader copy, then diff copy position against target with tmp/grind/func_80017848/s38/dis.sh."
   },
   {
    "hypothesis": "An SOTN-master (PSX / GCC 2.7.2) precedent exhibiting the copy-then-redefine-source preheader idiom in a non-nested-loop context would convert the s18 decomp.me twin (scratch 19TpT) into a citable precedent and re-open gate (b).",
@@ -542,6 +548,38 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s37/body_BASE.c; BASE 3 at 127/127; no FAKE constructs",
    "predicate_cite": "",
    "result": "classify prints FIRST DIVERGENCE: RA because the three differing instructions share opcodes, but they sit at different p"
+  },
+  {
+   "session": 38,
+   "statement": "Frontier item 1: a basic-block boundary between the preheader copy and the base add whose label is removed after combine keeps the copy at zero instruction cost in target's position (escape #8 with a ",
+   "kill_scope": "instance",
+   "measured_on": "standalone scratch TUs under the exact project CC_FLAGS (canonical cc1), plus BASE re-audited at 3 (127/127) over the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs anywhere",
+   "predicate_cite": "",
+   "result": "m7a: insn 87 (add) has no LOG_LINK, combine leaves copy insn 71, but the final .s emits the copy as move $2,$3 in the br"
+  },
+  {
+   "session": 38,
+   "statement": "A volatile-qualified read of the links pointer between the copy and the base add makes combine.c:985-988 refuse the copy->add combination and leaves target's use-once copy in place.",
+   "kill_scope": "class",
+   "measured_on": "source reading of the frozen cc1 tree; no FAKE constructs involved",
+   "predicate_cite": "tools/gcc-2.7.2/rtlanal.c:1366",
+   "result": "volatile_insn_p has case MEM: return 0; and returns 1 only for UNSPEC_VOLATILE and volatile ASM_OPERANDS; a MEM_VOLATILE"
+  },
+  {
+   "session": 38,
+   "statement": "The Q1 instance kill (escape #9 in both loops, target's exact 127-instruction stream with a 14-point seat residual) is stale on the drifted chassis (anchor 719 -> 820).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_Q1.c; BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "14 at 127/127, identical to s34 and s35. Not stale; FAKE ablation vacuous (no FAKE constructs in any form of this functi"
+  },
+  {
+   "session": 38,
+   "statement": "One of the jump.c or flow.c emit_move_insn sites left unread by the s31 census produces a plain reg-reg copy after combine on this target.",
+   "kill_scope": "class",
+   "measured_on": "source reading of the frozen cc1 tree and mips target files; no FAKE constructs involved",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.h:2937",
+   "result": "jump.c:907/951/1008 are gated on ! reload_completed && BRANCH_COST >= 3 (resp. 4) and BRANCH_COST is 1 for -mcpu=3000; :"
   }
  ],
  "escalation_deferrals": 0
