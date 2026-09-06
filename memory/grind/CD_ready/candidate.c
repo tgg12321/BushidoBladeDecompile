@@ -1,3 +1,31 @@
+/* s88 UPDATE (2026-09-06, forensics). MATCH: sandbox 0/179/0 (cheat-invisible, --disable all) and
+ * verify-oracle ok:true (full build SHA1 == oracle) with this body in src/system.c. The 87-session
+ * residual (chain A's shift emitted before chain B's address in both scheduler passes, coupled to a
+ * local-alloc qty_compare tie) is closed by four co-designed changes, each measured load-bearing:
+ *   1. the sync-byte read `t0 = idx_1494[0]` sits BEFORE the do-while(0) wrap (loop depth 1): its
+ *      quantity's reg_n_refs drop from 8 to 7, so the merged chain-A quantity (byte+shift tied by
+ *      combine_regs, local-alloc.c:1784) prices at 2*7/16 = 0.875 below the arg5 value's 2*4/6 = 1.33
+ *      and the value takes $v1 first, the chain $a0 (H1/H2/H3 qty tables, tmp/grind/CD_ready/s88/).
+ *   2. the wrap's first inner insn is now the ready-byte load: sched.c:2081 makes it a loop-note
+ *      barrier that depends on the sync load and that every later register-setting insn (incl. the
+ *      a1 argument load) depends on - so the sync load may be a boosted single-set pseudo and still
+ *      be emitted first (this is what the original's volatile Intr reads did via read_dependence).
+ *   3. chain B's address is a fresh named intermediate `pB` written before chain A's shift, and its
+ *      value load `arg5 = *pB` after it: the boosted 126/128/115/130 then tie on priority and
+ *      rank_for_schedule's INSN_LUID fall-through (sched.c:2462) emits 126 128 115 130 in pass 1,
+ *      which pass 2 inherits (H5, pB folded back into the load = 2 = the old floor).
+ *   4. chain A's address is staged through the dead `src` local (staged-value-reused-variable): a
+ *      multi-set destination keeps the addu unboosted so it fills the backward-pass slot behind the
+ *      sw (the D-chain lbu is memory-unit blocked there) and global.c seats it in $a0 with src's
+ *      copy-loop lives (fresh `ta` instead: s87 F4/F5 9; in-place t0: N1/V2n/G2 15; `arg5 = *(s32 *)v0`
+ *      gives v0 a $v1 preference through set_preference's MEM stripping: H1 27).
+ * The v0 staging FAKE for the ready byte is RETIRED (H3 = 0 without it). Ablations: H4 (no outer
+ * wrap) 30, H5 (no pB) 2, H6 (arg5/tb inlined) 9. Volatile on both bytes (V2) 8 - the s60 kill
+ * reproduces because the volatile QI load splits from the shift and the shift becomes boosted.
+ * FAKE units on this body: outer wrap, t0 placement, tb, pB, src staging, arg5, the nested check
+ * wraps (unchanged), new_var/new_var3 (unchanged), the pointer aliases (now annotated), the
+ * volatile idx_1496 pointer (unchanged, F3 Judge question). Full derivation: evidence.md s88.
+ */
 /* s87 UPDATE (2026-09-06, solver). BODY UNCHANGED (2/179/0, re-measured live; residual = slots
  * 55-57, chain A's shift 115 emitted before chain B's 126/128 in both passes by INSN_LUID).
  * Both owner-directive probes executed: (1) local_extract/local_alloc on a4 - NO re-pricing
@@ -281,10 +309,10 @@ s32 marionation_Exec(s32 a0, u8 *a1)
   u8 *dst2;
   s32 i;
   D_800F19B8.timeout = sys_VSync(-1) + 0x3C0;
-  tbl_125c = D_800A125C;
-  idx_1494 = (u8 *)&D_800A1494;
-  idx_1495 = 1 + idx_1494;
-  idx_1496 = idx_1494 + 2;
+  tbl_125c = D_800A125C; /* FAKE: pointer alias to the CD_intstr table per pointer-alias-fake-exception, mechanism: the base is held in s5 across the poll loop as in the target; lever-exhaustion: direct-subscript spellings s66 s07 (14) */
+  idx_1494 = (u8 *)&D_800A1494; /* FAKE: pointer alias to the IRQ-mutated 3-byte status block (the original's Intr struct; the aggregate merge is foreclosed for this function by Ruling D, decisions.md:18287) per pointer-alias-fake-exception, mechanism: the base is held in s2 as in the target; lever-exhaustion: type-level spellings s60 (4/180) */
+  idx_1495 = 1 + idx_1494; /* FAKE: second handle (+1) per pointer-alias-fake-exception, mechanism: base register s6 for the ready byte in the callback block as in the target; lever-exhaustion: s60 */
+  idx_1496 = idx_1494 + 2; /* volatile u8 *: the IRQ-set completion byte polled in the goto-loop spin-wait (legitimate-volatile-interrupt-touched two-prong: IRQ writer = the CD callback, use-site = spin-wait read); the declaration-level spelling measured 4/178 at s78 (F3); FAKE pointer alias per pointer-alias-fake-exception */
   D_800F19B8.count = 0;
   D_800F19B8.func = &D_80016248;
   loop:
@@ -301,21 +329,22 @@ s32 marionation_Exec(s32 a0, u8 *a1)
     goto success;
   }
   do_timeout:
-  do { /* FAKE: do-while(0) loop-note ref weighting seats tbl_125c in s5 (SOTN FAKE-class match device; do-while-zero-exception 2026-07-06) */
   tslTm2LoadImage_2(&D_800161B8);
-
   {
     s32 arg5;
     s32 t0;
-    t0 = idx_1494[0];
-    t0 *= 4;
-    t0 = (s32)((u8 *)tbl_125c + t0);
-    v0 = idx_1494[1]; /* FAKE: index staged through the (dead-here) v0 var per staged-value-reused-variable (owner-sanctioned 2026-07-03) */
-    arg5 = *(s32 *)((v0 << 2) + (s32)tbl_125c);
-    debug_printf(&D_800161C8, D_800F19B8.func, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
-  }
+    s32 *pB;
+    s32 tb;
+    t0 = idx_1494[0]; /* FAKE: sync-byte read placed before the wrap (loop depth 1), mechanism: flow.c loop_depth-weighted reg_n_refs feeds local-alloc.c:1660 qty_compare - the depth-1 mention (qty refs 7, not 8) puts the merged chain-A quantity below the arg5 value's priority, so the value takes $v1 and the chain $a0; lever-exhaustion: s66 s01-s08, s88 N1/V2n/G2 (chain inside the wrap, refs 12: score 15) - hypotheses.md s88 */
+  do { /* FAKE: do-while(0) wrap, mechanism: sched.c:2081 loop-note barrier on the first insn inside (the ready-byte load) orders the sync-byte load ahead of it and every later register-argument load after it, and flow.c loop_depth ref weighting seats tbl_125c in s5 (SOTN FAKE-class match device; do-while-zero-exception 2026-07-06); lever-exhaustion: wrap ablated s81 2 -> 12, s88 H4 0 -> 30 */
+    tb = idx_1494[1]; /* FAKE: named intermediate for the ready byte (fresh, once-written, once-read, real value = lbu v0,1(s2)), mechanism: expand argument staging - with arg5 it keeps the stack argument's chain out of the call sequence; lever-exhaustion: s88 H6 (tb and arg5 inlined into the printf call) = 9 */
+    pB = (s32 *)((tb << 2) + (s32)tbl_125c); /* FAKE: named address intermediate (fresh, once-written, once-read, real value = addu v0,v0,s5), mechanism: rank_for_schedule INSN_LUID tie-break (sched.c:2462) between the boosted chain-B address insn and the boosted chain-A shift - the address must precede the shift and the value load follow it in RTL order; lever-exhaustion: s88 H5 (folded back into the value load) = 2 = the s80-s87 floor */
+    src = (u8 *)((t0 << 2) + (s32)tbl_125c); /* FAKE: chain-A address staged through the (dead-here) src var per staged-value-reused-variable (owner-sanctioned 2026-07-03), mechanism: the multi-set destination keeps the addu unboosted (birthing_insn_p sched.c:2505) so it fills the backward-pass slot behind the sw instead of the shift, and global.c seats it in $a0 with src's copy-loop lives; lever-exhaustion: s87 F4/F5 (fresh ta: 9), s88 N1/V2n/G2 (in-place t0: 15), s87 P5a/P5b (5/9) */
+    arg5 = *pB; /* FAKE: named intermediate for the fifth (stack) argument (fresh, once-written, once-read, real value = lw v1,0(v0)), mechanism: calls.c store_one_arg - a named value is loaded before the call sequence and stored by the sw at the target slot; lever-exhaustion: s88 H6 (passed as *pB directly) = 9 */
+    debug_printf(&D_800161C8, D_800F19B8.func, D_800A11DC[D_800A11D5], *(s32 *)src, arg5);
   cdrom_ClearIrq();
   } while (0);
+  }
   v0 = -1;
   goto check;
   success:

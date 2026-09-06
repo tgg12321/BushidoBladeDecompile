@@ -3982,3 +3982,47 @@ ON-manifold on the floor body.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor body with full FAKE set, t0 hoisted to function scope
+
+## [s88] The 87-session residual closes with four co-designed statement changes on the floor chassis: the sync-byte read before the wrap, a fresh named address for chain B written before chain A's shift with its value load after, the chain-A address staged through the dead src local, and the stack argument in a named local.
+- mechanism: sched.c:2081 loop-note barrier on the wrap's first insn orders the two byte loads and the a1 load by dependence; rank_for_schedule's INSN_LUID tie-break (sched.c:2462) among the boosted 126/128/115/130 gives the pass-1 emission 128 < 115 < 130 that pass 2 inherits; the multi-set src destination keeps the addu unboosted so it fills the memory-unit-blocked slot behind the sw; flow.c loop_depth weighting at depth 1 prices the combine_regs-merged chain-A quantity (2*7/16) below the arg5 value (2*4/6) in local-alloc.c:1660 so the value takes $v1 and the chain $a0, and global.c seats src in $a0 with its copy-loop lives.
+- probe: H2 (with the v0 staging) and H3 (fresh tb instead) applied via apply_s78.py; sandbox --disable all; tmp/grind/CD_ready/s87/sbs.py side-by-side; local_extract qty tables; verify-oracle.
+- result: H2 = 0/179/0, H3 = 0/179/0, verify-oracle ok:true. Only slot 54's D_800F19B8+8 addend spelling differs textually (byte-identical at link). Banked as candidate.c (annotated) and progress/s88-H2-*, progress/s88-H3-*.
+- verdict: CONFIRMED
+
+## [s88] Spelling both chains through multi-set variables (`v0 <<= 2; v0 += tbl` and `t0 <<= 2; t0 += tbl`, N1) reproduces the target's exact pass-1 emission order on the floor chassis.
+- mechanism: with no boosted chain insn, priorities (2 each) tie and INSN_LUID decides, and pass 2 inherits the positions.
+- probe: N1 applied, sandbox, sched1 trace and local_extract table (tmp/grind/CD_ready/s88/N1.*).
+- result: pass-1 emission 111 124 151 126 128 115 130 138 120 147 143 153 155 149 (target-exact) but score 15: t0 has one death (same-insn set/use adds no REG_DEAD), becomes a local qty [8,32] refs 12 priced 1.5 above the arg5 value, is allocated first and takes $2, and global.c moves v0 to $4 function-wide.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor FAKE set (outer wrap, v0 staging, new_var/new_var3, nested check wraps, volatile idx_1496)
+
+## [s88] Volatile on both status bytes (idx_1494/idx_1495 `volatile u8 *`) with the N1/V2-style chain spelling orders the byte loads by read_dependence and lets the chain-A shift stay unboosted.
+- mechanism: sched.c:807 read_dependence makes two volatile reads anti-dependent, so the second cannot be scheduled before the first in the backward pass regardless of boosts.
+- probe: V2 applied, sandbox, RTL block and sched1 trace (tmp/grind/CD_ready/s88/V2.*).
+- result: 8/179/0. The ordering works (lbu, lbu, lw a1 emitted in the target's order), but the volatile access is expanded as a QImode load into its own pseudo; the SI zero_extend folds into the shift, the shift becomes a single-set boosted insn and is scheduled at T-11 ahead of the sw (emitted after it). Reproduces the s60 kill (8) on the new chain spelling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor FAKE set plus volatile on idx_1494/idx_1495
+
+## [s88] A fresh boosted chain-A address (`ta`) over a merged multi-set t0 (V2n), or the chain-A addu written inside the printf argument (G2), produces the target's pass-1 order with the sw emitted after the addu.
+- mechanism: a boosted addu is scheduled before the sw (pri 3), shrinking the arg5 value's span; the addu's luid after the D chain makes it the first insn taken at T-8.
+- probe: V2n and G2 applied, sandbox, sched1 traces (tmp/grind/CD_ready/s88/V2n.sched, G2.sched), qty tables.
+- result: V2n = 15: with the addu (ALU) scheduled at T-9 the D-chain lbu is not memory-unit blocked at T-10, the sw lands after the D lbu in the backward order (before it in emission), the arg5 value's range [18,22] no longer overlaps the D chain's $2 and the value takes $2. G2 = 15: the unboosted shift 115 (ready one cycle after the addu) fills the blocked cycle behind the sw and is emitted after the value load and the D lbu.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor FAKE set, chain B in place on v0
+
+## [s88] Reading the arg5 value through v0 directly (`arg5 = *(s32 *)v0`, H1) keeps v0 in $v0 when the block-3 local seats are target-exact.
+- mechanism: local-alloc seats do not feed back into v0's global allocno.
+- probe: H1 applied (src-staged addu, t0 before the wrap, chain B in place on v0), sandbox, qty table, H1.greg vs floor.greg.
+- result: 27/179/0. The three block-3 local quantities seat exactly as predicted (D chain $2, arg5 value $3, merged chain A $4) and the pass-1 order is the target's, but global.c's set_preference strips the MEM of the value load and gives v0 a $3 preference (`74 preferences: 3`), so v0 is seated in $v1 for the whole function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06, s78 struct/no-pp chassis, floor FAKE set with the addu staged through src
+
+## [s88] Each FAKE unit of the match is load-bearing: the outer wrap (H4), the named address pB (H5), and the named tb/arg5 intermediates (H6).
+- mechanism: H4 removes the loop-note barrier and the tbl_125c ref weighting; H5 puts chain B's whole chain after chain A's shift in luid order; H6 lets calls.c expand the stack argument inside the call sequence.
+- probe: H4, H5, H6 applied and measured (tmp/grind/CD_ready/s88/H4.c, H5.c, H6.c).
+- result: H4 = 30 (byte loads and seats scrambled), H5 = 2 (exactly the s80-s87 floor residual, 115 before 128), H6 = 9. The v0 staging FAKE is NOT load-bearing (H3 = 0 with a fresh tb) and is retired from the body.
+- verdict: CONFIRMED

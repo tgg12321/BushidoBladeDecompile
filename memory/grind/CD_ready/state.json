@@ -1046,5 +1046,21 @@
   }
  ],
  "escalation_deferrals": 0,
- "object_model_audited": 78
+ "object_model_audited": 78,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The local `volatile u8 *idx_1496` pointer-carried alias is a non-sanctioned respelling of extern-volatile CSE-defeat that bypasses the allowlist/citation gate entirely; the self-vet itself admits it doesn't fit the sanctioned form. Next action: Revert the local pointer-carried `volatile u8 *idx_1496` construct. If the completion byte genuinely needs CSE-defeat, respell it as an `extern volatile u8 D_800A1496;` (or equivalent scalar) declaration at the actual global address, satisfy the full legitimate-volatile-interrupt-touched checklist (IRQ-writer citation with v"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "9140d0ff54f52e78",
+   "when": "2026-09-06T16:10:46.381933+00:00",
+   "summary": "The local `volatile u8 *idx_1496` pointer-carried alias is a non-sanctioned respelling of extern-volatile CSE-defeat that bypasses the allowlist/citation gate entirely; the self-vet itself admits it doesn't fit the sanctioned form."
+  }
+ ],
+ "banned_constructs": [
+  "volatile u8 *idx_1496; ... idx_1496 = idx_1494 + 2; /* volatile u8 *: the IRQ-set completion byte polled in the goto-loop spin-wait ... FAKE pointer alias per pointer-alias-fake-exception */"
+ ],
+ "ladder_skip": 2
 }
