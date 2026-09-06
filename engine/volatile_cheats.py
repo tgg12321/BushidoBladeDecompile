@@ -771,6 +771,12 @@ _SANCTIONED_UNWRITTEN_PADS: dict[str, frozenset[tuple[str, int]]] = {
     # grant), target vars=24 vs ours 8 with zero ($sp) references in the body;
     # same general phantom-frame-slot family, no family extension.
     "func_80030580": frozenset({("pre_pad", 4)}),
+    # 2026-09-06 owner ruling (docs/grind/decisions.md, foreclosed-bucket
+    # review): text1b.c sibling of func_80047EE8/func_80047FBC/func_800481E8
+    # with the identical untouched sp+0x18..0x37 region; full build == oracle
+    # proven 2026-09-05 (tmp/grind/func_800480C0/s24) before the grant; same
+    # general phantom-frame-slot family, no family extension.
+    "func_800480C0": frozenset({("pre_pad", 8)}),
 }
 
 
