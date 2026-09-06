@@ -963,3 +963,61 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s11] src/text1b.c was restored to its HEAD INCLUDE_ASM("asm/funcs", func_800480C0); state after the measurement; the session's diff touches only docs/grind/decisions.md, memory/grind/func_800480C0/{candidate.c,evidence.md,hypotheses.md}, tmp/, and the engine-written metrics/events.jsonl.
 
 - [operator 2026-09-02] owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated — ledger floor 20 > ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never its subject; the ladder runs a second full cycle (20 flat sessions, >= 6 modalities) before any disposition. All standing banned_constructs remain in force. exhaustion_base=11
+
+## s12 — structural (2026-09-05, chassis HEAD 2dba1d48)
+
+- **Floor re-measured 20** (`sandbox func_800480C0 --disable all` → `{"score": 20,
+  "target_insns": 74, "build_insns": 74, "rules_dropped": 0}`) with
+  `memory/grind/func_800480C0/candidate.c` installed over the
+  `INCLUDE_ASM("asm/funcs", func_800480C0);` line; `src/text1b.c` restored from HEAD
+  immediately afterwards. The chassis moved (s11 measured on 37f9ecdb) and the floor did
+  not.
+- **Mandated FAKE re-audit** (`tools/fake_ablate.py --func func_800480C0 --file text1b
+  --candidate memory/grind/func_800480C0/candidate.c`,
+  `tmp/grind/func_800480C0/s12/fake_ablate.txt`): one FAKE unit, the annotated
+  `arg0 = 0;`. keep-all 20 (74 insns) / drop-1 32 (73 insns). Load-bearing, masking no
+  lever — s8/s10/s11 verdict holds on this chassis.
+- **Fourteen new structural forms, every one `vars= 0` / `unalloc=0`**
+  (`tmp/grind/func_800480C0/s12/runall.txt`, `rundiag.txt`; bodies banked as
+  `rejected/s12-*.c`). Axes covered: declaration order and scope depth (b1 `new_var`
+  inside the loop block, b2 all locals at function scope, b11 an extra nested block
+  around the body), loop shape and exit form (b3 `for(;;)` + inline break, b4 pre-test
+  `while ((count--) != 0)` with no leading guard), cursor chassis (b5 split `u32*`/`u16*`
+  cursors, b6 an integer offset cursor with all accesses cast off `base`), statement
+  re-association (b7 `new_var` computed before the narrow loads, b12 swapped sum operand
+  order), type/signedness (b8 `u32 count`), and sign-extend placement (b9 all four inside
+  the loop, b10 two hoisted / two in-loop). Two forms move the frame the WRONG way by
+  buying a ninth callee-saved register (b5 and b8 read `regs= 9`, frame 64) and one
+  deletes bytes the target ships (b4, 67 insns).
+- **Producer 2's stated precondition is satisfiable here and still yields no orphan.**
+  `.claude/rules/phantom-slot-frame-lever.md:47-56` records that the combine orphan-USE
+  (`combine.c:10832-10841`) needs the widened `reg:HI` to carry a SECOND use AS AN HIMODE
+  VALUE, and that an s32-only consumer makes the site "fold clean instead". Diagnostics d1
+  (all four narrow fields accumulated in HImode: `a1v = (s16)(a1v + arg2);` then
+  `(s32)a1v`) and d2 (one field) give the body exactly that shape. Both measure
+  `unalloc=0` — d1 66 insns, d2 71 insns; combine re-forms the loads as `lh` and folds the
+  whole chain rather than stranding a death note at the loop label. This is stronger than
+  the s7/s9 result: class A does not fire on this body even when its documented
+  precondition is present, so its absence was never the binding constraint.
+- **Instrument control.** Re-running `rejected/phantom-guard-vars8-ceiling.c` on this
+  chassis still reads `vars= 8` / `unalloc=1`
+  (`tmp/grind/func_800480C0/s12/runctrl.txt`), so the fourteen zeros are genuine
+  negatives, not a broken probe.
+- **Frame algebra re-confirmed.** Target `.frame $sp,88` = args 24 + vars 32 + regs 32
+  (8 saved words). GCC 2.7.2 has at most nine callee-saved GP registers to offer
+  (`$s0-$s7` + `$ra`), so no `regs=` value can absorb the missing 32 bytes: the residual
+  is `vars` and nothing else. Every 74-insn form this session lands at frame 56 or 64.
+
+- [s12] Floor is 20 on chassis 2dba1d48 (74/74 insns, rules_dropped 0) with candidate.c installed; src/text1b.c restored from HEAD after the measurement.
+
+- [s12] FAKE re-audit on this chassis: one FAKE unit (`arg0 = 0;`), keep-all 20 / drop-1 32 - load-bearing, masking no lever.
+
+- [s12] Fourteen new forms measured this session (twelve structural respellings plus two HImode-accumulate diagnostics), every one vars=0 / unalloc=0; banked in memory/grind/func_800480C0/rejected/ as s12-*.c. Running total on this body is ~69 measured forms.
+
+- [s12] The combine orphan-USE producer (.claude/rules/phantom-slot-frame-lever.md:47-56, tools/gcc-2.7.2/combine.c:10832-10841) does not fire on this body even when its stated precondition - a second HImode use of the widened narrow field - is supplied: combine folds the chain into `lh` and the death note finds a home.
+
+- [s12] Positive control on the same chassis: rejected/phantom-guard-vars8-ceiling.c still reads vars=8 / unalloc=1, so the negatives are real.
+
+- [s12] Frame algebra: target .frame $sp,88 = args 24 + vars 32 + regs 32 (8 saved words). GCC 2.7.2 offers at most nine callee-saved GP registers ($s0-$s7 + $ra), so no `regs=` value can absorb the missing 32 bytes - the residual is `vars` and nothing else. Two of this session's forms reach regs=9 (frame 64) and none reach frame 88.
+
+- [s12] Owner directive 2026-09-02 governs the disposition: the ledger floor 20 exceeds ENDGAME_LOCK_MAX_FLOOR=5, so the 2026-07-27 standing ruling was never this function's subject and the ladder runs a second full cycle before any disposition. This session is a progress outcome, not a foreclosure.

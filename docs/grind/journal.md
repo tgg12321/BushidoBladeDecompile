@@ -1743,3 +1743,4 @@
 - 2026-09-05 19:41 func_8003C714 COMPLETED-C after 20 sessions (closer: s20 [structural]).
 - 2026-09-05 19:57 func_8003D39C s2 [structural] floor=15: Floor 16 -> 15: the array address must be carried by TWO distinct pointer variables; the residual is now one RA coalescing choice (n*16 temp onto n's register instead of the n+1 register), flat across 14 further structural spellings.
 - 2026-09-05 20:10 func_8003D39C COMPLETED-C after 3 sessions (closer: s3 [structural]).
+- 2026-09-05 20:19 func_800480C0 s12 [structural] floor=20: Structural: 14 new forms all vars=0/unalloc=0, and the combine orphan-USE producer's own documented precondition (a second HImode use of the widened field) is now measured negative ON this body, not merely absent from it.

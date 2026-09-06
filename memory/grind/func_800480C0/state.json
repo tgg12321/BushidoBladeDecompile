@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 11,
- "current_modality": "escalation",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 20,
    "modality": "escalation",
    "headline": "Disposition filed: gate (a) canonical-asm FAILS (scan_hand_coded tier=LOW 1/8, no STRONG signal); gate (b) SOTN precedent for the volatile-leading-pad construct is in hand (sotn-construct-index.md:103"
+  },
+  {
+   "session": 12,
+   "floor": 20,
+   "modality": "structural",
+   "headline": "Structural: 14 new forms all vars=0/unalloc=0, and the combine orphan-USE producer's own documented precondition (a second HImode use of the widened field) is now measured negative ON this body, not m"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An owner ruling adding the ('pre_pad', 8) row for func_800480C0 to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS re-activates this function and completes it with zero further grinding.",
-   "mechanism": "The bytes are already proven end-to-end: with the row honoured, sandbox --disable all reads 0 and the full clean-driver build SHA1s to the oracle (tmp/grind/func_800480C0/s1/build.log). The three in-file siblings received identical rows under the 2026-08-20 / 2026-08-22 owner rulings after the same bytes proof.",
-   "next_probe": "No probe. Operator steps are enumerated verbatim at docs/grind/decisions.md:20330-20345 (apply candidate.c over the INCLUDE_ASM line, add the row, sandbox must print 0, verify-oracle --rebuild, fresh layer-2 cheat-reviewer, queue done). A grind session may not write engine/ - it is on the scope-grant denylist at .claude/rules/integration-handoff-self-serve.md:63 and is mechanically refused by _SCOPE_GRANT_ALLOWED_RE (tools/grinder/grindlib.py:401)."
+   "hypothesis": "An owner ruling adding the ('pre_pad', 8) row for func_800480C0 to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS completes this function with zero further grinding.",
+   "mechanism": "The bytes are already proven end-to-end: with the row honoured, `sandbox --disable all` reads 0 and the full clean-driver build SHA1s to the oracle (tmp/grind/func_800480C0/s1/build.log). The three in-file siblings (func_80047EE8, func_80047FBC, func_800481E8) received identical rows under the 2026-08-20 / 2026-08-22 owner rulings after the same bytes proof, and all four shipped frames reserve the identical untouched 0x18-0x37 window.",
+   "next_probe": "No probe. Operator steps are enumerated verbatim at docs/grind/decisions.md:20330-20345. A grind session may not write engine/ - it is on the scope-grant denylist at .claude/rules/integration-handoff-self-serve.md:63 and is mechanically refused by _SCOPE_GRANT_ALLOWED_RE (tools/grinder/grindlib.py:401). Do NOT re-file this as an INTEGRATION HANDOFF: that shape was Judge-FAILed at docs/grind/decisions.md:20349."
   },
   {
-   "hypothesis": "A general class grant converting the per-function enumeration into a family predicate - 'allocated-but-never-touched leading vars window with zero target stores, in a TU where sibling functions already hold grants' - would cover this function without a per-function row.",
-   "mechanism": "The enumeration has grown to eight rows by six separate owner rulings, at least four of which (func_80047EE8, func_80047FBC, func_800481E8, and this function) are members of one four-function batch-loader family in one TU with the identical 0x18-0x37 window. That is the shape a predicate would generalise.",
-   "next_probe": "Owner-only. Nothing for a grind session to measure: the frozen family list is owner-only to extend (.claude/rules/no-new-park-categories.md), and the 2026-08-31 ordinary-c-judge-decidable ruling makes a session-side extension attempt FAIL(CONSTRUCT), not an escalation."
+   "hypothesis": "No known phantom producer in this tree can reach four unallocated pseudos on a body of this shape, so the honest producer of the 32-byte window is a toolchain finding still to be made on some other function.",
+   "mechanism": "Producer 1 (folded loop-guard compare) caps at one phantom here across the s2-s6 guard forms; producer 3 (live named locals on multi-read fields) has no site - every field this body reads is read once; and producer 2 (combine orphan-USE) is now measured negative WITH its precondition supplied, not merely without it (s12 d1/d2). The tree-wide mult-free ceiling measured in s8 is three (SetDrawEnv, SetDrawEnv2, func_80041AC8).",
+   "next_probe": "Cross-function, not per-function. If a future session on another queue item finds an ordinary-C body that reaches four unallocated pseudos at one block head - especially one whose narrow loads survive as lhu+sll+sra rather than folding to lh - re-open this function and transplant the producer shape. Do NOT re-spell class A, class B, the DImode route, or the structural axes: s4 (~50k permuter iters), s6-s9 (forensics), s10 (55 forms) and s12 (14 forms) closed all of them."
   },
   {
-   "hypothesis": "A toolchain finding that plants FOUR combine.c distribute_notes orphan pseudos at one block head from ordinary live C, on a body whose parameters arrive through narrow lhu+sll+sra loads, would give the 32-byte window an honest producer.",
-   "mechanism": "s6 named the producer as a distribute_notes orphan USE (combine.c:10832-10841) and s7 established the orphans DO stack at one block head; but this body's narrow parameter loads rule out the orphan shape SetDrawEnv (3 phantoms, vars=32, ordinary C) uses, and s10's 55 forms all measured unalloc=0.",
-   "next_probe": "Not a per-function probe - it is a cross-function toolchain question. If a future session on another queue item finds a body that reaches four orphans at one block head with narrow parameter loads, re-open this function and transplant the producer shape. Do NOT re-spell class A, class B or the DImode route here: s4 (~50k permuter iters), s6-s9 (forensics) and s10 (55 forms) closed all three."
+   "hypothesis": "A general class grant converting the per-function unwritten-pad enumeration into a family predicate - 'allocated-but-never-touched leading vars window with zero target stores, in a TU where sibling functions already hold grants' - would cover this function without a per-function row.",
+   "mechanism": "The enumeration has grown to eight rows by six separate owner rulings, at least four of which (func_80047EE8, func_80047FBC, func_800481E8 and this function) are members of one four-function batch-loader family in one TU with the identical 0x18-0x37 window and identical args=0x18 / callee-saved base 0x38 layout.",
+   "next_probe": "Owner-only. Nothing for a grind session to measure: the frozen family list is owner-only to extend (.claude/rules/no-new-park-categories.md), and the 2026-08-31 ordinary-c-judge-decidable ruling makes a session-side extension attempt a FAIL(CONSTRUCT) rather than an escalation."
   }
  ],
  "judge_constraints": [
@@ -356,6 +362,30 @@
    "measured_on": "HEAD 37f9ecdb, read-only scanner pass over asm/funcs/func_800480C0.s; no candidate installed, no FAKE construct in play.",
    "predicate_cite": "",
    "result": "HAND_CODED: tier=LOW score=1/8 (74 insns), reason 'no strong hand-coded indicators'. Only S4 fires (4 loads in an 8-insn"
+  },
+  {
+   "session": 12,
+   "statement": "The banked candidate body still measures a floor of 20 on the current chassis, and its single FAKE unit (the annotated `arg0 = 0;`) is load-bearing rather than masking a lever.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2dba1d48, candidate.c installed over the INCLUDE_ASM line; one FAKE (`arg0 = 0;`) present in the keep-all run and separately ablated in the drop-1 run.",
+   "predicate_cite": "",
+   "result": "sandbox printed {\"score\": 20, \"target_insns\": 74, \"build_insns\": 74, \"rules_dropped\": 0}. Ablation: one FAKE unit found;"
+  },
+  {
+   "session": 12,
+   "statement": "Twelve structural respellings of this body - declaration order and block-scope depth, loop shape and exit form, cursor chassis, statement re-association, counter signedness, and sign-extend placement ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2dba1d48, bodies at tmp/grind/func_800480C0/s12/bodies/ installed one at a time over the INCLUDE_ASM line, with the annotated `arg0 = 0;` FAKE present in every body.",
+   "predicate_cite": "",
+   "result": "All twelve read `vars= 0 / unalloc=0`. b1 new_var in the loop block, b2 all locals at function scope, b3 for(;;)+inline "
+  },
+  {
+   "session": 12,
+   "statement": "Giving the four narrow fields a second use AS AN HIMODE VALUE - the precondition the phantom-slot rule names for the combine orphan-USE producer - plants no orphan pseudo on this body.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2dba1d48, bodies at tmp/grind/func_800480C0/s12/diag/ installed one at a time over the INCLUDE_ASM line, annotated `arg0 = 0;` FAKE present.",
+   "predicate_cite": "",
+   "result": "d1 `vars= 0 / unalloc=0`, 66 insns; d2 `vars= 0 / unalloc=0`, 71 insns. Combine re-forms the narrow loads as `lh` and fo"
   }
  ],
  "ladder_skip": 0,

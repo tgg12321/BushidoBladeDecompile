@@ -3,6 +3,42 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s12 (structural, 2026-09-05, chassis HEAD 2dba1d48) - BODY UNCHANGED, floor
+ * re-measured 20 (74/74, rules_dropped 0) with this body installed over the
+ * INCLUDE_ASM line; src/text1b.c restored from HEAD afterwards. Mandated FAKE
+ * re-audit re-run on this chassis (tools/fake_ablate.py,
+ * tmp/grind/func_800480C0/s12/fake_ablate.txt): one FAKE unit (`arg0 = 0;`),
+ * keep-all 20 / drop-1 32 - still load-bearing, still masking no lever.
+ *  FOURTEEN NEW FORMS, ALL vars=0 / unalloc=0 (tmp/grind/func_800480C0/s12/
+ *  {runall.txt,rundiag.txt}; bodies banked in rejected/ as s12-*):
+ *    b1 new_var declared in the loop block      b2 all locals at function scope
+ *    b3 for(;;) + inline break (67-72 insns)    b4 pre-test `while ((count--)!=0)`
+ *       (67 insns - deletes the guard the target ships)
+ *    b5 split u32*/u16* cursors (regs=9, frame 64)
+ *    b6 integer offset cursor instead of a pointer
+ *    b7 new_var computed first in the body (statement re-association)
+ *    b8 unsigned loop counter (74 insns but regs=9, frame 64)
+ *    b9 sign-extends taken inside the loop      b10 half hoisted / half in-loop
+ *    b11 extra nested block around the body     b12 swapped sum operand order
+ *    d1/d2 HImode accumulate (see below).
+ *  THE DECISIVE NEW RESULT - PRODUCER 2's STATED PRECONDITION IS SATISFIED AND
+ *  STILL DOES NOT ORPHAN HERE. .claude/rules/phantom-slot-frame-lever.md:47-56
+ *  says the combine orphan-USE fires when the `reg:HI` being widened has a
+ *  SECOND use AS AN HIMODE VALUE (func_8007CE0C r8, tslLineG5Init pseudo 92);
+ *  an s32-only consumer "takes the widened value and the site folds clean".
+ *  d1 gives all four narrow fields exactly that second HImode use
+ *  (`a1v = (s16)(a1v + arg2);` then `(s32)a1v`), d2 gives it to one field.
+ *  Both measure unalloc=0: d1 66 insns, d2 71 insns - combine re-forms the
+ *  loads as `lh` and folds the whole chain instead of stranding a note. So on
+ *  THIS body the class-A recipe fails even when its precondition is met, not
+ *  merely because s7/s9 found the precondition absent.
+ *  INSTRUMENT CONTROL (tmp/grind/func_800480C0/s12/runctrl.txt): re-running
+ *  rejected/phantom-guard-vars8-ceiling.c on this chassis still reads
+ *  vars=8 / unalloc=1, so the fourteen zeros are real negatives and not a dead
+ *  probe. Frame algebra re-confirmed: target 88 = args 24 + vars 32 + regs 32;
+ *  only nine callee-saved registers exist, so no regs= value can absorb the 32.
+ *  Instruments: tmp/grind/func_800480C0/s12/{gen.py,probe.sh,runall.sh,
+ *  rundiag.sh,runctrl.sh,bodies/,diag/,ctrl/}. */
 /* s11 (escalation, 2026-09-02, chassis HEAD 37f9ecdb) - BODY UNCHANGED. Floor
  * re-measured 20 (74/74, rules_dropped 0) with this body installed over the
  * INCLUDE_ASM line; src/text1b.c restored to HEAD afterwards. Mandated FAKE

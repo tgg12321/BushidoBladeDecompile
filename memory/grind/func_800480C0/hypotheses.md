@@ -1003,3 +1003,70 @@ owner grants, not an unfound spelling.
 - probe: Grepped docs/reference/sotn-construct-index.md (machine-generated at sotn-decomp master aa53500226ee84be763f3e8702b27de06456b3a7, 1911 files) for volatile pad declarations, and read the provenance comments on every row of engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS.
 - result: Three PSX (untagged, i.e. GCC 2.7.2, not the PSP/mwcc or Saturn ports) hits: sotn-construct-index.md:103 -> src/st/sel/stream.c:80 `volatile u32 pad[4]; // FAKE`; :84 (and :620) -> src/st/e_background_bushes_trees.h:160 `volatile char pad[8]; //! FAKE`; :101 -> src/st/sel/2C048.c:564 `volatile u32 pad; // !FAKE:`. Honest limit: the index records declaration sites only, so it does not resolve whether those pads are subsequently written - it evidences the volatile-leading-pad construct, not specifically the UNWRITTEN sub-case this function needs - and the index header states a hit 'is not, by itself, a BB2 authorization'. Meanwhile all five post-original rows in _SANCTIONED_UNWRITTEN_PADS (engine/volatile_cheats.py:746-769: func_80047EE8, func_80047FBC, func_800481E8, func_80049A2C, func_80041688) carry inline dated 2026-08-20 / 2026-08-22 OWNER RULING citations; none was added by a Judge, a driver scope grant, or a session. So a sixth row is a family extension, which the 2026-08-31 ordinary-c-judge-decidable ruling makes FAIL(CONSTRUCT) - exactly what the 2026-09-02 04:28 Judge ruled at decisions.md:20349. The precedent is recorded in the foreclosure entry so the driver borderline-logs it for owner batch review; the disposition is still the silent foreclosure.
 - verdict: CONFIRMED
+
+## s12 — structural (2026-09-05, chassis HEAD 2dba1d48)
+
+- **H-s12-1 (KILLED, instance).** The banked candidate body still measures a floor of 20
+  on chassis 2dba1d48, and its single FAKE unit is load-bearing.
+  *Probe:* install candidate.c over the INCLUDE_ASM line, `sandbox --disable all`;
+  then `tools/fake_ablate.py`.
+  *Result:* score 20 (74/74, rules_dropped 0); ablation keep-all 20 / drop-1 32.
+  *Measured on:* HEAD 2dba1d48, candidate.c installed, one FAKE (`arg0 = 0;`) present and
+  separately ablated. Artifacts: `tmp/grind/func_800480C0/s12/fake_ablate.txt`.
+
+- **H-s12-2 (KILLED, instance).** Twelve structural respellings of this body — declaration
+  order and block-scope depth, loop shape and exit form, cursor chassis, statement
+  re-association, counter signedness, and sign-extend placement — each emit `vars= 0` with
+  zero unallocated pseudos.
+  *Probe:* `tmp/grind/func_800480C0/s12/{gen.py,runall.sh}`; per-body `.frame`, insn count
+  and `BB2_ALLOC_DEBUG` hardreg=-1 count.
+  *Result:* all twelve `vars= 0 / unalloc=0`; b5 and b8 buy a ninth callee-saved register
+  (frame 64, wrong direction), b4 deletes the guard insns the target ships (67 insns).
+  *Measured on:* HEAD 2dba1d48, bodies at `tmp/grind/func_800480C0/s12/bodies/` installed
+  one at a time over the INCLUDE_ASM line, the annotated `arg0 = 0;` FAKE present in every
+  body. Artifacts: `tmp/grind/func_800480C0/s12/runall.txt`.
+
+- **H-s12-3 (KILLED, instance).** Giving the four narrow fields a second use AS AN HIMODE
+  VALUE — the precondition `.claude/rules/phantom-slot-frame-lever.md:47-56` names for the
+  combine orphan-USE producer — does not plant an orphan on this body.
+  *Probe:* d1 accumulates all four fields in HImode before widening, d2 accumulates one;
+  measured with the same instrument.
+  *Result:* d1 `unalloc=0`, 66 insns; d2 `unalloc=0`, 71 insns. Combine re-forms the loads
+  as `lh` and folds the chain instead of stranding a REG_DEAD note at the loop label.
+  *Measured on:* HEAD 2dba1d48, bodies at `tmp/grind/func_800480C0/s12/diag/`, FAKE
+  present. Artifacts: `tmp/grind/func_800480C0/s12/rundiag.txt`.
+
+- **H-s12-4 (CONFIRMED).** The probe is live on this chassis: the banked
+  `phantom-guard-vars8-ceiling.c` form still reads `vars= 8 / unalloc=1`, so this
+  session's fourteen zeros are real negatives.
+  *Artifacts:* `tmp/grind/func_800480C0/s12/runctrl.txt`.
+
+## [s12] The banked candidate body still measures a floor of 20 on the current chassis, and its single FAKE unit (the annotated `arg0 = 0;`) is load-bearing rather than masking a lever.
+- mechanism: Mandated kill re-audit: an instance kill is only as good as the chassis and FAKE state it was taken under, and the chassis moved from 37f9ecdb (s11) to 2dba1d48. fake_ablate.py rebuilds the body with each annotated FAKE unit removed in turn and re-scores.
+- probe: python3 tmp/grind/func_800480C0/s3/install.py memory/grind/func_800480C0/candidate.c; `sandbox func_800480C0 --disable all`; src/text1b.c restored from HEAD; then `python3 tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c`.
+- result: sandbox printed {"score": 20, "target_insns": 74, "build_insns": 74, "rules_dropped": 0}. Ablation: one FAKE unit found; keep-all 20 (74 insns) / drop-1 32 (73 insns). The store is load-bearing for the stream and masks no phantom lever, re-confirming the s8/s10/s11 verdicts on a new chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2dba1d48, candidate.c installed over the INCLUDE_ASM line; one FAKE (`arg0 = 0;`) present in the keep-all run and separately ablated in the drop-1 run.
+
+## [s12] Twelve structural respellings of this body - declaration order and block-scope depth, loop shape and exit form, cursor chassis, statement re-association, counter signedness, and sign-extend placement - each emit `vars= 0` with zero unallocated pseudos.
+- mechanism: The residual is 32 bytes of `vars` that no instruction touches, and s5 measured `vars = 8 * phantoms` exactly across this tree, so the target needs FOUR unallocated pseudos. The structural modality's levers (block-local splits, declaration order, type narrowing, statement re-association) were spelled out as twelve bodies and screened on the `.frame`/BB2_ALLOC_DEBUG gradient rather than the sandbox score, which separates 'wrong frame' from 'wrong codegen'.
+- probe: tmp/grind/func_800480C0/s12/gen.py generated b1..b12; tmp/grind/func_800480C0/s12/runall.sh installed each over the INCLUDE_ASM line, compiled the TU with the instrumented cc1 (BB2_ALLOC_DEBUG=1), and reported `.frame`, insn count and the hardreg=-1 pseudo count.
+- result: All twelve read `vars= 0 / unalloc=0`. b1 new_var in the loop block, b2 all locals at function scope, b3 for(;;)+inline break, b7 new_var computed first, b9 sign-extends inside the loop, b10 half hoisted, b11 an extra nested block, b12 swapped sum operand order and b6 an integer offset cursor all sit at 72 insns / frame 56. Two move the frame the wrong way by buying a ninth callee-saved register (b5 split u32*/u16* cursors and b8 unsigned counter both read `regs= 9`, frame 64), and b4 (pre-test `while ((count--) != 0)` with no leading guard) drops to 67 insns by deleting guard instructions the target ships.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2dba1d48, bodies at tmp/grind/func_800480C0/s12/bodies/ installed one at a time over the INCLUDE_ASM line, with the annotated `arg0 = 0;` FAKE present in every body.
+
+## [s12] Giving the four narrow fields a second use AS AN HIMODE VALUE - the precondition the phantom-slot rule names for the combine orphan-USE producer - plants no orphan pseudo on this body.
+- mechanism: .claude/rules/phantom-slot-frame-lever.md:47-56 records that combine's distribute_notes orphan-USE (combine.c:10832-10841) fires when the widened `reg:HI` carries a second use as an HImode value (func_8007CE0C r8, tslLineG5Init pseudo 92), and that an s32-only consumer 'takes the widened value and the site folds clean instead'. s7 and s9 had only established that this body's fields are consumed once as s32; this probe supplies the missing precondition directly and asks whether the producer then fires.
+- probe: tmp/grind/func_800480C0/s12/diag/d1_himode_accumulate.c accumulates all four fields in HImode (`a1v = (s16)(a1v + arg2);` then `(s32)a1v`); d2 does it for one field. Both measured with the same .frame/BB2_ALLOC_DEBUG instrument via tmp/grind/func_800480C0/s12/rundiag.sh.
+- result: d1 `vars= 0 / unalloc=0`, 66 insns; d2 `vars= 0 / unalloc=0`, 71 insns. Combine re-forms the narrow loads as `lh` and folds the whole chain rather than stranding a REG_DEAD note at the loop-top label, so the note always finds a home. Class A therefore fails on this body even with its documented precondition present - its absence was never the binding constraint. (Both forms are diagnostics, not candidates: they change the program's semantics and delete bytes the target ships.)
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2dba1d48, bodies at tmp/grind/func_800480C0/s12/diag/ installed one at a time over the INCLUDE_ASM line, annotated `arg0 = 0;` FAKE present.
+
+## [s12] The .frame/unalloc probe is live on this chassis, so this session's fourteen zeros are genuine negatives rather than a dead instrument.
+- mechanism: A negative-only batch is worthless without a positive control: the banked rejected/phantom-guard-vars8-ceiling.c form is known to produce exactly one class-B phantom, so re-running it on the current chassis proves the instrument still detects unallocated pseudos.
+- probe: tmp/grind/func_800480C0/s12/runctrl.sh over memory/grind/func_800480C0/rejected/phantom-guard-vars8-ceiling.c.
+- result: Reads `.frame $sp,64 # vars= 8, regs= 8/0, args= 24`, insns=73, unalloc=1 - unchanged from s6. Control passes.
+- verdict: CONFIRMED
