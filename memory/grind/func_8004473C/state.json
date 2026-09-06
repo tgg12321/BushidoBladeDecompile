@@ -1,0 +1,72 @@
+{
+ "func": "func_8004473C",
+ "file": "text1a_c",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 13,
+   "modality": "recon",
+   "headline": "Object-model fix (D_800A9CF8 header struct, base+offset evidence) drops honest floor 40 -> 13; loop body byte-exact; residual is pre-loop sched1/local-alloc coupling fully attributed (birthing-leaf re"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "An ordinary-C spelling exists in which src's pseudo has two live sets at flow time with the second set becoming a no-op move after allocation (e.g. src derived on both arms of the count check from the same temp), demoting the reload copy from birthing and yielding the target order at 0.",
+   "mechanism": "sched.c birthing_insn_p requires reg_n_sets==1; with 2 sets the copy keeps priority 1, the store wins T-2 by potential_hazard, the count load is blocked one cycle after the store and lands before addr/store.",
+   "next_probe": "Spell 2-3 such forms, sandbox each, verify in .flow that reg 72 keeps 2 sets and in .sched that insn 20 shows priority (1) at T-2."
+  },
+  {
+   "hypothesis": "tools/sched_solver on block 0 of form C can enumerate exactly which attribute change (boost removal vs. added block-0 consumer) yields the target order, and tools/ra_solver classify can confirm the local-temp seat, before more spellings are burned.",
+   "mechanism": "order-exact scheduler model + local-alloc model on the banked pre-sched chain (dumpsC .combine).",
+   "next_probe": "Run the solvers on dumpsC, map the winning vector to C, measure."
+  },
+  {
+   "hypothesis": "If src's second set cannot be produced, a form where the reload copy has a block-0 consumer other than the store (dst or i derived from the temp) is the last ordinary-C lever; probability low because the target block 0 has no extra insns.",
+   "mechanism": "a consumer removes the copy from the T-2 ready list; the consumer must itself be deleted/merged later.",
+   "next_probe": "One measurement per shape; kill with the sched trace."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Form A (src = game_GetCharData(); D.unk10 = src; for-loop) on the merged-struct chassis with no FAKE constructs seats the call result in $a0 instead of $v0 and measures 15.",
+   "kill_scope": "instance",
+   "measured_on": "merged-struct chassis, form A, no FAKE constructs, sandbox --disable all = 15",
+   "predicate_cite": "",
+   "result": "15; sched1 order already matches the target, only the seats differ (move a0,v0 / lh v0 / addiu v1)."
+  },
+  {
+   "session": 1,
+   "statement": "Form C (D.unk10 = (s32)game_GetCharData(); src = (Rec*)D.unk10; for-loop) and its load-order permutations C4-C7, loop-shape variants D1-D3, and F2/F4 all measure 13 with the count load scheduled after",
+   "kill_scope": "instance",
+   "measured_on": "merged-struct chassis, forms C/C4-C7/D1-D3/F2/F4, no FAKE constructs, sandbox --disable all = 13 each",
+   "predicate_cite": "",
+   "result": "All 13. Allocation is correct in this family (p75 -> $v0 by copy suggestion, count -> $v1, src -> $v0 by global preferen"
+  },
+  {
+   "session": 1,
+   "statement": "Reading the count into a shared local n (pre-check and loop test, n re-read at body end) makes the pre-check load non-birthing without changing the loop.",
+   "kill_scope": "instance",
+   "measured_on": "merged-struct chassis, form N1, no FAKE constructs, sandbox --disable all = 29",
+   "predicate_cite": "",
+   "result": "29: n becomes a loop-carried global pseudo seated in $a0 (lh a0 / slt v0,a3,a0) and the pre-loop seats shift; the target"
+  },
+  {
+   "session": 1,
+   "statement": "Placing the reload/copy of src inside the count guard (F5/F6/F7) keeps the call temp local and fixes the order.",
+   "kill_scope": "instance",
+   "measured_on": "merged-struct chassis, forms F5/F6/F7, no FAKE constructs, sandbox --disable all = 17/19/19",
+   "predicate_cite": "",
+   "result": "17 / 19 / 19 \u2014 allocation regresses exactly as predicted."
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-06T05:55:59.277089+00:00",
+ "object_model_audited": 1
+}

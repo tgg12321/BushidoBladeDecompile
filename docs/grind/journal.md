@@ -1760,3 +1760,4 @@
 - 2026-09-06 00:17 _spu_note2pitch: LAYER-1 FAILED a sandbox-0 candidate — The down-shift arm's `(u16)(0x1000 >> oct)` cast is a self-admitted no-op width cast whose sole purpose is to give `atten` a second static set that defeats sched.c's birthing_insn_p reg_n_sets==1 boost -- a redundant-width-cast GCC-internals lever, a family the 2026-07-01/2026-08-18 SOTN surveys explicitly declined to sanction.
 - 2026-09-06 00:34 _spu_note2pitch COMPLETED-C after 2 sessions (closer: s2 [permuter]).
 - 2026-09-06 00:55 func_800644FC COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-06 01:34 func_8004473C s1 [recon] floor=13: Object-model fix (D_800A9CF8 header struct, base+offset evidence) drops honest floor 40 -> 13; loop body byte-exact; residual is pre-loop sched1/local-alloc coupling fully attributed (birthing-leaf reload copy vs copy-suggested call temp).
