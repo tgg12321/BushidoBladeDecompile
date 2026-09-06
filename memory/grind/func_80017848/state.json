@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 43,
- "current_modality": "structural",
+ "session_count": 44,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -261,23 +261,29 @@
    "floor": 3,
    "modality": "structural",
    "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis and U4 at 6; six new structural cells killed: tail-in-if reload (12, seat swap), C self-assign reader (class kill: expr.c store_expr emits no RTL), "
+  },
+  {
+   "session": 44,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Floor re-audited at 3 (127/127); frontier items 1 and 2 measured dead (F1a/F1b/F2 = 6, F2b = 12); NEW dump-proven mechanism: a loop-body read of the copy destination that combine folds to a constant A"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Placing the copy `q = p` in the guard block immediately after the guard load and BEFORE the two-step address (`t = sh + p`) seats q in a3 by conflicts alone (q live while t/v0 is born, while p/a0 is still live to the guard add, and while i/v1, sh/a1, lnk/a2 are live) with no post-loop reader, and the copy is scheduled into neither the load-delay nop nor the blez delay slot.",
-   "mechanism": "global.c hard_reg_conflicts from global_conflicts' live sets (conflicts recorded at each birth while q is live); the copy and the add are then in different basic blocks so flow.c:2084 gives the add no LOG_LINK and combine never tries it; the cost is sched2/reorg filling target's unfilled `sll zero,zero,0` after `lw v0,28(v0)` (E-s32-7 measured a copy placed after the guard's address computation, not this earlier position - verify the s32 cell before spending the measurement).",
-   "next_probe": "On U4 move `q = *(u8 **)(ctx + 0xC)` (or `q = p`) to directly after `p = *(u8 **)(ctx + 0xC);` and before `sh = slot_a << 6;` in loop 1 only; read .greg for q's conflicts/seat and .sched2/.dbr for where the copy lands; if it fills the nop, bank as an instance kill of the guard-block placement with the scheduler as the predicate (sched.c dependency on the lw result vs the copy's independence)."
+   "hypothesis": "A NATURAL loop-body expression on the byte index or the record pointer whose RTL combine proves constant or unreachable (e.g. a sentinel/range check on the zero-extended byte index against a constant outside 0..255 such as idx == -1 or idx >= 0x100, with the copy destination read inside the folded arm) reproduces target's copies AND seats the copy destination in a3, provided the 2.7.2 front end leaves the comparison to RTL.",
+   "mechanism": "combine.c simplify_comparison folds the compare via nonzero_bits(lbu) = 0xFF and turns the conditional jump unconditional; the dead arm's read of q is deleted by jump2 after global allocation, so flow's liveness (q live across the loop) is what global.c allocates from (E-s44-3); the seat is a3 iff q's priority (global.c:615) sorts after sh and lnk, which a def + add + one loop-weight read over a >=10-insn range does in U4's geometry (E-s44-4).",
+   "next_probe": "On U4: idx = *(u8 *)(base + i + 0x24); if (idx == -1 or idx > 0xFF) { <statement reading q that a human would write, e.g. a fallback record pointer> } then the existing check; verify in .rtl that the compare reaches RTL (not tree-folded), in .combine that the jump folds, in .jump2 that the arm is deleted, in cc1.log ALLOCDBG that q sorts after sh/lnk; bank the seat and the score. If the front end folds it, measure the same with a u8-typed local instead of s32."
   },
   {
-   "hypothesis": "A single pseudo q written in both preheaders and read once after loop 2 would seat in a3 and keep both copies, and its entry-liveness on the loop-skip paths (s40 m9a) can be cut only by a definition in guard 1's block that cse does not fold into the preheader copy.",
-   "mechanism": "cse deletes a same-value re-store in the guard's extended block; a different-value definition before the blez costs an instruction unless it is the guard's own load (dest q), which then seats q in a0 by the guard add.",
-   "next_probe": "On U4 measure guard 1 loading into q (q = *(u8 **)(ctx + 0xC)) with p = q in the preheader and base = sh + p (roles swapped), reader after loop 2; read .greg for the seats; expected instance kill (q in a0, copy dest p short-lived in v0)."
+   "hypothesis": "A byte-free instrument that adds no cross-block pseudo and reads no pre-existing pseudo (so sh/lnk keep U4's priorities 11428/8333) seats the copy destination in a3 and scores the loop-1 residual at 0, confirming that priority order is the ONLY remaining variable once a combine-folded reader exists.",
+   "mechanism": "E-s44-4: q with 4 weighted refs over >=10 insns has priority <= 8000 in U4's geometry, below lnk's 8333 and sh's 11428, so find_reg reaches a3; M6 failed only because its in-loop read of sh stretched sh to 5555 and M7 because its named idx became a global pseudo.",
+   "next_probe": "Instrument (cheat, measurement only): compute the fold source from a value already live across the loop without extending anything, e.g. y = (base & i) & 0 is folded at the tree level (useless) - instead use a u8-typed temp declared and consumed within the first loop block (idx local to that block) and z = q & (idx & 0x100) placed in the SAME block before the return check, consumed in the lhu address; read ALLOCDBG for q's priority and seat; if a3, bank 'priority order confirmed' and move to the natural-spelling search."
   },
   {
-   "hypothesis": "A family grant covering a construct that places a use-once register copy at a join-successor preheader without paying for its own address expression would re-open the residual; no such family is on the frozen list today (s43 adds: the do/while(0) wrap, the one sanctioned family with 'any codegen effect', is measured inert around the copy in every placement).",
-   "mechanism": "s37-s43 prove combine's deletion, the block-boundary escape, the interposer escape, the reload producer, the call-argument reader, the cross-jump reader, the same-block re-store reader, the dead-store reader, the self-assign reader, the do/while(0) wrap and the allocator preference route are all context-free.",
-   "next_probe": "On a future grant_rescan.py --apply hit, re-measure the U4 chassis with the granted construct spelling both preheader copies, then diff with tmp/grind/func_80017848/s43/post.sh."
+   "hypothesis": "GCC 2.7.2's C front end (fold-const / c-typeck) does NOT fold comparisons of an int-typed local holding a zero-extended byte against out-of-range constants, so such a check reaches RTL and combine (not the front end) removes it - the precondition for frontier item 1.",
+   "mechanism": "fold-const.c in 2.7.2 folds range comparisons only through type ranges of the operand's TREE type; an s32 local has full range, a u8-typed local does not.",
+   "next_probe": "Scratch TU under project flags with -da: s32 idx = *(u8 *)p; if (idx == -1) return 1; return 0; and the u8-typed variant; grep .rtl for the compare and .combine/.jump2 for its removal; bank which typing keeps the compare in RTL."
   }
  ],
  "judge_constraints": [],
@@ -746,6 +752,30 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_X3.c (U4-derived); BASE re-audited at 3 (127/127); wrap unannotated measurement cell, no other FAKE constructs",
    "predicate_cite": "",
    "result": "10 at 127/125: loop 1's sh seats a2 and lnk a1 (sll a2,s4,6 / addu v0,a2,a0 / lw a1,16(s2) / addu a0,a2,a0), loop 2's li"
+  },
+  {
+   "session": 44,
+   "statement": "Placing the copy q = p in the guard block immediately after the guard load and before the two-step address (frontier item 1) keeps the copy and seats q in a3 by conflicts alone, measured as cells F1a ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_F1a.c / body_F1b.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "6 at 127/125 for both, same residual as U4; the copy never reaches combine. Banked as rejected/s44_frontier1_copy_in_gua"
+  },
+  {
+   "session": 44,
+   "statement": "Guard 1 loading into q with p = q in the preheader and base = sh + p (roles swapped, frontier item 2), with and without loop 2's guard reading q, keeps a copy or moves the copy destination's seat towa",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_F2.c / body_F2b.c (U4-derived); BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "F2 = 6 at 127/125 (identical to U4). F2b = 12 at 127/124: addu a0,a0,a1 reads q, q in a1, sh in a0 in both guards, loop-"
+  },
+  {
+   "session": 44,
+   "statement": "The instrument spellings M2 (ashiftrt of the lbu value feeding a jump), M3 (constant-condition conditional jump guarding the reader) and M4 (single-expression and-chain) produce a byte-free combine-fo",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus body_M2.c / body_M2a.c / body_M3.c / body_M3a.c / body_M4.c / body_M4a.c (U4-derived instruments); BASE re-audited at 3 (127/127); no FAKE constructs",
+   "predicate_cite": "",
+   "result": "M2 45 at 135 / M2a 38 at 131 (sra + bne survive); M3 14 at 133 / M3a 16 at 132 (y = 0 computed, bne v0,zero kept, reader"
   }
  ],
  "escalation_deferrals": 0

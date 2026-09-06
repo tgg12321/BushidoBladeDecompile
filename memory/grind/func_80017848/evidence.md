@@ -5082,3 +5082,139 @@ enforce it; it is why the frontier below points at the guard-block placement
 - [s43] Reading: global.c:919-928 (someone_prefers = lower-priority conflicting allocnos only) + global.c:899-910 (call-crossing parameter preferences pruned) + global.c:344-372/:1000 (v0/a0 seeded used) close the pass-0 preference route to a3; the a3 seat needs hard_reg_conflicts with v0 and a0, i.e. q live past the base add.
 
 - [s43] Reading: a byte-free flow-time reader must be a non-dead insn (flow.c:1590), cannot be an algebraic fold (cse2 sees the guard->preheader extended block and folds first), and after RA can only vanish as a no-op move or by reorg's redundant-insn redirect; no instruction of target after either preheader add reads a3.
+
+## s44 (2026-09-06, modality `synthesis`; owner directive already executed s37-s43)
+
+Chassis: HEAD `src/ings.c:820` INCLUDE_ASM anchor with each cell body pasted in
+by `tmp/grind/func_80017848/s44/apply_win.py` (cells.ps1 saves obj_<cell>.o and
+src_<cell>.c per cell; post.sh makes D_<cell>.txt from the saved object and the
+instrumented dump i<cell>/ from the saved source). `candidate.c` (= s43's body,
+s44/body_BASE.c) re-measured **3 at 127/127** first; U4 re-measured **6 at
+127/125** (E-s44-0). No FAKE constructs exist in any form of this function, so
+`tools/fake_ablate.py` remains vacuous (the kill re-audit is the BASE/U4
+re-measurement). Sibling func_8005E54C has no candidate.c and shares no block
+with this function (nothing to transplant). Cell bodies, normalised diffs,
+raw objdumps, saved objects and instrumented dumps (CODEGEN-IDENTICAL to
+build/cc1 on every dumped cell) are in `tmp/grind/func_80017848/s44/`.
+
+### E-s44-0 - chassis re-audit + kill re-audit (quote THIS floor)
+BASE = 3 at 127/127; U4 = 6 at 127/125. Both identical to s42/s43; the ledger's
+banked kills are not stale. src/ings.c restored to HEAD after every cell
+(`git diff --quiet -- src/ings.c` passes at session end).
+
+### E-s44-1 - frontier item 1 (copy in the guard block before the two-step) is dead
+F1a = U4 with `q = p;` right after the guard load and before `sh = slot_a << 6`
+/ `t = sh + p` in both loops: **6 at 127/125**, same residual as U4. F1b (fresh
+read `q = *(u8 **)(ctx + 0xC)` at the same position) = **6**. Mechanism: the
+guard block and the preheader form one cse2 extended block; q's last reference
+(the base add) lies inside it, so cse.c:826-855 make_regs_eqv keeps p as the
+canonical register, the base add is rewritten to `sh + p`, and the copy is dead
+before flow (flow deletes it; combine never sees it). The s32 cell S survived
+only because q was ALSO read after the extended block (the loop-2 guard) and so
+became canonical. Escape #8 therefore needs a post-block reference of q in
+addition to the block boundary - and E-s32-7 already showed the boundary
+position is incompatible with target's stream. Frontier item 1 closed.
+
+### E-s44-2 - frontier item 2 (roles swapped) is dead; a real post-loop reader seats q in a1
+F2 (guard loads q, preheader `p = q`, `base = sh + p`, both loops) = **6 at
+127/125**: the short-lived copy destination p dies at the add, combine folds it,
+identical to U4. F2b (F2 in loop 1 plus loop 2's guard reading q instead of
+reloading) = **12 at 127/124**: the copy is folded INTO the base add
+(`addu a0,a0,a1` reads q), q takes a1 and sh a0 (both guards swap), loop-2
+links a1. q was allocated before sh because its priority (more refs) is
+higher. A real post-loop reader cannot both keep the copy and seat q in a3.
+Frontier item 2 closed.
+
+### E-s44-3 - NEW MECHANISM, DUMP-PROVEN: a combine-folded loop-body reader keeps the copy with zero bytes
+Instrument M1 (a CHEAT by construction - dead algebra `m = slot_b & 1; w = m >> 1;`
+in the loop `y = i & w; z = (s32)q & y;` with the exit test reading
+`base + z + 0x1C`; never a candidate) = 14 at 127/128. Its loop 1 preheader is
+`addu a1,a0,zero / lw t0,16(s2) / addu a0,a2,a1`: the use-once copy SURVIVES and
+the base add reads the copy destination, while the loop body contains NO read of
+a1 (the `and` chain is folded to constants). Pass attribution from iM1/: the
+reader `z = q & y` is present in .cse2 and .flow (flow marks q live at the loop
+top, so the base add carries no REG_DEAD for q); in .combine the chain
+`y = i & w` -> 0 (combine.c nonzero_bits of w = (ashiftrt m 1) with
+nonzero_bits(m) = 1) and `z = q & 0` -> 0 are folded into the exit-test address,
+so q's loop read vanishes AFTER flow; try_combine(copy -> base add) then fails
+at combine.c:1458 (`added_sets_2 = ! dead_or_set_p (i3, i2dest)` is true) because
+the PARALLEL of two SETs is not recognised and the two-insn case has no split
+path (combine.c:1704/1718 need REG_UNUSED, :1900/:1996 need i1). global.c then
+allocates q with the loop's pseudos in conflict because
+`basic_block_live_at_start` (flow.c) is never recomputed between combine and
+global_alloc. CONSEQUENCE: E-s43-5's enumeration of byte-free readers ("after
+RA the only deleters are no-op moves and reorg's redundant-insn redirect") is
+REFUTED - combine is a pre-RA deleter of flow-time readers, and a reader it
+deletes leaves both the copy and q's loop-wide conflicts behind at zero bytes.
+This is the first mechanism in 44 sessions that reproduces (copy alive, add
+reads the copy destination, no reader instruction) without a real move.
+
+### E-s44-4 - M5 reproduces target's INSTRUCTION STREAM exactly (127/127); the residual is allocation ORDER
+M5 (instrument: `y = (sh & i) & 0x3F; z = (s32)q & y;` as separate statements
+in both loops, exit tests reading `base + z + off`; a CHEAT, never a candidate)
+= **12 at 127/127**: both preheader copies alive, no reader bytes, D_M5.txt is a
+pure register permutation (q a1 for a3, sh a2 for a1, lnk a3 for a2) plus loop
+2's `addu/lw` order (a consequence of the seats). iM5/cc1.log ALLOCDBG order:
+i(88) 30000 -> base(81) 13043 -> **q(80) 9230 (nrefs 8, livelen 26) -> a1** ->
+p(79) 8571 -> sh(84)/sh2(85) 5555 (livelen 18: the instrument's in-loop read of
+sh stretches sh's range) -> ... -> lnk(77) 2500 -> a3. Priority is
+global.c:615 `floor_log2 (n_refs) * n_refs / live_length * 10000 * size`.
+Target's a3 seat needs q allocated AFTER sh and lnk; in U4's natural geometry
+(s43/iX2 ALLOCDBG) sh is 11428 (4/7), sh2 13333, lnk 8333 (5/12), p 16000,
+base 27826. M6 (distinct q/q2 per loop) = 12 with q at 6153 (4 refs / 13):
+still before the instrument-depressed sh (5555). Inference (unmeasured): a copy
+destination with 4 weighted refs (def, add, one in-loop read at loop weight 2)
+and live length >= 10, in a geometry that leaves sh/lnk at their U4 priorities,
+sorts after both and takes a3 (v0/v1/a0/a1/a2 all conflict once q is live
+across the loop). M7 (fold sourced from the loop's own lbu value) turned the
+named `idx` into a global pseudo (priority 30000, v1) and rotated every seat
+(35 at 126) - the instrument must not add a cross-block pseudo.
+
+### E-s44-5 - what combine does and does not fold (instrument spellings, banked)
+M2/M2a (`if (idx >> 8) return (s32)q;`): the `sra` and its `bne` survive
+(45/38 at 135/131) - combine's shift path does not zero an ashiftrt whose
+operand's nonzero_bits are shifted out, and the jump keeps a real reader.
+M3/M3a (`if ((sh & i) & 0x3F) return (s32)q;`): the and-chain folds to
+`y = 0` (`addu v0,zero,zero`) but the constant-condition `bne v0,zero` is NOT
+folded by combine, so the reader block stays reachable (14/16 at 133/132);
+copies survive only as real uses. M4/M4a (`z = q & ((sh & i) & 0x3F)` in one
+expression): fold-const reassociates the constant onto q, `q & 63` becomes a
+hoisted invariant (`andi`), a real second use (10/9 at 129/127, q in v0).
+Only the `and`-chain-into-address spelling (M1/M5/M6) is byte-free.
+
+### E-s44-6 - policy position of the finding
+Every instrument is dead algebra (T1 no semantic purpose, T2 a human would not
+write it) and is banked as `rejected/s44_INSTRUMENT_cheat_*.c` so it is never
+re-proposed as a candidate. The finding's value is forensic: target's C
+contains, in each loop, a READ of the copy destination that combine (not cse,
+not loop.c, not flow) removes. The natural-C search is now narrowed to loop-body
+expressions on the slots pointer (or a value derived from it) whose RTL combine
+proves constant or unreachable, e.g. comparisons of the zero-extended byte index
+against out-of-range constants (`idx == -1`, `idx >= 0x100`) IF the 2.7.2 front
+end leaves them to RTL (combine.c simplify_comparison folds them via
+nonzero_bits and jump2 deletes the dead arm) - to be measured next session with
+the reader placed in the folded arm. No sanctioned family covers an
+intentionally folded reader; if the natural spelling is found it is ordinary C
+and needs no annotation, otherwise the disposition is unchanged.
+
+- [s44] Floor re-audited at 3 (127/127) on the HEAD src/ings.c:820 chassis; U4 6 (127/125); no FAKE constructs; src/ings.c restored.
+- [s44] Frontier item 1 (copy in the guard block before the two-step) F1a/F1b = 6: cse2 keeps p canonical (q's last use inside the extended block), the copy is dead before flow. Closed.
+- [s44] Frontier item 2 (roles swapped) F2 = 6; F2b (loop-2 guard reads q) = 12: real post-loop reader folds the copy into the add and seats q in a1. Closed.
+- [s44] NEW MECHANISM (instrument M1, cheat, never a candidate): a loop-body read of q folded to a constant by combine after flow keeps the preheader copy (added_sets_2 -> unrecognised PARALLEL, combine.c:1458) with zero reader bytes, and global.c allocates q as live across the loop (stale basic_block_live_at_start). Refutes E-s43-5's deleter enumeration.
+- [s44] M5 (instrument, cheat) = 12 at 127/127: target's exact instruction stream with both copies; residual is allocation ORDER (q pri 9230 before sh 5555 / lnk 2500 in that geometry). global.c:615 priority formula quoted; U4 geometry has sh 11428, lnk 8333.
+- [s44] Instrument spellings that do NOT work: ashiftrt fold (M2), constant-condition jump fold (M3), single-expression and-chain (M4, fold-const reassociation), lbu-sourced fold with a named cross-block idx (M7, seat rotation).
+- [s44] Artifacts: tmp/grind/func_80017848/s44/{body_*.c, D_*.txt, B_*.txt, raw_*.txt, obj_*.o, src_*.c, T.txt, iF2b/, iM1/, iM2/, iM3/, iM4/, iM5/, iM6/, iM7/, cells.ps1, post.sh, apply_win.py, norm.py, idump.sh, mk*.py, bank.py, ledger.py, idiom*.py}.
+
+- [s44] BASE (candidate.c body) re-measured 3 at 127/127 and U4 6 at 127/125 on the HEAD src/ings.c:820 chassis; src/ings.c restored (git diff --quiet passes).
+
+- [s44] F1a/F1b (frontier 1) = 6: a copy in the guard block is canonicalised away by cse2 (cse.c:826-855) because q's last reference is inside the guard+preheader extended block; F2 = 6, F2b = 12 (frontier 2): a real post-loop reader folds the copy into the add and seats q in a1.
+
+- [s44] Instrument M1 (cheat, never a candidate) proves a combine-folded loop-body reader keeps the preheader copy alive (combine.c:1458 added_sets_2, no two-insn split path) with zero reader bytes; global.c allocates q live across the loop from flow's stale basic_block_live_at_start.
+
+- [s44] Instrument M5 (cheat) = 12 at 127/127: target's exact instruction stream with both copies; residual is a pure seat permutation decided by global.c:615 priority order (q 9230 allocated before sh 5555 and lnk 2500 in that geometry; U4 geometry has sh 11428, lnk 8333).
+
+- [s44] combine does not byte-free-fold: an ashiftrt feeding a jump (M2), a constant-condition conditional jump (M3), or a single-expression and-chain that fold-const reassociates (M4); a named cross-block idx (M7) becomes a global pseudo and rotates every seat.
+
+- [s44] Sibling func_8005E54C has no candidate.c and shares no block with this function; nothing to transplant.
+
+- [s44] Repo-wide idiom scan (s44/idiom2.py): no other function, matched or not, carries the addu a3,a0,zero / addu a0,a1,a3 preheader pair; the two matched functions with a kept copy-then-add (func_800200DC, func_80037F40) are hard-register copies (call return / incoming parameter), a different mechanism.

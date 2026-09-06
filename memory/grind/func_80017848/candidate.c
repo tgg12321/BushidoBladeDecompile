@@ -1,3 +1,18 @@
+/* [s44 SYNTHESIS NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
+ * (anchor src/ings.c:820); U4 re-audited 6 at 125.]  Frontier items 1 and 2
+ * measured dead (F1a/F1b/F2 = 6, F2b = 12; E-s44-1/2).  NEW MECHANISM, dump-
+ * proven with cheat instruments that are banked in rejected/ and are NEVER
+ * candidates: a loop-body read of the copy destination that combine folds to
+ * a constant AFTER flow keeps the use-once preheader copy alive (combine.c:1458
+ * added_sets_2 -> unrecognised PARALLEL) at zero reader bytes, and global.c
+ * allocates the copy destination as live across the loop from flow's stale
+ * basic_block_live_at_start.  Instrument M5 reproduces target's instruction
+ * stream EXACTLY (127/127, both copies) with a pure seat permutation decided by
+ * global.c:615 priority order (q allocated before sh/lnk -> a1; a3 needs q
+ * after both).  Refutes E-s43-5.  The natural-C search is narrowed to loop-body
+ * expressions combine proves constant/unreachable (E-s44-6).  Details:
+ * evidence.md/hypotheses.md s44 sections.
+ */
 /* [s43 STRUCTURAL NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
  * (anchor src/ings.c:820); U4 re-audited 6 at 125.]  Six new cells, all dead:
  * W1 (loop-1 exit tail reload+sh recompute INSIDE the if, no join reload) = 12,
