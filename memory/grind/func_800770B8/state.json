@@ -210,9 +210,9 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-01T07:44:32.913912+00:00",
- "exhaustion_base": 20,
- "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.593946+00:00",
+ "exhaustion_base": 30,
+ "last_unpark_reason": "owner 2026-09-06 foreclosed-bucket review: STRUCTURAL probe first - re-measure the class-B prologue store-base spellings (saved copy vs freshly returned pointer) on the h3 chassis where the surrounding schedule differs from the chassis they were tested on (ledger frontier item 3; 2-point prize); then frontier item 2 (record-layout audit for a genuine third use of the C pointer). No identity detour",
+ "last_unpark_at": "2026-09-06T21:28:27.463007+00:00",
  "kills": [
   {
    "session": 21,
@@ -463,5 +463,6 @@
    "result": "25, 14, 39, 30, 36, 36 and 28 / 28 / 29 / 25 / 25 - all 175/175. Every order keeping C before S either leaves the chain "
   }
  ],
- "object_model_audited": 29
+ "object_model_audited": 29,
+ "escalation_deferrals": 0
 }
