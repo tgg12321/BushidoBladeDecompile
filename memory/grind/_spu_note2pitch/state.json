@@ -29,7 +29,10 @@
   }
  ],
  "judge_constraints": [],
- "banned_constructs": [],
+ "banned_constructs": [
+  "`atten = (u16)(0x1000 >> oct);` in the else-arm of `_spu_note2pitch` (memory/grind/_spu_note2pitch/candidate.c line 45)",
+  "Per-arm `(u16)` narrowing chosen specifically because it produces TWO static sets of `atten` (vs one) at sched1 time"
+ ],
  "kills": [
   {
    "session": 1,
@@ -56,9 +59,21 @@
    "result": "16: seats rotate (atten a1, i a2) plus an extra addu v1,a1 copy."
   }
  ],
- "ladder_skip": 0,
+ "ladder_skip": 2,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-06T04:32:16.084283+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: The down-shift arm's `(u16)(0x1000 >> oct)` cast is a self-admitted no-op width cast whose sole purpose is to give `atten` a second static set that defeats sched.c's birthing_insn_p reg_n_sets==1 boost -- a redundant-width-cast GCC-internals lever, a family the 2026-07-01/2026-08-18 SOTN surveys explicitly declined to sanction. Next action: Revert the per-arm `(u16)` narrowing on the else-arm (or find a genuinely value-truthful reason for it that does not reduce, by the worker's own measurement, to 'defeats birthing_insn_p'). The ledger's frontier is not exhausted "
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "9b2590129810b97d",
+   "when": "2026-09-06T05:17:40.361686+00:00",
+   "summary": "The down-shift arm's `(u16)(0x1000 >> oct)` cast is a self-admitted no-op width cast whose sole purpose is to give `atten` a second static set that defeats sched.c's birthing_insn_p reg_n_sets==1 boost -- a redundant-width-cast GCC-internals lever, a family the 2026-07-01/2026-08-18 SOTN surveys exp"
+  }
+ ]
 }

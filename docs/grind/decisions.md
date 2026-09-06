@@ -24460,3 +24460,7 @@ docs/grind/decisions.md:20282 (the original handoff packet) and :20351 (the supe
 ruling).
 
 **Constraint recorded for any future session:** The phantom-frame-slot pad IS sanctioned for func_800480C0 (2026-08-18 general family; the 2026-09-02 FAIL cited the superseded 2026-08-17 per-function scope) - the prior judge_constraint forbidding it here is narrowed and void; do NOT chase honest producers for the sp+0x18..0x37 region, and do not resubmit until the engine/volatile_cheats.py row exists.
+
+## 2026-09-06 00:17 — _spu_note2pitch — layer-1 review — **FAIL**
+
+The down-shift arm's `(u16)(0x1000 >> oct)` cast is a self-admitted no-op width cast whose sole purpose is to give `atten` a second static set that defeats sched.c's birthing_insn_p reg_n_sets==1 boost -- a redundant-width-cast GCC-internals lever, a family the 2026-07-01/2026-08-18 SOTN surveys explicitly declined to sanction.

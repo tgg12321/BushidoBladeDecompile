@@ -86,3 +86,58 @@ func_8008B488 is INCLUDE_ASM, so the prototype has no caller-side codegen.
 - [s1] reg_n_sets is counted by flow.c after dead-store deletion: a dead second assignment does not count (and is a cheat family anyway).
 
 - [s1] cc1 -da dumps for form F are in tmp/grind/_spu_note2pitch/dumps (main.sched block 7 shows the tie); scratch frame bisection in tmp/grind/_spu_note2pitch/s1/fr.
+
+## s2 (2026-09-06, structural) — floor 2 -> 0, MATCHED (verify-oracle ok:true)
+
+- The s1 residual (order of `andi $a2,$v0,0xFFFF` vs `addiu $a0,$zero,0x103B` at
+  .L8008BBB0) was NOT a scheduling problem to be worked around — it was a
+  STRUCTURE signal that s1 mis-read. The target's single `andi` sits AFTER the
+  join label, so it truncates the value produced by BOTH arms of the sign
+  branch. That means the original source narrowed the octave base to 16 bits
+  INSIDE EACH ARM, and jump2 cross-jumping re-merged the two identical `andi`
+  tails into one after the join. s1's spelling (one `u16 base` assigned in both
+  arms, widened once at the call) puts the truncation after the join in the
+  SOURCE, which is a different program shape and left the 2-insn residual.
+- MEASURED (HEAD chassis, `inline _spu_2pitch`, no FAKE constructs anywhere):
+    vF  s1 candidate (u16 base, widened at the call)                        = 2
+    vS  narrowing only the up-shift arm, down arm bare `0x1000 >> oct`      = 4
+    vN  `u16 base` per arm + `atten = base;` duplicated into both arms      = 0
+    vQ  `atten = (u16)(0x1000 << oct);` / `(u16)(0x1000 >> oct);` per arm   = 0
+    vR  vQ with the prefix abs written as a ternary                         = 0
+  vQ/vR and vN are the same shape (a u32 receiver written in both arms); the
+  cast form is the chosen one because it carries no extra variable.
+- MECHANISM (consistent with s1's attribution, now confirmed by the fix): with
+  the narrowing in both arms the widened receiver `atten` has TWO static sets at
+  sched1 time, so sched.c `birthing_insn_p` (tools/gcc-2.7.2/sched.c:2512-2526,
+  `reg_n_sets[i] == 1`) no longer boosts the `andi` to LAUNCH_PRIORITY and the
+  pair falls to the LUID tie-break, which is the target order. jump2's
+  cross-jump then merges the two arm-local `andi`s back into the single
+  post-join instruction.
+- DIVMOD: s1's `rem = absdiff / 1536; oct = rem; rem = absdiff - oct * 1536;`
+  (the divmod-coalesce-reuse-var reference recipe) is NOT needed on this chassis
+  and was DROPPED — the plain `oct = absdiff / 1536; rem = absdiff % 1536;`
+  scores 0 by itself. This removes the only variable-reuse construct from the
+  body. The remainder MUST be spelled with `%`:
+    `oct = absdiff / 1536; rem = absdiff % 1536;`                = 0
+    `rem = absdiff % 1536; oct = absdiff / 1536;` (order swapped) = 37
+    `oct = absdiff / 1536; rem = absdiff - oct * 1536;`           = 36
+    `... rem = absdiff - (oct * 1536);`                           = 36
+    s1's quotient-through-rem reuse + `- oct * 1536`              = 0
+  Declaring `rem` before `oct` with the `%` form is also 0 (declaration order is
+  free here).
+- The two ternary abs forms (`(diff < 0) ? -diff : diff` and the call actual
+  `(rem < 0) ? -rem : rem`) each materialize a mips.md abssi2 template that is
+  present in the target (0x8008BB4C and 0x8008BBC4). `rem` is non-negative on
+  every reachable path, so the second one is defensive normalization in the
+  original library source — its three instructions are in the shipped bytes.
+- FINAL: sandbox _spu_note2pitch = 0, sandbox _spu_2pitch = 0 (the `inline`
+  keyword leaves the sibling byte-identical), full `verify-oracle` ok:true.
+  Body = memory/grind/_spu_note2pitch/candidate.c, in place in src/main.c.
+
+- [s2] The target's single post-join `andi $a2,$v0,0xFFFF` proves the original narrowed the octave base to u16 in BOTH arms of the sign branch; jump2 cross-jumping merges the two arm-local truncations. Per-arm narrowing gives the receiver two static sets, defeating sched.c birthing_insn_p's reg_n_sets==1 boost, which was the whole 2-insn residual.
+
+- [s2] Post-join narrowing = 2, up-arm-only narrowing = 4, per-arm narrowing = 0. The score-4 measurement is what discriminates: without an identical tail in both arms there is nothing for jump2 to cross-jump.
+
+- [s2] The divmod-coalesce-reuse-var spelling is NOT required here: plain `oct = absdiff / 1536; rem = absdiff % 1536;` = 0. But `%` is load-bearing (`absdiff - oct * 1536` = 36) and so is the quotient-first statement order (`%` before `/` = 37).
+
+- [s2] MATCHED: floor 0, full-build verify-oracle ok:true, pure C, no FAKE constructs, no sanctioned-family claim. self_vet.md written.

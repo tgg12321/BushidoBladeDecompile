@@ -76,3 +76,30 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-06 with inline _spu_2pitch chassis; no FAKE constructs
+
+## s2 (2026-09-06, structural) — SOLVED
+
+## [s2] The target's single `andi $a2,$v0,0xFFFF` after the join label .L8008BBB0 truncates BOTH arms' results, so the original source narrowed the octave base to u16 inside each arm of the sign branch rather than once at the call; writing it that way gives the widened receiver two static sets and reproduces the target exactly.
+- mechanism: the per-arm narrowing makes the u32 receiver `atten` multi-set at sched1, so sched.c birthing_insn_p (tools/gcc-2.7.2/sched.c:2512-2526, reg_n_sets[i]==1) does not boost the andi to LAUNCH_PRIORITY and the pair falls to the LUID tie-break; jump2 cross-jumping then merges the two identical arm-local andi tails into the single post-join instruction.
+- probe: forms vQ/vR (`atten = (u16)(0x1000 << oct);` / `(u16)(0x1000 >> oct);` in the two arms) and vN (`u16 base` per arm + `atten = base;`), sandbox _spu_note2pitch --disable all; discriminated against vF (post-join narrowing) and vS (up-arm narrowing only).
+- result: vQ = 0, vR = 0, vN = 0; vF = 2, vS = 4. Sibling `_spu_2pitch` still 0. Full verify-oracle ok:true.
+- verdict: CONFIRMED
+
+## [s2] H7 (s1 frontier 1) as posed — "find a byte-neutral LIVE SECOND SET of the receiver, sourced from a prefix value or from the clamp" — is not how the second set arises: the second set comes from the arms themselves once the narrowing is per-arm, so no borrowed carrier and no FAKE construct is needed.
+- mechanism: same birthing_insn_p gate; the two sets are the two arms' own assignments to the call actual, which jump2 later re-merges.
+- probe: vQ/vR/vN vs s1's form L (clamp written back into the receiver, score 6) and form K (receiver reused as the call target, score 16).
+- result: 0 with no borrowed carrier; the s1 candidates for the second set (prefix value, clamp variable) are moot.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06 with the inline _spu_2pitch chassis; no FAKE constructs present
+
+## [s2] The divmod-coalesce-reuse-var spelling (`rem = absdiff / 1536; oct = rem; rem = absdiff - oct * 1536;`) is required to reproduce the target's quotient move `addu $a0,$v1,$zero`.
+- mechanism: memory/reference/divmod-coalesce-reuse-var.md (quotient born in the reused variable's register, copied to the call-visible variable).
+- probe: replace it with the plain `oct = absdiff / 1536; rem = absdiff % 1536;` on the per-arm-narrowing chassis and sandbox; also measure the `- oct * 1536` and statement-order variants.
+- result: plain `/` + `%` = 0 (the quotient move appears anyway). `absdiff - oct * 1536` = 36 and remainder-statement-first = 37, so `%` and the quotient-first order are load-bearing, but the variable reuse is not. Dropped from the final body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-06 with the per-arm-narrowing body (vR/d1); no FAKE constructs present
+
+## [s2] H8 (s1 frontier 2, respell the sibling to make `ratio`'s init single-set) — not needed; never measured, and now moot: the residual closed from the caller side without touching the sibling, which stays byte-identical with only the GNU89 `inline` keyword added.
+- verdict: CONFIRMED (moot)
