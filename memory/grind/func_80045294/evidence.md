@@ -2055,3 +2055,107 @@ sessions across structural, synthesis, solver, forensics and escalation.
 - [s60] Exhaustion: 60 sessions across 8 distinct modalities (structural 12, rederive 12, forensics 11, permuter 10, synthesis 8, escalation 3, solver 2, recon 1); 74 banked rejected forms; 24 recorded kills of which 10 are predicate-cited class kills (cse.c:6871-6902, sched.c:2464, global.c:1275, global.c:972, loop.c:705-709, cse_end_of_basic_block). Floor moved 2 -> 1 at s52 and has been flat at 1 for eight sessions across five modalities.
 
 - [s60] Foreclosure record filed this session at docs/grind/decisions.md:21298, titled '## 2026-09-03 - func_80045294 (saTan0Init, src/text1a_c.c) - **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**'.
+
+
+## [s61] rederive - owner-directive probe (copy preferences), then the cse-splitter frontier closed by measurement
+
+**Chassis (re-measured).** `memory/grind/func_80045294/candidate.c` over `src/text1a_c.c:1438` gives
+`sandbox func_80045294 --disable all` = **score 1, target_insns 83, build_insns 83, rules_dropped 0**.
+The single residual is still instruction idx 9: target `sll $v1,$s2,4` (shift reads the param pseudo 72),
+build `sll $v1,$s0,4` (reads the copy pseudo 75). Zero FAKE constructs. `src/text1a_c.c` was restored
+to `INCLUDE_ASM("asm/funcs", func_80045294);` before the session ended.
+
+**Owner directive (2026-09-06) executed and closed.** On the distinct-loop-2-counter form
+(`rejected/s52-a0ptr-separate-loop2-counter-collapse-80.c`, re-dumped through the instrumented cc1 into
+`tmp/grind/func_80045294/s61/dumps_J/`), `fn.greg` prints the allocno order
+`92 76 85 86 72 75 79 74 73 77 80` and the dispositions `72 in 18, 75 in 4, 76 in 3, 85 in 16, 86 in 17`
+(the loop-1 counter 75 crosses no call, "dies in 0 places", and lands on $a0).
+`BB2_FINDREG_DEBUG=75` (`tmp/grind/func_80045294/s61/dumps_J75/cc1_stderr.txt`) prints for pseudo 75:
+`conflicts: 2 3 18 29`, `someone_prefers:` (empty), `own_copy_prefs:` (empty), `own_full_prefs:` (empty),
+`pass0_used: 0 1 2 3 18 19 20 21 22 23 26 27 28 29 30 31`. Both preference sets are empty, so per the
+directive the line is abandoned. Mechanism: `set_preference` (global.c:1671) only records a preference when
+one side of the copy is a hard register after `reg_renumber` (global.c:1718-1719 and :1737-1738); the copy
+`75 = 72` is pseudo-to-pseudo with 72 a global allocno, so it records nothing, and $s0 (16) is not in any
+set that find_reg consults for 75. The only copy-linked register, $s2 (18), is in the conflict set of 75.
+
+**The cse extended-basic-block splitter frontier (s59/s60 frontier 1) is now closed at the pass level.**
+Four forms were built and dumped (`tmp/grind/func_80045294/s61/dumps_N1..N4/`); the mechanism is fully
+named:
+
+- Form N1 = candidate + `do { } while (0);` + `if (i != a0) { i = a0; }` between the copy and the shift.
+  cse1 (`fn.cse`): the LOOP_END note ends the first extended block (cse.c:8054, `!after_loop`), so the
+  carrier compare `(eq 75 72)` is processed with an empty table and survives; on the skip_blocks AROUND
+  path (cse.c:8149-8180, status AROUND) `invalidate_skipped_block` (cse.c:7843) invalidates 75 because the
+  skipped body sets it, and the shift after the label is printed `(ashift:SI (reg/v:SI 72) 4)` while the
+  loop-1 guard stays `(lt 75 78)`. cse2 (`fn.cse2`): the LOOP_END is no longer a boundary, the copy is in
+  the table, the carrier folds to an unconditional jump (`cse_jumps_altered`, cse.c:7037/7103), and the
+  `if (tem) jump_optimize` at toplev.c:2929 deletes branch, body and label before flow. The shift reads 72
+  through loop, cse2, flow, combine, sched and greg (`(ashift:SI (reg/v:SI 18 s2) 4)` = `sll $3,$18,4`).
+  This is the first form in 61 sessions with the target shift operand AND copy-before-shift RTL order
+  surviving to final. Sandbox: **score 2 / 83**. The emitted body differs from the candidate only in the
+  sll position: `move $16,$18; sw $31; sw $21; sw $20; sll $3,$18,4` instead of the target
+  `move $16,$18; sll; sw $31; sw $21; sw $20`.
+- Why N1 loses: sched.c:2284-2291 records LOOP_BEG/LOOP_END notes inside a block, and sched.c:2081-2103
+  makes the next insn depend (anti on every `reg_last_uses`, true on every `reg_last_sets`) on every
+  earlier insn in the block and flushes the pending memory lists onto it. After the carrier is deleted the
+  next insn after the notes is the sll, so in pass 2 (`tmp/grind/func_80045294/s61/N1.sched.json`) node 36
+  carries deps on 219, 221, 223, 225, 227, 229, 231, 233, 4, 6, 12, 15 (all seven prologue saves included)
+  and the lw (41) depends only on 36; picks are `51 50 47 44 41 36 225 223 221 15 ...`, i.e. the sll is
+  picked before the three saves and emitted after them. sched1 re-emits the notes just before the same
+  insn, so sched2 sees the same barrier. `perturb.py --goal-before 221:36 --goal-before 223:36
+  --goal-before 225:36 --depth 1` over 892 atoms: NO vector (`s61/perturb_N1_goalbefore.txt`).
+- Every LOOP note position before the sll is excluded by the same predicate: the barrier insn must follow
+  all seven prologue `sw`s, but the target emits `sw $31`, `sw $s5`, `sw $s4` AFTER the sll, so the first
+  surviving insn after the notes must be at or after `lw $s4`. A note at or after the sll cannot separate
+  the copy from a compare placed before the sll.
+- Form N2 (N1 without the do-while): the cse1 AROUND pass still prints the shift on 72, but the NOT_TAKEN
+  re-pass folds the carrier in cse1 (label gone before cse2), and cse2 prints the shift on 75 = candidate.
+- Form N3 (carrier `if (((a0 << 4) & 0xF) != 0) { i = a0 + 1; }`, cse-opaque, combine folds it by
+  `nonzero_bits`; body re-stores i): shift on 72 through greg, the carrier compare and its shift temp are
+  deleted by combine, flow deletes the dead body - but the unconditional `jump L` and label L survive to
+  flow, so sched2 block 0 (`s61/N3.sched.json`) ends at jump 20 and the sll is in the next block, emitted
+  after all of block 0 including the three late saves (body diff vs candidate = the single moved sll).
+  jump2 is `jump_optimize (insns, 1, 1, 0)` at toplev.c:3142, AFTER sched2 at toplev.c:3117; thread_jumps
+  (toplev.c:2932-2935) can only redirect. So any label alive at the end of cse2 splits sched2 block 0.
+- Form N4 (two stacked `if (i != a0) { i = a0; }` carriers, the first meant to fold in cse1 and shield the
+  second): both fold in cse1 (post-cse1 label count 5 = baseline). cse_main (cse.c:8360-8373) re-processes
+  the block from its start whenever a jump is altered, so after carrier 0 becomes `jump L0` the walk carries
+  the table across L0 and folds carrier 1 as well.
+- s60 correction: re-dumping `tmp/grind/func_80045294/s60/C_ifmask_carrier.c` shows the shift on 75 in
+  cse1, cse2, combine and sched (`s61/dumps_S60C`); its body `sum = 1` invalidated only pseudo 74, so that
+  carrier never produced the target operand. Its score-5 diff was the `sw $17 / move $17,$0` pair moving,
+  unrelated to the shift.
+
+**Closed-form statement of the residual after s61.** The shift must be processed by BOTH cse passes in an
+extended block that does not know `75 == 72`; the only per-pass boundaries are CODE_LABEL, LOOP_END
+(cse1 only) and SETJMP; a CODE_LABEL surviving cse2 splits sched2 block 0 (jump2 runs after sched2), a
+CODE_LABEL folded in cse1 is gone before cse2, and the only cse1/cse2 asymmetries in cse.c are the two
+loop-note ones (cse.c:8054 and cse.c:8576), whose notes are a sched barrier at every position before the
+sll. Inside the extended block the copy crowns one register for every later read (cse.c make_regs_eqv),
+so shift and guard cannot read different registers.
+
+**Artifacts.** `tmp/grind/func_80045294/s61/{N1,N2,N3,N4}.c`, `dumps_J/`, `dumps_J75/cc1_stderr.txt`,
+`dumps_C/`, `dumps_N1/`, `dumps_N2/`, `dumps_N3/`, `dumps_N4/`, `dumps_S60C/`, `C.sched.json`,
+`N1.sched.json`, `N3.sched.json`, `N3_sched_model.txt`, `perturb_N1_goalbefore.txt`, `perturb_N1_pass2.txt`,
+helper scripts `apply.py`, `cc1dump.sh`, `sched_loop.sh`, `sched_N3.sh`.
+
+- [s61] Chassis re-measured: candidate.c over src/text1a_c.c:1438 gives sandbox score 1 / 83 / 83, rules_dropped 0, zero FAKE constructs; src restored to INCLUDE_ASM at session end.
+- [s61] Owner directive closed: BB2_FINDREG_DEBUG=75 on the distinct-loop-2-counter form prints empty own_copy_prefs, own_full_prefs and someone_prefers for the loop-1 counter; $s2 is in its conflict set; set_preference (global.c:1718) records nothing for a pseudo-to-pseudo copy.
+- [s61] Form N1 (do-while(0) + cse2-folded carrier) is the first form to carry the target shift operand (reg 72 / $s2) with copy-before-shift RTL through greg; it scores 2 / 83 because sched.c:2081-2103 turns the first insn after a loop note into a full barrier and that insn is the sll.
+- [s61] A CODE_LABEL that survives cse2 always splits sched2 block 0: jump2 (toplev.c:3142) runs after sched2 (toplev.c:3117) and flow fixes the block boundaries before combine; measured on form N3 (block 0 ends at the carrier jump 20).
+- [s61] cse_main re-processes a block from its start after any jump alteration (cse.c:8360-8373), so stacked cse1-foldable carriers cannot shield a later carrier from cse1 (form N4: both folded, cse2 shift on 75).
+- [s61] The s60 if-mask carrier never fixed the operand: its body set only sum (74), so cse1 wrote 75 into the shift; its score-5 diff was the sw $17/move $17 pair.
+
+- [s61] Chassis re-measured this session: candidate.c over src/text1a_c.c:1438 gives sandbox score 1, target_insns 83, build_insns 83, rules_dropped 0; zero FAKE constructs; src restored to INCLUDE_ASM at session end.
+
+- [s61] Owner directive 2026-09-06 executed: BB2_FINDREG_DEBUG=75 on the distinct-loop-2-counter form shows empty own_copy_prefs, own_full_prefs and someone_prefers for the loop-1 counter; abandoned as instructed.
+
+- [s61] Form N1 is the first form in 61 sessions whose greg dump prints the shift as (ashift (reg 18 s2) 4) with copy-before-shift RTL; it scores 2 because the do-while loop notes make the sll a full scheduling barrier (sched.c:2081-2103).
+
+- [s61] Pass order fact load-bearing for this function: jump2 = jump_optimize(insns,1,1,0) at toplev.c:3142 runs after sched2 (toplev.c:3117); the only jump pass between cse2 and flow is the conditional one at toplev.c:2929 (requires cse2 to alter a jump) plus thread_jumps.
+
+- [s61] The only cse1/cse2 asymmetries in cse.c are loop-note based: the LOOP_END boundary at cse.c:8054 (!after_loop) and cse_around_loop at cse.c:8576 (around_loop); both need loop notes, which are a sched barrier at every position before the sll.
+
+- [s61] cse_main re-processes a block from its start whenever a jump is altered (cse.c:8360-8373), which is why stacked carriers (N4) fold together in cse1.
+
+- [s61] s60 correction: the if-mask carrier's body set only sum, so cse1 wrote 75 into the shift; that form never carried the target operand.

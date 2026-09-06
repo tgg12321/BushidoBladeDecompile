@@ -1,8 +1,8 @@
 {
  "func": "func_80045294",
  "file": "text1a_c",
- "session_count": 60,
- "current_modality": "escalation",
+ "session_count": 61,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -363,18 +363,24 @@
    "floor": 1,
    "modality": "escalation",
    "headline": "Escalation disposition: both endgame gates evaluated (scan_hand_coded LOW 0/8; SOTN empty_if precedent exists but is moot) and the last two live frontiers closed by measurement - the frontier-1 carrie"
+  },
+  {
+   "session": 61,
+   "floor": 1,
+   "modality": "rederive",
+   "headline": "Owner directive closed (loop-1 counter has empty copy/full preference sets, global.c:1718); a cse2-folded carrier behind a do-while(0) is the first form in 61 sessions to carry the target shift operan"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A byte-free cse extended-basic-block splitter IS constructible from C on this chassis and only one placement of it has been tested, so if the frozen family list is ever extended to fabricated always-false conditionals the remaining search is over carrier POSITION rather than carrier existence.",
-   "mechanism": "combine's nonzero_bits folds (and (ashift x 4) 15) to zero only after cse2 has already run, so the CODE_LABEL survives both cse passes and the post-combine jump pass then deletes the compare, the branch, the guarded store and the label - measured at build_insns 83.",
-   "next_probe": "Under such a grant, sweep the carrier across every statement boundary in block 0 and in loop 1's preheader (not just between the copy and the shift), scoring only forms that build at 83 instructions. Without the grant, do not build these: they are auto-reject class."
+   "hypothesis": "The shift operand and the sll position are now two separately measured constraints: N1 satisfies the operand (copy-first RTL, shift on 72 through greg) and fails only on the loop-note barrier; a byte-free cse1/cse2 asymmetry that is NOT a loop note between the copy and the carrier compare would close the function, if one exists in GCC 2.7.2.",
+   "mechanism": "cse.c:8054 and cse.c:8576 are the only after_loop-conditioned behaviours in cse.c; the remaining candidates are effects of the passes between cse1 and cse2 (loop.c, jump_optimize(0,0,1) at toplev.c:2923, reg_scan) on the carrier compare's operands or on REG_EQUAL notes.",
+   "next_probe": "Read loop.c for any insn creation/replacement that can touch a compare placed before the first loop (move_movables copy propagation, biv/giv initial-value REG_EQUAL notes) and grep jump.c jump_optimize for transformations that could make a cse1-opaque compare cse2-foldable; do not build another loop-note or surviving-label carrier, both are class-killed."
   },
   {
-   "hypothesis": "The distinct-loop-2-counter family remains closed at 83 instructions and should not be re-entered.",
-   "mechanism": "global.c:972 - the loop-1 counter pseudo crosses no call, so find_reg takes the call-clobbered path and gives it $a0, freeing a callee-saved pair and turning block 0's copy into a redundant reload that is gone by jump2; three instructions lost every time.",
-   "next_probe": "Do not re-derive. The single open sub-question is whether a hard_reg_copy_preference can pull a non-call-crossing loop-1 counter onto $s0 without a live-range change; check dumps_J/fn.greg's allocno ordering first and abandon the line if the preference sets are empty."
+   "hypothesis": "If the frozen family list is ever extended to always-false conditionals, the N1 body shape is the right carrier and the search is over positions AFTER the sll only (a loop note at or after the sll is not a barrier for the target order), which cannot separate the copy from the compare, so under the current toolchain the carrier route needs the asymmetry in frontier 1 regardless of family grants.",
+   "mechanism": "sched.c:2081 barrier lands on the first surviving insn after the notes; the target order requires that insn to be at or after lw $s4.",
+   "next_probe": "None until frontier 1 names a non-loop asymmetry; record only."
   }
  ],
  "judge_constraints": [
@@ -593,6 +599,54 @@
    "measured_on": "HEAD 2026-09-03 chassis, a0-as-pointer i-first geometry with split declarations, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "build_insns 84, target_insns 83, score 2. The extra store is not deleted with the rest of the dead block, so this lever "
+  },
+  {
+   "session": 61,
+   "statement": "On the distinct-loop-2-counter chassis the loop-1 counter pseudo (75) has empty hard_reg_copy_preferences, hard_reg_full_preferences and regs_someone_prefers, so the find_reg preference passes cannot ",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-06 chassis, distinct-loop-2-counter geometry, zero FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/global.c:1718",
+   "result": "own_copy_prefs empty, own_full_prefs empty, someone_prefers empty, conflicts 2 3 18 29; 75 takes $a0. Abandoned per the "
+  },
+  {
+   "session": 61,
+   "statement": "A LOOP_BEG/LOOP_END note anywhere between the function start and the shift in block 0 makes the first surviving insn after it depend on every earlier register use and set, including all seven prologue",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-06 chassis, N1 geometry (copy-first, shift on 72), do-while(0) FAKE carrier present",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2081",
+   "result": "no perturbation reaches the goal; N1 scores 2 with the sll after the three late saves."
+  },
+  {
+   "session": 61,
+   "statement": "A carrier CODE_LABEL between the copy and the shift that is still present at the end of cse2 (folded only by combine, deleted only by jump2) makes flow end block 0 at the carrier jump, so sched2 place",
+   "kill_scope": "class",
+   "measured_on": "HEAD 2026-09-06 chassis, N3 geometry (copy-first, combine-only-foldable carrier, no loop notes), zero FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/toplev.c:3142",
+   "result": "shift reads 72 through greg; emitted body differs from the candidate by the single moved sll, the same residual N1 score"
+  },
+  {
+   "session": 61,
+   "statement": "Form N2, the carrier `if (i != a0) { i = a0; }` without the do-while, prints the shift on 72 in the cse1 AROUND pass but has its carrier folded in the cse1 NOT_TAKEN re-pass, so the label is gone befo",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-06 chassis, N2 geometry (copy-first, single cse-foldable carrier), zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "cse1 72, cse2 75; not separately sandboxed."
+  },
+  {
+   "session": 61,
+   "statement": "Form N4, two consecutive `if (i != a0) { i = a0; }` carriers meant to fold one per cse pass, loses both carriers in cse1 (post-cse1 label count 5 equals the baseline) and cse2 prints the shift on 75.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-06 chassis, N4 geometry, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "both carriers folded in cse1; cse2 shift = 75."
+  },
+  {
+   "session": 61,
+   "statement": "The s60 if-mask carrier (tmp/grind/func_80045294/s60/C_ifmask_carrier.c) prints the shift on 75 in cse1, cse2, combine and sched because its skipped body set only sum (74); it never produced the targe",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2026-09-06 chassis, s60 C_ifmask_carrier geometry, zero FAKE constructs",
+   "predicate_cite": "",
+   "result": "shift 75 in every pass; corrects the s60 claim that the carrier split the block for the shift."
   }
  ],
  "escalation_deferrals": 0

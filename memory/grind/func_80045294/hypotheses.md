@@ -1962,3 +1962,125 @@ sliced per pass into `tmp/grind/func_80045294/s59/dumps_{C,J,L}/fn.<pass>`:
 - probe: `python3 tools/fake_ablate.py --func func_80045294 --file text1a_c --candidate memory/grind/func_80045294/candidate.c`, plus a fresh build+score of the split-declaration rewrite of block 0 (tmp/grind/func_80045294/s60/B_splitdecl.c).
 - result: fake_ablate reports 'no FAKE-annotated constructs found in memory/grind/func_80045294/candidate.c; nothing to ablate'. The split-declaration baseline scores 1 at 83 insns, matching the six score-1 forms in s56's 120-form enumeration, so that kill is intact on the current chassis.
 - verdict: CONFIRMED
+
+
+## [s61] KILLED (class) - a hard_reg_copy_preference cannot seat the non-call-crossing loop-1 counter on $s0 (owner directive 2026-09-06)
+- statement: On the distinct-loop-2-counter chassis the loop-1 counter pseudo (75) has empty hard_reg_copy_preferences, hard_reg_full_preferences and regs_someone_prefers, so the find_reg preference passes (global.c:1097-1130) cannot move it off the lowest free register; no C spelling of the copy `i = a0` can populate them because set_preference only records copies with a hard register on one side.
+- mechanism: global.c:1718-1719 / :1737-1738 (set_preference requires dest_regno or src_regno below FIRST_PSEUDO_REGISTER after reg_renumber); 72 and 75 are both global allocnos, so the copy records nothing; $s0 (16) never appears in any set find_reg consults for 75.
+- probe: apply rejected/s52-a0ptr-separate-loop2-counter-collapse-80.c, instrumented cc1 with BB2_FINDREG_DEBUG=75 (tmp/grind/func_80045294/s61/dumps_J75/cc1_stderr.txt); greg allocno order 92 76 85 86 72 75 79 74 73 77 80.
+- result: own_copy_prefs empty, own_full_prefs empty, someone_prefers empty, conflicts 2 3 18 29 -> 75 takes $a0 (4). Directive says abandon; abandoned.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-06 chassis, distinct-loop-2-counter geometry (rejected/s52-a0ptr-separate-loop2-counter-collapse-80.c), zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/global.c:1718
+
+## [s61] CONFIRMED - a cse2-foldable, cse1-opaque carrier makes both cse passes print the target shift operand with copy-before-shift RTL
+- statement: Placing `do { } while (0);` then `if (i != a0) { i = a0; }` between the copy and the shift makes cse1 process the shift on the skip_blocks AROUND path with 75 invalidated (shift reads 72) while the carrier survives cse1, and makes cse2 fold the carrier and delete it before flow; the shift reads reg 72 through greg and final emits `sll $3,$18,4` with `move $16,$18` before it.
+- mechanism: cse.c:8054 (LOOP_END ends the cse1 extended block), cse.c:8149-8180 (AROUND path) + cse.c:7843 invalidate_skipped_block, cse.c:7037/7103 (jump folded, cse_jumps_altered), toplev.c:2929 (jump_optimize after cse2).
+- probe: form N1 (tmp/grind/func_80045294/s61/N1.c), dumps_N1, sandbox.
+- result: score 2 / 83; the only diff vs the candidate emitted body is the sll position (after sw $31/$21/$20 instead of before). Operand residual gone, position residual created.
+- verdict: CONFIRMED
+
+## [s61] KILLED (class) - any LOOP_BEG/LOOP_END note before the sll in block 0 puts the sll (or an earlier insn) behind all seven prologue saves
+- statement: With a loop note between the function start and the shift, the first surviving insn after the note acquires anti/true dependences on every earlier register use and set in the block, including the seven prologue sw insns, so it is emitted after `sw $31`, `sw $s5`, `sw $s4`; the target emits those three saves after the sll, so no such note position can produce the target order.
+- mechanism: sched.c:2284-2291 (loop notes collected inside a block) and sched.c:2081-2103 (dependences on all reg_last_uses/reg_last_sets + flush_pending_lists onto the next insn); sched1 re-emits the notes before the same insn so sched2 repeats it.
+- probe: N1.sched.json pass 2 block 0: node 36 deps = 219 221 223 225 227 229 231 233 4 6 12 15; picks 51 50 47 44 41 36 225 223 221 15 ...; perturb.py --goal-before 221:36 --goal-before 223:36 --goal-before 225:36 --depth 1 over 892 atoms finds nothing.
+- result: score 2 on N1; the position-closing perturbation does not exist at depth 1.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-06 chassis, N1 geometry (copy-first, shift on 72), do-while(0) FAKE carrier present
+- predicate_cite: tools/gcc-2.7.2/sched.c:2081
+
+## [s61] KILLED (class) - a carrier label alive at the end of cse2 splits sched2 block 0 and puts the sll after the late saves
+- statement: A CODE_LABEL between the copy and the shift that survives cse2 (deleted only by combine/jump2) makes flow end block 0 at the carrier jump, so sched2 schedules the sll in the following block, after every insn of block 0 including `sw $31/$s5/$s4`.
+- mechanism: toplev.c:3117 (sched2) precedes toplev.c:3142 (jump_optimize with cross-jump = jump2); thread_jumps (toplev.c:2932-2935) only redirects; flow block boundaries are fixed before combine.
+- probe: form N3 `if (((a0 << 4) & 0xF) != 0) { i = a0 + 1; }` (dumps_N3, N3.sched.json: pass-2 block 0 = prologue, 4, 6, 12, 15, jump 20).
+- result: shift on 72 through greg, emitted body differs from the candidate by the single moved sll (same residual N1 scored at 2).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-06 chassis, N3 geometry (copy-first, combine-only-foldable carrier, no loop notes), zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/toplev.c:3142
+
+## [s61] KILLED (instance) - a carrier whose condition cse1 can fold is gone before cse2, and cse2 re-canonicalises the shift to 75
+- statement: Form N2 (`if (i != a0) { i = a0; }` with no do-while) prints the shift on 72 in the cse1 AROUND pass but folds the carrier in the cse1 NOT_TAKEN re-pass; the label is deleted before cse2 and cse2 prints the shift on 75, the candidate state.
+- mechanism: cse.c:7030-7037 / 7058 (conditional jump folded when both operands share a quantity), toplev.c:2870 jump_optimize after cse1.
+- probe: dumps_N2 fn.cse / fn.cse2.
+- result: cse1 72, cse2 75; not separately sandboxed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-06 chassis, N2 geometry (copy-first, single cse-foldable carrier), zero FAKE constructs
+
+## [s61] KILLED (instance) - two stacked cse1-foldable carriers both fold in cse1
+- statement: Form N4 (two consecutive `if (i != a0) { i = a0; }` carriers) loses both carriers in cse1 (post-cse1 label count equals the baseline) and cse2 prints the shift on 75.
+- mechanism: cse.c:8360-8373 - cse_main re-runs cse_basic_block from the same block start when cse_jumps_altered is set, and the re-walk carries the copy across the folded carrier label to the next carrier.
+- probe: dumps_N4 fn.jump (7 labels) vs fn.cse (5 labels), fn.cse2 shift operand.
+- result: both folded in cse1; cse2 shift = 75.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-06 chassis, N4 geometry, zero FAKE constructs
+
+## [s61] KILLED (instance) - the s60 if-mask carrier never carried the target operand
+- statement: Re-dumping tmp/grind/func_80045294/s60/C_ifmask_carrier.c shows the shift on 75 in cse1, cse2, combine and sched; its skipped body set only sum (74), so the AROUND-path invalidation never touched 75.
+- mechanism: cse.c:7810-7835 invalidate_skipped_set invalidates only the destinations set in the skipped block.
+- probe: dumps_S60C.
+- result: shift 75 everywhere; the score-5 diff was the sw $17 / move $17,$0 pair moving.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-06 chassis, s60 C_ifmask_carrier geometry, zero FAKE constructs
+
+## [s61] On the distinct-loop-2-counter chassis the loop-1 counter pseudo (75) has empty hard_reg_copy_preferences, hard_reg_full_preferences and regs_someone_prefers, so the find_reg preference passes cannot seat it on $s0; set_preference records nothing for a pseudo-to-pseudo copy, so no spelling of `i = a0` can populate them.
+- mechanism: global.c:1718-1719 and :1737-1738 (set_preference requires a hard register on one side after reg_renumber); 72 and 75 are both global allocnos; $s2 (18), the only copy-linked register, is in the conflict set of 75.
+- probe: rejected/s52-a0ptr-separate-loop2-counter-collapse-80.c through the instrumented cc1 with BB2_FINDREG_DEBUG=75 (tmp/grind/func_80045294/s61/dumps_J75/cc1_stderr.txt); greg allocno order 92 76 85 86 72 75 79 74 73 77 80.
+- result: own_copy_prefs empty, own_full_prefs empty, someone_prefers empty, conflicts 2 3 18 29; 75 takes $a0. Abandoned per the directive.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-06 chassis, distinct-loop-2-counter geometry, zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/global.c:1718
+
+## [s61] A `do { } while (0);` followed by `if (i != a0) { i = a0; }` between the copy and the shift makes cse1 keep the carrier (LOOP_END ends its extended block) while processing the shift on the skip_blocks AROUND path with 75 invalidated, and makes cse2 fold and delete the carrier before flow; the shift reads reg 72 through greg and final emits `sll $3,$18,4` after `move $16,$18`.
+- mechanism: cse.c:8054 (LOOP_END boundary, cse1 only), cse.c:8149-8180 AROUND path + cse.c:7843 invalidate_skipped_block, cse.c:7037/7103 jump fold setting cse_jumps_altered, toplev.c:2929 jump_optimize after cse2.
+- probe: form N1 (tmp/grind/func_80045294/s61/N1.c), dumps_N1 per-pass operand grep, sandbox.
+- result: score 2 / 83; the only difference from the candidate emitted body is the sll position (after sw $31/$21/$20). First form with the target operand and copy-first order together.
+- verdict: CONFIRMED
+
+## [s61] A LOOP_BEG/LOOP_END note anywhere between the function start and the shift in block 0 makes the first surviving insn after it depend on every earlier register use and set, including all seven prologue saves, so that insn is emitted after sw $31, sw $s5 and sw $s4, which the target emits after the sll.
+- mechanism: sched.c:2284-2291 collects loop notes inside a block; sched.c:2081-2103 adds anti/true dependences from every reg_last_uses/reg_last_sets entry and flushes pending memory lists onto the next insn; sched1 re-emits the notes before the same insn so sched2 repeats it.
+- probe: N1.sched.json pass 2 block 0 (node 36 deps = 219 221 223 225 227 229 231 233 4 6 12 15; picks 51 50 47 44 41 36 225 223 221 15 ...) and perturb.py --goal-before 221:36 --goal-before 223:36 --goal-before 225:36 --depth 1 over 892 atoms.
+- result: no perturbation reaches the goal; N1 scores 2 with the sll after the three late saves.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-06 chassis, N1 geometry (copy-first, shift on 72), do-while(0) FAKE carrier present
+- predicate_cite: tools/gcc-2.7.2/sched.c:2081
+
+## [s61] A carrier CODE_LABEL between the copy and the shift that is still present at the end of cse2 (folded only by combine, deleted only by jump2) makes flow end block 0 at the carrier jump, so sched2 places the sll in the next block after all of block 0 including the three late saves.
+- mechanism: toplev.c:3117 (sched2) precedes toplev.c:3142 (jump_optimize cross-jump pass); thread_jumps at toplev.c:2932-2935 only redirects; block boundaries are fixed by flow before combine.
+- probe: form N3 `if (((a0 << 4) & 0xF) != 0) { i = a0 + 1; }` (dumps_N3; N3.sched.json pass-2 block 0 = prologue, 4, 6, 12, 15, jump 20).
+- result: shift reads 72 through greg; emitted body differs from the candidate by the single moved sll, the same residual N1 scored at 2.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 2026-09-06 chassis, N3 geometry (copy-first, combine-only-foldable carrier, no loop notes), zero FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/toplev.c:3142
+
+## [s61] Form N2, the carrier `if (i != a0) { i = a0; }` without the do-while, prints the shift on 72 in the cse1 AROUND pass but has its carrier folded in the cse1 NOT_TAKEN re-pass, so the label is gone before cse2 and cse2 prints the shift on 75, the candidate state.
+- mechanism: cse.c:7030-7037 / 7058 conditional-jump fold when both operands share a quantity; toplev.c:2870 jump_optimize after cse1.
+- probe: dumps_N2 fn.cse and fn.cse2 operand grep.
+- result: cse1 72, cse2 75; not separately sandboxed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-06 chassis, N2 geometry (copy-first, single cse-foldable carrier), zero FAKE constructs
+
+## [s61] Form N4, two consecutive `if (i != a0) { i = a0; }` carriers meant to fold one per cse pass, loses both carriers in cse1 (post-cse1 label count 5 equals the baseline) and cse2 prints the shift on 75.
+- mechanism: cse.c:8360-8373: cse_main re-runs cse_basic_block from the same block start when cse_jumps_altered is set, and the re-walk carries the copy across the folded carrier label into the next carrier.
+- probe: dumps_N4 fn.jump (7 labels) vs fn.cse (5 labels) and fn.cse2 operand.
+- result: both carriers folded in cse1; cse2 shift = 75.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-06 chassis, N4 geometry, zero FAKE constructs
+
+## [s61] The s60 if-mask carrier (tmp/grind/func_80045294/s60/C_ifmask_carrier.c) prints the shift on 75 in cse1, cse2, combine and sched because its skipped body set only sum (74); it never produced the target operand and its score-5 diff was the sw $17 / move $17,$0 pair moving.
+- mechanism: cse.c:7810-7835 invalidate_skipped_set invalidates only destinations set in the skipped block.
+- probe: dumps_S60C per-pass operand grep and emitted-body diff against the candidate.
+- result: shift 75 in every pass; corrects the s60 claim that the carrier split the block for the shift.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2026-09-06 chassis, s60 C_ifmask_carrier geometry, zero FAKE constructs
