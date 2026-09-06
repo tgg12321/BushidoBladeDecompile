@@ -1,3 +1,119 @@
+/* s32 (structural, second run — 2026-09-06).  BODY UNCHANGED; floor still 3/175/175.
+ * 46 scoring builds + 3 cc1 -da dump runs this session; src/text1b.c restored to the
+ * pristine HEAD copy after every sweep.  THE RESIDUAL IS NOW LOCALISED TO A SINGLE GCC
+ * DECISION, and for the first time a body exists that emits the whole class-C block
+ * BYTE-EXACT.
+ *
+ * 1. PASS ATTRIBUTION, READ OUT OF THE DUMPS (not inferred).  `pwsh tools/grinder/dump.ps1
+ *    func_800770B8` was run on this body (base) and on the operand-flip body (f2, the
+ *    int-domain spelling `(s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A)`).  Their `.lreg`
+ *    dumps for func_800770B8 differ in EXACTLY ONE insn out of the whole function:
+ *      base: (insn 188 (set (reg 110) (plus (reg 109) (reg 108))))   <- reload first
+ *      f2:   (insn 188 (set (reg 110) (plus (reg 108) (reg 109))))   <- chain first
+ *    (reg 108 = the t0*10 chain, reg 109 = the second `lw %gp_rel(D_800A36A0)` reload.)
+ *    Every other insn, and the ENTIRE insn ORDER, is identical.  So sched1 is NOT involved
+ *    in the 24 rows of collateral f2 pays — the collateral is entirely local-alloc's
+ *    response to that one swap: block_alloc's tying loop (local-alloc.c:1240-1299) now
+ *    ties reg 110 to operand 1 = the CHAIN, merging the dest quantity into the chain
+ *    quantity instead of the reload quantity, and the resulting qty_compare_1 priority
+ *    order reseats the whole loop-body block.  f2's `(plus (reg 108) (reg 109))` IS the
+ *    target's RTL; only the hard registers come out swapped ($v0<->$v1 on the chain and
+ *    the reload, $a0<->$a1 on t0 and the first load).
+ *    Artifacts: tmp/grind/func_800770B8/s32/{base,f2,u4}.lreg / .sched, slice.py.
+ *
+ * 2. THE SEATS ARE REACHABLE — u4 = 12/175/175, THE FIRST BODY IN 32 SESSIONS THAT EMITS
+ *    ROWS 54 THROUGH 64 BYTE-EXACT, class C included.  u4 = f2's operand flip PLUS moving
+ *    the D_800A35D0 store group (the 0x2/0x0 clears) ahead of the group-A stores.  Its
+ *    entire 11-row residual is the D group's own emission position (target rows 49-53, u4
+ *    rows 38-39/43-46); rows 54-64 — `addu $v0,$a0,$v1 / addu $a0,$a0,$a1 /
+ *    addu $v1,$v1,$a1 / sh 0x42 / sh 0x40 / sb 0x68 / lw / sll / addu $v1,$v1,$v0 /
+ *    addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E` — are the target's, register for register.
+ *    Controls: w10 (the D hoist WITHOUT the flip) = 15 and still carries the 3 class-C
+ *    rows, so the hoist alone does nothing for the tie; x3 (the same hoist through its own
+ *    local) = 12 identically, so `ptr` reuse is not the lever.
+ *
+ * 3. WHY u4 IS NOT THE ANSWER, AND WHAT THE FRONTIER NOW IS.  The target's store order is
+ *    A(0x10,0x8,0xC,0x14,0x3C) -> D(0x2,0x0) -> C(0x42,0x40) -> S(0x68), i.e. THIS body's
+ *    order; GCC 2.7.2 will not reorder stores through an unknown pointer past stores to a
+ *    known symbol, so the D-first order that wins the seats also emits the D stores first.
+ *    Hoisting only the D ADDRESS and leaving its stores in place does not reproduce the
+ *    effect (x1 26, x2 38, w13 29, x4 27 at 172 insns), so it is the STORE position, not
+ *    the address-computation position, that moves the allocation.  The open question is
+ *    therefore narrow and purely local-alloc: with insn 188 in the target's operand order
+ *    and the store order left alone, restore the qty_compare_1 ordering that base already
+ *    has for rows 38-61.
+ *
+ * 4. ALSO MEASURED AND NEGATIVE this session (all on this chassis, floor body + the class-B
+ *    dead store, do-while(0) fence present).  Group-order permutations with the flip:
+ *    ACDS/ADSC/ACSD/SADC 27, ASDC 36, DCAS 20, DASC 14, CDAS 14, DACS 12.  Flip variants:
+ *    p_7e = p_6a + 10 (u1) 27, chain named s32 (u2) 27, constant folded into the chain (u3)
+ *    14 at 176 insns, (t0*5)*2 (u10) 27, flip on p_6a only (u8) 27, flip on p_7e only (u9)
+ *    3 = byte-inert, pointer-domain flip through a named `u8 *chain` local (y2) 27,
+ *    declaration order of p_6a/p_7e (y4) 29.  Natural record readings: `s16 *tbl =
+ *    (s16 *)D_800A36A0; &tbl[t0*5+53]` (y1) = 7 but at 176 insns — it folds the +0x6A/+0x7E
+ *    constants BEFORE the base add, emitting two `addu` where the target emits one `addu`
+ *    plus two `addiu`; the 0x6A-biased table (y3) 43 at 176.  Operand-order flips of the
+ *    OTHER groups are byte-inert or near-inert on the floor body (z1/z2/z3 = 4, z4 = 3) and
+ *    do not counteract the flip's reseat when combined with it (z5-z9 all 27).
+ * Detail: evidence.md [s32b], hypotheses.md [s32b].
+ */
+/* s32 UPDATE (2026-09-06, structural).  BODY UNCHANGED - still the honest floor.
+ * Re-measured live this session: this body = `sandbox func_800770B8 --disable all` =
+ * score 3, build_insns 175, target_insns 175.  36 scoring builds; the residual is still
+ * exactly rows 62/63/64 and still exactly ONE local-alloc tie.
+ *
+ * THE TIE PREDICATE IS NOW READ OUT OF THE COMPILER SOURCE, not inferred.  block_alloc's
+ * tying loop (local-alloc.c:1240-1299) walks recog_operand 1..n and calls combine_regs;
+ * combine_regs (local-alloc.c:1784-1946) refuses only on three reachable grounds:
+ *   (1) reg_qty[operand] < 0            -- local-alloc.c:1827
+ *   (2) reg_qty[dest] == -1             -- local-alloc.c:1836
+ *   (3) no REG_DEAD note for the operand at this insn -- local-alloc.c:1917
+ * reg_qty is set at local-alloc.c:469-477: -2 (local-allocatable) iff
+ * reg_basic_block >= 0 AND reg_n_deaths == 1, else -1.  Our sum insn is
+ * `(set (reg 110) (plus (reg 109 = the D_800A36A0 reload) (reg 108 = the t0*10 chain)))`
+ * and the reload satisfies all three, so operand 1 wins and the dest takes the reload's
+ * seat ($v0).  The TARGET's `addu $v1,$v1,$v0` is the dest tied to the CHAIN.
+ *
+ * ALL THREE DENIAL GROUNDS WERE SPELLED IN C AND PRICED THIS SESSION:
+ *   (3) REG_DEAD denial - give the reload a real use AFTER the sum, inside the block.
+ *       The only statement available is the 0x68 sb, and CONTROL h2 (relocate the sb and
+ *       change nothing else) already costs 24 rows; h1 (relocate + read the global) 27,
+ *       h4 14 at 177 insns, h5 28.  Priced out before the tie is touched.
+ *   (1) reg_qty denial - i1, the best form in 32 sessions: re-read D_800A36A0 into the
+ *       EXISTING `base` local just before p_6a/p_7e (two sets, every reference still in
+ *       the one block).  Score 14/175/175 with rows 44-53 AND rows 63/64 byte-exact and
+ *       row 62 carrying the TARGET's dest register.  Its ceiling is structural: one C
+ *       variable is one pseudo, and reg_qty = -1 hands it to global-alloc, which gives
+ *       BOTH live ranges a single hard register ($a1), so `base` can no longer die at the
+ *       S pointer (target row 55 `addu $a0,$a0,$a1`).  CONTROL i5 (the same reload named
+ *       in a fresh ONCE-set local) is byte-inert at 3, isolating "two sets" as the whole
+ *       lever.  Every other carrier is worse: reusing the already-multiply-set `ptr`
+ *       n1/n2/n3/n5 = 27 and `p_old` n4 = 27; sharing one local with a LATER block
+ *       o1/o1b 33, o2 31, o3 36, o4 39; a trailing dead store on a fresh local m1/m2/m4/m6
+ *       = 3 (flow deletes it - the second set needs a real read after it, m3 176 insns).
+ *   (2) dest denial - not C-reachable (the dest is a compiler temp).
+ *   Operand ORDER (make the chain operand 1) - f2/h6/q7 = 27.  s32 isolated the cause:
+ *       CONTROL q5 `(s16 *)((s32)D_800A36A0 + (t0 * 10) + 0x6A)` - the SAME (s32) cast
+ *       with the global still first - is byte-INERT at 3.  So the 24 rows of collateral
+ *       are the operand ORDER itself, not the cast: putting the chain first extends the
+ *       chain quantity through row 64 and reseats rows 38-64 wholesale.
+ *
+ * CLASS B'S DEAD STORE IS NOT REPLACEABLE BY ORDINARY C (owner directive item 2, ledger
+ * frontier item 3, executed and closed).  The target's prologue was decoded further this
+ * session: func_8006E49C RETURNS A COMPUTED POINTER (`addiu $v0,$a0,0x1FB0` is its last
+ * value insn, asm/funcs/func_8006E49C.s), and the target emits a REAL copy insn
+ * `addu $s1,$v0,$zero` - so the raw result and the `p_old` variable really are two
+ * pseudos there.  Spelling that shape directly (s1/s2/s4 = 23 at 170 insns, s5 = 25 at
+ * 170, s3 = 17 at 173) always loses 2-5 insns, because a separate local for the raw
+ * result lets cse rematerialise p_old's pre-call value from $s0 (= arg0) after the three
+ * calls, so nothing needs a callee-saved register and the $s1 save/restore collapses.
+ * The annotated dead store is the only spelling that reaches the gate at 175 insns.
+ * Byte-inert equivalences banked this session (all 3/175/175): `p_7e = p_6a + 10` (r4),
+ * `(t0 * 5) * 2` for the chain (r5), naming t0*10 in an s32 local (r3, s30's kill
+ * re-confirmed on THIS chassis).  Declaration order of the two pointers costs 5 (r1) and
+ * swapping the inner loop's two stores costs 7 (r2).
+ * Detail: evidence.md [s32], hypotheses.md [s32].
+ */
 /* s31 UPDATE (2026-09-06, rederive).  FLOOR 5 -> 3.  CLASS B IS CLOSED.
  * Measured live on the HEAD 2fbaa47a chassis: this body =
  * `sandbox func_800770B8 --disable all` = score 3, build_insns 175, target_insns 175.

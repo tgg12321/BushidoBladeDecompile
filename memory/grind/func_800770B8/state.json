@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 31,
- "current_modality": "rederive",
+ "session_count": 32,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -189,23 +189,29 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "Class B CLOSED after 31 sessions: floor 5 -> 3. A dead store to the local p_old between the 0x4 store and the 0x30/0x34 clears denies local-alloc's combine_regs its reg_n_deaths==1 precondition, so th"
+  },
+  {
+   "session": 32,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "Class C localised to ONE insn: the .lreg dumps of the floor body and the operand-flip body differ in exactly one line (insn 188's plus operand order), and u4 (flip + D-store hoist) emits rows 54-64 by"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A C form exists that makes the class-C reload pseudo fail local-alloc.c:469-477 (reg_qty = -1) WITHOUT introducing a long-lived named local - which would keep g1's byte-exact rows 60-78 while leaving rows 79-89 (the 0x5C/0x60 block) untouched. That form scores 3 minus the class-C rows plus only the rows 38-59 loop-head cost, and if the loop head can be held, it is a score-0 body.",
-   "mechanism": "local-alloc.c:469-477 sets reg_qty = -1 when reg_basic_block < 0 OR reg_n_deaths != 1; g1 satisfied both at once (two sets AND uses straddling the inner loop). Only ONE is needed. g4 proves two reads inside a single basic block are refolded by cse and never materialise a second set, so the second death has to come from a read the cse table cannot merge - i.e. one separated from the first by a store or a call, which the inner loop's own stores already provide.",
-   "next_probe": "Enumerate spellings that give the reload exactly ONE of the two disqualifiers: (a) reg_n_deaths == 2 with both uses in the SAME block by placing the second read after the inner loop's first store but keeping the 0x5C/0x60 stores as anonymous global reads; (b) reg_basic_block == -1 with a single set, by reading the global into a local BEFORE the p_6a/p_7e block and using it once more in the immediately following block only. Read reg_n_deaths / reg_basic_block for the reload pseudo straight out of the .lreg dump for each build (tmp/grind/func_800770B8/s31/slice.py) rather than inferring from the score."
+   "hypothesis": "A pure-C form exists that gives insn 188 the target's operand order (chain first) AND leaves local-alloc's qty_compare_1 ordering where the floor body already has it for rows 38-61 - which would be a score-0 body, since u4 proves the seats are reachable and the floor body proves the rest of the block is already exact.",
+   "mechanism": "The whole residual is now one decision inside block_alloc: with the dest tied to the chain (local-alloc.c:1240-1299), the merged chain+dest quantity's live length grows by three insns and qty_compare_1 (tools/gcc-2.7.2/local-alloc.c) hands it and the reload the opposite hard registers. u4 restores the target's assignment by adding one more quantity to the block's sort, but it does so with a store hoist that changes the emission order.",
+   "next_probe": "Take f2 (the flip, 27) as the base and add a quantity to the loop-body block WITHOUT moving any store: e.g. a genuinely-used local holding the sp[t0] address, the arg2 mask, or the D_800A35D0 base, declared and consumed inside the loop body; and separately vary the live length of the COMPETING quantities (the first D_800A36A0 load, t0*4, t0*2) rather than the chain's. Read reg_qty / qty ordering for regs 108/109/110 straight out of the .lreg dump for each build with tmp/grind/func_800770B8/s32/slice.py instead of inferring from the score, and diff the .greg dump of each build against u4.greg to see which quantity's seat moved."
   },
   {
-   "hypothesis": "The rows 38-59 loop-head reschedule that BOTH class-C fixes pay is a separable sched1 decision, not a fixed price of the flipped tie.",
-   "mechanism": "In f1 and g1 the loop-top `lw %gp_rel(D_800A36A0)` moves one slot earlier (ours row 40 vs target row 41) and the group-A pointer re-seats from $v0 to $a1, propagating through rows 42-59. sched.c's ready-list priority for the loop-top load changes once the downstream sum's quantity changes seat, so this is the same sched1/local-alloc coupling s28-s30 named on the flipped-cursor chassis - but now on the A-first chassis, where the rest of the window is already byte-exact.",
-   "next_probe": "Take g1 as the base (rows 60-78 byte-exact) and vary ONLY the loop head: the position of `u8 *base = D_800A36A0;`, whether group A is addressed off `base` or off a re-read, and the statement order of the A/D/C/S groups. Diff the .sched dump's ready-list for the loop-top load between d1F and g1 to name which dependency edge changed."
+   "hypothesis": "u4's 11-row residual can be paid down from the other side: with the class-C block already byte-exact, a spelling exists that keeps the D-first store order's ALLOCATION while restoring the target's A-then-D emission order.",
+   "mechanism": "The store order is fixed by GCC's refusal to reorder a store through an unknown pointer past a store to a known symbol, so the only route is to make the two groups NOT alias-ordered - e.g. by giving the group-A pointer a declared type that lets GCC prove independence, or by making the D group's stores unconditionally sink.",
+   "next_probe": "Re-check the alias decision in the .sched dump for u4: read the REG_DEP_ANTI / true-dependence edges between insns 125/128 (the D stores) and 139-151 (the A stores) and confirm they are memory dependencies rather than register ones. If they are memory dependencies, record that as the predicate closing this route; if not, sweep spellings that separate the two groups' memory."
   },
   {
-   "hypothesis": "Class B's dead store may be replaceable by an ordinary-C form if the second death can come from a real program value - the one candidate not yet enumerated is the record's own back-pointer field being read back rather than kept in `prev`.",
-   "mechanism": "The dead store is only needed because p_old has exactly one death. Any truthful construct that re-sets p_old (e.g. walking the record list, or re-reading *(s32 *)((u8 *)p_old + 4)) supplies the same second death without a FAKE annotation.",
-   "next_probe": "Audit the callers and the record layout at D_800A36A0 + 0x4 for a genuine list-walk shape in the surrounding functions (func_8006E49C, func_80076FF8, func_8006E950): if any of them establishes that this block is a push onto a linked list, the natural C for the push may reassign p_old on its own. If no such shape exists, record the absence with the record layout as the predicate and keep the annotated dead store."
+   "hypothesis": "The 176-insn table readings (y1 = 7, y3 = 43) are one fold away from the target's shape, and a spelling exists that keeps the natural s16-table reading of the record while emitting the target's one addu plus two addiu.",
+   "mechanism": "GCC folds the +53 / +63 element offsets into the index before scaling and adding the base, producing two addu; the target adds the base first and then applies 0x6A / 0x7E as addiu displacements. Keeping the constants OUT of the index expression should restore the target's split.",
+   "next_probe": "Spell the table reading as `s16 *tbl = (s16 *)D_800A36A0; s16 *row = &tbl[t0 * 5]; p_6a = row + 53; p_7e = row + 63;` and the variant with the row pointer typed u8 *, and measure insn count first - anything at 176 is out regardless of score."
   }
  ],
  "judge_constraints": [
@@ -483,6 +489,22 @@
    "measured_on": "HEAD 2fbaa47a chassis, d1 body (dead store present, do-while(0) fence present), 175/175 in all three builds",
    "predicate_cite": "",
    "result": "f1 27, f2 27, f3 3. s9 banked this family at score 33 on an older chassis; re-audited here per the kill-re-audit directi"
+  },
+  {
+   "session": 32,
+   "statement": "Of the nine store-group permutations built this session on the operand-flip body, the five that keep the group-A stores first measure 27 or worse (ACDS 27, ADSC 27, ACSD 27, SADC 27, ASDC 36), and the",
+   "kill_scope": "instance",
+   "measured_on": "HEAD df705f93 chassis, floor body F + the class-B dead store (score 3), do-while(0) prologue fence present; 175/175 in every build except x4 (172).",
+   "predicate_cite": "",
+   "result": "12 is the floor of this family and its whole residual is the D group's emission position; no permutation reaches those s"
+  },
+  {
+   "session": 32,
+   "statement": "On this chassis the flip variants and the natural s16-table record readings measured this session do not beat the plain operand flip: p_7e = p_6a + 10 27, chain named in an s32 local 27, the field con",
+   "kill_scope": "instance",
+   "measured_on": "HEAD df705f93 chassis, floor body F + the class-B dead store (score 3), do-while(0) prologue fence present; 175/175 in every build except u3, y1 and y3 (176).",
+   "predicate_cite": "",
+   "result": "As listed; none is below the floor's 3 and none reaches u4's seats."
   }
  ],
  "object_model_audited": 29,

@@ -2914,3 +2914,203 @@ do-while(0) prologue fence present, 175/175 in all fourteen builds.
 - probe: g1 (fresh local b2, two sets), g2 (reusing the existing `base` local), g3 (second set in the tail block), g4 (two reads into one local inside ONE basic block), f4 (single read shared with the 0x5C block).
 - result: g1 39 (rows 60-78 byte-exact; price is rows 38-59, the same loop-head reschedule f1 pays, plus rows 79-89 where the named local perturbs the 0x5C/0x60 block), g2 35, g3 33, g4 3 (byte-inert - cse merges same-block re-reads so the second set never materialises), f4 53 at 163 insns (sharing collapses two real loads). Not banked as the candidate, but this is the first form in 31 sessions to emit rows 62-64 correctly on the target's A-first store order.
 - verdict: CONFIRMED
+
+## [s32] (structural, 2026-09-06) — owner directive: class-B re-measure, then a genuine third use
+
+### H1 KILLED (instance) — the REG_DEAD-denial route is priced out by the store relocation it needs
+- statement: on the HEAD df705f93 chassis, giving the D_800A36A0 reload a real use after
+  the sum insn requires relocating the 0x68 `sb` into the p_6a/p_7e block, and the CONTROL
+  that relocates it while changing nothing else (h2) measures 24/175/175; the full
+  spellings measure h1 27/175, h4 14 at 177 insns, h5 28/175, h3 31 at 176.
+- mechanism: combine_regs requires `find_regno_note (insn, REG_DEAD, ureg)` at
+  local-alloc.c:1917, so a use of the reload after the sum denies the operand-1 tie. The
+  only statement in that basic block that can supply such a use is the S store; every
+  other statement either precedes the sum or lives in the inner loop's block.
+- probe: h1-h5 plus the isolating control h2, one build each.
+- result: the relocation alone costs 24 rows, i.e. more than the 3-row prize, before the
+  tie is touched at all.
+- measured_on: HEAD df705f93 chassis, floor body F+dead-store (score 3), do-while(0)
+  prologue fence present, 175/175 except h3 (176) and h4 (177).
+- verdict: KILLED (instance)
+
+### H2 CONFIRMED — the reg_qty route reaches the target's dest with rows 44-53 and 63/64 byte-exact
+- statement: re-reading `D_800A36A0` into the EXISTING `base` local immediately before the
+  p_6a/p_7e computation (two sets, every reference still inside the loop-body basic block)
+  measures 14/175/175, emits rows 44-53 and rows 63/64 byte-exact, and puts the target's
+  dest register on row 62.
+- mechanism: two sets give `reg_n_deaths == 2`, so local-alloc.c:469-477 sets
+  `reg_qty = -1`; combine_regs then bails at local-alloc.c:1827 for operand 1 of the sum,
+  and block_alloc's tying loop (local-alloc.c:1240-1299, `if (win) break;`) falls through
+  to operand 2 — the t0*10 chain, which is the target's dest.
+- probe: i1 (both pointers off the refreshed `base`), i2 (only p_6a), i3/i4/i6 (other
+  refresh positions), and CONTROL i5 (the same reload named in a fresh ONCE-set local).
+- result: i1 14, i2 14, i3 39, i4 41, i6 16 at 176; i5 byte-inert at 3, which isolates
+  "two sets" as the entire lever. Not banked as the candidate: 11 rows worse than the floor.
+- verdict: CONFIRMED
+
+### H3 KILLED (instance) — no carrier for the two-set property leaves `base` intact
+- statement: on this chassis every alternative carrier for the reload's second death
+  measures worse than i1's 14: a trailing dead store on a fresh local m1/m2/m4/m6 = 3
+  (byte-inert), m3 = 17 at 176 insns, m5 = 39 at 174; reusing the already-multiply-set
+  `ptr` n1/n2/n3/n5 = 27 and `p_old` n4 = 27; sharing one function-scope local with a
+  LATER block o1/o1b = 33, o2 = 31 at 174, o3 = 36, o4 = 39.
+- mechanism: a set with no read after it is deleted by flow before a second death is
+  recorded, so the dead-store carrier never reaches local-alloc.c:469-477; and any carrier
+  that DOES reach it is one C variable, hence one pseudo, hence one hard register from
+  global-alloc across all of its live ranges — which is why i1 forces `base` and the reload
+  into `$a1` together and why the cross-block and reused-`ptr` carriers pin a register
+  across seats the target emits separately.
+- probe: m1-m6, n1-n5, o1-o4, one build each.
+- result: as listed; i1's 14 stands as the floor of this family.
+- measured_on: HEAD df705f93 chassis, floor body F+dead-store (score 3), do-while(0)
+  prologue fence present; 175/175 except m3 (176), m5/o2 (174).
+- verdict: KILLED (instance)
+
+### H4 KILLED (instance) — the operand-order route's collateral is the ORDER, not the cast
+- statement: `(s16 *)((s32)D_800A36A0 + (t0 * 10) + 0x6A)` — the same `(s32)` cast as f2
+  but with the global still in operand 1 — measures 3/175/175 and is byte-INERT, while
+  every spelling that puts the t0*10 chain in operand 1 (f2, h6, q7) measures 27/175/175
+  with rows 38 through 64 all differing.
+- mechanism: c-typeck.c:1988/2695 put the pointer-typed side in ptrop unconditionally, so
+  the int domain is the only way to reach `(plus chain reload)`. The cast itself emits
+  nothing; what costs is the tie, which merges the sum's dest into the chain quantity and
+  extends that quantity's interval through row 64, changing its qty_compare_1 priority and
+  reseating the entire loop-body block — including rows 44-53, which the floor body
+  already emits byte-exact.
+- probe: q5 (the isolating control), q7 (the same order via a named `s32` intermediate),
+  and the re-measured f2 with a full alias-normalised row diff.
+- result: q5 3 (inert), q7 27, f2 27 with 27 differing rows spanning 38-64. "Find a
+  cleaner cast / a cast-free operand flip" is retired as a line of attack.
+- measured_on: HEAD df705f93 chassis, floor body F+dead-store (score 3), do-while(0)
+  prologue fence present, 175/175 in all three builds.
+- verdict: KILLED (instance)
+
+### H5 KILLED (instance) — class B's dead store has no ordinary-C replacement (frontier item 3 CLOSED)
+- statement: on this chassis every spelling of the target's own two-pseudo class-B shape
+  (the func_8006E49C result held in its own local, `p_old` reassigned from it, the 0x30/
+  0x34 clears issued through the raw local) loses insns: s1/s2/s4 = 23 at 170 insns,
+  s5 = 25 at 170, s3 = 17 at 173, against the target's 175.
+- mechanism: a separate local for the raw result lets cse rematerialise `p_old`'s pre-call
+  value from `$s0` (= `arg0`) after the three calls, so no pseudo needs a callee-saved
+  register and the `$s1` save/restore prologue collapses — 5 insns short. The record-layout
+  audit the frontier called for was also run: `func_8006E49C` is a pure field-initialiser
+  (writes 0x0-0x4C of its `$a1` argument) returning a computed pointer
+  (`addiu $v0,$a0,0x1FB0`), and neither `func_80076FF8` (ten `func_8006920C` calls over
+  fields 0x14-0x38) nor `func_8006E950` establishes a linked-list push, so there is no
+  natural list walk that could reassign `p_old`.
+- probe: s1-s5 on the floor body F (dead store REMOVED), plus a read of
+  `asm/funcs/func_8006E49C.s`, `func_80076FF8.s` and `func_8006E950.s`.
+- result: as listed; the annotated dead store remains the only spelling that reaches the
+  gate at 175 insns.
+- measured_on: HEAD df705f93 chassis, floor body F with the class-B dead store REMOVED,
+  do-while(0) prologue fence present; 170-173 insns against target 175.
+- verdict: KILLED (instance)
+
+### H6 KILLED (instance) — three s30 spelling kills re-confirmed on the score-3 chassis
+- statement: naming `t0 * 10` in an `s32` local (r3), spelling the chain `(t0 * 5) * 2`
+  (r5), and deriving `p_7e = p_6a + 10` (r4) are each byte-inert at 3/175/175; swapping the
+  two pointer declarations costs 5 (r1) and swapping the inner loop's two stores costs
+  7 (r2).
+- mechanism: cse has already shared the t0*4 pseudo and folded the synth_mult chain, so a
+  C-level name adds no reference and moves no interval; the declaration and store orders,
+  by contrast, feed sched1's ready list directly.
+- probe: r1-r5, one build each.
+- measured_on: HEAD df705f93 chassis, floor body F+dead-store (score 3), do-while(0)
+  prologue fence present, 175/175 in all five builds.
+- verdict: KILLED (instance)
+
+
+## [s32b] (structural, 2026-09-06, second run) — operand order isolated to one insn
+
+### H1 CONFIRMED — the class-C residual is one `plus` operand order plus one seat decision
+- statement: the int-domain spelling `(s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A)` changes
+  exactly ONE insn in the whole function's `.lreg` RTL — insn 188 becomes
+  `(set (reg 110) (plus (reg 108) (reg 109)))`, which is the target's operand order — and
+  the 24 rows of collateral it pays are entirely local-alloc's seat response to that swap,
+  not a scheduler decision.
+- mechanism: with the chain in operand 1, block_alloc's tying loop
+  (tools/gcc-2.7.2/local-alloc.c:1240-1299) ties the dest to the chain instead of the
+  reload, merging the dest quantity into the chain quantity; the changed live length
+  reorders qty_compare_1 and reseats the block ($v0<->$v1 on chain/reload, $a0<->$a1 on t0
+  and the first load).
+- probe: `pwsh tools/grinder/dump.ps1 func_800770B8` on the floor body and on f2; the
+  `;; Function func_800770B8` regions of the two `.lreg` dumps diffed line by line
+  (tmp/grind/func_800770B8/s32/slice.py, base.lreg, f2.lreg).
+- result: one differing line, insn 188. Insn order identical throughout.
+- verdict: CONFIRMED
+
+### H2 CONFIRMED — the target's seats for the flipped tie ARE reachable in pure C (u4 = 12)
+- statement: the operand flip combined with moving the D_800A35D0 store group ahead of the
+  group-A stores measures 12/175/175 and emits rows 54 through 64 byte-exact, including
+  `addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E` — the class-C residual that
+  has stood for 32 sessions.
+- mechanism: the extra store group changes the quantity set local-alloc sorts, and the
+  merged chain+dest quantity lands on the target's hard registers.
+- probe: u4/w5 (D,A,C,S order), x3 (same via its own local), CONTROL w10 (hoist without the
+  flip), CONTROL x1/x2/w13/x4 (address hoisted, stores left in place).
+- result: u4 12, x3 12, w10 15 (class C still broken), x1 26, x2 38, w13 29, x4 27 at 172.
+- verdict: CONFIRMED
+
+### H3 KILLED (instance) — on this chassis no group-order permutation reaches u4's seats
+        while leaving the target's A,D,C,S store order intact
+- statement: with the operand flip present on the floor body, the nine store-group
+  permutations built this session score ACDS 27, ADSC 27, ACSD 27, SADC 27, ASDC 36,
+  DCAS 20, DASC 14, CDAS 14, DACS 12, so every permutation that keeps the A group's stores
+  first scores 27 or worse, and the three that beat 20 all emit the D_800A35D0 stores
+  before the group-A stores.
+- mechanism: GCC 2.7.2 does not reorder a store through an unknown pointer past a store to
+  a known symbol, so the source order of the two store groups is the emission order; the
+  seat change that fixes class C is carried by the D stores' position, not by the D address
+  computation (x1 26, x2 38, w13 29, x4 27 at 172 insns).
+- probe: w1-w13, x1-x7, one build each.
+- result: as listed; 12 is the floor of this family and its whole residual is the D group's
+  emission position.
+- measured_on: HEAD df705f93 chassis, floor body F + the class-B dead store (score 3),
+  do-while(0) prologue fence present; 175/175 except x4 (172).
+- verdict: KILLED (instance)
+
+### H4 KILLED (instance) — the flip variants and the natural record readings measured here
+        do not beat the plain flip
+- statement: on this chassis, carrying the operand flip through `p_7e = p_6a + 10` (27), a
+  named `s32` chain local (27), the constant folded into the chain (14 at 176 insns),
+  `(t0*5)*2` (27), the flip on p_6a alone (27) or p_7e alone (3, byte-inert), a named
+  `u8 *chain` pointer local (27), or swapped p_6a/p_7e declarations (29) all measure at or
+  above the plain flip's 27; and the two natural s16-table readings measure 7 at 176 insns
+  and 43 at 176 insns.
+- mechanism: the byte-inert spellings are refolded by cse onto the same RTL (confirmed by
+  the single-insn .lreg diff in H1), so they cannot move a seat; the table readings fold the
+  0x6A/0x7E field constants into the index before the base add, emitting two `addu` where
+  the target emits one `addu` and two `addiu`.
+- probe: u1, u2, u3, u8, u9, u10, y1, y2, y3, y4, z1-z9, one build each.
+- result: as listed.
+- measured_on: HEAD df705f93 chassis, floor body F + the class-B dead store (score 3),
+  do-while(0) prologue fence present; 175/175 except u3/y1/y3 (176).
+- verdict: KILLED (instance)
+
+## [s32] The int-domain spelling (s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A) changes exactly ONE insn in the whole function's .lreg RTL - insn 188 becomes (set (reg 110) (plus (reg 108) (reg 109))), which is the target's operand order - so the 24 rows of collateral it pays are local-alloc's seat response to that swap and not a scheduler decision.
+- mechanism: With the chain in operand 1, block_alloc's tying loop (tools/gcc-2.7.2/local-alloc.c:1240-1299) ties the sum's dest to the chain instead of the reload, merging the dest quantity into the chain quantity; the changed live length reorders qty_compare_1 and reseats the loop-body block ($v0<->$v1 on the chain and the reload, $a0<->$a1 on t0 and the first load).
+- probe: pwsh tools/grinder/dump.ps1 func_800770B8 on the floor body and on f2; the ';; Function func_800770B8' regions of the two .lreg dumps diffed line by line via tmp/grind/func_800770B8/s32/slice.py.
+- result: Exactly one differing line across the entire function region: insn 188's plus operand order and its REG_DEAD note order. The insn ORDER is identical in both dumps, which falsifies the s31 / s32-first-run attribution of the collateral to a loop-head sched1 reschedule.
+- verdict: CONFIRMED
+
+## [s32] The target's seats for the flipped tie are reachable in pure C: the operand flip combined with moving the D_800A35D0 store group ahead of the group-A stores measures 12/175/175 and emits rows 54 through 64 byte-exact, including addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E.
+- mechanism: The relocated store group changes the quantity set local-alloc sorts, and the merged chain+dest quantity lands on the target's hard registers; the residual 11 rows are only the D group's own emission position (target rows 49-53).
+- probe: u4 / w5 (D,A,C,S order), x3 (the same hoist through its own local dp), CONTROL w10 (the hoist without the flip), CONTROLS x1/x2/w13/x4 (D address hoisted, D stores left in place).
+- result: u4 12, x3 12, w10 15 with the three class-C rows still present, x1 26, x2 38, w13 29, x4 27 at 172 insns. The class-C residual that has stood for 32 sessions is gone in u4.
+- verdict: CONFIRMED
+
+## [s32] Of the nine store-group permutations built this session on the operand-flip body, the five that keep the group-A stores first measure 27 or worse (ACDS 27, ADSC 27, ACSD 27, SADC 27, ASDC 36), and the three that beat 20 (DACS 12, DASC 14, CDAS 14) each emit the D_800A35D0 stores before the group-A stores, which is not the target's store order.
+- mechanism: GCC 2.7.2 does not reorder a store through an unknown pointer past a store to a known symbol, so the source order of the two store groups is the emission order; and the seat change is carried by the D STORES' position, not by the D address computation - hoisting only the address measures x1 26, x2 38, w13 29, x4 27 at 172 insns.
+- probe: w1-w13 and x1-x7, one scoring build each.
+- result: 12 is the floor of this family and its whole residual is the D group's emission position; no permutation reaches those seats with the target's A,D,C,S store order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD df705f93 chassis, floor body F + the class-B dead store (score 3), do-while(0) prologue fence present; 175/175 in every build except x4 (172).
+
+## [s32] On this chassis the flip variants and the natural s16-table record readings measured this session do not beat the plain operand flip: p_7e = p_6a + 10 27, chain named in an s32 local 27, the field constant folded into the chain 14 at 176 insns, (t0*5)*2 27, the flip on p_6a alone 27, the flip on p_7e alone 3 (byte-inert), a named u8 *chain pointer local 27, swapped p_6a/p_7e declarations 29, s16 *tbl = (s16 *)D_800A36A0 with &tbl[t0*5+53] 7 at 176 insns, and the 0x6A-biased table 43 at 176 insns.
+- mechanism: The byte-inert spellings are refolded by cse onto the same RTL, which the single-insn .lreg diff independently confirms, so they cannot move a seat; the table readings fold the 0x6A/0x7E field constants into the index before the base add, emitting two addu where the target emits one addu and two addiu.
+- probe: u1, u2, u3, u8, u9, u10, y1, y2, y3, y4 and z1-z9, one scoring build each.
+- result: As listed; none is below the floor's 3 and none reaches u4's seats.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD df705f93 chassis, floor body F + the class-B dead store (score 3), do-while(0) prologue fence present; 175/175 in every build except u3, y1 and y3 (176).

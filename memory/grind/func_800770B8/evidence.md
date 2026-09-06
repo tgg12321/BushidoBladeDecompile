@@ -3884,3 +3884,176 @@ Ablation: `tmp/grind/func_800770B8/ablate/`.
 - [s31] Two independent denials of that tie were measured and BOTH work at the tie level: the ptrop route (f1/f2, right tie / wrong seats / +24 loop-head rows) and the local-alloc reg_qty route (g1, right tie AND right seats, rows 60-78 byte-exact, priced in rows 38-59 and 79-89).
 
 - [s31] Both f1 and g1 pay the SAME rows 38-59 loop-head reschedule, so that collateral is a property of the flipped tie itself, not of either spelling.
+
+## [s32] (structural, 2026-09-06) — the class-C tie predicate, read out of the compiler
+
+**Chassis re-measurement.** HEAD df705f93. The banked `candidate.c` body (applied with its
+two documented byte-neutral caller-side edits) re-measures **3 / 175 / 175**. 36 scoring
+builds this session; `src/text1b.c` restored to the pristine HEAD copy after every sweep.
+
+**The tie predicate is now sourced, not inferred.** `block_alloc`'s tying loop
+(`tools/gcc-2.7.2/local-alloc.c:1240-1299`) walks `recog_operand` 1..n with `if (win)
+break;`. `combine_regs` (`local-alloc.c:1784-1946`) has exactly three C-reachable refusal
+grounds: `reg_qty[operand] < 0` (`local-alloc.c:1827`), `reg_qty[dest] == -1`
+(`local-alloc.c:1836`), and no `REG_DEAD` note for the operand at that insn
+(`local-alloc.c:1917`). `reg_qty` itself is set at `local-alloc.c:469-477`: `-2` iff
+`reg_basic_block >= 0 && reg_n_deaths == 1`, else `-1`.
+
+**All three grounds were spelled in C and priced.**
+* REG_DEAD denial (a real use of the reload after the sum, in the same block): the only
+  candidate statement is the 0x68 `sb`, and the CONTROL that relocates it and changes
+  nothing else (h2) already costs **24 rows**. h1 27, h4 14 at 177 insns, h5 28, h3 31 at
+  176. Priced out before the tie is touched.
+* `reg_qty` denial: **i1 = 14 / 175 / 175**, the best class-C form in 32 sessions — a
+  re-read of `D_800A36A0` into the EXISTING `base` local just before `p_6a`/`p_7e`, so the
+  pseudo has two sets with every reference still inside the one loop-body block. Rows
+  44-53 and rows 63/64 are byte-exact and row 62 carries the target's dest register.
+  CONTROL i5 (the same reload named in a fresh ONCE-set local) is byte-inert at 3, which
+  isolates "two sets" as the entire lever. i2 14, i3 39, i4 41, i6 16 at 176.
+* dest denial: not C-reachable (the dest is a compiler temp).
+* operand ORDER (chain as operand 1): f2 / h6 / q7 = 27, all reseating rows 38-64.
+
+**The operand-order collateral is the ORDER, not the cast (new).** CONTROL q5,
+`(s16 *)((s32)D_800A36A0 + (t0 * 10) + 0x6A)` — the same `(s32)` cast with the global
+still first — measures **3 and is byte-inert**. So `(s32)` is free; what costs 24 rows is
+putting the chain in operand 1, which extends the chain quantity through row 64 and
+reseats the whole block. This retires "find a cleaner cast" as a line of attack.
+
+**i1's ceiling is structural.** One C variable is one pseudo; `reg_qty = -1` hands it to
+global-alloc, which gives BOTH live ranges a single hard register (`$a1`). The target needs
+the first load in `$a0` and the reload in `$v0` so that `base` can die at the S pointer
+(target row 55 `addu $a0,$a0,$a1`). i1's 14 rows are exactly that consequence: the
+`$a0`<->`$a1` swap at rows 38-43, the address-computation cluster order at rows 54-59, and
+the reload seat at rows 60/62. Every attempt to move the two-set property onto a
+*separate* short-lived local failed: a trailing dead store on a fresh local is deleted by
+flow before a second death is recorded (m1/m2/m4/m6 all 3; m3, which puts a real read
+after the second set, needs a second load — 176 insns); reusing the already-multiply-set
+`ptr` (n1/n2/n3/n5) or `p_old` (n4) costs 27; sharing one local with a LATER block
+(o1/o1b 33, o2 31 at 174, o3 36, o4 39) makes global-alloc pin one hard register across
+both blocks.
+
+**Class B's dead store is not replaceable by ordinary C (owner directive item 2 / ledger
+frontier item 3, executed and CLOSED).** The target prologue was decoded further:
+`func_8006E49C` returns a COMPUTED pointer (`addiu $v0,$a0,0x1FB0` is its last value insn,
+`asm/funcs/func_8006E49C.s`) and is a pure field-initialiser writing 0x0-0x4C of its `$a1`
+argument — it is NOT a list allocator, and neither `func_80076FF8` (a ten-call
+`func_8006920C` loop over fields 0x14-0x38) nor `func_8006E950` establishes a
+linked-list-push shape, so no natural list walk exists to reassign `p_old`. The target
+does emit a REAL copy insn `addu $s1,$v0,$zero`, i.e. the raw result and the `p_old`
+variable really are two pseudos there. Spelling that shape directly always loses insns:
+s1/s2/s4 = 23 at **170** insns, s5 = 25 at 170, s3 (no `prev`, old pointer re-derived from
+`arg0`) = 17 at **173**. Mechanism: a separate local for the raw result lets cse
+rematerialise `p_old`'s pre-call value from `$s0` (= `arg0`) after the three calls, so
+nothing needs a callee-saved register and the `$s1` save/restore prologue collapses. This
+re-confirms s31's c1/c4/c5/c9 with the mechanism named.
+
+**Byte-inert equivalences banked (all 3 / 175 / 175).** `p_7e = p_6a + 10` (r4); the chain
+spelled `(t0 * 5) * 2` (r5); `t0 * 10` named in an `s32` local (r3 — s30's kill
+re-confirmed on THIS chassis, per the chassis-relative re-measure rule). Not inert:
+swapping the two pointer declarations costs 5 (r1); swapping the inner loop's two stores
+costs 7 (r2).
+
+**Artifacts.** `tmp/grind/func_800770B8/s32/` — gen_h.py, gen_i.py, gen_m.py, gen_n.py,
+gen_o.py, gen_q.py, gen_r.py, gen_s.py (the 36 bodies in `v/`), apply.py, run.sh,
+rowdiff.sh, rows2.py, sweep.log, hdr.txt.
+
+- [s32] HEAD df705f93 chassis re-measured live: the banked candidate body = 3 / 175 / 175. The residual is still rows 62/63/64 and still one local-alloc tie.
+- [s32] The class-C tie has exactly three C-reachable refusal grounds, read out of tools/gcc-2.7.2/local-alloc.c: reg_qty[operand] < 0 (1827), reg_qty[dest] == -1 (1836), and the missing REG_DEAD note (1917), with reg_qty set at 469-477 (-2 iff reg_basic_block >= 0 && reg_n_deaths == 1).
+- [s32] i1 (re-read D_800A36A0 into the existing `base` local before p_6a/p_7e) = 14/175/175 with rows 44-53 and 63/64 byte-exact and row 62 carrying the target's dest register - the best class-C form in 32 sessions, and 11 rows worse than the floor.
+- [s32] CONTROL i5 (the same reload named in a fresh ONCE-set local) is byte-inert at 3, isolating "two sets" as the entire lever.
+- [s32] CONTROL q5 ((s32)D_800A36A0 + (t0*10) + 0x6A, global first) is byte-inert at 3, so the operand-order route's 24-row collateral is the ORDER, not the (s32) cast. "Find a cleaner cast" is retired.
+- [s32] CONTROL h2 (relocate the 0x68 sb into the p_6a/p_7e block, changing nothing else) = 24, which prices out every REG_DEAD-denial spelling before the tie is touched.
+- [s32] A trailing dead store on a fresh reload local is deleted by flow before a second death is recorded (m1/m2/m4/m6 all 3); the second set only counts when a real read follows it, which in this block costs a second load (m3, 176 insns).
+- [s32] func_8006E49C is a pure field-initialiser (writes 0x0-0x4C of its $a1 arg) returning a computed pointer, and func_80076FF8 / func_8006E950 show no linked-list-push shape - there is no natural list walk that could reassign p_old, closing ledger frontier item 3.
+- [s32] The two-pseudo class-B shape the target actually has (raw result in its own local, p_old reassigned from it) costs 2-5 insns in every spelling (s1/s2/s4 23 at 170, s5 25 at 170, s3 17 at 173): a separate raw-result local lets cse rematerialise p_old's pre-call value from $s0, collapsing the $s1 callee-save prologue.
+
+
+## [s32b] (structural, 2026-09-06, second run) — the residual is ONE local-alloc decision
+
+**Chassis re-measured live.** HEAD df705f93 + the banked `candidate.c` body applied with its
+two documented byte-neutral caller-side edits: `sandbox func_800770B8 --disable all` =
+**3 / 175 / 175**, residual rows 62/63/64. 46 scoring builds this session plus three
+`pwsh tools/grinder/dump.ps1 func_800770B8` runs; `src/text1b.c` restored to the pristine
+HEAD copy after every sweep (verified `git status` clean at the end).
+
+**PASS ATTRIBUTION (dumps read, not inferred) — the operand flip touches ONE insn.**
+`.lreg` was dumped for the floor body (`base`) and for the int-domain operand-flip body
+(`f2`, `(s16 *)((t0 * 10) + (s32)D_800A36A0 + 0x6A)`). Diffing the whole
+`;; Function func_800770B8` region of the two dumps gives **exactly one differing line**:
+
+    base: (insn 188 (set (reg:SI 110) (plus:SI (reg:SI 109) (reg:SI 108))))   reload first
+    f2:   (insn 188 (set (reg:SI 110) (plus:SI (reg:SI 108) (reg:SI 109))))   chain  first
+
+(reg 108 = the `t0 * 10` chain, reg 109 = the second `lw %gp_rel(D_800A36A0)` reload,
+reg 110 = the sum whose dest the target puts in the chain's register.) Every other insn and
+the entire insn ORDER are identical. This kills the s31/s32-first-run attribution of the
+24-row collateral to a "loop-head sched1 reschedule": sched1 emits the same order for both
+bodies. The collateral is entirely `local-alloc`'s response to the swap — block_alloc's
+tying loop (`tools/gcc-2.7.2/local-alloc.c:1240-1299`) now ties reg 110 to operand 1 = the
+CHAIN, so the dest quantity merges into the chain quantity instead of the reload quantity,
+and the resulting `qty_compare_1` priority order reseats the block ($v0<->$v1 on the chain
+and the reload, $a0<->$a1 on t0 and the first load). **f2's RTL for insn 188 IS the
+target's RTL**; only the hard registers come out swapped.
+
+**u4 = 12/175/175 — the first body in 32 sessions with rows 54-64 byte-exact.** u4 is f2's
+operand flip PLUS moving the D_800A35D0 store group (the 0x2/0x0 clears) ahead of the
+group-A stores. Its 11 differing rows are ONLY the D group's own emission position (target
+rows 49-53; u4 emits it at 38-39/43-46). From row 54 on it is the target instruction for
+instruction and register for register, including the entire class-C block
+`addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E`. Controls: **w10** (the same
+D hoist WITHOUT the flip) = 15 and still carries the three class-C rows, so the hoist alone
+does nothing for the tie; **x3** (the same hoist through its own local `dp`) = 12
+identically, so `ptr` reuse is not the lever.
+
+**Why u4 cannot be the final form.** The target's store order is A(0x10,0x8,0xC,0x14,0x3C)
+-> D(0x2,0x0) -> C(0x42,0x40) -> S(0x68) — the floor body's order. GCC 2.7.2 will not
+reorder a store through an unknown pointer past a store to a known symbol, so a D-first
+source order is a D-first emission order. Hoisting only the D ADDRESS and leaving its
+stores in place does not reproduce the allocation (x1 26, x2 38, w13 29, x4 27 at 172
+insns), so it is the STORE position that moves the allocation, not the address-computation
+position.
+
+**Everything else measured this session (all 175/175 unless noted).** Group-order
+permutations carrying the flip: ACDS 27, ADSC 27, ACSD 27, SADC 27, ASDC 36, DCAS 20,
+DASC 14, CDAS 14, DACS 12 (= u4). Flip variants: `p_7e = p_6a + 10` 27, chain named in an
+s32 local 27, constant folded into the chain 14 at 176, `(t0*5)*2` 27, flip on p_6a only
+27, flip on p_7e only 3 (byte-inert — cse refolds it onto the p_6a form), pointer-domain
+flip through a named `u8 *chain` local 27, p_6a/p_7e declaration order 29. Natural record
+readings: `s16 *tbl = (s16 *)D_800A36A0; &tbl[t0*5+53]` = 7 but at **176** insns (it folds
+the +0x6A/+0x7E constants BEFORE the base add, emitting two `addu` where the target emits
+one `addu` and two `addiu`); the 0x6A-biased table = 43 at 176. Operand-order flips of the
+OTHER address groups are byte-inert or near-inert on the floor body (A group 4, C group 4,
+S store 3) and do not counteract the reseat when combined with the flip (all 27).
+
+**Artifacts.** `tmp/grind/func_800770B8/s32/` — gen_u.py, gen_w.py, gen_x.py, gen_y.py,
+gen_z.py (the 51 bodies in `v/`), apply.py, run.sh, rowdiff.sh, rows2.py, rowsall.py,
+show.sh, slice.py, sweep.log, hdr2.txt, base.lreg, f2.lreg, u4.lreg, base.sched, f2.sched,
+u4.sched.
+
+- [s32b] Chassis re-verified live: floor body 3/175/175, i1 14/175/175 — both inherited numbers reproduce on HEAD df705f93.
+- [s32b] base.lreg and f2.lreg differ in EXACTLY ONE insn across the whole function - insn 188's plus operand order - so the 24-row collateral of the operand flip is 100% local-alloc, not sched1. The s31/s32-first-run "loop-head sched1 reschedule" attribution is falsified.
+- [s32b] f2's insn 188 `(set (reg 110) (plus (reg 108) (reg 109)))` IS the target's RTL for the class-C sum; only the hard-register assignment differs.
+- [s32b] u4 (operand flip + the D_800A35D0 store group hoisted ahead of group A) = 12/175/175 and is byte-exact from row 54 through row 64, class C included - the first body in 32 sessions to emit rows 62/63/64 correctly at 175 insns.
+- [s32b] CONTROL w10 (the D hoist alone, no flip) = 15 and still carries the three class-C rows; CONTROL x3 (the hoist through its own local) = 12 - so the hoist is a pure seat lever and `ptr` reuse is irrelevant.
+- [s32b] Hoisting only the D ADDRESS (x1 26, x2 38, w13 29, x4 27 at 172 insns) does not reproduce u4's allocation: it is the D STORE position that moves it, and the target's store order is A,D,C,S.
+- [s32b] The s16-table index reading `(s16 *)D_800A36A0` + `&tbl[t0*5+53]` costs an insn (176): it folds the field constants before the base add, so it emits two addu where the target emits one addu and two addiu.
+
+- [s32] Chassis re-verified live on HEAD df705f93: the banked candidate body (with its two documented byte-neutral caller-side edits) = sandbox score 3, build_insns 175, target_insns 175; i1 re-measures 14/175/175. Both inherited numbers reproduce.
+
+- [s32] base.lreg and f2.lreg differ in EXACTLY ONE line across the whole ';; Function func_800770B8' region: insn 188 is (set (reg 110) (plus (reg 109) (reg 108))) in the floor body and (set (reg 110) (plus (reg 108) (reg 109))) in the flip body. reg 108 = the t0*10 chain, reg 109 = the second lw %gp_rel(D_800A36A0) reload, reg 110 = the sum.
+
+- [s32] The insn ORDER in the two .lreg dumps is identical, so sched1 plays no part in the operand flip's 24-row collateral. The s31 and s32-first-run attribution of that collateral to a 'rows 38-59 loop-head sched1 reschedule' is falsified.
+
+- [s32] f2's insn 188 IS the target's RTL for the class-C sum; only the hard-register assignment comes out different ($v0<->$v1 on the chain and the reload, $a0<->$a1 on t0 and the first load).
+
+- [s32] u4 (the operand flip plus the D_800A35D0 store group hoisted ahead of group A) = 12/175/175 and is byte-exact from row 54 through row 64 - addu $v0,$a0,$v1 / addu $a0,$a0,$a1 / addu $v1,$v1,$a1 / sh 0x42 / sh 0x40 / sb 0x68 / lw / sll / addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E. This is the first body in 32 sessions that emits rows 62/63/64 correctly at 175 insns.
+
+- [s32] CONTROL w10 (the same D-store hoist WITHOUT the operand flip) = 15 and still carries the three class-C rows, so the hoist is purely a seat lever; CONTROL x3 (the hoist through its own local dp) = 12 identically, so `ptr` reuse is not the lever.
+
+- [s32] Hoisting only the D ADDRESS computation and leaving the D stores in place does not reproduce u4's allocation (x1 26, x2 38, w13 29, x4 27 at 172 insns): it is the D STORE position that moves it, and the target's store order is A(0x10,0x8,0xC,0x14,0x3C) then D(0x2,0x0) then C(0x42,0x40) then S(0x68).
+
+- [s32] The natural s16-table reading of the record ((s16 *)D_800A36A0 indexed by t0*5+53) costs one insn (176): it folds the field constants into the index before the base add, so it emits two addu where the target emits one addu and two addiu.
+
+- [s32] Operand-order flips of the OTHER address groups are byte-inert or near-inert on the floor body (A group 4, C group 4, S store 3) and do not counteract the flip's reseat when combined with it (z5-z9 all 27).
+
+- [s32] src/text1b.c was restored to the pristine HEAD copy after every sweep and after the dump runs; git status on src/ and include/ is clean at end of session.
