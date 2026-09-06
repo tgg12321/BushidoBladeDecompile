@@ -38,7 +38,7 @@ glabel func_80029454
     /* 19CE0 800294E0 0100E724 */  addiu      $a3, $a3, 0x1
     /* 19CE4 800294E4 1000E228 */  slti       $v0, $a3, 0x10
     /* 19CE8 800294E8 F6FF4014 */  bnez       $v0, .L800294C4
-    /* 19CEC 800294EC 0C00C624 */   addiu     $a2, $a2, %lo(D_1F80000C)
+    /* 19CEC 800294EC 0C00C624 */   addiu      $a2, $a2, 0xC
     /* 19CF0 800294F0 21980000 */  addu       $s3, $zero, $zero
     /* 19CF4 800294F4 00011526 */  addiu      $s5, $s0, 0x100
     /* 19CF8 800294F8 801F163C */  lui        $s6, (0x1F800054 >> 16)
@@ -715,7 +715,7 @@ glabel func_80029454
     /* 1A6B8 80029EB8 0100E724 */  addiu      $a3, $a3, 0x1
     /* 1A6BC 80029EBC 1000E228 */  slti       $v0, $a3, 0x10
     /* 1A6C0 80029EC0 F6FF4014 */  bnez       $v0, .L80029E9C
-    /* 1A6C4 80029EC4 0C00C624 */   addiu     $a2, $a2, %lo(D_1F80000C)
+    /* 1A6C4 80029EC4 0C00C624 */   addiu      $a2, $a2, 0xC
     /* 1A6C8 80029EC8 43101100 */  sra        $v0, $s1, 1
     /* 1A6CC 80029ECC 40100200 */  sll        $v0, $v0, 1
     /* 1A6D0 80029ED0 43181400 */  sra        $v1, $s4, 1
@@ -749,7 +749,7 @@ glabel func_80029454
     /* 1A730 80029F30 0100E724 */  addiu      $a3, $a3, 0x1
     /* 1A734 80029F34 1000E228 */  slti       $v0, $a3, 0x10
     /* 1A738 80029F38 F6FF4014 */  bnez       $v0, .L80029F14
-    /* 1A73C 80029F3C 0C00C624 */   addiu     $a2, $a2, %lo(D_1F80000C)
+    /* 1A73C 80029F3C 0C00C624 */   addiu      $a2, $a2, 0xC
     /* 1A740 80029F40 09A90008 */  j          .L8002A424
     /* 1A744 80029F44 FFFF0224 */   addiu     $v0, $zero, -0x1
   .L80029F48:
@@ -1065,7 +1065,7 @@ glabel func_80029454
     /* 1AB9C 8002A39C 0100E724 */  addiu      $a3, $a3, 0x1
     /* 1ABA0 8002A3A0 1000E228 */  slti       $v0, $a3, 0x10
     /* 1ABA4 8002A3A4 F6FF4014 */  bnez       $v0, .L8002A380
-    /* 1ABA8 8002A3A8 0C00C624 */   addiu     $a2, $a2, %lo(D_1F80000C)
+    /* 1ABA8 8002A3A8 0C00C624 */   addiu      $a2, $a2, 0xC
     /* 1ABAC 8002A3AC 43101400 */  sra        $v0, $s4, 1
     /* 1ABB0 8002A3B0 40100200 */  sll        $v0, $v0, 1
     /* 1ABB4 8002A3B4 43181100 */  sra        $v1, $s1, 1
@@ -1098,7 +1098,7 @@ glabel func_80029454
     /* 1AC10 8002A410 0100E724 */  addiu      $a3, $a3, 0x1
     /* 1AC14 8002A414 1000E228 */  slti       $v0, $a3, 0x10
     /* 1AC18 8002A418 F6FF4014 */  bnez       $v0, .L8002A3F4
-    /* 1AC1C 8002A41C 0C00C624 */   addiu     $a2, $a2, %lo(D_1F80000C)
+    /* 1AC1C 8002A41C 0C00C624 */   addiu      $a2, $a2, 0xC
   .L8002A420:
     /* 1AC20 8002A420 FFFF0224 */  addiu      $v0, $zero, -0x1
   .L8002A424:
