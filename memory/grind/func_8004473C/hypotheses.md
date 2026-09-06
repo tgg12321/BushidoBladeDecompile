@@ -475,3 +475,34 @@ carrier to ablate here.
 grant + unban via the Judge ESCALATE(integration-handoff) path, then apply
 `candidate_merge.patch` to clean HEAD, re-measure, write self_vet.md claiming the per-word-splat ->
 aggregate merge family with the header-canonical prong MET, and return candidate-ready.
+
+
+## s4 (2026-09-06, synthesis) -- frontier resolved by landing, not by probing
+
+CONFIRMED (measured this session): the header-canonical spelling of the D_800A9CF8 aggregate
+merge, combined with the s4-era matched loop body, reaches distance 0 at 49/49 instructions and
+rebuilds the whole tree to the oracle SHA1. Measured on: HEAD + candidate_merge.patch + the
+seven prong-(c) alias suffixes in undefined_syms_auto.txt; no FAKE constructs present anywhere
+in the diff.
+
+CONFIRMED (measured this session): moving the aggregate declaration from TU-local
+(`src/text1a_c.c`) to the shared header (`include/game.h`) is byte-neutral. The 2026-09-06
+04:14 layer-1 FAIL rested entirely on prong (d), and complying with prong (d) costs nothing --
+the same score 0 / 49 insns before and after. s3 had only shown this equivalence at floor 13;
+it now holds at zero.
+
+CONFIRMED (checked directly, correcting an inherited claim): `named_syms.txt` contains no rows
+for D_800A9CF8 / CFA / CFC / CFE / D00 / D04 / D08. The handoff's instruction to amend rows at
+1742-1743 / 2135-2136 / 2269-2270 / 2488 was based on a mis-recollection; those lines are
+unrelated symbols. Prong (c) is satisfied by the `undefined_syms_auto.txt` suffixes alone.
+
+CONFIRMED (checked directly, correcting an inherited claim): `asm/funcs/func_80044800.s` does
+NOT read `$v1-0xA` off `&D_800A9D04`. It forms that address at :6-7 and does `lw 0($v1)` at
+:17. Prong (a) rests instead on `asm/funcs/func_8004473C.s` lines 11-12 / 15 / 24 / 43, which
+show one base register (`$a3 = &D_800A9D08 - 0x10`) reaching 0x800A9CF8, 0x800A9CFE and
+0x800A9D08 by signed displacement.
+
+MOOT, not killed -- the three s3 frontier hypotheses (the W1 walker-fold question, the
+`birthing_insn_p` liveness disjunct, and the sched_solver/ra_solver fallback) all targeted a
+13-instruction residual that no longer exists on the landed chassis. I did not probe them and
+record no verdict on them. If this submission is ever reverted, they are inherited unspent.

@@ -471,3 +471,82 @@ patch and is at 0).
   declares `typedef`, `struct`, `Unk800A9CF8Header`, `extern`, `D_800A9CF8`, `include/game.h` —
   well past the threshold. `unban_construct=Unk800A9CF8Header` is therefore part of the remedy,
   not a nicety.
+
+
+## s4 (2026-09-06, synthesis modality) -- LANDED AT ZERO THROUGH THE NORMAL GATES
+
+This session did no new codegen research, and that was the correct call: the residual this
+ledger spent three sessions on (13 instructions, attributed to a sched1 `birthing_insn_p`
+boost) was already CLOSED before dispatch. The remaining obstacle was purely procedural, and
+the pipeline had already removed it.
+
+### The state I inherited (verified, not assumed)
+
+- `tools/grinder/scope_allow.txt:61` carries `func_8004473C include/game.h
+  undefined_syms_auto.txt named_syms.txt`, written by the driver on the Judge's
+  ESCALATE(integration-handoff) verdict of 2026-09-06. So `include/game.h` was editable.
+- `state.json` `banned_constructs` is `[]` -- the `Unk800A9CF8Header` tripwire that the Judge's
+  ruling ordered cleared is gone. So the compliant header-canonical spelling could be
+  self-vetted without tripping `check_banned_constructs`.
+- `memory/grind/func_8004473C/candidate_merge.patch` applies cleanly to HEAD
+  (`git apply --check` passes; 2 files, +90/-76).
+
+Both of the previous two sessions were discarded/escalated over a blocker that no longer
+existed at my dispatch. There was nothing left to research.
+
+### What I did
+
+1. Applied `candidate_merge.patch` to a clean HEAD. It moves the `Unk800A9CF8Header` typedef
+   and `extern Unk800A9CF8Header D_800A9CF8;` into `include/game.h`, deletes the six per-word
+   `extern` scalars from `src/text1a_c.c`, rewrites the three C siblings (`func_80044670`,
+   `func_80044B30`, `func_80044C70`) to members, and replaces the register-pinned m2c body of
+   `func_8004473C` with the matched pure-C loop.
+2. Prong-(c) housekeeping (`tmp/suffix_syms.py`): suffixed the seven per-word rows at
+   `undefined_syms_auto.txt:302-308`. Six get the mandated
+   "alias of D_800A9CF8+0xN; retire with func_80044800" block comment; the base row
+   `D_800A9CF8` instead records that it is the base of `Unk800A9CF8Header`. Format copied from
+   the in-tree precedents at `undefined_syms_auto.txt:527-528` and `:977-978`. The rows must
+   stay because the still-`INCLUDE_ASM` sibling `func_80044800` references three of them from
+   its assembly (`asm/funcs/func_80044800.s`, 4 references).
+3. `named_syms.txt` needed NO edit. The handoff and the Judge packet both asserted census rows
+   for these symbols at lines 1742-1743 / 2135-2136 / 2269-2270 / 2488; a grep for all seven
+   symbol names in `named_syms.txt` returns NOTHING. That part of the inherited instruction was
+   simply wrong, and following it literally would have edited unrelated rows.
+
+### Measurements (this session, this configuration)
+
+- `sandbox func_8004473C --disable all` -> score 0, target_insns 49, build_insns 49,
+  scorable true, rules_dropped 0. Run twice -- once after applying the patch, once after the
+  `include/game.h` comment correction below -- 0 both times.
+- `verify-oracle --rebuild --allow-dirty` -> ok true,
+  build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa = expected = original_sha1_now =
+  original_sha1_locked, build_matches true. Whole-tree, so prong (e) byte-neutrality for every
+  other consumer of the seven symbols is proven, not argued.
+- The reported `cheat_asm_stripped: 6` belongs to OTHER functions in the TU that still carry
+  m2c bodies. `func_8004473C`'s own body now contains no `__asm__`, no register pin, no pad
+  array. The diff is cheat-REMOVING: 8 cheat constructs deleted, 0 added.
+
+### One inherited evidence claim CORRECTED (prong (a))
+
+The discarded handoff and the Judge's packet both state that `asm/funcs/func_80044800.s`
+"forms &D_800A9D04 in $v1 and reads D_800A9CFA as $v1-0xA". I checked it rather than
+inheriting it, and it is FALSE: lines 6-7 form the address, line 17 does a plain
+`lw $s2, 0x0($v1)`, and there is no negative displacement off `$v1` anywhere in the function.
+I withdrew the claim from `self_vet.md` and from the `include/game.h` comment.
+
+Prong (a) does not depend on it. `asm/funcs/func_8004473C.s` alone carries the evidence:
+lines 11-12 build `&D_800A9D08` in `$a0`, line 15 does `addiu $a3, $a0, -0x10`, and lines 24
+and 43 read `lhu 0($a3)` (= 0x800A9CF8) and `lh 6($a3)` (= 0x800A9CFE). One base register
+reaching three of the seven addresses by signed displacement across a 0x10-byte span is
+base+offset addressing of a single object -- exactly the evidence class prong (a) asks for, and
+exactly the thing that splat-symbol-names-are-not-evidence says adjacency is NOT. On the C side
+`func_80044C70` corroborates by bumping the `unk8` / `unkC` pointer pair together by the same
+delta.
+
+### Why this closes the ledger's frontier without probing it
+
+The entire s2/s3 frontier -- the W1 walker chassis, the `birthing_insn_p` liveness disjunct,
+and the solver-suite fallback -- existed to attack a 13-instruction residual on the form-C
+chassis. That residual is gone: this body measures 0. The three frontier hypotheses are now
+MOOT rather than killed; I did not measure them and make no claim about them, and the next
+reader should treat them as unspent-but-unnecessary rather than as open questions.

@@ -1,8 +1,8 @@
 {
  "func": "func_8004473C",
  "file": "text1a_c",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,19 @@
    "floor": 13,
    "modality": "structural",
    "headline": "Block-0 schedule now trace-complete: form C's ONLY defect is insn 20 winning T-2 on its birthing boost; W1 measures the first form with the target's order, anchor and delay slot, proving the mechanism"
+  },
+  {
+   "session": 4,
+   "floor": 0,
+   "modality": "synthesis",
+   "headline": "MATCHED at 0 (49/49) + full-tree oracle SHA1: candidate_merge.patch landed header-canonical under the executed scope grant, plus prong-(c) alias suffixes on undefined_syms_auto.txt:302-308; two inherited evidence claims corrected."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The remaining gap is an ALLOCATION problem on the W1 chassis, not an ordering problem on the form-C chassis: W1 already has the target's block-0 order, anchor and delay slot, and fails only because the walker's second set costs a live biv plus a giv and because the call-result temp becomes multi-block.",
-   "mechanism": "loop.c keeps the biv register live only for the add_val-0 access and still emits a giv for the other two reads, so the loop carries two walking pointers; and because the walker's init is a source-level block-0 statement rather than a loop.c preheader giv init, the call-result temp stays live into the preheader, is allocated by global.c after local-alloc has given $v0 to the block-0-local count temp, and the seats rotate.",
-   "next_probe": "Read tmp/grind/func_8004473C/s3/traceW1/text1a_c.loop and compare it with traceC's .loop to see exactly which pseudo loop.c picks as the giv base when two candidate source pointers exist, and whether any ordinary spelling makes loop.c fold the two W-family walkers back into one (a single biv whose three reads are all expressed off it) while keeping reg_n_sets == 2. That would remove W1's +3 instructions and leave only the seat rotation, which is the same defect A0 has and is already fully attributed."
-  },
-  {
-   "hypothesis": "The un-probed disjunct of birthing_insn_p is liveness, not set count: the boost also requires the dest's bit to be set in bb_live_regs at LAUNCH time, and src is live out of block 0 only because the preheader giv init (insn 145) reads it.",
-   "mechanism": "birthing_insn_p (sched.c:2505-2536) returns reg_n_sets[i] == 1 only when bb_live_regs already has the dest's bit; otherwise it returns 0 outright. If the source giv init were emitted before the branch instead of in the preheader, src would be dead at block-0 exit and insn 20 would not be boosted, with no second set required and no extra instruction.",
-   "next_probe": "Read the .loop dump for what decides preheader versus pre-branch placement of a giv init (loop.c's loop_start / preheader emission), and check whether any ordinary loop shape - in particular one where the source giv's init is loop-invariant in a way loop.c can hoist above the exit pre-check - puts insn 145 in block 0. Verify in .flow that src is absent from block 1's live-at-start list BEFORE spending a sandbox run."
-  },
-  {
-   "hypothesis": "Nothing further is available from form-C statement-order spelling; the next sanctioned axis after the two above is the solver suite, which can decide the seats-versus-order tradeoff instead of enumerating C.",
-   "mechanism": "tools/sched_solver models both scheduler passes order- and clock-exactly and tools/ra_solver models local-alloc/global.c/reload; the residual here is precisely one ready-list tie plus one local-alloc seat, which is the input shape those tools are built for.",
-   "next_probe": "Feed traceC's pre-sched block-0 chain to tools/sched_solver and ask it to enumerate the minimal insn-attribute change that flips T-2 to the store, then run tools/ra_solver inverse_compose.py classify on the resulting seat assignment to get a REACHABLE / FORECLOSED verdict on the combined (order + seats) requirement before any further C is spelled."
+   "hypothesis": "None open. func_8004473C measures 0 at 49/49 with the header-canonical aggregate merge landed, and a full-tree verify-oracle --rebuild returns the locked SHA1. The three s3 frontier hypotheses are MOOT (they targeted a 13-instruction residual that no longer exists), not killed.",
+   "mechanism": "The residual was closed by the s4-era body (loop-body statement order + comma-increment order + the chained assignment that removes the block-0 copy insn sched1 was boosting); the only thing left was the procedural prong-(d) header placement, which the pipeline's executed integration handoff made possible and which measures byte-neutral.",
+   "next_probe": "None. If this submission is ever reverted, re-read hypotheses.md s4 and inherit the s3 frontier unspent."
   }
  ],
  "judge_constraints": [
@@ -141,6 +137,13 @@
    "hash": "ca17f281f09a7feb",
    "when": "2026-09-06T09:14:03.998928+00:00",
    "summary": "The per-word-splat-to-aggregate merge is submitted with the struct declared TU-locally in src/text1a_c.c, which is a self-admitted, unmet mandatory prong of the only family that could sanction the restructuring."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "ca17f281f09a7feb",
+   "when": "2026-09-06T09:37:37.494880+00:00",
+   "summary": "final call: PASS. The body is ordinary C: a for-loop over two stride-0x68 records, no register pins, no __asm__, no pad locals, no FAKE construct \u2014 the diff DELETES eight cheat constructs from the old m2c body an"
   }
  ]
 }
