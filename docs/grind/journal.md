@@ -1766,3 +1766,4 @@
 - 2026-09-06 04:14 func_8004473C: LAYER-1 FAILED a sandbox-0 candidate — The per-word-splat-to-aggregate merge is submitted with the struct declared TU-locally in src/text1a_c.c, which is a self-admitted, unmet mandatory prong of the only family that could sanction the restructuring.
 - 2026-09-06 04:28 func_8004473C JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: func_8004473C include/game.h undefined_syms_auto.txt named_syms.txt; cleared 1 superseded ban(s)), function stays active.
 - 2026-09-06 04:37 func_8004473C COMPLETED-C after 5 sessions (closer: s4 [synthesis]).
+- 2026-09-06 04:57 _addque2 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: _addque2 volatile_extern_allowlist.txt include/gpu.h undefined_syms_auto.txt named_syms.txt), function stays active.

@@ -1,0 +1,18 @@
+{
+ "func": "_addque2",
+ "file": "display",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "Land exactly memory/grind/_addque2/s1-candidate-diff.txt (body + both MMIO pointee corrections at BOTH decl sites each + the four per-word extern removals + the memset cast), plus the granted-path edits; any deviation is a new candidate and re-enters review. The GpuQueueItem typedef + `extern volatile GpuQueueItem D_80103680[64];` MUST end up in include/gpu.h (prong d), not TU-local in src/display.c.",
+  "integration-handoff EXECUTED (pipeline, 2026-09-06): scope grant: _addque2 volatile_extern_allowlist.txt include/gpu.h undefined_syms_auto.txt named_syms.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
+ ],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-06T09:37:41.527252+00:00"
+}
