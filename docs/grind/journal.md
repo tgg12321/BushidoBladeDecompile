@@ -1768,3 +1768,4 @@
 - 2026-09-06 04:37 func_8004473C COMPLETED-C after 5 sessions (closer: s4 [synthesis]).
 - 2026-09-06 04:57 _addque2 JUDGE ESCALATE (integration-handoff) — EXECUTED by driver (scope grant: _addque2 volatile_extern_allowlist.txt include/gpu.h undefined_syms_auto.txt named_syms.txt), function stays active.
 - 2026-09-06 05:07 _addque2 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-06 05:30 _spu_Fr_ COMPLETED-C after 1 sessions (closer: s1 [recon]).
