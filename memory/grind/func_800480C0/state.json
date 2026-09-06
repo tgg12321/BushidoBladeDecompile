@@ -1,7 +1,7 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 22,
+ "session_count": 23,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -135,23 +135,29 @@
    "floor": 1,
    "modality": "structural",
    "headline": "Structural: floor 20 -> 1. A byte-neutral inline helper carrying a written 32-byte local reaches the target's exact .frame $sp,88 # vars=32,regs=8/0,args=24 and leaves ONE instruction (the last store "
+  },
+  {
+   "session": 23,
+   "floor": 1,
+   "modality": "structural",
+   "headline": "Structural closes the written-carrier axis with a flow.c:1741 class kill and corrects the ledger's central claim - the unwritten pad form is BYTES-PROVEN but scores 20, not 0, and the whole residual i"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The surviving store into a referenced donation carrier can be made to coincide with an instruction the target already emits, converting k4's score 1 into a match without an unwritten block.",
-   "mechanism": "k4's build is the target's 74 instructions plus one sw at sp+0x18 into the donated block. The target's only sp store in the window is the 5th outgoing argument, sw $v0, 0x10($sp), emitted in the jal delay slot. If the donated object could BE the outgoing-argument home - a helper whose 32-byte local is what supplies the 5th argument, or a carrier written through the same address expression the argument store uses - the two stores merge and the residual closes. Nobody has tried to make the donated block and the argument block the same object; s17 already measured that an outgoing-args block survives deletion of its call, which is the adjacent mechanism.",
-   "next_probe": "Start from tmp/grind/func_800480C0/s22/bodies/k4_base_donate32w.c and vary WHERE the helper's 32-byte local is written: (a) written from the value that becomes the 5th argument, (b) written through a pointer the caller also uses, (c) written in the helper that computes the 5th argument only (k6 is the one-site variant, already at target-exact frame and 74 raw insns). Screen with s22/sweep.py for .frame $sp,88 at 73 raw insns, then sandbox; anything below 1 is a match."
+   "hypothesis": "The residual is now a single source line with a bytes proof and a named sibling grant, and the only remaining disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS - not another spelling.",
+   "mechanism": "rejected/s23-volatile-pre-pad8-bytes-proven-sandbox-strips-to-20.c is the clean construct-free body plus `volatile u32 pre_pad[8];` and builds the target's exact object (sha1 441ad473...). It is byte-for-byte the (pre_pad, 8) shape already granted to func_80047EE8 and func_80047FBC - the two text1b.c siblings with the identical untouched sp+0x18..0x37 window - at engine/volatile_cheats.py:757-758. Its sandbox 20 is an allowlist artefact, not a codegen gap. Every alternative producer is now measured: the written carrier costs exactly 1 (flow.c:1741, class kill), the phantom family caps at 8 bytes (s22), integrate.c:2124 never fires, donations do not stack, and widening the call puts the 7th argument word inside the untouched window (s18).",
+   "next_probe": "Do NOT re-spell the pad and do not rebuild the sxadd contraption. Whichever session reaches the escalation modality should file the record around the ONE-LINE form: cite its sha1-equal byte proof (tmp/grind/func_800480C0/s23/c1_bytes.txt), the sibling rows at engine/volatile_cheats.py:757-758, s23's flow.c:1741 class kill of the written carrier, and s22's k4 (sandbox 1) as the tightest honest-floor statement."
   },
   {
-   "hypothesis": "A donation carrier can be a 32-byte local that the algorithm genuinely reads, so that its traffic replaces rather than adds instructions.",
-   "mechanism": "integrate.c:2085-2092 donates DECL_FRAME_SIZE regardless of what the local is; the cost is only the traffic that survives. Every s21/s22 carrier so far has been an invented array whose stores are pure overhead. A carrier holding a value the four call arguments already need - e.g. the four sign-extended halfwords staged through a real 8-word buffer - would have its stores accounted against instructions the target emits, not added to them.",
-   "next_probe": "Enumerate carriers whose element writes correspond one-to-one with instructions in asm/funcs/func_800480C0.s (the four sll/sra pairs and the four addu), sweep for .frame $sp,88 at 73 raw insns with s22/sweep.py, then sandbox. Note this is exactly the shape the written-never-read carve-out in .claude/rules/dead-vars-local-array.md WOULD sanction if the target bytes contained the stores - so check the target listing first and stop if they do not."
+   "hypothesis": "The alter_reg phantom is the only zero-traffic frame-vars producer this function is still allowed to use, and its multiplicity on this body has been probed only by varying the number of guard-split SITES, never by varying the number of distinct BASIC BLOCKS that host an unallocatable compare pseudo.",
+   "mechanism": "reload1.c:2404 pays 8 bytes for each pseudo global.c cannot seat; s22 measured 1, 2 and 3 independent split sites all giving vars= 8, and the .lreg header names the single survivor as pseudo 92, 'used 2 times across 2 insns in block 0; ST_REGS or none'. Every site s22 tried lives in that same entry block, so the experiment varied sites but not blocks - four such pseudos in four distinct blocks would reach 32 bytes with zero traffic and no pad.",
+   "next_probe": "Read tmp/grind/func_800480C0/dumps/text1b.lreg for the exact regclass path that leaves pseudo 92 in ST_REGS, then construct spellings whose comparison residues land in DIFFERENT basic blocks (not merely different statements in block 0) and sweep for vars= 16/24/32 at 73 raw insns with tmp/grind/func_800480C0/s23/sweep.py. s22 finding (3) already warns the phantom is not free on the STREAM, so screen on raw-insn count as well as frame and stop as soon as a spelling exceeds 73."
   },
   {
-   "hypothesis": "The record is now strong enough that the disposition is an owner row in engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS rather than another spelling, and s22 is the proof.",
-   "mechanism": "s22's k4/k7 pair reduces the whole question to one sentence: with the donated 32-byte block WRITTEN the build is the target plus exactly one store (score 1); with it UNWRITTEN the build is byte-identical (score 0). GCC 2.7.2 never deletes the last store to a frame object, so no referenced carrier of any shape measured so far reaches zero traffic. The standing Judge constraint (docs/grind/decisions.md:20349) bars the unwritten form for this function until an owner row names it, and .claude/rules/no-new-park-categories.md:340-342 makes the family a closed per-function enumeration.",
-   "next_probe": "Do NOT re-spell the pad. Whichever session reaches the escalation modality should cite s22's k4 (score 1, target-exact frame, one surviving sw) and k7 (score 0) as the tightest possible statement of the residual, alongside s21's sibling-invariance table showing func_800480C0 is the only one of four identical-window siblings without a row."
+   "hypothesis": "Only the SUM var_size + args_size == 56 is observable in the bytes, and that pair has been probed at (0,24), (8,24), (16,24), (24,24), (32,24) and at the >=7-argument widenings, but never at mixed partitions such as (24,32) or (16,40).",
+   "mechanism": "compute_frame_size (mips.c:4443-4475) places every saved-register slot at args_size + extra_size + var_size + gp_reg_size - 4 downward, so (24,32) and (32,24) are byte-identical frames. The 20 differing instructions in the clean body are exactly the 8 prologue sw, the 8 epilogue lw, the 2 sp adjustments and the 2 sp-relative incoming-parameter loads at 0x68/0x6C. s18 measured only that the 7th outgoing-argument word lands at sp+0x18; it did not measure whether an 8- or 9-argument call's extra stores can be made to coincide with the target's existing sw $v0,0x10($sp) at 0x800481AC.",
+   "next_probe": "Sweep call widenings of 6, 7, 8 and 9 arguments to func_800482C8 paired with whatever var_size completes 56, recording raw insn count and the sp offset of every resulting store; screen against the target's single sw $v0,0x10($sp). Anything adding more than one store is dead on arrival - the point is to confirm the (24,32) optimum by direct measurement rather than by extending s18's boundary argument."
   }
  ],
  "judge_constraints": [
@@ -159,38 +165,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 5,
-   "statement": "Folding a guard onto BOTH of this body's conditional branches (the entry test and the do-while backedge) raises phantom multiplicity to two",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 118e147d, pad-free bodies, bare `arg0 = 0;` dead param store present (cc1 sees it with or without the FAKE comment), instrumented cc1 tools/gcc-2.7.2/cc1 BB2_ALLOC_DEBUG census",
-   "predicate_cite": "",
-   "result": "P and Q both report `.frame $sp,72 # vars= 8, regs= 9/0, args= 24` with unalloc_pseudos=1; R reports vars=0 / unalloc_ps"
-  },
-  {
-   "session": 5,
-   "statement": "Among functions in this tree containing no mult/div, some reach more than two phantoms",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 118e147d, all 32 src/*.c TUs as they stand on main, project cc1 plus instrumented cc1 BB2_ALLOC_DEBUG",
-   "predicate_cite": "",
-   "result": "Over that subset untouched vars takes exactly the values {8, 16, 32}, and every 32 belongs to a sanctioned-pad function "
-  },
-  {
-   "session": 6,
-   "statement": "s5's tree-wide bound - that among functions containing no mult/div none reserves more than two phantom slots - holds",
-   "kill_scope": "instance",
-   "measured_on": "HEAD ba593529, six -da TU dumps (display, text1a_c, text1a_pre, config, code6cac_c_mid, main) from the project cc1, correlated with s5's BB2_ALLOC_DEBUG captures; no FAKE construct involved (the measu",
-   "predicate_cite": "",
-   "result": "Refuted by counterexample. SetDrawEnv (src/display.c:360) and SetDrawEnv2 (src/display.c:436) contain no mult/multu/div/"
-  },
-  {
-   "session": 6,
-   "statement": "The single phantom the banked vars=8 forms produce is the same class-A combine orphan that the multiplicity-2 and multiplicity-3 exhibits use",
-   "kill_scope": "instance",
-   "measured_on": "HEAD ba593529, the two banked score-36/frame-64 guard bodies as stored in memory/grind/func_800480C0/rejected/, instrumented cc1 BB2_ALLOC_DEBUG plus -da combine dump; the annotated `arg0 = 0;` dead p",
-   "predicate_cite": "",
-   "result": "phantom-guard-vars8-ceiling.c = vars= 8, regs= 8/0, unalloc=1, orphanUSE=0; two-branch-guards-still-one-phantom.c = vars"
-  },
   {
    "session": 6,
    "statement": "A class-A orphan can be induced on this body by re-spelling the four param sign-extends or by leaving a foldable intermediate at the loop-head block boundary",
@@ -638,6 +612,38 @@
    "measured_on": "chassis HEAD b4a92a26, bodies installed one at a time over src/text1b.c:129 with the arg0 = 0 FAKE present",
    "predicate_cite": "",
    "result": "vars= 0 on all of them; several regress the stream (c1/c2/c7 to 75 raw insns and regs= 9, x4 to regs= 9). The only struc"
+  },
+  {
+   "session": 23,
+   "statement": "On this body every donation carrier that is STORED to keeps exactly one surviving store, so a written 32-byte carrier builds at the target's instruction count plus one.",
+   "kill_scope": "class",
+   "measured_on": "chassis HEAD cabe7b9d, bodies installed one at a time over the INCLUDE_ASM line at src/text1b.c:129, the s1..s21 `arg0 = 0;` FAKE present in every body",
+   "predicate_cite": "tools/gcc-2.7.2/flow.c:1741",
+   "result": "All eight build 74 raw cc1 insns against the target's 74 final, i.e. 75 build insns; sandbox b1 = 1, b3 = 1, b5 = 1, k6 "
+  },
+  {
+   "session": 23,
+   "statement": "Static __inline__ helpers with 6, 8 and 10 parameters - trailing parameters passed as constant 0, in variants where the last one is unused and where it is referenced in the helper body - all print .fr",
+   "kill_scope": "instance",
+   "measured_on": "chassis HEAD cabe7b9d, bodies a1..a5 under tmp/grind/func_800480C0/s23/bodies/, `arg0 = 0;` FAKE present",
+   "predicate_cite": "",
+   "result": "All five print vars= 0, .frame $sp,56, 73 raw insns - identical to the construct-free clean body. The integrate.c:2124 p"
+  },
+  {
+   "session": 23,
+   "statement": "Two distinct inline helpers, each declaring its own 32-byte local, substituted at two different call sites, produce vars= 32 rather than 64.",
+   "kill_scope": "instance",
+   "measured_on": "chassis HEAD cabe7b9d, body b5_two_helpers.c, `arg0 = 0;` FAKE present",
+   "predicate_cite": "",
+   "result": "vars= 32, not 64; 74 raw insns; sandbox 1. Summing several small donations to reach 32 has no spelling on this body."
+  },
+  {
+   "session": 23,
+   "statement": "An honest 8-word staging buffer that the four sign-extended halfwords genuinely flow through reaches vars= 32 but builds 77 raw cc1 insns against the target's 74 - this was s22 frontier item 2.",
+   "kill_scope": "instance",
+   "measured_on": "chassis HEAD cabe7b9d, body c2_real_staging_buf.c, `arg0 = 0;` FAKE present",
+   "predicate_cite": "",
+   "result": "vars= 32 as designed, but 77 raw cc1 insns - four extra stores. s22 frontier item 2 is dead."
   }
  ],
  "ladder_skip": 0,

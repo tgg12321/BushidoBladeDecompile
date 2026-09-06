@@ -37,13 +37,36 @@
  *     store to a frame object, so a REFERENCED donation carrier always keeps exactly
  *     one store.  s21 predicted this from three-of-four store folding; s22 measured it
  *     end to end and priced it at exactly 1.
- * (2) AND THE BARRED PAD IS WORTH EXACTLY THAT ONE INSTRUCTION.  The same body with the
- *     helper's array left unwritten (k7_base_donate32_unwritten.c) scores 0 at 74/74 on
- *     this chassis - re-confirming s20's h1 on the current chassis, and pinning the
- *     entire remaining gap to the write/no-write distinction on the donated block.
- *     That form is the unwritten volatile-pad family barred for this function by the
- *     standing Judge constraint (docs/grind/decisions.md:20349) until an owner ruling
- *     adds "func_800480C0" to engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS.
+ * (2) [CORRECTED BY s23 - READ THIS INSTEAD OF THE s22 TEXT IT REPLACES.]  s22 wrote
+ *     that the unwritten variant (k7_base_donate32_unwritten.c) "scores 0 at 74/74".
+ *     That was a reading of the raw cc1 .s, NOT a sandbox measurement.  s23 measured it:
+ *     `sandbox func_800480C0 --disable all` on k7 prints score 20, build_insns 74 - the
+ *     SAME score as the construct-free clean body.  The sandbox's find_unused_local_arrays
+ *     (engine/volatile_cheats.py:249) STRIPS the unreferenced array before scoring, and the
+ *     _SANCTIONED_UNWRITTEN_PADS allowlist (engine/volatile_cheats.py:746) only spares an
+ *     array that carries BOTH a `volatile` qualifier and a per-function row; func_800480C0
+ *     has no row.  The BYTES claim survives intact and s23 re-proved it directly:
+ *     build/src/text1b.o sha1 441ad473138db80847e60b0f8e2a8c2b07014ee8, compared word by
+ *     word against asm/funcs/func_800480C0.s in tmp/grind/func_800480C0/s23/c1_bytes.txt -
+ *     74/74 instructions, the sole differing word being the un-relocated `jal` target.
+ *     So: the pad form is BYTES-PROVEN and its honest sandbox floor is 20, not 0.  The
+ *     lowest honest score any spelling has ever reached on this function is 1 (this body).
+ * (2b) s23 ALSO showed the inline-helper machinery is unnecessary to state the residual.
+ *     rejected/s23-volatile-pre-pad8-bytes-proven-sandbox-strips-to-20.c is the clean
+ *     s1..s21 body plus ONE line - `volatile u32 pre_pad[8];` as its first local - with no
+ *     helper, no donation carrier and no FAKE, and it builds the IDENTICAL object
+ *     (sha1 441ad473...).  That is exactly the ("pre_pad", 8) shape already granted to the
+ *     two identical-window text1b.c siblings func_80047EE8 and func_80047FBC
+ *     (engine/volatile_cheats.py:757-758).  Any future escalation should cite that one-line
+ *     form, not the sxadd contraption.
+ * (2c) s23 closed the written-carrier axis with a named mechanism.  flow.c:1741 deletes a
+ *     store to a frame object only when a LATER store in the SAME basic block writes the
+ *     same address (last_mem_set); flow.c:1630 clears last_mem_set at a CALL, flow.c:2393
+ *     clears it at any memory READ, and flow.c:1988 refuses to record sp-based stores at
+ *     all.  The target emits ZERO stores into sp+0x18..0x37, so the last store to any
+ *     REFERENCED carrier always survives.  Eight written-carrier spellings measured at
+ *     74 raw cc1 insns = target + 1 (k3 24B, k4 32B x4 sites, b1 arg5-only, b2 arg1-only,
+ *     b3 stores-the-sum, b5 two distinct helpers, b6 16B); b1/b3/b5 sandbox = 1.
  * (3) A GENUINELY FREE 8-BYTE PHANTOM EXISTS ON THIS BODY - s19's "the phantom half
  *     costs an instruction" was an INSTANCE result, not the whole story.
  *     g1_guard_is_counter.c (`guard = count - 1; if (guard != -1) { ... } while

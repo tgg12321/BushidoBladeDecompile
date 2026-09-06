@@ -2242,3 +2242,104 @@ submittable; the honest construct-free floor is still 20).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: chassis HEAD b4a92a26, bodies installed one at a time over src/text1b.c:129 with the arg0 = 0 FAKE present
+
+## s23 (structural, 2026-09-05, chassis HEAD cabe7b9d)
+
+### KILLED (class) — a written donation carrier always retains exactly one store
+**Statement.** On this body every donation carrier that is STORED to keeps exactly one surviving
+store, so any written 32-byte carrier builds at the target's instruction count plus one.
+**Mechanism.** `insn_dead_p` deletes a store to a frame object only under
+`GET_CODE (r) == MEM && last_mem_set && ! MEM_VOLATILE_P (r) && rtx_equal_p (r, last_mem_set)`
+(tools/gcc-2.7.2/flow.c:1740-1741): a LATER store, in the SAME basic block, to the SAME address.
+`last_mem_set` is cleared at a CALL (flow.c:1630), at any memory READ (flow.c:2393), and is never
+recorded for an sp-based store (flow.c:1985-1988). `asm/funcs/func_800480C0.s` emits no store into
+sp+0x18..0x37, so the last carrier store has nothing to kill it.
+**Probe.** Eight spellings swept for frame/insns (tmp/grind/func_800480C0/s23/sweep.py) and four
+sandboxed: k3 24B, k4 32B four-site, b1 arg5-site-only, b2 arg1-site-only, b3 stores-the-sum,
+b5 two distinct helpers, b6 16B, k6 donate24+phantom. All 74 raw cc1 insns; b1/b3/b5 sandbox 1,
+k6 sandbox 6. Dump census (tmp/grind/func_800480C0/s23/cnt.py) puts the 5→2 `(set (mem …))` drop
+exactly at .flow.
+**kill_scope:** class · **predicate_cite:** tools/gcc-2.7.2/flow.c:1741
+**measured_on:** chassis HEAD cabe7b9d, bodies installed one at a time over
+src/text1b.c:129, the s1..s21 `arg0 = 0;` FAKE present in every body.
+
+### KILLED (instance) — the inline-callee incoming-args donation site
+**Statement.** Static `__inline__` helpers with 6, 8 and 10 parameters — trailing parameters
+passed as constant 0, in variants where the last one is unused and where it is referenced in the
+helper body — all print `.frame $sp,56 # vars= 0` on this body.
+**Mechanism.** integrate.c:2118-2135 allocates a caller-side block for the inline callee's
+incoming arguments only when the copied RTL actually references VIRTUAL_INCOMING_ARGS_REGNUM;
+integrate substitutes `arg_vals` for every parameter of a fully-inlined call, so the reference
+never appears. This was the last unmeasured entry of s15's eight-site producer census.
+**kill_scope:** instance · **measured_on:** chassis HEAD cabe7b9d, bodies a1..a5 under
+tmp/grind/func_800480C0/s23/bodies/, `arg0 = 0;` FAKE present.
+
+### KILLED (instance) — donations from distinct callees do not stack
+**Statement.** Two distinct inline helpers, each declaring its own 32-byte local, substituted at
+two different call sites, produce `vars= 32`, not 64.
+**Mechanism.** `assign_stack_temp (BLKmode, DECL_FRAME_SIZE, 1)` at integrate.c:2092 reuses the
+same BLKmode temp across expansions, so the charge is the MAX donated frame size, not the sum.
+**kill_scope:** instance · **measured_on:** chassis HEAD cabe7b9d, body b5_two_helpers.c,
+`arg0 = 0;` FAKE present.
+
+### KILLED (instance) — s22 frontier item 2, a carrier the algorithm genuinely reads
+**Statement.** An honest 8-word staging buffer that the four sign-extended halfwords genuinely
+flow through reaches `vars= 32` but builds 77 raw cc1 insns against the target's 74.
+**Mechanism.** The carrier's stores can only be "accounted against" target instructions if the
+target emits stores into the carrier's window; `asm/funcs/func_800480C0.s` has zero sw/lw into
+sp+0x18..0x37, so each write is pure addition.
+**kill_scope:** instance · **measured_on:** chassis HEAD cabe7b9d, body c2_real_staging_buf.c,
+`arg0 = 0;` FAKE present.
+
+### CONFIRMED — the residual is a single declaration, bytes-proven, honest floor 20
+**Statement.** The clean s1..s21 body with `volatile u32 pre_pad[8];` as its first local — no
+inline helper, no donation carrier, no FAKE — builds
+`build/src/text1b.o sha1 441ad473138db80847e60b0f8e2a8c2b07014ee8`, byte-identical to the target
+(74/74 words; the single differing word is the un-relocated `jal` target in an unlinked object,
+tmp/grind/func_800480C0/s23/c1_bytes.txt). Its `sandbox --disable all` score is 20, because
+`find_unused_local_arrays` (engine/volatile_cheats.py:249) strips the unreferenced array and the
+`_SANCTIONED_UNWRITTEN_PADS` allowlist (engine/volatile_cheats.py:746) requires both a `volatile`
+qualifier and a per-function row. This corrects the s22 banner, which reported the unwritten form
+as "score 0" from a raw-.s reading rather than a sandbox run. The shape is byte-for-byte the
+`("pre_pad", 8)` grant already held by the two identical-window text1b.c siblings func_80047EE8 and
+func_80047FBC (engine/volatile_cheats.py:757-758); it remains barred here by the standing Judge
+constraint (docs/grind/decisions.md:20349) until an owner ruling adds the row.
+
+## [s23] On this body every donation carrier that is STORED to keeps exactly one surviving store, so a written 32-byte carrier builds at the target's instruction count plus one.
+- mechanism: insn_dead_p deletes a store to a frame object only under `GET_CODE (r) == MEM && last_mem_set && ! MEM_VOLATILE_P (r) && rtx_equal_p (r, last_mem_set)` (tools/gcc-2.7.2/flow.c:1740-1741) - a LATER store, in the SAME basic block, to the SAME address. last_mem_set is cleared at a CALL (flow.c:1630), cleared at any memory READ (flow.c:2393), and is never recorded for an sp-based store (flow.c:1985-1988). asm/funcs/func_800480C0.s emits no store into sp+0x18..0x37, so the last carrier store has nothing to kill it.
+- probe: Eight written-carrier spellings swept for frame/insns with tmp/grind/func_800480C0/s23/sweep.py and four of them sandboxed: k3 (24B), k4 (32B at four sites), b1 (arg5 site only), b2 (arg1 site only), b3 (carrier stores the SUM), b5 (two distinct helpers), b6 (16B), k6 (donate24 + g1 phantom). Pass attribution by dump census, tmp/grind/func_800480C0/s23/cnt.py, over the s22 k4 dumps.
+- result: All eight build 74 raw cc1 insns against the target's 74 final, i.e. 75 build insns; sandbox b1 = 1, b3 = 1, b5 = 1, k6 = 6, k4 = 1. The (set (mem ...)) census drops 5 -> 2 exactly at .flow (rtl/jump/cse/loop/cse2 = 5; flow/combine/sched/lreg/greg = 2), naming flow.c as the deleting pass. Disassembly of the k4 sandbox object is the target instruction-for-instruction plus a single `afa20018 sw v0,24(sp)` inserted between `sra v0,v0,0x10` and `addu v0,v0,s3`.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: chassis HEAD cabe7b9d, bodies installed one at a time over the INCLUDE_ASM line at src/text1b.c:129, the s1..s21 `arg0 = 0;` FAKE present in every body
+- predicate_cite: tools/gcc-2.7.2/flow.c:1741
+
+## [s23] Static __inline__ helpers with 6, 8 and 10 parameters - trailing parameters passed as constant 0, in variants where the last one is unused and where it is referenced in the helper body - all print .frame $sp,56 # vars= 0 on this body.
+- mechanism: integrate.c:2118-2135 allocates a caller-side block for an inline callee's incoming arguments only when the copied RTL actually references VIRTUAL_INCOMING_ARGS_REGNUM; integrate substitutes arg_vals for every parameter of a fully-inlined call, so that reference never appears. This was the last unmeasured entry of s15's eight-site frame-vars producer census.
+- probe: Bodies a1_p6_unused, a2_p8_unused, a3_p8_lastused, a4_p10_lastused, a5_p10_unused under tmp/grind/func_800480C0/s23/bodies/, swept with s23/sweep.py.
+- result: All five print vars= 0, .frame $sp,56, 73 raw insns - identical to the construct-free clean body. The integrate.c:2124 producer site is dead on this body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis HEAD cabe7b9d, bodies a1..a5 under tmp/grind/func_800480C0/s23/bodies/, `arg0 = 0;` FAKE present
+
+## [s23] Two distinct inline helpers, each declaring its own 32-byte local, substituted at two different call sites, produce vars= 32 rather than 64.
+- mechanism: assign_stack_temp (BLKmode, DECL_FRAME_SIZE, 1) at integrate.c:2092 reuses the same BLKmode temp across expansions, so the caller's charge is the MAX donated DECL_FRAME_SIZE, never the sum.
+- probe: Body b5_two_helpers.c - a u32 t[8] helper at the arg1 site and a u32 u[8] helper at the arg5 site; swept and sandboxed.
+- result: vars= 32, not 64; 74 raw insns; sandbox 1. Summing several small donations to reach 32 has no spelling on this body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis HEAD cabe7b9d, body b5_two_helpers.c, `arg0 = 0;` FAKE present
+
+## [s23] An honest 8-word staging buffer that the four sign-extended halfwords genuinely flow through reaches vars= 32 but builds 77 raw cc1 insns against the target's 74 - this was s22 frontier item 2.
+- mechanism: A carrier's stores can only be accounted against target instructions if the target emits stores into the carrier's window. asm/funcs/func_800480C0.s has zero sw/lw into sp+0x18..0x37, so every carrier write is pure addition rather than replacement.
+- probe: Body c2_real_staging_buf.c - u32 buf[8] declared in func_800480C0 itself, buf[0..3] written with the four sign-extended halfwords and read back at the four call-argument positions; swept with s23/sweep.py.
+- result: vars= 32 as designed, but 77 raw cc1 insns - four extra stores. s22 frontier item 2 is dead.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: chassis HEAD cabe7b9d, body c2_real_staging_buf.c, `arg0 = 0;` FAKE present
+
+## [s23] The clean s1..s21 body plus one line - `volatile u32 pre_pad[8];` as its first local, with no inline helper, no donation carrier and no FAKE - is byte-identical to the target, and its honest sandbox score is 20 rather than the 0 the s22 banner recorded for the equivalent unwritten form.
+- mechanism: expand_decl (stmt.c:3412) charges var_size for the aggregate whether or not it is referenced, giving .frame $sp,88 # vars= 32, regs= 8/0, args= 24 - the target's exact frame - at the clean body's 73 raw insns. The sandbox then strips the unreferenced array in find_unused_local_arrays (engine/volatile_cheats.py:249); the _SANCTIONED_UNWRITTEN_PADS allowlist (engine/volatile_cheats.py:746) spares such an array only when it carries BOTH a volatile qualifier and a per-function row, and func_800480C0 has no row - so the stripped build scores exactly the clean body's 20.
+- probe: `build-c text1b` with the body installed, then a word-by-word objdump comparison against asm/funcs/func_800480C0.s (tmp/grind/func_800480C0/s23/cmp.py -> c1_bytes.txt); plus `sandbox func_800480C0 --disable all` on both this body and s22's k7_base_donate32_unwritten.c.
+- result: build/src/text1b.o sha1 441ad473138db80847e60b0f8e2a8c2b07014ee8 for BOTH this one-line form and s22's k7 helper form; the comparison prints `build insns 74 target 74` with exactly one differing word (index 58, 0c000000 vs 0c0120b2 - the un-relocated jal func_800482C8 target in an unlinked object). Sandbox: 20 for both. This is byte-for-byte the (pre_pad, 8) shape already granted to the identical-window text1b.c siblings func_80047EE8 and func_80047FBC at engine/volatile_cheats.py:757-758, and remains barred here by the standing Judge constraint at docs/grind/decisions.md:20349.
+- verdict: CONFIRMED

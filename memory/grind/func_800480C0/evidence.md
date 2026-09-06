@@ -2047,3 +2047,108 @@ capped at 8 bytes (F4).
 - [s22] 45 bodies swept for raw insn count, orphan-USE count and .frame in one table: tmp/grind/func_800480C0/s22/sweep_log.txt.
 
 - [s22] src/text1b.c was restored to its HEAD INCLUDE_ASM state after every measurement; git status on src/ is clean at session end.
+
+## s23 (structural, 2026-09-05, chassis HEAD cabe7b9d)
+
+- [s23] **The s22 banner's "k7 scores 0" is a raw-.s reading, not a sandbox measurement, and
+  it is wrong as a score.** `sandbox func_800480C0 --disable all` with
+  `tmp/grind/func_800480C0/s22/bodies/k7_base_donate32_unwritten.c` installed prints
+  `"score": 20, "build_insns": 74` — the same score as the construct-free clean body. The
+  sandbox's `find_unused_local_arrays` (engine/volatile_cheats.py:249) strips the unreferenced
+  `u32 t[8]` before scoring; the `_SANCTIONED_UNWRITTEN_PADS` allowlist
+  (engine/volatile_cheats.py:746) spares an array only when it carries BOTH a `volatile`
+  qualifier and a per-function row, and func_800480C0 has neither. The honest floor of every
+  unwritten-carrier spelling is therefore 20, not 0, and the lowest honest score ever measured
+  on this function remains 1 (the written carrier, s22 k4).
+
+- [s23] **The BYTES claim behind that form is nevertheless real, and s23 re-proved it directly
+  rather than by inference.** `build-c text1b` with k7 installed emits
+  `build/src/text1b.o sha1 441ad473138db80847e60b0f8e2a8c2b07014ee8`; a word-by-word objdump
+  comparison against `asm/funcs/func_800480C0.s`
+  (`tmp/grind/func_800480C0/s23/{cmp.py,c1_bytes.txt}`) prints `build insns 74 target 74` with
+  exactly one differing word — index 58, `0c000000` vs `0c0120b2`, the un-relocated `jal
+  func_800482C8` target in an unlinked object. Zero real divergences.
+
+- [s23] **The entire residual is ONE declaration; the inline-helper donation machinery that
+  s20–s22 built is not needed to state it.** The clean s1..s21 body with
+  `volatile u32 pre_pad[8];` inserted as its first local — no `static __inline__` helper, no
+  `sxadd`, no donation carrier, no FAKE construct — prints
+  `.frame $sp,88,$31 # vars= 32, regs= 8/0, args= 24, extra= 0` at 73 raw cc1 insns and builds
+  the *identical* object (same sha1 441ad473…, same 74/74 word comparison). Its sandbox score is
+  20 for the allowlist reason above. Banked as
+  `rejected/s23-volatile-pre-pad8-bytes-proven-sandbox-strips-to-20.c`. This is byte-for-byte the
+  `("pre_pad", 8)` shape already granted to the two identical-window text1b.c siblings
+  func_80047EE8 and func_80047FBC at engine/volatile_cheats.py:757-758.
+
+- [s23] **The written-donation-carrier axis is closed with a named mechanism, not a plateau.**
+  `insn_dead_p` deletes a store to a frame object only via
+  `GET_CODE (r) == MEM && last_mem_set && ! MEM_VOLATILE_P (r) && rtx_equal_p (r, last_mem_set)`
+  (tools/gcc-2.7.2/flow.c:1740-1741) — i.e. only when a LATER store in the SAME basic block
+  writes the SAME address. `last_mem_set` is cleared at a CALL (flow.c:1630), cleared at any
+  memory READ (flow.c:2393), and is never set at all for an sp-based store (flow.c:1985-1988).
+  `asm/funcs/func_800480C0.s` emits ZERO stores into sp+0x18..0x37, so the LAST store to any
+  referenced carrier always survives. Confirmed by dump census: the k4 stream carries 5
+  `(set (mem …))` insns through .cse2 and exactly 2 from .flow onward
+  (`tmp/grind/func_800480C0/s23/cnt.py` over the s22 k4 dumps) — flow.c is the deleting pass,
+  and it deletes 3 of the 4 carrier stores.
+
+- [s23] **Eight written-carrier spellings, all at target + 1 instruction.** k3 (24B), k4 (32B at
+  four sites), b1 (32B at the arg5 site only), b2 (32B at the arg1 site only), b3 (carrier stores
+  the SUM rather than the operand), b5 (two DISTINCT helpers), b6 (16B at four sites), k6
+  (donate24 + the g1 phantom) — every one builds 74 raw cc1 insns against the target's 74 final,
+  i.e. 75 build insns. Sandboxed: b1 = 1, b3 = 1, b5 = 1, k6 = 6.
+
+- [s23] **The exact k4 divergence, disassembled.** `mipsel-linux-gnu-objdump -d
+  tmp/sandbox/func_800480C0/text1b.o` is the target instruction-for-instruction plus a single
+  `afa20018  sw v0,24(sp)` inserted between `sra v0,v0,0x10` and `addu v0,v0,s3`. Nothing else
+  differs anywhere in the 75-instruction stream.
+
+- [s23] **integrate.c:2124 — the inline-callee INCOMING-ARGS donation — never fires on this body.**
+  Five static `__inline__` helpers with 6, 8 and 10 parameters (extras passed as constant 0;
+  variants with the trailing parameter unused and with it referenced in the helper body) all print
+  `.frame $sp,56,$31 # vars= 0` — identical to the clean body. That was the last unmeasured entry
+  of s15's eight-site frame-vars producer census on this body. Banked as
+  `rejected/s23-inline-args-donation-integrate2124-never-fires.c`.
+
+- [s23] **Donations from distinct inline callees SHARE one block; they do not stack.** Two
+  different helpers, each declaring its own 32-byte local (`u32 t[8]` / `u32 u[8]`), substituted at
+  two different call sites, print `vars= 32` — not 64. `assign_stack_temp` reuses the same BLKmode
+  temp for both expansions. "Sum several small donations to reach 32" has no spelling: the charge
+  is the MAX donated `DECL_FRAME_SIZE`, never the sum.
+
+- [s23] **s22 frontier item 2 (a carrier the algorithm genuinely reads) is measured dead.** An
+  honest `u32 buf[8]` that the four sign-extended halfwords are genuinely staged through reaches
+  `vars= 32` but builds 77 raw cc1 insns against the target's 74. The four stores are pure
+  overhead because the target contains no store into the vars window for them to be accounted
+  against. Banked as `rejected/s23-honest-staging-buffer-costs-four-stores.c`.
+
+- [s23] **Frame arithmetic re-derived from the back end.** `compute_frame_size`
+  (tools/gcc-2.7.2/config/mips/mips.c:4443-4475) computes
+  `total = var_size + args_size + extra_size(0) + gp_reg_size(32)` and places every saved-register
+  slot at `args_size + extra_size + var_size + gp_reg_size - 4` and downward. Only the SUM
+  `var_size + args_size == 56` is observable in the bytes: `args=56/vars=0` would be byte-identical
+  to `args=24/vars=32`. s18 already measured that the 7th outgoing-argument word stores into
+  sp+0x18, so widening the call is not a path; `args=24 / vars=32` with one carrier store is the
+  measured optimum of the whole family.
+
+- [s23] CORRECTION TO THE LEDGER: s22's banner claim that k7_base_donate32_unwritten.c 'scores 0 at 74/74' was a reading of the raw cc1 .s, not a sandbox run. Measured this session: sandbox --disable all prints score 20, build_insns 74 - identical to the construct-free clean body - because engine/volatile_cheats.py:249 find_unused_local_arrays strips the unreferenced u32 t[8]. No unwritten spelling can measure below 20 without an owner row in _SANCTIONED_UNWRITTEN_PADS (engine/volatile_cheats.py:746), which additionally requires the array to carry a volatile qualifier.
+
+- [s23] The BYTES behind that form are real and were re-proved directly rather than inferred: build/src/text1b.o sha1 441ad473138db80847e60b0f8e2a8c2b07014ee8, compared word by word against asm/funcs/func_800480C0.s in tmp/grind/func_800480C0/s23/c1_bytes.txt - 74/74 instructions with a single differing word, the un-relocated jal target of an unlinked object.
+
+- [s23] The inline-helper donation machinery s20-s22 built is unnecessary to state the residual: `volatile u32 pre_pad[8];` as the first local of the clean body produces the IDENTICAL object (same sha1) with no static __inline__ helper, no sxadd, no donation carrier and no FAKE construct. Banked at memory/grind/func_800480C0/rejected/s23-volatile-pre-pad8-bytes-proven-sandbox-strips-to-20.c. Any future escalation should cite that one-line form.
+
+- [s23] The exact k4 divergence, disassembled from tmp/sandbox/func_800480C0/text1b.o: the target instruction-for-instruction plus a single `afa20018 sw v0,24(sp)` inserted between `sra v0,v0,0x10` and `addu v0,v0,s3`. Nothing else differs in the 75-instruction stream. Only ONE of the four sxadd sites keeps its store; flow.c deletes the other three.
+
+- [s23] Pass attribution (the mandated dump read, not a guess): the (set (mem ...)) count in the k4 dumps is 5 through .rtl/.jump/.cse/.loop/.cse2 and 2 from .flow onward. flow.c is the deleting pass; the surviving pair is one carrier store plus one outgoing-argument store. Instrument: tmp/grind/func_800480C0/s23/cnt.py.
+
+- [s23] flow.c's dead-store rule read in full: insn_dead_p at tools/gcc-2.7.2/flow.c:1740-1741 requires a later same-address store in the same basic block (last_mem_set); flow.c:1630 clears last_mem_set at a CALL, flow.c:2393 clears it at any memory read, and flow.c:1985-1988 refuses to record sp-based stores at all. The target has zero stores in sp+0x18..0x37, so the last store to a referenced carrier can never be killed.
+
+- [s23] Eight written-carrier spellings all land at target + 1 instruction: k3 (24B), k4 (32B at four sites), b1 (arg5 site only), b2 (arg1 site only), b3 (stores the SUM instead of the operand), b5 (two distinct helpers), b6 (16B), k6 (donate24 + g1 phantom). Sandbox: b1 1, b3 1, b5 1, k6 6, k4 1.
+
+- [s23] integrate.c:2124 - the inline-callee INCOMING-ARGS donation, the last unmeasured entry of s15's eight-site frame-vars producer census - never fires on this body: five helpers with 6/8/10 parameters (extras constant 0, last parameter both unused and used) all print vars= 0.
+
+- [s23] Donations from distinct inline callees SHARE one block: two helpers each declaring a 32-byte local give vars= 32, not 64 (assign_stack_temp reuse at integrate.c:2092). The charge is the MAX donated DECL_FRAME_SIZE, never the sum - so small donations cannot be summed to 32.
+
+- [s23] Frame arithmetic re-derived from compute_frame_size (tools/gcc-2.7.2/config/mips/mips.c:4443-4475): total = var_size + args_size + extra_size(0) + gp_reg_size(32), and every saved-register slot sits at args_size + extra_size + var_size + gp_reg_size - 4 and downward. Only the SUM var_size + args_size == 56 is observable in the bytes, so args=56/vars=0 would be byte-identical - but s18 already measured that the 7th outgoing-argument word stores into sp+0x18. args=24 / vars=32 with one carrier store is the measured optimum of the whole family.
+
+- [s23] s22 frontier item 2 is measured dead: an honest u32 buf[8] that the four halfwords genuinely stage through reaches vars= 32 at 77 raw insns against the target's 74.
