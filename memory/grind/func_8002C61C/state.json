@@ -1,0 +1,34 @@
+{
+ "func": "func_8002C61C",
+ "file": "code6cac_b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "Before any tooling/reference edit, prove the candidate with `engine build` (SHA1 == oracle); spell loop-3 destinations against the record base D_80101EC8 + off + field offset, drop the unused ProbeRec typedef and the duplicated typedef blocks in src/code6cac_b.c, and bring the .s/undefined_syms_auto.txt D_1F80000C correction back as an integration-handoff ESCALATE once the SHA1 is banked - never by editing engine/score.py."
+ ],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-06T11:15:09.332403+00:00",
+ "judge_clearances": [
+  {
+   "hash": "7deeac5ed5627ab5",
+   "when": "2026-09-06T11:44:57.563407+00:00",
+   "ref": "decisions.md 2026-09-06 06:44 ruling PASS",
+   "justification": "Q1 (spelling): PASS - ordinary C, no FAKE, no family claim needed. `off = i * 0x44C; *(s32 *)((u8 *)&D_80101EC8 + off + 0x18C)` is a semantically truthful reading (0x44C IS the record stride; 0x80101EC8+0x18C == 0x80102054, +0x174 == 0x8010203C, so the census object model is confirmed, not evaded) and is the idiom already shipped in this TU's matched siblings (src/code6cac_b.c:868 `(u8 *)&D_80101EC8 + i * 0x44C`, :880, `*(s16 *)(var_s0 + 0x40)`). Per ordinary-c-judge-decidable (owner 2026-08-31) choosing it after measuring the alternatives is the method, not a cheat; the four declaration-level"
+  }
+ ],
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "7deeac5ed5627ab5",
+   "when": "2026-09-06T11:44:57.563407+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-06 06:44 ruling PASS)"
+  }
+ ]
+}
