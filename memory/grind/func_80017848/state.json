@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 45,
- "current_modality": "object-model",
+ "session_count": 46,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -273,23 +273,19 @@
    "floor": 3,
    "modality": "object-model",
    "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis; OBJECT MODEL audit banked: the function references no global, its data model is the 52-byte object block from matched sibling func_80017D84 (s16 li"
+  },
+  {
+   "session": 46,
+   "floor": 3,
+   "modality": "escalation",
+   "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis; owner directive 2026-09-06 confirmed executed at s37 (class kill combine.c:1458, artifacts on disk); s15 closest-kill re-audit stands at 3 with no "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A NATURAL loop-body expression on the byte index or the record pointer whose RTL combine proves constant or unreachable reproduces target's copies and seats the copy destination in a3, provided the 2.7.2 front end leaves the comparison to RTL. Object-model constraint from s45: the reader must NOT be a re-read of the record pointer or of &recs[slot_a] (cse merges those into base before flow); it has to be a value derived from q that cse cannot canonicalise.",
-   "mechanism": "combine.c simplify_comparison folds via nonzero_bits(lbu) = 0xFF and the dead arm's read of q is deleted by jump2 after global allocation, so flow's liveness keeps q live across the loop (E-s44-3); seat a3 iff q's global.c:615 priority sorts after sh and lnk (E-s44-4).",
-   "next_probe": "On U4: idx = *(u8 *)(base + i + 0x24); if (idx == -1 or idx > 0xFF) { <statement reading q> } then the existing check; verify in .rtl that the compare reaches RTL, in .combine that the jump folds, in .jump2 that the arm is deleted, in cc1.log ALLOCDBG q's priority and seat."
-  },
-  {
-   "hypothesis": "A byte-free instrument that adds no cross-block pseudo and reads no pre-existing pseudo (so sh/lnk keep U4's priorities 11428/8333) seats the copy destination in a3 and scores the loop-1 residual at 0, confirming that priority order is the only remaining variable once a combine-folded reader exists.",
-   "mechanism": "E-s44-4: q with 4 weighted refs over >=10 insns has priority <= 8000 in U4's geometry, below lnk's 8333 and sh's 11428, so find_reg reaches a3.",
-   "next_probe": "Instrument (cheat, measurement only): a u8-typed temp declared and consumed within the first loop block and z = q & (idx & 0x100) in the same block before the return check, consumed in the lhu address; read ALLOCDBG for q's priority and seat."
-  },
-  {
-   "hypothesis": "GCC 2.7.2's C front end does NOT fold comparisons of an int-typed local holding a zero-extended byte against out-of-range constants, so such a check reaches RTL and combine (not the front end) removes it.",
-   "mechanism": "fold-const.c folds range comparisons only through the operand's TREE type range; an s32 local has full range, a u8-typed local does not.",
-   "next_probe": "Scratch TU under project flags with -da: s32 idx = *(u8 *)p; if (idx == -1) return 1; return 0; and the u8-typed variant; grep .rtl for the compare and .combine/.jump2 for its removal."
+   "hypothesis": "Re-activation only: an owner class grant covering a byte-free flow-time reader of the loop-2 preheader copy destination (E-s44-3 mechanism) would make the residual attackable.",
+   "mechanism": "combine folds the reader after flow keeps the copy alive (combine.c:1458 no longer sees i2dest dead in i3 at flow time); seat a3 follows global.c priority order (E-s44-4).",
+   "next_probe": "None until a grant exists; every spelling measured is a fabricated dead conditional or unused local."
   }
  ],
  "judge_constraints": [],
@@ -303,22 +299,6 @@
  "last_unpark_reason": "owner 2026-09-06 foreclosed-bucket review: FORENSICS probe first - build the minimal scratch translation unit holding only the loop-1-exit/loop-2-preheader copy geometry under the exact project flags and read .cse2/.combine dumps to name the protecting context (ledger frontier item 3, marked unspent since s35). Test the pass decision in isolation, not inside the 15-local chassis.",
  "last_unpark_at": "2026-09-06T16:57:06.708297+00:00",
  "kills": [
-  {
-   "session": 29,
-   "statement": "Giving the preheader copy's destination a second SET (reg_n_sets == 2, one copy statement per loop writing one shared local q) is what keeps combine from substituting the copy away.",
-   "kill_scope": "instance",
-   "measured_on": "chassis A (tmp/grind/func_80017848/s29/ings.orig.c = committed HEAD INCLUDE_ASM anchor, plus the cell body), floor-3 chassis, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "4, at 127 target / 126 build insns - the kill holds on the current chassis. Both copies are absent from the build: loop "
-  },
-  {
-   "session": 29,
-   "statement": "Making the two preheaders source-symmetric by giving loop 2 its own named lnk = *(u8 **)(ctx + 0x10); between the copy and the base add - the shape target's addu a3,a0,zero / lw a2,16(s2) / addu a0,a1",
-   "kill_scope": "instance",
-   "measured_on": "chassis A (tmp/grind/func_80017848/s29/ings.orig.c plus the cell body), floor-3 chassis, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "B = 12 (126 build insns), C = 13 (126), D = 36 (126). The named links local costs 8 points over cell A and restores neit"
-  },
   {
    "session": 29,
    "statement": "The 14-point residual of the s23 crosses-set form, which s23 recorded as emitting target's entire instruction stream, carries instruction-selection or ordering differences as well as register ones.",
@@ -782,6 +762,22 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus s30 body_B.c; BASE re-audited at 3 (127/127); no FAKE constructs",
    "predicate_cite": "",
    "result": "7 at 127/127, tying s30 exactly; fake_ablate reports no FAKE-annotated construct to ablate (no form of this function has"
+  },
+  {
+   "session": 46,
+   "statement": "KILL RE-AUDIT: the s15 hoisted-copy form (rejected/s15_hoisted_copy_plus_base_combine_deletes_copy_costs_3.c) measures below 3 on the HEAD chassis or with FAKE constructs ablated.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with the s15 form applied; BASE candidate re-audited at 3 (127/127); no FAKE constructs anywhere",
+   "predicate_cite": "",
+   "result": "No FAKE construct in the form (nothing to ablate); plain re-measure 3 at 127/127, identical to s15 and to the candidate."
+  },
+  {
+   "session": 46,
+   "statement": "Frontier item 3 (s44): the 2.7.2 C front end does not fold a comparison of an s32 local holding a zero-extended byte against an out-of-range constant, so the check reaches RTL and combine removes it, ",
+   "kill_scope": "instance",
+   "measured_on": "standalone scratch TUs under the exact project CC_FLAGS (canonical tools/gcc-2.7.2/build/cc1), HEAD chassis; no FAKE constructs",
+   "predicate_cite": "",
+   "result": "s32 holder: compare reaches RTL (not front-end folded) but jump converts it to a store-flag before combine and it materi"
   }
  ],
  "escalation_deferrals": 0,

@@ -5344,3 +5344,54 @@ the two arrays it owns, with the evidence sources the directive names.
 - [s45] Floor re-audited at 3 (127/127) on the HEAD src/ings.c:820 chassis; fake_ablate vacuous; src/ings.c restored (git status shows only ledger files).
 
 - [s45] Owner directive (2026-09-06 scratch-TU forensics of the preheader copy geometry) was executed in s37 and extended in s38-s44 per the ledger; acknowledged, not re-run.
+
+### E-s46-1 - Floor re-audit (escalation / disposition session)
+- candidate.c applied over the HEAD src/ings.c:820 INCLUDE_ASM anchor: sandbox
+  --disable all = 3 at 127/127, scorable, rules_dropped 0
+  (tmp/grind/func_80017848/s46/sandbox_base.txt). Floor flat at 3 since s9;
+  45 prior sessions over 9 distinct modalities (recon 1, structural 10,
+  permuter 4, forensics 10, rederive 7, synthesis 5, escalation 6, solver 1,
+  object-model 1); permuter campaigns total >= 180,472 iterations (evidence.md
+  s13/s14 telemetry); 267 rejected forms banked.
+- src/ings.c restored to HEAD (git checkout) after measurement; no candidate
+  change this session.
+### E-s46-2 - Owner directive 2026-09-06 status
+- Executed at s37 (H-s37-1, class kill, combine.c:1458) with artifacts still on
+  disk in tmp/grind/func_80017848/s37/mini/ (run.sh reproduces the build with
+  the exact CPP_FLAGS/CC_FLAGS; m4_iso_loop / m5_iso_noloop carry the promoted
+  copy geometry into .cse2 and lose it in .combine). The dispatch audit's
+  "DIRECTIVE NOT YET IN LEDGER" is a false positive; acknowledged here.
+### E-s46-3 - Gate (a) scan_hand_coded re-run
+- tier=LOW score=0/8, 127 insns, no S1/S2/S6 signal
+  (tmp/grind/func_80017848/s46/scan_hand_coded.txt). Unchanged from s17.
+### E-s46-4 - Gate (b) SOTN-master precedent census (negative)
+- docs/reference/sotn-construct-index.md (2746 lines, commit aa53500, 1911 files)
+  has 0 hits for register-asm pins / `__asm__` / `asm volatile` in PSX sources,
+  and 0 hits for preheader / reg-reg copy / move-vs-load constructs. The
+  residual (E-s42-1: target copies the loop-1 record-pointer LOAD into a3 in
+  loop 2's preheader and reloads 0xC(s2) in loop 1's exit tail; BASE has the
+  copy and the load swapped) has no closing C construct: the ledger's only
+  three copy-survival routes are a second use (+1 insn, s17 escape #1), a
+  block boundary (incompatible order, escape #8) or a byte-free flow-time
+  reader (E-s44-3), and every byte-free reader measured is a fabricated dead
+  conditional or an unused local (forbidden families), none of which SOTN
+  master ships for GCC 2.7.2.
+### E-s46-5 - Frontier item 3 scratch measurement
+- f3_s32 / f3_s32_gt / f3_u8 under project flags (tmp/grind/func_80017848/s46/
+  mini/): s32 holder keeps the compare through RTL (front end does not fold)
+  but jump converts it to a store-flag before combine and it MATERIALISES as
+  `nor`/`slt` in the final assembly; u8 holder is front-end folded to a
+  constant (even the lbu disappears). No byte-free reader arises from this
+  shape in isolation.
+
+- [s46] E-s46-1: candidate.c over HEAD src/ings.c:820 = 3 at 127/127 scorable, rules_dropped 0 (tmp/grind/func_80017848/s46/sandbox_base.txt); src/ings.c restored to HEAD afterwards.
+
+- [s46] E-s46-2: owner directive 2026-09-06 executed at s37 (H-s37-1 class kill, combine.c:1458); artifacts tmp/grind/func_80017848/s37/mini/ (run.sh, m0..m6, .cse2/.combine).
+
+- [s46] E-s46-3: scan_hand_coded --single func_80017848 = tier LOW 0/8, no S1/S2/S6 (s46/scan_hand_coded.txt).
+
+- [s46] E-s46-4: docs/reference/sotn-construct-index.md census: 0 PSX hits for register-asm/__asm__/asm volatile, 0 hits for preheader/reg-reg copy/move-vs-load constructs; gate (b) fails.
+
+- [s46] E-s46-5: frontier item 3 scratch TUs: s32 holder compare survives to assembly as nor/slt; u8 holder front-end folded.
+
+- [s46] Exhaustion: floor flat at 3 since s9 across 45 sessions and 9 modalities (structural 10, forensics 10, rederive 7, escalation 6, synthesis 5, permuter 4, recon/solver/object-model 1 each); >= 180,472 permuter iterations; 8 class + 53 instance kills; 267 rejected forms.

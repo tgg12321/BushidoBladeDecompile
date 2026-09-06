@@ -24879,3 +24879,111 @@ Submitted body has no verified prior ruling (mechanical ledger contradicts the s
 ## 2026-09-06 11:57 — CD_ready — final call — **PASS**
 
 Ruled fresh on body 81190eb7276955af (not on the 2026-09-06T16:33 clearance, which the ban forbids relying on and which keys a different body). Every construct sits in a frozen family with prerequisites met: pointer-alias-fake-exception (tbl_125c, idx_1494/95/96, pp), do-while-zero-exception incl. the nested wrap with its measured single-level-insufficient justification (pri 933<952, masked 4->14), staged-value-reused-variable (src), named-local constant-holders (new_var/new_var3), and named intermediates (tb/pB/arg5/t0) - all 17 FAKE-annotated with a named GCC-pass mechanism and per-lever exhaustion. Decisive fact I verified independently: idx_1494[0..2] is NOT cross-symbol derivation - memory/closer/libcd-identity.md:28 documents D_800A1494/95/96 as ONE 3-byte `static volatile CD_intr Intr`, symbol_addrs.txt:85-87 confirms the addresses, and main already ships the identical idiom at src/system.c:766. The volatile on the locals comes from the TU's pre-existing `extern volatile u8 g_cd_status_a;` (src/system.c:400,599, consumed by matched CD_flush/cdrom_IrqHandler), not a local coercion - exactly the remedy the last layer-1 FAIL prescribed; the rejected coercion spelling is banked at rejected/s50-...-volatile-ptr-coercion-masked2.c. `volatile u8 *D_800A147C` is type-level MMIO (0x1F801800 CD_reg, mmio-volatile-type-level), and the diff DELETES the forbidden asm("D_800A147C") alias-rename - a net reduction in non-ordinary constructs. Banned CD_alarm struct is absent (HEAD's three flat externs restored). Also verified: diff touches src/system.c ONLY - no Makefile, pipeline .txt, .ld, engine/ or tools/ change, so no build-time output rewriting. Exhaustion banked across 88 sessions in hypotheses.md (s20/s21/s47/s49 mask-holder axis; s88d F1=23, F2d=10, F2a-F2f=0/179 for pp) and ~90 rejected/ files; the annotation's stale `memory/wip/CD_ready/notes.md` pointer is a pre-migration path whose substance I confirmed is banked in this ledger's rejected/ and hypotheses.md - not a decisive defect. Match evidence read at evidence.md [s88]: 0/179 sandbox --disable all, rules_dropped 0, verify-oracle ok:true.
+
+## 2026-09-06 — func_80017848 (src/ings.c) — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED** (post-unpark foreclosed-bucket window run to exhaustion; the owner's 2026-09-06 forensics directive is executed and measured; both endgame gates fail)
+
+Filed by grind session 46 (modality `escalation`, assigned by the driver after
+the honest pure-C floor stayed FLAT at 3 from session 9 through session 45
+across nine distinct modalities). This is a proof-of-foreclosure RECORD under
+the owner's standing ruling of 2026-07-27 (`.claude/rules/endgame-lock-disposition.md`)
+with silent foreclosure per the 2026-08-31 ruling
+(`.claude/rules/ordinary-c-judge-decidable.md`). Nothing here is a question to
+the owner.
+
+### Honest state (re-measured this session)
+- `sandbox func_80017848 --disable all` with `memory/grind/func_80017848/candidate.c`
+  applied over the `src/ings.c:820` INCLUDE_ASM anchor = **3** (127 target insns /
+  127 build insns, scorable, rules_dropped 0) —
+  `tmp/grind/func_80017848/s46/sandbox_base.txt`.
+- Nothing holds a byte-match on main: the function is committed as
+  `INCLUDE_ASM("asm/funcs", func_80017848)` (asm-until-matched); the earlier
+  asmfix whole-body rule was retired with the 2026-08-25 rules-to-zero milestone.
+  There is no cheat carrier and no cheat-asm to strip.
+- The residual is the two-instruction geometry recorded at evidence.md E-s42-1:
+  target reloads the record-pointer (`lw a0,0xC(s2)`) in loop 1's exit tail and
+  COPIES loop 1's load into `a3` in loop 2's preheader (`addu a3,a0,zero`); the
+  candidate has the copy in the tail and the reload in the preheader, so three
+  instructions differ (tail move, preheader load, preheader add operand).
+
+### Owner directive of 2026-09-06 (foreclosed-bucket review) — EXECUTED
+The directive asked for a minimal scratch translation unit holding only the
+loop-1-exit / loop-2-preheader copy geometry under the exact project flags with
+`.cse2` / `.combine` read to name the protecting context (ledger frontier item 3).
+It was executed at session 37 (hypotheses.md H-s37-1, class kill,
+`tools/gcc-2.7.2/combine.c:1458`): scratch TUs `m4_iso_loop.c` / `m5_iso_noloop.c`
+in `tmp/grind/func_80017848/s37/mini/` (built by `run.sh` with the project's
+CPP_FLAGS / CC_FLAGS, `-da`) carry the promoted use-once copy into `.cse2` and
+lose it in `.combine` exactly as the full function does, because the copy's
+destination dies in the consuming add (`added_sets_2 = 0`) and combine folds i2
+into i3. No chassis-specific context protects or deletes the copy. The dispatch
+audit's "DIRECTIVE NOT YET IN LEDGER" warning was a false positive; session 46
+acknowledges it explicitly (hypotheses.md s46, evidence.md E-s46-2).
+
+### Kill re-audit (mandated)
+`rejected/s15_hoisted_copy_plus_base_combine_deletes_copy_costs_3.c` (closest
+instance kill) carries no FAKE construct (`tools/fake_ablate.py`: nothing to
+ablate) and re-measures 3 at 127/127 on the HEAD chassis
+(`tmp/grind/func_80017848/s46/sandbox_s15_reaudit.txt`). The kill stands.
+
+### Un-tried lever check
+Frontier item 3 of session 44 (an s32 local holding a zero-extended byte compared
+against an out-of-range constant, hoped to reach RTL and be combine-folded into a
+byte-free reader) was measured on scratch TUs `f3_s32.c` / `f3_s32_gt.c` /
+`f3_u8.c` (`tmp/grind/func_80017848/s46/mini/`): the s32 form reaches RTL but is
+converted to a store-flag by jump and MATERIALISES as `nor` / `slt` in the final
+assembly; the u8 form is front-end folded (the load disappears). Neither yields
+a byte-free reader, and the construct is in any case a fabricated always-false
+conditional (forbidden dead-conditional / empty-body-if family). Frontier items
+1 and 2 of session 44 require the same fabricated reader and are disposed with it.
+No lever drops the floor.
+
+### GATE (a) — canonical-asm evidence: **FAILED**
+    $ python3 tools/scan_hand_coded.py --single func_80017848
+      HAND_CODED: tier=LOW  score=0/8  (func_80017848, 127 insns)
+        Reason: no strong hand-coded indicators
+        [ ] S1 multu pacing  only 0 multu/mflo pair(s)
+        [ ] S2 empty branch  no empty-body branches
+        [ ] S6 BIOS jumptable no BIOS jumptable call pattern
+(`tmp/grind/func_80017848/s46/scan_hand_coded.txt`; identical to session 17.)
+No STRONG signal; ordinary GCC 2.7.2 output, independently confirmed by the
+124-of-127 pure-C reconstruction.
+
+### GATE (b) — in-hand SOTN-master precedent for a closing construct: **FAILED**
+`docs/reference/sotn-construct-index.md` (commit `aa53500`, 1911 files, 2746
+index lines) has 0 PSX hits for register-asm pins, `__asm__` or `asm volatile`,
+and 0 hits for any preheader-copy / reg-reg-copy / move-vs-load construct. The
+ledger's exhaustive copy-survival enumeration (session 17 E-s17-1, seven
+`can_combine_p` paths; session 35 combine.c:902 retired by reading; session 44
+E-s44-3 byte-free-reader mechanism) leaves only forbidden families as carriers
+(dead conditional, unused local, register pin). A negative census is a failed
+gate, not an open question.
+
+### Exhaustion evidence (pointers)
+- Floor history: 16 → 14 → 12 → 11 → 5 → 3 over sessions 1-9; flat at 3 for
+  sessions 9-46 (`memory/grind/func_80017848/state.json`).
+- Modalities: recon 1, structural 10, permuter 4, forensics 10, rederive 7,
+  synthesis 5, escalation 6, solver 1, object-model 1 (45 sessions before this one).
+- Permuter: >= 180,472 iterations across the s13/s14 campaigns plus the s4/s5
+  sweeps (evidence.md telemetry); every output re-scored with the engine.
+- Kill ledger: 8 class kills (predicate-cited) + 53 instance kills; 267 rejected
+  forms in `memory/grind/func_80017848/rejected/`.
+- Object model audited (session 45): no globals referenced; typed forms score
+  7 / 37 / 43 / 47 and never create a surviving copy.
+
+### Re-activation triggers
+1. An owner class grant covering a byte-free flow-time reader of a copy
+   destination (the E-s44-3 mechanism) — today every spelling is a fabricated
+   dead conditional or unused local, outside the frozen family list.
+2. A toolchain finding that changes cse.c:826 make_regs_eqv promotion or
+   combine.c:1458 `added_sets_2` behaviour for use-once copies (the compiler is
+   frozen; this is a documentation trigger only).
+3. A sibling ledger reaching a surviving preheader copy of a loaded pointer in
+   ordinary C on this cc1 (none known; func_8005E54C is at floor 798 and shares
+   no block).
+
+### Disposition
+Both gates fail; the floor is <= 5. Under the standing ruling this is
+**RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**. The driver forecloses
+silently; nothing is surfaced to the owner. The best pure-C form (distance 3)
+remains at `memory/grind/func_80017848/candidate.c` with the full derivation in
+its header.

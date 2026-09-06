@@ -4339,3 +4339,47 @@ re-audit: s30 cell B re-measured as R30B = 7 at 127/127 (ties s30).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor plus s30 body_B.c; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s46] The owner's 2026-09-06 foreclosed-bucket directive (minimal scratch TU holding only the loop-1-exit/loop-2-preheader copy geometry under the exact project flags, .cse2/.combine read to name the protecting context; frontier item 3 since s35) is still unexecuted, so executing it could name a chassis-specific protecting context and re-open the residual.
+- mechanism: The consistency audit flagged "DIRECTIVE NOT YET IN LEDGER"; if that were true the directive's probe would be an un-tried forensic lever.
+- probe: Ledger read (hypotheses.md H-s37-1 at line 3519 and its s37 entry at line 3576; evidence.md s37 CONCLUSION block at line 4350) plus artifact check of tmp/grind/func_80017848/s37/mini/ (m0..m6 .c sources, run.sh with the exact CC_FLAGS/CPP_FLAGS, 14 .cse2/.combine dumps, flat.py).
+- result: The directive WAS executed at s37 and closed as a class kill: m4 (isolated loop) and m5 (isolated no-loop) reproduce the exact promoted copy geometry in .cse2 and both lose the copy in .combine by combine.c:1458 (i2dest dies in i3 so added_sets_2 = 0 and i2 is deleted); no chassis context protects or deletes it. The audit warning is a false positive (the ledger cites the directive by date and frontier number, not by the driver's acknowledgement token). This session records the acknowledgement explicitly; the s37 artifacts remain on disk and are re-listed in the s46 outcome.
+- verdict: CONFIRMED (directive executed and measured; no re-run needed)
+
+## [s46] KILL RE-AUDIT: the s15 hoisted-copy form (rejected/s15_hoisted_copy_plus_base_combine_deletes_copy_costs_3.c, the instance kill whose form sits closest to target: a hoisted loop-2 preheader copy that combine deletes) measures below 3 on the HEAD chassis or with FAKE constructs ablated.
+- mechanism: Mandated re-audit; an instance kill measured under an older chassis or with a FAKE carrier on the target pseudo is not a kill.
+- probe: tools/fake_ablate.py --func func_80017848 --file ings --candidate <s15 form> (tmp/grind/func_80017848/s46/ablate_s15.txt) then the form applied over the HEAD src/ings.c:820 INCLUDE_ASM anchor and scored with sandbox --disable all (tmp/grind/func_80017848/s46/sandbox_s15_reaudit.txt).
+- result: fake_ablate reports "no FAKE-annotated constructs ... nothing to ablate" (the form carries no FAKE construct), and the plain re-measure is 3 at 127/127, identical to the s15 value and to the candidate. The kill stands on the HEAD chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with the s15 form applied; BASE candidate re-audited at 3 (127/127) the same way (tmp/grind/func_80017848/s46/sandbox_base.txt); no FAKE constructs anywhere
+
+## [s46] Frontier item 3 (s44): GCC 2.7.2's C front end does NOT fold a comparison of an s32 local holding a zero-extended byte against an out-of-range constant, so the check reaches RTL and combine (not the front end) removes it, leaving a byte-free reader.
+- mechanism: fold-const.c folds range comparisons only through the operand's TREE type; an s32 local has full range so the compare survives to RTL, where combine.c simplify_comparison would fold it via nonzero_bits(lbu) = 0xFF.
+- probe: Scratch TUs tmp/grind/func_80017848/s46/mini/f3_s32.c (s32 idx = *p; if (idx == -1) ...), f3_s32_gt.c (idx > 0xFF) and f3_u8.c (u8 idx; idx == -1), built by mini/run.sh with the project's exact CPP_FLAGS/CC_FLAGS and -da; .rtl/.combine/.jump2 jump_insn counts and the final .s read.
+- result: Premise half CONFIRMED: for the s32 holder the compare reaches RTL (3 jump_insns in .rtl, (ne ...) / (eq ...) present) and is NOT front-end folded; for the u8 holder the front end folds it entirely (f3_u8.s is `j $31; move $2,$0`, the load itself is gone). Conclusion half KILLED: in isolation the jump pass converts the branch to a store-flag before combine (.combine has 0 jump_insns), and neither combine nor jump2 folds the compare to a constant; the final assembly MATERIALISES it (`lbu $2; nor $2,$0,$2` for == -1, `lbu $2; slt $2,$2,256` for > 0xFF). The reader is therefore not byte-free in this geometry, and its only purpose in the function would be to keep the copy destination live, which fails cheat tests T1/T2 (a fabricated always-false conditional is the forbidden dead-conditional / empty-body-if family) regardless of whether some in-loop geometry folds it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone scratch TUs under the exact project CC_FLAGS (canonical tools/gcc-2.7.2/build/cc1), HEAD chassis; no FAKE constructs
+
+## [s46] The owner's 2026-09-06 directive (minimal scratch TU of the loop-1-exit/loop-2-preheader copy geometry under project flags, .cse2/.combine read to name the protecting context) is unexecuted and could re-open the residual.
+- mechanism: If the copy deletion depended on chassis context, an isolated TU would keep the copy through .combine.
+- probe: Ledger read (hypotheses.md H-s37-1 line 3519, evidence.md s37 conclusion line 4350) and artifact check of tmp/grind/func_80017848/s37/mini/ (m0..m6, run.sh, 14 .cse2/.combine dumps).
+- result: Executed at s37: m4/m5 reproduce the promoted copy in .cse2 and lose it in .combine via combine.c:1458 (i2dest dead in i3); no protecting context exists. The dispatch audit warning was a false positive; acknowledged in the ledger this session.
+- verdict: CONFIRMED
+
+## [s46] KILL RE-AUDIT: the s15 hoisted-copy form (rejected/s15_hoisted_copy_plus_base_combine_deletes_copy_costs_3.c) measures below 3 on the HEAD chassis or with FAKE constructs ablated.
+- mechanism: An instance kill measured on an older chassis or with a FAKE carrier on the target pseudo is not a kill.
+- probe: tools/fake_ablate.py on the form (tmp/grind/func_80017848/s46/ablate_s15.txt), then the form applied over the HEAD src/ings.c:820 anchor and scored with sandbox --disable all (s46/sandbox_s15_reaudit.txt).
+- result: No FAKE construct in the form (nothing to ablate); plain re-measure 3 at 127/127, identical to s15 and to the candidate. Kill stands.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with the s15 form applied; BASE candidate re-audited at 3 (127/127); no FAKE constructs anywhere
+
+## [s46] Frontier item 3 (s44): the 2.7.2 C front end does not fold a comparison of an s32 local holding a zero-extended byte against an out-of-range constant, so the check reaches RTL and combine removes it, leaving a byte-free reader.
+- mechanism: fold-const.c folds range comparisons only through the TREE type; combine.c simplify_comparison would fold via nonzero_bits(lbu) = 0xFF.
+- probe: Scratch TUs tmp/grind/func_80017848/s46/mini/f3_s32.c, f3_s32_gt.c, f3_u8.c built by mini/run.sh with the exact project CPP_FLAGS/CC_FLAGS and -da; .rtl/.combine/.jump2 jump_insn counts and the final .s read.
+- result: s32 holder: compare reaches RTL (not front-end folded) but jump converts it to a store-flag before combine and it materialises as nor/slt in the assembly (not byte-free). u8 holder: front-end folded to a constant, the lbu disappears. No byte-free reader arises; the construct is a fabricated always-false conditional (forbidden family) in any case.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: standalone scratch TUs under the exact project CC_FLAGS (canonical tools/gcc-2.7.2/build/cc1), HEAD chassis; no FAKE constructs

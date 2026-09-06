@@ -1108,3 +1108,15 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * registers and local-alloc seats, none of which can be a3 here. The residual is
  * still exactly one byte-free flow-time reader of each preheader copy destination.
  */
+/* [s46 ESCALATION ADDENDUM - body unchanged, re-measured 3 at 127/127 on the
+ * HEAD chassis (tmp/grind/func_80017848/s46/sandbox_base.txt).]  Disposition
+ * session: the owner's 2026-09-06 directive (minimal scratch TU of the copy
+ * geometry, .cse2/.combine read) was executed at s37 and is closed as a class
+ * kill (combine.c:1458; no protecting context exists).  Kill re-audit: the s15
+ * hoisted-copy form carries no FAKE construct and re-measures 3 on HEAD.
+ * Frontier item 3 measured on scratch TUs: the s32 byte-holder compare reaches
+ * RTL but materialises as slt/nor (not byte-free); the u8 holder is front-end
+ * folded.  Gate (a) scan LOW 0/8; gate (b) SOTN census negative.  Disposed
+ * FORECLOSED under the 2026-07-27 standing ruling - see docs/grind/decisions.md
+ * 2026-09-06 func_80017848 entry.
+ */
