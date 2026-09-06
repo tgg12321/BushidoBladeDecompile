@@ -1759,3 +1759,4 @@
 - 2026-09-06 00:06 _spu_note2pitch s1 [recon] floor=2: _spu_note2pitch = prefix + inlined COMPLETED-C sibling _spu_2pitch (GNU89 inline, sibling byte-neutral) + fold-const ternary abs -> mips abssi2; honest floor 37 -> 2, residual is one sched1 birthing-priority tie (andi vs li) attributed to sched.c adjust_priority/birthing_insn_p with the lever class identified.
 - 2026-09-06 00:17 _spu_note2pitch: LAYER-1 FAILED a sandbox-0 candidate — The down-shift arm's `(u16)(0x1000 >> oct)` cast is a self-admitted no-op width cast whose sole purpose is to give `atten` a second static set that defeats sched.c's birthing_insn_p reg_n_sets==1 boost -- a redundant-width-cast GCC-internals lever, a family the 2026-07-01/2026-08-18 SOTN surveys explicitly declined to sanction.
 - 2026-09-06 00:34 _spu_note2pitch COMPLETED-C after 2 sessions (closer: s2 [permuter]).
+- 2026-09-06 00:55 func_800644FC COMPLETED-C after 1 sessions (closer: s1 [recon]).
