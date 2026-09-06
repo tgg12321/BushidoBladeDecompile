@@ -1799,3 +1799,82 @@ s14/s15/s16 on three earlier chassis. Candidate floor re-measured 20 this sessio
 - kill_scope: class
 - measured_on: HEAD eab57aaf, tools/prologue_config.json = {} and both funcs lists comment-only
 - predicate_cite: tools/prologue_fix.py:14
+
+## [s18] Mandated kill re-audit: the candidate's single FAKE is still load-bearing and still masks no lever on the current chassis.
+- mechanism: tools/fake_ablate.py installs the candidate over the INCLUDE_ASM line, then re-measures with each /* FAKE */ unit removed; a lever measured inert while a FAKE occupies its target pseudo is not a kill (func_8002EA24 s8).
+- probe: `python3 tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c` on chassis e25a492f.
+- result: one FAKE unit (`arg0 = 0;`), keep-all 20 at 74 build insns, drop-1 32 at 73 build insns. Identical to the s14/s15/s16/s17 audits on four earlier chassis. CONFIRMED (the FAKE is load-bearing); no banked instance kill is voided by it.
+- verdict: CONFIRMED
+
+## [s18] A LIVE call can raise current_function_outgoing_args_size above 24 on this body without placing an argument store at sp+0x18 or above.
+- mechanism: mips.h:1651 makes STARTING_FRAME_OFFSET == current_function_outgoing_args_size and mips.c:4475 totals the frame as var_size + args_size + extra_size + gp_reg_rounded, so args_size is byte-interchangeable with var_size; s17 reopened this axis by showing an args block survives deletion of its call. The open question was whether a REACHABLE call could size the block without filling it, since the target's 0x18..0x37 window is store-free.
+- probe: the body's own in-loop call widened to 6, 7, 8 and 10 live arguments (tmp/grind/func_800480C0/s18/bodies/b{6,7,8,10}_call*args.c) measured with s18/probe.sh, and the sp store/load histogram read off each emitted listing (s18/last_b*.s).
+- result: KILLED. args = 24/32/32/40 with outgoing-arg stores at {16,20} / {16,20,24} / {16,20,24,28} / {16,20,24,28,32,36} - one store per argument word past the fourth, contiguous, no gaps, emitted by store_one_arg's emit_push_insn. The SIXTH word is free of the window (its store lands at 0x14) but does not raise args_size at all (still 24, frame grows only by the extra saved register); the SEVENTH word is the first to raise args_size, and its store lands at 0x18, inside the window. Since the target has exactly one non-save sp reference (sw $v0,0x10($sp)), every reachable-call body with args_size > 24 diverges. args_size is pinned at 24 and var_size == 32 for every body without dead code.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/calls.c:3135
+- measured_on: HEAD e25a492f, bodies b6/b7/b8/b10 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each; src/text1b.c restored from HEAD around every measurement.
+
+## [s18] An 8-byte-aligned argument leaves an alignment HOLE in the outgoing-args block, so a live call could size the block to 56 with the target's 0x18..0x37 window left store-free.
+- mechanism: on MIPS o32 a long long / double argument is aligned to an even word slot, so a misaligned one skips a word; the skipped word is never stored. This is the only mechanism in expand_call that can size outgoing-args bytes without emitting a store into them, and no prior session considered it.
+- probe: c1_ll6th.c (the five existing arguments plus a 6th long long) and c2_ll6th7th.c (plus a 7th) measured with s18/probe.sh; sp histograms from s18/last_c*.s.
+- result: KILLED. The hole is REAL - c1 reads .frame $sp,72 # vars= 0, regs= 10/0, args= 32 with stores at 16, 24, 28 and nothing at 20 - but it falls at 0x14, below the window, while the long long's own two words land at 0x18/0x1C inside it. c2 reads args= 40 with stores at 16,24,28,32,36 and NO second hole, because the second long long is already aligned. A hole costs at most one word per misaligned 8-byte argument, so the eight words needed to raise args_size from 24 to 56 carry at least four stores inside 0x18..0x37 under any argument-type mixture.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e25a492f, bodies c1_ll6th and c2_ll6th7th installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each.
+
+## [s18] compute_frame_size has a third term, extra_size, that some C-level construct could raise to reach the 32-byte residual.
+- mechanism: mips.c:4475 totals the frame as var_size + args_size + extra_size + gp_reg_rounded, and fifteen sessions treated extra_size as zero without reading its definition.
+- probe: read tools/gcc-2.7.2/config/mips/mips.c:4462 and its neighbourhood, and check the build's compiler flags.
+- result: KILLED. extra_size = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0)) - it is a function of the -mabicalls target flag alone and the build compiles -mno-abicalls, so extra_size is 0 for every C body compiled by this toolchain and even under -mabicalls it would be 8, not 32. The adjacent bump at mips.c:4471 (args_size = 4*UNITS_PER_WORD when args_size == 0 && current_function_calls_alloca) cannot fire on a body whose args_size is 24. Every .frame emitted by every s18 probe reads `extra= 0`.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:4462
+
+## [s18] A frame producer whose object is REFERENCED could still charge this frame, because references can hide behind a base register copied from $sp rather than $sp itself.
+- mechanism: [[base-register-store-invisible-to-symbol-grep]] - a store made through a base register into a frame object is invisible to a `$sp` grep, so s1's "ZERO sw/lw in 0x18..0x37" would not have excluded a referenced object. If such an object existed, the whole class of referenced producers (put_var_into_stack address-taken locals, struct-return temps at calls.c:698, block-move temps in expr.c) would be back in play.
+- probe: enumerate EVERY mention of $sp in asm/funcs/func_800480C0.s, not just sw/lw, and classify each.
+- result: KILLED as a possibility - the grep returns exactly 25 lines and every one is accounted for: two addiu $sp frame adjustments, 8 register saves at 0x38..0x54, 8 restores, two incoming-parameter loads at 0x68/0x6C (above this frame), and the single sw $v0,0x10($sp). There is no addiu $r,$sp,N, no move $r,$sp and no addu involving $sp, so no sp-derived base register exists in the target at all and nothing can be hidden behind one. The 32 bytes are charged for an object that is unreferenced in the emitted RTL, which leaves exactly the four zero-instruction producers the ledger has already enumerated (unreferenced aggregate / alter_reg phantom / inline donation / dead-call args block).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: target listing asm/funcs/func_800480C0.s at HEAD e25a492f (a property of the shipped bytes, independent of any installed body or FAKE state).
+
+## [s18] The candidate's single FAKE unit (arg0 = 0;) is still load-bearing on the current chassis and still masks no lever's target pseudo.
+- mechanism: tools/fake_ablate.py installs the candidate over the INCLUDE_ASM line and re-measures with each /* FAKE */ unit removed; a lever measured inert while a FAKE occupies its target pseudo is not a kill (func_8002EA24 s8), which is why the audit is mandated when the floor is flat.
+- probe: python3 tools/fake_ablate.py --func func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c on chassis e25a492f.
+- result: One FAKE unit; keep-all 20 at 74 build insns, drop-1 32 at 73 build insns - identical to the s14/s15/s16/s17 audits on four earlier chassis. No banked instance kill is voided; the ledger floor of 20 is re-confirmed on this chassis.
+- verdict: CONFIRMED
+
+## [s18] A LIVE call on this body can raise current_function_outgoing_args_size above 24 without placing an outgoing-argument store at sp+0x18 or above.
+- mechanism: mips.h:1651 makes STARTING_FRAME_OFFSET == current_function_outgoing_args_size and mips.c:4475 totals the frame as var_size + args_size + extra_size + gp_reg_rounded, so args_size is byte-interchangeable with var_size; s17 reopened this axis by showing that an args block survives deletion of its call. The open question was whether a REACHABLE call could size the block without filling it, since the target's 0x18..0x37 window is store-free.
+- probe: The body's own in-loop call widened to 6, 7, 8 and 10 live arguments (s18/bodies/b{6,7,8,10}_call*args.c), measured with s18/probe.sh, with the sp store/load histogram read off each emitted listing (s18/last_b*.s).
+- result: args = 24/32/32/40 with outgoing-arg stores at {16,20} / {16,20,24} / {16,20,24,28} / {16,20,24,28,32,36} - one store per argument word past the fourth, contiguous, no gaps, emitted by store_one_arg's emit_push_insn. The SIXTH word is free of the window (its store lands at 0x14) but raises args_size by nothing (still 24); the SEVENTH word is the first that raises args_size, and its store lands at 0x18, inside the window. The target has exactly one non-save sp reference, sw $v0,0x10($sp). args_size is therefore pinned at 24 and var_size == 32 for every body whose call is reachable, restoring s16's decomposition and bounding s17's reopening to the dead-code spellings s17 itself banked as cheats.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD e25a492f, bodies b6/b7/b8/b10 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each; src/text1b.c restored from HEAD around every measurement.
+- predicate_cite: tools/gcc-2.7.2/calls.c:3135
+
+## [s18] An 8-byte-aligned argument leaves an alignment hole in the outgoing-args block, so a live call could size that block to 56 bytes on this body while leaving the 0x18..0x37 window store-free.
+- mechanism: On MIPS o32 a long long / double argument is aligned to an even word slot, so a misaligned one skips a word that is never stored. This is the only mechanism inside expand_call that can size outgoing-args bytes without emitting a store into them, and no prior session considered it.
+- probe: c1_ll6th.c (the five existing arguments plus a 6th long long) and c2_ll6th7th.c (plus a 7th), measured with s18/probe.sh; sp histograms from s18/last_c*.s.
+- result: The hole is real - c1 reads .frame $sp,72 # vars= 0, regs= 10/0, args= 32 with stores at 16, 24, 28 and nothing at 20 - but it falls at 0x14, below the target's untouched window, while the long long's own two words land at 0x18/0x1C inside it. c2 reads args= 40 with stores at 16,24,28,32,36 and no second hole, because the second long long is already aligned. A hole costs at most one word per misaligned 8-byte argument, so the eight words needed to lift args_size from 24 to 56 carry at least four stores inside 0x18..0x37 on the argument-type mixtures measured here.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e25a492f, bodies c1_ll6th and c2_ll6th7th installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each.
+
+## [s18] compute_frame_size's third term extra_size can be raised from C to supply the 32-byte residual.
+- mechanism: mips.c:4475 totals the frame as var_size + args_size + extra_size + gp_reg_rounded, and fifteen sessions treated extra_size as zero without reading its definition - if any C-level construct could set it, the residual would have a producer nobody had enumerated.
+- probe: Read tools/gcc-2.7.2/config/mips/mips.c:4462 and its neighbourhood; cross-check the build's compiler flags and the extra= field of every .frame emitted by this session's probes.
+- result: extra_size = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0)) - a function of the -mabicalls target flag alone, and the build compiles -mno-abicalls, so extra_size is 0 for every C body this toolchain produces; even under -mabicalls it would be 8, not 32. The adjacent bump at mips.c:4471 (args_size = 4*UNITS_PER_WORD when args_size == 0 && current_function_calls_alloca) cannot fire on a body whose args_size is 24. Every .frame emitted by every s18 probe reads extra= 0. The frame identity is exactly var_size + args_size + gp_reg_rounded.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD e25a492f; read from compiler source plus the extra= field of the candidate, b6/b7/b8/b10 and c1/c2 probe listings, base candidate's single FAKE present.
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.c:4462
+
+## [s18] A referenced frame object could still be charged to this frame with its traffic hidden behind a base register copied from $sp, which s1's sw/lw-only grep would not have seen.
+- mechanism: A store made through a base register into a frame object is invisible to a $sp grep ([[base-register-store-invisible-to-symbol-grep]]). If such a reference existed in the target, the whole class of REFERENCED producers - put_var_into_stack address-taken locals (function.c:1347), struct-return temps (calls.c:698), block-move temps (expr.c) - would be back in play as honest producers of the 32 bytes.
+- probe: Enumerate every mention of $sp in asm/funcs/func_800480C0.s, not just sw/lw, and classify each of the 25 hits.
+- result: Every hit is accounted for: two addiu $sp frame adjustments, 8 register saves at 0x38..0x54, 8 restores, two INCOMING-parameter loads at 0x68/0x6C (above this frame), and the single sw $v0,0x10($sp). There is no addiu $r,$sp,N, no move $r,$sp and no addu involving $sp, so no sp-derived base register exists in the target and nothing can hide behind one. The 32 bytes are charged for an object that is unreferenced in the emitted RTL, which leaves exactly the four zero-instruction producers already enumerated: expand_decl of an unreferenced aggregate (the banned pad), alter_reg phantom slots (8 bytes each, capped at one on this body), inline-callee frame donation (killed s14/s15), and a dead-call outgoing-args block (a cheat, s17).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: target listing asm/funcs/func_800480C0.s at HEAD e25a492f - a property of the shipped bytes, independent of any installed body or FAKE state.

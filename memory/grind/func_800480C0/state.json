@@ -1,8 +1,8 @@
 {
  "func": "func_800480C0",
  "file": "text1b",
- "session_count": 17,
- "current_modality": "solver",
+ "session_count": 18,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -105,23 +105,29 @@
    "floor": 20,
    "modality": "solver",
    "headline": "Solver types the residual PRE-RA (RA/sched foreclosed); measured that an outgoing-args block survives deletion of its call, so the residual is args_size=56/var_size=0 as much as var_size=32 - and the "
+  },
+  {
+   "session": 18,
+   "floor": 20,
+   "modality": "forensics",
+   "headline": "Forensics closes the outgoing-args axis s17 reopened: the 7th argument word is the boundary (args_size stays 24 through 6 args, and the 7th's store lands at sp+0x18 inside the target's untouched windo"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C construct exists that raises current_function_outgoing_args_size to 56 without leaving a live call - which would reach the target frame at zero instruction cost, the price no var_size producer can match outside the banned pad.",
-   "mechanism": "expand_call fixes current_function_outgoing_args_size during RTL generation and compute_frame_size (mips.c:4467) reads it at the end; anything that sizes the block and is then removed, folded or never emitted keeps the bytes. This session only found spellings whose removal mechanism is jump.c deleting unreachable code, which is dead code and a cheat.",
-   "next_probe": "Enumerate the non-dead-code routes to a 56-byte outgoing block and measure each with tmp/grind/func_800480C0/s17/probe.sh: (a) grep include/ and src/ for a REAL BB2 callee taking 14 or more words of arguments, and check whether any of them is plausibly reachable from this routine's data (the func_800482C8 family's four members are the obvious starting point); (b) a struct-by-value argument list on the existing five-parameter call, where the copy is later dead-store-eliminated; (c) an emit_library_call path (64-bit shift/divide, emit_block_move) that sizes the block; (d) a static __inline__ helper whose internal many-argument call constant-folds away inside the inline expansion, where the source-level call site is a real one."
+   "hypothesis": "The only remaining unmeasured zero-instruction producer is a THREE-way split (one alter_reg phantom at 8 bytes plus 24 bytes from somewhere else), since compute_frame_size constrains only the sum: this body demonstrably supports exactly one combine orphan at 73 insns (s17 m1), so a 24-byte partner would suffice.",
+   "mechanism": "mips.c:4475 totals var_size + args_size + gp_reg_rounded and the s18 boundary result pins args_size at 24 for reachable calls, so the 32 bytes must come entirely from var_size - but var_size need not come from ONE object. function.c:687 rounds each alter_reg slot to 8 bytes (BIGGEST_ALIGNMENT 64, mips.h:1082), so 8 + 24 is arithmetically identical to 32.",
+   "next_probe": "Install the s17 m1 folded-entry-guard body (vars= 8, 73 insns) and add, one at a time, each honest 24-byte candidate: a 24-byte unreferenced aggregate is the banned pad and is excluded, so the only untried partners are a static __inline__ helper whose OWN frame is 24 bytes (integrate.c:2092 donates DECL_FRAME_SIZE verbatim - s14/s15 killed the 32-byte donation because the inlinee's local had to be live, but a 24-byte donation may admit a shape whose traffic folds), and a 6-argument live call combined with the phantom (args stays 24 by the s18 measurement, so this is a control, not a lever). Measure with s18/probe.sh; the m1 body's 73 insns leave exactly one instruction of headroom against the target's 74."
   },
   {
-   "hypothesis": "The var_size=32 route and the args_size=56 route may not be the only two: since compute_frame_size constrains only var_size + args_size == 56, intermediate splits (args 32 / var 24, args 40 / var 16, args 48 / var 8) are equally byte-identical and each needs only 3, 2 or 1 zero-traffic slot respectively.",
-   "mechanism": "mips.c:4475 and 4547 both depend on the sum only; a single combine orphan is worth 8 bytes (function.c:687, BIGGEST_ALIGNMENT 64) and this body demonstrably supports exactly one, so an args_size of 48 would need just that one orphan - the one construct already measured working on this body at 73 insns.",
-   "next_probe": "Measure the m1 folded-entry-guard body (vars= 8, 73 insns) combined with an outgoing-args block of 48 bytes, and the base body with blocks of 32 and 40, to confirm the sum arithmetic holds and to find which split needs the least fabrication. Then hunt an honest producer for THAT block size rather than for 56 - a 12-word call is a far more plausible real BB2 signature than a 14-word one, and only one honest orphan is needed alongside it."
+   "hypothesis": "The 32 bytes may not be a frame OBJECT at all: gp_reg_rounded is the only other term, and MUST_SAVE_REGISTER (mips.h) decides which registers enter it - a register the target saves for a reason our body does not reproduce would move 32 bytes without any frame object.",
+   "mechanism": "mips.c:4478-4485 accumulates gp_reg_size over MUST_SAVE_REGISTER and mips.c:4547 places the save block at args_size + extra_size + var_size + gp_reg_size - 4. Both the target and the candidate save eight registers at 0x38..0x54, so this looks closed - but the SAVE OFFSETS are derived from the same sum, and nobody has checked whether a ninth saved register whose save/restore pair is later deleted (e.g. by reorg.c or by the epilogue scheduler) could leave gp_reg_size raised. b6/b7 both measured regs= 9/0 and regs= 10/0 with visible extra saves, so the deletion half is the untested part.",
+   "next_probe": "Grep tools/gcc-2.7.2/config/mips/mips.c for every write to the frame's mask/gp_reg_size after compute_frame_size runs, and check whether mips_expand_prologue or the .frame emission can ever disagree with the emitted save set; if any path can, construct a body that forces a register into the mask without a save insn and measure it with s18/probe.sh."
   },
   {
-   "hypothesis": "The honest producer for var_size=32 really is a declared-and-never-referenced 32-byte local aggregate (stmt.c:3412 allocates the slot for an aggregate whether or not it is referenced), which is what the original source most likely carried and what the two immediate text1b.c siblings func_80047EE8 and func_80047FBC were granted.",
-   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS carries (\"pre_pad\", 8) rows for func_80047EE8, func_80047FBC, func_800481E8 and func_80041688 for this same 32-byte untouched region; func_800480C0 is barred from the family by the standing Judge constraint in this ledger until an owner ruling adds its row.",
-   "next_probe": "Do NOT re-spell the pad - the Judge constraint is binding and body-keyed. If the args_size hunt above closes negative as well, the honest record to file is that the only two producers reaching the target frame at zero instruction cost are the banned pad and dead code, with the s17 measurements as the proof, and the re-activation trigger is an owner row in _SANCTIONED_UNWRITTEN_PADS."
+   "hypothesis": "With args pinned, referenced producers excluded and the donation/phantom routes capped, the honest producer for this function really is the declared-and-never-referenced local aggregate that the three text1b siblings were granted, and the residual's disposition is an owner row rather than a spelling.",
+   "mechanism": "engine/volatile_cheats.py::_SANCTIONED_UNWRITTEN_PADS carries (\"pre_pad\", 8) rows for func_80047EE8, func_80047FBC, func_800481E8 and func_80041688 for this identical 32-byte untouched window; func_800480C0 is barred by the standing Judge constraint in this ledger until an owner ruling adds its row.",
+   "next_probe": "Do NOT re-spell the pad - the Judge constraint is binding and body-keyed. Spend the remaining ladder modalities on frontier items 1 and 2; if both close negative, the honest record is that the only producers reaching the target frame at zero instruction cost are the banned pad and dead code, with the s16/s17/s18 measurements as proof and an owner row in _SANCTIONED_UNWRITTEN_PADS as the re-activation trigger."
   }
  ],
  "judge_constraints": [
@@ -568,6 +574,38 @@
    "measured_on": "HEAD eab57aaf, tools/prologue_config.json = {} and both funcs lists comment-only",
    "predicate_cite": "tools/prologue_fix.py:14",
    "result": "KILLED. No post-cc1 stage touches this function's prologue; the 0x58 is written by compute_frame_size and nothing downst"
+  },
+  {
+   "session": 18,
+   "statement": "A LIVE call on this body can raise current_function_outgoing_args_size above 24 without placing an outgoing-argument store at sp+0x18 or above.",
+   "kill_scope": "class",
+   "measured_on": "HEAD e25a492f, bodies b6/b7/b8/b10 installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each; src/text1b.c restored from HEAD around every measurement",
+   "predicate_cite": "tools/gcc-2.7.2/calls.c:3135",
+   "result": "args = 24/32/32/40 with outgoing-arg stores at {16,20} / {16,20,24} / {16,20,24,28} / {16,20,24,28,32,36} - one store pe"
+  },
+  {
+   "session": 18,
+   "statement": "An 8-byte-aligned argument leaves an alignment hole in the outgoing-args block, so a live call could size that block to 56 bytes on this body while leaving the 0x18..0x37 window store-free.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD e25a492f, bodies c1_ll6th and c2_ll6th7th installed one at a time over the INCLUDE_ASM line, base candidate's single FAKE (arg0 = 0;) present in each.",
+   "predicate_cite": "",
+   "result": "The hole is real - c1 reads .frame $sp,72 # vars= 0, regs= 10/0, args= 32 with stores at 16, 24, 28 and nothing at 20 - "
+  },
+  {
+   "session": 18,
+   "statement": "compute_frame_size's third term extra_size can be raised from C to supply the 32-byte residual.",
+   "kill_scope": "class",
+   "measured_on": "HEAD e25a492f; read from compiler source plus the extra= field of the candidate, b6/b7/b8/b10 and c1/c2 probe listings, base candidate's single FAKE present.",
+   "predicate_cite": "tools/gcc-2.7.2/config/mips/mips.c:4462",
+   "result": "extra_size = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0)) - a function of the -mabicalls target flag alon"
+  },
+  {
+   "session": 18,
+   "statement": "A referenced frame object could still be charged to this frame with its traffic hidden behind a base register copied from $sp, which s1's sw/lw-only grep would not have seen.",
+   "kill_scope": "instance",
+   "measured_on": "target listing asm/funcs/func_800480C0.s at HEAD e25a492f - a property of the shipped bytes, independent of any installed body or FAKE state.",
+   "predicate_cite": "",
+   "result": "Every hit is accounted for: two addiu $sp frame adjustments, 8 register saves at 0x38..0x54, 8 restores, two INCOMING-pa"
   }
  ],
  "ladder_skip": 0,

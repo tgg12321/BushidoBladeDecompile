@@ -3,6 +3,41 @@
  * file is a CANDIDATE, not the state of HEAD; every 'measured on main' statement in the
  * headers below means 'measured with this body installed over that INCLUDE_ASM line'.
  * Install with tmp/grind/func_800480C0/s3/install.py. */
+/* s18 (forensics, 2026-09-05, chassis HEAD e25a492f) - BODY UNCHANGED, floor re-measured
+ * 20 with this body installed over the INCLUDE_ASM line (74 target insns, 74 build insns).
+ * Mandated FAKE re-audit re-run on this chassis: one FAKE unit (arg0 = 0;), keep-all 20 /
+ * drop-1 32 - load-bearing, masking no lever, identical on five chassis now.
+ * THE SESSION'S FINDING: the axis s17 reopened is closed, and the residual is back to a
+ * single sentence. (1) THE TARGET FORMS NO $sp-RELATIVE ADDRESS AT ALL - all 25 mentions of
+ * $sp in asm/funcs/func_800480C0.s are the two frame adjustments, the 8 saves at 0x38..0x54,
+ * the 8 restores, the two INCOMING-parameter loads at 0x68/0x6C and the single
+ * sw $v0,0x10($sp). s1 had only grepped sw/lw, so the base-register blind spot
+ * ([[base-register-store-invisible-to-symbol-grep]]) was still open; it is now shut. Every
+ * frame producer whose object is REFERENCED must emit an sp-relative memory reference or an
+ * sp-relative address computation, and the target has neither in 0x18..0x37, so the object
+ * charged for those 32 bytes is unreferenced in the emitted RTL.
+ * (2) A LIVE CALL CANNOT SIZE THE OUTGOING-ARGS BLOCK PAST 24 WITHOUT WRITING INTO THE
+ * WINDOW. The body's own in-loop call widened to 6/7/8/10 live arguments reads
+ * args= 24/32/32/40 with outgoing-arg stores at {16,20} / {16,20,24} / {16,20,24,28} /
+ * {16,20,24,28,32,36} - one store per word past the fourth, contiguous, emitted by
+ * store_one_arg's emit_push_insn (calls.c:3135). The SIXTH word is free of the window (store
+ * at 0x14) but raises args_size by nothing; the SEVENTH is the first that raises args_size
+ * and it stores at 0x18. So args_size == 24 and var_size == 32 for every reachable-call
+ * body, restoring s16's decomposition and bounding s17's reopening to dead-code spellings.
+ * (3) THE ALIGNMENT-HOLE LOOPHOLE, WHICH NO SESSION HAD CONSIDERED, IS REAL BUT TOO SMALL: a
+ * 6th long long argument leaves a genuine unstored HOLE at offset 20 (args= 32, stores at
+ * 16,24,28), but the hole is at 0x14, below the window, and the long long's own words land
+ * inside it; a second long long adds no hole (already aligned). Eight words of args therefore
+ * carry at least four stores in 0x18..0x37 under any type mixture.
+ * (4) extra_size is not a third term: mips.c:4462 makes it TARGET_ABICALLS-only and the
+ * build is -mno-abicalls, so every probe reads extra= 0 and the frame identity is
+ * var_size + args_size + gp_reg_rounded.
+ * Instruments banked: s18/{probe.sh,bodies/,last_*.s,nrefs_census.txt,label_census.txt,
+ * loop_movables.txt}. nrefs_census shows EVERY allocno seated (no hardreg=-1) - there is no
+ * allocation residual, which is why s17's solver verdict was PRE-RA; loop_movables shows an
+ * EMPTY movable table (loop insns 78..162, insn_count=34, loop_has_call=True, threshold=61)
+ * so loop.c is not a lever; label_census confirms 2 labels and eight referenced callee-saved
+ * registers, already reproduced by this body. */
 /* s17 (solver, 2026-09-05, chassis HEAD eab57aaf) - BODY UNCHANGED, floor re-measured
  * 20 with this body installed over the INCLUDE_ASM line (74 target insns, 74 build
  * insns, rules_dropped 0; probe reads .frame sp,56 - vars= 0, regs= 8/0, args= 24,

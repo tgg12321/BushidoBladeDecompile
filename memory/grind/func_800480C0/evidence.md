@@ -1482,3 +1482,110 @@ record for owner batch review; the disposition is still the silent foreclosure.
 - [s17] Every alter_reg slot is 8 bytes for every mode this target has: reload1.c:2404 passes align == -1, function.c:687 rounds the size to BIGGEST_ALIGNMENT / BITS_PER_UNIT, and mips.h:1082 sets BIGGEST_ALIGNMENT 64. func_80042874's six phantoms in vars= 48 confirm 8 bytes each.
 
 - [s17] No post-cc1 stage can change this function's frame constant: tools/prologue_config.json is {}, tools/delay_slot_ra_funcs.txt and tools/frame_fix_funcs.txt are comment-only, and every prologue_fix rewriter including apply_frame_fix is gated on the function being named in one of them.
+
+## s18 (forensics) - facts added
+
+- MANDATED KILL RE-AUDIT, current chassis e25a492f: `python3 tools/fake_ablate.py --func
+  func_800480C0 --file text1b --candidate memory/grind/func_800480C0/candidate.c` reports
+  exactly one FAKE unit (`arg0 = 0;`), keep-all **20** (74 build insns) / drop-1 **32**
+  (73 build insns). Unchanged across the s14/s15/s16/s17/s18 audits on five chassis: the
+  FAKE is load-bearing and occupies no lever's target pseudo. Ledger floor 20 re-confirmed.
+
+- THE TARGET FORMS NO $sp-RELATIVE ADDRESS ANYWHERE, WHICH s1 NEVER CHECKED (s1 grepped
+  `sw`/`lw` only). Grepping `$sp` over `asm/funcs/func_800480C0.s` returns exactly 25 lines:
+  the two `addiu $sp` frame adjustments, the 8 register saves (0x38..0x54), the 8 restores,
+  the two INCOMING-parameter loads (0x68/0x6C, which live above this frame), and the single
+  `sw $v0,0x10($sp)`. There is no `addiu $r,$sp,N`, no `move $r,$sp`, no `addu $r,$sp,$r` -
+  so no sp-derived base register exists and the base-register-store blind spot
+  ([[base-register-store-invisible-to-symbol-grep]]) cannot hide traffic in 0x18..0x37
+  either. CONSEQUENCE, and it is the cleanest statement of the residual yet: every frame
+  producer whose object is REFERENCED must materialise either an sp-relative memory
+  reference or an sp-relative address computation, and the target has neither in the 32-byte
+  window. The object charged for those 32 bytes is therefore UNREFERENCED in the emitted
+  RTL - which restricts the producer set to exactly the four zero-instruction sites the
+  ledger has enumerated: `expand_decl` of an unreferenced aggregate (the banned pad),
+  `alter_reg` phantom slots (8 bytes each, capped at one on this body), inline-callee frame
+  donation (integrate.c:2092, killed s14/s15), and an outgoing-args block whose call is
+  deleted as dead code (s17, a cheat).
+
+- THE OUTGOING-ARGS AXIS THAT s17 REOPENED IS NOW CLOSED BY MEASUREMENT, WITH THE STORE
+  OFFSETS READ OFF THIS BODY RATHER THAN INFERRED. Four live-call widenings of the body's
+  own in-loop call (`tmp/grind/func_800480C0/s18/bodies/b{6,7,8,10}_call*args.c`, probe
+  `s18/probe.sh`, listings `s18/last_b*.s`):
+
+  | body | frame | args | insns | outgoing-arg store offsets |
+  |---|---|---|---|---|
+  | candidate (5 args) | 56 | 24 | 74 build | 16 |
+  | b6 (6 args)  | 64 | 24 | 76 | 16, 20 |
+  | b7 (7 args)  | 72 | 32 | 80 | 16, 20, **24** |
+  | b8 (8 args)  | 72 | 32 | 82 | 16, 20, 24, 28 |
+  | b10 (10 args)| 80 | 40 | 86 | 16, 20, 24, 28, 32, 36 |
+
+  Every argument word past the fourth is stored exactly once, contiguously, by
+  `store_one_arg`'s `emit_push_insn` (`tools/gcc-2.7.2/calls.c:3135`). THE BOUNDARY IS THE
+  SEVENTH WORD: a 6-argument call still reads `args= 24` and puts its second store at 0x14,
+  BELOW the target's untouched window, so it changes the frame by nothing; the SEVENTH word
+  is the first that both raises `args_size` (to 32) and lands a store at 0x18, inside the
+  window. `asm/funcs/func_800480C0.s` has exactly one non-save sp reference, at 0x10.
+  Therefore for any body whose call is REACHABLE, `args_size` is pinned at 24 and
+  `var_size == 32` - s16's conclusion is restored, and s17's reopening is bounded precisely
+  to the dead-code spellings s17 itself banked as cheats.
+
+- AND THE ALIGNMENT-HOLE LOOPHOLE, WHICH NO SESSION HAD CONSIDERED, IS MEASURED AND TOO
+  SMALL. An 8-byte-aligned argument (`long long`/`double`) skips a word of the outgoing
+  block, so an args block can in principle be sized without a store in every slot.
+  Measured: `c1_ll6th.c` (the five existing arguments plus a 6th `long long`) reads
+  `.frame $sp,72 # vars= 0, regs= 10/0, args= 32` with stores at 16, **24, 28** and a genuine
+  HOLE at 20 - the hole is real, but it falls at 0x14, below the window, while the long
+  long's own two words land at 0x18/0x1C inside it. `c2_ll6th7th.c` (two long longs) reads
+  `args= 40` with stores at 16,24,28,32,36 and no second hole, because the second long long
+  is already aligned. A hole costs one word and only occurs on a misaligned 8-byte argument,
+  so raising `args_size` from 24 to 56 (eight words) places AT LEAST FOUR stores inside
+  0x18..0x37 under every argument-type mixture. The args route to the target frame requires
+  dead code in every spelling that leaves the window store-free.
+
+- `extra_size` IS NOT A THIRD LEVER: `tools/gcc-2.7.2/config/mips/mips.c:4462` sets
+  `extra_size = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0))`, and the build
+  compiles with `-mno-abicalls` (probe command line, Makefile CC_FLAGS), so extra_size is 0
+  for every C body. The neighbouring `if (args_size == 0 && current_function_calls_alloca)
+  args_size = 4*UNITS_PER_WORD` (mips.c:4471) cannot fire either: this body's args_size is
+  24, not 0. The frame identity is exactly `var_size + args_size + gp_reg_rounded`.
+
+- FORENSIC INSTRUMENTS RUN AND BANKED (this session's modality deliverable).
+  `tools/nrefs_census.py --func func_800480C0 --file text1b` (`s18/nrefs_census.txt`) shows
+  EVERY allocno seated - ords 0..10 all carry a hardreg, no `hardreg=-1` row, matching the
+  probe's `unalloc= 0`; the candidate has no allocation residual at all, which is why the
+  s17 solver verdict was PRE-RA. `tools/loop_movables.py` (`s18/loop_movables.txt`): loop
+  insns 78..162, insn_count=34, loop_has_call=True, threshold=61, and the movable table is
+  EMPTY - LICM has no candidate in this loop, so loop.c is not a lever here either (the only
+  multiply-set pseudo is 82, set 5 times, admissible only via consec_sets_invariant_p,
+  loop.c:705). `tools/label_census.py --func func_800480C0` (`s18/label_census.txt`): the
+  target has 2 labels (.L80048144 @33 preds=2, .L800481BC @63 preds=2) and callee-saved
+  reference counts $s0=26 $s1=9 $s2=5 $s3=4 $s4=4 $s5=4 $s6=4 $s7=0 - eight saved registers,
+  which the candidate already reproduces exactly (`regs= 8/0`).
+
+- [s18] Mandated kill re-audit on chassis e25a492f: fake_ablate reports one FAKE unit (arg0 = 0;), keep-all 20 / drop-1 32 - load-bearing, masking no lever; unchanged over five chassis. Candidate floor 20 (74 build insns vs 74 target insns).
+
+- [s18] The target forms NO sp-relative ADDRESS anywhere (all 25 $sp mentions in asm/funcs/func_800480C0.s are the two frame adjustments, 8 saves, 8 restores, the two incoming-parameter loads at 0x68/0x6C and the single sw $v0,0x10($sp)) - s1 had only checked sw/lw. So no sp-derived base register exists, the base-register blind spot cannot hide traffic in 0x18..0x37, and every frame producer whose object is REFERENCED is excluded: the object charged for those 32 bytes is unreferenced in the emitted RTL.
+
+- [s18] The outgoing-args axis is closed by direct measurement on this body: b6/b7/b8/b10 (the in-loop call widened to 6/7/8/10 live arguments) read args= 24/32/32/40 with outgoing-arg stores at {16,20} / {16,20,24} / {16,20,24,28} / {16,20,24,28,32,36}. The SEVENTH argument word is the boundary - it is the first that both raises args_size above 24 and lands a store at 0x18, inside the target's untouched window. A 6-argument call costs one instruction and changes the frame by nothing.
+
+- [s18] The alignment-hole loophole is measured and too small: a 6th long long argument (c1_ll6th.c) reads args= 32 with stores at 16,24,28 and a genuine HOLE at 20 - but the hole falls at 0x14, below the window, and the long long's own words land at 0x18/0x1C inside it; a second long long (c2) adds no second hole since it is already aligned. Raising args_size from 24 to 56 therefore places at least four stores inside 0x18..0x37 under every argument-type mixture.
+
+- [s18] extra_size is not a third term: mips.c:4462 sets extra_size = MIPS_STACK_ALIGN(TARGET_ABICALLS ? UNITS_PER_WORD : 0) and the build is -mno-abicalls, so extra_size == 0 for every C body; mips.c:4471's alloca bump only fires when args_size == 0. The frame identity is var_size + args_size + gp_reg_rounded.
+
+- [s18] Forensic instruments banked: nrefs_census shows every allocno seated (no hardreg=-1, unalloc= 0) so there is no allocation residual; loop_movables shows an EMPTY movable table for the loop (insns 78..162, insn_count=34, loop_has_call=True, threshold=61) so loop.c is not a lever; label_census confirms 2 labels and eight referenced callee-saved registers, which the candidate already reproduces.
+
+- [s18] Mandated kill re-audit on chassis e25a492f: fake_ablate reports one FAKE unit (arg0 = 0;), keep-all 20 / drop-1 32 - load-bearing, masking no lever, unchanged over five chassis. Candidate floor 20 (74 build insns vs 74 target insns); probe reads .frame $sp,56 # vars= 0, regs= 8/0, args= 24, extra= 0 at 72 cc1 insns, unalloc= 0.
+
+- [s18] The target forms NO sp-relative ADDRESS anywhere: all 25 $sp mentions in asm/funcs/func_800480C0.s are the two frame adjustments, 8 saves, 8 restores, the two incoming-parameter loads at 0x68/0x6C and the single sw $v0,0x10($sp). s1 had only checked sw/lw, so the base-register blind spot was still formally open; it is now shut, and every REFERENCED frame producer is excluded.
+
+- [s18] Live-call widening measured on this body: b6/b7/b8/b10 read args= 24/32/32/40 with outgoing-arg stores at {16,20} / {16,20,24} / {16,20,24,28} / {16,20,24,28,32,36}. The seventh argument word is the boundary - the first that both raises args_size above 24 and stores at 0x18, inside the target's untouched window. A sixth argument costs one instruction and changes the frame by nothing.
+
+- [s18] The alignment-hole loophole is real but too small: a 6th long long argument gives args= 32 with stores at 16,24,28 and a genuine unstored hole at 20 - the hole falls at 0x14, below the window, while the long long's own words land at 0x18/0x1C inside it; a second long long adds no hole because it is already aligned.
+
+- [s18] extra_size is not a third term: mips.c:4462 makes it TARGET_ABICALLS-only and the build is -mno-abicalls, so every probe reads extra= 0; mips.c:4471's alloca bump only fires when args_size == 0. The frame identity is var_size + args_size + gp_reg_rounded.
+
+- [s18] Forensic instruments banked: nrefs_census shows every allocno seated (ords 0..10, no hardreg=-1) so there is no allocation residual - consistent with s17's PRE-RA solver verdict; loop_movables shows an EMPTY movable table (loop insns 78..162, insn_count=34, loop_has_call=True, threshold=61) so loop.c is not a lever on this body; label_census confirms 2 labels and eight referenced callee-saved registers ($s0=26 $s1=9 $s2=5 $s3=4 $s4=4 $s5=4 $s6=4 $s7=0), which the candidate already reproduces.
+
+- [s18] Net effect on the frontier: with args pinned at 24 and referenced producers excluded, the residual is again exactly 'an unreferenced 25..32-byte frame object with zero emitted instructions', and the four zero-instruction producers are the banned pad, a single 8-byte alter_reg phantom, inline-callee frame donation (killed) and dead code (a cheat).
