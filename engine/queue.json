@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "_dws",
-      "file": "display",
-      "distance": 48,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_spu_FiDMA",
       "file": "main",
       "distance": 48,
@@ -1481,14 +1473,14 @@
     }
   ],
   "counts": {
-    "total": 167,
-    "active": 164,
+    "total": 166,
+    "active": 163,
     "by_status": {
-      "active": 164,
+      "active": 163,
       "foreclosed": 3
     },
     "by_verdict": {
-      "C": 138,
+      "C": 137,
       "ASM-PARTIAL": 26
     }
   }
