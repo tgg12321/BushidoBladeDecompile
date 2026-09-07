@@ -1,7 +1,7 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 14,
+ "session_count": 15,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -87,23 +87,29 @@
    "floor": 13,
    "modality": "synthesis",
    "headline": "Both live frontier items measured dead and the do-while(0) arming route class-killed at loop.c:570 (phony); the ledger now reduces to exactly two axes with one measured floor each -- moved_once arming"
+  },
+  {
+   "session": 15,
+   "floor": 13,
+   "modality": "synthesis",
+   "headline": "Both remaining axes priced to the word: dead payloads are invisible to loop.c (cse.c:8684 class kill), the sanctioned truthful split tops out at insn_count 99 of the 120 needed, and the one arming spe"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The two words separating the score-5 arming form (build_insns 93) from the target (91) are NOT both the arming loop's own instructions; identifying them changes what the remaining work actually is.",
-   "mechanism": "Every session since s10 has assumed the residual is the arming loop's decrement and back branch, but no session has printed the diff. If one of the two words is instead a load-delay nop of the kind the maspsx label-nop gate already covers for this function (asm/funcs/func_8007526C.s:6, confirmed by both layer-2 reviewers per the Judge constraints block), or a delay-slot fill reorg made differently, then the arming axis is one word from a match rather than two and the hunt narrows to a specific address.",
-   "next_probe": "Apply rejected/arming-loop-after-main-score5.c at src/text1b.c:6660, run pwsh tools/grinder/dump.ps1 func_8007526C, and run a branch/jump-target-masked word-by-word comparison of the built function against asm/funcs/func_8007526C.s (s5 left a working comparator at tmp/grind/func_8007526C/s5/cmp.py). Record the differing words and their addresses in evidence.md so no future session has to assume again."
+   "hypothesis": "A LIVE construct exists that survives cse1 and is removed by jump2 or combine at better than the 3-loop-insns-per-emitted-word rate the duplication axis measures, closing the 21-insn gap between the truthful-split ceiling (99) and the bar (120).",
+   "mechanism": "Dead payloads are now proven invisible to loop.c (cse.c:8684), so the payload must be live. The two live removal mechanisms with measured rates are jump2 cross-jumping (3:1) and combine reassociation (1:0 but requiring fabricated addends, Judge-FAILed). Untested middle ground: duplications whose copies are instruction-identical AND whose merge point is the function's own shared tail at .L800753B8 -- the target itself merges case 2 and case 4 there, so the merge is demonstrably live in the target's geometry -- and live named intermediates whose def-use pair cse1 cannot forward-propagate because a store to the same address sits between the definition and the use.",
+   "next_probe": "Build each shape from memory/grind/func_8007526C/candidate.c, apply at src/text1b.c:6660 with tmp/grind/func_8007526C/s14/apply.sh, and record (loop insn_count, build_insns, score) per variant with tmp/grind/func_8007526C/s15b/sweep.ps1. Compute loop-insns-gained per emitted-word-leaked for each; anything better than 3-for-1 reopens the insn_count axis, and 1-for-0 on 21 insns closes the function."
   },
   {
-   "hypothesis": "An arming loop exists whose two emitted instructions are ABSORBED rather than added, taking the arming form from build_insns 93 to 91.",
-   "mechanism": "s10 measured three arming spellings (for-loop 94, while-loop 96, do-while(--i) 93) and concluded the floor is two instructions because a loop cannot emit zero. That is true in isolation but does not settle absorption: reorg fills branch delay slots by duplicating the branch target and retargeting past it (the target's own two default-path 'j .L800753C4 / addiu $a2,$a2,0x1' pairs are exactly that), and jump2 cross-jumps identical tails. An arming loop whose test reuses a comparison the function already computes, or whose back branch lands where reorg would otherwise emit a nop, could cost zero net words.",
-   "next_probe": "Measure arming-loop spellings whose emitted instructions overlap what the function already emits: a trailing loop whose test is the main loop's own 'i < 2' comparison value; 'while (i--)' and 'for (; i; i--)' variants; and an arming loop placed so its decrement can be folded into the epilogue delay slot ahead of 'jr $ra'. Record score, build_insns and the .loop movable verdicts for each, and pair the result with F1's word diff to see whether the two residual words move independently."
+   "hypothesis": "A second loop that carries lim can be genuinely reachable and still emit no NET words, because part of the target's own 91 words belongs to that second loop rather than to the main one.",
+   "mechanism": "The 'no word budget for a second loop' argument assumes the main loop must emit all 91 target words. If the two-entry iteration is instead expressed as an outer loop over entries containing an inner region that runs once and carries lim, the inner region's back edge could be a branch the target already emits, and loop.c would still scan the inner region first (loop numbers run last-first, loop.c:435), move regno 75 and set moved_once[75] at loop.c:1912.",
+   "next_probe": "Build nests whose combined emitted word count is 90-91 (start from s13's rejected/same-back-edge-nest-score29.c and vary where lim is set and which loop owns the i++ and the exit test), and for each read the .loop dump to confirm the inner region is scanned before the outer one and that regno 75 is moved there, then read whether the main loop prints 'halved since already moved'."
   },
   {
-   "hypothesis": "combine (not jump2) can raise loop-time insn_count above the emitted word count at a better rate than the duplication axis's measured 3-loop-insns-per-emitted-word, reopening the insn_count>=120 route with a different payload.",
-   "mechanism": "count_loop_regs_set counts 'i'-class insns after cse1/jump1 and before cse2, combine, flow and jump2 (loop.c:2989-3007). Every attempt so far has relied on jump2 cross-jumping to delete the surplus, but combine MERGES insns (two or three into one) and flow deletes dead ones, and both run after loop. No session has measured the loop-time/emitted delta for a spelling designed to be combine-folded rather than cross-jumped.",
-   "next_probe": "Build ordinary-C variants whose extra insns survive cse1/jump1 but that combine collapses -- a named intermediate holding a comparison result that feeds its own branch, same-variable split-init / compound-assignment splits (owner-ruled ordinary C per the split-init-accumulation memory), and an explicitly staged sign-extension of a halfword value before its compare -- and record (loop insn_count, build_insns) for each with tmp/grind/func_8007526C/s14/sweep.ps1. If any spelling beats 3-for-1 the insn_count axis reopens; if none does, the axis is closed by mechanism rather than geometry and the function's disposition rests entirely on F1/F2."
+   "hypothesis": "The target's three pre-header words are not all forced, so a second live movable can be moved before the four comparison constants are scanned, firing threshold -= 3 a second time and lowering the bar from 120 to 117.",
+   "mechanism": "Every 'no word budget' argument in this ledger rests on s12's reading that addu $a2,$zero,$zero / addiu $a3,$zero,0xC8 / lw $a0,%gp_rel(D_800A36A0)($gp) are exactly i, lim and base with nothing else possible. If any one of those is instead the loop.c-moved pre-header insn of a different live local, a second threshold decay is established as a mechanism, and combined with the truthful-split ceiling of 99 the required decay count becomes tractable to enumerate rather than guess.",
+   "next_probe": "Enumerate live C shapes whose loop.c-moved pre-header insn would be word-identical to one of those three target words (e.g. a live local initialised to 0xC8 inside the loop and read at the real store sites, an i-initialisation written inside the loop, a base held in a second live local), apply each, and grep the .loop dump for a second 'moved to' line ahead of the four constants plus the resulting desirability verdicts."
   }
  ],
  "judge_constraints": [
@@ -411,6 +417,30 @@
    "measured_on": "HEAD 3d1c16e4 chassis 2026-09-07, s13's w9 body minus one duplicated tail applied to src/text1b.c, pure C, no FAKE construct present",
    "predicate_cite": "",
    "result": "Loop insn_count fell 124 -> 120, landing exactly on the measured rejection threshold with all four constants still print"
+  },
+  {
+   "session": 15,
+   "statement": "Dead stores and dead loop-invariant computations written to locals inside the loop body raise the loop-time insn_count that move_movables tests, because the passes that delete dead register writes run",
+   "kill_scope": "class",
+   "measured_on": "HEAD 9bf1aa2c chassis 2026-09-07, ordinary baseline plus dead-store and dead-invariant injections applied to src/text1b.c, pure C, no FAKE construct present",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:8684",
+   "result": "All four measure score 13, build_insns 93, loop insn_count 91 -- bit-identical to the baseline, same five movables, all "
+  },
+  {
+   "session": 15,
+   "statement": "The owner-sanctioned two-step split of a genuine a + b, applied at every update site the function has, supplies the +29 loop-time insns the move_movables desirability bar needs.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 9bf1aa2c chassis 2026-09-07, truthful two-step splits at all seven and at five update sites applied to src/text1b.c, pure C, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "All seven sites -> loop insn_count 99, build_insns 92, score 26. Five sites -> 97 / 92 / 26. The bar is insn_count >= 12"
+  },
+  {
+   "session": 15,
+   "statement": "s14 frontier F2: an arming loop exists whose emitted instructions are absorbed, taking the arming form from build_insns 93 down to 91.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 9bf1aa2c chassis 2026-09-07, four trailing arming spellings applied to src/text1b.c, pure C, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "The while-form measures score 1, build_insns 90 with all four constants printing 'not desirable' -- the target's 91 word"
   }
  ],
  "ladder_skip": 0,

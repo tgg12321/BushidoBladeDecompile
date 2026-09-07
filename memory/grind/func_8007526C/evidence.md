@@ -1432,3 +1432,124 @@ ruling-request rather than a submission.
     two `+ 1` increments through named locals -- ordinary C needing no split justification --
     buys only +6 loop insns for eight staged statements AND costs 2 emitted words, so it
     cannot replace split depth on the way to insn_count >= 120.
+
+## s15b (2026-09-07, synthesis) -- the two axes are now priced, and both end in admissibility
+
+Chassis re-measured first: `memory/grind/func_8007526C/candidate.c` (the ordinary, construct-free
+body, restored to that slot this session -- see below) measures **score 13, build_insns 93,
+target_insns 91**, `.loop` "Loop from 14 to 260: 91 real insns" with `lim` (regno 75) and all four
+switch-comparison constants (regnos 124/126/127/128, life 1, savings 1) moved to the pre-header.
+That is the same number the ledger has carried since s8, on HEAD 9bf1aa2c.
+
+**candidate.c was rolled back to the ordinary baseline.** The s15 compound-assignment-split body
+that held the slot was ruled a CHEAT by the Judge on 2026-09-07 17:07: decomposing the single
+literal `0xA` into eight synthetic addends has no semantic reading, so it is neither a truthful
+spelling under the 2026-08-31 Ruling 1(3) nor a member of a frozen family. That body is dead and
+must never be re-filed. `ordinary-score13-baseline.c` is retained as the identical fallback copy.
+
+### 1. Dead payloads cannot reach loop.c at all -- the whole dead-local family is closed
+
+The obvious next reach after the Judge's ruling is the frozen dead-store / dead-scalar-local /
+constant-holder family: stores that flow.c deletes should be free loop-time `insn_count`. They are
+not free, they are *invisible*.
+
+| body | loop insn_count | build_insns | score |
+|---|---|---|---|
+| baseline | 91 | 93 | 13 |
+| baseline + 8 dead stores `dz = 1..8;` in the loop | **91** | 93 | 13 |
+| baseline + 32 dead stores `dz = 1..32;` in the loop | **91** | 93 | 13 |
+| baseline + 4 dead invariant movable pairs `zK = c; dz = zK;` | **91** | 93 | 13 |
+| baseline + 11 dead invariant movable pairs | **91** | 93 | 13 |
+
+Every one is bit-identical to the baseline, and every `.loop` dump lists the same five movables
+with the four constants still `moved to` the pre-header. The mechanism is `delete_dead_from_cse`,
+called at the end of the first cse pass (**tools/gcc-2.7.2/cse.c:8684**); its own comment states
+its purpose is that "loop ... won't try to move dead invariants out of loops or make givs for dead
+quantities". So no dead or unused local computation is ever counted by `count_loop_regs_set`, and
+the threshold-decay variant (11 dead invariant movables, aiming to drive threshold 122 -> 89 via
+`threshold -= 3` at loop.c:1904) never gets a movable registered either.
+Banked: `rejected/dead-locals-deleted-by-cse1-insncount-unchanged.c`,
+`rejected/dead-invariant-movables-deleted-by-cse1-score13.c`.
+
+Consequence for the ladder: the insn_count payload must be **live**. That leaves exactly the three
+live mechanisms already measured -- combine reassociation (rate ~1 loop-insn per 0 emitted words,
+but needs fabricated addends: Judge-FAILed), jump2 cross-jump (rate 3:1, floor build_insns 102),
+and register-copy coalescing (measured +6 loop-insns for +2 emitted words in s15).
+
+### 2. The sanctioned truthful split's ceiling on this function is insn_count 99
+
+The one split shape the 2026-09-07 17:07 ruling explicitly left standing is the two-step split of a
+genuine `a + b`. Applied to **every** update site the function has (`v = *(u16 *)(p + K); v = v +
+0xA; *(u16 *)(p + K) = v;` at all six `+- 0xA` sites plus the `+ 1` site):
+
+| body | loop insn_count | build_insns | score |
+|---|---|---|---|
+| all 7 sites split (t_truthall) | 99 | 92 | 26 |
+| 5 sites split, case 1 skipped (t_truthskip2) | 97 | 92 | 26 |
+
+The bar is insn_count >= 120. The admissible family therefore supplies **+8 of the required +29**,
+and costs 13 points of register-assignment divergence on the way. This is a ceiling, not a sample:
+there are no other `a + b` expressions in the function's semantics to split.
+Banked: `rejected/truthful-twostep-split-all-sites-insncount99-score26.c`.
+
+### 3. The arming axis has a ZERO-WORD spelling, and its zero-ness IS its deadness
+
+s14/s15 left F2 open: "is there an arming loop whose two instructions are absorbed?" Four trailing
+arming spellings measured this session, all appended after the main do-while and all setting
+`lim = 0xC8` so loop.c moves regno 75 there first (loops are processed last-first, loop.c:435) and
+sets `moved_once[75]` (loop.c:1912), doubling the main loop's insn_count at loop.c:1609-1611:
+
+| trailing arming spelling | build_insns | score | main-loop movable verdicts |
+|---|---|---|---|
+| `do { lim = 0xC8; } while (--i);` (s10's form) | 93 | 5 | all four `not desirable` |
+| `do { lim = 0xC8; } while (i < 2);` | 93 | 4 | all four `not desirable` |
+| `k = 1; do { lim = 0xC8; } while (k < 2);` | 93 | 4 | all four `not desirable` |
+| **`while (i < 2) { lim = 0xC8; i++; }`** | **90** | **1** | all four `not desirable` |
+
+The while-form is the answer to F2 and it is unambiguous: **build_insns 90, score 1** -- the
+target's 91 words minus the maspsx label-nop at asm/funcs/func_8007526C.s:6, i.e. byte-exact modulo
+the assembler-layer hazard nop the gate rule already covers. loop.c scans the trailing region
+("Loop from 263 to 285: 4 real insns", regno 75 moved), arms `moved_once`, and the main loop then
+rejects all four comparison constants -- the target's exact movable shape.
+
+It emits zero words for one reason only: `i` is already 2 when control reaches it, so the region is
+provably dead and the downstream jump/cse passes delete it entirely. That is not a coincidence of
+this spelling, it is the requirement: the target's 91 words are fully accounted for by the main
+loop, so a second loop has zero word budget, and the three *reachable* arming spellings all cost
+exactly 3 words. A construct that must emit nothing must not execute -- cheat-checklist T1 (no
+observable effect), T2 (no human writes it) and T3 (its whole rationale is `moved_once`) all fail,
+and it is the same intent as the goto-loop already banned for this function.
+Banked: `rejected/trailing-dead-while-arming-score1-deadcode.c`,
+`rejected/arming-dowhile-reuse-exit-test-score4.c`.
+
+### Where that leaves the function
+
+Both axes are now quantified rather than guessed, and neither is blocked by a missing measurement:
+
+* insn_count axis -- bar 120; admissible payload ceiling 99; dead payloads structurally
+  invisible (cse.c:8684); the only payload that reaches the bar at zero emitted cost is the
+  fabricated-addend chain the Judge FAILed; the only *admissible-family* payload that reaches it
+  (jump2 duplication) costs 11 emitted words.
+* arming axis -- reachable spellings cost 3 words against a zero-word budget; the zero-word
+  spelling is dead code.
+
+The next session's real question is therefore not "which lever" but "is there a LIVE, semantically
+truthful construct that either (a) contributes ~21 more loop-time insns that combine or jump2
+removes, or (b) gives the function a second genuine loop over `lim` that emits no net words".
+Everything cheaper than that has been measured.
+
+- [s15] Chassis floor re-measured on HEAD 9bf1aa2c: the ordinary construct-free body is score 13, build_insns 93, target_insns 91, loop insn_count 91.
+
+- [s15] candidate.c was ROLLED BACK to the ordinary baseline body this session. The s15 compound-assignment-split body that held the slot was ruled a cheat by the Judge on 2026-09-07 17:07 (eight synthetic addends decomposing one literal 0xA); that body must never be re-filed. ordinary-score13-baseline.c is retained as an identical fallback copy.
+
+- [s15] delete_dead_from_cse (tools/gcc-2.7.2/cse.c:8684) runs at the end of the FIRST cse pass, before loop.c. Its in-source comment states its purpose is that loop 'won't try to move dead invariants out of loops or make givs for dead quantities'. Measured consequence: 32 dead stores to a local and 11 dead invariant movable pairs both leave loop insn_count at exactly 91.
+
+- [s15] The move_movables bar for this function is loop insn_count >= 120 (threshold 122 at loop.c:532, minus 3 once lim is moved at loop.c:1904, savings = lifetime = 1 at loop.c:1631).
+
+- [s15] Measured payload rates for raising loop insn_count: sanctioned two-step split of a genuine a + b = +8 total (ceiling 99, build 92, score 26); jump2 cross-jump duplication = 3 loop insns per surviving emitted word (floor build 102, s13/s14); register-copy staging = +6 loop insns for +2 emitted words (s15); dead payloads = 0 (this session); fabricated-addend combine chains = ~1 loop insn per 0 emitted words but Judge-FAILed.
+
+- [s15] Trailing arming loops measured on this chassis: do { lim = 0xC8; } while (--i); -> 93 / score 5; do { lim = 0xC8; } while (i < 2); -> 93 / score 4; k = 1; do { lim = 0xC8; } while (k < 2); -> 93 / score 4; while (i < 2) { lim = 0xC8; i++; } -> 90 / score 1. All four reproduce the target's movable shape (lim moved, all four comparison constants 'not desirable').
+
+- [s15] The zero-word arming loop is zero-word BECAUSE it is dead: i is already 2 at that point, so the region is deleted after loop.c has used it. Reachable arming spellings all cost 3 words, and the target's 91 words leave no budget for a second loop -- so on this chassis 'emits no words' and 'never executes' are the same property.
+
+- [s15] Five forms banked to rejected/ this session: dead-locals-deleted-by-cse1-insncount-unchanged.c, dead-invariant-movables-deleted-by-cse1-score13.c, trailing-dead-while-arming-score1-deadcode.c, arming-dowhile-reuse-exit-test-score4.c, truthful-twostep-split-all-sites-insncount99-score26.c.

@@ -1214,3 +1214,98 @@ The floor-1 body's only non-ordinary element is the DEPTH of the compound-assign
 (eight addends decomposing one constant `0xA`).  The shape is the owner-sanctioned
 same-variable split-init / compound-assignment split, but the sanctioned examples are all
 two-way splits of a real `a + b`.  s15 deliberately did not self-approve it.
+
+## s15b (2026-09-07, synthesis)
+
+## [s15b] Dead stores and dead loop-invariant computations written to locals inside the loop body raise the loop-time insn_count that move_movables tests, because the passes that delete dead register writes run after loop.c has counted them.
+- mechanism: `count_loop_regs_set` (loop.c:2989-3007) counts every 'i'-class insn between loop_start and loop_end, and flow.c's life analysis (which deletes dead register writes) runs after loop. If that ordering held, dead stores would be a 1-loop-insn-per-0-emitted-words generator and 29 of them would clear the insn_count >= 120 bar; the dead-invariant variant would additionally register as movables and decay `threshold` by 3 each at loop.c:1904, dragging the bar down instead.
+- probe: Four bodies built from the ordinary baseline and measured for score, build_insns and the `.loop` movable list: 8 dead stores `dz = 1..8;`, 32 dead stores `dz = 1..32;`, and 4 and 11 dead invariant pairs `zK = 0x101+K; dz = zK;`, each injected at the top of the loop body.
+- result: All four measure score 13, build_insns 93, and loop insn_count 91 -- bit-identical to the baseline, with the same five movables and all four switch-comparison constants still `moved to` the pre-header. The first cse pass ends by calling `delete_dead_from_cse` (tools/gcc-2.7.2/cse.c:8684), whose own comment states it exists so that "loop ... won't try to move dead invariants out of loops or make givs for dead quantities". Dead local computation is therefore invisible to loop.c by construction. This closes the entire frozen dead-store / dead-scalar-local / constant-holder family as a payload for this axis: the insn_count payload must be LIVE.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 9bf1aa2c chassis 2026-09-07, ordinary baseline plus dead-store and dead-invariant injections applied to src/text1b.c, pure C, no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/cse.c:8684
+- banked: rejected/dead-locals-deleted-by-cse1-insncount-unchanged.c, rejected/dead-invariant-movables-deleted-by-cse1-score13.c
+
+## [s15b] The owner-sanctioned two-step split of a genuine `a + b` -- the one split shape the 2026-09-07 17:07 judge ruling left standing -- can supply the +29 loop-time insns the desirability bar needs if it is applied at every update site the function has.
+- mechanism: The FAILed s15 body reached insn_count 123 with eight synthetic addends per site. The admissible version stages each real update through a named local (`v = *(u16 *)(p + K); v = v + 0xA; *(u16 *)(p + K) = v;`), a truthful spelling of the program's own `old + step`, and each staged statement was expected to survive cse1 and be folded back by combine exactly as the deeper chain was.
+- probe: Two bodies measured for score, build_insns and the `.loop` insn_count line: all seven update sites split (six `+- 0xA` plus the `+ 1` at p+0x10), and the same with case 1's two sites left alone.
+- result: All seven sites -> loop insn_count 99, build_insns 92, score 26. Five sites -> 97 / 92 / 26. The bar is insn_count >= 120 (threshold 122, minus 3 once `lim` is moved at loop.c:1904, against savings = lifetime = 1 at loop.c:1631), so the admissible family yields +8 of the required +29 and costs 13 points of register-assignment divergence on the way. There are no other `a + b` expressions in the function's semantics to split, so 99 is this family's ceiling here rather than a sample.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9bf1aa2c chassis 2026-09-07, truthful two-step splits at all seven and at five update sites applied to src/text1b.c, pure C, no FAKE construct present
+- banked: rejected/truthful-twostep-split-all-sites-insncount99-score26.c
+
+## [s15b] (s14 frontier F2) An arming loop exists whose emitted instructions are absorbed, taking the arming form from build_insns 93 to 91.
+- mechanism: A second loop that also sets `lim` is scanned first (loop numbers run last-first, loop.c:435), moves regno 75, sets moved_once[75] (loop.c:1912) and so doubles the main loop's insn_count at loop.c:1609-1611, which reproduces the target's exact movable shape. s10 measured three spellings at 93-96 words and concluded two words was the floor; the open question was whether reorg or jump2 could absorb them.
+- probe: Four trailing arming spellings appended after the main do-while, each measured for score, build_insns and the main loop's movable verdicts: `do { lim = 0xC8; } while (--i);`, `do { lim = 0xC8; } while (i < 2);`, `k = 1; do { lim = 0xC8; } while (k < 2);`, and `while (i < 2) { lim = 0xC8; i++; }`.
+- result: The while-form measures score 1, build_insns 90 with all four constants `not desirable` -- the target's 91 words minus the maspsx label-nop -- so the answer to F2 exists mechanically. The three do-while forms all cost exactly 3 words (score 4, 4, 5). The while-form emits nothing for exactly one reason: `i` is already 2 when control reaches it, so the region is provably dead and the downstream jump/cse passes delete it after loop.c has used it. Zero emitted words and semantic deadness are the same property here, because the target's 91 words are fully accounted for by the main loop and a second loop therefore has no word budget. The construct fails cheat-checklist T1 (no observable effect), T2 (no human writes it) and T3 (its only rationale is loop.c's moved_once flag), and it carries the same intent as the goto-loop already banned for this function. F2 is answered: yes mechanically, no admissibly.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9bf1aa2c chassis 2026-09-07, four trailing arming spellings applied to src/text1b.c, pure C, no FAKE construct present
+- banked: rejected/trailing-dead-while-arming-score1-deadcode.c, rejected/arming-dowhile-reuse-exit-test-score4.c
+
+### Frontier reset -- s15b
+
+Both historical axes are now priced end to end, and neither is short of a measurement; each ends at
+an admissibility question. The next pass should spend its measurements on LIVE, semantically
+truthful structure, because dead structure is now proven invisible to loop.c.
+
+**F1 -- a live construct that survives cse1 but is deleted by jump2 or combine at better than
+3-for-1.** The jump2 duplication axis's measured rate is 3 loop-time insns per surviving emitted
+word (floor build_insns 102, s13/s14); combine reassociation is 1-for-0 but needs fabricated
+addends and is FAILed. Untested middle ground: duplications whose copies are identical AND whose
+merge point is the function's own shared tail at `.L800753B8` (the target itself merges case 2 and
+case 4 there), and live named intermediates whose def-use pair cse1 cannot forward-propagate
+because a store to the same address sits between them. Probe: for each shape record (loop
+insn_count, build_insns, score) and compute the ratio; anything better than 3-for-1 reopens the
+axis, since +21 more insns at 1-for-0 would clear the bar from the truthful-split ceiling of 99.
+
+**F2 -- a second loop over `lim` that is genuinely reachable and emits no NET words.** The three
+reachable arming spellings each cost 3 words against a zero-word budget, but that budget assumes
+the main loop must emit all 91 words. Untested: restructurings where part of the target's own 91
+words belong to a second real loop -- e.g. the two-entry iteration expressed as an outer loop over
+entries containing an inner loop that runs once and carries `lim`, so the inner loop's back edge is
+one the target already has. s13's `same-back-edge-nest-score29.c` tried one nest shape; the space is
+not exhausted. Probe: build nests whose combined emitted word count is 90-91 and read whether the
+inner region is scanned before the outer one and moves regno 75.
+
+**F3 -- re-audit the assumption that the target's pre-header has no spare slot.** Every "no word
+budget" argument in this ledger rests on s12's reading that the target's three pre-header words
+(`addu $a2,$zero,$zero`, `addiu $a3,$zero,0xC8`, `lw $a0,%gp_rel(D_800A36A0)($gp)`) are exactly i,
+lim and base with nothing else possible. If any one of those three could instead be a loop.c-moved
+movable of a different LIVE local -- so `threshold -= 3` fires twice before the four constants are
+scanned -- the bar drops from 120 to 117 and, more importantly, a second decay is established as a
+mechanism. Probe: enumerate live C shapes whose loop.c-moved pre-header insn is word-identical to
+one of those three, and read the `.loop` dump for a second `threshold -= 3`.
+
+## [s15] Dead stores and dead loop-invariant computations written to locals inside the loop body raise the loop-time insn_count that move_movables tests, because the passes that delete dead register writes run after loop.c has counted them.
+- mechanism: count_loop_regs_set (loop.c:2989-3007) counts every 'i'-class insn between loop_start and loop_end, and flow.c's life analysis, which deletes dead register writes, runs after loop. On that ordering a dead store is a 1-loop-insn-per-0-emitted-words generator and 29 of them clear the insn_count >= 120 bar; the dead-invariant variant would additionally register as movables and fire threshold -= 3 each at loop.c:1904, dragging the bar down instead of pushing the count up.
+- probe: Four bodies built from the ordinary baseline and measured for score, build_insns and the .loop movable list: 8 dead stores dz = 1..8; 32 dead stores dz = 1..32; and 4 and 11 dead invariant pairs zK = 0x101+K; dz = zK; each injected at the top of the loop body (tmp/grind/func_8007526C/s15b/gen.py, sweep.ps1).
+- result: All four measure score 13, build_insns 93, loop insn_count 91 -- bit-identical to the baseline, same five movables, all four switch-comparison constants still 'moved to' the pre-header. The first cse pass ends by calling delete_dead_from_cse (tools/gcc-2.7.2/cse.c:8684), whose own comment says it exists so that 'loop ... won't try to move dead invariants out of loops or make givs for dead quantities'. Dead local computation never reaches loop.c, so the frozen dead-store / dead-scalar-local / constant-holder family cannot serve as a payload for this axis at all: the payload must be LIVE. Banked as rejected/dead-locals-deleted-by-cse1-insncount-unchanged.c and rejected/dead-invariant-movables-deleted-by-cse1-score13.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 9bf1aa2c chassis 2026-09-07, ordinary baseline plus dead-store and dead-invariant injections applied to src/text1b.c, pure C, no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/cse.c:8684
+
+## [s15] The owner-sanctioned two-step split of a genuine a + b, applied at every update site the function has, supplies the +29 loop-time insns the move_movables desirability bar needs.
+- mechanism: The s15 body the Judge FAILed reached insn_count 123 with eight synthetic addends per site. The admissible version stages each real update through a named local (v = *(u16 *)(p + K); v = v + 0xA; *(u16 *)(p + K) = v;), a truthful spelling of the program's own old + step, and each staged statement was expected to survive cse1 and be folded back by combine exactly as the deeper chain was.
+- probe: Two bodies measured for score, build_insns and the .loop insn_count line: all seven update sites split (six +- 0xA sites plus the + 1 at p+0x10), and the same with case 1's two sites left alone (tmp/grind/func_8007526C/s15b/gen3.py).
+- result: All seven sites -> loop insn_count 99, build_insns 92, score 26. Five sites -> 97 / 92 / 26. The bar is insn_count >= 120 (threshold 122 at loop.c:532, minus 3 once lim is moved at loop.c:1904, against savings = lifetime = 1 in the test at loop.c:1631). The admissible family therefore yields +8 of the required +29 and costs 13 points of register-assignment divergence on the way. There are no other a + b expressions in this function's semantics to split, so 99 is the family's ceiling here. Banked as rejected/truthful-twostep-split-all-sites-insncount99-score26.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9bf1aa2c chassis 2026-09-07, truthful two-step splits at all seven and at five update sites applied to src/text1b.c, pure C, no FAKE construct present
+
+## [s15] s14 frontier F2: an arming loop exists whose emitted instructions are absorbed, taking the arming form from build_insns 93 down to 91.
+- mechanism: A second loop that also sets lim is scanned first (loop numbers run last-first, loop.c:435), moves regno 75, sets moved_once[75] at loop.c:1912 and so doubles the main loop's insn_count at loop.c:1609-1611, reproducing the target's exact movable shape. s10 measured three spellings at 93-96 words and concluded two words was the floor; the open question was whether reorg or jump2 could absorb them.
+- probe: Four trailing arming spellings appended after the main do-while, each measured for score, build_insns and the main loop's movable verdicts: do { lim = 0xC8; } while (--i); do { lim = 0xC8; } while (i < 2); k = 1; do { lim = 0xC8; } while (k < 2); and while (i < 2) { lim = 0xC8; i++; } (tmp/grind/func_8007526C/s15b/gen2.py).
+- result: The while-form measures score 1, build_insns 90 with all four constants printing 'not desirable' -- the target's 91 words minus the maspsx label-nop -- so a zero-word arming loop exists mechanically. The three do-while forms each cost exactly 3 words (score 4, 4, 5). The while-form emits nothing for exactly one reason: i is already 2 when control reaches it, so the region is provably dead and the downstream jump/cse passes delete it after loop.c has used it. Zero emitted words and semantic deadness are the same property here, because the target's 91 words are fully accounted for by the main loop and a second loop has no word budget. It fails cheat-checklist T1 (no observable effect), T2 (no human writes it) and T3 (its only rationale is loop.c's moved_once flag), and carries the same intent as the goto-loop already banned for this function, so it was banked as rejected, not proposed. Banked as rejected/trailing-dead-while-arming-score1-deadcode.c and rejected/arming-dowhile-reuse-exit-test-score4.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 9bf1aa2c chassis 2026-09-07, four trailing arming spellings applied to src/text1b.c, pure C, no FAKE construct present
+
+## [s15] Kill re-audit: the ordinary construct-free baseline still measures the ledger's recorded floor on the current chassis.
+- mechanism: The chassis-check block reported the HEAD floor as unavailable, and every banked spelling conclusion is chassis-relative, so the baseline had to be re-measured before any of the s9-s15 instance kills could be spent.
+- probe: Applied memory/grind/func_8007526C/candidate.c (restored this session to the ordinary baseline body) over the INCLUDE_ASM line at src/text1b.c:6660 and ran sandbox func_8007526C --disable all, plus the cc1 -da dump.
+- result: score 13, build_insns 93, target_insns 91, .loop 'Loop from 14 to 260: 91 real insns' with lim (regno 75) and all four switch-comparison constants (regnos 124/126/127/128, life 1, savings 1) moved to the pre-header -- identical to the s8-s14 recording. Neither the baseline nor any form measured this session carries a FAKE construct, so tools/fake_ablate.py has no carrier to strip and every instance kill banked in s9-s15 remains chassis-valid.
+- verdict: CONFIRMED
