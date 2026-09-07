@@ -51,6 +51,20 @@
  * only shrinks the register file loop.c prices lifetime against.  This body is therefore
  * very probably the original C already, and the 13 points are a build-configuration
  * divergence, not a spelling divergence.  See evidence.md [s16].
+ *
+ * s20 (2026-09-07, rederive) RE-MEASURED THIS BODY at score 13 / build_insns 93 /
+ * loop insn_count 91 on HEAD 43226623, and re-derived the dispatch from scratch.  Three
+ * structurally different shapes were measured and rejected: the literal-0xC8 form without
+ * the `lim` local (13, codegen-neutral), the target-exact-order if/else chain with literal
+ * constants (29), and the same chain with every comparison constant written through ONE
+ * reused local (26).  The last one is the important result: it removes all four constant
+ * movables from loop.c -- the .loop dump prints exactly one movable, regno 75, which is the
+ * target's movable set -- and it emits the target's registers exactly ($a3 holding 0xC8 in
+ * the pre-header, the constants rematerialised in-loop in $v0).  It still scores 26 because
+ * an if/else chain inlines its arm bodies where a switch places them out of line, costing
+ * five words.  So the movable set alone controls the allocation, and the `switch` alone
+ * controls the layout, and no C name reaches a switch's expand_case comparison pseudos.
+ * See evidence.md [s20].
  */
 void func_8007526C(void) {
     u8 *base;

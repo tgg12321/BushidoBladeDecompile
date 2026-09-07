@@ -1617,3 +1617,80 @@ to src/text1b.c, pure C, no FAKE construct present.
 - probe: awk over tmp/grind/func_8007526C/dumps/text1b.cse for the four insn UIDs the .loop dump names, read against asm/funcs/func_8007526C.s:1-24.
 - result: Confirmed. The dispatch shape our C produces (beq on 2, slti 3 range test, then 1, then 3, then 4) is byte-shaped identically to the target's; the whole residual is placement of those four li insns, which re-confirms s17's placement finding from the RTL side rather than the objdump side.
 - verdict: CONFIRMED
+
+## s20 (2026-09-07, rederive) -- hypotheses
+
+H-s20-1 (CONFIRMED, mechanism).  A dispatch whose comparison constants are all written
+through one reused C local makes loop.c build no movable for them, because n_times_set > 1
+with non-consecutive sets fails consec_sets_invariant_p at tools/gcc-2.7.2/loop.c:706.
+Measured: exactly one movable for the whole function (regno 75), and the target's exact
+register assignment with the four constants rematerialised in-loop in $v0.  Score 26,
+build_insns 86.
+
+H-s20-2 (KILLED, instance).  The if/else dispatch chain, written in the target's exact
+comparison order, can carry that mechanism to the target's bytes.  Measured on HEAD
+43226623 with no FAKE construct present: reused-holder score 26 / build 86, plain literals
+29 / build 89, literals without the `lim` local 29 / build 89.  The chain inlines all four
+arm bodies between the tests where the switch places them out of line behind the whole
+decision tree, so it loses five words and gains more score than the movable fix removes.
+
+H-s20-3 (KILLED, instance).  Naming the 0xC8 store value in a local (`lim`) rather than
+writing the literal is what creates the hoisted pre-header constant.  Measured: the literal
+form scores 13 / build 93 / insn_count 92 with the same movable present, as compiler pseudo
+regno 92 instead of user variable regno 75.
+
+H-s20-4 (KILLED, class).  Under a `switch` carrier, some term other than threshold or
+insn_count in loop.c's desirability test can be moved from C.  The four dispatch constants
+satisfy scan_loop's eligibility gate unconditionally through its compiler-temp clause, and
+their savings and lifetime are both already 1.
+
+Frontier handed to s21:
+  F1  An admissible arming loop that emits zero machine words -- still the only live axis
+      with a measured score-1 endpoint.  s20 re-measured the three banked arming forms and
+      they reproduce (1 / 8 / 29).  The requirement is a loop nested inside the main
+      do-while (or textually after it) whose scan_start is a CODE_LABEL, in which the
+      pseudo holding 0xC8 is a moved movable, and whose own emitted words are zero.  s20
+      found no semantically real sub-loop in this function to carry it.
+  F2  The if/else carrier is closed (H-s20-2).  What survives is the s20 finding that the
+      movable set ALONE controls the allocation: any construction that removes the four
+      movables while KEEPING a `switch` reaches the target's registers exactly.  The open
+      question is whether any C construct reaches expand_case's comparison pseudos.
+  F3  Threshold decay is bounded: it needs eleven extra moved invariants and the function
+      has three 0xC8 use sites, so the reachable decay is 122 -> 113 against insn_count 91.
+
+## [s20] A dispatch whose comparison constants are all written through one reused C local makes loop.c build no movable for any of them, because n_times_set > 1 with non-consecutive sets fails consec_sets_invariant_p, and the resulting allocation is the target's.
+- mechanism: scan_loop only builds a movable when n_times_set[regno] == 1 or consec_sets_invariant_p succeeds (tools/gcc-2.7.2/loop.c:706). Writing 2, 1, 3 and 4 through one local gives that pseudo four sets separated by the dispatch branches, so neither test holds and the sets never enter the movables list. loop.c is then left with exactly one movable, the 0xC8 store value, which is what the target hoists into $a3.
+- probe: tmp/grind/func_8007526C/s20/r3_reuse.c applied at src/text1b.c:6660 on HEAD 43226623; sandbox func_8007526C --disable all; cc1 -da .loop dump read for the movable list; disassembly of the emitted text1b.s dispatch region.
+- result: score 26, build_insns 86, .loop = 'Loop from 14 to 273: 89 real insns' with a single movable line, 'Insn 19: regno 75 (life 72), move-insn savings 1  moved to 281'. The emitted code assigns $6 to the counter, $7 to the pre-header 0xC8 (target's $a3), $4 to the base pointer, $3 to the state byte, and rematerialises the comparison constants IN LOOP into $2 (target's $v0) as 'li $2,2 / bne' and 'li $2,1 / bne'. First form in twenty sessions whose loop.c movable set equals the target's.
+- verdict: CONFIRMED
+
+## [s20] The if/else dispatch chain, written in the target's exact comparison order (k==2, then k<3, then k==1, then k==3, then k==4), reaches the target's bytes -- either with a reused comparison holder or with plain literals.
+- mechanism: A switch emits the whole decision tree first and the arm bodies out of line behind it, which is the target's block layout; an if/else chain emits 'bne <next test>' and falls straight into its arm body, inlining all four arms between the tests and displacing every later word.
+- probe: tmp/grind/func_8007526C/s20/r3_reuse.c, r2_ifelse.c and r4_lit_ifelse.c each applied at src/text1b.c:6660 and scored with sandbox func_8007526C --disable all.
+- result: reused holder score 26 / build 86; literals with the lim local score 29 / build 89; literals without the lim local score 29 / build 89. All three are worse than candidate.c's 13. The 13 points the movable fix removes are swamped by the layout cost, so the comparison order was never why s11's if/else failed -- the layout is. Banked as rejected/s20-ifelse-reused-holder-right-alloc-wrong-layout-score26.c and rejected/s20-ifelse-exact-order-literals-score29.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 43226623 chassis 2026-09-07, three if/else dispatch bodies applied at src/text1b.c:6660, pure C, no FAKE construct present in any of them
+
+## [s20] Naming the 0xC8 store value in a local (the candidate's `lim`) is what creates the hoisted pre-header constant, so writing the literal at all three store sites removes that movable.
+- mechanism: loop.c's movable eligibility gate has a clause for compiler temps, so whether the invariant lives in a user variable or in a compiler-generated pseudo changes only REG_USERVAR_P, which the temp clause at tools/gcc-2.7.2/loop.c:697 makes irrelevant.
+- probe: tmp/grind/func_8007526C/s20/r1_literal.c applied at src/text1b.c:6660; sandbox plus the .loop movable list.
+- result: score 13, build_insns 93, loop insn_count 92, five movables moved -- identical residual to candidate.c. The store-value constant simply appears as compiler pseudo regno 92 (life 3, savings 2, with regno 101 matching it) instead of user variable regno 75. Codegen-neutral; banked as rejected/s20-literal-0xC8-no-lim-local-score13.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 43226623 chassis 2026-09-07, r1_literal.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+
+## [s20] Under a switch carrier some term other than threshold or insn_count in loop.c's desirability test can be moved from C for the four dispatch constants.
+- mechanism: The four constants are pseudos created by expand_case, so they satisfy scan_loop's eligibility gate unconditionally through its compiler-temp clause; invariant_p is true for a const_int, n_times_set is 1, and may_trap_p is false. m->savings is n_times_used == 1 and m->lifetime is 1 because the li and its beq are adjacent, and lifetime 0 would require the set and the use to be the same insn.
+- probe: Read of scan_loop's movable construction and of move_movables' desirability test in tools/gcc-2.7.2/loop.c, cross-checked against the .loop dumps of candidate.c (savings 1, life 1 on regnos 124/126/127/128) and of every s20 variant.
+- result: Every factor except threshold and insn_count is pinned at its minimum by construction, so loop.c:1631 reduces to `threshold >= insn_count` for these four movables under a switch. This closes the search for a third axis on the switch carrier and leaves the ledger's two known axes untouched.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 43226623 chassis 2026-09-07, candidate.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/loop.c:697
+
+## [s20] The banked arming forms still reproduce their recorded scores on the current chassis and none of them depends on a FAKE carrier.
+- mechanism: Mandated kill re-audit: an instance kill is only as good as the chassis and FAKE state it was measured under, so the three forms that sat closest to the target were re-applied and re-scored, and the closest one was put through tools/fake_ablate.py.
+- probe: tmp/grind/func_8007526C/s19/b_arm_dead.c, rejected/inner-arming-loop-moved-once-doubling-score8.c and rejected/same-back-edge-nest-score29.c each applied at src/text1b.c:6660 and scored; then tools/fake_ablate.py --func func_8007526C --file text1b --candidate tmp/grind/func_8007526C/s19/b_arm_dead.c.
+- result: score 1 / build 90, score 8 / build 96 and score 29 / build 94 respectively -- all three reproduce exactly. fake_ablate reports 'no FAKE-annotated constructs found', so the ablation half of the re-audit is vacuous for this function and the banked instance kills stand as measured. The arming axis is still the only one with a measured score-1 endpoint.
+- verdict: CONFIRMED

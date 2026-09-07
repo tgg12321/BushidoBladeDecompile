@@ -2056,3 +2056,102 @@ is whether cse1's copy propagation forwards the copy away before loop.c ever cou
 - [s19] Measured arming end to end: lim (life 124) prints 'halved since already moved' and is STILL moved (119*1*124 >= 182); all four constants (life 1) print 'not desirable' (116*1*1 < 182). Score 1, build_insns 90.
 
 - [s19] WORD BUDGET: with arming, build_insns falls 93 -> 90 against target 91, and the one missing word is the maspsx .L-label load-delay nop at asm/funcs/func_8007526C.s:6. So an admissible arming construct must emit EXACTLY ZERO machine words; every word it emits is a wrong word straight into the score. Measured costs of banked arming spellings: trailing-dead-while 1 (dead code), arming-dowhile-reuse-exit-test 4, arming-loop-after-main 5, inner-arming-loop-moved-once-doubling 8, dowhile0-inner-arming 13 (phony at loop.c:570), same-back-edge-nest 29.
+
+## s20 (2026-09-07, rederive)
+
+- [s20] CHASSIS: HEAD 43226623 re-measured with `memory/grind/func_8007526C/candidate.c`
+  applied at src/text1b.c:6660 -- score 13, build_insns 93, target_insns 91, `.loop`
+  "Loop from 14 to 260: 91 real insns" with regno 75 (life 63) plus regnos 124/126/127/128
+  (life 1, savings 1) all moved.  Unchanged from s16/s17/s18/s19.  The dispatch brief's
+  "measurement unavailable" is again a driver artefact, not a chassis change.
+
+- [s20] KILL RE-AUDIT (mandated, floor flat >3 sessions).  The three banked arming forms
+  closest to the target were re-applied to this chassis and reproduce their banked scores
+  exactly: trailing-dead-while arming (tmp/grind/func_8007526C/s19/b_arm_dead.c) score 1 /
+  build 90; rejected/inner-arming-loop-moved-once-doubling-score8.c score 8 / build 96;
+  rejected/same-back-edge-nest-score29.c score 29 / build 94.  `tools/fake_ablate.py
+  --func func_8007526C --file text1b --candidate .../b_arm_dead.c` reports "no
+  FAKE-annotated constructs found" -- none of these forms carries a FAKE construct, so the
+  ablation half of the re-audit is vacuous for this function and the banked instance kills
+  stand as measured.
+
+- [s20] MEASURED, frontier item 2 -- MECHANISM CONFIRMED, CARRIER KILLED.  Spelling the
+  dispatch as the target's exact comparison order with every comparison constant written
+  through ONE reused `s32 c` (c=2; if (k==c) ... c=1; if (k==c) ... c=3; ... c=4; ...)
+  gives n_times_set[c] == 4 with non-consecutive sets, so consec_sets_invariant_p fails and
+  loop.c builds NO movable for any of them.  `.loop` prints exactly one movable line for
+  the whole function -- "Insn 19: regno 75 (life 72), move-insn savings 1  moved to 281" --
+  which is, for the first time in twenty sessions, the target's movable set.  The emitted
+  allocation is the target's register for register: $6 counter, $7 = 0xC8 hoisted to the
+  pre-header (target $a3), $4 base, $3 state byte, and the four comparison constants
+  rematerialised IN LOOP into $2 (target $v0) as `li $2,2 / bne` and `li $2,1 / bne`.
+  Measured score 26, build_insns 86.  Banked as
+  rejected/s20-ifelse-reused-holder-right-alloc-wrong-layout-score26.c.
+
+- [s20] WHY THE CARRIER IS WRONG, precisely.  A `switch` emits the entire decision tree
+  first and the arm bodies out of line behind it -- the target's shape, and the reason
+  candidate.c sits at only 13 -- while an if/else chain emits `bne <next test>` and falls
+  straight into its arm body, inlining all four arms between the tests.  That costs five
+  words (86 against the target's 91) and 26 score points, which swamps the 13 points the
+  movable fix buys.  The mechanism cannot be transplanted onto the `switch` because the
+  switch's four comparison constants are pseudos created by expand_case and no C identifier
+  reaches them.  Confirmed by re-measuring the same chain with plain literals: score 29 /
+  build 89 with all five movables moved
+  (rejected/s20-ifelse-exact-order-literals-score29.c), and with the `lim` local also
+  dropped, score 29 / build 89.  s11's if/else kill therefore had nothing to do with the
+  comparison order, which s20 got exactly right; it is layout, and it is layout for every
+  if/else spelling measured so far.
+
+- [s20] MEASURED: dropping the named `lim` local and storing the literal 0xC8 at all three
+  sites is codegen-neutral -- score 13, build_insns 93, loop insn_count 92, five movables,
+  with the store-value constant appearing as compiler pseudo regno 92 (life 3, savings 2,
+  regno 101 matching) instead of user variable regno 75.  Naming the constant or not names
+  the same movable (rejected/s20-literal-0xC8-no-lim-local-score13.c).
+
+- [s20] READ + REASONED: with a `switch` carrier the four dispatch constants are always
+  loop.c movables and their desirability product is always minimal.  scan_loop's
+  eligibility gate at tools/gcc-2.7.2/loop.c:697 is satisfied unconditionally for them by
+  clause (2), `(! REG_USERVAR_P (SET_DEST (set)) && ! REG_LOOP_TEST_P (...))`, because they
+  are compiler temps; `invariant_p` is true for a const_int; n_times_set is 1; and
+  may_trap_p is false.  m->savings is n_times_used == 1 and m->lifetime is 1 (the `li` and
+  its `beq` are adjacent), and neither can be driven lower -- lifetime 0 would require the
+  set and the use to be the same insn.  So under a switch the only terms left in
+  loop.c:1631 are `threshold` and `insn_count`, which is exactly the two-axis picture the
+  ledger already carries.  No new axis exists on the switch carrier.
+
+- [s20] READ: threshold's other input is `loop_has_call` -- tools/gcc-2.7.2/loop.c:532,
+  `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`.  A call in the loop would
+  give threshold 61, decaying to 58 after `lim` moves, which reproduces the -msoft-float
+  verdict exactly (58 against insn_count 91: `lim` moved, all four constants not
+  desirable).  It is not reachable: prescan_loop sets loop_has_call only from a real
+  CALL_INSN (tools/gcc-2.7.2/loop.c:2202), and this function's 91 target words contain no
+  `jal`.  Recorded so no later session re-derives it as a live lever.
+
+- [s20] READ: the threshold-decay budget is now exact.  `threshold -= 3` fires once per
+  moved movable (tools/gcc-2.7.2/loop.c:1904), so reaching threshold < insn_count = 91 from
+  122 needs eleven extra moved invariants ahead of the constants, each of which lands a word
+  in a pre-header the target gives only three words (`addu $a2,$zero,$zero`,
+  `addiu $a3,$zero,0xC8`, `lw $a0,%gp_rel(D_800A36A0)`).  The function's only repeatable
+  invariant is 0xC8 itself and it has just three use sites, so at most three holders exist
+  and they buy threshold 113, not 90.  Frontier item 3 is bounded by use-site count.
+
+- [s20] TOOLING NOTE for later sessions: `bash tmp/grind/func_8007526C/run_dump.sh` FAILS
+  with a Python FileNotFoundError when invoked through the Claude Bash tool, and it fails
+  silently if its output is redirected -- leaving stale dumps from the previous variant in
+  tmp/grind/func_8007526C/dumps/ that look perfectly plausible.  It works from PowerShell
+  (which is how s19's sweep.ps1 drives it).  One s20 probe was mis-read for two turns
+  because of this.  Always run the dump from PowerShell and check the printed tail.
+
+- [s20] HEAD 43226623 honest floor re-measured with candidate.c applied at src/text1b.c:6660: score 13, build_insns 93, target_insns 91, .loop 'Loop from 14 to 260: 91 real insns' with regno 75 (life 63) and regnos 124/126/127/128 (life 1, savings 1) all moved. Unchanged since s16; the dispatch brief's 'measurement unavailable' is a driver artefact.
+
+- [s20] The reused-holder dispatch is the first form measured on this function whose loop.c movable set equals the target's (one movable, regno 75) and whose emitted register assignment equals the target's register for register, including in-loop rematerialisation of the comparison constants into $v0.
+
+- [s20] A switch's four comparison constants are pseudos created by expand_case and no C identifier reaches them, so the reused-holder mechanism cannot be transplanted onto the switch carrier; and the switch is the only construct that produces the target's out-of-line arm layout.
+
+- [s20] loop.c:532 sets threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs). A call in the loop would give threshold 61 decaying to 58 after lim moves, which reproduces the -msoft-float verdict exactly, but prescan_loop sets loop_has_call only from a real CALL_INSN (loop.c:2202) and the target's 91 words contain no jal. Recorded so no later session re-derives it as a live lever.
+
+- [s20] The threshold-decay budget is exact: threshold -= 3 fires once per moved movable (loop.c:1904), so reaching threshold < insn_count = 91 from 122 needs eleven extra moved invariants ahead of the constants. The function's only repeatable invariant is 0xC8 and it has three use sites, so at most three holders exist and they buy threshold 113. Frontier item 3 is bounded by use-site count.
+
+- [s20] Naming the 0xC8 store value is codegen-neutral: with the literal at all three sites the same movable appears as compiler pseudo regno 92 (life 3, savings 2) and the score stays 13.
+
+- [s20] TOOLING: bash tmp/grind/func_8007526C/run_dump.sh fails with a Python FileNotFoundError when invoked through the Claude Bash tool, and fails silently if its output is redirected, leaving stale dumps from the previous variant in tmp/grind/func_8007526C/dumps/. It works from PowerShell. One s20 probe was mis-read for two turns because of this; always run the dump from PowerShell and check the printed tail.
