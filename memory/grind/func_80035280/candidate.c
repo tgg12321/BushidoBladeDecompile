@@ -1,80 +1,51 @@
 /*
- * CANDIDATE -- func_80035280 (src/code6cac_b.c) -- s1 (2026-09-07, recon)
+ * CANDIDATE -- func_80035280 (src/code6cac_b.c) -- s2 (2026-09-07, structural)
  *
- * MEASUREMENTS THIS SESSION (chassis: HEAD, INCLUDE_ASM baseline = 108 / no C body):
- *   THIS body (vC), dropped over `INCLUDE_ASM("asm/funcs", func_80035280);`
- *   with no other edit anywhere in the tree:
- *       sandbox func_80035280 --disable all = 63   (target 108, build 109)
- *   Sibling banked form vB (rejected/s1-walker-two-IV-floor56.c), same flag
- *   block but the loop-2 walker spelled `base`/`base += 8` instead of
- *   `s = base + i * 8`:
- *       sandbox = 56  (target 108, build 111)   <- the SESSION FLOOR
- *   vB scores lower but is STRUCTURALLY WORSE: it makes GCC create a second
- *   induction variable (one giv for `*base`, one for `*(s32*)(base+4)`), which
- *   is 2 insns the target does not have.  vC is the correct structural base to
- *   resume from; its 63 is register-NAMING distance, not shape distance.
+ * MEASURED THIS SESSION on the HEAD chassis (INCLUDE_ASM baseline, target 108):
+ *     THIS body                                sandbox = 39   (build 109)
+ *     s1 candidate (s/dst locals, `vC`)        sandbox = 63   (build 109)
+ *     byte-field-first reorder                 sandbox = 67   (build 110)
+ *     three values into locals, store at end   sandbox = 93   (build  92)
+ * 39 is the session floor and supersedes the s1 floor of 56.
  *
- * WHAT IS LEFT, EXACTLY.  ONE lever.  Proven by the diagnostic form
- * rejected/s1-diagnostic-real-call-in-loop2-adds-jal.c: with a real call placed
- * inside loop 2 (`while (1) { ...; i += 1; if (i >= 3) { func_800344B4(); break; } }`)
- * the ENTIRE loop-2 body becomes instruction-for-instruction identical to the
- * target -- preheader `move a3,zero / lui 0x8888 / ori / lui %hi(D_80106A58) /
- * addiu / move`, then in-loop `lui v0,0x91a2 / lw v1,4(base) / ori v0,0xb3c5 /
- * mult / mfhi / addu / sra 10 / sra 31 / subu / sb 0x21(dst)` -- against the
- * target's asm/funcs/func_80035280.s:25B18-25B54.  That body measures 110
- * insns (108 + the jal + its delay slot) and score 57.  Remove the two call
- * insns and it is 108 == 108.  The call is NOT admissible here (this function
- * has no callee to make in loop 2 -- unlike sibling func_8003C714, whose match
- * was closed exactly this way, decisions.md 2026-09-05 final call PASS).
+ * WHY THIS SPELLING WINS.  Writing every loop-2 memory reference with its
+ * index inline -- `((u8 *)p)[i * 4 + 0x2X]` and `*(s32 *)(base + i * 8 + 4)`
+ * -- instead of hoisting `u8 *s` / `u8 *dst` walker locals lets cse1 share the
+ * two base computations itself, and strength reduction then produces exactly
+ * the target's two givs.  The whole of loop 2 becomes register-identical to
+ * asm/funcs/func_80035280.s:25B18-25B54 (dst = $a1, record = $a2, counter =
+ * $a3, 0x88888889 = $t1, and the same $v0/$v1/$a0 temp rotation), and `p` lands
+ * in $t0 and the flag-byte walker in $a2 exactly as the target has them.  The
+ * s1 spelling put p in $t1 and the counter in $t0 and permuted the whole
+ * loop-2 temp set; that was 24 points of pure naming distance.
  *
- * WHY THE CALL MATTERS -- loop.c:1631, read this session, not inherited:
- *   move_movables hoists a loop-invariant const load iff
- *       already_moved[regno] || (threshold * savings * m->lifetime) >= insn_count
- *   loop.c:532  threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)
- *   loop.c:897  savings = 1 for a `move_insn` (constant-load) movable -- HARD
- *               CODED, so savings can never be 0.
- *   Measured for THIS function in tmp/grind/func_80035280/dumps/code6cac_b.loop:
- *       "Loop from 109 to 255: 62 real insns."
- *       "Insn 135: regno 112 (life 1), move-insn savings 1  moved to 273"  <- 0x91A2B3C5
- *       "Insn 153: regno 118 (life 35), move-insn savings 1 moved to 275"  <- 0x88888889
- *   No call  -> threshold 122 -> 122*1*1 = 122 >= 62 -> BOTH hoisted (wrong).
- *   With call-> threshold  61 ->  61*1*1 =  61 <  62 -> 0x91A2B3C5 STAYS in the
- *               loop (right), while 0x88888889 (life 35) still hoists (right).
- *   loop.c:1609 also doubles insn_count when moved_once[regno] is already set,
- *   so insn_count 62 -> 124 > 122 would ALSO leave it in the loop.  That is the
- *   cheapest untried route: it needs only that pseudo 112 be the destination of
- *   an earlier already-moved movable in the same loop.  See hypotheses.md F1.
+ * WHAT IS LEFT, EXACTLY -- and it is NOT a C-spelling problem.
+ * The residual is the single loop.c:1631 LICM decision s1 identified: the build
+ * hoists the 0x91A2B3C5 (/1800) magic into the loop-2 preheader (2 insns) and
+ * then needs a `nop` in the `lw 0x4($a2)` load-delay slot, where the target
+ * materialises the constant in the loop and fills that slot with its `ori`.
+ * Net +1 instruction (109 vs 108) plus the $t2/$t3 shift it forces on the mfhi
+ * temp.  s2 measured the gate exactly instead of deriving it (see below): the
+ * constant stays in the loop only when the loop's RTL insn_count exceeds 122,
+ * and the three natural spellings above measure insn_count 44, 55 and 62.
  *
- * THE FLAG-BLOCK FIX (`src[3]`, not `*f`) IS LOAD-BEARING AND IS A DATA-MODEL
- * FACT, not a codegen trick.  The target emits THREE `lbu 0(a1)` of
- * D_80106A73 and THREE `sw 0x20(t0)`; a plain `*f` deref emits one of each
- * (build 107 vs target 108, flag block 20 insns vs 24).  Mechanism, read this
- * session: expr.c:4567-4577 sets MEM_IN_STRUCT_P on an INDIRECT_REF only when
- * the address tree is a PLUS_EXPR (or is &<aggregate>, or the type is
- * aggregate).  cse.c:7565-7576 marks the `p[8] = v` store `nonscalar` (never
- * `all`, because its address IS a PLUS and its mode is not QImode), and
- * cse.c:1701 invalidate_memory then drops only entries with p->in_struct set
- * or a varying address -- and cse_rtx_addr_varies_p returns 0 for a MEM whose
- * address register has a known constant qty, which `&D_80106A73` is.  So a
- * non-in-struct flag load SURVIVES all three stores and is CSE'd, and the two
- * now-redundant stores die.  Spelling the read so the address tree is a
- * PLUS_EXPR (`src[3]`, src = &D_80106A73 - 3) restores all six instructions.
- * The honest declaration form of the same fact is an aggregate covering
- * 0x80106A70..0x80106A73 (see the DATA MODEL / OBJECT MODEL entry in
- * evidence.md); `src[3]` is the TU-local measurement spelling and should be
- * replaced by the declaration before any submission.
+ * The measured cause is a COMPILER CONFIGURATION difference, not a source
+ * difference: `-msoft-float` (the PS1 has no FPU; PsyQ's cc1psx fixed the FP
+ * hard registers) halves n_non_fixed_regs, halves the loop.c:532 threshold, and
+ * makes THIS function compile to 108 == 108 with the target's exact loop-2
+ * shape.  It is codegen-neutral for 31 of the project's 32 C files.  The one
+ * blocker is func_800324D0 (same TU), which regresses 0 -> 3 under the flag.
+ * Full evidence + the operator steps are in evidence.md [s2] and the frontier.
+ * Do NOT spend another session searching for a loop-2 spelling with
+ * insn_count >= 123; that number is now measured, not assumed.
  */
 void func_80035280(void) {
     s32 *p;
     u8 *f;
     u8 *src;
     u8 *base;
-    u8 *dst;
     s32 i;
     s32 v;
-    s32 a;
-    s32 b;
-    s32 c;
 
     p = func_80077D00();
     f = &D_80106A73;
@@ -93,21 +64,9 @@ void func_80035280(void) {
     }
     base = (u8 *)&D_80106A58;
     for (i = 0; i < 3; i++) {
-        u8 *s = base + i * 8;
-        dst = (u8 *)p + i * 4;
-        a = *(s32 *)(s + 4);
-        a = a / 1800;
-        dst[0x21] = a;
-        b = *(s32 *)(s + 4);
-        b = b / 30;
-        b = b % 60;
-        dst[0x22] = b;
-        c = *(s32 *)(s + 4);
-        c = c % 30;
-        c = c * 100;
-        c = c / 30;
-        dst[0x23] = c;
-        v = *s;
-        dst[0x24] = v;
+        ((u8 *)p)[i * 4 + 0x21] = *(s32 *)(base + i * 8 + 4) / 1800;
+        ((u8 *)p)[i * 4 + 0x22] = (*(s32 *)(base + i * 8 + 4) / 30) % 60;
+        ((u8 *)p)[i * 4 + 0x23] = (*(s32 *)(base + i * 8 + 4) % 30) * 100 / 30;
+        ((u8 *)p)[i * 4 + 0x24] = base[i * 8];
     }
 }

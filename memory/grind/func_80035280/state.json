@@ -1,31 +1,37 @@
 {
  "func": "func_80035280",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 56,
    "modality": "recon",
    "headline": "Floor 56 from the 108 no-body sentinel; semantics fully recovered and the residual narrowed to ONE lever - loop.c:1631 hoists the /1800 magic 0x91A2B3C5 that the target keeps in loop 2 (proven by a ca"
+  },
+  {
+   "session": 2,
+   "floor": 39,
+   "modality": "structural",
+   "headline": "Floor 56/63 -> 39 from an inline-index loop-2 spelling that reproduces the target's whole loop-2 register assignment; the loop.c:1631 boundary is now MEASURED at 122 (hoists at insn_count 120, refuses"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "loop.c:1609 `if (moved_once[regno]) insn_count *= 2;` is the cheapest untried route: doubling insn_count 62 -> 124 makes the loop.c:1631 test 122 >= 124 fail, so 0x91A2B3C5 stays in the loop with no call and no padding, and the margin needed is only 2.",
-   "mechanism": "moved_once[regno] is set when move_movables has already moved a movable with that pseudo, so the 0x91A2B3C5 holder must be the destination of an earlier already-moved movable in the same loop; the doubling is applied before the desirability test and is logged as 'halved since already moved' in the .loop dump.",
-   "next_probe": "Read loop.c:780-900 (movable construction) and loop.c:1210-1340 (the m->match / m0->lifetime += m->lifetime merging paths) to establish what C-visible condition makes two movables share one regno, then search natural spellings of the three divisions that let GCC reuse one pseudo for the /1800 magic; confirm any hit by grepping the regenerated .loop dump slice for 'halved since already moved'."
+   "hypothesis": "The toolchain-configuration question is the whole of func_80035280's remaining structural residual, and it is an operator/owner decision rather than a grind axis: with -msoft-float this function is 108 == 108 with the target's exact loop-2 shape, and the flag is codegen-neutral for 31 of 32 TUs.",
+   "mechanism": "threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) at loop.c:532; fixing the FP hard registers (which the FPU-less R3000 target implies) drops n_non_fixed_regs by about 32, halves the threshold below the loop-2 insn_count of 62, and leaves the lifetime-1 /1800 magic in the loop while the lifetime-35 /30 magic still hoists.",
+   "next_probe": "Do NOT re-derive this - it is measured in evidence.md FACT 11. If the owner ever takes it: add -msoft-float to CC_FLAGS and CC_FLAGS_GP in Makefile:35-36 and engine/buildconfig.py:43-44, re-grind func_800324D0 (src/code6cac_b.c:2554) from its residual of 3 because its /* FAKE */ duplicated-tail construct was tuned under the hard-float register set, then verify-oracle. Until then treat the +1 instruction as config-blocked and grind only the naming residual below."
   },
   {
-   "hypothesis": "Route (B) raw - push loop-2 insn_count from 62 to at least 123 with RTL that survives cse and jump (both run before loop) and dies in combine, so it emits no bytes.",
-   "mechanism": "loop.c:1631 with threshold 122, savings 1 and lifetime 1 leaves the constant in the loop as soon as insn_count exceeds 122; this is the combine-foldable chain-extender family that owner ruling 2026-07-01 moved into the sanctioned F1 family as a FAKE-annotated last resort, un-annotated or byte-materialising instances remaining FAIL.",
-   "next_probe": "Read the two banked padding forms in memory/grind/func_8003C714/rejected/ that reached insn_count 123 and measured sandbox 0 before being refused, then judge whether any +61-insn chain here can pass the human-programmer test; if the answer is no, emit a ruling-request naming the F1 grant rather than submitting."
+   "hypothesis": "Of the candidate's 39 points, roughly 4-6 are the flag block's register permutation and statement ordering, and those are attackable on the CURRENT chassis without touching the LICM decision.",
+   "mechanism": "The candidate emits the flag block with (addr $a0, acc $a1, mask $v1, byte $v0) where the target has (addr $a1, acc $v0, mask $a0, byte $v1), and the second flag arm is ordered lbu / and / andi / or / li where the target has and / lbu / li / andi / or; the target also zeroes the loop-1 counter (addu $a3,$zero,$zero) as the first insn after the jal, where the candidate emits it fourth.",
+   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the flag-block seats using the s2 candidate as the base (not the s1 body, whose allocation is 24 points worse) and spell only the vectors it returns; do not guess spellings. The loop-2 seats are already correct and must not be disturbed."
   },
   {
-   "hypothesis": "The residual 63 at build_insns 109 vs target 108 is a register-naming permutation that will largely collapse once the preheader hoist is corrected, not an independent allocation problem.",
-   "mechanism": "The call-in-loop diagnostic, whose LICM decision is correct, scores 57 while carrying two extra call instructions, so most of the naming distance is downstream of the hoist rather than of allocno ordering.",
-   "next_probe": "After F1 or F2 lands, run tools/ra_solver inverse_compose.py classify on the residual seats instead of guessing spellings; the deltas to aim at are flag block build a1/v0/v1/a0 vs target v0/v1/a0/a1, loop 2 build t0/t2/t3 vs target a2/t1/v0, and the target's unbiased dst base (0x21($a1) with a1 = p, where the walker build biases to p + 0x24 and uses -3/-2/-1/0)."
+   "hypothesis": "The D_80106A73 declaration is still the s1 open question and is unchanged: src[3] is a measurement device, not a declaration.",
+   "mechanism": "expr.c:4567-4577 gives MEM_IN_STRUCT_P only to a PLUS_EXPR address, an ADDR_EXPR of an aggregate, or an aggregate type, so a scalar read through a plain deref is CSE'd across the three p[8] stores and collapses the target's 3 lbu + 3 sw into one of each; an aggregate covering 0x80106A70..0x80106A73 makes the read an ARRAY_REF and gets the flag from expr.c:4888.",
+   "next_probe": "Measure a widened D_80106A70[4] (or a 4-byte aggregate based at 0x80106A70) against matched sibling func_80034F88's score BEFORE proposing it - func_80034F88 reads D_80106A73 as its own scalar and its integration-handoff note asks for D_80106A70 to stay [3]. It is a header change (include/code6cac.h:472), so it needs the integration-handoff path, not a TU-local declaration."
   }
  ],
  "judge_constraints": [],
@@ -46,11 +52,28 @@
    "measured_on": "HEAD chassis (target_insns 108), candidate.c body plus one synthesised call, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "The diagnostic proves the mechanism and disproves the transfer: the sibling's route needs a real callee this function do"
+  },
+  {
+   "session": 2,
+   "statement": "The loop.c:1609 insn_count doubling cannot make the 0x91A2B3C5 movable undesirable at any insn_count at or below 122, because the only event that sets moved_once for that pseudo relocates that pseudo'",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis (src/code6cac_b.c INCLUDE_ASM baseline, target_insns 108), nested-loop probe body, zero FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1631",
+   "result": "The s1 frontier's cheapest untried route defeats itself: the very act that sets moved_once inflates the lifetime term fa"
+  },
+  {
+   "session": 2,
+   "statement": "The four natural spellings of loop 2 measured in s1 and s2 produce loop-2 RTL insn_counts of 62, 62, 55 and 44 against the 123 the loop.c:1631 gate requires, so none of them comes within a factor of t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (target_insns 108), four natural bodies (s1 candidate, byte-first, inline-index, values-into-locals), zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Raising insn_count by spelling is not a live route on this body; the missing 61 insns would have to come from RTL that s"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-07T17:24:11.460672+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }

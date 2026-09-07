@@ -180,3 +180,169 @@ FACT 6 — provenance and scope facts worth not re-deriving.
 - [s1] Once the LICM decision is correct the rest of the body already matches in shape: the call-in-loop diagnostic makes the loop-2 preheader (move a3,zero / lui 0x8888 / ori / lui %hi(D_80106A58) / addiu / move) and the loop head (lui 0x91a2 / lw 4(base) / ori 0xb3c5 / mult / mfhi / addu / sra 10 / sra 31 / subu / sb 0x21(dst)) instruction-for-instruction identical to asm/funcs/func_80035280.s:25B18-25B54. The residual 63 at 109/108 is a register-NAMING permutation downstream of the hoist, so register allocation should not be ground before the hoist is settled.
 
 - [s1] Reusable scratch tooling written this session: tmp/grind/func_80035280/s1/slice.py splits a whole-file cc1 -da dump on ';; Function ' so a single function's pass output can be grepped without paging the whole file, and tmp/grind/func_80035280/s1/apply.py <body.c> drops a body over the INCLUDE_ASM line (or replaces an existing body) with LF endings preserved.
+
+## s2 (2026-09-07, structural)
+
+FACT 7 — THE FLOOR MOVED, 56/63 -> 39, FROM SPELLING ALONE. Writing every
+loop-2 memory reference with its index inline (`((u8 *)p)[i * 4 + 0x21]`,
+`*(s32 *)(base + i * 8 + 4)`) instead of introducing `u8 *s` / `u8 *dst` walker
+locals measures `sandbox func_80035280 --disable all` = 39 at build 109 /
+target 108 (memory/grind/func_80035280/candidate.c, this session's body). The
+s1 candidate measured 63 on the same chassis this session, so the delta is real
+and is entirely register naming: with the inline spelling GCC allocates
+p -> $t0, the flag-byte pointer -> $a0 with its walker in $a2, the loop-2
+counter -> $a3, the destination walker -> $a1, the record walker -> $a2 and
+0x88888889 -> $t1, which is exactly the target's assignment
+(asm/funcs/func_80035280.s:25B18-25B54); the s1 spelling put p in $t1 and the
+counter in $t0 and permuted the whole loop-2 temp set. Two other natural
+spellings measured worse and are banked:
+rejected/s2-byte-field-first-adds-insn-score67.c (score 67, build 110 — moving
+`dst[0x24] = *s` to the top of the body costs an instruction) and
+rejected/s2-locals-collapse-three-lw-into-one.c (score 93, build 92 — reading
+the frame count into three locals before any store lets cse1 merge the target's
+three `lw 0x4($a2)` into one, which is a shape error, not a naming error).
+
+FACT 8 — THE loop.c:1631 GATE IS NOW MEASURED, NOT DERIVED. s1 computed
+threshold = 122 from loop.c:532 and the hard floors of savings and m->lifetime.
+s2 measured the boundary directly by padding the loop-2 body with extra stores
+and reading the .loop dump (tmp/grind/func_80035280/s2/pad*.c, generator
+tmp/grind/func_80035280/s2/gen_pad.py):
+
+    insn_count 117 -> "moved to ..."      (0x91A2B3C5 hoisted)
+    insn_count 120 -> "moved to ..."      (hoisted)
+    insn_count 123 -> "not desirable"     (STAYS IN THE LOOP)
+    insn_count 135 -> "not desirable"
+    at every one of those counts 0x88888889 (life 35) still hoists
+
+So the product threshold * savings * m->lifetime is exactly 122 and the gate
+flips between 120 and 123 — s1's arithmetic is confirmed by measurement. The
+requirement is insn_count >= 123.
+
+FACT 9 — NATURAL SPELLINGS DO NOT REACH insn_count 123, MEASURED. The .loop
+dump's "Loop from N to M: K real insns" for loop 2, across the four natural
+bodies tried in s1+s2:
+    s1 candidate (s + dst walker locals)      62
+    byte-field-first reorder                  62
+    inline-index spelling (this candidate)    55
+    three values into locals, store at end    44
+The best natural spelling is 62 against a requirement of 123. Nothing in the
+44-62 band is within a factor of two of the gate.
+
+FACT 10 — THE s1 FRONTIER's `moved_once` DOUBLING IS SELF-DEFEATING, MEASURED.
+The s1 frontier's cheapest untried route was loop.c:1609
+`if (moved_once[regno]) insn_count *= 2;`, on the theory that 62 -> 124 > 122
+would leave the constant in the loop. s2 built the only construct that can set
+moved_once for that pseudo — an inner loop inside loop 2 containing the /1800
+division, so the inner loop's scan_loop hoists it first (loops are scanned last
+first, loop.c:430-433 "scan the loops, last ones first", so a loop nested inside
+loop 2 is the only loop that can run before loop 2). Banked at
+rejected/s2-nested-loop-movedonce-inflates-lifetime.c. The .loop dump shows the
+doubling FIRING and the constant being hoisted anyway:
+
+    Loop from 130 to 172: 13 real insns.
+    Insn 144: regno 114 (life 1), move-insn savings 1  moved to 304
+    Loop from 106 to 281: 67 real insns.
+    Insn 304: regno 114 (life 18), move-insn savings 1 halved since already moved  moved to 306
+
+The mechanism defeats itself: hoisting the constant out of the inner loop moves
+its SET to the inner preheader while its USE stays put, so m->lifetime
+(loop.c:791, a function-wide luid span) went 1 -> 18. The gate is then
+122 * 1 * 18 = 2196 >= 134, which passes comfortably. Because any event that
+sets moved_once[regno] for this pseudo is precisely an earlier move of that
+pseudo's set to an enclosing preheader, lifetime is >= 2 afterwards, and
+122 * lifetime >= 2 * insn_count holds for every insn_count <= 122 — the
+doubling never lowers the bar below the raw insn_count >= 123 route. The s1
+frontier item F1 collapses into F2 and buys nothing.
+
+FACT 11 — THE RESIDUAL IS A COMPILER-CONFIGURATION DIFFERENCE, MEASURED
+END-TO-END. The PS1 R3000 has no FPU. GCC 2.7.2's CONDITIONAL_REGISTER_USAGE
+marks every FP hard register fixed under -msoft-float, which drops
+n_non_fixed_regs by ~32 and therefore halves the loop.c:532 threshold
+`(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`. Our CC_FLAGS (Makefile:35,
+engine/buildconfig.py:43) do NOT pass -msoft-float, so cc1 runs with the
+hardware-FP register set and threshold 122. Measured, on the s1 candidate body
+(loop-2 insn_count 62):
+
+  * with -msoft-float the .loop dump prints
+        Insn 135: regno 112 (life 1), move-insn savings 1 not desirable
+        Insn 153: regno 118 (life 35), move-insn savings 1  moved to 273
+    i.e. 0x91A2B3C5 STAYS IN THE LOOP and 0x88888889 still hoists — exactly the
+    target's split;
+  * the object built through the real pipeline with the flag added
+    (tmp/grind/func_80035280/s2/build_o.sh, artifact
+    tmp/grind/func_80035280/s2/soft.o) has build_insns 108 == target 108, with
+    the loop head emitted as
+        lui v0,0x91a2 / lw v1,4(base) / ori v0,0xb3c5 / mult v1,v0 / mfhi /
+        addu / sra 0xa / sra 0x1f / subu / sb 0x21(dst)
+    instruction-for-instruction the target's asm/funcs/func_80035280.s:25B18+,
+    with NO call and NO padding. Its engine score is 55 — the +1 instruction and
+    the entire structural residual are gone, and what remains is pure register
+    naming (the s1 body's naming, since that was the body measured; the s2
+    candidate's naming is 24 points better and has not yet been measured under
+    the flag because its loop-2 insn_count of 55 falls below the soft-float
+    threshold and would hoist again).
+
+  ORACLE IMPACT, MEASURED ACROSS THE WHOLE PROJECT. cc1 output was generated for
+  all 32 src/*.c stems with and without -msoft-float and compared line by line,
+  ignoring only the cc1 flag-echo comment line
+  (tmp/grind/func_80035280/s2/sf3.py):
+        IDENTICAL: 31 of 32
+        DIFFERS:   code6cac_b, 8 diff lines
+  The single differing function is func_800324D0 (src/code6cac_b.c:2554), where
+  the flag changes one `li 0x000000ff` from $8 to $2 and the matching `bne`.
+  Scored against build/src/code6cac_b.o: func_800324D0 is 0 without the flag and
+  3 with it. That function currently matches only through a /* FAKE */
+  duplicated-statement-into-arms construct whose stated mechanism is forcing the
+  walker pseudo into $v1 via reg_n_refs; its natural (un-duplicated) spelling
+  was measured this session at score 27 under BOTH configurations, so the FAKE
+  is not merely a hard-float artefact and the flag does not make it removable.
+
+  NET: adopting -msoft-float would close func_80035280's structural residual and
+  is codegen-neutral for every other function in the project except
+  func_800324D0, which would need re-grinding under the new configuration from a
+  residual of 3. That is a toolchain-configuration decision on surfaces a grind
+  session may not touch (Makefile, engine/buildconfig.py) and is governed by
+  .claude/rules/no-compiler-divergence.md. It is recorded here as evidence, NOT
+  acted on, and NOT proposed as a candidate.
+
+FACT 12 — DOORS IN loop.c CHECKED AND CLOSED, so no future session re-reads
+them. A constant-load movable is always created for this insn: loop.c:695 skips
+only pseudos created BY loop optimization (regno >= max_reg_before_loop); the
+maybe_never / call_passed guards at loop.c:694-716 do not apply because
+REG_USERVAR_P is false for a compiler temp and may_trap_p is 0 for a CONST_INT;
+`savings` is n_times_used[regno], which loop.c:597 bcopies from n_times_set, so
+it is the number of SETS in the loop and cannot be 0; and the only way to
+may_not_optimize the pseudo (count_loop_regs_set, loop.c:3037-3048) is to set
+the same pseudo in two basic blocks, or twice with a use between, both of which
+materialise the constant twice and cost bytes. The gate at loop.c:1631
+therefore has exactly one input left that C can move, insn_count.
+
+FACT 13 — reusable s2 tooling, all under tmp/grind/func_80035280/s2/:
+  loopslice.py       prints the func_80035280 slice of the .loop dump
+                     (Loop-from / moved-to / halved / not-desirable lines only)
+  gen_pad.py K out.c generates the body with K extra loop-2 stores, for
+                     measuring the loop.c:1631 boundary
+  dump_flags.sh "X"  regenerates all cc1 -da dumps with extra flags X
+  build_o.sh "X" out builds code6cac_b.o through the REAL pipeline with extra
+                     cc1 flags X (cpp | cc1 | prologue_fix | maspsx | multu_pad | as)
+  score.sh obj ref   engine score_func for func_80035280 on any two objects
+  sf3.py / sf6.py    the whole-project -msoft-float codegen parity sweep and the
+                     func_800324D0 natural-spelling control
+
+- [s2] Floor 39 on the HEAD chassis (build 109 / target 108) with the inline-index loop-2 spelling, measured this session; the s1 body re-measured at 63 and the s1 ledger floor of 56 came from a structurally worse two-giv walker form.
+
+- [s2] Loop 2 in the new candidate is register-identical to asm/funcs/func_80035280.s:25B18-25B54 - dst $a1, record walker $a2, counter $a3, 0x88888889 $t1, p $t0 - with the only in-loop delta being the mfhi temp $t3 vs the target's $t2, which is displaced by the wrongly-hoisted 0x91A2B3C5 sitting in $t2.
+
+- [s2] The loop.c:1631 desirability boundary is measured, not derived: 0x91A2B3C5 is hoisted at loop-2 insn_count 117 and 120 and refused at 123 and 135, so the product threshold * savings * m->lifetime is exactly 122 and the requirement is insn_count >= 123.
+
+- [s2] Natural loop-2 spellings measure insn_count 62 (s1 walker locals), 62 (byte-field-first), 55 (inline index) and 44 (values into locals); the best is a factor of two below the 123 the gate requires.
+
+- [s2] The loop.c:1609 moved_once doubling fires as advertised and still hoists: the nested-loop probe shows 'halved since already moved  moved to 306' because hoisting the constant out of the inner loop raised its m->lifetime from 1 to 18, and 122 * 18 = 2196 >= 134.
+
+- [s2] Doors in loop.c checked and closed so they are not re-read: loop.c:695 (regno >= max_reg_before_loop) applies only to loop-created pseudos; the maybe_never / call_passed guards do not apply because REG_USERVAR_P is false for a compiler temp and may_trap_p is 0 for a CONST_INT; savings is n_times_used[regno] which loop.c:597 bcopies from the SET count and cannot be 0; and may_not_optimize (loop.c:3037-3048) requires the constant to be materialised twice, which costs bytes.
+
+- [s2] -msoft-float halves the loop.c:532 threshold (PS1 has no FPU; CONDITIONAL_REGISTER_USAGE fixes the FP hard registers) and compiles func_80035280 to build_insns 108 == target 108 with the target's exact in-loop lui/lw/ori/mult sequence, no call and no padding, engine score 55 on the s1 body.
+
+- [s2] -msoft-float is codegen-neutral for 31 of 32 src stems (cc1 output identical line for line ignoring the flag-echo comment); the only differing function project-wide is func_800324D0, which goes from score 0 to score 3, and whose natural un-FAKEd spelling scores 27 under both configurations.
+
+- [s2] src/code6cac_b.c was restored to HEAD at the end of the session; no build file is left modified. All s2 diagnostics ran through scratch scripts under tmp/grind/func_80035280/s2/.
