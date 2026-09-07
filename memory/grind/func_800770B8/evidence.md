@@ -4551,3 +4551,143 @@ reproduce the merge.
 - [s36] The owner's 2026-09-06 directive (class-B prologue store-base spellings on the h3 chassis, then the record-layout audit for a third use of the C pointer) was executed and measured by s31 (26 builds, class B closed, floor 5 -> 3) and s32/s33 (no list-walk shape in the siblings; the natural s16-table readings cost 176 insns), and re-confirmed by s35; this session worked the standing frontier.
 
 - [s36] src/text1b.c was restored to the pristine HEAD copy after every sweep; git status on src/ and include/ is clean at end of session, and candidate.c is unchanged (the floor body at 3).
+
+# s37 (solver — 2026-09-06) — the D-triple hoist is one missing dependence edge, and that edge and the class-C quantity want opposite things from the same pseudo
+
+**Chassis.** HEAD b5982c8f. `memory/grind/func_800770B8/candidate.c` applied to `src/text1b.c` with
+the two documented byte-neutral caller-side edits (prototype `s32 func_800770B8(s32, s32, s32);`,
+call site `(s32)&D_8009BD24`): `sandbox func_800770B8 --disable all` = **score 3, build_insns 175,
+target_insns 175**. x3 and w3 both re-measure at 27/175/175, i.e. every s36 number is current and no
+banked conclusion needed re-deriving.
+
+## 1. The owner directive (class B on a differing chassis) is executed and negative
+
+Eighteen builds: six spellings of the `func_8006E49C` result block x three chassis (floor, x3, w3).
+`gen_k.py` writes them; `sweep.log` has the scores.
+
+| spelling | floor chassis | x3 chassis | insns |
+|---|---|---|---|
+| base / x3 (the `/* FAKE */` dead store to `p_old` present) | **3** | **27** | 175 |
+| k3 — dead store ABLATED, `p_old` reuse kept | 5 | 29 | 175 |
+| k1 — returned pointer in its own `s32 *nw`, clears through the global | 23 | 47 | **170** |
+| k2 — `nw` for the 0x4 store AND the clears | 23 | 47 | **170** |
+| k4 — 0x4 store through the global, clears through `nw` | 23 | 47 | **170** |
+| k5 — everything through the `D_800A36A0` read-back, no local | 23 | 47 | **170** |
+| k6 — `nw` for the 0x4 store, a second named read-back `cur` for the clears | 23 | 47 | **170** |
+
+The dead store is worth exactly 2 points on BOTH chassis (3->5, 27->29), and the family's internal
+ordering is identical on both. The differing surrounding schedule the directive hoped would re-rank
+these does not re-rank them.
+
+The instruction count is the substantive finding. Every "freshly returned pointer" spelling builds
+**170** instructions against the target's 175. `goal_from_tgt.py classify` on k1 names the five:
+
+```
+    ours only  : addiu #,#,-56  x1        target only: addiu #,#,-64   x1
+    ours only  : addiu #,#,56   x1        target only: addiu #,#,64    x1
+                                          target only: move #,#        x2
+                                          target only: sw #,56(#)      x1
+                                          target only: lw #,56(#)      x1
+                                          target only: nop             x1
+```
+
+i.e. a FOURTH callee-saved register plus its save/restore pair and a 64-byte frame. The target keeps
+`arg0` in `$s0` and `arg0 + 0x58` in `$s1` live at the same time (target rows 12 `addiu $s1,$s0,0x58`
+and 16 `sw $s0,%gp_rel(D_800A35D8)($gp)`); k1 computes the pointer only after `arg0`'s last use and
+reuses `$s0` for it (k1 row 16 `addiu $s0,$s0,88`). Re-using the single variable `p_old` across the
+call is what holds all four callee-saved registers live. Banked at
+`rejected/s37-classB-freshly-returned-pointer-own-local-170insn-score23.c` and
+`rejected/s37-classB-FAKE-ablated-reuse-kept-175insn-score5.c`.
+
+## 2. sched_solver: the hoist is ONE missing dependence edge
+
+x3's sched1 model of blk=1 (27 insns) simulates **exact**, so the model is sound here.
+`tmp/grind/func_800770B8/s37/blkdump.py` prints the block with UIDs, luids, dependences and each
+UID's derived target position. The relevant UIDs are
+
+* **137** `la $6,D_800A35D0` — no predecessors at all (a link-time constant), our index **1**, target index **12**
+* **145** `addu $6,$3,$6` — our index 5, target index 13
+* **134** `sh $0,60($2)` — the fifth and last group-A store, both at index 13/11
+
+Searches (`solve4.sh`, fork of `tools/sched_solver/perturb.py`):
+
+| goal | atoms | result |
+|---|---|---|
+| `--goal-before 137:134` | `luid,luid_move` (1053 atoms) | **no vector at depth 1** |
+| `--goal-before 137:134` | all classes (1999 atoms) | **exactly two, and they are one edge**: `add_dep 137 <- 134 (true/data)` and `add_dep 137 <- 134 (anti-output kind 14)` |
+| the full 27-UID target pick order | all classes | **no vector at depth 1** |
+
+No `del_dep`, no `cost` change, and no statement move of any kind reaches the goal. The D triple sits
+at the top of the block because nothing in the block can precede it, full stop.
+
+## 3. The edge is spellable, it works, and it costs the quantity that motivated x3
+
+The only truthful C source of `137 <- 134` is to assign the D address to the pseudo the group-A
+stores read — i.e. write the group-A pointer local a second time. Ten bodies were built and scored:
+
+| body | what | score | insns |
+|---|---|---|---|
+| m1 | groups A and D through the same local `ap` (the solver's edge, on the x3 chassis) | **23** | 175 |
+| m7 | m1 + the group-C pointer in its own local | 23 | 175 |
+| m10 | m1 + `t0 * 4` named ahead of the group-A stores | 23 | 175 |
+| m4 | D group emitted after the C group | 25 | 175 |
+| m2 | D group in a fresh single-death `dp` alongside `ap` | 26 | 175 |
+| m5 | `ap` carrying groups A and C, `ptr` on D | 26 | 175 |
+| m6 | D group interleaved between the 4th and 5th group-A stores | 29 | 175 |
+| m3 | D address written inline, no local | 9 | **177** |
+| m8 | the FLOOR body with groups A and D through `ap`, no cast flip | **3** | 175 |
+| m9 | m8 + the named C pointer | **3** | 175 |
+
+**m1's rows 38-64 are a clean `$v0`/`$v1` swap against the target with the D triple at rows 48/49/51**
+(target 49/50/51). The hoist is gone — the first body in 37 sessions to kill it. But m8/m9 are
+byte-inert at 3: strip the cast flip and "groups A and D through one local" IS the floor body under
+another name. The hoist is present in exactly those bodies whose group-A pointer has ONE death
+(x3 27, x4 26, x6 23, y1-y4 27, z1 29, z2 28, m2 26, m7 23, m10 23) and absent in exactly those whose
+group-A pointer has TWO (base 3, m8 3, m9 3, m1 23, m5 26).
+
+`local_alloc` grants a block quantity only at `reg_basic_block >= 0 && reg_n_deaths == 1`
+(`tools/gcc-2.7.2/local-alloc.c:472`). So the second write that creates the scheduler edge is the
+same second death that destroys the `ap` quantity (b18 d30 refs16, priority 4.0) which is the entire
+reason x3 holds the target's four class-C seats. **Frontier item 1's conflict route is closed for the
+D address as the carrier**: sched1 wants the A pointer written twice, local-alloc wants it written
+once, and the D address cannot be both the second write and a separate quantity.
+
+What is NOT closed: the edge does not have to come from the D address. ANY real program value written
+into the A pointer's pseudo after the group-A stores and before the D address supplies `137 <- 134`
+while leaving the D address free to be its own thing. Finding such a value is a record-layout
+question about what else the function legitimately points at in that window — the owner directive's
+frontier item 2, now with a precise specification instead of a hunch.
+
+Banked forms: `rejected/s37-groupA-and-D-through-one-local-kills-hoist-but-classC-swaps-23.c`,
+`rejected/s37-D-address-inline-no-local-177insn-score9.c`,
+`rejected/s37-ap-carries-A-and-D-byte-inert-rename-of-floor-3.c`.
+
+## 4. Tooling gap found and worked around (integration item, not applied)
+
+`tools/sched_solver/goalmap.py:213-237` (`_macro_expand_counts`) counts any operand containing a `(`
+as one object instruction, so `sb $4,D_8009BCE4($3)` — which GNU `as` expands to
+`lui $at,%hi / addu $at,$at,$3 / sb` — is undercounted by two. With two such stores in this function
+the checksum at `goalmap.py:279` raised a spurious "the sandbox object was built from a DIFFERENT
+source state" error (169 text lines, estimate 171, real object 175) and the object-mode goal path —
+the ONLY goal path available to an `INCLUDE_ASM`-routed function — was unusable. A patched fork is at
+`tmp/grind/func_800770B8/s37/fork/goalmap.py`; with it the alignment runs clean
+(`equal 151, replace 19, delete 2, insert 2, moved 3`). `tools/` is outside a grind session's
+writable surface, so the fix is recorded here for the operator rather than applied.
+
+- [s37] Chassis re-measured live this session: candidate.c = 3/175/175, x3 = 27/175/175, w3 = 27/175/175 on HEAD b5982c8f, so every s36 conclusion is chassis-current and nothing needed re-deriving.
+
+- [s37] The floor body's ENTIRE residual, re-confirmed by a mnemonic-normalised row diff this session, is three instructions: row 62 addu $v0,$v0,$v1 against the target's addu $v1,$v1,$v0, and rows 63/64 reading $v0 instead of $v1.
+
+- [s37] x3's residual, by the same diff, is the D_800A35D0 lui/addiu/addu triple emitted at rows 38/39/43 instead of 49/50/51, which pushes the a2 loop counter into $a3 and swaps a2/a3 for the rest of the function, plus one delay-slot nop at row 126.
+
+- [s37] sched_solver's simulator reproduces x3's blk=1 pick order EXACTLY (baseline exact, 27 insns), so its negative results for this block are model-grade, not approximations.
+
+- [s37] add_dep 137 <- 134 is the only depth-1 vector over all 1999 atoms for the goal 'hold the D triple below the last group-A store'; the 1053 spellable atoms (luid, luid_move) return nothing.
+
+- [s37] m1 is the first body in 37 sessions to eliminate the D-triple hoist while keeping 175 instructions: its rows 38-64 are a clean $v0/$v1 swap against the target with the triple at 48/49/51.
+
+- [s37] m8 and m9 (the same A+D-through-one-local geometry without the cast flip) are byte-inert at 3, proving the geometry IS the floor body's and that the hoist is a function of the group-A pointer's death count, not of x3's spelling.
+
+- [s37] Every class-B 'freshly returned pointer' spelling builds 170 instructions; the target's extra five are a fourth callee-saved register (save/restore at 56($sp)), a 64-byte frame, two moves and a nop, all of which exist only because arg0 and arg0+0x58 are live simultaneously.
+
+- [s37] TOOLING: tools/sched_solver/goalmap.py:213-237 (_macro_expand_counts) undercounts `<mem> $r,SYM(base)` by two (GNU as expands it to lui $at,%hi / addu $at,$at,base / <mem>), which made the checksum at goalmap.py:279 raise a spurious 'different source state' error and blocked the object-mode goal path -- the only goal path an INCLUDE_ASM-routed function has. A patched fork is at tmp/grind/func_800770B8/s37/fork/goalmap.py; tools/ is outside a grind session's writable surface so it is recorded, not applied.

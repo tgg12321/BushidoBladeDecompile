@@ -1,3 +1,37 @@
+/* s37 (solver - 2026-09-06).  BODY UNCHANGED; floor still 3/175/175, re-measured live on
+ * HEAD b5982c8f with the two documented byte-neutral caller-side edits.  Its whole residual is
+ * still rows 62/63/64 (the merged chain+dest quantity seated in $v0 instead of $v1).
+ *
+ * TWO THINGS ARE NOW SETTLED.
+ *
+ * (1) THE OWNER'S CLASS-B RE-MEASURE IS DONE AND NEGATIVE.  Six spellings of the func_8006E49C
+ * result block were scored on THREE chassis (floor, x3, w3).  The FAKE-annotated dead store to
+ * `p_old` is worth exactly 2 points on the floor chassis (3 -> 5) AND on the x3 chassis
+ * (27 -> 29), and the family's internal ordering is identical on both -- the differing schedule
+ * does not re-rank them.  Every "freshly returned pointer in its own local" spelling builds
+ * 170 instructions against the target's 175: the target keeps arg0 in $s0 and arg0+0x58 in $s1
+ * live at the same time (rows 12 and 16), which costs a fourth callee-saved register, its
+ * save/restore pair, two moves and a nop.  Only the REUSE of the single variable `p_old` across
+ * the call holds those registers live.  (rejected/s37-classB-*)
+ *
+ * (2) THE D-TRIPLE HOIST IS ONE MISSING DEPENDENCE EDGE, AND IT WANTS THE OPPOSITE OF WHAT
+ * local-alloc WANTS.  tools/sched_solver on x3's blk=1 (27 insns, baseline exact): with all
+ * four atom classes enabled, the ONLY depth-1 vector that holds `la $6,D_800A35D0` (uid 137)
+ * below the last group-A store (uid 134) is the edge `add_dep 137 <- 134` itself -- no del_dep,
+ * no cost change, no statement move.  Its only truthful C source is to write the D address into
+ * the pseudo the group-A stores read, i.e. give the group-A pointer local a SECOND write.  That
+ * works (m1: the D triple lands at rows 48/49/51 against the target's 49/50/51, 23/175) but the
+ * second write is the second death, and local-alloc.c:472 grants a block quantity only at
+ * reg_n_deaths == 1 -- so it destroys the `ap` quantity that is the whole reason x3 holds the
+ * target's four class-C seats.  m8/m9 prove the point from the other side: strip the cast flip
+ * and "groups A and D through one local" IS this body, byte-inert at 3.
+ *
+ * THE OPENING THAT LEAVES: the edge does not have to come from the D address.  Any REAL program
+ * value written into the group-A pointer's pseudo after the group-A stores and before the D
+ * address supplies 137 <- 134 while leaving the D address free to be its own quantity.  That is
+ * a record-layout question -- what else does this function legitimately point at in that window
+ * -- and it is now a specification rather than a hunch.
+ */
 /* s34 (synthesis — 2026-09-06).  BODY UNCHANGED; floor still 3/175/175 (re-measured live on
  * HEAD de9606ac with the two documented byte-neutral caller-side edits; residual rows 62/63/64).
  *
