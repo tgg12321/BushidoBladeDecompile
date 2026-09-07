@@ -1822,3 +1822,146 @@ MECHANISM, not this form. Two things must now be solved together:
 - [s17] A payload for this function must not introduce the constants 1, 2, 3 or 4: cse1 forwards them into the switch comparisons and the case constants then materialise at the top of the loop in four hard registers (score 22).
 
 - [s17] tools/fake_ablate.py reports no FAKE-annotated construct in any banked form for this function, so no banked instance kill rests on a masked pseudo.
+
+## s18 (2026-09-07, forensics) -- the union-CLOBBER payload priced end to end: it is FREE in words but NOT free in FRAME, and its admissible ceiling is insn_count 109
+
+s17 discovered that a UNION_TYPE constructor emits a `(clobber target)` at
+tools/gcc-2.7.2/expr.c:2996 which survives cse1 (cse.c:8765) and emits no machine word, and
+left two questions on the frontier: (F1a) does a LIVE union constructor -- one carrying a real
+value -- pay the same zero-word rate, and (F1b) can the payload be made frame-free so the two
+`addiu sp` words disappear.  Both are now measured, and a third quantity that neither s16 nor
+s17 had -- the number of union constructors the function's own semantics can admit -- is
+measured too.  All three measurements were taken on HEAD df727cb4 with
+memory/grind/func_8007526C/candidate.c applied at src/text1b.c:6660, pure C, no FAKE construct
+anywhere in the tree; `tools/fake_ablate.py` continues to report no FAKE carrier for this
+function, so none of these numbers is masked by a carrier occupying a pseudo.
+
+### (F1a) CONFIRMED -- a live union constructor is +1 loop insn_count for 0 emitted words
+
+`tmp/grind/func_8007526C/s18/p1_live_union_4sites.c` takes candidate.c and replaces each of the
+four `(s16)*(u16 *)(p + 0xC)` signed re-interpretations -- the only genuinely idiomatic
+type-punning sites the function has -- with
+
+    { union hw v = { *(u16 *)(p + 0xC) };
+      if (v.s >= 0xC8) { ... } }
+
+Measured: `sandbox func_8007526C --disable all` -> score 15, build_insns 95; `.loop` ->
+"Loop from 14 to 284: 95 real insns" with `lim` (regno 75) moved and the four switch constants
+still moved (95 is far below the bar).  insn_count went 91 -> 95, i.e. exactly +1 per site, and
+build_insns went 93 -> 95, i.e. +2 -- and the +2 is NOT per-site, it is the function's new
+prologue/epilogue (see F1b).  The RTL confirms the shape: in the reduced case `a2` of
+tmp/grind/func_8007526C/s18/micro2.c the union decl is `(reg/v:HI 73)`, the constructor emits
+`(insn 9 (clobber (reg/v:HI 73)))` on a REGISTER, and the value store is an ordinary reg-reg
+move that cse1 folds away.  So the CLOBBER payload rate is identical for live and dead
+constructors: 1 loop insn, 0 emitted words.
+
+### (F1b) KILLED -- every aggregate constructor allocates 8 phantom frame bytes, so the payload always costs the 2 sp-adjust words
+
+The function's target (asm/funcs/func_8007526C.s) has NO frame: no `subu $sp`, no `addu $sp`.
+Every measured payload build has one.  The scaling is exact and it is per constructor, not per
+byte:
+
+| form | constructors | `.frame` vars | build_insns |
+|---|---|---|---|
+| candidate.c (no constructor) | 0 | 0 | 93 |
+| p1_live_union_4sites.c | 4 | 32 | 95 |
+| p4_pun_all_reads.c | 18 | 144 | 95 |
+| p2_dead30_hi.c (`union { u16 u; s16 s; }`) | 30 | 240 | 92 |
+| p3_dead30_qi.c (`union { u8 c; }`) | 30 | 240 | 92 |
+| s17 probe_union30_nocse.c (`union { s32 w; }`) | 30 | 240 | 92 |
+
+8 bytes per constructor regardless of the union's own size (1, 2 or 4 bytes), which is
+`assign_stack_local`'s rounding of any stack object to STACK_BOUNDARY (function.c:670, reached
+from `assign_stack_temp` at function.c:826).  The slot is a PHANTOM in the sense of
+[[phantom-frame-slots-gcc272]]: the RTL never references it -- the decl itself lives in
+`(reg/v:HI 73)` -- yet `get_frame_size()` is non-zero, so MIPS emits `subu $sp,$sp,N` and
+`addu $sp,$sp,N`.
+
+Reduced-case sweep (tmp/grind/func_8007526C/s18/micro2.c and micro3.c, compiled with the
+production cc1 and CC_FLAGS), `vars=` taken from the `.frame` directive:
+
+    union hw v = { 5 };                    -> 8      (constant initialiser)
+    union hw v = { p[0] };                 -> 8      (non-constant initialiser)
+    union { int w; } v = { p[0] };         -> 8      (SImode union)
+    struct { u16 a, b; } r = {p[0],p[1]};  -> 16
+    struct { int a; } r = { p[0] };        -> 8
+    union hw v; v.u = p[0];                -> 0      <-- NO constructor, NO slot
+    register union hw v = { p[0] };        -> 8      (`register` does not help)
+    sink((union hw) p[0]);                 -> 8      (GNU cast-to-union as a call argument)
+    ((union hw) p[0]).s                    -> 8      (GNU cast-to-union as a pure rvalue)
+
+Every spelling that produces a CONSTRUCTOR allocates the slot; the only spelling that avoids it
+(`v.u = p[0];`) is precisely the spelling that emits no CLOBBER, because `store_constructor`
+(expr.c:2988) is never entered and so the `emit_insn (gen_rtx (CLOBBER, ...))` at expr.c:2996
+never fires.  The two properties are welded together in this compiler.  For a function whose
+target has zero spare words, that welds the CLOBBER payload to a 2-word surplus.
+
+### (F1c) KILLED -- the admissible union payload tops out at insn_count 109, 11 short of the bar
+
+The bar derived by s15/s16 is loop-time `insn_count >= 120`: move_movables' desirability test
+`(threshold * savings * m->lifetime) >= insn_count` at tools/gcc-2.7.2/loop.c:1631 with
+threshold 122 decaying to 119 once `lim` is moved (loop.c:1904), savings = lifetime = 1.
+`tmp/grind/func_8007526C/s18/p4_pun_all_reads.c` is candidate.c with EVERY rvalue `*(u16 *)`
+read in the function read through a `union hw { u16 u; s16 s; }` temporary -- all eighteen of
+them, across all four switch arms: the six `x = x + 0xA` / `x = x - 0xA` read-modify-writes,
+the four `>> 8` state reads, the two `+ 1` state bumps, the four `p + 0x18` / `p + 0x38`
+copies and the four signed compares.  That is the complete set of sites where a union view of
+a 16-bit table field has any semantic reading at all; the twenty-two remaining `*(u16 *)`
+occurrences are STORE destinations, which cannot be spelled as a constructor without a
+pointless value round-trip (which would fail cheat-checklist T1/T2 anyway).
+
+Measured: score 15, build_insns 95, `.loop` -> "Loop from 14 to 362: 109 real insns", with
+`lim` moved and all four switch constants STILL moved ("moved to 370/372/374/376/378"), because
+109 < 119.  The rate is exactly +1 per site as F1a predicted (91 + 18 = 109).  So even setting
+the frame aside entirely, the semantically-admissible union payload is 11 insns short of the
+threshold.  Reaching 120 needs 29 constructors, eleven more than the function has real punning
+sites -- which is why every form that DOES reach the bar (s17's 30 dead unions, and p2/p3 here)
+is dead code failing T1/T2/T6.
+
+### What this leaves
+
+The CLOBBER mechanism is real, its rate is the best ever measured for this function (1 loop
+insn per 0 emitted words), and it is nevertheless closed on BOTH ends: it cannot reach the bar
+with admissible sites (109 < 120), and even if it could it would cost 2 words of frame the
+target does not have.  The next zero-word payload shape to price is a different RTL form
+entirely: a register-to-register COPY whose two pseudos are coalesced onto one hard register.
+Such an insn is an ordinary SET with a live destination, so `delete_dead_from_cse` keeps it and
+loop.c counts it toward insn_count, while flow.c:957 ("Delete (in effect) any obvious no-op
+moves") and reload's equivalent post-allocation check remove it before `final` -- and, unlike a
+constructor, a copy allocates no frame at all.  Its C spelling lives in the sanctioned
+named-intermediate / variable-reuse families rather than in aggregates, and the open question
+is whether cse1's copy propagation forwards the copy away before loop.c ever counts it.
+
+### Artifacts
+
+    tmp/grind/func_8007526C/s18/gen.py                      -- probe generator
+    tmp/grind/func_8007526C/s18/sweep.ps1                   -- apply/sandbox/dump sweep driver
+    tmp/grind/func_8007526C/s18/p1_live_union_4sites.c      -- F1a, score 15 / build 95 / insn_count 95
+    tmp/grind/func_8007526C/s18/p4_pun_all_reads.c          -- F1c, score 15 / build 95 / insn_count 109
+    tmp/grind/func_8007526C/s18/p2_dead30_hi.c              -- HImode frame control, vars=240
+    tmp/grind/func_8007526C/s18/p3_dead30_qi.c              -- QImode frame control, vars=240
+    tmp/grind/func_8007526C/s18/*.loop                      -- .loop dumps for each of the four
+    tmp/grind/func_8007526C/s18/micro.c micro2.c micro3.c   -- reduced-case frame sweep sources
+
+- [s18] MEASURED: a LIVE union constructor pays the same payload rate as a dead one -- 4 live `union hw v = { *(u16 *)(p + 0xC) }` punnings of the function's four signed re-interpretations take loop insn_count 91 -> 95 and build_insns 93 -> 95, where the +2 words are the new prologue/epilogue and not per-site.
+- [s18] MEASURED: every aggregate CONSTRUCTOR spelling allocates 8 phantom frame bytes (4 constructors -> vars=32, 18 -> vars=144, 30 -> vars=240, independent of the union's own size), so any CLOBBER payload gives this frameless function a `subu $sp` / `addu $sp` pair the target does not have.
+- [s18] MEASURED (reduced cases): `union hw v; v.u = p[0];` allocates no frame but emits no CLOBBER; `union hw v = { p[0] };`, `register union hw v = { p[0] };`, `(union hw) p[0]` as a call argument and `((union hw) p[0]).s` as a pure rvalue all allocate the slot. Frame-freeness and the CLOBBER are mutually exclusive in GCC 2.7.2.
+- [s18] MEASURED: punning ALL eighteen rvalue `*(u16 *)` reads the function has through a `union { u16 u; s16 s; }` temporary gives loop insn_count 109 (score 15, build 95) against the bar of 120 -- the admissible union payload is 11 insns short, and the other 22 `*(u16 *)` occurrences are store destinations that cannot be constructors.
+- [s18] The RTL for the reduced case shows the union decl in `(reg/v:HI 73)` with `(clobber (reg/v:HI 73))` emitted on a REGISTER, confirming the CLOBBER is not itself what forces memory; the phantom slot is a separate allocation via assign_stack_temp (function.c:826) / assign_stack_local (function.c:670).
+- [s18] NEXT ZERO-WORD SHAPE TO PRICE: a reg-reg copy coalesced onto one hard register -- an ordinary SET with a live dest, so cse.c's delete_dead_from_cse keeps it and loop.c counts it, while flow.c:957's no-op-move deletion removes it before final and it allocates no frame.
+
+- [s18] HEAD df727cb4 honest floor re-measured this session with candidate.c applied at src/text1b.c:6660: score 13, build_insns 93, target_insns 91 -- unchanged from s16 and s17, so the ledger floor and the dispatch chassis agree.
+
+- [s18] A LIVE union constructor pays the same payload rate as a dead one: 4 live union punnings of the function's four signed re-interpretations take loop insn_count 91 -> 95 and build_insns 93 -> 95, where the +2 words are the new prologue/epilogue and not a per-site cost.
+
+- [s18] Every aggregate CONSTRUCTOR spelling allocates 8 phantom frame bytes -- 4 constructors give vars=32, 18 give vars=144, 30 give vars=240, independent of whether the union is 1, 2 or 4 bytes wide -- so any CLOBBER payload gives this frameless function a subu $sp / addu $sp pair the target does not have.
+
+- [s18] Reduced-case sweep: union hw v; v.u = p[0]; allocates no frame but emits no CLOBBER, while union hw v = { p[0] };, register union hw v = { p[0] };, (union hw) p[0] as a call argument and ((union hw) p[0]).s as a pure rvalue all allocate the slot. Frame-freeness and the CLOBBER are mutually exclusive in GCC 2.7.2 because the slot is tied to the CONSTRUCTOR expansion path itself.
+
+- [s18] Punning ALL eighteen rvalue *(u16 *) reads the function has gives loop insn_count 109 against the bar of 120 -- the admissible union payload is 11 insns short, and the remaining 22 *(u16 *) occurrences are store destinations that cannot be constructors without a pointless value round-trip.
+
+- [s18] The RTL for the reduced case shows the union decl in (reg/v:HI 73) with (clobber (reg/v:HI 73)) emitted on a REGISTER, so the CLOBBER is not itself what forces memory; the phantom slot is a separate allocation via assign_stack_temp (function.c:826) into assign_stack_local (function.c:670).
+
+- [s18] The frame table is exact and per-constructor rather than per-byte, which means no choice of union member type, width or storage class reduces it -- the payload's word cost is 2 for any constructor count >= 1.
+
+- [s18] Next zero-word RTL shape to price: a reg-reg copy coalesced onto one hard register. It is an ordinary SET with a LIVE destination, so cse.c's delete_dead_from_cse keeps it and loop.c counts it toward insn_count, while flow.c:957 ('Delete (in effect) any obvious no-op moves') and reload's post-allocation equivalent remove it before final -- and unlike a constructor it allocates no frame.

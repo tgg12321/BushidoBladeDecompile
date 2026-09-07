@@ -1485,3 +1485,93 @@ F2 (unchanged, still open but now lower priority): the moved_once doubling at lo
 - probe: candidate.c plus thirty scoped dead union initialisations { union un q<n> = { 1000 + n }; } placed immediately after lim = 0xC8; inside the loop (tmp/grind/func_8007526C/s17/probe_union30_nocse.c); sandbox --disable all plus pwsh tools/grinder/dump.ps1 and the .loop dump. Three negative controls run the same way: thirty dead long long locals, thirty dead two-field struct initialisations, and the same thirty unions initialised with 0..29.
 - result: Refuted for CLOBBER-bearing payloads. The .loop dump reads 'Loop from 14 to 440: 121 real insns' with Insn 19 regno 75 moved and Insns 406/412/418/421 all printing 'not desirable' -- the target's exact movable shape, lim hoisted and all four switch constants left in the loop -- at score 3 and build_insns 92, i.e. the payload itself emitted zero words. That is an unbounded payload ratio against the 3-for-1 record, so frontier F1 is reopened. The measured form is dead code and inadmissible (cheat-checklist T1/T2/T6) and is banked to rejected/ only; the result is the mechanism and its price. Controls: thirty dead long long locals leave score 13 / build 93 (plain SETs, deleted by cse1); thirty dead two-field struct initialisations measure score 122 / build 199 (stack stores, which delete_dead_from_cse's SET arm cannot remove because its dest is not a REG); the 0..29 variant measures score 22 / build 95 because cse1 forwards the payload's 1/2/3/4 into the switch comparisons and materialises all four case constants at the top of the loop in four hard registers.
 - verdict: CONFIRMED
+
+## s18 (2026-09-07, forensics)
+
+### H-s18-1 -- CONFIRMED. A live union constructor carries a real value AND the zero-word CLOBBER payload.
+Statement: replacing the function's four `(s16)*(u16 *)(p + 0xC)` signed re-interpretations with
+`union hw { u16 u; s16 s; }` temporaries initialised from the halfword raises loop `insn_count`
+by exactly +1 per site and emits no extra machine word per site.
+Mechanism: `store_constructor` (tools/gcc-2.7.2/expr.c:2988-2996) emits an unconditional
+`(clobber target)` for any UNION_TYPE constructor whether the value is used or not;
+`count_loop_regs_set` (loop.c:2989ff) counts it toward `insn_count`;
+`delete_dead_from_cse`'s final `else live_insn = 1` (cse.c:8765) cannot delete it because a bare
+CLOBBER is neither SET nor PARALLEL; `final.c` emits nothing for it.
+Probe: tmp/grind/func_8007526C/s18/p1_live_union_4sites.c applied at src/text1b.c:6660.
+Result: score 15, build_insns 95, `.loop` "Loop from 14 to 284: 95 real insns" (91 -> 95, +1 per
+site).  The +2 on build_insns is the new prologue/epilogue, not a per-site cost -- see
+H-s18-2.  Verdict CONFIRMED.
+
+### H-s18-2 -- KILLED (instance). On this chassis every aggregate-constructor payload gave the frameless target a 2-word sp adjust.
+Statement: on the s18 chassis, each of the six measured constructor payloads (4, 18, 30, 30 and
+30 constructors, union sizes 1/2/4 bytes) allocated 8 phantom frame bytes per constructor and
+produced a `subu $sp` / `addu $sp` pair, while the baseline candidate.c and the target
+asm/funcs/func_8007526C.s have `vars= 0` and no sp adjust at all.
+Mechanism: the slot comes from `assign_stack_temp` (function.c:826) -> `assign_stack_local`
+(function.c:670), whose STACK_BOUNDARY rounding makes any stack object 8 bytes on MIPS.  It is a
+phantom in the sense of [[phantom-frame-slots-gcc272]]: the RTL never references it (the union
+decl itself is `(reg/v:HI 73)` and the CLOBBER is emitted on that REGISTER), but `get_frame_size`
+is non-zero so the MIPS prologue/epilogue materialise.
+Probe: the six-row frame table in evidence.md [s18], plus the nine-spelling reduced-case sweep
+in tmp/grind/func_8007526C/s18/micro2.c and micro3.c -- constant initialiser, non-constant
+initialiser, SImode union, one-field struct, two-field struct, `register`-qualified union,
+GNU cast-to-union as a call argument, and GNU cast-to-union as a pure rvalue all allocate the
+slot; only `union hw v; v.u = p[0];` (which emits no CLOBBER at all) does not.
+Result: 4 constructors -> vars=32, 18 -> vars=144, 30 -> vars=240; build_insns 95 / 95 / 92
+against a frameless baseline of 93 and a target of 91.  Verdict KILLED, kill_scope instance.
+measured_on: HEAD df727cb4 chassis 2026-09-07, candidate.c plus each probe applied to
+src/text1b.c, pure C, no FAKE construct present (fake_ablate.py reports no carrier).
+
+### H-s18-3 -- KILLED (instance). Punning all eighteen real u16 reads reaches insn_count 109, not the 120 the desirability test needs.
+Statement: reading every one of the function's eighteen rvalue `*(u16 *)` accesses through a
+`union { u16 u; s16 s; }` temporary measured loop `insn_count` 109, and all four switch-comparison
+constants were still hoisted.
+Mechanism: the payload rate is +1 per constructor (H-s18-1), and the function has exactly
+eighteen sites where a union view has a semantic reading; its other twenty-two `*(u16 *)`
+occurrences are store destinations, which are lvalues and cannot be constructors.  The gate is
+move_movables' `(threshold * savings * m->lifetime) >= insn_count` at loop.c:1631 with threshold
+122 decayed to 119 by loop.c:1904 once `lim` is moved, so the switch constants stay hoisted for
+any insn_count below 120.
+Probe: tmp/grind/func_8007526C/s18/p4_pun_all_reads.c applied at src/text1b.c:6660.
+Result: score 15, build_insns 95, `.loop` "Loop from 14 to 362: 109 real insns", regno 75 moved
+and regnos 140/142/143/144 "moved to 370/372/374/376/378".  Eleven insns short.  Verdict KILLED,
+kill_scope instance.  measured_on: HEAD df727cb4 chassis 2026-09-07, p4_pun_all_reads.c applied
+to src/text1b.c, pure C, no FAKE construct present.
+
+### Frontier after s18
+1. Price the reg-reg COPY payload: a copy insn between two pseudos that local-alloc/reload
+   coalesce onto one hard register is an ordinary SET with a LIVE destination, so
+   delete_dead_from_cse keeps it and loop.c counts it, flow.c:957's no-op-move deletion and
+   reload's post-allocation equivalent remove it before `final`, and -- unlike a constructor --
+   it allocates no frame.  Open question: whether cse1's copy propagation forwards it away
+   before loop.c ever sees it.  Spell it inside the sanctioned named-intermediate /
+   variable-reuse families, start with two or three sites, and read the `.loop`, `.lreg` and
+   `.greg` dumps to see both the insn_count delta and whether the two pseudos got one register.
+2. F2 (unchanged, lower priority): a reachable second loop arming the moved_once doubling at
+   loop.c:1609-1611 for zero net emitted words.
+3. Re-examine whether the bar is really 120: every measurement so far has priced payloads
+   against threshold 122 decaying to 119.  A payload that also lengthens `lim`'s lifetime or
+   adds a second moved movable changes the decay term at loop.c:1904, so a smaller payload might
+   suffice.  s16 killed one version of this (F3) but on the pre-CLOBBER chassis.
+
+## [s18] Replacing the function's four (s16)*(u16 *)(p + 0xC) signed re-interpretations with live union { u16 u; s16 s; } temporaries initialised from the halfword raises loop insn_count by exactly +1 per site and emits no extra machine word per site, so a LIVE union constructor pays the same payload rate as the dead one s17 measured.
+- mechanism: store_constructor (tools/gcc-2.7.2/expr.c:2988-2996) emits an unconditional (clobber target) for any UNION_TYPE constructor whether or not the value is used; count_loop_regs_set (loop.c:2989ff) counts every RTX_CLASS 'i' insn toward insn_count regardless of pattern; delete_dead_from_cse's final else live_insn = 1 (cse.c:8765) cannot delete a bare CLOBBER because it is neither SET nor PARALLEL; final.c emits nothing for it.
+- probe: tmp/grind/func_8007526C/s18/p1_live_union_4sites.c applied at src/text1b.c:6660, then sandbox func_8007526C --disable all and the .loop dump.
+- result: score 15, build_insns 95, .loop 'Loop from 14 to 284: 95 real insns' -- insn_count 91 -> 95, exactly +1 per site. The +2 on build_insns is the function's new prologue/epilogue, not a per-site cost. The reduced-case RTL (tmp/grind/func_8007526C/s18/micro2.c, function a2) shows the union decl as (reg/v:HI 73) with (insn 9 (clobber (reg/v:HI 73))) emitted on a REGISTER.
+- verdict: CONFIRMED
+
+## [s18] On the s18 chassis each of the six measured aggregate-constructor payloads allocated 8 phantom frame bytes per constructor and gave this function a subu $sp / addu $sp pair, while the baseline candidate.c and the target asm/funcs/func_8007526C.s both have vars= 0 and no sp adjust.
+- mechanism: The slot comes from assign_stack_temp (tools/gcc-2.7.2/function.c:826) into assign_stack_local (function.c:670), whose STACK_BOUNDARY rounding makes any stack object 8 bytes on MIPS. It is a phantom slot: the RTL never references it -- the union decl itself lives in a pseudo and the CLOBBER is emitted on that REGISTER -- but get_frame_size() is non-zero so the MIPS prologue and epilogue materialise. Crucially the only reduced-case spelling that avoids the slot, union hw v; v.u = p[0];, is exactly the spelling that never enters store_constructor (expr.c:2988) and so never fires the CLOBBER at expr.c:2996.
+- probe: Six-form frame table (0/4/18/30/30/30 constructors, union sizes 1, 2 and 4 bytes) read from the .frame directive of each build, plus a nine-spelling reduced-case sweep in tmp/grind/func_8007526C/s18/micro2.c and micro3.c compiled with the production cc1 and CC_FLAGS: constant initialiser, non-constant initialiser, SImode union, one-field struct, two-field struct, register-qualified union, GNU cast-to-union as a call argument, GNU cast-to-union as a pure rvalue, and the member-assignment control.
+- result: 4 constructors -> vars=32, 18 -> vars=144, 30 -> vars=240 (independent of the union's own size); build_insns 95 / 95 / 92 against a frameless baseline of 93 and a target of 91. Every constructor spelling allocated the slot; only the member-assignment spelling (which emits no CLOBBER) did not.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD df727cb4 chassis 2026-09-07, memory/grind/func_8007526C/candidate.c plus each probe applied at src/text1b.c:6660, pure C, no FAKE construct present (tools/fake_ablate.py reports no FAKE carrier for this function)
+
+## [s18] Reading every one of the function's eighteen rvalue *(u16 *) accesses through a union { u16 u; s16 s; } temporary measured loop insn_count 109, and all four switch-comparison constants were still hoisted to the pre-header.
+- mechanism: The payload rate is +1 loop insn per constructor, and the function has exactly eighteen sites where a union view of a 16-bit table field has a semantic reading (six read-modify-write updates, four >> 8 state reads, two + 1 state bumps, four field copies from p+0x18 / p+0x38, four signed compares); its other twenty-two *(u16 *) occurrences are store destinations, which are lvalues and cannot be constructors. The gate is move_movables' desirability test (threshold * savings * m->lifetime) >= insn_count at tools/gcc-2.7.2/loop.c:1631, with threshold 122 decayed to 119 by loop.c:1904 once lim is moved, so the switch constants stay hoisted for any insn_count below 120.
+- probe: tmp/grind/func_8007526C/s18/p4_pun_all_reads.c applied at src/text1b.c:6660, then sandbox func_8007526C --disable all and the .loop dump.
+- result: score 15, build_insns 95, .loop 'Loop from 14 to 362: 109 real insns' with regno 75 moved and regnos 140/142/143/144 all 'moved to 370/372/374/376/378'. Eleven insns short of the bar, exactly as the +1-per-site rate predicts (91 + 18 = 109). Reaching 120 would need 29 constructors, eleven more than the function has real punning sites -- which is why every form that does reach the bar is dead code failing cheat-checklist T1/T2/T6.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD df727cb4 chassis 2026-09-07, p4_pun_all_reads.c applied at src/text1b.c:6660, pure C, no FAKE construct present (tools/fake_ablate.py reports no FAKE carrier for this function)
