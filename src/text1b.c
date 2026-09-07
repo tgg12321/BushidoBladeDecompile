@@ -126,7 +126,54 @@ void func_80047FBC(s32 arg0, s32 arg1, s16 arg2, s16 arg3)
         } while ((count--) != 0);
     }
 }
-INCLUDE_ASM("asm/funcs", func_800480C0);
+void func_800480C0(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s16 arg4, s16 arg5)
+{
+    volatile u32 pre_pad[8]; // !FAKE: phantom-frame-slot volatile filler (owner ruling 2026-08-18, .claude/rules/no-new-park-categories.md:422-434; grant row engine/volatile_cheats.py:779, commit 661c01ef): the target reserves 32 locals bytes at sp+0x18..sp+0x37 that no instruction in asm/funcs/func_800480C0.s reads or writes; mechanism: GCC 2.7.2 get_frame_size/expand_decl reserves declared locals (config/mips/mips.c:4443-4475); lever-exhaustion: memory/grind/func_800480C0/hypotheses.md s1-s23, 104 rejected forms, every referenced producer costs >=1 store (flow.c:1740-1741 never deletes the last store to a frame object)
+    u32 *p;
+    s32 base_addr;
+    s32 count;
+    s32 new_var;
+    base_addr = arg0;
+    p = (u32 *)arg0;
+    arg0 = 0; // !FAKE: dead store to a PARAMETER (sanctioned dead-store family, .claude/rules/dead-store-fake-exception.md; identical construct in the matched sibling func_80047FBC at src/text1b.c:91). It defeats cse2's canonical-register substitution, which otherwise folds the {arg0, p, base_addr} equivalence class and emits one base copy instead of two; mechanism: GCC 2.7.2 cse.c canonical-reg substitution; lever-exhaustion: hypotheses.md s1-s3
+    p = (u32 *)((s32)p + (((s32)(arg1 << 16)) >> 14));
+    p = (u32 *)(base_addr + (((*p) >> 2) << 2));
+    count = *(p++);
+    if (count != 0) {
+        s32 sx_arg2;
+        s32 sx_arg3;
+        s32 sx_arg4;
+        s32 sx_arg5;
+        count--;
+        sx_arg2 = arg2;
+        sx_arg3 = arg3;
+        sx_arg4 = arg4;
+        sx_arg5 = arg5;
+        do {
+            u32 word;
+            s16 a1v;
+            s16 a2v;
+            s16 a3v;
+            s16 v0v;
+            word = *p;
+            p = (u32 *)(((s32)p) + 4);
+            a1v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            a2v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            new_var = base_addr + (((u32)word >> 2) << 2);
+            a3v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            v0v = (s16)(*((u16 *)p));
+            p = (u32 *)(((s32)p) + 2);
+            func_800482C8(new_var,
+                          (s32)a1v + sx_arg2,
+                          (s32)a2v + sx_arg3,
+                          (s32)a3v + sx_arg4,
+                          (s32)v0v + sx_arg5);
+        } while ((count--) != 0);
+    }
+}
 /* func_800481E8 — COMPLETED-C 2026-08-22 (commit 272e47c4, layer-2 PASS;
  * allowlist row granted per the parked-but-proven audit, ruling cbcfda04).
  * Two annotated constructs, both in sanctioned families:

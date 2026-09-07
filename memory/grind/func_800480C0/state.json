@@ -654,5 +654,14 @@
  "exhaustion_base": 23,
  "last_unpark_reason": "owner 2026-09-06: pre_pad[8] row added to engine/volatile_cheats.py (commit 661c01ef) - fix annotation to // !FAKE: and argue the arg0 = 0 dead store explicitly at layer-1",
  "last_unpark_at": "2026-09-07T01:28:16.218251+00:00",
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "a96c99d4800c4536",
+   "when": "2026-09-07T01:36:00.580686+00:00",
+   "summary": "final call: Two annotated constructs, both inside sanctioned families with prerequisites verified independently. (1) volatile u32 pre_pad[8] \u2014 phantom-frame-slot family (.claude/rules/no-new-park-categories.md:42"
+  }
+ ]
 }

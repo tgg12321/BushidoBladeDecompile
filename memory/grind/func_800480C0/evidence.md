@@ -2249,3 +2249,37 @@ item was open.
 - [s24] Frontier item 3 (mixed args/vars partitions) is retired by the merge, not by a new probe: s18's b6/b7/b8/b10 + c1/c2 table already measured that args_size is a function of the argument count and that every partition above (24,32) lands stores inside sp+0x18..0x37.
 - [s24] tools/fake_ablate.py cannot ablate a body that carries a preceding `static __inline__` helper - it installs the function body only and both variants return ERR/None (tmp/grind/func_800480C0/s24/fake_ablate_k4.txt). Tool limitation, recorded so a later session does not read it as a result.
 - [s24] candidate.c rewritten to the pad form with an accurate representation banner (fixes the standing "STALE HEAD CLAIMS" consistency warning: main carries INCLUDE_ASM, the candidate asserts nothing about main) and with the pad line correctly FAKE-annotated - the s23 rejected/ header wrongly said the form carried "no FAKE" while the body kept the `arg0 = 0;` unit.
+
+## s24 (synthesis, 2026-09-06) — SOLVED. The owner grant landed; the banked body scores 0.
+
+- The owner directive attached to the queue item ("pre_pad[8] row added to
+  engine/volatile_cheats.py (commit 661c01ef) - fix annotation to `// !FAKE:` and argue the
+  `arg0 = 0` dead store explicitly at layer-1") is now EXECUTED. Verified the row exists:
+  `engine/volatile_cheats.py:779  "func_800480C0": frozenset({("pre_pad", 8)}),` with a
+  comment block at :775-778 citing the text1b.c sibling family and this ledger. Commit
+  661c01ef, subject `engine: sanction func_800480C0 pre_pad[8] (phantom-frame-slot family)`.
+- Installed s23's bytes-proven body over `INCLUDE_ASM("asm/funcs", func_800480C0);` at
+  src/text1b.c:129 (LF verified, zero CR in the file), with BOTH FAKE annotations respelled
+  from `/* FAKE: */` to the family's `// !FAKE:` form — the spelling the pad family's FORM
+  CONSTRAINT requires (.claude/rules/no-new-park-categories.md:432) and the one the matched
+  sibling func_80047FBC ships at src/text1b.c:85.
+- `sandbox func_800480C0 --disable all` -> `"score": 0`, `target_insns` 74, `build_insns` 74,
+  `scorable` true, `rules_dropped` 0. Previously 20 with the identical body. The 20 was, as
+  s23 stated, purely the allowlist artefact: with the row present the engine no longer strips
+  the unreferenced pad and the honest floor is 0. This retroactively CONFIRMS s23's central
+  claim and closes the s23 frontier item exactly as it predicted.
+  Artifact: tmp/grind/func_800480C0/s24/sandbox0.txt
+- `verify-oracle` -> `"ok": true`; build/bb2.exe SHA1
+  `62efab4f73f992798c43e8c730aa43baa10bb4fa` == oracle. Full clean driver build, whole EXE
+  byte-identical to the original with this body in place.
+  Artifact: tmp/grind/func_800480C0/s24/verify_oracle.txt
+- The floor trajectory closes: 20 (s1-s21) -> 1 (s22 written-carrier) -> 20 (s23 correction,
+  pad-stripped) -> 0 (s24, grant applied). No new codegen work was needed or done in s24; the
+  function's C has been correct since s23 and the only variable was the engine row.
+- Layer-1 argument for the `arg0 = 0;` dead store (per the owner directive) is written out in
+  full in memory/grind/func_800480C0/self_vet.md T1/T3/T5: it is a dead store to a PARAMETER,
+  the exact shape sanctioned by .claude/rules/dead-store-fake-exception.md (owner ruling
+  2026-07-01), annotated, after documented lever-exhaustion, and identical to the construct
+  already accepted at layer-2 in the committed sibling func_80047FBC (src/text1b.c:91). Its
+  mechanism is cse.c canonical-register substitution: without it cse2 folds the
+  {arg0, p, base_addr} equivalence class and emits one base copy where the target has two.

@@ -2399,3 +2399,18 @@ memory read, and never recorded for sp-based stores). It does not cover combine.
 jump.c cross-jumping / tail-merge, both of which delete insns for reasons unrelated to liveness.
 The probe is cheap: take the s22 k4 dumps already on disk and count `(set (mem ...))` insns per
 pass across .combine and .jump2 rather than only across .cse2/.flow as s23's cnt.py did.
+
+## s24 (synthesis, 2026-09-06) — frontier resolved, not re-spelled.
+
+CONFIRMED: "the residual is an allowlist artefact, not a codegen gap" (s23 frontier item 1).
+Probe: install the banked pad body verbatim after the owner's grant row landed; measure.
+Result: sandbox 0 / 74 of 74 / rules_dropped 0, and verify-oracle SHA1 == oracle. The two
+remaining s23 frontier items (multi-basic-block alter_reg phantoms; mixed
+var_size/args_size partitions such as (24,32)) are now MOOT — they existed only to find an
+honest producer for a 32-byte untouched region that the sanctioned pad now supplies with a
+granted row. They are NOT killed and should not be re-opened for this function; if a future
+ruling ever revokes the pad grant, they are the two live axes to resume from.
+
+No new spellings were tried this session and none should be: the 104 banked rejections plus
+s22's k4 (score 1, flow.c:1740-1741 class kill on the referenced carrier) already establish
+that every referenced producer costs at least one instruction.
