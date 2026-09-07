@@ -1,8 +1,8 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 16,
- "current_modality": "synthesis",
+ "session_count": 17,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -99,23 +99,29 @@
    "floor": 13,
    "modality": "synthesis",
    "headline": "Named the 13-point residual to a single integer: a controlled two-config cc1 experiment shows hard- vs soft-float changes ONLY loop.c's threshold (122 vs 58, via 32 FP regs going fixed), with insn_cou"
+  },
+  {
+   "session": 17,
+   "floor": 13,
+   "modality": "solver",
+   "headline": "Solver triage closed the sched axis and found the zero-word payload F1 asked for: a union constructor's CLOBBER insn survives cse1, raises loop insn_count 1-for-0 words, and 30 of them reproduce the t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A LIVE payload exists that survives cse1 and is removed after loop.c has counted it, at better than the measured 3-loop-insns-per-emitted-word rate, supplying the exact 21 insns between the truthful-split ceiling (99) and the bar (120).",
-   "mechanism": "count_loop_regs_set runs at loop.c:591, before move_movables (loop.c:967) and before strength_reduce (loop.c:977), so anything strength_reduce, cse2, combine or jump2 later deletes was already counted. Dead payloads are class-dead (cse1's delete_dead_from_cse, cse.c:8684). Measured live rates: jump2 cross-jumping 3:1 (build floor 102), truthful two-step splits +8 loop insns for +1 word, combine reassociation 1:0 but only with fabricated addends (Judge-FAILed 2026-09-07 17:07). The untested class is payloads removed by cse2 rather than cse1 -- redundancies that only become visible after loop.c's own strength reduction rewrites the address givs (the s16 dumps show giv reg 77 and giv reg 73 created from biv reg 74).",
-   "next_probe": "Build address- and value-staging shapes whose redundancy is invisible to cse1 (different extended basic blocks, or dependent on the biv rewrite) from memory/grind/func_8007526C/candidate.c, apply with tmp/grind/func_8007526C/s15b/apply.py, and for each record (loop insn_count from the .loop dump, build_insns, score) plus the count of surviving insns in t_*.cse2 vs t_*.loop. Anything better than 3-for-1 reopens the axis; 21 insns at 1-for-0 closes the function."
+   "hypothesis": "The CLOBBER payload can be made frame-free, removing the two addiu sp words and taking the measured form to the s6 floor-1 state from an ordinary loop.",
+   "mechanism": "stmt.c:3357-3364 puts an automatic in a register at -O2 when DECL_MODE != BLKmode, the decl is not volatile and not TREE_ADDRESSABLE, and obey_regdecls is 0. The 30 union locals evidently failed one of those tests and took 8 frame bytes each; the union's DECL_MODE (stor-layout.c) and the dead-store path are the two candidates. A register-resident union constructor still emits the expr.c:2996 CLOBBER, so the insn_count gain should survive the fix.",
+   "next_probe": "Vary the payload union's type one axis at a time from tmp/grind/func_8007526C/s17/probe_union30_nocse.c -- union { s32 w; }, union { u16 u; s16 s; }, a single-field union { u8 c; } -- applying with tmp/grind/func_8007526C/s15b/apply.py, and for each record the frame size in the prologue word, build_insns, score, and the loop insn_count from the .loop dump. Read the .greg dump to see whether the payload pseudos were given hard registers or stack slots."
   },
   {
-   "hypothesis": "A second loop that carries lim can be genuinely reachable and still emit no NET words, because part of the target's own 91 words belongs to that second loop rather than to the main one.",
-   "mechanism": "The moved_once doubling at loop.c:1609-1611 needs only insn_count*2 = 182 > 119, so it is much the cheaper gate; loop numbers run last-first (loop.c:435), so a trailing loop that moves regno 75 sets moved_once[75] at loop.c:1912 and doubles the main loop's insn_count. moved_once is a per-function array (loop.c:157,344), so any earlier-scanned loop arms it. The three reachable arming spellings measured cost exactly 3 words each (score 4/5, build 93) against a zero-word budget, but that budget assumes the main loop must emit all 91 target words.",
-   "next_probe": "Build nests whose combined emitted word count is 90-91 (start from rejected/same-back-edge-nest-score29.c and vary where lim is set and which loop owns the i++ and the exit test), and for each read the .loop dump to confirm the inner region is scanned first and moves regno 75, then check whether the main loop prints 'halved since already moved'."
+   "hypothesis": "An ADMISSIBLE payload of ~29 CLOBBERs exists in the function's own semantics: type-punning its sub-word accesses through a union local.",
+   "mechanism": "expr.c:2996 emits the CLOBBER for every UNION_TYPE constructor, live or dead, so a union temporary that carries a real value still pays the payload. func_8007526C performs roughly 29 accesses spelled *(u16 *)(p + k) and one (s16) re-interpretation per arm; reading them through a union { u16 u; s16 s; } local is ordinary idiomatic decomp C with a genuine semantic reading (it is how the original 16-bit signed/unsigned punning would naturally be written), not a coercion construct. If a live union constructor's copy coalesces away, each site is +1 insn_count for 0 words and 29 sites clear the bar of 120.",
+   "next_probe": "Start small to price it: convert ONE arm's accesses in memory/grind/func_8007526C/candidate.c to a union { u16 u; s16 s; } temporary, apply, and read (loop insn_count from the .loop dump, build_insns, score). If the per-site rate is +1 insn_count / +0 words, scale to all arms and re-measure; if a copy survives, try initialising the union from the loaded halfword and reading .s back out for the signed compare."
   },
   {
-   "hypothesis": "The disposition record for this function, when the driver eventually declares exhaustion, should rest on the s16 diagnosis rather than on the ladder count.",
-   "mechanism": "The residual is now attributable to one named integer with a four-link source chain (loop.c:532 -> regclass.c:380-387 -> mips.h:524-536 -> mips.h:1224-1225), measured by a controlled two-configuration experiment in which every C-controlled quantity is bit-identical. That is materially stronger evidence than 'the ladder is spent', and it identifies the exact re-activation trigger: any ruling or toolchain finding that changes the compiler's fixed_regs set (or a class grant covering the insn_count payload) makes the residual attackable again.",
-   "next_probe": "No measurement needed. If a later session is dispatched in escalation modality, cite evidence.md [s16] and tmp/grind/func_8007526C/s16/{t_hard.loop,t_soft.loop} in the foreclosure record, and do NOT re-file the -msoft-float integration handoff that the standing Judge constraint forbids."
+   "hypothesis": "F2 (unchanged, now lower priority): a reachable second loop can arm the moved_once doubling at loop.c:1609-1611 for zero net emitted words.",
+   "mechanism": "loop_optimize scans loops last-first (loop.c:435), so a trailing or inner loop that moves regno 75 sets moved_once[75] at loop.c:1912 and doubles the main loop's insn_count to 182 > 119. The cost is the arming loop's own words; every reachable spelling measured so far costs exactly 3, and the target has zero spare words. Note the target's emitted code contains exactly ONE backward branch (asm/funcs/func_8007526C.s:99), so any second live loop must add a back-edge word unless it shares that branch -- the shared-back-edge nest was measured at score 29.",
+   "next_probe": "Only if the CLOBBER axis stalls. Build nests whose combined emitted word count is 90-91 from rejected/same-back-edge-nest-score29.c, varying where lim is set and which loop owns the i++ and the exit test, and read the .loop dump to confirm the inner region is scanned first, moves regno 75, and makes the main loop print 'halved since already moved'."
   }
  ],
  "judge_constraints": [
@@ -463,6 +469,22 @@
    "measured_on": "HEAD bd38096c chassis 2026-09-07, memory/grind/func_8007526C/candidate.c applied to src/text1b.c, pure C, no FAKE construct present",
    "predicate_cite": "",
    "result": "No second decay is available on this chassis. lim (regno 75) is the moved movable and already supplies the one decay the"
+  },
+  {
+   "session": 17,
+   "statement": "The 13-point residual is a difference in the CONTENT of the emitted instruction stream (a missing or surplus computation), not merely in where four instructions sit.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 552bc572 chassis 2026-09-07, memory/grind/func_8007526C/candidate.c applied to src/text1b.c, pure C, no FAKE constructs present (tools/fake_ablate.py finds none in any banked form for this functi",
+   "predicate_cite": "",
+   "result": "Refuted. The classifier reports the register-blanked multisets identical apart from two surplus nops on our side, and th"
+  },
+  {
+   "session": 17,
+   "statement": "A scheduler perturbation (LUID order, LUID move, dependence edge or INSN_COST) can move the four switch-comparison constants from the loop pre-header into the target's three dispatch blocks.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 552bc572 chassis 2026-09-07, candidate.c applied to src/text1b.c, pure C, no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:3225",
+   "result": "The sched axis is foreclosed for this function; searching inverse_sched.py or sched_solver/perturb.py here would return "
   }
  ],
  "ladder_skip": 0,

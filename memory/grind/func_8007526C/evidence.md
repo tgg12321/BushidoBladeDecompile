@@ -1657,3 +1657,168 @@ the ledger did not previously contain.
 - [s16] No second threshold decay exists: lim supplies the only one, i is the loop's biv ('Insn 248: possible biv, reg 74, const = 1' in both dumps), and the D_800A36A0 load is non-invariant (s12).
 
 - [s16] tools/fake_ablate.py finds no FAKE-annotated construct in any banked form for this function, so the whole kill ledger is free of the masked-pseudo failure mode.
+
+## [s17] 2026-09-07, solver -- the zero-word insn_count payload EXISTS: CLOBBER insns survive cse1
+
+### Chassis + solver triage (mandated first step)
+HEAD 552bc572. candidate.c applied at src/text1b.c:6660 -> `sandbox func_8007526C --disable all`
+= `"score": 13, "target_insns": 91, "build_insns": 93`. Unchanged from s16.
+
+`python3 tools/ra_solver/inverse_compose.py classify text1b func_8007526C
+ --target-object build/src/text1b.o --ours-object tmp/sandbox/func_8007526C/text1b.o`
+-> **FIRST DIVERGENCE: SCHED**, "the ONLY multiset difference is 2 `nop`(s) (we have more).
+The instructions themselves are identical."
+
+That is a NEW and load-bearing fact about the residual, and it is also a documented
+mis-triage of the tool, both of which the ledger should carry:
+
+  * NEW FACT: register-blanked, our 93-insn stream and the target's 91-insn stream are the
+    SAME MULTISET apart from two `nop`s. The four `li` constants exist in both; only their
+    POSITION differs (ours: one pre-header block; target: three separate dispatch blocks).
+    So there is no missing or surplus computation to find -- the whole 13-point residual is
+    instruction PLACEMENT, and the 2 surplus nops are the consequence (the target fills the
+    load-delay slots after `lbu` and after `beqz` with the `li`s it kept in the loop; we
+    have nothing left to fill them with and maspsx inserts nops).
+  * TOOL LIMITATION worth carrying project-wide: `inverse_compose.py classify`'s funnel model
+    assumes multiset-identical => scheduler. **LICM also preserves the multiset while moving
+    insns ACROSS basic blocks**, so a loop.c residual classifies as SCHED. The SCHED backend
+    is the wrong model here and searching it would have produced fiction.
+
+### The SCHED layer is closed by inspection, not by search
+`schedule_insns` calls `schedule_block (b, dump_file)` once per basic block
+(tools/gcc-2.7.2/sched.c:5013) and `schedule_block` bounds its region with
+`head = basic_block_head[b]` / `tail = basic_block_end[b]` (sched.c:3225-3226). The four
+divergent `li`s sit in ONE block for us (the loop pre-header, ahead of `lw a0,0(gp)`) and in
+THREE different blocks in the target (positions 6, 10, 15/17 of the target stream: after
+`lbu`, after `beqz`, and after the second `beq`). An intra-block list scheduler cannot move
+an insn between blocks, so no scheduler perturbation -- LUID, LUID-move, dependence edge or
+INSN_COST -- can reach the target order. The sched axis is FORECLOSED for this function.
+
+### THE FIND: CLOBBER insns are counted by loop.c and are NOT deleted by cse1
+
+s15 recorded "dead payloads yield ZERO -- cse1's delete_dead_from_cse keeps loop from seeing
+them" and generalised it. That generalisation is **wrong for one RTL shape**, and that shape
+is exactly the zero-word payload frontier F1 asked for:
+
+  * `count_loop_regs_set` (tools/gcc-2.7.2/loop.c:2989ff) increments `count` for EVERY insn
+    with `GET_RTX_CLASS (GET_CODE (insn)) == 'i'`. It looks at the PATTERN only afterwards,
+    to maintain `may_not_move`. A bare `(clobber (reg))` insn therefore counts 1 toward
+    `insn_count` exactly like a real SET.
+  * `delete_dead_from_cse` (tools/gcc-2.7.2/cse.c:8684) tests `GET_CODE (PATTERN (insn)) ==
+    SET`, then `== PARALLEL`, and its final `else live_insn = 1;` is at cse.c:8765. A bare
+    CLOBBER pattern is neither SET nor PARALLEL, so it falls into that `else` and is
+    unconditionally live. Dead SETs are deleted; dead CLOBBERs are not.
+  * `final.c` emits nothing for a CLOBBER. So each surviving CLOBBER is +1 loop `insn_count`
+    for 0 emitted words -- an unbounded payload ratio, against the best previously measured
+    rate of 3 loop insns per emitted word.
+  * The C construct that emits one: a UNION CONSTRUCTOR. `store_constructor`
+    (tools/gcc-2.7.2/expr.c:2988-2996) emits `(clobber target)` unconditionally for a
+    `UNION_TYPE` / `QUAL_UNION_TYPE` target ("Inform later passes that the whole union value
+    is dead"), before storing any element. expr.c:3013 does the same for a RECORD_TYPE
+    constructor that lists every field.
+
+### Measurement (tmp/grind/func_8007526C/s17/probe_union30_nocse.c)
+candidate.c plus, immediately after `lim = 0xC8;` inside the loop, thirty scoped dead
+union initialisations `{ union un q<n> = { 1000 + n }; }`:
+
+    sandbox  -> "score": 3, "build_insns": 92   (was 13 / 93)
+    .loop    -> Loop from 14 to 440: 121 real insns.
+                Insn  19: regno  75 (life 153), savings 1  moved to 448
+                Insn 406: regno 154 (life 1), savings 1  NOT DESIRABLE
+                Insn 412: regno 156 (life 1), savings 1  NOT DESIRABLE
+                Insn 418: regno 157 (life 1), savings 1  NOT DESIRABLE
+                Insn 421: regno 158 (life 1), savings 1  NOT DESIRABLE
+
+That is the target's movable shape exactly: `lim` hoisted, all four switch-comparison
+constants left in the loop. insn_count 121 >= the bar of 120 that s15/s16 derived, reached at
+a cost of ZERO emitted words for the payload itself. The masked instruction diff against
+asm/funcs/func_8007526C.s is now three words and nothing else:
+
+    + addiu sp,sp,-240      (prologue: 30 union locals took 8 frame bytes each)
+    - nop                   (after `lw a0,0(gp)`: the KNOWN maspsx .L-label load-delay
+                             blind spot, s6; the owner has already authorised the
+                             maspsx_label_nop_funcs.txt line for this function)
+    + addiu sp,sp,240       (epilogue)
+
+i.e. the body is one frame away from the s6 floor-1 state, reached from an ORDINARY
+do-while loop rather than the banned goto spelling.
+
+### Why this form is NOT the answer, and what the remaining question is
+Thirty dead union locals are dead code: cheat-checklist T1 (no observable effect), T2 (no
+programmer writes them) and T6 all fail, and the form is banked only as
+rejected/s17-dead-union-clobber-payload-score3-deadcode.c. The session's result is the
+MECHANISM, not this form. Two things must now be solved together:
+
+  1. ADMISSIBILITY. The payload must be ~29 union (or all-fields RECORD) constructors that
+     carry real function semantics. The natural candidate is already sitting in the body:
+     func_8007526C performs roughly 29 sub-word accesses spelled `*(u16 *)(p + k)`, with one
+     s16 re-interpretation per arm (`(s16)*(u16 *)(p + 0xC)`). Type-punning those through a
+     `union { u16 u; s16 s; }` local is ordinary, idiomatic decomp C with a real semantic
+     reading, and every such initialisation emits the same CLOBBER. Whether a LIVE union
+     constructor also emits the CLOBBER (expr.c:2996 is unconditional for UNION_TYPE, so it
+     should) and whether its copy is coalesced away to 0 emitted words is UNMEASURED.
+  2. THE FRAME. The 30 dead unions took 240 bytes of stack and cost the 2 `addiu sp` words.
+     stmt.c:3357-3364 puts a non-BLKmode, non-addressable local in a REGISTER at -O2
+     (`! obey_regdecls`), so a union whose DECL_MODE is not BLKmode should not need a slot;
+     these evidently did. Whether that is the union's mode or the dead-store path is
+     UNMEASURED, and it is the cheaper of the two questions.
+
+### What did NOT work (negative controls, both banked)
+  * `{ long long d<n> = 0x100000000LL + n; }` x30 -> score 13, build 93, insn_count
+    unchanged. Plain DImode dead locals are pure SETs; cse1 deletes them. The CLOBBER is
+    specific to the aggregate-constructor path, not to wide types.
+    (rejected/s17-dead-longlong-locals-no-insncount-gain-score13.c)
+  * `struct pr { s16 a; s16 b; }` x30 dead initialisations -> score 122, build 199. A
+    two-field RECORD constructor stores to a stack slot; those stores are MEM sets, which
+    delete_dead_from_cse cannot remove (its SET arm requires a REG dest), so they all emit.
+    (rejected/s17-dead-struct-inits-emit-stores-score122.c)
+  * The same 30 unions initialised with the values 0..29 instead of 1000..1029 -> score 22,
+    build 95. cse1 forwarded the payload's constants 1/2/3/4 into the switch comparisons, so
+    the four case constants materialised at the top of the loop in four different hard
+    registers and the dispatch blocks lost them. A payload for this function must not create
+    constants that collide with the case labels.
+    (rejected/s17-union-payload-cse-collides-with-case-constants-score22.c)
+
+### Artifacts
+  tmp/grind/func_8007526C/s17/streams.py                  -- masked objdump stream dumper
+  tmp/grind/func_8007526C/s17/ours.txt, tgt.txt           -- the two masked streams
+  tmp/grind/func_8007526C/s17/probe_union30_nocse.c       -- the score-3 form
+  tmp/grind/func_8007526C/s17/probe_union30.c             -- the cse-collision form
+  tmp/grind/func_8007526C/s17/probe_clobber30.c           -- the struct form
+  tmp/grind/func_8007526C/s17/probe_di30.c                -- the DImode control
+  tmp/grind/func_8007526C/dumps/text1b.loop               -- .loop dump of the score-3 build
+
+- [s17] HEAD 552bc572 honest floor re-measured with candidate.c applied: score 13, build_insns 93, target_insns 91.
+- [s17] inverse_compose.py classify (object mode) reports the register-blanked multisets identical apart from 2 surplus nops on our side: the residual is instruction PLACEMENT only, not a different computation.
+- [s17] classify's SCHED verdict is a mis-triage for a LICM residual (its funnel model equates multiset-identity with a scheduling difference); loop.c moves insns across basic blocks while preserving the multiset. Carry this project-wide.
+- [s17] The scheduler axis is foreclosed for this function: sched.c:5013 schedules one basic block at a time and sched.c:3225-3226 bounds the region by basic_block_head/end, while the four divergent li insns occupy one block for us and three different blocks in the target.
+- [s17] count_loop_regs_set (loop.c:2989ff) counts every insn of RTX_CLASS 'i' toward insn_count regardless of pattern, and delete_dead_from_cse's final else (cse.c:8765) marks any non-SET, non-PARALLEL pattern live. A bare (clobber (reg)) insn therefore raises loop insn_count by 1, survives cse1, and emits no machine word.
+- [s17] store_constructor emits an unconditional (clobber target) for a UNION_TYPE constructor at expr.c:2996 and for an all-fields RECORD_TYPE constructor at expr.c:3013. A union initialisation is the C spelling of a zero-word insn_count payload.
+- [s17] MEASURED: candidate.c + 30 dead scoped union initialisations inside the loop gives loop insn_count 121 (bar 120), lim moved and ALL FOUR switch constants 'not desirable' -- the target's exact movable shape -- at score 3 / build_insns 92. The three residual words are addiu sp,sp,-240 / addiu sp,sp,240 (the payload's frame) and the known maspsx .L-label load-delay nop.
+- [s17] The dead-union form is inadmissible dead code and is banked to rejected/ only; the RESULT of this session is the mechanism plus its exact price, not that form.
+- [s17] Negative controls: 30 dead long long locals leave insn_count at 91 (pure SETs, deleted by cse1); 30 dead two-field struct initialisations emit all their stack stores (score 122, build 199) because delete_dead_from_cse's SET arm requires a REG destination.
+- [s17] A payload must not introduce the constants 1, 2, 3 or 4: cse1 forwards them into the switch comparisons, materialising all four case constants at the top of the loop in four hard registers (score 22).
+
+- [s17] HEAD 552bc572 honest floor re-measured with candidate.c applied at src/text1b.c:6660: score 13, target_insns 91, build_insns 93 -- unchanged from s16.
+
+- [s17] inverse_compose.py classify in object mode reports our 93-insn stream and the target's 91-insn stream as the same register-blanked multiset apart from two surplus nops: the residual is instruction PLACEMENT only.
+
+- [s17] classify's SCHED verdict is a mis-triage for a LICM residual; loop.c moves insns across basic blocks while preserving the multiset, which classify's funnel model does not model.
+
+- [s17] sched.c:5013 schedules one basic block per call and sched.c:3225-3226 bounds the region by basic_block_head/end, while our four divergent li insns occupy one block and the target's occupy three -- the sched axis is foreclosed for this function.
+
+- [s17] count_loop_regs_set (loop.c:2989ff) counts every insn of RTX_CLASS 'i' toward insn_count regardless of pattern; delete_dead_from_cse's final else (cse.c:8765) marks any non-SET, non-PARALLEL pattern live; final.c emits nothing for a CLOBBER. A bare (clobber (reg)) in the loop is therefore +1 insn_count for 0 emitted words.
+
+- [s17] store_constructor emits an unconditional (clobber target) for a UNION_TYPE constructor at expr.c:2996 and for an all-fields RECORD_TYPE constructor at expr.c:3013 -- a union initialisation is the C spelling of that payload.
+
+- [s17] MEASURED: candidate.c + 30 dead scoped union initialisations gives loop insn_count 121 against the s15/s16 bar of 120, with lim moved and all four switch constants 'not desirable', at score 3 / build_insns 92.
+
+- [s17] The three residual words of that build are addiu sp,sp,-240 and addiu sp,sp,240 (the payload's 240-byte frame) and the known maspsx .L-label load-delay nop after lw a0,0(gp) -- so the body is one frame away from the s6 floor-1 state, reached from an ordinary do-while loop rather than the banned goto spelling.
+
+- [s17] The dead-union form is inadmissible dead code (T1/T2/T6) and is banked to rejected/s17-dead-union-clobber-payload-score3-deadcode.c only; it must never be filed as a candidate.
+
+- [s17] stmt.c:3357-3364 gives a non-BLKmode, non-addressable automatic a register at -O2 (! obey_regdecls), so the 240 bytes the 30 union locals took is not yet explained and is the cheapest open question.
+
+- [s17] A payload for this function must not introduce the constants 1, 2, 3 or 4: cse1 forwards them into the switch comparisons and the case constants then materialise at the top of the loop in four hard registers (score 22).
+
+- [s17] tools/fake_ablate.py reports no FAKE-annotated construct in any banked form for this function, so no banked instance kill rests on a masked pseudo.
