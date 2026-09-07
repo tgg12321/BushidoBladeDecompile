@@ -1,7 +1,7 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 18,
+ "session_count": 19,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -111,23 +111,29 @@
    "floor": 13,
    "modality": "forensics",
    "headline": "s17's union-CLOBBER payload priced end to end: live constructors really are +1 loop insn_count for 0 words, but every constructor allocates 8 phantom frame bytes (2 sp words this frameless target cann"
+  },
+  {
+   "session": 19,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "Reg-reg copy payload killed (cse1 deletes every copy before loop.c); the moved_once arming mechanism is now explained to the word -- insn_count *= 2 is a permanent mutation and lim's lifetime 124 vs t"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A register-to-register copy whose two pseudos are coalesced onto one hard register is a zero-word, frame-free loop insn_count payload -- the CLOBBER's rate without the CLOBBER's frame cost.",
-   "mechanism": "Such a copy is an ordinary SET with a live destination, so delete_dead_from_cse (tools/gcc-2.7.2/cse.c:8684) keeps it and count_loop_regs_set (loop.c:2989ff) counts it toward insn_count; flow.c:957's no-op-move deletion and reload's post-allocation equivalent then delete it before final.c, so it emits no word; and because it is a scalar pseudo rather than an aggregate it never reaches assign_stack_temp (function.c:826), so it adds no frame bytes. The risk is that cse1's copy propagation forwards the copy away before loop.c ever counts it.",
-   "next_probe": "Spell two or three copies inside the sanctioned named-intermediate / variable-reuse families (a fresh once-written once-read local carrying a real consumed value, per .claude/rules/narrow-byte-args-packed-call.md; or borrowing an existing local per .claude/rules/defeat-licm-hoist-var-reuse.md), apply with tmp/grind/func_8007526C/s15b/apply.py, and for each read the loop insn_count from the .loop dump, build_insns and score, plus the .lreg/.greg dumps to confirm the two pseudos landed on one hard register. If the per-site rate is +1 insn_count / +0 words with vars= 0, scale toward 29 sites; if cse1 eats the copy, look for spellings where the copy's source is redefined between the copy and the use."
+   "hypothesis": "An admissible arming loop exists whose own emitted words are re-merged by jump2 cross-jumping with words the 90-word body already has -- specifically with the body's single backward branch at asm/funcs/func_8007526C.s:99 -- rather than being cheap in the abstract.",
+   "mechanism": "The requirement is now exactly four conditions: (a) a loop with a HIGHER loop number than the main do-while, i.e. nested inside it or placed after it in the source (loop.c:435 scans last-first); (b) it must survive the phony test at loop.c:570, whose scan_start must be a CODE_LABEL -- this is why every do{}while(0) spelling is rejected; (c) it must contain a moved movable for the pseudo holding lim (regno 75), and nothing else about it matters to loop.c; (d) it must emit zero machine words. The arming variable need not be fresh and the arming loop need not be trivial.",
+   "next_probe": "Build nests from rejected/same-back-edge-nest-score29.c and rejected/inner-arming-loop-moved-once-doubling-score8.c whose arming back-edge is a textual duplicate of the main loop's `i++ ; blt` tail so jump2's cross-jump tail-merges them, and for each read (i) the .loop dump for 'Loop from ... / regno 75 ... moved' in the arming region followed by 'halved since already moved' in the main region, (ii) the .jump2 dump to confirm the merge, and (iii) build_insns -- the target is build_insns 90 with the four constants 'not desirable'."
   },
   {
-   "hypothesis": "The bar may not really be 120: a payload that also lengthens lim's lifetime or adds a second moved movable changes the threshold-decay term, so fewer payload insns could flip the four switch constants to 'not desirable'.",
-   "mechanism": "loop.c:1904 decays the threshold as movables are moved (122 -> 119 after lim), and loop.c:1631 tests (threshold * savings * m->lifetime) >= insn_count. Every s13-s18 measurement priced payloads against the post-lim value of 119 with savings = lifetime = 1 for the four constants. A form that raises the number of moved movables ahead of the constants lowers the threshold further, reducing the insn_count needed. s16 killed one version of this (frontier F3) but on the pre-CLOBBER chassis and without the exact decay arithmetic in hand.",
-   "next_probe": "Instrument the decay directly: run tools/loop_movables.py on the candidate build and on p4_pun_all_reads.c, print the running threshold at each move decision, and compute the minimum insn_count that makes the fourth constant fail for each achievable count of prior moves. Then look for an ordinary-C form that supplies those prior moves."
+   "hypothesis": "The four constants can be made non-movables at the source level by giving loop.c a reason not to treat their sets as loop-invariant single-set pseudos, without changing the emitted dispatch.",
+   "mechanism": "loop.c only builds a movable for a pseudo set once in the loop with an invariant source (scan_loop's movable construction; n_times_set drives it). The four pseudos are compiler-generated for the switch's beq comparisons, so C cannot name them -- but a dispatch spelled as explicit comparisons against a single reused named variable would give one pseudo with n_times_set > 1, which is the sanctioned defeat-licm-hoist-var-reuse shape. s11 killed a hand-written if/else dispatch at score 29, but that kill is instance-scoped and predates the exact knowledge that the target's dispatch is beq-2 / slti-3 / beq-1 / beq-3 / beq-4 with all four constants living in $v0.",
+   "next_probe": "Re-derive the if/else dispatch to reproduce the target's exact comparison order and range test, with a single s32 holding each comparison constant in turn, and read the .loop dump to see whether the movable list drops from five entries to one. Diff the shape against the banked if/else rejects first to confirm it is genuinely new before spending a build."
   },
   {
-   "hypothesis": "F2 (unchanged, lowest priority): a reachable second loop can arm the moved_once doubling at loop.c:1609-1611 for zero net emitted words.",
-   "mechanism": "loop_optimize scans loops last-first (loop.c:435), so a trailing or inner loop that moves regno 75 sets moved_once[75] at loop.c:1912 and doubles the main loop's insn_count to 182 > 119. The cost is the arming loop's own emitted words; every reachable spelling measured so far costs exactly 3, and the target has zero spare words. The target's emitted code contains exactly ONE backward branch (asm/funcs/func_8007526C.s:99), so any second live loop must add a back-edge word unless it shares that branch -- and the shared-back-edge nest measured score 29.",
-   "next_probe": "Only if both axes above stall. Build nests whose combined emitted word count is 90-91 from rejected/same-back-edge-nest-score29.c, varying where lim is set and which loop owns the i++ and the exit test, and read the .loop dump to confirm the inner region is scanned first, moves regno 75, and makes the main loop print 'halved since already moved'."
+   "hypothesis": "The bar is not 120 but 120 - 3k for k extra movables moved ahead of the constants, so a smaller payload plus real extra hoisted invariants could flip them.",
+   "mechanism": "threshold -= 3 per moved movable at loop.c:1904, tested at loop.c:1631. s16 killed one version (F3) but on the pre-CLOBBER chassis; the union payload reaches insn_count 109 (s18), which needs only k = 4 extra prior moves to clear the bar. The obstacle measured this session is the word budget: an extra live invariant costs a word wherever it sits, and the baseline is already +2 over target before any payload.",
+   "next_probe": "Instrument the running threshold with tools/loop_movables.py on candidate.c and on s18's p4_pun_all_reads.c, print the decay at each move decision, and tabulate the minimum insn_count that fails the fourth constant for k = 0..6 prior moves. Then check whether any of the function's EXISTING computations can be made loop-invariant rather than added."
   }
  ],
  "judge_constraints": [
@@ -507,6 +513,14 @@
    "measured_on": "HEAD df727cb4 chassis 2026-09-07, p4_pun_all_reads.c applied at src/text1b.c:6660, pure C, no FAKE construct present (tools/fake_ablate.py reports no FAKE carrier for this function)",
    "predicate_cite": "",
    "result": "score 15, build_insns 95, .loop 'Loop from 14 to 362: 109 real insns' with regno 75 moved and regnos 140/142/143/144 all"
+  },
+  {
+   "session": 19,
+   "statement": "A chain of plain register-to-register copies of a live local raises loop insn_count at zero emitted words.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 1b0a5b7b chassis 2026-09-07, memory/grind/func_8007526C/candidate.c plus each chain probe applied at src/text1b.c:6660, pure C, no FAKE construct present (tools/fake_ablate.py reports no FAKE car",
+   "predicate_cite": "",
+   "result": "Refuted at every scale. All three measure score 13, build_insns 93, .loop '91 real insns', identical to baseline (base '"
   }
  ],
  "ladder_skip": 0,

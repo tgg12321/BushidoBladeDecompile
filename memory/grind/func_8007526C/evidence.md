@@ -1965,3 +1965,94 @@ is whether cse1's copy propagation forwards the copy away before loop.c ever cou
 - [s18] The frame table is exact and per-constructor rather than per-byte, which means no choice of union member type, width or storage class reduces it -- the payload's word cost is 2 for any constructor count >= 1.
 
 - [s18] Next zero-word RTL shape to price: a reg-reg copy coalesced onto one hard register. It is an ordinary SET with a LIVE destination, so cse.c's delete_dead_from_cse keeps it and loop.c counts it toward insn_count, while flow.c:957 ('Delete (in effect) any obvious no-op moves') and reload's post-allocation equivalent remove it before final -- and unlike a constructor it allocates no frame.
+
+## s19 (2026-09-07, forensics)
+
+- [s19] HEAD 1b0a5b7b chassis re-measured with `memory/grind/func_8007526C/candidate.c` applied
+  at src/text1b.c:6660: score 13, build_insns 93, target_insns 91; `.loop` "Loop from 14 to 260:
+  91 real insns", `lim` (regno 75, life 63) moved, regnos 124/126/127/128 (life 1, savings 1)
+  moved.  Ledger floor and dispatch chassis agree; the dispatch brief's "measurement
+  unavailable" is a driver artefact, not a chassis change.
+
+- [s19] IDENTIFIED, from the `.cse` dump, exactly what the four hoisted movables ARE:
+  insn 226 `(set (reg:SI 124) (const_int 2))`, insn 232 `(reg:SI 126) = 1`,
+  insn 238 `(reg:SI 127) = 3`, insn 241 `(reg:SI 128) = 4` -- the four SWITCH DISPATCH
+  comparison constants, each with a REG_EQUAL note, each `movsi_internal2`.  The target
+  materialises the same four values in the same order (`addiu $v0,$zero,0x2` at
+  asm/funcs/func_8007526C.s:7, `0x1` at :12, `0x3` at :18, `0x4` at :20) and reuses ONE hard
+  register ($v0) for all four because their live ranges are disjoint; we get four distinct
+  hard registers only because loop.c hoisted the four pseudos into the pre-header where they
+  are simultaneously live.  The dispatch STRUCTURE our C produces is already byte-shaped
+  identically to the target's (`beq` on 2, `slti` 3 range test, then 1, then 3, then 4).
+
+- [s19] MEASURED, frontier item 1 (the reg-reg COPY payload) -- REFUTED.  Chains of 4, 10 and
+  30 plain `s32 c_k = c_{k-1};` copies of `lim`, terminating in the real
+  `*(u16 *)(p + 0xC) = c_N;` store of case 1, all leave loop `insn_count` at exactly 91 and the
+  honest score at 13 / build_insns 93.  Pass attribution from the dumps: the copies ARE emitted
+  at RTL generation (base `.rtl` region 79 insns, chain-30 `.rtl` region 109 insns, and the
+  chain is visible as `(insn 79 (set (reg/v:SI 76) (reg/v:SI 75)))`, `(insn 82 ... 77 <- 76)`,
+  `(insn 85 ... 78 <- 77)` ...), and they are ALL GONE by the end of cse1: base `.cse` region
+  76 insns, chain-30 `.cse` region 76 insns -- identical.  cse1 copy-propagates each `c_k` to
+  its value and `delete_dead_from_cse` (tools/gcc-2.7.2/cse.c:8684) then removes the now-dead
+  SET, exactly the risk the s18 frontier flagged.  loop.c never sees a copy insn, so a
+  reg-reg copy cannot be a loop `insn_count` payload at any scale in this spelling.
+
+- [s19] READ + MEASURED: the `insn_count *= 2` at tools/gcc-2.7.2/loop.c:1611 is a permanent
+  mutation of `move_movables`' by-value `insn_count` parameter (declared loop.c:1532), NOT a
+  per-movable local adjustment.  Once ANY movable with `moved_once[regno]` set is examined,
+  every LATER movable in the same `move_movables` call is priced against the doubled count.
+  `moved_once` is function-global, not per-loop: it is alloca'd once in `loop_optimize`
+  (loop.c:344) and set at loop.c:1912, so arming survives across loops in the same function.
+  Loops are scanned last-first (loop.c:435), i.e. inner-before-outer and later-before-earlier.
+
+- [s19] MEASURED the arming mechanism END TO END on the known-dead trailing-while form
+  (rejected/trailing-dead-while-arming-score1-deadcode.c, re-run this session as
+  tmp/grind/func_8007526C/s19/b_arm_dead.c): score 1, build_insns 90, and the `.loop` dump
+  reads, in scan order, "Loop from 263 to 285: 4 real insns / Insn 274: regno 75 (life 118),
+  global move-insn savings 1  moved to 298" then "Loop from 14 to 260: 91 real insns / Insn 19:
+  regno 75 (life 124), global move-insn savings 1 **halved since already moved**  moved to 300"
+  and all four constants "**not desirable**".  This is the complete, verified explanation of
+  why arming produces the target's exact movable set:
+    * `lim` is armed, so its own test is `119 * 1 * 124 >= 182` -- TRUE because its lifetime is
+      124, so `lim` is STILL hoisted to the pre-header, matching `addiu $a3,$zero,0xC8` at
+      asm/funcs/func_8007526C.s:3;
+    * `insn_count` stays 182 for the rest of the call, and each constant's test is
+      `116 * 1 * 1 >= 182` (threshold already decayed by loop.c:1904 after `lim`) -- FALSE, so
+      all four stay in the loop, exactly as the target rematerialises them.
+  The lifetime asymmetry (124 vs 1) is what makes ONE arming event select precisely the four
+  insns we need to un-hoist while sparing the one we need hoisted.  Nothing else about the
+  arming form matters to loop.c.
+
+- [s19] WORD BUDGET for any arming form, restated exactly: with arming, build_insns falls
+  93 -> 90 (the four `li` leave the pre-header and two of them fill the `lbu`/`beq` load-delay
+  slots that we otherwise pad with nops), against target_insns 91.  The one missing word is the
+  maspsx `.L`-label load-delay `nop` at asm/funcs/func_8007526C.s:6, which the owner has
+  already authorised as a gate line.  Therefore an admissible arming construct must emit
+  **exactly zero** machine words: every word it emits lands on top of an already-complete
+  90-word body and shows up directly in the score (measured: arming-dowhile-reuse-exit-test 4,
+  arming-loop-after-main 5, inner-arming-loop-moved-once-doubling 8, dowhile0-inner-arming
+  phony 13).
+
+- [s19] SPECIFICATION handed to the next session, replacing the older "F2" wording.  The
+  requirement is NOT "a second loop that emits no words" in the abstract; it is precisely:
+  a loop, with a higher loop number than the main do-while (i.e. nested inside it, or placed
+  after it in the source), that survives loop.c:570's phony test (its `scan_start` must be a
+  CODE_LABEL, which is why every `do { } while (0)` spelling is rejected as phony), in which
+  the pseudo that holds `lim` is a moved movable -- and whose own emitted words are zero
+  because they are re-merged with, or replace, words the 90-word body already has.  The
+  arming variable does not have to be a fresh one and the arming loop does not have to be
+  trivial; it only has to move regno 75.
+
+- [s19] HEAD 1b0a5b7b chassis re-measured with candidate.c applied: score 13, build_insns 93, target_insns 91 -- the dispatch brief's 'measurement unavailable' is a driver artefact, not a chassis change.
+
+- [s19] The four hoisted movables are the switch dispatch constants: .cse insns 226/232/238/241 set regs 124/126/127/128 to const_int 2/1/3/4.
+
+- [s19] Reg-reg copies are created at RTL generation and destroyed by cse1: base .rtl region 79 insns -> .cse 76; chain-30 .rtl 109 -> .cse 76. loop insn_count is 91 in both.
+
+- [s19] loop.c:1611's `insn_count *= 2` mutates move_movables' by-value parameter (declared loop.c:1532) for the whole remaining movables walk, not for one movable.
+
+- [s19] moved_once is function-global (alloca'd in loop_optimize at loop.c:344, set at loop.c:1912), so arming crosses loops; loops are scanned last-first at loop.c:435, inner before outer and later before earlier.
+
+- [s19] Measured arming end to end: lim (life 124) prints 'halved since already moved' and is STILL moved (119*1*124 >= 182); all four constants (life 1) print 'not desirable' (116*1*1 < 182). Score 1, build_insns 90.
+
+- [s19] WORD BUDGET: with arming, build_insns falls 93 -> 90 against target 91, and the one missing word is the maspsx .L-label load-delay nop at asm/funcs/func_8007526C.s:6. So an admissible arming construct must emit EXACTLY ZERO machine words; every word it emits is a wrong word straight into the score. Measured costs of banked arming spellings: trailing-dead-while 1 (dead code), arming-dowhile-reuse-exit-test 4, arming-loop-after-main 5, inner-arming-loop-moved-once-doubling 8, dowhile0-inner-arming 13 (phony at loop.c:570), same-back-edge-nest 29.
