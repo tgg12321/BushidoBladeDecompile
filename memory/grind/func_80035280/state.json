@@ -1,8 +1,8 @@
 {
  "func": "func_80035280",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 16,
    "modality": "structural",
    "headline": "Floor 39 -> 16: local-alloc.c:472's reg_n_deaths==1 eligibility test was the flag-block seat permutation; splitting the reused accumulator into one local per merged bit plus hoisting the loop-1 counte"
+  },
+  {
+   "session": 4,
+   "floor": 15,
+   "modality": "permuter",
+   "headline": "Floor 16 -> 15: loop 1's byte stores respelled as ((u8 *)p + i)[0x17] flip the address add to the target's operand order; two permuter campaigns (30k + 25k iterations, both harvested and stopped) foun"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The loop.c:1631 LICM decision on the 0x91A2B3C5 (/1800) magic is the entire remaining 16 points, and under the shipped compiler configuration it needs a loop-2 RTL insn_count of at least 123 that no measured spelling approaches.",
-   "mechanism": "loop.c:1631 moves the constant-load movable iff threshold * savings * m->lifetime >= insn_count; threshold is 122 (loop.c:532, no call in the loop), savings is 1 (loop.c:897, hard-coded for a move_insn) and lifetime is 1 (loop.c:791), so the product is pinned at 122 and only insn_count is C-movable. The five loop-2 spellings measured across s1/s2/s3 give insn_counts of 44, 55, 55, 62 and 62, and s2 measured the gate flipping between 120 and 123.",
-   "next_probe": "Do NOT re-derive the gate (s2 FACT 8 measured the 120/123 boundary) and do NOT re-derive the -msoft-float story (s3 FACT 19 supersedes s2 FACT 11: the flag alone leaves this body at 16). The one untried honest direction is a rederive-modality session looking for a different decomposition of the three clock fields (minutes / seconds / hundredths) that is byte-equivalent to the current loop but carries more pre-combine RTL. If that comes back empty, the residual is compiler-configuration-bound and the disposition question belongs to a later escalation-modality session, not to a structural one."
+   "hypothesis": "Ten of the fifteen remaining points are register NAMES, not instructions: the hoisted 0x91A2B3C5 constant takes $t2 and pushes the mfhi temp to $t3. If that hoisted pseudo can be steered to a different hard register, the floor drops to about 5 without touching the loop.c:1631 decision at all - and nobody has looked at this axis yet, because s1-s3 treated the whole residual as one indivisible LICM problem.",
+   "mechanism": "After the hoist, the constant pseudo is a global allocno live across the whole of loop 2 and is coloured before the loop's short-lived mfhi temp; global.c's allocno priority ordering and the local-alloc suggestion pass decide which of $t1/$t2/$t3 each gets. The target's allocation has $t1 = 0x88888889 and $t2 = the mfhi temp, so only ONE seat has to move.",
+   "next_probe": "A solver-modality session: run tools/ra_solver's global.c model on the s4 candidate (memory/grind/func_80035280/candidate.c) and use inverse_compose.py classify on the $t2 seat to get a REACHABLE/FORECLOSED verdict plus ranked C-lever vectors, then spell the top vectors and measure them with tmp/grind/func_80035280/s4/score.sh (about two seconds each). Do NOT start from the LICM question - this is a pure seat problem and it is worth 10 of the 15 points."
   },
   {
-   "hypothesis": "The 16-point body's two constructs - the split accumulators (flags/flags0/flags1/flags2) and the `i = 0;` hoist - need an admissibility ruling before any submission, and respelling them to dodge that is the wrong move.",
-   "mechanism": "Neither construct is dead and neither is a coercion: every split local is written once and holds a value that IS stored to p[8] and read by the next arm, and `i = 0;` is the loop's real initialisation. But flags0 and flags1 are each read TWICE (the store and the next arm), so this is not the once-written/once-read named-intermediate shape in .claude/rules/narrow-byte-args-packed-call.md, and the only reason not to reuse one `v` is codegen - which is the shape the frozen list covers under 'variable reuse for codegen control' read in reverse.",
-   "next_probe": "Nothing to submit while the body is at 16. When a future session reaches distance 0 from this chassis, file a ruling-request naming BOTH constructs and quoting the candidate.c admissibility note, rather than a speculative candidate-ready. The fallbacks if either is refused are the split-only body at 18 (tmp/grind/func_80035280/s3/v/v4.c) and the un-split body at 39 (rejected/s3-single-accumulator-global-allocno-score39.c)."
+   "hypothesis": "The loop.c:1631 hoist of the 0x91A2B3C5 (/1800) magic is the remaining 5 points once the seat question above is settled, and it needs a loop-2 spelling whose pre-combine RTL insn_count reaches 123 while keeping the inline-index giv shape.",
+   "mechanism": "threshold * savings * m->lifetime = 122 * 1 * 1 is pinned on all three factors (s4 proved savings and lifetime from loop.c:793/597 and loop.c:791; s1/s2 pinned threshold at loop.c:532), so only insn_count moves. Measured loop-2 insn_counts across s1-s4: 44, 55, 55, 62, 62. s2 measured the gate flipping between 120 and 123.",
+   "next_probe": "A rederive-modality session on the arithmetic itself: look for a decomposition of the three clock fields (minutes / seconds / hundredths from a 30 Hz frame counter) that is byte-equivalent to the current loop but carries substantially more pre-combine RTL. Do NOT re-derive the gate (s2 FACT 8), do NOT re-run -msoft-float (s3 FACT 19), do NOT re-seed either permuter chassis (s4), and do NOT re-open savings / lifetime / loop_has_call / movable-creation (s4). If that comes back empty, the residual is compiler-configuration-bound and the disposition question belongs to an escalation-modality session."
   },
   {
-   "hypothesis": "The reg_n_deaths == 1 lever found here is generic and should transfer to other queue functions whose target holds an accumulator in $v0/$v1 across a straight-line block where our build puts it in an argument register.",
-   "mechanism": "local-alloc.c:472's eligibility test is not specific to this function: any pseudo written more than once in a block is refused local allocation and gets whatever global-alloc has left after the short single-death temps have taken $v0/$v1/$a0. Splitting the multi-written variable into one local per value restores local eligibility and the qty_compare priority ordering.",
-   "next_probe": "Cheap and mechanical: for any function stuck on an argument-register accumulator, grep its .lreg slice for a pseudo that 'dies in N places' with N > 1 and cross-check the ';; N regs to allocate' list in .greg. If the accumulator is in the global list, try the one-local-per-value split. Worth a cross-function sweep by a solver-modality or forensics session; it is not a func_80035280-specific finding."
+   "hypothesis": "The 15-point body's two non-ordinary constructs - the split accumulators (flags/flags0/flags1/flags2) and the `i = 0;` hoist - still need an admissibility ruling before any submission, and respelling them to dodge that is the wrong move. Carried unchanged from s3.",
+   "mechanism": "Neither construct is dead and neither is a coercion: every split local is written once and holds a value that IS stored to p[8] and read by the next arm, and `i = 0;` is the loop's real initialisation. But flags0 and flags1 are each read TWICE (the store and the next arm), so this is not the once-written/once-read named-intermediate shape in .claude/rules/narrow-byte-args-packed-call.md, and the only reason not to reuse one `v` is codegen.",
+   "next_probe": "Nothing to submit while the body is above 0. When a future session reaches distance 0 from this chassis, file a ruling-request naming BOTH constructs and quoting the candidate.c admissibility note, rather than a speculative candidate-ready. The fallbacks if either is refused are the split-only body at 18 (tmp/grind/func_80035280/s3/v/v4.c) and the un-split body at 39 (rejected/s3-single-accumulator-global-allocno-score39.c)."
   }
  ],
  "judge_constraints": [],
@@ -98,6 +104,30 @@
    "measured_on": "HEAD chassis (target_insns 108), s3 candidate body built with -msoft-float through the real pipeline, zero FAKE constructs present",
    "predicate_cite": "",
    "result": "s2's FACT 11 is restated: the configuration question, if the operator ever takes it, is 'add the flag AND find a loop-2 "
+  },
+  {
+   "session": 4,
+   "statement": "The two neighbouring spellings of the loop-1 index add, `((u8 *)p)[i + 0x17]` and `(((u8 *)p) + 0x17)[i]`, are inert on this body: both measure 31 normalized instruction diffs against the accepted for",
+   "kill_scope": "instance",
+   "measured_on": "s4 minimal-TU harness (tmp/perm_80035280/compile.sh, validated byte-identical to the full-TU sandbox object for this function this session; target_insns 108), s3/s4 three-way-flag-split body, zero FAK",
+   "predicate_cite": "",
+   "result": "The lever is specifically 'pointer + index, then a constant subscript'; the commuted spellings buy nothing and should no"
+  },
+  {
+   "session": 4,
+   "statement": "A 29,979-iteration decomp-permuter campaign on the split-accumulator chassis produced exactly one improvement, and it was the loop-1 address-add fix already found by hand.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (src/code6cac_b.c:3741 INCLUDE_ASM baseline, target_insns 108), s3/s4 split-accumulator body in the validated minimal-TU harness, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "This chassis is exhausted for local mutation; under the 2026-09-01 chassis rule a future permuter session may not re-see"
+  },
+  {
+   "session": 4,
+   "statement": "The structurally different walker loop-2 chassis - the highest loop-2 RTL insn_count measured on this function (62) - is a worse permuter basin: 25,284 iterations reached a best score of 695 against t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (target_insns 108), walker loop-2 body on the s3/s4 flag-split prologue, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Seeding a search from 'more loop-2 RTL' is not productive on its own - the insn_count lever has to arrive without giving"
   }
  ],
  "ladder_skip": 0,

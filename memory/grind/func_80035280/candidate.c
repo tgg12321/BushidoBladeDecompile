@@ -1,68 +1,61 @@
 /*
- * CANDIDATE -- func_80035280 (src/code6cac_b.c) -- s3 (2026-09-07, structural)
+ * CANDIDATE -- func_80035280 (src/code6cac_b.c) -- s4 (2026-09-07, permuter)
  *
- * MEASURED THIS SESSION on the HEAD chassis (INCLUDE_ASM baseline, target 108):
- *     s2 candidate (single reused `v` accumulator)   sandbox = 39  (build 109)
- *     v declared first / v = p[8] hoisted            sandbox = 39  (build 109)
- *     `f` dropped, src = &D_80106A73 - 3 directly    sandbox = 44  (build 111)
- *     THREE-WAY SPLIT accumulator (flags/0/1/2)      sandbox = 18  (build 109)
- *     two alternating accumulators (fA/fB)           sandbox = 28  (build 109)
- *     THIS body = three-way split + `i = 0;` hoisted sandbox = 16  (build 109)
- *     same, but `s32 i = 0;` initialiser             sandbox = 29  (build 110)
- *     same, but `i = 0;` just before loop 1          sandbox = 18  (build 109)
- * 16 is the session floor and supersedes the s2 floor of 39.
+ * FLOOR 16 -> 15 THIS SESSION. The only change against the s3 body is loop 1's
+ * two byte stores, respelled from
+ *     ((u8 *)p)[0x17 + i] = *src;      /  ((u8 *)p)[0x1D + i] = *src;
+ * to
+ *     ((u8 *)p + i)[0x17] = *src;      /  ((u8 *)p + i)[0x1D] = *src;
+ * Measured on the HEAD chassis with `sandbox func_80035280 --disable all`:
+ *     s3 body                       score 16, build_insns 109
+ *     THIS body                     score 15, build_insns 109
+ * The point is the loop-1 address add. The target emits `addu $v1, $t0, $a3`
+ * (pointer first, index second); the `0x17 + i` spelling emits
+ * `addu $v1, $a3, $t0`. Adding the index to the POINTER in the source, rather
+ * than to the constant byte offset, puts the pointer in the first operand slot
+ * of the PLUS that combine hands to the addu pattern, and the operand order
+ * flips to the target's. Two other spellings of the same idea measured NO
+ * change (`((u8 *)p)[i + 0x17]` and `(((u8 *)p) + 0x17)[i]`, both 31 diffs on
+ * the s4 mini-TU harness against this body's 29) -- the win is specifically
+ * "pointer + index, then a constant subscript".
+ * A 30k-iteration decomp-permuter campaign on the s3 chassis
+ * (tmp/perm_80035280, label s4-split-accum-chassis) found exactly one
+ * improvement in the whole run, and it was this same transform spelled as
+ * `((u8 *)p)[(unsigned long long)(0x17 + i)]` -- an independent confirmation
+ * that the loop-1 address add was a real point and that nothing else in this
+ * basin is reachable by local mutation.
  *
- * WHY THIS SPELLING WINS -- the mechanism, read out of the compiler source and
- * confirmed in the dumps, not guessed.
- * local-alloc.c:472 makes a pseudo eligible for LOCAL allocation only when
- *     reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1
- * With ONE reused accumulator `v` the pseudo is set four times, so
- * reg_n_deaths == 4 (`Register 77 ... dies in 4 places` in the s2 .lreg dump),
- * reg_qty is left at -1, and the accumulator falls through to global-alloc.
- * By then local-alloc has already handed $v0/$v1/$a0 to the short per-arm
- * temps (QTYDBG blk=0 shows exactly seven block-0 quantities and the
- * accumulator is not among them), so the accumulator gets whatever is left --
- * $a1 -- and the whole flag block comes out as the 4-cycle permutation
- * (addr $a0, acc $a1, mask $v1, byte $v0) against the target's
- * (addr $a1, acc $v0, mask $a0, byte $v1).
- * Splitting the accumulator into one local per merged bit gives every one of
- * them reg_n_deaths == 1, so they are local quantities. Their local-alloc
- * priority is log2(refs)*refs*size / (death - birth) (local-alloc.c
- * qty_compare), which puts the accumulator chain ahead of the per-arm temps,
- * and find_free_reg hands it $v0 first. The emitted flag block then matches
- * asm/funcs/func_80035280.s:25AA4-25AEC instruction for instruction, register
- * for register.
- * Hoisting `i = 0;` to immediately after the `func_80077D00()` call (and
- * spelling loop 1 `for (; i < 3; i++)`) puts the counter zeroing where the
- * target has it -- the first insn after the jal's delay slot -- and takes the
- * last two points off the prologue. Position matters: the same statement placed
- * just before loop 1, or as a `s32 i = 0;` declaration initialiser, measures 18
- * and 29 respectively.
+ * EVERYTHING THE s3 HEADER SAID ABOUT THE FLAG BLOCK AND `i = 0;` STILL HOLDS
+ * (local-alloc.c:472 reg_n_deaths == 1 eligibility; the counter-zeroing slot).
+ * Read the s3 candidate header in git history / evidence.md FACT 12-18 for it.
  *
- * WHAT IS LEFT, EXACTLY: build insns 1..38 are now IDENTICAL to the target
- * (prologue, the whole flag block, the whole of loop 1). The entire remaining
- * score of 16 is the single loop.c:1631 LICM decision s1 identified and s2
- * measured: the build hoists the 0x91A2B3C5 (/1800) magic into the loop-2
- * preheader (+2 insns) and then needs a `nop` in the `lw 0x4($a2)` load-delay
- * slot, where the target materialises the constant inside the loop and lets the
- * `ori` fill that slot; that also displaces the mfhi temp from $t2 to $t3.
- * Net build 109 vs target 108. Loop 2 is otherwise register-identical.
- * The gate needs loop-2 RTL insn_count >= 123 (measured in s2); this body's
- * loop 2 is 55 real insns (`Loop from 110 to 274: 55 real insns.` in the .loop
- * dump, both constants "moved to"). Do NOT re-derive this -- see evidence.md
- * FACT 8/9 and the -msoft-float configuration finding in FACT 11.
+ * WHAT IS LEFT, EXACTLY: 15 points, ALL of them downstream of ONE decision --
+ * loop.c:1631 hoisting the 0x91A2B3C5 (/1800) magic into the loop-2 preheader.
+ * The residual diff is: +2 preheader insns (lui/ori into $t2), -2 in-loop insns
+ * (the target's lui/ori at the loop top), +1 `nop` in the `lw 0x4($a2)` load
+ * delay slot that the target's `ori` fills, and then ten register-name
+ * differences because our hoisted constant occupies $t2 and displaces the mfhi
+ * temp to $t3 (target: mfhi $t2 five times, plus the five `addu`s that read it).
+ * Kill the hoist and all 15 go together.
  *
- * ADMISSIBILITY NOTE for whoever submits this body. Two constructs need a call:
- * (1) the split accumulators flags/flags0/flags1/flags2 -- each is written once
- *     and holds a real value that IS stored to p[8] and consumed by the next
- *     arm, so nothing is dead; but the only reason not to reuse one `v` is
- *     codegen, and flags0/flags1 are read TWICE (the store and the next arm),
- *     so this is not the once-written/once-read named-intermediate shape.
- * (2) the `i = 0;` hoist -- a real initialisation of a real loop counter, moved
- *     eight statements earlier for a scheduling slot (worth 2 points).
- * If either is ruled inadmissible, memory/grind/func_80035280/rejected/
- * s3-single-accumulator-global-allocno-score39.c is the un-split fallback at 39
- * and tmp/grind/func_80035280/s3/v/v4.c is the split-only body at 18.
+ * s4 RE-DERIVED THE GATE INDEPENDENTLY FROM loop.c AND SHARPENED IT: the move
+ * condition is `threshold * savings * m->lifetime >= insn_count`. All three
+ * factors on the left are pinned, not just threshold:
+ *   threshold  = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)  (loop.c:532)
+ *                = 2 * 61 = 122; loop 2 has no call and a call cannot be added
+ *                without a `jal` (s1 kill), and n_non_fixed_regs is compiler
+ *                configuration (.claude/rules/no-compiler-divergence.md).
+ *   savings    = m->savings = n_times_used[regno] (loop.c:793), and
+ *                n_times_used is a bcopy of n_times_set (loop.c:597) -- i.e.
+ *                the number of SETS of the constant pseudo inside the loop, not
+ *                the number of uses. For a single constant load that is exactly
+ *                1, and it can only go UP (more sets = more eager hoisting).
+ *   m->lifetime = luid span of the pseudo (loop.c:791); the const load sits
+ *                immediately before its single mult, so it is already the
+ *                minimum 1, and it too can only go up.
+ * So 122 * 1 * 1 = 122 and the ONLY C-movable term is insn_count, which must
+ * reach >= 123 (s2 measured the flip between 120 and 123). This body's loop 2
+ * is 55 real insns; the largest natural spelling ever measured here is 62.
  */
 void func_80035280(void) {
     s32 *p;
@@ -87,8 +80,8 @@ void func_80035280(void) {
     flags2 = (flags1 & ~4) | (src[3] & 4);
     p[8] = flags2;
     for (; i < 3; i++) {
-        ((u8 *)p)[0x17 + i] = *src;
-        ((u8 *)p)[0x1D + i] = *src;
+        ((u8 *)p + i)[0x17] = *src;
+        ((u8 *)p + i)[0x1D] = *src;
         src++;
     }
     base = (u8 *)&D_80106A58;

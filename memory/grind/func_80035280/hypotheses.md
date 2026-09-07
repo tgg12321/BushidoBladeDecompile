@@ -497,3 +497,75 @@ solver-modality driver; the mechanism is not specific to func_80035280.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis (target_insns 108), s3 candidate body built with -msoft-float through the real pipeline, zero FAKE constructs present
+
+## [s4] Spelling loop 1's byte stores as `((u8 *)p + i)[0x17]` instead of `((u8 *)p)[0x17 + i]` flips the loop-1 address add to the target's operand order and takes the floor from 16 to 15.
+- mechanism: The subscript `0x17 + i` builds a PLUS whose first operand is the index expression, and combine hands that to the addu pattern as `addu $v1, $a3, $t0`; adding the index to the POINTER and leaving a constant subscript puts the pointer in the first operand slot, giving the target's `addu $v1, $t0, $a3`.
+- probe: tmp/grind/func_80035280/s4/v/cand_ptrplus.c installed at src/code6cac_b.c:3741 and measured with `sandbox func_80035280 --disable all`: {"score": 15, "target_insns": 108, "build_insns": 109} against the s3 body re-measured at 16/109 first this session. Cross-checked on the s4 mini-TU harness at 29 normalized diffs versus 31. Two neighbouring spellings measured no change (see the KILLED entry below).
+- result: New session floor 15, saved as memory/grind/func_80035280/candidate.c. Independently rediscovered by permuter campaign 1 as `((u8 *)p)[(unsigned long long)(0x17 + i)]` - the only improvement that campaign found in 29,979 iterations.
+- verdict: CONFIRMED
+
+## [s4] The two neighbouring spellings of the loop-1 index add - `((u8 *)p)[i + 0x17]` and `(((u8 *)p) + 0x17)[i]` - are both inert, measuring 31 normalized diffs each against the accepted form's 29.
+- mechanism: Commuting the operands inside the subscript expression does not commute the emitted addu, because combine canonicalises the PLUS before the operand order is fixed; folding the constant into the pointer and subscripting by `i` produces the same canonical form. Only moving the INDEX onto the pointer and leaving a constant subscript changes which operand reaches the first slot.
+- probe: tmp/grind/func_80035280/s4/v/l1_iplus.c and l1_castdiff.c through tmp/grind/func_80035280/s4/score.sh: 31 diffs each, against the accepted `((u8 *)p + i)[0x17]` form at 29 and the s3 body at 31. Banked at rejected/s4-loop1-index-commute-nochange.c.
+- result: The lever is specifically "pointer + index, then a constant subscript"; do not re-try the commuted spellings.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4 mini-TU harness (tmp/perm_80035280/compile.sh, validated byte-identical to the full-TU sandbox object this session; target_insns 108), s3/s4 body with the three-way flag split, zero FAKE constructs present
+
+## [s4] A 30k-iteration decomp-permuter campaign on the split-accumulator chassis finds nothing beyond the loop-1 address-add fix.
+- mechanism: The permuter mutates the C AST locally (variable reuse, declaration order, casts, expression re-association, statement swaps). Every remaining point on this body is downstream of one loop.c:1631 LICM decision that needs loop-2 RTL insn_count to more than double, which is not a local AST mutation.
+- probe: tools/permuter_campaign.py launch --dir tmp/perm_80035280 --label s4-split-accum-chassis -j 8 on the minimal-TU harness (base_score 600). 29,979 iterations, harvested with --stop. finds_new = 1, best_new_score = 590, and that find is the loop-1 transform spelled with an `(unsigned long long)` index cast plus inert noise. Log at tmp/grind/func_80035280/s4/perm/campaign_split_accum.log.
+- result: The split-accumulator basin is exhausted for local mutation. A future permuter session on this function must not re-seed this chassis (chassis rule 2026-09-01).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (target_insns 108), s3/s4 split-accumulator body in the validated minimal-TU harness, zero FAKE constructs present
+
+## [s4] The structurally different walker loop-2 chassis - the highest loop-2 RTL insn_count ever measured here (62) - is a strictly worse permuter basin and never approaches the split-accumulator body.
+- mechanism: The walker spelling keeps `dst` and `base` as explicit induction variables and three per-field locals, so loop 2 carries more pre-combine RTL (62 vs 55) but also emits two extra giv instructions and loses the target's `addiu $a1, $a1, 4` shape. 62 is still nowhere near the loop.c:1631 requirement of 123, so the extra RTL is paid for and buys nothing.
+- probe: The s1 walker loop 2 grafted onto the s3/s4 flag-split prologue (rejected/s4-walker-loop2-on-split-prologue-score55.c) measures 55 normalized diffs against the accepted body's 29. Seeded as permuter campaign 2 (tools/permuter_campaign.py launch --dir tmp/perm_80035280_w --label s4-walker-loop2-chassis -j 8, base_score 960): 25,284 iterations, 14 finds, best 695 - well short of the other chassis's 590, and no find keeps the /1800 magic inside loop 2. Harvested with --stop; log at tmp/grind/func_80035280/s4/perm/campaign_walker.log.
+- result: "More loop-2 RTL" is not on its own a productive direction to search from; the insn_count lever has to arrive without giving up the inline-index giv shape, and the permuter cannot construct that.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (target_insns 108), walker loop-2 body on the s3/s4 flag-split prologue, zero FAKE constructs present
+
+## [s4] `savings` and `m->lifetime` in the loop.c:1631 move test are pinned at their minima and can only move in the direction that makes the hoist MORE eager, so insn_count is the only C-movable term in the whole product.
+- mechanism: `savings = m->savings = n_times_used[regno]` (loop.c:793) and `n_times_used` is a bcopy of `n_times_set` (loop.c:597), i.e. the count of SETS of the constant pseudo inside the loop - exactly 1 for a single constant load, and any C change that adds a second set raises it. `m->lifetime` (loop.c:791) is the luid span between the pseudo's first and last uid; the const load sits immediately before its single `mult`, so it is already the minimum 1, and separating set from use only raises it (that is why the /30 magic with lifetime 31-35 hoists so freely). `threshold` was already pinned at 122 by s1/s2.
+- probe: Read of tools/gcc-2.7.2/loop.c lines 520-540, 690-800, 1520-1640, 2158-2215 and 2989-3060 this session, cross-checked against the s3 .loop dump line `Insn 137: regno 115 (life 1), move-insn savings 1  moved to 292`.
+- result: The frontier's claim that insn_count is the only lever is now proven from source for all three factors, not just for threshold. Two further escape routes were closed in the same read: `loop_has_call` is set only by a real CALL_INSN (prescan_loop, loop.c:2202), and the movable is always recorded for a compiler-generated constant temp because the skip test at loop.c:695-701 is satisfied by `! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)` unconditionally. The one remaining source-level blocker, `may_not_move` (loop.c:3038-3044), requires the constant pseudo to be set in two basic blocks of the loop, and the target's loop 2 is a single straight-line basic block.
+- verdict: CONFIRMED
+
+## [s4] Spelling loop 1's byte stores as ((u8 *)p + i)[0x17] instead of ((u8 *)p)[0x17 + i] flips the loop-1 address add to the target's operand order and takes the floor from 16 to 15.
+- mechanism: The subscript 0x17 + i builds a PLUS whose first operand is the index expression, and combine hands that to the addu pattern as `addu $v1, $a3, $t0`; adding the index to the POINTER and leaving a constant subscript puts the pointer in the first operand slot, giving the target's `addu $v1, $t0, $a3` in loop 1 of asm/funcs/func_80035280.s.
+- probe: tmp/grind/func_80035280/s4/v/cand_ptrplus.c installed at src/code6cac_b.c:3741 via tmp/grind/func_80035280/s4/install.py and measured with `sandbox func_80035280 --disable all`: score 15, target_insns 108, build_insns 109 - against the s3 body re-measured at 16/109 first this session on the same chassis. Cross-checked on the s4 minimal-TU harness at 29 normalized instruction diffs versus the s3 body's 31.
+- result: New session floor 15, saved as memory/grind/func_80035280/candidate.c and re-verified at 15 after being written back from that file. Permuter campaign 1 independently rediscovered the same transform as `((u8 *)p)[(unsigned long long)(0x17 + i)]` - the only improvement it found in 29,979 iterations.
+- verdict: CONFIRMED
+
+## [s4] The two neighbouring spellings of the loop-1 index add, `((u8 *)p)[i + 0x17]` and `(((u8 *)p) + 0x17)[i]`, are inert on this body: both measure 31 normalized instruction diffs against the accepted form's 29.
+- mechanism: Commuting the operands inside the subscript expression does not commute the emitted addu, because combine canonicalises the PLUS before the operand order is fixed; folding the constant into the pointer and subscripting by i produces the same canonical form.
+- probe: tmp/grind/func_80035280/s4/v/l1_iplus.c and l1_castdiff.c scored with tmp/grind/func_80035280/s4/score.sh against tmp/perm_80035280/target.o: 31 diffs each, versus 29 for `((u8 *)p + i)[0x17]` and 31 for the s3 body. Banked at memory/grind/func_80035280/rejected/s4-loop1-index-commute-nochange.c.
+- result: The lever is specifically 'pointer + index, then a constant subscript'; the commuted spellings buy nothing and should not be re-tried on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s4 minimal-TU harness (tmp/perm_80035280/compile.sh, validated byte-identical to the full-TU sandbox object for this function this session; target_insns 108), s3/s4 three-way-flag-split body, zero FAKE constructs present
+
+## [s4] A 29,979-iteration decomp-permuter campaign on the split-accumulator chassis produced exactly one improvement, and it was the loop-1 address-add fix already found by hand.
+- mechanism: The permuter mutates the C AST locally (variable reuse, declaration order, casts, expression re-association, statement swaps). Every remaining point on this body is downstream of one loop.c:1631 LICM decision that needs the loop-2 RTL insn_count to more than double, which is not a local AST mutation.
+- probe: tools/permuter_campaign.py launch --func func_80035280 --dir tmp/perm_80035280 --label s4-split-accum-chassis -j 8, base_score 600, on the validated minimal-TU harness. Waited in-turn, harvested with --stop: iterations 29,979, finds_new 1, best_new_score 590; the find is the loop-1 transform spelled with an (unsigned long long) index cast plus inert noise (a &D_80106A58 hoist, `int new_var2 = ~4;`, `long flags0`). Log tmp/grind/func_80035280/s4/perm/campaign_split_accum.log, find tmp/grind/func_80035280/s4/perm/find_590_source.c.
+- result: This chassis is exhausted for local mutation; under the 2026-09-01 chassis rule a future permuter session may not re-seed it. The campaign is a positive data point for the loop-1 fix and a negative one for everything else in the basin.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (src/code6cac_b.c:3741 INCLUDE_ASM baseline, target_insns 108), s3/s4 split-accumulator body in the validated minimal-TU harness, zero FAKE constructs present
+
+## [s4] The structurally different walker loop-2 chassis - the highest loop-2 RTL insn_count measured on this function (62) - is a worse permuter basin: 25,284 iterations reached a best score of 695 against the split-accumulator chassis's 590.
+- mechanism: The walker spelling keeps dst and base as explicit induction variables plus three per-field locals, so loop 2 carries more pre-combine RTL (62 vs 55) but emits two extra giv instructions and loses the target's `addiu $a1, $a1, 4` shape. 62 is still far below the loop.c:1631 requirement of 123, so the extra RTL is paid for and buys nothing.
+- probe: The s1 walker loop 2 grafted onto the s3/s4 flag-split prologue (rejected/s4-walker-loop2-on-split-prologue-score55.c) scores 55 normalized diffs against the accepted body's 29. Seeded as campaign 2: tools/permuter_campaign.py launch --dir tmp/perm_80035280_w --label s4-walker-loop2-chassis -j 8, base_score 960; waited in-turn across eight windows; harvested with --stop at iterations 25,284, finds_new 14, best_new_score 695. Log tmp/grind/func_80035280/s4/perm/campaign_walker.log.
+- result: Seeding a search from 'more loop-2 RTL' is not productive on its own - the insn_count lever has to arrive without giving up the inline-index giv shape, and no find in this campaign kept the /1800 magic inside loop 2. Both campaigns are harvested, stopped and confirmed dead by permuter_campaign.py status.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (target_insns 108), walker loop-2 body on the s3/s4 flag-split prologue, zero FAKE constructs present
+
+## [s4] In the loop.c:1631 move test, `savings` and `m->lifetime` are pinned at their minima for this constant and can only move in the direction that makes the hoist more eager, so insn_count is the only C-movable term in the product.
+- mechanism: savings = m->savings = n_times_used[regno] (loop.c:793) and n_times_used is a bcopy of n_times_set (loop.c:597), i.e. the count of SETS of the constant pseudo inside the loop - exactly 1 for a single constant load, and any C change adding a second set raises it. m->lifetime (loop.c:791) is the luid span between the pseudo's first and last uid; the const load sits immediately before its single mult, so it is already the minimum 1, and separating set from use only raises it - which is exactly why the /30 magic with lifetime 31-35 hoists freely. threshold was already pinned at 122 by s1/s2.
+- probe: Read of tools/gcc-2.7.2/loop.c lines 520-540, 690-800, 1520-1640, 2158-2215 and 2989-3060 this session, cross-checked against the s3 .loop dump line 'Insn 137: regno 115 (life 1), move-insn savings 1  moved to 292'. Two further escape routes closed in the same read: loop_has_call is set only by a real CALL_INSN (prescan_loop, loop.c:2202), and the movable is always recorded for a compiler-generated constant temp because the skip test at loop.c:695-701 is satisfied unconditionally by `! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)`. The one remaining source-level blocker, may_not_move (loop.c:3038-3044), needs the constant pseudo set in two basic blocks of the loop, and the target's loop 2 is one straight-line basic block.
+- result: The frontier's insn_count claim is now proven from compiler source for all three factors rather than just for threshold, so a later session does not need to re-open savings, lifetime, loop_has_call or movable-creation.
+- verdict: CONFIRMED
