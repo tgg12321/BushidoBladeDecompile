@@ -47,7 +47,8 @@
   }
  ],
  "judge_constraints": [
-  "Do not re-file an integration handoff for func_8007526C: -msoft-float (Makefile/build flags) and maspsx_label_nop_funcs.txt are both denylisted/owner-reserved and no scope grant can cover them; work the measured C-side axis (loop scan_loop insn_count >= 123 while still collapsing to 91 final insns) instead."
+  "Do not re-file an integration handoff for func_8007526C: -msoft-float (Makefile/build flags) and maspsx_label_nop_funcs.txt are both denylisted/owner-reserved and no scope grant can cover them; work the measured C-side axis (loop scan_loop insn_count >= 123 while still collapsing to 91 final insns) instead.",
+  "C-side ladder for func_8007526C is COMPLETE at honest floor 1 (s6 body, byte-identical but for the assembler-emitted load-delay nop): do NOT grind further, do NOT respell around the missing nop, and do NOT touch or request the owner-only gate surface -- bank the body and file the queue-escalate decision packet naming that one owner line, exactly as func_80022F34 did."
  ],
  "banned_constructs": [],
  "kills": [

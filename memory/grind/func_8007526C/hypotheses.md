@@ -233,3 +233,33 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 793d8b08 chassis 2026-09-07, rule-text read of .claude/rules/integration-handoff-self-serve.md:56-73; no build, no FAKE constructs, floor 13
+
+## [s6] Spelling the loop as a label plus a backward `goto`, instead of `do { } while`, keeps NOTE_INSN_LOOP_BEG out of the RTL so loop.c never processes this loop, which both leaves the four switch-comparison constants inside the loop and removes the strength-reduction giv bias.
+- mechanism: GCC 2.7.2 emits NOTE_INSN_LOOP_BEG/END only from expand_start_loop for while/for/do statements, and loop_optimize locates loops exclusively by those notes, so move_movables (tools/gcc-2.7.2/loop.c:1631) and strength_reduce are both skipped for a goto-spelled loop. The 0xC8 pre-header constant that move_movables used to supply is replaced by an ordinary named local `lim`, initialised before the loop and read at the three `sh $a3,...` store sites.
+- probe: Applied the goto-spelled body (tmp/grind/func_8007526C/s6/varA.c) over src/text1b.c:6660 and ran `& tools/wteng.ps1 main sandbox func_8007526C --disable all`, then disassembled tmp/sandbox/func_8007526C/text1b.o and compared word by word against asm/funcs/func_8007526C.s.
+- result: score 1, build_insns 90, target_insns 91, on the current unmodified build configuration with no -msoft-float and no compiler-flag change. All 90 emitted words are word-identical to the target; the only missing word is the load-delay nop at asm/funcs/func_8007526C.s:6. Floor 13 -> 1. Banked as memory/grind/func_8007526C/candidate.c; the superseded score-13 index-cursor do/while body is banked as rejected/index-cursor-do-while-loopc-hoists-4-consts-score13.c.
+- verdict: CONFIRMED
+
+## [s6] The whole remaining 1-point residual is the maspsx .L-label load-delay blind spot, and adding func_8007526C to maspsx_label_nop_funcs.txt closes the function to byte-exact under the current build configuration.
+- mechanism: maspsx is_label() matches only $L-prefixed locals while this GCC fork emits .L, so the load-delay hazard `lw $a0,%gp_rel(D_800A36A0)($gp)` / `.L80075278:` / `lbu $v1,0x10($a0)` is invisible to it and the nop is dropped (.claude/rules/maspsx-label-nop-gate.md, LOAD-CONSUMER case).
+- probe: tmp/grind/func_8007526C/s6/repro.sh rebuilt src/text1b.c through the exact Makefile:150 pipeline with the current flags twice - once with the repo maspsx_label_nop_funcs.txt and once with a temporary copy appending func_8007526C (no repo gate file was modified) - and tmp/grind/func_8007526C/s6/cmp.py did a branch/jump-target-masked word comparison against asm/funcs/func_8007526C.s.
+- result: base build 90 insns; gated build 91 insns with exactly ONE masked word diff, `lw $a0,0($gp)` = 8f840000 un-relocated vs 8f8405d4 in the target, which is an R_MIPS_GPREL16 D_800A36A0 relocation filled by ld. The function is byte-identical after linking, with ordinary C and the project's existing compiler flags. The s5 -msoft-float half of the blocker is eliminated; the gate list is the only surface still involved.
+- verdict: CONFIRMED
+
+## Live frontier - rewritten by s6
+
+- **F1 - the maspsx label-nop gate is the ONLY remaining item.** The C is finished and is
+  ordinary (goto-spelled loop with SOTN-master PSX precedent at
+  docs/reference/sotn-construct-index.md:2723 / :2725 / :2705; a named constant local whose
+  value materialises in the target bytes). Adding func_8007526C to
+  maspsx_label_nop_funcs.txt takes the build to 91/91. That file is on the add-scope-allow
+  denylist (.claude/rules/integration-handoff-self-serve.md:56-58) while
+  .claude/rules/maspsx-label-nop-gate.md calls the same edit a pure-C RETIREMENT path with
+  three precedents (spu_DmaTransfer, cdrom_DmaToRam, gnd_get_fog - the last in this same
+  TU). s6 asked the Judge to resolve that conflict; see the s6 outcome ruling_question.
+- **F2 - dead framing, do not re-open.** The loop.c insn_count >= 123 axis that s3/s5
+  pinned is moot: the goto spelling removes loop.c from the loop entirely, so there is no
+  threshold to beat. Do NOT spend sessions duplicating statements into switch arms.
+- **F3 - dead, do not re-file.** The s5 -msoft-float build-flag theory is superseded: the
+  target's in-loop constants are reachable with the project's existing hard-float
+  configuration. The Judge constraint against re-filing an integration handoff stands.

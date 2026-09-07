@@ -381,3 +381,77 @@ an exhausted ladder.
 - [s4] s4's discard was purely clerical: it had filed an entry, but its heading lacked the literal OWNER-ESCALATION / CANONICAL-ASM GRANT PATH token that the driver pre-check at tools/grinder/grind.ps1:1302 requires on the same LINE as the function name. s5 re-filed a self-contained entry with a conforming title, and did not rely on the voided s4 span - every claim in it was re-measured this session.
 
 - [s4] src/text1b.c was restored byte-for-byte to HEAD at the end of the session (7097 lines); the score-13 body lives only in memory/grind/func_8007526C/candidate.c.
+
+## s6 (recon, 2026-09-07) - chassis HEAD 9066e9ad - FLOOR 13 -> 1
+
+### OBJECT MODEL: D_800A36A0 - MATCHES (re-confirmed, measured)
+func_8007526C still touches exactly one global, D_800A36A0, already declared
+`extern u8 *D_800A36A0;` in src/text1b.c and listed in sdata_syms.txt:226. This session's
+build reproduces the target's `lw $a0, %gp_rel(D_800A36A0)($gp)` and every absolute field
+offset (0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C) with the declaration unchanged, at score 1.
+No MISMATCH and no MISMATCH-unmeasured symbol; no aggregate/struct question arises.
+
+### H6-1 CONFIRMED - a goto-spelled loop removes loop.c from the picture entirely: 13 -> 1
+Every session s1-s5 treated the four hoisted switch-comparison `li` as a loop.c
+move_movables threshold problem and searched for +31 RTL insns of loop body
+(loop.c:1631, threshold 122 vs insn_count 92). That framing had the wrong lever.
+
+GCC 2.7.2 emits NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END only from expand_start_loop,
+i.e. only for `while`, `for` and `do ... while` STATEMENTS. loop_optimize locates loops
+exclusively by scanning for those notes (tools/gcc-2.7.2/loop.c), so a loop spelled as a
+label plus a backward `goto` is never entered by loop.c at all. Two consequences, both
+wanted here:
+  (a) move_movables never runs, so the four switch-comparison constants are NOT hoisted -
+      they are materialised inside the loop, in the branch delay slots, exactly as the
+      target does at asm/funcs/func_8007526C.s:8/12/18/20;
+  (b) strength_reduce never runs, so there is no address giv and therefore no +0x10
+      induction-variable bias - the very bias that made the natural pointer-bump spelling
+      measure 48 in s1/s2 (rejected/pointer-increment-biases-iv-by-0x10.c). `p += 2` at the
+      loop bottom compiles literally to the target's `addiu $a0,$a0,0x2` in the closing
+      branch delay slot (asm/funcs/func_8007526C.s:100).
+The 0xC8 pre-header constant that loop.c used to hoist for us is supplied instead by an
+ordinary named local `lim`, initialised before the loop and read at the three `sh $a3,...`
+store sites in cases 1 and 3; the `>= 0xC8` tests keep the literal because they assemble to
+`slti` immediates (asm/funcs/func_8007526C.s:33/57). Pre-header order
+`move a2,zero / li a3,200 / lw a0,0(gp)` matches asm/funcs/func_8007526C.s:2-4 exactly.
+
+MEASURED: `sandbox func_8007526C --disable all` -> score 1, build_insns 90,
+target_insns 91, on the current unmodified build configuration (NO -msoft-float, no
+compiler-flag change of any kind). Body banked as memory/grind/func_8007526C/candidate.c.
+Disassemblies: tmp/grind/func_8007526C/s6/base.dis and gated.dis.
+
+This supersedes the s5 -msoft-float theory as the route to the bytes: the four constants
+stay in the loop under the project's existing hard-float configuration. The build-flag
+half of the s5 blocker is GONE.
+
+### The whole remaining residual is one maspsx-gate nop (measured, 91/91)
+The single missing word is the load-delay nop at asm/funcs/func_8007526C.s:6. It sits
+between `lw $a0, %gp_rel(D_800A36A0)($gp)` (the last pre-header insn) and the loop-top
+label .L80075278, whose first insn is `lbu $v1, 0x10($a0)` - a load consuming the base
+register produced by the immediately preceding load, ACROSS a label. maspsx's is_label()
+matches only $L-prefixed locals while this GCC fork emits .L, so maspsx does not see the
+hazard and drops the nop. This is verbatim the LOAD-CONSUMER symptom that
+.claude/rules/maspsx-label-nop-gate.md documents as a pure-C RETIREMENT path ("canonical
+-> C, pure-C distance 1, the lone diff a missing nop across a .L merge label"), with three
+precedents: spu_DmaTransfer (main.c, commit 25f8f56), cdrom_DmaToRam (system.c,
+2026-05-26) and gnd_get_fog - the last of which is in THIS SAME TU, src/text1b.c.
+
+PROVEN: tmp/grind/func_8007526C/s6/repro.sh rebuilds src/text1b.c through the exact
+Makefile:150 pipeline with the CURRENT flags, once with the repo's
+maspsx_label_nop_funcs.txt and once with a TEMPORARY COPY that appends func_8007526C
+(no repo gate file was modified; the copy was passed as --label-nop-funcs=<temp>).
+tmp/grind/func_8007526C/s6/cmp.py does a branch/jump-target-masked word comparison against
+asm/funcs/func_8007526C.s:
+
+| build | insns | masked word diffs vs the 91-insn target |
+|---|---|---|
+| current flags, repo gate list | 90 | 1 (missing nop + index shift) |
+| current flags + func_8007526C in the label-nop list | 91 | 1 |
+
+The one remaining word in the 91/91 row is `lw $a0,0($gp)` = 8f840000 un-relocated versus
+8f8405d4 in the target: an R_MIPS_GPREL16 D_800A36A0 addend that ld fills at link time. So
+the function is byte-identical after linking, with ordinary C and the project's existing
+compiler flags.
+
+- [s6] src/text1b.c was restored byte-for-byte to HEAD at the end of the session; the
+  score-1 body lives only in memory/grind/func_8007526C/candidate.c.
