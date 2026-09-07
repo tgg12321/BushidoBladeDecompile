@@ -37,7 +37,14 @@ param(
     # recon lane is pinned to the new id explicitly. Judge/execution lanes are
     # unchanged (the 2026-08-12 / 2026-08-17 directives are about lane
     # assignment, not model version).
-    [string]$ReconModel = 'claude-fable-5-1[1m]',
+    # OWNER DIRECTIVE 2026-09-07 — ALL LANES ON OPUS. The 2026-08-17 lane split
+    # is retired: the Fable allowance ran out again and the recon lane 429'd 16
+    # consecutive spawns on func_800238C4 (~7 h of backoff, api_error 429
+    # "You've reached your Fable limit") until the circuit-breaker fired. A lane
+    # pinned to a model with its own exhaustible allowance is a single point of
+    # failure for the whole pipeline; one model for every lane cannot deadlock
+    # that way.
+    [string]$ReconModel = 'claude-opus-5[1m]',
     # Judge stays on Opus per the 2026-08-12 directive: Fable 5 has its own
     # per-model allowance, and exhausting it on judging stalled the whole
     # pipeline — five 429 wait cycles over 2.5 h with a proven candidate parked
@@ -49,7 +56,9 @@ param(
     # Layer-1 (the pre-Judge cheat-reviewer gate) runs on the model the agent
     # definition declares — it is a high-volume, cheap gate whose job is to bounce
     # obvious cheat-by-spelling before a Judge cycle is spent.
-    [string]$Layer1Model = 'claude-sonnet-5',
+    # 2026-09-07: moved to Opus with every other lane (owner "switch it to opus
+    # fully"). Layer-1 is default-FAIL anyway; a stronger gate only bounces more.
+    [string]$Layer1Model = 'claude-opus-5[1m]',
     [int]$SessionTimeoutMin = 90,
     [string]$MockSessionScript = '',
     [string]$MockJudgeScript = '',
