@@ -585,3 +585,56 @@ kill (predicate tools/maspsx/maspsx/__init__.py:257) from the target bytes indep
 - [s6] DISPOSITION IS BLOCKED ON MODALITY, NOT ON EVIDENCE. This session's mandated modality is `recon`. tools/grinder/grindlib.py:812 mechanically refuses an owner-gated outcome whose escalation_ref carries a foreclosure title (RESOLVED BY STANDING RULING / LADDER EXHAUSTED) unless modality == 'escalation'. The only other line in docs/grind/decisions.md that names this function alongside OWNER-ESCALATION is the 2026-09-07 INTEGRATION HANDOFF at docs/grind/decisions.md:25107, and citing it would route straight back to the Judge (tools/grinder/grind.ps1:1428) in violation of the standing judge constraint in state.json ('Do not re-file an integration handoff for func_8007526C') -- that body was already FAILed twice, at docs/grind/decisions.md:25223 and :25227. So this session returns `progress` with the kills banked, exactly as the ladder design requires, and the correct next step is for the DRIVER to assign `escalation` modality; the honest floor of 1 is <= ENDGAME_LOCK_MAX_FLOOR, so that session files the RESOLVED BY STANDING RULING (2026-07-27) foreclosure record.
 
 - [s6] No new C axis exists for the residual word. The target fixes the pre-loop insn order (asm/funcs/func_8007526C.s:2-6), so every byte-matching build necessarily places the gp-relative load immediately before the .L80075278 merge label whose first insn consumes $a0. The suppressed delay nop is a consequence of that required order, not of any C-level choice.
+
+## s7 (recon, 2026-09-07) — chassis re-measured on HEAD 52ce9db3
+
+### OBJECT MODEL: D_800A36A0 — MATCHES (measured; unchanged since s1/s2)
+`func_8007526C` touches exactly one global, `D_800A36A0`, declared `extern u8 *D_800A36A0;`
+in src/text1b.c (lines 6624/6659/6791) and listed in sdata_syms.txt:226 as a GP-relative
+pointer variable. With the banked body applied, the built function reproduces the target's
+`lw $a0, %gp_rel(D_800A36A0)($gp)` preamble and every absolute field offset
+(0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C) — 90 of 91 words word-identical. The declaration
+needs no fix; this is a MEASURED verdict (score 1), not an inspection. No second global,
+no aggregate/struct question, no MISMATCH and no MISMATCH-unmeasured symbol.
+
+### Chassis check (the recon deliverable)
+The dispatch brief carried no floor ("measurement unavailable", ledger floor "(none)") and
+the queue banner still says 48, so this session re-measured from scratch rather than
+quoting the ledger. `memory/grind/func_8007526C/candidate.c` applied at src/text1b.c:6660,
+build configuration completely unmodified:
+
+    "score": 1, "target_insns": 91, "build_insns": 90, "scorable": true
+    (artifact: tmp/grind/func_8007526C/s7/sandbox_floor1.json)
+
+The tree was restored from tmp/grind/func_8007526C/s7/text1b.c.bak immediately afterwards;
+`git status --porcelain` shows only metrics/events.jsonl. So the honest floor on THIS
+chassis is **1**, confirming s5 and s6 and retiring the stale 48 (queue banner,
+migration_pin.json) and 13 (floor_history s1-s4), which belong to the pointer-bump and
+index-cursor spellings respectively, not to the banked goto-spelled body.
+
+### Frontier status: no C-side axis remains open
+The single residual word is the load-delay `nop` at asm/funcs/func_8007526C.s:6, between
+`lw $a0, %gp_rel(D_800A36A0)($gp)` and the loop-top merge label `.L80075278` whose first
+insn is `lbu $v1, 0x10($a0)`. It is emitted by the assembler layer (maspsx `is_label()`
+only matches `$L`, this cc1 fork emits `.L` — tools/maspsx/maspsx/__init__.py:257,
+.claude/rules/maspsx-label-nop-gate.md), so no C spelling can produce it; the Judge
+affirmed exactly this on 2026-09-07 12:10 after reading the asm and the s6 artifacts
+itself. The s3 `loop.c scan_loop insn_count >= 123` axis is moot under the goto spelling
+(GCC 2.7.2 emits NOTE_INSN_LOOP_BEG only for while/for/do, so loop.c never runs on this
+loop). Disposition re-filed this session as an OWNER-ESCALATION record in
+docs/grind/decisions.md (2026-09-07, "OWNER-ONLY GATE-LINE REMEDY"), superseding the
+earlier `-msoft-float` handoff, which is moot: the current body needs no flag change at
+all, only the one owner-only `maspsx_label_nop_funcs.txt` line (precedent func_80022F34,
+commit d4338774, list line maspsx_label_nop_funcs.txt:22).
+
+- [s7] OBJECT MODEL: D_800A36A0 — MATCHES (measured, score 1 with 90/91 words byte-exact). func_8007526C touches exactly one global, D_800A36A0, already declared `extern u8 *D_800A36A0;` in src/text1b.c (lines 6624, 6659, 6791) and listed in sdata_syms.txt:226 as a GP-relative pointer variable. With the banked body the build reproduces the target's `lw $a0, %gp_rel(D_800A36A0)($gp)` preamble and every absolute field offset (0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C). The declaration needs no fix. There is no second global, no aggregate/struct question, and no MISMATCH or MISMATCH-unmeasured symbol for this function.
+
+- [s7] Chassis re-measured this session because the dispatch brief carried no floor ("measurement unavailable", ledger floor "(none)") and the queue banner still says 48: with candidate.c applied the sandbox reports score 1 / build_insns 90 / target_insns 91 (tmp/grind/func_8007526C/s7/sandbox_floor1.json). The 48 (queue banner, migration_pin.json) belongs to the pointer-bump spelling and the 13 (floor_history s1-s4) to the index-cursor do/while spelling; neither describes the banked body.
+
+- [s7] src/text1b.c was restored from tmp/grind/func_8007526C/s7/text1b.c.bak immediately after the measurement; `git status --porcelain` shows only metrics/events.jsonl, so the tree is clean for the driver's scope check.
+
+- [s7] The s3 axis (drive loop.c scan_loop insn_count to >= 123 so move_movables stops hoisting the four switch constants) is moot under the banked spelling: a goto-formed loop gets no NOTE_INSN_LOOP_BEG, so loop.c never scans it. This is why the floor fell from 13 to 1 without ever reaching that boundary.
+
+- [s7] Disposition re-filed this session at docs/grind/decisions.md:25231 as `## 2026-09-07 — func_8007526C — OWNER-ESCALATION: OWNER-ONLY GATE-LINE REMEDY (honest floor 1; one line in maspsx_label_nop_funcs.txt)`. It supersedes the earlier 2026-09-07 -msoft-float handoff, which is moot: the current body needs no Makefile or compiler-flag change of any kind. The record requests nothing be granted to the pipeline — maspsx_label_nop_funcs.txt is denylisted at .claude/rules/integration-handoff-self-serve.md:56-58 and the Judge affirmed that denylist on 2026-09-07 12:10.
+
+- [s7] Precedent for the remedy: func_80022F34 sat in the identical shape, was foreclosed, and landed only after the owner applied the one gate line in the 2026-09-06 foreclosed-bucket review (commit d4338774, `[infra-rule: maspsx-label-nop]`); the line lives at maspsx_label_nop_funcs.txt:22.

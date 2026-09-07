@@ -657,3 +657,8 @@ disposition taken: REFUSED under the current frozen policy; FORECLOSED silently 
 category: canonical-asm-grant
 evidence: scan_hand_coded --single func_80019310 tier=OWNER-CLUSTER (cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-06 foreclosed-bucket review)) (driver-verified); judge ESCALATE packet in docs/grind/decisions.md (2026-09-06)
 disposition taken: inline_asm_canonical.txt entry written by the driver per owner ruling 2026-08-18; function stays ACTIVE for canonical-asm integration.
+
+## 2026-09-07 — func_8007526C — policy-question
+category: policy-question
+evidence: session-filed disposition: docs/grind/decisions.md:25231 — 2026-09-07 — func_8007526C — OWNER-ESCALATION: OWNER-ONLY GATE-LINE REMEDY (honest floor 1; one line in maspsx_label_nop_funcs.txt)
+disposition taken: FORECLOSED silently (owner ruling 2026-08-31 — no pending states, no packets); re-attemptable if a later owner ruling spends this entry.

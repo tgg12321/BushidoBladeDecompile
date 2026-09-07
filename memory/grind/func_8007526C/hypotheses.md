@@ -386,3 +386,17 @@ No further C measurement on this function will change the score.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 19c9eda0 chassis 2026-09-07, candidate.c applied to src/text1b.c, pure C, no FAKE constructs present, floor 1
+
+## [s7] With memory/grind/func_8007526C/candidate.c applied at src/text1b.c:6660 and the build configuration completely unmodified, the honest pure-C floor on the current chassis is 1, not the 48 the queue banner reports nor the 13 recorded for sessions s1-s4.
+- mechanism: The body spells the loop as a label plus a backward goto. GCC 2.7.2 emits NOTE_INSN_LOOP_BEG only for while/for/do statements, so loop.c never processes this loop: no move_movables hoist of the four switch-comparison constants (the whole 13-point residual of s1-s5) and no strength-reduction giv biasing every field offset by +0x10 (the 48-point residual of the pointer-bump spelling).
+- probe: tools/wteng.ps1 main sandbox func_8007526C --disable all with the candidate applied; tree restored from tmp/grind/func_8007526C/s7/text1b.c.bak afterwards (git status clean but for metrics/events.jsonl).
+- result: score 1, build_insns 90, target_insns 91, scorable true (tmp/grind/func_8007526C/s7/sandbox_floor1.json). Reproduces s5 and s6 exactly.
+- verdict: CONFIRMED
+
+## [s7] The one remaining differing word — the load-delay nop at asm/funcs/func_8007526C.s:6, between the gp-relative load of D_800A36A0 and the loop-top merge label .L80075278 whose first insn is lbu $v1,0x10($a0) — is emitted by the maspsx assembler layer under the label-nop gate list, so this instance is not produced by the C body in src/text1b.c.
+- mechanism: maspsx is_label() (tools/maspsx/maspsx/__init__.py:257) recognises only $L-prefixed labels while this cc1 fork emits .L, so the load-consumer-across-a-merge-label hazard nop is dropped unless the function is listed in maspsx_label_nop_funcs.txt (.claude/rules/maspsx-label-nop-gate.md).
+- probe: s6 banked the gated build (tmp/grind/func_8007526C/s6: base.dis 90 insns, gated.dis 91, target 91, repro.sh, cmp.py — 91/91 with the gate list passed as a temp copy, only word differing being the unrelocated GPREL16 addend); the Judge independently re-read the asm and those artifacts on 2026-09-07 12:10 and affirmed the shape.
+- result: Adding func_8007526C to a temporary copy of the gate list yields 91 insns and a single masked-word difference that the linker fills. No C spelling participates in that word. Kill is scoped to this instance and this chassis: the measurement is the s6 gated build re-confirmed at floor 1 today, with no FAKE construct present in the body.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 52ce9db3, unmodified build configuration, candidate.c applied at src/text1b.c:6660, no FAKE constructs present (ordinary C: label + backward goto)

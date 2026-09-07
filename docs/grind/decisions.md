@@ -25227,3 +25227,81 @@ The C body in candidate.c is ordinary (no FAKE, no family claim needed) — that
 ## 2026-09-07 12:10 — func_8007526C — ruling: Two rule documents give opposite answers for the state func_8007526C is now in,  — **FAIL**
 
 Answering both halves plainly. (1) YES, the symptom shape is genuine: I read asm/funcs/func_8007526C.s:4-7 myself -- lw $a0,%gp_rel(D_800A36A0); .L80075278:; nop; lbu $v1,0x10($a0) -- the textbook load-consumer-across-a-.L-merge-label case of .claude/rules/maspsx-label-nop-gate.md, and I independently confirmed the session's measurement from its own artifacts (tmp/grind/func_8007526C/s6: base.dis 90 insns, gated.dis 91, target 91). candidate.c is ordinary C (label+backward-goto loop, SOTN PSX precedent verified at docs/reference/sotn-construct-index.md:2705,:2723,:2725; `lim` is read at real store sites). Nothing here is a cheat and I am not calling the gate one -- .claude/rules/maspsx-gate-lists.md adjudicates it FIDELITY-class. (2) NO, the driver may not add the line. The denylist at .claude/rules/integration-handoff-self-serve.md:56-58 names that file verbatim, is enforced by path-class regex, and postdates the gate rule; the standing 2026-09-07 judge constraint says the same. The controlling precedent is func_80022F34, which sat in exactly this shape: the pipeline was told not to re-file (decisions.md:24257), the function was foreclosed, and the OWNER applied the one line in the 2026-09-06 foreclosed-bucket review (commit d4338774, [infra-rule: maspsx-label-nop]) after which it landed. That is the sanctioned route, and it is owner-only by design. My s5 FAIL's premise is superseded and I say so explicitly: the goto-spelled loop bypasses loop.c entirely, so floor is 1, not 13, and the insn_count>=123 axis I previously pointed at is moot. The C-side ladder IS spent -- per the gate-lists adjudication no C spelling can emit an assembler hazard nop -- so further grinding would be waste, not diligence. Disposition: bank the s6 body and evidence, then file the owner decision packet (queue escalate) naming the single owner-only line as the sole remaining step.
+
+## 2026-09-07 — func_8007526C — OWNER-ESCALATION: OWNER-ONLY GATE-LINE REMEDY (honest floor 1; one line in maspsx_label_nop_funcs.txt)
+
+Filed by session s7 (recon modality) after re-measuring the chassis. This entry supersedes
+the 2026-09-07 `-msoft-float` handoff above: that route is moot — the s6 goto-spelled body
+reaches the same place with the build configuration completely unmodified, so no Makefile
+change and no compiler-flag change is requested by this record.
+
+### Re-measured today, on this HEAD, by this session
+
+`memory/grind/func_8007526C/candidate.c` applied at src/text1b.c:6660, current unmodified
+build configuration:
+
+    sandbox func_8007526C --disable all  ->  "score": 1, build_insns 90, target_insns 91
+
+The tree was restored immediately afterwards; the backup used is
+tmp/grind/func_8007526C/s7/text1b.c.bak. This reproduces s5 and s6 exactly (state.json
+floor_history sessions 5 and 6 both record floor 1) and supersedes the stale floors 48
+(queue banner / migration_pin.json) and 13 (floor_history s1-s4), which belong to the
+pointer-bump and index-cursor spellings, not to the banked body.
+
+### What the single residual word is
+
+The 90 emitted words are word-identical to asm/funcs/func_8007526C.s. The one missing word
+is the load-delay `nop` at asm/funcs/func_8007526C.s:6, sitting between
+`lw $a0, %gp_rel(D_800A36A0)($gp)` (line 4) and the loop-top merge label `.L80075278`
+(line 5) whose first insn is `lbu $v1, 0x10($a0)` (line 7). maspsx's `is_label()`
+(tools/maspsx/maspsx/__init__.py:257) only recognises `$L`-prefixed labels while this cc1
+fork emits `.L`, so the load-consumer-across-a-merge-label hazard nop is dropped
+([[maspsx-is-label-dot-prefix]], .claude/rules/maspsx-label-nop-gate.md). It is emitted by
+the assembler layer, never by any C spelling, which is why no further C grinding can reach it.
+
+### Why nothing is left on the C side
+
+The Judge ruled on exactly this question on 2026-09-07 12:10 (this file, above),
+independently verifying the asm shape, the s6 artifacts (tmp/grind/func_8007526C/s6:
+base.dis 90 insns, gated.dis 91, target 91), and the ordinariness of the C body
+(label + backward goto; SOTN PSX precedent at docs/reference/sotn-construct-index.md:2705,
+:2723, :2725). Its verdict: the C-side ladder is complete; per
+.claude/rules/maspsx-gate-lists.md the gate is FIDELITY-class, not a cheat; and the
+`loop.c scan_loop insn_count >= 123` axis pinned by s3 is moot because the goto-spelled
+loop never reaches loop.c at all (GCC 2.7.2 emits NOTE_INSN_LOOP_BEG only for
+while/for/do). Standing judge_constraints in memory/grind/func_8007526C/state.json say the
+same: do not grind further, do not respell around the missing nop.
+
+### The remedy, and who may apply it
+
+One line, owner-only:
+
+  1. `maspsx_label_nop_funcs.txt`: append `func_8007526C` (LOAD-CONSUMER case, per
+     .claude/rules/maspsx-label-nop-gate.md).
+  2. Replace `INCLUDE_ASM("asm/funcs", func_8007526C);` at src/text1b.c:6660 with
+     `memory/grind/func_8007526C/candidate.c` (ordinary C — no FAKE construct, no
+     sanctioned-family claim required), then `verify-oracle` and `queue done func_8007526C`.
+
+This session does NOT ask for that surface to be granted to the pipeline and did not touch
+it: `.claude/rules/integration-handoff-self-serve.md:56-58` names the file verbatim on the
+add-scope-allow denylist, and the Judge affirmed that denylist on 2026-09-07 12:10. The
+controlling precedent is func_80022F34, which sat in this identical shape, was foreclosed,
+and landed only after the OWNER applied the one gate line in the 2026-09-06 foreclosed-bucket
+review (commit d4338774, `[infra-rule: maspsx-label-nop]`); the resulting line lives at
+maspsx_label_nop_funcs.txt:22. A fresh layer-2 cheat-reviewer still rules on the C before
+acceptance.
+
+### Re-activation triggers
+
+- The owner (or any later ruling) adding func_8007526C to `maspsx_label_nop_funcs.txt` —
+  after which the function is a two-command completion, already proven at 91/91 words with
+  the gate on (tmp/grind/func_8007526C/s6/repro.sh, cmp.py).
+- A maspsx fidelity fix teaching `is_label()` the `.L` prefix, which would close this class
+  outright rather than per function.
+
+### Evidence pointers
+
+- memory/grind/func_8007526C/candidate.c (header carries the full s6 measurement record)
+- memory/grind/func_8007526C/evidence.md [s1]-[s7], hypotheses.md, state.json floor_history
+- tmp/grind/func_8007526C/s6/ (base.dis, gated.dis, repro.sh, cmp.py)
+- this session: tmp/grind/func_8007526C/s7/sandbox_floor1.json, text1b.c.bak

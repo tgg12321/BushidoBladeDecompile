@@ -1,8 +1,8 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "synthesis",
+ "session_count": 7,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -39,18 +39,24 @@
    "floor": 1,
    "modality": "synthesis",
    "headline": "Chassis re-measured on HEAD 19c9eda0: the banked goto-spelled body still measures floor 1 (90 of 91 target words); canonical returns verdict C distance 1, so no canonical-asm path exists, and the sole"
+  },
+  {
+   "session": 7,
+   "floor": 1,
+   "modality": "solver",
+   "headline": "Chassis re-measured on HEAD: the banked goto-spelled body measures honest floor 1 (90 of 91 target words, every word identical); the sole residual is an assembler-layer load-delay nop and the disposit"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The function is finished on the C side at honest floor 1 and its one remaining step is a single owner-only line: func_8007526C appended to maspsx_label_nop_funcs.txt (LOAD-CONSUMER case), the same one-line remedy the owner applied for func_80022F34 at maspsx_label_nop_funcs.txt:22.",
-   "mechanism": "maspsx is_label() (tools/maspsx/maspsx/__init__.py:257) does not recognise the `.L` labels this cc1 fork emits, so the gate list is the only mechanism that restores the load-delay nop for a load-consumer-across-a-merge-label case. The file is denylisted for every non-owner actor at .claude/rules/integration-handoff-self-serve.md:56-58.",
-   "next_probe": "None on the C side -- do not spend another session measuring it; the answer is 1. The pipeline-correct move is a session in `escalation` modality filing the floor-1 RESOLVED BY STANDING RULING (2026-07-27) FORECLOSED record naming that single owner-only line and citing the func_80022F34 precedent, after which the driver forecloses silently and the queue advances."
+   "hypothesis": "func_8007526C completes in two commands the moment func_8007526C is listed in maspsx_label_nop_funcs.txt \u2014 a single owner-only line, already proven to yield 91/91 words with the gate on.",
+   "mechanism": "The gate list is the only mechanism that restores the dropped load-delay nop for a load-consumer-across-a-.L-merge-label case, because maspsx is_label() (tools/maspsx/maspsx/__init__.py:257) does not recognise the .L labels this cc1 fork emits. Adjudicated FIDELITY-class, not a cheat, by .claude/rules/maspsx-gate-lists.md.",
+   "next_probe": "None on the C side. If a later ruling or an owner unpark grants the line: append func_8007526C to maspsx_label_nop_funcs.txt, replace INCLUDE_ASM at src/text1b.c:6660 with memory/grind/func_8007526C/candidate.c, then verify-oracle and queue done."
   },
   {
-   "hypothesis": "If a future session must re-confirm rather than dispose, the whole confirmation is two commands and costs almost nothing.",
-   "mechanism": "The banked body is ordinary C (label + backward goto, no FAKE construct, no sanctioned-family claim required) and is chassis-independent in the way that matters: it bypasses loop.c entirely, so the passes that produced every earlier residual never run.",
-   "next_probe": "Apply memory/grind/func_8007526C/candidate.c at src/text1b.c:6660, run `sandbox func_8007526C --disable all` (expect score 1, 90/91) and `canonical func_8007526C` (expect verdict C, distance 1), then restore src/text1b.c. Do not re-open the loop.c insn_count >= 123 axis: it is moot under the goto spelling, which never reaches loop.c."
+   "hypothesis": "A maspsx fidelity fix teaching is_label() the .L prefix would close this residual class outright rather than one function at a time.",
+   "mechanism": "The blind spot is a single prefix test in tools/maspsx/maspsx/__init__.py:257; every function on maspsx_label_nop_funcs.txt exists because of it ([[maspsx-is-label-dot-prefix]]).",
+   "next_probe": "Owner/toolchain surface, outside a grind session's allowed edit set \u2014 record only, do not attempt."
   }
  ],
  "judge_constraints": [
@@ -130,12 +136,20 @@
    "measured_on": "HEAD 19c9eda0 chassis 2026-09-07, candidate.c applied to src/text1b.c, pure C, no FAKE constructs present, floor 1",
    "predicate_cite": "",
    "result": "verdict C, asm_insns 0, total 91, distance 1, reason 'pure-C distance 1 <= 50 -- pure-C target'. A 90-of-91-word pure-C "
+  },
+  {
+   "session": 7,
+   "statement": "The one remaining differing word \u2014 the load-delay nop at asm/funcs/func_8007526C.s:6, between the gp-relative load of D_800A36A0 and the loop-top merge label .L80075278 whose first insn is lbu $v1,0x1",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 52ce9db3, unmodified build configuration, candidate.c applied at src/text1b.c:6660, no FAKE constructs present (ordinary C: label + backward goto)",
+   "predicate_cite": "",
+   "result": "Adding func_8007526C to a temporary copy of the gate list yields 91 insns and a single masked-word difference that the l"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-07T16:08:15.562106+00:00",
- "object_model_audited": 6,
+ "object_model_audited": 7,
  "escalation_deferrals": 0
 }
