@@ -1,0 +1,62 @@
+{
+ "func": "func_8007526C",
+ "file": "text1b",
+ "session_count": 2,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "modality": "recon",
+   "floor": 13,
+   "note": "48 (pin re-measured) -> 13 via index-derived cursor"
+  },
+  {
+   "session": 2,
+   "floor": 13,
+   "modality": "recon",
+   "headline": "Index-derived cursor (p = base + i*2) kills loop.c's +0x10 giv bias: floor 48 -> 13; residual is loop.c move_movables hoisting the four switch comparison constants."
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "An ordinary-C spelling of the four case arms that leaves >= 123 RTL insns inside the loop at loop.c scan_loop time (but collapses back to the same 91 insns via combine and jump2 cross-jumping) will flip loop.c:1631 and leave the comparison constants in the loop.",
+   "mechanism": "loop.c:1631 (threshold * savings * lifetime) >= insn_count with threshold 122, savings 1, lifetime 1; insn_count is currently 91 and is the only free variable.",
+   "next_probe": "Try arm spellings that produce more pre-combine RTL - a real statement duplicated into two or more arms and re-merged by jump2 (family: .claude/rules/duplicated-statement-into-arms.md), and address arithmetic not yet folded into the MEM at cse time. After EVERY variant read the `Loop from N to M: K real insns` line at the head of tmp/grind/func_8007526C/dumps/text1b.loop - K is literally the predicate's insn_count and gives a direct gradient toward 123."
+  },
+  {
+   "hypothesis": "A switch spelling whose comparison constants never become separate invariant pseudos (folded into slti/sltiu/xori immediates, or one pseudo set more than once so loop.c:707's n_times_set[regno] == 1 fails) removes the movables entirely.",
+   "mechanism": "loop.c:695-707 registers a movable only for an invariant whose dest pseudo is set exactly once; the structural disjuncts always pass for compiler temps, so the escape must change what RTL the case comparison emits.",
+   "next_probe": "Measure an if/else-if chain and a range-shifted switch (switch on x - 1) and diff the emitted decision tree against the target's `beq $v1,$v0 / slti $v0,$v1,0x3 / beqz` bisection; the target keeps that bisection AND uses register-held constants, so only a spelling preserving both the tree and non-invariance can win."
+  },
+  {
+   "hypothesis": "The sibling func_80074B18 - the other consumer of D_800A36A0, same 2-slot stride-2 shape - already carries the addressing and/or constant-hoist finding, so its ledger transfers directly.",
+   "mechanism": "Shared data window and shared loop shape; see the repo's sibling-ledger-propagation post-mortem where a foreclosed sibling held the fix for 41 sessions.",
+   "next_probe": "Read memory/grind/func_80074B18/ (evidence.md, hypotheses.md, retired-chassis-2026-08/body.c) and any docs/grind/decisions.md entry naming it before spending further measurements here."
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 2,
+   "statement": "Re-reading the global D_800A36A0 at every field access, with no local cursor, inflates the loop's RTL insn_count past loop.c's move_movables threshold and keeps the switch comparison constants in the ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f43e0467 chassis 2026-09-07, pure C, no FAKE constructs present, score 25",
+   "predicate_cite": "",
+   "result": "cse collapses the repeated global loads before loop.c runs: 'Loop from 11 to 622: 95 real insns' (up from 91, still far "
+  },
+  {
+   "session": 2,
+   "statement": "The loop form itself (for (i=0;i<2;i++, p+=2) versus i=0; do {...} i++; p+=2; while (i<2)) is the lever behind the 48-point residual.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f43e0467 chassis 2026-09-07, pure C, no FAKE constructs present, score 48 for both spellings",
+   "predicate_cite": "",
+   "result": "Both measure exactly 48 with build 94 insns and identical output; the loop syntax is neutral here. The addressing form, "
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-07T16:08:15.562106+00:00",
+ "object_model_audited": 2
+}

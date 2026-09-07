@@ -1813,3 +1813,4 @@
 - 2026-09-07 10:38 func_800238C4 COMPLETED-C after 2 sessions (closer: s2 [structural]).
 - 2026-09-07 11:00 _dws COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-07 11:08 _spu_FiDMA COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-07 11:21 func_8007526C s1 [recon] floor=13: Index-derived cursor (p = base + i*2) kills loop.c's +0x10 giv bias: floor 48 -> 13; residual is loop.c move_movables hoisting the four switch comparison constants.
