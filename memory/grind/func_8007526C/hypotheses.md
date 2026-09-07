@@ -586,3 +586,116 @@ movable and ONE decrement.
 - kill_scope: class
 - measured_on: HEAD 3368f17b chassis 2026-09-07, compiler source read plus the unmodified candidate's .loop dump (score 13, no FAKE constructs present)
 - predicate_cite: tools/gcc-2.7.2/loop.c:1912
+
+## [s10 2026-09-07, modality rederive] — movable SCAN ORDER is a free C-level lever; the moved_once doubling is armable from the loop's own 0xC8
+
+Chassis re-measured first: the s1 candidate (index-derived cursor, do-while, INCLUDE_ASM
+restored elsewhere) measures score 13 / build_insns 93 / target 91 on HEAD 7a577773 — the
+driver's "measurement unavailable" banner and the ledger's 13 agree.
+
+### THE NEW FACT: the four switch constants are scanned FIRST, and that is changeable for free
+Every prior session reasoned about `threshold -= 3` decay without noticing that in the s1 body
+the four switch-comparison constants are the FIRST entries in move_movables' list (dump order
+229/235/241/244, then insn 76 = the 0xC8, then 113). expand_end_case reorders the decision-tree
+insns to the FRONT of the case statement, so anything written INSIDE the switch is scanned after
+them and nothing written inside the arms can ever decay `threshold` ahead of them. Statements
+written BEFORE the switch in the loop body are physically before the dispatch and ARE scanned
+first. Measured: hoisting the 0xC8 into a named local assigned at the top of the loop body
+(`lim = 0xC8;`, used at the three sites that store it) costs NOTHING — score 13, build_insns 93,
+loop insn_count 92 -> 91 — and makes `Insn 19: regno 75 (life 63) ... moved to 268` the first
+movable scanned. That body is now memory/grind/func_8007526C/candidate.c.
+
+### THE RESULT: score 13 -> 5 on the moved_once doubling, armed from ordinary loop structure
+With that chassis, a second loop placed TEXTUALLY AFTER the main loop that also moves `lim`
+arms `moved_once[75]`; loop_optimize walks loop numbers downward so the later loop is scanned
+first. The main loop then reads `Insn 19: regno 75 ... halved since already moved  moved` —
+insn_count 91 -> 182 — and all four constants print `not desirable` while the 0xC8 still hoists.
+That IS the target's movable shape (asm/funcs/func_8007526C.s:3 pre-header + `addiu $v0,$zero,N`
+inside the dispatch), on the unmodified hard-float chassis. Cost ladder, all measured:
+  `for (k = 0; k < 2; k++) { lim = 0xC8; }` -> score 6, build_insns 94
+  `while (i > 0) { lim = 0xC8; i--; }`      -> score 7, build_insns 96
+  `do { lim = 0xC8; } while (--i);`         -> score 5, build_insns 93   (rejected/arming-loop-after-main-score5.c)
+5 is the lowest score any NON-goto body has reached for this function (previous best 13). The
+2-instruction residual is the arming loop's own decrement and back branch. It is NOT submittable:
+the loop is semantically dead (checklist T1/T2), in no sanctioned family, and s8 already measured
+that the zero-instruction spelling `do { } while (0)` is rejected as phony at loop.c:570.
+
+### FRONTIER AFTER s10
+**F1 (the live one) — make the arming loop's 2 residual instructions semantically real, or find a
+second construct that sets moved_once[75] without emitting a back edge.** Everything else about
+the doubling is now measured and reproducible on the banked chassis. Note the arming loop must be
+(i) textually after the main loop, (ii) a real loop (non-phony at loop.c:570), (iii) move the SAME
+pseudo the main loop scans first — all three are satisfied by the banked score-5 body, so the only
+open question is the 2 instructions.
+
+**F2 (bounded, do not re-open blind) — threshold decay needs >= 7 carriers and cannot beat 13.**
+Measured this session: a carrier whose only use is dead (`m0 = (s32)base + 0x101; d0 = m0;`) is
+deleted by cse1 before loop.c sees it — the constant 257 is in text1b.rtl and text1b.jump and
+absent from text1b.cse and text1b.loop; loop insn_count stays 92 and no movable appears. A carrier
+therefore needs a live use and costs >= 2 surviving instructions. Arithmetic with k 2-insn
+carriers: threshold after the moves must be < insn_count, i.e. 122 - 3k < 92 + 2k, so k >= 7 and
+the axis costs >= 14 instructions — strictly worse than doing nothing. s9's k=8 measurement
+(score 17) is the empirical point on that line.
+
+**F3 — the two remaining s9 frontier probes are both KILLED (measured, not inferred).**
+(a) a named holder for the 0xA ramp step used at all six sites: cse1 folds it into the addiu
+immediates, no movable appears, loop insn_count stays 92, score stays 13.
+(b) the eq/ne exit test `while (i != 2)`: no new movable — cse merges the exit-test 2 with the
+switch's case-2 constant (that pseudo turns into life 2 / savings 2 and is still moved) — and the
+score gets WORSE, 13 -> 15.
+Also killed: the `while (i < 2) { do { ...; i++; } while (i < 2); }` same-back-edge nest s9 asked
+to be measured once — cc1 collects ONE loop from it, not two, so it cannot arm anything; score 29.
+Also measured neutral: the `for (i = 0; i < 2; i++)` chassis is byte-for-byte the same compile as
+the do-while (score 13, build_insns 93, insn_count 92) — the loop keyword is not a lever here.
+
+## [s10] Naming the 0xC8 constant as a local assigned at the TOP of the loop body, before the switch, changes move_movables' scan order so that constant is scanned first instead of the four switch-comparison constants, and it does so at zero instruction cost.
+- mechanism: expand_end_case reorders the switch decision-tree insns to the FRONT of the case statement, so anything written inside the switch is scanned after the four comparison constants and cannot decay threshold (tools/gcc-2.7.2/loop.c:1904) ahead of them; a statement written before the switch is physically before the dispatch and is scanned first.
+- probe: Applied vB_limtop.c (s1 body with `s32 lim; ... lim = 0xC8;` at the top of the loop body, used at the three sites that store 0xC8) to src/text1b.c, ran `sandbox func_8007526C --disable all` and `pwsh tools/grinder/dump.ps1 func_8007526C`, and read the func_8007526C section of tmp/grind/func_8007526C/dumps/text1b.loop.
+- result: CONFIRMED. score 13, build_insns 93, target_insns 91 -- identical to the s1 body -- while loop insn_count falls 92 -> 91 and the movable list becomes `Insn 19: regno 75 (life 63), move-insn savings 1  moved to 268` FIRST, then the four constants (regno 124/126/127/128) at threshold 119. Banked as the new candidate.c; dump saved as tmp/grind/func_8007526C/s10/vB_limtop.loop.
+- verdict: CONFIRMED
+
+## [s10] A real loop placed textually AFTER the main loop that also moves the same pseudo arms move_movables' moved_once doubling for the main loop, leaving all four switch-comparison constants inside the dispatch while the 0xC8 still hoists.
+- mechanism: loop_optimize walks loop numbers downward so a textually later loop is scanned first; when it moves regno 75 it sets moved_once[75] (tools/gcc-2.7.2/loop.c:1912), and the main loop's first movable then hits `if (moved_once[regno]) insn_count *= 2;` at tools/gcc-2.7.2/loop.c:1609-1611, taking insn_count 91 -> 182 so that 122*1*1 fails the desirability test at loop.c:1631 for every savings-1/lifetime-1 movable after it.
+- probe: Applied three arming spellings on the vB chassis and measured sandbox score + build_insns + the .loop dump for each: `for (k = 0; k < 2; k++) { lim = 0xC8; }`, `while (i > 0) { lim = 0xC8; i--; }`, and `do { lim = 0xC8; } while (--i);`, all placed after the main loop.
+- result: CONFIRMED. Dump prints `Loop from 265 to 288: 4 real insns.` (the arming loop) BEFORE `Loop from 14 to 260: 91 real insns.`, then `Insn 19: regno 75 ... halved since already moved  moved` and insns 226/232/238/241 `not desirable` -- the target's exact movable shape on the unmodified hard-float chassis. Scores: for-loop 6 (94 insns), while-loop 7 (96), do-while 5 (93). 5 is the lowest score any non-goto body has reached for this function (previous best 13). NOT SUBMITTABLE: the arming loop is semantically dead (checklist T1/T2) and in no sanctioned family; banked as rejected/arming-loop-after-main-score5.c purely as the mechanism proof.
+- verdict: CONFIRMED
+
+## [s10] A threshold-decay carrier whose only use is a dead register copy (`m0 = (s32)base + 0x101; d0 = m0;`, d0 never read) survives to loop.c as a movable and so decays threshold at zero final instruction cost.
+- mechanism: The intent was that loop.c would hoist m0 (threshold -= 3 at tools/gcc-2.7.2/loop.c:1904) while flow's dead-code elimination, which runs after loop, deleted both the hoisted set and the dead copy, giving a decay with no surviving instruction.
+- probe: Applied v0_deadcopy1.c to src/text1b.c, measured the sandbox score, regenerated the cc1 -da dumps and grepped the func_8007526C section of text1b.rtl / text1b.jump / text1b.cse / text1b.loop for the carrier constant 257.
+- result: KILLED. cse1 deletes the chain before loop_optimize ever runs: 257 is present in text1b.rtl and text1b.jump and absent from text1b.cse and text1b.loop. Loop insn_count stays 92, no carrier movable appears in the dump, score stays 13, build_insns stays 93. A decay carrier in this shape needs a live use and costs at least 2 surviving instructions; with k such carriers the requirement 122 - 3k < 92 + 2k gives k >= 7, i.e. 14 or more surviving instructions against a do-nothing floor of 13. s9's 8-carrier measurement (score 17) is the empirical point on that line.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7a577773 chassis 2026-09-07, s1 candidate body plus one dead-copy carrier applied to src/text1b.c, pure C, no FAKE constructs present, score 13 / build_insns 93 / loop insn_count 92
+
+## [s10] A named holder for the 0xA ramp step, assigned at the top of the loop body and used at all six sites, becomes a movable with lifetime >= 1 and so decays threshold ahead of the four switch-comparison constants.
+- mechanism: s9's frontier predicted lifetime 0 because addiu takes a 16-bit immediate and cse1 folds the holder away, but noted that if some of the six uses survived as register-required uses the decay would be reachable from ordinary C.
+- probe: Applied v2_stepholder.c (`s32 step; ... step = 0xA;` at the loop top, all six `+ 0xA` / `- 0xA` sites rewritten to use it) and read the func_8007526C section of tmp/grind/func_8007526C/dumps/text1b.loop plus the sandbox score.
+- result: KILLED. cse1 folds the holder back into the addiu immediates: the dump shows loop insn_count 92 (unchanged) and exactly the same five movables as the unmodified body -- no movable on the holder's regno at all -- and the sandbox score and build_insns are unchanged at 13 / 93.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7a577773 chassis 2026-09-07, s1 candidate body with a top-of-loop 0xA holder applied to src/text1b.c, pure C, no FAKE constructs present, score 13
+
+## [s10] Spelling the loop exit test as `while (i != 2)` forces the 2 into a register as a new movable that decays threshold at zero or negative instruction cost.
+- mechanism: s9's frontier reasoned that the MIPS branch predicate is reg_or_0_operand, so an eq/ne test against a held constant creates a movable with lifetime >= 1 while removing the in-loop slti.
+- probe: Applied v3_neexit.c (`} while (i != 2);`) and read the .loop dump section and the sandbox score.
+- result: KILLED. No new movable appears: cse merges the exit-test constant with the switch's case-2 comparison constant, so regno 126 simply becomes life 2 / savings 2 and is still moved, loop insn_count stays 92, and the score gets WORSE -- 13 -> 15 at build_insns 92.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7a577773 chassis 2026-09-07, s1 candidate body with an eq/ne exit test applied to src/text1b.c, pure C, no FAKE constructs present, score 15
+
+## [s10] The `while (i < 2) { do { ...; i++; } while (i < 2); }` same-back-edge nest gives cc1 two loops, the inner one arming moved_once for the outer.
+- mechanism: s9's frontier predicted this would fail requirement (c) because the inner loop contains the switch dispatch, so the four constants would be hoisted into the inner pre-header first.
+- probe: Applied vA_samebackedge.c and read the func_8007526C section of the .loop dump plus the sandbox score.
+- result: KILLED, and for a simpler reason than predicted: cc1 collects ONE loop from this shape, not two. The dump prints a single `Loop from 24 to 273: 92 real insns.` with no inner loop, moved_once is never armed, all four constants are still `moved to` the pre-header, and the extra outer test costs 3 instructions -- score 29, build_insns 94.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7a577773 chassis 2026-09-07, same-back-edge nest applied to src/text1b.c, pure C, no FAKE constructs present, score 29
+
+## [s10] The `for (i = 0; i < 2; i++)` loop keyword produces a different loop.c geometry from the do-while on the current index-derived chassis (s2's kill was measured on the retired pointer-bump chassis at score 48).
+- mechanism: A for/while loop puts an entry jump at the top so scan_loop sets loop_top and starts scanning at the bottom test label (tools/gcc-2.7.2/loop.c:537-558), which could change which movable is scanned first.
+- probe: Applied v4_for.c and compared the .loop dump section and sandbox score against the do-while baseline.
+- result: KILLED. Byte-for-byte the same compile: score 13, build_insns 93, `Loop from 13 to 265: 92 real insns.`, and the same five movables in the same order all moved. The loop keyword is not a lever for this residual on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7a577773 chassis 2026-09-07, for-loop chassis applied to src/text1b.c, pure C, no FAKE constructs present, score 13
