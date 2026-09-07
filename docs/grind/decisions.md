@@ -25035,3 +25035,71 @@ Ordinary C, no family claimed. Constructs: GpuRect{s16 x,y,w,h} retype, var_s4 d
 ## 2026-09-07 11:08 — _spu_FiDMA — final call — **PASS**
 
 Ordinary C; no exception family claimed and none needed. The body is the Sony LIBSPU handler shape (guard -> SPUCNT read-modify-write -> bounded 0xF00 spin -> callback-or-DeliverEvent); every statement is load-bearing hardware behavior, no __asm__, no pin, no FAKE, no dead local/store, no build-time output rewriting, no new rule/config or pipeline file. Decisive fact I verified myself: `git diff --stat` shows src/main.c body lines ONLY (metrics/events.jsonl is engine-generated) — zero declaration changes, so the three globals it consumes (D_800A2CDC/D_800A2D2C src/main.c:75,100; `extern volatile s32 _spu_transferCallback` src/main.c:74 under the ratified volatile_extern_allowlist.txt:33-34 grant, operator-audited 2026-07-10) are pre-existing HEAD decls this diff neither introduces nor modifies, and the volatile-u16 SPU register idiom is the unchanged HEAD idiom at src/main.c:1620-1637. Re-ran `sandbox _spu_FiDMA --disable all` myself: score 0, 48/48 (the 14 cheat_asm_stripped are other functions in the TU; this diff contains no asm). candidate.c body is byte-identical to what landed in src/main.c. Full evidence: memory/grind/_spu_FiDMA/evidence.md (FIDMA-E1..E4) and hypotheses.md (H2 kills the stale 2026-07 fork-segfault premise; the fork-divergence-inline-asm carve-out is NOT invoked here).
+
+## 2026-09-07 — func_8007526C — **INTEGRATION HANDOFF (bytes proven; blocked on build-config surfaces a grind session may not touch)**
+
+**This is not an endgame lock and not an exhaustion claim.** The matching C exists, is
+written, and was measured byte-identical to the target this session. What is blocked is two
+build-configuration edits outside a grind session's allowed surface (the Makefile and the
+maspsx gate list).
+
+**The finding.** GCC 2.7.2's `loop.c` `move_movables` hoists a loop invariant when
+`(threshold * savings * m->lifetime) >= insn_count` (tools/gcc-2.7.2/loop.c:1631), with
+`threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532).
+`CONDITIONAL_REGISTER_USAGE` (tools/gcc-2.7.2/config/mips/mips.h:524-536) marks all 32 FP
+registers fixed when `!TARGET_HARD_FLOAT`. Our `CC_FLAGS` (Makefile:35) does not pass
+`-msoft-float`, so this port's default hard-float configuration leaves the FP registers
+allocatable: `n_non_fixed_regs` is 60 instead of 28 and the threshold is 122 instead of 58.
+At func_8007526C's loop `insn_count` of 92 that is the whole difference between hoisting the
+four switch-comparison constants into the pre-header (our build, four `li`, score 13) and
+rematerialising them inside the loop in the branch delay slots (the target). The 0xC8
+movable, `savings 2 * lifetime 3`, clears both thresholds and is hoisted in both — matching
+`addiu $a3,$zero,0xC8` at asm/funcs/func_8007526C.s:3. The PlayStation has no FPU, so the
+original PsyQ compile was necessarily a soft-float configuration; this is the same class of
+port-default divergence as the big-endian default that `-mel` already had to correct
+(2026-08-04).
+
+**Measured, not argued.** Driving the exact Makefile:150 pipeline by hand
+(`cpp | cc1 | prologue_fix | maspsx | multu_pad | as`, scripts under
+tmp/grind/func_8007526C/s1/): current flags give 93 insns (sandbox score 13); `-msoft-float`
+gives 90 insns, identical to the target but for one missing load-delay `nop` at the loop top;
+`-msoft-float` plus func_8007526C in the maspsx `--label-nop-funcs` list gives **91 insns,
+byte-identical to asm/funcs/func_8007526C.s**, the only remaining word being the unrelocated
+`%gp_rel(D_800A36A0)` addend that `ld` fills. Comparison script shift2.py, objdump artifacts
+softnop.dis.
+
+**Blast radius, measured project-wide.** All 32 `src/*.c` were compiled twice with identical
+flags except `-msoft-float` and diffed (blast.sh). Thirty TUs are byte-identical apart from
+the options-comment line. Exactly two functions change anywhere in the project:
+func_8007526C (the target, in text1b.c — no other function in that TU moves), and
+func_800324D0 (src/code6cac_b.c:2554, in code6cac_b.c), where one loop-invariant `li $8,0xFF`
+de-hoists. **func_800324D0 is already COMPLETED-C, so a GLOBAL flag flip would break the
+oracle for it.**
+
+**Exact operator steps (recommended surgical form).**
+1. `Makefile`: add `SOFT_FLOAT_FILES := text1b` and append `$(if $(filter $1,$(SOFT_FLOAT_FILES)), -msoft-float)`
+   to `cc_flags_for` (Makefile:133), mirroring the existing `NO_SR_FILES` mechanism. Mirror the
+   new list into `engine/buildconfig.py` — the mirror is load-bearing
+   (`buildconfig-mirror-drift-false-mismatch`).
+2. `maspsx_label_nop_funcs.txt`: add `func_8007526C` (per
+   `.claude/rules/maspsx-label-nop-gate.md`).
+3. Replace the `INCLUDE_ASM("asm/funcs", func_8007526C);` at src/text1b.c:6660 with
+   `memory/grind/func_8007526C/candidate.c` (ordinary C, no FAKE construct, no sanctioned-family
+   claim required), then `verify-oracle` and `queue done func_8007526C`.
+   A fresh layer-2 cheat-reviewer still runs on the C before acceptance.
+
+**Systemic question this opens (for the project, not for this function).** If soft float is the
+historically correct configuration, every `loop.c` movable threshold in the project has been
+double its true value. The effect is invisible except where a loop's `insn_count` falls in
+(58, 122] with a `savings * lifetime == 1` invariant — and exactly one already-COMPLETED
+function sits in that window: func_800324D0, which took 21 grind sessions and carries a
+`/* FAKE */` duplicated-tail construct. Worth one measurement by whoever owns the systemic
+call: recompile code6cac_b.c with `-msoft-float` and score func_800324D0 with and without
+that construct.
+
+**Re-activation.** Nothing about this function is foreclosed on the merits. Once step 1 and
+step 2 land, the function is a one-commit COMPLETED-C.
+
+## 2026-09-07 11:46 — func_8007526C — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s4 of func_8007526C, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_8007526C). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
