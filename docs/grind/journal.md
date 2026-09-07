@@ -1808,3 +1808,4 @@
 - 2026-09-06 20:55 func_80089A48 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-06 21:12 func_80044800: LAYER-1 FAILED a sandbox-0 candidate — The rec/ent retarget-and-restore block was engineered specifically to defeat GCC 2.7.2's loop.c biv/giv classification, not to express a real algorithmic need — the worker's own evidence names the compiler-pass mechanism as the reason for the spelling.
 - 2026-09-06 21:27 func_80044800 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-07 03:17 CIRCUIT-BREAK: agent spawn failed 16 consecutive times on func_800238C4 (~7h of backoff) — see C:\Users\Trenton\Desktop\Bushido Blade 2 Decompile\tmp\grind\outcome_func_800238C4.json.agent.log; not retrying indefinitely
