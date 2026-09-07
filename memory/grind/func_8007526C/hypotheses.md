@@ -1148,3 +1148,69 @@ by mechanism rather than by geometry and the function's disposition rests entire
 - probe: Applied each body over the INCLUDE_ASM line at src/text1b.c:6660 and ran `sandbox func_8007526C --disable all` plus `tmp/grind/func_8007526C/run_dump.sh`.
 - result: candidate.c: score 13, build_insns 93, `Loop from 14 to 260: 91 real insns`, lim (regno 75) and all four constants (regnos 124/126/127/128) moved. arming-loop form: score 5, build_insns 93, `Loop from 263 to 281: 3 real insns / Insn 268: regno 75 (life 116), global move-insn savings 1 moved to 289` then `Loop from 14 to 260: 91 real insns / Insn 19: regno 75 (life 120), global move-insn savings 1 halved since already moved moved to 291` and all four constants `not desirable`. Every instance kill banked in s9-s13 therefore remains chassis-valid.
 - verdict: CONFIRMED
+
+## s15 (2026-09-07, synthesis)
+
+### KILLED (instance) -- "the two words separating the score-5 arming form from the target are
+the arming loop's decrement and back branch" (s14 frontier F1).
+Measured: built the arming body with the production pipeline and aligned the masked word
+streams against the target.  The arming loop costs THREE words (`addiu $a2,$a2,-1`,
+`bnez $a2`, and a reorg-duplicated `addiu $a2,$a2,-1` in the delay slot) and additionally
+changes the epilogue delay slot from the target's `nop` to `addiu $a2,$a2,1`.  The only other
+residual is the missing maspsx label-nop.  measured_on: HEAD 5b5a47a6 chassis 2026-09-07,
+rejected/arming-loop-after-main-score5.c applied to src/text1b.c, pure C, no FAKE construct.
+
+### KILLED (class) -- "halving loop.c's threshold by making the loop contain a call is a
+usable lever".  prescan_loop sets `loop_has_call` only on a real CALL_INSN, and the target's
+91 words contain no `jal`/`jalr` (grep of asm/funcs/func_8007526C.s), so any payload that
+sets it emits words the target does not have.  predicate_cite: tools/gcc-2.7.2/loop.c:532.
+measured_on: target instruction census, chassis-independent.
+
+### KILLED (class) -- "the four switch-comparison constants can be kept off move_movables'
+list by a C-level spelling".  The movable-admission guard admits them through clause (2)
+(`! REG_USERVAR_P (SET_DEST) && ! REG_LOOP_TEST_P (SET_DEST)`), which holds for every
+compiler-generated comparison constant regardless of source spelling, so the desirability
+test at loop.c:1631 is the only gate.  predicate_cite: tools/gcc-2.7.2/loop.c:689.
+measured_on: source reading plus every s10..s15 .loop dump, all of which list the four
+constants as movables.
+
+### CONFIRMED -- "insn_count can be raised past the desirability bar at ZERO emitted cost by a
+same-variable compound-assignment split chain that combine folds back".
+count_loop_regs_set runs before cse2/combine/flow/jump2, so it counts the whole chain; combine
+merges the chain into one `addiu`.  Splitting the four `+- 0xA` updates in cases 3/2/4 into
+eight addends each lifts loop insn_count 91 -> 123 while build_insns FALLS 93 -> 90 and the
+.loop dump prints "not desirable" for all four constants.  This falsifies the s13/s14 belief
+that the insn_count axis costs 11 emitted words -- that price was a property of the
+jump2-cross-jump payload, not of the axis.  measured_on: HEAD 5b5a47a6 chassis 2026-09-07,
+tmp/grind/func_8007526C/s15/s2_k8.c applied to src/text1b.c, pure C, no FAKE construct.
+
+### CONFIRMED -- "honest floor 1 is reachable with a real do-while loop".
+`sandbox func_8007526C --disable all` -> "score": 1, build_insns 90.  The 90 words are
+word-identical to the target's 91 minus the load-delay nop at asm/funcs/func_8007526C.s:6.
+measured_on: same chassis/body as above.
+
+### KILLED (instance) -- "splitting all six update sites is fine".
+Splitting case 1's two sites swaps the hard registers local-alloc gives the p+8 and p+0xC
+values (target `lhu $v1,0x8 / lhu $v0,0xC`, build `lhu $v0,8 / lhu $v1,12`), costing 10 points.
+Reversing the local declaration order and swapping the two local names both measure 11/90
+unchanged, so it is not a declaration-order effect.  measured_on: HEAD 5b5a47a6 chassis
+2026-09-07, rejected/split-distinct-locals-case1-regswap-score11.c and its two permutations
+applied to src/text1b.c, pure C, no FAKE construct.
+
+### KILLED (instance) -- "16-bit (`s16`) locals generate free sign-extension insns that inflate
+loop-time insn_count".  Six `s16` locals buy +2 loop insns (93) because the extensions are
+folded into the lhu/sh before loop.c counts; at two addends `s16` and `s32` both measure
+insn_count 105.  measured_on: HEAD 5b5a47a6 chassis 2026-09-07,
+rejected/s16-locals-no-insncount-gain-score26.c applied to src/text1b.c, pure C, no FAKE.
+
+### KILLED (instance) -- "staging the memory-to-memory copies and the `+ 1` increments through
+named locals (plainly ordinary C) can supply the insn_count on its own".  Eight staged
+statements buy +6 loop insns and cost 2 emitted words (113 / 92).  measured_on: HEAD 5b5a47a6
+chassis 2026-09-07, rejected/staged-copies-and-increments-poor-ratio-score10.c applied to
+src/text1b.c, pure C, no FAKE construct.
+
+### OPEN -- the admissibility question (s15 returns ruling-request)
+The floor-1 body's only non-ordinary element is the DEPTH of the compound-assignment split
+(eight addends decomposing one constant `0xA`).  The shape is the owner-sanctioned
+same-variable split-init / compound-assignment split, but the sanctioned examples are all
+two-way splits of a real `a + b`.  s15 deliberately did not self-approve it.

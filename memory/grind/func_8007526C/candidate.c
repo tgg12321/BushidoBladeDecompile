@@ -1,102 +1,57 @@
-/* s14 (2026-09-07, synthesis) RE-MEASURED this body unchanged on the dispatch chassis:
- *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91,
- *   .loop "Loop from 14 to 260: 91 real insns", lim (regno 75) moved and all four switch
- *   comparison constants (regnos 124/126/127/128, life 1, savings 1) moved to the pre-header.
- * MANDATED KILL RE-AUDIT: the closest banked form, rejected/arming-loop-after-main-score5.c,
- *   still measures score 5 / build_insns 93 with all four constants `not desirable`.  Neither
- *   body carries a FAKE construct, so tools/fake_ablate.py has no carrier to strip and every
- *   banked instance kill remains chassis-valid.
- * s14 kept this body because BOTH live frontier items measured dead:
- *   (a) frontier 1 -- "5 outer-exit copies of a tail containing no address recomputation merge
- *       perfectly" is FALSE on this chassis: `i++` alone at the five outer exits measures
- *       96 / 95 (+5 loop insns for +2 emitted words) and the 3-insn tail measures 108 / 97.
- *       s13's perfect merge (w2, +9 / +0) is a property of the POINTER-BUMP chassis only.
- *   (b) frontier 2 -- "each removed non-merging copy returns ~1 emitted word" is FALSE:
- *       w9 minus one copy lands loop insn_count on exactly 120 (all four constants rejected)
- *       with build_insns UNCHANGED at 102.  The duplication axis's emitted cost is quantized
- *       and its floor at insn_count 120 is 11 words above the 91-word target.
- *   (c) NEW CLASS KILL -- `do { ... } while (0);` cannot arm the moved_once doubling: loop.c
- *       calls it phony and returns before scanning (loop.c:568-575, scan_start is not a
- *       CODE_LABEL once jump1 deletes the unreferenced top label).  Measured at three
- *       placements inside the main loop, all 13 / 93 / 91.
- * The two live axes and their measured floors are now: the moved_once ARMING axis, which
- * reproduces the target's movable shape exactly at build_insns 93 / score 5 and whose only
- * residual is the arming loop's own two emitted instructions; and the insn_count >= 120 axis,
- * whose cheapest measured form is build_insns 102 / score 27.  See evidence.md s14.
- */
-/* s13 (2026-09-07, structural) RE-MEASURED this body unchanged on HEAD 34eb8142:
- *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91,
- *   .loop "Loop from 14 to 260: 91 real insns" with lim (regno 75) and all four switch
- *   comparison constants (regnos 124/126/127/128, life 1, savings 1) moved to the pre-header.
- * Still the best NON-BANNED form.  s13 kept it because:
- *   (a) local DECLARATION ORDER is completely inert here -- all five permutations of
- *       base/p/i/lim measure score 13 / build 93 / insn_count 91 and only renumber the
- *       pseudos (75 -> 72/73/74), so local-alloc's $8/$9/$10/$11 assignment does not respond
- *       to declaration order (s12 frontier item 3, now killed);
- *   (b) per-access address arithmetic (*(u16 *)(base + i * 2 + K), no p local) is NOT free
- *       loop-time insn_count -- cse1 runs before loop and collapses it back to 91;
- *   (c) the duplicated-tail axis (s12 frontier item 1) DOES reach the goal mechanically --
- *       at insn_count >= 120 all four constants print "not desirable" -- but the cheapest
- *       measured form that gets there is build_insns 102 against a 91-word target.
- * Full table: tmp/grind/func_8007526C/s13/scores.txt.  See evidence.md s13.
- */
-/* s12 (2026-09-07, structural) RE-MEASURED this body unchanged on HEAD f2842664:
- *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91.
- * Still the best NON-BANNED form.  s12 kept it because all three of s11's frontier items measured
- * dead: the semantically real two-pass state split arms the moved_once doubling but halves the
- * loop's insn_count so the doubling loses (63/99); arming without a second loop is impossible
- * (moved_once is written only at loop.c:1912, reachable only through the single move_movables call
- * at loop.c:966 inside scan_loop); and every permutation of the switch case-label order is worse
- * than this body's own 1/3/2/4 (31 / 55 / 60).  s12 also priced out the threshold-decay route --
- * the target's whole pre-header is three instructions with no spare slot for a hoisted movable --
- * and found ONE thing that is not dead: loop-time insn_count and emitted build_insns are NOT
- * coupled 1:1 once a real statement is duplicated into the switch arms (jump2 cross-jumps the
- * copies back after loop.c has counted them).  See evidence.md s12.
- */
-/* s11 (2026-09-07, rederive) RE-MEASURED this body unchanged on HEAD 7ab27738:
- *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91.
- * It remains the best NON-BANNED form.  s11 kept it because four structurally different
- * re-derivations all measured worse: hand-written if/else dispatch tree (29), the matched
- * sibling func_80075670's u16-element array model (47 / 60), its `s16 i` counter (28), and a
- * named 0xA step holder (13, bit-identical baseline -- cse1 folds it into the addiu immediate).
- * The 13 points are entirely the four switch-comparison constants being hoisted into
- * $8/$9/$10/$11; the target keeps them in-loop in a reused $v0.  See evidence.md s11 for the
- * closed-out loop.c arithmetic.
- */
-/* candidate for func_8007526C (src/text1b.c) -- s10 (2026-09-07), ORDINARY C, real do-while loop.
+/* candidate for func_8007526C (src/text1b.c) -- s15 (2026-09-07, synthesis).
+ * MEASURED THIS SESSION, dispatch chassis, current unmodified build configuration:
+ *   `sandbox func_8007526C --disable all` -> "score": 1, build_insns 90, target_insns 91
+ *   .loop: "Loop from 14 to 356: 123 real insns."
+ *          Insn 19: regno 75 (life 71) move-insn savings 1  moved to 364      <- the 0xC8, hoisted
+ *          Insn 322/328/334/337: regno 124/126/127/128 (life 1, savings 1)  not desirable
+ *   i.e. EXACTLY the target's movable shape, reached with a REAL do-while loop (no goto,
+ *   no dead arming loop, no FAKE construct, no duplicated tail).
  *
- * MEASURED THIS SESSION on the dispatch chassis with the current unmodified build configuration:
- *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91
- *   (identical score/insns to the s1 candidate it replaces; that body is kept verbatim below
- *    except for the named 0xC8 holder).
+ * WORD-EXACTNESS PROOF (tmp/grind/func_8007526C/s15/align.py s2k8, artifact s2k8.dis):
+ *   the 90 emitted words are word-identical to the 91 words of asm/funcs/func_8007526C.s
+ *   except that the build is MISSING one word: the load-delay `nop` at
+ *   asm/funcs/func_8007526C.s:6 (target word index 3), which sits between
+ *   `lw $a0, %gp_rel(D_800A36A0)($gp)` and the `.L80075278:` label and is the maspsx
+ *   .L-label load-consumer blind spot that both layer-2 reviewers already confirmed and
+ *   that the owner already authorized adding to maspsx_label_nop_funcs.txt.  Every other
+ *   diff printed by align.py is a branch/jump label-text difference only (masked equal).
  *
- * WHY THIS BODY AND NOT THE s1 ONE (both score 13): naming the 0xC8 constant as a local
- * `lim` and assigning it at the TOP of the loop body, before the switch, is FREE (score and
- * build_insns unchanged, loop insn_count 92 -> 91) and it moves that movable to POSITION 1 of
- * move_movables' scan list.  Dump proof (tmp/grind/func_8007526C/s10/vB_limtop.loop):
- *     Loop from 14 to 260: 91 real insns.
- *     Insn 19:  regno 75  (life 63), move-insn savings 1  moved to 268   <- lim, scanned FIRST
- *     Insn 226/232/238/241: regno 124/126/127/128 (life 1, savings 1) moved  <- the 1/2/3/4
- * In the s1 body the four switch-comparison constants were scanned FIRST and the 0xC8 movable
- * last, so nothing could ever decay `threshold` ahead of them.  With this body they are scanned
- * SECOND, at threshold 119 instead of 122 (loop.c:1904 `threshold -= 3`), and -- far more
- * importantly -- regno 75 is now the first regno move_movables touches in this loop, which is
- * the ONLY hook by which loop.c:1609-1611's `if (moved_once[regno]) insn_count *= 2;` can fire
- * before the four constants are considered.  s10 measured that hook: with a second (dead) loop
- * after the main loop that also moves `lim`, all four constants print `not desirable`, the
- * 0xC8 still hoists, and the score falls 13 -> 5 (rejected/arming-loop-after-main-score5.c).
- * That arming loop is not admissible C, but the chassis it needs is this one.
+ * HOW IT WORKS (the s15 discovery).  The whole 13-point residual was ever only
+ * tools/gcc-2.7.2/loop.c:1631 `(threshold * savings * m->lifetime) >= insn_count` with
+ * threshold 122 (loop.c:532, hard float), savings 1 and lifetime 1 for each of the four
+ * switch-comparison constants against a loop insn_count of 91.  s13/s14 concluded the
+ * insn_count >= 120 route costs 11 extra emitted words because every previous payload
+ * relied on jump2 cross-jumping duplicated tails (measured 3 loop insns per emitted word).
+ * That conclusion is WRONG for a different payload: a same-variable compound-assignment
+ * split chain is counted by count_loop_regs_set (loop.c:2989-3007, which runs before cse2,
+ * combine, flow and jump2) but is folded back to ONE `addiu` by combine, so it costs
+ * loop-time insn_count at ZERO -- here NEGATIVE -- emitted cost.  Splitting the four
+ * `*(u16 *)(p + X) = *(u16 *)(p + X) +- 0xA;` updates in cases 3/2/4 into
+ * `vN = *(u16 *)(p + X); vN = vN +- t1; ... ; *(u16 *)(p + X) = vN;` with eight addends
+ * summing to 0xA lifts insn_count 91 -> 123 while build_insns FALLS 93 -> 90.
+ * Case 1's two update statements are deliberately left un-split: splitting them swaps the
+ * hard registers local-alloc gives the p+8 and p+0xC values ($v0/$v1 instead of the
+ * target's $v1/$v0) -- see rejected/split-distinct-locals-case1-regswap-score11.c.
  *
- * The whole remaining 13-point residual is still the single move_movables desirability test
- * `(threshold * savings * m->lifetime) >= insn_count` at tools/gcc-2.7.2/loop.c:1631, with
- * threshold = 2 * (1 + n_non_fixed_regs) = 122 (loop.c:532, hard float) against insn_count 91.
- * The byte-proven answer is threshold 58 (-msoft-float), which this pipeline may not spend.
+ * STATUS: RULING PENDING, NOT A SUBMISSION YET.  The construct is the owner-sanctioned
+ * same-variable split-init / compound-assignment split (feedback memory
+ * split-init-accumulation-sanctioned; owner rulings 2026-08-31 ordinary-c-judge-decidable
+ * Ruling 1(3) and 2026-09-02 Ruling 4/B, which explicitly named compound-assignment splits
+ * and retired the "adjacent spellings need their own ruling" caveat) -- but at a DEPTH
+ * (eight addends decomposing one constant 0xA) that the sanctioned examples never show.
+ * s15 did not self-approve it; the s15 outcome is a ruling-request.  If the ruling is
+ * favourable this body plus the already-authorized maspsx_label_nop_funcs.txt line is
+ * COMPLETED-C; if not, fall back to ordinary-score13-baseline.c.
  */
 void func_8007526C(void) {
     u8 *base;
     u8 *p;
     s32 i;
     s32 lim;
+    s32 v3;
+    s32 v4;
+    s32 v5;
+    s32 v6;
 
     base = D_800A36A0;
     i = 0;
@@ -118,7 +73,16 @@ void func_8007526C(void) {
             }
             break;
         case 3:
-            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) + 0xA;
+            v3 = *(u16 *)(p + 0xC);
+            v3 = v3 + 2;
+            v3 = v3 + 2;
+            v3 = v3 + 1;
+            v3 = v3 + 1;
+            v3 = v3 + 1;
+            v3 = v3 + 1;
+            v3 = v3 + 1;
+            v3 = v3 + 1;
+            *(u16 *)(p + 0xC) = v3;
             if ((s16)*(u16 *)(p + 0xC) >= 0xC8) {
                 *(u16 *)(p + 8) = lim;
                 *(u16 *)(p + 0xC) = lim;
@@ -130,7 +94,16 @@ void func_8007526C(void) {
             }
             break;
         case 2:
-            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) - 0xA;
+            v4 = *(u16 *)(p + 0xC);
+            v4 = v4 - 2;
+            v4 = v4 - 2;
+            v4 = v4 - 1;
+            v4 = v4 - 1;
+            v4 = v4 - 1;
+            v4 = v4 - 1;
+            v4 = v4 - 1;
+            v4 = v4 - 1;
+            *(u16 *)(p + 0xC) = v4;
             if ((s16)*(u16 *)(p + 0xC) <= 0) {
                 *(u16 *)(p + 8) = 0;
                 *(u16 *)(p + 0xC) = 0;
@@ -138,8 +111,26 @@ void func_8007526C(void) {
             }
             break;
         case 4:
-            *(u16 *)(p + 8) = *(u16 *)(p + 8) - 0xA;
-            *(u16 *)(p + 0xC) = *(u16 *)(p + 0xC) - 0xA;
+            v5 = *(u16 *)(p + 8);
+            v5 = v5 - 2;
+            v5 = v5 - 2;
+            v5 = v5 - 1;
+            v5 = v5 - 1;
+            v5 = v5 - 1;
+            v5 = v5 - 1;
+            v5 = v5 - 1;
+            v5 = v5 - 1;
+            *(u16 *)(p + 8) = v5;
+            v6 = *(u16 *)(p + 0xC);
+            v6 = v6 - 2;
+            v6 = v6 - 2;
+            v6 = v6 - 1;
+            v6 = v6 - 1;
+            v6 = v6 - 1;
+            v6 = v6 - 1;
+            v6 = v6 - 1;
+            v6 = v6 - 1;
+            *(u16 *)(p + 0xC) = v6;
             if ((s16)*(u16 *)(p + 0xC) <= 0) {
                 *(u16 *)(p + 8) = 0;
                 *(u16 *)(p + 0xC) = 0;

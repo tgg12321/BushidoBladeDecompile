@@ -1350,3 +1350,85 @@ asm has nothing after the main loop but `jr $ra / nop`.
 - [s14] TOOLING: tmp/grind/func_8007526C/s14/sweep.ps1 is a hardened rewrite of s13's harness -- it git-checkouts src/text1b.c first and its apply.py handles BOTH the committed INCLUDE_ASM state and an already-applied body, so a sweep can no longer silently report baseline scores.
 
 - [s14] src/text1b.c was restored to its committed INCLUDE_ASM state; git status --porcelain shows no src/ modification.
+
+## s15 (2026-09-07, synthesis) -- the insn_count axis is ZERO-COST after all; floor 13 -> 1 with a real loop
+
+### 1. Frontier item F1 answered: the score-5 arming body's residual is 1 nop + 3 arming words
+Built `rejected/arming-loop-after-main-score5.c` with the exact production pipeline
+(`tmp/grind/func_8007526C/s15/build.sh arm`, artifacts `arm.s`/`arm.o`/`arm.dis`) and ran a
+difflib alignment of the masked word streams against `asm/funcs/func_8007526C.s`
+(`tmp/grind/func_8007526C/s15/align.py`).  Result, exactly:
+  * target[3] `nop` -- MISSING from the build.  This is the load-delay nop at
+    `asm/funcs/func_8007526C.s:6`, between `lw $a0, %gp_rel(D_800A36A0)($gp)` and the
+    `.L80075278:` label: the maspsx .L-label load-consumer blind spot.
+  * build[88..90] `addiu $a2,$a2,-1 / bnez $a2,... / addiu $a2,$a2,-1` -- THREE extra words,
+    not the two every session since s10 assumed (reorg duplicates the decrement into the
+    back branch's delay slot).
+  * target[90] `nop` (the `jr $ra` delay slot) vs build[92] `addiu $a2,$a2,1` -- the arming
+    loop also changes what reorg puts in the epilogue delay slot.
+  * Every other difference in the alignment is branch/jump label TEXT only (masked equal).
+So the arming axis is 3 emitted words over target, not 2, and the ONLY non-arming residual
+in that body was the maspsx nop.  The assumption in the s14 frontier is dead.
+
+### 2. Mechanism census of loop.c:1631, completed by reading the compiler
+`(threshold * savings * m->lifetime) >= insn_count` at tools/gcc-2.7.2/loop.c:1631 has exactly
+four inputs, and s15 closed out the three that are not insn_count:
+  * `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532).  A CALL in
+    the loop HALVES it to 61 < 91, which alone would make all four constants not desirable --
+    but `prescan_loop` (loop.c:2158-2211) sets `loop_has_call` only on a real `CALL_INSN`, and
+    `asm/funcs/func_8007526C.s` contains zero `jal`/`jalr`, so any call payload adds words the
+    target does not have.  `n_non_fixed_regs` is set once in regclass.c:380-387 from
+    `fixed_regs[]` (only `-msoft-float`, which is denylisted, moves it) and decremented at
+    regclass.c:530 only inside `globalize_reg` -- i.e. by global register variables, a
+    forbidden register-pin family, and 16 of them would be needed.
+  * `savings = m->savings = n_times_used[regno]` (loop.c:793) = 1; a constant with zero uses
+    would not be emitted at all.
+  * `m->lifetime = uid_luid[regno_last_uid] - uid_luid[regno_first_uid]` (loop.c:791) = 1;
+    a set insn and its consumer are distinct 'i'-class insns so their luids always differ by
+    at least 1 (loop.c:406-409).
+  * The four constants cannot be kept out of the movable list either: the guard at
+    loop.c:686-700 admits them through clause (2) (`! REG_USERVAR_P && ! REG_LOOP_TEST_P`),
+    which is always true for compiler-generated comparison constants.
+Therefore insn_count is the only C-side input, and the bar is insn_count >= 120 (not 123):
+after `lim` is moved, `threshold -= 3` (loop.c:1904) leaves 119, so 119 < insn_count suffices.
+Confirmed by measurement: insn_count 115 rejects only the last two constants (119 >= 115 and
+116 >= 115 still pass), insn_count 121 and 123 reject all four.
+
+### 3. THE FINDING: combine-folded compound-assignment splits buy insn_count for FREE
+`count_loop_regs_set` (loop.c:2989-3007) counts every 'i'-class insn between the loop notes,
+and it runs BEFORE cse2, combine, flow and jump2.  Every previous payload (s12-s14) relied on
+jump2 cross-jumping duplicated tails and measured 3 loop insns per extra emitted word.  A
+same-variable compound-assignment split chain is different: `combine` folds
+`vN = vN + a; vN = vN + b;` back into a single `addiu`, so the chain is counted at loop time
+and costs NOTHING at emission.  Measured ladder, all on the s10..s14 candidate chassis, pure C,
+no FAKE construct, `sandbox --disable all` score / build_insns / loop insn_count:
+    base (no split)                                      13 / 93 /  91
+    one shared local `v`, all 6 sites, 2 addends         23 / 93 /  93
+    one shared local `v`, all 6 sites, 5 addends         20 / 87 / 121   (all 4 not desirable)
+    distinct local per site, all 6, 5 addends            11 / 90 / 121   (all 4 not desirable)
+    distinct local, case 1 UN-split, 4 sites, 6 addends  20 / 91 / 115   (2 of 4 hoisted)
+    distinct local, case 1 UN-split, 4 sites, 8 addends   1 / 90 / 123   (all 4 not desirable)
+    distinct local, case 1 UN-split, 4 sites, 10 addends  1 / 90 / 131   (all 4 not desirable)
+Each extra addend on a split site is worth +1 loop insn; introducing the local itself is worth
+another +1 per site.  build_insns FALLS as the split deepens because the locals also remove
+reloads, which is why the case-1 sites must stay un-split.
+
+### 4. Floor 1 reached with a REAL do-while loop (no goto, no arming loop, no FAKE)
+`tmp/grind/func_8007526C/s15/s2_k8.c` (now `memory/grind/func_8007526C/candidate.c`) measures
+`"score": 1, build_insns 90, target_insns 91`.  The alignment
+(`tmp/grind/func_8007526C/s15/align.py s2k8`, artifact `s2k8.dis`) shows the 90 emitted words
+are word-identical to the target's 91 minus exactly one word: the load-delay `nop` at
+`asm/funcs/func_8007526C.s:6` -- the same owner-authorized maspsx label-nop gate line that the
+s5/s6/s7 packets identified.  This is the state the Judge asked for in the s14 constraints
+block ("reach floor 1 with a real while/for/do loop"), reached without the banned goto loop.
+The open question is admissibility of the split DEPTH, which is why s15 returns a
+ruling-request rather than a submission.
+
+### 5. Two secondary spellings measured and dead
+  * `s16` locals instead of `s32` add only +2 loop insns across all six sites (93): the
+    sign-extensions are folded into the lhu/sh before loop.c counts.  The insn_count gain
+    comes from the split, not from the local's width.
+  * Staging the four memory-to-memory `*(u16 *)(p+0x14) = *(u16 *)(p+0x18);` copies and the
+    two `+ 1` increments through named locals -- ordinary C needing no split justification --
+    buys only +6 loop insns for eight staged statements AND costs 2 emitted words, so it
+    cannot replace split depth on the way to insn_count >= 120.
