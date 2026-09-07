@@ -455,3 +455,73 @@ compiler flags.
 
 - [s6] src/text1b.c was restored byte-for-byte to HEAD at the end of the session; the
   score-1 body lives only in memory/grind/func_8007526C/candidate.c.
+
+## s7 (recon, 2026-09-07) — chassis HEAD a04d3e60
+
+### OBJECT MODEL: D_800A36A0 — MATCHES (re-measured this session, score 1)
+`func_8007526C` touches exactly ONE global, `D_800A36A0`, already declared in
+src/text1b.c as `extern u8 *D_800A36A0;` (src/text1b.c:6624, :6659, :6791) and listed in
+sdata_syms.txt:226, i.e. a GP-relative pointer variable, not an array and not an
+aggregate. With the banked s6 body applied the built function reproduces the target's
+`lw $a0, %gp_rel(D_800A36A0)($gp)` preamble and every absolute field offset (0x8, 0xC,
+0x10, 0x14, 0x18, 0x38, 0x3C) word-for-word — verdict **MATCHES**, proven by measurement
+(90 of 91 target words identical, sandbox score 1), not by inspection. There is no second
+global, no MISMATCH symbol and no MISMATCH-unmeasured symbol for this function, so no
+declaration fix is available or needed. This re-confirms the s1 and s2 OBJECT MODEL
+entries on the current chassis.
+
+### Chassis re-measurement (the brief's chassis check reported "measurement unavailable")
+- Bare HEAD ships `INCLUDE_ASM("asm/funcs", func_8007526C);` at src/text1b.c:6660.
+- With `memory/grind/func_8007526C/candidate.c` (the s6 goto-spelled body) applied:
+  `sandbox func_8007526C --disable all` → **score 1**, target_insns 91, build_insns 90,
+  scorable true, rules_dropped 0. The honest floor on this chassis is **1**, NOT the 13
+  recorded in state.json's floor_history and NOT the 48 the SessionStart queue banner
+  still quotes; the queue's 48 is the stale pre-s1 pin.
+- `canonical func_8007526C` → verdict **C**, asm_insns 0, total 91, distance 1
+  ("pure-C distance 1 <= 50 — pure-C target"). The function remains routed pure-C; there
+  is no canonical-asm grant path here and `scan_hand_coded` has nothing to work with.
+
+### The single residual word is an assembler-layer nop, and its predicate is in maspsx
+The one missing word is the load-delay `nop` at asm/funcs/func_8007526C.s:6, sitting
+between `lw $a0, %gp_rel(D_800A36A0)($gp)` (:4) and the loop-top merge label
+`.L80075278:` (:5) whose first instruction is `lbu $v1, 0x10($a0)` (:7). I read the
+mechanism directly out of the tool source this session rather than inheriting it:
+`is_label()` at tools/maspsx/maspsx/__init__.py:257 is
+`re.match(r"\$L(b|e)?\d+:$", line)` — it recognises only `$L`-prefixed locals, while this
+GCC fork emits `.L`-prefixed ones, so a load whose destination is consumed across a `.L`
+merge label is not seen as a load-delay hazard and loses its nop. The narrow workaround
+already in the tool (`_handle_nop_before_next_instruction`,
+tools/maspsx/maspsx/__init__.py:810-820) is explicitly scoped to the **jalr-consumer**
+case only (`lw $rN; .L<n>:; jal $31,$rN`), with an in-source comment saying broadening the
+label-skip cascades through index-anchored rules elsewhere. Our consumer is an ordinary
+`lbu`, so it is outside that carve-out; the per-function opt-in list
+`maspsx_label_nop_funcs.txt` is the sanctioned way to cover a LOAD-CONSUMER case
+(.claude/rules/maspsx-label-nop-gate.md), and func_80022F34 is the precedent already in
+that list (maspsx_label_nop_funcs.txt:22), applied by the OWNER in the 2026-09-06
+foreclosed-bucket review (commit d4338774).
+
+### That surface is mechanically owner-only — re-confirmed by reading the rule
+`.claude/rules/integration-handoff-self-serve.md:60-63` names
+`maspsx_label_nop_funcs.txt` verbatim on the "Path denylist for add-scope-allow
+(severe-blocker class, always refused)" list, alongside the other maspsx fidelity-gate
+lists, and :64-65 puts everything under `tools/` behind a path-class regex. So neither a
+grind session nor the driver can add the line; only the owner can. This is consistent
+with the two standing judge rulings (docs/grind/decisions.md 2026-09-07 11:56 and 12:10)
+and is why an INTEGRATION HANDOFF disposition is NOT available: that rule requires bytes
+proven at sandbox == 0, and this function measures 1.
+
+- [s5] OBJECT MODEL: D_800A36A0 - MATCHES (re-measured this session, score 1). It is the only global func_8007526C touches, is already declared `extern u8 *D_800A36A0;` in src/text1b.c (lines 6624, 6659, 6791) and listed in sdata_syms.txt:226, i.e. a GP-relative pointer variable, not an array and not an aggregate. With the banked s6 body applied the build reproduces the target's `lw $a0, %gp_rel(D_800A36A0)($gp)` preamble and every absolute field offset (0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C) word-for-word - proven by measurement (90 of 91 target words identical), not inspection. No second global, no MISMATCH symbol, no MISMATCH-unmeasured symbol, so no declaration fix is available or needed.
+
+- [s5] Chassis re-measurement (the brief reported 'measurement unavailable'): with candidate.c applied over src/text1b.c:6660, `sandbox func_8007526C --disable all` returns score 1 / target_insns 91 / build_insns 90 / rules_dropped 0, and `canonical func_8007526C` returns verdict C, asm_insns 0, distance 1. The honest floor is 1. The 13 in state.json floor_history and the 48 in the SessionStart queue banner are both stale and were superseded by the s6 body.
+
+- [s5] The single missing word is the load-delay nop at asm/funcs/func_8007526C.s:6, between the gp-relative load at :4 and the `lbu $v1, 0x10($a0)` at :7 that follows the loop-top merge label `.L80075278:` at :5.
+
+- [s5] Mechanism read from tool source this session: maspsx's is_label() at tools/maspsx/maspsx/__init__.py:257 matches only $L-prefixed locals while this GCC fork emits .L, so the load-delay hazard across that merge label is invisible and the nop is dropped. The existing .L carve-out at tools/maspsx/maspsx/__init__.py:810-820 is deliberately scoped to the indirect-call consumer case, with an in-source comment that broadening the label-skip cascades through index-anchored rules elsewhere; our consumer is an ordinary lbu, so it is outside that carve-out.
+
+- [s5] The sanctioned remedy is the per-function opt-in list maspsx_label_nop_funcs.txt (LOAD-CONSUMER case, .claude/rules/maspsx-label-nop-gate.md), which is on the always-refused add-scope-allow denylist at .claude/rules/integration-handoff-self-serve.md:60-63 - owner-only by design. The controlling precedent is func_80022F34, which sat in this exact shape, was foreclosed, and completed when the owner applied the one line in the 2026-09-06 foreclosed-bucket review (commit d4338774); it is now maspsx_label_nop_funcs.txt:22.
+
+- [s5] An INTEGRATION HANDOFF disposition is NOT available and must not be re-filed: .claude/rules/integration-handoff-self-serve.md:12-15 requires bytes proven at sandbox == 0, and this function measures 1 on every buildable configuration. Both previously filed handoffs were FAILed by the Judge on exactly that ground (docs/grind/decisions.md 2026-09-07 11:56 and 12:10).
+
+- [s5] The loop.c insn_count >= 123 axis (s3's frontier F1) is MOOT, not open: the goto-spelled loop bypasses loop.c entirely so move_movables never runs on it. The 2026-09-07 12:10 judge ruling states this explicitly. Recorded here so no later session re-derives it.
+
+- [s5] src/text1b.c was reverted to its HEAD INCLUDE_ASM form at the end of this session; the tree carries only ledger edits.

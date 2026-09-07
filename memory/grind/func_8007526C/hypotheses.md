@@ -263,3 +263,61 @@
 - **F3 - dead, do not re-file.** The s5 -msoft-float build-flag theory is superseded: the
   target's in-loop constants are reachable with the project's existing hard-float
   configuration. The Judge constraint against re-filing an integration handoff stands.
+
+## [s7] The honest floor on the current HEAD chassis (a04d3e60) with the banked s6 body is 1, and the single residual word is the load-delay nop at asm/funcs/func_8007526C.s:6 rather than any remaining codegen divergence.
+- mechanism: the s6 body spells the 2-iteration loop as a label plus a backward `goto`, so GCC 2.7.2 never emits NOTE_INSN_LOOP_BEG for it and loop.c's scan_loop/move_movables never runs on this loop at all — which removes both the four hoisted switch-comparison constants (the entire s1-s5 13-point residual) and the strength-reduction giv that biased every field offset by +0x10 in the pointer-bump spelling.
+- probe: applied memory/grind/func_8007526C/candidate.c over the `INCLUDE_ASM("asm/funcs", func_8007526C);` line at src/text1b.c:6660 and ran `& tools/wteng.ps1 main sandbox func_8007526C --disable all` plus `canonical func_8007526C` on HEAD a04d3e60 with an otherwise unmodified build configuration.
+- result: sandbox reports score 1, target_insns 91, build_insns 90, rules_dropped 0, cheat_asm_stripped 158 (all from elsewhere in the TU); canonical reports verdict C, asm_insns 0, distance 1. 90 of the target's 91 words are reproduced. state.json's floor_history (13) and the SessionStart queue banner (48) are both stale and should be read as superseded.
+- verdict: CONFIRMED
+
+## [s7] The remaining single-word residual is reachable from some C spelling of func_8007526C.
+- mechanism: the missing word is a literal `nop` that the ASSEMBLER emits as a load-delay hazard fill between `lw $a0, %gp_rel(D_800A36A0)($gp)` and the `lbu $v1, 0x10($a0)` that follows the loop-top `.L` merge label. maspsx decides that entirely from the text of the label line, never from the C.
+- probe: read the deciding code in the tool source instead of inferring it — `is_label()` at tools/maspsx/maspsx/__init__.py:257 is `re.match(r"\$L(b|e)?\d+:$", line)`, and the only `.L`-label carve-out, `_handle_nop_before_next_instruction` at tools/maspsx/maspsx/__init__.py:810-820, is guarded by `re.match(rf"^jal\t\$31,{re.escape(r_dest)}$", after_label)`, i.e. it fires only when the consumer across the label is an indirect call. Our consumer is `lbu`. Also re-read `.claude/rules/integration-handoff-self-serve.md:60-63`, which names `maspsx_label_nop_funcs.txt` on the always-refused denylist.
+- result: the nop's presence is decided by a regex over the assembler input's label spelling and by per-function membership in `maspsx_label_nop_funcs.txt`; no C construct participates in that predicate, and C has no spelling that emits a bare `nop` word. Every C-side lever therefore leaves the score at 1. Ordinary-C status of the body itself is not in dispute — the 2026-09-07 12:10 judge ruling states the body is ordinary C with SOTN PSX backward-goto precedent verified at docs/reference/sotn-construct-index.md:2705, :2723, :2725.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD a04d3e60 chassis 2026-09-07, candidate.c (s6 goto body) applied to src/text1b.c, pure C, no FAKE constructs present, floor 1
+- predicate_cite: tools/maspsx/maspsx/__init__.py:257
+
+## Live frontier — rewritten by s7 (the C axis is closed; what remains is a gate line)
+
+- **F1 — the ONE remaining step is a single owner-only line: `func_8007526C` appended to
+  `maspsx_label_nop_funcs.txt` (LOAD-CONSUMER case, .claude/rules/maspsx-label-nop-gate.md).**
+  With it, s5/s6 measured the build at 91 insns with a single masked-word difference that is
+  the linker-filled R_MIPS_GPREL16 addend, i.e. byte-identical after link. The file is on the
+  always-refused denylist at .claude/rules/integration-handoff-self-serve.md:60-63, so neither
+  a grind session nor the driver may add it. The controlling precedent is func_80022F34,
+  which sat in exactly this shape, was foreclosed, and was then completed when the OWNER
+  applied the one line in the 2026-09-06 foreclosed-bucket review (commit d4338774; the entry
+  is now maspsx_label_nop_funcs.txt:22).
+  Next probe: none on the C side. The correct pipeline disposition is a FORECLOSED record
+  filed by a session in `escalation` modality (floor 1 <= 5 → the
+  `RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED` title), citing this ledger. A
+  session in any other modality is refused that title by grindlib.py:812 and should return
+  `progress`, as s7 did.
+
+- **F2 — do NOT re-file an INTEGRATION HANDOFF.** It requires bytes proven at sandbox == 0
+  (.claude/rules/integration-handoff-self-serve.md:12-15); this function measures 1 on every
+  buildable configuration, and both previously filed handoffs (the -msoft-float one and the
+  gate-line one) were FAILed by the Judge on exactly that ground
+  (docs/grind/decisions.md 2026-09-07 11:56 and 12:10).
+
+- **F3 — do NOT reopen the loop.c insn_count >= 123 axis.** It was the right frontier while
+  the body was while/do-spelled and the floor was 13. The s6 goto spelling bypasses loop.c
+  entirely, so move_movables never runs and the whole axis is moot; the 2026-09-07 12:10
+  judge ruling says so explicitly ("the insn_count>=123 axis I previously pointed at is moot").
+
+## [s5] The honest floor on the current HEAD chassis (a04d3e60) with the banked s6 body applied is 1, and the residual is one word rather than any remaining codegen divergence.
+- mechanism: The s6 body spells the 2-iteration loop as a label plus a backward goto, so GCC 2.7.2 emits no NOTE_INSN_LOOP_BEG and loop.c's scan_loop/move_movables never runs on this loop: no hoist of the four switch-comparison constants (the whole s1-s5 13-point residual) and no strength-reduction giv biasing the field offsets by +0x10.
+- probe: Applied memory/grind/func_8007526C/candidate.c over the INCLUDE_ASM line at src/text1b.c:6660 and ran `sandbox func_8007526C --disable all` and `canonical func_8007526C` on HEAD a04d3e60 with an unmodified build configuration.
+- result: sandbox: score 1, target_insns 91, build_insns 90, scorable true, rules_dropped 0. canonical: verdict C, asm_insns 0, total 91, distance 1. 90 of the target's 91 words reproduced. state.json floor_history (13) and the SessionStart queue banner (48) are both stale.
+- verdict: CONFIRMED
+
+## [s5] The remaining single-word residual is reachable from some C spelling of func_8007526C.
+- mechanism: The missing word is a literal nop the assembler emits as a load-delay hazard fill between the gp-relative load of D_800A36A0 and the lbu that follows the loop-top .L merge label; maspsx decides that from the text of the label line and from per-function gate-list membership, never from the C.
+- probe: Read the deciding code in the tool source rather than inferring it: is_label() at tools/maspsx/maspsx/__init__.py:257 matches only $L-prefixed locals while this GCC fork emits .L-prefixed ones; the only .L carve-out, _handle_nop_before_next_instruction at tools/maspsx/maspsx/__init__.py:810-820, is guarded by a match on an indirect-call consumer (jal $31,<reg>), whereas ours is an lbu. Also re-read .claude/rules/integration-handoff-self-serve.md:60-63.
+- result: The nop's presence is decided by a regex over the assembler input's label spelling plus membership in maspsx_label_nop_funcs.txt; no C construct participates in that predicate and C has no spelling that emits a bare nop word, so every C-side lever leaves the score at 1. The body's ordinary-C status is not in dispute (2026-09-07 12:10 judge ruling; SOTN PSX backward-goto precedent at docs/reference/sotn-construct-index.md:2705, :2723, :2725).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD a04d3e60 chassis 2026-09-07, candidate.c (s6 goto body) applied to src/text1b.c, pure C, no FAKE constructs present, floor 1
+- predicate_cite: tools/maspsx/maspsx/__init__.py:257

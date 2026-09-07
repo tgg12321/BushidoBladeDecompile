@@ -1,8 +1,8 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,24 @@
    "floor": 13,
    "modality": "permuter",
    "headline": "Byte-proof independently reproduced (91/91; the only differing word is the linker-filled GPREL16 addend); disposition re-filed with a validator-conforming OWNER-ESCALATION title."
+  },
+  {
+   "session": 5,
+   "floor": 1,
+   "modality": "synthesis",
+   "headline": "Chassis re-measured: the banked s6 goto-spelled body measures floor 1 (90 of 91 target words), not the 13 in floor_history nor the 48 in the queue banner; the last word is an assembler-emitted load-de"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The filed INTEGRATION HANDOFF is executed: per-file -msoft-float for text1b plus the maspsx label-nop opt-in, then candidate.c replaces the INCLUDE_ASM line and the function is COMPLETED-C.",
-   "mechanism": "loop.c:532/1631 threshold halves from 122 to 58 once CONDITIONAL_REGISTER_USAGE (mips.h:524-536) fixes the FP registers, leaving the four switch-comparison constants in the loop; the maspsx dot-label gate restores the loop-top load-delay nop.",
-   "next_probe": "The operator steps are enumerated in the decisions.md entry; after them, verify-oracle and queue done. No further C grinding is needed or useful."
+   "hypothesis": "The one remaining step is a single owner-only line: func_8007526C appended to maspsx_label_nop_funcs.txt (LOAD-CONSUMER case). With it the build is 91 insns and byte-identical after link (the only masked-word difference s5/s6 measured is the linker-filled R_MIPS_GPREL16 addend).",
+   "mechanism": "maspsx is_label() (tools/maspsx/maspsx/__init__.py:257) does not see .L labels, so the gate list is the only way to restore the load-delay nop for a load-consumer case; the file is denylisted for every non-owner actor at .claude/rules/integration-handoff-self-serve.md:60-63.",
+   "next_probe": "None on the C side. The correct pipeline disposition is a FORECLOSED record filed by a session in `escalation` modality - floor 1 <= 5, so the RESOLVED BY STANDING RULING (2026-07-27) title - citing this ledger and the func_80022F34 precedent. grindlib.py:812 refuses that title in any other modality, which is why s7 returned progress."
   },
   {
-   "hypothesis": "If the handoff is refused, the only C-side axis left is reaching loop insn_count >= 123 at loop.c scan_loop time while still collapsing to 91 final insns (the candidate carries 92).",
-   "mechanism": "loop.c:1631 with the hard-float threshold of 122: the predicate flips when insn_count exceeds it, measured exactly by s3 (92 all hoisted, 122 one hoisted three rejected, 123 all rejected).",
-   "next_probe": "Spell the switch arms with more duplicated real trailing statements (the sanctioned duplicated-statement-into-arms family; the target already shows one such merge at the shared sh zero,8 / sh zero,0xC / sh zero,0x10 tail at .L800753B8), and read BOTH the dump's 'Loop from N to M: K real insns' line and the sandbox score on every variant - a +31 expansion that fails to re-merge measures worse than 13."
-  },
-  {
-   "hypothesis": "The pointer-bump spelling should NOT be re-opened as an insn_count vehicle.",
-   "mechanism": "combine_givs always combines address givs onto the last-registered one, so the +0x10 bias is independent of insn_count (s3 measured it still present at insn_count 133).",
-   "next_probe": "None - this is a standing warning for future sessions; the index-derived cursor in candidate.c is the correct chassis."
+   "hypothesis": "Any further C-side grinding on this function changes the score.",
+   "mechanism": "The residual word is decided by an assembler-layer regex and a gate list, both outside the C.",
+   "next_probe": "Do not spend a session on it. If a future session must confirm, re-apply candidate.c and re-run sandbox: the answer is 1."
   }
  ],
  "judge_constraints": [
@@ -99,11 +100,20 @@
    "measured_on": "HEAD 793d8b08 chassis 2026-09-07, rule-text read of .claude/rules/integration-handoff-self-serve.md:56-73; no build, no FAKE constructs, floor 13",
    "predicate_cite": "",
    "result": "Refuted. The denylist names the maspsx fidelity-gate lists explicitly, including maspsx_label_nop_funcs.txt, and covers "
+  },
+  {
+   "session": 5,
+   "statement": "The remaining single-word residual is reachable from some C spelling of func_8007526C.",
+   "kill_scope": "class",
+   "measured_on": "HEAD a04d3e60 chassis 2026-09-07, candidate.c (s6 goto body) applied to src/text1b.c, pure C, no FAKE constructs present, floor 1",
+   "predicate_cite": "tools/maspsx/maspsx/__init__.py:257",
+   "result": "The nop's presence is decided by a regex over the assembler input's label spelling plus membership in maspsx_label_nop_f"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-07T16:08:15.562106+00:00",
- "object_model_audited": 4
+ "object_model_audited": 5,
+ "escalation_deferrals": 0
 }
