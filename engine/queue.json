@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002C61C",
-      "file": "code6cac_b",
-      "distance": 44,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unparked_from": "FORECLOSED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-08-31): 2026-09-06 \u2014 func_8002C61C \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)",
-      "unpark_reason": "owner 2026-09-06: reference corrected (splat false-positive D_1F80000C dropped, commit 42765104) - reinstall candidate.c, expect sandbox 0, normal gates"
-    },
-    {
       "func": "func_80089A48",
       "file": "main",
       "distance": 45,
@@ -1515,14 +1505,14 @@
     }
   ],
   "counts": {
-    "total": 171,
-    "active": 168,
+    "total": 170,
+    "active": 167,
     "by_status": {
-      "active": 168,
+      "active": 167,
       "foreclosed": 3
     },
     "by_verdict": {
-      "C": 142,
+      "C": 141,
       "ASM-PARTIAL": 26
     }
   }

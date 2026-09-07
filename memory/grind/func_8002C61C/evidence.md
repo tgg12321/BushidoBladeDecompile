@@ -158,3 +158,33 @@
 - [s1] Judge clearance 7deeac5ed5627ab5 is the PER-WORD body, preserved verbatim at memory/grind/func_8002C61C/candidate_cleared_body_7deeac5ed5627ab5.c; candidate.c is the record-base body 5e2fa09ac0d7e10d the Judge constraint mandates (ProbeRec typedef dropped, no duplicated typedef blocks). self_vet.md written: no constructs, no family claims.
 
 - [s1] canonical verdict: C (pure-C distance 2 <= 50).
+
+## s2 (2026-09-06, structural; chassis HEAD 4242d07b — the reference correction HAS LANDED)
+
+- OWNER DIRECTIVE EXECUTED. Commit `42765104` ("asm: drop splat false-positive scratchpad symbols
+  (literal loop increments)") landed the reference fix the s1b integration handoff asked for.
+  Verified in-session: `grep D_1F80000C asm/funcs/func_8002C61C.s undefined_syms_auto.txt` returns
+  nothing, and the two former `%lo(D_1F80000C)` operands now read `addiu $a2, $a2, 0xC`
+  (asm/funcs/func_8002C61C.s:180 word 0C00C624, :205 word 0C00C624 — unchanged words, as predicted:
+  the correction was byte-neutral).
+- CANDIDATE REINSTALLED UNRESPELLED. `memory/grind/func_8002C61C/candidate.c` (the record-base body
+  `5e2fa09ac0d7e10d` the 2026-09-06 06:44 Judge ruling directed) replaced the
+  `INCLUDE_ASM("asm/funcs", func_8002C61C);` line at src/code6cac_b.c:916. No other TU edit; the
+  `Vec3i` typedef it needs already sits at src/code6cac_b.c:914; no ProbeRec typedef, no duplicated
+  typedef blocks (the Judge constraint's cleanup is already baked into candidate.c).
+- **SANDBOX = 0.** `sandbox func_8002C61C --disable all` -> score 0, target_insns 284,
+  build_insns 284, scorable true, rules_dropped 0 (`tmp/grind/func_8002C61C/s2/sandbox.txt`). The
+  residual 2 that stood on the HEAD reference through s1/s1b is gone, exactly as s1b's frontier
+  hypothesis predicted, and it is now confirmed to have been 100% a reference-text defect with no
+  C component.
+- **FULL-TREE ORACLE = MATCH.** `engine build` (full clean-driver build, candidate in place) ->
+  `sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa` == want, MATCH
+  (`tmp/grind/func_8002C61C/s2/engine_build.txt`). Bytes are proven at the object level (sandbox 0)
+  and at the whole-game level (SHA1) on the corrected chassis in the SAME session.
+- No structural lever was needed or spent: the mandated modality's premise (a C-side residual to
+  attack with block-local splits / declaration order / type narrowing / re-association) is void for
+  this function — the honest floor was already 0 in C terms and the measurement now shows it.
+- Sibling `func_80029454` (still INCLUDE_ASM, active, floor 1024): its five `%lo(D_1F80000C)`
+  operands were part of the same corrected commit, so its next session inherits a reference with
+  the 5-unit phantom already removed. Nothing else of this ledger transplants (no candidate.c on
+  that side to borrow from, and this body shares no block with it).

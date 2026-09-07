@@ -87,3 +87,15 @@ H8 CONFIRMED — sibling func_80029454 (s1, no candidate.c) has nothing to trans
 - probe: Checked memory/grind/func_80029454/ for candidate.c (absent); grep of every %lo(D_1F80000C) in the repo.
 - result: No transplant possible; the handoff's reference correction covers its .s so its future floor drops 5 phantom units.
 - verdict: CONFIRMED
+
+## H9 (s2) — CONFIRMED: with the reference correction landed, the s1b candidate measures 0 with no respelling
+Statement: on chassis HEAD 4242d07b (commit 42765104 having literalised the splat false-positive
+`%lo(D_1F80000C)` operands), reinstalling `memory/grind/func_8002C61C/candidate.c` verbatim yields
+`sandbox func_8002C61C --disable all` = 0 and a full-tree `engine build` SHA1 == oracle.
+Mechanism: the s1/s1b residual of 2 came entirely from engine/score.py's `_resolve_named_pair`
+leaving an unpaired R_MIPS_LO16 immediate at 0 in the reference while the C build emitted the
+literal 12; with the operand written as `0xC` there is no unpaired reloc and the two words compare
+equal. No GCC pass is involved — this was never a codegen question.
+Probe: grep the reference for D_1F80000C (absent), install candidate.c at src/code6cac_b.c:916,
+`sandbox --disable all` (0, 284/284), `engine build` (SHA1 MATCH).
+Verdict: CONFIRMED. Artifacts tmp/grind/func_8002C61C/s2/{sandbox.txt,engine_build.txt}.

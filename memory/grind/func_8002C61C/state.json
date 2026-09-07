@@ -42,6 +42,13 @@
    "hash": "7deeac5ed5627ab5",
    "when": "2026-09-06T11:44:57.563407+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-06 06:44 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "5e2fa09ac0d7e10d",
+   "when": "2026-09-07T01:46:04.164789+00:00",
+   "summary": "final call: Ordinary C throughout: no __asm__, no pins, no volatile, no FAKE, no family claim, no pipeline/txt/Makefile edit (git status: src/code6cac_b.c + ledger + metrics only; sandbox rules_dropped 0). Decisi"
   }
  ],
  "object_model_audited": 1,

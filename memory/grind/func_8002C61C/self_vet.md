@@ -8,3 +8,17 @@ CONSTRUCTS: none (ordinary C only: u8* record-base locals s1/s0, u16 `mode` loca
 ## T6 naming-announces-intent: names are `s1`, `s0`, `i`, `mode`, `off`, `diff`, `saved`, `dst_a`, `dst_b`, `src`, `SCR` — domain names, none from the coercion list.
 SANCTIONED-FAMILY-CLAIMS: none (ordinary C; Judge PASS 2026-09-06 06:44 on the per-word body 7deeac5ed5627ab5 ruled "no FAKE, no family claim needed" and directed the record-base spelling carried here, body 5e2fa09ac0d7e10d)
 ANNOTATION-CONFORMANCE: n/a — no FAKE construct
+
+## s2 re-affirmation (2026-09-06, structural session 2, chassis HEAD 4242d07b with the corrected reference)
+The diff is byte-for-byte the same body (`5e2fa09ac0d7e10d`) this vet was written for; nothing was
+respelled. Re-measured on the corrected chassis: `sandbox func_8002C61C --disable all` = **0**
+(284/284, rules 0) and a full clean-driver `engine build` = sha1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle, MATCH. All six answers above stand unchanged.
+Note for the reviewer: the driver's declaration-pun auto-scan flags the `(u8 *)&D_80101EC8 + off +
+<field>` and `(Vec3i *)&D_801020D8` spellings. Those are not evasions of a declaration fix — the
+2026-09-06 06:44 Judge ruling examined exactly this question and ruled the record-base spelling a
+"semantically truthful reading" (0x44C IS the record stride; 0x80101EC8+0x18C == 0x80102054 and
++0x174 == 0x8010203C, so the census object model is confirmed by the arithmetic, not dodged), and
+the Judge constraint on this ledger AFFIRMATIVELY DIRECTS this spelling. Every declaration-level
+array / struct-array / record-pointer alternative was measured and MISMATCHES (s1 bank:
+memory/grind/func_8002C61C/rejected/micro-loop3-*.c, scores 4-80).
