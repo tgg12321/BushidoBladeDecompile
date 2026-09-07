@@ -5,6 +5,14 @@
  *       escape lets sched2 hoist the lhu above the sb D_800A3769 store; 46->44)
  *   (3) natural offsets[i]/8 and /64 divisions + clamps on the s16 array elements with dx/dz read per arm (44->3)
  * Residual 3: local-alloc seat swap on the {lw parent, li 2} pair before `sh 2,0x286(parent)` (target lw->$2, li->$3).
+ *
+ * s1 (2026-09-07, recon) RE-MEASURED this body on the current chassis: sandbox --disable all = 3,
+ * 219/219 instructions, 0 rules. Floor 3 CONFIRMED; this remains the best known form. The residual
+ * is now attributed with measurements rather than inference: local-alloc's qty_compare_1
+ * (tools/gcc-2.7.2/local-alloc.c:1660) ranks the const-2 quantity (birth 6, death 8, refs 2 -> pri
+ * 10000) ahead of the parent-pointer quantity (birth 4, death 8, refs 2 -> pri 5000), so the constant
+ * takes $v0 and the pointer takes $v1 — the exact inverse of the target. See evidence.md for the
+ * BB2_QTY_DEBUG capture and hypotheses.md for the three probes killed against it.
  */
 void func_800238C4(u8 *arg0)
 {
