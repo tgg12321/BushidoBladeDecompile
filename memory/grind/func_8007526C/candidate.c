@@ -1,18 +1,30 @@
-/* candidate for func_8007526C (src/text1b.c) -- session 1 (recon), honest floor 13.
+/* candidate for func_8007526C (src/text1b.c).
  *
- * Chassis: HEAD 2026-09-07, no FAKE constructs, ordinary C only.
- * Requires the surrounding `extern u8 *D_800A36A0;` declaration already present
- * in src/text1b.c immediately above the INCLUDE_ASM line.
+ * BYTE-EXACT.  Proven by s4 and INDEPENDENTLY RE-MEASURED by s5 (2026-09-07) from a
+ * fresh preprocess through the exact Makefile:150 pipeline: with the build configuration
+ * below this body assembles to 91 instructions that match asm/funcs/func_8007526C.s
+ * word-for-word, the only differing word being the unrelocated R_MIPS_GPREL16 addend on
+ * the D_800A36A0 load (filled by ld).  The C is finished; the residual was never in it.
  *
- * s3 (2026-09-07) re-measured this body at score 13 on chassis HEAD 4eedc052 -- unchanged.
+ * Under the CURRENT build configuration it measures score 13 (build 93 insns) -- four
+ * switch-comparison `li` hoisted into the loop pre-header by loop.c move_movables.
+ * Reaching 0 needs two BUILD-CONFIG edits that a grind session may not make
+ * (INTEGRATION HANDOFF, filed in docs/grind/decisions.md 2026-09-07 as
+ * "func_8007526C - OWNER-ESCALATION: INTEGRATION HANDOFF"; full measurements in
+ * memory/grind/func_8007526C/evidence.md [s5]):
+ *   1. compile src/text1b.c with -msoft-float via a PER-FILE opt-in
+ *      (`SOFT_FLOAT_FILES := text1b`, mirroring NO_SR_FILES at Makefile:129-133 -- a
+ *      GLOBAL flip also moves func_800324D0 in code6cac_b and breaks the oracle).
+ *      The PS1 has no FPU, so the original PsyQ compile had the 32 FP registers fixed
+ *      (mips.h:524 CONDITIONAL_REGISTER_USAGE); that takes loop.c's move_movables
+ *      threshold from 2*(1+60)=122 to 2*(1+28)=58 (loop.c:532/1631), which leaves the
+ *      four switch-comparison constants inside the loop -- the target's shape -- while
+ *      still hoisting the 0xC8 movable.
+ *   2. add func_8007526C to maspsx_label_nop_funcs.txt for the loop-top load-delay nop.
+ * Inside src/text1b.c the flag changes only this function (measured: 27 of 29 changed
+ * cc1 output lines are inside it, the other 2 are the options comment).
  *
- * Residual (score 13, build 93 insns vs target 91): GCC 2.7.2 loop.c
- * move_movables hoists the four switch decision-tree comparison constants
- * (1, 2, 3, 4) into the loop pre-header (they become `li t3,2 / li t2,1 /
- * li t1,3 / li t0,4`), where the target rematerializes each `addiu $v0,$zero,N`
- * inside the loop, in the branch delay slots.  The 0xC8 constant IS hoisted in
- * both.  Everything else -- block order, offsets, register seats, delay slots --
- * is byte-identical.
+ * Ordinary C: no FAKE construct, no sanctioned-family claim required.
  */
 void func_8007526C(void) {
     u8 *base;

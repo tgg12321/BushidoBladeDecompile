@@ -217,3 +217,167 @@ finding to propagate. The [[sibling-ledger-propagation]] check is done and negat
 - [s3] Sibling check done and negative: memory/grind/func_80074B18/ holds only migration_pin.json (floor 79) and retired-chassis-2026-08/body.c, with no evidence, hypotheses or decisions.md entry. Its body uses D_800A36A0 as a large struct base (pointer at +4, byte at +0x65) with nested 0x10/0xC-stride loops - no 2-slot interleaving, no switch in a loop, nothing transferable.
 
 - [s3] src/text1b.c was restored byte-for-byte to HEAD at the end of the session (git diff --stat shows only the pre-existing metrics/events.jsonl churn); the score-13 body lives only in memory/grind/func_8007526C/candidate.c.
+
+## s4 (recon, 2026-09-07) — chassis HEAD 45290724 — ROOT CAUSE FOUND: the build is missing `-msoft-float`; func_8007526C is BYTE-EXACT with it
+
+### Chassis re-measurement
+`memory/grind/func_8007526C/candidate.c` applied verbatim over the `INCLUDE_ASM` line in
+src/text1b.c still measures **score 13, build_insns 93, target_insns 91** (`wteng main
+sandbox func_8007526C --disable all`). The banked floor is chassis-accurate.
+
+### The s1-s3 premise was right about the predicate and wrong about the free variable
+s3 pinned the residual to loop.c:1631 `(threshold * savings * m->lifetime) >= insn_count`
+and concluded the only free variable is `insn_count`, requiring the loop to carry >= 123
+RTL insns (we carry 92) — an implausible +31 that must then vanish again before the final
+91-insn output. That reading treated `threshold` as a constant of the toolchain. It is not.
+`threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (tools/gcc-2.7.2/loop.c:532),
+and `n_non_fixed_regs` (regclass.c) counts the hard regs NOT marked in `fixed_regs`.
+`CONDITIONAL_REGISTER_USAGE` (tools/gcc-2.7.2/config/mips/mips.h:524-536) marks **all 32 FP
+registers fixed when `!TARGET_HARD_FLOAT`**. So:
+  - hard float (what we build with today): n_non_fixed_regs = 60, threshold = 2 * 61 = **122**
+    -> 122 * 1 * 1 = 122 >= 92 -> the four switch-comparison constants are HOISTED.
+  - soft float: n_non_fixed_regs = 28, threshold = 2 * 29 = **58**
+    -> 58 * 1 * 1 = 58 >= 92 is FALSE -> the four constants STAY IN THE LOOP.
+    The 0xC8 movable (savings 2, lifetime 3) still gives 58 * 2 * 3 = 348 >= 92 -> still
+    hoisted, which is exactly what the target does (`addiu $a3,$zero,0xC8`,
+    asm/funcs/func_8007526C.s:3).
+The PlayStation has no FPU; every float operation in PS1 code is a libgcc call. A period
+PsyQ cc1psx is a soft-float configuration by construction, so the FP registers were fixed in
+the original compile. Our Makefile:35 `CC_FLAGS` has no `-msoft-float`, so this port's
+`mips-mips-gnu` default (hard float, like the big-endian default that `-mel` already had to
+correct — see [[mel-endianness-adoption]]) leaves the 32 FP regs allocatable and doubles
+every loop.c movable threshold project-wide.
+
+### MEASURED: with `-msoft-float` the function is byte-identical to the target
+Manual reproduction of the exact Makefile:150 pipeline
+(`cpp | cc1 | prologue_fix | maspsx | multu_pad | as`) on src/text1b.c carrying
+candidate.c, driven by tmp/grind/func_8007526C/s1/pipe.sh and pipe2.sh:
+
+| build | insns | vs target (asm/funcs/func_8007526C.s, 91 insns) |
+|---|---|---|
+| current flags (hard float) | 93 | sandbox score 13 — the four `li` in the pre-header |
+| `-msoft-float` | 90 | identical except ONE missing load-delay `nop` at the loop top |
+| `-msoft-float` + func_8007526C in the maspsx label-nop gate list | **91** | **byte-identical, 91/91** |
+
+The only surviving word-level difference in the final comparison is
+`lw $a0, %gp_rel(D_800A36A0)($gp)` reading `8f840000` in the un-linked object versus
+`8f8405d4` in the target — that is the unrelocated R_MIPS_GPREL16 addend, filled by `ld`.
+Comparison script tmp/grind/func_8007526C/s1/shift2.py (branch/jump targets masked);
+objdump artifacts tmp/grind/func_8007526C/s1/{hardo,softo,softnop}.dis.
+The cc1-level diff (tmp/grind/func_8007526C/s1/{hard,soft}.func.s) shows precisely the four
+hoisted `li $8..$11` disappearing from the pre-header and reappearing as `li $2,N` inside the
+loop, in the branch delay slots — the target's `addiu $v0,$zero,N` shape.
+
+### The missing `nop` is the known maspsx dot-label gate, not a second unknown
+The target's `nop` at asm/funcs/func_8007526C.s:6 is the load-delay slot for
+`lw $a0,%gp_rel(D_800A36A0)($gp)` consumed by `lbu $v1,0x10($a0)` across the loop-top label.
+maspsx drops it because a label intervenes ([[maspsx-is-label-dot-prefix]]); the documented
+remedy is the per-function gate list `maspsx_label_nop_funcs.txt`
+(.claude/rules/maspsx-label-nop-gate.md), which currently has 21 entries and does not list
+func_8007526C. Adding it (tested via a tmp copy passed to `--label-nop-funcs`, so no repo
+gate file was modified this session) produces the 91st insn in the right place.
+
+### BLAST RADIUS OF `-msoft-float`, MEASURED PROJECT-WIDE (not estimated)
+tmp/grind/func_8007526C/s1/blast.sh compiled EVERY src/*.c twice (identical flags, with and
+without `-msoft-float`) and diffed the cc1 assembly. Of 32 translation units, 30 are
+byte-identical apart from the `# -w -mel -msoft-float -o` options-comment line. Exactly two
+TUs change code:
+  1. **text1b** — 29 diff lines, and a `.ent`-range attribution pass
+     (tmp/grind/func_8007526C/s1/blast/) shows every one of them lies inside
+     **func_8007526C**. No other function in the TU moves.
+  2. **code6cac_b** — 6 diff lines, all inside **func_800324D0** (src/code6cac_b.c:2554):
+     the same phenomenon, one loop-invariant `li $8,0xFF` de-hoisted from the pre-header to
+     `li $2,0xFF` inside the loop. func_800324D0 is already COMPLETED-C (not in
+     engine/queue.json) and carries a `/* FAKE */` duplicated-tail construct from a 21-session
+     grind, so a GLOBAL flag flip would change its bytes and break the oracle for it.
+The surgical form is therefore a per-file flag, for which the Makefile already has the exact
+mechanism: `cc_flags_for` at Makefile:133 appends `-fno-strength-reduce` for members of
+`NO_SR_FILES`. A `SOFT_FLOAT_FILES := text1b` list appended the same way touches only
+text1b.c, whose sole affected function is the one we are matching.
+
+## s5 (recon, 2026-09-07) — chassis HEAD 793d8b08 — s4's byte-claim INDEPENDENTLY RE-VERIFIED; the disposition entry is now filed in a validator-conforming shape
+
+### Why this session exists
+s4 was DISCARDED by the driver validator, and the discard reason was purely clerical:
+"owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in
+docs/grind/decisions.md names func_8007526C". s4 HAD appended an entry, but its heading
+read `## 2026-09-07 — func_8007526C — **INTEGRATION HANDOFF (...)**` and the driver's
+pre-check (tools/grinder/grind.ps1:1302) requires a single LINE containing the literal
+token `OWNER-ESCALATION` or `CANONICAL-ASM GRANT PATH` **and** the function name. None of
+s4's technical content was ever disputed; the driver-stamped discarded-session marker
+voids the span, so s5 re-measured the entire claim from scratch rather than inheriting it,
+and re-filed a self-contained entry titled
+`## 2026-09-07 — func_8007526C — OWNER-ESCALATION: **INTEGRATION HANDOFF (bytes proven;
+remedy is a build-flag change, the severe-blocker class)**`.
+
+### Chassis re-measurement
+`memory/grind/func_8007526C/candidate.c` applied verbatim over the `INCLUDE_ASM` line at
+src/text1b.c:6660 measures **score 13, build_insns 93, target_insns 91** on HEAD 793d8b08
+(`wteng main sandbox func_8007526C --disable all`). The banked floor of 13 is
+chassis-accurate; nothing needed correction.
+
+### INDEPENDENT REPRODUCTION of the `-msoft-float` byte-proof (fresh preprocess, s5 scripts)
+s5 did NOT reuse s4's `text1b.i` or object files. `tmp/grind/func_8007526C/s5/repro.sh`
+regenerates the preprocessed TU with the exact `Makefile:38-39` CPP flags and drives the
+exact `Makefile:150` pipeline (`cpp | cc1 | prologue_fix | maspsx | multu_pad | as`),
+using `tools/gcc-2.7.2/build/cc1` — the same binary `Makefile:12 CC1` names, verified, not
+assumed. Comparison is `tmp/grind/func_8007526C/s5/cmp.py`, which extracts the function
+from each objdump and compares word-for-word against the little-endian words embedded in
+asm/funcs/func_8007526C.s, masking only branch/jump targets.
+
+| build | build_insns | masked word diffs vs the 91-insn target |
+|---|---|---|
+| current flags (hard float) | 93 | 86 |
+| `+ -msoft-float` | 90 | 89 (shift artefacts of ONE missing `nop`) |
+| `+ -msoft-float` + func_8007526C in the maspsx label-nop list | **91** | **1** |
+
+The one surviving word is index 2, `lw $a0, %gp_rel(D_800A36A0)($gp)`: `8f840000` in our
+un-linked object versus `8f8405d4` in the target. `mipsel-linux-gnu-objdump -r
+tmp/grind/func_8007526C/s5/softnop.o` reports `R_MIPS_GPREL16 D_800A36A0` at that word, so
+the addend is supplied by `ld` and the function is byte-identical after linking. The
+byte-proof is therefore CONFIRMED by an independent second measurement, not inherited.
+
+### BLAST RADIUS re-measured inside text1b.c by .ent attribution
+`tmp/grind/func_8007526C/s5/attrib.py` diffs the hard-float and soft-float cc1 outputs for
+src/text1b.c with difflib and attributes every changed line to its enclosing `.ent` range:
+**29 changed lines total — 27 inside func_8007526C, 2 in the file-header options comment.
+No other function in the translation unit moves.** This independently reproduces s4's
+finding for the TU that matters and is what makes the per-file remedy safe.
+
+### The blocking surfaces are BOTH on the severe-blocker denylist (read this session)
+.claude/rules/integration-handoff-self-serve.md:56-73 denylists, for the self-serve
+scope-widening path, `Makefile` and `*.ld` by path-class regex AND names
+`maspsx_label_nop_funcs.txt` explicitly among "the maspsx fidelity-gate lists —
+assembler-behavior gates are substrate-adjacent"; the same file's "what STILL pends the
+owner" list names "any change to the oracle, the substrate (cc1/maspsx/linker/Makefile),
+or build flags". So neither of the two remaining steps is reachable by a Judge
+ESCALATE(integration-handoff) scope grant, and neither is reachable by a grind session.
+This is an INTEGRATION HANDOFF in the strict sense of the brief — bytes proven, blocked
+only by a surface the session may not touch — and explicitly NOT an endgame lock and NOT
+an exhausted ladder.
+
+- [s5] OBJECT MODEL: D_800A36A0 - MATCHES (re-confirmed by measurement this session). It remains the only global func_8007526C touches, is already declared `extern u8 *D_800A36A0;` at src/text1b.c:6659 immediately above the INCLUDE_ASM line and listed in sdata_syms.txt:226, and is loaded once as `lw $a0, %gp_rel(D_800A36A0)($gp)` at asm/funcs/func_8007526C.s:4. With candidate.c applied the build reproduces that exact gp-relative load (R_MIPS_GPREL16 relocation confirmed by `objdump -r` on tmp/grind/func_8007526C/s5/softnop.o) and every absolute field offset (0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C), measured score 13 under current flags and a 91/91 byte-identical function under the handoff's build configuration. No second global, no MISMATCH, no MISMATCH-unmeasured symbol, no aggregate or struct declaration question outstanding for this function.
+
+- [s5] Chassis re-measurement on HEAD 793d8b08: candidate.c applied over src/text1b.c:6660 measures score 13, build_insns 93, target_insns 91. Floor unchanged and chassis-accurate.
+
+- [s5] The `-msoft-float` byte-proof is now supported by TWO independent measurements taken by different sessions with separately written scripts. s5's chain regenerates text1b.i from source with the Makefile's own CPP flags and uses `tools/gcc-2.7.2/build/cc1` (the binary Makefile:12 names): hard float 93 insns / 86 masked diffs, `-msoft-float` 90 insns / 89 masked diffs (one missing nop shifting everything), `-msoft-float` + the maspsx label-nop opt-in 91 insns / 1 masked diff, and that one diff is the unrelocated R_MIPS_GPREL16 addend on the D_800A36A0 load.
+
+- [s5] Soft-float blast radius inside src/text1b.c re-measured by .ent attribution: 29 changed cc1 output lines, 27 of them inside func_8007526C and 2 in the options comment. No other function in the TU changes, so a per-file `SOFT_FLOAT_FILES := text1b` opt-in (mirroring the existing NO_SR_FILES mechanism at Makefile:129-133) is surgical. A GLOBAL flag flip is NOT safe — a prior sweep found code6cac_b's already-COMPLETED-C func_800324D0 also moves.
+
+- [s5] Both remaining steps are severe-blocker class and cannot be self-served: .claude/rules/integration-handoff-self-serve.md:56-73 denylists `Makefile` (path-class regex) and names `maspsx_label_nop_funcs.txt` among the maspsx fidelity-gate lists, and its "still pends the owner" list covers build-flag and substrate changes. A Judge ESCALATE(integration-handoff) scope grant cannot reach either path.
+
+- [s5] src/text1b.c was restored byte-for-byte to HEAD at the end of the session (7097 lines, `git status` clean for src/); the score-13 body lives only in memory/grind/func_8007526C/candidate.c.
+
+- [s4] OBJECT MODEL: D_800A36A0 - MATCHES (re-confirmed by measurement this session). It is the only global func_8007526C touches, is already declared extern u8 *D_800A36A0; at src/text1b.c:6659 immediately above the INCLUDE_ASM line and listed in sdata_syms.txt:226, and is loaded once as lw $a0, %gp_rel(D_800A36A0)($gp) at asm/funcs/func_8007526C.s:4. With candidate.c applied the build reproduces that exact gp-relative load (R_MIPS_GPREL16 relocation confirmed by objdump -r on tmp/grind/func_8007526C/s5/softnop.o) and every absolute field offset (0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C): score 13 under current flags, and a 91/91 byte-identical function under the handoff's build configuration. No second global, no MISMATCH, no MISMATCH-unmeasured symbol, and no aggregate or struct declaration question outstanding for this function.
+
+- [s4] Chassis re-measurement on HEAD 793d8b08: memory/grind/func_8007526C/candidate.c applied verbatim over the INCLUDE_ASM line at src/text1b.c:6660 measures score 13, build_insns 93, target_insns 91. The banked floor is chassis-accurate and needed no correction.
+
+- [s4] The -msoft-float byte-proof now rests on TWO independent measurements by different sessions with separately written scripts. s5's chain regenerates text1b.i from source with the Makefile's own CPP flags and uses tools/gcc-2.7.2/build/cc1: hard float 93 insns / 86 masked diffs, -msoft-float 90 / 89, -msoft-float plus the maspsx label-nop opt-in 91 / 1, and the single residual word is the unrelocated R_MIPS_GPREL16 addend on the D_800A36A0 load.
+
+- [s4] Soft-float blast radius inside src/text1b.c, measured by .ent attribution: 29 changed cc1 output lines, 27 inside func_8007526C and 2 in the options comment. No other function in the TU changes. The per-file remedy (SOFT_FLOAT_FILES := text1b, mirroring NO_SR_FILES at Makefile:129-133) is therefore surgical; a global flag flip is not, because code6cac_b's already-COMPLETED-C func_800324D0 also moves.
+
+- [s4] Both remaining steps are severe-blocker class and cannot be self-served: .claude/rules/integration-handoff-self-serve.md:56-73 denylists Makefile by path-class regex and names maspsx_label_nop_funcs.txt among the maspsx fidelity-gate lists, and the same file's 'still pends the owner' list covers build-flag and substrate changes.
+
+- [s4] s4's discard was purely clerical: it had filed an entry, but its heading lacked the literal OWNER-ESCALATION / CANONICAL-ASM GRANT PATH token that the driver pre-check at tools/grinder/grind.ps1:1302 requires on the same LINE as the function name. s5 re-filed a self-contained entry with a conforming title, and did not rely on the voided s4 span - every claim in it was re-measured this session.
+
+- [s4] src/text1b.c was restored byte-for-byte to HEAD at the end of the session (7097 lines); the score-13 body lives only in memory/grind/func_8007526C/candidate.c.

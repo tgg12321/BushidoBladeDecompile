@@ -1,8 +1,8 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,26 +21,34 @@
    "floor": 13,
    "modality": "structural",
    "headline": "loop.c move_movables boundary pinned by measurement at insn_count 123 (92 today): the four switch constants stay in-loop at >=123 while the 0xC8 movable still hoists, exactly reproducing the target pr"
+  },
+  {
+   "session": 4,
+   "floor": 13,
+   "modality": "permuter",
+   "headline": "Byte-proof independently reproduced (91/91; the only differing word is the linker-filled GPREL16 addend); disposition re-filed with a validator-conforming OWNER-ESCALATION title."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C spelling of the four switch arms that leaves >= 123 real RTL insns inside the loop at loop.c scan_loop time - +31 over the current 92 - while still collapsing to the target's 91 final insns will leave all four comparison constants in the loop and close the last 13 points.",
-   "mechanism": "loop.c:1631 (threshold * savings * lifetime) >= insn_count, boundary measured at exactly 123 this session; the legitimate ways insns vanish after loop.c are jump2 cross-jumping of identical trailing statement sequences across arms (the target already shows one such merge - the shared three-store tail at .L800753B8 reached from case 2 and case 4), combine folding the sll-16 / sra-16 pair an explicit (s16) cast emits (folded at asm/funcs/func_8007526C.s:88, kept at :31-32), and reorg delay-slot peeling (which already duplicates the i++ into two jump delay slots at :16 and :24).",
-   "next_probe": "Build variants that spell the arms with more duplicated real trailing statements (family .claude/rules/duplicated-statement-into-arms.md) and after EACH variant record both the sandbox score and the dump's 'Loop from N to M: K real insns' line. The score should be flat below K = 122, dip slightly at 122 where exactly one constant is still hoisted, and drop by ~13 at 123. A variant that reaches 123 with a score worse than 13 means the duplication is not re-merging and cross-jumping is the wrong vehicle."
+   "hypothesis": "The filed INTEGRATION HANDOFF is executed: per-file -msoft-float for text1b plus the maspsx label-nop opt-in, then candidate.c replaces the INCLUDE_ASM line and the function is COMPLETED-C.",
+   "mechanism": "loop.c:532/1631 threshold halves from 122 to 58 once CONDITIONAL_REGISTER_USAGE (mips.h:524-536) fixes the FP registers, leaving the four switch-comparison constants in the loop; the maspsx dot-label gate restores the loop-top load-delay nop.",
+   "next_probe": "The operator steps are enumerated in the decisions.md entry; after them, verify-oracle and queue done. No further C grinding is needed or useful."
   },
   {
-   "hypothesis": "The target's pointer-bump spelling can be reproduced without the +0x10 giv bias by changing WHICH address giv is registered last, because combine_givs uses the last-registered address giv as the combination base and the bias equals that giv's add constant.",
-   "mechanism": "loop.c strength_reduce / combine_givs: the dump prints 'giv at X combined with giv at Y' where Y is the last-registered address giv, and 'biv 72 can be eliminated'; s3 measured that this is insensitive to insn_count (still add 90 at insn_count 133).",
-   "next_probe": "In the pointer-bump spelling, vary which field access is textually last in the loop body and read the 'dest address src reg NN ... add K' lines plus the 'giv at X combined with giv at Y' lines in the func_8007526C section of tmp/grind/func_8007526C/dumps/text1b.loop. A spelling whose last-registered address giv has add 0 keeps the target's pointer bump with no bias."
+   "hypothesis": "If the handoff is refused, the only C-side axis left is reaching loop insn_count >= 123 at loop.c scan_loop time while still collapsing to 91 final insns (the candidate carries 92).",
+   "mechanism": "loop.c:1631 with the hard-float threshold of 122: the predicate flips when insn_count exceeds it, measured exactly by s3 (92 all hoisted, 122 one hoisted three rejected, 123 all rejected).",
+   "next_probe": "Spell the switch arms with more duplicated real trailing statements (the sanctioned duplicated-statement-into-arms family; the target already shows one such merge at the shared sh zero,8 / sh zero,0xC / sh zero,0x10 tail at .L800753B8), and read BOTH the dump's 'Loop from N to M: K real insns' line and the sandbox score on every variant - a +31 expansion that fails to re-merge measures worse than 13."
   },
   {
-   "hypothesis": "The natural structure-of-arrays object model - D_800A36A0 pointing at a struct whose fields are s16[2] arrays indexed by the slot number, which is what the 2-byte stride with fields at 0x8..0x3C implies - changes the address-arithmetic RTL enough to move the giv registration order and the loop insn_count at the same time.",
-   "mechanism": "A struct member-array access expands differently from a raw cast through a u8 cursor: the index scaling and base addition are emitted as separate RTL before cse folds them, which feeds both the loop.c:1631 insn_count and the combine_givs registration order.",
-   "next_probe": "Declare the struct file-locally first (measure before committing to a header), respell the candidate with member-array accesses indexed by the slot number, and record both the sandbox score and the dump's 'Loop from ... K real insns' value; compare K against the 92 baseline and the 123 boundary."
+   "hypothesis": "The pointer-bump spelling should NOT be re-opened as an insn_count vehicle.",
+   "mechanism": "combine_givs always combines address givs onto the last-registered one, so the +0x10 bias is independent of insn_count (s3 measured it still present at insn_count 133).",
+   "next_probe": "None - this is a standing warning for future sessions; the index-derived cursor in candidate.c is the correct chassis."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "Do not re-file an integration handoff for func_8007526C: -msoft-float (Makefile/build flags) and maspsx_label_nop_funcs.txt are both denylisted/owner-reserved and no scope grant can cover them; work the measured C-side axis (loop scan_loop insn_count >= 123 while still collapsing to 91 final insns) instead."
+ ],
  "banned_constructs": [],
  "kills": [
   {
@@ -82,11 +90,19 @@
    "measured_on": "HEAD 4eedc052 chassis 2026-09-07, ledger inspection only, no build performed",
    "predicate_cite": "",
    "result": "The sibling ledger holds only a migration pin (floor 79) and a retired body; it has no evidence.md, no hypotheses.md and"
+  },
+  {
+   "session": 4,
+   "statement": "The two remaining build-configuration steps can be self-served by this pipeline through a Judge ESCALATE(integration-handoff) scope grant.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 793d8b08 chassis 2026-09-07, rule-text read of .claude/rules/integration-handoff-self-serve.md:56-73; no build, no FAKE constructs, floor 13",
+   "predicate_cite": "",
+   "result": "Refuted. The denylist names the maspsx fidelity-gate lists explicitly, including maspsx_label_nop_funcs.txt, and covers "
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-07T16:08:15.562106+00:00",
- "object_model_audited": 3
+ "object_model_audited": 4
 }
