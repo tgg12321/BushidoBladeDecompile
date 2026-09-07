@@ -20,45 +20,29 @@
 param(
     [switch]$Once,
     [switch]$Stop,
-    # Owner directive 2026-08-17 (supersedes the same-day all-Fable switch):
-    # split the model by modality — recon (session 1: floor measurement, lever
-    # mapping, frontier hypotheses) runs on Fable 5, where model strength pays
-    # off most; execution sessions grind pre-built frontiers on Opus. This
-    # also keeps Fable's separate per-model allowance from stalling the
-    # pipeline (the 2026-08-12 incident: five 429 wait cycles over 2.5 h).
-    # 2026-09-06: owner switched the execution lane to Fable 5.1 briefly
-    # (spare Fable allowance), then reverted it to Opus the same day after
-    # the Fable allowance ran out (five 429 spawn failures on func_800770B8
-    # s31, "session limit · resets 5pm"). The 2026-08-17 lane split stands:
-    # recon on Fable, execution on Opus, Judge on Opus per 2026-08-12.
-    [string]$Model = 'claude-opus-5[1m]',
-    # 2026-09-01: Fable 5.1 released; the `claude-fable-5[1m]` alias still
-    # resolves to Fable 5 (probed via `claude -p --output-format json`), so the
-    # recon lane is pinned to the new id explicitly. Judge/execution lanes are
-    # unchanged (the 2026-08-12 / 2026-08-17 directives are about lane
-    # assignment, not model version).
-    # OWNER DIRECTIVE 2026-09-07 — ALL LANES ON OPUS. The 2026-08-17 lane split
-    # is retired: the Fable allowance ran out again and the recon lane 429'd 16
-    # consecutive spawns on func_800238C4 (~7 h of backoff, api_error 429
-    # "You've reached your Fable limit") until the circuit-breaker fired. A lane
-    # pinned to a model with its own exhaustible allowance is a single point of
-    # failure for the whole pipeline; one model for every lane cannot deadlock
-    # that way.
-    [string]$ReconModel = 'claude-opus-5[1m]',
-    # Judge stays on Opus per the 2026-08-12 directive: Fable 5 has its own
-    # per-model allowance, and exhausting it on judging stalled the whole
-    # pipeline — five 429 wait cycles over 2.5 h with a proven candidate parked
-    # in front of the Judge, while every other model still had usage. (The
-    # 2026-07-22 backlog audit note about a weaker same-tier fable judge
-    # passing a fabricated-evidence cheat is in the ledger-staging note
-    # further down.)
-    [string]$JudgeModel = 'claude-opus-5[1m]',
-    # Layer-1 (the pre-Judge cheat-reviewer gate) runs on the model the agent
-    # definition declares — it is a high-volume, cheap gate whose job is to bounce
-    # obvious cheat-by-spelling before a Judge cycle is spent.
-    # 2026-09-07: moved to Opus with every other lane (owner "switch it to opus
-    # fully"). Layer-1 is default-FAIL anyway; a stronger gate only bounces more.
-    [string]$Layer1Model = 'claude-opus-5[1m]',
+    # LANE MODELS — owner directive 2026-09-07 (evening; supersedes the same-day
+    # "all lanes on Opus" directive): Judge on Fable 5.1, execution sessions on
+    # Opus, every other lane on Fable 5.1.
+    #
+    # History that shaped this: three Fable-allowance outages (2026-08-12 judge
+    # 429 x5 over 2.5 h; 2026-09-06 execution lane 429 x5; 2026-09-07 recon lane
+    # 429 x16, ~7 h of backoff on func_800238C4) each stalled the whole
+    # pipeline because a lane was HARD-pinned to a model with its own
+    # exhaustible allowance. The fix is not "never use Fable" but "never let a
+    # Fable limit block": every lane pinned to a non-$FallbackModel model falls
+    # back to $FallbackModel for the rest of that limit window the moment a
+    # spawn dies on a usage-limit 429 (see Invoke-GrindAgent / Get-LaneModel).
+    # Quality where it pays (Judge, recon, object-model, layer-1) and volume
+    # where it is cheap (execution), with no single point of failure.
+    #
+    # `claude-fable-5[1m]` still resolves to Fable 5 (probed 2026-09-01), so
+    # Fable 5.1 is pinned by its explicit id.
+    [string]$Model = 'claude-opus-5[1m]',              # execution sessions
+    [string]$ReconModel = 'claude-fable-5-1[1m]',      # recon + object-model sessions
+    [string]$JudgeModel = 'claude-fable-5-1[1m]',      # the default-FAIL Judge
+    [string]$Layer1Model = 'claude-fable-5-1[1m]',     # pre-Judge cheat-reviewer gate
+    # Fallback for ANY lane whose model hits a usage-limit 429 (see above).
+    [string]$FallbackModel = 'claude-opus-5[1m]',
     [int]$SessionTimeoutMin = 90,
     [string]$MockSessionScript = '',
     [string]$MockJudgeScript = '',
@@ -177,7 +161,7 @@ function Reap-PermuterOrphans([string]$When) {
     try { python tools/permuter_campaign.py deactivate-all 2>$null | Out-Null } catch { }
 }
 
-Log "grinder starting (pid $PID, model $Model, judge $JudgeModel)"
+Log "grinder starting (pid $PID, execution $Model, recon $ReconModel, judge $JudgeModel, layer1 $Layer1Model, fallback $FallbackModel)"
 if (-not (Test-OracleGreen)) {
     Log "PRE-FLIGHT FAIL: oracle not green on main. Fix before grinding."
     Attribute-RedBuild 'pre-flight'
@@ -242,7 +226,12 @@ function Get-JudgeLimitReset([string]$AgentLog) {
         $lo = $raw.IndexOf('{'); $hi = $raw.LastIndexOf('}')
         if ($lo -lt 0 -or $hi -le $lo) { return $null }
         $d = $raw.Substring($lo, $hi - $lo + 1) | ConvertFrom-Json
-        if ([int]$d.api_error_status -ne 429) { return $null }
+        # The CLI sometimes leaves api_error_status NULL and carries the code
+        # only in the result text (owner ruling 2026-09-04 B.3), and a plan
+        # limit reads "You've reached your Fable limit" — accept either form.
+        $code = 0; try { $code = [int]$d.api_error_status } catch { }
+        $txt = [string]$d.result
+        if ($code -ne 429 -and $txt -notmatch 'API Error: 429\b' -and $txt -notmatch "(?i)reached your .{0,40}limit") { return $null }
         $m = [regex]::Match([string]$d.result, 'resets\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)', 'IgnoreCase')
         if (-not $m.Success) { return (Get-Date).AddMinutes(30) }
         $h = [int]$m.Groups[1].Value % 12
@@ -1015,10 +1004,31 @@ function Get-AgentSpawnException([string]$AgentLog) {
     return ''
 }
 
+# Per-model usage-limit windows: model id -> [datetime] the plan limit resets.
+# Set when a spawn on that model dies on a usage-limit 429; every lane pinned
+# to that model runs on $FallbackModel until the window passes. Lives only for
+# this driver run (a relaunch re-probes the real model).
+$script:ModelLimitedUntil = @{}
+
+function Get-LaneModel([string]$Requested) {
+    # The model a lane actually spawns with right now: the requested one unless
+    # it is inside a known usage-limit window, in which case $FallbackModel.
+    if ($Requested -eq $FallbackModel) { return $Requested }
+    $until = $script:ModelLimitedUntil[$Requested]
+    if ($until -and (Get-Date) -lt $until) { return $FallbackModel }
+    if ($until) { $script:ModelLimitedUntil.Remove($Requested) }
+    return $Requested
+}
+
 function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
                            [string]$RoleFile, [string]$AgentModel,
                            [string]$MockScript, [string]$Func,
                            [string]$UsageFunc, [string]$UsageRole = 'session') {
+    $requestedModel = $AgentModel
+    $AgentModel = Get-LaneModel $AgentModel
+    if ($AgentModel -ne $requestedModel) {
+        Log "$UsageRole lane: $requestedModel is usage-limited until $($script:ModelLimitedUntil[$requestedModel].ToString('HH:mm')); spawning on $AgentModel instead."
+    }
     Remove-Item $OutcomePath -ErrorAction SilentlyContinue
     if ($MockScript) {
         $env:GRIND_BRIEF_PATH = $BriefPath; $env:GRIND_OUTCOME_PATH = $OutcomePath
@@ -1108,6 +1118,20 @@ function Invoke-GrindAgent([string]$BriefPath, [string]$OutcomePath,
         # raises, never blocks the driver (tools/grinder/record_usage.py).
         $uFunc = if ($UsageFunc) { $UsageFunc } else { $Func }
         try { python tools/grinder/record_usage.py ($OutcomePath + '.agent.log') $uFunc $UsageRole 2>$null | Out-Null } catch { }
+        # MODEL FALLBACK (owner directive 2026-09-07): a usage-limit 429 on a
+        # non-fallback model is not weather to wait out — it is a lane deadlock
+        # in the making (three incidents, see the param block). Record the
+        # limit window for that model and respawn THIS call on $FallbackModel
+        # right away; the outcome path is the same so callers are unaffected.
+        if ($AgentModel -ne $FallbackModel -and -not (Test-Path $OutcomePath)) {
+            $reset = Get-JudgeLimitReset ($OutcomePath + '.agent.log')
+            if ($reset) {
+                $script:ModelLimitedUntil[$AgentModel] = $reset
+                Log "$UsageRole lane: $AgentModel hit a usage-limit 429 (stated reset $($reset.ToString('HH:mm'))); falling back to $FallbackModel for this window."
+                Journal "model-fallback $UsageRole $AgentModel->$FallbackModel until $($reset.ToString('HH:mm'))"
+                return (Invoke-GrindAgent $BriefPath $OutcomePath $RoleFile $FallbackModel $MockScript $Func -UsageFunc $UsageFunc -UsageRole $UsageRole)
+            }
+        }
     }
     if (-not (Test-Path $OutcomePath)) { return $null }
     try { return (Get-Content $OutcomePath -Raw | ConvertFrom-Json) } catch { return $null }
@@ -1246,7 +1270,8 @@ while ($true) {
     }
     # Per-modality model: recon sessions get the strong model (frontier quality
     # determines how many execution sessions follow); everything else grinds on
-    # the cheaper worker model.
+    # the execution model. (Get-LaneModel inside Invoke-GrindAgent swaps in
+    # $FallbackModel while the chosen model is usage-limited.)
     # object-model (2026-09-03) is a one-shot audit whose quality decides whether
     # the function forecloses — it gets the recon-tier model for the same reason.
     $sessionModel = if ($modality -in @('recon', 'object-model')) { $ReconModel } else { $Model }
