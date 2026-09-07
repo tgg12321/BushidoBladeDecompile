@@ -652,3 +652,8 @@ disposition taken: FORECLOSED silently (owner ruling 2026-08-31 — no pending s
 category: integration-handoff (REFUSED: no executable remedy in verdict)
 evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-06 — func_8002C61C — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
 disposition taken: REFUSED under the current frozen policy; FORECLOSED silently (owner ruling 2026-08-31, ordinary-c-judge-decidable); candidate preserved at memory/grind/func_8002C61C/candidate.c; re-attemptable if a later owner ruling spends this entry.
+
+## 2026-09-06 — func_80019310 — canonical-asm-grant
+category: canonical-asm-grant
+evidence: scan_hand_coded --single func_80019310 tier=OWNER-CLUSTER (cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-06 foreclosed-bucket review)) (driver-verified); judge ESCALATE packet in docs/grind/decisions.md (2026-09-06)
+disposition taken: inline_asm_canonical.txt entry written by the driver per owner ruling 2026-08-18; function stays ACTIVE for canonical-asm integration.
