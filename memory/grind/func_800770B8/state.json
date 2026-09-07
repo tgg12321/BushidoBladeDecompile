@@ -704,5 +704,14 @@
   }
  ],
  "object_model_audited": 29,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "d0d2b6328fdf32d3",
+   "when": "2026-09-07T01:18:30.697001+00:00",
+   "summary": "final call: Three FAKE units, all inside frozen-list families with prerequisites met. (1) empty do{}while(0) prologue fence -> do-while-zero-exception (owner 2026-07-06: any body incl. empty, ANY codegen effect, "
+  }
+ ]
 }

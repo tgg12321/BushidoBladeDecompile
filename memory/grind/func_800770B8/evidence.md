@@ -4859,3 +4859,82 @@ Banked forms this run: `rejected/s38-fresh-twostatement-dp-folds-to-one-set-la-s
 - [s38] q1 (dp = (u8 *)&D_800A35D0 + (t0 * 4); as ONE statement on the x3 chassis) remains the best body in the split-pointer family at 18/175; the u-series shows the two-statement spelling of the same fresh local is not a different RTL shape.
 
 - [s38] The floor body's multi-set ptr ({78: 4, 85: 4}) is the only measured way to keep the la inside the loop, and it is variable reuse across unrelated values -- the same source fact that local-alloc.c:472 (reg_n_deaths == 1) and sched.c (add_dep 137 <- 134) read in opposite directions.
+
+## [s39] escalation modality — the function CLOSED at score 0 instead of being disposed of
+
+Chassis re-measured live at session start on HEAD 805d9432: `base` (the banked floor
+body) = 3/175/175, `F` (`candidate.c`) = 3/175/175, `q1` = 18/175/175, `x3` =
+27/175/175 — every banked number reproduces, so all s36–s38 conclusions were
+chassis-current.
+
+Endgame gate (a), run before any probe:
+`python3 tools/scan_hand_coded.py --single func_800770B8` → `tier=LOW score=0/8`,
+"no strong hand-coded indicators", all of S1–S8 unset
+(`tmp/grind/func_800770B8/s39/scan.log`). The canonical-asm gate FAILS, as it did in
+s19/s19b/s20.
+
+The disposition was not reached, because the one live frontier item turned out to be
+the answer. s38 had named `loop.c`'s `move_movables` (not sched1) as the pass that
+displaces the `lui %hi(D_800A35D0) / addiu %lo` pair out of the outer loop across the
+whole `ap` family, and had killed the `n_times_set > 1` route to blocking it: cse
+folds a two-statement refinement of a single local back into one set before
+`loop_optimize` runs. Reading `tools/gcc-2.7.2/loop.c` this session showed the gate
+has a SECOND, independent term. `count_loop_regs_set` (`loop.c:2989`) is called with
+`may_not_optimize` as its `may_not_move` argument (`loop.c:593`), and
+`loop.c:3040-3041` sets it for any pseudo whose set is the first in the CURRENT basic
+block while the pseudo was already set earlier in the loop — i.e. a pseudo set in TWO
+BASIC BLOCKS. `scan_loop` then skips the insn outright at `loop.c:649`, before the
+`n_times_set` disjunct at `loop.c:705` is ever consulted, so the symbol build stays
+where the source put it. cse cannot fold a second write that sits under a conditional,
+which is exactly why this term survives where s38's did not.
+
+func_800770B8 already contains a real conditional inside the outer loop — the
+`if ((arg2 & mask) != 0)` arm of the 0..0xA for-loop — so no control flow had to be
+invented. On the q1 chassis (the single-death-`ap` family member that already holds
+all four target class-C seats, 18/175), naming the symbol in its own local and adding
+a same-value dead store to that local inside the existing arm gives **0**.
+
+Sweep (all 175 insns against target 175 unless noted); `s39/sweep.log`:
+
+| form | what | score |
+|---|---|---|
+| base / F | banked floor body | 3 |
+| q1 | single-statement `dp`, no second set | 18 |
+| x3 | two-statement `ptr`, `ap` split | 27 |
+| **g1** | **q1 + `sym` local + same-value dead store in the arm** | **0** |
+| g5 | arm write spelled `&D_800A35D0 + t0*4` | 0 |
+| g8 | g1 with `dp = (t0*4) + sym` operand order | 0 |
+| g3 | second set written into `dp`, no `sym` local | 18 |
+| g4 | same second set on the x3 chassis (into `ptr`) | 27 |
+| g6 | literal self-assign `sym = sym;` in the arm | 18 |
+| g1d | g1 minus the arm write | 18 |
+| g1a | g1 minus the `p_old = prev;` dead store | 2 |
+| g1b | g1 minus the empty `do { } while (0);` fence | 5 |
+| g1c | g1 minus both inherited FAKE units | 7 |
+| h1 | arm write replaced by a REAL reuse of `sym` for `D_8009BCE4[idx]` | 41 (178 insns) |
+| h2 | `sym` reused for both the `&0xF2` and the `|1` store | 54 (170 insns) |
+| h3 | `sym` reused for the `&0xF2` store only | 51 (178 insns) |
+
+Three readings matter. (i) g6 = 18: a literal self-assign is deleted before
+`loop_optimize` counts sets, so the value has to be re-materialised from the symbol
+for the second SET to exist at that point. (ii) g3 = 18 and g4 = 27: the second set
+has to land on the pseudo that HOLDS THE SYMBOL, not on the pointer holding
+symbol+offset — which is why the `sym` local (a real, consumed named intermediate,
+`dp = sym + (t0 * 4);`) is part of the mechanism and not decoration. (iii) h1/h2/h3:
+no truthful second write substitutes — every real value available in that arm changes
+the instruction count (178, 170, 178), so a +0-instruction same-value store is the
+only spelling that keeps 175.
+
+FAKE inventory of the final form — three units, three passes, additive costs
+(0 → 2 → 5 → 7 as they are removed), each annotated with what / named GCC pass /
+lever-exhaustion pointer:
+  1. `do { } while (0);` prologue fence — sched2 scheduling-region bounds (inherited, s11).
+  2. `p_old = prev;` — `local-alloc.c:472`, `reg_n_deaths == 1` (inherited, s31).
+  3. `sym = (u8 *)&D_800A35D0;` in the arm — `loop.c:3040-3041`, `may_not_move` (new this session).
+
+Final form: `memory/grind/func_800770B8/candidate.c` (== `s39/v/final.c`), applied to
+`src/text1b.c` together with the two byte-neutral caller-side edits the ledger has
+carried since s1. In-place verification this session:
+`sandbox func_800770B8 --disable all` → `{"score": 0, "build_insns": 175,
+"target_insns": 175, "scorable": true}`. Self-vet:
+`memory/grind/func_800770B8/self_vet.md`.

@@ -34,17 +34,6 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
         p_old = (s32 *)func_8006E49C(r, D_800A35D8);
         D_800A36A0 = (u8 *)p_old;
         *(s32 *)((u8 *)p_old + 4) = (s32)prev;
-        /* FAKE: same-value dead store restoring p_old's pre-call value (p_old is
-           never read again). Effect: it denies local-alloc's combine_regs its
-           reg_n_deaths == 1 precondition on the p_old pseudo, so the 0x30/0x34
-           clears keep the target's base register instead of collapsing onto the
-           freshly returned pointer.
-           mechanism: GCC 2.7.2 local-alloc.c:472 (combine_regs / block-quantity
-           grant gated on reg_n_deaths == 1).
-           lever-exhaustion: hypotheses.md class B, s1-s31 (31 sessions of
-           store-base spellings), re-measured negative on three differing chassis
-           in s37 (k1-k6) and ablation-confirmed load-bearing here in s39
-           (removing it costs 2 points: g1 0 -> g1a 2). */
         p_old = prev;
         *(s32 *)(D_800A36A0 + 0x30) = 0;
         *(s16 *)(D_800A36A0 + 0x34) = 0;
@@ -91,25 +80,6 @@ s32 func_800770B8(s32 arg0, s32 arg1, s32 arg2) {
             if ((arg2 & mask) != 0) {
                 (&D_8009BCE4)[idx] = (u8)((&D_8009BCE4)[idx] | 1);
                 sp[t0] += 1;
-                /* FAKE: same-value dead store re-establishing sym's own value
-                   (sym is never read after the loop body's D stores). Effect: it
-                   gives the sym pseudo a SECOND set, in a different basic block
-                   from its first, which is what keeps the lui %hi/addiu %lo pair
-                   for D_800A35D0 inside the outer loop where the target builds
-                   it (rows 49/50/51) instead of hoisting it to the pre-header.
-                   mechanism: GCC 2.7.2 loop.c:3040-3041 (count_loop_regs_set sets
-                   may_not_move[regno] when a set is the first in the current basic
-                   block but the reg was already set in the loop, i.e. it is set in
-                   two basic blocks); scan_loop then skips the insn at loop.c:649,
-                   so move_movables never sees it. The n_times_set > 1 route to the
-                   same gate is unreachable in C here -- s38 proved cse folds a
-                   two-statement refinement of the same local back into one set.
-                   lever-exhaustion: 38 prior sessions, 8 modalities, 188 banked
-                   rejected forms, 33,926 permuter iterations; ablation this session
-                   shows removing it costs 18 points (g1 0 -> g1d 18) and that no
-                   real-valued second write substitutes for it (h1 41/178, h2 54/170,
-                   h3 51/178) nor does a literal self-assign (g6 18). */
-                sym = (u8 *)&D_800A35D0;
             }
         }
         t0 = (s16)(t0 + 1);
