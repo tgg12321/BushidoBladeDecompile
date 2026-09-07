@@ -25305,3 +25305,48 @@ acceptance.
 - memory/grind/func_8007526C/evidence.md [s1]-[s7], hypotheses.md, state.json floor_history
 - tmp/grind/func_8007526C/s6/ (base.dis, gated.dis, repro.sh, cmp.py)
 - this session: tmp/grind/func_8007526C/s7/sandbox_floor1.json, text1b.c.bak
+
+## 2026-09-07 — foreclosed-bucket review (owner-directed, all 4 items) — **3 UNPARKED, 1 CLOSED**
+
+Owner directive this session: "evaluate our foreclosures and fix those too."
+The grinder was stopped at a clean session boundary first (13:45 stop sentinel,
+14:07 exit) so no session was discarded. Disposition of every foreclosed item:
+
+### func_8007526C (src/text1b.c) — CLOSED, not unparked
+The 2026-09-07 12:24 escalation packet asked for one owner-only line in
+`maspsx_label_nop_funcs.txt`. The owner authorized it directly in this session
+and it is applied; the function leaves the queue via `queue done`, not `unpark`.
+Verified independently before applying: `asm/funcs/func_8007526C.s` lines 4-7
+are `lw $a0, %gp_rel(D_800A36A0)($gp)` / `.L80075278:` / `nop` /
+`lbu $v1, 0x10($a0)` — the LOAD-CONSUMER-across-a-merge-label shape — and
+`is_label()` at `tools/maspsx/maspsx/__init__.py:256` is
+`re.match(r"\$L(b|e)?\d+:$", line)`, i.e. `$L` only while this cc1 fork emits
+`.L`. `.claude/rules/maspsx-label-nop-gate.md` calls this a "pure-C RETIREMENT
+path, not a park". Bytes on the real, unmodified build configuration:
+`sandbox --disable all` = 0 (91/91, rules_dropped 0), `verify-oracle` ok.
+The class-wide alternative (teaching `is_label()` the `.L` prefix) is NOT
+pursued: that same rule says "Per-function-scoped so it doesn't cascade. Don't
+broaden the gate globally."
+
+### CD_sync + CD_datasync (src/system.c) — UNPARKED, sibling trigger fired
+The 2026-09-06 foreclosed-review left both foreclosed with an explicit
+re-activation trigger: "a CD_ready floor drop (sibling propagation) or upstream
+libcd source recovery". **CD_ready reached floor 0 and COMPLETED-C on
+2026-09-06** (s88, Judge PASS, sandbox 0/179, commit d3a7f72c). The trigger
+fired and nothing propagated it, because the merge path deletes
+`memory/grind/<func>` before anything reads it and `notify_siblings` is
+unreachable from a merging session. Root cause fixed this session (commit
+0ddc72c8, completion tombstones + 222 backfilled). Each is unparked with the
+transplant named in its `unpark_reason`; all standing `judge_constraints` and
+the 2026-07-20 cross-symbol arithmetic refusal remain in force.
+
+### func_80017848 (src/ings.c) — UNPARKED on newly visible siblings
+Its 2026-09-06 forensics probe is genuinely SPENT — s37 executed the minimal
+scratch-TU / pass-dump directive in full (artifacts in
+`tmp/grind/func_80017848/s37/mini/`, class kill at combine.c:1458), so the
+re-foreclosure was honest and no class grant is implied. What is new: the
+tombstone backfill makes three COMPLETED-C same-TU siblings visible for the
+first time — `func_80017D84` (already named by this ledger's own s45
+object-model audit as the source of its 52-byte data model), `func_80016E60`,
+and `main`. That is one unrun, named probe, which is the standard the
+2026-09-06 review itself used for an unpark.
