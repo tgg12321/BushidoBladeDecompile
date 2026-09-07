@@ -1,3 +1,29 @@
+/* s14 (2026-09-07, synthesis) RE-MEASURED this body unchanged on the dispatch chassis:
+ *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91,
+ *   .loop "Loop from 14 to 260: 91 real insns", lim (regno 75) moved and all four switch
+ *   comparison constants (regnos 124/126/127/128, life 1, savings 1) moved to the pre-header.
+ * MANDATED KILL RE-AUDIT: the closest banked form, rejected/arming-loop-after-main-score5.c,
+ *   still measures score 5 / build_insns 93 with all four constants `not desirable`.  Neither
+ *   body carries a FAKE construct, so tools/fake_ablate.py has no carrier to strip and every
+ *   banked instance kill remains chassis-valid.
+ * s14 kept this body because BOTH live frontier items measured dead:
+ *   (a) frontier 1 -- "5 outer-exit copies of a tail containing no address recomputation merge
+ *       perfectly" is FALSE on this chassis: `i++` alone at the five outer exits measures
+ *       96 / 95 (+5 loop insns for +2 emitted words) and the 3-insn tail measures 108 / 97.
+ *       s13's perfect merge (w2, +9 / +0) is a property of the POINTER-BUMP chassis only.
+ *   (b) frontier 2 -- "each removed non-merging copy returns ~1 emitted word" is FALSE:
+ *       w9 minus one copy lands loop insn_count on exactly 120 (all four constants rejected)
+ *       with build_insns UNCHANGED at 102.  The duplication axis's emitted cost is quantized
+ *       and its floor at insn_count 120 is 11 words above the 91-word target.
+ *   (c) NEW CLASS KILL -- `do { ... } while (0);` cannot arm the moved_once doubling: loop.c
+ *       calls it phony and returns before scanning (loop.c:568-575, scan_start is not a
+ *       CODE_LABEL once jump1 deletes the unreferenced top label).  Measured at three
+ *       placements inside the main loop, all 13 / 93 / 91.
+ * The two live axes and their measured floors are now: the moved_once ARMING axis, which
+ * reproduces the target's movable shape exactly at build_insns 93 / score 5 and whose only
+ * residual is the arming loop's own two emitted instructions; and the insn_count >= 120 axis,
+ * whose cheapest measured form is build_insns 102 / score 27.  See evidence.md s14.
+ */
 /* s13 (2026-09-07, structural) RE-MEASURED this body unchanged on HEAD 34eb8142:
  *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91,
  *   .loop "Loop from 14 to 260: 91 real insns" with lim (regno 75) and all four switch

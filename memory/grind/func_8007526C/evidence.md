@@ -1201,3 +1201,152 @@ insn_count in one pass; reuse it rather than rebuilding one.
 - [s13] TOOLING: PowerShell's `python3` is not on PATH on this host, so a sweep that shells `python3 apply.py` from PowerShell silently no-ops and every variant reports the BASELINE score. Apply through `bash <script>` from PowerShell (which is WSL bash; the Bash tool is Git Bash and has no /mnt/c), and verify the variant landed in src/text1b.c before trusting a flat sweep. The working harness is tmp/grind/func_8007526C/s13/sweep2.ps1.
 
 - [s13] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session; `git status --porcelain src/` is clean.
+
+## s14 (2026-09-07, synthesis) — evidence
+
+Chassis re-measured at dispatch: `memory/grind/func_8007526C/candidate.c` applied over the
+`INCLUDE_ASM("asm/funcs", func_8007526C);` line at src/text1b.c:6660 measures
+**score 13, build_insns 93, target_insns 91**, `.loop` `Loop from 14 to 260: 91 real insns`,
+`lim` = regno 75 moved to the pre-header and the four switch comparison constants
+(regnos 124/126/127/128, life 1, savings 1) all `moved to`. Unchanged from s10–s13.
+
+MANDATED KILL RE-AUDIT: the closest-to-target banked form,
+`rejected/arming-loop-after-main-score5.c`, still measures **score 5, build_insns 93** on the
+current chassis, with its dump reading `Loop from 263 to 281: 3 real insns / Insn 268: regno 75
+(life 116), global move-insn savings 1 moved to 289 / Loop from 14 to 260: 91 real insns /
+Insn 19: regno 75 (life 120), global move-insn savings 1 halved since already moved moved to 291 /
+Insn 226,232,238,241 ... not desirable`. Neither that body nor the candidate carries a FAKE
+construct, so `tools/fake_ablate.py` has no carrier to strip; every banked instance kill from
+s9–s13 remains chassis-valid.
+
+Full measured table this session: `tmp/grind/func_8007526C/s14/scores.txt`; harness
+`tmp/grind/func_8007526C/s14/sweep.ps1` (git-checkout -> apply -> sandbox -> cc1 `-da` dump ->
+extract the function's `.loop` lines), a hardened rewrite of s13's `sweep2.ps1` that also works
+from the committed `INCLUDE_ASM` state.
+
+### 1. NEW CLASS KILL — `do { ... } while (0);` cannot arm the moved_once doubling (loop.c:570)
+
+The most attractive unexplored shape on the arming axis was a `do { ... } while (0);` wrapper
+placed INSIDE the main loop body. It is an owner-sanctioned family (2026-07-06 ruling, ANY
+codegen effect including register allocation), and unlike s10's dead trailing loop it emits
+nothing — so if it produced a scannable inner loop it would have been the zero-cost version of
+the score-5 mechanism proof.
+
+It does emit a `NOTE_INSN_LOOP_BEG`, and loop.c does find the loop — but `scan_loop` returns
+before doing any work:
+
+    tmp/grind/func_8007526C/dumps/text1b.loop (v1 variant):
+      Loop from 18 to 32 is phony.
+      Loop from 14 to 274: 91 real insns.
+      Insn 23:  regno 75  (life 65), move-insn savings 1  moved to 282
+      Insn 240/246/252/255: regno 124/126/127/128 (life 1), savings 1  moved to 284/286/288/290
+
+The predicate is `tools/gcc-2.7.2/loop.c:568-575`: scan_loop prints "is phony" and `return`s
+unless `scan_start` (the first non-note insn after `NOTE_INSN_LOOP_BEG`, or the label targeted
+by a `while`-style entry jump) is a `CODE_LABEL`. A `do { } while (0)` has no back edge, so its
+top label is unreferenced and jump1 — which runs before loop — deletes it. `move_movables` is
+therefore never called for that region, `moved_once` (written at exactly one site,
+loop.c:1912) is never set, and the main loop's movable list is bit-identical to the baseline.
+
+Measured at three placements, all **score 13 / build_insns 93 / insn_count 91**: wrapping
+`lim = 0xC8;` alone (v1), wrapping `lim = 0xC8; p = base + i * 2;` (v2), and wrapping
+`p = base + i * 2;` alone (v3). Banked as
+`rejected/dowhile0-inner-arming-phony-loopc570-score13.c`. This independently re-derives and
+extends s8's finding (which measured the do-while(0) shape only as a trailing sibling loop) to
+the nested placement, and it closes the sanctioned-family route to a zero-cost arming.
+
+### 2. FRONTIER ITEM 1 KILLED — the perfect cross-jump merge belongs to the POINTER chassis, not to the tail's content
+
+s13 measured `w2` (pointer chassis, `i++; p += 2;` duplicated into the five OUTER switch-arm
+exits) at +9 loop-time insns for +0 emitted words, and hypothesised that the 2-word leak in `w3`
+came from `p = base + i * 2` re-associating differently per arm — i.e. that a tail built only
+from same-register increments, with no address recomputation, would keep merging perfectly and
+could be lengthened to buy the +29 loop-time insns needed to clear insn_count 120 for free.
+
+Measured on the chassis that actually scores 13 (`p = base + i * 2` recomputed at the loop top):
+
+| variant | tail duplicated into the 5 outer exits | loop insn_count | build_insns | score |
+|---|---|---|---|---|
+| base (candidate) | — | 91 | 93 | 13 |
+| t1 | tail moved to the loop bottom, single copy | 91 | 93 | 13 |
+| a1 | `i++;` (1 insn, NO address recomputation) | 96 (+5) | 95 (+2) | 16 |
+| t2 | `i++; p = base + i * 2;` (3 insns) | 108 (+17) | 97 (+4) | 32 |
+
+**Even a bare one-insn `i++` tail leaks 2 emitted words at 5 outer-exit copies on this chassis.**
+The premise is false: `w2`'s zero-cost merge is a property of the pointer-bump chassis (whose own
+combine_givs bias already costs score 47, s3/s13), not of the duplicated tail's content. Banked as
+`rejected/5outer-iplus-base-chassis-leaks-2-score16.c` and
+`rejected/5outer-3insn-tail-base-chassis-score32.c`.
+
+### 3. FRONTIER ITEM 2 KILLED — the duplication axis's emitted cost is QUANTIZED
+
+s13 banked `w9` (10 copies of the 3-insn tail) at loop insn_count 124 / build_insns 102 / score 27
+and hypothesised that trimming to the minimum copy count that still clears 120 would return
+roughly one emitted word per removed non-merging copy.
+
+Removing exactly one copy (the case-3 inner-if copy) gives
+`rejected/w9-minus1-copy-insncount120-build102-score27.c`:
+
+    Loop from 17 to 350: 120 real insns.
+    Insn 22: regno 75 (life 70), move-insn savings 1  moved to 358
+    Insn 319/325/331/334: regno 140/142/143/144 (life 1), savings 1  not desirable
+    score 27, build_insns 102
+
+`insn_count` fell 124 -> 120 (landing exactly on the measured threshold, with all four constants
+still rejected) while **build_insns did not move at all**. The emitted cost of this duplication
+geometry does not respond to copy count; removing a second copy would drop insn_count below 120
+and re-hoist the constants. **102 — eleven words above the 91-word target — is the floor of the
+insn_count axis as currently spelled**, and it is reached at 9 copies just as at 10.
+
+### 4. The two surviving axes and their measured floors (the synthesis)
+
+Everything measured across s1–s14 collapses to two mechanisms that both reach the target's exact
+movable shape (`lim`/0xC8 hoisted, all four switch comparison constants left in the loop), and to
+one number each:
+
+| axis | mechanism | how it is reached | measured floor |
+|---|---|---|---|
+| **ARMING** | `insn_count *= 2` at loop.c:1609-1611 when `moved_once[regno]` is set | a second NON-PHONY loop that moves regno 75 and is scanned before the main loop (i.e. textually after it, or nested inside it) | **build_insns 93, score 5** — the residual is the arming loop's own 2 emitted instructions (its decrement and back branch) |
+| **INSN_COUNT** | `(threshold * savings * lifetime) >= insn_count` at loop.c:1631 with threshold 119 after `lim`'s -3 decay | duplicate a real statement into the switch-arm exits so jump2 re-merges the copies after loop.c has counted them | **build_insns 102, score 27** at insn_count 120 |
+
+The arming axis is 5 points from a byte match and the insn_count axis is 27, so the arming axis
+is where the remaining value is — but its floor is structural: a loop cannot emit zero
+instructions (s10), and the one construct that would have emitted zero (`do { } while (0)`) is
+rejected as phony before scan_loop runs (§1 above). Any future zero-cost arming must come from a
+second loop whose emitted instructions are ABSORBED — either merged with instructions the target
+already contains, or filled into delay slots reorg would otherwise fill with nop. Note also that
+a dead arming loop fails cheat-checklist T1/T2 on its own terms (s10 said so explicitly), so the
+arming axis only becomes submittable if the second loop carries real semantics — and the target's
+asm has nothing after the main loop but `jr $ra / nop`.
+
+- [s14] Chassis re-measured at dispatch: candidate.c applied at src/text1b.c:6660 gives score 13, build_insns 93, target_insns 91, .loop 'Loop from 14 to 260: 91 real insns' with lim (regno 75) and the four switch comparison constants (regnos 124/126/127/128, life 1, savings 1) all moved to the pre-header. Unchanged from s10-s13.
+
+- [s14] MANDATED KILL RE-AUDIT: rejected/arming-loop-after-main-score5.c still measures score 5 / build_insns 93 with all four constants 'not desirable'; neither it nor the candidate carries a FAKE construct, so tools/fake_ablate.py has no carrier to strip and every s9-s13 instance kill remains chassis-valid.
+
+- [s14] CLASS KILL: `do { ... } while (0);` cannot arm move_movables' moved_once doubling. It does emit a NOTE_INSN_LOOP_BEG, but scan_loop prints 'Loop from N to M is phony.' and returns at tools/gcc-2.7.2/loop.c:568-575 because scan_start is not a CODE_LABEL -- a do-while(0) has no back edge, so jump1 (which runs before loop) deletes its unreferenced top label. move_movables is never called for the region and moved_once (written only at loop.c:1912) is never set. Measured at three placements inside the main loop, all score 13 / build 93 / insn_count 91.
+
+- [s14] FRONTIER 1 KILLED: the zero-cost cross-jump merge s13 measured for 5 outer-exit copies (w2, +9 loop insns / +0 emitted) is a property of the POINTER-BUMP chassis, not of the duplicated tail's content. On the candidate chassis a bare one-insn `i++` tail at the five outer exits measures insn_count 96 / build 95 (+5 / +2) and the 3-insn tail measures 108 / 97 (+17 / +4).
+
+- [s14] FRONTIER 2 KILLED: the duplication axis's emitted cost is quantized and does not respond to copy count. w9 minus one copy lands loop insn_count on exactly 120 with all four constants 'not desirable' and build_insns UNCHANGED at 102. Removing a second copy would drop below 120 and re-hoist, so build_insns 102 (11 words over the 91-word target) is the floor of the insn_count axis as currently spelled.
+
+- [s14] SYNTHESIS: every measurement s1-s14 collapses to two mechanisms that both reproduce the target's exact movable shape, with one measured floor each -- the moved_once ARMING axis at build_insns 93 / score 5 (residual = the arming loop's own 2 emitted instructions) and the insn_count >= 120 axis at build_insns 102 / score 27. The arming axis carries the remaining value; the open question is whether a second non-phony loop exists whose emitted instructions are absorbed rather than added.
+
+- [s14] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session; `git status --porcelain src/` is clean.
+
+- [s14] Chassis re-measured at dispatch: candidate.c applied at src/text1b.c:6660 gives score 13, build_insns 93, target_insns 91, .loop 'Loop from 14 to 260: 91 real insns' with lim (regno 75) and the four switch comparison constants (regnos 124/126/127/128, life 1, savings 1) all moved to the pre-header -- unchanged from s10-s13.
+
+- [s14] Kill re-audit: rejected/arming-loop-after-main-score5.c still measures score 5 / build_insns 93 with all four constants 'not desirable'; neither it nor candidate.c carries a FAKE construct, so fake_ablate has no carrier and all s9-s13 instance kills remain chassis-valid.
+
+- [s14] A do-while(0) placed inside the main loop DOES emit a NOTE_INSN_LOOP_BEG and loop.c does find the region, but scan_loop prints 'Loop from 18 to 32 is phony.' and returns at tools/gcc-2.7.2/loop.c:568-575 because scan_start is not a CODE_LABEL: the wrapper has no back edge, so jump1 deletes its unreferenced top label before loop runs. move_movables is never called for it and moved_once (written only at loop.c:1912) is never set.
+
+- [s14] Measured on the candidate chassis, five outer-arm-exit copies of a one-insn 'i++' tail give loop insn_count 96 and build_insns 95 (+5 loop-time for +2 emitted); the 3-insn tail gives 108 and 97 (+17 for +4). s13's zero-cost 5-copy merge (w2, +9/+0) is a property of the pointer-bump chassis, not of the tail's content.
+
+- [s14] w9 minus one copy lands loop insn_count on exactly 120 -- the measured rejection threshold, all four constants 'not desirable' -- with build_insns UNCHANGED at 102. The duplication axis's emitted cost is quantized and does not respond to copy count, so 102 (11 words over the 91-word target) is this geometry's floor.
+
+- [s14] SYNTHESIS: fourteen sessions of measurement reduce to two mechanisms that each reproduce the target's exact movable shape, with one number each -- the moved_once arming axis at build_insns 93 / score 5 (residual: the arming loop's own two emitted instructions) and the insn_count>=120 duplication axis at build_insns 102 / score 27. The arming axis is 22 points closer and is where the remaining value sits.
+
+- [s14] Nobody has ever printed the word-by-word diff of the score-5 arming build against asm/funcs/func_8007526C.s; every session since s10 has assumed its two extra words are the arming loop's decrement and back branch. That assumption is now the ledger's single largest unverified premise.
+
+- [s14] TOOLING: tmp/grind/func_8007526C/s14/sweep.ps1 is a hardened rewrite of s13's harness -- it git-checkouts src/text1b.c first and its apply.py handles BOTH the committed INCLUDE_ASM state and an already-applied body, so a sweep can no longer silently report baseline scores.
+
+- [s14] src/text1b.c was restored to its committed INCLUDE_ASM state; git status --porcelain shows no src/ modification.

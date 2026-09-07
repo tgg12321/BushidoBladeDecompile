@@ -1015,3 +1015,136 @@ insn_count 91 with the identical five movables; only the loop-note insn UIDs shi
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 34eb8142 chassis 2026-09-07, for- and while-loop rewrites of the candidate body applied to src/text1b.c, pure C, no FAKE constructs present
+
+## s14 (2026-09-07, synthesis) — hypotheses
+
+### Measured this session
+
+**H-s14-1 — KILLED (class).** A `do { ... } while (0);` wrapper placed inside the main loop body
+creates a second `NOTE_INSN_LOOP_BEG`, so `scan_loop` runs on it, moves the `lim = 0xC8` movable,
+sets `moved_once[75]` at loop.c:1912, and thereby arms the `insn_count *= 2` doubling
+(loop.c:1609-1611) for the main loop at ZERO emitted cost — the free version of s10's dead
+trailing arming loop, inside an owner-sanctioned family.
+*Mechanism as measured:* the loop note IS emitted and loop.c DOES find the region, but
+`scan_loop` prints `Loop from 18 to 32 is phony.` and returns at tools/gcc-2.7.2/loop.c:568-575
+before registering any movable, because `scan_start` is not a `CODE_LABEL`: a do-while(0) has no
+back edge, so its top label is unreferenced and jump1 (which runs before loop) deletes it.
+*Probe:* three placements — wrapping `lim = 0xC8;`, wrapping `lim = 0xC8; p = base + i * 2;`,
+wrapping `p = base + i * 2;` — each applied at src/text1b.c:6660 and measured with
+`sandbox func_8007526C --disable all` plus a cc1 `-da` dump.
+*Result:* all three score 13 / build_insns 93 / loop insn_count 91, with the main loop's movable
+list bit-identical to the baseline (all four switch comparison constants still `moved to`).
+*Kill scope:* class — the predicate is unconditional for any back-edge-free wrapper.
+*predicate_cite:* tools/gcc-2.7.2/loop.c:570.
+*Banked:* rejected/dowhile0-inner-arming-phony-loopc570-score13.c.
+
+**H-s14-2 — KILLED (instance).** (s13 frontier item 1.) On the candidate chassis, five copies of
+a duplicated loop tail placed only at the OUTER switch-arm exits cross-jump back completely when
+the tail contains no address recomputation, so lengthening such a tail buys loop-time
+`insn_count` at zero emitted cost.
+*Probe:* `i++;` alone duplicated into the four case exits plus an explicit `default:` (a1), and
+the 3-insn tail `i++; p = base + i * 2;` in the same five places on the tail-at-bottom chassis
+(t2); measured score, build_insns and the `.loop` `Loop from N to M: K real insns` line.
+*Result:* a1 = insn_count 96 / build_insns 95 / score 16 (+5 loop-time for +2 emitted); t2 =
+insn_count 108 / build_insns 97 / score 32 (+17 for +4). Even the one-insn tail leaks. s13's
+zero-cost merge (w2, +9 / +0) is a property of the POINTER-BUMP chassis, not of the tail's
+content, and that chassis independently costs score 47 through combine_givs' base bias.
+*measured_on:* HEAD 3d1c16e4 chassis 2026-09-07, candidate body with the duplications applied to
+src/text1b.c, pure C, no FAKE construct present.
+*Banked:* rejected/5outer-iplus-base-chassis-leaks-2-score16.c,
+rejected/5outer-3insn-tail-base-chassis-score32.c.
+
+**H-s14-3 — KILLED (instance).** (s13 frontier item 2.) Trimming s13's w9 duplication from ten
+copies to the minimum that still clears loop insn_count 120 returns roughly one emitted word per
+removed copy that jump2 was not merging, paying the 11-word excess down toward 91.
+*Probe:* removed exactly one copy (the case-3 inner-if copy) from w9, giving nine copies, and
+measured score, build_insns and the `.loop` line.
+*Result:* loop insn_count fell 124 -> 120 — landing exactly on the measured rejection threshold,
+with all four constants still printing `not desirable` — while build_insns stayed at 102,
+unchanged from w9. The emitted cost of this geometry is quantized and does not respond to copy
+count; removing a second copy would drop below 120 and re-hoist. build_insns 102 is the floor of
+the insn_count axis as currently spelled.
+*measured_on:* HEAD 3d1c16e4 chassis 2026-09-07, w9-minus-one-copy applied to src/text1b.c, pure
+C, no FAKE construct present.
+*Banked:* rejected/w9-minus1-copy-insncount120-build102-score27.c.
+
+**H-s14-4 — CONFIRMED (kill re-audit).** `rejected/arming-loop-after-main-score5.c` still measures
+score 5 / build_insns 93 on the current chassis with the target's exact movable shape (`lim`
+hoisted, all four constants `not desirable`). Neither it nor candidate.c contains a FAKE
+construct, so `tools/fake_ablate.py` has no carrier to strip and every instance kill banked in
+s9–s13 remains chassis-valid.
+
+### Frontier reset — the strongest three for the next ladder pass
+
+Everything s1–s14 has measured collapses to TWO mechanisms that each reproduce the target's exact
+movable shape, with one number each: the moved_once ARMING axis at **build_insns 93 / score 5**
+and the insn_count>=120 duplication axis at **build_insns 102 / score 27**. The arming axis is 22
+points closer, so the frontier is now weighted toward it. All three items below are cheap.
+
+**F1 (highest value, never run) — word-diff the score-5 arming build against the target.**
+Every session since s10 has ASSUMED that the two words separating the arming form (build_insns
+93) from the target (91) are the arming loop's own decrement and back branch. Nobody has printed
+the diff. If only one of the two extra words belongs to the arming loop — or if neither does, and
+the residual is (say) a load-delay `nop` of the kind the maspsx label-nop gate already covers for
+this function — then the remaining work is a different problem from the one the ledger has been
+attacking for four sessions. *Probe:* apply rejected/arming-loop-after-main-score5.c, run
+`tools/grinder/dump.ps1`, and do a branch/jump-target-masked word-by-word comparison of the
+built function against asm/funcs/func_8007526C.s (s5 left a working comparator at
+tmp/grind/func_8007526C/s5/cmp.py). Record WHICH words differ and at which addresses, in the
+ledger, so no future session has to assume again.
+
+**F2 — is there an arming loop that emits fewer than two words?**
+s10 measured three spellings (`for (k = 0; k < 2; k++)` -> build 94, `while (i > 0) { ...; i--; }`
+-> build 96, `do { ... } while (--i);` -> build 93) and concluded the floor is two instructions
+because "a loop cannot emit zero instructions". That is true in isolation but not in context: the
+question is whether the arming loop's two instructions can be ABSORBED. *Probe:* measure arming
+loops whose test is a value the function already computes (the main loop's own `i < 2`
+comparison), whose back branch could be the target's existing loop branch, or whose two
+instructions land in delay slots reorg would otherwise fill with `nop`. Also measure the arming
+loop placed at the very END of the function body after `jr $ra`'s work — i.e. whether reorg
+folds its decrement into the epilogue delay slot. Any spelling that reaches build_insns 91 turns
+the whole function on, and F1's diff tells you exactly which two words you are hunting.
+
+**F3 — an entirely untested deletion mechanism: `combine`, not `jump2`.**
+Every attempt so far to make loop-time `insn_count` exceed the emitted word count has used jump2
+cross-jumping, whose measured rate on this function is ~3 loop-time insns per surviving emitted
+word. But `combine` also runs after `loop` and MERGES insns (2 or 3 into 1), as do `cse2` and
+`flow` (dead-code). No session has measured the loop-time/emitted delta for a spelling designed
+to be combine-folded rather than cross-jumped. *Probe:* build variants using ordinary-C shapes
+that survive cse1/jump1 but that combine collapses — a named intermediate holding a comparison
+result that feeds its branch, same-variable split-init / compound-assignment splits (owner-ruled
+ordinary C: `v = x; v += k;`), and an explicitly staged sign-extension of a halfword value — and
+for each record (loop insn_count, build_insns). If any spelling shows a rate better than
+3-for-1, the insn_count axis reopens with a different payload; if none does, the axis is closed
+by mechanism rather than by geometry and the function's disposition rests entirely on F1/F2.
+
+## [s14] A `do { ... } while (0);` wrapper placed inside the main loop body creates a second NOTE_INSN_LOOP_BEG that scan_loop processes, so it moves the `lim = 0xC8` movable, sets moved_once[75] at loop.c:1912, and arms the insn_count *= 2 doubling (loop.c:1609-1611) for the main loop at zero emitted cost.
+- mechanism: loop_optimize walks loop numbers last-first (loop.c:435), so a nested loop is scanned before its enclosing loop; moved_once is per-function (loop.c:344-345) and the doubling it triggers mutates move_movables' local insn_count for the remainder of that loop's movable scan, which is exactly how s10's dead trailing arming loop made all four switch comparison constants print `not desirable`. do-while(0) is an owner-sanctioned family (2026-07-06 ruling) and emits no instructions, so it would have been the zero-cost version of that mechanism proof.
+- probe: Three placements built and measured on the dispatch chassis: wrapping `lim = 0xC8;` (v1), wrapping `lim = 0xC8; p = base + i * 2;` (v2), and wrapping `p = base + i * 2;` (v3); each applied over the INCLUDE_ASM line at src/text1b.c:6660, scored with `sandbox func_8007526C --disable all`, and dumped with cc1 -da to read the .loop movable list.
+- result: All three measure score 13 / build_insns 93 / loop insn_count 91 -- bit-identical to the baseline, with all four switch comparison constants still `moved to` the pre-header. The .loop dump shows the region IS found but immediately discarded: `Loop from 18 to 32 is phony.` scan_loop returns at tools/gcc-2.7.2/loop.c:568-575 unless scan_start is a CODE_LABEL, and a back-edge-free wrapper's top label is unreferenced, so jump1 (which runs before loop) deletes it. move_movables is never called for the region and moved_once is never written. Banked as rejected/dowhile0-inner-arming-phony-loopc570-score13.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 3d1c16e4 chassis 2026-09-07, candidate body plus the do-while(0) wrapper applied to src/text1b.c, pure C, no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/loop.c:570
+
+## [s14] On the candidate chassis, five copies of a duplicated real loop tail placed only at the outer switch-arm exits cross-jump back completely when the tail contains no address recomputation, so the tail can be lengthened to buy loop-time insn_count at zero emitted cost (s13 frontier item 1).
+- mechanism: s13 measured w2 on the pointer-bump chassis (5 copies of `i++; p += 2;` at the outer exits) at +9 loop-time insns for +0 emitted words, and attributed w3's 2-word leak to `p = base + i * 2` re-associating differently per arm. jump2's cross_jump merges tails only when each copy is instruction-identical and ends at the same jump target, so a tail built purely from same-register increments was predicted to scale.
+- probe: Two variants built and measured with score, build_insns and the .loop `Loop from N to M: K real insns` line: a1 = `i++;` alone duplicated into the four case exits plus an explicit `default:` on the candidate chassis; t2 = the 3-insn tail `i++; p = base + i * 2;` in the same five places on a chassis with `p = base` before the loop and the tail at the bottom (t1, itself re-measured at 13 / 93 / 91).
+- result: a1 = loop insn_count 96, build_insns 95, score 16 (+5 loop-time for +2 emitted). t2 = loop insn_count 108, build_insns 97, score 32 (+17 for +4). Even the bare one-insn tail leaks two emitted words at five outer-exit copies, so w2's zero-cost merge belongs to the pointer-bump chassis rather than to the duplicated tail's content -- and that chassis independently costs score 47 through combine_givs' base bias (s3/s13). Banked as rejected/5outer-iplus-base-chassis-leaks-2-score16.c and rejected/5outer-3insn-tail-base-chassis-score32.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 3d1c16e4 chassis 2026-09-07, candidate and tail-at-bottom bodies with 5 outer-exit duplications applied to src/text1b.c, pure C, no FAKE construct present
+
+## [s14] Trimming s13's w9 duplication from ten copies to the minimum that still clears loop insn_count 120 returns roughly one emitted word per removed copy that jump2 was not merging, paying the 11-word excess down toward the 91-word target (s13 frontier item 2).
+- mechanism: w9 reaches insn_count 124 when 120 suffices, so at least one 3-insn copy was assumed to be pure waste; each copy jump2 refused to merge was assumed to cost roughly one surviving emitted word, making copy count a continuous cost dial.
+- probe: Removed exactly one copy from w9 -- the case-3 inner-if copy -- leaving nine, applied it at src/text1b.c:6660, and measured score, build_insns and the .loop movable verdicts.
+- result: Loop insn_count fell 124 -> 120, landing exactly on the measured rejection threshold with all four constants still printing `not desirable` (regnos 140/142/143/144, life 1, savings 1), while build_insns did not move at all: still 102, score 27. The emitted cost of this duplication geometry is quantized and does not respond to copy count, and removing a second copy would drop below 120 and re-hoist the constants. build_insns 102 -- eleven words over the target -- is the floor of this geometry. Banked as rejected/w9-minus1-copy-insncount120-build102-score27.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 3d1c16e4 chassis 2026-09-07, s13's w9 body minus one duplicated tail applied to src/text1b.c, pure C, no FAKE construct present
+
+## [s14] The mandated kill re-audit holds: the closest-to-target banked form, rejected/arming-loop-after-main-score5.c, still measures score 5 / build_insns 93 on the current chassis with the target's exact movable shape, and candidate.c still measures score 13 / build_insns 93 / loop insn_count 91.
+- mechanism: Both bodies are ordinary C with no FAKE construct, so tools/fake_ablate.py has no carrier to strip and the ablated measurement is the measurement itself; re-running the sandbox and the cc1 -da dump on the current chassis is the whole audit.
+- probe: Applied each body over the INCLUDE_ASM line at src/text1b.c:6660 and ran `sandbox func_8007526C --disable all` plus `tmp/grind/func_8007526C/run_dump.sh`.
+- result: candidate.c: score 13, build_insns 93, `Loop from 14 to 260: 91 real insns`, lim (regno 75) and all four constants (regnos 124/126/127/128) moved. arming-loop form: score 5, build_insns 93, `Loop from 263 to 281: 3 real insns / Insn 268: regno 75 (life 116), global move-insn savings 1 moved to 289` then `Loop from 14 to 260: 91 real insns / Insn 19: regno 75 (life 120), global move-insn savings 1 halved since already moved moved to 291` and all four constants `not desirable`. Every instance kill banked in s9-s13 therefore remains chassis-valid.
+- verdict: CONFIRMED
