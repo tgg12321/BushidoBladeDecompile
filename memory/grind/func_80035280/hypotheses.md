@@ -301,3 +301,199 @@ needing the integration-handoff path.
 - probe: Three measurements: (1) regenerated the .loop dump with the flag, which prints 'Insn 135: regno 112 (life 1), move-insn savings 1 not desirable' and still hoists regno 118; (2) built code6cac_b.o through the real pipeline with the flag (tmp/grind/func_80035280/s2/build_o.sh), giving build_insns 108 == target 108 with the loop head lui v0,0x91a2 / lw v1,4(base) / ori v0,0xb3c5 / mult v1,v0 ... matching asm/funcs/func_80035280.s:25B18+, engine score 55; (3) swept cc1 output for all 32 src stems with and without the flag (tmp/grind/func_80035280/s2/sf3.py), ignoring only the cc1 flag-echo comment line: IDENTICAL 31 of 32, DIFFERS code6cac_b with 8 diff lines, all inside func_800324D0 (one li 0xff moving from $8 to $2 plus its bne).
 - result: CONFIRMED as the mechanism behind the entire structural residual, and recorded as evidence only - not acted on and not proposed as a candidate. func_800324D0 (src/code6cac_b.c:2554) currently matches only through a /* FAKE */ duplicated-statement-into-arms construct tuned under the hard-float register set; its natural un-duplicated spelling was measured this session at score 27 under BOTH configurations, so the flag does not make that FAKE removable and adopting it would require re-grinding that function from a residual of 3. CC_FLAGS lives in Makefile:35 and engine/buildconfig.py:43, both surfaces a grind session may not touch, and the question is governed by .claude/rules/no-compiler-divergence.md.
 - verdict: CONFIRMED
+
+## s3 (2026-09-07, structural) — chassis: HEAD (INCLUDE_ASM, target 108). Floor reached: 16.
+
+### H9 — the flag-block accumulator must have reg_n_deaths == 1. CONFIRMED (floor 39 -> 18).
+Statement: the four-seat register permutation in the flag block is caused by the
+accumulator pseudo failing local-alloc's eligibility test, and splitting the
+accumulator into one local per merged bit makes every flag-block seat match the
+target exactly.
+Mechanism: local-alloc.c:470-477 sets `reg_qty[i] = -2` (eligible for local
+allocation) only when `reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`. A
+single reused `v` is set four times, carries four REG_DEAD notes (.lreg:
+"Register 77 used 10 times across 16 insns in block 0; dies in 4 places"), gets
+reg_qty = -1, and is allocated by global-alloc AFTER local-alloc has already
+given $v0/$v1 to the six short per-arm temps and $a0 to the address pointer.
+Probe: BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 run of the instrumented cc1
+(tools/gcc-2.7.2/cc1, NOT build/cc1) — block 0 has exactly seven quantities and
+the accumulator is not one of them; greg prints `;; 77 conflicts: 72 74 76 77
+2 3 4 29`. Then measured the split body.
+Result: 39 -> 18, build 109 both ways, and build insns 10..28 become the
+target's flag block instruction-for-instruction. Confirmed downstream: the
+global list falls from 13 to 12 allocnos and no block-0 pseudo "dies in 4
+places" any more.
+
+### H10 — declaration order / statement order as a seat lever. KILLED (instance).
+Statement: on the single-accumulator body, declaring `v` first among the locals
+and hoisting `v = p[8];` above the `f`/`src` pointer setup each measured 39,
+exactly the score of the unmodified s2 body, so neither moved any flag-block
+register seat.
+Mechanism: the seat assignment is decided by local-alloc's eligibility test
+(local-alloc.c:472) on reg_n_deaths, which is a property of how many times the
+variable is written, not of where it is declared or where its first assignment
+appears; cse1 normalises the RTL order before local-alloc runs.
+Probe: tmp/grind/func_80035280/s3/v/v1.c (v declared first) and v2.c (v = p[8]
+hoisted), sandbox 39 / build 109 each, against the s2 body's 39 / 109 measured
+first this session. Also measured the neighbouring form that drops the `f`
+pointer (v3.c): 44 / build 111.
+Result: order levers are inert here; the death count is the lever. Banked at
+rejected/s3-single-accumulator-global-allocno-score39.c and
+rejected/s3-no-f-pointer-adds-two-insns-score44.c.
+kill_scope: instance
+measured_on: HEAD chassis (target_insns 108), single-accumulator s2 body plus
+two order variants, zero FAKE constructs present.
+
+### H11 — a two-way alternating accumulator split. KILLED (instance).
+Statement: splitting the flag accumulator into two alternating locals (fA/fB)
+measured 28 against the three-way split's 18, because each of the two pseudos is
+still written twice and so still fails local-alloc.c:472's `reg_n_deaths == 1`.
+Probe: tmp/grind/func_80035280/s3/v/v5.c, sandbox 28 / build 109, banked at
+rejected/s3-two-alternating-accumulators-score28.c.
+Result: the split has to be one local per merged bit; a partial split only
+partially lands on the target's seats.
+kill_scope: instance
+measured_on: HEAD chassis (target_insns 108), two-accumulator body, zero FAKE
+constructs present.
+
+### H12 — loop-1 counter-zeroing placement. CONFIRMED (18 -> 16).
+Statement: writing the loop-1 counter initialisation as a statement immediately
+after the `func_80077D00()` call, with loop 1 spelled `for (; i < 3; i++)`, puts
+`addu $a3,$zero,$zero` where the target has it — the first instruction after the
+jal's delay slot — and takes the last two points off the prologue.
+Probe: four placements measured on the split body: after the call 16, before the
+flag block 18, immediately before loop 1 18, and as a `s32 i = 0;` declaration
+initialiser 29 at build 110 (that form is emitted before the call, so the value
+must survive it and costs a real instruction — banked at
+rejected/s3-i-declaration-initialiser-adds-insn-score29.c).
+Result: build insns 1..38 are now identical to the target. ADMISSIBILITY is open
+— see the note in candidate.c: this is a real initialisation of a real loop
+counter, but it is moved eight statements earlier purely for a scheduling slot.
+The split-only body without the hoist is 18 and is kept at
+tmp/grind/func_80035280/s3/v/v4.c.
+
+### H13 — -msoft-float closes THIS body. KILLED (instance).
+Statement: the s3 candidate built through the real pipeline with -msoft-float
+scores 16 at build 109, identical to the hard-float build, because the flag
+lowers the loop.c:532 threshold only to about 58 while this body's loop-2 RTL
+insn_count is 55.
+Mechanism: -msoft-float fixes the 32 FP hard registers, so
+`(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` falls from 122 to about 58;
+loop.c:1631 then still finds `58 * 1 * 1 >= 55` and hoists the 0x91A2B3C5
+movable. The s1 walker body's insn_count of 62 clears 58, which is why s2
+measured that body at 108 == 108 under the flag.
+Probe: tmp/grind/func_80035280/s3/soft_v6.o, scored against build/src/code6cac_b.o
+with engine score_func: {"score": 16, "target_insns": 108, "build_insns": 109};
+the .loop slice for the hard-float build of the same body reads "Loop from 110
+to 274: 55 real insns" with both constants "moved to".
+Result: s2's FACT 11 has to be restated. The configuration question, if the
+operator ever takes it, is "add the flag AND find a loop-2 spelling whose
+insn_count lands in [59, 122] while keeping the inline-index giv shape", not
+"add the flag". The s1 walker spelling clears 59 but costs two giv instructions
+(build 111).
+kill_scope: instance
+measured_on: HEAD chassis (target_insns 108), s3 candidate body built with
+-msoft-float through the real pipeline, zero FAKE constructs present.
+
+## Live frontier for session 4+
+
+### F4 — the loop.c:1631 LICM residual is the ENTIRE remaining 16 (unchanged, config-bound).
+Build insns 1..38 match the target exactly; everything left is the wrongly
+hoisted 0x91A2B3C5 (+2 preheader insns, the `nop` in the `lw 0x4($a2)` load-delay
+slot, and the mfhi temp displaced from $t2 to $t3). The gate needs loop-2
+insn_count >= 123 under the shipped configuration and the five spellings measured
+across s1/s2/s3 give 44, 55, 55, 62, 62. Do NOT re-derive the gate (s2 FACT 8
+measured the boundary at 120/123) and do NOT re-derive the -msoft-float story
+(s3 FACT 19 supersedes s2 FACT 11). The only untried honest direction is a loop-2
+spelling that is byte-equivalent to the current one but carries more pre-combine
+RTL; s2's H8 measured four spellings in the 44-62 band and none is within a
+factor of two of 123, so treat this as config-bound unless a rederive session
+finds a different decomposition of the three clock fields.
+
+### F5 — admissibility of the two s3 constructs (ask BEFORE submitting, do not respell).
+The 16-point body carries (1) the split accumulators flags/flags0/flags1/flags2
+and (2) the `i = 0;` hoist. Neither is dead and neither is a coercion: every
+split local is written once and holds a value that IS stored to p[8] and read by
+the next arm, and `i = 0;` is the loop's real initialisation. But flags0/flags1
+are read TWICE, so this is not the once-written/once-read named-intermediate
+shape, and the only reason not to reuse one `v` is codegen. Since the body is not
+at distance 0 there is nothing to submit yet; when it is, the right move is a
+`ruling-request` naming both constructs rather than a speculative
+candidate-ready. The un-hoisted fallback is 18 (tmp/grind/func_80035280/s3/v/v4.c)
+and the un-split fallback is 39
+(rejected/s3-single-accumulator-global-allocno-score39.c).
+
+### F6 — the reg_n_deaths lever is likely to transfer to other queue functions.
+local-alloc.c:472's `reg_n_deaths[i] == 1` test is generic: ANY function whose
+target holds an accumulator in a low register ($v0/$v1) across a straight-line
+block, where our build puts it in an argument register, is a candidate for the
+same one-local-per-value split. The diagnostic is one line of the .lreg dump
+("dies in N places" for the pseudo in question) plus the ";; N regs to allocate"
+list in .greg. Worth a cross-function sweep by a later session or by the
+solver-modality driver; the mechanism is not specific to func_80035280.
+
+## [s3] The flag-block four-seat register permutation is caused by local-alloc.c:472's eligibility test reg_n_deaths[i] == 1, and splitting the single reused accumulator into one local per merged bit puts every flag-block seat on the target's register.
+- mechanism: local-alloc.c:470-477 sets reg_qty[i] = -2 (eligible for local allocation) only when reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1; a single reused `v` is set four times, carries four REG_DEAD notes, gets reg_qty = -1, and is left to global-alloc, which runs only after local-alloc has handed $v0/$v1 to the six short per-arm temps and $a0 to the address pointer.
+- probe: BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 run of the instrumented cc1 (tools/gcc-2.7.2/cc1) shows exactly seven block-0 quantities with the accumulator absent, and the greg slice prints ";; 77 conflicts: 72 74 76 77 2 3 4 29"; then measured the three-way split body with sandbox.
+- result: sandbox 39 -> 18 at build 109, and build instructions 10..28 become the target's 24-instruction flag block instruction-for-instruction. The global allocno list falls from 13 to 12 and no block-0 pseudo "dies in 4 places" any more.
+- verdict: CONFIRMED
+
+## [s3] On the single-accumulator body, declaring `v` first among the locals and hoisting `v = p[8];` above the pointer setup each measured 39, the same score as the unmodified s2 body, so neither order lever moved any flag-block register seat.
+- mechanism: the seat assignment is decided by local-alloc.c:472's reg_n_deaths test, which counts how many times the variable is written, not where it is declared or where its first assignment appears; cse1 normalises RTL order before local-alloc runs.
+- probe: tmp/grind/func_80035280/s3/v/v1.c and v2.c, sandbox 39 / build 109 each; the neighbouring form that drops the `f` pointer (v3.c) measured 44 / build 111.
+- result: order levers are inert on this function; the death count is the lever. Banked at rejected/s3-single-accumulator-global-allocno-score39.c and rejected/s3-no-f-pointer-adds-two-insns-score44.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (target_insns 108), single-accumulator s2 body plus two order variants, zero FAKE constructs present
+
+## [s3] Splitting the flag accumulator into two alternating locals measured 28 against the three-way split's 18, because each of the two pseudos is still written twice and still fails local-alloc.c:472's reg_n_deaths == 1 test.
+- mechanism: local-alloc.c:472 requires exactly one REG_DEAD note per pseudo; a two-way alternation gives each pseudo two, so both stay ineligible for local allocation and only part of the flag block lands on the target's seats.
+- probe: tmp/grind/func_80035280/s3/v/v5.c, sandbox 28 / build 109.
+- result: the split has to be one local per merged bit. Banked at rejected/s3-two-alternating-accumulators-score28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (target_insns 108), two-accumulator body, zero FAKE constructs present
+
+## [s3] The s3 candidate built with -msoft-float scores 16 at build 109, identical to the hard-float build, so the flag does not close this body.
+- mechanism: -msoft-float fixes the 32 FP hard registers, so loop.c:532's (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) falls from 122 to about 58; loop.c:1631 then still finds 58 * 1 * 1 >= 55 for this body's loop-2 insn_count of 55 and hoists the 0x91A2B3C5 movable anyway. The s1 walker body's insn_count of 62 clears 58, which is why s2 measured that body at 108 == 108 under the flag.
+- probe: built code6cac_b through the real pipeline with -msoft-float (tmp/grind/func_80035280/s2/build_o.sh, artifact tmp/grind/func_80035280/s3/soft_v6.o) and scored it against build/src/code6cac_b.o with engine score_func: {"score": 16, "target_insns": 108, "build_insns": 109}. The .loop slice for the same body reads "Loop from 110 to 274: 55 real insns" with both constants "moved to".
+- result: s2's FACT 11 is restated - the configuration question is "add the flag AND find a loop-2 spelling with insn_count in [59, 122] keeping the inline-index giv shape", not "add the flag". The s1 walker spelling clears 59 but costs two giv instructions (build 111).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (target_insns 108), s3 candidate body built with -msoft-float through the real pipeline, zero FAKE constructs present
+
+## [s3] The flag-block four-seat register permutation is caused by local-alloc.c:472's eligibility test reg_n_deaths[i] == 1, and splitting the single reused accumulator into one local per merged bit puts every flag-block seat on the target's register.
+- mechanism: local-alloc.c:470-477 sets reg_qty[i] = -2 (eligible for LOCAL allocation) only when reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1. A single reused `v` is set four times, so it carries four REG_DEAD notes (.lreg: 'Register 77 used 10 times across 16 insns in block 0; dies in 4 places'), gets reg_qty = -1, and is left to global-alloc - which runs only after local-alloc has already handed $v0 and $v1 to the six short per-arm temps and $a0 to the address pointer. Giving each accumulator value its own local makes reg_n_deaths == 1 per pseudo, so they become block-0 quantities, and local-alloc's qty_compare priority floor_log2(n_refs)*n_refs*size/(death-birth) ranks the accumulator chain ahead of the two-reference temps, so find_free_reg hands it $v0 first.
+- probe: Ran the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT the engine's tools/gcc-2.7.2/build/cc1, which emits no QTYDBG lines) with BB2_QTY_DEBUG=1 BB2_SUGG_DEBUG=1 and read the block-0 trace: exactly seven quantities (reg1 = 73, 78, 82, 83, 87, 88, 92) with the accumulator absent, got = 2,2,2,3,3,3,4. The greg slice prints ';; 77 conflicts: 72 74 76 77 2 3 4 29'. Then measured the split body with sandbox --disable all.
+- result: 39 -> 18 at build 109 from the split alone, and build instructions 10..28 become the target's 24-instruction flag block instruction-for-instruction and register-for-register against asm/funcs/func_80035280.s:25AA4-25AEC. Confirmed downstream in the s3 dumps: the global allocno list falls from ';; 13 regs to allocate' to ';; 12 regs to allocate' and no block-0 pseudo says 'dies in 4 places' any more.
+- verdict: CONFIRMED
+
+## [s3] Writing the loop-1 counter initialisation as a statement immediately after the func_80077D00() call, with loop 1 spelled `for (; i < 3; i++)`, puts the counter zeroing where the target has it and takes two more points off the score.
+- mechanism: The target's first instruction after the jal's delay slot is `addu $a3,$zero,$zero`. The RTL position of the initialisation decides where the first-pass scheduler can place it inside block 0; the earlier the statement, the earlier the insn's LUID and the earlier the ready-list lets it issue.
+- probe: Measured four placements on the split body: statement immediately after the call = 16 (build 109); statement immediately before the flag block = 18 (build 109); statement immediately before loop 1, i.e. equivalent to `for (i = 0; ...)` = 18 (build 109); `s32 i = 0;` declaration initialiser = 29 (build 110).
+- result: 16 is the session floor. Build instructions 1..38 - prologue, the whole flag block and the whole of loop 1 - are now identical to the target. The declaration-initialiser form is emitted BEFORE the call, so the value must survive it and GCC spends a real extra instruction (build 110), which is why it is 29 rather than 16.
+- verdict: CONFIRMED
+
+## [s3] On the single-accumulator body, declaring `v` first among the locals and hoisting `v = p[8];` above the pointer setup each measured 39, the same score as the unmodified s2 body, so neither order lever moved any flag-block register seat.
+- mechanism: The seat assignment is decided by local-alloc.c:472's reg_n_deaths test, which counts how many times the variable is written, not where it is declared or where its first assignment appears; cse1 normalises the RTL order before local-alloc runs.
+- probe: tmp/grind/func_80035280/s3/v/v1.c (v declared first) and v2.c (v = p[8] hoisted above the f/src setup): sandbox 39 / build 109 each, against the s2 body re-measured at 39 / 109 first this session. The neighbouring form that drops the `f` pointer and spells src = (u8 *)&D_80106A73 - 3 directly (v3.c) measured 44 / build 111.
+- result: Both order levers were inert here; the death count is what moves the seats. The two-pointer spelling is also confirmed right - the target genuinely keeps both $a1 (= &D_80106A73, for the lbu) and $a2 (= $a1-3, the loop-1 walker), and dropping `f` costs two instructions. Banked at rejected/s3-single-accumulator-global-allocno-score39.c and rejected/s3-no-f-pointer-adds-two-insns-score44.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (src/code6cac_b.c:3741 INCLUDE_ASM baseline, target_insns 108), single-accumulator s2 body plus two order variants, zero FAKE constructs present
+
+## [s3] Splitting the flag accumulator into two alternating locals measured 28 against the three-way split's 18, because each of the two pseudos is still written twice and so still fails local-alloc.c:472's reg_n_deaths == 1 test.
+- mechanism: local-alloc.c:472 requires exactly one REG_DEAD note per pseudo. A two-way alternation (fA/fB) leaves each pseudo with two, so both stay ineligible for local allocation and fall through to global-alloc, and only part of the flag block lands on the target's seats.
+- probe: tmp/grind/func_80035280/s3/v/v5.c, sandbox 28 / build 109, against the three-way split's 18 / 109 measured in the same batch.
+- result: The split has to be one local per merged bit; a partial split only partially helps. Banked at rejected/s3-two-alternating-accumulators-score28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (target_insns 108), two-accumulator body, zero FAKE constructs present
+
+## [s3] The s3 candidate built through the real pipeline with -msoft-float scores 16 at build 109, identical to the hard-float build, so the flag does not close this body.
+- mechanism: -msoft-float fixes the 32 FP hard registers, so loop.c:532's (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) falls from 122 to about 58. loop.c:1631 then still finds 58 * 1 * 1 >= 55 for this body's loop-2 insn_count of 55 and hoists the 0x91A2B3C5 movable anyway. The s1 walker body's insn_count of 62 clears 58, which is why s2 measured that body at 108 == 108 under the flag.
+- probe: Built code6cac_b with -msoft-float through cpp | cc1 | prologue_fix | maspsx | multu_pad | as (tmp/grind/func_80035280/s2/build_o.sh, artifact tmp/grind/func_80035280/s3/soft_v6.o) and scored it against build/src/code6cac_b.o with engine score_func: {"score": 16, "target_insns": 108, "build_insns": 109}. The .loop slice for the same body reads 'Loop from 110 to 274: 55 real insns' with both constants 'moved to'.
+- result: s2's FACT 11 is restated: the configuration question, if the operator ever takes it, is 'add the flag AND find a loop-2 spelling whose insn_count lands in [59, 122] while keeping the inline-index giv shape', not 'add the flag'. The s1 walker spelling clears 59 but costs two giv instructions (build 111). Bracketed both ways this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (target_insns 108), s3 candidate body built with -msoft-float through the real pipeline, zero FAKE constructs present

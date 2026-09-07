@@ -1,7 +1,7 @@
 {
  "func": "func_80035280",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 39,
    "modality": "structural",
    "headline": "Floor 56/63 -> 39 from an inline-index loop-2 spelling that reproduces the target's whole loop-2 register assignment; the loop.c:1631 boundary is now MEASURED at 122 (hoists at insn_count 120, refuses"
+  },
+  {
+   "session": 3,
+   "floor": 16,
+   "modality": "structural",
+   "headline": "Floor 39 -> 16: local-alloc.c:472's reg_n_deaths==1 eligibility test was the flag-block seat permutation; splitting the reused accumulator into one local per merged bit plus hoisting the loop-1 counte"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The toolchain-configuration question is the whole of func_80035280's remaining structural residual, and it is an operator/owner decision rather than a grind axis: with -msoft-float this function is 108 == 108 with the target's exact loop-2 shape, and the flag is codegen-neutral for 31 of 32 TUs.",
-   "mechanism": "threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) at loop.c:532; fixing the FP hard registers (which the FPU-less R3000 target implies) drops n_non_fixed_regs by about 32, halves the threshold below the loop-2 insn_count of 62, and leaves the lifetime-1 /1800 magic in the loop while the lifetime-35 /30 magic still hoists.",
-   "next_probe": "Do NOT re-derive this - it is measured in evidence.md FACT 11. If the owner ever takes it: add -msoft-float to CC_FLAGS and CC_FLAGS_GP in Makefile:35-36 and engine/buildconfig.py:43-44, re-grind func_800324D0 (src/code6cac_b.c:2554) from its residual of 3 because its /* FAKE */ duplicated-tail construct was tuned under the hard-float register set, then verify-oracle. Until then treat the +1 instruction as config-blocked and grind only the naming residual below."
+   "hypothesis": "The loop.c:1631 LICM decision on the 0x91A2B3C5 (/1800) magic is the entire remaining 16 points, and under the shipped compiler configuration it needs a loop-2 RTL insn_count of at least 123 that no measured spelling approaches.",
+   "mechanism": "loop.c:1631 moves the constant-load movable iff threshold * savings * m->lifetime >= insn_count; threshold is 122 (loop.c:532, no call in the loop), savings is 1 (loop.c:897, hard-coded for a move_insn) and lifetime is 1 (loop.c:791), so the product is pinned at 122 and only insn_count is C-movable. The five loop-2 spellings measured across s1/s2/s3 give insn_counts of 44, 55, 55, 62 and 62, and s2 measured the gate flipping between 120 and 123.",
+   "next_probe": "Do NOT re-derive the gate (s2 FACT 8 measured the 120/123 boundary) and do NOT re-derive the -msoft-float story (s3 FACT 19 supersedes s2 FACT 11: the flag alone leaves this body at 16). The one untried honest direction is a rederive-modality session looking for a different decomposition of the three clock fields (minutes / seconds / hundredths) that is byte-equivalent to the current loop but carries more pre-combine RTL. If that comes back empty, the residual is compiler-configuration-bound and the disposition question belongs to a later escalation-modality session, not to a structural one."
   },
   {
-   "hypothesis": "Of the candidate's 39 points, roughly 4-6 are the flag block's register permutation and statement ordering, and those are attackable on the CURRENT chassis without touching the LICM decision.",
-   "mechanism": "The candidate emits the flag block with (addr $a0, acc $a1, mask $v1, byte $v0) where the target has (addr $a1, acc $v0, mask $a0, byte $v1), and the second flag arm is ordered lbu / and / andi / or / li where the target has and / lbu / li / andi / or; the target also zeroes the loop-1 counter (addu $a3,$zero,$zero) as the first insn after the jal, where the candidate emits it fourth.",
-   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the flag-block seats using the s2 candidate as the base (not the s1 body, whose allocation is 24 points worse) and spell only the vectors it returns; do not guess spellings. The loop-2 seats are already correct and must not be disturbed."
+   "hypothesis": "The 16-point body's two constructs - the split accumulators (flags/flags0/flags1/flags2) and the `i = 0;` hoist - need an admissibility ruling before any submission, and respelling them to dodge that is the wrong move.",
+   "mechanism": "Neither construct is dead and neither is a coercion: every split local is written once and holds a value that IS stored to p[8] and read by the next arm, and `i = 0;` is the loop's real initialisation. But flags0 and flags1 are each read TWICE (the store and the next arm), so this is not the once-written/once-read named-intermediate shape in .claude/rules/narrow-byte-args-packed-call.md, and the only reason not to reuse one `v` is codegen - which is the shape the frozen list covers under 'variable reuse for codegen control' read in reverse.",
+   "next_probe": "Nothing to submit while the body is at 16. When a future session reaches distance 0 from this chassis, file a ruling-request naming BOTH constructs and quoting the candidate.c admissibility note, rather than a speculative candidate-ready. The fallbacks if either is refused are the split-only body at 18 (tmp/grind/func_80035280/s3/v/v4.c) and the un-split body at 39 (rejected/s3-single-accumulator-global-allocno-score39.c)."
   },
   {
-   "hypothesis": "The D_80106A73 declaration is still the s1 open question and is unchanged: src[3] is a measurement device, not a declaration.",
-   "mechanism": "expr.c:4567-4577 gives MEM_IN_STRUCT_P only to a PLUS_EXPR address, an ADDR_EXPR of an aggregate, or an aggregate type, so a scalar read through a plain deref is CSE'd across the three p[8] stores and collapses the target's 3 lbu + 3 sw into one of each; an aggregate covering 0x80106A70..0x80106A73 makes the read an ARRAY_REF and gets the flag from expr.c:4888.",
-   "next_probe": "Measure a widened D_80106A70[4] (or a 4-byte aggregate based at 0x80106A70) against matched sibling func_80034F88's score BEFORE proposing it - func_80034F88 reads D_80106A73 as its own scalar and its integration-handoff note asks for D_80106A70 to stay [3]. It is a header change (include/code6cac.h:472), so it needs the integration-handoff path, not a TU-local declaration."
+   "hypothesis": "The reg_n_deaths == 1 lever found here is generic and should transfer to other queue functions whose target holds an accumulator in $v0/$v1 across a straight-line block where our build puts it in an argument register.",
+   "mechanism": "local-alloc.c:472's eligibility test is not specific to this function: any pseudo written more than once in a block is refused local allocation and gets whatever global-alloc has left after the short single-death temps have taken $v0/$v1/$a0. Splitting the multi-written variable into one local per value restores local eligibility and the qty_compare priority ordering.",
+   "next_probe": "Cheap and mechanical: for any function stuck on an argument-register accumulator, grep its .lreg slice for a pseudo that 'dies in N places' with N > 1 and cross-check the ';; N regs to allocate' list in .greg. If the accumulator is in the global list, try the one-local-per-value split. Worth a cross-function sweep by a solver-modality or forensics session; it is not a func_80035280-specific finding."
   }
  ],
  "judge_constraints": [],
@@ -68,6 +74,30 @@
    "measured_on": "HEAD chassis (target_insns 108), four natural bodies (s1 candidate, byte-first, inline-index, values-into-locals), zero FAKE constructs present",
    "predicate_cite": "",
    "result": "Raising insn_count by spelling is not a live route on this body; the missing 61 insns would have to come from RTL that s"
+  },
+  {
+   "session": 3,
+   "statement": "On the single-accumulator body, declaring `v` first among the locals and hoisting `v = p[8];` above the pointer setup each measured 39, the same score as the unmodified s2 body, so neither order lever",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (src/code6cac_b.c:3741 INCLUDE_ASM baseline, target_insns 108), single-accumulator s2 body plus two order variants, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Both order levers were inert here; the death count is what moves the seats. The two-pointer spelling is also confirmed r"
+  },
+  {
+   "session": 3,
+   "statement": "Splitting the flag accumulator into two alternating locals measured 28 against the three-way split's 18, because each of the two pseudos is still written twice and so still fails local-alloc.c:472's r",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (target_insns 108), two-accumulator body, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "The split has to be one local per merged bit; a partial split only partially helps. Banked at rejected/s3-two-alternatin"
+  },
+  {
+   "session": 3,
+   "statement": "The s3 candidate built through the real pipeline with -msoft-float scores 16 at build 109, identical to the hard-float build, so the flag does not close this body.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis (target_insns 108), s3 candidate body built with -msoft-float through the real pipeline, zero FAKE constructs present",
+   "predicate_cite": "",
+   "result": "s2's FACT 11 is restated: the configuration question, if the operator ever takes it, is 'add the flag AND find a loop-2 "
   }
  ],
  "ladder_skip": 0,
