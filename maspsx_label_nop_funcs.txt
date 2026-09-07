@@ -20,4 +20,3 @@ func_80040594
 _spu_init
 func_80027640
 func_80022F34
-func_8007526C

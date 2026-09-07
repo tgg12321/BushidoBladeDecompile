@@ -4,6 +4,16 @@
   "build_failures": [],
   "items": [
     {
+      "func": "func_8007526C",
+      "file": "text1b",
+      "distance": 0,
+      "verdict": "C",
+      "rules": 0,
+      "status": "active",
+      "origin": "regression",
+      "reopen_reason": ""
+    },
+    {
       "func": "CD_datasync",
       "file": "system",
       "distance": 2,
@@ -1454,13 +1464,13 @@
     }
   ],
   "counts": {
-    "total": 164,
-    "active": 164,
+    "total": 165,
+    "active": 165,
     "by_status": {
-      "active": 164
+      "active": 165
     },
     "by_verdict": {
-      "C": 138,
+      "C": 139,
       "ASM-PARTIAL": 26
     }
   }

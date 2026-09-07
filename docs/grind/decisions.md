@@ -25389,3 +25389,54 @@ on each attack surface:
 The class-wide alternative (teaching `is_label()` the `.L` prefix) is NOT taken:
 `maspsx-label-nop-gate.md` says "Per-function-scoped so it doesn't cascade.
 Don't broaden the gate globally."
+
+## 2026-09-07 — func_8007526C — layer-2 SPLIT verdict → **FAIL, completion REVERTED**
+
+Supersedes the "manual completion (owner-applied remedy) — PASS / COMPLETED-C"
+entry above. Match commit 121e34d7 is backed out; the function is `queue
+reopen`ed and back to `INCLUDE_ASM`, the gate line removed, the ledger restored.
+
+**What happened.** Two fresh adversarial cheat-reviewers were run (the second
+because the first appeared to have died without reporting; it later delivered).
+They split: reviewer 1 PASS, reviewer 2 FAIL. Under the default-FAIL gate a
+split is a FAIL. The owner-facing error was procedural: the Match was committed
+on reviewer 1's PASS while reviewer 2 was still running.
+
+**Reviewer 2's ground, verified firsthand against the sotn-decomp working copy
+at C:\Users\Trenton\Desktop\sotn-decomp — NOT taken on the agent's word:**
+the three SOTN citations do not support the construct they were cited for.
+- `src/main/main.c:40` — `main_search_loop_1` is a retry-on-CD-failure label
+  (`goto` only under `main_fd < 0`) and it WRAPS a real
+  `while (!CdSearchFile(...)) {}` loop, which emits the loop note anyway.
+- `src/main/psxsdk/libc/sprintf.c:96` — `loop_30:` is a switch-dispatch
+  re-entry point for the `h`/`l`/`L` format modifiers.
+- `src/dra/5F60C.c:579,588` — both labels sit INSIDE real
+  `do { ... } while (...)` loops, which DO emit `NOTE_INSN_LOOP_BEG` — this
+  citation actively contradicts the candidate's stated mechanism.
+None is a bounded counting loop respelled as a backward goto. The index entries
+are filed under the `nested_exit_label` class, precedent for the sanctioned
+mixed-exit family, not for "omit for/while/do so loop.c never runs".
+
+Reviewer 1 verified the cited lines EXIST and that each goto line number exceeds
+its label line number. That was true but insufficient — it did not check what
+the constructs are. The deeper check governs.
+
+**No sanctioned family covers this.** The nearest rule,
+`.claude/rules/loop-note-fixes-delay-slot-steal.md`, runs the other way: a
+goto-formed poll loop is the DEFECT and rewriting it as a real while/do loop
+(gaining `NOTE_INSN_LOOP_BEG`) is the retirement path. A fixed-2-iteration array
+walk spelled as `goto` solely to keep loop.c from running is therefore a NEW
+technique family — owner-only to sanction per `no-new-park-categories.md` /
+`judge-sole-gate.md` rule 4, and it must be filed as a family candidate rather
+than adjudicated in-session on a mismatched index citation.
+
+**What SURVIVES.** Both reviewers cleared `lim` (written once, read at three
+real `sh $a3` store sites matching the target's immediates — byte-neutral and
+semantically truthful) and both cleared the GATE LINE. The load-consumer finding
+is real and independently confirmed three times: `asm/funcs/func_8007526C.s:6`
+is a genuine `.L`-blind-spot load-delay nop. **The owner's authorization for
+that one line stands** — it goes in the moment an acceptable body reaches honest
+floor 1. Recorded as a judge_constraint on the ledger; the goto spelling is
+recorded in banned_constructs.
+
+Oracle re-verified green after the revert (ok true, build_matches true).

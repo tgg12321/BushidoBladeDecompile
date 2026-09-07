@@ -1,0 +1,14 @@
+regfix.txt:1693: func_8007526C: delete @ 5
+regfix.txt:1694: func_8007526C: delete @ 4
+regfix.txt:1695: func_8007526C: delete @ 3
+regfix.txt:1696: func_8007526C: delete @ 2
+regfix.txt:1697: func_8007526C: subst "nop" "addiu $2,$0,2" @ 8
+regfix.txt:1698: func_8007526C: subst "\$11(?!\d)" "$2" @ 9
+regfix.txt:1699: func_8007526C: subst "nop" "addiu $2,$0,1" @ 12
+regfix.txt:1700: func_8007526C: subst "\$10(?!\d)" "$2" @ 13
+regfix.txt:1701: func_8007526C: subst "\$9(?!\d)" "$2" @ 17
+regfix.txt:1702: func_8007526C: subst "nop" "addiu $2,$0,4" @ 18
+regfix.txt:1703: func_8007526C: subst "\$8(?!\d)" "$2" @ 19
+regfix.txt:1704: func_8007526C: insert "addiu $2,$0,3" @ 13
+regfix.txt:1705: func_8007526C: insert "nop" @ 3
+regfix.txt:1706: func_8007526C: reorder 0,2,1,3 @ 0-3
