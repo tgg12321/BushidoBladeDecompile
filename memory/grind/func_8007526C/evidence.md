@@ -525,3 +525,63 @@ proven at sandbox == 0, and this function measures 1.
 - [s5] The loop.c insn_count >= 123 axis (s3's frontier F1) is MOOT, not open: the goto-spelled loop bypasses loop.c entirely so move_movables never runs on it. The 2026-09-07 12:10 judge ruling states this explicitly. Recorded here so no later session re-derives it.
 
 - [s5] src/text1b.c was reverted to its HEAD INCLUDE_ASM form at the end of this session; the tree carries only ledger edits.
+
+## s7 (recon, 2026-09-07) — chassis HEAD 19c9eda0 — floor RE-CONFIRMED at 1
+
+### OBJECT MODEL: D_800A36A0 — MATCHES (measured this session, score 1)
+`func_8007526C` touches exactly ONE global, `D_800A36A0`. It is already declared
+`extern u8 *D_800A36A0;` in src/text1b.c (lines 6624, 6659, 6791) and listed in
+sdata_syms.txt:226, i.e. a GP-relative pointer *variable*, not an array. Re-measured on
+today's chassis (HEAD 19c9eda0) with `memory/grind/func_8007526C/candidate.c` applied at
+src/text1b.c:6660: `sandbox func_8007526C --disable all` -> **score 1, build_insns 90,
+target_insns 91**. Every one of the 90 emitted words is word-identical to
+asm/funcs/func_8007526C.s, including the `lw $a0, %gp_rel(D_800A36A0)($gp)` preamble
+(asm/funcs/func_8007526C.s:4) and all absolute field offsets (0x8, 0xC, 0x10, 0x14, 0x18,
+0x38, 0x3C). The declaration therefore needs no fix — proven by measurement, not
+inspection. There is no second global, no aggregate/struct question, no MISMATCH and no
+MISMATCH-unmeasured symbol for this function. Verdict: **MATCHES**.
+
+### Chassis re-measurement (the brief's CHASSIS CHECK said "measurement unavailable")
+The dispatch brief arrived with an EMPTY ledger digest ("floor history: (none yet)",
+"live frontier: (empty)", "session 1 of a cumulative grind") and the SessionStart queue
+banner still quotes the pre-migration pin of 48. Both are stale. The real ledger
+(state.json, 5 floor_history entries) and the measurements below are authoritative:
+- HEAD 19c9eda0, `candidate.c` applied: **score 1** (90/91 words). Re-verified, not quoted.
+- `canonical func_8007526C` -> verdict **C**, asm_insns 0, distance 1, reason
+  "pure-C distance 1 <= 50 — pure-C target". The function is correctly routed to pure C;
+  it is NOT a canonical-asm candidate, so the canonical-asm endgame gate FAILS here and
+  no CANONICAL-ASM GRANT PATH disposition is available.
+
+### The precedent function is now IN the gate file — direct confirmation of the route
+`maspsx_label_nop_funcs.txt` currently holds 21 entries and line 22 is **func_80022F34**,
+the controlling precedent the s6 Judge ruling named (decisions.md 2026-09-07 12:10). That
+line was applied by the OWNER in the 2026-09-06 foreclosed-bucket review (commit d4338774,
+`[infra-rule: maspsx-label-nop]`), after which func_80022F34 landed. `func_8007526C` is
+absent from that file. So the sanctioned route for this exact residual is demonstrated,
+executed once already, and owner-only by construction: the file is named verbatim on the
+add-scope-allow denylist at .claude/rules/integration-handoff-self-serve.md:56-58.
+
+### No new C axis exists for the residual word (re-derived from the target, not quoted)
+The target's first four words are fixed in order (asm/funcs/func_8007526C.s:2-6):
+`addu $a2,$zero,$zero` / `addiu $a3,$zero,0xC8` / `lw $a0,%gp_rel(D_800A36A0)($gp)` /
+`.L80075278:` / `nop` / `lbu $v1,0x10($a0)`. Any byte-matching build must therefore place
+the gp-relative load as the LAST insn before the loop-top merge label, with the label's
+first insn consuming `$a0`. That is precisely the load-consumer-across-a-`.L`-label shape
+whose delay `nop` maspsx suppresses, because `is_label()` (tools/maspsx/maspsx/__init__.py:257)
+only recognises `$L`-prefixed labels while this cc1 fork emits `.L`
+([[maspsx-is-label-dot-prefix]], .claude/rules/maspsx-label-nop-gate.md). The hazard is a
+property of the required instruction ORDER, not of any C spelling, so re-ordering the C
+cannot both keep the target order and remove the hazard. This re-confirms the s5/s6 class
+kill (predicate tools/maspsx/maspsx/__init__.py:257) from the target bytes independently.
+
+- [s6] OBJECT MODEL: D_800A36A0 -- MATCHES (measured, score 1). It is the only global func_8007526C touches, is already declared `extern u8 *D_800A36A0;` in src/text1b.c (lines 6624, 6659, 6791) and listed in sdata_syms.txt:226, i.e. a GP-relative pointer variable and not an array. With candidate.c applied the build reproduces the target's exact `lw $a0, %gp_rel(D_800A36A0)($gp)` preamble (asm/funcs/func_8007526C.s:4) and every absolute field offset (0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C) -- 90 of 91 words word-identical. The declaration needs no fix, proven by measurement rather than inspection. No second global, no aggregate/struct question, no MISMATCH and no MISMATCH-unmeasured symbol for this function.
+
+- [s6] Chassis re-measurement on HEAD 19c9eda0: sandbox func_8007526C --disable all with candidate.c applied gives score 1 / build_insns 90 / target_insns 91. The dispatch brief's CHASSIS CHECK said 'measurement unavailable' and shipped an EMPTY ledger digest ('session 1', 'floor history: (none yet)', 'live frontier: (empty)') while the SessionStart queue banner still quotes the pre-migration pin of 48. All three are stale; the real ledger is memory/grind/func_8007526C/state.json with five floor_history entries (48 -> 13 -> 13 -> 13 -> 1).
+
+- [s6] canonical func_8007526C returns verdict C, asm_insns 0, distance 1 -- the function is correctly routed to pure C and is not a canonical-asm candidate, closing the CANONICAL-ASM GRANT PATH branch.
+
+- [s6] maspsx_label_nop_funcs.txt holds 21 entries and line 22 is func_80022F34 -- the controlling precedent named by the s6 Judge ruling (docs/grind/decisions.md:25229), applied by the OWNER in the 2026-09-06 foreclosed-bucket review (commit d4338774, [infra-rule: maspsx-label-nop]), after which that function landed. func_8007526C is absent. The sanctioned route for this exact residual is therefore demonstrated, already executed once, and owner-only by construction: the file is named verbatim on the add-scope-allow denylist at .claude/rules/integration-handoff-self-serve.md:56-58.
+
+- [s6] DISPOSITION IS BLOCKED ON MODALITY, NOT ON EVIDENCE. This session's mandated modality is `recon`. tools/grinder/grindlib.py:812 mechanically refuses an owner-gated outcome whose escalation_ref carries a foreclosure title (RESOLVED BY STANDING RULING / LADDER EXHAUSTED) unless modality == 'escalation'. The only other line in docs/grind/decisions.md that names this function alongside OWNER-ESCALATION is the 2026-09-07 INTEGRATION HANDOFF at docs/grind/decisions.md:25107, and citing it would route straight back to the Judge (tools/grinder/grind.ps1:1428) in violation of the standing judge constraint in state.json ('Do not re-file an integration handoff for func_8007526C') -- that body was already FAILed twice, at docs/grind/decisions.md:25223 and :25227. So this session returns `progress` with the kills banked, exactly as the ladder design requires, and the correct next step is for the DRIVER to assign `escalation` modality; the honest floor of 1 is <= ENDGAME_LOCK_MAX_FLOOR, so that session files the RESOLVED BY STANDING RULING (2026-07-27) foreclosure record.
+
+- [s6] No new C axis exists for the residual word. The target fixes the pre-loop insn order (asm/funcs/func_8007526C.s:2-6), so every byte-matching build necessarily places the gp-relative load immediately before the .L80075278 merge label whose first insn consumes $a0. The suppressed delay nop is a consequence of that required order, not of any C-level choice.

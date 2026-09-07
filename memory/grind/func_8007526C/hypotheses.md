@@ -321,3 +321,68 @@
 - kill_scope: class
 - measured_on: HEAD a04d3e60 chassis 2026-09-07, candidate.c (s6 goto body) applied to src/text1b.c, pure C, no FAKE constructs present, floor 1
 - predicate_cite: tools/maspsx/maspsx/__init__.py:257
+
+## s7 (recon, 2026-09-07, chassis HEAD 19c9eda0)
+
+- **H-s7.1 CONFIRMED — the banked s6 body still measures floor 1 on today's chassis.**
+  Mechanism: the label + backward-`goto` loop spelling emits no NOTE_INSN_LOOP_BEG, so
+  loop.c never runs `scan_loop`/`move_movables` on this loop; the four switch-comparison
+  constants stay in-loop and no strength-reduced giv biases the field offsets. Probe:
+  applied `candidate.c` at src/text1b.c:6660, `sandbox --disable all` -> score 1,
+  build_insns 90, target_insns 91. This kills the possibility that the chassis moved under
+  the ledger (HEAD advanced 9066e9ad -> 19c9eda0 since the s6 measurement).
+
+- **H-s7.2 KILLED (class) — the missing word is reachable from some C spelling.**
+  Re-derived independently from the TARGET bytes this session rather than inherited: the
+  target fixes the pre-loop insn order (`addu $a2` / `addiu $a3,0xC8` /
+  `lw $a0,%gp_rel(...)` / `.L80075278:` / `nop` / `lbu $v1,0x10($a0)`), so every
+  byte-matching build necessarily places the gp load immediately before a `.L` merge label
+  whose first insn consumes `$a0`. The delay `nop` is then emitted or suppressed by an
+  assembler-layer regex over the label spelling plus membership in
+  `maspsx_label_nop_funcs.txt`; C cannot express it.
+  Predicate: tools/maspsx/maspsx/__init__.py:257.
+
+- **H-s7.3 KILLED (instance) — a canonical-asm disposition is available for this residual.**
+  `canonical func_8007526C` returns verdict **C**, asm_insns 0, distance 1, reason
+  "pure-C distance 1 <= 50 — pure-C target". The canonical-asm endgame gate needs STRONG
+  `scan_hand_coded` signals; a 90/91 pure-C match is the opposite of that evidence. So the
+  CANONICAL-ASM GRANT PATH branch (grind.ps1:1412) is not open here.
+
+### Frontier after s7 (unchanged in substance, now chassis-current)
+The C-side ladder is complete at honest floor 1. The single remaining step is one
+owner-only line: `func_8007526C` appended to `maspsx_label_nop_funcs.txt`
+(LOAD-CONSUMER case), exactly as the owner did for func_80022F34 at
+maspsx_label_nop_funcs.txt:22 (commit d4338774). Two dispositions are mechanically
+refused to a session in a non-`escalation` modality:
+  - a foreclosure title (RESOLVED BY STANDING RULING / LADDER EXHAUSTED) — refused by
+    tools/grinder/grindlib.py:812 unless `modality == "escalation"`;
+  - an INTEGRATION HANDOFF re-file — forbidden by the standing judge constraint in
+    state.json (`judge_constraints[0]`) and already FAILed twice
+    (decisions.md 2026-09-07 11:56 and 12:10).
+Therefore the correct pipeline move is for the DRIVER to assign `escalation` modality;
+that session files the floor-1 (<= 5) `RESOLVED BY STANDING RULING (2026-07-27):
+FORECLOSED` record naming the single owner-only line, and the driver forecloses silently.
+No further C measurement on this function will change the score.
+
+## [s6] The banked s6 goto-spelled body still measures floor 1 on the current chassis (HEAD advanced from 9066e9ad to 19c9eda0 since the last measurement, and the dispatch brief arrived with an empty ledger digest and a stale queue banner of 48).
+- mechanism: A label + backward-goto loop emits no NOTE_INSN_LOOP_BEG, so GCC 2.7.2 loop.c never runs scan_loop/move_movables on it: the four switch-comparison constants are not hoisted into the pre-header and no strength-reduced giv biases the field offsets by +0x10. Both were the entire residual in the do/while and pointer-bump spellings.
+- probe: Applied memory/grind/func_8007526C/candidate.c in place of the INCLUDE_ASM at src/text1b.c:6660, then ran `& tools/wteng.ps1 main sandbox func_8007526C --disable all`.
+- result: score 1, build_insns 90, target_insns 91, scorable true. The chassis did not move under the ledger; floor 1 is current, not inherited. src/text1b.c was restored to HEAD afterwards.
+- verdict: CONFIRMED
+
+## [s6] The single remaining residual word is reachable from some C spelling of func_8007526C.
+- mechanism: The delay-slot nop is emitted or suppressed by maspsx's is_label() regex over the assembler input's label spelling plus membership in the maspsx_label_nop_funcs.txt gate list. This cc1 fork emits `.L`-prefixed labels while is_label() only matches `$L`, so the load-delay nop after a load whose consumer sits across a `.L` merge label is dropped.
+- probe: Re-derived independently from the target bytes this session rather than inherited: asm/funcs/func_8007526C.s:2-6 fixes the pre-loop insn order as addu $a2,$zero,$zero / addiu $a3,$zero,0xC8 / lw $a0,%gp_rel(D_800A36A0)($gp) / .L80075278: / nop / lbu $v1,0x10($a0). Any byte-matching build must therefore place the gp-relative load as the last insn before the loop-top merge label with the label's first insn consuming $a0 -- the hazard is a property of the required instruction order, not of the C spelling, so re-ordering the C cannot both preserve the target order and remove the hazard.
+- result: Confirms the s5/s6 class kill from the target bytes independently. func_8007526C is absent from maspsx_label_nop_funcs.txt (21 entries); the controlling precedent func_80022F34 IS present at line 22, applied by the owner in the 2026-09-06 foreclosed-bucket review (commit d4338774, [infra-rule: maspsx-label-nop]), after which that function landed. That file is named verbatim on the add-scope-allow denylist at .claude/rules/integration-handoff-self-serve.md:56-58, so the route is demonstrated and owner-only.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 19c9eda0 chassis 2026-09-07, memory/grind/func_8007526C/candidate.c applied to src/text1b.c:6660, pure C, no FAKE constructs present, floor 1
+- predicate_cite: tools/maspsx/maspsx/__init__.py:257
+
+## [s6] A canonical-asm disposition is available for this residual, which would let the function take the CANONICAL-ASM GRANT PATH instead of waiting on the gate-list line.
+- mechanism: The canonical-asm endgame gate (grind.ps1:1412) requires STRONG scan_hand_coded signals (S1/S2/S6); the engine's canonical gate is the arbiter of whether a function's original code was hand-written assembly.
+- probe: Ran `& tools/wteng.ps1 main canonical func_8007526C`.
+- result: verdict C, asm_insns 0, total 91, distance 1, reason 'pure-C distance 1 <= 50 -- pure-C target'. A 90-of-91-word pure-C reproduction is the opposite of hand-written-asm evidence, so the gate fails and that branch is not open for this function.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 19c9eda0 chassis 2026-09-07, candidate.c applied to src/text1b.c, pure C, no FAKE constructs present, floor 1
