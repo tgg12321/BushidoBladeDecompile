@@ -1,3 +1,16 @@
+/* s12 (2026-09-07, structural) RE-MEASURED this body unchanged on HEAD f2842664:
+ *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91.
+ * Still the best NON-BANNED form.  s12 kept it because all three of s11's frontier items measured
+ * dead: the semantically real two-pass state split arms the moved_once doubling but halves the
+ * loop's insn_count so the doubling loses (63/99); arming without a second loop is impossible
+ * (moved_once is written only at loop.c:1912, reachable only through the single move_movables call
+ * at loop.c:966 inside scan_loop); and every permutation of the switch case-label order is worse
+ * than this body's own 1/3/2/4 (31 / 55 / 60).  s12 also priced out the threshold-decay route --
+ * the target's whole pre-header is three instructions with no spare slot for a hoisted movable --
+ * and found ONE thing that is not dead: loop-time insn_count and emitted build_insns are NOT
+ * coupled 1:1 once a real statement is duplicated into the switch arms (jump2 cross-jumps the
+ * copies back after loop.c has counted them).  See evidence.md s12.
+ */
 /* s11 (2026-09-07, rederive) RE-MEASURED this body unchanged on HEAD 7ab27738:
  *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91.
  * It remains the best NON-BANNED form.  s11 kept it because four structurally different

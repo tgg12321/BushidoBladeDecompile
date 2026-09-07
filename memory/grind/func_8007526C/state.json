@@ -1,8 +1,8 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 13,
    "modality": "rederive",
    "headline": "Four structural re-derivations killed (hand-written if/else dispatch 29, sibling u16-array model 47/60, s16 counter 28, 0xA step holder 13); loop.c's desirability arithmetic is now closed out on all t"
+  },
+  {
+   "session": 12,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "All three s11 frontier items measured dead (two-pass split 63, arming-without-a-loop closed at loop.c:1912, every case-label permutation worse), threshold-decay priced out by the target's 3-insn pre-h"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 2 residual instructions of the after-main arming loop (the decrement and the back branch of do { lim = 0xC8; } while (--i);) are the entire distance from a proven score-5 body to 0, and that loop is inadmissible only because it is dead -- a spelling in which those two instructions do semantically-required work would close the function.",
-   "mechanism": "s11 proved the arming geometry is exhaustively two shapes (after-main, score 5; nested-inner, score 8) via the last-first scan order at tools/gcc-2.7.2/loop.c:435. The after-main shape needs only: (i) a loop whose beginning follows the main loop's, (ii) non-phony at loop.c:570 (its first insn after LOOP_BEG must be a CODE_LABEL), (iii) a move of the SAME pseudo the main loop scans first (regno 75, the named 0xC8). Nothing else about it matters to loop.c.",
-   "next_probe": "Search the function's own semantics for work that can legitimately be expressed as a second loop after the main loop. Specifically re-examine the two-pass formulation: because the shrink states (2 and 4) zero the state word and the grow states (1 and 3) advance it to 2 and 4, a pass over both entries handling only states 2 and 4, followed by a pass over both entries handling only states 1 and 3, appears order-equivalent to the single interleaved pass. Measure it, and read whether jump2 cross-jumps the two loop bodies back toward one. Read build_insns AND the .loop dump (the second loop must print moved for regno 75 and the main loop must print halved since already moved)."
+   "hypothesis": "A real statement duplicated into the switch arms whose copies jump2 re-merges COMPLETELY (zero surviving emitted words) raises loop-time insn_count for free, and enough such duplication reaches insn_count 120 where threshold 119 rejects the four comparison constants at loop.c:1631.",
+   "mechanism": "Measured this session: GCC 2.7.2 runs jump1 with cross-jumping off and only jump2 with it on, so arm-tail duplicates survive to loop time and count_loop_regs_set counts them, then jump2 merges them back. The i++ duplication measured +5 loop-time for +2 emitted -- a genuinely sub-1:1 rate that refutes s11's 1:1 kill. The residual +2 came from i++ being only one insn per copy, so the merge also has to absorb each arm's differing branch structure.",
+   "next_probe": "Duplicate a LONGER real tail so the merge is unambiguous. Concretely: re-associate the loop so more real work sits after the switch (e.g. compute the next iteration's p at the arm tails, or sink the state-word re-read), then duplicate that multi-insn tail into all five arms and measure the pair (loop-time insn_count from the .loop dump, emitted build_insns). Track the exchange rate per shape; the target is a shape at or near +k loop-time / +0 emitted. Also try `continue` instead of `break` so every arm ends in the identical jump to the do-while test, which is the shape jump2's cross_jump likes best."
   },
   {
-   "hypothesis": "A construct other than a loop can set moved_once[75] before the main loop is scanned, arming the doubling with no emitted control code at all.",
-   "mechanism": "moved_once[regno] = 1 is written at exactly one site, tools/gcc-2.7.2/loop.c:1912, reached only from move_movables' move block; the doubling reads it at loop.c:1609. s8 killed do { } while (0) (phony at loop.c:570), s9 killed same-value matching (m->match entries are marked done and skipped by the guard at loop.c:1584), and s11 killed the arm-from-an-earlier-textual-loop shape by scan order.",
-   "next_probe": "Read tools/gcc-2.7.2/loop.c:1636-1720 (the m->partial && m->match branch and the m->move_insn branch) for any path that reaches line 1912 without a second NOTE_INSN_LOOP_BEG -- specifically whether a partial movable (m->partial with a non-VOIDmode m->savemode) can be produced by a sub-word store to the same local that carries the 0xC8. Confirm with a .loop dump before spending a build."
+   "hypothesis": "An arming loop that is a second loop of ADDITIONAL real work, laid alongside an undivided 91-insn main loop, exists in this function's semantics or its caller's.",
+   "mechanism": "s12 closed every cheap arming geometry: before-the-main-loop is scanned too late (s11, loop.c:435), splitting the main loop halves insn_count below the doubling's break-even of ~60 (s12), and no non-loop construct reaches loop.c:1912 (s12). What survives is a genuine second loop that does not come out of the main loop's own work. The after-main dead loop costs only 2 emitted words (score 5), so a real second loop costing 2 words closes the function.",
+   "next_probe": "Read the caller(s) of func_8007526C and the D_800A36A0 record layout for work currently done outside this function that could plausibly belong to it as a trailing loop over the same two entries (e.g. a second field pair swept after the state ramp). Grep asm/funcs for callers first (jal 8007526C), then diff the callers' own loops against this record. If nothing is found, record that as the closing kill for the arming axis."
   },
   {
-   "hypothesis": "The 13-point residual can be lowered without changing loop.c's decision at all, by changing which hard registers the four hoisted constants receive.",
-   "mechanism": "The four constants are hoisted into $8/$9/$10/$11 while the target uses a reused $v0 in-loop. The engine score is a weighted metric in which register mismatches cost less than insn insert/delete, and the ledger has never measured whether the pre-header emission order of the four li insns changes their allocation. A lower gradient would give the next session a sharper signal even though the loop.c decision is unchanged.",
-   "next_probe": "Read tmp/grind/func_8007526C/dumps/text1b.greg for the allocation order of regnos 124/126/127/128, then permute the case-label order in the switch (1/3/2/4 as today, vs 1/2/3/4, vs 2/1/3/4) and measure score for each; the case order changes expand_case's emission order and hence the pre-header order of the four li insns."
+   "hypothesis": "The 13-point residual can be lowered without changing loop.c's decision, by changing which hard registers the four hoisted constants receive through something other than case-label order.",
+   "mechanism": "Case-label order is now measured exhaustively and the candidate's 1/3/2/4 is optimal, so the pre-header emission order of the four li insns is fixed. What is NOT measured is whether local-alloc's assignment of $8/$9/$10/$11 responds to the declaration order or live ranges of the function's own locals (base / p / i / lim), which set the pseudo numbering that reg_alloc_order tie-breaks on.",
+   "next_probe": "Read tmp/grind/func_8007526C/dumps/text1b.greg for the allocation order of regnos 124/126/127/128 and 75, then permute the local declaration order in the candidate (base/p/i/lim -> lim/i/p/base and two other orders) and measure each with sandbox. Cheap, purely structural, and a lower gradient sharpens the signal for the duplication axis above."
   }
  ],
  "judge_constraints": [
@@ -296,6 +302,46 @@
    "measured_on": "HEAD 7ab27738 chassis 2026-09-07, s10 candidate body plus each s11 variant applied to src/text1b.c, pure C, no FAKE constructs present",
    "predicate_cite": "",
    "result": "No ordinary-C statement measured this session raised loop-time insn_count without raising build_insns by the same amount"
+  },
+  {
+   "session": 12,
+   "statement": "The semantically real two-pass state split (pass A over both entries handling only the shrink states 2/4, pass B over both entries handling only the grow states 1/3) arms the moved_once doubling for t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f2842664 chassis 2026-09-07, two-pass split body applied to src/text1b.c, pure C, no FAKE constructs present, score 63",
+   "predicate_cite": "",
+   "result": "score 63, build_insns 99 (target 91). The arming half works exactly as predicted -- the dump prints 'Insn 19: regno 75 ."
+  },
+  {
+   "session": 12,
+   "statement": "A construct other than a second loop can set moved_once for the pseudo the main loop scans first, arming the insn_count doubling with no emitted control code at all.",
+   "kill_scope": "class",
+   "measured_on": "tools/gcc-2.7.2 source at the pinned build; no chassis dependence -- the call graph of moved_once is a property of loop.c, not of this function",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1912",
+   "result": "No path reaches loop.c:1912 without a scan_loop invocation, i.e. without a second NOTE_INSN_LOOP_BEG. Combined with s11'"
+  },
+  {
+   "session": 12,
+   "statement": "Permuting the switch case-label source order changes which hard registers the four hoisted comparison constants receive and lowers the score below 13.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f2842664 chassis 2026-09-07, candidate body with permuted case-label order applied to src/text1b.c, pure C, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "1/3/2/4 (the candidate) 13/93; 1/2/3/4 31/93; 2/4/1/3 55/93; 4/3/2/1 60/91. The candidate's existing case order is alrea"
+  },
+  {
+   "session": 12,
+   "statement": "Writing the gp-relative load of D_800A36A0 inside the loop body makes it a loop-invariant movable that loop.c hoists back to the pre-header at zero emitted cost, decaying threshold by 3 for free.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f2842664 chassis 2026-09-07, candidate body with the global load inside the loop applied to src/text1b.c, pure C, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "score 16, build_insns 95 (baseline 13/93). No movable is created: the loop stores through p to addresses loop.c cannot d"
+  },
+  {
+   "session": 12,
+   "statement": "s11's finding that loop-time insn_count and emitted build_insns move 1:1 for every ordinary-C statement, which would close the Judge-named insn_count >= 120 axis, also holds for a real statement dupli",
+   "kill_scope": "instance",
+   "measured_on": "HEAD f2842664 chassis 2026-09-07, candidate body with i++ duplicated into all five switch arms applied to src/text1b.c, pure C, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "The 1:1 coupling is BROKEN. Loop-time insn_count went 91 -> 96 (+5, one copy per arm: 'Loop from 14 to 275: 96 real insn"
   }
  ],
  "ladder_skip": 0,

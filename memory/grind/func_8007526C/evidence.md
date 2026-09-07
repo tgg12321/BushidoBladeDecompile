@@ -1008,3 +1008,77 @@ reached here by a dead loop.
 - [s11] SIBLING TRANSPLANT (mandated; func_80075670, src/text1b.c:6666, COMPLETED-C on main): both of its spellings fail here -- the ((s16 *)(work + i * 2))[K/2] element-array addressing (score 47 switch form / 60 if-chain form) and the s16 i counter (score 28). What it does supply is a live worked example of the exact mechanism func_8007526C needs: its own .loop section reads Loop from 103 to 405: 87 real insns / Insn 552: regno 120 ... halved since already moved / Insn 273: regno 144 (life 1), move-insn savings 1 not desirable -- a life-1 movable rejected at threshold 119 against a doubled insn_count of 174, produced by its genuine inner for (i = 0; i < 2; i++) loops. func_8007526C has no semantic work after or inside its main loop, which is precisely why the same mechanism is only reachable here through a dead loop.
 
 - [s11] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session; git diff is clean for src/. The candidate saved to memory/grind/func_8007526C/candidate.c is the unchanged s10 body (best non-banned form, score 13) with an s11 re-measurement header.
+
+## s12 (2026-09-07, structural) — evidence
+
+Chassis re-measured on HEAD f2842664: candidate.c = **score 13, build_insns 93, target_insns 91**;
+`rejected/arming-loop-after-main-score5.c` = **score 5, build_insns 93**. Unchanged from s10/s11.
+Full score table for the session: `tmp/grind/func_8007526C/s12/scores.txt`.
+
+### The three s11 frontier items are all now measured
+
+1. **Two-pass state split (frontier #1) — measured, 63/99.** The split is genuinely admissible C
+   (order-equivalent to the interleaved pass), and it *does* arm the `moved_once` doubling: the
+   .loop dump prints `Insn 19: regno 75 ... halved since already moved  moved` for the textually
+   earlier pass. It loses anyway because splitting the loop halves `insn_count`: pass A counts 37
+   real insns, doubled 74, against threshold 119, so `119 * 1 * 1 >= 74` at loop.c:1631 keeps every
+   comparison constant desirable. **The doubling only beats the threshold while `insn_count` stays
+   above about 60** (2*insn_count > 119), and any split of the main loop that supplies the second
+   loop drops it below that. This is the durable arithmetic: an arming loop must be a second loop of
+   *additional* work sitting alongside an *undivided* 91-insn main loop.
+
+2. **Arming without a second loop (frontier #2) — closed by source read.** `moved_once` is written
+   at exactly one site (loop.c:1912) inside `move_movables`, which has exactly one call site
+   (loop.c:966) inside `scan_loop`. Both the `m->partial && m->match` branch (loop.c:1641) and the
+   STRICT_LOW_PART partial-movable construction (loop.c:838-862) sit inside that same move block,
+   downstream of that same call. No path reaches line 1912 without a `scan_loop` invocation, i.e.
+   without a second `NOTE_INSN_LOOP_BEG`.
+
+3. **Case-label order (frontier #3) — measured, no headroom.** 1/3/2/4 (the candidate) 13; 1/2/3/4
+   31; 2/4/1/3 55; 4/3/2/1 60. The candidate's existing order is the optimum of the permutation
+   space. (4/3/2/1 hits the target's exact 91-word count but reverses block layout — coincidence.)
+
+### The threshold-decay route is priced out by the target's pre-header
+
+Decay alone needs `122 - 3k < 91 + k`, i.e. `k >= 8` moved movables — which s1/s9 measured working
+(all four constants `not desirable` at 8 movables). But each moved movable emits its hoisted insn
+into the pre-header, and the **target's entire pre-header is three instructions**
+(asm/funcs/func_8007526C.s:2-4: `addu $a2,$zero,$zero`, `addiu $a3,$zero,0xC8`, `lw $a0,%gp_rel(D_800A36A0)($gp)`),
+of which only the 0xC8 is a movable. Zero spare slots. The one apparently-free extra movable — the
+gp-relative base load written inside the loop, which the target already has in its pre-header — is
+**not loop-invariant at all** (the loop stores through `p`, `invariant_p` rejects the MEM); it
+measured 16/95, the load simply re-emitted in the loop.
+
+### NEW: the loop-time / emitted coupling is NOT 1:1 (s11's kill relaxed)
+
+s11 banked an instance kill stating that every ordinary-C statement raises loop-time `insn_count`
+and emitted `build_insns` by the same amount, which would close the Judge-named
+"`insn_count >= 120` while still collapsing to 91" axis. **That coupling breaks under
+duplicated-statement-into-arms.** GCC 2.7.2 runs the first jump pass with cross-jumping OFF and only
+`jump2` with it ON, so duplicated arm tails survive to loop time and are counted by
+`count_loop_regs_set`, then get re-merged afterwards. Measured on the real loop-advance statement
+`i++` duplicated into all five switch arms (four cases + default):
+
+    loop-time insn_count   91 -> 96   (+5; ".loop: Loop from 14 to 275: 96 real insns.")
+    emitted   build_insns  93 -> 95   (+2; jump2 re-merged 3 of the 5 copies to identical bytes)
+
+Exchange rate on this shape: **5 loop-time insns per 2 surviving emitted words**. Reaching
+`insn_count` 120 needs +29 loop-time insns, which at this rate costs ~+12 emitted words against a
+91-word target — so this particular duplication is not the answer, but the axis is demonstrably
+open. A winning form needs a duplication whose copies merge **completely** (0 surviving words), or a
+duplication with a much better rate; `i++` is only 1 insn per copy, so it merges poorly (the merge
+has to also absorb the arms' differing branch structure).
+
+- [s12] Mandated kill re-audit on HEAD f2842664: candidate.c still score 13 / build_insns 93 / target_insns 91; rejected/arming-loop-after-main-score5.c still score 5 / build_insns 93. Neither body contains a FAKE construct, so tools/fake_ablate.py has no carrier to remove and every banked instance kill remains chassis-valid.
+
+- [s12] The moved_once doubling has a floor on loop size: it only beats the decayed threshold while the loop's insn_count exceeds about 60 (2 * insn_count > 119). Measured on the two-pass split, where pass A's 37 insns doubled to 74 and all four comparison constants hoisted regardless.
+
+- [s12] moved_once is written at exactly one site (tools/gcc-2.7.2/loop.c:1912), reached only through the single move_movables call at loop.c:966 inside scan_loop, so arming it always costs a second NOTE_INSN_LOOP_BEG. The m->partial / STRICT_LOW_PART construction at loop.c:838-862 is downstream of the same call and offers no shortcut.
+
+- [s12] The threshold-decay route is priced out by the target's pre-header budget: decay alone needs k >= 8 moved movables (122 - 3k < 91 + k), each of which emits its hoisted insn into the pre-header, but the target's whole pre-header is three instructions (asm/funcs/func_8007526C.s:2-4) of which only the 0xC8 slot is a movable -- zero spare slots.
+
+- [s12] The one apparently-free extra movable, the gp-relative D_800A36A0 load that the target already keeps in its pre-header, is not loop-invariant when written inside the loop: the loop stores through p, invariant_p rejects the MEM, and the load is simply re-emitted (16/95).
+
+- [s12] Switch case-label source order is a real codegen lever with no headroom left: 1/3/2/4 = 13, 1/2/3/4 = 31, 2/4/1/3 = 55, 4/3/2/1 = 60. The candidate's order is the optimum.
+
+- [s12] n_non_fixed_regs (the other half of threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs), loop.c:532) is a compilation-wide constant set once in regclass.c:380-387; the only code path that lowers it is globalize_reg at regclass.c:530, reached only from a file-scope global register variable -- a register-asm pin, i.e. a banned construct. It is not a C-side lever.
