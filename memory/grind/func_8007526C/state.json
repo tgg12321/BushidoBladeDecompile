@@ -1,8 +1,8 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,18 +45,29 @@
    "floor": 1,
    "modality": "solver",
    "headline": "Chassis re-measured on HEAD: the banked goto-spelled body measures honest floor 1 (90 of 91 target words, every word identical); the sole residual is an assembler-layer load-delay nop and the disposit"
+  },
+  {
+   "session": 8,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "Chassis re-measured after the 121e34d7 revert: the spendable floor is 13 (the floor-1 body is the banned goto spelling), and the whole 13-point residual is one loop.c predicate -- found and MEASURED a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "func_8007526C completes in two commands the moment func_8007526C is listed in maspsx_label_nop_funcs.txt \u2014 a single owner-only line, already proven to yield 91/91 words with the gate on.",
-   "mechanism": "The gate list is the only mechanism that restores the dropped load-delay nop for a load-consumer-across-a-.L-merge-label case, because maspsx is_label() (tools/maspsx/maspsx/__init__.py:257) does not recognise the .L labels this cc1 fork emits. Adjudicated FIDELITY-class, not a cheat, by .claude/rules/maspsx-gate-lists.md.",
-   "next_probe": "None on the C side. If a later ruling or an owner unpark grants the line: append func_8007526C to maspsx_label_nop_funcs.txt, replace INCLUDE_ASM at src/text1b.c:6660 with memory/grind/func_8007526C/candidate.c, then verify-oracle and queue done."
+   "hypothesis": "An arming loop that costs zero final instructions closes the function outright: it produces the target's exact movable shape (already measured) without the 5 insns the current probe emits.",
+   "mechanism": "move_movables moved_once doubling, tools/gcc-2.7.2/loop.c:1609-1611 plus :1912, armed by any loop processed before the main loop (loop_optimize walks loop numbers downward) whose hoisted movable is scanned first in the main loop's movable list.",
+   "next_probe": "Measure arming loops whose control code is absorbed: (i) an arming loop placed textually after the main loop; (ii) `while (i < 2) { do { ...; i++; } while (i < 2); }` -- predicted to FAIL requirement (c) because the inner loop contains the dispatch, so run it mainly to confirm that prediction cheaply; (iii) any loop shape whose induction variable is work the function already performs. Read the .loop dump for 'halved since already moved' plus 'not desirable' on regno 126/128/129/130, and the sandbox build_insns for the cost."
   },
   {
-   "hypothesis": "A maspsx fidelity fix teaching is_label() the .L prefix would close this residual class outright rather than one function at a time.",
-   "mechanism": "The blind spot is a single prefix test in tools/maspsx/maspsx/__init__.py:257; every function on maspsx_label_nop_funcs.txt exists because of it ([[maspsx-is-label-dot-prefix]]).",
-   "next_probe": "Owner/toolchain surface, outside a grind session's allowed edit set \u2014 record only, do not attempt."
+   "hypothesis": "The main loop's scan_loop insn_count can be pushed from 92 to at least 123 by ordinary C whose surplus RTL dies after loop.c, which defeats the hoist without any arming loop.",
+   "mechanism": "insn_count is counted at loop.c:593 before flow.c dead-store elimination and combine run, so RTL that those passes delete still counts toward the loop.c:1631 desirability denominator.",
+   "next_probe": "Bounded and low-yield: measured inflations to date are 92 (candidate), 95 (arming probe), 95 (s2 global-reload-per-access, which also cost 12 output points) against a +28 requirement. Only spend a session here if a construct with a high RTL-to-final ratio is identified first."
+  },
+  {
+   "hypothesis": "The four switch-comparison constants can be given savings 0 or lifetime 0 so the loop.c:1631 product falls under insn_count without touching insn_count at all.",
+   "mechanism": "m->savings = n_times_used[regno] and m->lifetime = uid_luid[regno_last_uid] - uid_luid[regno_first_uid], both assigned at tools/gcc-2.7.2/loop.c:791-793; a product of 0 fails the test for any insn_count.",
+   "next_probe": "Untested and probably closed (a set plus a separate use gives lifetime >= 1 and savings >= 1), but it is the only untried algebraic route into the same predicate. Confirm or kill it by reading loop.c:780-800 against the .loop dump's 'life N' and 'savings N' fields for regno 126/128/129/130 rather than by building."
   }
  ],
  "judge_constraints": [
@@ -147,12 +158,20 @@
    "measured_on": "HEAD 52ce9db3, unmodified build configuration, candidate.c applied at src/text1b.c:6660, no FAKE constructs present (ordinary C: label + backward goto)",
    "predicate_cite": "",
    "result": "Adding func_8007526C to a temporary copy of the gate list yields 91 insns and a single masked-word difference that the l"
+  },
+  {
+   "session": 8,
+   "statement": "A `do { lim = 0xC8; } while (0);` wrapper can arm the moved_once doubling by getting its invariant hoisted out of the zero-trip loop, giving a cost-free version of the lever above.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 73e786dd chassis 2026-09-07, candidate.c body applied to src/text1b.c, pure C, no FAKE constructs present, score 13",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:570",
+   "result": "KILLED. The dump prints 'Loop from 18 to 32 is phony.' -- scan_loop returns before collecting a single movable, so no do"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-07T16:08:15.562106+00:00",
- "object_model_audited": 7,
+ "object_model_audited": 8,
  "escalation_deferrals": 0
 }

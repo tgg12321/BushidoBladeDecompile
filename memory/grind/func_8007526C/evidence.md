@@ -638,3 +638,116 @@ commit d4338774, list line maspsx_label_nop_funcs.txt:22).
 - [s7] Disposition re-filed this session at docs/grind/decisions.md:25231 as `## 2026-09-07 — func_8007526C — OWNER-ESCALATION: OWNER-ONLY GATE-LINE REMEDY (honest floor 1; one line in maspsx_label_nop_funcs.txt)`. It supersedes the earlier 2026-09-07 -msoft-float handoff, which is moot: the current body needs no Makefile or compiler-flag change of any kind. The record requests nothing be granted to the pipeline — maspsx_label_nop_funcs.txt is denylisted at .claude/rules/integration-handoff-self-serve.md:56-58 and the Judge affirmed that denylist on 2026-09-07 12:10.
 
 - [s7] Precedent for the remedy: func_80022F34 sat in the identical shape, was foreclosed, and landed only after the owner applied the one gate line in the 2026-09-06 foreclosed-bucket review (commit d4338774, `[infra-rule: maspsx-label-nop]`); the line lives at maspsx_label_nop_funcs.txt:22.
+
+---
+
+## [s1 2026-09-07, modality recon] — chassis re-measure + the moved_once/insn_count-doubling lever
+
+CHASSIS RE-MEASURE (HEAD 73e786dd, after the 121e34d7 Match was reverted by 73e786dd).
+`src/text1b.c` carries `INCLUDE_ASM("asm/funcs", func_8007526C);` again. With the legal
+(non-banned) index-cursor do-while body applied — now `memory/grind/func_8007526C/candidate.c` —
+`sandbox func_8007526C --disable all` prints **score 13, build_insns 93, target_insns 91**.
+That is the honest floor a session may actually spend: the floor-1 number in floor_history
+belongs to the goto-spelled body, which layer-2 FAILED on 2026-09-07 and which is now
+`state.json` banned_constructs[0] (moved to `rejected/goto-loop-banned-layer2-fail-score1.c`).
+
+OBJECT MODEL: `D_800A36A0` — **MATCHES**. It is the only global func_8007526C touches. It is a
+gp-relative POINTER (`lw $a0, %gp_rel(D_800A36A0)($gp)`, asm/funcs/func_8007526C.s:4), declared
+`extern u8 *D_800A36A0;` at src/text1b.c:6624/6659/6662/6791 and used with byte-offset casts by
+every one of the 10 sibling consumers in the same TU (e.g. src/text1b.c:6737
+`tbl = (s16 *)(arg2 * 2 + (s32)D_800A36A0)`, :6887 `*(s16 *)(D_800A36A0 + (t0 * 2) + 0x5C)`).
+The census row (docs/naming/residual_named.csv:12) describes exactly the shape the target
+compiles to: "2 instances, +2 stride; switch on state byte field 0x10 (0-4)". Every field offset
+the function touches (0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C) is a multiple of 4 while the
+per-iteration stride is 2, i.e. the underlying storage is a 16-bit table indexed
+`[row][instance]` — which the file-wide `u8 *` + byte-offset idiom already expresses. No
+declaration change is available or indicated; no signal is flagged. Not re-measured as a
+separate build because there is no alternative declaration to measure: the existing decl already
+produces the target's addressing (all 90 emitted words of the banned body are word-identical).
+
+THE RESIDUAL IS ONE loop.c DECISION, AND THE ARITHMETIC IS NOW FULLY PINNED.
+`pwsh tools/grinder/dump.ps1 func_8007526C` → tmp/grind/func_8007526C/dumps/text1b.loop, at
+`;; Function func_8007526C`, with the candidate body applied:
+
+    Loop from 14 to 263: 92 real insns.
+    Insn 229: regno 126 (life 1), move-insn savings 1  moved to 271    <- switch constant
+    Insn 235: regno 128 (life 1), move-insn savings 1  moved to 273    <- switch constant
+    Insn 241: regno 129 (life 1), move-insn savings 1  moved to 275    <- switch constant
+    Insn 244: regno 130 (life 1), move-insn savings 1  moved to 277    <- switch constant
+    Insn  76: regno  92 (life 3), move-insn savings 2  moved to 279    <- the 0xC8
+    Insn 113: regno 101 (life 2), done move-insn matches 76
+
+move_movables moves a movable iff `(threshold * savings * m->lifetime) >= insn_count`
+(tools/gcc-2.7.2/loop.c:1631), with `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`
+(loop.c:532). This hard-float cc1 has n_non_fixed_regs == 60 → threshold == 122, and
+122 * 1 * 1 = 122 >= 92 moves each switch constant. The target keeps all four inside the loop
+(asm/funcs/func_8007526C.s:8/12/18/20) and hoists only the 0xC8 (line 3, `addiu $a3,$zero,0xC8`),
+which is what savings 2 / life 3 gets you at any insn_count below 732. Everything in the 13-point
+residual is that single predicate; s3's independently measured boundary (insn_count >= 123) is
+exactly `insn_count > threshold` and is hereby re-derived from the source, not just observed.
+
+NEW LEVER, MEASURED: the `moved_once` insn_count DOUBLING (loop.c:1609-1611).
+
+    if (moved_once[regno]) { insn_count *= 2; ... "halved since already moved" }
+
+`moved_once` is per-FUNCTION (alloca'd once in loop_optimize, loop.c:344) and is set at
+loop.c:1912 whenever a movable is actually moved. The doubling mutates move_movables' LOCAL
+insn_count for every movable considered AFTER it in the same loop's movable list. So one
+already-moved movable, scanned FIRST, permanently doubles the desirability denominator for the
+rest of the loop — which is precisely the lever that leaves savings-1/lifetime-1 constants behind.
+
+Probe (rejected/inner-arming-loop-moved-once-doubling-score8.c): give the 0xC8 a named local
+`lim`, put `lim = 0xC8;` as the first statement of the loop body, and wrap that statement in a
+REAL inner loop `for (k = 0; k < 2; k++) { lim = 0xC8; }`. Measured, same chassis:
+
+    Loop from 20 to 43: 4 real insns.                            <- arming loop, scanned FIRST
+    Insn 31: regno 76 (life 69), global move-insn savings 1  moved to 298
+    Loop from 14 to 285: 95 real insns.
+    Insn 298: regno 76 (life 72), move-insn savings 1 halved since already moved  moved to 308
+    Insn 251: regno 126 (life 1), move-insn savings 1 NOT DESIRABLE
+    Insn 257: regno 128 (life 1), move-insn savings 1 NOT DESIRABLE
+    Insn 263: regno 129 (life 1), move-insn savings 1 NOT DESIRABLE
+    Insn 266: regno 130 (life 1), move-insn savings 1 NOT DESIRABLE
+
+    sandbox score 13 -> 8, build_insns 93 -> 96.
+
+That is the target's exact movable shape (0xC8 hoisted to the pre-header, all four switch
+constants left in the dispatch) reached with NO build-flag change, on the current chassis. The
+loop is processed innermost/last-first (loop_optimize iterates loop numbers downward), so the
+arming loop runs before the real loop and arms moved_once[lim] in time. The only remaining
+problem is COST: the arming loop itself emits 5 final insns (init k, the empty body's counter
+add, the compare and the branch, plus a scheduling nop) that the target does not have, and it is
+a dead loop with no semantic purpose — a coercion construct in no sanctioned family. It is banked
+as a mechanism proof, not as a submission.
+
+WHY do-while(0) CANNOT ARM IT (class result). The obvious zero-cost arming wrapper —
+`do { lim = 0xC8; } while (0);` — cannot work, and not for a heuristic reason: scan_loop rejects
+a zero-trip loop outright before it ever collects movables. Measured: `Loop from 18 to 32 is
+phony.` The predicate is tools/gcc-2.7.2/loop.c:570 (`if (INSN_UID (scan_start) >= max_uid_for_loop
+|| GET_CODE (scan_start) != CODE_LABEL) { ... "is phony" ... return; }`), and the source comment
+20 lines above it names the construct verbatim: "This case can happen for things like
+do {..} while (0)." No movable is ever moved out of such a loop, so moved_once is never set by
+one. Measured score with the do-while(0) wrapper: 13 (unchanged), loop insn_count 91.
+
+CONFIGURATION CONTEXT (unchanged from s5, restated because it is what the arithmetic means).
+threshold == 122 is a property of the hard-float register file: 2 * (1 + 60). The period-correct
+PsyQ compile had the 32 FP registers fixed (no FPU on the PS1), giving 2 * (1 + 28) == 58 < 92,
+under which the plain candidate body needs no lever at all and is byte-exact. That is a
+toolchain-configuration divergence of the same class as -mel, not a C-spelling question, and the
+Judge has denylisted re-filing it (state.json judge_constraints[0]). The C-side work is therefore
+to reproduce a threshold-58 outcome on a threshold-122 chassis, and the moved_once doubling is
+the first mechanism found that does so.
+
+- [s8] OBJECT MODEL: D_800A36A0 -- MATCHES. It is the only global the target touches: a gp-relative pointer (lw $a0, %gp_rel(D_800A36A0)($gp), asm/funcs/func_8007526C.s:4) declared `extern u8 *D_800A36A0;` at src/text1b.c:6624/6659/6662/6791 and consumed with byte-offset casts by all 10 sibling functions in the same TU (src/text1b.c:6737, :6887). The census row docs/naming/residual_named.csv:12 matches the compiled shape exactly (2 instances, +2 stride, switch on the state byte at field 0x10). Every touched field offset (0x8/0xC/0x10/0x14/0x18/0x38/0x3C) is a multiple of 4 against a 2-byte per-iteration stride, i.e. a 16-bit [row][instance] table, which the existing u8*-plus-byte-offset idiom already expresses; no alternative declaration exists to measure and no signal is flagged. Not measured as a separate build for that reason.
+
+- [s8] CHASSIS: on HEAD 73e786dd (src/text1b.c back to INCLUDE_ASM after the 121e34d7 Match was reverted by 73e786dd) the legal index-cursor do-while body measures score 13, build_insns 93, target_insns 91. The floor-1 number in floor_history belongs to the goto-spelled body, which layer-2 FAILED and which is now state.json banned_constructs[0]; it has been moved out of candidate.c to rejected/goto-loop-banned-layer2-fail-score1.c, and candidate.c now holds the best LEGAL form (13).
+
+- [s8] The entire 13-point residual is one predicate: move_movables moves a movable iff (threshold * savings * lifetime) >= insn_count (tools/gcc-2.7.2/loop.c:1631), threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) (loop.c:532). This hard-float cc1 has n_non_fixed_regs == 60 so threshold == 122, and 122*1*1 >= 92 hoists each of the four switch-comparison constants. The .loop dump names them: 'Loop from 14 to 263: 92 real insns', insns 229/235/241/244 (regno 126/128/129/130, life 1, savings 1) all moved, and insn 76 (regno 92, life 3, savings 2, the 0xC8) also moved. s3's independently measured boundary of insn_count >= 123 is exactly insn_count > threshold, now re-derived from the compiler source rather than only observed.
+
+- [s8] moved_once is per-FUNCTION, not per-loop: it is allocated once in loop_optimize (tools/gcc-2.7.2/loop.c:344) and set at loop.c:1912 whenever a movable is actually moved, so a movable hoisted out of an earlier-processed loop permanently doubles move_movables' local insn_count for every movable scanned after it in a later loop (loop.c:1609-1611, dump text 'halved since already moved').
+
+- [s8] Requirement (c) for the moved_once lever, derived from the inner-scan arithmetic and worth not re-deriving: the arming loop must NOT contain the switch dispatch. If it does, the inner scan (insn_count 95 < threshold 122) hoists the four constants into the INNER pre-header first, which places them clustered at the top of the outer loop body instead of interleaved through the dispatch as the target has them at asm/funcs/func_8007526C.s:8/12/18/20.
+
+- [s8] COST measured, and it is the only thing standing between the moved_once lever and the target: a real arming loop emits 5 final insns (build_insns 96 vs target 91). loop.c empties its body by hoisting the invariant out, but nothing later deletes the emptied loop -- flow.c and jump2 both leave the counter init, the increment, the compare and the branch standing.
+
+- [s8] Configuration context (restated, NOT a re-filing): threshold == 122 is 2*(1+60) for a hard-float register file. The period-correct PsyQ compile had the 32 FP registers fixed, giving 2*(1+28) == 58 < 92, under which the plain candidate body needs no lever at all and is byte-exact. Re-filing that as an integration handoff is denylisted by state.json judge_constraints[0]; it is recorded only to explain what the C-side lever is emulating.

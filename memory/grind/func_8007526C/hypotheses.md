@@ -400,3 +400,76 @@ No further C measurement on this function will change the score.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 52ce9db3, unmodified build configuration, candidate.c applied at src/text1b.c:6660, no FAKE constructs present (ordinary C: label + backward goto)
+
+---
+
+## [s1 2026-09-07, recon] frontier reset after the 121e34d7 revert
+
+The spendable floor is **13**, not 1: the floor-1 body is banned (goto-loop spelling, layer-2
+FAIL 2026-09-07, state.json banned_constructs[0]). The whole 13-point gap is one predicate,
+`(threshold * savings * lifetime) >= insn_count` at tools/gcc-2.7.2/loop.c:1631 with
+threshold == 122 (loop.c:532, n_non_fixed_regs == 60) and insn_count == 92. Four movables with
+savings 1 / lifetime 1 land on the wrong side of it. Full measurements in evidence.md [s1].
+
+**F1 (new, mechanism MEASURED, the live axis).** Arm move_movables' `moved_once` doubling
+(loop.c:1609-1611) so insn_count is doubled for every movable scanned after the first. Proven
+this session to produce the target's exact movable shape — 0xC8 hoisted to the pre-header, all
+four switch constants left inside the dispatch — score 13 -> 8, with no build-flag change
+(rejected/inner-arming-loop-moved-once-doubling-score8.c). Requirements, all three necessary:
+  (a) a movable whose regno was ALREADY moved once in this function, i.e. hoisted out of some
+      earlier-processed loop (loop_optimize walks loop numbers downward, so any loop whose
+      NOTE_INSN_LOOP_BEG is emitted after the main loop's — nested inside it, or textually after
+      it — is processed first);
+  (b) that movable must be scanned FIRST in the main loop's movable list, i.e. its set insn must
+      sit physically ahead of the switch dispatch. `lim = 0xC8;` as the loop body's first
+      statement satisfies this and is also what the target hoists;
+  (c) the arming loop must NOT contain the switch dispatch — if it does, the inner scan hoists
+      the four constants into the inner pre-header first (inner insn_count 95 < 122) and they end
+      up clustered at the top of the outer body instead of interleaved in the dispatch.
+  THE OPEN PROBLEM IS COST, AND IT IS THE ONLY ONE LEFT ON THIS AXIS: the arming loop emits 5
+  final insns the target does not have, and as written (`for (k = 0; k < 2; k++) lim = 0xC8;`) it
+  is a dead loop with no semantic purpose — not submittable. NEXT PROBE: find an arming loop
+  whose emitted control code is zero-cost or is code the target already contains. Ideas not yet
+  measured, in priority order: (i) an arming loop placed textually AFTER the main loop (still
+  processed first) whose induction variable and body are real work the function already does —
+  there is none in this function today, so this likely fails on semantics; (ii) two
+  NOTE_INSN_LOOP pairs over the same physical back edge (`while (i < 2) { do { ...; i++; } while
+  (i < 2); }`) so the arming loop costs only the second, possibly cross-jumpable, test — but
+  note requirement (c): the inner loop there DOES contain the dispatch, so this specific shape is
+  predicted to fail and should be measured only to confirm the (c) prediction cheaply;
+  (iii) whether flow.c/jump2 will delete an arming loop whose body loop.c has emptied (measured
+  answer today: NO, the 5 insns survive to the final asm).
+
+**F2 (inherited, quantified).** Reach insn_count >= 123 in the main loop with ordinary C whose
+surplus RTL dies after loop.c (flow.c dead-store elimination and combine both run later). Best
+measured so far: 92 (candidate), 95 (arming probe), 95 (s2's global-reload-per-access form, which
+also cost 12 points of output). The gap is +28 real insns on a function whose entire final body
+is 91 — every plausible ordinary-C inflation measured to date buys 3. Treat F2 as bounded and
+low-yield unless a construct is found with a high RTL-to-final ratio.
+
+**F3 (dead as a grind surface, recorded so it is not re-derived).** threshold == 58 under a
+compile with the FP registers fixed makes the plain candidate byte-exact with no lever at all.
+That is the period-correct PsyQ configuration and is a toolchain-fidelity divergence of the same
+class as -mel, but re-filing it is explicitly denylisted by state.json judge_constraints[0]. Do
+not re-open it; it is context for what F1 is emulating, nothing more.
+
+**KILLED THIS SESSION.** `do { lim = 0xC8; } while (0);` as the arming wrapper for F1: scan_loop
+rejects zero-trip loops as "phony" at tools/gcc-2.7.2/loop.c:570 before collecting any movable,
+so no do-while(0) can ever set moved_once. Measured: dump prints "Loop from 18 to 32 is phony.",
+score unchanged at 13. This kill is about the ARMING role only — it says nothing about
+do-while(0) as a codegen lever elsewhere.
+
+## [s8] move_movables' `if (moved_once[regno]) insn_count *= 2;` doubling, armed by a real inner loop that hoists the 0xC8 movable first, leaves all four savings-1/lifetime-1 switch-comparison constants inside the loop while still hoisting the 0xC8 to the pre-header -- i.e. it reproduces the target's movable shape on the current hard-float chassis with no build-flag change.
+- mechanism: tools/gcc-2.7.2/loop.c:1609-1611 doubles move_movables' local insn_count for every movable considered after an already-moved regno; moved_once is per-function (allocated at loop.c:344, set at loop.c:1912), and loop_optimize walks loop numbers downward so a nested or later loop is processed first. With threshold = 2*(1+n_non_fixed_regs) = 122 (loop.c:532) the desirability test at loop.c:1631 becomes 122*1*1 = 122 < 190 for each switch constant, while the 0xC8 (savings 2, life 3) still clears it.
+- probe: Applied rejected/inner-arming-loop-moved-once-doubling-score8.c (named local lim = 0xC8 as the loop body's first statement, wrapped in `for (k = 0; k < 2; k++)`), then ran `pwsh tools/grinder/dump.ps1 func_8007526C` and `sandbox func_8007526C --disable all`.
+- result: CONFIRMED by the .loop dump: 'Loop from 20 to 43: 4 real insns' (arming loop scanned first, regno 76 moved), then 'Loop from 14 to 285: 95 real insns' with 'Insn 298 ... halved since already moved  moved to 308' for the 0xC8 and 'not desirable' printed for all four constants (insns 251/257/263/266, regno 126/128/129/130, life 1, savings 1). sandbox score 13 -> 8, build_insns 93 -> 96. The 3 residual points beyond the shape match are the arming loop's own 5 emitted insns; the construct as spelled is a dead loop with no semantic purpose and is banked as a mechanism proof, not as a submission.
+- verdict: CONFIRMED
+
+## [s8] A `do { lim = 0xC8; } while (0);` wrapper can arm the moved_once doubling by getting its invariant hoisted out of the zero-trip loop, giving a cost-free version of the lever above.
+- mechanism: Zero-trip loops still emit NOTE_INSN_LOOP_BEG/END, so loop_optimize was expected to scan the wrapper, move the invariant and set moved_once[regno] at loop.c:1912 without emitting any control code.
+- probe: Applied the candidate body with `do { lim = 0xC8; } while (0);` as the first statement of the loop body and the three 0xC8 stores rewritten to use lim; ran dump.ps1 and sandbox.
+- result: KILLED. The dump prints 'Loop from 18 to 32 is phony.' -- scan_loop returns before collecting a single movable, so no do-while(0) can set moved_once. sandbox score unchanged at 13 (loop insn_count 91). The rejecting predicate is `if (INSN_UID (scan_start) >= max_uid_for_loop || GET_CODE (scan_start) != CODE_LABEL)`, and the source comment 20 lines above it names the construct verbatim: 'This case can happen for things like do {..} while (0).' This kill is scoped to the ARMING role and says nothing about do-while(0) as a codegen lever elsewhere.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 73e786dd chassis 2026-09-07, candidate.c body applied to src/text1b.c, pure C, no FAKE constructs present, score 13
+- predicate_cite: tools/gcc-2.7.2/loop.c:570
