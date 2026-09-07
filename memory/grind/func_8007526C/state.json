@@ -1,7 +1,7 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -123,23 +123,29 @@
    "floor": 13,
    "modality": "rederive",
    "headline": "Re-derived the dispatch three ways: a reused-holder if/else removes ALL four constant movables from loop.c and emits the target's exact registers (score 26/build 86), proving the movable set alone con"
+  },
+  {
+   "session": 21,
+   "floor": 13,
+   "modality": "rederive",
+   "headline": "Named loop.c:532's third and last C-reachable threshold factor (loop_has_call -> 58, the exact -msoft-float endpoint, target movable set reproduced) and closed the nested-arming route with two complem"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An admissible arming loop exists whose own emitted words are zero -- still the only axis with a measured score-1 endpoint (b_arm_dead.c, build_insns 90 against target 91, the one missing word being the maspsx .L-label load-delay nop the owner has already authorised as a gate line).",
-   "mechanism": "moved_once[regno] is function-global (alloca'd at loop.c:344, set at loop.c:1912) and loops are scanned last-first (loop.c:435), so a loop nested inside the main do-while, or textually after it, that moves the pseudo holding 0xC8 arms the insn_count *= 2 doubling at loop.c:1611 for the main loop's own scan. lim (life 124) then still passes 119*1*124 >= 182 while all four constants fail 116*1*1 >= 182.",
-   "next_probe": "s20 found no semantically real sub-loop in this function to carry the arming, and every reachable spelling banked so far emits at least three words (scores 1 dead / 4 / 5 / 8 / 13 phony / 29). Next: instead of inventing an arming loop, look for a spelling of the MAIN loop that is itself two nested loops with a real reading -- e.g. an outer loop over the two table entries whose body is an inner loop that legitimately owns the 0xC8 initialisation -- and read the .loop dump for a moved regno in the inner region followed by 'halved since already moved' plus four 'not desirable' lines in the outer region, with build_insns 90."
+   "hypothesis": "An arming loop placed textually AFTER the main loop is now the only remaining shape that can satisfy all five arming requirements, because a nested one cannot.",
+   "mechanism": "A trailing loop's hoisted insn lands in ITS pre-header, outside the main loop, so the main loop keeps exactly one set of the armed pseudo at its loop top -- first in the movables list, ahead of the dispatch constants, and not a duplicate. s21's two nested forms fail precisely the requirements a trailing loop satisfies.",
+   "next_probe": "Re-open rejected/arming-loop-after-main-score5.c and rejected/arming-dowhile-reuse-exit-test-score4.c on the current chassis and account for their 3 and 4 emitted words one at a time against asm/funcs/func_8007526C.s, asking specifically whether jump2 can cross-jump the trailing loop's back edge and exit test onto the main loop's own back edge at s:99 (the function's single backward branch) rather than whether a cheaper trailing loop can be invented."
   },
   {
-   "hypothesis": "Some C construct reaches expand_case's four comparison pseudos and stops them being single-set invariants, which would give the target's registers under the switch carrier that already gives the target's layout.",
-   "mechanism": "s20 proved the movable set alone controls the allocation (H-s20-1) and that the switch alone controls the layout (H-s20-2). The two are currently mutually exclusive because the switch's constants are compiler temps with n_times_set == 1, savings 1 and lifetime 1.",
-   "next_probe": "Read tools/gcc-2.7.2/stmt.c's emit_case_nodes and node_has_low_bound/node_has_high_bound to see whether any case-label set, case ordering, or range shape makes GCC emit a comparison against a value it already has in a pseudo rather than a fresh const load -- for instance whether an added case that makes one arm a range test replaces a li+beq pair with a reused bound. Measure any such shape with the sandbox and read the .loop movable list."
+   "hypothesis": "The five-requirement arming specification is complete, so the arming axis can now be decided rather than searched.",
+   "mechanism": "Requirements: (1) a real loop whose scan_start is a CODE_LABEL (loop.c:570); (2) scanned before the main loop, i.e. nested or textually later (loop.c:435); (3) the armed pseudo's ONLY main-loop set positioned between the loop top and the switch statement (loop.c:706 plus the loop.c:545 scan_start retarget); (4) that set not value-identical to another movable, or move_movables takes the matches path (loop.c:1609); (5) zero emitted words, because the armed configuration is already at build 90 against target 91.",
+   "next_probe": "Enumerate, against the target's 91 words, every position in the emitted stream where a loop back edge could be absorbed for zero net words, and decide requirement (5) as a yes/no rather than probing spellings. If it resolves to no, the arming axis is closed and the ledger is down to insn_count >= 120 with zero words."
   },
   {
-   "hypothesis": "loop insn_count can be lifted from 91 to >= 120 by ordinary semantics rather than by a payload.",
-   "mechanism": "loop.c:1631 reduces to threshold >= insn_count for the four constants (H-s20-4), and threshold is pinned at 122 decaying to 119/116, so insn_count >= 120 is the only alternative to arming. The original C must have had roughly thirty more RTL insns at loop.c time that later passes removed, since its final body is 91 words.",
-   "next_probe": "Count, per pass, how many insns candidate.c loses between .loop and .final (the s20 dumps show it loses none -- build_insns 93 exceeds insn_count 91), then look for a spelling of the field accesses whose extra RTL is removed by combine or cse2 rather than by cse1: the sll/sra sign-extension pairs and the p+offset address forms are the only sites with headroom. The admissible union-constructor payload already measured tops out at insn_count 109 (s18)."
+   "hypothesis": "insn_count >= 120 with zero emitted words remains the only axis with no measured structural obstruction, but every payload so far exchanges roughly two insn_count per emitted word.",
+   "mechanism": "loop.c:1631 reduces to threshold >= insn_count for the four dispatch constants; threshold is 119 after lim moves, so insn_count >= 120 flips them (measured by rejected/w9-minus1-copy-insncount120-build102-score27.c). Dead payloads are deleted by cse1 (cse.c:8684); copy chains are copy-propagated away; aggregate constructors buy +1 each but allocate 8 phantom frame bytes; a real nested loop buys +7 for 4 words.",
+   "next_probe": "Look for RTL that survives cse1 but is deleted by a pass AFTER loop.c -- cse2, combine, flow's no-op-move deletion, or jump2 -- rather than for more payload volume. The concrete candidates are comparisons whose set/branch pair combine merges on MIPS (the <= 0 tests already show combine eating the sra) and stores that cse2 can prove redundant only after loop.c has hoisted their address."
   }
  ],
  "judge_constraints": [
@@ -551,6 +557,22 @@
    "measured_on": "HEAD 43226623 chassis 2026-09-07, candidate.c applied at src/text1b.c:6660, pure C, no FAKE construct present",
    "predicate_cite": "tools/gcc-2.7.2/loop.c:697",
    "result": "Every factor except threshold and insn_count is pinned at its minimum by construction, so loop.c:1631 reduces to `thresh"
+  },
+  {
+   "session": 21,
+   "statement": "The real nested loop found this session can arm moved_once for lim while lim also keeps its loop-top assignment, giving the main loop both the arming and its own first-in-list movable.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 1930c839 chassis 2026-09-07, d_innerloop_arm.c applied at src/text1b.c:6660, pure C, no FAKE construct present (tools/fake_ablate.py reports no FAKE carrier for this function)",
+   "predicate_cite": "",
+   "result": "Refuted on this form. The arming half fires exactly as predicted -- the inner region prints 'Insn 126: regno 75 (life 69"
+  },
+  {
+   "session": 21,
+   "statement": "Deleting the loop-top lim assignment so the armed pseudo has a single main-loop set repairs the previous form and lets the doubling reach the four dispatch constants.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 1930c839 chassis 2026-09-07, e_lim_only_in_inner.c and f_literal_inner_loop.c applied at src/text1b.c:6660, pure C, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "Refuted on both forms, by a second and complementary mechanism. Removing the loop-top statement makes the loop body star"
   }
  ],
  "ladder_skip": 0,

@@ -65,6 +65,17 @@
  * five words.  So the movable set alone controls the allocation, and the `switch` alone
  * controls the layout, and no C name reaches a switch's expand_case comparison pseudos.
  * See evidence.md [s20].
+ *
+ * s21 (2026-09-07, rederive) RE-MEASURED THIS BODY at score 13 / build_insns 93 / loop
+ * insn_count 91 on HEAD 1930c839.  Two things about this body are now known to be
+ * load-bearing beyond what earlier headers say.  (a) The `lim = 0xC8;` statement at the TOP
+ * of the loop keeps scan_loop's scan_start on that insn; delete it and the loop body starts
+ * with the switch's jump to expand_case's decision tree, loop.c:545 retargets scan_start to
+ * the dispatch, and the four comparison constants are collected AHEAD of every body movable
+ * -- which forecloses any arming construct living in an arm body.  (b) loop.c:532's
+ * threshold has a third C-reachable factor nobody had named: `loop_has_call`.  One call in
+ * the loop gives threshold 61 -> 58 and reproduces the target's movable set exactly (one
+ * hoisted 0xC8, four in-loop constants), at a cost of eleven words.  See evidence.md [s21].
  */
 void func_8007526C(void) {
     u8 *base;

@@ -2155,3 +2155,58 @@ is whether cse1's copy propagation forwards the copy away before loop.c ever cou
 - [s20] Naming the 0xC8 store value is codegen-neutral: with the literal at all three sites the same movable appears as compiler pseudo regno 92 (life 3, savings 2) and the score stays 13.
 
 - [s20] TOOLING: bash tmp/grind/func_8007526C/run_dump.sh fails with a Python FileNotFoundError when invoked through the Claude Bash tool, and fails silently if its output is redirected, leaving stale dumps from the previous variant in tmp/grind/func_8007526C/dumps/. It works from PowerShell. One s20 probe was mis-read for two turns because of this; always run the dump from PowerShell and check the printed tail.
+
+## s21 (2026-09-07, rederive) -- evidence
+
+Chassis: HEAD 1930c839.  candidate.c re-measured at score 13 / build_insns 93 / loop
+insn_count 91, identical to s20; the brief's unavailable chassis measurement is resolved.
+
+1.  THE THIRD THRESHOLD TERM.  tools/gcc-2.7.2/loop.c:532 is
+    `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`.  s16 named
+    n_non_fixed_regs (60, moved only by -msoft-float).  s21 names the other factor:
+    prescan_loop (loop.c:2158-2202) sets loop_has_call from any CALL_INSN in the loop, and
+    with one call present the four dispatch constants print "not desirable" while `lim` is
+    still moved -- the target's exact movable set, reached with NO arming and NO insn_count
+    payload.  Measured: tmp/grind/func_8007526C/s21/b_call.loop.  The cost is eleven words.
+    The two independent routes to the target's movable set (soft float, and a call) both
+    land on threshold 58, which is strong corroboration that candidate.c's C is right and
+    the residual is a single integer in loop.c.
+
+2.  THIS FUNCTION DOES CONTAIN A REAL NESTED LOOP.  Case 3 stores the same value to
+    p+8 and p+0xC, so `for (k = 8; k <= 0xC; k += 4) *(u16 *)(p + k) = lim;` is a truthful
+    rewrite.  It is a genuine loop by every loop.c test -- verified biv, combined givs,
+    eliminated biv, CODE_LABEL scan_start -- which is the first counterexample to twenty
+    sessions of "no semantically real sub-loop exists here".  Its price is four emitted
+    words (build 93 -> 97).
+
+3.  WHY A NESTED ARMING LOOP CANNOT WORK.  move_movables deposits the hoisted insn in the
+    inner loop's pre-header, which is inside the main loop.  The armed pseudo therefore has
+    two sets in the main loop and loop.c:706 refuses to build a movable for it, so nothing
+    doubles insn_count.  Deleting the main loop's own set to fix that has a second effect:
+    the loop body then starts with the switch's jump-to-dispatch and loop.c:545 retargets
+    scan_start to the decision tree, so the four constants are collected BEFORE any body
+    movable.  The two failure modes are complementary and together close the nested route.
+
+4.  MOVABLE ORDER IS A C-CONTROLLED PROPERTY.  candidate.c's `lim = 0xC8;` at the loop top
+    is load-bearing for a reason nobody had recorded: it is what keeps scan_start at the top
+    of the loop instead of at the switch dispatch, and therefore what keeps `lim` first in
+    the movables list.  Any future arming attempt must preserve a non-jump statement at the
+    top of the loop body.
+
+5.  DUPLICATE MOVABLES DO NOT ARM.  When two movables hold the same value, move_movables
+    handles the second through its "matches" path, which is short-circuited before the
+    moved_once test at loop.c:1609.  The f_literal_inner_loop dump shows this explicitly
+    ("Insn 298: regno 104 (life 11), done move-insn matches 76").
+
+Artifacts: tmp/grind/func_8007526C/s21/{a_base,b_call,c_innerloop,d_innerloop_arm,
+e_lim_only_in_inner,f_literal_inner_loop}.{c,loop}, plus dump.py / loopsec.py / probe.ps1.
+
+- [s21] Chassis re-measurement: candidate.c applied at src/text1b.c:6660 on HEAD 1930c839 measures score 13, build_insns 93, .loop 'Loop from 14 to 260: 91 real insns' with all five movables moved -- identical to s20. The brief's 'measurement unavailable' chassis line is resolved; the floor is 13 and the banked spelling conclusions still hold on this chassis.
+
+- [s21] loop.c:532 is threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs). The soft-float route (s16) and the loop_has_call route (s21) both land on threshold 58 and both produce the target's exact movable verdict, from opposite ends of the compiler -- one changes the register file being priced, the other halves the multiplier.
+
+- [s21] The mandated kill re-audit was satisfied by re-measuring the closest banked form on the current chassis: candidate.c reproduces at 13/93, and tools/fake_ablate.py continues to report no FAKE-annotated constructs for this function, so the ablation half remains vacuous and the banked instance kills stand as measured.
+
+- [s21] A real nested loop DOES exist in this function's semantics (case 3's paired 0xC8 resets) and costs four emitted words. Its insn_count contribution is +7 for those four words -- roughly two insn_count per word, the same poor exchange rate every other payload has shown.
+
+- [s21] Movable ORDER inside the main loop is C-controlled: a non-jump statement at the top of the loop body keeps scan_start there, while a switch as the first statement makes loop.c:545 retarget scan_start to expand_case's decision tree and collect the four comparison constants ahead of everything else.

@@ -1694,3 +1694,98 @@ Frontier handed to s21:
 - probe: tmp/grind/func_8007526C/s19/b_arm_dead.c, rejected/inner-arming-loop-moved-once-doubling-score8.c and rejected/same-back-edge-nest-score29.c each applied at src/text1b.c:6660 and scored; then tools/fake_ablate.py --func func_8007526C --file text1b --candidate tmp/grind/func_8007526C/s19/b_arm_dead.c.
 - result: score 1 / build 90, score 8 / build 96 and score 29 / build 94 respectively -- all three reproduce exactly. fake_ablate reports 'no FAKE-annotated constructs found', so the ablation half of the re-audit is vacuous for this function and the banked instance kills stand as measured. The arming axis is still the only one with a measured score-1 endpoint.
 - verdict: CONFIRMED
+
+## s21 (2026-09-07, rederive) -- hypotheses
+
+Chassis re-measurement first: `memory/grind/func_8007526C/candidate.c` applied at
+src/text1b.c:6660 on HEAD 1930c839 measures score 13, build_insns 93, `.loop` "Loop from 14
+to 260: 91 real insns" with all five movables moved -- identical to s20.  The brief's
+"measurement unavailable" chassis line is therefore resolved: the floor is 13 and every
+banked spelling conclusion still holds on this chassis.
+
+## [s21] loop_has_call is the third and last C-reachable term in loop.c's desirability test, and turning it on reproduces the target's exact movable verdict.
+- mechanism: tools/gcc-2.7.2/loop.c:532 computes `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`, and prescan_loop sets loop_has_call from any CALL_INSN in the loop (loop.c:2202).  n_non_fixed_regs is a compilation-wide constant (60) that only -msoft-float moves, which is what s16 measured; loop_has_call is the one factor of that product a C author controls.  With a call present threshold is 61 rather than 122, decaying to 58 after `lim` is moved (loop.c:1904), so the four dispatch constants fail `58 * 1 * 1 >= insn_count` while `lim` at lifetime 64 passes comfortably.
+- probe: tmp/grind/func_8007526C/s21/b_call.c -- candidate.c with a single `func_80075670();` call inserted at the top of the loop body -- applied at src/text1b.c:6660, scored with `sandbox func_8007526C --disable all`, and dumped with tmp/grind/func_8007526C/s21/dump.py (`.loop` saved as tmp/grind/func_8007526C/s21/b_call.loop).
+- result: The mechanism is confirmed to the line.  The outer `.loop` region reads "Loop from 14 to 264: 92 real insns / Insn 19: regno 75 (life 64), move-insn savings 1  moved to 272 / Insn 229: regno 124 (life 1) ... not desirable / Insn 235: regno 126 ... not desirable / Insn 241: regno 127 ... not desirable / Insn 244: regno 128 ... not desirable".  That is EXACTLY the target's movable set -- one hoisted 0xC8 and four in-loop constants -- reached without arming and without an insn_count payload, and it lands on the identical threshold endpoint (58) that -msoft-float produces.  The form itself scores 54 at build_insns 102: the call costs eleven words (jal, its delay slot, the $ra save/restore and the stack frame this otherwise-frameless function does not have), so it can never be part of a match.  Banked as rejected/s21-loop-has-call-threshold-61-score54.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1930c839 chassis 2026-09-07, b_call.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+
+## [s21] A semantically exact REAL nested loop exists in this function -- case 3's two identical 0xC8 resets -- and it satisfies every loop.c structural requirement that the do-while(0) spellings failed.
+- mechanism: s19's F1 specification required an arming loop whose scan_start is a CODE_LABEL (loop.c:570 rejects phony loops), that is scanned before the main loop (loop_optimize scans last-first, loop.c:435), and that emits zero words.  `*(u16 *)(p + 8) = lim; *(u16 *)(p + 0xC) = lim;` are two stores of the same value to addresses four bytes apart, so `for (k = 8; k <= 0xC; k += 4) *(u16 *)(p + k) = lim;` is a byte-for-byte truthful rewrite and an ordinary loop with a real back edge.
+- probe: tmp/grind/func_8007526C/s21/c_innerloop.c applied at src/text1b.c:6660; sandbox plus the `.loop` dump (tmp/grind/func_8007526C/s21/c_innerloop.loop).
+- result: The loop is real: "Loop from 115 to 140: 5 real insns / Insn 134: possible biv, reg 76, const = 4 / Reg 76: biv verified / ... / giv at 126 combined with giv at 128 / biv 76 was eliminated".  It is scanned before the outer loop, exactly as required.  It does NOT arm anything, because `lim` has no set inside it, so the inner scan builds no movable for regno 75 and the outer loop still moves all four dispatch constants (outer insn_count rises 91 -> 98).  Score 21, build_insns 97: the real inner loop costs FOUR emitted words.  Since the armed configuration already sits at build 90 against a 91-word target with the one missing word being the maspsx .L-label nop, an arming carried by a real nested loop starts four words over a zero-word budget.  Banked as rejected/s21-real-inner-loop-case3-reset-score21.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1930c839 chassis 2026-09-07, c_innerloop.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+
+## [s21] A nested arming loop and a loop-top movable of the same pseudo are mutually exclusive: hoisting the pseudo out of the inner loop deposits a second set of it inside the outer loop and destroys its outer movable.
+- mechanism: move_movables deposits a moved insn in the pre-header of the loop it was moved out of.  For a loop nested inside the main do-while that pre-header is still inside the main loop, so the pseudo now has two sets there.  scan_loop only builds a movable when n_times_set == 1 or consec_sets_invariant_p succeeds (tools/gcc-2.7.2/loop.c:706); two sets separated by the switch dispatch satisfy neither, so the outer loop gets no movable for that pseudo and there is nothing left to trigger the moved_once doubling at loop.c:1609-1611.
+- probe: tmp/grind/func_8007526C/s21/d_innerloop_arm.c -- c_innerloop with `lim = 0xC8;` added inside the inner loop while the loop-top `lim = 0xC8;` is kept -- applied at src/text1b.c:6660; sandbox plus the `.loop` dump.
+- result: The arming half fires exactly as s19 predicted: the inner region prints "Insn 126: regno 75 (life 69), global move-insn savings 1  moved to 300", so moved_once[75] is set before the outer scan.  The outer movables list nevertheless contains ONLY the four dispatch constants (insns 253/259/265/268), all four moved, with no line for regno 75 and no "halved since already moved".  Score 28, build_insns 97, outer insn_count 99.  Banked as rejected/s21-inner-loop-arm-kills-lim-movable-score28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1930c839 chassis 2026-09-07, d_innerloop_arm.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+
+## [s21] Removing the loop-top statement so the arming pseudo has a single set retargets scan_start to the switch dispatch, which puts the four constants FIRST in the outer movables list.
+- mechanism: scan_loop picks scan_start as the first CODE_LABEL or insn after loop_start (tools/gcc-2.7.2/loop.c:519-528) and then, if that is a jump, retargets scan_start to the jump's target (loop.c:545ff).  A switch as the first statement of the loop body begins with expand_case's jump to the decision tree, which is emitted AFTER the arm bodies, so scan_start becomes the dispatch tree and the movables are collected dispatch-first, body-second.  With a plain statement such as `lim = 0xC8;` at the loop top, scan_start is that insn and the ordinary top-to-bottom order is restored -- which is why candidate.c lists regno 75 (insn 19) ahead of the constants.
+- probe: tmp/grind/func_8007526C/s21/e_lim_only_in_inner.c (lim assigned only inside the real inner loop, loop-top assignment deleted) and tmp/grind/func_8007526C/s21/f_literal_inner_loop.c (no lim local at all, both 0xC8 resets written as literals with the case-3 pair as a real inner loop), each applied at src/text1b.c:6660 and dumped.
+- result: In both dumps the outer movables list begins with the four dispatch constants (insns 252/258/264/267 and 251/257/263/266 respectively) and only then reaches the body movables (insn 76, insn 298).  Every arming movable that lives in an arm body is therefore processed too late to double insn_count for the constants.  e scores 29 / build 98, f scores 21 / build 97, both at outer insn_count 99.  Consequence for the arming axis: under a `switch` carrier the only movables that can precede the dispatch constants are those emitted between the loop top and the switch statement, so an arming pseudo must have its single outer-loop set there -- which is precisely the position the nested-loop hoist destroys (see the preceding hypothesis).  Banked as rejected/s21-lim-only-in-inner-scanstart-retarget-score29.c and rejected/s21-literal-inner-loop-duplicate-movable-no-arm-score21.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1930c839 chassis 2026-09-07, e_lim_only_in_inner.c and f_literal_inner_loop.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+
+## [s21] A movable that move_movables recognises as a duplicate of an already-moved movable does NOT arm the moved_once doubling.
+- mechanism: move_movables tests `moved_once[regno]` and doubles insn_count at loop.c:1609-1611 only inside the branch it takes for a movable it is still deciding about.  A movable whose value matches one already moved is dispatched earlier through the m->done / "matches" path and never reaches the desirability block, so neither the doubling nor the threshold decay runs for it.
+- probe: the f_literal_inner_loop `.loop` dump, where the inner loop moved the 0xC8 temp ("Insn 127: regno 104 (life 1), move-insn savings 1  moved to 298") and the outer loop then printed "Insn 76: regno 93 (life 12), move-insn savings 2  moved to 317 / Insn 298: regno 104 (life 11), done move-insn matches 76 " with no "halved since already moved" line anywhere.
+- result: Confirmed.  This adds a fifth requirement to s19's arming specification: the armed pseudo must reach the outer loop's desirability block as a movable in its own right, i.e. it must not be value-identical to another movable that move_movables processes first.  Writing the 0xC8 as a bare literal in two places is enough to collapse them into a matched pair and silently disarm the mechanism.
+- verdict: CONFIRMED
+
+Frontier handed to s22:
+  F1  The arming axis, now specified to five requirements (real loop with a CODE_LABEL
+      scan_start; scanned before the main loop; the armed pseudo's ONLY main-loop set
+      positioned between the loop top and the switch statement; that set not a duplicate of
+      another movable; zero emitted words).  s21 showed a nested loop cannot satisfy the
+      third requirement, so only a loop placed textually AFTER the main loop can, and the
+      two banked live spellings of that cost 3 and 4 words (scores 4 and 5).
+  F2  loop_has_call halves threshold to exactly the -msoft-float endpoint.  Every ordinary
+      call costs at least eleven words here.  The open question a future session could price
+      is whether any construct produces a CALL_INSN that later passes delete -- nothing in
+      GCC 2.7.2 obviously does, so this is closer to a closed axis than an open one.
+  F3  insn_count >= 120 with zero emitted words.  s21 adds that a real nested loop buys +7
+      or +8 insn_count for 4 words, i.e. roughly 2 insn_count per word -- the same poor
+      exchange rate every other payload has shown.
+
+## [s21] loop_has_call is the third and last C-reachable term in loop.c's movable-desirability test, and turning it on reproduces the target's exact movable set without arming and without an insn_count payload.
+- mechanism: tools/gcc-2.7.2/loop.c:532 computes threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs). s16 named n_non_fixed_regs (a compilation-wide 60 that only -msoft-float moves). prescan_loop sets loop_has_call from any CALL_INSN in the loop (loop.c:2202), so one call gives threshold 61, decaying to 58 once lim is moved (loop.c:1904). The four dispatch constants then fail 58*1*1 >= insn_count while lim at lifetime 64 passes.
+- probe: tmp/grind/func_8007526C/s21/b_call.c (candidate.c plus one func_80075670() call at the top of the loop body) applied at src/text1b.c:6660; sandbox func_8007526C --disable all; cc1 -da .loop dump saved as tmp/grind/func_8007526C/s21/b_call.loop.
+- result: Confirmed to the line. The outer loop region reads 'Loop from 14 to 264: 92 real insns / Insn 19: regno 75 (life 64), move-insn savings 1  moved to 272' followed by all four constants (regnos 124/126/127/128, life 1, savings 1) 'not desirable' -- exactly the target's movable set, and the identical threshold endpoint (58) that -msoft-float produces. The carrier form itself is inadmissible and scores 54 at build_insns 102: a call costs eleven words here (jal, its delay slot, the $ra save/restore and a stack frame this otherwise-frameless function does not have). Two independent routes now land on threshold 58, which corroborates that candidate.c's C is right and the residual is one integer inside loop.c. Banked as rejected/s21-loop-has-call-threshold-61-score54.c.
+- verdict: CONFIRMED
+
+## [s21] This function does contain a semantically exact REAL nested loop -- case 3's two identical 0xC8 resets -- and it satisfies every loop.c structural requirement that the do-while(0) spellings failed, at a price of four emitted words.
+- mechanism: *(u16 *)(p + 8) = lim; *(u16 *)(p + 0xC) = lim; are two stores of the same value to addresses four bytes apart, so for (k = 8; k <= 0xC; k += 4) *(u16 *)(p + k) = lim; is a byte-for-byte truthful rewrite with a real back edge and a CODE_LABEL scan_start, which is what loop.c:570's phony test rejects every do-while(0) for.
+- probe: tmp/grind/func_8007526C/s21/c_innerloop.c applied at src/text1b.c:6660; sandbox plus the .loop dump (tmp/grind/func_8007526C/s21/c_innerloop.loop).
+- result: The loop is real by every loop.c test: 'Loop from 115 to 140: 5 real insns / Insn 134: possible biv, reg 76, const = 4 / Reg 76: biv verified / giv at 126 combined with giv at 128 / biv 76 was eliminated', and it is scanned before the main loop. It arms nothing (lim has no set inside it) so the outer loop still moves all four dispatch constants, outer insn_count rising 91 -> 98. Score 21, build_insns 97: four emitted words. Since the armed configuration already sits at build 90 against a 91-word target, any arming carried by a nested loop starts four words over a zero-word budget. This is the first counterexample to twenty sessions of 'no semantically real sub-loop exists here'. Banked as rejected/s21-real-inner-loop-case3-reset-score21.c.
+- verdict: CONFIRMED
+
+## [s21] The real nested loop found this session can arm moved_once for lim while lim also keeps its loop-top assignment, giving the main loop both the arming and its own first-in-list movable.
+- mechanism: s19 established that moved_once[regno] is function-global and that loops are scanned last-first, so a loop nested inside the main do-while that moves the pseudo holding 0xC8 should double insn_count for the main loop's own scan at loop.c:1609-1611.
+- probe: tmp/grind/func_8007526C/s21/d_innerloop_arm.c (c_innerloop with lim = 0xC8; added inside the inner loop, loop-top assignment kept) applied at src/text1b.c:6660; sandbox plus the .loop dump.
+- result: Refuted on this form. The arming half fires exactly as predicted -- the inner region prints 'Insn 126: regno 75 (life 69), global move-insn savings 1  moved to 300' -- but move_movables deposits that hoisted insn in the INNER loop's pre-header, which lies inside the main loop, so regno 75 now has two sets there and scan_loop builds no outer movable for it at all (loop.c:706). The outer movables list contains only the four dispatch constants (insns 253/259/265/268), all four moved, with no 'halved since already moved' line. Score 28, build_insns 97, outer insn_count 99. Banked as rejected/s21-inner-loop-arm-kills-lim-movable-score28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1930c839 chassis 2026-09-07, d_innerloop_arm.c applied at src/text1b.c:6660, pure C, no FAKE construct present (tools/fake_ablate.py reports no FAKE carrier for this function)
+
+## [s21] Deleting the loop-top lim assignment so the armed pseudo has a single main-loop set repairs the previous form and lets the doubling reach the four dispatch constants.
+- mechanism: With lim assigned only inside the inner loop, the hoisted copy in the inner pre-header would be the main loop's single set of regno 75, so scan_loop would build a movable for it, find moved_once set, and double insn_count for the constants processed afterwards.
+- probe: tmp/grind/func_8007526C/s21/e_lim_only_in_inner.c and tmp/grind/func_8007526C/s21/f_literal_inner_loop.c (the same shape with no lim local at all, both 0xC8 resets written as literals) applied at src/text1b.c:6660; sandbox plus both .loop dumps.
+- result: Refuted on both forms, by a second and complementary mechanism. Removing the loop-top statement makes the loop body start with the switch's jump to expand_case's decision tree, and loop.c:545 retargets scan_start to that tree, so the outer movables are collected dispatch-FIRST: both dumps list the four constants (insns 252/258/264/267 and 251/257/263/266) ahead of every body movable, and an arming movable in an arm body is therefore processed too late to double insn_count for them. e scores 29 / build 98, f scores 21 / build 97, both at outer insn_count 99. The two failure modes are complementary: with the loop-top set the pseudo has two main-loop sets and is not a movable; without it the constants are scanned first. candidate.c's loop-top lim = 0xC8; is load-bearing for exactly this reason. Banked as rejected/s21-lim-only-in-inner-scanstart-retarget-score29.c and rejected/s21-literal-inner-loop-duplicate-movable-no-arm-score21.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 1930c839 chassis 2026-09-07, e_lim_only_in_inner.c and f_literal_inner_loop.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+
+## [s21] A movable that move_movables recognises as a duplicate of an already-moved movable does not arm the moved_once doubling.
+- mechanism: move_movables reaches the moved_once test at loop.c:1609-1611 only inside the branch it takes for a movable it is still deciding about; a movable whose value matches one already moved is dispatched earlier through the m->done / 'matches' path, so neither the doubling nor the threshold decay runs for it.
+- probe: The f_literal_inner_loop .loop dump, where the inner loop moved the 0xC8 temp ('Insn 127: regno 104 (life 1), move-insn savings 1  moved to 298') and the outer loop then printed 'Insn 76: regno 93 (life 12), move-insn savings 2  moved to 317 / Insn 298: regno 104 (life 11), done move-insn matches 76 ' with no 'halved since already moved' anywhere.
+- result: Confirmed. This adds a fifth requirement to s19's arming specification: the armed pseudo must reach the main loop's desirability block as a movable in its own right, and must not be value-identical to another movable processed first. Writing 0xC8 as a bare literal in two places is enough to collapse the pair and silently disarm the mechanism.
+- verdict: CONFIRMED
