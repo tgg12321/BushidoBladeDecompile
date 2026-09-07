@@ -1,7 +1,7 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 12,
+ "session_count": 13,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -75,23 +75,29 @@
    "floor": 13,
    "modality": "structural",
    "headline": "All three s11 frontier items measured dead (two-pass split 63, arming-without-a-loop closed at loop.c:1912, every case-label permutation worse), threshold-decay priced out by the target's 3-insn pre-h"
+  },
+  {
+   "session": 13,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "First ordinary-C form that stops the four-constant hoist without a dead loop: duplicating the real loop tail into all ten switch-arm exits reaches loop-time insn_count 124 and prints 'not desirable' f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A real statement duplicated into the switch arms whose copies jump2 re-merges COMPLETELY (zero surviving emitted words) raises loop-time insn_count for free, and enough such duplication reaches insn_count 120 where threshold 119 rejects the four comparison constants at loop.c:1631.",
-   "mechanism": "Measured this session: GCC 2.7.2 runs jump1 with cross-jumping off and only jump2 with it on, so arm-tail duplicates survive to loop time and count_loop_regs_set counts them, then jump2 merges them back. The i++ duplication measured +5 loop-time for +2 emitted -- a genuinely sub-1:1 rate that refutes s11's 1:1 kill. The residual +2 came from i++ being only one insn per copy, so the merge also has to absorb each arm's differing branch structure.",
-   "next_probe": "Duplicate a LONGER real tail so the merge is unambiguous. Concretely: re-associate the loop so more real work sits after the switch (e.g. compute the next iteration's p at the arm tails, or sink the state-word re-read), then duplicate that multi-insn tail into all five arms and measure the pair (loop-time insn_count from the .loop dump, emitted build_insns). Track the exchange rate per shape; the target is a shape at or near +k loop-time / +0 emitted. Also try `continue` instead of `break` so every arm ends in the identical jump to the do-while test, which is the shape jump2's cross_jump likes best."
+   "hypothesis": "A duplication geometry exists whose copies ALL sit at the five outer switch-arm exits (the only placement measured to cross-jump back completely) yet still supplies +29 loop-time insns, by making the duplicated outer tail longer rather than by adding more copies.",
+   "mechanism": "w2 proved 5 outer-exit copies of a 2-insn tail merge to zero emitted cost (+9 loop insns); w3 showed a 3-insn outer tail at 5 copies already leaks 2 emitted words because `p = base + i * 2` re-associates differently per arm. The open question is which 5-copy tail SHAPES merge perfectly: the merge needs each copy to be instruction-identical and to end at the same jump target, so a tail built only from same-register increments should scale, while anything involving a recomputed address does not. A 7-insn perfectly-merging outer tail would give +35 loop insns at zero cost and clear 120 outright.",
+   "next_probe": "Build outer-exit-only variants (5 copies, no in-arm copies) with progressively longer tails made of real loop-advance work that uses no address recomputation, and record (loop insn_count, build_insns) for each: (a) `i++;` alone, (b) `i++; p += 2;` [= w2, known good], (c) `i++; p += 2;` with the loop test itself re-associated so the tail also carries the comparison, (d) tails that end in `continue` rather than `break` so every copy ends in the identical jump to the do-while test -- the shape jump2's cross_jump merges best. Plot emitted cost against copy length; if the merge stays perfect up to 4-5 insns per copy the axis closes the function."
   },
   {
-   "hypothesis": "An arming loop that is a second loop of ADDITIONAL real work, laid alongside an undivided 91-insn main loop, exists in this function's semantics or its caller's.",
-   "mechanism": "s12 closed every cheap arming geometry: before-the-main-loop is scanned too late (s11, loop.c:435), splitting the main loop halves insn_count below the doubling's break-even of ~60 (s12), and no non-loop construct reaches loop.c:1912 (s12). What survives is a genuine second loop that does not come out of the main loop's own work. The after-main dead loop costs only 2 emitted words (score 5), so a real second loop costing 2 words closes the function.",
-   "next_probe": "Read the caller(s) of func_8007526C and the D_800A36A0 record layout for work currently done outside this function that could plausibly belong to it as a trailing loop over the same two entries (e.g. a second field pair swept after the state ramp). Grep asm/funcs for callers first (jal 8007526C), then diff the callers' own loops against this record. If nothing is found, record that as the closing kill for the arming axis."
+   "hypothesis": "The 11-word excess of the w9 form (build_insns 102, insn_count 124, all four constants rejected) can be paid down to 91 by trimming the duplication to the minimum that still clears 120 and by re-merging the surviving copies through a different arm-exit spelling.",
+   "mechanism": "w9 overshoots: it reaches 124 when 120 suffices, so at least one 3-insn copy is pure waste. Each removed copy that jump2 was NOT merging returns roughly 1 emitted word. The remaining excess is the copies inside the if-bodies, which do not merge because their predecessors' branch structure differs; giving every copy the same predecessor shape (single `if` per arm, no nested `if`, `continue` instead of `break`) is the untested lever.",
+   "next_probe": "Starting from rejected/dup-tails-base-3insn-insncount124-score27.c, remove one duplicated tail at a time (10 -> 9 -> 8 copies) and measure (loop insn_count, build_insns, score) at each step to find the exact minimum-cost point at insn_count 120-123. Then re-spell the surviving in-arm copies so each arm has exactly one exit shape, and diff the jump2 dump (tmp/grind/func_8007526C/dumps/text1b.jump2) against the .loop dump to see precisely which copies cross_jump refused and why."
   },
   {
-   "hypothesis": "The 13-point residual can be lowered without changing loop.c's decision, by changing which hard registers the four hoisted constants receive through something other than case-label order.",
-   "mechanism": "Case-label order is now measured exhaustively and the candidate's 1/3/2/4 is optimal, so the pre-header emission order of the four li insns is fixed. What is NOT measured is whether local-alloc's assignment of $8/$9/$10/$11 responds to the declaration order or live ranges of the function's own locals (base / p / i / lim), which set the pseudo numbering that reg_alloc_order tie-breaks on.",
-   "next_probe": "Read tmp/grind/func_8007526C/dumps/text1b.greg for the allocation order of regnos 124/126/127/128 and 75, then permute the local declaration order in the candidate (base/p/i/lim -> lim/i/p/base and two other orders) and measure each with sandbox. Cheap, purely structural, and a lower gradient sharpens the signal for the duplication axis above."
+   "hypothesis": "There is a second real movable in this function's semantics whose hoist would decay threshold below 119 without adding a pre-header word, lowering the insn_count target from 120 toward the reachable 100-110 band.",
+   "mechanism": "Each moved movable decays threshold by 3 (loop.c:1904) but emits its hoisted insn into the pre-header, and s12 priced the target's pre-header at three instructions with zero spare slots. The untested case is a movable whose hoisted pre-header insn is REDUNDANT with one the target already has (e.g. a second loop-invariant expression that evaluates to 0xC8 or to the D_800A36A0 base), which cse2 -- which runs AFTER loop, unlike cse1 -- would then delete from the pre-header, giving the -3 decay at zero emitted cost. Every -3 lowers the insn_count requirement by 3.",
+   "next_probe": "Write a variant whose loop body contains a second loop-invariant use of the 0xC8 value under a distinct C expression that cse1 will not fold into the first (so two movables reach move_movables), confirm from the .loop dump that BOTH move and that threshold decays twice, then check tmp/grind/func_8007526C/dumps/text1b.cse2 and .greg to see whether the redundant pre-header insn is deleted or survives as a copy. If it is deleted the insn_count target drops to 117; repeat to walk it down toward the ~106 that ordinary duplication already reaches."
   }
  ],
  "judge_constraints": [
@@ -342,6 +348,38 @@
    "measured_on": "HEAD f2842664 chassis 2026-09-07, candidate body with i++ duplicated into all five switch arms applied to src/text1b.c, pure C, no FAKE constructs present",
    "predicate_cite": "",
    "result": "The 1:1 coupling is BROKEN. Loop-time insn_count went 91 -> 96 (+5, one copy per arm: 'Loop from 14 to 275: 96 real insn"
+  },
+  {
+   "session": 13,
+   "statement": "A duplicated real tail whose copies jump2 re-merges completely supplies the 29 extra loop-time insns needed to clear insn_count 120 from the base chassis's 91 at zero emitted cost.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 34eb8142 chassis 2026-09-07, six duplication variants applied to src/text1b.c one at a time, pure C, no FAKE construct present in any of them (nothing for fake_ablate.py to strip)",
+   "predicate_cite": "",
+   "result": "Complete re-merge occurs ONLY for copies placed at the five OUTER switch-arm exits (w2: +9 loop-time insns for +0 emitte"
+  },
+  {
+   "session": 13,
+   "statement": "Permuting the source declaration order of the function's four locals (base / p / i / lim) changes which hard registers local-alloc gives the four hoisted switch comparison constants.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 34eb8142 chassis 2026-09-07, candidate body with permuted local declaration order applied to src/text1b.c, pure C, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All five measure score 13, build_insns 93, loop insn_count 91, with the identical five-movable list and the same hard-re"
+  },
+  {
+   "session": 13,
+   "statement": "Spelling every access as *(u16 *)(base + i * 2 + K) with no p local raises loop-time insn_count for free, because the per-access address arithmetic is only removed later by strength reduction.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 34eb8142 chassis 2026-09-07, y1 body applied to src/text1b.c, pure C, no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:2989",
+   "result": "`.loop` prints 'Loop from 14 to 541: 91 real insns' -- exactly the candidate's count -- with the same five movables; san"
+  },
+  {
+   "session": 13,
+   "statement": "The loop's C spelling (do-while vs while vs for) changes the insn region count_loop_regs_set counts, or the movable set it produces.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 34eb8142 chassis 2026-09-07, for- and while-loop rewrites of the candidate body applied to src/text1b.c, pure C, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Both measure score 13, build_insns 93, loop insn_count 91 with the identical five-movable list; only the loop-note insn "
   }
  ],
  "ladder_skip": 0,

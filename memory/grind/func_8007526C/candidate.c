@@ -1,3 +1,19 @@
+/* s13 (2026-09-07, structural) RE-MEASURED this body unchanged on HEAD 34eb8142:
+ *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91,
+ *   .loop "Loop from 14 to 260: 91 real insns" with lim (regno 75) and all four switch
+ *   comparison constants (regnos 124/126/127/128, life 1, savings 1) moved to the pre-header.
+ * Still the best NON-BANNED form.  s13 kept it because:
+ *   (a) local DECLARATION ORDER is completely inert here -- all five permutations of
+ *       base/p/i/lim measure score 13 / build 93 / insn_count 91 and only renumber the
+ *       pseudos (75 -> 72/73/74), so local-alloc's $8/$9/$10/$11 assignment does not respond
+ *       to declaration order (s12 frontier item 3, now killed);
+ *   (b) per-access address arithmetic (*(u16 *)(base + i * 2 + K), no p local) is NOT free
+ *       loop-time insn_count -- cse1 runs before loop and collapses it back to 91;
+ *   (c) the duplicated-tail axis (s12 frontier item 1) DOES reach the goal mechanically --
+ *       at insn_count >= 120 all four constants print "not desirable" -- but the cheapest
+ *       measured form that gets there is build_insns 102 against a 91-word target.
+ * Full table: tmp/grind/func_8007526C/s13/scores.txt.  See evidence.md s13.
+ */
 /* s12 (2026-09-07, structural) RE-MEASURED this body unchanged on HEAD f2842664:
  *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91.
  * Still the best NON-BANNED form.  s12 kept it because all three of s11's frontier items measured

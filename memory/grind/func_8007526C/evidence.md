@@ -1082,3 +1082,122 @@ has to also absorb the arms' differing branch structure).
 - [s12] Switch case-label source order is a real codegen lever with no headroom left: 1/3/2/4 = 13, 1/2/3/4 = 31, 2/4/1/3 = 55, 4/3/2/1 = 60. The candidate's order is the optimum.
 
 - [s12] n_non_fixed_regs (the other half of threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs), loop.c:532) is a compilation-wide constant set once in regclass.c:380-387; the only code path that lowers it is globalize_reg at regclass.c:530, reached only from a file-scope global register variable -- a register-asm pin, i.e. a banned construct. It is not a C-side lever.
+
+## s13 (2026-09-07, structural) — evidence
+
+Chassis re-measured on HEAD 34eb8142: `memory/grind/func_8007526C/candidate.c` applied at
+src/text1b.c:6660 measures **score 13, build_insns 93, target_insns 91**, `.loop`
+`Loop from 14 to 260: 91 real insns`, lim = regno 75 moved, the four switch comparison
+constants = regnos 124/126/127/128 (life 1, savings 1) all moved to the pre-header.
+Unchanged from s10/s11/s12. Full 18-row measured table: `tmp/grind/func_8007526C/s13/scores.txt`.
+
+### 1. The threshold DECAY STAIRCASE is now measured exactly (new)
+
+`move_movables` decays `threshold` by 3 per moved movable (tools/gcc-2.7.2/loop.c:1904) and
+tests `(threshold * savings * m->lifetime) >= insn_count` (loop.c:1631) with savings = 1 and
+lifetime = 1 for every one of the four constants. Starting threshold is 122
+(= 2 * (1 + n_non_fixed_regs), loop.c:532, hard float). `lim` is always scanned first (s10) and
+always moves, taking threshold to 119. Each comparison constant that then moves decays it
+further. Measured staircase, confirmed by four independent variants this session:
+
+    insn_count <= 113   -> all four constants hoist            (x1 = 106, base = 91)
+    114 .. 116          -> the LAST TWO are "not desirable"    (w8 = 114, x2 = 114)
+    117 .. 119          -> the last three are "not desirable"  (interpolated, not spent)
+    insn_count >= 120   -> ALL FOUR are "not desirable"        (w9 = 124, w7 = 130, w6 = 141)
+
+The Judge-named axis is exactly right and its number is **120**, not "about 120".
+
+### 2. FIRST ORDINARY-C FORM THAT REJECTS ALL FOUR CONSTANTS (the session headline)
+
+Until now the only construct that stopped the hoist was a *dead* arming loop after the main
+loop (s10, `rejected/arming-loop-after-main-score5.c`, the moved_once doubling). s13 reached
+the same end state with **no dead code at all**, purely by duplicating a real statement into
+the switch-arm exit paths — the `duplicated-statement-into-arms` shape:
+
+  `rejected/dup-tails-base-3insn-insncount124-score27.c` (variant w9): the real loop tail
+  `i++; p = base + i * 2;` duplicated into all ten switch-arm exit paths (four cases, their
+  if-taken paths, case 3's nested-if path, and an explicit `default:`), with nothing left after
+  the switch. `.loop` reads `Loop from 17 to 362: 124 real insns` and **all four constants
+  print `not desirable`**, with only `lim` moved. **score 27, build_insns 102.**
+
+It is dead as a candidate only because the duplication does not fully cross-jump back: it buys
+34 loop-time insns for 11 extra emitted words against a 91-word target.
+
+### 3. The measured exchange rate of duplication (loop-time insns bought per emitted word)
+
+| variant | copies x tail insns | loop insn_count | build_insns | rate |
+|---|---|---|---|---|
+| w2 ptr chassis, `i++; p += 2;` at the 5 OUTER arm exits only | 5 x 2 | 90 -> 99 | 94 -> 94 | **+9 / +0 (perfect merge)** |
+| w3 ptr chassis, `i++; p = base + i*2;` at the 5 outer exits | 5 x 3 | 90 -> 104 | 94 -> 96 | +14 / +2 |
+| x1 base chassis, `i++` at all 10 exits | 10 x 1 | 91 -> 106 | 93 -> 98 | +15 / +5 |
+| w8 ptr chassis, `i++; p += 2;` at all 10 exits | 10 x 2 | 90 -> 114 | 94 -> 99 | +24 / +5 |
+| w9 base chassis, `i++; p = base + i*2;` at all 10 exits | 10 x 3 | 91 -> 124 | 93 -> 102 | +33 / +9 |
+| w7 ptr, 11 exits + the 4-store blocks duplicated into nested arms | 11 x 2 + 8 | 90 -> 130 | 94 -> 117 | +40 / +23 |
+
+The structural rule the table shows: **duplication placed at the five OUTER switch-arm exits
+cross-jumps back completely (w2: +9 loop-time insns at zero emitted cost); duplication placed
+inside the arms' if-bodies does not**, because jump2's `cross_jump` cannot merge tails whose
+predecessors have differing branch structure. The free budget is therefore about **+9**
+loop-time insns, against the **+29** needed to clear 120 from the base chassis's 91.
+Duplicating the 4-store blocks themselves is the worst shape measured and should not be retried.
+
+### 4. Structural levers killed outright this session
+
+- **Local declaration order is inert.** All five permutations of `base / p / i / lim`
+  (lim,i,p,base | i,base,p,lim | p,base,lim,i | lim,base,p,i | base,lim,p,i) measure
+  score 13 / build_insns 93 / insn_count 91. Declaration order renumbers the pseudos (regno 75
+  becomes 72 / 73 / 74) but changes neither the movable scan order nor local-alloc's
+  $8/$9/$10/$11 assignment. s12's frontier item 3 is closed.
+- **Per-access address arithmetic is not free loop-time insn_count.** Writing every access as
+  `*(u16 *)(base + i * 2 + K)` with no `p` local
+  (`rejected/no-p-local-address-per-access-cse1-collapses-score13.c`) still measures
+  `Loop from 14 to 541: 91 real insns`, score 13, build 93 — cse1 runs before loop in the
+  toplev pass order (jump1, cse1, loop) and collapses the repeated address computations before
+  `count_loop_regs_set` ever sees them.
+- **Loop spelling is inert.** `for (i = 0; i < 2; i++)`, `while (i < 2)` and the candidate's
+  `do { } while (i < 2)` all measure 91 / 93 / score 13, with identical movable lists.
+- **The explicit pointer-IV chassis costs.** Writing `p += 2` instead of letting strength
+  reduction derive the pointer from `p = base + i * 2` measures score 47 / build 94 /
+  insn_count 90 (w1), consistent with the banked
+  `rejected/pointer-increment-biases-iv-by-0x10.c`.
+
+### 5. The arithmetic that frames every future session on this function
+
+For the four constants NOT to hoist out of a loop whose loop-time insn_count equals the
+target's own emitted 91 words, `threshold` must be <= 90, i.e.
+`2 * (1 + n_non_fixed_regs) <= 90`, i.e. `n_non_fixed_regs <= 44`. Under the project's current
+flags it is 60 (hard float). So any C form whose loop-time insn_count is the target's 91 will
+hoist, and the only C-side escape is to inflate loop-time insn_count above the emitted count
+by at least 29 words — priced this session at roughly one extra emitted word per three
+loop-time insns beyond the first nine free ones. This is the honest statement of the residual
+and it is consistent with the banked `-msoft-float` finding (threshold 58) being the original
+build's actual mechanism.
+
+### 6. Tooling note for future sessions (cost a full sweep this session)
+
+PowerShell's `python3` is not on PATH on this host, so a sweep script that shells
+`python3 apply.py` from PowerShell silently no-ops and every variant reports the BASELINE
+score. Apply through `bash <script>` invoked from PowerShell — on this box PowerShell's `bash`
+is WSL bash, while the Bash tool is Git Bash and has no `/mnt/c`. Always confirm a variant
+actually landed in src/text1b.c before trusting a flat sweep.
+The working harness is `tmp/grind/func_8007526C/s13/sweep2.ps1` (apply -> sandbox -> cc1 -da
+dump -> extract the func's `.loop` lines), which reports score, build_insns and loop-time
+insn_count in one pass; reuse it rather than rebuilding one.
+
+- [s13] Chassis re-measured on HEAD 34eb8142: candidate.c applied at src/text1b.c:6660 gives score 13, build_insns 93, target_insns 91, and .loop 'Loop from 14 to 260: 91 real insns' with lim (regno 75) plus all four switch comparison constants (regnos 124/126/127/128, life 1, savings 1) moved to the pre-header. Unchanged from s10/s11/s12.
+
+- [s13] For the four constants NOT to hoist out of a loop whose loop-time insn_count equals the target's own emitted 91 words, threshold must be <= 90, i.e. 2 * (1 + n_non_fixed_regs) <= 90, i.e. n_non_fixed_regs <= 44; under the project's current flags it is 60 (hard float). So the only C-side escape is to inflate loop-time insn_count above the emitted count by at least 29 words.
+
+- [s13] The free (fully cross-jumped) duplication budget on this function is about +9 loop-time insns: 5 copies of a 2-insn real tail placed at the OUTER switch-arm exits measured 90 -> 99 loop insns with build_insns unchanged at 94.
+
+- [s13] Every measured geometry that actually reaches insn_count >= 120 costs at least 11 emitted words above the 91-word target; the cheapest is w9 at score 27 / build_insns 102, and the most expensive (duplicating the 4-store blocks into the nested-if arms) is score 67 / build_insns 117.
+
+- [s13] The decay staircase measured on two independent chassis: insn_count <= 113 hoists all four constants, 114..116 rejects the last two, >= 120 rejects all four.
+
+- [s13] Local declaration order is codegen-inert here: five permutations of base/p/i/lim all measure score 13 / build 93 / insn_count 91 and differ only in pseudo numbering.
+
+- [s13] cse1 runs before the loop pass, so per-access address arithmetic (base + i * 2 + K spelled at every access, no p local) does not raise loop-time insn_count at all -- it still measures 91.
+
+- [s13] TOOLING: PowerShell's `python3` is not on PATH on this host, so a sweep that shells `python3 apply.py` from PowerShell silently no-ops and every variant reports the BASELINE score. Apply through `bash <script>` from PowerShell (which is WSL bash; the Bash tool is Git Bash and has no /mnt/c), and verify the variant landed in src/text1b.c before trusting a flat sweep. The working harness is tmp/grind/func_8007526C/s13/sweep2.ps1.
+
+- [s13] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session; `git status --porcelain src/` is clean.

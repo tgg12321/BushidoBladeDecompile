@@ -912,3 +912,106 @@ the do-while (score 13, build_insns 93, insn_count 92) — the loop keyword is n
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD f2842664 chassis 2026-09-07, candidate body with i++ duplicated into all five switch arms applied to src/text1b.c, pure C, no FAKE constructs present
+
+## s13 (2026-09-07, structural) — hypotheses
+
+Chassis: HEAD 34eb8142; candidate.c re-measured at score 13 / build_insns 93 / target 91 /
+loop-time insn_count 91. No FAKE construct present in the baseline body, so `fake_ablate.py`
+has no carrier to remove and the banked instance kills stay chassis-valid.
+
+**H13.1 — KILLED (instance).** Permuting the source declaration order of the function's four
+locals (base / p / i / lim) changes which hard registers local-alloc gives the four hoisted
+switch comparison constants. Probe: five permutations (lim,i,p,base | i,base,p,lim |
+p,base,lim,i | lim,base,p,i | base,lim,p,i) applied to src/text1b.c and measured with
+`sandbox --disable all` plus a cc1 `-da` .loop dump each. Result: every permutation measures
+score 13, build_insns 93, loop insn_count 91, with the identical movable list; only the pseudo
+NUMBERS change (regno 75 becomes 72 / 73 / 74). Declaration order feeds pseudo numbering but
+neither the movable scan order nor reg_alloc_order's tie-break outcome here. s12 frontier
+item 3 closed.
+
+**H13.2 — CONFIRMED.** Loop-time `insn_count` >= 120 makes `move_movables` reject all four
+switch comparison constants while still hoisting `lim`, and ordinary duplicated-statement C
+can reach it. Probe: the real loop tail `i++; p = base + i * 2;` duplicated into all ten
+switch-arm exit paths (variant w9, `rejected/dup-tails-base-3insn-insncount124-score27.c`).
+Result: `.loop` prints `Loop from 17 to 362: 124 real insns` and all four constants print
+`not desirable`; only regno 75 (lim) moves. This is the first time the hoist has been stopped
+without a dead arming loop. Measured score 27, build_insns 102.
+
+**H13.3 — CONFIRMED.** The exact decay staircase: with `threshold` starting at 122 and
+decaying 3 per moved movable (loop.c:1904) against `threshold * 1 * 1 >= insn_count`
+(loop.c:1631), insn_count <= 113 hoists all four, 114..116 rejects the last two, and >= 120
+rejects all four. Probe: variants at insn_count 106 (all hoist), 114 x2 (last two rejected,
+two independent chassis), 124 / 130 / 141 (all rejected). The staircase is chassis-independent.
+
+**H13.4 — KILLED (instance).** A duplicated real tail whose copies jump2 re-merges completely
+can supply the +29 loop-time insns needed to clear insn_count 120 from the base chassis's 91
+at zero emitted cost. Probe: six duplication geometries measured for the pair (loop insn_count,
+build_insns) — 5 outer-arm copies of a 2-insn tail (99 / 94, perfect merge), 5 copies of a
+3-insn tail (104 / 96), 10 copies of a 1-insn tail (106 / 98), 10 copies of a 2-insn tail
+(114 / 99), 10 copies of a 3-insn tail (124 / 102), and 11 copies plus the 4-store blocks
+duplicated into the nested-if arms (130 / 117). Result: complete re-merge happens ONLY for
+copies placed at the five OUTER switch-arm exits, which caps the free budget at about +9
+loop-time insns; every copy placed inside an arm's if-body survives at roughly one emitted word
+per three loop-time insns, so every form that actually reaches insn_count >= 120 costs at least
+11 emitted words above the 91-word target. s12's measured `i++` exchange rate (+5 loop / +2
+emitted) is superseded by this six-point table.
+
+**H13.5 — KILLED (class).** Spelling every access as `*(u16 *)(base + i * 2 + K)` with no `p`
+local raises loop-time insn_count, because the per-access address arithmetic is only removed
+later by strength reduction. Probe: variant y1
+(`rejected/no-p-local-address-per-access-cse1-collapses-score13.c`) measured score 13,
+build_insns 93 and `.loop` `Loop from 14 to 541: 91 real insns` — identical to the candidate.
+Mechanism: cse1 runs before the loop pass in the toplev pass order, so every repeated address
+computation is already collapsed before `count_loop_regs_set` counts insns; there is no window
+in which pre-strength-reduction address RTL inflates the count.
+predicate: tools/gcc-2.7.2/loop.c:2989 (`count_loop_regs_set` counts the post-cse1 insn stream).
+
+**H13.6 — KILLED (instance).** The loop's C spelling (do-while vs while vs for) changes the
+region `count_loop_regs_set` counts or the movable set. Probe: `for (i = 0; i < 2; i++)` and
+`while (i < 2)` forms of the candidate body. Result: both measure score 13, build_insns 93,
+insn_count 91 with the identical five movables; only the loop-note insn UIDs shift.
+
+## [s13] Loop-time insn_count >= 120 makes move_movables reject all four switch comparison constants while still hoisting lim, and ordinary duplicated-statement C reaches it.
+- mechanism: threshold starts at 122 (2 * (1 + n_non_fixed_regs), tools/gcc-2.7.2/loop.c:532), decays 3 per moved movable (loop.c:1904), and each constant is tested by (threshold * savings * m->lifetime) >= insn_count at loop.c:1631 with savings = lifetime = 1. lim is scanned first (s10) and always moves, leaving threshold 119, so insn_count >= 120 rejects every constant. count_loop_regs_set (loop.c:2989) counts the pre-jump2 insn stream, and GCC 2.7.2 runs cross-jumping only in jump2, so arm-tail duplicates are counted at loop time and merged afterwards.
+- probe: Variant w9: the real loop tail `i++; p = base + i * 2;` duplicated into all ten switch-arm exit paths (four cases, their if-taken paths, case 3's nested-if path, and an explicit default:), nothing left after the switch. Applied to src/text1b.c, measured with `sandbox func_8007526C --disable all` plus a cc1 -da .loop dump.
+- result: `.loop` prints 'Loop from 17 to 362: 124 real insns'; regno 75 (lim) 'moved to 370'; all four comparison constants (regnos 142/144/145/146, life 1, savings 1) print 'not desirable'. sandbox: score 27, build_insns 102, target_insns 91. This is the first time the hoist has been stopped with no dead code at all -- previously only the s10 dead arming loop did it. Banked as rejected/dup-tails-base-3insn-insncount124-score27.c.
+- verdict: CONFIRMED
+
+## [s13] The move_movables decay staircase for this loop is: insn_count <= 113 hoists all four constants, 114..116 rejects the last two, and >= 120 rejects all four.
+- mechanism: Each constant that moves decays threshold by 3 (loop.c:1904) before the next is tested at loop.c:1631, so the rejection point walks in steps of 3 from 119 downward: 119 (after lim), 116 (after the first constant), 113 (after the second).
+- probe: Four independent variants measured on two different chassis: x1 at insn_count 106 (all hoist), w8 at 114 (ptr chassis) and x2 at 114 (base chassis) -- both reject exactly the last two -- and w9 / w7 / w6 at 124 / 130 / 141 (all four rejected).
+- result: Staircase reproduced identically on both chassis; the Judge-named axis number is exactly 120, not approximately 120. Table in tmp/grind/func_8007526C/s13/scores.txt.
+- verdict: CONFIRMED
+
+## [s13] A duplicated real tail whose copies jump2 re-merges completely supplies the 29 extra loop-time insns needed to clear insn_count 120 from the base chassis's 91 at zero emitted cost.
+- mechanism: jump2's cross_jump merges identical instruction tails that end at the same jump target; duplicates emitted before jump2 are counted by count_loop_regs_set at loop time, so a perfectly merging duplication would be free loop-time insn_count.
+- probe: Six duplication geometries measured for the pair (loop insn_count, build_insns): 5 outer-arm copies of a 2-insn tail (90->99 / 94->94), 5 copies of a 3-insn tail (90->104 / 94->96), 10 copies of a 1-insn tail (91->106 / 93->98), 10 copies of a 2-insn tail (90->114 / 94->99), 10 copies of a 3-insn tail (91->124 / 93->102), and 11 copies plus the 4-store blocks duplicated into the nested-if arms (90->130 / 94->117).
+- result: Complete re-merge occurs ONLY for copies placed at the five OUTER switch-arm exits (w2: +9 loop-time insns for +0 emitted words), which caps the free budget at about +9 against the +29 required. Copies placed inside an arm's if-body survive at roughly one emitted word per three loop-time insns, so every geometry that actually reaches insn_count >= 120 costs at least 11 emitted words above the 91-word target (cheapest: w9 at build_insns 102). Duplicating the 4-store blocks is the worst shape measured (+40 loop for +23 emitted) and should not be retried. This supersedes s12's single-point i++ rate (+5 loop / +2 emitted) with a six-point curve.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 34eb8142 chassis 2026-09-07, six duplication variants applied to src/text1b.c one at a time, pure C, no FAKE construct present in any of them (nothing for fake_ablate.py to strip)
+
+## [s13] Permuting the source declaration order of the function's four locals (base / p / i / lim) changes which hard registers local-alloc gives the four hoisted switch comparison constants.
+- mechanism: Declaration order sets the pseudo numbering that reg_alloc_order tie-breaks on in local-alloc, and the four constants receive $8/$9/$10/$11 in the build against a reused $v0 in the target.
+- probe: Five permutations (lim,i,p,base | i,base,p,lim | p,base,lim,i | lim,base,p,i | base,lim,p,i) each applied to src/text1b.c and measured with `sandbox --disable all` plus a cc1 -da .loop dump.
+- result: All five measure score 13, build_insns 93, loop insn_count 91, with the identical five-movable list and the same hard-register assignment. Only the pseudo NUMBERS change (regno 75 becomes 72 / 73 / 74). s12's frontier item 3 is closed. NOTE: a first attempt at this sweep silently measured nothing because PowerShell's `python3` is not on PATH on this host and the apply step no-opped; the numbers above are from the re-run through `bash apply.sh`, with the variant verified present in src/text1b.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 34eb8142 chassis 2026-09-07, candidate body with permuted local declaration order applied to src/text1b.c, pure C, no FAKE constructs present
+
+## [s13] Spelling every access as *(u16 *)(base + i * 2 + K) with no p local raises loop-time insn_count for free, because the per-access address arithmetic is only removed later by strength reduction.
+- mechanism: cse1 runs before the loop pass in GCC 2.7.2's toplev pass order (jump1, cse1, loop, cse2), so repeated address computations are already collapsed into one base pointer before count_loop_regs_set walks the insn stream; there is no window in which pre-strength-reduction address RTL inflates the count.
+- probe: Variant y1: candidate body with the p local removed and every access rewritten as *(u16 *)(base + i * 2 + K), applied to src/text1b.c and measured with `sandbox --disable all` plus a cc1 -da .loop dump.
+- result: `.loop` prints 'Loop from 14 to 541: 91 real insns' -- exactly the candidate's count -- with the same five movables; sandbox score 13, build_insns 93. Byte-identical outcome to the candidate. Banked as rejected/no-p-local-address-per-access-cse1-collapses-score13.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 34eb8142 chassis 2026-09-07, y1 body applied to src/text1b.c, pure C, no FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/loop.c:2989
+
+## [s13] The loop's C spelling (do-while vs while vs for) changes the insn region count_loop_regs_set counts, or the movable set it produces.
+- mechanism: scan_loop picks scan_start/loop_top differently when a loop begins with a jump down to its exit test (loop.c:500-560), and counts from loop_top rather than loop_start when it does, so a while/for shape could count a different region.
+- probe: for (i = 0; i < 2; i++) and while (i < 2) rewrites of the candidate body, each applied to src/text1b.c and measured with `sandbox --disable all` plus a cc1 -da .loop dump.
+- result: Both measure score 13, build_insns 93, loop insn_count 91 with the identical five-movable list; only the loop-note insn UIDs shift (Loop from 13 to 262 / 14 to 262 vs 14 to 260). GCC normalises all three spellings to the same bottom-test loop before the loop pass.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 34eb8142 chassis 2026-09-07, for- and while-loop rewrites of the candidate body applied to src/text1b.c, pure C, no FAKE constructs present
