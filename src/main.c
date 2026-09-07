@@ -1711,7 +1711,31 @@ INCLUDE_ASM("asm/funcs", _spu_FwriteByIO);
    not_a_c_function_text() word-searches the raw .c text (comments included),
    so naming it here makes it read as a C function and flood the queue as an
    unscorable distance -1 item, which sorts to the very top. */
-INCLUDE_ASM("asm/funcs", _spu_FiDMA);
+/* PsyQ LIBSPU spu.c `_spu_FiDMA` (C ref: Xeeynamo/psyz decomp/src/libspu/spu.c:161).
+   SPU DMA-completion interrupt handler: waits for the transfer-mode bits
+   (0x30) in SPUCNT (_spu_RXX + 0x1AA) to clear with a bounded spin, then
+   dispatches either the installed transfer callback or the SPU DMA event. */
+void _spu_FiDMA(void) {
+    u32 timeout;
+
+    if (D_800A2D2C == 0) {
+        _spu_Fw1ts();
+    }
+    *(volatile u16 *)(D_800A2CDC + 0x1AA) =
+        *(volatile u16 *)(D_800A2CDC + 0x1AA) & ~0x30;
+    timeout = 0;
+    while (*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0x30) {
+        timeout++;
+        if (timeout > 0xF00) {
+            break;
+        }
+    }
+    if (_spu_transferCallback) {
+        ((void (*)(void))_spu_transferCallback)();
+        return;
+    }
+    DeliverEvent(0xF0000009, 0x20);
+}
 /* PsyQ 4.0 LIBSPU spu.c: _spu_Fr_ — unreferenced in BB2 (dead code carried
    by the linked Sony object; SpuRGetAllKeysStatus/S_SCA precedent).
    C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_r_); this build's

@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "_spu_FiDMA",
-      "file": "main",
-      "distance": 48,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8007526C",
       "file": "text1b",
       "distance": 48,
@@ -1473,14 +1465,14 @@
     }
   ],
   "counts": {
-    "total": 166,
-    "active": 163,
+    "total": 165,
+    "active": 162,
     "by_status": {
-      "active": 163,
+      "active": 162,
       "foreclosed": 3
     },
     "by_verdict": {
-      "C": 137,
+      "C": 136,
       "ASM-PARTIAL": 26
     }
   }
