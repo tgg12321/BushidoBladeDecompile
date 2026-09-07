@@ -1309,3 +1309,89 @@ one of those three, and read the `.loop` dump for a second `threshold -= 3`.
 - probe: Applied memory/grind/func_8007526C/candidate.c (restored this session to the ordinary baseline body) over the INCLUDE_ASM line at src/text1b.c:6660 and ran sandbox func_8007526C --disable all, plus the cc1 -da dump.
 - result: score 13, build_insns 93, target_insns 91, .loop 'Loop from 14 to 260: 91 real insns' with lim (regno 75) and all four switch-comparison constants (regnos 124/126/127/128, life 1, savings 1) moved to the pre-header -- identical to the s8-s14 recording. Neither the baseline nor any form measured this session carries a FAKE construct, so tools/fake_ablate.py has no carrier to strip and every instance kill banked in s9-s15 remains chassis-valid.
 - verdict: CONFIRMED
+
+## s16 (2026-09-07, synthesis)
+
+## [s16] The whole 13-point residual is a single integer inside loop.c -- `threshold` -- and that integer differs between our build configuration and the original's for a reason that has nothing to do with the C: `-msoft-float` marks the 32 MIPS FP registers fixed, which halves `n_non_fixed_regs` and therefore halves loop.c's move_movables desirability threshold.
+- mechanism: loop.c:532 sets `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`. `n_non_fixed_regs` is counted in regclass.c:380-387 as the number of hard registers with `fixed_regs[i] == 0`. mips.h:524-536 (CONDITIONAL_REGISTER_USAGE) sets `fixed_regs[regno] = call_used_regs[regno] = 1` for every regno in FP_REG_FIRST..FP_REG_LAST (mips.h:1224-1225, i.e. 32..63 -- exactly 32 registers) whenever `!TARGET_HARD_FLOAT`. So `-msoft-float` lowers `n_non_fixed_regs` by 32 and `threshold` by 64: 122 -> 58, and after `lim`'s single `threshold -= 3` decay at loop.c:1904, 119 -> 55. The desirability test at loop.c:1631 is `threshold * savings * m->lifetime >= insn_count`; for the four switch-comparison constants savings = lifetime = 1 and insn_count = 91, so the product is 119 (>= 91, move) under hard float and 55 (< 91, keep) under soft float. For `lim` (regno 75, life 63) the product is 7686 or 3654 -- above 91 either way, which is why the target's pre-header still contains `addiu $a3,$zero,0xC8`.
+- probe: Compiled the SAME preprocessed src/text1b.c (candidate.c body applied) twice with the production cc1 and the production flag string, the second invocation adding only `-msoft-float`, and diffed the `.loop` dumps for func_8007526C. Scripts/dumps: tmp/grind/func_8007526C/s16/dump2.sh, t_hard.loop, t_soft.loop.
+- result: The two dumps are identical in every quantity the C controls. Both print `Loop from 14 to 260: 91 real insns.` Both list the same five movables with the same insn UIDs, regnos, lifetimes and savings: `Insn 19: regno 75 (life 63), move-insn savings 1`, then regnos 124/126/127/128 at `(life 1) savings 1` (insns 226/232/238/241). The only difference is the verdict: hard float prints `moved to 268/270/272/274/276` for all five; soft float prints `moved to 268` for regno 75 and `not desirable` for all four constants. Since insn_count, savings and lifetime are bit-identical across the two runs, `threshold` is the only term that changed, and the source chain above fixes its value exactly. This confirms the s1/s5 `-msoft-float` observation and, for the first time, names its mechanism: the flag never touches floating point in this function (it has none) -- it only shrinks the register file loop.c prices register lifetime against.
+- verdict: CONFIRMED
+- measured_on: HEAD bd38096c chassis 2026-09-07, memory/grind/func_8007526C/candidate.c applied to src/text1b.c, pure C, no FAKE construct present
+
+## [s16] Because the two configurations produce bit-identical movables (same regnos, same `life 1`, same `savings 1`), no C-level spelling can attack the desirability product through `savings` or `m->lifetime`; `insn_count` is the only term the C controls.
+- mechanism: loop.c:791-793 computes `m->lifetime = uid_luid[regno_last_uid] - uid_luid[regno_first_uid]` and `m->savings = n_times_used[regno]`. A compiler-generated switch-comparison constant is set immediately before the single `beq` that consumes it, so lifetime is 1 (its minimum for a set/use pair) and savings is 1 (one use) for every source spelling of a 4-way dispatch -- both dumps show exactly that, and every s10..s15 dump has shown it too. `threshold` is a whole-compilation constant (regclass.c:380-387, set once from `fixed_regs`) with no source-level input. That leaves loop.c:1631's `insn_count`, counted by count_loop_regs_set (loop.c:2989-3007) over the insns between loop_top and loop_end before any post-loop pass runs.
+- probe: Read of the two s16 `.loop` dumps for the movable table plus the loop.c/regclass.c/mips.h source chain.
+- result: The C-side gate reduces to one inequality with one C-controlled variable: under the project's hard-float configuration the four constants stay in the loop iff `insn_count > 119` (>= 120), and the loop's ordinary insn_count is 91. The ledger's measured ceiling for truthful loop-time insn generation is 99 (s15b, two-step splits at all seven update sites), so the axis is 21 insns short and the shortfall is exact, not approximate. Under the original's soft-float configuration the same body clears the gate at any insn_count above 55, which the ordinary 91-insn loop does by a wide margin -- i.e. the original source needed no codegen-shaping construct at all.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD bd38096c chassis 2026-09-07, candidate.c applied to src/text1b.c, pure C, no FAKE construct present; both `.loop` dumps in tmp/grind/func_8007526C/s16/
+- predicate_cite: tools/gcc-2.7.2/loop.c:1631
+
+## [s16] Kill re-audit (mandated): the closest-to-target banked forms still measure their recorded scores on the current chassis, and none of them carries a FAKE construct that could have masked a lever.
+- mechanism: An instance kill is chassis-relative; HEAD moved from 9bf1aa2c to bd38096c since s15b banked its measurements.
+- probe: `sandbox func_8007526C --disable all` on (a) memory/grind/func_8007526C/candidate.c, (b) rejected/arming-dowhile-reuse-exit-test-score4.c, (c) rejected/arming-loop-after-main-score5.c; plus `python3 tools/fake_ablate.py --func func_8007526C --file text1b --candidate rejected/arming-dowhile-reuse-exit-test-score4.c`.
+- result: (a) score 13, build_insns 93, target_insns 91. (b) score 4, build_insns 93. (c) score 5, build_insns 93. fake_ablate reports "no FAKE-annotated constructs found ... nothing to ablate", which holds for every banked form in this ledger -- this function has never had a FAKE carrier occupying a target pseudo, so no banked instance kill is at risk from that failure mode. All three numbers reproduce the ledger exactly; the chassis has not drifted.
+- verdict: CONFIRMED
+- measured_on: HEAD bd38096c chassis 2026-09-07, each named body applied to src/text1b.c, pure C, no FAKE construct present
+
+## [s16] Frontier item F3 (s15b): one of the target's three pre-header words could be a second loop.c-moved movable, giving a second `threshold -= 3` decay.
+- mechanism: A second decay would lower the bar from insn_count 120 to 117. The candidates were the three target pre-header words `addu $a2,$zero,$zero` (i = 0), `addiu $a3,$zero,0xC8` (lim) and `lw $a0,%gp_rel(D_800A36A0)($gp)` (base).
+- probe: Read the s16 hard-float `.loop` dump movable table against the three words, using the now-exact threshold arithmetic.
+- result: Answered NO. `lim` is the moved movable and already supplies the one decay the ledger counts. `i = 0` is the loop basic induction variable (`Insn 248: possible biv, reg 74, const = 1` in both dumps), set inside the loop, so it is not invariant and never enters the movable list. The base load was measured non-invariant in s12 (GCC 2.7.2 invalidates all memory on any store, and the loop stores through `p`) and banked as rejected/global-load-inside-loop-not-invariant-score16.c. So exactly one decay is available and the bar is 120, not 117. F3 is closed.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD bd38096c chassis 2026-09-07, candidate.c applied to src/text1b.c, pure C, no FAKE construct present
+
+### Frontier reset -- s16
+
+The residual is now stated as a single arithmetic fact rather than a search: under this project
+hard-float cc1 configuration the four switch constants stay in the loop iff loop-time
+`insn_count >= 120`; the ordinary loop is 91 and the truthful-C ceiling is 99. Two live items
+remain, both unchanged in shape but now priced exactly.
+
+**F1 -- a LIVE payload that survives cse1 and is removed after loop.c at better than 3 loop-insns
+per emitted word.** Need +21 over the truthful-split ceiling of 99. Measured rates: jump2
+cross-jumping 3:1 (build floor 102), combine reassociation 1:0 but only with fabricated addends
+(Judge-FAILed 2026-09-07 17:07), truthful two-step splits +8 total for +1 word. Untested: payloads
+removed by cse2 rather than cse1 -- i.e. redundancies that only become visible AFTER loop.c own
+strength reduction rewrites the address givs (the s16 dumps show `giv reg 77` and `giv reg 73`
+created from biv reg 74), since anything strength_reduce or cse2 deletes was already counted by
+count_loop_regs_set at loop.c:591.
+
+**F2 -- a second loop over `lim` that is genuinely reachable and emits no NET words.** The
+moved_once doubling needs only `insn_count * 2 = 182 > 119`, so it is by far the cheaper gate; the
+whole cost is the arming loop 3 emitted words (score 4, build 93) against a zero-word budget.
+Untested: nests in which part of the target own 91 words belongs to the inner region, so the
+inner back edge is a branch the target already emits.
+
+**F3 -- closed this session.** No second `threshold -= 3` decay exists on this chassis.
+
+## [s16] The whole 13-point residual is one integer inside loop.c -- `threshold` -- which differs between this project's build configuration and the original's because `-msoft-float` marks the 32 MIPS FP registers fixed, halving n_non_fixed_regs and so halving move_movables' desirability threshold.
+- mechanism: loop.c:532 sets threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs). regclass.c:380-387 counts n_non_fixed_regs as the hard regs with fixed_regs[i]==0. mips.h:524-536 (CONDITIONAL_REGISTER_USAGE) sets fixed_regs[regno]=call_used_regs[regno]=1 for FP_REG_FIRST..FP_REG_LAST when !TARGET_HARD_FLOAT, and mips.h:1224-1225 make that range 32..63 -- exactly 32 registers. So -msoft-float lowers threshold by 64: 122 -> 58 (119 -> 55 after lim's single `threshold -= 3` at loop.c:1904). The test at loop.c:1631 is threshold*savings*lifetime >= insn_count; for the four switch-comparison constants savings=lifetime=1 and insn_count=91, giving 119>=91 (hoist) under hard float and 55<91 (keep) under soft float, while lim at life 63 clears the bar under both.
+- probe: Compiled ONE preprocessed src/text1b.c (candidate.c body applied) twice with the production cc1 tools/gcc-2.7.2/build/cc1 and the production flag string, the second invocation adding only -msoft-float, and diffed the func_8007526C .loop dumps (tmp/grind/func_8007526C/s16/dump2.sh -> t_hard.loop, t_soft.loop).
+- result: Both dumps print `Loop from 14 to 260: 91 real insns.` and list the same five movables with identical insn UIDs, regnos, lifetimes and savings (Insn 19 regno 75 life 63 savings 1; Insns 226/232/238/241 regnos 124/126/127/128 life 1 savings 1). The only difference is the verdict: hard float prints `moved to 268/270/272/274/276` for all five, soft float prints `moved to 268` for regno 75 and `not desirable` for all four constants. Every term the C controls is bit-identical, so threshold is the only variable, and the four-link source chain fixes its two values exactly. The flag touches no floating point in this function -- it only shrinks the register file loop.c prices register lifetime against, which is why the PsyQ-era soft-float build never faced this hoist at all.
+- verdict: CONFIRMED
+
+## [s16] Some C-level spelling of the 4-way dispatch changes the desirability product at loop.c:1631 through `m->savings` or `m->lifetime` rather than through insn_count.
+- mechanism: loop.c:791-793 sets m->lifetime = uid_luid[regno_last_uid] - uid_luid[regno_first_uid] and m->savings = n_times_used[regno]. A compiler-generated switch-comparison constant is emitted immediately before the single beq that consumes it, so its lifetime is 1 (the minimum for a set/use pair) and its savings is 1 (one use). threshold is a whole-compilation constant set once from fixed_regs in regclass.c:380-387 with no source-level input.
+- probe: Read the movable tables of both s16 .loop dumps (hard and soft float) plus the loop.c/regclass.c/mips.h source chain, cross-checked against every s10..s15 .loop dump banked in this ledger.
+- result: All four constants show `life 1` and `savings 1` in every dump this ledger has ever produced, and the two s16 configurations agree on them bit-for-bit. The desirability product therefore has exactly one C-controlled term, insn_count, and the bar on this chassis is exact rather than approximate: insn_count >= 120 (threshold 122 minus lim's one decay = 119, times savings 1 times lifetime 1). The ledger's measured truthful-C ceiling for loop-time insn generation is 99 (s15b), so the axis is short by exactly 21 insns. Under the original's soft-float threshold of 58 the same body clears the gate at any insn_count above 55, which the ordinary 91-insn loop does easily -- the original source needed no codegen-shaping construct.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD bd38096c chassis 2026-09-07, memory/grind/func_8007526C/candidate.c applied to src/text1b.c, pure C, no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/loop.c:1631
+
+## [s16] Frontier F3: one of the target's three pre-header words is a second loop.c-moved movable of a live local, so a second `threshold -= 3` decay fires before the four constants are scanned and lowers the bar from insn_count 120 to 117.
+- mechanism: move_movables decays threshold by 3 at loop.c:1904 for each movable it moves. The three target pre-header words are `addu $a2,$zero,$zero` (i = 0), `addiu $a3,$zero,0xC8` (lim) and `lw $a0,%gp_rel(D_800A36A0)($gp)` (base); if any of them but lim were also a moved movable, a second decay would be established as a mechanism.
+- probe: Read the s16 hard-float .loop dump's movable and biv tables against the three pre-header words, using the now-exact threshold arithmetic, together with the s12 banked measurement of the base load.
+- result: No second decay is available on this chassis. lim (regno 75) is the moved movable and already supplies the one decay the ledger counts. `i` is the loop's basic induction variable -- both dumps print `Insn 248: possible biv, reg 74, const = 1` -- so it is set inside the loop, is never invariant, and never enters the movable list. The D_800A36A0 load was measured non-invariant in s12 (GCC 2.7.2 invalidates all memory on any store and the loop stores through p), banked as rejected/global-load-inside-loop-not-invariant-score16.c. The bar stays 120.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD bd38096c chassis 2026-09-07, memory/grind/func_8007526C/candidate.c applied to src/text1b.c, pure C, no FAKE construct present
+
+## [s16] Mandated kill re-audit: the closest-to-target banked forms still measure their recorded scores on the current chassis, and no banked kill was measured with a FAKE carrier occupying a target pseudo.
+- mechanism: Instance kills are chassis-relative and HEAD moved from 9bf1aa2c to bd38096c since s15b banked its measurements; a lever measured inert while a FAKE carrier held its pseudo is not a kill.
+- probe: `sandbox func_8007526C --disable all` on candidate.c, on rejected/arming-dowhile-reuse-exit-test-score4.c and on rejected/arming-loop-after-main-score5.c; plus `python3 tools/fake_ablate.py --func func_8007526C --file text1b --candidate rejected/arming-dowhile-reuse-exit-test-score4.c`.
+- result: candidate.c -> score 13, build_insns 93, target_insns 91. arming-dowhile-reuse-exit-test-score4.c -> score 4, build_insns 93. arming-loop-after-main-score5.c -> score 5, build_insns 93. All reproduce the ledger exactly; the chassis has not drifted. fake_ablate reports 'no FAKE-annotated constructs found ... nothing to ablate', which is true of every banked form in this ledger -- this function has never carried a FAKE construct, so no banked instance kill is at risk from the masked-pseudo failure mode.
+- verdict: CONFIRMED

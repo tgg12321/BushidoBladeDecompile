@@ -37,6 +37,20 @@
  *
  * So the two axes are now quantified rather than guessed, and both terminate in an
  * admissibility question rather than a measurement question.  See evidence.md [s15b].
+ *
+ * s16 (2026-09-07, synthesis) RE-MEASURED THIS BODY at score 13 / build_insns 93 on HEAD
+ * bd38096c, and named the residual to the integer.  Compiling this exact preprocessed TU
+ * twice with the production cc1 and flags, the second run adding only `-msoft-float`,
+ * produces .loop dumps that agree on EVERY quantity the C controls -- "Loop from 14 to 260:
+ * 91 real insns", the same five movables, regno 75 at life 63 and regnos 124/126/127/128 at
+ * life 1 savings 1 -- and disagree only in the verdict: hard float moves all five, soft float
+ * prints "not desirable" for the four constants.  The single differing term in loop.c:1631 is
+ * `threshold`, and mips.h:524-536 fixes all 32 FP registers (mips.h:1224-1225) when
+ * !TARGET_HARD_FLOAT, which drops regclass.c:380-387's n_non_fixed_regs by 32 and so
+ * loop.c:532's threshold by 64: 122 -> 58.  The flag touches no float in this function; it
+ * only shrinks the register file loop.c prices lifetime against.  This body is therefore
+ * very probably the original C already, and the 13 points are a build-configuration
+ * divergence, not a spelling divergence.  See evidence.md [s16].
  */
 void func_8007526C(void) {
     u8 *base;

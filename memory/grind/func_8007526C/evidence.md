@@ -1553,3 +1553,107 @@ Everything cheaper than that has been measured.
 - [s15] The zero-word arming loop is zero-word BECAUSE it is dead: i is already 2 at that point, so the region is deleted after loop.c has used it. Reachable arming spellings all cost 3 words, and the target's 91 words leave no budget for a second loop -- so on this chassis 'emits no words' and 'never executes' are the same property.
 
 - [s15] Five forms banked to rejected/ this session: dead-locals-deleted-by-cse1-insncount-unchanged.c, dead-invariant-movables-deleted-by-cse1-score13.c, trailing-dead-while-arming-score1-deadcode.c, arming-dowhile-reuse-exit-test-score4.c, truthful-twostep-split-all-sites-insncount99-score26.c.
+
+## [s16] 2026-09-07, synthesis -- the residual named to the integer: loop.c threshold 122 vs 58
+
+### Chassis re-measurement (kill re-audit, mandated)
+HEAD bd38096c. `sandbox func_8007526C --disable all` with memory/grind/func_8007526C/candidate.c
+applied at src/text1b.c:6660 -> `"score": 13, "target_insns": 91, "build_insns": 93`. The two
+closest-to-target banked forms re-measure unchanged: rejected/arming-dowhile-reuse-exit-test-score4.c
+-> score 4 / build 93, rejected/arming-loop-after-main-score5.c -> score 5 / build 93.
+`tools/fake_ablate.py` reports "no FAKE-annotated constructs found ... nothing to ablate" -- true of
+every banked form in this ledger, so the "lever measured inert while a FAKE carrier occupied its
+pseudo" failure mode has never applied here and no banked instance kill needs re-opening on that
+ground.
+
+### THE NEW FACT: the divergence is one integer, and the C never had a say in it
+
+s1 and s5 recorded that adding `-msoft-float` makes this function build to 91 words byte-identical
+to the target. Nobody had named the mechanism, and the pipeline has been grinding the C for eight
+sessions on the assumption that some C spelling reaches the same place. It does not, and now we
+know exactly why.
+
+Controlled experiment (tmp/grind/func_8007526C/s16/dump2.sh): one preprocessed translation unit,
+the production cc1 (`tools/gcc-2.7.2/build/cc1`) and the production flag string
+(`-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel`), compiled
+twice, the second run adding `-msoft-float` and nothing else. Both `.loop` dumps
+(t_hard.loop, t_soft.loop) for func_8007526C:
+
+    both:  Loop from 14 to 260: 91 real insns.
+    both:  Insn  19: regno  75 (life 63), move-insn savings 1
+    both:  Insn 226: regno 124 (life  1), move-insn savings 1
+    both:  Insn 232: regno 126 (life  1), move-insn savings 1
+    both:  Insn 238: regno 127 (life  1), move-insn savings 1
+    both:  Insn 241: regno 128 (life  1), move-insn savings 1
+    hard:  ... moved to 268 / 270 / 272 / 274 / 276     (all five hoisted)
+    soft:  ... moved to 268, then "not desirable" x4    (only lim hoisted)
+
+Every quantity the C source controls -- insn_count, the movable set, each movable regno, lifetime
+and savings -- is bit-identical. The verdict flips anyway. The only remaining term in the
+desirability test at tools/gcc-2.7.2/loop.c:1631,
+`threshold * savings * m->lifetime >= insn_count`, is `threshold`, and its value is fixed by:
+
+  * tools/gcc-2.7.2/loop.c:532 -- `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`
+  * tools/gcc-2.7.2/regclass.c:380-387 -- `n_non_fixed_regs` counts hard regs with `fixed_regs[i] == 0`
+  * tools/gcc-2.7.2/config/mips/mips.h:524-536 -- CONDITIONAL_REGISTER_USAGE: when `!TARGET_HARD_FLOAT`,
+    `fixed_regs[regno] = call_used_regs[regno] = 1` for FP_REG_FIRST..FP_REG_LAST
+  * tools/gcc-2.7.2/config/mips/mips.h:1224-1225 -- FP_REG_FIRST 32, FP_REG_LAST 63: exactly 32 registers
+
+So `-msoft-float` removes 32 registers from `n_non_fixed_regs` and 64 from `threshold`:
+122 -> 58 (and 119 -> 55 after `lim`'s single `threshold -= 3` decay at loop.c:1904). Against
+insn_count 91 with savings = lifetime = 1 that is 119 >= 91 (hoist) versus 55 < 91 (keep). For
+`lim`, life 63, the product is 7686 or 3654 -- comfortably above 91 either way, which is exactly
+why the target's pre-header still carries `addiu $a3,$zero,0xC8` while the four dispatch constants
+are rematerialised in-loop in `$v0`.
+
+The flag has nothing to do with floating point here: func_8007526C contains no float operation. Its
+whole effect on this function is to shrink the register file that loop.c prices register lifetime
+against. The PlayStation has no FPU and PsyQ shipped a soft-float compiler, so the original build
+had threshold 58 and this function's LICM question never arose for whoever wrote the C. The C we
+have is, on this evidence, already the right C; the 13 points are a build-configuration
+divergence wearing a codegen-divergence costume.
+
+### What that closes, and what it leaves open
+
+Closed as a class (predicate tools/gcc-2.7.2/loop.c:1631): attacking the product through `savings`
+or `m->lifetime`. A compiler-generated switch-comparison constant is set immediately before the
+single `beq` that consumes it, so loop.c:791-793 gives it lifetime 1 and savings 1 for any source
+spelling of a 4-way dispatch; both s16 dumps and every s10..s15 dump show precisely that.
+`threshold` is a whole-compilation constant with no source-level input. `insn_count` is the only
+term the C controls, and the bar is exact: `insn_count >= 120` on this chassis.
+
+Closed as an instance (frontier F3): there is no second `threshold -= 3` decay to be had. `lim`
+supplies the one decay; `i` is the loop's biv (`Insn 248: possible biv, reg 74, const = 1`, both
+dumps) and so is never invariant; the `D_800A36A0` load was measured non-invariant in s12. The bar
+is 120, not 117.
+
+Still open, and unchanged in shape: F1 (a live payload deleted after loop.c at better than the
+measured 3-loop-insns-per-emitted-word rate -- 21 insns short of the bar from the truthful-split
+ceiling of 99) and F2 (a reachable second loop that arms the moved_once doubling at loop.c:1609-1611
+for zero net emitted words; the doubling only needs 182 > 119, and the entire cost is the arming
+loop's three words).
+
+Note for whoever writes this function's eventual disposition record: the standing Judge constraint
+forbids re-filing an integration handoff on `-msoft-float`, and this session does not. What is new
+is not the remedy but the diagnosis -- the residual is now attributable to a single named integer
+with a four-link source chain, which is the kind of evidence a foreclosure record needs and which
+the ledger did not previously contain.
+
+### Artifacts
+  tmp/grind/func_8007526C/s16/dump2.sh   -- the two-configuration cc1 dump driver
+  tmp/grind/func_8007526C/s16/t_hard.loop, t_soft.loop  -- the two `.loop` dumps (diff of one line class)
+  tmp/grind/func_8007526C/s16/t_hard.s,  t_soft.s       -- the two asm outputs
+
+- [s16] HEAD bd38096c honest floor re-measured: sandbox func_8007526C --disable all with candidate.c applied -> score 13, build_insns 93, target_insns 91.
+
+- [s16] Two-configuration cc1 experiment (same preprocessed TU, same production flags, second run adds only -msoft-float): both .loop dumps print 'Loop from 14 to 260: 91 real insns' and list identical movables -- Insn 19 regno 75 (life 63) savings 1, Insns 226/232/238/241 regnos 124/126/127/128 (life 1) savings 1. Hard float moves all five; soft float moves only regno 75 and prints 'not desirable' four times.
+
+- [s16] Source chain fixing the only differing term: loop.c:532 threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs); regclass.c:380-387 counts n_non_fixed_regs from fixed_regs; mips.h:524-536 fixes FP_REG_FIRST..FP_REG_LAST when !TARGET_HARD_FLOAT; mips.h:1224-1225 give that range as 32..63 (32 registers). Hence threshold 122 (hard) vs 58 (soft), and 119 vs 55 after lim's threshold -= 3 at loop.c:1904.
+
+- [s16] func_8007526C contains no floating-point operation, so -msoft-float's entire effect on this function is the size of the register file loop.c prices register lifetime against -- the residual is a build-configuration divergence, not a C-spelling divergence.
+
+- [s16] The C-side bar is therefore exact: loop-time insn_count >= 120. The loop's ordinary insn_count is 91 and the ledger's measured truthful-C ceiling is 99 (s15b two-step splits at all seven update sites), leaving a shortfall of exactly 21 insns.
+
+- [s16] No second threshold decay exists: lim supplies the only one, i is the loop's biv ('Insn 248: possible biv, reg 74, const = 1' in both dumps), and the D_800A36A0 load is non-invariant (s12).
+
+- [s16] tools/fake_ablate.py finds no FAKE-annotated construct in any banked form for this function, so the whole kill ledger is free of the masked-pseudo failure mode.
