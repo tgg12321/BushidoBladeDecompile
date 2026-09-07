@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80019310",
-      "file": "code6cac",
-      "distance": 44,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active",
-      "unparked_from": "FORECLOSED (logged to borderline.md; owner ruling 2026-08-31): docs/grind/decisions.md 2026-09-06 entry 'func_80019310 (src/code6cac.c) - blocked at the operator registry row (bytes PROVEN, Judge PASS on record, LOW scan tier)': operator step = add the func_80019310 row to tools/grinder/owner_cluster_grants.txt (2026-09-01 widened-anchor grant, decisions.md:18119) then unpark; see the entry's Routing note.",
-      "unpark_reason": "owner 2026-09-06: owner_cluster_grants.txt row added (commit 2cef233c) - take the canonical-asm grant path on body df4741401a310eb2"
-    },
-    {
       "func": "func_8002C61C",
       "file": "code6cac_b",
       "distance": 44,
@@ -1525,15 +1515,15 @@
     }
   ],
   "counts": {
-    "total": 172,
-    "active": 169,
+    "total": 171,
+    "active": 168,
     "by_status": {
-      "active": 169,
+      "active": 168,
       "foreclosed": 3
     },
     "by_verdict": {
-      "ASM-PARTIAL": 27,
-      "C": 142
+      "C": 142,
+      "ASM-PARTIAL": 26
     }
   }
 }

@@ -42,3 +42,14 @@ ANNOTATION-CONFORMANCE: n/a — no /* FAKE */ construct is present in the diff (
 The function header comment carries the same five name+line-range cites in a table, plus a dedicated CLOBBER PROVENANCE paragraph attributing the three added "memory" clobbers to src/code6cac_b.c:935 rather than to SDK text, which is the exact defect the 2026-09-06 05:55 Judge final call named (docs/grind/decisions.md:24662).
 
 SESSION SCOPE (annotation-fix modality, 2026-09-06): the diff against the judge-failed body (memory/grind/func_80019310/rejected/judge-fail-0906-0554.c) changes COMMENT LINES ONLY — verified mechanically with `diff` filtered to non-comment lines (empty result). No construct added, removed, renamed or reordered. Re-measured after the re-cite: `sandbox func_80019310 --disable all` = score 0, 81/81, rules_dropped 0.
+
+RE-VET (structural-modality session, 2026-09-06, post-registry-row): the body under review is UNCHANGED
+from the one this vet was written against — memory/grind/func_80019310/candidate.c was not edited this
+session (no construct added, removed, renamed, reordered; no comment change), so it is still the
+Judge-cleared body df4741401a310eb2 (clearance: docs/grind/decisions.md 2026-09-06 06:05 ruling PASS).
+Every answer above (T1-T6, both family claims, the annotation-conformance list) applies verbatim. The
+only thing that changed is OUTSIDE the diff: the operator added the owner-cluster registry row
+(tools/grinder/owner_cluster_grants.txt:30, commit 2cef233c), which supplies the grant door that the
+2026-09-06 merge refusal named as the sole remaining blocker. Re-measured this session on HEAD 0bb257ca:
+`sandbox func_80019310 --disable all` = score 0, 81/81, rules_dropped 0, cheat_asm_stripped 22
+(tmp/grind/func_80019310/s2b/sandbox_final_stripped.json). Zero /* FAKE */ constructs remain the case.

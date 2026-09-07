@@ -58,3 +58,25 @@
 - [s1] Disposition entry filed: docs/grind/decisions.md '2026-09-06 - func_80019310 (src/code6cac.c) - CANONICAL-ASM GRANT PATH: blocked at the operator registry row'. Exact operator steps listed there.
 
 - [s1] candidate.c unchanged (still the Judge-cleared body); applied in src/code6cac.c at :339 for the driver's own re-verification.
+
+## [s2-post-unpark, structural, 2026-09-06] Owner directive executed: registry row present + bytes re-proven on HEAD 0bb257ca.
+- mechanism: tools/grinder/owner_cluster_grants.txt line 30 supplies the alternative evidence door for
+  grant_canonical_asm (owner enumeration substitutes for a STRONG scan_hand_coded tier), which was the
+  single blocker recorded in the 2026-09-06 CANONICAL-ASM GRANT PATH disposition entry
+  (docs/grind/decisions.md:24678). Commit 2cef233c added it.
+- probe: read the registry (row confirmed, `git show --stat 2cef233c`); applied candidate.c verbatim via
+  tmp/grind/func_80019310/s2b/apply.py; `& tools/wteng.ps1 main sandbox func_80019310 --disable all`.
+- result: score 0, 81/81 target/build insns, rules_dropped 0, cheat_asm_stripped 22. Artifacts
+  tmp/grind/func_80019310/s2b/sandbox_final_stripped.json, grant_row.txt, head.txt.
+- verdict: CONFIRMED
+
+## [s2-post-unpark] Structural levers are inapplicable to a distance-0 Judge-cleared body.
+- mechanism: the mandated structural modality's levers (var splits, declaration order, type narrowing,
+  statement re-association) can only perturb a body that already emits the target's exact 81 insns; and
+  any perturbation changes the body hash, discarding the df4741401a310eb2 Judge clearance and returning
+  the same construct set to layer-1 for no gain.
+- probe: none run by design; the two structural degrees of freedom with any recorded effect were already
+  measured in s1 (H4 local array size → frame 32 vs 24; v5 loop-bound re-read → byte-neutral).
+- result: no structural edit proposed; the session spends its measurement on re-proving the banked body
+  under the new registry state, which is what the owner directive mandates before default modality work.
+- verdict: CONFIRMED

@@ -62,3 +62,41 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s3 chassis HEAD 12427b10, candidate.c body df4741401a310eb2, no FAKE constructs
+
+## s2 of the post-unpark window (structural modality, 2026-09-06 — owner directive executed)
+
+- H11 CONFIRMED — The owner directive ("owner_cluster_grants.txt row added, commit 2cef233c — take the
+  canonical-asm grant path on body df4741401a310eb2") is now executable end-to-end. Probe: read
+  tools/grinder/owner_cluster_grants.txt (row present at line 30:
+  `func_80019310 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01,
+  decisions.md:18082; row per owner ruling 2026-09-06 foreclosed-bucket review)`; commit 2cef233c
+  confirmed by `git show --stat`), then applied memory/grind/func_80019310/candidate.c to
+  src/code6cac.c with tmp/grind/func_80019310/s2b/apply.py (unchanged copy of the s1 applier: replaces
+  the INCLUDE_ASM line and inserts the prototype after func_800187F4's) and re-measured on HEAD
+  0bb257ca. Result: `sandbox func_80019310 --disable all` = score 0, target_insns 81, build_insns 81,
+  rules_dropped 0, cheat_asm_stripped 22 (tmp/grind/func_80019310/s2b/sandbox_final_stripped.json).
+  The two conditions the s3 frontier named as the only remaining blockers — registry row present, body
+  still at 0 on the current chassis — are both satisfied simultaneously for the first time.
+
+- H12 CONFIRMED — The body submitted is byte-for-byte the Judge-cleared body df4741401a310eb2:
+  memory/grind/func_80019310/candidate.c was NOT edited this session (no respelling, no comment change),
+  so the driver's clearance lookup skips layer-1 and runs bytes + FINAL CALL directly. Per the s2/s3
+  ledger this is the ONLY door that admits this body — a respelled or re-commented body would be a new
+  body and would re-enter layer-1 with the same construct set that already carries a Judge PASS.
+
+- No structural probing was performed and none is warranted: the mandated structural levers (block-local
+  var splits, declaration order, type narrowing, statement re-association) all operate on a body that is
+  already at distance 0 with 81/81 insns and zero dropped rules. Any structural edit can only move the
+  floor UP and would additionally destroy the Judge clearance by changing the body hash. The s1 variant
+  sweep (v1..v6) already measured the two structural degrees of freedom that mattered — local array size
+  (H4: `s32 out[6]` → frame 32 vs target 24) and the loop-bound spelling (v5, inline re-read, byte-neutral).
+
+## Frontier (post-this-session)
+1. None on the C side or the operator side — every precondition is met and the submission is made this
+   session as `candidate-ready`. The remaining steps belong to the driver: bytes re-verification, the
+   FINAL CALL, and the grant door (which should now return tier OWNER-CLUSTER off the line-30 row and
+   write the inline_asm_canonical.txt line itself). Honest bucket is COMPLETED-INLINE-ASM-CANONICAL.
+2. If the driver's grant door STILL refuses after this submission, that is a tooling defect in the
+   registry lookup (the row exists and matches the 2026-09-02 func_80031890 / func_8002FF20 row shape
+   exactly), not a C or evidence problem — the next session should dump grant_canonical_asm's parse of
+   owner_cluster_grants.txt rather than touch the body.

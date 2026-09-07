@@ -67,6 +67,13 @@
    "hash": "df4741401a310eb2",
    "when": "2026-09-06T11:05:16.317341+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-06 06:05 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "df4741401a310eb2",
+   "when": "2026-09-07T01:40:17.026186+00:00",
+   "summary": "final call: FINAL CALL, body df4741401a310eb2 \u2014 same body I PASSed 2026-09-06 11:05; I re-verified and found no defect that ruling missed. Constructs: four GTE cop2 islands (gte_SetRotMatrix, gte_SetTransMatrix, "
   }
  ],
  "judge_clearances": [
