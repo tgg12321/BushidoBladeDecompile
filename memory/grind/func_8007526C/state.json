@@ -1,8 +1,8 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 2,
- "current_modality": "recon",
+ "session_count": 3,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -15,23 +15,29 @@
    "floor": 13,
    "modality": "recon",
    "headline": "Index-derived cursor (p = base + i*2) kills loop.c's +0x10 giv bias: floor 48 -> 13; residual is loop.c move_movables hoisting the four switch comparison constants."
+  },
+  {
+   "session": 3,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "loop.c move_movables boundary pinned by measurement at insn_count 123 (92 today): the four switch constants stay in-loop at >=123 while the 0xC8 movable still hoists, exactly reproducing the target pr"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C spelling of the four case arms that leaves >= 123 RTL insns inside the loop at loop.c scan_loop time (but collapses back to the same 91 insns via combine and jump2 cross-jumping) will flip loop.c:1631 and leave the comparison constants in the loop.",
-   "mechanism": "loop.c:1631 (threshold * savings * lifetime) >= insn_count with threshold 122, savings 1, lifetime 1; insn_count is currently 91 and is the only free variable.",
-   "next_probe": "Try arm spellings that produce more pre-combine RTL - a real statement duplicated into two or more arms and re-merged by jump2 (family: .claude/rules/duplicated-statement-into-arms.md), and address arithmetic not yet folded into the MEM at cse time. After EVERY variant read the `Loop from N to M: K real insns` line at the head of tmp/grind/func_8007526C/dumps/text1b.loop - K is literally the predicate's insn_count and gives a direct gradient toward 123."
+   "hypothesis": "An ordinary-C spelling of the four switch arms that leaves >= 123 real RTL insns inside the loop at loop.c scan_loop time - +31 over the current 92 - while still collapsing to the target's 91 final insns will leave all four comparison constants in the loop and close the last 13 points.",
+   "mechanism": "loop.c:1631 (threshold * savings * lifetime) >= insn_count, boundary measured at exactly 123 this session; the legitimate ways insns vanish after loop.c are jump2 cross-jumping of identical trailing statement sequences across arms (the target already shows one such merge - the shared three-store tail at .L800753B8 reached from case 2 and case 4), combine folding the sll-16 / sra-16 pair an explicit (s16) cast emits (folded at asm/funcs/func_8007526C.s:88, kept at :31-32), and reorg delay-slot peeling (which already duplicates the i++ into two jump delay slots at :16 and :24).",
+   "next_probe": "Build variants that spell the arms with more duplicated real trailing statements (family .claude/rules/duplicated-statement-into-arms.md) and after EACH variant record both the sandbox score and the dump's 'Loop from N to M: K real insns' line. The score should be flat below K = 122, dip slightly at 122 where exactly one constant is still hoisted, and drop by ~13 at 123. A variant that reaches 123 with a score worse than 13 means the duplication is not re-merging and cross-jumping is the wrong vehicle."
   },
   {
-   "hypothesis": "A switch spelling whose comparison constants never become separate invariant pseudos (folded into slti/sltiu/xori immediates, or one pseudo set more than once so loop.c:707's n_times_set[regno] == 1 fails) removes the movables entirely.",
-   "mechanism": "loop.c:695-707 registers a movable only for an invariant whose dest pseudo is set exactly once; the structural disjuncts always pass for compiler temps, so the escape must change what RTL the case comparison emits.",
-   "next_probe": "Measure an if/else-if chain and a range-shifted switch (switch on x - 1) and diff the emitted decision tree against the target's `beq $v1,$v0 / slti $v0,$v1,0x3 / beqz` bisection; the target keeps that bisection AND uses register-held constants, so only a spelling preserving both the tree and non-invariance can win."
+   "hypothesis": "The target's pointer-bump spelling can be reproduced without the +0x10 giv bias by changing WHICH address giv is registered last, because combine_givs uses the last-registered address giv as the combination base and the bias equals that giv's add constant.",
+   "mechanism": "loop.c strength_reduce / combine_givs: the dump prints 'giv at X combined with giv at Y' where Y is the last-registered address giv, and 'biv 72 can be eliminated'; s3 measured that this is insensitive to insn_count (still add 90 at insn_count 133).",
+   "next_probe": "In the pointer-bump spelling, vary which field access is textually last in the loop body and read the 'dest address src reg NN ... add K' lines plus the 'giv at X combined with giv at Y' lines in the func_8007526C section of tmp/grind/func_8007526C/dumps/text1b.loop. A spelling whose last-registered address giv has add 0 keeps the target's pointer bump with no bias."
   },
   {
-   "hypothesis": "The sibling func_80074B18 - the other consumer of D_800A36A0, same 2-slot stride-2 shape - already carries the addressing and/or constant-hoist finding, so its ledger transfers directly.",
-   "mechanism": "Shared data window and shared loop shape; see the repo's sibling-ledger-propagation post-mortem where a foreclosed sibling held the fix for 41 sessions.",
-   "next_probe": "Read memory/grind/func_80074B18/ (evidence.md, hypotheses.md, retired-chassis-2026-08/body.c) and any docs/grind/decisions.md entry naming it before spending further measurements here."
+   "hypothesis": "The natural structure-of-arrays object model - D_800A36A0 pointing at a struct whose fields are s16[2] arrays indexed by the slot number, which is what the 2-byte stride with fields at 0x8..0x3C implies - changes the address-arithmetic RTL enough to move the giv registration order and the loop insn_count at the same time.",
+   "mechanism": "A struct member-array access expands differently from a raw cast through a u8 cursor: the index scaling and base addition are emitted as separate RTL before cse folds them, which feeds both the loop.c:1631 insn_count and the combine_givs registration order.",
+   "next_probe": "Declare the struct file-locally first (measure before committing to a header), respell the candidate with member-array accesses indexed by the slot number, and record both the sandbox score and the dump's 'Loop from ... K real insns' value; compare K against the 92 baseline and the 123 boundary."
   }
  ],
  "judge_constraints": [],
@@ -52,11 +58,35 @@
    "measured_on": "HEAD f43e0467 chassis 2026-09-07, pure C, no FAKE constructs present, score 48 for both spellings",
    "predicate_cite": "",
    "result": "Both measure exactly 48 with build 94 insns and identical output; the loop syntax is neutral here. The addressing form, "
+  },
+  {
+   "session": 3,
+   "statement": "Setting loop_has_call, which halves the threshold to 61 and would leave all four constants in the loop at the current insn_count of 92 with no other change, is reachable from ordinary C for this funct",
+   "kill_scope": "class",
+   "measured_on": "HEAD 4eedc052 chassis 2026-09-07, candidate.c applied to src/text1b.c, pure C, no FAKE constructs present, floor 13",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:2202",
+   "result": "prescan_loop assigns loop_has_call at exactly one site, tools/gcc-2.7.2/loop.c:2202, guarded solely by GET_CODE (insn) ="
+  },
+  {
+   "session": 3,
+   "statement": "The four switch-comparison constants can be prevented from being registered as movables at all (the inherited frontier F2), by a C spelling that fails one of the scan_loop structural gates.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 4eedc052 chassis 2026-09-07, candidate.c applied to src/text1b.c, floor 13, no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:697",
+   "result": "The second disjunct, (! REG_USERVAR_P (SET_DEST (set)) && ! REG_LOOP_TEST_P (SET_DEST (set))), is unconditionally true f"
+  },
+  {
+   "session": 3,
+   "statement": "The sibling func_80074B18, the other consumer of D_800A36A0, carries an addressing or constant-hoist finding that transfers to this function (the inherited frontier F3).",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 4eedc052 chassis 2026-09-07, ledger inspection only, no build performed",
+   "predicate_cite": "",
+   "result": "The sibling ledger holds only a migration pin (floor 79) and a retired body; it has no evidence.md, no hypotheses.md and"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-07T16:08:15.562106+00:00",
- "object_model_audited": 2
+ "object_model_audited": 3
 }

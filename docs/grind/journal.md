@@ -1814,3 +1814,4 @@
 - 2026-09-07 11:00 _dws COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-07 11:08 _spu_FiDMA COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-07 11:21 func_8007526C s1 [recon] floor=13: Index-derived cursor (p = base + i*2) kills loop.c's +0x10 giv bias: floor 48 -> 13; residual is loop.c move_movables hoisting the four switch comparison constants.
+- 2026-09-07 11:33 func_8007526C s3 [structural] floor=13: loop.c move_movables boundary pinned by measurement at insn_count 123 (92 today): the four switch constants stay in-loop at >=123 while the 0xC8 movable still hoists, exactly reproducing the target pre-header; loop_has_call and movable-registration escapes class-killed.

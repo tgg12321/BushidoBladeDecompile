@@ -112,3 +112,108 @@ free variable in the predicate.
 - [s2] Neither savings nor lifetime can be driven below 1 for a separate constant set+use, and the three structural gates at loop.c:695-700 pass unconditionally for compiler-generated constant pseudos (`! REG_USERVAR_P && ! REG_LOOP_TEST_P` is true), so insn_count is the only free variable in the predicate for this residual.
 
 - [s2] src/text1b.c was reverted to HEAD (INCLUDE_ASM) at the end of the session; the score-13 body lives in memory/grind/func_8007526C/candidate.c and applies cleanly under the existing `extern u8 *D_800A36A0;` declaration at src/text1b.c:6659.
+
+## s3 (recon, 2026-09-07) — chassis HEAD 4eedc052, floor RE-MEASURED at 13
+
+### Chassis re-measurement
+`memory/grind/func_8007526C/candidate.c` applied verbatim over the `INCLUDE_ASM` line at
+src/text1b.c:6660 still measures **score 13, build_insns 93, target_insns 91** on HEAD
+4eedc052 (`wteng main sandbox func_8007526C --disable all`). The banked floor is
+chassis-accurate; nothing in the s1/s2 conclusions needed restating.
+
+### THE PREDICATE BOUNDARY IS NOW PINNED EXACTLY BY MEASUREMENT, not arithmetic
+s1/s2 derived `threshold = 122` from the compiler sources. s3 measured the boundary
+directly by dialling the loop's RTL `insn_count` one insn at a time with 1-insn pad
+stores (`*(u16 *)(p + 0x40 + 2k) = 0;`, each exactly one `sh` RTL insn) appended to the
+candidate's loop body, then reading the `Loop from N to M: K real insns` line and the
+per-movable verdicts out of tmp/grind/func_8007526C/dumps/text1b.loop
+(script: tmp/grind/func_8007526C/s3/bisect.py):
+
+| loop insn_count | verdict on the four switch-comparison constants (regnos 126/128/129/130) |
+|---|---|
+| 92 (the candidate, unpadded) | all four `moved to` — HOISTED |
+| 122 (30 pads) | FIRST one `moved to`, other three `not desirable` |
+| 123 (31 pads) | ALL FOUR `not desirable` — matches the target |
+| 133 (14 three-insn pads, pointer-bump chassis) | all four `not desirable` |
+
+The 122 row is the direct fingerprint of `threshold -= 3` at loop.c:1719: the first
+movable passes `122 * 1 * 1 >= 122`, which drops threshold to 119 and makes the
+remaining three fail. This confirms the `(threshold * savings * m->lifetime) >= insn_count`
+predicate at loop.c:1631 with threshold = 122, savings = 1, lifetime = 1, and it confirms
+the derivation of `n_non_fixed_regs = 60` (FIRST_PSEUDO_REGISTER 68 at
+tools/gcc-2.7.2/config/mips/mips.h:1181; FIXED_REGISTERS at mips.h:1188 flags exactly 8
+entries — $0, $1, $26, $27, $28, $29, $31 and reg 67).
+
+**The 0xC8 movable (regno 92, life 3, savings 2) is `moved to` the pre-header at EVERY
+insn_count tested, including 123 and 133** — `122 * 2 * 3 = 732`. That is precisely what
+the target does (`addiu $a3,$zero,0xC8` in the pre-header, asm/funcs/func_8007526C.s:3),
+so the target's loop insn_count lies in the interval **[123, 732]** and our reconstruction
+is at 92. THE ENTIRE REMAINING RESIDUAL IS A SINGLE INTEGER: the loop needs **>= 123 RTL
+insns at loop.c scan_loop time, i.e. +31 over the current form**, while still collapsing
+to the target's 91 final insns.
+
+### The target's own shape is the POINTER-BUMP form, not the index-derived form
+Read directly off asm/funcs/func_8007526C.s: the loop-closing branch's delay slot is
+`addiu $a0, $a0, 0x2` (line 100) and every field access is an absolute offset off `$a0`
+(0x8/0xC/0x10/0x14/0x18/0x38/0x3C), with a bare `lw $a0, %gp_rel(D_800A36A0)($gp)`
+pre-header (line 4). So the ORIGINAL source almost certainly bumped a pointer; our
+index-derived cursor is a *different* spelling that happens to produce the same
+addressing. This matters for the next session: the +0x10 giv bias that s1 saw in the
+pointer-bump spelling is NOT caused by the pointer bump per se.
+
+### The giv bias is INDEPENDENT of insn_count (measured) — it is combine_givs base choice
+In the padded pointer-bump run at insn_count 133 the dump still says `biv 72 can be
+eliminated` and combines every address giv onto the LAST giv in the list
+(`giv at ... combined with giv at 344`, which is `add 90` there; in the unpadded run it
+was `add 16`). So raising insn_count does NOT restore the unbiased base — combine_givs
+always picks the last-registered address giv as the combination base, and the bias equals
+that giv's `add` constant. The index-derived cursor sidesteps this entirely (its address
+givs have `add 0` relative to the recomputed `p`). Consequence: the two residual
+phenomena are governed by DIFFERENT mechanisms and the next session must not assume that
+fixing insn_count also permits reverting to the pointer-bump spelling.
+
+### `loop_has_call` is not reachable here (class kill)
+`threshold` would halve to `1 * (1 + 60) = 61` if `loop_has_call` were set, and `61 >= 92`
+is false — i.e. the CURRENT 92-insn loop would already leave all four constants in place.
+But `prescan_loop` (tools/gcc-2.7.2/loop.c:2202) sets `loop_has_call` on exactly one
+condition, `GET_CODE (insn) == CALL_INSN`, and a CALL_INSN in this loop emits a `jal` in
+the final asm. asm/funcs/func_8007526C.s contains no `jal` anywhere in the loop body
+(lines 5-100), so no C form that sets `loop_has_call` can produce the target bytes.
+
+### The movable-registration gates are confirmed unconditional (F2 is closed)
+Read at tools/gcc-2.7.2/loop.c:695-716: the three-way disjunct is
+`(! maybe_never && ! loop_reg_used_before_p (...)) || (! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)) || reg_in_basic_block_p (...)`.
+For a compiler-generated switch-comparison constant pseudo the SECOND disjunct is
+unconditionally true (it is not a user variable and it is not the loop test register), so
+no ordinary switch/if-chain spelling can stop the constant from being *registered* as a
+movable. Likewise `savings` (= n_times_used, >= 1) and `m->lifetime` (>= 1 for any
+separate set + use) cannot be driven below 1, and raising either only makes hoisting MORE
+likely. insn_count therefore remains the only free variable in the predicate — this is
+now source-confirmed, not inferred.
+
+### Sibling func_80074B18 carries nothing transferable (F3 closed)
+memory/grind/func_80074B18/ holds only migration_pin.json (floor 79) and
+retired-chassis-2026-08/body.c — no evidence.md, no hypotheses.md, and no entry naming it
+in docs/grind/decisions.md. Its body uses D_800A36A0 in a completely different way: as a
+large struct base with a pointer member at +4 and a byte at +0x65, driving nested
+`SetTile`/`SetSemiTrans` loops over 0x10- and 0xC-byte strides. It has neither the 2-slot
+stride-2 interleaving nor a switch-in-loop, so there is no addressing or constant-hoist
+finding to propagate. The [[sibling-ledger-propagation]] check is done and negative.
+
+- [s3] OBJECT MODEL: D_800A36A0 - MATCHES (re-confirmed by measurement this session). It remains the only global func_8007526C touches, is declared 'extern u8 *D_800A36A0;' at src/text1b.c:6659 immediately above the INCLUDE_ASM line, and is loaded once as a gp-relative load at asm/funcs/func_8007526C.s:4. With candidate.c applied the build reproduces that exact gp-relative load and every absolute field offset (0x8, 0xC, 0x10, 0x14, 0x18, 0x38, 0x3C), measured score 13. No second global, no MISMATCH, no MISMATCH-unmeasured symbol, no aggregate/struct declaration question outstanding for this function.
+
+- [s3] Chassis re-measurement: memory/grind/func_8007526C/candidate.c applied verbatim over src/text1b.c:6660 measures score 13, build_insns 93, target_insns 91 on HEAD 4eedc052. The banked floor of 13 is chassis-accurate and needed no correction.
+
+- [s3] THE PREDICATE BOUNDARY IS NOW MEASURED, NOT DERIVED. Padding the candidate loop one RTL insn at a time gives: insn_count 92 -> all four switch constants 'moved to' the pre-header; 122 -> the FIRST is 'moved to' and the other three are 'not desirable'; 123 -> all four 'not desirable'; 133 -> all four 'not desirable'. The 122 row is the direct fingerprint of the threshold -= 3 decrement at loop.c:1719, and it independently confirms threshold = 122 and hence n_non_fixed_regs = 60.
+
+- [s3] The 0xC8 movable (regno 92, life 3, savings 2, product 732) is hoisted at EVERY tested insn_count including 123 and 133 - exactly what the target does at asm/funcs/func_8007526C.s:3. So the target's loop insn_count lies in the interval [123, 732] and the current form sits at 92: the entire remaining 13-point residual reduces to needing +31 RTL insns inside the loop at loop.c scan_loop time that collapse again before the final 91-insn output.
+
+- [s3] The target's own shape is the POINTER-BUMP form, read directly off the asm: the loop-closing branch delay slot is 'addiu $a0, $a0, 0x2' (asm/funcs/func_8007526C.s:100) with absolute field offsets off $a0 and a bare gp-relative load in the pre-header. The banked score-13 candidate uses an index-derived cursor instead, which is a DIFFERENT spelling that coincidentally lands on the same addressing - the next session must not assume the original bumped nothing.
+
+- [s3] The +0x10 giv bias is INDEPENDENT of insn_count (measured): in the padded pointer-bump run at insn_count 133 the dump still reads 'biv 72 can be eliminated' and combines every address giv onto the LAST-registered one (add 90 there, add 16 unpadded). combine_givs always picks the last-registered address giv as the combination base and the bias equals that giv's add constant, so raising insn_count does not restore the unbiased base and the two residual phenomena have different mechanisms.
+
+- [s3] Movable registration cannot be defeated (source-confirmed at tools/gcc-2.7.2/loop.c:695-716): the second disjunct is unconditionally true for expand_end_case's constant pseudos, and savings and lifetime both have a hard floor of 1. Combined with the loop_has_call class kill, insn_count is now the only remaining free variable in the loop.c:1631 predicate.
+
+- [s3] Sibling check done and negative: memory/grind/func_80074B18/ holds only migration_pin.json (floor 79) and retired-chassis-2026-08/body.c, with no evidence, hypotheses or decisions.md entry. Its body uses D_800A36A0 as a large struct base (pointer at +4, byte at +0x65) with nested 0x10/0xC-stride loops - no 2-slot interleaving, no switch in a loop, nothing transferable.
+
+- [s3] src/text1b.c was restored byte-for-byte to HEAD at the end of the session (git diff --stat shows only the pre-existing metrics/events.jsonl churn); the score-13 body lives only in memory/grind/func_8007526C/candidate.c.

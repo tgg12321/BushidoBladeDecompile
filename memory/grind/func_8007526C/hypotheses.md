@@ -19,63 +19,123 @@
   Both spellings of the pointer-increment loop measure exactly 48; the loop form is not
   the lever, the addressing form is. Measured on HEAD 2026-09-07, no FAKE constructs.
 
-## Live frontier (in priority order)
-
-- **F1 — inflate the loop's `scan_loop` insn_count above 122.**
-  Mechanism: `loop.c:1631` moves an invariant iff
-  `(threshold * savings * m->lifetime) >= insn_count`, with threshold = 2*(1+60) = 122
-  for this (call-free) loop, savings = lifetime = 1 for each switch comparison constant.
-  Our loop is 91 RTL insns at `scan_loop` time, so the four constants are hoisted; the
-  target's are not. Any ordinary-C spelling that leaves >= 123 RTL insns inside the loop
-  *at loop.c time* (i.e. surviving `jump` and `cse`, but freely collapsible afterwards by
-  `combine` / `jump2` cross-jumping) would flip the predicate.
-  Next probe: write the four case arms in a form that produces more pre-`combine` RTL —
-  e.g. arms that duplicate a real statement (the sanctioned duplicated-statement-into-arms
-  family, `.claude/rules/duplicated-statement-into-arms.md`) and are re-merged by `jump2`,
-  or field accesses whose address arithmetic is not yet folded into the MEM at `cse` time.
-  Read `Loop from N to M: K real insns` at the head of the per-function .loop dump after
-  every variant — that number IS the predicate's insn_count and gives a direct gradient.
-
-- **F2 — make the case comparisons not become movables at all.**
-  Mechanism: the movable is only registered if the set's dest survives the gates at
-  `loop.c:695-700`. For compiler-generated constant pseudos the second disjunct
-  (`! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)`) is unconditionally true, so no
-  ordinary switch spelling escapes there. The escape would have to change WHAT RTL the
-  case comparison produces: a spelling where the comparison constant is folded into the
-  instruction as an immediate (`sltiu`/`xori`/`slti`) leaves no pseudo to hoist.
-  Next probe: measure an if/else-if chain and a range-shifted switch (e.g. switching on
-  `x - 1`) and diff the resulting decision tree against the target's
-  `beq $v1,$v0 / slti $v0,$v1,3 / beqz` bisection. NOTE: the target itself uses
-  `addiu $v0,$zero,N; beq $v1,$v0`, so the constants ARE in registers there — this
-  frontier can only win if some spelling both keeps the bisection tree and makes the
-  constant pseudos non-invariant (e.g. one pseudo set more than once, which fails
-  `n_times_set[regno] == 1` at loop.c:707).
-
-- **F3 — check the sibling `func_80074B18`.**
-  It is the other consumer of `D_800A36A0` (memory/grind/func_80074B18/retired-chassis-2026-08/body.c)
-  and has the same 2-slot / stride-2 shape. If it has ever been matched, or if its ledger
-  records a switch-in-loop constant-hoist finding, the spelling transfers directly
-  (see [[sibling-ledger-propagation]] — a foreclosed sibling holding the shared window's
-  fix is a known 41-session failure mode in this repo).
-
-## [s2] Deriving the loop cursor from the index inside the loop (p = base + i*2) instead of bumping a pointer (p += 2) stops loop.c strength reduction from creating a base induction variable biased by +0x10, restoring the target's absolute field offsets and bare 'lw a0,0(gp)' preamble.
-- mechanism: GCC 2.7.2 loop.c strength_reduce/combine_givs. With an explicit pointer bump, reg 72 is the biv and the first in-loop address (p+0x10, the lbu feeding the switch) is chosen as the combined giv base, emitting (set (reg 130) (plus (reg 72) (const_int 16))) in the pre-header and shifting every MEM offset by -0x10. With an index-derived cursor the giv over biv i has add_val 0, so the pre-header initialiser is the plain global load.
-- probe: Wrote both spellings into src/text1b.c and measured with `wteng main sandbox func_8007526C --disable all`; read tmp/grind/func_8007526C/dumps/text1b.loop ('Insn 219: dest address src reg 72 ... add 16' and insn 281) for pass attribution; objdump-diffed both builds against asm/funcs/func_8007526C.s.
-- result: Pointer-bump form measures 48 (build 94 insns) with every offset biased by -0x10; index-derived form measures 13 (build 93 insns) with every offset, block order, register seat and delay slot matching the target. Banked as memory/grind/func_8007526C/candidate.c.
+## [s3] The loop.c:1631 move_movables boundary for this function sits at exactly insn_count 123: at 122 the first switch-comparison constant is still hoisted and threshold -= 3 knocks out the other three, and at 123 all four read "not desirable" while the 0xC8 movable is still moved, reproducing the target pre-header.
+- mechanism: loop.c:1631 `(threshold * savings * m->lifetime) >= insn_count` with threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 2 * 61 = 122 (loop.c:532; FIRST_PSEUDO_REGISTER 68 at config/mips/mips.h:1181, 8 fixed entries at mips.h:1188), savings = lifetime = 1 for each comparison constant, and the threshold -= 3 decrement at loop.c:1719 after each movable is moved. The 0xC8 movable has savings 2 and lifetime 3, so its product is 732 and it survives the whole tested range.
+- probe: Dialled the candidate loop's RTL insn_count one insn at a time by appending N single-insn pad stores (`*(u16 *)(p + 0x40 + 2k) = 0;`) inside the loop, rebuilding the cc1 dumps with `pwsh tools/grinder/dump.ps1 func_8007526C` and reading the `Loop from N to M: K real insns` line plus the per-movable `moved to` / `not desirable` verdicts out of the func_8007526C section of tmp/grind/func_8007526C/dumps/text1b.loop. Script tmp/grind/func_8007526C/s3/bisect.py; segments saved as tmp/grind/func_8007526C/s3/loop_seg_candidate_insncount92.txt and loop_seg_padded31_insncount123.txt.
+- result: insn_count 92 (unpadded candidate) hoists all four; 122 hoists the first and rejects three; 123 rejects all four; 133 rejects all four. The 0xC8 constant is `moved to` the pre-header in every case. The target's loop insn_count therefore lies in [123, 732] and our reconstruction is at 92 -- the whole residual reduces to finding +31 RTL insns of ordinary C that live inside the loop at loop.c time and collapse again before the final 91-insn output.
 - verdict: CONFIRMED
 
-## [s2] Re-reading the global D_800A36A0 at every field access, with no local cursor, inflates the loop's RTL insn_count past loop.c's move_movables threshold and keeps the switch comparison constants in the loop.
-- mechanism: loop.c:1631 moves an invariant iff (threshold * savings * lifetime) >= insn_count; the idea was to raise insn_count above threshold = 2*(1+n_non_fixed_regs) = 122 by multiplying the source-level global loads.
-- probe: Rewrote all 24 accesses as *(u16 *)(D_800A36A0 + i * 2 + OFFS), measured the sandbox score, and read the insn_count line at the head of the regenerated .loop dump.
-- result: cse collapses the repeated global loads before loop.c runs: 'Loop from 11 to 622: 95 real insns' (up from 91, still far below 122), all four constants still 'moved to' the pre-header, and the score regressed from 13 to 25 (98 insns). Saved to rejected/global-reload-per-access-score25.c.
+## [s3] Setting loop_has_call, which halves the threshold to 61 and would leave all four constants in the loop at the current insn_count of 92 with no other change, is reachable from ordinary C for this function.
+- mechanism: loop.c:532 makes threshold = 1 * (1 + n_non_fixed_regs) = 61 when loop_has_call is set, and 61 >= 92 is false, so every one of the four comparison constants would read "not desirable" without touching insn_count at all.
+- probe: Read prescan_loop in tools/gcc-2.7.2/loop.c (the whole function, lines 2160-2214) to enumerate every assignment to loop_has_call, then grepped asm/funcs/func_8007526C.s for call instructions.
+- result: prescan_loop sets loop_has_call at exactly one place, tools/gcc-2.7.2/loop.c:2202, guarded solely by `GET_CODE (insn) == CALL_INSN`. Any C construct that produces a CALL_INSN inside this loop emits a `jal` in the final output, and the target function contains no `jal` at all (asm/funcs/func_8007526C.s lines 1-103 are branch/jump/load/store/ALU only). So no C form can set this flag and still produce the target bytes.
 - verdict: KILLED
-- kill_scope: instance
-- measured_on: HEAD f43e0467 chassis 2026-09-07, pure C, no FAKE constructs present, score 25
+- kill_scope: class
+- measured_on: HEAD 4eedc052 chassis 2026-09-07, candidate.c applied, pure C, no FAKE constructs, floor 13
+- predicate_cite: tools/gcc-2.7.2/loop.c:2202
 
-## [s2] The loop form itself (for (i=0;i<2;i++, p+=2) versus i=0; do {...} i++; p+=2; while (i<2)) is the lever behind the 48-point residual.
-- mechanism: Front-end loop-note placement and where the increment lands relative to NOTE_INSN_LOOP_CONT could change which register loop.c picks as the biv.
-- probe: Measured both spellings of the pointer-bump body with `wteng main sandbox func_8007526C --disable all`.
-- result: Both measure exactly 48 with build 94 insns and identical output; the loop syntax is neutral here. The addressing form, not the loop form, carries the residual.
+## [s3] The four switch-comparison constants can be prevented from being REGISTERED as movables at all (frontier F2), by a spelling that fails one of the scan_loop structural gates.
+- mechanism: scan_loop registers a movable only if the dest survives the three-way disjunct at loop.c:695-700 and `n_times_set[regno] == 1` at loop.c:707.
+- probe: Read tools/gcc-2.7.2/loop.c:686-716 directly and evaluated each disjunct for a compiler-generated switch-comparison constant pseudo.
+- result: The second disjunct, `(! REG_USERVAR_P (SET_DEST (set)) && ! REG_LOOP_TEST_P (SET_DEST (set)))`, is unconditionally true for these pseudos -- they are compiler temporaries emitted by expand_end_case, never user variables, and never the loop test register -- so the disjunction always passes regardless of how the switch is spelled in C. Neither savings (= n_times_used, minimum 1) nor m->lifetime (minimum 1 for a separate set and use) can be driven below 1, and increasing either only strengthens the hoist. insn_count is the sole free variable in the predicate.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 4eedc052 chassis 2026-09-07, candidate.c applied, floor 13, no FAKE constructs
+- predicate_cite: tools/gcc-2.7.2/loop.c:697
+
+## [s3] The sibling func_80074B18, the other consumer of D_800A36A0, carries an addressing or constant-hoist finding that transfers to this function (frontier F3).
+- mechanism: shared data window and assumed shared 2-slot stride-2 loop shape; the [[sibling-ledger-propagation]] failure mode.
+- probe: Listed memory/grind/func_80074B18/, read its migration_pin.json and retired-chassis-2026-08/body.c, and grepped docs/grind/decisions.md for both function names.
+- result: The sibling ledger holds only a migration pin (floor 79) and a retired body; there is no evidence.md, no hypotheses.md and no decisions.md entry for either function. Its body treats D_800A36A0 as a large struct base (pointer member at +4, byte at +0x65) driving nested SetTile/SetSemiTrans loops over 0x10- and 0xC-byte strides -- no 2-slot interleaving, no switch in a loop. Nothing transfers.
 - verdict: KILLED
 - kill_scope: instance
-- measured_on: HEAD f43e0467 chassis 2026-09-07, pure C, no FAKE constructs present, score 48 for both spellings
+- measured_on: HEAD 4eedc052 chassis 2026-09-07, ledger inspection only, no build
+
+## Live frontier (in priority order) -- rewritten by s3
+
+- **F1 (was F1, now the ONLY open axis) -- find +31 RTL insns of ordinary C that live inside
+  the loop at loop.c scan_loop time and are gone again by the final 91-insn output.**
+  The target number is no longer an estimate: measured, the loop must carry **>= 123 real
+  insns** at loop.c time (loop.c:1631, threshold 122, savings 1, lifetime 1); the current
+  score-13 candidate carries 92. Every other term in the predicate is measured or
+  source-confirmed immovable (see the s3 class kills on loop_has_call and on movable
+  registration). The gradient is monotone and readable in one line of the dump -- append
+  pad stores, read `Loop from N to M: K real insns`, and note that at K = 122 exactly ONE
+  constant is still hoisted, so partial progress is visible before the full flip.
+  What can legitimately vanish between loop.c and the final asm, in decreasing size:
+  (a) jump2 cross-jumping of identical trailing statement sequences across switch arms
+      (the sanctioned duplicated-statement-into-arms family,
+      .claude/rules/duplicated-statement-into-arms.md) -- note the target ALREADY shows one
+      such merge, the shared `sh zero,8 / sh zero,0xC / sh zero,0x10` tail at .L800753B8
+      reached from both case 2 and case 4, so the mechanism is demonstrably live here;
+  (b) combine folding multi-insn sequences, e.g. the `sll 16 / sra 16` pair an explicit
+      `(s16)` cast emits, which the target folds away at asm/funcs/func_8007526C.s:88
+      but keeps at :31-32;
+  (c) reorg delay-slot peeling, which already duplicates the `addiu $a2,$a2,0x1` increment
+      into two jump delay slots in the target (:16 and :24) -- see
+      [[reorg-peel-is-not-a-source-statement]].
+  Next probe: build variants that spell the four arms with more duplicated real trailing
+  statements and measure BOTH the dump's insn_count AND the sandbox score after each; the
+  score should be flat until insn_count reaches 122, dip slightly at 122, and drop by ~13
+  at 123. If a variant reaches 123 with a score worse than 13, the duplication is not
+  re-merging and (a) is the wrong vehicle.
+
+- **F2 (new) -- reconstruct the loop in the target's own POINTER-BUMP spelling without
+  reintroducing the +0x10 giv bias.**
+  s3 read the target directly: it bumps `$a0` by 2 in the loop-closing delay slot
+  (asm/funcs/func_8007526C.s:100) with absolute field offsets, so the original source
+  almost certainly used a bumped pointer, and our index-derived cursor is a different
+  spelling that coincidentally lands on the same addressing. s3 also measured that raising
+  insn_count does NOT remove the bias (at insn_count 133 the dump still reads
+  `biv 72 can be eliminated` and combines every address giv onto the last-registered one).
+  The bias constant always equals the `add` of the LAST address giv in loop.c's list, so
+  the lever is the ORDER in which address givs are registered, not their count.
+  Next probe: in the pointer-bump spelling, vary which field access is textually last in
+  the loop body and read the `dest address src reg NN ... add K` lines plus the
+  `giv at X combined with giv at Y` lines in the func_8007526C section of
+  tmp/grind/func_8007526C/dumps/text1b.loop; a spelling whose last-registered address giv
+  has `add 0` would eliminate the bias while keeping the target's pointer bump.
+
+- **F3 (new) -- test whether insn_count and the giv-base choice can be moved together by
+  the natural struct-of-arrays object model.**
+  The +2 stride with fields at 0x8..0x3C means D_800A36A0 points at a structure-of-arrays
+  in which each logical field is an `s16 [2]` indexed by the slot number, not an array of
+  per-slot structs. Nobody has yet measured the header-canonical struct spelling
+  (`w->field[i]`) against the raw `*(u16 *)(p + off)` casts; it changes which RTL the
+  address arithmetic produces and therefore both the giv registration order (F2) and the
+  loop insn_count (F1) at once.
+  Next probe: declare the struct in include/ (or file-locally first, to measure before
+  committing to a header), respell the candidate with `w->field[i]`, and record both the
+  sandbox score and the dump's `Loop from ... K real insns`.
+
+## [s3] The loop.c:1631 move_movables boundary for this function sits at exactly insn_count 123: at 122 the first switch-comparison constant is still hoisted and the threshold -= 3 decrement knocks out the other three, and at 123 all four read 'not desirable' while the 0xC8 movable is still moved, reproducing the target pre-header.
+- mechanism: loop.c:1631 (threshold * savings * m->lifetime) >= insn_count with threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 2 * 61 = 122 (loop.c:532; FIRST_PSEUDO_REGISTER 68 at tools/gcc-2.7.2/config/mips/mips.h:1181 with 8 entries flagged in FIXED_REGISTERS at mips.h:1188), savings = lifetime = 1 for each comparison constant, plus the threshold -= 3 decrement at loop.c:1719 applied after each movable is moved. The 0xC8 movable has savings 2 and lifetime 3 so its product is 732 and it survives the entire tested range.
+- probe: Dialled the candidate loop's RTL insn_count one insn at a time by appending N single-insn pad stores (*(u16 *)(p + 0x40 + 2k) = 0;) inside the loop body, regenerating the cc1 dumps with `pwsh tools/grinder/dump.ps1 func_8007526C` for each N, and reading the 'Loop from N to M: K real insns' line and the per-movable 'moved to' / 'not desirable' verdicts out of the func_8007526C section of tmp/grind/func_8007526C/dumps/text1b.loop. Driver script tmp/grind/func_8007526C/s3/bisect.py.
+- result: insn_count 92 (unpadded candidate, score 13) hoists all four constants; insn_count 122 hoists the first and rejects the other three; insn_count 123 rejects all four; insn_count 133 (measured on the pointer-bump chassis with three-insn pads) also rejects all four. The 0xC8 constant is 'moved to' the pre-header in every single case, matching asm/funcs/func_8007526C.s:3. The target's loop insn_count therefore lies in [123, 732] while our reconstruction sits at 92, so the whole remaining residual reduces to one integer: +31 RTL insns inside the loop at loop.c time that collapse again before the final 91-insn output.
+- verdict: CONFIRMED
+
+## [s3] Setting loop_has_call, which halves the threshold to 61 and would leave all four constants in the loop at the current insn_count of 92 with no other change, is reachable from ordinary C for this function.
+- mechanism: loop.c:532 sets threshold = 1 * (1 + n_non_fixed_regs) = 61 when loop_has_call is set, and 61 >= 92 is false, so all four comparison constants would read 'not desirable' without touching insn_count at all.
+- probe: Read prescan_loop in full in tools/gcc-2.7.2/loop.c to enumerate every assignment to loop_has_call, then inspected all 103 lines of asm/funcs/func_8007526C.s for call instructions.
+- result: prescan_loop assigns loop_has_call at exactly one site, tools/gcc-2.7.2/loop.c:2202, guarded solely by GET_CODE (insn) == CALL_INSN. Any C construct producing a CALL_INSN inside this loop emits a jal in the final output, and the target function contains no jal at all - its loop body (asm/funcs/func_8007526C.s:5-100) is branch, jump, load, store and ALU only. No C form can set this flag and still produce the target bytes.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 4eedc052 chassis 2026-09-07, candidate.c applied to src/text1b.c, pure C, no FAKE constructs present, floor 13
+- predicate_cite: tools/gcc-2.7.2/loop.c:2202
+
+## [s3] The four switch-comparison constants can be prevented from being registered as movables at all (the inherited frontier F2), by a C spelling that fails one of the scan_loop structural gates.
+- mechanism: scan_loop registers a movable only if the SET dest survives the three-way disjunct at loop.c:695-700 and n_times_set[regno] == 1 at loop.c:707.
+- probe: Read tools/gcc-2.7.2/loop.c:686-716 directly and evaluated each disjunct against a compiler-generated switch-comparison constant pseudo, cross-checking against the movable list printed in the func_8007526C section of tmp/grind/func_8007526C/dumps/text1b.loop.
+- result: The second disjunct, (! REG_USERVAR_P (SET_DEST (set)) && ! REG_LOOP_TEST_P (SET_DEST (set))), is unconditionally true for these pseudos - they are compiler temporaries emitted by expand_end_case, never user variables and never the loop test register - so the disjunction passes however the switch is spelled in C. Neither savings (= n_times_used, minimum 1) nor m->lifetime (minimum 1 for a separate set and use) can be driven below 1, and raising either only strengthens the hoist. insn_count is the sole free variable in the predicate.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 4eedc052 chassis 2026-09-07, candidate.c applied to src/text1b.c, floor 13, no FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/loop.c:697
+
+## [s3] The sibling func_80074B18, the other consumer of D_800A36A0, carries an addressing or constant-hoist finding that transfers to this function (the inherited frontier F3).
+- mechanism: Shared data window and an assumed shared 2-slot stride-2 loop shape; the sibling-ledger-propagation failure mode where a foreclosed sibling held a shared window's fix for 41 sessions.
+- probe: Listed memory/grind/func_80074B18/, read its migration_pin.json and retired-chassis-2026-08/body.c, and grepped docs/grind/decisions.md for both function names.
+- result: The sibling ledger holds only a migration pin (floor 79) and a retired body; it has no evidence.md, no hypotheses.md and no decisions.md entry, and neither function is named anywhere in docs/grind/decisions.md. Its body treats D_800A36A0 as a large struct base - pointer member at +4, byte at +0x65 - driving nested SetTile/SetSemiTrans loops over 0x10-byte and 0xC-byte strides, with no 2-slot interleaving and no switch in a loop. Nothing transfers.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4eedc052 chassis 2026-09-07, ledger inspection only, no build performed

@@ -4,6 +4,8 @@
  * Requires the surrounding `extern u8 *D_800A36A0;` declaration already present
  * in src/text1b.c immediately above the INCLUDE_ASM line.
  *
+ * s3 (2026-09-07) re-measured this body at score 13 on chassis HEAD 4eedc052 -- unchanged.
+ *
  * Residual (score 13, build 93 insns vs target 91): GCC 2.7.2 loop.c
  * move_movables hoists the four switch decision-tree comparison constants
  * (1, 2, 3, 4) into the loop pre-header (they become `li t3,2 / li t2,1 /
