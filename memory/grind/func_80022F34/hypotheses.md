@@ -433,3 +433,33 @@ which is on the `add-scope-allow` denylist and requires an operator hand-apply.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: clean HEAD chassis at commit 8eaa09e4 with scope_allow.txt:58 granting include/code6cac.h + src/code6cac.c, edits 1/2/4 applied, maspsx_label_nop_funcs.txt untouched, zero FAKE constructs, sandbox --disable all = 1
+
+## s12 (structural, 2026-09-06)
+
+- **CONFIRMED — the maspsx row was the whole remaining gap.** With
+  `func_80022F34` present in `maspsx_label_nop_funcs.txt` (owner commit
+  d4338774), the s10/s11 banked body plus the three header array declarations
+  measures `sandbox --disable all` = **0** (70/70, rules_dropped 0) and
+  `verify-oracle` SHA1 == oracle. The s11 residual of 1 was exactly the
+  ASPSX load-delay nop that maspsx's `$L`-only `is_label()` dropped at the
+  target's own `.L` merge label.
+
+- **CONFIRMED — the `(u16 *)&D_80102778` pun is not load-bearing; the
+  two-element declaration is byte-free.** Probe: declare
+  `extern u16 D_80102778[2];`, use `tbl = D_80102778;`, and rewrite
+  func_8001C444's two scalar stores as `D_80102778[1]` / `D_80102778[0]`.
+  Result: func_80022F34 = 0, func_8001C444 = 0, full-tree oracle SHA1 match.
+  Generalisation worth trying elsewhere: when a splat scalar is walked by a
+  stepped base register in the target, the merged array declaration is
+  typically byte-identical to the cast pun, so the pun can be paid off for
+  free at review time rather than argued.
+
+- **KILLED (instance) — completing the D_80101EC8 object-model correction
+  inside this function's scope grant.** Probe: enumerate every use of the
+  symbol (`grep -rn D_80101EC8 src/ include/`). Twelve use sites; six are in
+  src/code6cac_b.c, two in src/code6cac_c_ab.c, two in src/text1b.c — none of
+  which the s12 scope grant covers (`func_80022F34 include/code6cac.h
+  src/code6cac.c`). Changing the header declaration alone breaks those TUs'
+  pointer arithmetic (`&D_80101EC8 + offset` on an incomplete array type), so
+  the correction is a multi-file integration handoff. The byte-offset spelling
+  is argued in self_vet.md instead.

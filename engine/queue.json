@@ -4,16 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80022F34",
-      "file": "code6cac",
-      "distance": 11,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "unpark_reason": "owner 2026-09-06: maspsx_label_nop_funcs.txt row added (commit d4338774) - land banked form; argue or correct the D_80101EC8 / D_80102778 raw-offset accesses at review",
-      "unparked_from": "FORECLOSED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-08-31): 2026-09-05 \u2014 func_80022F34 \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
-    },
-    {
       "func": "func_800480C0",
       "file": "text1b",
       "distance": 20,
@@ -1545,14 +1535,14 @@
     }
   ],
   "counts": {
-    "total": 174,
-    "active": 171,
+    "total": 173,
+    "active": 170,
     "by_status": {
-      "active": 171,
+      "active": 170,
       "foreclosed": 3
     },
     "by_verdict": {
-      "C": 144,
+      "C": 143,
       "ASM-PARTIAL": 27
     }
   }

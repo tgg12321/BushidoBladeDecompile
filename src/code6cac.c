@@ -996,8 +996,8 @@ void func_8001BE08(s32 *arg0) {
 void func_8001BE20(s32 arg0, GameObj *arg1);
 INCLUDE_ASM("asm/funcs", func_8001BE20);
 void func_8001C444(void) {
-    D_8010277A = 0x800;
-    D_80102778 = 0x800;
+    D_80102778[1] = 0x800;
+    D_80102778[0] = 0x800;
     D_8010277C = 1;
     D_8010277D = 0x10;
     D_80102784 = 0xC;
@@ -2464,7 +2464,52 @@ void func_80022568(s16 *arg0) {
     arg0[0x139] = 0;
 }
 INCLUDE_ASM("asm/funcs", func_80022580);
-INCLUDE_ASM("asm/funcs", func_80022F34);
+void func_80022F34(void) {
+    s32 i;
+    u16 *tbl;
+    s32 offset;
+
+    i = 0;
+    tbl = D_80102778;
+    offset = 0;
+
+loop_22F34:
+    {
+        u8 *rec = (u8 *)&D_80101EC8 + offset;
+
+        if (*(s16 *)(rec + 6) != 0) {
+            s32 mode = D_800A38DC;
+
+            switch (mode) {
+                case 0:
+                    *(s16 *)(rec + 8) = D_80102782[i] << 4;
+                    break;
+                case 1:
+                case 2:
+                default:
+                    *(s16 *)(rec + 8) = *tbl;
+                    break;
+                case 3:
+                    break;
+            }
+
+            {
+                s16 idx1 = *(s16 *)(rec + 0x4A);
+                s32 val1 = D_801027BC[idx1][0];
+                rec = *(u8 **)rec;
+                {
+                    s16 idx2 = *(s16 *)(rec + 0x4A);
+                    func_80055138(i, val1, D_801027BC[idx2][0]);
+                }
+            }
+        }
+
+        tbl++;
+        i++;
+        offset += 0x44C;
+    }
+    if (i < 2) goto loop_22F34;
+}
 
 typedef struct { s32 a, b, c, d; } Quad_2304C;
 

@@ -118,5 +118,14 @@
    "result": "The label and the nop are both target bytes. A shape that drops the merge label drops a branch target the original has, "
   }
  ],
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "d33fbbfa2f1f6d15",
+   "when": "2026-09-07T01:28:12.103973+00:00",
+   "summary": "final call: Ordinary C throughout; no FAKE, no __asm__, no pin, no barrier, no dead local/store, no sanctioned-family claim needed. The three header changes (u16 D_80102778[2], u8 D_80102782[], s32 D_801027BC[][5"
+  }
+ ]
 }

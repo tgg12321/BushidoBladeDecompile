@@ -646,3 +646,45 @@ scope check. Landed-state copies banked at `tmp/grind/func_80022F34/s11/code6cac
 - [s11] The banked body carries no declaration pun, no __asm__, no volatile, no dead store, no unused local or array and no FAKE construct; memory/grind/func_80022F34/self_vet.md is on disk from s10 and applies unchanged.
 
 - [s11] Tree reverted to clean HEAD after measurement (s10 procedure); the landed state is banked at tmp/grind/func_80022F34/s11/code6cac.c.s11-landed and code6cac.h.s11-landed.
+
+## s12 (2026-09-06, structural) — LANDED AT ZERO
+
+The owner applied the operator line the s11 frontier asked for:
+`maspsx_label_nop_funcs.txt:22` now carries `func_80022F34` (commit d4338774).
+With that row present, the banked s10/s11 form measures **score 0**.
+
+Measurements, clean HEAD, edits in src/ + include/:
+  - `sandbox func_80022F34 --disable all` -> score 0, build_insns 70,
+    target_insns 70, rules_dropped 0, cheat_asm_stripped 23 (all of that 23 is
+    OTHER functions in code6cac.c; func_80022F34 itself carries none).
+  - `verify-oracle` -> ok true, build_sha1 == original_sha1_locked ==
+    62efab4f73f992798c43e8c730aa43baa10bb4fa (full-tree, all objects).
+
+### D_80102778 declaration corrected (new this session, byte-neutral)
+s11 landed with `tbl = (u16 *)&D_80102778;` — a per-use cast pun over a symbol
+declared `extern s16 D_80102778;`. The target walks it with a dedicated base
+register (`$s2 = %hi/%lo(D_80102778)`, func_80022F34.s:6-7) stepped by 2 across
+the two loop iterations, i.e. base-register + stride evidence for a
+two-element u16 object (elements 0x80102778 and 0x8010277A, both written
+`= 0x800` by func_8001C444). Corrected at the DECLARATION:
+  include/code6cac.h:445  `extern s16 D_80102778;` -> `extern u16 D_80102778[2];`
+  src/code6cac.c:2473     `tbl = (u16 *)&D_80102778;` -> `tbl = D_80102778;`
+  src/code6cac.c:999-1000 (inside the already-matched func_8001C444)
+      `D_8010277A = 0x800; D_80102778 = 0x800;`
+      -> `D_80102778[1] = 0x800; D_80102778[0] = 0x800;`
+MEASURED byte-neutral both ways: func_80022F34 score 0 AND func_8001C444
+score 0 after the change, and the full-tree oracle SHA1 still matches. So the
+merge is free — the pun was never load-bearing for the bytes.
+
+`extern s16 D_8010277A;` is left in the header because its last remaining user,
+src/code6cac_b.c:3048, is outside this function's scope grant. Inside
+src/code6cac.c the merged two-element model is used at every site.
+
+### D_80101EC8 raw-offset access: ARGUED, not corrected (see self_vet.md)
+Correcting it to `u8 D_80101EC8[][0x44C]` would require simultaneous edits in
+src/code6cac_b.c (:666, :745, :808, :868, :880, :2369),
+src/code6cac_c_ab.c (:458, :578) and src/text1b.c (:1520, :1531) — all outside
+the grant — and would perturb functions already at COMPLETED-C. The byte-offset
+spelling is the repo-wide idiom for this symbol and mirrors the target's own
+base+offset addressing (`addu $a0, $s1, $v0`, func_80022F34.s:14). Banked as a
+project-wide integration handoff, not a blocker for this function.
