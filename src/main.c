@@ -73,7 +73,16 @@ extern s32 D_800A2D0C;
 extern volatile u32 *D_800A2CEC;
 extern volatile s32 _spu_transferCallback;
 extern s32 D_800A2CDC;
-extern volatile u16 D_800F7298[];
+typedef struct {
+    u16 pad[196];
+    volatile u16 key_on[2];  /* +0x188 SPU KEY-ON (MMIO via _spu_RXX) */
+    volatile u16 key_off[2]; /* +0x18C SPU KEY-OFF */
+} SpuRXX;
+typedef union {
+    SpuRXX rxx;
+    volatile u16 raw[0x100];
+} SpuUnion;
+extern SpuUnion D_800F7298;
 extern s32 D_800A2CFC;
 extern u16 D_800A2CF4;
 extern s32 _spu_inTransfer;
@@ -2057,7 +2066,52 @@ void SpuSetNoiseVoice(s32 a0, s32 a1) {
     func_80089A48(a0, a1, 0xCA, 0xCB);
 }
 
-INCLUDE_ASM("asm/funcs", func_80089A48);
+s32 func_80089A48(s32 on_off, u32 bits, s32 addr1, s32 addr2)
+{
+    u32 var_t0;
+
+    if (D_800A2CD4 & 1) {
+        var_t0 = ((D_800F7298.raw[addr2] & 0xFF) << 16) | D_800F7298.raw[addr1];
+    } else {
+        var_t0 = ((((SpuUnion *)D_800A2CDC)->raw[addr2] & 0xFF) << 16) | ((SpuUnion *)D_800A2CDC)->raw[addr1];
+    }
+    switch (on_off) {
+    case 1:
+        if (D_800A2CD4 & 1) {
+            D_800F7298.raw[addr1] |= bits;
+            D_800F7298.raw[addr2] |= (bits >> 16) & 0xFF;
+            D_800A28A0 |= 1 << ((addr1 - 0xC6) >> 1);
+        } else {
+            ((SpuUnion *)D_800A2CDC)->raw[addr1] |= bits;
+            ((SpuUnion *)D_800A2CDC)->raw[addr2] |= (bits >> 16) & 0xFF;
+        }
+        var_t0 |= bits & 0xFFFFFF;
+        break;
+    case 0:
+        if (D_800A2CD4 & 1) {
+            D_800F7298.raw[addr1] &= ~bits;
+            D_800F7298.raw[addr2] &= ~((bits >> 16) & 0xFF);
+            D_800A28A0 |= 1 << ((addr1 - 0xC6) >> 1);
+        } else {
+            ((SpuUnion *)D_800A2CDC)->raw[addr1] &= ~bits;
+            ((SpuUnion *)D_800A2CDC)->raw[addr2] &= ~((bits >> 16) & 0xFF);
+        }
+        var_t0 &= ~(bits & 0xFFFFFF);
+        break;
+    case 8:
+        if (D_800A2CD4 & 1) {
+            D_800F7298.raw[addr1] = bits;
+            D_800F7298.raw[addr2] = (bits >> 16) & 0xFF;
+            D_800A28A0 |= 1 << ((addr1 - 0xC6) >> 1);
+        } else {
+            ((SpuUnion *)D_800A2CDC)->raw[addr1] = bits;
+            ((SpuUnion *)D_800A2CDC)->raw[addr2] = (bits >> 16) & 0xFF;
+        }
+        var_t0 = bits & 0xFFFFFF;
+        break;
+    }
+    return var_t0 & 0xFFFFFF;
+}
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana_2  |  178i  |  x2 size collision */
 s32 SpuSetNoiseClock(s32 a0) {
     s32 val;
@@ -2448,11 +2502,6 @@ __asm__(
  * 2026-07-09); C ref: sotn-decomp src/psxsdk/libspu/s_sk.c shape + PsyQ 4.0
  * S_SK object relocs (_spu_RQ = one u16[4]). Volatile decls are Ruling-4
  * ground-truth-codegen grants (volatile_extern_allowlist.txt:40-44). */
-typedef struct {
-    u16 pad[196];
-    volatile u16 key_on[2];  /* +0x188 SPU KEY-ON (MMIO via _spu_RXX) */
-    volatile u16 key_off[2]; /* +0x18C SPU KEY-OFF */
-} SpuRXX;
 
 void SpuSetKey(s32 on_off, u32 voice_bit) {
     u16 lo;

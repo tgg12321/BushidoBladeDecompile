@@ -34,6 +34,13 @@
    "hash": "3d9403702d133b3a",
    "when": "2026-09-06T12:52:27.364557+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-06 07:52 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "3d9403702d133b3a",
+   "when": "2026-09-07T01:55:05.017153+00:00",
+   "summary": "final call: Ordinary C, no FAKE, no asm, no annotation owed. Binding basis: my own 2026-09-06 07:52 ruling cleared this exact body (hash 3d9403702d133b3a, state.json judge_clearances) and I find no defect it did "
   }
  ],
  "judge_clearances": [

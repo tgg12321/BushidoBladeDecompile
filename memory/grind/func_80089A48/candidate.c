@@ -1,3 +1,14 @@
+/* MIGRATION BANNER (s4, 2026-09-06): main carries func_80089A48 as INCLUDE_ASM("asm/funcs", func_80089A48)
+ * (asm-until-matched). Body below is byte-for-byte the s3 body (Judge clearance hash 3d9403702d133b3a),
+ * re-applied in place in src/main.c this session (tmp/grind/func_80089A48/s4/applied_diff.patch), measured
+ * sandbox --disable all = 0/178, canonical pure-C, resubmitted as candidate-ready s4. The s3 candidate-ready
+ * was discarded only by the self-vet banned-construct tripwire (CONSTRUCTS line quoted the banned wrapper's
+ * tokens), not by any review - self_vet.md rewritten, `grindlib.py selfvet` exits 0. Older banners follow. */
+/* MIGRATION BANNER (s3, 2026-09-06): main carries func_80089A48 as INCLUDE_ASM("asm/funcs", func_80089A48)
+ * (asm-until-matched). This body was APPLIED IN PLACE in src/main.c this session (tmp/grind/func_80089A48/s3/
+ * applied_diff.patch), measured sandbox --disable all = 0/178, and its body hash 3d9403702d133b3a equals the
+ * Judge PASS clearance of docs/grind/decisions.md 2026-09-06 07:52 -> submitted as candidate-ready s3.
+ * The "NOT SUBMITTED / ruling-request" text below is the s2 history that the ruling resolved. */
 /* candidate.c - func_80089A48 (s2 recon, 2026-09-06) - sandbox 0/178 on the HEAD chassis
  * (INCLUDE_ASM representation on main; measured this session with the body applied in place of
  * the INCLUDE_ASM line - tmp/grind/func_80089A48/s2/apply.py vB_union reproduces it exactly).

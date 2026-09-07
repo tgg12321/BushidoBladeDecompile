@@ -13,3 +13,9 @@
 - H8 CONFIRMED - SOTN header-canonical `union SpuUnion { SpuRXX rxx; volatile u16 raw[0x100]; }` typing of D_800F7298 (libspu_internal.h:165-170) with `.raw[addr]` access, D_800F7420 untouched: 0/178. candidate.c. Distinct from the banned single-member wrap in type (two real views, the record view being main.c's existing SpuRXX shared with the MMIO block) and in evidence (psyz 4.0 struct-typed _spu_RQ; .bss layout) - filed as ruling-request, not self-approved.
 - H9 KILLED (instance) - aggregate merge of D_800F7420 into the union (`D_800F7298.rxx.key_on[k]` in SpuSetKey, `.raw[0xC4+channel]` in _spu_init): target 0/178 but SpuSetKey 14/127 (offset-0 register-base form lost). rejected/union-merge-D800F7420-spusetkey-score14.c.
 - FRONTIER if the ruling refuses aggregate typing: the residual is the per-block address pseudo (target a0 in prologue, a1 in arms; params displaced to t1/t0). Only C-level ways measured so far to get a fresh pseudo per block are member-array or cast spellings; a solver classify (`inverse_compose.py classify`) of the a0/a1 seats against the H3 single-pointer form is the next mechanism probe, then per-block-scoped pointer locals as a spelling probe (unmeasured, Sony-plausibility doubtful).
+
+## s3 (recon, 2026-09-06)
+- H8 CONFIRMED (re-measured in tree, submitted) - Judge-cleared SpuUnion body applied to src/main.c: sandbox 0/178, canonical pure-C, body hash 3d9403702d133b3a == clearance. candidate-ready. No new hypotheses needed; frontier empty pending driver bytes + FINAL CALL.
+
+## s4 (recon, 2026-09-06)
+- H8 CONFIRMED (re-measured in tree, resubmitted) - identical Judge-cleared SpuUnion body: sandbox 0/178, canonical pure-C, body hash 3d9403702d133b3a == clearance. s3's discard was a self-vet tripwire false positive (CONSTRUCTS line echoed the ban's tokens), fixed in self_vet.md and verified with `grindlib.py selfvet` (exit 0). candidate-ready. Frontier empty pending driver bytes + FINAL CALL.
