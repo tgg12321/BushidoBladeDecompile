@@ -1,7 +1,7 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 13,
    "modality": "forensics",
    "headline": "Chassis re-measured after the 121e34d7 revert: the spendable floor is 13 (the floor-1 body is the banned goto spelling), and the whole 13-point residual is one loop.c predicate -- found and MEASURED a"
+  },
+  {
+   "session": 9,
+   "floor": 13,
+   "modality": "forensics",
+   "headline": "Chassis re-measured at 13; a THIRD lever into the loop.c:1631 residual is confirmed by measurement -- move_movables' `threshold -= 3` decay reproduces the target's exact movable shape (four switch con"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An arming loop that costs zero final instructions closes the function outright: it produces the target's exact movable shape (already measured) without the 5 insns the current probe emits.",
-   "mechanism": "move_movables moved_once doubling, tools/gcc-2.7.2/loop.c:1609-1611 plus :1912, armed by any loop processed before the main loop (loop_optimize walks loop numbers downward) whose hoisted movable is scanned first in the main loop's movable list.",
-   "next_probe": "Measure arming loops whose control code is absorbed: (i) an arming loop placed textually after the main loop; (ii) `while (i < 2) { do { ...; i++; } while (i < 2); }` -- predicted to FAIL requirement (c) because the inner loop contains the dispatch, so run it mainly to confirm that prediction cheaply; (iii) any loop shape whose induction variable is work the function already performs. Read the .loop dump for 'halved since already moved' plus 'not desirable' on regno 126/128/129/130, and the sandbox build_insns for the cost."
+   "hypothesis": "One of the function's OWN constants can serve as a threshold-decay carrier, making the confirmed decay lever reachable from ordinary C: specifically, whether a named holder for the `0xA` ramp step is actually MOVED (lifetime >= 1) or folded to lifetime 0 by cse1.",
+   "mechanism": "A movable is moved only if m->lifetime >= 1 (tools/gcc-2.7.2/loop.c:791); lifetime is 0 when cse1 has folded the constant into a 16-bit-immediate insn and left the holder with no surviving use. `addiu` takes an immediate, so the prediction is life 0 - but 0xA occurs at six sites (case 1 twice, case 3 once, case 2 once, case 4 twice) and if even some of them survive as register-required uses the k >= 8 requirement is suddenly within reach of ordinary C.",
+   "next_probe": "Declare a single `s32 step = 0xA;` at the top of the loop body, use it at all six sites, run dump.ps1 and read the func_8007526C section of tmp/grind/func_8007526C/dumps/text1b.loop for a movable on that regno and its `life N` field. Then repeat with six separate holders to see whether six decrements materialise. Read the dump BEFORE reading the score - the score will be worse either way; the `life` field is the answer."
   },
   {
-   "hypothesis": "The main loop's scan_loop insn_count can be pushed from 92 to at least 123 by ordinary C whose surplus RTL dies after loop.c, which defeats the hoist without any arming loop.",
-   "mechanism": "insn_count is counted at loop.c:593 before flow.c dead-store elimination and combine run, so RTL that those passes delete still counts toward the loop.c:1631 desirability denominator.",
-   "next_probe": "Bounded and low-yield: measured inflations to date are 92 (candidate), 95 (arming probe), 95 (s2 global-reload-per-access, which also cost 12 output points) against a +28 requirement. Only spend a session here if a construct with a high RTL-to-final ratio is identified first."
+   "hypothesis": "The loop exit test can supply threshold-decay carrier #1 at zero or negative instruction cost by being spelled as an eq/ne comparison against a held constant instead of `i < 2`.",
+   "mechanism": "The MIPS branch predicate is reg_or_0_operand, so `while (i != n)` with n = 2 forces the 2 into a register that cse1 cannot fold away - a movable with lifetime >= 1 that hoists to the pre-header and decrements threshold by 3 (loop.c:1904), while removing the in-loop `slti` the current form emits.",
+   "next_probe": "Measure `i = 0; do { ... i++; } while (i != 2);` on the candidate chassis: read build_insns for the cost delta against 93 and the .loop dump for whether a new movable appears and is 'moved to' the pre-header. Note the target's own exit test is `slti $v0,$a2,0x2; bnez` (asm/funcs/func_8007526C.s:97-98), so this carrier trades two target-matching instructions for one decrement - bank the exact trade even if the net score rises."
   },
   {
-   "hypothesis": "The four switch-comparison constants can be given savings 0 or lifetime 0 so the loop.c:1631 product falls under insn_count without touching insn_count at all.",
-   "mechanism": "m->savings = n_times_used[regno] and m->lifetime = uid_luid[regno_last_uid] - uid_luid[regno_first_uid], both assigned at tools/gcc-2.7.2/loop.c:791-793; a product of 0 fails the test for any insn_count.",
-   "next_probe": "Untested and probably closed (a set plus a separate use gives lifetime >= 1 and savings >= 1), but it is the only untried algebraic route into the same predicate. Confirm or kill it by reading loop.c:780-800 against the .loop dump's 'life N' and 'savings N' fields for regno 126/128/129/130 rather than by building."
+   "hypothesis": "s8's moved_once doubling remains the single cheapest confirmed route to the target's movable shape, and its only open problem is still an arming loop whose emitted control code is absorbed.",
+   "mechanism": "move_movables' `if (moved_once[regno]) insn_count *= 2;` at tools/gcc-2.7.2/loop.c:1609-1611 permanently doubles the local insn_count for every movable scanned after the first already-moved one; moved_once is per-function (allocated loop.c:344, set loop.c:1912) and loop_optimize walks loop numbers downward, so a nested or textually-later loop is processed first and arms it.",
+   "next_probe": "Two arming routes are now closed - do-while(0) is rejected as phony at loop.c:570 (s8) and same-value matching never sets moved_once (this session, loop.c:1912/:1968). What remains untested is an arming loop placed textually AFTER the main loop whose induction variable and body are work the function already performs, and the `while (i < 2) { do { ...; i++; } while (i < 2); }` same-back-edge shape, which requirement (c) predicts will fail because the inner loop contains the dispatch - measure it once purely to confirm that prediction cheaply."
   }
  ],
  "judge_constraints": [
@@ -166,12 +172,36 @@
    "measured_on": "HEAD 73e786dd chassis 2026-09-07, candidate.c body applied to src/text1b.c, pure C, no FAKE constructs present, score 13",
    "predicate_cite": "tools/gcc-2.7.2/loop.c:570",
    "result": "KILLED. The dump prints 'Loop from 18 to 32 is phony.' -- scan_loop returns before collecting a single movable, so no do"
+  },
+  {
+   "session": 9,
+   "statement": "Spelling func_8007526C's memory accesses through the census data model (u16 (*t)[2], t[row][i]) raises the main loop's scan_loop insn_count above the 92 the byte-offset spelling produces, which is wha",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 3368f17b chassis 2026-09-07, u16 (*t)[2] array-model body applied to src/text1b.c, pure C, no FAKE constructs present, score 13 / build_insns 93 / loop insn_count 92",
+   "predicate_cite": "",
+   "result": "KILLED. The .loop dump reads 'Loop from 14 to 543: 92 real insns.' -- exactly the byte-offset spelling's count -- and th"
+  },
+  {
+   "session": 9,
+   "statement": "The `threshold -= 3` decay can be driven by a single variable written invariantly N times at the top of the loop (consecutive sets), so N decrements cost one variable rather than N distinct carrier re",
+   "kill_scope": "class",
+   "measured_on": "HEAD 3368f17b chassis 2026-09-07, compiler source read (no build); same chassis on which the 8-carrier probe measured score 17 with exactly 5 decrements observed in the dump",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1904",
+   "result": "KILLED. `threshold -= 3;` sits AFTER the closing brace of the consec loop, at loop.c:1904, exactly as it does on the mov"
+  },
+  {
+   "session": 9,
+   "statement": "s8's moved_once doubling can be armed inside a single loop by giving two registers the same invariant value, so that the second movable matches the first and inherits its moved state, removing the nee",
+   "kill_scope": "class",
+   "measured_on": "HEAD 3368f17b chassis 2026-09-07, compiler source read plus the unmodified candidate's .loop dump (score 13, no FAKE constructs present)",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1912",
+   "result": "KILLED. The matched-movable block sets already_moved[m1->regno] = 1 at loop.c:1968 and m1->done = 1, but moved_once is a"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-07T16:08:15.562106+00:00",
- "object_model_audited": 8,
+ "object_model_audited": 9,
  "escalation_deferrals": 0
 }

@@ -473,3 +473,116 @@ do-while(0) as a codegen lever elsewhere.
 - kill_scope: class
 - measured_on: HEAD 73e786dd chassis 2026-09-07, candidate.c body applied to src/text1b.c, pure C, no FAKE constructs present, score 13
 - predicate_cite: tools/gcc-2.7.2/loop.c:570
+
+## [s1 2026-09-07, recon] frontier rewritten -- a THIRD lever into loop.c:1631 is confirmed
+
+Floor unchanged at 13 (chassis-re-measured).  The whole residual is still the single
+predicate `(threshold * savings * m->lifetime) >= insn_count` at tools/gcc-2.7.2/loop.c:1631
+applied to four savings-1 / lifetime-1 switch-comparison constants.  What changed this
+session is that the predicate now has THREE known free variables, not two:
+  (i)   insn_count      -- inherited F2, needs >= 123, measured ceiling 95.
+  (ii)  moved_once      -- s8's doubling, needs a separately-processed arming loop, cost 5 insns.
+  (iii) threshold decay -- NEW, confirmed this session: `threshold -= 3` per moved movable
+        (loop.c:1904 / :1718).  Needs 7-8 extra moved movables ahead of the dispatch.
+
+**F1 (was s8's F1, unchanged in substance).** moved_once doubling.  Still the shape-exact
+lever; still blocked only by the arming loop's 5 emitted insns.  This session closed one
+hoped-for cheap arming route by source read: matched movables (combine_movables) set
+`already_moved` but never `moved_once` (loop.c:1968 vs :1912) and are skipped as `done`
+before the doubling site, so two same-valued invariants inside ONE loop cannot arm it.
+NEXT PROBE unchanged: an arming loop whose emitted control code is zero-cost or is code the
+function already performs.
+
+**F2 (inherited, now bounded harder).** insn_count >= 123.  Measured points: 92 (candidate),
+92 (array-model spelling, NEW this session -- cse1 collapses it, so the addressing spelling
+is not a lever at all), 95 (s2 global-reload).  Requirement +31.  Treat as closed unless a
+construct with a genuinely high RTL-to-final ratio is identified; the two natural
+data-model spellings are now both measured and both give 92.
+
+**F3 (NEW, the live axis).** threshold decay.  Mechanism and arithmetic MEASURED
+(rejected/threshold-decay-8-movables-score17.c; dump excerpt
+tmp/grind/func_8007526C/s1/decay8.loop.txt): with 8 extra carriers the four constants all
+read "not desirable" and the 0xC8 still hoists -- the target's exact movable shape.  The
+open problem is identical in kind to F1's: COST.  A carrier only counts if it is actually
+MOVED, which needs `m->lifetime >= 1`, which needs a use that survives cse1 in a
+register-REQUIRED context.  On this target that means a store of a non-zero constant to
+memory or an eq/ne branch against one; every other context takes a 16-bit immediate and
+cse1 folds the holder to lifetime 0.  The function's semantics supply exactly one such
+constant (0xC8) and it is the one that must stay hoisted.
+NEXT PROBE, in priority order: (a) confirm the lifetime-0 claim cheaply by declaring ONE
+named holder for the `0xA` step and reading the dump for `life 0` / absence of the movable
+-- if 0xA DOES produce a moved movable, the cost model changes completely and 6 natural
+0xA sites plus 0xC8 gets within one carrier of the k>=8 requirement; (b) measure whether an
+eq/ne exit test (`while (i != 2)`) produces a moved movable at zero or negative insn cost,
+which would be carrier #1 from ordinary C; (c) only if (a) or (b) lands, re-solve
+`122 - 3k < 92 + c*k` with the measured c.
+
+**F4 (dead, recorded so it is not re-derived).** `threshold -= 3` cannot be multiplied by a
+movable's consec count -- the decrement is outside the `for (count = m->consec; ...)` loop
+at loop.c:1904.  One variable written N times invariantly at the top of the loop is ONE
+movable and ONE decrement.
+
+## [s1] Spelling func_8007526C's memory accesses through the census data model (u16 (*t)[2], t[row][i]) raises the main loop's scan_loop insn_count above the 92 the byte-offset spelling produces.
+- mechanism: `t[row][i]` expands to `base + row*4 + i*2`, which is not a valid MIPS address, so expand should force a separate `addu` temp per access; insn_count is counted at loop.c:593 before cse2/flow/combine, so pre-combine address RTL would count toward the loop.c:1631 denominator.
+- probe: Wrote the entire body through `u16 (*t)[2] = (u16 (*)[2])D_800A36A0;` with t[2][i]/t[3][i]/t[4][i]/t[5][i]/t[6][i]/t[14][i]/t[15][i], applied it over src/text1b.c:6660, ran `wteng main sandbox func_8007526C --disable all` and `pwsh tools/grinder/dump.ps1 func_8007526C`.
+- result: KILLED. The .loop dump reads `Loop from 14 to 543: 92 real insns.` -- exactly the byte-offset spelling's count -- and the sandbox reports score 13, build_insns 93, identical in every field. cse1 runs before loop_optimize and collapses every `base + i*2` into a single pseudo, leaving the constant row offset inside the MEM as a `plus(reg, const)` address that costs no separate insn. The two data-model spellings are the same compile. Banked as rejected/array-model-insn-count-unchanged-score13.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 3368f17b chassis 2026-09-07, u16 (*t)[2] array-model body applied to src/text1b.c, pure C, no FAKE constructs present, score 13 / build_insns 93 / loop insn_count 92
+- predicate_cite:
+
+## [s1] move_movables' `threshold -= 3` decay (loop.c:1904) is a third, independent way to drive the loop.c:1631 desirability product below insn_count: enough movables moved ahead of the dispatch leaves all four switch-comparison constants inside the loop while the 0xC8 movable still hoists.
+- mechanism: threshold is a local of move_movables initialised to (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 122 (loop.c:532) and decremented by 3 after each movable is actually moved (loop.c:1904 on the consec path, loop.c:1718 on the move_insn path). Movables are considered in physical loop order, and statements written before the `switch` are scanned before the dispatch tree because expand_end_case reorders the tree to the front of the switch rather than the front of the loop body.
+- probe: Applied rejected/threshold-decay-8-movables-score17.c -- eight locals set to distinct non-zero constants 0x101..0x108 at the top of the loop body, each stored to a distinct unused table slot so the use is register-required and cse1 cannot fold it -- then ran dump.ps1 and sandbox.
+- result: CONFIRMED. tmp/grind/func_8007526C/s1/decay8.loop.txt: `Loop from 14 to 303: 108 real insns.`; insns 25/30/35/40/45 (regno 75-79) moved to 311/313/315/317/319; insns 50/55/60 `not desirable`; insns 269/275/281/284 (regno 134/136/137/138, the four switch-comparison constants) all `not desirable`; insn 116 (regno 100, life 3, savings 2, the 0xC8) `moved to 321`. threshold decayed 122 -> 107 across five moves and 107 < 108 flipped the predicate. sandbox score 17, build_insns 106 -- the score is worse only because the eight carriers cost 13 surviving instructions; the MOVABLE SHAPE is the target's exactly.
+- verdict: CONFIRMED
+
+## [s1] The `threshold -= 3` decay can be driven by a single variable written invariantly N times at the top of the loop (consec sets), so N carriers cost one variable rather than N.
+- mechanism: scan_loop sets `m->consec = n_times_set[regno] - 1` (loop.c:776) and move_movables moves all consecutive sets in `for (count = m->consec; count >= 0; count--)`, so a consec movable was expected to decrement threshold once per moved insn.
+- probe: Source read of tools/gcc-2.7.2/loop.c:1860-1906 -- located the closing brace of the consec `for` loop relative to the `threshold -= 3;` statement.
+- result: KILLED. `threshold -= 3;` sits AFTER the closing brace of the consec loop, at loop.c:1904, exactly as it does on the move_insn path at loop.c:1718. One movable, one decrement, regardless of how many consecutive invariant sets it carries. Reaching k decrements requires k distinct movable registers.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 3368f17b chassis 2026-09-07, compiler source read (no build); the same chassis on which the 8-carrier probe measured score 17 with 5 decrements observed in the dump
+- predicate_cite: tools/gcc-2.7.2/loop.c:1904
+
+## [s1] s8's moved_once doubling can be armed inside a single loop by giving two registers the same invariant value, so that the second one matches the first and inherits its moved state -- removing the need for a separate arming loop and its 5 emitted insns.
+- mechanism: combine_movables sets `m1->match = m` for movables loading the same value into different registers; move_movables was expected to mark the matched register as moved, which would set moved_once and arm the `insn_count *= 2` doubling at loop.c:1609-1611 for every movable scanned afterwards.
+- probe: Source read of tools/gcc-2.7.2/loop.c:1584 (the `if (!m->done ...)` guard), :1609-1611 (the doubling site), :1912 (moved_once assignment) and :1932-1975 (the matched-movable handling), cross-checked against this session's unmodified-candidate dump line `Insn 232: regno 170 (life 2), done move-insn matches 139`.
+- result: KILLED. The matched-movable block sets `already_moved[m1->regno] = 1` at loop.c:1968 and `m1->done = 1`, but `moved_once` is assigned only for the moved movable's own regno at loop.c:1912. A movable with `done` set is skipped by the guard at loop.c:1584 and never reaches the doubling site at all. Same-value invariants inside one loop therefore cannot arm the doubling; s8's requirement of a separately-processed loop stands.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 3368f17b chassis 2026-09-07, compiler source read plus the unmodified candidate's .loop dump (score 13, no FAKE constructs present)
+- predicate_cite: tools/gcc-2.7.2/loop.c:1912
+
+## [s9] move_movables' `threshold -= 3` decay (tools/gcc-2.7.2/loop.c:1904) is a third, independent way to drive the loop.c:1631 desirability product below insn_count: enough movables moved ahead of the dispatch leaves all four switch-comparison constants inside the loop while the 0xC8 movable still hoists to the pre-header.
+- mechanism: threshold is a LOCAL of move_movables, initialised to (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 122 at tools/gcc-2.7.2/loop.c:532 and decremented by 3 after every movable actually moved (loop.c:1904 on the consec path, loop.c:1718 on the move_insn path). Movables are considered in physical loop order, and statements written before the `switch` in the source are scanned before the dispatch tree, because expand_end_case reorders the decision tree to the front of the SWITCH, not to the front of the loop body. So carriers placed at the top of the loop body decay threshold before the four savings-1/lifetime-1 comparison constants are ever tested.
+- probe: Applied memory/grind/func_8007526C/rejected/threshold-decay-8-movables-score17.c (eight locals set to distinct non-zero constants 0x101..0x108 at the top of the loop body, each stored to a distinct unused table slot so the use is register-required and cse1 cannot fold it), then ran `pwsh tools/grinder/dump.ps1 func_8007526C` and `wteng main sandbox func_8007526C --disable all`.
+- result: CONFIRMED. tmp/grind/func_8007526C/s1/decay8.loop.txt: 'Loop from 14 to 303: 108 real insns.'; insns 25/30/35/40/45 (regno 75-79, life 1, savings 1) 'moved to' 311/313/315/317/319; insns 50/55/60 'not desirable'; insns 269/275/281/284 (regno 134/136/137/138 -- the four switch-comparison constants) ALL 'not desirable'; insn 116 (regno 100, life 3, savings 2 -- the 0xC8) 'moved to 321'. threshold decayed 122 -> 119 -> 116 -> 113 -> 110 -> 107 across the first five moves and 107*1*1 = 107 < insn_count 108 flipped the predicate. That is the target's exact movable shape (asm/funcs/func_8007526C.s:2-3 pre-header vs `addiu $v0,$zero,N` at lines 8/12/18/20). sandbox score 17, build_insns 106 -- the score is worse only because the eight invented carriers cost 13 surviving instructions; the SHAPE is right. Cost bound worked out in the ledger: the first constant fails iff 122 - 3k < 92 + c*k, so k >= 8 carriers at c = 1 insn each, k >= 7 at c = 2. A carrier only counts if it is actually MOVED, which needs m->lifetime >= 1 (loop.c:791), which needs a use surviving cse1 in a register-REQUIRED context -- on MIPS/GCC-2.7.2 that is a store of a non-zero constant to memory or an eq/ne branch against one. Every other context (`+ 0xA`, slti, shifts, array indices) takes a 16-bit immediate, so cse1 folds the holder and its lifetime drops to 0. func_8007526C's semantics supply exactly ONE such constant, 0xC8, and it is the carrier that must remain hoisted.
+- verdict: CONFIRMED
+
+## [s9] Spelling func_8007526C's memory accesses through the census data model (u16 (*t)[2], t[row][i]) raises the main loop's scan_loop insn_count above the 92 the byte-offset spelling produces, which is what the inherited frontier F2 needs.
+- mechanism: t[row][i] expands to base + row*4 + i*2, which is not a valid MIPS address, so at expand time each of the ~25 accesses should force a separate `addu` temp; insn_count is counted in count_loop_regs_set before cse2/flow/combine run, so pre-combine address RTL counts toward the loop.c:1631 denominator.
+- probe: Wrote the entire body through `u16 (*t)[2] = (u16 (*)[2])D_800A36A0;` with t[2][i]/t[3][i]/t[4][i]/t[5][i]/t[6][i]/t[14][i]/t[15][i] (rows = byte offset / 4, instance stride 2), applied it over the INCLUDE_ASM line at src/text1b.c:6660, then ran the sandbox and dump.ps1 and read the 'Loop from N to M: K real insns' line for func_8007526C.
+- result: KILLED. The .loop dump reads 'Loop from 14 to 543: 92 real insns.' -- exactly the byte-offset spelling's count -- and the sandbox reports score 13, build_insns 93, identical in every field to candidate.c. cse1 runs before loop_optimize and collapses every `base + i*2` into a single pseudo, leaving the constant row offset inside the MEM as a plus(reg, const) address that costs no separate insn. The two data-model spellings are the same compile, so the addressing spelling is not a free variable for insn_count. Banked as rejected/array-model-insn-count-unchanged-score13.c. F2's measured points are now 92 / 92 / 95 against a requirement of >= 123.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 3368f17b chassis 2026-09-07, u16 (*t)[2] array-model body applied to src/text1b.c, pure C, no FAKE constructs present, score 13 / build_insns 93 / loop insn_count 92
+
+## [s9] The `threshold -= 3` decay can be driven by a single variable written invariantly N times at the top of the loop (consecutive sets), so N decrements cost one variable rather than N distinct carrier registers.
+- mechanism: scan_loop sets m->consec = n_times_set[regno] - 1 at tools/gcc-2.7.2/loop.c:776 and move_movables moves every consecutive set in `for (count = m->consec; count >= 0; count--)`, so a consec movable was expected to decrement threshold once per moved insn.
+- probe: Source read of tools/gcc-2.7.2/loop.c:1860-1906 -- located the closing brace of the consec `for` loop relative to the `threshold -= 3;` statement, and cross-checked the parallel move_insn path at loop.c:1710-1719.
+- result: KILLED. `threshold -= 3;` sits AFTER the closing brace of the consec loop, at loop.c:1904, exactly as it does on the move_insn path at loop.c:1718. One movable, one decrement, regardless of how many consecutive invariant sets it carries. Reaching k decrements requires k distinct movable registers, which is what makes the cost bound on the confirmed decay lever binding.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 3368f17b chassis 2026-09-07, compiler source read (no build); same chassis on which the 8-carrier probe measured score 17 with exactly 5 decrements observed in the dump
+- predicate_cite: tools/gcc-2.7.2/loop.c:1904
+
+## [s9] s8's moved_once doubling can be armed inside a single loop by giving two registers the same invariant value, so that the second movable matches the first and inherits its moved state, removing the need for a separate arming loop and its 5 emitted instructions.
+- mechanism: combine_movables sets m1->match = m for movables loading the same value into different registers; move_movables was expected to mark the matched register as moved, which would set moved_once and arm the `insn_count *= 2` doubling at tools/gcc-2.7.2/loop.c:1609-1611 for every movable scanned afterwards.
+- probe: Source read of tools/gcc-2.7.2/loop.c:1584 (the `if (!m->done ...)` guard), :1609-1611 (the doubling site), :1912 (the moved_once assignment) and :1932-1975 (the matched-movable handling), cross-checked against this session's unmodified-candidate .loop dump line 'Insn 232: regno 170 (life 2), done move-insn matches 139'.
+- result: KILLED. The matched-movable block sets already_moved[m1->regno] = 1 at loop.c:1968 and m1->done = 1, but moved_once is assigned only for the moved movable's OWN regno at loop.c:1912. A movable with done set is skipped by the guard at loop.c:1584 and never reaches the doubling site. Same-value invariants inside one loop therefore cannot arm the doubling, and s8's requirement of a separately-processed loop stands.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 3368f17b chassis 2026-09-07, compiler source read plus the unmodified candidate's .loop dump (score 13, no FAKE constructs present)
+- predicate_cite: tools/gcc-2.7.2/loop.c:1912
