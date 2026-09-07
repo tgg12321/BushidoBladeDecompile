@@ -3347,3 +3347,93 @@ measured_on: HEAD de9606ac, floor body + class-B dead store + do-while(0) fence,
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD de9606ac chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; 175/175
+
+## [s35] (synthesis, 2026-09-06) — chassis HEAD b90bdce4 (src identical to de9606ac), floor body F + the class-B dead store + the do-while(0) prologue fence = 3/175/175
+
+## [s35] The blk=1 quantity table on the floor insn stream is invariant under source spelling: twelve byte-neutral respellings (base defined later, the sb address named early, the sb address re-associated as base + (t0 + 0x68), the sb moved past the record pointers, the sb value spelled (u8)(t0 + 0), the sb as the subscript base[t0 + 0x68], t0*4 named ahead of the A group for both groups or for the C group only, p_7e = p_6a + 10, and a named q = D_800A36A0 + t0*10 feeding both record pointers) all score as their parent body and all reproduce births 6/10/12/28/48, deaths 46/44/14/52/56 and refs 14/12/4/16/10 exactly.
+- mechanism: births and deaths are luids assigned after sched1, and refs is reg_n_refs summed over the merged pseudos; cse2/combine normalise every one of these spellings back to the same RTL, so the qty_compare_1 inputs (local-alloc.c:1660) are fixed by the insn stream, not by the source.
+- probe: gen_a.py (a1/a3/a4/a5/a6/a7), gen_b.py (b4), gen_c.py (c1/c4), gen_e.py (d1/d2); run.sh scored each, qty.sh dumped the blk=1 table for a1/a3/a4/a5/a6/c1/c4/d1/d2.
+- result: a1 24, a3 24, a4 24, a6 24, a7 24, b4 24 (all on the p2 chassis, byte-inert against p2's 24); c1 3, c4 3, d1 3, d2 3 (byte-inert against the floor's 3); a5 31 with a different five-quantity table. Every dumped table is identical to base.qty / p2.qty.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b90bdce4 chassis, floor body F + the class-B dead store + the do-while(0) prologue fence (both FAKE constructs present, as in candidate.c); 175/175 in all twelve builds
+
+## [s35] The frontier-item-1 levers (later birth for base, one fewer reference to the sign-extended t0, four more references to base) do not exist at the source level on the p2 chassis: all six spellings tried are byte-inert at 24, and the ones that do restructure the block score 31, 32, 33 and 47.
+- mechanism: s34's frontier assumed refs and birth were source-controllable. They are not (see the invariance hypothesis above): the only spellings that moved them replaced the A-group pointer with five base-relative addresses, or moved a live pointer over the tail stores, which changes the block's whole quantity structure (and, for the tail forms, deletes the second D_800A36A0 reload the target keeps) rather than nudging one term.
+- probe: a1 (base assigned after a2 = 0), a3 (sb address in its own local), a4 (sb address re-associated), a6 (sb store moved past the record pointers), a7 (sb value (u8)(t0 + 0)), b4 (sb as a subscript), a5 (A group off base), b3 (per-player counter through a named pointer), b1/b2 (tail 0x5C/0x60 pair off base / off rb).
+- result: a1/a3/a4/a6/a7/b4 all 24 with p2's exact table; a5 31; b3 32; b1 33 and b2 47 both at 174 insns.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b90bdce4 chassis, p2 body (floor + the named reload before the sb) with both FAKE constructs present; 175/175 except b1/b2 (174)
+
+## [s35] Naming the t0*4 shift ahead of the A group does not move the chain quantity's birth: on the floor body it is byte-inert (3) and on the ptr-carried-reload body it leaves the merged chain+dest born at 28 and scores 27, exactly as the unnamed forms do.
+- mechanism: s34's frontier item 2 wanted "an early t0*4 consumer that is not the D address". A named value is not a consumer: cse gives the D group, the C group and the chain their own shifts (the D group's temp is born 12 and dead by 14 in every measured body, so the C group never reuses it), and only moving a STORE group ahead of the A group moves the chain's first insn.
+- probe: gen_c.py built c1 (q4 named, used by the D and C groups) and c4 (q4 used by the C group only) on the floor body and c2/c3 (two placements) on the r8a chassis; run.sh scored all four, qty.sh dumped c1/c4.
+- result: c1 3, c4 3 (byte-inert, table identical to base including the temp's death at 14), c2 27, c3 27 (identical to r8a's 27).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b90bdce4 chassis, floor body F and the r8a body, both FAKE constructs present; 175/175 in all four builds
+
+## [s35] Computing the D_800A35D0 address ahead of the A group while leaving the D STORES in their target position scores 29 with the A pointer promoted to its own long quantity, whether the A group is carried by a second local or addressed straight off base.
+- mechanism: s2 gets the merged chain+dest born at 12 by putting the whole D group first; moving only the address leaves a second value live across the A stores, which is the h-series failure (s34) with the roles reversed — global-alloc seats the extra pointer and the A pointer becomes reg86 b18 d30 refs16 instead of a short temp.
+- probe: gen_e.py built e1 (A group through a new local ap) and e2 (A group addressed off base); run.sh scored both, qty.sh dumped e1.
+- result: e1 29, e2 29, both at 175/175. e1's blk=1 is the s2 four-quantity shape (merged chain+dest b12 d56 refs22) plus the long A-pointer quantity.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b90bdce4 chassis, s2 body (D group first + the ptr-carried reload), both FAKE constructs present; 175/175
+
+## [s35] CONFIRMED — the four target seats are reachable on a near-floor body: f3 (the sb store moved ahead of the C group + the named reload immediately before the moved sb) puts the chain in $v0, the dest+reload in $v1, base in $a0 and t0 in $a1, and its whole 34-point residual is the schedule.
+- mechanism: moving the sb earlier pulls base's death 44 -> 42 while t0's goes 46 -> 48, and the lw taken before the sb lands at luid 38, so qty4's priority falls to 3*10/18 = 1.67, below the chain's 2.667, while base keeps the $a0 seat at 36/32 vs 42/42. Every seat then lands on the target's register.
+- probe: gen_f.py built f1 (the sb move alone) and f3/f4 (the named reload before / after the moved sb); run.sh scored them; qty.sh dumped all three blk=1 tables and their QTYDBG allocation order.
+- result: f1 5 (the sb move alone costs two rows and leaves the floor's seats), f3 34 with ord = (temp $v0, chain $v0, dest+reload $v1, base $a0, t0 $a1) — the target's four seats — and f4 40 with a six-quantity table. The price of the seats is sched1 hoisting the lw to luid 38.
+- verdict: CONFIRMED
+
+## [s35] CONFIRMED — closed form: on the target's insn stream the dest-merged-onto-the-reload structure can never take $v1, so the target's C must produce the s2/r8 merge (dest merged with the CHAIN, reload carried by a multi-death local)
+- mechanism: qty4 dies at 56 = the last insn of blk=1 (the p_7e addiu; the block ends at the inner do-while head), so its span can only grow at the birth end; it needs span >= 12 (birth <= 44) or refs <= 7 to sort below the chain's 2.667 (qty_compare_1, local-alloc.c:1660). refs is invariant at 10, and birth 48 -> 44 moves the lw two insns earlier, which is itself a differing row. Symmetrically, for any reload placement before the sb the luid shift k is a positive multiple of 2 (one insn = 2 luids), base keeps $a0 iff 36/(34+k) > 42/(40+k) i.e. k < 2, and qty4 needs k >= 2 — disjoint.
+- probe: the invariance dumps above plus s34's p-series and this session's f-series.
+- result: measurement matches the closed form at every point — p6/p8/p10 = 3 byte-inert at k=0; p2 = 24 at k=2 with rows 62-64 byte-exact and the $a0/$a1 pair inverted; p3/p9 = 38 at k=4; f3 = all four seats but with the lw moved. The "fix the floor body's registers in place" programme (s27-s35) is closed; the live route is the s2/s4 family (merged chain+dest in $v1, reload not a block quantity), whose only residual is the D-store group's emission position.
+- verdict: CONFIRMED
+
+## [s35] The blk=1 local-alloc quantity table on the floor insn stream is unchanged by twelve byte-neutral respellings measured this session (base defined later, the sb address named early, the sb address re-associated as base + (t0 + 0x68), the sb moved past the record pointers, the sb value spelled (u8)(t0 + 0), the sb spelled as the subscript base[t0 + 0x68], t0*4 named ahead of the A group for both groups or for the C group only, p_7e = p_6a + 10, and a named q = D_800A36A0 + t0*10 feeding both record pointers): every dumped table reproduces births 6/10/12/28/48, deaths 46/44/14/52/56 and refs 14/12/4/16/10.
+- mechanism: Births and deaths are luids assigned after sched1 and refs is reg_n_refs summed over the merged pseudos, so the qty_compare_1 inputs (tools/gcc-2.7.2/local-alloc.c:1660) are a function of the insn stream; cse2/combine normalise all twelve spellings back to the same RTL.
+- probe: gen_a.py (a1/a3/a4/a5/a6/a7), gen_b.py (b3/b4), gen_c.py (c1/c4), gen_e.py (d1/d2); run.sh scored each and qty.sh dumped the BB2_QTY_DEBUG blk=1 table for a1/a3/a4/a5/a6/c1/c4/d1/d2.
+- result: a1/a3/a4/a6/a7/b4 all 24 (byte-inert against p2's 24); c1/c4/d1/d2 all 3 (byte-inert against the floor's 3); a5 31 and b3 32 restructure the block instead of nudging one term. All at 175/175.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b90bdce4 chassis (src identical to de9606ac), floor body F + the class-B dead store + the do-while(0) prologue fence, both FAKE constructs present as in candidate.c; 175/175 in all twelve builds
+
+## [s35] s34's frontier item 1 levers for the p2 $a0/$a1 tie (a later birth for base, one fewer reference to the sign-extended t0, four more references to base) have no source spelling on this chassis: six respellings are byte-inert at 24, and the two that raise the base or reload quantity's refs by addressing the tail 0x5C/0x60 pair off a live pointer delete the second D_800A36A0 reload and build 174 insns.
+- mechanism: refs and birth are not source-controllable while the insn stream is fixed (previous hypothesis); the only way measured to raise the base quantity's reg_n_refs is to give base a use in the tail, which removes the lw that the target keeps.
+- probe: a1, a3, a4, a6, a7, b4 (byte-neutral respellings); a5 (A group addressed off base); b3 (per-player counter through a named pointer); b1/b2 (tail pair off base / off rb). One scoring build each.
+- result: a1/a3/a4/a6/a7/b4 24; a5 31; b3 32; b1 33 at 174 insns; b2 47 at 174 insns.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b90bdce4 chassis, p2 body (floor body F + the named reload before the sb) with the class-B dead store and the do-while(0) prologue fence present; 175/175 except b1/b2 (174)
+
+## [s35] Naming the t0*4 shift ahead of the A group does not move the chain quantity's birth: on the floor body it is byte-inert at 3 with the D-group temp still dead at luid 14, and on the ptr-carried-reload body it leaves the merged chain+dest born at 28 and scores 27, the same as the unnamed form.
+- mechanism: s34's frontier item 2 wanted an early t0*4 consumer that is not the D address, but a named value is not a consumer: cse gives the D group, the C group and the chain their own shifts, so only moving a STORE group ahead of the A group moves the chain's first insn.
+- probe: gen_c.py built c1 (q4 used by the D and C groups) and c4 (q4 used by the C group only) on the floor body, and c2/c3 (two placements) on the r8a body; run.sh scored all four and qty.sh dumped c1/c4.
+- result: c1 3, c4 3 (byte-inert, tables identical to base.qty), c2 27, c3 27 (identical to r8a's 27). All 175/175.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b90bdce4 chassis, floor body F and the r8a body, both FAKE constructs present; 175/175 in all four builds
+
+## [s35] Computing the D_800A35D0 address ahead of the A group while leaving the D stores in their target position scores 29 in both spellings tried, because the early address becomes a second value live across the A stores and the A pointer is promoted to its own long quantity (reg86 birth 18 death 30 refs 16).
+- mechanism: s2 gets the merged chain+dest born at 12 by putting the whole D group first; hoisting only the address reproduces the h-series failure of s34 with the roles reversed, and global-alloc seats the extra pointer.
+- probe: gen_e.py built e1 (A group through a second local ap) and e2 (A group addressed straight off base); run.sh scored both and qty.sh dumped e1's blk=1 table.
+- result: e1 29, e2 29, both 175/175, against s2's 13 and s4's 12.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b90bdce4 chassis, s2 body (D group first + the ptr-carried reload), both FAKE constructs present; 175/175
+
+## [s35] f3 (the floor body with the sb store moved ahead of the C-group stores and the named reload placed immediately before the moved sb) is the first body in 35 sessions to hold all four of the target's blk=1 seats simultaneously: chain $v0, dest+reload $v1, base $a0, t0 $a1, at 175/175 insns.
+- mechanism: The sb move pulls base's death 44 -> 42 while t0's goes 46 -> 48, and the reload lands at luid 38, so the dest+reload quantity's qty_compare_1 priority is 3*10/18 = 1.67, below the chain's 4*16/24 = 2.667, while base keeps $a0 at 36/32 vs 42/42.
+- probe: gen_f.py built f1 (the sb move alone), f3 and f4 (the named reload before / after the moved sb); run.sh scored them and qty.sh dumped each blk=1 table with its QTYDBG allocation order.
+- result: f1 5, f3 34 with the target's four seats, f4 40. The seats cost 34 points of schedule: sched1 hoists the lw to luid 38 and the sb move alone is already worth 2 rows.
+- verdict: CONFIRMED
+
+## [s35] Closed form, confirmed by every measurement in the p-series and f-series: on the target's insn stream the dest-merged-onto-the-reload structure cannot take $v1, so the target's C must produce the s2/r8 merge instead (dest merged with the chain, reload carried by a multi-death local).
+- mechanism: The dest+reload quantity dies at luid 56, the last insn of blk=1 (the p_7e addiu; the block ends at the inner do-while head), so its span can only grow at the birth end; qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) needs span >= 12 (birth <= 44) or refs <= 7 for it to sort below the chain, refs is invariant at 10, and birth 48 -> 44 moves the lw two insns earlier, which is itself a differing row. For any reload placement before the sb the luid shift k is a positive multiple of 2, base keeps $a0 iff 36/(34+k) > 42/(40+k) i.e. k < 2, and the dest quantity needs k >= 2 — disjoint.
+- probe: The twelve invariance dumps, s34's p-series (p2/p3/p6/p8/p9/p10), and this session's f-series.
+- result: Measurement matches the closed form at every point: k=0 byte-inert 3, k=2 (p2) 24 with rows 62-64 byte-exact and the $a0/$a1 pair inverted, k=4 38, and f3 wins the seats only by moving the lw. The s27-s35 programme of fixing the floor body's registers in place is closed; the live route is the s2/s4 family.
+- verdict: CONFIRMED

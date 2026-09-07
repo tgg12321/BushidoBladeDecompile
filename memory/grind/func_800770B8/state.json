@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 34,
+ "session_count": 35,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -207,23 +207,29 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "s33's 'one quantity from score 0' frontier is closed and negative (a correct qty table measures 42), and the class-C seat is reached for the first time with NO operand flip and no FAKE construct: nami"
+  },
+  {
+   "session": 35,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Floor holds at 3; the blk=1 quantity table is measured invariant under 12 byte-neutral spellings, the 'fix the floor body's registers in place' programme is closed in closed form, and f3 becomes the f"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A body that holds the named reload at birth <= 44 while leaving reg101's death at 44 (or pushing reg87's death to >= 50) breaks p2's 1.000/1.000 tie in base+t0's favour and is a score-0 body.",
-   "mechanism": "qty_compare_1 (local-alloc.c:1660) ranks by floor_log2(refs)*refs*size/(death-birth) and breaks exact ties by quantity index, which favours the lower-numbered quantity (reg87 = sign-extended t0, born first). p2 already has every other seat right, including rows 62/63/64 byte-exact; only the $a0/$a1 pair is inverted. Needed ratio: (reg87.death - 6) / (reg101.death - 10) > 42/36 = 1.1667; p2 sits at exactly 1.1667 and the floor body at 1.176.",
-   "next_probe": "Start from rejected/s34-named-reload-before-sb-classC-rows-exact-but-a0a1-tiebreak-24.c. Sweep spellings that shorten reg101's live range or lengthen reg87's WITHOUT adding an instruction: (a) give `base` a later birth (assign it after `a2 = 0;`, or address the A group's first store off D_800A36A0 so base's first ref is later); (b) drop one mention of the sign-extended t0 so its refs fall 14 -> 12 and floor_log2 drops 3 -> 3 with 36/42 = 0.857; (c) raise reg101's refs 12 -> 16 by giving `base` a fourth use inside blk=1. Triage every variant with tmp/grind/func_800770B8/s34/qty.sh BEFORE scoring: keep only tables whose blk=1 has five quantities, the chain at ord0/ord1 with got=2, the dest+reload with got=3, reg101 with got=4 and reg87 with got=5."
+   "hypothesis": "The s2/s4 family (merged chain+dest in $v1, reload carried by the multi-death ptr, all four target seats) is the only live route, and its whole 12-13 point residual is the D_800A35D0 store group's emission position; a body that keeps the merged quantity born <= 12 with the D stores back at rows 51/52 is a score-0 body.",
+   "mechanism": "The merged quantity takes $v1 only because it is born before the short t0*4 temp and therefore conflicts with it (s2: merged b12 d56 refs22, temp b22 d24). Its birth moves only when a STORE group is emitted ahead of the A group (s35 killed the named-value route; s34 killed the reorders that do not lead with the D group). What has never been swept is WHICH store group leads: the C group (base + t0*4, the value the target computes at row 42) or the sb store, with the D group left in the target's slot.",
+   "next_probe": "Start from tmp/grind/func_800770B8/s35/v/s2.c. Build bodies whose first store group is the C group (ptr = base + t0*4; the 0x42/0x40 pair) or the sb store, with the A, D, C order otherwise as in the floor body and the reload still taken into ptr. qty-triage each with s35/qty.sh first: keep only tables with FOUR quantities, the merged chain+dest at birth <= 12 with got=3, and a short t0*4 temp born after it; then score with s35/run.sh and diff rows against asm/funcs/func_800770B8.s."
   },
   {
-   "hypothesis": "s2/s4's four-quantity structure can be kept while the D_800A35D0 stores return to their target position (rows 52/53, after the A stores), which would close the last 12 points.",
-   "mechanism": "In s2 the chain is born at 12 only because a t0*4 consumer (the D address) precedes the A group; the D stores follow the address because both live in `ptr`. Any spelling that computes the D address early but stores late needs a second pointer, and s34 proved a second pointer is seated in $a2 across the A stores whether or not local-alloc grants it a quantity (h1/h4). The remaining unexplored axis is a spelling where the EARLY t0*4 consumer is not the D address at all -- e.g. the C-group address or the t0*5 chain -- while `ptr` still carries all three store groups.",
-   "next_probe": "Start from rejected/s34-dgroup-first-reload-into-ptr-plus-flip-12.c (12) and rejected/s34-dgroup-first-reload-into-ptr-13.c (13). Sweep bodies in which the FIRST statement of the loop body is a t0*4-consuming expression that the target also computes early (row 42 `sll $v1,$a1,2`), with the three store groups left in the target's A, D, C order through `ptr`, and the second D_800A36A0 read taken into `ptr`. qty-triage for four quantities with the merged chain+dest at birth <= 14 and got=3, then score; also dump .sched for the best one to see whether sched2 restores the D stores to rows 52/53."
+   "hypothesis": "On the floor store order the r8 merge (ptr-carried reload) scores 27 only because the merged chain+dest (refs 22, span 28, priority 3.14) outranks the reload quantity (refs 4, span 4, priority 2.0) and takes $v0; giving the reload pseudo refs >= 8 at the same span inverts that (3*8/4 = 6.0) and seats the merge in $v1 with the D stores never moved.",
+   "mechanism": "qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) ranks floor_log2(refs)*refs*size/(death-birth); flow.c weights reg_n_refs by loop depth, so a reference to the reload pseudo from inside the inner do-while counts more than one in the outer body. The reload's span is pinned at 4 by the load-delay scheduling, so refs is the only free term.",
+   "next_probe": "Start from tmp/grind/func_800770B8/s35/v/r8a.c (27). Sweep spellings that give the pseudo holding the second D_800A36A0 read more references without adding an insn: the record pointers rebuilt from it in both arms of the inner loop, the reload local reused as the base of the 0x5C/0x60 pair while a separate local keeps the record pointers, and the reload read into a local that also carries the sb address. Check insns == 175 FIRST (any form that lets cse delete the second lw drops to 174), then qty-triage for a reload quantity with refs >= 8 before scoring."
   },
   {
-   "hypothesis": "The two families are independent and can be combined: p2's named reload (which fixes rows 62-64 with the store order untouched) plus s2's ptr-carried reload merge (which fixes the dest tie without the flip).",
-   "mechanism": "p2 wins the seat by lowering the dest+reload quantity's priority; s2 wins it by removing the reload from the quantity altogether and moving the chain's birth. They act on the same two quantities by different routes, so a body that uses the ptr-carried reload AND keeps the target's store order should have the dest tied to the chain at birth 28 (r8 = 27) -- the missing piece is an early t0*4 consumer that is not a second live pointer.",
-   "next_probe": "Build r8a (rejected/s34-reload-into-ptr-merges-dest-with-chain-birth28-27.c) variants in which the loop body's first statement makes t0*4 available early without materialising a symbol address: e.g. compute the C-group offset first into `ptr` and re-derive it, or spell the A-group index so cse emits the t0*4 shift ahead of the t0*2 shift. qty-triage for merged birth <= 14 with four quantities before scoring."
+   "hypothesis": "f3 proves the four seats are winnable at 175/175; the only thing between f3 and a match is that sched1 emits the reload lw at luid 38 (and f3 pays two more rows for the sb move). A body whose lw lands at exactly luid 44 with the sb unmoved would hold the seats with the floor's schedule.",
+   "mechanism": "The dest+reload quantity needs span >= 12, i.e. birth <= 44; the floor emits the lw at 48 and every source placement before the sb moves it to 42 or earlier while shifting the sb's dependents by k >= 2 luids (which loses the $a0 tie). Luid 44 is the single slot that satisfies both, and it is a sched1 outcome, not a source-order one.",
+   "next_probe": "Run tools/sched_solver on blk=1 of the floor body (dump with pwsh tools/grinder/dump.ps1 func_800770B8, read .sched) and enumerate the schedules in which the lw sits at luid 44 with every other insn at its floor position; then ask which C-level dependence (a use of the reload's value, or a store the lw must precede) would force that slot, and spell it. If the solver returns FORECLOSED for luid 44, bank that as the class kill that closes the whole floor-stream family and leaves frontier items 1 and 2 as the only routes."
   }
  ],
  "judge_constraints": [
@@ -573,6 +579,38 @@
    "measured_on": "HEAD de9606ac chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; 175/175",
    "predicate_cite": "",
    "result": "q5 birth 26, q6 birth 28, q7 birth 26; scores 15, worse, worse. Also q1/q2/q3 (the sb store moved ahead of the C group o"
+  },
+  {
+   "session": 35,
+   "statement": "The blk=1 local-alloc quantity table on the floor insn stream is unchanged by twelve byte-neutral respellings measured this session (base defined later, the sb address named early, the sb address re-a",
+   "kill_scope": "instance",
+   "measured_on": "HEAD b90bdce4 chassis (src identical to de9606ac), floor body F + the class-B dead store + the do-while(0) prologue fence, both FAKE constructs present as in candidate.c; 175/175 in all twelve builds",
+   "predicate_cite": "",
+   "result": "a1/a3/a4/a6/a7/b4 all 24 (byte-inert against p2's 24); c1/c4/d1/d2 all 3 (byte-inert against the floor's 3); a5 31 and b"
+  },
+  {
+   "session": 35,
+   "statement": "s34's frontier item 1 levers for the p2 $a0/$a1 tie (a later birth for base, one fewer reference to the sign-extended t0, four more references to base) have no source spelling on this chassis: six res",
+   "kill_scope": "instance",
+   "measured_on": "HEAD b90bdce4 chassis, p2 body (floor body F + the named reload before the sb) with the class-B dead store and the do-while(0) prologue fence present; 175/175 except b1/b2 (174)",
+   "predicate_cite": "",
+   "result": "a1/a3/a4/a6/a7/b4 24; a5 31; b3 32; b1 33 at 174 insns; b2 47 at 174 insns."
+  },
+  {
+   "session": 35,
+   "statement": "Naming the t0*4 shift ahead of the A group does not move the chain quantity's birth: on the floor body it is byte-inert at 3 with the D-group temp still dead at luid 14, and on the ptr-carried-reload ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD b90bdce4 chassis, floor body F and the r8a body, both FAKE constructs present; 175/175 in all four builds",
+   "predicate_cite": "",
+   "result": "c1 3, c4 3 (byte-inert, tables identical to base.qty), c2 27, c3 27 (identical to r8a's 27). All 175/175."
+  },
+  {
+   "session": 35,
+   "statement": "Computing the D_800A35D0 address ahead of the A group while leaving the D stores in their target position scores 29 in both spellings tried, because the early address becomes a second value live acros",
+   "kill_scope": "instance",
+   "measured_on": "HEAD b90bdce4 chassis, s2 body (D group first + the ptr-carried reload), both FAKE constructs present; 175/175",
+   "predicate_cite": "",
+   "result": "e1 29, e2 29, both 175/175, against s2's 13 and s4's 12."
   }
  ],
  "object_model_audited": 29,

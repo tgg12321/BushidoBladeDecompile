@@ -4291,3 +4291,105 @@ base_fn.lreg, rows_e3.txt, rows_base.txt, rows_p2.txt, rows_h1.txt, rows_s2.txt.
 - [s34] Routing the second D_800A36A0 read through `ptr` alone (r8a/r8b/r8c, 27) reproduces the operand flip's combine_regs effect -- the dest ties to the chain rather than the reload -- in ordinary C with no flip written.
 
 - [s34] src/text1b.c was restored to the pristine HEAD copy after every sweep; git status on src/ and include/ is clean at end of session.
+
+## [s35] (synthesis, 2026-09-06) — the floor stream's quantity table is invariant; the seat is winnable, the schedule is what it costs
+
+**Chassis.** HEAD b90bdce4. `git log --name-only` shows no `src/` change between de9606ac (s34's
+chassis) and b90bdce4 — the two ledger commits touch only `memory/`, `docs/` and `metrics/`, so the
+chassis is byte-identical to s34's. Re-measured with s34's harness copied to
+`tmp/grind/func_800770B8/s35/`: floor body `base` = **3/175/175**, `p2` = 24, `s2` = 13, `s4` = 12,
+`r8a` = 27, `r1` = 5. Every s34 score reproduces exactly.
+
+**KILL RE-AUDIT (mandated).** `python3 tools/fake_ablate.py --func func_800770B8 --file text1b
+--candidate memory/grind/func_800770B8/candidate.c`: keep-all **3**, drop the `p_old` dead store
+**5**, drop the empty `do { } while (0)` prologue wrap **8**, drop both **10** — all at 175 insns.
+Both FAKE constructs are load-bearing on the current chassis, and no banked kill was measured with a
+FAKE carrier sitting on the class-C pseudos (the two FAKE units live in the prologue block, blk=0).
+
+**OWNER DIRECTIVE.** The 2026-09-06 queue directive (class-B prologue store-base spellings on the h3
+chassis, then the record-layout audit for a third use of the C pointer) was already executed and
+measured: s31 ran 26 builds of the class-B store-base spellings on BOTH the floor body and the h3
+chassis and CLOSED class B (floor 5 -> 3, hypotheses.md [s31]); s32 ran the record-layout audit
+(func_8006E49C / func_80076FF8 / func_8006E950 show no list-walk shape; the natural s16-table
+readings of the 0x6A/0x7E record cost 176 insns) and s33 re-confirmed both (evidence.md:4179). This
+session therefore worked the standing frontier, as s33 did.
+
+### [s35] The blk=1 local-alloc quantity table is INVARIANT on the floor insn stream
+Twelve byte-neutral spellings measured this session, each dumped with `BB2_QTY_DEBUG=1`, produce the
+IDENTICAL blk=1 table (only the pseudo numbers move):
+
+    qty0  t0 (sign-extended)        birth 6   death 46  refs 14   -> $a1
+    qty1  base (+ base+t0 merged)   birth 10  death 44  refs 12   -> $a0
+    qty2  the D-group t0*4 temp     birth 12  death 14  refs 4    -> $v0
+    qty3  the t0*4->t0*5->t0*10 chain birth 28 death 52 refs 16   -> $v1
+    qty4  the dest + the D_800A36A0 reload birth 48 death 56 refs 10 -> $v0
+
+The spellings: `base` defined after `a2 = 0` (a1); the sb address named early in its own local (a3);
+the sb address re-associated as `base + (t0 + 0x68)` (a4); the sb store moved past the record-pointer
+computations (a6); the sb value spelled `(u8)(t0 + 0)` (a7); the sb spelled as the array subscript
+`base[t0 + 0x68]` (b4); `s32 q4 = t0 * 4;` named ahead of the A group and used by both the D and the C
+group (c1) or by the C group only (c4); `p_7e = p_6a + 10` (d1); a named `u8 *q = D_800A36A0 + t0*10`
+feeding both record pointers (d2). All score 3 at 175/175 — byte-inert. s34's p6/p8/p10 (three
+placements of a named reload AFTER the sb) are the same table. **Births, deaths, refs and the merge
+membership are not reachable by source spelling while the insn stream is the target's.**
+
+### [s35] Closed form: on the target's insn stream the dest+reload merge CANNOT take $v1
+The class-C seat requires qty3 (chain, `floor_log2(16)*16/24` = 2.667) to sort ahead of qty4
+(dest+reload, `floor_log2(10)*10/8` = 3.75) in `qty_compare_1`
+(`tools/gcc-2.7.2/local-alloc.c:1660`). qty4's death 56 is the LAST insn of blk=1 (the `p_7e` addiu;
+the block ends at the inner do-while's head), so the death cannot be pushed later by any body — the
+span can only grow at the birth end. qty4 needs pri <= 2.667, i.e. span >= 12, i.e. birth <= 44; and
+refs is invariant at 10 (above), so the refs route (needs <= 7) is closed too. Birth 48 -> 44 means
+the reload `lw` is emitted two insns earlier, which is itself a differing row. **Therefore no body
+whose insn stream equals the target's can reach the class-C seat with the dest merged onto the
+reload. The target's structure has to be the one s2/r8 exhibit: the dest merged with the CHAIN, the
+reload carried by a multi-death local that `local-alloc.c:471`'s `reg_n_deaths == 1` gate refuses a
+quantity.** This is why every "make the floor body's registers come out right" probe since s27 has
+failed: the floor body's merge structure is the wrong one, not a mis-priced one.
+
+### [s35] Closed form: the p2 family cannot hold both seats
+For any placement of the named reload BEFORE the sb store, every insn from the lw's new slot onward
+shifts later by k luids, k a positive multiple of 2 (one insn = 2 luids). base keeps the $a0 seat iff
+`36/(34+k) > 42/(40+k)` <=> `12 > 6k` <=> k < 2; qty4 needs birth <= 44 <=> k >= 2. The two
+requirements are disjoint. Measured, exactly as predicted: k=0 (p6/p8/p10) byte-inert 3; k=2 (p2) 24
+with rows 62/63/64 byte-exact and the $a0/$a1 pair inverted; k=4 (p3/p9) 38.
+
+### [s35] f3 — the first body holding ALL FOUR target seats
+`f3` = the floor body with (i) the sb store moved ahead of the C-group stores and (ii) `u8 *rb;
+rb = D_800A36A0;` immediately before the moved sb, with the record pointers built off `rb`. blk=1:
+t0 b6 d48 refs14, base b10 d42 refs12, temp b12 d14, chain b28 d52 refs16, dest+reload **b38** d56
+refs10 -> 30/18 = 1.67 < 2.667. Allocation order: temp $v0, **chain $v0**, **dest+reload $v1**,
+**base $a0**, **t0 $a1** — the target's four seats, all of them, at 175/175 insns.
+**Score 34.** The price is entirely schedule: sched1 hoists the lw to luid 38 and the sb move costs
+f1's two rows (`f1` = the sb move alone = 5). The seat is winnable on a near-floor body; what is not
+winnable is winning it without moving the lw.
+
+### [s35] Two refs-raising routes measured and priced
+Addressing the tail 0x5C/0x60 pair off the loop-body `base` (b1) or off the named reload `rb` (b2)
+raises the base/reload quantity's refs but DELETES the second `D_800A36A0` reload: 174 insns, scores
+33 and 47. Routing the per-player counter through a named `s32 *cnt = &sp[t0];` (b3) scores 32.
+Addressing the five A-group stores straight off `base` (a5) restructures blk=1 into a different
+five-quantity table and scores 31.
+
+### [s35] The s2 residual is not payable by hoisting the address alone
+`e1` (D address computed into `ptr` ahead of the A group, A group through a second local `ap`, D
+stores back in their target position) and `e2` (same, A group addressed straight off `base`) both
+score **29** at 175/175 — worse than s2's 13. The early D address is a second value live across the A
+stores, which is the h-series failure with the roles reversed: blk=1 comes out with the merged
+chain+dest at b12 d56 refs22 (the s2 shape) but the A pointer becomes its own long quantity
+(reg86 b18 d30 refs16). **The s2 family's 13-point residual is the D STORES' position, and it cannot
+be paid by moving only the address.**
+
+- [s35] Chassis re-confirmed at HEAD b90bdce4: floor body 3/175/175, p2 24, s2 13, s4 12, r8a 27, r1 5 — every s34 score reproduces; git log --name-only shows no src/ change between de9606ac and b90bdce4.
+
+- [s35] KILL RE-AUDIT: tools/fake_ablate.py on candidate.c gives keep-all 3, drop the p_old dead store 5, drop the empty do-while(0) prologue wrap 8, drop both 10, all at 175 insns — both FAKE constructs are load-bearing on the current chassis and neither sits on a class-C pseudo (both live in blk=0).
+
+- [s35] The floor stream's blk=1 quantity table (t0 b6 d46 refs14 -> $a1; base b10 d44 refs12 -> $a0; D-group t0*4 temp b12 d14 refs4 -> $v0; chain b28 d52 refs16 -> $v1; dest+reload b48 d56 refs10 -> $v0) is reproduced byte-for-byte by twelve distinct byte-neutral spellings.
+
+- [s35] The D-group t0*4 temp dies at luid 14 in every measured body, including bodies that name the shift and hand the same named value to the C group — the C group always gets its own shift, so the temp can never be made to conflict with the chain.
+
+- [s35] f3's QTYDBG order is (temp $v0, chain $v0, dest+reload $v1, base $a0, t0 $a1): all four target seats on a 175/175 body, price 34 points of schedule.
+
+- [s35] Addressing the tail 0x5C/0x60 pair off any live pointer (base or the named reload) deletes the second D_800A36A0 reload and builds 174 insns (b1 33, b2 47), so the refs-raising route on the base quantity is priced out.
+
+- [s35] The owner's 2026-09-06 directive (class-B prologue store-base spellings on the h3 chassis, then the record-layout audit for a third use of the C pointer) was already executed and measured by s31 (26 builds, class B closed, floor 5 -> 3) and s32/s33 (no list-walk shape in the siblings; the natural s16-table readings cost 176 insns); this session worked the standing frontier instead, as s33 did.
