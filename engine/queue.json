@@ -1451,23 +1451,13 @@
       "unparked": "2026-08-01 owner directive: canonical-asm was REJECTED by the 2026-06-09 audit, so this is ordinary pure-C work that was merely deferred; deferral is not an available disposition (no-deferral-work-to-completion 2026-06-12). Body is still asm via asmfix replace_with_asmfile \u2014 a from-scratch decomp, not a residual.",
       "regate": "2026-08-07: fresh canonical gate (distance>500 but hand-coded tier < POSSIBLE) -> ASM-SUSPECT; distance-only ASM-STRUCTURAL label was pre-fix routing | 2026-08-18 re-gate: scan_hand_coded tier=LOW (no S1/S2/S6) - ASM-SUSPECT label was a distance artifact; ordinary pure-C target",
       "hand_coded_tier": "LOW"
-    },
-    {
-      "func": "func_8007526C",
-      "file": "text1b",
-      "distance": 48,
-      "verdict": "C",
-      "rules": 0,
-      "status": "foreclosed",
-      "foreclosure": "FORECLOSED (logged to borderline.md; owner ruling 2026-08-31): docs/grind/decisions.md:25231 \u2014 2026-09-07 \u2014 func_8007526C \u2014 OWNER-ESCALATION: OWNER-ONLY GATE-LINE REMEDY (honest floor 1; one line in maspsx_label_nop_funcs.txt)"
     }
   ],
   "counts": {
-    "total": 165,
+    "total": 164,
     "active": 164,
     "by_status": {
-      "active": 164,
-      "foreclosed": 1
+      "active": 164
     },
     "by_verdict": {
       "C": 138,

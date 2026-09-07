@@ -25350,3 +25350,42 @@ first time — `func_80017D84` (already named by this ledger's own s45
 object-model audit as the source of its 52-byte data model), `func_80016E60`,
 and `main`. That is one unrun, named probe, which is the standard the
 2026-09-06 review itself used for an unpark.
+
+## 2026-09-07 — func_8007526C — manual completion (owner-applied remedy) — **PASS / COMPLETED-C**
+
+The 2026-09-07 12:24 escalation packet's owner-only remedy, applied by the owner
+in-session. Two lines of change: `func_8007526C` appended to
+`maspsx_label_nop_funcs.txt` (LOAD-CONSUMER case) and the banked s6/s7 body
+replacing `INCLUDE_ASM("asm/funcs", func_8007526C);` at src/text1b.c.
+
+**Bytes, on the unmodified build configuration:** `sandbox func_8007526C
+--disable all` = 0 (91/91, rules_dropped 0); `verify-oracle` ok, build SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa; `queue done` re-verified and recorded
+`maspsx_gates: [maspsx_label_nop_funcs.txt]`.
+
+**Layer-2 (fresh adversarial cheat-reviewer, default-FAIL): PASS.** It
+reproduced both measurements itself rather than crediting the author, and ruled
+on each attack surface:
+- `lim` (local 0xC8 used at three `sh $a3,...` stores while the two `>= 0xC8`
+  guards stay literal): NOT the banned named-local constant-holder. It traced
+  the ledger's own s1 measurement showing the 0xC8 hoist is identical with or
+  without the named local — so the variable is byte-neutral and does no hidden
+  codegen work; it is a truthful named limit constant that really is stored to
+  memory at the cited offsets.
+- Backward-goto loop: mechanism is real GCC internals (loop.c only sees loops
+  via NOTE_INSN_LOOP_BEG, which expand_start_loop emits for while/for/do only),
+  and per ordinary-c-judge-decidable.md a semantically truthful spelling is not
+  disqualified by the pass-motive that led the worker to it. It verified the
+  three SOTN citations at sotn-construct-index.md:2705/2723/2725 are real PSX
+  entries AND that each cited goto line exceeds its label line, i.e. genuine
+  backward loops rather than forward exit jumps.
+- The gate line: verified fidelity-class against the target asm (lines 4-7 are
+  `lw $a0,%gp_rel(D_800A36A0)($gp)` / `.L80075278:` / missing nop /
+  `lbu $v1,0x10($a0)`) and against `is_label()`'s `$L`-only regex, and verified
+  the func_80022F34 precedent by reading commits d4338774 and 03f47912 — same
+  shape, same owner-applied mechanism.
+- No FAKE, pin, volatile, `__asm__`, dead store, or pad anywhere in the diff.
+
+The class-wide alternative (teaching `is_label()` the `.L` prefix) is NOT taken:
+`maspsx-label-nop-gate.md` says "Per-function-scoped so it doesn't cascade.
+Don't broaden the gate globally."
