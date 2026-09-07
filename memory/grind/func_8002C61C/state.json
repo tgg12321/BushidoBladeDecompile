@@ -44,5 +44,9 @@
    "summary": "ruling PASS (decisions.md 2026-09-06 06:44 ruling PASS)"
   }
  ],
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "exhaustion_base": 1,
+ "last_unpark_reason": "owner 2026-09-06: reference corrected (splat false-positive D_1F80000C dropped, commit 42765104) - reinstall candidate.c, expect sandbox 0, normal gates",
+ "last_unpark_at": "2026-09-07T01:40:22.027321+00:00",
+ "escalation_deferrals": 0
 }
