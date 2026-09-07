@@ -1802,3 +1802,4 @@
 - 2026-09-06 20:05 func_800770B8 s38 [forensics] floor=3: Pass re-attribution: the ap/x3 family's D-address displacement is loop.c move_movables (admitted at loop.c:705), not sched1 -- and a fresh two-statement local cannot reproduce the floor body's multi-set pointer because cse folds its first write away (u1/u2/u3 = 26).
 - 2026-09-06 20:18 func_800770B8 COMPLETED-C after 39 sessions (closer: s39 [escalation]).
 - 2026-09-06 20:28 func_80022F34 COMPLETED-C after 12 sessions (closer: s12 [structural]).
+- 2026-09-06 20:36 func_800480C0 COMPLETED-C after 24 sessions (closer: s24 [synthesis]).
