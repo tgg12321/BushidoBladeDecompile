@@ -4661,3 +4661,112 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: the s58 G2 struct-model / no-pp chassis at 2 real (sandbox 7) with the s9 do{}while(0) FAKE present and the void **pp pointer-alias FAKE absent
+
+## s60 (rederive - CD_ready sibling transplant)
+
+- H(s60-1) CONFIRMED. CD_ready's matched do_timeout spelling (puts and the chain-A raw
+  read outside the do{}while(0) wrap; chain B computed before chain A inside it), applied
+  to the CD_datasync chassis with a multi-set chain-A address carrier, reproduces the
+  target's block-3 instruction order and register seats exactly (asm/funcs/CD_datasync.s
+  lines 45-63 vs tmp/grind/CD_datasync/s60/dis_P3.txt). Sibling: CD_ready s88,
+  COMPLETED-C on main 2026-09-06.
+
+- H(s60-2) KILLED (instance). Staging chain A's address through a FRESH single-set local
+  on the CD_ready-transplant chassis reaches the correct window order but the wrong seats
+  (chain A in $v1, arg5 in $v0 instead of $a0/$v1) and measures 8.
+  measured_on: the s60 CD_ready-transplant chassis at 8, with the do{}while(0) wrap and
+  the pp = &D_800F19C0 pointer alias present; idx_1494 both volatile (g_cd_status_a) and
+  non-volatile (&D_800A1494) - identical 8 either way.
+
+- H(s60-3) KILLED (instance). A dead store to the fresh chain-A carrier - before the poll
+  loop (src = (u8 *)tbl_125c;) or after the wrap (src = 0;) - does not give the carrier
+  the multi-set allocation behaviour the order needs; both spellings are byte-inert at 8,
+  identical to the carrier with no extra store at all.
+  measured_on: the s60 CD_ready-transplant chassis at 8, do{}while(0) wrap and pp pointer
+  alias present.
+
+- H(s60-4) KILLED (instance). Splitting the chain-A address computation into two
+  statements (aA = t0 << 2; aA += (s32)tbl_125c;), on a fresh local at either function or
+  block scope, gives the carrier two sets but re-emits the shift as its own boosted insn,
+  and the old 2-insn order residual returns: score 2, sll a0,a0,2 back ahead of
+  sll v0,v0,2 / addu v0,v0,s0.
+  measured_on: the s60 CD_ready-transplant chassis at 2, do{}while(0) wrap and pp pointer
+  alias present.
+
+- H(s60-5) KILLED (instance). Splitting the -1/0 flag out of the v0 carrier into its own
+  local frees $v0 for the flag but leaves the carrier single-set, and the window order is
+  lost: 8. Measured with three neighbouring spellings that also fail to move the flag out
+  of $a0 while keeping the order: return v0 in place of return -1 (4), the flag staged
+  through cnt (3, byte-identical residual), the carrier copied into a fresh pointer
+  before the printf (3, byte-identical residual).
+  measured_on: the s60 CD_ready-transplant chassis with the v0 carrier at 3, do{}while(0)
+  wrap and pp pointer alias present.
+
+- H(s60-6) KILLED (instance). Putting the multi-set carrier on chain B (the arg5 address,
+  which the target holds in $v0 - the flag's own seat) instead of chain A does not let the
+  flag and the address share a seat for free: v0 on chain B = 8, v0 on chain B with cnt on
+  chain A = 4, v0 on chain A with cnt on chain B = 6.
+  measured_on: the s60 CD_ready-transplant chassis, do{}while(0) wrap and pp pointer alias
+  present.
+
+- H(s60-7) KILLED (instance). The three remaining function-scope pseudos are not usable as
+  the chain-A carrier: tbl_125c re-set after its last read = 2 with the order lost,
+  idx_1494 = 9, tbl_11dc = 18 (its own value is still needed by the same printf).
+  Block-scope re-use of t0 (self-reassign) = 8, tb = 8, pB re-used after its own load = 4,
+  and the puts() argument pointer as carrier = 8.
+  measured_on: the s60 CD_ready-transplant chassis, do{}while(0) wrap and pp pointer alias
+  present.
+
+## [s60] CD_ready's matched do_timeout spelling (puts and the chain-A raw byte read emitted OUTSIDE the do{}while(0) wrap; chain B's address computed before chain A's inside it), applied to the CD_datasync chassis with a multi-set carrier for chain A's address, reproduces the target's block-3 instruction order AND register seats exactly.
+- mechanism: Moving puts and t0 = idx_1494[0] out of the wrap puts the chain-A raw read at loop depth 1 (flow.c loop_depth ref weighting: qty refs 7 not 8), which drops the merged chain-A quantity below the arg5 value's local-alloc priority; the multi-set carrier keeps the chain-A addu unboosted (sched.c birthing_insn_p) so it fills the backward-pass slot behind the sw instead of ahead of chain B's shift.
+- probe: Transplanted CD_ready's on-main window (src/system.c:379-435) onto the CD_datasync chassis and disassembled the sandbox object; compared insn-by-insn against asm/funcs/CD_datasync.s lines 45-63.
+- result: Window byte-exact: lbu a0,0(s1) / lbu v0,1(s1) / lui a1 / lw a1 / sll v0,v0,2 / addu v0,v0,s0 / sll a0,a0,2 / lw v1,0(v0) / lui v0 / lbu v0 / addu a0,a0,s0 / sll v0,v0,2 / addu v0,v0,s3 / sw v1,0x10(sp) / lw a2,0(v0) / lw a3,0(a0). Artifact tmp/grind/CD_datasync/s60/dis_P3.txt. Whole-function score 3; the only divergence left is the -1/0 flag sitting in $a0 instead of $v0 (3 insns).
+- verdict: CONFIRMED
+
+## [s60] Staging chain A's address through a FRESH single-set local on the CD_ready-transplant chassis reaches the correct window order but the wrong seats (chain A in $v1, arg5 in $v0 instead of $a0/$v1) and measures 8.
+- mechanism: A single-set pseudo is a birthing insn for its SET (sched.c), so its address addu is boosted and local-alloc gives the quantity a different preference than the target's $a0.
+- probe: Fresh function-scope u8 *src carrier, with idx_1494 spelled both volatile (&g_cd_status_a) and non-volatile (&D_800A1494).
+- result: 8 in both spellings; volatile is inert here. Banked as rejected/s60-cdready-transplant-fresh-fnscope-src-carrier-8.c and rejected/s60-cdready-transplant-nonvolatile-idx1494-8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis at 8, with the do{}while(0) wrap FAKE and the pp = &D_800F19C0 pointer-alias FAKE present
+
+## [s60] A dead store to the fresh chain-A carrier - placed before the poll loop (src = (u8 *)tbl_125c;) or after the wrap (src = 0;) - does not give the carrier the multi-set allocation behaviour the window order needs.
+- mechanism: flow.c deletes the dead store before local-alloc builds quantities, so the pseudo's reg_n_refs and set count are unchanged; only sets carrying a real value on a reaching path move the allocation.
+- probe: Two dead-store placements on the fresh-carrier transplant chassis, measured against the same body without the store.
+- result: Both byte-inert at 8, identical to the no-store form. This kills the cheapest sanctioned escape (dead-store-fake-exception) for this residual. Banked as rejected/s60-dead-store-to-src-before-loop-inert-8.c and rejected/s60-dead-store-to-src-after-wrap-inert-8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis at 8, do{}while(0) wrap FAKE and pp pointer-alias FAKE present
+
+## [s60] Splitting the chain-A address computation into two statements (aA = t0 << 2; aA += (s32)tbl_125c;) on a fresh local, at either function or block scope, gives the carrier two sets but loses the window order.
+- mechanism: The split re-emits the shift as its own RTL insn with its own birthing-insn boost, so the chain-A sll is scheduled ahead of chain B's sll/addu again - the pre-s60 residual shape.
+- probe: Two-step split carrier at function scope and at block scope inside the wrap.
+- result: Both score 2 (ties the floor) with sll a0,a0,2 back ahead of sll v0,v0,2 / addu v0,v0,s0 - the old 2-insn order residual. Banked as rejected/s60-fresh-aA-twostep-order-lost-2.c; the block-scope variant is this session's candidate.c body only because it is the lowest-scoring form.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis at 2, do{}while(0) wrap FAKE and pp pointer-alias FAKE present
+
+## [s60] Splitting the -1/0 flag out of the v0 carrier into its own local frees $v0 for the flag but leaves the carrier single-set, and the window order is lost (8); three neighbouring spellings that keep the order all leave the flag in $a0.
+- mechanism: GCC 2.7.2 does no web splitting, so the carrier def and the two flag defs are one pseudo -> one quantity -> one hard reg; the chain-A address correctly prefers $a0 (target holds it there too) and the flag is dragged along. Removing the flag defs removes exactly the multi-set-ness the order depends on.
+- probe: Four forms: separate flag local; return v0 in place of return -1; the flag staged through cnt; the carrier copied into a fresh pointer before the printf.
+- result: Separate flag local 8; return v0 4; flag through cnt 3 (byte-identical residual); copy-to-fresh-pointer 3 (byte-identical residual). Banked as rejected/s60-flag-split-from-v0-carrier-8.c, rejected/s60-return-v0-instead-of-minus1-4.c, rejected/s60-v0-carrier-plus-copy-to-pA-3.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis with the v0 carrier at 3, do{}while(0) wrap FAKE and pp pointer-alias FAKE present
+
+## [s60] Putting the multi-set carrier on chain B (the arg5 address, which the target holds in $v0 - the flag's own seat) instead of chain A does not let the flag and the address share a seat for free.
+- mechanism: Chain B's address is consumed immediately by the lw that feeds the stack argument, so merging it with the flag pseudo extends a live range across the printf call sequence and forces a different quantity ordering in local-alloc.
+- probe: Three assignments of the two multi-set function-scope pseudos across the two chains.
+- result: v0 on chain B = 8; v0 on chain B with cnt on chain A = 4; v0 on chain A with cnt on chain B = 6. Banked as rejected/s60-v0-carries-chainB-8.c, rejected/s60-v0-chainB-cnt-chainA-4.c, rejected/s60-v0-chainA-cnt-chainB-6.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis, do{}while(0) wrap FAKE and pp pointer-alias FAKE present
+
+## [s60] The remaining function-scope and block-scope pseudos are not usable as the chain-A address carrier on this chassis: tbl_125c 2 with the order lost, idx_1494 9, tbl_11dc 18, t0 self-reassigned 8, tb 8, pB re-used after its own load 4, the puts() argument pointer 8.
+- mechanism: Each of these pseudos either still holds a live value the same printf consumes (tbl_11dc), is live across the poll loop (idx_1494, tbl_125c as the s0 base), or has all of its sets inside the window so its extra set does not change the loop-depth ref weighting.
+- probe: Seven carrier substitutions, one measurement each, on the transplant chassis.
+- result: Scores as stated; only v0 (3) and cnt (4) reach the byte-exact window at all, and both pay in their own block. Banked as rejected/s60-tbl125c-carrier-order-lost-2.c, s60-idx1494-carrier-9.c, s60-tbl11dc-carrier-18.c, s60-t0-selfreassign-carrier-8.c, s60-tb-carrier-8.c, s60-pB-reused-for-chainA-4.c, s60-puts-arg-pointer-carrier-8.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis, do{}while(0) wrap FAKE and pp pointer-alias FAKE present

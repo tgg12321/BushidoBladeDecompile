@@ -1,8 +1,8 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 59,
- "current_modality": "escalation",
+ "session_count": 60,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -357,23 +357,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Disposition: floor re-verified live at 2/91, both endgame gates FAIL (scan_hand_coded LOW 1/8; no PSX SOTN precedent and no closing construct in hand) - foreclosure record filed at docs/grind/decision"
+  },
+  {
+   "session": 60,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "CD_ready sibling transplant makes CD_datasync's do_timeout window BYTE-EXACT (all 15 insns incl. seats) - the 59-session order residual is retired; the remaining residual is 3 insns, one pseudo's hard"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A construct that inserts a luid between two ADJACENT sched.c pass-1 luids without re-pricing the surrounding block-3 quantities would close CD_datasync, CD_ready and CD_sync together; no member of the frozen family list reaches it today.",
-   "mechanism": "s57's inequality 9 < luid(arg4-sll) < 10 plus s59's measurement that every added-luid spelling tried (new pseudo, existing-local carrier, member-address split) either is byte-inert or re-prices five quantities at once.",
-   "next_probe": "Re-activation trigger only: a class grant or owner ruling covering such a construct, or a toolchain finding that changes rank_for_schedule's INSN_LUID tiebreak for equal-priority candidates."
+   "hypothesis": "The chain-A address carrier and the -1/0 flag can be separated if the function has (or the original source had) a statement AFTER the timeout window that gives the carrier a genuine second set - which is exactly what CD_ready has (its carrier `src` is the byte-copy loop's source pointer).",
+   "mechanism": "The order needs a pseudo that is multi-set with a set outside the window; the seat needs that pseudo's other uses to tolerate $a0. CD_ready satisfies both because its carrier's other uses are in a later copy loop whose pointer is naturally call-clobbered. CD_datasync's tail has no such statement, so every available multi-set pseudo (v0, cnt) has uses that want a different seat.",
+   "next_probe": "Re-examine CD_datasync's tail control flow against the target: does the target's tail (bnez v0 / lw D_800A14C0 / and 0x1000000 / beqz s2 loop) imply a local we are not modelling - e.g. the DMA-control read staged through a pointer that is also the timeout window's chain-A carrier? Start from memory/grind/CD_datasync/progress/s60-cdready-transplant-v0-carrier-window-byte-exact-3.c and vary ONLY the tail, keeping the window frozen."
   },
   {
-   "hypothesis": "engine/score.py's failure to resolve named-symbol R_MIPS_LO16/HI16 addends to absolute addresses inflates every struct-model measurement on this function by exactly 5 points, a standing measurement hazard for CD_datasync and its two foreclosed siblings.",
-   "mechanism": "normalized_insns masks section-symbol addends (fixed 2026-08-07) but keeps named-symbol immediates, so D_800F19B8+4/+8 compare unequal to D_800F19BC/D_800F19C0 despite linking to the same addresses; undefined_syms_auto.txt / named_syms.txt give every symbol's absolute address.",
-   "next_probe": "Operator/integration task outside the grind surface: add absolute-address resolution of named HI16/LO16 relocs to engine/score.py, re-run `engine test`, then re-score memory/grind/CD_datasync/progress/s58-alarm-struct-no-pp-fake-link-identical-2.c, which should read 2 rather than 7. This does not lower the true floor."
+   "hypothesis": "The cnt-carrier form (4) may be cheaper to fix than the v0-carrier form (3), because its 4 divergent insns are all in the poll-counter block where the target simply holds cnt in $v1.",
+   "mechanism": "In the cnt-carrier form the window AND the whole tail are byte-exact; only lui/lw/addiu/slt in the counter block use $a0 where the target uses $v1. That is a single quantity's seat in a block with no call and only three live values, which the ra_solver's local-alloc model covers directly.",
+   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the cnt quantity of rejected/s60-cnt-carrier-cnt-block-seat-a0-4.c asking for $v1, and spell the returned C-lever vector; the block is small enough that the solver's verdict should be decisive rather than heuristic."
   },
   {
-   "hypothesis": "Recovery of the original libcd source spelling of the shared do_timeout window would decide CD_datasync, CD_ready and CD_sync simultaneously.",
-   "mechanism": "All three twins share a byte-shape-identical do_timeout window (CD_ready s36/s39/s46/s53); each has ground the window independently to floor 2 and each residual is a scheduling artefact of the unknown original statement geometry.",
-   "next_probe": "Re-activation trigger only: new PsyQ-era libcd source or a version-correct decomp of CD_datasync's window (psyz / psxsdk skew already surveyed negative in research-psyz-axis-2026-08-19.md)."
+   "hypothesis": "The CD_ready transplant should be propagated to CD_sync (cpu_side_move_dir_4) immediately - it is the third twin of the same libcd do_timeout window, has been at floor 2 for 125 sessions, and its ledger has never seen CD_ready's matched spelling either.",
+   "mechanism": "All three twins share a byte-shape-identical window; CD_ready matched it, CD_datasync's window is now byte-exact under the same transplant, so CD_sync's 2-point residual is very likely the same order artefact with the same fix.",
+   "next_probe": "Outside this function's scope, but the driver should force a rederive on CD_sync with the same directive: transplant CD_ready's on-main window spelling (puts and the chain-A raw read outside the wrap, chain B before chain A) and census the multi-set carriers."
   }
  ],
  "judge_constraints": [],
@@ -383,54 +389,6 @@
  "last_unpark_reason": "Sibling trigger FIRED (same as CD_sync). CD_ready COMPLETED-C 2026-09-06 at floor 0 (s88, Judge PASS) on the shared do_timeout printf window; nothing propagated it because the merge path deleted the ledger (fixed 2026-09-07, commit 0ddc72c8). This ledger's candidate already carries *pp; UNSPENT is the rest of CD_ready's on-main spelling in src/system.c \u2014 the do-while(0) wrap placement, the tb/pB/a",
  "last_unpark_at": "2026-09-07T19:28:06.615222+00:00",
  "kills": [
-  {
-   "session": 41,
-   "statement": "Some cell of the complete {index local} x {arg4 value local} x {arg3 value local} x {arg5 value local} x {assignment order} cross-product holds both halves of the s39 two-pass conjunction (inherited s",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, three hoisted pointer locals) with the do{}while(0) FAKE present; 32 whole-function compiles md5-grouped, 4 live sandbox re-measurements",
-   "predicate_cite": "",
-   "result": "No cell holds both halves - and the space is far smaller than it looked. 32 forms collapse to 11 distinct functions and "
-  },
-  {
-   "session": 41,
-   "statement": "LUID order - which arguments are named locals and in what order - is the lever that decides the window's leaf-load picks (the ledger's model of record since s39 and the premise of all three inherited ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; v2 vs c_0000_435 whole-function md5 plus one live sandbox measurement",
-   "predicate_cite": "",
-   "result": "v2 is byte-identical to the fully-inline form (same md5, same 15-insn window, 13/91 live). A required LUID relation was "
-  },
-  {
-   "session": 41,
-   "statement": "Some ordinary-C spelling of arg3 that is neither a plain value local nor plain-inline (an index local, explicit pointer arithmetic, or a value local assigned after arg5's) moves arg3's index load late",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 8 forms (w1-w8), whole-function md5, window-slot classification",
-   "predicate_cite": "",
-   "result": "Four of the eight (w1, w2, w3, w5) are byte-identical to the class found earlier in the session, which therefore has SIX"
-  },
-  {
-   "session": 42,
-   "statement": "Reducing the number of hoisted callee-saved table pointers (tbl_11dc, idx_1494, tbl_125c), which are used only inside the do_timeout block, raises the printf window's register pressure and reaches tar",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, do{}while(0) FAKE present), 32 whole-function compiles with the FAKE wrapper in place in every form",
-   "predicate_cite": "",
-   "result": "Only the all-three-hoisted subset reaches target's expanded instruction count of 82 at all. All 28 forms that drop at le"
-  },
-  {
-   "session": 42,
-   "statement": "The declaration order of the three pointer locals, the order of their initialising assignments, and the position of that assignment block relative to the D_800F19BC and D_800F19C0 prologue stores are ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 108 whole-function compiles, all n=82 nop=3",
-   "predicate_cite": "",
-   "result": "Declaration order is completely byte-inert (all 6 permutations give identical scores in every cell) and the block positi"
-  },
-  {
-   "session": 42,
-   "statement": "Assigning one argument's value into a local BEFORE the puts() call raises the window's register pressure enough to force target's $v0 reuse.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis with the do{}while(0) FAKE present; 27 whole-function compiles",
-   "predicate_cite": "",
-   "result": "Every form carrying at least one before-puts assignment grows the function to n=84/85/87/88/90 - one callee-saved save/r"
-  },
   {
    "session": 42,
    "statement": "Hoisting arg2 (D_800F19C0) into a named value local advances its lui/lw pair into target's slots 43/44 on the new m011 chassis, where arg4's chain currently occupies them.",
@@ -862,6 +820,54 @@
    "measured_on": "the s58 G2 struct-model / no-pp chassis at 2 real (sandbox 7) with the s9 do{}while(0) FAKE present and the void **pp pointer-alias FAKE absent",
    "predicate_cite": "",
    "result": "P3 sandbox 7 = 2 real, object-identical to G2 - completely byte-inert. P4 sandbox 17 = 12 real, exactly P1's score with "
+  },
+  {
+   "session": 60,
+   "statement": "Staging chain A's address through a FRESH single-set local on the CD_ready-transplant chassis reaches the correct window order but the wrong seats (chain A in $v1, arg5 in $v0 instead of $a0/$v1) and ",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis at 8, with the do{}while(0) wrap FAKE and the pp = &D_800F19C0 pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "8 in both spellings; volatile is inert here. Banked as rejected/s60-cdready-transplant-fresh-fnscope-src-carrier-8.c and"
+  },
+  {
+   "session": 60,
+   "statement": "A dead store to the fresh chain-A carrier - placed before the poll loop (src = (u8 *)tbl_125c;) or after the wrap (src = 0;) - does not give the carrier the multi-set allocation behaviour the window o",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis at 8, do{}while(0) wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "Both byte-inert at 8, identical to the no-store form. This kills the cheapest sanctioned escape (dead-store-fake-excepti"
+  },
+  {
+   "session": 60,
+   "statement": "Splitting the chain-A address computation into two statements (aA = t0 << 2; aA += (s32)tbl_125c;) on a fresh local, at either function or block scope, gives the carrier two sets but loses the window ",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis at 2, do{}while(0) wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "Both score 2 (ties the floor) with sll a0,a0,2 back ahead of sll v0,v0,2 / addu v0,v0,s0 - the old 2-insn order residual"
+  },
+  {
+   "session": 60,
+   "statement": "Splitting the -1/0 flag out of the v0 carrier into its own local frees $v0 for the flag but leaves the carrier single-set, and the window order is lost (8); three neighbouring spellings that keep the ",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis with the v0 carrier at 3, do{}while(0) wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "Separate flag local 8; return v0 4; flag through cnt 3 (byte-identical residual); copy-to-fresh-pointer 3 (byte-identica"
+  },
+  {
+   "session": 60,
+   "statement": "Putting the multi-set carrier on chain B (the arg5 address, which the target holds in $v0 - the flag's own seat) instead of chain A does not let the flag and the address share a seat for free.",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis, do{}while(0) wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "v0 on chain B = 8; v0 on chain B with cnt on chain A = 4; v0 on chain A with cnt on chain B = 6. Banked as rejected/s60-"
+  },
+  {
+   "session": 60,
+   "statement": "The remaining function-scope and block-scope pseudos are not usable as the chain-A address carrier on this chassis: tbl_125c 2 with the order lost, idx_1494 9, tbl_11dc 18, t0 self-reassigned 8, tb 8,",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis, do{}while(0) wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "Scores as stated; only v0 (3) and cnt (4) reach the byte-exact window at all, and both pay in their own block. Banked as"
   }
  ],
  "object_model_audited": 58,
@@ -872,7 +878,7 @@
    "session": 45,
    "at": "2026-09-04T19:05:13.564558+00:00",
    "headline": "SOLVED IN PURE C: honest sandbox 0 (91/91, rules_dropped 0, cheat_asm_stripped 147 = unchanged baseline) via three declaration changes measured 9->6->5->0; blocked ONLY by volatile_extern_allowlist.tx",
-   "consumed": null
+   "consumed": 60
   },
   {
    "from": "func_80034F88",
@@ -880,7 +886,7 @@
    "session": 66,
    "at": "2026-09-05T19:39:10.478122+00:00",
    "headline": "func_80034F88 byte-matches: sandbox score 0 (49/49) AND full-build SHA1 == oracle; the only thing left is a scope_allow.txt line for the honest header-canonical array declaration (integration handoff,",
-   "consumed": null
+   "consumed": 60
   },
   {
    "from": "func_800770B8",
@@ -888,7 +894,7 @@
    "session": 31,
    "at": "2026-09-06T22:17:04.967151+00:00",
    "headline": "Class B CLOSED after 31 sessions: floor 5 -> 3. A dead store to the local p_old between the 0x4 store and the 0x30/0x34 clears denies local-alloc's combine_regs its reg_n_deaths==1 precondition, so th",
-   "consumed": null
+   "consumed": 60
   }
  ],
  "escalation_deferrals": 0

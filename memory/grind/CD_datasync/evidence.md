@@ -3495,3 +3495,84 @@ sweep and not the permuter.
 - [s59] Exhaustion: 59 sessions across structural (s52/s53), synthesis (s54/s55/s56), rederive (s51), solver (s57), object-model (s58), forensics/permuter (s4-s7, ~10k permuter samples plus a 140-ordering and a 9-topology sweep) and escalation (s59); 2500+ statement-order forms since s50 alone; 208 banked rejected forms; 60 instance kills, 0 class kills. Sibling inheritance is spent - CD_ready (77 sessions, foreclosed at 2) and CD_sync (116 sessions, foreclosed at 2) are the same three-twin libcd cluster, transplanted in s51/s58, and the shared do_timeout window's spelling is the same unknown in all three.
 
 - [s59] Foreclosure record filed this session at docs/grind/decisions.md:22256 ('2026-09-04 - CD_datasync / saEft01Init (src/system.c) - RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED'). Floor 2 <= 5, so the standing ruling is the correct subject. src/system.c was restored to its INCLUDE_ASM state; the tree is clean outside memory/grind/, docs/grind/ and metrics.
+
+## s60 (2026-09-07, rederive - forced by the CD_ready sibling trigger)
+
+- [s60] SIBLING TRANSPLANT EXECUTED (the owner directive on the queue item). CD_ready
+  (marionation_Exec) is COMPLETED-C on main since 2026-09-06; its matched do_timeout
+  window lives at src/system.c:379-435. s60 transplanted that window's spelling onto the
+  CD_datasync chassis verbatim (allowing for CD_datasync's shorter tail). The four
+  structural elements taken over: (a) puts(...) emitted OUTSIDE / before the do{}while(0)
+  wrap, not inside it; (b) the chain-A raw byte read t0 = idx_1494[0]; ALSO outside the
+  wrap, at loop depth 1; (c) inside the wrap, chain B computed first (tb -> pB) and chain
+  A's address second, with arg5 = *pB third; (d) pp = &D_800F19C0 as the last statement
+  before the printf.
+- [s60] THE 59-SESSION ORDER RESIDUAL IS SOLVED. With a multi-set carrier for chain A's
+  address, the emitted window is BYTE-EXACT against asm/funcs/CD_datasync.s:45-63 - all
+  fifteen instructions including register seats: lbu a0,0(s1) / lbu v0,1(s1) / lui a1 /
+  lw a1 / sll v0,v0,2 / addu v0,v0,s0 / sll a0,a0,2 / lw v1,0(v0) / lui v0 / lbu v0 /
+  addu a0,a0,s0 / sll v0,v0,2 / addu v0,v0,s3 / sw v1,0x10(sp) / lw a2,0(v0) /
+  lw a3,0(a0). Artifact: tmp/grind/CD_datasync/s60/dis_P3.txt. This retires the residual
+  every session since s2 has been describing ("arg4's index sll is scheduled two slots
+  too early"). s57's solver inequality (9 < luid(arg4-sll) < 10, no statement REORDER
+  reaches it) and s59's "any added luid re-prices five quantities" were correct
+  statements ABOUT THE OLD CHASSIS ONLY; the CD_ready structure reaches the order without
+  adding a luid, by moving puts and the chain-A read out of the wrap.
+- [s60] CARRIER CENSUS (21 forms, all measured on the transplant chassis). Chain A's
+  address must be staged through a pseudo that is multi-set with at least one set OUTSIDE
+  the window. v0 (the VSync-result / -1 / 0 flag local) = 3; cnt (the poll counter) = 4;
+  both reach the byte-exact window. Fresh fn-scope single-set local = 8; fresh local
+  split two-step (aA = t0 << 2; aA += (s32)tbl_125c;) = 2 with the OLD 2-insn order
+  residual back; tbl_125c re-set after its last read = 2 (order lost); t0 self-reassigned
+  = 8; tb = 8; pB re-used after its own load = 4; idx_1494 = 9; tbl_11dc = 18; the puts()
+  argument pointer = 8.
+- [s60] DEAD STORES DO NOT BUY MULTI-SET-NESS. A dead store to the fresh carrier before
+  the loop (src = (u8 *)tbl_125c;) and after the wrap (src = 0;) are both byte-inert: 8
+  either way, identical to the no-dead-store form. Only sets that carry a real value on a
+  reaching path move the allocation. This kills the cheapest sanctioned escape
+  (dead-store-fake-exception) for this residual.
+- [s60] THE NEW RESIDUAL IS 3 INSTRUCTIONS AND ONE PSEUDO. On the v0-carrier form the only
+  divergence in the entire function is that the -1/0 flag sits in $a0 instead of $v0:
+  ours j .. ; li a0,-1 / move a0,zero / bnez a0,.. ; li v0,-1 vs target
+  j .. ; li v0,-1 / move v0,zero / bnez v0,.. ; li v0,-1. GCC 2.7.2 does no web
+  splitting, so the carrier def and the two flag defs are one pseudo -> one quantity ->
+  one hard reg; the chain-A address correctly prefers $a0 (the target holds it there too)
+  and the flag is dragged along.
+- [s60] SEVEN ESCAPES FROM THE FLAG SEAT MEASURED, ALL WORSE OR EQUAL: splitting the flag
+  into its own local restores $v0 for the flag but makes the carrier single-set and the
+  ORDER is lost (8); return v0 in place of return -1 (4); the flag staged through cnt
+  (3, byte-identical residual); the carrier copied into a fresh pointer before the printf
+  (3, byte-identical residual); the carrier on chain B instead of chain A (8); v0 on
+  chain B with cnt on chain A (4); v0 on chain A with cnt on chain B (6).
+- [s60] FLOOR UNCHANGED at 2 (three distinct forms tie it: the s50 body, the fresh-local
+  two-step transplant, and the tbl_125c-carrier transplant). The session's value is the
+  chassis change, not the number: the residual went from "a scheduling artefact nobody
+  could name a lever for" to "one pseudo needs a different hard register, and the two
+  function-scope pseudos that reach the order both pay 3-4 in their own block".
+- [s60] NOTE FOR THE FORECLOSURE RECORD. s59 filed docs/grind/decisions.md:22256
+  (FORECLOSED under the 2026-07-27 standing ruling) on the premise that the residual was
+  an unnameable scheduling artefact. That premise is now false: the window is byte-exact
+  and the residual is a named, enumerable register-seat question on one pseudo. The item
+  should stay ACTIVE.
+
+- [s60] The owner directive on the queue item was executed: CD_ready's on-main matched do_timeout window (src/system.c:379-435, COMPLETED-C 2026-09-06) was transplanted onto the CD_datasync chassis, not merely the *pp alias the ledger already carried.
+
+- [s60] The four structural elements that matter are: puts() emitted OUTSIDE / before the do{}while(0) wrap; the chain-A raw byte read t0 = idx_1494[0] ALSO outside the wrap at loop depth 1; chain B (tb -> pB) computed before chain A's address inside the wrap; pp = &D_800F19C0 as the last statement before the printf.
+
+- [s60] With a multi-set chain-A carrier this reproduces asm/funcs/CD_datasync.s lines 45-63 byte-for-byte, register seats included - the first time in 60 sessions the do_timeout window has matched.
+
+- [s60] s57's solver inequality (9 < luid(arg4-sll) < 10, unreachable by statement REORDER) and s59's 'any added luid re-prices five quantities at once' are correct about the OLD chassis only; the CD_ready structure reaches the order without adding a luid.
+
+- [s60] The residual is now 3 instructions in the function tail: the -1/0 flag is in $a0 where the target has $v0 (ours: j .. ; li a0,-1 / move a0,zero / bnez a0,.. ; li v0,-1).
+
+- [s60] Cause named: GCC 2.7.2 has no web splitting, so the chain-A carrier def and the two flag defs share one pseudo, hence one quantity, hence one hard register; the address correctly wants $a0 and drags the flag with it.
+
+- [s60] Only two function-scope pseudos in this function are multi-set with a set outside the window - v0 (3) and cnt (4) - and each pays its cost in its own block (v0: the flag's 3 tail insns; cnt: 4 insns in the poll-counter block, where the target holds cnt in $v1).
+
+- [s60] Dead stores are inert as a multi-set source: adding one before the loop or after the wrap leaves the fresh carrier at 8, unchanged.
+
+- [s60] Floor unchanged at 2; three distinct forms tie it (the s50 body, the two-step fresh-local transplant, the tbl_125c-carrier transplant). 21 forms measured this session, all banked to memory/grind/CD_datasync/rejected/.
+
+- [s60] s59's foreclosure record (docs/grind/decisions.md:22256) rests on the premise that the residual was an unnameable scheduling artefact. That premise is now false and the item should remain ACTIVE; s60 did not file or amend any disposition entry.
+
+- [s60] src/system.c was restored to its INCLUDE_ASM state at the end of the session; the tree is clean outside memory/grind/, tmp/ and metrics.
