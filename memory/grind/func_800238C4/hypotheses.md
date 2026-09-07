@@ -104,3 +104,43 @@ more than another hand-spelled probe. This has NOT been run yet.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 2026-09-07 chassis, asm-until-matched, 0 rules, banked candidate.c body, no FAKE constructs present
+
+---
+
+# s2 (2026-09-07, structural) — CLOSED AT 0
+
+## CONFIRMED — a third quantity in the block, supplied by duplicating the common tail
+The seat swap is decided by local-alloc's hand-rolled quantity sort
+(tools/gcc-2.7.2/local-alloc.c:1539-1563), not by the qsort/qty_compare_1 path. With the
+block holding only two quantities the sort is one comparison and the shorter-lived constant
+always wins $v0. Duplicating the common tail `*(s32 *)(arg0 + 0x74) = *(s32 *)(arg0 + 0xBC);`
+plus its `goto skip_74;` into the first arm puts a THIRD quantity (the 0xBC load, refs 2,
+span 2, pri 10000) in the block after the store; the case-3 arm of the sort compares literal
+quantity numbers rather than qty_order slots, so its third comparison undoes the first
+exchange and leaves the parent pointer at qty_order[0]. Pointer -> $v0, constant -> $v1.
+jump2 cross-jump re-merges the duplicated copy, so the emitted count stays at 219.
+MEASURED: sandbox --disable all = 0, 219/219, 0 rules; verify-oracle ok, build SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+Family: duplicated-statement-into-arms (2026-08-06 control-transfer-tail scope),
+FAKE-annotated. Vet in self_vet.md.
+
+## KILLED — K4: source-level ordering of the constant ahead of the pointer load
+s1's H1 lever (a). It fails at the SCHEDULER, one pass earlier than s1 supposed, and
+independently of the cse/combine folding that killed K3's spelling: in the standalone
+reproduction at tmp/grind/func_800238C4/s2/probe/ a deliberately non-foldable value emitted
+ahead of the load is REORDERED behind it by sched1, because the MIPS memory unit gives a load
+ready-delay 2 (tools/gcc-2.7.2/config/mips/mips.md:157-159) against 1 for an arith def and
+rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) sorts on INSN_PRIORITY before anything else.
+Scope: INSTANCE (this block shape — one load and one arith def feeding one store —
+on the floor-3 chassis, no FAKE constructs present).
+
+## KILLED — K5: re-spelling the store's address or value expression
+Eighteen spellings measured in the standalone harness (batch.py, batch2.py, batch3.py):
+pointer local, `(short *)` cast local, `q[0x143]` index, two-step offset, struct member,
+uintptr round-trip, alias local, split offset, enum constant, `1 + 1`, `register` storage
+class, unsigned width, `int` width, assignment-as-value, assignment chain, comma sequence,
+and a preceding-statement variant. Every one produced the same quantity table (pointer
+refs 2 birth 2 death 6, constant refs 2 birth 4 death 6) and the same `lw $3 / li $2 / sh $2`
+seating. Address and value spelling do not move this seat.
+Scope: INSTANCE (these eighteen forms, standalone reproduction of the floor-3 block,
+no FAKE constructs present).

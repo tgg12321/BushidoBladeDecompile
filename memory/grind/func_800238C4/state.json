@@ -60,5 +60,14 @@
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-07T02:27:43.161152+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "a6b817cc113b0f4c",
+   "when": "2026-09-07T15:38:48.339366+00:00",
+   "summary": "final call: One added construct: the common tail *(s32*)(arg0+0x74)=*(s32*)(arg0+0xBC) plus its goto duplicated into the first kind-dispatch arm (candidate.c diff; self_vet.md). That is the duplicated-statement-i"
+  }
+ ]
 }

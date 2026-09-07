@@ -140,3 +140,98 @@ local-alloc entirely and hands it to global-alloc (+3 over the floor).
 - [s1] The inherited rejected form parent-ptr-hoisted-before-ifelse-score6.c (score 6) is now explained rather than merely recorded: hoisting `u8 *parent` above the `if (s1 < 0x400)` makes the pointer live across basic blocks, which removes it from local-alloc entirely and hands it to global-alloc.
 
 - [s1] tools/ra_solver and inverse_compose.py classify have NOT been run on this residual. It is precisely the shape they exist for - a two-quantity local-alloc seat assignment whose priority inputs (refs 2/2, spans 4/2, class GENERAL_REGS) are now fully measured - so a REACHABLE/FORECLOSED verdict with a ranked lever vector is available cheaply to the next session and is worth more than another hand-spelled probe.
+
+## s2 (2026-09-07, structural) — MATCHED, floor 3 -> 0
+
+CHASSIS RE-MEASURE: the inherited s1 candidate.c body re-applied over the
+INCLUDE_ASM line measured score 3 / 219 target insns / 219 build insns / 0 rules,
+so the s1 floor of 3 was reproduced exactly before any probe ran.
+
+SIBLING SWEEP: the only sibling named by this ledger, func_80022580 (src/code6cac.c,
+still active), has NO candidate.c — its ledger is a from-scratch recon of a 619-insn
+init function that shares no basic block, no local and no expression with this target
+(its only overlap is the unrelated global D_800A3758). There was nothing to transplant,
+so no transplant hypothesis was banked.
+
+### The quantity arithmetic, closed
+
+s1 measured the two competing quantities in block 41 with the instrumented cc1 and
+attributed the seat swap to local-alloc's priority sort. s2 re-read the allocator and
+found the full decision procedure, which is narrower than s1 recorded:
+
+  * block_alloc does NOT qsort when the block has few quantities. For next_qty <= 3 it
+    uses a hand-rolled sort (tools/gcc-2.7.2/local-alloc.c:1539-1563).
+  * For next_qty == 2 that sort is a single `if (qty_compare (0, 1) > 0) EXCHANGE (0, 1);`.
+    qty_compare (local-alloc.c:1640) returns pri2 - pri1, so the exchange happens only when
+    the SECOND quantity's priority is STRICTLY greater. A TIE therefore leaves qty 0 —
+    the earlier-born quantity — allocated first. (s1's note that "a tie does not help"
+    was derived from the qsort/qty_compare_1 path, which this block never reaches.)
+  * BB2_SUGG_DEBUG (new capture, tmp/grind/func_800238C4/s2/qtydbg.txt:2431-2432) shows both
+    quantities carry ncopysugg=0 nsugg=0 size=1 altclass=0, so the suggested-register pass
+    that runs before the priority pass is inert here and the seat is decided by
+    floor_log2(refs)*refs*size/(death-birth) alone.
+
+With the pointer at refs 2 / span 4 (pri 5000) and the constant at refs 2 / span 2
+(pri 10000), the constant is allocated first and takes $v0. The three ways to invert that
+are exhaustively enumerable from the formula, and s2 measured all three:
+
+  (a) make the constant born earlier — KILLED at the SCHEDULER, not at cse. A standalone
+      4-line reproduction (tmp/grind/func_800238C4/s2/probe/) with a deliberately
+      non-foldable value shows sched1 HOISTS the load above an earlier-emitted, ready,
+      same-consumer def: the MIPS memory function unit gives a load a ready-delay of 2
+      (tools/gcc-2.7.2/config/mips/mips.md:157-159) versus 1 for an arith def, and
+      rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) sorts on INSN_PRIORITY first, so the
+      load's priority is strictly higher and it is always emitted first. Source-level
+      ordering of the two defs cannot survive sched1.
+  (b) raise the pointer's refs to 4 — no natural second reference exists; the target uses
+      the parent pointer once.
+  (c) lower the constant's priority — impossible for a two-quantity block: a live pseudo
+      always has at least 2 refs (its def and its use), and both quantities die on the same
+      insn, so the constant's span is always strictly shorter than the pointer's.
+
+Nine address spellings and nine expression-context spellings of the statement were
+measured in the standalone harness (batch.py / batch2.py / batch3.py): every one produced
+refs 2/2 with births 2/4 and the constant in $2. Address spelling, pointer locals, index
+form, struct form, enum constant, `1 + 1`, register storage class and store width are all
+measured no-ops for this seat.
+
+### The lever that worked — a THIRD quantity, and the hand-rolled sort's third comparison
+
+The standalone harness found the exception: adding an unrelated statement AFTER the store,
+in the same basic block, flips the seat (probe X2_after_unrelated). With three quantities
+the case-3 arm of the hand-rolled sort runs
+
+    if (qty_compare (0, 1) > 0) EXCHANGE (0, 1);
+    if (qty_compare (1, 2) > 0) EXCHANGE (2, 1);
+    if (qty_compare (0, 1) > 0) EXCHANGE (0, 1);   /* case-2 fall-through */
+
+and those comparisons take LITERAL QUANTITY NUMBERS, not the contents of qty_order. When
+the third quantity ties the constant at 10000, the second comparison is a no-op and the
+third comparison UNDOES the first exchange, leaving the parent pointer at qty_order[0]. It
+is allocated first, takes $v0, and the constant takes $v1 — the target seating.
+
+The function already contained a statement that could legitimately live in that block:
+the common tail `*(s32 *)(arg0 + 0x74) = *(s32 *)(arg0 + 0xBC);` that every arm except the
+0x11 arm falls into. Duplicating it, with its control transfer, into the first arm
+(`... = 2; *(s32 *)(arg0 + 0x74) = *(s32 *)(arg0 + 0xBC); goto skip_74;`) puts the 0xBC
+load (refs 2, span 2, pri 10000) in block 41 after the store, and jump2 cross-jump
+re-merges the duplicated copy with the shared one so the instruction count is unchanged.
+
+MEASURED: `sandbox func_800238C4 --disable all` = score 0, target_insns 219,
+build_insns 219, rules_dropped 0. Full build `verify-oracle` = ok, build SHA1
+62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle. func_800238C4 byte-matches in pure C.
+
+The construct is the sanctioned duplicated-statement-into-arms family in its 2026-08-06
+control-transfer-tail scope, FAKE-annotated in the body with the mechanism and the
+lever-exhaustion pointer; the reasoning is written out in self_vet.md.
+
+### Precedent found in the shipped binary (independent confirmation of the model)
+
+A corpus scan of all asm/funcs/*.s for `lw rP / addiu rC, zero, K / s? rC, off(rP)`
+(tmp/grind/func_800238C4/s2/findpat.py) returned 53 instances. 51 of them seat the
+constant in the LOWER register, exactly like the pre-fix build. The exception at
+func_80065800.s:102-107 seats the pointer in $v0 — and there the constant 0x20 is stored
+through TWO different pointers, which gives its quantity refs 3 and span 6 (pri 5000),
+tying the first pointer's 5000 and handing the pointer the first register by the same
+tie-keeps-qty-0 rule. The shipped binary therefore contains an independent instance of the
+priority arithmetic derived here.

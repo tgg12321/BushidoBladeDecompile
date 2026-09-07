@@ -1,18 +1,27 @@
-/* func_800238C4 â€” grind candidate, session 1 (2026-09-06). Honest floor 3 (sandbox --disable all).
- * Chassis: asm-until-matched, zero rules. Derived from retired-chassis-2026-08/body.c (floor 48) by:
- *   (1) int -> void return type (reorg.c: $2 live at epilogue blocked the li-into-delay-slot fills; 48->46)
- *   (2) ((u16 *)arg0)[2] pointer-index read of +4 (expr.c:4570 MEM_IN_STRUCT_P -> sched.c:834 true_dependence
- *       escape lets sched2 hoist the lhu above the sb D_800A3769 store; 46->44)
- *   (3) natural offsets[i]/8 and /64 divisions + clamps on the s16 array elements with dx/dz read per arm (44->3)
- * Residual 3: local-alloc seat swap on the {lw parent, li 2} pair before `sh 2,0x286(parent)` (target lw->$2, li->$3).
+/* func_800238C4 - grind candidate, session 2 (2026-09-07). MATCHED: sandbox
+ * --disable all = 0, 219/219 instructions, 0 rules; full-build SHA1 ==
+ * 62efab4f73f992798c43e8c730aa43baa10bb4fa (verify-oracle ok this session).
  *
- * s1 (2026-09-07, recon) RE-MEASURED this body on the current chassis: sandbox --disable all = 3,
- * 219/219 instructions, 0 rules. Floor 3 CONFIRMED; this remains the best known form. The residual
- * is now attributed with measurements rather than inference: local-alloc's qty_compare_1
- * (tools/gcc-2.7.2/local-alloc.c:1660) ranks the const-2 quantity (birth 6, death 8, refs 2 -> pri
- * 10000) ahead of the parent-pointer quantity (birth 4, death 8, refs 2 -> pri 5000), so the constant
- * takes $v0 and the pointer takes $v1 — the exact inverse of the target. See evidence.md for the
- * BB2_QTY_DEBUG capture and hypotheses.md for the three probes killed against it.
+ * Derivation of the body is in the s1 header (kept in evidence.md): void return
+ * type, the ((u16 *)arg0)[2] sub-word read, and the natural /8 and /64 divisions
+ * with per-arm dx/dz reads took the honest floor from 48 to 3.
+ *
+ * The last 3 instructions were a $v0/$v1 seat swap on {lw parent, li 2} feeding
+ * `sh 2, 0x286(parent)`. Closed in s2 by duplicating the common tail
+ * `*(s32 *)(arg0 + 0x74) = *(s32 *)(arg0 + 0xBC);` plus its control transfer into
+ * the first arm (sanctioned duplicated-statement-into-arms family, FAKE-annotated
+ * in the body). Mechanism, measured with the instrumented cc1 rather than inferred:
+ * local-alloc block_alloc sorts the block's quantities with a hand-rolled sort
+ * (tools/gcc-2.7.2/local-alloc.c:1539-1563). With only two quantities the
+ * next_qty==2 path ranks by qty_compare alone: `li 2` (refs 2, span 2) scores
+ * 10000, the parent pointer (refs 2, span 4) scores 5000, so the constant is
+ * allocated first and takes $v0. The duplicated tail puts a THIRD quantity (the
+ * 0xBC load, refs 2, span 2, pri 10000) in the same block after the store; the
+ * next_qty==3 path compares literal quantity NUMBERS rather than qty_order slots,
+ * and its third comparison undoes the first exchange, leaving the pointer at
+ * qty_order[0]. The pointer takes $v0, the constant $v1 - the target seating.
+ * jump2 cross-jump then re-merges the duplicated tail with the shared copy, so the
+ * emitted instruction count is unchanged at 219.
  */
 void func_800238C4(u8 *arg0)
 {
@@ -119,6 +128,21 @@ void func_800238C4(u8 *arg0)
                 *((s16 *) (arg0 + 0x94)) = 1;
             }
             *((s16 *) ((*((u8 **) arg0)) + 0x286)) = 2;
+            /* FAKE: the common tail `0x74 = 0xBC` + its control transfer duplicated into
+             * this arm instead of falling through to the shared copy below,
+             * mechanism: local-alloc block_alloc's hand-rolled quantity sort
+             * (tools/gcc-2.7.2/local-alloc.c:1539-1563). With only the two quantities of
+             * `lw parent` (refs 2, span 4, pri 5000) and `li 2` (refs 2, span 2, pri 10000)
+             * the next_qty==2 path ranks the constant first and hands it $v0; the
+             * duplicated tail puts a third quantity (the 0xBC load, pri 10000) in the same
+             * block, and the next_qty==3 path's third comparison restores the parent
+             * pointer to qty_order[0], so it takes $v0 and the constant takes $v1 - the
+             * target seating. jump2 cross-jump re-merges the two copies, so the emitted
+             * function is unchanged at 219/219 instructions.
+             * lever-exhaustion: memory/grind/func_800238C4/hypotheses.md K0-K3 + the s2
+             * quantity-arithmetic derivation in evidence.md. */
+            *((s32 *) (arg0 + 0x74)) = *((s32 *) (arg0 + 0xBC));
+            goto skip_74;
         }
         else if ((kind & 0xFFFF) == 0x11)
         {
