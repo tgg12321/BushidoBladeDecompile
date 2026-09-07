@@ -379,9 +379,9 @@
  "judge_constraints": [],
  "origin": "queue",
  "created": "2026-08-01T16:43:14.708981+00:00",
- "exhaustion_base": 20,
- "last_unpark_reason": "owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): re-activated with the exhaustion window RESET \u2014 the 2026-09-01 Ruling-A unpark was re-foreclosed after one session because the window did not reset. The 09-01 named probe is spent (see ledger); work the ladder from its next rung. All standing banned_constructs remain in force.",
- "last_unpark_at": "2026-09-03T01:44:08.567370+00:00",
+ "exhaustion_base": 59,
+ "last_unpark_reason": "Sibling trigger FIRED (same as CD_sync). CD_ready COMPLETED-C 2026-09-06 at floor 0 (s88, Judge PASS) on the shared do_timeout printf window; nothing propagated it because the merge path deleted the ledger (fixed 2026-09-07, commit 0ddc72c8). This ledger's candidate already carries *pp; UNSPENT is the rest of CD_ready's on-main spelling in src/system.c \u2014 the do-while(0) wrap placement, the tb/pB/a",
+ "last_unpark_at": "2026-09-07T19:28:06.615222+00:00",
  "kills": [
   {
    "session": 41,
@@ -890,5 +890,6 @@
    "headline": "Class B CLOSED after 31 sessions: floor 5 -> 3. A dead store to the local p_old between the 0x4 store and the 0x30/0x34 clears denies local-alloc's combine_regs its reg_n_deaths==1 precondition, so th",
    "consumed": null
   }
- ]
+ ],
+ "escalation_deferrals": 0
 }
