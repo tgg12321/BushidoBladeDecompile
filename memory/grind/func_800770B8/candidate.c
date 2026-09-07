@@ -1,3 +1,11 @@
+/* s38 (forensics - 2026-09-06).  BODY UNCHANGED; floor still 3/175/175, re-measured live.
+ * s38's finding: the four-times-assigned `ptr` below is load-bearing in loop.c as well --
+ * scan_loop admits a movable only at n_times_set == 1 (tools/gcc-2.7.2/loop.c:705), so the
+ * multi-write is the ONLY thing keeping `lui %hi(D_800A35D0) / addiu %lo` inside the loop
+ * where the target has it (rows 49/50).  Give the D address its own single-death or inline
+ * form and move_movables hoists the `la` to the prologue: 175 insns at score 18 (q1) or 177
+ * insns (the inline family).  See evidence.md s38 for the three-gate reading.
+ */
 /* s37 (solver - 2026-09-06).  BODY UNCHANGED; floor still 3/175/175, re-measured live on
  * HEAD b5982c8f with the two documented byte-neutral caller-side edits.  Its whole residual is
  * still rows 62/63/64 (the merged chain+dest quantity seated in $v0 instead of $v1).

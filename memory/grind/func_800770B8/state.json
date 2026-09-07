@@ -1,8 +1,8 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 37,
- "current_modality": "solver",
+ "session_count": 38,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -225,23 +225,29 @@
    "floor": 3,
    "modality": "solver",
    "headline": "sched_solver names the D-triple hoist as ONE missing dependence edge (add_dep 137<-134, the only depth-1 vector over all four atom classes); spelling it truthfully works (m1 puts the triple at rows 48"
+  },
+  {
+   "session": 38,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "Pass re-attribution: the ap/x3 family's D-address displacement is loop.c move_movables (admitted at loop.c:705), not sched1 -- and a fresh two-statement local cannot reproduce the floor body's multi-s"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The scheduler edge does not have to come from the D address. Any REAL program value written into the group-A pointer's pseudo after the five group-A stores and before the D address supplies add_dep 137 <- 134 while leaving the D address free to be its own single-death local -- which is the one combination that has never been built, and by construction it holds x3's four class-C seats AND the floor body's schedule.",
-   "mechanism": "The conflict measured this session is entirely about WHICH value performs the second write of the A pointer. local-alloc.c:472 disqualifies the pseudo that is written twice; sched.c needs 137 to depend on 134. If a third value (not the D address) is the one written second, the disqualified pseudo is the A pointer -- which the target itself does not seat as a block quantity in the floor body -- while the D address keeps its own quantity. This is the owner directive's frontier item 2 (record-layout audit) with a precise specification attached.",
-   "next_probe": "Audit what else this function legitimately points at in the window between the group-A stores and the D group. Candidates visible in the body: the group-C pointer base + t0*4 (m5 tried it in the wrong order -- try C written into ap BEFORE the D group and the D group in its own fresh dp), the sb address base + t0 + 0x68 taken early into ap, and the 0x5C/0x60 pair's base D_800A36A0 + t0*2 hoisted into ap. Build each as: ap = A address; five A stores; ap = <the third value>; dp = &D_800A35D0; dp = t0*4 + dp; D stores; then qty-triage with s37/qty.sh for FIVE quantities with dp present and ap absent from the blk=1 table before scoring with run.sh."
+   "hypothesis": "The multi-set property that keeps the la in the loop may also be reachable through count_loop_regs_set's OTHER may_not_move term -- a pseudo set in two different basic blocks (loop.c:3040-3046) -- which does not require the local to be reused for an unrelated value and may leave the ap block quantity intact.",
+   "mechanism": "count_loop_regs_set sets may_not_move[regno] when the first set of a reg in the current basic block is not its first set in the loop, i.e. when the same variable is assigned once in each of two control-flow arms. scan_loop then skips it at loop.c:649 before the n_times_set disjunct is ever consulted, so the la stays where the source put it. The sanctioned duplicated-statement-into-arms family (.claude/rules/duplicated-statement-into-arms.md) is the shape that spells this, and jump2 cross-jumping re-merges the arms to identical bytes.",
+   "next_probe": "Find a real conditional inside the outer loop of func_800770B8 that dominates the D stores (the arg2 & mask test in the 0..0xA for-loop is the only one; check whether the D group can truthfully sit in both arms of any earlier branch). Build the duplicated form on the x3 chassis, confirm insns == 175 with s38/run.sh, then check movables (s38/mov2.sh) for the DISAPPEARANCE of the insn-139/151 movables before scoring."
   },
   {
-   "hypothesis": "m3 (the D address written inline with no local at all) scores 9 at 177 instructions -- two over the target and the lowest score of any 177-insn body -- because cse does not fold the two inline `(u8 *)&D_800A35D0 + t0*4` address builds into one. A spelling that keeps the inline form for the FIRST D store and reuses its value for the second would land at 175 with the inline form's schedule.",
-   "mechanism": "The inline form has no pseudo for the A stores to conflict with, so 137 is emitted where the store needs it rather than at the top of the block; the cost is a duplicated lui/addiu pair. Sharing the address between the two D stores through an expression cse WILL fold (rather than a named local, which re-creates the single-death quantity and the hoist) is the only missing step.",
-   "next_probe": "From tmp/grind/func_800770B8/s37/v/m3.c, sweep: both D stores written through one inline subscript of a s16-typed cast (`((s16 *)((u8 *)&D_800A35D0 + t0 * 4))[1] = 0;` and `[0] = 0;`), the same with the t0*4 product named in the s32 domain only, and the pair written as one two-halfword expression. Check insns == 175 FIRST with run.sh, then row-diff rows 48-53 against asm/funcs/func_800770B8.s."
+   "hypothesis": "Because the ap family's displacement is loop.c and not sched1, the s37 sched_solver programme (add_dep 137 <- 134) was solving the wrong pass for that family; re-running the solver on the FLOOR body's residual (rows 62/63/64, a local-alloc seat) rather than on x3's displaced triple may be the higher-value use of it.",
+   "mechanism": "The floor body already emits the target's schedule; its only divergence is the qty_compare_1 tie between the merged chain+dest quantity and the reload (s33's closed form: with the operand flip, priority < 2.00 needs birth < 12). No scheduler question is open on the floor chassis at all.",
+   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the floor body's .lreg/.greg dumps for the rows-62/63/64 seat and ask for ranked C-lever vectors that lower the merged quantity's birth below 12 without moving the D stores; measure the top three vectors with s38/run.sh."
   },
   {
-   "hypothesis": "On the w3 chassis the merged chain+dest quantity is b28 d56 refs22 (qty_compare_1 priority floor_log2(22)*22/28 = 3.14) and the reload is b48 d52 refs4 (2*4/4 = 2.0). Because 22 and 4 are both loop-weighted by 2, the merged quantity drops below the reload as soon as its refs reach 14 or fewer, or its span exceeds 44 -- and either of those wins the target's seats with NO group-A local, no schedule change and the D stores untouched.",
-   "mechanism": "qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) ranks floor_log2(refs)*refs*size/(death-birth) and find_free_reg hands out ascending first-free registers in that order. refs 16 still gives 4*16/28 = 2.28 (too high) but refs 14 gives 3*14/28 = 1.5, below the reload's 2.0. flow.c accumulates reg_n_refs weighted by loop depth, so removing TWO source references to the chain pseudo (four weighted refs) is the whole requirement.",
-   "next_probe": "Start from tmp/grind/func_800770B8/s37/v/w3.c (27). Enumerate every reference to the chain pseudo in the blk=1 stream (rows 42, 56, 61, 62, 63, 64) and sweep spellings that remove two of them without deleting an instruction: p_7e derived from p_6a, the row-56 addu re-associated so the chain is not an operand, and the row-63/64 addiu pair taken off a single named sum. Confirm insns == 175 first, then qty-triage with s37/qty.sh for a merged quantity at refs <= 14 before scoring."
+   "hypothesis": "q1 (18/175) is the closest body outside the floor family and its whole residual is the two hoisted movables; blocking JUST insn 139/regno 93 (life 5, savings 2) while leaving 151/99 alone would leave one addu inside the loop and may land the target's rows 49-51.",
+   "mechanism": "loop.c:1631's inequality has no C-level slack (loop_has_call is the only C input to the threshold and there is no call in this loop), so the movable has to be denied admission at loop.c:705/649 rather than out-priced. savings is n_times_used of the invariant inside the loop (loop.c:793), so a SECOND in-loop use of the same symbol address raises savings and lifetime -- it cannot lower them.",
+   "next_probe": "From tmp/grind/func_800770B8/s38/v/q1.c, sweep spellings that give the symbol expression a second in-loop consumer that the target also has (the 0x5C/0x60 pair and the 0x68 byte store are the candidates), check movables_*.txt for the admission decision on insn 139 first, and only score bodies whose report loses that row."
   }
  ],
  "judge_constraints": [
@@ -663,6 +669,38 @@
    "measured_on": "HEAD b5982c8f chassis, x3 and floor bodies, class-B dead store + do-while(0) prologue fence present in all ten builds; 175/175 in nine, m3 at 177",
    "predicate_cite": "",
    "result": "m1 23, m7 23, m10 23, m4 25, m2 26, m5 26, m6 29 (all 175 insns), m3 9 at 177 insns, m8 3 and m9 3 (byte-inert). The hoi"
+  },
+  {
+   "session": 38,
+   "statement": "On the x3 chassis, giving the D address a FRESH two-statement local (dp = (u8 *)&D_800A35D0; dp = (t0 * 4) + dp;) so that loop.c would see n_times_set > 1 does not keep the lui/addiu pair inside the l",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ef141a56 chassis; x3 body (group-A pointer split into a single-death ap, cast flip present); class-B dead store to p_old and the empty do { } while (0); prologue fence present in all three builds",
+   "predicate_cite": "",
+   "result": "u1 = 26, u2 = 26, u3 = 26, all at 175 insns (base 3, q1 18, x3 27). movables_u1.txt: outer loop insns 103..409, insn_cou"
+  },
+  {
+   "session": 38,
+   "statement": "Frontier item 1 (a third real program value written into the group-A pointer's pseudo between the group-A stores and the D address) does not recover the floor: the four record-layout-audited values bu",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ef141a56 chassis, x3 body + the class-B dead store to p_old + the empty do { } while (0); prologue fence, both FAKE units present in all five builds; 175/175 in t1/t2/t4, 173 in t3, 177 in t5",
+   "predicate_cite": "",
+   "result": "t1 = 26, t4 = 26, t2 = 30 (175 insns), t3 = 43 at 173 insns, t5 = 12 at 177 insns. t3 is the informative failure: hoisti"
+  },
+  {
+   "session": 38,
+   "statement": "Frontier item 2 (bringing the inline D-address form from 177 instructions down to 175 by sharing one address expression between the two D stores) measures 176 or 177 in the six spellings built: p1 = 9",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ef141a56 chassis; x3 body for p1-p4/t5, floor body F for q3; class-B dead store to p_old and the empty do { } while (0); prologue fence present in all six builds; 176-177 insns against target 175",
+   "predicate_cite": "",
+   "result": "No inline spelling reaches 175 insns; the family's two reachable shapes cost +2 (two hoisted invariants) and +1 (two mac"
+  },
+  {
+   "session": 38,
+   "statement": "Frontier item 3's two named source levers on the w3 chassis (deriving p_7e from p_6a; naming c4 = t0 * 4 early to widen the chain quantity's span) are byte-inert: v1, v2, v4, v6 and r1 each measure 27",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ef141a56 chassis; w3 body (cast flip) for v1/v2/v4/v6/r1-r3 and floor body F for v3/v5; class-B dead store to p_old and the empty do { } while (0); prologue fence present in all ten builds; 175/1",
+   "predicate_cite": "",
+   "result": "v1 = v2 = v4 = v6 = r1 = 27, v3 = v5 = 3. w3.qty and v1.qty are byte-identical files; v2.qty/v4.qty differ from w3.qty o"
   }
  ],
  "object_model_audited": 29,

@@ -4691,3 +4691,171 @@ writable surface, so the fix is recorded here for the operator rather than appli
 - [s37] Every class-B 'freshly returned pointer' spelling builds 170 instructions; the target's extra five are a fourth callee-saved register (save/restore at 56($sp)), a 64-byte frame, two moves and a nop, all of which exist only because arg0 and arg0+0x58 are live simultaneously.
 
 - [s37] TOOLING: tools/sched_solver/goalmap.py:213-237 (_macro_expand_counts) undercounts `<mem> $r,SYM(base)` by two (GNU as expands it to lui $at,%hi / addu $at,$at,base / <mem>), which made the checksum at goalmap.py:279 raise a spurious 'different source state' error and blocked the object-mode goal path -- the only goal path an INCLUDE_ASM-routed function has. A patched fork is at tmp/grind/func_800770B8/s37/fork/goalmap.py; tools/ is outside a grind session's writable surface so it is recorded, not applied.
+
+## s38 (forensics, 2026-09-06) — the loop.c gate behind the floor body's pointer reuse
+
+Chassis re-measured live: base 3/175, x3 27/175, w3 27/175, m3 9/177. `fake_ablate` on
+candidate.c: keep-all 3, drop the `p_old` dead store 5, drop the `do { } while (0);` 8, drop both
+10 — unchanged since s35.
+
+### Sweep table (all scores from `tmp/grind/func_800770B8/s38/sweep.log`)
+
+| body | what it is | score | insns |
+|---|---|---|---|
+| base | floor body F | **3** | 175 |
+| x3 | group-A pointer split into a single-death `ap` | 27 | 175 |
+| m3 | D address inline, no local (s37) | 9 | **177** |
+| p1 | both D stores as subscripts of ONE inline s16 cast | 9 | **177** |
+| p2 | `t0*4` named, address left inline in the store operand | 19 | **176** |
+| p3 | p1 + the C group also inline | 10 | **177** |
+| p4 | m3 with the second store as a constant displacement | 9 | **177** |
+| q1 | `dp = (u8 *)&D_800A35D0 + (t0*4);` — ONE statement, fresh local | **18** | 175 |
+| q2 | q1's lever on the floor chassis | 33 | 175 |
+| q3 | inline D on the floor chassis | 35 | **177** |
+| q4 | floor chassis + a fresh TWO-statement `dp` | 28 | 175 |
+| t1 | C base written into `ap` before the D group, D in a fresh `dp` | 26 | 175 |
+| t2 | the 0x68 byte-store cursor into `ap` | 30 | 175 |
+| t3 | the 0x5C/0x60 base into `ap` | 43 | **173** |
+| t4 | t1 + the 0x68 cursor, both through `ap` | 26 | 175 |
+| t5 | t1 with the D group inline | 12 | **177** |
+| v1 | `p_7e = p_6a + 10` on w3 | 27 | 175 |
+| v2 | `c4 = t0*4` named at the top of the loop body, w3 | 27 | 175 |
+| v3 / v5 | the same two levers on the floor chassis | **3** | 175 |
+| v4 / v6 | v1+v2; floor + cast flip + p_7e derivation | 27 | 175 |
+| r1 | one named `D_800A36A0` re-read for the inner loop and the 0x5C/0x60 pair | 27 | 175 |
+| r2 / r3 | the 0x5C/0x60 pair sharing the inner loop's re-read | 65 / 53 | **163** |
+
+### The finding: `loop.c:705` is the third gate on the same source fact
+
+`tools/loop_movables.py` on three bodies (reports `movables_base.txt`, `movables_p1.txt`,
+`movables_q1.txt`) reads the outer do-while (insns 103..~409, `insn_count` 86–88,
+`loop_has_call=False`, threshold 122):
+
+| body | extra life-38 movables in the outer loop | multi-set pseudos | insns | where the `la` lands |
+|---|---|---|---|---|
+| base (floor) | 0 | `{78: 4, 85: 4}` (85 = `ptr`) | 175 | rows 49/50/51, INSIDE the loop (target) |
+| q1 (one-statement local) | 1 (insn 142, regno 96) | `{78: 4}` | 175 | rows 30/31, hoisted out; one `addu` left inside |
+| p1 (inline, no local) | 2 (insns 139/151, regnos 93/99) | `{78: 4}` | **177** | rows 30/31/32 hoisted; TWO `addu` inside |
+
+`scan_loop` admits a movable only when `n_times_set[dest] == 1` or `consec_sets_invariant_p`
+succeeds (`tools/gcc-2.7.2/loop.c:705`), and `move_movables` then hoists it on
+`122 * 2 * 5 = 1220 >= 88` and `119 * 1 * 1 = 119 >= 88` (`loop.c:1631`) — an inequality with no C-level slack whatever
+(`loop_has_call` is the only C input to the threshold and there is no call in this loop). So the
+floor body's four-times-assigned `ptr` is not incidental spelling: **it is the only thing that keeps
+the `lui %hi(D_800A35D0) / addiu %lo` pair inside the loop where the target has it.**
+
+That makes the s37 conflict three-way, all three gates reading the same source fact — how many
+times the loop's pointer local is assigned:
+
+1. `loop.c:705` wants it **> 1** (else the `la` hoists out of the loop);
+2. `local-alloc.c:472` wants it **== 1** (else no block quantity, and the class-C seats are lost);
+3. `sched.c` wants it **> 1** (s37: the only depth-1 vector holding the D triple below the
+   group-A stores is `add_dep 137 <- 134`, spellable only as a second write of that pseudo).
+
+The two-statement D spelling (`dp = (u8 *)&D_800A35D0; dp = (t0 * 4) + dp;`) is the cheapest way to
+satisfy (1) for the D address alone — that is exactly what m2/q4 do, and why they keep 175
+instructions while q1 does not keep the `la` in place.
+
+### Closed this session
+
+- **Frontier item 1 (a third real program value as the second write of `ap`)** — the record-layout
+  audit found exactly three candidate values in the window and all four spellings of them measure
+  26/26/30/43. The edge costs the class-C seats no matter which value pays for it.
+- **Frontier item 2 (inline D address at 175 insns)** — six spellings, floor of the family is 176.
+  The two reachable shapes are +2 (two hoisted invariants) and +1 (two `as`-macro-expanded
+  symbol-indexed stores); there is no third shape.
+- **Frontier item 3 (drop the merged quantity's `qty_compare_1` priority)** — both named source
+  levers are erased by cse before local-alloc sees them; the `.qty` tables are byte-identical
+  (v1) or differ only in pseudo numbering (v2/v4). Sharing the `D_800A36A0` re-read, the only
+  remaining way to add references to the reload quantity, deletes twelve instructions.
+
+### New best in the split-pointer family
+
+q1 (`dp = (u8 *)&D_800A35D0 + (t0 * 4);` as ONE statement, alongside x3's single-death `ap`) scores
+**18 at 175 instructions** — better than x3 (27) and m1 (23). Its whole residual is the two-insn
+`la` pair sitting at rows 30/31 instead of 49/50 and the register cascade that follows. It is the
+first body to hold the class-C seats AND keep the D address to one `addu` inside the loop; what it
+cannot do is keep the `la` itself in the loop, because a one-statement local has
+`n_times_set == 1`.
+
+Banked forms: `rejected/s38-inline-D-shared-subscript-loop-hoists-two-invariants-177insn.c`,
+`rejected/s38-named-offset-inline-D-as-macro-expands-each-store-176insn.c`,
+`rejected/s38-single-statement-dp-hoists-la-out-of-loop-175insn-score18.c`,
+`rejected/s38-third-value-C-base-into-ap-before-D-score26.c`,
+`rejected/s38-third-value-5C60-base-into-ap-deletes-two-insns-173.c`,
+`rejected/s38-early-c4-naming-cse-folded-byte-inert-w3.c`,
+`rejected/s38-shared-reload-for-5C60-pair-collapses-12-insns-163.c`.
+
+## s38 (forensics, continued run) - the movable report re-attributes the whole `ap` family
+
+The section above was written by a run of s38 that the driver discarded on an outcome-wording
+defect (a KILLED hypothesis worded at class level while declared `instance`). Its measurements were
+re-verified live this run and all reproduce; they are kept, and the following is added on top.
+
+Chassis re-measured live: **base = 3 / 175 / 175**, q1 = 18/175, x3 = 27/175.
+`tools/fake_ablate.py --func func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c`
+prints keep-all **3**, drop the `p_old` dead store **5**, drop the empty `do { } while (0);` **8**,
+drop both **10**, all at 175 build insns - identical to s35/s36/s37, so the mandated kill re-audit is
+clean and both FAKE units remain load-bearing.
+
+### New measurements (`tmp/grind/func_800770B8/s38/gen5.py`, bodies `v/u1.c`, `v/u2.c`, `v/u3.c`)
+
+| body | what it is | score | insns |
+|---|---|---|---|
+| u1 | x3 chassis (single-death `ap` for group A) + the D address in a FRESH two-statement local `dp`; `ptr` keeps group C only | 26 | 175 |
+| u2 | u1 + group C in its own local `cp` (no shared pointer anywhere) | 26 | 175 |
+| u3 | u1 with the second write spelled `dp = dp + (t0 * 4);` instead of `dp = (t0 * 4) + dp;` | 26 | 175 |
+
+### Finding 1 - a fresh local written twice with a REFINEMENT of its own value is one RTL set
+
+`tools/loop_movables.py` on u1 (`tmp/grind/func_800770B8/s38/movables_u1.txt`) reports the outer
+loop multi-set pseudo dict as `{78: 4}` - **`dp` is not in it**. The source writes `dp` twice
+(`dp = (u8 *)&D_800A35D0;` then `dp = (t0 * 4) + dp;`) but by the time `count_loop_regs_set`
+(`tools/gcc-2.7.2/loop.c:2989`) runs, only one set survives: cse propagates the symbol constant into
+the `plus` and the first set dies. So the two-statement spelling does NOT give a fresh local
+`n_times_set > 1`; the symbol stays a single-set invariant, `scan_loop` admits it at `loop.c:705`,
+and `move_movables` hoists it on `122*2*5 = 1220 >= 88` (`loop.c:1631`). The u1 report is
+insn-for-insn identical to the inline body p1: the same two extra movables (insn 139/regno 93 life
+5, insn 151/regno 99 life 1).
+
+This corrects the paragraph above ("the two-statement D spelling is the cheapest way to satisfy (1)"):
+that is true only for the SHARED `ptr` of the floor body (`{78: 4, 85: 4}`, 85 = `ptr`), never for a
+fresh local. The multi-set property that keeps the `la` inside the loop is a property of **variable
+reuse across semantically unrelated values**, not of statement count.
+
+### Finding 2 - PASS RE-ATTRIBUTION: the `ap` family hoist is loop.c, not sched1
+
+`mov2.sh x3` (`movables_x3.txt`) is byte-identical to the u1 report: `{78: 4}` and the SAME two extra
+movables at insns 139/151. The floor body has neither (its four movables are 560/284/555/557; x3 and
+u1 carry 556/280/551/553 plus the two extras). So on the x3 chassis the `lui %hi(D_800A35D0) /
+addiu %lo` pair is moved by **`move_movables` (loop.c:1631, admitted at loop.c:705)** - s36 and s37
+attributed that displacement to the sched1 list scheduler. Splitting group A out of `ptr` does not
+merely remove a sched anti-dependence: it drops `ptr` out of the multi-set dict entirely, so the
+symbol becomes a loop invariant three passes before the scheduler ever sees it. Every body in the
+`ap`/x3/q1/u-series family (scores 18-30) carries this same loop.c hoist; the sched1 story applies
+only to what is left after it.
+
+### Consequence for the three-way conflict
+
+The conflict recorded above is unchanged in substance but its first term is now sharper: the source
+fact `loop.c` reads is not "how many statements write the pointer local" but "is this local reused
+for a value the compiler cannot fold into the previous one". The floor body satisfies it by reusing
+one `ptr` for group A, the D address and group C; no split-pointer body measured so far
+(x3, q1, u1, u2, u3, m1, w3) reproduces it, and every one of them pays 15-27 points for the loss.
+
+Banked forms this run: `rejected/s38-fresh-twostatement-dp-folds-to-one-set-la-still-hoists-score26.c`,
+`rejected/s38-fresh-dp-plus-own-C-local-la-still-hoists-score26.c`.
+
+- [s38] Chassis re-measured live this run: memory/grind/func_800770B8/candidate.c = 3 / 175 / 175; q1 = 18/175; x3 = 27/175; u1/u2/u3 = 26/175.
+
+- [s38] Mandated kill re-audit: tools/fake_ablate.py --func func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c returns keep-all 3, drop the p_old dead store 5, drop the empty do { } while (0); 8, drop both 10 -- identical to s35/s36/s37, so both FAKE units remain load-bearing on the current chassis.
+
+- [s38] The previous run of s38 was discarded on outcome wording only; its measurements were re-verified against the same chassis and its ledger text, artifacts (s38/gen.py..gen4.py, sweep.log, movable and row reports) and seven rejected forms are retained and re-filed here.
+
+- [s38] loop.c gate enumeration (tools/gcc-2.7.2/loop.c:646-712 and :2989-3060) -- a movable is admitted only if the dest is not may_not_optimize, one of the three use-cases holds (not used before set / not a user variable and not the loop test / all uses in the set's basic block), invariant_p(src) holds, and n_times_set == 1 or consec_sets_invariant_p succeeds. count_loop_regs_set additionally sets may_not_move when a reg is set in two different basic blocks, or set twice in one block with a use in between.
+
+- [s38] For the D-address symbol the dest is a compiler temp, so the user-variable and loop-test terms of the three-case test can never block it; the only source-side terms left are n_times_set (variable reuse) and may_not_move (two-basic-block sets).
+
+- [s38] q1 (dp = (u8 *)&D_800A35D0 + (t0 * 4); as ONE statement on the x3 chassis) remains the best body in the split-pointer family at 18/175; the u-series shows the two-statement spelling of the same fresh local is not a different RTL shape.
+
+- [s38] The floor body's multi-set ptr ({78: 4, 85: 4}) is the only measured way to keep the la inside the loop, and it is variable reuse across unrelated values -- the same source fact that local-alloc.c:472 (reg_n_deaths == 1) and sched.c (add_dep 137 <- 134) read in opposite directions.
