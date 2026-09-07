@@ -1806,3 +1806,4 @@
 - 2026-09-06 20:40 func_80019310 COMPLETED-INLINE-ASM-CANONICAL after 2 sessions (closer: s2 [structural]).
 - 2026-09-06 20:46 func_8002C61C COMPLETED-C after 2 sessions (closer: s2 [structural]).
 - 2026-09-06 20:55 func_80089A48 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-06 21:12 func_80044800: LAYER-1 FAILED a sandbox-0 candidate — The rec/ent retarget-and-restore block was engineered specifically to defeat GCC 2.7.2's loop.c biv/giv classification, not to express a real algorithmic need — the worker's own evidence names the compiler-pass mechanism as the reason for the spelling.
