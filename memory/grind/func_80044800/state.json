@@ -31,6 +31,13 @@
    "hash": "52ecd6d8e091f34b",
    "when": "2026-09-07T02:23:31.009728+00:00",
    "summary": "ruling PASS (decisions.md 2026-09-06 21:23 ruling PASS)"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "52ecd6d8e091f34b",
+   "when": "2026-09-07T02:27:39.157303+00:00",
+   "summary": "final call: Same body (52ecd6d8e091f34b) I cleared at 2026-09-07T02:23 (decisions.md 2026-09-06 21:23); no defect that ruling did not consider. Re-verified in asm/funcs/func_80044800.s: save 800449C8 addu $s0,$s2"
   }
  ],
  "judge_clearances": [

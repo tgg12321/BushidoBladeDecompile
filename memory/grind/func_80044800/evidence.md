@@ -122,3 +122,28 @@ itself makes the block's accesses go through $s2 while rec's value survives in
 $s0. The retarget is therefore not a lever chosen to defeat loop.c -- it is the
 only pointer flow consistent with the bytes; the loop.c non-biv consequence is
 a side effect of the original's own spelling.
+
+## s1 (2026-09-06, recon, post Judge PASS 21:23) -- cleared body re-applied, floor 0 re-measured
+
+OBJECT MODEL (re-banked): the DATA MODEL block again flags D_800A9CFE /
+D_800A9D00 / D_800A9D04 as "decl NONE in include/*.h". MATCHES -- they are
+`.unk6` / `.unk8` / `.unkC` of `Unk800A9CF8Header D_800A9CF8`
+(include/game.h:46-56); the candidate names no per-word symbol and measures 0.
+D_800A3820 (`extern s32`, code6cac.h) MATCHES (list-append idiom inside the
+0-scoring body). `Judge` (TU-local `extern s16 Judge[]`, src/text1a_c.c:192)
+MATCHES. No declaration fix exists; the flagged signals are the stale splat
+alias rows in undefined_syms_auto.txt / named_syms.txt marked "retire with
+func_80044800".
+
+Chassis: HEAD 4287b19d (the Judge-ruling commit; src/text1a_c.c INCLUDE_ASM).
+candidate.c applied with tmp/grind/func_80044800/s1/apply.py (also the
+Rec4473C pad -> `s16 unk60; s8 pad62[6]` rename). canonical = C (distance 0,
+202 insns); `sandbox func_80044800 --disable all` = 0, 202/202, rules_dropped 0.
+Body hash of the applied src body and of candidate.c both = 52ecd6d8e091f34b
+(tmp/grind/func_80044800/s1/hash.py via grindlib.body_hash), identical to the
+JUDGE CLEARANCES entry, so layer-1 is skipped and the body was NOT respelled.
+self_vet.md rewritten per the Judge constraint: primary ground = target bytes
+800449C8 / 800449D4 / 80044A88 / 80044ADC (asm lines 118/121/166/191),
+secondary = ordinary-c-judge-decidable.md:51 Ruling 1 step 3; no frozen-list
+family claimed, no FAKE annotation. Edits left in place in src/ for the
+driver's bytes verification.

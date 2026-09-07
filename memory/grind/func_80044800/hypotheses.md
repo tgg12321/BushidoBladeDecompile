@@ -58,3 +58,13 @@ control" family with a FAKE annotation on `ent = rec` / `rec = ent` -- note the
 annotation would be on the original's own spelling and the F-family bounds
 (staged-value-reused-variable bound 3: previous value dead) do NOT fit (rec's
 value is live and restored), so that route needs its own ruling too.
+
+## s1 (2026-09-06, recon, post Judge PASS)
+
+H9 CONFIRMED -- the Judge-cleared candidate.c body (hash 52ecd6d8e091f34b)
+measures 0 on chassis 4287b19d (canonical C, sandbox --disable all 0,
+202/202). Submitted EXACTLY as cleared; candidate-ready.
+
+Frontier: empty -- matched and cleared. If the driver's bytes verification
+fails, the only open item is the Rec4473C typedef rename (byte-neutral per the
+s1 oracle rebuild) -- re-run verify-oracle --rebuild before touching the body.
