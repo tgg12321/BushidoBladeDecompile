@@ -699,3 +699,113 @@ the do-while (score 13, build_insns 93, insn_count 92) — the loop keyword is n
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 7a577773 chassis 2026-09-07, for-loop chassis applied to src/text1b.c, pure C, no FAKE constructs present, score 13
+
+## s11 (2026-09-07, rederive)
+
+- [s11] KILL RE-AUDIT (mandated, floor flat 3 sessions). Re-measured the closest banked form,
+  `rejected/arming-loop-after-main-score5.c`, on the dispatch chassis (HEAD 7ab27738): still
+  **score 5, build_insns 93**. The s10 candidate body: still **score 13, build_insns 93**. No
+  FAKE construct is present in either body, so there was nothing to ablate — `tools/fake_ablate.py`
+  has no carrier to remove here. Every s9/s10 instance kill therefore remains chassis-valid.
+
+- [s11] KILLED (instance): the target's dispatch tree written by hand as an if/else-if chain
+  (`st == 2` / `st < 3` -> `st == 1` / `st == 3` / `st == 4`, value read once into a local) on the
+  s10 candidate chassis measures score 29, build_insns 89. The `switch` keyword's expand_case
+  layout is load-bearing; the hand-written tree is not an equivalent spelling.
+  Banked: rejected/ifchain-dispatch-score29.c.
+
+- [s11] KILLED (instance): the u16-element array model transplanted from the matched sibling
+  func_80075670 (src/text1b.c:6666-6667) — `u16 *w = (u16 *)D_800A36A0;` with `w[4]`..`w[30]` and
+  an explicit `w++` — measures score 47, build_insns 94 (switch form) and score 60, build_insns 90
+  (if-chain form). The explicit `w++` replaces the giv that the byte-offset chassis gets for free.
+  Banked: rejected/u16-element-array-model-score47.c.
+
+- [s11] KILLED (instance): the sibling's `s16 i` counter declaration on the candidate chassis
+  measures score 28, build_insns 99 — cc1 keeps the counter in HImode and emits sll/sra pairs.
+  Banked: rejected/s16-counter-sign-extend-score28.c.
+
+- [s11] KILLED (instance, re-confirming s10 from a different spelling): a named holder for the
+  0xA ramp step used at all six `+ 0xA` sites (`lim2 = 0xA;` at the top of the loop body) measures
+  score 13, build_insns 93 — bit-identical to the baseline. cse1 folds it into the `addiu`
+  immediate, no movable is created, and `threshold` does not decay. This closes the last untried
+  spelling of the "more free movables" lever: every remaining in-loop constant of this function
+  (0xA, +1, the 0 stores, the 0xC8 compare bound) folds into an immediate field.
+
+- [s11] KILLED (class): a loop placed textually BEFORE the main loop cannot arm the
+  `moved_once` doubling for the main loop. `loop_optimize` scans loops last-first
+  (`for (i = max_loop_num-1; i >= 0; i--)`) over `loop_number_loop_starts`, which is filled in
+  order of loop beginnings, so an earlier-beginning loop is always scanned AFTER the main loop and
+  its `moved_once[regno] = 1` (loop.c:1912) lands too late to be read at loop.c:1609.
+  predicate: tools/gcc-2.7.2/loop.c:435.
+  Corollary (both shapes now enumerated, both already banked): the only two arming geometries are
+  a sibling loop textually AFTER the main loop (rejected/arming-loop-after-main-score5.c, score 5)
+  and a loop NESTED INSIDE it (rejected/inner-arming-loop-moved-once-doubling-score8.c, score 8).
+
+- [s11] CONFIRMED (source-read, not measured): `loop_has_call == 1` is byte-exactly equivalent to
+  s5's `-msoft-float` finding. `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`
+  (loop.c:532); a call in the loop gives threshold 61, and 61*1*1 = 61 < insn_count 91 rejects all
+  four switch constants while 61*1*63 still hoists the 0xC8 — the target's exact movable shape.
+  `loop_has_call` is set only by a CALL_INSN in the loop (loop.c:2202), and the target contains no
+  call, so this is not a usable lever; it is recorded because it means the target's shape has TWO
+  independent toolchain-level explanations, and any future finding that puts a real call in this
+  loop (there is none in the semantics) or that lowers n_non_fixed_regs closes the function.
+
+- [s11] KILLED (instance): the `insn_count >= 120` axis named by the standing Judge constraint has
+  no measured headroom on this chassis. Every ordinary-C statement added this session raised
+  loop-time `insn_count` and emitted `build_insns` by the SAME amount (`s16 i`: +6/+6;
+  u16-element model: +1/+1), and the only post-loop pass that deletes insn groups here is jump2
+  cross-jumping, which needs identical duplicated tails — the target already shares the maximum
+  (`.L800753B8` merges the case-2/case-4 zeroing tails, `.L800753C0` merges the arm exits) and
+  deliberately does NOT merge its case-1/case-3 tails. Reaching 120 needs +29 loop-time insns that
+  are all gone by final output; no such statement was found.
+  measured on: HEAD 7ab27738 chassis 2026-09-07, s10 candidate body plus each variant applied to
+  src/text1b.c, pure C, no FAKE constructs present.
+
+## [s11] Writing the target's own dispatch tree by hand as an if/else-if chain (st==2 / st<3 -> st==1 / st==3 / st==4) on the s10 candidate chassis reproduces the switch's codegen.
+- mechanism: expand_case emits a balanced comparison tree for the dense case set 1..4; if a hand-written chain produced the same basic-block and luid layout, the four comparison constants would land in the same movable positions and the same registers.
+- probe: tmp/grind/func_8007526C/s11/v3_chassis_ifchain.c applied at src/text1b.c:6660; sandbox func_8007526C --disable all.
+- result: score 29, build_insns 89 (target 91) against baseline 13/93. The hand-written tree emits two fewer insns than the target and a different block layout. Banked as memory/grind/func_8007526C/rejected/ifchain-dispatch-score29.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7ab27738 chassis 2026-09-07, s10 candidate body with the switch replaced by an if/else-if chain, applied to src/text1b.c, pure C, no FAKE constructs present
+
+## [s11] The u16-element array addressing model used by the matched sibling func_80075670 (src/text1b.c:6666) transplants onto func_8007526C's chassis.
+- mechanism: Mandated sibling transplant. func_80075670 is COMPLETED-C in the same TU and touches the same D_800A36A0 record with the same 2-byte per-entry stride, so its spelling of the record accesses is author-authentic evidence.
+- probe: tmp/grind/func_8007526C/s11/v1_u16arr_switch.c and v2_u16arr_ifchain.c (u16 *w = (u16 *)D_800A36A0; w[4]..w[30]; w++ per iteration) applied at src/text1b.c:6660; sandbox func_8007526C --disable all.
+- result: score 47, build_insns 94 (switch form) and score 60, build_insns 90 (if-chain form). The explicit w++ replaces the giv the byte-offset chassis gets for free (Insn 25: giv reg 73 src reg 74 mult 2), so the induction-variable shape diverges from the target's addiu $a0,$a0,2 back-edge delay slot. Banked as rejected/u16-element-array-model-score47.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7ab27738 chassis 2026-09-07, sibling-style u16-element array body applied to src/text1b.c, pure C, no FAKE constructs present
+
+## [s11] Declaring the loop counter s16 i, the declaration style the matched sibling func_80075670 uses for its own two-iteration loops, moves the score.
+- mechanism: A narrower counter changes the biv's mode and the luid distances inside the loop, which feeds both loop.c's insn_count and the movable lifetimes; it is also the second half of the mandated sibling transplant.
+- probe: tmp/grind/func_8007526C/s11/v4_s16counter.c (candidate body, s32 i -> s16 i) applied at src/text1b.c:6660; sandbox func_8007526C --disable all.
+- result: score 28, build_insns 99 (target 91). cc1 keeps the counter in HImode and emits sll/sra sign-extension pairs inside the loop: +6 loop-time insns AND +6 emitted insns. Banked as rejected/s16-counter-sign-extend-score28.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7ab27738 chassis 2026-09-07, s10 candidate body with an s16 counter applied to src/text1b.c, pure C, no FAKE constructs present
+
+## [s11] A named holder for the 0xA ramp step, declared as a second local, assigned at the top of the loop body and used at all six + 0xA sites, creates an extra move-insn movable and decays threshold by 3.
+- mechanism: move_movables decays threshold by 3 for each movable it moves (tools/gcc-2.7.2/loop.c:1719); the four switch constants are rejected once threshold drops below insn_count 91, which needs 11 such decays. s10 measured a top-of-loop 0xA holder in a different spelling; this is the all-six-sites spelling.
+- probe: tmp/grind/func_8007526C/s11/v5_u8state_local.c (candidate body plus s32 lim2 = 0xA used at every + 0xA site) applied at src/text1b.c:6660; sandbox func_8007526C --disable all.
+- result: score 13, build_insns 93 -- bit-identical to the baseline. cse1 folds the holder straight into the addiu immediate field, so no movable is created and threshold does not decay. Together with s9's carrier bound this closes the decay lever: every remaining in-loop constant of this function (0xA, +1, the 0 stores, the 0xC8 compare bound) is immediate-foldable on MIPS, and the only register-required constant the semantics supply is the 0xC8 that must itself stay hoisted.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7ab27738 chassis 2026-09-07, s10 candidate body plus an all-sites 0xA holder applied to src/text1b.c, pure C, no FAKE constructs present
+
+## [s11] A loop placed textually BEFORE the main loop can set moved_once for a pseudo the main loop scans, arming the insn_count doubling at loop.c:1609.
+- mechanism: moved_once is allocated and zeroed once per function (loop.c:344-345) and set only at loop.c:1912 when a movable is actually moved, so an earlier-SCANNED loop that moves the same pseudo arms the doubling for a later-scanned loop. The open question was which textual placements are scanned earlier.
+- probe: Source read of loop_optimize's driver: loops are recorded in order of their beginnings by find_and_verify_loops and then scanned last-first, so an earlier-beginning loop is always scanned AFTER the main loop and its moved_once assignment lands too late to be read at loop.c:1609. Cross-checked against the live dump of the matched sibling func_80075670 in tmp/grind/func_8007526C/dumps/text1b.loop, where the doubling fires only from its INNER loops (Loop from 103 to 405: 87 real insns ... halved since already moved ... Insn 273: regno 144 (life 1) ... not desirable).
+- result: The doubling has exactly two reachable geometries: a sibling loop textually AFTER the main loop, and a loop NESTED INSIDE it. Both are already banked (arming-loop-after-main-score5.c score 5; inner-arming-loop-moved-once-doubling-score8.c score 8), and both are dead loops because func_8007526C has no semantic work after or inside its main loop. The previously un-enumerated 'arm it from a loop before the main loop' shape is eliminated.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: tools/gcc-2.7.2 source at the pinned build; no chassis dependence -- the scan order is a property of loop_optimize, not of this function
+- predicate_cite: tools/gcc-2.7.2/loop.c:435
+
+## [s11] Ordinary C raises loop.c's insn_count for this loop to 120 or more while the emitted insn count stays at 91, which is the axis the standing Judge constraint names.
+- mechanism: insn_count is the count of i-class insns between the loop notes at loop time (count_loop_regs_set, loop.c:2989-3007), i.e. after cse1/jump1 and before cse2, combine, flow and jump2. The four switch constants are rejected once threshold (122, decayed to 119 by the 0xC8's own move) falls below insn_count, so insn_count >= 120 reproduces the target's movable shape. Any insns added at loop time must therefore be deleted by a later pass.
+- probe: Every s11 variant was read for both numbers: s16 counter +6 loop-time insns and +6 build_insns (99); u16-element model +1 and +1 (94); if/else chain -2 and -2 (89); 0xA holder 0 and 0 (93). Cross-checked against the target's own arm structure in asm/funcs/func_8007526C.s.
+- result: No ordinary-C statement measured this session raised loop-time insn_count without raising build_insns by the same amount -- the coupling was 1:1 in every case. The only post-loop pass that deletes insn groups here is jump2 cross-jumping, which needs identical duplicated tails, and the target already shares the maximum (.L800753B8 merges the case-2/case-4 zeroing tails, .L800753C0 merges the arm exits) while deliberately NOT merging its case-1/case-3 tails. Closing the 91 -> 120 gap needs +29 loop-time insns that are all gone by final output; none was found this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 7ab27738 chassis 2026-09-07, s10 candidate body plus each s11 variant applied to src/text1b.c, pure C, no FAKE constructs present

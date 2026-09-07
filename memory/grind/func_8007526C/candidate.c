@@ -1,3 +1,13 @@
+/* s11 (2026-09-07, rederive) RE-MEASURED this body unchanged on HEAD 7ab27738:
+ *   `sandbox func_8007526C --disable all` -> score 13, build_insns 93, target_insns 91.
+ * It remains the best NON-BANNED form.  s11 kept it because four structurally different
+ * re-derivations all measured worse: hand-written if/else dispatch tree (29), the matched
+ * sibling func_80075670's u16-element array model (47 / 60), its `s16 i` counter (28), and a
+ * named 0xA step holder (13, bit-identical baseline -- cse1 folds it into the addiu immediate).
+ * The 13 points are entirely the four switch-comparison constants being hoisted into
+ * $8/$9/$10/$11; the target keeps them in-loop in a reused $v0.  See evidence.md s11 for the
+ * closed-out loop.c arithmetic.
+ */
 /* candidate for func_8007526C (src/text1b.c) -- s10 (2026-09-07), ORDINARY C, real do-while loop.
  *
  * MEASURED THIS SESSION on the dispatch chassis with the current unmodified build configuration:

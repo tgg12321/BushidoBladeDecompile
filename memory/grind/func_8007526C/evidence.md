@@ -895,3 +895,116 @@ mechanism with no zero-cost legitimate spelling identified in this function yet.
 - [s10] A decay carrier with a dead use never reaches loop.c: the carrier constant 257 is in text1b.rtl and text1b.jump and absent from text1b.cse and text1b.loop, so cse1 deletes it; insn_count stays 92 and no movable appears. Live-use carriers cost at least 2 instructions each and the requirement 122 - 3k < 92 + 2k needs k >= 7, i.e. 14 or more surviving instructions -- worse than the floor of 13.
 
 - [s10] Three inherited s9 frontier probes are now measured dead: the 0xA step holder (cse1 folds it, no movable, score 13), the eq/ne exit test (cse merges the constant with the case-2 comparison, score 15), and the same-back-edge nest (cc1 sees one loop, not two, score 29). The for-loop chassis is a byte-identical compile to the do-while (score 13).
+
+## s11 (2026-09-07, rederive) — the loop.c predicate arithmetic, closed out in full
+
+Chassis re-measured at dispatch: the s10 candidate body applied at src/text1b.c:6660 gives
+`sandbox func_8007526C --disable all` -> **score 13, build_insns 93, target_insns 91**, and the
+banked closest-form `rejected/arming-loop-after-main-score5.c` still measures **score 5,
+build_insns 93** (mandated kill re-audit; both numbers unchanged from s10, so every s10 kill is
+still chassis-valid).
+
+### The 13-point residual, read off the cc1 asm rather than inferred
+`tmp/grind/func_8007526C/dumps/text1b.s` (this session's dump) shows the entire divergence is the
+prologue of the loop:
+
+    ours:                          target (asm/funcs/func_8007526C.s):
+      move  $6,$0                    addu   $a2,$zero,$zero
+      li    $7,0xc8                  addiu  $a3,$zero,0xC8
+      li    $11,2                    lw     $a0,%gp_rel(D_800A36A0)($gp)
+      li    $10,1                  .L80075278:
+      li    $9,3                      nop
+      li    $8,4                      lbu    $v1,0x10($a0)
+      lw    $4,D_800A36A0             addiu  $v0,$zero,2      <- in-loop, $v0 reused
+    .L902:                            beq    $v1,$v0,...
+      lbu   $3,16($4)                 slti   $v0,$v1,0x3
+      beq   $3,$11,.L912              ...
+      slt   $2,$3,3
+
+Every other insn of the body is already word-identical in shape.  The target keeps all four
+switch-comparison constants **inside** the loop, each in a dead-on-arrival `$v0`, two of them
+filling branch delay slots.  We hoist all four into $8/$9/$10/$11, which is +4 live registers
+across a 91-insn loop and is the whole 13-point score.
+
+### `.loop` dump, this session (tmp/grind/func_8007526C/dumps/text1b.loop)
+
+    Loop from 14 to 260: 91 real insns.
+    Insn 19:  regno 75  (life 63), move-insn savings 1  moved to 268   <- lim (0xC8)
+    Insn 226: regno 124 (life 1),  move-insn savings 1  moved to 270   <- the 2
+    Insn 232: regno 126 (life 1),  move-insn savings 1  moved to 272   <- the 1
+    Insn 238: regno 127 (life 1),  move-insn savings 1  moved to 274   <- the 3
+    Insn 241: regno 128 (life 1),  move-insn savings 1  moved to 276   <- the 4
+
+### The desirability arithmetic is now fully pinned (tools/gcc-2.7.2/loop.c)
+`move_movables` moves a movable iff `already_moved[regno] || (threshold * savings * m->lifetime)
+>= insn_count` (loop.c:1630-1632).  For each of the four constants `savings = n_times_used = 1`
+(loop.c:790) and `m->lifetime = 1` (loop.c:791 — the `li` and its `beq` are adjacent, luid
+distance 1); **both are already at their floor, so the left-hand side cannot be lowered from the
+C side at all.**  That leaves exactly three numeric levers, and s11 measured or derived the bound
+on each:
+
+1. **`threshold`** = `(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532) = 122 today.
+   `loop_has_call` is set **only** by a `CALL_INSN` in the loop (loop.c:2199-2202).  A call inside
+   this loop would halve threshold to 61, and 61*1*1 = 61 < 91 rejects all four constants while
+   61*1*63 still hoists the 0xC8 — i.e. **a call in the loop is byte-exactly equivalent to the
+   `-msoft-float` finding of s5**, reached through a different predicate.  The target has no call,
+   so this is a dead end, but it is worth recording that the target's shape is reproduced by
+   *either* `n_non_fixed_regs == 28` *or* `loop_has_call == 1`.
+2. **`threshold -= 3` decay** (loop.c:1719 for move-insn movables, loop.c:1904 for the general
+   case).  `lim` decays it to 119 before the constants are scanned, so the constants need
+   `insn_count >= 120`, or 11 further free movables scanned before insn 226 to bring threshold
+   below 91.  s10 reached 8 (score 17).  s11 re-confirmed why no more exist: every remaining
+   in-loop constant (0xA addend, +1 increment, the 0 stores, the 0xC8 compare bound) folds into
+   an immediate field (`addiu`/`slti`/`$zero`), so cse1 deletes any holder for it —
+   `v5_u8state_local.c` (a named `lim2 = 0xA` holder used at all six `+ 0xA` sites) measures
+   score 13 / build_insns 93, i.e. exactly the baseline: no movable created, no decay.
+3. **`insn_count *= 2` doubling** (loop.c:1609-1611) when `moved_once[regno]` is already set.
+   `moved_once` is allocated and zeroed once per **function** (loop.c:344-345) and is set only at
+   loop.c:1912, on the main move path; the `m1->match` merge path sets `already_moved` but not
+   `moved_once` (loop.c:1968).  Loops are scanned **last-first** (loop.c:435:
+   `for (i = max_loop_num-1; i >= 0; i--)`, "so inner ones are done before outer ones"), and
+   `loop_number_loop_starts` is in order of loop *beginnings*.  Consequences, both now proven
+   from the source rather than guessed: a loop placed textually **before** the main loop can never
+   arm it, and an **inner** loop arms its **outer** loop.  Those are the only two shapes, and both
+   are already banked (arming-loop-after-main score 5, inner-arming-loop score 8).
+
+### Why the `insn_count >= 120` axis has no headroom
+`insn_count` is the count of `'i'`-class insns between the loop notes at loop time
+(`count_loop_regs_set`, loop.c:2989-3007), i.e. **after cse1/jump1 and before cse2, combine, flow
+and jump2**.  To exceed 119 we need +29 insns present at loop time that are all gone by the final
+output.  The only post-loop pass that deletes whole insn groups here is jump2 cross-jumping, and
+it needs identical duplicated tails; the target's arms already share the maximum
+(`.L800753B8` merges the case-2/case-4 zeroing tails, `.L800753C0` merges the arm exits) and its
+case-1 and case-3 tails are deliberately **not** merged.  Every s11 variant confirmed the 1:1
+coupling instead: `s16 i` adds 6 loop-time insns and 6 emitted insns (99 vs 93); the u16-element
+array model adds 1 and 1.  No ordinary-C statement measured this session raised loop-time
+insn_count without raising `build_insns` by the same amount.
+
+### Sibling transplant (mandated) — func_80075670, src/text1b.c:6666, matched on main
+Its spellings were transplanted and **both fail**: the `((s16 *)(work + i * 2))[K/2]` element-array
+addressing (score 47/60) and the `s16 i` counter declaration (score 28).  What the sibling *does*
+supply is a live worked example of the very mechanism this function needs — its own `.loop` dump
+section reads `Loop from 103 to 405: 87 real insns. / Insn 552: regno 120 ... halved since
+already moved  moved to 554 / Insn 273: regno 144 (life 1), move-insn savings 1 not desirable`.
+That is a life-1 movable rejected at threshold 119 against a doubled insn_count of 174, produced
+by its genuine inner `for (i = 0; i < 2; i++)` loops.  func_8007526C has no semantic work after
+its main loop and no semantic inner loop, which is precisely why the same mechanism can only be
+reached here by a dead loop.
+
+- [s11] Chassis re-measured at dispatch: the s10 candidate body applied at src/text1b.c:6660 gives score 13, build_insns 93, target_insns 91 -- matching the ledger's recorded floor of 13, so the chassis has not moved since s10.
+
+- [s11] MANDATED KILL RE-AUDIT: the closest banked form, rejected/arming-loop-after-main-score5.c, still measures score 5 / build_insns 93 on HEAD 7ab27738. Neither it nor the candidate contains a FAKE construct, so tools/fake_ablate.py has no carrier to strip; every s9/s10 instance kill remains chassis-valid.
+
+- [s11] The whole 13-point residual is read off this session's cc1 asm dump rather than inferred: our prologue emits li $7,0xc8 / li $11,2 / li $10,1 / li $9,3 / li $8,4 before the loop, where the target emits only addiu $a3,$zero,0xC8 and keeps the four comparison constants inside the loop in a reused $v0 (two of them filling branch delay slots). Every other insn of the body is already word-identical in shape.
+
+- [s11] This session's .loop dump confirms the movable list exactly: Loop from 14 to 260: 91 real insns. / Insn 19: regno 75 (life 63) move-insn savings 1 moved to 268 / Insn 226,232,238,241: regno 124,126,127,128 (life 1) move-insn savings 1 moved to 270,272,274,276.
+
+- [s11] Both factors on the left of move_movables' desirability test are already at their floor for the four constants: savings = n_times_used = 1 (loop.c:790) and m->lifetime = 1 (loop.c:791 -- the li and its beq are adjacent, so the luid distance is 1). The left-hand side of (threshold * savings * m->lifetime) >= insn_count at loop.c:1631 cannot be lowered from the C side at all, which leaves exactly three numeric levers: threshold's initial value, the threshold -= 3 decay, and the insn_count *= 2 doubling. s11 bounded all three.
+
+- [s11] NEW: loop_has_call == 1 is byte-exactly equivalent to s5's -msoft-float finding, reached through a different predicate. threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) at loop.c:532; a call in the loop gives threshold 61, and 61*1*1 = 61 < insn_count 91 rejects all four switch constants while 61*1*63 still hoists the 0xC8 -- the target's exact movable shape. loop_has_call is set only by a CALL_INSN in the loop (loop.c:2202) and the target contains no call, so it is not a usable lever; it is recorded because the target's shape now has two independent toolchain-level explanations.
+
+- [s11] moved_once is allocated and zeroed once per FUNCTION (loop.c:344-345), not per loop, and is assigned only at loop.c:1912 on the main move path; the m1->match merge path sets already_moved but not moved_once (loop.c:1968). Combined with the last-first scan order at loop.c:435, the doubling has exactly two reachable geometries -- a sibling loop after the main loop, or a loop nested inside it -- and both are already banked at scores 5 and 8.
+
+- [s11] SIBLING TRANSPLANT (mandated; func_80075670, src/text1b.c:6666, COMPLETED-C on main): both of its spellings fail here -- the ((s16 *)(work + i * 2))[K/2] element-array addressing (score 47 switch form / 60 if-chain form) and the s16 i counter (score 28). What it does supply is a live worked example of the exact mechanism func_8007526C needs: its own .loop section reads Loop from 103 to 405: 87 real insns / Insn 552: regno 120 ... halved since already moved / Insn 273: regno 144 (life 1), move-insn savings 1 not desirable -- a life-1 movable rejected at threshold 119 against a doubled insn_count of 174, produced by its genuine inner for (i = 0; i < 2; i++) loops. func_8007526C has no semantic work after or inside its main loop, which is precisely why the same mechanism is only reachable here through a dead loop.
+
+- [s11] src/text1b.c was restored to its committed INCLUDE_ASM state at the end of the session; git diff is clean for src/. The candidate saved to memory/grind/func_8007526C/candidate.c is the unchanged s10 body (best non-banned form, score 13) with an s11 re-measurement header.
