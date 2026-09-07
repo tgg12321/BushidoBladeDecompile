@@ -5,11 +5,10 @@
  "current_modality": null,
  "floor_history": [],
  "frontier": [],
- "judge_constraints": [],
- "banned_constructs": [
-  "ent = rec; rec = (Rec4473C *)D_800A9CF8.unk10 + i; <6 loads, func_800417D0 call, 3 += accumulations>; rec = ent;",
-  "Self-vet's invocation of ordinary-c-judge-decidable.md's codegen-observation carve-out to excuse the retarget, without claiming the one plausibly-relevant SOTN family ('Variable reuse for codegen control')"
+ "judge_constraints": [
+  "func_80044800: the ent/rec save-retarget-restore block is CLEARED as ordinary C (judge ruling 2026-09-06) -- both prior bans superseded. Self-vet must cite the target byte evidence (asm lines 800449C8 / 800449D4 / 80044A88 / 80044ADC) as the primary ground, with .claude/rules/ordinary-c-judge-decidable.md Ruling 1 step 3 secondary; do not claim a frozen-list family and do not add a FAKE annotation to live code."
  ],
+ "banned_constructs": [],
  "kills": [],
  "ladder_skip": 10,
  "pending_fixup": null,
@@ -25,6 +24,21 @@
    "hash": "52ecd6d8e091f34b",
    "when": "2026-09-07T02:12:16.522640+00:00",
    "summary": "The rec/ent retarget-and-restore block was engineered specifically to defeat GCC 2.7.2's loop.c biv/giv classification, not to express a real algorithmic need \u2014 the worker's own evidence names the compiler-pass mechanism as the reason for the spelling."
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "52ecd6d8e091f34b",
+   "when": "2026-09-07T02:23:31.009728+00:00",
+   "summary": "ruling PASS (decisions.md 2026-09-06 21:23 ruling PASS)"
+  }
+ ],
+ "judge_clearances": [
+  {
+   "hash": "52ecd6d8e091f34b",
+   "when": "2026-09-07T02:23:31.008728+00:00",
+   "ref": "decisions.md 2026-09-06 21:23 ruling PASS",
+   "justification": "The save/retarget/restore IS the original's own pointer flow, verified by me in asm/funcs/func_80044800.s: 800449C8 `addu $s0,$s2,$zero` (save, bne delay slot), 800449D4 `addu $s2,$v0,$s6` from lw 0xE($s5) (retarget to the char-data record), every block store + the func_800417D0 arg through $s2 (800449F8-80044A80), 80044A88 `addu $s2,$s0,$zero` (restore, j delay slot); $s2 is then list-appended at 80044ADC and latched `addiu $s2,$s2,0x68` at 80044AE0 -- so $s2 is `rec` and the original reused it. Decisive fact: the block is LIVE work on a different record (six loads, a call, three accumulation"
   }
  ]
 }

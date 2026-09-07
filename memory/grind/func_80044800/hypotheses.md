@@ -29,3 +29,32 @@ six index spellings tested that survives fold's constant reassociation; with
 latch order `rec++, i++` the function measures 0 (candidate.c).
 
 Frontier: empty — matched.
+
+## s1 re-run (2026-09-06, recon, post layer-1 FAIL)
+
+H6 CONFIRMED -- candidate.c still measures 0 on chassis 7d3c722f (canonical C,
+sandbox --disable all 0, 202/202). The floor is 0; the open question is
+review classification, not codegen.
+
+H7 KILLED (instance) -- the layer-1 reviewer's proposed spelling: a distinct
+local `ent` for the char-data record with `rec` never reassigned. Measured 70
+on chassis 7d3c722f, no FAKE constructs (rejected/distinct-ent-local-rec-biv-
+giv-score70.c). rec becomes a loop.c biv -> giv rec+96 -> $fp consumed; and the
+block's stores land in $s0 while the target's go through $s2 with rec parked
+in $s0 (asm lines 118/121/166).
+
+H8 KILLED (instance) -- indexed `rec = table + i` per iteration with a distinct
+`ent`. Measured 48 on chassis 7d3c722f, no FAKE constructs (rejected/indexed-
+rec-distinct-ent-score48.c). rec becomes a giv of i, recomputed each
+iteration from a reloaded `.unkC`; no latch biv.
+
+Frontier: the matched body (candidate.c) is byte-proven and the retarget/
+restore block is byte-evidenced as the original's pointer flow (evidence.md,
+BYTE EVIDENCE). Both bans cover exactly this block, so `candidate-ready` is
+mechanically impossible until a Judge ruling clears the candidate.c body.
+This session returns `ruling-request` with the precise question. If the Judge
+rules FAIL, the remaining sanctioned route is the "Variable reuse for codegen
+control" family with a FAKE annotation on `ent = rec` / `rec = ent` -- note the
+annotation would be on the original's own spelling and the F-family bounds
+(staged-value-reused-variable bound 3: previous value dead) do NOT fit (rec's
+value is live and restored), so that route needs its own ruling too.
