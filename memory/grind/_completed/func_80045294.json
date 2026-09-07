@@ -1,0 +1,15 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-09-06T09:41:13-05:00",
+ "file": "text1a_c",
+ "func": "func_80045294",
+ "headline": "",
+ "mentions": [
+  "CD_sync",
+  "func_80017848"
+ ],
+ "names": [
+  "func_80045294"
+ ],
+ "sessions": 62
+}

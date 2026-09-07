@@ -2079,6 +2079,13 @@ def sibling_ledgers(root, func, names=None):
                     "candidate": cand_rel, "candidate_mtime": cand_mtime,
                     "mentioned_at_session": ment, "mentioned_at_date": ment_date,
                     "unspent": bool(unspent)})
+    # COMPLETED siblings last: their ledger directory is gone, so the loop above
+    # cannot see them, but a floor-0 twin is the strongest lead that exists
+    # (2026-09-07 post-mortem — see the tombstone section).
+    try:
+        out.extend(completed_siblings(root, func, names))
+    except Exception:
+        pass
     return out
 
 
@@ -2178,6 +2185,143 @@ def notify_siblings(root, func, session, floor, headline):
         except Exception:
             continue
     return stamped
+
+
+# ── Completion tombstones (2026-09-07 post-mortem) ───────────────────────────
+# The 2026-09-04 sibling mechanism only ever saw ledgers that still had a
+# state.json — and the merge path DELETES memory/grind/<func> the moment a
+# function completes. So a sibling became invisible at exactly the moment its
+# spelling became correct (floor 0), and the completion never stamped a
+# sibling_progress notice either (notify_siblings is only called from
+# apply_outcome, which a merging session does not reach).
+#
+# That is how CD_ready went 2 -> 0 on 2026-09-06 (88 sessions, Judge PASS)
+# while its libcd twins CD_sync and CD_datasync — same do_timeout printf
+# window, both stuck at floor 2 — were left foreclosed with nothing pointing
+# at the solved body. Structurally the same miss the 2026-09-04 post-mortem
+# was written about, one rung higher up.
+#
+# A tombstone is the ledger's sibling-relevant surface, snapshotted BEFORE the
+# directory is removed. The completed body itself is not lost — it is on main
+# in src/<stem>.c — so the tombstone only has to carry enough to re-establish
+# the coupling and point at it.
+COMPLETED_SUBDIR = "_completed"
+MAX_COMPLETED_SIBLINGS = 8
+
+
+def completed_dir(root):
+    return os.path.join(root, "memory", "grind", COMPLETED_SUBDIR)
+
+
+def _ledger_mentions(root, func):
+    """Identifier-like names of OTHER existing ledgers that this ledger's text
+    mentions — the inbound half of the coupling test, frozen at close time."""
+    base = os.path.join(root, "memory", "grind")
+    text = _ledger_text(root, func)
+    out = []
+    try:
+        dirs = sorted(os.listdir(base))
+    except OSError:
+        return out
+    for d in dirs:
+        if d == func or d.startswith("_"):
+            continue
+        if not os.path.isfile(os.path.join(base, d, "state.json")):
+            continue
+        for n in _ledger_names(root, d):
+            if _name_re([n]).search(text):
+                out.append(d)
+                break
+    return out[:60]
+
+
+def write_completion_tombstone(root, func, bucket="", sessions=0, headline=""):
+    """Snapshot `func`'s ledger for sibling lookup, then return the tombstone.
+    Call BEFORE the ledger directory is deleted. Never raises."""
+    try:
+        if not os.path.isfile(os.path.join(ledger_dir(root, func), "state.json")):
+            return None       # nothing to snapshot; never invent a tombstone
+        st = load_state(root, func) or {}
+        rec = {"func": func, "names": _ledger_names(root, func),
+               "file": st.get("file", "?"), "bucket": str(bucket or ""),
+               "sessions": int(sessions or st.get("session_count", 0) or 0),
+               "completed_at": _now(), "mentions": _ledger_mentions(root, func),
+               "headline": str(headline or "")[:200]}
+        d = completed_dir(root)
+        os.makedirs(d, exist_ok=True)
+        tmp = os.path.join(d, func + ".json.tmp")
+        with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(rec, fh, indent=1, sort_keys=True)
+            fh.write("\n")
+        os.replace(tmp, os.path.join(d, func + ".json"))
+        return rec
+    except Exception:
+        return None
+
+
+def completion_tombstones(root):
+    """Every banked completion tombstone (list of dicts). Never raises."""
+    d = completed_dir(root)
+    out = []
+    try:
+        names = sorted(os.listdir(d))
+    except OSError:
+        return out
+    for fn in names:
+        if not fn.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(d, fn), encoding="utf-8") as fh:
+                rec = json.load(fh)
+            if isinstance(rec, dict) and rec.get("func"):
+                out.append(rec)
+        except (OSError, ValueError):
+            continue
+    return out
+
+
+def completed_siblings(root, func, names=None):
+    """Completed (ledger-closed) functions coupled to `func`, in the same dict
+    shape sibling_ledgers returns so render_siblings needs no special case.
+    A completed sibling's floor is 0 and its body is on main in src/<stem>.c."""
+    own_names = _ledger_names(root, func, names or ())
+    if not own_names:
+        return []
+    own_text = _ledger_text(root, func)
+    own_pat = _name_re(own_names)
+    dates = journal_session_dates(root)
+    out = []
+    for rec in completion_tombstones(root):
+        sib = rec["func"]
+        if sib == func:
+            continue
+        sib_names = [n for n in (rec.get("names") or [sib]) if _ident_like(n)] or [sib]
+        outbound = bool(_name_re(sib_names).search(own_text))
+        inbound = any(own_pat.search(n) for n in (rec.get("mentions") or []))
+        if not (outbound or inbound):
+            continue
+        done_date = str(rec.get("completed_at") or "")[:10] or None
+        ment = _last_mention_session(root, func, _name_re(sib_names)) if outbound else None
+        ment_date = next((dates.get((n, ment)) for n in own_names
+                          if ment is not None and (n, ment) in dates), None)
+        # SPENT only if this ledger read it AFTER it completed. Otherwise the
+        # solved spelling is still inheritance nobody has applied.
+        unspent = not (done_date and ment_date and ment_date >= done_date)
+        stem = rec.get("file", "?")
+        out.append({"func": sib, "names": sib_names, "file": stem,
+                    "queue_status": (rec.get("bucket") or "COMPLETED") + " — ledger closed",
+                    "floor": 0, "floor_since_session": rec.get("sessions"),
+                    "floor_since_date": done_date, "sessions": rec.get("sessions") or 0,
+                    "candidate": f"src/{stem}.c (the MATCHED body, on main)",
+                    "candidate_mtime": done_date or "",
+                    "mentioned_at_session": ment, "mentioned_at_date": ment_date,
+                    "unspent": bool(unspent)})
+    # A long-running ledger names a lot of functions (CD_sync at s125 couples to
+    # 17 completed ones), and the brief pays for every line. Newest completions
+    # first, capped — a stale twin is far less likely to hold your fix than one
+    # that closed last week.
+    out.sort(key=lambda s: (s["floor_since_date"] or ""), reverse=True)
+    return out[:MAX_COMPLETED_SIBLINGS]
 
 
 # ── Current-scope injection (2026-09-01 post-mortem) ─────────────────────────
@@ -2680,6 +2824,32 @@ if __name__ == "__main__":
         # notices, exactly as the next brief would carry them (read-only)
         print(render_siblings(sibling_ledgers(sys.argv[2], sys.argv[3]), sys.argv[3]))
         print(render_sibling_progress(load_state(sys.argv[2], sys.argv[3]) or {}))
+    elif cmd == "complete-ledger":
+        # complete-ledger <root> <func> <bucket> <sessions> [headline]
+        # Called by the merge path IMMEDIATELY BEFORE the ledger directory is
+        # deleted (2026-09-07 post-mortem): banks the tombstone, stamps the
+        # floor-0 drop on every coupled ledger, and prints any coupled sibling
+        # that is FORECLOSED — the operator-facing half, since a foreclosed
+        # sibling is never dispatched and so can never consume a notice itself.
+        _root, _func = sys.argv[2], sys.argv[3]
+        _bucket = sys.argv[4] if len(sys.argv) > 4 else ""
+        _sess = int(sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5].isdigit() else 0
+        _head = sys.argv[6] if len(sys.argv) > 6 else ""
+        try:
+            _sibs = sibling_ledgers(_root, _func)
+        except Exception:
+            _sibs = []
+        write_completion_tombstone(_root, _func, _bucket, _sess, _head)
+        try:
+            notify_siblings(_root, _func, _sess, 0, _head or f"{_func} {_bucket}")
+        except Exception:
+            pass
+        for _s in _sibs:
+            if str(_s.get("queue_status", "")).startswith("foreclosed"):
+                print(f"FORECLOSED SIBLING {_s['func']} (floor {_s['floor']}, "
+                      f"src/{_s['file']}.c) — {_func} just reached floor 0; its "
+                      f"body on main is an unspent transplant. Consider "
+                      f"`queue unpark {_s['func']}`.")
     else:
         print(f"unknown cmd {cmd}")
         sys.exit(2)

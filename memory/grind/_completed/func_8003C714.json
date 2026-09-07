@@ -1,0 +1,15 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-09-05T19:41:34-05:00",
+ "file": "code6cac_c2",
+ "func": "func_8003C714",
+ "headline": "",
+ "mentions": [
+  "func_80035280",
+  "func_80067D14"
+ ],
+ "names": [
+  "func_8003C714"
+ ],
+ "sessions": 20
+}

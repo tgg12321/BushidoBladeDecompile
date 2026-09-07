@@ -1704,3 +1704,105 @@ class TestEscalationDeferral(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCompletionTombstones(unittest.TestCase):
+    """2026-09-07 post-mortem: the merge path deletes memory/grind/<func>, so a
+    COMPLETED sibling — floor 0, the strongest lead there is — became invisible
+    to sibling_ledgers, and the completion never stamped a sibling_progress
+    notice (notify_siblings only ran from apply_outcome). CD_ready went 2 -> 0
+    on 2026-09-06 while its libcd twins CD_sync / CD_datasync sat foreclosed on
+    the same unsolved do_timeout window with nothing pointing at the fix."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+        G.init_ledger(self.root, "CD_ready", "system")
+        G.init_ledger(self.root, "CD_sync", "system")
+        G.init_ledger(self.root, "func_80011111", "text1a")  # unrelated
+        os.makedirs(os.path.join(self.root, "docs", "grind"))
+        os.makedirs(os.path.join(self.root, "engine"))
+        json.dump({"items": [{"func": "CD_sync", "status": "foreclosed"}]},
+                  open(os.path.join(self.root, "engine", "queue.json"), "w"))
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def close(self, func, bucket="COMPLETED-C", sessions=88):
+        """What the merge path does: tombstone + notify, THEN delete."""
+        G.write_completion_tombstone(self.root, func, bucket, sessions, "solved")
+        G.notify_siblings(self.root, func, sessions, 0, "solved")
+        import shutil
+        shutil.rmtree(G.ledger_dir(self.root, func))
+
+    def test_completed_sibling_survives_ledger_deletion(self):
+        G.append_evidence(self.root, "CD_sync", "CD_ready shares this window", session=3)
+        self.close("CD_ready")
+        self.assertFalse(os.path.isdir(G.ledger_dir(self.root, "CD_ready")))
+        sibs = G.sibling_ledgers(self.root, "CD_sync")
+        self.assertEqual([s["func"] for s in sibs], ["CD_ready"])
+        self.assertEqual(sibs[0]["floor"], 0)
+        self.assertIn("src/system.c", sibs[0]["candidate"])
+        self.assertTrue(sibs[0]["unspent"])
+
+    def test_inbound_coupling_frozen_at_close_time(self):
+        # CD_ready's ledger names CD_sync; CD_sync's says nothing about CD_ready.
+        G.append_evidence(self.root, "CD_ready", "CD_sync is the twin", session=4)
+        self.close("CD_ready")
+        sibs = G.sibling_ledgers(self.root, "CD_sync")
+        self.assertEqual([s["func"] for s in sibs], ["CD_ready"])
+        self.assertIsNone(sibs[0]["mentioned_at_session"])
+
+    def test_uncoupled_completion_is_not_surfaced(self):
+        self.close("CD_ready")
+        self.assertEqual(G.sibling_ledgers(self.root, "func_80011111"), [])
+
+    def test_completion_stamps_sibling_progress(self):
+        G.append_evidence(self.root, "CD_sync", "CD_ready shares this window", session=3)
+        self.close("CD_ready")
+        sp = G.load_state(self.root, "CD_sync")["sibling_progress"]
+        self.assertEqual([e["from"] for e in sp], ["CD_ready"])
+        self.assertEqual(sp[0]["floor"], 0)
+        self.assertIsNone(sp[0]["consumed"])
+
+    def test_spent_once_this_ledger_reads_it_after_completion(self):
+        G.append_evidence(self.root, "CD_sync", "CD_ready shares this window", session=3)
+        self.close("CD_ready")
+        done = G.completion_tombstones(self.root)[0]["completed_at"][:10]
+        st = G.load_state(self.root, "CD_sync")
+        st["session_count"] = 9
+        G.save_state(self.root, "CD_sync", st)
+        G.append_hypothesis(self.root, "CD_sync",
+                            {"statement": "transplanted CD_ready's spelling"}, session=9)
+        with open(os.path.join(self.root, "docs", "grind", "journal.md"), "a",
+                  encoding="utf-8") as f:
+            f.write(f"- {done} 10:00 CD_sync s9 [rederive] floor=2: read it\n")
+        self.assertFalse(G.sibling_ledgers(self.root, "CD_sync")[0]["unspent"])
+
+    def test_render_marks_the_completed_body_on_main(self):
+        G.append_evidence(self.root, "CD_sync", "CD_ready shares this window", session=3)
+        self.close("CD_ready")
+        blk = G.render_siblings(G.sibling_ledgers(self.root, "CD_sync"), "CD_sync")
+        self.assertIn("CD_ready", blk)
+        self.assertIn("COMPLETED-C — ledger closed", blk)
+        self.assertIn("UNSPENT", blk)
+
+    def test_tombstone_never_raises_on_a_missing_ledger(self):
+        self.assertIsNone(G.write_completion_tombstone(self.root, "nope", "x", 1))
+        self.assertEqual(G.completed_siblings(self.root, "nope"), [])
+
+    def test_completed_siblings_are_capped_newest_first(self):
+        G.append_evidence(self.root, "CD_sync", "the twins", session=1)
+        for i in range(G.MAX_COMPLETED_SIBLINGS + 4):
+            f = "func_8000%04d" % i
+            G.init_ledger(self.root, f, "system")
+            G.append_evidence(self.root, "CD_sync", f"{f} shares a block", session=1)
+            self.close(f, sessions=i)
+            p = os.path.join(G.completed_dir(self.root), f + ".json")
+            rec = json.load(open(p, encoding="utf-8"))
+            rec["completed_at"] = "2026-08-%02dT00:00:00+00:00" % (i + 1)
+            json.dump(rec, open(p, "w", encoding="utf-8"), indent=1, sort_keys=True)
+        sibs = G.completed_siblings(self.root, "CD_sync")
+        self.assertEqual(len(sibs), G.MAX_COMPLETED_SIBLINGS)
+        dates = [s["floor_since_date"] for s in sibs]
+        self.assertEqual(dates, sorted(dates, reverse=True))

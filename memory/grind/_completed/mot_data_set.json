@@ -1,0 +1,12 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-07-17T11:00:28-05:00",
+ "file": "text1a_c",
+ "func": "mot_data_set",
+ "headline": "",
+ "mentions": [],
+ "names": [
+  "mot_data_set"
+ ],
+ "sessions": 2
+}

@@ -1,0 +1,12 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-07-28T08:50:55-05:00",
+ "file": "text1a_c",
+ "func": "calc_fc_frame",
+ "headline": "",
+ "mentions": [],
+ "names": [
+  "calc_fc_frame"
+ ],
+ "sessions": 1
+}

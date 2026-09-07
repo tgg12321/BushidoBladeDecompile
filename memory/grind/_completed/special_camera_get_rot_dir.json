@@ -1,0 +1,14 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-08-30T20:13:31-05:00",
+ "file": "code6cac_b2_post",
+ "func": "special_camera_get_rot_dir",
+ "headline": "",
+ "mentions": [
+  "CD_sync"
+ ],
+ "names": [
+  "special_camera_get_rot_dir"
+ ],
+ "sessions": 8
+}

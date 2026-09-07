@@ -1,0 +1,14 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-08-26T10:09:35-05:00",
+ "file": "code6cac_c",
+ "func": "func_80037A20",
+ "headline": "",
+ "mentions": [
+  "sprintf"
+ ],
+ "names": [
+  "func_80037A20"
+ ],
+ "sessions": 13
+}

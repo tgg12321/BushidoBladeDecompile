@@ -933,6 +933,18 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         # without it the closer is only inferable from the ladder, and the one
         # discriminator available showed ~1/3 of inferred credit was wrong.
         Journal "$func $bucket after $sessionsTaken sessions (closer: s$sessionN [$modality])."
+        # 2026-09-07 post-mortem: bank the sibling tombstone and stamp the
+        # floor-0 drop BEFORE the ledger directory goes away. Deleting it first
+        # made a solved twin invisible at exactly the moment it became correct
+        # (CD_ready 2 -> 0 on 2026-09-06 while foreclosed CD_sync / CD_datasync
+        # sat on the same unsolved do_timeout window). A foreclosed sibling is
+        # never dispatched, so it also gets surfaced to the log and the journal.
+        $fsibs = @()
+        try {
+            $fsibs = @(python tools/grinder/grindlib.py complete-ledger . $func $bucket $sessionsTaken 2>$null |
+                        Where-Object { $_ -match '^FORECLOSED SIBLING' })
+        } catch { }
+        foreach ($fs in $fsibs) { Log "${func}: $fs"; Journal "$func completed — $fs" }
         Remove-Item -Recurse -Force (Join-Path $Root "memory\grind\$func")
         git -C $Root add -A -- memory/grind docs/grind 2>$null
         git -C $Root add -- metrics/events.jsonl 2>$null

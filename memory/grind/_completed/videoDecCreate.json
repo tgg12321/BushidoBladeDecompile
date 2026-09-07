@@ -1,0 +1,12 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-07-17T11:10:41-05:00",
+ "file": "text1a_c",
+ "func": "videoDecCreate",
+ "headline": "",
+ "mentions": [],
+ "names": [
+  "videoDecCreate"
+ ],
+ "sessions": 2
+}

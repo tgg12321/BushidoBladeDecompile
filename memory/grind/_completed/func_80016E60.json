@@ -1,0 +1,15 @@
+{
+ "bucket": "COMPLETED-C",
+ "completed_at": "2026-09-02T04:07:08-05:00",
+ "file": "ings",
+ "func": "func_80016E60",
+ "headline": "",
+ "mentions": [
+  "func_80017848",
+  "func_8005C8A8"
+ ],
+ "names": [
+  "func_80016E60"
+ ],
+ "sessions": 6
+}
