@@ -4393,3 +4393,161 @@ be paid by moving only the address.**
 - [s35] Addressing the tail 0x5C/0x60 pair off any live pointer (base or the named reload) deletes the second D_800A36A0 reload and builds 174 insns (b1 33, b2 47), so the refs-raising route on the base quantity is priced out.
 
 - [s35] The owner's 2026-09-06 directive (class-B prologue store-base spellings on the h3 chassis, then the record-layout audit for a third use of the C pointer) was already executed and measured by s31 (26 builds, class B closed, floor 5 -> 3) and s32/s33 (no list-walk shape in the siblings; the natural s16-table readings cost 176 insns); this session worked the standing frontier instead, as s33 did.
+
+## [s36] (synthesis, 2026-09-06) — the row-62 operand order is `expr.c:5287`, and the class-C seat is winnable by CONFLICT (all four seats, no FAKE, D stores unmoved)
+
+**Chassis.** HEAD 2ac3e85d (`src/text1b.c` byte-identical to the s35 pristine copy; the two ledger
+commits since de9606ac touch only `memory/`, `docs/` and `metrics/`). Re-measured with s35's harness
+copied to `tmp/grind/func_800770B8/s36/`: floor body `base` = **3/175/175**, `s2` = 13, `s4` = 12,
+`r8a` = 27, `f3` = 34 — every s35 score reproduces exactly. 29 scoring builds, 5 `BB2_QTY_DEBUG`
+tables, 1 `-da` dump run, 3 row-diff runs. `src/text1b.c` restored to the pristine HEAD copy after
+every sweep; `git status` on `src/` and `include/` clean at end of session.
+
+**KILL RE-AUDIT (mandated), executed on the current chassis.** `python3 tools/fake_ablate.py --func
+func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c`: keep-all **3**,
+drop the `p_old` dead store **5**, drop the empty `do { } while (0)` prologue wrap **8**, drop both
+**10** — all at 175 insns, identical to s35's numbers. Both FAKE units remain load-bearing and both
+sit in blk=0, so neither occupies a class-C pseudo.
+
+**OWNER DIRECTIVE.** The 2026-09-06 queue directive (class-B prologue store-base spellings on the h3
+chassis, then the record-layout audit for a third use of the C pointer) was executed and measured by
+s31 (26 builds, class B CLOSED, floor 5 -> 3) and s32/s33 (no list-walk shape in func_8006E49C /
+func_80076FF8 / func_8006E950; the natural s16-table readings of the 0x6A/0x7E record cost 176
+insns), and re-confirmed by s35. This session therefore worked the standing frontier.
+
+### [s36] THE MECHANISM FOR ROW 62 IS NAMED: `expr.c:5287`
+
+36 sessions have treated the row-62 residual (target `addu $v1,$v1,$v0` vs our `addu $v0,$v0,$v1`)
+as purely an allocation fact. It is first an EMISSION fact with an exact source in the compiler:
+
+    expr.c:5286  /* Put a constant term last and put a multiplication first.  */
+    expr.c:5287  if (CONSTANT_P (op0) || GET_CODE (op1) == MULT)
+    expr.c:5288    temp = op1, op1 = op0, op0 = temp;
+
+This swap lives in the `both_summands:` arm of `expand_expr`'s `PLUS_EXPR` case, which is reached
+ONLY when `modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER` (expr.c:5238:
+`if ((modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER) || mode != ptr_mode) goto binop;`)
+— i.e. only when the sum is being expanded as the ADDRESS of a MEM. On that path `expand_expr` of a
+`MULT_EXPR` by a constant returns a live `(mult reg const)` rtx, so `GET_CODE (op1) == MULT` holds
+and the multiply is swapped to operand 0. On the ordinary `binop:` path the tree order survives, and
+`c-typeck.c`'s `pointer_int_sum` puts the POINTER first unconditionally.
+
+Both outcomes are visible in the floor body's OWN RTL from the SAME C shape
+`D_800A36A0 + <shift> + <const>` (`tmp/grind/func_800770B8/s36/base_fn.rtl`, `base_fn.lreg`):
+
+  * insn 188 `(set (reg 110) (plus (reg 109 = the D_800A36A0 reload) (reg 108 = t0*10)))` — the
+    `p_6a`/`p_7e` pointer-variable initialisers, `binop:` path, POINTER first, giving row 62
+    `addu $v0,$v0,$v1`;
+  * insn 266 `(set (reg 140) (plus (reg 139 = t0*2) (reg 137 = the reload)))` — the
+    `*(s16 *)(D_800A36A0 + t0*2 + 0x5C) = 0` store, EXPAND_SUM path, MULT first, giving row 86
+    `addu $v1,$v1,$v0`, which already MATCHES the target byte-for-byte.
+
+The target's row 62 has the multiply first, so the target's row-62 sum was expanded with the MULT
+rtx alive as operand 1 — either on the address path, or from a tree whose operand 0 is the multiply.
+
+### [s36] `&D_800A36A0[i]` is NOT an EXPAND_SUM lever (c-typeck rewrites it at tree level)
+
+`build_unary_op`'s ADDR_EXPR case turns `&x[y]` into `x + y` as a TREE, so such an address never
+reaches `expand_expr`'s EXPAND_SUM arm. Measured: `(s16 *)(&D_800A36A0[t0 * 10] + 0x6A)` (u3) = **3**,
+byte-inert, identical to the floor body and to s35's `d2`. Pushing the constant inside the subscript
+reassociates instead (`&D_800A36A0[(t0*10) + 0x6A]` u1/u2, and the s16-table view u5) and costs an
+insn: **7 at 176**, emitting `addiu $v0,$v1,106` before the pointer add. Putting the whole address
+inside the inner loop's MEM so LICM must hoist it (u6 `((s16 *)(D_800A36A0 + t0*10 + 0x6A))[a2]`,
+u7 `*(s16 *)(... + a2 * 2)`) lets cse/LICM delete insns the target keeps: **44 at 172** and **45 at
+171**. `p_7e = p_6a + 10` on the ADDR_EXPR body (u4) = 29.
+
+### [s36] The 27-point "operand flip" family's residual is ONE ROTATED SEAT, not a broken schedule
+
+s31/s32 recorded the cast-flip spellings as 27 "because they seat the reload and the shift the other
+way round and reschedule the loop head". Measured here with the quantity table and the row diff, the
+real state is far better than that reading. Five spellings all measure **27/175/175**: w1 (the
+inline int-domain flip on both initialisers), w2 (`s32 q = (t0*10) + (s32)D_800A36A0;`), w3
+(`u8 *q = (u8 *)((t0 * 10) + (s32)D_800A36A0);` with `p_6a = (s16 *)(q + 0x6A)` and
+`p_7e = (s16 *)(q + 0x7E)`), w4 (pointer-typed shift), w5 (`s16 *q` plus `&q[0x35]`/`&q[0x3F]`).
+w3's row 62 is `addu $v0,$v0,$v1` where **$v0 is the CHAIN** (row 61 `sll $v0,$v0,1`) and $v1 is the
+reload (row 60 `lw $v1`): the flip HAPPENED and the dest is tied to the chain. Its blk=1 table
+(`s36/w3.qty`) is
+
+    ord0 qty2 reg89  b12 d14 refs4  -> $v0   (the short group-A temp)
+    ord1 qty3 reg102 b28 d56 refs22 -> $v0   (merged chain + dest)      <-- target wants $v1
+    ord2 qty4 reg109 b48 d52 refs4  -> $v1   (the D_800A36A0 reload, its OWN quantity)
+    ord3 qty1 reg100 b10 d44 refs12 -> $v1   (base)
+    ord4 qty0 reg86  b6  d46 refs14 -> $a0   (sign-extended t0)
+
+Every seat is exactly one slot off the target, and the single cause is that the merged quantity
+(`qty_compare_1` priority `floor_log2(22)*22/28` = 3.14, `tools/gcc-2.7.2/local-alloc.c:1660`) is
+allocated second and NOTHING conflicting holds $v0 — the only earlier quantity, the b12/d14 temp,
+is long dead by luid 28.
+
+### [s36] x3 — ALL FOUR TARGET SEATS by CONFLICT, no FAKE, D stores left at rows 52/53
+
+The floor body borrows ONE local `ptr` for the group-A, group-D and group-C pointers. Because that
+local has four defs and three REG_DEAD notes, `local-alloc.c:471-472`
+(`reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`) refuses it a block quantity and punts every one
+of those pointers to global-alloc — which is exactly why no short quantity is alive at luid 28 to
+deny the merged quantity $v0.
+
+**x3** = w3 plus the five group-A stores written through their own single-death local `u8 *ap;`
+(`ap = (u8 *)((t0 * 2) + (s32)base);` followed by five `*(s16 *)(ap + k) = 0;`). Score
+**27/175/175**, and its blk=1 table is the target's assignment outright:
+
+    ord0 qty3 reg86  b18 d30 refs16 -> $v0   (the group-A pointer, pri 4*16/12 = 5.33)
+    ord1 qty1 reg103 b12 d56 refs22 -> $v1   (merged chain + dest)      <-- TARGET SEAT
+    ord2 qty4 reg110 b48 d52 refs4  -> $v0   (the reload)               <-- TARGET SEAT
+    ord3 qty2 reg101 b16 d44 refs12 -> $a0   (base)                     <-- TARGET SEAT
+    ord4 qty0 reg87  b8  d46 refs14 -> $a1   (sign-extended t0)         <-- TARGET SEAT
+
+and rows 54 through 64 come out BYTE-EXACT: `addu $v0,$a0,$v1` / `addu $a0,$a0,$a1` /
+`addu $v1,$v1,$a1` / `sh $zero,0x42($v0)` / `sh $zero,0x40($v0)` / `sb $t0,0x68($a0)` /
+`lw $v0,%gp_rel(D_800A36A0)($gp)` / `sll $v1,$v1,1` / **`addu $v1,$v1,$v0`** /
+**`addiu $a3,$v1,0x6A`** / **`addiu $a1,$v1,0x7E`**. This is the FIRST body in 36 sessions to take
+the class-C seat through a CONFLICT (a higher-priority quantity holding $v0 across the merged
+quantity's live range) rather than through an early birth, and the first to do it with the
+D_800A35D0 stores left in the target's own slot (rows 52/53). It carries no FAKE construct in the
+loop body.
+
+**x3's whole residual is one sched1 decision.** Splitting the group-A pointer out of `ptr` removes
+the shared-pseudo anti-dependence that pinned the `&D_800A35D0` address below the group-A stores, so
+sched1 hoists the `lui %hi(D_800A35D0) / addiu %lo / addu` triple from rows 49/50/51 up to rows
+38/39/43, and the loop counter `a2` lands in $a3 instead of $a2. Rows 38-53 are the entire cost.
+
+### [s36] Six schedule nudges do not move the hoist
+
+On the x3 chassis: `ap` declared before `ptr` (y1) 27; the D-group address built pointer-first
+`ptr = ptr + (t0 * 4)` (y2) 27; the C group written inline off `base` so `ptr` serves the D group
+only (y3) 27; the group-A stores written inline off `base` with no local at all (y4, on the w3
+chassis) 27. Adding a separate C-group local as well (x4) 26 — its quantity is b36 d40 refs6, pri
+3.00, and it ALSO sorts above the merged quantity, giving the same four seats. The C-group local
+alone (x6) 23; on the floor body without the flip (x5) 3, byte-inert. Without the flip, the
+group-A local alone (x1) 29 and A+C (x2) 28 — their tables keep the dest merged with the RELOAD.
+Combining `ap` with the r8 ptr-carried reload instead of the cast flip (z1 29, z2 28) does not
+reproduce the merge.
+
+- [s36] Chassis re-confirmed at HEAD 2ac3e85d: floor body 3/175/175, s2 13, s4 12, r8a 27, f3 34; fake_ablate keep-all 3 / drop the p_old dead store 5 / drop the do-while(0) wrap 8 / drop both 10, all at 175 insns.
+- [s36] expr.c:5287 ("Put a constant term last and put a multiplication first") is the mechanism for row 62's operand order: it fires only in the both_summands: arm reached when modifier == EXPAND_SUM (expr.c:5238), i.e. only for a sum expanded as the address of a MEM; on the binop: path c-typeck's pointer_int_sum ordering (pointer first) survives. The floor body's own RTL shows BOTH outcomes from the same C shape: insn 188 (plus reload chain) for the p_6a pointer initialiser, insn 266 (plus t0*2 reload) for the 0x5C direct store, and row 86 already matches the target.
+- [s36] &D_800A36A0[i] cannot reach the EXPAND_SUM path: c-typeck's build_unary_op rewrites &x[y] to x + y as a tree, so u3 = 3 byte-inert (identical to s35's d2); &D_800A36A0[i + c] reassociates and costs an insn (u1/u2/u5 = 7 at 176); putting the address in the inner loop's MEM (u6/u7) lets LICM/cse delete insns the target keeps (44 at 172, 45 at 171).
+- [s36] The five cast-flip spellings (w1-w5, all 27/175/175) DO produce the target's operand order at row 62 with the dest tied to the chain; w3's blk=1 table shows all five seats rotated by exactly one slot because the merged chain+dest quantity (pri 3.14) is allocated second with nothing conflicting holding $v0.
+- [s36] x3 (w3 + the five group-A stores through their own single-death local ap) = 27/175/175 with blk=1 = ap($v0) / merged chain+dest($v1) / reload($v0) / base($a0) / t0($a1) — ALL FOUR target seats, rows 54-64 byte-exact including addu $v1,$v1,$v0, no FAKE construct in the loop body, and the D_800A35D0 stores left at rows 52/53.
+- [s36] The group-A pointer earns a block quantity only when it is single-death (local-alloc.c:471-472); its priority 4*16/12 = 5.33 beats the merged quantity's 3.14 and it conflicts with it, so $v0 is denied — the first CONFLICT-based route to the class-C seat (s2's route is an early birth, and that one costs the D stores' position).
+- [s36] x3's entire residual is sched1: removing the shared-ptr anti-dependence lets sched1 hoist the lui %hi(D_800A35D0) / addiu %lo / addu triple from rows 49/50/51 to rows 38/39/43, and a2 lands in $a3. Six nudges (y1 declaration order 27, y2 D-address operand order 27, y3 C group inline 27, y4 A group inline 27, x4 +C local 26, x6 C local only 23) leave the hoist in place.
+- [s36] src/text1b.c was restored to the pristine HEAD copy after every sweep; git status on src/ and include/ is clean at end of session.
+
+- [s36] Chassis re-confirmed at HEAD 2ac3e85d: floor body 3/175/175, s2 13, s4 12, r8a 27, f3 34; fake_ablate keep-all 3 / drop the p_old dead store 5 / drop the do-while(0) prologue wrap 8 / drop both 10, all at 175 insns.
+
+- [s36] expr.c:5287 ('Put a constant term last and put a multiplication first') is the mechanism for row 62's operand order; it fires only in the both_summands: arm that expr.c:5238 reaches when modifier == EXPAND_SUM, i.e. only for a sum expanded as the address of a MEM. On the binop: path c-typeck's pointer_int_sum ordering (pointer first) survives.
+
+- [s36] The floor body's own RTL shows both outcomes from one C shape: insn 188 (plus reload chain) for the p_6a pointer initialiser and insn 266 (plus t0*2 reload) for the 0x5C direct store, whose row 86 already matches the target's addu $v1,$v1,$v0.
+
+- [s36] &D_800A36A0[i] cannot reach the EXPAND_SUM path because c-typeck's build_unary_op rewrites &x[y] to x + y as a tree: u3 = 3 byte-inert; &D_800A36A0[i + c] reassociates and costs an insn (u1/u2/u5 = 7 at 176); the inner-loop MEM spellings let LICM/cse delete insns the target keeps (u6 44 at 172, u7 45 at 171).
+
+- [s36] The five cast-flip spellings (w1-w5, all 27/175/175) DO produce the target's row-62 operand order with the dest tied to the chain; every seat is rotated by exactly one slot because the merged chain+dest quantity (qty_compare_1 priority 3.14, local-alloc.c:1660) is allocated second with nothing conflicting holding $v0.
+
+- [s36] x3 (w3 + the five group-A stores through their own single-death local ap) = 27/175/175 with blk=1 = ap($v0) / merged chain+dest($v1) / reload($v0) / base($a0) / t0($a1): ALL FOUR target seats, rows 54-64 byte-exact including addu $v1,$v1,$v0 / addiu $a3,$v1,0x6A / addiu $a1,$v1,0x7E, no FAKE construct in the loop body, and the D_800A35D0 stores left at rows 52/53.
+
+- [s36] The group-A pointer earns a block quantity only when it is single-death (local-alloc.c:471-472); its priority 4*16/12 = 5.33 beats the merged quantity's 3.14 and it conflicts with it, so $v0 is denied. This is a CONFLICT route to the class-C seat, independent of s2/s4's early-birth route and without their D-store displacement.
+
+- [s36] x3's entire residual is sched1: removing the shared-ptr anti-dependence lets the list scheduler hoist the lui %hi(D_800A35D0) / addiu %lo / addu triple from rows 49/50/51 to rows 38/39/43, and a2 lands in $a3. Nine forms (y1 27, y2 27, y3 27, y4 27, x4 26, x6 23, x1 29, x2 28, z1 29, z2 28) leave the hoist in place.
+
+- [s36] The owner's 2026-09-06 directive (class-B prologue store-base spellings on the h3 chassis, then the record-layout audit for a third use of the C pointer) was executed and measured by s31 (26 builds, class B closed, floor 5 -> 3) and s32/s33 (no list-walk shape in the siblings; the natural s16-table readings cost 176 insns), and re-confirmed by s35; this session worked the standing frontier.
+
+- [s36] src/text1b.c was restored to the pristine HEAD copy after every sweep; git status on src/ and include/ is clean at end of session, and candidate.c is unchanged (the floor body at 3).

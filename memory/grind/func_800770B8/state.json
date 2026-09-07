@@ -1,7 +1,7 @@
 {
  "func": "func_800770B8",
  "file": "text1b",
- "session_count": 35,
+ "session_count": 36,
  "current_modality": "synthesis",
  "floor_history": [
   {
@@ -213,23 +213,29 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "Floor holds at 3; the blk=1 quantity table is measured invariant under 12 byte-neutral spellings, the 'fix the floor body's registers in place' programme is closed in closed form, and f3 becomes the f"
+  },
+  {
+   "session": 36,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Row 62's operand order is named for the first time (expr.c:5287, EXPAND_SUM-only MULT-first swap), and x3 becomes the first body to hold ALL FOUR target class-C seats at 175 insns with the D stores un"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The s2/s4 family (merged chain+dest in $v1, reload carried by the multi-death ptr, all four target seats) is the only live route, and its whole 12-13 point residual is the D_800A35D0 store group's emission position; a body that keeps the merged quantity born <= 12 with the D stores back at rows 51/52 is a score-0 body.",
-   "mechanism": "The merged quantity takes $v1 only because it is born before the short t0*4 temp and therefore conflicts with it (s2: merged b12 d56 refs22, temp b22 d24). Its birth moves only when a STORE group is emitted ahead of the A group (s35 killed the named-value route; s34 killed the reorders that do not lead with the D group). What has never been swept is WHICH store group leads: the C group (base + t0*4, the value the target computes at row 42) or the sb store, with the D group left in the target's slot.",
-   "next_probe": "Start from tmp/grind/func_800770B8/s35/v/s2.c. Build bodies whose first store group is the C group (ptr = base + t0*4; the 0x42/0x40 pair) or the sb store, with the A, D, C order otherwise as in the floor body and the reload still taken into ptr. qty-triage each with s35/qty.sh first: keep only tables with FOUR quantities, the merged chain+dest at birth <= 12 with got=3, and a short t0*4 temp born after it; then score with s35/run.sh and diff rows against asm/funcs/func_800770B8.s."
+   "hypothesis": "x3 holds all four target seats with the D stores in place, so the only thing between it and a match is that sched1 hoists the &D_800A35D0 lui/addiu/addu triple to the top of blk=1. A body that keeps the group-A pointer single-death while leaving a real dependence that pins that triple below the group-A stores is a very-low-score body.",
+   "mechanism": "In the floor body the shared `ptr` pseudo serialises the group-A, group-D and group-C pointer computations, and that anti-dependence is what holds the D address at rows 49/50/51. Splitting the group-A pointer out (required for local-alloc.c:471-472 to give it a quantity) removes the edge, and sched.c's list scheduler then has no predecessor for the lui/addiu pair.",
+   "next_probe": "Dump blk=1 of x3 (tmp/grind/func_800770B8/s36/v/x3.c, `pwsh tools/grinder/dump.ps1 func_800770B8` then read the .sched) and run tools/sched_solver on it: enumerate the schedules in which the D-address triple sits at the target's slots with every other insn unmoved, and ask which C-level dependence would force that. Candidates to spell: the group-D pointer sharing a local with the group-C pointer only; the group-A local declared inside a tighter scope; the group-D address taken from a local that the group-A stores must write first through a genuine read. If sched_solver returns FORECLOSED for the target slot with a single-death group-A pointer present, bank that as the predicate that closes the conflict route and leaves the refs route (item 2) as the only one."
   },
   {
-   "hypothesis": "On the floor store order the r8 merge (ptr-carried reload) scores 27 only because the merged chain+dest (refs 22, span 28, priority 3.14) outranks the reload quantity (refs 4, span 4, priority 2.0) and takes $v0; giving the reload pseudo refs >= 8 at the same span inverts that (3*8/4 = 6.0) and seats the merge in $v1 with the D stores never moved.",
-   "mechanism": "qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) ranks floor_log2(refs)*refs*size/(death-birth); flow.c weights reg_n_refs by loop depth, so a reference to the reload pseudo from inside the inner do-while counts more than one in the outer body. The reload's span is pinned at 4 by the load-delay scheduling, so refs is the only free term.",
-   "next_probe": "Start from tmp/grind/func_800770B8/s35/v/r8a.c (27). Sweep spellings that give the pseudo holding the second D_800A36A0 read more references without adding an insn: the record pointers rebuilt from it in both arms of the inner loop, the reload local reused as the base of the 0x5C/0x60 pair while a separate local keeps the record pointers, and the reload read into a local that also carries the sb address. Check insns == 175 FIRST (any form that lets cse delete the second lw drops to 174), then qty-triage for a reload quantity with refs >= 8 before scoring."
+   "hypothesis": "On the w3 chassis the reload is its OWN quantity (b48 d52 refs4, qty_compare_1 priority 2*4/4 = 2.0). Raising it to refs >= 8 at the same span makes it 3*8/4 = 6.0, so it is allocated FIRST, takes $v0, and the merged chain+dest quantity is forced onto $v1 - the target's seats with no group-A local, no schedule change and the D stores untouched.",
+   "mechanism": "qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) ranks floor_log2(refs)*refs*size/(death-birth); flow.c accumulates reg_n_refs weighted by loop depth, so the reload pseudo currently scores 2 references x weight 2 = 4. Its span is pinned at 4 by the lw/sll/addu emission order (the target's own order), so refs is the only free term; two more references to the same pseudo, or one reference inside the inner do-while where the loop weight is higher, is the whole requirement.",
+   "next_probe": "Start from tmp/grind/func_800770B8/s36/v/w3.c (27). Sweep spellings that reference the named reload local `q`'s SOURCE pseudo more often without adding an insn: the reload read into a local that also supplies the sb address, the reload local re-read inside the inner do-while for one of the two record pointers, and the reload named in a local whose second reference sits in the 0x5C/0x60 block while a separate read keeps that block's own lw. Check insns == 175 FIRST (any form that lets cse delete the second lw drops to 174), then qty-triage with s36/qty.sh for a reload quantity with refs >= 8 at span 4 before scoring."
   },
   {
-   "hypothesis": "f3 proves the four seats are winnable at 175/175; the only thing between f3 and a match is that sched1 emits the reload lw at luid 38 (and f3 pays two more rows for the sb move). A body whose lw lands at exactly luid 44 with the sb unmoved would hold the seats with the floor's schedule.",
-   "mechanism": "The dest+reload quantity needs span >= 12, i.e. birth <= 44; the floor emits the lw at 48 and every source placement before the sb moves it to 42 or earlier while shifting the sb's dependents by k >= 2 luids (which loses the $a0 tie). Luid 44 is the single slot that satisfies both, and it is a sched1 outcome, not a source-order one.",
-   "next_probe": "Run tools/sched_solver on blk=1 of the floor body (dump with pwsh tools/grinder/dump.ps1 func_800770B8, read .sched) and enumerate the schedules in which the lw sits at luid 44 with every other insn at its floor position; then ask which C-level dependence (a use of the reload's value, or a store the lw must precede) would force that slot, and spell it. If the solver returns FORECLOSED for luid 44, bank that as the class kill that closes the whole floor-stream family and leaves frontier items 1 and 2 as the only routes."
+   "hypothesis": "x3's merged chain+dest quantity is already born at 12 without moving the D group, which is the birth s2/s4 had to displace the D stores to obtain. Re-running the s2/s4 store-group family on the x3 chassis may therefore pay for the seats twice and expose a body whose D stores sit at rows 52/53 with the address emitted at 49/50/51.",
+   "mechanism": "s34/s35 established that the merged quantity's birth moves only when a store group is emitted ahead of the group-A stores; x3 shows a single-death group-A pointer moves it to 12 with no store reordering at all. The two levers have never been measured together, and the s2 residual (13 points, entirely the D group's emission position) is the smaller of the two residuals now on the table.",
+   "next_probe": "Build x3 variants that additionally use s2's ptr-carried reload instead of the cast flip, and s4 variants that add the single-death group-A local, qty-triaging each with s36/qty.sh for four or five quantities with the merged chain+dest at birth <= 14 seated in $v1 and the reload in $v0, then score with s36/run.sh and row-diff against asm/funcs/func_800770B8.s to see which of rows 38-53 remain."
   }
  ],
  "judge_constraints": [
@@ -611,6 +617,30 @@
    "measured_on": "HEAD b90bdce4 chassis, s2 body (D group first + the ptr-carried reload), both FAKE constructs present; 175/175",
    "predicate_cite": "",
    "result": "e1 29, e2 29, both 175/175, against s2's 13 and s4's 12."
+  },
+  {
+   "session": 36,
+   "statement": "The address-of-subscript spellings do not reach the EXPAND_SUM path: `(s16 *)(&D_800A36A0[t0 * 10] + 0x6A)` measures 3 at 175 insns (byte-inert, identical to the floor body and to s35's d2), while `&D",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2ac3e85d chassis, floor body F + the class-B dead store to p_old + the empty do-while(0) prologue fence; 175 insns for u3/u4 and 176 for u1/u2/u5",
+   "predicate_cite": "",
+   "result": "KILLED for these five spellings on this chassis: the family either changes nothing or adds an instruction."
+  },
+  {
+   "session": 36,
+   "statement": "Writing the p_6a/p_7e addresses directly inside the inner do-while's MEM measures 44 at 172 insns (`((s16 *)(D_800A36A0 + (t0 * 10) + 0x6A))[a2] = -1;`) and 45 at 171 insns (`*(s16 *)(D_800A36A0 + (t0",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2ac3e85d chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; 172 and 171 insns",
+   "predicate_cite": "",
+   "result": "KILLED for these two spellings: the EXPAND_SUM path is reachable this way but costs 3-4 instructions the target has."
+  },
+  {
+   "session": 36,
+   "statement": "On the x3 chassis sched1 emits the `lui %hi(D_800A35D0) / addiu %lo / addu` triple at rows 38/39/43 instead of the target's 49/50/51 and `a2` lands in $a3, and the nine forms measured against that hoi",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2ac3e85d chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; the cast flip present in x3/x4/x6/y1-y4 and absent in x1/x2/x5/z1/z2; 175/175 in all nine builds",
+   "predicate_cite": "",
+   "result": "KILLED for these nine forms on this chassis. x3's cost is a sched1 emission fact, in the same shape as f3's cost in s35:"
   }
  ],
  "object_model_audited": 29,

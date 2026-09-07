@@ -3437,3 +3437,106 @@ measured_on: HEAD de9606ac, floor body + class-B dead store + do-while(0) fence,
 - probe: The twelve invariance dumps, s34's p-series (p2/p3/p6/p8/p9/p10), and this session's f-series.
 - result: Measurement matches the closed form at every point: k=0 byte-inert 3, k=2 (p2) 24 with rows 62-64 byte-exact and the $a0/$a1 pair inverted, k=4 38, and f3 wins the seats only by moving the lw. The s27-s35 programme of fixing the floor body's registers in place is closed; the live route is the s2/s4 family.
 - verdict: CONFIRMED
+
+## [s36] Row 62's operand order is decided by expr.c:5287, which fires only on the EXPAND_SUM address path — the same C shape gives (plus reload chain) for a pointer-variable initialiser and (plus mult reload) for a direct store, both visible in the floor body's own RTL
+- statement: in the floor body's pre-optimisation RTL, insn 188 is `(set (reg 110) (plus (reg 109 = the D_800A36A0 reload) (reg 108 = t0*10)))` (the p_6a/p_7e pointer-variable initialisers) while insn 266 is `(set (reg 140) (plus (reg 139 = t0*2) (reg 137 = the reload)))` (the `*(s16 *)(D_800A36A0 + t0*2 + 0x5C) = 0` store), from the identical C shape `D_800A36A0 + <shift> + <const>`; row 86 therefore already matches the target's `addu $v1,$v1,$v0` while row 62 does not.
+- mechanism: expr.c:5286-5288 ("Put a constant term last and put a multiplication first": `if (CONSTANT_P (op0) || GET_CODE (op1) == MULT) temp = op1, op1 = op0, op0 = temp;`) sits in the `both_summands:` arm of expand_expr's PLUS_EXPR case, which expr.c:5238 reaches only when `modifier == EXPAND_SUM || EXPAND_INITIALIZER`, i.e. only for a sum expanded as the address of a MEM. On that path a MULT_EXPR by a constant returns a live `(mult reg const)` rtx so the swap fires; on the ordinary `binop:` path the tree order survives and c-typeck.c's pointer_int_sum puts the pointer first unconditionally.
+- probe: `pwsh`-free `-da` dump of the floor body via tmp/grind/func_800770B8/s36/dump.py, sliced to the function (s36/base_fn.rtl, s36/base_fn.lreg), plus the row diffs s34/rows_base.txt.
+- result: CONFIRMED. Both orders are present in one compilation of one body; the difference is the expansion path, not the source spelling of the sum.
+- verdict: CONFIRMED
+
+## [s36] KILLED (instance) — the ADDR_EXPR spellings cannot reach the EXPAND_SUM path, because c-typeck rewrites &x[y] into x + y as a tree
+- statement: `(s16 *)(&D_800A36A0[t0 * 10] + 0x6A)` measures 3 at 175 insns (byte-inert, identical to the floor body and to s35's d2); `&D_800A36A0[(t0 * 10) + 0x6A]` and `&D_800A36A0[0x6A + (t0 * 10)]` and the s16-table view `&((s16 *)D_800A36A0)[(t0*5) + 0x35]` each measure 7 at 176 insns; `p_7e = p_6a + 10` on the ADDR_EXPR body measures 29 at 175.
+- mechanism: c-typeck.c's build_unary_op ADDR_EXPR case returns build_binary_op(PLUS_EXPR, array, index) for an ARRAY_REF operand, so the address is an ordinary PLUS_EXPR tree and expand_expr never enters the EXPAND_SUM arm that carries the expr.c:5287 swap. Pushing the constant inside the subscript makes fold reassociate the sum, which emits `addiu $v0,$v1,106` before the pointer add — one insn the target does not have.
+- probe: u1/u2/u3/u4/u5 (tmp/grind/func_800770B8/s36/gen_u.py), scored with s36/run.sh.
+- result: KILLED. The address-of-subscript family does not produce the target's operand order and either changes nothing or adds an instruction.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2ac3e85d chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; 175 or 176 insns as noted
+
+## [s36] KILLED (instance) — moving the p_6a/p_7e addresses into the inner loop's MEM lets LICM/cse delete instructions the target keeps
+- statement: `((s16 *)(D_800A36A0 + (t0 * 10) + 0x6A))[a2] = -1;` written directly in the inner do-while measures 44 at 172 insns, and `*(s16 *)(D_800A36A0 + (t0 * 10) + 0x6A + a2 * 2) = -1;` measures 45 at 171 insns, against the target's 175.
+- mechanism: with the whole address inside the MEM, loop.c hoists the invariant part and cse1 collapses the hoisted sum against the loop-body `base` read, removing the `lw %gp_rel(D_800A36A0)` reload at row 60 and the separate `addiu` pair the target emits at rows 63/64.
+- probe: u6/u7 (tmp/grind/func_800770B8/s36/gen_u2.py), scored with s36/run.sh.
+- result: KILLED. The EXPAND_SUM path is reachable this way but only at the cost of 3-4 instructions the target has.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2ac3e85d chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; 172 and 171 insns
+
+## [s36] CONFIRMED — the 27-point cast-flip family already holds the target's row-62 operand order and the chain/dest merge; its whole residual is that all five quantities are seated one slot off
+- statement: five cast-flip spellings (w1 inline int-domain, w2 `s32 q`, w3 `u8 *q`, w4 pointer-typed shift, w5 `s16 *q` with `&q[0x35]`/`&q[0x3F]`) all measure 27/175/175, and w3's row 62 is `addu $v0,$v0,$v1` with the CHAIN in $v0 (row 61 `sll $v0,$v0,1`) and the reload in $v1 (row 60 `lw $v1`) — i.e. the flip fires and combine_regs ties the dest to the chain. w3's blk=1 table is ap-less: temp b12 d14 refs4 -> $v0, merged chain+dest b28 d56 refs22 -> $v0, reload b48 d52 refs4 -> $v1, base b10 d44 refs12 -> $v1, t0 b6 d46 refs14 -> $a0.
+- mechanism: qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) gives the merged quantity floor_log2(22)*22/28 = 3.14, second behind the b12/d14 temp's 4.0. The temp is dead by luid 28, so the merged quantity reuses $v0 instead of being pushed to $v1, and every later quantity slides one seat.
+- probe: gen_w.py (w1-w5) scored with s36/run.sh; s36/w3.qty (BB2_QTY_DEBUG) and s36/rows_w3.txt.
+- result: CONFIRMED, and it supersedes the s31/s32 reading that the flip "seats the reload and the shift the other way round". The flip is correct; only the $v0 conflict is missing.
+- verdict: CONFIRMED
+
+## [s36] CONFIRMED — giving the group-A pointer its own single-death local makes it a block quantity whose priority beats the merged chain+dest quantity and conflicts with it, delivering ALL FOUR target seats at 175 insns with the D stores unmoved and no FAKE construct
+- statement: x3 (w3 + `u8 *ap; ap = (u8 *)((t0 * 2) + (s32)base);` carrying the five group-A stores) measures 27/175/175 with blk=1 = ap b18 d30 refs16 -> $v0, merged chain+dest b12 d56 refs22 -> $v1, reload b48 d52 refs4 -> $v0, base b16 d44 refs12 -> $a0, t0 b8 d46 refs14 -> $a1, and rows 54 through 64 byte-exact including `addu $v1,$v1,$v0`, `addiu $a3,$v1,0x6A`, `addiu $a1,$v1,0x7E`.
+- mechanism: local-alloc.c:471-472 gates a block quantity on `reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`, so the floor body's four-times-assigned `ptr` is punted to global-alloc and no short quantity is alive at luid 28. A single-death group-A pointer earns a quantity with qty_compare_1 priority floor_log2(16)*16/12 = 5.33, is allocated first, takes $v0, and conflicts with the merged quantity's [12,56] range, which therefore must take $v1.
+- probe: gen_x.py (x1-x6) and gen_y.py (y1-y4) scored with s36/run.sh; s36/x3.qty, s36/x4.qty, s36/x1.qty (BB2_QTY_DEBUG); s36/rows_x3.txt.
+- result: CONFIRMED. This is a second, independent route to the class-C seat (conflict rather than early birth), and unlike s2/s4 it leaves the D_800A35D0 stores at rows 52/53.
+- verdict: CONFIRMED
+
+## [s36] KILLED (instance) — the six schedule nudges measured on the x3 chassis do not stop sched1 hoisting the D_800A35D0 address once the group-A pointer is split out of ptr
+- statement: on x3 (four target seats, rows 54-64 byte-exact) sched1 emits the `lui %hi(D_800A35D0) / addiu %lo / addu` triple at rows 38/39/43 instead of the target's 49/50/51, and `a2` lands in $a3; declaring `ap` before `ptr` (y1) 27, building the D address pointer-first `ptr = ptr + (t0 * 4)` (y2) 27, writing the C group inline off `base` (y3) 27, writing the group-A stores inline off `base` with no local (y4) 27, adding a separate C-group local (x4) 26, the C-group local alone (x6) 23, and combining `ap` with the r8 ptr-carried reload instead of the cast flip (z1 29, z2 28) all leave the hoist in place.
+- mechanism: in the floor body the group-A, group-D and group-C pointers share one C local, so they share one pseudo and the write-after-write/read serialisation on that pseudo pins the D address below the group-A stores in sched.c's dependence graph. Splitting the group-A pointer into its own local removes that anti-dependence, and the `lui`/`addiu` pair has no remaining predecessor in the block, so the list scheduler hoists it to the top.
+- probe: gen_y.py (y1-y4), gen_x.py (x4/x5/x6), gen_z.py (z1/z2), scored with s36/run.sh; rows_x3.txt for the hoist read-out.
+- result: KILLED for these nine forms on this chassis. The conflict route's cost is a sched1 fact, exactly as f3's cost was in s35.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2ac3e85d chassis, floor body F + the class-B dead store + the do-while(0) prologue fence, cast-flip present in x3/x4/x6/y1-y4 and absent in x1/x2/x5/z1/z2; 175/175 in all nine builds
+
+## [s36] KILL RE-AUDIT (mandated) — both FAKE units re-measured load-bearing on the current chassis
+- statement: `tools/fake_ablate.py --func func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c` returns keep-all 3, drop the `p_old` dead store 5, drop the empty `do { } while (0)` prologue wrap 8, drop both 10, all at 175 insns — identical to s35's numbers on HEAD b90bdce4.
+- mechanism: both FAKE units live in blk=0 (the prologue) and neither occupies a class-C pseudo, so no class-C kill in the ledger was measured with a FAKE carrier sitting on the pseudo under test.
+- probe: fake_ablate.py on HEAD 2ac3e85d.
+- result: CONFIRMED unchanged; the chassis is stable and the s34/s35 instance kills remain measured under the same FAKE state.
+- verdict: CONFIRMED
+
+## [s36] In the floor body's own pre-optimisation RTL the identical C shape `D_800A36A0 + <shift> + <const>` produces (plus reload chain) at insn 188 (the p_6a/p_7e pointer-variable initialisers, which give row 62 `addu $v0,$v0,$v1`) and (plus t0*2 reload) at insn 266 (the `*(s16 *)(D_800A36A0 + t0*2 + 0x5C) = 0` direct store, which gives row 86 `addu $v1,$v1,$v0` and already matches the target).
+- mechanism: expr.c:5286-5288, 'Put a constant term last and put a multiplication first': `if (CONSTANT_P (op0) || GET_CODE (op1) == MULT) temp = op1, op1 = op0, op0 = temp;`. That statement sits in the `both_summands:` arm of expand_expr's PLUS_EXPR case, which expr.c:5238 only reaches when `modifier == EXPAND_SUM || EXPAND_INITIALIZER`, i.e. when the sum is expanded as the address of a MEM; on that path a MULT_EXPR by a constant returns a live (mult reg const) rtx so the swap fires. On the ordinary `binop:` path the tree order survives and c-typeck.c's pointer_int_sum puts the pointer operand first unconditionally.
+- probe: cc1 -da dump of the floor body (tmp/grind/func_800770B8/s36/dump.py), sliced to the function as s36/base_fn.rtl and s36/base_fn.lreg; read against s34/rows_base.txt rows 60-64 and 84-86.
+- result: CONFIRMED. Both operand orders occur in one compilation of one body from one C shape, so the row-62 residual is first an expansion-path fact and only then an allocation fact. This is the first named mechanism for the class-C operand order in 36 sessions.
+- verdict: CONFIRMED
+
+## [s36] The address-of-subscript spellings do not reach the EXPAND_SUM path: `(s16 *)(&D_800A36A0[t0 * 10] + 0x6A)` measures 3 at 175 insns (byte-inert, identical to the floor body and to s35's d2), while `&D_800A36A0[(t0 * 10) + 0x6A]`, `&D_800A36A0[0x6A + (t0 * 10)]` and `&((s16 *)D_800A36A0)[(t0 * 5) + 0x35]` each measure 7 at 176 insns and `p_7e = p_6a + 10` on that body measures 29 at 175.
+- mechanism: c-typeck.c's build_unary_op ADDR_EXPR case rewrites &x[y] into build_binary_op(PLUS_EXPR, x, y) at TREE level, so the address is an ordinary PLUS_EXPR and expand_expr never enters the both_summands: arm carrying the expr.c:5287 swap. Pushing the constant inside the subscript makes fold reassociate the sum, emitting `addiu $v0,$v1,106` before the pointer add - one instruction the target does not have.
+- probe: u1/u2/u3/u4/u5 generated by tmp/grind/func_800770B8/s36/gen_u.py, scored with s36/run.sh; row read-out in s36/rows_u1.txt.
+- result: KILLED for these five spellings on this chassis: the family either changes nothing or adds an instruction.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2ac3e85d chassis, floor body F + the class-B dead store to p_old + the empty do-while(0) prologue fence; 175 insns for u3/u4 and 176 for u1/u2/u5
+
+## [s36] Writing the p_6a/p_7e addresses directly inside the inner do-while's MEM measures 44 at 172 insns (`((s16 *)(D_800A36A0 + (t0 * 10) + 0x6A))[a2] = -1;`) and 45 at 171 insns (`*(s16 *)(D_800A36A0 + (t0 * 10) + 0x6A + a2 * 2) = -1;`), against the target's 175.
+- mechanism: With the whole address inside the MEM the sum does take the EXPAND_SUM path, but loop.c hoists the invariant part and cse1 then collapses the hoisted sum against the loop-body `base` read, deleting the `lw %gp_rel(D_800A36A0)` reload at row 60 and the separate addiu pair the target emits at rows 63/64.
+- probe: u6/u7 generated by tmp/grind/func_800770B8/s36/gen_u2.py, scored with s36/run.sh.
+- result: KILLED for these two spellings: the EXPAND_SUM path is reachable this way but costs 3-4 instructions the target has.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2ac3e85d chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; 172 and 171 insns
+
+## [s36] The five cast-flip spellings (w1 inline int-domain, w2 `s32 q`, w3 `u8 *q = (u8 *)((t0 * 10) + (s32)D_800A36A0);`, w4 pointer-typed shift, w5 `s16 *q` with &q[0x35]/&q[0x3F]) all measure 27/175/175 and DO emit the target's operand order at row 62 with the dest tied to the chain: w3's row 62 is `addu $v0,$v0,$v1` with the chain in $v0 (row 61 `sll $v0,$v0,1`) and the reload in $v1 (row 60 `lw $v1`). w3's blk=1 table is temp b12 d14 refs4 -> $v0, merged chain+dest b28 d56 refs22 -> $v0, reload b48 d52 refs4 -> $v1, base b10 d44 refs12 -> $v1, t0 b6 d46 refs14 -> $a0: every seat exactly one slot off the target.
+- mechanism: qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1660) ranks the merged chain+dest quantity at floor_log2(22)*22/28 = 3.14, second behind the b12/d14 temp's 4.0. The temp is dead by luid 28, so the merged quantity reuses $v0 rather than being pushed onto $v1, and every quantity allocated after it slides one seat.
+- probe: gen_w.py (w1-w5) scored with s36/run.sh; BB2_QTY_DEBUG table s36/w3.qty; row diff s36/rows_w3.txt.
+- result: CONFIRMED, and it corrects the s31/s32 reading that the cast flip 'seats the reload and the shift the other way round'. The flip is correct and the merge is correct; the only thing missing is a conflicting quantity holding $v0 across the merged quantity's range.
+- verdict: CONFIRMED
+
+## [s36] x3 (w3 plus the five group-A stores written through their own single-death local `u8 *ap; ap = (u8 *)((t0 * 2) + (s32)base);`) measures 27/175/175 with blk=1 = ap b18 d30 refs16 -> $v0, merged chain+dest b12 d56 refs22 -> $v1, reload b48 d52 refs4 -> $v0, base b16 d44 refs12 -> $a0, t0 b8 d46 refs14 -> $a1, and rows 54 through 64 byte-exact including `addu $v1,$v1,$v0`, `addiu $a3,$v1,0x6A` and `addiu $a1,$v1,0x7E`.
+- mechanism: local-alloc.c:471-472 gates a block quantity on `reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1`, so the floor body's four-times-assigned `ptr` (group-A, group-D and group-C pointers all borrowing one local) is punted to global-alloc and no short quantity is alive at luid 28. A single-death group-A pointer earns a quantity with qty_compare_1 priority floor_log2(16)*16/12 = 5.33, is allocated first, takes $v0, and conflicts with the merged quantity's [12,56] range, which is therefore forced onto $v1; the reload, base and t0 then fall into the target's remaining seats.
+- probe: gen_x.py (x1-x6) scored with s36/run.sh; BB2_QTY_DEBUG tables s36/x3.qty, s36/x4.qty, s36/x1.qty; row diff s36/rows_x3.txt.
+- result: CONFIRMED. x3 is the first body in 36 sessions to hold all four target class-C seats through a CONFLICT rather than an early birth, and the first to do it with the D_800A35D0 stores left in the target's own slot (rows 52/53) and with no FAKE construct in the loop body. Adding a C-group local as well (x4) gives the same four seats at 26.
+- verdict: CONFIRMED
+
+## [s36] On the x3 chassis sched1 emits the `lui %hi(D_800A35D0) / addiu %lo / addu` triple at rows 38/39/43 instead of the target's 49/50/51 and `a2` lands in $a3, and the nine forms measured against that hoist all keep it: `ap` declared before `ptr` (y1) 27, the D address built pointer-first as `ptr = ptr + (t0 * 4)` (y2) 27, the C group inline off base (y3) 27, the group-A stores inline off base with no local (y4) 27, a separate C-group local added (x4) 26, the C-group local alone (x6) 23, and `ap` combined with the r8 ptr-carried reload instead of the cast flip (z1 29, z2 28, x1 29, x2 28).
+- mechanism: In the floor body the group-A, group-D and group-C pointers share one C local and therefore one pseudo, and that register reuse is what pins the D_800A35D0 address below the group-A stores in sched.c's dependence graph. Splitting the group-A pointer into its own local removes the anti-dependence; the lui/addiu pair then has no predecessor left in blk=1 and the list scheduler hoists it to the top of the block.
+- probe: gen_y.py (y1-y4), gen_x.py (x1/x2/x4/x5/x6) and gen_z.py (z1/z2) scored with s36/run.sh; the hoist read out of s36/rows_x3.txt.
+- result: KILLED for these nine forms on this chassis. x3's cost is a sched1 emission fact, in the same shape as f3's cost in s35: the seats are winnable, the schedule is what they cost.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 2ac3e85d chassis, floor body F + the class-B dead store + the do-while(0) prologue fence; the cast flip present in x3/x4/x6/y1-y4 and absent in x1/x2/x5/z1/z2; 175/175 in all nine builds
+
+## [s36] KILL RE-AUDIT, mandated: tools/fake_ablate.py on memory/grind/func_800770B8/candidate.c at HEAD 2ac3e85d returns keep-all 3, drop the p_old dead store 5, drop the empty do-while(0) prologue wrap 8, drop both 10, all at 175 insns - identical to s35's numbers on HEAD b90bdce4.
+- mechanism: Both FAKE units sit in blk=0 (the prologue) and neither occupies a class-C pseudo, so none of the s34/s35 class-C instance kills was measured with a FAKE carrier on the pseudo under test; the chassis and the FAKE state under which they were banked are unchanged.
+- probe: python3 tools/fake_ablate.py --func func_800770B8 --file text1b --candidate memory/grind/func_800770B8/candidate.c; plus a live re-measurement of base (3), s2 (13), s4 (12), r8a (27) and f3 (34), all reproducing s35 exactly.
+- result: CONFIRMED unchanged. Both FAKE units remain load-bearing and the banked kills stay valid on this chassis.
+- verdict: CONFIRMED
