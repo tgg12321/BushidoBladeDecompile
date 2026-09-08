@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 51,
- "current_modality": "rederive",
+ "session_count": 52,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -309,23 +309,29 @@
    "floor": 3,
    "modality": "rederive",
    "headline": "M-branch moved 17 -> 10 at 127/127: s50's M2 carried a redundant loop-2 lnk local that rotated the a1/a2 seats; deleting it (cell M7) leaves a disjoint 2+2-point trade-off between the a3 copy seat and"
+  },
+  {
+   "session": 52,
+   "floor": 3,
+   "modality": "structural",
+   "headline": "Loop-2's missing preheader copy MATERIALISED for the first time in 52 sessions (cell G, 127/127) - the residual is now a carrier-cost problem, not a reachability problem; 19 carrier spellings priced, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The M7/M8 2+2 trade-off is separable: a form that defines `q` on the loop-skip path WITHOUT adding a statement to the block preceding the loop-1 guard would take M7's a3 seat and M8's `i = 0` placement at the same time, landing the M-branch at 6.",
-   "mechanism": "M7's 2-point loss is reorg.c filling the loop-1 guard's bltz delay slot, decided by the contents of the block preceding the guard; M8's 2-point loss is flow making q/r live-in at entry. Both are caused by the SAME statement (`q = p;`) but through different passes, so a definition site that satisfies flow without giving reorg a new fill candidate should collect both wins.",
-   "next_probe": "Build M21 = M7 with the pre-guard `q = p;` deleted and `q = *(u8 **)(ctx + 0xC);` replacing `p = *(u8 **)(ctx + 0xC);` outright, so ONE pointer local carries the value up to loop-1's preheader and `p` is reintroduced only by the exit-tail reload; score it and diff both the bltz delay slot and the copy seats against tmp/grind/func_80017848/s51/T.txt."
+   "hypothesis": "A carrier whose live range is confined to loop-2's guarded region but whose reader sits in the TAIL block (after the do-while, before the join) can hold the copy without the callee-saved seat or the guard/base add collapse - J4 already reaches 8 at 125 insns with exactly that shape and no post-loop reader, so the two missing insns are the whole gap.",
+   "mechanism": "J4 (`r = p;` in the preheader, base via r, `p = r;` in the loop-2 tail, all post-loop sites left as inline reloads) is 125/127: the tail copy and one reload both vanish because p is dead after the tail. Restoring a post-loop reader for p is what re-inflates the score (J1/J2/J3 = 50/17/50) because every candidate reader deletes one of the target's own lw ..,12(s2) reloads. A reader that consumes p WITHOUT replacing a reload - for example one that uses p only in an address the target also computes from a register - would keep 127 insns while preserving the tail.",
+   "next_probe": "On the J4 chassis (tmp/grind/func_80017848/s52/body_J4.c) enumerate post-loop consumers of p that do NOT sit at one of the three target reload sites: the link-record write `link = *(u8 **)(ctx + 0x10) + (*(s16 *)(ctx + 6) << 4)` and the `*(s32 *)(link + 4) = (slot_a << 16) | slot_b` operand chain are the only post-loop expressions not already spelled through ctx+0xC. Measure each and diff the loop-2 preheader against tmp/grind/func_80017848/s52/T.txt."
   },
   {
-   "hypothesis": "Loop-2's copy needs no C-level reader at all: like the target's, it should survive on flow-stale liveness, so the closing form gives the copy destination a reader that combine or jump2 removes AFTER flow rather than one that reaches code generation.",
-   "mechanism": "E-s51-4 pins that the target emits no reader for the loop-2 a3 copy anywhere, and P1 proves that with no C reader GCC deletes the copy. s44 already dump-proved the alternative producer (a loop-body read of the copy destination that combine folds to a constant after flow, combine.c:1458), but s44's instruments for it were cheat constructs. The open question is whether an ORDINARY C expression exists whose value combine can prove constant inside loop 2 only.",
-   "next_probe": "Enumerate loop-2-body expressions in `r` that are provably constant given the loop's own dominating tests (a comparison against a value the guard already established, or an index expression combine can bound), apply each on the M7 chassis, and read tmp/grind/func_80017848/dumps/*.combine after `pwsh tools/grinder/dump.ps1 func_80017848` to confirm the read is folded rather than emitted."
+   "hypothesis": "Loop 1's copy and loop 2's copy cannot both be bought at once as long as loop-1's q carrier is the exit tail `p = q;`, because that tail is precisely the instruction the target spends on loop-2's guard-block load; the closing form must give loop-1's q an out-of-block reader that emits no instruction.",
+   "mechanism": "Every symmetric form measured (s11/s12 at 4, R at 13, N-series at 17-36) either keeps `p = q;` - which puts a copy in loop-2's guard block where the target has lw a0,12(s2) - or drops it and loses loop-1's copy (the s11 form's 126 insns). The only block boundaries inside loop-1's guarded region are preheader->body and body->tail, and a reader placed in either is folded back into the preheader by loop.c LICM plus cse (measured for loop 2 as cell T).",
+   "next_probe": "Attack the loop-1 side directly: build cells where loop-1's q is read in the guarded TAIL by an expression the target also computes there, and where loop-2's guard carries its own inline read of *(u8 **)(ctx + 0xC). Run pwsh tools/grinder/dump.ps1 func_80017848 on the best cell and read tmp/grind/func_80017848/dumps/*.combine to confirm whether loop-1's copy insn survives combine or is deleted, rather than inferring it from the score."
   },
   {
-   "hypothesis": "BASE's 3 and the M-branch's 10 are two attacks on the same missing fact and BASE is still the closer one: BASE's residual is only loop-1's exit tail plus loop-2's two preheader insns, so a lever that buys ONLY loop-2's copy on the BASE chassis (leaving loop 1 untouched) would close the function without paying M7's seat and call-block costs.",
-   "mechanism": "BASE already emits loop-1's copy byte-exactly with `p = q;` as its reader, and its remaining 3 are entirely loop-2's. The M-branch bought loop-2's copy by restructuring loop 1 as well, which is what introduced the 2+2 trade-off. A loop-2-local buyer would not disturb loop 1 at all.",
-   "next_probe": "On the BASE chassis (not M7), enumerate readers for a loop-2-preheader copy that are confined to loop 2's own block - the exit test, the count load, the index expression - and measure each; s50's E1/E2 exit-test cells were measured on a DIFFERENT chassis (with the loop-1 restructure already applied) and so are not a kill for the BASE chassis."
+   "hypothesis": "The carrier-cost table shows the guard/base add collapse (worth roughly 2 points every time it fires) is triggered purely by cse knowing the carrier equals p inside the guard block; a carrier whose equality with p is NOT visible to cse in that block would keep the two independent adds and cut every slots-reuse cell by that amount.",
+   "mechanism": "In cell G the carrier is assigned `slots = p;` in the same block as the base add, so cse substitutes and the base add folds to a copy of the guard add's result. In the target the two adds are independent, which means the carrier's value reaches the base add without cse being able to prove it equals the guard's addend - the same situation loop 1 achieves by loading the memory a second time rather than copying a register.",
+   "next_probe": "Re-run the slots-reuse family with the carrier assigned from a second inline READ of *(u8 **)(ctx + 0xC) instead of from p (slots = *(u8 **)(ctx + 0xC); inside loop-2's guard) while keeping the post-loop reader, so cse folds the load to a copy but the guard block never established the memory equivalence; measure and diff the two adds."
   }
  ],
  "judge_constraints": [],
@@ -339,38 +345,6 @@
  "last_unpark_reason": "Newly VISIBLE completed siblings in the same TU (tombstone backfill, commit 0ddc72c8): func_80017D84 \u2014 already named by this ledger's own s45 object-model audit as the source of its 52-byte data model \u2014 plus func_80016E60 and main, all COMPLETED-C in src/ings.c and never read by this ledger. PROBE: read their on-main bodies and transplant their loop-2 preheader / copy-geometry spellings onto the f",
  "last_unpark_at": "2026-09-08T01:58:36.569292+00:00",
  "kills": [
-  {
-   "session": 34,
-   "statement": "The use_crosses_set_p escape (combine.c:914) measures 14 (Q1, both loops merging p and links) and 15 (Q2, loop 1 merging slots and links, loop 2 merging p and links) at 127/127 on the join chassis, ag",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the P0/P1/P2/P3/P4/Q1/Q2/R1 cell bodies, floor-3 chassis (BASE re-measured 3 at 127/127, K1 10 at 127/127, AK 14 at 127/127), no FAKE constructs anywhere in",
-   "predicate_cite": "",
-   "result": "Q1 = 14 at 127/127 - the complete 127-instruction stream with a pure register-permutation residual, reproducing AK's num"
-  },
-  {
-   "session": 35,
-   "statement": "Reusing the C variable p as the loop base pointer - the spelling that would give target's a0-for-both-roles allocation from a single pseudo, and that makes the base add set the copy's source register ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the A1/A2 cell bodies on the join (P4) chassis; floor-3 chassis re-audited this session (BASE 3, K1 10, P4 4); no FAKE constructs anywhere in the tree",
-   "predicate_cite": "",
-   "result": "A1 = 4 at 127/125 and A2 = 4 at 127/125, identical to P4 in both score and instruction count. A cell with no copy at all"
-  },
-  {
-   "session": 35,
-   "statement": "On the join chassis the preheader copy's carrier variable, that carrier's prior live range, and the position of the links read relative to the copy are all byte-neutral: three cells land on exactly P4",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the E1/E3/E4 cell bodies on the join (P4) chassis; floor-3 chassis re-audited this session; no FAKE constructs anywhere in the tree",
-   "predicate_cite": "",
-   "result": "E1 = E3 = E4 = 4 at 127/125, all identical to P4. With A1/A2 that is five consecutive cells at exactly P4's number."
-  },
-  {
-   "session": 35,
-   "statement": "Escape #1 re-priced on the join chassis as s34's frontier asked: a second use of the copy destination does buy an instruction there, but the instruction it buys is a copy emitted after the base add ra",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the B1/B2 cell bodies on the join (P4) chassis; floor-3 chassis re-audited this session; no FAKE constructs anywhere in the tree",
-   "predicate_cite": "",
-   "result": "B1 = 6 at 127/126, B2 = 7 at 127/126 - one instruction closer than P4 but worse in score. B1's diff shows loop 2 emittin"
-  },
   {
    "session": 35,
    "statement": "Escape #9 (combine.c:914) applied to one loop only costs 12 points whichever loop carries it, so the merge price is per-loop and symmetric and no one-sided merge avoids the seat penalty.",
@@ -818,8 +792,40 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s51/body_M10.c, body_M13.c and body_M14.c applied; BASE re-audited at 3 (127/127); no FAKE constructs",
    "predicate_cite": "",
    "result": "M10 = 24 at 127/127, M13 = 24 at 127/127, M14 (hoisted r sourced from the post-loop reload) = 16 at 124/127. Banked as r"
+  },
+  {
+   "session": 52,
+   "statement": "The three closest banked forms (s11_l1tail_fresh_read_loses_l1_copy_costs_4, s12_symmetric_fresh_reload_tail_costs_4, s12_symmetric_no_q_fresh_reload_tail_costs_4) still measure 4 at 126/127 on the HE",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with each rejected/*.c body applied; BASE re-audited at 3 (127/127) in the same session; fake_ablate reports no FAKE construct in any of these bodies",
+   "predicate_cite": "",
+   "result": "4 / 4 / 4, all at 126 build insns, identical to their banked values. The s11 residual is now pinned exactly: loop-2's GU"
+  },
+  {
+   "session": 52,
+   "statement": "Nineteen carrier spellings for loop-2's preheader copy each measure worse than BASE's 3 on the HEAD chassis, because the carrier has to be live on loop-2's skip path, which either seats it callee-save",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s52/body_{A,B,C,F,G,H,I,J1,J2,J3,J4,N1,N2,N3,N4,R}.c applied; BASE re-audited at 3 (127/127); no FAKE construct present in any body",
+   "predicate_cite": "",
+   "result": "F=17@126, G=22@127, H=26@124, I=26@127, J4=8@125, J2=17@123, J1=50@127, J3=50@126, A=14@125, B=21@124, C=38@128, N1=32@1"
+  },
+  {
+   "session": 52,
+   "statement": "Giving loop-2's copy destination its out-of-block reader inside the guarded region (the do-while exit test) rather than after loop 2 does not produce the pointer copy on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s52/body_T.c applied; BASE re-audited at 3 (127/127); no FAKE construct present",
+   "predicate_cite": "",
+   "result": "T = 7 at 126/127. Build emits a single collapsed add plus `addu a1,a0,zero` (a copy of the BASE); the target's lw a0,12("
+  },
+  {
+   "session": 52,
+   "statement": "None of the three newly-visible COMPLETED-C siblings in src/ings.c (func_80017D84, func_80016E60, main) carries a preheader-copy or two-loop copy geometry that transplants onto func_80017848.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c on main (commit 4a2d4a51), read-only sibling audit; BASE re-audited at 3 (127/127) in the same session",
+   "predicate_cite": "",
+   "result": "func_80017D84's only loop is a walking-pointer `for (i = 0; i < 8; i++) { ...; p += 0x34; }` with a break and a post-loo"
   }
  ],
  "escalation_deferrals": 0,
- "object_model_audited": 50
+ "object_model_audited": 52
 }

@@ -4725,3 +4725,71 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - probe: bash tmp/grind/func_80017848/s51/run.sh M7 + sandbox func_80017848 --disable all + normalised objdump diff against tmp/grind/func_80017848/s51/T.txt
 - result: M7 = 10 at 127/127 (M2 = 17 on the same chassis). Loop-1's preheader is byte-exact: `addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3`. This retires s50's frontier item 1 - the seat rotation was the lnk local, not the added q/r allocnos. Banked rejected/s51_M7_loop2_lnk_local_removed_seat_and_call_residual_costs_10.c.
 - verdict: CONFIRMED
+
+## [s52] The three closest banked forms (s11_l1tail_fresh_read, s12_symmetric_fresh_reload_tail, s12_symmetric_no_q_fresh_reload_tail) still measure 4 at 126/127 on the HEAD chassis with no FAKE construct present.
+- mechanism: mandated kill re-audit - an instance kill is only as good as the chassis and FAKE state it was measured under, and the chassis has moved through the M-branch work of s50/s51.
+- probe: applied each rejected body to src/ings.c:820 and ran sandbox func_80017848 --disable all; normalised objdump diff for the s11 form against tmp/grind/func_80017848/s52/T.txt
+- result: 4 / 4 / 4, all at 126 build insns, unchanged from their banked values. The s11 form's residual is now pinned: loop-2's GUARD block is byte-exact (`lw a0,12(s2)`), loop-2's preheader still emits a fresh `lw v0,12(s2)` where the target has the copy, and loop 1 loses its copy entirely (`addu a0,a1,a0`).
+- verdict: KILLED
+
+## [s52] Loop-2's missing preheader copy `addu a3,a0,zero` is emitted by ordinary C when the copy destination is a pointer local that is already live on loop-2's skip path and has a use after loop 2.
+- mechanism: the copy needs a reference to its destination in a block other than the preheader to survive combine (the same trichotomy loop 1 uses via its `p = q;` exit tail). A variable that is already defined before loop-2's guard can take the copy inside the guard without an else-arm definition, and its post-loop use supplies the out-of-block reference.
+- probe: cell G = BASE with `slots = p;` as the first statement inside loop-2's guard, `base = (u8 *)(sh2 + (s32)slots);`, and rec_a re-spelled `(u8 *)((slot_a << 6) + (s32)slots)`; sandbox + normalised objdump diff
+- result: build emits `addu s5,a0,zero` in loop-2's preheader at 127/127, score 22. This is the first form in 52 sessions in which loop-2's copy exists at all - the copy is reachable, and the residual is now a CARRIER-COST problem rather than a materialisation problem.
+- verdict: CONFIRMED
+
+## [s52] Nineteen carrier spellings for loop-2's preheader copy each measure worse than BASE on the HEAD chassis, because the carrier variable has to be live on loop-2's skip path, which either seats it callee-saved or collapses the guard and base adds.
+- mechanism: reusing an entry-live local (`slots`) gives the copy an out-of-block reader but makes cse aware that the carrier equals `p` inside the guard, so the guard add and base add fold into one add plus a copy; and the carrier's entry-to-rec_a live range forces a callee-saved seat with a new save/restore pair. Introducing a fresh local instead requires either a definition on the skip path (an extra insn) or a `p = r;` exit tail whose post-loop reader deletes one of the target's own reloads.
+- probe: 19 cells on the HEAD chassis, bodies in tmp/grind/func_80017848/s52/: F=17, G=22, H=26, I=26 (slots reuse); J4=8, J2=17, J1=50, J3=50 (fresh r + `p = r;` tail); A=14, B=21, C=38 (fresh read instead of a copy); N1=32, N2=17, N3=36, N4=33 (loop-2 guard given its own `p2` read on top of loop-1's tail); R=13 (fully symmetric, `q` reused, top-guard read feeding it)
+- result: best of the family is J4 = 8 at 125 insns; nothing approaches BASE's 3. Bodies banked as rejected/s52_*.c.
+- verdict: KILLED
+
+## [s52] Giving loop-2's copy destination its out-of-block reader inside the guarded region (the do-while exit test) rather than after loop 2 does not produce the pointer copy.
+- mechanism: the exit test `i < *(s32 *)(sh2 + (s32)r + 0x20)` is loop-invariant in `r`, so loop.c hoists `sh2 + r` back into the preheader where cse merges it with the guard add; the surviving out-of-block reference is then to the BASE, not to the pointer.
+- probe: cell T = BASE with `r = p;` in loop-2's preheader, `base = (u8 *)(sh2 + (s32)r);`, and the do-while condition re-spelled through r; sandbox + normalised objdump diff
+- result: T = 7 at 126/127. Build emits a single collapsed add and `addu a1,a0,zero` as a copy of the BASE; the target's `lw a0,12(s2)` / `addu a3,a0,zero` / `addu a0,a1,a3` triple is not reproduced. Banked rejected/s52_l2_exit_test_through_r_collapses_base_add_costs_7.c.
+- verdict: KILLED
+
+## [s52] The owner directive's sibling transplant is discharged negatively: none of the three newly-visible COMPLETED-C siblings in src/ings.c carries a preheader-copy or two-loop copy geometry that applies to func_80017848.
+- mechanism: the directive assumed the tombstone-backfilled siblings might hold the loop-2 preheader spelling this ledger is missing. Reading their on-main bodies settles what they actually contain.
+- probe: read src/ings.c:824-846 (func_80017D84), src/ings.c:436-565 (func_80016E60) and src/ings.c:576-685 (main) on main
+- result: func_80017D84's only loop is a walking-pointer `for (i = 0; i < 8; i++) { ...; p += 0x34; }` with a break and a post-loop read of `i` - the explicit-walking-pointer form already priced at 49 by s18's R3. func_80016E60 is a `while (1)` dispatch loop with no pointer preheader (its two FAKE constructs are a pointer-alias pass-through and a do-while(0) wrap, neither of which addresses a preheader copy). main has no analogous geometry. The siblings' positive contribution is object-model confirmation only: func_80017D84 sets `*(s32 *)(p + 0x10) = c + (*(s16 *)(p + 4) << 6)` with `c = *(s32 *)(a0 + 0x10)`, so ctx+0x10 is exactly ctx+0xC advanced past the 64-byte node records and ctx+6 is the link counter func_80017848 increments.
+- verdict: KILLED
+
+## [s52] The three closest banked forms (s11_l1tail_fresh_read_loses_l1_copy_costs_4, s12_symmetric_fresh_reload_tail_costs_4, s12_symmetric_no_q_fresh_reload_tail_costs_4) still measure 4 at 126/127 on the HEAD chassis with no FAKE construct present.
+- mechanism: Mandated kill re-audit: an instance kill is only as good as the chassis and FAKE state it was measured under, and the chassis moved through the M-branch work of s50/s51.
+- probe: Applied each rejected body to the src/ings.c:820 INCLUDE_ASM anchor and ran sandbox func_80017848 --disable all; normalised objdump diff of the s11 form against tmp/grind/func_80017848/s52/T.txt.
+- result: 4 / 4 / 4, all at 126 build insns, identical to their banked values. The s11 residual is now pinned exactly: loop-2's GUARD block is byte-exact (lw a0,12(s2)), loop-2's preheader still emits a fresh lw v0,12(s2) where the target has the copy, and loop 1 loses its copy entirely (addu a0,a1,a0). The kills are re-validated, not void.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each rejected/*.c body applied; BASE re-audited at 3 (127/127) in the same session; fake_ablate reports no FAKE construct in any of these bodies
+
+## [s52] Loop-2's missing preheader copy addu a3,a0,zero is emitted by ordinary C when the copy destination is a pointer local that is already live on loop-2's skip path and has a use after loop 2.
+- mechanism: The copy needs a reference to its destination in a block other than the preheader to survive combine - the same trichotomy loop 1 already uses via its `p = q;` exit tail. A variable defined before loop-2's guard can take the copy inside the guard without needing an else-arm definition, and its post-loop use supplies the out-of-block reference.
+- probe: Cell G = BASE with `slots = p;` as the first statement inside loop-2's guard, `base = (u8 *)(sh2 + (s32)slots);`, and rec_a re-spelled `(u8 *)((slot_a << 6) + (s32)slots)`; sandbox + normalised objdump diff (tmp/grind/func_80017848/s52/body_G.c).
+- result: Build emits `addu s5,a0,zero` in loop-2's preheader at 127/127, score 22. First form in 52 sessions in which loop-2's copy exists at all. The 22 points are entirely carrier cost: slots is live from function entry to rec_a so global.c seats it callee-saved (new save/restore pair, ra moves to 60(sp), s6 appears), and because cse knows slots == p inside the guard the guard add and base add collapse to `addu a1,v0,a0` + `addu a0,a1,zero` where the target emits two independent adds.
+- verdict: CONFIRMED
+
+## [s52] Nineteen carrier spellings for loop-2's preheader copy each measure worse than BASE's 3 on the HEAD chassis, because the carrier has to be live on loop-2's skip path, which either seats it callee-saved or collapses the guard and base adds.
+- mechanism: Reusing an entry-live local (slots) gives the copy an out-of-block reader but makes cse aware the carrier equals p inside the guard, folding the guard and base adds into one add plus a copy, and its long live range forces a callee-saved seat. A fresh local instead requires either a definition on the skip path (an extra insn) or a `p = r;` exit tail whose post-loop reader deletes one of the target's own reloads.
+- probe: 19 cells applied at src/ings.c:820 and scored with sandbox --disable all; bodies in tmp/grind/func_80017848/s52/: slots-reuse F/G/H/I, fresh-r-with-tail J1..J4, fresh-read A/B/C, own-p2-guard-read N1..N4, fully symmetric R.
+- result: F=17@126, G=22@127, H=26@124, I=26@127, J4=8@125, J2=17@123, J1=50@127, J3=50@126, A=14@125, B=21@124, C=38@128, N1=32@129, N2=17@126, N3=36@126, N4=33@124, R=13@124. Best of the family is J4 = 8; nothing approaches BASE's 3. Seven representative bodies banked as memory/grind/func_80017848/rejected/s52_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s52/body_{A,B,C,F,G,H,I,J1,J2,J3,J4,N1,N2,N3,N4,R}.c applied; BASE re-audited at 3 (127/127); no FAKE construct present in any body
+
+## [s52] Giving loop-2's copy destination its out-of-block reader inside the guarded region (the do-while exit test) rather than after loop 2 does not produce the pointer copy on this chassis.
+- mechanism: The exit test `i < *(s32 *)(sh2 + (s32)r + 0x20)` is loop-invariant in r, so loop.c hoists sh2 + r back into the preheader where cse merges it with the guard add; the surviving out-of-block reference is then to the BASE, not to the pointer.
+- probe: Cell T = BASE with `r = p;` in loop-2's preheader, `base = (u8 *)(sh2 + (s32)r);`, and the do-while condition re-spelled through r; sandbox + normalised objdump diff (tmp/grind/func_80017848/s52/body_T.c).
+- result: T = 7 at 126/127. Build emits a single collapsed add plus `addu a1,a0,zero` (a copy of the BASE); the target's lw a0,12(s2) / addu a3,a0,zero / addu a0,a1,a3 triple is not reproduced. Banked rejected/s52_l2_exit_test_through_r_collapses_base_add_costs_7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s52/body_T.c applied; BASE re-audited at 3 (127/127); no FAKE construct present
+
+## [s52] None of the three newly-visible COMPLETED-C siblings in src/ings.c (func_80017D84, func_80016E60, main) carries a preheader-copy or two-loop copy geometry that transplants onto func_80017848.
+- mechanism: The owner directive assumed the tombstone-backfilled siblings might hold the loop-2 preheader spelling this ledger is missing; reading their on-main bodies settles what they actually contain.
+- probe: Read src/ings.c:824-846 (func_80017D84), src/ings.c:436-565 (func_80016E60) and src/ings.c:576-685 (main) on main.
+- result: func_80017D84's only loop is a walking-pointer `for (i = 0; i < 8; i++) { ...; p += 0x34; }` with a break and a post-loop read of i - the explicit-walking-pointer form already priced at 49 by s18's R3. func_80016E60 is a while(1) dispatch loop with no pointer preheader (its two FAKE constructs are a pointer-alias pass-through and a do-while(0) wrap, neither addressing a preheader copy). main has no analogous geometry. Positive contribution is object-model confirmation only: func_80017D84 sets *(s32 *)(p + 0x10) = c + (*(s16 *)(p + 4) << 6) with c = *(s32 *)(a0 + 0x10), so ctx+0x10 is exactly ctx+0xC advanced past the 64-byte node records and ctx+6 is the link counter func_80017848 increments.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c on main (commit 4a2d4a51), read-only sibling audit; BASE re-audited at 3 (127/127) in the same session

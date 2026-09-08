@@ -1248,3 +1248,57 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  *    addend back to `base`, so cell C copies base after the add where target
  *    copies the record pointer before it (E-s49-4).
  */
+/* [s52 STRUCTURAL ADDENDUM - body unchanged, re-audited at 3 (127/127) on the
+ * HEAD chassis (anchor src/ings.c:820).]  s52 executed the mandated kill
+ * re-audit and then produced the FIRST POSITIVE MATERIALISATION of loop-2's
+ * missing preheader copy.
+ *
+ *  (1) KILL RE-AUDIT.  The three closest banked forms - s11_l1tail_fresh_read_
+ *      loses_l1_copy_costs_4, s12_symmetric_fresh_reload_tail_costs_4 and
+ *      s12_symmetric_no_q_fresh_reload_tail_costs_4 - all still measure exactly
+ *      4 at 126/127 on the HEAD chassis with no FAKE construct present.  The
+ *      s11 residual is now pinned precisely: loop-2's guard block is BYTE-EXACT
+ *      (`lw a0,12(s2)`) and loop 2's preheader still emits a fresh `lw v0,12(s2)`
+ *      instead of the copy, while loop 1 loses its copy entirely (`addu a0,a1,a0`).
+ *
+ *  (2) THE RESIDUAL IS A LOAD/COPY SWAP, NOT A MISSING INSTRUCTION.  At 127/127
+ *      BASE and target differ in exactly three insns and they are a transposition:
+ *      target puts `lw a0,12(s2)` in loop-2's GUARD block and `addu a3,a0,zero`
+ *      in loop-2's PREHEADER; BASE puts the copy (`addu a0,a3,zero`, i.e. the
+ *      loop-1 exit tail `p = q;`) in the guard block and the load
+ *      (`lw v0,12(s2)`) in the preheader, with the base add reading v0.
+ *
+ *  (3) WHY: THE cse EXTENDED-BLOCK BOUNDARY.  Loop 1 works because its guard
+ *      block LOADS ctx+0xC into `p`; the preheader's second inline read is then
+ *      the second reference to that memory in the same cse extended block and
+ *      cse rewrites it into a reg-reg copy.  Loop 2's guard block in BASE reads
+ *      through the register `p` and never touches the memory, so the preheader's
+ *      read is the FIRST reference in that EBB and stays a real load.  The guard
+ *      add is recomputed in both loops because its destination register is
+ *      clobbered by the following `lw`, which invalidates cse's equivalence for
+ *      the sum but not for the pointer.
+ *
+ *  (4) THE COPY IS REACHABLE.  Cell G - `slots` (the unconditional top-guard
+ *      local) reused as loop-2's base addend (`slots = p;` inside the guard) with
+ *      its second use at rec_a - emits `addu s5,a0,zero` in loop-2's preheader at
+ *      127/127.  This is the first form in 52 sessions in which loop-2's copy
+ *      exists at all.  It scores 22 because the carrier is live from function
+ *      entry: it is seated in the callee-saved s5, which adds a save/restore pair
+ *      and rotates the whole prologue, and because the guard add and base add
+ *      collapse (cse knows slots == p, so the second add is folded to a copy of
+ *      the first add's result).
+ *
+ *  (5) EVERY CARRIER MEASURED.  slots-reuse: F=17 (both call args), G=22 (rec_a),
+ *      H=26 (rec_a+rec_b), I=26 (call arg0).  Fresh `r` with a `p = r;` loop-2
+ *      exit tail: J4=8 (no post-loop use), J2=17 (call arg0), J1=50 (rec_a),
+ *      J3=50 (rec_a+rec_b).  Fresh READ instead of a copy: A=14, B=21, C=38.
+ *      Loop-2 guard given its own read `p2` on top of loop-1's tail: N1=32,
+ *      N2=17, N3=36, N4=33.  Fully symmetric with `q` reused and the top-guard
+ *      read feeding it: R=13.  Exit test through `r`: T=7.
+ *
+ *  (6) THE EXIT-TEST CARRIER IS DEAD.  T spells loop-2's do-while condition as
+ *      `i < *(s32 *)(sh2 + (s32)r + 0x20)` so that `r` has an out-of-block use
+ *      inside the guarded region.  It does NOT produce a pointer copy: cse
+ *      instead collapses the guard add and the base add and emits a copy of the
+ *      BASE (`addu a1,a0,zero`) at 126/127.
+ */
