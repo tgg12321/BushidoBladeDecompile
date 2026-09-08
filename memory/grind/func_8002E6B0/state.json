@@ -1,7 +1,7 @@
 {
  "func": "func_8002E6B0",
  "file": "code6cac_b",
- "session_count": 4,
+ "session_count": 5,
  "current_modality": "permuter",
  "floor_history": [
   {
@@ -27,23 +27,29 @@
    "floor": 34,
    "modality": "permuter",
    "headline": "Permuter dropped the floor 40 -> 34: a block-2 borrow of the existing cross_point local to stage dx buys the target's SIXTH callee-save (sw s5 / mflo s5); the residual is now two separable, individual"
+  },
+  {
+   "session": 5,
+   "floor": 26,
+   "modality": "permuter",
+   "headline": "Floor 34 -> 26: staging block 2's dz through the return carrier itself (with a ret=0 restore) holds the target's exact exit shape AND its sixth callee-save at the same time - s4's anti-correlation is "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An exit form exists that materialises the returned zero on the borrow (34) chassis WITHOUT introducing a long-lived ret pseudo, holding the target's exit shape and the sixth callee-save at the same time",
-   "mechanism": "the s5 save comes from block-1/2 pressure exhausting the caller-save set in global.c find_reg; a function-scope ret pseudo spans block 1 and absorbs exactly that pressure, which is why the composed body drops back to five callee-saves. A carrier whose live range does NOT span block 1 (a second borrow of cross_center or center_x at the exits, or a ret declared inside a do { } while (0) wrap) would supply the zero without the span.",
-   "next_probe": "cheap cc1-only screen first: run each candidate through tmp/grind/func_8002E6B0/s3/da.sh and check the .lreg/.greg dump for BOTH (i) a sixth callee-save in the allocation and (ii) the zero-set reaching the first bltz's delay slot; sandbox-measure only bodies showing both. Start from candidate.c (34) and from rejected/s4_retvar_plus_borrow_exit_exact_loses_s5_45.c."
+   "hypothesis": "The ret pseudo can be seated in $v0 rather than $v1, removing the trailing `move v0,v1` and collapsing the {v0,v1,a0,a1,a2} rename against the target",
+   "mechanism": "the 26 body's register MULTISET now matches the target (six callee-saves, s5 present) and the stream is 98 vs 96 insns, so the goal mapper that s1 reported unusable ('goal is not a topological order') should now be well-formed; the seat is a global.c find_reg ordering question, not a spelling question",
+   "next_probe": "tools/ra_solver/extract.py + inverse.py global --goal on the 26 body (memory/grind/func_8002E6B0/candidate.c), then inverse_compose.py classify, to type the ret seat REACHABLE or FORECLOSED before any further spelling. This supersedes the s4 frontier item that named the 34 body - run it on the 26 body."
   },
   {
-   "hypothesis": "The remaining block-1 seat permutation on the 34 chassis is typable by tools/ra_solver now that the register multiset matches the target",
-   "mechanism": "s1 reported the sched/RA goal mapper unusable ('goal is not a topological order') because our stream carried 37 renames and 20 moves versus the target - but that was measured when we had five callee-saves and no s5 product. The 34 body is 95 insns against the target's 96 in the permuter normalisation, with the same callee-save set.",
-   "next_probe": "tools/ra_solver/extract.py + inverse.py global --goal on the 34 body's block 1, targeting lw t5,8(a2) / mfhi t7 / mfhi a1, to type the seats REACHABLE or FORECLOSED before any further spelling; tools/sched_solver perturb.py --goal-from-target is worth re-running for the same reason."
+   "hypothesis": "A block-2 value other than dz, staged through ret, keeps the sixth callee-save while letting the returned zero survive block 2 with no restore insn",
+   "mechanism": "the restore exists only because our block 2 clobbers the carrier, whereas the target's $v0 holds 0 untouched across block 2; every spelling that simply DROPS the restore also drops the pressure and the s5 save (measured 45 four ways), so the carrier must be clobbered late enough that its restore merges into an insn the target already has - e.g. staged across the SECOND product only, or staging one of the subtraction operands rather than dz",
+   "next_probe": "enumerate the block-2 staging positions (each of the four subexpressions, each of the two products) as hand variants, screen them with tmp/grind/func_8002E6B0/s3/da.sh + the .lreg/.greg dump for a sixth callee-save AND a surviving zero before spending sandbox measurements, then measure only the survivors"
   },
   {
-   "hypothesis": "A permuter campaign on a structurally different chassis than the 34 body still has room",
-   "mechanism": "perm_c saturated the 34 basin (24,869 iterations, zero finds below base), but the ret-var + borrow 45 body is a structurally distinct chassis that has never been permuted, and it is the one carrying the correct exit shape",
-   "next_probe": "seed tmp/grind/func_8002E6B0/s4/mkws.sh on rejected/s4_retvar_plus_borrow_exit_exact_loses_s5_45.c and run one fresh-seed window; do NOT re-seed the 34 chassis - that is a spent probe on the record."
+   "hypothesis": "A permuter campaign seeded on one of the 26 TIES (a different statement geometry landing on the same object) finds what the 26 basin itself could not",
+   "mechanism": "perm_e saturated the 26 basin and produced only semantically-broken finds, but d2 / e1 / i2 are different source geometries with different permuter neighbourhoods; and the standing lesson on this function is that a broken find is a LEAD - both floor drops on record came from repairing one",
+   "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh on rejected/s5_dx_staged_restored_ties_26.c (or the d2/e1 ties in the s5 workspace) for one fresh-seed window; do NOT re-seed the 26 basin (perm_e) or the 34 basin (s4 perm_c) - both are spent probes on the record. Read every find's SEMANTICS and hand-repair it before scoring."
   }
  ],
  "judge_constraints": [],
@@ -136,6 +142,46 @@
    "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, v92/v93/v96/v91/q445 bodies, no FAKE constructs",
    "predicate_cite": "",
    "result": "40, 40, 44, 41 and 46 respectively; the two 40s are the v12 object. Ordinary statement-level spelling stays exhausted on"
+  },
+  {
+   "session": 5,
+   "statement": "Reusing an existing local (cross_center, cross_point, center_x, center_z) as the return carrier instead of declaring a fresh ret reaches the target's exit shape on the 34 borrow chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, a1/a2/a3/a4/a5 bodies on the s4 34 chassis, one variable-reuse borrow (cross_point = dx) present in each",
+   "predicate_cite": "",
+   "result": "34, 37, 50, 50 and 35. The cross_center version compiles to the IDENTICAL object as the plain 34 candidate - jump.c fold"
+  },
+  {
+   "session": 5,
+   "statement": "The ret-var chassis's five-callee-save allocation is pushed to six by borrowing some other local (block 3, blocks 2+3, or a second block-2 borrow staging dz through cross_center)",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, c1/c2/c3 bodies, one or two variable-reuse borrows present in each",
+   "predicate_cite": "",
+   "result": "45 / 93 insns in all three cases - the same allocation, still five callee-saves. On this chassis a borrow of a local OTH"
+  },
+  {
+   "session": 5,
+   "statement": "The ret = 0 restore that repairs the permuter's find can be spelled somewhere cheaper than an extra insn at the end of block 2",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, g1/g2/h1/h2 bodies, one variable-reuse borrow (the ret staging) present in each",
+   "predicate_cite": "",
+   "result": "45, 45, 45 and 58. Every spelling that removes the restore statement also removes the pressure and the sixth callee-save"
+  },
+  {
+   "session": 5,
+   "statement": "Declaring ret uninitialised and assigning the zero at the exits, so its live range does not span block 1, keeps the sixth callee-save while shortening the pseudo",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, f1/f2/b4 bodies, one variable-reuse borrow present in f1/f2 and none in b4",
+   "predicate_cite": "",
+   "result": "30 / 95 insns for both staged variants and 41 for the unstaged one. The 30 body has NO sw s5 and the wrong first exit (b"
+  },
+  {
+   "session": 5,
+   "statement": "The permuter improves on the repaired 26 body by further randomisation of that same chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the 26 body (e7/d2) with its single ret-staging borrow present, decomp-permuter with --stack-diffs",
+   "predicate_cite": "",
+   "result": "Best find 265, but every sub-base find is the same semantically-broken family the permuter already produced on the other"
   }
  ],
  "ladder_skip": 0,

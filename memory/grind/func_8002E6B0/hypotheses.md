@@ -228,3 +228,112 @@
 - probe: re-measured both banked bodies on HEAD this session (v12 = 40/93, the s3 exit-exact ret-var body = 45/93) and inspected them for FAKE constructs before running tools/fake_ablate.py
 - result: chassis unmoved, both scores reproduce exactly. fake_ablate is NOT APPLICABLE here: neither banked body contains a single FAKE construct (plain locals, plain arithmetic, plain returns), so no carrier occupied the contested pseudo and there is nothing to ablate. The s3 kill stands as measured - and s4's 34 body confirms its diagnosis from the other side, since the thing that finally moved the allocation was added register PRESSURE, not any ret-var spelling.
 - verdict: CONFIRMED
+
+## [s5] A permuter campaign on the ret-var + borrow (45) chassis - structurally distinct from the permuter-saturated 34 basin - still has room
+- mechanism: s4's perm_c saturated the 34 basin (24,869 iterations, zero finds below base), but the ret-var chassis carrying the target's exact exit shape had never been permuted WITH the borrow present; a basin yields early or not at all
+- probe: campaign `tmp/grind/func_8002E6B0/s5/perm_d`, seeded on `rejected/s4_retvar_plus_borrow_exit_exact_loses_s5_45.c` (base 630), harvested and stopped in-session
+- result: it yielded within minutes. `output-265-1` stages block 2's `dz` through the return carrier `ret` - semantically BROKEN as found (no restore, so the second early exit returns `dz`), measuring 25. Repaired with a `ret = 0;` restore at the end of block 2 it measures **26 / 96 insns**, dropping the floor from 34.
+- verdict: CONFIRMED
+
+## [s5] The target's exit structure and its sixth callee-save can be held simultaneously if the pressure carrier is the ret pseudo ITSELF rather than another local
+- mechanism: s4 measured the two halves as anti-correlated because the ret pseudo absorbed exactly the block-1/2 pressure that a cross_point borrow created. Staging a real block-2 value THROUGH the ret pseudo puts the pressure back on the pseudo that was consuming it, so global.c find_reg still exhausts the caller-save set and falls back to a sixth callee-save.
+- probe: sandbox --disable all on the repaired 26 body, then a -dz side-by-side against the assembled target (`tmp/grind/func_8002E6B0/s5/cmp2.sh e7_ret_stage_first_product_min`)
+- result: the 26 body carries BOTH halves - `move v0,zero` in the first bltz's delay slot, both bltz to the epilogue, no `j`, no orphan zero block, AND `sw s5,20(sp)` + `mflo s5`. s4's "anti-correlated" reading was an instance property of the carriers it tried, not of the chassis.
+- verdict: CONFIRMED
+
+## [s5] Reusing an EXISTING local as the return carrier (instead of declaring a fresh `ret`) reaches the target's exit shape on the 34 borrow chassis
+- mechanism: the s4 frontier proposed it explicitly - a carrier whose live range does not span block 1 would supply the returned zero without absorbing block-1 pressure
+- probe: sandbox --disable all on the 34 body with `cross_center`, `cross_point`, `center_x` and `center_z` each used as the carrier (`X = 0; goto end;` at both exits, `X = (cc ^ cp) >= 0; end: return X;`), plus a mixed-exit variant
+- result: 34 (identical object to the plain candidate - jump.c folds the carrier assignment back into a plain `return 0`), 37, 50, 50 and 35. None reaches the target's exit shape; the exit shape needs the top-initialised ret pseudo, which is what the s5 winner uses.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, a1/a2/a3/a4/a5 bodies on the s4 34 chassis, one variable-reuse borrow (cross_point = dx) present in each
+
+## [s5] The ret-var chassis's five-callee-save allocation can be pushed to six by borrowing some OTHER local (block 3, blocks 2+3, or a second block-2 borrow staging dz through cross_center)
+- mechanism: s4 had only tried the block-2 and blocks-1+2 placements of the cross_point borrow on the ret-var chassis; more borrows should mean more pressure
+- probe: sandbox --disable all on the 45 body with the borrow added to block 3, with the borrow ONLY in block 3, and with a second block-2 borrow staging `dz` through `cross_center`
+- result: 45 / 93 insns in all three cases - byte-for-byte the same allocation, still five callee-saves. On this chassis a borrow of a local OTHER than the ret pseudo is neutral; only staging through the ret pseudo itself moves the allocation.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, c1/c2/c3 bodies, one or two variable-reuse borrows present in each
+
+## [s5] The `ret = 0;` restore that repairs the permuter's find can be spelled somewhere cheaper than an extra insn at the end of block 2
+- mechanism: the restore costs a `move v1,zero` in the second bltz's delay slot, one of the two insns separating the 26 body from the target. Alternative spellings that keep the second exit returning 0 - put the zero inside the branch, spell the second exit as an inline `return 0;`, or send it to a separate `zero:` label - should be free if jump.c cross-jumps them.
+- probe: sandbox --disable all on the restore moved inside the second exit's branch, on the second exit spelled `return 0;` inline with no restore, on a separate `zero: return 0;` label with no restore, and on a live READ of `ret` in block 2 (`... + ret`) instead of the staging
+- result: 45, 45, 45 and 58. Every spelling that removes the restore statement also removes the pressure and the sixth callee-save with it; the restore is load-bearing, not incidental. The only 26-scoring alternative is the same restore hoisted one statement earlier (before the second `if`), which compiles to the identical object.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, g1/g2/h1/h2 bodies, one variable-reuse borrow (the ret staging) present in each
+
+## [s5] Declaring `ret` uninitialised and assigning the zero at the exits (so its live range does not span block 1) keeps the s5 save while shortening the pseudo
+- mechanism: the s4 frontier's leading idea - the target's `$v0` is set in the first bltz's delay slot, i.e. its live range begins AFTER block 1, so a carrier that does not span block 1 should match it more closely
+- probe: sandbox --disable all on the 26 body with `s32 ret;` uninitialised and `ret = 0;` at the first exit, both with the dz staging on both block-2 products and on the first product only; plus the same shape without any staging
+- result: 30 / 95 insns for both staged variants and 41 for the unstaged one. The 30 body has NO `sw s5` and the WRONG first exit (`bgez` + `j` + `move v1,zero`) - dropping the top initialisation costs both halves at once. The top-initialised `s32 ret = 0;` is required.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, f1/f2/b4 bodies, one variable-reuse borrow present in f1/f2 and none in b4
+
+## [s5] The permuter improves on the repaired 26 body by further randomisation of that same chassis
+- mechanism: campaign `perm_e` seeded on the repaired 26 body (base 365), fresh seeds, harvest+stop in-session
+- probe: 11,782 iterations / 444 s, 9 novel finds
+- result: best 265, but every sub-base find is the same semantically-broken family the permuter already produced on the other chassis - a dead `ret = 0;` moved ABOVE the staging (the second exit then returns dz), or `dx` clobbered by a staged `center_z - arg0[2]` before its later use. Repairing the dx shape by hand (recompute, or restore dx) measures 26 again, i.e. a tie, not an improvement. No legal improvement came out of this basin.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the 26 body (e7/d2) with its single ret-staging borrow present, decomp-permuter with --stack-diffs
+
+## Live frontier after s5 (ranked)
+1. **Get the ret pseudo into `$v0`.** The 26 body's largest remaining cost is that our carrier lands in `$v1`, forcing a trailing `move v0,v1` and renaming {v0,v1,a0,a1,a2} against the target throughout. The register MULTISET now matches the target and the insn stream is 98 vs 96, so `tools/ra_solver` (extract.py + inverse.py global --goal, then `inverse_compose.py classify`) can finally type this seat REACHABLE or FORECLOSED instead of it being guessed. This supersedes the s4 frontier-2 item - run it on the 26 body, not the 34 one.
+2. **Make the `ret = 0;` restore free.** It is the second of the two extra insns, and it exists only because our block 2 clobbers the carrier while the target's `$v0` is never touched across block 2. Every spelling that DROPS the restore also drops the sixth callee-save (measured: 45 four ways). The open question is whether a different block-2 value staged through `ret` - one whose last use lets the restore merge into an insn the target already has, or one staged only across the second product - keeps the pressure while letting the zero survive. Screen candidates cheaply with `tmp/grind/func_8002E6B0/s3/da.sh` + the .lreg/.greg dump for a sixth callee-save before spending sandbox measurements.
+3. **Permute a structurally different chassis again - the tie family, not the 26 basin.** perm_e saturated the 26 basin with nothing legal; do NOT re-seed it. The untried seeds are the 26 TIES (d2 with two borrows, e1 with ret declared first, i2 with `dx` additionally staged) - each is a different statement geometry that lands on the same object, so their permuter neighbourhoods differ. And note the standing lesson: on this function the permuter's best find has twice been semantically invalid, so read every find's semantics and try the REPAIR before discarding it - the s5 floor drop came entirely from repairing a broken find.
+
+## [s5] A permuter campaign on the ret-var + borrow (45) chassis - structurally distinct from the permuter-saturated 34 basin - still has room
+- mechanism: s4's perm_c saturated the 34 basin (24,869 iterations, zero finds below base), but the ret-var chassis that carries the target's exact exit shape had never been permuted with the borrow present; per permuter-directives a basin yields early or not at all
+- probe: campaign tmp/grind/func_8002E6B0/s5/perm_d seeded on rejected/s4_retvar_plus_borrow_exit_exact_loses_s5_45.c (base 630), harvested and stopped in-session
+- result: It yielded within minutes. output-265-1 stages block 2's dz through the return carrier ret, but is SEMANTICALLY BROKEN as found (no restore, so the second early exit would return dz instead of 0); that raw body measures 25/95. Adding a `ret = 0;` restore at the end of block 2 makes it correct and measures 26/96 - a floor drop from 34.
+- verdict: CONFIRMED
+
+## [s5] The target's exit structure and its sixth callee-save are held simultaneously when the pressure carrier is the ret pseudo itself rather than another local
+- mechanism: s4 measured the two halves as anti-correlated because the ret pseudo absorbed exactly the block-1/2 pressure a cross_point borrow created; staging a real block-2 value THROUGH the ret pseudo puts the pressure back on the pseudo that was consuming it, so global.c find_reg still exhausts the caller-save set and falls back to a sixth callee-save
+- probe: sandbox --disable all on the repaired 26 body, then a -dz side-by-side against the assembled target via tmp/grind/func_8002E6B0/s5/cmp2.sh e7_ret_stage_first_product_min
+- result: The 26 body carries both halves: `move v0,zero` in the first bltz's delay slot, BOTH bltz branching straight to the epilogue, no `j` and no orphan zero block, AND `sw s5,20(sp)` + `mflo s5`. s4's anti-correlation was a property of the carriers it tried, not of the chassis.
+- verdict: CONFIRMED
+
+## [s5] Reusing an existing local (cross_center, cross_point, center_x, center_z) as the return carrier instead of declaring a fresh ret reaches the target's exit shape on the 34 borrow chassis
+- mechanism: the s4 frontier proposed it explicitly - a carrier whose live range does not span block 1 would supply the returned zero without absorbing block-1 pressure
+- probe: sandbox --disable all on the 34 body with each of the four locals as the carrier (X = 0; goto end; at both exits, X = (cc ^ cp) >= 0; end: return X;), plus a mixed-exit variant
+- result: 34, 37, 50, 50 and 35. The cross_center version compiles to the IDENTICAL object as the plain 34 candidate - jump.c folds the carrier assignment back into a plain return 0 - and none of the four reaches the target's exit shape. The exit shape needs the top-initialised ret pseudo that the s5 winner uses.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, a1/a2/a3/a4/a5 bodies on the s4 34 chassis, one variable-reuse borrow (cross_point = dx) present in each
+
+## [s5] The ret-var chassis's five-callee-save allocation is pushed to six by borrowing some other local (block 3, blocks 2+3, or a second block-2 borrow staging dz through cross_center)
+- mechanism: s4 had only tried the block-2 and blocks-1+2 placements of the cross_point borrow on the ret-var chassis; more borrows should mean more register pressure
+- probe: sandbox --disable all on the 45 body with the borrow added to block 3, with the borrow only in block 3, and with a second block-2 borrow staging dz through cross_center
+- result: 45 / 93 insns in all three cases - the same allocation, still five callee-saves. On this chassis a borrow of a local OTHER than the ret pseudo is neutral; only staging through the ret pseudo itself moves the allocation.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, c1/c2/c3 bodies, one or two variable-reuse borrows present in each
+
+## [s5] The ret = 0 restore that repairs the permuter's find can be spelled somewhere cheaper than an extra insn at the end of block 2
+- mechanism: the restore costs a `move v1,zero` in the second bltz's delay slot, one of the two insns separating the 26 body from the target; alternative spellings that keep the second exit returning 0 (zero inside the branch, an inline `return 0;`, a separate `zero:` label) should be free if jump.c cross-jumps them
+- probe: sandbox --disable all on the restore moved inside the second exit's branch, the second exit spelled `return 0;` inline with no restore, a separate `zero: return 0;` label with no restore, and a live READ of ret in block 2 (`... + ret`) instead of the staging
+- result: 45, 45, 45 and 58. Every spelling that removes the restore statement also removes the pressure and the sixth callee-save with it, so the restore is load-bearing rather than incidental. The only 26-scoring alternative is the same restore hoisted one statement earlier (before the second if), which compiles to the identical object.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, g1/g2/h1/h2 bodies, one variable-reuse borrow (the ret staging) present in each
+
+## [s5] Declaring ret uninitialised and assigning the zero at the exits, so its live range does not span block 1, keeps the sixth callee-save while shortening the pseudo
+- mechanism: the s4 frontier's leading idea - the target's $v0 is set in the first bltz's delay slot, so its live range begins after block 1 and a carrier that does not span block 1 should match it more closely
+- probe: sandbox --disable all on the 26 body with `s32 ret;` uninitialised and `ret = 0;` at the first exit, with the dz staging on both block-2 products and on the first product only, plus the same shape with no staging at all
+- result: 30 / 95 insns for both staged variants and 41 for the unstaged one. The 30 body has NO sw s5 and the wrong first exit (bgez + j + move v1,zero) - dropping the top initialisation costs both halves at once, so the top-initialised `s32 ret = 0;` is required on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, f1/f2/b4 bodies, one variable-reuse borrow present in f1/f2 and none in b4
+
+## [s5] The permuter improves on the repaired 26 body by further randomisation of that same chassis
+- mechanism: decomp-permuter randomizer over the 26 base (permuter base score 365) with fresh seeds; a basin yields early or not at all
+- probe: campaign tmp/grind/func_8002E6B0/s5/perm_e, 11,782 iterations / 444 s, 9 novel finds, then harvest --stop
+- result: Best find 265, but every sub-base find is the same semantically-broken family the permuter already produced on the other chassis - a dead `ret = 0;` moved ABOVE the staging (so the second exit returns dz), or `dx` clobbered by a staged `center_z - arg0[2]` before its later use. Repairing the dx shape by hand (recomputing the expression, or restoring dx) measures 26 again, i.e. a tie. No legal improvement came out of this basin.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the 26 body (e7/d2) with its single ret-staging borrow present, decomp-permuter with --stack-diffs
