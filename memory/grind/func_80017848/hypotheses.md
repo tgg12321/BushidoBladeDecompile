@@ -4533,3 +4533,102 @@ re-audit: s30 cell B re-measured as R30B = 7 at 127/127 (ties s30).
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s49/body_C.c applied; BASE re-audited at 3 (127/127) in the same session; no FAKE constructs
+
+## s50 (2026-09-07, rederive)
+
+BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c:820 anchor).
+
+- **H-s50-1 (KILLED, instance).** Replacing the loop-1 exit-tail `p = q;` with a fresh
+  `p = *(u8 **)(ctx + 0xC);` makes the tail match the target's `lw a0,12(s2)` without
+  disturbing loop-1's preheader copy. Probe: cell F1. Result: **4 at 126/127** — the tail
+  matches exactly, but loop-1's copy is deleted (`addu a0,a1,a0`), because `p = q;` was
+  `q`'s only out-of-block reader. Measured on: HEAD src/ings.c:820 INCLUDE_ASM anchor with
+  tmp/grind/func_80017848/s50/body_F1.c applied; BASE re-audited at 3; no FAKE constructs
+  present in either form.
+
+- **H-s50-2 (KILLED, instance).** Rewriting each loop's exit test as
+  `while (i < *(s32 *)(sh + (s32)q + OFF));` gives `q` an in-loop out-of-block reader that
+  buys the preheader copy in BOTH loops at zero instruction cost. Probe: cells E1 (`q` a
+  re-read) and E2 (`q = p`). Result: E1 **10 at 128/127**, E2 **12 at 126/127**. Copies do
+  survive in both loops and residual (a) is won, but cse assigns the exit-test expression its
+  own pseudo, so the surviving copy runs base→temp instead of the target's pointer→base, and
+  E2 lets cse fold loop-2's base add into the guard add. Measured on: HEAD src/ings.c:820
+  anchor with s50/body_E1.c and s50/body_E2.c applied; BASE re-audited at 3; no FAKE
+  constructs.
+
+- **H-s50-3 (CONFIRMED).** The join between the two loops is a cse extended-basic-block
+  boundary (two predecessors), so two pointer pseudos that both hold `*(u8 **)(ctx + 0xC)`
+  are never proven equal there; giving loop-2's GUARD the reloaded `p` and loop-2's BASE ADD
+  a separately-carried `q` therefore reproduces the target's two unshared adds AND keeps
+  `q` live across loop 1, buying loop-1's preheader copy at a site the target pays for
+  anyway. Probe: cell M1. Result: **14 at 126/127** with loop-1's `addu a3,a0,zero` and the
+  loop-1 exit-tail `lw a0,12(s2)` both byte-matching; the only structural miss is loop-2's
+  own copy. This supersedes the s42/E-s42-4 attribution that loop-1's copy is bought
+  ENTIRELY by the `p = q;` read — it is bought by ANY out-of-block reader of `q`, and
+  loop-2's base add is a free one.
+
+- **H-s50-4 (CONFIRMED).** Chaining the same device a second time — a copy `r = q;` in
+  loop-2's preheader whose out-of-block reader is math_Distance3D's first argument —
+  produces the target's full instruction stream shape: both preheader copies plus the tail
+  reload, at 127/127. Probe: cell M2. Result: **17 at 127/127**; every remaining difference
+  is a register seat or a copy source (sh/lnk rotated to a2/a1; loop-2's copy sourced from
+  `q`/t0 instead of `p`/a3; the call's arg0 from `r` instead of the reload). This is the
+  first form in 50 sessions with no missing or extra instruction anywhere in the residual
+  region.
+
+- **H-s50-5 (KILLED, instance).** Sourcing loop-2's copy from the reloaded `p` (`r = p;`)
+  rather than from `q` moves the copy source to the target's register while keeping the
+  count. Probe: cell M3. Result: **16 at 126/127** — GCC drops the post-loop reload entirely
+  once `r` and `p` are the same value, losing an instruction. Measured on: HEAD
+  src/ings.c:820 anchor with s50/body_M3.c applied; BASE re-audited at 3; no FAKE constructs.
+
+- **H-s50-6 (KILLED, instance).** Emitting `r = q;` before the `lnk` load in loop-2's
+  preheader reproduces the target's `addu a3,a0,zero` / `lw a2,16(s2)` order. Probe: cell M4.
+  Result: **17 at 127/127**, score identical to M2 — sched reorders the copy/load pair
+  regardless of statement order, so source order is not the lever for that pair. Measured on:
+  HEAD src/ings.c:820 anchor with s50/body_M4.c applied; BASE re-audited at 3; no FAKE
+  constructs.
+
+## [s50] Replacing the loop-1 exit-tail `p = q;` with a fresh `p = *(u8 **)(ctx + 0xC);` makes that tail match the target's `lw a0,12(s2)` while loop-1's preheader copy still survives.
+- mechanism: `p = q;` is the only out-of-block reader of `q`; the ledger (E-s42-4) attributed loop-1's surviving copy to that read, so replacing it with a load should be free if some other reader keeps q live.
+- probe: Cell F1 = candidate.c with only that one statement changed; sandbox --disable all; normalised objdump diff against asm/funcs/func_80017848.s.
+- result: 4 at 126/127. The tail matches the target exactly, but loop-1's copy is deleted (`addu a0,a1,a0` replaces `addu a3,a0,zero` + `addu a0,a1,a3`). Proves the tail move and loop-1's copy are one single purchase on this chassis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s50/body_F1.c applied; BASE re-audited at 3 (127/127) this session; no FAKE constructs in the form
+
+## [s50] Rewriting each loop's exit test as `while (i < *(s32 *)(sh + (s32)q + OFF));` gives q an in-loop reader that buys the preheader copy in both loops at zero instruction cost.
+- mechanism: s44 established the copy destination must be live across its loop body; an exit test that cse can rewrite onto the already-computed base pointer should add that liveness for free.
+- probe: Cells E1 (q a re-read of ctx+0xC) and E2 (q = p), both with the loop-1 tail reload; sandbox --disable all; normalised diff.
+- result: E1 = 10 at 128/127, E2 = 12 at 126/127. Copies do survive in both loops and residual (a) is won, but cse gives the exit-test expression its own pseudo so the copy runs base->temp (`addu a1,a1,a0` / `addu a0,a1,zero`) instead of the target's pointer->base; E2 additionally lets cse fold loop-2's base add into the guard add.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s50/body_E1.c and body_E2.c applied; BASE re-audited at 3; no FAKE constructs in either form
+
+## [s50] The join between the two loops is a cse extended-basic-block boundary, so giving loop-2's guard the reloaded p and loop-2's base add a separately-carried q reproduces the target's two unshared adds and simultaneously buys loop-1's preheader copy at a site the target already pays for.
+- mechanism: The join block has two predecessors, so cse's value table is empty there and it never proves q == p; the guard's `sh2 + p` and the preheader's `sh2 + q` therefore stay two distinct adds (target: `addu v0,a1,a0` in the guard, `addu a0,a1,a3` in the preheader, never shared), and q's use in the preheader keeps it live across loop 1 without the tail move.
+- probe: Cell M1 = F1 plus `q = p;` seeded before the loop-1 guard, loop-1's preheader keeping `q = *(u8 **)(ctx + 0xC);`, and loop-2's base add reading q while its guard reads p; sandbox --disable all; normalised diff.
+- result: 14 at 126/127, with loop-1's preheader copy `addu a3,a0,zero` AND the loop-1 exit-tail `lw a0,12(s2)` both byte-matching the target. Only structural miss is loop-2's own copy. Supersedes E-s42-4: loop-1's copy is bought by any out-of-block reader of q, not specifically by `p = q;`.
+- verdict: CONFIRMED
+
+## [s50] Chaining the same device a second time - a copy `r = q;` in loop-2's preheader whose out-of-block reader is math_Distance3D's first argument - produces both preheader copies plus the tail reload at 127/127.
+- mechanism: Same cse-EBB-boundary liveness argument applied to loop 2; the post-loop call block is the only remaining free out-of-block reader, and moving one of its two operands onto r keeps the instruction count neutral.
+- probe: Cell M2; sandbox --disable all; normalised diff against s50/T.txt.
+- result: 17 at 127/127 - the first form in 50 sessions with no missing or extra instruction anywhere in the residual region. Every remaining difference is a register seat or a copy source: sh/lnk rotated to a2/a1 (target a1/a2), loop-2's copy sourced from q/t0 instead of p/a3, and the call's arg0 from r instead of the reload.
+- verdict: CONFIRMED
+
+## [s50] Sourcing loop-2's copy from the reloaded p (`r = p;`) instead of from q puts the copy source in the target's register while keeping the instruction count.
+- mechanism: Target emits `addu a3,a0,zero` where a0 is the reload, so the copy source should be p; if r and p carry the same pseudo value the copy should still survive because r is read after the loop.
+- probe: Cell M3 = M2 with `r = q;` -> `r = p;`; sandbox --disable all.
+- result: 16 at 126/127 - GCC drops the post-loop reload entirely once r and p carry the same value, losing an instruction.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s50/body_M3.c applied; BASE re-audited at 3; no FAKE constructs in the form
+
+## [s50] Emitting `r = q;` before the lnk load in loop-2's preheader reproduces the target's copy-then-`lw a2,16(s2)` order.
+- mechanism: Target's preheader order is `addu a3,a0,zero` / `lw a2,16(s2)` / `addu a0,a1,a3`; M2 emits the load first, so source statement order was the obvious lever.
+- probe: Cell M4 = M2 with the two statements swapped; sandbox --disable all.
+- result: 17 at 127/127, score identical to M2 - sched reorders the copy/load pair regardless of source order, so statement order is not the lever for that pair.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s50/body_M4.c applied; BASE re-audited at 3; no FAKE constructs in the form

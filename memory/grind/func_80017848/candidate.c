@@ -1,3 +1,28 @@
+/* [s50 REDERIVE NOTE - body unchanged, re-audited at 3 (127/127) on the HEAD
+ * chassis (anchor src/ings.c:820).]  THE 3-INSN STRUCTURAL RESIDUAL IS SOLVED
+ * ON A NEW CHASSIS.  The residual was pinned exactly this session (s50/T.txt vs
+ * s50/B_C.txt): (a) loop-1 exit tail `lw a0,12(s2)` vs this body's `addu
+ * a0,a3,zero` (from `p = q;`), (b)+(c) loop-2 preheader `addu a3,a0,zero` +
+ * `addu a0,a1,a3` vs this body's `lw v0,12(s2)` + `addu a0,a1,v0`.
+ * Cell F1 (this body with `p = q;` -> `p = *(u8 **)(ctx + 0xC);`) = 4 at 126:
+ * it WINS residual (a) outright and costs exactly loop-1's copy, proving the
+ * tail move and loop-1's copy are ONE purchase (q's only out-of-block reader).
+ * Cell M1 moves that purchase to a FREE site - `q` is seeded before the loop-1
+ * guard, re-read (cse -> copy) in loop-1's preheader, and consumed by loop-2's
+ * BASE ADD (an add the target emits anyway) while loop-2's GUARD reads the
+ * reloaded `p`; the join is a cse EBB boundary so the two same-valued pseudos
+ * are never merged.  M1 = 14 at 126 with loop-1's copy AND the tail reload both
+ * BYTE-MATCHING.  Cell M2 = M1 + a second copy `r = q;` in loop-2's preheader
+ * bought by using `r` as math_Distance3D's first argument: 17 at 127/127, the
+ * first form ever to carry BOTH preheader copies and the tail reload together.
+ * M2's whole remaining residual is REGISTER SEATS (sh<->lnk rotated to a2/a1
+ * instead of a1/a2; loop-2's copy sourced from q/t0 instead of p/a3), i.e. the
+ * closing question on this branch is an allocation question again - and M2 IS
+ * the chassis change the s47-s49 solver work said the RA axis needed.  Forms
+ * banked as rejected/s50_*.c; M2 is
+ * rejected/s50_STRUCTURALLY_EXACT_127of127_both_copies_seat_residual_costs_17.c.
+ * Details: evidence.md/hypotheses.md s50 sections.
+ */
 /* [s45 OBJECT-MODEL NOTE - body unchanged, still 3 at 127/127 on the HEAD chassis
  * (anchor src/ings.c:820).]  Owner-directed object-model audit banked as
  * evidence.md "OBJECT MODEL:" (s45).  This function references no global; its

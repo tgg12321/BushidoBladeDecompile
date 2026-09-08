@@ -5744,3 +5744,118 @@ the two arrays it owns, with the evidence sources the directive names.
 - [s49] The copy-survival device is now named and symmetric: a preheader copy survives combine when its destination carries an OUT-OF-BLOCK use. BASE already buys loop 1's copy that way through p = q; in the exit tail - which is exactly what costs residual (a) - and cell C buys loop 2's copy the same way at zero instruction cost.
 
 - [s49] The device copies whichever pseudo carries the out-of-block use. cse folds every in-loop use of the record-pointer local back to base, so in-loop readers yield a copy of base; every non-foldable reader of the record pointer lives after the loop nest and is substitutive (E-s48-3, 126 insns). Target's copy is of a pseudo (T.txt line 59 -> line 61) with no reader at all after the base add.
+
+## s50 (2026-09-07, rederive) — the 3-insn structural residual, pinned and then solved on a new chassis
+
+Chassis re-audit: `sandbox func_80017848 --disable all` with `candidate.c` applied at the
+`src/ings.c:820` INCLUDE_ASM anchor = **3** (127 target insns / 127 build insns, scorable).
+Unchanged from s42–s49.
+
+**E-s50-1 — the residual is exactly three instructions and they are ONE swap.**
+Normalised target-vs-build diff (`tmp/grind/func_80017848/s50/{T.txt,B_C.txt}`, produced by
+`s50/dis.sh` + `s50/norm.py`; norm.py's branch-target rule was fixed this session to map
+decimal objdump targets to LBL) shows the ONLY divergence is at the loop-1 exit tail and
+loop-2 preheader:
+
+| position | target | candidate.c |
+|---|---|---|
+| loop-1 exit tail | `lw a0,12(s2)` (reload of ctx+0xC) | `addu a0,a3,zero` (move, from `p = q;`) |
+| loop-2 preheader | `addu a3,a0,zero` (copy of p) | `lw v0,12(s2)` (fresh load) |
+| loop-2 preheader | `addu a0,a1,a3` | `addu a0,a1,v0` |
+
+Everything else — prologue, both guards, both loop bodies, the join geometry, the whole
+math_Distance3D/link/store tail — is byte-identical. The target's loop-1 and loop-2
+preheaders are literally the same five instructions modulo the record offset
+(`addu v1,zero,zero / addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3 / addu v0,a0,v1`),
+so the closing form must produce the SAME copy device twice.
+
+**E-s50-2 — residual (a) is independently winnable and costs exactly loop-1's copy (cell F1).**
+F1 = `candidate.c` with the loop-1 exit-tail `p = q;` replaced by `p = *(u8 **)(ctx + 0xC);`
+measures **4 at 126/127**. The tail becomes target's `lw a0,12(s2)` (exact), and loop-1's
+preheader copy disappears (`addu a0,a1,a0` in place of `addu a3,a0,zero` + `addu a0,a1,a3`).
+This is the first direct proof that the tail move and loop-1's copy are a SINGLE purchase:
+`p = q;` is `q`'s only out-of-block reader, and it is what keeps `q` live across loop 1.
+Banked `rejected/s50_tail_reload_only_loop1_copy_dies_costs_4.c`.
+
+**E-s50-3 — the loop exit test as the copy buyer (cells E1/E2) produces copies but in the
+wrong direction.** E1 (both loops: `q = *(u8**)(ctx+0xC)` in the preheader + exit test
+rewritten to `while (i < *(s32 *)(sh + (s32)q + OFF));` + tail reload) = **10 at 128/127**;
+E2 (same with `q = p;`) = **12 at 126/127**. E1 confirms the device does keep a use-once
+preheader copy alive in BOTH loops and wins residual (a), but cse gives the exit-test
+expression its OWN pseudo and the surviving copy runs base→temp (`addu a1,a1,a0` /
+`addu a0,a1,zero`, exit test on the copy) instead of target's pointer→base
+(`addu a3,a0,zero` / `addu a0,a1,a3`, exit test on base). E2 additionally lets cse fold
+loop-2's base add into the guard add (`addu a0,v0,a0` in the guard block), collapsing the
+preheader to a bare copy.
+
+**E-s50-4 — THE NEW MECHANISM (cell M1): the join is a cse EBB boundary, so two same-valued
+pointer pseudos can coexist there, and loop-2's base add is a FREE out-of-block reader for
+loop-1's copy.** M1 = F1 plus (i) `q = p;` seeded before the loop-1 guard so `q` is defined on
+the skip path, (ii) loop-1's preheader keeps `q = *(u8 **)(ctx + 0xC);` (cse turns it into the
+copy), (iii) loop-2's GUARD reads the reloaded `p` while loop-2's BASE ADD reads `q`.
+M1 measures **14 at 126/127** and, critically, **loop-1's preheader copy `addu a3,a0,zero`
+and the loop-1 exit-tail `lw a0,12(s2)` BOTH byte-match the target**. The only structural
+miss is loop-2's own copy (126 vs 127 insns); the rest of the 14 points is a seat rotation
+(sh lands in a2 and lnk in a1, target has a1/a2). The mechanism is that the join block has
+two predecessors, so cse's value table is empty there and it never proves `q == p`; the
+guard's `sh2 + p` and the preheader's `sh2 + q` therefore stay two distinct adds — which is
+exactly the target's shape (`addu v0,a1,a0` in the guard, `addu a0,a1,a3` in the preheader,
+never shared). Banked `rejected/s50_q_carried_across_join_loop2_base_from_q_costs_14.c`;
+the q-undefined-on-skip-path variant M1c = 12 at 126 (`q` seats in t0),
+`rejected/s50_q_undefined_on_skip_path_variant_costs_12.c`.
+
+**E-s50-5 — cell M2 is the first form that carries BOTH preheader copies and the tail reload
+at 127/127.** M2 = M1 plus a second copy `r = q;` in loop-2's preheader, with `base` built
+from `r` and `r` re-used as math_Distance3D's first argument (the free out-of-block reader
+that buys loop-2's copy, paid for by dropping one of the two uses of the post-loop reload).
+M2 measures **17 at 127/127**. Its emitted geometry:
+
+    loop1: addu a3,a0,zero / lw a1,16(s2) / addu a0,a2,a3      (target: a3,a0 / lw a2 / a0,a1,a3)
+    tail:  lw a0,12(s2)                                        (target: identical)
+    loop2: lw a1,16(s2) / addu t0,a3,zero / addu a0,a2,t0       (target: addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3)
+    call:  sll s0 / sll s1 / lw a1,12(s2) / addu a0,t0,s0       (target: sll s0 / lw a1,12(s2) / sll s1 / addu a0,a1,s0)
+
+Every remaining difference is a REGISTER SEAT or a copy SOURCE, not a missing/extra
+instruction: (1) sh and lnk are rotated (a2/a1 instead of a1/a2), (2) loop-2's copy is
+sourced from `q`/t0 rather than `p`/a3, (3) the call's first argument comes from `r` rather
+than the reload. Banked
+`rejected/s50_STRUCTURALLY_EXACT_127of127_both_copies_seat_residual_costs_17.c`.
+
+**E-s50-6 — the M2 sub-cells that lose the count.** M3 = M2 with loop-2's copy sourced from
+`p` instead of `q` (`r = p;`) = **16 at 126/127** — sourcing from the reload lets GCC drop the
+post-loop reload entirely. M4 = M2 with `r = q;` moved BEFORE the `lnk` load (to chase the
+target's copy-then-`lw a2` order) = **17 at 127/127**, byte-identical score to M2: sched
+reorders the pair regardless, so statement order is not the lever for that pair.
+Banked `rejected/s50_loop2_copy_from_p_drops_call_reload_costs_16.c` and
+`rejected/s50_M2_copy_before_lnk_load_sched_reorders_costs_17.c`.
+
+**E-s50-7 — owner directive (completed in-TU siblings) executed.** Read the on-main bodies of
+`func_80017D84` (src/ings.c:824-843), `func_80016E60` (src/ings.c:436+) and `main`
+(src/ings.c:576+). Transplantable spellings found and used this session: `main`'s
+read-a-local-before-any-assignment idiom (`func_80016A8C(..., env, idx)` with `env`/`idx`
+never assigned) is the precedent for cell M1c's skip-path-undefined `q`; `func_80017D84`
+confirms the 52-byte object model already banked at s45 (s16 count at +6, `c` at +0xC,
+`c + (count << 6)` at +0x10) and uses a pointer-increment `for` with a `break` rather than an
+indexed loop — that geometry does NOT fit this function (the target recomputes `base + i`
+in the branch delay slot every iteration, which the indexed form already reproduces exactly).
+`func_80016E60` contributes only FAKE-annotated do-while(0)/pointer-alias levers, both of
+which s43 already measured on this function (X1/X2/X3/X4, all 6 or 10). No further
+transplant surface in the TU.
+
+- [s50] BASE re-audit: candidate.c at the src/ings.c:820 anchor measures 3 at 127/127 on the HEAD chassis, unchanged from s42-s49.
+
+- [s50] The 3-insn residual is now pinned exactly (s50/T.txt vs s50/B_C.txt): loop-1 exit tail target `lw a0,12(s2)` vs build `addu a0,a3,zero`; loop-2 preheader target `addu a3,a0,zero` + `addu a0,a1,a3` vs build `lw v0,12(s2)` + `addu a0,a1,v0`. Nothing else in the function differs.
+
+- [s50] The target's loop-1 and loop-2 preheaders are the SAME five instructions modulo the record offset (`addu v1,zero,zero / addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3 / addu v0,a0,v1`), so the closing form must produce the same copy device twice.
+
+- [s50] F1 (tail reload only) = 4 at 126: wins residual (a) outright and costs exactly loop-1's copy - the tail move and loop-1's copy are one purchase.
+
+- [s50] M1 (q carried across the cse EBB join, loop-2 guard on p / base on q) = 14 at 126, with loop-1's copy and the loop-1 exit-tail reload BOTH byte-matching the target.
+
+- [s50] M2 (M1 + `r = q;` in loop-2's preheader read by math_Distance3D's first argument) = 17 at 127/127 - both preheader copies and the tail reload present simultaneously for the first time; the entire remaining residual is register seats plus two copy sources.
+
+- [s50] The seat rotation in M1/M2 is sh in a2 and lnk in a1 where the target has a1/a2; BASE already seats sh in a1, so the rotation is caused by the added q/r allocnos, not by the loop bodies.
+
+- [s50] Owner directive executed: the three completed in-TU siblings were read on main. func_80017D84 (src/ings.c:824-843) confirms the s45 52-byte object model and uses a pointer-increment for-with-break geometry that does NOT fit this target (which recomputes `base + i` in the branch delay slot each iteration). main (src/ings.c:576) supplies the read-a-never-assigned-local idiom used by cell M1c. func_80016E60 (src/ings.c:436) contributes only FAKE do-while(0) / pointer-alias levers, all already measured on this function at s43 (X1-X4 = 6 or 10). No further transplant surface in the TU.
+
+- [s50] tools/grinder/dump.ps1 was not needed this session: the pass attribution (cse EBB boundary at the join) was established directly from the emitted stream, where the target's guard add and preheader add of the same value are provably unshared.
