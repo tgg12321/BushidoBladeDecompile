@@ -58,6 +58,17 @@
  * 9).  Anything that wins must add a reference, a quantity or a surviving copy that the
  * final 202 instructions do not show.  Details in hypotheses.md [s7].
  *
+ * [s8 forensics] Re-measured 2/202 on HEAD a91a7f44; body unchanged.  Both halves of
+ * residual A are now class-typed.  sched1: the six difference subus all have INSN_PRIORITY 1
+ * (empty in-block LOG_LINKS) and both ready-list candidates are class-3 data predecessors of
+ * the dx*az mult, so rank_for_schedule (sched.c:2408) decides purely on INSN_LUID -- statement
+ * order is the ONLY C-side input, and because the scheduler is BACKWARD the order that emits
+ * dx first is the h1 order, which is exactly the order that ties dz/dx in local_alloc.  The
+ * escape has to be a local-alloc-time artifact absent from the final 202, and s8 closed two of
+ * its three spellings: a self-assign emits no RTL at all, and an in-block double-def carrier is
+ * deleted by cse (cse.c:1032) -- verified in the t1 dump, where the carrier copies vanish at
+ * .cse while this body's own `m` copies survive into .lreg.  Details in hypotheses.md [s8].
+ *
  * The three cop2 blocks are the owner-authorized canonical LZCS/LZCR + mvmva idiom
  * (.claude/rules/cop2-addressing-preamble-cluster.md).
  *

@@ -629,3 +629,139 @@ any probe that can also make the carrier multiply-defined.
 - [s7] Every single-def copy carrier (dx2 = dx, dz2 = dz, five placements) is byte-neutral because cse.c make_regs_eqv folds it before local-alloc runs -- the same mechanism s5 documented for residual B, and the reason the combine_regs route needs a multiply-defined carrier.
 
 - [s7] Free chassis moves banked: fresh test-3 cross-product locals are byte-neutral on both statement orders (p1 = 9 = p7, p6 = 2 = the candidate), and so is a single-def copy of dz or dx.
+
+## [s8] forensics -- the block-7 decision points, read off the instrumented cc1 dumps
+
+Chassis re-measured at dispatch: the s5 candidate body spliced into src/code6cac_b.c scores
+**2 / 202** on HEAD a91a7f44 (`sandbox func_8002D780 --disable all`, build_insns 202 ==
+target_insns 202). The ledger floor of 2 is intact and every s8 measurement below is relative
+to it.
+
+### The exact two instructions, and the exact two decisions behind them
+
+Target block 7 (test 3) is asm/funcs/func_8002D780.s L103-L123, with the operand map recovered
+from the four subus: `$t1` = x0, `$a3` = z0, `$t2` = cx, `$a2` = cz, `$t3` = px, `$t4` = pz,
+`$t5` = x2, `$t0` = z2. The block emits
+
+    103 subu $v0,$t2,$t1   ax = cx - x0   (in the test-2 bltz delay slot, stolen by reorg)
+    104 subu $a0,$t0,$a3   dz = z2 - z0
+    105 mult $a0,$v0       dz * ax
+    107 subu $v1,$t5,$t1   dx = x2 - x0
+    108 subu $v0,$a2,$a3   az = cz - z0
+    109 mult $v1,$v0       dx * az
+    111 subu $v0,$t3,$t1   bx = px - x0
+    113 mult $a0,$v0       dz * bx
+    115 subu $v0,$t4,$a3   bz = pz - z0
+    117 mult $v1,$v0       dx * bz
+
+Our 2-floor body emits the identical multiset with insn 182 (`az`) and insn 194 (`dx`) swapped.
+The RTL for our block is in tmp/grind/func_8002D780/s8/sched_fn.txt: pseudos 129=ax, 130=az,
+131=bx, 132=bz, 133=dz, 134=dx, scheduled 179,191,197,182,194,199,185,204,188,206,201,208,210,212.
+
+Two independent decisions produce the swap, and s7 + s8 have now typed both:
+
+**(1) sched1 ready-list pick.** The scheduler is BACKWARD, so the insn rank_for_schedule
+*prefers* is emitted LATER. At the decision that matters, last_scheduled_insn is the `dx*az`
+mult (our insn 199) and the ready pair is {182 az, 194 dx}. Both have INSN_PRIORITY 1 -- every
+one of the six difference subus reads both operands from an earlier basic block, so LOG_LINKS
+is `(nil)` for all six and priority() (sched.c:1434, a DEPTH function over predecessors) floors
+at 1. Both are data predecessors of 199 with insn_cost 1, so both classify 3
+(sched.c:2429). The comparator therefore reaches `INSN_LUID (tmp) - INSN_LUID (tmp2)` and the
+higher-LUID insn wins the pick. Our statement order puts dx last, so dx is preferred and lands
+after az; the target needs az preferred, i.e. dx's STATEMENT before az's -- the h1 order.
+
+**(2) local_alloc qty_compare_1.** On the candidate order the resulting stream gives dz 3 refs
+over 7 insns and dx 3 refs over 6, so dx wins the priority sort, is allocated first and takes
+`$v1` -- the target's seats, which is why the candidate scores 2 and its only defect is the
+order. On the h1 order the stream IS the target's, and there both quantities are born 2 insns
+apart with identical 3-ref / 6-span profiles, so the comparator ties and local-alloc.c:1684's
+qty-number fallback hands `$v1` to dz (s7's class kill; h1 scores 9).
+
+Residual A is therefore a genuine two-sided constraint: statement order is the ONLY C-side
+input to (1), and the order that wins (1) is exactly the order that loses (2).
+
+### What s8 eliminated
+
+* **s6's frontier item 1 had the direction inverted.** It proposed raising *dx's* INSN_PRIORITY.
+  Because the list scheduler is backward, a higher-priority insn is emitted LATER, so raising
+  dx would move dx further from the target. It is *az* whose priority would have to rise, and
+  az is precisely the one with no in-block operand: raising it needs an in-block producer with
+  result_ready_cost 2 (a load), and every one of the six operands is also read by test 1 or
+  test 2, so its load is hoisted out of block 7 by construction. Both the priority axis and the
+  class axis of rank_for_schedule are therefore closed on this block shape (class-killed,
+  sched.c:2408; the anti/output half was already closed in s6 by mips.h:2946).
+
+* **Self-assign is not a lever in this compiler.** `dx = dx;` produces NO RTL insn at all --
+  copyscan.py finds zero `(set (reg N) (reg N))` patterns in `.rtl`, let alone in `.cse` or
+  `.lreg`. All ten batch-S variants are byte-neutral (9 on h1, 2 on the candidate order, 202
+  insns each). This is the sharp distinction from s5's `m = dist;`, which is a copy between two
+  DIFFERENT variables and does emit an insn.
+
+* **An in-block double-def carrier does not survive cse.** Batch T built a block-local `c`
+  initialised from one difference local and re-assigned from another, in nine placements; every
+  one is byte-neutral at 202. The t1 dump is the proof: its two copies, `(insn 197 (set (reg
+  135) (reg 132)))` and `(insn 200 (set (reg 135) (reg 131)))`, are present in `.rtl` and
+  `.jump` and gone from `.cse` onward, while in the SAME dump the s5 `m` copies (insns 264/274,
+  `(set (reg 155) (reg 143))`) survive into `.lreg`. The discriminating condition is not the
+  number of definitions but whether they share a basic block: cse's per-block value table
+  (insert_regs -> make_regs_eqv, cse.c:1032) deletes the first copy as a dead store and folds
+  the second as a single-def copy. Block 7 has no internal control flow, so no carrier confined
+  to it can reach local_alloc.
+
+* **Borrowing test 2's `kp` to manufacture the cross-block second definition costs more than
+  the residual.** Batch R measured 16 on h1 and 13 on the candidate order (202 insns each),
+  with the single-def control r5 = 9 isolating the entire cost to the change in test 2's own
+  codegen. The copies themselves DO vanish by final output, which confirms the second half of
+  the surviving-copy route works; only the manufacture of the second definition is unaffordable
+  in this spelling.
+
+### The paradox this leaves, stated precisely for s9
+
+A carrier that survives cse must have a definition in another basic block. A carrier that can
+lend dx a reference (combine_regs) must be block-7-local, because block_alloc skips any pseudo
+referenced in more than one block. Those two requirements are mutually exclusive, so the
+reference-count route into qty_compare_1 is closed. The SPAN route is not: a cross-block
+carrier's copy insn is still a real insn inside block 7 at local_alloc time, and one placed
+between dz's definition and dx's definition lengthens dz's live range to 7 while leaving dx's
+at 6, breaking the tie in dx's favour without touching either reference count. That is the
+first frontier item, and it must be verified in `.lreg` (copy present, correctly placed, dz
+span 7 vs dx span 6) before it is scored.
+
+### Incidental trap for future generators
+
+Splicing a statement between two declarations violates C89 declaration order and silently
+produces a wrong-sized body rather than a hard error at the sandbox level (batch S variant s2 =
+182 insns, batch R variant r7 = 184 insns). Every generated variant for this function must keep
+all declarations at the head of their block.
+
+### Artifacts
+
+    tmp/grind/func_8002D780/s8/sched_fn.txt              block-7 RTL slice of the 2-floor body
+    tmp/grind/func_8002D780/s8/copyscan.py               pass-by-pass reg-reg-copy survival scan
+    tmp/grind/func_8002D780/s8/t1_rtl_slice.txt          t1 .rtl slice  (copies 197/200 present)
+    tmp/grind/func_8002D780/s8/t1_jump_slice.txt         t1 .jump slice (copies still present)
+    tmp/grind/func_8002D780/s8/t1_cse_slice.txt          t1 .cse slice  (copies gone)
+    tmp/grind/func_8002D780/s8/t1_lreg_slice.txt         t1 .lreg slice (only the `m` copies left)
+    tmp/grind/func_8002D780/s8/gen_r.py + variantsR/     batch R (8 variants)
+    tmp/grind/func_8002D780/s8/gen_s.py + variantsS/     batch S (10 variants)
+    tmp/grind/func_8002D780/s8/gen_t.py + variantsT/     batch T (9 variants)
+
+- [s8] Chassis check: the s5 candidate body spliced into src/code6cac_b.c scores 2/202 on HEAD a91a7f44 (build_insns == target_insns == 202); the ledger floor of 2 is intact and every s8 number is relative to it.
+
+- [s8] Target block 7 operand map, recovered from the four subus at asm/funcs/func_8002D780.s L103-L123: $t1 = x0, $a3 = z0, $t2 = cx, $a2 = cz, $t3 = px, $t4 = pz, $t5 = x2, $t0 = z2; dz lands in $a0 and dx in $v1, and the two differing instructions are the target's L107 (subu $v1,$t5,$t1 = dx) and L108 (subu $v0,$a2,$a3 = az), which our body emits in the opposite order.
+
+- [s8] Our block-7 RTL (tmp/grind/func_8002D780/s8/sched_fn.txt): pseudos 129=ax, 130=az, 131=bx, 132=bz, 133=dz, 134=dx; scheduled 179,191,197,182,194,199,185,204,188,206,201,208,210,212; every one of the six difference subus carries `(nil)` LOG_LINKS, which is the datum behind the uniform INSN_PRIORITY of 1.
+
+- [s8] GCC 2.7.2's sched.c list scheduler is BACKWARD, so the insn rank_for_schedule prefers is emitted LATER -- this inverts the direction of the s6 frontier's proposed priority lever, which named dx when the insn that would have to gain priority is az.
+
+- [s8] jump_optimize is passed noop_moves == 1 at exactly one call site, toplev.c:3142 (jump2, after reload); no-op moves are therefore NOT removed before local_alloc, which keeps the surviving-copy route mechanically viable and is confirmed by every batch R/S/T carrier variant staying at 202 insns.
+
+- [s8] `x = x` on a plain register local produces no RTL insn whatsoever in GCC 2.7.2 -- copyscan.py finds zero `(set (reg N) (reg N))` patterns in the .rtl dump of a body that contains one, so a self-assign cannot be a reference-count lever regardless of where it is placed.
+
+- [s8] cse deletes a reg-reg copy whose definitions all sit in the same basic block (t1's insns 197 and 200 are present in .rtl and .jump, gone from .cse onward) while leaving a copy whose second definition is in a conditional arm (this body's own `m` copies 264/274 survive into .lreg in that same dump) -- the s5 `m` mechanism depends on the cross-block join, not merely on the definition count.
+
+- [s8] The two requirements for a local-alloc-time artifact that lends dx a reference are mutually exclusive: surviving cse needs a definition in another basic block, and being eligible for combine_regs needs the pseudo to be referenced in only one block. The reference-count route into qty_compare_1 is therefore closed; the live-span route (an extra insn between dz's and dx's definitions, lengthening dz's range to 7 while dx's stays 6) is not.
+
+- [s8] Splicing a statement between two declarations is a C89 declaration-order violation that silently yields a wrong-sized body rather than a hard failure at the sandbox level (batch S s2 = 182 insns, batch R r7 = 184 insns); every generated variant for this function must keep all declarations at the head of their block.
+
+- [s8] 27 variants measured this session across three batches; not one moved the floor, and the best form remains the unchanged s5 candidate at 2/202.

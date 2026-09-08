@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 2,
    "modality": "solver",
    "headline": "Solver typed both halves of the last 2 insns: sched is solvable (180/720 statement orders reach the target's emission order) but on that order local-alloc sees dz and dx tied on every qty_compare_1 in"
+  },
+  {
+   "session": 8,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics closed the sched1 side of residual A as a class kill (LUID is the only C-side input) and killed two of the three spellings of the local-alloc-time artifact the target needs: a self-assign em"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The original compile presented local-alloc with an extra reference, quantity or copy in block 7 that the final 202 instructions do not show, and the surviving-copy route is the one still open.",
-   "mechanism": "Only reload/flow2 delete_noop_moves, reorg's delay-slot steal and jump2 cross-jumping remove instructions after local_alloc. The delay-slot route is already spoken for (the ax subu fills the test-2 bltz slot), so the no-op-move route is the candidate: a copy that survives to local-alloc merges its qty with dx's via combine_regs (n_refs 3 -> 5, clear of dz) and then vanishes when both pseudos land in the same hard register.",
-   "next_probe": "s7 measured the blocker exactly -- cse folds every SINGLE-DEF copy. Give the copy carrier a second definition the way s5's `m` carrier gets one: hoist the test-3 difference computation so the carrier is assigned in the enclosing test-2 arm and re-assigned inside the test-3 block, then read tmp/grind/func_8002D780/dumps/code6cac_b.cse and .lreg to confirm the copy insn survives into local-alloc BEFORE scoring anything. Keep build_insns at 202."
+   "hypothesis": "A cross-block (m-shaped) copy carrier whose copy insn lands between dz's definition and dx's definition breaks the qty_compare_1 tie by LIVE SPAN rather than by reference count -- dz's range grows from 6 to 7 while dx's stays 6 -- and is then deleted by jump2's delete_noop_moves, keeping build_insns at 202.",
+   "mechanism": "s8 closed the reference-count route (a carrier cannot be both cross-block enough to survive cse and single-block enough for combine_regs), but the copy insn itself is still a real insn inside block 7 at local_alloc time and does not need a quantity of its own to shift dz's death index. jump_optimize's noop_moves pass runs only at toplev.c:3142, after local_alloc, so a copy whose two pseudos land in the same hard register disappears from the final stream.",
+   "next_probe": "Take the h1 body, add an m-shaped carrier (declared before the test-2 arm, assigned once inside the test-2 arm, re-assigned inside test 3 from a block-7 value that dies at the copy), and BEFORE scoring read tmp/grind/func_8002D780/dumps/code6cac_b.lreg to confirm (i) the copy insn is present in block 7, (ii) it sits between the dz subu and the dx subu in the scheduled stream, and (iii) dz's `used K times across M insns` line reports 7 where dx's reports 6. Only then score it, and check build_insns stays 202."
   },
   {
-   "hypothesis": "The extra_qty vector ('one more temp: refs=2 span=[2,4) pri=10000') flips the seats without touching dz's or dx's own comparator columns.",
-   "mechanism": "It is the only 1-atom vector in the inverse.py report that leaves both tied quantities untouched: an additional short-lived quantity born at the top of block 7 changes what find_free_reg has already handed out by the time the tied pair is reached, so dz can be pushed off $v1 without changing its priority.",
-   "next_probe": "Spell a seventh test-3 local whose value is genuinely consumed (not a dead store) and is born at the top of the block -- the obvious candidate is splitting one of the four multiply operands into a named intermediate -- measured against the h1 statement order, with build_insns checked to stay at 202. Not spelled in s7."
+   "hypothesis": "The inverse RA solver's `[extra_qty] one more temp: refs=2 span=[2,4) pri=10000` vector flips the seats without touching dz's or dx's own comparator columns.",
+   "mechanism": "It is the only 1-atom vector in the inverse.py report that leaves both tied quantities untouched: an additional short-lived quantity born at the top of block 7 changes what find_free_reg has already handed out by the time the tied pair is reached, so dz can be pushed off $v1 without changing its priority. Untouched by every s8 kill because it does not rely on a copy at all.",
+   "next_probe": "Spell a seventh test-3 local whose value is genuinely consumed (not a dead store) and is born at the top of the block -- the obvious candidate is splitting one of the four multiply operands into a named intermediate -- measured against the h1 statement order, with build_insns checked to stay at 202. Still not spelled after s7 and s8."
   },
   {
    "hypothesis": "A decomp-permuter campaign on the 2-floor chassis finds the last two instructions where the s4 campaign on the 7-floor chassis found nothing.",
-   "mechanism": "s7 has typed the residual as a local-alloc tie whose only remaining C-side inputs are an extra quantity or a surviving copy -- exactly the temporary-introduction and statement-reordering moves in the permuter's pass set, and the s4 campaign's neighbourhood was dominated by residuals B and C, which are now closed.",
-   "next_probe": "Regenerate base.c from memory/grind/func_8002D780/candidate.c into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (the s4 finding that the permuter's weighted metric is anti-correlated with the engine's here still applies). The family classification of the body -- the FAKE `m` re-store plus the six difference locals -- is still unsettled and must be recorded before any candidate-ready submission."
+   "mechanism": "s7 typed the residual as a local-alloc tie and s8 class-killed the entire sched1 side, so the remaining C-side inputs are an extra quantity or a span-shifting copy -- exactly the temporary-introduction and statement-reordering moves in the permuter's pass set, and the s4 campaign's neighbourhood was dominated by residuals B and C, which are now closed.",
+   "next_probe": "Regenerate base.c from memory/grind/func_8002D780/candidate.c AND from the h1 body into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (the s4 finding that the permuter's weighted metric is anti-correlated with the engine's here still applies). The family classification of the body -- the FAKE `m` re-store plus the six difference locals -- is still unsettled and must be recorded before any candidate-ready submission."
   }
  ],
  "judge_constraints": [],
@@ -298,6 +304,38 @@
    "measured_on": "HEAD b3a8a19a (-mel -msoft-float), the s5 candidate body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)",
    "predicate_cite": "",
    "result": "KILLED. Every placement is byte-neutral -- q1/q3/q4/q5 = 9 on the h1 order, q2/q7 = 2 on the candidate order, all at 202"
+  },
+  {
+   "session": 8,
+   "statement": "The sched1 half of residual A (the az/dx emission-order swap) has exactly one C-side input on this block shape -- statement order (INSN_LUID); neither INSN_PRIORITY nor rank_for_schedule's dependence-",
+   "kill_scope": "class",
+   "measured_on": "HEAD a91a7f44 (-mel -msoft-float), the s5 2-floor candidate.c body spliced into src/code6cac_b.c and re-measured at 2/202 this session, one FAKE construct present (the same-value re-store of the local",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2408",
+   "result": "KILLED. There is no in-block producer for any of ax/az/bx/bz/dz/dx, so nothing can give az an INSN_PRIORITY of 2 (that n"
+  },
+  {
+   "session": 8,
+   "statement": "A self-assign of a block-local (`dx = dx;`) gives dx a fourth local-alloc reference that lifts its qty_compare_1 priority clear of dz's, and is dropped before final output the way s5's redundant `m` s",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a91a7f44 (-mel -msoft-float), the s5 candidate body and the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "KILLED, with the mechanism much earlier than assumed. s1/s3/s4/s6/s8/s10 = 9 on h1 and s5/s9 = 2 on the candidate order,"
+  },
+  {
+   "session": 8,
+   "statement": "A copy carrier with two definitions inside block 7 survives cse the way s5's `m` does, so it can hold a fourth reference to dx via combine_regs or a spare insn between dz's and dx's births, and then v",
+   "kill_scope": "class",
+   "measured_on": "HEAD a91a7f44 (-mel -msoft-float), the s5 candidate body and the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "tools/gcc-2.7.2/cse.c:1032",
+   "result": "KILLED. All nine are byte-neutral (t1/t2/t3/t5/t6/t7/t8 = 9 on h1, t4/t9 = 2 on the candidate order, every one at 202 in"
+  },
+  {
+   "session": 8,
+   "statement": "Borrowing an existing multiply-defined variable (test 2's kp) as the block-7 copy carrier gets the copy past cse and is the cheap spelling of the surviving-copy route.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD a91a7f44 (-mel -msoft-float), the s5 candidate body and the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "KILLED as an improvement, informative as a cost measurement. r1/r2/r4/r8 = 16 on the h1 order and r3/r6 = 13 on the cand"
   }
  ],
  "ladder_skip": 0,
