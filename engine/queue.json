@@ -14,16 +14,6 @@
       "reopen_reason": "2026-09-07 -msoft-float adoption: the FAKE duplicated-tail completion only matched under the hard-float loop.c threshold; reverted to INCLUDE_ASM, ledger restored (evidence.md 2026-09-07 note)"
     },
     {
-      "func": "func_8007526C",
-      "file": "text1b",
-      "distance": 0,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active",
-      "origin": "regression",
-      "reopen_reason": ""
-    },
-    {
       "func": "CD_datasync",
       "file": "system",
       "distance": 2,
@@ -1474,13 +1464,13 @@
     }
   ],
   "counts": {
-    "total": 166,
-    "active": 166,
+    "total": 165,
+    "active": 165,
     "by_status": {
-      "active": 166
+      "active": 165
     },
     "by_verdict": {
-      "C": 140,
+      "C": 139,
       "ASM-PARTIAL": 26
     }
   }

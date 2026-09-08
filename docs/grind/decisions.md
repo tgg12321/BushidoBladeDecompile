@@ -25493,3 +25493,16 @@ same ledger (s1/s5 handoffs) was a build-flag change, which the driver may not s
   (construct grounds, config-independent); the Judge re-adjudicates in-pipeline.
 - Oracle proven green (full `verify-oracle --rebuild`) BEFORE either src change is
   credited; `engine test` + `fixtures-verify` green.
+
+## 2026-09-07 — func_8007526C — layer-2 fresh cheat-reviewer (manual path, after the -msoft-float adoption) — **PASS / COMPLETED-C**
+
+Candidate: the ordinary do-while body (memory/grind/func_8007526C/ordinary-score13-baseline.c)
++ the owner-authorized LOAD-CONSUMER gate line in maspsx_label_nop_funcs.txt. Reviewer verified
+firsthand: read the diff and the target asm; ran `sandbox func_8007526C --disable all` on the
+working tree → score 0, 91/91; deleted `lim` and inlined 0xC8 to test its causal role → still
+0, 91/91 (byte-neutral, not a lever), then restored the exact diff; re-read both earlier
+rulings on `lim` and the gate line; confirmed the flag change is a global configuration-fidelity
+correction (Makefile 35-40, commits 68e2b302 / a42d7ff7), not a per-function flag-hunt.
+Verdict PASS: "Ordinary do-while body, no cheat constructs." `queue done func_8007526C` →
+COMPLETED-C, SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa. The goto-loop family question
+is closed as moot (not sanctioned).
