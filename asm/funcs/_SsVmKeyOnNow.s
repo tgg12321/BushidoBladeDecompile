@@ -1,4 +1,4 @@
-glabel func_800872A4
+glabel _SsVmKeyOnNow
     /* 77AA4 800872A4 1080023C */  lui        $v0, %hi(D_80101BC4)
     /* 77AA8 800872A8 C41B428C */  lw         $v0, %lo(D_80101BC4)($v0)
     /* 77AAC 800872AC 00000000 */  nop
@@ -320,4 +320,4 @@ glabel func_800872A4
     /* 77F64 80087764 1000BD27 */  addiu      $sp, $sp, 0x10
     /* 77F68 80087768 0800E003 */  jr         $ra
     /* 77F6C 8008776C 00000000 */   nop
-endlabel func_800872A4
+endlabel _SsVmKeyOnNow

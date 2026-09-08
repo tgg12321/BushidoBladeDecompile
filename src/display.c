@@ -2281,7 +2281,7 @@ __asm__(
     ".set\tnoreorder\n"
     ".set noat\n"
     ".set noreorder\n"
-    "glabel gte_SetColorMatrix\n"
+    "glabel SetColorMatrix\n"
     "    lw     $t0, 0($a0)\n"
     "    lw     $t1, 4($a0)\n"
     "    lw     $t2, 8($a0)\n"

@@ -40,16 +40,16 @@ VERSIONS = [("40J", os.path.join(REPO, "tmp", "libscan", "psyq40")),
             ("44", os.path.join(REPO, "tmp", "libsnd_hunt", "psyq44"))]
 
 CANDIDATES = [
-    ("LIBSND", "UT_KEYV", "SsUtKeyOnV", 0x80085A40, "func_80085A40"),
-    ("LIBSND", "UT_KEYV", "SsUtKeyOffV", 0x80085DD4, "(interior of func_80085A40)"),
-    ("LIBSND", "VM_NOWOF", "_SsVmKeyOffNow", 0x800871D4, "func_800871D4"),
+    ("LIBSND", "UT_KEYV", "SsUtKeyOnV", 0x80085A40, "SsUtKeyOnV"),
+    ("LIBSND", "UT_KEYV", "SsUtKeyOffV", 0x80085DD4, "(interior of SsUtKeyOnV)"),
+    ("LIBSND", "VM_NOWOF", "_SsVmKeyOffNow", 0x800871D4, "_SsVmKeyOffNow"),
     ("LIBSND", "UT_VVOL", "SsUtGetDetVVol", 0x80085FD8, "func_80085FD8 (C)"),
     ("LIBSND", "UT_VVOL3", "SsUtGetVVol", 0x80086080, "func_80086080 (C)"),
     ("LIBSND", "VM_SEQ_2", "_SsVmGetSeqLVol", 0x80087D10, "func_80087D10 (C)"),
     ("LIBSND", "VM_SEQ_2", "_SsVmGetSeqRVol", 0x80087D58, "func_80087D58 (C)"),
-    ("LIBSND", "UT_VVOL2", "SsUtSetDetVVol", 0x80086018, "func_80086014 (starts 4 bytes EARLIER)"),
-    ("LIBSPU", "S_SAV", "_SpuSetAnyVoice", 0x80089A54, "func_80089A48 (starts 12 bytes EARLIER)"),
-    ("LIBSND", "VM_ALOC2", "_SsVmDoAllocate", 0x800861B8, "func_800861BC (starts 4 bytes LATER)"),
+    ("LIBSND", "UT_VVOL2", "SsUtSetDetVVol", 0x80086018, "SsUtSetDetVVol (starts 4 bytes EARLIER)"),
+    ("LIBSPU", "S_SAV", "_SpuSetAnyVoice", 0x80089A54, "_SpuSetAnyVoice (starts 12 bytes EARLIER)"),
+    ("LIBSND", "VM_ALOC2", "_SsVmDoAllocate", 0x800861B8, "_SsVmDoAllocate (starts 4 bytes LATER)"),
 ]
 
 # ---- our names by address (link map: object-provided definitions)

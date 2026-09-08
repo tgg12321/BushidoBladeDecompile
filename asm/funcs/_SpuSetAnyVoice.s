@@ -1,4 +1,4 @@
-glabel func_80089A48
+glabel _SpuSetAnyVoice
     /* 7A248 80089A48 21488000 */  addu       $t1, $a0, $zero
     /* 7A24C 80089A4C 0A80023C */  lui        $v0, %hi(D_800A2CD4)
     /* 7A250 80089A50 D42C428C */  lw         $v0, %lo(D_800A2CD4)($v0)
@@ -191,4 +191,4 @@ glabel func_80089A48
     /* 7A504 80089D04 FFFF4234 */  ori        $v0, $v0, (0xFFFFFF & 0xFFFF)
     /* 7A508 80089D08 0800E003 */  jr         $ra
     /* 7A50C 80089D0C 24104201 */   and       $v0, $t2, $v0
-endlabel func_80089A48
+endlabel _SpuSetAnyVoice

@@ -570,7 +570,7 @@ s32 SetVideoMode(s32 a0) {
     return old;
 }
 
-s32 sys_GetVideoMode(void) {
+s32 GetVideoMode(void) {
     return g_sys_video_mode;
 }
 
@@ -719,7 +719,7 @@ extern s32 D_80106FA8[32][16];
 extern s32 D_80104E80;
 extern s32 D_801027E4;
 extern s32 D_800FF630;
-extern void func_80086818(s32);
+extern void _SsVmInit(s32);
 
 /* PsyQ 4.0 LIBSND ssinit: _SsInit — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/ssinit.c */
@@ -739,7 +739,7 @@ void _SsInit(void) {
         *var_a2++ = (&D_800A26AC)[i];
     }
 
-    func_80086818(0x18);
+    _SsVmInit(0x18);
 
     for (j = 0; j < 32; j++) {
         for (i = 0; i < 16; i++) {

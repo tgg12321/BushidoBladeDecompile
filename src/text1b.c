@@ -1159,7 +1159,7 @@ extern u8 D_800F6338;
 extern u8 D_800F6339;
 extern u8 D_800F633A;
 extern void func_8004A09C(s32, u16 *);
-extern void gte_SetColorMatrix(s32 *);
+extern void SetColorMatrix(s32 *);
 extern void SetBackColor(s32, s32, s32);
 
 void func_80049F4C(void) {
@@ -1174,7 +1174,7 @@ void func_80049F4C(void) {
         i++;
         base += 0x60;
     } while (i < 8);
-    gte_SetColorMatrix(&D_800F6318);
+    SetColorMatrix(&D_800F6318);
     SetBackColor(D_800F6338, D_800F6339, D_800F633A);
 }
 void func_8004A09C(s32 arg0, u16 *arg1) {

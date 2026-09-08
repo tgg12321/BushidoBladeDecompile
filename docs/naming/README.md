@@ -51,6 +51,7 @@ a key, oracle-verified per batch, never hand-applied. Applied so far:
 | libscan wave | `fe40a52b` (2026-08-07) | **334 evidence-backed renames** from the PsyQ bit-verbatim library scan: 51 hard misnames corrected, 182 alias fixes, 73 fills, 28 style rows to bare Sony names (owner ruling). Census gained the `libscan-verbatim` -> VERIFIED tier |
 | addendum wave | `ef3919bd` (2026-08-10) | **12 RENAMEs + 1 RESET** from the ambiguous-tie resolutions + reloc-chain bonus IDs (`docs/naming/libscan/addendum_addresses.txt`). Part B: 5/9 XDEF splits obsolete (`6df437b6`), 4 genuine splits applied same day (`113abc0e`/`b6c73b0f`/`4ffc63aa`); only the 2 owner-gated re-derivations remain — see `docs/naming/ADDENDUM-APPLY-PLAN.md` |
 | apiscan wave | `naming: apiscan wave` (2026-09-07) | **21 RENAMEs** from the API-restatement class (`docs/naming/apiscan/`): 10 fills of auto glabels + 11 retirements of meaningless/wrong aliases (`pad_file_*`, `bios_helper`, `irq_helper`, `obj_helper`, `sys_helper`, `mode_helper`). Names restate the VERIFIED BIOS/PsyQ calls + literal device strings in the body; every row re-derived by a fresh default-refute verifier before landing. Census gained the `apiscan-restatement` -> CORROBORATED origin |
+| near-tier wave | this commit (2026-09-07) | **35 RENAMEs** under the owner's near-tier ruling (`docs/naming/libscan/near-tier-ruling-2026-09-07.md`): 7 `libscan-xref` (an accepted verbatim module's XREF + the EXE's jal target pin the callee — VERIFIED), 11 `libscan-near` (body matches a Sony build except explainable words, unique placement — CORROBORATED), 17 link-map desync corrections (C definition still carried the pre-2026-08-07 misnomer, e.g. SpuFree defined as spu_DmaTransfer). Audit: `near_audit_report.md`, `callee_web.md`; tools `tools/libscan/near_audit.py`, `callee_web.py`. build_census.py now compares the link-map object symbol against the glabel on every row |
 
 ---
 
@@ -173,6 +174,8 @@ Every non-AUTO name is attributed to a recorded evidence path:
 | `misname-flag` | 49 | SUSPECT |
 | `psyq-idiom-scan` (`known_psyq_stdlib.txt` body-shape match) | 39 | CORROBORATED |
 | `apiscan-restatement` (name restates VERIFIED library calls + literal strings; `docs/naming/apiscan/`) | 21 | CORROBORATED |
+| `libscan-xref` (accepted verbatim module's XREF + EXE jal target) | 7 | VERIFIED |
+| `libscan-near` (Sony build match except explainable words; owner ruling 2026-09-07) | 11 | CORROBORATED |
 | `psyq-family-prefix` | 38 | INFERRED — prefix only |
 | `legacy-renamer-map(verified band)` | 29 | CORROBORATED |
 | `unattributed` | 16 | INFERRED — provenance unknown |

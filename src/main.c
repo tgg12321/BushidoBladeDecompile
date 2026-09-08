@@ -7,11 +7,11 @@
 
 /* Forward declarations */
 extern void SpuSetReverb(s32);
-extern void spu_InitEx(s32);
+extern void _SpuInit(s32);
 extern s32 SpuIsTransferCompleted(s32);
 extern void _SsSeqPlay(s16, s16);
 extern s16 SsVabOpenHeadWithMode(u8 *, s16, s16, u32);
-extern s32 func_80089A48(s32, u32, s32, s32);
+extern s32 _SpuSetAnyVoice(s32, u32, s32, s32);
 
 /* Externs for globals */
 extern s16 D_800F66F8;
@@ -20,7 +20,7 @@ extern s32 g_spu_busy;
 extern s32 g_spu_base_addr;
 
 extern void DMACallback(s32, s32);
-extern s32 spu_TransferDirect(s32, s32);
+extern s32 _spu_Fr(s32, s32);
 /* PsyQ LIBSPU: _spu_transferCallback — Sony's own header types the SPU
    transfer callback as a volatile function pointer (sotn-decomp
    libspu_internal.h:39); volatile is original semantics, not coercion */
@@ -38,7 +38,7 @@ extern s32 D_80106F28;
 extern s32 TestEvent(s32);
 extern s32 _spu_init(s32);
 extern void func_80087770(s32, s32, s32, s32);
-extern s16 func_80087CAC(s32, s16 *, s16 *);
+extern s16 _SsVmGetSeqVol(s32, s16 *, s16 *);
 extern void _spu_FsetRXX(s32, u32, s32);
 extern s32 D_800A287C;
 extern s32 D_800A2880;
@@ -96,7 +96,7 @@ extern void _spu_Fw1ts(void);
  * key-on pending [0..1], key-off pending [2..3]); splat split it into two D_
  * symbols. Ruling-4 grant, volatile_extern_allowlist.txt:40-41. */
 extern volatile u16 D_800F7420[10]; /* _spu_RQ; _spu_init clears all 10 (PsyQ 4.0 spu.c) */
-extern s32 spu_TransferData(s32, s32);
+extern s32 _spu_Fw(s32, s32);
 extern s32 D_800A2D2C;
 extern s32 D_800A2D30;
 extern s32 D_800A2D34;
@@ -229,13 +229,13 @@ extern s16 D_801077A8;  /* _snd_seq_s_max */
 extern s16 D_801077AA;  /* _snd_seq_t_max */
 extern s32 D_801027E4;  /* _snd_openflag */
 extern s32 D_80106F28;  /* _ss_score (per-SEP score-block pointer table) */
-extern void func_800863DC(void);   /* SpuVmFlush */
-void spu_SetMotionCallback(s16 a0, s16 a1); /* _SsSndPlay */
-void func_800841E0(s16 arg0, s16 arg1);     /* _SsSndCrescendo */
-void func_80084500(s16 arg0, s16 arg1);     /* _SsSndDecrescendo */
+extern void _SsVmFlush(void);   /* SpuVmFlush */
+void _SsSndPlay(s16 a0, s16 a1); /* _SsSndPlay */
+void _SsSndCrescendo(s16 arg0, s16 arg1);     /* _SsSndCrescendo */
+void _SsSndDecrescendo(s16 arg0, s16 arg1);     /* _SsSndDecrescendo */
 void _SsSndTempo(s16 a0, s16 a1);         /* _SsSndTempo */
-void spu_SetMotionState(s16 a0, s16 a1);    /* _SsSndPause */
-void spu_SetMotionActive(s32 a0, s16 a1);   /* _SsSndReplay */
+void _SsSndPause(s16 a0, s16 a1);    /* _SsSndPause */
+void _SsSndReplay(s32 a0, s16 a1);   /* _SsSndReplay */
 void _SsSndStop(s16 a0, s16 a1);         /* _SsSndStop */
 
 void SsStart(void) {
@@ -272,20 +272,20 @@ static void SsSeqCalledTbyT(void) {
     if (D_800FF630 != 1) {
         D_800FF630 = 1;
 
-        func_800863DC();
+        _SsVmFlush();
 
         for (i = 0; i < D_801077A8; i++) {
             s32 bit = 1 << i;
             if (D_801027E4 & bit) {
                 for (j = 0; j < D_801077AA; j++) {
                     if (SS_SCORE_FLAG(i, j) & 1) {
-                        spu_SetMotionCallback(i, j);
+                        _SsSndPlay(i, j);
 
                         if (SS_SCORE_FLAG(i, j) & 0x10) {
-                            func_800841E0(i, j);
+                            _SsSndCrescendo(i, j);
                         }
                         if (SS_SCORE_FLAG(i, j) & 0x20) {
-                            func_80084500(i, j);
+                            _SsSndDecrescendo(i, j);
                         }
                         if (SS_SCORE_FLAG(i, j) & 0x40) {
                             _SsSndTempo(i, j);
@@ -295,10 +295,10 @@ static void SsSeqCalledTbyT(void) {
                         }
                     }
                     if (SS_SCORE_FLAG(i, j) & 2) {
-                        spu_SetMotionState(i, j);
+                        _SsSndPause(i, j);
                     }
                     if (SS_SCORE_FLAG(i, j) & 8) {
-                        spu_SetMotionActive((s16)i, j);
+                        _SsSndReplay((s16)i, j);
                     }
                     if (SS_SCORE_FLAG(i, j) & 4) {
                         _SsSndStop(i, j);
@@ -311,22 +311,22 @@ static void SsSeqCalledTbyT(void) {
     }
 }
 /* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
-INCLUDE_ASM("asm/funcs", func_800841E0);
-INCLUDE_ASM("asm/funcs", func_80084500);
-void spu_SetMotionState(s16 a0, s16 a1) {
+INCLUDE_ASM("asm/funcs", _SsSndCrescendo);
+INCLUDE_ASM("asm/funcs", _SsSndDecrescendo);
+void _SsSndPause(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
     s32 offset = (s16)a1 * 0xB0;
     u8 *entry;
     entry = (u8 *)(*base_ptr + offset);
-    spu_NotifyChannel((s16)(a0 | (a1 << 8)));
+    _SsVmSeqKeyOff((s16)(a0 | (a1 << 8)));
     entry[0x14] = 0;
     offset += *base_ptr;
     *(s32 *)(offset + 0x98) &= ~2;
 }
 
-void spu_SetMotionCallback(s16 a0, s16 a1) {
+void _SsSndPlay(s16 a0, s16 a1) {
     _SsSeqPlay(a0, a1);
 }
 
@@ -418,10 +418,10 @@ void func_80084A7C(s16 a0, s16 a1) {
 
     if (base[0x22] != 0xFF) {
         base[0x14] = 0;
-        spu_ResetMotionEntry(base[0x22], base[0x23]);
-        spu_NotifyChannel((s16)(a0 | (a1 << 8)));
+        _SsSndNextSep(base[0x22], base[0x23]);
+        _SsVmSeqKeyOff((s16)(a0 | (a1 << 8)));
     }
-    spu_NotifyChannel((s16)(a0 | (a1 << 8)));
+    _SsVmSeqKeyOff((s16)(a0 | (a1 << 8)));
     *(s32 *)(base + 0x90) = *(s16 *)(base + 0x54);
 }
 extern void (*D_800F3340)(s16, s16, u8, u8);
@@ -429,7 +429,7 @@ extern void (*D_800F3344)(s16, s16, u8);
 extern void (*D_800F3348)(s16, s16);
 extern void (*D_800F334C)(s16, s16, u8);
 extern void (*D_800F3350)(s16, s16, u8);
-extern s32 spu_ReadMotionFrame(s32, s16);
+extern s32 _SsReadDeltaValue(s32, s16);
 
 s32 func_80084CC0(s16 a0, s16 a1)
 {
@@ -479,7 +479,7 @@ s32 func_80084CC0(s16 a0, s16 a1)
         data = b;
         *((u8 **) state) = cmd_ptr + 2;
         next = cmd_ptr[1];
-        *((s32 *) (state + 0x90)) = spu_ReadMotionFrame(a0, a1);
+        *((s32 *) (state + 0x90)) = _SsReadDeltaValue(a0, a1);
         D_800F3340(a0, a1, data, next);
         goto end;
 
@@ -535,7 +535,7 @@ s32 func_80084CC0(s16 a0, s16 a1)
         u8 *cp = *((u8 **) state);
         *((u8 **) state) = cp + 1;
         next = cp[0];
-        *((s32 *) (state + 0x90)) = spu_ReadMotionFrame(a0, a1);
+        *((s32 *) (state + 0x90)) = _SsReadDeltaValue(a0, a1);
         D_800F3340(a0, a1, b, next);
         goto end;
       }
@@ -573,7 +573,7 @@ s32 func_80084CC0(s16 a0, s16 a1)
 
 }
 /* kengo:MED  |  sa_tan0/saTan0Main  |  233i */
-s32 spu_ReadMotionFrame(s32 arg0, s16 arg1) {
+s32 _SsReadDeltaValue(s32 arg0, s16 arg1) {
     s32 result;
     u8 *ptr;
     u8 **base;
@@ -605,7 +605,7 @@ s32 spu_ReadMotionFrame(s32 arg0, s16 arg1) {
 /* PsyQ LIBSND next.c: _SsSndNextSep — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/next.c (mixed
    score-pointer / full-index accesses are the original's spelling) */
-void spu_ResetMotionEntry(s32 a0, s16 a1) {
+void _SsSndNextSep(s32 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
@@ -624,7 +624,7 @@ void spu_ResetMotionEntry(s32 a0, s16 a1) {
 }
 /* PsyQ 4.0 LIBSND replay: _SsSndReplay — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/replay.c */
-void spu_SetMotionActive(s32 a0, s16 a1) {
+void _SsSndReplay(s32 a0, s16 a1) {
     s32 shifted = a0 << 16;
     s32 *addr = (s32 *)&D_80106F28;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
@@ -651,8 +651,8 @@ void _SsSndStop(s16 a0, s16 a1) {
     *(s32*)((*base_ptr + (s16)a1 * 0xB0) + 0x98) &= ~0x400;
     *(s32*)((*base_ptr + (s16)a1 * 0xB0) + 0x98) |= 4;
 
-    spu_NotifyChannel((s16)(a0 | (a1 << 8)));
-    spu_ResetCounter();
+    _SsVmSeqKeyOff((s16)(a0 | (a1 << 8)));
+    _SsVmDamperOff();
 
     i = 0;
     p[0x14] = 0;
@@ -749,7 +749,7 @@ void SsSetTickMode(s32 arg) {
     s32 mode;
     s32 v;
 
-    mode = sys_GetVideoMode();
+    mode = GetVideoMode();
 
     if (arg & 0x1000) {
         D_800A26CC.unk4 = 1;
@@ -933,7 +933,7 @@ void func_800858D0(void) {
             buf[0] = offset << var_s0;
             func_8008B488(buf);
             D_801027F0.voice = var_s0;
-            func_800871D4(1);
+            _SsVmKeyOffNow(1);
             var_s0 = var_s0 + 1;
             if (D_80101BCC) { /* !FAKE: empty-if redundant-condition (F6,
                 no-new-park-categories.md:371); mechanism: jump1 branch
@@ -958,7 +958,7 @@ s32 SsUtGetVBaddrInSB(s16 a0) {
     }
     return g_snd_ch_addr[a0];
 }
-INCLUDE_ASM("asm/funcs", func_80085A40);
+INCLUDE_ASM("asm/funcs", SsUtKeyOnV);
 /* kengo:MED  |  am_rmd/AllocBukiRmd  |  259i */
 extern s32 D_800F5750;
 extern s16 D_800F5758;
@@ -1025,7 +1025,7 @@ s32 func_80085FD8(s16 a0) {
     return -1;
 }
 
-s32 func_80086014(s16 idx, s16 x, s16 y)
+s32 SsUtSetDetVVol(s16 idx, s16 x, s16 y)
 {
     if ((u16)idx < 0x18) {
         D_80102A78[idx * 8 + 1] = y;
@@ -1083,7 +1083,7 @@ static inline void vmSetStartAddr(u16 addr) {
     D_800F65E0[D_801027F0.voice] |= 8;
 }
 
-void func_800861BC(void) {
+void _SsVmDoAllocate(void) {
     int i;
     int progIdx;
 
@@ -1107,13 +1107,13 @@ void func_800861BC(void) {
     D_800F65E0[D_801027F0.voice] |= 0x30;
 }
 
-void spu_ResetCounter(void) {
+void _SsVmDamperOff(void) {
     D_800F66F8 = 0;
 }
 
-INCLUDE_ASM("asm/funcs", func_800863DC);
+INCLUDE_ASM("asm/funcs", _SsVmFlush);
 /* kengo:HIGH  |  is_action/action_CheckHitZangeki  |  271i */
-INCLUDE_ASM("asm/funcs", func_80086818);
+INCLUDE_ASM("asm/funcs", _SsVmInit);
 /* kengo:HIGH  |  md_game/md_game_end  |  249i */
 /* PsyQ LIBSND VM_N2P: note2pitch — a second exported entry point that splat
    merged into func_80086818. Split out 2026-08-10 (docs/naming/libscan/
@@ -1154,7 +1154,7 @@ s32 note2pitch2(u16 arg0, u16 arg1) {
     }
     return var_v1;
 }
-INCLUDE_ASM("asm/funcs", func_80086CF8);
+INCLUDE_ASM("asm/funcs", vmNoiseOn);
 extern u16 D_800F1B10;
 extern u16 D_800F1B12;
 extern s16 D_800F4E18;
@@ -1167,7 +1167,7 @@ extern u16 D_801078DA;
    Symbol map: D_801027F0.voice <- _svm_cur.voice; D_800F4E18 <- _svm_voice[] base
    (BB2 stride 54); D_801078D8/DA <- _svm_okof1/_svm_okof2; D_800F1B10/12 <-
    _svm_okon1/_svm_okon2. */
-void func_800871D4(s32 mode) {
+void _SsVmKeyOffNow(s32 mode) {
     s32 bitsUpper;
     s32 bitsLower;
     u16 voice;
@@ -1200,9 +1200,9 @@ void func_800871D4(s32 mode) {
     D_800F1B10 &= ~D_801078D8;
     D_800F1B12 &= ~D_801078DA;
 }
-INCLUDE_ASM("asm/funcs", func_800872A4);
+INCLUDE_ASM("asm/funcs", _SsVmKeyOnNow);
 INCLUDE_ASM("asm/funcs", func_80087770);
-s16 func_80087CAC(s32 a0, s16 *a1, s16 *a2) {
+s16 _SsVmGetSeqVol(s32 a0, s16 *a1, s16 *a2) {
     u8 *base;
     /* FAKE: materializes &D_801027F0.seq_sep_no once in a reg for store+reload; all pointer-free spellings measured 12 (s2, tmp/grind/func_80087CAC/s2/) */
     s16 *ptr;
@@ -1239,7 +1239,7 @@ s16 func_80087D58(s32 a0) {
 }
 extern u8 g_memcard_slot;
 extern s16 D_800F4E28[];
-void spu_NotifyChannel(s16 a0) {
+void _SsVmSeqKeyOff(s16 a0) {
     s32 s0 = 0;
     s16 s1;
     if (g_memcard_slot == 0) {
@@ -1251,7 +1251,7 @@ void spu_NotifyChannel(s16 a0) {
         s32 off = ((idx * 8 - idx) * 4 - idx) * 2;
         if (*(s16 *)((u8 *)D_800F4E28 + off) == s1) {
             D_801027F0.voice = (u8)s0;
-            func_800871D4(0);
+            _SsVmKeyOffNow(0);
         }
         s0++;
     } while ((u8)s0 < g_memcard_slot);
@@ -1323,12 +1323,12 @@ s32 SsSetReservedVoice(s32 a0) {
 extern u8 g_snd_ch_status[];
 extern s32 g_snd_ch_addr[];
 extern u16 g_snd_ch_count;
-extern void spu_DmaTransfer(s32);
+extern void SpuFree(s32);
 void SsVabClose(s16 a0) {
     if ((u16)a0 < 0x10) {
         s16 idx = a0;
         if (g_snd_ch_status[idx] == 1) {
-            spu_DmaTransfer(g_snd_ch_addr[idx]);
+            SpuFree(g_snd_ch_addr[idx]);
             g_snd_ch_status[idx] = 0;
             g_snd_ch_count--;
         }
@@ -1541,10 +1541,10 @@ s16 SsVabTransCompleted(s16 a0) {
 }
 
 void SpuInit(void) {
-    spu_InitEx(0);
+    _SpuInit(0);
 }
 
-void spu_InitEx(s32 arg0) {
+void _SpuInit(s32 arg0) {
     u16 *var_v0;
     s32 var_v1;
     s32 val;
@@ -1561,7 +1561,7 @@ void spu_InitEx(s32 arg0) {
             var_v0 -= 1;
         } while (var_v1 >= 0);
     }
-    spu_InitIrq();
+    SpuStart();
     D_800A287C = 0;
     D_800A2880 = 0;
     D_800A288C = 0;
@@ -1585,12 +1585,12 @@ extern s32 g_snd_init_flag;
 extern s32 g_snd_irq_handle;
 extern s32 g_snd_irq_data;
 
-void spu_InitIrq(void) {
+void SpuStart(void) {
     s32 v0;
     if (g_snd_init_flag == 0) {
         g_snd_init_flag = 1;
         EnterCriticalSection();
-        spu_SetCallback((s32)&g_snd_irq_data);
+        _SpuDataCallback((s32)&g_snd_irq_data);
         v0 = OpenEvent((s32)0xF0000009, 0x20, 0x2000, 0);
         g_snd_irq_handle = v0;
         EnableEvent(v0);
@@ -1845,7 +1845,7 @@ s32 _spu_t(s32 mode, ...) {
 }
 /* kengo:MED  |  sa_tan0/saTan0GaugeDraw  |  164i */
 extern void _spu_FwriteByIO(s32, s32);
-s32 spu_TransferData(s32 a0, s32 a1) {
+s32 _spu_Fw(s32 a0, s32 a1) {
     if (g_spu_reverb_mode == 0) {
         _spu_t(2, g_spu_xfer_addr << g_spu_addr_shift);
         _spu_t(1);
@@ -1855,7 +1855,7 @@ s32 spu_TransferData(s32 a0, s32 a1) {
     }
     return a1;
 }
-s32 spu_TransferDirect(s32 a0, s32 a1) {
+s32 _spu_Fr(s32 a0, s32 a1) {
     _spu_t(2, g_spu_xfer_addr << g_spu_addr_shift);
     _spu_t(0);
     _spu_t(3, a0, a1);
@@ -1916,7 +1916,7 @@ void _spu_Fw1ts(void) {
         v = v * 13;
     }
 }
-void spu_SetCallback(s32 a0) {
+void _SpuDataCallback(s32 a0) {
     DMACallback(4, a0);
 }
 /* PsyQ LIBSPU s_q.c: SpuQuit — verbatim-linked Sony object (census
@@ -1932,7 +1932,7 @@ void SpuQuit(void) {
         EnterCriticalSection();
         g_spu_init_flag = 0;
         g_spu_timer = 0;
-        spu_SetCallback(0);
+        _SpuDataCallback(0);
         CloseEvent(g_snd_irq_handle);
         DisableEvent(g_snd_irq_handle);
         ExitCriticalSection();
@@ -2071,7 +2071,7 @@ extern s32 g_spu_voice_key_a;
 extern void _spu_gcSPU(void);
 /* PsyQ 4.0 LIBSPU s_m_f: SpuFree — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_m_f.c */
-void spu_DmaTransfer(u32 arg0) {
+void SpuFree(u32 arg0) {
     s32 i;
 
     for (i = 0; i < g_spu_voice_key_a; i++) {
@@ -2087,10 +2087,10 @@ void spu_DmaTransfer(u32 arg0) {
 }
 
 void SpuSetNoiseVoice(s32 a0, s32 a1) {
-    func_80089A48(a0, a1, 0xCA, 0xCB);
+    _SpuSetAnyVoice(a0, a1, 0xCA, 0xCB);
 }
 
-s32 func_80089A48(s32 on_off, u32 bits, s32 addr1, s32 addr2)
+s32 _SpuSetAnyVoice(s32 on_off, u32 bits, s32 addr1, s32 addr2)
 {
     u32 var_t0;
 
@@ -2450,7 +2450,7 @@ void _spu_setReverbAttr(s32 *arg0) {
 }
 
 void SpuSetReverbVoice(s32 a0, s32 a1) {
-    func_80089A48(a0, a1, 0xCC, 0xCD);
+    _SpuSetAnyVoice(a0, a1, 0xCC, 0xCD);
 }
 
 /* PsyQ 4.0 LIBSPU s_crwa: SpuClearReverbWorkArea — verbatim-linked Sony
@@ -2620,7 +2620,7 @@ s32 SpuRead(s32 a0, s32 a1) {
     if ((u32)a1 > 0x7EFF0u) {
         a1 = 0x7EFF0;
     }
-    spu_TransferDirect(a0, a1);
+    _spu_Fr(a0, a1);
     if (g_spu_init_flag == 0) {
         g_spu_busy = 0;
     }
@@ -2630,7 +2630,7 @@ s32 SpuWrite(s32 a0, s32 a1) {
     if ((u32)a1 > 0x7EFF0u) {
         a1 = 0x7EFF0;
     }
-    spu_TransferData(a0, a1);
+    _spu_Fw(a0, a1);
     if (g_spu_init_flag == 0) {
         g_spu_busy = 0;
     }

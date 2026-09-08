@@ -7,7 +7,7 @@ HERE = Path(__file__).parent
 CASES = [
     ("func_80041188", "text1a"),
     ("func_80041BF4", "text1a"),
-    ("func_800861BC", "main"),
+    ("_SsVmDoAllocate", "main"),
     ("func_800858D0", "main"),
     ("get_cs", "display"),
     ("get_ce", "display"),

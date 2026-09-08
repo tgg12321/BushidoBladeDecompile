@@ -327,7 +327,7 @@ ApplyRotMatrixLV  # LIBGTE MTX_01 ApplyRotMatrixLV: sibling of func_8007E74C —
 # $v0/$v1/$a0). Retired as file-scope `__asm__("glabel ... jr ra ...")` block.
 # See gte-wrapper-misroute-park.md.
 SetTransMatrix  # GTE translation-vector loader (display.c): lw $t0..$t2, 20-28($a0) -> ctc2 $t0..$t2, $5..$7 -> jr $ra. Auto-authorized 2026-06-06.
-gte_SetColorMatrix  # GTE color-matrix loader (display.c): lw $t0..$t4, 0-16($a0) -> ctc2 $t0..$t4, $16..$20 -> jr $ra. Pure cop2 control-reg ops, no C form. Auto-authorized 2026-06-07.
+SetColorMatrix  # GTE color-matrix loader (display.c): lw $t0..$t4, 0-16($a0) -> ctc2 $t0..$t4, $16..$20 -> jr $ra. Pure cop2 control-reg ops, no C form. Auto-authorized 2026-06-07.
 SetRotMatrix  # GTE rotation-matrix loader (display.c): lw $t0..$t4, 0-16($a0) -> ctc2 $t0..$t4, $0..$4 (RT11RT12/RT13RT21/RT22RT23/RT31RT32/RT33) -> jr $ra. Pure cop2 control-reg ops, no C form. Auto-authorized 2026-06-07.
 
 # === Hand-coded leaf with vestigial frame (text1a.c) ===

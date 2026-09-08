@@ -1,4 +1,4 @@
-glabel func_800863DC
+glabel _SsVmFlush
     /* 76BDC 800863DC 1080023C */  lui        $v0, %hi(D_80103604)
     /* 76BE0 800863E0 0436428C */  lw         $v0, %lo(D_80103604)($v0)
     /* 76BE4 800863E4 78FFBD27 */  addiu      $sp, $sp, -0x88
@@ -288,4 +288,4 @@ glabel func_800863DC
     /* 7700C 8008680C 8800BD27 */  addiu      $sp, $sp, 0x88
     /* 77010 80086810 0800E003 */  jr         $ra
     /* 77014 80086814 00000000 */   nop
-endlabel func_800863DC
+endlabel _SsVmFlush

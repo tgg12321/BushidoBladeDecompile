@@ -1,4 +1,4 @@
-glabel func_80087CAC
+glabel _SsVmGetSeqVol
     /* 784AC 80087CAC FF008230 */  andi       $v0, $a0, 0xFF
     /* 784B0 80087CB0 80100200 */  sll        $v0, $v0, 2
     /* 784B4 80087CB4 1080013C */  lui        $at, %hi(D_80106F28)
@@ -60,4 +60,4 @@ glabel func_80087CAC
     /* 78594 80087D94 5A006284 */  lh         $v0, 0x5A($v1)
     /* 78598 80087D98 0800E003 */  jr         $ra
     /* 7859C 80087D9C 00000000 */   nop
-endlabel func_80087CAC
+endlabel _SsVmGetSeqVol

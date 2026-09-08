@@ -13,7 +13,7 @@
 #
 # Format: one function name per line; blank lines and #-comments ignored.
 
-spu_DmaTransfer
+SpuFree
 CD_getsector
 func_80060E04
 func_80040594

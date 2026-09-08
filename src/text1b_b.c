@@ -131,7 +131,7 @@ extern u8 D_800F6338;
 extern u8 D_800F6339;
 extern u8 D_800F633A;
 extern void func_8004A09C(s32, u16 *);
-extern void gte_SetColorMatrix(s32 *);
+extern void SetColorMatrix(s32 *);
 extern void SetBackColor(s32, s32, s32);
 extern s32 rcos();
 extern s32 rsin();

@@ -1,4 +1,4 @@
-glabel func_80086CF8
+glabel vmNoiseOn
     /* 774F8 80086CF8 1080033C */  lui        $v1, %hi(D_80102806)
     /* 774FC 80086CFC 06286394 */  lhu        $v1, %lo(D_80102806)($v1)
     /* 77500 80086D00 D0FFBD27 */  addiu      $sp, $sp, -0x30
@@ -324,4 +324,4 @@ glabel func_80086CF8
     /* 779C8 800871C8 3000BD27 */  addiu      $sp, $sp, 0x30
     /* 779CC 800871CC 0800E003 */  jr         $ra
     /* 779D0 800871D0 00000000 */   nop
-endlabel func_80086CF8
+endlabel vmNoiseOn

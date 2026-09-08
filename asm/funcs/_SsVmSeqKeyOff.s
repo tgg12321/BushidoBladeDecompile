@@ -1,4 +1,4 @@
-glabel func_80087DA0
+glabel _SsVmSeqKeyOff
     /* 785A0 80087DA0 1080023C */  lui        $v0, %hi(D_80101BCC)
     /* 785A4 80087DA4 CC1B4290 */  lbu        $v0, %lo(D_80101BCC)($v0)
     /* 785A8 80087DA8 E0FFBD27 */  addiu      $sp, $sp, -0x20
@@ -24,7 +24,7 @@ glabel func_80087DA0
     /* 785F4 80087DF4 FF000232 */   andi      $v0, $s0, 0xFF
     /* 785F8 80087DF8 1080013C */  lui        $at, %hi(D_8010280A)
     /* 785FC 80087DFC 0A2822A4 */  sh         $v0, %lo(D_8010280A)($at)
-    /* 78600 80087E00 751C020C */  jal        func_800871D4
+    /* 78600 80087E00 751C020C */  jal        _SsVmKeyOffNow
     /* 78604 80087E04 21200000 */   addu      $a0, $zero, $zero
   .L80087E08:
     /* 78608 80087E08 01001026 */  addiu      $s0, $s0, 0x1
@@ -41,4 +41,4 @@ glabel func_80087DA0
     /* 78630 80087E30 2000BD27 */  addiu      $sp, $sp, 0x20
     /* 78634 80087E34 0800E003 */  jr         $ra
     /* 78638 80087E38 00000000 */   nop
-endlabel func_80087DA0
+endlabel _SsVmSeqKeyOff

@@ -1,4 +1,4 @@
-glabel func_800861BC
+glabel _SsVmDoAllocate
     /* 769BC 800861BC F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 769C0 800861C0 21380000 */  addu       $a3, $zero, $zero
     /* 769C4 800861C4 1080033C */  lui        $v1, %hi(D_8010280C)
@@ -134,4 +134,4 @@ glabel func_800861BC
     /* 76BC0 800863C0 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 76BC4 800863C4 0800E003 */  jr         $ra
     /* 76BC8 800863C8 00000000 */   nop
-endlabel func_800861BC
+endlabel _SsVmDoAllocate

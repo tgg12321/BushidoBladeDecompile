@@ -1,4 +1,4 @@
-glabel func_800841E0
+glabel _SsSndCrescendo
     /* 749E0 800841E0 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 749E4 800841E4 21388000 */  addu       $a3, $a0, $zero
     /* 749E8 800841E8 00140700 */  sll        $v0, $a3, 16
@@ -64,7 +64,7 @@ glabel func_800841E0
     /* 74ACC 800842CC 038C0200 */  sra        $s1, $v0, 16
     /* 74AD0 800842D0 21202002 */  addu       $a0, $s1, $zero
     /* 74AD4 800842D4 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 74AD8 800842D8 2B1F020C */  jal        func_80087CAC
+    /* 74AD8 800842D8 2B1F020C */  jal        _SsVmGetSeqVol
     /* 74ADC 800842DC 1200A627 */   addiu     $a2, $sp, 0x12
     /* 74AE0 800842E0 1000A597 */  lhu        $a1, 0x10($sp)
     /* 74AE4 800842E4 4A000386 */  lh         $v1, 0x4A($s0)
@@ -95,7 +95,7 @@ glabel func_800841E0
     /* 74B44 80084344 038C0200 */  sra        $s1, $v0, 16
     /* 74B48 80084348 21202002 */  addu       $a0, $s1, $zero
     /* 74B4C 8008434C 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 74B50 80084350 2B1F020C */  jal        func_80087CAC
+    /* 74B50 80084350 2B1F020C */  jal        _SsVmGetSeqVol
     /* 74B54 80084354 1200A627 */   addiu     $a2, $sp, 0x12
     /* 74B58 80084358 1000A297 */  lhu        $v0, 0x10($sp)
     /* 74B5C 8008435C 4C000386 */  lh         $v1, 0x4C($s0)
@@ -198,7 +198,7 @@ glabel func_800841E0
     /* 74CC4 800844C4 00240400 */  sll        $a0, $a0, 16
     /* 74CC8 800844C8 03240400 */  sra        $a0, $a0, 16
     /* 74CCC 800844CC 5C000526 */  addiu      $a1, $s0, 0x5C
-    /* 74CD0 800844D0 2B1F020C */  jal        func_80087CAC
+    /* 74CD0 800844D0 2B1F020C */  jal        _SsVmGetSeqVol
     /* 74CD4 800844D4 5E000626 */   addiu     $a2, $s0, 0x5E
     /* 74CD8 800844D8 4000BF8F */  lw         $ra, 0x40($sp)
     /* 74CDC 800844DC 3C00B58F */  lw         $s5, 0x3C($sp)
@@ -210,4 +210,4 @@ glabel func_800841E0
     /* 74CF4 800844F4 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 74CF8 800844F8 0800E003 */  jr         $ra
     /* 74CFC 800844FC 00000000 */   nop
-endlabel func_800841E0
+endlabel _SsSndCrescendo

@@ -1,4 +1,4 @@
-glabel func_80084500
+glabel _SsSndDecrescendo
     /* 74D00 80084500 B8FFBD27 */  addiu      $sp, $sp, -0x48
     /* 74D04 80084504 21388000 */  addu       $a3, $a0, $zero
     /* 74D08 80084508 00140700 */  sll        $v0, $a3, 16
@@ -64,7 +64,7 @@ glabel func_80084500
     /* 74DEC 800845EC 038C0200 */  sra        $s1, $v0, 16
     /* 74DF0 800845F0 21202002 */  addu       $a0, $s1, $zero
     /* 74DF4 800845F4 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 74DF8 800845F8 2B1F020C */  jal        func_80087CAC
+    /* 74DF8 800845F8 2B1F020C */  jal        _SsVmGetSeqVol
     /* 74DFC 800845FC 1200A627 */   addiu     $a2, $sp, 0x12
     /* 74E00 80084600 1000A597 */  lhu        $a1, 0x10($sp)
     /* 74E04 80084604 4A000686 */  lh         $a2, 0x4A($s0)
@@ -112,7 +112,7 @@ glabel func_80084500
     /* 74E9C 8008469C 038C0200 */  sra        $s1, $v0, 16
     /* 74EA0 800846A0 21202002 */  addu       $a0, $s1, $zero
     /* 74EA4 800846A4 1000A527 */  addiu      $a1, $sp, 0x10
-    /* 74EA8 800846A8 2B1F020C */  jal        func_80087CAC
+    /* 74EA8 800846A8 2B1F020C */  jal        _SsVmGetSeqVol
     /* 74EAC 800846AC 1200A627 */   addiu     $a2, $sp, 0x12
     /* 74EB0 800846B0 1000A297 */  lhu        $v0, 0x10($sp)
     /* 74EB4 800846B4 4C000386 */  lh         $v1, 0x4C($s0)
@@ -239,7 +239,7 @@ glabel func_80084500
     /* 75070 80084870 00240400 */  sll        $a0, $a0, 16
     /* 75074 80084874 03240400 */  sra        $a0, $a0, 16
     /* 75078 80084878 5C000526 */  addiu      $a1, $s0, 0x5C
-    /* 7507C 8008487C 2B1F020C */  jal        func_80087CAC
+    /* 7507C 8008487C 2B1F020C */  jal        _SsVmGetSeqVol
     /* 75080 80084880 5E000626 */   addiu     $a2, $s0, 0x5E
     /* 75084 80084884 4000BF8F */  lw         $ra, 0x40($sp)
     /* 75088 80084888 3C00B58F */  lw         $s5, 0x3C($sp)
@@ -251,4 +251,4 @@ glabel func_80084500
     /* 750A0 800848A0 4800BD27 */  addiu      $sp, $sp, 0x48
     /* 750A4 800848A4 0800E003 */  jr         $ra
     /* 750A8 800848A8 00000000 */   nop
-endlabel func_80084500
+endlabel _SsSndDecrescendo

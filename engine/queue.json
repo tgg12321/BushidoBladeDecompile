@@ -391,7 +391,7 @@
       "status": "active"
     },
     {
-      "func": "func_800841E0",
+      "func": "_SsSndCrescendo",
       "file": "main",
       "distance": 200,
       "verdict": "C",
@@ -399,7 +399,7 @@
       "status": "active"
     },
     {
-      "func": "func_80086818",
+      "func": "_SsVmInit",
       "file": "main",
       "distance": 200,
       "verdict": "C",
@@ -511,7 +511,7 @@
       "status": "active"
     },
     {
-      "func": "func_80084500",
+      "func": "_SsSndDecrescendo",
       "file": "main",
       "distance": 235,
       "verdict": "C",
@@ -559,7 +559,7 @@
       "status": "active"
     },
     {
-      "func": "func_80085A40",
+      "func": "SsUtKeyOnV",
       "file": "main",
       "distance": 259,
       "verdict": "C",
@@ -615,7 +615,7 @@
       "status": "active"
     },
     {
-      "func": "func_800863DC",
+      "func": "_SsVmFlush",
       "file": "main",
       "distance": 271,
       "verdict": "C",
@@ -759,7 +759,7 @@
       "status": "active"
     },
     {
-      "func": "func_800872A4",
+      "func": "_SsVmKeyOnNow",
       "file": "main",
       "distance": 301,
       "verdict": "C",
@@ -775,7 +775,7 @@
       "status": "active"
     },
     {
-      "func": "func_80086CF8",
+      "func": "vmNoiseOn",
       "file": "main",
       "distance": 305,
       "verdict": "C",

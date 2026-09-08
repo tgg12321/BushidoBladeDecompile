@@ -1,4 +1,4 @@
-glabel func_800871D4
+glabel _SsVmKeyOffNow
     /* 779D4 800871D4 1080043C */  lui        $a0, %hi(D_8010280A)
     /* 779D8 800871D8 0A288494 */  lhu        $a0, %lo(D_8010280A)($a0)
     /* 779DC 800871DC 00000000 */  nop
@@ -53,4 +53,4 @@ glabel func_800871D4
     /* 77A98 80087298 121B22A4 */  sh         $v0, %lo(D_800F1B12)($at)
     /* 77A9C 8008729C 0800E003 */  jr         $ra
     /* 77AA0 800872A0 00000000 */   nop
-endlabel func_800871D4
+endlabel _SsVmKeyOffNow

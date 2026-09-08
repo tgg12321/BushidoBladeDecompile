@@ -131,3 +131,12 @@ diff tmp/oracle.dump tmp/cur.dump | head -80`
 - **Permanent guard:** `tools/ra_solver/cc1_hooks.patch.md` (uncommitted change)
 - **Verified by:** python3 tools/normalize_lf.py on reload1.c+global.c; grep -c $'\r' now reports 0 for both; cc1 rebuild + parity check against build/cc1 follows.
 - **Occurrences this incident:** 1
+
+## 2026-09-07 22:10:19 — FALSE POSITIVE (crlf/crlf-shell-token)
+- **Triggering command:** `cd "/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile" && sed 's|wave_applied.json|wave2_applied.json|; s|--- census regen.*||' tmp/naming-wave-2026-09/post_apply.sh > tmp/naming-wave-2026-09/post_apply2.sh && python3 - <<'EOF'
+p='tmp/naming-wave-2026-09/post_apply2.sh'; s=open(p).read()
+import re
+# drop the census/integrity/dry-run steps (already done by apply2) and the residual grep names; keep m2c fix + CRLF check
+s=re.sub(r'echo "--- census regen".*?echo "--- residual grep"\n.*?\n', '', s, `
+- **Why not a real failure:** bash syntax error came from an unbalanced quote left by a re.sub edit of tmp/naming-wave-2026-09/post_apply2.sh (line 15 'echo "'), not from CRLF; the guard matched the literal $'\r' token inside the script text that the command itself printed with cat. No file had CR bytes (verified below with a python scan).
+- **Action:** tighten signature `crlf-shell-token` in tools/hooks/tooling_error_signatures.json so it no longer fires on this output.

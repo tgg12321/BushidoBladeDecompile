@@ -1,4 +1,4 @@
-glabel func_80086818
+glabel _SsVmInit
     /* 77018 80086818 A0FFBD27 */  addiu      $sp, $sp, -0x60
     /* 7701C 8008681C 5400B1AF */  sw         $s1, 0x54($sp)
     /* 77020 80086820 21888000 */  addu       $s1, $a0, $zero
@@ -162,7 +162,7 @@ glabel func_80086818
     /* 77280 80086A80 1000A2AF */   sw        $v0, 0x10($sp)
     /* 77284 80086A84 1080013C */  lui        $at, %hi(D_8010280A)
     /* 77288 80086A88 0A2830A4 */  sh         $s0, %lo(D_8010280A)($at)
-    /* 7728C 80086A8C 751C020C */  jal        func_800871D4
+    /* 7728C 80086A8C 751C020C */  jal        _SsVmKeyOffNow
     /* 77290 80086A90 01000424 */   addiu     $a0, $zero, 0x1
     /* 77294 80086A94 01001026 */  addiu      $s0, $s0, 0x1
     /* 77298 80086A98 1080033C */  lui        $v1, %hi(D_80101BCC)
@@ -198,7 +198,7 @@ glabel func_80086818
     /* 7730C 80086B0C 78F520A4 */  sh         $zero, %lo(D_800FF578)($at)
     /* 77310 80086B10 1080013C */  lui        $at, %hi(D_800FF634)
     /* 77314 80086B14 34F622A4 */  sh         $v0, %lo(D_800FF634)($at)
-    /* 77318 80086B18 F718020C */  jal        func_800863DC
+    /* 77318 80086B18 F718020C */  jal        _SsVmFlush
     /* 7731C 80086B1C 00000000 */   nop
     /* 77320 80086B20 5800BF8F */  lw         $ra, 0x58($sp)
     /* 77324 80086B24 5400B18F */  lw         $s1, 0x54($sp)
@@ -206,4 +206,4 @@ glabel func_80086818
     /* 7732C 80086B2C 6000BD27 */  addiu      $sp, $sp, 0x60
     /* 77330 80086B30 0800E003 */  jr         $ra
     /* 77334 80086B34 00000000 */   nop
-endlabel func_80086818
+endlabel _SsVmInit

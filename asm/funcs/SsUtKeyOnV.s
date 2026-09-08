@@ -1,4 +1,4 @@
-glabel func_80085A40
+glabel SsUtKeyOnV
     /* 76240 80085A40 C0FFBD27 */  addiu      $sp, $sp, -0x40
     /* 76244 80085A44 1800B0AF */  sw         $s0, 0x18($sp)
     /* 76248 80085A48 5800B08F */  lw         $s0, 0x58($sp)
@@ -206,14 +206,14 @@ glabel func_80085A40
     /* 76544 80085D44 0F80013C */  lui        $at, %hi(D_800F4E2E)
     /* 76548 80085D48 21082200 */  addu       $at, $at, $v0
     /* 7654C 80085D4C 2E4E24A4 */  sh         $a0, %lo(D_800F4E2E)($at)
-    /* 76550 80085D50 6F18020C */  jal        func_800861BC
+    /* 76550 80085D50 6F18020C */  jal        _SsVmDoAllocate
     /* 76554 80085D54 00000000 */   nop
     /* 76558 80085D58 1080033C */  lui        $v1, %hi(D_80102808)
     /* 7655C 80085D5C 08286384 */  lh         $v1, %lo(D_80102808)($v1)
     /* 76560 80085D60 FF000224 */  addiu      $v0, $zero, 0xFF
     /* 76564 80085D64 05006214 */  bne        $v1, $v0, .L80085D7C
     /* 76568 80085D68 2120A002 */   addu      $a0, $s5, $zero
-    /* 7656C 80085D6C 3E1B020C */  jal        func_80086CF8
+    /* 7656C 80085D6C 3E1B020C */  jal        vmNoiseOn
     /* 76570 80085D70 FF006432 */   andi      $a0, $s3, 0xFF
     /* 76574 80085D74 64170208 */  j          .L80085D90
     /* 76578 80085D78 00000000 */   nop
@@ -221,7 +221,7 @@ glabel func_80085A40
     /* 7657C 80085D7C FF1A020C */  jal        note2pitch2
     /* 76580 80085D80 2128C003 */   addu      $a1, $fp, $zero
     /* 76584 80085D84 01000424 */  addiu      $a0, $zero, 0x1
-    /* 76588 80085D88 A91C020C */  jal        func_800872A4
+    /* 76588 80085D88 A91C020C */  jal        _SsVmKeyOnNow
     /* 7658C 80085D8C FFFF4530 */   andi      $a1, $v0, 0xFFFF
   .L80085D90:
     /* 76590 80085D90 1080013C */  lui        $at, %hi(D_800FF630)
@@ -265,7 +265,7 @@ glabel func_80085A40
   .L80085E20:
     /* 76620 80085E20 1080013C */  lui        $at, %hi(D_8010280A)
     /* 76624 80085E24 0A2825A4 */  sh         $a1, %lo(D_8010280A)($at)
-    /* 76628 80085E28 751C020C */  jal        func_800871D4
+    /* 76628 80085E28 751C020C */  jal        _SsVmKeyOffNow
     /* 7662C 80085E2C 21200000 */   addu      $a0, $zero, $zero
     /* 76630 80085E30 21100000 */  addu       $v0, $zero, $zero
     /* 76634 80085E34 1080013C */  lui        $at, %hi(D_800FF630)
@@ -275,4 +275,4 @@ glabel func_80085A40
     /* 76640 80085E40 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 76644 80085E44 0800E003 */  jr         $ra
     /* 76648 80085E48 00000000 */   nop
-endlabel func_80085A40
+endlabel SsUtKeyOnV

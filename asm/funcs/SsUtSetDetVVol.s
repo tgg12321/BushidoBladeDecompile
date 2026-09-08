@@ -1,4 +1,4 @@
-glabel func_80086014
+glabel SsUtSetDetVVol
     /* 76814 80086014 F8FFBD27 */  addiu      $sp, $sp, -0x8
     /* 76818 80086018 FFFF8230 */  andi       $v0, $a0, 0xFFFF
     /* 7681C 8008601C 1800422C */  sltiu      $v0, $v0, 0x18
@@ -28,4 +28,4 @@ glabel func_80086014
     /* 76874 80086074 0800BD27 */  addiu      $sp, $sp, 0x8
     /* 76878 80086078 0800E003 */  jr         $ra
     /* 7687C 8008607C 00000000 */   nop
-endlabel func_80086014
+endlabel SsUtSetDetVVol

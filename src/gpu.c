@@ -263,7 +263,7 @@ u16 LoadTPage(s32 a0, s32 mode, s32 a2, s32 a3, s32 texpage, s32 width, s32 clut
     return GetTPage(mode, a2, a3, texpage) & 0xFFFF;
 }
 
-u16 gpu_LoadClut256(s32 a0, s32 a1, s32 a2) {
+u16 LoadClut(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
     buf[0] = a1;
     buf[1] = a2;
@@ -272,7 +272,7 @@ u16 gpu_LoadClut256(s32 a0, s32 a1, s32 a2) {
     LoadImage((s32)buf, a0);
     return GetClut(a1, a2);
 }
-u16 gpu_LoadClut16(s32 a0, s32 a1, s32 a2) {
+u16 LoadClut2(s32 a0, s32 a1, s32 a2) {
     s16 buf[4];
     buf[0] = a1;
     buf[1] = a2;
@@ -283,7 +283,7 @@ u16 gpu_LoadClut16(s32 a0, s32 a1, s32 a2) {
 }
 s16 *SetDefDrawEnv(s16 *a0, s16 a1, s16 a2, s16 a3, s32 a4) {
     s32 ret;
-    ret = sys_GetVideoMode();
+    ret = GetVideoMode();
     a0[0] = a1;
     a0[1] = a2;
     a0[2] = a3;
@@ -337,11 +337,11 @@ void DumpTPage(s32 a0) {
 void DumpClut(s32 a0) {
     g_gpu_debug_func(&D_80015D70, (a0 & 0x3F) << 4, (a0 & 0xFFFF) >> 6);
 }
-u32 ot_GetTag(u32 *a0) {
+u32 NextPrim(u32 *a0) {
     return (*a0 & OT_ADDR_MASK) | OT_TAG_BASE;
 }
 
-u32 ot_IsEnd(u32 *a0) {
+u32 IsEndPrim(u32 *a0) {
     return (*a0 & OT_ADDR_MASK) == OT_ADDR_MASK;
 }
 void AddPrim(OTag *a0, OTag *a1) {

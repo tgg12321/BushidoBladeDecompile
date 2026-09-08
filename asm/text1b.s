@@ -2423,7 +2423,7 @@ glabel func_80049F4C
     /* 3A850 8004A050 60001026 */   addiu     $s0, $s0, 0x60
     /* 3A854 8004A054 0F80043C */  lui        $a0, %hi(D_800F6318)
     /* 3A858 8004A058 18638424 */  addiu      $a0, $a0, %lo(D_800F6318)
-    /* 3A85C 8004A05C C7FB010C */  jal        gte_SetColorMatrix
+    /* 3A85C 8004A05C C7FB010C */  jal        SetColorMatrix
     /* 3A860 8004A060 00000000 */   nop
     /* 3A864 8004A064 0F80043C */  lui        $a0, %hi(D_800F6338)
     /* 3A868 8004A068 38638490 */  lbu        $a0, %lo(D_800F6338)($a0)
@@ -23021,7 +23021,7 @@ glabel func_8005C6D0
     /* 4D01C 8005C81C 21083200 */  addu       $at, $at, $s2
     /* 4D020 8005C820 7CFB2290 */  lbu        $v0, %lo(D_800EFB7C)($at)
     /* 4D024 8005C824 0F00E730 */  andi       $a3, $a3, 0xF
-    /* 4D028 8005C828 9016020C */  jal        func_80085A40
+    /* 4D028 8005C828 9016020C */  jal        SsUtKeyOnV
     /* 4D02C 8005C82C 1C00A2AF */   sw        $v0, 0x1C($sp)
     /* 4D030 8005C830 14720108 */  j          .L8005C850
     /* 4D034 8005C834 00141300 */   sll       $v0, $s3, 16
