@@ -1,0 +1,24 @@
+{
+ "func": "func_8003F6D8",
+ "file": "config",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T07:12:28.986450+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "88919c5b1f367b06",
+   "when": "2026-09-08T07:20:43.721667+00:00",
+   "summary": "final call: Body is ordinary pure C: a layout typedef (Func8003F6D8Inner, offsets recovered from the asm per evidence.md 'Layout recovered'), two counted for-loops, a per-iteration record offset `off = i * 0xD0 +"
+  }
+ ]
+}

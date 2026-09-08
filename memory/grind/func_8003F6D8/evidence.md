@@ -1,0 +1,11 @@
+# Evidence bank — func_8003F6D8
+
+## 2026-09-08 s1 (recon) — chassis: HEAD main @ 0f9bfa61, -mel -msoft-float, no FAKE constructs
+- canonical: verdict C, hand_coded_tier LOW (no S1/S2/S6), target 71 insns. Ordinary pure-C target.
+- Baseline honest floor with the committed cheat body stripped (39 cheat-asm insns stripped): sandbox --disable all = 55.
+- OBJECT MODEL: the function touches NO globals (only its s16* parameter and the callee func_80052A20, an authorized canonical-asm GTE leaf in src/text1b.c). No DATA MODEL signals; nothing to measure.
+- Layout recovered from the asm: header s16 count at +0; records of stride 0xD0 start at +8; inside each record at +0x1C: s32 count, s32 *objs[] at +4 (each obj used at +0x18), s16 pairs[3][16] at +0x18 (stride 0x20, second call uses +0x10), s32 quads[3][4] at +0x84 (stride 0x10, second call uses +8). Inner block size 0xB4 = 0xD0-0x1C.
+- Form A (`rec[i].inner` with rec = (Rec*)(arg0+4)): score 24. Inner loop byte-exact. loop.c folded arg0 into the giv add_val -> a pointer giv (init `addiu v1,a0,8` after the entry test, lives in $s8), i spilled to 0x18(sp). Target instead keeps i in $fp, spills an integer offset biv at 0x28(sp) and does `addu v0,t0,a3` (arg0+off) each iteration.
+- Form B (user biv `s32 off = 8;` hoisted before the loop, `i++, off += 0xD0`): score 12. Register shape now matches (i=$fp, j=$s7, off in stack) but off=8 is stored BEFORE the entry `blez` (target: after) and the off increment sits after `i++` (target: before). Both are placement facts of a user biv vs. a compiler-created giv.
+- Form C (`s32 off = i * 0xD0 + 8;` INSIDE the loop body, address `(u8*)arg0 + off + 0x1C`): score 0. config.loop dump (tmp/grind/func_8003F6D8/dumps/config.loop:1876-1885): "Insn 36: giv reg 79 src reg 73 ... mult 208 add 8" and "giv at 36 reduced to (reg:SI 125)" — a DEST_REG giv of biv i (reg 73), whose init lands at loop start (after the cse-duplicated entry test) and whose increment is emitted at the biv update, before `i++`. The `arg0 + off` add is not a separately-reduced address giv, so it is re-emitted each iteration from the two spilled slots, exactly as the target.
+- Build of src/config.c compiled clean under the sandbox with Form C in place (score 0 = byte-identical function body vs. asm/funcs/func_8003F6D8.s modulo relocations).
