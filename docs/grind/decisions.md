@@ -25650,3 +25650,7 @@ THE BLOCKER AND THE REMEDY. grant_canonical_asm (tools/grinder/grindlib.py:1493)
 WHY NOT FAIL / PASS. FAIL is wrong: no construct is objectionable and no evidence is missing — a FAIL would re-grind a solved function against a wall no session can move. A bare PASS is wrong: the body is already cleared, and resubmission would hit the same grant-door refusal as 387fa8f8 (a livelock). One record defect, not a fail ground: the handoff entry cites a 'docs/grind/decisions.md 2026-09-08 ruling' for the 06:15 PASS, but that PASS is recorded only in state.json review_ledger and journal.md:1860 (commit 387fa8f8 did not touch decisions.md). Evidence: memory/grind/func_800204C0/evidence.md items 1-16, hypotheses.md H1-H6, rejected/ (2 forms), tmp/grind/func_800204C0/s1/.
 
 **Constraint recorded for any future session:** Submit memory/grind/func_800204C0/candidate.c EXACTLY (body 8655cc28f3aa5cc7, Judge-cleared) once tools/grinder/owner_cluster_grants.txt carries a func_800204C0 row; do not respell the islands (measured dead, rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c) and do not add FAKE/pins/barriers to chase a STRONG scan tier.
+
+## 2026-09-08 01:34 — func_800430E4 — layer-1 review — **FAIL**
+
+The dst-relative RMW lever is ordinary C, but the body rests on two unjustified per-use object-model puns: a fabricated function-named 8xs32 struct cast over the splat scalar D_800FF610 (documented as a MATRIX / struct) and stride-96 pointer arithmetic on the s16 scalar D_800F62E0; the dispatcher flagged both lines and the self-vet justified neither.
