@@ -1,3 +1,36 @@
+/* [s53 STRUCTURAL NOTE - body unchanged, re-audited at 3 (127/127) on the HEAD
+ * chassis (anchor src/ings.c:820); no FAKE construct in this body.]
+ * THE FUNCTION IS SYMMETRIC.  Cell S2 (rejected/s53_symmetric_loop2_mirror_
+ * both_copies_missing_costs_12.c) writes loop 2 as a literal mirror of loop 1 -
+ * its own pre-guard read `p2 = *(u8 **)(ctx + 0xC);`, its own guard temp `t2`,
+ * its own preheader read `q2 = *(u8 **)(ctx + 0xC);` feeding `base = sh2 + q2` -
+ * and measures 12 at 125/127 with the ENTIRE diff confined to the two loop
+ * preheaders, IDENTICAL in both loops: the target's `addu a3,a0,zero` is missing
+ * and the guard's pointer/shift seats swap (a1/a0 instead of a0/a1).  Every
+ * other instruction in the function matches.  The 52-session framing that loop 2
+ * needs a different spelling from loop 1, and that the residual is a
+ * load-vs-copy TRANSPOSITION between loop-2's guard block and its preheader, is
+ * RETIRED: it is one missing instruction per loop, the same one twice.
+ *
+ * The pass attribution is now read from dumps, not inferred: with S2 in place,
+ * tmp/grind/func_80017848/dumps/ings.cse and ings.combine contain NO
+ * `(set (reg) (reg))` insn in either preheader.  cse propagates the guard's
+ * pointer pseudo straight into the base add (insn 89 for loop 1, insn 165 for
+ * loop 2, both operands carrying REG_DEAD), so the copy never reaches
+ * local-alloc at all.  The copy therefore survives only if its DESTINATION has
+ * more than one use at combine time - with a single use, combine merges the move
+ * into the consuming `plus` and the instruction disappears.
+ *
+ * That model was confirmed by construction: V1 (loop 2's preheader spelled
+ * `q2 = q;`, giving loop-1's q two uses) materialises loop-1's copy at 10/126,
+ * and Z1 (V1 + loop-2's latch recomputed from q2) reaches 9 at 127/127 - the best
+ * M-branch score in 53 sessions.  What is still wrong in Z1 is the SHAPE of the
+ * second use: every address-shaped second use (latch bound, body index) is folded
+ * by cse to `base`, so the copy that survives is a copy of base placed AFTER the
+ * base add instead of a copy of the pointer placed BEFORE it.  The next session's
+ * job is a second use of the copy destination that cse cannot fold to base.
+ * This body remains the floor-3 BASE and is NOT superseded.
+ */
 /* [s51 REDERIVE NOTE - body unchanged, re-audited at 3 (127/127) on the HEAD
  * chassis (anchor src/ings.c:820); fake_ablate reports NO FAKE constructs in
  * this body, so every s42-s50 instance kill was measured without a FAKE mask.]

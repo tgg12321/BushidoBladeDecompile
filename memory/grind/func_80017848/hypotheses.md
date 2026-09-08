@@ -4793,3 +4793,87 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD src/ings.c on main (commit 4a2d4a51), read-only sibling audit; BASE re-audited at 3 (127/127) in the same session
+
+## s53 (2026-09-07, structural)
+
+- **H-s53-1 (CONFIRMED).** Loop 2 written as a literal mirror of loop 1 (own pre-guard
+  read `p2`, own guard temp `t2`, own preheader read `q2`) makes the emitted function
+  match the target everywhere except one instruction per loop preheader.
+  Probe: cells S1/S2, `tmp/grind/func_80017848/s53/body_S1.c`, `body_S2.c`, diff in
+  `s53/B_S2.txt`. Result: both 12 at 125/127; the only differing lines are the two
+  preheaders, and the difference is the SAME in both loops (missing `addu a3,a0,zero`
+  plus the a0/a1 seat swap it causes).
+
+- **H-s53-2 (CONFIRMED).** The missing preheader copy is decided at COMBINE time by the
+  copy destination's use count, not by local-alloc / optimize_reg_copy_1.
+  Probe: `pwsh tools/grinder/dump.ps1 func_80017848` with S2 in place; read
+  `tmp/grind/func_80017848/dumps/ings.cse` and `ings.combine` insns 64-89 (loop 1) and
+  143-165 (loop 2). Result: no `(set (reg) (reg))` insn exists in either preheader at any
+  pass; cse propagates the guard pseudo (reg 79 / reg 81) straight into the base add
+  (insn 89 / insn 165), both operands carrying REG_DEAD.
+
+- **H-s53-3 (CONFIRMED).** Giving the preheader copy destination a SECOND use makes the
+  copy survive. Probe: cell V1 (loop 2's preheader spelled `q2 = q;`, so loop-1's `q` is
+  used by loop-1's base add and by loop-2's preheader). Result: 10 at 126/127 with
+  `addu t0,a0,zero / addu a0,a1,t0` emitted in loop 1's preheader for the first time on a
+  chassis whose loop-2 guard also carries the target's `lw`.
+
+- **H-s53-4 (CONFIRMED).** Two chained second-uses restore the instruction count and give
+  the best M-branch score recorded. Probe: cell Z1 = V1 + `} while (i < *(s32 *)(sh2 +
+  (s32)q2 + 0x20));`. Result: 9 at 127/127 (previous M-branch best: 10 at s51).
+  Banked `rejected/s53_chain_plus_loop2_latch_via_q2_BEST_M_BRANCH_costs_9.c`.
+
+- **H-s53-5 (KILLED, instance).** Spelling the copy destination's second use as an ADDRESS
+  expression (the do-while latch bound, or the loop-body index) does not produce the
+  target's pointer copy: cse folds the expression to `base`, so the surviving copy is a
+  copy of base emitted after the base add. Measured on the HEAD src/ings.c:820 INCLUDE_ASM
+  anchor with no FAKE construct present: U1 = 13 at 127/127, U2 = 17 at 127/127, U3 = 14 at
+  126, AA = 11 at 126, AB = 13 at 127, AC = 10 at 127, AD = 11 at 128, Z3 = 12 at 127.
+
+- **H-s53-6 (KILLED, instance).** Spelling the copy destination's second use as a POST-LOOP
+  consumer of the node-array pointer, or sourcing the preheader copies from the top-guard
+  local `slots`, does not improve on BASE or on Z1. Measured on the same chassis with no
+  FAKE construct present: BA (rec_a via q2) = 21 at 127, BB (call arg0 via q2) = 13 at 127,
+  BC (rec_b via q2) = 21 at 126, BD = 21 at 127, Y1 = 15 at 125, Y2 = 15 at 125,
+  Z4 = 32 at 128, W1 (no `base` local) = 12 at 125,
+  AE/AF/AG (q pre-initialised before loop 1's guard) = 11 / 11 / 12.
+
+## [s53] Loop 2 written as a literal mirror of loop 1 (its own pre-guard read p2, its own guard temp t2, its own preheader read q2 feeding base = sh2 + q2) makes the emitted function match the target everywhere except one instruction per loop preheader, and the two preheaders then differ from the target in exactly the same way.
+- mechanism: BASE gives loop 2 no memory reference in its guard block (the guard tests through the register p carried out of loop 1), so loop 2's preheader read is the first reference in its cse extended block and stays a real lw while loop 1's becomes a copy. Mirroring the guard's fresh read into loop 2 makes both loops' extended blocks identical, which collapses the long-standing asymmetry into a single repeated construct.
+- probe: Cells S1 and S2, tmp/grind/func_80017848/s53/body_S1.c and body_S2.c, applied at the HEAD src/ings.c:820 INCLUDE_ASM anchor and scored with `sandbox func_80017848 --disable all`; normalised objdump diff in s53/B_S2.txt vs s53/T.txt.
+- result: S1 = 12 at 125/127, S2 = 12 at 125/127. The whole diff is the two loop preheaders: the target's `addu a3,a0,zero` is absent in both, and the guard's pointer/shift seats swap to a1/a0 from the target's a0/a1. Prologue, top guard, both loop bodies, both latches, the call block, the link-record stores, rec_a/rec_b and the epilogue are byte-identical. The 52-session framing that the residual is a load-vs-copy transposition peculiar to loop 2 is retired.
+- verdict: CONFIRMED
+
+## [s53] The missing preheader copy is decided at combine time by the copy destination's use count; cse never leaves a reg-reg copy insn for local-alloc to keep or drop.
+- mechanism: cse rewrites the preheader's redundant *(u8 **)(ctx + 0xC) load by propagating the guard's pointer pseudo directly into the consuming base add, so no (set (reg) (reg)) insn is ever created. A copy insn only persists when its destination has more than one use, because combine merges a single-use move into the consuming plus.
+- probe: `pwsh tools/grinder/dump.ps1 func_80017848` with cell S2 applied; read tmp/grind/func_80017848/dumps/ings.cse and ings.combine, loop-1 preheader insns 64/66/86/89 and loop-2 preheader insns 143/145/165/336.
+- result: Neither dump contains any reg-to-reg set in either preheader. In .cse the loop-1 base add is already (insn 89 (set (reg/v:SI 83) (plus (reg/v:SI 86) (reg/v:SI 79)))) and in .combine both source operands carry REG_DEAD notes; loop 2's insn 165 is the same shape. This supersedes s52's local-alloc.c:700 optimize_reg_copy_1 attribution for THIS construct: the copy is gone long before local-alloc runs.
+- verdict: CONFIRMED
+
+## [s53] Giving the preheader copy destination a second use makes the copy survive, and two chained second uses restore the instruction count to 127/127 at score 9.
+- mechanism: With two uses combine cannot merge the move into the base add, so the pseudo survives to the allocator and is emitted as an addu copy. Chaining loop 2's preheader onto loop 1's copy dest (`q2 = q;`) supplies loop 1's second use, and recomputing loop 2's do-while bound from q2 supplies loop 2's.
+- probe: Cells V1 (tmp/grind/func_80017848/s53/body_V1.c) and Z1 (body_Z1.c), applied at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`; diffs in s53/B_V1.txt and s53/B_Z1.txt.
+- result: V1 = 10 at 126/127 and emits `addu t0,a0,zero / addu a0,a1,t0` in loop 1's preheader for the first time on a chassis whose loop-2 guard also carries the target's lw. Z1 = 9 at 127/127, beating s51's M7/M8 (10) and s50's M2 (17); it is the best M-branch score in 53 sessions. Banked as rejected/s53_chain_plus_loop2_latch_via_q2_BEST_M_BRANCH_costs_9.c.
+- verdict: CONFIRMED
+
+## [s53] Spelling the copy destination's second use as an address expression - the do-while latch bound or the loop-body index - produces a copy of base emitted after the base add rather than the target's copy of the pointer emitted before it, in each of the eight cells measured this session.
+- mechanism: cse recognises `sh + q + K` as `base + K` and folds it, so the second use attaches to the base pseudo. LICM then hoists the folded address into the preheader as a copy of base, which lands after the base add instead of before it.
+- probe: Cells U1, U2, U3, AA, AB, AC, AD, Z3 in tmp/grind/func_80017848/s53/, each applied at the HEAD src/ings.c:820 anchor and scored; diffs read for U1 and U2 (s53/B_U1.txt, s53/B_U2.txt).
+- result: U1 = 13 at 127/127, U2 = 17 at 127/127, U3 = 14 at 126, AA = 11 at 126, AB = 13 at 127, AC = 10 at 127, AD = 11 at 128, Z3 = 12 at 127. Every one of them shows the copy after the base add with the latch or body reading the copy.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s53 body applied in turn; no FAKE construct present in any body (fake_ablate reported none in candidate.c at s51 and none of these cells adds one); BASE re-audited at 3 (127/127) in the same session.
+
+## [s53] Sourcing the preheader copies from the top-guard local `slots`, or giving the copy destination a post-loop second use (rec_a, rec_b, or math_Distance3D's first argument), does not improve on BASE's 3 or on Z1's 9 in any of the eleven cells measured this session.
+- mechanism: A post-loop consumer of the node-array pointer replaces one of the target's own `lw ..,12(s2)` reloads, so the copy bought is paid for by a load lost; `slots` is live from function entry, which lengthens its live range across the loops and rotates the guard seats.
+- probe: Cells BA, BB, BC, BD, Y1, Y2, Z4, W1, AE, AF, AG in tmp/grind/func_80017848/s53/, each applied at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`.
+- result: BA = 21 at 127, BB = 13 at 127, BC = 21 at 126, BD = 21 at 127, Y1 = 15 at 125, Y2 = 15 at 125, Z4 = 32 at 128, W1 (no `base` local at all) = 12 at 125, AE = 11 at 126, AF = 11 at 126, AG = 12 at 128.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s53 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session.
+
+## [s53] The mandatory kill re-audit found nothing void: BASE and s52's two closest cells re-measure at their banked values on the HEAD chassis.
+- mechanism: Instance kills are chassis-relative and FAKE-state-relative, so the closest banked forms are re-measured before new probes are spent.
+- probe: memory/grind/func_80017848/candidate.c, tmp/grind/func_80017848/s52/body_J4.c and body_G.c applied in turn at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`.
+- result: BASE = 3 at 127/127, J4 = 8 at 125/127, G = 22 at 127/127 - all identical to their s52 values. The s52 instance kills stand.
+- verdict: CONFIRMED
