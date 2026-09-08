@@ -114,6 +114,29 @@
  * that it never reaches the tie.
  * Do NOT re-run: the block-structure axis, the partial-inline axis, computation hoisting,
  * or any sign flip. See evidence.md / hypotheses.md s16. */
+/* s17 (2026-09-08, synthesis) - body UNCHANGED, floor re-measured 2/202 on HEAD df6966b7.
+ * s17 derived the residual end-to-end from local-alloc.c and the target asm instead of
+ * from the ledger narrative, and the derivation is now complete: in the (T,T) quadrant
+ * block 7 is 14 insns, dz is born at insn 2 and dies at insn 8, dx is born at insn 4 and
+ * dies at insn 10, both have 3 references, so qty_compare_1 gives both exactly 2500 and
+ * falls through to `return *q1 - *q2` (local-alloc.c:1719) - the QUANTITY number, handed
+ * out by alloc_qty's next_qty++ (local-alloc.c:284) from block_alloc's forward insn scan
+ * (local-alloc.c:1169-1175). In the (T,T) quadrant dz's subu always precedes dx's, so dz
+ * always has the lower quantity number and always wins the seat. Only three levers can
+ * change that: (L1) dx gets a 4th reference, (L2) dz's span grows by an insn placed
+ * between insn 2 and insn 4, (L3) dx's last use moves to insn 9 or earlier.
+ * s17 measured L3 dead (8 more kp-difference spellings, all exactly 9; 2 split-init forms
+ * 32/36) and killed the last s16 frontier item, the outer declaration list, as a CLASS
+ * kill (24 sampled orders, best 9, and the mechanism shows pseudo numbering is not an
+ * input to any comparator in local-alloc.c) - so do NOT run the 16,384-variant sweep the
+ * s15/s16 frontier proposed. A new axis, naming a PRODUCT rather than a difference to
+ * reverse the multiply order, is inert on the first product and costs 25-32 on the second.
+ * What is left is L1 and one unread artefact: block 7's four product pseudos do not
+ * appear in the block-7 quantity table and have no QTYDBG-SUGG lines, so combine_regs has
+ * already tied each of them into some other quantity. If the kp product can be made to
+ * tie into dx's quantity, dx's refs go 3 -> 5 and its death extends to the kp subu:
+ * priority 3125 vs dz's 2500, dx wins the seat, emission order untouched. See
+ * evidence.md / hypotheses.md s17. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;

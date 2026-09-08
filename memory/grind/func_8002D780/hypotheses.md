@@ -1805,3 +1805,159 @@ outcome JSON.
 - probe: python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate tmp/grind/func_8002D780/s16/va/a_000_AZXC.c -> keep-all 9, drop-1 13.
 - result: The s14 kill of the target-declaration-order body stands on the current chassis and is not a FAKE-masking artefact.
 - verdict: CONFIRMED
+
+## s17 (2026-09-08, synthesis)
+
+### H-s17-1 - the outer declaration list (the last s15/s16 frontier item)
+- statement: On the (T,T) quadrant chassis, permuting the outer centroid/test-1
+  declaration list x0, x2, z0, z2, cx, cz, px, pz over 24 sampled def-before-use orders
+  scores 9 at best, and the quantity numbers that would have to move are handed out by
+  block_alloc's forward insn scan rather than by pseudo numbering, so no permutation of
+  that list can seat dx before dz.
+- mechanism: qty_compare_1 breaks its tie with "return *q1 - *q2;"
+  (tools/gcc-2.7.2/local-alloc.c:1719) - the QUANTITY number, which alloc_qty assigns
+  with next_qty++ (local-alloc.c:284) as block_alloc scans the block's insns forward
+  (local-alloc.c:1169-1175). The pseudo NUMBER, which is what an outer declaration
+  permutation changes, is not an input to any comparator in the file. In the (T,T)
+  quadrant dz's subu necessarily precedes dx's, so dz's quantity is created first and
+  wins every tie.
+- probe: tmp/grind/func_8002D780/s17/gen_s17.py group A -> 24 variants swept with
+  tools/sweep_variants.py (tmp/grind/func_8002D780/s17/vA.json).
+- result: 5 orders at 9 (those that keep the four loads adjacent), 3 at 17, 4 at 22,
+  3 at 25, 6 at 26, 1 at 27, 2 at 31. Nothing below 9. Banked
+  rejected/s17-outer-decl-order-interleaved-loads-17.c. This closes the axis WITHOUT the
+  16,384-variant, ~3.5 h enumerate sweep the s15 and s16 frontiers proposed.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD df6966b7 (-mel -msoft-float), the (T,T) chassis
+  tmp/grind/func_8002D780/s17/tt_chassis.c spliced into src/code6cac_b.c, one FAKE
+  construct present (the same-value re-store of the local m); 24 orders sampled evenly
+  across the 16,384-order space, with the mechanism covering the remainder
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1719
+
+### H-s17-2 - the L3 axis: getting the (pz - z0) subu out from between the two kp mults
+- statement: Naming, re-ordering or re-scoping the two kp differences (px - x0) and
+  (pz - z0) - eight spellings including both named before kp, named in reverse order,
+  one named only, both declared at the top of block 7, and two split-init accumulation
+  forms - scores exactly 9 for every naming/scoping spelling and 32-36 for the
+  split-init forms, on the (T,T) chassis.
+- mechanism: dx's local-alloc span shortens below dz's only if dx's last use moves to
+  insn 9 or earlier, i.e. only if the (pz - z0) subu stops sitting between the two kp
+  multiplies. sched1 re-sinks each difference to immediately before its consuming mult
+  regardless of where it is written, so the insn sequence - and with it every
+  birth/death pair feeding qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708) - is
+  byte-identical across all six naming/scoping spellings. The split-init forms do move
+  the products but pay for the reassociation.
+- probe: tmp/grind/func_8002D780/s17/gen_s17.py groups B and D -> 10 variants
+  (tmp/grind/func_8002D780/s17/vA.json).
+- result: B1-B5, B8 all exactly 9 (identical to the plain body); B6 36, B7 33, D1 32,
+  D2 36. Banked rejected/s17-kp-split-init-accumulation-36.c. Extends s14's six-spelling
+  result to the current chassis and to the split-init family.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD df6966b7 (-mel -msoft-float), the (T,T) chassis
+  tmp/grind/func_8002D780/s17/tt_chassis.c spliced into src/code6cac_b.c, one FAKE
+  construct present (the same-value re-store of the local m)
+
+### H-s17-3 - NEW AXIS: naming a PRODUCT to reverse the multiply order
+- statement: Writing one of a cross product's two multiplies as a named local so that it
+  expands first - the only ordinary-C construction that moves dx's last use ahead of
+  dz's without inverting a branch - is exactly inert when the FIRST product is named and
+  costs 25 to 32 when the SECOND product is named, across all 18 combinations on the
+  (T,T) chassis.
+- mechanism: RTL expansion evaluates a binary operator's operands left to right, so
+  naming the second product forces its multiply (and therefore its operand subus) to be
+  emitted before the first product's. That is the reversal L3 needs. It happens - and it
+  re-orders four emitted instructions, which costs far more than the seat is worth.
+  Naming the first product changes nothing because that is already the expansion order.
+  Every previous sweep in this ledger varied which DIFFERENCES are named; none named a
+  product.
+- probe: tmp/grind/func_8002D780/s17/gen_e.py -> 18 variants
+  (tmp/grind/func_8002D780/s17/vE.json).
+- result: kc-first/kp-first and the plain forms all 9 (8 variants); naming both second
+  products 25; naming kc's second product only 30; naming kp's second product only 32.
+  The qx/qz naming sub-axis is byte-inert throughout (each _i and _q pair scores
+  identically). Banked
+  rejected/s17-named-second-products-reverse-mult-order-25.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD df6966b7 (-mel -msoft-float), the (T,T) chassis
+  tmp/grind/func_8002D780/s17/tt_chassis.c spliced into src/code6cac_b.c, one FAKE
+  construct present (the same-value re-store of the local m)
+
+### H-s17-4 - mandated kill re-audit of the (T,T) quadrant on the current chassis
+- statement: On HEAD df6966b7 the (T,T) body scores 9 with the m re-store FAKE present
+  and 13 with it ablated, against 2 and 6 for the banked baseline, so the +7 quadrant
+  penalty is unchanged by the FAKE carrier and unchanged since the s16 re-audit at HEAD
+  82ab11bd.
+- mechanism: the flat-floor rule requires the closest instance kill to be re-measured on
+  the current chassis with every FAKE construct ablated, because a FAKE occupying a
+  lever's target pseudo can make the lever look inert (func_8002EA24 s8). The m re-store
+  lives on the m/lzcr pseudos of the sqrt block, not on the dz/dx pseudos of the
+  residual.
+- probe: python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate
+  tmp/grind/func_8002D780/s17/tt_chassis.c
+- result: keep-all 9, drop-1 13. Both bodies lose exactly 4 instructions when the FAKE
+  is removed; the s14/s16 kill of the target-declaration-order body stands.
+- verdict: CONFIRMED
+
+### H-s17-5 - the owner directive for this dispatch (sibling func_8002E6B0 -> floor 0)
+- statement: The auto-return directive "coupled sibling moved after rotation -
+  func_8002E6B0 -> floor 0" names a transplant this ledger already executed: s14
+  transplanted func_8002E6B0's matched spelling of the shared point-in-triangle
+  predicate (two named edge differences per test, centroid/query differences inline) and
+  it is the chassis every body since has been built on.
+- mechanism: func_8002E6B0 is the same predicate with three explicit vertices; this
+  function inlines it with one vertex at the origin. The only block the two share in
+  spelling terms is test 3, and the sibling's spelling of it is what candidate.c carries.
+- probe: re-read the matched func_8002E6B0 body in src/code6cac_b.c and the s14 header;
+  re-measured the transplanted chassis this session (baseline 2/202 in both s17 sweeps).
+- result: directive executed and measured; no unspent sibling knowledge remains.
+- verdict: CONFIRMED
+
+### Frontier after s17 (see evidence.md s17 for the full derivation)
+The residual is one seat, and the arithmetic that decides it is now completely written
+down. The only lever the arithmetic still allows is L1 - dx's quantity acquiring a
+fourth reference - and the one unread input to it is WHICH quantity combine_regs ties
+each of block 7's four product pseudos into. Four product pseudos are unaccounted for in
+w_n6's seven-quantity block-7 table and there are no QTYDBG-SUGG lines for the block, so
+they are already tied into something. If the kp product ties into dx's quantity, dx's
+refs become 5 and its death extends to the kp subu: priority 3125 against dz's 2500, and
+dx wins the seat with the emission order untouched.
+
+## [s17] On the (T,T) quadrant chassis, permuting the outer centroid/test-1 declaration list x0, x2, z0, z2, cx, cz, px, pz over 24 sampled def-before-use orders scores 9 at best, and the numbers that would have to move are quantity numbers handed out by block_alloc's forward insn scan rather than pseudo numbers, so no permutation of that list can seat dx before dz.
+- mechanism: qty_compare_1 breaks its tie with `return *q1 - *q2;` (tools/gcc-2.7.2/local-alloc.c:1719) - the QUANTITY number, which alloc_qty assigns with next_qty++ (local-alloc.c:284) as block_alloc scans the block's insns forward (local-alloc.c:1169-1175). The pseudo NUMBER, which is what an outer declaration permutation changes, is not an input to any comparator in the file. In the (T,T) quadrant dz's subu necessarily precedes dx's, so dz's quantity is created first and wins every tie.
+- probe: tmp/grind/func_8002D780/s17/gen_s17.py group A -> 24 variants swept with tools/sweep_variants.py (tmp/grind/func_8002D780/s17/vA.json).
+- result: 5 orders at 9 (those keeping the four loads adjacent), 3 at 17, 4 at 22, 3 at 25, 6 at 26, 1 at 27, 2 at 31. Nothing below 9. Banked memory/grind/func_8002D780/rejected/s17-outer-decl-order-interleaved-loads-17.c. This closes the axis without the 16,384-variant, ~3.5 h enumerate sweep the s15 and s16 frontiers proposed.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD df6966b7 (-mel -msoft-float), the (T,T) chassis tmp/grind/func_8002D780/s17/tt_chassis.c spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1719
+
+## [s17] Naming, re-ordering or re-scoping the two kp differences (px - x0) and (pz - z0) in eight further spellings, plus two split-init accumulation forms, scores exactly 9 for every naming/scoping spelling and 32-36 for the split-init forms on the (T,T) chassis.
+- mechanism: dx's local-alloc span drops below dz's only if dx's last use moves to insn 9 or earlier, i.e. only if the (pz - z0) subu stops sitting between the two kp multiplies. sched1 re-sinks each difference to immediately before its consuming mult regardless of where it is written, so the insn sequence - and every birth/death pair feeding qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708) - is byte-identical across all six naming/scoping spellings.
+- probe: tmp/grind/func_8002D780/s17/gen_s17.py groups B and D -> 10 variants (tmp/grind/func_8002D780/s17/vA.json).
+- result: B1-B5 and B8 all exactly 9 (identical to the plain body); B6 36, B7 33, D1 32, D2 36. Banked memory/grind/func_8002D780/rejected/s17-kp-split-init-accumulation-36.c. Extends s14's six-spelling result to the current chassis and to the split-init family.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD df6966b7 (-mel -msoft-float), the (T,T) chassis tmp/grind/func_8002D780/s17/tt_chassis.c spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s17] Writing one of a cross product's two multiplies as a named local so that it expands first is exactly inert when the FIRST product is named and costs 25 to 32 when the SECOND product is named, across all 18 combinations measured on the (T,T) chassis.
+- mechanism: RTL expansion evaluates a binary operator's operands left to right, so naming the second product forces its multiply - and therefore its operand subus - to be emitted before the first product's. That is the reversal that would move dx's last use ahead of dz's without inverting a branch (the s16-5 route). It does happen, and it re-orders four emitted instructions, which costs far more than the seat is worth. Every previous sweep in this ledger varied which DIFFERENCES are named; none named a product.
+- probe: tmp/grind/func_8002D780/s17/gen_e.py -> 18 variants (tmp/grind/func_8002D780/s17/vE.json).
+- result: The plain and first-product-named forms all 9 (8 variants); both second products named 25; kc's second product only 30; kp's second product only 32. The qx/qz naming sub-axis is byte-inert throughout (each _i and _q pair scores identically). Banked memory/grind/func_8002D780/rejected/s17-named-second-products-reverse-mult-order-25.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD df6966b7 (-mel -msoft-float), the (T,T) chassis tmp/grind/func_8002D780/s17/tt_chassis.c spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s17] On HEAD df6966b7 the (T,T) body scores 9 with the m re-store FAKE present and 13 with it ablated, against 2 and 6 for the banked baseline, so the +7 quadrant penalty is unchanged by the FAKE carrier and unchanged since the s16 re-audit at HEAD 82ab11bd.
+- mechanism: The flat-floor rule requires the closest instance kill to be re-measured on the current chassis with every FAKE construct ablated, because a FAKE occupying a lever's target pseudo can make the lever look inert (func_8002EA24 s8). The m re-store lives on the m/lzcr pseudos of the sqrt block, not on the dz/dx pseudos of the residual.
+- probe: python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate tmp/grind/func_8002D780/s17/tt_chassis.c
+- result: keep-all 9, drop-1 13. Both bodies lose exactly 4 instructions when the FAKE is removed; the s14/s16 kill of the target-declaration-order body stands on the current chassis.
+- verdict: CONFIRMED
+
+## [s17] The dispatch's owner directive (coupled sibling func_8002E6B0 reached floor 0) names a transplant this ledger already executed in s14, and the transplanted spelling is the chassis every body since has been built on.
+- mechanism: func_8002E6B0 is the same point-in-triangle predicate with three explicit vertices; this function inlines it with one vertex at the origin. The only block the two share in spelling terms is test 3, and the sibling's matched spelling of it (two named edge differences per test, centroid/query differences inline) is what candidate.c carries.
+- probe: Re-read the matched func_8002E6B0 body in src/code6cac_b.c and the s14 candidate header; re-measured the transplanted chassis this session (baseline 2/202 in both s17 sweeps).
+- result: Directive executed and measured; no unspent sibling knowledge remains for this pair.
+- verdict: CONFIRMED

@@ -1715,3 +1715,117 @@ masking this lever; the s14 kill stands on the current chassis.
 - [s16] The queue's auto-return directive (coupled sibling func_8002E6B0 -> floor 0) was already executed and measured in s14; s16 did not re-run it because the quadrant model explains its result exactly - the sibling's spelling lands in the (F,T) class, which is why it scored 2 with the residual moved to the ax/dz delay-slot pair rather than improving.
 
 - [s16] Ledger totals after s16: floor 2/202 flat for eight sessions; 53 instance kills and 8 predicate-cited class kills; 88 rejected forms banked.
+
+## s17 (2026-09-08, synthesis) - floor 2/202, chassis unchanged
+
+### What this session did
+Re-read the whole ledger, re-derived the residual from the COMPILER SOURCE and the
+TARGET ASM rather than from any banked narrative, ran the mandated kill re-audit, and
+measured 52 new variants across the two axes the s16 frontier named. The floor did not
+move; three axes closed, one of them a class kill that saves the next session a
+16,384-variant / ~3.5 h sweep.
+
+### The residual, fully derived (this supersedes every earlier partial account)
+Block 7 at local-alloc time, in the target's own emission order (the (T,T) quadrant of
+the s16 model), is exactly 14 insns.  Read off asm/funcs/func_8002D780.s:103-121 and
+cross-checked against the w_n6 QTYDBG table (qty birth = 2 * insn index):
+
+     1  subu ax   (cx - x0)      <- reorg later pulls this into the test-2 branch slot
+     2  subu dz   (z2 - z0)          birth 4
+     3  mult      dz * ax
+     4  subu dx   (x2 - x0)          birth 8
+     5  subu az   (cz - z0)
+     6  mult      dx * az
+     7  subu qx   (px - x0)
+     8  mult      dz * qx            dz death 16
+     9  subu qz   (pz - z0)
+    10  mult      dx * qz            dx death 20
+    11  subu kc   12  subu kp   13  xor   14  bgez
+
+qty_compare_1's priority is floor_log2(refs) * refs * size / (death - birth) * 10000
+(tools/gcc-2.7.2/local-alloc.c:1689-1712).  dz = 1*3*1/12 -> 2500; dx = 1*3*1/12 ->
+2500.  An EXACT tie.  qty_compare_1 then falls through to "return *q1 - *q2;"
+(local-alloc.c:1719), i.e. to the quantity NUMBER, and quantity numbers are handed out
+by alloc_qty's next_qty++ (local-alloc.c:284) from block_alloc's FORWARD insn scan
+(local-alloc.c:1169-1175).  Any body in the (T,T) quadrant emits dz's subu before dx's
+by definition of the quadrant, so dz's quantity number is necessarily the lower one, dz
+is always seated first, takes $v1, and dx takes $a0 - the exact mirror of the target
+($a0 for dz, $v1 for dx).  That is the whole of the 9-point (T,T) penalty.
+
+### The three levers the arithmetic allows, and their status
+  L1  dx's qty_n_refs -> 4 (numerator 3 -> 8, priority 2500 -> 6666).  qty_n_refs is
+      reg_n_refs of the pseudo PLUS the refs of any pseudo that combine_regs ties into
+      the quantity (local-alloc.c:1929 "qty_n_refs[sqty] += reg_n_refs[sreg];").  OPEN -
+      no ordinary-C realisation found yet; s16 proved the reference cannot be REMOVED
+      from dz (cse refolds a partial inline), and s17 found no way to ADD one to dx.
+  L2  dz's span > 12: one more insn between insn 2 and insn 4.  Only source-order
+      levers reach there, and any of them re-orders the emitted pair (that is exactly
+      what az declared third does - it is the banked 2/202 body).
+  L3  dx's span < 12: dx's last use must be at insn <= 9, i.e. the qz subu must not sit
+      between the two kp multiplies.  MEASURED DEAD this session (below).
+
+### Measurements (52 variants, tmp/grind/func_8002D780/s17/vA.json + vE.json)
+  - Group A, the s15/s16 frontier's "outer declaration list" item: 24 sampled
+    def-before-use orders of x0,x2,z0,z2,cx,cz,px,pz on the (T,T) chassis.  5 stay at 9,
+    the other 19 cost 17-31.  NOTHING below 9.  The mechanism above says why it can
+    never help: quantity numbers come from the block scan, not from pseudo numbering,
+    so no outer permutation can put dx's quantity before dz's.  This closes the item
+    without the 16,384-variant sweep the s15/s16 frontier proposed.
+  - Group B, the L3 axis: 8 further spellings of the two kp differences (both named
+    before kp, named in reverse order, one named only, declared at the top of block 7,
+    split-init accumulation).  Every naming/scoping spelling scores EXACTLY 9 - byte for
+    byte the plain body - because sched1 re-sinks each difference to immediately before
+    its consuming mult, so insn 9 stays between mult 8 and mult 10.  This reproduces and
+    extends s14's six-spelling result on the current chassis.  The two split-init forms
+    (kp = a; kp -= b;  and  kp = -(b); kp += a;) cost 36 and 32.
+  - Group E, NEW axis - naming a PRODUCT rather than a difference.  A named product
+    forces its multiply to expand before the other operand of the subtraction, which is
+    the only ordinary-C construction that moves dx's last use earlier than dz's without
+    inverting a branch (the s16-5 route).  Naming the FIRST product of either cross
+    product is exactly inert (9, all four combinations).  Naming the SECOND product does
+    reverse the multiply order - and costs 25 (both), 30 (kc only), 32 (kp only).  The
+    seat gain is never worth the emission-order loss.
+  - Mandated kill re-audit, current chassis (HEAD df6966b7, -mel -msoft-float):
+    tools/fake_ablate.py on the (T,T) body tmp/grind/func_8002D780/s17/tt_chassis.c ->
+    keep-all 9, drop-1 13; baseline 2 / 6.  The m re-store FAKE contributes the same
+    4 instructions to both bodies, so the (T,T) kill is not a FAKE-masking artefact.
+    Identical to the s16 re-audit at HEAD 82ab11bd, on a newer chassis.
+
+### The standing contradiction, stated precisely for the next session
+The target's OWN emission order produces an exact qty_compare_1 tie that GCC 2.7.2 must
+break toward dz, yet the target bytes show dx seated first ($v1) and dz second ($a0).
+Both cannot be true of the same quantity table.  Therefore the original source's block 7
+did NOT present local-alloc with the quantity table we are producing: dx's quantity had
+a higher priority than dz's, and by the arithmetic above that means dx had a fourth
+reference (L1) or dz's span was longer (L2).  Every way of reaching those through the
+declarations of ax/dz/az/dx (s15, 2,080 spellings), through their scope (s15, 816),
+through the kc/kp variable identity, block structure, computation hoisting, partial
+inlining, sign flips (s16, 528), through the outer declaration list (s17, 24) and
+through the kp differences and the products (s17, 26) is now measured.  What has NEVER
+been examined is the QUANTITY TABLE ITSELF: block 7 contains six difference pseudos,
+four product pseudos, kc, kp and the xor result, but only SEVEN quantities appear in
+w_n6's table.  Four product pseudos are unaccounted for - they are neither separate
+quantities nor SUGG-pass quantities (there are no QTYDBG-SUGG lines for this block).
+They are therefore already TIED into other quantities by combine_regs, and WHICH
+quantity absorbs each product is the one input to the tie nobody has read.  If the kp
+product can be made to tie into dx's quantity instead of wherever it goes now, dx's
+refs become 3 + 2 = 5 and its death extends to the kp subu: priority
+floor_log2(5)*5/16*10000 = 3125 against dz's 2500, and dx wins the seat with no change
+to the emission order at all.  That is the single highest-value unread artefact in this
+grind.
+
+- [s17] Block 7 at local-alloc time in the target's own emission order is exactly 14 insns: 1 subu ax, 2 subu dz, 3 mult dz*ax, 4 subu dx, 5 subu az, 6 mult dx*az, 7 subu (px-x0), 8 mult dz*(px-x0), 9 subu (pz-z0), 10 mult dx*(pz-z0), 11 subu kc, 12 subu kp, 13 xor, 14 bgez. Read off asm/funcs/func_8002D780.s:103-121 and cross-checked against the w_n6 QTYDBG table (qty birth = 2 * insn index).
+
+- [s17] qty_compare_1's priority is floor_log2(refs)*refs*size/(death-birth)*10000 (tools/gcc-2.7.2/local-alloc.c:1689-1712). dz = 1*3*1/12 -> 2500 and dx = 1*3*1/12 -> 2500: an exact tie, broken by `return *q1 - *q2;` at local-alloc.c:1719, i.e. by the quantity number.
+
+- [s17] Quantity numbers are handed out by alloc_qty's next_qty++ (tools/gcc-2.7.2/local-alloc.c:284) during block_alloc's forward insn scan (local-alloc.c:1169-1175), which skips NOTEs (local-alloc.c:1174) and steps each real insn by 2 LUIDs. Pseudo numbering never enters any comparator in the file, which is why declaration-scope (s15) and outer-declaration-order (s17) sweeps are both inert.
+
+- [s17] Only three levers can break the tie in dx's favour: L1 dx's qty_n_refs -> 4 (numerator 3 -> 8); L2 one more insn between insn 2 and insn 4 (lengthens dz's span alone); L3 dx's last use at insn <= 9 (shortens dx's span alone). L3 is measured dead this session; L2 is only reachable by source-order levers, all of which re-order the emitted pair (that is exactly the banked 2/202 body, where az declared third supplies the extra insn and costs the az/dx transposition).
+
+- [s17] qty_n_refs is reg_n_refs of the pseudo PLUS the refs of any pseudo combine_regs ties into the quantity (tools/gcc-2.7.2/local-alloc.c:1929 `qty_n_refs[sqty] += reg_n_refs[sreg];`), and a tie also extends qty_death. So L1 has two realisations, an extra RTL reference or an absorbed pseudo.
+
+- [s17] Block 7 contains six difference pseudos, four product pseudos, kc, kp and an xor result, but only SEVEN quantities appear in the w_n6 QTYDBG table (regs 129,130,131,132,135,137,139) plus eight HI/LO scratch entries, and grep finds no QTYDBG-SUGG line for this block. The four product pseudos are therefore already tied into other quantities by combine_regs, and which quantity absorbs each product has never been read.
+
+- [s17] If the kp product were tied into dx's quantity, dx would have 3 + 2 = 5 references and a death extended to the kp subu (insn 12): priority floor_log2(5)*5/16*10000 = 3125 against dz's 2500, so dx would win the seat with the emission order untouched. That is the only construction found that satisfies L1 arithmetically.
+
+- [s17] 52 new variants measured this session, all at build_insns == target_insns == 202: 24 outer-declaration orders (best 9), 10 kp-difference spellings (six exactly 9, four 32-36), 18 product-naming spellings (eight exactly 9, ten 25-32). Nothing below the banked floor of 2.
