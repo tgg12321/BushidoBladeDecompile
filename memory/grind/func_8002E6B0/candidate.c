@@ -1,3 +1,34 @@
+/* s10 ADDENDUM (2026-09-08, forensics). Body UNCHANGED; re-measured 26 / 96 on
+   HEAD this session (the dispatch brief again said "measurement unavailable").
+
+   THE RESIDUAL IS ONE REGISTER PERMUTATION. Side-by-side against the target
+   (tmp/grind/func_8002E6B0/s10/tgt.n vs zz_reaudit_candidate.n): identical
+   callee-save usage, including the never-used s4 slot the target also saves.
+   Every differing line except the two known extra moves is a rename under one
+   permutation - $v0 <-> $v1 throughout, plus an a0 -> a1 -> a2 three-cycle in
+   the block-1 delta region.
+
+   PASS ATTRIBUTION (s10). mips.h defines no REG_ALLOC_ORDER, so local-alloc's
+   find_free_reg scans hard registers ASCENDING and $v0 (reg 2) is the first
+   register tried for every unsuggested quantity - which is the whole reason
+   twelve pseudos land "in 2." and only four "in 3.". `used` gains bit 2 only
+   if hard reg 2 is genuinely live over the quantity's range, or via the
+   just_try_suggested pass. GCC 2.7.2 gives a scalar return value the HARD
+   register (a source `return 0;` is `(set (reg/i:SI 2) (const_int 0))`, no
+   pseudo), but in the inline-return bodies those sets sit in the exit ARMS, so
+   reg 2 is never live on the fall-through path and the seat does not move
+   (measured 40 / 93 and 30 / 95). The target instead writes $v0 unconditionally
+   mid-block-1 and never touches it across block 2. The open question is
+   therefore exactly: which C shape makes the return register live on the
+   FALL-THROUGH path from mid-block-1 through block 2.
+
+   KILLED THIS SESSION (do not re-propose): the declaration-SCOPE axis (three
+   distinct function-scope dz/dx pairs are BYTE-IDENTICAL to the per-block
+   braces; only cross-block NAME reuse changes anything, at 55-60); alternative
+   staging carriers (cross_point / cross_center score 45-48, i.e. exactly the
+   no-borrow control, because the carrier is overwritten on the next statement
+   and the staging store is dead before RA); and hoisting any block's dz/dx
+   computation above the first `if` (58-70). */
 /* s9 ADDENDUM (2026-09-08, enumerate). Body UNCHANGED; re-measured 26 / 96 on
    HEAD this session (the dispatch brief said "measurement unavailable" - the
    ledger's 26 is correct on the current -mel -msoft-float chassis).

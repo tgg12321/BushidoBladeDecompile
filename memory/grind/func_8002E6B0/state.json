@@ -1,8 +1,8 @@
 {
  "func": "func_8002E6B0",
  "file": "code6cac_b",
- "session_count": 9,
- "current_modality": "enumerate",
+ "session_count": 10,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 26,
    "modality": "enumerate",
    "headline": "Floor holds at 26; 1,228 exhaustively enumerated spellings of all three cross-product blocks scored nothing below it, and block 2 is proven to have exactly one byte-relevant degree of freedom."
+  },
+  {
+   "session": 10,
+   "floor": 26,
+   "modality": "forensics",
+   "headline": "Floor holds at 26; the residual is proven to be ONE register permutation ($v0<->$v1 plus an a0->a1->a2 three-cycle) and the seat is attributed to local-alloc's ascending find_free_reg scan (MIPS defin"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual lives in DECLARATION SCOPE, not in statement spelling: moving the per-block dz/dx pairs to function scope (or conversely tightening center_x/center_z/cross_center/cross_point into narrower scopes) changes reg 96's conflict set where no in-block spelling can",
-   "mechanism": "s9 exhausted naming, ordering and operand order INSIDE each block with 1,228 measurements and found nothing below 26, and s8 killed the function-scope declaration-ORDER axis. Scope is the one declaration axis neither session touched: it changes where GCC's pseudo births sit relative to the block boundaries, which is what record_one_conflict (global.c:1392) IORs hard_regs_live into reg 96's hard_reg_conflicts on. s1 already measured that block-scoping the single-set dz/dx was worth part of the 64 -> 40 drop, so this axis is known to be live on this function.",
-   "next_probe": "Build the 2^3 grid of scope placements for the three dz/dx pairs (per-block braces as now, vs three distinct function-scope pairs, vs one reused function-scope pair) crossed with the borrow present/absent, and score the eight bodies in one tools/sweep_variants.py call. The enumerator cannot generate these - write them by hand from memory/grind/func_8002E6B0/candidate.c. Do NOT re-spell anything inside a block: all three blocks are swept out."
+   "hypothesis": "Evicting ALL THREE $v0 contributors from local-alloc at once seats reg 96 in $v0: o1 already removed the block-1 condition (117) at zero byte cost, so only pseudo 121 - a block-2 mflo product - remains inside reg 96's live range",
+   "mechanism": "find_free_reg's ascending scan hands $v0 to every unsuggested LOCAL quantity, and record_one_conflict (global.c:1392) then IORs it into reg 96's hard_reg_conflicts at each of reg 96's births. A pseudo referenced in more than one basic block is not a local quantity at all, so it never reaches that scan - measured this session on the block-1 condition (117 left the ';; Register N in H.' listing, the block-2 condition moved to $a0, object unchanged). Pseudo 121 is a product consumed one insn later inside block 2, so only a function-scope name that is ALSO read in another block can lift it out.",
+   "next_probe": "Build the o1 chassis crossed with function-scope names for the block-2 products: e.g. `s32 prod;` written in block 2 and read again in block 3 (or a pair `s32 pa, pb;` used across the block boundary), spelled so that the block-3 read is a real consumed value and not a dead store. Screen each body with the .lreg local map FIRST (tmp/grind/func_8002E6B0/s10/dumpvar.sh prints it; success = no pseudo 'in 2.' born inside reg 96's live range) and only then score it with tools/sweep_variants.py. Do NOT re-try single-block condition variables (o3 = 26) or routing the tail through cond (o2/o4 = 55)."
   },
   {
    "hypothesis": "A permuter campaign seeded on r2 (md5 3bae0255) or q2 (md5 1b1fa1c0) - distinct objects that tie at 26 - finds what the saturated base basin could not",
-   "mechanism": "s5's perm_e saturated only the base object (921b8948) at 11,782 iterations; s8 showed that basin absorbs eleven more hand spellings byte-identically and s9 has now shown it absorbs 264 enumerated spellings as well. q1, q2 and r2 are different source geometries compiling to different objects, so their neighbourhoods are unsearched. Both floor drops on record (40 -> 34, 34 -> 26) came from hand-repairing a semantically broken permuter find.",
+   "mechanism": "s5's perm_e saturated only the base object (921b8948) at 11,782 iterations; s8 showed that basin absorbs eleven more hand spellings byte-identically, s9 264 enumerated spellings, and s10 four more (the scope grid and o1/o3). q1, q2 and r2 are different source geometries compiling to different objects, so their neighbourhoods are unsearched. Both floor drops on record (40 -> 34, 34 -> 26) came from hand-repairing a semantically broken permuter find.",
    "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh (it carries the current -mel -msoft-float flags) on memory/grind/func_8002E6B0/rejected/s7_cond_carrier_cross_point_distinct_object_ties_26.c and .../s6_first_if_xor_swap_distinct_object_ties_26.c, one fresh-seed window each, waited in-turn with tools/permuter_campaign.py wait and stopped with harvest --stop before the outcome is written. Do NOT re-seed the base 26 basin (perm_e) or the 34 basin (s4 perm_c). Read every find's SEMANTICS before scoring it."
   },
   {
    "hypothesis": "The four s32* parameters are the wrong object model, and a struct/vector parameter type changes the addressing that feeds the multiplies",
-   "mechanism": "Every argument is indexed only at [0] and [2] - a 3-component coordinate read with the y component never touched. A struct type would change the load offsets and the base-register pressure feeding the products, which is the one thing 1,228 spellings of the products themselves could not change. Per splat-symbol-names-are-not-evidence the case must be made from base-register/stride evidence in the target asm, not from splat's names.",
-   "next_probe": "Read asm/funcs/func_8002E6B0.s and check whether the target's loads for arg0..arg3 use a common base register with a stride (evidence for a struct model) or independent offsets off four distinct bases (evidence against). If the stride evidence is there, spell the struct form and re-measure; if it is not, bank the negative and the object-model axis is closed."
+   "mechanism": "Every argument is indexed only at [0] and [2] - a 3-component coordinate read with the y component never touched. A struct type would change the load offsets and the base-register pressure feeding the products, which is the one thing 1,228 spellings of the products could not change. Per splat-symbol-names-are-not-evidence the case must be made from base-register/stride evidence in the target asm, not from splat's names.",
+   "next_probe": "Read asm/funcs/func_8002E6B0.s (or tmp/grind/func_8002E6B0/s10/tgt.n) and check whether the target's loads for arg0..arg3 use a common base register with a stride (evidence for a struct model) or independent offsets off four distinct bases (evidence against). If the stride evidence is there, spell the struct form and re-measure; if it is not, bank the negative and the object-model axis is closed."
   }
  ],
  "judge_constraints": [],
@@ -318,6 +324,30 @@
    "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, candidate.c body with the block-2 borrow present",
    "predicate_cite": "",
    "result": "All three split exactly 50/50 between 26 and 43 with no intermediate value. The single discriminator is whether the borr"
+  },
+  {
+   "session": 10,
+   "statement": "The residual lives in DECLARATION SCOPE: moving the per-block dz/dx pairs to function scope, or tightening the other locals, changes reg 96's conflict set where no in-block spelling can",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the 10 g_* scope-grid bodies on the 26 chassis; the block-2 variable-reuse staging borrow (the only FAKE construct) present in the borrow arms and absen",
+   "predicate_cite": "",
+   "result": "With DISTINCT names the scope of a dz/dx pair is codegen-neutral: three function-scope pairs compile to the same 26/96 o"
+  },
+  {
+   "session": 10,
+   "statement": "A staging carrier other than ret (cross_point or cross_center) supplies the sixth callee-save without writing ret in block 2, which would remove the restore's move v1,zero",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the 10 m_* bodies on the 26 chassis; the ret staging borrow is ABSENT in m1-m6/m8/m9 (that is the point of the probe) and present in m7/m10",
+   "predicate_cite": "",
+   "result": "Every alternative carrier scores exactly the no-borrow control: cross_point 45/93 (identical to the plain form), cross_p"
+  },
+  {
+   "session": 10,
+   "statement": "Hoisting a block's dz/dx computation above the first if gives block 2 a longer-lived local quantity that claims $v0 before reg 96's births and pushes the block-2 condition to $v1",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the 5 n_* bodies on the 26 chassis with the block-2 ret staging borrow present in all of them",
+   "predicate_cite": "",
+   "result": "58/95 (block 3), 68/94 (block 2), 68/94 (blocks 1+2), 70/97 (blocks 2+3), 70/97 (all three). Hoisting lengthens the wron"
   }
  ],
  "ladder_skip": 0,

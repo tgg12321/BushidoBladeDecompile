@@ -458,3 +458,194 @@ block. What the sweep does NOT cover, and what the next session inherits:
 - [s9] The spelling enumerator structurally cannot reach three axes, which is what the next session inherits: declaration SCOPE (function-scope vs the current per-block braces, since the tool cannot move a declaration across a block boundary), any form spanning an early-exit `if` (the tool must keep anchors last), and the object model (four s32* parameters vs a struct/vector type).
 
 - [s9] tools/sweep_variants.py restores src/ byte-exact; git status confirms src/code6cac_b.c was untouched at end of session.
+
+## s10 (2026-09-08, forensics) — floor 26 -> 26; the ret seat typed down to a single local-alloc scan order
+
+CHASSIS. Re-measured on HEAD this session with `tools/sweep_variants.py`:
+candidate.c = **26 / 96 insns** (target 94). The dispatch brief again said
+"measurement unavailable"; the ledger's 26 is correct on the current
+-mel -msoft-float chassis.
+
+KILL RE-AUDIT (mandated). The instance kill whose form sits closest to the
+target is s8's k1 (`s8_first_exit_inline_return0_loses_s5_30.c`, 30 / 95 — one
+insn FEWER than our 96, the closest any banked form gets). Re-measured this
+session: **30 / 95**, unchanged. The FAKE-ablation control
+(`s7_plain_noborrow_on_26_chassis_45.c`) re-measured **45 / 93**, unchanged.
+Both kills stand on the current chassis; no lever was masked by the borrow.
+
+### 1. The residual is a pure register PERMUTATION, not a code difference
+
+Side-by-side normalised disassembly (tmp/grind/func_8002E6B0/s10/tgt.n vs
+zz_reaudit_candidate.n) of the 26 body against the target:
+
+  * The callee-save usage is **identical**: both save s0-s5, both use
+    s0/s1/s2/s3/s5 at the same instructions, and both save s4 without ever
+    using it (a phantom slot in the target too).
+  * Every differing line except two is a register RENAME under one fixed
+    permutation: $v0 <-> $v1 everywhere, plus a three-cycle a0 -> a1 -> a2 in
+    the block-1 delta region (`mfhi a1` / `mflo a2` / `mflo a0` in the target vs
+    `mfhi a2` / `mflo a0` / `mflo a1` in ours).
+  * The only two extra instructions are the ones already banked: the restore's
+    `move v1,zero` in the second bltz's delay slot, and the trailing
+    `move v0,v1`.
+
+So the whole 26-point residual is downstream of ONE allocation decision: which
+of $v0 / $v1 the `ret` pseudo (reg 96) gets.
+
+### 2. PASS ATTRIBUTION: local-alloc.c `find_free_reg`, the ascending scan
+
+`tools/gcc-2.7.2/config/mips/mips.h` does **not** define `REG_ALLOC_ORDER`, so
+`find_free_reg` (local-alloc.c, the `for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)`
+loop with `regno = i`) scans hard registers in **ascending numeric order**. $v0
+is register 2 — the first allocatable register on this target. Therefore every
+local quantity that reaches the ascending scan without a suggestion takes $v0,
+and only a quantity whose `used` set already contains bit 2 can land in $v1.
+
+That is the complete explanation for the `.lreg` map this function produces
+(dumped again this session for the candidate, tmp/grind/func_8002E6B0/s10/
+dumps_zz_reaudit_candidate/code6cac_b.lreg): twelve pseudos "in 2."
+(79 81 84 97 100 117 121 138 146 149 153 157) and only four "in 3."
+(88 90 93 142). $v1 is reached only when $v0 is already excluded.
+
+The chain to the seat, unchanged from s7/s8 but now with its first link named:
+find_free_reg's ascending scan puts 117 / 121 / 138 in $v0 ->
+global.c:1490-1491,1509 folds those renumbered locals into `hard_regs_live` ->
+record_one_conflict (global.c:1392) ORs that into reg 96's `hard_reg_conflicts`
+at each of reg 96's births -> global.c find_reg excludes reg 2 in BOTH passes
+(s7's FINDREGDBG capture) -> reg 96 gets $v1.
+
+`used` in find_free_reg can only acquire bit 2 two ways:
+  (a) `IOR_HARD_REG_SET (used, regs_live_at[ins])` over the quantity's range —
+      i.e. **hard reg 2 is live across that range**; or
+  (b) a copy/arith suggestion diverts the quantity first
+      (`qty_phys_copy_sugg` / `qty_phys_sugg`, the `just_try_suggested` pass),
+      which on a leaf function with no calls only arises from copies to/from
+      the incoming argument registers $a0-$a3.
+
+### 3. PASS-INPUT ENUMERATION: what C shape puts hard reg 2 in `regs_live_at`?
+
+GCC 2.7.2 gives a scalar return value the hard register directly: a source-level
+`return 0;` expands to `(set (reg/i:SI 2 v0) (const_int 0))` with **no pseudo at
+all**, whereas a `s32 ret` local produces `(reg/v:SI 96)` plus one epilogue copy
+`(set (reg/i:SI 2 v0) (reg/v:SI 96))`. Both shapes were dumped this session and
+grepped out of the `.lreg` (s10/dumps_zz_reaudit_candidate/, s10/dumps_zz_k5_
+both_inline_40/).
+
+MEASURED: that does **not** move the seat. In the both-exits-inline body
+(`s8_both_exits_inline_40.c`, 40 / 93) the two `(set (reg/i:SI 2) 0)` insns sit
+in the two exit ARMS — the taken edges — so hard reg 2 is never live on the
+fall-through path through blocks 1 and 2, and the `.lreg` map is the same:
+117 / 121 / 138 still "in 2.", conditions still `bltz v0`. The k1 mixed body
+(30 / 95) behaves identically. So the inline-return family cannot supply
+route (a).
+
+What the TARGET does, read off its disassembly: hard $v0 is written
+unconditionally in the middle of block 1 (`move v0,zero`, later stolen into the
+first bltz's delay slot by reorg) and is then **untouched across the whole of
+block 2** — target block 2 uses only a0 / v1 / a1 / a2 / t-regs. Its block-1
+condition is in $v1 too, born after the last $v0 use of block 1. That is exactly
+the signature of route (a): reg 2 live across the branch, blocks 1-and-2
+quantities pushed to $v1, and the return value seated in $v0.
+
+### 4. Measured this session (all `sandbox func_8002E6B0 --disable all`)
+
+Declaration-SCOPE grid (the s9 frontier's #1 next probe, 13 bodies,
+s10/sweep_scope.json):
+
+| form | score / insns |
+|---|---|
+| per-block braces (= candidate), borrow | 26 / 96 |
+| three DISTINCT function-scope dz/dx pairs, borrow | **26 / 96 (byte-identical)** |
+| blocks 1+3 distinct fn-scope, block 2 braced, borrow | 26 / 96 |
+| blocks 1+3 braced, block 2 fn-scope, borrow | 26 / 96 |
+| per-block braces, plain | 45 / 93 |
+| three distinct fn-scope pairs, plain | 45 / 93 |
+| ONE REUSED fn-scope dz/dx pair, borrow | 55 / 94 |
+| blocks 1+3 share one fn-scope pair, block 2 braced | 56 / 94 |
+| blocks 2+3 share one fn-scope pair | 56 / 94 |
+| one reused fn-scope pair, plain | 60 / 97 |
+
+Alternative staging CARRIER family (10 bodies, s10/sweep_m.json):
+
+| form | score / insns |
+|---|---|
+| block-2 staging through `cross_point` (goto/goto chassis) | 45 / 93 |
+| same, staging in blocks 1+2 / blocks 2+3 | 45 / 93 both |
+| block-2 staging through `cross_center` (cross_point stmt first) | 46 / 95 |
+| that + the same in block 3 | 48 / 95 |
+| both exits inline `return 0` + cross_point carrier | 53 / 93 |
+| first exit inline + cross_point carrier | 56 / 99 |
+| `ret` borrow (candidate) PLUS a cross_point borrow in block 1 | 26 / 96 |
+| mixed exits + the `ret` borrow with restore | 30 / 95 |
+
+Delta-HOISTING family (5 bodies, s10/sweep_n.json) — moving each block's
+`dz`/`dx` computation above the first `if` (the one motion the s9 enumerator
+structurally cannot make): block 3 only 58 / 95; block 2 only 68 / 94;
+blocks 1+2 68 / 94; blocks 2+3 70 / 97; all three 70 / 97. Every hoist is far
+worse.
+
+### 5. Facts banked
+
+- The declaration-SCOPE axis is byte-neutral as long as the three dz/dx pairs
+  keep DISTINCT names: function-scope declarations compile to the identical
+  object as the per-block braces (26 / 96). Only NAME reuse across blocks
+  changes anything, and it costs 29-34 points (55-60) while landing on 94
+  insns.
+- An alternative staging carrier does not exist on this chassis. Staging block
+  2's `dz` through `cross_point` or `cross_center` scores 45-48 — identical to
+  the no-borrow control — because the carrier is overwritten by its own real
+  value on the very next statement, so the staging store is dead and is removed
+  before RA. The `ret` carrier works only because `ret` is live out through
+  both early exits, which is what keeps the store alive.
+- Hoisting any block's delta computation above the first `if` is 58-70.
+- The candidate's callee-save allocation is byte-for-byte the target's,
+  including the never-used s4 slot; the entire residual is the $v0/$v1 seat and
+  the a0/a1/a2 three-cycle that follows it, plus the two known extra moves.
+
+### 6. s10 POSTSCRIPT — one of the three $v0 contributors CAN be removed, and it is byte-neutral
+
+A function-scope `s32 cond;` written in block 1 and again in block 2
+(`cond = cross_center ^ cross_point; if (cond < 0) goto end;`) makes the block-1
+condition a MULTI-BLOCK reference, so it is no longer a local-alloc quantity at
+all. Measured (tmp/grind/func_8002E6B0/s10/sweep_o.json): o1 = 26 / 96 and the
+object is **byte-identical** to the base basin (md5 921b8948). But the `.lreg`
+map DID change (s10/dumps_zz_o1/code6cac_b.lreg): pseudo 117, the block-1
+condition, has disappeared from the `;; Register N in H.` listing entirely, so
+local_alloc now places ELEVEN pseudos in $v0 instead of twelve, and the
+block-2 condition (renumbered 138) moved from "in 2." to "in 4." ($a0).
+
+Reg 96 still lands in $v1 because pseudo 121 — a block-2 PRODUCT (an `mflo`
+result consumed by the following subtraction) — is still "in 2." and is still
+born inside reg 96's live range. So the seat needs ALL THREE contributors out
+of $v0, and this session has shown that two of the three (both branch
+conditions) can be evicted with ordinary C at zero byte cost. Variants that
+route the tail through the same `cond` variable (o2, o4) cost 29 points
+(55 / 96), so the eviction must stay confined to the two `if` conditions.
+
+Two further controls: o3 (two DISTINCT single-block condition variables,
+`cond1` / `cond2`) is also 26 / 96 — a single-block named condition stays a
+local quantity, as expected.
+
+- [s10] [s10] HEAD honest floor re-measured this session: 26 (96 build insns, target 94). The dispatch brief again reported 'measurement unavailable'; the ledger's 26 is correct on the current -mel -msoft-float chassis.
+
+- [s10] [s10] The candidate's callee-save allocation is byte-for-byte the target's: both save s0-s5, both use s0/s1/s2/s3/s5 at the same instructions, and both save s4 without ever using it (a phantom slot in the target too).
+
+- [s10] [s10] Every differing instruction between the 26 body and the target, except the two known extra moves (the restore's move v1,zero in the second bltz delay slot and the trailing move v0,v1), is a register RENAME under one fixed permutation: $v0 <-> $v1 throughout plus an a0 -> a1 -> a2 three-cycle in the block-1 delta region. There is no structural work left; the floor is one allocation decision wide.
+
+- [s10] [s10] PASS ATTRIBUTION: tools/gcc-2.7.2/config/mips/mips.h defines no REG_ALLOC_ORDER, so local-alloc.c find_free_reg's scan loop runs ascending with regno = i and $v0 (reg 2) is the first register tried for every unsuggested quantity. That alone explains the twelve-in-$v0 / four-in-$v1 local map; $v1 is reached only when $v0 is already excluded from `used`.
+
+- [s10] [s10] `used` in find_free_reg can only acquire bit 2 from IOR_HARD_REG_SET (used, regs_live_at[ins]) (hard reg 2 live over the range) or from the just_try_suggested pass (qty_phys_copy_sugg / qty_phys_sugg), which in this call-free leaf function can only come from copies to/from the incoming argument registers $a0-$a3.
+
+- [s10] [s10] GCC 2.7.2 gives a scalar return value the hard register: a source-level `return 0;` expands to (set (reg/i:SI 2 v0) (const_int 0)) with NO pseudo, while `s32 ret` produces (reg/v:SI 96) plus one epilogue copy (set (reg/i:SI 2 v0) (reg/v:SI 96)). Both were read out of the .lreg dumps this session.
+
+- [s10] [s10] The inline-return family does NOT make hard reg 2 live across blocks 1-2: in the both-exits-inline body the two reg-2 sets sit in the exit ARMS (taken edges), so the fall-through path is unaffected, 117/121/138 are still 'in 2.', and the seat is unchanged (40/93; mixed-exit variant 30/95).
+
+- [s10] [s10] The target writes $v0 unconditionally in the middle of block 1 (later stolen into the first bltz's delay slot) and never touches it across the whole of block 2 - its block 2 uses only a0/v1/a1/a2/t-regs - which is the signature of the return register being live on the fall-through path at local-alloc time.
+
+- [s10] [s10] Declaration SCOPE is byte-neutral with distinct names: three function-scope dz/dx pairs compile to the identical 26/96 object as the per-block braces. Cross-block NAME reuse costs 29-34 points (55/94, 56/94, 60/97) and is the only shape on this chassis that reaches the target's 94-insn count.
+
+- [s10] [s10] Alternative staging carriers do not exist on this chassis: cross_point and cross_center score 45-48, exactly the no-borrow control, because the carrier is overwritten on the next statement so the staging store is dead before RA. `ret` works only because its staged value is live out through both early exits.
+
+- [s10] [s10] Hoisting any block's dz/dx computation above the first `if` scores 58-70.
+
+- [s10] [s10] A function-scope `cond` written in blocks 1 and 2 evicts pseudo 117 from local_alloc's map entirely (eleven pseudos in $v0 instead of twelve, and the block-2 condition moves from $v0 to $a0) while leaving the object byte-identical (26/96, md5 921b8948). The remaining blocker is pseudo 121, a block-2 mflo product still allocated to $v0 and still born inside reg 96's live range.
