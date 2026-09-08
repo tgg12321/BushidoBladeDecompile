@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 7,
    "modality": "structural",
    "headline": "Floor 10 -> 7/202: the tail residual is CLOSED by an if/return-0 block-structure change, which unlocked the s2-banked LZCR slot operand; residual A is now an allocation question, not a schedule."
+  },
+  {
+   "session": 4,
+   "floor": 7,
+   "modality": "permuter",
+   "headline": "First faithful permuter workspace for func_8002D780 built and validated; 55,531-iteration campaign found nothing \u2014 its metric is anti-correlated with the engine's on this chassis \u2014 and nine embedded-a"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Residual A (2 insns) is a dz/dx seat assignment: f1/f3 already give the target's emission order for the whole test-3 block, and the only remaining error is dz in $v1 / dx in $a0 where the target has dz in $a0 / dx in $v1.",
-   "mechanism": "local-alloc quantity numbering follows the post-sched1 insn order, so the declaration order that fixes the emission order also flips the two seats; this is global.c/local-alloc, not sched.c",
-   "next_probe": "tools/ra_solver/inverse_compose.py classify on the dz and dx seats against the f1 body (memory/grind/func_8002D780/rejected/relvec-dx-before-az-order-right-regs-swapped-14.c) - it returns REACHABLE/FORECLOSED plus a ranked C-lever vector. Do NOT re-sweep declaration orders; twelve are measured in s3 and the two that hold the floor are the two in candidate.c."
+   "hypothesis": "Residual A (2 insns) is a dz/dx seat assignment: f1/f3 already give the target's emission order for the whole test-3 block, and the only remaining error is dz in $v1 / dx in $a0 where the target has dz in $a0 / dx in $v1. The permuter did not touch it in 55k iterations.",
+   "mechanism": "local-alloc quantity numbering follows the post-sched1 insn order, so the declaration order that fixes the emission order also flips the two seats; this is global.c/local-alloc, not sched.c.",
+   "next_probe": "tools/ra_solver/inverse_compose.py classify on the dz and dx seats against the f1 body (memory/grind/func_8002D780/rejected/relvec-dx-before-az-order-right-regs-swapped-14.c) \u2014 it returns REACHABLE/FORECLOSED plus a ranked C-lever vector. Do NOT re-sweep declaration orders; twelve are measured in s3 and the two that hold the floor are the two in candidate.c. This is the solver modality's job and it is now the highest-value untried axis."
   },
   {
-   "hypothesis": "Residual B (5 insns) is the second pseudo holding dist in $a0 (move a0,s1 in the beqz delay slot) feeding the LZCS island input and the srlv, while $s1 keeps the compare, the small-path LUT index and the call arguments.",
-   "mechanism": "cse.c make_regs_eqv folds every single-def copy into its source pseudo, so no natural C copy survives to reload; the target compile kept two pseudos",
-   "next_probe": "tools/ra_solver inverse_compose.py classify on the $a0 seat; only if that returns FORECLOSED for every natural form, the sibling func_8002D518's FAKE dead-store re-store (src/code6cac_b.c:1244-1265, .claude/rules/dead-store-fake-exception.md) citing this function's now fourteen-spelling exhaustion ledger."
+   "hypothesis": "Residual B (5 insns) is the second pseudo holding dist in $a0 (move a0,s1 in the beqz delay slot) feeding the LZCS island input and the srlv, while $s1 keeps the compare, the small-path LUT index and the call arguments. Twenty-three source spellings of the copy are now dead, including the permuter's own embedded-assignment form.",
+   "mechanism": "cse.c make_regs_eqv folds every single-def copy into its source pseudo, so no natural C copy survives to reload; the target compile kept two pseudos. Because build_insns never moves off 202 for any of the twenty-three spellings, the copy is being eliminated in cse and not merely coalesced later.",
+   "next_probe": "tools/ra_solver inverse_compose.py classify on the $a0 seat, and read tmp/grind/func_8002D780/dumps/code6cac_b.cse / .combine to confirm the fold point rather than re-deriving it. Only if that returns FORECLOSED for every natural form does the sibling func_8002D518's FAKE dead-store re-store (src/code6cac_b.c:1244-1265, .claude/rules/dead-store-fake-exception.md) become the sanctioned last resort, and it would cite a twenty-three-spelling exhaustion ledger."
   },
   {
    "hypothesis": "candidate.c's six fresh once-written test-3 locals (ax/az/bx/bz/dx/dz) need a family decision BEFORE any candidate-ready submission, because review verdicts are keyed by body and respelling after a layer-1 verdict is not available.",
-   "mechanism": "The family-selection table routes a fresh once-written once-read local carrying a real consumed value to the named-intermediate family (six prongs, FAKE required); the competing reading is that vertex-0-relative vectors are ordinary geometric C needing no family claim",
-   "next_probe": "grep docs/reference/sotn-construct-index.md for vertex-relative / difference-local precedent, then either write the six-prong named-intermediate self-vet or emit a ruling-request naming both readings - decide before the body is submitted."
+   "mechanism": "The family-selection table routes a fresh once-written once-read local carrying a real consumed value to the named-intermediate family (six prongs, FAKE required); the competing reading is that vertex-0-relative vectors are ordinary geometric C needing no family claim.",
+   "next_probe": "grep docs/reference/sotn-construct-index.md for vertex-relative / difference-local precedent, then either write the six-prong named-intermediate self-vet or emit a ruling-request naming both readings \u2014 decide before the body is submitted."
   }
  ],
  "judge_constraints": [],
@@ -170,6 +176,22 @@
    "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
    "predicate_cite": "",
    "result": "10 = control; jump1 deletes the goto and rebuilds the same relocation. The structural change that DID work was the retur"
+  },
+  {
+   "session": 4,
+   "statement": "A decomp-permuter campaign on the s3 7-floor chassis finds a form that lowers the engine's honest floor below 7.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 8cd6da6b (-mel -msoft-float), the s3 7-floor candidate.c body spliced into src/code6cac_b.c (sandbox score 7, build_insns 202), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "No find improved the honest floor. output-110-1 = 8, output-115-1 = 8, output-115-2 = 8, output-115-3 = 9, output-125-1 "
+  },
+  {
+   "session": 4,
+   "statement": "The dist copy of residual B survives cse if it is spelled as an embedded assignment inside a condition (if ((u32)(m = dist) < 0x400)) rather than as a plain s32 c = dist; declaration.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 8cd6da6b (-mel -msoft-float), the s3 7-floor candidate.c body spliced into src/code6cac_b.c, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All eight well-defined arrangements measured 7 = control at exactly 202 build insns \u2014 no move insn materialised at all, "
   }
  ],
  "ladder_skip": 0,

@@ -1,3 +1,11 @@
+/* s4 (permuter modality, 2026-09-08): BODY UNCHANGED - the floor is still 7/202,
+ * re-measured this session with this exact body spliced into src/code6cac_b.c.  A
+ * 55,531-iteration decomp-permuter campaign on this chassis (the first faithful
+ * workspace this function has ever had - tmp/grind/func_8002D780/s4/nonmatchings/
+ * func_8002D780, rebuild recipe in evidence.md [s4]) produced 12 finds and no
+ * improvement; its best find re-measures at 8 on the engine.  Nine embedded-
+ * assignment spellings of the residual-B dist copy also measured 7 = control.
+ * See hypotheses.md [s4]. */
 /* func_8002D780 - grind candidate (s3 structural, 2026-09-08). Honest sandbox floor
  * 7/202 (s2 left it at 10/202). Measured THIS session with these exact edits in
  * src/code6cac_b.c: `sandbox func_8002D780 --disable all` -> score 7, and
