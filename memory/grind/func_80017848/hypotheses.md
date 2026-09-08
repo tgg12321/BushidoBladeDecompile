@@ -4991,3 +4991,85 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - probe: memory/grind/func_80017848/candidate.c applied at the HEAD src/ings.c:820 anchor and scored; `python3 tools/fake_ablate.py --func func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c`.
 - result: BASE = 3 at 127/127, identical to its s52/s53 value; fake_ablate reports "no FAKE-annotated constructs found". Every s52/s53 instance kill stands on this chassis.
 - verdict: CONFIRMED
+
+## s55 (2026-09-07, escalation)
+
+## [s55] The s54 attribution of loop-1's `addu a3,a0,zero` / `addu a0,a1,a3` pair to combine is wrong: the operand rewrite is done by `optimize_reg_copy_1` inside local-alloc, between the `flow` and `lreg` dumps.
+- mechanism: local-alloc.c:700 `optimize_reg_copy_1` (called from `update_equiv_regs`, local-alloc.c:1007) takes a reg-reg copy whose SOURCE does not die at the copy, scans forward to the insn where the source dies (stopping at labels, jumps and `NOTE_INSN_LOOP_BEG`/`LOOP_END`), and if nothing sets either register in between it replaces the source with the destination throughout that range and moves the death note onto the copy. Loop 1 satisfies every clause.
+- probe: `pwsh tools/grinder/dump.ps1` output already on disk with BASE applied; insn 89 compared at ings.combine:6974, ings.flow:9027 and ings.lreg:8889.
+- result: insn 89 reads `(reg/v 79)` in both combine and flow and reads `(reg/v 80)` in lreg, with `REG_DEAD (reg 79)` moved back onto insn 83. The pass boundary is unambiguous.
+- verdict: CONFIRMED
+
+## [s55] The preheader copy has a SECOND survival gate that 54 sessions never tested: combine.c:914's `(! all_adjacent && use_crosses_set_p (src, INSN_CUID (insn)))`, which refuses the merge when the copy's SOURCE is set between the copy and its consumer — and the target's own `lw a2,16(s2)` lnk load is that intervening insn.
+- mechanism: spelling the ctx+0x10 lnk load as a write to the same C variable that holds the ctx+0xC pointer makes `reg_last_set[src]` newer than the copy's CUID, so `can_combine_p` returns 0 and the copy survives to local-alloc, where `optimize_reg_copy_1` then rewrites the base add to read it.
+- probe: cell V3 (`tmp/grind/func_80017848/s55/body_V3.c`, both loops given the clobber with per-loop variables) applied at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`; normalised objdump diff against s55/T.txt.
+- result: 14 at 127/127, and the preheader copy `addu v0,a1,zero` is PRESENT in both loops — the first time the loop-2 copy and the loop-1 copy have ever coexisted. The whole opcode stream matches the target; only register seats differ. `tools/ra_solver/inverse_compose.py classify` re-types the residual as `FIRST DIVERGENCE: RA — same instructions, different registers`.
+- verdict: CONFIRMED
+
+## [s55] The target's seat map says the ctx+0xC pointer variable and the loop base variable are ONE C variable (both live in a0) while lnk has its own seat; spelling it that way makes every register in the function target-exact.
+- mechanism: in the target `lw a0,12(s2)` loads the pointer and `addu a0,a1,a3` writes the base into the same register; V3 instead reuses the pointer variable for lnk, which keeps that pseudo live through the whole loop body, pins lnk and the pointer to one seat and cascades a one-seat shift through ptr/sh/copy/base/index.
+- probe: cell U1 (`tmp/grind/func_80017848/s55/body_U1.c`: per-loop `q` holds the ctx+0xC pointer and is then reassigned the base, `lnk`/`lnk2` separate, copy dest `p`/`p2`) applied at the HEAD anchor and scored; full normalised objdump diff.
+- result: 4 at 125/127. The ENTIRE diff is the two missing `addu a3,a0,zero` copies and their two consumers reading `a0` instead of `a3`; all 125 emitted instructions match the target register-for-register and offset-for-offset.
+- verdict: CONFIRMED
+
+## [s55] On the U1 chassis the copy is merged because the source is set by the base add itself rather than by an insn between the copy and the add, so combine.c:914's clobber gate does not fire; every U1-family spelling measured this session leaves the two copies merged at 125 instructions.
+- mechanism: `use_crosses_set_p` consults `reg_last_set`, which combine only updates for insns it has already scanned past; i3 setting the source does not count as a set "between". The two gates are mutually exclusive on this chassis — V3's clobber buys the copy and loses the seats, U1's variable identity buys the seats and loses the clobber.
+- probe: cells U2 (lnk load moved above the copy), U5/U6 (`slots` as the copy dest in one/both loops), U7 (copy dest shared across both loops), U8 (no reuse at all, separate base variable) and U10 (an explicit re-read of ctx+0xC between the copy and the add), each applied at the HEAD src/ings.c:820 anchor and scored.
+- result: U2 = U5 = U6 = U7 = U10 = 4 at 125, U8 = 10 at 125. U10's re-read is folded away by cse, so it never becomes a clobber. Banked rejected/s55_no_reuse_separate_base_var_costs_10.c and rejected/s55_reread_ctx0xC_between_copy_and_add_cse_folds_costs_4.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s55 U-cell applied in turn; no FAKE construct in any body (tools/fake_ablate.py finds none in candidate.c either); BASE re-audited at 3 (127/127) in the same session
+
+## [s55] Sharing or splitting the four loop variables (q, p, base, t) across the two loops does not move the V3 seat map: all sixteen cells of the lattice measure 14 at 127/127 except the four that share both `p` and `t`, which measure 36.
+- mechanism: sharing a variable across both loops makes its pseudo multi-block and hands it to global.c instead of local-alloc, which was the hoped-for route to the `a3` seat that BASE's loop 1 wins; the measurement shows the seat map is decided upstream of that distinction, by which values are simultaneously live in the loop body.
+- probe: cells W00..W15 (`tmp/grind/func_80017848/s55/body_W*.c`, generated as the 2^4 subset lattice over {q, p, base, t}) plus birth-order variants Y1 (`i = 0` after the pointer read), Y2 (pointer read before `sh`), Y3 (base written into the top-guard variable `slots`), Y4 (loop-1's pointer IS `slots`) and Y5 (`slots` as the copy dest), each applied at the HEAD anchor and scored.
+- result: W00-W09, W12, W13 = 14 at 127; W10, W11, W14, W15 = 36 at 127; Y1 = Y2 = 14 at 127; Y3 = Y5 = 17 at 127; Y4 = 19 at 126. Banked rejected/s55_combine_clobber_via_lnk_var_reuse_seats_shifted_costs_14.c, rejected/s55_combine_clobber_all_vars_shared_across_loops_costs_36.c, rejected/s55_share_p_and_t_across_loops_costs_36.c, rejected/s55_base_written_into_slots_costs_17.c and rejected/s55_loop1_ptr_is_slots_costs_19.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s55 W/Y cell applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session
+
+## [s55] The mandatory kill re-audit found nothing void: BASE re-measures at 3 (127/127) on the HEAD chassis and carries no FAKE construct.
+- mechanism: instance kills are chassis- and FAKE-state-relative, so the closest banked form is re-measured before new probes are spent.
+- probe: memory/grind/func_80017848/candidate.c applied at the HEAD src/ings.c:820 anchor and scored; the dispatch brief reported the chassis measurement as unavailable.
+- result: BASE = 3 at 127/127, identical to its s52/s53/s54 value. The ledger floor of 3 is the correct chassis number.
+- verdict: CONFIRMED
+
+## [s55] s54's attribution of loop-1's copy/add pair to combine is incorrect: the operand rewrite that produces the target's 'addu a3,a0,zero' / 'addu a0,a1,a3' is done by optimize_reg_copy_1 inside local-alloc, between the flow and lreg dumps.
+- mechanism: tools/gcc-2.7.2/local-alloc.c:700 optimize_reg_copy_1, called from update_equiv_regs at local-alloc.c:1007, takes a reg-reg copy whose source does not die at the copy, scans forward to where the source dies (stopping at labels, jumps and NOTE_INSN_LOOP_BEG/LOOP_END), and if neither register is set in between replaces the source with the destination over that range and moves the death note onto the copy.
+- probe: Compared insn 89 at the same uid across the four dumps already on disk with BASE applied: tmp/grind/func_80017848/dumps/ings.combine:6974, ings.flow:9027, ings.lreg:8889, ings.greg:7549.
+- result: insn 89 = (set (reg/v 81) (plus (reg/v 84) (reg/v 79))) in combine and flow, and (plus (reg/v 84) (reg/v 80)) in lreg with REG_DEAD (reg 79) moved back onto the copy at insn 83. The producing pass is named unambiguously for the first time.
+- verdict: CONFIRMED
+
+## [s55] The preheader copy has a second survival gate that no prior session tested - combine.c:914's '(! all_adjacent && use_crosses_set_p (src, INSN_CUID (insn)))' - and the target's own ctx+0x10 lnk load is a free intervening insn that can supply the required set of the copy's source.
+- mechanism: Spelling the lnk load as a write to the same C variable that holds the ctx+0xC pointer makes reg_last_set[src] newer than the copy's CUID, so can_combine_p returns 0, the copy survives to local-alloc, and optimize_reg_copy_1 then rewrites the base add to read it.
+- probe: Cell V3 (tmp/grind/func_80017848/s55/body_V3.c, both loops given the clobber with per-loop variables) applied at the HEAD src/ings.c:820 INCLUDE_ASM anchor, scored with 'sandbox func_80017848 --disable all', diffed against tmp/grind/func_80017848/s55/T.txt, then classified with tools/ra_solver/inverse_compose.py.
+- result: 14 at 127/127 with the preheader copy 'addu v0,a1,zero' PRESENT in both loops - the loop-1 and loop-2 copies coexist for the first time in 55 sessions - and the whole opcode stream matching the target. inverse_compose.py classify (--target-object build/src/ings.o --ours-object tmp/sandbox/func_80017848/ings.o) reports 'FIRST DIVERGENCE: RA - same instructions, different registers', where every prior session's residual was a structural transposition.
+- verdict: CONFIRMED
+
+## [s55] The target's seat map says the ctx+0xC pointer and the loop base are one C variable (both a0) while lnk holds its own seat (a2); spelling it that way makes every register in the function target-exact and leaves only the two copies missing.
+- mechanism: V3 reuses the pointer variable for lnk, which keeps that pseudo live through the whole loop body, pins lnk and the pointer to one seat and cascades a one-seat shift through ptr/sh/copy/base/index. Reusing the pointer variable for the base instead lets the pointer die at the copy, and the allocator hands the freed a0 to the base exactly as the target does.
+- probe: Cell U1 (tmp/grind/func_80017848/s55/body_U1.c; per-loop 'q' holds the ctx+0xC pointer and is then reassigned the base, 'lnk'/'lnk2' separate, copy dest 'p'/'p2') applied at the HEAD src/ings.c:820 anchor and scored; full normalised objdump diff via tmp/grind/func_80017848/s55/dis.sh.
+- result: 4 at 125/127. The complete diff is '-addu a3,a0,zero' / '-addu a0,a1,a3' / '+addu a0,a1,a0' twice, once per loop. All 125 emitted instructions match the target register-for-register, offset-for-offset and in order. Banked as memory/grind/func_80017848/candidate_alt_s55_u1_seat_exact_two_copies_missing_4.c.
+- verdict: CONFIRMED
+
+## [s55] On the U1 chassis the copies are merged because the copy's source is set by the base add itself rather than by an insn between the copy and the add; each U-family spelling measured this session leaves both copies merged at 125 instructions.
+- mechanism: use_crosses_set_p consults reg_last_set, which combine updates only for insns it has already scanned past, so i3 setting the source does not count as a set 'between'. The two gates are mutually exclusive as spelled so far: V3's clobber buys the copies and loses the seats, U1's variable identity buys the seats and loses the clobber.
+- probe: Cells U2 (lnk load moved above the copy), U5/U6 ('slots' as the copy dest in one/both loops), U7 (copy dest shared across both loops), U8 (no reuse, separate base variable) and U10 (explicit re-read of ctx+0xC between the copy and the add), each applied at the HEAD src/ings.c:820 anchor and scored.
+- result: U2 = U5 = U6 = U7 = U10 = 4 at 125, U8 = 10 at 125. U10's re-read is folded away by cse so it never becomes a clobber. Banked rejected/s55_no_reuse_separate_base_var_costs_10.c and rejected/s55_reread_ctx0xC_between_copy_and_add_cse_folds_costs_4.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s55 U-cell applied in turn; no FAKE construct in any body; BASE re-audited at 3 (127/127) in the same session
+
+## [s55] Sharing or splitting the four loop variables (q, p, base, t) across the two loops does not move the V3 seat map, and neither do the birth-order and 'slots'-routing variants measured this session.
+- mechanism: Sharing a variable across both loops makes its pseudo multi-block and hands it to global.c instead of local-alloc, which was the hoped-for route to the a3 seat that BASE's loop 1 wins; the measurement shows the seat map is decided upstream of that distinction, by which values are simultaneously live in the loop body.
+- probe: Cells W00..W15 (the 2^4 subset lattice over {q, p, base, t}, generated into tmp/grind/func_80017848/s55/) plus Y1 ('i = 0' after the pointer read), Y2 (pointer read before 'sh'), Y3 (base written into the top-guard variable 'slots'), Y4 (loop-1's pointer IS 'slots') and Y5 ('slots' as the copy dest), each applied at the HEAD anchor and scored.
+- result: W00-W09, W12, W13 = 14 at 127; W10, W11, W14, W15 = 36 at 127; Y1 = Y2 = 14 at 127; Y3 = Y5 = 17 at 127; Y4 = 19 at 126. Five bodies banked to memory/grind/func_80017848/rejected/ (333 forms total).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s55 W/Y cell applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session
+
+## [s55] The mandatory kill re-audit found nothing void: BASE re-measures at 3 (127/127) on the HEAD chassis and carries no FAKE construct, so the ledger floor of 3 is the correct chassis number despite the dispatch brief reporting the measurement as unavailable.
+- mechanism: Instance kills are chassis- and FAKE-state-relative, so the closest banked form is re-measured before new probes are spent.
+- probe: memory/grind/func_80017848/candidate.c applied at the HEAD src/ings.c:820 anchor and scored with 'sandbox func_80017848 --disable all'.
+- result: 3 at 127/127, identical to its s52/s53/s54 value.
+- verdict: CONFIRMED

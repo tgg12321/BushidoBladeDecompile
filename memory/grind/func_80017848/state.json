@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 54,
- "current_modality": "synthesis",
+ "session_count": 55,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -327,23 +327,29 @@
    "floor": 3,
    "modality": "synthesis",
    "headline": "Residual pinned to a 2-instruction transposition in loop 2 and attributed insn-by-insn from the .combine dump: loop-1's copy and loop-2's wrong guard instruction are two ends of ONE device (the `p = q"
+  },
+  {
+   "session": 55,
+   "floor": 3,
+   "modality": "escalation",
+   "headline": "Escalation premise falsified by measurement: an un-tried lever (combine.c:914 use_crosses_set_p, clobbering the copy's source with the target's own lnk load) materialises BOTH preheader copies for the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Loop 2's copy is reachable only if its destination gets a second use that is neither an address (cse folds it to `base`) nor a value that replaces one of the target's three post-loop ctx+0xC reloads. The one untried shape is a PERMUTATION rather than an addition: keep the reload count at three and change WHICH post-loop consumer reads the carrier, so no load is deleted.",
-   "mechanism": "The target reloads ctx+0xC at combine insns 222 (call), 270 (rec_a) and 293 (rec_b). Every s52-s54 cell that gave the carrier a value use removed one of those loads, costing an instruction; but if the carrier feeds rec_a AND rec_a's former load is re-introduced by giving the CALL its own read plus a second fresh read for rec_b, the reload count is unchanged and only the carrier's live range moves.",
-   "next_probe": "On the s53 S2 mirror chassis (tmp/grind/func_80017848/s53/body_S2.c), spell rec_a's pointer as `(u8 *)((slot_a << 6) + (s32)q2)` while adding a fresh `*(u8 **)(ctx + 0xC)` read for the math_Distance3D arg pair and another for rec_b, so the build still issues three post-loop loads. Measure, then diff the loop-2 preheader against tmp/grind/func_80017848/s54/T.txt lines 58-61 and the tail against lines 76-113."
+   "hypothesis": "Closing this function is now one question: find a spelling that has BOTH gates at once - a set of the ctx+0xC pointer pseudo strictly BETWEEN the preheader copy and the base add (so combine.c:914 refuses the merge) that does not extend any live range and so preserves U1's exact seat map.",
+   "mechanism": "combine.c:914 needs use_crosses_set_p (src, INSN_CUID (copy)) true with the copy and the add non-adjacent. U1's only set of the source is the base add itself, which combine does not count because reg_last_set is updated only for insns already scanned past. V3 supplies the set with the lnk load but that pins lnk and the pointer to one pseudo, keeps it live through the loop body and shifts every seat.",
+   "next_probe": "On tmp/grind/func_80017848/s55/body_U1.c, split the base computation so the pointer variable is written TWICE inside the preheader with the lnk load between the two writes - e.g. 'p = q; q = (u8 *)sh; lnk = *(u8 **)(ctx + 0x10); q = (u8 *)((s32)q + (s32)p);' - and check whether the first write is folded into the second by cse (leaving 125) or survives as the required clobber (giving 127 with U1's seats). Then vary which of the two writes carries the shift and which carries the pointer."
   },
   {
-   "hypothesis": "The target's loop-1 copy has one use in 127 instructions, so at least one of the two copies is produced by a pass other than combine-survival-by-use-count. Identifying that producer is worth more than another C spelling.",
-   "mechanism": "In BASE's .combine the copy is (set 80 79) with the base add reading 79, yet the emitted asm is `addu a3,a0,zero` / `addu a0,a1,a3` - the base add's operand was rewritten from reg 79 to reg 80 AFTER combine. local-alloc.c's optimize_reg_copy family (or reload's inheritance) is the only candidate; whichever transform does it may be reachable in loop 2 without any tail at all.",
-   "next_probe": "With BASE applied, read tmp/grind/func_80017848/dumps/ings.lreg and ings.greg around the insns that were 83/89/141 in .combine and find the pass at which the base add's operand becomes reg 80. Then check whether the same transform's precondition (a reg-reg move whose source dies at the move) can be created in loop 2 by making the preheader read a distinct pseudo that dies immediately."
+   "hypothesis": "The clobber does not have to come from a C statement: optimize_reg_copy_1's own precondition (source does not die at the copy, dies later, neither register set in between) may be satisfiable on the U1 chassis by giving the pointer a use AFTER the base add inside the same block, which both keeps the source alive past the copy and defeats combine's merge for a different reason.",
+   "mechanism": "If the source is still live after the add, merging the copy into the add would extend rather than shorten the source's range, and optimize_reg_copy_1 then has exactly the shape it is written for. U1's pointer currently dies at the add.",
+   "next_probe": "On body_U1.c give the pointer variable one more read after the base add that the target ALSO performs - the loop-1 latch bound and the loop body both read the base, so try re-deriving one of them from the pointer plus the shift instead of from the base - and measure whether the instruction count stays at 127 rather than dropping to 125."
   },
   {
-   "hypothesis": "Attacking the join copy rather than the preheader copy: cell X1 is 127/127 with loop 1 byte-exact and only loop-2's guard/preheader wrong (7). If loop-1's `p = q;` join copy can be made free - `p` given a single reaching definition at loop-2's preheader - X1 loses one instruction of pure overhead and the residual reduces to the single missing preheader copy.",
-   "mechanism": "The join copy exists because `p` has two reaching definitions at loop-2's guard block (the entry read on the skip path, `q` on the loop path). A single-definition carrier removes it, but the obvious spellings make `q` undefined on the loop-1 skip path; the s53 AE/AF/AG family (q pre-initialised before loop 1) priced that at 11-12 because the pre-initialisation itself lands a copy in loop-1's guard block.",
-   "next_probe": "On tmp/grind/func_80017848/s54/body_X1.c, try defining the carrier on BOTH paths at zero cost: give loop-1's `if` an else-arm-free spelling in which the entry read and `q` are the SAME variable while loop-1's preheader read is a distinct one (i.e. invert which of the two pseudos carries out of the loop), and measure whether the join copy disappears without loop 1 losing its own preheader copy."
+   "hypothesis": "If neither gate can be bought together in C, the residual is now a two-instruction RA/combine question that tools/ra_solver can attack directly, because the classifier types it as RA rather than as a structural difference for the first time.",
+   "mechanism": "inverse_compose.py classify already returns RA on the V3 chassis; extract.py + simulate.py + perturb.py can price the exact allocno perturbation that moves V3's seats onto the target's, which would close the function from the V3 side instead of the U1 side.",
+   "next_probe": "Run 'python3 tools/ra_solver/extract.py func_80017848 ings' then 'simulate.py --trace' and 'perturb.py' on the V3 chassis (14 at 127/127, opcode-exact) and read off the ranked C-lever vectors for the ptr/sh/copy/base/index seat shift; artifacts already staged under tmp/grind/func_80017848/s55/ra/."
   }
  ],
  "judge_constraints": [],
@@ -357,22 +363,6 @@
  "last_unpark_reason": "Newly VISIBLE completed siblings in the same TU (tombstone backfill, commit 0ddc72c8): func_80017D84 \u2014 already named by this ledger's own s45 object-model audit as the source of its 52-byte data model \u2014 plus func_80016E60 and main, all COMPLETED-C in src/ings.c and never read by this ledger. PROBE: read their on-main bodies and transplant their loop-2 preheader / copy-geometry spellings onto the f",
  "last_unpark_at": "2026-09-08T01:58:36.569292+00:00",
  "kills": [
-  {
-   "session": 37,
-   "statement": "The solver's object-level classify on the BASE chassis types the floor-3 residual as a register-seat (RA) permutation that inverse.py can search.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s37/body_BASE.c; BASE 3 at 127/127; no FAKE constructs",
-   "predicate_cite": "",
-   "result": "classify prints FIRST DIVERGENCE: RA because the three differing instructions share opcodes, but they sit at different p"
-  },
-  {
-   "session": 38,
-   "statement": "Frontier item 1: a basic-block boundary between the preheader copy and the base add whose label is removed after combine keeps the copy at zero instruction cost in target's position (escape #8 with a ",
-   "kill_scope": "instance",
-   "measured_on": "standalone scratch TUs under the exact project CC_FLAGS (canonical cc1), plus BASE re-audited at 3 (127/127) over the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs anywhere",
-   "predicate_cite": "",
-   "result": "m7a: insn 87 (add) has no LOG_LINK, combine leaves copy insn 71, but the final .s emits the copy as move $2,$3 in the br"
-  },
   {
    "session": 38,
    "statement": "A volatile-qualified read of the links pointer between the copy and the base add makes combine.c:985-988 refuse the copy->add combination and leaves target's use-once copy in place.",
@@ -836,6 +826,22 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with each s54 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session",
    "predicate_cite": "",
    "result": "ZB = 8 at 125, ZC = 17 at 127, ZD = 5 at 128, ZE = 6 at 128, M = 17 at 126, M2 = 17 at 126, M3 = 16 at 126, F2 = 17 at 1"
+  },
+  {
+   "session": 55,
+   "statement": "On the U1 chassis the copies are merged because the copy's source is set by the base add itself rather than by an insn between the copy and the add; each U-family spelling measured this session leaves",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with each s55 U-cell applied in turn; no FAKE construct in any body; BASE re-audited at 3 (127/127) in the same session",
+   "predicate_cite": "",
+   "result": "U2 = U5 = U6 = U7 = U10 = 4 at 125, U8 = 10 at 125. U10's re-read is folded away by cse so it never becomes a clobber. B"
+  },
+  {
+   "session": 55,
+   "statement": "Sharing or splitting the four loop variables (q, p, base, t) across the two loops does not move the V3 seat map, and neither do the birth-order and 'slots'-routing variants measured this session.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with each s55 W/Y cell applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session",
+   "predicate_cite": "",
+   "result": "W00-W09, W12, W13 = 14 at 127; W10, W11, W14, W15 = 36 at 127; Y1 = Y2 = 14 at 127; Y3 = Y5 = 17 at 127; Y4 = 19 at 126."
   }
  ],
  "escalation_deferrals": 0,

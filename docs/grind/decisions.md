@@ -25518,3 +25518,21 @@ Every no-semantic-purpose construct sits in a frozen family with prerequisites m
 ## 2026-09-07 20:58 — CD_sync — final call — **PASS**
 
 All constructs sit in frozen families with prerequisites met: pointer-alias-fake-exception (tbl_125c, idx_1494, idx_1495 = 1 + idx_1494, pp), do-while-zero-exception (two single-level wraps, no nested wrap), staged-value-reused-variable (src), and once-written fresh named intermediates (t0/pB/arg5, no-new-park-categories SOTN-accepted entry as clarified 2026-08-17/2026-08-31) - every FAKE annotated with a named GCC pass and a banked ablation score matching rejected/s126-*.c filenames (C1 31, C2 29, A7 12, A5 18, A8 25, A6 8, B1 7, B2 9, B3 14, V1 18). Decisive fact I verified: the 2026-07-20 refused cross-symbol idiom (`idx_1495 = &D_800A1494[1]`, decisions.md:950) is gone; `1 + idx_1494` is an offset inside the single 3-byte Intr object (memory/closer/libcd-identity.md:28, symbol_addrs.txt:85-87), the exact shape my CD_ready PASS cleared (decisions.md:24881) and that ships matched at src/system.c:515/766. The banned CD_alarm merge (2026-09-06 11:38) is absent - HEAD's flat externs are used. Volatile comes from the pre-existing TU extern, no cast. Diff surface is src/system.c only (git diff --stat): no Makefile/pipeline/engine change, so no build-time rewriting. Evidence: memory/grind/CD_sync/evidence.md s126 (sandbox 0/160, rules_dropped 0, verify-oracle ok), hypotheses.md:3264, self_vet.md.
+
+## 2026-09-07 — func_80017848 — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
+
+**Auto-filed by the grinder driver (2026-09-07)** after 55 sessions held the honest
+floor flat at 3 across 9 distinct modalities (escalation, forensics, object-model, permuter, recon, rederive, solver, structural, synthesis) without a
+session self-filing — the escalation-modality backstop (grind.ps1). This is the endgame-lock
+species per the standing 2026-07-20 endgame-lock-disposition policy: byte-matches on main only
+via a cheat (cheat-asm), honest pure-C floor 3,
+sanctioned levers exhausted across the full modality ladder (see memory/grind/func_80017848/
+evidence.md + hypotheses.md for the per-session kill record). Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
+func_80017848` = **LOW** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
+coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
+2026-08-31 ruling (.claude/rules/ordinary-c-judge-decidable.md): the item is FORECLOSED
+silently — this entry is the proof-of-foreclosure record, not a question; nothing is
+surfaced to the owner and no packet exists. The two AND-gates remain the unchanged
+STANDARD. The function stays INCLUDE_ASM on main; re-activation triggers are a new owner
+class grant covering the residual, a toolchain-fidelity finding, or an explicit owner
+`queue unpark`.

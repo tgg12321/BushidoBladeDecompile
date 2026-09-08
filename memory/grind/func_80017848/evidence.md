@@ -6214,3 +6214,121 @@ a fresh read / slots) = 11 / 11 / 12.
 - [s54] BASE's .combine carries three separate post-loop ctx+0xC loads (insn 222 for math_Distance3D, insn 270 for rec_a, insn 293 for rec_b); routing loop-2's carrier into any of them deletes that load and lands the build at 126 instructions (M/M2/M3/F2/F2b/N2/XM all 16-17).
 
 - [s54] Nine new bodies banked to memory/grind/func_80017848/rejected/ this session (313 -> 326 forms), each named for the measured cost.
+
+## s55 (2026-09-07, escalation modality — the exhaustion premise is FALSIFIED by measurement)
+
+- **E-s55-0 (chassis + kill re-audit).** `memory/grind/func_80017848/candidate.c` (BASE)
+  re-measures **3 at 127/127** on the HEAD `src/ings.c:820` INCLUDE_ASM anchor. The dispatch
+  brief reported "measurement unavailable"; the ledger's floor of 3 is correct.
+
+- **E-s55-1 (the s54 pass attribution was WRONG, corrected from dumps).** s54 recorded that
+  loop-1's base add "reads the copy's SOURCE rather than its destination, and the operand was
+  rewritten from reg 79 to reg 80 AFTER combine", with local-alloc named only as a candidate.
+  Reading the four dumps at the same insn uids settles it:
+    - `ings.combine:6974` insn 89 = `(set (reg/v 81) (plus (reg/v 84) (reg/v 79)))` — reads 79
+    - `ings.flow:9027`    insn 89 = identical — still reads 79
+    - `ings.lreg:8889`    insn 89 = `(set (reg/v 81) (plus (reg/v 84) (reg/v 80)))` — reads 80,
+       and the `REG_DEAD (reg 79)` note has moved back onto the copy at insn 83
+  The rewrite therefore happens **inside local-alloc, between `flow` and `lreg`**, and the
+  routine is **`optimize_reg_copy_1` (tools/gcc-2.7.2/local-alloc.c:700)**, called from
+  `update_equiv_regs` at local-alloc.c:1007. Its contract is exactly this shape: "INSN is a copy
+  from SRC to DEST, both registers, and SRC does not die in INSN. Search forward to see if SRC
+  dies before either it or DEST is modified... If so, we can replace SRC with DEST and let SRC
+  die in INSN." Loop 1 satisfies it (79 dies at insn 89, nothing sets 79 or 80 in between, the
+  scan has not yet hit `NOTE_INSN_LOOP_BEG` at insn 91), so `addu a3,a0,zero` / `addu a0,a1,a3`
+  is emitted. **This is a mechanism-level correction, not a new spelling: `optimize_reg_copy_1`
+  is what turns a surviving preheader copy into the target's exact two-instruction pair.**
+
+- **E-s55-2 (NEW DEVICE, un-tried in 54 sessions: block combine with `use_crosses_set_p`).**
+  `tools/gcc-2.7.2/combine.c:914-917` refuses a combination when
+  `(! all_adjacent && use_crosses_set_p (src, INSN_CUID (insn)))` — i.e. when the copy and its
+  consumer are NOT adjacent AND the copy's SOURCE register is set by an insn in between. The
+  function's own loop preheaders supply that intervening insn for free: the target emits exactly
+  one instruction between the copy and the base add, `lw a2,16(s2)` (the ctx+0x10 "lnk" load).
+  Spelling that load as a write to the SAME C variable that holds the ctx+0xC pointer makes the
+  clobber real, and **the preheader copy materialises in BOTH loops for the first time in 55
+  sessions** — cell V3 (`tmp/grind/func_80017848/s55/body_V3.c`), 14 at 127/127.
+  Every previous session's framing ("the gate is the copy destination's use count",
+  s54 / combine.c:1453) is thereby shown to be only ONE of the two gates; the source-clobber gate
+  is cheaper because the clobbering insn already exists in the target.
+
+- **E-s55-3 (the residual class CHANGED: `inverse_compose classify` now says RA, not
+  instructions).** With V3 applied,
+  `python3 tools/ra_solver/inverse_compose.py classify ings func_80017848
+   --target-object build/src/ings.o --ours-object tmp/sandbox/func_80017848/ings.o`
+  reports **`FIRST DIVERGENCE: RA — same instructions, different registers`** (127 honest / 127
+  target). For 54 sessions this function's residual was a structural transposition that no C
+  form could produce; it is now a seat permutation, which is the ra_solver's declared domain.
+  Artifact: `tmp/grind/func_80017848/s55/ra/`.
+
+- **E-s55-4 (seat topology read off the target: the pointer variable IS the base variable).**
+  In the target the ctx+0xC pointer and the loop base occupy the SAME hard register `a0`
+  (`lw a0,12(s2)` … `addu a0,a1,a3`), while lnk has its own seat `a2`, the copy dest is `a3` and
+  the index is `v1`. V3 reused the pointer variable for LNK, which pins lnk and the pointer to
+  one seat (`a1`) and shifts every other seat — the whole 14-point residual. Reusing the pointer
+  variable for the BASE instead reproduces the target's seat map.
+
+- **E-s55-5 (cell U1 — EVERY REGISTER IN THE FUNCTION IS NOW TARGET-EXACT).**
+  `tmp/grind/func_80017848/s55/body_U1.c` measures **4 at 125/127**, and the complete normalised
+  objdump diff against the target is:
+
+        loop 1:   -addu a3,a0,zero          loop 2:   -addu a3,a0,zero
+                   lw a2,16(s2)                        lw a2,16(s2)
+                  -addu a0,a1,a3                      -addu a0,a1,a3
+                  +addu a0,a1,a0                      +addu a0,a1,a0
+
+  Nothing else differs anywhere in 125 instructions — not one register, not one offset, not one
+  ordering. The residual is now literally **two missing `addu a3,a0,zero` copies**, one per loop,
+  and the two consuming adds each read `a0` instead of `a3`. This is the closest any form has come
+  in 55 sessions; the previous best (BASE, 3) is numerically lower only because the engine metric
+  charges the two absent instructions plus their two consumers.
+
+- **E-s55-6 (why U1 loses the copies, stated as a predicate).** In U1 the copy's source `q` is set
+  by the base add ITSELF (`q = (u8 *)(sh + (s32)q_old)`), not by an insn *between* the copy and
+  the add, so `use_crosses_set_p` is false at the time `try_combine` runs (combine's
+  `reg_last_set` is only updated for insns already scanned past, and i3 has not been scanned).
+  combine therefore merges the copy into the add and the copy is deleted. The two gates are
+  currently mutually exclusive on this chassis: the clobber that keeps the copy (V3) costs the
+  seat map, and the variable identity that wins the seat map (U1) removes the clobber.
+
+- **E-s55-7 (what was swept and stayed flat).** Sharing/splitting the four loop variables
+  (q, p, base, t) across the two loops is a 16-cell lattice, W00..W15: every cell measures 14 at
+  127/127 except the four that share BOTH `p` and `t` (W10/W11/W14/W15 = 36). Birth-order
+  permutations of the V3 clobber (Y1 `i=0` after the read, Y2 read before `sh`) are byte-neutral
+  at 14; routing the base or the pointer through the top-guard variable `slots` is worse
+  (Y3 = 17, Y5 = 17, Y4 = 19 at 126). On the U1 chassis, moving the lnk load above the copy
+  (U2 = 4), using `slots` as the copy dest (U5/U6 = 4), sharing the copy dest across both loops
+  (U7 = 4), re-reading ctx+0xC between the copy and the add (U10 = 4 — cse folds the re-read away,
+  so it is not a clobber) and dropping the reuse entirely for a separate base variable (U8 = 10)
+  all leave the copies merged at 125.
+
+- **E-s55-8 (bearing on the endgame-lock gates).** Gate (a) is unchanged and still FAILS
+  (`scan_hand_coded` LOW 0/8, quoted in the 2026-08-18 entry; nothing in this session's evidence
+  bears on hand-written asm — the opposite, since a pure-C form now reproduces 125 of 127
+  instructions with every register exact). Gate (b) is not reached: this session introduces NO
+  coercion or spelling family needing a precedent. U1 and V3 are ordinary C — named locals,
+  ordinary loads, one variable holding one pointer at a time. `tools/fake_ablate.py` finds no
+  FAKE construct in either. **The premise the escalation modality rests on — that the pure-C
+  levers are exhausted — is falsified by E-s55-2/3/5: an un-tried lever moved the residual from a
+  structural transposition no C form could reach to a two-instruction combine question with a
+  named predicate at combine.c:914.**
+
+- [s55] BASE re-measures 3 at 127/127 on the HEAD chassis (the dispatch brief's chassis measurement was unavailable; the ledger number is correct).
+
+- [s55] PASS ATTRIBUTION CORRECTED: loop-1's copy/add pair is produced by optimize_reg_copy_1 (tools/gcc-2.7.2/local-alloc.c:700, called at local-alloc.c:1007), not by combine - insn 89 reads reg 79 at ings.combine:6974 and ings.flow:9027 and reg 80 at ings.lreg:8889.
+
+- [s55] NEW LEVER: combine.c:914's '(! all_adjacent && use_crosses_set_p (src, INSN_CUID (insn)))' is a second, cheaper survival gate for the preheader copy; the target's own 'lw a2,16(s2)' lnk load is the free intervening insn that can supply the set.
+
+- [s55] Cell V3 (clobber spelled as the lnk load writing the pointer variable) = 14 at 127/127 and MATERIALISES the preheader copy in BOTH loops - the first time in 55 sessions that loop 2 has a copy at all.
+
+- [s55] tools/ra_solver/inverse_compose.py classify with --target-object build/src/ings.o now reports 'FIRST DIVERGENCE: RA - same instructions, different registers' for this function; the residual class changed from structural to seat.
+
+- [s55] Cell U1 (pointer variable reused as the loop base, lnk separate) = 4 at 125/127 with EVERY register in all 125 emitted instructions matching the target; the entire diff is the two missing 'addu a3,a0,zero' copies and their two consumers reading a0 instead of a3.
+
+- [s55] The two gates are mutually exclusive as spelled so far: V3's clobber buys the copies and loses the seat map; U1's variable identity buys the seat map and loses the clobber (its only set of the source is the base add itself, which combine does not count as a set 'between').
+
+- [s55] Endgame-lock gate (a) still fails and is unaffected (scan_hand_coded LOW 0/8 per the 2026-08-18 entry); a pure-C form now reproduces 125 of 127 instructions with every register exact, which is further evidence against hand-written asm. Gate (b) is not reached: U1 and V3 introduce no coercion or spelling family - they are ordinary named locals and ordinary loads, and tools/fake_ablate.py finds no FAKE construct in either.
+
+- [s55] Twelve new bodies banked; memory/grind/func_80017848/rejected/ is now 333 forms, and the U1 body is saved as candidate_alt_s55_u1_seat_exact_two_copies_missing_4.c.
+
+- [s55] src/ings.c was restored to its HEAD INCLUDE_ASM state at end of session; the tree carries no source edits.

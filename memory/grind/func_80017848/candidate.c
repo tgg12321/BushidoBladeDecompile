@@ -1,3 +1,42 @@
+/* [s55 ESCALATION - READ THIS FIRST.  The body below is UNCHANGED (BASE, 3 at
+ * 127/127, re-audited on the HEAD chassis this session, no FAKE construct).  It
+ * is still the lowest-SCORING form, but it is NO LONGER the most advanced one:
+ *
+ *   memory/grind/func_80017848/candidate_alt_s55_u1_seat_exact_two_copies_missing_4.c
+ *   (cell U1) measures 4 at 125/127 and its ENTIRE diff against the target is
+ *   the two missing `addu a3,a0,zero` preheader copies and their two consumers
+ *   reading a0 instead of a3.  All 125 emitted instructions match the target
+ *   register-for-register.  Start there, not here.
+ *
+ * WHAT s55 FOUND (full detail in evidence.md E-s55-1..8, hypotheses.md s55):
+ *  1. s54's pass attribution was WRONG.  The rewrite that turns a surviving
+ *     preheader copy into the target's `addu a3,a0,zero` / `addu a0,a1,a3` pair
+ *     is `optimize_reg_copy_1` (tools/gcc-2.7.2/local-alloc.c:700, called from
+ *     update_equiv_regs at :1007) and it runs between the flow and lreg dumps -
+ *     insn 89 reads reg 79 at ings.combine:6974 and ings.flow:9027, and reg 80
+ *     at ings.lreg:8889.
+ *  2. The preheader copy has a SECOND survival gate nobody tested in 54
+ *     sessions: combine.c:914's `(! all_adjacent && use_crosses_set_p (src,
+ *     INSN_CUID (insn)))`.  Set the copy's SOURCE between the copy and the base
+ *     add and combine cannot merge it.  The target already emits exactly one
+ *     instruction there - the ctx+0x10 lnk load - so the clobber is FREE.
+ *     Spelling that load into the pointer variable makes the loop-2 preheader
+ *     copy appear in both loops (cell V3, 14 at 127/127), and
+ *     `ra_solver/inverse_compose.py classify` then reports
+ *     `FIRST DIVERGENCE: RA - same instructions, different registers`.
+ *  3. The target's seat map says the ctx+0xC pointer variable and the loop base
+ *     variable are ONE C variable (both a0), lnk has its own seat (a2), the copy
+ *     dest is a3 and the index v1.  Spelling THAT (cell U1) makes every register
+ *     exact - but then the base add itself is the only set of the source, so
+ *     combine.c:914 does not fire and the copies merge away (125 insns).
+ *  4. So the two gates are currently mutually exclusive: V3's clobber buys the
+ *     copies and loses the seats; U1's variable identity buys the seats and
+ *     loses the clobber.  Closing this function = finding one spelling that has
+ *     BOTH, i.e. a set of the pointer pseudo between the copy and the add that
+ *     is not the lnk load and does not extend any live range.
+ *
+ * The pre-s55 derivation of this body follows unchanged.
+ */
 /* [s54 SYNTHESIS - body unchanged, re-audited at 3 (127/127) on the HEAD chassis
  * (anchor src/ings.c:820); tools/fake_ablate.py reports no FAKE construct here.]
  *
