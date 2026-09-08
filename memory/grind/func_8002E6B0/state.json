@@ -1,8 +1,8 @@
 {
  "func": "func_8002E6B0",
  "file": "code6cac_b",
- "session_count": 3,
- "current_modality": "structural",
+ "session_count": 4,
+ "current_modality": "permuter",
  "floor_history": [
   {
    "session": 1,
@@ -21,23 +21,29 @@
    "floor": 40,
    "modality": "structural",
    "headline": "Exit structure SOLVED on the ret-var chassis (score 45, structurally exact); the residual is one seat - ret must be $v0, blocked by local_alloc claiming $v0 first - and the reorg all-live route is KIL"
+  },
+  {
+   "session": 4,
+   "floor": 34,
+   "modality": "permuter",
+   "headline": "Permuter dropped the floor 40 -> 34: a block-2 borrow of the existing cross_point local to stage dx buys the target's SIXTH callee-save (sw s5 / mflo s5); the residual is now two separable, individual"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C form exists that makes expand emit the return value's zero directly into HARD $v0 before block 1's branch, which is what bars $v0 from block 2's local allocation and reproduces the target's whole seat cascade including the sixth callee-save",
-   "mechanism": "DECL_RESULT of a scalar-returning function has the hard return register as its RTL, so expand_return writes $v0 directly; local_alloc only respects HARD regs, so only a hard $v0 set (not a function-scope pseudo) can keep block 2's local qtys off $v0",
-   "next_probe": "cc1-only screen, seconds per body: run each candidate through tmp/grind/func_8002E6B0/s3/da.sh and grep the .lreg dump for the position of `(set (reg:SI 2 v0) (const_int 0))` relative to the first bltz; sandbox-measure only bodies where it lands BEFORE the branch. Unscreened candidates: nested ifs with the `return 0` LAST; a COND_EXPR chain `return c1 >= 0 ? (c2 >= 0 ? c3 >= 0 : 0) : 0;` (never tried - s1 only tried TRUTH_ANDIF); `if (c1 < 0 || c2 < 0) return 0;` (TRUTH_ORIF, never tried)"
+   "hypothesis": "An exit form exists that materialises the returned zero on the borrow (34) chassis WITHOUT introducing a long-lived ret pseudo, holding the target's exit shape and the sixth callee-save at the same time",
+   "mechanism": "the s5 save comes from block-1/2 pressure exhausting the caller-save set in global.c find_reg; a function-scope ret pseudo spans block 1 and absorbs exactly that pressure, which is why the composed body drops back to five callee-saves. A carrier whose live range does NOT span block 1 (a second borrow of cross_center or center_x at the exits, or a ret declared inside a do { } while (0) wrap) would supply the zero without the span.",
+   "next_probe": "cheap cc1-only screen first: run each candidate through tmp/grind/func_8002E6B0/s3/da.sh and check the .lreg/.greg dump for BOTH (i) a sixth callee-save in the allocation and (ii) the zero-set reaching the first bltz's delay slot; sandbox-measure only bodies showing both. Start from candidate.c (34) and from rejected/s4_retvar_plus_borrow_exit_exact_loses_s5_45.c."
   },
   {
-   "hypothesis": "Excluding hard $v0 from block 2's local qtys is reachable without a hard $v0 set preceding the block",
-   "mechanism": "local-alloc.c block_alloc / find_free_reg scan hard regs in plain ascending order (MIPS defines no REG_ALLOC_ORDER) and run before global_alloc, so function-scope pseudos are invisible to them",
-   "next_probe": "tools/ra_solver/local_extract.py plus local_alloc.py on code6cac_b block 2 to type it REACHABLE or FORECLOSED; if FORECLOSED, frontier 1 is the only remaining route and the whole question reduces to how the return value is expanded"
+   "hypothesis": "The remaining block-1 seat permutation on the 34 chassis is typable by tools/ra_solver now that the register multiset matches the target",
+   "mechanism": "s1 reported the sched/RA goal mapper unusable ('goal is not a topological order') because our stream carried 37 renames and 20 moves versus the target - but that was measured when we had five callee-saves and no s5 product. The 34 body is 95 insns against the target's 96 in the permuter normalisation, with the same callee-save set.",
+   "next_probe": "tools/ra_solver/extract.py + inverse.py global --goal on the 34 body's block 1, targeting lw t5,8(a2) / mfhi t7 / mfhi a1, to type the seats REACHABLE or FORECLOSED before any further spelling; tools/sched_solver perturb.py --goal-from-target is worth re-running for the same reason."
   },
   {
-   "hypothesis": "The target's sixth callee-save ($s5 for block 1's fourth product) is a consequence of $v0 being unavailable in block 1's tail rather than an independent target",
-   "mechanism": "global.c find_reg falls back to callee-saves once the caller-save set is exhausted for the overlapping ranges in block 1's tail",
-   "next_probe": "no independent probe - re-read the block-1 seat map after frontier 1 resolves; do not chase it with more statement spellings (14 measured neutral in s2, 4 more in s3)"
+   "hypothesis": "A permuter campaign on a structurally different chassis than the 34 body still has room",
+   "mechanism": "perm_c saturated the 34 basin (24,869 iterations, zero finds below base), but the ret-var + borrow 45 body is a structurally distinct chassis that has never been permuted, and it is the one carrying the correct exit shape",
+   "next_probe": "seed tmp/grind/func_8002E6B0/s4/mkws.sh on rejected/s4_retvar_plus_borrow_exit_exact_loses_s5_45.c and run one fresh-seed window; do NOT re-seed the 34 chassis - that is a spent probe on the record."
   }
  ],
  "judge_constraints": [],
@@ -98,10 +104,43 @@
    "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, v70/v71/v72/v74/v80 bodies, no FAKE constructs",
    "predicate_cite": "",
    "result": "v70 = 45, v71 = 45, v74 = 45, v80 = 45, v72 = 40. No spelling moved ret off $a1. v72 normalises back to the v12 object ("
+  },
+  {
+   "session": 4,
+   "statement": "The target's sixth callee-save ($s5) is an independent target that must be chased with its own statement spellings",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, v12 and q345 bodies; no FAKE constructs in v12, one variable-reuse borrow present in q345",
+   "predicate_cite": "",
+   "result": "sw s5,20(sp) and mflo s5 appeared with no spelling aimed at them. s3's reading is confirmed and the 14+4 previously-meas"
+  },
+  {
+   "session": 4,
+   "statement": "The permuter improves on the 34-scoring borrow body by further randomisation of that same chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, q345 body with its variable-reuse borrow present, decomp-permuter with --stack-diffs",
+   "predicate_cite": "",
+   "result": "zero finds below base. Its single same-score find is only a respelling of the identical borrow (`dx = center_z - arg0[2]"
+  },
+  {
+   "session": 4,
+   "statement": "The target's exit structure and the sixth callee-save are held simultaneously by adding the ret-var/goto-end exit form to the borrow chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, w6/x2 bodies, one (w6) or two (x2) variable-reuse borrows present",
+   "predicate_cite": "",
+   "result": "both = 45. The composed body keeps the target's exit shape but drops back to FIVE callee-saves (no sw s5) and puts ret i"
+  },
+  {
+   "session": 4,
+   "statement": "Untried ordinary-C exit and coordinate spellings move the floor below 40 on the v12 / ret-var chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, v92/v93/v96/v91/q445 bodies, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "40, 40, 44, 41 and 46 respectively; the two 40s are the v12 object. Ordinary statement-level spelling stays exhausted on"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-08T13:35:52.121385+00:00"
+ "created": "2026-09-08T13:35:52.121385+00:00",
+ "escalation_deferrals": 0
 }

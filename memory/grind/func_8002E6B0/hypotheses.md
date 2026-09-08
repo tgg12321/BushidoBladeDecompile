@@ -140,3 +140,91 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v70/v71/v72/v74/v80 bodies, no FAKE constructs
+
+## [s4] Borrowing an existing function-scope local (`cross_point`) to stage block 2's `dx` lowers the floor below 40 on the v12 chassis
+- mechanism: the borrow makes the `dx` value live in the cross_point pseudo across the cross_center product, which raises block-1/block-2 register pressure enough that global.c find_reg exhausts the caller-save set and falls back to a SIXTH callee-save — the target's `sw s5` / `mflo s5`. A fresh local cannot do this because CSE/copy-propagation folds a plain `s32 dxa = dx;` away before RA ever sees a second live range.
+- probe: decomp-permuter campaign `tmp/grind/func_8002E6B0/s4/perm_b` (v12 chassis, 26,669 iterations) produced output-345-1; sandbox --disable all on that body, then a hand ablation sweep (fresh named intermediate in the same position; borrow in block 1 only; borrow in all three blocks; borrow cross_center for dz instead; xor-swap and mixed-exit respellings)
+- result: **40 -> 34 / 95 insns.** Fresh intermediate = 40, block-1-only = 40, all-three-blocks = 61, cross_center-for-dz = 53; xor-swap and mixed-exit respellings TIE at 34. The 34 body's prologue and block-1 tail now carry the target's sixth callee-save (`sw s5,20(sp)`, `mflo s5`) and lines 1-17/20/22-23/26-34/37/39/45 of the -dz side-by-side are identical to the target.
+- verdict: CONFIRMED
+- NOTE: the borrow is a FAKE construct in the variable-reuse family (.claude/rules/defeat-licm-hoist-var-reuse.md, gated by .claude/rules/staged-value-reused-variable.md — an EXISTING local borrowed for a second value, not an invented one). It carries no annotation yet because this session is not submitting; any candidate-ready must add the `/* FAKE: ... */` line with mechanism + lever-exhaustion and quote that rule's scope sentence. The best FAKE-FREE form remains v12 at 40 (`rejected/s4_v12_plain_no_varreuse_40.c`).
+
+## [s4] The target's sixth callee-save ($s5) is an independent target that must be chased with its own spellings
+- mechanism: s3 frontier-3 asserted the opposite (that it is a consequence of block-1 tail pressure); this hypothesis tested the assertion by NOT aiming at it
+- probe: the 34 body was produced by a pressure-raising borrow in block 2 with no statement anywhere aimed at block 1's fourth product; -dz side-by-side of the result vs asm/funcs/func_8002E6B0.s
+- result: `sw s5,20(sp)` and `mflo s5` appeared with no spelling aimed at them, exactly as s3 predicted. s3's frontier-3 reading is confirmed; the callee-save is a consequence of pressure.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v12 and q345 bodies, no FAKE constructs in v12, one variable-reuse borrow in q345
+
+## [s4] The permuter can improve on the 34-scoring borrow body by further randomisation of the same chassis
+- mechanism: decomp-permuter's randomizer over the same base source; a basin either yields early or not at all (permuter-directives §Campaign discipline)
+- probe: campaign `tmp/grind/func_8002E6B0/s4/perm_c`, seeded on the 34 body (permuter base score 345), 24,869 iterations over ~23 min with fresh seeds
+- result: ZERO finds below base. The single same-score find is a respelling of the identical borrow (`dx = center_z - arg0[2];` with `cross_point * dx`), not a new construct. The basin is saturated for this chassis, so re-seeding it is not a valid probe for a later session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, q345 body with its variable-reuse borrow present, permuter with --stack-diffs
+
+## [s4] The exit structure and the sixth callee-save can be held simultaneously by adding the ret-var/goto-end exit form to the borrow chassis
+- mechanism: s3 established the ret-var + `goto end` form reproduces the target's exit shape exactly (zero-move in the first bltz's delay slot, both bltz to the epilogue, no `j`); s4 established the block-2 borrow buys the sixth callee-save. The hypothesis was that the two are independent and compose.
+- probe: sandbox --disable all on the ret-var chassis WITH the block-2 borrow (`rejected/s4_retvar_plus_borrow_exit_exact_loses_s5_45.c`) and on the same body with the borrow ALSO in block 1 (`rejected/s4_retvar_borrow_blocks1and2_45.c`); -dz disassembly of the first (`tmp/grind/func_8002E6B0/s4/w6.ins.txt`)
+- result: both = 45. The composed body keeps the target's exit shape but DROPS back to five callee-saves (no `sw s5`) and puts ret in `$a1` with a trailing `move v0,a1`; adding the block-1 borrow does not recover s5. The two halves are anti-correlated on the bodies measured: the ret pseudo consumes the pressure the borrow was creating.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, w6/x2 bodies, one (w6) or two (x2) variable-reuse borrows present
+
+## [s4] Untried ordinary-C exit and coordinate spellings move the floor below 40 on the v12/ret-var chassis
+- mechanism: assorted — do_store_flag comparison-code choice (GE vs GT vs logical negation), extra named coordinate locals raising pressure, a ret-var whose default is 1 rather than 0, and swapping the cross_point/cross_center assignment order in ONE block rather than all three (s2 had only measured all-three, which was 57)
+- probe: sandbox --disable all on `return !((cc ^ cp) < 0)`, `return (cc ^ cp) > -1`, all eight vertex coordinates hoisted into named locals, ret-var defaulted to 1 with `ret = 0;` on both failing paths, and block-2-only assignment-order swap
+- result: 40, 40, 44, 41, 46 respectively — none below 40, and the two 40s are the v12 object. Ordinary statement-level spelling remains exhausted on this chassis; the 34 came from a variable-reuse borrow, not from ordinary C.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v92/v93/v96/v91/q445 bodies, no FAKE constructs
+
+## Live frontier after s4 (ranked)
+1. **Compose the exit shape with the sixth callee-save.** The 34 body has the target's s5 save + a line-for-line block-1 prefix but the wrong tail; the 45 body has the exact tail but only five callee-saves. Both halves are now individually MEASURED, not hypothesised. Next probe: on the 34 (borrow) chassis, find an exit form that materialises the returned zero WITHOUT introducing a long-lived ret pseudo that eats the pressure — e.g. a second borrow that carries the zero (borrow `cross_center` or `center_x` at the exits rather than declaring `ret`), or the ret-var declared inside a `do { } while (0);` wrap so its live range does not span block 1. Screen cheaply with `tmp/grind/func_8002E6B0/s3/da.sh` + the .lreg dump before spending sandbox measurements.
+2. **Close the remaining block-1 seats on the 34 chassis.** The residual there is `lw t5,8(a2)` vs our `lw a0,8(a2)` and `mfhi t7`/`mfhi a1` vs our `mfhi t5`/`mfhi a2`, which then permutes blocks 2 and 3. Now that the multiset finally matches the target's (six callee-saves, 95 vs 96 insns in the permuter normalisation), `tools/ra_solver` inverse/classify on the 34 body is worth running for the first time — s1 reported the goal was not a topological order, but that was measured before the s5 save existed.
+3. **Do NOT re-seed a permuter campaign on the 34 chassis** — s4's perm_c saturated it (24,869 iterations, zero finds below base). A future permuter session must seed a structurally different chassis (the ret-var + borrow 45 body is the obvious untried one) or a different lever hint.
+
+## [s4] Borrowing an existing function-scope local (cross_point) to stage block 2's dx lowers the floor below 40 on the v12 chassis
+- mechanism: the borrow keeps dx's value live in the cross_point pseudo across the cross_center product, raising block-1/block-2 pressure until global.c find_reg exhausts the caller-save set and falls back to a sixth callee-save ($s5) - the target's sw s5 / mflo s5. A fresh named local cannot do this: CSE/copy-propagation folds a plain `s32 dxa = dx;` away before RA ever sees a second live range (measured: fresh intermediate = 40).
+- probe: decomp-permuter campaign tmp/grind/func_8002E6B0/s4/perm_b (v12 chassis, 26,669 iterations, --stack-diffs) produced output-345-1; sandbox --disable all on that body, then a hand ablation sweep of four neighbouring spellings and two respellings
+- result: 40 -> 34 / 95 insns. Ablations: fresh named intermediate in the same position = 40, borrow in block 1 only = 40, borrow in all three blocks = 61, borrow cross_center for dz instead = 53. Ties at 34: xor operands swapped throughout, and mixed exit forms (first exit `goto end` + a trailing `end: return 0;`). The -dz side-by-side now matches the target on lines 1-17, 20, 22-23, 26-34, 37, 39 and 45, INCLUDING the prologue's sw s5,20(sp) and block 1's mflo s5.
+- verdict: CONFIRMED
+
+## [s4] The target's sixth callee-save ($s5) is an independent target that must be chased with its own statement spellings
+- mechanism: s3's frontier-3 asserted the opposite - that it falls out of block-1 tail pressure once $v0 is unavailable - and this hypothesis tested that assertion by aiming nothing at it
+- probe: the 34 body was produced by a pressure-raising borrow in block 2 with no statement anywhere aimed at block 1's fourth product; -dz disassembly compared against asm/funcs/func_8002E6B0.s (tmp/grind/func_8002E6B0/s4/q345.ins.txt)
+- result: sw s5,20(sp) and mflo s5 appeared with no spelling aimed at them. s3's reading is confirmed and the 14+4 previously-measured neutral statement spellings were correctly not the route.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v12 and q345 bodies; no FAKE constructs in v12, one variable-reuse borrow present in q345
+
+## [s4] The permuter improves on the 34-scoring borrow body by further randomisation of that same chassis
+- mechanism: decomp-permuter randomizer over the same base source; per permuter-directives a basin yields early or not at all
+- probe: campaign tmp/grind/func_8002E6B0/s4/perm_c seeded on the 34 body (permuter base score 345), 24,869 iterations over ~23 min with fresh seeds, then harvest --stop
+- result: zero finds below base. Its single same-score find is only a respelling of the identical borrow (`dx = center_z - arg0[2];` with `cross_point * dx`). The basin is saturated for this chassis; re-seeding it later is not a valid probe.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, q345 body with its variable-reuse borrow present, decomp-permuter with --stack-diffs
+
+## [s4] The target's exit structure and the sixth callee-save are held simultaneously by adding the ret-var/goto-end exit form to the borrow chassis
+- mechanism: s3 established the ret-var + goto-end form reproduces the target's exit shape exactly (zero-move in the first bltz's delay slot, both bltz to the epilogue, no j); s4 established the block-2 borrow buys the sixth callee-save; the hypothesis was that the two compose
+- probe: sandbox --disable all on the ret-var chassis WITH the block-2 borrow, and on the same body with the borrow also added to block 1; -dz disassembly of the first (tmp/grind/func_8002E6B0/s4/w6.ins.txt)
+- result: both = 45. The composed body keeps the target's exit shape but drops back to FIVE callee-saves (no sw s5) and puts ret in $a1 with a trailing move v0,a1; adding a second borrow in block 1 does not recover s5. On the bodies measured the two halves are anti-correlated - the ret pseudo consumes the pressure the borrow creates.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, w6/x2 bodies, one (w6) or two (x2) variable-reuse borrows present
+
+## [s4] Untried ordinary-C exit and coordinate spellings move the floor below 40 on the v12 / ret-var chassis
+- mechanism: assorted: do_store_flag comparison-code choice (GE vs GT vs logical negation), extra named coordinate locals raising pressure, a ret-var defaulting to 1 rather than 0, and swapping the cross_point/cross_center assignment order in ONE block (s2 had only measured all three blocks, which was 57)
+- probe: sandbox --disable all on `return !((cc ^ cp) < 0)`, `return (cc ^ cp) > -1`, all eight vertex coordinates hoisted into named locals, a ret-var defaulted to 1 with `ret = 0;` on both failing paths, and the block-2-only assignment-order swap
+- result: 40, 40, 44, 41 and 46 respectively; the two 40s are the v12 object. Ordinary statement-level spelling stays exhausted on this chassis - the 34 came from a variable-reuse borrow, not from ordinary C.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v92/v93/v96/v91/q445 bodies, no FAKE constructs
+
+## [s4] The s3 kill of the ret-var seat (no ordinary-C spelling moves ret off $a1) still holds on the current chassis and is not an artefact of a FAKE carrier occupying $v0
+- mechanism: mandated kill re-audit: an instance kill is only as good as the chassis and FAKE state it was measured under
+- probe: re-measured both banked bodies on HEAD this session (v12 = 40/93, the s3 exit-exact ret-var body = 45/93) and inspected them for FAKE constructs before running tools/fake_ablate.py
+- result: chassis unmoved, both scores reproduce exactly. fake_ablate is NOT APPLICABLE here: neither banked body contains a single FAKE construct (plain locals, plain arithmetic, plain returns), so no carrier occupied the contested pseudo and there is nothing to ablate. The s3 kill stands as measured - and s4's 34 body confirms its diagnosis from the other side, since the thing that finally moved the allocation was added register PRESSURE, not any ret-var spelling.
+- verdict: CONFIRMED
