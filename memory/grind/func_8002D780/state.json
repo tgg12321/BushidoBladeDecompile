@@ -1,31 +1,37 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 47,
    "modality": "recon",
    "headline": "recon: honest floor 48 -> 47 (xor operand order); residual attributed to sched1 block-5 multiply order (~38), un-coalesced dist copy into $a0 (~5, sibling func_8002D518's closed residual), and reorg s"
+  },
+  {
+   "session": 2,
+   "floor": 10,
+   "modality": "structural",
+   "headline": "Structural: honest floor 47 -> 10/202 \u2014 named cross-product locals per side test (-24), centroid term first in the XOR with the locals reused across tests (-9), sibling LZCS clobber footprint $12-$15 "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Block-5 multiply order (cluster 1, ~38 insns) is reachable by a natural expression shape: cx/cz computed inline at their use points (explains the deferred cz sra/subu) or a per-edge helper-macro evaluation order.",
-   "mechanism": "sched1 backward list scheduling with LUID tie-break (tools/gcc-2.7.2/sched.c rank_for_schedule)",
-   "next_probe": "tools/sched_solver inverse on block 5 against the target order to get the required emission order/dependency shape, then spell and sweep; BB2_RANK_DEBUG=1 on tools/gcc-2.7.2/cc1 via tmp/grind/func_8002D780/s1/dbrdbg.py to see class ties"
+   "hypothesis": "Residual A (2 insns): the test-3 block's first scheduled insn should be subu v0,t2,t1 (cx - x0), not subu a0,t0,a3 (z2 - z0), so reorg steals the centroid difference into the test-2 bltz slot.",
+   "mechanism": "reorg.c fill_simple_delay_slots takes the first schedulable insn of the fall-through thread; the order is set by sched1 (tools/gcc-2.7.2/sched.c rank_for_schedule) at the top of the test-3 block",
+   "next_probe": "tools/sched_solver inverse on the test-3 block against the target order (order-exact: it returns REACHABLE/FORECLOSED plus the required emission order) before spelling anything else \u2014 ten source spellings are already dead (s2 H-s2-i); also pwsh tools/grinder/dump.ps1 func_8002D780 and read .sched for the two subus' priority and LUID"
   },
   {
-   "hypothesis": "The `dist` copy into $a0 (cluster 2) needs a second pseudo that survives cse: compute the sqrt input as its own expression separate from the call argument, or a u32-typed macro-style block.",
-   "mechanism": "global.c conflict: dist stays live across the calls in $s1; a copy that dies before the calls lands in $a0",
-   "next_probe": "sweep natural forms first; only if spent, the sibling func_8002D518 FAKE dead-store re-store family with this function's own exhaustion ledger; also check the LZCR slot offset (target 16($sp), ours 0($sp))"
+   "hypothesis": "Residual C (3 insns): preventing jump1 from cross-jumping the three return-1 sites into one shared relocated block leaves $v0 dead at the call-3 block entry, so reorg steals li v0,1 into the second post-call branch's slot.",
+   "mechanism": "reorg.c mark_target_live_regs pending-dead flush at CODE_LABELs (tools/gcc-2.7.2/reorg.c:2560-2760); jump.c's cross-jump moves the shared block behind the sltu block so no label flushes the pending-dead $v0",
+   "next_probe": "shapes that change the BLOCK STRUCTURE rather than the tail's C spelling (eleven spellings are dead) \u2014 e.g. a goto target above the calls that gives the call-3 block a real CODE_LABEL; verify each with BB2_DBR_DEBUG=1 via tmp/grind/func_8002D780/s1/dbrdbg.py and read oppregs bit 2 on the insn=381 line"
   },
   {
-   "hypothesis": "The tail fill (cluster 3, 3 insns) follows once the call-3 block entry has $v0 dead in reorg's liveness walk, e.g. by giving that block a label or by avoiding jump1's relocation of the shared return-1 block.",
-   "mechanism": "reorg.c mark_target_live_regs pending-dead flush at CODE_LABELs (tools/gcc-2.7.2/reorg.c:2560-2760)",
-   "next_probe": "sweep tail shapes and read the BB2_DBR_DEBUG `insn=381` line for oppregs bit 2 (tmp/grind/func_8002D780/s1/dbrdbg.py BB2_DBR_DEBUG)"
+   "hypothesis": "Residual B (5 insns): once C lands, the \"r\"(&sp_var) asm operand closes the LZCR slot addressing at 202 insns, leaving only the dist copy into $a0.",
+   "mechanism": "an r-constrained address operand materialises the frame-slot address into a pseudo (confirmed this session at 203 insns); the remaining copy is a global.c coalescing question \u2014 dist stays live across the three calls in $s1 while the copy dies before them",
+   "next_probe": "land C, re-measure the &sp_var operand, then run tools/ra_solver inverse_compose.py classify on the $a0 seat; only if that returns FORECLOSED for every natural form, the sibling func_8002D518's FAKE dead-store re-store (src/code6cac_b.c:1244-1265, .claude/rules/dead-store-fake-exception.md) citing this function's now nine-spelling exhaustion ledger"
   }
  ],
  "judge_constraints": [],
@@ -62,11 +68,68 @@
    "measured_on": "HEAD 543ed812 (-mel -msoft-float), retired body with sibling cop2 spelling, no FAKE constructs",
    "predicate_cite": "",
    "result": "48, identical layout and fill"
+  },
+  {
+   "session": 2,
+   "statement": "Declaring px/pz before x0/x2/z0/z2, or declaring the z pair before the x pair, reorders the block-5 loads toward the target.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 25c0188a (-mel -msoft-float), s1 candidate body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "48 and 49, both worse than the 47 control"
+  },
+  {
+   "session": 2,
+   "statement": "Reading px/pz through the object at the use sites (s1's v2 re-measured on the 47 chassis rather than the 48 chassis it was killed on) changes the test-1 schedule.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 25c0188a (-mel -msoft-float), s1 candidate body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "47, identical to the control \u2014 s1's kill reproduces on the newer chassis"
+  },
+  {
+   "session": 2,
+   "statement": "One of ten spellings of the third (edge) side test makes cc1 emit subu v0,t2,t1 (cx - x0) before subu a0,t0,a3 (z2 - z0), so reorg steals the centroid difference into the test-2 bltz slot as the targe",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body (named cross locals + sibling clobbers), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "no spelling moved the two-insn residual: inline dz 10, dx-declared-first 10, fresh test-3 locals 10 (all = control); kc-"
+  },
+  {
+   "session": 2,
+   "statement": "A copy of dist in the else arm survives cse on the 10-floor chassis in one of four spellings (u32 copy, s32 copy, copy declared in the outer block, copy used only as the srlv index), materialising the",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "all 10, identical to the control; the copy is folded in every spelling, reproducing s1's H-s1-c on the new chassis"
+  },
+  {
+   "session": 2,
+   "statement": "One of six further tail shapes changes reorg's delay-slot fill on the second post-call branch (goto to a shared yes: label, nested == 0 ifs re-measured, truthy if, a result local for the last call, ? ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "all 10, identical to the control; the seventh shape (a hit = 1 result carrier returned from the early exits) restructure"
+  },
+  {
+   "session": 2,
+   "statement": "Hoisting the p10C setup above the first call shortens the call-3 block enough to change reorg's liveness walk.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "94 at 200 build insns \u2014 the hoist also changes what the two earlier calls see, so the whole region diverges"
+  },
+  {
+   "session": 2,
+   "statement": "The byte-matched sibling func_8002BC68's staged-u32 sqrt chain (m = (u32)-2; m &= lzcr; sh = 0x16 - m; idx = dist >> sh; ...) transplanted onto this chassis closes part of the LZCS residual.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "10, byte-neutral against the simpler func_8002D320 spelling the candidate keeps"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-08T07:20:48.522431+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }

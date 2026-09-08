@@ -96,3 +96,79 @@ needed; nothing to fix on the data-model axis.
 - [s1] cluster 3 attributed to reorg.c: instrumented trace shows branch 381 loses the `li v0,1` steal because $v0 is reported live at the call-3 block (oppregs=202e0004) while branch 345 (oppregs=20370000) wins; identical REG_DEAD notes on both branches; call-3 block has no label after jump1's relocation.
 
 - [s1] cluster 2 is the sibling func_8002D518's closed residual (ud copy kept by a FAKE dead-store re-store, src/code6cac_b.c:1244-1265); a plain copy folds on this chassis too.
+
+## s2 (2026-09-08, structural) — chassis: HEAD main @ 25c0188a (-mel -msoft-float), s1 candidate applied
+
+FLOOR 47 -> 10 (build_insns == target_insns == 202 throughout). Every number below is a
+`sandbox func_8002D780 --disable all` score measured this session via
+`tools/sweep_variants.py` (8 batches, 40 variants, generators + variant bodies in
+tmp/grind/func_8002D780/s2/).
+
+### The three levers that moved it
+1. **NAMED CROSS-PRODUCT LOCALS (47 -> 23).** Each triangle side test is a sign
+   comparison between two 2-D cross products: the point-side one (`z0*px - x0*pz`) and
+   the centroid-side one (`z0*cx - x0*cz`). s1 wrote both inline inside one nested
+   expression. Computing them into two named locals (`kc` centroid, `kp` point) as
+   separate statements before the `if` gives sched1 the target's block-5 multiply order
+   (z0*cx, lw px, z0*px, lw pz, x0*pz, cz fixup, x0*cz) instead of s1's interleaving.
+   Variant e_named_cross = 23.
+2. **CENTROID TERM FIRST + REUSE (23 -> 14).** Writing the test as `(kc ^ kp) >= 0`
+   (centroid cross product as the XOR's first operand, matching the operand order the
+   target's three tests share) and REUSING the same two locals for tests 2 and 3
+   measured 14 (variant e2_reuse_cfirst_xor). Controls: `(kp ^ kc)` = 23; fresh locals
+   per test = 52; p-assigned-before-c = 47; named intermediates in test 1 only = 48.
+   The reuse is not a codegen trick in search of a purpose — it is how the three tests
+   read as one repeated computation — but it IS load-bearing (fresh locals cost 38).
+3. **SIBLING LZCS CLOBBER FOOTPRINT (14 -> 10).** The LZCS island's clobber list
+   `"$12","$13","$14","$15"` (the byte-matched sibling spelling on main for the SAME
+   island in this TU: func_8002BC68 src/code6cac_b.c:762-767, func_8002BEA0 :825-830,
+   carrying the 2026-07-28 judge ruling that RTL mention of $13-$15 is the only route
+   by which reload1.c picks $24) turns our `mflo $t7` ($15) into the target's
+   `mflo $t8` ($24) and takes two further permutation insns with it. Variant
+   g1_clobbers = 10 at 202 insns. THIS IS AN INHERITED SIBLING CONSTRUCT, not a new
+   one: any candidate-ready session must cite the in-line ruling record at
+   src/code6cac_b.c:751-758 (the identical comment block ships on main).
+
+### Byte-neutral hygiene adopted
+The redundant `(u8 *)` casts on `&D_8008D118` are dropped (`extern u8 D_8008D118;` at
+src/code6cac_b.c:279 already makes `&D_8008D118` a `u8 *`). Measured identical (10,
+variant p1_no_pun_cast) and it removes the two declaration puns the s2 brief flagged.
+The sibling func_8002BC68's staged-u32 sqrt chain (`m = (u32)-2; m &= lzcr; sh = 0x16 - m;
+idx = dist >> sh; ...`) was transplanted per the sibling mandate and measured 10 —
+byte-neutral here, so the simpler s1/func_8002D320 spelling is kept.
+
+### The remaining 10 insns (tmp/grind/func_8002D780/s2/pairdiff_g1.txt)
+- **A (2 insns), edge-test delay slot.** Target fills the test-2 `bltz` slot with
+  `subu v0,t2,t1` (cx - x0) and emits `subu a0,t0,a3` (dz = z2 - z0) after it; we emit
+  dz first, so reorg steals dz instead. Everything else in test 3 matches insn-for-insn.
+- **B (5 insns), cluster 2.** Unchanged from s1: the target keeps a second pseudo
+  holding `dist` in $a0 (`move a0,s1` in the `beqz` delay slot) feeding the LZCS input
+  and the `srlv`, while $s1 keeps the compare, the small-path LUT index and the call
+  arguments; and its LZCR frame slot is addressed `addiu v0,sp,16; move t4,v0` where we
+  emit `move t4,sp`. NOTE (new this session): our `lw` of the slot already reads
+  `16($sp)` — only the asm's address computation differs, and passing `"r"(&sp_var)` as
+  a third operand DOES produce the target's two-insn form, but costs one insn overall
+  (203) because our tail still carries the extra `j` from cluster C. A and C must land
+  together with it for the count to stay at 202.
+- **C (3 insns), tail.** Unchanged from s1: reorg.c will not steal `li v0,1` into the
+  second post-call branch's slot. Six further tail shapes measured this session
+  (goto-yes label, nested `== 0`, truthy `if`, result local, ternary, `!!`) — all 10.
+
+- [s2] FLOOR 47 -> 10 (202/202 insns) via three ordinary-C/inherited-sibling levers: named cross-product locals per side test, centroid term first in the XOR + locals reused across the three tests, and the sibling LZCS clobber footprint $12-$15.
+- [s2] Named cross-product locals are worth 24 insns; the XOR operand order worth 9; the sibling clobber list worth 4. Fresh locals per test instead of reuse costs 38 (52 vs 14).
+- [s2] The LZCR frame slot is at 16($sp) in BOTH builds — only the asm's address computation differs; `"r"(&sp_var)` reproduces the target's `addiu v0,sp,16; move t4,v0` but pushes build_insns to 203 until the tail (cluster C) also lands.
+- [s2] Cluster 2's `dist` copy still folds under four more natural spellings (u32/s32 copy in the else arm, copy declared in the outer block, copy used only as the srlv index) — cse.c make_regs_eqv, same as s1's v3.
+
+- [s2] s2 floor: 47 -> 10 of 202, with build_insns == target_insns == 202 at every step; verified this session with the edits in src/code6cac_b.c (sandbox func_8002D780 --disable all -> score 10) before src was restored to its committed INCLUDE_ASM state.
+
+- [s2] The single biggest lever was structural and ordinary: each triangle side test's two 2-D cross products computed into named locals as separate statements (47 -> 23), with the centroid-side product as the XOR's first operand and the two locals reused across the three tests (23 -> 14).
+
+- [s2] Reuse of the cross-product locals across the three tests is worth 38 insns against fresh locals per test (14 vs 52) — the next session must not 'clean it up' into per-test locals.
+
+- [s2] The LZCS island's clobber list is an INHERITED sibling construct, not a new one: $12-$15 is what the byte-matched func_8002BC68 (src/code6cac_b.c:762-767) and func_8002BEA0 (:825-830) ship on main for the identical island, with the 2026-07-28 judge ruling recorded in the in-line comment at src/code6cac_b.c:751-758. It is worth 4 insns here (mflo $t7 -> $t8 plus two permutation insns).
+
+- [s2] The LZCR frame slot is at 16($sp) in BOTH builds — only the asm's address computation differs. Passing "r"(&sp_var) reproduces the target's addiu v0,sp,16 / move t4,v0 exactly, but pushes build_insns to 203 while the tail still carries its extra j: residuals B and C are coupled by the insn count and must land together.
+
+- [s2] Nine natural spellings of the cluster-2 dist copy are now measured dead across s1 and s2 (plain u32/s32 copies, outer-block declaration, index-only use, pointer reads); cse.c make_regs_eqv folds every one.
+
+- [s2] Eleven tail spellings are now measured dead across s1 and s2 (nested == 0, goto-to-shared-label, truthy if, result local, ternary, !!, result carrier, p10C hoist, ...); the mechanism is jump1's relocation of the shared li v0,1 block, not the tail's C shape, so the next probe should attack the cross-jump rather than the spelling.
