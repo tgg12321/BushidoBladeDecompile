@@ -1,0 +1,24 @@
+{
+ "func": "func_8003F824",
+ "file": "config",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T12:56:01.666419+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "c9f3dfa72137b293",
+   "when": "2026-09-08T13:29:14.091458+00:00",
+   "summary": "final call: Ordinary C throughout: TU-local struct typedefs (SceneQuad/SceneRec/Scene) that name the 0xD0-record / 0x418-quad-table layout already hand-indexed by func_8003F6D8 and the sibling functions in config"
+  }
+ ]
+}
