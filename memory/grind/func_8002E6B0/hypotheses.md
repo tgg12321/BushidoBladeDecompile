@@ -608,3 +608,72 @@ The target's `move v0,zero` sits in the delay slot of the FIRST `bltz`. MIPS del
 - probe: Re-generated the -da dumps with the 26 body installed (tmp/grind/func_8002E6B0/run_dump.sh) and parsed the .lreg RTL for func_8002E6B0 in CHAIN order rather than insn-number order (tmp/grind/func_8002E6B0/s8/an3.py, output tmp/grind/func_8002E6B0/s8/conflict_sources.txt), recording every set of (reg/v:SI 96) and the chain-index live range of each of the twelve $v0 and four $v1 pseudos from the ';; Register N in H.' map.
 - result: CONFIRMED and sharply narrowed. Reg 96 has SIX sets, not the four the candidate header recorded: chain idx 40 (insn 50, ret = 0), 49 (insn 129, the ret = dz staging), 55 (insn 165, the restore) and 75/76/77 (insns 230/231/232, the tail xor / not / lshiftrt, all written into reg 96 itself exactly as the target does). Reg 96 is live over chain idx 40..79 but dead across block 3. Intersecting that range with the $v0 quantities leaves exactly three contributors: pseudo 117 (block-1 branch condition, idx 43-44), pseudo 121 (a block-2 product, idx 51-54) and pseudo 138 (block-2 branch condition, idx 58-59). The seven block-3 $v0 quantities (146, 149, 153, 157 and neighbours, idx 64-72) cannot reach the seat at all. The target computes both branch conditions into $v1 (xor v1,a0,v1 / bltz v1), exactly what this model requires.
 - verdict: CONFIRMED
+
+## s9 (2026-09-08, enumerate)
+
+### KILLED (instance) — H9.1 A spelling of one of the three cross-product blocks (which sub-expressions are named locals, the declaration order, the assignment order, or the commutative operand order inside each product) scores below 26 on this chassis
+- mechanism: the residual is two moves tied to the `ret` pseudo's seat, and the
+  three straight-line blocks are the only code whose spelling can change which
+  pseudos are live across reg 96's windows (local-alloc.c:1854-1896 sets
+  qty_phys_sugg from copies, so operand order and CSE naming decide which
+  quantity gets $v0 first).
+- probe: `tools/spelling_enum.py` on each block in fully-named form, swept with
+  `tools/sweep_variants.py`: enumA/enumB/enumC (dz/dx/ax/az axis, 130 each),
+  enumAp/enumBp/enumCp (dz/dx/px/pz axis, 130 each), enumAs/enumBs/enumCs
+  (commutative-swap axis, 160/160/128). 1,228 spellings total.
+- result: best score 26 in every sweep; 264 spellings tie the floor; none below.
+  Scores range 26..54, so the sweeps explore genuinely different objects rather
+  than re-emitting one basin. Artifacts: tmp/grind/func_8002E6B0/s9/sweep*.json
+  and s9/histograms.txt.
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the s5/s7
+  candidate.c body with its block-2 variable-reuse borrow present in every
+  variant (the borrow is the only FAKE construct and it is inside enumC's region,
+  so the C-sweep measured it in both operand orders).
+
+### KILLED (instance) — H9.2 Block 2 (the borrow block) has more than one byte-relevant degree of freedom
+- mechanism: if naming, ordering or operand order inside block 2 could move the
+  delay-slot `move v1,zero`, the sweep would show a spread of scores there as it
+  does for blocks 1 and 3.
+- probe: enumC (130), enumCp (130) and enumCs (128) histograms.
+- result: all three split EXACTLY 50/50 between 26 and 43 with no intermediate
+  value. The discriminator is one bit — whether the borrowed pseudo is written as
+  the first or the second operand of its multiply. Every other block-2 axis is
+  byte-neutral. Block 2 is already at its optimum and cannot be spelled toward
+  the seat.
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, candidate.c body,
+  block-2 borrow present.
+
+### CONFIRMED — H9.3 Every banked score for this function reproduces on the current chassis, and the block-2 borrow is not masking a lever
+- mechanism: the mandated kill re-audit — an instance kill measured while a FAKE
+  carrier occupies the target pseudo is not a kill (func_8002EA24 s8).
+- probe: one sweep over tmp/grind/func_8002E6B0/s9/reaudit/ (candidate.c plus
+  five banked rejected forms including the FAKE-ablated no-borrow control).
+- result: candidate 26/96, s6 xor-swap tie 26/96, s7 cond-carrier tie 26/96,
+  s8 first-exit-inline 30/95, s8 hoist-shared-subexpr 31/96, s7 plain no-borrow
+  45/93 — all identical to their banked values. The ablated control is 19 WORSE
+  and loses an instruction relative to the target (93 vs 94), so removing the
+  borrow does not open the $v0 seat; no s7/s8 kill was masked by it.
+
+## [s9] A spelling of one of the three cross-product blocks - which sub-expressions are named locals, the declaration order, the assignment order, or the commutative operand order inside each product - scores below 26 on this chassis
+- mechanism: The residual is two moves tied to the ret pseudo's seat, and the three straight-line blocks are the only code whose spelling can change which pseudos are live across reg 96's windows; local-alloc.c:1854-1896 sets qty_phys_sugg from copies, so CSE naming and operand order decide which quantity is offered $v0 first.
+- probe: tools/spelling_enum.py marked each block in fully-named form and emitted every legal spelling; tools/sweep_variants.py scored them. Nine sweeps: enumA/enumB/enumC (dz/dx/ax/az naming x declaration order x assignment order, 130 each), enumAp/enumBp/enumCp (same axes over dz/dx/px/pz, 130 each), enumAs/enumBs/enumCs (commutative operand swaps on all four products, 160/160/128).
+- result: ENUMERATION: 1,228 spellings, best 26, 264 at the floor, none below. Histograms - A 26:35/31:30/52:65; B 26:19/28:16/29:14/34:65/53:16; C 26:65/43:65; Ap 26:16/30:49/52:19/53:46; Bp 26:65/34:19/36:14/38:16/53:16; Cp 26:65/43:65; As 26:10/27:26/28:22/29:6/31:8/32:8/52:52/53:28; Bs spans 26..54 over 24 distinct scores; Cs 26:64/43:64. The 26..54 spread shows the sweeps explore genuinely different objects rather than re-emitting one basin. Semantics are preserved by construction; emitted variants were spot-checked to confirm the block-2 borrow survives inlining as (ret = (arg2[2] - arg0[2])).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the s5/s7 candidate.c body; the block-2 variable-reuse borrow (the only FAKE construct) is present in every variant and was itself swept in both operand orders inside enumC/enumCp/enumCs
+
+## [s9] Block 2, the block carrying the variable-reuse borrow, has more than one byte-relevant degree of freedom in its spelling
+- mechanism: If naming, declaration order, assignment order or operand order inside block 2 could move the delay-slot `move v1,zero`, the block-2 sweeps would show a spread of scores the way blocks 1 and 3 do.
+- probe: enumC (130), enumCp (130) and enumCs (128) histograms read together.
+- result: All three split exactly 50/50 between 26 and 43 with no intermediate value. The single discriminator is whether the borrowed pseudo is written as the FIRST or the SECOND operand of its multiply; every other block-2 axis is byte-neutral. Block 2 is already at its optimum on that one bit, so the next lever is not a block-2 spelling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, candidate.c body with the block-2 borrow present
+
+## [s9] Every banked score for this function reproduces on the current chassis, and the block-2 borrow is not masking a lever that s7/s8 recorded inert
+- mechanism: The mandated kill re-audit: an instance kill measured while a FAKE carrier occupies the target pseudo is not a kill (func_8002EA24 s8). The borrow is the only FAKE construct here, so its ablated control is the plain no-borrow form.
+- probe: One sweep over tmp/grind/func_8002E6B0/s9/reaudit/ holding candidate.c plus five banked rejected forms including the FAKE-ablated no-borrow control.
+- result: candidate 26/96 insns, s6 xor-swap tie 26/96, s7 cond-carrier tie 26/96, s8 first-exit-inline 30/95, s8 hoist-shared-subexpr 31/96, s7 plain no-borrow 45/93 - every value identical to its banked score. The ablated control is 19 worse and emits 93 insns against the target's 94, so removing the borrow does not open the $v0 seat and no earlier kill was masked by it.
+- verdict: CONFIRMED

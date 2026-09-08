@@ -1,3 +1,29 @@
+/* s9 ADDENDUM (2026-09-08, enumerate). Body UNCHANGED; re-measured 26 / 96 on
+   HEAD this session (the dispatch brief said "measurement unavailable" - the
+   ledger's 26 is correct on the current -mel -msoft-float chassis).
+
+   s9 swept 1,228 SPELLINGS of the three cross-product blocks with
+   tools/spelling_enum.py + tools/sweep_variants.py and found NOTHING below 26
+   (264 spellings tie it). Axes covered per block: which sub-expressions are
+   named locals vs inlined (dz/dx/ax/az and dz/dx/px/pz), declaration order,
+   assignment order, and commutative operand order on every product. Do not
+   re-spell any of that - see the s9 section of evidence.md for the nine
+   histograms.
+
+   NEW STRUCTURAL FACT: block 2 (this block, the borrow block) has exactly ONE
+   byte-relevant degree of freedom. All three block-2 sweeps split 50/50 between
+   26 and 43 with no intermediate score, and the discriminator is a single bit:
+   whether the borrowed pseudo is the FIRST operand of its multiply, as written
+   below. Every other block-2 spelling choice is byte-neutral. Blocks 1 and 3 by
+   contrast span 26..54, so they are spelling-sensitive but bounded below by 26.
+
+   The FAKE-ablation control was re-measured too: the plain no-borrow form is 45
+   (93 insns, one FEWER than the target's 94), so the borrow is worth +19 and is
+   not masking any lever s7/s8 measured inert.
+
+   WHAT IS LEFT (the enumerator structurally cannot reach it): declaration SCOPE
+   (function-scope vs the per-block braces below), any form spanning an early-exit
+   `if`, and the object model (four s32* args vs a struct/vector type). */
 /* s8 ADDENDUM (2026-09-08, structural). Body UNCHANGED; re-measured 26 / 96 on
    HEAD this session. Two corrections to the s7 header below:
      - reg 96 has SIX sets, not four: the tail (cc ^ cp) >= 0 expands to

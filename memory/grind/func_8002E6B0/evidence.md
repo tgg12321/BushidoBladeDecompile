@@ -359,3 +359,102 @@ tgt.n + per-variant .n normalised disassemblies, measure.ps1, install.py, gen.py
 - [s8] The target's move v0,zero sits in the FIRST bltz's delay slot and executes unconditionally, serving both early exits; $v0 is then reused as block-3 scratch before the tail recomputes it. The ret-variable chassis is structurally correct and reg 96 is legitimately dead across block 3 in our build too.
 
 - [s8] The FAKE-free plain chassis (j0/t0 = 45 / 93) seats ret in $a1 (move a1,zero / srl a1,a1,0x1f / move v0,a1), a worse seat than the borrow chassis's $v1, so the plain form is two structural steps from the target, not one.
+
+## s9 (2026-09-08, enumerate) — exhaustive per-block spelling sweep: 1,228 spellings, zero below 26
+
+CHASSIS. Re-measured on HEAD this session: candidate.c = **26** (96 build insns;
+target 94). The driver's dispatch brief reported "measurement unavailable"; the
+ledger's 26 is CORRECT on the current -mel -msoft-float chassis.
+
+KILL RE-AUDIT (mandated; `tools/sweep_variants.py` over
+tmp/grind/func_8002E6B0/s9/reaudit/, result in s9/sweep_reaudit.json). Every
+banked score reproduces byte-for-byte on the current chassis:
+
+| form | s9 score | build insns | banked score |
+|---|---|---|---|
+| candidate.c (borrow present) | 26 | 96 | 26 |
+| s6_first_if_xor_swap_distinct_object_ties_26 | 26 | 96 | 26 |
+| s7_cond_carrier_cross_point_distinct_object_ties_26 | 26 | 96 | 26 |
+| s8_first_exit_inline_return0_loses_s5 | 30 | 95 | 30 |
+| s8_hoist_shared_subexpr_borrow | 31 | 96 | 31 |
+| s7_plain_noborrow_on_26_chassis (FAKE-ABLATED control) | 45 | 93 | 45 |
+
+The FAKE-ablation question the re-audit exists to answer is therefore settled
+for this function: the ONLY FAKE construct in candidate.c is the block-2
+variable-reuse borrow (`(ret = dz)` + the `ret = 0` restore), its ablated
+control is the plain no-borrow form, and that control measures 45 — 19 worse,
+not better. No lever this session was measured with a FAKE carrier masking it,
+because the carrier is worth +19 and removing it does not open a seat: the
+no-borrow form loses the sixth callee-save (93 insns, one FEWER than target).
+
+THE ENUMERATION. The residual is two moves (trailing `move v0,v1`; `move
+v1,zero` in the second bltz delay slot), so the three straight-line
+cross-product blocks are the only regions whose spelling can move it. Each was
+marked ENUM-BEGIN/ENUM-END and enumerated with `tools/spelling_enum.py`, then
+scored with `tools/sweep_variants.py` (all JSON in tmp/grind/func_8002E6B0/s9/,
+histograms collected in s9/histograms.txt):
+
+| sweep | region | axis | n | score histogram |
+|---|---|---|---|---|
+| A  | block 1 (arg1-arg0) | named-vs-inlined x decl order x assign order over dz/dx/ax/az | 130 | 26:35, 31:30, 52:65 |
+| B  | block 3 (arg2-arg1) | same | 130 | 26:19, 28:16, 29:14, 34:65, 53:16 |
+| C  | block 2 (arg2-arg0, borrow) | same | 130 | 26:65, 43:65 |
+| Ap | block 1 | same over dz/dx/px/pz (point deltas named) | 130 | 26:16, 30:49, 52:19, 53:46 |
+| Bp | block 3 | same | 130 | 26:65, 34:19, 36:14, 38:16, 53:16 |
+| Cp | block 2 | same | 130 | 26:65, 43:65 |
+| As | block 1 | commutative operand swaps on all four products x inline/order over dz/dx | 160 | 26:10, 27:26, 28:22, 29:6, 31:8, 32:8, 52:52, 53:28 |
+| Bs | block 3 | same | 160 | 26:5, 27:13, 28:11, 29:5, 30:4, 31:2, 34:5, 35:13, 36:11, 37:3, 39:2, 40:7, 41:10, 42:8, 43:5, 44:3, 45:4, 46:8, 47:8, 48:4, 49:2, 50:2, 51:1, 54:24 |
+| Cs | block 2 | same | 128 | 26:64, 43:64 |
+
+**ENUMERATION: 1,228 spellings swept, best 26, 264 of them AT the floor. Not one
+spelling scored below 26.** Semantics are preserved by construction (the tool
+only renames/inlines/reorders within def-before-use and swaps commutative
+operands); the emitted variants were spot-checked to confirm the block-2 borrow
+survives inlining as `(ret = (arg2[2] - arg0[2]))`.
+
+TWO STRUCTURAL READINGS OF THE HISTOGRAMS (both new this session):
+
+1. **Block 2 is spelling-RIGID and binary.** enumC / enumCp / enumCs each split
+   exactly 50/50 between 26 and 43 and produce NO intermediate score. The
+   discriminator is a single bit: whether the borrow product is written
+   `(ret = dz) * <ax>` or `<ax> * (ret = dz)`, i.e. whether the borrowed pseudo
+   is the FIRST operand of the multiply. Every other block-2 axis (which
+   sub-expressions are named, in what order they are declared, in what order
+   the two cross products are assigned) is byte-neutral. So no block-2 spelling
+   change can reach the seat — the block has exactly one degree of freedom and
+   it is already at its optimum.
+2. **Blocks 1 and 3 are spelling-SENSITIVE but bounded below by 26.** They span
+   26..53 across 20+ distinct scores, so the sweep genuinely explores different
+   objects (it is not one basin re-emitted), and it still never crosses 26. The
+   26 count differs sharply by axis (block 1: 35/130 named-vs-inlined but only
+   10/160 once swaps are on; block 3: 19/130 and 5/160), which means most
+   spellings of those blocks are actively harmful and the current candidate sits
+   on a narrow ridge.
+
+WHAT THIS ELIMINATES. The `enumerate` modality's own stopping rule applies: a
+zero-hit sweep over a region is the strongest evidence that the residual does
+not live in that region's spelling space. All three straight-line blocks are now
+swept exhaustively on the three axes the tool models (naming, declaration and
+statement order, commutative operand order). The residual is therefore NOT a
+sub-expression-naming, statement-order or operand-order choice inside any single
+block. What the sweep does NOT cover, and what the next session inherits:
+  * the DECLARATION SCOPE axis (function-scope vs the current per-block braces) —
+    the enumerator cannot move a declaration across a block boundary;
+  * any spelling that spans the `if` boundary (the tool must keep anchors last,
+    so a region cannot legally contain the early-exit branch);
+  * the OBJECT MODEL (arg0/arg1/arg2/arg3 as four `s32 *` vs a struct/vector
+    type), which changes the addressing, not the spelling.
+
+- [s9] HEAD honest floor for func_8002E6B0 re-measured this session: 26 (96 build insns, target 94). The dispatch brief reported 'measurement unavailable'; the ledger's 26 is correct on the current -mel -msoft-float chassis.
+
+- [s9] 1,228 distinct spellings of the three cross-product blocks were enumerated and scored this session. Best 26; 264 tie the floor; zero below it.
+
+- [s9] Block 2 (the borrow block) is spelling-rigid: enumC, enumCp and enumCs each split exactly 50/50 between scores 26 and 43 with no intermediate value, so the block has exactly one byte-relevant degree of freedom - whether the borrowed pseudo is the first operand of its multiply. It is already set to the good value.
+
+- [s9] Blocks 1 and 3 are spelling-sensitive but bounded below by 26: their sweeps span 26..54 across 20+ distinct scores. Most spellings are actively harmful (block 1 ties the floor in 35/130 without swaps but only 10/160 with swaps; block 3 in 19/130 and 5/160), so the candidate sits on a narrow ridge.
+
+- [s9] FAKE-ablation control re-measured on the current chassis: the plain no-borrow form scores 45 and emits 93 insns, one FEWER than the target's 94. The borrow is worth +19 and is not masking a lever.
+
+- [s9] The spelling enumerator structurally cannot reach three axes, which is what the next session inherits: declaration SCOPE (function-scope vs the current per-block braces, since the tool cannot move a declaration across a block boundary), any form spanning an early-exit `if` (the tool must keep anchors last), and the object model (four s32* parameters vs a struct/vector type).
+
+- [s9] tools/sweep_variants.py restores src/ byte-exact; git status confirms src/code6cac_b.c was untouched at end of session.

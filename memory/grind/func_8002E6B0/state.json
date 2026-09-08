@@ -1,8 +1,8 @@
 {
  "func": "func_8002E6B0",
  "file": "code6cac_b",
- "session_count": 8,
- "current_modality": "structural",
+ "session_count": 9,
+ "current_modality": "enumerate",
  "floor_history": [
   {
    "session": 1,
@@ -51,23 +51,29 @@
    "floor": 26,
    "modality": "structural",
    "headline": "Floor holds at 26; four structural lever families killed (declaration order, sub-expression hoisting, ret-init placement, first-exit-inline mixed exits) and the ret seat's cause narrowed from twelve $"
+  },
+  {
+   "session": 9,
+   "floor": 26,
+   "modality": "enumerate",
+   "headline": "Floor holds at 26; 1,228 exhaustively enumerated spellings of all three cross-product blocks scored nothing below it, and block 2 is proven to have exactly one byte-relevant degree of freedom."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ret seat is reachable by giving pseudos 117 and 138 (the two branch-condition xor results) a $v1 preference in local_alloc, rather than by adding a competitor for $v0",
-   "mechanism": "Only pseudos 117, 121 and 138 overlap reg 96's live range, so those three are the entire cause of the 96/$v0 edge. Parking some other local quantity in $v0 across those windows cannot help - that quantity would itself conflict with reg 96. local-alloc.c:1854-1896 sets qty_phys_copy_sugg / qty_phys_sugg from copies between a quantity and a specific hard register, and local-alloc.c:1505-1527 tries every suggested quantity in a dedicated pre-pass ahead of the ordinary decreasing-life-length scan, so a $v1 suggestion for 117 and 138 is the only path that removes the edge without creating a new one.",
-   "next_probe": "The instrumented cc1 (tools/gcc-2.7.2/cc1) already carries BB2_QTY_DEBUG (prints QTYDBG-SUGG and QTYDBG lines with blk / ord / qty / reg1 / birth / death / refs / got for every local quantity) and BB2_SUGG_DEBUG (prints SUGGDBG-FFR with find_free_reg's used and first_used sets). Run both on the preprocessed TU for the 26 body using tmp/grind/func_8002E6B0/s8/findreg.sh with the env var swapped, read the lines whose reg1 is 117, 121 or 138, and establish whether each takes $v0 from the ascending scan or from a suggestion; then ask which C shape changes that. Do not re-spell declaration order, ret = 0 placement, restore arithmetic, tail splitting, sub-expression hoisting or first-exit-inline mixed exits - all are banked dead."
+   "hypothesis": "The residual lives in DECLARATION SCOPE, not in statement spelling: moving the per-block dz/dx pairs to function scope (or conversely tightening center_x/center_z/cross_center/cross_point into narrower scopes) changes reg 96's conflict set where no in-block spelling can",
+   "mechanism": "s9 exhausted naming, ordering and operand order INSIDE each block with 1,228 measurements and found nothing below 26, and s8 killed the function-scope declaration-ORDER axis. Scope is the one declaration axis neither session touched: it changes where GCC's pseudo births sit relative to the block boundaries, which is what record_one_conflict (global.c:1392) IORs hard_regs_live into reg 96's hard_reg_conflicts on. s1 already measured that block-scoping the single-set dz/dx was worth part of the 64 -> 40 drop, so this axis is known to be live on this function.",
+   "next_probe": "Build the 2^3 grid of scope placements for the three dz/dx pairs (per-block braces as now, vs three distinct function-scope pairs, vs one reused function-scope pair) crossed with the borrow present/absent, and score the eight bodies in one tools/sweep_variants.py call. The enumerator cannot generate these - write them by hand from memory/grind/func_8002E6B0/candidate.c. Do NOT re-spell anything inside a block: all three blocks are swept out."
   },
   {
    "hypothesis": "A permuter campaign seeded on r2 (md5 3bae0255) or q2 (md5 1b1fa1c0) - distinct objects that tie at 26 - finds what the saturated base basin could not",
-   "mechanism": "s5's perm_e saturated only the base object (921b8948) at 11,782 iterations, and s8 has now shown that basin absorbs eleven more hand spellings byte-identically, so the base neighbourhood is exhausted by hand as well. q1, q2 and r2 are different source geometries compiling to different objects, so their neighbourhoods are different. Both floor drops on record (40 -> 34 and 34 -> 26) came from hand-repairing a semantically broken find.",
+   "mechanism": "s5's perm_e saturated only the base object (921b8948) at 11,782 iterations; s8 showed that basin absorbs eleven more hand spellings byte-identically and s9 has now shown it absorbs 264 enumerated spellings as well. q1, q2 and r2 are different source geometries compiling to different objects, so their neighbourhoods are unsearched. Both floor drops on record (40 -> 34, 34 -> 26) came from hand-repairing a semantically broken permuter find.",
    "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh (it carries the current -mel -msoft-float flags) on memory/grind/func_8002E6B0/rejected/s7_cond_carrier_cross_point_distinct_object_ties_26.c and .../s6_first_if_xor_swap_distinct_object_ties_26.c, one fresh-seed window each, waited in-turn with tools/permuter_campaign.py wait and stopped with harvest --stop before the outcome is written. Do NOT re-seed the base 26 basin (perm_e) or the 34 basin (s4 perm_c). Read every find's SEMANTICS before scoring it."
   },
   {
-   "hypothesis": "The ra_solver suite becomes usable on this function only once extract.py can supply a DIRECTIONAL conflict matrix (operator work, outside a grind session's allowed surface)",
-   "mechanism": "prune_preferences uses the one-way conflict bit (global.c:920) while dump_conflicts prints the symmetric closure (global.c:1807); the model is built from the dump, so its regs_someone_prefers is strictly too large and the ord-0 seat is wrong on this function. Until that is fixed, every inverse.py verdict here is void.",
-   "next_probe": "Either add a birth-order proxy to tools/ra_solver/extract.py or add a cc1 hook that dumps the raw conflicts array alongside the ALLOCDBG/FINDREGDBG streams, then re-run simulate.py on tmp/ra_solver_work/func_8002E6B0.model.json and check it reproduces ord 0-2 before trusting any inverse verdict. In the meantime BB2_FINDREG_DEBUG, BB2_QTY_DEBUG and BB2_SUGG_DEBUG give the same ground truth directly."
+   "hypothesis": "The four s32* parameters are the wrong object model, and a struct/vector parameter type changes the addressing that feeds the multiplies",
+   "mechanism": "Every argument is indexed only at [0] and [2] - a 3-component coordinate read with the y component never touched. A struct type would change the load offsets and the base-register pressure feeding the products, which is the one thing 1,228 spellings of the products themselves could not change. Per splat-symbol-names-are-not-evidence the case must be made from base-register/stride evidence in the target asm, not from splat's names.",
+   "next_probe": "Read asm/funcs/func_8002E6B0.s and check whether the target's loads for arg0..arg3 use a common base register with a stride (evidence for a struct model) or independent offsets off four distinct bases (evidence against). If the stride evidence is there, spell the struct form and re-measure; if it is not, bank the negative and the object-model axis is closed."
   }
  ],
  "judge_constraints": [],
@@ -296,11 +302,28 @@
    "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, k1/k3/k4/k5 bodies on the 26 chassis, one variable-reuse staging borrow present in k1/k3/k4 and in k5",
    "predicate_cite": "",
    "result": "k1 = k3 = k4 = 30 / 95 and k5 = 40 / 93. The live-range mechanism works on its own terms - the insn count drops by one -"
+  },
+  {
+   "session": 9,
+   "statement": "A spelling of one of the three cross-product blocks - which sub-expressions are named locals, the declaration order, the assignment order, or the commutative operand order inside each product - scores",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the s5/s7 candidate.c body; the block-2 variable-reuse borrow (the only FAKE construct) is present in every variant and was itself swept in both operand",
+   "predicate_cite": "",
+   "result": "ENUMERATION: 1,228 spellings, best 26, 264 at the floor, none below. Histograms - A 26:35/31:30/52:65; B 26:19/28:16/29:"
+  },
+  {
+   "session": 9,
+   "statement": "Block 2, the block carrying the variable-reuse borrow, has more than one byte-relevant degree of freedom in its spelling",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, candidate.c body with the block-2 borrow present",
+   "predicate_cite": "",
+   "result": "All three split exactly 50/50 between 26 and 43 with no intermediate value. The single discriminator is whether the borr"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-08T13:35:52.121385+00:00",
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "object_model_audited": 9
 }
