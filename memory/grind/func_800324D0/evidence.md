@@ -1814,3 +1814,175 @@ So the honest RA residual is unchanged by the flag; only the FAKE closer died.
 The loop threshold is now 58: any new closer must keep the 0xFF movable hoisted,
 i.e. `58 * savings * lifetime >= loop insn_count` must still hold for it.
 Ruling: docs/grind/decisions.md 2026-09-07 OWNER RULING (-msoft-float).
+
+## s22 (2026-09-07, rederive) — the chassis moved under the function: floor 15 -> 3
+
+CONTEXT. The 2026-09-07 `-msoft-float` adoption (commit a42d7ff7) is a
+chassis change for THIS function specifically. Project-wide the flag is
+codegen-neutral for 31 of 32 src stems; func_800324D0 is the single
+exception (measured by func_80035280's s2, `memory/grind/func_80035280/evidence.md:291`).
+The body that had matched at 0 — the FAKE-annotated duplicated-tail body — was
+reverted to `INCLUDE_RODATA(jtbl_800105A0)` + `INCLUDE_ASM` in the same commit
+and the queue item was reopened (8784de37). Every conclusion in this ledger
+from s1 through s21 was measured on the hard-float chassis and had to be
+re-measured before it could be spent.
+
+FACT 1 — THE +2 REFERENCE ARTIFACT IS STILL LIVE, AND IS RE-CONFIRMED
+INDEPENDENTLY. HEAD now ships the INCLUDE_ASM migration inside this TU, so
+`build/src/code6cac_b.o` — the object `sandbox` scores against — reaches the
+jump table through relocations against the NAMED GLOBAL `jtbl_800105A0`,
+whose immediate fields `engine/score.py` does not mask, while any C build
+reaches the same table through a `.rodata` SECTION-relative reloc that
+score.py does mask. This is precisely the s15 artifact. Confirmation: the s21
+ledger body, banked at 15, re-measures at **17** on today's reference, and the
+raw instruction diff of the duplicated-tail body shows exactly two reloc-name
+lines (`R_MIPS_HI16 jtbl_800105A0` / `R_MIPS_LO16 jtbl_800105A0` vs `.rodata`)
+among its five (s22/target.dis, s22/dup.dis). **Every sandbox number quoted in
+this entry is honest+2.** Standing procedure unchanged: pristine
+`git checkout -- src/code6cac_b.c` -> `& tools/wteng.ps1 main build`
+(SHA1 == oracle, s22/build_head_reference.log) -> apply a body -> sandbox ->
+subtract 2.
+
+FACT 2 — THE FLOOR IS 3 (raw 5), DOWN FROM 15. The duplicated-tail body
+measures raw 5 / build_insns 68 == target_insns 68 / rules_dropped 0
+(s22/sandbox_dup_tail.log, s22/sandbox_K7_final.log). All fifteen register
+diffs the s21 body carried are GONE: the walker takes $v1 and the operand
+carrier takes $a2, exactly as the target does. The RA seat problem that
+occupied s1–s21 is, on this chassis and with this construct, solved.
+
+FACT 3 — THE ENTIRE REMAINING RESIDUAL IS ONE LOOP-INVARIANT HOIST. The
+target materialises the 0xFF head-test constant in the PREHEADER (`li t0,255`
+at `b770`, then `bne a2,t0`); our build materialises it inside the loop
+(`li v0,255`, `bne a2,v0`). Three words. Nothing else differs
+(s22/target.dis vs s22/dup.dis, normalised).
+
+FACT 4 — THE GATE IS loop.c:1631 AND ITS ARITHMETIC IS MEASURED, NOT INFERRED.
+The condition is
+
+    hoist  <=>  threshold * savings * m->lifetime  >=  insn_count
+
+(`tools/gcc-2.7.2/loop.c:1631`). For the 0xFF pseudo the `.loop` dump prints
+`(life 1), move-insn savings 1`; `m->lifetime` is
+`uid_luid[regno_last_uid] - uid_luid[regno_first_uid]` (loop.c:791) and
+`m->savings` is `n_times_used[regno]`, which loop.c:597 bcopies from
+`n_times_set`, i.e. the SET count (loop.c:793). `threshold` is
+`(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` (loop.c:532) = **58** under
+-msoft-float, where the 32 FP registers are fixed; it was 122 under hard
+float. So the budget is a hard **loop insn_count <= 58**.
+
+FACT 5 — THE BUDGET AND THE ALLOCATOR ARE SEPARATED BY EXACTLY THREE
+INSTRUCTIONS. Let K be the number of command arms carrying the duplicated
+tail. Measured, plain chassis (s22/ksweep.log plus per-K `.loop` dumps):
+
+      K    loop insn_count   0xFF hoisted?   raw score
+      0        47                yes            29
+      5        57                yes            23
+      6        59                no             26
+      7        61                no              5
+      8        63                no              5
+     12        72                no              5
+
+Base loop insn_count is 47 and each duplicated arm costs exactly +2. The
+hoist boundary is exactly 58 (K=5 hoists at 57, K=6 refuses at 59), which
+confirms `threshold * savings * lifetime = 58 * 1 * 1`. The RA flip happens
+between K=6 and K=7. **The hoist wants <= 58; the allocator wants 61.**
+
+FACT 6 — FOUR ATTACKS ON THAT THREE-INSTRUCTION DEFICIT, ALL MEASURED DEAD.
+
+  (a) `u32 c` (sheds the zero-extends): build_insns **67 != 68** at every K,
+      score 9 for K >= 7. It removes a real instruction the target keeps.
+      Banked: rejected/u32-c-dup-tail-67insns.c.
+  (b) the s21 staged-cmd tail + K: 17/17/17/18/18/18/18/30 for K = 0..7, and
+      its own loop is **49** insns — 2 WORSE on the budget than the plain
+      body. Dead on both legs.
+  (c) operand read hoisted to the loop head: this DOES move the RA flip one
+      arm cheaper (K=6 instead of K=7), which is the first lever ever measured
+      to do so — but 47 + 12 = 59 still misses the budget by one, and the
+      hoisted lbu costs a byte of its own (score 6 vs 5). K=5 (57) hoists but
+      the allocator has not flipped: 30. Banked:
+      rejected/val-hoist-loop-head-dup6-59insns.c. The narrower variant (read
+      in the else-of-0xFF arm) does not move the flip at all and costs +2:
+      rejected/val-read-in-else-of-ff-dup7.c.
+  (d) merging the short-command and payload `ptr++` sites into one: build_insns
+      **66 != 68**. This is a positive structural fact about the target: the
+      original body has TWO separate `ptr++` sites, so the base loop
+      insn_count of 47 is not reducible by merging them. Banked:
+      rejected/merged-ptr-inc-66insns.c.
+
+FACT 7 — THE TWO OTHER INPUTS TO THE GATE ARE STRUCTURALLY PINNED FOR THIS
+CONSTANT. `m->lifetime` is the LUID distance from the constant's SET to its
+last reference; a single-use constant compare emits
+`(set (reg 85) (const_int 255))` immediately before the compare that consumes
+it, so the distance is 1 and can only grow if the SAME constant is referenced
+at a second point in the loop — and the target's own bytes show one 0xFF
+comparison. `m->savings` is the SET count, so it is 1 unless the constant is
+materialised twice, which costs bytes. Neither is a source-controllable lever
+here; the only live input is `insn_count`.
+
+FACT 8 — THE HONEST READING, WHICH REDIRECTS THE WHOLE FRONTIER. A 47-insn
+loop hoists the 0xFF under BOTH thresholds (58 and 122), and the target hoists
+it. Therefore the original source cannot have carried the duplicated tail: the
+original is a K=0-shaped loop (47 insns, ~11 instructions of slack under the
+budget) whose walker wins $v1 for a reason that is NOT reg_n_refs inflation.
+The duplicated-tail construct was always the wrong mechanism; the hard-float
+threshold merely hid that for one session. This also means the s15–s21
+foreclosure of the RA-seat channel was argued against the wrong constraint
+set and is worth re-opening on the new chassis, with the 11-instruction slack
+budget as an explicit resource the earlier sessions never had.
+
+FACT 9 — reusable s22 tooling, all under tmp/grind/func_800324D0/s22/:
+
+  gen.py  K            plain chassis, tail duplicated into the first K arms
+  gen2.py K staged     same, on the s21 staged-cmd chassis
+  gen3.py K <ctype>    same, with the type of `c` parameterised
+  gen4.py K hoist      same, operand read optionally hoisted to the loop head
+  gen5.py K 2          operand read moved into the else-of-0xFF arm
+  gen6.py K hoist      short-command and payload `ptr++` sites merged
+  dis.sh obj out       extract the func_800324D0 disassembly slice from an object
+
+Each writes the body straight into src/code6cac_b.c; measure with
+`& tools/wteng.ps1 main sandbox func_800324D0 --disable all` and read the loop
+budget with `pwsh tools/grinder/dump.ps1 func_800324D0` then the
+`Loop from ... real insns` / `savings` lines of the func_800324D0 segment of
+tmp/grind/func_800324D0/dumps/code6cac_b.loop.
+
+- [s22] Floor 3 honest (raw 5 on today's INCLUDE_ASM reference), down from 15,
+  with build_insns 68 == target_insns 68 and rules_dropped 0.
+- [s22] The s21 ledger body re-measures at raw 17 on this reference, which
+  re-confirms the s15 +2 named-global-jtbl scoring artifact independently.
+- [s22] The residual is three words: the target hoists the 0xFF head-test
+  constant into the preheader, our build materialises it inside the loop.
+- [s22] loop.c:1631's budget under -msoft-float is loop insn_count <= 58
+  (threshold 58 = 2*(1+n_non_fixed_regs), savings 1, lifetime 1); measured
+  boundary K=5 (57) hoists, K=6 (59) refuses.
+- [s22] Base loop insn_count is 47; each duplicated tail arm costs +2; the RA
+  flip needs K >= 7 (61). Deficit: exactly 3 instructions.
+- [s22] The operand-read-at-loop-head spelling moves the RA flip from K=7 to
+  K=6 — the first measured lever that reduces the required duplication count.
+- [s22] The target has two separate `ptr++` sites: merging them compiles to 66
+  insns against a target of 68.
+- [s22] `u32 c` compiles to 67 insns against a target of 68 on every chassis
+  tested, so it can never match regardless of the hoist.
+- [s22] src/code6cac_b.c was restored to HEAD at the end of the session.
+
+- [s22] Honest floor is 3 (raw sandbox 5) with build_insns 68 == target_insns 68 and rules_dropped 0, down from a banked 15 — the drop came from the chassis change, not from a new spelling.
+
+- [s22] The s15 +2 named-global-jtbl scoring artifact is re-confirmed independently: the s21 ledger body, banked at 15, re-measures at raw 17 on today's INCLUDE_ASM/INCLUDE_RODATA reference, and two of the five diff lines are the jtbl_800105A0 vs .rodata reloc names.
+
+- [s22] Standing procedure for this function is unchanged and was followed: pristine `git checkout -- src/code6cac_b.c`, then `& tools/wteng.ps1 main build` (SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa), then apply a body, then sandbox, then subtract 2.
+
+- [s22] The entire residual is three words: the target materialises the 0xFF head-test constant in the preheader (`li t0,255` then `bne a2,t0`), our build materialises it inside the loop (`li v0,255`, `bne a2,v0`).
+
+- [s22] loop.c:1631's budget under -msoft-float is loop insn_count <= 58 (threshold = 2*(1+n_non_fixed_regs) = 58 by loop.c:532, savings 1, lifetime 1); the boundary is measured, not derived — K=5 at 57 insns hoists, K=6 at 59 refuses.
+
+- [s22] Base loop insn_count is 47; each arm carrying the duplicated tail costs exactly +2; the allocator flip needs K >= 7 (61 insns). The deficit is exactly three instructions.
+
+- [s22] The operand-read-at-loop-head spelling is the first lever ever measured to reduce the required duplication count (K=7 -> K=6), but it lands at 59 insns and costs one byte of its own.
+
+- [s22] The target has two separate `ptr++` sites: merging the short-command and payload advances compiles to build_insns 66 against a target of 68.
+
+- [s22] `u32 c` compiles to build_insns 67 against a target of 68 on every chassis tested, so it can never match regardless of the hoist.
+
+- [s22] A 47-instruction loop hoists the 0xFF under BOTH thresholds (58 and 122) and the target hoists it, so the original source cannot have carried the duplicated tail — the duplicated-tail construct is the wrong mechanism and the hard-float threshold merely hid that.
+
+- [s22] src/code6cac_b.c was restored to HEAD at the end of the session; no build file is left modified.

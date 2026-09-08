@@ -1,7 +1,7 @@
 {
  "func": "func_800324D0",
  "file": "code6cac_b",
- "session_count": 21,
+ "session_count": 22,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -129,23 +129,29 @@
    "floor": 15,
    "modality": "rederive",
    "headline": "Rederive: the s20 frontier's last unmeasured axis (two-carrier split) is KILLED by measurement - nested dispatch leaves pseudo 76 unsplit at nrefs 26 and costs +11 insns - and the residual is restated"
+  },
+  {
+   "session": 22,
+   "floor": 3,
+   "modality": "rederive",
+   "headline": "Chassis moved: -msoft-float drops the honest floor 15 -> 3 and converts the residual from an RA seat into one loop.c:1631 hoist, short by exactly 3 loop instructions (hoist wants insn_count <= 58, the"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A 68-instruction C body exists in which `val`'s live range crosses the loop back edge without a dead preheader store, satisfying livelen(76) >= 68.",
-   "mechanism": "Everything else in the residual is already bought: s19's probe H buys livelen(75) >= 20 for +1 instruction and makes allocno 85 vanish entirely. If some shape pays for H's instruction AND puts a real, consumed value in `val` before the loop, the 8/8 disposition closes. Nineteen bodies say the second half has no semantic reading - every arm consumes the operand byte on the next instruction - but that is an argument, not a measurement.",
-   "next_probe": "Search for a semantic reading in which the operand byte legitimately persists across an iteration (e.g. a command whose payload is consumed on the FOLLOWING command, or a repeat/run-length command). Test it against the target bytes first: any such reading must still produce exactly the twelve `sb $a1, 0xXX($a0)` arms and the single `lbu $a1, 0x0($v1)` at .L80032544. If no reading survives that check, livelen(76) >= 68 is unreachable in honest C and the RA channel is closed in closed form."
+   "hypothesis": "A K=0-shaped body (47-insn loop, walker in $v1 with no duplicated tail) exists, because the target's own hoist of the 0xFF proves the original loop was small.",
+   "mechanism": "The hoist gate is satisfied by any loop of 58 or fewer RTL instructions, and the target hoists; so the original body has a K=0-sized loop and its walker wins $v1 for a reason that is not reg_n_refs inflation. Every s15-s21 conclusion that the RA seat is foreclosed was argued on the hard-float chassis and against the wrong resource model (final instruction count, not loop RTL insn_count).",
+   "next_probe": "Re-run the allocno-priority attack at K=0 on the -msoft-float chassis, reading pri/nrefs/live_length for every allocno directly out of the .lreg/.greg dumps (tmp/grind/func_800324D0/dumps/) rather than re-deriving from the s19-s21 tables. The explicit new resource is ELEVEN loop instructions of slack (47 of 58): instructions that are added inside the loop and then removed by cross-jumping, combine or reload cost no final bytes, as the K sweep proves."
   },
   {
-   "hypothesis": "The three demotion thresholds can be met by lowering nrefs(76) instead of raising its live length.",
-   "mechanism": "The threshold scales as floor_log2(n)*n: at nrefs 26 it is livelen > 67.2, but at nrefs 12 it collapses to livelen > 23 - which probe A's measured livelen 30 already exceeds. nrefs(76) = 1 def + 12 arm uses, weighted x2 for loop depth.",
-   "next_probe": "This requires fewer than twelve references to the operand variable while the target bytes mandate twelve `sb $a1` arms. Confirm the impossibility mechanically (or find the exception) by grepping the base body's .lreg RTL (tmp/grind/func_800324D0/dumps/code6cac_b.lreg, segment ';; Function func_800324D0') for the twelve store insns and checking each carries a (reg 76) use. If all twelve are counted, record the axis as closed rather than re-probing it."
+   "hypothesis": "There is a shape whose loop RTL insn_count is at most 58 AND whose allocator flip has already happened \u2014 i.e. a lever worth two duplicated arms rather than the one the val-hoist buys.",
+   "mechanism": "The two constraints are now numeric and independent: insn_count <= 58 (loop.c:1631) and walker reg_n_refs above the operand carrier's rank (global.c allocno_compare). The val-hoist measured one arm of relief for +1 byte; a second, byte-free arm of relief closes the function.",
+   "next_probe": "Sweep other carrier-demotion / walker-promotion spellings at K = 5 and K = 6 with the loop insn_count read from the .loop dump each time, and reject any that pushes insn_count past 58 or build_insns off 68. Candidates not yet measured on this chassis: arm-order permutations of which K arms carry the tail, the tail duplicated into the two HEAD branches instead of arms, and shortening the walker's live length rather than lengthening the carrier's."
   },
   {
-   "hypothesis": "Both endgame-lock gates remain FAILED, so no session should spend turns re-running them.",
-   "mechanism": "s12 and s13 both measured `python3 tools/scan_hand_coded.py --single func_800324D0` at tier=LOW, score=0/8 with all eight signals absent (80 insns, 0 spills, 7 distinct regs); the SOTN-master precedent census for the required construct came back NEGATIVE.",
-   "next_probe": "Do not re-run. If the driver assigns `escalation` modality, cite s12/s13's scan logs and the negative census directly and file the PROOF-OF-FORECLOSURE RECORD; the gate evidence is banked and does not need re-measuring."
+   "hypothesis": "The +2 reference artifact can be removed so future floors are read directly instead of corrected by hand.",
+   "mechanism": "sandbox scores against build/src/code6cac_b.o, which on today's HEAD reaches the jump table through relocations against the named global jtbl_800105A0 that engine/score.py does not mask, while any C build uses a masked .rodata section-relative reloc.",
+   "next_probe": "Not a grind-session surface (engine/score.py is out of scope), but every session on this function must keep subtracting 2 and must say so explicitly in its ledger entry. If a future session is given engine scope, masking R_MIPS_HI16/LO16 against a rodata-resident named global would remove a two-point systematic error from this function's whole history."
   }
  ],
  "judge_constraints": [
@@ -167,7 +173,34 @@
    "session": 22,
    "at": "2026-09-08T00:17:28.789444+00:00",
    "headline": "func_8007526C COMPLETED-C",
-   "consumed": null
+   "consumed": 22
   }
- ]
+ ],
+ "kills": [
+  {
+   "session": 22,
+   "statement": "The three-instruction deficit is closed by shrinking the loop with `u32 c`, by the s21 staged-cmd chassis, or by merging the two `ptr++` sites into one.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD after a42d7ff7 (-msoft-float); pristine-HEAD reference build SHA1 == oracle; duplicated-tail FAKE present at K = 0..12",
+   "predicate_cite": "",
+   "result": "Each fails for a different measured reason. `u32 c` compiles to build_insns 67 against a target of 68 at every K (score "
+  },
+  {
+   "session": 22,
+   "statement": "Extending the operand carrier's live range lowers the duplication count the allocator needs enough to bring the loop under the loop.c:1631 budget.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD after a42d7ff7 (-msoft-float); pristine-HEAD reference build SHA1 == oracle; duplicated-tail FAKE present at K = 4..7",
+   "predicate_cite": "",
+   "result": "First positive movement ever measured on this axis, but not enough. The loop-head hoist DOES move the allocator flip fro"
+  },
+  {
+   "session": 22,
+   "statement": "The other two inputs to loop.c:1631 for this constant, m->lifetime and m->savings, are source-controllable and can widen the budget beyond 58.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD after a42d7ff7 (-msoft-float); 0xFF movable printing (life 1), savings 1 in the K = 0, 5, 6, 7, 8, 12 and val-hoist .loop dumps",
+   "predicate_cite": "",
+   "result": "The 0xFF movable prints `(life 1), move-insn savings 1` in the K = 0, 5, 6, 7, 8, 12 and val-hoist dumps without excepti"
+  }
+ ],
+ "escalation_deferrals": 0
 }

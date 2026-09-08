@@ -135,5 +135,15 @@
  "origin": "queue",
  "created": "2026-09-07T17:24:11.460672+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "sibling_progress": [
+  {
+   "from": "func_800324D0",
+   "floor": 3,
+   "session": 22,
+   "at": "2026-09-08T00:41:58.396060+00:00",
+   "headline": "Chassis moved: -msoft-float drops the honest floor 15 -> 3 and converts the residual from an RA seat into one loop.c:1631 hoist, short by exactly 3 loop instructions (hoist wants insn_count <= 58, the",
+   "consumed": null
+  }
+ ]
 }

@@ -1225,3 +1225,168 @@ single open question a future session would have to answer:
 - probe: Checked the repo record for Kengo C availability; ran m2c on asm/funcs/func_800324D0.s.
 - result: docs/grind/decisions.md:5937-5939 records that `Kengo/` holds names + sizes + source paths ONLY - 'There is no Kengo C ... never a source shape to transplant' - so the tag is a naming attribution and carries no shape. m2c refuses the function without the jump table ('Found jr instruction ... but the corresponding jump table is not provided') and would in any case only reproduce the shape already read insn-by-insn from the target asm and already built at 68/68. The decomp.me corpus leg is non-applicable: the residual is a register-seat swap inside a body that already matches instruction-for-instruction.
 - verdict: KILLED
+
+## [s22] The -msoft-float chassis change (a42d7ff7) drops this function's honest floor from 15 to 3, and converts the residual from a register-allocation seat into a single loop-invariant hoist
+
+- mechanism: the flag fixes the 32 FP registers, which halves loop.c:532's
+  `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` from 122 to 58.
+  Nothing about integer register allocation changes, so the duplicated-tail
+  construct still seats the walker in $v1 and erases all fifteen of the s21
+  body's register diffs; what breaks is loop.c:1631's hoist of the 0xFF
+  head-test constant, whose budget is now smaller than the duplicated loop.
+- probe: pristine HEAD build (SHA1 == oracle, s22/build_head_reference.log) as
+  the reference, then `sandbox func_800324D0 --disable all` on (a) the s21
+  ledger body and (b) the pre-a42d7ff7 duplicated-tail body, plus a normalised
+  objdump diff of the second against the target
+  (s22/dis.sh, s22/target.dis, s22/dup.dis).
+- result: (a) raw 17, (b) raw 5, both at build_insns 68 == target_insns 68 and
+  rules_dropped 0. The s15 named-global-jtbl reference artifact is still worth
+  exactly +2 (the s21 body was banked at 15 and reads 17; two of the five diff
+  lines in (b) are the `jtbl_800105A0` vs `.rodata` reloc names), so the honest
+  floor is 3. The three real diffs are all the same thing: the target has
+  `li t0,255` in the preheader, our build has `li v0,255` inside the loop with
+  the matching `bne`.
+- verdict: CONFIRMED
+
+## [s22] The remaining 3 is gated by `loop insn_count <= 58`, and the duplicated-tail RA fix needs 61 — the function is short by exactly three loop instructions
+
+- mechanism: loop.c:1631 hoists iff `threshold * savings * m->lifetime >=
+  insn_count`. For the 0xFF pseudo the .loop dump prints `(life 1), savings 1`,
+  and threshold is 58, so the budget is `insn_count <= 58`. Each command arm
+  that carries the duplicated loop tail adds exactly two RTL insns to the loop,
+  over a base of 47.
+- probe: swept K = 0..12 (K = number of arms carrying the duplicated tail),
+  recording both the sandbox score and the `Loop from ... real insns` /
+  `savings` lines of the func_800324D0 segment of the .loop dump for
+  K = 0, 6, 7, 8 (s22/ksweep.log, `pwsh tools/grinder/dump.ps1 func_800324D0`).
+- result: K=0 47 insns hoisted score 29; K=5 57 hoisted 23; K=6 59 refused 26;
+  K=7 61 refused 5; K=8 63 refused 5; K=12 72 refused 5. The hoist boundary is
+  exactly 58, which independently confirms `58 * 1 * 1`. The allocator flips
+  between K=6 and K=7. Hoist wants <= 58, allocation wants 61: a deficit of
+  three instructions, or two duplicated arms.
+- verdict: CONFIRMED
+
+## [s22] The three-instruction deficit can be closed by shrinking the loop with `u32 c`, by the s21 staged-cmd chassis, or by merging the two `ptr++` sites
+
+- mechanism: all three were the cheapest available ways to remove RTL
+  instructions from the loop (dropping the zero-extends, re-using the staged
+  tail carrier, folding the short-command and payload pointer advances) while
+  keeping the duplicated tail that the allocator needs.
+- probe: three parameterised sweeps against the same reference —
+  `gen3.py K u32` for K = 0,5,6,7,8,9,12; `gen2.py K 1` (staged) for K = 0..7
+  plus its .loop dump; `gen6.py K {0,1}` for K = 5..8.
+- result: KILLED, and each for a different measured reason. `u32 c` compiles to
+  build_insns **67** against a target of 68 at every K, i.e. it deletes a real
+  instruction the target keeps (score 9 for K >= 7). The staged-cmd chassis has
+  a **49**-insn loop, two WORSE on the budget than the plain body, and scores
+  17/18 flat through K=6 and 30 at K=7. Merging the two `ptr++` sites compiles
+  to build_insns **66**, which is itself a positive fact about the original: the
+  target provably has two separate pointer advances, so the base 47 is not
+  reducible by merging them. Bodies banked as
+  rejected/u32-c-dup-tail-67insns.c and rejected/merged-ptr-inc-66insns.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD after a42d7ff7 (-msoft-float), pristine-HEAD reference build
+  SHA1 == oracle, duplicated-tail FAKE present at K = 0..12
+
+## [s22] Extending the operand carrier's live range lowers the duplication count the allocator needs, and can bring it under the loop.c budget
+
+- mechanism: global.c ranks allocnos by `floor_log2(nrefs) * nrefs * size /
+  reg_live_length`, so lengthening the operand carrier's live range demotes it
+  and lets the walker win $v1 with fewer duplicated references — which would
+  buy back exactly the loop instructions the hoist needs.
+- probe: operand read hoisted to the loop head (`gen4.py K 1`, K = 0,3,4,5,6,7)
+  and the narrower variant with the read moved into the else-of-0xFF arm
+  (`gen5.py K 2`, K = 4..7), each measured for score and, for the loop-head
+  form, for loop insn_count at K = 5 and 6.
+- result: KILLED on this chassis, but with the first positive movement ever
+  measured on this axis. The loop-head hoist DOES move the allocator flip from
+  K=7 to K=6 — one arm cheaper — but 47 + 12 = 59 still misses the 58 budget by
+  ONE instruction (`Insn 81: regno 85 (life 1), move-insn savings 1 not
+  desirable`), and the hoisted lbu costs a byte of its own, so the best it
+  reaches is 6 against the plain chassis's 5; at K=5 (57 insns) the 0xFF does
+  hoist but the allocator has not flipped, giving 30. The else-of-0xFF variant
+  does not move the flip at all and costs +2 (7 at K=7). Banked as
+  rejected/val-hoist-loop-head-dup6-59insns.c and
+  rejected/val-read-in-else-of-ff-dup7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD after a42d7ff7 (-msoft-float), pristine-HEAD reference build
+  SHA1 == oracle, duplicated-tail FAKE present at K = 4..7
+
+## [s22] The other two inputs to loop.c:1631 (`m->lifetime`, `m->savings`) are source-controllable for this constant
+
+- mechanism: the budget is `threshold * savings * lifetime`, so doubling either
+  factor would make the duplicated loop fit with room to spare (58 * 2 = 116 >
+  the K=12 count of 72).
+- probe: read the definitions rather than guess — loop.c:791 (`m->lifetime =
+  uid_luid[regno_last_uid[regno]] - uid_luid[regno_first_uid[regno]]`),
+  loop.c:793 + loop.c:597 (`m->savings = n_times_used[regno]`, bcopied from
+  `n_times_set`), against the .loop dump line for the 0xFF pseudo, which prints
+  `(life 1), move-insn savings 1` in every body measured this session.
+- result: KILLED for this constant. `lifetime` is the LUID distance from the
+  constant's SET to its last reference, and a single-use constant compare emits
+  `(set (reg N) (const_int 255))` immediately before the compare that consumes
+  it, so the distance is 1; it can only grow if the same constant is referenced
+  at a second point in the loop, and the target's bytes contain exactly one 0xFF
+  comparison. `savings` is the SET count, so raising it means materialising the
+  constant twice, which costs bytes. The only live input to the gate is
+  `insn_count`.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD after a42d7ff7 (-msoft-float), 0xFF movable printing
+  `(life 1), savings 1` in the K = 0, 5, 6, 7, 8, 12 and val-hoist .loop dumps
+
+## [s22] THE FRONTIER RESTATED — the duplicated tail is the wrong mechanism, and the K=0 chassis has eleven instructions of slack nobody has ever spent
+
+A 47-instruction loop hoists the 0xFF under BOTH thresholds (58 and 122), and
+the target hoists it. So the original source cannot have carried the duplicated
+tail: it is a K=0-shaped loop whose walker wins $v1 for a reason that is not
+reg_n_refs inflation. That is a genuinely new constraint on the search, and it
+also means the s15–s21 foreclosure of the RA-seat channel was argued against
+the wrong constraint set: those sessions treated the instruction budget as
+exact at 68 FINAL instructions, but the real resource is the LOOP's RTL
+insn_count, which has eleven instructions of slack (47 of 58) before the hoist
+breaks. Instructions that are added inside the loop and then removed again by
+cross-jumping, by combine, or by reload cost final bytes only if they survive —
+and the K sweep proves they need not. The next session should re-run the
+allocno-priority attack (demote the operand carrier / promote the walker) with
+that eleven-instruction budget as an explicit resource, and should measure the
+priorities directly from the .lreg/.greg dumps at K = 0 rather than re-deriving
+them from the s19–s21 tables, which were taken on the hard-float chassis.
+
+## [s22] The -msoft-float chassis change (a42d7ff7) drops this function's honest floor from 15 to 3 and converts the residual from a register-allocation seat into a single loop-invariant hoist.
+- mechanism: The flag fixes the 32 FP registers, halving loop.c:532's threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) from 122 to 58. Integer register allocation is unaffected, so the duplicated-tail construct still seats the walker in $v1 and erases all fifteen of the s21 body's register diffs; what breaks is loop.c:1631's hoist of the 0xFF head-test constant, whose budget is now smaller than the duplicated loop.
+- probe: Pristine HEAD build as the reference (SHA1 == oracle, s22/build_head_reference.log), then sandbox --disable all on (a) the s21 ledger body and (b) the pre-a42d7ff7 duplicated-tail body, plus a normalised objdump diff of (b) against the target (s22/dis.sh, s22/target.dis, s22/dup.dis).
+- result: (a) raw 17, (b) raw 5, both at build_insns 68 == target_insns 68, rules_dropped 0. The s15 named-global-jtbl reference artifact is still worth exactly +2 (the s21 body was banked at 15 and reads 17; two of the five diff lines in (b) are the jtbl_800105A0 vs .rodata reloc names), so the honest floor is 3. The three real diffs are one thing: the target has `li t0,255` in the preheader, our build has `li v0,255` inside the loop with the matching `bne`.
+- verdict: CONFIRMED
+
+## [s22] The remaining 3 is gated by loop insn_count <= 58, and the duplicated-tail RA fix needs 61, so the function is short by exactly three loop instructions.
+- mechanism: loop.c:1631 hoists iff threshold * savings * m->lifetime >= insn_count. For the 0xFF pseudo the .loop dump prints (life 1), savings 1, and threshold is 58, so the budget is insn_count <= 58. Each command arm carrying the duplicated loop tail adds exactly two RTL insns over a base of 47.
+- probe: Swept K = 0..12 (K = arms carrying the duplicated tail) recording sandbox score, and the `Loop from ... real insns` / `savings` lines of the func_800324D0 segment of the .loop dump for K = 0, 6, 7, 8 (s22/ksweep.log; pwsh tools/grinder/dump.ps1 func_800324D0).
+- result: K=0 47 insns hoisted score 29; K=5 57 hoisted 23; K=6 59 refused 26; K=7 61 refused 5; K=8 63 refused 5; K=12 72 refused 5. The hoist boundary is exactly 58, independently confirming 58 * 1 * 1. The allocator flips between K=6 and K=7. Deficit: three instructions, or two duplicated arms.
+- verdict: CONFIRMED
+
+## [s22] The three-instruction deficit is closed by shrinking the loop with `u32 c`, by the s21 staged-cmd chassis, or by merging the two `ptr++` sites into one.
+- mechanism: All three were the cheapest available ways to remove RTL instructions from the loop (dropping the zero-extends, re-using the staged tail carrier, folding the short-command and payload pointer advances) while keeping the duplicated tail the allocator needs.
+- probe: Three parameterised sweeps against the same pristine-HEAD reference: gen3.py K u32 for K = 0,5,6,7,8,9,12; gen2.py K 1 (staged) for K = 0..7 plus its .loop dump; gen6.py K {0,1} for K = 5..8.
+- result: Each fails for a different measured reason. `u32 c` compiles to build_insns 67 against a target of 68 at every K (score 9 for K >= 7) — it deletes a real instruction the target keeps. The staged-cmd chassis has a 49-insn loop, two WORSE on the budget than the plain body, and scores 17/18 flat through K=6 and 30 at K=7. Merging the two `ptr++` sites compiles to build_insns 66, which is a positive fact about the original: the target provably has two separate pointer advances, so the base 47 is not reducible by merging them. Bodies banked as rejected/u32-c-dup-tail-67insns.c and rejected/merged-ptr-inc-66insns.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD after a42d7ff7 (-msoft-float); pristine-HEAD reference build SHA1 == oracle; duplicated-tail FAKE present at K = 0..12
+
+## [s22] Extending the operand carrier's live range lowers the duplication count the allocator needs enough to bring the loop under the loop.c:1631 budget.
+- mechanism: global.c ranks allocnos by floor_log2(nrefs) * nrefs * size / reg_live_length, so lengthening the operand carrier's live range demotes it and lets the walker win $v1 with fewer duplicated references — buying back exactly the loop instructions the hoist needs.
+- probe: Operand read hoisted to the loop head (gen4.py K 1, K = 0,3,4,5,6,7) and the narrower variant with the read moved into the else-of-0xFF arm (gen5.py K 2, K = 4..7); score for each, plus loop insn_count for the loop-head form at K = 5 and 6.
+- result: First positive movement ever measured on this axis, but not enough. The loop-head hoist DOES move the allocator flip from K=7 to K=6 — one arm cheaper — but 47 + 12 = 59 still misses the 58 budget by ONE instruction (`Insn 81: regno 85 (life 1), move-insn savings 1 not desirable`), and the hoisted lbu costs a byte of its own, so its best is 6 against the plain chassis's 5; at K=5 (57 insns) the 0xFF does hoist but the allocator has not flipped, giving 30. The else-of-0xFF variant does not move the flip at all and costs +2 (7 at K=7). Banked as rejected/val-hoist-loop-head-dup6-59insns.c and rejected/val-read-in-else-of-ff-dup7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD after a42d7ff7 (-msoft-float); pristine-HEAD reference build SHA1 == oracle; duplicated-tail FAKE present at K = 4..7
+
+## [s22] The other two inputs to loop.c:1631 for this constant, m->lifetime and m->savings, are source-controllable and can widen the budget beyond 58.
+- mechanism: The budget is threshold * savings * lifetime, so doubling either factor would make even the K=12 loop (72 insns) fit under 58 * 2 = 116.
+- probe: Read the definitions rather than guess: loop.c:791 (m->lifetime = uid_luid[regno_last_uid] - uid_luid[regno_first_uid]), loop.c:793 with loop.c:597 (m->savings = n_times_used[regno], bcopied from n_times_set), checked against the .loop dump line for the 0xFF pseudo in every body measured this session.
+- result: The 0xFF movable prints `(life 1), move-insn savings 1` in the K = 0, 5, 6, 7, 8, 12 and val-hoist dumps without exception. lifetime is the LUID distance from the constant's SET to its last reference, and a single-use constant compare emits (set (reg N) (const_int 255)) immediately before the compare that consumes it, so the distance is 1; it can only grow if the same constant is referenced at a second point in the loop, and the target's bytes contain exactly one 0xFF comparison. savings is the SET count, so raising it means materialising the constant twice, which costs bytes. The only live input to the gate is insn_count.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD after a42d7ff7 (-msoft-float); 0xFF movable printing (life 1), savings 1 in the K = 0, 5, 6, 7, 8, 12 and val-hoist .loop dumps
