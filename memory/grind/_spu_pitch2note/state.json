@@ -1,0 +1,72 @@
+{
+ "func": "_spu_pitch2note",
+ "file": "main",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 36,
+   "modality": "recon",
+   "headline": "recon s1: floor 64 -> 36 pure C; epilogue+prologue matched; residual = inner-loop back-edge delay slot (label between increments and inner++) + seat cascade; counter/biv-elimination and hit-after-loop"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "An ordinary-C spelling exists whose RTL has the hit block out of line while the increments fall straight into inner++ (no label/jump between), which lets reorg fill the back-edge slot with `acc += step` as in the target",
+   "mechanism": "reorg.c:2969 fill_simple_delay_slots stops at CODE_LABEL; the relocation mechanism seen on v11's scan block (fresh label after a barrier) is the likely source of the target's out-of-line hit block",
+   "next_probe": "Instrumented cc1 with BB2_XJUMP_DEBUG=1 on v11 vs v13 to name the pass that minted label 262; then measure (a) v13 with the hit arm first, (b) v3 shape with break + foldable post-loop test, (c) do/while inner loop, (d) increments in the for-clause with continue; pairdiff + .dbr dump each"
+  },
+  {
+   "hypothesis": "The remaining seat cascade (pitch $a3->$a0, bit/shift/curve/lower/outer/acc/step) is a consequence of the structural residual and the pseudo set, not an independent RA lock",
+   "mechanism": "global.c priority order and conflict sets change once the then-arm jump/label disappear and `inner` takes $a0",
+   "next_probe": "After F1 lands, run tools/ra_solver inverse_compose.py classify on the v13-derived form before spelling any seat lever"
+  },
+  {
+   "hypothesis": "If F1 has no ordinary spelling, the two-pass reorg route (make the loop-top peel ineligible on pass 1 so pass 2 sees the deleted `j Lend`) reproduces the slot",
+   "mechanism": "dbr_schedule runs MAX_REORG_PASSES; relax_delay_slots deletes the jump-to-next after the hit block is stolen",
+   "next_probe": "Read v13's .dbr dump for the first-pass fill order; low priority"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "The natural spelling `lower + step*j` / `lower + step*(j+1)` (v1) reproduces the target's inner-loop induction shape",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, prototype s32(u16,u16,u16)",
+   "predicate_cite": "",
+   "result": "59; `move a3,t3` init of the folded giv present, target has none"
+  },
+  {
+   "session": 1,
+   "statement": "A running `cents++` counter read after the `goto found` exit is biv-eliminated by loop.c into the target's `li v0,0x600` and `base + inner` form",
+   "kill_scope": "class",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs",
+   "predicate_cite": "unroll.c:3051",
+   "result": "45 both; `addiu cents,1` left in the inner loop, no hoisted `sll t5` base, no `li 0x600`"
+  },
+  {
+   "session": 1,
+   "statement": "A `hit:` label placed after the loops (`result = 0x600; goto found; hit: result = base + inner; found:`) with a named per-octave base (v11/v12/v17) yields the target's out-of-line hit block",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "41; scan branch inverted with its block moved before hit:, extra `j found` kept"
+  },
+  {
+   "session": 1,
+   "statement": "Initialising `result = 0x600` before the loops instead of assigning it after them (v14/v15/v16) keeps the target's `li v0,0x600` placement",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "57-58, far worse than 36"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T22:13:40.153191+00:00",
+ "object_model_audited": 1
+}
