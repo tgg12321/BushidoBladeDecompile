@@ -1843,3 +1843,4 @@
 - 2026-09-07 20:08 func_800324D0 COMPLETED-C after 23 sessions (closer: s23 [structural]).
 - 2026-09-07 20:20 CD_datasync s61 [rederive] floor=2: Chain-A carrier moved off the -1/0 flag onto the tail DMA-control pointer: the do_timeout window AND the flag block are now both byte-exact (score 3), and the complete carrier price list proves the target's chain-A address is not a spanning multi-set pseudo at all.
 - 2026-09-07 20:39 CD_datasync COMPLETED-C after 62 sessions (closer: s62 [structural]).
+- 2026-09-07 20:58 CD_sync COMPLETED-C after 126 sessions (closer: s126 [rederive]).
