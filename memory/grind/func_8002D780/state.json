@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 4,
- "current_modality": "permuter",
+ "session_count": 5,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -27,23 +27,29 @@
    "floor": 7,
    "modality": "permuter",
    "headline": "First faithful permuter workspace for func_8002D780 built and validated; 55,531-iteration campaign found nothing \u2014 its metric is anti-correlated with the engine's on this chassis \u2014 and nine embedded-a"
+  },
+  {
+   "session": 5,
+   "floor": 2,
+   "modality": "synthesis",
+   "headline": "Floor 7 -> 2/202: residual B closed (the dist copy survives cse only when the carrier is multiply-defined AND declared before lzcr) and the LZCR slot-address order closed by splitting the LZCS island "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Residual A (2 insns) is a dz/dx seat assignment: f1/f3 already give the target's emission order for the whole test-3 block, and the only remaining error is dz in $v1 / dx in $a0 where the target has dz in $a0 / dx in $v1. The permuter did not touch it in 55k iterations.",
-   "mechanism": "local-alloc quantity numbering follows the post-sched1 insn order, so the declaration order that fixes the emission order also flips the two seats; this is global.c/local-alloc, not sched.c.",
-   "next_probe": "tools/ra_solver/inverse_compose.py classify on the dz and dx seats against the f1 body (memory/grind/func_8002D780/rejected/relvec-dx-before-az-order-right-regs-swapped-14.c) \u2014 it returns REACHABLE/FORECLOSED plus a ranked C-lever vector. Do NOT re-sweep declaration orders; twelve are measured in s3 and the two that hold the floor are the two in candidate.c. This is the solver modality's job and it is now the highest-value untried axis."
+   "hypothesis": "Residual A (2 insns) is the last diff in the function: the target emits `subu v1,t5,t1` (dx = x2 - x0) before `subu v0,a2,a3` (az = cz - z0) and we emit az first, while our dz/dx seats are already the target's. Every source rearrangement that fixes the order flips the seats (34 forms measured).",
+   "mechanism": "Both subus carry sched1 priority 1 and the same function unit, so rank_for_schedule falls through to the INSN_LUID tie-break and schedule_select's largest-potential-hazard rule (tools/gcc-2.7.2/sched.c:2708-2723); the statement order that lowers dx's LUID also changes local-alloc's quantity numbering, which is what moves dz/dx between $a0 and $v1.",
+   "next_probe": "Run tools/ra_solver/inverse_compose.py classify on the dz and dx seats against BOTH 2-floor bodies -- memory/grind/func_8002D780/candidate.c (seats right, order wrong) and tmp/grind/func_8002D780/s5/variantsH/h2_ax_dx_dz_az.c (order right, seats wrong) -- and spell only the C-lever vector it names. In parallel run tools/sched_solver order-exact on the test-3 block: a DEPENDENCE change (not a statement reorder) may break the priority-1 tie the other way without touching allocation, which is the one axis 34 source rearrangements could not reach."
   },
   {
-   "hypothesis": "Residual B (5 insns) is the second pseudo holding dist in $a0 (move a0,s1 in the beqz delay slot) feeding the LZCS island input and the srlv, while $s1 keeps the compare, the small-path LUT index and the call arguments. Twenty-three source spellings of the copy are now dead, including the permuter's own embedded-assignment form.",
-   "mechanism": "cse.c make_regs_eqv folds every single-def copy into its source pseudo, so no natural C copy survives to reload; the target compile kept two pseudos. Because build_insns never moves off 202 for any of the twenty-three spellings, the copy is being eliminated in cse and not merely coalesced later.",
-   "next_probe": "tools/ra_solver inverse_compose.py classify on the $a0 seat, and read tmp/grind/func_8002D780/dumps/code6cac_b.cse / .combine to confirm the fold point rather than re-deriving it. Only if that returns FORECLOSED for every natural form does the sibling func_8002D518's FAKE dead-store re-store (src/code6cac_b.c:1244-1265, .claude/rules/dead-store-fake-exception.md) become the sanctioned last resort, and it would cite a twenty-three-spelling exhaustion ledger."
+   "hypothesis": "A decomp-permuter campaign on the 2-floor chassis finds the last 2 insns where the s4 campaign on the 7-floor chassis found nothing.",
+   "mechanism": "The s4 campaign's neighbourhood was dominated by two residuals that no local rearrangement could reach; with those closed the remaining residual is a single two-insn local reorder, which is squarely inside the permuter's pass set.",
+   "next_probe": "Regenerate base.c from the new candidate.c into the existing validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait in-turn, harvest with --stop, and re-score every find on the real engine sandbox -- the s4 finding that the permuter's weighted metric is anti-correlated with the engine's here still applies."
   },
   {
-   "hypothesis": "candidate.c's six fresh once-written test-3 locals (ax/az/bx/bz/dx/dz) need a family decision BEFORE any candidate-ready submission, because review verdicts are keyed by body and respelling after a layer-1 verdict is not available.",
-   "mechanism": "The family-selection table routes a fresh once-written once-read local carrying a real consumed value to the named-intermediate family (six prongs, FAKE required); the competing reading is that vertex-0-relative vectors are ordinary geometric C needing no family claim.",
-   "next_probe": "grep docs/reference/sotn-construct-index.md for vertex-relative / difference-local precedent, then either write the six-prong named-intermediate self-vet or emit a ruling-request naming both readings \u2014 decide before the body is submitted."
+   "hypothesis": "The body is one lever from candidate-ready, so the family classification must be settled before the next submission rather than after a layer-1 verdict.",
+   "mechanism": "Review verdicts are keyed by body, so respelling after a layer-1 FAIL is not available; the body carries one FAKE-annotated dead-store re-store and six fresh once-written test-3 difference locals whose named-intermediate-vs-ordinary-C reading the s3 frontier flagged.",
+   "next_probe": "Write memory/grind/func_8002D780/self_vet.md now: dead-store family for `m` (quote the scope sentence from .claude/rules/dead-store-fake-exception.md, cite src/code6cac_b.c:1244-1265), and either the six named-intermediate prongs from .claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17 clarification for ax/az/bx/bz/dz/dx or an ordinary-C argument on the geometry; grep docs/reference/sotn-construct-index.md for vertex-relative difference-local precedent first, and emit a ruling-request rather than a submission if the citation does not hold."
   }
  ],
  "judge_constraints": [],
@@ -192,6 +198,22 @@
    "measured_on": "HEAD 8cd6da6b (-mel -msoft-float), the s3 7-floor candidate.c body spliced into src/code6cac_b.c, no FAKE constructs present",
    "predicate_cite": "",
    "result": "All eight well-defined arrangements measured 7 = control at exactly 202 build insns \u2014 no move insn materialised at all, "
+  },
+  {
+   "session": 5,
+   "statement": "Declaring the six test-3 difference locals in the floor-holding order while assigning az after dx gives the target's emission order without the dz/dx seat flip.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 994d8b2d (-mel -msoft-float), the s3/s4 7-floor candidate.c body spliced into src/code6cac_b.c, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "The seat permutation follows the STATEMENT order alone. Every form whose az statement follows dx's measured 14 (a1/a3/a4"
+  },
+  {
+   "session": 5,
+   "statement": "Kill re-audit: one of the fully-inlined or partial-local test-3 forms killed at 26/27 on the s2 10-floor body reaches the target's test-3 emission order and the target's dz/dx seats on the newer chass",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 994d8b2d (-mel -msoft-float); batches B/C on the s3 7-floor body with no FAKE constructs present, batches H/I/J on the s5 2-floor body with one FAKE same-value re-store of the local `m` present",
+   "predicate_cite": "",
+   "result": "The fully-inlined EDGE-first form (b3/h5) sits at the floor (7, then 2) but mis-orders the OTHER subu pair (it emits dz "
   }
  ],
  "ladder_skip": 0,

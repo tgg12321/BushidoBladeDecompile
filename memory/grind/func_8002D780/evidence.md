@@ -295,3 +295,103 @@ on the new chassis.
 - [s4] Re-measured on the real engine sandbox, the permuter's best finds are all WORSE than the control: 110-find = 8, 115-finds = 8/8/9, 125-find = 9, control = 7. The two scorers are anti-correlated here because the permuter charges 60 per reordering and 100 per insertion/deletion while the engine counts raw differing instructions.
 
 - [s4] The only genuinely new lever the campaign surfaced is the embedded-assignment copy spelling `if ((u32)(m = dist) < 0x400)`; nine arrangements of it were measured on the real chassis and all well-defined ones are 7 = control at 202 insns, so cse folds it like the other twenty-two dist-copy spellings.
+
+## s5 (2026-09-08, synthesis) - chassis: HEAD main @ 994d8b2d (-mel -msoft-float), s3/s4 candidate applied
+
+FLOOR 7 -> 2, with build_insns == target_insns == 202 throughout. Every number below is
+a `sandbox func_8002D780 --disable all` score measured this session (49 variants in 8
+batches; generators + variant bodies in tmp/grind/func_8002D780/s5/, run through
+tmp/grind/func_8002D780/s3/run.ps1). Control re-measured on this chassis first: 7/202.
+
+### Residual B (the `dist` copy, 5 insns, flat since s1) is CLOSED
+Twenty-three copy spellings were dead across s1-s4 and EVERY ONE OF THEM WAS A
+SINGLE-DEF COPY -- which is precisely the shape cse.c make_regs_eqv folds. The
+byte-matched sibling func_8002D518 closes the identical residual by making the carrier
+MULTIPLY-DEFINED across the join (src/code6cac_b.c:1244-1265, a FAKE-annotated
+same-value re-store under .claude/rules/dead-store-fake-exception.md). Transplanting
+that shape verbatim measured 7 = control (variant d1) -- and the reason took two batches
+to find:
+
+  * THE CARRIER MUST BE DECLARED BEFORE `lzcr`. `s32 lzcr = 0; s32 m = dist;` folds
+    (d1 = 7); `s32 m = dist; s32 lzcr = 0;` does not (f4 = 5 at 202 insns). Declaration
+    order sets the RTL emission order of the two stores, and reorg.c steals the FIRST
+    schedulable insn into the `beqz` delay slot: with the carrier first we get the
+    target's `move a0,s1` there and `move v1,zero` in the `bltz` slot; with lzcr first
+    the copy folds away entirely.
+  * THE SECOND DEFINITION MUST SIT IN THE SAME ARM. Putting it in an `else` arm
+    (`if (dist >= 0) {...} else { m = dist; }`) also defeats cse and the copy survives
+    -- variant e1, tmp/grind/func_8002D780/s5/pairdiff_e1.txt shows `move a0,s1`
+    materialising for the first time in five sessions -- but the arm costs an extra `j`
+    plus a duplicated `li v0,-2` (204 insns, score 9). A carrier defined once in EACH
+    arm survives too but emits BOTH copies (205/206 insns, score 10; d2/d3/d5/d7/e4).
+  * The carrier must feed BOTH the LZCS island input and the `srlv`. Asm-input-only
+    (d4) folds back to 7.
+
+With f4 the sqrt block's `move a0,s1`, `srlv v0,a0,v1` and the LUT reload all match the
+target insn-for-insn (tmp/grind/func_8002D780/s5/pairdiff_f4.txt, 6 differing insns).
+
+### The LZCR slot-address ORDER (2 insns) is CLOSED by splitting the asm island
+On the f4 chassis the remaining sqrt diff was ORDER, not content: the target emits
+`addiu $v0,$sp,0x10` BETWEEN the `mtc2 $t4,$30` + nop/nop group and the
+`addu $t4,$v0,$zero` + `swc2 $31,0($t4)` group (asm/funcs/func_8002D780.s L141-147).
+A single asm statement cannot produce that -- an "r" operand's setup insn is always
+emitted before the whole asm insn, which is why s2/s3's one-statement island with
+`"r"(&sp_var)` hoisted the addiu above the mtc2. Writing the island as TWO asm
+statements (the mtc2 island, then the swc2 island whose "r" operand is `&sp_var`) puts
+the addiu exactly where the target has it: score 5 -> 2 at 202 insns.
+Clobber placement across the two statements is not load-bearing between orderings
+(g1 `"$12"` then `$12-$15` = 2; g2 reversed = 2; g3 both = 2) but SOME $13-$15 mention
+is (g4, `"$12"` on both, = 6) -- the same reload1.c bad_spill_regs effect the s2 sibling
+clobber footprint buys.
+
+### Residual A (2 insns) survives twenty-two more forms
+The test-3 subu pair is still the only diff: the target emits `subu v1,t5,t1` (dx) then
+`subu v0,a2,a3` (az); we emit az then dx. Registers/seats are CORRECT in the 2-floor
+body. Measured this session:
+  * Batch A (8 variants): DECLARATION order and STATEMENT order can be decoupled
+    (`s32 az;` declared with the others, assigned after dx), and it does NOT help --
+    every form whose az STATEMENT follows dx's scores 14 (7-chassis) / 9 (2-chassis),
+    and every form whose az statement precedes dx's holds the floor regardless of where
+    az is DECLARED (a2/a6/a7 = 7). So the seat permutation follows the STATEMENT order,
+    not expand_decl's pseudo numbering -- which kills the "declare early, assign late"
+    lever outright.
+  * Batch B/C (19 variants): the fully-inlined edge-first form
+    `kc = (z2-z0)*(cx-x0) - (x2-x0)*(cz-z0)` (b3/h5) ALSO scores at the floor, but with
+    the OTHER pair mis-ordered (it emits dz before ax where the target has ax then dz;
+    tmp/grind/func_8002D780/s5/pairdiff_b3_inlined_edge_first_term_first.txt). The
+    fully-inlined ORIGIN-first form (b1) gets BOTH pairs in the target's emission order
+    and is the only form that does -- and it pays for it with the dz/dx seat flip
+    (dz->$v1, dx->$a0) plus an upstream permutation in tests 1-2, scoring 23.
+  * Batch H/I/J (20 variants on the 2-floor chassis): partial-local forms (ax/bx local
+    with the edges inlined = 9; az/bz local = 4), fresh test-3 cross locals (2 = control),
+    four further declaration orders (2), kp-assigned-first (35), az written as a negated
+    reverse difference (11). Nothing beats 2.
+So residual A is confirmed as the s3 diagnosis: the target's emission order and the
+target's dz/dx seats are, on this chassis, mutually exclusive across 34 measured forms.
+
+- [s5] FLOOR 7 -> 2 of 202 (build_insns == target_insns == 202), measured this session with the edits in src/code6cac_b.c (sandbox func_8002D780 --disable all -> score 2) before src was restored to its committed INCLUDE_ASM state.
+- [s5] Residual B is CLOSED. All 23 previously-dead copy spellings were SINGLE-DEF copies (what cse.c make_regs_eqv folds); the sibling func_8002D518's multiply-defined carrier shape works here too, but ONLY when the carrier is declared BEFORE `lzcr` and its second definition sits inside the same `if (dist >= 0)` arm.
+- [s5] Declaration order of the carrier vs `lzcr` decides WHICH insn reorg.c steals into the `beqz` delay slot: carrier first gives the target's `move a0,s1` there (score 5); `lzcr` first folds the copy away entirely (score 7).
+- [s5] A carrier whose second definition sits in an `else` arm DOES survive cse (the first time `move a0,s1` has ever materialised for this function) but costs an extra `j` + a duplicated `li v0,-2` (204 insns, score 9); a carrier defined once in EACH arm emits both copies (205/206 insns, score 10).
+- [s5] The LZCR slot-address residual was an asm-STATEMENT-COUNT question, not a C-spelling question: the target's `addiu $v0,$sp,0x10` sits between the mtc2 group and the swc2 group, which one asm statement cannot emit (operand setup always precedes the whole asm insn). Two asm statements reproduce it exactly: 5 -> 2.
+- [s5] Splitting the LZCS island still needs a $13-$15 clobber mention somewhere (both statements clobbering only "$12" scores 6); which statement carries it does not matter (g1/g2/g3 all 2).
+- [s5] Residual A: DECLARATION order and STATEMENT order of the six test-3 difference locals can be decoupled, and the seat permutation follows the STATEMENT order alone (a2/a6/a7 = control at 7 with declarations reshuffled; every az-statement-after-dx form = 14/9). The "declare early, assign late" lever is dead.
+- [s5] Residual A: the fully-inlined edge-first test-3 form scores at the floor with the OTHER subu pair mis-ordered; the fully-inlined origin-first form is the only measured form with BOTH pairs in the target's emission order, and it carries the dz/dx seat flip plus an upstream permutation (23). 34 forms across s3+s5 now show the target's order and the target's seats to be mutually exclusive on this chassis.
+
+- [s5] s5 floor: 7 -> 2 of 202 with build_insns == target_insns == 202, measured this session with the edits in src/code6cac_b.c (sandbox func_8002D780 --disable all -> score 2) before src was restored to its committed INCLUDE_ASM state. Final diff: tmp/grind/func_8002D780/s5/pairdiff_candidate_s5.txt, 2 differing instructions.
+
+- [s5] Residual B (the `dist` copy, flat since s1, 23 dead spellings) is CLOSED. Every previously-dead spelling was a SINGLE-DEF copy, which is exactly the shape cse.c make_regs_eqv folds; a multiply-defined carrier survives.
+
+- [s5] Declaration order of the carrier vs `lzcr` decides which insn reorg.c steals into the `beqz` delay slot: carrier declared first gives the target's `move a0,s1` (score 5); `lzcr` first folds the copy away entirely (score 7). The sibling func_8002D518's FAKE shape transplanted verbatim, with lzcr declared first, measured 7 = control.
+
+- [s5] A carrier whose second definition sits in an `else` arm survives cse but costs an extra `j` plus a duplicated `li v0,-2` (204 insns, score 9); a carrier defined once in EACH arm emits both copies (205/206 insns, score 10).
+
+- [s5] The LZCR slot-address residual was an asm-STATEMENT-COUNT question, not a C-spelling question: the target emits `addiu $v0,$sp,0x10` between the mtc2 group and the swc2 group (asm/funcs/func_8002D780.s L141-147), which one asm statement cannot do because operand setup always precedes the whole asm insn. Two asm statements reproduce it: 5 -> 2.
+
+- [s5] Splitting the LZCS island still needs a $13-$15 clobber mention on one of the two statements (both clobbering only "$12" scores 6); which statement carries it does not matter (g1/g2/g3 all 2).
+
+- [s5] Residual A: declaration order and statement order of the six test-3 difference locals CAN be decoupled, and the dz/dx seat permutation follows the STATEMENT order alone -- so the 'declare early, assign late' lever is dead and the s3 diagnosis stands.
+
+- [s5] Residual A: 34 forms across s3 and s5 now agree that the target's test-3 emission order (dx before az) and the target's dz/dx seats (dz->$a0, dx->$v1) are mutually exclusive under source rearrangement on this chassis; the 2-floor body has the seats right and the order wrong, and h2/h5 give the complementary shapes.
+
+- [s5] candidate.c now carries ONE FAKE-annotated construct (the same-value re-store of the local `m`, dead-store family, .claude/rules/dead-store-fake-exception.md, byte-matched in-TU precedent at src/code6cac_b.c:1244-1265) with a 23-spelling lever-exhaustion ledger cited in the annotation.

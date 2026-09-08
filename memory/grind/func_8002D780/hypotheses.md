@@ -447,3 +447,88 @@ candidate applied to src/code6cac_b.c, NO FAKE construct present anywhere in the
 - probe: tmp/grind/func_8002D780/s4/validate3.sh — regenerate base.c through ast_util twice, once with the full TU (bodies kept) and once through extract_fn (bodies stripped), compile both with the workspace compile.sh, and objdump-diff func_8002D780 out of each.
 - result: 207 insns each side; the only differences are branch-target text (relative offsets, normalised by both scorers) and jal relocation symbol names. Stripping is codegen-neutral for this function, so the campaign's null result is a real result about the search and not a workspace artifact.
 - verdict: CONFIRMED
+
+## [s5] The carrier for residual B survives cse if it is MULTIPLY-DEFINED across the join, as the byte-matched sibling func_8002D518 does at src/code6cac_b.c:1244-1265.
+- mechanism: cse.c make_regs_eqv puts a SINGLE-def copy and its source into one quantity and rewrites every later read to the source register, deleting the copy insn; a second definition makes the pseudo multiply-defined across the join and invalidates the equivalence, so the copy survives to reload and global_alloc lands it in the target's $a0.
+- probe: batches D/E/F (19 variants, tmp/grind/func_8002D780/s5/gen_d.py / gen_e.py / gen_f.py), scored with tmp/grind/func_8002D780/s3/run.ps1; diffs tmp/grind/func_8002D780/s5/pairdiff_e1.txt and pairdiff_f4.txt.
+- result: 7 -> 5 at exactly 202 insns (variant f4). The `move a0,s1` in the beqz delay slot, the `srlv v0,a0,v1` and the LUT reload all match the target insn-for-insn. Two extra conditions beyond the sibling's shape were load-bearing: the carrier must be DECLARED BEFORE `lzcr` (d1, carrier declared second, = 7 -- the copy folds), and the second definition must sit inside the same `dist >= 0` arm (e1, second def in an `else` arm, = 9 at 204 insns; d3/d7, one def per arm, = 10 at 206).
+- verdict: CONFIRMED
+
+## [s5] The target's LZCR frame-slot address is computed BETWEEN the mtc2 group and the swc2 group, which a single asm statement cannot emit.
+- mechanism: an "r" operand's setup insn is emitted before the whole asm insn, so `"r"(&sp_var)` on a one-statement island always hoists `addiu $v0,$sp,0x10` above the `mtc2`. Two asm statements put the setup insn between them.
+- probe: batch G (4 variants, tmp/grind/func_8002D780/s5/gen_g.py) on the f4 chassis
+- result: 5 -> 2 at 202 insns (g1/g2/g3). The whole sqrt region now matches the target insn-for-insn. Clobber placement across the two statements is free ($12 then $12-$15, the reverse, or both = 2) but dropping $13-$15 from both statements costs 4 (g4 = 6).
+- verdict: CONFIRMED
+
+## [s5] Declaring the six test-3 difference locals in the floor-holding order while ASSIGNING az after dx gives the target's emission order without the dz/dx seat flip.
+- mechanism: expand_decl assigns DECL_RTL for each local at block entry, so declaration order was expected to set the pseudo numbers that local-alloc's quantity numbering follows, while statement order sets INSN_LUID and hence sched1's tie-break -- decoupling them should let one form satisfy both.
+- probe: batch A (8 variants, tmp/grind/func_8002D780/s5/gen_a.py): az declared in place and assigned last; all six split into declarations plus assignments in the candidate order and in the az-last order; az between dz and dx; declarations in the dx-first order with candidate statement order; az declared last but assigned first; the whole b-vector assigned late.
+- result: the seat permutation follows the STATEMENT order alone. Every form whose az statement follows dx's measured 14 (a1/a3/a4/a5/a8), and every form whose az statement precedes dx's measured 7 = control no matter how the declarations were reshuffled (a2/a6/a7). Banked as rejected/decl-stmt-decoupled-seats-unchanged-7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 994d8b2d (-mel -msoft-float), the s3/s4 7-floor candidate.c body spliced into src/code6cac_b.c, no FAKE constructs present
+
+## [s5] Re-audit of the s3 instance kill on the fully-inlined test-3 forms (killed at 26/27 on the s2 10-floor body): one of them reaches the target's test-3 emission order AND seats on the newer chassis.
+- mechanism: chassis-relative kills must be re-measured when the chassis changes materially, and the tail/slot-operand changes of s3 altered register pressure across the whole function.
+- probe: batches B and C (19 variants, gen_b.py / gen_c.py) on the 7-floor chassis, plus batches H/I/J (20 variants) re-run on the 2-floor chassis after residual B closed.
+- result: the fully-inlined EDGE-first form (b3/h5) is at the floor (7, then 2) but mis-orders the OTHER subu pair -- it emits dz before ax where the target has ax then dz. The fully-inlined ORIGIN-first form (b1) is the only measured form that gets BOTH pairs in the target's emission order, and it permutes dz/dx between $a0 and $v1 and repermutes tests 1-2 (23). Partial-local hybrids: ax/bx local with the edges inlined 9, az/bz local 4, dz/dx local with the origin components inlined 2, four locals with the edges inlined 2. Fresh test-3 cross locals 2, four further declaration orders 2, kp-assigned-first 35, az as a negated reverse difference 11.
+- result-summary: 34 forms across s3 and s5 now agree that the target's emission order and the target's dz/dx seats are mutually exclusive on this chassis. Banked as rejected/inlined-origin-first-seat-flip-23.c and rejected/test3-dx-before-az-seat-flip-9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 994d8b2d (-mel -msoft-float), the s3 7-floor body for batches B/C and the s5 2-floor body (one FAKE same-value re-store of the local `m` present) for batches H/I/J
+
+## Live frontier (for s6) -- 2 insns left, all of them residual A
+1. **Residual A, 2 insns -- the test-3 subu pair (dx before az) vs the dz/dx seats.**
+   This is now the ONLY differing region: the sqrt block, the tail, tests 1 and 2 and
+   the whole prologue match insn-for-insn. Thirty-four forms show the two properties to
+   be mutually exclusive under source rearrangement. Next probe: this is exactly what
+   `tools/ra_solver/inverse_compose.py classify` exists for -- run it on the dz and dx
+   seats against BOTH 2-floor bodies (candidate.c, which has the seats right and the
+   order wrong, and tmp/grind/func_8002D780/s5/variantsH/h2_ax_dx_dz_az.c, which has the
+   order right and the seats wrong) and let it name the C-lever vector; also worth a
+   `tools/sched_solver` order-exact pass on the test-3 block, since the pair is a
+   priority-1 same-unit tie decided by schedule_select's largest-potential-hazard rule
+   (tools/gcc-2.7.2/sched.c:2708-2723) and a dependence change -- not a statement
+   reorder -- may break the tie the other way without touching allocation.
+2. **A permuter campaign is now worth re-running.** The s4 campaign explored the
+   7-floor chassis, whose search neighbourhood was dominated by the two dead residuals;
+   the 2-floor chassis is a completely different neighbourhood and the workspace already
+   exists and is validated (tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780, plus
+   the four hurdles documented in evidence.md [s4]). Regenerate base.c from the new
+   candidate.c first. Note the s4 finding that the permuter's weighted metric is
+   anti-correlated with the engine's here: re-score every find on the real sandbox.
+3. **Family decision before any candidate-ready.** The body now carries ONE
+   FAKE-annotated construct (the same-value re-store of the local `m`, dead-store
+   family, .claude/rules/dead-store-fake-exception.md, in-TU byte-matched precedent at
+   src/code6cac_b.c:1244-1265) plus the six test-3 difference locals whose
+   named-intermediate-vs-ordinary-C classification the s3 frontier flagged. Both must be
+   written into memory/grind/func_8002D780/self_vet.md BEFORE submitting, because review
+   verdicts are keyed by body and respelling after a layer-1 verdict is not available.
+
+## [s5] The carrier for residual B survives cse if it is MULTIPLY-DEFINED across the join, as the byte-matched sibling func_8002D518 does at src/code6cac_b.c:1244-1265.
+- mechanism: cse.c make_regs_eqv puts a SINGLE-def copy and its source into one quantity and rewrites every later read to the source register, so the copy insn dies; a second definition makes the pseudo multiply-defined across the join, invalidates that equivalence, and the copy survives to reload, where global_alloc lands it in the target's $a0. All 23 copy spellings killed across s1-s4 were single-def, which is why every one of them folded.
+- probe: Batches D/E/F, 19 variants (tmp/grind/func_8002D780/s5/gen_d.py, gen_e.py, gen_f.py), scored with tmp/grind/func_8002D780/s3/run.ps1; diffs tmp/grind/func_8002D780/s5/pairdiff_e1.txt and pairdiff_f4.txt.
+- result: 7 -> 5 at exactly 202 insns (variant f4_carrier_decl_first_restore_in_arm). The target's `move a0,s1` in the beqz delay slot, `srlv v0,a0,v1` and the LUT reload all match insn-for-insn. Two conditions beyond the sibling's shape are load-bearing and cost two batches to find: (1) the carrier must be DECLARED BEFORE `lzcr` -- with `s32 lzcr = 0;` first the copy folds again (d1 = 7); declaration order decides which of the two stores reorg.c steals into the beqz delay slot; (2) the second definition must sit inside the same `dist >= 0` arm -- in an `else` arm the copy survives (first materialisation of `move a0,s1` in five sessions, e1) but costs an extra `j` plus a duplicated `li v0,-2` (204 insns, score 9), and one definition per arm emits both copies (205/206 insns, score 10, d2/d3/d5/d7/e4). Asm-input-only use of the carrier folds back to 7 (d4).
+- verdict: CONFIRMED
+
+## [s5] The target's LZCR frame-slot address is computed BETWEEN the mtc2 group and the swc2 group, which one asm statement cannot emit, so the LZCS island is two asm statements.
+- mechanism: An "r" operand's setup insn is always emitted before the whole asm insn, so `"r"(&sp_var)` on the one-statement island hoists `addiu $v0,$sp,0x10` above the `mtc2`. Splitting into a mtc2 island and a swc2 island whose "r" operand is &sp_var puts the setup insn between them, exactly as asm/funcs/func_8002D780.s L141-147 has it.
+- probe: Batch G, 4 variants (tmp/grind/func_8002D780/s5/gen_g.py) on the f4 chassis.
+- result: 5 -> 2 at 202 insns (g1/g2/g3). The whole sqrt region now matches the target insn-for-insn; the remaining diff for the function is 2 instructions, both in test 3. Clobber placement across the two statements is free ($12 then $12-$15 = 2, reversed = 2, both = 2) but dropping $13-$15 from both statements costs 4 (g4 = 6), the same reload1.c bad_spill_regs effect the s2 sibling clobber footprint buys.
+- verdict: CONFIRMED
+
+## [s5] Declaring the six test-3 difference locals in the floor-holding order while assigning az after dx gives the target's emission order without the dz/dx seat flip.
+- mechanism: expand_decl assigns DECL_RTL for each local at block entry, so declaration order was expected to set the pseudo numbers local-alloc's quantity numbering follows while statement order sets INSN_LUID and hence sched1's tie-break; decoupling them should satisfy both at once.
+- probe: Batch A, 8 variants (tmp/grind/func_8002D780/s5/gen_a.py): az declared in place and assigned last; all six split into declarations plus assignments in the candidate order and in the az-last order; az between dz and dx; declarations in dx-first order with candidate statement order; az declared last but assigned first; the b-vector assigned late.
+- result: The seat permutation follows the STATEMENT order alone. Every form whose az statement follows dx's measured 14 (a1/a3/a4/a5/a8); every form whose az statement precedes dx's measured 7 = control however the declarations were reshuffled (a2/a6/a7). Banked as memory/grind/func_8002D780/rejected/decl-stmt-decoupled-seats-unchanged-7.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 994d8b2d (-mel -msoft-float), the s3/s4 7-floor candidate.c body spliced into src/code6cac_b.c, no FAKE constructs present
+
+## [s5] Kill re-audit: one of the fully-inlined or partial-local test-3 forms killed at 26/27 on the s2 10-floor body reaches the target's test-3 emission order and the target's dz/dx seats on the newer chassis.
+- mechanism: Chassis-relative kills must be re-measured when the chassis changes materially, and s3's tail and slot-operand changes plus s5's carrier and split-island changes altered register pressure across the whole function.
+- probe: Batches B and C (19 variants, gen_b.py / gen_c.py) on the 7-floor chassis, then batches H, I and J (20 variants, gen_h.py / gen_i.py / gen_j.py) re-run on the 2-floor chassis after residual B closed; diff tmp/grind/func_8002D780/s5/pairdiff_b3_inlined_edge_first_term_first.txt.
+- result: The fully-inlined EDGE-first form (b3/h5) sits at the floor (7, then 2) but mis-orders the OTHER subu pair (it emits dz before ax where the target has ax then dz), so it trades one 2-insn residual for another. The fully-inlined ORIGIN-first form (b1) is the only measured form that puts BOTH pairs in the target's emission order, and it pays with the dz/dx seat flip (dz->$v1, dx->$a0) plus an upstream permutation in tests 1-2, scoring 23. Partial-local hybrids: ax/bx local with the edges inlined 9, az/bz local 4, dz/dx local with the origin components inlined 2, four origin locals with the edges inlined 2. Fresh test-3 cross locals 2, four further declaration orders 2, kp-assigned-first 35, az as a negated reverse difference 11. Banked as rejected/inlined-origin-first-seat-flip-23.c and rejected/test3-dx-before-az-seat-flip-9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 994d8b2d (-mel -msoft-float); batches B/C on the s3 7-floor body with no FAKE constructs present, batches H/I/J on the s5 2-floor body with one FAKE same-value re-store of the local `m` present
