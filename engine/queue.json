@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "note2pitch",
-      "file": "main",
-      "distance": 49,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_80073060",
       "file": "text1b",
       "distance": 50,
@@ -1427,14 +1419,14 @@
     }
   ],
   "counts": {
-    "total": 161,
-    "active": 160,
+    "total": 160,
+    "active": 159,
     "by_status": {
-      "active": 160,
+      "active": 159,
       "foreclosed": 1
     },
     "by_verdict": {
-      "C": 134,
+      "C": 133,
       "ASM-PARTIAL": 26
     }
   }

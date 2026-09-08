@@ -1,0 +1,24 @@
+{
+ "func": "note2pitch",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T05:41:39.016914+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "f8e30cd805d2b7ce",
+   "when": "2026-09-08T05:47:35.102553+00:00",
+   "summary": "final call: Ordinary C, no constructs. The body is Sony's own note2pitch from psyz PsyQ 4.0 libsnd/vm_n2p.c (local copy tmp/psyq_prov/psyz/decomp/src/libsnd/vm_n2p.c), identical statement-for-statement; only the "
+  }
+ ]
+}
