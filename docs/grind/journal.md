@@ -1878,3 +1878,4 @@
 - 2026-09-08 06:51 func_8002D780 s12 [structural] floor=2: Floor holds at 2/202 but the residual moved off the delay slot: the new candidate holds the target's slot AND every register, leaving one adjacent az/dx transposition inside block 7.
 - 2026-09-08 07:31 func_8002D780 s13 [escalation] STANDING RULING (2026-07-27) applied — FORECLOSED: Disposition RE-FILED under a heading the driver's owner-gated check can see (OWNER-ESCALATION token + func name on one line); floor re-measured 2/202, both endgame gates re-run and FAIL, FAKE ablation clears the banked sched kills, one new lever (first-product operand swap) killed at 3.
 - 2026-09-08 07:43 func_800393C8 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-08 07:55 func_80042C80 COMPLETED-C after 1 sessions (closer: s1 [recon]).
