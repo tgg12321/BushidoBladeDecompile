@@ -1863,3 +1863,4 @@
 - 2026-09-08 01:48 func_800430E4 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-08 02:05 func_8007352C: LAYER-1 FAILED a sandbox-0 candidate — Body is ordinary C except one construct: SetSprt((s32)sp, e->x) passes a fabricated second argument to the one-argument libgpu SetSprt (src/gpu.c:427 reads only p; asm/funcs/SetSprt.s never touches $a1) whose only plausible role is binding e->x into $a1 before the call; the worker never measured the honest one-arg form.
 - 2026-09-08 02:12 func_8007352C COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-08 02:20 func_8003F6D8 COMPLETED-C after 1 sessions (closer: s1 [recon]).
