@@ -1,0 +1,24 @@
+{
+ "func": "func_800393C8",
+ "file": "code6cac_c_mid",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T12:31:16.207201+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "782924c95671fed8",
+   "when": "2026-09-08T12:43:44.472887+00:00",
+   "summary": "final call: Pure C, no FAKE annotations, no asm/pins/barriers/pads, no rule/pipeline files touched (diff is src/code6cac_c_mid.c only). Constructs: byte-cursor table walk with literal field offsets (same spelling"
+  }
+ ]
+}
