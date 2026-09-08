@@ -499,13 +499,13 @@ $(if ($v.constraint) { "**Constraint recorded for any future session:** $($v.con
         $ekind = 'integration-handoff (REFUSED: no executable remedy in verdict)'
     }
     $evid = "judge ESCALATE packet in docs/grind/decisions.md ($ref)"
-    $disp = "REFUSED under the current frozen policy; FORECLOSED silently (owner ruling 2026-08-31, ordinary-c-judge-decidable); candidate preserved at memory/grind/$func/candidate.c; re-attemptable if a later owner ruling spends this entry."
+    $disp = "REFUSED under the current frozen policy; ROTATED to the back of the active worklist (owner ruling 2026-09-08, rotation-not-foreclosure; returns automatically); candidate preserved at memory/grind/$func/candidate.c."
     python tools/grinder/grindlib.py log-borderline . $func $ekind $evid $disp $date | Out-Null
-    Invoke-Eng @('queue', 'foreclose', $func, '--reason', "FORECLOSED (judge ESCALATE $ekind refused; owner ruling 2026-08-31): $ref") | Out-Null
-    Journal "$func JUDGE ESCALATE ($kind, $ekind) — refused + FORECLOSED silently (owner ruling 2026-08-31)."
-    Log "${func}: judge ESCALATE — borderline-logged + foreclosed (silent disposition)."
+    Invoke-Eng @('queue', 'rotate', $func, '--reason', "ROTATED (judge ESCALATE $ekind refused; owner ruling 2026-09-08 rotation-not-foreclosure): $ref") | Out-Null
+    Journal "$func JUDGE ESCALATE ($kind, $ekind) — refused + ROTATED (returns automatically; owner ruling 2026-09-08)."
+    Log "${func}: judge ESCALATE — borderline-logged + rotated (returns automatically)."
     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-    git -C $Root commit -m "grind: $func foreclosed (judge ESCALATE refused) [skip-park-src-guard]" 2>$null | Out-Null
+    git -C $Root commit -m "grind: $func rotated (judge ESCALATE refused) [skip-park-src-guard]" 2>$null | Out-Null
 }
 
 function Set-FailRouting([string]$func, $v) {
@@ -669,14 +669,14 @@ function Invoke-CandidatePath([string]$func, [string]$stem, [string]$modality, $
             $reason = "scope livelock: $n candidates re-proposed edits to $($offStem -join ', '), " +
                       "which the driver cannot accept (the legitimate route is a Judge " +
                       "ESCALATE integration-handoff scope grant, which no session took). " +
-                      "FORECLOSED (owner ruling 2026-08-31); re-activated by an owner unpark " +
-                      "or a scope_allow.txt grant."
-            Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
-            Add-Decision $func 'scope livelock' 'FORECLOSED' $reason
-            Journal "$func SCOPE-LIVELOCK — foreclosed after $n identical out-of-scope candidates ($($offStem -join ', '))."
-            Log "${func}: SCOPE LIVELOCK — foreclosed so the queue advances (silent disposition)."
+                      "ROTATED (owner ruling 2026-09-08 rotation-not-foreclosure); returns automatically, " +
+                      "or earlier on an owner unpark / a scope_allow.txt grant."
+            Invoke-Eng @('queue', 'rotate', $func, '--reason', $reason) | Out-Null
+            Add-Decision $func 'scope livelock' 'ROTATED' $reason
+            Journal "$func SCOPE-LIVELOCK — rotated after $n identical out-of-scope candidates ($($offStem -join ', '))."
+            Log "${func}: SCOPE LIVELOCK — rotated so the queue advances (returns automatically)."
             git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-            git -C $Root commit -m "grind: $func foreclosed on scope livelock [skip-park-src-guard]" 2>$null | Out-Null
+            git -C $Root commit -m "grind: $func rotated on scope livelock [skip-park-src-guard]" 2>$null | Out-Null
             $script:livelockParks++
             if ($script:livelockParks -ge 3) {
                 Circuit-Break "scope livelock on $script:livelockParks distinct functions — the scope gate looks systemically wrong, not function-specific"
@@ -931,7 +931,7 @@ $led/rejected/. Write your verdict JSON to the exact path given below.
         $fsibs = @()
         try {
             $fsibs = @(python tools/grinder/grindlib.py complete-ledger . $func $bucket $sessionsTaken 2>$null |
-                        Where-Object { $_ -match '^FORECLOSED SIBLING' })
+                        Where-Object { $_ -match '^(ROTATED|FORECLOSED) SIBLING' })
         } catch { }
         foreach ($fs in $fsibs) { Log "${func}: $fs"; Journal "$func completed — $fs" }
         Remove-Item -Recurse -Force (Join-Path $Root "memory\grind\$func")
@@ -1181,6 +1181,29 @@ while ($true) {
     Reap-PermuterOrphans 'session boundary'
     if (Test-Path $StopFile) { Log "STOP sentinel found; exiting cleanly."; break }
 
+    # 0) auto-return (owner ruling 2026-09-08, rotation-not-foreclosure ruling 1):
+    #    rotated items come back on their own — queue drain, a toolchain-
+    #    fingerprint change (their candidates are re-measured), or a coupled
+    #    sibling that moved after the rotation. Runs at every boundary on a clean
+    #    tree; any return is committed so the next dispatch sees it (and its
+    #    unpark_reason resets the exhaustion window via step 2b).
+    try {
+        $arRaw = Invoke-Eng @('queue', 'auto-return')
+        $arLo = $arRaw.IndexOf('{'); $arHi = $arRaw.LastIndexOf('}')
+        if ($arLo -ge 0 -and $arHi -gt $arLo) {
+            $ar = ($arRaw.Substring($arLo, $arHi - $arLo + 1) | ConvertFrom-Json)
+            foreach ($r in @($ar.returned)) {
+                Log "$($r.func): AUTO-RETURN — $($r.reason)"
+                Journal "$($r.func) AUTO-RETURNED to active — $($r.reason)"
+            }
+            if ($ar.toolchain_moved) { Log "toolchain fingerprint moved -> $($ar.fingerprint); rotated candidates re-measured: $(@($ar.remeasured).Count)" }
+            if (@(git -C $Root status --porcelain -- engine/queue.json docs/grind/journal.md | Where-Object { $_ }).Count) {
+                git -C $Root add -- engine/queue.json docs/grind/journal.md metrics/events.jsonl 2>$null
+                git -C $Root commit -m "grind: queue auto-return at session boundary [skip-park-src-guard]" 2>$null | Out-Null
+            }
+        }
+    } catch { Log "auto-return skipped: $_" }
+
     # 1) target = queue top
     $item = Get-QueueTop
     if (-not $item -or -not $item.func) { Log "queue empty — nothing to grind."; break }
@@ -1222,6 +1245,32 @@ while ($true) {
 
     # 3) brief with mandated modality
     $modality = (python tools/grinder/grindlib.py modality . $func).Trim()
+    # 3a) cc1psx self-disproof gate (owner ruling 2026-09-08, ruling 2): before
+    #     the driver may declare exhaustion it compiles the current candidate
+    #     under the ORIGINAL compiler out of tree. A strictly-closer cc1psx
+    #     result is a fidelity lead — the ledger is stamped, the next session
+    #     is forced to `rederive` with the lead as a constraint, and the item is
+    #     NOT rotated. Keyed by the candidate hash, so it reruns only when the
+    #     candidate changes. Best-effort: a failed check never blocks dispatch.
+    if ($modality -eq 'escalation') {
+        try {
+            $need = (python tools/grinder/grindlib.py cc1psx-needed . $func 2>$null | Out-String).Trim()
+            if ($need -eq 'needed') {
+                $ccPath = Join-Path $GrindTmp "cc1psx_$func.json"
+                (& tools/wteng.ps1 main cc1psx-check $func 2>&1 | Out-String) | Set-Content $ccPath -Encoding utf8
+                $gate = (python tools/grinder/grindlib.py record-cc1psx . $func $ccPath 2>$null | Out-String).Trim()
+                if ($gate -eq 'rederive') {
+                    $modality = 'rederive'
+                    Log "${func}: CC1PSX SELF-DISPROOF — the original compiler is strictly closer; FIDELITY LEAD banked, rotation blocked, next session forced to rederive."
+                    Journal "$func cc1psx self-disproof: FIDELITY LEAD (original compiler closer) — rotation blocked, rederive forced (owner ruling 2026-09-08)."
+                } else {
+                    Log "${func}: CC1PSX SELF-DISPROOF — original compiler no closer; residual is source-side. Escalation proceeds."
+                }
+                git -C $Root add -- "memory/grind/$func" docs/grind/journal.md metrics/events.jsonl 2>$null
+                git -C $Root commit -m "grind: $func cc1psx self-disproof banked [skip-park-src-guard]" 2>$null | Out-Null
+            }
+        } catch { Log "${func}: cc1psx gate skipped: $_" }
+    }
     $outPath  = Join-Path $GrindTmp "outcome_$func.json"
     $briefPath = Join-Path $GrindTmp "brief_$func.md"
     # Process improvement #2 (2026-08-18): measure the HEAD honest floor at
@@ -1434,18 +1483,21 @@ while ($true) {
             Revert-SessionEdits $func
             $escRef = [string]$o.escalation_ref
             if ($escRef -match 'RESOLVED BY STANDING RULING') {
-                $reason = "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): $escRef"
-                Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
-                Log "${func}: ENDGAME LOCK — FORECLOSED silently ($escRef; owner ruling 2026-08-31)."
-                Journal "$func s$sessionN [$modality] STANDING RULING (2026-07-27) applied — FORECLOSED: $($o.headline)"
+                # Owner ruling 2026-09-08 (rotation-not-foreclosure): the standing
+                # ruling decides the record's WORDING; the item is rotated, never
+                # foreclosed, and returns automatically (auto-return at loop top).
+                $reason = "ROTATED (standing ruling 2026-07-27 wording; owner ruling 2026-09-08 rotation-not-foreclosure — returns automatically): $escRef"
+                Invoke-Eng @('queue', 'rotate', $func, '--reason', $reason) | Out-Null
+                Log "${func}: ENDGAME LOCK — ROTATED to the back of the worklist ($escRef; returns automatically)."
+                Journal "$func s$sessionN [$modality] STANDING RULING (2026-07-27) applied — ROTATED (returns automatically): $($o.headline)"
             } elseif ($escRef -match 'LADDER EXHAUSTED') {
                 # Owner ruling 2026-09-02 (ruling 2): a non-endgame residual (floor >
-                # ENDGAME_LOCK_MAX_FLOOR) foreclosed after two full ladder cycles —
+                # ENDGAME_LOCK_MAX_FLOOR) rotated after two full ladder cycles —
                 # the record never claims the 2026-07-27 standing ruling.
-                $reason = "FORECLOSED (ladder exhausted, non-endgame residual — owner ruling 2026-09-02; silent per owner ruling 2026-08-31): $escRef"
-                Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
-                Log "${func}: LADDER EXHAUSTED (non-endgame) — FORECLOSED silently ($escRef)."
-                Journal "$func s$sessionN [$modality] LADDER EXHAUSTED (non-endgame residual) — FORECLOSED: $($o.headline)"
+                $reason = "ROTATED (ladder exhausted, non-endgame residual — owner ruling 2026-09-02 wording; 2026-09-08 rotation-not-foreclosure — returns automatically): $escRef"
+                Invoke-Eng @('queue', 'rotate', $func, '--reason', $reason) | Out-Null
+                Log "${func}: LADDER EXHAUSTED (non-endgame) — ROTATED ($escRef; returns automatically)."
+                Journal "$func s$sessionN [$modality] LADDER EXHAUSTED (non-endgame residual) — ROTATED (returns automatically): $($o.headline)"
             } elseif ($escRef -match 'CANONICAL-ASM GRANT PATH') {
                 # Owner ruling 2026-08-18 (judge-sole-gate, b9d91163): STRONG-tier
                 # canonical-asm no longer waits on the owner. Stay ACTIVE — the next
@@ -1468,11 +1520,11 @@ while ($true) {
                 # Legacy pending-shaped ref (pre-2026-08-18). No pending states exist
                 # anymore: log to the borderline ledger and foreclose silently.
                 $date = Get-Date -Format 'yyyy-MM-dd'
-                python tools/grinder/grindlib.py log-borderline . $func 'policy-question' "session-filed disposition: $escRef" "FORECLOSED silently (owner ruling 2026-08-31 — no pending states, no packets); re-attemptable if a later owner ruling spends this entry." $date | Out-Null
-                $reason = "FORECLOSED (logged to borderline.md; owner ruling 2026-08-31): $escRef"
-                Invoke-Eng @('queue', 'foreclose', $func, '--reason', $reason) | Out-Null
-                Log "${func}: OWNER-GATED — borderline-logged + FORECLOSED silently: $escRef"
-                Journal "$func s$sessionN [$modality] OWNER-GATED — borderline-logged, foreclosed: $($o.headline)"
+                python tools/grinder/grindlib.py log-borderline . $func 'policy-question' "session-filed disposition: $escRef" "ROTATED (owner ruling 2026-09-08 rotation-not-foreclosure — no pending states, no packets; returns automatically)." $date | Out-Null
+                $reason = "ROTATED (logged to borderline.md; owner ruling 2026-09-08 — returns automatically): $escRef"
+                Invoke-Eng @('queue', 'rotate', $func, '--reason', $reason) | Out-Null
+                Log "${func}: OWNER-GATED — borderline-logged + ROTATED (returns automatically): $escRef"
+                Journal "$func s$sessionN [$modality] OWNER-GATED — borderline-logged, rotated: $($o.headline)"
             }
             # engine/queue.json is where `queue park` wrote the parked status — it
             # MUST be staged, or the park stays as working-tree dirt and the next
@@ -1535,12 +1587,12 @@ while ($true) {
                     # ENDGAME_LOCK_MAX_FLOOR) or LADDER EXHAUSTED (wider residual, owner
                     # ruling 2026-09-02) — never claim the standing ruling for the latter.
                     $bsKind = if ($ref -match 'LADDER EXHAUSTED') { 'ladder exhausted, non-endgame residual — owner ruling 2026-09-02' } else { 'standing ruling 2026-07-27' }
-                    $bsReason = "FORECLOSED ($bsKind, auto-filed backstop; silent per owner ruling 2026-08-31): $ref"
-                    Invoke-Eng @('queue', 'foreclose', $func, '--reason', $bsReason) | Out-Null
-                    Log "${func}: EXHAUSTION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + foreclosed."
-                    Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file) — foreclosed: $ref"
+                    $bsReason = "ROTATED ($bsKind wording, auto-filed backstop; owner ruling 2026-09-08 rotation-not-foreclosure — returns automatically): $ref"
+                    Invoke-Eng @('queue', 'rotate', $func, '--reason', $bsReason) | Out-Null
+                    Log "${func}: EXHAUSTION BACKSTOP — session dodged in escalation modality (floor $($o.floor) >= prior $priorFloor); driver auto-filed + rotated (returns automatically)."
+                    Journal "$func s$sessionN [escalation] AUTO-FILED by driver backstop (session did not self-file) — rotated (returns automatically): $ref"
                     git -C $Root add -- memory/grind docs/grind metrics/events.jsonl engine/queue.json 2>$null
-                    git -C $Root commit -m "grind: $func foreclosed (exhaustion backstop) [skip-park-src-guard]" 2>$null | Out-Null
+                    git -C $Root commit -m "grind: $func rotated (exhaustion backstop) [skip-park-src-guard]" 2>$null | Out-Null
                 }
             } else {
                 python tools/grinder/grindlib.py apply . $func $outPath $modality | Out-Null

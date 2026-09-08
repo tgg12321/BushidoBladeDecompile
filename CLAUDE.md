@@ -112,10 +112,11 @@ the top each session; `queue status` shows progress.
 |---|---|
 | `queue next` | print the top active item (func, file, verdict, distance) |
 | `queue done <func>` | mark complete — re-checks ZERO non-canonical cheat-asm + build SHA1 == oracle (refuses otherwise). On success the function is REMOVED from the queue. `python3 tools/check_completion_integrity.py` audits the invariants still hold. |
-| `queue escalate <func> --reason "…"` | escalate with a DECISION PACKET (owner ruling 2026-08-24, [[escalation-not-parked]] — the parked state is retired; `park` is a legacy alias); `next` skips it until the owner rules and it returns to active |
+| `queue rotate <func> --reason "…"` | rotate an exhausted item to the BACK of the active worklist (owner ruling 2026-09-08, [[rotation-not-foreclosure]] — `foreclosed`/`escalated`/`parked` are retired; `foreclose`/`escalate`/`park` are legacy aliases). Never terminal: it returns automatically |
+| `queue auto-return` | bring rotated items back: queue drain, toolchain-fingerprint change (candidates re-measured), coupled-sibling movement. The driver runs it at every session boundary |
 | `queue status` | counts by status/verdict + the current top |
-| `queue regen` | rebuild the queue (preserves done/parked); run after big changes |
-| `queue unpark <func>` | return a parked item to active (with `--reason`) |
+| `queue regen` | rebuild the queue (preserves rotated/directives); run after big changes |
+| `queue unpark <func>` | early return of a rotated item to active (with `--reason`); resets its exhaustion window |
 | `queue reopen <func> --file <stem>` | re-add a silently-dropped function to the queue |
 
 (`queue next`/`status` always print JSON — there is no `--json` flag. Low-level engine commands not tabled above: `oracle-lock`, `build-c`, `parity`, `fixtures-add`, `canonical-scan`.)

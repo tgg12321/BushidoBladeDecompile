@@ -35,20 +35,21 @@ entirely):
              evidence + Judge verdict; the driver writes the grant. No user
              sign-off wait; pre-2026-08-18 this bucket meant "needs user
              canonical-asm sign-off")
-  foreclosed exhaustion disposition recorded silently (owner ruling
-             2026-08-31, .claude/rules/ordinary-c-judge-decidable.md —
-             frontier empty + both endgame-lock gates fail; the
-             proof-of-foreclosure lives in docs/grind/decisions.md).
-             Skipped by `next`; sticky across `regen`; NEVER surfaced to
-             the owner as a question. Re-activated (`unpark`) on a new
-             class grant, a toolchain finding, or an explicit owner call.
-             Replaces the retired `escalated` status (2026-08-24..31) and
-             the earlier `parked` status — both legacy statuses are read
-             compatibly and behave like foreclosed.
+  rotated    the ladder is exhausted FOR NOW (owner ruling 2026-09-08,
+             .claude/rules/rotation-not-foreclosure.md): the item sits
+             behind the active ones and RETURNS AUTOMATICALLY —
+             `auto_return` brings it back when the active list drains,
+             when the toolchain fingerprint moves (its candidate is
+             re-measured), or when a coupled sibling ledger moves after
+             the rotation. Never terminal, never surfaced to the owner as
+             a question; sticky across `regen`. The record lives in
+             docs/grind/decisions.md. Replaces the retired `foreclosed`
+             (2026-08-31..09-08), `escalated` (2026-08-24..31) and `parked`
+             statuses — all three legacy statuses are read as rotated.
 
 Queue file: engine/queue.json (committed). Driven by `python3 -m engine.cli
-queue {next,done,foreclose,unpark,status,regen,reopen}` (`escalate`/`park`
-are legacy aliases for foreclose).
+queue {next,done,rotate,unpark,auto-return,status,regen,reopen}`
+(`foreclose`/`escalate`/`park` are legacy aliases for rotate).
 
 Concurrency: every mutator (mark_done / mark_parked / reopen / generate) runs
 its load-modify-save under an advisory lock (`engine/queue.json.lock`) and
@@ -61,10 +62,13 @@ unlocked; the atomic rename means they never see a partial file.
 from __future__ import annotations
 
 import contextlib
+import datetime
 import hashlib
 import json
 import os
 import re
+import subprocess
+import sys
 import time
 from collections import Counter
 from pathlib import Path
@@ -80,11 +84,11 @@ from . import score
 
 QUEUE_PATH = "engine/queue.json"
 _AUTHORIZE = {"ASM-WHOLE", "ASM-STRUCTURAL", "JTBL-INFRA"}
-_STATUS_RANK = {"active": 0, "authorize": 1, "escalated": 2, "parked": 2,
-                "foreclosed": 2}
-# Statuses `next` skips and `regen` keeps sticky. `escalated`/`parked` are
-# legacy (pre-2026-08-31) and behave like `foreclosed`.
-_INACTIVE = ("parked", "escalated", "foreclosed")
+_STATUS_RANK = {"active": 0, "authorize": 1, "rotated": 2, "escalated": 2,
+                "parked": 2, "foreclosed": 2}
+# Statuses `next` prefers active over, and `regen` keeps sticky. `foreclosed`/
+# `escalated`/`parked` are legacy (pre-2026-09-08) and are read as `rotated`.
+_INACTIVE = ("rotated", "parked", "escalated", "foreclosed")
 
 
 class QueueConflict(RuntimeError):
@@ -490,6 +494,13 @@ def next_item() -> dict | None:
     for it in load().get("items", []):
         if it["status"] == "active":
             return it
+    # Ruling 1(a), rotation-not-foreclosure: an empty active list returns the
+    # oldest rotated item (no toolchain rescan here — `next` stays cheap).
+    r = auto_return(rescan=False)
+    if r.get("returned"):
+        for it in load().get("items", []):
+            if it["status"] == "active":
+                return it
     return None
 
 
@@ -645,7 +656,8 @@ def mark_done(func: str) -> dict:
         # above still applied — but the override must be loud in the done
         # record, not silent, so the disposition's audit trail
         # (borderline.md / decisions.md) can be reconciled.
-        result["park_overridden"] = (item.get("escalation")
+        result["park_overridden"] = (item.get("rotation")
+                                     or item.get("escalation")
                                      or item.get("park_reason")
                                      or item.get("foreclosure")
                                      or "(no reason recorded)")
@@ -657,38 +669,200 @@ def mark_done(func: str) -> dict:
     return result
 
 
-def mark_foreclosed(func: str, reason: str = "") -> dict:
-    """Foreclose: record an exhaustion disposition silently (owner ruling
-    2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — replaces the
-    retired `escalated` decision-packet state). The reason points at the
-    proof-of-foreclosure entry in docs/grind/decisions.md. Nothing is
-    surfaced to the owner; `next` skips the item; `mark_unparked`
-    re-activates it on a new class grant, a toolchain finding, or an
-    explicit owner call. This path only ever refuses C — the function stays
-    INCLUDE_ASM on main — so it carries zero cheat risk."""
+# ── Rotation (owner ruling 2026-09-08, .claude/rules/rotation-not-foreclosure.md) ──
+# The terminal-sounding `foreclosed` state is retired. An exhausted function is
+# ROTATED: it stays in the worklist behind the active items and RETURNS on its
+# own — when the active list drains, when the toolchain fingerprint moves (its
+# candidate is re-measured), or when a coupled sibling ledger moves after the
+# rotation. Nothing here refuses C; the function stays INCLUDE_ASM on main.
+
+ROTATED = "rotated"
+TOOLCHAIN_FINGERPRINT_INPUTS = (
+    "Makefile", "engine/buildconfig.py", "tools/gcc-2.7.2/build/cc1",
+    "tools/maspsx/maspsx.py", "tools/prologue_fix.py", "tools/multu_pad.py",
+    "maspsx_label_nop_funcs.txt", "maspsx_prefill_label_funcs.txt",
+    "expand_lb_funcs.txt", "expand_dest_funcs.txt", "multu_funcs.txt",
+    "multu_pad_funcs.txt", "sdata_syms.txt", "sdata_funcs.txt", "sdata_exclude.txt",
+)
+
+
+def toolchain_fingerprint() -> str:
+    """SHA1 over the inputs that decide codegen for a fixed source: compiler
+    binary, flags (Makefile + engine mirror), the maspsx/prologue/multu stages
+    and every gate list. A change here voids every chassis-relative kill in a
+    rotated ledger, so it is the re-measure trigger."""
+    h = hashlib.sha1()
+    for rel in TOOLCHAIN_FINGERPRINT_INPUTS:
+        p = Path(rel)
+        h.update(rel.encode())
+        if p.is_file():
+            h.update(p.read_bytes())
+        else:
+            h.update(b"<missing>")
+    return h.hexdigest()[:16]
+
+
+def _normalize_legacy(items: list[dict]) -> bool:
+    """Read legacy foreclosed/parked/escalated items as rotated (ruling 1).
+    Returns True when anything changed."""
+    changed = False
+    for it in items:
+        if it.get("status") in ("foreclosed", "parked", "escalated"):
+            it["rotation"] = (it.pop("foreclosure", "") or it.pop("park_reason", "")
+                              or it.pop("escalation", "") or "(legacy disposition)")
+            it["rotated_from_legacy"] = it["status"]
+            it["status"] = ROTATED
+            it.setdefault("rotated_at", _utcnow())
+            changed = True
+    return changed
+
+
+def _utcnow() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+
+
+def mark_rotated(func: str, reason: str = "") -> dict:
+    """Rotate: the ladder is exhausted for now. Status `rotated`, the reason
+    points at the record in docs/grind/decisions.md, `rotated_at` is the
+    return-trigger baseline. `next` prefers active items; `auto_return` brings
+    the item back mechanically. Legacy alias names (`foreclose`, `park`,
+    `escalate`) route here."""
     with _locked():
         q = load()
         tok = _fingerprint()
         item = next((it for it in q.get("items", []) if it["func"] == func), None)
         if item is None:
             return {"ok": False, "func": func, "reason": "not in queue"}
-        item["status"] = "foreclosed"
-        item["foreclosure"] = reason
+        item["status"] = ROTATED
+        item["rotation"] = reason
+        item["rotated_at"] = _utcnow()
+        item["rotation_count"] = int(item.get("rotation_count") or 0) + 1
+        for k in ("foreclosure", "park_reason", "escalation"):
+            item.pop(k, None)
         q["items"].sort(key=_sort_key)
         q["counts"] = _counts(q["items"])
         save(q, expect=tok)
-    return {"ok": True, "func": func, "foreclosure": reason}
+    return {"ok": True, "func": func, "rotation": reason,
+            "rotation_count": item["rotation_count"]}
+
+
+def _ledger_floor(func: str):
+    """Last int floor in the function's grind ledger, or None."""
+    try:
+        st = json.loads(Path(f"memory/grind/{func}/state.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    for e in reversed(st.get("floor_history") or []):
+        if isinstance(e.get("floor"), int):
+            return e["floor"]
+    return None
+
+
+def _sibling_moved_since(func: str, since: str) -> str | None:
+    """A coupled ledger's drop/completion notice stamped AFTER `since`
+    (grindlib.notify_siblings writes `sibling_progress` with an `at` stamp;
+    completions stamp floor 0 via the merge path's complete-ledger)."""
+    try:
+        st = json.loads(Path(f"memory/grind/{func}/state.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    for e in st.get("sibling_progress") or []:
+        at = str(e.get("at") or "")
+        if at and since and at > since:
+            return f"{e.get('from')} -> floor {e.get('floor')} ({at[:16]})"
+    return None
+
+
+def _remeasure_candidate(func: str, stem: str):
+    """Honest floor of memory/grind/<func>/candidate.c on the CURRENT toolchain,
+    via tools/sweep_variants.py (in-tree splice + sandbox, source restored
+    byte-exact). None when there is no candidate or the sweep fails."""
+    cand = Path(f"memory/grind/{func}/candidate.c")
+    if not cand.is_file():
+        return None
+    try:
+        r = subprocess.run([sys.executable, "tools/sweep_variants.py", "--func", func,
+                            "--file", stem, "--variants", str(cand), "--json"],
+                           capture_output=True, text=True, timeout=900)
+        res = json.loads(r.stdout)
+    except Exception:
+        return None
+    for row in res.get("results", []):
+        if row.get("variant") != "<baseline>" and isinstance(row.get("score"), int):
+            return row["score"]
+    return None
+
+
+def auto_return(rescan: bool = True) -> dict:
+    """Bring rotated items back to active on the three mechanical triggers
+    (ruling 1): (a) the active list is empty -> the oldest rotated item
+    returns; (b) the toolchain fingerprint moved -> every rotated candidate is
+    re-measured and any mover returns with its new floor; (c) a coupled
+    sibling moved after the rotation -> the item returns for the transplant
+    session. Each return carries an `unpark_reason`, so the driver's existing
+    unpark sync resets the exhaustion window. Also normalises legacy statuses."""
+    returned, remeasured = [], []
+    with _locked():
+        q = load()
+        tok = _fingerprint()
+        items = q.get("items", [])
+        changed = _normalize_legacy(items)
+        rotated = [it for it in items if it.get("status") == ROTATED]
+        fp_now = toolchain_fingerprint()
+        fp_prev = q.get("toolchain_fingerprint")
+        toolchain_moved = bool(rescan and fp_prev and fp_prev != fp_now)
+
+        def _ret(it, why):
+            it["status"] = "active"
+            it["unparked_from"] = it.pop("rotation", "")
+            it["unpark_reason"] = why[:400]
+            it["returned_at"] = _utcnow()
+            returned.append({"func": it["func"], "reason": why})
+
+        for it in rotated:
+            if it["status"] != ROTATED:
+                continue
+            moved = _sibling_moved_since(it["func"], str(it.get("rotated_at") or ""))
+            if moved:
+                _ret(it, f"auto-return: coupled sibling moved after rotation — {moved}")
+                continue
+            if toolchain_moved:
+                new = _remeasure_candidate(it["func"], it.get("file", ""))
+                old = _ledger_floor(it["func"])
+                remeasured.append({"func": it["func"], "old": old, "new": new})
+                if isinstance(new, int) and (old is None or new != old):
+                    it["distance"] = new
+                    _ret(it, f"auto-return: toolchain change re-measure floor {old} -> {new} "
+                             f"(fingerprint {fp_prev} -> {fp_now})")
+        if not any(it.get("status") == "active" for it in items):
+            still = sorted((it for it in items if it.get("status") == ROTATED),
+                           key=lambda it: str(it.get("rotated_at") or ""))
+            if still:
+                _ret(still[0], "auto-return: active queue drained — oldest rotation returns")
+        if rescan:
+            q["toolchain_fingerprint"] = fp_now
+        if returned or changed or rescan and fp_prev != fp_now or fp_prev is None:
+            items.sort(key=_sort_key)
+            q["counts"] = _counts(items)
+            save(q, expect=tok)
+    return {"ok": True, "returned": returned, "remeasured": remeasured,
+            "toolchain_moved": toolchain_moved, "fingerprint": fp_now}
+
+
+def mark_foreclosed(func: str, reason: str = "") -> dict:
+    """Legacy alias (2026-08-31..09-08 `foreclose`) — routes to mark_rotated
+    (owner ruling 2026-09-08: the foreclosed state is retired)."""
+    return mark_rotated(func, reason)
 
 
 def mark_parked(func: str, reason: str = "") -> dict:
-    """Legacy alias (pre-2026-08-24 `park`) — routes to mark_foreclosed."""
-    return mark_foreclosed(func, reason)
+    """Legacy alias (pre-2026-08-24 `park`) — routes to mark_rotated."""
+    return mark_rotated(func, reason)
 
 
 def mark_escalated(func: str, packet: str = "") -> dict:
-    """Legacy alias (2026-08-24..31 `escalate`) — routes to mark_foreclosed
-    (owner ruling 2026-08-31: the decision-packet state is retired)."""
-    return mark_foreclosed(func, packet)
+    """Legacy alias (2026-08-24..31 `escalate`) — routes to mark_rotated."""
+    return mark_rotated(func, packet)
 
 
 def mark_unparked(func: str, reason: str = "") -> dict:
@@ -706,14 +880,16 @@ def mark_unparked(func: str, reason: str = "") -> dict:
             return {"ok": False, "func": func, "reason": "not in queue"}
         if item.get("status") not in _INACTIVE:
             return {"ok": False, "func": func,
-                    "reason": "not foreclosed/parked/escalated"}
+                    "reason": "not rotated (or legacy foreclosed/parked/escalated)"}
         item["status"] = "active"
-        item["unparked_from"] = (item.pop("escalation", "")
+        item["unparked_from"] = (item.pop("rotation", "")
+                                 or item.pop("escalation", "")
                                  or item.pop("park_reason", "")
                                  or item.pop("foreclosure", ""))
-        item.pop("park_reason", None)
-        item.pop("foreclosure", None)
+        for k in ("park_reason", "foreclosure", "escalation"):
+            item.pop(k, None)
         item["unpark_reason"] = (reason or "")[:400]
+        item["returned_at"] = _utcnow()
         q["items"].sort(key=_sort_key)
         q["counts"] = _counts(q["items"])
         save(q, expect=tok)

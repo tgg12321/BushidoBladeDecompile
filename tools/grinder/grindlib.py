@@ -47,8 +47,8 @@ MODALITIES = ["recon", "structural", "permuter", "solver", "forensics", "rederiv
 # strictly downstream of a dump but cheaper than a full forensics session and
 # converts guess-and-measure into typed REACHABLE/FORECLOSED verdicts. Built
 # for the RA/scheduler-tiebreak endgame class returning to the active lane.
-LADDER = ["structural", "structural", "permuter", "permuter", "synthesis",
-          "solver", "forensics", "forensics", "rederive", "rederive"]
+LADDER = ["structural", "structural", "permuter", "permuter", "enumerate",
+          "synthesis", "solver", "forensics", "forensics", "rederive", "rederive"]
 RESULTS = ("progress", "candidate-ready", "ruling-request", "owner-gated")
 MAX_FRONTIER = 3
 
@@ -809,10 +809,11 @@ def validate_outcome(o, modality, root, func=None):
         # standing-ruling one and the non-endgame LADDER EXHAUSTED one — are
         # driver-declared dispositions; a session that just spent an owner's
         # named probe returns `progress`, never a foreclosure.
-        if (("RESOLVED BY STANDING RULING" in ref or "LADDER EXHAUSTED" in ref)
+        if (("RESOLVED BY STANDING RULING" in ref or "LADDER EXHAUSTED" in ref
+                 or "ROTATED" in ref)
                 and modality != "escalation"):
-            return False, ("owner-gated: a foreclosure disposition (standing ruling / "
-                           f"ladder exhausted) requires `escalation` modality (driver-"
+            return False, ("owner-gated: a rotation disposition (standing ruling / "
+                           f"ladder exhausted / ROTATED) requires `escalation` modality (driver-"
                            f"declared exhaustion), not `{modality}`. A dead axis in this "
                            "modality is a `progress` outcome with the kills banked — "
                            "the ladder still has untried modalities.")
@@ -905,6 +906,141 @@ ESCALATION_MIN_MODALITIES = 4
 ENDGAME_LOCK_MAX_FLOOR = 5
 ESCALATION_FLAT_SESSIONS_WIDE = 2 * len(LADDER)
 ESCALATION_MIN_MODALITIES_WIDE = 6
+
+
+# ── Ruling 3 (2026-09-08, rotation-not-foreclosure): no repeat without a new instrument ──
+# At a flat floor the ladder used to walk its fixed cycle, re-running synthesis /
+# forensics / rederive twice each while the floor sat still (func_8002D780:
+# eight sessions at 2/202, three repeated instruments, no new tool). Once the
+# honest floor has been flat for FLAT_WINDOW_MIN sessions, the next modality
+# is the first ladder rung that has NOT run since the floor went flat; a rung
+# may repeat at that floor only when every rung has run in the window. The
+# `enumerate` rung (tools/spelling_enum.py) is what makes a small residual
+# searchable exhaustively before any hand method repeats.
+FLAT_WINDOW_MIN = 2
+LADDER_UNIQUE = []
+for _m in LADDER:
+    if _m not in LADDER_UNIQUE:
+        LADDER_UNIQUE.append(_m)
+
+
+def _flat_window(state):
+    """Trailing floor_history entries (after exhaustion_base) whose int floor
+    equals the latest floor. Empty when the floor is moving or unknown."""
+    hist = (state or {}).get("floor_history") or []
+    base = (state or {}).get("exhaustion_base")
+    if isinstance(base, int) and base > 0:
+        hist = [e for e in hist if isinstance(e.get("session"), int) and e["session"] > base]
+    if not hist or not isinstance(hist[-1].get("floor"), int):
+        return []
+    top = hist[-1]["floor"]
+    win = []
+    for e in reversed(hist):
+        if e.get("floor") != top:
+            break
+        win.append(e)
+    return list(reversed(win))
+
+
+def _permuter_capped(state):
+    fh = (state or {}).get("floor_history") or []
+    n_perm = sum(1 for e in fh if e.get("modality") == "permuter")
+    if n_perm >= 2:
+        return True
+    for i, e in enumerate(fh):
+        if e.get("modality") == "permuter":
+            prev = fh[i - 1].get("floor") if i else None
+            cur = e.get("floor")
+            if isinstance(prev, int) and isinstance(cur, int) and cur >= prev:
+                return True
+    return False
+
+
+def untried_rung(state):
+    """The first LADDER_UNIQUE rung not yet run in the current flat window, or
+    None when the floor is not flat (window shorter than FLAT_WINDOW_MIN) or
+    every rung has run. A capped permuter counts as run."""
+    win = _flat_window(state)
+    if len(win) < FLAT_WINDOW_MIN:
+        return None
+    ran = {e.get("modality") for e in win}
+    if _permuter_capped(state):
+        ran.add("permuter")
+    for m in LADDER_UNIQUE:
+        if m not in ran:
+            return m
+    return None
+
+
+# ── Ruling 2 (2026-09-08): the cc1psx self-disproof gates exhaustion ─────────
+# func_8002D780 was foreclosed with a record blaming policy; the original
+# compiler, never run in 14 sessions, emits the same residual from the same
+# source. Before the driver may assign `escalation` it runs
+# `engine cc1psx-check <func>` (out of tree) and records the result here. A
+# strictly-closer cc1psx result is a fidelity lead: the function is NOT
+# rotated, the next session is forced to `rederive` with the lead banked as a
+# constraint. The check is keyed by the candidate's hash so it reruns only
+# when the candidate changes.
+
+def cc1psx_candidate_sha(root, func):
+    p = os.path.join(root, "memory", "grind", func, "candidate.c")
+    try:
+        with open(p, "rb") as fh:
+            return hashlib.sha1(fh.read()).hexdigest()[:12]
+    except OSError:
+        return ""
+
+
+def cc1psx_check_needed(root, func):
+    """True when no cc1psx result is banked for the CURRENT candidate."""
+    st = load_state(root, func) or {}
+    rec = st.get("cc1psx_check") or {}
+    sha = cc1psx_candidate_sha(root, func)
+    if not sha:
+        return False                     # nothing to check without a candidate
+    return rec.get("candidate_sha") != sha
+
+
+def record_cc1psx_check(root, func, result):
+    """Bank an `engine cc1psx-check` result (dict) in state.json + evidence.md.
+    Returns the modality the driver should use next: `rederive` on a fidelity
+    lead (with a constraint banked), else `escalation`."""
+    st = load_state(root, func)
+    if not st:
+        return "escalation"
+    ours = ((result or {}).get("ours") or {}).get("score")
+    psx = ((result or {}).get("psx") or {}).get("score")
+    rec = {"at": _now(), "candidate_sha": (result or {}).get("candidate_sha", ""),
+           "ours": ours, "psx": psx, "closer": bool((result or {}).get("closer")),
+           "ok": bool((result or {}).get("ok")), "error": (result or {}).get("error")}
+    st["cc1psx_check"] = rec
+    n = int(st.get("session_count", 0))
+    if rec["ok"]:
+        line = (f"CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate {rec['candidate_sha']} "
+                f"scores {ours} under our cc1 and {psx} under the original cc1psx — "
+                + ("FIDELITY LEAD: the original compiler is strictly closer; the residual is a "
+                   "toolchain difference, not a spelling. Rotation blocked; investigate the "
+                   "compiler/assembler side (flags, patches, maspsx gate)."
+                   if rec["closer"] else
+                   "SOURCE-SIDE: the original compiler is no closer from this source, so the "
+                   "residual is a spelling not yet found (a pure-C preimage exists by construction)."))
+    else:
+        line = (f"CC1PSX SELF-DISPROOF (driver): check did not produce a scorable result "
+                f"({rec['error']}); rotation proceeds on the source-side assumption.")
+    append_evidence(root, func, line, session=n)
+    if rec["ok"] and rec["closer"]:
+        st.setdefault("judge_constraints", [])
+        c = (f"cc1psx fidelity lead (ruling 2026-09-08): the original compiler scores {psx} vs "
+             f"our {ours} on candidate {rec['candidate_sha']} — the residual is toolchain-side. "
+             "Diff the two objects (engine cc1psx-check), attribute the divergence to a flag / "
+             "cc1 patch / maspsx gate, and file it as a fidelity finding; do not re-spell.")
+        if c not in st["judge_constraints"]:
+            st["judge_constraints"].append(c)
+        st["forced_next_modality"] = "rederive"
+        save_state(root, func, st)
+        return "rederive"
+    save_state(root, func, st)
+    return "escalation"
 
 
 def _exhaustion_ready(state):
@@ -1084,8 +1220,16 @@ def escalation_deferral(root, func, o):
     base = st.get("exhaustion_base")
     if isinstance(base, int) and base > 0:
         hist = [e for e in hist if isinstance(e.get("session"), int) and e["session"] > base]
-    ran = {e.get("modality") for e in hist}
-    pick = next((m for m in _DEFERRAL_MODALITIES if m not in ran), _DEFERRAL_MODALITIES[0])
+    # Ruling 3 (2026-09-08): by the time `escalation` is assigned every rung has
+    # run in the flat window, so "first unrun" rarely exists — fall back to the
+    # LEAST-RECENTLY-RUN deferral rung, and never force a capped permuter.
+    last_run = {}
+    for e in hist:
+        last_run[e.get("modality")] = e.get("session") or 0
+    cands = [m for m in _DEFERRAL_MODALITIES
+             if not (m == "permuter" and _permuter_capped(st))] or list(_DEFERRAL_MODALITIES)
+    unrun = [m for m in cands if m not in last_run]
+    pick = unrun[0] if unrun else min(cands, key=lambda m: last_run.get(m, 0))
     st["escalation_deferrals"] = used + 1
     st["forced_next_modality"] = pick
     save_state(root, func, st)
@@ -1125,6 +1269,13 @@ def assign_modality(session_count, state=None):
     forced = st.get("forced_next_modality") if isinstance(st, dict) else None
     if forced in LADDER:
         return forced
+    # Ruling 3 (2026-09-08, rotation-not-foreclosure): at a flat floor the next
+    # session runs the first instrument that has NOT run since the floor went
+    # flat. Exhaustion can only be declared once every rung has run in the
+    # window — "eight sessions passed" is no longer sufficient on its own.
+    rung = untried_rung(st) if isinstance(st, dict) else None
+    if rung:
+        return rung
     if _exhaustion_ready(state):
         # Object-model gate (2026-09-03): exhaustion may not be declared until
         # ONE session has audited declared shape vs evidence on the record.
@@ -1435,28 +1586,32 @@ it to docs/grind/borderline.md for later owner audit."""
     elif isinstance(floor, int) and floor > ENDGAME_LOCK_MAX_FLOOR:
         # Owner ruling 2026-09-02 (ruling 2): a residual wider than the endgame-lock
         # floor is NOT the standing ruling's subject — the record says what it is.
-        ref = f"{date} — {func} — LADDER EXHAUSTED (non-endgame residual, floor {floor}): FORECLOSED (auto-filed by driver, exhaustion backstop after two full ladder cycles)"
+        ref = f"{date} — {func} — LADDER EXHAUSTED (non-endgame residual, floor {floor}): ROTATED (auto-filed by driver, exhaustion backstop after two full ladder cycles; returns automatically per rotation-not-foreclosure)"
         tail = f"""This is NOT an endgame lock (honest floor {floor} > ENDGAME_LOCK_MAX_FLOOR =
 {ENDGAME_LOCK_MAX_FLOOR}; owner ruling 2026-09-02): the 2026-07-27 standing ruling is not
 claimed. The floor held flat across two full ladder cycles ({ESCALATION_FLAT_SESSIONS_WIDE}
 sessions, >= {ESCALATION_MIN_MODALITIES_WIDE} modalities) with `scan_hand_coded --single
-{func}` = **{scan_tier}**. Per the owner's 2026-08-31 ruling
-(.claude/rules/ordinary-c-judge-decidable.md) the item is FORECLOSED silently — this
-entry is the proof-of-foreclosure record, not a question. The function stays INCLUDE_ASM
-on main; re-activation triggers are a new owner class grant covering the residual, a
-toolchain-fidelity finding, a new diagnostic/modality, or an explicit owner `queue
-unpark` (which resets the exhaustion window)."""
+{func}` = **{scan_tier}**. Per the owner's 2026-09-08 ruling
+(.claude/rules/rotation-not-foreclosure.md) the item is ROTATED to the back of the active
+worklist — this entry is the rotation record, not a question, and nothing is terminal. The
+function stays INCLUDE_ASM on main and RETURNS AUTOMATICALLY when the active queue drains,
+when the toolchain fingerprint changes (its candidate is re-measured), or when a coupled
+sibling moves; an owner `queue unpark` is an early return (each resets the exhaustion
+window)."""
     else:
-        ref = f"{date} — {func} — RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
+        ref = f"{date} — {func} — RESOLVED BY STANDING RULING (2026-07-27): ROTATED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop; returns automatically per rotation-not-foreclosure)"
         tail = f"""Both AND-gates fail on the ledger evidence: canonical-asm — `scan_hand_coded --single
 {func}` = **{scan_tier}** (ordinary GCC RA/scheduler artifact, no hand-coded signature);
 coercion family — no SOTN-master precedent recorded for the residual axes. Per the owner's
-2026-08-31 ruling (.claude/rules/ordinary-c-judge-decidable.md): the item is FORECLOSED
-silently — this entry is the proof-of-foreclosure record, not a question; nothing is
-surfaced to the owner and no packet exists. The two AND-gates remain the unchanged
-STANDARD. The function stays INCLUDE_ASM on main; re-activation triggers are a new owner
-class grant covering the residual, a toolchain-fidelity finding, or an explicit owner
-`queue unpark`."""
+2026-09-08 ruling (.claude/rules/rotation-not-foreclosure.md): the item is ROTATED to the
+back of the active worklist — this entry is the rotation record, not a question; nothing is
+surfaced to the owner, no packet exists, and nothing is terminal. The two AND-gates remain
+the unchanged STANDARD (they decide this record's wording only). The original cc1psx was run
+on the candidate before this record (state.json `cc1psx_check`) and is no closer, so the
+residual is a spelling not yet found. The function stays INCLUDE_ASM on main and RETURNS
+AUTOMATICALLY when the active queue drains, when the toolchain fingerprint changes (its
+candidate is re-measured), or when a coupled sibling moves; an owner `queue unpark` is an
+early return."""
     entry = f"""
 ## {ref}
 
@@ -1703,6 +1858,23 @@ MODALITY_PLAYBOOK = {
                        "cannot be written truthfully — because the exhaustion or the mechanism "
                        "the template demands does not exist — that is not a comment problem: "
                        "say so in `evidence` and return progress, and the ladder resumes."),
+    "enumerate": ("SYSTEMATIC SPELLING SWEEP (owner ruling 2026-09-08). The residual is "
+                  "searched exhaustively, not by hand: (1) identify the ONE block (or at most "
+                  "two) where the differing instructions live and write the candidate with "
+                  "that region in FULLY-NAMED form (every sub-expression that could be a "
+                  "local IS a local) between `/* ENUM-BEGIN */` and `/* ENUM-END */` markers "
+                  "(one statement per line; the closing `if`/`return` is an anchor); (2) run "
+                  "`python3 tools/spelling_enum.py --candidate <file> --out tmp/grind/<func>/enum "
+                  "--no-swaps` and sweep it with `python3 tools/sweep_variants.py --func <func> "
+                  "--file <stem> --variants tmp/grind/<func>/enum --json` (thousands of "
+                  "variants score in minutes); (3) if no exact hit, re-run WITH the operand-"
+                  "swap axis on the region, and/or widen the region to the neighbouring "
+                  "block; (4) bank the score histogram as evidence (`ENUMERATION: N spellings, "
+                  "best B, K at the floor`) and the best forms in rejected/ or candidate.c. A "
+                  "hit is a PROPOSAL — vet it against the cheat catalog before candidate-ready. "
+                  "A zero-hit sweep is a CLASS KILL for that region's spelling space and is "
+                  "the strongest evidence a later session has that the residual lives "
+                  "elsewhere (declaration scope, block structure, the object model)."),
     "escalation": ("DISPOSITION SESSION — the honest floor has been FLAT across many "
                    "sessions and >=4 distinct modalities, so the driver has determined the "
                    "pure-C levers are exhausted. (A floor FLAT AT 0 lands here too: it means "
@@ -1719,23 +1891,27 @@ MODALITY_PLAYBOOK = {
                    "an in-hand SOTN-master precedent EXISTS for the closing construct "
                    "(file+line citation — 'same spirit' does not count). If BOTH gates FAIL "
                    "(scan LOW + no precedent — the common case), APPLY THE OWNER'S STANDING "
-                   "RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md; silent "
-                   "foreclosure per the 2026-08-31 ruling ordinary-c-judge-decidable): APPEND "
-                   "an `## <date> — <func> — **RESOLVED BY STANDING RULING (2026-07-27): "
-                   "FORECLOSED**` entry to docs/grind/decisions.md stating both gates' "
-                   "evidence and the exhaustion (sessions/modalities/permuter iters from the "
-                   "ledger) — this is a proof-of-foreclosure RECORD, never a question or a "
-                   "decision packet addressed to the owner — then return result=owner-gated "
-                   "with escalation_ref citing that entry; the driver forecloses silently, "
-                   "no owner wait, nothing surfaced. If gate (a) PASSES (STRONG scan tier), "
+                   "RULING (2026-07-27, .claude/rules/endgame-lock-disposition.md; ROTATION per the "
+                   "2026-09-08 ruling rotation-not-foreclosure — the foreclosed state is "
+                   "retired): APPEND an `## <date> — <func> — OWNER-ESCALATION — **RESOLVED BY "
+                   "STANDING RULING (2026-07-27): ROTATED**` entry to docs/grind/decisions.md "
+                   "stating both gates' evidence, the cc1psx self-disproof result the driver "
+                   "banked in state.json (`cc1psx_check`), and the exhaustion "
+                   "(sessions/modalities/permuter iters from the ledger) — this is a rotation "
+                   "RECORD, never a question or a decision packet addressed to the owner, and "
+                   "NEVER a claim that policy blocks the function: a pure-C preimage exists by "
+                   "construction — then return result=owner-gated with escalation_ref citing "
+                   "that entry; the driver rotates the item to the back of the active worklist "
+                   "(it returns automatically on queue drain / toolchain change / sibling "
+                   "movement), no owner wait, nothing surfaced. If gate (a) PASSES (STRONG scan tier), "
                    "append a `## <date> — <func> — CANONICAL-ASM GRANT PATH` entry with the "
                    "scanner evidence and return owner-gated citing it — per the owner's "
                    "2026-08-18 ruling (judge-sole-gate) the function STAYS ACTIVE and the "
                    "next session authors the whole-body canonical form; no owner wait. If "
                    "only gate (b) passes (an actually-exhibited SOTN precedent), file the "
-                   "foreclosure entry AND include the precedent citation — the driver "
+                   "rotation entry AND include the precedent citation — the driver "
                    "borderline-logs it for owner batch review; the frozen list is owner-only "
-                   "to extend and the disposition is still the silent foreclosure. NEVER "
+                   "to extend and the disposition is still the rotation. NEVER "
                    "file an 'awaiting owner ruling' or 'DECISION PACKET' entry — those "
                    "shapes are retired. A flat-floor `progress` is NOT an acceptable "
                    "outcome this session — the driver will auto-file the disposition if "
@@ -2626,10 +2802,10 @@ memory/grind/{func}/candidate.c (apply it to src/{st['file']}.c as your starting
 - SELF-VET IS MANDATORY FOR candidate-ready. Before you write the outcome JSON, write memory/grind/{func}/self_vet.md using the template in your role prompt: a CONSTRUCTS: line, the six cheat-checklist tests answered IN WRITING for every construct in your diff, a SANCTIONED-FAMILY-CLAIMS: section (each claimed family carrying its rule's SCOPE sentence quoted VERBATIM plus a PRECEDENT as file:line or a commit hash), and an ANNOTATION-CONFORMANCE: line. The driver checks all of that mechanically and DISCARDS a candidate-ready session that lacks it — the same disposition as a scope violation. Then a fresh adversarial cheat-reviewer (layer 1) rules on your diff BEFORE the Judge is spawned; a layer-1 FAIL bounces straight back without a Judge cycle. Writing the vet honestly is how you pass both: if you cannot quote a scope sentence and cite a precedent for a family you are claiming, you do not have that family, and the correct outcome is `ruling-request`, not a submission.
 - REVIEW LOOPS ARE CLOSED MECHANICALLY: the driver keys every review verdict by the BODY (comments/whitespace ignored). A body the Judge FAILed at FINAL CALL is rejected on resubmission with no review — respelling comments does not make a new body. A body layer-1 FAILed goes to the Judge directly the second time (the Judge decides once; layer-1 does not re-run). A body a Judge PASS ruling cleared skips layer-1. So: if layer-1 FAILed a body you believe is ordinary C, `ruling-request` with the precise question is the ONE correct move — never resubmit with new comments, never respell to dodge a ban.
 - "ruling-request" is for a construct you cannot classify (sanctioned SOTN family vs cheat; genuine hand-written-asm evidence). Ask a precise question.
-- "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and FORECLOSES the function silently (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — a recorded disposition, never a question to the owner) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
+- "owner-gated" is for when every remaining sanctioned axis is measured dead. FILE the entry in docs/grind/decisions.md YOURSELF THIS session (docs/grind/ is in your allowed surface), THEN return owner-gated with escalation_ref citing it — you do not wait for an entry to pre-exist, you create it. The driver verifies the entry names {func} and ROTATES the function to the back of the active worklist, from which it returns automatically (owner ruling 2026-09-08 rotation-not-foreclosure; 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — a recorded disposition, never a question to the owner) so the queue advances. Never use it to defer work that is still grindable (a floor still dropping is grindable). This is the mandated outcome in `escalation` modality.
 - OWNER'S STANDING AUTO-RULING (2026-07-27) — this governs HOW you word an escalation, and it NEVER authorizes ending a function early. Two separate questions, do not conflate them:
   (A) IS THE FUNCTION EXHAUSTED? This is the DRIVER's call, not yours. The driver assigns `escalation` modality only after the honest floor has been FLAT across many sessions AND >=4 DISTINCT modalities. If your mandated modality is NOT `escalation`, the answer is NO — you may not dispose of the function, however dead your own axis looks. A killed axis is a `progress` outcome with the kills banked; the ladder still has untried modalities (forensics / rederive / synthesis) and the owner's standing directive is to work the top item to completion however many sessions it takes ([[no-deferral-work-to-completion]], [[difficult-is-not-impossible]]). Judge FAILs do NOT make a function exhausted — a FAILed construct is one dead lever, and a FAIL on annotation FORMAT is a one-comment fix, not a wall.
-  (B) ONCE THE DRIVER HAS DECLARED EXHAUSTION (you are in `escalation` modality), evaluate the two endgame-lock AND-gates: (1) canonical-asm needs STRONG `scan_hand_coded` signals (S1/S2/S6); (2) a coercion/spelling family needs an in-hand SOTN-master precedent you can CITE (file+line or commit). "Same spirit", "genre-adjacent", "only lever left", "measured to work", and a partition/elimination argument do NOT qualify — and a census you ran that came back NEGATIVE is a FAILED gate, not an open question. Whatever the gate outcome, your entry is a PROOF-OF-FORECLOSURE RECORD (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — the DECISION PACKET shape is retired; you never address a question to the owner): if the flat honest floor is <= {ENDGAME_LOCK_MAX_FLOOR} title it `## <date> — {func} — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**`; if the floor is > {ENDGAME_LOCK_MAX_FLOOR} the standing ruling is NOT its subject (owner ruling 2026-09-02) — title it `## <date> — {func} — **LADDER EXHAUSTED (non-endgame residual, floor N): FORECLOSED**` and never claim endgame-lock status. Either way state (i) the gate evidence (scan tier, precedent census result), (ii) evidence POINTERS (ledger lines, measurements, scan output), (iii) the re-activation triggers that would make the residual attackable again (a class grant covering it, a toolchain finding). The driver forecloses the item silently; nothing is surfaced to the owner; an owner unpark or a later ruling re-activates it. "This is hard" is NOT a disposition: if the ladder is not exhausted, the honest outcome is `progress` with the kills banked, and the item stays active for the next modality. AUTO-REJECT CLASS (owner ruling 2026-08-24, reaffirmed 2026-08-31): a construct outside the frozen family list is a clean FAIL/refusal — do not argue for it in the record beyond citing the negative census; that residual's disposition is the same silent foreclosure.
+  (B) ONCE THE DRIVER HAS DECLARED EXHAUSTION (you are in `escalation` modality), evaluate the two endgame-lock AND-gates: (1) canonical-asm needs STRONG `scan_hand_coded` signals (S1/S2/S6); (2) a coercion/spelling family needs an in-hand SOTN-master precedent you can CITE (file+line or commit). "Same spirit", "genre-adjacent", "only lever left", "measured to work", and a partition/elimination argument do NOT qualify — and a census you ran that came back NEGATIVE is a FAILED gate, not an open question. Whatever the gate outcome, your entry is a PROOF-OF-FORECLOSURE RECORD (owner ruling 2026-08-31, .claude/rules/ordinary-c-judge-decidable.md — the DECISION PACKET shape is retired; you never address a question to the owner): if the flat honest floor is <= {ENDGAME_LOCK_MAX_FLOOR} title it `## <date> — {func} — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**`; if the floor is > {ENDGAME_LOCK_MAX_FLOOR} the standing ruling is NOT its subject (owner ruling 2026-09-02) — title it `## <date> — {func} — OWNER-ESCALATION — **LADDER EXHAUSTED (non-endgame residual, floor N): ROTATED**` and never claim endgame-lock status. Either way state (i) the gate evidence (scan tier, precedent census result), (ii) evidence POINTERS (ledger lines, measurements, scan output), (iii) the re-activation triggers that would make the residual attackable again (a class grant covering it, a toolchain finding). The driver rotates the item; nothing is surfaced to the owner; it returns automatically on queue drain, toolchain change, or sibling movement (an owner unpark is an early return). Never write that policy blocks the function: a pure-C preimage exists by construction. "This is hard" is NOT a disposition: if the ladder is not exhausted, the honest outcome is `progress` with the kills banked, and the item stays active for the next modality. AUTO-REJECT CLASS (owner ruling 2026-08-24, reaffirmed 2026-08-31): a construct outside the frozen family list is a clean FAIL/refusal — do not argue for it in the record beyond citing the negative census; that residual's disposition is the same rotation.
 - Bytes proven but blocked ONLY by a surface you may not touch (prologue_config.json/inline_asm_canonical.txt) is an INTEGRATION HANDOFF, not an endgame lock: say so plainly in the entry, list the exact operator steps, and return owner-gated. Do not dress it up as exhaustion — and note the operator still runs a fresh layer-2 cheat-reviewer on your C before it is accepted, so a Judge PASS on a construct is not a guarantee of acceptance.
 - A hypothesis KILLED with measurements is a fully successful session. Eliminating search space IS the job. There is no such thing as a failed session — only an unproven one, and unproven sessions are discarded by the driver as if they never ran.
 """
@@ -2746,6 +2922,20 @@ if __name__ == "__main__":
     elif cmd == "modality":
         st = load_state(sys.argv[2], sys.argv[3])
         print(assign_modality(st["session_count"] if st else 0, st))
+    elif cmd == "cc1psx-needed":
+        # cc1psx-needed <root> <func> -> "needed" when no cc1psx self-disproof is
+        # banked for the current candidate (ruling 2, 2026-09-08)
+        print("needed" if cc1psx_check_needed(sys.argv[2], sys.argv[3]) else "banked")
+    elif cmd == "record-cc1psx":
+        # record-cc1psx <root> <func> <result.json> -> prints the next modality
+        # (`rederive` on a fidelity lead, else `escalation`)
+        try:
+            with open(sys.argv[4], encoding="utf-8") as fh:
+                _raw = fh.read()
+            _res = json.loads(_raw[_raw.find("{"):_raw.rfind("}") + 1])
+        except Exception as e:  # noqa: BLE001
+            _res = {"ok": False, "error": f"unreadable result: {e}"}
+        print(record_cc1psx_check(sys.argv[2], sys.argv[3], _res))
     elif cmd == "sync-unpark":
         # sync-unpark <root> <func>  -> prints "stamped" when the exhaustion
         # window was reset for a fresh unpark_reason (owner ruling 2026-09-02)
@@ -2845,11 +3035,11 @@ if __name__ == "__main__":
         except Exception:
             pass
         for _s in _sibs:
-            if str(_s.get("queue_status", "")).startswith("foreclosed"):
-                print(f"FORECLOSED SIBLING {_s['func']} (floor {_s['floor']}, "
+            if str(_s.get("queue_status", "")).split()[0:1] in (["rotated"], ["foreclosed"]):
+                print(f"ROTATED SIBLING {_s['func']} (floor {_s['floor']}, "
                       f"src/{_s['file']}.c) — {_func} just reached floor 0; its "
-                      f"body on main is an unspent transplant. Consider "
-                      f"`queue unpark {_s['func']}`.")
+                      f"body on main is an unspent transplant. The driver's "
+                      f"`queue auto-return` brings it back on this sibling notice.")
     else:
         print(f"unknown cmd {cmd}")
         sys.exit(2)

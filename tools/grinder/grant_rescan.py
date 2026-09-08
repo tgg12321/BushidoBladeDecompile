@@ -177,7 +177,7 @@ def _queue_update(root: str, func: str, reason: str) -> str:
         if item is None:
             return ""
         was = item.get("status")
-        if was not in ("foreclosed", "parked", "escalated"):
+        if was not in ("rotated", "foreclosed", "parked", "escalated"):
             return ""
         r = Q.mark_unparked(func, reason=reason)
         if not r.get("ok"):

@@ -89,10 +89,14 @@ def main() -> int:
     sub.add_parser("test", help="run the engine regression suite (fast pure-logic + build-read tiers)")
 
     qp = sub.add_parser("queue", help="consolidated INCOMPLETE-work queue — work the TOP item to done")
-    qp.add_argument("action", choices=["next", "done", "foreclose", "escalate", "park", "unpark", "status", "regen", "reopen"])
-    qp.add_argument("func", nargs="?", help="function name (required for done/foreclose/unpark/reopen)")
-    qp.add_argument("--reason", default="", help="reason / disposition pointer (for foreclose/unpark/reopen; escalate and park are legacy aliases for foreclose — owner ruling 2026-08-31)")
+    qp.add_argument("action", choices=["next", "done", "rotate", "foreclose", "escalate", "park", "unpark", "auto-return", "status", "regen", "reopen"])
+    qp.add_argument("func", nargs="?", help="function name (required for done/rotate/unpark/reopen)")
+    qp.add_argument("--reason", default="", help="reason / record pointer (for rotate/unpark/reopen; foreclose, escalate and park are legacy aliases for rotate — owner ruling 2026-09-08)")
     qp.add_argument("--file", default="", help="src file stem (required for reopen)")
+    qp.add_argument("--no-rescan", action="store_true", help="auto-return: skip the toolchain-fingerprint re-measure")
+    ccp = sub.add_parser("cc1psx-check", help="self-disproof: score a function's candidate under our cc1 AND the original cc1psx (out of tree); a closer cc1psx = fidelity lead")
+    ccp.add_argument("func")
+    ccp.add_argument("--candidate", default="", help="candidate body (default memory/grind/<func>/candidate.c)")
 
     a = ap.parse_args()
 
@@ -205,13 +209,18 @@ def main() -> int:
                 pass
             print(json.dumps(it, indent=2))
             return 0
-        if a.action in ("done", "foreclose", "escalate", "park", "unpark"):
+        if a.action == "auto-return":
+            r = Q.auto_return(rescan=not a.no_rescan)
+            print(json.dumps(r, indent=2))
+            MET.record_event("queue-auto-return", None, r, exit_code=0)
+            return 0
+        if a.action in ("done", "rotate", "foreclose", "escalate", "park", "unpark"):
             if not a.func:
                 print(f"queue {a.action}: requires a function name")
                 return 2
             r = (Q.mark_done(a.func) if a.action == "done"
-                 else Q.mark_foreclosed(a.func, a.reason)
-                 if a.action in ("foreclose", "escalate", "park")
+                 else Q.mark_rotated(a.func, a.reason)
+                 if a.action in ("rotate", "foreclose", "escalate", "park")
                  else Q.mark_unparked(a.func, a.reason))
             print(json.dumps(r, indent=2))
             MET.record_event(f"queue-{a.action}", a.func, r, exit_code=0 if r.get("ok") else 1)
@@ -279,6 +288,13 @@ def main() -> int:
         print(json.dumps(r, indent=2))
         MET.record_event("canonical", a.func, r, extra={"fast": a.fast})
         return 0
+
+    if a.cmd == "cc1psx-check":
+        from . import cc1psx as CCX
+        r = CCX.cc1psx_check(a.func, a.candidate or None)
+        print(json.dumps(r, indent=2))
+        MET.record_event("cc1psx-check", a.func, r, exit_code=0 if r.get("ok") else 1)
+        return 0 if r.get("ok") else 1
 
     if a.cmd == "dossier":
         from . import dossier as DOS

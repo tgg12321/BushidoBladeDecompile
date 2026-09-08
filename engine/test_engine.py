@@ -2134,13 +2134,13 @@ def test_queue_write_serialization() -> None:
             Q.mark_parked("func_A", reason="lane A")
             Q.mark_parked("func_B", reason="lane B")
             by_func = {it["func"]: it for it in Q.load()["items"]}
-            # mark_parked is a legacy alias for mark_foreclosed since the
-            # 2026-08-31 ruling (ordinary-c-judge-decidable) — the persisted
-            # status is "foreclosed"; the lock semantics under test are the same.
+            # mark_parked is a legacy alias for mark_rotated since the
+            # 2026-09-08 ruling (rotation-not-foreclosure) — the persisted
+            # status is "rotated"; the lock semantics under test are the same.
             eq("queue lock: lane A's park survived lane B's write",
-               by_func["func_A"]["status"], "foreclosed")
+               by_func["func_A"]["status"], "rotated")
             eq("queue lock: lane B's park landed too",
-               by_func["func_B"]["status"], "foreclosed")
+               by_func["func_B"]["status"], "rotated")
             eq("queue lock: untouched item intact",
                by_func["func_C"]["status"], "active")
 
@@ -2161,7 +2161,7 @@ def test_queue_write_serialization() -> None:
                   conflicted)
             after = {it["func"]: it for it in Q.load()["items"]}
             eq("queue lock: writer B's park was NOT silently clobbered",
-               after.get("func_B", {}).get("status"), "foreclosed")
+               after.get("func_B", {}).get("status"), "rotated")
             check("queue lock: writer A's stale drop did not take effect",
                   "func_A" in after)
 
@@ -2591,6 +2591,82 @@ def _test_datamodel_body() -> None:
         os.chdir(cwd)  # leave the temp dir before it is removed (Windows)
 
 
+def test_queue_rotation() -> None:
+    """Owner ruling 2026-09-08 (rotation-not-foreclosure): `rotated` replaces
+    `foreclosed`; legacy statuses normalise to rotated; the oldest rotation
+    returns automatically when the active list drains; a coupled sibling
+    notice stamped after `rotated_at` returns the item; an unchanged
+    toolchain fingerprint re-measures nothing."""
+    def seed(qp: Path, items) -> None:
+        qp.write_text(json.dumps({"items": items, "counts": {}}, indent=2) + "\n")
+
+    with tempfile.TemporaryDirectory() as td:
+        qp = Path(td) / "queue.json"
+        orig_path, orig_cwd = Q.QUEUE_PATH, os.getcwd()
+        Q.QUEUE_PATH = str(qp)
+        os.chdir(td)          # ledger lookups + fingerprint inputs resolve here (none exist)
+        try:
+            base = {"file": "text1a_c", "distance": 1, "verdict": "C", "rules": 0}
+            # 1. rotate: status + reason + stamp; legacy alias still works
+            seed(qp, [dict(base, func="f_A", status="active"),
+                      dict(base, func="f_B", status="active")])
+            r = Q.mark_rotated("f_A", "ROTATED: test record")
+            eq("rotation: ok", r["ok"], True)
+            it = {i["func"]: i for i in Q.load()["items"]}
+            eq("rotation: status rotated", it["f_A"]["status"], "rotated")
+            check("rotation: rotated_at stamped", bool(it["f_A"].get("rotated_at")))
+            eq("rotation: legacy foreclose alias", Q.mark_foreclosed("f_B", "x")["ok"], True)
+            # 2. queue drain -> oldest rotation returns with an unpark_reason
+            it = {i["func"]: i for i in Q.load()["items"]}
+            it["f_A"]["rotated_at"] = "2026-01-01T00:00:00+00:00"   # make f_A the oldest
+            seed(qp, list(it.values()))
+            r = Q.auto_return(rescan=False)
+            eq("auto-return: one item returned on drain", len(r["returned"]), 1)
+            eq("auto-return: the oldest rotation returned", r["returned"][0]["func"], "f_A")
+            it = {i["func"]: i for i in Q.load()["items"]}
+            eq("auto-return: status active", it["f_A"]["status"], "active")
+            check("auto-return: unpark_reason set (resets the exhaustion window)",
+                  "drained" in it["f_A"].get("unpark_reason", ""))
+            eq("auto-return: the other stays rotated", it["f_B"]["status"], "rotated")
+            check("auto-return: next_item sees the returned item",
+                  (Q.next_item() or {}).get("func") == "f_A")
+            # 3. legacy statuses normalise to rotated
+            seed(qp, [dict(base, func="f_C", status="foreclosed", foreclosure="old"),
+                      dict(base, func="f_D", status="active")])
+            Q.auto_return(rescan=False)
+            it = {i["func"]: i for i in Q.load()["items"]}
+            eq("legacy: foreclosed reads as rotated", it["f_C"]["status"], "rotated")
+            eq("legacy: reason carried", it["f_C"]["rotation"], "old")
+            # 4. sibling movement after rotation returns the item
+            led = Path(td) / "memory" / "grind" / "f_C"
+            led.mkdir(parents=True)
+            (led / "state.json").write_text(json.dumps({
+                "sibling_progress": [{"from": "f_X", "floor": 0,
+                                      "at": "2026-12-31T00:00:00+00:00", "consumed": None}]}))
+            r = Q.auto_return(rescan=False)
+            eq("sibling: returned", [x["func"] for x in r["returned"]], ["f_C"])
+            check("sibling: reason names the sibling",
+                  "f_X" in Q.load()["items"][0].get("unpark_reason", "")
+                  or any("f_X" in i.get("unpark_reason", "") for i in Q.load()["items"]))
+            # 5. fingerprint: first run records it, second run sees no movement
+            seed(qp, [dict(base, func="f_E", status="rotated", rotated_at="2026-01-01T00:00:00+00:00"),
+                      dict(base, func="f_F", status="active")])
+            r1 = Q.auto_return(rescan=True)
+            r2 = Q.auto_return(rescan=True)
+            eq("fingerprint: recorded", bool(Q.load().get("toolchain_fingerprint")), True)
+            eq("fingerprint: unchanged -> no re-measure", r2["toolchain_moved"], False)
+            eq("fingerprint: unchanged -> nothing returned", r2["returned"], [])
+            # 6. unpark clears the rotation fields
+            r = Q.mark_unparked("f_E", "owner: early return")
+            eq("unpark: ok on rotated", r["ok"], True)
+            it = {i["func"]: i for i in Q.load()["items"]}
+            check("unpark: rotation field cleared", "rotation" not in it["f_E"])
+            eq("status counts: rotated key", Q._counts(Q.load()["items"])["by_status"].get("rotated", 0), 0)
+        finally:
+            os.chdir(orig_cwd)
+            Q.QUEUE_PATH = orig_path
+
+
 def main() -> int:
     test_datamodel()
     test_canonical()
@@ -2619,6 +2695,7 @@ def main() -> int:
     test_queue_reopen()
     test_queue_hand_coded_tier()
     test_queue_write_serialization()
+    test_queue_rotation()
     test_canonical_build()
     test_score_object_paths()
     print(f"\n{_passed} passed, {_failed} failed, {_skipped} skipped")

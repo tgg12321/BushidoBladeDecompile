@@ -139,16 +139,19 @@ class TestApplyAndLadder(unittest.TestCase):
         # (index 5), before forensics/rederive. Solver rung added 2026-08-24
         # (escalation-not-parked rollout): s7 (index 6), between synthesis and
         # forensics.
+        # enumerate rung added 2026-09-08 (rotation-not-foreclosure ruling 3):
+        # s5 (index 4), between the permuter pair and synthesis.
         self.assertEqual(G.assign_modality(0), "recon")
         self.assertEqual(G.assign_modality(1), "structural")
         self.assertEqual(G.assign_modality(2), "structural")
         self.assertEqual(G.assign_modality(3), "permuter")
-        self.assertEqual(G.assign_modality(5), "synthesis")
-        self.assertEqual(G.assign_modality(6), "solver")
-        self.assertEqual(G.assign_modality(7), "forensics")
-        self.assertEqual(G.assign_modality(9), "rederive")
-        self.assertEqual(G.assign_modality(11), "structural")  # ladder repeats
-        self.assertEqual(G.assign_modality(15), "synthesis")
+        self.assertEqual(G.assign_modality(5), "enumerate")
+        self.assertEqual(G.assign_modality(6), "synthesis")
+        self.assertEqual(G.assign_modality(7), "solver")
+        self.assertEqual(G.assign_modality(8), "forensics")
+        self.assertEqual(G.assign_modality(10), "rederive")
+        self.assertEqual(G.assign_modality(12), "structural")  # ladder repeats
+        self.assertEqual(G.assign_modality(17), "synthesis")
 
     def test_permuter_hard_cap(self):
         # R3: two permuter sessions ever, regardless of yield — a 3rd is never
@@ -175,7 +178,9 @@ class TestApplyAndLadder(unittest.TestCase):
 
 
 class TestExhaustionEscalation(unittest.TestCase):
-    MODS = ["structural", "permuter", "forensics", "rederive"]
+    # Ruling 3 (2026-09-08): exhaustion needs EVERY ladder rung in the flat
+    # window, so the flat histories cycle the full unique ladder.
+    MODS = list(G.LADDER_UNIQUE)
 
     def hist(self, floors, mods=None, audited=True):
         mods = mods or self.MODS
@@ -1133,7 +1138,7 @@ class TestForeclosureMechanics(unittest.TestCase):
     """Owner ruling 2026-09-02 (decisions.md 'foreclosure mechanics'): an unpark
     resets the exhaustion window; standing-ruling foreclosure is scoped to the
     endgame-lock floor (<= ENDGAME_LOCK_MAX_FLOOR); a spent probe is progress."""
-    MODS6 = ["structural", "permuter", "synthesis", "solver", "forensics", "rederive"]
+    MODS6 = ["structural", "permuter", "enumerate", "synthesis", "solver", "forensics", "rederive"]
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -1559,8 +1564,8 @@ class TestSiblingLedgers(unittest.TestCase):
 
     def test_sibling_progress_beats_exhaustion(self):
         G.append_hypothesis(self.root, "CD_datasync", {"statement": "CD_sync twin"}, session=1)
-        # flat at 3 (<= ENDGAME_LOCK_MAX_FLOOR) across 4 modalities => exhaustion
-        mods = ["structural", "permuter", "synthesis", "forensics"] * 3
+        # flat at 3 (<= ENDGAME_LOCK_MAX_FLOOR) across every rung => exhaustion
+        mods = list(G.LADDER_UNIQUE) * 3
         for m in mods[:G.ESCALATION_FLAT_SESSIONS]:
             self.progress("CD_datasync", [3], mod=m)
         st = G.load_state(self.root, "CD_datasync")
@@ -1588,15 +1593,19 @@ class TestEscalationDeferral(unittest.TestCase):
     and the next session is forced to an unrun rung instead of escalation.
     CD_sync s116 (a confirmed lever auto-foreclosed by the backstop) is the
     exhibit."""
-    MODS = ["structural", "synthesis", "forensics", "rederive"]
+    # Ruling 3 (2026-09-08): every rung runs in the flat window before
+    # `escalation`; the deferral then forces the LEAST-RECENTLY-RUN deferral
+    # rung (capped permuter excluded). Session order below: permuter s1/s8
+    # (capped, excluded), solver s2, structural s3, forensics s4.
+    MODS = ["permuter", "solver", "structural", "forensics", "enumerate", "synthesis", "rederive"]
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = self.tmp.name
         G.init_ledger(self.root, "CD_sync", "system")
-        # 8 flat sessions at 2 across 4 modalities (none of them solver/permuter)
+        # 8 flat sessions at 2 across the whole unique ladder
         for i in range(G.ESCALATION_FLAT_SESSIONS):
-            self.apply(2, self.MODS[i % 4], verdict="KILLED")
+            self.apply(2, self.MODS[i % len(self.MODS)], verdict="KILLED")
         st = G.load_state(self.root, "CD_sync")
         st["object_model_audited"] = 1
         G.save_state(self.root, "CD_sync", st)
@@ -1634,7 +1643,7 @@ class TestEscalationDeferral(unittest.TestCase):
     def test_confirmed_lever_defers_and_forces_unrun_rung(self):
         o = self.apply(2, "escalation")           # floor did NOT drop
         pick = G.escalation_deferral(self.root, "CD_sync", o)
-        self.assertEqual(pick, "solver")          # first unrun of the deferral list
+        self.assertEqual(pick, "solver")          # least-recently-run deferral rung
         st = self.state()
         self.assertEqual(st["escalation_deferrals"], 1)
         self.assertEqual(G.assign_modality(st["session_count"], st), "solver")
@@ -1649,8 +1658,9 @@ class TestEscalationDeferral(unittest.TestCase):
         self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "solver")
         self.apply(2, "solver", verdict="KILLED")
         o = self.apply(2, "escalation")
-        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "permuter")
-        self.apply(2, "permuter", verdict="KILLED")
+        # solver just ran; permuter is capped; structural (s3) is the oldest
+        self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "structural")
+        self.apply(2, "structural", verdict="KILLED")
         o = self.apply(2, "escalation")
         self.assertEqual(G.escalation_deferral(self.root, "CD_sync", o), "")
         self.assertEqual(self.state()["escalation_deferrals"], G.ESCALATION_DEFERRALS_MAX)
@@ -1806,3 +1816,91 @@ class TestCompletionTombstones(unittest.TestCase):
         self.assertEqual(len(sibs), G.MAX_COMPLETED_SIBLINGS)
         dates = [s["floor_since_date"] for s in sibs]
         self.assertEqual(dates, sorted(dates, reverse=True))
+
+
+class TestRotationRuling(unittest.TestCase):
+    """Owner ruling 2026-09-08 (rotation-not-foreclosure): ruling 3 — no rung
+    repeats at a flat floor until every rung has run in the window; ruling 2 —
+    the cc1psx self-disproof gates exhaustion."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def hist(self, mods, floors=None):
+        floors = floors or [2] * len(mods)
+        return {"session_count": len(mods), "object_model_audited": 1,
+                "floor_history": [{"session": i + 1, "floor": f, "modality": m}
+                                  for i, (m, f) in enumerate(zip(mods, floors))]}
+
+    def test_flat_floor_picks_first_unrun_rung(self):
+        # two flat forensics sessions: the next is NOT a third forensics
+        st = self.hist(["structural", "forensics", "forensics"], [9, 2, 2])
+        self.assertEqual(G.untried_rung(st), "structural")
+        self.assertEqual(G.assign_modality(3, st), "structural")
+        st = self.hist(["structural", "structural", "forensics", "forensics"], [9, 2, 2, 2])
+        self.assertEqual(G.assign_modality(4, st), "permuter")
+
+    def test_moving_floor_uses_the_plain_ladder(self):
+        st = self.hist(["structural", "forensics"], [9, 2])   # window length 1
+        self.assertIsNone(G.untried_rung(st))
+
+    def test_capped_permuter_counts_as_run(self):
+        # one zero-yield permuter session caps it; the rule skips to enumerate
+        st = self.hist(["structural", "permuter", "structural"], [2, 2, 2])
+        self.assertEqual(G.untried_rung(st), "enumerate")
+
+    def test_every_rung_run_then_exhaustion(self):
+        mods = list(G.LADDER_UNIQUE) + ["structural"]
+        st = self.hist(mods)
+        self.assertIsNone(G.untried_rung(st))
+        self.assertEqual(G.assign_modality(len(mods), st), "escalation")
+
+    def test_repeat_only_after_every_rung_ran(self):
+        # 8 flat sessions but two rungs never ran -> still not exhaustion
+        mods = ["structural", "permuter", "synthesis", "forensics"] * 2
+        st = self.hist(mods)
+        self.assertEqual(G.assign_modality(8, st), "enumerate")
+
+    def _ledger_with_candidate(self, body="s32 f(void) { return 1; }\n"):
+        G.init_ledger(self.root, "func_R", "s")
+        with open(os.path.join(self.root, "memory", "grind", "func_R", "candidate.c"),
+                  "w", encoding="utf-8", newline="\n") as f:
+            f.write(body)
+
+    def test_cc1psx_needed_keyed_by_candidate_hash(self):
+        self._ledger_with_candidate()
+        self.assertTrue(G.cc1psx_check_needed(self.root, "func_R"))
+        sha = G.cc1psx_candidate_sha(self.root, "func_R")
+        res = {"ok": True, "candidate_sha": sha, "ours": {"score": 2}, "psx": {"score": 2}, "closer": False}
+        self.assertEqual(G.record_cc1psx_check(self.root, "func_R", res), "escalation")
+        self.assertFalse(G.cc1psx_check_needed(self.root, "func_R"))
+        st = G.load_state(self.root, "func_R")
+        self.assertEqual(st["cc1psx_check"]["psx"], 2)
+        self.assertNotIn("forced_next_modality", st)
+        # a new candidate re-arms the check
+        self._ledger_with_candidate("s32 f(void) { return 2; }\n")
+        self.assertTrue(G.cc1psx_check_needed(self.root, "func_R"))
+
+    def test_cc1psx_fidelity_lead_blocks_rotation(self):
+        self._ledger_with_candidate()
+        st = G.load_state(self.root, "func_R")
+        st["session_count"] = 3            # past recon: the forced rung must win
+        G.save_state(self.root, "func_R", st)
+        sha = G.cc1psx_candidate_sha(self.root, "func_R")
+        res = {"ok": True, "candidate_sha": sha, "ours": {"score": 2}, "psx": {"score": 0}, "closer": True}
+        self.assertEqual(G.record_cc1psx_check(self.root, "func_R", res), "rederive")
+        st = G.load_state(self.root, "func_R")
+        self.assertEqual(st["forced_next_modality"], "rederive")
+        self.assertTrue(any("fidelity lead" in c for c in st["judge_constraints"]))
+        self.assertEqual(G.assign_modality(st["session_count"], st), "rederive")
+        ev = open(os.path.join(self.root, "memory", "grind", "func_R", "evidence.md"),
+                  encoding="utf-8").read()
+        self.assertIn("FIDELITY LEAD", ev)
+
+    def test_no_candidate_needs_no_check(self):
+        G.init_ledger(self.root, "func_N", "s")
+        self.assertFalse(G.cc1psx_check_needed(self.root, "func_N"))
