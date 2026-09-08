@@ -83,7 +83,7 @@ glabel func_800383A4
   .L800384C8:
     /* 28CC8 800384C8 01000224 */  addiu      $v0, $zero, 0x1
     /* 28CCC 800384CC D20682A7 */  sh         $v0, %gp_rel(D_800A379E)($gp)
-    /* 28CD0 800384D0 88DE000C */  jal        func_80037A20
+    /* 28CD0 800384D0 88DE000C */  jal        memcard_CountFiles
     /* 28CD4 800384D4 21280000 */   addu      $a1, $zero, $zero
     /* 28CD8 800384D8 A9DE000C */  jal        func_80037AA4
     /* 28CDC 800384DC 00000000 */   nop
@@ -122,7 +122,7 @@ glabel func_800383A4
     /* 28D58 80038558 1000A2AF */  sw         $v0, 0x10($sp)
     /* 28D5C 8003855C 00020224 */  addiu      $v0, $zero, 0x200
     /* 28D60 80038560 1400A2AF */  sw         $v0, 0x14($sp)
-    /* 28D64 80038564 0DDF000C */  jal        func_80037C34
+    /* 28D64 80038564 0DDF000C */  jal        memcard_WriteFile
     /* 28D68 80038568 1800B1AF */   sw        $s1, 0x18($sp)
     /* 28D6C 8003856C 07004010 */  beqz       $v0, .L8003858C
     /* 28D70 80038570 04000224 */   addiu     $v0, $zero, 0x4
@@ -138,7 +138,7 @@ glabel func_800383A4
     /* 28D94 80038594 00000000 */   nop
   .L80038598:
     /* 28D98 80038598 21200000 */  addu       $a0, $zero, $zero
-    /* 28D9C 8003859C 88DE000C */  jal        func_80037A20
+    /* 28D9C 8003859C 88DE000C */  jal        memcard_CountFiles
     /* 28DA0 800385A0 21280000 */   addu      $a1, $zero, $zero
     /* 28DA4 800385A4 A9DE000C */  jal        func_80037AA4
     /* 28DA8 800385A8 00000000 */   nop
@@ -159,7 +159,7 @@ glabel func_800383A4
     /* 28DE0 800385E0 D833E724 */  addiu      $a3, $a3, %lo(D_800F33D8)
     /* 28DE4 800385E4 2401868F */  lw         $a2, %gp_rel(D_800A31F0)($gp)
     /* 28DE8 800385E8 00020224 */  addiu      $v0, $zero, 0x200
-    /* 28DEC 800385EC E4DE000C */  jal        func_80037B90
+    /* 28DEC 800385EC E4DE000C */  jal        memcard_ReadFile
     /* 28DF0 800385F0 1000A2AF */   sw        $v0, 0x10($sp)
     /* 28DF4 800385F4 07004010 */  beqz       $v0, .L80038614
     /* 28DF8 800385F8 06000224 */   addiu     $v0, $zero, 0x6
@@ -174,7 +174,7 @@ glabel func_800383A4
     /* 28E18 80038618 8FE10008 */  j          .L8003863C
     /* 28E1C 8003861C 00000000 */   nop
   .L80038620:
-    /* 28E20 80038620 C2DF000C */  jal        func_80037F08
+    /* 28E20 80038620 C2DF000C */  jal        memcard_Format
     /* 28E24 80038624 21280000 */   addu      $a1, $zero, $zero
     /* 28E28 80038628 02004014 */  bnez       $v0, .L80038634
     /* 28E2C 8003862C 0B000224 */   addiu     $v0, $zero, 0xB

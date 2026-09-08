@@ -148,7 +148,7 @@ glabel func_80036140
     /* 26B60 80036360 21200000 */  addu       $a0, $zero, $zero
     /* 26B64 80036364 21280000 */  addu       $a1, $zero, $zero
     /* 26B68 80036368 21300000 */  addu       $a2, $zero, $zero
-    /* 26B6C 8003636C CCD7000C */  jal        func_80035F30
+    /* 26B6C 8003636C CCD7000C */  jal        cdrom_SetMix
     /* 26B70 80036370 21380000 */   addu      $a3, $zero, $zero
     /* 26B74 80036374 1080053C */  lui        $a1, %hi(D_80101E90)
     /* 26B78 80036378 901EA524 */  addiu      $a1, $a1, %lo(D_80101E90)
@@ -249,7 +249,7 @@ glabel func_80036140
     /* 26CDC 800364DC FF000424 */  addiu      $a0, $zero, 0xFF
     /* 26CE0 800364E0 21280000 */  addu       $a1, $zero, $zero
     /* 26CE4 800364E4 FF000624 */  addiu      $a2, $zero, 0xFF
-    /* 26CE8 800364E8 CCD7000C */  jal        func_80035F30
+    /* 26CE8 800364E8 CCD7000C */  jal        cdrom_SetMix
     /* 26CEC 800364EC 21380000 */   addu      $a3, $zero, $zero
   .L800364F0:
     /* 26CF0 800364F0 1080023C */  lui        $v0, %hi(D_80101E68)
@@ -310,7 +310,7 @@ glabel func_80036140
     /* 26DC4 800365C4 21200000 */   addu      $a0, $zero, $zero
     /* 26DC8 800365C8 21280000 */  addu       $a1, $zero, $zero
     /* 26DCC 800365CC 21300000 */  addu       $a2, $zero, $zero
-    /* 26DD0 800365D0 CCD7000C */  jal        func_80035F30
+    /* 26DD0 800365D0 CCD7000C */  jal        cdrom_SetMix
     /* 26DD4 800365D4 21380000 */   addu      $a3, $zero, $zero
     /* 26DD8 800365D8 1080023C */  lui        $v0, %hi(D_80101E6A)
     /* 26DDC 800365DC 6A1E4284 */  lh         $v0, %lo(D_80101E6A)($v0)
@@ -350,7 +350,7 @@ glabel func_80036140
     /* 26E54 80036654 21200000 */  addu       $a0, $zero, $zero
     /* 26E58 80036658 21280000 */  addu       $a1, $zero, $zero
     /* 26E5C 8003665C 21300000 */  addu       $a2, $zero, $zero
-    /* 26E60 80036660 CCD7000C */  jal        func_80035F30
+    /* 26E60 80036660 CCD7000C */  jal        cdrom_SetMix
     /* 26E64 80036664 21380000 */   addu      $a3, $zero, $zero
     /* 26E68 80036668 1080023C */  lui        $v0, %hi(D_80101E6A)
     /* 26E6C 8003666C 6A1E4284 */  lh         $v0, %lo(D_80101E6A)($v0)
@@ -392,7 +392,7 @@ glabel func_80036140
     /* 26EF4 800366F4 21200000 */  addu       $a0, $zero, $zero
     /* 26EF8 800366F8 21280000 */  addu       $a1, $zero, $zero
     /* 26EFC 800366FC 21300000 */  addu       $a2, $zero, $zero
-    /* 26F00 80036700 CCD7000C */  jal        func_80035F30
+    /* 26F00 80036700 CCD7000C */  jal        cdrom_SetMix
     /* 26F04 80036704 21380000 */   addu      $a3, $zero, $zero
     /* 26F08 80036708 1080023C */  lui        $v0, %hi(D_80101E6A)
     /* 26F0C 8003670C 6A1E4284 */  lh         $v0, %lo(D_80101E6A)($v0)
@@ -443,7 +443,7 @@ glabel func_80036140
     /* 26FB0 800367B0 21200000 */  addu       $a0, $zero, $zero
     /* 26FB4 800367B4 21280000 */  addu       $a1, $zero, $zero
     /* 26FB8 800367B8 21300000 */  addu       $a2, $zero, $zero
-    /* 26FBC 800367BC CCD7000C */  jal        func_80035F30
+    /* 26FBC 800367BC CCD7000C */  jal        cdrom_SetMix
     /* 26FC0 800367C0 21380000 */   addu      $a3, $zero, $zero
     /* 26FC4 800367C4 09000424 */  addiu      $a0, $zero, 0x9
     /* 26FC8 800367C8 E400020C */  jal        CdControlF
@@ -481,7 +481,7 @@ glabel func_80036140
     /* 2703C 8003683C 21200000 */  addu       $a0, $zero, $zero
     /* 27040 80036840 21280000 */  addu       $a1, $zero, $zero
     /* 27044 80036844 21300000 */  addu       $a2, $zero, $zero
-    /* 27048 80036848 CCD7000C */  jal        func_80035F30
+    /* 27048 80036848 CCD7000C */  jal        cdrom_SetMix
     /* 2704C 8003684C 21380000 */   addu      $a3, $zero, $zero
     /* 27050 80036850 94068293 */  lbu        $v0, %gp_rel(D_800A3760)($gp)
     /* 27054 80036854 00000000 */  nop

@@ -29,7 +29,7 @@ extern void seq_Reset(void);
 extern void VSync(s32);
 extern void LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
-extern void func_80035FA8(void);
+extern void snd_SerialMixOn(void);
 extern s32 D_800109BC;
 extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
@@ -39,7 +39,7 @@ extern s32 D_80102794;
 extern u8 *D_800A3894;
 extern s16 D_800A38C4;
 extern s16 D_80101F32;
-extern void func_80035F30(s32, s32, s32, s32);
+extern void cdrom_SetMix(s32, s32, s32, s32);
 extern void obj_InitChars(void);
 extern void obj_Reset(void);
 extern void obj_InitTask(void);
@@ -83,8 +83,8 @@ extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
-extern void special_camera_get_rot_dir(s32 *);
+extern void snd_Quit(void);
+extern void cdrom_LoadExec(s32 *);
 extern void StopPAD(void);
 extern void StopCallback(void);
 extern s32 D_800A3210;
@@ -254,7 +254,7 @@ s32 func_8003ACB8(void) {
     D_800A38D0 = 0;
     D_800A3908 = 0;
     D_800A38FC = 0;
-    func_8003A174();
+    comb_Init();
     do {
         func_80019568(1);
         func_8005C6D0();

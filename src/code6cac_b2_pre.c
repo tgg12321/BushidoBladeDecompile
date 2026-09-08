@@ -79,7 +79,7 @@ extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void snd_Quit(void);
 extern void func_80037774(void);
 extern void StopPAD(void);
 extern void StopCallback(void);
@@ -179,7 +179,7 @@ void func_8003553C(void) {
     D_800A38B4 = g;
 }
 void func_800355E8(void) {
-    func_80035FA8();
+    snd_SerialMixOn();
     func_80037110(1);
     func_800371E8(1);
 }

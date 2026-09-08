@@ -50,6 +50,7 @@ a key, oracle-verified per batch, never hand-applied. Applied so far:
 | phase-2 reset wave | `2651e2e5` (2026-08-07) | **300 RESET + 2 RENAME** (`main`, `gpu_EnableDisplay`/`gpu_DisableDisplay` family) — the SUSPECT/Kengo purge, byte-neutral |
 | libscan wave | `fe40a52b` (2026-08-07) | **334 evidence-backed renames** from the PsyQ bit-verbatim library scan: 51 hard misnames corrected, 182 alias fixes, 73 fills, 28 style rows to bare Sony names (owner ruling). Census gained the `libscan-verbatim` -> VERIFIED tier |
 | addendum wave | `ef3919bd` (2026-08-10) | **12 RENAMEs + 1 RESET** from the ambiguous-tie resolutions + reloc-chain bonus IDs (`docs/naming/libscan/addendum_addresses.txt`). Part B: 5/9 XDEF splits obsolete (`6df437b6`), 4 genuine splits applied same day (`113abc0e`/`b6c73b0f`/`4ffc63aa`); only the 2 owner-gated re-derivations remain — see `docs/naming/ADDENDUM-APPLY-PLAN.md` |
+| apiscan wave | `naming: apiscan wave` (2026-09-07) | **21 RENAMEs** from the API-restatement class (`docs/naming/apiscan/`): 10 fills of auto glabels + 11 retirements of meaningless/wrong aliases (`pad_file_*`, `bios_helper`, `irq_helper`, `obj_helper`, `sys_helper`, `mode_helper`). Names restate the VERIFIED BIOS/PsyQ calls + literal device strings in the body; every row re-derived by a fresh default-refute verifier before landing. Census gained the `apiscan-restatement` -> CORROBORATED origin |
 
 ---
 
@@ -171,6 +172,7 @@ Every non-AUTO name is attributed to a recorded evidence path:
 | `splat-auto` | 129 | AUTO |
 | `misname-flag` | 49 | SUSPECT |
 | `psyq-idiom-scan` (`known_psyq_stdlib.txt` body-shape match) | 39 | CORROBORATED |
+| `apiscan-restatement` (name restates VERIFIED library calls + literal strings; `docs/naming/apiscan/`) | 21 | CORROBORATED |
 | `psyq-family-prefix` | 38 | INFERRED — prefix only |
 | `legacy-renamer-map(verified band)` | 29 | CORROBORATED |
 | `unattributed` | 16 | INFERRED — provenance unknown |

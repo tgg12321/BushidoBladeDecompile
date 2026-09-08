@@ -30,7 +30,7 @@ extern void VSync(s32);
 extern void LoadImage(s32, s32);
 
 extern s32 func_80036FD4(void);
-extern void func_80035FA8(void);
+extern void snd_SerialMixOn(void);
 extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
 extern void seq_Start(s32, s32);
@@ -40,7 +40,7 @@ extern s32 D_800A3894;
 extern u32 D_800A3D30;
 extern s16 D_800A38C4;
 extern s16 D_80101F32;
-extern void func_80035F30(s32, s32, s32, s32);
+extern void cdrom_SetMix(s32, s32, s32, s32);
 extern void obj_InitChars(void);
 extern void obj_Reset(void);
 extern void obj_InitTask(void);
@@ -95,7 +95,7 @@ extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void snd_Quit(void);
 extern void SetDrawMove(u32 *, s16 *, s32, s32);
 extern s32 game_GetPlayerCount(void);
 extern s32 func_80052C28(s32, s32);
@@ -129,7 +129,7 @@ extern void StoreImage(s32 *, u16 *);
 extern void func_80052BE4(u8 *);
 extern void func_8003F388(s16 *);
 extern void func_80037774(void);
-extern void special_camera_get_rot_dir(s32 *);
+extern void cdrom_LoadExec(s32 *);
 extern void StopPAD(void);
 extern void StopCallback(void);
 extern s32 EnterCriticalSection(void);
@@ -171,7 +171,7 @@ extern void func_80020CDC(void);
 extern void func_80020D38(void);
 extern void func_80041688(s32, s32);
 extern void func_8004659C(s32);
-extern void func_80035FA8(void);
+extern void snd_SerialMixOn(void);
 extern s32 func_80036EA8(s32, s32);
 extern void func_80036FD4(s32, s32);
 extern void func_80037260(void);
@@ -231,7 +231,7 @@ void func_8003B9D0(void) {
     func_8001DBE4();
     D_800A3768 = 0xFF;
     D_800A36A8 = 0;
-    func_80035FA8();
+    snd_SerialMixOn();
     v0 = func_80036EA8(5, ((u8 *)D_800A3878)[1]);
     func_80036FD4(v0, ((u8 *)D_800A3878)[2]);
     func_80037260();
@@ -301,7 +301,7 @@ extern void player_Destroy(s32);
 extern void file_ResetDmaFlag(void);
 extern void obj_InitAll(void);
 extern void func_80078824(s32);
-extern void func_80035FA8(void);
+extern void snd_SerialMixOn(void);
 extern void func_80036FD4(s32, s32);
 extern void func_80037260(void);
 void func_8003BE10(void) {
@@ -313,7 +313,7 @@ void func_8003BE10(void) {
     file_ResetDmaFlag();
     obj_InitAll();
     func_80078824((s32)0x80118800);
-    func_80035FA8();
+    snd_SerialMixOn();
     {
         s32 v0 = func_80036EA8(5, 0x20);
         func_80036FD4(v0, 4);
@@ -472,7 +472,7 @@ void func_8003C040(void) {
     game_Cleanup();
     p = (s8 *)(((s8 *)(&D_8008EA70)) + (D_800A38A4 << 1));
     if (p[0] >= 0) {
-        func_80035FA8();
+        snd_SerialMixOn();
         func_80036FD4(func_80036EA8(5, p[0]), (u8)p[1]);
         func_80037260();
     }

@@ -1878,7 +1878,7 @@ extern void func_800858D0(s32);
 extern s32 SsUtSetReverbDepth(s32, s32);
 extern s32 SsUtSetReverbType(s32);
 extern s32 SsUtReverbOff(void);
-void func_8005B43C(void) {
+void snd_Init(void) {
     s32 *p1;
     s32 *p2;
     s32 i;
@@ -1927,7 +1927,7 @@ void SsQuit(void);
 extern s32 D_800EFB38[];
 extern s32 D_800EFC38[];
 extern s32 D_800A3408;
-void func_8005B50C(void) {
+void snd_Quit(void) {
     s32 i;
     s32 *a0;
     s32 *v1;
@@ -2414,10 +2414,10 @@ s32 func_8005B8B8(s32 arg0) {
     game_FrameLoop();
     return func_8005C2A8(arg0 + ret, 4, arg0 + size) + ret;
 }
-void func_8005C4C0(s32, s32);
+void snd_VabFakeOpen(s32, s32);
 void func_8005B98C(s32 a0) {
-    func_8005C4C0(a0, 8);
-    func_8005C4C0(a0, 4);
+    snd_VabFakeOpen(a0, 8);
+    snd_VabFakeOpen(a0, 4);
 }
 extern s32 D_800EFC5C;
 extern s32 D_800EFB5C;
@@ -2445,13 +2445,13 @@ void obj_InitTaskCamera(s32 a0) {
     game_FrameLoop();
     func_8005C2A8(a0, 9, a0 + s1);
 }
-void func_8005C4C0(s32, s32);
+void snd_VabFakeOpen(s32, s32);
 void obj_ExecTask(s32 a0) {
-    func_8005C4C0(a0, 9);
+    snd_VabFakeOpen(a0, 9);
 }
 INCLUDE_ASM("asm/funcs", func_8005BA8C);
 extern void func_800858D0(s32);
-extern void func_8005C4C0(s32, s32);
+extern void snd_VabFakeOpen(s32, s32);
 extern s32 D_800EFC50;
 extern s32 D_800EFC44;
 extern u8 D_8009AD18;
@@ -2464,7 +2464,7 @@ void func_8005BD30(s32 arg0) {
     if (count != 0) {
         do {
             u8 byte = (&D_8009AD18)[i & 0xFF];
-            func_8005C4C0(arg0, byte);
+            snd_VabFakeOpen(arg0, byte);
             i += 1;
         } while ((u32)(i & 0xFF) < (u32)count);
     }
@@ -2569,7 +2569,7 @@ extern s16 SsVabFakeBody(s16);
  * Structured single-exit representative sanctioned by user 2026-06-10; the
  * goto-end spelling remains REJECTED. See
  * .claude/rules/proven-spelling-class-reconstruction.md. */
-s32 func_8005C4C0(s32 arg0, s16 arg1) {
+s32 snd_VabFakeOpen(s32 arg0, s16 arg1) {
     s32 idx;
     u8 *base;
     s32 **p;
@@ -2603,7 +2603,7 @@ extern s32 D_800A3404;
 void SsVabClose(s32);
 void SsVabOpenHeadSticky(s32, s16, s32);
 s32 SsVabTransBody(s32, s16);
-s16 func_8005C5A8(s32 *a0, s16 a1) {
+s16 snd_VabOpen(s32 *a0, s16 a1) {
     SsVabClose(a1);
     SsVabOpenHeadSticky(a0[1], a1, D_800A3404);
     *(s32 *)(a0[1] + 8) = a1;

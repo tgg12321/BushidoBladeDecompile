@@ -29,7 +29,7 @@ extern void seq_Reset(void);
 extern void VSync(s32);
 extern void LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
-extern void func_80035FA8(void);
+extern void snd_SerialMixOn(void);
 extern s32 D_800109BC;
 extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
@@ -39,7 +39,7 @@ extern s32 D_80102794;
 extern u8 *D_800A3894;
 extern s16 D_800A38C4;
 extern s16 D_80101F32;
-extern void func_80035F30(s32, s32, s32, s32);
+extern void cdrom_SetMix(s32, s32, s32, s32);
 extern void obj_InitChars(void);
 extern void obj_Reset(void);
 extern void obj_InitTask(void);
@@ -81,8 +81,8 @@ extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
-extern void special_camera_get_rot_dir(s32 *);
+extern void snd_Quit(void);
+extern void cdrom_LoadExec(s32 *);
 extern void StopPAD(void);
 extern void StopCallback(void);
 extern s32 D_800A3210;
@@ -171,16 +171,16 @@ extern s32 D_80102810;
 extern s32 D_800F34D8;
 extern s32 D_800A31F0;
 extern s32 D_800A3794;
-extern s32 func_80037A20(s32, s32);
+extern s32 memcard_CountFiles(s32, s32);
 extern void func_80037F40(void *);
 extern s32 func_80037AA4(void);
 extern s32 func_80037B00(s32);
-extern s32 func_80037B90(s32, s32, s32, void *, s32);
-extern s32 func_80037C34(s32, s32, s32, void *, s32, s32, s32);
+extern s32 memcard_ReadFile(s32, s32, s32, void *, s32);
+extern s32 memcard_WriteFile(s32, s32, s32, void *, s32, s32, s32);
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-s32 func_80037F08(s32 a0, s32 a1) {
+s32 memcard_Format(s32 a0, s32 a1) {
     s32 buf[2];
     sprintf(buf, &D_800109C8, a0, a1);
     return format(buf);
@@ -498,7 +498,7 @@ state_other:
 
 state_3:
     D_800A379E = 1;
-    func_80037A20(0, 0);
+    memcard_CountFiles(0, 0);
     temp_s0 = func_80037AA4();
     if (func_80037B00(D_800A31F0) != 0) {
         var_s1 = 0;
@@ -518,7 +518,7 @@ setup_load:
     func_80038148();
     func_80038170(D_800F33D8);
     func_80037F40(D_800F33D8 + 0x100);
-    if (func_80037C34(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) != 0) {
+    if (memcard_WriteFile(0, 0, D_800A31F0, D_800F33D8, 1, 0x200, var_s1) != 0) {
         close(D_800A3794);
         var_v0 = 3;
         goto finish;
@@ -527,7 +527,7 @@ setup_load:
     return;
 
 state_5:
-    func_80037A20(0, 0);
+    memcard_CountFiles(0, 0);
     func_80037AA4();
     if (func_80037B00(D_800A31F0) == 0) {
         var_v0 = 0xE;
@@ -535,7 +535,7 @@ state_5:
     }
     D_800A379E = 4;
     func_80038148();
-    if (func_80037B90(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
+    if (memcard_ReadFile(0, 0, D_800A31F0, D_800F33D8, 0x200) != 0) {
         close(D_800A3794);
         var_v0 = 6;
         goto finish;
@@ -544,7 +544,7 @@ state_5:
     return;
 
 state_7:
-    var_v0 = func_80037F08(0, 0);
+    var_v0 = memcard_Format(0, 0);
     if (var_v0 != 0) {
         var_v0 = 0xB;
         goto finish;
@@ -1395,7 +1395,7 @@ neg:
     }
 }
 INCLUDE_ASM("asm/funcs", func_8003993C);
-void func_8003A174(void) {
+void comb_Init(void) {
     s32 neg1;
     EnterCriticalSection();
     neg1 = -1;
@@ -1421,7 +1421,7 @@ void func_8003A174(void) {
     _comb_control(1, 3, 0xE100);
     _comb_control(1, 4, 1);
 }
-void func_8003A264(void) {
+void comb_Close(void) {
     close(D_800A3734);
     close(D_800A373C);
     EnterCriticalSection();
@@ -1454,7 +1454,7 @@ void func_8003A39C(void) {
     D_800A3730 = 0;
     _comb_control(2, 0, 0);
     _comb_control(1, 1, 0);
-    func_8003A264();
+    comb_Close();
     D_800A3834 = 8;
 }
 void func_8003A3F0(void) {
@@ -1471,7 +1471,7 @@ s32 func_8003A42C(s32 a0, u32 a1) {
     }
     return 1;
 }
-s32 func_8003A450(void) {
+s32 comb_Write8(void) {
     s32 s1;
     s32 s0;
 
@@ -1512,11 +1512,11 @@ s32 func_8003A450(void) {
     _comb_control(1, 1, 0);
     return D_800A382C;
 }
-void func_8003A574(void) {
+void comb_Read8(void) {
     read(D_800A3734, &D_800A3688, 8);
 }
 extern s32 D_800A38D0;
-s32 func_8003A5A0(void) {
+s32 comb_WaitRead8(void) {
     s32 s0;
     s32 s1;
     s32 a1;
@@ -1545,7 +1545,7 @@ loop_check:
     }
     _comb_control(2, 0, 0);
     s0 = 0;
-    func_8003A574();
+    comb_Read8();
     ResetRCnt(0xF2000001);
 poll:
     if (((_comb_control(0, 0, 0) >> 7) & 3) == 1) {
@@ -1655,17 +1655,17 @@ void func_8003A728(s32 a0) {
 
         if (flag != 0) {
             if (vsync == 0) {
-                func_8003A574();
+                comb_Read8();
             } else {
-                if (((FuncBufType)func_8003A450)(&D_800A3698) == 0) {
+                if (((FuncBufType)comb_Write8)(&D_800A3698) == 0) {
                     func_8003A3F0();
                     return;
                 }
                 D_800A3908 += func_8003A6FC(buf8 & 0xFFFF);
-                func_8003A574();
+                comb_Read8();
             }
         } else {
-            if (func_8003A5A0() == 0) {
+            if (comb_WaitRead8() == 0) {
                 func_8003A3F0();
                 return;
             }
@@ -1679,12 +1679,12 @@ void func_8003A728(s32 a0) {
                     return;
                 }
             }
-            if (((FuncBufType)func_8003A450)(&D_800A3698) == 0) {
+            if (((FuncBufType)comb_Write8)(&D_800A3698) == 0) {
                 func_8003A3F0();
                 return;
             }
             D_800A3908 += func_8003A6FC(buf8 & 0xFFFF);
-            func_8003A574();
+            comb_Read8();
             if (D_800A38A0 == 0) {
                 if (D_800A3730 != zero || (D_800A36C0 & 0x40000000)) {
                     func_8003A39C();

@@ -18,7 +18,7 @@ glabel func_8003BE10
     /* 2C650 8003BE50 1180043C */  lui        $a0, (0x80118800 >> 16)
     /* 2C654 8003BE54 09E2010C */  jal        func_80078824
     /* 2C658 8003BE58 00888434 */   ori       $a0, $a0, (0x80118800 & 0xFFFF)
-    /* 2C65C 8003BE5C EAD7000C */  jal        func_80035FA8
+    /* 2C65C 8003BE5C EAD7000C */  jal        snd_SerialMixOn
     /* 2C660 8003BE60 00000000 */   nop
     /* 2C664 8003BE64 05000424 */  addiu      $a0, $zero, 0x5
     /* 2C668 8003BE68 AADB000C */  jal        func_80036EA8

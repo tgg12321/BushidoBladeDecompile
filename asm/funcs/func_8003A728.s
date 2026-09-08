@@ -39,14 +39,14 @@ glabel func_8003A728
     /* 2AFBC 8003A7BC 00000000 */   nop
     /* 2AFC0 8003A7C0 0500A014 */  bnez       $a1, .L8003A7D8
     /* 2AFC4 8003A7C4 00000000 */   nop
-    /* 2AFC8 8003A7C8 5DE9000C */  jal        func_8003A574
+    /* 2AFC8 8003A7C8 5DE9000C */  jal        comb_Read8
     /* 2AFCC 8003A7CC 00000000 */   nop
     /* 2AFD0 8003A7D0 3DEA0008 */  j          .L8003A8F4
     /* 2AFD4 8003A7D4 00000000 */   nop
   .L8003A7D8:
     /* 2AFD8 8003A7D8 0A80043C */  lui        $a0, %hi(D_800A3698)
     /* 2AFDC 8003A7DC 98368424 */  addiu      $a0, $a0, %lo(D_800A3698)
-    /* 2AFE0 8003A7E0 14E9000C */  jal        func_8003A450
+    /* 2AFE0 8003A7E0 14E9000C */  jal        comb_Write8
     /* 2AFE4 8003A7E4 00000000 */   nop
     /* 2AFE8 8003A7E8 24004010 */  beqz       $v0, .L8003A87C
     /* 2AFEC 8003A7EC 00000000 */   nop
@@ -56,12 +56,12 @@ glabel func_8003A728
     /* 2AFFC 8003A7FC 00000000 */  nop
     /* 2B000 8003A800 21186200 */  addu       $v1, $v1, $v0
     /* 2B004 8003A804 3C0883AF */  sw         $v1, %gp_rel(D_800A3908)($gp)
-    /* 2B008 8003A808 5DE9000C */  jal        func_8003A574
+    /* 2B008 8003A808 5DE9000C */  jal        comb_Read8
     /* 2B00C 8003A80C 00000000 */   nop
     /* 2B010 8003A810 3DEA0008 */  j          .L8003A8F4
     /* 2B014 8003A814 00000000 */   nop
   .L8003A818:
-    /* 2B018 8003A818 68E9000C */  jal        func_8003A5A0
+    /* 2B018 8003A818 68E9000C */  jal        comb_WaitRead8
     /* 2B01C 8003A81C 00000000 */   nop
     /* 2B020 8003A820 16004010 */  beqz       $v0, .L8003A87C
     /* 2B024 8003A824 01000224 */   addiu     $v0, $zero, 0x1
@@ -83,7 +83,7 @@ glabel func_8003A728
   .L8003A864:
     /* 2B064 8003A864 0A80043C */  lui        $a0, %hi(D_800A3698)
     /* 2B068 8003A868 98368424 */  addiu      $a0, $a0, %lo(D_800A3698)
-    /* 2B06C 8003A86C 14E9000C */  jal        func_8003A450
+    /* 2B06C 8003A86C 14E9000C */  jal        comb_Write8
     /* 2B070 8003A870 00000000 */   nop
     /* 2B074 8003A874 05004014 */  bnez       $v0, .L8003A88C
     /* 2B078 8003A878 00000000 */   nop
@@ -99,7 +99,7 @@ glabel func_8003A728
     /* 2B098 8003A898 00000000 */  nop
     /* 2B09C 8003A89C 21186200 */  addu       $v1, $v1, $v0
     /* 2B0A0 8003A8A0 3C0883AF */  sw         $v1, %gp_rel(D_800A3908)($gp)
-    /* 2B0A4 8003A8A4 5DE9000C */  jal        func_8003A574
+    /* 2B0A4 8003A8A4 5DE9000C */  jal        comb_Read8
     /* 2B0A8 8003A8A8 00000000 */   nop
     /* 2B0AC 8003A8AC 0A80023C */  lui        $v0, %hi(D_800A38A0)
     /* 2B0B0 8003A8B0 A038428C */  lw         $v0, %lo(D_800A38A0)($v0)

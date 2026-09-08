@@ -150,7 +150,7 @@ glabel func_8003C040
     /* 2CA5C 8003C25C 00000000 */  nop
     /* 2CA60 8003C260 0C004004 */  bltz       $v0, .L8003C294
     /* 2CA64 8003C264 13000224 */   addiu     $v0, $zero, 0x13
-    /* 2CA68 8003C268 EAD7000C */  jal        func_80035FA8
+    /* 2CA68 8003C268 EAD7000C */  jal        snd_SerialMixOn
     /* 2CA6C 8003C26C 00000000 */   nop
     /* 2CA70 8003C270 00000582 */  lb         $a1, 0x0($s0)
     /* 2CA74 8003C274 AADB000C */  jal        func_80036EA8

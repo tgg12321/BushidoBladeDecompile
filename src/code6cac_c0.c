@@ -10,9 +10,9 @@ extern void _card_info(s32);
 extern void _card_load(s32);
 extern void _card_clear(s32);
 extern s32  func_80037804(void);
-extern void func_800379D8(void);
+extern void memcard_AckHwEvents(void);
 extern s32  func_80037964(void);
-extern void func_8003791C(void);
+extern void memcard_AckSwEvents(void);
 
 s32 func_80037D14(s32 arg0, s32 arg1) {
     s32 p = (arg0 << 4) + arg1;
@@ -51,7 +51,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         goto c1_e24;
     c1_df4:
         D_800A37F4 = 2;
-        func_800379D8();
+        memcard_AckHwEvents();
         _card_clear(p);
         func_80037964();
         D_800A31EC = 2;
@@ -66,7 +66,7 @@ s32 func_80037D14(s32 arg0, s32 arg1) {
         break;
     }
     case 2:
-        func_8003791C();
+        memcard_AckSwEvents();
         _card_load(p);
         D_800A31EC = 3;
         D_800A3924 = 0;

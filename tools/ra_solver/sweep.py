@@ -47,10 +47,10 @@ RA = WORK / "ra"
 # The parked queue items whose park reason names a register exchange.
 TARGETS = [
     ("func_800611A4", "text1b", "v0<->v1 RA swap (local-alloc.c:472 + find_free_reg)"),
-    ("func_80037A20", "code6cac_c", "s0<->s1 allocno-priority swap + cse REG_WAS_0 fold"),
+    ("memcard_CountFiles", "code6cac_c", "s0<->s1 allocno-priority swap + cse REG_WAS_0 fold"),
     ("func_80056FE8", "text1b", "a1<->a2 find_reg swap, no copy-preference anchor"),
     ("func_80033550", "code6cac_b", "RA $a1-vs-$a3 (asm pin)"),
-    ("special_camera_get_rot_dir", "code6cac_b2_post",
+    ("cdrom_LoadExec", "code6cac_b2_post",
      "copy_end->s5 rotation reachable only via register pin"),
 ]
 
@@ -391,7 +391,7 @@ def main():
               "the same stripped source via `honest_model.py` / "
               "`honest_local_model.py`._\n")
     md.append("\n_Re-run 2026-08-06 after the `extract.py` greg<->ent alignment "
-              "fix (ALLOCDBG-indexed instead of pseudo-set-subset): func_80037A20 "
+              "fix (ALLOCDBG-indexed instead of pseudo-set-subset): memcard_CountFiles "
               "moved GAP -> LEVER; the other four verdicts are unchanged, and "
               "`validate.py` stayed 10/10 EXACT._\n")
     # The caveat block lives HERE, in the generator, not in the .md — the doc
@@ -441,7 +441,7 @@ def main():
               "table any more: those atoms are foreclosed before emission "
               "unless the register is provably appearable. Where a verdict "
               "rests only on `refs_up`/`refs_down`, note that 61912561 "
-              "measured func_80037A20's refs vectors (pointer >=10, counter "
+              "measured memcard_CountFiles's refs vectors (pointer >=10, counter "
               "<=4) as byte-forced and already killed in s7/s8 — the model "
               "reaches the goal, the C cannot._\n")
 

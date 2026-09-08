@@ -1,7 +1,7 @@
 glabel func_8001DA8C
     /* E28C 8001DA8C E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* E290 8001DA90 1000BFAF */  sw         $ra, 0x10($sp)
-    /* E294 8001DA94 EAD7000C */  jal        func_80035FA8
+    /* E294 8001DA94 EAD7000C */  jal        snd_SerialMixOn
     /* E298 8001DA98 00000000 */   nop
     /* E29C 8001DA9C F559000C */  jal        file_GetFlag2
     /* E2A0 8001DAA0 00000000 */   nop

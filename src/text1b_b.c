@@ -431,7 +431,7 @@ extern void replay_camera_Init(s32, s32);
 extern s32 D_800EFC5C;
 extern s32 D_800EFB5C;
 extern void func_800858D0(s32);
-extern void func_8005C4C0(s32, s32);
+extern void snd_VabFakeOpen(s32, s32);
 extern u32 D_800EFC38[];
 extern u32 D_800EFB38[];
 extern u8 D_8009AD18[];

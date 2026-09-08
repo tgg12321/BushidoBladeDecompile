@@ -11,7 +11,7 @@ glabel func_8003ACB8
     /* 2B4DC 8003ACDC 040880AF */  sw         $zero, %gp_rel(D_800A38D0)($gp)
     /* 2B4E0 8003ACE0 3C0880AF */  sw         $zero, %gp_rel(D_800A3908)($gp)
     /* 2B4E4 8003ACE4 300880AF */  sw         $zero, %gp_rel(D_800A38FC)($gp)
-    /* 2B4E8 8003ACE8 5DE8000C */  jal        func_8003A174
+    /* 2B4E8 8003ACE8 5DE8000C */  jal        comb_Init
     /* 2B4EC 8003ACEC 00000000 */   nop
   .L8003ACF0:
     /* 2B4F0 8003ACF0 5A65000C */  jal        func_80019568

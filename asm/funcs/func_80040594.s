@@ -92,7 +92,7 @@ glabel func_80040594
     /* 30EE0 800406E0 23202402 */  subu       $a0, $s1, $a0
     /* 30EE4 800406E4 40280200 */  sll        $a1, $v0, 1
     /* 30EE8 800406E8 2128A200 */  addu       $a1, $a1, $v0
-    /* 30EEC 800406EC 3071010C */  jal        func_8005C4C0
+    /* 30EEC 800406EC 3071010C */  jal        snd_VabFakeOpen
     /* 30EF0 800406F0 0100A524 */   addiu     $a1, $a1, 0x1
   .L800406F4:
     /* 30EF4 800406F4 0400248E */  lw         $a0, 0x4($s1)

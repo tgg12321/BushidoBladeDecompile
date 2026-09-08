@@ -11,7 +11,7 @@ glabel func_8003A39C
     /* 2ABC0 8003A3C0 01000524 */  addiu      $a1, $zero, 0x1
     /* 2ABC4 8003A3C4 1931020C */  jal        _comb_control
     /* 2ABC8 8003A3C8 21300000 */   addu      $a2, $zero, $zero
-    /* 2ABCC 8003A3CC 99E8000C */  jal        func_8003A264
+    /* 2ABCC 8003A3CC 99E8000C */  jal        comb_Close
     /* 2ABD0 8003A3D0 00000000 */   nop
     /* 2ABD4 8003A3D4 08000224 */  addiu      $v0, $zero, 0x8
     /* 2ABD8 8003A3D8 0A80013C */  lui        $at, %hi(D_800A3834)

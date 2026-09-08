@@ -29,7 +29,7 @@ extern void seq_Reset(void);
 extern void VSync(s32);
 extern void LoadImage(s32, s32);
 extern s32 func_80036FD4(void);
-extern void func_80035FA8(void);
+extern void snd_SerialMixOn(void);
 extern s32 D_800109BC;
 extern void game_Cleanup(void);
 extern s32 func_800371E8(s16);
@@ -39,7 +39,7 @@ extern s32 D_80102794;
 extern u8 *D_800A3894;
 extern s16 D_800A38C4;
 extern s16 D_80101F32;
-extern void func_80035F30(s32, s32, s32, s32);
+extern void cdrom_SetMix(s32, s32, s32, s32);
 extern void obj_InitChars(void);
 extern void obj_Reset(void);
 extern void obj_InitTask(void);
@@ -81,8 +81,8 @@ extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
-extern void special_camera_get_rot_dir(s32 *);
+extern void snd_Quit(void);
+extern void cdrom_LoadExec(s32 *);
 extern void StopPAD(void);
 extern void StopCallback(void);
 extern s32 D_800A3210;
@@ -172,7 +172,7 @@ extern s32 D_800F34D8;
 
 /* --- Functions from 6CAC segment (0x80017FA0 - 0x8003EDC0) --- */
 
-void func_800375EC(void) {
+void memcard_Init(void) {
     InitCARD(1);
     StartCARD();
     _bu_init();
@@ -244,7 +244,7 @@ s32 func_800378A8(void) {
     }
     return (TestEvent(D_800A3800) == 1) * 4;
 }
-void func_8003791C(void) {
+void memcard_AckSwEvents(void) {
     TestEvent(D_800A37DC);
     TestEvent(D_800A37F0);
     TestEvent(D_800A37FC);
@@ -259,13 +259,13 @@ loop:
     if (TestEvent(D_800A3850) != one) { goto loop; }
     return 4;
 }
-void func_800379D8(void) {
+void memcard_AckHwEvents(void) {
     TestEvent(D_800A3838);
     TestEvent(D_800A383C);
     TestEvent(D_800A3848);
     TestEvent(D_800A3850);
 }
-s32 func_80037A20(s32 arg0, s32 arg1) {
+s32 memcard_CountFiles(s32 arg0, s32 arg1) {
     s32 *var_s0;
     s32 var_s1;
     s32 sp10[8];
@@ -366,7 +366,7 @@ s32 func_80037B00(u8 *arg0) {
 }
 extern s32 open(s32 *, s32);
 typedef void (*Func79A30_5)(s32 *, s32 *, s32, s32, s32);
-s32 func_80037B90(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 memcard_ReadFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 sp18[8];
     s32 temp_v0;
 
@@ -376,14 +376,14 @@ s32 func_80037B90(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         return -1;
     }
     D_800A3794 = temp_v0;
-    func_8003791C();
-    func_800379D8();
+    memcard_AckSwEvents();
+    memcard_AckHwEvents();
     read(temp_v0, arg3, arg4);
     return -(func_80037964() != 1);
 }
 extern void close(s32);
 extern void write(s32, s32, s32);
-s32 func_80037C34(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+s32 memcard_WriteFile(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
     s32 sp18[8];
     s32 temp_v0;
 
@@ -400,8 +400,8 @@ s32 func_80037C34(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s3
         return -1;
     }
     D_800A3794 = temp_v0;
-    func_8003791C();
-    func_800379D8();
+    memcard_AckSwEvents();
+    memcard_AckHwEvents();
     write(temp_v0, arg3, arg5);
     return -(func_80037964() != 1);
 }

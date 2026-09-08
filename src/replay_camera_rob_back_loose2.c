@@ -23,7 +23,7 @@ void func_80035618(s32 arg0) {
     case 0:
         if (D_800A31DA == 0) {
             func_800784E4(0x80118800);
-            func_80035FA8();
+            snd_SerialMixOn();
             func_80037110(0);
             D_800A3740 = 4;
             return;

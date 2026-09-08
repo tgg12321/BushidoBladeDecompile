@@ -287,8 +287,8 @@ void disp_Init(void) {
 extern void InitPAD(u8 *, s32, u8 *, s32);
 extern void StartPAD(void);
 extern void ChangeClearPAD(s32);
-extern void func_80035FE0(void);
-extern void func_800375EC(void);
+extern void cdrom_Init(void);
+extern void memcard_Init(void);
 extern u8 g_pad_data;
 void sys_Init(void) {
     u8 *base = &g_pad_data;
@@ -299,8 +299,8 @@ void sys_Init(void) {
     disp_Init();
     g_disp_enable = DISP_DISABLED;
     g_disp_fade = 0;
-    func_80035FE0();
-    func_800375EC();
+    cdrom_Init();
+    memcard_Init();
     sys_InitSound();
 }
 void func_80016A8C(u8 *arg0, u8 *arg1, s32 arg2) {
@@ -373,21 +373,21 @@ void file_LoadOverlay(void) {
     }
     g_file_dma_flag = 1;
 }
-extern void func_8005B43C(void);
+extern void snd_Init(void);
 extern s32 func_8005B7C4(u32);
 extern void memcpy(u32, u32, s32);
-extern void func_8005C4C0(u32, s32);
+extern void snd_VabFakeOpen(u32, s32);
 extern void func_8005C614(void);
 void file_LoadSoundData(void) {
     s32 size;
 
-    func_8005B43C();
+    snd_Init();
     size = func_8005B7C4(0x801D8800);
     if (size >= 0xD01) {
         sys_Panic();
     }
     memcpy(0x8010DB00, 0x801D8800, size);
-    func_8005C4C0(0xFFF35300, 0);
+    snd_VabFakeOpen(0xFFF35300, 0);
     func_8005C614();
     D_800A3906 = 1;
 }

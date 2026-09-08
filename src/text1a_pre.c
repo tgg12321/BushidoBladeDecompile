@@ -245,7 +245,7 @@ after_select:
         func_800520B8(a0[8], a0[7], off);
         rmd = (s32 *)a0[7];
         if ((a0[0] >> 1) & 1) {
-            func_8005C4C0((s32)rmd - a0[8], ((s16 *)a0)[2] * 3 + 1);
+            snd_VabFakeOpen((s32)rmd - a0[8], ((s16 *)a0)[2] * 3 + 1);
         }
     }
 

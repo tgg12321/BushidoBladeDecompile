@@ -1851,7 +1851,7 @@ void func_80045A50(s32 a0) {
     func_800453E0(a0);
 }
 extern void func_80044100(s32, s32);
-extern void func_8005C4C0(s32, s32);
+extern void snd_VabFakeOpen(s32, s32);
 void func_80045AA4(s32 a0, s32 a1) {
     s32 *ptr;
     s32 idx;
@@ -1869,7 +1869,7 @@ void func_80045AA4(s32 a0, s32 a1) {
     if ((ptr[0] >> 1) & 1) {
         s32 val = *(s16 *)((u8 *)ptr + 4);
         idx = 3 * val + 1;
-        func_8005C4C0(a1, idx);
+        snd_VabFakeOpen(a1, idx);
     }
 }
 INCLUDE_ASM("asm/funcs", func_80045B68);
@@ -1878,7 +1878,7 @@ void func_80046020(void) {
     func_800453E0(6);
     func_8005B6AC();
 }
-extern void func_8005C4C0(s32, s32);
+extern void snd_VabFakeOpen(s32, s32);
 void func_80046048(s32 a0, s32 a1) {
     s32 *s0;
     s32 count;
@@ -1901,7 +1901,7 @@ void func_80046048(s32 a0, s32 a1) {
     }
     s0++;
     do {
-        func_8005C4C0(a1, *s0++);
+        snd_VabFakeOpen(a1, *s0++);
         count--;
     } while (count != -1);
 }

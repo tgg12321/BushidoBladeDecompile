@@ -6,7 +6,7 @@ glabel game_FrameInit
     /* 276D0 80036ED0 21200000 */  addu       $a0, $zero, $zero
     /* 276D4 80036ED4 21280000 */  addu       $a1, $zero, $zero
     /* 276D8 80036ED8 21300000 */  addu       $a2, $zero, $zero
-    /* 276DC 80036EDC CCD7000C */  jal        func_80035F30
+    /* 276DC 80036EDC CCD7000C */  jal        cdrom_SetMix
     /* 276E0 80036EE0 21380000 */   addu      $a3, $zero, $zero
     /* 276E4 80036EE4 5200020C */  jal        CdFlush
     /* 276E8 80036EE8 00000000 */   nop

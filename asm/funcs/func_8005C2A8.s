@@ -93,7 +93,7 @@ glabel func_8005C2A8
     /* 4CBFC 8005C3FC 21187100 */  addu       $v1, $v1, $s1
     /* 4CC00 8005C400 080023AE */  sw         $v1, 0x8($s1)
     /* 4CC04 8005C404 21105100 */  addu       $v0, $v0, $s1
-    /* 4CC08 8005C408 6A71010C */  jal        func_8005C5A8
+    /* 4CC08 8005C408 6A71010C */  jal        snd_VabOpen
     /* 4CC0C 8005C40C 040022AE */   sw        $v0, 0x4($s1)
     /* 4CC10 8005C410 01000424 */  addiu      $a0, $zero, 0x1
     /* 4CC14 8005C414 6121020C */  jal        SsVabTransCompleted

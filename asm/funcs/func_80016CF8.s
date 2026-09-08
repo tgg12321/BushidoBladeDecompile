@@ -1,7 +1,7 @@
 glabel func_80016CF8
     /* 74F8 80016CF8 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 74FC 80016CFC 1400BFAF */  sw         $ra, 0x14($sp)
-    /* 7500 80016D00 0F6D010C */  jal        func_8005B43C
+    /* 7500 80016D00 0F6D010C */  jal        snd_Init
     /* 7504 80016D04 1000B0AF */   sw        $s0, 0x10($sp)
     /* 7508 80016D08 1D80043C */  lui        $a0, (0x801D8800 >> 16)
     /* 750C 80016D0C F16D010C */  jal        func_8005B7C4
@@ -21,7 +21,7 @@ glabel func_80016CF8
     /* 7540 80016D40 21300002 */   addu      $a2, $s0, $zero
     /* 7544 80016D44 F3FF043C */  lui        $a0, (0xFFF35300 >> 16)
     /* 7548 80016D48 00538434 */  ori        $a0, $a0, (0xFFF35300 & 0xFFFF)
-    /* 754C 80016D4C 3071010C */  jal        func_8005C4C0
+    /* 754C 80016D4C 3071010C */  jal        snd_VabFakeOpen
     /* 7550 80016D50 21280000 */   addu      $a1, $zero, $zero
     /* 7554 80016D54 8571010C */  jal        func_8005C614
     /* 7558 80016D58 00000000 */   nop

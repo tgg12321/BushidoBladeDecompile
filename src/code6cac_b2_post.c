@@ -74,7 +74,7 @@ extern void file_LoadOverlay(void);
 extern void func_80040510(s32, s32, s32);
 extern void stage_GetDataPtr(void);
 
-extern void func_8005B50C(void);
+extern void snd_Quit(void);
 extern void func_80037774(void);
 extern void StopPAD(void);
 extern void StopCallback(void);
@@ -161,7 +161,7 @@ s32 func_80035EDC(s32 a0) {
 extern void CdMix(u8 *);
 extern u8 D_800A3718;
 extern s16 D_800A3854;
-void func_80035F30(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void cdrom_SetMix(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     D_800A3718 = (u8)arg0;
     D_800A3719 = (u8)arg1;
     D_800A371A = (u8)arg2;
@@ -179,15 +179,15 @@ void func_80035F78(s16 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800A3840 = 0;
     D_800A36BB = (u8)arg4;
 }
-void func_80035FA8(void) {
+void snd_SerialMixOn(void) {
     SsSetSerialAttr(0, 0, 1);
     SsSetSerialVol(0, 0x7F, 0x7F);
 }
 extern u8 D_800A31E4;
-void func_80035FE0(void) {
+void cdrom_Init(void) {
     CdInit();
     CdSetDebug(0);
-    func_80035F30(0, 0, 0, 0);
+    cdrom_SetMix(0, 0, 0, 0);
     D_80101E60.unk02 = 0;
     if (D_800A31E4 == 0) {
         D_800A31E4 = 1;
@@ -272,7 +272,7 @@ s32 func_80036EA8(s32 arg0, s32 arg1) {
 }
 void game_FrameInit(void) {
     CdReadyCallback(0);
-    func_80035F30(0, 0, 0, 0);
+    cdrom_SetMix(0, 0, 0, 0);
     CdFlush();
     CdControlF(9, 0);
     D_80101E60.unk08 = 1;
@@ -425,18 +425,19 @@ s32 func_800372F4(s32 nbytes, s32 buf, s32 mode) {
     } while (v > 0);
     return v;
 }
-/* The 60-byte camera-rotation record the game reads out of the CD sector: the
- * 0x3C bytes starting 0x10 into the sector buffer. */
+/* The 0x3C-byte struct EXEC (PS-EXE header body) that sits 0x10 into the first
+ * sector of a PS-EXE image on disc: pc0, gp0, t_addr, t_size, ... */
 typedef struct { s32 rot[15]; } CamRot;
 extern void CdControl(s32, s32, s32);
 extern void CdIntToPos(s32, s32);
-/* Reads the special-camera rotation table for the current stage off the CD.
- * Seeks to the stage's entry in the SpecialCam directory, reads one 2048-byte
- * sector into a stack buffer, copies the 60-byte rotation record out of it into
- * the caller's dest[], then seeks to the following sector and reads the
- * variable-length block described by dest[2] (address) / dest[3] (length).
- * Any failed read restarts the whole sequence from the seek. */
-void special_camera_get_rot_dir(s32 *dest) {
+/* Loads a PS-EXE from disc (renamed cdrom_LoadExec 2026-09-07; was
+ * special_camera_get_rot_dir - nothing camera-related). Seeks to entry
+ * D_8008F12C[6] (=156, MOVOVL.EXE) of the SpecialCam CD-locator table, reads
+ * one 2048-byte sector, copies the struct EXEC at +0x10 into the caller's
+ * dest[], then seeks to the following sector and reads t_size (dest[3]) bytes to
+ * t_addr (dest[2]). The sole caller, sys_Exec, then Exec()s dest. Any failed read
+ * restarts the whole sequence from the seek. */
+void cdrom_LoadExec(s32 *dest) {
     u8 sp_buf[0x800];
     u8 sp_buf2[8];
     s32 index;
@@ -463,16 +464,16 @@ void special_camera_get_rot_dir(s32 *dest) {
     }
 }
 /* kengo:MED  |  nm_special_cam/special_camera_get_rot_dir  |  66i  |  +6 9.1% */
-void func_80037468(s32 a0, s32 *a1, s32 a2) {
+void sys_Exec(s32 a0, s32 *a1, s32 a2) {
     s32 sp[16];
     VSync(0);
     SetDispMask(0);
     gpu_EnableDisplay();
-    func_8005B50C();
+    snd_Quit();
     func_80037774();
     ResetCallback();
     CdInit();
-    special_camera_get_rot_dir(sp);
+    cdrom_LoadExec(sp);
     DrawSync(0);
     ResetGraph(0);
     StopPAD();
@@ -487,7 +488,7 @@ void func_80037468(s32 a0, s32 *a1, s32 a2) {
     SetDispMask(1);
 }
 extern s32 func_800392B8(void);
-extern void func_80037468(s32, s32 *, s32);
+extern void sys_Exec(s32, s32 *, s32);
 void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     /* n.b.! needs to be 25-32 bytes (inclusive): target frame 0x48 - callee
        saves (6 regs @ 0x30-0x44 = 24) - outgoing args (16) = 32-byte locals
@@ -508,5 +509,5 @@ void func_80037540(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     sp[4] = (s32)&SpecialCam + v0 * 8;
     sp[5] = a4;
     v0 = func_800392B8();
-    func_80037468(6, sp, v0 + 0x7FC);
+    sys_Exec(6, sp, v0 + 0x7FC);
 }

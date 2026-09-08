@@ -314,6 +314,26 @@ def libscan_evidence(a):
     return "libscan-verbatim: %s/%s XDEF %s @ %s" % (e["lib"], e["module"], e["name"], off)
 
 
+# ---------------------------------------------------------------- apiscan (API-restatement)
+# Second evidence source, below libscan: the name RESTATES the VERIFIED library calls the
+# body makes plus the literal device/format strings it passes (docs/naming/apiscan/README.md).
+# Only rows a fresh adversarial verifier graded CONFIRM are consumed. Tier CORROBORATED:
+# body behaviour affirmatively agrees with the name's claim, with a citation.
+apiscan = {}   # ADDR(no 0x, upper) -> dict(name, evidence, note)
+ap = J("docs", "naming", "apiscan", "rename_manifest.csv")
+if os.path.exists(ap):
+    with open(ap, newline="", encoding="utf-8", errors="replace") as fh:
+        for r in csv.DictReader(fh):
+            if (r.get("verdict") or "").strip().upper() != "CONFIRM":
+                continue
+            a = (r.get("addr") or "").strip().upper().replace("0X", "")
+            if not re.fullmatch(r"[0-9A-F]{8}", a) or not (r.get("proposed_name") or "").strip():
+                continue
+            apiscan[a] = dict(name=r["proposed_name"].strip(),
+                              evidence=(r.get("evidence") or "").strip(),
+                              note=(r.get("verifier_note") or "").strip())
+
+
 # ---------------------------------------------------------------- queue
 queue_funcs = set()
 qp = J("engine", "queue.json")
@@ -429,6 +449,20 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
                       "string that does NOT match the XDEF name — review before applying")
         same = (nm == e["name"]) or e["classification"] == "CONFIRM"
         rows.append(dict(common, origin="libscan-verbatim", tier="VERIFIED",
+                         evidence="; ".join(ev)[:1000],
+                         action="KEEP" if same else "RENAME",
+                         proposed_name="" if same else e["name"]))
+        continue
+
+    # --- apiscan: API-restatement identity (docs/naming/apiscan/). Checked before the
+    # AUTO short-circuit for the same reason as libscan: a FILL row is an auto glabel.
+    if addr in apiscan:
+        e = apiscan[addr]
+        same = (nm == e["name"])
+        ev = ["apiscan-restatement: " + e["evidence"][:600]]
+        if e["note"]:
+            ev.append("verifier: " + e["note"][:200])
+        rows.append(dict(common, origin="apiscan-restatement", tier="CORROBORATED",
                          evidence="; ".join(ev)[:1000],
                          action="KEEP" if same else "RENAME",
                          proposed_name="" if same else e["name"]))

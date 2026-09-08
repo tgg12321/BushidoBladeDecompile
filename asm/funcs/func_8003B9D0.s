@@ -166,7 +166,7 @@ glabel func_8003B9D0
     /* 2C42C 8003BC2C 683722A0 */  sb         $v0, %lo(D_800A3768)($at)
     /* 2C430 8003BC30 0A80013C */  lui        $at, %hi(D_800A36A8)
     /* 2C434 8003BC34 A83620A0 */  sb         $zero, %lo(D_800A36A8)($at)
-    /* 2C438 8003BC38 EAD7000C */  jal        func_80035FA8
+    /* 2C438 8003BC38 EAD7000C */  jal        snd_SerialMixOn
     /* 2C43C 8003BC3C 00000000 */   nop
     /* 2C440 8003BC40 0A80023C */  lui        $v0, %hi(D_800A3878)
     /* 2C444 8003BC44 7838428C */  lw         $v0, %lo(D_800A3878)($v0)
