@@ -1394,3 +1394,57 @@ candidate applied to src/code6cac_b.c, NO FAKE construct present anywhere in the
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD d9de5549 (-mel -msoft-float), a2/a3 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s13] A decomp-permuter campaign run on the 2-floor (d1) chassis finds the az/dx transposition that the twelve-session hand search has not reached.
+- mechanism: The residual is a single adjacent transposition of two independent statements with every register in the function already correct - the smallest, most permuter-shaped residual this function has ever had. The permuter's randomized statement-reorder / expression-rewrite mutations sample exactly that space, and unlike its intermediate weighted scores (which s4 measured anti-correlated with the engine metric here) a TRUE match scores 0 and is reported regardless of the anti-correlation.
+- probe: The s4 workspace was re-based onto the current candidate (tmp/grind/func_8002D780/s13/mkbase.py: comments stripped, the four `__asm__ volatile` statements re-encoded as `#pragma _permuter b64literal`, spliced over the old body in base.c; s4 base.c preserved as s13/base_s4_backup.c). Launched via tools/permuter_campaign.py (label s13-d1-2floor-chassis, -j 8, --stop-on-zero); the permuter's own scorer reported base_score 30 against s4's 300, independently confirming the chassis improvement. Waited in-turn across three 9-minute fresh-seed windows, then harvested with --stop.
+- result: KILLED. 52,368 iterations, ZERO novel finds, and no find at or below base_score 30 - every one of the 12 output dirs in the workspace is an s4-era find (`"new": false` in the harvest report). Campaign confirmed dead (status: alive false, 52,603 iterations). Log: tmp/grind/func_8002D780/s13/campaign_s13.log. The fresh-seed stopping rule (20-30 min with no novel find) is satisfied with margin.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4a44c3ce (-mel -msoft-float), the s12 d1_az_hoisted candidate as the permuter base and in src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s13] The sched2 az/dx tie can be broken by re-spelling the second product of `kc` - swapping its operand order, naming it as an intermediate, or moving where `dx` and `bz` are named.
+- mechanism: sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class, then INSN_LUID (tools/gcc-2.7.2/sched.c:2464). Four source-level handles on that comparison had not been measured: the mult's operand order (which feeds the RTL operand order and therefore the dependence edges), a named intermediate for the product (which forces the product to be its own statement), and declaring `dx` or `bz` at positions AFTER `az` rather than before it.
+- probe: e1 `kc = dz * ax - az * (x2 - x0)`; e2 `s32 ax; s32 dz; s32 az; s32 dx;` (dx named fourth); e3 `s32 q = (x2 - x0) * az; kc = dz * ax - q;`; e4 `bz` named inside a nested block after `kc` is assigned. Generator tmp/grind/func_8002D780/s13/gen_e.py, all four scored on the engine sandbox.
+- result: KILLED. e1 = 3/202 (a REGRESSION: the mult operand order is itself a matched byte, so swapping it costs a third differing instruction); e2 = 2/202 (inert); e3 = 36/202 (naming the product makes it its own statement and scrambles the block-7 multiply emission order wholesale); e4 = 2/202 (inert). Banked as rejected/kc-second-product-operand-swap-3.c, rejected/dx-named-fourth-inert-2.c, rejected/named-product-intermediate-scrambles-mults-36.c, rejected/bz-named-after-dx-inert-2.c. e2 and e4 are the informative pair: they confirm the s12 span model from the other side, since an insn added AFTER dx's birth changes nothing at all, and only an insn strictly BETWEEN dz's and dx's births moves the seats - which is precisely the insn that then loses the sched2 LUID tie.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4a44c3ce (-mel -msoft-float), e1/e2/e3/e4 spliced into src/code6cac_b.c on the d1 candidate chassis, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s14] Swapping the FIRST product's operand order raises dx above az in rank_for_schedule — KILLED (instance)
+Mechanism: `kc = dz * ax - (x2 - x0) * az;` emits `mult $a0,$v0`; writing it `ax * dz` changes
+which operand is the multiplicand, which changes the def-use edges feeding mult1 and could shift
+the longest-path INSN_PRIORITY of the subus feeding it (sched.c rank_for_schedule, sched.c:2464).
+s13 had measured the SECOND product's swap (e1 = 3); the first product's swap was untried.
+Probe: f1 = candidate.c with `kc = ax * dz - (x2 - x0) * az;`, spliced into src/code6cac_b.c,
+`sandbox func_8002D780 --disable all`.
+Result: 3/202 (regression from 2). The first mult's operand order is itself a matched byte, so the
+swap costs an instruction before any scheduling effect can pay for it.
+measured_on: HEAD 551f3dae (-mel -msoft-float), candidate.c chassis in src/code6cac_b.c, one FAKE
+construct present (the `m` re-store, ablation-confirmed load-bearing this session: keep-all 2 /
+drop-1 6).
+Banked: rejected/first-product-operand-swap-3.c
+
+## [s14] The candidate's sole FAKE construct occupies a pseudo unrelated to the residual — CONFIRMED
+Mechanism: a lever measured inert while a FAKE carrier occupies its target pseudo is not a kill
+(func_8002EA24 s8). The mandated re-audit asks whether the s12/s13 sched-lever kills were measured
+under that contamination.
+Probe: `tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate
+memory/grind/func_8002D780/candidate.c`.
+Result: exactly 1 FAKE unit (same-value re-store of `m`, candidate.c L142); keep-all = 2/202,
+drop-1 = 6/202. Load-bearing (4 insns) and located on the `m`/`lzcr` pseudo in the sqrt block,
+disjoint from the `dz`/`dx`/`az` pseudos of the block-7 residual. The banked sched kills stand.
+
+## [s13] Swapping the operand order of the FIRST product (kc = ax * dz - (x2 - x0) * az) reorders the def-use edges into mult1 and raises dx above az in rank_for_schedule.
+- mechanism: sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class, then INSN_LUID (tools/gcc-2.7.2/sched.c:2464). dx and az tie on the first two and az wins on LUID. Changing which subu is the multiplicand of mult1 changes the longest-path priorities feeding it. s13 measured the SECOND product's swap (e1 = 3); the first product's swap was untried.
+- probe: f1 = candidate.c with `kc = ax * dz - (x2 - x0) * az;` spliced into src/code6cac_b.c; `sandbox func_8002D780 --disable all`.
+- result: 3/202, a regression from the 2/202 control. The first mult's operand order is itself a matched byte, so the swap costs an instruction before any scheduling effect can pay for it. Banked as memory/grind/func_8002D780/rejected/first-product-operand-swap-3.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 551f3dae (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local `m`, ablation-confirmed load-bearing this session: keep-all 2 / drop-1 6)
+
+## [s13] The candidate's sole FAKE construct sits on the `m`/`lzcr` pseudo in the sqrt block, disjoint from the dz/dx/az pseudos where the block-7 residual is, so the s12/s13 scheduler-lever kills were not measured with a FAKE carrier occupying their target pseudo.
+- mechanism: fake_ablate.py enumerates annotated FAKE units and re-scores with each dropped; the func_8002EA24-s8 failure mode is a lever measured inert while a FAKE carrier already held its target pseudo.
+- probe: python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate memory/grind/func_8002D780/candidate.c
+- result: Exactly 1 FAKE unit (candidate.c L142, the same-value re-store of `m`): keep-all = 2/202, drop-1 = 6/202. Load-bearing (worth 4 insns) and located in the sqrt block. The banked scheduler kills stand un-contaminated.
+- verdict: CONFIRMED

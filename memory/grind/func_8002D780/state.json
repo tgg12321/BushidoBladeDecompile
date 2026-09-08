@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 12,
- "current_modality": "structural",
+ "session_count": 13,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -75,23 +75,19 @@
    "floor": 2,
    "modality": "structural",
    "headline": "Floor holds at 2/202 but the residual moved off the delay slot: the new candidate holds the target's slot AND every register, leaving one adjacent az/dx transposition inside block 7."
+  },
+  {
+   "session": 13,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Disposition RE-FILED under a heading the driver's owner-gated check can see (OWNER-ESCALATION token + func name on one line); floor re-measured 2/202, both endgame gates re-run and FAIL, FAKE ablation"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "sched2 can be made to emit `dx` before `az` on the d1 candidate without moving dx's birth earlier, closing the last two instructions.",
-   "mechanism": "sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class, then INSN_LUID (tools/gcc-2.7.2/sched.c:2464). dx and az are independent subus that both feed mult2, so their longest-path priorities and classes are equal and az wins on LUID - which is exactly the property that lengthens dz's live range and buys the target's register seats. The naive fix (give dx the lower LUID) is self-cancelling and measured dead as d5. What is needed is an asymmetry in the first two comparisons, or a post-reload hard-register dependence that blocks az until after dx.",
-   "next_probe": "Run tools/sched_solver on the d1 stream (both passes modelled order- and clock-exactly). Ask it, over the sched1 statement orders reachable from ordinary C spellings of test 3, for the set that simultaneously (a) puts at least one insn between dz's def and dx's def - verified against the .lreg blk=7 QTYDBG table as dz span > dx span - and (b) has a sched2 output equal to the target's block-7 emission order ax, dz, mult1, dx, az, mult2, bx, mult3, bz, mult4, kc, kp, xor, branch. Score only bodies the solver types REACHABLE, and require build_insns == 202."
-  },
-  {
-   "hypothesis": "A tie-breaking insn other than `az` sits between dz's def and dx's def at sched1 time yet is placed AFTER dx by sched2.",
-   "mechanism": "Same positional mechanism as `az`, but with an insn whose INSN_PRIORITY is lower than dx's (a longer dependence chain to the end of block 7) or which acquires a WAR/WAW dependence on a hard register written by dx's insn after reload. `az` has equal priority and loses only on LUID; bz and bx have the right chain length on paper but sched1 sinks them before they can serve (s12 kill), so the candidate insn must be needed early and consumed late - a shape that does not exist among the six test-3 differences.",
-   "next_probe": "Only after frontier 1. If spent, enumerate with sched_solver rather than by hand: the s12 measurements show hand-guessing which difference 'stays high' is unreliable (bz and bx both looked equivalent to az on paper and both sank)."
-  },
-  {
-   "hypothesis": "A decomp-permuter campaign on the d1 chassis finds the transposition the hand search has not reached.",
-   "mechanism": "The residual is now a single adjacent transposition of two independent statements with every register in the function already correct - the smallest and most permuter-shaped residual this function has ever had, and strictly easier than the s4 campaign (which ran on a 7-floor chassis dominated by residuals B and C) or the s11 framing (a reorg delay-slot decision the permuter cannot address).",
-   "next_probe": "Regenerate base.c from the NEW memory/grind/func_8002D780/candidate.c into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (s4's finding that the permuter's weighted metric is anti-correlated with the engine's here still applies)."
+   "hypothesis": "sched2 can be made to emit dx before az without moving dx's birth earlier, closing the last two instructions.",
+   "mechanism": "rank_for_schedule ties on INSN_PRIORITY and dependence class and falls through to INSN_LUID (sched.c:2464); the LUID fix is self-cancelling against the local-alloc span that buys the register seats (s12 d5 = 9). A fix needs an asymmetry in the first two comparisons or a post-reload hard-register dependence blocking az until after dx - no ordinary-C spelling for either has been found in 14 sessions.",
+   "next_probe": "Only re-openable under re-activation trigger (1) or (2) in the filed entry: a class grant covering an insn-positioning construct, or a toolchain change to rank_for_schedule's tie-break inputs (CC_FLAGS of the -mel / -msoft-float class, or a maspsx/ASPSX fidelity gate altering pre-reload insn counts in block 7). Either voids every chassis-relative kill here and the ledger's re-measurement discipline re-opens the function."
   }
  ],
  "judge_constraints": [],
@@ -496,6 +492,14 @@
    "measured_on": "HEAD d9de5549 (-mel -msoft-float), a2/a3 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)",
    "predicate_cite": "",
    "result": "KILLED. Both score 26/202 at 202 insns. The pairdiff of a3 shows the damage is not in block 7 at all: making ax live acr"
+  },
+  {
+   "session": 13,
+   "statement": "Swapping the operand order of the FIRST product (kc = ax * dz - (x2 - x0) * az) reorders the def-use edges into mult1 and raises dx above az in rank_for_schedule.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 551f3dae (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local `m`, ablation-confirmed load-bearing this session",
+   "predicate_cite": "",
+   "result": "3/202, a regression from the 2/202 control. The first mult's operand order is itself a matched byte, so the swap costs a"
   }
  ],
  "ladder_skip": 0,
