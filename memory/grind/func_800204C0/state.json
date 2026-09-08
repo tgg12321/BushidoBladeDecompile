@@ -1,0 +1,26 @@
+{
+ "func": "func_800204C0",
+ "file": "code6cac",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [
+  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 3 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)"
+ ],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T05:57:54.139618+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "8655cc28f3aa5cc7",
+   "when": "2026-09-08T06:15:47.793801+00:00",
+   "summary": "final call: PASS. Islands: four cop2 islands (gte_SetRotMatrix, gte_ldlv0 incl. the lhu/lhu/sll/or pack, MVMVA .word 0x4A486012, gte_stlvnl) template-identical to the func_800203B4 spelling (inline_asm_canonical."
+  }
+ ]
+}
