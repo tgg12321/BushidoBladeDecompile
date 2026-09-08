@@ -121,10 +121,16 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             kc = z2 * cx - x2 * cz;
             kp = z2 * px - x2 * pz;
             if ((kc ^ kp) >= 0) {
-                kc = (z2 - z0) * (cx - x0) - (x2 - x0) * (cz - z0);
-                kp = (z2 - z0) * (px - x0) - (x2 - x0) * (pz - z0);
-                if ((kc ^ kp) >= 0)
-                    return 1;
+                s32 dz = z2 - z0;
+                s32 dx = x2 - x0;
+                kc = dz * (cx - x0) - dx * (cz - z0);
+                if (kc < 0) {
+                    if (dz * (px - x0) - dx * (pz - z0) < 0)
+                        return 1;
+                } else {
+                    if (dz * (px - x0) - dx * (pz - z0) >= 0)
+                        return 1;
+                }
             }
         }
     }

@@ -1123,3 +1123,133 @@ candidate applied to src/code6cac_b.c, NO FAKE construct present anywhere in the
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+# s11 (2026-09-08, rederive) — floor 2/202, residual re-attributed to reorg.c
+
+## [s11] Kill re-audit: the s10 candidate's `m` re-store is un-annotated, and ablating it re-measures the carrier's worth on the current chassis.
+- mechanism: tools/fake_ablate.py keys on the `/* FAKE: ... */` marker; the s10 body claimed the construct in its header comment but never emitted the annotation, so the ablation tool reported nothing to ablate and every s6-s10 "FAKE present" caveat was unverifiable by tooling.
+- probe: ran fake_ablate.py on memory/grind/func_8002D780/candidate.c (reported "no FAKE-annotated constructs found"), then hand-built two variants — a1_no_m_restore.c (the inner `m = dist;` deleted) and a2_annotated_m.c (re-store plus the annotation) — and scored both on the sandbox.
+- result: a1 = 6/202, a2 = 2/202, candidate = 2/202. The re-store is still worth 4 insns on HEAD 4e56c8b9 and the annotation is codegen-neutral. a1 banked as rejected/m-restore-ablated-still-load-bearing-6.c; candidate.c now ships the annotation.
+- verdict: CONFIRMED
+
+## [s11] The last two instructions are decided by reorg.c's delay-slot fill for the test-2 exit branch, not by local-alloc.
+- mechanism: the two transposed insns straddle the delay slot of `bltz $v0,.L8002D964` at 8002D90C. reorg.c's fill_slots_from_thread scans the fall-through thread and takes the first insn clearing five gates (references-set / sets-set / sets-needed / sets-a-resource-needed-at-the-opposite-thread / may_trap_p), then goes to `winner` (tools/gcc-2.7.2/reorg.c:3480).
+- probe: instrumented cc1 with BB2_DBR_DEBUG=1 on the candidate (tmp/grind/func_8002D780/s11/dbr1/stderr_full.txt) and read the trace for the branch, uid 175.
+- result: `DBRDBG thr insn=175 trial=179 refset=0 setset=0 setneed=0 setsopp=0 trap=0` followed immediately by `DBRDBG thr WINNER insn=175 trial=179 annul=0`. Uid 179 is dz's subu, the first insn of block 7; it clears every gate and takes the slot with no competition. `oppregs=20010020_00000000` decodes to $a1/$s0/$s1/$sp live at the branch target, so $a0 is dead there and `setsopp` can never be 1 for dz.
+- verdict: CONFIRMED
+
+## [s11] The ax/dz emission order and the dz/dx register seat are two readings of the same INSN_LUID, so no re-ordering of the six test-3 difference expressions satisfies both.
+- mechanism: sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class, then falls to `INSN_LUID (tmp) - INSN_LUID (tmp2)` (tools/gcc-2.7.2/sched.c:2464). dz's subu and ax's subu are both inputs of the same mult, so their longest-path priorities are equal by construction and both classify as 3; the LUID line therefore decides in both sched1 and sched2, and sched2's LUIDs come from sched1's output stream. local-alloc then reads that same order as its birth order, and on the target's block-7 geometry dz and dx have 3 refs and an eight-slot span each, so qty_compare_1 ties them and the quantity-number fallback (tools/gcc-2.7.2/local-alloc.c:1684) seats whichever was born first.
+- probe: BB2_RANK_DEBUG=1 trace (s11/rank2/stderr_full.txt) for the pair; uid-window comparison of the .lreg / .greg / .jump2 / .sched2 streams for the candidate; and the cc1 .s output of both the dz-first candidate (s11/cand) and the ax-first body y1_w2_kc_first_flip.c (s11/y1).
+- result: `RANKDBG last=183 y=181 cls=3 x=179 cls2=3 val=0` — the print is only reached when the priority comparison did not return, so the pair is priority-tied and class-tied. All four dumps show the same relative order `[175, 179, 181, ...]`, so sched2 never decouples the emission order from the order local-alloc saw. The two cc1 outputs are the two halves of the contradiction: dz-first puts dz in the slot (wrong) with dz in $a0 and dx in $v1 (right); ax-first puts ax in the slot (right) with dz in $v1 and dx in $a0 (wrong, 9/202).
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+- measured_on: HEAD 4e56c8b9 (-mel -msoft-float), the s10/s11 candidate body and y1_w2_kc_first_flip.c spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s11] The extra local-alloc insn residual A needs can be paid for out of ASPSX mflo->mult hazard-pad slack, so it costs no machine instruction.
+- mechanism: ASPSX inserts a nop when fewer than two instructions separate an `mflo` from the next `mult`, so an RTL insn dropped into such a gap displaces the pad and leaves the machine-instruction count unchanged. The target's block 7 is 20 machine instructions of which two (8002D934, 8002D944) are exactly those pads, i.e. 18 RTL insns.
+- probe: mapped the target's block 7 to RTL indices (i0 ax, i1 dz, i2 mult, i3 mflo, i4 dx, i5 az, i6 mult, i7 mflo, i8 bx, i9 mult, i10 mflo, i11 bz, i12 mult, i13 kc, i14 mflo, i15 kp, i16 xor, i17 branch), located the two pad gaps (i8->i9 and i11->i12), and recomputed the qty_compare_1 spans for an insn inserted at each gap and at both.
+- result: both pads lie AFTER dx's birth at i4, so spending them moves the spans the wrong way — before i9 gives dz 9 / dx 9 (still a tie, dz seated first), before i12 gives dz 8 / dx 9 (dz priority higher), both gives dz 9 / dx 10 (dz priority higher). The gap that would work, strictly between i1 and i4, has no pad (mflo i3 already has two insns before mult i6), so an insn there costs +1 and produces 203.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4e56c8b9 (-mel -msoft-float), the s11 candidate body in src/code6cac_b.c, one FAKE construct present (the `m` re-store); pad positions read from asm/funcs/func_8002D780.s and from the `#nop` markers in tmp/grind/func_8002D780/s11/cand/code6cac_b.s
+
+## [s11] reorg can be made to pass over dz's subu and take ax for the slot instead, by making one of its five gates fail.
+- mechanism: fill_slots_from_thread does not stop at an unusable trial when it owns the thread (`! stop_search_p (...) && (! lose || own_thread)`, reorg.c:3399-3401); it records the loss and continues, so if dz's subu failed a gate the loop would reach ax's subu next and fill the slot with it — which, on the dz-first body that already has the target's seats, is exactly the target.
+- probe: read the five gate values reorg actually computed for the candidate (BB2_DBR_DEBUG trace, s11/dbr1) and checked each against what C could change. refset/setset/setneed are all vacuous for the first insn of a thread. may_trap_p is 1 only for a MEM, and dz's insn is a register subtract. setsopp needs dz's destination live at the branch target, and the target's own sqrt block at .L8002D964 writes $a0 at 8002D980 before any read of it.
+- result: all five gates are structurally clear for a register-to-register subtract at the head of the thread; the trace shows `refset=0 setset=0 setneed=0 setsopp=0 trap=0` and an immediate WINNER. No C spelling of the six test-3 differences makes dz's subu fail a gate without changing the instruction that lands there.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4e56c8b9 (-mel -msoft-float), the s11 candidate body in src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## Live frontier (for s12) — still 2 insns, and the door is now named exactly
+
+1. **Make one of dz / dx a GLOBAL (cross-block) quantity so global.c seats it instead of local-alloc.**
+   mechanism: local-alloc only forms a quantity for a pseudo whose entire live range sits inside one
+   basic block; anything live across a block boundary is left to global_alloc, which ranks by a
+   completely different allocno priority and never consults qty_compare_1 or its quantity-number
+   fallback. That is the only measured escape from the s11 contradiction, because it removes one of
+   the two tied quantities from the tie altogether while leaving its defining subu inside block 7.
+   next probe: spell test 3 so that one of `(z2 - z0)` / `(x2 - x0)` is ALSO consumed after the three
+   triangle tests (for example as the value stored to obj+0x118 / obj+0x124 in the sqrt block, which
+   already computes `x0 - px` and `x2 - px` style differences), so the pseudo is live at the join
+   while its subu still sits at block-7 index 1 or 4. Read the .lreg dump FIRST: require the blk=7
+   QTYDBG table to show only ONE of dz/dx present (the other having been handed to global_alloc) and
+   the .greg dump to show the missing one allocated; only then score, requiring build_insns == 202.
+
+2. **An RTL insn born strictly between dz's def and dx's def that disappears between local_alloc and final.**
+   mechanism: unchanged from s10 frontier 1 and still the arithmetic that works (dz span 14 against
+   dx's 12), but s11 adds two facts. First, the ASPSX pad route is closed (both pads are on the wrong
+   side of dx's birth, s11 kill above), so the insn really must vanish rather than be absorbed.
+   Second, reorg's `redundant_insn` deletion (reorg.c:3439-3462) is a SECOND late deleter beside
+   jump2's delete_noop_moves — but it only fires on insns the thread scan actually reaches, and the
+   scan stops at the first winner, so it cannot reach index 2 or 3. That leaves delete_noop_moves,
+   whose cse survival problem s8 class-killed for copies defined wholly inside block 7.
+   next probe: only worth spending after frontier 1; if it is spent, the shape needed is a copy whose
+   two definitions straddle the test-2 branch AND whose block-7 definition lands at index 2 or 3.
+
+3. **A decomp-permuter campaign on the s11 chassis.**
+   mechanism: unchanged from s10 frontier 2 — the residual is one transposition of two adjacent subus
+   with every register already correct, which is squarely in the permuter's move set, and the s4
+   campaign ran on a 7-floor chassis dominated by residuals B and C. s11 lowers the prior: the
+   transposition is now known to be a single LUID whose two consumers pull opposite ways, so a
+   permuter win would have to arrive via frontier 1's shape rather than by shuffling statements.
+   next probe: regenerate base.c from memory/grind/func_8002D780/candidate.c into the validated
+   workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in
+   evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with
+   `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score
+   every find on the engine sandbox.
+
+## [s11] Splitting test 3 on the sign of kc makes dz and dx cross-block quantities, handing their seats to global_alloc instead of local-alloc's tied qty_compare_1.
+- mechanism: local-alloc only forms a quantity for a pseudo whose whole live range sits in one basic block (the s11 contradiction is entirely a local-alloc phenomenon), so branching on `kc < 0` between the two cross products leaves dz and dx live across the join and hands them to global.c's allocno priority model, which never consults qty_compare_1 or its quantity-number fallback.
+- probe: two spellings measured on the sandbox and dumped — g1_split_block_global_dz_dx.c (named dz/dx locals, the kp product duplicated into both arms of an `if (kc < 0)`) and g2_split_block_inline_dup.c (the same shape with the differences left inline). Register dispositions read from the .greg dumps (tmp/grind/func_8002D780/s11/cand vs s11/g1).
+- result: KILLED as spelled. g1 = 36/212, g2 = 37/212 — jump2 does NOT cross-jump the duplicated kp arithmetic back together, so the split costs 10 machine instructions before any seat question is reached. The seats do move (candidate: reg129 dz in $a0, reg130 ax in $v0, reg132 dx in $v1; g1: reg129 in $v1, reg130 in $a0, reg132 in $t1), which confirms the mechanism is live, but they move the wrong way and the +10 insn cost is fatal. Any future attempt at this route must find a split that jump2 tail-merges back to 202.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4e56c8b9 (-mel -msoft-float), g1/g2 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s11] The ax/dz emission order and the dz/dx register seat are two readings of the same INSN_LUID, so re-ordering the six test-3 difference expressions cannot satisfy both.
+- mechanism: sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class, then falls to INSN_LUID. dz's subu and ax's subu are both inputs of the same mult, so their longest-path priorities are equal by construction and both classify as 3; the LUID line decides in sched1 and again in sched2 (whose LUIDs come from sched1's output stream). local-alloc reads that same order as its birth order, and on the target's block-7 geometry dz and dx have 3 refs and an eight-slot span each, so qty_compare_1 ties them and the quantity-number fallback at local-alloc.c:1684 seats whichever was born first.
+- probe: BB2_RANK_DEBUG=1 instrumented cc1 trace on the candidate (tmp/grind/func_8002D780/s11/rank2/stderr_full.txt); uid-window comparison of the .lreg / .greg / .jump2 / .sched2 streams; cc1 .s output of the dz-first candidate (s11/cand) and the ax-first body y1_w2_kc_first_flip.c (s11/y1).
+- result: RANKDBG last=183 y=181 cls=3 x=179 cls2=3 val=0 - the class print is only reached when the priority comparison did not return, so uids 179 (dz) and 181 (ax) are priority-tied and class-tied. All four dumps show the same relative order [175, 179, 181, ...], so sched2 never decouples the post-reload emission order from the order local-alloc saw. The two cc1 outputs are the two halves of the contradiction: dz-first puts dz in the delay slot (wrong) with dz in $a0 and dx in $v1 (right, 2/202); ax-first puts ax in the slot (right, matching the target) with dz in $v1 and dx in $a0 (wrong, 9/202).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 4e56c8b9 (-mel -msoft-float), the s10/s11 candidate body and s10/variantsY/y1_w2_kc_first_flip.c spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+
+## [s11] The last two instructions are decided by reorg.c's delay-slot fill for the test-2 exit branch, not by a local-alloc seat as sessions s6-s10 assumed.
+- mechanism: The two transposed insns straddle the delay slot of `bltz $v0,.L8002D964` at 8002D90C. reorg.c's fill_slots_from_thread walks the fall-through thread and takes the first insn clearing five gates (references-set, sets-set, sets-needed, sets-a-resource-needed-at-the-opposite-thread, may_trap_p), then goes to the winner label at reorg.c:3480.
+- probe: Instrumented cc1 with BB2_DBR_DEBUG=1 on the candidate; read the trace for the branch (uid 175) in tmp/grind/func_8002D780/s11/dbr1/stderr_full.txt.
+- result: CONFIRMED. `DBRDBG thr insn=175 trial=179 refset=0 setset=0 setneed=0 setsopp=0 trap=0` followed immediately by `DBRDBG thr WINNER insn=175 trial=179 annul=0`. Uid 179 is dz's subu, the head of block 7; it clears every gate and takes the slot uncontested. oppregs=20010020_00000000 decodes to $a1/$s0/$s1/$sp live at the branch target, so $a0 is dead there and setsopp can never be 1 for dz. The target's slot holds ax, so the target's pre-reorg block 7 began with ax.
+- verdict: CONFIRMED
+
+## [s11] The extra local-alloc insn that residual A needs can be paid for out of ASPSX mflo->mult hazard-pad slack, so it costs no machine instruction.
+- mechanism: ASPSX inserts a nop when fewer than two instructions separate an mflo from the next mult, so an RTL insn dropped into such a gap displaces the pad and leaves the machine-instruction count unchanged. The target's block 7 is 20 machine instructions of which two (8002D934, 8002D944) are exactly those pads, i.e. 18 RTL insns.
+- probe: Mapped the target's block 7 to RTL indices (i0 ax, i1 dz, i2 mult, i3 mflo, i4 dx, i5 az, i6 mult, i7 mflo, i8 bx, i9 mult, i10 mflo, i11 bz, i12 mult, i13 kc, i14 mflo, i15 kp, i16 xor, i17 branch), located the two pad gaps (i8->i9 and i11->i12) from asm/funcs/func_8002D780.s and the `#nop` markers in the cc1 .s output, and recomputed the qty_compare_1 spans for an insn inserted at each gap and at both.
+- result: KILLED. Both pads lie after dx's birth at i4, so spending them moves the spans the wrong way: before i9 gives dz span 9 / dx span 9 (still a tie, dz seated first), before i12 gives dz 8 / dx 9 (dz priority higher), both gives dz 9 / dx 10 (dz priority higher). The gap that would work, strictly between i1 and i4, has no pad (mflo i3 already has two insns before mult i6), so an insn there costs +1 and leaves 203.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4e56c8b9 (-mel -msoft-float), the s11 candidate body in src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s11] reorg can be made to pass over dz's subu and take ax for the slot instead, by making one of its five gates fail on the dz-first body that already has the target's seats.
+- mechanism: fill_slots_from_thread does not stop at an unusable trial when it owns the thread (`! stop_search_p (...) && (! lose || own_thread)`); it records the loss and continues, so if dz's subu failed a gate the loop would reach ax's subu next and fill the slot with it - which on the dz-first body is exactly the target's byte sequence.
+- probe: Read the five gate values reorg actually computed for the candidate (BB2_DBR_DEBUG trace, s11/dbr1) and checked each against what C can change; checked $a0's liveness at .L8002D964 in the target's own asm.
+- result: KILLED. refset/setset/setneed are vacuous for the first insn of a thread; may_trap_p is 1 only for a MEM and dz's insn is a register subtract; setsopp needs dz's destination live at the branch target, and the target's own sqrt block writes $a0 at 8002D980 before any read of it. The trace shows all five gates clear and an immediate WINNER, so no C spelling of the six test-3 differences makes dz's subu fail a gate without changing which instruction lands there.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4e56c8b9 (-mel -msoft-float), the s11 candidate body in src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s11] Splitting test 3 on the sign of kc makes dz and dx cross-block quantities, handing their seats to global_alloc instead of local-alloc's tied qty_compare_1.
+- mechanism: local-alloc only forms a quantity for a pseudo whose whole live range sits in one basic block, so branching on kc < 0 between the two cross products leaves dz and dx live across the join and hands them to global.c's allocno priority model, which never consults qty_compare_1 or its quantity-number fallback.
+- probe: Two spellings measured on the sandbox and dumped: g1_split_block_global_dz_dx.c (named dz/dx locals, the kp product duplicated into both arms of an `if (kc < 0)`) and g2_split_block_inline_dup.c (same shape, differences inline). Register dispositions read from the .greg dumps (s11/cand vs s11/g1).
+- result: KILLED as spelled. g1 = 36/212, g2 = 37/212 - jump2 does not cross-jump the duplicated kp arithmetic back together, so the split costs 10 machine instructions before any seat question is reached. The seats do move (candidate: reg129 dz in $a0, reg130 ax in $v0, reg132 dx in $v1; g1: reg129 in $v1, reg130 in $a0, reg132 in $t1), confirming the mechanism is live, but they move the wrong way. Banked as rejected/split-block-kc-sign-no-crossjump-36.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 4e56c8b9 (-mel -msoft-float), g1/g2 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s11] Kill re-audit: the s10 candidate's `m` same-value re-store shipped without its FAKE annotation, and ablating it re-measures the carrier's worth on the current chassis.
+- mechanism: tools/fake_ablate.py keys on the /* FAKE: ... */ marker; the s10 body claimed the construct in its header comment but never emitted the annotation, so the ablation tool reported nothing to ablate and every s6-s10 'FAKE present' caveat was unverifiable by tooling. An un-annotated FAKE is also an automatic Judge FAIL, so this was a latent blocker on any future candidate-ready.
+- probe: Ran fake_ablate.py on memory/grind/func_8002D780/candidate.c, then hand-built a1_no_m_restore.c (inner `m = dist;` deleted) and a2_annotated_m.c (re-store plus the annotation) and scored both on the sandbox.
+- result: CONFIRMED that the carrier is still load-bearing: fake_ablate.py reported 'no FAKE-annotated constructs found'; a1 = 6/202, a2 = 2/202, candidate = 2/202. The re-store is worth 4 insns on HEAD 4e56c8b9 and the annotation itself is codegen-neutral. a1 banked as rejected/m-restore-ablated-still-load-bearing-6.c; candidate.c now ships the annotation.
+- verdict: CONFIRMED

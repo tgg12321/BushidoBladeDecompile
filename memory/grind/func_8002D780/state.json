@@ -1,7 +1,7 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 10,
+ "session_count": 11,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -63,23 +63,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Rederive: test 3 needs NO named locals (floor holds at 2/202) and the residual MOVED to the ax/dz pair with every register already correct; the dz/dx seat is now measured to be a live-range-LENGTH que"
+  },
+  {
+   "session": 11,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Residual A re-attributed from local-alloc to reorg.c's delay-slot fill: the ax/dz slot order and the dz/dx seat are the SAME INSN_LUID pulling opposite ways (class kill), the ASPSX pad slack that coul"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One extra instruction between dz's definition and dx's definition, deleted after local_alloc, gives dz span 14 against dx's 12 and seats dx first WITHOUT costing the ax/dz emission order.",
-   "mechanism": "On the target's emission order dz spans block-7 indices i1->i7 and dx i3->i9, six slots each, refs 3 each, so qty_compare_1 ties and the quantity-number fallback (local-alloc.c:1757) seats dz. One extra insn in the single slot between the two definitions shifts every later index by 2 for dz but not for dx. The insn must vanish after local_alloc, so it must be a reg-reg copy removed by jump2's delete_noop_moves (toplev.c:3142). s8's cse class kill (cse.c:1032) rules out a copy whose definitions all sit inside block 7, and s8's batch R priced a cross-block carrier manufactured out of test 2's arithmetic at +7/+11 -- but a carrier whose second definition sits in the TEST-1 arm or the outer block, which already assign kc and kp three times between them, has never been tried and leaves test 2's codegen untouched.",
-   "next_probe": "On the ax-first body (tmp/grind/func_8002D780/s10/variantsY/y1_w2_kc_first_flip.c, 9/202) add a carrier declared in the outer test block, defined once there or in the test-1 arm, and re-assigned inside test 3 from a block-7 value that dies at the copy. BEFORE scoring, run tmp/grind/func_8002D780/s10/dumpvar.py with BB2_CC1=tools/gcc-2.7.2/cc1 and require the blk=7 SUGGDBG-QTY table to show dz death 18 (span 14) with dx still birth 8 / death 20 (span 12); only then score, requiring build_insns == 202."
+   "hypothesis": "One of dz / dx can be made a GLOBAL (cross-block) quantity - so global.c, not local-alloc's tied qty_compare_1, seats it - by a split that jump2 tail-merges back to 202 insns.",
+   "mechanism": "local-alloc only forms a quantity for a pseudo whose entire live range sits inside one basic block; anything live across a block boundary is left to global_alloc, which ranks by allocno priority and never consults qty_compare_1 or its quantity-number fallback. This is the only escape from the s11 LUID contradiction, because it removes one of the two tied quantities from the tie while leaving its defining subu inside block 7. s11 proved the mechanism moves the seats; what it did not find is a split that costs zero instructions.",
+   "next_probe": "The s11 spelling duplicated the whole kp cross product into both arms and jump2 refused to merge it (+10 insns). Try splits where the duplicated tail is IDENTICAL insn-for-insn in both arms so cross_jump can merge it: e.g. `if (kc < 0) { if (kp < 0) goto hit; } else { if (kp >= 0) goto hit; }` with kp computed ONCE before the split (which keeps only the branch structure split, not the arithmetic), and the mixed goto/return exit form from .claude/rules/cross-jump-store-tail-merge.md. Read the .lreg blk=7 QTYDBG table FIRST and require exactly one of dz/dx to be absent (handed to global_alloc), then score requiring build_insns == 202."
   },
   {
-   "hypothesis": "A decomp-permuter campaign on the s10 chassis finds the last two instructions where the s4 campaign on the 7-floor chassis found nothing.",
-   "mechanism": "The residual is now ONE transposition of two adjacent subu instructions with every register, every multiply and the whole rest of the function already byte-correct -- precisely the permuter's statement-reordering and operand-shuffling move set. The s4 campaign's neighbourhood was dominated by residuals B and C, both closed since s5.",
-   "next_probe": "Regenerate base.c from the new memory/grind/func_8002D780/candidate.c AND from s10/variantsY/y1_w2_kc_first_flip.c into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (s4's finding that the permuter's weighted metric is anti-correlated with the engine's here still applies)."
+   "hypothesis": "An RTL insn born strictly between dz's def and dx's def that disappears between local_alloc and final gives dz span 14 against dx's 12 and seats dx first without costing an instruction.",
+   "mechanism": "Unchanged arithmetic from the s10 frontier, but s11 narrows the deleter. The ASPSX pad route is now closed (both pads sit after dx's birth), so the insn must genuinely vanish. s11 also identified a SECOND late deleter beside jump2's delete_noop_moves: reorg.c's redundant_insn deletion (reorg.c:3439-3462) removes a redundant trial insn outright - but only on insns the thread scan reaches, and the scan stops at the first winner, so it cannot reach block-7 index 2 or 3. That leaves delete_noop_moves, whose cse survival problem s8 class-killed for copies defined wholly inside block 7.",
+   "next_probe": "Only worth spending after the frontier-1 shape is exhausted. If spent, the shape needed is a reg-reg copy whose two definitions straddle the test-2 branch (so cse.c:1032 cannot fold it) and whose block-7 definition lands at index 2 or 3; verify with the .lreg blk=7 QTYDBG table that dz reports span 14 and dx span 12 BEFORE scoring."
   },
   {
-   "hypothesis": "Block 7 in the original compile was not the same fourteen RTL insns we emit, so the dz/dx tie the ledger has assumed since s6 never arose there.",
-   "mechanism": "Every kill from s6 onward assumes the target's block 7 holds exactly our fourteen insns, which forces the tie and leaves the original's dx-first seat unexplained. s10 killed the two obvious ways to change the block's contents (hoisting a difference into the test-2 arm, 20-39; five control-flow respellings, all byte-neutral). What remains is a change to what block 7 CONTAINS that keeps the final 202 -- most plausibly one of the sqrt-block or tail values being computed inside the test region, or the centroid divide-by-3 being expressed so that a piece of it lands after the test-2 branch.",
-   "next_probe": "Sweep spellings that move a value across the block-6/block-7 boundary in the OTHER direction from batch B: compute part of the sqrt-block tail (for example the 0x108 load or the p118/p124 base pointers) inside the test-3 arm, and re-express cx/cz as (x0 + x2) / 3 evaluated lazily at their first use in test 3; read the .lreg dump's basic-block boundaries and the blk=7 SUGGDBG-QTY table for each, not only the score."
+   "hypothesis": "A decomp-permuter campaign on the s11 chassis finds a body the hand search has not reached.",
+   "mechanism": "The residual is one transposition of two adjacent subus with every register already correct, which is squarely in the permuter's statement-reordering move set, and the s4 campaign ran on a 7-floor chassis dominated by residuals B and C (both closed since s5). s11 lowers the prior for a plain reordering win - the transposition is one LUID whose two consumers pull opposite ways - so any real find would have to arrive via the frontier-1 shape, which is exactly the kind of restructuring the permuter explores blindly.",
+   "next_probe": "Regenerate base.c from memory/grind/func_8002D780/candidate.c into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (s4's finding that the permuter's weighted metric is anti-correlated with the engine's here still applies)."
   }
  ],
  "judge_constraints": [],
@@ -420,6 +426,38 @@
    "measured_on": "HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
    "predicate_cite": "",
    "result": "KILLED as a lever, banked as a free degree of freedom. All five score 2/202 at 202 insns, byte-identical to the candidat"
+  },
+  {
+   "session": 11,
+   "statement": "The ax/dz emission order and the dz/dx register seat are two readings of the same INSN_LUID, so re-ordering the six test-3 difference expressions cannot satisfy both.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 4e56c8b9 (-mel -msoft-float), the s10/s11 candidate body and s10/variantsY/y1_w2_kc_first_flip.c spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2464",
+   "result": "RANKDBG last=183 y=181 cls=3 x=179 cls2=3 val=0 - the class print is only reached when the priority comparison did not r"
+  },
+  {
+   "session": 11,
+   "statement": "The extra local-alloc insn that residual A needs can be paid for out of ASPSX mflo->mult hazard-pad slack, so it costs no machine instruction.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 4e56c8b9 (-mel -msoft-float), the s11 candidate body in src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
+   "predicate_cite": "",
+   "result": "KILLED. Both pads lie after dx's birth at i4, so spending them moves the spans the wrong way: before i9 gives dz span 9 "
+  },
+  {
+   "session": 11,
+   "statement": "reorg can be made to pass over dz's subu and take ax for the slot instead, by making one of its five gates fail on the dz-first body that already has the target's seats.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 4e56c8b9 (-mel -msoft-float), the s11 candidate body in src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
+   "predicate_cite": "",
+   "result": "KILLED. refset/setset/setneed are vacuous for the first insn of a thread; may_trap_p is 1 only for a MEM and dz's insn i"
+  },
+  {
+   "session": 11,
+   "statement": "Splitting test 3 on the sign of kc makes dz and dx cross-block quantities, handing their seats to global_alloc instead of local-alloc's tied qty_compare_1.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 4e56c8b9 (-mel -msoft-float), g1/g2 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
+   "predicate_cite": "",
+   "result": "KILLED as spelled. g1 = 36/212, g2 = 37/212 - jump2 does not cross-jump the duplicated kp arithmetic back together, so t"
   }
  ],
  "ladder_skip": 0,

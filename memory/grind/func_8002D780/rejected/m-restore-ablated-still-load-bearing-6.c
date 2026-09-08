@@ -1,18 +1,3 @@
-/* s11 (2026-09-08, rederive) ADDENDUM -- read this with the s10 header below.
- * Floor unchanged at 2/202.  Two things changed here:
- *   1. The `m` re-store now CARRIES its /* FAKE *\/ annotation.  The s10 body shipped it
- *      un-annotated, which tools/fake_ablate.py reported as "no FAKE-annotated constructs
- *      found" -- an un-annotated FAKE is an automatic Judge FAIL, so this was a latent
- *      blocker on any future candidate-ready.  Ablation re-measured on this chassis:
- *      dropping the re-store scores 6/202, keeping it scores 2/202 (worth 4 insns), and
- *      the annotation itself is codegen-neutral (annotated body still 2/202).
- *   2. The residual is RE-ATTRIBUTED.  It is NOT a local-alloc decision, as s6-s10
- *      assumed.  It is reorg.c's delay-slot fill for the test-2 exit branch:
- *      `DBRDBG thr insn=175 trial=179 refset=0 setset=0 setneed=0 setsopp=0 trap=0`
- *      -> `WINNER trial=179`.  reorg takes the FIRST insn of the fall-through thread that
- *      clears its five gates, and our first insn is dz's subu.  The target's slot holds
- *      ax's subu, so the target's pre-reorg block 7 began with ax.  See evidence.md [s11]
- *      for why that is contradictory with the seats we already have. */
 /* func_8002D780 - grind candidate (s10 rederive, 2026-09-08).  Honest sandbox floor
  * 2/202, build_insns == target_insns == 202, measured THIS session with these exact
  * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 2).
@@ -144,11 +129,6 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             s32 m = dist;
             s32 lzcr = 0;
             if (dist >= 0) {
-                /* FAKE: same-value re-store of the local `m`, mechanism: cse.c make_regs_eqv
-                 * (a single-definition copy is folded; a second definition keeps the pseudo
-                 * multiply-defined so the copy survives into local-alloc), lever-exhaustion:
-                 * memory/grind/func_8002D780/hypotheses.md s1-s5, 14 copy spellings dead. */
-                m = dist;
                 __asm__ volatile(
                     "addu $t4, %0, $zero\n"
                     "mtc2 $t4, $30\n"

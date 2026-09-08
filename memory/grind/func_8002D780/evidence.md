@@ -994,3 +994,146 @@ whichever shape suits them; block structure is not the missing input to the dz/d
 - [s10] Block structure in the test region is a free degree of freedom: five distinct control-flow spellings (goto early exits, &&-chained tests with embedded assignments, an inverted inner if, fresh cross-product locals, test 3 folded into its own if condition) all produce byte-identical output at 2/202.
 
 - [s10] Arithmetic of the remaining 2 insns, pinned: the target's block 7 is 14 RTL insns -- ax(i0) dz(i1) mult1(i2) dx(i3) az(i4) mult2(i5) bx(i6) mult3(i7) bz(i8) mult4(i9) kc-sub kp-sub xor branch -- on which dz spans i1->i7 and dx spans i3->i9, six slots and 3 refs each, hence the tie. Making dx win needs dz's range longer (only reachable by moving dz's def to i0, which costs the ax/dz order), or dx's refs = 4 (all three spellings class-killed in s8), or one extra insn between dz's def and dx's def that is deleted after local_alloc.
+
+## [s11] (2026-09-08, rederive) — floor 2/202, and the residual is RE-ATTRIBUTED to reorg.c
+
+Chassis re-measured at dispatch: HEAD 4e56c8b9 (-mel -msoft-float), the s10 candidate body
+spliced into src/code6cac_b.c, `sandbox func_8002D780 --disable all` = **2/202**,
+build_insns == target_insns == 202. The brief's "measurement unavailable" is resolved and
+the ledger's floor 2 stands.
+
+### 0. Kill re-audit (mandated) — the FAKE was never annotated, and it is still load-bearing
+
+`tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate
+memory/grind/func_8002D780/candidate.c` returned **"no FAKE-annotated constructs found"**:
+the s10 candidate's `m = dist;` same-value re-store shipped WITHOUT its `/* FAKE: ... */`
+annotation even though the s10 header claimed it carried one. An un-annotated FAKE is an
+automatic Judge FAIL, so this was a latent blocker on any future candidate-ready. Fixed in
+this session's candidate.c. Hand ablation on the current chassis
+(tmp/grind/func_8002D780/s11/variants/):
+  * `a1_no_m_restore.c` (re-store deleted)     = **6/202** -> banked as
+    memory/grind/func_8002D780/rejected/m-restore-ablated-still-load-bearing-6.c
+  * `a2_annotated_m.c` (re-store + annotation) = **2/202** — the annotation is codegen-neutral.
+So the s6-s10 kills measured "with the `m` carrier present" were measured against a construct
+that is still worth 4 insns on this chassis; the carrier is not a stale artefact.
+
+### 1. The two residual instructions are a REORG DELAY-SLOT FILL, not a local-alloc seat
+
+`tools/pairdiff.py code6cac_b func_8002D780` on the current candidate:
+
+    ours[91]  bltz v0,@          target[91] bltz v0,@
+    ours[92]  subu a0,t0,a3 (dz) target[92] subu v0,t2,t1 (ax)   <- the delay slot
+    ours[93]  subu v0,t2,t1 (ax) target[93] subu a0,t0,a3 (dz)
+    ours[94]  mult a0,v0         target[94] mult a0,v0
+    === 2 differing instructions ===
+
+Every register, every multiply and every other insn in the function is already correct. The
+transposed pair straddles a branch delay slot (target address 8002D90C `bltz $v0,.L8002D964`
+with slot 8002D910), so the decision that produces it belongs to **reorg.c**, read directly
+out of the instrumented cc1 (`BB2_DBR_DEBUG=1`, tmp/grind/func_8002D780/s11/dbr1/stderr_full.txt):
+
+    DBRDBG thr insn=175 thread=179 opp=227 own=1 likely=0 tif=0 oppregs=20010020_00000000 oppmem=1
+    DBRDBG thr insn=175 trial=179 refset=0 setset=0 setneed=0 setsopp=0 trap=0
+    DBRDBG thr WINNER insn=175 trial=179 annul=0
+
+`fill_slots_from_thread` (tools/gcc-2.7.2/reorg.c:3399-3480) walks the fall-through thread and
+takes the FIRST insn that clears all five gates — references-set, sets-set, sets-needed,
+sets-a-resource-needed-at-the-opposite-thread, and may_trap_p. Our block-7 head insn (uid 179 =
+dz's subu) clears all five (`oppregs=20010020` decodes to $a1/$s0/$s1/$sp live at the branch
+target — $a0 is dead there, so `setsopp=0`), so it wins the slot immediately. The target's slot
+holds ax, therefore **the target's pre-reorg block 7 began with ax, not dz**.
+
+### 2. The emission order and the seat are the SAME variable (INSN_LUID), and they disagree
+
+Both scheduler passes decide the ax/dz order by LUID, i.e. by source order:
+
+  * sched.c `rank_for_schedule` returns on priority first, then on dependence class, then
+    `return INSN_LUID (tmp) - INSN_LUID (tmp2);` (tools/gcc-2.7.2/sched.c:2464).
+    Instrumented run (`BB2_RANK_DEBUG=1`, tmp/grind/func_8002D780/s11/rank2/stderr_full.txt)
+    prints `RANKDBG last=183 y=181 cls=3 x=179 cls2=3 val=0` — reaching the class print at all
+    proves the priority comparison did NOT return, so uids 179 and 181 are priority-TIED, and
+    both are class 3, so the LUID line decides. Both are inputs of the same mult (uid 183), so
+    their longest-path priorities are structurally equal and no source spelling separates them.
+  * The relative order is identical in .lreg (post-sched1), .greg, .jump2 and .sched2 for the
+    candidate (uid windows measured: `[175, 179, 181, ...]` in all four), so sched2 does not
+    decouple the post-reload emission order from the order local-alloc saw.
+
+And the seat needs the opposite LUID order. Measured this session on the ax-first body
+(tmp/grind/func_8002D780/s10/variantsY/y1_w2_kc_first_flip.c, cc1 asm in s11/y1/code6cac_b.s):
+
+    cand (dz first) : bltz $2,.L296 / subu $4,$8,$7 (dz in $a0, IN THE SLOT) / subu $2,$10,$9 (ax)
+    y1   (ax first) : bltz $2,.L296 / subu $2,$10,$9 (ax, IN THE SLOT — TARGET) / subu $3,$8,$7
+                      (dz in $v1 — WRONG seat) / ... subu $4,$13,$9 (dx in $a0 — WRONG seat)
+
+So: dz-first source order buys the target's SEATS and loses the SLOT; ax-first buys the SLOT
+and loses the seats (dz and dx tie at refs 3 / span 12 and local-alloc.c:1684's quantity-number
+fallback seats the lower-numbered dz first). One variable, two contradictory requirements.
+
+### 3. The target's own block 7 forces the tie, so the fix must ADD an insn — and there is no free slot
+
+Target block 7 (8002D910-8002D95C) is 20 machine instructions of which 2 are ASPSX hazard nops,
+i.e. 18 RTL insns:
+
+    i0 ax  i1 dz  i2 mult(dz,ax)  i3 mflo t0  i4 dx  i5 az  i6 mult(dx,az)  i7 mflo a2
+    i8 bx  [nop]  i9 mult(dz,bx)  i10 mflo a0 i11 bz [nop] i12 mult(dx,bz)
+    i13 kc-sub  i14 mflo v1  i15 kp-sub  i16 xor  i17 branch
+
+dz spans i1->i9 and dx spans i4->i12: eight insn slots each, 3 refs each — the tie is a property
+of the TARGET's own geometry, not of our spelling. Breaking it in dx's favour needs one extra
+RTL insn strictly between i1 and i4 that costs zero machine instructions. The zero-cost sites in
+this block are exactly the two ASPSX pads, and ASPSX only pads when fewer than two insns
+separate an `mflo` from the next `mult` (target: mflo i3 -> mult i6 has two insns and no pad;
+mflo i7 -> mult i9 has one and gets the nop at 8002D934; mflo i10 -> mult i12 has one and gets
+the nop at 8002D944). Both pads sit AFTER dx's birth, and the arithmetic of spending them runs
+the wrong way:
+    free insn before i9  : dz span 9, dx span 9  -> tie, dz still seated first
+    free insn before i12 : dz span 8, dx span 9  -> dz priority HIGHER, dz seated first
+    both                 : dz span 9, dx span 10 -> dz priority HIGHER, dz seated first
+There is no pad between i1 and i4, so any insn placed there costs +1 and leaves 203.
+
+### 4. What this rules out and what it leaves
+
+Ruled out this session (kill records in hypotheses.md [s11]): re-ordering the six test-3
+difference expressions in any way (the ax/dz slot fill and the dz/dx seat are the same LUID and
+pull opposite ways); making sched2 emit an order different from the one local-alloc saw
+(priority- and class-tied, LUID-stable); making reorg pass over dz's subu (all five gates clear,
+and `setsopp` would need $a0 live at .L8002D964, which the target's own sqrt block contradicts —
+it writes $a0 at 8002D980 before any read); and paying for the missing insn out of ASPSX pad
+slack (both pads are on the wrong side of dx's birth).
+
+What is left is narrower than the s10 frontier stated: not "block 7 contained something else" in
+general, but specifically **one RTL insn born strictly between dz's def and dx's def that either
+(a) disappears between local_alloc and final, or (b) makes one of dz/dx a GLOBAL (cross-block)
+quantity so that global.c, not local-alloc, seats it.** Route (b) is completely untried and is
+the only door this session did not close: local-alloc only allocates quantities whose whole live
+range sits inside one basic block, so a test-3 difference that is still live at the join would be
+handed to global_alloc with an entirely different priority model, and global.c can hand out $a0
+without ever consulting qty_compare_1.
+
+### 5. Artifacts
+
+  tmp/grind/func_8002D780/s11/cand/     — full -da dump set + qty tables for the candidate
+  tmp/grind/func_8002D780/s11/y1/       — same for the ax-first body (cc1 .s shows the seats)
+  tmp/grind/func_8002D780/s11/dbr1/stderr_full.txt  — BB2_DBR_DEBUG reorg trace
+  tmp/grind/func_8002D780/s11/rank2/stderr_full.txt — BB2_RANK_DEBUG rank_for_schedule trace
+  tmp/grind/func_8002D780/s11/sched2_fn_compact.txt — one-line-per-insn sched2 stream
+  tmp/grind/func_8002D780/s11/dbg.py    — s11 dump driver (all four BB2_* hooks at once)
+  tmp/grind/func_8002D780/s11/score.ps1 — variant scorer (apply.py via Windows python + wteng)
+
+- [s11] Chassis re-measured at dispatch: HEAD 4e56c8b9 (-mel -msoft-float), s10 candidate body spliced into src/code6cac_b.c, `sandbox func_8002D780 --disable all` = 2/202 with build_insns == target_insns == 202. The brief's 'measurement unavailable' is resolved; the ledger floor 2 stands.
+
+- [s11] The 2 residual instructions are ours[92] `subu a0,t0,a3` (dz) versus target[92] `subu v0,t2,t1` (ax), transposed with ours[93]/target[93]; every register, every multiply and every other instruction in the function already matches. The pair straddles the delay slot of `bltz $v0,.L8002D964` at 8002D90C.
+
+- [s11] reorg.c owns the residual: BB2_DBR_DEBUG shows `DBRDBG thr insn=175 trial=179 refset=0 setset=0 setneed=0 setsopp=0 trap=0` then `WINNER insn=175 trial=179`. All five fill_slots_from_thread gates are clear for a register-subtract at the head of the thread, so reorg always takes the first insn of block 7 and the target's slot content is decided upstream, by which subu is emitted first.
+
+- [s11] sched1 and sched2 both decide the ax/dz order by INSN_LUID (sched.c:2464): BB2_RANK_DEBUG prints `RANKDBG last=183 y=181 cls=3 x=179 cls2=3 val=0`, and reaching the class print proves the priority comparison did not return. The two subus feed the same mult, so their longest-path priorities are structurally equal and no source spelling separates them.
+
+- [s11] The relative order of uids 179 and 181 is identical in the .lreg, .greg, .jump2 and .sched2 dumps of the candidate, so sched2 does not decouple the final emission order from the order local-alloc saw. The emission order and the seat are therefore the same variable.
+
+- [s11] On the target's own block-7 geometry (18 RTL insns plus 2 ASPSX pad nops), dz spans i1->i9 and dx spans i4->i12 - eight slots and 3 refs each - so qty_compare_1 ties them regardless of spelling and local-alloc.c:1684's quantity-number fallback seats whichever was born first. The tie is a property of the target, not of our C.
+
+- [s11] ASPSX pad accounting (new): the only zero-machine-cost insertion sites inside block 7 are the two mflo->mult hazard pads at 8002D934 and 8002D944, both after dx's birth. Inserting there gives dz/dx spans of 9/9, 8/9 or 9/10 - a tie or dz-favouring in every case. The interval that would work, strictly between dz's def and dx's def, carries no pad, so an insn there costs +1 and yields 203.
+
+- [s11] The split-block route that would hand dz/dx to global_alloc is live but expensive as spelled: branching on `kc < 0` between the two cross products moves the seats (reg129 $a0->$v1, reg130 $v0->$a0, reg132 $v1->$t1) but jump2 does not tail-merge the duplicated kp arithmetic, costing 10 machine instructions (36/212 and 37/212).
+
+- [s11] The s10 candidate shipped its `m = dist;` FAKE construct UN-ANNOTATED (fake_ablate.py: 'no FAKE-annotated constructs found'), which would have been an automatic Judge FAIL on any candidate-ready. Fixed this session; the annotation is codegen-neutral (2/202 with and without the comment) and the construct is still worth 4 insns (6/202 when deleted).
