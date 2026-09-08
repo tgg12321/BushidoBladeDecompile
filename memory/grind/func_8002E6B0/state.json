@@ -1,8 +1,8 @@
 {
  "func": "func_8002E6B0",
  "file": "code6cac_b",
- "session_count": 7,
- "current_modality": "solver",
+ "session_count": 8,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 26,
    "modality": "solver",
    "headline": "Ret seat typed end-to-end: one graph edge (reg 96 conflicts hard $v0) is necessary AND sufficient, s6's block-entry cause is falsified, and the real cause is local_alloc giving $v0 to 12 short-lived q"
+  },
+  {
+   "session": 8,
+   "floor": 26,
+   "modality": "structural",
+   "headline": "Floor holds at 26; four structural lever families killed (declaration order, sub-expression hoisting, ret-init placement, first-exit-inline mixed exits) and the ret seat's cause narrowed from twelve $"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ret seat is reachable by attacking it as a LOCAL-ALLOC problem: get the branch-condition and product temporaries out of $v0 in the windows where ret is live",
-   "mechanism": "The seat reduces to exactly one graph edge - reg 96 conflicts with hard reg 2 - and that edge exists only because local_alloc gave $v0 to twelve short-lived quantities here while giving $v1 only four; record_one_conflict (global.c:1392) then IORs $v0 into reg 96's conflicts at one of ret's four births. The target does the reverse and returns in $v0 with no restore, so a C shape that flips local_alloc's choice closes both residual insns at once.",
-   "next_probe": "Read tools/gcc-2.7.2/local-alloc.c find_free_reg and block_alloc to learn what makes a quantity take $v1 ahead of $v0 - qty_phys_copy_sugg and qty_phys_sugg are consulted before the ascending scan, so a quantity copied to or from a specific hard register gets that register first - then ask which C shape gives block 1's and block 2's condition quantity a $v1 suggestion. Make every future variant report its local_alloc map for free by dumping the ';; Register N in H.' lines from its .lreg alongside the sandbox score."
+   "hypothesis": "The ret seat is reachable by giving pseudos 117 and 138 (the two branch-condition xor results) a $v1 preference in local_alloc, rather than by adding a competitor for $v0",
+   "mechanism": "Only pseudos 117, 121 and 138 overlap reg 96's live range, so those three are the entire cause of the 96/$v0 edge. Parking some other local quantity in $v0 across those windows cannot help - that quantity would itself conflict with reg 96. local-alloc.c:1854-1896 sets qty_phys_copy_sugg / qty_phys_sugg from copies between a quantity and a specific hard register, and local-alloc.c:1505-1527 tries every suggested quantity in a dedicated pre-pass ahead of the ordinary decreasing-life-length scan, so a $v1 suggestion for 117 and 138 is the only path that removes the edge without creating a new one.",
+   "next_probe": "The instrumented cc1 (tools/gcc-2.7.2/cc1) already carries BB2_QTY_DEBUG (prints QTYDBG-SUGG and QTYDBG lines with blk / ord / qty / reg1 / birth / death / refs / got for every local quantity) and BB2_SUGG_DEBUG (prints SUGGDBG-FFR with find_free_reg's used and first_used sets). Run both on the preprocessed TU for the 26 body using tmp/grind/func_8002E6B0/s8/findreg.sh with the env var swapped, read the lines whose reg1 is 117, 121 or 138, and establish whether each takes $v0 from the ascending scan or from a suggestion; then ask which C shape changes that. Do not re-spell declaration order, ret = 0 placement, restore arithmetic, tail splitting, sub-expression hoisting or first-exit-inline mixed exits - all are banked dead."
   },
   {
-   "hypothesis": "A permuter campaign seeded on r2 or q2 - distinct objects that tie at 26 - finds what the saturated base basin could not",
-   "mechanism": "s5's perm_e saturated the base 26 basin (11,782 iterations, 9 novel finds, all semantically broken) but was seeded on the base object. There are now four distinct objects at the floor and only the base has been searched; q1, q2 and r2 are different source geometries compiling to different objects, so their neighbourhoods are different. Both floor drops on record (40 to 34 and 34 to 26) came from hand-repairing a semantically broken find, so a broken find here is a LEAD, not a failure.",
-   "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh (it carries the current -mel -msoft-float flags; the older tools/mar_perm_workspace.sh and the func_800283D0 copy predate soft-float) on memory/grind/func_8002E6B0/rejected/s7_cond_carrier_cross_point_distinct_object_ties_26.c and .../s6_first_if_xor_swap_distinct_object_ties_26.c, one fresh-seed window each, waited in-turn with tools/permuter_campaign.py wait and stopped with harvest --stop before the outcome is written. Do NOT re-seed the base 26 basin (perm_e) or the 34 basin (s4 perm_c). Read every find's SEMANTICS before scoring it."
+   "hypothesis": "A permuter campaign seeded on r2 (md5 3bae0255) or q2 (md5 1b1fa1c0) - distinct objects that tie at 26 - finds what the saturated base basin could not",
+   "mechanism": "s5's perm_e saturated only the base object (921b8948) at 11,782 iterations, and s8 has now shown that basin absorbs eleven more hand spellings byte-identically, so the base neighbourhood is exhausted by hand as well. q1, q2 and r2 are different source geometries compiling to different objects, so their neighbourhoods are different. Both floor drops on record (40 -> 34 and 34 -> 26) came from hand-repairing a semantically broken find.",
+   "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh (it carries the current -mel -msoft-float flags) on memory/grind/func_8002E6B0/rejected/s7_cond_carrier_cross_point_distinct_object_ties_26.c and .../s6_first_if_xor_swap_distinct_object_ties_26.c, one fresh-seed window each, waited in-turn with tools/permuter_campaign.py wait and stopped with harvest --stop before the outcome is written. Do NOT re-seed the base 26 basin (perm_e) or the 34 basin (s4 perm_c). Read every find's SEMANTICS before scoring it."
   },
   {
-   "hypothesis": "The ra_solver suite becomes usable on this function once extract.py can supply a DIRECTIONAL conflict matrix (operator work, outside a grind session's allowed surface)",
-   "mechanism": "prune_preferences uses the one-way conflict bit (global.c:920) while dump_conflicts prints the symmetric closure (global.c:1807); the model is built from the dump, so its regs_someone_prefers is strictly too large and the ord-0 seat is wrong on this function. Until that is fixed, every inverse.py verdict here is void - including the negative result s6 logged.",
-   "next_probe": "Either add a birth-order proxy to tools/ra_solver/extract.py (row I of the matrix holds the allocnos already live when I was born, so first-def insn order approximates the direction) or add a cc1 hook that dumps the raw conflicts array alongside the existing ALLOCDBG/FINDREGDBG streams, then re-run simulate.py on tmp/ra_solver_work/func_8002E6B0.model.json and check it reproduces ord 0-2 (96 to $v1, 95 to $v0, 94 to $a0) before trusting any inverse verdict. In the meantime use BB2_FINDREG_DEBUG (tmp/grind/func_8002E6B0/s7/findreg.sh) as the ground-truth substitute."
+   "hypothesis": "The ra_solver suite becomes usable on this function only once extract.py can supply a DIRECTIONAL conflict matrix (operator work, outside a grind session's allowed surface)",
+   "mechanism": "prune_preferences uses the one-way conflict bit (global.c:920) while dump_conflicts prints the symmetric closure (global.c:1807); the model is built from the dump, so its regs_someone_prefers is strictly too large and the ord-0 seat is wrong on this function. Until that is fixed, every inverse.py verdict here is void.",
+   "next_probe": "Either add a birth-order proxy to tools/ra_solver/extract.py or add a cc1 hook that dumps the raw conflicts array alongside the ALLOCDBG/FINDREGDBG streams, then re-run simulate.py on tmp/ra_solver_work/func_8002E6B0.model.json and check it reproduces ord 0-2 before trusting any inverse verdict. In the meantime BB2_FINDREG_DEBUG, BB2_QTY_DEBUG and BB2_SUGG_DEBUG give the same ground truth directly."
   }
  ],
  "judge_constraints": [],
@@ -258,6 +264,38 @@
    "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, r3/r4 bodies on the 26 chassis, one variable-reuse staging borrow present",
    "predicate_cite": "",
    "result": "r4 = 48 / 95, i.e. 22 worse: block 1 staging loses the sixth callee-save exactly as block 3 staging did. Every block is "
+  },
+  {
+   "session": 8,
+   "statement": "Declaration order of the function-scope locals (center_x, center_z, cross_center, cross_point, ret) moves the ret seat or the floor on the 26 chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, d0-d6 bodies on the 26 chassis, one variable-reuse staging borrow present in each",
+   "predicate_cite": "",
+   "result": "All seven measure 26 / 96 and all seven are BYTE-IDENTICAL to the base object (md5 921b8948a0460d02b617959aacbd2403). GC"
+  },
+  {
+   "session": 8,
+   "statement": "Hoisting the repeated coordinate sub-expressions into named locals supplies the sixth callee-save as an ordinary-C substitute for the FAKE staging borrow",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, h1-h6 and j_* bodies; the staging borrow is present in h2/h4/h6/j_borrow_* and absent in h1/h3/h5/j_plain_*",
+   "predicate_cite": "",
+   "result": "Not one form improves either baseline. Plain chassis (baseline 45 / 93): h3 = 45 (byte-different but tied), h1 = 49, h5 "
+  },
+  {
+   "session": 8,
+   "statement": "Moving the ret = 0 initialisation later, or splitting the tail expression through ret, shortens reg 96's live range enough to drop its $v0 conflict",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, i1/i2/i5/i6/i7/i8 bodies on the 26 chassis, one variable-reuse staging borrow present",
+   "predicate_cite": "",
+   "result": "i1, i5, i7 and i8 all measure 26 / 96 and are byte-identical to the base object (md5 921b8948); i6 measures 26 / 96 and "
+  },
+  {
+   "session": 8,
+   "statement": "A mixed-exit form whose FIRST exit is an inline return 0 removes reg 96's early birth while keeping the sixth callee-save",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, k1/k3/k4/k5 bodies on the 26 chassis, one variable-reuse staging borrow present in k1/k3/k4 and in k5",
+   "predicate_cite": "",
+   "result": "k1 = k3 = k4 = 30 / 95 and k5 = 40 / 93. The live-range mechanism works on its own terms - the insn count drops by one -"
   }
  ],
  "ladder_skip": 0,

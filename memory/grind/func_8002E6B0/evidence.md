@@ -280,3 +280,82 @@
 - [s7] There are now FOUR known distinct objects tied at the 26 floor: base26 (921b8948, the only basin a permuter has searched - s5's perm_e, 11,782 iterations), q1 (078e7ad4), q2 (1b1fa1c0) and s7's r2 (3bae0255).
 
 - [s7] BB2_FINDREG_DEBUG on tools/gcc-2.7.2/cc1 gives the exact per-pseudo allocation inputs for one cc1 run per pseudo and is strictly more trustworthy than the ra_solver model on this function; tmp/grind/func_8002E6B0/s7/findreg.sh is a reusable two-line driver for it.
+
+## s8 (2026-09-08, structural) - floor 26 -> 26
+
+Chassis re-confirmed: candidate.c measures 26 / 96 insns on HEAD this session.
+
+Measured this session (all `sandbox func_8002E6B0 --disable all`, -mel -msoft-float, INCLUDE_ASM on main):
+
+| form | score / insns | object md5 |
+|---|---|---|
+| d0 base (= candidate.c) | 26 / 96 | 921b8948 |
+| d1 ret declared first | 26 / 96 | 921b8948 |
+| d2 cross vars declared first | 26 / 96 | 921b8948 |
+| d3 cross_point before cross_center | 26 / 96 | 921b8948 |
+| d4 center_z before center_x | 26 / 96 | 921b8948 |
+| d5 ret between centers and cross vars | 26 / 96 | 921b8948 |
+| d6 centers split decl/assign | 26 / 96 | 921b8948 |
+| h1 plain + hoist arg3 coords | 49 / 93 | - |
+| h2 borrow + hoist arg3 coords | 32 / 96 | - |
+| h3 plain + hoist arg0 coords | 45 / 93 | fac5aca8 |
+| h4 borrow + hoist arg0 coords | 26 / 96 | 921b8948 |
+| h5 plain + hoist both | 49 / 93 | - |
+| h6 borrow + hoist both | 32 / 96 | - |
+| j0 plain (no borrow, no restore) | 45 / 93 | - |
+| j_plain_ox / _qx / _all | 50 / 49 / 50, 93 | - |
+| j_borrow_ox / _qx / _all | 31 / 30 / 31, 96 | - |
+| i1 ret=0 moved before first if | 26 / 96 | 921b8948 |
+| i2 ret=0 inside first exit arm | 30 / 95 | a8ace481 |
+| i5 tail split through ret | 26 / 96 | 921b8948 |
+| i6 i5 + tail xor operands swapped | 26 / 96 | 078e7ad4 (= s6 q1) |
+| i7 i1 + i5 | 26 / 96 | 921b8948 |
+| i8 restore spelled `ret -= dz;` | 26 / 96 | 921b8948 |
+| k1 first exit inline return 0 | 30 / 95 | - |
+| k3 k1 with ret uninitialised | 30 / 95 | - |
+| k4 k3 + tail split | 30 / 95 | - |
+| k5 both exits inline return 0 | 40 / 93 | - |
+
+Facts established:
+
+1. The base 26 basin (md5 921b8948) now absorbs SEVEN further structural spellings byte-identically
+   (d1-d6, h4, i1, i5, i7, i8). Declaration order, `ret = 0` statement placement, the arithmetic
+   spelling of the restore, and splitting the tail expression through ret are all codegen-neutral.
+   Hand search of that basin's neighbourhood is exhausted.
+
+2. Two independent forms that shorten reg 96's live range at the FRONT (i2, k1/k3/k4) each drop one
+   insn but lose the sixth callee-save and turn the first `bltz` into `bgez` + `j`. Front-shortening
+   and the sixth callee-save are anti-correlated on this chassis.
+
+3. Conflict-source analysis of the `.lreg` RTL in CHAIN order (tmp/grind/func_8002E6B0/s8/an3.py,
+   output conflict_sources.txt): reg 96 has six sets (chain idx 40, 49, 55, 75, 76, 77 = insns
+   50, 129, 165, 230, 231, 232) and is live over chain idx 40..79 but dead across block 3. Only
+   THREE of local_alloc's twelve $v0 pseudos overlap that range: 117 (block-1 branch condition,
+   idx 43-44), 121 (a block-2 product, idx 51-54) and 138 (block-2 branch condition, idx 58-59).
+   The block-3 $v0 quantities (146/149/153/157, idx 64-72) are irrelevant to the seat. The target
+   computes both branch conditions into $v1, which is exactly what this model requires.
+
+4. The target's `move v0,zero` occupies the FIRST `bltz`'s delay slot and executes unconditionally,
+   serving both early exits; $v0 is then reused as block-3 scratch before the tail recomputes it.
+   The ret-variable chassis is structurally correct.
+
+5. The FAKE-free plain chassis (j0/t0 = 45 / 93) seats ret in $a1, not $v1 - a worse seat than the
+   borrow chassis. The plain form is two structural steps from the target (missing `sw`/`lw s5` and
+   carrying a trailing `move v0,a1`), not one.
+
+Artifacts: tmp/grind/func_8002E6B0/s8/ (all variant .c and .o files, an3.py, conflict_sources.txt,
+tgt.n + per-variant .n normalised disassemblies, measure.ps1, install.py, gen.py, gen2.py, dis2.sh).
+
+- [s8] Chassis re-confirmed at dispatch: memory/grind/func_8002E6B0/candidate.c measures 26 / 96 insns on HEAD this session, matching the ledger floor, so every s5-s7 spelling conclusion remains chassis-valid.
+
+- [s8] The base 26 basin (object md5 921b8948a0460d02b617959aacbd2403) now absorbs eleven further structural spellings byte-identically (d1-d6, h4, i1, i5, i7, i8) on top of the ties s5-s7 recorded; hand search of that basin's neighbourhood is exhausted.
+
+- [s8] Every ordinary-C register-pressure lever measured on this chassis is neutral or worse: split-init accumulation 65-68 (s7), staging sites b1 = 48 / b3 = 48 / b2+b3 = 34 (s4-s6), coordinate and shared-sub-expression hoisting 45 -> 45/49/50 plain and 26 -> 26/30/31/32 borrow (s8). The FAKE staging borrow remains the only construct that buys the target's sixth callee-save.
+
+- [s8] Two independent front-shortening forms (i2, and k1/k3/k4) each drop one insn to 95 but lose sw s5,20(sp) and convert the first bltz into bgez + j, so shortening reg 96's live range at the front and holding the sixth callee-save are anti-correlated on this chassis.
+
+- [s8] Conflict-source analysis (tmp/grind/func_8002E6B0/s8/conflict_sources.txt) names the three quantities that create the seat: pseudos 117, 121 and 138, in two windows only (chain idx 43-44 and 51-59). This supersedes s7's twelve-pseudo statement.
+
+- [s8] The target's move v0,zero sits in the FIRST bltz's delay slot and executes unconditionally, serving both early exits; $v0 is then reused as block-3 scratch before the tail recomputes it. The ret-variable chassis is structurally correct and reg 96 is legitimately dead across block 3 in our build too.
+
+- [s8] The FAKE-free plain chassis (j0/t0 = 45 / 93) seats ret in $a1 (move a1,zero / srl a1,a1,0x1f / move v0,a1), a worse seat than the borrow chassis's $v1, so the plain form is two structural steps from the target, not one.

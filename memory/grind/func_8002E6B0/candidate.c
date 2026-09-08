@@ -1,3 +1,15 @@
+/* s8 ADDENDUM (2026-09-08, structural). Body UNCHANGED; re-measured 26 / 96 on
+   HEAD this session. Two corrections to the s7 header below:
+     - reg 96 has SIX sets, not four: the tail (cc ^ cp) >= 0 expands to
+       xor / not / lshiftrt all written INTO reg 96, exactly as the target does.
+     - the 96/$v0 conflict is contributed by only THREE local_alloc quantities,
+       not twelve: pseudos 117 (block-1 branch condition), 121 (a block-2
+       product) and 138 (block-2 branch condition). Reg 96 is dead across
+       block 3, so the seven block-3 $v0 quantities cannot reach the seat.
+   s8 also confirmed this basin absorbs seven more structural spellings
+   byte-identically (declaration order in any permutation, ret = 0 statement
+   placement, restore spelled as a subtract, tail split through ret) - see
+   the s8 section of hypotheses.md. Do not re-spell any of them. */
 /* s7 CANDIDATE (body UNCHANGED from s5/s6; floor 26 / 96 insns, re-measured on
    HEAD this session; target is 94 insns).
 
