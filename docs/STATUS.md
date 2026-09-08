@@ -1,6 +1,6 @@
 # Project Status
 
-**Live snapshot.** Refreshed 2026-09-02 (post grinder session-efficiency work). For
+**Live snapshot.** Refreshed 2026-09-07 (post `-msoft-float` adoption). For
 the live worklist run `& tools/wteng.ps1 main queue next` (and `queue status`
 for counters); for build health run `verify-oracle`. The workflow itself lives
 in [`../CLAUDE.md`](../CLAUDE.md).
@@ -11,8 +11,8 @@ in [`../CLAUDE.md`](../CLAUDE.md).
 |---|---|
 | Branch | `main` |
 | Oracle SHA1 | `62efab4f73f992798c43e8c730aa43baa10bb4fa` |
-| Build match | ✅ green — full `verify-oracle --rebuild` re-verified 2026-08-30 |
-| Grinder | relaunched 2026-09-02 after the session-efficiency changes (`docs/superpowers/plans/2026-09-01-grinder-session-efficiency.md`: current-scope injection, kill hygiene, FAKE ablation, loop/nrefs/label census tools, grant re-scan) |
+| Build match | ✅ green — full `verify-oracle --rebuild` re-verified 2026-09-07 under the new flag set |
+| Grinder | relaunched 2026-09-07 after the `-msoft-float` adoption (Judge/recon/layer-1 on Fable 5.1, execution on Opus since 1930c839) |
 | Current worklist top | via `& tools/wteng.ps1 main queue next` |
 
 **Representation (owner ruling 2026-08-19, [[asm-until-matched]]):** an
@@ -21,6 +21,12 @@ cheat-asm, no draft C on `main`. Candidates live in
 `memory/grind/<func>/`; queue distance comes from the pinned/ledger honest
 floor.
 
+**Canonical flags (2026-09-07):** `CC_FLAGS` carries `-mel -msoft-float` — both are
+target-triple fidelity corrections (the prebuilt cc1 defaults big-endian and
+hard-float; PsyQ cc1psx prints `# Cc1 defaults: -mgas -msoft-float`). Hard float
+had doubled `loop.c`'s invariant-hoist threshold (122 vs 58); blast radius was
+exactly two functions (`docs/grind/decisions.md` 2026-09-07 OWNER RULING).
+
 **No post-processing rule machinery exists.** The build pipeline is
 `cpp | cc1 | prologue_fix | maspsx | multu_pad | as` — every completed function
 compiles to its bytes directly from C (or authorized canonical asm). The
@@ -28,7 +34,7 @@ historical regfix/asmfix rule system reached zero rules on 2026-08-25 and was
 removed entirely (files, pipeline stages, tooling) on 2026-08-30; see git
 history if archaeology is ever needed.
 
-## Function inventory (2026-09-02)
+## Function inventory (2026-09-07)
 
 Counts from `python3 tools/check_completion_integrity.py` (the authority — it
 applies the 2026-08-07 data-as-code structural filter; raw `asm/funcs/*.s` file
@@ -36,18 +42,20 @@ counts do not).
 
 | | Count |
 |---|------:|
-| **COMPLETED-C** | **1,074** |
-| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 189 |
-| **INCOMPLETE** (queue items) | 211 |
-| — active (grinder-eligible) | 193 |
-| — foreclosed (standing ruling; re-activated by grant re-scan or unpark) | 18 |
+| **COMPLETED-C** | **1,114** |
+| **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 195 |
+| **INCOMPLETE** (queue items) | 165 |
+| — active (grinder-eligible) | 165 |
+| — foreclosed | **0** (all unparked in the 2026-09-06/07 owner reviews) |
 | — escalated | **0** |
-| Data-as-code symbols (excluded by ruling) | 12 |
+| Data-as-code symbols (excluded by ruling) | 11 |
 
-≈ 86% of the 1,474 in-scope functions are in a COMPLETED state.
+≈ 89% of the 1,474 in-scope functions are in a COMPLETED state.
 
-Queue verdict breakdown (2026-09-02): 179 `C` (pure-C reachable) + 32
-`ASM-PARTIAL` (contain canonical GTE/BIOS/HW asm).
+Queue verdict breakdown (2026-09-07): 139 `C` (pure-C reachable) + 26
+`ASM-PARTIAL` (contain canonical GTE/BIOS/HW asm). Top of queue:
+func_800324D0 (reopened 2026-09-07 — its FAKE-carrying completion was an
+artifact of the hard-float loop threshold) then the easiest-first tail.
 
 **Escalation backlog: CLEARED 2026-08-30.** The owner ruled on the full
 23-item escalated set in one batch (decisions.md "2026-08-30 — OWNER
@@ -60,19 +68,19 @@ func_8002FC80 and func_8002D320), the func_800324D0 jtbl re-wiring lane,
 two provenance adjudications, one bounded calibration probe, and the return
 of every no-question item to active. No standard was lowered.
 
-## Source-file distribution (2026-08-30)
+## Source-file distribution (2026-09-07)
 
 | File | Lines |
 |---|---:|
-| `text1b.c` | 6,484 |
-| `display.c` | 3,520 |
-| `main.c` | 3,263 |
-| `code6cac.c` | 2,771 |
-| `code6cac_b.c` | 2,642 |
-| `text1b_b.c` | 1,914 |
-| `text1a_c.c` | 1,748 |
-| Other 25 files | < 1,700 each |
-| **Total** | **35,194** |
+| `text1b.c` | 7,154 |
+| `code6cac_b.c` | 3,684 |
+| `display.c` | 3,632 |
+| `main.c` | 3,452 |
+| `code6cac.c` | 3,254 |
+| `text1b_b.c` | 1,980 |
+| `text1a_c.c` | 1,907 |
+| Other 25 files | < 1,900 each |
+| **Total** | **38,661** |
 
 32 C source files total. Line counts SHRINK during migration waves (bodies
 move to `asm/funcs/`) and grow again as functions reach COMPLETED-C —
@@ -82,12 +90,12 @@ neither direction is a health signal by itself.
 
 | Window | Commits |
 |---|---:|
-| Last 2 weeks | 540 |
-| Last month | 1,216 |
-| Total since project start (2026-03-23) | 5,373 |
+| Last 2 weeks | 959 |
+| Last month | 1,546 |
+| Total since project start (2026-03-23) | 6,096 |
 
-208 `Match:` completions landed since 2026-07-12 (21 since 2026-08-24).
-Recent grinder closes ran 1–37 sessions each — the easiest-first queue's
+262 `Match:` completions landed since 2026-07-12 (75 since 2026-08-24, 33 since
+2026-09-02). Recent grinder closes ran 1–88 sessions each — the easiest-first queue's
 remaining tail is genuinely hard.
 
 ## Standing initiatives
@@ -128,13 +136,13 @@ Retired initiatives (fleet, closer, the rule system) are recorded in
 
 | Item | State |
 |---|---|
-| Root cleanliness | ✅ (last verified 2026-08-24, `tools/check_root_cleanliness.py`) |
-| Completion integrity | ✅ all completed functions satisfy their category's invariants (verified 2026-08-30) |
+| Root cleanliness | ✅ (last verified 2026-09-07, `tools/check_root_cleanliness.py`) |
+| Completion integrity | ✅ all completed functions satisfy their category's invariants (verified 2026-09-07) |
 | CLAUDE.md / memory hygiene | Guards active (root-write, LF, CRLF-tooling-error, memory-write) |
-| Oracle | Green (`build/bb2.exe` == `disc/SLUS_006.63`, full rebuild 2026-08-30) |
+| Oracle | Green (`build/bb2.exe` == `disc/SLUS_006.63`, full rebuild 2026-09-07) |
 | Function naming | Census + phase-2 reset wave complete (2026-08-07/10); 334 Sony names applied byte-neutral. `docs/naming/README.md` |
 | Rodata cleanup | Phase A + B COMPLETE (2026-06-09; `bb2.ld` hand-maintained since) |
-| maspsx gate-dependent completions | 6, tracked for transparency (fidelity-class assembler gates, not cheats) |
+| maspsx gate-dependent completions | 11, tracked for transparency (fidelity-class assembler gates, not cheats) |
 | Metrics Postgres | local instance unreachable (query staleness only; `metrics/events.jsonl` remains source of truth — run `python tools/metrics/sync.py` when back) |
 | WSL nonpaged-pool leak | Known host issue (~1 Job object per `wsl.exe` call) — surfaced only when it actually breaks something ([[wsl-kernel-object-leak-audio]]) |
 
