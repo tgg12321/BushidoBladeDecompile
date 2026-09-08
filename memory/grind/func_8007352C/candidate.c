@@ -1,4 +1,12 @@
-extern s32 SetSprt(s32, s16);
+/* func_8007352C candidate — s1 recon 2026-09-08 (third pass; prior pass discarded
+ * on a self-vet tripwire, body unchanged). sandbox --disable all = 0 (127/127),
+ * canonical verdict C distance 0. Ordinary C throughout: the sprite initializer is
+ * called with its real one-pointer signature (src/gpu.c:427); the lh $a1,0($s0)
+ * before that call is local-alloc's scratch choice for e->x feeding x0.
+ * Also requires: src/text1b.c:409 GetClut decl -> `extern u16 GetClut(s32, s32);`
+ * (sibling func_800485EC re-measured 0, 68/68). Body is in place in src/text1b.c.
+ */
+extern void SetSprt(s32);
 extern s32 SetShadeTex(s32, s32);
 extern s32 SetSemiTrans(s32, s32);
 extern s32 AddPrim(s32, s32);
@@ -63,7 +71,7 @@ s32 func_8007352C(EnvA *env) {
         x1 = x0 + e->w;
         y1 = y0 + e->h;
         if (x1 > 0 && x0 < 0x280 && y0 < 0xF0 && y1 > 0) {
-            SetSprt((s32)sp, e->x);
+            SetSprt((s32)sp);
             sp->clut = clut;
             sp->x0 = x0;
             sp->y0 = y0;

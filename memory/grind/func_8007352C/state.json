@@ -24,6 +24,13 @@
    "hash": "27e54a313d4781d9",
    "when": "2026-09-08T07:05:16.181095+00:00",
    "summary": "Body is ordinary C except one construct: SetSprt((s32)sp, e->x) passes a fabricated second argument to the one-argument libgpu SetSprt (src/gpu.c:427 reads only p; asm/funcs/SetSprt.s never touches $a1) whose only plausible role is binding e->x into $a1 before the call; the worker never measured the"
+  },
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "8e5341a674b7f9f7",
+   "when": "2026-09-08T07:12:23.523733+00:00",
+   "summary": "final call: Body is ordinary C throughout: three plain layout typedefs (SPRT prim, sprite header, 8-byte table entry) over the existing EnvA block, an s16 count-down loop, named clip bounds, and PsyQ calls under "
   }
  ]
 }
