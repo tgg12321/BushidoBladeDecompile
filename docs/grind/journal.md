@@ -1854,3 +1854,4 @@
 - 2026-09-07 23:31 func_80017848 s54 [synthesis] floor=3: Residual pinned to a 2-instruction transposition in loop 2 and attributed insn-by-insn from the .combine dump: loop-1's copy and loop-2's wrong guard instruction are two ends of ONE device (the `p = q;` join copy), and every second use available to loop-2's carrier is now priced dead.
 - 2026-09-07 23:48 func_80017848 s55 [escalation] AUTO-FILED by driver backstop (session did not self-file) — foreclosed: 2026-09-07 ΓÇö func_80017848 ΓÇö RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)
 - 2026-09-08 00:16 func_80035280 COMPLETED-C after 5 sessions (closer: s5 [rederive]).
+- 2026-09-08 00:41 SsUtKeyOffV COMPLETED-C after 1 sessions (closer: s1 [recon]).
