@@ -1,15 +1,46 @@
 {
  "func": "func_800204C0",
  "file": "code6cac",
- "session_count": 0,
- "current_modality": null,
- "floor_history": [],
- "frontier": [],
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 0,
+   "modality": "recon",
+   "headline": "func_800204C0 re-proven at sandbox 0 (122/122) on HEAD 387fa8f8 with the Judge-PASSed body 8655cc28f3aa5cc7; the C-respelled-island branch of the refusal is measured dead (0/12 island insns); the only"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Once tools/grinder/owner_cluster_grants.txt carries the func_800204C0 row, submitting candidate.c EXACTLY (Judge clearance 8655cc28f3aa5cc7 skips layer-1) merges as COMPLETED-INLINE-ASM-CANONICAL.",
+   "mechanism": "grant_canonical_asm owner-cluster door (grindlib.py:1493) writes the inline_asm_canonical.txt line itself after bytes re-proof and FINAL CALL.",
+   "next_probe": "cp memory/grind/func_800204C0/candidate.c src/code6cac.c; sandbox --disable all (expect 0); candidate-ready."
+  }
+ ],
  "judge_constraints": [
-  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 3 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)"
+  "MERGE REFUSED (owner Ruling C 2026-09-02): the Judge PASSed a body carrying 3 non-cop2-whitelist inline-asm island(s) but func is not allowlisted and no grant door admits it (scan tier LOW, not in tools/grinder/owner_cluster_grants.txt). Either the islands are C-expressible (respell them in C) or the function needs an owner cluster row. gate: grant REFUSED (tier not STRONG-class and not owner-cluster-enumerated \u0393\u00c7\u00f6 evidence gate failed)",
+  "Submit memory/grind/func_800204C0/candidate.c EXACTLY (body 8655cc28f3aa5cc7, Judge-cleared) once tools/grinder/owner_cluster_grants.txt carries a func_800204C0 row; do not respell the islands (measured dead, rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c) and do not add FAKE/pins/barriers to chase a STRONG scan tier."
  ],
  "banned_constructs": [],
- "kills": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Respelling the gte_SetRotMatrix island as five C word loads plus ctc2-only islands (first island only, other three in the granted spelling, no FAKE constructs) reproduces the 12-insn island region of ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 387fa8f8 chassis, candidate.c body with island 1 respelled in C, zero FAKE constructs, cc1 direct gradient",
+   "predicate_cite": "",
+   "result": "0 of 12 region insns reproduced: loads seated $t0/$a0/$v0/$a0/$v1 as a block ahead of each ctc2 pair, no $t4 copy, 11 in"
+  },
+  {
+   "session": 1,
+   "statement": "The STRONG scan-tier door of grant_canonical_asm is available for func_800204C0.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 387fa8f8, asm/funcs/func_800204C0.s target bytes (scanner reads the target, independent of C)",
+   "predicate_cite": "",
+   "result": "tier LOW 1/8, only S4 front loads (tmp/grind/func_800204C0/s1/scan_hand_coded.txt). Only the owner_cluster_grants.txt ro"
+  }
+ ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
@@ -22,5 +53,6 @@
    "when": "2026-09-08T06:15:47.793801+00:00",
    "summary": "final call: PASS. Islands: four cop2 islands (gte_SetRotMatrix, gte_ldlv0 incl. the lhu/lhu/sll/or pack, MVMVA .word 0x4A486012, gte_stlvnl) template-identical to the func_800203B4 spelling (inline_asm_canonical."
   }
- ]
+ ],
+ "object_model_audited": 1
 }

@@ -1857,3 +1857,5 @@
 - 2026-09-08 00:41 SsUtKeyOffV COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-08 00:47 note2pitch COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-08 00:57 func_80073060 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-08 01:16 func_800204C0: MERGE REFUSED after judge PASS — 3 unallowlisted inline-asm island(s), no grant door; constraint banked.
+- 2026-09-08 01:23 func_800204C0 JUDGE ESCALATE (ruling request, integration-handoff (REFUSED: no executable remedy in verdict)) — refused + FORECLOSED silently (owner ruling 2026-08-31).

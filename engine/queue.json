@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_800204C0",
-      "file": "code6cac",
-      "distance": 52,
-      "verdict": "ASM-PARTIAL",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_800430E4",
       "file": "text1a_c",
       "distance": 52,
@@ -1408,18 +1400,27 @@
       "unpark_reason": "Newly VISIBLE completed siblings in the same TU (tombstone backfill, commit 0ddc72c8): func_80017D84 \u2014 already named by this ledger's own s45 object-model audit as the source of its 52-byte data model \u2014 plus func_80016E60 and main, all COMPLETED-C in src/ings.c and never read by this ledger. PROBE: read their on-main bodies and transplant their loop-2 preheader / copy-geometry spellings onto the f",
       "unparked_from": "FORECLOSED (standing ruling 2026-07-27; silent disposition per owner ruling 2026-08-31): docs/grind/decisions.md \u2014 '## 2026-09-06 \u2014 func_80017848 (src/ings.c) \u2014 **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**' (post-unpark foreclosed-bucket window, both endgame gates fail)",
       "foreclosure": "FORECLOSED (standing ruling 2026-07-27, auto-filed backstop; silent per owner ruling 2026-08-31): 2026-09-07 \u0393\u00c7\u00f6 func_80017848 \u0393\u00c7\u00f6 RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED (endgame lock, both gates fail; auto-filed by driver, exhaustion backstop)"
+    },
+    {
+      "func": "func_800204C0",
+      "file": "code6cac",
+      "distance": 52,
+      "verdict": "ASM-PARTIAL",
+      "rules": 0,
+      "status": "foreclosed",
+      "foreclosure": "FORECLOSED (judge ESCALATE integration-handoff (REFUSED: no executable remedy in verdict) refused; owner ruling 2026-08-31): 2026-09-08 \u2014 func_800204C0 \u2014 JUDGE ESCALATE on ruling request (integration-handoff) \u2014 RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)"
     }
   ],
   "counts": {
     "total": 159,
-    "active": 158,
+    "active": 157,
     "by_status": {
-      "active": 158,
-      "foreclosed": 1
+      "active": 157,
+      "foreclosed": 2
     },
     "by_verdict": {
-      "ASM-PARTIAL": 26,
-      "C": 132
+      "C": 132,
+      "ASM-PARTIAL": 25
     }
   }
 }

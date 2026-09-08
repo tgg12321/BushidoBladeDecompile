@@ -25552,3 +25552,101 @@ Ordinary C, no constructs. The body is Sony's own note2pitch from psyz PsyQ 4.0 
 ## 2026-09-08 00:57 — func_80073060 — final call — **PASS**
 
 Ordinary C only: a TU-local TileXy typedef (PsyQ TILE layout; callee func_80072F30/func_80072FCC are SetTile+AddPrim wrappers returning p+0x10, so the typing is semantically truthful; same-file precedent PolyG4Xy text1b.c:6395), three for-loops sharing one counter, and tick x-positions written as base + i*stride, which are the values actually stored. No pins, asm, volatile, dead reads, empty-ifs, pads, or FAKE annotations (grep 0). The retired-chassis empty-if dead reads were NOT carried over. Decisive fact: every statement stores a real coordinate or advances the primitive pointer; nothing is byte-neutral. Independently verified: candidate.c equals the src/text1b.c body (only BEGIN/END markers differ), diff touches only src/text1b.c + metrics/events.jsonl, no pipeline/rule/asm files. Evidence: memory/grind/func_80073060/evidence.md (v2 sandbox 0, 104/104), hypotheses.md H2/H3, rejected/one-j-var-all-loops-score23.c.
+
+## 2026-09-08 — func_800204C0 (src/code6cac.c) — **CANONICAL-ASM GRANT PATH: blocked at the operator registry row (bytes PROVEN, Judge PASS on record, LOW scan tier)**
+
+Filed by grind session s1b (recon modality, re-dispatch after the 387fa8f8 merge refusal). **This is
+NOT an exhaustion claim, NOT an endgame lock, and NOT a question to the owner.** It is a
+proof-of-foreclosure record of the integration-handoff kind, identical in shape to the func_80019310
+entry above (2026-09-06, decisions.md:24678): the function is SOLVED (pure-C body + four PsyQ SDK GTE
+macro islands, sandbox 0), the Judge has already PASSed the exact body, and the ONLY missing piece is
+one line in a file no grind session may write.
+
+### State of proof (all re-measured this session on HEAD 387fa8f8)
+
+- Body: `memory/grind/func_800204C0/candidate.c`, Judge hash `8655cc28f3aa5cc7`, Judge PASS
+  2026-09-08 06:15 (`state.json` review_ledger; docs/grind/decisions.md 2026-09-08 ruling).
+- `sandbox func_800204C0 --disable all` = score 0, 122/122, rules_dropped 0
+  (`tmp/grind/func_800204C0/s1/sandbox_s1b.json`). `canonical` = ASM-PARTIAL, 11/122 cop2 insns.
+  Zero pins, zero aliasing blocks, zero scheduling barriers, zero `/* FAKE */`; the C body is
+  ordinary (field reads through `u8 *arg0`, a `+= 1` counter with re-read, signed `/ 150` and
+  `/ 0x1000`, a `(s16)` compare, a double tail store).
+- `tools/scan_hand_coded.py --single func_800204C0` = tier LOW 1/8 (S4 front loads only; none of
+  the STRONG signals S1/S2/S6), the GTE-wrapper-misroute artifact the 2026-09-01 grant record itself
+  names (`tmp/grind/func_800204C0/s1/scan_hand_coded.txt`).
+- The refusal's other branch, "the islands are C-expressible (respell them in C)", is measured DEAD on
+  this chassis: gte_SetRotMatrix respelled as five C word loads plus ctc2-only islands reproduces 0 of
+  the 12 island-region insns — GCC 2.7.2 seats the loads in $t0/$a0/$v0/$a0/$v1 as a block ahead of
+  each transfer pair and never emits the redundant `move $t4,$v1` preamble
+  (`tmp/grind/func_800204C0/s1/thin1_try.txt`, hypotheses.md H5,
+  `rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c`). Same class result as func_80019310 s3
+  H10 and func_800203B4 s6.
+
+### Why the driver refused the merge, and why no session can cure it
+
+`grant_canonical_asm` (tools/grinder/grindlib.py:1493) has two evidence doors: STRONG scan tier, or a
+row naming the function in `tools/grinder/owner_cluster_grants.txt`. The tier is LOW and the registry
+has no `func_800204C0` row (rows exist for func_80031890, func_8002FF20 and func_80019310 under the
+same grant). The registry header states it is OPERATOR-MAINTAINED ONLY and `tools/` is outside session
+scope. The owner grant that admits this function already exists: the 2026-09-01 widened-anchor GRANT
+names `func_800204C0` as a confirmed handwritten-tagged carrier (decisions.md:18120;
+.claude/rules/cop2-addressing-preamble-cluster.md:155). The island spelling is character-identical to
+the integrated func_800203B4 body (inline_asm_canonical.txt:367). Nothing is being asked of the owner;
+the ruling is landed. The missing surface is purely clerical.
+
+### The exact operator step (the whole remedy)
+
+1. Append ONE row to `tools/grinder/owner_cluster_grants.txt`, same shape as the func_80019310 row:
+   `func_800204C0 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)`
+2. Re-activate the function (`queue unpark func_800204C0 --reason "registry row added"`) if the driver
+   foreclosed it on this entry.
+3. The next session submits `candidate.c` EXACTLY (the Judge clearance skips layer-1); the driver
+   re-proves bytes, runs FINAL CALL, and its grant door writes the `inline_asm_canonical.txt` line
+   itself (tier "OWNER-CLUSTER"). Honest bucket: COMPLETED-INLINE-ASM-CANONICAL. The operator's fresh
+   layer-2 cheat-reviewer still runs on the C before acceptance.
+
+### Routing note
+
+As with func_80019310, the session cites this entry in `escalation_ref` WITHOUT the grant-path branch
+keyword so the driver takes its borderline-log + silent-foreclosure branch (grind.ps1:1474) rather than
+re-dispatching sessions that cannot act until the registry row exists. Re-activation triggers: the
+registry row above, OR a future rule/toolchain change that lets a session write the row itself.
+Evidence pointers: `memory/grind/func_800204C0/evidence.md` (s1 items 1-10, s1b items 11-16),
+`hypotheses.md` (H1-H6), `rejected/` (two disproven forms), `tmp/grind/func_800204C0/s1/`.
+
+## 2026-09-08 01:23 — func_800204C0 — ruling: INTEGRATION HANDOFF filed for func_800204C0 : docs/grind/decisions.md:25556 — 20 — **ESCALATE**
+
+RULING REQUEST on the integration handoff filed at docs/grind/decisions.md:25556. The claim holds; the work is sound and complete; the only blocker is a registry file no grind session may write, and it is also outside the driver's own scope-grant classes.
+
+WHAT WAS BUILT. A 97-instruction pure-C body (field reads through a byte pointer, a counter incremented in memory and re-read, signed divisions by 150 and 4096, a 16-bit compare, a double tail store) plus four GTE inline-asm islands that are the PsyQ SDK macro bodies character-for-character (gte_SetRotMatrix, gte_ldlv0 with its lhu/lhu/sll/or pack, the MVMVA command word 0x4A486012, gte_stlvnl), spelled identically to the already-integrated func_800203B4 (inline_asm_canonical.txt:367). No pins, no scheduling barriers, no free-standing GPR asm outside an island, no /* FAKE */ constructs, no build-time output rewriting (only src/code6cac.c would change).
+
+WHAT I VERIFIED MYSELF (not taken from the ledger). (1) grindlib body_hash of candidate.c = 8655cc28f3aa5cc7, the body already PASSed at FINAL CALL (state.json review_ledger 2026-09-08 06:15); nothing in the C changed. (2) Applied candidate.c to src/code6cac.c transiently: sandbox func_800204C0 --disable all = score 0, 122/122, rules_dropped 0; canonical = ASM-PARTIAL 11/122 cop2; src restored to INCLUDE_ASM afterwards, tree clean. (3) candidate.c differs from the committed TU only in the function region (diff of the file minus that region is empty). (4) Target asm carries the grant's defining evidence: three materialize-then-copy preambles (addu $t4,$v1/$v0/$v0 at asm/funcs/func_800204C0.s:25,37,59) and 8 splat handwritten-instruction tags on the cop2 transfers. (5) scan_hand_coded tier LOW 1/8 (S4 only), which the 2026-09-01 grant record itself names as the GTE-wrapper-misroute artifact. (6) The 'islands are C-expressible' branch of the 387fa8f8 refusal is measured dead: the C-loads respelling reproduces 0 of 12 island-region instructions (GCC 2.7.2 never emits the redundant $t4 copy) — rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c, same class as func_80019310 s3 and func_800203B4 s6.
+
+FAMILY. The cop2 addressing-preamble cluster, WIDENED-ANCHOR owner GRANT of 2026-09-01: func_800204C0 is named by name as a confirmed handwritten-tagged carrier (decisions.md:18120; .claude/rules/cop2-addressing-preamble-cluster.md:155). Its load-bearing prerequisite — the pure-C body independently at sandbox 0 — holds (verified above). Condition 3 (template = SDK macro body) holds per owner ruling 2026-09-02.
+
+THE BLOCKER AND THE REMEDY. grant_canonical_asm (tools/grinder/grindlib.py:1493) opens on a STRONG scan tier or a row naming the function in tools/grinder/owner_cluster_grants.txt. The tier is LOW and the registry has rows for func_80031890, func_8002FF20 and func_80019310 under this same grant, but none for func_800204C0. The registry header says OPERATOR-MAINTAINED ONLY. The whole remedy is one line, same shape as the func_80019310 row: `func_800204C0 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)`. I am setting scope_paths to that file so the record names the exact surface. I expect the driver to REFUSE it mechanically (tools/ is outside _SCOPE_GRANT_ALLOWED_RE), borderline-log this packet and foreclose silently — which is precisely the func_80019310 precedent (refused 12427b10 -> foreclosed 2aed243e -> operator row 2cef233c in the 2026-09-06 foreclosed-bucket review -> unpark -> merged 3869ca31 as COMPLETED-INLINE-ASM-CANONICAL). After the row lands: queue unpark func_800204C0, the next session submits candidate.c EXACTLY (clearance skips layer-1), the driver re-proves bytes, runs FINAL CALL, and its owner-cluster door writes the inline_asm_canonical.txt line (bucket COMPLETED-INLINE-ASM-CANONICAL).
+
+WHY NOT FAIL / PASS. FAIL is wrong: no construct is objectionable and no evidence is missing — a FAIL would re-grind a solved function against a wall no session can move. A bare PASS is wrong: the body is already cleared, and resubmission would hit the same grant-door refusal as 387fa8f8 (a livelock). One record defect, not a fail ground: the handoff entry cites a 'docs/grind/decisions.md 2026-09-08 ruling' for the 06:15 PASS, but that PASS is recorded only in state.json review_ledger and journal.md:1860 (commit 387fa8f8 did not touch decisions.md). Evidence: memory/grind/func_800204C0/evidence.md items 1-16, hypotheses.md H1-H6, rejected/ (2 forms), tmp/grind/func_800204C0/s1/.
+
+## 2026-09-08 — func_800204C0 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait)
+
+**Filed by the grinder Judge (2026-09-08)** — verdict ESCALATE (integration-handoff): the work is
+sound but the grant is above the Judge's standing authority. Per the owner's
+2026-08-18 ruling (judge-sole-gate, b9d91163) the driver disposes it immediately;
+nothing waits on the owner.
+
+**The Judge's packet:**
+
+RULING REQUEST on the integration handoff filed at docs/grind/decisions.md:25556. The claim holds; the work is sound and complete; the only blocker is a registry file no grind session may write, and it is also outside the driver's own scope-grant classes.
+
+WHAT WAS BUILT. A 97-instruction pure-C body (field reads through a byte pointer, a counter incremented in memory and re-read, signed divisions by 150 and 4096, a 16-bit compare, a double tail store) plus four GTE inline-asm islands that are the PsyQ SDK macro bodies character-for-character (gte_SetRotMatrix, gte_ldlv0 with its lhu/lhu/sll/or pack, the MVMVA command word 0x4A486012, gte_stlvnl), spelled identically to the already-integrated func_800203B4 (inline_asm_canonical.txt:367). No pins, no scheduling barriers, no free-standing GPR asm outside an island, no /* FAKE */ constructs, no build-time output rewriting (only src/code6cac.c would change).
+
+WHAT I VERIFIED MYSELF (not taken from the ledger). (1) grindlib body_hash of candidate.c = 8655cc28f3aa5cc7, the body already PASSed at FINAL CALL (state.json review_ledger 2026-09-08 06:15); nothing in the C changed. (2) Applied candidate.c to src/code6cac.c transiently: sandbox func_800204C0 --disable all = score 0, 122/122, rules_dropped 0; canonical = ASM-PARTIAL 11/122 cop2; src restored to INCLUDE_ASM afterwards, tree clean. (3) candidate.c differs from the committed TU only in the function region (diff of the file minus that region is empty). (4) Target asm carries the grant's defining evidence: three materialize-then-copy preambles (addu $t4,$v1/$v0/$v0 at asm/funcs/func_800204C0.s:25,37,59) and 8 splat handwritten-instruction tags on the cop2 transfers. (5) scan_hand_coded tier LOW 1/8 (S4 only), which the 2026-09-01 grant record itself names as the GTE-wrapper-misroute artifact. (6) The 'islands are C-expressible' branch of the 387fa8f8 refusal is measured dead: the C-loads respelling reproduces 0 of 12 island-region instructions (GCC 2.7.2 never emits the redundant $t4 copy) — rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c, same class as func_80019310 s3 and func_800203B4 s6.
+
+FAMILY. The cop2 addressing-preamble cluster, WIDENED-ANCHOR owner GRANT of 2026-09-01: func_800204C0 is named by name as a confirmed handwritten-tagged carrier (decisions.md:18120; .claude/rules/cop2-addressing-preamble-cluster.md:155). Its load-bearing prerequisite — the pure-C body independently at sandbox 0 — holds (verified above). Condition 3 (template = SDK macro body) holds per owner ruling 2026-09-02.
+
+THE BLOCKER AND THE REMEDY. grant_canonical_asm (tools/grinder/grindlib.py:1493) opens on a STRONG scan tier or a row naming the function in tools/grinder/owner_cluster_grants.txt. The tier is LOW and the registry has rows for func_80031890, func_8002FF20 and func_80019310 under this same grant, but none for func_800204C0. The registry header says OPERATOR-MAINTAINED ONLY. The whole remedy is one line, same shape as the func_80019310 row: `func_800204C0 cop2-addressing-preamble-cluster.md widened anchor (owner grant 2026-09-01, decisions.md:18082; row per owner ruling 2026-09-02)`. I am setting scope_paths to that file so the record names the exact surface. I expect the driver to REFUSE it mechanically (tools/ is outside _SCOPE_GRANT_ALLOWED_RE), borderline-log this packet and foreclose silently — which is precisely the func_80019310 precedent (refused 12427b10 -> foreclosed 2aed243e -> operator row 2cef233c in the 2026-09-06 foreclosed-bucket review -> unpark -> merged 3869ca31 as COMPLETED-INLINE-ASM-CANONICAL). After the row lands: queue unpark func_800204C0, the next session submits candidate.c EXACTLY (clearance skips layer-1), the driver re-proves bytes, runs FINAL CALL, and its owner-cluster door writes the inline_asm_canonical.txt line (bucket COMPLETED-INLINE-ASM-CANONICAL).
+
+WHY NOT FAIL / PASS. FAIL is wrong: no construct is objectionable and no evidence is missing — a FAIL would re-grind a solved function against a wall no session can move. A bare PASS is wrong: the body is already cleared, and resubmission would hit the same grant-door refusal as 387fa8f8 (a livelock). One record defect, not a fail ground: the handoff entry cites a 'docs/grind/decisions.md 2026-09-08 ruling' for the 06:15 PASS, but that PASS is recorded only in state.json review_ledger and journal.md:1860 (commit 387fa8f8 did not touch decisions.md). Evidence: memory/grind/func_800204C0/evidence.md items 1-16, hypotheses.md H1-H6, rejected/ (2 forms), tmp/grind/func_800204C0/s1/.
+
+**Constraint recorded for any future session:** Submit memory/grind/func_800204C0/candidate.c EXACTLY (body 8655cc28f3aa5cc7, Judge-cleared) once tools/grinder/owner_cluster_grants.txt carries a func_800204C0 row; do not respell the islands (measured dead, rejected/thin-island-c-loads-seat-t0-a0-v0-not-t5-t7.c) and do not add FAKE/pins/barriers to chase a STRONG scan tier.

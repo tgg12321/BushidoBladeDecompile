@@ -662,3 +662,8 @@ disposition taken: inline_asm_canonical.txt entry written by the driver per owne
 category: policy-question
 evidence: session-filed disposition: docs/grind/decisions.md:25231 — 2026-09-07 — func_8007526C — OWNER-ESCALATION: OWNER-ONLY GATE-LINE REMEDY (honest floor 1; one line in maspsx_label_nop_funcs.txt)
 disposition taken: FORECLOSED silently (owner ruling 2026-08-31 — no pending states, no packets); re-attemptable if a later owner ruling spends this entry.
+
+## 2026-09-08 — func_800204C0 — integration-handoff (REFUSED: no executable remedy in verdict)
+category: integration-handoff (REFUSED: no executable remedy in verdict)
+evidence: judge ESCALATE packet in docs/grind/decisions.md (2026-09-08 — func_800204C0 — JUDGE ESCALATE on ruling request (integration-handoff) — RESOLVED BY PIPELINE (owner ruling 2026-08-18, no owner wait))
+disposition taken: REFUSED under the current frozen policy; FORECLOSED silently (owner ruling 2026-08-31, ordinary-c-judge-decidable); candidate preserved at memory/grind/func_800204C0/candidate.c; re-attemptable if a later owner ruling spends this entry.
