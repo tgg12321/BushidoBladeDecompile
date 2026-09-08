@@ -48,16 +48,6 @@
  * NOT merge the two asm statements back together or drop the `m = dist;` re-store --
  * each is worth 2-7 insns and every alternative is measured in hypotheses.md.
  *
- * [s7 solver] Re-measured 2 on HEAD b3a8a19a; body unchanged.  The residual is typed
- * end to end now: goal_from_tgt classify says FIRST DIVERGENCE = SCHED (our 202 texts are
- * a permutation of the target's), the validated sched simulator says 180 of the 720
- * orderings of the six difference statements reach the target's emission order, and the
- * BB2_SUGG_DEBUG local-alloc table says that on THAT order dz and dx tie on every
- * qty_compare_1 input (refs 3, size 1, span 12, no register suggestion), so
- * local-alloc.c:1684's qty-number tie-break gives $v1 to dz and the seats invert (score
- * 9).  Anything that wins must add a reference, a quantity or a surviving copy that the
- * final 202 instructions do not show.  Details in hypotheses.md [s7].
- *
  * The three cop2 blocks are the owner-authorized canonical LZCS/LZCR + mvmva idiom
  * (.claude/rules/cop2-addressing-preamble-cluster.md).
  *
@@ -114,14 +104,14 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             kp = z2 * px - x2 * pz;
             if ((kc ^ kp) >= 0) {
                 s32 ax = cx - x0;
+                s32 dz = z2 - z0;
+                s32 dx = x2 - x0;
                 s32 az = cz - z0;
                 s32 bx = px - x0;
                 s32 bz = pz - z0;
-                s32 dz = z2 - z0;
-                s32 dx = x2 - x0;
-                kc = dz * ax - dx * az;
-                kp = dz * bx - dx * bz;
-                if ((kc ^ kp) >= 0)
+                s32 c3 = dz * ax - dx * az;
+                s32 p3 = dz * bx - dx * bz;
+                if ((c3 ^ p3) >= 0)
                     return 1;
             }
         }

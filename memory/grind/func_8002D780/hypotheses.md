@@ -681,3 +681,111 @@ candidate applied to src/code6cac_b.c, NO FAKE construct present anywhere in the
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 06451cd2 (-mel -msoft-float), s5 variantsH bodies spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s7] The residual is a pure emission-order divergence, and the scheduler half of it is reachable from the source statement order alone.
+- mechanism: goal_from_tgt.py's object-level classifier aligns our 202 instruction texts against the target's and reports the first pass at which the two streams diverge; sched_solver/simulate.py then replays sched.c's backward list scheduler for the block (validated 6978/6978 blocks, and self-checked here against this function's own dump).
+- probe: `goal_from_tgt.py classify code6cac_b func_8002D780`; `sched_solver/extract.py code6cac_b`; `inverse_sched.py --block 7 --pass 1 --goal-order 179,191,197,194,182,199,185,204,188,206,201,208,210,212`; then tmp/grind/func_8002D780/s7/sim_luid.py over all 720 permutations of the six difference-local statements.
+- result: CONFIRMED. classify prints `FIRST DIVERGENCE: SCHED -- texts match as a multiset, order differs`. inverse_sched returns NEGATIVE at depth 2 and perturb.py --atoms luid,luid_move at depth 3 also returns negative, but the direct simulation shows that is only a depth statement: 180 of the 720 statement permutations reach the target's emission order exactly, h1 (ax,dz,dx,az,bx,bz) among them. The scheduler half needs no further search.
+- verdict: CONFIRMED
+
+## [s7] On the target's own emission order the dz and dx quantities tie on every qty_compare_1 input, so local-alloc.c:1684's qty-number tie-break decides the seat and hands $v1 to whichever subu the target emits first (dz).
+- mechanism: block_alloc sorts quantities by floor_log2(n_refs)*n_refs*size/(death-birth) and, when that is equal, by qty number; qty numbers are handed out in birth order by the forward block scan. The suggested-register pass (local-alloc.c:1509) runs first but only for quantities with a nonzero sugg/copysugg count.
+- probe: `local_extract.py code6cac_b --func func_8002D780 --suggest` on the h1 body (the body whose sched1 output IS the target's stream), reading the complete BB2_SUGG_DEBUG table in tmp/ra_solver_work/code6cac_b.sugg.json block 7.
+- result: CONFIRMED. qty 1 (dz, pseudo 130) = birth 4, death 16, refs 3, size 1, nsugg 0, ncopysugg 0; qty 4 (dx, pseudo 131) = birth 8, death 20, refs 3, size 1, nsugg 0, ncopysugg 0. Identical priority, so the comparator returns *q1 - *q2 and dz (lower qty) is allocated first. Since all 180 order-reaching permutations produce the identical scheduled stream, they all present this same tied table -- measured h1 = 9, p1 = 9, p7 = 9.
+- verdict: CONFIRMED
+
+## [s7] Six independent block-local difference pseudos, arranged into the target's sched1 emission order, produce the target's dz/dx register seats.
+- mechanism: refs and live span are read by local-alloc off the scheduled stream; if that stream is the target's, both quantities necessarily have 3 refs and a 12-unit span, and neither carries a register suggestion, so the qty_compare_1 tie-break at local-alloc.c:1684 fixes the seat by birth order.
+- probe: the BB2_SUGG_DEBUG table above, plus the exhaustive 720-permutation simulation, plus three direct measurements of order-reaching bodies (h1, p1, p7).
+- result: KILLED. All three order-reaching bodies score 9 with the seats inverted, and the input table shows why: the two quantities are indistinguishable to the comparator. The corollary is the useful part -- the original compile must have presented local-alloc with an extra reference, an extra quantity, or a copy that is absent from the final 202 instructions (reload, flow2 delete_noop_moves and reorg all run after local-alloc).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD b3a8a19a (-mel -msoft-float), the s5 candidate body and the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1684
+
+## [s7] The inverse RA solver's top spellable vector -- a fourth in-block reference to dx -- can be spelled by carrying the test-3 kp in dx once the test-3 cross products get FRESH block-local names (the repair of the s6 batch-N failure, which merged the outer cross-block kp into dx).
+- mechanism: qty_compare_1's numerator steps at floor_log2(4)*4 = 8, so a fourth reference lifts dx's priority clear of dz's even with the longer span; local-alloc.c:1509's suggestion pass is not involved.
+- probe: batch P (tmp/grind/func_8002D780/s7/gen_p.py -> s7/variantsP), 8 variants: fresh test-3 locals with kp carried in dx / in dz / not carried, against the h1 and candidate statement orders, plus outer-kc controls.
+- result: KILLED. p2 = 28 and p3 = 28 (fresh c3 local, kp carried in dx, h1 and candidate orders); p4 = 16 and p8 = 16 (outer kc kept, reproducing batch N's number); p5 = 30 (kp carried in dz). Re-extracting the local-alloc table from p2 shows the reuse also moved the SCHEDULE -- dx's quantity is gone (merged with kp at birth 24) and dz's death moved 16 -> 10 -- so the variable-reuse spelling of a refs_up atom is not stream-neutral here. Byte-neutral by-product: giving test 3 its own cross-product locals costs nothing (p1 = 9 = p7 on the h1 order, p6 = 2 = the candidate on the candidate order).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b3a8a19a (-mel -msoft-float), the s5 candidate body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s7] A plain `dx2 = dx` copy makes local-alloc's combine_regs merge the two pseudos into one quantity whose n_refs is the sum, lifting dx clear of dz, while the copy itself ends as a same-register no-op that flow2's delete_noop_moves removes.
+- mechanism: local-alloc combines the quantities of a copy whose source dies at the copy, summing qty_n_refs; a copy between two pseudos that end up in the same hard register is deleted after reload, so the final stream can stay at 202 instructions.
+- probe: batch Q (tmp/grind/func_8002D780/s7/gen_q.py -> s7/variantsQ), 6 variants: the copy placed before the products, between them, feeding one product or both, and a dz-side control, against the h1 and candidate statement orders.
+- result: KILLED. Every placement is byte-neutral -- q1/q3/q4/q5 = 9 on the h1 order, q2/q7 = 2 on the candidate order, all at 202 insns. cse.c make_regs_eqv puts the copy's source and destination into one quantity and deletes the copy insn long before local-alloc runs, which is the identical mechanism s5 documented for residual B. The route survives only with a MULTIPLY-DEFINED carrier, and this straight-line block offers no control-flow arm to hold the second definition. Useful by-product: a single-def copy of dz or dx is a free (byte-neutral) carrier slot on both statement orders.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b3a8a19a (-mel -msoft-float), the s5 candidate body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## Live frontier (for s8) -- still 2 insns, and the search is now typed on both passes
+
+1. **Find the extra local-alloc-time reference/quantity that the final 202 instructions do
+   not show.** This is the corollary of the s7 class kill: with the target's emission order
+   fixed, dz and dx tie on every comparator input, so the original compile must have had
+   something MORE in block 7 at local-alloc time that was removed afterwards. Only three
+   passes remove instructions after local_alloc: reload/flow2 `delete_noop_moves` (a copy
+   whose two pseudos land in the same hard register), reorg's delay-slot steal + own-thread
+   delete, and jump2/cross-jumping. The delay-slot route is already spoken for (`subu ax`
+   fills the test-2 `bltz` slot). The no-op-move route is the one to attack, and s7 showed
+   the blocker precisely: cse folds every SINGLE-DEF copy. Next probe: give the copy carrier
+   a second definition the way s5's `m` carrier gets one -- e.g. hoist the test-3 difference
+   computation so the carrier is assigned in the test-2 arm and re-assigned in the test-3
+   block, and check tmp/grind/func_8002D780/dumps/code6cac_b.cse for whether the copy insn
+   survives into .lreg before scoring anything.
+2. **Spell the `[extra_qty] one more temp: refs=2 span=[2,4) pri=10000` vector.** It is the
+   only 1-atom vector in the inverse.py report that does not touch dz's or dx's own
+   columns: an additional short-lived quantity born at the top of block 7 changes what
+   find_free_reg has already handed out by the time the tied pair is reached. It was not
+   spelled this session. Next probe: a seventh difference local computed at the top of the
+   test-3 block whose value is genuinely consumed (so it is not a dead store) -- the obvious
+   candidate is splitting one of the four multiply operands into a named intermediate --
+   measured against the h1 order, checking build_insns stays 202.
+3. **A decomp-permuter campaign on the 2-floor chassis** (inherited unspent from s5/s6, and
+   now sharper: s7 has typed the residual as a local-alloc tie whose only remaining C-side
+   inputs are an extra quantity or a surviving copy, both of which are exactly the
+   temporary-introduction moves the permuter's pass set explores). Next probe: regenerate
+   base.c from candidate.c into the validated workspace
+   tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in
+   evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN, harvest with
+   --stop, re-score every find on the engine sandbox. The family classification of the
+   body (the FAKE `m` re-store plus the six difference locals) is still unsettled and must
+   be recorded before any candidate-ready submission.
+
+## [s7] The residual is a pure emission-order divergence, and the scheduler half of it is reachable from the source statement order alone.
+- mechanism: goal_from_tgt.py's object-level classifier aligns our 202 instruction texts against the target's and reports the first pass at which the streams diverge; sched_solver/simulate.py then replays sched.c's backward list scheduler for the block (validated 6978/6978 blocks, and self-checked here against this function's own dump: 'model self-check: sim == dump (err=None)').
+- probe: goal_from_tgt.py classify code6cac_b func_8002D780; sched_solver/extract.py code6cac_b -> s7/model.json; inverse_sched.py --func func_8002D780 --pass 1 --block 7 --goal-order 179,191,197,194,182,199,185,204,188,206,201,208,210,212 --depth 2; perturb.py --atoms luid,luid_move --depth 3; then tmp/grind/func_8002D780/s7/sim_luid.py over all 720 permutations of the six difference-local statements.
+- result: CONFIRMED. classify prints 'FIRST DIVERGENCE: SCHED -- texts match as a multiset, order differs'. inverse_sched is NEGATIVE at depth 2 and the luid-only search is negative at depth 3, but the direct simulation shows that is only a depth statement: 180 of the 720 permutations reach the target's emission order exactly, and the s5 h1 body (ax,dz,dx,az,bx,bz) is one of them. No further scheduler search is warranted on this block.
+- verdict: CONFIRMED
+
+## [s7] On the target's own sched1 emission order the dz and dx quantities tie on every qty_compare_1 input, so local-alloc.c:1684's qty-number tie-break decides the seat and hands $v1 to the subu the target emits first (dz).
+- mechanism: block_alloc sorts quantities by floor_log2(n_refs)*n_refs*size/(death-birth) and, when that is equal, by qty number; qty numbers are handed out in birth order by the forward block scan. The suggested-register pass (local-alloc.c:1509) runs first, but only for quantities with a nonzero sugg/copysugg count.
+- probe: local_extract.py code6cac_b --func func_8002D780 --suggest on the h1 body (the body whose sched1 output IS the target's stream); read the complete BB2_SUGG_DEBUG table for block 7 (tmp/grind/func_8002D780/s7/sugg_block7.json).
+- result: CONFIRMED. qty 1 (dz, pseudo 130) = birth 4, death 16, refs 3, size 1, nsugg 0, ncopysugg 0; qty 4 (dx, pseudo 131) = birth 8, death 20, refs 3, size 1, nsugg 0, ncopysugg 0 -- identical priority, so the comparator returns *q1 - *q2 and dz is allocated first and takes $v1. All 180 order-reaching permutations produce the identical scheduled stream and therefore this same tied table: h1 = 9, p1 = 9, p7 = 9.
+- verdict: CONFIRMED
+
+## [s7] Six independent block-local difference pseudos, arranged into the target's sched1 emission order, produce the target's dz/dx register seats.
+- mechanism: local-alloc reads refs and live span off the scheduled stream; if that stream is the target's, both quantities necessarily carry 3 references and a 12-unit span and neither carries a register suggestion, so the qty_compare_1 tie-break at local-alloc.c:1684 fixes the seat by birth order.
+- probe: The BB2_SUGG_DEBUG input table above, the exhaustive 720-permutation simulation in s7/sim_luid.py, and three direct sandbox measurements of order-reaching bodies (h1, p1 = h1 with fresh test-3 cross-product locals, p7 = h1 with the outer kc/kp).
+- result: KILLED. All three order-reaching bodies score 9 at 202 insns with the dz/dx seats inverted, and the input table shows why: the two quantities are indistinguishable to the comparator. The useful corollary for s8 is that the original compile must have presented local-alloc with an extra reference, an extra quantity, or a copy that is absent from the final 202 instructions -- reload/flow2 delete_noop_moves, reorg's delay-slot steal and jump2 cross-jumping all run after local_alloc.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD b3a8a19a (-mel -msoft-float), the s5 candidate body and the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1684
+
+## [s7] The inverse RA solver's top spellable vector -- a fourth in-block reference to dx -- can be spelled by carrying the test-3 kp in dx once the test-3 cross products get fresh block-local names, which is the repair of the s6 batch-N failure that merged the outer cross-block kp into dx.
+- mechanism: qty_compare_1's numerator steps at floor_log2(4)*4 = 8, so a fourth reference lifts dx's priority clear of dz's even with the longer span; the suggestion pass is not involved.
+- probe: Batch P, 8 variants (tmp/grind/func_8002D780/s7/gen_p.py -> s7/variantsP): fresh test-3 cross-product locals with kp carried in dx, in dz, or not carried, against the h1 and candidate statement orders, plus outer-kc controls; scored with tmp/grind/func_8002D780/s3/run.ps1.
+- result: KILLED. p2 = 28 and p3 = 28 (fresh c3 local, kp carried in dx, h1 and candidate orders); p4 = 16 and p8 = 16 (outer kc kept, reproducing batch N's number); p5 = 30 (kp carried in dz); all at 202 insns. Re-extracting the local-alloc table from p2 shows the reuse also moved the SCHEDULE: dx's quantity is gone (merged with kp, birth 24) and dz's death moved 16 -> 10. Byte-neutral by-product: giving test 3 its own cross-product locals costs nothing (p1 = 9 = p7; p6 = 2 = the candidate).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b3a8a19a (-mel -msoft-float), the s5 candidate body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s7] A plain dx2 = dx copy makes local-alloc's combine_regs merge the two pseudos into one quantity whose n_refs is the sum, lifting dx clear of dz, while the copy itself ends as a same-register no-op that flow2's delete_noop_moves removes.
+- mechanism: local-alloc combines the quantities of a copy whose source dies at the copy and sums qty_n_refs; a copy between two pseudos that land in the same hard register is deleted after reload, so the final stream can still be 202 instructions.
+- probe: Batch Q, 6 variants (tmp/grind/func_8002D780/s7/gen_q.py -> s7/variantsQ): the copy placed before the products, between them, feeding one product or both, and a dz-side control, against the h1 and candidate statement orders.
+- result: KILLED. Every placement is byte-neutral -- q1/q3/q4/q5 = 9 on the h1 order, q2/q7 = 2 on the candidate order, all at 202 insns. cse.c make_regs_eqv puts the copy's source and destination into one quantity and deletes the copy insn long before local-alloc runs, the identical mechanism s5 documented for residual B. The route survives only with a MULTIPLY-DEFINED carrier, and this straight-line block offers no control-flow arm to hold the second definition. By-product: a single-def copy of dz or dx is a free carrier slot on both statement orders.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD b3a8a19a (-mel -msoft-float), the s5 candidate body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
