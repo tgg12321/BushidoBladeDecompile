@@ -130,3 +130,97 @@ v13 RESIDUAL (36; side-by-side at tmp/grind/_spu_pitch2note/s1/v13_sbs.txt):
 - [s1] v13 residual seats: pitch copy $a3 vs $a0; bit $a0 vs $v1; shift $v1 vs $t2; curve $t2 vs $t0; lower $t3 vs $t4; outer $t4 vs $t2; acc $t1 vs $t3; step $t0 vs $t1
 
 - [s1] A pre-reload jump_optimize pass (between .jump and .cse2) can relocate a `{X; jump L}` block reached by fallthrough to a fresh label after a barrier (seen on v11's scan block, label 262); mechanism not yet identified - candidates jump.c:1531/1718/2324 get_label_after sites and the range swap at jump.c:1840ff
+
+
+## s2 (2026-09-08, structural) — floor 36 -> 21, insn multiset now EXACT
+
+SCORE LADDER (sandbox --disable all; forms in tmp/grind/_spu_pitch2note/s2/):
+  v13 36  s1 candidate (baseline re-measured this session: 36, 75 insns)
+  v20 35  v13 + hit arm first (`if (target >= lo && target < hi) {hit} incs;`)
+  v21 24  v13 + sibling curve spelling (`curve *= 0x103B; curve >>= 12;`)
+  v22 23  v20 + v21 together  <- 74 insns == target
+  v23 36  miss-arm with `continue` (label still between incs and inner++)
+  v24/v26/v27/v28 23  four declaration-order permutations - BYTE-IDENTICAL streams
+  v31 23  acc/next init order swapped        v32 23  `base = outer << 5;` named
+  v34 23  acc = 0 at top of outer body       v35 38  `target = pitch;` first statement
+  v40 22  scale before oct                   v41 24  bit = 0 before search
+  v42 23  scan loop as while + explicit decrement
+  v43 24  target before curve                v44 24  `scale = 1; scale <<= bit;`
+  p00..p23  21..25  all 24 permutations of the four pre-loop assignments
+  p21 21  `target; scale; curve; oct;`  <- BEST, candidate.c
+  q1 21 / q2 21 (outer-body order, inert on p21)   q3 23 (bit=0 first, on p21)
+
+WHAT THE SIBLING GAVE US: `_spu_2pitch` (COMPLETED-C, src/main.c, the inlinee
+of the matched `_spu_note2pitch`) walks the SAME 0x103B curve and spells the
+step as two compound assignments, `ratio *= 0x103B; ratio >>= 12;`.  Our s1
+body had the folded `curve = (curve * 0x103B) >> 12;`.  Transplanting the
+sibling's split spelling alone is worth 12 points (36 -> 24).  This is the
+sibling-ledger mandate paying off literally: the fix was sitting in a
+COMPLETED-C function twelve lines above ours in the same file.
+
+S1'S F1 IS CLOSED.  Putting the HIT arm first and letting the two increments
+fall through to the loop increment removes the CODE_LABEL that s1 measured
+between `acc += step` and `inner++`; reorg.c:2969 fill_simple_delay_slots then
+takes `acc += step` into the back-edge delay slot exactly as the target does,
+and build_insns drops to 74 == target_insns.
+
+CLASSIFIER (tools/ra_solver/inverse_compose.py classify main _spu_pitch2note
+--target-object build/src/main.o --ours-object tmp/sandbox/_spu_pitch2note/main.o):
+  "FIRST DIVERGENCE: RA - same instructions, different registers".  The
+  register-blanked multisets are identical; only 5 seats and 2 in-block
+  orderings remain.
+
+INSTRUMENTED-cc1 GOTCHA (cost half a turn, do not re-derive): tools/gcc-2.7.2/cc1
+SEGFAULTS on the full preprocessed src/main.c (exit 139 after 59 .ent, last
+function _spu_FiDMA) - ra_solver/extract.py therefore fails with "FATAL:
+_spu_pitch2note not in .ent list (59 functions)".  Workaround used here: a SOLO
+TU (tmp/grind/_spu_pitch2note/s2/solo/solo.c = `#include "common.h"` + the
+function) compiles clean and produces the SAME allocation as the in-tree build
+(verified register-for-register against the sandbox stream), so the solver runs
+on it.  extract_solo.py (ROOT + src dir repointed) lives in the s2 scratch dir,
+NOT in tools/.
+
+RA MODEL RESULT (the s3 frontier):
+  simulate.py on the solo model is EXACT - 21/21 dispositions, sort order MATCH,
+  one reload-retry note (pseudo 86: 65->3).  Our priority order is
+  shift 41250 > ... > bit 7692 > ... > pitch-copy 1176.
+  inverse.py global with the full 6-seat goal, and with the single flip
+  shift $v1 -> $t2, both return the depth-2 NEGATIVE ("no perturbation of any
+  modelled input - refs / live span / birth order / conflicts / preferences /
+  calls-crossed - reaches the target assignment"), and it names the unmodelled
+  candidates: local-alloc's suggested-register pass, qty_size, reload retry.
+  A hand what-if applying exactly the livelen deltas implied by the two observed
+  sched1 inversions is also 0/6.  So the remaining seats are NOT reachable by
+  moving refs/live-ranges from C on this chassis; the next instrument is
+  local_extract.py --suggest (BB2_SUGG_DEBUG) on the solo TU.
+
+- [s2] Sibling transplant: `_spu_2pitch`'s `ratio *= 0x103B; ratio >>= 12;`
+  spelling of the curve step is worth -12 on this function (36 -> 24)
+
+- [s2] Hit-arm-first + fall-through increments closes s1's F1: no CODE_LABEL
+  between `acc += step` and `inner++`, back-edge delay slot matches, 74/74 insns
+
+- [s2] Declaration order of the 21 locals is inert here (4 permutations, all 23,
+  identical streams); pre-loop STATEMENT order is not (24 permutations, 21..25)
+
+- [s2] tools/gcc-2.7.2/cc1 (instrumented) segfaults on full main.i; the solo-TU
+  workaround reproduces the allocation exactly and is the way to run ra_solver
+  on any src/main.c function
+
+- [s2] ra_solver inverse.py depth-2 NEGATIVE for the 5-seat residual and for the
+  single shift $v1->$t2 flip; forward model exact 21/21 - the residual's inputs
+  are outside the global model (suggested-register pass / reload retry)
+
+- [s2] Sibling transplant is worth -12 alone: _spu_2pitch (COMPLETED-C, src/main.c, the inlinee of the matched _spu_note2pitch) spells the shared 0x103B curve step as `ratio *= 0x103B; ratio >>= 12;`; our s1 body had the folded `curve = (curve*0x103B)>>12;`
+
+- [s2] Floor 36 -> 21 this session; build_insns is now 74 == target_insns 74 and inverse_compose classify reports FIRST DIVERGENCE: RA (register-blanked multisets identical)
+
+- [s2] s1's F1 (back-edge delay slot / CODE_LABEL between the increments and inner++) is CLOSED by putting the hit arm first
+
+- [s2] Declaration order of the locals is inert here (4 permutations, identical streams); pre-loop STATEMENT order is not (24 permutations, 21..25, unique min p21)
+
+- [s2] tools/gcc-2.7.2/cc1 (the instrumented one) SEGFAULTS on the full preprocessed src/main.c - exit 139 after 59 .ent, last function _spu_FiDMA - so ra_solver/extract.py fails with 'FATAL: _spu_pitch2note not in .ent list (59 functions)'. A solo TU (#include common.h + the function body) compiles clean and reproduces the in-tree allocation register-for-register; extract_solo.py (ROOT and src dir repointed) is banked in the s2 scratch dir
+
+- [s2] ra_solver forward model on the solo TU is EXACT (21/21 dispositions, sort order MATCH); pseudo map banked in hypotheses.md (76 pitch-copy, 79 bit, 80 shift, 85 lower, 88 acc, 92 outer)
+
+- [s2] Statement order inside the outer-loop body and `bit = 0` placement are inert or worse on the p21 base (q1 21, q2 21, q3 23)

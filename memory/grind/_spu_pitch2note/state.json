@@ -1,31 +1,37 @@
 {
  "func": "_spu_pitch2note",
  "file": "main",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 36,
    "modality": "recon",
    "headline": "recon s1: floor 64 -> 36 pure C; epilogue+prologue matched; residual = inner-loop back-edge delay slot (label between increments and inner++) + seat cascade; counter/biv-elimination and hit-after-loop"
+  },
+  {
+   "session": 2,
+   "floor": 21,
+   "modality": "structural",
+   "headline": "floor 36 -> 21: sibling _spu_2pitch's split `curve *= 0x103B; curve >>= 12;` (-12), hit-arm-first closes s1's back-edge delay-slot residual (74/74 insns, -1), pre-loop statement-order sweep p21 (-2); "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An ordinary-C spelling exists whose RTL has the hit block out of line while the increments fall straight into inner++ (no label/jump between), which lets reorg fill the back-edge slot with `acc += step` as in the target",
-   "mechanism": "reorg.c:2969 fill_simple_delay_slots stops at CODE_LABEL; the relocation mechanism seen on v11's scan block (fresh label after a barrier) is the likely source of the target's out-of-line hit block",
-   "next_probe": "Instrumented cc1 with BB2_XJUMP_DEBUG=1 on v11 vs v13 to name the pass that minted label 262; then measure (a) v13 with the hit arm first, (b) v3 shape with break + foldable post-loop test, (c) do/while inner loop, (d) increments in the for-clause with continue; pairdiff + .dbr dump each"
+   "hypothesis": "The 5 residual seats are set by local-alloc's SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg), not by global.c priority - the pitch copy `move a3,a2` is a copy off the incoming $a2 and target seats it in $a0",
+   "mechanism": "local_alloc's block_alloc runs before global_alloc and its suggestion scan is reported-not-scored by the current model; its renumberings also seed global.c's regs_used_so_far",
+   "next_probe": "run tools/ra_solver/local_extract.py --suggest (BB2_SUGG_DEBUG) on the SOLO TU (tmp/grind/_spu_pitch2note/s2/solo/) and price the pitch-copy, shift and outer quantities; then ask inverse.py local for the flip"
   },
   {
-   "hypothesis": "The remaining seat cascade (pitch $a3->$a0, bit/shift/curve/lower/outer/acc/step) is a consequence of the structural residual and the pseudo set, not an independent RA lock",
-   "mechanism": "global.c priority order and conflict sets change once the then-arm jump/label disappear and `inner` takes $a0",
-   "next_probe": "After F1 lands, run tools/ra_solver inverse_compose.py classify on the v13-derived form before spelling any seat lever"
+   "hypothesis": "The two sched1 order inversions (andi target / move outer=0, and srl v0 / addu v1) are a separate residual that survives the RA fix and needs sched_solver",
+   "mechanism": "sched1 runs before local/global alloc, so its order also sets the live lengths global.c prices",
+   "next_probe": "after the RA seats move, run tools/sched_solver on the p21 body; do NOT run it first - the livelen what-ifs for these two inversions are already measured inert (whatif.py)"
   },
   {
-   "hypothesis": "If F1 has no ordinary spelling, the two-pass reorg route (make the loop-top peel ineligible on pass 1 so pass 2 sees the deleted `j Lend`) reproduces the slot",
-   "mechanism": "dbr_schedule runs MAX_REORG_PASSES; relax_delay_slots deletes the jump-to-next after the hit block is stolen",
-   "next_probe": "Read v13's .dbr dump for the first-pass fill order; low priority"
+   "hypothesis": "p21 is only the minimum for the CURRENT inner-loop shape; any inner-loop change re-opens the 4-point spread",
+   "mechanism": "the pre-loop assignment order sets first-definition pseudo numbers, which are both the allocno tie-break and sched1's LUID tie-break",
+   "next_probe": "re-run the 24-permutation sweep (bash tmp/grind/_spu_pitch2note/s2/measure.sh p00 .. p23) after any change to the loop body - it is nearly free"
   }
  ],
  "judge_constraints": [],
@@ -62,11 +68,28 @@
    "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs",
    "predicate_cite": "",
    "result": "57-58, far worse than 36"
+  },
+  {
+   "session": 2,
+   "statement": "Permuting the declaration order of this function's 21 locals changes its allocation",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, v22 base at floor 23",
+   "predicate_cite": "",
+   "result": "all four measure 23 and v28's instruction stream is byte-identical to v22's - GCC 2.7.2 mints the pseudo at the first RT"
+  },
+  {
+   "session": 2,
+   "statement": "The remaining 5-seat permutation (shift $a0 vs $t2, pitch-copy $a3 vs $a0, lower $t3 vs $t4, acc $t2 vs $t3, outer $t4 vs $t2) is reachable by perturbing a modelled global.c input - refs, live length,",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, p21 body at floor 21, solo-TU model with simulate.py exact 21/21",
+   "predicate_cite": "",
+   "result": "both inverse runs return the validated depth-2 NEGATIVE (search bounds refs +12/-6, livelen +/-2,4,8) and the livelen wh"
   }
  ],
  "ladder_skip": 0,
  "pending_fixup": null,
  "origin": "queue",
  "created": "2026-09-08T22:13:40.153191+00:00",
- "object_model_audited": 1
+ "object_model_audited": 1,
+ "escalation_deferrals": 0
 }
