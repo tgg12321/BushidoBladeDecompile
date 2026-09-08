@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 46,
- "current_modality": "escalation",
+ "session_count": 47,
+ "current_modality": "solver",
  "floor_history": [
   {
    "session": 1,
@@ -279,13 +279,29 @@
    "floor": 3,
    "modality": "escalation",
    "headline": "Floor re-audited at 3 (127/127) on the HEAD chassis; owner directive 2026-09-06 confirmed executed at s37 (class kill combine.c:1458, artifacts on disk); s15 closest-kill re-audit stands at 3 with no "
+  },
+  {
+   "session": 47,
+   "floor": 3,
+   "modality": "solver",
+   "headline": "Solver types the floor-3 residual mechanically for the first time: the one seat divergence belongs to a LOCAL allocno (reg 113, blk 13 qty 0, refs 2) that global.c never models, and inverse.py's local"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Re-activation only: an owner class grant covering a byte-free flow-time reader of the loop-2 preheader copy destination (E-s44-3 mechanism) would make the residual attackable.",
-   "mechanism": "combine folds the reader after flow keeps the copy alive (combine.c:1458 no longer sees i2dest dead in i3 at flow time); seat a3 follows global.c priority order (E-s44-4).",
-   "next_probe": "None until a grant exists; every spelling measured is a fabricated dead conditional or unused local."
+   "hypothesis": "Re-activation only: an owner class grant covering a byte-free flow-time reader of the loop-2 preheader copy destination (E-s44-3) would make the residual attackable; the s47 solver verdict now shows the SAME grant also unlocks the $a3 seat, so the whole 3-instruction residual closes at once rather than partially.",
+   "mechanism": "A reader that keeps reg 113 live past the base add makes it a global allocno: combine.c:1458 then sees i2dest not dead in i3 (added_sets_2 -> unrecognised PARALLEL, the copy survives) and global.c seats it $a3 from its pass-0 conflict set (v0,v1,a0,a1,a2,s2,s3,sp; a3 first eligible).",
+   "next_probe": "None until a grant exists; every byte-free reader measured to date is a fabricated dead conditional or an unused local (forbidden families)."
+  },
+  {
+   "hypothesis": "A REAL post-loop-2 consumer of the loop-2 record pointer exists in target's own byte stream that the ledger has priced only through a shared live local; re-pricing it with reg 113 (the local addend) rather than the candidate's `p` may cost less than the banked 19.",
+   "mechanism": "Target's post-loop tail re-reads 0xC(s2) three times (math_Distance3D args at 0x80017978, rec_a at 0x800179BC). Routing one of them off the loop-2 addend promotes reg 113 to a global allocno, which is the single precondition E-s47-3 names; the banked 19-point kill (s9 T1/T3/T4) was measured on the candidate's `p` local across a JOIN, not on the loop-2 addend.",
+   "next_probe": "Build a cell where loop 2's base addend is a named local whose ONLY extra use is the math_Distance3D first argument, with the read placed unconditionally before loop 2's guard so it is defined on the skip path (the s42 reorg.c thread-redirect geometry), and score it; then re-run local_extract.py to confirm the qty left block 13's local set."
+  },
+  {
+   "hypothesis": "The local-alloc SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg), which inverse.py reports but does not score, is what seats target's value and is outside every modelled input - so the next move on the seat is instrumentation, not spelling.",
+   "mechanism": "inverse.py's own negative-result text names exactly this: 'the mechanism is outside the current model - the local-alloc SUGGESTED-REGISTER pass, qty_size for DImode, or reload spill-retry. Extend the instrumentation before spending another spelling search.' local_extract.py --suggest already emits per-qty suggestion sets and find_free_reg's scanned hard-reg sets.",
+   "next_probe": "Re-run local_extract.py ings --func func_80017848 --suggest and read <stem>.sugg.json for blk 13 qty 0: compare the scanned hard-reg set and any copy-suggestion against the target seat, to decide whether $a3 is even in find_free_reg's scan order at that point or is excluded by a live hard reg."
   }
  ],
  "judge_constraints": [],
@@ -299,30 +315,6 @@
  "last_unpark_reason": "Newly VISIBLE completed siblings in the same TU (tombstone backfill, commit 0ddc72c8): func_80017D84 \u2014 already named by this ledger's own s45 object-model audit as the source of its 52-byte data model \u2014 plus func_80016E60 and main, all COMPLETED-C in src/ings.c and never read by this ledger. PROBE: read their on-main bodies and transplant their loop-2 preheader / copy-geometry spellings onto the f",
  "last_unpark_at": "2026-09-08T01:58:36.569292+00:00",
  "kills": [
-  {
-   "session": 29,
-   "statement": "The 14-point residual of the s23 crosses-set form, which s23 recorded as emitting target's entire instruction stream, carries instruction-selection or ordering differences as well as register ones.",
-   "kill_scope": "instance",
-   "measured_on": "chassis A (tmp/grind/func_80017848/s29/ings.orig.c plus the cell E body), floor-3 chassis, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "14 at 127/127, and the diff carries no opcode, no offset and no operand-count difference anywhere in the 127 instruction"
-  },
-  {
-   "session": 30,
-   "statement": "Expanding either scan loop from a static inline helper makes integrate.c's inline-argument copy survive into the preheader as target's addu $a3, $a0, $zero, at three spellings (helper carries the loop",
-   "kill_scope": "instance",
-   "measured_on": "candidate chassis (memory/grind/func_80017848/candidate.c applied over the src/ings.c:719 INCLUDE_ASM anchor), floor-3 chassis re-measured this session at 127/127, no FAKE constructs in any cell",
-   "predicate_cite": "",
-   "result": "F = 42 at 137 build insns, G = 45 at 136, H = 30 at 136, against a 127-insn target - all three OVERSHOOT. Inlining genui"
-  },
-  {
-   "session": 30,
-   "statement": "Writing the function against the real record and link struct types (a 0x40-byte record array at ctx+0xC, a 0x10-byte link array at ctx+0x10) instead of the u8 * plus literal-offset idiom reaches the f",
-   "kill_scope": "instance",
-   "measured_on": "candidate chassis (candidate.c over the src/ings.c:719 anchor), floor-3 chassis, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "A (fresh indexed re-reads at every use) = 34 at 123 build insns - struct indexing lets cse fold four loads the target ke"
-  },
   {
    "session": 30,
    "statement": "Declaring q, lnk and base in the loop blocks that use them, rather than in the function-scope declaration list, perturbs local-alloc's allocno ordering enough to move the four-seat permutation of the ",
@@ -778,8 +770,32 @@
    "measured_on": "standalone scratch TUs under the exact project CC_FLAGS (canonical tools/gcc-2.7.2/build/cc1), HEAD chassis; no FAKE constructs",
    "predicate_cite": "",
    "result": "s32 holder: compare reaches RTL (not front-end folded) but jump converts it to a store-flag before combine and it materi"
+  },
+  {
+   "session": 47,
+   "statement": "The one register-seat divergence in the floor-3 residual (ours `addu a0,a1,v0` vs target `addu a0,a1,a3`) is reachable by a perturbation of local-alloc's modelled inputs for that quantity, so inverse.",
+   "kill_scope": "class",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with the BASE candidate applied (3 at 127/127); forward model validated 15/15 by simulate.py; no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1079",
+   "result": "Global goal is EMPTY, but for a NEW reason unrelated to s31's merged-pseudo cause: reg 113 is a LOCAL allocno (born and "
+  },
+  {
+   "session": 47,
+   "statement": "The owner's 2026-09-06 directive - read the newly visible COMPLETED-C siblings in src/ings.c (func_80017D84, func_80016E60, main) and transplant their loop-2 preheader / copy-geometry spellings onto t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with body_D1.c / body_D2.c / body_D3.c applied; BASE re-audited at 3 (127/127) the same way; no FAKE constructs in BASE, D2 or D3 (D1 carries the sanctioned do-w",
+   "predicate_cite": "",
+   "result": "D1 = 15 at 128 insns; D2 = 3 at 127 (byte-inert, residual identical to BASE, re-confirming s11's C-inertness of loop 2's"
+  },
+  {
+   "session": 47,
+   "statement": "The closest-to-target instance kill (Q1, target's complete 127-instruction stream with a pure register permutation) scores differently on the current chassis or with FAKE constructs ablated.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor plus s42/body_Q1.c; BASE re-audited at 3 (127/127); no FAKE constructs anywhere in the tree",
+   "predicate_cite": "",
+   "result": "Q1 = 14 at 127/127, identical to its s34/s36/s38/s39/s41/s42 value. fake_ablate reports no FAKE-annotated constructs in "
   }
  ],
  "escalation_deferrals": 0,
- "object_model_audited": 45
+ "object_model_audited": 47
 }

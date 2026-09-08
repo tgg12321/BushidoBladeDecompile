@@ -1120,3 +1120,23 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * FORECLOSED under the 2026-07-27 standing ruling - see docs/grind/decisions.md
  * 2026-09-06 func_80017848 entry.
  */
+/* [s47 SOLVER ADDENDUM - body unchanged, re-measured 3 at 127/127 on the HEAD
+ * chassis (tmp/grind/func_80017848/s47/sb_BASE.txt).]  The owner's sibling-
+ * transplant directive is EXECUTED: func_80017D84 confirms the object model and
+ * adds that the link base (+0x10) equals the record base (+0xC) plus
+ * (count << 6), but spelling loop 2's links that way costs sll+lh+addu (D3 = 33
+ * at 128); func_80016E60's do-while(0) wrap on loop 2's preheader is 15 at 128
+ * (D1); its pointer-alias named local is byte-inert (D2 = 3), as s11 had it.
+ * SOLVER RESULT (new, mechanical): the residual's one seat divergence
+ * (`addu a0,a1,v0` vs `addu a0,a1,a3`) belongs to reg 113, a LOCAL allocno
+ * (blk 13 qty 0, birth 2 death 6, refs 2) that global.c never models - which is
+ * why goal_from_tgt derives an EMPTY goal on this chassis for a reason unrelated
+ * to s31's.  inverse.py's LOCAL backend returns a validated NEGATIVE at depth 3
+ * and depth 4 over 24 atoms in 6 classes: no perturbation of refs, live span,
+ * birth order, conflicts, preferences or calls-crossed reaches $a3.  The only
+ * route to $a3 is promoting reg 113 to a GLOBAL allocno live across loop 2 -
+ * exactly the precondition the missing `addu a3,a0,zero` copy needs
+ * (combine.c:1458).  All three residual instructions are ONE fact, and it is
+ * the E-s44-3 byte-free-flow-time-reader wall.  Q1 re-audited at 14; candidate
+ * carries no FAKE construct.  Details: evidence.md/hypotheses.md s47 sections.
+ */

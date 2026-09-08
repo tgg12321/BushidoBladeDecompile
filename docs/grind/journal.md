@@ -1844,3 +1844,4 @@
 - 2026-09-07 20:20 CD_datasync s61 [rederive] floor=2: Chain-A carrier moved off the -1/0 flag onto the tail DMA-control pointer: the do_timeout window AND the flag block are now both byte-exact (score 3), and the complete carrier price list proves the target's chain-A address is not a spanning multi-set pseudo at all.
 - 2026-09-07 20:39 CD_datasync COMPLETED-C after 62 sessions (closer: s62 [structural]).
 - 2026-09-07 20:58 CD_sync COMPLETED-C after 126 sessions (closer: s126 [rederive]).
+- 2026-09-07 21:11 func_80017848 s47 [solver] floor=3: Solver types the floor-3 residual mechanically for the first time: the one seat divergence belongs to a LOCAL allocno (reg 113, blk 13 qty 0, refs 2) that global.c never models, and inverse.py's local backend returns a validated NEGATIVE at depth 3 and 4 over 24 atoms in 6 classes; the owner's sibling-transplant directive is executed and measured (D1=15, D2=3 inert, D3=33).

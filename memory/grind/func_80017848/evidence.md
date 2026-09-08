@@ -5395,3 +5395,73 @@ the two arrays it owns, with the evidence sources the directive names.
 - [s46] E-s46-5: frontier item 3 scratch TUs: s32 holder compare survives to assembly as nor/slt; u8 holder front-end folded.
 
 - [s46] Exhaustion: floor flat at 3 since s9 across 45 sessions and 9 modalities (structural 10, forensics 10, rederive 7, escalation 6, synthesis 5, permuter 4, recon/solver/object-model 1 each); >= 180,472 permuter iterations; 8 class + 53 instance kills; 267 rejected forms.
+
+### E-s47-1 - Floor re-audit (solver session)
+- candidate.c applied over the HEAD src/ings.c:820 INCLUDE_ASM anchor: sandbox
+  --disable all = 3 at 127/127, scorable, rules_dropped 0
+  (tmp/grind/func_80017848/s47/sb_BASE.txt). Floor flat at 3 since s9.
+  src/ings.c restored with `git checkout` after every cell; tree clean.
+### E-s47-2 - The residual's seat belongs to a LOCAL allocno (NEW)
+- The divergent instruction is ours[60] `addu a0,a1,v0` vs tgt[60]
+  `addu a0,a1,a3`; the value is reg 113, set by .lreg insn 162
+  (set (reg:SI 113) (mem:SI (plus (reg/v:SI 72) (const_int 12)))) and consumed
+  by insn 164 (set (reg/v:SI 81) (plus (reg/v:SI 85) (reg:SI 113))).
+  local_extract.py places it at blk=13 qty 0, birth=2 death=6, refs=2, got=$v0.
+  It is absent from global.c's 15-pseudo model (extract.py), which is why
+  goal_from_tgt.py derives an EMPTY goal and reports the substitution as
+  AMBIGUOUS across 33 $v0-holding pseudos. This is a DIFFERENT cause from
+  s31's empty goal (cell E's merged p/links pseudo) and is a property of the
+  BASE chassis. Artifacts: s47/goal_BASE.txt, s47/BASE_model.json,
+  s47/local_extract.txt, s47/ings.local.json.
+### E-s47-3 - inverse.py LOCAL returns a validated negative at depth 3 and 4
+- inverse.py local ings.local.json --func func_80017848 --block 13
+  --goal {"0": 7} --depth {3,4}: atom space 24 single perturbations over 6
+  classes, bounds refs delta +4/-2 with birth/death enumerated exhaustively;
+  NEGATIVE RESULT at both depths. Tool verdict verbatim: "the flip is not
+  produced by refs / live span / birth order / conflicts / preferences /
+  calls-crossed at all, so no C spelling that only moves those will ever close
+  it." Artifacts: s47/inverse_local_d3.txt, s47/inverse_local_d4.txt.
+- Forward fidelity on this chassis is exact (simulate.py: dispositions 15/15
+  match, sort order MATCH), so the negative is about the FORM, not the model.
+- COMPOSED CONCLUSION: reaching $a3 requires reg 113 to be a GLOBAL allocno
+  live across loop 2, which is the same precondition as the missing
+  `addu a3,a0,zero` copy (combine.c:1458 added_sets_2). The three-instruction
+  residual is ONE fact - the byte-free flow-time reader of E-s44-3 - now
+  typed by the solver instead of argued by hand.
+### E-s47-4 - Owner sibling-transplant directive: executed and measured
+- func_80017D84 (src/ings.c:824 on main) CONFIRMS and EXTENDS s45's object
+  model: it constructs the block and writes *(s32*)(p+0xC) = c and
+  *(s32*)(p+0x10) = c + (*(s16*)(p+4) << 6), i.e. the LINK array base at
+  +0x10 is the RECORD array base at +0xC plus (record-count << 6). New fact,
+  no zero-byte spelling: transplanted as cell D3 it costs sll+lh+addu where
+  target has one `lw a2,16(s2)` -> 33 at 128.
+- func_80016E60 (src/ings.c:436 on main, MATCHED) carries two sanctioned
+  constructs with mechanism annotations - a pointer-alias pass-through local
+  (combine i2/i3 merge leaving a copy at the LATER position) and a
+  do { } while (0) wrap (flow.c loop-depth weighting -> global.c allocno
+  priority). The do-while(0) transplant onto loop 2's preheader base
+  assignment is cell D1 = 15 at 128. The pointer-alias transplant is the
+  already-banked "named local for the loop-2 base addend", C-INERT since s11
+  and re-confirmed by cell D2 = 3 at 127 this session. Neither lever can
+  reach reg 113's seat because reg 113 is a LOCAL allocno and both annotated
+  mechanisms act on global.c priority / combine position (E-s47-2/3).
+- main (src/ings.c, COMPLETED-C) contains no loop-preheader copy geometry of
+  this shape; nothing transplantable.
+### E-s47-5 - Kill re-audit
+- Q1 (s42/body_Q1.c, target's exact 127-instruction stream) = 14 at 127/127,
+  unchanged (s47/sb_Q1.txt). fake_ablate on candidate.c: no FAKE-annotated
+  constructs, nothing to ablate.
+
+- [s47] Floor re-audit: candidate.c over the HEAD src/ings.c:820 INCLUDE_ASM anchor = 3 at 127/127, scorable, rules_dropped 0 (tmp/grind/func_80017848/s47/sb_BASE.txt). src/ings.c restored with git checkout after every cell; only metrics/events.jsonl and the new rejected/ files are dirty.
+
+- [s47] NEW: the residual's only renamable seat is reg 113, a LOCAL allocno - .lreg insn 162 (set (reg:SI 113) (mem (plus (reg/v:SI 72) (const_int 12)))) feeding insn 164 (set (reg/v:SI 81) (plus (reg/v:SI 85) (reg:SI 113))); local_extract.py places it at blk 13 qty 0, birth 2, death 6, refs 2, got $v0. It is absent from global.c's 15-pseudo model, which is why goal_from_tgt.py derives an EMPTY goal and calls the substitution AMBIGUOUS across 33 $v0-holding pseudos. This is a different cause from s31's empty goal and is a property of the BASE chassis.
+
+- [s47] inverse.py's LOCAL backend (local-alloc.c block_alloc model) returns a validated NEGATIVE for goal qty0 -> $a3 at depth 3 AND depth 4, atom space 24 single perturbations over 6 classes, bounds refs delta +4/-2 with birth/death enumerated exhaustively. Forward fidelity on this chassis is exact (simulate.py 15/15, sort order MATCH), so the negative is about the FORM, not the model.
+
+- [s47] Composed conclusion: reaching $a3 for that value requires promoting reg 113 to a GLOBAL allocno live across loop 2, which is exactly the precondition the missing `addu a3,a0,zero` copy needs (combine.c:1458 added_sets_2). The three residual instructions are therefore ONE fact and it is the E-s44-3 byte-free-flow-time-reader wall - previously an argument, now a solver verdict.
+
+- [s47] Owner directive executed: func_80017D84 (src/ings.c:824 on main) confirms s45's object model and adds a genuinely new relation - the link array base at ctx+0x10 equals the record array base at ctx+0xC plus (record-count << 6), because the constructor writes it that way. Transplanted (cell D3) it costs sll+lh+addu against target's single lw a2,16(s2): 33 at 128.
+
+- [s47] Owner directive executed: func_80016E60 (src/ings.c:436 on main, MATCHED) contributes a do-while(0) wrap (cell D1 = 15 at 128) and a pointer-alias pass-through local (cell D2 = 3 at 127, byte-inert). Neither reaches reg 113's seat, and E-s47-2/3 says why: both annotated mechanisms act on global.c allocno priority or combine position, and reg 113 is a local allocno. main carries no comparable geometry.
+
+- [s47] Kill re-audit: Q1 = 14 at 127/127 (unchanged since s34); fake_ablate finds no FAKE-annotated construct in candidate.c.
