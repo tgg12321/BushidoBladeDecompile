@@ -1,0 +1,24 @@
+{
+ "func": "func_80073060",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T05:47:39.835795+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "6788bc2ed3ba777b",
+   "when": "2026-09-08T05:57:49.044869+00:00",
+   "summary": "final call: Ordinary C only: a TU-local TileXy typedef (PsyQ TILE layout; callee func_80072F30/func_80072FCC are SetTile+AddPrim wrappers returning p+0x10, so the typing is semantically truthful; same-file preced"
+  }
+ ]
+}

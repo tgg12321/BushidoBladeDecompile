@@ -1,0 +1,10 @@
+# SELF-VET — func_80073060
+CONSTRUCTS: none (ordinary C only: TU-local `TileXy` struct typedef mirroring the PsyQ TILE primitive layout (tag / r0 g0 b0 code / x0 y0 / w h), three `for` loops sharing one counter `i`, x-coordinates written as `base + i * stride` arithmetic expressions, calls to the two existing helpers with `D_800A3580` passed directly)
+## T1 semantic purpose: every statement stores a real coordinate/size into the TILE primitive or advances the primitive pointer via the helper's return value; removing any statement changes the emitted primitive list. The struct typedef gives the field stores their real meaning (x0/y0/w/h of a TILE). The `0x6A + i * 0x21` / `0x211 - i * 0x20` expressions are the actual x positions of the 5 tick marks (they are the values the game stores). No construct is byte-neutral.
+## T2 human-programmer: yes — a HUD/gauge drawing routine that emits a row of 13 vertical bars, 3 horizontal bars, then two rows of 5 ticks with decreasing width, using one loop counter and computing tick x as base + index*spacing is exactly how a human writes it. The same-file sibling func_80072E10 already uses a TU-local primitive typedef (PolyG4Xy).
+## T3 GCC-internals justification: none needed for the form; the loop.c hoist-threshold observation (why 0x3F stays in-loop in loop 3) is a DIAGNOSTIC that explained the divergence and pointed at the giv expression — the giv expression is the program's arithmetic, not a lever. Nothing in the source is present because of a pass.
+## T4 permuter/search provenance: hand-written from the asm structure; no permuter used.
+## T5 family check: no forbidden family matched (no pins, asm, barriers, volatile coercion, dead locals/stores/reads, empty ifs, pads, goto pads). The previous retired-chassis body's `if (D_800A3580) {}` empty-body dead reads were NOT carried over (they are a forbidden family); the clean form matches without them.
+## T6 naming-announces-intent: names are `p`, `i`, `TileXy`, field names `x0 y0 w h` — all semantic, none announce coercion.
+SANCTIONED-FAMILY-CLAIMS: none
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct
