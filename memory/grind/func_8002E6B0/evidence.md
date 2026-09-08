@@ -798,3 +798,80 @@ $v0<->$v1 permutation: target `move v0,zero` in the first bltz delay slot, ours
 - [s11] y_001000 (block 2's edge reversed, dz = arg0[2]-arg2[2]) ties 26 with a DISTINCT object - its mfhi/mflo seats and block-3 operand order differ from 754665bc - and is therefore an unsearched permuter basin, banked at rejected/s11_sign_rev_block2_edge_distinct_object_ties_26.c.
 
 - [s11] The residual is unchanged in kind from s10: every 26 body differs from the target by two moves plus the $v0<->$v1 permutation (target 'move v0,zero' in the first bltz delay slot vs ours 'move v1,zero'; ours additionally carries a trailing 'move v0,v1').
+
+---
+
+## [s12] MATCHED - score 0 / 94 insns / 0 rules / 0 FAKE constructs (2026-09-08, rederive)
+
+The function is closed in pure C. The matched body is in
+memory/grind/func_8002E6B0/candidate.c and installed verbatim in
+src/code6cac_b.c. Measurements this session: `sandbox func_8002E6B0
+--disable all` -> "score": 0, "target_insns": 94, "build_insns": 94,
+"rules_dropped": 0. A full `verify-oracle` on the tree with the body installed
+exited 0 (build+link SHA1 still equals the oracle). No __asm__, no volatile, no
+variable-reuse borrow, no staged value, no restore statement, no annotation.
+
+### What the body is
+
+Two centroid locals; two cross-product locals reused per edge; three
+brace-scoped blocks each declaring dz/dx and computing cross_center and
+cross_point; three NESTED `if ((cross_center ^ cross_point) >= 0)` tests; an
+inline `return 1;` innermost and one inline `return 0;` at the end. There is NO
+return-value carrier variable.
+
+### Where it came from - an unspent sibling the auto-sweep never named
+
+func_8002D780 (floor 2/202, rotated 2026-09-08) contains the SAME
+three-cross-product point-in-triangle test as an inner region of a much larger
+function, and its matched-adjacent spelling of that region is the nested,
+positive-test, inline-return chassis reproduced here. It is in the same file
+family but was NOT in this ledger's auto-generated sibling list (which named
+ings.c, func_8002EA24 and func_800283D0 only), so eleven sessions of inheritance
+never saw it. Reading a sibling ledger that the auto-sweep did not name is what
+closed this function.
+
+### Why eleven sessions missed it - the carrier was the whole problem
+
+Every nested-if body measured before s12 (s2's v-series, s11's t1/t2/t3, u1-u4,
+u8) retained the `s32 ret` carrier and usually the block-2 staging borrow,
+because s4/s5 had measured the borrow as the only source of the target's sixth
+callee-save (sw s5,20(sp) / mflo s5). That inference was correct about the GOTO
+chassis and false in general. On the carrier-free nested chassis the return
+value is not a pseudo at all: `return 0;` and `return 1;` emit
+(set (reg/i:SI 2) ...) directly, reorg.c fills the first bltz delay slot with
+addu $v0,$zero,$zero, and hard $v0 is therefore live across blocks 1 and 2 on
+the fall-through path. That is precisely the question the s10 frontier posed -
+"which C shape makes the return register live on the FALL-THROUGH path from
+mid-block-1 through block 2" - and the answer was to DELETE the carrier rather
+than to re-seat it. With $v0 genuinely occupied, local_alloc ascending
+find_free_reg can no longer hand it to the three short-lived quantities
+(pseudos 117 / 121 / 138) that s7-s8 identified as the source of the
+reg-96 <-> hard-$v0 conflict edge, so the edge s7 proved necessary and
+sufficient never forms, and the two residual moves plus the register permutation
+evaporate. The sixth callee-save falls out of the same pressure with no borrow.
+
+The s10/s11 "inline return" measurements (40/93 and 30/95) are not
+counter-evidence: those bodies used the GOTO chassis or a MIXED exit form with a
+carrier still present. The fully nested, all-inline-return, carrier-free form
+was never measured before s12.
+
+### The s12 sweep (tmp/grind/func_8002E6B0/s12/sweep_z.json, 12 bodies)
+
+      0 / 94   z5  nested chassis + this ledger block spelling, no carrier  <- MATCH
+     13 / 94   z1  nested chassis + func_8002D780 ax/az/dz block naming
+     26 / 96   z0  the s5..s11 banked candidate (goto + carrier + borrow)
+     26 / 96   z6  nested + carrier + borrow
+     26 / 96   za  goto + carrier + borrow, block 1 in the target emission order
+     29 / 96   zb  goto + carrier + borrow, block 3 in func_8002D780 naming
+     34 / 96   z2, z3  func_8002D780 block naming on goto / nested-carrier chassis
+     47 / 94   z7, z9  four named products m1..m4 per block
+     52 / 93   z4   and   53 / 93  z8  - carrier-free variants of z2 / z7
+
+Two facts worth keeping. (1) The chassis and the block spelling are INDEPENDENT
+axes and both must be right: z5 and z1 share a chassis and differ only in whether
+the centroid differences are named, and that costs 13 - naming ax/az forces their
+subu to the top of the function and breaks the mult/mflo interleave, the same
+failure mode s8 measured for sub-expression hoisting. (2) The borrow was worth
++19 on the goto chassis and is worth NOTHING on the right one; a FAKE construct
+that buys a large gradient is evidence the chassis is wrong, not evidence the
+construct is load-bearing.

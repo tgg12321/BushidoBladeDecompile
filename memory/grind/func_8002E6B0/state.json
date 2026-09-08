@@ -401,5 +401,14 @@
  "origin": "queue",
  "created": "2026-09-08T13:35:52.121385+00:00",
  "escalation_deferrals": 0,
- "object_model_audited": 11
+ "object_model_audited": 11,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "a42322e41a96758c",
+   "when": "2026-09-08T18:29:12.502713+00:00",
+   "summary": "final call: func_8002E6B0 (body hash a42322e41a96758c) is ordinary C: a centroid same-side point-in-triangle test with per-edge block-scoped dz/dx temporaries, two function-scope cross-product locals re-assigned "
+  }
+ ]
 }

@@ -1323,7 +1323,46 @@ INCLUDE_ASM("asm/funcs", func_8002DAD0);
 
 /* kengo:MED  |  sa_tan0/saTan0KiWareMoveB  |  212i  |  x2 size collision */
 INCLUDE_ASM("asm/funcs", func_8002DE20);
-INCLUDE_ASM("asm/funcs", func_8002E6B0);
+/* Point-in-triangle test: is arg3 on the same side of each triangle edge as
+ * the centroid? For each of the three edges (arg0->arg1, arg0->arg2,
+ * arg1->arg2) the 2D cross product of the edge vector with the centroid
+ * offset and with the query-point offset must have the same sign; the sign
+ * agreement is tested as `(cc ^ cp) >= 0`. Same idiom as the triangle test
+ * inside func_8002D780 in this file. */
+s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
+{
+    s32 center_x = ((arg0[0] + arg1[0]) + arg2[0]) / 3;
+    s32 center_z = ((arg0[2] + arg1[2]) + arg2[2]) / 3;
+    s32 cross_center;
+    s32 cross_point;
+
+    {
+        s32 dz = arg1[2] - arg0[2];
+        s32 dx = arg1[0] - arg0[0];
+        cross_center = (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
+        cross_point = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
+    }
+    if ((cross_center ^ cross_point) >= 0) {
+        {
+            s32 dz = arg2[2] - arg0[2];
+            s32 dx = arg2[0] - arg0[0];
+            cross_center = (dz * (center_x - arg0[0])) - (dx * (center_z - arg0[2]));
+            cross_point = (dz * (arg3[0] - arg0[0])) - (dx * (arg3[2] - arg0[2]));
+        }
+        if ((cross_center ^ cross_point) >= 0) {
+            {
+                s32 dz = arg2[2] - arg1[2];
+                s32 dx = arg2[0] - arg1[0];
+                cross_center = (dz * (center_x - arg1[0])) - (dx * (center_z - arg1[2]));
+                cross_point = (dz * (arg3[0] - arg1[0])) - (dx * (arg3[2] - arg1[2]));
+            }
+            if ((cross_center ^ cross_point) >= 0) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 /* kengo:HIGH  |  is_pad/pad_main_control  |  98i */
 void func_8002E838(u8 *obj) {
     s32 sp_tmp;

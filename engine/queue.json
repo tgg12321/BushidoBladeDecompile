@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_8002E6B0",
-      "file": "code6cac_b",
-      "distance": 64,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "_spu_pitch2note",
       "file": "main",
       "distance": 64,
@@ -1362,14 +1354,14 @@
     }
   ],
   "counts": {
-    "total": 152,
-    "active": 149,
+    "total": 151,
+    "active": 148,
     "by_status": {
-      "active": 149,
+      "active": 148,
       "rotated": 3
     },
     "by_verdict": {
-      "C": 125,
+      "C": 124,
       "ASM-PARTIAL": 24
     }
   },
