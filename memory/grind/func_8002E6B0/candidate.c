@@ -1,59 +1,69 @@
-/* s6 CANDIDATE (unchanged body, floor 26 / 96 insns, re-measured on HEAD this session).
+/* s7 CANDIDATE (body UNCHANGED from s5/s6; floor 26 / 96 insns, re-measured on
+   HEAD this session; target is 94 insns).
 
-   IMPORTANT INHERITANCE FIX (s6): the s5 header comment contained a literal
-   close-comment sequence inside its prose, which terminated the block comment
-   early and made this file FAIL TO COMPILE when installed verbatim into
-   src/code6cac_b.c (the sandbox reported "func_8002E6B0 not found in ...o").
-   The prose is now written without any nested comment delimiters. If you install
-   candidate.c and the sandbox says the function is missing, look here first.
+   INHERITANCE WARNING kept from s6: do not write a literal close-comment
+   sequence inside this header. The s5 header did, which terminated the block
+   comment early and made this file fail to compile when installed verbatim into
+   src/code6cac_b.c; the sandbox then reported "func_8002E6B0 not found in
+   tmp/sandbox/func_8002E6B0/code6cac_b.o" instead of a score. If you install
+   candidate.c and see that error, look here first.
 
-   THE BODY. Chassis: the s4 "ret-var + goto end" exit form (s32 ret = 0; both
-   early exits `goto end;`, tail `ret = (cc ^ cp) >= 0; end: return ret;`) PLUS one
-   borrow in block 2: block 2's `dz` is staged through the return carrier `ret`
-   (`((ret = dz) * (center_x - arg0[0]))`), and `ret` is restored to its real value
-   0 at the end of block 2 so the second early exit still returns 0.
+   THE BODY. Chassis: the s4 ret-var + goto-end exit form (s32 ret = 0; both
+   early exits goto end; tail ret = (cc ^ cp) >= 0; end: return ret;) PLUS one
+   borrow in block 2: block 2's dz is staged through the return carrier ret
+   ((ret = dz) * (center_x - arg0[0])), and ret is restored to its real value 0
+   at the end of block 2 so the second early exit still returns 0.
 
-   WHY IT WORKS (measured, not inferred): staging dz through the ret pseudo itself
+   WHY IT WORKS (measured, not inferred): staging dz through the ret pseudo
    supplies the block-1/2 register pressure that buys the target's SIXTH
    callee-save while the ret-var chassis supplies the target's exit shape; s4 had
    measured those two halves as anti-correlated. The side-by-side reproduces the
-   target's exit structure exactly (move v0,zero in the first bltz's delay slot,
-   BOTH bltz straight to the epilogue, no j, no orphan zero block) AND sw s5,20(sp)
-   / mflo s5.
+   target's exit structure exactly and its sw s5,20(sp) / mflo s5.
 
-   RESIDUAL (2 insns + a register permutation, unchanged in s6): our ret pseudo
-   lands in $v1 rather than $v0, which costs a trailing `move v0,v1`, and the
-   `ret = 0;` restore costs a `move v1,zero` in the second bltz's delay slot.
+   RESIDUAL: exactly two insns, both moves, plus the register permutation that
+   follows from them. Our ret pseudo lands in $v1 rather than $v0, which costs a
+   trailing move v0,v1; and the ret = 0 restore costs a move v1,zero in the
+   second bltz's delay slot (the target fills that slot with real block-3 work,
+   subu a0,t5,t3, because it needs no restore).
 
-   s6 MECHANISM FINDING for the $v1-vs-$v0 seat (ground truth, .greg for this very
-   body, tmp/grind/func_8002E6B0/s6/greg_seg.txt): the ret pseudo is reg 96. It is
-   allocno ORDER 0 (pri 17368, allocated FIRST), so priority is NOT the obstacle.
-   The obstacle is that reg 96 carries a PRE-ALLOCATION hard-register conflict with
-   $v0 (";; 96 conflicts: ... 2 29 64 66"), and global.c:907-908 then strips reg
-   96's $v0 copy preference because prune_preferences masks preferences by
-   hard_reg_conflicts - which is why reg 96's dump line carries NO ";; 96
-   preferences:" entry at all, while the two xor operands (reg 94 = 8 insns, reg 95
-   = 7 insns) DO carry "preferences: 2 3 4" and reg 95 duly takes $v0. dump_conflicts
-   is called at global.c:580, i.e. AFTER prune_preferences but BEFORE any allocation,
-   so those conflicts are genuine inputs and not post-assignment fallout. Any lever
-   that only moves refs / live length / birth order will not close this seat; the
-   lever has to remove reg 96's hard conflict with $v0.
+   s7 MECHANISM - THE SEAT IS NOW FULLY TYPED, AND IT IS A LOCAL-ALLOC PROBLEM.
+   Ground truth from the instrumented cc1 (BB2_FINDREG_DEBUG=96 on
+   tools/gcc-2.7.2/cc1; capture in tmp/grind/func_8002E6B0/s7/findregdbg.txt) for
+   this exact body: pseudo 96 is ret, allocno ORDER 0, conflicts = {2, 29},
+   someone_prefers = {4}, used_so_far contains 2, pass0_used =
+   {0,1,2,4,16..23,26..31} so the free set is {3,5,6,7,8..15,24,25} and the
+   ascending scan takes 3 = $v1; pass1_used = {0,1,2,26,27,28,29,31}. Reg 2 is
+   excluded in BOTH passes solely by the conflict, so removing that single graph
+   edge is necessary AND sufficient to seat ret in $v0.
+   Where the edge comes from: NOT the block-entry path (the .lreg per-block
+   live-at-start sets contain no reg 2 at all - see
+   tmp/grind/func_8002E6B0/s7/lreg_blocks.txt, which falsifies the s6 frontier),
+   and NOT the epilogue copy (mark_reg_clobber returns early unless its setter is
+   a CLOBBER, global.c:1528-1529, and the REG_DEAD note is processed before
+   mark_reg_store). It comes from local_alloc: the .lreg dump's
+   ";; Register N in H." list (tmp/grind/func_8002E6B0/s7/local_alloc_map.txt)
+   shows local_alloc put TWELVE pseudos in $v0 and only FOUR in $v1, and
+   record_one_conflict IORs hard_regs_live into hard_reg_conflicts at
+   global.c:1392 on every birth of reg 96 - of which this body has four. The
+   target mirrors us: both its branch conditions go to $v1 and ret sits in $v0.
+   So no global-alloc priority, live-length or preference lever can reach this
+   seat; the lever must change local_alloc's choice.
 
-   FAMILY: variable reuse - an EXISTING local (the real return carrier) borrowed to
-   stage a real, immediately-consumed value, then written back with its own real
-   value (.claude/rules/defeat-licm-hoist-var-reuse.md, gated by
+   FAMILY: variable reuse - an EXISTING local (the real return carrier) borrowed
+   to stage a real, immediately-consumed value, then written back with its own
+   real value (.claude/rules/defeat-licm-hoist-var-reuse.md, gated by
    .claude/rules/staged-value-reused-variable.md). It is a FAKE construct: any
-   candidate-ready must carry the FAKE annotation (what + mechanism +
+   candidate-ready must carry the FAKE annotation (what, mechanism,
    lever-exhaustion) and quote that rule's scope sentence verbatim. The best
-   FAKE-FREE form on this chassis remains v12 at 40
-   (rejected/s4_v12_plain_no_varreuse_40.c).
+   FAKE-FREE form on THIS chassis is 45 (rejected/s7_plain_noborrow_on_26_chassis_45.c);
+   the older FAKE-free 40 belongs to the different s4 v12 chassis.
 
-   TIES AT 26 (byte-identical object): p1 = the staging moved to block 2's SECOND
-   product; p2 = the staging carrying `center_x - arg0[0]` instead of dz; q3 = both
-   of those at once; plus the s5 ties d2 / e6 / e1 / i1 / i2.
-   TIES AT 26 WITH A DISTINCT OBJECT (fresh permuter basins, s6): q1 = the FINAL
-   xor's operands swapped only; q2 = the FIRST if's xor operands swapped only.
-   Both are in rejected/ as s6_final_xor_swap_* and s6_first_if_xor_swap_*. */
+   TIES AT 26, BYTE-IDENTICAL OBJECT (md5 921b8948): s5's d2 / e6 / e1 / i1 / i2,
+   s6's p1 / p2 / q3, and s7's r3 (restore moved up inside block 2).
+   TIES AT 26 WITH A DISTINCT OBJECT (unsearched permuter basins): s6's q1
+   (078e7ad4, final xor operands swapped) and q2 (1b1fa1c0, first if's xor
+   operands swapped), and s7's r2 (3bae0255, branch condition carried in
+   cross_point). All three are in rejected/. */
 s32 func_8002E6B0(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3)
 {
   s32 center_x = ((arg0[0] + arg1[0]) + arg2[0]) / 3;
