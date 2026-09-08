@@ -1894,3 +1894,4 @@
 - 2026-09-08 13:16 func_8002E6B0 s11 [rederive] floor=26: Floor holds at 26; a full re-derivation (fresh m2c decompile, sibling-idiom transplants, object-model probes) proves the control-flow shape, ret-birth placement and object model are ONE point in byte space - nine independently derived shapes compile byte-identically - and closes the object-model axis with target addressing evidence.
 - 2026-09-08 13:29 func_8002E6B0 COMPLETED-C after 12 sessions (closer: s12 [rederive]).
 - 2026-09-08 13:29 func_8002E6B0 completed — ROTATED SIBLING func_8002D780 (floor 2, src/code6cac_b.c) ΓÇö func_8002E6B0 just reached floor 0; its body on main is an unspent transplant. The driver's `queue auto-return` brings it back on this sibling notice.
+- 2026-09-08 13:29 func_8002D780 AUTO-RETURNED to active — auto-return: coupled sibling moved after rotation — func_8002E6B0 -> floor 0 (2026-09-08T18:29)
