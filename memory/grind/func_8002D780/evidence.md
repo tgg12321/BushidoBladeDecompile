@@ -395,3 +395,117 @@ target's dz/dx seats are, on this chassis, mutually exclusive across 34 measured
 - [s5] Residual A: 34 forms across s3 and s5 now agree that the target's test-3 emission order (dx before az) and the target's dz/dx seats (dz->$a0, dx->$v1) are mutually exclusive under source rearrangement on this chassis; the 2-floor body has the seats right and the order wrong, and h2/h5 give the complementary shapes.
 
 - [s5] candidate.c now carries ONE FAKE-annotated construct (the same-value re-store of the local `m`, dead-store family, .claude/rules/dead-store-fake-exception.md, byte-matched in-TU precedent at src/code6cac_b.c:1244-1265) with a 23-spelling lever-exhaustion ledger cited in the annotation.
+
+## s6 (2026-09-08, synthesis) - chassis: HEAD main @ 06451cd2 (-mel -msoft-float), s5 candidate applied
+
+Control re-measured first: the s5 candidate.c body scores **2/202** on this chassis
+(build_insns == target_insns == 202), so the floor is unchanged and every s5 conclusion
+about residuals B and C still holds. 37 further variants measured in four batches
+(K/L/N/O, generators + bodies in tmp/grind/func_8002D780/s6/), none below 2.
+
+### RESIDUAL A IS NOW MECHANISM-COMPLETE: two named passes, two dumps, one tie
+This is the first session that READ the pass dumps for residual A instead of inferring
+it (tmp/grind/func_8002D780/s6/dumpsA = the 2-floor candidate, dumpsH1 = the h1 body,
+sliced out of tmp/grind/func_8002D780/dumps by s6/slice.py).
+
+**The scheduler half (sched1, tools/gcc-2.7.2/sched.c).** In the test-3 block (block 7)
+the six difference subus and the four mults ALL carry INSN_PRIORITY 1 (dump
+s6/dumpsA/sched.txt L248-258): `priority()` (sched.c:1434) is a forward longest-path
+over LOG_LINKS *within the block*, and every operand of the six subus (x0,x2,z0,z2,cx,
+cz,px,pz) is computed in an EARLIER block, so all six are dependence-graph leaves with
+priority 1. rank_for_schedule (sched.c:2408-2464) therefore falls through the priority
+test, then through the dependence-class test, and decides on INSN_LUID -- i.e. on the
+statement order. That is why 34 source rearrangements across s3/s5 could only trade the
+subu order against something else.
+
+**The allocator half (local_alloc, tools/gcc-2.7.2/local-alloc.c).** dump_flow_info at
+the head of the .lreg dump gives the two inputs of qty_compare_1 (local-alloc.c:1660,
+priority = floor_log2(n_refs) * n_refs * size / (qty_death - qty_birth)) directly:
+  * 2-floor candidate body (s6/dumpsA/lreg.txt L111-113): `Register 133 [dz] used 3
+    times across 7 insns in block 7` / `Register 134 [dx] used 3 times across 6 insns`.
+    dx's live range is one insn SHORTER (it is born after the first mult instead of
+    before it), so dx's qty priority is strictly higher, dx is allocated first and takes
+    $v1 (default REG_ALLOC_ORDER, $v0 already conflicted by ax/az/bx/bz), dz takes $a0 --
+    the TARGET's seats. The price is that az's statement precedes dx's, so sched1's LUID
+    tie-break emits `subu v0,a2,a3` before `subu v1,t5,t1`: the 2-insn residual.
+  * h1 body, dx's statement moved ahead of az's (s6/dumpsH1/lreg.txt L105-107):
+    `Register 130 [dz] used 3 times across 7 insns` / `Register 131 [dx] used 3 times
+    across 7 insns` -- an EXACT TIE. qty_compare_1 falls through to its `*q1 - *q2`
+    quantity-number tie-break, which favours the quantity born first (dz), so dz takes
+    $v1 and dx $a0: the seats invert and the body scores 9 (14 differing insns,
+    s6/pairdiff_h1.txt).
+So residual A is one tie in local-alloc, not a scheduling wall: in the TARGET's emission
+order dz and dx have identical n_refs (3) and identical live length (7), and the target
+nevertheless allocates dx first. Any winning form must raise dx's qty priority strictly
+above dz's WITHOUT perturbing the emitted stream.
+
+### CORRECTION to the s5 frontier
+The s5 frontier described `tmp/grind/func_8002D780/s5/variantsH/h2_ax_dx_dz_az.c` as a
+second 2-floor body ("order right, seats wrong"). It is NOT: h1 and h2 both measure
+**9** (202 insns) on this chassis. There is only one 2-floor family, the candidate's.
+Do not plan an s7 probe around a complementary 2-floor body; it does not exist.
+
+### The sched-class route is FORECLOSED BY THE MIPS BACK END (class kill)
+rank_for_schedule's second test classifies each ready insn by its dependence on
+`last_scheduled_insn`: class 1 (data dep, cost > 1), class 2 (anti/output dep, cost > 1),
+class 3 (independent, or cost 1), highest class wins. Making az class-2 by giving it an
+anti-dependence on the preceding mult (i.e. having az write a register the mult reads --
+the variable-reuse spelling) CANNOT work on this target: `ADJUST_COST`
+(tools/gcc-2.7.2/config/mips/mips.h:2946) sets COST = 0 for every anti- or
+output-dependence, insn_cost (sched.c:1372-1425) then sets LINK_COST_FREE and returns 1,
+and rank_for_schedule's `insn_cost (...) == 1` test puts the insn back in class 3. So no
+C form whose only effect is a WAR/WAW dependence can move this tie-break, on any block of
+any function built with this compiler.
+
+### What was measured (37 variants, none below 2)
+  * Batch K (11): product OPERAND order (`dx * az` -> `az * dx`, both terms swapped) and
+    the sign-flipped cross-product pair (`kc = dx*az - dz*ax; kp = dx*bz - dz*bx`, which
+    preserves `(kc ^ kp) >= 0`), plus product locals. k1/k3 = 17, k2 = 19, k4 = 32,
+    k5 = 43, k6 = 24, k8 = 33, k9 = 23. TWO byte-neutral alternates at the floor:
+    k7 (four named product locals p1/p2/q1/q2) = 2 and k10 (dx inlined as `(x2 - x0)` in
+    both of its products, no dx local at all) = 2.
+  * Batch L (11): reordering the four mults so dx DIES BEFORE dz (shortening dx's live
+    range, which is the qty_compare_1 input) via named product locals and via a single
+    `q2 = dx * bz` local. 9, 25, 25, 32, 32, 32, 32, 33, 36, 36. Reordering the products
+    necessarily reorders the bx/bz subus too, so the 2 insns it could win are paid for
+    several times over.
+  * Batch N (7): raising dx's qty n_refs from 3 to 4 (floor_log2 steps at 4, which would
+    more than double dx's priority) by carrying the point-side cross product kp in the
+    dx variable -- motivated by the target sharing $v1 between dx, dx*bz and kp
+    (asm/funcs/func_8002D780.s L107/L119/L120). n1/n2/n3 = 16 regardless of statement
+    order, n4 = 41, n5 = 46, n6 = 10, n7 = 10. The extra def makes kp share dx's quantity
+    and the join with the other two tests' kp costs more than the seat is worth.
+  * Batch O (8): carrying dz or dx in x2/z2 (locals already live in the test-2 block), so
+    that the carrier becomes multi-block, is skipped by block_alloc and is assigned by
+    global.c instead -- dissolving the tie by removing one of its two operands from
+    local-alloc entirely. o1/o2 = 23, o3/o4 = 38, o5/o6 = 40, and the score is IDENTICAL
+    for the candidate and h1 statement orders, i.e. once a carrier is multi-block the
+    emission order stops mattering at all. Controls o7 (h1) = 9 and o8 (candidate) = 2
+    also establish a new byte-neutral degree of freedom: declaring the six difference
+    locals UNINITIALISED and assigning them in the same order as separate statements is
+    free (2 == control), so a future probe may split declaration from assignment without
+    paying for it.
+
+- [s6] Control: the s5 candidate body still measures 2/202 (202 == 202 insns) on HEAD 06451cd2. Floor unchanged this session.
+- [s6] Residual A is a local_alloc qty_compare_1 TIE, read from the dumps, not a scheduling wall: in the candidate's emission order dz is 3 refs / 7 insns and dx is 3 refs / 6 insns (dx wins, target seats); in the target's emission order both are 3 refs / 7 insns and the qty-number tie-break hands $v1 to dz (seats invert, 14 differing insns).
+- [s6] All six test-3 difference subus carry INSN_PRIORITY 1 because every operand is computed in an earlier block, so sched1's rank_for_schedule decides them purely on INSN_LUID (statement order) -- the reason 34 source rearrangements could only trade order against seats.
+- [s6] CLASS KILL: no C form whose only effect is an anti- or output-dependence can move rank_for_schedule's class tie-break on MIPS -- ADJUST_COST (config/mips/mips.h:2946) zeroes the cost of anti/output deps, insn_cost returns 1, and the insn is classified 3 exactly as if independent.
+- [s6] CORRECTION: the s5 frontier's "second 2-floor body" (variantsH/h2, 'order right, seats wrong') does not exist -- h1 and h2 both score 9 on this chassis. Only the candidate-order family reaches 2.
+- [s6] Two byte-neutral alternates at the floor were found and are available as chassis for future probes: k7 (four named product locals) = 2, k10 (dx inlined in both of its products, no dx local) = 2, and o8 (split declaration/assignment of the six difference locals) = 2.
+- [s6] Making the dz or dx carrier MULTI-BLOCK (carried in x2/z2) removes it from local-alloc and makes the statement order irrelevant -- the candidate and h1 orders then score identically (23 / 38 / 40) -- which independently confirms that local-alloc, not sched1, owns the seat half of residual A.
+
+- [s6] Control: the s5 candidate body still measures 2/202 with build_insns == target_insns == 202 on HEAD 06451cd2, so the floor is unchanged and the s5 conclusions about residuals B and C stand.
+
+- [s6] Residual A is a local_alloc qty_compare_1 tie, read from the dumps rather than inferred: candidate order dz = 3 refs / 7 insns, dx = 3 refs / 6 insns (dx allocated first, takes $v1 = target seats); target emission order dz = 3/7, dx = 3/7 (tie, quantity-number fallback gives $v1 to dz, 14 differing insns).
+
+- [s6] All six test-3 difference subus carry INSN_PRIORITY 1 because every operand is computed in an earlier basic block, so sched1's rank_for_schedule decides them purely on INSN_LUID (statement order) -- the structural reason 34 source rearrangements could only trade emission order against seats.
+
+- [s6] CLASS RESULT: rank_for_schedule's dependence-class tie-break is unreachable from C on this back end -- ADJUST_COST (tools/gcc-2.7.2/config/mips/mips.h:2946) zeroes the cost of every anti- and output-dependence, insn_cost returns 1, and the insn is classified 3 exactly as if independent.
+
+- [s6] CORRECTION to the inherited frontier: the s5 'second 2-floor body' (variantsH/h2) does not exist -- h1 and h2 both score 9. Only the candidate-order family reaches 2.
+
+- [s6] Three byte-neutral alternates at the floor are banked as chassis for future probes: k7 (four named product locals) = 2, k10 (dx inlined in both of its products, no dx local) = 2, o8 (split declaration/assignment of the six difference locals) = 2.
+
+- [s6] Making the dz or dx carrier multi-block (carried in x2 / z2) makes the statement order irrelevant -- the candidate and h1 orders then score identically (23 / 38 / 40) -- an independent confirmation that local-alloc, not sched1, owns the seat half of residual A.
+
+- [s6] 37 variants measured this session across four batches (K product operand order and sign-flipped pairs, L product emission order, N extra dx reference, O multi-block carrier); none scored below 2.

@@ -532,3 +532,152 @@ candidate applied to src/code6cac_b.c, NO FAKE construct present anywhere in the
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD 994d8b2d (-mel -msoft-float); batches B/C on the s3 7-floor body with no FAKE constructs present, batches H/I/J on the s5 2-floor body with one FAKE same-value re-store of the local `m` present
+
+## [s6] The residual-A seat flip is decided by local_alloc's qty_compare_1 priority (floor_log2(n_refs)*n_refs/live_length), and in the target's emission order dz and dx tie on both inputs.
+- mechanism: dump_flow_info at the head of the .lreg dump prints qty_compare_1's two inputs per pseudo. Candidate order: dz 3 refs / 7 insns, dx 3 refs / 6 insns -> dx first -> $v1 (target seats). h1 order: both 3 refs / 7 insns -> the `*q1 - *q2` quantity-number fallback picks dz -> $v1 to dz (seats inverted).
+- probe: pwsh tools/grinder/dump.ps1 func_8002D780 on both bodies; slice func_8002D780 out of code6cac_b.lreg (tmp/grind/func_8002D780/s6/slice.py) and read the `Register N used K times across M insns in block 7` lines.
+- result: CONFIRMED. dumpsA/lreg.txt L111-113 (dz=133: 3/7, dx=134: 3/6) vs dumpsH1/lreg.txt L105-107 (dz=130: 3/7, dx=131: 3/7). h1 scores 9 with 14 differing insns (s6/pairdiff_h1.txt) and the diff is exactly the dz/dx seat swap and its downstream mflo permutation.
+- verdict: CONFIRMED
+
+## [s6] An anti-dependence (C-level variable reuse) on the preceding mult can push az into rank_for_schedule's class 2 so that dx wins the ready-list tie in the candidate's statement order.
+- mechanism: rank_for_schedule (sched.c:2408-2464) prefers the highest dependence class w.r.t. last_scheduled_insn; class 2 = anti/output dependence with insn_cost > 1.
+- probe: read ADJUST_COST for the target back end and insn_cost's handling of its result before spelling any reuse form.
+- result: KILLED at the source. config/mips/mips.h:2946 defines ADJUST_COST to set COST = 0 for every dependence whose REG_NOTE_KIND != 0 (anti or output); insn_cost (sched.c:1409-1414) sees the adjusted cost <= 1, sets LINK_COST_FREE and returns 1; rank_for_schedule's `link == 0 || insn_cost (...) == 1` test then classifies the insn 3, identical to an independent insn. The class tie-break is unreachable by any WAR/WAW dependence on this target.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:2946
+- measured_on: read from the pinned toolchain source (tools/gcc-2.7.2), toolchain-invariant
+
+## [s6] Swapping the product operand order, or negating both cross products (semantics-preserving under `(kc ^ kp) >= 0`), reaches the target's test-3 subu order.
+- mechanism: the mult's rtx operand order feeds sched_analyze's dependence construction and local-alloc's scan order.
+- probe: batch K, 11 variants on the 2-floor chassis (tmp/grind/func_8002D780/s6/gen_k.py, variantsK).
+- result: KILLED. k1/k3 = 17, k2 = 19, k4 = 32, k5 = 43, k6 = 24, k8 = 33, k9 = 23; k7 (product locals) = 2 and k10 (dx inlined in both products) = 2 are byte-neutral alternates, not improvements.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), the s5 2-floor candidate.c body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s6] Reordering the four test-3 mults so that dx dies before dz shortens dx's live range enough to break the qty_compare_1 tie in the target's emission order.
+- mechanism: qty priority is n_refs-weighted and divided by (qty_death - qty_birth); moving the dx*bz product ahead of dz*bx makes dx die at the 7th insn of the block instead of the 9th.
+- probe: batch L, 11 variants (named product locals p1/p2/q1/q2 in four orders, and a single `q2 = dx * bz` local, each against three difference-local statement orders).
+- result: KILLED. 9, 25, 25, 32, 32, 32, 32, 33, 36, 36. Reordering the products necessarily reorders the bx/bz subus that feed them, so the two insns the seat would win are paid for four to seventeen times over.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), the s5 2-floor candidate.c body, one FAKE construct present (the `m` re-store)
+
+## [s6] Giving dx a fourth reference inside the block (carrying the point-side cross product kp in the dx variable) raises its qty priority past dz's, since floor_log2 steps at 4 refs.
+- mechanism: qty_compare_1's numerator is floor_log2(n_refs)*n_refs, so 3 -> 4 refs takes it from 3 to 8 while the live length grows only from 7 to 10; the target itself shares $v1 between dx, the dx*bz product and kp (asm/funcs/func_8002D780.s L107/L119/L120).
+- probe: batch N, 7 variants (kp carried in dx / bz / bx / dz, kc carried in az, against three statement orders).
+- result: KILLED. n1/n2/n3 = 16 (identical for all three statement orders), n4 = 41, n5 = 46, n6 = 10, n7 = 10. The second definition merges kp into dx's quantity, and the cost at the join with the two earlier tests' kp exceeds the two insns the seat is worth.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), the s5 2-floor candidate.c body, one FAKE construct present (the `m` re-store)
+
+## [s6] Carrying dz or dx in a local that is already live in an earlier block (x2 / z2) takes it out of local-alloc entirely, so the qty_compare_1 tie never arises and global.c assigns the seat.
+- mechanism: block_alloc only allocates pseudos whose live range lies inside one basic block; a multi-block pseudo is left to global_alloc, whose priority function is different.
+- probe: batch O, 8 variants (dz in z2, dx in x2, both, each against the candidate and h1 statement orders, plus two split-declaration controls).
+- result: KILLED. o1/o2 = 23, o3/o4 = 38, o5/o6 = 40 -- and each pair is IDENTICAL across the two statement orders, which independently confirms that the seat half of residual A belongs to local-alloc. Controls: o7 (h1, split decl/assign) = 9, o8 (candidate, split decl/assign) = 2, so splitting declaration from assignment is byte-neutral and is available free to future probes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), the s5 2-floor candidate.c body, one FAKE construct present (the `m` re-store)
+
+## [s6] The s5 frontier's second 2-floor body (variantsH/h2, "order right, seats wrong") exists.
+- mechanism: n/a -- a ledger claim inherited from s5's frontier text.
+- probe: re-scored h1 and h2 on this chassis and pairdiffed h1.
+- result: KILLED. Both h1 and h2 score 9 at 202 insns; h1's pairdiff shows 14 differing instructions (the dz/dx seat swap plus its downstream mflo/subu permutation). There is exactly one 2-floor family, the candidate's.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), s5 variantsH bodies spliced into src/code6cac_b.c
+
+## Live frontier (for s7) -- 2 insns left, all of them residual A, now fully attributed
+
+1. **Raise dx's INSN_PRIORITY above az's in the CANDIDATE statement order (the only route
+   left that keeps the winning seats).** Residual A is a two-sided constraint and s6
+   proved both sides: the candidate order gives the target's SEATS (dx live 6, dz 7) but
+   loses the sched1 LUID tie-break; every order that wins the tie-break ties the live
+   lengths and loses the seats. The one axis that moves sched1 WITHOUT moving statement
+   order is INSN_PRIORITY: rank_for_schedule tests priority BEFORE it falls through to
+   LUID. All six subus are priority 1 only because every operand is computed in an
+   earlier block; if one of dx's operands were produced inside block 7 by an insn with
+   result_ready_cost > 1 (a load is the obvious candidate: priority(dx) = 1 + 2 - 1 = 2),
+   dx would outrank az and be scheduled first with the candidate's statement order
+   untouched. Next probe: find a spelling in which the x2 (or x0) LOAD lands inside the
+   test-3 block without adding an insn -- e.g. read the vertex-2 x through the object at
+   its two use sites (test 2 and test 3) instead of into an x2 local, and check in the
+   .cse/.combine dumps whether the second read survives as its own load or is folded back
+   to the test-2 pseudo. Keep build_insns == 202: if the earlier load stays live for test
+   2 the body goes to 203 and the probe is dead, so pair it with a form where the test-2
+   use is the one that reads through the object.
+2. **Break the qty_compare_1 tie from the n_refs side without merging quantities.** The
+   s6 batch-N failure was not the priority arithmetic -- it was that carrying kp in dx
+   MERGES kp's cross-block quantity into dx's. A fourth reference to dx that stays inside
+   block 7 and does not extend any other value's range would still work. Next probe:
+   enumerate the block-7 values that die before dx is born or are born after dx dies
+   (from s6/dumpsA/lreg.txt: ax dies at the first mult, az at the second, and the kc subu
+   is born two insns after dx dies), and test a carrier whose OTHER uses are all inside
+   block 7 -- the kc subtraction is the only candidate, and it was never measured (n6
+   carried kc in az, not in dx).
+3. **A decomp-permuter campaign on the 2-floor chassis** (inherited unspent from s5, and
+   now better motivated: s6 has shown the residual is a single local-alloc tie, which is
+   exactly the neighbourhood the permuter's statement-reordering passes explore). Next
+   probe: regenerate base.c from candidate.c into the validated workspace
+   tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in
+   evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN, harvest with
+   --stop, and re-score every find on the engine sandbox (the s4 finding that the
+   permuter's weighted metric is anti-correlated with the engine's here still applies).
+   NOTE: the family classification of the body (frontier item 3 from s5) is still unspent
+   and must be settled before any candidate-ready submission.
+
+## [s6] The residual-A seat/order coupling is decided by local_alloc's qty_compare_1 priority (floor_log2(n_refs)*n_refs*size / (qty_death - qty_birth)), and in the target's emission order the dz and dx quantities tie on both inputs.
+- mechanism: dump_flow_info at the head of the .lreg dump prints qty_compare_1's two inputs per pseudo. In the 2-floor candidate body dz is 3 refs across 7 insns and dx is 3 refs across 6 insns, so dx's priority is strictly higher, dx is allocated first and takes $v1 under the default REG_ALLOC_ORDER ($v0 is already conflicted by ax/az/bx/bz) while dz takes $a0 -- the target's seats. In the h1 body (dx's statement moved ahead of az's) sched1 emits the target's subu order but dz and dx are BOTH 3 refs across 7 insns, an exact tie, so qty_compare_1 falls through to its quantity-number fallback, which favours the quantity born first (dz), and the seats invert.
+- probe: pwsh tools/grinder/dump.ps1 func_8002D780 on the candidate body and on tmp/grind/func_8002D780/s5/variantsH/h1_ax_dz_dx_az.c; slice func_8002D780 out of code6cac_b.lreg with tmp/grind/func_8002D780/s6/slice.py and read the 'Register N used K times across M insns in block 7' lines; pairdiff both bodies.
+- result: CONFIRMED. tmp/grind/func_8002D780/s6/dumpsA/lreg.txt L111-113 (dz=133: 3 refs/7 insns, dx=134: 3 refs/6 insns) vs s6/dumpsH1/lreg.txt L105-107 (dz=130: 3/7, dx=131: 3/7). The candidate scores 2 with the 2-insn subu-order residual; h1 scores 9 with 14 differing instructions whose content is exactly the dz/dx seat swap and its downstream mflo permutation (s6/pairdiff_h1.txt). Also measured on the scheduler side: all six test-3 difference subus carry INSN_PRIORITY 1 (s6/dumpsA/sched.txt L248-258) because every one of their operands is computed in an earlier basic block, so rank_for_schedule falls straight through to the INSN_LUID tie-break -- which is why 34 source rearrangements across s3/s5 could only trade the emission order against the seats.
+- verdict: CONFIRMED
+
+## [s6] An anti-dependence or output-dependence introduced from C (variable reuse) changes rank_for_schedule's dependence-class tie-break, so az can be demoted below dx while the candidate's statement order is kept.
+- mechanism: rank_for_schedule (tools/gcc-2.7.2/sched.c:2408-2464) classifies each ready insn against last_scheduled_insn as class 1 (data dependence, cost > 1), class 2 (anti/output dependence, cost > 1) or class 3 (independent, or cost 1), and prefers the highest class before falling through to INSN_LUID.
+- probe: Read the target back end's ADJUST_COST and insn_cost's handling of the adjusted value before spelling any reuse form.
+- result: KILLED at the source. tools/gcc-2.7.2/config/mips/mips.h:2946 defines ADJUST_COST to set COST = 0 whenever REG_NOTE_KIND (LINK) != 0, i.e. for every anti- and output-dependence; insn_cost (sched.c:1409-1414) then sets LINK_COST_FREE and returns 1, and rank_for_schedule's 'link == 0 || insn_cost (...) == 1' test classifies the insn 3 -- identical to an independent insn. The class tie-break cannot be reached by a WAR/WAW dependence on this back end, so no C form whose only scheduling effect is such a dependence can move it.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: read from the pinned toolchain source under tools/gcc-2.7.2 (back-end macro, toolchain-invariant); no FAKE construct involved
+- predicate_cite: tools/gcc-2.7.2/config/mips/mips.h:2946
+
+## [s6] Swapping the product operand order (dx * az -> az * dx), or negating both cross products (kc = dx*az - dz*ax; kp = dx*bz - dz*bx, which preserves the (kc ^ kp) >= 0 test), reaches the target's test-3 subu emission order on this chassis.
+- mechanism: The mult's rtx operand order feeds sched_analyze's dependence construction and the order in which local-alloc's block scan first sees each pseudo.
+- probe: Batch K, 11 variants generated by tmp/grind/func_8002D780/s6/gen_k.py into s6/variantsK and scored with tmp/grind/func_8002D780/s3/run.ps1 (sandbox func_8002D780 --disable all).
+- result: KILLED. k1/k3 = 17, k2 = 19, k4 = 32, k5 = 43, k6 = 24, k8 = 33, k9 = 23, all at 202 insns. Two byte-neutral alternates at the floor came out of the batch and are banked as future chassis: k7 (four named product locals p1/p2/q1/q2) = 2 and k10 (dx inlined as (x2 - x0) in both of its products, no dx local at all) = 2.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), the s5 2-floor candidate.c body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s6] Reordering the four test-3 multiplies so that dx dies before dz shortens dx's live range enough to break the qty_compare_1 tie while the target's subu emission order is kept.
+- mechanism: qty_compare_1's priority divides an n_refs-weighted numerator by (qty_death - qty_birth); moving the dx*bz product ahead of dz*bx makes dx die at the 7th insn of the block instead of the 9th, which would make dx's priority strictly higher than dz's.
+- probe: Batch L, 11 variants (four named-product-local orders and a single 'q2 = dx * bz' local, each against three difference-local statement orders), tmp/grind/func_8002D780/s6/gen_l.py -> s6/variantsL.
+- result: KILLED. Scores 9, 25, 25, 32, 32, 32, 32, 33, 36, 36 at 202 insns. Reordering the products necessarily reorders the bx/bz subus that feed them, so the two instructions the seat would win are paid for four to seventeen times over.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), the s5 2-floor candidate.c body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s6] Giving dx a fourth reference inside the test-3 block by carrying the point-side cross product kp in the dx variable raises dx's qty priority past dz's, because floor_log2 steps at 4 references.
+- mechanism: qty_compare_1's numerator is floor_log2(n_refs)*n_refs, so 3 -> 4 refs takes it from 3 to 8 while the live length only grows from 7 to 10; the target itself shares $v1 between dx, the dx*bz product and kp (asm/funcs/func_8002D780.s L107, L119, L120), which is what suggested the carrier.
+- probe: Batch N, 7 variants (kp carried in dx / bz / bx / dz and kc carried in az, against the candidate, h1 and h2 statement orders), tmp/grind/func_8002D780/s6/gen_n.py -> s6/variantsN.
+- result: KILLED. n1/n2/n3 = 16 -- identical for all three statement orders -- n4 = 41, n5 = 46, n6 = 10, n7 = 10, all at 202 insns. The second definition merges kp's cross-block quantity into dx's, and the cost at the join with the two earlier tests' kp exceeds the two instructions the seat is worth.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), the s5 2-floor candidate.c body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s6] Carrying dz or dx in a local that is already live in an earlier block (the vertex-2 coordinates x2 / z2) takes that value out of local-alloc, so the qty_compare_1 tie never arises and global.c assigns the seat instead.
+- mechanism: block_alloc only allocates pseudos whose live range lies inside a single basic block; a multi-block pseudo is left to global_alloc, whose priority function is different.
+- probe: Batch O, 8 variants (dz in z2, dx in x2, both, each against the candidate and h1 statement orders, plus two split-declaration controls), tmp/grind/func_8002D780/s6/gen_o.py -> s6/variantsO.
+- result: KILLED. o1/o2 = 23, o3/o4 = 38, o5/o6 = 40 at 202 insns -- and each pair scores IDENTICALLY across the two statement orders, which independently confirms that the seat half of residual A belongs to local-alloc rather than to sched1. The controls are useful: o7 (h1 order, split declaration/assignment) = 9 and o8 (candidate order, split declaration/assignment) = 2, so declaring the six difference locals uninitialised and assigning them in the same order is byte-neutral and is available free to future probes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), the s5 2-floor candidate.c body spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s6] The s5 frontier's second 2-floor body -- tmp/grind/func_8002D780/s5/variantsH/h2_ax_dx_dz_az.c, described there as 'order right, seats wrong' at the floor -- scores 2 on this chassis.
+- mechanism: n/a: a ledger claim inherited from the s5 frontier text, re-measured before it could be spent on an s6 probe.
+- probe: Re-scored h1 and h2 with tmp/grind/func_8002D780/s5/pd.ps1 and pairdiffed h1 through tools/pairdiff.py.
+- result: KILLED. Both h1 and h2 score 9 at 202 insns; h1's pairdiff shows 14 differing instructions (tmp/grind/func_8002D780/s6/pairdiff_h1.txt). There is one 2-floor family on this chassis, the candidate's, and an s7 plan built around a complementary 2-floor body would be built on a wrong inherited number.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 06451cd2 (-mel -msoft-float), s5 variantsH bodies spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
