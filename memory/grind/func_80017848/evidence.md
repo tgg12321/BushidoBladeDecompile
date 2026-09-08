@@ -5465,3 +5465,121 @@ the two arrays it owns, with the evidence sources the directive names.
 - [s47] Owner directive executed: func_80016E60 (src/ings.c:436 on main, MATCHED) contributes a do-while(0) wrap (cell D1 = 15 at 128) and a pointer-alias pass-through local (cell D2 = 3 at 127, byte-inert). Neither reaches reg 113's seat, and E-s47-2/3 says why: both annotated mechanisms act on global.c allocno priority or combine position, and reg 113 is a local allocno. main carries no comparable geometry.
 
 - [s47] Kill re-audit: Q1 = 14 at 127/127 (unchanged since s34); fake_ablate finds no FAKE-annotated construct in candidate.c.
+
+### E-s48-1 - Floor re-audit (forensics session)
+- candidate.c applied over the HEAD src/ings.c:820 INCLUDE_ASM anchor: sandbox
+  --disable all = 3 at 127/127, scorable, rules_dropped 0
+  (tmp/grind/func_80017848/s48/sb_BASE.txt). Floor flat at 3 since s9.
+  src/ings.c restored with `git checkout` after every cell; tree clean apart
+  from metrics/events.jsonl and the new rejected/ file.
+
+### E-s48-2 - FRONTIER ITEM 3 CLOSED: reg 113 carries NO suggestion at all, and
+###             $a3 is neither suggested-away nor excluded - it simply loses an
+###             ASCENDING regno scan to $v0
+- s47's frontier item 3 asked whether local-alloc's SUGGESTED-REGISTER pass
+  (qty_phys_copy_sugg / qty_phys_sugg) is what seats reg 113, and whether $a3 is
+  even in find_free_reg's scan order at that point or is excluded by a live hard
+  reg. Both halves are now answered from the instrumented cc1's BB2_SUGG_DEBUG
+  stream (`local_extract.py ings --func func_80017848 --suggest`):
+    blk=13 qty=0 reg1=113 birth=2 death=6 refs=2 size=1 mode=4 minclass=1
+           altclass=0 calls=0 chgsize=0 ncopysugg=0 nsugg=0 copysugg=[] sugg=[]
+  ncopysugg = nsugg = 0, so reg 113 has NO copy-suggested and NO arithmetic-
+  suggested register; the suggested pass never runs for it (block_alloc only
+  calls find_free_reg with just_try_suggested=1 for qtys that carry a
+  suggestion). Correspondingly blk 13 appears ONLY on `main` lines in the QTYDBG
+  stream and never on a `sugg` line, and there is exactly ONE SUGGDBG-FFR call
+  for it, with jts=0.
+- That single find_free_reg call scans:
+    SUGGDBG-FFR qty=0 class=1 mode=4 jts=0 acc=0 born=2 dead=6
+                used={0,1,26..67}  first_used={0,1,26..67}
+  i.e. regnos 2..25 - every general-purpose register including $v0(2), $v1(3),
+  $a0(4), $a1(5), $a2(6) and $a3(7) - are ALL FREE over the whole live span
+  [2,6). $a3 is therefore in the scan order and is NOT excluded by any live hard
+  reg, by the class mask, by an eliminable, or by a suggestion set.
+- MECHANISM (read end to end this session, tools/gcc-2.7.2/local-alloc.c):
+  find_free_reg builds `used` at local-alloc.c:2164-2190 as
+  fixed_reg_set  U  (union over ins in [born,dead) of regs_live_at[ins])  U
+  complement(reg_class_contents[class])  U  eliminables, then copies it to
+  `first_used` at :2205 (unmodified when just_try_suggested is 0). The scan at
+  local-alloc.c:2249-2255 is
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    #ifdef REG_ALLOC_ORDER
+        int regno = reg_alloc_order[i];
+    #else
+        int regno = i;
+    #endif
+
+  and the MIPS back end does NOT define REG_ALLOC_ORDER (grep over
+  tools/gcc-2.7.2/config/mips/ returns nothing; the only REG_ALLOC_ORDER
+  references in the tree are the #ifdef sites in global.c, local-alloc.c,
+  regclass.c, reload1.c and stupid.c). So the scan is plain ASCENDING regno from
+  0 and returns the FIRST free register - $v0, regno 2.
+- CONSEQUENCE (the new, quantified precondition): for the LOCAL pass to seat this
+  quantity in $a3 (regno 7), regnos 2,3,4,5,6 - $v0,$v1,$a0,$a1,$a2 - must ALL be
+  set in `first_used` over [2,6), i.e. FIVE hard registers must be live across
+  loop 2's preheader at that point. `regs_live_at` at local-alloc time contains
+  only (a) hard regs referenced by the RTL itself and (b) post_mark_life marks
+  from qtys ALREADY allocated in the same basic block; blk 13 contains exactly
+  one quantity (ord=0), so route (b) contributes nothing and there is no call in
+  the preheader to make route (a) contribute. This replaces s47's "the mechanism
+  is outside the current model" with a named mechanism and a concrete price.
+- Artifacts: tmp/grind/func_80017848/s48/local_extract_suggest.txt,
+  s48/sugg_blk13.json, s48/ings.sugg.json.
+
+### E-s48-3 - FRONTIER ITEM 2 MEASURED: a real second use DOES promote reg 113
+###             out of local-alloc, but the promoted allocno takes $v1 and cse
+###             deletes target's tail reload - 17 at 126
+- Cell A (s48/body_A.c, banked as
+  rejected/s48_l2_addend_named_local_reused_as_distance3d_arg_promotes_reg113_but_cse_deletes_tail_reload_costs_17.c)
+  is exactly the probe s47's frontier item 2 named: loop 2's base addend becomes
+  a named local `recs2 = *(u8 **)(ctx + 0xC);` placed UNCONDITIONALLY before loop
+  2's guard (so it is defined on the skip path), used inside the guard as
+  `base = (u8 *)(sh2 + (s32)recs2)`, and whose ONLY extra use is
+  math_Distance3D's first argument. sandbox --disable all = 17 at 126 build
+  insns / 127 target insns (s48/sb_A.txt) - ONE INSTRUCTION SHORT.
+- The promotion half WORKS and is now proven, not argued: re-running
+  local_extract.py on cell A, block 13 has DISAPPEARED ENTIRELY from the
+  local-alloc quantity table (s48/local_A.txt shows blk 9,10,12,14,15,16 and no
+  blk 13). The value is no longer a local quantity; it is a global allocno. This
+  is the precondition E-s47-3 named, and ordinary C reaches it.
+- The seat half FAILS, and differently from E-s47-3's prediction. objdump of the
+  cell-A object shows the promoted value in $v1 (`lw v1,12(s2)` hoisted above
+  loop 1, then `addu v0,a1,v1` reused in six later blocks), not in $a3, and cse
+  then propagates it into every subsequent ctx+0xC consumer - which is why the
+  body comes out at 126 instructions instead of 127. E-s47-3 predicted $a3 as
+  "first eligible in its pass-0 conflict set"; that prediction was made for a
+  short allocno whose range ends just after loop 2, whereas any allocno created
+  by a REAL second use necessarily reaches that use, and the resulting long range
+  gets a different conflict set and a different seat.
+- COMPOSED CONCLUSION (supersedes the loose reading of E-s47-3): promoting reg
+  113 to a global allocno is NECESSARY but NOT SUFFICIENT for target's $a3 seat,
+  and it is not free. Every C-level second use of the loop-2 preheader load is
+  SUBSTITUTIVE rather than additive - it does not add an instruction, it lets
+  cse delete one of the reloads target performs in its tail (target re-reads
+  0xC(s2) at the math_Distance3D args and again at rec_a/rec_b). The banked s9
+  T-series priced this at 19 through the candidate's `p` across a JOIN; re-priced
+  on the loop-2 addend as frontier item 2 asked, it is 17 at 126. The residual is
+  still the E-s44-3 byte-free-flow-time-reader requirement, but the requirement
+  is now sharper: the reader must promote the load's value WITHOUT giving cse a
+  register equivalence it can forward to the tail reloads.
+
+- [s48] E-s48-1: candidate.c over the HEAD src/ings.c:820 anchor = 3 at 127/127, scorable, rules_dropped 0 (tmp/grind/func_80017848/s48/sb_BASE.txt); src restored after every cell.
+- [s48] E-s48-2: frontier item 3 closed with the BB2_SUGG_DEBUG dump. reg 113 (blk 13 qty 0) has ncopysugg=0 nsugg=0 - no suggestion of any kind - so the suggested-register pass never runs for it. Its single find_free_reg call (jts=0, born=2, dead=6) scans used=first_used={0,1,26..67}: every GPR 2..25 is free, so $a3 is in the scan order and is NOT excluded. It loses because MIPS defines no REG_ALLOC_ORDER and local-alloc.c:2249-2255 therefore scans ascending regno and returns the first free one, $v0. To seat $a3 locally, regnos 2..6 ($v0,$v1,$a0,$a1,$a2) must all be live over [2,6) - five hard registers across loop 2's preheader - and blk 13 has only one quantity and no call, so neither post_mark_life nor RTL hard-reg references can supply them.
+- [s48] E-s48-3: frontier item 2 measured as cell A (named loop-2 base addend whose only extra use is math_Distance3D's first argument, read unconditionally before loop 2's guard) = 17 at 126/127. The promotion works and is dump-proven: blk 13 vanishes from local_extract.py's quantity table, so the value became a global allocno. The seat does not: objdump shows the promoted value in $v1 hoisted above loop 1, and cse forwards it into every later ctx+0xC consumer, deleting one of the reloads target performs in its tail. Every C-level second use of that load is substitutive, not additive.
+
+- [s48] Floor re-audit: candidate.c over the HEAD src/ings.c:820 INCLUDE_ASM anchor = 3 at 127/127, scorable, rules_dropped 0 (tmp/grind/func_80017848/s48/sb_BASE.txt). src/ings.c restored with git checkout after every cell; the only dirt at end of session is metrics/events.jsonl and the new rejected/ file.
+
+- [s48] reg 113 (the loop-2 preheader load of ctx+0xC, .lreg insn 162) is blk 13 qty 0 with ncopysugg=0 and nsugg=0 - it carries NO copy-suggested and NO arithmetic-suggested register, so local-alloc's suggested-register pass never runs for it. It appears only on QTYDBG 'main' lines, never on a 'sugg' line, and generates exactly one SUGGDBG-FFR call, with just_try_suggested=0.
+
+- [s48] That find_free_reg call scans used = first_used = {0,1,26..67} over born=2 dead=6: regnos 2..25 - every GPR including $v0, $v1, $a0, $a1, $a2 and $a3 - are all free. $a3 is in the scan order and is excluded by nothing.
+
+- [s48] The MIPS back end defines no REG_ALLOC_ORDER, so the scan at tools/gcc-2.7.2/local-alloc.c:2249-2255 walks regno ascending from 0 and returns the first free register - $v0, regno 2. The $v0 seat is a scan artefact, not a preference.
+
+- [s48] New quantified precondition for a LOCAL-pass $a3 seat: regnos 2,3,4,5,6 must all be set in first_used over [2,6), i.e. five hard registers live across loop 2's preheader. find_free_reg builds that set at local-alloc.c:2164-2190 from fixed_reg_set, the union of regs_live_at over the span, the class complement and the eliminables; blk 13 holds one quantity so post_mark_life of an earlier-allocated qty contributes nothing, and there is no call in the preheader so no RTL hard-reg reference contributes either.
+
+- [s48] Frontier item 2 measured as cell A = 17 at 126 build insns / 127 target insns (s48/sb_A.txt). The promotion half is dump-proven: blk 13 vanishes from local_extract.py's quantity table on cell A's source (s48/local_A.txt), so a real second use does convert reg 113 from a local quantity into a global allocno.
+
+- [s48] The seat half fails: objdump shows cell A's promoted value in $v1, hoisted above loop 1, not in $a3 - E-s47-3's $a3 prediction holds only for a short allocno ending just after loop 2, and no real second use produces such a range.
+
+- [s48] Every C-level second use of the loop-2 preheader load is SUBSTITUTIVE rather than additive: it does not add an instruction, it lets cse forward the register equivalence into target's tail re-reads of 0xC(s2) and delete one of them, which is why cell A is one instruction SHORT of target rather than one long.

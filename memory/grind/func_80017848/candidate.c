@@ -1140,3 +1140,27 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  * the E-s44-3 byte-free-flow-time-reader wall.  Q1 re-audited at 14; candidate
  * carries no FAKE construct.  Details: evidence.md/hypotheses.md s47 sections.
  */
+/* [s48 FORENSICS ADDENDUM - body unchanged, re-measured 3 at 127/127 on the HEAD
+ * chassis (anchor src/ings.c:820).]  Two frontier items closed with the
+ * instrumented cc1 and a source read of local-alloc.c.
+ *   (1) s47 frontier item 3 is answered: reg 113 (blk 13 qty 0) carries NO
+ *       suggestion at all (ncopysugg=0, nsugg=0), so local-alloc's
+ *       SUGGESTED-REGISTER pass never runs for it, and its single find_free_reg
+ *       call scans used=first_used={0,1,26..67} - every GPR 2..25 free.  $a3 is
+ *       in the scan order and is not excluded by anything.  It loses because the
+ *       MIPS back end defines no REG_ALLOC_ORDER, so local-alloc.c:2249-2255
+ *       walks regno ASCENDING from 0 and takes the first free one, $v0.  A
+ *       LOCAL-pass $a3 seat therefore needs regnos 2..6 ($v0,$v1,$a0,$a1,$a2)
+ *       all live over [2,6) - five hard registers across loop 2's preheader -
+ *       and blk 13 holds one quantity and contains no call, so neither
+ *       post_mark_life nor an RTL hard-reg reference can supply them.
+ *   (2) s47 frontier item 2 is measured: a real second use of the loop-2 addend
+ *       (cell A, math_Distance3D's first argument, read unconditionally before
+ *       loop 2's guard) DOES promote reg 113 out of local-alloc - blk 13
+ *       vanishes from the quantity table - but the promoted allocno takes $v1,
+ *       not $a3, and cse forwards it into every later ctx+0xC consumer, deleting
+ *       one of target's tail reloads: 17 at 126 vs 127.  Every C-level second
+ *       use of that load is SUBSTITUTIVE, not additive, which is why E-s44-3's
+ *       byte-free reader is still the requirement - now sharpened to "promote
+ *       the value without giving cse an equivalence it can forward to the tail".
+ */

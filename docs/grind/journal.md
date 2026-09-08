@@ -1845,3 +1845,4 @@
 - 2026-09-07 20:39 CD_datasync COMPLETED-C after 62 sessions (closer: s62 [structural]).
 - 2026-09-07 20:58 CD_sync COMPLETED-C after 126 sessions (closer: s126 [rederive]).
 - 2026-09-07 21:11 func_80017848 s47 [solver] floor=3: Solver types the floor-3 residual mechanically for the first time: the one seat divergence belongs to a LOCAL allocno (reg 113, blk 13 qty 0, refs 2) that global.c never models, and inverse.py's local backend returns a validated NEGATIVE at depth 3 and 4 over 24 atoms in 6 classes; the owner's sibling-transplant directive is executed and measured (D1=15, D2=3 inert, D3=33).
+- 2026-09-07 21:32 func_80017848 s48 [forensics] floor=3: Forensics closes both open solver frontier items: the $v0 seat is an ascending-regno scan artefact (no suggestion, $a3 free but later in scan order), and a real second use DOES promote reg 113 to a global allocno but lands it in $v1 while cse deletes a tail reload (17 at 126).
