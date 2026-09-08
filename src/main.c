@@ -959,6 +959,11 @@ s32 SsUtGetVBaddrInSB(s16 a0) {
     return _svm_vab_start[a0];
 }
 INCLUDE_ASM("asm/funcs", SsUtKeyOnV);
+/* PsyQ LIBSND UT_KEYV: SsUtKeyOffV — the module's second exported entry point, which
+   splat merged into SsUtKeyOnV. Split out 2026-09-07 (docs/naming/libscan/
+   near-tier-ruling-2026-09-07.md; XDEF +0x394, follows a real jr $ra); must stay
+   immediately after its former host so the link order reproduces the byte layout. */
+INCLUDE_ASM("asm/funcs", SsUtKeyOffV);
 /* kengo:MED  |  am_rmd/AllocBukiRmd  |  259i */
 extern s32 _svm_rattr;
 extern s16 _svm_rattr_plus_0x8;
