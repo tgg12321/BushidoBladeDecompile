@@ -3646,3 +3646,28 @@ question on the split chassis (V1), not an allocator question.
 - [s125] Owner directive 2026-09-04 Ruling A probes are all executed across s117-s125: CD_datasync s58 CD_alarm-struct transplant (s117, link-identical at 2/160 and it DELETED the pp pointer-alias FAKE), sched_solver + ra_solver on the j1/h1 frontier (s121-s123), fresh-seed permuter (earlier windows). None moved the floor below 2.
 
 - [s125] src/system.c was restored to its committed INCLUDE_ASM state at the end of the session; the only dirty file is metrics/events.jsonl (engine-written).
+
+## s126 (2026-09-07) — MATCHED, floor 2 -> 0
+
+- `& tools/wteng.ps1 main sandbox CD_sync --disable all` -> `"score": 0`,
+  `"target_insns": 160`, `"build_insns": 160`, `"rules_dropped": 0`,
+  `"scorable": true`. Measured with the body in place in src/system.c.
+- `& tools/wteng.ps1 main verify-oracle` -> `"ok": true`,
+  `"build_sha1": "62efab4f73f992798c43e8c730aa43baa10bb4fa"`, `"build_matches": true`.
+- Diff surface: `src/system.c` only (`git diff --stat`: src/system.c + the engine's own
+  metrics/events.jsonl append). No declaration-surface change — the extern block already on
+  main above the function was used verbatim, so there is NO integration handoff and no
+  scope_allow.txt line is needed.
+- The banned `CD_alarm` aggregate merge (decisions.md 2026-09-06 11:38) is removed; HEAD's
+  three flat externs D_800F19B8 / D_800F19BC / D_800F19C0 are used with the `pp` alias, the
+  same model CD_ready and CD_datasync ship matched.
+- The refused cross-symbol arithmetic idiom (owner ruling 2026-07-20) is removed: the
+  combine-foldable chain-extender is replaced by `idx_1495 = 1 + idx_1494`, an offset inside
+  ONE object (D_800A1494/95/96 = one `static volatile CD_intr Intr`,
+  memory/closer/libcd-identity.md:28), the shape the Judge cleared on CD_ready
+  (docs/grind/decisions.md:24881) and that ships on main at src/system.c:515 and :766.
+- Ladder: V1 (transplant, goto poll, no callback wrap) 18 -> V2 (+ callback do-while(0)) 9
+  -> V5 (+ real do-while(1) poll loop) 0 -> V7 (V5 minus the two byte-inert constructs) 0.
+- Artifacts: tmp/grind/CD_sync/s126/ (v1/v2/v3/v5/v7, ablations a2..a8/b1..b3/c1/c2,
+  dis.txt, cmp2.py, run.sh, apply.py).
+- Self-vet: memory/grind/CD_sync/self_vet.md. Candidate: memory/grind/CD_sync/candidate.c.

@@ -1,223 +1,64 @@
-/* [s125] DISPOSITION SESSION.  BODY UNCHANGED; floor re-measured live at 2/160
- * (bi 160, rd 0).  The residual was re-confirmed by disassembly diff as the ONE
- * 54/55 adjacent transposition with all 160 register seats already equal to the
- * target's (tmp/grind/CD_sync/s125/dis_cand.txt).
+/* CD_sync candidate - s126 (2026-09-07).  MATCHED: sandbox --disable all = 0/160,
+ * build_insns 160, rules_dropped 0, AND full-build verify-oracle ok:true with
+ * build_sha1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa.  This body is in place
+ * in src/system.c.
  *
- * s124's top frontier item H124-1 -- combine.c:10752-10754's byte-neutral
- * reg_n_refs 2 -> 3 bump -- is RETIRED this session.  The guard fires only when
- * the register is a SOURCE in the patterns of both i2 and i3 (rtlanal.c's
- * reg_referenced_p does not count a plain REG SET_DEST), and reg106 has exactly
- * one source reference (`sw v1,0x10($sp)`) on our chassis AND in the target's
- * own asm.  A second source reference is a second emitted use, so there is no
- * byte-neutral spelling.  Statement-order permutation on the folded chassis was
- * re-tested (P1 6, P2 2, P3 2, P6 2) and is the same binary dial as on the split
- * chassis.  Both endgame gates fail (scan_hand_coded LOW 2/8; SOTN
- * construct-index census negative), so the function is FORECLOSED under the
- * owner's standing auto-ruling (2026-07-27); record in docs/grind/decisions.md,
- * entry dated 2026-09-05.
+ * HOW IT CLOSED (the forced-rederive sibling transplant, first probe of the
+ * session).  The s117-s125 chassis (CD_alarm struct + honest goto poll loop +
+ * combine-foldable chain-extender + folded/split ix arithmetic) was DISCARDED
+ * whole, not tweaked.  In its place: CD_ready's matched on-main do_timeout
+ * window and CD_datasync's pointer-alias declaration block, transplanted onto
+ * CD_sync.  The three functions are the same PsyQ libcd bios.c v1.86 family and
+ * their do_timeout windows are instruction-for-instruction the same shape
+ * (asm/funcs/CD_sync.s:49-74 vs asm/funcs/CD_datasync.s:48-69).
+ *
+ * The measurement ladder this session, all on this chassis:
+ *   V1  transplant, honest `goto poll` loop, no callback wrap      = 18/160
+ *       -- ORDER-EXACT for all 160 instructions.  The 20-session 54/55
+ *          transposition that defined the old chassis's residual is GONE; all
+ *          18 diffs are callee-saved seat rotations
+ *          (ours s1=idx_1494 s2=saved s4=mode s5=result s6=idx_1495,
+ *           target s1=saved s2=idx_1494 s4=idx_1495 s5=mode s6=result).
+ *   V2  V1 + do-while(0) around the CheckCallback block             =  9/160
+ *       -- fixes saved/idx_1494 ($s1/$s2) and tbl_125c ($s3).
+ *   V5  V2 + the poll loop written as a REAL `do { ... } while (1);`
+ *       with an `if (status == 0) break;` early exit               =  0/160
+ *       -- the front end emits NOTE_INSN_LOOP_BEG/END for a real loop, so
+ *          flow.c:2081 weights every reference inside it by loop_depth; that
+ *          lifts idx_1495's allocno above the two incoming parameters in
+ *          global.c's priority sort, seating it in $s4 and pushing mode/result
+ *          to $s5/$s6.  The old `goto poll` spelling gets no loop note at all,
+ *          which is why 125 sessions of window-arithmetic never reached it.
+ *   V7  = V5 minus every construct that ablated byte-neutral: the `new_var`
+ *          0xFF constant holder (A2 = 0) and the `tb` ready-byte named
+ *          intermediate (A4 = 0) are both DELETED.  V7 = 0/160.
+ *
+ * Every construct that survives is individually load-bearing, measured this
+ * session by single-construct ablation on this chassis:
+ *   tbl_125c alias      C1 = 31      idx_1494 alias   C2 = 29
+ *   idx_1495 alias      A7 = 12      window do-while  A8 = 25
+ *   pp alias            A5 = 18      src staging      A6 =  8
+ *   pB address          B1 =  7      arg5 value       B2 =  9
+ *   t0 sync byte        B3 = 14      callback wrap    V1 = 18
+ * The real `do{}while(1)` poll loop is ORDINARY C, not a FAKE construct: it is
+ * the loop the function actually performs, and it is the spelling CD_ready
+ * ships matched on main (src/system.c).
+ *
+ * The BANNED CD_alarm aggregate merge (decisions.md 2026-09-06 11:38) is ABSENT:
+ * this body uses HEAD's three flat externs D_800F19B8 / D_800F19BC / D_800F19C0
+ * with the `pp` alias, exactly as CD_ready and CD_datasync do.  No declaration
+ * surface changes at all - the extern block already on main at src/system.c
+ * (D_800A125C[], g_cd_status_a, D_800A11DC[], D_800A11D5, D_800F19B8/BC/C0)
+ * is used verbatim, so there is no integration handoff and no scope_allow line.
+ *
+ * Self-vet: memory/grind/CD_sync/self_vet.md.
  */
-/* [s124] BODY UNCHANGED; floor re-measured live at 2/160 (bi 160, rd 0);
- * fake_ablate re-run: keep-all 2/160, drop-1 15/159, so the chain-extender is
- * still load-bearing and no number below is a FAKE-carrier artifact.
- *
- * WHAT THIS SESSION ADDS: the closing predicate is now a NUMBER, and the
- * mechanism that produces it is named.
- *
- * 1. The t0 chain is TWO pseudos, not one, and that is a C-level dial nobody
- *    had turned.  `t0 *= 4;` expands as a MULT, so expand_expr targets a FRESH
- *    pseudo (reg112) for the scale and the C variable's own pseudo (reg107)
- *    dies twice -- "dies in 2 places" in the .lreg register file, which is the
- *    condition that makes local-alloc SKIP reg107 and hand it to global-alloc.
- *    `t0 <<= 2;` writes in place, so the whole t0 chain becomes ONE local
- *    quantity (reg107, refs 6, birth 8 death 32, pri 5000).  Measured:
- *    B0 (candidate chassis) 7, B1/B2/B3 (order-exact chassis) 6, B4 7,
- *    B5 (mirror, ix *= 4) 9.  The merged chassis is STRICTLY WORSE for
- *    closing, because a 5000-pri t0 chain outranks any refs-3 arg5 (also 5000)
- *    on the qty-number tiebreak.  The closing chassis is the SPLIT one.
- *
- * 2. On the SPLIT + order-exact stream (S3/X1, 6/160) the four block-3
- *    quantities are ix (refs 6, span 10, pri 12000), arg3 (refs 4, span 8,
- *    10000), the t0 scale temp reg112 (refs 2, span 6, 3333) and the arg5
- *    loaded value reg106 (refs 2, span 6, 3333).  reg112 wins the 3333 tie on
- *    qty number and takes $v1; arg5 gets $a0; reg107 follows reg112 into $v1
- *    out of global-alloc.  The target wants the opposite.
- *
- * 3. THE PREDICATE IS EXACTLY THREE REFERENCES ON reg106 -- not ">= 3".
- *    pri(refs 3, span 6) = 5000, which slots arg5 THIRD (after ix and arg3,
- *    before reg112): ix $v0, arg3 $v0, arg5 $v1, reg112 $a0, and reg107's
- *    second range overlaps arg5's $v1 range so global-alloc must give it $a0 --
- *    all six of the divergent register pairs, in the target's spelling.
- *    Measured overshoot: C1/C2 give reg106 refs 4 (pri 13333), it is allocated
- *    FIRST and takes $v0 (11/161).  Measured undershoot: refs 2 is today's 6.
- *
- * 4. TWO CARRIERS FOR refs=3 MEASURED, BOTH DEAD AS SPELLED:
- *    - dead store / self-assign to the local (`arg5 = arg5;`, `ix = arg5;`,
- *      doubled) leaves refs at 2 in QTYDBG -- these are deleted before flow.c
- *      counts, so the whole dead-store family is not a refs carrier here.
- *    - `do { arg5 = *(s32 *)ix; } while (0);` DOES produce refs exactly 3
- *      (flow.c:2081 `reg_n_refs[regno] += loop_depth`), confirmed in QTYDBG on
- *      E1/E2 -- but the loop notes split block 3, so ix picks up a 7th ref, the
- *      t0 chain merges anyway, and the order is destroyed: 11-15/160 over four
- *      placements plus a dedicated-address-local variant.
- *
- * 5. THE UNSPENT CARRIER, and it is a named byte-neutral GCC mechanism:
- *    combine.c:10752-10754 -- "If the register is used in both I2 and I3 and it
- *    dies in I3 ... if reg_n_refs was 2, bump it to 3.  The reason this is done
- *    is because local-alloc.c treats 2 references as a special case."  That is
- *    a refs 2 -> 3 bump with ZERO emitted bytes and zero change to the insn
- *    stream.  Spelling the do_timeout block so the arg5 value is referenced in
- *    both halves of a successful combine, with its REG_DEAD note landing on i3,
- *    is the next session's target.  See hypotheses.md H124-1..H124-3.
- *
- * Also killed this session: folding the t0 scale into the t0 address at C level
- * (S1's device) on an ORDER-REACHING chassis does not remove the scale temp
- * from local-alloc's table -- X1's block-3 quantity table is byte-identical to
- * V2/S3's and all eight X forms score 6 or 7.  This is the correct re-test of
- * the "refs_down on qty 1" vector under s122's corrected quantity map, which
- * s121 had measured against the MIS-IDENTIFIED quantity (the address, not the
- * scale result); that kill is now re-established on the right target.
- */
-/* [s123] BODY UNCHANGED; floor re-measured live at 2/160 (bi 160, rd 0).
- * The s121/s122 frontier item this body was carrying - "there are ~10
- * perturbation atoms that reach the sched2 goal without perturbing the sched1
- * stream local-alloc consumes" - is WITHDRAWN.  It came from subtracting a
- * pass-1 atom set from a pass-2 atom set, and the two are different luid spaces:
- * sched_analyze re-numbers INSN_LUID by walking the current insn chain at the
- * start of EVERY pass (tools/gcc-2.7.2/sched.c:2198), so pass-1 luids index the
- * post-combine chain (= the C statement order) and pass-2 luids index sched1's
- * OUTPUT.  Reload does not reorder this block (.lreg/.greg chains == .sched
- * chain), so sched2's whole input is a function of sched1's output plus the
- * allocation: a pass-2-only atom cannot exist.
- *
- * The dual closes the other side.  Every pass-1 atom that reaches block 3's
- * target order yields the SAME output stream, and local-alloc's input IS that
- * stream (births/deaths = 2*emission_position+4), so the target order always
- * comes with the V2 seats.  Four structurally different spellings that reach it
- * (S3/S5/S7/S9 - arg5-address splits, not V2's group move) all score 6/160, and
- * classify on S3 prints V2's exact six register pairs.  ORDER AND SEATS ARE ONE
- * DIAL.  Closing needs a lever that moves a local-alloc quantity's refs or
- * birth/death while leaving the post-sched1 chain untouched; on the V2/S3 stream
- * the only such vector never spelled is inverse.py's rank-#8 refs_up on qty 2
- * (the arg5 loaded value).  See hypotheses.md H123-1..H123-3.
- *
- * Also this session: the s122 Q3 pointer-local lever re-audited on THIS chassis
- * is inert (2 == 2), fake_ablate keeps the chain-extender load-bearing
- * (2/160 with, 15/159 without), and two non-order-reaching forms (the t0 scale
- * folded into the t0 add, with and without the ix shift hoisted) sit at 3/160 -
- * a third residual level nobody has looked at.
- */
-/* [s122] BODY UNCHANGED; floor still 2/160.  The s118-s121 NAMING of block 3's
- * contended local-alloc quantities was WRONG and is corrected here (post-sched1
- * RTL, tmp/grind/CD_sync/s122/P5_v2_control/gccdump.lreg:446-505):
- *   qty1 = reg113 = the t0 SCALE result (`sll reg113 = reg107 << 2`), live for
- *          three insns only (127 -> 132);
- *   qty2 = reg106 = the arg5 loaded value (123 -> the `sw ...,16(sp)` at 149);
- *   the t0 ADDRESS is reg107, the /v pseudo of the C variable `t0`, and it is
- *          NOT one of the four quantities local-alloc ranks in this block.
- * Consequence: every "live_extend qty 1" vector means MOVE THE INSNS, not
- * restructure the C variable -- and four structurally distinct spellings (the
- * `t0` variable reused for the ix index / for the arg5 value / a dedicated
- * `s32 *ap` pointer local / the control) produce a BYTE-IDENTICAL quantity
- * table on the V2 chassis.  Also: perturb.py --pass 1 --goal-before 132:149
- * returns 25 reaching vectors and ZERO luid atoms, so source-statement order
- * provably does not contain the span fix on that chassis.  See hypotheses.md
- * H122-1..H122-3.
- */
-/* [s121] BODY UNCHANGED; floor still 2/160 (re-measured live this session,
- * bi 160 rd 0).  What changed is the DIAGNOSIS, and it moves the frontier off
- * the scheduler entirely.
- *
- * 1. This body's residual is ONE adjacent transposition in block 3, identical
- *    in sched1 and sched2: ours emits uid 120 (the t0 chain's `sll`, from
- *    `t0 *= 4;`) then uid 130 (the ix chain's reload-materialised `addu`, from
- *    the folded `*(s32 *)(ix + (s32)tbl_125c)`); the target emits 130 then 120.
- *    Both are INSN_PRIORITY 2 and ready together, so rank_for_schedule decides
- *    on INSN_LUID descending -- i.e. on SOURCE STATEMENT ORDER, nothing else.
- *    perturb.py finds 36 pass-2 / 31 pass-1 single luid atoms that reach the
- *    goal; all of them are plain statement moves.
- *
- * 2. AND ONE OF THEM IS ALREADY BANKED.  progress/s121-V2-order-exact-RA-only-6.c
- *    (= s120's V2_ixfirst_folded, which s120 recorded as a bare "6/160") is
- *    ORDER-EXACT in BOTH scheduler passes for block 3.  ra_solver's
- *    inverse_compose classify calls its FIRST DIVERGENCE `RA -- same
- *    instructions, different registers`, six pairs, the t0 address and the arg5
- *    value exchanged between $a0 and $v1.
- *
- * 3. So the s115-s120 "order-vs-seat is one binary variable" equation is RETIRED:
- *    a form exists with the order and not the seats.  The live question is a
- *    local-alloc tie -- blk=3 qty1 reg113 (t0 addr) birth 18 death 24 refs 2 and
- *    qty2 reg106 (arg5) birth 20 death 26 refs 2, equal pri, broken by qty
- *    number.  inverse.py local --swap 1,2 says REACHABLE at 1 atom, 21 vectors.
- *    Rank #1 (refs_down on the t0 address) is measured dead (folding the add
- *    into printf's 4th argument = 14/160, six spellings).  The live vectors are
- *    live_extend on qty 1 and refs_up on qty 2.
- *
- * 4. Do NOT use `goalmap.py --target asm/funcs/CD_sync.s`: asm_body() skips
- *    every `/*`-prefixed line, so the target parses as one instruction and every
- *    block falsely reports "GOAL == OURS".  Object mode only.
- */
-/* CD_sync candidate - s118 (2026-09-04).  Honest floor 2/160, build_insns 160,
- * rules_dropped 0, measured live this session on HEAD's src/system.c.
- *
- * THIS BODY REPLACES the s117 scalar/pp body that used to sit here.  It is the
- * pp-FREE CD_alarm-struct chassis (s117 hypothesis H117-1, CONFIRMED): the
- * per-word D_800F19BC / D_800F19C0 externs are dropped and D_800F19B8 is
- * declared as `typedef struct { s32 timeout; s32 count; char *func; } CD_alarm;`
- * so the printf argument is a member MEM.  Same 2/160 as the scalar body, but
- *   - ONE FAKE construct instead of two (the `void **pp` pointer alias is gone),
- *   - no declaration pun for the dispatch auto-scan to flag.
- * The five R_MIPS_LO16 addend differences the struct model produces are all
- * masked by engine/score.py and were verified addend-only against objdump
- * records in s117, so 2 is 2.
- *
- * The leading //REPL: / //DROP: lines are the declaration-surface directives
- * consumed by tmp/grind/CD_sync/s117/apply.py (region-scoped so CD_datasync's
- * duplicate declaration block is never touched).  They are also valid C
- * comments, so this file reads as the body plus a decl-surface manifest.
- *
- * RESIDUAL (unchanged since s115): a single transposition at target indices
- * 54/55 - target `addu $v0,$v0,$s3 ; sll $a0,$a0,2`, ours the other way round.
- * All 158 other instructions match including every register.  See
- * hypotheses.md s117/s118 for the local-alloc quantity table that governs it.
- *
- * [s119] The floor form is still this one (2/160).  But the STRUCTURALLY
- * closest form in the ledger is now memory/grind/CD_sync/progress/
- * s119-T1-status-borrow-4.c (4/160): it is order-exact for all 160
- * instructions AND seats printf's 5th argument in $v1 (the target seat) with
- * refs=2 and no loop-note wrap, by carrying the do_timeout t0 address in the
- * existing function-wide local `status' so that pseudo is exiled from
- * local-alloc.  Its entire residual is ONE register: the t0 chain sits in $s0
- * where the target has $a0 (indices 49/55/59/65).  See hypotheses.md s119.
- *
- * [s120] Body unchanged; floor still 2/160.  The residual is now stated as a
- * closed equation (evidence.md s120): local-alloc.c:1660 qty_compare_1 gives
- * pri = floor_log2(refs)*refs*size/(death-birth)*10000, and block 3's two
- * contending quantities are the t0 address chain and the arg5 value, both at
- * refs 2 / size 4.  THIS body uses the FOLDED ix add
- * (`arg5 = *(s32 *)(ix + (s32)tbl_125c)`), so the add only materialises during
- * reload: t0's sll takes sched1 slot 8, t0 span 8 (pri 10000) vs arg5 span 6
- * (13333), arg5 is allocated first and takes $v1, t0 takes $a0 - the TARGET
- * seats - at the cost of the 54/55 transposition.  Writing the add as its own
- * statement (`ix += (s32)tbl_125c;`) makes it a sched1 insn, which fixes the
- * order for all 160 instructions but pushes t0's sll to slot 9, ties both
- * spans at 6, and swaps $a0/$v1 (6/160; banked as progress/
- * s120-V1-order-exact-seatswap.c).  Fifteen source orders were measured and
- * the two outcomes are exhaustive.  The closing predicate is now a sched1
- * ORDER predicate - make sched1 emit `sw arg5,16(sp)` before `lw a3,0(t0)`,
- * which is the relative order the TARGET's own final output has - and not the
- * refs>=3 chain-extender FAKE that s119's frontier called for.
- */
-//REPL:extern s32 D_800F19B8; => typedef struct { s32 timeout; s32 count; char *func; } CD_alarm; extern CD_alarm D_800F19B8;
-//DROP:extern s32 D_800F19BC;
-//DROP:extern void *D_800F19C0;
-//REPL:extern void D_80016240; => extern char D_80016240[];
 s32 CD_sync(s32 a0, u8 *a1)
 {
-  int new_var;
   s32 v0;
   s32 cnt;
-  u8 *idx_1494;
-  u8 *idx_1495;
+  volatile u8 *idx_1494;
+  volatile u8 *idx_1495;
   s32 *tbl_125c;
   u8 saved;
   s32 status;
@@ -226,41 +67,42 @@ s32 CD_sync(s32 a0, u8 *a1)
   s32 i;
   u8 b;
   s32 temp;
-  D_800F19B8.timeout = VSync(-1) + 0x3C0;
-  tbl_125c = D_800A125C;
-  idx_1494 = &D_800A1494;
-  idx_1495 = (u8 *)((u8 *)tbl_125c + ((s32)&D_800A1494 - (s32)D_800A125C) + 1); /* FAKE: combine-foldable chain-extender (link-constant delta; folds to &D_800A1494 + 1 with ZERO emitted bytes, build_insns 160 == target), mechanism: flow.c records the extra reg_n_refs before combine.c folds the SYMBOL_REF difference (expr.c::expand_expr emits the subsi3/addsi3 pair, unfoldable in cse.c per s97); family: .claude/rules/dead-store-fake-exception.md:32-46 (owner ruling 2026-07-01); lever-exhaustion: memory/grind/CD_sync/hypotheses.md s96-s105 (~40 decompositions, 122 rejected forms); load-bearing: s105 measured all three honest respellings (idx_1494+1, &idx_1494[1], &D_800A1494+1) at masked=15 vs 2 */
-  D_800F19B8.count = 0;
-  D_800F19B8.func = D_80016240;
+  D_800F19B8 = VSync(-1) + 0x3C0;
+  tbl_125c = D_800A125C; /* FAKE: pointer alias (second handle) to the CD_intstr table per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: global.c seats the base in $s3 across the whole function as the target does (asm/funcs/CD_sync.s:16-17); lever-exhaustion: s126 ablation C1 (direct D_800A125C[] subscript) = 31/160, plus the 125-session ledger in memory/grind/CD_sync/hypotheses.md */
+  idx_1494 = &g_cd_status_a; /* FAKE: pointer alias (second handle) to the libcd Intr status block per pointer-alias-fake-exception (owner ruling 2026-07-01); the volatile is the TU's own declaration `extern volatile u8 g_cd_status_a;` (src/system.c, on main since 7e182728; ground truth `static volatile CD_intr Intr`, memory/closer/libcd-identity.md:28) - no cast, no local qualifier; mechanism: global.c seats the base in $s2 across the poll loop as the target does (asm/funcs/CD_sync.s:18-19); lever-exhaustion: s126 ablation C2 (direct (&g_cd_status_a)[n] subscript) = 29/160 */
+  idx_1495 = 1 + idx_1494; /* FAKE: second handle (+1) into the same 3-byte Intr block per pointer-alias-fake-exception (NOT cross-symbol arithmetic: D_800A1494/95/96 are one `static volatile CD_intr Intr`, memory/closer/libcd-identity.md:28; the identical idiom ships matched on main at src/system.c CD_ready and cdrom_IrqHandler), mechanism: global.c seats the ready-byte base in $s4 (`addiu s4,s2,1`, asm/funcs/CD_sync.s:20); lever-exhaustion: s126 ablation A7 (idx_1494[1] read at the use site) = 12/160, s105 (three honest respellings of the old chain-extender) = 15 */
+  D_800F19BC = 0;
+  D_800F19C0 = &D_80016240;
   loop:
   v0 = VSync(-1);
 
-  if (D_800F19B8.timeout < v0)
+  if (D_800F19B8 < v0)
   {
     goto do_timeout;
   }
-  cnt = D_800F19B8.count;
-  D_800F19B8.count = cnt - -1;
+  cnt = D_800F19BC;
+  D_800F19BC = cnt + 1;
   if (!(0x3C0000 < cnt))
   {
     goto success;
   }
   do_timeout:
   puts(&D_800161B8);
-
   {
     s32 arg5;
     s32 t0;
-    s32 ix;
-    t0 = idx_1494[0];
-    ix = idx_1494[1]; /* s106: honest fresh local - the v0 staged-value borrow it replaces is NOT load-bearing (measured 2 == 2, 160/160) */
-    t0 *= 4;
-    t0 = (s32)((u8 *)tbl_125c + t0);
-    ix <<= 2;
-    arg5 = *(s32 *)(ix + (s32)tbl_125c);
-    printf(&D_800161C8, D_800F19B8.func, D_800A11DC[D_800A11D5], *(s32 *)t0, arg5);
+    s32 *pB;
+    void **pp;
+    t0 = idx_1494[0]; /* FAKE: named intermediate for the sync byte, placed BEFORE the wrap (loop depth 1), mechanism: flow.c:2081 loop_depth-weighted reg_n_refs feeds local-alloc.c:1660 qty_compare_1 - the depth-1 mention leaves the merged chain-A quantity below the second table read's priority, so the chain takes $a0 and the value $v1 exactly as at asm/funcs/CD_sync.s:49/56/60/65; lever-exhaustion: s126 probe B3 (read inlined into the src address) = 14/160, the 125-session t0 ledger in hypotheses.md s118-s125 */
+    do { /* FAKE: do-while(0) wrap per do-while-zero-exception (owner ruling 2026-07-06), mechanism: sched.c:2081 loop-note barrier on the first insn inside (the ready-byte address chain) orders the sync-byte load ahead of it and every later register-argument load after it, and flow.c loop_depth ref weighting seats tbl_125c in $s3; lever-exhaustion: s126 ablation A8 (wrap removed) = 25/160 */
+      pB = (s32 *)((idx_1494[1] << 2) + (s32)tbl_125c); /* FAKE: named address intermediate (fresh, once-written, once-read, real value = `addu $v0,$v0,$s3` at asm/funcs/CD_sync.s:56), mechanism: rank_for_schedule INSN_LUID tie-break (sched.c:2462) between the boosted chain-B address insn and the boosted chain-A shift - the address must precede the shift and the value load follow it in RTL order; lever-exhaustion: s126 probe B1 (folded back into the arg5 load) = 7/160 */
+      src = (u8 *)((t0 << 2) + (s32)tbl_125c); /* FAKE: chain-A address staged through the (dead-here) src copy-loop variable per staged-value-reused-variable (owner-sanctioned 2026-07-03), mechanism: the multi-set destination keeps the addu unboosted (birthing_insn_p sched.c:2505) so it fills the backward-pass slot behind the sw instead of the shift, and global.c seats it in $a0 with src's copy-loop lives; lever-exhaustion: s126 ablation A6 (fresh local `ta` instead of the reused src) = 8/160 */
+      arg5 = *pB; /* FAKE: named intermediate for the fifth (stack) argument (fresh, once-written, once-read, real value = `lw $v1,0($v0)` at asm/funcs/CD_sync.s:60), mechanism: calls.c store_one_arg - a named value is loaded before the call sequence and stored by the sw at the target slot 64; lever-exhaustion: s126 probe B2 (passed as *pB directly) = 9/160 */
+      pp = &D_800F19C0; /* FAKE: pointer alias (second handle) to the alarm callback slot per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: calls.c:1652-1664 expand_call precomputes a register argument whose rtx_cost > 2 into a pseudo inside a loop (preserve_subexpressions_p), whereas `*pp` is a cheap mem(reg) that stays in the call sequence and cse folds the alias back to the target's `lui $a1 / lw $a1` at asm/funcs/CD_sync.s:51-52; lever-exhaustion: s126 ablation A5 (direct D_800F19C0 read) = 18/160; the CD_alarm struct spelling that this candidate carried through s117-s125 is BANNED (decisions.md 2026-09-06 11:38) and is removed here */
+      printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)src, arg5);
+      CD_flush();
+    } while (0);
   }
-  CD_flush();
   v0 = -1;
   goto check;
   success:
@@ -272,14 +114,15 @@ s32 CD_sync(s32 a0, u8 *a1)
     return -1;
   }
 
-  new_var = 0xFF;
+  do { /* FAKE: do-while(0) wrap per do-while-zero-exception (owner ruling 2026-07-06 - sanctioned for ANY codegen effect incl. register allocation), mechanism: flow.c:2081 loop_depth-weighted reg_n_refs lifts the idx_1494 / idx_1495 / saved allocnos in global.c's priority sort so they take $s2/$s4/$s1 instead of $s1/$s6/$s2; single level is sufficient here (no nested wrap needed); lever-exhaustion: s126 ablation V1 (wrap removed) = 18/160, all 18 being callee-saved register substitutions on an otherwise order-exact 160/160 stream */
   if (CheckCallback() != 0)
   {
     saved = (*D_800A147C) & 3;
-    poll:
+    do
+    {
     status = getintr();
 
-    if (status != 0)
+    if (status == 0) break;
     {
       if (status & 4)
       {
@@ -295,11 +138,13 @@ s32 CD_sync(s32 a0, u8 *a1)
           ((void (*)(u8, void *)) D_800A11B4)(*idx_1494, &D_800F19A0);
         }
       }
-      goto poll;
     }
+    }
+    while (1);
     *D_800A147C = saved;
   }
-  temp = (*idx_1494) & new_var;
+  } while (0);
+  temp = (*idx_1494) & 0xFF;
   if (((temp == 2) || (temp == 5)) != 0)
   {
     *idx_1494 = 2;

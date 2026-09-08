@@ -1163,5 +1163,14 @@
   }
  ],
  "escalation_deferrals": 0,
- "object_model_audited": 117
+ "object_model_audited": 117,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "7411d942c690462a",
+   "when": "2026-09-08T01:58:25.414934+00:00",
+   "summary": "final call: All constructs sit in frozen families with prerequisites met: pointer-alias-fake-exception (tbl_125c, idx_1494, idx_1495 = 1 + idx_1494, pp), do-while-zero-exception (two single-level wraps, no nested"
+  }
+ ]
 }

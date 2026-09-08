@@ -3260,3 +3260,77 @@ ORDER lever.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: folded candidate chassis (2/160 live control) and the target asm tmp/grind/CD_sync/s121/CD_sync.tgt.s; chain-extender FAKE present, pp pointer alias absent
+
+## s126 (2026-09-07) — rederive (forced sibling transplant) — **FLOOR 2 -> 0. MATCHED.**
+
+The forced-rederive sibling notice was correct and the transplant was the whole answer.
+Probe order was the owner directive's: read CD_ready's and CD_datasync's matched on-main
+bodies FIRST, transplant their spelling of the shared do_timeout window and declaration
+block onto CD_sync, measure, and only then iterate.
+
+### H126-1 CONFIRMED — CD_ready's / CD_datasync's matched window spelling, transplanted whole, removes the 54/55 transposition that defined the residual from s115 to s125.
+The s117-s125 chassis was discarded entirely (CD_alarm struct, combine-foldable
+chain-extender, folded-vs-split ix arithmetic, honest `goto poll` loop). V1 =
+CD_datasync's declaration block (`tbl_125c`/`idx_1494`/`idx_1495` pointer aliases with the
+volatile coming from the TU's own `extern volatile u8 g_cd_status_a;`) plus CD_ready's
+window (`t0` before a do-while(0) wrap; `tb`/`pB`/`src`/`arg5`/`pp` inside it;
+`printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)src, arg5)`; `CD_flush()` inside
+the wrap). Measured **18/160** — and the disassembly comparison
+(tmp/grind/CD_sync/s126/cmp2.py) shows **ZERO opcode or order differences across all 160
+instructions**. Every one of the 18 is a callee-saved seat substitution:
+ours s0=status s1=idx_1494 s2=saved s3=tbl_125c s4=mode s5=result s6=idx_1495;
+target s0=status s1=saved s2=idx_1494 s3=tbl_125c s4=idx_1495 s5=mode s6=result.
+Twenty sessions of block-3 arithmetic (the 54/55 `addu $v0,$v0,$s3` / `sll $a0,$a0,2`
+transposition) were attacking a residual that the sibling spelling simply does not have.
+
+### H126-2 CONFIRMED — a do-while(0) wrap around the whole CheckCallback/poll block moves saved into $s1, idx_1494 into $s2 and tbl_125c into $s3 (18 -> 9).
+Mechanism: flow.c:2081 weights `reg_n_refs` by loop_depth, and global.c's allocno priority
+sort consumes those counts. The wrap lifts every reference inside the callback block by one
+depth level, which reorders the allocno sort exactly as CD_ready's identical wrap does
+(src/system.c:564, "seats idx_1494/idx_1495"). Residual after: 9/160, all in idx_1495 /
+mode / result ($s6/$s4/$s5 vs the target's $s4/$s5/$s6).
+
+### H126-3 CONFIRMED — writing the poll loop as a REAL `do { ... if (status == 0) break; ... } while (1);` instead of a backward `goto poll;` closes the function (9 -> 0).
+This is the finding the previous 125 sessions never had, and it is not a FAKE construct: it
+is ordinary C, the loop the function actually performs, and the spelling CD_ready ships
+matched on main. Mechanism: the C front end emits NOTE_INSN_LOOP_BEG / NOTE_INSN_LOOP_END
+only for real loop constructs; a backward `goto` produces no loop note at all, so
+flow.c:2081's `reg_n_refs[regno] += loop_depth` gives every reference inside a
+goto-spelled loop weight 1. With the real loop, idx_1495's single dereference inside the
+callback block is weighted at depth 2 (inner loop inside the do-while(0) wrap), which lifts
+its allocno above the two incoming parameters in global.c's priority sort. Result:
+idx_1495 -> $s4, mode -> $s5, result -> $s6 — the target's seats. **0/160.**
+
+### H126-4 KILLED (instance) — the `new_var = 0xFF` constant holder and the `tb` ready-byte named intermediate are byte-inert on this chassis and are DELETED.
+Both were inherited from CD_ready's body (where they are load-bearing). Ablation A2
+(`temp = (*idx_1494) & 0xFF;`, `int new_var;` removed) = 0/160; ablation A4 (`tb` removed,
+`pB = (s32 *)((idx_1494[1] << 2) + (s32)tbl_125c)`) = 0/160; combined (V7) = 0/160. The
+submitted body carries neither. Two fewer FAKE constructs than the sibling.
+
+### H126-5 CONFIRMED — every OTHER construct in V7 is individually load-bearing (single-construct ablation, this chassis, all other FAKEs present).
+| ablation | form | score |
+|---|---|---|
+| C1 | `tbl_125c` alias removed, direct `D_800A125C[]` | 31/160 |
+| C2 | `idx_1494` alias removed, direct `(&g_cd_status_a)[n]` | 29/160 |
+| A7 | `idx_1495` alias removed, `idx_1494[1]` at the use site | 12/160 |
+| A8 | window `do { } while (0);` removed | 25/160 |
+| A5 | `pp` alias removed, direct `D_800F19C0` read | 18/160 |
+| A6 | `src` staging replaced by a fresh local `ta` | 8/160 |
+| B1 | `pB` folded back into the `arg5` load | 7/160 |
+| B2 | `arg5` passed as `*pB` directly | 9/160 |
+| B3 | `t0` inlined into the `src` address | 14/160 |
+| V1 | callback `do { } while (0);` removed | 18/160 |
+| V2 | poll loop back to `goto poll;` | 9/160 |
+| V3 | declaration order `saved` before `idx_1494` (on V1) | 18/160 |
+
+### H126-6 KILLED (instance) — the s115-s125 diagnosis that CD_sync's residual is a block-3 local-alloc / sched1-order dial is superseded, not refuted: it was a property of the discarded chassis.
+The whole s118-s125 frontier (the reg_n_refs(reg106) == 3 predicate, the combine.c:10752
+bump, the folded-vs-split ix add, the order-vs-seat equation) described the CD_alarm /
+chain-extender / goto-poll chassis. On the sibling chassis block 3 is order-exact and
+seat-exact from the first probe, and the entire residual lives in the callee-saved
+allocation of the FUNCTION-WIDE locals — a region no session had looked at. This is the
+concrete instance of the ledger's own standing warning that when every verdict looks dead,
+one verdict is wrong: the wrong one was the choice of chassis, not any measurement on it.
+
+**Frontier: EMPTY. The function is matched, bytes proven on main
+(sandbox 0/160, rules_dropped 0, verify-oracle build_sha1 == oracle).**
