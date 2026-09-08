@@ -1856,3 +1856,4 @@
 - 2026-09-08 00:16 func_80035280 COMPLETED-C after 5 sessions (closer: s5 [rederive]).
 - 2026-09-08 00:41 SsUtKeyOffV COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-08 00:47 note2pitch COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-08 00:57 func_80073060 COMPLETED-C after 1 sessions (closer: s1 [recon]).
