@@ -25907,3 +25907,7 @@ worklist.
 
 **Applied the same day.** The three currently-foreclosed items (func_80017848, func_8002D780,
 func_800204C0) become `rotated` with their original reason pointers preserved.
+
+## 2026-09-08 13:29 — func_8002E6B0 — final call — **PASS**
+
+func_8002E6B0 (body hash a42322e41a96758c) is ordinary C: a centroid same-side point-in-triangle test with per-edge block-scoped dz/dx temporaries, two function-scope cross-product locals re-assigned per edge (same quantity each time, not a variable-reuse borrow), three nested `(cc ^ cp) >= 0` tests, inline `return 1` / `return 0`. No __asm__, no volatile, no dead stores, no staging, no FAKE annotation needed; the s5-s11 staging borrow is deleted, not respelled (self_vet.md T3/T5, candidate.c header). No sanctioned-family claim is required because nothing needs classifying. Independently verified: `sandbox func_8002E6B0 --disable all` = 0 (94/94, rules_dropped 0; the 24 stripped islands are the file's pre-existing GTE bodies, none in this function), and the working-tree diff is confined to src/code6cac_b.c (40+/1-), no pipeline/txt/engine edits. Evidence: memory/grind/func_8002E6B0/self_vet.md, candidate.c header (s12 sweep table), hypotheses.md.

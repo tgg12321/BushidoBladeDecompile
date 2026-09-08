@@ -516,5 +516,15 @@
   "closer": false,
   "ok": true,
   "error": null
- }
+ },
+ "sibling_progress": [
+  {
+   "from": "func_8002E6B0",
+   "floor": 0,
+   "session": 12,
+   "at": "2026-09-08T18:29:16.501710+00:00",
+   "headline": "func_8002E6B0 COMPLETED-C",
+   "consumed": null
+  }
+ ]
 }
