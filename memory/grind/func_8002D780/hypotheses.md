@@ -2201,3 +2201,53 @@ dx wins the seat with the emission order untouched.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: dispatch HEAD (-mel -msoft-float), the TT_axcarrier chassis tmp/grind/func_8002D780/s21/v21/TT_axcarrier.c spliced into src/code6cac_b.c; one FAKE construct present (the same-value re-store of the local m)
+
+### s23 (2026-09-08, escalation)
+
+- **KILLED (instance).** Transplanting the matched sibling func_8002E6B0's block-7 spelling
+  (per-edge named differences, centroid and query differences left inline, own brace) onto this
+  chassis in its four forms — `SIB_dz_dx`, `SIB_dx_dz`, `SIB_brace`, `SIB_ax_az_kept` — scores
+  exactly 2/202 in all four, i.e. exactly the chassis floor, with 202 build insns.
+  *Measured on:* HEAD 3cce8d12 (`-mel -msoft-float`), `memory/grind/func_8002D780/candidate.c`
+  chassis re-measured 2/202 this session, sole FAKE (the `m` re-store) present and ablation-
+  verified off the residual pseudos. *Mechanism:* with the centroid differences inline the two
+  named subus do not bracket a third one, so the s16 declaration-order bit has nothing to order
+  and both orders compile to the same bytes. *Artifact:* `tmp/grind/func_8002D780/s23/sib.json`.
+
+- **KILLED (instance).** The eleven no-new-pseudo rearrangements of block 7's two product
+  statements measured this session — kp-before-kc, kc split-init, kp split-init, both split,
+  kp-first split, kc split around the kp statement, kp split around the kc statement, and the
+  four product-operand-swap forms — all score 4 or worse (4, 17, 19, 29, 30, 30, 31, 31, 32, 34,
+  42) against the chassis floor of 2, at 202 build insns each.
+  *Measured on:* HEAD 3cce8d12 (`-mel -msoft-float`), `memory/grind/func_8002D780/candidate.c`
+  chassis (floor 2/202 re-measured this session), sole FAKE present on the `m` pseudo only.
+  *Mechanism:* both kp multiplies feed the same subtraction, so sched1 re-packs the whole block
+  around the mult/mflo latency instead of only changing the distance between them; the
+  `allocno_compare` live_length tie of pseudos 115/116 (`global.c:635-655`) is broken by the
+  re-pack in every one of these forms. *Artifact:* `tmp/grind/func_8002D780/s23/v23.json`.
+
+- **CONFIRMED.** The chassis floor is 2/202 at 202 build insns with 1 FAKE unit, and that FAKE is
+  load-bearing (drop-1 = 6/202) but sits on the sqrt block's `m`/`lzcr` pseudo, not on the
+  residual's `dz`/`dx`/`az` pseudos. *Artifact:* `tmp/grind/func_8002D780/s23/base.sh` output.
+
+## [s22] Transplanting the matched sibling func_8002E6B0's block-7 spelling onto this chassis in its four banked forms (SIB_dz_dx, SIB_dx_dz, SIB_brace, SIB_ax_az_kept) scores exactly 2/202 at 202 build insns in all four, i.e. exactly the chassis floor, so the owner directive's coupled-sibling trigger yields no spelling this chassis lacks.
+- mechanism: The sibling names the two EDGE differences per test and leaves the centroid and query differences inline. With the centroid differences inline the two named subus no longer bracket a third one, so the declaration-order bit that drives the s16 quadrant table has nothing to order and SIB_dz_dx / SIB_dx_dz compile byte-identically.
+- probe: tools/sweep_variants.py over tmp/grind/func_8002D780/s23/sib/ (4 bodies) with candidate.c as the chassis; scores in tmp/grind/func_8002D780/s23/sib.json.
+- result: All four score 2/202 with build_insns 202 — the chassis floor to the byte. The func_8002E6B0 instance of the coupled-sibling re-activation trigger is spent; a future sibling trigger must name a different sibling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 3cce8d12 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis re-measured 2/202 this session; sole FAKE (the same-value re-store of the local m) present and ablation-verified to sit on the sqrt block's m/lzcr pseudo, not on the residual's dz/dx/az pseudos.
+
+## [s22] The eleven no-new-pseudo rearrangements of block 7's two product statements measured this session — kp-statement-before-kc, kc split-init, kp split-init, both split-init, kp-first split-init, kc split around the kp statement, kp split around the kc statement, and the four product-operand-swap forms — all score 4 or worse (4, 17, 19, 29, 30, 30, 31, 31, 32, 34, 42) against this chassis's floor of 2, each at 202 build insns.
+- mechanism: s21's frontier item 2 wanted the two kp multiplies at symmetric distances from the end of block 7 so that pseudos 115/116 keep their live_length tie in allocno_compare (global.c:635-655) while the multiply order flips. Both kp multiplies feed the same subtraction, so sched1 re-packs the entire block around the mult/mflo latency instead of only altering the inter-multiply distance, and the 26/26 live_length tie breaks in each form.
+- probe: tmp/grind/func_8002D780/s23/gen_s23.py generated 12 bodies (base + 11 rearrangements) from candidate.c; tools/sweep_variants.py scored them; results in tmp/grind/func_8002D780/s23/v23.json. Six banked to memory/grind/func_8002D780/rejected/s23-*.c.
+- result: Base 2; kc-operand-swap 4; kp-operand-swap 17; both-swap 19; kp-first 29; kp-split-around-kc 30; kp-split 30; kc-split-around-kp 31; kp-first-swap 31; kp-first-split 32; kc-split 34; both-split 42. Nothing beats or ties the floor. The no-new-pseudo half of frontier item 2 is dead on this chassis; the new-pseudo half is the s20/s22 staging kill.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 3cce8d12 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis (floor 2/202 re-measured this session), sole FAKE present on the m pseudo only (fake_ablate keep-all 2, drop-1 6).
+
+## [s22] The chassis floor is 2/202 at 202 build insns with exactly one FAKE unit present, and that FAKE is load-bearing (drop-1 = 6/202) but occupies the sqrt block's m/lzcr pseudo rather than the residual's dz/dx/az pseudos.
+- mechanism: fake_ablate re-compiles the candidate with each annotated FAKE construct removed in turn; a lever measured inert while a FAKE carrier occupies its target pseudo is not a kill (func_8002EA24 s8), so the carrier's location decides whether this ledger's block-7 kills stand.
+- probe: python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate memory/grind/func_8002D780/candidate.c, plus sandbox func_8002D780 --disable all with candidate.c spliced into src/code6cac_b.c (tmp/grind/func_8002D780/s23/base.sh).
+- result: sandbox -> {"score": 2, "target_insns": 202, "build_insns": 202, "cheat_asm_stripped": 23}; fake_ablate -> 1 FAKE unit, keep-all 2/202, drop-1 6/202. The mandated flat-floor kill re-audit is therefore satisfied for the block-7 kill family.
+- verdict: CONFIRMED

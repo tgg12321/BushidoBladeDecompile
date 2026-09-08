@@ -2378,3 +2378,86 @@ Artifacts: `tmp/grind/func_8002D780/s22/` (`base.sh`, `gen_s22.py`, `sweep.sh`, 
 `v22/` 16 bodies, `v22.json`, `src_backup.c`).
 
 - [s21] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 3490eff0b5df scores 2 under our cc1 and 46 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+## s23 (2026-09-08, escalation) — disposition session; chassis + both gates re-measured; frontier item 2 closed
+
+Every number in this section was measured THIS session at the dispatch HEAD (`-mel
+-msoft-float`); nothing is inherited on trust. (The s22 span above is driver-marked DISCARDED and
+carries no standing, so its measurements are re-taken here rather than cited.)
+
+**Chassis.** `memory/grind/func_8002D780/candidate.c` spliced into `src/code6cac_b.c`:
+`sandbox func_8002D780 --disable all` -> `{"score": 2, "target_insns": 202, "build_insns": 202,
+"cheat_asm_stripped": 23}`. Floor **2/202**, unchanged, flat since s5.
+
+**Mandated FAKE re-audit.** `python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b
+--candidate memory/grind/func_8002D780/candidate.c` -> 1 FAKE unit (the same-value re-store of
+the local `m`, cse.c `make_regs_eqv` mechanism), keep-all **2/202**, drop-1 **6/202**. The sole
+FAKE is load-bearing and sits on the `m`/`lzcr` pseudo in the sqrt block, NOT on the
+`dz`/`dx`/`az` pseudos where the two-instruction residual is — so the func_8002EA24-s8 failure
+mode (a lever measured inert while a FAKE carrier occupies its target pseudo) is excluded by
+measurement for this ledger's block-7 kills.
+
+**Owner directive executed and measured NEGATIVE (re-taken this session).** The queue directive
+was `auto-return: coupled sibling moved after rotation — func_8002E6B0 -> floor 0`. That
+sibling's matched body is on main at `src/code6cac_b.c:1332-1364`; it is the same
+point-in-triangle predicate with one vertex at the origin, and its per-edge spelling names the
+two EDGE differences per test and leaves both the centroid and the query differences inline in a
+brace of its own. Four transplants of that exact spelling onto this chassis
+(`tmp/grind/func_8002D780/s23/sib.json`): `SIB_dz_dx` **2/202**, `SIB_dx_dz` **2/202**,
+`SIB_brace` **2/202**, `SIB_ax_az_kept` **2/202** — all exactly the chassis floor, all at 202
+insns. `SIB_dz_dx` and `SIB_dx_dz` are byte-identical to each other: with the centroid
+differences inline the two named subus no longer bracket a third one, so the declaration-order
+bit that drives the whole s16 quadrant table has nothing to order. The sibling holds no spelling
+this chassis lacks; the coupled-sibling re-activation trigger for func_8002E6B0 is SPENT.
+
+**Frontier item 2 (symmetric kp-multiply distance) closed by measurement.** s21's second frontier
+item asked for a block-7 shape in which the two kp multiplies sit at symmetric distances from the
+end of the block, reached by sweeping the kc/kp STATEMENT order and the placement of the kc
+subtraction relative to the kp products — i.e. changing what sits BETWEEN the two kp multiplies
+without adding a pseudo (staging was already killed in s20 and re-killed as L2). Twelve bodies
+swept (`tmp/grind/func_8002D780/s23/v23.json`, all at 202 build insns): base **2**;
+`S23_kc_swap` (kc's two products' operands swapped) 4; `S23_kp_swap` 17; `S23_both_swap` 19;
+`S23_kp_first` (kp statement emitted before kc) 29; `S23_kp_around_kc` (kp split-init with the kc
+statement between its two halves) 30; `S23_kp_split` 30; `S23_kc_around_kp` (kc split-init with
+the kp statement between its two halves) 31; `S23_kp_first_swap` 31; `S23_kp_first_split` 32;
+`S23_kc_split` 34; `S23_both_split` 42. Nothing scores below the chassis floor and nothing ties
+it: every statement-order or split-init rearrangement of the two product statements moves the
+whole block-7 schedule rather than only the distance between the two kp multiplies, because both
+multiplies feed the same subtraction and sched1 re-packs the block around the mult/mflo latency.
+The no-new-pseudo half of frontier item 2 is therefore measured dead on this chassis; the
+new-pseudo half is the s20/s22 staging kill.
+
+**Gate (a) — canonical-asm — FAILS (re-run this session).** `python3 tools/scan_hand_coded.py
+--single func_8002D780` -> **tier=LOW, score=1/8** (212 insns). Only S4 (6 loads in an 8-insn
+window @ insn 163) fires; S1 multu pacing (0 multu/mflo pairs), S2 empty branch, S3 no-spills (7
+spills, 27 distinct regs), S5 cluster (jaccard < 0.5), S6 BIOS jumptable, S7 unsaved `$sN`, S8
+redundant mask all negative.
+
+**Gate (b) — in-hand SOTN-master precedent — FAILS.** There is no closing construct to cite a
+precedent for: the residual is an adjacent transposition of two priority-tied, dependence-class-
+tied independent subus, and the only construct that would force it is a scheduling barrier — a
+forbidden family by any spelling (auto-reject class, owner ruling 2026-08-24). Negative census of
+`docs/reference/sotn-construct-index.md`: the only scheduling-related classes are `match_comment`
+and `new_var_temp`, and the named-temporary shape is what this candidate already uses for
+`ax`/`dz`/`az`/`dx`.
+
+Artifacts: `tmp/grind/func_8002D780/s23/` (`base.sh`, `gen_s23.py`, `sweep.sh`, `sweep_sib.sh`,
+`v23/` 12 bodies, `v23.json`, `sib/` 4 bodies, `sib.json`, `src_backup.c`).
+
+- [s22] Chassis re-measured this session at HEAD 3cce8d12 (-mel -msoft-float): candidate.c spliced into src/code6cac_b.c gives sandbox func_8002D780 --disable all = {"score": 2, "target_insns": 202, "build_insns": 202, "cheat_asm_stripped": 23}. Floor 2, unchanged since s5 (sixteen consecutive sessions, eight distinct modalities).
+
+- [s22] Gate (a) canonical-asm re-run this session: python3 tools/scan_hand_coded.py --single func_8002D780 -> tier=LOW, score=1/8 (212 insns). Only S4 (6 loads in an 8-insn window @ insn 163) fires; S1 multu pacing (0 multu/mflo pairs), S2, S3 (7 spills, 27 distinct regs), S5 (jaccard < 0.5), S6, S7, S8 all negative. Gate FAILS.
+
+- [s22] Gate (b) SOTN-master precedent FAILS: the residual is an adjacent transposition of two priority-tied, dependence-class-tied independent subus, and the only construct that would force it is a scheduling barrier (forbidden family by any spelling, auto-reject class per the 2026-08-24 ruling). Negative census of docs/reference/sotn-construct-index.md: only match_comment and new_var_temp are scheduling-related, and the named-temporary shape is already what candidate.c uses for ax/dz/az/dx.
+
+- [s22] cc1psx self-disproof banked by the driver in state.json (cc1psx_check, candidate sha 3490eff0b5df, 2026-09-08T22:07Z): ours 2, cc1psx 46, closer=false — the period-correct original compiler is 44 instructions further from the target on this body, so the residual is not a compiler-identity artifact.
+
+- [s22] The residual is unchanged and fully attributed: ours[96] subu v0,a2,a3 (az) / ours[97] subu v1,t5,t1 (dx) against target[96] dx / target[97] az. rank_for_schedule falls through to INSN_LUID (tools/gcc-2.7.2/sched.c:2464) because both subus have equal INSN_PRIORITY and equal dependence class; the same source property sets dx's live-range birth, so qty_compare_1 (local-alloc.c:1680-1685) and allocno_compare (global.c:635-655) demand opposite values of one positional quantity.
+
+- [s22] Owner directive from the queue item (auto-return: coupled sibling func_8002E6B0 -> floor 0) EXECUTED and measured negative this session: four transplants of the matched sibling's block-7 spelling all score exactly 2/202 (tmp/grind/func_8002D780/s23/sib.json).
+
+- [s22] s21's last open frontier item (symmetric kp-multiply distance) closed this session by a 12-body sweep, best non-base score 4 against a floor of 2 (tmp/grind/func_8002D780/s23/v23.json). The other two frontier items (L2 gap-filler; allocno_compare n_refs) were closed by measurement in the preceding session and are recorded in evidence.md.
+
+- [s22] Disposition filed by this session: docs/grind/decisions.md:26057, '## 2026-09-08 — func_8002D780 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**'. It supersedes the earlier FORECLOSED entry and the driver-DISCARDED ROTATED entry at line 25915, and re-takes every measurement rather than citing them.
+
+- [s22] src/code6cac_b.c is unmodified on disk (the function remains INCLUDE_ASM on main); the session's only tracked-file changes are docs/grind/decisions.md, memory/grind/func_8002D780/evidence.md, hypotheses.md and six new rejected/ bodies.

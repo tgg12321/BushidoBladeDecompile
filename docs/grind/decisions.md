@@ -26053,3 +26053,141 @@ queue drain that returns the item on rotation.
 ## 2026-09-08 17:07 — func_8002D780 — DISCARDED-SESSION MARKER (driver-stamped)
 
 Text appended above by session s22 of func_8002D780, which the driver DISCARDED as invalid (KILLED hypothesis statement makes a class-level claim ('every spelling') with kill_scope='instance': 'The n_refs side of allocno_compare has no C-level handle on this function: every'. Either narrow the STATEMENT wording to the instance you measured (which arms, which chassis, which FAKE state) or set kill_scope='class' and cite the gate predicate (file:line that exists) in predicate_cite.). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
+
+## 2026-09-08 — func_8002D780 — OWNER-ESCALATION — **RESOLVED BY STANDING RULING (2026-07-27): ROTATED**
+
+Proof-of-foreclosure record (owner ruling 2026-08-31, `.claude/rules/ordinary-c-judge-decidable.md`;
+disposition vocabulary per the 2026-09-08 ruling `.claude/rules/rotation-not-foreclosure.md`, which
+retires the foreclosed state). This is a RECORD, not a question: nothing is asked of the owner and
+nothing waits. It supersedes both earlier entries for this function — the 2026-09-08 FORECLOSED
+entry filed under the pre-rotation vocabulary, and the 2026-09-08 ROTATED entry immediately above
+it, which the driver marked DISCARDED and which therefore carries no standing. Every number below
+was RE-MEASURED in session s23 at dispatch HEAD `3cce8d12` (`-mel -msoft-float`); nothing is
+inherited on trust. **Policy does not block this function: a pure-C preimage exists by
+construction.** The item is rotated to the back of the active worklist and returns automatically.
+
+**State.** `src/code6cac_b.c`, cop2/LZCS triangle-and-sphere overlap test, 202 target instructions.
+Honest floor **2/202** with `build_insns == target_insns == 202`, re-measured this session with
+`memory/grind/func_8002D780/candidate.c` spliced into `src/code6cac_b.c`:
+`sandbox func_8002D780 --disable all` → `{"score": 2, "target_insns": 202, "build_insns": 202,
+"cheat_asm_stripped": 23}`. Floor 2 <= 5, so the 2026-07-27 standing ruling is the governing
+disposition.
+
+**The residual, precisely.** Every register in the function is correct and the reorg delay-slot fill
+is correct. The only two differing instructions are an adjacent transposition inside block 7:
+
+    ours[96] subu v0,a2,a3 (az)      target[96] subu v1,t5,t1 (dx)
+    ours[97] subu v1,t5,t1 (dx)      target[97] subu v0,a2,a3 (az)
+
+`dx` and `az` are independent subus feeding the same mult, so their INSN_PRIORITYs and dependence
+classes are equal and `rank_for_schedule` falls through to INSN_LUID — source order
+(`tools/gcc-2.7.2/sched.c:2464`). The LUID ordering that wins that tie is the same source property
+that gives `dx` the earlier live-range birth, which restores the local-alloc span tie
+(`qty_compare_1`, `local-alloc.c:1680-1685`) and inverts the register seats. Sessions s19–s21
+pushed the attribution one pass further and it is complete and two-sided: block 7's kp multiply
+order is read by `qty_compare_1` (which wants dx's product expanded FIRST) and by `allocno_compare`
+(`global.c:635-655`, which keeps the centroid allocation only while the two query holders, pseudos
+115 and 116, stay TIED at `live_length` 26 — and they die AT those two multiplies). The two
+comparators require opposite values of one positional quantity; slot, seat and emission order are
+three consumers of it pulling against each other.
+
+**Owner directive executed (the trigger that re-activated this item), measured NEGATIVE.** The
+coupled sibling `func_8002E6B0` reached COMPLETED-C and its matched body is on main at
+`src/code6cac_b.c:1332-1364`. Its per-edge spelling names the two EDGE differences and leaves BOTH
+the centroid and the query differences inline, in a brace of its own. Four transplants of that
+exact spelling onto this chassis all score **exactly 2/202 at 202 insns** (`SIB_dz_dx`,
+`SIB_dx_dz`, `SIB_brace`, `SIB_ax_az_kept`; `tmp/grind/func_8002D780/s23/sib.json`, re-measured
+this session). `SIB_dz_dx` and `SIB_dx_dz` are byte-identical to each other: with the centroid
+differences inline the two named subus no longer bracket a third one, so the declaration-order bit
+that drives the whole s16 quadrant table has nothing to order. The sibling holds no spelling this
+chassis lacks, and the coupled-sibling re-activation trigger is therefore SPENT for func_8002E6B0.
+
+**The last open frontier item closed this session, by measurement.** s21's frontier item 2 asked
+for a block-7 shape in which the two kp multiplies sit at SYMMETRIC distances from the end of the
+block — reached by sweeping the kc/kp STATEMENT order and the placement of the kc subtraction
+relative to the kp products, i.e. changing what sits BETWEEN the two kp multiplies without adding a
+pseudo (adding one was killed in s20 as staging, and again as frontier item L2). Twelve bodies
+swept this session, all at 202 build insns (`tmp/grind/func_8002D780/s23/v23.json`): base **2**;
+kc-operand-swap 4; kp-operand-swap 17; both-swap 19; kp-statement-first 29; kp split-init around
+the kc statement 30; kp split-init 30; kc split-init around the kp statement 31; kp-first-swap 31;
+kp-first split-init 32; kc split-init 34; both split-init 42. Nothing ties the floor and nothing
+beats it: both kp multiplies feed the same subtraction, so sched1 re-packs the whole block around
+the mult/mflo latency rather than only changing the distance between them, and the
+`allocno_compare` live_length tie of pseudos 115/116 breaks in every form. The two frontier items
+the ledger carried before that — L2 (an insn placed in the `dz`→`dx` gap; every one of block 7's
+six differences and both staged products measured, all inert or worse) and the `n_refs` side of
+`allocno_compare` (four reference-count spellings on the TT_axcarrier chassis, all exactly that
+chassis's baseline because cse refolds the redundant load before regclass counts references) —
+were closed by measurement in the immediately preceding session and are re-stated in
+`memory/grind/func_8002D780/evidence.md`.
+
+**Kill re-audit performed this session (mandated by the flat-floor rule).**
+`python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate
+memory/grind/func_8002D780/candidate.c` → 1 FAKE unit (the same-value re-store of the local `m`);
+keep-all **2/202**, drop-1 **6/202**. The sole FAKE is load-bearing and sits on the `m`/`lzcr`
+pseudo in the sqrt block — NOT on the `dz`/`dx`/`az` pseudos where the residual is. The
+func_8002EA24-s8 failure mode (a lever measured inert while a FAKE carrier occupied its target
+pseudo) is excluded here by measurement, for this ledger's block-7 kills as a class.
+
+**cc1psx self-disproof (driver-banked in `state.json`, `cc1psx_check`).** Candidate sha
+`3490eff0b5df`, 2026-09-08T22:07Z: ours **2**, cc1psx **46**, `closer: false`. The period-correct
+original compiler is 44 instructions FURTHER from the target on this body, so the residual is not a
+compiler-identity artifact and no compiler-divergence path is open.
+
+**Gate (a) — canonical-asm — FAILS.** Re-run this session: `python3 tools/scan_hand_coded.py
+--single func_8002D780` → **tier=LOW, score=1/8** (212 insns); only S4 (6 loads in an 8-insn window
+@ insn 163) fires. S1 multu pacing (0 multu/mflo pairs), S2 empty branch, S3 no-spills (7 spills,
+27 distinct regs), S5 cluster (jaccard < 0.5), S6 BIOS jumptable, S7 unsaved `$sN`, S8 redundant
+mask all negative. For the record this function IS an enumerated member of the cop2
+materialize-then-copy cluster (`.claude/rules/cop2-addressing-preamble-cluster.md:75`), but that
+grant is unavailable and irrelevant here: its mechanical check condition 1 is `sandbox --disable
+all == 0`, and its own load-bearing negative scopes it to the TAIL ISLAND. The three cop2 islands
+in this body are already the authorized canonical LZCS/LZCR + mvmva form and are not where the two
+residual instructions sit.
+
+**Gate (b) — in-hand SOTN-master precedent — FAILS.** There is no closing construct to cite a
+precedent for. Negative census of `docs/reference/sotn-construct-index.md` (1,365 entries at a
+pinned commit): the only scheduling-related classes are `match_comment` (codegen-reason comments)
+and `new_var_temp` (named RA/scheduler temporaries) — and the named-temporary shape is what this
+candidate ALREADY uses for `ax`/`dz`/`az`/`dx`. Zero entries are a construct that forces a
+transposition of two priority-tied, class-tied independent insns. A construct that did so would be
+a scheduling barrier: a forbidden family by any spelling, hence a clean refusal under the
+2026-08-24 auto-reject class, not an argument to make here.
+
+**What holds the byte-match.** Nothing does — the function has never reached 0 and no cheat-asm
+holds a match. It is committed as `INCLUDE_ASM("asm/funcs", func_8002D780);` on main and the
+candidate lives only in `memory/grind/func_8002D780/`. The candidate carries one annotated
+construct, the same-value re-store of the local `m` (dead-store family,
+`.claude/rules/dead-store-fake-exception.md`), plus the three authorized cop2 islands.
+
+**Exhaustion.** 23 sessions, all 2026-09-08. Modalities spent: recon, structural (x3), permuter,
+synthesis (x2), solver (x2), forensics (x4), rederive (x2), enumerate, escalation (x4). Floor
+trajectory 56 → 48 → 47 → 10 → 7 → **2**, flat at 2 for sixteen consecutive sessions (s5–s23)
+across eight distinct modalities. 60+ hypotheses banked (55 instance kills, 10 predicate-cited
+class kills); 113 rejected forms in `memory/grind/func_8002D780/rejected/`. Enumerations: 2,080
+in-block test-3 spellings and 816 declaration-SCOPE variants (s15), 528 structural variants (s16),
+104 declaration-order variants and 13 carrier spellings (s21), 16 in s22 and 16 in s23 — plus the
+operator's out-of-tree 62,624-spelling class kill of the test-3 local space. Permuter total across
+two campaigns: 55,531 iterations on the s3 7-floor chassis (s4; 12 finds, all measured WORSE than
+control on the engine metric) plus 52,368 iterations on the 2-floor chassis (s13) with ZERO novel
+finds — three 9-minute fresh-seed windows, harvested with `--stop`, campaign confirmed dead. The
+RA/scheduler solver ran in s7 and typed the sched1 half solvable and the local-alloc half tied on
+every `qty_compare_1` in the reachable set.
+
+**Evidence pointers.** `memory/grind/func_8002D780/evidence.md` (s1–s23), `hypotheses.md`,
+`candidate.c` (2/202; its header documents every load-bearing line), `rejected/` (113),
+`tmp/grind/func_8002D780/s12/pairdiff_d1.txt` (the two-instruction residual),
+`tmp/grind/func_8002D780/s13/` (permuter rebuild script, campaign log, scored variants),
+`tmp/grind/func_8002D780/s19-s21/` (six instrumented cc1 dumps with the BB2_QTY_DEBUG /
+BB2_SCHED_DEBUG / BB2_PRIO_DEBUG traces and the `.lreg` live_length tables),
+`tmp/grind/func_8002D780/s23/` (this session: `base.sh`, `gen_s23.py`, `sweep.sh`, `sweep_sib.sh`,
+`v23/` 12 bodies, `v23.json`, `sib/` 4 bodies, `sib.json`).
+
+**Re-activation triggers.** (1) A class grant covering an insn-positioning construct that can sit
+between two live-range births at sched1 time and be sunk below one of them by sched2 — nothing in
+the frozen family list does this today. (2) A toolchain finding that changes `rank_for_schedule`'s
+tie-break inputs or `qty_compare_1`'s priority arithmetic (a `CC_FLAGS` change of the `-mel` /
+`-msoft-float` class). (3) Movement on a coupled sibling in `src/code6cac_b.c` that shares block
+7's shape — NOTE: the `func_8002E6B0` instance of this trigger fired and was measured negative
+this session, so a future sibling trigger must name a DIFFERENT sibling to be worth a session.
+(4) A queue drain that returns the item on rotation.

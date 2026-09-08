@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 21,
- "current_modality": "forensics",
+ "session_count": 22,
+ "current_modality": "escalation",
  "floor_history": [
   {
    "session": 1,
@@ -129,44 +129,24 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics s21: the 26-instruction centroid half of the TT_qdx landmark is a global_alloc allocno-order shift driven only by allocno_live_length - the extra pseudo was never the cause - and the two que"
+  },
+  {
+   "session": 22,
+   "floor": 2,
+   "modality": "escalation",
+   "headline": "Disposition s23: floor re-measured 2/202 and both endgame gates re-run and FAILED (scan LOW 1/8, no SOTN precedent); the owner directive's sibling transplant and s21's last frontier item (symmetric kp"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "s17's L2 lever is the one handle left that does not touch either kp multiply: an insn emitted BETWEEN dz's subu and dx's subu lengthens dz's live range, wins qty_compare_1 for dx, and leaves the two query holders' deaths - and therefore the centroid allocation - exactly where TT_base already has them.",
-   "mechanism": "qty_compare_1 (local-alloc.c:1680-1685) compares floor_log2(refs)*refs/(death-birth); dz and dx tie at 2500 in the (T,T) quadrant with spans 12 and 12. One extra insn between the two births makes dz's span 14 (2142) against dx's 12 (2500) with both deaths untouched, so the two kp multiplies never move and pseudos 115/116 stay tied at live_length 26. The (F,T) quadrant already realises this - sched1 emits ax into that gap there - which is exactly why (F,T) scores 2 with the centroid allocation correct.",
-   "next_probe": "Enumerate ordinary-C shapes that put a THIRD block-7 computation into the dz->dx gap while keeping (T,T)'s ax-before-dz source order: a fourth difference whose consumer is the kc subtraction rather than a multiply, a value read by both kc and kp so sched1 cannot sink it to a multiply's latency window, and the kc/kp statement orders that place such a value's insn between the two births. Verify each with QTYDBG blk=7 (dz span must grow while both deaths stay at 16/20) and with the .lreg live_length of 115/116 (both must stay 26) BEFORE scoring."
-  },
-  {
-   "hypothesis": "A block-7 shape in which the two kp multiplies sit at SYMMETRIC distances from the end of the block moves both query holders' deaths by the same amount, so their live lengths stay tied at 26 even when the multiply order is reversed - which would keep the centroid allocation while still fixing the block-7 seat.",
-   "mechanism": "live_length(115) - live_length(116) is exactly the signed distance between the two kp multiplies. Swapping them currently moves 115 by +2 and 116 by -2 (fresh carrier) or -4 (borrowed carrier). Any shape that inserts one insn between the two multiplies in one order and removes it in the other would cancel the swing, and allocno_compare (global.c:635-655) would fall back to the allocno-number tie-break that produces the target's centroid.",
-   "next_probe": "From the four instrumented dumps, tabulate the exact block-7 emission index of each kp multiply and of each query holder's last use on TT_base, TT_qdx and TT_axcarrier; then sweep the kc/kp STATEMENT order and the placement of the kc subtraction relative to the kp products (which changes what sits between the two kp multiplies without changing which one is expanded last), reading the .lreg 115/116 live lengths for each before scoring."
-  },
-  {
-   "hypothesis": "The other side of allocno_compare is n_refs, which has never been probed: if one query holder gains or loses a C-level reference the 26/26 tie is replaced by a priority ordering that could survive the multiply swap.",
-   "mechanism": "allocno_compare's priority is floor_log2(n_refs)*n_refs/live_length. Both query holders currently have n_refs 4. At n_refs 5 the numerator goes 8 -> 10, which is a 25% swing - larger than the 28-vs-24 live_length swing the multiply order produces - so an extra reference on the holder that ends up over-long could restore its position in the allocno order without touching block 7's schedule at all.",
-   "next_probe": "Identify which of pseudos 115 and 116 is px and which is pz from the w_ax RTL dump, then sweep byte-neutral spellings that change one holder's reference count - reading px or pz once more where the value is already in a register (a duplicated read into a branch arm, .claude/rules/split-read-defeats-hoist.md), or inlining one of its existing reads so the count drops to 3 - and check build_insns stays at 202 and the .lreg count actually moved before scoring."
+   "hypothesis": "No sanctioned pure-C axis remains open on this chassis; the item is rotated and returns automatically on queue drain, toolchain change, or movement of a DIFFERENT coupled sibling in src/code6cac_b.c that shares block 7's shape.",
+   "mechanism": "The two comparators that decide the residual (qty_compare_1 and allocno_compare) read opposite values of one positional quantity in block 7; every C-level handle on that quantity enumerated so far \u2014 declaration order, declaration scope, gap fillers, staging, statement order, split-init, operand order, reference count, block structure, computation hoisting \u2014 is measured dead.",
+   "next_probe": "On re-activation, re-measure the chassis first (the floor and all instance kills are chassis-relative), then attack the positional quantity from a lever class not yet enumerated: a change in what block 7's CALLER shape forces into the register file at entry, or a toolchain finding that alters rank_for_schedule's tie-break inputs."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 2,
-   "statement": "The byte-matched sibling func_8002BC68's staged-u32 sqrt chain (m = (u32)-2; m &= lzcr; sh = 0x16 - m; idx = dist >> sh; ...) transplanted onto this chassis closes part of the LZCS residual.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "10, byte-neutral against the simpler func_8002D320 spelling the candidate keeps"
-  },
-  {
-   "session": 3,
-   "statement": "Declaring dx ahead of az fixes residual A's remaining subu-pair order without a register cost.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body (relative-vector test 3 + if/return-0 tail + &sp_var slot operand), no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "Both measured 14. The order IS fixed - the whole test-3 block matches the target's emission order - but dz and dx are pe"
-  },
   {
    "session": 3,
    "statement": "One of six further declaration orders or inlinings of the six vertex-0-relative difference locals gives both the target's emission order and the target's dz/dx allocation.",
@@ -630,6 +610,22 @@
    "measured_on": "HEAD 722aa906 (-mel -msoft-float), the TT_qdx chassis (tmp/grind/func_8002D780/s20/v20/TT_qdx.c) and the TT_axcarrier chassis (tmp/grind/func_8002D780/s21/v21/TT_axcarrier.c), both spliced into src/co",
    "predicate_cite": "",
    "result": "All 56 px/pz placements score exactly 32 - the axis is byte-inert. The 48 coordinate orders split 12/12 on each carrier:"
+  },
+  {
+   "session": 22,
+   "statement": "Transplanting the matched sibling func_8002E6B0's block-7 spelling onto this chassis in its four banked forms (SIB_dz_dx, SIB_dx_dz, SIB_brace, SIB_ax_az_kept) scores exactly 2/202 at 202 build insns ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 3cce8d12 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis re-measured 2/202 this session; sole FAKE (the same-value re-store of the local m) present and ablation-verified to si",
+   "predicate_cite": "",
+   "result": "All four score 2/202 with build_insns 202 \u2014 the chassis floor to the byte. The func_8002E6B0 instance of the coupled-sib"
+  },
+  {
+   "session": 22,
+   "statement": "The eleven no-new-pseudo rearrangements of block 7's two product statements measured this session \u2014 kp-statement-before-kc, kc split-init, kp split-init, both split-init, kp-first split-init, kc split",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 3cce8d12 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis (floor 2/202 re-measured this session), sole FAKE present on the m pseudo only (fake_ablate keep-all 2, drop-1 6).",
+   "predicate_cite": "",
+   "result": "Base 2; kc-operand-swap 4; kp-operand-swap 17; both-swap 19; kp-first 29; kp-split-around-kc 30; kp-split 30; kc-split-a"
   }
  ],
  "ladder_skip": 0,
