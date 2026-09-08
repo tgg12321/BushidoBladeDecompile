@@ -78,6 +78,18 @@
  * src/code6cac_b.c:1244-1265.  The six test-3 difference locals still need the
  * named-intermediate-vs-ordinary-C decision recorded in the s3 frontier before any
  * candidate-ready submission. */
+/* [s9 forensics] Re-measured 2/202 on HEAD c7aa37e7; body unchanged.  fake_ablate says the
+ * one FAKE construct is worth 4 insns here (2 -> 6) and residual A's 2 insns survive its
+ * removal, so residual A is independent of the `m` carrier.  The allocator's own trace was
+ * read this session (instrumented cc1 + BB2_SUGG_DEBUG/BB2_QTY_DEBUG,
+ * tmp/grind/func_8002D780/s9/dumpvar.py): on THIS body dz is qty1 (birth 4, death 16,
+ * 3 refs, pri 2500) and dx is qty5 (birth 10, death 20, pri 3000), so dx is seated first and
+ * takes $v1 -- the target's seats.  On the h1 = target emission order the two are exactly
+ * tied and local-alloc.c:1757's quantity-number fallback seats dz on $v1 instead.  Probe u3
+ * proved that ONE extra short-lived block-7 quantity born between their births does flip the
+ * seats on the h1 order, but it also outranks `ax` (pri 10000 vs 5000) and steals ax's $v0,
+ * and the only live range that would outrank dz without outranking ax is birth 4 / death 8 --
+ * the slot dz's own defining insn occupies.  Details in hypotheses.md [s9]. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;

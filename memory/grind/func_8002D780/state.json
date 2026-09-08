@@ -1,7 +1,7 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 8,
+ "session_count": 9,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -51,23 +51,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics closed the sched1 side of residual A as a class kill (LUID is the only C-side input) and killed two of the three spellings of the local-alloc-time artifact the target needs: a self-assign em"
+  },
+  {
+   "session": 9,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Read local-alloc's own allocation trace: the residual-A seat flip IS reachable by one extra short-lived block-7 quantity (proved in probe u3's QTYDBG trace), but the only live range that outranks dz w"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A cross-block (m-shaped) copy carrier whose copy insn lands between dz's definition and dx's definition breaks the qty_compare_1 tie by LIVE SPAN rather than by reference count -- dz's range grows from 6 to 7 while dx's stays 6 -- and is then deleted by jump2's delete_noop_moves, keeping build_insns at 202.",
-   "mechanism": "s8 closed the reference-count route (a carrier cannot be both cross-block enough to survive cse and single-block enough for combine_regs), but the copy insn itself is still a real insn inside block 7 at local_alloc time and does not need a quantity of its own to shift dz's death index. jump_optimize's noop_moves pass runs only at toplev.c:3142, after local_alloc, so a copy whose two pseudos land in the same hard register disappears from the final stream.",
-   "next_probe": "Take the h1 body, add an m-shaped carrier (declared before the test-2 arm, assigned once inside the test-2 arm, re-assigned inside test 3 from a block-7 value that dies at the copy), and BEFORE scoring read tmp/grind/func_8002D780/dumps/code6cac_b.lreg to confirm (i) the copy insn is present in block 7, (ii) it sits between the dz subu and the dx subu in the scheduled stream, and (iii) dz's `used K times across M insns` line reports 7 where dx's reports 6. Only then score it, and check build_insns stays 202."
+   "hypothesis": "The extra block-7 quantity the target needs is a cross-block copy carrier whose copy insn lands at block-7 insn 2 (between ax's subu and dz's subu) with refs 2, birth 4 and death 8, and which is then deleted by jump2's delete_noop_moves so build_insns stays at 202.",
+   "mechanism": "s9 pinned the unique admissible live range (refs 2 / birth 4 / death 8: above dz's 2500, below ax's 5000, conflicting with dz, clear of dx's birth at 8). s8 established that a copy surviving cse needs its second definition in a different basic block, and that jump_optimize is passed noop_moves == 1 only at the jump2 call (toplev.c:3142), i.e. after local_alloc has already counted the quantity.",
+   "next_probe": "Build an `m`-shaped carrier on the h1 order (declared before the test-2 arm, defined once inside that arm from a statement test 2 already needs -- s8 batch R showed manufacturing that definition costs +7/+11 -- and re-assigned inside test 3 from a value that dies at the copy). BEFORE scoring, run tmp/grind/func_8002D780/s9/dumpvar.py with BB2_CC1=tools/gcc-2.7.2/cc1 and confirm in the blk=7 SUGGDBG-QTY table that the new quantity reports birth 4 death 8 refs 2 and that ax still reports birth 2 death 6; only then score, requiring build_insns == 202."
   },
   {
-   "hypothesis": "The inverse RA solver's `[extra_qty] one more temp: refs=2 span=[2,4) pri=10000` vector flips the seats without touching dz's or dx's own comparator columns.",
-   "mechanism": "It is the only 1-atom vector in the inverse.py report that leaves both tied quantities untouched: an additional short-lived quantity born at the top of block 7 changes what find_free_reg has already handed out by the time the tied pair is reached, so dz can be pushed off $v1 without changing its priority. Untouched by every s8 kill because it does not rely on a copy at all.",
-   "next_probe": "Spell a seventh test-3 local whose value is genuinely consumed (not a dead store) and is born at the top of the block -- the obvious candidate is splitting one of the four multiply operands into a named intermediate -- measured against the h1 statement order, with build_insns checked to stay at 202. Still not spelled after s7 and s8."
+   "hypothesis": "Removing ax from block_alloc's competition (making it a multi-block pseudo seated by global_alloc) lets the u3-shaped extra quantity take $v0 without displacing anything, so the dz/dx seats flip on the h1 order at no register cost.",
+   "mechanism": "u3 already proves the seat flip; its entire cost is that ax loses $v0 to the new quantity. block_alloc only allocates pseudos whose live range lies inside one basic block (local-alloc.c:470-478), so a multi-block ax is skipped and its seat comes from global.c instead. s6's batch O did exactly this to dz and dx (23-40) but never to ax.",
+   "next_probe": "Carry `ax` (= cx - x0) in a variable that is also live in the test-2 block, on the h1 statement order, with and without the u3-shaped extra value; read the blk=7 SUGGDBG-QTY table first to confirm ax has left the quantity list and that dz/dx are seated $a0/$v1, then score and check build_insns."
   },
   {
    "hypothesis": "A decomp-permuter campaign on the 2-floor chassis finds the last two instructions where the s4 campaign on the 7-floor chassis found nothing.",
-   "mechanism": "s7 typed the residual as a local-alloc tie and s8 class-killed the entire sched1 side, so the remaining C-side inputs are an extra quantity or a span-shifting copy -- exactly the temporary-introduction and statement-reordering moves in the permuter's pass set, and the s4 campaign's neighbourhood was dominated by residuals B and C, which are now closed.",
-   "next_probe": "Regenerate base.c from memory/grind/func_8002D780/candidate.c AND from the h1 body into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (the s4 finding that the permuter's weighted metric is anti-correlated with the engine's here still applies). The family classification of the body -- the FAKE `m` re-store plus the six difference locals -- is still unsettled and must be recorded before any candidate-ready submission."
+   "mechanism": "s7 typed the residual as a local-alloc tie, s8 class-killed the sched1 side, and s9 has now reduced the whole remaining search to introducing one extra short-lived temporary in one block -- which is precisely the permuter's temporary-introduction and statement-reordering move set. The s4 campaign's neighbourhood was dominated by residuals B and C, both now closed.",
+   "next_probe": "Regenerate base.c from memory/grind/func_8002D780/candidate.c AND from the h1 body into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (the s4 finding that the permuter's weighted metric is anti-correlated with the engine's here still applies)."
   }
  ],
  "judge_constraints": [],
@@ -336,6 +342,38 @@
    "measured_on": "HEAD a91a7f44 (-mel -msoft-float), the s5 candidate body and the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
    "predicate_cite": "",
    "result": "KILLED as an improvement, informative as a cost measurement. r1/r2/r4/r8 = 16 on the h1 order and r3/r6 = 13 on the cand"
+  },
+  {
+   "session": 9,
+   "statement": "Kill re-audit: the s6-s8 instance kills were measured with the FAKE `m` re-store occupying a pseudo that residual A needs, so at least one of them is void on the current chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD c7aa37e7 (-mel -msoft-float), the s5 candidate.c body spliced into src/code6cac_b.c, measured both with the FAKE present and with it ablated by tools/fake_ablate.py",
+   "predicate_cite": "",
+   "result": "KILLED -- the re-audit clears the earlier kills rather than voiding them. keep-all = 2/202, drop-1 = 6/202, so the FAKE "
+  },
+  {
+   "session": 9,
+   "statement": "The extra block-7 quantity that flips the dz/dx seats can be spelled without disturbing the seats of ax, az, bx and bz.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD c7aa37e7 (-mel -msoft-float), the s5 h1 body (tmp/grind/func_8002D780/s5/variantsH/h1_ax_dz_dx_az.c) spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
+   "predicate_cite": "",
+   "result": "KILLED on this block geometry. u3 measures 13/203: the extra quantity has refs 2 over a span of 2, hence pri 10000 again"
+  },
+  {
+   "session": 9,
+   "statement": "One of block 7's four multiply-result pseudos can be turned into the extra local-alloc quantity, since each is defined and dies inside block 7.",
+   "kill_scope": "class",
+   "measured_on": "HEAD c7aa37e7 (-mel -msoft-float), the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:472",
+   "result": "KILLED. The dump prints all four as `Register N used 2 times across K insns in block 7; pref LO_REG, else GR_REGS`, and "
+  },
+  {
+   "session": 9,
+   "statement": "Giving test 3 its own cross-product locals instead of reusing the outer kc/kp adds block-local quantities that break the dz/dx tie.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD c7aa37e7 (-mel -msoft-float), the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
+   "predicate_cite": "",
+   "result": "KILLED as a lever, banked as a free degree of freedom. u1 = 9/202, identical to the h1 baseline. The two new quantities "
   }
  ],
  "ladder_skip": 0,

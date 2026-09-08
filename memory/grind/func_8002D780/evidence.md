@@ -765,3 +765,118 @@ all declarations at the head of their block.
 - [s8] Splicing a statement between two declarations is a C89 declaration-order violation that silently yields a wrong-sized body rather than a hard failure at the sandbox level (batch S s2 = 182 insns, batch R r7 = 184 insns); every generated variant for this function must keep all declarations at the head of their block.
 
 - [s8] 27 variants measured this session across three batches; not one moved the floor, and the best form remains the unchanged s5 candidate at 2/202.
+
+## s9 (2026-09-08, forensics) - chassis: HEAD main @ c7aa37e7 (-mel -msoft-float), s5 candidate applied
+
+Control re-measured first: the s5 candidate.c body scores **2/202** on this chassis
+(build_insns == target_insns == 202). Floor unchanged. Mandated kill re-audit run:
+`tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate
+memory/grind/func_8002D780/candidate.c` gives keep-all = 2/202, drop-1 = **6/202**, so the
+single FAKE construct (the same-value re-store of the local `m`) is worth 4 insns on this
+chassis (it was 5 when s5 measured it) and residual A's 2 insns are present WITH and
+WITHOUT it -- residual A is not masked by the FAKE carrier, and every s6/s7/s8 kill taken
+"with one FAKE construct present" is unaffected by that carrier.
+
+### The whole of local-alloc's block-7 decision is now READ, not inferred
+This session used the instrumented cc1 (tools/gcc-2.7.2/cc1, NOT build/cc1) with
+BB2_SUGG_DEBUG=1 BB2_QTY_DEBUG=1, which prints local-alloc's complete per-quantity input
+table (SUGGDBG-QTY, local-alloc.c:1447) and every find_free_reg answer in allocation order
+(QTYDBG, local-alloc.c:1585). Driver: tmp/grind/func_8002D780/s9/dumpvar.py; captures in
+tmp/grind/func_8002D780/s9/{cand,h1,u1_fresh_kc_kp_locals,u3_probe_early_extra_qty}/qty.txt.
+
+Block 7 (test 3) is 14 RTL insns in the h1 = TARGET emission order (sliced from
+s9/h1/code6cac_b.lreg):
+
+     1 (179) reg129 ax = cx - x0        2 (182) reg130 dz = z2 - z0
+     3 (197) reg135 = dz * ax           4 (185) reg131 dx = x2 - x0
+     5 (188) reg132 az = cz - z0        6 (199) reg136 = dx * az
+     7 (191) reg133 bx = px - x0        8 (204) reg137 = dz * bx
+     9 (194) reg134 bz = pz - z0       10 (206) reg138 = dx * bz
+    11 (201) reg117 kc = 135 - 136     12 (208) reg120 kp = 137 - 138
+    13 (210) reg139 = kc ^ kp          14 (212) branch
+
+Only SEVEN of those pseudos are local-alloc quantities: ax, dz, dx, az, bx, bz and the xor
+result. reg117/reg120 are the OUTER `kc`/`kp` variables, hence multi-block. reg135-138 (the
+four multiply results) are excluded by **local-alloc.c:472**: `dump_flow_info` prints them
+as `pref LO_REG, else GR_REGS`, and the -2 (allocatable-locally) marking requires
+`reg_alternate_class (i) == NO_REGS || ! CLASS_LIKELY_SPILLED_P (reg_preferred_class (i))`
+-- a multiply result fails both halves, so no multiply result in this compiler is ever a
+block_alloc quantity.
+
+The two orders, from the dumps:
+
+  * CANDIDATE order (ax,az,bx,bz,dz,dx): dz = qty1 birth 4 death 16 refs 3 (pri 2500),
+    dx = qty5 birth 10 death 20 refs 3 (pri 3000). dx outranks dz, is allocated at ord=5 and
+    takes $v1; dz takes $a0 at ord=6. **Target seats, wrong subu order.**
+  * H1 = TARGET order (ax,dz,dx,az,bx,bz): dz = qty1 birth 4 death 16, dx = qty4 birth 8
+    death 20 -- both refs 3, both span 12, both pri 2500. qty_sugg_compare_1's last line
+    (`return *q1 - *q2`, local-alloc.c:1757) therefore decides, dz has the lower quantity
+    number because it is born first, dz is allocated at ord=5 and takes $v1, dx takes $a0.
+    **Target subu order, inverted seats -- score 9.**
+  * In BOTH orders every 2-ref quantity (az, bx, bz, xor) has pri 10000 and is allocated
+    first onto $v0, ax has pri 5000 and also lands on $v0, and the tied pair is decided last.
+
+### The s7 `[extra_qty]` vector is REAL, and the dump shows exactly why it cannot be paid for
+Probe u3 (tmp/grind/func_8002D780/s9/variantsU/u3_probe_early_extra_qty.c -- a deliberately
+semantics-altered MECHANISM probe, never a candidate) adds one short-lived value `e` born
+immediately after dz and consumed by the first multiply. Its dump
+(s9/u3_probe_early_extra_qty/qty.txt) shows the predicted chain end to end:
+
+    qty2 (e) birth 6 death 8, refs 2, pri 10000 -> allocated FIRST, takes $v0
+    -> ax (birth 2 death 8) now overlaps e, cannot have $v0, takes $v1
+    -> dz (birth 4 death 18) overlaps ax's $v1, takes $a0            <- target seat
+    -> dx (birth 10 death 22) finds $v1 free after ax dies, takes $v1 <- target seat
+
+So an extra block-7 quantity born between dz's and dx's births DOES break the tie and DOES
+produce the target's dz/dx seats on the target's own emission order. The price is that the
+new quantity outranks ax (pri 10000 vs 5000) and steals ax's $v0: the target has ax, az, bx
+and bz ALL on $v0 (asm/funcs/func_8002D780.s L110/L124/L130/L140). u3 measures 13/203.
+
+The admissible window is now closed arithmetically. A quantity B that fixes the seats without
+disturbing ax must simultaneously (i) rank below ax (pri < 5000, or == 5000 with a higher
+quantity number) so ax keeps $v0, (ii) rank above dz (pri > 2500) so it is seated first,
+(iii) conflict with dz (overlap [4,16]) so dz is pushed off $v1, and (iv) not conflict with
+dx (death <= 8) so dx can still take $v1. With qty priority = floor_log2(refs)*refs*size/
+(death-birth) * 10000 and births at 2*insn-index, the only (refs, birth, death) triple that
+satisfies all four is refs 2 / birth 4 / death 8 -- i.e. a pseudo born by block-7 insn 2,
+which is the insn that defines dz itself. One insn sets one pseudo, so on this 14-insn block
+geometry the slot is occupied; anything born at insn 1 outranks ax (u3's outcome) and
+anything born at insn 3 or later conflicts with dx.
+
+### Byte-neutral degrees of freedom found (both at the h1 baseline of 9, 202 insns)
+  * u1: giving test 3 its OWN cross-product locals (`s32 c3, p3;` instead of reusing the
+    outer `kc`/`kp`) makes them block-7 quantities (qty14 reg141 birth 22 death 28 refs 4,
+    qty15 reg136 birth 24 death 26 refs 2) -- but both are born after dx's death window, dz
+    and dx stay tied at 3 refs / span 12, and the score is unchanged at 9.
+  * u2: naming the first product (`s32 e = dz * ax; kc = e - dx * az;`) is byte-neutral at 9
+    and, as local-alloc.c:472 predicts, adds no quantity at all.
+
+- [s9] Control + kill re-audit: the s5 candidate body still measures 2/202 on HEAD c7aa37e7; fake_ablate says the one FAKE construct is worth 4 insns (2 -> 6) and residual A's 2 insns are present in both, so no s6-s8 kill was measured behind a FAKE carrier occupying the contested pseudo.
+- [s9] Block 7 has exactly seven local-alloc quantities. The four multiply results are excluded by local-alloc.c:472 (pref LO_REG = CLASS_LIKELY_SPILLED_P with alternate GR_REGS), and the outer kc/kp are excluded as multi-block, so no existing insn in block 7 can be turned into the extra quantity the seat flip needs.
+- [s9] Read from the instrumented dump: on the h1 = target emission order dz and dx are qty1 (birth 4 death 16 refs 3) and qty4 (birth 8 death 20 refs 3) -- identical priority 2500 -- and local-alloc.c:1757's `*q1 - *q2` quantity-number fallback seats dz on $v1 first. On the candidate order dx is birth 10 death 20 (pri 3000) and wins outright, which is why the candidate holds the target's seats.
+- [s9] MECHANISM CONFIRMED: an extra short-lived block-7 quantity born between dz's and dx's births flips dz to $a0 and dx to $v1 on the target's emission order (probe u3's QTYDBG trace), so the s7 inverse-solver [extra_qty] vector is a genuine lever and not a modelling artifact.
+- [s9] MECHANISM PRICED: that same quantity has priority 10000 and is therefore allocated before ax (5000), taking $v0 and pushing ax onto $v1, which the target does not do (ax/az/bx/bz are all $v0). u3 scores 13 at 203 insns.
+- [s9] The admissible (refs, birth, death) triple for a quantity that outranks dz, ranks below ax, conflicts with dz and not with dx is uniquely refs 2 / birth 4 / death 8 -- the birth slot of dz's own defining insn on the 14-insn block-7 geometry.
+- [s9] Two byte-neutral degrees of freedom at the h1 baseline: fresh test-3 cross-product locals (u1) and a named first product (u2), both 9/202, both available free to future probes.
+
+- [s9] Control + kill re-audit: the s5 candidate body measures 2/202 on HEAD c7aa37e7; tools/fake_ablate.py gives keep-all 2/202 and drop-1 6/202, and residual A's 2 insns are present in both, so no s6-s8 kill was taken behind a FAKE carrier occupying the contested pseudo.
+
+- [s9] Block 7 (test 3) is 14 RTL insns in the h1 = TARGET emission order: ax, dz, mult(dz*ax), dx, az, mult(dx*az), bx, mult(dz*bx), bz, mult(dx*bz), kc, kp, xor, branch (sliced from tmp/grind/func_8002D780/s9/h1/code6cac_b.lreg).
+
+- [s9] Only seven of block 7's pseudos are local-alloc quantities: ax, dz, dx, az, bx, bz and the xor result. The outer kc/kp are multi-block; the four multiply results are excluded by local-alloc.c:472 because dump_flow_info gives them `pref LO_REG, else GR_REGS` and LO_REG is CLASS_LIKELY_SPILLED_P.
+
+- [s9] Candidate order (ax,az,bx,bz,dz,dx): dz = qty1 birth 4 death 16 refs 3 (pri 2500), dx = qty5 birth 10 death 20 refs 3 (pri 3000); QTYDBG shows dx allocated at ord=5 with got=3 ($v1) and dz at ord=6 with got=4 ($a0) -- the target's seats.
+
+- [s9] h1 = target order (ax,dz,dx,az,bx,bz): dz = qty1 (4,16) and dx = qty4 (8,20), identical refs 3 and identical span 12, so qty_sugg_compare_1's `return *q1 - *q2` line (local-alloc.c:1757) seats dz first on $v1 and dx on $a0; score 9/202.
+
+- [s9] In both orders every 2-ref block-7 quantity (az, bx, bz, the xor result) has pri 10000 and is seated on $v0 first, ax has pri 5000 and also lands on $v0, and the tied dz/dx pair is decided last.
+
+- [s9] MECHANISM CONFIRMED: probe u3 adds one short-lived value born between dz and dx; its QTYDBG trace shows the new quantity taking $v0, ax displaced to $v1, dz to $a0 and dx to $v1 -- the target's dz/dx seats on the target's emission order. The s7 inverse-solver [extra_qty] vector is real.
+
+- [s9] MECHANISM PRICED: that quantity's pri is 10000 against ax's 5000, so it outranks ax and steals ax's $v0, which the target does not do (ax/az/bx/bz are all $v0 at asm/funcs/func_8002D780.s L110/L124/L130/L140). u3 scores 13 at 203 insns.
+
+- [s9] The admissible (refs, birth, death) triple for a quantity that outranks dz, ranks below ax, conflicts with dz and not with dx is uniquely refs 2 / birth 4 / death 8 -- the birth slot of dz's own defining insn on this 14-insn block geometry.
+
+- [s9] Two byte-neutral degrees of freedom at the h1 baseline of 9/202: fresh test-3 cross-product locals (u1) and a named first product (u2); both are available free to future probes.
+
+- [s9] Tooling note for the next session: the BB2_SUGG_DEBUG / BB2_QTY_DEBUG hooks only exist in tools/gcc-2.7.2/cc1, not in engine/buildconfig.py's CC1 (tools/gcc-2.7.2/build/cc1); tmp/grind/func_8002D780/s9/dumpvar.py takes the binary from $BB2_CC1 and writes both the qty trace and the full -da dump set per variant.
