@@ -25867,3 +25867,43 @@ Ordinary C throughout: TU-local struct typedefs (SceneQuad/SceneRec/Scene) that 
 ## 2026-09-08 08:35 — func_80047BE0 — final call — **PASS**
 
 Plain PsyQ C: two SVECTOR[17] extern arrays replace wrong s16 scalar decls (evidence.md OBJECT MODEL: stride-8 sh stores + base/base+8/base+16 to RotTransPers3 prove the shape; bytes decide the declaration per sotn-prototype-struct-precedent), while-loops with counters, post-increment pointer stores into integer-literal scratchpad addresses (same spelling as accepted code6cac.c:247/286), and one truthful (s16 *)base cast to the existing func_8004BCC0 prototype. Decisive fact: no construct outside ordinary C -- no pins, asm, volatile, dead stores, pads, if(1), goto chassis, FAKE annotations; the only tuning was source statement order (hypotheses.md H2), which is ordinary C. The retired if(1)/goto cheat body is banked in rejected/ and not carried over. Independently verified: sandbox --disable all = 0 (109/109, cheat_asm_stripped 0), canonical = C, candidate.c byte-identical to src/sound.c body, tree carries no foreign edits. Full evidence: memory/grind/func_80047BE0/{evidence.md,hypotheses.md,self_vet.md}.
+
+## 2026-09-08 — OWNER RULING — rotation replaces foreclosure (`.claude/rules/rotation-not-foreclosure.md`)
+
+Owner (Trenton), verbatim: "I don't want the endgame lock to fire earlier, kind of the opposite. I
+want little to no foreclosures at all. It's just delaying the inevitable, everything has to be
+decompiled eventually. In my ideal world, we just work an item until it is complete. Though I
+don't want an agent just looping infinitely and eating tokens overnight, making no progress
+because it feels it is deadlocked by policies somehow." Package approved: "Alright go ahead with
+all your recommendations on this."
+
+**Evidence presented.** (1) Of 36 functions ever foreclosed, 26 later reached COMPLETED-C (median
+5 sessions after the first foreclosure; the closers were systemic changes such as `-msoft-float`,
+owner unparks, or sibling solutions — not another cycle of the same ladder). (2) func_8002D780's
+foreclosure record (this file, 2026-09-08 entry above) said only a policy grant or a toolchain
+change could reopen it; the original PsyQ cc1psx, run out of tree on the same candidate (never run
+in 14 sessions), emits the SAME residual order (az before dx) and is 96 instructions farther from
+the target overall — the residual is a spelling not yet found, and a pure-C preimage exists by
+construction. (3) At floor 2 the ladder re-ran synthesis, forensics and rederive twice each with no
+new instrument.
+
+**Rulings (three, one package).**
+1. `foreclosed` is RETIRED. Exhausted functions are ROTATED to the back of the active worklist
+   (queue status `rotated`, never terminal) and RETURN AUTOMATICALLY on queue drain, on a
+   toolchain-fingerprint change (rotated candidates re-measured; movers return), and on sibling
+   floor drops / completions stamped after the rotation. Every return resets the exhaustion window.
+   Legacy foreclosed/parked/escalated statuses read as rotated.
+2. The cc1psx self-disproof (`engine cc1psx-check <func>`) is MANDATORY before the driver may
+   declare exhaustion; a closer cc1psx result is a fidelity lead that blocks rotation and forces
+   the investigation.
+3. No modality repeats at the same floor until every ladder instrument has run in the flat window;
+   the `enumerate` rung (`tools/spelling_enum.py`, exhaustive structured spelling sweep) joins the
+   ladder.
+
+**Unchanged.** The anti-cheat wall, the frozen construct list, the default-FAIL Judge, the two
+endgame-lock AND-gates as the STANDARD. The 2026-07-27 standing ruling and its 2026-09-02
+amendment now decide the wording of the rotation record, not whether a function leaves the
+worklist.
+
+**Applied the same day.** The three currently-foreclosed items (func_80017848, func_8002D780,
+func_800204C0) become `rotated` with their original reason pointers preserved.

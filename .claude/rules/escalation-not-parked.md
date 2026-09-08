@@ -8,6 +8,11 @@ metadata:
 
 # Owner ruling 2026-08-24 — escalation replaces parking
 
+> **SUPERSEDED AGAIN (owner ruling 2026-09-08, [[rotation-not-foreclosure]]):**
+> the `foreclosed` state described below is retired in turn. Exhausted
+> functions are ROTATED to the back of the active worklist and return
+> automatically (queue drain / toolchain change / sibling movement).
+
 > **SUPERSEDED IN DISPOSITION SHAPE (owner ruling 2026-08-31,
 > [[ordinary-c-judge-decidable]]):** the ESCALATED state and the
 > decision-packet mechanism are retired. Exhaustion dispositions take the

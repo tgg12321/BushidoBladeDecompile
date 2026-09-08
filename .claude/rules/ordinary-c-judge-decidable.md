@@ -112,6 +112,14 @@ against the amended text with all prerequisites verified.
 
 ## Ruling 3 — exhaustion dispositions are silent: the `foreclosed` state
 
+> **SUPERSEDED (owner ruling 2026-09-08, [[rotation-not-foreclosure]]):** the
+> `foreclosed` status is retired. The disposition is now `rotated` (back of
+> the active worklist, automatic return on queue drain / toolchain change /
+> sibling movement); the cc1psx self-disproof runs before exhaustion may be
+> declared, and every ladder instrument must have run in the flat window
+> first. The silent-record principle (nothing surfaced to the owner, no
+> packet) is unchanged.
+
 The `escalated` queue status and session-filed OWNER-ESCALATION decision
 packets are **retired**. A function whose frontier is empty with both
 endgame-lock gates failing (the 2026-07-27 standing-ruling shape) takes

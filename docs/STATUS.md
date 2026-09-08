@@ -46,8 +46,8 @@ counts do not).
 | **COMPLETED-INLINE-ASM-CANONICAL** (`inline_asm_canonical.txt`) | 195 |
 | **INCOMPLETE** (queue items) | 165 |
 | — active (grinder-eligible) | 165 |
-| — foreclosed | **0** (all unparked in the 2026-09-06/07 owner reviews) |
-| — escalated | **0** |
+| — rotated (back of the worklist, returns automatically — owner ruling 2026-09-08, `foreclosed` retired) | 3 |
+| — escalated | **0** (state retired) |
 | Data-as-code symbols (excluded by ruling) | 11 |
 
 ≈ 89% of the 1,474 in-scope functions are in a COMPLETED state.
