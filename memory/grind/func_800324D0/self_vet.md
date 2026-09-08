@@ -1,67 +1,83 @@
 # SELF-VET — func_800324D0
 
-CONSTRUCTS: base (fresh u8* local, once-written, twice-read), ff (fresh u8
-local = 0xFF, once-written, read by 7 stores), deletion of 4 register-asm
-pins, semantic renames (v1/v0/a2/a1/a0 → ptr/c/cmd/val/pad — order-preserving,
-codegen-neutral, re-measured 0 after renaming).
+CONSTRUCTS: (1) the header advance `ptr += 5` written as a four-statement
+chain `ptr++; ptr++; ptr++; ptr += 2;`; (2) the 0xFF command's advance
+`ptr += 6` written as `ptr++; ptr += 5;`; (3) the loop tail
+`c = *ptr; ptr++;` duplicated into the first five switch arms (which then
+`continue`) instead of being reached by falling out of the switch.
 
 ## T1 semantic purpose
-- `base`: holds the stream base pointer loaded from `pad+0x58`; consumed twice
-  (`base[4]` reads the first opcode, `base + 5` derives the walking pointer
-  past the 5-byte header). Every write is read; every read feeds an emitted
-  instruction (`lw`, `lbu $v0,4`, `addiu +5` are all in the target bytes).
-  Removing it changes the emitted output (the register assignment of 27
-  instructions) — it is not byte-inert dead code. PASS.
-- `ff`: holds the 0xFF default value stored into 7 of the 11 initialization
-  bytes; all 7 reads are real `sb` stores present in target (`li $v0,0xFF` is
-  target's own instruction). Not dead, not unused, not address-taken. PASS.
+(1) and (2) are LIVE computations of the walker pointer: every intermediate
+value is the real pointer value and the final value is the one the loop
+consumes. They are algebraically identical to the single-statement form and
+combine folds them back to it, so the emitted bytes are the single-statement
+form's bytes (build_insns 68 == target_insns 68; full-EXE SHA1 ==
+62efab4f73f992798c43e8c730aa43baa10bb4fa). Their only surviving effect is the
+`reg_n_refs` count flow.c records before the fold — which is precisely the
+sanctioned combine-foldable chain-extender clause, and precisely why the
+clause requires the FAKE annotation. (3) is a REAL statement (the next
+command byte must be fetched and the pointer advanced) executed on those five
+paths; duplicating it rather than sharing one copy is the sanctioned
+duplicated-statement-into-arms spelling, and jump2's cross-jump re-merges the
+copies so no duplicated instruction materialises. All three are
+FAKE-annotated in the body.
 
 ## T2 human-programmer
-`u8 *base = *(u8 **)(pad + 0x58); c = base[4]; ptr = base + 5;` is the
-natural reading of "the stream has a 5-byte header; byte 4 is the first
-opcode": a programmer names the base, reads the header field, and starts the
-cursor past the header. `u8 ff = 0xFF;` naming the repeated default before 11
-initialization stores is ordinary style (7 of the stores use it). Neither
-would draw a "why is this here?" from a reader. The previous m2c body's
-single-variable spelling was equally natural; both are ordinary C — this diff
-chooses between two natural spellings, it does not add semantically empty
-material. PASS.
+(3) reads as ordinary code a human writes without thinking about it (each
+command arm finishes by fetching the next command byte); SOTN master ships
+7-arm and 11-arm instances of exactly this. (1) and (2) would make a reader
+ask "why not `ptr += 5` / `ptr += 6`?" — they do NOT pass the naive
+human-programmer test on their own, which is exactly why they are claimed
+under a named FAKE-annotated family rather than as ordinary C, and why each
+carries a `/* FAKE: ... */` line naming the pass and the exhaustion ledger.
 
 ## T3 GCC-internals justification
-The evidence ledger does explain WHY this spelling matches via GCC internals
-(local-alloc ordering, set_preference, find_reg pass 0) — that is the
-matching analysis, recorded for the audit trail. The constructs themselves are
-explained by program logic (T1/T2): both locals hold real values with real
-consumers and their instructions exist in the target bytes. No construct here
-exists ONLY as an invisible analysis-steering artifact; the choice between
-byte-different natural spellings is the core matching activity, not a
-coercion. PASS (with the internals reasoning disclosed, not hidden).
+Yes, and it is stated openly in the annotations rather than disguised as
+program logic: flow.c's life_analysis sets `reg_n_refs` (weighted by loop
+depth) BEFORE combine folds the chains, and global.c's `allocno_compare`
+ranks allocnos by `floor_log2(nrefs) * nrefs * size / live_length`. Measured
+this session from the instrumented cc1's ALLOCDBG output: the walker allocno
+must outrank the payload carrier (47272) for find_reg to seat it in $v1, and
+this body puts it at 53333 with the 0xFF head-test constant still hoisted
+(loop.c:1631, insn_count 58 <= threshold 58). Naming a GCC pass is a
+REQUIREMENT of both claimed families, not a workaround of the checklist —
+both are FAKE-annotated last-resort families whose annotation template
+mandates a named mechanism.
 
 ## T4 permuter/search provenance
-No permuter or auto-search was used. The spelling was derived from RA
-forensics (instrumented cc1 find_reg dumps) and verified by the sandbox. PASS.
+No permuter or automated spelling search was used. The form was derived
+forward from the measured allocno-priority arithmetic (ra_solver
+extract.py/simulate.py + the .greg/.lreg/.loop dumps), then confirmed by
+sandbox and by a full-EXE SHA1 build. The exact ref/live-length deltas of
+each construct were measured individually before the body was assembled.
 
 ## T5 family check
-Checked against the forbidden catalog: no pins (they were REMOVED), no asm of
-any kind, no volatile, no alias renames, no dead stores/self-assigns, no
-unused locals or arrays, no `(void)` discards, no do-while(0) wrapper, no
-goto/label constructs, no scheduling barriers, no constant-holder that is
-dead (ff is read 7×). Closest neighboring families considered: the
-named-intermediate fresh-local carve-out (not claimed — base is twice-read
-live code, not a once-read no-op copy) and the dead-scalar constant-holder
-(not applicable — ff is live). No forbidden family matches by spelling or by
-analogy. PASS.
+(1) and (2): combine-foldable chain-extender, the 2026-07-01 same-day scope
+extension of dead-store-fake-exception. Its extra prerequisite ("verify the
+fold actually emits zero bytes — same insn count + no new address
+materialization") is verified: build_insns 68 == target_insns 68, no new
+address materialization, SHA1 == oracle. (3): duplicated-statement-into-arms,
+byte-neutrality verified by the same measurement. Neither is a register pin,
+hardcoded-$N asm, scheduling barrier, volatile coercion, dead local/array,
+dead store, alias rename, or any other forbidden-family spelling; nothing in
+the body is dead (every statement's value is consumed).
 
 ## T6 naming-announces-intent
-No `pad`/`dummy`/`unused`/`spill`-style dead names. The PARAMETER is named
-`pad` because the function initializes and parses a gamepad-config stream
-(naming census: `is_pad/Pad_Prs`, kengo:HIGH) — it is the primary data object,
-read/written by 20+ real instructions, not a discarded declaration (T6's FAIL
-shape is dead/discard-only uses). `ff` names the 0xFF value it holds; `base`,
-`ptr`, `c`, `cmd`, `val` are ordinary program terms. PASS.
+No new names are introduced. The three locals are `ptr`, `c`, `val`, all
+inherited from the pre-existing chassis and all read; no `pad`/`dummy`/
+`unused`/`spill`/`tail`/`slack` names appear.
 
-SANCTIONED-FAMILY-CLAIMS: none — every construct in the diff is live,
-consumed, byte-visible ordinary C; no last-resort family is invoked.
+SANCTIONED-FAMILY-CLAIMS:
+  FAMILY: combine-foldable chain-extender (dead-store-fake-exception scope extension, owner ruling 2026-07-01 same-day)
+  SCOPE: "**combine-foldable chain-extender** (scope extension, owner ruling 2026-07-01 same-day): a LIVE store/computation routed through an algebraically-equivalent detour that combine folds back to the direct form with ZERO emitted bytes — its only surviving effect is the extra `reg_n_refs` count flow.c records before the fold."
+  PRECEDENT: .claude/rules/dead-store-fake-exception.md:51
 
-ANNOTATION-CONFORMANCE: n/a — no FAKE construct (no family claimed; no rule
-mandating an annotation applies to live named locals with real consumers).
+  FAMILY: duplicated-statement-into-arms
+  SCOPE: "NARROW SANCTIONED EXCEPTION (owner ruling 2026-07-01): duplicating a REAL statement into 2+ arms (instead of label-sharing) is legitimate — incl. when cross-jump re-merges the copies to identical bytes and the effect is a reg_n_refs priority lift."
+  PRECEDENT: .claude/rules/duplicated-statement-into-arms.md:5
+
+ANNOTATION-CONFORMANCE:
+  /* FAKE: the header advance `ptr += 5` is spelled as a four-step chain, mechanism: combine folds the four `addiu` insns back to the single `addiu $v1,$v1,5` the target carries (zero emitted bytes, build_insns 68 == target_insns 68), and the only surviving effect is the extra reg_n_refs count flow.c records BEFORE the fold, which lifts the walker allocno's global.c allocno_compare priority above the payload carrier's so find_reg seats the walker in $v1, lever-exhaustion: memory/grind/func_800324D0/hypotheses.md s1-s23 */
+  /* FAKE: same combine-foldable chain-extender as above, applied to the 0xFF command's `ptr += 6` advance, mechanism: combine folds `addiu 1; addiu 5` back to the target's single `addiu $v1,$v1,6`, contributing reg_n_refs inside the loop (loop depth 2) without adding a final instruction, lever-exhaustion: memory/grind/func_800324D0/hypotheses.md */
+  /* FAKE: the loop tail `c = *ptr; ptr++;` is duplicated into the first five command arms instead of being reached by falling out of the switch, mechanism: flow.c's reg_n_refs census counts the duplicated walker references before global.c's allocno_compare ranks the allocnos, and jump2's cross-jump pass (after reload) re-merges the identical tails so not one duplicated instruction materialises, lever-exhaustion: memory/grind/func_800324D0/hypotheses.md */
+  All three carry what + named GCC pass + lever-exhaustion pointer.

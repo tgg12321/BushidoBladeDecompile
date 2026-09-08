@@ -1986,3 +1986,44 @@ tmp/grind/func_800324D0/dumps/code6cac_b.loop.
 - [s22] A 47-instruction loop hoists the 0xFF under BOTH thresholds (58 and 122) and the target hoists it, so the original source cannot have carried the duplicated tail — the duplicated-tail construct is the wrong mechanism and the hard-float threshold merely hid that.
 
 - [s22] src/code6cac_b.c was restored to HEAD at the end of the session; no build file is left modified.
+
+## s23 (2026-09-07, structural) — MATCHED
+
+- The +2 jtbl_800105A0 reloc artifact is REAL and is now retired as a
+  correction: with the pristine-HEAD reference object in place the K=2 match
+  candidate measured raw 2 with every register correct; once src/ carries the
+  C body the reference object is C-built and the same body measures raw 0.
+  Any future session measuring this function must rebuild the reference from
+  a pristine tree first.
+- K=0 disassembly is instruction-for-instruction identical to the target;
+  the only differences are a 3-cycle register rotation (ours $a2/$a1/$v1 for
+  walker/command/payload, target $v1/$a2/$a1) plus the reloc artifact.
+- Allocno identities on this chassis (from the .greg/.lreg segments and the
+  post-allocation RTL): 72 = pad ($a0), 73 = walker pointer, 74 = c in QImode,
+  75 = payload byte `val`, 84 = zero-extended c, 89 = c - 0x80,
+  85 = the hoisted 0xFF constant, 91 = the jump-table base.
+- global.c priority rows at K=0 (ALLOCDBG): 75 pri 47272 (26 refs / 22),
+  84 34285 (8/7), 89 30000 (6/4), 72 29838 (37/62), 74 26666 (8/9),
+  73 15483 (24/62), 91 333, 85 326. Order 75 84 89 72 74 73 91 85.
+- 672 of the 40320 allocation orders reach the full target disposition; their
+  only invariants are `73 before 75` and `75 before 84/89/91/85`. 72 and 74
+  are free because they carry hard-register preferences ($a0, $v0).
+- Measured cost table for raising the walker's rank (each row an ALLOCDBG
+  measurement, not an estimate): one duplicated 2-insn loop tail in an arm =
+  +6 refs, +2 live length, +2 loop insns; one combine-foldable `addiu` inside
+  the loop = +4 refs, +0 live length, +1 loop insn; one outside the loop =
+  +2 refs, +0 live length, +0 loop insns. Refs are weighted by loop depth
+  (2 inside the loop, 1 outside), which is why the in-loop chain is worth
+  double.
+- flow.c's life_analysis runs BEFORE combine, so an algebraically-equivalent
+  pointer-advance chain that combine folds back to one `addiu` still raises
+  reg_n_refs. This is the mechanism that makes the residual fit: the
+  arm-duplication route needs K=7 = 61 loop insns while loop.c:1631 needs
+  <= 58, but the folded chains buy refs at 0-1 loop insns each.
+- FINAL FORM (memory/grind/func_800324D0/candidate.c, in src/code6cac_b.c):
+  K=5 duplicated tails + `ptr += 5` as a four-step chain + `ptr += 6` as a
+  two-step chain. nrefs(73) 64, live_length 72, pri 53333 > 47272; loop
+  insn_count 58 (hoist still fires); build_insns 68 == target_insns 68;
+  sandbox 0, rules_dropped 0; full build SHA1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle.
+- Artifacts: tmp/grind/func_800324D0/s23/.

@@ -202,5 +202,14 @@
    "result": "The 0xFF movable prints `(life 1), move-insn savings 1` in the K = 0, 5, 6, 7, 8, 12 and val-hoist dumps without excepti"
   }
  ],
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "9741c8dc28ae1036",
+   "when": "2026-09-08T01:08:26.530063+00:00",
+   "summary": "final call: Three FAKE-annotated constructs, all inside frozen families with prerequisites verified. (1)+(2) the `ptr += 5` / `ptr += 6` advances split into combine-foldable addiu chains = dead-store-fake-excepti"
+  }
+ ]
 }

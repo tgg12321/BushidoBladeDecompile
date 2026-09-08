@@ -1390,3 +1390,70 @@ them from the s19–s21 tables, which were taken on the hard-float chassis.
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD after a42d7ff7 (-msoft-float); 0xFF movable printing (life 1), savings 1 in the K = 0, 5, 6, 7, 8, 12 and val-hoist .loop dumps
+
+## [s23] MATCHED. The K=0 residual is a pure 3-register rotation among {$v1,$a1,$a2}, the allocation order it needs is fully determined, and it is reachable inside the loop.c:1631 hoist budget by raising the walker's reg_n_refs with combine-foldable pointer-advance chains instead of by duplicating more loop tails.
+
+- mechanism: At K=0 our build is instruction-for-instruction identical to the
+  target (68 == 68, the 0xFF hoist already correct) with only three pseudos
+  rotated: walker 73 sits in $a2 where the target has $v1, payload carrier 75
+  sits in $v1 where the target has $a1, and the zero-extended command 84/89
+  sit in $a1 where the target has $a2. global.c ranks allocnos by
+  `floor_log2(nrefs) * nrefs * size / live_length`; a brute-force replay of
+  all 40320 allocation orders through tools/ra_solver/simulate.py against the
+  extracted K=0 model shows 672 orders reach the FULL target disposition and
+  that their ONLY invariant relations are `73 before 75` and
+  `75 before {84, 89, 91, 85}`. So the entire residual reduces to one
+  inequality: pri(73) > pri(75) = 47272. The two inputs a C author can move
+  are reg_n_refs (set by flow.c's life_analysis, which runs BEFORE combine)
+  and reg_live_length. Measured deltas, all from the instrumented cc1's
+  ALLOCDBG rows: a duplicated 2-insn loop tail in one arm costs +6 refs,
+  +2 live length and +2 loop insns; a combine-foldable extra `addiu` inside
+  the loop costs +4 refs, +0 live length and +1 loop insn; one outside the
+  loop costs +2 refs, +0 live length and +0 loop insns. Because the extra
+  `addiu`s fold away in combine (which runs AFTER flow), they raise the
+  census without emitting a byte — which is exactly why the arm-duplication
+  route alone could never fit: it needs K=7 (61 loop insns) while the 0xFF
+  hoist needs <= 58.
+- probe: (1) normalised objdump diff of the K=0 body against
+  build/src/code6cac_b.o from a pristine-HEAD reference build (SHA1 == oracle)
+  — s23/target.dis vs s23/k0.dis, 83 vs 83 lines, every difference a register
+  name or the known jtbl reloc artifact; (2) tools/ra_solver/extract.py on
+  five bodies (K=0; K=7; K=6 + val-hoist; K=5 + val-hoist + late init order;
+  K=5 + val-hoist + a 2-way split of `ptr += 6`), each giving the exact
+  nrefs / live_length / pri row per allocno and the resulting dispositions;
+  (3) the 40320-order replay in s23/orders.py; (4) sandbox and full-EXE builds.
+- result: MATCH. The body that satisfies the inequality inside the hoist
+  budget is K=5 (loop tail duplicated into the first five arms) plus two
+  combine-foldable chains: `ptr += 5` -> `ptr++; ptr++; ptr++; ptr += 2;`
+  before the loop and `ptr += 6` -> `ptr++; ptr += 5;` in the 0xFF arm.
+  That gives nrefs(73) = 64, live_length(73) = 72, pri = 53333 > 47272, loop
+  insn_count 58 (the hoist boundary is `>= insn_count` with threshold 58, so
+  58 still hoists), build_insns 68 == target_insns 68, sandbox score 0,
+  rules_dropped 0, and a full build of SHA1
+  62efab4f73f992798c43e8c730aa43baa10bb4fa == the oracle
+  (s23/build_final_annotated.log). An intermediate form (K=2 with the
+  advances split 6-way and 5-way) also reached SHA1 == oracle and was
+  measured at raw 2 = honest 0 against the still-pristine reference before
+  the reference object was rebuilt, independently confirming that the
+  remaining raw 2 on this function was only ever the jtbl_800105A0 reloc
+  naming artifact.
+- verdict: CONFIRMED
+
+## [s23] Moving the eleven pad[] initialisation stores ahead of the walker load shortens the walker's allocno live length.
+- mechanism: the walker pseudo is defined by the first statement and is live
+  across all eleven initialisation stores; issuing the stores first should cut
+  reg_live_length by about eleven and therefore raise pri(73) with no change
+  to refs or to the loop.
+- probe: gen7.py 5 1 1 (K=5, val-hoist, initialisation stores before the
+  pointer load) followed by tools/ra_solver/extract.py; compared the ALLOCDBG
+  rows against the same body with the load first.
+- result: live_length(73) is 72 in BOTH orders — the RTL keeps the pointer
+  load first regardless of statement order, so the lever is inert on the
+  walker. It is not neutral elsewhere: it SHORTENED the payload carrier
+  (live_length 27 -> 26, pri 38518 -> 40000) and the zero-extended command
+  (7 -> 6), i.e. it moves the inequality the WRONG way. Dispositions stayed
+  at our own rotation (73 in $a2).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD after a42d7ff7 (-msoft-float), K=5 with the val-hoist and
+  the duplicated-tail FAKE present, pristine-HEAD reference build SHA1 == oracle
