@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 15,
- "current_modality": "enumerate",
+ "session_count": 16,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -93,23 +93,29 @@
    "floor": 2,
    "modality": "enumerate",
    "headline": "Enumerate s15: 2,080 in-block spellings re-confirm the test-3 class kill in tree, and the declaration-SCOPE axis the class-kill memory named as the next instrument is measured INERT (816 variants, sam"
+  },
+  {
+   "session": 16,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Structural s16: the residual is now a fully characterised 2-bit quadrant model (ax<dz, dx<az) and five structural axes (528 variants) are measured dead against it."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The outer centroid/test-1 declaration list (x0, x2, z0, z2, cx, cz, px, pz, kc, kp) sets the pseudo numbering that block 7's quantities inherit, so one of its 16,384 valid orders renumbers the dz/dx quantities and breaks the qty_compare_1 tie in dx's favour.",
-   "mechanism": "block_alloc creates quantities in order of first reference within the block, but the pseudos those quantities wrap are numbered by expand order across the whole function. Every body measured so far uses one fixed outer declaration order, so the pseudo numbers feeding block 7 have never varied. On an exact qty_compare_1 tie (local-alloc.c:1708 has no tie-break of its own) qsort leaves the array in quantity-number order, which is where a renumbering would show up.",
-   "next_probe": "Sweep tmp/grind/func_8002D780/s15/enum_base3.c with `tools/spelling_enum.py --keep-inlined x0,x2,z0,z2,cx,cz,px,pz,kc,kp --no-swaps --max 20000` (16,384 variants, ~3.5 h at the measured 0.76 s/variant - budget a whole enumerate session and chunk it into 16 so partial results bank), then dump the block-7 BB2_QTY_DEBUG table for the best and worst forms to see whether the quantity numbers moved at all."
+   "hypothesis": "Something inside block 7 but BETWEEN dz's def and dx's def can widen the birth gap without changing either emission order, breaking the qty_compare_1 tie in dx's favour while staying in the (T,T) quadrant.",
+   "mechanism": "In (T,T) the two spans are equal only because the birth gap and the death gap are both 4 LUIDs. Any insn that lands between the dz subu and the dx subu at local-alloc time (i.e. in sched1's OUTPUT, not in source order) lengthens dz's span alone and dx wins the seat on qty_compare_1's 10000/span term (tools/gcc-2.7.2/local-alloc.c:1708). Declaration order cannot supply one - putting az there is exactly what flips the quadrant to (T,F) - but an insn sched1 chooses to place there for dependence reasons would not.",
+   "next_probe": "Dump the .sched and BB2_QTY_DEBUG tables (pwsh tools/grinder/dump.ps1 func_8002D780, then tmp/grind/func_8002D780/s14/dbg.py for the instrumented run) for one (T,T) body and read which insns sched1 places between the dz and dx subus. Then look for an ordinary-C statement in the test-3 region whose insn sched1 would sink to exactly that point - the (px - x0) / (pz - z0) differences are the obvious candidates but s14 measured them sunk to just before their consuming mult, so target instead something consumed by mult1."
   },
   {
-   "hypothesis": "The BLOCK STRUCTURE of the three tests - not the spelling or the scope of any local - is the remaining source-side input, e.g. flattening the two nested `if`s into one `&&` chain, or splitting test 3 into its own helper-shaped block, changes which basic block block 7's quantities are allocated in.",
-   "mechanism": "local_alloc runs per basic block (block_alloc); a quantity's birth and death are LUIDs WITHIN its block. Merging or splitting the enclosing conditionals changes block boundaries, and therefore the spans that qty_compare_1 divides by, without touching any statement's spelling - an axis no sweep so far has varied, because every variant kept the same three-level if nest.",
-   "next_probe": "Hand-generate the small set of semantically identical block structures (nested ifs as now; `if (a && b)` merged; test-3 body lifted into the test-2 arm with an early `goto`), splice each with the banked test-3 spelling, and read the .lreg dump's block numbering for block 7 in each before scoring."
+   "hypothesis": "Giving dx a fourth RTL reference lifts it over dz outright and closes the residual from inside the (T,T) quadrant (carried forward from s14/s15; s16 killed the partial-inline route to it but not the axis).",
+   "mechanism": "qty_compare_1's numerator is floor_log2(refs)*refs*size (tools/gcc-2.7.2/local-alloc.c:1708). dz and dx both have exactly 3 references, so the spans decide and they tie. A fourth reference to dx steps floor_log2 from 1 to 2 and the numerator from 3 to 8, winning the seat from ANY declaration order. s16 proved the reference cannot be REMOVED from dz (cse refolds a partial inline), so the remaining direction is adding one to dx.",
+   "next_probe": "Read the .combine dump for whether kc's or kp's dx product can legitimately be written through a shared subexpression that survives combine as a second reference, and check the tail block's p118/p124 differences (x2 - px, x0 - px) for an ordinary-C re-association that reaches dx - noting that a reference in another basic block does NOT count, because local_alloc only sees single-block pseudos. If nothing ordinary-C exists, file a ruling-request naming the F1 combine-foldable chain-extender family rather than submitting a body that uses it."
   },
   {
-   "hypothesis": "Giving dx a fourth RTL reference lifts it over dz outright (carried forward unchanged from s14 - this session did not test it).",
-   "mechanism": "qty_compare_1's numerator is floor_log2(refs)*refs*size (local-alloc.c:1708); dx and dz both have exactly 3 references, so the spans decide. A fourth reference to dx steps floor_log2 from 1 to 2 and the priority from 3*10000/span to 8*10000/span, winning the seat from ANY declaration order.",
-   "next_probe": "Read the .combine dump for whether kc's or kp's dx product can legitimately be written through a shared subexpression that survives as a second reference. If nothing ordinary-C exists, file a ruling-request naming the F1 combine-foldable chain-extender family rather than submitting a body that uses it."
+   "hypothesis": "The outer centroid/test-1 declaration list (x0, x2, z0, z2, cx, cz, px, pz, kc, kp) renumbers the pseudos block 7 inherits, and one of its 16,384 valid def-before-use orders lets dx's quantity be created before dz's inside the (T,T) quadrant, so qsort's quantity-number tie-break seats dx first (carried forward from s15; still unmeasured).",
+   "mechanism": "block_alloc creates quantities in order of first reference within the block, but the pseudos those quantities wrap are numbered by expand order across the whole function. Every body measured so far uses one fixed outer declaration order. On an exact qty_compare_1 tie (local-alloc.c:1708 has no tie-break of its own) qsort leaves the array in quantity-number order, which is where a renumbering would show up. s16's fresh-kc/kp probe shows that ADDING quantities inside block 7 does not move the pair, but it did not vary the outer list at all.",
+   "next_probe": "Sweep tmp/grind/func_8002D780/s15/enum_base3.c with tools/spelling_enum.py --keep-inlined x0,x2,z0,z2,cx,cz,px,pz,kc,kp --no-swaps --max 20000 (16,384 variants, ~3.5 h at the measured 0.76 s/variant - an enumerate-modality session, chunked into 16 so partial results bank). Crucially, run it on a (T,T) quadrant chassis (tmp/grind/func_8002D780/s16/va/a_000_AZXC.c) rather than the banked (T,F) body: only in (T,T) is there a tie for the renumbering to break, so the same sweep on the banked chassis would be wasted."
   }
  ],
  "judge_constraints": [],
@@ -554,6 +560,46 @@
    "measured_on": "HEAD e3895bb7 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local `m`); all 16 hoist sub",
    "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1708",
    "result": "412 at 2, 204 at 4, 204 at 9, nothing else and nothing below 2. Broken out by hoist level: hoisted-0 {2:12,4:6,9:6}, hoi"
+  },
+  {
+   "session": 16,
+   "statement": "Giving test 2 and/or test 3 their own kc/kp locals instead of re-assigning the single kc/kp pair scores 2 at best across all 8 fresh/reuse combinations times all 24 block-7 declaration orders.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 82ab11bd (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)",
+   "predicate_cite": "",
+   "result": "000/001/010 all {2:12,4:6,9:6}; 011 {36:18,43:6}; any fresh kc1/kp1 in test 1 costs 45-66. Nothing below 2. Banked memor"
+  },
+  {
+   "session": 16,
+   "statement": "Moving any non-empty subset of the block-7 difference computations ax/dz/az/dx, initialisers included, into the test-2 arm or the outer centroid block scores 19 at best over all 192 subset/destination",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "Best 19 (3 forms, dz hoisted to the outer block), mode 41, worst 44 - nothing within 17 of the floor. Banked memory/grin"
+  },
+  {
+   "session": 16,
+   "statement": "Restructuring the three sign tests - early-out gotos to a label in front of the sphere block, or putting the test-3 differences and cross products in their own inner brace scope with the if outside it",
+   "kill_scope": "class",
+   "measured_on": "HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the m re-store); all four shapes measured on their complete 24-order domain, so the ax",
+   "predicate_cite": "tools/gcc-2.7.2/local-alloc.c:1708",
+   "result": "nest {2:12,4:6,9:6}; goto {2:12,4:6,9:6}; inner {2:12,4:6,9:6}; flag {8:6,10:6,21:6,27:6}. The both-products sign flip a"
+  },
+  {
+   "session": 16,
+   "statement": "Writing exactly one of a block-7 difference's two uses as its expression instead of its name, to drop that difference from three references to two, reproduces the baseline distribution {2:12, 4:6, 9:6",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "60 at 2, 30 at 4, 30 at 9 - i.e. {2:12,4:6,9:6} per mode, five times over. Banked memory/grind/func_8002D780/rejected/s1"
+  },
+  {
+   "session": 16,
+   "statement": "Negating exactly one of test 3's two cross products and testing (kc ^ kp) < 0 instead of >= 0 - the one construction found that makes dz die after dx without touching the declaration order - scores 21",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "kpf {21:6, 26:6, 31:6, 37:6}; kcf {29:6, 31:6, 33:6, 39:6}. Nothing below 21. Banked memory/grind/func_8002D780/rejected"
   }
  ],
  "ladder_skip": 0,

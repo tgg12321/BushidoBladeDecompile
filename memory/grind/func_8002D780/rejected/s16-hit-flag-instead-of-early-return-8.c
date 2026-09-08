@@ -1,3 +1,13 @@
+/* s16 (structural, 2026-09-08) - REJECTED at 8/202 (floor 2).
+ * Replacing the deepest `return 1` with a `hit` flag set inside the nest and tested after
+ * it closes, so the branch leaves block 7 entirely.  One of four block SHAPES measured
+ * this session over all 24 declaration orders (tmp/grind/func_8002D780/s16/vc.json):
+ *   nest  (banked)          {2:12, 4:6, 9:6}
+ *   goto  (early-out label) {2:12, 4:6, 9:6}   - exactly inert
+ *   inner (own brace scope) {2:12, 4:6, 9:6}   - exactly inert
+ *   flag  (this form)       {8:6, 10:6, 21:6, 27:6}
+ * i.e. the shape of the three tests is not an input to the residual, and the only shape
+ * that changes the score changes it for the worse. */
 /* func_8002D780 - grind candidate (s14 rederive, 2026-09-08).  Honest sandbox floor
  * 2/202, build_insns == target_insns == 202, measured THIS session with these exact
  * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 2).
@@ -87,33 +97,6 @@
  * evidence.md and hypotheses.md s15; the remaining region is the outer centroid/test-1
  * declaration list (16,384 valid orders, marked body at tmp/grind/func_8002D780/s15/
  * enum_base3.c). */
-/* s16 (2026-09-08, structural) - body UNCHANGED, floor re-measured 2/202 on HEAD 82ab11bd.
- * s16's result is a complete MODEL of what is left, not a new spelling. Block 7 emits four
- * subus; sched1 groups them by which mult they feed (ax,dz -> mult1; dx,az -> mult2) and
- * within each pair falls through to INSN_LUID = source order (sched.c:2464). So the score
- * of any declaration order is a pure function of TWO BITS, measured exhaustively over all
- * 24 orders (tmp/grind/func_8002D780/s16/va.json + the twelve pairdiff_*.txt):
- *     ax<dz   dx<az   score   residual
- *      no      no       4     BOTH pairs transposed, all registers correct
- *      no      yes      2     ours[92:93] ax/dz swapped (the reorg delay-slot pair)
- *      yes     no       2     ours[96:97] dx/az swapped   <-- THIS BODY
- *      yes     yes      9     both emission orders correct, but the seats swap
- * The target is the (yes,yes) quadrant. It costs 9 rather than 2 because dz and dx then
- * tie EXACTLY in qty_compare_1 (local-alloc.c:1708) - 3 refs each, span 12 each, dz born 4
- * LUIDs earlier and dying 4 LUIDs earlier - so qsort seats dz first and $v1/$a0 swap
- * through the block. The entire remaining problem is: reach (yes,yes) and make dx beat dz
- * in qty_compare_1.
- * s16 killed five structural ways of trying: fresh kc/kp per test (inert alone, +34 for
- * both), hoisting the difference COMPUTATIONS out of block 7 (best 19; this is the axis
- * s15's uninitialised-declaration sweep could not reach), the block SHAPE of the three
- * tests (goto early-out and inner brace scope EXACTLY inert; hit-flag +6), the sign flip
- * of one product with a compensating `< 0` branch (best 21) and of both products (uniform
- * +22 in every shape), and PARTIAL inlining of one use to drop dz to 2 references (all
- * five modes exactly inert - cse refolds the duplicated subexpression). 528 variants;
- * every inert axis reproduces {2:12, 4:6, 9:6} byte-for-byte, which is itself the proof
- * that it never reaches the tie.
- * Do NOT re-run: the block-structure axis, the partial-inline axis, computation hoisting,
- * or any sign flip. See evidence.md / hypotheses.md s16. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -153,6 +136,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         s32 cz = (z0 + z2) / 3;
         s32 px = *(s32 *)(obj + 0x100);
         s32 pz = *(s32 *)(obj + 0x104);
+        s32 hit = 0;
         s32 kc = z0 * cx - x0 * cz;
         s32 kp = z0 * px - x0 * pz;
 
@@ -167,9 +151,10 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                 kc = (dz * ax) - (dx * az);
                 kp = (dz * (px - x0)) - (dx * (pz - z0));
                 if ((kc ^ kp) >= 0)
-                    return 1;
+                    hit = 1;
             }
         }
+        if (hit != 0) return 1;
     }
 
     {

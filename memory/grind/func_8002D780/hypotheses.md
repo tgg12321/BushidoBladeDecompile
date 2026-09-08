@@ -1609,3 +1609,199 @@ no-swap set - a full session's work, and the obvious next enumerate-modality dis
 - kill_scope: class
 - measured_on: HEAD e3895bb7 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local `m`); all 16 hoist subsets and all outer/inner orders covered, so the axis is measured on its complete domain rather than on a sample
 - predicate_cite: tools/gcc-2.7.2/local-alloc.c:1708
+
+## s16 (2026-09-08, structural)
+
+### H-s16-0 - the QUADRANT MODEL (CONFIRMED - the session's main result)
+- statement: The score of every block-7 declaration order is a pure function of two
+  independent bits - whether ax is declared before dz, and whether dx is declared before
+  az: (no,no) = 4, (no,yes) = 2, (yes,no) = 2, (yes,yes) = 9.
+- mechanism: sched1 groups the four subus by which mult they feed (ax,dz -> mult1;
+  dx,az -> mult2) via INSN_PRIORITY; within each pair priority and dependence class tie and
+  rank_for_schedule falls through to INSN_LUID = source order
+  (tools/gcc-2.7.2/sched.c:2464). The target's order is (yes,yes). In that quadrant dz and
+  dx tie exactly in qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708) - 3 refs each, span
+  12 each - so qsort seats dz first and swaps $v1/$a0 through the block, which costs 9
+  instead of the 2 the transposition costs.
+- probe: all 24 orders swept (tmp/grind/func_8002D780/s16/va.json, group 000) plus
+  pairdiffs of all twelve score-2 orders (tmp/grind/func_8002D780/s16/pairdiff_*.txt).
+- result: the partition is exact, 6 orders per quadrant, and the two score-2 classes are
+  COMPLEMENTARY - (yes,no) leaves the ours[96:97] dx/az transposition, (no,yes) leaves the
+  ours[92:93] ax/dz transposition (the reorg delay-slot pair), both with every register in
+  the function correct. This subsumes and explains the s14 sibling transplant.
+- verdict: CONFIRMED
+
+### H-s16-1 - kc/kp variable identity
+- statement: Giving test 2 and/or test 3 their own kc/kp locals instead of re-assigning the
+  single pair scores 2 at best across all 8 fresh/reuse combinations times all 24 block-7
+  declaration orders.
+- mechanism: adding quantities to block 7 was the candidate way to renumber the pseudos
+  whose quantity numbers break the qty_compare_1 tie in qsort's stable order. It does not:
+  fresh-in-test-2-alone and fresh-in-test-3-alone reproduce the baseline {2:12,4:6,9:6}
+  exactly, so the added quantities are created after the dz/dx pair and do not shift it.
+- probe: tmp/grind/func_8002D780/s16/gen_a.py -> 192 variants, swept in one
+  tools/sweep_variants.py call (va.json).
+- result: 000/001/010 all {2:12,4:6,9:6}; 011 {36:18,43:6}; any fresh test-1 pair 45-66.
+  Nothing below 2. Banked rejected/s16-fresh-kc-kp-in-tests-2-and-3-36.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), memory/grind/func_8002D780/candidate.c
+  chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value
+  re-store of the local m)
+
+### H-s16-2 - hoisting the difference COMPUTATIONS out of block 7
+- statement: Moving any non-empty subset of the block-7 difference computations
+  ax/dz/az/dx, initialisers included, into the test-2 arm or the outer centroid block
+  scores 19 at best over all 192 subset/destination/order combinations.
+- mechanism: this is the axis s15's enum4 sweep could not reach - enum4 hoisted only
+  UNINITIALISED declarations, which emit no RTL. Moving the defining insn makes the pseudo
+  span two basic blocks, so local_alloc (single-block pseudos only) hands it to
+  global_alloc and it leaves block 7's quantity table entirely, and the value is also
+  computed on the path where the test-2 branch fails.
+- probe: tmp/grind/func_8002D780/s16/gen_b.py -> 192 variants (vb.json).
+- result: best 19 (3 forms, dz hoisted to the outer block), mode 41, worst 44. Nothing
+  within 17 of the floor. Banked rejected/s16-hoist-dz-computation-to-outer-block-19.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into
+  src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+### H-s16-3 - the BLOCK STRUCTURE of the three tests (the s15 frontier's named axis)
+- statement: Restructuring the three sign tests - early-out gotos to a label in front of
+  the sphere block, or putting the test-3 differences and cross products in their own inner
+  brace scope with the if outside it - reproduces the nested-if score distribution
+  {2:12, 4:6, 9:6} exactly at every one of the 24 declaration orders, while a hit flag
+  tested after the nest closes costs 8 to 27.
+- mechanism: local_alloc runs per basic block and a quantity's birth/death are LUIDs within
+  its block, so block boundaries were the candidate lever. They are not: jump optimisation
+  normalises the goto form back to the same block graph, and an inner brace scope has no
+  RTL existence at all, so in both cases block 7 keeps exactly the same insn sequence and
+  qty_compare_1 (local-alloc.c:1708) sees exactly the same spans.
+- probe: tmp/grind/func_8002D780/s16/gen_c.py -> 168 variants across 4 shapes x sign-flip x
+  24 orders (vc.json).
+- result: nest {2:12,4:6,9:6}; goto {2:12,4:6,9:6}; inner {2:12,4:6,9:6}; flag
+  {8:6,10:6,21:6,27:6}. The both-products sign flip adds a uniform +22 in EVERY shape.
+  Banked rejected/s16-hit-flag-instead-of-early-return-8.c.
+- verdict: KILLED
+- kill_scope: class
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1708
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into
+  src/code6cac_b.c, one FAKE construct present (the m re-store); all four shapes measured
+  on their complete 24-order domain, so the axis is covered rather than sampled
+
+### H-s16-4 - PARTIAL inlining as a reference-count lever
+- statement: Writing exactly one of a block-7 difference's two uses as its expression
+  instead of its name, to drop that difference from three references to two, reproduces the
+  baseline score distribution {2:12, 4:6, 9:6} exactly in all five inline modes at all 24
+  declaration orders.
+- mechanism: qty_compare_1's numerator is floor_log2(refs)*refs*size
+  (tools/gcc-2.7.2/local-alloc.c:1708), so dz at 2 refs (numerator 2) would lose to dx at
+  3 refs (numerator 3) outright and the seat tie would break without touching the
+  declaration order. It never happens: cse re-folds the duplicated subexpression onto the
+  same pseudo, the reference count stays at 3, and the identical distribution proves not a
+  single instruction changed. tools/spelling_enum.py cannot express this axis - its
+  name/inline axis is all-or-nothing.
+- probe: tmp/grind/func_8002D780/s16/gen_d.py -> 120 variants (vd.json).
+- result: 60 at 2, 30 at 4, 30 at 9 - i.e. {2:12,4:6,9:6} per mode, five times over.
+  Banked rejected/s16-partial-inline-of-one-dz-use-inert-2.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into
+  src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+### H-s16-5 - single-product sign flip with a compensating branch inversion
+- statement: Negating exactly one of test 3's two cross products and testing (kc ^ kp) < 0
+  instead of >= 0 - the only construction found that makes dz die after dx without touching
+  the declaration order - scores 21 at best over both flip modes and all 24 orders.
+- mechanism: (kc ^ kp) >= 0 means "same sign", so negating one product and inverting the
+  test is semantics-preserving. Moving dz's last use past dx's would make dz's span longer
+  than dx's and win the qty_compare_1 tie for dx in the (yes,yes) quadrant. Measured, the
+  inverted branch polarity does not stay local: it changes the branch opcode and the reorg
+  delay-slot fill around it, and the re-association changes which subu feeds which mult,
+  which re-groups sched1's priority classes.
+- probe: tmp/grind/func_8002D780/s16/gen_e.py -> 48 variants (ve.json).
+- result: kpf {21:6, 26:6, 31:6, 37:6}; kcf {29:6, 31:6, 33:6, 39:6}. Nothing below 21.
+  Banked rejected/s16-single-product-flip-inverted-branch-21.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into
+  src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+### H-s16-6 - mandated kill re-audit of the (yes,yes) quadrant under FAKE ablation
+- statement: The (yes,yes) quadrant order ax, dz, dx, az scores 9 with the m re-store FAKE
+  present and 13 with it ablated, against 2 and 6 for the banked baseline, so the +7
+  penalty is identical with and without the FAKE carrier.
+- mechanism: the flat-floor rule requires the closest instance kill to be re-measured with
+  every FAKE construct ablated, because a FAKE sitting on a lever's target pseudo can make
+  the lever look inert (func_8002EA24 s8). The m re-store occupies the m/lzcr pseudos in
+  the sqrt block, not the dz/dx pseudos of the residual, and the ablation confirms it: both
+  bodies lose exactly 4 instructions when it is removed.
+- probe: python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate
+  tmp/grind/func_8002D780/s16/va/a_000_AZXC.c -> keep-all 9, drop-1 13.
+- result: the s14 kill of the target-declaration-order body stands on the current chassis
+  and is not a FAKE-masking artefact.
+- verdict: CONFIRMED
+
+### Frontier after s16
+The residual is now a single, fully-characterised question: reach the (yes,yes) quadrant
+(ax before dz AND dx before az) while making dx beat dz in qty_compare_1
+(tools/gcc-2.7.2/local-alloc.c:1708). Both quantities have 3 references and span 12, and
+this session killed the three ordinary-C ways found to disturb that: reference count via
+partial inlining (cse refolds), death order via product re-association (both-flip +22,
+single-flip-plus-branch-inversion +19), and birth order via block structure / declaration
+scope / hoisting (inert or -17). What has NOT been tried is a lever on dz's or dx's SIZE
+term or on the block's insn count between the two births - see the frontier entries in the
+outcome JSON.
+
+## [s16] The score of every block-7 declaration order is a pure function of two independent bits - whether ax is declared before dz, and whether dx is declared before az: (no,no)=4, (no,yes)=2, (yes,no)=2, (yes,yes)=9.
+- mechanism: sched1 groups the four subus by which mult they feed (ax,dz -> mult1; dx,az -> mult2) via INSN_PRIORITY; within each pair priority and dependence class tie and rank_for_schedule falls through to INSN_LUID = source order (tools/gcc-2.7.2/sched.c:2464). The target's emission order is ax (in the test-2 branch delay slot), dz, mult1, dx, az, mult2 - the (yes,yes) quadrant. In that quadrant dz and dx tie EXACTLY in qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708): 3 references each and span 12 each, because dz is born 4 LUIDs before dx and also dies 4 LUIDs before it. qsort leaves the tied pair in quantity-number order, seats dz first, and $v1/$a0 swap through the rest of the block.
+- probe: All 24 declaration orders swept (tmp/grind/func_8002D780/s16/va.json, group 000) plus tools/pairdiff.py on all twelve score-2 orders (tmp/grind/func_8002D780/s16/pairdiff_*.txt).
+- result: The partition is exact, 6 orders per quadrant, and the two score-2 classes are COMPLEMENTARY: (yes,no) leaves the ours[96:97] dx/az transposition (the banked chassis' residual), (no,yes) leaves the ours[92:93] ax/dz transposition (the reorg delay-slot pair, which is what the s14 sibling transplant produced). Both classes hold every register in the function correct. Score 4 is (no,no) - both transpositions, seats still correct. Score 9 is (yes,yes) - both emission orders correct, seats lost. This single model explains and subsumes every {2:12,4:6,9:6} histogram in the ledger, including s15's 2,080-spelling and 816-scope sweeps.
+- verdict: CONFIRMED
+
+## [s16] Giving test 2 and/or test 3 their own kc/kp locals instead of re-assigning the single kc/kp pair scores 2 at best across all 8 fresh/reuse combinations times all 24 block-7 declaration orders.
+- mechanism: Adding quantities to block 7 was the candidate way to renumber the pseudos whose quantity numbers resolve the qty_compare_1 tie (tools/gcc-2.7.2/local-alloc.c:1708) in qsort's stable order. It does not reach them: fresh-in-test-2-alone and fresh-in-test-3-alone reproduce the all-reuse {2:12,4:6,9:6} distribution exactly, so the added quantities are created after the dz/dx pair and never shift it.
+- probe: tmp/grind/func_8002D780/s16/gen_a.py -> 192 variants swept in one tools/sweep_variants.py call (va.json).
+- result: 000/001/010 all {2:12,4:6,9:6}; 011 {36:18,43:6}; any fresh kc1/kp1 in test 1 costs 45-66. Nothing below 2. Banked memory/grind/func_8002D780/rejected/s16-fresh-kc-kp-in-tests-2-and-3-36.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)
+
+## [s16] Moving any non-empty subset of the block-7 difference computations ax/dz/az/dx, initialisers included, into the test-2 arm or the outer centroid block scores 19 at best over all 192 subset/destination/order combinations.
+- mechanism: This is the axis s15's enum4 sweep could not reach: enum4 hoisted only UNINITIALISED declarations, which emit no RTL, so the pseudo's birth stayed inside block 7. Moving the defining insn makes the pseudo span two basic blocks, so local_alloc (single-block pseudos only) hands it to global_alloc and it leaves block 7's quantity table entirely; the value is also computed on the path where the test-2 branch fails.
+- probe: tmp/grind/func_8002D780/s16/gen_b.py -> 192 variants (vb.json).
+- result: Best 19 (3 forms, dz hoisted to the outer block), mode 41, worst 44 - nothing within 17 of the floor. Banked memory/grind/func_8002D780/rejected/s16-hoist-dz-computation-to-outer-block-19.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+## [s16] Restructuring the three sign tests - early-out gotos to a label in front of the sphere block, or putting the test-3 differences and cross products in their own inner brace scope with the if outside it - reproduces the nested-if distribution {2:12, 4:6, 9:6} exactly at every one of the 24 declaration orders, while a hit flag tested after the nest closes costs 8 to 27.
+- mechanism: local_alloc runs per basic block and a quantity's birth and death are LUIDs WITHIN its block, so block boundaries were the candidate lever named by the s15 frontier. They are not one: jump optimisation normalises the goto form back to the same block graph, and an inner brace scope has no RTL existence at all, so in both cases block 7 keeps exactly the same insn sequence and qty_compare_1 sees exactly the same spans.
+- probe: tmp/grind/func_8002D780/s16/gen_c.py -> 168 variants across 4 shapes x sign-flip x 24 orders (vc.json).
+- result: nest {2:12,4:6,9:6}; goto {2:12,4:6,9:6}; inner {2:12,4:6,9:6}; flag {8:6,10:6,21:6,27:6}. The both-products sign flip adds a uniform +22 in EVERY shape. Banked memory/grind/func_8002D780/rejected/s16-hit-flag-instead-of-early-return-8.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the m re-store); all four shapes measured on their complete 24-order domain, so the axis is covered rather than sampled
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1708
+
+## [s16] Writing exactly one of a block-7 difference's two uses as its expression instead of its name, to drop that difference from three references to two, reproduces the baseline distribution {2:12, 4:6, 9:6} exactly in all five inline modes at all 24 declaration orders.
+- mechanism: qty_compare_1's numerator is floor_log2(refs)*refs*size (tools/gcc-2.7.2/local-alloc.c:1708), so dz at 2 references (numerator 2) would lose to dx at 3 (numerator 3) outright and the seat tie would break without touching either declaration order. It never happens: cse re-folds the duplicated subexpression onto the same pseudo, the reference count stays at 3, and the byte-identical distribution proves not a single instruction changed. tools/spelling_enum.py cannot express this axis - its name/inline axis is all-or-nothing.
+- probe: tmp/grind/func_8002D780/s16/gen_d.py -> 120 variants (vd.json).
+- result: 60 at 2, 30 at 4, 30 at 9 - i.e. {2:12,4:6,9:6} per mode, five times over. Banked memory/grind/func_8002D780/rejected/s16-partial-inline-of-one-dz-use-inert-2.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+## [s16] Negating exactly one of test 3's two cross products and testing (kc ^ kp) < 0 instead of >= 0 - the one construction found that makes dz die after dx without touching the declaration order - scores 21 at best over both flip modes and all 24 orders.
+- mechanism: (kc ^ kp) >= 0 means same sign, so negating one product and inverting the test is semantics-preserving. Moving dz's last use past dx's would make dz's span longer than dx's and win the qty_compare_1 tie for dx in the (yes,yes) quadrant. Measured, the inverted branch polarity does not stay local: it changes the branch opcode and the reorg delay-slot fill around it, and the re-association changes which subu feeds which mult, re-grouping sched1's priority classes.
+- probe: tmp/grind/func_8002D780/s16/gen_e.py -> 48 variants (ve.json).
+- result: kpf {21:6, 26:6, 31:6, 37:6}; kcf {29:6, 31:6, 33:6, 39:6}. Nothing below 21. Banked memory/grind/func_8002D780/rejected/s16-single-product-flip-inverted-branch-21.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 82ab11bd (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+## [s16] The (yes,yes) quadrant order ax, dz, dx, az scores 9 with the m re-store FAKE present and 13 with it ablated, against 2 and 6 for the banked baseline, so the +7 penalty of that quadrant is identical with and without the FAKE carrier.
+- mechanism: The flat-floor rule requires the closest instance kill to be re-measured on the current chassis with every FAKE construct ablated, because a FAKE sitting on a lever's target pseudo can make the lever look inert (func_8002EA24 s8). The m re-store occupies the m/lzcr pseudos in the sqrt block, not the dz/dx pseudos of the residual, and the ablation confirms it: both bodies lose exactly 4 instructions when it is removed, leaving the quadrant penalty unchanged.
+- probe: python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate tmp/grind/func_8002D780/s16/va/a_000_AZXC.c -> keep-all 9, drop-1 13.
+- result: The s14 kill of the target-declaration-order body stands on the current chassis and is not a FAKE-masking artefact.
+- verdict: CONFIRMED

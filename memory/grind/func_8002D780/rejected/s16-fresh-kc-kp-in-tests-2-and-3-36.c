@@ -1,3 +1,12 @@
+/* s16 (structural, 2026-09-08) - REJECTED at 36/202 (floor 2).
+ * Giving test 2 AND test 3 their own kc/kp locals instead of re-assigning the single
+ * kc/kp pair.  The hypothesis was that adding quantities to block 7 renumbers the pseudos
+ * feeding it and breaks the qty_compare_1 tie (local-alloc.c:1708) that qsort resolves in
+ * quantity-number order.  Measured over all 8 fresh/reuse combinations x all 24 block-7
+ * declaration orders (tmp/grind/func_8002D780/s16/va.json): fresh in test 2 ALONE and
+ * fresh in test 3 ALONE are exactly inert ({2:12,4:6,9:6}, the same trichotomy as the
+ * all-reuse baseline), fresh in BOTH costs 34+, and any fresh kc1/kp1 in test 1 costs 43+.
+ * The single reused kc/kp pair is load-bearing for the outer two tests. */
 /* func_8002D780 - grind candidate (s14 rederive, 2026-09-08).  Honest sandbox floor
  * 2/202, build_insns == target_insns == 202, measured THIS session with these exact
  * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 2).
@@ -87,33 +96,6 @@
  * evidence.md and hypotheses.md s15; the remaining region is the outer centroid/test-1
  * declaration list (16,384 valid orders, marked body at tmp/grind/func_8002D780/s15/
  * enum_base3.c). */
-/* s16 (2026-09-08, structural) - body UNCHANGED, floor re-measured 2/202 on HEAD 82ab11bd.
- * s16's result is a complete MODEL of what is left, not a new spelling. Block 7 emits four
- * subus; sched1 groups them by which mult they feed (ax,dz -> mult1; dx,az -> mult2) and
- * within each pair falls through to INSN_LUID = source order (sched.c:2464). So the score
- * of any declaration order is a pure function of TWO BITS, measured exhaustively over all
- * 24 orders (tmp/grind/func_8002D780/s16/va.json + the twelve pairdiff_*.txt):
- *     ax<dz   dx<az   score   residual
- *      no      no       4     BOTH pairs transposed, all registers correct
- *      no      yes      2     ours[92:93] ax/dz swapped (the reorg delay-slot pair)
- *      yes     no       2     ours[96:97] dx/az swapped   <-- THIS BODY
- *      yes     yes      9     both emission orders correct, but the seats swap
- * The target is the (yes,yes) quadrant. It costs 9 rather than 2 because dz and dx then
- * tie EXACTLY in qty_compare_1 (local-alloc.c:1708) - 3 refs each, span 12 each, dz born 4
- * LUIDs earlier and dying 4 LUIDs earlier - so qsort seats dz first and $v1/$a0 swap
- * through the block. The entire remaining problem is: reach (yes,yes) and make dx beat dz
- * in qty_compare_1.
- * s16 killed five structural ways of trying: fresh kc/kp per test (inert alone, +34 for
- * both), hoisting the difference COMPUTATIONS out of block 7 (best 19; this is the axis
- * s15's uninitialised-declaration sweep could not reach), the block SHAPE of the three
- * tests (goto early-out and inner brace scope EXACTLY inert; hit-flag +6), the sign flip
- * of one product with a compensating `< 0` branch (best 21) and of both products (uniform
- * +22 in every shape), and PARTIAL inlining of one use to drop dz to 2 references (all
- * five modes exactly inert - cse refolds the duplicated subexpression). 528 variants;
- * every inert axis reproduces {2:12, 4:6, 9:6} byte-for-byte, which is itself the proof
- * that it never reaches the tie.
- * Do NOT re-run: the block-structure axis, the partial-inline axis, computation hoisting,
- * or any sign flip. See evidence.md / hypotheses.md s16. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -157,16 +139,16 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         s32 kp = z0 * px - x0 * pz;
 
         if ((kc ^ kp) >= 0) {
-            kc = z2 * cx - x2 * cz;
-            kp = z2 * px - x2 * pz;
-            if ((kc ^ kp) >= 0) {
+            s32 kc2 = z2 * cx - x2 * cz;
+            s32 kp2 = z2 * px - x2 * pz;
+            if ((kc2 ^ kp2) >= 0) {
                 s32 ax = cx - x0;
                 s32 dz = z2 - z0;
                 s32 az = cz - z0;
                 s32 dx = x2 - x0;
-                kc = (dz * ax) - (dx * az);
-                kp = (dz * (px - x0)) - (dx * (pz - z0));
-                if ((kc ^ kp) >= 0)
+                s32 kc3 = (dz * ax) - (dx * az);
+                s32 kp3 = (dz * (px - x0)) - (dx * (pz - z0));
+                if ((kc3 ^ kp3) >= 0)
                     return 1;
             }
         }

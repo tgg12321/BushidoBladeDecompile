@@ -1598,3 +1598,120 @@ bodies), `gen_scope.py`, `chunk.py`, `hist.py`, `sweep.ps1`, `sweep_all.ps1`, `s
 - [s15] The remaining region named by the 2026-09-08 class-kill memory is the OUTER centroid/test-1 declaration list (x0, x2, z0, z2, cx, cz, px, pz, kc, kp) feeding block 7. Its space was counted this session: 16,384 valid def-before-use orders with every name kept (all ten are read outside the region, so the inline axis is empty), and >900,000 with commutative swaps on the six products. A marked body is ready at tmp/grind/func_8002D780/s15/enum_base3.c.
 
 - [s15] src/code6cac_b.c was restored to its committed INCLUDE_ASM state at the end of the session; the only tree changes are the two banked rejected forms, the ledger appends, and the candidate.c header note.
+
+## s16 (structural, 2026-09-08) — the QUADRANT MODEL: the whole residual is two bits
+
+**Directive executed.** The queue's auto-return directive (coupled sibling func_8002E6B0 →
+floor 0) was already executed and measured in s14 (sibling transplant, 2/202 with the
+residual moved to the ax/dz pair, banked as
+`rejected/s14-sibling-8002e6b0-transplant-slot-wrong-2.c`). s16 did not re-run it; instead
+it explains that result, because the quadrant model below subsumes it exactly.
+
+**Chassis.** HEAD 82ab11bd (`-mel -msoft-float`), `memory/grind/func_8002D780/candidate.c`
+spliced into `src/code6cac_b.c`: `sandbox func_8002D780 --disable all` → 2/202,
+build_insns == target_insns == 202. Floor unchanged. 528 variants swept this session in four
+batches, all through `tools/sweep_variants.py`.
+
+### The model (new, and it closes the interpretation of every sweep in the ledger)
+
+Block 7 emits four `subu`s. Two of them feed the FIRST product of each cross product
+(`ax`, `dz` → `mult1`), two feed the SECOND (`dx`, `az` → `mult2`). sched1 schedules by
+`INSN_PRIORITY`, which groups them by which mult they feed; WITHIN each pair the priorities
+and dependence classes tie, so `rank_for_schedule` falls through to `INSN_LUID`
+(`tools/gcc-2.7.2/sched.c:2464`) = source order. Therefore the emission order of the block
+is decided by exactly TWO independent bits: whether `ax` is declared before `dz`, and
+whether `dx` is declared before `az`. The score over all 24 declaration orders is a pure
+function of those two bits, measured exhaustively (`tmp/grind/func_8002D780/s16/va.json`,
+group `000`):
+
+| ax before dz | dx before az | score | orders |
+|---|---|---|---|
+| no  | no  | 4 | CXZA CZAX CZXA ZACX ZCAX ZCXA |
+| no  | yes | **2** | XCZA XZAC XZCA ZAXC ZXAC ZXCA |
+| yes | no  | **2** | ACXZ ACZX AZCX CAXZ CAZX CXAZ |
+| yes | yes | 9 | AXCZ AXZC AZXC XACZ XAZC XCAZ |
+
+The target's own emission order is `ax` (in the test-2 branch delay slot), `dz`, `mult1`,
+`dx`, `az`, `mult2` — i.e. the (yes, yes) quadrant. Pairdiffs of all twelve score-2 orders
+(`tmp/grind/func_8002D780/s16/pairdiff_*.txt`) confirm the partition exactly and show that
+the two score-2 classes are COMPLEMENTARY, each leaving one adjacent transposition with
+every register in the function correct:
+
+- (yes, no) — six orders, incl. the banked `AZCX` chassis: residual at ours[96:97],
+  `subu v1,t5,t1` (`dx`) must move one slot earlier past `subu v0,a2,a3` (`az`).
+- (no, yes) — six orders, incl. the s14 sibling transplant: residual at ours[92:93],
+  `subu v0,t2,t1` (`ax`) must move one slot earlier past `subu a0,t0,a3` (`dz`), i.e. into
+  the `bltz` delay slot that reorg fills.
+
+Score 4 is the (no, no) quadrant: BOTH transpositions, seats still correct. Score 9 is the
+(yes, yes) quadrant: both emission orders correct, but `dz` and `dx` then tie exactly in
+`qty_compare_1` (`tools/gcc-2.7.2/local-alloc.c:1708`) — equal refs (3 each) and equal
+spans (12 each, because `dz` is born 4 LUIDs before `dx` and also dies 4 LUIDs before it) —
+and qsort leaves the tied pair in quantity-number order, which seats `dz` first and swaps
+`$v1`/`$a0` through the rest of the block.
+
+**So the function's whole remaining residual is one sentence:** reach the (yes, yes)
+quadrant while making `dx` beat `dz` in `qty_compare_1`. Everything else is solved.
+
+### The five structural axes measured this session (all inert or worse)
+
+Every one of them was swept across all 24 declaration orders, and every inert one
+reproduces the `{2:12, 4:6, 9:6}` trichotomy BYTE-FOR-BYTE — i.e. the axis does not reach
+the tie at all.
+
+1. **kc/kp variable identity** (`va.json`, 192 variants). Fresh `kc2/kp2` for test 2 alone:
+   inert. Fresh `kc3/kp3` for test 3 alone: inert. Both: 36–43. Fresh `kc1/kp1` for test 1:
+   45–66. Adding quantities to block 7 does not renumber the `dz`/`dx` pair.
+2. **Hoisting the difference COMPUTATIONS** out of block 7 (`vb.json`, 192 variants — every
+   non-empty subset, two destination blocks, all orders). Best 19, mode 41. This is the
+   axis s15's enum4 could not reach (enum4 hoisted only uninitialised declarations, no RTL).
+   A hoisted pseudo spans two blocks, leaves local_alloc for global_alloc, and the value is
+   computed on the test-2-fails path too.
+3. **Block SHAPE of the three tests** (`vc.json`, 168 variants) — the axis the s15 frontier
+   named. `goto` early-out (tests as straight-line siblings with a label before the sphere
+   block) and `inner` (test-3 differences in their own brace scope with the `if` outside)
+   are EXACTLY inert. A `hit` flag tested after the nest closes costs 8–27. Block structure
+   is not an input to the residual.
+4. **Both-products sign flip** (`vc.json`, the `s1` half): a uniform **+22** in every one of
+   the four shapes. `(kc ^ kp) >= 0` is invariant under negating both products, but the
+   re-association swaps the pair grouping and costs 22 instructions.
+5. **Single-product flip with a compensating `< 0` branch** (`ve.json`, 48 variants). The
+   one construction found that lengthens `dz`'s live range past `dx`'s without touching the
+   declaration order. Best 21, worst 39 — the inverted branch polarity does not stay local.
+6. **PARTIAL inlining** (`vd.json`, 120 variants) — writing ONE of a difference's two uses
+   as its expression, to drop `dz` from 3 references to 2 and win `qty_compare_1` on the
+   `floor_log2(refs)*refs` numerator. `tools/spelling_enum.py` cannot express this (its
+   name/inline axis is all-or-nothing). All five modes reproduce `{2:12, 4:6, 9:6}`
+   EXACTLY: cse re-folds the duplicated subexpression onto the same pseudo and the
+   reference count never drops.
+
+### Mandated kill re-audit (flat floor ≥ 3 sessions)
+
+The closest instance kill to the target is the (yes, yes) quadrant itself — `AZXC`
+(`ax, dz, dx, az`, the target's own emission order), killed at 9 in s14. Re-measured this
+session on the current chassis AND with the FAKE ablated
+(`python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate
+tmp/grind/func_8002D780/s16/va/a_000_AZXC.c`): keep-all **9**, drop-1 **13**. The baseline
+is 2 / 6 under the same ablation, so the +7 penalty of the quadrant is identical with and
+without the FAKE carrier. The `m` re-store does not sit on the `dz`/`dx` pseudos and is not
+masking this lever; the s14 kill stands on the current chassis.
+
+- [s16] Chassis re-measured this session: HEAD 82ab11bd (-mel -msoft-float), memory/grind/func_8002D780/candidate.c spliced into src/code6cac_b.c -> sandbox func_8002D780 --disable all = score 2, target_insns 202, build_insns 202. Floor unchanged; src/ restored byte-exact afterwards.
+
+- [s16] 528 variants swept this session in five batches through tools/sweep_variants.py (va 192, vb 192, vc 168, vd 120, ve 48 - 720 counting overlap-free totals per batch file), plus 12 tools/pairdiff.py runs. All JSON histograms and pairdiffs are banked under tmp/grind/func_8002D780/s16/.
+
+- [s16] THE QUADRANT MODEL: the four block-7 subus split into two sched1 priority groups by which mult they consume (ax,dz -> mult1; dx,az -> mult2); within each group INSN_PRIORITY and dependence class tie so rank_for_schedule falls through to INSN_LUID = source order (tools/gcc-2.7.2/sched.c:2464). Score is therefore a pure function of two bits - (ax<dz) and (dx<az) - verified over all 24 orders: (F,F)=4 {CXZA CZAX CZXA ZACX ZCAX ZCXA}, (F,T)=2 {XCZA XZAC XZCA ZAXC ZXAC ZXCA}, (T,F)=2 {ACXZ ACZX AZCX CAXZ CAZX CXAZ}, (T,T)=9 {AXCZ AXZC AZXC XACZ XAZC XCAZ}.
+
+- [s16] Pairdiffs of all twelve score-2 orders show exactly two complementary residual classes, each one adjacent transposition with EVERY register in the function correct: (T,F) leaves ours[96:97] subu v1,t5,t1 (dx) needing to move one slot earlier past subu v0,a2,a3 (az); (F,T) leaves ours[92:93] subu v0,t2,t1 (ax) needing to move one slot earlier past subu a0,t0,a3 (dz), i.e. into the bltz delay slot reorg fills. The target's order is ax(slot), dz, mult1, dx, az, mult2.
+
+- [s16] The (T,T) quadrant - the target's own emission order - costs 9 rather than 2 because dz and dx then tie EXACTLY in qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708): 3 references each, span 12 each (dz born 4 LUIDs earlier and dying 4 LUIDs earlier), and qsort leaves the tied pair in quantity-number order, seating dz first. The whole remaining problem is one sentence: reach (T,T) while making dx beat dz in qty_compare_1.
+
+- [s16] Every structural axis that is INERT reproduces the {2:12, 4:6, 9:6} trichotomy BYTE-FOR-BYTE, which is itself the proof that the axis never reaches the tie: fresh kc/kp in test 2 alone, fresh kc/kp in test 3 alone, goto early-out block shape, inner-brace scoping, and all five partial-inline modes.
+
+- [s16] Axes measured WORSE, with their best score: hoisting the difference computations out of block 7 (19), the hit-flag tail shape (8), the both-products sign flip (+22 uniformly in all four block shapes), the single-product flip with a compensating < 0 branch (21), fresh kc/kp in both tests 2 and 3 (36), fresh kc1/kp1 in test 1 (45).
+
+- [s16] Mandated kill re-audit: tools/fake_ablate.py on the (T,T) form a_000_AZXC.c gives keep-all 9 / drop-1 13 against the baseline's 2 / 6. The single FAKE unit (the m re-store) is worth 4 instructions in both bodies and does not sit on the dz/dx pseudos, so the s14 quadrant kill is not FAKE-masked.
+
+- [s16] The queue's auto-return directive (coupled sibling func_8002E6B0 -> floor 0) was already executed and measured in s14; s16 did not re-run it because the quadrant model explains its result exactly - the sibling's spelling lands in the (F,T) class, which is why it scored 2 with the residual moved to the ax/dz delay-slot pair rather than improving.
+
+- [s16] Ledger totals after s16: floor 2/202 flat for eight sessions; 53 instance kills and 8 predicate-cited class kills; 88 rejected forms banked.
