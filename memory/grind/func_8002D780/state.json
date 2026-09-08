@@ -1,7 +1,7 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 19,
+ "session_count": 20,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -117,36 +117,34 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics s19: the block-7 seat is a whole-quantity-table allocation, not a dz/dx comparison - the suggestion frontier is dead (the MATCHED sibling gets the same seats with nsugg=0) and the residual r"
+  },
+  {
+   "session": 20,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics s20: the first sched.c trace of block 7 (BB2_SCHED_DEBUG/BB2_PRIO_DEBUG) attributes the az/dx transposition to rank_for_schedule's INSN_LUID fall-through in BOTH passes, and a staged dx kp p"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The residual closes by making dz's and dx's DEATHS 2 apart at local-alloc time rather than 4 - the matched sibling's native geometry - instead of trying to move their births. With deaths 2 apart and births 4 apart, dz spans 12 and dx spans 10, dx is seated first with the emission order of the four subus untouched, and sched2 is then free to refill the third multiply's latency slot with the (pz - z0) subu to reproduce the target's final order.",
-   "mechanism": "qty_compare_1 (local-alloc.c:1680-1685) ranks on floor_log2(refs)*refs*size/(death-birth); with refs equal at 3 the seat is decided purely by span. The deaths land 4 apart only because sched1 sinks the (pz - z0) subu to immediately before its consuming multiply (measured in s17 and s18), placing it between the two multiplies that kill dz and dx. sched1's ready-list order is INSN_PRIORITY, then dependence class against the last scheduled insn, then INSN_LUID (sched.c:2408-2464), so the subu stays ahead of the third multiply only if its priority or its dependence class differs - not if it is merely written earlier in the source, which is exactly why s18's interposition sweep was inert.",
-   "next_probe": "Read the block-7 region of tmp/grind/func_8002D780/s19/w_tt/code6cac_b.sched (and the .sched2/.dbr dumps) for the INSN_PRIORITY of the (pz - z0) subu against the third multiply, and the RANKDBG lines that order them, to see by how much and on which term the subu loses. Then look for ordinary-C shapes that raise that subu's priority or lengthen its dependence chain - the sibling's shape, in which the query difference is a common subexpression shared with an EARLIER test so it is computed in a dominating block, is the reference; check whether any algebraic rewrite of tests 1 and 2 of func_8002D780 (which use the origin vertex and so currently contain no query difference) legitimately produces px - x0 or pz - z0 as a shared subexpression while keeping build_insns at 202."
+   "hypothesis": "TT_qdx's 32 is two independent residuals, and the larger one (about 26 instructions) is not a block-7 problem at all: it is a global-alloc rename of the centroid block's six value holders caused purely by the extra q pseudo. If the same span geometry can be produced without adding a pseudo - by reusing an existing block-7 local as the product carrier, or by a spelling that reorders the two kp multiplies without naming either product - the rename disappears and the residual collapses to the kp multiply order alone.",
+   "mechanism": "global_alloc assigns the centroid block's long-lived pseudos in allocno order; one extra GR-class allocno in block 7 shifts that order and renames $t1/$t2, $t4/$t5 and $a2/$a3 throughout blocks 5 and 6. The seat effect in block 7 comes only from WHICH multiply expands last, not from the existence of the carrier.",
+   "next_probe": "Re-dump TT_qdx's .greg and .lreg (tmp/grind/func_8002D780/s20/w_qdx/) and diff the centroid-block allocno list against w_bk to confirm the rename is an allocno-order shift; then sweep spellings that make dx's kp multiply expand first WITHOUT a new pseudo - reusing an existing dead block-7 local as the carrier, borrowing kc before its own use, and inlining the dz product into the subtraction's second operand - and check build_insns stays at 202 and the QTYDBG blk=7 seats stay at dx got=3 / dz got=4 before scoring."
   },
   {
-   "hypothesis": "L1 unchanged and now quantified: a genuine third C-level reference to x2 - x0 inside block 7 gives reg_n_refs[dx] = 4 and priority floor_log2(4)*4/12*10000 = 6666 against dz's 2500, which wins the seat on the (T,T) chassis with the emission order untouched.",
-   "mechanism": "qty_n_refs for an untied quantity is exactly reg_n_refs of its pseudo (the s18 class kill at local-alloc.c:471 closed the alternative of absorbing a product pseudo), and reg_n_refs counts RTL references surviving to local-alloc. dx is used twice today, in dx * az and dx * (pz - z0).",
-   "next_probe": "Work the algebra of the three tests against the matched sibling func_8002E6B0 (src/code6cac_b.c:1332-1364) for a spelling in which the edge difference x2 - x0 appears in test 2 as well as twice in test 3; verify build_insns stays at 202 BEFORE scoring, since every s18 hoist that added or removed a reference moved the instruction count off 202."
+   "hypothesis": "The remaining approximately 6 instructions of TT_qdx are the two kp multiplies emitted in the opposite order to the target. Because sched1 pins each single-use query difference immediately before its own multiply, the emitted multiply order equals the EXPANSION order, so the target's order (dz's multiply first) requires dz's multiply to expand first while still dying last - which needs a use of dz after the fourth multiply, or a spelling where the fourth multiply's operand is the one already live.",
+   "mechanism": "Expansion order fixes INSN_LUID, and rank_for_schedule's third term is INSN_LUID; the two multiplies never compare on priority or class because they are on the same function unit and are picked in blocked order. Death position therefore tracks expansion order exactly, which is why staging inverts both the seat and the emitted order together.",
+   "next_probe": "Enumerate the spellings in which kp's SUBTRACTION consumes dz's product last while dz's product is expanded first - a staged carrier for the dz product that is re-read after the dx product (q = dz * (px - x0); ... ; kp = q - dx * (pz - z0); with an intervening real use), and the mirror form in kc - and read QTYDBG blk=7 plus the block-7 emitted order for each before scoring. TT_qdz (score 9) is the measured control for the no-op end of this axis."
   },
   {
-   "hypothesis": "A fifth GR-class short-lived quantity inside block 7, born within ax's live range [2,6] and dead by dx's birth (8), would be forced out of $v0 into $v1 (ax already holds $v0 across that window), which pushes dz to $a0 while leaving $v1 free for dx to reuse - the target's seats, with dz still allocated first and the 2500 tie left intact.",
-   "mechanism": "find_free_reg hands each quantity the lowest hard register whose current occupant does not overlap it, and the s19 dumps show all five short block-7 quantities sharing $v0 solely because they are pairwise disjoint. Any short quantity overlapping ax must take $v1; if it also dies by position 8 it blocks $v1 for dz [4,16] but not for dx [8,20].",
-   "next_probe": "Enumerate what ordinary-C values could occupy [4,8] in block 7 without changing build_insns from 202 - the candidates are a value consumed by the first multiply or by the dz/dx subus themselves - and check the .lreg dump for any pseudo already living in that window that cse or combine currently folds away. If no byte-neutral occupant exists, record that as the closing measurement for this axis rather than re-running the 24-order sweep, which s15/s16 already exhausted."
+   "hypothesis": "On the banked chassis (correct seats, az emitted before dx) the transposition is settled purely on INSN_LUID because az and dx are both at INSN_PRIORITY 1 and dependence class 3. Any ordinary-C shape that gives az a strictly longer dependence path from the top of block 7 than dx would flip the ready-list order and fix the residual without touching the allocation at all.",
+   "mechanism": "INSN_PRIORITY in this backward scheduler is the depth of an insn from the start of its block; az = cz - z0 and dx = x2 - x0 both read values produced in an earlier block, so both are depth 1. rank_for_schedule returns on the priority term before it ever reaches INSN_LUID, so a single unit of extra depth on az is sufficient.",
+   "next_probe": "Enumerate ordinary-C shapes that make az's operands depend on a value computed inside block 7 while leaving build_insns at 202 - e.g. deriving cz - z0 from a difference already computed in the block via an algebraic identity, or computing az from ax and an edge value - and verify with the PRIODBG/SCHEDDBG dump that az's pass-1 node line reports pri > 1 before scoring. Record the closing measurement for the axis if no byte-neutral shape raises the depth."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 2,
-   "statement": "A copy of dist in the else arm survives cse on the 10-floor chassis in one of four spellings (u32 copy, s32 copy, copy declared in the outer block, copy used only as the srlv index), materialising the",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "all 10, identical to the control; the copy is folded in every spelling, reproducing s1's H-s1-c on the new chassis"
-  },
   {
    "session": 2,
    "statement": "One of six further tail shapes changes reorg's delay-slot fill on the second post-call branch (goto to a shared yes: label, nested == 0 ifs re-measured, truthy if, a result local for the last call, ? ",
@@ -618,6 +616,14 @@
    "measured_on": "HEAD 2c87428f (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis re-measured 2/202 and the (T,T) chassis tmp/grind/func_8002D780/s19/TT_base.c, both spliced into src/code6cac_b.c; one",
    "predicate_cite": "",
    "result": "func_8002D780 blk=7 reports ncopysugg=0 nsugg=0 on all seven pseudo quantities on both chassis. func_8002E6B0's predicat"
+  },
+  {
+   "session": 20,
+   "statement": "Twelve product-order and product-staging spellings of test 3 - staging either kp product, staging the kc product, negating both cross products, swapping the operand order inside both kp products, and ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 01bd10a2 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis (re-measured 2/202 this session) and the (T,T) chassis tmp/grind/func_8002D780/s20/TT_base.c, both spliced into src/co",
+   "predicate_cite": "",
+   "result": "BK_base 2 and TT_base 9 reproduce their chassis exactly. TT_qdz 9 (staging the dz product instead - exactly inert, the c"
   }
  ],
  "ladder_skip": 0,

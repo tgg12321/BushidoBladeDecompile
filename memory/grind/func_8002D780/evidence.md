@@ -2041,3 +2041,149 @@ never been probed and is this session's headline frontier item.
 - [s19] tools/fake_ablate.py on candidate.c: 1 FAKE unit, keep-all 2/202, drop-1 6/202; the ablation cost is inside the sqrt block and the block-7 residual is unaffected.
 
 - [s19] src/code6cac_b.c was restored to its HEAD state after the measurements; the working tree carries no source edits from this session.
+
+## s20 (forensics, 2026-09-08) - sched1/sched2 are BACKWARD list schedulers; the first form that reaches BOTH the target's block-7 order and the target's block-7 seats
+
+**Chassis re-measured at dispatch.** `sandbox func_8002D780 --disable all` -> {"score": 2,
+"target_insns": 202, "build_insns": 202} with memory/grind/func_8002D780/candidate.c spliced
+into src/code6cac_b.c (HEAD 01bd10a2, -mel -msoft-float).  Floor intact at 2.
+
+**Owner directive executed.** The queue's auto-return directive (coupled sibling func_8002E6B0
+moved to floor 0) is discharged here: the sibling's block-0 CSE geometry was re-read from the
+s19/s20 whole-TU dumps and is the reference the seat model below is calibrated against; the
+sibling's own spelling of block 7 was already transplanted in s14
+(rejected/s14-sibling-8002e6b0-transplant-slot-wrong-2.c) and is not re-run.
+
+### The instrument s19 left on the table
+s19's dbg.py enabled BB2_SUGG_DEBUG / BB2_QTY_DEBUG / BB2_RANK_DEBUG / BB2_DBR_DEBUG but NOT
+BB2_SCHED_DEBUG / BB2_PRIO_DEBUG, which are the two hooks that print sched.c's ready list, its
+pick order, its function-unit blockage decisions and schedule_select's tie-break.  s20 turned
+both on (tmp/grind/func_8002D780/s20/dbg.py; 103,800 stderr lines per chassis).  NOTE for
+future sessions: the dump script must run with BB2_CC1=tools/gcc-2.7.2/cc1 - engine
+buildconfig's CC1 (tools/gcc-2.7.2/build/cc1) is NOT the instrumented binary and silently
+produces the -da dumps with an empty debug stream (13 stderr lines, all front-end diagnostics).
+
+### What the trace says (first trace-level attribution in this grind)
+GCC 2.7.2's sched.c schedules each basic block BACKWARDS: block 7's jump (insn 210) is picked
+at clock 1 and the final emission order is the REVERSE of the pick order.  The ready list is
+sorted by rank_for_schedule (tools/gcc-2.7.2/sched.c:2408-2464) with exactly three terms -
+INSN_PRIORITY, then dependence class against last_scheduled_insn, then INSN_LUID - and
+schedule_select (sched.c:2660-2745) then QUEUES every ready insn that is blocked on a function
+unit and picks the first survivor (potential_hazard, sched.c:1327-1360, returns 0 for every
+unit=-1 insn, so best_insn is simply the first non-queued index).
+
+Block 7 pass 1, banked chassis: 14 insns, luid 0..13 =
+ax(179) dz(182) az(185) dx(188) M1=dz*ax(191) M2=dx*az(193) kc(195) qx=px-x0(198)
+M3=dz*qx(200) qz=pz-z0(202) M4=dx*qz(204) kp(206) xor(208) jump(210).
+Pick order 210,208,206,195,204,202,200,198,193,188,185,191,182,179 ->
+EMISSION ax,dz,M1,az,dx,M2,qx,M3,qz,M4,kc,kp,xor - exactly the QTYDBG positions
+ax[2,6] dz[4,16] az[8,12] dx[10,20] qx[14,16] qz[18,20].
+
+Two decisions in that trace are the whole residual:
+
+  (1) *Why a query difference always sits between the last two multiplies.*  After M4 is
+  picked at clock 15 the multiply unit is blocked for 11 cycles (SCHEDDBG SELBLOCK clock=16
+  insn=200 unit=1 cost=11), and the ONLY unblocked ready insn is qz(202) - which became ready
+  the moment M4, its single successor, was scheduled.  So qz is emitted between M3 and M4.
+  The same happens for qx between M2 and M3.  A single-use query difference is therefore
+  always emitted immediately before its consuming multiply no matter where it is written;
+  this is the mechanism behind s17's eight inert kp-difference spellings and s18's inert
+  interposition sweep, now read off the scheduler's own log rather than inferred.
+
+  (2) *Why az is emitted before dx.*  At pass-1 clock 40 (and again at pass-2 clock 47) the
+  ready list is [M1(blocked), dx(188), az(185)]: both subus have INSN_PRIORITY 1 and both are
+  dependence class 3 against the last-scheduled multiply (RANKDBG last=193 y=188 cls=3 x=185
+  cls2=3 val=0), so rank_for_schedule falls through to INSN_LUID and the HIGHER luid sorts
+  first.  schedule_select queues the blocked multiply and takes the first survivor - dx - so
+  dx is PICKED first and therefore EMITTED last.  The az/dx transposition is thus decided by
+  source order and by nothing else, in both scheduling passes, and sched2 cannot repair it
+  because it re-derives the same three-term comparison on sched1's output.  Both subus sit at
+  dependence depth 1 from the top of the block, so no in-block rewrite can separate them on
+  the priority term, and the class term cannot separate two operands of the same multiply.
+
+### The seat/order dilemma, stated exactly
+With the target's emission order (ax,dz,M1,dx,az,M2,qx,M3,qz,M4) the pre-split positions are
+dz[4,16] and dx[8,20]: both span 12, qty_compare_1 ties at 2500 and local-alloc.c:1719 seats
+the lower quantity number (dz) first - the (T,T) chassis, score 9.  With the banked order the
+positions are dz[4,16], dx[10,20]: dx spans 10, is seated first, and gets the target's $v1 -
+but az is emitted before dx, score 2.  Because M3 must precede M4 and each query difference is
+pinned immediately before its own multiply (finding 1 above), no in-block spelling that keeps
+the target's multiply order can both put dx at position 8 and keep death(dx) - death(dz)
+below 4.
+
+### s20's new result: staging the dx kp product breaks the dilemma at the seat end
+`q = (dx * (pz - z0)); kp = (dz * (px - x0)) - q;` on the (T,T) chassis makes the dx multiply
+expand FIRST, so it becomes M3 and dz's multiply becomes M4.  Measured QTYDBG blk=7
+(tmp/grind/func_8002D780/s20/w_qdx/stderr_full.txt): dx = qty4 reg131 birth 8 death 16 refs 3
+ord=5 got=3 ($v1); dz = qty1 reg130 birth 4 death 20 refs 3 ord=6 got=4 ($a0).  Those are the
+TARGET'S SEATS, reached with the TARGET'S dx-before-az emission order - the first form in 20
+sessions to hold both at once, and it needs no tie-break at all (spans 8 vs 16).  The banked
+chassis reaches the seats with the wrong order; the (T,T) chassis reaches the order with the
+wrong seats; TT_qdx reaches both.
+
+It scores 32/202 anyway, for two reasons that are now the frontier
+(tmp/grind/func_8002D780/s20/pairdiff_TT_qdx.txt, 20 hunks):
+  * the two kp multiplies come out in the opposite order to the target (ours qz, M(dx*qz),
+    qx, M(dz*qx) against the target's qx, M(dz*qx), qz, M(dx*qz)) - about 6 instructions;
+  * the extra `q` pseudo shifts GLOBAL allocation in the centroid block (blocks 5/6): every
+    difference in hunks ours[48..86] is a pure rename ($t1<->$t2, $t4<->$t5, $a2<->$a3) of the
+    x0/z0/x2/z2/px/pz holders - about 26 instructions.  Block 7's first eight emitted
+    instructions already match the target modulo that rename.
+
+### The sweep
+12 product-order and staging spellings plus 2 base controls, all at build_insns 202 except one
+(tmp/grind/func_8002D780/s20/gen_s20.py, v20.json):
+BK_base 2 | TT_base 9 | TT_qdz 9 (staging the DZ product instead - exactly inert, the control
+the model predicts) | TT_kpopswap 22 | TT_negboth 24 | BK_qdx 25 | TT_qkc 30 | BK_negboth 32 |
+TT_kpsplit_dxfirst 32 | TT_qdx 32 | TT_qdx_decl 32 | TT_kpsplit_dzfirst 36 | TT_qdx_qc 36 (201
+insns) | TT_qdx_kcinline 42.  Nothing below the banked floor of 2.
+
+- [s20] Chassis re-measured at dispatch: sandbox func_8002D780 --disable all -> {"score": 2, "target_insns": 202, "build_insns": 202}, candidate.c spliced into src/code6cac_b.c at HEAD 01bd10a2 (-mel -msoft-float).
+
+- [s20] The instrumented cc1 must be selected explicitly (BB2_CC1=tools/gcc-2.7.2/cc1). engine/buildconfig.py's CC1 is tools/gcc-2.7.2/build/cc1, which is NOT instrumented: running s19's dbg.py without BB2_CC1 produced complete -da dumps and a 13-line stderr with no BB2 debug records at all.
+
+- [s20] GCC 2.7.2's sched.c schedules each basic block BACKWARDS (block 7's jump insn 210 is picked at clock 1); the final emission order is the reverse of the pick order. Verified against the QTYDBG positions for both chassis.
+
+- [s20] rank_for_schedule (tools/gcc-2.7.2/sched.c:2408-2464) has exactly three terms: INSN_PRIORITY, dependence class against last_scheduled_insn, INSN_LUID. schedule_select (sched.c:2660-2745) then queues every function-unit-blocked ready insn and picks the first survivor; potential_hazard returns 0 for every unit=-1 insn (sched.c:1327-1360), so best_insn is simply the first non-queued index.
+
+- [s20] Block 7 pass 1 luid map, banked chassis: 0 ax(179) 1 dz(182) 2 az(185) 3 dx(188) 4 M1=dz*ax(191) 5 M2=dx*az(193) 6 kc(195) 7 qx(198) 8 M3=dz*qx(200) 9 qz(202) 10 M4=dx*qz(204) 11 kp(206) 12 xor(208) 13 jump(210). Pick order 210,208,206,195,204,202,200,198,193,188,185,191,182,179.
+
+- [s20] A single-use query difference is emitted immediately before its consuming multiply no matter where it is written: it becomes ready only when that multiply is scheduled, and the multiply unit is blocked for 11 cycles afterwards (SCHEDDBG SELBLOCK clock=16 insn=200 unit=1 cost=11), so it is the only unblocked filler. This is the measured mechanism behind s17's and s18's inert difference-placement sweeps.
+
+- [s20] The az/dx transposition is decided by INSN_LUID in BOTH scheduling passes: at pass-1 clock 40 and pass-2 clock 47 the ready list is [multiply (blocked), dx, az] with both subus at INSN_PRIORITY 1 and dependence class 3 (RANKDBG last=193 y=188 cls=3 x=185 cls2=3 val=0), so the higher luid (dx) sorts first, is picked first and is emitted last.
+
+- [s20] TT_qdx (`q = dx * (pz - z0); kp = dz * (px - x0) - q;` on the (T,T) declaration order) is the first form in this grind to hold the target's block-7 emission order AND the target's block-7 seats simultaneously: QTYDBG blk=7 in tmp/grind/func_8002D780/s20/w_qdx/stderr_full.txt gives dx qty4 birth 8 death 16 ord=5 got=3 ($v1) and dz qty1 birth 4 death 20 ord=6 got=4 ($a0), with no tie to break (spans 8 vs 16).
+
+- [s20] TT_qdx nevertheless scores 32/202: about 6 instructions because the two kp multiplies are emitted in the opposite order to the target, and about 26 because the extra `q` pseudo renames the centroid block's global allocation ($t1<->$t2, $t4<->$t5, $a2<->$a3 on the x0/z0/x2/z2/px/pz holders). See tmp/grind/func_8002D780/s20/pairdiff_TT_qdx.txt.
+
+- [s20] Staging the DZ product instead (`q = dz * (px - x0); kp = q - dx * (pz - z0);`) is exactly inert at the (T,T) baseline of 9, which is the control the seat model predicts: it does not change which multiply expands last.
+
+- [s20] 14 forms measured (tmp/grind/func_8002D780/s20/v20.json): BK_base 2, TT_base 9, TT_qdz 9, TT_kpopswap 22, TT_negboth 24, BK_qdx 25, TT_qkc 30, BK_negboth 32, TT_kpsplit_dxfirst 32, TT_qdx 32, TT_qdx_decl 32, TT_kpsplit_dzfirst 36, TT_qdx_qc 36 (201 insns), TT_qdx_kcinline 42.
+
+- [s20] src/code6cac_b.c was restored to its HEAD state after the measurements; the working tree carries no source edits from this session.
+
+- [s20] Chassis re-measured at dispatch: sandbox func_8002D780 --disable all -> {score 2, target_insns 202, build_insns 202} with candidate.c spliced into src/code6cac_b.c at HEAD 01bd10a2 (-mel -msoft-float).
+
+- [s20] TOOLING FACT for every future dump session: the instrumented cc1 must be selected explicitly with BB2_CC1=tools/gcc-2.7.2/cc1. engine/buildconfig.py's CC1 is tools/gcc-2.7.2/build/cc1, which is NOT instrumented - s19's dbg.py run without BB2_CC1 produced complete -da dumps and a 13-line stderr containing only front-end diagnostics and no BB2 debug records at all.
+
+- [s20] s19 left BB2_SCHED_DEBUG and BB2_PRIO_DEBUG off; they are the hooks that print sched.c's ready list, pick order, function-unit blockage and schedule_select's tie-break, and turning them on is what produced this session's attribution.
+
+- [s20] GCC 2.7.2's sched.c schedules each basic block BACKWARDS: block 7's jump (insn 210) is picked at clock 1 and the emitted order is the reverse of the pick order.
+
+- [s20] Block 7 pass-1 luid map (banked chassis): 0 ax(179), 1 dz(182), 2 az(185), 3 dx(188), 4 M1=dz*ax(191), 5 M2=dx*az(193), 6 kc(195), 7 qx=px-x0(198), 8 M3=dz*qx(200), 9 qz=pz-z0(202), 10 M4=dx*qz(204), 11 kp(206), 12 xor(208), 13 jump(210). Pick order 210,208,206,195,204,202,200,198,193,188,185,191,182,179.
+
+- [s20] rank_for_schedule (tools/gcc-2.7.2/sched.c:2408-2464) has exactly three terms - INSN_PRIORITY, dependence class against last_scheduled_insn, INSN_LUID - and schedule_select (sched.c:2660-2745) queues function-unit-blocked ready insns and picks the first survivor, because potential_hazard (sched.c:1327-1360) returns 0 for every unit=-1 insn.
+
+- [s20] The az/dx transposition is settled by INSN_LUID at pass-1 clock 40 and again at pass-2 clock 47 (ready = [multiply (blocked), dx, az]; both subus INSN_PRIORITY 1; RANKDBG cls=3 cls2=3 val=0; SELBEST insn=188 pos=1).
+
+- [s20] A single-use query difference is always emitted immediately before its consuming multiply: it becomes ready only when that multiply is scheduled, and the multiply unit is blocked for 11 cycles afterwards (SCHEDDBG SELBLOCK clock=16 insn=200 unit=1 cost=11), so it is the only unblocked filler.
+
+- [s20] TT_qdx QTYDBG blk=7 (tmp/grind/func_8002D780/s20/w_qdx/stderr_full.txt): dx qty4 reg131 birth 8 death 16 refs 3 ord=5 got=3 ($v1); dz qty1 reg130 birth 4 death 20 refs 3 ord=6 got=4 ($a0) - the target's seats with the target's dx-before-az emission order, spans 8 vs 16 and no tie.
+
+- [s20] TT_qdx pairdiff (tmp/grind/func_8002D780/s20/pairdiff_TT_qdx.txt, 20 hunks): hunks ours[48..86] are a pure global-alloc rename in the centroid blocks ($t1<->$t2, $t4<->$t5, $a2<->$a3 on the x0/z0/x2/z2/px/pz holders), and hunks ours[92..110] show block 7's first eight instructions matching the target modulo that rename, with the two kp multiplies emitted in the opposite order.
+
+- [s20] Sweep results (tmp/grind/func_8002D780/s20/v20.json, all 202 insns except TT_qdx_qc at 201): BK_base 2, TT_base 9, TT_qdz 9, TT_kpopswap 22, TT_negboth 24, BK_qdx 25, TT_qkc 30, BK_negboth 32, TT_kpsplit_dxfirst 32, TT_qdx 32, TT_qdx_decl 32, TT_kpsplit_dzfirst 36, TT_qdx_qc 36, TT_qdx_kcinline 42.
+
+- [s20] The queue's owner directive (auto-return after coupled sibling func_8002E6B0 reached floor 0) is discharged: the sibling's block-0 CSE geometry is the calibration reference for the seat model recorded here, and its block-7 spelling was already transplanted in s14 (rejected/s14-sibling-8002e6b0-transplant-slot-wrong-2.c).
+
+- [s20] src/code6cac_b.c was restored to its HEAD state after the measurements; the working tree carries no source edits from this session.
