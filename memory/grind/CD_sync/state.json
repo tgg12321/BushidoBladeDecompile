@@ -1152,6 +1152,14 @@
    "at": "2026-09-06T22:17:04.969152+00:00",
    "headline": "Class B CLOSED after 31 sessions: floor 5 -> 3. A dead store to the local p_old between the 0x4 store and the 0x30/0x34 clears denies local-alloc's combine_regs its reg_n_deaths==1 precondition, so th",
    "consumed": null
+  },
+  {
+   "from": "CD_datasync",
+   "floor": 0,
+   "session": 62,
+   "at": "2026-09-08T01:39:25.495464+00:00",
+   "headline": "CD_datasync COMPLETED-C",
+   "consumed": null
   }
  ],
  "escalation_deferrals": 0,
