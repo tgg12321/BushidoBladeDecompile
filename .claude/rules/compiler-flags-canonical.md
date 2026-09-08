@@ -50,6 +50,27 @@ rules, zero regressions after the OTag field-order restore + a 2-rule decBs0
 re-fit. This does NOT reopen flag-hunting: the flag set (now including -mel)
 remains frozen and the walls remain source-structure.
 
+## `-msoft-float` (2026-09-07) — the second target-triple default corrected
+
+Adopted by delegated owner ruling 2026-09-07 (docs/grind/decisions.md, same-day
+entry). The same `mips-mips-gnu` cc1 build defaults to HARD float; the PS1 has
+no FPU and PsyQ's original `cc1psx` prints `# Cc1 defaults: -mgas -msoft-float`
+in every asm file it emits (verified directly: `float a*b` → `jal __mulsf3`
+under cc1psx, `mul.s` under our default). The integer-code consequence:
+`CONDITIONAL_REGISTER_USAGE` fixes the 32 FP registers only under soft float,
+and `loop.c:532` sizes the invariant-hoist threshold from `n_non_fixed_regs`
+(122 hard vs 58 soft, tested at `loop.c:1631` as
+`threshold * savings * lifetime >= insn_count`). Our build had been hoisting
+loop invariants the original compiler left in-loop for every loop with
+`insn_count` in (58, 122]. Project-wide blast radius measured at exactly two
+functions: func_8007526C (ordinary do-while body becomes byte-exact) and
+func_800324D0 (its `/* FAKE */` completion was an artifact of the wrong
+threshold — reopened). cc1psx reproduces the target's loop shape on the
+ordinary body instruction-for-instruction. Like `-mel`, this is
+configuration fidelity, NOT a flag-hunting precedent — the flag set (now
+`-mel -msoft-float`) stays frozen. cc1psx's printed `Cc1 defaults` header is
+the authoritative record of the original configuration.
+
 ## The only real per-file flag variation (already encoded)
 
 | Mechanism (Makefile) | Flag | Why |

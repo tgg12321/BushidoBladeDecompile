@@ -25444,3 +25444,52 @@ Oracle re-verified green after the revert (ok true, build_matches true).
 ## 2026-09-07 17:07 — func_8007526C — ruling: func_8007526C now reaches honest floor 1 (sandbox score 1, build_insns 90 of the — **FAIL**
 
 Read candidate.c, state.json (judge_constraints + banned_constructs), and the rejected/ set. The body is otherwise clean (real do-while, no FAKE, no dead store), but the four update sites decompose ONE literal 0xA into eight synthetic addends (2+2+1+1+1+1+1+1) on a nine-times-written carrier. Decisive fact: the sanctioned family (feedback split-init-accumulation-sanctioned; 2026-09-02 Ruling 4/B) restructures a REAL two-operand expression `a + b` into init + compound-assign -- its truthful semantic reading comes from the operands already existing in the program. Here the program quantity is a single atomic 0xA; no spec quantity equals 2 or 1, so the eight-step chain has NO semantic reading and cannot be a 'semantically-truthful spelling' under 2026-08-31 Ruling 1(3) -- that ruling protects choosing AMONG truthful spellings, not fabricating operands. Under Ruling 1(2) a no-semantic-reading construct must sit in a frozen family with prerequisites met; this one does not (checklist 3 and 4 both fail: candidate.c's own rationale is loop.c:2989-3007 / loop.c:1631 insn_count, not program logic). Non-membership is a clean FAIL(CONSTRUCT), not an escalation. Answering the depth question: it is not a count limit -- each addend must correspond to a real quantity in the function's semantics, so the admissible split of `+= 0xA` is zero-deep. The two-step split of a genuine `a + b` remains sanctioned and is NOT banned here. Fallback ordinary-score13-baseline.c is preserved; the maspsx gate-line half of the earlier packet is untouched by this ruling.
+
+## 2026-09-07 — OWNER RULING (delegated: "research those pending items and follow through with your best judgment") — **`-msoft-float` ADOPTED as canonical CC_FLAGS; func_8007526C goto-family REFUSED (moot); func_800324D0 REOPENED**
+
+### The question that was pending
+func_8007526C's only floor-1 body was a fixed-2-iteration walk respelled as a backward
+`goto` solely so `loop.c` never sees a loop. Layer-2 split (PASS/FAIL) → FAIL, and the
+construct was filed as a NEW family needing an owner call. The alternative remedy on the
+same ledger (s1/s5 handoffs) was a build-flag change, which the driver may not spend.
+
+### What was measured today (all read-only, scripts under the job tmp dir)
+1. **PsyQ's original compiler is soft-float by default.** `tools/cc1psx.exe` (via
+   `tools/cc1psx_wrapper.sh`) prints in every asm file it emits:
+   `# Cc1 defaults: -mgas -msoft-float`. A `float a*b` compiles to `jal __mulsf3` under
+   cc1psx; our cc1 emits `mul.s` (a real FPU op, on a console with no FPU) and only
+   emits `__mulsf3` with `-msoft-float`.
+2. **Why it changes integer code.** `config/mips/mips.h:524-536` fixes all 32 FP regs
+   only under `!TARGET_HARD_FLOAT`; `loop.c:532` sets
+   `threshold = 2 * (1 + n_non_fixed_regs)` → 122 (hard) vs 58 (soft); `loop.c:1631`
+   hoists iff `threshold * savings * lifetime >= insn_count`. Same class of
+   target-triple default mismatch as `-mel` (2026-08-04).
+3. **cc1psx reproduces the target's loop shape on the ORDINARY body.** cc1psx on
+   `memory/grind/func_8007526C/ordinary-score13-baseline.c` (plain do-while, no FAKE,
+   no goto) keeps the four switch constants in-loop — instruction-for-instruction
+   identical to our cc1 with `-msoft-float`, differing only in `$L`/`.L` label prefixes.
+4. **Bytes.** Ordinary body + `-msoft-float` + the already-authorized maspsx label-nop
+   gate line: 91/91 words, the only differing word the linker-filled `%gp_rel` addend.
+   Hard float (today's build): 93 insns, score 13.
+5. **Blast radius, project-wide.** All 32 TUs compiled both ways: exactly two
+   functions change. func_8007526C (the target) and func_800324D0, whose committed
+   `/* FAKE */` duplicated-tail body inflates loop `insn_count` past the TRUE
+   threshold, so the `0xFF` hoist the target has stops (68/68 → 4 masked diffs). Every
+   plain body in its archived ledger measures the same RA residual it always had; the
+   layer-1-banned base/ff split body measures 0 under soft float as under hard.
+
+### Ruling
+- **`-msoft-float` joins the frozen canonical flag set** (Makefile `CC_FLAGS`/`CC_FLAGS_GP`,
+  `engine/buildconfig.py`, and every tool mirror). Configuration-fidelity correction,
+  not flag-hunting; `compiler-flags-canonical.md` updated. The 2026-08-04 note that
+  `-msoft-float` was "disproven" rested on one FAKE-carrying match and is superseded.
+- **func_8007526C:** the goto-loop family question is MOOT and the family is NOT
+  sanctioned — the ordinary do-while body is byte-exact under the correct
+  configuration with the gate line both reviewers already cleared. Lands as
+  COMPLETED-C after a fresh layer-2 cheat-reviewer PASS on the ordinary body.
+- **func_800324D0:** its completion was an artifact of the wrong threshold. Returns to
+  `INCLUDE_ASM` + `INCLUDE_RODATA` (asm-until-matched), ledger restored from
+  30e41b12 with this note, re-queued `origin: regression`. The base/ff ban stands
+  (construct grounds, config-independent); the Judge re-adjudicates in-pipeline.
+- Oracle proven green (full `verify-oracle --rebuild`) BEFORE either src change is
+  credited; `engine test` + `fixtures-verify` green.

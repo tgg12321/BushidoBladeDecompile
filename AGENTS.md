@@ -126,6 +126,13 @@ runtime `BYTES_BIG_ENDIAN` to match the little-endian PS1 (spill-slot layout,
 bitfield direction, lwl/lwr offsets). `-mel` is load-bearing for the oracle
 match — do not remove it.
 
+Since 2026-09-07 cc1 also runs with `-msoft-float`: the same triple defaults to
+HARD float, but the PS1 has no FPU and PsyQ's original cc1psx prints
+`# Cc1 defaults: -mgas -msoft-float`. Hard float leaves the 32 FP registers
+allocatable, which doubles GCC's loop-invariant hoisting threshold
+(`loop.c` 122 vs 58) and made our build hoist constants the original compiler
+kept in-loop. Also load-bearing — do not remove.
+
 All objects linked with `mipsel-linux-gnu-ld`, stripped to binary via `objcopy`, then `make_psexe.py` prepends the original 0x800-byte PS-EXE header. Final SHA1 compared against original.
 
 ### Environment setup
