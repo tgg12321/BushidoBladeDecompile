@@ -1,30 +1,28 @@
-/* CANDIDATE - _spu_pitch2note (src/main.c)  sandbox --disable all = 21  (s2, 2026-09-08)
- * Pure C, no FAKE constructs, 74/74 insns - the insn MULTISET now matches the
- * target exactly (inverse_compose classify: FIRST DIVERGENCE = RA).
+/* CANDIDATE - _spu_pitch2note (src/main.c)  sandbox --disable all = 20  (s3, 2026-09-08)
+ * Pure C, no FAKE constructs, 74/74 insns.  The insn MULTISET matches the target;
+ * the whole residual is a register-seat permutation plus two sched1 order
+ * inversions (see below).
  *
- * Three s2 deltas over the s1 body (36):
- *  1. SIBLING TRANSPLANT (-12): `curve *= 0x103B; curve >>= 12;` instead of
- *     `curve = (curve * 0x103B) >> 12;` - the split compound-assignment spelling
- *     the COMPLETED-C sibling `_spu_2pitch` (src/main.c, `ratio *= 0x103B;
- *     ratio >>= 12;`) uses for the same 0x103B curve step.  36 -> 24.
- *  2. HIT ARM FIRST (-1, and it is what removes the last STRUCTURAL residual):
- *     `if (target >= lo && target < hi) { result = ...; goto found; }` followed
- *     by the two increments, instead of s1's `if (miss) {incs} else {hit}`.
- *     The label now sits BEFORE the increments, so nothing separates
- *     `acc += step` from `inner++` and reorg.c:2969 fill_simple_delay_slots
- *     takes `acc += step` into the back-edge slot exactly as the target does
- *     (s1's F1 frontier item - closed).  24 -> 23.
- *  3. PRE-LOOP STATEMENT ORDER (-2): `target; scale; curve; oct;` (permutation
- *     p21 of the four pre-loop assignments) instead of `oct; scale; curve;
- *     target;`.  All 24 permutations were measured (21..25); p21 is the unique
- *     minimum and it seats `bit` in $v1 as the target does.  23 -> 21.
+ * s3 delta over the s2 body (21 -> 20), ONE change:
+ *   the upper inner-loop bound is spelled as a SPLIT compound assignment
+ *       hi = lower + next;
+ *       hi >>= 12;
+ *   while the lower bound stays folded (`lo = (lower + acc) >> 12;`).
+ *   Splitting BOTH bounds (h4/e2/e3 forms) or only the LOWER one (r2a) measures
+ *   21; splitting only the UPPER one is the unique -1.  Same
+ *   split-compound-assignment family as the s2 sibling transplant
+ *   (`curve *= 0x103B; curve >>= 12;` from the COMPLETED-C sibling _spu_2pitch).
  *
- * RESIDUAL (21) = a 5-seat RA permutation + 2 sched1 order inversions:
- *   shift $a0 vs $t2, pitch-copy $a3 vs $a0, lower $t3 vs $t4, acc $t2 vs $t3,
- *   outer $t4 vs $t2; and the pairs (andi target / move outer=0) and
- *   (srl v0 / addu v1) emitted in the opposite order.
- *   ra_solver: forward model EXACT (21/21 dispositions); inverse.py depth-2
- *   NEGATIVE for the 6-seat goal AND for the single flip shift $v1->$t2.
+ * The p21 pre-loop statement order (`target; scale; curve; oct;`) was re-swept
+ * over all 24 permutations on THIS loop shape (s3 q00..q23, range 20..24) and is
+ * still the unique minimum - q00 == p21 == the order below.
+ *
+ * RESIDUAL (20) = the same 5-seat RA permutation as s2 plus two order inversions:
+ *   pitch-copy $a3 vs $a0, shift $a0 vs $t2, lower $t3 vs $t4, acc $t2 vs $t3,
+ *   outer $t4 vs $t2; the (andi target / move outer,zero) pair and the
+ *   (addu lo / addu hi) pair are emitted in the opposite order.
+ *   ra_solver s2 status: forward model EXACT (21/21), inverse.py depth-2
+ *   NEGATIVE for the 6-seat goal and for the single flip shift $v1 -> $t2.
  *
  * Prototype s32 (u16, u16, u16); no header prototype exists and no in-EXE caller. */
 s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
@@ -72,7 +70,8 @@ s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
         next = step;
         for (inner = 0; inner < 0x20; inner++) {
             lo = (lower + acc) >> 12;
-            hi = (lower + next) >> 12;
+            hi = lower + next;
+            hi >>= 12;
             if (target >= lo && target < hi) {
                 result = (outer << 5) + inner;
                 goto found;

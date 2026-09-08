@@ -224,3 +224,52 @@ RA MODEL RESULT (the s3 frontier):
 - [s2] ra_solver forward model on the solo TU is EXACT (21/21 dispositions, sort order MATCH); pseudo map banked in hypotheses.md (76 pitch-copy, 79 bit, 80 shift, 85 lower, 88 acc, 92 outer)
 
 - [s2] Statement order inside the outer-loop body and `bit = 0` placement are inert or worse on the p21 base (q1 21, q2 21, q3 23)
+
+- [s3] FLOOR 21 -> 20.  The single change is the split of the UPPER inner-loop
+  bound: 'hi = lower + next; hi >>= 12;' with the lower bound left folded
+  ('lo = (lower + acc) >> 12;').  Splitting the lower bound instead, or both,
+  measures 21.  Body: memory/grind/_spu_pitch2note/candidate.c.
+- [s3] The full split-compound-assignment sweep over every remaining folded
+  expression is banked (hypotheses.md H16): only the 'hi' split helps; the
+  'step', 'result' and 'return' splits cost 13 / 15 / 24 points and the last two
+  ALSO add insns (75 / 76 vs 74).
+- [s3] The 24-permutation pre-loop order sweep was re-run on the new loop shape:
+  'target; scale; curve; oct;' (s2's p21 = s3's q00) is still the unique minimum
+  at 20; the spread is 20..24.
+- [s3] Residual at 20 (pairdiff: tmp/grind/_spu_pitch2note/s3/r2b_pairdiff.txt),
+  74/74 insns, insn multiset matches:
+    seats  pitch-copy $a3 vs $a0 | shift $a0 vs $t2 | lower $t3 vs $t4 |
+           acc $t2 vs $t3 | outer $t4 vs $t2
+    order  ours 'andi a2,a3,0xffff' at 15 and 'oct' at 19; target 'oct' at 15
+           and the andi at 20, after 'move outer,zero'
+    order  ours emits the UPPER bound's addu before the LOWER bound's; the
+           target emits the lower first.  No source ordering of the two bounds
+           flips it (h2/h3/e2/e3 all 20 with identical streams) - it is sched1.
+- [s3] The target seats the pitch copy in $a0 - an INCOMING-ARG register freed by
+  'move t8,a0' (cen_note) at insn 0 - while we take $a3, an ordinary free
+  call-clobbered register.  That is the signature of local-alloc's
+  copy-suggestion pass (qty_phys_copy_sugg), which is the one modelled RA input
+  s2's inverse.py run did not carry.  It is the s4 F1 probe.
+- [s3] Eliminating the pitch copy is NOT the answer: deriving 'search' from
+  'target' (d1) does remove it - 73 insns - and scores 22.  The target's 74
+  insns include the copy.
+- [s3] Sweep harness for the next session: tmp/grind/_spu_pitch2note/s3/apply.py
+  (splices a body file over the INCLUDE_ASM line in a pristine
+  'git show HEAD:src/main.c', LF-safe) + sweep.ps1 (applies + sandboxes a list of
+  variant names) + v/*.c (57 measured variants including q00..q23).
+
+- [s3] Floor 21 -> 20 on the HEAD chassis; the inherited s2 body was re-measured at 21 before any probe, so the chassis is unchanged from the ledger.
+
+- [s3] The winning body is the s2 candidate with exactly one edit: hi = lower + next; hi >>= 12; replacing hi = (lower + next) >> 12;. 74 build insns == 74 target insns; the insn multiset matches.
+
+- [s3] Residual at 20 is a 5-seat RA permutation (pitch-copy $a3 vs $a0, shift $a0 vs $t2, lower $t3 vs $t4, acc $t2 vs $t3, outer $t4 vs $t2) plus two order inversions: (andi target / move outer,zero) and (addu lo / addu hi).
+
+- [s3] NEW: the target emits the LOWER bound's addu before the UPPER bound's; ours emits the upper first, and no source ordering of the two bound statements flips it (h2/h3/e2/e3 produce identical streams) - it is sched1, not the C order.
+
+- [s3] NEW: the target seats the pitch copy in $a0, an incoming-arg register freed by move t8,a0 (cen_note) at insn 0, while we take the ordinary free $a3. That is the signature of local-alloc's copy-suggestion pass (qty_phys_copy_sugg), the one modelled RA input s2's inverse.py run did not carry.
+
+- [s3] Eliminating the pitch copy is not the answer: d1 removes it (73 insns) and scores 22; the target's 74 insns include the copy.
+
+- [s3] Sweep harness for the next session: tmp/grind/_spu_pitch2note/s3/apply.py (splices a body file over the INCLUDE_ASM line in a pristine git show HEAD:src/main.c, LF-safe) + sweep.ps1 (applies + sandboxes a list of variant names) + v/*.c (57 measured variants including q00..q23).
+
+- [s3] src/main.c was restored to HEAD at the end of the session; the 20-floor body lives in memory/grind/_spu_pitch2note/candidate.c.

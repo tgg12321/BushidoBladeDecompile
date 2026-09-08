@@ -1,7 +1,7 @@
 {
  "func": "_spu_pitch2note",
  "file": "main",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 21,
    "modality": "structural",
    "headline": "floor 36 -> 21: sibling _spu_2pitch's split `curve *= 0x103B; curve >>= 12;` (-12), hit-arm-first closes s1's back-edge delay-slot residual (74/74 insns, -1), pre-loop statement-order sweep p21 (-2); "
+  },
+  {
+   "session": 3,
+   "floor": 20,
+   "modality": "structural",
+   "headline": "Floor 21 -> 20: splitting ONLY the upper inner-loop bound (hi = lower + next; hi >>= 12;) is worth -1; the rest of the split-compound-assignment family, the re-run 24-permutation pre-loop order sweep,"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The 5 residual seats are set by local-alloc's SUGGESTED-REGISTER pass (qty_phys_copy_sugg / qty_phys_sugg), not by global.c priority - the pitch copy `move a3,a2` is a copy off the incoming $a2 and target seats it in $a0",
-   "mechanism": "local_alloc's block_alloc runs before global_alloc and its suggestion scan is reported-not-scored by the current model; its renumberings also seed global.c's regs_used_so_far",
-   "next_probe": "run tools/ra_solver/local_extract.py --suggest (BB2_SUGG_DEBUG) on the SOLO TU (tmp/grind/_spu_pitch2note/s2/solo/) and price the pitch-copy, shift and outer quantities; then ask inverse.py local for the flip"
+   "hypothesis": "The 5 residual seats are set by local-alloc's suggested-register pass (qty_phys_copy_sugg / qty_phys_sugg): the pitch copy is a copy off the incoming $a2 and the target seats it in $a0, an arg register freed at insn 0",
+   "mechanism": "local_alloc's block_alloc runs before global_alloc and its suggestion scan is reported-not-scored by the current ra_solver model; its renumberings also seed global.c's regs_used_so_far",
+   "next_probe": "run tools/ra_solver/local_extract.py --suggest (BB2_SUGG_DEBUG) on the SOLO TU (tmp/grind/_spu_pitch2note/s2/solo/ + extract_solo.py - the instrumented cc1 segfaults on the full main.i) rebuilt from the s3 body, price the pitch-copy, shift and outer quantities, then ask inverse.py local for the flip"
   },
   {
-   "hypothesis": "The two sched1 order inversions (andi target / move outer=0, and srl v0 / addu v1) are a separate residual that survives the RA fix and needs sched_solver",
-   "mechanism": "sched1 runs before local/global alloc, so its order also sets the live lengths global.c prices",
-   "next_probe": "after the RA seats move, run tools/sched_solver on the p21 body; do NOT run it first - the livelen what-ifs for these two inversions are already measured inert (whatif.py)"
+   "hypothesis": "The two sched1 order inversions - (andi target / move outer,zero) and the newly-identified (addu lo / addu hi) pair - are a separate residual that survives the RA fix",
+   "mechanism": "sched1 runs before local/global alloc, so its order also sets the live lengths global.c prices; the addu pair is provably immune to C statement order (s3 h2/h3/e2/e3)",
+   "next_probe": "run tools/sched_solver on the r2b body AFTER the RA seats move; the livelen what-ifs for the first inversion are already measured inert (s2 whatif.py)"
   },
   {
-   "hypothesis": "p21 is only the minimum for the CURRENT inner-loop shape; any inner-loop change re-opens the 4-point spread",
+   "hypothesis": "The 24-permutation pre-loop order sweep is only the minimum for the CURRENT inner-loop shape",
    "mechanism": "the pre-loop assignment order sets first-definition pseudo numbers, which are both the allocno tie-break and sched1's LUID tie-break",
-   "next_probe": "re-run the 24-permutation sweep (bash tmp/grind/_spu_pitch2note/s2/measure.sh p00 .. p23) after any change to the loop body - it is nearly free"
+   "next_probe": "re-run tmp/grind/_spu_pitch2note/s3/sweep.ps1 q00..q23 after ANY change to the loop body - it is nearly free and the spread is 4 points"
   }
  ],
  "judge_constraints": [],
@@ -84,6 +90,46 @@
    "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, p21 body at floor 21, solo-TU model with simulate.py exact 21/21",
    "predicate_cite": "",
    "result": "both inverse runs return the validated depth-2 NEGATIVE (search bounds refs +12/-6, livelen +/-2,4,8) and the livelen wh"
+  },
+  {
+   "session": 3,
+   "statement": "Making target = pitch; a loop invariant so loop.c hoists it into the preheader reproduces the target's late andi placement",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, r2b body at floor 20",
+   "predicate_cite": "",
+   "result": "21/21/21/24/22/24 for m1_*, identical six for m2_*; best 21, one point worse than the pre-loop placement, and the andi d"
+  },
+  {
+   "session": 3,
+   "statement": "Block-local (nested-scope) declarations of the loop temporaries move the allocation",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, p21 body at 21 and r2b body at 20",
+   "predicate_cite": "",
+   "result": "exactly the base score in every case (21 on p21, 20 on r2b) - same conclusion as s2's H10 for function-scope declaration"
+  },
+  {
+   "session": 3,
+   "statement": "Statement order inside the outer-loop body is a live lever on the new (r2b) loop shape",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, r2b body at floor 20",
+   "predicate_cite": "",
+   "result": "all five measure 20, unchanged from the base"
+  },
+  {
+   "session": 3,
+   "statement": "Re-spelling the scan loop or the search value moves the residual seats",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, r2b body at floor 20",
+   "predicate_cite": "",
+   "result": "s3/s6/r8 byte-neutral at 20; d2/d4/g1 21; d6 23; d1 22 with 73 insns (the pitch copy is eliminated, but the target HAS t"
+  },
+  {
+   "session": 3,
+   "statement": "The split-compound-assignment family helps on the other folded expressions of this function (step, result, return, lower, upper, scale, oct)",
+   "kill_scope": "instance",
+   "measured_on": "HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, p21 body at 21 and r2b body at 20",
+   "predicate_cite": "",
+   "result": "r1 33, r3 35 at 75 insns, r4 44 at 76 insns, f1 22, f2 21, r7 23 (re-confirms s2 H15); only r6 and f3 are byte-neutral. "
   }
  ],
  "ladder_skip": 0,
