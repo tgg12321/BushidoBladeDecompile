@@ -38,7 +38,7 @@ CPP = ("mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin "
        "-D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C")
 CC1 = ROOT / "tools" / "gcc-2.7.2" / "cc1"
 CC1_FLAGS = ("-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 "
-             "-mno-abicalls -fno-builtin -w -mel")
+             "-mno-abicalls -fno-builtin -w -mel -msoft-float")
 
 QTY = re.compile(
     r"^QTYDBG(?P<sugg>-SUGG)? blk=(?P<blk>-?\d+) ord=(?P<ord>-?\d+) "

@@ -40,8 +40,8 @@ MULTU_PAD = "python3 tools/multu_pad.py --funcs multu_pad_funcs.txt"
 # tracked prologue_fix config only.
 
 # -- Flags ------------------------------------------------------------------
-CC_FLAGS = "-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel"
-CC_FLAGS_GP = "-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel"
+CC_FLAGS = "-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
+CC_FLAGS_GP = "-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 AS_FLAGS = "-Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0"
 CPP_FLAGS = "-Iinclude -undef -Wall -lang-c -fno-builtin"
 CPP_DEFS = (

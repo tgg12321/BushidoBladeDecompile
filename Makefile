@@ -32,8 +32,12 @@ CPP          := mipsel-linux-gnu-cpp
 # -mel: MANDATORY. The prebuilt cc1's mips-mips-gnu triple defaults BIG-endian;
 # -mel flips BYTES_BIG_ENDIAN (spill-slot layout, bitfield direction, lwl/lwr).
 # Load-bearing for the oracle match — do not remove (see AGENTS.md).
-CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
-CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel
+# -msoft-float: MANDATORY. The same triple defaults HARD-float; the PS1 has no
+# FPU and PsyQ cc1psx prints "# Cc1 defaults: -mgas -msoft-float". Hard float
+# leaves 32 FP regs allocatable, doubling loop.c's invariant-hoist threshold
+# (122 vs 58) — adopted 2026-09-07 (docs/grind/decisions.md). Do not remove.
+CC_FLAGS     := -O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float
+CC_FLAGS_GP  := -O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float
 AS_FLAGS     := -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0
 CPP_FLAGS    := -Iinclude -undef -Wall -lang-c -fno-builtin
 CPP_DEFS     := -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx \

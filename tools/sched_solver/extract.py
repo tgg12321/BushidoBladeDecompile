@@ -29,7 +29,7 @@ CPP = ("mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin "
 CC1 = ROOT / "tools" / "gcc-2.7.2" / "cc1"              # instrumented
 CC1_REF = ROOT / "tools" / "gcc-2.7.2" / "build" / "cc1"  # the build compiler
 CC1_FLAGS = ("-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 "
-             "-mno-abicalls -fno-builtin -w -mel")
+             "-mno-abicalls -fno-builtin -w -mel -msoft-float")
 
 
 def preprocess(stem: str) -> Path:

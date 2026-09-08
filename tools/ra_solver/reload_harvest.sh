@@ -13,7 +13,7 @@ cd "/mnt/c/Users/Trenton/Desktop/Bushido Blade 2 Decompile"
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin \
 -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ \
 -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
-BASE="-O2 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel"
+BASE="-O2 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 GP_FILES="text1a"          # keep in sync with the Makefile's GP_FILES
 CC1=tools/gcc-2.7.2/cc1
 OUT=tmp/reload_work

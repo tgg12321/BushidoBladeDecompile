@@ -66,8 +66,8 @@ SH=$(sha1sum "$SCRATCH/cc1" | cut -d' ' -f1)
 echo "   built: $SCRATCH/cc1  ($(stat -c%s "$SCRATCH/cc1") bytes)  sha1 $SH"
 
 echo "== fidelity check: diagnostic vs ORACLE ($ORACLE) over all TUs"
-F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel"
-FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel"
+F="-O2 -G0 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
+FG8="-O2 -G8 -funsigned-char -quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float"
 CPP="mipsel-linux-gnu-cpp -Iinclude -undef -Wall -lang-c -fno-builtin -Dmips -D__GNUC__=2 -D__OPTIMIZE__ -D__mips__ -D__mips -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C"
 W=tmp/cc1diag_check; mkdir -p $W
 n=0; bad=""; lines=0
