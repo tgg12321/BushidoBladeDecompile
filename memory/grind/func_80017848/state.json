@@ -1,8 +1,8 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 53,
- "current_modality": "structural",
+ "session_count": 54,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -321,23 +321,29 @@
    "floor": 3,
    "modality": "structural",
    "headline": "The function is symmetric: a mirror-spelled loop 2 (cell S2) matches the target everywhere except ONE missing preheader copy per loop, the dumps prove that copy is a combine-time use-count question ra"
+  },
+  {
+   "session": 54,
+   "floor": 3,
+   "modality": "synthesis",
+   "headline": "Residual pinned to a 2-instruction transposition in loop 2 and attributed insn-by-insn from the .combine dump: loop-1's copy and loop-2's wrong guard instruction are two ends of ONE device (the `p = q"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "A second use of the preheader copy destination that cse CANNOT fold to base would leave the surviving copy as a copy of the POINTER placed before the base add - the exact target shape - on the S2/V1 symmetric chassis where everything else already matches.",
-   "mechanism": "Combine keeps a reg-reg move whose dest has 2+ uses (proved this session by V1 and Z1). Every second use tried so far was an address of the form sh + q + K, which cse recognises as base + K and folds, moving the surviving copy onto base and after the base add. A second use that reads the pointer through a DIFFERENT addend - the other slot's shift (slot_b << 6), a use in the loop body's early-return arm, or a use whose address the target also materialises independently - would not be foldable to base.",
-   "next_probe": "On tmp/grind/func_80017848/s53/body_S2.c enumerate non-base-relative second uses of q and q2: (a) fold *(s32 *)((slot_b << 6) + (s32)q2 + 0x18) into the loop-2 guard test, (b) use q2 inside the do-while body's early-return arm, (c) pass q2 as math_Distance3D's SECOND (slot_b-shifted) argument, which the target computes from a separate sll. Measure each and diff the preheaders against s53/T.txt lines 34-37 and 58-61."
+   "hypothesis": "Loop 2's copy is reachable only if its destination gets a second use that is neither an address (cse folds it to `base`) nor a value that replaces one of the target's three post-loop ctx+0xC reloads. The one untried shape is a PERMUTATION rather than an addition: keep the reload count at three and change WHICH post-loop consumer reads the carrier, so no load is deleted.",
+   "mechanism": "The target reloads ctx+0xC at combine insns 222 (call), 270 (rec_a) and 293 (rec_b). Every s52-s54 cell that gave the carrier a value use removed one of those loads, costing an instruction; but if the carrier feeds rec_a AND rec_a's former load is re-introduced by giving the CALL its own read plus a second fresh read for rec_b, the reload count is unchanged and only the carrier's live range moves.",
+   "next_probe": "On the s53 S2 mirror chassis (tmp/grind/func_80017848/s53/body_S2.c), spell rec_a's pointer as `(u8 *)((slot_a << 6) + (s32)q2)` while adding a fresh `*(u8 **)(ctx + 0xC)` read for the math_Distance3D arg pair and another for rec_b, so the build still issues three post-loop loads. Measure, then diff the loop-2 preheader against tmp/grind/func_80017848/s54/T.txt lines 58-61 and the tail against lines 76-113."
   },
   {
-   "hypothesis": "On the symmetric chassis the guard's pointer/shift seat swap (build a1/a0 vs target a0/a1) is a consequence of the missing copy, not an independent residual, so it will resolve for free once the copy lands.",
-   "mechanism": "In S2 the pointer pseudo dies at the base add (REG_DEAD in .combine insn 89), which shortens its live range and changes its position in the allocation order; the target's copy extends the pointer's range by one insn. Loop-1's seats are already correct in BASE, where the pointer is live into loop 2's guard.",
-   "next_probe": "Take the best cell that materialises a POINTER copy in a preheader (V1 for loop 1) and check whether that loop's guard seats are a0/a1 in tmp/grind/func_80017848/s53/B_V1.txt; if they are, the seat swap is dependent and needs no separate lever. Then re-measure S2 with only loop 1 chained to isolate."
+   "hypothesis": "The target's loop-1 copy has one use in 127 instructions, so at least one of the two copies is produced by a pass other than combine-survival-by-use-count. Identifying that producer is worth more than another C spelling.",
+   "mechanism": "In BASE's .combine the copy is (set 80 79) with the base add reading 79, yet the emitted asm is `addu a3,a0,zero` / `addu a0,a1,a3` - the base add's operand was rewritten from reg 79 to reg 80 AFTER combine. local-alloc.c's optimize_reg_copy family (or reload's inheritance) is the only candidate; whichever transform does it may be reachable in loop 2 without any tail at all.",
+   "next_probe": "With BASE applied, read tmp/grind/func_80017848/dumps/ings.lreg and ings.greg around the insns that were 83/89/141 in .combine and find the pass at which the base add's operand becomes reg 80. Then check whether the same transform's precondition (a reg-reg move whose source dies at the move) can be created in loop 2 by making the preheader read a distinct pseudo that dies immediately."
   },
   {
-   "hypothesis": "Z1 (9 at 127/127) is a better starting chassis than BASE (3 at 127/127) for the remaining work even though its score is higher, because its residual is entirely preheader shape while BASE's 3 encodes the structural asymmetry.",
-   "mechanism": "Score counts differing instructions, not distance-to-solution. BASE is 3 because its asymmetric spelling happens to land the loop-1 preheader and the loop-2 guard load in the right places, and that same spelling cannot also buy loop-2's copy (measured across s11-s52). Z1 has both loops in the target's structural shape with only the copy's kind and position wrong.",
-   "next_probe": "Run the frontier-1 probes on the Z1 body (memory/grind/func_80017848/rejected/s53_chain_plus_loop2_latch_via_q2_BEST_M_BRANCH_costs_9.c) as well as on S2, and record BOTH scores per cell so the next session can see which chassis the lever moves."
+   "hypothesis": "Attacking the join copy rather than the preheader copy: cell X1 is 127/127 with loop 1 byte-exact and only loop-2's guard/preheader wrong (7). If loop-1's `p = q;` join copy can be made free - `p` given a single reaching definition at loop-2's preheader - X1 loses one instruction of pure overhead and the residual reduces to the single missing preheader copy.",
+   "mechanism": "The join copy exists because `p` has two reaching definitions at loop-2's guard block (the entry read on the skip path, `q` on the loop path). A single-definition carrier removes it, but the obvious spellings make `q` undefined on the loop-1 skip path; the s53 AE/AF/AG family (q pre-initialised before loop 1) priced that at 11-12 because the pre-initialisation itself lands a copy in loop-1's guard block.",
+   "next_probe": "On tmp/grind/func_80017848/s54/body_X1.c, try defining the carrier on BOTH paths at zero cost: give loop-1's `if` an else-arm-free spelling in which the entry read and `q` are the SAME variable while loop-1's preheader read is a distinct one (i.e. invert which of the two pseudos carries out of the loop), and measure whether the join copy disappears without loop 1 losing its own preheader copy."
   }
  ],
  "judge_constraints": [],
@@ -351,38 +357,6 @@
  "last_unpark_reason": "Newly VISIBLE completed siblings in the same TU (tombstone backfill, commit 0ddc72c8): func_80017D84 \u2014 already named by this ledger's own s45 object-model audit as the source of its 52-byte data model \u2014 plus func_80016E60 and main, all COMPLETED-C in src/ings.c and never read by this ledger. PROBE: read their on-main bodies and transplant their loop-2 preheader / copy-geometry spellings onto the f",
  "last_unpark_at": "2026-09-08T01:58:36.569292+00:00",
  "kills": [
-  {
-   "session": 35,
-   "statement": "s34's frontier item 3 is disposed by reading: combine.c:902 cannot save the preheader copy even when provoked, because that refusal is only reachable with the copy in the i1 slot of a three-insn combi",
-   "kill_scope": "instance",
-   "measured_on": "source reading of tools/gcc-2.7.2/combine.c against the P4 dump geometry (tmp/grind/func_80017848/dumps/ings.combine); floor-3 chassis re-audited this session; no FAKE constructs anywhere in the tree",
-   "predicate_cite": "",
-   "result": "The frontier item is retired without spending cells. s34's R1 negative was not a failure to provoke the path; provoking "
-  },
-  {
-   "session": 36,
-   "statement": "On the BASE floor-carrier chassis, giving loop 2's redundant *(u8 **)(ctx + 0xC) read a named carrier q2 plus a second use evaluated BEFORE the base add (s35 frontier item 1, ported from the join chas",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the D1/D2/D3/D4 cell bodies on the BASE (candidate) chassis; BASE re-measured 3 at 127/127 this session; no FAKE constructs anywhere in the tree",
-   "predicate_cite": "",
-   "result": "D1 = 5 at 127 target / 128 build insns, D2 = 6 at 127/128, D3 = 31 at 127/124, D4 = 3 at 127/127 (exact tie with BASE in"
-  },
-  {
-   "session": 36,
-   "statement": "The closest-to-target banked instance kill (Q1, s34 - target's complete 127-instruction stream with a pure register-permutation residual) scores differently on the current chassis or with FAKE constru",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus tmp/grind/func_80017848/s34/body_Q1.c; BASE 3 at 127/127; no FAKE constructs anywhere in the tree",
-   "predicate_cite": "",
-   "result": "Q1 = 14 at 127/127, exactly its banked s34 number. fake_ablate prints 'no FAKE-annotated constructs found ... nothing to"
-  },
-  {
-   "session": 37,
-   "statement": "Some context specific to this function's chassis (its 15 locals, two loops, argument moves, call, LOG_LINK order, cuid distances, combine's reg_last_set bookkeeping) is what lets combine delete the pr",
-   "kill_scope": "class",
-   "measured_on": "standalone scratch TUs under the exact project CC_FLAGS, plus BASE re-audited at 3 (127/127) over the HEAD src/ings.c:820 INCLUDE_ASM anchor; no FAKE constructs anywhere",
-   "predicate_cite": "tools/gcc-2.7.2/combine.c:1458",
-   "result": "m5 and m4 both put the exact geometry in .cse2 (copy insn 71/70 with its destination promoted to canonical by cse.c:826 "
-  },
   {
    "session": 37,
    "statement": "The solver's object-level classify on the BASE chassis types the floor-3 residual as a register-seat (RA) permutation that inverse.py can search.",
@@ -830,6 +804,38 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with each s53 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session.",
    "predicate_cite": "",
    "result": "BA = 21 at 127, BB = 13 at 127, BC = 21 at 126, BD = 21 at 127, Y1 = 15 at 125, Y2 = 15 at 125, Z4 = 32 at 128, W1 (no `"
+  },
+  {
+   "session": 54,
+   "statement": "Writing both loops as `while` loops, so that jump.c's duplicate_loop_exit_test synthesises the guard from the exit test, measures 29 at 120/127 on this chassis: the latch's bound is hoisted out of the",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s54/body_WA.c applied; BASE re-audited at 3 (127/127) in the same session; tools/fake_ablate.py reports no FAKE construct in candida",
+   "predicate_cite": "",
+   "result": "WA = 29 at 120/127. The preheader copy that does appear is `addu a2,v0,zero`, a copy of the guard's computed ADDRESS rat"
+  },
+  {
+   "session": 54,
+   "statement": "Sourcing loop-2's preheader base from loop-1's exit-tail carrier while loop-2's guard reads ctx+0xC fresh measures 7 at 127/127: the join copy moves above the guard load instead of replacing it.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with each s54 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session",
+   "predicate_cite": "",
+   "result": "X1 = X2 = X4 = 7 at 127/127, X3 = 14 at 127. All three 7-cells emit `addu a0,a3,zero` BEFORE `lw v0,12(s2)` in loop-2's "
+  },
+  {
+   "session": 54,
+   "statement": "Statement order inside loop-2's preheader is byte-neutral (cell Z measures 3 at 127/127, identical to BASE), so combine's adjacency test is not the gate that decides the copy on this chassis; the gate",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s54/body_Z.c applied; no FAKE construct present; BASE re-audited at 3 (127/127) in the same session",
+   "predicate_cite": "",
+   "result": "Z = 3 at 127/127, byte-identical to BASE. Banked rejected/s54_l2_named_q2_lnk2_mirrors_l1_order_no_change_costs_3.c. Pre"
+  },
+  {
+   "session": 54,
+   "statement": "Each of the ten second-use spellings measured this session for loop-2's preheader copy destination scores between 5 and 17: an address use is folded to `base` by cse and yields a copy of base after th",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with each s54 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session",
+   "predicate_cite": "",
+   "result": "ZB = 8 at 125, ZC = 17 at 127, ZD = 5 at 128, ZE = 6 at 128, M = 17 at 126, M2 = 17 at 126, M3 = 16 at 126, F2 = 17 at 1"
   }
  ],
  "escalation_deferrals": 0,

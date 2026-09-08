@@ -4877,3 +4877,117 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - probe: memory/grind/func_80017848/candidate.c, tmp/grind/func_80017848/s52/body_J4.c and body_G.c applied in turn at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`.
 - result: BASE = 3 at 127/127, J4 = 8 at 125/127, G = 22 at 127/127 - all identical to their s52 values. The s52 instance kills stand.
 - verdict: CONFIRMED
+
+## s54 (2026-09-07, synthesis)
+
+## [s54] BASE's floor-3 residual is a two-instruction transposition confined to loop 2: the target puts the ctx+0xC LOAD in loop-2's guard and the reg-reg COPY in loop-2's preheader, BASE puts the COPY in the guard and the LOAD in the preheader.
+- mechanism: BASE's loop-1 exit tail `p = q;` is a join copy that materialises at the merge block, and that merge block IS loop-2's guard block; it therefore occupies the slot where the target emits `lw a0,12(s2)`, and loop-2's preheader is then left with nothing to copy from and issues a fresh load instead.
+- probe: memory/grind/func_80017848/candidate.c applied at the HEAD src/ings.c:820 anchor, `sandbox func_80017848 --disable all`, normalised objdump diff tmp/grind/func_80017848/s54/T.txt vs s54/B.txt.
+- result: 3 at 127/127; the entire diff is `lw a0,12(s2)` / `addu a3,a0,zero` / `addu a0,a1,a3` (target) against `addu a0,a3,zero` / `lw v0,12(s2)` / `addu a0,a1,v0` (build). Both sides emit exactly one load and one copy per loop; only their placement differs.
+- verdict: CONFIRMED
+
+## [s54] The RTL producer of every part of the residual is now read from dumps: loop-1's copy is combine insn 83 kept alive by the tail at insn 141, loop-1's base add reads the copy's SOURCE rather than its destination, and loop-2's preheader is a genuine memory load (insn 162, the s47 solver's local allocno reg 113).
+- mechanism: cse propagates the guard's pointer pseudo into the base add, so the preheader copy is never the base add's operand; combine deletes such a copy unless its destination is used again, which the `p = q;` tail supplies. Loop 2 has no equivalent because reg 79 carries REG_DEAD at loop-2's guard add and the ctx+0xC memory equivalence does not survive loop 1's blocks.
+- probe: `pwsh tools/grinder/dump.ps1 func_80017848` with BASE applied; read tmp/grind/func_80017848/dumps/ings.combine from line 6767 (insns 64, 66, 72, 75, 79, 83, 86, 89, 141, 148, 151, 155, 158, 162, 164, 335).
+- result: insn 83 = (set (reg/v 80) (reg/v 79)); insn 89 = (set (reg/v 81) (plus (reg/v 84) (reg/v 79))); insn 141 = (set (reg/v 79) (reg/v 80)); insn 162 = (set (reg 113) (mem (plus (reg/v 72) (const_int 12)))). The s52 local-alloc.c:700 attribution and the s53 framing that loop 2 needs a spelling loop 1 does not are both superseded by this reading.
+- verdict: CONFIRMED
+
+## [s54] The two-step guard temp (`t = sh + (s32)p; t = *(s32 *)(t + 0x1C);`) is load-bearing: reusing one variable for the guard address and the guard value clobbers the pseudo holding `sh + p`, which is what forces the preheader to recompute the base add instead of reusing the guard's address.
+- mechanism: combine insns 72 and 75 both write reg 86, so cse's record of (plus sh p) is destroyed before the preheader is reached. A single-expression guard leaves the address pseudo live and cse folds the preheader's base add into it, leaving a copy of BASE after the add rather than a copy of the POINTER before it.
+- probe: cell XM (tmp/grind/func_80017848/s54/body_XM.c, loop 2 mirrored WITHOUT the two-step temp) applied at the HEAD anchor and scored; normalised objdump diff.
+- result: XM = 17 at 126/127; loop-2's guard emits `addu a3,v0,a1` and the preheader emits `addu a1,a3,zero`, a copy of base. The device is present in BASE's loop 1 and in s53's S2 loop 2 and absent from the whole s52 N-family, which retrospectively explains those scores.
+- verdict: CONFIRMED
+
+## [s54] Writing both loops as `while` loops, so that jump.c's duplicate_loop_exit_test synthesises the guard from the exit test, does not reproduce the target on this chassis: the latch's bound is hoisted out of the loop and the build is seven instructions short.
+- mechanism: duplicate_loop_exit_test copies the exit-test insns before the loop and remaps pseudos used only in the exit code, which does produce a preheader copy; but the copied exit test leaves the original bound load loop-invariant, and loop.c then hoists it, whereas the target reloads `lw v0,28(a0)` on every iteration.
+- probe: cell WA (tmp/grind/func_80017848/s54/body_WA.c) applied at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`; normalised objdump diff against s54/T.txt.
+- result: WA = 29 at 120/127. The preheader copy that does appear is `addu a2,v0,zero`, a copy of the guard's computed ADDRESS rather than of the pointer. Banked rejected/s54_while_loops_duplicate_loop_exit_test_hoists_latch_costs_29.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s54/body_WA.c applied; BASE re-audited at 3 (127/127) in the same session; fake_ablate reports no FAKE construct in candidate.c and none of these cells adds one
+
+## [s54] Sourcing loop-2's preheader base from loop-1's exit-tail carrier while loop-2's guard reads ctx+0xC fresh moves the join copy above the guard load instead of replacing it.
+- mechanism: giving `p` a consumer in loop-2's preheader keeps loop-1's tail alive, so loop 1 stays byte-exact, but `p` still has two reaching definitions and the join copy is still emitted; with the guard now reading memory the copy is simply scheduled ahead of the load rather than taking its place.
+- probe: cells X1, X2, X4 (fresh p2 guard read, preheader base from p, with and without a named intermediate and a loop-2 tail) and X3 (loop-2's guard read reusing variable q) in tmp/grind/func_80017848/s54/, each applied at the HEAD anchor and scored.
+- result: X1 = X2 = X4 = 7 at 127/127, X3 = 14 at 127. All three 7-cells emit `addu a0,a3,zero` BEFORE `lw v0,12(s2)` in loop-2's guard block and `addu a0,a1,a0` with no copy in the preheader. Banked rejected/s54_l2_guard_fresh_read_preheader_base_from_l1_carrier_costs_7.c and rejected/s54_l2_guard_read_reuses_q_costs_14.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s54 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session
+
+## [s54] Statement ORDER inside loop-2's preheader is byte-neutral, so combine's adjacency test is not the gate that decides the copy; the gate is the copy destination's use count.
+- mechanism: combine's `added_sets_2 = ! dead_or_set_p (i3, i2dest)` (tools/gcc-2.7.2/combine.c:1453) decides whether the i2 SET has to be carried into the merged pattern; the `! all_adjacent` clause in can_combine_p only rejects when an intervening insn SETS a register the source uses, which the `lw ..,16(s2)` sitting between them never does.
+- probe: cell Z = BASE with loop 2 given explicit named intermediates in loop-1's exact order (`q2 = *(u8 **)(ctx + 0xC); lnk2 = *(u8 **)(ctx + 0x10); base = (u8 *)(sh2 + (s32)q2);`), applied at the HEAD anchor and scored; cross-checked against s53's S2, whose loop 1 carries the same ordering yet loses its copy for want of a tail.
+- result: Z = 3 at 127/127, byte-identical to BASE. Banked rejected/s54_l2_named_q2_lnk2_mirrors_l1_order_no_change_costs_3.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s54/body_Z.c applied; no FAKE construct present; BASE re-audited at 3 (127/127) in the same session
+
+## [s54] Every second use available to loop-2's preheader copy destination is priced: an address use is folded to `base` by cse and yields a copy of base after the base add, and a value use consumes one of the three ctx+0xC reloads the target performs after the loops, dropping the build to 126 instructions.
+- mechanism: BASE's .combine carries three independent (mem (plus (reg 72) (const_int 12))) loads after the loops (insn 222 for math_Distance3D, insn 270 for rec_a, insn 293 for rec_b). Routing the carrier into any of them makes GCC use the register it already holds and deletes that load; routing it into an address instead lets cse recognise sh2 + q2 + K as base + K and attaches the second use to the base pseudo.
+- probe: ten cells across two chassis, all applied at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`. On BASE: ZB (q2 sourced from the carrier), ZC (latch bound via the carrier), ZD (latch bound via q2), ZE (body index via q2). On the s53 S2 mirror chassis: M (both tails plus call arg0 via p), M2 (loop-2 tail only), M3 (loop-2 tail placed inside the preheader), F2 (copy dest feeds only the tail while the base is routed through the guard pseudo p2), F2b (the same shape in both loops). Plus a re-measurement of s52's N2.
+- result: ZB = 8 at 125, ZC = 17 at 127, ZD = 5 at 128, ZE = 6 at 128, M = 17 at 126, M2 = 17 at 126, M3 = 16 at 126, F2 = 17 at 126, F2b = 17 at 126, N2 = 17 at 126 (unchanged from its s52 value). ZD's diff shows the predicted `addu a1,a0,zero` copy of BASE emitted after the base add. Seven bodies banked as rejected/s54_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s54 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session
+
+## [s54] The mandatory kill re-audit found nothing void: BASE re-measures at its banked value on the HEAD chassis and carries no FAKE construct.
+- mechanism: instance kills are chassis-relative and FAKE-state-relative, so the closest banked form is re-measured before new probes are spent.
+- probe: memory/grind/func_80017848/candidate.c applied at the HEAD src/ings.c:820 anchor and scored; `python3 tools/fake_ablate.py --func func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c`.
+- result: BASE = 3 at 127/127, identical to its s52/s53 value; fake_ablate reports "no FAKE-annotated constructs found". Every s52/s53 instance kill stands on this chassis.
+- verdict: CONFIRMED
+
+## [s54] BASE's floor-3 residual is a two-instruction transposition confined to loop 2: the target puts the ctx+0xC LOAD in loop-2's guard and the reg-reg COPY in loop-2's preheader, while BASE puts the COPY in the guard and the LOAD in the preheader.
+- mechanism: BASE's loop-1 exit tail `p = q;` is a join copy that materialises at the merge block, and that merge block IS loop-2's guard block, so it occupies the slot where the target emits `lw a0,12(s2)`; loop-2's preheader is then left with nothing to copy from and issues a fresh load instead.
+- probe: memory/grind/func_80017848/candidate.c applied at the HEAD src/ings.c:820 INCLUDE_ASM anchor, `sandbox func_80017848 --disable all`, normalised objdump diff tmp/grind/func_80017848/s54/T.txt vs s54/B.txt.
+- result: 3 at 127/127. The whole diff is `lw a0,12(s2)` / `addu a3,a0,zero` / `addu a0,a1,a3` (target) against `addu a0,a3,zero` / `lw v0,12(s2)` / `addu a0,a1,v0` (build). Both sides emit exactly one load and one copy per loop; only the placement differs. Loop 1, the prologue, both bodies, both latches, the call block, the link stores, rec_a/rec_b and the epilogue are byte-identical.
+- verdict: CONFIRMED
+
+## [s54] The RTL producer of every part of the residual is read from dumps: loop-1's preheader copy is combine insn 83, kept alive only by the tail at insn 141; loop-1's base add (insn 89) reads the copy's SOURCE rather than its destination; and loop-2's preheader is a genuine memory load (insn 162, the s47 solver's local allocno reg 113).
+- mechanism: cse propagates the guard's pointer pseudo into the base add, so the preheader copy is never the base add's operand; combine deletes such a copy unless its destination is used again, which the `p = q;` tail supplies. Loop 2 has no equivalent because reg 79 carries REG_DEAD at loop-2's guard add (insn 151) and the ctx+0xC memory equivalence does not survive loop 1's blocks.
+- probe: `pwsh tools/grinder/dump.ps1 func_80017848` with BASE applied; read tmp/grind/func_80017848/dumps/ings.combine from line 6767 (insns 64, 66, 72, 75, 79, 83, 86, 89, 141, 148, 151, 155, 158, 162, 164, 335).
+- result: insn 83 = (set (reg/v 80) (reg/v 79)); insn 89 = (set (reg/v 81) (plus (reg/v 84) (reg/v 79))); insn 141 = (set (reg/v 79) (reg/v 80)); insn 162 = (set (reg 113) (mem (plus (reg/v 72) (const_int 12)))). This supersedes s52's local-alloc.c:700 attribution and s53's framing that loop 2 needs a spelling loop 1 does not: loop-1's copy and loop-2's wrong guard instruction are the two ends of ONE device.
+- verdict: CONFIRMED
+
+## [s54] The two-step guard temp (`t = sh + (s32)p; t = *(s32 *)(t + 0x1C);`) is load-bearing: reusing one variable for the guard address and the guard value clobbers the pseudo holding sh + p, which is what forces the preheader to recompute the base add instead of reusing the guard's address.
+- mechanism: combine insns 72 and 75 both write reg 86, so cse's record of (plus sh p) is destroyed before the preheader is reached. A single-expression guard leaves the address pseudo live, cse folds the preheader's base add into it, and the surviving copy is a copy of BASE emitted after the add rather than a copy of the POINTER emitted before it.
+- probe: Cell XM (tmp/grind/func_80017848/s54/body_XM.c: loop 2 mirrored WITHOUT the two-step temp) applied at the HEAD anchor and scored; normalised objdump diff.
+- result: XM = 17 at 126/127; loop-2's guard emits `addu a3,v0,a1` and the preheader emits `addu a1,a3,zero`. The device is present in BASE's loop 1 and in s53's S2 loop 2 and absent from the whole s52 N-family, which retrospectively explains those scores.
+- verdict: CONFIRMED
+
+## [s54] Writing both loops as `while` loops, so that jump.c's duplicate_loop_exit_test synthesises the guard from the exit test, measures 29 at 120/127 on this chassis: the latch's bound is hoisted out of the loop and the build is seven instructions short.
+- mechanism: duplicate_loop_exit_test copies the exit-test insns before the loop and remaps pseudos used only in the exit code, which does produce a preheader copy; but the copied exit test leaves the original bound load loop-invariant and loop.c hoists it, whereas the target reloads `lw v0,28(a0)` on every iteration.
+- probe: Cell WA (tmp/grind/func_80017848/s54/body_WA.c) applied at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`; normalised objdump diff against s54/T.txt.
+- result: WA = 29 at 120/127. The preheader copy that does appear is `addu a2,v0,zero`, a copy of the guard's computed ADDRESS rather than of the pointer. Banked rejected/s54_while_loops_duplicate_loop_exit_test_hoists_latch_costs_29.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s54/body_WA.c applied; BASE re-audited at 3 (127/127) in the same session; tools/fake_ablate.py reports no FAKE construct in candidate.c and none of these cells adds one
+
+## [s54] Sourcing loop-2's preheader base from loop-1's exit-tail carrier while loop-2's guard reads ctx+0xC fresh measures 7 at 127/127: the join copy moves above the guard load instead of replacing it.
+- mechanism: Giving `p` a consumer in loop-2's preheader keeps loop-1's tail alive so loop 1 stays byte-exact, but `p` still has two reaching definitions and the join copy is still emitted; with the guard now reading memory the copy is simply scheduled ahead of the load rather than taking its place.
+- probe: Cells X1, X2, X4 (fresh p2 guard read, preheader base from p, with and without a named intermediate and a loop-2 tail) and X3 (loop-2's guard read reusing variable q) in tmp/grind/func_80017848/s54/, each applied at the HEAD anchor and scored.
+- result: X1 = X2 = X4 = 7 at 127/127, X3 = 14 at 127. All three 7-cells emit `addu a0,a3,zero` BEFORE `lw v0,12(s2)` in loop-2's guard block and `addu a0,a1,a0` with no copy in the preheader. Banked rejected/s54_l2_guard_fresh_read_preheader_base_from_l1_carrier_costs_7.c and rejected/s54_l2_guard_read_reuses_q_costs_14.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s54 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session
+
+## [s54] Statement order inside loop-2's preheader is byte-neutral (cell Z measures 3 at 127/127, identical to BASE), so combine's adjacency test is not the gate that decides the copy on this chassis; the gate is the copy destination's use count.
+- mechanism: combine's `added_sets_2 = ! dead_or_set_p (i3, i2dest)` decides whether the i2 SET has to be carried into the merged pattern; the `! all_adjacent` clause in can_combine_p only rejects when an intervening insn SETS a register the source uses, which the `lw ..,16(s2)` sitting between them never does.
+- probe: Cell Z = BASE with loop 2 given explicit named intermediates in loop-1's exact order (`q2 = *(u8 **)(ctx + 0xC); lnk2 = *(u8 **)(ctx + 0x10); base = (u8 *)(sh2 + (s32)q2);`), applied at the HEAD anchor and scored; cross-checked against s53's S2, whose loop 1 carries the same ordering yet loses its copy for want of a tail.
+- result: Z = 3 at 127/127, byte-identical to BASE. Banked rejected/s54_l2_named_q2_lnk2_mirrors_l1_order_no_change_costs_3.c. Predicate for the use-count gate: tools/gcc-2.7.2/combine.c:1453.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s54/body_Z.c applied; no FAKE construct present; BASE re-audited at 3 (127/127) in the same session
+
+## [s54] Each of the ten second-use spellings measured this session for loop-2's preheader copy destination scores between 5 and 17: an address use is folded to `base` by cse and yields a copy of base after the base add, and a value use consumes one of the three ctx+0xC reloads the target performs after the loops, dropping the build to 126 instructions.
+- mechanism: BASE's .combine carries three independent (mem (plus (reg 72) (const_int 12))) loads after the loops - insn 222 for math_Distance3D, insn 270 for rec_a, insn 293 for rec_b. Routing the carrier into any of them makes GCC use the register it already holds and deletes that load; routing it into an address instead lets cse recognise sh2 + q2 + K as base + K, attaching the second use to the base pseudo.
+- probe: Ten cells across two chassis, all applied at the HEAD src/ings.c:820 anchor and scored with `sandbox func_80017848 --disable all`. On BASE: ZB (q2 sourced from the carrier), ZC (latch bound via the carrier), ZD (latch bound via q2), ZE (body index via q2). On the s53 S2 mirror chassis: M (both tails plus call arg0 via p), M2 (loop-2 tail only), M3 (loop-2 tail placed inside the preheader), F2 (copy dest feeds only the tail while the base is routed through the guard pseudo p2), F2b (the same shape in both loops). Plus a re-measurement of s52's N2.
+- result: ZB = 8 at 125, ZC = 17 at 127, ZD = 5 at 128, ZE = 6 at 128, M = 17 at 126, M2 = 17 at 126, M3 = 16 at 126, F2 = 17 at 126, F2b = 17 at 126, N2 = 17 at 126 (unchanged from its s52 value). ZD's diff shows the predicted `addu a1,a0,zero` copy of BASE emitted after the base add. Seven bodies banked as rejected/s54_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with each s54 body applied in turn; no FAKE construct present in any body; BASE re-audited at 3 (127/127) in the same session
+
+## [s54] The mandatory kill re-audit found nothing void: BASE re-measures at 3 (127/127) on the HEAD chassis and tools/fake_ablate.py reports no FAKE-annotated construct in it.
+- mechanism: Instance kills are chassis-relative and FAKE-state-relative, so the closest banked form is re-measured before new probes are spent.
+- probe: memory/grind/func_80017848/candidate.c applied at the HEAD src/ings.c:820 anchor and scored; `python3 tools/fake_ablate.py --func func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c`.
+- result: BASE = 3 at 127/127, identical to its s52/s53 value; fake_ablate reports "no FAKE-annotated constructs found". Every s52/s53 instance kill stands on this chassis.
+- verdict: CONFIRMED
