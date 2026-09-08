@@ -53,3 +53,52 @@
 - [s2] The C question is now sharp: our shared return-0 label is one flow already knew (block=4); the target's must be a label flow never saw. jump2's cross-jump reused an existing flow-known label in EVERY exit spelling measured, which is exactly why all four spellings produce one object.
 
 - [s2] The instrumented-cc1 loop (tmp/grind/func_8002E6B0/s2/dbr2.sh, single-function TU, seconds per body, no sandbox round trip) is a cheap oracle for that question: grep `DBRDBG mtlr target=<uid> block=` and look for block=-1 before spending a sandbox measurement.
+
+## s3 (2026-09-08, structural) — chassis: -mel -msoft-float, INCLUDE_ASM on main, no FAKE constructs
+
+- [s3] CHASSIS RE-MEASURE: v12 (`candidate.c`) = **40 / 93 insns** on HEAD this session. Floor confirmed unchanged.
+- [s3] **THE SCORE IS MISLEADING ON THIS FUNCTION.** The ret-var body banked by s1 as
+  `rejected/s1_blockscoped_dzdx_ret_var_goto_45.c` (score 45, re-measured 45/93 this session) is the ONLY
+  banked body whose EXIT STRUCTURE matches the target line-for-line: its `bltz #1` carries the `ret = 0`
+  insn in the delay slot (target: `addu $v0,$zero,$zero`), BOTH `bltz` branch straight to the epilogue,
+  block 3 falls through into the epilogue with no `j`, and there is NO orphan `move v0,zero` block. v12
+  (score 40) has the WRONG exits: `j .L295` + an orphan `.L294: move v0,zero`. The 5-point score
+  difference is register-seat penalty, not structure. Body kept at
+  `memory/grind/func_8002E6B0/chassis_retvar_exit_correct_45.c`.
+- [s3] The ONLY residual on that ret-var chassis is the seat: our `ret` pseudo is allocated `$a1`, so a
+  trailing `move v0,a1` survives (1 extra insn) and the whole downstream cascade shifts. Target's `ret` is
+  `$v0`.
+- [s3] MEASURED WHY: from the `.greg` dump of the real TU (`tmp/grind/func_8002E6B0/s3/real.i.greg`,
+  `;; Function func_8002E6B0`): the ret pseudo's conflict set CONTAINS hard reg 2 (`$v0`), so `find_reg`
+  can never give it `$v0`. `$v0` is occupied by LOCAL-allocated block temps — the .greg RTL shows
+  `(reg:SI 2 v0)` as the `(a[0]+b[0]+c[0])` accumulator, its `sra`, and as `(reg/v:SI 2 v0)` for the
+  block-scoped `dz`/`dx` in every block. MIPS defines no `REG_ALLOC_ORDER`, so both `local_alloc` and
+  `global.c find_reg` scan hard regs in plain ascending order and `$v0` (reg 2) is always taken first;
+  `local_alloc` runs BEFORE `global_alloc` and cannot see the function-scope `ret` pseudo.
+- [s3] TARGET CONTRAST (asm/funcs/func_8002E6B0.s): the target's block 2 (0x8002E774-0x8002E7BC) uses
+  `$a0/$v1/$a3/$a1/$a2` and NEVER `$v0`, while its block 1 uses `$v0` freely up to `mult $v0,$a1`
+  (0x8002E758) and its block 3 reuses `$v0`. So in the ORIGINAL compile `$v0` was live-and-occupied across
+  block 2 AT LOCAL-ALLOC TIME — i.e. the `v0 = 0` was already a HARD `$v0` set sitting before block 1's
+  branch when local-alloc ran. That same occupancy is what raises block-1 pressure enough to force the
+  target's SIXTH callee-save (`$s5` for block 1's 4th product, `mflo $s5`); our bodies need only five.
+- [s3] Both the target and every body we build carry a PHANTOM `$s4` (saved + restored, never referenced),
+  so `$s4` is NOT a differentiator; the differentiator is the target's extra REAL callee-save `$s5`.
+- [s3] cc1 leaves BOTH `bltz` delay slots UNFILLED in this function (verified on the real TU and on a solo
+  TU: `bltz $2,.L294` with no `.set noreorder`); maspsx/as fills them from the fall-through insn. That is
+  why `relax_delay_slots`' redundant-target redirect never fires here — reorg.c:3950 gates that whole
+  block on `GET_CODE (PATTERN (insn)) == SEQUENCE` ("Now look only at cases where we have filled a delay
+  slot"), and an unfilled branch is not a SEQUENCE.
+
+- [s3] Chassis re-measured this session: v12 (candidate.c) = 40 / 93 insns. Floor unchanged at 40.
+
+- [s3] THE SCORE IS MISLEADING ON THIS FUNCTION: the ret-var body (s1's rejected/s1_blockscoped_dzdx_ret_var_goto_45.c, re-measured 45/93) is the only banked body whose EXIT STRUCTURE matches the target line-for-line - the `ret = 0` insn sits in bltz#1's delay slot (target: addu $v0,$zero,$zero), BOTH bltz branch straight to the epilogue, block 3 falls through into the epilogue with no `j`, and there is no orphan `move v0,zero` block. v12 (score 40) has the wrong exits (j .L295 plus an orphan .L294). Kept as memory/grind/func_8002E6B0/chassis_retvar_exit_correct_45.c.
+
+- [s3] The only residual on that chassis is one register seat: our ret pseudo is allocated $a1, so a trailing `move v0,a1` survives (one extra insn) and the downstream cascade shifts; the target's ret is $v0.
+
+- [s3] Measured cause (real-TU .greg dump, ';; Function func_8002E6B0'): the ret pseudo's conflict set contains hard reg 2, so find_reg can never hand it $v0. The .greg RTL shows (reg:SI 2 v0) as the (arg0[0]+arg1[0]+arg2[0]) accumulator and its sra, and (reg/v:SI 2 v0) as the block-scoped dz/dx in every block - all local-allocated.
+
+- [s3] TARGET CONTRAST: the target's block 2 (0x8002E774-0x8002E7BC) uses $a0/$v1/$a3/$a1/$a2 and never $v0, while block 1 uses $v0 up to `mult $v0,$a1` (0x8002E758) and block 3 reuses it. So in the original compile $v0 was occupied ACROSS block 2 at local-alloc time - i.e. the v0=0 was already a HARD $v0 set sitting before block 1's branch. That same occupancy is what forces the target's sixth callee-save ($s5 holding block 1's fourth product, `mflo $s5`); our bodies need only five.
+
+- [s3] Both the target and every body we build carry a PHANTOM $s4 (saved and restored, never referenced), so $s4 is not a differentiator - the target's extra REAL callee-save $s5 is.
+
+- [s3] cc1 leaves BOTH bltz delay slots UNFILLED in this function (no .set noreorder around either branch; verified on the real TU and on a solo TU); maspsx/as fills them from the fall-through insn afterwards.

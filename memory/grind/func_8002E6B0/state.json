@@ -1,7 +1,7 @@
 {
  "func": "func_8002E6B0",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 40,
    "modality": "structural",
    "headline": "Floor holds at 40: four distinct exit spellings compile to ONE identical object (jump.c normalises them) and 11 statement-level structural levers are neutral or worse; the reorg all-live delay-slot me"
+  },
+  {
+   "session": 3,
+   "floor": 40,
+   "modality": "structural",
+   "headline": "Exit structure SOLVED on the ret-var chassis (score 45, structurally exact); the residual is one seat - ret must be $v0, blocked by local_alloc claiming $v0 first - and the reorg all-live route is KIL"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Some ordinary C body makes jump2's cross-jump emit a FRESH label for the shared return-0 block, so both bltz targets are flow-unknown and reorg's all-live path produces the target's exits (v0=0 in slot 1, both branches to the epilogue, no j, orphan block deleted)",
-   "mechanism": "jump.c find_cross_jump / do_cross_jump label creation vs reuse; reorg.c mark_target_live_regs find_basic_block == -1 -> SET_HARD_REG_SET; redundant_insn + reorg_redirect_jump on the second bltz",
-   "next_probe": "read tools/gcc-2.7.2/jump.c find_cross_jump/do_cross_jump for the condition under which a fresh label is emitted rather than reused (the only C-visible knob); then iterate bodies through tmp/grind/func_8002E6B0/s2/dbr2.sh (cc1-only, seconds per body) grepping `DBRDBG mtlr target=... block=` for a -1, and only sandbox-measure a body that produces one. The four exit spellings killed in s2 are one object - do not re-spell them."
+   "hypothesis": "An ordinary-C form exists that makes expand emit the return value's zero directly into HARD $v0 before block 1's branch, which is what bars $v0 from block 2's local allocation and reproduces the target's whole seat cascade including the sixth callee-save",
+   "mechanism": "DECL_RESULT of a scalar-returning function has the hard return register as its RTL, so expand_return writes $v0 directly; local_alloc only respects HARD regs, so only a hard $v0 set (not a function-scope pseudo) can keep block 2's local qtys off $v0",
+   "next_probe": "cc1-only screen, seconds per body: run each candidate through tmp/grind/func_8002E6B0/s3/da.sh and grep the .lreg dump for the position of `(set (reg:SI 2 v0) (const_int 0))` relative to the first bltz; sandbox-measure only bodies where it lands BEFORE the branch. Unscreened candidates: nested ifs with the `return 0` LAST; a COND_EXPR chain `return c1 >= 0 ? (c2 >= 0 ? c3 >= 0 : 0) : 0;` (never tried - s1 only tried TRUTH_ANDIF); `if (c1 < 0 || c2 < 0) return 0;` (TRUTH_ORIF, never tried)"
   },
   {
-   "hypothesis": "The seat cascade (target: cross_center->$a0, cross_point->$v1, arg2[2]->$t5, block-1 4th product->$s5 with a sixth callee-save; ours: $v1 / $v0 / $a0 / $v1 with five) is reachable from some C form",
-   "mechanism": "global.c find_reg allocno priority ordering plus local-alloc's ascending find_free_reg; hard $v0 must be excluded from the block-1/block-2 local allocation for the target's map",
-   "next_probe": "tools/ra_solver/extract.py func_8002E6B0 code6cac_b, then inverse.py global --goal with cross_center=4, cross_point=3, arg2[2]=13 to type it REACHABLE or FORECLOSED, plus local_extract.py / local_alloc.py code6cac_b for block 2. All 14 statement-level structural spellings measured in s2 left the cascade untouched, so do not attack it with more spellings first."
+   "hypothesis": "Excluding hard $v0 from block 2's local qtys is reachable without a hard $v0 set preceding the block",
+   "mechanism": "local-alloc.c block_alloc / find_free_reg scan hard regs in plain ascending order (MIPS defines no REG_ALLOC_ORDER) and run before global_alloc, so function-scope pseudos are invisible to them",
+   "next_probe": "tools/ra_solver/local_extract.py plus local_alloc.py on code6cac_b block 2 to type it REACHABLE or FORECLOSED; if FORECLOSED, frontier 1 is the only remaining route and the whole question reduces to how the return value is expanded"
   },
   {
-   "hypothesis": "arg2 coordinate seats (target $t6/$t5, ours $t6/$a0) fall out of cross_center occupying $a0 across every coordinate's live range",
-   "mechanism": "global.c conflict propagation: cross_center (function-scope, live in all three blocks) overlaps every coordinate pseudo",
-   "next_probe": "no independent measurement - verify from the RA model's hard_conflicts for the arg2[2] pseudo after frontier 2 resolves."
+   "hypothesis": "The target's sixth callee-save ($s5 for block 1's fourth product) is a consequence of $v0 being unavailable in block 1's tail rather than an independent target",
+   "mechanism": "global.c find_reg falls back to callee-saves once the caller-save set is exhausted for the overlapping ranges in block 1's tail",
+   "next_probe": "no independent probe - re-read the block-1 seat map after frontier 1 resolves; do not chase it with more statement spellings (14 measured neutral in s2, 4 more in s3)"
   }
  ],
  "judge_constraints": [],
@@ -76,6 +82,22 @@
    "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, v30-v35 / v40-v42 / v50-v52 bodies, no FAKE constructs",
    "predicate_cite": "",
    "result": "40 for all except v32 = 57 and v42 = 44 (both worse); only v30 produced different object bytes at the same score, the ot"
+  },
+  {
+   "session": 3,
+   "statement": "reorg.c's all-live fallback at the shared return-0 label produces the target's full exit shape (both bltz branching to the epilogue, no j, no orphan move-block) when forced on the branch target labels",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, v12 body, no FAKE constructs, instrumented cc1 with BB2_ALLLIVE_LABEL forced on 0, 1 and 2 labels",
+   "predicate_cite": "",
+   "result": "unforced = 88 insns with both bltz UNFILLED and both targeting .L3. Forcing 170 = 89 insns: bltz#1 gets `move $2,$0` in "
+  },
+  {
+   "session": 3,
+   "statement": "Some ordinary-C ret-var spelling (assignment position, declaration order, exit form, xor operand order) moves the ret pseudo out of $a1 into $v0 on the exit-correct chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, v70/v71/v72/v74/v80 bodies, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "v70 = 45, v71 = 45, v74 = 45, v80 = 45, v72 = 40. No spelling moved ret off $a1. v72 normalises back to the v12 object ("
   }
  ],
  "ladder_skip": 0,
