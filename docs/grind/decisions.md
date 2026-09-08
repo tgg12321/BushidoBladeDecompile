@@ -25662,3 +25662,7 @@ Body bd51289e54a02310 is ordinary C: D_800FF610 typed as gte.h MATRIX (32 bytes;
 ## 2026-09-08 02:05 — func_8007352C — layer-1 review — **FAIL**
 
 Body is ordinary C except one construct: SetSprt((s32)sp, e->x) passes a fabricated second argument to the one-argument libgpu SetSprt (src/gpu.c:427 reads only p; asm/funcs/SetSprt.s never touches $a1) whose only plausible role is binding e->x into $a1 before the call; the worker never measured the honest one-arg form.
+
+## 2026-09-08 02:12 — func_8007352C — final call — **PASS**
+
+Body is ordinary C throughout: three plain layout typedefs (SPRT prim, sprite header, 8-byte table entry) over the existing EnvA block, an s16 count-down loop, named clip bounds, and PsyQ calls under their real libgpu shapes. The layer-1 banned construct (two-arg SetSprt) is GONE, not respelled: SetSprt((s32)sp) under extern void SetSprt(s32) matches src/gpu.c:427's one-pointer definition; the lh $a1 before the jal is dead by the call (evidence.md [s1-rerun]). GetClut u16 is libgpu's u_short return and is neutral for sibling func_800485EC (hypotheses.md H5); the one-arg warning call under a variadic prototype matches src/code6cac_c2.c:1068. No FAKE, pins, asm, barriers, volatile, or dead stores. Independently verified: sandbox --disable all = 0 (127/127) on the in-tree body. Full evidence: memory/grind/func_8007352C/evidence.md, hypotheses.md, rejected/.
