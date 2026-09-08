@@ -1,11 +1,11 @@
 glabel SsSetAutoKeyOffMode
-    /* 78700 80087F00 1080013C */  lui        $at, %hi(D_80103600)
-    /* 78704 80087F04 003624A0 */  sb         $a0, %lo(D_80103600)($at)
+    /* 78700 80087F00 1080013C */  lui        $at, %hi(_svm_auto_kof_mode)
+    /* 78704 80087F04 003624A0 */  sb         $a0, %lo(_svm_auto_kof_mode)($at)
     /* 78708 80087F08 0800E003 */  jr         $ra
     /* 7870C 80087F0C 00000000 */   nop
     /* 78710 80087F10 01000224 */  addiu      $v0, $zero, 0x1
-    /* 78714 80087F14 1080013C */  lui        $at, %hi(D_800FF578)
-    /* 78718 80087F18 78F522A4 */  sh         $v0, %lo(D_800FF578)($at)
+    /* 78714 80087F14 1080013C */  lui        $at, %hi(_svm_stereo_mono)
+    /* 78718 80087F18 78F522A4 */  sh         $v0, %lo(_svm_stereo_mono)($at)
     /* 7871C 80087F1C 0800E003 */  jr         $ra
     /* 78720 80087F20 00000000 */   nop
 endlabel SsSetAutoKeyOffMode

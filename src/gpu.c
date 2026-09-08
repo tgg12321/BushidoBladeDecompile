@@ -331,11 +331,11 @@ u32 GetClut(s32 a0, s32 a1) {
 }
 void DumpTPage(s32 a0) {
     u32 val = a0 & 0xFFFF;
-    g_gpu_debug_func(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
+    GPU_printf(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
                ((val << 4) & 0x100) + ((val >> 2) & 0x200));
 }
 void DumpClut(s32 a0) {
-    g_gpu_debug_func(&D_80015D70, (a0 & 0x3F) << 4, (a0 & 0xFFFF) >> 6);
+    GPU_printf(&D_80015D70, (a0 & 0x3F) << 4, (a0 & 0xFFFF) >> 6);
 }
 u32 NextPrim(u32 *a0) {
     return (*a0 & OT_ADDR_MASK) | OT_TAG_BASE;
@@ -546,20 +546,20 @@ s32 MargePrim(u8 *a0, u32 *a1) {
 }
 void DumpDrawEnv(s16 *a0) {
     u32 val;
-    g_gpu_debug_func(&D_80015D80, a0[0], a0[1], a0[2], a0[3]);
-    g_gpu_debug_func(&D_80015D98, a0[4], a0[5]);
-    g_gpu_debug_func(&D_80015DA8, a0[6], a0[7], a0[8], a0[9]);
-    g_gpu_debug_func(&D_80015DC0, ((u8 *)a0)[0x16]);
-    g_gpu_debug_func(&D_80015DCC, ((u8 *)a0)[0x17]);
+    GPU_printf(&D_80015D80, a0[0], a0[1], a0[2], a0[3]);
+    GPU_printf(&D_80015D98, a0[4], a0[5]);
+    GPU_printf(&D_80015DA8, a0[6], a0[7], a0[8], a0[9]);
+    GPU_printf(&D_80015DC0, ((u8 *)a0)[0x16]);
+    GPU_printf(&D_80015DCC, ((u8 *)a0)[0x17]);
     val = ((u16 *)a0)[0xA];
-    g_gpu_debug_func(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
+    GPU_printf(&D_80015D58, (val >> 7) & 3, (val >> 5) & 3, (val << 6) & 0x7C0,
                ((val << 4) & 0x100) + ((val >> 2) & 0x200));
 }
 void DumpDispEnv(s16 *a0) {
-    g_gpu_debug_func(&D_80015DD8, a0[0], a0[1], a0[2], a0[3]);
-    g_gpu_debug_func(&D_80015DF4, a0[4], a0[5], a0[6], a0[7]);
-    g_gpu_debug_func(&D_80015E10, ((u8 *)a0)[0x10]);
-    g_gpu_debug_func(&D_80015E1C, ((u8 *)a0)[0x11]);
+    GPU_printf(&D_80015DD8, a0[0], a0[1], a0[2], a0[3]);
+    GPU_printf(&D_80015DF4, a0[4], a0[5], a0[6], a0[7]);
+    GPU_printf(&D_80015E10, ((u8 *)a0)[0x10]);
+    GPU_printf(&D_80015E1C, ((u8 *)a0)[0x11]);
 }
 typedef struct {
     u8 mode;
@@ -594,7 +594,7 @@ u32 ResetGraph(s32 a0) {
         return s0->mode;
     default:
         if (g_gpu_debug_level >= 2) {
-            g_gpu_debug_func(&D_80015E7C, a0);
+            GPU_printf(&D_80015E7C, a0);
         }
         ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);
         break;
@@ -605,7 +605,7 @@ u32 SetGraphReverse(s32 a0) {
     u32 old = *p;
     u32 val;
     if (g_gpu_debug_level >= 2) {
-        g_gpu_debug_func(&D_80015E90, a0);
+        GPU_printf(&D_80015E90, a0);
     }
     *p = a0;
     val = ((u32 (*)(s32))((u32 *)g_gpu_dev_table)[0x28 / 4])(8);
@@ -632,7 +632,7 @@ u32 SetGraphDebug(s32 a0) {
     u32 val = a0 & 0xFF;
     *p = a0;
     if (val) {
-        g_gpu_debug_func(&D_80015EA8, val, g_gpu_type, g_gpu_dither);
+        GPU_printf(&D_80015EA8, val, g_gpu_type, g_gpu_dither);
     }
     return old;
 }
@@ -640,7 +640,7 @@ u32 SetGraphQueue(s32 a0) {
     u8 *p = &g_gpu_interlace;
     u32 old = *p;
     if (g_gpu_debug_level >= 2) {
-        g_gpu_debug_func(&D_80015ED4, a0);
+        GPU_printf(&D_80015ED4, a0);
     }
     if (a0 != *p) {
         ((void (*)(s32))((u32 *)g_gpu_dev_table)[0x34 / 4])(1);

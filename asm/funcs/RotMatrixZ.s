@@ -8,9 +8,9 @@ glabel RotMatrixZ
     /* 703D4 8007FBD4 FF0FEF31 */   andi      $t7, $t7, 0xFFF
   .L8007FBD8:
     /* 703D8 8007FBD8 80C00F00 */  sll        $t8, $t7, 2
-    /* 703DC 8007FBDC 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 703DC 8007FBDC 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 703E0 8007FBE0 21C83803 */  addu       $t9, $t9, $t8
-    /* 703E4 8007FBE4 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 703E4 8007FBE4 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 703E8 8007FBE8 00000000 */  nop
     /* 703EC 8007FBEC 00741900 */  sll        $t6, $t9, 16
     /* 703F0 8007FBF0 03740E00 */  sra        $t6, $t6, 16
@@ -19,9 +19,9 @@ glabel RotMatrixZ
     /* 703FC 8007FBFC 03441900 */   sra       $t0, $t9, 16
   .L8007FC00:
     /* 70400 8007FC00 80C01900 */  sll        $t8, $t9, 2
-    /* 70404 8007FC04 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 70404 8007FC04 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 70408 8007FC08 21C83803 */  addu       $t9, $t9, $t8
-    /* 7040C 8007FC0C 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 7040C 8007FC0C 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 70410 8007FC10 00000000 */  nop
     /* 70414 8007FC14 00C41900 */  sll        $t8, $t9, 16
     /* 70418 8007FC18 034C1800 */  sra        $t1, $t8, 16

@@ -57,8 +57,8 @@ glabel checkRECT
     /* 6BC78 8007B478 0180043C */  lui        $a0, %hi(D_80015F4C)
     /* 6BC7C 8007B47C 4C5F8424 */  addiu      $a0, $a0, %lo(D_80015F4C)
   .L8007B480:
-    /* 6BC80 8007B480 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6BC84 8007B484 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6BC80 8007B480 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6BC84 8007B484 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6BC88 8007B488 00000000 */  nop
     /* 6BC8C 8007B48C 09F84000 */  jalr       $v0
     /* 6BC90 8007B490 21280001 */   addu      $a1, $t0, $zero
@@ -66,8 +66,8 @@ glabel checkRECT
     /* 6BC98 8007B498 02000686 */  lh         $a2, 0x2($s0)
     /* 6BC9C 8007B49C 04000786 */  lh         $a3, 0x4($s0)
     /* 6BCA0 8007B4A0 06000286 */  lh         $v0, 0x6($s0)
-    /* 6BCA4 8007B4A4 0A80033C */  lui        $v1, %hi(D_8009BE70)
-    /* 6BCA8 8007B4A8 70BE638C */  lw         $v1, %lo(D_8009BE70)($v1)
+    /* 6BCA4 8007B4A4 0A80033C */  lui        $v1, %hi(GPU_printf)
+    /* 6BCA8 8007B4A8 70BE638C */  lw         $v1, %lo(GPU_printf)($v1)
     /* 6BCAC 8007B4AC 0180043C */  lui        $a0, %hi(D_80015F38)
     /* 6BCB0 8007B4B0 385F8424 */  addiu      $a0, $a0, %lo(D_80015F38)
     /* 6BCB4 8007B4B4 09F86000 */  jalr       $v1

@@ -1,27 +1,27 @@
 glabel SpuQuit
     /* 79AF8 800892F8 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 79AFC 800892FC 0A80033C */  lui        $v1, %hi(D_800A2CD8)
-    /* 79B00 80089300 D82C638C */  lw         $v1, %lo(D_800A2CD8)($v1)
+    /* 79AFC 800892FC 0A80033C */  lui        $v1, %hi(_spu_isCalled)
+    /* 79B00 80089300 D82C638C */  lw         $v1, %lo(_spu_isCalled)($v1)
     /* 79B04 80089304 01000224 */  addiu      $v0, $zero, 0x1
     /* 79B08 80089308 16006214 */  bne        $v1, $v0, .L80089364
     /* 79B0C 8008930C 1000BFAF */   sw        $ra, 0x10($sp)
-    /* 79B10 80089310 0A80013C */  lui        $at, %hi(D_800A2CD8)
-    /* 79B14 80089314 D82C20AC */  sw         $zero, %lo(D_800A2CD8)($at)
+    /* 79B10 80089310 0A80013C */  lui        $at, %hi(_spu_isCalled)
+    /* 79B14 80089314 D82C20AC */  sw         $zero, %lo(_spu_isCalled)($at)
     /* 79B18 80089318 6EE2010C */  jal        EnterCriticalSection
     /* 79B1C 8008931C 00000000 */   nop
     /* 79B20 80089320 21200000 */  addu       $a0, $zero, $zero
     /* 79B24 80089324 0A80013C */  lui        $at, %hi(_spu_transferCallback)
     /* 79B28 80089328 142D20AC */  sw         $zero, %lo(_spu_transferCallback)($at)
-    /* 79B2C 8008932C 0A80013C */  lui        $at, %hi(D_800A2D18)
-    /* 79B30 80089330 182D20AC */  sw         $zero, %lo(D_800A2D18)($at)
+    /* 79B2C 8008932C 0A80013C */  lui        $at, %hi(_spu_IRQCallback)
+    /* 79B30 80089330 182D20AC */  sw         $zero, %lo(_spu_IRQCallback)($at)
     /* 79B34 80089334 B524020C */  jal        _SpuDataCallback
     /* 79B38 80089338 00000000 */   nop
-    /* 79B3C 8008933C 0A80043C */  lui        $a0, %hi(D_800A2870)
-    /* 79B40 80089340 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
+    /* 79B3C 8008933C 0A80043C */  lui        $a0, %hi(_spu_EVdma)
+    /* 79B40 80089340 7028848C */  lw         $a0, %lo(_spu_EVdma)($a0)
     /* 79B44 80089344 62E2010C */  jal        CloseEvent
     /* 79B48 80089348 00000000 */   nop
-    /* 79B4C 8008934C 0A80043C */  lui        $a0, %hi(D_800A2870)
-    /* 79B50 80089350 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
+    /* 79B4C 8008934C 0A80043C */  lui        $a0, %hi(_spu_EVdma)
+    /* 79B50 80089350 7028848C */  lw         $a0, %lo(_spu_EVdma)($a0)
     /* 79B54 80089354 DD24020C */  jal        DisableEvent
     /* 79B58 80089358 00000000 */   nop
     /* 79B5C 8008935C 72E2010C */  jal        ExitCriticalSection

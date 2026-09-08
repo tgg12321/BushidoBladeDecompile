@@ -10,54 +10,54 @@ glabel SpuSetReverb
     /* 7A580 80089D80 85270208 */  j          .L80089E14
     /* 7A584 80089D84 00000000 */   nop
   .L80089D88:
-    /* 7A588 80089D88 0A80023C */  lui        $v0, %hi(D_800A2CDC)
-    /* 7A58C 80089D8C DC2C428C */  lw         $v0, %lo(D_800A2CDC)($v0)
+    /* 7A588 80089D88 0A80023C */  lui        $v0, %hi(_spu_RXX)
+    /* 7A58C 80089D8C DC2C428C */  lw         $v0, %lo(_spu_RXX)($v0)
     /* 7A590 80089D90 00000000 */  nop
     /* 7A594 80089D94 AA014394 */  lhu        $v1, 0x1AA($v0)
-    /* 7A598 80089D98 0A80013C */  lui        $at, %hi(D_800A287C)
-    /* 7A59C 80089D9C 7C2820AC */  sw         $zero, %lo(D_800A287C)($at)
+    /* 7A598 80089D98 0A80013C */  lui        $at, %hi(_spu_rev_flag)
+    /* 7A59C 80089D9C 7C2820AC */  sw         $zero, %lo(_spu_rev_flag)($at)
     /* 7A5A0 80089DA0 84270208 */  j          .L80089E10
     /* 7A5A4 80089DA4 7FFF6330 */   andi      $v1, $v1, 0xFF7F
   .L80089DA8:
-    /* 7A5A8 80089DA8 0A80023C */  lui        $v0, %hi(D_800A2880)
-    /* 7A5AC 80089DAC 8028428C */  lw         $v0, %lo(D_800A2880)($v0)
+    /* 7A5A8 80089DA8 0A80023C */  lui        $v0, %hi(_spu_rev_reserve_wa)
+    /* 7A5AC 80089DAC 8028428C */  lw         $v0, %lo(_spu_rev_reserve_wa)($v0)
     /* 7A5B0 80089DB0 00000000 */  nop
     /* 7A5B4 80089DB4 0F005010 */  beq        $v0, $s0, .L80089DF4
     /* 7A5B8 80089DB8 00000000 */   nop
-    /* 7A5BC 80089DBC 0A80043C */  lui        $a0, %hi(D_800A2884)
-    /* 7A5C0 80089DC0 8428848C */  lw         $a0, %lo(D_800A2884)($a0)
+    /* 7A5BC 80089DBC 0A80043C */  lui        $a0, %hi(_spu_rev_offsetaddr)
+    /* 7A5C0 80089DC0 8428848C */  lw         $a0, %lo(_spu_rev_offsetaddr)($a0)
     /* 7A5C4 80089DC4 AC27020C */  jal        _SpuIsInAllocateArea_
     /* 7A5C8 80089DC8 00000000 */   nop
     /* 7A5CC 80089DCC 09004010 */  beqz       $v0, .L80089DF4
     /* 7A5D0 80089DD0 00000000 */   nop
-    /* 7A5D4 80089DD4 0A80023C */  lui        $v0, %hi(D_800A2CDC)
-    /* 7A5D8 80089DD8 DC2C428C */  lw         $v0, %lo(D_800A2CDC)($v0)
+    /* 7A5D4 80089DD4 0A80023C */  lui        $v0, %hi(_spu_RXX)
+    /* 7A5D8 80089DD8 DC2C428C */  lw         $v0, %lo(_spu_RXX)($v0)
     /* 7A5DC 80089DDC 00000000 */  nop
     /* 7A5E0 80089DE0 AA014394 */  lhu        $v1, 0x1AA($v0)
-    /* 7A5E4 80089DE4 0A80013C */  lui        $at, %hi(D_800A287C)
-    /* 7A5E8 80089DE8 7C2820AC */  sw         $zero, %lo(D_800A287C)($at)
+    /* 7A5E4 80089DE4 0A80013C */  lui        $at, %hi(_spu_rev_flag)
+    /* 7A5E8 80089DE8 7C2820AC */  sw         $zero, %lo(_spu_rev_flag)($at)
     /* 7A5EC 80089DEC 84270208 */  j          .L80089E10
     /* 7A5F0 80089DF0 7FFF6330 */   andi      $v1, $v1, 0xFF7F
   .L80089DF4:
-    /* 7A5F4 80089DF4 0A80023C */  lui        $v0, %hi(D_800A2CDC)
-    /* 7A5F8 80089DF8 DC2C428C */  lw         $v0, %lo(D_800A2CDC)($v0)
+    /* 7A5F4 80089DF4 0A80023C */  lui        $v0, %hi(_spu_RXX)
+    /* 7A5F8 80089DF8 DC2C428C */  lw         $v0, %lo(_spu_RXX)($v0)
     /* 7A5FC 80089DFC 00000000 */  nop
     /* 7A600 80089E00 AA014394 */  lhu        $v1, 0x1AA($v0)
-    /* 7A604 80089E04 0A80013C */  lui        $at, %hi(D_800A287C)
-    /* 7A608 80089E08 7C2830AC */  sw         $s0, %lo(D_800A287C)($at)
+    /* 7A604 80089E04 0A80013C */  lui        $at, %hi(_spu_rev_flag)
+    /* 7A608 80089E08 7C2830AC */  sw         $s0, %lo(_spu_rev_flag)($at)
     /* 7A60C 80089E0C 80006334 */  ori        $v1, $v1, 0x80
   .L80089E10:
     /* 7A610 80089E10 AA0143A4 */  sh         $v1, 0x1AA($v0)
   .L80089E14:
-    /* 7A614 80089E14 0A80023C */  lui        $v0, %hi(D_800A287C)
-    /* 7A618 80089E18 7C28428C */  lw         $v0, %lo(D_800A287C)($v0)
+    /* 7A614 80089E14 0A80023C */  lui        $v0, %hi(_spu_rev_flag)
+    /* 7A618 80089E18 7C28428C */  lw         $v0, %lo(_spu_rev_flag)($v0)
     /* 7A61C 80089E1C 1400BF8F */  lw         $ra, 0x14($sp)
     /* 7A620 80089E20 1000B08F */  lw         $s0, 0x10($sp)
     /* 7A624 80089E24 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 7A628 80089E28 0800E003 */  jr         $ra
     /* 7A62C 80089E2C 00000000 */   nop
-    /* 7A630 80089E30 0A80023C */  lui        $v0, %hi(D_800A2D40)
-    /* 7A634 80089E34 402D428C */  lw         $v0, %lo(D_800A2D40)($v0)
+    /* 7A630 80089E30 0A80023C */  lui        $v0, %hi(_spu_memList)
+    /* 7A634 80089E34 402D428C */  lw         $v0, %lo(_spu_memList)($v0)
     /* 7A638 80089E38 00000000 */  nop
     /* 7A63C 80089E3C 03004014 */  bnez       $v0, .L80089E4C
     /* 7A640 80089E40 0080083C */   lui       $t0, (0x80000000 >> 16)

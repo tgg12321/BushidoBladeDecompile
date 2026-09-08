@@ -37,8 +37,8 @@ glabel _SsInit
     /* 742C8 80083AC8 061A020C */  jal        _SsVmInit
     /* 742CC 80083ACC 18000424 */   addiu     $a0, $zero, 0x18
     /* 742D0 80083AD0 21280000 */  addu       $a1, $zero, $zero
-    /* 742D4 80083AD4 1080033C */  lui        $v1, %hi(D_80106FA8)
-    /* 742D8 80083AD8 A86F6324 */  addiu      $v1, $v1, %lo(D_80106FA8)
+    /* 742D4 80083AD4 1080033C */  lui        $v1, %hi(_SsMarkCallback)
+    /* 742D8 80083AD8 A86F6324 */  addiu      $v1, $v1, %lo(_SsMarkCallback)
   .L80083ADC:
     /* 742DC 80083ADC 0F000424 */  addiu      $a0, $zero, 0xF
     /* 742E0 80083AE0 3C006224 */  addiu      $v0, $v1, 0x3C
@@ -52,12 +52,12 @@ glabel _SsInit
     /* 742FC 80083AFC F7FF4014 */  bnez       $v0, .L80083ADC
     /* 74300 80083B00 40006324 */   addiu     $v1, $v1, 0x40
     /* 74304 80083B04 3C000224 */  addiu      $v0, $zero, 0x3C
-    /* 74308 80083B08 1080013C */  lui        $at, %hi(D_80104E80)
-    /* 7430C 80083B0C 804E22AC */  sw         $v0, %lo(D_80104E80)($at)
-    /* 74310 80083B10 1080013C */  lui        $at, %hi(D_801027E4)
-    /* 74314 80083B14 E42720AC */  sw         $zero, %lo(D_801027E4)($at)
-    /* 74318 80083B18 1080013C */  lui        $at, %hi(D_800FF630)
-    /* 7431C 80083B1C 30F620AC */  sw         $zero, %lo(D_800FF630)($at)
+    /* 74308 80083B08 1080013C */  lui        $at, %hi(VBLANK_MINUS)
+    /* 7430C 80083B0C 804E22AC */  sw         $v0, %lo(VBLANK_MINUS)($at)
+    /* 74310 80083B10 1080013C */  lui        $at, %hi(_snd_openflag)
+    /* 74314 80083B14 E42720AC */  sw         $zero, %lo(_snd_openflag)($at)
+    /* 74318 80083B18 1080013C */  lui        $at, %hi(_snd_ev_flag)
+    /* 7431C 80083B1C 30F620AC */  sw         $zero, %lo(_snd_ev_flag)($at)
     /* 74320 80083B20 1000BF8F */  lw         $ra, 0x10($sp)
     /* 74324 80083B24 1800BD27 */  addiu      $sp, $sp, 0x18
     /* 74328 80083B28 0800E003 */  jr         $ra

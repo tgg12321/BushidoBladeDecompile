@@ -18,8 +18,8 @@ glabel _SsVmFlush
     /* 76C1C 8008641C 1080013C */  lui        $at, %hi(D_80107898)
     /* 76C20 80086420 21082200 */  addu       $at, $at, $v0
     /* 76C24 80086424 987820AC */  sw         $zero, %lo(D_80107898)($at)
-    /* 76C28 80086428 1080023C */  lui        $v0, %hi(D_80101BCC)
-    /* 76C2C 8008642C CC1B4290 */  lbu        $v0, %lo(D_80101BCC)($v0)
+    /* 76C28 80086428 1080023C */  lui        $v0, %hi(_SsVmMaxVoice)
+    /* 76C2C 8008642C CC1B4290 */  lbu        $v0, %lo(_SsVmMaxVoice)($v0)
     /* 76C30 80086430 1080033C */  lui        $v1, %hi(D_80107898)
     /* 76C34 80086434 98786324 */  addiu      $v1, $v1, %lo(D_80107898)
     /* 76C38 80086438 1E004018 */  blez       $v0, .L800864B4
@@ -49,15 +49,15 @@ glabel _SsVmFlush
     /* 76C94 80086494 000044AC */  sw         $a0, 0x0($v0)
   .L80086498:
     /* 76C98 80086498 36005226 */  addiu      $s2, $s2, 0x36
-    /* 76C9C 8008649C 1080023C */  lui        $v0, %hi(D_80101BCC)
-    /* 76CA0 800864A0 CC1B4290 */  lbu        $v0, %lo(D_80101BCC)($v0)
+    /* 76C9C 8008649C 1080023C */  lui        $v0, %hi(_SsVmMaxVoice)
+    /* 76CA0 800864A0 CC1B4290 */  lbu        $v0, %lo(_SsVmMaxVoice)($v0)
     /* 76CA4 800864A4 01003126 */  addiu      $s1, $s1, 0x1
     /* 76CA8 800864A8 2A102202 */  slt        $v0, $s1, $v0
     /* 76CAC 800864AC E8FF4014 */  bnez       $v0, .L80086450
     /* 76CB0 800864B0 36001026 */   addiu     $s0, $s0, 0x36
   .L800864B4:
-    /* 76CB4 800864B4 1080023C */  lui        $v0, %hi(D_80103600)
-    /* 76CB8 800864B8 00364290 */  lbu        $v0, %lo(D_80103600)($v0)
+    /* 76CB4 800864B4 1080023C */  lui        $v0, %hi(_svm_auto_kof_mode)
+    /* 76CB8 800864B8 00364290 */  lbu        $v0, %lo(_svm_auto_kof_mode)($v0)
     /* 76CBC 800864BC 00000000 */  nop
     /* 76CC0 800864C0 29004014 */  bnez       $v0, .L80086568
     /* 76CC4 800864C4 21880000 */   addu      $s1, $zero, $zero
@@ -71,8 +71,8 @@ glabel _SsVmFlush
     /* 76CE0 800864E0 0F00222A */  slti       $v0, $s1, 0xF
     /* 76CE4 800864E4 FBFF4014 */  bnez       $v0, .L800864D4
     /* 76CE8 800864E8 04006324 */   addiu     $v1, $v1, 0x4
-    /* 76CEC 800864EC 1080023C */  lui        $v0, %hi(D_80101BCC)
-    /* 76CF0 800864F0 CC1B4290 */  lbu        $v0, %lo(D_80101BCC)($v0)
+    /* 76CEC 800864EC 1080023C */  lui        $v0, %hi(_SsVmMaxVoice)
+    /* 76CF0 800864F0 CC1B4290 */  lbu        $v0, %lo(_SsVmMaxVoice)($v0)
     /* 76CF4 800864F4 00000000 */  nop
     /* 76CF8 800864F8 1A004018 */  blez       $v0, .L80086564
     /* 76CFC 800864FC 21880000 */   addu      $s1, $zero, $zero
@@ -98,8 +98,8 @@ glabel _SsVmFlush
     /* 76D44 80086544 21083000 */  addu       $at, $at, $s0
     /* 76D48 80086548 354E20A0 */  sb         $zero, %lo(D_800F4E35)($at)
   .L8008654C:
-    /* 76D4C 8008654C 1080023C */  lui        $v0, %hi(D_80101BCC)
-    /* 76D50 80086550 CC1B4290 */  lbu        $v0, %lo(D_80101BCC)($v0)
+    /* 76D4C 8008654C 1080023C */  lui        $v0, %hi(_SsVmMaxVoice)
+    /* 76D50 80086550 CC1B4290 */  lbu        $v0, %lo(_SsVmMaxVoice)($v0)
     /* 76D54 80086554 01003126 */  addiu      $s1, $s1, 0x1
     /* 76D58 80086558 2A102202 */  slt        $v0, $s1, $v0
     /* 76D5C 8008655C EBFF4014 */  bnez       $v0, .L8008650C

@@ -1,8 +1,8 @@
 glabel _SpuIsInAllocateArea_
-    /* 7A6B0 80089EB0 0A80023C */  lui        $v0, %hi(D_800A2D04)
-    /* 7A6B4 80089EB4 042D428C */  lw         $v0, %lo(D_800A2D04)($v0)
-    /* 7A6B8 80089EB8 0A80033C */  lui        $v1, %hi(D_800A2D40)
-    /* 7A6BC 80089EBC 402D638C */  lw         $v1, %lo(D_800A2D40)($v1)
+    /* 7A6B0 80089EB0 0A80023C */  lui        $v0, %hi(_spu_mem_mode_plus)
+    /* 7A6B4 80089EB4 042D428C */  lw         $v0, %lo(_spu_mem_mode_plus)($v0)
+    /* 7A6B8 80089EB8 0A80033C */  lui        $v1, %hi(_spu_memList)
+    /* 7A6BC 80089EBC 402D638C */  lw         $v1, %lo(_spu_memList)($v1)
     /* 7A6C0 80089EC0 00000000 */  nop
     /* 7A6C4 80089EC4 03006014 */  bnez       $v1, .L80089ED4
     /* 7A6C8 80089EC8 04204400 */   sllv      $a0, $a0, $v0

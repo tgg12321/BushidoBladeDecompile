@@ -1,7 +1,7 @@
 glabel SpuFree
     /* 7A1A8 800899A8 E0FFBD27 */  addiu      $sp, $sp, -0x20
-    /* 7A1AC 800899AC 0A80033C */  lui        $v1, %hi(D_800A2D38)
-    /* 7A1B0 800899B0 382D638C */  lw         $v1, %lo(D_800A2D38)($v1)
+    /* 7A1AC 800899AC 0A80033C */  lui        $v1, %hi(_spu_AllocBlockNum)
+    /* 7A1B0 800899B0 382D638C */  lw         $v1, %lo(_spu_AllocBlockNum)($v1)
     /* 7A1B4 800899B4 21300000 */  addu       $a2, $zero, $zero
     /* 7A1B8 800899B8 14006018 */  blez       $v1, .L80089A0C
     /* 7A1BC 800899BC 1800BFAF */   sw        $ra, 0x18($sp)
@@ -9,8 +9,8 @@ glabel SpuFree
     /* 7A1C4 800899C4 0080023C */  lui        $v0, (0x80000000 >> 16)
     /* 7A1C8 800899C8 25408200 */  or         $t0, $a0, $v0
     /* 7A1CC 800899CC 21386000 */  addu       $a3, $v1, $zero
-    /* 7A1D0 800899D0 0A80053C */  lui        $a1, %hi(D_800A2D40)
-    /* 7A1D4 800899D4 402DA58C */  lw         $a1, %lo(D_800A2D40)($a1)
+    /* 7A1D0 800899D0 0A80053C */  lui        $a1, %hi(_spu_memList)
+    /* 7A1D4 800899D4 402DA58C */  lw         $a1, %lo(_spu_memList)($a1)
   .L800899D8:
     /* 7A1D8 800899D8 00000000 */  nop
     /* 7A1DC 800899DC 0000A38C */  lw         $v1, 0x0($a1)

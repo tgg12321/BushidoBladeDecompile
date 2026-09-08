@@ -8,9 +8,9 @@ glabel RotMatrixY
     /* 70234 8007FA34 FF0FEF31 */   andi      $t7, $t7, 0xFFF
   .L8007FA38:
     /* 70238 8007FA38 80C00F00 */  sll        $t8, $t7, 2
-    /* 7023C 8007FA3C 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 7023C 8007FA3C 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 70240 8007FA40 21C83803 */  addu       $t9, $t9, $t8
-    /* 70244 8007FA44 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 70244 8007FA44 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 70248 8007FA48 00000000 */  nop
     /* 7024C 8007FA4C 00741900 */  sll        $t6, $t9, 16
     /* 70250 8007FA50 034C0E00 */  sra        $t1, $t6, 16
@@ -18,9 +18,9 @@ glabel RotMatrixY
     /* 70258 8007FA58 03441900 */   sra       $t0, $t9, 16
   .L8007FA5C:
     /* 7025C 8007FA5C 80C01900 */  sll        $t8, $t9, 2
-    /* 70260 8007FA60 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 70260 8007FA60 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 70264 8007FA64 21C83803 */  addu       $t9, $t9, $t8
-    /* 70268 8007FA68 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 70268 8007FA68 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 7026C 8007FA6C 00000000 */  nop
     /* 70270 8007FA70 00C41900 */  sll        $t8, $t9, 16
     /* 70274 8007FA74 037C1800 */  sra        $t7, $t8, 16

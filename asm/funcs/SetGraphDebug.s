@@ -8,8 +8,8 @@ glabel SetGraphDebug
     /* 6B92C 8007B12C FF008530 */  andi       $a1, $a0, 0xFF
     /* 6B930 8007B130 0B00A010 */  beqz       $a1, .L8007B160
     /* 6B934 8007B134 000044A0 */   sb        $a0, 0x0($v0)
-    /* 6B938 8007B138 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6B93C 8007B13C 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6B938 8007B138 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6B93C 8007B13C 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6B940 8007B140 0A80063C */  lui        $a2, %hi(D_8009BE74)
     /* 6B944 8007B144 74BEC690 */  lbu        $a2, %lo(D_8009BE74)($a2)
     /* 6B948 8007B148 0A80073C */  lui        $a3, %hi(D_8009BE77)

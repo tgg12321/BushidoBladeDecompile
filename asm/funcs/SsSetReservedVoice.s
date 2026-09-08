@@ -9,8 +9,8 @@ glabel SsSetReservedVoice
     /* 7874C 80087F4C D71F0208 */  j          .L80087F5C
     /* 78750 80087F50 FF000224 */   addiu     $v0, $zero, 0xFF
   .L80087F54:
-    /* 78754 80087F54 1080013C */  lui        $at, %hi(D_80101BCC)
-    /* 78758 80087F58 CC1B24A0 */  sb         $a0, %lo(D_80101BCC)($at)
+    /* 78754 80087F54 1080013C */  lui        $at, %hi(_SsVmMaxVoice)
+    /* 78758 80087F58 CC1B24A0 */  sb         $a0, %lo(_SsVmMaxVoice)($at)
   .L80087F5C:
     /* 7875C 80087F5C 0800E003 */  jr         $ra
     /* 78760 80087F60 00000000 */   nop

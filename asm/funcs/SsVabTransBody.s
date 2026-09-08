@@ -11,29 +11,29 @@ glabel SsVabTransBody
     /* 78CE8 800884E8 1000B0AF */   sw        $s0, 0x10($sp)
     /* 78CEC 800884EC 00140500 */  sll        $v0, $a1, 16
     /* 78CF0 800884F0 03940200 */  sra        $s2, $v0, 16
-    /* 78CF4 800884F4 1080013C */  lui        $at, %hi(D_80102A68)
+    /* 78CF4 800884F4 1080013C */  lui        $at, %hi(_svm_vab_used)
     /* 78CF8 800884F8 21083200 */  addu       $at, $at, $s2
-    /* 78CFC 800884FC 682A2390 */  lbu        $v1, %lo(D_80102A68)($at)
+    /* 78CFC 800884FC 682A2390 */  lbu        $v1, %lo(_svm_vab_used)($at)
     /* 78D00 80088500 02000224 */  addiu      $v0, $zero, 0x2
     /* 78D04 80088504 14006214 */  bne        $v1, $v0, .L80088558
     /* 78D08 80088508 80881200 */   sll       $s1, $s2, 2
-    /* 78D0C 8008850C 1080013C */  lui        $at, %hi(D_80107810)
+    /* 78D0C 8008850C 1080013C */  lui        $at, %hi(_svm_vab_start)
     /* 78D10 80088510 21083100 */  addu       $at, $at, $s1
-    /* 78D14 80088514 1078308C */  lw         $s0, %lo(D_80107810)($at)
+    /* 78D14 80088514 1078308C */  lw         $s0, %lo(_svm_vab_start)($at)
     /* 78D18 80088518 9F2B020C */  jal        SpuSetTransferMode
     /* 78D1C 8008851C 21200000 */   addu      $a0, $zero, $zero
     /* 78D20 80088520 892B020C */  jal        SpuSetTransferStartAddr
     /* 78D24 80088524 21200002 */   addu      $a0, $s0, $zero
-    /* 78D28 80088528 1080013C */  lui        $at, %hi(D_801077C8)
+    /* 78D28 80088528 1080013C */  lui        $at, %hi(_svm_vab_total)
     /* 78D2C 8008852C 21083100 */  addu       $at, $at, $s1
-    /* 78D30 80088530 C877258C */  lw         $a1, %lo(D_801077C8)($at)
+    /* 78D30 80088530 C877258C */  lw         $a1, %lo(_svm_vab_total)($at)
     /* 78D34 80088534 712B020C */  jal        SpuWrite
     /* 78D38 80088538 21206002 */   addu      $a0, $s3, $zero
     /* 78D3C 8008853C 21104002 */  addu       $v0, $s2, $zero
     /* 78D40 80088540 01000324 */  addiu      $v1, $zero, 0x1
-    /* 78D44 80088544 1080013C */  lui        $at, %hi(D_80102A68)
+    /* 78D44 80088544 1080013C */  lui        $at, %hi(_svm_vab_used)
     /* 78D48 80088548 21082200 */  addu       $at, $at, $v0
-    /* 78D4C 8008854C 682A23A0 */  sb         $v1, %lo(D_80102A68)($at)
+    /* 78D4C 8008854C 682A23A0 */  sb         $v1, %lo(_svm_vab_used)($at)
     /* 78D50 80088550 59210208 */  j          .L80088564
     /* 78D54 80088554 00000000 */   nop
   .L80088558:

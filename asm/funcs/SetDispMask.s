@@ -12,8 +12,8 @@ glabel SetDispMask
     /* 6BAC8 8007B2C8 21808000 */   addu      $s0, $a0, $zero
     /* 6BACC 8007B2CC 0180043C */  lui        $a0, %hi(D_80015F04)
     /* 6BAD0 8007B2D0 045F8424 */  addiu      $a0, $a0, %lo(D_80015F04)
-    /* 6BAD4 8007B2D4 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6BAD8 8007B2D8 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6BAD4 8007B2D4 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6BAD8 8007B2D8 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6BADC 8007B2DC 00000000 */  nop
     /* 6BAE0 8007B2E0 09F84000 */  jalr       $v0
     /* 6BAE4 8007B2E4 21280002 */   addu      $a1, $s0, $zero

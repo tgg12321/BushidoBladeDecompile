@@ -14,8 +14,8 @@ glabel SetGraphReverse
     /* 6B830 8007B030 21888000 */   addu      $s1, $a0, $zero
     /* 6B834 8007B034 0180043C */  lui        $a0, %hi(D_80015E90)
     /* 6B838 8007B038 905E8424 */  addiu      $a0, $a0, %lo(D_80015E90)
-    /* 6B83C 8007B03C 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6B840 8007B040 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6B83C 8007B03C 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6B840 8007B040 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6B844 8007B044 00000000 */  nop
     /* 6B848 8007B048 09F84000 */  jalr       $v0
     /* 6B84C 8007B04C 21282002 */   addu      $a1, $s1, $zero

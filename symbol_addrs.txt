@@ -43,7 +43,7 @@ jtbl_800100E4 = 0x800100E4; // jump table (6 entries)
 g_sin_table = 0x800973FC; // sine lookup table (4096 entries, s16)
 
 // === GPU Subsystem (gpu.c / display.c) ===
-g_gpu_debug_func = 0x8009BE70; // GPU debug printf callback
+// data-wave 2026-09-07: g_gpu_debug_func = 0x8009BE70 retired; GPU_printf is now object-defined
 g_gpu_dev_table = 0x8009BE6C; // GPU device function vtable
 g_gpu_move_param = 0x8009BF1C; // PsyQ libgpu sys.c MoveImage `u_long param[5]` blit packet (head 2 words initialized: 0x04FFFFFF, 0x80000000)
 g_gpu_type = 0x8009BE74; // GPU hardware type
@@ -66,13 +66,13 @@ g_gpu_draw_count = 0x8009BF90; // draw call counter
 g_gpu_color_table = 0x800F189C; // GPU color index table
 
 // === GPU: Sine/Cosine LUTs (display.c) ===
-g_sin_lut_q1 = 0x8009BF94; // sine LUT quadrant 1
+// data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined
 g_sin_lut_q3 = 0x8009AF94; // sine LUT quadrant 3
 g_cos_lut_q2 = 0x8009B794; // cosine LUT quadrant 2
 g_cos_lut_q4 = 0x8009A794; // cosine LUT quadrant 4
 
 // === GTE Tables (display.c) ===
-g_gte_sqrt_table = 0x8009C7A8; // GTE square root lookup
+// data-wave 2026-09-07: g_gte_sqrt_table = 0x8009C7A8 retired; SQRT is now object-defined
 g_gte_saved_ra = 0x8009C798; // saved RA in GTE init
 
 // === CD-ROM Subsystem (system.c) ===
@@ -85,44 +85,44 @@ g_cd_spu_voice = 0x800A1490; // SPU voice register base ptr
 g_cd_status_a = 0x800A1494; // CD status byte A
 g_cd_status_b = 0x800A1495; // CD status byte B
 g_cd_status_c = 0x800A1496; // CD status byte C
-g_cd_debug_level = 0x800A11C0; // CD debug output level
-g_cd_mode = 0x800A11C4; // CD operating mode
-g_cd_param = 0x800A11D0; // CD command parameter
-g_cd_ready_flag = 0x800A11D4; // CD ready status
-g_cd_ready_flag2 = 0x800A11D5; // CD ready status 2
-g_cd_callback_a = 0x800A11B4; // CD callback A
-g_cd_callback_b = 0x800A11B8; // CD callback B
+// data-wave 2026-09-07: g_cd_debug_level = 0x800A11C0 retired; CD_debug is now object-defined
+// data-wave 2026-09-07: g_cd_mode = 0x800A11C4 retired; CD_status is now object-defined
+// data-wave 2026-09-07: g_cd_param = 0x800A11D0 retired; CD_pos is now object-defined
+// data-wave 2026-09-07: g_cd_ready_flag = 0x800A11D4 retired; CD_mode is now object-defined
+CD_com = 0x800A11D5; // CD ready status 2  // data-wave 2026-09-07: was g_cd_ready_flag2
+CD_cbsync = 0x800A11B4; // CD callback A  // data-wave 2026-09-07: was g_cd_callback_a
+CD_cbready = 0x800A11B8; // CD callback B  // data-wave 2026-09-07: was g_cd_callback_b
 g_cd_init_flag = 0x800A11C8; // CD initialized flag
 g_cd_dma_bcr = 0x800A14B0; // CD DMA BCR ptr
 g_cd_dma_ctrl_b4 = 0x800A14B4; // CD DMA control B4 ptr
 g_cd_dma_dest = 0x800A14B8; // CD DMA destination ptr
 g_cd_dma_size = 0x800A14BC; // CD DMA transfer size ptr
 g_cd_dma_ctrl = 0x800A14C0; // CD DMA control reg ptr
-g_cd_cmd_table = 0x800A11DC; // CD command dispatch table
-g_cd_result_table = 0x800A125C; // CD result handler table
+CD_comstr = 0x800A11DC; // CD command dispatch table  // data-wave 2026-09-07: was g_cd_cmd_table
+CD_intstr = 0x800A125C; // CD result handler table  // data-wave 2026-09-07: was g_cd_result_table
 g_cd_sector_buf = 0x800A112C; // CD sector buffer
 
 // === Sound / SPU Subsystem ===
-g_spu_base_addr = 0x800A2CDC; // SPU register base address
+_spu_RXX = 0x800A2CDC; // SPU register base address  // data-wave 2026-09-07: was g_spu_base_addr
 g_spu_dma_ctrl = 0x800A2CF0; // SPU DMA control register ptr
-g_spu_xfer_addr = 0x800A2CF4; // SPU transfer address (shifted)
-g_spu_reverb_mode = 0x800A2CF8; // SPU reverb mode (0=off)
-g_spu_addr_shift = 0x800A2D04; // SPU address shift factor
+_spu_tsa = 0x800A2CF4; // SPU transfer address (shifted)  // data-wave 2026-09-07: was g_spu_xfer_addr
+_spu_transMode = 0x800A2CF8; // SPU reverb mode (0=off)  // data-wave 2026-09-07: was g_spu_reverb_mode
+_spu_mem_mode_plus = 0x800A2D04; // SPU address shift factor  // data-wave 2026-09-07: was g_spu_addr_shift
 g_spu_busy = 0x800A2D10; // SPU busy/transfer state
 g_spu_init_flag = 0x800A2D14; // SPU initialized flag
-g_spu_timer = 0x800A2D18; // SPU timer
-g_spu_voice_key_a = 0x800A2D38; // SPU voice key A
-g_spu_voice_key_b = 0x800A2D3C; // SPU voice key B
-g_spu_voice_key_c = 0x800A2D40; // SPU voice key C
-g_snd_init_flag = 0x800A2CD8; // sound system init flag
-g_snd_irq_handle = 0x800A2870; // sound IRQ handler handle
-g_snd_reverb_flag = 0x800A2878; // sound reverb enable
+_spu_IRQCallback = 0x800A2D18; // SPU timer  // data-wave 2026-09-07: was g_spu_timer
+_spu_AllocBlockNum = 0x800A2D38; // SPU voice key A  // data-wave 2026-09-07: was g_spu_voice_key_a
+_spu_AllocLastNum = 0x800A2D3C; // SPU voice key B  // data-wave 2026-09-07: was g_spu_voice_key_b
+_spu_memList = 0x800A2D40; // SPU voice key C  // data-wave 2026-09-07: was g_spu_voice_key_c
+_spu_isCalled = 0x800A2CD8; // sound system init flag  // data-wave 2026-09-07: was g_snd_init_flag
+_spu_EVdma = 0x800A2870; // sound IRQ handler handle  // data-wave 2026-09-07: was g_snd_irq_handle
+_spu_trans_mode = 0x800A2878; // sound reverb enable  // data-wave 2026-09-07: was g_snd_reverb_flag
 g_snd_callback = 0x800A307C; // sound completion callback
 
 // === Sound: Channels and Playback ===
-g_snd_ch_status = 0x80102A68; // per-channel status array
-g_snd_ch_addr = 0x80107810; // per-channel SPU address
-g_snd_ch_count = 0x80107808; // active sound channel count
+_svm_vab_used = 0x80102A68; // per-channel status array  // data-wave 2026-09-07: was g_snd_ch_status
+_svm_vab_start = 0x80107810; // per-channel SPU address  // data-wave 2026-09-07: was g_snd_ch_addr
+_svm_vab_count = 0x80107808; // active sound channel count  // data-wave 2026-09-07: was g_snd_ch_count
 g_snd_irq_data = 0x80088BA0; // sound IRQ callback data
 
 // === System / IRQ ===
@@ -132,7 +132,7 @@ g_sys_vblank_count = 0x800A157A; // VBlank counter
 g_sys_vsync_mode = 0x800A14CC; // VSync wait mode
 g_sys_timer = 0x800A1500; // system timer value
 g_sys_video_mode = 0x800A2664; // video mode (0=NTSC)
-g_sys_dma_region = 0x800A2634; // DMA memory region
+Vcount = 0x800A2634; // DMA memory region  // data-wave 2026-09-07: was g_sys_dma_region
 
 // === Player / Character ===
 g_player_ptrs = 0x800A9A10; // player struct pointers [3]
@@ -215,9 +215,9 @@ g_char_data = 0x800A6690; // character data region
 g_char_setup_tbl = 0x80094E48; // character setup table
 
 // === Memory Card ===
-g_memcard_busy = 0x800FF578; // memcard busy flag
-g_memcard_slot = 0x80101BCC; // memcard slot
-g_memcard_data = 0x80103600; // memcard data byte
+_svm_stereo_mono = 0x800FF578; // memcard busy flag  // data-wave 2026-09-07: was g_memcard_busy
+_SsVmMaxVoice = 0x80101BCC; // memcard slot  // data-wave 2026-09-07: was g_memcard_slot
+_svm_auto_kof_mode = 0x80103600; // memcard data byte  // data-wave 2026-09-07: was g_memcard_data
 
 // === Debug Format Strings ===
 g_str_putdrawenv = 0x80015FC4; // PutDrawEnv debug

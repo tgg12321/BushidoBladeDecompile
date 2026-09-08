@@ -13,8 +13,8 @@ glabel PutDrawEnv
     /* 6C1DC 8007B9DC 21888000 */   addu      $s1, $a0, $zero
     /* 6C1E0 8007B9E0 0180043C */  lui        $a0, %hi(D_80015FC4)
     /* 6C1E4 8007B9E4 C45F8424 */  addiu      $a0, $a0, %lo(D_80015FC4)
-    /* 6C1E8 8007B9E8 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6C1EC 8007B9EC 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6C1E8 8007B9E8 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6C1EC 8007B9EC 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6C1F0 8007B9F0 00000000 */  nop
     /* 6C1F4 8007B9F4 09F84000 */  jalr       $v0
     /* 6C1F8 8007B9F8 21282002 */   addu      $a1, $s1, $zero

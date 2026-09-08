@@ -1,14 +1,14 @@
 glabel CD_initintr
     /* 72174 80081974 E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 72178 80081978 1000BFAF */  sw         $ra, 0x10($sp)
-    /* 7217C 8008197C 0A80013C */  lui        $at, %hi(D_800A11B8)
-    /* 72180 80081980 B81120AC */  sw         $zero, %lo(D_800A11B8)($at)
-    /* 72184 80081984 0A80013C */  lui        $at, %hi(D_800A11B4)
-    /* 72188 80081988 B41120AC */  sw         $zero, %lo(D_800A11B4)($at)
+    /* 7217C 8008197C 0A80013C */  lui        $at, %hi(CD_cbready)
+    /* 72180 80081980 B81120AC */  sw         $zero, %lo(CD_cbready)($at)
+    /* 72184 80081984 0A80013C */  lui        $at, %hi(CD_cbsync)
+    /* 72188 80081988 B41120AC */  sw         $zero, %lo(CD_cbsync)($at)
     /* 7218C 8008198C 0A80013C */  lui        $at, %hi(D_800A11C8)
     /* 72190 80081990 C81120AC */  sw         $zero, %lo(D_800A11C8)($at)
-    /* 72194 80081994 0A80013C */  lui        $at, %hi(D_800A11C4)
-    /* 72198 80081998 C41120AC */  sw         $zero, %lo(D_800A11C4)($at)
+    /* 72194 80081994 0A80013C */  lui        $at, %hi(CD_status)
+    /* 72198 80081998 C41120AC */  sw         $zero, %lo(CD_status)($at)
     /* 7219C 8008199C B00A020C */  jal        ResetCallback
     /* 721A0 800819A0 00000000 */   nop
     /* 721A4 800819A4 0880053C */  lui        $a1, %hi(D_80081F1C)

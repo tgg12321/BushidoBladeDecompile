@@ -8,10 +8,10 @@ glabel SpuSetTransferMode
   .L8008AE94:
     /* 7B694 8008AE94 21100000 */  addu       $v0, $zero, $zero
   .L8008AE98:
-    /* 7B698 8008AE98 0A80013C */  lui        $at, %hi(D_800A2878)
-    /* 7B69C 8008AE9C 782824AC */  sw         $a0, %lo(D_800A2878)($at)
-    /* 7B6A0 8008AEA0 0A80013C */  lui        $at, %hi(D_800A2CF8)
-    /* 7B6A4 8008AEA4 F82C22AC */  sw         $v0, %lo(D_800A2CF8)($at)
+    /* 7B698 8008AE98 0A80013C */  lui        $at, %hi(_spu_trans_mode)
+    /* 7B69C 8008AE9C 782824AC */  sw         $a0, %lo(_spu_trans_mode)($at)
+    /* 7B6A0 8008AEA0 0A80013C */  lui        $at, %hi(_spu_transMode)
+    /* 7B6A4 8008AEA4 F82C22AC */  sw         $v0, %lo(_spu_transMode)($at)
     /* 7B6A8 8008AEA8 0800E003 */  jr         $ra
     /* 7B6AC 8008AEAC 00000000 */   nop
 endlabel SpuSetTransferMode

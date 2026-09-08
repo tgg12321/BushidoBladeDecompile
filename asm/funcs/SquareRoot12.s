@@ -24,9 +24,9 @@ glabel SquareRoot12
   .L8007E490:
     /* 6EC90 8007E490 C0FF8C21 */  addi       $t4, $t4, -0x40 /* handwritten instruction */
     /* 6EC94 8007E494 40600C00 */  sll        $t4, $t4, 1
-    /* 6EC98 8007E498 0A800D3C */  lui        $t5, %hi(D_8009C7A8)
+    /* 6EC98 8007E498 0A800D3C */  lui        $t5, %hi(SQRT)
     /* 6EC9C 8007E49C 2168AC01 */  addu       $t5, $t5, $t4
-    /* 6ECA0 8007E4A0 A8C7AD85 */  lh         $t5, %lo(D_8009C7A8)($t5)
+    /* 6ECA0 8007E4A0 A8C7AD85 */  lh         $t5, %lo(SQRT)($t5)
     /* 6ECA4 8007E4A4 00000000 */  nop
     /* 6ECA8 8007E4A8 04002005 */  bltz       $t1, .L8007E4BC
     /* 6ECAC 8007E4AC 00000000 */   nop

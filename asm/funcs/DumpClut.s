@@ -6,8 +6,8 @@ glabel DumpClut
     /* 6B04C 8007A84C 0180043C */  lui        $a0, %hi(D_80015D70)
     /* 6B050 8007A850 705D8424 */  addiu      $a0, $a0, %lo(D_80015D70)
     /* 6B054 8007A854 00290500 */  sll        $a1, $a1, 4
-    /* 6B058 8007A858 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6B05C 8007A85C 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6B058 8007A858 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6B05C 8007A85C 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6B060 8007A860 1000BFAF */  sw         $ra, 0x10($sp)
     /* 6B064 8007A864 09F84000 */  jalr       $v0
     /* 6B068 8007A868 82310600 */   srl       $a2, $a2, 6

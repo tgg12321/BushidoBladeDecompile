@@ -13,8 +13,8 @@ glabel DumpTPage
     /* 6B008 8007A808 585D8424 */  addiu      $a0, $a0, %lo(D_80015D58)
     /* 6B00C 8007A80C 0300A530 */  andi       $a1, $a1, 0x3
     /* 6B010 8007A810 0300C630 */  andi       $a2, $a2, 0x3
-    /* 6B014 8007A814 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6B018 8007A818 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6B014 8007A814 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6B018 8007A818 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6B01C 8007A81C C007E730 */  andi       $a3, $a3, 0x7C0
     /* 6B020 8007A820 1800BFAF */  sw         $ra, 0x18($sp)
     /* 6B024 8007A824 09F84000 */  jalr       $v0

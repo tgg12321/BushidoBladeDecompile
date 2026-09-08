@@ -25,7 +25,7 @@ struct struct_svm {
     u8 tone_max; u8 tone_mode; u8 pad; short seq_sep_no; short tone_vag_idx;
     short voice; short voiceOffset; short field_0x1e;
 };
-extern struct struct_svm D_801027F0; /* _svm_cur */
+extern struct struct_svm _svm_cur; /* _svm_cur */
 
 /* PsyQ ProgAtr (libsnd.h) - program attribute record, 16 bytes; BB2 reads
    reserved2 as two u16 halves (VAG start-address pair). _svm_pg table. */

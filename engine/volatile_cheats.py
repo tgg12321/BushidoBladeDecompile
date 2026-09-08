@@ -809,7 +809,7 @@ def _is_sanctioned_pad(fname: str | None, text: str, s: int, e: int,
 # per-function/exact-shape strictness _SANCTIONED_UNWRITTEN_PADS enforces.
 # Everything else stays a cheat.
 _SANCTIONED_EMPTY_IFS: dict[str, frozenset[str]] = {
-    "func_800858D0": frozenset({"D_80101BCC"}),
+    "func_800858D0": frozenset({"_SsVmMaxVoice"}),
 }
 
 

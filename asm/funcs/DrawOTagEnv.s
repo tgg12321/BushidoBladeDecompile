@@ -16,8 +16,8 @@ glabel DrawOTagEnv
     /* 6C2EC 8007BAEC 0180043C */  lui        $a0, %hi(D_80015FDC)
     /* 6C2F0 8007BAF0 DC5F8424 */  addiu      $a0, $a0, %lo(D_80015FDC)
     /* 6C2F4 8007BAF4 21284002 */  addu       $a1, $s2, $zero
-    /* 6C2F8 8007BAF8 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6C2FC 8007BAFC 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6C2F8 8007BAF8 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6C2FC 8007BAFC 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6C300 8007BB00 00000000 */  nop
     /* 6C304 8007BB04 09F84000 */  jalr       $v0
     /* 6C308 8007BB08 21302002 */   addu      $a2, $s1, $zero

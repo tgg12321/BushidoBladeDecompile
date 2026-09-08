@@ -8,8 +8,8 @@ glabel _spu_FiDMA
     /* 793B4 80088BB4 9B24020C */  jal        _spu_Fw1ts
     /* 793B8 80088BB8 00000000 */   nop
   .L80088BBC:
-    /* 793BC 80088BBC 0A80043C */  lui        $a0, %hi(D_800A2CDC)
-    /* 793C0 80088BC0 DC2C848C */  lw         $a0, %lo(D_800A2CDC)($a0)
+    /* 793BC 80088BBC 0A80043C */  lui        $a0, %hi(_spu_RXX)
+    /* 793C0 80088BC0 DC2C848C */  lw         $a0, %lo(_spu_RXX)($a0)
     /* 793C4 80088BC4 00000000 */  nop
     /* 793C8 80088BC8 AA018294 */  lhu        $v0, 0x1AA($a0)
     /* 793CC 80088BCC 00000000 */  nop

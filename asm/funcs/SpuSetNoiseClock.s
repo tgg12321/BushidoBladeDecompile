@@ -10,8 +10,8 @@ glabel SpuSetNoiseClock
     /* 7A52C 80089D2C 00000000 */   nop
     /* 7A530 80089D30 3F000524 */  addiu      $a1, $zero, 0x3F
   .L80089D34:
-    /* 7A534 80089D34 0A80043C */  lui        $a0, %hi(D_800A2CDC)
-    /* 7A538 80089D38 DC2C848C */  lw         $a0, %lo(D_800A2CDC)($a0)
+    /* 7A534 80089D34 0A80043C */  lui        $a0, %hi(_spu_RXX)
+    /* 7A538 80089D38 DC2C848C */  lw         $a0, %lo(_spu_RXX)($a0)
     /* 7A53C 80089D3C 3F00A230 */  andi       $v0, $a1, 0x3F
     /* 7A540 80089D40 AA018394 */  lhu        $v1, 0x1AA($a0)
     /* 7A544 80089D44 00120200 */  sll        $v0, $v0, 8

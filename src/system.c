@@ -15,12 +15,12 @@ extern s32 DMACallback(s32, s32);
 extern s32 CD_datasync(s32);
 
 /* Externs for globals */
-extern u8 g_cd_mode;
-extern u8 g_cd_param;
-extern u8 g_cd_ready_flag;
-extern u8 g_cd_ready_flag2;
-extern s32 g_cd_callback_a;
-extern s32 g_cd_callback_b;
+extern u8 CD_status;
+extern u8 CD_pos;
+extern u8 CD_mode;
+extern u8 CD_com;
+extern s32 CD_cbsync;
+extern s32 CD_cbready;
 
 /* --- Functions 0x8008008C - 0x800807A8 --- */
 
@@ -37,19 +37,19 @@ __asm__(
 );
 
 u32 CdStatus(void) {
-    return g_cd_mode;
+    return CD_status;
 }
 
 u32 CdMode(void) {
-    return g_cd_ready_flag;
+    return CD_mode;
 }
 
 u32 CdLastCom(void) {
-    return g_cd_ready_flag2;
+    return CD_com;
 }
 
 void *CdLastPos(void) {
-    return &g_cd_param;
+    return &CD_pos;
 }
 
 extern void CD_initintr(void);
@@ -75,14 +75,14 @@ void CdFlush(void) {
     CD_flush();
 }
 
-extern s32 g_cd_debug_level;
-extern s32 g_cd_cmd_table[];
-extern s32 g_cd_result_table[];
+extern s32 CD_debug;
+extern s32 CD_comstr[];
+extern s32 CD_intstr[];
 extern char g_str_none;
 
 s32 CdSetDebug(s32 a0) {
-    s32 old = g_cd_debug_level;
-    g_cd_debug_level = a0;
+    s32 old = CD_debug;
+    CD_debug = a0;
     return old;
 }
 
@@ -92,7 +92,7 @@ void *CdComstr(u8 com) {
     if (com > 0x1B) {
         return &g_str_none;
     }
-    return (void *)g_cd_cmd_table[com];
+    return (void *)CD_comstr[com];
 }
 
 /* PsyQ 4.0 LIBCD sys: CdIntstr — verbatim-linked Sony object (census
@@ -101,7 +101,7 @@ void *CdIntstr(u8 intr) {
     if (intr > 6) {
         return &g_str_none;
     }
-    return (void *)g_cd_result_table[intr];
+    return (void *)CD_intstr[intr];
 }
 
 /* PsyQ 4.0 LIBCD sys: CdSync — verbatim-linked Sony object (census
@@ -117,14 +117,14 @@ s32 CdReady(s32 mode, u8 *result) {
 }
 
 s32 CdSyncCallback(s32 a0) {
-    s32 old = g_cd_callback_a;
-    g_cd_callback_a = a0;
+    s32 old = CD_cbsync;
+    CD_cbsync = a0;
     return old;
 }
 
 s32 CdReadyCallback(s32 a0) {
-    s32 old = g_cd_callback_b;
-    g_cd_callback_b = a0;
+    s32 old = CD_cbready;
+    CD_cbready = a0;
     return old;
 }
 
@@ -140,7 +140,7 @@ s32 CdControl(u8 a0, s32 a1, s32 a2) {
     s32 *elem;
 
     idx = a0;
-    saved = g_cd_callback_a;
+    saved = CD_cbsync;
     count = 3;
     base = g_cd_sector_buf;
     elem = base + idx;
@@ -155,10 +155,10 @@ loop:
        floor 17, 720 declaration orders inert, mask/param/named-intermediate
        axes measured) */
     do {
-    g_cd_callback_a = 0;
+    CD_cbsync = 0;
 
     if (idx != 1) {
-        if (g_cd_mode & 0x10) {
+        if (CD_status & 0x10) {
             CD_cw(1, 0, 0, 0);
         }
     }
@@ -169,7 +169,7 @@ loop:
             }
         }
     }
-    g_cd_callback_a = saved;
+    CD_cbsync = saved;
     if (CD_cw(a0, a1, a2, 0) == 0) {
         goto done;
     }
@@ -180,7 +180,7 @@ next:
         goto loop;
     }
     } while (0);
-    g_cd_callback_a = saved;
+    CD_cbsync = saved;
     result = -1;
 done:
     return result + 1;
@@ -194,7 +194,7 @@ s32 CdControlF(u8 a0, s32 a1) {
     s32 *elem;
 
     idx = a0;
-    saved = g_cd_callback_a;
+    saved = CD_cbsync;
     count = 3;
     base = g_cd_sector_buf;
     elem = base + idx;
@@ -207,10 +207,10 @@ loop:
        hypotheses.md (s1 60+120 perms, s2 240 init orders + batches A-E,
        s3 batches A/B) */
     do {
-    g_cd_callback_a = 0;
+    CD_cbsync = 0;
 
     if (idx != 1) {
-        if (g_cd_mode & 0x10) {
+        if (CD_status & 0x10) {
             CD_cw(1, 0, 0, 0);
         }
     }
@@ -221,7 +221,7 @@ loop:
             }
         }
     }
-    g_cd_callback_a = saved;
+    CD_cbsync = saved;
     if (CD_cw(a0, a1, 0, 1) == 0) {
         goto done;
     }
@@ -232,7 +232,7 @@ next:
         goto loop;
     }
     } while (0);
-    g_cd_callback_a = saved;
+    CD_cbsync = saved;
     result = -1;
 done:
     return result + 1;
@@ -245,17 +245,17 @@ s32 CdControlB(u8 a0, s32 a1, s32 a2) {
     s32 *base;
     s32 status;
 
-    saved = g_cd_callback_a;
+    saved = CD_cbsync;
     count = 3;
     idx = a0 & 0xFF;
     base = g_cd_sector_buf;
     elem = base + idx;
 
 loop:
-    g_cd_callback_a = 0;
+    CD_cbsync = 0;
 
     if (idx != 1) {
-        if (g_cd_mode & 0x10) {
+        if (CD_status & 0x10) {
             CD_cw(1, 0, 0, 0);
         }
     }
@@ -266,7 +266,7 @@ loop:
             }
         }
     }
-    g_cd_callback_a = saved;
+    CD_cbsync = saved;
     if (CD_cw(a0 & 0xFF, a1, a2, 0) == 0) {
         status = 0;
         goto done;
@@ -277,7 +277,7 @@ next:
     if (count != (-1)) {
         goto loop;
     }
-    g_cd_callback_a = saved;
+    CD_cbsync = saved;
 done:
     if (status != 0) {
         return 0;
@@ -356,8 +356,8 @@ extern void printf(void *, void *, s32, s32, s32);
 extern s32 CheckCallback(void);
 extern s32 getintr(void);
 extern volatile u8 *D_800A147C;
-extern s32 D_800A11B4;
-extern s32 D_800A11B8;
+extern s32 CD_cbsync;
+extern s32 CD_cbready;
 extern void D_800F19A0;
 extern void D_800F19A8;
 extern void D_800F19B0;
@@ -368,9 +368,9 @@ extern s32 D_800F19BC;
 extern void *D_800F19C0;
 extern s32 D_800161B8;
 extern s32 D_800161C8;
-extern u8 D_800A11D5;
-extern s32 D_800A11DC[];
-extern s32 D_800A125C[];
+extern u8 CD_com;
+extern s32 CD_comstr[];
+extern s32 CD_intstr[];
 extern volatile u8 g_cd_status_a;
 extern u8 D_800A1494;
 extern u8 D_800A1495;
@@ -389,7 +389,7 @@ s32 CD_sync(s32 a0, u8 *a1)
   u8 b;
   s32 temp;
   D_800F19B8 = VSync(-1) + 0x3C0;
-  tbl_125c = D_800A125C; /* FAKE: pointer alias (second handle) to the CD_intstr table per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: global.c seats the base in $s3 across the whole function as the target does (asm/funcs/CD_sync.s:16-17); lever-exhaustion: s126 ablation C1 (direct D_800A125C[] subscript) = 31/160, plus the 125-session ledger in memory/grind/CD_sync/hypotheses.md */
+  tbl_125c = CD_intstr; /* FAKE: pointer alias (second handle) to the CD_intstr table per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: global.c seats the base in $s3 across the whole function as the target does (asm/funcs/CD_sync.s:16-17); lever-exhaustion: s126 ablation C1 (direct D_800A125C[] subscript) = 31/160, plus the 125-session ledger in memory/grind/CD_sync/hypotheses.md */
   idx_1494 = &g_cd_status_a; /* FAKE: pointer alias (second handle) to the libcd Intr status block per pointer-alias-fake-exception (owner ruling 2026-07-01); the volatile is the TU's own declaration `extern volatile u8 g_cd_status_a;` (src/system.c, on main since 7e182728; ground truth `static volatile CD_intr Intr`, memory/closer/libcd-identity.md:28) - no cast, no local qualifier; mechanism: global.c seats the base in $s2 across the poll loop as the target does (asm/funcs/CD_sync.s:18-19); lever-exhaustion: s126 ablation C2 (direct (&g_cd_status_a)[n] subscript) = 29/160 */
   idx_1495 = 1 + idx_1494; /* FAKE: second handle (+1) into the same 3-byte Intr block per pointer-alias-fake-exception (NOT cross-symbol arithmetic: D_800A1494/95/96 are one `static volatile CD_intr Intr`, memory/closer/libcd-identity.md:28; the identical idiom ships matched on main at src/system.c CD_ready and cdrom_IrqHandler), mechanism: global.c seats the ready-byte base in $s4 (`addiu s4,s2,1`, asm/funcs/CD_sync.s:20); lever-exhaustion: s126 ablation A7 (idx_1494[1] read at the use site) = 12/160, s105 (three honest respellings of the old chain-extender) = 15 */
   D_800F19BC = 0;
@@ -420,7 +420,7 @@ s32 CD_sync(s32 a0, u8 *a1)
       src = (u8 *)((t0 << 2) + (s32)tbl_125c); /* FAKE: chain-A address staged through the (dead-here) src copy-loop variable per staged-value-reused-variable (owner-sanctioned 2026-07-03), mechanism: the multi-set destination keeps the addu unboosted (birthing_insn_p sched.c:2505) so it fills the backward-pass slot behind the sw instead of the shift, and global.c seats it in $a0 with src's copy-loop lives; lever-exhaustion: s126 ablation A6 (fresh local `ta` instead of the reused src) = 8/160 */
       arg5 = *pB; /* FAKE: named intermediate for the fifth (stack) argument (fresh, once-written, once-read, real value = `lw $v1,0($v0)` at asm/funcs/CD_sync.s:60), mechanism: calls.c store_one_arg - a named value is loaded before the call sequence and stored by the sw at the target slot 64; lever-exhaustion: s126 probe B2 (passed as *pB directly) = 9/160 */
       pp = &D_800F19C0; /* FAKE: pointer alias (second handle) to the alarm callback slot per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: calls.c:1652-1664 expand_call precomputes a register argument whose rtx_cost > 2 into a pseudo inside a loop (preserve_subexpressions_p), whereas `*pp` is a cheap mem(reg) that stays in the call sequence and cse folds the alias back to the target's `lui $a1 / lw $a1` at asm/funcs/CD_sync.s:51-52; lever-exhaustion: s126 ablation A5 (direct D_800F19C0 read) = 18/160; the CD_alarm struct spelling that this candidate carried through s117-s125 is BANNED (decisions.md 2026-09-06 11:38) and is removed here */
-      printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)src, arg5);
+      printf(&D_800161C8, *pp, CD_comstr[CD_com], *(s32 *)src, arg5);
       CD_flush();
     } while (0);
   }
@@ -447,16 +447,16 @@ s32 CD_sync(s32 a0, u8 *a1)
     {
       if (status & 4)
       {
-        if (D_800A11B8 != 0)
+        if (CD_cbready != 0)
         {
-          ((void (*)(u8, void *)) D_800A11B8)(*idx_1495, &D_800F19A8);
+          ((void (*)(u8, void *)) CD_cbready)(*idx_1495, &D_800F19A8);
         }
       }
       if (status & 2)
       {
-        if (D_800A11B4 != 0)
+        if (CD_cbsync != 0)
         {
-          ((void (*)(u8, void *)) D_800A11B4)(*idx_1494, &D_800F19A0);
+          ((void (*)(u8, void *)) CD_cbsync)(*idx_1494, &D_800F19A0);
         }
       }
     }
@@ -510,7 +510,7 @@ s32 CD_ready(s32 a0, u8 *a1)
   u8 *dst2;
   s32 i;
   D_800F19B8 = VSync(-1) + 0x3C0;
-  tbl_125c = D_800A125C; /* FAKE: pointer alias to the CD_intstr table per pointer-alias-fake-exception, mechanism: the base is held in s5 across the poll loop as in the target; lever-exhaustion: direct-subscript spellings s66 s07 (14) */
+  tbl_125c = CD_intstr; /* FAKE: pointer alias to the CD_intstr table per pointer-alias-fake-exception, mechanism: the base is held in s5 across the poll loop as in the target; lever-exhaustion: direct-subscript spellings s66 s07 (14) */
   idx_1494 = &g_cd_status_a; /* FAKE: pointer alias to the libcd Intr status block per pointer-alias-fake-exception (owner ruling 2026-07-01); the pointer's volatile type is the TU's declaration `extern volatile u8 g_cd_status_a;` (src/system.c, on main since 7e182728; ground truth `static volatile CD_intr Intr`, memory/closer/libcd-identity.md:28) - no cast, no local qualifier; mechanism: the base is held in s2 across the poll loop as in the target; lever-exhaustion: type-level direct spellings s60 (4/180), s88 VD (&g_cd_status_c: 2/180) */
   idx_1495 = 1 + idx_1494; /* FAKE: second handle (+1) per pointer-alias-fake-exception, mechanism: base register s6 for the ready byte in the callback block as in the target (the idiom cdrom_IrqHandler ships on main: `volatile u8 *s3 = s1 - 1;`, src/system.c:766); lever-exhaustion: s60 */
   idx_1496 = idx_1494 + 2; /* FAKE: third handle (+2) per pointer-alias-fake-exception, mechanism: base register s3 (`addiu s3,s2,2`) for the completion byte as in the target; the volatile store `*(idx_1496 - 1) = 0` in check2 is load-bearing through reorg.c:760 (resource_conflicts_p: a volatile store sets set.volatil, so fill_simple_delay_slots takes nothing into the `beqz a2` slot - the target's nop); lever-exhaustion: s88 R1 (non-volatile idx_1496: 2/178, reorg hoists `move a1,s4` into the slot) */
@@ -544,7 +544,7 @@ s32 CD_ready(s32 a0, u8 *a1)
     src = (u8 *)((t0 << 2) + (s32)tbl_125c); /* FAKE: chain-A address staged through the (dead-here) src var per staged-value-reused-variable (owner-sanctioned 2026-07-03), mechanism: the multi-set destination keeps the addu unboosted (birthing_insn_p sched.c:2505) so it fills the backward-pass slot behind the sw instead of the shift, and global.c seats it in $a0 with src's copy-loop lives; lever-exhaustion: s87 F4/F5 (fresh ta: 9), s88 N1/V2n/G2 (in-place t0: 15), s87 P5a/P5b (5/9) */
     arg5 = *pB; /* FAKE: named intermediate for the fifth (stack) argument (fresh, once-written, once-read, real value = lw v1,0(v0)), mechanism: calls.c store_one_arg - a named value is loaded before the call sequence and stored by the sw at the target slot; lever-exhaustion: s88 H6 (passed as *pB directly) = 9 */
     pp = &D_800F19C0; /* FAKE: pointer alias (second handle) to the alarm callback slot per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: calls.c:1652-1664 expand_call precomputes a register argument whose rtx_cost > 2 into a pseudo inside a loop (preserve_subexpressions_p) - the bare `mem(symbol_ref D_800F19C0)` is copied to a pseudo before the chain-A/chain-B insns and the sw (F1.combine insn 119 + `move a1`), whereas `*pp` is a cheap `mem(reg)` that stays in the call sequence and cse folds the alias back to `(set a1 (mem (symbol_ref D_800F19C0)))` (F2f.combine insn 136), the target's `lui a1/lw a1` at slots 53-54; lever-exhaustion: direct global read s88d F1 = 23/180 (a1 load displaced to slots 61-62, seats shuffled), s53-s57 scalar model = 9, the CD_alarm struct spelling is BANNED (decisions.md 2026-09-06 11:38); placement inside the block is byte-inert (s88d F2a/F2b/F2c/F2e/F2f all 0/179), function-scope placement F2d = 10/183 (pp becomes a loop-carried callee-saved live range) */
-    printf(&D_800161C8, *pp, D_800A11DC[D_800A11D5], *(s32 *)src, arg5);
+    printf(&D_800161C8, *pp, CD_comstr[CD_com], *(s32 *)src, arg5);
   CD_flush();
   } while (0);
   }
@@ -573,17 +573,17 @@ s32 CD_ready(s32 a0, u8 *a1)
     {
       if (status & 4)
       {
-        if (D_800A11B8 != 0)
+        if (CD_cbready != 0)
         {
-          ((void (*)(u8, void *)) D_800A11B8)(*idx_1495, &D_800F19A8);
+          ((void (*)(u8, void *)) CD_cbready)(*idx_1495, &D_800F19A8);
         }
         ;
       }
       if (status & 2)
       {
-        if (D_800A11B4)
+        if (CD_cbsync)
         {
-          ((void (*)(u8, void *)) D_800A11B4)(*idx_1494, &D_800F19A0);
+          ((void (*)(u8, void *)) CD_cbsync)(*idx_1494, &D_800F19A0);
         }
       }
     }
@@ -717,10 +717,10 @@ extern s32 g_cd_init_flag;
 extern void InterruptCallback(s32, void *);
 extern u8 D_80081F1C;
 void CD_initintr(void) {
-    g_cd_callback_b = 0;
-    g_cd_callback_a = 0;
+    CD_cbready = 0;
+    CD_cbsync = 0;
     g_cd_init_flag = 0;
-    *(s32 *)&g_cd_mode = 0;
+    *(s32 *)&CD_status = 0;
     ResetCallback();
     InterruptCallback(2, &D_80081F1C);
 }
@@ -735,12 +735,12 @@ s32 CD_init(void) {
     puts(&D_800162A8);
     printf(&D_800162B4, &D_800A1498);
 
-    g_cd_ready_flag2 = 0;
-    g_cd_ready_flag = 0;
-    g_cd_callback_b = 0;
-    g_cd_callback_a = 0;
+    CD_com = 0;
+    CD_mode = 0;
+    CD_cbready = 0;
+    CD_cbsync = 0;
     g_cd_init_flag = 0;
-    *(s32 *)&g_cd_mode = 0;
+    *(s32 *)&CD_status = 0;
 
     ResetCallback();
     InterruptCallback(2, &D_80081F1C);
@@ -767,7 +767,7 @@ s32 CD_init(void) {
 
     CD_cw(1, 0, 0, 0);
 
-    if (*(s32 *)&g_cd_mode & 0x10) {
+    if (*(s32 *)&CD_status & 0x10) {
         CD_cw(1, 0, 0, 0);
     }
 
@@ -793,9 +793,9 @@ extern void *D_800F19C0;
 extern s32 g_str_cd_timeout;
 extern s32 D_800161C8;
 extern void D_800162C0;
-extern u8 D_800A11D5;
-extern s32 D_800A11DC[];
-extern s32 D_800A125C[];
+extern u8 CD_com;
+extern s32 CD_comstr[];
+extern s32 CD_intstr[];
 extern u8 D_800A1494;
 extern u8 D_800A1495;
 extern volatile u32 *D_800A14C0;
@@ -808,9 +808,9 @@ s32 CD_datasync(s32 a0) {
     s32 *tbl_125c;
 
     D_800F19B8 = VSync(-1) + 0x3C0;
-    tbl_11dc = D_800A11DC; /* FAKE: pointer alias (second handle) to the libcd command-name table per pointer-alias-fake-exception (owner ruling 2026-07-01), mechanism: global.c seats the base in $s3 across the poll loop as the target does (asm/funcs/CD_datasync.s:11-12); lever-exhaustion: s62 ablation A4 (direct D_800A11DC[] subscript) = 18/88, plus the 61-session ledger in memory/grind/CD_datasync/hypotheses.md */
+    tbl_11dc = CD_comstr; /* FAKE: pointer alias (second handle) to the libcd command-name table per pointer-alias-fake-exception (owner ruling 2026-07-01), mechanism: global.c seats the base in $s3 across the poll loop as the target does (asm/funcs/CD_datasync.s:11-12); lever-exhaustion: s62 ablation A4 (direct D_800A11DC[] subscript) = 18/88, plus the 61-session ledger in memory/grind/CD_datasync/hypotheses.md */
     idx_1494 = &g_cd_status_a; /* FAKE: pointer alias (second handle) to the libcd Intr status block per pointer-alias-fake-exception (owner ruling 2026-07-01); the volatile is the TU's own declaration `extern volatile u8 g_cd_status_a;` (src/system.c, on main since 7e182728; ground truth `static volatile CD_intr Intr`, memory/closer/libcd-identity.md:28) - no cast, no local qualifier; mechanism: global.c seats the base in $s1 across the poll loop as the target does (asm/funcs/CD_datasync.s:13-14); lever-exhaustion: s62 ablation A5 (direct (&g_cd_status_a)[n] subscript) = 20/90 */
-    tbl_125c = D_800A125C; /* FAKE: pointer alias (second handle) to the CD_intstr table per pointer-alias-fake-exception (owner ruling 2026-07-01), mechanism: global.c seats the base in $s0 across the poll loop as the target does (asm/funcs/CD_datasync.s:15-16); lever-exhaustion: s62 ablation A3 (direct D_800A125C[] subscript) = 27/89 */
+    tbl_125c = CD_intstr; /* FAKE: pointer alias (second handle) to the CD_intstr table per pointer-alias-fake-exception (owner ruling 2026-07-01), mechanism: global.c seats the base in $s0 across the poll loop as the target does (asm/funcs/CD_datasync.s:15-16); lever-exhaustion: s62 ablation A3 (direct D_800A125C[] subscript) = 27/89 */
     D_800F19BC = 0;
     D_800F19C0 = &D_800162C0;
 
@@ -835,7 +835,7 @@ do_timeout:
         do { /* FAKE: do-while(0) wrap per do-while-zero-exception (owner ruling 2026-07-06), mechanism: sched.c:2081 loop-note barrier on the first insn inside (the ready-byte load) orders the sync-byte load ahead of it and every later register-argument load after it, and flow.c loop_depth ref weighting seats tbl_125c in $s0; lever-exhaustion: s62 ablation A2 (wrap removed) = 13/91, s61 ablation 2 -> 12 */
             tb = idx_1494[1]; /* FAKE: named intermediate for the ready byte (fresh, once-written, once-read, real value = lbu $v0,1($s1) at asm/funcs/CD_datasync.s:51), mechanism: expand argument staging keeps the fifth (stack) argument's chain out of the call sequence so the sw lands at slot 63; lever-exhaustion: s62 probe B1 (tb inlined into the call) = 12/91, s62 probe A6 (all intermediates inlined) = 13/91 */
             pp = &D_800F19C0; /* FAKE: pointer alias (second handle) to the alarm callback slot per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: calls.c:1652-1664 expand_call precomputes a register argument whose rtx_cost > 2 into a pseudo inside a loop (preserve_subexpressions_p), whereas `*pp` is a cheap mem(reg) that stays in the call sequence and cse folds the alias back to the target's `lui $a1 / lw $a1` at asm/funcs/CD_datasync.s:52-53; lever-exhaustion: s62 ablation A1 (direct D_800F19C0 read) = 4/91 */
-            printf(&D_800161C8, *pp, tbl_11dc[D_800A11D5], tbl_125c[t0], tbl_125c[tb]);
+            printf(&D_800161C8, *pp, tbl_11dc[CD_com], tbl_125c[t0], tbl_125c[tb]);
             CD_flush();
         } while (0);
     }
@@ -921,8 +921,8 @@ void CD_set_test_parmnum(s32 a0) {
 
 extern volatile u8 g_cd_status_a;
 extern volatile u8 g_cd_status_b;
-extern s32 g_cd_callback_a;
-extern s32 g_cd_callback_b;
+extern s32 CD_cbsync;
+extern s32 CD_cbready;
 extern void D_800F19A8;
 extern void D_800F19A0;
 extern s32 getintr(void);
@@ -950,13 +950,13 @@ void cdrom_IrqHandler(void) {
         s0 = getintr();
         if (s0 == 0) break;
         if (s0 & 4) {
-            if (g_cd_callback_b != 0) {
-                ((void (*)(u8, void *))g_cd_callback_b)(*s1, &D_800F19A8);
+            if (CD_cbready != 0) {
+                ((void (*)(u8, void *))CD_cbready)(*s1, &D_800F19A8);
             }
         }
         if (!(s0 & 2)) continue;
-        if (g_cd_callback_a == 0) continue;
-        ((void (*)(u8, void *))g_cd_callback_a)(*s3, &D_800F19A0);
+        if (CD_cbsync == 0) continue;
+        ((void (*)(u8, void *))CD_cbsync)(*s3, &D_800F19A0);
     } while (1);
     *g_cd_index_reg = s2;
 }

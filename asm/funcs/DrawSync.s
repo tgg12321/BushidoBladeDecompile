@@ -9,8 +9,8 @@ glabel DrawSync
     /* 6BB58 8007B358 1400BFAF */   sw        $ra, 0x14($sp)
     /* 6BB5C 8007B35C 0180043C */  lui        $a0, %hi(D_80015F18)
     /* 6BB60 8007B360 185F8424 */  addiu      $a0, $a0, %lo(D_80015F18)
-    /* 6BB64 8007B364 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6BB68 8007B368 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6BB64 8007B364 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6BB68 8007B368 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6BB6C 8007B36C 00000000 */  nop
     /* 6BB70 8007B370 09F84000 */  jalr       $v0
     /* 6BB74 8007B374 21280002 */   addu      $a1, $s0, $zero

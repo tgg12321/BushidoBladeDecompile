@@ -1,6 +1,6 @@
 glabel SpuGetVoiceVolume
-    /* 7C588 8008BD88 0A80023C */  lui        $v0, %hi(D_800A2CDC)
-    /* 7C58C 8008BD8C DC2C428C */  lw         $v0, %lo(D_800A2CDC)($v0)
+    /* 7C588 8008BD88 0A80023C */  lui        $v0, %hi(_spu_RXX)
+    /* 7C58C 8008BD8C DC2C428C */  lw         $v0, %lo(_spu_RXX)($v0)
     /* 7C590 8008BD90 00210400 */  sll        $a0, $a0, 4
     /* 7C594 8008BD94 21208200 */  addu       $a0, $a0, $v0
     /* 7C598 8008BD98 00008394 */  lhu        $v1, 0x0($a0)

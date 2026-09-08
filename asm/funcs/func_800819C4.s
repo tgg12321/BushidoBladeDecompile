@@ -11,18 +11,18 @@ glabel CD_init
     /* 721E8 800819E8 9814A524 */  addiu      $a1, $a1, %lo(D_800A1498)
     /* 721EC 800819EC 82E4010C */  jal        printf
     /* 721F0 800819F0 00000000 */   nop
-    /* 721F4 800819F4 0A80013C */  lui        $at, %hi(D_800A11D5)
-    /* 721F8 800819F8 D51120A0 */  sb         $zero, %lo(D_800A11D5)($at)
-    /* 721FC 800819FC 0A80013C */  lui        $at, %hi(D_800A11D4)
-    /* 72200 80081A00 D41120A0 */  sb         $zero, %lo(D_800A11D4)($at)
-    /* 72204 80081A04 0A80013C */  lui        $at, %hi(D_800A11B8)
-    /* 72208 80081A08 B81120AC */  sw         $zero, %lo(D_800A11B8)($at)
-    /* 7220C 80081A0C 0A80013C */  lui        $at, %hi(D_800A11B4)
-    /* 72210 80081A10 B41120AC */  sw         $zero, %lo(D_800A11B4)($at)
+    /* 721F4 800819F4 0A80013C */  lui        $at, %hi(CD_com)
+    /* 721F8 800819F8 D51120A0 */  sb         $zero, %lo(CD_com)($at)
+    /* 721FC 800819FC 0A80013C */  lui        $at, %hi(CD_mode)
+    /* 72200 80081A00 D41120A0 */  sb         $zero, %lo(CD_mode)($at)
+    /* 72204 80081A04 0A80013C */  lui        $at, %hi(CD_cbready)
+    /* 72208 80081A08 B81120AC */  sw         $zero, %lo(CD_cbready)($at)
+    /* 7220C 80081A0C 0A80013C */  lui        $at, %hi(CD_cbsync)
+    /* 72210 80081A10 B41120AC */  sw         $zero, %lo(CD_cbsync)($at)
     /* 72214 80081A14 0A80013C */  lui        $at, %hi(D_800A11C8)
     /* 72218 80081A18 C81120AC */  sw         $zero, %lo(D_800A11C8)($at)
-    /* 7221C 80081A1C 0A80013C */  lui        $at, %hi(D_800A11C4)
-    /* 72220 80081A20 C41120AC */  sw         $zero, %lo(D_800A11C4)($at)
+    /* 7221C 80081A1C 0A80013C */  lui        $at, %hi(CD_status)
+    /* 72220 80081A20 C41120AC */  sw         $zero, %lo(CD_status)($at)
     /* 72224 80081A24 B00A020C */  jal        ResetCallback
     /* 72228 80081A28 00000000 */   nop
     /* 7222C 80081A2C 0880053C */  lui        $a1, %hi(D_80081F1C)
@@ -90,8 +90,8 @@ glabel CD_init
     /* 7231C 80081B1C 000062AC */  sw         $v0, 0x0($v1)
     /* 72320 80081B20 BF04020C */  jal        CD_cw
     /* 72324 80081B24 00000000 */   nop
-    /* 72328 80081B28 0A80023C */  lui        $v0, %hi(D_800A11C4)
-    /* 7232C 80081B2C C411428C */  lw         $v0, %lo(D_800A11C4)($v0)
+    /* 72328 80081B28 0A80023C */  lui        $v0, %hi(CD_status)
+    /* 7232C 80081B2C C411428C */  lw         $v0, %lo(CD_status)($v0)
     /* 72330 80081B30 00000000 */  nop
     /* 72334 80081B34 10004230 */  andi       $v0, $v0, 0x10
     /* 72338 80081B38 05004010 */  beqz       $v0, .L80081B50

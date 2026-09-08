@@ -8,9 +8,9 @@ glabel RotMatrixZYX
     /* 6FE04 8007F604 FF0FEF31 */   andi      $t7, $t7, 0xFFF
   .L8007F608:
     /* 6FE08 8007F608 80C00F00 */  sll        $t8, $t7, 2
-    /* 6FE0C 8007F60C 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FE0C 8007F60C 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FE10 8007F610 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FE14 8007F614 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FE14 8007F614 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FE18 8007F618 00000000 */  nop
     /* 6FE1C 8007F61C 00741900 */  sll        $t6, $t9, 16
     /* 6FE20 8007F620 03740E00 */  sra        $t6, $t6, 16
@@ -19,9 +19,9 @@ glabel RotMatrixZYX
     /* 6FE2C 8007F62C 03441900 */   sra       $t0, $t9, 16
   .L8007F630:
     /* 6FE30 8007F630 80C01900 */  sll        $t8, $t9, 2
-    /* 6FE34 8007F634 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FE34 8007F634 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FE38 8007F638 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FE3C 8007F63C 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FE3C 8007F63C 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FE40 8007F640 00000000 */  nop
     /* 6FE44 8007F644 00C41900 */  sll        $t8, $t9, 16
     /* 6FE48 8007F648 035C1800 */  sra        $t3, $t8, 16
@@ -36,9 +36,9 @@ glabel RotMatrixZYX
     /* 6FE68 8007F668 FF0FEF31 */   andi      $t7, $t7, 0xFFF
   .L8007F66C:
     /* 6FE6C 8007F66C 80C00F00 */  sll        $t8, $t7, 2
-    /* 6FE70 8007F670 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FE70 8007F670 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FE74 8007F674 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FE78 8007F678 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FE78 8007F678 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FE7C 8007F67C 00000000 */  nop
     /* 6FE80 8007F680 00741900 */  sll        $t6, $t9, 16
     /* 6FE84 8007F684 03740E00 */  sra        $t6, $t6, 16
@@ -47,9 +47,9 @@ glabel RotMatrixZYX
     /* 6FE90 8007F690 034C1900 */   sra       $t1, $t9, 16
   .L8007F694:
     /* 6FE94 8007F694 80C01900 */  sll        $t8, $t9, 2
-    /* 6FE98 8007F698 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FE98 8007F698 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FE9C 8007F69C 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FEA0 8007F6A0 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FEA0 8007F6A0 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FEA4 8007F6A4 00000000 */  nop
     /* 6FEA8 8007F6A8 00741900 */  sll        $t6, $t9, 16
     /* 6FEAC 8007F6AC 03640E00 */  sra        $t4, $t6, 16
@@ -74,9 +74,9 @@ glabel RotMatrixZYX
     /* 6FEF4 8007F6F4 FF0FEF31 */   andi      $t7, $t7, 0xFFF
   .L8007F6F8:
     /* 6FEF8 8007F6F8 80C00F00 */  sll        $t8, $t7, 2
-    /* 6FEFC 8007F6FC 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FEFC 8007F6FC 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FF00 8007F700 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FF04 8007F704 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FF04 8007F704 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FF08 8007F708 00000000 */  nop
     /* 6FF0C 8007F70C 00C41900 */  sll        $t8, $t9, 16
     /* 6FF10 8007F710 03C41800 */  sra        $t8, $t8, 16
@@ -88,9 +88,9 @@ glabel RotMatrixZYX
     /* 6FF24 8007F724 03730F00 */  sra        $t6, $t7, 12
     /* 6FF28 8007F728 1000AEA4 */  sh         $t6, 0x10($a1)
     /* 6FF2C 8007F72C 80C01900 */  sll        $t8, $t9, 2
-    /* 6FF30 8007F730 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FF30 8007F730 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FF34 8007F734 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FF38 8007F738 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FF38 8007F738 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FF3C 8007F73C 00000000 */  nop
     /* 6FF40 8007F740 00C41900 */  sll        $t8, $t9, 16
     /* 6FF44 8007F744 036C1800 */  sra        $t5, $t8, 16

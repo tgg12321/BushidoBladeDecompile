@@ -15,9 +15,9 @@ extern s32 _SpuSetAnyVoice(s32, u32, s32, s32);
 
 /* Externs for globals */
 extern s16 D_800F66F8;
-extern s16 g_memcard_busy;
+extern s16 _svm_stereo_mono;
 extern s32 g_spu_busy;
-extern s32 g_spu_base_addr;
+extern s32 _spu_RXX;
 
 extern void DMACallback(s32, s32);
 extern s32 _spu_Fr(s32, s32);
@@ -25,54 +25,54 @@ extern s32 _spu_Fr(s32, s32);
    transfer callback as a volatile function pointer (sotn-decomp
    libspu_internal.h:39); volatile is original semantics, not coercion */
 extern void (* volatile g_spu_init_flag)();
-extern s32 D_800A2874;
-extern s32 g_snd_reverb_flag;
-extern s32 g_spu_reverb_mode;
-extern u16 g_spu_xfer_addr;
-extern s32 g_spu_addr_shift;
+extern s32 _spu_keystat;
+extern s32 _spu_trans_mode;
+extern s32 _spu_transMode;
+extern u16 _spu_tsa;
+extern s32 _spu_mem_mode_plus;
 extern s32 EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 extern void AddDrv(s32 *);
 extern s32 g_snd_callback;
-extern s32 D_80106F28;
+extern s32 _ss_score;
 extern s32 TestEvent(s32);
 extern s32 _spu_init(s32);
 extern void func_80087770(s32, s32, s32, s32);
 extern s16 _SsVmGetSeqVol(s32, s16 *, s16 *);
 extern void _spu_FsetRXX(s32, u32, s32);
-extern s32 D_800A287C;
-extern s32 D_800A2880;
-extern s32 D_800A2884;
-extern s32 D_800A288C;
-extern s16 D_800A2890;
-extern s16 D_800A2892;
-extern s32 D_800A2894;
-extern s32 D_800A2898;
-extern volatile s32 D_800A289C; /* _spu_RQvoice — Ruling-4 grant (volatile_extern_allowlist.txt:44) */
-extern volatile s32 D_800A28A0;
+extern s32 _spu_rev_flag;
+extern s32 _spu_rev_reserve_wa;
+extern s32 _spu_rev_offsetaddr;
+extern s32 _spu_rev_attr_plus_0x4;
+extern s16 _spu_rev_attr_plus_0x8;
+extern s16 _spu_rev_attr_plus_0xA;
+extern s32 _spu_rev_attr_plus_0xC;
+extern s32 _spu_rev_attr_plus_0x10;
+extern volatile s32 _spu_RQvoice; /* _spu_RQvoice — Ruling-4 grant (volatile_extern_allowlist.txt:44) */
+extern volatile s32 _spu_RQmask;
 extern s16 D_800A28D2;
-extern volatile s32 D_800A2CD4;
-extern s32 g_spu_reverb_mode;
-extern s32 g_spu_voice_key_a;
-extern s32 g_spu_voice_key_b;
-extern s32 g_spu_voice_key_c;
+extern volatile s32 _spu_env;
+extern s32 _spu_transMode;
+extern s32 _spu_AllocBlockNum;
+extern s32 _spu_AllocLastNum;
+extern s32 _spu_memList;
 /* PsyQ libspu memList record (_spu_memList entries) */
 typedef struct {
     u32 addr;
     u32 size;
 } SpuMemRec;
 
-extern s32 D_800A2D44[]; /* _spu_rev_startaddr */
-extern s32 D_800A2870;
-extern s32 D_800A28D4;
-extern s32 D_800A2CF8;
-extern s32 D_800A2D04;
+extern s32 _spu_rev_startaddr[]; /* _spu_rev_startaddr */
+extern s32 _spu_EVdma;
+extern s32 _spu_zerobuf;
+extern s32 _spu_transMode;
+extern s32 _spu_mem_mode_plus;
 extern s32 D_800A2D00;
 extern s32 D_800A2D08;
-extern s32 D_800A2D0C;
+extern s32 _spu_mem_mode_unitM;
 extern volatile u32 *D_800A2CEC;
 extern volatile s32 _spu_transferCallback;
-extern s32 D_800A2CDC;
+extern s32 _spu_RXX;
 typedef struct {
     u16 pad[196];
     volatile u16 key_on[2];  /* +0x188 SPU KEY-ON (MMIO via _spu_RXX) */
@@ -84,9 +84,9 @@ typedef union {
 } SpuUnion;
 extern SpuUnion D_800F7298;
 extern s32 D_800A2CFC;
-extern u16 D_800A2CF4;
+extern u16 _spu_tsa;
 extern s32 _spu_inTransfer;
-extern s32 D_800A2D18;
+extern s32 _spu_IRQCallback;
 extern s32 D_800A2D1C;
 extern s32 D_800163D8;
 extern s32 D_800163E8;
@@ -95,7 +95,7 @@ extern void _spu_Fw1ts(void);
 /* Sony _spu_RQ: ONE u16[4] object (PsyQ 4.0 LIBSPU S_SK relocs: addends 0/2/4/6 —
  * key-on pending [0..1], key-off pending [2..3]); splat split it into two D_
  * symbols. Ruling-4 grant, volatile_extern_allowlist.txt:40-41. */
-extern volatile u16 D_800F7420[10]; /* _spu_RQ; _spu_init clears all 10 (PsyQ 4.0 spu.c) */
+extern volatile u16 _spu_RQ[10]; /* _spu_RQ; _spu_init clears all 10 (PsyQ 4.0 spu.c) */
 extern s32 _spu_Fw(s32, s32);
 extern s32 D_800A2D2C;
 extern s32 D_800A2D30;
@@ -139,7 +139,7 @@ typedef struct {
     /* 0x12 */ u8 unk18;
     /* 0x13 */ u8 unk19;
 } SndSeqTickEnv;
-extern SndSeqTickEnv D_800A26CC;
+extern SndSeqTickEnv _snd_seq_tick_env;
 
 void _SsStart(s32 arg0) {
     u16 rcnt_target;
@@ -149,21 +149,21 @@ void _SsStart(s32 arg0) {
     while (--wait >= 0) {
     }
 
-    D_800A26CC.unk16 = 0;
-    D_800A26CC.unk18 = 6;
-    D_800A26CC.unk17 = 0;
-    D_800A26CC.unk12 = 0;
+    _snd_seq_tick_env.unk16 = 0;
+    _snd_seq_tick_env.unk18 = 6;
+    _snd_seq_tick_env.unk17 = 0;
+    _snd_seq_tick_env.unk12 = 0;
     rcnt_spec = 0xF2000002;
     rcnt_target = 0x44E8;
-    switch (D_800A26CC.unk0) {
+    switch (_snd_seq_tick_env.unk0) {
     case 0:
-        D_800A26CC.unk18 = 0x7F;
+        _snd_seq_tick_env.unk18 = 0x7F;
         return;
 
     case 5:
-        D_800A26CC.unk18 = 0;
+        _snd_seq_tick_env.unk18 = 0;
         if (arg0 == 0) {
-            D_800A26CC.unk16 = 1;
+            _snd_seq_tick_env.unk16 = 1;
         } else {
             rcnt_spec = 0xF2000003;
             rcnt_target = 1;
@@ -178,12 +178,12 @@ void _SsStart(s32 arg0) {
         break;
 
     default:
-        if (D_800A26CC.unk4 == 0) {
-            if (D_800A26CC.unk0 < 0x46) {
-                rcnt_target = 0x204CC0 / D_800A26CC.unk0;
-                D_800A26CC.unk17++;
+        if (_snd_seq_tick_env.unk4 == 0) {
+            if (_snd_seq_tick_env.unk0 < 0x46) {
+                rcnt_target = 0x204CC0 / _snd_seq_tick_env.unk0;
+                _snd_seq_tick_env.unk17++;
             } else {
-                rcnt_target = 0x409980 / D_800A26CC.unk0;
+                rcnt_target = 0x409980 / _snd_seq_tick_env.unk0;
             }
         } else {
             return;
@@ -191,7 +191,7 @@ void _SsStart(s32 arg0) {
         break;
     }
 
-    if (D_800A26CC.unk16 != 0) {
+    if (_snd_seq_tick_env.unk16 != 0) {
         EnterCriticalSection();
         VSyncCallback(g_alarm_secondary_cb_ptr);
     } else {
@@ -200,15 +200,15 @@ void _SsStart(s32 arg0) {
         EnterCriticalSection();
         ResetRCnt(rcnt_spec);
         SetRCnt(rcnt_spec, rcnt_target, 0x1000);
-        de = D_800A26CC.unk18;
+        de = _snd_seq_tick_env.unk18;
         if (de == 0) {
             s32 ret = InterruptCallback(0, 0);
-            de = D_800A26CC.unk18;
+            de = _snd_seq_tick_env.unk18;
             a1_val = (s32)&D_80083EDC;
-            D_800A26CC.unk12 = ret;
+            _snd_seq_tick_env.unk12 = ret;
         } else {
             a1_val = (s32)&D_80083F1C;
-            if (D_800A26CC.unk17 == 0) {
+            if (_snd_seq_tick_env.unk17 == 0) {
                 a1_val = g_alarm_secondary_cb_ptr;
             }
         }
@@ -224,11 +224,11 @@ void _SsStart(s32 arg0) {
    has a glabel: SsStart2 + the tick trampolines are statics inside the
    splat extent; SsSeqCalledTbyT is address-referenced only by the
    SndSeqTickEnv .data initializer (raw .word @0x800A26D4). */
-extern s32 D_800FF630;  /* _snd_ev_flag */
-extern s16 D_801077A8;  /* _snd_seq_s_max */
-extern s16 D_801077AA;  /* _snd_seq_t_max */
-extern s32 D_801027E4;  /* _snd_openflag */
-extern s32 D_80106F28;  /* _ss_score (per-SEP score-block pointer table) */
+extern s32 _snd_ev_flag;  /* _snd_ev_flag */
+extern s16 _snd_seq_s_max;  /* _snd_seq_s_max */
+extern s16 _snd_seq_t_max;  /* _snd_seq_t_max */
+extern s32 _snd_openflag;  /* _snd_openflag */
+extern s32 _ss_score;  /* _ss_score (per-SEP score-block pointer table) */
 extern void _SsVmFlush(void);   /* SpuVmFlush */
 void _SsSndPlay(s16 a0, s16 a1); /* _SsSndPlay */
 void _SsSndCrescendo(s16 arg0, s16 arg1);     /* _SsSndCrescendo */
@@ -245,10 +245,10 @@ static void SsStart2(void) {
     _SsStart(0);
 }
 static void D_80083EDC(void) {
-    if (D_800A26CC.unk12 != 0) {
-        ((void (*)(void))D_800A26CC.unk12)();
+    if (_snd_seq_tick_env.unk12 != 0) {
+        ((void (*)(void))_snd_seq_tick_env.unk12)();
     }
-    ((void (*)(void))D_800A26CC.unk8)();
+    ((void (*)(void))_snd_seq_tick_env.unk8)();
 }
 static void D_80083F1C(void) {
     /* The 1-per-2 tick toggle: a standalone word AFTER the declared
@@ -261,23 +261,23 @@ static void D_80083F1C(void) {
         D_800A26E0 = 1;
     } else {
         D_800A26E0 = 0;
-        ((void (*)(void))D_800A26CC.unk8)();
+        ((void (*)(void))_snd_seq_tick_env.unk8)();
     }
 }
 #define SS_SCORE_FLAG(i, j) \
-    (*(s32 *)(((s32 *)&D_80106F28)[i] + (j) * 0xB0 + 0x98))
+    (*(s32 *)(((s32 *)&_ss_score)[i] + (j) * 0xB0 + 0x98))
 static void SsSeqCalledTbyT(void) {
     int i;
     int j;
-    if (D_800FF630 != 1) {
-        D_800FF630 = 1;
+    if (_snd_ev_flag != 1) {
+        _snd_ev_flag = 1;
 
         _SsVmFlush();
 
-        for (i = 0; i < D_801077A8; i++) {
+        for (i = 0; i < _snd_seq_s_max; i++) {
             s32 bit = 1 << i;
-            if (D_801027E4 & bit) {
-                for (j = 0; j < D_801077AA; j++) {
+            if (_snd_openflag & bit) {
+                for (j = 0; j < _snd_seq_t_max; j++) {
                     if (SS_SCORE_FLAG(i, j) & 1) {
                         _SsSndPlay(i, j);
 
@@ -307,7 +307,7 @@ static void SsSeqCalledTbyT(void) {
                 }
             }
         }
-        D_800FF630 = 0;
+        _snd_ev_flag = 0;
     }
 }
 /* kengo:LOW  |  su_menu_ending/_DispStuff  |  209i  |  PS2 UI — reverted */
@@ -315,7 +315,7 @@ INCLUDE_ASM("asm/funcs", _SsSndCrescendo);
 INCLUDE_ASM("asm/funcs", _SsSndDecrescendo);
 void _SsSndPause(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
-    s32 *addr = (s32 *)&D_80106F28;
+    s32 *addr = (s32 *)&_ss_score;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
     s32 offset = (s16)a1 * 0xB0;
     u8 *entry;
@@ -342,7 +342,7 @@ void _SsSeqPlay(s16 a0, s16 a1) {
     u8 *base;
     s32 var_s0;
 
-    base = (u8 *)(*(s32 *)((u8 *)&D_80106F28 + ((s32)(a0 << 16) >> 14)) + (s16)a1 * 0xB0);
+    base = (u8 *)(*(s32 *)((u8 *)&_ss_score + ((s32)(a0 << 16) >> 14)) + (s16)a1 * 0xB0);
 
     if (*(s32 *)(base + 0x90) - *(s16 *)(base + 0x54) > 0) {
         if (*(s16 *)(base + 0x52) > 0) {
@@ -367,7 +367,7 @@ void _SsSeqPlay(s16 a0, s16 a1) {
 /* kengo:MED  |  sa_tan4/saTan4GaugeInit  |  66i */
 void func_80084A7C(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
-    s32 *addr = (s32 *)&D_80106F28;
+    s32 *addr = (s32 *)&_ss_score;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
     u8 *base = (u8 *)(*base_ptr + (s16)a1 * 0xB0);
     s32 val;
@@ -452,12 +452,12 @@ s32 func_80084CC0(s16 a0, s16 a1)
   u8 databyte;
   u8 next;
   s32 ret;
-  state = (u8 *) (((s32) ((void **) (&D_80106F28))[a0]) + (a1 * 0xB0));
+  state = (u8 *) (((s32) ((void **) (&_ss_score))[a0]) + (a1 * 0xB0));
   ptr = *((u8 **) state);
   *((u8 **) state) = ptr + 1;
   b = ptr[0];
   ret = 0;
-  if (((*((s32 *) (((u8 *) (((s32) ((void **) (&D_80106F28))[a0]) + (a1 * 0xB0))) + 0x98))) & 0x401) == 0x401)
+  if (((*((s32 *) (((u8 *) (((s32) ((void **) (&_ss_score))[a0]) + (a1 * 0xB0))) + 0x98))) & 0x401) == 0x401)
   {
     if (((s32) (ptr + 1)) == ((*((s32 *) (state + 0x10))) + 1))
     {
@@ -580,7 +580,7 @@ s32 _SsReadDeltaValue(s32 arg0, s16 arg1) {
     s32 val;
     s32 byte;
 
-    base = (u8 **)((*(s32 *)((u8 *)&D_80106F28 + ((s32)(arg0 << 16) >> 14))) + (arg1 * 0xB0));
+    base = (u8 **)((*(s32 *)((u8 *)&_ss_score + ((s32)(arg0 << 16) >> 14))) + (arg1 * 0xB0));
     ptr = *base;
     *base = ptr + 1;
     val = *ptr;
@@ -607,7 +607,7 @@ s32 _SsReadDeltaValue(s32 arg0, s16 arg1) {
    score-pointer / full-index accesses are the original's spelling) */
 void _SsSndNextSep(s32 a0, s16 a1) {
     s32 shifted = a0 << 16;
-    s32 *addr = (s32 *)&D_80106F28;
+    s32 *addr = (s32 *)&_ss_score;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
     s32 base = *base_ptr;
     u8 *entry = (u8 *)(base + (s16)a1 * 0xB0);
@@ -626,7 +626,7 @@ void _SsSndNextSep(s32 a0, s16 a1) {
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/replay.c */
 void _SsSndReplay(s32 a0, s16 a1) {
     s32 shifted = a0 << 16;
-    s32 *addr = (s32 *)&D_80106F28;
+    s32 *addr = (s32 *)&_ss_score;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
     s32 base = *base_ptr;
     u8 *entry = (u8 *)(base + (s16)a1 * 0xB0);
@@ -639,7 +639,7 @@ void _SsSndReplay(s32 a0, s16 a1) {
    the ~0x400 flag clear + NotifyChannel/ResetCounter pair). */
 void _SsSndStop(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
-    s32 *addr = (s32 *)&D_80106F28;
+    s32 *addr = (s32 *)&_ss_score;
     s32 *base_ptr = (s32 *)((u8 *)addr + (shifted >> 14));
     u8 *p = (u8*)(*base_ptr + (s16)a1 * 0xB0);
     s32 i;
@@ -744,7 +744,7 @@ void SsSetSerialVol(s16 s_num, s16 voll, s16 volr) {
     }
     SpuSetCommonAttr((s32 *)&attr);
 }
-extern s32 D_80104E80;
+extern s32 VBLANK_MINUS;
 void SsSetTickMode(s32 arg) {
     s32 mode;
     s32 v;
@@ -752,53 +752,53 @@ void SsSetTickMode(s32 arg) {
     mode = GetVideoMode();
 
     if (arg & 0x1000) {
-        D_800A26CC.unk4 = 1;
-        D_800A26CC.unk0 = arg & 0xFFF;
+        _snd_seq_tick_env.unk4 = 1;
+        _snd_seq_tick_env.unk0 = arg & 0xFFF;
     } else {
-        D_800A26CC.unk4 = 0;
-        D_800A26CC.unk0 = arg;
+        _snd_seq_tick_env.unk4 = 0;
+        _snd_seq_tick_env.unk0 = arg;
     }
 
-    v = D_800A26CC.unk0;
+    v = _snd_seq_tick_env.unk0;
     if (v >= 6) goto big_v;
     switch (v) {
     case 4: {
         s32 t = 50;
-        D_80104E80 = t;
-        if (mode == 1) D_800A26CC.unk0 = 5;
-        else D_800A26CC.unk0 = t;
+        VBLANK_MINUS = t;
+        if (mode == 1) _snd_seq_tick_env.unk0 = 5;
+        else _snd_seq_tick_env.unk0 = t;
         break;
     }
     case 1: {
         s32 t = 60;
-        D_80104E80 = t;
-        if (mode == 0) D_800A26CC.unk0 = 5;
-        else D_800A26CC.unk0 = t;
+        VBLANK_MINUS = t;
+        if (mode == 0) _snd_seq_tick_env.unk0 = 5;
+        else _snd_seq_tick_env.unk0 = t;
         break;
     }
     case 3:
-        D_80104E80 = 120;
+        VBLANK_MINUS = 120;
         break;
     case 2:
-        D_80104E80 = 240;
+        VBLANK_MINUS = 240;
         break;
     case 5:
-        if (mode == 0) D_80104E80 = 60;
-        else if (mode == 1) D_80104E80 = 50;
-        else D_80104E80 = 60;
+        if (mode == 0) VBLANK_MINUS = 60;
+        else if (mode == 1) VBLANK_MINUS = 50;
+        else VBLANK_MINUS = 60;
         break;
     case 0:
-        if (mode == 0) D_80104E80 = 60;
-        else if (mode == 1) D_80104E80 = 50;
-        else D_80104E80 = 60;
+        if (mode == 0) VBLANK_MINUS = 60;
+        else if (mode == 1) VBLANK_MINUS = 50;
+        else VBLANK_MINUS = 60;
         break;
     default:
-        D_80104E80 = 60;
+        VBLANK_MINUS = 60;
         break;
     }
     return;
 big_v:
-    D_80104E80 = v;
+    VBLANK_MINUS = v;
 }
 /* kengo:MED  |  am_rmd/SetBloodSpot  |  91i */
 /* PsyQ 4.0 LIBSND TEMPO: _SsSndTempo — verbatim-linked Sony object (census
@@ -806,7 +806,7 @@ big_v:
    4.0 build adds the counter<0 early clear-and-return). */
 void _SsSndTempo(s16 a0, s16 a1) {
     s32 shifted = a0 << 16;
-    s32 *addr = (s32 *)&D_80106F28;
+    s32 *addr = (s32 *)&_ss_score;
     s32 *tbl = (s32 *)((u8 *)addr + (shifted >> 14));
     u8 *p = (u8 *)(*tbl + (s16)a1 * 0xB0);
 
@@ -846,19 +846,19 @@ void _SsSndTempo(s16 a0, s16 a1) {
     }
 
     *(s16 *)(p + 0x54) =
-        (*(s16 *)(p + 0x50) * *(u32 *)(p + 0x94) * 10) / (u32)(D_80104E80 * 60);
+        (*(s16 *)(p + 0x50) * *(u32 *)(p + 0x94) * 10) / (u32)(VBLANK_MINUS * 60);
     if (*(s16 *)(p + 0x54) <= 0) {
         *(s16 *)(p + 0x54) = 1;
     }
     if ((*(s32 *)(p + 0xA8) == 0) || (*(u32 *)(p + 0x94) == *(u32 *)(p + 0xAC))) {
         s32 shifted2 = a0 << 16;
-        s32 *addr2 = (s32 *)&D_80106F28;
+        s32 *addr2 = (s32 *)&_ss_score;
         s32 *tbl2 = (s32 *)((u8 *)addr2 + (shifted2 >> 14));
         *(s32 *)((u8 *)(*tbl2 + (s16)a1 * 0xB0) + 0x98) &= ~0x40;
         *(s32 *)((u8 *)(*tbl2 + (s16)a1 * 0xB0) + 0x98) &= ~0x80;
     }
 }
-extern u8 D_80101BCC;
+extern u8 _SsVmMaxVoice;
 extern s16 D_800F4E1A;
 extern s16 D_800F4E1E;
 extern s16 D_800F4E28[];
@@ -918,7 +918,7 @@ void func_800858D0(void) {
     *(s16 *)((u8 *)buf + 0x08) = 0;
     *(s16 *)((u8 *)buf + 0x0A) = 0;
     *(s16 *)((u8 *)buf + 0x3C) = 0x4000;
-    if (D_80101BCC != 0) {
+    if (_SsVmMaxVoice != 0) {
         ff = 0xFF;
         do {
             offset = var_s0 * 54;
@@ -932,10 +932,10 @@ void func_800858D0(void) {
             offset = 1;
             buf[0] = offset << var_s0;
             func_8008B488(buf);
-            D_801027F0.voice = var_s0;
+            _svm_cur.voice = var_s0;
             _SsVmKeyOffNow(1);
             var_s0 = var_s0 + 1;
-            if (D_80101BCC) { /* !FAKE: empty-if redundant-condition (F6,
+            if (_SsVmMaxVoice) { /* !FAKE: empty-if redundant-condition (F6,
                 no-new-park-categories.md:371); mechanism: jump1 branch
                 deletion + cse1 load-CSE leaves u's second set dead;
                 loop.c sees 2 sets (no hoist), flow DCEs it, sched1 sees
@@ -943,40 +943,40 @@ void func_800858D0(void) {
                 sched.c:2504-2537); lever-exhaustion: hypotheses.md s3
                 H9-H11 (noted-loop trilemma proven analytically) */
             }
-            u = D_80101BCC;
+            u = _SsVmMaxVoice;
         } while (var_s0 < u);
     }
 }
-extern u8 g_snd_ch_status[];
-extern s32 g_snd_ch_addr[];
+extern u8 _svm_vab_used[];
+extern s32 _svm_vab_start[];
 s32 SsUtGetVBaddrInSB(s16 a0) {
     if ((u16)a0 >= 0x11) {
         return -1;
     }
-    if (g_snd_ch_status[a0] != 1) {
+    if (_svm_vab_used[a0] != 1) {
         return -1;
     }
-    return g_snd_ch_addr[a0];
+    return _svm_vab_start[a0];
 }
 INCLUDE_ASM("asm/funcs", SsUtKeyOnV);
 /* kengo:MED  |  am_rmd/AllocBukiRmd  |  259i */
-extern s32 D_800F5750;
-extern s16 D_800F5758;
-extern s16 D_800F575A;
+extern s32 _svm_rattr;
+extern s16 _svm_rattr_plus_0x8;
+extern s16 _svm_rattr_plus_0xA;
 extern s32 SpuSetReverbModeParam();
 void SsUtSetReverbDepth(s16 a0, s16 a1) {
     s32 x = (s16)a0 * 32767 / 127;
     s32 y = (s16)a1 * 32767 / 127;
-    s32 *buf = &D_800F5750;
+    s32 *buf = &_svm_rattr;
     *buf = 6;
-    D_800F5758 = x;
-    D_800F575A = y;
+    _svm_rattr_plus_0x8 = x;
+    _svm_rattr_plus_0xA = y;
     SpuSetReverbModeParam(buf);
 }
-extern s32 D_800F5750;
-extern s16 D_800F5758;
-extern s16 D_800F575A;
-extern s32 D_800F5754;
+extern s32 _svm_rattr;
+extern s16 _svm_rattr_plus_0x8;
+extern s16 _svm_rattr_plus_0xA;
+extern s32 _svm_rattr_plus_0x4;
 s16 SsUtSetReverbType(s16 a0) {
     s32 neg = 0;
     s16 v1 = a0;
@@ -986,23 +986,23 @@ s16 SsUtSetReverbType(s16 a0) {
         v1 = -a0;
     }
     if ((u16)v1 < 0xA) {
-        D_800F5750 = 1;
+        _svm_rattr = 1;
         if (neg) {
-            D_800F5754 = (s16)((v1 | 0x100) << 16 >> 16);
+            _svm_rattr_plus_0x4 = (s16)((v1 | 0x100) << 16 >> 16);
         } else {
-            D_800F5754 = (s16)(v1 << 16 >> 16);
+            _svm_rattr_plus_0x4 = (s16)(v1 << 16 >> 16);
         }
         s0 = (s16)(v1 << 16 >> 16);
         if (s0 == 0) {
             SpuSetReverb(0);
         }
-        SpuSetReverbModeParam(&D_800F5750);
+        SpuSetReverbModeParam(&_svm_rattr);
         return s0;
     }
     return -1;
 }
 s16 SsUtGetReverbType(void) {
-    return *(s16 *)&D_800F5754;
+    return *(s16 *)&_svm_rattr_plus_0x4;
 }
 
 void SsUtReverbOff(void) {
@@ -1060,7 +1060,7 @@ s32 func_80086130(s16 idx, s16 x, s16 y)
     }
     return -1;
 }
-extern s32 D_800FF6A0;
+extern s32 _svm_pg;
 /* PsyQ VagAtr (libsnd) — _svm_tn tone-attribute table pointer */
 typedef struct {
     u8 prior, mode, vol, pan, center, shift, min, max;
@@ -1069,7 +1069,7 @@ typedef struct {
     s16 prog, vag;
     s16 reserved[4];
 } VagAtr;
-extern VagAtr *D_80101BC8; /* _svm_tn */
+extern VagAtr *_svm_tn; /* _svm_tn */
 extern s16 D_80102A7E;
 extern s16 D_80102A80;
 extern s16 D_80102A82;
@@ -1079,32 +1079,32 @@ extern s32 D_80107898[];
    voice's dirty bits. BB2 deltas vs psyz: _svm_voice stride 54, ADSR indexed
    by voiceOffset through the flat s16 shadow view D_80102A78[]. */
 static inline void vmSetStartAddr(u16 addr) {
-    D_80102A78[D_801027F0.voiceOffset + 3] = addr;
-    D_800F65E0[D_801027F0.voice] |= 8;
+    D_80102A78[_svm_cur.voiceOffset + 3] = addr;
+    D_800F65E0[_svm_cur.voice] |= 8;
 }
 
 void _SsVmDoAllocate(void) {
     int i;
     int progIdx;
 
-    D_801027F0.voiceOffset = D_801027F0.voice * 8;
-    D_801027F0.field_0x1e = D_801027F0.field_7_fake_program * 16 + D_801027F0.tone;
-    *(s16 *)((u8 *)&D_800F4E1E + D_801027F0.voice * 54) = 0x7FFF;
+    _svm_cur.voiceOffset = _svm_cur.voice * 8;
+    _svm_cur.field_0x1e = _svm_cur.field_7_fake_program * 16 + _svm_cur.tone;
+    *(s16 *)((u8 *)&D_800F4E1E + _svm_cur.voice * 54) = 0x7FFF;
     for (i = 0; i < 16; i++) {
-        D_80107898[i] &= ~(1 << D_801027F0.voice);
+        D_80107898[i] &= ~(1 << _svm_cur.voice);
     }
-    if ((D_801027F0.tone_vag_idx & 1) > 0) {
-        progIdx = (D_801027F0.tone_vag_idx - 1) / 2;
-        vmSetStartAddr(((ProgAtr *)D_800FF6A0)[progIdx].reserved2);
+    if ((_svm_cur.tone_vag_idx & 1) > 0) {
+        progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
+        vmSetStartAddr(((ProgAtr *)_svm_pg)[progIdx].reserved2);
     } else {
-        progIdx = (D_801027F0.tone_vag_idx - 1) / 2;
-        vmSetStartAddr(((ProgAtr *)D_800FF6A0)[progIdx].reserved3);
+        progIdx = (_svm_cur.tone_vag_idx - 1) / 2;
+        vmSetStartAddr(((ProgAtr *)_svm_pg)[progIdx].reserved3);
     }
-    D_80102A78[D_801027F0.voiceOffset + 4] =
-        D_80101BC8[D_801027F0.field_7_fake_program * 16 + D_801027F0.tone].adsr1;
-    D_80102A78[D_801027F0.voiceOffset + 5] =
-        D_80101BC8[D_801027F0.field_7_fake_program * 16 + D_801027F0.tone].adsr2 + D_800F66F8;
-    D_800F65E0[D_801027F0.voice] |= 0x30;
+    D_80102A78[_svm_cur.voiceOffset + 4] =
+        _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr1;
+    D_80102A78[_svm_cur.voiceOffset + 5] =
+        _svm_tn[_svm_cur.field_7_fake_program * 16 + _svm_cur.tone].adsr2 + D_800F66F8;
+    D_800F65E0[_svm_cur.voice] |= 0x30;
 }
 
 void _SsVmDamperOff(void) {
@@ -1134,14 +1134,14 @@ s32 note2pitch2(u16 arg0, u16 arg1) {
     s32 pos;
     s32 tone;
 
-    tone = D_801027F0.tone + (D_801027F0.field_7_fake_program * 0x10);
-    var_a3 = (arg1 + D_80101BC8[tone].shift) / 8;
+    tone = _svm_cur.tone + (_svm_cur.field_7_fake_program * 0x10);
+    var_a3 = (arg1 + _svm_tn[tone].shift) / 8;
     var_a2 = 0;
     if (var_a3 >= 16) {
         var_a2 = 1;
         var_a3 -= 16;
     }
-    new_var = arg0 + 60 - D_80101BC8[tone].center + var_a2;
+    new_var = arg0 + 60 - _svm_tn[tone].center + var_a2;
     octave = new_var / 12;
     pos = (new_var % 12) * 16;
     var_v1 = D_800A26E4[pos + var_a3];
@@ -1175,7 +1175,7 @@ void _SsVmKeyOffNow(s32 mode) {
     u16 okof1;
     u16 okof2;
 
-    voice = D_801027F0.voice;
+    voice = _svm_cur.voice;
     if (voice < 16) {
         bitsLower = 1 << voice;
         bitsUpper = 0;
@@ -1208,8 +1208,8 @@ s16 _SsVmGetSeqVol(s32 a0, s16 *a1, s16 *a2) {
     s16 *ptr;
     s32 slot;
     u8 *p;
-    base = (u8 *)((s32 *)&D_80106F28)[(u8)a0];
-    ptr = &D_801027F0.seq_sep_no;
+    base = (u8 *)((s32 *)&_ss_score)[(u8)a0];
+    ptr = &_svm_cur.seq_sep_no;
     *ptr = a0;
     slot = (a0 & 0xFF00) >> 8;
     p = base + slot * 176;
@@ -1221,8 +1221,8 @@ s16 _SsVmGetSeqVol(s32 a0, s16 *a1, s16 *a2) {
 s16 func_80087D10(s32 a0) {
     u8 *base;
     s32 slot;
-    base = (u8 *)*(s32 *)((u8 *)&D_80106F28 + (u8)a0 * 4);
-    D_801027F0.seq_sep_no = a0;
+    base = (u8 *)*(s32 *)((u8 *)&_ss_score + (u8)a0 * 4);
+    _svm_cur.seq_sep_no = a0;
     slot = (a0 & 0xFF00) >> 8;
     base += slot * 176;
     return *(s16 *)(base + 0x58);
@@ -1231,18 +1231,18 @@ s16 func_80087D10(s32 a0) {
 s16 func_80087D58(s32 a0) {
     u8 *base;
     s32 slot;
-    base = (u8 *)*(s32 *)((u8 *)&D_80106F28 + (u8)a0 * 4);
-    D_801027F0.seq_sep_no = a0;
+    base = (u8 *)*(s32 *)((u8 *)&_ss_score + (u8)a0 * 4);
+    _svm_cur.seq_sep_no = a0;
     slot = (a0 & 0xFF00) >> 8;
     base += slot * 176;
     return *(s16 *)(base + 0x5A);
 }
-extern u8 g_memcard_slot;
+extern u8 _SsVmMaxVoice;
 extern s16 D_800F4E28[];
 void _SsVmSeqKeyOff(s16 a0) {
     s32 s0 = 0;
     s16 s1;
-    if (g_memcard_slot == 0) {
+    if (_SsVmMaxVoice == 0) {
         return;
     }
     s1 = (s16)a0;
@@ -1250,19 +1250,19 @@ void _SsVmSeqKeyOff(s16 a0) {
         s32 idx = (u8)s0;
         s32 off = ((idx * 8 - idx) * 4 - idx) * 2;
         if (*(s16 *)((u8 *)D_800F4E28 + off) == s1) {
-            D_801027F0.voice = (u8)s0;
+            _svm_cur.voice = (u8)s0;
             _SsVmKeyOffNow(0);
         }
         s0++;
-    } while ((u8)s0 < g_memcard_slot);
+    } while ((u8)s0 < _SsVmMaxVoice);
 }
-extern u8 D_80102A68[];
-extern s16 D_800FF634;
-extern s32 D_800F66B8[];
-extern s32 D_800F6660[];
-extern s32 D_800F6700[];
-extern s32 D_80101BC4;
-extern s32 D_800FF6A0;
+extern u8 _svm_vab_used[];
+extern s16 kMaxPrograms;
+extern s32 _svm_vab_vh[];
+extern s32 _svm_vab_pg[];
+extern s32 _svm_vab_tn[];
+extern s32 _svm_vh;
+extern s32 _svm_pg;
 s32 _SsVmVSetUp(s32 a0, s32 a1) {
     u16 a0h;
     s16 a1h;
@@ -1277,70 +1277,70 @@ s32 _SsVmVSetUp(s32 a0, s32 a1) {
     a1h = a1;
     if ((a0 & 0xFFFFu) >= 0x10) goto fail;
     idx = (s16)a0h;
-    if (D_80102A68[idx] != 1) return -1;
+    if (_svm_vab_used[idx] != 1) return -1;
     sa1 = a1h;
-    if (sa1 < D_800FF634) goto ok;
+    if (sa1 < kMaxPrograms) goto ok;
 fail:
     return -1;
 ok:
     ret = idx << 2;
-    v0 = *(s32 *)((u8 *)D_800F66B8 + ret);
-    v1 = *(s32 *)((u8 *)D_800F6660 + ret);
-    v2 = *(s32 *)((u8 *)D_800F6700 + ret);
+    v0 = *(s32 *)((u8 *)_svm_vab_vh + ret);
+    v1 = *(s32 *)((u8 *)_svm_vab_pg + ret);
+    v2 = *(s32 *)((u8 *)_svm_vab_tn + ret);
     ret = sa1 << 4;
-    D_801027F0.vabId = (u8) a0h;
-    D_801027F0.prog = (u8) a1h;
+    _svm_cur.vabId = (u8) a0h;
+    _svm_cur.prog = (u8) a1h;
     ret += v1;
     entry = *((s32 *) (ret + 8));
-    D_80101BC4 = v0;
-    D_800FF6A0 = v1;
-    D_80101BC8 = (VagAtr *)v2;
-    D_801027F0.field_7_fake_program = (u8)entry;
+    _svm_vh = v0;
+    _svm_pg = v1;
+    _svm_tn = (VagAtr *)v2;
+    _svm_cur.field_7_fake_program = (u8)entry;
     return 0;
 }
 /* kengo:MED  |  am_rmd/AddTbpOfst  |  49i */
-extern u8 g_memcard_data;
+extern u8 _svm_auto_kof_mode;
 void SsSetAutoKeyOffMode(u8 a0) {
-    g_memcard_data = a0;
+    _svm_auto_kof_mode = a0;
 }
 void SsSetMono(void) {
-    g_memcard_busy = 1;
+    _svm_stereo_mono = 1;
 }
 
 void SsSetStereo(void) {
-    g_memcard_busy = 0;
+    _svm_stereo_mono = 0;
 }
 
-extern u8 g_memcard_slot;
+extern u8 _SsVmMaxVoice;
 s32 SsSetReservedVoice(s32 a0) {
     u8 v = (u8)a0;
     if (v >= 0x19 || v == 0) {
         return 0xFF;
     }
-    g_memcard_slot = a0;
+    _SsVmMaxVoice = a0;
     return v;
 }
-extern u8 g_snd_ch_status[];
-extern s32 g_snd_ch_addr[];
-extern u16 g_snd_ch_count;
+extern u8 _svm_vab_used[];
+extern s32 _svm_vab_start[];
+extern u16 _svm_vab_count;
 extern void SpuFree(s32);
 void SsVabClose(s16 a0) {
     if ((u16)a0 < 0x10) {
         s16 idx = a0;
-        if (g_snd_ch_status[idx] == 1) {
-            SpuFree(g_snd_ch_addr[idx]);
-            g_snd_ch_status[idx] = 0;
-            g_snd_ch_count--;
+        if (_svm_vab_used[idx] == 1) {
+            SpuFree(_svm_vab_start[idx]);
+            _svm_vab_used[idx] = 0;
+            _svm_vab_count--;
         }
     }
 }
-extern u8 g_snd_ch_status[];
+extern u8 _svm_vab_used[];
 
 s16 SsVabFakeBody(s16 a0) {
     if ((u16)a0 < 0x11) {
-        if (g_snd_ch_status[a0] == 2) {
+        if (_svm_vab_used[a0] == 2) {
             _spu_setInTransfer(0);
-            g_snd_ch_status[a0] = 1;
+            _svm_vab_used[a0] = 1;
             return a0;
         }
     }
@@ -1375,9 +1375,9 @@ typedef struct {
     u8 attr2;
     u32 reserved1;
 } VabHdr;
-extern u16 D_80107808;
-extern s32 D_80107810[];
-extern s32 D_801077C8[];
+extern u16 _svm_vab_count;
+extern s32 _svm_vab_start[];
+extern s32 _svm_vab_total[];
 extern s32 SpuMalloc(s32);
 /* PsyQ 4.0 LIBSND vs_vh: SsVabOpenHeadWithMode — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libsnd/vs_vh.c */
@@ -1406,19 +1406,19 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
     }
     if (vabid == -1) {
         for (i = 0; i < 16; i++) {
-            if (D_80102A68[i] == 0) {
-                D_80102A68[i] = 1;
+            if (_svm_vab_used[i] == 0) {
+                _svm_vab_used[i] = 1;
                 vabId_2 = i;
-                D_80107808++;
+                _svm_vab_count++;
                 break;
             }
         }
     } else {
-        var_a2 = D_80102A68;
+        var_a2 = _svm_vab_used;
         if (var_a2[vabid] == 0) {
-            D_80102A68[vabid] = 1;
+            _svm_vab_used[vabid] = 1;
             vabId_2 = vabid;
-            D_80107808++;
+            _svm_vab_count++;
         }
     }
     if (vabId_2 >= 0x10) {
@@ -1426,39 +1426,39 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
         return -1;
     }
     var_a2 = addr;
-    D_800F66B8[vabId_2] = (s32)var_a2;
+    _svm_vab_vh[vabId_2] = (s32)var_a2;
 
     var_a2 = var_a2 + 0x20;
     vab_hdr_2 = (VabHdr *)addr;
     magic = vab_hdr_2->form;
     if ((magic >> 8) != ('V' << 0x10 | 'A' << 0x8 | 'B')) {
-        D_80102A68[vabId_2] = 0;
+        _svm_vab_used[vabId_2] = 0;
         _spu_setInTransfer(0);
-        D_80107808 -= 1;
+        _svm_vab_count -= 1;
         return -1;
     }
     if ((magic & 0xFF) == 'p') {
         if (vab_hdr_2->ver >= 5) {
-            D_800FF634 = 0x80;
+            kMaxPrograms = 0x80;
         } else {
-            D_800FF634 = 0x40;
+            kMaxPrograms = 0x40;
         }
     } else {
-        D_800FF634 = 0x40;
+        kMaxPrograms = 0x40;
     }
-    if (vab_hdr_2->ps <= D_800FF634) {
-        D_800F6660[vabId_2] = (s32)var_a2;
+    if (vab_hdr_2->ps <= kMaxPrograms) {
+        _svm_vab_pg[vabId_2] = (s32)var_a2;
         pProgTable = (ProgAtr *)var_a2;
-        var_a2 = var_a2 + (D_800FF634 * 0x10);
+        var_a2 = var_a2 + (kMaxPrograms * 0x10);
         var_s0 = 0;
-        for (i = 0; i < D_800FF634; i++) {
+        for (i = 0; i < kMaxPrograms; i++) {
             pProgTable[i].reserved1 = var_s0;
             if (pProgTable[i].tones != 0) {
                 var_s0++;
             }
         }
         var_s0 = 0;
-        D_800F6700[vabId_2] = (s32)var_a2;
+        _svm_vab_tn[vabId_2] = (s32)var_a2;
         ptr_vag_off_table = (u16 *)(var_a2 + (vab_hdr_2->ps << 9));
         num_vags = vab_hdr_2->vs;
         for (i = 0; i < 256; i++) {
@@ -1476,9 +1476,9 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
         if (arg2 == 0) {
             spuAllocMem = SpuMalloc(var_s0);
             if (spuAllocMem == -1) {
-                D_80102A68[vabId_2] = 0;
+                _svm_vab_used[vabId_2] = 0;
                 _spu_setInTransfer(0);
-                D_80107808 -= 1;
+                _svm_vab_count -= 1;
                 return -1;
             }
         } else {
@@ -1487,13 +1487,13 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
         sum = spuAllocMem + var_s0;
         if (sum > 0x80000U) {
         end:
-            D_80102A68[vabId_2] = 0;
+            _svm_vab_used[vabId_2] = 0;
 
             _spu_setInTransfer(0);
-            D_80107808 -= 1;
+            _svm_vab_count -= 1;
             return -1;
         }
-        D_80107810[vabId_2] = spuAllocMem;
+        _svm_vab_start[vabId_2] = spuAllocMem;
         var_s0 = 0;
         for (i = 0; i <= num_vags; i++) {
             var_s0 += vagLens[i];
@@ -1504,17 +1504,17 @@ s16 SsVabOpenHeadWithMode(u8 *addr, s16 vabid, s16 arg2, u32 sbaddr) {
             }
         }
 
-        D_801077C8[vabId_2] = var_s0;
-        D_80102A68[vabId_2] = 2;
+        _svm_vab_total[vabId_2] = var_s0;
+        _svm_vab_used[vabId_2] = 2;
     } else {
         goto end;
     }
     return vabId_2;
 }
 /* kengo:MED  |  sa_tan2/saTan2Main  |  247i */
-extern u8 g_snd_ch_status[];
-extern s32 g_snd_ch_addr[];
-extern s32 D_801077C8[];
+extern u8 _svm_vab_used[];
+extern s32 _svm_vab_start[];
+extern s32 _svm_vab_total[];
 extern s32 SpuSetTransferStartAddr(s32);
 extern s32 SpuWrite(s32, s32);
 s16 SsVabTransBody(s32 a0, s16 a1) {
@@ -1522,16 +1522,16 @@ s16 SsVabTransBody(s32 a0, s16 a1) {
         _spu_setInTransfer(0);
         return -1;
     }
-    if (g_snd_ch_status[a1] != 2) {
+    if (_svm_vab_used[a1] != 2) {
         _spu_setInTransfer(0);
         return -1;
     }
     {
-        s32 s0 = g_snd_ch_addr[a1];
+        s32 s0 = _svm_vab_start[a1];
         SpuSetTransferMode(0);
         SpuSetTransferStartAddr(s0);
-        SpuWrite(a0, D_801077C8[a1]);
-        g_snd_ch_status[a1] = 1;
+        SpuWrite(a0, _svm_vab_total[a1]);
+        _svm_vab_used[a1] = 1;
     }
     return a1;
 }
@@ -1562,37 +1562,37 @@ void _SpuInit(s32 arg0) {
         } while (var_v1 >= 0);
     }
     SpuStart();
-    D_800A287C = 0;
-    D_800A2880 = 0;
-    D_800A288C = 0;
-    D_800A2890 = 0;
-    D_800A2892 = 0;
-    D_800A2894 = 0;
-    D_800A2898 = 0;
-    D_800A2884 = D_800A2D44[0];
-    _spu_FsetRXX(0xD1, D_800A2D44[0], 0);
-    g_spu_voice_key_a = 0;
-    g_spu_voice_key_b = 0;
-    g_spu_voice_key_c = 0;
-    g_snd_reverb_flag = 0;
-    g_spu_reverb_mode = 0;
-    D_800A2874 = 0;
-    D_800A28A0 = 0;
-    D_800A289C = 0;
-    D_800A2CD4 = 0;
+    _spu_rev_flag = 0;
+    _spu_rev_reserve_wa = 0;
+    _spu_rev_attr_plus_0x4 = 0;
+    _spu_rev_attr_plus_0x8 = 0;
+    _spu_rev_attr_plus_0xA = 0;
+    _spu_rev_attr_plus_0xC = 0;
+    _spu_rev_attr_plus_0x10 = 0;
+    _spu_rev_offsetaddr = _spu_rev_startaddr[0];
+    _spu_FsetRXX(0xD1, _spu_rev_startaddr[0], 0);
+    _spu_AllocBlockNum = 0;
+    _spu_AllocLastNum = 0;
+    _spu_memList = 0;
+    _spu_trans_mode = 0;
+    _spu_transMode = 0;
+    _spu_keystat = 0;
+    _spu_RQmask = 0;
+    _spu_RQvoice = 0;
+    _spu_env = 0;
 }
-extern s32 g_snd_init_flag;
-extern s32 g_snd_irq_handle;
+extern s32 _spu_isCalled;
+extern s32 _spu_EVdma;
 extern s32 g_snd_irq_data;
 
 void SpuStart(void) {
     s32 v0;
-    if (g_snd_init_flag == 0) {
-        g_snd_init_flag = 1;
+    if (_spu_isCalled == 0) {
+        _spu_isCalled = 1;
         EnterCriticalSection();
         _SpuDataCallback((s32)&g_snd_irq_data);
         v0 = OpenEvent((s32)0xF0000009, 0x20, 0x2000, 0);
-        g_snd_irq_handle = v0;
+        _spu_EVdma = v0;
         EnableEvent(v0);
         ExitCriticalSection();
     }
@@ -1614,41 +1614,41 @@ s32 _spu_init(s32 a0) {
 
     *D_800A2CEC |= 0xB0000;
 
-    D_800A2CF8 = 0;
+    _spu_transMode = 0;
     D_800A2CFC = 0;
-    D_800A2CF4 = 0;
-    *(volatile u16 *)(D_800A2CDC + 0x180) = 0;
-    *(volatile u16 *)(D_800A2CDC + 0x182) = 0;
-    *(volatile u16 *)(D_800A2CDC + 0x1AA) = 0;
+    _spu_tsa = 0;
+    *(volatile u16 *)(_spu_RXX + 0x180) = 0;
+    *(volatile u16 *)(_spu_RXX + 0x182) = 0;
+    *(volatile u16 *)(_spu_RXX + 0x1AA) = 0;
     _spu_Fw1ts();
 
-    *(volatile u16 *)(D_800A2CDC + 0x180) = 0;
-    *(volatile u16 *)(D_800A2CDC + 0x182) = 0;
+    *(volatile u16 *)(_spu_RXX + 0x180) = 0;
+    *(volatile u16 *)(_spu_RXX + 0x182) = 0;
 
-    if (*(volatile u16 *)(D_800A2CDC + 0x1AE) & 0x7FF) {
+    if (*(volatile u16 *)(_spu_RXX + 0x1AE) & 0x7FF) {
         i = 0;
         do {
             if (++i > 0xF00) {
                 printf(&D_800163D8, &D_800163E8);
                 break;
             }
-        } while (*(volatile u16 *)(D_800A2CDC + 0x1AE) & 0x7FF);
+        } while (*(volatile u16 *)(_spu_RXX + 0x1AE) & 0x7FF);
     }
 
     channel = 0;
     D_800A2D00 = 2;
-    D_800A2D04 = 3;
+    _spu_mem_mode_plus = 3;
     D_800A2D08 = 8;
-    D_800A2D0C = 7;
-    *(volatile u16 *)(D_800A2CDC + 0x1AC) = 4;
-    *(volatile u16 *)(D_800A2CDC + 0x184) = 0;
-    *(volatile u16 *)(D_800A2CDC + 0x186) = 0;
-    *(volatile u16 *)(D_800A2CDC + 0x18C) = 0xFFFF;
-    *(volatile u16 *)(D_800A2CDC + 0x18E) = 0xFFFF;
-    *(volatile u16 *)(D_800A2CDC + 0x198) = 0;
-    *(volatile u16 *)(D_800A2CDC + 0x19A) = 0;
+    _spu_mem_mode_unitM = 7;
+    *(volatile u16 *)(_spu_RXX + 0x1AC) = 4;
+    *(volatile u16 *)(_spu_RXX + 0x184) = 0;
+    *(volatile u16 *)(_spu_RXX + 0x186) = 0;
+    *(volatile u16 *)(_spu_RXX + 0x18C) = 0xFFFF;
+    *(volatile u16 *)(_spu_RXX + 0x18E) = 0xFFFF;
+    *(volatile u16 *)(_spu_RXX + 0x198) = 0;
+    *(volatile u16 *)(_spu_RXX + 0x19A) = 0;
     for (channel = 0; channel < 10; channel++) {
-        D_800F7420[channel] = 0;
+        _spu_RQ[channel] = 0;
     }
 
     if (a0 == 0) {
@@ -1656,18 +1656,18 @@ s32 _spu_init(s32 a0) {
         s32 koff;
         volatile u16 *vp;
 
-        D_800A2CF4 = 0x200;
-        *(volatile u16 *)(D_800A2CDC + 0x190) = 0;
-        *(volatile u16 *)(D_800A2CDC + 0x192) = 0;
-        *(volatile u16 *)(D_800A2CDC + 0x194) = 0;
-        *(volatile u16 *)(D_800A2CDC + 0x196) = 0;
-        *(volatile u16 *)(D_800A2CDC + 0x1B0) = 0;
-        *(volatile u16 *)(D_800A2CDC + 0x1B2) = 0;
-        *(volatile u16 *)(D_800A2CDC + 0x1B4) = 0;
-        *(volatile u16 *)(D_800A2CDC + 0x1B6) = 0;
+        _spu_tsa = 0x200;
+        *(volatile u16 *)(_spu_RXX + 0x190) = 0;
+        *(volatile u16 *)(_spu_RXX + 0x192) = 0;
+        *(volatile u16 *)(_spu_RXX + 0x194) = 0;
+        *(volatile u16 *)(_spu_RXX + 0x196) = 0;
+        *(volatile u16 *)(_spu_RXX + 0x1B0) = 0;
+        *(volatile u16 *)(_spu_RXX + 0x1B2) = 0;
+        *(volatile u16 *)(_spu_RXX + 0x1B4) = 0;
+        *(volatile u16 *)(_spu_RXX + 0x1B6) = 0;
         _spu_FwriteByIO((s32)&D_800A2D1C, 0x10);
 
-        vp = (volatile u16 *)D_800A2CDC;
+        vp = (volatile u16 *)_spu_RXX;
         for (channel = 0; channel < 0x18; channel++) {
             vp[channel * 8 + 0] = 0;
             vp[channel * 8 + 1] = 0;
@@ -1679,15 +1679,15 @@ s32 _spu_init(s32 a0) {
 
         kon = 0xFFFF;
         koff = 0xFF;
-        *(volatile u16 *)(D_800A2CDC + 0x188) = kon;
-        *(volatile u16 *)(D_800A2CDC + 0x18A) = koff;
+        *(volatile u16 *)(_spu_RXX + 0x188) = kon;
+        *(volatile u16 *)(_spu_RXX + 0x18A) = koff;
         _spu_Fw1ts();
         _spu_Fw1ts();
         _spu_Fw1ts();
         _spu_Fw1ts();
 
-        *(volatile u16 *)(D_800A2CDC + 0x18C) = kon;
-        *(volatile u16 *)(D_800A2CDC + 0x18E) = koff;
+        *(volatile u16 *)(_spu_RXX + 0x18C) = kon;
+        *(volatile u16 *)(_spu_RXX + 0x18E) = koff;
         _spu_Fw1ts();
         _spu_Fw1ts();
         _spu_Fw1ts();
@@ -1695,9 +1695,9 @@ s32 _spu_init(s32 a0) {
     }
 
     _spu_inTransfer = 1;
-    *(volatile u16 *)(D_800A2CDC + 0x1AA) = 0xC000;
+    *(volatile u16 *)(_spu_RXX + 0x1AA) = 0xC000;
     _spu_transferCallback = 0;
-    D_800A2D18 = 0;
+    _spu_IRQCallback = 0;
     return 0;
 }
 INCLUDE_ASM("asm/funcs", _spu_FwriteByIO);
@@ -1721,10 +1721,10 @@ void _spu_FiDMA(void) {
     if (D_800A2D2C == 0) {
         _spu_Fw1ts();
     }
-    *(volatile u16 *)(D_800A2CDC + 0x1AA) =
-        *(volatile u16 *)(D_800A2CDC + 0x1AA) & ~0x30;
+    *(volatile u16 *)(_spu_RXX + 0x1AA) =
+        *(volatile u16 *)(_spu_RXX + 0x1AA) & ~0x30;
     timeout = 0;
-    while (*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0x30) {
+    while (*(volatile u16 *)(_spu_RXX + 0x1AA) & 0x30) {
         timeout++;
         if (timeout > 0xF00) {
             break;
@@ -1741,9 +1741,9 @@ void _spu_FiDMA(void) {
    C ref: sotn-decomp src/main/psxsdk/libspu/spu.c (_spu_r_); this build's
    WASTE_TIME() is the out-of-line _spu_Fw1ts call. */
 void _spu_Fr_(s32 addr, u16 mode, s32 size) {
-    *(volatile u16 *)(D_800A2CDC + 0x1A6) = mode;
+    *(volatile u16 *)(_spu_RXX + 0x1A6) = mode;
     _spu_Fw1ts();
-    *(volatile u16 *)(D_800A2CDC + 0x1AA) = *(volatile u16 *)(D_800A2CDC + 0x1AA) | 0x30;
+    *(volatile u16 *)(_spu_RXX + 0x1AA) = *(volatile u16 *)(_spu_RXX + 0x1AA) | 0x30;
     _spu_Fw1ts();
     _spu_FsetDelayR();
     *D_800A2CE0 = addr;
@@ -1771,42 +1771,42 @@ s32 _spu_t(s32 mode, ...) {
     switch (mode) {
     case 2:
         count = va_arg(args, u32);
-        D_800A2CF4 = count >> D_800A2D04;
-        *(volatile u16 *)(D_800A2CDC + 0x1A6) = D_800A2CF4;
+        _spu_tsa = count >> _spu_mem_mode_plus;
+        *(volatile u16 *)(_spu_RXX + 0x1A6) = _spu_tsa;
         break;
 
     case 1:
-        t = *(volatile u16 *)(D_800A2CDC + 0x1A6);
+        t = *(volatile u16 *)(_spu_RXX + 0x1A6);
         i = 0;
         D_800A2D2C = 0;
-        if ((t & 0xFFFF) != D_800A2CF4) {
+        if ((t & 0xFFFF) != _spu_tsa) {
             do {
                 if (++i > 0xF00) {
                     return -2;
                 }
-            } while (*(volatile u16 *)(D_800A2CDC + 0x1A6) != D_800A2CF4);
+            } while (*(volatile u16 *)(_spu_RXX + 0x1A6) != _spu_tsa);
         }
-        cnt = *(volatile u16 *)(D_800A2CDC + 0x1AA);
+        cnt = *(volatile u16 *)(_spu_RXX + 0x1AA);
         cnt &= ~0x30;
         cnt |= 0x20;
-        *(volatile u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        *(volatile u16 *)(_spu_RXX + 0x1AA) = cnt;
         break;
 
     case 0:
-        t = *(volatile u16 *)(D_800A2CDC + 0x1A6);
+        t = *(volatile u16 *)(_spu_RXX + 0x1A6);
         i = 0;
         D_800A2D2C = 1;
-        if ((t & 0xFFFF) != D_800A2CF4) {
+        if ((t & 0xFFFF) != _spu_tsa) {
             do {
                 if (++i > 0xF00) {
                     return -2;
                 }
-            } while (*(volatile u16 *)(D_800A2CDC + 0x1A6) != D_800A2CF4);
+            } while (*(volatile u16 *)(_spu_RXX + 0x1A6) != _spu_tsa);
         }
-        cnt = *(volatile u16 *)(D_800A2CDC + 0x1AA);
+        cnt = *(volatile u16 *)(_spu_RXX + 0x1AA);
         cnt &= ~0x30;
         cnt |= 0x30;
-        *(volatile u16 *)(D_800A2CDC + 0x1AA) = cnt;
+        *(volatile u16 *)(_spu_RXX + 0x1AA) = cnt;
         break;
 
     case 3:
@@ -1816,7 +1816,7 @@ s32 _spu_t(s32 mode, ...) {
             ck2 = 0x20;
         }
         i = 0;
-        while ((*(volatile u16 *)(D_800A2CDC + 0x1AA) & 0x30) != ck2) {
+        while ((*(volatile u16 *)(_spu_RXX + 0x1AA) & 0x30) != ck2) {
             if (++i > 0xF00) {
                 return -2;
             }
@@ -1846,8 +1846,8 @@ s32 _spu_t(s32 mode, ...) {
 /* kengo:MED  |  sa_tan0/saTan0GaugeDraw  |  164i */
 extern void _spu_FwriteByIO(s32, s32);
 s32 _spu_Fw(s32 a0, s32 a1) {
-    if (g_spu_reverb_mode == 0) {
-        _spu_t(2, g_spu_xfer_addr << g_spu_addr_shift);
+    if (_spu_transMode == 0) {
+        _spu_t(2, _spu_tsa << _spu_mem_mode_plus);
         _spu_t(1);
         _spu_t(3, a0, a1);
     } else {
@@ -1856,17 +1856,17 @@ s32 _spu_Fw(s32 a0, s32 a1) {
     return a1;
 }
 s32 _spu_Fr(s32 a0, s32 a1) {
-    _spu_t(2, g_spu_xfer_addr << g_spu_addr_shift);
+    _spu_t(2, _spu_tsa << _spu_mem_mode_plus);
     _spu_t(0);
     _spu_t(3, a0, a1);
     return a1;
 }
 void _spu_FsetRXX(s32 arg0, u32 arg1, s32 arg2) {
     if (arg2 == 0) {
-        *(volatile u16 *)(arg0 * 2 + g_spu_base_addr) = arg1;
+        *(volatile u16 *)(arg0 * 2 + _spu_RXX) = arg1;
         return;
     }
-    *(volatile u16 *)(arg0 * 2 + g_spu_base_addr) = arg1 >> g_spu_addr_shift;
+    *(volatile u16 *)(arg0 * 2 + _spu_RXX) = arg1 >> _spu_mem_mode_plus;
 }
 s32 _spu_FsetRXXa(s32 mode, s32 val) {
     s32 aligned;
@@ -1874,25 +1874,25 @@ s32 _spu_FsetRXXa(s32 mode, s32 val) {
         u32 step = D_800A2D08;
         if ((u32)val % step != 0) {
             val += step;
-            val &= ~D_800A2D0C;
+            val &= ~_spu_mem_mode_unitM;
         }
     }
-    aligned = (s32)((u32)val >> D_800A2D04);
+    aligned = (s32)((u32)val >> _spu_mem_mode_plus);
     if (mode == -2) goto ret_val_m2;
     if (mode != -1) goto store;
     return aligned & 0xFFFF;
 ret_val_m2:
     return val;
 store:
-    ((s16 *)D_800A2CDC)[mode] = (s16)aligned;
+    ((s16 *)_spu_RXX)[mode] = (s16)aligned;
     return val;
 }
 s32 _spu_FgetRXXa(s32 index, s32 mode) {
-    u16 val = ((u16 *)D_800A2CDC)[index];
+    u16 val = ((u16 *)_spu_RXX)[index];
     if (mode == -1) {
         return val;
     }
-    return val << D_800A2D04;
+    return val << _spu_mem_mode_plus;
 }
 void _spu_FsetPCR(s32 arg0) {
     *D_800A2CEC &= 0xFFF8FFFF;
@@ -1924,17 +1924,17 @@ void _SpuDataCallback(s32 a0) {
    g_spu_init_flag = _spu_transferCallback, g_spu_timer = _spu_IRQCallback
    (both volatile fn ptrs per Sony's header), g_snd_init_flag =
    _spu_isCalled. */
-extern void (* volatile g_spu_timer)();
+extern void (* volatile _spu_IRQCallback)();
 
 void SpuQuit(void) {
-    if (g_snd_init_flag == 1) {
-        g_snd_init_flag = 0;
+    if (_spu_isCalled == 1) {
+        _spu_isCalled = 0;
         EnterCriticalSection();
         g_spu_init_flag = 0;
-        g_spu_timer = 0;
+        _spu_IRQCallback = 0;
         _SpuDataCallback(0);
-        CloseEvent(g_snd_irq_handle);
-        DisableEvent(g_snd_irq_handle);
+        CloseEvent(_spu_EVdma);
+        DisableEvent(_spu_EVdma);
         ExitCriticalSection();
     }
 }
@@ -1950,13 +1950,13 @@ __asm__(
     ".set reorder\n"
     ".set at\n"
 );
-extern s32 g_spu_voice_key_a;
-extern s32 g_spu_voice_key_b;
-extern s32 g_spu_voice_key_c;
+extern s32 _spu_AllocBlockNum;
+extern s32 _spu_AllocLastNum;
+extern s32 _spu_memList;
 
-extern s32 g_spu_voice_key_a;
-extern s32 g_spu_voice_key_b;
-extern s32 g_spu_voice_key_c;
+extern s32 _spu_AllocBlockNum;
+extern s32 _spu_AllocLastNum;
+extern s32 _spu_memList;
 
 /* PsyQ LIBSPU s_m_init.c: SpuInitMalloc — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/
@@ -1965,11 +1965,11 @@ s32 SpuInitMalloc(s32 num, s32 *top) {
     s32 size;
 
     if (num > 0) {
-        size = 0x10000 << g_spu_addr_shift;
+        size = 0x10000 << _spu_mem_mode_plus;
         top[0] = 0x40001010;
-        g_spu_voice_key_c = (s32)top;
-        g_spu_voice_key_b = 0;
-        g_spu_voice_key_a = num;
+        _spu_memList = (s32)top;
+        _spu_AllocLastNum = 0;
+        _spu_AllocBlockNum = num;
         top[1] = size - 0x1010;
         return num;
     }
@@ -1978,7 +1978,11 @@ s32 SpuInitMalloc(s32 num, s32 *top) {
 extern void _spu_gcSPU(void);
 /* PsyQ 4.0 LIBSPU s_m_m: SpuMalloc — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_m_m.c */
-#define _spu_memList ((SpuMemRec *)g_spu_voice_key_c)
+/* Self-referential on purpose: the object `_spu_memList` (Sony's SPU_MALLOC list pointer,
+   declared s32 here) is viewed as SpuMemRec* through this macro; a macro name inside its
+   own replacement list is not re-expanded (C90 6.8.3.4). Data wave 2026-09-07 renamed the
+   symbol from g_spu_voice_key_c. */
+#define _spu_memList ((SpuMemRec *)_spu_memList)
 s32 SpuMalloc(s32 size) {
     s32 var_s2;
     s32 var_s3;
@@ -1987,22 +1991,22 @@ s32 SpuMalloc(s32 size) {
     i = 0;
     var_s2 = -1;
 
-    if (D_800A2880 == 0) {
+    if (_spu_rev_reserve_wa == 0) {
         var_s3 = 0;
     } else {
-        var_s3 = (0x10000 - D_800A2884) << D_800A2D04;
+        var_s3 = (0x10000 - _spu_rev_offsetaddr) << _spu_mem_mode_plus;
     }
 
-    size += (size & ~D_800A2D0C) ? D_800A2D0C : 0;
-    size >>= D_800A2D04;
-    size <<= D_800A2D04;
+    size += (size & ~_spu_mem_mode_unitM) ? _spu_mem_mode_unitM : 0;
+    size >>= _spu_mem_mode_plus;
+    size <<= _spu_mem_mode_plus;
 
     if (_spu_memList[0].addr & 0x40000000) {
         var_s2 = 0;
     } else {
         _spu_gcSPU();
 
-        for (; i < g_spu_voice_key_a; i++) {
+        for (; i < _spu_AllocBlockNum; i++) {
             if (_spu_memList[i].addr & 0x40000000 ||
                 (_spu_memList[i].addr & 0x80000000 &&
                  _spu_memList[i].size >= size)) {
@@ -2016,7 +2020,7 @@ s32 SpuMalloc(s32 size) {
         return -1;
 
     if (_spu_memList[var_s2].addr & 0x40000000) {
-        if (var_s2 < g_spu_voice_key_a &&
+        if (var_s2 < _spu_AllocBlockNum &&
             _spu_memList[var_s2].size - var_s3 >= size) {
             s32 next = var_s2 + 1;
 
@@ -2028,7 +2032,7 @@ s32 SpuMalloc(s32 size) {
                 0x40000000;
             _spu_memList[next].size = _spu_memList[var_s2].size - size;
 
-            g_spu_voice_key_b = next;
+            _spu_AllocLastNum = next;
             _spu_memList[var_s2].size = size;
             _spu_memList[var_s2].addr &= 0x0FFFFFFF;
 
@@ -2038,17 +2042,17 @@ s32 SpuMalloc(s32 size) {
         }
     } else {
         if (size < _spu_memList[var_s2].size &&
-            g_spu_voice_key_b < g_spu_voice_key_a) {
+            _spu_AllocLastNum < _spu_AllocBlockNum) {
             u32 _addr = _spu_memList[var_s2].addr + size;
             u32 _size = _spu_memList[var_s2].size - size;
             SpuMemRec *kb =
-                (SpuMemRec *)((g_spu_voice_key_b << 3) + (s32)_spu_memList);
+                (SpuMemRec *)((_spu_AllocLastNum << 3) + (s32)_spu_memList);
             u32 swapAddr = kb->addr;
             u32 swapSize = kb->size;
 
             kb->addr = _addr | 0x80000000;
             kb->size = _size;
-            g_spu_voice_key_b++;
+            _spu_AllocLastNum++;
             kb[1].addr = swapAddr;
             kb[1].size = swapSize;
         }
@@ -2063,23 +2067,23 @@ s32 SpuMalloc(s32 size) {
 }
 /* kengo:HIGH  |  is_coli/coli_HitPauseKatana  |  178i  |  x2 size collision */
 typedef struct Entry { s32 w0; s32 w1; } Entry;
-extern s32 D_800A2D3C;
-extern s32 D_800A2D40;
+extern s32 _spu_AllocLastNum;
+extern s32 _spu_memList;
 INCLUDE_ASM("asm/funcs", _spu_gcSPU);
 /* kengo:HIGH  |  md_game/exec_game  |  194i */
-extern s32 g_spu_voice_key_a;
+extern s32 _spu_AllocBlockNum;
 extern void _spu_gcSPU(void);
 /* PsyQ 4.0 LIBSPU s_m_f: SpuFree — verbatim-linked Sony object (census
    2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_m_f.c */
 void SpuFree(u32 arg0) {
     s32 i;
 
-    for (i = 0; i < g_spu_voice_key_a; i++) {
-        if (((SpuMemRec *)g_spu_voice_key_c)[i].addr & 0x40000000) {
+    for (i = 0; i < _spu_AllocBlockNum; i++) {
+        if (((SpuMemRec *)_spu_memList)[i].addr & 0x40000000) {
             break;
         }
-        if (((SpuMemRec *)g_spu_voice_key_c)[i].addr == arg0) {
-            ((SpuMemRec *)g_spu_voice_key_c)[i].addr |= 0x80000000;
+        if (((SpuMemRec *)_spu_memList)[i].addr == arg0) {
+            ((SpuMemRec *)_spu_memList)[i].addr |= 0x80000000;
             break;
         }
     }
@@ -2094,42 +2098,42 @@ s32 _SpuSetAnyVoice(s32 on_off, u32 bits, s32 addr1, s32 addr2)
 {
     u32 var_t0;
 
-    if (D_800A2CD4 & 1) {
+    if (_spu_env & 1) {
         var_t0 = ((D_800F7298.raw[addr2] & 0xFF) << 16) | D_800F7298.raw[addr1];
     } else {
-        var_t0 = ((((SpuUnion *)D_800A2CDC)->raw[addr2] & 0xFF) << 16) | ((SpuUnion *)D_800A2CDC)->raw[addr1];
+        var_t0 = ((((SpuUnion *)_spu_RXX)->raw[addr2] & 0xFF) << 16) | ((SpuUnion *)_spu_RXX)->raw[addr1];
     }
     switch (on_off) {
     case 1:
-        if (D_800A2CD4 & 1) {
+        if (_spu_env & 1) {
             D_800F7298.raw[addr1] |= bits;
             D_800F7298.raw[addr2] |= (bits >> 16) & 0xFF;
-            D_800A28A0 |= 1 << ((addr1 - 0xC6) >> 1);
+            _spu_RQmask |= 1 << ((addr1 - 0xC6) >> 1);
         } else {
-            ((SpuUnion *)D_800A2CDC)->raw[addr1] |= bits;
-            ((SpuUnion *)D_800A2CDC)->raw[addr2] |= (bits >> 16) & 0xFF;
+            ((SpuUnion *)_spu_RXX)->raw[addr1] |= bits;
+            ((SpuUnion *)_spu_RXX)->raw[addr2] |= (bits >> 16) & 0xFF;
         }
         var_t0 |= bits & 0xFFFFFF;
         break;
     case 0:
-        if (D_800A2CD4 & 1) {
+        if (_spu_env & 1) {
             D_800F7298.raw[addr1] &= ~bits;
             D_800F7298.raw[addr2] &= ~((bits >> 16) & 0xFF);
-            D_800A28A0 |= 1 << ((addr1 - 0xC6) >> 1);
+            _spu_RQmask |= 1 << ((addr1 - 0xC6) >> 1);
         } else {
-            ((SpuUnion *)D_800A2CDC)->raw[addr1] &= ~bits;
-            ((SpuUnion *)D_800A2CDC)->raw[addr2] &= ~((bits >> 16) & 0xFF);
+            ((SpuUnion *)_spu_RXX)->raw[addr1] &= ~bits;
+            ((SpuUnion *)_spu_RXX)->raw[addr2] &= ~((bits >> 16) & 0xFF);
         }
         var_t0 &= ~(bits & 0xFFFFFF);
         break;
     case 8:
-        if (D_800A2CD4 & 1) {
+        if (_spu_env & 1) {
             D_800F7298.raw[addr1] = bits;
             D_800F7298.raw[addr2] = (bits >> 16) & 0xFF;
-            D_800A28A0 |= 1 << ((addr1 - 0xC6) >> 1);
+            _spu_RQmask |= 1 << ((addr1 - 0xC6) >> 1);
         } else {
-            ((SpuUnion *)D_800A2CDC)->raw[addr1] = bits;
-            ((SpuUnion *)D_800A2CDC)->raw[addr2] = (bits >> 16) & 0xFF;
+            ((SpuUnion *)_spu_RXX)->raw[addr1] = bits;
+            ((SpuUnion *)_spu_RXX)->raw[addr2] = (bits >> 16) & 0xFF;
         }
         var_t0 = bits & 0xFFFFFF;
         break;
@@ -2147,7 +2151,7 @@ s32 SpuSetNoiseClock(s32 a0) {
         val = a0;
     }
     {
-        volatile u16 *ptr = (volatile u16 *)(g_spu_base_addr + 0x1AA);
+        volatile u16 *ptr = (volatile u16 *)(_spu_RXX + 0x1AA);
         u16 tmp = *ptr;
         *ptr = (tmp & 0xC0FF) | ((val & 0x3F) << 8);
     }
@@ -2159,34 +2163,34 @@ s32 SpuSetReverb(s32 on_off) {
     u16 cnt;
     switch (on_off) {
     case 0:
-        cnt = *(volatile u16 *)((u8 *)D_800A2CDC + 0x1AA);
-        D_800A287C = 0;
+        cnt = *(volatile u16 *)((u8 *)_spu_RXX + 0x1AA);
+        _spu_rev_flag = 0;
         cnt &= ~0x80;
-        *(volatile u16 *)((u8 *)D_800A2CDC + 0x1AA) = cnt;
+        *(volatile u16 *)((u8 *)_spu_RXX + 0x1AA) = cnt;
         break;
 
     case 1:
-        if ((D_800A2880 != on_off) && _SpuIsInAllocateArea_(D_800A2884)) {
-            cnt = *(volatile u16 *)((u8 *)D_800A2CDC + 0x1AA);
-            D_800A287C = 0;
+        if ((_spu_rev_reserve_wa != on_off) && _SpuIsInAllocateArea_(_spu_rev_offsetaddr)) {
+            cnt = *(volatile u16 *)((u8 *)_spu_RXX + 0x1AA);
+            _spu_rev_flag = 0;
             cnt &= ~0x80;
-            *(volatile u16 *)((u8 *)D_800A2CDC + 0x1AA) = cnt;
+            *(volatile u16 *)((u8 *)_spu_RXX + 0x1AA) = cnt;
         } else {
-            cnt = *(volatile u16 *)((u8 *)D_800A2CDC + 0x1AA);
-            D_800A287C = on_off;
+            cnt = *(volatile u16 *)((u8 *)_spu_RXX + 0x1AA);
+            _spu_rev_flag = on_off;
             cnt |= 0x80;
-            *(volatile u16 *)((u8 *)D_800A2CDC + 0x1AA) = cnt;
+            *(volatile u16 *)((u8 *)_spu_RXX + 0x1AA) = cnt;
         }
         break;
     }
 
-    return D_800A287C;
+    return _spu_rev_flag;
 }
 /* PsyQ 4.0 LIBSPU s_m_util: _SpuIsInAllocateArea / _SpuIsInAllocateArea_ —
    verbatim-linked Sony object (census 2026-07-09); C ref: sotn-decomp
    src/main/psxsdk/libspu/s_m_util.c (4.0 adds the NULL list guard) */
 s32 _SpuIsInAllocateArea(u32 arg0) {
-    SpuMemRec *list = (SpuMemRec *)g_spu_voice_key_c;
+    SpuMemRec *list = (SpuMemRec *)_spu_memList;
     s32 i;
 
     if (list == 0) {
@@ -2210,10 +2214,10 @@ s32 _SpuIsInAllocateArea(u32 arg0) {
 }
 
 s32 _SpuIsInAllocateArea_(u32 arg0) {
-    SpuMemRec *list = (SpuMemRec *)g_spu_voice_key_c;
+    SpuMemRec *list = (SpuMemRec *)_spu_memList;
     s32 i;
 
-    arg0 <<= g_spu_addr_shift;
+    arg0 <<= _spu_mem_mode_plus;
     if (list == 0) {
         return 0;
     }
@@ -2274,7 +2278,7 @@ typedef struct {
     /* 0x0C */ s32 delay;
     /* 0x10 */ s32 feedback;
 } SpuRevAttr;
-extern SpuRevAttr D_800A2888; /* _spu_rev_attr */
+extern SpuRevAttr _spu_rev_attr; /* _spu_rev_attr */
 
 void _spu_setReverbAttr(s32 *arg0);
 s32 SpuClearReverbWorkArea(u32 rev_mode);
@@ -2306,107 +2310,107 @@ s32 SpuSetReverbModeParam(SpuReverbAttr *attr) {
             var_s0 &= ~0x100;
             sp58 = 1;
         }
-        if (var_s0 >= 0xA || _SpuIsInAllocateArea_(D_800A2D44[var_s0])) {
+        if (var_s0 >= 0xA || _SpuIsInAllocateArea_(_spu_rev_startaddr[var_s0])) {
             return -1;
         }
         var_s4 = 1;
-        D_800A2888.mode = var_s0;
-        D_800A2884 = D_800A2D44[D_800A2888.mode];
-        _memcpy((char *)&entry, (char *)&D_800A2D94[D_800A2888.mode],
+        _spu_rev_attr.mode = var_s0;
+        _spu_rev_offsetaddr = _spu_rev_startaddr[_spu_rev_attr.mode];
+        _memcpy((char *)&entry, (char *)&D_800A2D94[_spu_rev_attr.mode],
                 sizeof(RevParamEntry));
-        switch (D_800A2888.mode) {
+        switch (_spu_rev_attr.mode) {
         case 7: /* SPU_REV_MODE_ECHO */
-            D_800A2888.feedback = 0x7F;
-            D_800A2888.delay = 0x7F;
+            _spu_rev_attr.feedback = 0x7F;
+            _spu_rev_attr.delay = 0x7F;
             break;
         case 8: /* SPU_REV_MODE_DELAY */
-            D_800A2888.feedback = 0;
-            D_800A2888.delay = 0x7F;
+            _spu_rev_attr.feedback = 0;
+            _spu_rev_attr.delay = 0x7F;
             break;
         default:
-            D_800A2888.feedback = 0;
-            D_800A2888.delay = 0;
+            _spu_rev_attr.feedback = 0;
+            _spu_rev_attr.delay = 0;
             break;
         }
     }
     if (bSetAll || (mask & 0x8)) {
-        switch (D_800A2888.mode) {
+        switch (_spu_rev_attr.mode) {
         case 7: /* SPU_REV_MODE_ECHO */
         case 8: /* SPU_REV_MODE_DELAY */
             var_s6 = 1;
             if (!var_s4) {
-                _memcpy((char *)&entry, (char *)&D_800A2D94[D_800A2888.mode],
+                _memcpy((char *)&entry, (char *)&D_800A2D94[_spu_rev_attr.mode],
                         sizeof(RevParamEntry));
                 entry.flags = 0x0C011C00;
             }
-            D_800A2888.delay = attr->delay;
-            entry.mLSAME = ((D_800A2888.delay << 0xD) / 0x7F) - entry.dAPF1;
-            entry.mRSAME = ((D_800A2888.delay << 0xC) / 0x7F) - entry.dAPF2;
-            entry.mLCOMB1 = ((D_800A2888.delay << 0xC) / 0x7F) + entry.mRCOMB1;
-            entry.dLSAME = ((D_800A2888.delay << 0xC) / 0x7F) + entry.dRSAME;
-            entry.mLAPF1 = ((D_800A2888.delay << 0xC) / 0x7F) + entry.mLAPF2;
-            entry.mRAPF1 = ((D_800A2888.delay << 0xC) / 0x7F) + entry.mRAPF2;
+            _spu_rev_attr.delay = attr->delay;
+            entry.mLSAME = ((_spu_rev_attr.delay << 0xD) / 0x7F) - entry.dAPF1;
+            entry.mRSAME = ((_spu_rev_attr.delay << 0xC) / 0x7F) - entry.dAPF2;
+            entry.mLCOMB1 = ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.mRCOMB1;
+            entry.dLSAME = ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.dRSAME;
+            entry.mLAPF1 = ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.mLAPF2;
+            entry.mRAPF1 = ((_spu_rev_attr.delay << 0xC) / 0x7F) + entry.mRAPF2;
             break;
         default:
             break;
         }
     }
     if (bSetAll || (mask & 0x10)) {
-        switch (D_800A2888.mode) {
+        switch (_spu_rev_attr.mode) {
         case 7: /* SPU_REV_MODE_ECHO */
         case 8: /* SPU_REV_MODE_DELAY */
             var_fp = 1;
             if (!var_s4) {
                 if (!var_s6) {
-                    _memcpy((char *)&entry, (char *)&D_800A2D94[D_800A2888.mode],
+                    _memcpy((char *)&entry, (char *)&D_800A2D94[_spu_rev_attr.mode],
                             sizeof(RevParamEntry));
                     entry.flags = 0x80;
                 } else {
                     entry.flags |= 0x80;
                 }
             }
-            D_800A2888.feedback = attr->feedback;
-            entry.vWALL = (D_800A2888.feedback * 0x8100) / 0x7F;
+            _spu_rev_attr.feedback = attr->feedback;
+            entry.vWALL = (_spu_rev_attr.feedback * 0x8100) / 0x7F;
             break;
         default:
             break;
         }
     }
     if (var_s4) {
-        var_s7 = (*(volatile u16 *)(D_800A2CDC + 0x1AA) >> 7) & 1;
+        var_s7 = (*(volatile u16 *)(_spu_RXX + 0x1AA) >> 7) & 1;
         if (var_s7) {
-            cnt = *(volatile u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(volatile u16 *)(_spu_RXX + 0x1AA);
             cnt &= ~0x80;
-            *(volatile u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(volatile u16 *)(_spu_RXX + 0x1AA) = cnt;
         }
     }
     if (!var_s4) {
         if (bSetAll || (mask & 0x2)) {
-            *(u16 *)(D_800A2CDC + 0x184) = attr->depth.left;
-            D_800A2888.depth.left = attr->depth.left;
+            *(u16 *)(_spu_RXX + 0x184) = attr->depth.left;
+            _spu_rev_attr.depth.left = attr->depth.left;
         }
         if (bSetAll || (mask & 0x4)) {
-            *(u16 *)(D_800A2CDC + 0x186) = attr->depth.right;
-            D_800A2888.depth.right = attr->depth.right;
+            *(u16 *)(_spu_RXX + 0x186) = attr->depth.right;
+            _spu_rev_attr.depth.right = attr->depth.right;
         }
     } else {
-        *(u16 *)(D_800A2CDC + 0x184) = 0;
-        *(u16 *)(D_800A2CDC + 0x186) = 0;
-        D_800A2888.depth.left = 0;
-        D_800A2888.depth.right = 0;
+        *(u16 *)(_spu_RXX + 0x184) = 0;
+        *(u16 *)(_spu_RXX + 0x186) = 0;
+        _spu_rev_attr.depth.left = 0;
+        _spu_rev_attr.depth.right = 0;
     }
     if (var_s4 || var_s6 || var_fp) {
         _spu_setReverbAttr((s32 *)&entry);
     }
     if (sp58) {
-        SpuClearReverbWorkArea(D_800A2888.mode);
+        SpuClearReverbWorkArea(_spu_rev_attr.mode);
     }
     if (var_s4) {
-        _spu_FsetRXX(0xD1, D_800A2884, 0);
+        _spu_FsetRXX(0xD1, _spu_rev_offsetaddr, 0);
         if (var_s7) {
-            cnt = *(volatile u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(volatile u16 *)(_spu_RXX + 0x1AA);
             cnt |= 0x80;
-            *(volatile u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(volatile u16 *)(_spu_RXX + 0x1AA) = cnt;
         }
     }
     return 0;
@@ -2415,38 +2419,38 @@ void _spu_setReverbAttr(s32 *arg0) {
     s32 flags = arg0[0];
     s32 zero = flags == 0;
 
-    if (zero || (flags & 0x1)) { *(u16 *)(g_spu_base_addr + 0x1C0) = *(u16 *)((s32)arg0 + 0x4); }
-    if (zero || (flags & 0x2)) { *(u16 *)(g_spu_base_addr + 0x1C2) = *(u16 *)((s32)arg0 + 0x6); }
-    if (zero || (flags & 0x4)) { *(u16 *)(g_spu_base_addr + 0x1C4) = *(u16 *)((s32)arg0 + 0x8); }
-    if (zero || (flags & 0x8)) { *(u16 *)(g_spu_base_addr + 0x1C6) = *(u16 *)((s32)arg0 + 0xA); }
-    if (zero || (flags & 0x10)) { *(u16 *)(g_spu_base_addr + 0x1C8) = *(u16 *)((s32)arg0 + 0xC); }
-    if (zero || (flags & 0x20)) { *(u16 *)(g_spu_base_addr + 0x1CA) = *(u16 *)((s32)arg0 + 0xE); }
-    if (zero || (flags & 0x40)) { *(u16 *)(g_spu_base_addr + 0x1CC) = *(u16 *)((s32)arg0 + 0x10); }
-    if (zero || (flags & 0x80)) { *(u16 *)(g_spu_base_addr + 0x1CE) = *(u16 *)((s32)arg0 + 0x12); }
-    if (zero || (flags & 0x100)) { *(u16 *)(g_spu_base_addr + 0x1D0) = *(u16 *)((s32)arg0 + 0x14); }
-    if (zero || (flags & 0x200)) { *(u16 *)(g_spu_base_addr + 0x1D2) = *(u16 *)((s32)arg0 + 0x16); }
-    if (zero || (flags & 0x400)) { *(u16 *)(g_spu_base_addr + 0x1D4) = *(u16 *)((s32)arg0 + 0x18); }
-    if (zero || (flags & 0x800)) { *(u16 *)(g_spu_base_addr + 0x1D6) = *(u16 *)((s32)arg0 + 0x1A); }
-    if (zero || (flags & 0x1000)) { *(u16 *)(g_spu_base_addr + 0x1D8) = *(u16 *)((s32)arg0 + 0x1C); }
-    if (zero || (flags & 0x2000)) { *(u16 *)(g_spu_base_addr + 0x1DA) = *(u16 *)((s32)arg0 + 0x1E); }
-    if (zero || (flags & 0x4000)) { *(u16 *)(g_spu_base_addr + 0x1DC) = *(u16 *)((s32)arg0 + 0x20); }
-    if (zero || (flags & 0x8000)) { *(u16 *)(g_spu_base_addr + 0x1DE) = *(u16 *)((s32)arg0 + 0x22); }
-    if (zero || (flags & 0x10000)) { *(u16 *)(g_spu_base_addr + 0x1E0) = *(u16 *)((s32)arg0 + 0x24); }
-    if (zero || (flags & 0x20000)) { *(u16 *)(g_spu_base_addr + 0x1E2) = *(u16 *)((s32)arg0 + 0x26); }
-    if (zero || (flags & 0x40000)) { *(u16 *)(g_spu_base_addr + 0x1E4) = *(u16 *)((s32)arg0 + 0x28); }
-    if (zero || (flags & 0x80000)) { *(u16 *)(g_spu_base_addr + 0x1E6) = *(u16 *)((s32)arg0 + 0x2A); }
-    if (zero || (flags & 0x100000)) { *(u16 *)(g_spu_base_addr + 0x1E8) = *(u16 *)((s32)arg0 + 0x2C); }
-    if (zero || (flags & 0x200000)) { *(u16 *)(g_spu_base_addr + 0x1EA) = *(u16 *)((s32)arg0 + 0x2E); }
-    if (zero || (flags & 0x400000)) { *(u16 *)(g_spu_base_addr + 0x1EC) = *(u16 *)((s32)arg0 + 0x30); }
-    if (zero || (flags & 0x800000)) { *(u16 *)(g_spu_base_addr + 0x1EE) = *(u16 *)((s32)arg0 + 0x32); }
-    if (zero || (flags & 0x1000000)) { *(u16 *)(g_spu_base_addr + 0x1F0) = *(u16 *)((s32)arg0 + 0x34); }
-    if (zero || (flags & 0x2000000)) { *(u16 *)(g_spu_base_addr + 0x1F2) = *(u16 *)((s32)arg0 + 0x36); }
-    if (zero || (flags & 0x4000000)) { *(u16 *)(g_spu_base_addr + 0x1F4) = *(u16 *)((s32)arg0 + 0x38); }
-    if (zero || (flags & 0x8000000)) { *(u16 *)(g_spu_base_addr + 0x1F6) = *(u16 *)((s32)arg0 + 0x3A); }
-    if (zero || (flags & 0x10000000)) { *(u16 *)(g_spu_base_addr + 0x1F8) = *(u16 *)((s32)arg0 + 0x3C); }
-    if (zero || (flags & 0x20000000)) { *(u16 *)(g_spu_base_addr + 0x1FA) = *(u16 *)((s32)arg0 + 0x3E); }
-    if (zero || (flags & 0x40000000)) { *(u16 *)(g_spu_base_addr + 0x1FC) = *(u16 *)((s32)arg0 + 0x40); }
-    if (zero || (flags < 0)) { *(u16 *)(g_spu_base_addr + 0x1FE) = *(u16 *)((s32)arg0 + 0x42); }
+    if (zero || (flags & 0x1)) { *(u16 *)(_spu_RXX + 0x1C0) = *(u16 *)((s32)arg0 + 0x4); }
+    if (zero || (flags & 0x2)) { *(u16 *)(_spu_RXX + 0x1C2) = *(u16 *)((s32)arg0 + 0x6); }
+    if (zero || (flags & 0x4)) { *(u16 *)(_spu_RXX + 0x1C4) = *(u16 *)((s32)arg0 + 0x8); }
+    if (zero || (flags & 0x8)) { *(u16 *)(_spu_RXX + 0x1C6) = *(u16 *)((s32)arg0 + 0xA); }
+    if (zero || (flags & 0x10)) { *(u16 *)(_spu_RXX + 0x1C8) = *(u16 *)((s32)arg0 + 0xC); }
+    if (zero || (flags & 0x20)) { *(u16 *)(_spu_RXX + 0x1CA) = *(u16 *)((s32)arg0 + 0xE); }
+    if (zero || (flags & 0x40)) { *(u16 *)(_spu_RXX + 0x1CC) = *(u16 *)((s32)arg0 + 0x10); }
+    if (zero || (flags & 0x80)) { *(u16 *)(_spu_RXX + 0x1CE) = *(u16 *)((s32)arg0 + 0x12); }
+    if (zero || (flags & 0x100)) { *(u16 *)(_spu_RXX + 0x1D0) = *(u16 *)((s32)arg0 + 0x14); }
+    if (zero || (flags & 0x200)) { *(u16 *)(_spu_RXX + 0x1D2) = *(u16 *)((s32)arg0 + 0x16); }
+    if (zero || (flags & 0x400)) { *(u16 *)(_spu_RXX + 0x1D4) = *(u16 *)((s32)arg0 + 0x18); }
+    if (zero || (flags & 0x800)) { *(u16 *)(_spu_RXX + 0x1D6) = *(u16 *)((s32)arg0 + 0x1A); }
+    if (zero || (flags & 0x1000)) { *(u16 *)(_spu_RXX + 0x1D8) = *(u16 *)((s32)arg0 + 0x1C); }
+    if (zero || (flags & 0x2000)) { *(u16 *)(_spu_RXX + 0x1DA) = *(u16 *)((s32)arg0 + 0x1E); }
+    if (zero || (flags & 0x4000)) { *(u16 *)(_spu_RXX + 0x1DC) = *(u16 *)((s32)arg0 + 0x20); }
+    if (zero || (flags & 0x8000)) { *(u16 *)(_spu_RXX + 0x1DE) = *(u16 *)((s32)arg0 + 0x22); }
+    if (zero || (flags & 0x10000)) { *(u16 *)(_spu_RXX + 0x1E0) = *(u16 *)((s32)arg0 + 0x24); }
+    if (zero || (flags & 0x20000)) { *(u16 *)(_spu_RXX + 0x1E2) = *(u16 *)((s32)arg0 + 0x26); }
+    if (zero || (flags & 0x40000)) { *(u16 *)(_spu_RXX + 0x1E4) = *(u16 *)((s32)arg0 + 0x28); }
+    if (zero || (flags & 0x80000)) { *(u16 *)(_spu_RXX + 0x1E6) = *(u16 *)((s32)arg0 + 0x2A); }
+    if (zero || (flags & 0x100000)) { *(u16 *)(_spu_RXX + 0x1E8) = *(u16 *)((s32)arg0 + 0x2C); }
+    if (zero || (flags & 0x200000)) { *(u16 *)(_spu_RXX + 0x1EA) = *(u16 *)((s32)arg0 + 0x2E); }
+    if (zero || (flags & 0x400000)) { *(u16 *)(_spu_RXX + 0x1EC) = *(u16 *)((s32)arg0 + 0x30); }
+    if (zero || (flags & 0x800000)) { *(u16 *)(_spu_RXX + 0x1EE) = *(u16 *)((s32)arg0 + 0x32); }
+    if (zero || (flags & 0x1000000)) { *(u16 *)(_spu_RXX + 0x1F0) = *(u16 *)((s32)arg0 + 0x34); }
+    if (zero || (flags & 0x2000000)) { *(u16 *)(_spu_RXX + 0x1F2) = *(u16 *)((s32)arg0 + 0x36); }
+    if (zero || (flags & 0x4000000)) { *(u16 *)(_spu_RXX + 0x1F4) = *(u16 *)((s32)arg0 + 0x38); }
+    if (zero || (flags & 0x8000000)) { *(u16 *)(_spu_RXX + 0x1F6) = *(u16 *)((s32)arg0 + 0x3A); }
+    if (zero || (flags & 0x10000000)) { *(u16 *)(_spu_RXX + 0x1F8) = *(u16 *)((s32)arg0 + 0x3C); }
+    if (zero || (flags & 0x20000000)) { *(u16 *)(_spu_RXX + 0x1FA) = *(u16 *)((s32)arg0 + 0x3E); }
+    if (zero || (flags & 0x40000000)) { *(u16 *)(_spu_RXX + 0x1FC) = *(u16 *)((s32)arg0 + 0x40); }
+    if (zero || (flags < 0)) { *(u16 *)(_spu_RXX + 0x1FE) = *(u16 *)((s32)arg0 + 0x42); }
 }
 
 void SpuSetReverbVoice(s32 a0, s32 a1) {
@@ -2467,19 +2471,19 @@ s32 SpuClearReverbWorkArea(u32 rev_mode) {
 
     callback = 0;
     transmodeCleared = 0;
-    if (rev_mode >= 10 || _SpuIsInAllocateArea_(D_800A2D44[rev_mode])) {
+    if (rev_mode >= 10 || _SpuIsInAllocateArea_(_spu_rev_startaddr[rev_mode])) {
         return -1;
     }
     if (rev_mode == 0) {
-        var_s1 = 0x10 << D_800A2D04;
-        var_s2 = 0xFFF0 << D_800A2D04;
+        var_s1 = 0x10 << _spu_mem_mode_plus;
+        var_s2 = 0xFFF0 << _spu_mem_mode_plus;
     } else {
-        var_s1 = (0x10000 - D_800A2D44[rev_mode]) << D_800A2D04;
-        var_s2 = D_800A2D44[rev_mode] << D_800A2D04;
+        var_s1 = (0x10000 - _spu_rev_startaddr[rev_mode]) << _spu_mem_mode_plus;
+        var_s2 = _spu_rev_startaddr[rev_mode] << _spu_mem_mode_plus;
     }
-    oldTransmode = D_800A2CF8;
-    if (D_800A2CF8 == 1) {
-        D_800A2CF8 = 0;
+    oldTransmode = _spu_transMode;
+    if (_spu_transMode == 1) {
+        _spu_transMode = 0;
         transmodeCleared = 1;
     }
     var_s3 = 1;
@@ -2497,13 +2501,13 @@ s32 SpuClearReverbWorkArea(u32 rev_mode) {
 
         _spu_t(2, var_s2);
         _spu_t(1);
-        _spu_t(3, &D_800A28D4, var_s0);
-        WaitEvent(D_800A2870);
+        _spu_t(3, &_spu_zerobuf, var_s0);
+        WaitEvent(_spu_EVdma);
         var_s1 -= 0x400;
         var_s2 += 0x400;
     }
     if (transmodeCleared != 0) {
-        D_800A2CF8 = oldTransmode;
+        _spu_transMode = oldTransmode;
     }
     if (callback != 0) {
         _spu_transferCallback = callback;
@@ -2539,40 +2543,40 @@ void SpuSetKey(s32 on_off, u32 voice_bit) {
 
     switch (on_off) {
     case 1:
-        if (D_800A2CD4 & 1) {
-            D_800F7420[0] = lo;
-            D_800F7420[1] = hi;
-            D_800A28A0 |= 1;
-            D_800A289C |= voice_bit;
-            if (D_800F7420[2] & voice_bit) {
-                D_800F7420[2] &= ~voice_bit;
+        if (_spu_env & 1) {
+            _spu_RQ[0] = lo;
+            _spu_RQ[1] = hi;
+            _spu_RQmask |= 1;
+            _spu_RQvoice |= voice_bit;
+            if (_spu_RQ[2] & voice_bit) {
+                _spu_RQ[2] &= ~voice_bit;
             }
-            if (D_800F7420[3] & hi2) {
-                D_800F7420[3] &= ~hi2;
+            if (_spu_RQ[3] & hi2) {
+                _spu_RQ[3] &= ~hi2;
             }
         } else {
-            u32 stat = D_800A2874 | voice_bit;
-            ((SpuRXX *)D_800A2CDC)->key_on[0] = lo;
-            ((SpuRXX *)D_800A2CDC)->key_on[1] = hi;
-            D_800A2874 = stat;
+            u32 stat = _spu_keystat | voice_bit;
+            ((SpuRXX *)_spu_RXX)->key_on[0] = lo;
+            ((SpuRXX *)_spu_RXX)->key_on[1] = hi;
+            _spu_keystat = stat;
         }
         break;
     case 0:
-        if (D_800A2CD4 & 1) {
-            D_800F7420[2] = lo;
-            D_800F7420[3] = hi;
-            D_800A28A0 |= 1;
-            D_800A289C &= ~voice_bit;
-            if (D_800F7420[0] & voice_bit) {
-                D_800F7420[0] &= ~voice_bit;
+        if (_spu_env & 1) {
+            _spu_RQ[2] = lo;
+            _spu_RQ[3] = hi;
+            _spu_RQmask |= 1;
+            _spu_RQvoice &= ~voice_bit;
+            if (_spu_RQ[0] & voice_bit) {
+                _spu_RQ[0] &= ~voice_bit;
             }
-            if (D_800F7420[1] & hi2) {
-                D_800F7420[1] &= ~hi2;
+            if (_spu_RQ[1] & hi2) {
+                _spu_RQ[1] &= ~hi2;
             }
         } else {
-            ((SpuRXX *)D_800A2CDC)->key_off[0] = lo;
-            ((SpuRXX *)D_800A2CDC)->key_off[1] = hi;
-            D_800A2874 &= ~voice_bit;
+            ((SpuRXX *)_spu_RXX)->key_off[0] = lo;
+            ((SpuRXX *)_spu_RXX)->key_off[1] = hi;
+            _spu_keystat &= ~voice_bit;
         }
         break;
     }
@@ -2600,8 +2604,8 @@ s32 SpuGetKeyStatus(s32 arg0) {
     return -1;
 work:
     base = bit_found << 4;
-    mask = g_spu_base_addr;
-    flags = D_800A2874;
+    mask = _spu_RXX;
+    flags = _spu_keystat;
     base = base + mask;
     mask = 1 << bit_found;
     flags = flags & mask;
@@ -2643,8 +2647,8 @@ s32 SpuSetTransferStartAddr(s32 a0) {
         return 0;
     }
     v0 = _spu_FsetRXXa(-1, a0);
-    g_spu_xfer_addr = (u16)v0;
-    return (u32)(u16)v0 << g_spu_addr_shift;
+    _spu_tsa = (u16)v0;
+    return (u32)(u16)v0 << _spu_mem_mode_plus;
 }
 /* PsyQ LIBSPU s_stm.c: SpuSetTransferMode — verbatim-linked Sony object
    (census 2026-07-09); C ref: sotn-decomp src/main/psxsdk/libspu/s_stm.c */
@@ -2661,21 +2665,21 @@ s32 SpuSetTransferMode(s32 mode) {
         default:
             transMode = 0;
     }
-    g_snd_reverb_flag = mode;
-    g_spu_reverb_mode = transMode;
+    _spu_trans_mode = mode;
+    _spu_transMode = transMode;
     return transMode;
 }
 s32 SpuIsTransferCompleted(s32 arg0) {
     s32 var_v0;
 
-    if ((g_snd_reverb_flag == 1) || (g_spu_busy == 1)) {
+    if ((_spu_trans_mode == 1) || (g_spu_busy == 1)) {
         return 1;
     }
-    var_v0 = TestEvent(g_snd_irq_handle);
+    var_v0 = TestEvent(_spu_EVdma);
     if (arg0 == 1) {
         if (var_v0 == 0) {
             do {
-                var_v0 = TestEvent(g_snd_irq_handle);
+                var_v0 = TestEvent(_spu_EVdma);
             } while (var_v0 == 0);
         }
         var_v0 = 1;
@@ -2766,7 +2770,7 @@ void SpuSetCommonAttr(void *arg0) {
             }
         }
         vol_total_left &= 0x7FFF;
-        *(u16 *)(D_800A2CDC + 0x180) = vol_total_left | mvol_mode_left;
+        *(u16 *)(_spu_RXX + 0x180) = vol_total_left | mvol_mode_left;
     }
 
     if (bSetAll || (mask & 0x2)) {
@@ -2817,70 +2821,70 @@ void SpuSetCommonAttr(void *arg0) {
             }
         }
         vol_total_right &= 0x7FFF;
-        *(u16 *)(D_800A2CDC + 0x182) = vol_total_right | mvol_mode_right;
+        *(u16 *)(_spu_RXX + 0x182) = vol_total_right | mvol_mode_right;
     }
 
     if (bSetAll || (mask & 0x40)) {
-        *(u16 *)(D_800A2CDC + 0x1B0) = attr->cd.volume.left;
+        *(u16 *)(_spu_RXX + 0x1B0) = attr->cd.volume.left;
     }
 
     if (bSetAll || (mask & 0x80)) {
-        *(u16 *)(D_800A2CDC + 0x1B2) = attr->cd.volume.right;
+        *(u16 *)(_spu_RXX + 0x1B2) = attr->cd.volume.right;
     }
 
     if (bSetAll || (mask & 0x400)) {
-        *(u16 *)(D_800A2CDC + 0x1B4) = attr->ext.volume.left;
+        *(u16 *)(_spu_RXX + 0x1B4) = attr->ext.volume.left;
     }
 
     if (bSetAll || (mask & 0x800)) {
-        *(u16 *)(D_800A2CDC + 0x1B6) = attr->ext.volume.right;
+        *(u16 *)(_spu_RXX + 0x1B6) = attr->ext.volume.right;
     }
 
     if (bSetAll || (mask & 0x100)) {
         if (attr->cd.reverb == 0) {
-            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(u16 *)(_spu_RXX + 0x1AA);
             cnt &= ~4;
-            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
         } else {
-            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(u16 *)(_spu_RXX + 0x1AA);
             cnt |= 4;
-            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
         }
     }
 
     if (bSetAll || (mask & 0x200)) {
         if (attr->cd.mix == 0) {
-            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(u16 *)(_spu_RXX + 0x1AA);
             cnt &= ~1;
-            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
         } else {
-            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(u16 *)(_spu_RXX + 0x1AA);
             cnt |= 1;
-            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
         }
     }
 
     if (bSetAll || (mask & 0x1000)) {
         if (attr->ext.reverb == 0) {
-            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(u16 *)(_spu_RXX + 0x1AA);
             cnt &= ~8;
-            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
         } else {
-            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(u16 *)(_spu_RXX + 0x1AA);
             cnt |= 8;
-            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
         }
     }
 
     if (bSetAll || (mask & 0x2000)) {
         if (attr->ext.mix == 0) {
-            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(u16 *)(_spu_RXX + 0x1AA);
             cnt &= ~2;
-            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
         } else {
-            cnt = *(u16 *)(D_800A2CDC + 0x1AA);
+            cnt = *(u16 *)(_spu_RXX + 0x1AA);
             cnt |= 2;
-            *(u16 *)(D_800A2CDC + 0x1AA) = cnt;
+            *(u16 *)(_spu_RXX + 0x1AA) = cnt;
         }
     }
 }
@@ -2910,8 +2914,8 @@ static s32 SpuRGetAllKeysStatus(s32 min, s32 max, s8 *status) {
     for (voice = min; voice < max; voice++) {
         s32 off = voice << 4;
         s32 bit;
-        volumex = *(u16 *)((off + D_800A2CDC) + 0xC);
-        bit = D_800A2874 & (1 << voice);
+        volumex = *(u16 *)((off + _spu_RXX) + 0xC);
+        bit = _spu_keystat & (1 << voice);
         if (bit) {
             if (volumex != 0) {
                 status[voice] = 1;
@@ -2940,8 +2944,8 @@ void SpuGetAllKeysStatus(u8 *status) {
         s32 off = voice << 4;
         u16 volumex;
         s32 bit;
-        volumex = *((u16 *)((off + g_spu_base_addr) + 0xC));
-        bit = D_800A2874 & (1 << voice);
+        volumex = *((u16 *)((off + _spu_RXX) + 0xC));
+        bit = _spu_keystat & (1 << voice);
         if (bit) {
             if (volumex != 0) {
                 status[voice] = 1;
@@ -3063,7 +3067,7 @@ void SpuGetVoiceVolume(s32 arg0, u16 *arg1, u16 *arg2) {
     u32 temp_v1_2;
     s32 temp;
 
-    temp = (arg0 << 4) + g_spu_base_addr;
+    temp = (arg0 << 4) + _spu_RXX;
     temp_v1 = *(u16 *)(temp);
     temp_a0_2 = *(u16 *)(temp + 2);
     temp_a3 = temp_v1 & 0xFFFF;
@@ -3083,7 +3087,7 @@ void SpuGetVoiceVolume(s32 arg0, u16 *arg1, u16 *arg2) {
 }
 
 void SpuGetVoiceEnvelope(s32 a0, u16 *a1) {
-    a0 = (a0 << 4) + g_spu_base_addr;
+    a0 = (a0 << 4) + _spu_RXX;
     *a1 = *(u16 *)(a0 + 0xC);
 }
 

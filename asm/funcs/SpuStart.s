@@ -1,12 +1,12 @@
 glabel SpuStart
-    /* 78EC4 800886C4 0A80023C */  lui        $v0, %hi(D_800A2CD8)
-    /* 78EC8 800886C8 D82C428C */  lw         $v0, %lo(D_800A2CD8)($v0)
+    /* 78EC4 800886C4 0A80023C */  lui        $v0, %hi(_spu_isCalled)
+    /* 78EC8 800886C8 D82C428C */  lw         $v0, %lo(_spu_isCalled)($v0)
     /* 78ECC 800886CC E8FFBD27 */  addiu      $sp, $sp, -0x18
     /* 78ED0 800886D0 17004014 */  bnez       $v0, .L80088730
     /* 78ED4 800886D4 1000BFAF */   sw        $ra, 0x10($sp)
     /* 78ED8 800886D8 01000224 */  addiu      $v0, $zero, 0x1
-    /* 78EDC 800886DC 0A80013C */  lui        $at, %hi(D_800A2CD8)
-    /* 78EE0 800886E0 D82C22AC */  sw         $v0, %lo(D_800A2CD8)($at)
+    /* 78EDC 800886DC 0A80013C */  lui        $at, %hi(_spu_isCalled)
+    /* 78EE0 800886E0 D82C22AC */  sw         $v0, %lo(_spu_isCalled)($at)
     /* 78EE4 800886E4 6EE2010C */  jal        EnterCriticalSection
     /* 78EE8 800886E8 00000000 */   nop
     /* 78EEC 800886EC 0980043C */  lui        $a0, %hi(D_80088BA0)
@@ -20,8 +20,8 @@ glabel SpuStart
     /* 78F0C 8008870C 5EE2010C */  jal        OpenEvent
     /* 78F10 80088710 21380000 */   addu      $a3, $zero, $zero
     /* 78F14 80088714 21204000 */  addu       $a0, $v0, $zero
-    /* 78F18 80088718 0A80013C */  lui        $at, %hi(D_800A2870)
-    /* 78F1C 8008871C 702824AC */  sw         $a0, %lo(D_800A2870)($at)
+    /* 78F18 80088718 0A80013C */  lui        $at, %hi(_spu_EVdma)
+    /* 78F1C 8008871C 702824AC */  sw         $a0, %lo(_spu_EVdma)($at)
     /* 78F20 80088720 6AE2010C */  jal        EnableEvent
     /* 78F24 80088724 00000000 */   nop
     /* 78F28 80088728 72E2010C */  jal        ExitCriticalSection

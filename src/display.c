@@ -45,7 +45,7 @@ extern u8 D_80015F4C;
 u32 DrawSyncCallback(s32 a0) {
     u32 old;
     if (g_gpu_debug_level >= 2) {
-        g_gpu_debug_func(&D_80015EE8, a0);
+        GPU_printf(&D_80015EE8, a0);
     }
     old = g_gpu_draw_mode;
     g_gpu_draw_mode = a0;
@@ -71,7 +71,7 @@ typedef struct {
 void SetDispMask(s32 a0) {
     u8 *p = &((GpuCtx *)&g_gpu_type)->debug_level;
     if (*p >= 2) {
-        g_gpu_debug_func(&g_str_setdispmask, a0);
+        GPU_printf(&g_str_setdispmask, a0);
     }
     if (!a0) {
         memset(((GpuCtx *)&g_gpu_type)->disp_env, -1, 0x14);
@@ -87,7 +87,7 @@ void SetDispMask(s32 a0) {
 }
 void DrawSync(s32 a0) {
     if (g_gpu_debug_level >= 2) {
-        g_gpu_debug_func(&g_str_drawsync, a0);
+        GPU_printf(&g_str_drawsync, a0);
     }
     {
         u32 *v0 = (u32 *)g_gpu_dev_table;
@@ -113,12 +113,12 @@ level_1:
     if (y < 0) goto bad;
     if (h > 0) goto end;
 bad:
-    g_gpu_debug_func(&D_80015F2C, str);
-    g_gpu_debug_func(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+    GPU_printf(&D_80015F2C, str);
+    GPU_printf(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
     goto end;
 level_2:
-    g_gpu_debug_func(&D_80015F4C, str);
-    g_gpu_debug_func(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
+    GPU_printf(&D_80015F4C, str);
+    GPU_printf(&D_80015F38, rect[0], rect[1], rect[2], rect[3]);
 end:
     ;
 }
@@ -183,7 +183,7 @@ extern u32 g_gpu_ot_end;
 
 u32 *ClearOTag(u32 *a0, s32 a1) {
     if (g_gpu_debug_level >= 2) {
-        g_gpu_debug_func(&g_str_clearotag, a0, a1);
+        GPU_printf(&g_str_clearotag, a0, a1);
     }
     a1--;
     if (a1) {
@@ -206,7 +206,7 @@ extern u32 D_80015F98;
 u32 *ClearOTagR(u32 *ot, s32 n) {
     u32 *new_var;
     if (g_gpu_debug_level >= 2) {
-        g_gpu_debug_func(&D_80015F98, ot, n);
+        GPU_printf(&D_80015F98, ot, n);
         new_var = ot; /* FAKE: cse.c make_regs_eqv beyond-block gate; flow-deleted pre-RA */
     }
     {
@@ -226,7 +226,7 @@ void DrawPrim(u8 *a0) {
 }
 void DrawOTag(s32 a0) {
     if (g_gpu_debug_level >= 2) {
-        g_gpu_debug_func(&g_str_drawotag, a0);
+        GPU_printf(&g_str_drawotag, a0);
     }
     {
         u32 *v0 = (u32 *)g_gpu_dev_table;
@@ -248,7 +248,7 @@ s32 *PutDrawEnv(s32 *arg0) {
     u8 *base = &g_gpu_debug_level;
 
     if (*base >= 2) {
-        g_gpu_debug_func(&g_str_putdrawenv, arg0);
+        GPU_printf(&g_str_putdrawenv, arg0);
     }
     p = arg0 + 7;
     SetDrawEnv2(p, arg0);
@@ -276,7 +276,7 @@ void DrawOTagEnv(s32 arg0, s32 *arg1) {
     u8 *base = &g_gpu_debug_level;
 
     if (*base >= 2) {
-        g_gpu_debug_func(&D_80015FDC, arg0, arg1);
+        GPU_printf(&D_80015FDC, arg0, arg1);
     }
     p = arg1 + 7;
     SetDrawEnv2(p, arg1);
@@ -821,14 +821,14 @@ s32 _addque2(s32 (*func)(s32 *, s32), s32 *arg, s32 len, s32 count) {
     DMACallback(2, _exeque);
     if (len != 0) {
         for (i = 0; i < len / 4; i++) {
-            D_80103680[D_8009BF78].data[i] = arg[i];
+            _que[D_8009BF78].data[i] = arg[i];
         }
-        D_80103680[D_8009BF78].arg = D_80103680[D_8009BF78].data;
+        _que[D_8009BF78].arg = _que[D_8009BF78].data;
     } else {
-        D_80103680[D_8009BF78].arg = arg;
+        _que[D_8009BF78].arg = arg;
     }
-    D_80103680[D_8009BF78].count = count;
-    D_80103680[D_8009BF78].func = func;
+    _que[D_8009BF78].count = count;
+    _que[D_8009BF78].func = func;
     D_8009BF78 = (D_8009BF78 + 1) & 0x3F;
     SetIntrMask(D_8009BF80);
     _exeque();
@@ -864,7 +864,7 @@ s32 _reset(s32 arg0) {
         *D_8009BF64 |= 0x800;
         *D_8009BF48 = 0;
         memset(D_800F189C, 0, 0x100);
-        memset((u8 *)D_80103680, 0, 0x1800);
+        memset((u8 *)_que, 0, 0x1800);
         break;
     case 1:
     case 3:
@@ -980,7 +980,7 @@ s32 rsin(s32 a0) {
     }
     return sin_1(a0 & 0xFFF);
 }
-extern s16 g_sin_lut_q1[];
+extern s16 rsin_tbl[];
 extern s16 g_sin_lut_q3[];
 extern s16 g_cos_lut_q2[];
 extern s16 g_cos_lut_q4[];
@@ -988,14 +988,14 @@ extern s16 g_cos_lut_q4[];
 s32 sin_1(s32 a0) {
     if (a0 < 0x801) {
         if (a0 < 0x401) {
-            return g_sin_lut_q1[a0];
+            return rsin_tbl[a0];
         }
-        return g_sin_lut_q1[0x800 - a0];
+        return rsin_tbl[0x800 - a0];
     }
     if (a0 < 0xC01) {
         return -g_sin_lut_q3[a0];
     }
-    return -g_sin_lut_q1[0x1000 - a0];
+    return -rsin_tbl[0x1000 - a0];
 }
 s32 rcos(s32 a0) {
     if (a0 < 0) {
@@ -1004,12 +1004,12 @@ s32 rcos(s32 a0) {
     a0 = a0 & 0xFFF;
     if (a0 < 0x801) {
         if (a0 < 0x401) {
-            return g_sin_lut_q1[0x400 - a0];
+            return rsin_tbl[0x400 - a0];
         }
         return -g_cos_lut_q2[a0];
     }
     if (a0 < 0xC01) {
-        return -g_sin_lut_q1[0xC00 - a0];
+        return -rsin_tbl[0xC00 - a0];
     }
     return g_cos_lut_q4[a0];
 }
@@ -1101,9 +1101,9 @@ __asm__(
     ".L8007E170:\n"
     "    addi   $t4, $t4, -0x40\n"
     "    sll    $t4, $t4, 1\n"
-    "    lui    $t5, %hi(g_gte_sqrt_table)\n"
+    "    lui    $t5, %hi(SQRT)\n"
     "    addu   $t5, $t5, $t4\n"
-    "    lh     $t5, %lo(g_gte_sqrt_table)($t5)\n"
+    "    lh     $t5, %lo(SQRT)($t5)\n"
     "    nop\n"
     "    sllv   $t5, $t5, $t1\n"
     "    srl    $v0, $t5, 12\n"
@@ -1382,9 +1382,9 @@ __asm__(
     ".L8007E490:\n"
     "    addi   $t4, $t4, -0x40\n"
     "    sll    $t4, $t4, 1\n"
-    "    lui    $t5, %hi(g_gte_sqrt_table)\n"
+    "    lui    $t5, %hi(SQRT)\n"
     "    addu   $t5, $t5, $t4\n"
-    "    lh     $t5, %lo(g_gte_sqrt_table)($t5)\n"
+    "    lh     $t5, %lo(SQRT)($t5)\n"
     "    nop\n"
     "    bltz   $t1, .L8007E4BC\n"
     "    nop\n"
@@ -2709,9 +2709,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007F378:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t8, $t8, 16\n"
@@ -2720,9 +2720,9 @@ __asm__(
     "     sra       $t0, $t9, 16\n"
     ".L8007F3A0:\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t3, $t8, 16\n"
@@ -2737,9 +2737,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007F3DC:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t4, $t9, 16\n"
     "    sra        $t4, $t4, 16\n"
@@ -2748,9 +2748,9 @@ __asm__(
     "     sra       $t1, $t9, 16\n"
     ".L8007F404:\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t6, $t9, 16\n"
     "    sra        $t6, $t6, 16\n"
@@ -2775,9 +2775,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007F468:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t8, $t8, 16\n"
@@ -2789,9 +2789,9 @@ __asm__(
     "    sra        $t6, $t7, 12\n"
     "    sh         $t6, 16($a1)\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t5, $t8, 16\n"
@@ -2900,9 +2900,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007F608:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t6, $t9, 16\n"
     "    sra        $t6, $t6, 16\n"
@@ -2911,9 +2911,9 @@ __asm__(
     "     sra       $t0, $t9, 16\n"
     ".L8007F630:\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t3, $t8, 16\n"
@@ -2928,9 +2928,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007F66C:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t6, $t9, 16\n"
     "    sra        $t6, $t6, 16\n"
@@ -2939,9 +2939,9 @@ __asm__(
     "     sra       $t1, $t9, 16\n"
     ".L8007F694:\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t6, $t9, 16\n"
     "    sra        $t4, $t6, 16\n"
@@ -2966,9 +2966,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007F6F8:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t8, $t8, 16\n"
@@ -2980,9 +2980,9 @@ __asm__(
     "    sra        $t6, $t7, 12\n"
     "    sh         $t6, 16($a1)\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t5, $t8, 16\n"
@@ -3092,9 +3092,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007F898:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t6, $t9, 16\n"
     "    sra        $t6, $t6, 16\n"
@@ -3103,9 +3103,9 @@ __asm__(
     "     sra       $t0, $t9, 16\n"
     ".L8007F8C0:\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t1, $t8, 16\n"
@@ -3214,9 +3214,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007FA38:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t6, $t9, 16\n"
     "    sra        $t1, $t6, 16\n"
@@ -3224,9 +3224,9 @@ __asm__(
     "     sra       $t0, $t9, 16\n"
     ".L8007FA5C:\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t7, $t8, 16\n"
@@ -3336,9 +3336,9 @@ __asm__(
     "     andi      $t7, $t7, 0xFFF\n"
     ".L8007FBD8:\n"
     "    sll        $t8, $t7, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t6, $t9, 16\n"
     "    sra        $t6, $t6, 16\n"
@@ -3347,9 +3347,9 @@ __asm__(
     "     sra       $t0, $t9, 16\n"
     ".L8007FC00:\n"
     "    sll        $t8, $t9, 2\n"
-    "    lui        $t9, %hi(D_8009C928)\n"
+    "    lui        $t9, %hi(rcossin_tbl)\n"
     "    addu       $t9, $t9, $t8\n"
-    "    lw         $t9, %lo(D_8009C928)($t9)\n"
+    "    lw         $t9, %lo(rcossin_tbl)($t9)\n"
     "    nop\n"
     "    sll        $t8, $t9, 16\n"
     "    sra        $t1, $t8, 16\n"

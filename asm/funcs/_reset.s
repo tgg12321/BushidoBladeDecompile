@@ -48,8 +48,8 @@ glabel _reset
     /* 6E274 8007DA74 000040AC */  sw         $zero, 0x0($v0)
     /* 6E278 8007DA78 B9F7010C */  jal        memset
     /* 6E27C 8007DA7C 00000000 */   nop
-    /* 6E280 8007DA80 1080043C */  lui        $a0, %hi(D_80103680)
-    /* 6E284 8007DA84 80368424 */  addiu      $a0, $a0, %lo(D_80103680)
+    /* 6E280 8007DA80 1080043C */  lui        $a0, %hi(_que)
+    /* 6E284 8007DA84 80368424 */  addiu      $a0, $a0, %lo(_que)
     /* 6E288 8007DA88 21280000 */  addu       $a1, $zero, $zero
     /* 6E28C 8007DA8C B9F7010C */  jal        memset
     /* 6E290 8007DA90 00180624 */   addiu     $a2, $zero, 0x1800

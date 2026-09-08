@@ -8,9 +8,9 @@ glabel RotMatrix
     /* 6FB74 8007F374 FF0FEF31 */   andi      $t7, $t7, 0xFFF
   .L8007F378:
     /* 6FB78 8007F378 80C00F00 */  sll        $t8, $t7, 2
-    /* 6FB7C 8007F37C 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FB7C 8007F37C 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FB80 8007F380 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FB84 8007F384 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FB84 8007F384 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FB88 8007F388 00000000 */  nop
     /* 6FB8C 8007F38C 00C41900 */  sll        $t8, $t9, 16
     /* 6FB90 8007F390 03C41800 */  sra        $t8, $t8, 16
@@ -19,9 +19,9 @@ glabel RotMatrix
     /* 6FB9C 8007F39C 03441900 */   sra       $t0, $t9, 16
   .L8007F3A0:
     /* 6FBA0 8007F3A0 80C01900 */  sll        $t8, $t9, 2
-    /* 6FBA4 8007F3A4 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FBA4 8007F3A4 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FBA8 8007F3A8 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FBAC 8007F3AC 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FBAC 8007F3AC 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FBB0 8007F3B0 00000000 */  nop
     /* 6FBB4 8007F3B4 00C41900 */  sll        $t8, $t9, 16
     /* 6FBB8 8007F3B8 035C1800 */  sra        $t3, $t8, 16
@@ -36,9 +36,9 @@ glabel RotMatrix
     /* 6FBD8 8007F3D8 FF0FEF31 */   andi      $t7, $t7, 0xFFF
   .L8007F3DC:
     /* 6FBDC 8007F3DC 80C00F00 */  sll        $t8, $t7, 2
-    /* 6FBE0 8007F3E0 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FBE0 8007F3E0 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FBE4 8007F3E4 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FBE8 8007F3E8 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FBE8 8007F3E8 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FBEC 8007F3EC 00000000 */  nop
     /* 6FBF0 8007F3F0 00641900 */  sll        $t4, $t9, 16
     /* 6FBF4 8007F3F4 03640C00 */  sra        $t4, $t4, 16
@@ -47,9 +47,9 @@ glabel RotMatrix
     /* 6FC00 8007F400 034C1900 */   sra       $t1, $t9, 16
   .L8007F404:
     /* 6FC04 8007F404 80C01900 */  sll        $t8, $t9, 2
-    /* 6FC08 8007F408 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FC08 8007F408 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FC0C 8007F40C 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FC10 8007F410 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FC10 8007F410 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FC14 8007F414 00000000 */  nop
     /* 6FC18 8007F418 00741900 */  sll        $t6, $t9, 16
     /* 6FC1C 8007F41C 03740E00 */  sra        $t6, $t6, 16
@@ -74,9 +74,9 @@ glabel RotMatrix
     /* 6FC64 8007F464 FF0FEF31 */   andi      $t7, $t7, 0xFFF
   .L8007F468:
     /* 6FC68 8007F468 80C00F00 */  sll        $t8, $t7, 2
-    /* 6FC6C 8007F46C 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FC6C 8007F46C 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FC70 8007F470 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FC74 8007F474 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FC74 8007F474 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FC78 8007F478 00000000 */  nop
     /* 6FC7C 8007F47C 00C41900 */  sll        $t8, $t9, 16
     /* 6FC80 8007F480 03C41800 */  sra        $t8, $t8, 16
@@ -88,9 +88,9 @@ glabel RotMatrix
     /* 6FC94 8007F494 03730F00 */  sra        $t6, $t7, 12
     /* 6FC98 8007F498 1000AEA4 */  sh         $t6, 0x10($a1)
     /* 6FC9C 8007F49C 80C01900 */  sll        $t8, $t9, 2
-    /* 6FCA0 8007F4A0 0A80193C */  lui        $t9, %hi(D_8009C928)
+    /* 6FCA0 8007F4A0 0A80193C */  lui        $t9, %hi(rcossin_tbl)
     /* 6FCA4 8007F4A4 21C83803 */  addu       $t9, $t9, $t8
-    /* 6FCA8 8007F4A8 28C9398F */  lw         $t9, %lo(D_8009C928)($t9)
+    /* 6FCA8 8007F4A8 28C9398F */  lw         $t9, %lo(rcossin_tbl)($t9)
     /* 6FCAC 8007F4AC 00000000 */  nop
     /* 6FCB0 8007F4B0 00C41900 */  sll        $t8, $t9, 16
     /* 6FCB4 8007F4B4 036C1800 */  sra        $t5, $t8, 16

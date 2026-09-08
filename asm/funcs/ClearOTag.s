@@ -9,8 +9,8 @@ glabel ClearOTag
     /* 6BFA8 8007B7A8 0200422C */  sltiu      $v0, $v0, 0x2
     /* 6BFAC 8007B7AC 08004014 */  bnez       $v0, .L8007B7D0
     /* 6BFB0 8007B7B0 1800BFAF */   sw        $ra, 0x18($sp)
-    /* 6BFB4 8007B7B4 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6BFB8 8007B7B8 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6BFB4 8007B7B4 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6BFB8 8007B7B8 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6BFBC 8007B7BC 0180043C */  lui        $a0, %hi(D_80015F80)
     /* 6BFC0 8007B7C0 805F8424 */  addiu      $a0, $a0, %lo(D_80015F80)
     /* 6BFC4 8007B7C4 21280002 */  addu       $a1, $s0, $zero

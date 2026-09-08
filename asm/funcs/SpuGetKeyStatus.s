@@ -21,10 +21,10 @@ glabel SpuGetKeyStatus
     /* 7B510 8008AD10 3F2B0208 */  j          .L8008ACFC
     /* 7B514 8008AD14 21286000 */   addu      $a1, $v1, $zero
   .L8008AD18:
-    /* 7B518 8008AD18 0A80023C */  lui        $v0, %hi(D_800A2CDC)
-    /* 7B51C 8008AD1C DC2C428C */  lw         $v0, %lo(D_800A2CDC)($v0)
-    /* 7B520 8008AD20 0A80033C */  lui        $v1, %hi(D_800A2874)
-    /* 7B524 8008AD24 7428638C */  lw         $v1, %lo(D_800A2874)($v1)
+    /* 7B518 8008AD18 0A80023C */  lui        $v0, %hi(_spu_RXX)
+    /* 7B51C 8008AD1C DC2C428C */  lw         $v0, %lo(_spu_RXX)($v0)
+    /* 7B520 8008AD20 0A80033C */  lui        $v1, %hi(_spu_keystat)
+    /* 7B524 8008AD24 7428638C */  lw         $v1, %lo(_spu_keystat)($v1)
     /* 7B528 8008AD28 21208200 */  addu       $a0, $a0, $v0
     /* 7B52C 8008AD2C 01000224 */  addiu      $v0, $zero, 0x1
     /* 7B530 8008AD30 0410A200 */  sllv       $v0, $v0, $a1

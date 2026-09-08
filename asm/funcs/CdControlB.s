@@ -13,20 +13,20 @@ glabel CdControlB
     /* 70CE8 800804E8 0A80033C */  lui        $v1, %hi(D_800A112C)
     /* 70CEC 800804EC 2C116324 */  addiu      $v1, $v1, %lo(D_800A112C)
     /* 70CF0 800804F0 2400B5AF */  sw         $s5, 0x24($sp)
-    /* 70CF4 800804F4 0A80153C */  lui        $s5, %hi(D_800A11B4)
-    /* 70CF8 800804F8 B411B58E */  lw         $s5, %lo(D_800A11B4)($s5)
+    /* 70CF4 800804F4 0A80153C */  lui        $s5, %hi(CD_cbsync)
+    /* 70CF8 800804F8 B411B58E */  lw         $s5, %lo(CD_cbsync)($s5)
     /* 70CFC 800804FC 80101300 */  sll        $v0, $s3, 2
     /* 70D00 80080500 2800B6AF */  sw         $s6, 0x28($sp)
     /* 70D04 80080504 21B04300 */  addu       $s6, $v0, $v1
     /* 70D08 80080508 2C00BFAF */  sw         $ra, 0x2C($sp)
   .L8008050C:
-    /* 70D0C 8008050C 0A80013C */  lui        $at, %hi(D_800A11B4)
-    /* 70D10 80080510 B41120AC */  sw         $zero, %lo(D_800A11B4)($at)
+    /* 70D0C 8008050C 0A80013C */  lui        $at, %hi(CD_cbsync)
+    /* 70D10 80080510 B41120AC */  sw         $zero, %lo(CD_cbsync)($at)
     /* 70D14 80080514 01000224 */  addiu      $v0, $zero, 0x1
     /* 70D18 80080518 0B006212 */  beq        $s3, $v0, .L80080548
     /* 70D1C 8008051C 00000000 */   nop
-    /* 70D20 80080520 0A80023C */  lui        $v0, %hi(D_800A11C4)
-    /* 70D24 80080524 C4114290 */  lbu        $v0, %lo(D_800A11C4)($v0)
+    /* 70D20 80080520 0A80023C */  lui        $v0, %hi(CD_status)
+    /* 70D24 80080524 C4114290 */  lbu        $v0, %lo(CD_status)($v0)
     /* 70D28 80080528 00000000 */  nop
     /* 70D2C 8008052C 10004230 */  andi       $v0, $v0, 0x10
     /* 70D30 80080530 05004010 */  beqz       $v0, .L80080548
@@ -49,8 +49,8 @@ glabel CdControlB
     /* 70D70 80080570 0A004014 */  bnez       $v0, .L8008059C
     /* 70D74 80080574 00000000 */   nop
   .L80080578:
-    /* 70D78 80080578 0A80013C */  lui        $at, %hi(D_800A11B4)
-    /* 70D7C 8008057C B41135AC */  sw         $s5, %lo(D_800A11B4)($at)
+    /* 70D78 80080578 0A80013C */  lui        $at, %hi(CD_cbsync)
+    /* 70D7C 8008057C B41135AC */  sw         $s5, %lo(CD_cbsync)($at)
     /* 70D80 80080580 FF008432 */  andi       $a0, $s4, 0xFF
     /* 70D84 80080584 21282002 */  addu       $a1, $s1, $zero
     /* 70D88 80080588 21304002 */  addu       $a2, $s2, $zero
@@ -63,8 +63,8 @@ glabel CdControlB
     /* 70DA0 800805A0 FFFF0224 */  addiu      $v0, $zero, -0x1
     /* 70DA4 800805A4 D9FF0216 */  bne        $s0, $v0, .L8008050C
     /* 70DA8 800805A8 00000000 */   nop
-    /* 70DAC 800805AC 0A80013C */  lui        $at, %hi(D_800A11B4)
-    /* 70DB0 800805B0 B41135AC */  sw         $s5, %lo(D_800A11B4)($at)
+    /* 70DAC 800805AC 0A80013C */  lui        $at, %hi(CD_cbsync)
+    /* 70DB0 800805B0 B41135AC */  sw         $s5, %lo(CD_cbsync)($at)
   .L800805B4:
     /* 70DB4 800805B4 06004014 */  bnez       $v0, .L800805D0
     /* 70DB8 800805B8 21200000 */   addu      $a0, $zero, $zero

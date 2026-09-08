@@ -1,6 +1,6 @@
 glabel _SsVmSeqKeyOff
-    /* 785A0 80087DA0 1080023C */  lui        $v0, %hi(D_80101BCC)
-    /* 785A4 80087DA4 CC1B4290 */  lbu        $v0, %lo(D_80101BCC)($v0)
+    /* 785A0 80087DA0 1080023C */  lui        $v0, %hi(_SsVmMaxVoice)
+    /* 785A4 80087DA4 CC1B4290 */  lbu        $v0, %lo(_SsVmMaxVoice)($v0)
     /* 785A8 80087DA8 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 785AC 80087DAC 1000B0AF */  sw         $s0, 0x10($sp)
     /* 785B0 80087DB0 21800000 */  addu       $s0, $zero, $zero
@@ -28,8 +28,8 @@ glabel _SsVmSeqKeyOff
     /* 78604 80087E04 21200000 */   addu      $a0, $zero, $zero
   .L80087E08:
     /* 78608 80087E08 01001026 */  addiu      $s0, $s0, 0x1
-    /* 7860C 80087E0C 1080033C */  lui        $v1, %hi(D_80101BCC)
-    /* 78610 80087E10 CC1B6390 */  lbu        $v1, %lo(D_80101BCC)($v1)
+    /* 7860C 80087E0C 1080033C */  lui        $v1, %hi(_SsVmMaxVoice)
+    /* 78610 80087E10 CC1B6390 */  lbu        $v1, %lo(_SsVmMaxVoice)($v1)
     /* 78614 80087E14 FF000232 */  andi       $v0, $s0, 0xFF
     /* 78618 80087E18 2B104300 */  sltu       $v0, $v0, $v1
     /* 7861C 80087E1C EBFF4014 */  bnez       $v0, .L80087DCC

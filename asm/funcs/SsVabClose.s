@@ -7,26 +7,26 @@ glabel SsVabClose
     /* 78778 80087F78 1000B0AF */   sw        $s0, 0x10($sp)
     /* 7877C 80087F7C 00140400 */  sll        $v0, $a0, 16
     /* 78780 80087F80 03840200 */  sra        $s0, $v0, 16
-    /* 78784 80087F84 1080013C */  lui        $at, %hi(D_80102A68)
+    /* 78784 80087F84 1080013C */  lui        $at, %hi(_svm_vab_used)
     /* 78788 80087F88 21083000 */  addu       $at, $at, $s0
-    /* 7878C 80087F8C 682A2390 */  lbu        $v1, %lo(D_80102A68)($at)
+    /* 7878C 80087F8C 682A2390 */  lbu        $v1, %lo(_svm_vab_used)($at)
     /* 78790 80087F90 01000224 */  addiu      $v0, $zero, 0x1
     /* 78794 80087F94 0F006214 */  bne        $v1, $v0, .L80087FD4
     /* 78798 80087F98 80101000 */   sll       $v0, $s0, 2
-    /* 7879C 80087F9C 1080013C */  lui        $at, %hi(D_80107810)
+    /* 7879C 80087F9C 1080013C */  lui        $at, %hi(_svm_vab_start)
     /* 787A0 80087FA0 21082200 */  addu       $at, $at, $v0
-    /* 787A4 80087FA4 1078248C */  lw         $a0, %lo(D_80107810)($at)
+    /* 787A4 80087FA4 1078248C */  lw         $a0, %lo(_svm_vab_start)($at)
     /* 787A8 80087FA8 6A26020C */  jal        SpuFree
     /* 787AC 80087FAC 00000000 */   nop
-    /* 787B0 80087FB0 1080013C */  lui        $at, %hi(D_80102A68)
+    /* 787B0 80087FB0 1080013C */  lui        $at, %hi(_svm_vab_used)
     /* 787B4 80087FB4 21083000 */  addu       $at, $at, $s0
-    /* 787B8 80087FB8 682A20A0 */  sb         $zero, %lo(D_80102A68)($at)
-    /* 787BC 80087FBC 1080023C */  lui        $v0, %hi(D_80107808)
-    /* 787C0 80087FC0 08784294 */  lhu        $v0, %lo(D_80107808)($v0)
+    /* 787B8 80087FB8 682A20A0 */  sb         $zero, %lo(_svm_vab_used)($at)
+    /* 787BC 80087FBC 1080023C */  lui        $v0, %hi(_svm_vab_count)
+    /* 787C0 80087FC0 08784294 */  lhu        $v0, %lo(_svm_vab_count)($v0)
     /* 787C4 80087FC4 00000000 */  nop
     /* 787C8 80087FC8 FFFF4224 */  addiu      $v0, $v0, -0x1
-    /* 787CC 80087FCC 1080013C */  lui        $at, %hi(D_80107808)
-    /* 787D0 80087FD0 087822A4 */  sh         $v0, %lo(D_80107808)($at)
+    /* 787CC 80087FCC 1080013C */  lui        $at, %hi(_svm_vab_count)
+    /* 787D0 80087FD0 087822A4 */  sh         $v0, %lo(_svm_vab_count)($at)
   .L80087FD4:
     /* 787D4 80087FD4 1400BF8F */  lw         $ra, 0x14($sp)
     /* 787D8 80087FD8 1000B08F */  lw         $s0, 0x10($sp)

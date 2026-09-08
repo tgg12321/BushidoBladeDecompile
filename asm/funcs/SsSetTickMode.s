@@ -8,21 +8,21 @@ glabel SsSetTickMode
     /* 75D5C 8008555C 00100232 */  andi       $v0, $s0, 0x1000
     /* 75D60 80085560 08004010 */  beqz       $v0, .L80085584
     /* 75D64 80085564 01000224 */   addiu     $v0, $zero, 0x1
-    /* 75D68 80085568 0A80013C */  lui        $at, %hi(D_800A26D0)
-    /* 75D6C 8008556C D02622AC */  sw         $v0, %lo(D_800A26D0)($at)
+    /* 75D68 80085568 0A80013C */  lui        $at, %hi(_snd_seq_tick_env_plus_0x4)
+    /* 75D6C 8008556C D02622AC */  sw         $v0, %lo(_snd_seq_tick_env_plus_0x4)($at)
     /* 75D70 80085570 FF0F0232 */  andi       $v0, $s0, 0xFFF
-    /* 75D74 80085574 0A80013C */  lui        $at, %hi(D_800A26CC)
-    /* 75D78 80085578 CC2622AC */  sw         $v0, %lo(D_800A26CC)($at)
+    /* 75D74 80085574 0A80013C */  lui        $at, %hi(_snd_seq_tick_env)
+    /* 75D78 80085578 CC2622AC */  sw         $v0, %lo(_snd_seq_tick_env)($at)
     /* 75D7C 8008557C 65150208 */  j          .L80085594
     /* 75D80 80085580 00000000 */   nop
   .L80085584:
-    /* 75D84 80085584 0A80013C */  lui        $at, %hi(D_800A26D0)
-    /* 75D88 80085588 D02620AC */  sw         $zero, %lo(D_800A26D0)($at)
-    /* 75D8C 8008558C 0A80013C */  lui        $at, %hi(D_800A26CC)
-    /* 75D90 80085590 CC2630AC */  sw         $s0, %lo(D_800A26CC)($at)
+    /* 75D84 80085584 0A80013C */  lui        $at, %hi(_snd_seq_tick_env_plus_0x4)
+    /* 75D88 80085588 D02620AC */  sw         $zero, %lo(_snd_seq_tick_env_plus_0x4)($at)
+    /* 75D8C 8008558C 0A80013C */  lui        $at, %hi(_snd_seq_tick_env)
+    /* 75D90 80085590 CC2630AC */  sw         $s0, %lo(_snd_seq_tick_env)($at)
   .L80085594:
-    /* 75D94 80085594 0A80033C */  lui        $v1, %hi(D_800A26CC)
-    /* 75D98 80085598 CC26638C */  lw         $v1, %lo(D_800A26CC)($v1)
+    /* 75D94 80085594 0A80033C */  lui        $v1, %hi(_snd_seq_tick_env)
+    /* 75D98 80085598 CC26638C */  lw         $v1, %lo(_snd_seq_tick_env)($v1)
     /* 75D9C 8008559C 00000000 */  nop
     /* 75DA0 800855A0 06006228 */  slti       $v0, $v1, 0x6
     /* 75DA4 800855A4 3B004010 */  beqz       $v0, .L80085694
@@ -37,37 +37,37 @@ glabel SsSetTickMode
     /* 75DC8 800855C8 00000000 */   nop
   jlabel .L800855CC, global
     /* 75DCC 800855CC 32000324 */  addiu      $v1, $zero, 0x32
-    /* 75DD0 800855D0 1080013C */  lui        $at, %hi(D_80104E80)
-    /* 75DD4 800855D4 804E23AC */  sw         $v1, %lo(D_80104E80)($at)
+    /* 75DD0 800855D0 1080013C */  lui        $at, %hi(VBLANK_MINUS)
+    /* 75DD4 800855D4 804E23AC */  sw         $v1, %lo(VBLANK_MINUS)($at)
     /* 75DD8 800855D8 01000224 */  addiu      $v0, $zero, 0x1
     /* 75DDC 800855DC 0B008210 */  beq        $a0, $v0, .L8008560C
     /* 75DE0 800855E0 05000224 */   addiu     $v0, $zero, 0x5
-    /* 75DE4 800855E4 0A80013C */  lui        $at, %hi(D_800A26CC)
-    /* 75DE8 800855E8 CC2623AC */  sw         $v1, %lo(D_800A26CC)($at)
+    /* 75DE4 800855E4 0A80013C */  lui        $at, %hi(_snd_seq_tick_env)
+    /* 75DE8 800855E8 CC2623AC */  sw         $v1, %lo(_snd_seq_tick_env)($at)
     /* 75DEC 800855EC A7150208 */  j          .L8008569C
     /* 75DF0 800855F0 00000000 */   nop
   jlabel .L800855F4, global
     /* 75DF4 800855F4 3C000224 */  addiu      $v0, $zero, 0x3C
-    /* 75DF8 800855F8 1080013C */  lui        $at, %hi(D_80104E80)
-    /* 75DFC 800855FC 804E22AC */  sw         $v0, %lo(D_80104E80)($at)
+    /* 75DF8 800855F8 1080013C */  lui        $at, %hi(VBLANK_MINUS)
+    /* 75DFC 800855FC 804E22AC */  sw         $v0, %lo(VBLANK_MINUS)($at)
     /* 75E00 80085600 02008014 */  bnez       $a0, .L8008560C
     /* 75E04 80085604 00000000 */   nop
     /* 75E08 80085608 05000224 */  addiu      $v0, $zero, 0x5
   .L8008560C:
-    /* 75E0C 8008560C 0A80013C */  lui        $at, %hi(D_800A26CC)
-    /* 75E10 80085610 CC2622AC */  sw         $v0, %lo(D_800A26CC)($at)
+    /* 75E0C 8008560C 0A80013C */  lui        $at, %hi(_snd_seq_tick_env)
+    /* 75E10 80085610 CC2622AC */  sw         $v0, %lo(_snd_seq_tick_env)($at)
     /* 75E14 80085614 A7150208 */  j          .L8008569C
     /* 75E18 80085618 00000000 */   nop
   jlabel .L8008561C
     /* 75E1C 8008561C 78000224 */  addiu      $v0, $zero, 0x78
-    /* 75E20 80085620 1080013C */  lui        $at, %hi(D_80104E80)
-    /* 75E24 80085624 804E22AC */  sw         $v0, %lo(D_80104E80)($at)
+    /* 75E20 80085620 1080013C */  lui        $at, %hi(VBLANK_MINUS)
+    /* 75E24 80085624 804E22AC */  sw         $v0, %lo(VBLANK_MINUS)($at)
     /* 75E28 80085628 A7150208 */  j          .L8008569C
     /* 75E2C 8008562C 00000000 */   nop
   jlabel .L80085630
     /* 75E30 80085630 F0000224 */  addiu      $v0, $zero, 0xF0
-    /* 75E34 80085634 1080013C */  lui        $at, %hi(D_80104E80)
-    /* 75E38 80085638 804E22AC */  sw         $v0, %lo(D_80104E80)($at)
+    /* 75E34 80085634 1080013C */  lui        $at, %hi(VBLANK_MINUS)
+    /* 75E38 80085638 804E22AC */  sw         $v0, %lo(VBLANK_MINUS)($at)
     /* 75E3C 8008563C A7150208 */  j          .L8008569C
     /* 75E40 80085640 00000000 */   nop
   jlabel .L80085644
@@ -84,20 +84,20 @@ glabel SsSetTickMode
     /* 75E68 80085668 3C000224 */   addiu     $v0, $zero, 0x3C
     /* 75E6C 8008566C 32000224 */  addiu      $v0, $zero, 0x32
   .L80085670:
-    /* 75E70 80085670 1080013C */  lui        $at, %hi(D_80104E80)
-    /* 75E74 80085674 804E22AC */  sw         $v0, %lo(D_80104E80)($at)
+    /* 75E70 80085670 1080013C */  lui        $at, %hi(VBLANK_MINUS)
+    /* 75E74 80085674 804E22AC */  sw         $v0, %lo(VBLANK_MINUS)($at)
     /* 75E78 80085678 A7150208 */  j          .L8008569C
     /* 75E7C 8008567C 00000000 */   nop
   .L80085680:
     /* 75E80 80085680 3C000224 */  addiu      $v0, $zero, 0x3C
   .L80085684:
-    /* 75E84 80085684 1080013C */  lui        $at, %hi(D_80104E80)
-    /* 75E88 80085688 804E22AC */  sw         $v0, %lo(D_80104E80)($at)
+    /* 75E84 80085684 1080013C */  lui        $at, %hi(VBLANK_MINUS)
+    /* 75E88 80085688 804E22AC */  sw         $v0, %lo(VBLANK_MINUS)($at)
     /* 75E8C 8008568C A7150208 */  j          .L8008569C
     /* 75E90 80085690 00000000 */   nop
   .L80085694:
-    /* 75E94 80085694 1080013C */  lui        $at, %hi(D_80104E80)
-    /* 75E98 80085698 804E23AC */  sw         $v1, %lo(D_80104E80)($at)
+    /* 75E94 80085694 1080013C */  lui        $at, %hi(VBLANK_MINUS)
+    /* 75E98 80085698 804E23AC */  sw         $v1, %lo(VBLANK_MINUS)($at)
   .L8008569C:
     /* 75E9C 8008569C 1400BF8F */  lw         $ra, 0x14($sp)
     /* 75EA0 800856A0 1000B08F */  lw         $s0, 0x10($sp)

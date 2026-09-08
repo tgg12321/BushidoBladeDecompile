@@ -9,10 +9,10 @@ glabel SpuSetTransferStartAddr
     /* 7B640 8008AE40 1000BFAF */   sw        $ra, 0x10($sp)
     /* 7B644 8008AE44 3524020C */  jal        _spu_FsetRXXa
     /* 7B648 8008AE48 FFFF0424 */   addiu     $a0, $zero, -0x1
-    /* 7B64C 8008AE4C 0A80033C */  lui        $v1, %hi(D_800A2D04)
-    /* 7B650 8008AE50 042D638C */  lw         $v1, %lo(D_800A2D04)($v1)
-    /* 7B654 8008AE54 0A80013C */  lui        $at, %hi(D_800A2CF4)
-    /* 7B658 8008AE58 F42C22A4 */  sh         $v0, %lo(D_800A2CF4)($at)
+    /* 7B64C 8008AE4C 0A80033C */  lui        $v1, %hi(_spu_mem_mode_plus)
+    /* 7B650 8008AE50 042D638C */  lw         $v1, %lo(_spu_mem_mode_plus)($v1)
+    /* 7B654 8008AE54 0A80013C */  lui        $at, %hi(_spu_tsa)
+    /* 7B658 8008AE58 F42C22A4 */  sh         $v0, %lo(_spu_tsa)($at)
     /* 7B65C 8008AE5C FFFF4230 */  andi       $v0, $v0, 0xFFFF
     /* 7B660 8008AE60 9B2B0208 */  j          .L8008AE6C
     /* 7B664 8008AE64 04106200 */   sllv      $v0, $v0, $v1

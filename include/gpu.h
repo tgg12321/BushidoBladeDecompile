@@ -23,7 +23,7 @@ typedef struct {
 } OTag;
 
 /* Named globals */
-extern void (*g_gpu_debug_func)();
+extern void (*GPU_printf)();
 extern u8 g_gpu_debug_level;
 /* PsyQ libgpu device table ("gpu" in the SDK's sys.c): a 0x40-byte struct of
  * function pointers, the object at D_8009BE2C, reached through the pointer
@@ -85,6 +85,6 @@ typedef struct GpuQueueItem {
     /* 0x0C */ s32 data[21];
 } GpuQueueItem; /* size 0x60 */
 
-extern volatile GpuQueueItem D_80103680[64];
+extern volatile GpuQueueItem _que[64];
 
 #endif /* GPU_H */

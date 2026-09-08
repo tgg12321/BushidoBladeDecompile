@@ -82,8 +82,8 @@ glabel ResetGraph
     /* 6B7AC 8007AFAC 00000000 */   nop
     /* 6B7B0 8007AFB0 0180043C */  lui        $a0, %hi(D_80015E7C)
     /* 6B7B4 8007AFB4 7C5E8424 */  addiu      $a0, $a0, %lo(D_80015E7C)
-    /* 6B7B8 8007AFB8 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6B7BC 8007AFBC 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6B7B8 8007AFB8 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6B7BC 8007AFBC 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6B7C0 8007AFC0 00000000 */  nop
     /* 6B7C4 8007AFC4 09F84000 */  jalr       $v0
     /* 6B7C8 8007AFC8 21282002 */   addu      $a1, $s1, $zero

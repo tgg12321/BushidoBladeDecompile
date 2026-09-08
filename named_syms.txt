@@ -33,7 +33,7 @@ syscall_wrapper_break_800164F8 = 0x800164F8;  /* MISNAMED: not a syscall wrapper
 replay_camera_check_stage_80060758 = 0x80060758;  /* MISNAMED: 2-halfword clear of g_text_render_cursor_a/b — Kengo name-unique size collision, not a stage check */
 syscall_wrapper_break_80083698 = 0x80083698;
 g_sin_table = 0x800973FC;
-g_gpu_debug_func = 0x8009BE70;
+/* data-wave 2026-09-07: g_gpu_debug_func = 0x8009BE70 retired; GPU_printf is now object-defined */
 g_gpu_dev_table = 0x8009BE6C;
 g_gpu_type = 0x8009BE74;
 g_gpu_interlace = 0x8009BE75;
@@ -53,11 +53,11 @@ g_gpu_dma_chcr = 0x8009BF54;
 g_gpu_vcount = 0x8009BF8C;
 g_gpu_draw_count = 0x8009BF90;
 g_gpu_color_table = 0x800F189C;
-g_sin_lut_q1 = 0x8009BF94;
+/* data-wave 2026-09-07: g_sin_lut_q1 = 0x8009BF94 retired; rsin_tbl is now object-defined */
 g_sin_lut_q3 = 0x8009AF94;
 g_cos_lut_q2 = 0x8009B794;
 g_cos_lut_q4 = 0x8009A794;
-g_gte_sqrt_table = 0x8009C7A8;
+/* data-wave 2026-09-07: g_gte_sqrt_table = 0x8009C7A8 retired; SQRT is now object-defined */
 g_gte_saved_ra = 0x8009C798;
 g_cd_index_reg = 0x800A147C;
 g_cd_param_fifo = 0x800A1480;
@@ -68,40 +68,40 @@ g_cd_spu_voice = 0x800A1490;
 g_cd_status_a = 0x800A1494;
 g_cd_status_b = 0x800A1495;
 g_cd_status_c = 0x800A1496;
-g_cd_debug_level = 0x800A11C0;
-g_cd_mode = 0x800A11C4;
-g_cd_param = 0x800A11D0;
-g_cd_ready_flag = 0x800A11D4;
-g_cd_ready_flag2 = 0x800A11D5;
-g_cd_callback_a = 0x800A11B4;
-g_cd_callback_b = 0x800A11B8;
+/* data-wave 2026-09-07: g_cd_debug_level = 0x800A11C0 retired; CD_debug is now object-defined */
+/* data-wave 2026-09-07: g_cd_mode = 0x800A11C4 retired; CD_status is now object-defined */
+/* data-wave 2026-09-07: g_cd_param = 0x800A11D0 retired; CD_pos is now object-defined */
+/* data-wave 2026-09-07: g_cd_ready_flag = 0x800A11D4 retired; CD_mode is now object-defined */
+CD_com = 0x800A11D5;  /* data-wave 2026-09-07: was g_cd_ready_flag2 */
+CD_cbsync = 0x800A11B4;  /* data-wave 2026-09-07: was g_cd_callback_a */
+CD_cbready = 0x800A11B8;  /* data-wave 2026-09-07: was g_cd_callback_b */
 g_cd_init_flag = 0x800A11C8;
 g_cd_dma_bcr = 0x800A14B0;
 g_cd_dma_ctrl_b4 = 0x800A14B4;
 g_cd_dma_dest = 0x800A14B8;
 g_cd_dma_size = 0x800A14BC;
 g_cd_dma_ctrl = 0x800A14C0;
-g_cd_cmd_table = 0x800A11DC;
-g_cd_result_table = 0x800A125C;
+CD_comstr = 0x800A11DC;  /* data-wave 2026-09-07: was g_cd_cmd_table */
+CD_intstr = 0x800A125C;  /* data-wave 2026-09-07: was g_cd_result_table */
 g_cd_sector_buf = 0x800A112C;
-g_spu_base_addr = 0x800A2CDC;
+_spu_RXX = 0x800A2CDC;  /* data-wave 2026-09-07: was g_spu_base_addr */
 g_spu_dma_ctrl = 0x800A2CF0;
-g_spu_xfer_addr = 0x800A2CF4;
-g_spu_reverb_mode = 0x800A2CF8;
-g_spu_addr_shift = 0x800A2D04;
+_spu_tsa = 0x800A2CF4;  /* data-wave 2026-09-07: was g_spu_xfer_addr */
+_spu_transMode = 0x800A2CF8;  /* data-wave 2026-09-07: was g_spu_reverb_mode */
+_spu_mem_mode_plus = 0x800A2D04;  /* data-wave 2026-09-07: was g_spu_addr_shift */
 g_spu_busy = 0x800A2D10;
 g_spu_init_flag = 0x800A2D14;
-g_spu_timer = 0x800A2D18;
-g_spu_voice_key_a = 0x800A2D38;
-g_spu_voice_key_b = 0x800A2D3C;
-g_spu_voice_key_c = 0x800A2D40;
-g_snd_init_flag = 0x800A2CD8;
-g_snd_irq_handle = 0x800A2870;
-g_snd_reverb_flag = 0x800A2878;
+_spu_IRQCallback = 0x800A2D18;  /* data-wave 2026-09-07: was g_spu_timer */
+_spu_AllocBlockNum = 0x800A2D38;  /* data-wave 2026-09-07: was g_spu_voice_key_a */
+_spu_AllocLastNum = 0x800A2D3C;  /* data-wave 2026-09-07: was g_spu_voice_key_b */
+_spu_memList = 0x800A2D40;  /* data-wave 2026-09-07: was g_spu_voice_key_c */
+_spu_isCalled = 0x800A2CD8;  /* data-wave 2026-09-07: was g_snd_init_flag */
+_spu_EVdma = 0x800A2870;  /* data-wave 2026-09-07: was g_snd_irq_handle */
+_spu_trans_mode = 0x800A2878;  /* data-wave 2026-09-07: was g_snd_reverb_flag */
 g_snd_callback = 0x800A307C;
-g_snd_ch_status = 0x80102A68;
-g_snd_ch_addr = 0x80107810;
-g_snd_ch_count = 0x80107808;
+_svm_vab_used = 0x80102A68;  /* data-wave 2026-09-07: was g_snd_ch_status */
+_svm_vab_start = 0x80107810;  /* data-wave 2026-09-07: was g_snd_ch_addr */
+_svm_vab_count = 0x80107808;  /* data-wave 2026-09-07: was g_snd_ch_count */
 g_snd_irq_data = 0x80088BA0;
 g_sys_irq_vtable = 0x800A2600;
 g_sys_irq_counter = 0x800A2608;
@@ -109,7 +109,7 @@ g_sys_vblank_count = 0x800A157A;
 g_sys_vsync_mode = 0x800A14CC;
 g_sys_timer = 0x800A1500;
 g_sys_video_mode = 0x800A2664;
-g_sys_dma_region = 0x800A2634;
+Vcount = 0x800A2634;  /* data-wave 2026-09-07: was g_sys_dma_region */
 g_player_ptrs = 0x800A9A10;
 g_player_char_ids = 0x80094B88;
 g_cam_matrix = 0x800EEDB0;
@@ -168,9 +168,9 @@ g_anim_select = 0x800A3238;
 g_anim_counter = 0x800A3382;
 g_char_data = 0x800A6690;
 g_char_setup_tbl = 0x80094E48;
-g_memcard_busy = 0x800FF578;
-g_memcard_slot = 0x80101BCC;
-g_memcard_data = 0x80103600;
+_svm_stereo_mono = 0x800FF578;  /* data-wave 2026-09-07: was g_memcard_busy */
+_SsVmMaxVoice = 0x80101BCC;  /* data-wave 2026-09-07: was g_memcard_slot */
+_svm_auto_kof_mode = 0x80103600;  /* data-wave 2026-09-07: was g_memcard_data */
 g_str_putdrawenv = 0x80015FC4;
 g_str_putdispenv = 0x80015FF8;
 g_str_gpu_timeout = 0x80016010;
@@ -344,7 +344,7 @@ g_palette_base_ptr           = 0x800A378C;  /* base of palette/CLUT table, 4-byt
 /* === Batch 5 data-symbol renames (2026-05-17) -- next 4 highs from rank 31-60 === */
 /* See docs/naming/data_evidence/D_{800A3044,80106F28,800A334C,800A3874}.md */
 g_spu_reg_base_ptr           = 0x800A3044;  /* SPU register block pointer; volatile-u16 +0xA |= 0x20 == channel-control */
-g_seq_bank_table             = 0x80106F28;  /* SEQ bank pointer table; outer = bank id, inner stride 0xB0 == per-channel control block (matches func_8008{5114,5210,5064}) */
+_ss_score             = 0x80106F28;  /* SEQ bank pointer table; outer = bank id, inner stride 0xB0 == per-channel control block (matches func_8008{5114,5210,5064}) */  /* data-wave 2026-09-07: was g_seq_bank_table */
 g_motion_play_countdown      = 0x800A334C;  /* u8 motion-state watchdog; set to 0x5A (90 frames), decremented, gated on `== 0 || (g_seq_active_voice_mask & 0x100010)` */
 g_match_round_index          = 0x800A3874;  /* match-round counter; indexes the round-result table (D_800A377C) and `D_800F65F8/F65F9 + round*2` */
 
@@ -597,14 +597,14 @@ g_text1b_render_arg_cache       = 0x800F1178;  /* cached caller-arg0 in text1b r
 g_replay_attack_pos_x           = 0x80101E3C;  /* X position for replay-camera attack-number selection; paired with D_80101E44 */
 
 /* === Data-symbol batch 8 (2026-05-17) -- 8 highs + 18 mediums === */
-g_alarm_active_sentinel         = 0x800A26DE;  /* 0x7F = alarm armed, 0 = inactive; tested in irq_ProcessPending */
-g_spu_reg_pair                  = 0x800F7420;  /* volatile u16[2] SPU register pair; written by spu_WriteReg16 */
+_snd_seq_tick_env_plus_0x12         = 0x800A26DE;  /* 0x7F = alarm armed, 0 = inactive; tested in irq_ProcessPending */  /* data-wave 2026-09-07: was g_alarm_active_sentinel */
+_spu_RQ                  = 0x800F7420;  /* volatile u16[2] SPU register pair; written by spu_WriteReg16 */  /* data-wave 2026-09-07: was g_spu_reg_pair */
 g_memcard_event_io_complete     = 0x800A37DC;  /* BIOS event handle: class 0xF4000001 mode 4 (memcard I/O complete) */
 g_memcard_event_disconnect      = 0x800A37F0;  /* BIOS event handle: class 0xF4000001 mode 0x8000 (memcard disconnect/error) */
 g_mental_bar_packet_count       = 0x800A37A0;  /* packet-count companion to g_mental_bar_packet_buf at D_800A37A8 (+8 offset) */
 g_pad_analog_frame_counter      = 0x800A3814;  /* halfword incremented per frame in pad_FuncAnalog */
 g_round_frame_counter           = 0x800A3858;  /* match-elapsed-frame counter; centiseconds via (val % 30) * 100 / 30 */
-g_blood_spot_pos                = 0x800A26CC;  /* 12-bit packed position written by SetBloodSpot (paired with g_blood_spot_timer) */
+_snd_seq_tick_env                = 0x800A26CC;  /* 12-bit packed position written by SetBloodSpot (paired with g_blood_spot_timer) */  /* data-wave 2026-09-07: was g_blood_spot_pos */
 
 /* === Data-symbol batches 9-11 (2026-05-17) -- 21 highs landed === */
 /* BIOS memcard event handles (4 modes x 2 classes) -- opened by memcard_event_init */
@@ -620,10 +620,10 @@ g_comb_event_ioer   = 0x800A3738;  /* OpenEvent(HwSIO=0xF000000B, EvSpIOER=0x400
 g_comb_read_fd         = 0x800A3734;  /* open("sio:", O_RDONLY|O_NOWAIT=0x8001) by comb_Init; read by comb_Read8. libcomb serial link, NOT memcard (memcard fd is D_800A3794) */
 g_comb_write_fd         = 0x800A373C;  /* open("sio:", O_WRONLY=2) by comb_Init; written by comb_Write8 */
 /* SPU register / state cluster */
-g_spu_reg_pair_b                = 0x800F7424;  /* volatile u16[2], adjacent to g_spu_reg_pair at 0x800F7420 */
+_spu_RQ_plus_0x4                = 0x800F7424;  /* volatile u16[2], adjacent to g_spu_reg_pair at 0x800F7420 */  /* data-wave 2026-09-07: was g_spu_reg_pair_b */
 g_spu_reg_voice_array           = 0x800F7298;  /* volatile u16[] SPU voice registers */
-g_spu_xfer_mask                 = 0x800A2874;  /* SPU transfer/channel mask; OR'd with bit-masks */
-g_spu_voice_mask                = 0x800A28A0;  /* SPU voice key-on/off mask; bit = (regaddr - 0xC6) >> 1 */
+_spu_keystat                 = 0x800A2874;  /* SPU transfer/channel mask; OR'd with bit-masks */  /* data-wave 2026-09-07: was g_spu_xfer_mask */
+_spu_RQmask                = 0x800A28A0;  /* SPU voice key-on/off mask; bit = (regaddr - 0xC6) >> 1 */  /* data-wave 2026-09-07: was g_spu_voice_mask */
 /* Scratchpad pointer cache (text1b) */
 g_scratchpad_ptr_a4             = 0x800A34E8;  /* points to 0x1F8000A4 (scratchpad RAM) */
 g_scratchpad_ptr_b8             = 0x800A34EC;  /* points to 0x1F8000B8; deref'd as u16* */
@@ -636,7 +636,7 @@ g_motion_ex_counter_p2          = 0x800F0BC4;  /* p2's motion-ex counter (paired
 g_dma_madr_ptr                  = 0x800A263C;  /* pointer to DMA register; (val >> 24) & 0x7F = status read */
 g_vsync_timeout_deadline        = 0x800F19B8;  /* sys_VSync(-1) + 0x3C0 timeout frame number */
 g_panic_msg_format_ptr          = 0x800F19C0;  /* cached pointer to panic format string (&D_80016240) */
-g_alarm_armed_flag              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */
+_snd_seq_tick_env_plus_0x4              = 0x800A26D0;  /* alarm-armed boolean (distinct from g_alarm_active_sentinel at 0x800A26DE) */  /* data-wave 2026-09-07: was g_alarm_armed_flag */
 g_irq_alarm_handle              = 0x800A14E4;  /* volatile alarm handle; -1 = no alarm */
 
 /* === Data-symbol batches 12-14 (2026-05-17) -- 19 highs landed === */
@@ -651,16 +651,16 @@ g_scratchpad_ptr_30             = 0x800A3474;  /* -> 0x1F800030 */
 /* Replay-attack position triple (Y completes the X/Y/Z trio) */
 g_replay_attack_pos_y           = 0x80101E40;  /* Y, computed result[1] + a0[1] */
 /* IRQ alarm callback state */
-g_alarm_callback_ptr            = 0x800A26D8;  /* function-pointer/arg for pending alarm */
-g_alarm_callback_pending        = 0x800A26DC;  /* boolean: alarm callback pending */
+_snd_seq_tick_env_plus_0xC            = 0x800A26D8;  /* function-pointer/arg for pending alarm */  /* data-wave 2026-09-07: was g_alarm_callback_ptr */
+_snd_seq_tick_env_plus_0x10        = 0x800A26DC;  /* boolean: alarm callback pending */  /* data-wave 2026-09-07: was g_alarm_callback_pending */
 /* CDROM callback buffers */
 g_cdrom_callback_buf_a          = 0x800F19A0;  /* 8-byte payload buffer for Callback A */
 g_cdrom_callback_buf_b          = 0x800F19A8;  /* 8-byte payload buffer for Callback B */
 /* text1b render struct: dst_ptr (sibling of buf_ptr at state +0x20) */
 g_text1b_render_dst_ptr         = 0x800A3478;  /* volatile pointer to render state +0x18 */
 /* SPU state additions */
-g_spu_pending_irq_mask          = 0x800A2CD4;  /* SPU IRQ/pending-op mask */
-g_spu_xfer_callback_arg         = 0x800A287C;  /* SPU transfer callback arg cache */
+_spu_env          = 0x800A2CD4;  /* SPU IRQ/pending-op mask */  /* data-wave 2026-09-07: was g_spu_pending_irq_mask */
+_spu_rev_flag         = 0x800A287C;  /* SPU transfer callback arg cache */  /* data-wave 2026-09-07: was g_spu_xfer_callback_arg */
 g_spu_xfer_pending              = 0x800A2D2C;  /* SPU transfer-pending flag */
 /* GPU register pointer + text1a stream cursors */
 g_gpu_stat_reg_ptr              = 0x8009BF64;  /* pointer to GPU status/control register */
@@ -824,7 +824,7 @@ g_replay_frame_offset                                   = 0x80101E74;  /* ref: m
 g_char_state                                            = 0x80101F00;  /* per-character struct base, 1100-byte stride (ref: g_motion_data_base_ptr) */
 g_replay_camera_target_a                                = 0x80101FBC;  /* ref: g_practice_menu_index */
 g_motion_keyframe_table_ptr                             = 0x801027B0;  /* ref: g_motion_data_base_ptr */
-g_blood_spot_timer                                      = 0x80104E80;  /* ref: md_game_check_change_main_mode_default */
+VBLANK_MINUS                                      = 0x80104E80;  /* ref: md_game_check_change_main_mode_default */  /* data-wave 2026-09-07: was g_blood_spot_timer */
 
 /* === Function-medium promotion pass 2 (2026-05-17) -- 30 entries === */
 /* Promotion of function mediums where the body's call-graph + data-refs */
@@ -992,8 +992,8 @@ g_type_descriptor_table_8008EA00                        = 0x8008EA00;  /* 16-byt
 g_status_flag_record_table_80099D88                     = 0x80099D88;  /* 12-byte stride; u16 record indexed by `idx`; bit-tested with 0xBF00 mask */
 
 /* === GPU packet buffer + shadow tables (2026-05-17) === */
-g_gpu_packet_buffer_64x96                               = 0x80103684;  /* 64 entries x 96 bytes; OT-link/packet queue; indexed by D_8009BF78; alias of D_80103680+0x4 (GpuQueueItem.arg, include/gpu.h); retire with _exeque */
-g_gpu_packet_buffer_data_8010368C                       = 0x8010368C;  /* +8 from g_gpu_packet_buffer_64x96; per-entry data start; alias of D_80103680+0xC (GpuQueueItem.data, include/gpu.h); retire with _exeque */
+_que_plus_0x4                               = 0x80103684;  /* 64 entries x 96 bytes; OT-link/packet queue; indexed by D_8009BF78; alias of D_80103680+0x4 (GpuQueueItem.arg, include/gpu.h); retire with _exeque */  /* data-wave 2026-09-07: was g_gpu_packet_buffer_64x96 */
+_que_plus_0xC                       = 0x8010368C;  /* +8 from g_gpu_packet_buffer_64x96; per-entry data start; alias of D_80103680+0xC (GpuQueueItem.data, include/gpu.h); retire with _exeque */  /* data-wave 2026-09-07: was g_gpu_packet_buffer_data_8010368C */
 g_gpu_packet_write_idx                                  = 0x8009BF78;  /* increments by 1 with & 0x3F mask (64 entries) */
 g_gpu_packet_read_idx                                   = 0x8009BF7C;  /* paired with write_idx; equality test for buffer empty */
 g_gpu_packet_pending_target                             = 0x8009BF70;  /* set to arg3 of submit function */
@@ -1011,7 +1011,7 @@ g_record_table_16_800A4750                              = 0x800A4750;  /* 16-byt
 g_irq_handler_block_80081F1C                            = 0x80081F1C;  /* passed to irq_EnableInterrupts as the IRQ handler / context */
 g_seq_start_buffer_8008D9EC                             = 0x8008D9EC;  /* MISNAMED: per-class 0/1 flag byte table (0x00 x12 then 0x01s), chained after g_char_class_id_table[char_id] at 9 src sites (code6cac_b.c:3593+); not a SEQ buffer */
 g_sys_mem_clear_dst_800A2614                            = 0x800A2614;  /* destination buffer for sys_MemClear */
-g_satan0_gauge_data_block_800A28D4                      = 0x800A28D4;  /* passed to saTan0GaugeDraw; gauge data block */
+_spu_zerobuf                      = 0x800A28D4;  /* passed to saTan0GaugeDraw; gauge data block */  /* data-wave 2026-09-07: was g_satan0_gauge_data_block_800A28D4 */
 g_comb_recv_buf                                 = 0x800A3688;  /* 8-byte link-cable receive buffer: read(g_comb_read_fd, here, 8) in comb_Read8; checksum-verified by comb_WaitRead8 */
 g_comb_send_buf                                = 0x800A3698;  /* 8-byte link-cable send buffer: write(g_comb_write_fd, here, 8) in comb_Write8; packed by func_8003A728 */
 g_sys_int_rp_table                                      = 0x800F1838;  /* passed to bios_SysDeqIntRP; interrupt routine pointer table */
@@ -1195,8 +1195,8 @@ g_snd_wave_output_table                                 = 0x800EF59C;  /* 9 chan
 g_spu_ctrl_reg_ptr                                      = 0x800A2CEC;  /* pointer to SPU control register; *D_800A2CEC |= 0xB0000 turns on capture/transfer bits */
 g_spu_init_const_a                                      = 0x800A2D00;  /* SPU init constant = 2 (paired with g_spu_addr_shift=3) */
 g_spu_init_const_c                                      = 0x800A2D08;  /* SPU init constant = 8 */
-g_spu_init_mask                                         = 0x800A2D0C;  /* SPU init mask = 7 (3 bits); used as `& ~D_800A2D0C` to round-down */
-g_spu_init_reg_D1_val                                   = 0x800A2D44;  /* default value written to SPU register 0xD1 via spu_WriteReg */
+_spu_mem_mode_unitM                                         = 0x800A2D0C;  /* SPU init mask = 7 (3 bits); used as `& ~D_800A2D0C` to round-down */  /* data-wave 2026-09-07: was g_spu_init_mask */
+_spu_rev_startaddr                                   = 0x800A2D44;  /* default value written to SPU register 0xD1 via spu_WriteReg */  /* data-wave 2026-09-07: was g_spu_init_reg_D1_val */
 
 /* === Stage lighting + collision (2026-05-17) -- 5 highs === */
 /* From config.c stage_ClearLighting / stage_ApplyLighting: there are */
@@ -1238,7 +1238,6 @@ irq_vsync_register_callback                             = 0x80083370;  /* regist
 irq_cdrom_handler                                       = 0x80083418;  /* IRQ 3 CD-ROM handler: reads (*g_irq_cdrom_ctrl_reg_ptr >> 24) & 0x7F status bits */
 irq_cdrom_register_callback                             = 0x8008359C;  /* registrar companion to irq_cdrom_handler */
 g_irq_vsync_callbacks                                   = 0x800A2614;  /* 8 x s32 callback slots dispatched by irq_vsync_handler */
-g_irq_vsync_counter                                     = 0x800A2634;  /* volatile s32 vsync tick counter (++D in handler) */
 g_irq_vsync_ctrl_reg_ptr                                = 0x800A2638;  /* pointer to vsync IRQ control register (set to 0x107 in vsync init) */
 g_irq_cdrom_callbacks                                   = 0x800A2640;  /* 8 x s32 callback slots for CD-ROM IRQ; cleared by sys_MemClear2(&D, 8) */
 g_irq_cdrom_ctrl_reg_ptr                                = 0x800A263C;  /* pointer to CD-ROM IRQ control/status register */
@@ -1260,7 +1259,7 @@ g_pad_input_combined                                    = 0x80102794;  /* combin
 /* From display.c around lines 880-960.  Additional fields of the GPU */
 /* packet-submission flow that wasn't fully named.  Complement existing */
 /* g_gpu_packet_buffer_64x96 / g_gpu_packet_write_idx / etc. */
-g_gpu_packet_queue_base                                 = 0x80103680;  /* function-pointer field (offset 0) of each 0x60-byte slot in the 64-slot queue; paired with g_gpu_packet_buffer_64x96 (+4) */
+_que                                 = 0x80103680;  /* function-pointer field (offset 0) of each 0x60-byte slot in the 64-slot queue; paired with g_gpu_packet_buffer_64x96 (+4) */  /* data-wave 2026-09-07: was g_gpu_packet_queue_base */
 g_gpu_packet_pending_fn                                 = 0x8009BF68;  /* saved arg0 (callback fn) from last GPU-packet submit */
 g_gpu_packet_pending_arg1                               = 0x8009BF6C;  /* saved arg1 from last GPU-packet submit */
 g_gpu_motion_save_a                                     = 0x8009BF80;  /* motion_make_table(0) state saved during async draw */
@@ -1533,10 +1532,10 @@ g_gte_back_color_c_r                                    = 0x800F64B8;  /* effect
 /* From main.c AddTbpOfst (line 1181): looks up texture metadata for an */
 /* animated sprite associated with a sound channel (D_80102A68 = */
 /* g_snd_ch_status, 16 channels max).  Three parallel per-channel tables. */
-g_snd_ch_texture_base_ptr                               = 0x800F6660;  /* per-channel base ptr to texture data */
-g_snd_ch_texture_tpage                                  = 0x800F66B8;  /* per-channel TPage/u32 value */
-g_snd_ch_texture_meta_ptr                               = 0x800F6700;  /* per-channel secondary ptr */
-g_snd_ch_texture_max_frame                              = 0x800FF634;  /* max frame offset (compared against arg) */
+_svm_vab_pg                               = 0x800F6660;  /* per-channel base ptr to texture data */  /* data-wave 2026-09-07: was g_snd_ch_texture_base_ptr */
+_svm_vab_vh                                  = 0x800F66B8;  /* per-channel TPage/u32 value */  /* data-wave 2026-09-07: was g_snd_ch_texture_tpage */
+_svm_vab_tn                               = 0x800F6700;  /* per-channel secondary ptr */  /* data-wave 2026-09-07: was g_snd_ch_texture_meta_ptr */
+kMaxPrograms                              = 0x800FF634;  /* max frame offset (compared against arg) */  /* data-wave 2026-09-07: was g_snd_ch_texture_max_frame */
 
 /* === Leaf/foliage placement cluster (2026-05-17) -- 8 highs === */
 /* From code6cac_b.c mk_leaf_newpos (line 3388): places 6 leaves per */
@@ -1677,8 +1676,8 @@ g_stage_id_arg                                          = 0x800A3228;  /* stage 
 /* arg0" tracker; D_800A2884 caches g_spu_init_reg_D1_val and is used */
 /* as `(0x10000 - D_800A2884) << g_spu_addr_shift` to compute the */
 /* shift_val applied to incoming alloc requests. */
-g_spu_voice_alloc_current_a0                            = 0x800A2880;  /* current allocator a0 (0 = none); compared against incoming alloc requests */
-g_spu_voice_alloc_offset                                = 0x800A2884;  /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */
+_spu_rev_reserve_wa                            = 0x800A2880;  /* current allocator a0 (0 = none); compared against incoming alloc requests */  /* data-wave 2026-09-07: was g_spu_voice_alloc_current_a0 */
+_spu_rev_offsetaddr                                = 0x800A2884;  /* offset for voice-address calc; (0x10000 - D) << g_spu_addr_shift */  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset */
 
 /* === Sound subsystem misc state (2026-05-17) -- 6 highs === */
 g_snd_cached_bgm_arg                                    = 0x800A3248;  /* memoization cache for snd_PlayBgm helper -- skip re-init if arg matches */
@@ -1920,10 +1919,10 @@ g_practice_round_active_flag                            = 0x800A38A8;  /* set to
 /* From main.c func_80085E4C/EE4: command buffer passed to */
 /* AllocBukiRmd_80089F3C ("buki" = weapon).  Different cmd IDs (1, 6) */
 /* are dispatched with different arg layouts. */
-g_buki_cmd_buf_id                                       = 0x800F5750;  /* command ID (1 = pos input, 6 = analog xy) */
-g_buki_cmd_buf_arg                                      = 0x800F5754;  /* s32 arg (varies by cmd) */
-g_buki_cmd_buf_x                                        = 0x800F5758;  /* s16 X (scaled from pad -127..127 to -32767..32767) */
-g_buki_cmd_buf_y                                        = 0x800F575A;  /* s16 Y */
+_svm_rattr                                       = 0x800F5750;  /* command ID (1 = pos input, 6 = analog xy) */  /* data-wave 2026-09-07: was g_buki_cmd_buf_id */
+_svm_rattr_plus_0x4                                      = 0x800F5754;  /* s32 arg (varies by cmd) */  /* data-wave 2026-09-07: was g_buki_cmd_buf_arg */
+_svm_rattr_plus_0x8                                        = 0x800F5758;  /* s16 X (scaled from pad -127..127 to -32767..32767) */  /* data-wave 2026-09-07: was g_buki_cmd_buf_x */
+_svm_rattr_plus_0xA                                        = 0x800F575A;  /* s16 Y */  /* data-wave 2026-09-07: was g_buki_cmd_buf_y */
 
 /* === Weapon frame selection state (2026-05-17) -- 6 highs === */
 /* From main.c around line 954-984: weapon-frame selection logic. */
@@ -1933,8 +1932,8 @@ g_buki_cmd_buf_y                                        = 0x800F575A;  /* s16 Y 
 g_weapon_frame_idx                                      = 0x8010280A;  /* current weapon-frame index */
 g_weapon_frame_cursor                                   = 0x8010280C;  /* derived cursor (= idx * 8) */
 g_weapon_frame_packed_pos                               = 0x8010280E;  /* packed (col + row << 4) */
-g_weapon_frame_row                                      = 0x801027F7;  /* row coord 0..15 */
-g_weapon_frame_col                                      = 0x801027FC;  /* col coord 0..15 */
+_svm_cur_plus_0x7                                      = 0x801027F7;  /* row coord 0..15 */  /* data-wave 2026-09-07: was g_weapon_frame_row */
+_svm_cur_plus_0xC                                      = 0x801027FC;  /* col coord 0..15 */  /* data-wave 2026-09-07: was g_weapon_frame_col */
 g_weapon_frame_player_flag                              = 0x80102808;  /* player select (& 1 for parity-indexed lookup) */
 
 /* === saTan1 gauge init + secondary motion flags (2026-05-17) -- 7 highs === */
@@ -2272,7 +2271,7 @@ g_spu_dma_bcr_reg_ptr                                   = 0x800A2CE4;  /* pointe
 g_spu_dma_chcr_reg_ptr                                  = 0x800A2CE8;  /* pointer to SPU DMA CHCR register (channel control) */
 
 /* === Weapon frame data base + Y-offset (2026-05-17) -- 2 highs === */
-g_weapon_frame_data_base                                = 0x80101BC8;  /* base ptr to weapon frame data; addressed as (row*16 + col)*32 + base (= 32-byte cell stride) */
+_svm_tn                                = 0x80101BC8;  /* base ptr to weapon frame data; addressed as (row*16 + col)*32 + base (= 32-byte cell stride) */  /* data-wave 2026-09-07: was g_weapon_frame_data_base */
 g_weapon_frame_y_offset                                 = 0x800F66F8;  /* Y-offset added to *(u16*)(base + 0x12); reset to 0 by spu_ResetCounter (likely misnamed; actually wave/frame offset reset) */
 
 /* === Attack scale factor extensions + effect slot field+2 (2026-05-17) -- 5 highs === */
@@ -2380,10 +2379,10 @@ g_cd_status_c_plus_2                                    = 0x800A1498;  /* +2 fro
 g_sys_irq_vtable_plus_4                                 = 0x800A2604;  /* +4 from g_sys_irq_vtable (0x800A2600) */
 g_sys_irq_counter_plus_4                                = 0x800A260C;  /* +4 from g_sys_irq_counter (0x800A2608) */
 g_alarm_secondary_cb_ptr                               = 0x800A26D4;  /* +4 from g_alarm_armed_flag (0x800A26D0) */
-g_alarm_callback_pending_plus_1                         = 0x800A26DD;
+_snd_seq_tick_env_plus_0x11                         = 0x800A26DD;  /* data-wave 2026-09-07: was g_alarm_callback_pending_plus_1 */
 g_alarm_pending_priority_flag    = 0x800A26E0;  /* one-shot deferred-priority flag used by IRQ alabel D_80083F1C */  /* +1 from g_alarm_callback_pending (0x800A26DC) */
 g_alarm_active_sentinel_plus_6                          = 0x800A26E4;  /* +6 from g_alarm_active_sentinel (0x800A26DE) */
-g_spu_voice_alloc_offset_plus_8                         = 0x800A288C;  /* +8 from g_spu_voice_alloc_offset (0x800A2884) */
+_spu_rev_attr_plus_0x4                         = 0x800A288C;  /* +8 from g_spu_voice_alloc_offset (0x800A2884) */  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset_plus_8 */
 g_spu_timer_plus_4                                      = 0x800A2D1C;  /* +4 from g_spu_timer (0x800A2D18) */
 g_str_gn_bbm_800A3124_plus_8                            = 0x800A312C;  /* +8 from g_str_gn_bbm_800A3124 (0x800A3124) */
 g_damage_debug_enabled_plus_4                           = 0x800A3200;  /* +4 from g_damage_debug_enabled (0x800A31FC) */
@@ -2546,7 +2545,7 @@ g_status_up_data_buf_plus_4                             = 0x801027C0;  /* +4 fro
 g_voice_slot_24_arr_b_plus_4                            = 0x80102A7E;  /* +4 from g_voice_slot_24_arr_b (0x80102A7A) */
 g_voice_slot_24_arr_b_plus_6                            = 0x80102A80;  /* +6 from g_voice_slot_24_arr_b (0x80102A7A) */
 g_voice_slot_24_arr_b_plus_8                            = 0x80102A82;  /* +8 from g_voice_slot_24_arr_b (0x80102A7A) */
-g_gpu_packet_buffer_64x96_plus_4                        = 0x80103688;  /* +4 from g_gpu_packet_buffer_64x96 (0x80103684); alias of D_80103680+0x8 (GpuQueueItem.count, include/gpu.h); retire with _exeque */
+_que_plus_0x8                        = 0x80103688;  /* +4 from g_gpu_packet_buffer_64x96 (0x80103684); alias of D_80103680+0x8 (GpuQueueItem.count, include/gpu.h); retire with _exeque */  /* data-wave 2026-09-07: was g_gpu_packet_buffer_64x96_plus_4 */
 g_file_disc_type_plus_4                                 = 0x80106A58;  /* +4 from g_file_disc_type (0x80106A54) */
 g_file_flags_plus_5                                     = 0x80106A78;  /* +5 from g_file_flags (0x80106A73) */
 g_active_slot_flags_12_plus_2                           = 0x80106A82;  /* +2 from g_active_slot_flags_12 (0x80106A80) */
@@ -2557,14 +2556,14 @@ g_active_slot_flags_12_plus_2                           = 0x80106A82;  /* +2 fro
 g_practice_menu_table_p2                                = 0x80102314;  /* P2 of g_practice_menu_table (P1 = 0x80101EC8) */
 g_char_world_pos_x_p2                                   = 0x801023EC;  /* P2 of g_char_world_pos_x (P1 = 0x80101FA0) */
 g_char_world_pos_z_p2                                   = 0x801023F4;  /* P2 of g_char_world_pos_z (P1 = 0x80101FA8) */
-g_char_curr_keyframe_idx_p3                             = 0x801027E4;  /* P3 of g_char_curr_keyframe_idx (P1 = 0x80101F4C) */
+_snd_openflag                             = 0x801027E4;  /* P3 of g_char_curr_keyframe_idx (P1 = 0x80101F4C) */  /* data-wave 2026-09-07: was g_char_curr_keyframe_idx_p3 */
 
 /* === Tier 3 batch: high-ref (>=5) unnamed addresses (2026-05-17) === */
 /* 53 addresses, pattern-based naming for motion-ex */
 /* state/flag/counter extensions + generic g_high_ref_<addr> fallback */
 g_text1b_state_4bit_BD38                                     = 0x8009BD38;  /* 5 refs */
-g_trig_sin_cos_table_packed                                     = 0x8009C928;  /* 36 refs */
-g_main_flags_bitmask_reg                                     = 0x800A289C;  /* 5 refs */
+/* data-wave 2026-09-07: g_trig_sin_cos_table_packed = 0x8009C928 retired; rcossin_tbl is now object-defined */
+_spu_RQvoice                                     = 0x800A289C;  /* 5 refs */  /* data-wave 2026-09-07: was g_main_flags_bitmask_reg */
 g_text1b_pad_state_arr                                     = 0x800A35D0;  /* 5 refs */
 g_text1b_ot_prim_cursor                                     = 0x800A36E0;  /* 5 refs */
 g_disp_state_buf_cursor                                     = 0x800A36EC;  /* 5 refs */
@@ -2614,7 +2613,7 @@ g_motion_state_flag_at_26                               = 0x800F1138;  /* 5 refs
 g_text1b_gte_rgb_lookup_1024                                     = 0x800F2B70;  /* 10 refs */
 g_disp_state_buf                                     = 0x800F33D8;  /* 16 refs */
 g_camera_view_state                                     = 0x800FF558;  /* 8 refs */
-g_voice_state_ptr                                     = 0x800FF6A0;  /* 5 refs */
+_svm_pg                                     = 0x800FF6A0;  /* 5 refs */  /* data-wave 2026-09-07: was g_voice_state_ptr */
 
 /* === Bulk text1b/text1b_b unnamed batch (2026-05-17) === */
 /* 177 addresses, pattern-based naming: */
@@ -2857,10 +2856,10 @@ g_ings2_s32_buf_a15B4                                        = 0x800A15B4;
 g_ings2_s32_ptr_a2660                                        = 0x800A2660;
 g_ings2_u16_buf_a269C                                        = 0x800A269C;
 g_ings2_addr_800A26AC                                        = 0x800A26AC;
-g_spu_voice_alloc_offset_plus_8_plus_4                       = 0x800A2890;
-g_spu_voice_alloc_offset_plus_8_plus_6                       = 0x800A2892;
-g_spu_voice_alloc_offset_plus_8_plus_8                       = 0x800A2894;
-g_spu_voice_alloc_offset_plus_8_plus_12                      = 0x800A2898;
+_spu_rev_attr_plus_0x8                       = 0x800A2890;  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset_plus_8_plus_4 */
+_spu_rev_attr_plus_0xA                       = 0x800A2892;  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset_plus_8_plus_6 */
+_spu_rev_attr_plus_0xC                       = 0x800A2894;  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset_plus_8_plus_8 */
+_spu_rev_attr_plus_0x10                      = 0x800A2898;  /* data-wave 2026-09-07: was g_spu_voice_alloc_offset_plus_8_plus_12 */
 g_main_u16_base_A28D2                                         = 0x800A28D2;
 g_char_pose_id_p2_plus_15                                    = 0x800A310C;
 g_str_gn_bbm_800A3124_plus_8_plus_8                          = 0x800A3134;
@@ -2903,9 +2902,9 @@ g_gte_color_matrix_data_plus_6_plus_6                        = 0x800F6324;
 g_gte_color_matrix_data_b_plus_6_plus_6                      = 0x800F6384;
 g_text1a_value_12bit_F6460                                       = 0x800F6460;
 g_gte_color_matrix_data_c_plus_6_plus_6                      = 0x800F64A4;
-g_ings2_counter_FF630                                        = 0x800FF630;
+_snd_ev_flag                                        = 0x800FF630;  /* data-wave 2026-09-07: was g_ings2_counter_FF630 */
 g_voice_state_ptr_plus_8                                   = 0x800FF6A8;
-g_main_value_101BC4                                         = 0x80101BC4;
+_svm_vh                                         = 0x80101BC4;  /* data-wave 2026-09-07: was g_main_value_101BC4 */
 g_slot_array_16x256_80101BF0                               = 0x80101BF0;
 g_c6cb2_field_E59_arg1_save                                  = 0x80101E59;
 g_c6cb2_state_E5C                                  = 0x80101E5C;
@@ -2945,14 +2944,14 @@ g_char_p2_field_AD                                           = 0x801023C1;
 g_char_p2_field_31A                                          = 0x8010262E;
 g_practice_halfword_table_plus_8_plus_8                      = 0x80102770;
 g_char_p3_field_74                                           = 0x801027D4;
-g_char_curr_keyframe_idx_p3_plus_13                          = 0x801027F1;
-g_char_p3_field_96                                           = 0x801027F6;
+_svm_cur_plus_0x1                          = 0x801027F1;  /* data-wave 2026-09-07: was g_char_curr_keyframe_idx_p3_plus_13 */
+_svm_cur_plus_0x6                                           = 0x801027F6;  /* data-wave 2026-09-07: was g_char_p3_field_96 */
 g_weapon_frame_col_plus_10                                   = 0x80102806;
 g_char_p6_field_23A                                          = 0x8010367E;
-g_char_p19_field_388                                         = 0x80106FA8;
+_SsMarkCallback                                         = 0x80106FA8;  /* data-wave 2026-09-07: was g_char_p19_field_388 */
 g_char_p21_field_2F7                                         = 0x801077AF;
 g_practice_byte_table_plus_10                                = 0x801077BA;
-g_char_p21_field_310                                         = 0x801077C8;
+_svm_vab_total                                         = 0x801077C8;  /* data-wave 2026-09-07: was g_char_p21_field_310 */
 g_char_p21_field_3E0                                         = 0x80107898;
 g_char_p21_field_420                                         = 0x801078D8;
 g_char_p21_field_422                                         = 0x801078DA;
@@ -3168,14 +3167,14 @@ g_gpu_color_table_field_4_800F1860                 = 0x800F1860;  /* 8 refs; +4 
 g_gpu_color_table_field_8_800F1864                 = 0x800F1864;  /* 8 refs; +4 stride */
 g_gpu_color_table_field_12_800F1868                = 0x800F1868;  /* 8 refs; +4 stride */
 g_gpu_color_table_field_16_800F186C                = 0x800F186C;  /* 8 refs; +4 final field of 5-field cluster */
-g_char_p3_byte_f2_801027F2                         = 0x801027F2;  /* 6 refs; per-char-struct byte field at +0xF2 */
+_svm_cur_plus_0x2                         = 0x801027F2;  /* 6 refs; per-char-struct byte field at +0xF2 */  /* data-wave 2026-09-07: was g_char_p3_byte_f2_801027F2 */
 g_char_p3_byte_f4_801027F4                         = 0x801027F4;  /* 6 refs; +2 stride */
 g_char_p3_byte_f5_801027F5                         = 0x801027F5;  /* 6 refs; +1 stride */
 g_char_p3_byte_fa_801027FA                         = 0x801027FA;  /* 6 refs; +5 from _f5 */
 g_char_p3_byte_fb_801027FB                         = 0x801027FB;  /* 6 refs; +1 stride */
 g_char_p3_byte_fd_801027FD                         = 0x801027FD;  /* 6 refs; +2 stride */
 g_char_p3_byte_fe_801027FE                         = 0x801027FE;  /* 6 refs; +1 stride */
-g_pair_state_a_80102800                            = 0x80102800;  /* 6 refs; +4 pair with 0x80102804 */
+_svm_cur_plus_0x10                            = 0x80102800;  /* 6 refs; +4 pair with 0x80102804 */  /* data-wave 2026-09-07: was g_pair_state_a_80102800 */
 g_pair_state_b_80102804                            = 0x80102804;  /* 6 refs; +4 companion */
 
 /* === MISNOMERS pass 9 replacement aliases (2026-05-18 high-conf audit) === */

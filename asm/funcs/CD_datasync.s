@@ -8,12 +8,12 @@ glabel CD_datasync
     /* 723C8 80081BC8 1C00B1AF */  sw         $s1, 0x1C($sp)
     /* 723CC 80081BCC 330A020C */  jal        VSync
     /* 723D0 80081BD0 1800B0AF */   sw        $s0, 0x18($sp)
-    /* 723D4 80081BD4 0A80133C */  lui        $s3, %hi(D_800A11DC)
-    /* 723D8 80081BD8 DC117326 */  addiu      $s3, $s3, %lo(D_800A11DC)
+    /* 723D4 80081BD4 0A80133C */  lui        $s3, %hi(CD_comstr)
+    /* 723D8 80081BD8 DC117326 */  addiu      $s3, $s3, %lo(CD_comstr)
     /* 723DC 80081BDC 0A80113C */  lui        $s1, %hi(D_800A1494)
     /* 723E0 80081BE0 94143126 */  addiu      $s1, $s1, %lo(D_800A1494)
-    /* 723E4 80081BE4 0A80103C */  lui        $s0, %hi(D_800A125C)
-    /* 723E8 80081BE8 5C121026 */  addiu      $s0, $s0, %lo(D_800A125C)
+    /* 723E4 80081BE4 0A80103C */  lui        $s0, %hi(CD_intstr)
+    /* 723E8 80081BE8 5C121026 */  addiu      $s0, $s0, %lo(CD_intstr)
     /* 723EC 80081BEC C0034224 */  addiu      $v0, $v0, 0x3C0
     /* 723F0 80081BF0 0F80013C */  lui        $at, %hi(D_800F19B8)
     /* 723F4 80081BF4 B81922AC */  sw         $v0, %lo(D_800F19B8)($at)
@@ -55,8 +55,8 @@ glabel CD_datasync
     /* 7247C 80081C7C 21105000 */  addu       $v0, $v0, $s0
     /* 72480 80081C80 80200400 */  sll        $a0, $a0, 2
     /* 72484 80081C84 0000438C */  lw         $v1, 0x0($v0)
-    /* 72488 80081C88 0A80023C */  lui        $v0, %hi(D_800A11D5)
-    /* 7248C 80081C8C D5114290 */  lbu        $v0, %lo(D_800A11D5)($v0)
+    /* 72488 80081C88 0A80023C */  lui        $v0, %hi(CD_com)
+    /* 7248C 80081C8C D5114290 */  lbu        $v0, %lo(CD_com)($v0)
     /* 72490 80081C90 21209000 */  addu       $a0, $a0, $s0
     /* 72494 80081C94 80100200 */  sll        $v0, $v0, 2
     /* 72498 80081C98 21105300 */  addu       $v0, $v0, $s3

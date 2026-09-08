@@ -7,8 +7,8 @@ glabel DrawSyncCallback
     /* 6BA58 8007B258 0200422C */  sltiu      $v0, $v0, 0x2
     /* 6BA5C 8007B25C 07004014 */  bnez       $v0, .L8007B27C
     /* 6BA60 8007B260 1400BFAF */   sw        $ra, 0x14($sp)
-    /* 6BA64 8007B264 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6BA68 8007B268 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6BA64 8007B264 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6BA68 8007B268 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6BA6C 8007B26C 0180043C */  lui        $a0, %hi(D_80015EE8)
     /* 6BA70 8007B270 E85E8424 */  addiu      $a0, $a0, %lo(D_80015EE8)
     /* 6BA74 8007B274 09F84000 */  jalr       $v0

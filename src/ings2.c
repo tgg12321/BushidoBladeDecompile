@@ -13,7 +13,7 @@ extern s32 g_sys_video_mode;
 extern u16 g_sys_vblank_count;
 extern u16 *g_sys_irq_counter;
 extern s32 *g_sys_irq_vtable;
-extern volatile s32 g_sys_dma_region;
+extern volatile s32 Vcount;
 extern void SpuSetCommonAttr(s32 *);
 
 /* --- Functions 0x8008289C - 0x80083BE4 --- */
@@ -64,7 +64,7 @@ s32 VSync(s32 a0) {
     s1_val = (*D_800A1514 - D_800A1518) & 0xFFFF;
 
     if (a0 < 0) {
-        return g_sys_dma_region;
+        return Vcount;
     }
     if (a0 == 1) {
         return s1_val;
@@ -88,7 +88,7 @@ s32 VSync(s32 a0) {
     }
 
     s0_val = *D_800A1510;
-    v_wait(g_sys_dma_region + 1, 1);
+    v_wait(Vcount + 1, 1);
 
     if (s0_val & 0x400000) {
         volatile s32 *ptr = D_800A1510;
@@ -98,7 +98,7 @@ s32 VSync(s32 a0) {
         }
     }
 
-    D_800A151C = g_sys_dma_region;
+    D_800A151C = Vcount;
     D_800A1518 = *D_800A1514;
 
     return s1_val;
@@ -117,7 +117,7 @@ void v_wait(s32 a0, s32 a1) {
     volatile s32 timeout[2];
 
     timeout[0] = a1 << 0xF;
-    while (g_sys_dma_region < a0) {
+    while (Vcount < a0) {
         if (timeout[0]-- == 0) {
             puts(&D_80016318);
             ChangeClearPAD(0);
@@ -454,7 +454,7 @@ __asm__(
     "    .set at\n"
 );
 extern s32 D_800A2614[8];
-extern volatile s32 D_800A2634;
+extern volatile s32 Vcount;
 extern s32 *D_800A2638;
 
 void D_800832F8(void);
@@ -462,7 +462,7 @@ void D_80083370(s32, s32);
 
 s32 startIntrVSync(void) {
     *D_800A2638 = 0x107;
-    D_800A2634 = 0;
+    Vcount = 0;
     sys_MemClear(&D_800A2614[0], 8);
     ((void (*)(s32, void *))InterruptCallback)(0, (void *)D_800832F8);
     return (s32)D_80083370;
@@ -472,7 +472,7 @@ void D_800832F8(void) {
     s32 i;
     s32 *p;
 
-    ++D_800A2634;
+    ++Vcount;
 
     i = 0;
     p = &D_800A2614[0];
@@ -677,34 +677,34 @@ __asm__(
     "    .set reorder\n"
     "    .set at\n"
 );
-extern s32 D_800A26D0;
-extern u8 D_800A26DD;
-extern u8 D_800A26DE;
-extern u8 D_800A26DC;
-extern s32 D_800A26D8;
+extern s32 _snd_seq_tick_env_plus_0x4;
+extern u8 _snd_seq_tick_env_plus_0x11;
+extern u8 _snd_seq_tick_env_plus_0x12;
+extern u8 _snd_seq_tick_env_plus_0x10;
+extern s32 _snd_seq_tick_env_plus_0xC;
 extern void EnterCriticalSection(void);
 extern void ExitCriticalSection(void);
 
 void SsEnd(void) {
-    if (D_800A26D0 != 0) {
+    if (_snd_seq_tick_env_plus_0x4 != 0) {
         return;
     }
-    D_800A26DD = 0;
-    if (D_800A26DE == 0x7F) {
+    _snd_seq_tick_env_plus_0x11 = 0;
+    if (_snd_seq_tick_env_plus_0x12 == 0x7F) {
         return;
     }
     EnterCriticalSection();
-    if (D_800A26DC != 0) {
+    if (_snd_seq_tick_env_plus_0x10 != 0) {
         VSyncCallback(0);
-        D_800A26DC = 0;
-    } else if (D_800A26DE == 0) {
-        ((void (*)(s32, s32))InterruptCallback)(0, D_800A26D8);
-        D_800A26D8 = 0;
+        _snd_seq_tick_env_plus_0x10 = 0;
+    } else if (_snd_seq_tick_env_plus_0x12 == 0) {
+        ((void (*)(s32, s32))InterruptCallback)(0, _snd_seq_tick_env_plus_0xC);
+        _snd_seq_tick_env_plus_0xC = 0;
     } else {
         ((void (*)(s32, s32))InterruptCallback)(6, 0);
     }
     ExitCriticalSection();
-    D_800A26DE = 0x7F;
+    _snd_seq_tick_env_plus_0x12 = 0x7F;
 }
 
 void SsInit(void) {
@@ -715,10 +715,10 @@ void SsInit(void) {
 
 extern u16 D_800A269C;
 extern u16 D_800A26AC;
-extern s32 D_80106FA8[32][16];
-extern s32 D_80104E80;
-extern s32 D_801027E4;
-extern s32 D_800FF630;
+extern s32 _SsMarkCallback[32][16];
+extern s32 VBLANK_MINUS;
+extern s32 _snd_openflag;
+extern s32 _snd_ev_flag;
 extern void _SsVmInit(s32);
 
 /* PsyQ 4.0 LIBSND ssinit: _SsInit — verbatim-linked Sony object (census
@@ -743,13 +743,13 @@ void _SsInit(void) {
 
     for (j = 0; j < 32; j++) {
         for (i = 0; i < 16; i++) {
-            D_80106FA8[j][i] = 0;
+            _SsMarkCallback[j][i] = 0;
         }
     }
 
-    D_80104E80 = 60;
-    D_801027E4 = 0;
-    D_800FF630 = 0;
+    VBLANK_MINUS = 60;
+    _snd_openflag = 0;
+    _snd_ev_flag = 0;
 }
 
 void SsQuit(void) {

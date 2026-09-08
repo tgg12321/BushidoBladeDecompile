@@ -14,8 +14,8 @@ glabel SetGraphQueue
     /* 6B9A8 8007B1A8 21808000 */   addu      $s0, $a0, $zero
     /* 6B9AC 8007B1AC 0180043C */  lui        $a0, %hi(D_80015ED4)
     /* 6B9B0 8007B1B0 D45E8424 */  addiu      $a0, $a0, %lo(D_80015ED4)
-    /* 6B9B4 8007B1B4 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6B9B8 8007B1B8 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6B9B4 8007B1B4 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6B9B8 8007B1B8 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6B9BC 8007B1BC 00000000 */  nop
     /* 6B9C0 8007B1C0 09F84000 */  jalr       $v0
     /* 6B9C4 8007B1C4 21280002 */   addu      $a1, $s0, $zero

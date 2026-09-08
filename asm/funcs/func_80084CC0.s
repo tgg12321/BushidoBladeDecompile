@@ -2,8 +2,8 @@ glabel func_80084CC0
     /* 754C0 80084CC0 D0FFBD27 */  addiu      $sp, $sp, -0x30
     /* 754C4 80084CC4 00140400 */  sll        $v0, $a0, 16
     /* 754C8 80084CC8 03540200 */  sra        $t2, $v0, 16
-    /* 754CC 80084CCC 1080023C */  lui        $v0, %hi(D_80106F28)
-    /* 754D0 80084CD0 286F4224 */  addiu      $v0, $v0, %lo(D_80106F28)
+    /* 754CC 80084CCC 1080023C */  lui        $v0, %hi(_ss_score)
+    /* 754D0 80084CD0 286F4224 */  addiu      $v0, $v0, %lo(_ss_score)
     /* 754D4 80084CD4 80300A00 */  sll        $a2, $t2, 2
     /* 754D8 80084CD8 2130C200 */  addu       $a2, $a2, $v0
     /* 754DC 80084CDC 00140500 */  sll        $v0, $a1, 16

@@ -12,8 +12,8 @@ glabel ClearOTagR
     /* 6C06C 8007B86C 0180043C */  lui        $a0, %hi(D_80015F98)
     /* 6C070 8007B870 985F8424 */  addiu      $a0, $a0, %lo(D_80015F98)
     /* 6C074 8007B874 21280002 */  addu       $a1, $s0, $zero
-    /* 6C078 8007B878 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6C07C 8007B87C 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6C078 8007B878 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6C07C 8007B87C 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6C080 8007B880 00000000 */  nop
     /* 6C084 8007B884 09F84000 */  jalr       $v0
     /* 6C088 8007B888 21302002 */   addu      $a2, $s1, $zero

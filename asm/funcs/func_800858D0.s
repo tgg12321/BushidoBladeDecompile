@@ -1,8 +1,8 @@
 glabel func_800858D0
     /* 760D0 800858D0 A0FFBD27 */  addiu      $sp, $sp, -0x60
     /* 760D4 800858D4 0600023C */  lui        $v0, (0x60093 >> 16)
-    /* 760D8 800858D8 1080033C */  lui        $v1, %hi(D_80101BCC)
-    /* 760DC 800858DC CC1B6390 */  lbu        $v1, %lo(D_80101BCC)($v1)
+    /* 760D8 800858D8 1080033C */  lui        $v1, %hi(_SsVmMaxVoice)
+    /* 760DC 800858DC CC1B6390 */  lbu        $v1, %lo(_SsVmMaxVoice)($v1)
     /* 760E0 800858E0 93004234 */  ori        $v0, $v0, (0x60093 & 0xFFFF)
     /* 760E4 800858E4 5000B0AF */  sw         $s0, 0x50($sp)
     /* 760E8 800858E8 21800000 */  addu       $s0, $zero, $zero
@@ -60,8 +60,8 @@ glabel func_800858D0
     /* 761B4 800859B4 01000226 */  addiu      $v0, $s0, 0x1
     /* 761B8 800859B8 21804000 */  addu       $s0, $v0, $zero
     /* 761BC 800859BC 00140200 */  sll        $v0, $v0, 16
-    /* 761C0 800859C0 1080033C */  lui        $v1, %hi(D_80101BCC)
-    /* 761C4 800859C4 CC1B6390 */  lbu        $v1, %lo(D_80101BCC)($v1)
+    /* 761C0 800859C0 1080033C */  lui        $v1, %hi(_SsVmMaxVoice)
+    /* 761C4 800859C4 CC1B6390 */  lbu        $v1, %lo(_SsVmMaxVoice)($v1)
     /* 761C8 800859C8 03140200 */  sra        $v0, $v0, 16
     /* 761CC 800859CC 2A104300 */  slt        $v0, $v0, $v1
     /* 761D0 800859D0 D6FF4014 */  bnez       $v0, .L8008592C

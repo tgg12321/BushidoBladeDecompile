@@ -1,6 +1,6 @@
 glabel SpuIsTransferCompleted
-    /* 7B6B0 8008AEB0 0A80023C */  lui        $v0, %hi(D_800A2878)
-    /* 7B6B4 8008AEB4 7828428C */  lw         $v0, %lo(D_800A2878)($v0)
+    /* 7B6B0 8008AEB0 0A80023C */  lui        $v0, %hi(_spu_trans_mode)
+    /* 7B6B4 8008AEB4 7828428C */  lw         $v0, %lo(_spu_trans_mode)($v0)
     /* 7B6B8 8008AEB8 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 7B6BC 8008AEBC 1400B1AF */  sw         $s1, 0x14($sp)
     /* 7B6C0 8008AEC0 21888000 */  addu       $s1, $a0, $zero
@@ -17,8 +17,8 @@ glabel SpuIsTransferCompleted
     /* 7B6E8 8008AEE8 D02B0208 */  j          .L8008AF40
     /* 7B6EC 8008AEEC 01000224 */   addiu     $v0, $zero, 0x1
   .L8008AEF0:
-    /* 7B6F0 8008AEF0 0A80043C */  lui        $a0, %hi(D_800A2870)
-    /* 7B6F4 8008AEF4 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
+    /* 7B6F0 8008AEF0 0A80043C */  lui        $a0, %hi(_spu_EVdma)
+    /* 7B6F4 8008AEF4 7028848C */  lw         $a0, %lo(_spu_EVdma)($a0)
     /* 7B6F8 8008AEF8 66E2010C */  jal        TestEvent
     /* 7B6FC 8008AEFC 00000000 */   nop
     /* 7B700 8008AF00 0B003016 */  bne        $s1, $s0, .L8008AF30
@@ -26,8 +26,8 @@ glabel SpuIsTransferCompleted
     /* 7B708 8008AF08 0B004014 */  bnez       $v0, .L8008AF38
     /* 7B70C 8008AF0C 01000224 */   addiu     $v0, $zero, 0x1
   .L8008AF10:
-    /* 7B710 8008AF10 0A80043C */  lui        $a0, %hi(D_800A2870)
-    /* 7B714 8008AF14 7028848C */  lw         $a0, %lo(D_800A2870)($a0)
+    /* 7B710 8008AF10 0A80043C */  lui        $a0, %hi(_spu_EVdma)
+    /* 7B714 8008AF14 7028848C */  lw         $a0, %lo(_spu_EVdma)($a0)
     /* 7B718 8008AF18 66E2010C */  jal        TestEvent
     /* 7B71C 8008AF1C 00000000 */   nop
     /* 7B720 8008AF20 FBFF4010 */  beqz       $v0, .L8008AF10

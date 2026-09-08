@@ -1,6 +1,6 @@
 glabel _SpuIsInAllocateArea
-    /* 7A630 80089E30 0A80023C */  lui        $v0, %hi(D_800A2D40)
-    /* 7A634 80089E34 402D428C */  lw         $v0, %lo(D_800A2D40)($v0)
+    /* 7A630 80089E30 0A80023C */  lui        $v0, %hi(_spu_memList)
+    /* 7A634 80089E34 402D428C */  lw         $v0, %lo(_spu_memList)($v0)
     /* 7A638 80089E38 00000000 */  nop
     /* 7A63C 80089E3C 03004014 */  bnez       $v0, .L80089E4C
     /* 7A640 80089E40 0080083C */   lui       $t0, (0x80000000 >> 16)

@@ -13,8 +13,8 @@ glabel PutDispEnv
     /* 6C434 8007BC34 1400B1AF */   sw        $s1, 0x14($sp)
     /* 6C438 8007BC38 0180043C */  lui        $a0, %hi(D_80015FF8)
     /* 6C43C 8007BC3C F85F8424 */  addiu      $a0, $a0, %lo(D_80015FF8)
-    /* 6C440 8007BC40 0A80023C */  lui        $v0, %hi(D_8009BE70)
-    /* 6C444 8007BC44 70BE428C */  lw         $v0, %lo(D_8009BE70)($v0)
+    /* 6C440 8007BC40 0A80023C */  lui        $v0, %hi(GPU_printf)
+    /* 6C444 8007BC44 70BE428C */  lw         $v0, %lo(GPU_printf)($v0)
     /* 6C448 8007BC48 00000000 */  nop
     /* 6C44C 8007BC4C 09F84000 */  jalr       $v0
     /* 6C450 8007BC50 21280002 */   addu      $a1, $s0, $zero

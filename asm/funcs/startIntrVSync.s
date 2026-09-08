@@ -7,8 +7,8 @@ glabel startIntrVSync
     /* 73AB4 800832B4 07010224 */  addiu      $v0, $zero, 0x107
     /* 73AB8 800832B8 1000BFAF */  sw         $ra, 0x10($sp)
     /* 73ABC 800832BC 000062AC */  sw         $v0, 0x0($v1)
-    /* 73AC0 800832C0 0A80013C */  lui        $at, %hi(D_800A2634)
-    /* 73AC4 800832C4 342620AC */  sw         $zero, %lo(D_800A2634)($at)
+    /* 73AC0 800832C0 0A80013C */  lui        $at, %hi(Vcount)
+    /* 73AC4 800832C4 342620AC */  sw         $zero, %lo(Vcount)($at)
     /* 73AC8 800832C8 E70C020C */  jal        sys_MemClear
     /* 73ACC 800832CC 08000524 */   addiu     $a1, $zero, 0x8
     /* 73AD0 800832D0 0880053C */  lui        $a1, %hi(D_800832F8)
@@ -22,8 +22,8 @@ glabel startIntrVSync
     /* 73AF0 800832F0 0800E003 */  jr         $ra
     /* 73AF4 800832F4 00000000 */   nop
   alabel D_800832F8
-    /* 73AF8 800832F8 0A80023C */  lui        $v0, %hi(D_800A2634)
-    /* 73AFC 800832FC 3426428C */  lw         $v0, %lo(D_800A2634)($v0)
+    /* 73AF8 800832F8 0A80023C */  lui        $v0, %hi(Vcount)
+    /* 73AFC 800832FC 3426428C */  lw         $v0, %lo(Vcount)($v0)
     /* 73B00 80083300 E0FFBD27 */  addiu      $sp, $sp, -0x20
     /* 73B04 80083304 1400B1AF */  sw         $s1, 0x14($sp)
     /* 73B08 80083308 21880000 */  addu       $s1, $zero, $zero
@@ -32,10 +32,10 @@ glabel startIntrVSync
     /* 73B14 80083314 14261026 */  addiu      $s0, $s0, %lo(D_800A2614)
     /* 73B18 80083318 1800BFAF */  sw         $ra, 0x18($sp)
     /* 73B1C 8008331C 01004224 */  addiu      $v0, $v0, 0x1
-    /* 73B20 80083320 0A80013C */  lui        $at, %hi(D_800A2634)
-    /* 73B24 80083324 342622AC */  sw         $v0, %lo(D_800A2634)($at)
-    /* 73B28 80083328 0A80023C */  lui        $v0, %hi(D_800A2634)
-    /* 73B2C 8008332C 3426428C */  lw         $v0, %lo(D_800A2634)($v0)
+    /* 73B20 80083320 0A80013C */  lui        $at, %hi(Vcount)
+    /* 73B24 80083324 342622AC */  sw         $v0, %lo(Vcount)($at)
+    /* 73B28 80083328 0A80023C */  lui        $v0, %hi(Vcount)
+    /* 73B2C 8008332C 3426428C */  lw         $v0, %lo(Vcount)($v0)
   .L80083330:
     /* 73B30 80083330 0000028E */  lw         $v0, 0x0($s0)
     /* 73B34 80083334 00000000 */  nop

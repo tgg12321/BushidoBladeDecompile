@@ -13,8 +13,8 @@ glabel SsUtSetReverbDepth
     /* 76678 80085E78 2330C500 */  subu       $a2, $a2, $a1
     /* 7667C 80085E7C 1800C200 */  mult       $a2, $v0
     /* 76680 80085E80 E8FFBD27 */  addiu      $sp, $sp, -0x18
-    /* 76684 80085E84 0F80043C */  lui        $a0, %hi(D_800F5750)
-    /* 76688 80085E88 50578424 */  addiu      $a0, $a0, %lo(D_800F5750)
+    /* 76684 80085E84 0F80043C */  lui        $a0, %hi(_svm_rattr)
+    /* 76688 80085E88 50578424 */  addiu      $a0, $a0, %lo(_svm_rattr)
     /* 7668C 80085E8C 1000BFAF */  sw         $ra, 0x10($sp)
     /* 76690 80085E90 06000224 */  addiu      $v0, $zero, 0x6
     /* 76694 80085E94 000082AC */  sw         $v0, 0x0($a0)
@@ -22,15 +22,15 @@ glabel SsUtSetReverbDepth
     /* 7669C 80085E9C 83110200 */  sra        $v0, $v0, 6
     /* 766A0 80085EA0 C31F0300 */  sra        $v1, $v1, 31
     /* 766A4 80085EA4 23104300 */  subu       $v0, $v0, $v1
-    /* 766A8 80085EA8 0F80013C */  lui        $at, %hi(D_800F5758)
-    /* 766AC 80085EAC 585722A4 */  sh         $v0, %lo(D_800F5758)($at)
+    /* 766A8 80085EA8 0F80013C */  lui        $at, %hi(_svm_rattr_plus_0x8)
+    /* 766AC 80085EAC 585722A4 */  sh         $v0, %lo(_svm_rattr_plus_0x8)($at)
     /* 766B0 80085EB0 10280000 */  mfhi       $a1
     /* 766B4 80085EB4 2110A600 */  addu       $v0, $a1, $a2
     /* 766B8 80085EB8 83110200 */  sra        $v0, $v0, 6
     /* 766BC 80085EBC C3370600 */  sra        $a2, $a2, 31
     /* 766C0 80085EC0 23104600 */  subu       $v0, $v0, $a2
-    /* 766C4 80085EC4 0F80013C */  lui        $at, %hi(D_800F575A)
-    /* 766C8 80085EC8 5A5722A4 */  sh         $v0, %lo(D_800F575A)($at)
+    /* 766C4 80085EC4 0F80013C */  lui        $at, %hi(_svm_rattr_plus_0xA)
+    /* 766C8 80085EC8 5A5722A4 */  sh         $v0, %lo(_svm_rattr_plus_0xA)($at)
     /* 766CC 80085ECC CF27020C */  jal        SpuSetReverbModeParam
     /* 766D0 80085ED0 00000000 */   nop
     /* 766D4 80085ED4 1000BF8F */  lw         $ra, 0x10($sp)
