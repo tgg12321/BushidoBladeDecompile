@@ -2,6 +2,7 @@
 
 ## Floor history
 - pre-migration (2026-08-19): 64 (body G, cross_point-first, `return 0` exits)
+- s2 (2026-09-08, structural): 40 -> 40 (flat; 14 structural forms measured, 10 byte-identical to v12)
 - s1 (2026-09-08, recon): 64 -> **40** (v12 = candidate.c: cross_center-first, block-scoped single-set dz/dx, function-scope cross_center/cross_point, plain `return 0` exits)
 
 ## KILLED (s1; all instance kills on the -mel -msoft-float chassis, no FAKE constructs present)
@@ -53,3 +54,52 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: -mel -msoft-float chassis, v5/v6 bodies, no FAKE constructs
+
+## [s2] Exit-shape restructuring (nested ifs / shared `goto ret0` label / if-else arms) changes the emitted object on the v12 chassis
+- mechanism: hypothesised that the surviving return-0 block's provenance (which of the two `return 0`s survives jump2 cross-jumping, and whether its label is one flow analysed) is steerable from the exit spelling; jump.c cross_jump + jump-threading run before RA
+- probe: sandbox on v12 (plain double `return 0`), v20 (nested `if (t>=0) { ... }` with a single trailing `return 0`), v21 (`goto ret0` twice + trailing `ret0: return 0;`), v25 (`if (...) return 0; else { block }` arms); md5 of the resulting tmp/sandbox/func_8002E6B0/code6cac_b.o
+- result: all four = score 40 / 93, and all four objects are md5-IDENTICAL (45e95a1329ccc6c9cceb08218344b024). jump.c collapses the four shapes to one RTL before RA
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v12/v20/v21/v25 bodies, no FAKE constructs
+
+## [s2] Statement-level structural levers (declaration order, coordinate hoisting, named difference temps, named sums, distinct single-set dz/dx names, xor operand order) move the floor below 40
+- mechanism: hypothesised that changing pseudo birth order / count would re-order global.c's allocno priority list and break the cross_center->$v1 / cross_point->$v0 seat cascade; sched.c birthing_insn_p already showed single-set naming is a live lever on this function (s1: 60 -> 45)
+- probe: sandbox on 11 forms — v30 xor operand swap, v31 cross decl order, v32 cross_point assigned first, v33 center_z first, v34 arg3 coords hoisted, v35 arg0+arg3 coords hoisted, v40/v41/v42 named delta temps (all/center-only/point-only), v50 cross decls before center decls, v51 named sums, v52 function-scope distinct dz1..dz3/dx1..dx3
+- result: 40 for all except v32 = 57 and v42 = 44 (both worse). Only v30 produced different object bytes at the same score; the other eight 40s are byte-identical to v12. CSE + jump normalisation absorb the edits before RA sees them
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v30-v35/v40-v42/v50-v52 bodies, no FAKE constructs
+
+## [s2] reorg.c's all-live fallback at the first bltz's target is the mechanism that puts `v0 = 0` in the delay slot and sends both bltz to the epilogue
+- mechanism: reorg.c mark_target_live_regs -> find_basic_block(target) == -1 -> SET_HARD_REG_SET (everything live) -> fill_eager_delay_slots rejects the fallthrough insn and steals the target thread's `move v0,zero`, redirecting the branch past it
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) on a single-function TU (s2/solo.c) with BB2_DBR_DEBUG=1, then with BB2_ALLLIVE_LABEL=170; diff of the two .s files
+- result: baseline prints exactly one `DBRDBG mtlr target=170 block=4` (flow KNOWS the label, precise liveness -> fallthrough steal). Forcing all-live on label 170 changes the first bltz's slot to `move $2,$0` and redirects the branch — exactly the target's lines 48-49. The second bltz has a separate target (`mtlr target=183 block=0`) and is unaffected, so the forced body keeps the `j .Lend` + orphan block and is 99 insns
+- verdict: CONFIRMED
+
+## Live frontier after s2 (ranked)
+1. **Make the shared return-0 label flow-UNKNOWN.** Both bltz targets must return -1 from find_basic_block for the target's exit shape to fall out. Ours is block=4 / block=0 (known) because jump2's cross-jump reuses labels that existed at the last find_basic_blocks. Next probe: read tools/gcc-2.7.2/jump.c `do_cross_jump` / `find_cross_jump` to learn under which condition it EMITS A FRESH label instead of reusing one (that is the only C-visible knob), and confirm with the instrumented cc1 loop (s2/dbr2.sh — cc1-only, ~2s per body, no sandbox round trip needed) by grepping `DBRDBG mtlr target=<uid> block=` for a body whose block is -1. Only then measure with sandbox. Note the four exit spellings already tried are one object; the fresh-label condition, if it exists, is NOT among them.
+2. **Seat cascade (unchanged from s1, still the larger half of the 40).** Target needs a SIXTH callee-save (`s5` for block 1's 4th product) and cross_center->$a0 / cross_point->$v1 / arg2[2]->$t5, where we get $v1 / $v0 / $a0. All 14 structural spellings measured in s2 leave the cascade untouched, so the lever is not statement-level: use tools/ra_solver (extract.py + inverse.py global --goal '{"<cc>":4,"<cp>":3,"<arg2z>":13}') to type it REACHABLE/FORECLOSED before any further spelling.
+3. **arg2 coordinate seats** — expected to fall out of (2); no independent probe.
+
+## [s2] Exit-shape restructuring (nested ifs, a shared `goto ret0` label, if/else arms) changes the emitted object on the v12 chassis
+- mechanism: hypothesised that which of the two `return 0` blocks survives jump2 cross-jumping, and whether its label is one flow analysed, is steerable from the C exit spelling; jump.c cross-jump/threading runs before RA
+- probe: sandbox on v12 (double `return 0`), v20 (nested ifs + single trailing `return 0`), v21 (`goto ret0` twice + trailing labelled `return 0`), v25 (if/else arms), then md5 of each resulting tmp/sandbox/func_8002E6B0/code6cac_b.o
+- result: all four = score 40 / build_insns 93 and all four objects are md5-IDENTICAL (45e95a1329ccc6c9cceb08218344b024); jump.c collapses the four shapes to one RTL before RA, so frontier-1's suggested nested-if / reordered-return-0 probes are spent
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v12/v20/v21/v25 bodies, no FAKE constructs
+
+## [s2] Statement-level structural levers (declaration order, coordinate hoisting, named delta temps, named sums, distinct single-set dz/dx names, xor operand order) move the floor below 40
+- mechanism: hypothesised that changing pseudo birth order/count would re-order global.c's allocno priority list and break the cross_center->$v1 / cross_point->$v0 seat cascade; sched.c birthing_insn_p single-set naming was a live lever in s1 (60 -> 45)
+- probe: sandbox on 11 forms: v30 xor operand swap, v31 cross decl order, v32 cross_point assigned first, v33 center_z first, v34 arg3 coords hoisted, v35 arg0+arg3 coords hoisted, v40/v41/v42 named delta temps (all / center-only / point-only), v50 cross decls before center decls, v51 named sums, v52 function-scope distinct dz1..dz3/dx1..dx3
+- result: 40 for all except v32 = 57 and v42 = 44 (both worse); only v30 produced different object bytes at the same score, the other eight 40s are byte-identical to v12 — CSE and jump normalisation absorb the edits before RA sees them
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, v30-v35 / v40-v42 / v50-v52 bodies, no FAKE constructs
+
+## [s2] reorg.c's all-live fallback at the first bltz's target is the mechanism that puts `v0 = 0` in the delay slot and sends both bltz to the epilogue
+- mechanism: reorg.c mark_target_live_regs -> find_basic_block(target) == -1 -> SET_HARD_REG_SET (everything live) -> fill_eager_delay_slots rejects the fallthrough insn (it sets a0) and steals the target thread's `move v0,zero`, redirecting the branch past it
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) on a single-function TU (tmp/grind/func_8002E6B0/s2/solo.c) with BB2_DBR_DEBUG=1 (dbr2.sh), then with BB2_ALLLIVE_LABEL=170 (dbr3.sh); diff the two .s files and disassemble both
+- result: baseline prints exactly one `DBRDBG mtlr target=170 block=4` — flow KNOWS the label, so precise liveness is used and the fallthrough insn is stolen. Forcing all-live on label 170 makes the first bltz's delay slot `move $2,$0` with the branch redirected past it, matching the target's lines 48-49. The second bltz has a separate target (`mtlr target=183 block=0`) and is unaffected, so the forced body keeps the `j .Lend` + orphan block (99 insns).
+- verdict: CONFIRMED
