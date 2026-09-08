@@ -1864,3 +1864,4 @@
 - 2026-09-08 02:05 func_8007352C: LAYER-1 FAILED a sandbox-0 candidate — Body is ordinary C except one construct: SetSprt((s32)sp, e->x) passes a fabricated second argument to the one-argument libgpu SetSprt (src/gpu.c:427 reads only p; asm/funcs/SetSprt.s never touches $a1) whose only plausible role is binding e->x into $a1 before the call; the worker never measured the honest one-arg form.
 - 2026-09-08 02:12 func_8007352C COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-08 02:20 func_8003F6D8 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-08 02:45 func_8002D780 s1 [recon] floor=47: recon: honest floor 48 -> 47 (xor operand order); residual attributed to sched1 block-5 multiply order (~38), un-coalesced dist copy into $a0 (~5, sibling func_8002D518's closed residual), and reorg slot fill blocked by $v0 liveness at the call-3 block (3); OBJECT MODEL D_8008D118 MATCHES

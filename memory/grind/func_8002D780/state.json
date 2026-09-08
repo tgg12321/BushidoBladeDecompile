@@ -1,0 +1,72 @@
+{
+ "func": "func_8002D780",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 47,
+   "modality": "recon",
+   "headline": "recon: honest floor 48 -> 47 (xor operand order); residual attributed to sched1 block-5 multiply order (~38), un-coalesced dist copy into $a0 (~5, sibling func_8002D518's closed residual), and reorg s"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Block-5 multiply order (cluster 1, ~38 insns) is reachable by a natural expression shape: cx/cz computed inline at their use points (explains the deferred cz sra/subu) or a per-edge helper-macro evaluation order.",
+   "mechanism": "sched1 backward list scheduling with LUID tie-break (tools/gcc-2.7.2/sched.c rank_for_schedule)",
+   "next_probe": "tools/sched_solver inverse on block 5 against the target order to get the required emission order/dependency shape, then spell and sweep; BB2_RANK_DEBUG=1 on tools/gcc-2.7.2/cc1 via tmp/grind/func_8002D780/s1/dbrdbg.py to see class ties"
+  },
+  {
+   "hypothesis": "The `dist` copy into $a0 (cluster 2) needs a second pseudo that survives cse: compute the sqrt input as its own expression separate from the call argument, or a u32-typed macro-style block.",
+   "mechanism": "global.c conflict: dist stays live across the calls in $s1; a copy that dies before the calls lands in $a0",
+   "next_probe": "sweep natural forms first; only if spent, the sibling func_8002D518 FAKE dead-store re-store family with this function's own exhaustion ledger; also check the LZCR slot offset (target 16($sp), ours 0($sp))"
+  },
+  {
+   "hypothesis": "The tail fill (cluster 3, 3 insns) follows once the call-3 block entry has $v0 dead in reorg's liveness walk, e.g. by giving that block a label or by avoiding jump1's relocation of the shared return-1 block.",
+   "mechanism": "reorg.c mark_target_live_regs pending-dead flush at CODE_LABELs (tools/gcc-2.7.2/reorg.c:2560-2760)",
+   "next_probe": "sweep tail shapes and read the BB2_DBR_DEBUG `insn=381` line for oppregs bit 2 (tmp/grind/func_8002D780/s1/dbrdbg.py BB2_DBR_DEBUG)"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Swapping the XOR operand order in the first triangle test alone reorders the block-5 multiplies toward the target.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 543ed812 (-mel -msoft-float), retired body with sibling func_8002D320 cop2 spelling, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "48 (baseline 48); 70 differing insns vs 73 but no scored change"
+  },
+  {
+   "session": 1,
+   "statement": "Reading px/pz through a pointer at the use sites (no px/pz locals) changes the test-1 schedule.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 543ed812 (-mel -msoft-float), retired body with sibling cop2 spelling, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "48, no change; cse/sched already place the loads next to their multiplies"
+  },
+  {
+   "session": 1,
+   "statement": "A plain `u32 ud = dist;` copy in the else arm materialises the target's `move a0,s1` for the LZCS/shift path.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 543ed812 (-mel -msoft-float), retired body with sibling cop2 spelling, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "48, copy folded, no `move a0,s1` emitted"
+  },
+  {
+   "session": 1,
+   "statement": "Writing the three-call tail as nested `== 0` ifs with a trailing `return 1` changes reorg's delay-slot fill on the second post-call branch.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 543ed812 (-mel -msoft-float), retired body with sibling cop2 spelling, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "48, identical layout and fill"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T07:20:48.522431+00:00",
+ "object_model_audited": 1
+}
