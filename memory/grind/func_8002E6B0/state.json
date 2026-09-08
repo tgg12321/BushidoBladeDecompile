@@ -1,8 +1,8 @@
 {
  "func": "func_8002E6B0",
  "file": "code6cac_b",
- "session_count": 10,
- "current_modality": "forensics",
+ "session_count": 11,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -63,23 +63,29 @@
    "floor": 26,
    "modality": "forensics",
    "headline": "Floor holds at 26; the residual is proven to be ONE register permutation ($v0<->$v1 plus an a0->a1->a2 three-cycle) and the seat is attributed to local-alloc's ascending find_free_reg scan (MIPS defin"
+  },
+  {
+   "session": 11,
+   "floor": 26,
+   "modality": "rederive",
+   "headline": "Floor holds at 26; a full re-derivation (fresh m2c decompile, sibling-idiom transplants, object-model probes) proves the control-flow shape, ret-birth placement and object model are ONE point in byte "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Evicting ALL THREE $v0 contributors from local-alloc at once seats reg 96 in $v0: o1 already removed the block-1 condition (117) at zero byte cost, so only pseudo 121 - a block-2 mflo product - remains inside reg 96's live range",
-   "mechanism": "find_free_reg's ascending scan hands $v0 to every unsuggested LOCAL quantity, and record_one_conflict (global.c:1392) then IORs it into reg 96's hard_reg_conflicts at each of reg 96's births. A pseudo referenced in more than one basic block is not a local quantity at all, so it never reaches that scan - measured this session on the block-1 condition (117 left the ';; Register N in H.' listing, the block-2 condition moved to $a0, object unchanged). Pseudo 121 is a product consumed one insn later inside block 2, so only a function-scope name that is ALSO read in another block can lift it out.",
-   "next_probe": "Build the o1 chassis crossed with function-scope names for the block-2 products: e.g. `s32 prod;` written in block 2 and read again in block 3 (or a pair `s32 pa, pb;` used across the block boundary), spelled so that the block-3 read is a real consumed value and not a dead store. Screen each body with the .lreg local map FIRST (tmp/grind/func_8002E6B0/s10/dumpvar.sh prints it; success = no pseudo 'in 2.' born inside reg 96's live range) and only then score it with tools/sweep_variants.py. Do NOT re-try single-block condition variables (o3 = 26) or routing the tail through cond (o2/o4 = 55)."
+   "hypothesis": "A permuter campaign seeded on y_001000 - a NEW distinct-object 26 tie found this session - reaches what the saturated 754665bc basin cannot, and so do the older distinct-object ties r2 (3bae0255) and q2 (1b1fa1c0).",
+   "mechanism": "s5's perm_e saturated only the 754665bc object at 11,782 iterations; s8-s11 have now shown that basin absorbs eleven hand spellings, 264 enumerated spellings, the whole scope grid, the entire control-flow/object-model/ret-birth cross product and 8 of this session's 64 sign-reformulations byte-identically. y_001000 compiles to a different object at the same score, so its neighbourhood is unsearched. Both floor drops on record came from hand-repairing a semantically broken permuter find.",
+   "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh (it carries the current -mel -msoft-float flags) on memory/grind/func_8002E6B0/rejected/s11_sign_rev_block2_edge_distinct_object_ties_26.c, one fresh-seed window, waited in-turn with tools/permuter_campaign.py wait and stopped with harvest --stop before the outcome is written. Do NOT re-seed the 754665bc basin (perm_e) or the 34 basin (s4 perm_c)."
   },
   {
-   "hypothesis": "A permuter campaign seeded on r2 (md5 3bae0255) or q2 (md5 1b1fa1c0) - distinct objects that tie at 26 - finds what the saturated base basin could not",
-   "mechanism": "s5's perm_e saturated only the base object (921b8948) at 11,782 iterations; s8 showed that basin absorbs eleven more hand spellings byte-identically, s9 264 enumerated spellings, and s10 four more (the scope grid and o1/o3). q1, q2 and r2 are different source geometries compiling to different objects, so their neighbourhoods are unsearched. Both floor drops on record (40 -> 34, 34 -> 26) came from hand-repairing a semantically broken permuter find.",
-   "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh (it carries the current -mel -msoft-float flags) on memory/grind/func_8002E6B0/rejected/s7_cond_carrier_cross_point_distinct_object_ties_26.c and .../s6_first_if_xor_swap_distinct_object_ties_26.c, one fresh-seed window each, waited in-turn with tools/permuter_campaign.py wait and stopped with harvest --stop before the outcome is written. Do NOT re-seed the base 26 basin (perm_e) or the 34 basin (s4 perm_c). Read every find's SEMANTICS before scoring it."
+   "hypothesis": "The 94-insn forms found this session (y_000100, y_000001) and the 96-insn 26 forms are two disjoint local minima, and a body exists that has the 94-insn shape AND the sixth callee-save - i.e. the sw s5 pressure can be supplied from somewhere other than the staged value's first-operand position.",
+   "mechanism": "Reversing block 2's or block 3's outer subtraction removes exactly the two insns that separate us from the target's count, but it also moves the staged (ret = dz) out of first-operand position, which s9 proved is the single byte-relevant bit in block 2, and sw s5,20(sp) disappears. If the pressure that buys the sixth callee-save can be re-supplied inside a reversed-outer block - a different staging site within the same block, or a staged value consumed by the point-cross product instead of the centre one - the two minima merge.",
+   "next_probe": "Cross the outer-reversed blocks (y_000100 / y_000001) with every staging site inside that block: stage dz into the point cross product, stage dx instead of dz, stage into the second operand of the reversed subtraction. Screen each with the .lreg local map (tmp/grind/func_8002E6B0/s10/dumpvar.sh prints it) for the s5 allocation BEFORE scoring, then sweep with tools/sweep_variants.py."
   },
   {
-   "hypothesis": "The four s32* parameters are the wrong object model, and a struct/vector parameter type changes the addressing that feeds the multiplies",
-   "mechanism": "Every argument is indexed only at [0] and [2] - a 3-component coordinate read with the y component never touched. A struct type would change the load offsets and the base-register pressure feeding the products, which is the one thing 1,228 spellings of the products could not change. Per splat-symbol-names-are-not-evidence the case must be made from base-register/stride evidence in the target asm, not from splat's names.",
-   "next_probe": "Read asm/funcs/func_8002E6B0.s (or tmp/grind/func_8002E6B0/s10/tgt.n) and check whether the target's loads for arg0..arg3 use a common base register with a stride (evidence for a struct model) or independent offsets off four distinct bases (evidence against). If the stride evidence is there, spell the struct form and re-measure; if it is not, bank the negative and the object-model axis is closed."
+   "hypothesis": "Evicting the remaining $v0 contributor from local-alloc seats reg 96 in $v0 (carried unchanged from s10; s11 measured nothing on this axis).",
+   "mechanism": "find_free_reg's ascending scan hands $v0 to every unsuggested LOCAL quantity, and record_one_conflict (global.c:1392) IORs it into reg 96's hard_reg_conflicts at each of reg 96's births. A pseudo referenced in more than one basic block is not a local quantity and never reaches that scan - s10 measured this on the block-1 condition (pseudo 117). Pseudo 121 is a block-2 product consumed one insn later, so only a function-scope name that is ALSO read in another block can lift it out.",
+   "next_probe": "Build the s10 o1 chassis crossed with function-scope names for the block-2 products, spelled so the later read is a real consumed value and not a dead store. Screen each body with the .lreg local map FIRST (success = no pseudo 'in 2.' born inside reg 96's live range) and only then score it. Do NOT re-try single-block condition variables (o3 = 26) or routing the tail through cond (o2/o4 = 55)."
   }
  ],
  "judge_constraints": [],
@@ -348,6 +354,46 @@
    "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the 5 n_* bodies on the 26 chassis with the block-2 ret staging borrow present in all of them",
    "predicate_cite": "",
    "result": "58/95 (block 3), 68/94 (block 2), 68/94 (blocks 1+2), 70/97 (blocks 2+3), 70/97 (all three). Hoisting lengthens the wron"
+  },
+  {
+   "session": 11,
+   "statement": "The control-flow SHAPE is a byte-relevant degree of freedom on the 26 chassis: m2c's nested-if reconstruction, spelled with the block-2 ret staging borrow, produces a different object from the banked ",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the s5/s7 candidate.c body; the block-2 variable-reuse staging borrow present in t3/u1-u4/u8/w3/w4 and absent in t2",
+   "predicate_cite": "",
+   "result": "Every one of them scores 26 / 96 insns and hashes to disassembly md5 754665bc - byte-identical to the banked goto body. "
+  },
+  {
+   "session": 11,
+   "statement": "The four s32* parameters are the wrong object model, and a struct or byte-pointer parameter type changes the addressing that feeds the multiplies (s10 frontier item 3).",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the s5/s7 candidate.c body with the block-2 staging borrow present",
+   "predicate_cite": "",
+   "result": "Both score 26 / 96 with disassembly md5 754665bc, byte-identical to the s32* body. A by-value 3-component struct is excl"
+  },
+  {
+   "session": 11,
+   "statement": "ret's birth placement - declared uninitialised with ret = 0 written just before the first if, or written inside block 1's braces, or the block-2 restore moved mid-block - changes the object (re-audit ",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, both the goto and nested-if 26 chassis, block-2 staging borrow present",
+   "predicate_cite": "",
+   "result": "All five score 26 / 96 with disassembly md5 754665bc. s8's instance kill is CONFIRMED on the current chassis and extende"
+  },
+  {
+   "session": 11,
+   "statement": "The target's delay-slot addu $v0,$zero,$zero is the surviving arm of a per-block predicate assignment, so spelling each block as ret = (cross_center ^ cross_point) >= 0; if (ret) { ... } reproduces th",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, predicate-chain bodies x1-x8 on the 26 chassis; borrow present in x3-x8, absent in x1/x2",
+   "predicate_cite": "",
+   "result": "47-56 at 93-95 insns; nothing approaches 26. GCC 2.7.2 materialises the boolean with xor / nor / srl and branches on the"
+  },
+  {
+   "session": 11,
+   "statement": "A sign-equivalent reformulation of the cross products - reversing a block's edge direction or its outer subtraction order - reaches below 26.",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the 64 y_* bodies on the 26 chassis with the block-2 staging borrow present in every one",
+   "predicate_cite": "",
+   "result": "Histogram 26:2 28:2 42:2 43:4 44:2 45:6 47:2 50:6 52:6 58:6 59:8 60:6 61:6 62:2 63:4. Only two bodies reach 26 - the ban"
   }
  ],
  "ladder_skip": 0,
@@ -355,5 +401,5 @@
  "origin": "queue",
  "created": "2026-09-08T13:35:52.121385+00:00",
  "escalation_deferrals": 0,
- "object_model_audited": 9
+ "object_model_audited": 11
 }

@@ -649,3 +649,152 @@ local quantity, as expected.
 - [s10] [s10] Hoisting any block's dz/dx computation above the first `if` scores 58-70.
 
 - [s10] [s10] A function-scope `cond` written in blocks 1 and 2 evicts pseudo 117 from local_alloc's map entirely (eleven pseudos in $v0 instead of twelve, and the block-2 condition moves from $v0 to $a0) while leaving the object byte-identical (26/96, md5 921b8948). The remaining blocker is pseudo 121, a block-2 mflo product still allocated to $v0 and still born inside reg 96's live range.
+
+## s11 (2026-09-08, rederive) — the 26 basin is a control-flow / object-model INVARIANT
+
+Chassis re-measured first: the banked candidate.c body scores **26 / 96 insns**
+on HEAD (dispatch reported "measurement unavailable"; the ledger's 26 stands on
+the current `-mel -msoft-float` chassis). The FAKE-ablation control could not be
+run by `tools/fake_ablate.py` — candidate.c carries no `/* FAKE */` annotation
+yet (it is a WIP body, not a submission), so the tool exits with "no
+FAKE-annotated constructs found". The equivalent control is banked: the
+no-borrow form of this exact chassis is 45 / 93 insns
+(`rejected/s7_plain_noborrow_on_26_chassis_45.c`), i.e. the block-2 staging
+borrow is worth +19 and masks nothing.
+
+### 1. Fresh m2c decompile → a NESTED-IF shape, and it is byte-identical
+
+`tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax` on
+`asm/funcs/func_8002E6B0.s` (output: `tmp/grind/func_8002E6B0/s11/m2c.c`)
+reconstructs the function as **nested ifs**, not the goto/early-exit chassis the
+ledger has used since s3:
+
+```
+var_v0 = 0;
+if (block1_predicate >= 0) {
+    if (block2_predicate >= 0) {
+        var_v0 = (u32) ~block3_predicate >> 0x1F;
+    }
+}
+return var_v0;
+```
+
+m2c also confirms the CSE structure of the target: `center_x - arg0[0]`,
+`center_z - arg0[2]`, `arg3[0] - arg0[0]` and `arg3[2] - arg0[2]` are computed
+once in block 1 and reused in block 2 (registers t7, a1, t8, t0), while block 3
+recomputes everything against `arg1`.
+
+Measured (`tools/sweep_variants.py`, `sweep_t.json` / `sweep_u.json` /
+`sweep_w.json`): the nested-if shape carrying the block-2 ret staging borrow
+scores **26 / 96** and its disassembly md5 is **754665bc — identical to the
+banked goto body**. Nine independently derived shapes all produce that one
+object:
+
+| body | shape | score | disasm md5 |
+|---|---|---|---|
+| t0 (banked candidate) | goto + `end:` label | 26 | 754665bc |
+| t3 | m2c nested ifs | 26 | 754665bc |
+| t6 | struct `{s32 x,y,z;}` via in-body casts | 26 | 754665bc |
+| w1 | `u8 *` params + `*(s32 *)(p + off)` (func_8002EA24's idiom) | 26 | 754665bc |
+| w2 | named centroid sum locals | 26 | — |
+| w3 | func_800283D0's mixed-exit idiom | 26 | — |
+| w4 | u8-cast **and** nested | 26 | — |
+| u1 | ret declared uninit, `ret = 0` just before the first if | 26 | 754665bc |
+| u2/u3 | restore moved mid-block-2 (± late init) | 26 | 754665bc |
+| u4 | `ret = 0` inside block 1's braces | 26 | 754665bc |
+| u8 | inner test spelled as a ternary | 26 | 754665bc |
+
+Bodies that are NOT byte-neutral on this chassis: t2 nested **without** the
+borrow 45/93 (the same 45 the goto chassis gives without it, so the exit form
+contributes nothing on its own), t5 m2c's literal statement ORDER with every
+temp named 53/94, t1/t4 fully-inlined conditions 60/62, u5 block-3 staging only
+48/95, u6 borrow in blocks 2 **and** 3 34/94.
+
+**Consequence for the search space:** control-flow shape, ret-birth placement
+and the object model are not three axes, they are one point. s8's "ret-init
+placement" instance kill is re-audited and CONFIRMED on the current chassis, and
+now also on the nested chassis.
+
+### 2. Object model closed (s10 frontier item 3)
+
+The s10 frontier asked for base-register/stride evidence before spelling a
+struct form (per [[splat-symbol-names-are-not-evidence]]). The target reads
+every argument as **base+0 and base+8 off its own incoming register**:
+`lw t2,0(a0)` / `lw t1,8(a0)`, `lw t4,0(a1)` / `lw t3,8(a1)`,
+`lw t6,0(a2)` / `lw t5,8(a2)`, `lw s3,0(a3)` / `lw s2,8(a3)`. That addressing is
+what BOTH `s32 *p` indexing and `struct V *p` member access emit, so it does not
+discriminate — and the measurement agrees: struct (t6) and `u8 *`+cast (w1) are
+byte-identical to `s32 *`. The axis is closed; a 3-component struct passed by
+value is excluded independently because all four arguments arrive in a0..a3.
+
+### 3. FALSIFIED: the per-block-predicate reading of the delay slot
+
+New reading of the target worth recording because it was wrong: `addu
+$v0,$zero,$zero` sits in the **first bltz's delay slot** (8002E770), so the
+return register is written only on the failing edge and `$v0` is free as scratch
+for block 1's dz/dx before it. The natural C for that is a per-block predicate
+
+```
+ret = (cross_center ^ cross_point) >= 0;
+if (ret) { ... }
+```
+
+with the `ret = 1` arm dead-code-eliminated (ret is overwritten by the next
+block's predicate) and the `ret = 0` arm surviving into the delay slot. It would
+also make the block-2 staging borrow need **no restore**, removing one of the
+two residual moves. GCC 2.7.2 does not produce that: it materialises the boolean
+with xor/nor/srl and branches on the materialised value. Eight bodies
+(`sweep_x.json`): nested 48/95, goto 48/95, with the borrow 51/95, `== 0`
+spelling 51, ternary 51, borrow in block 1 only 47/96, borrow in blocks 2+3
+56/93.
+
+### 4. Sign-equivalent reformulation swept — 64 bodies, nothing below 26
+
+s9's 1,228-spelling enumeration covered COMMUTATIVE operand order only. The
+non-commutative axes were never measured: per block, reversing the edge
+direction (`dz = a[2] - b[2]` instead of `b[2] - a[2]`) or reversing the outer
+subtraction (`(dx*..) - (dz*..)`) negates BOTH cross products, so the
+`(cc ^ cp) < 0` test's meaning is unchanged. 2 bits x 3 blocks = 64 bodies
+(`sweep_y.json`), histogram:
+
+```
+26:2  28:2  42:2  43:4  44:2  45:6  47:2  50:6  52:6  58:6  59:8  60:6  61:6  62:2  63:4
+```
+
+- Only two bodies reach 26: `y_000000` (the banked spelling) and **`y_001000`**
+  — block 2's edge reversed — which is a **DISTINCT OBJECT** at 26 (its
+  disassembly differs from 754665bc in the mfhi/mflo seats and the block-3
+  operand order). Banked as
+  `rejected/s11_sign_rev_block2_edge_distinct_object_ties_26.c`; it is an
+  unsearched permuter basin.
+- Reversing the OUTER subtraction in block 2 (`y_000100`, 42) or block 3
+  (`y_000001`, 43) reaches the target's exact **94-insn** count, but the
+  side-by-side shows `sw s5,20(sp)` is **absent** — the sixth callee-save is
+  lost. Cause: the reversal moves the staged `(ret = dz)` out of first-operand
+  position, which s9 proved is the single byte-relevant bit in block 2. So
+  insn-count parity and the callee-save are mutually exclusive on this axis.
+- Reversing block 1's edge costs 2 (`y_100000` / `y_101000` = 28).
+
+### 5. Side-by-side status (unchanged)
+
+Every 26 body still differs from the target by the same two moves plus the
+$v0<->$v1 permutation: target `move v0,zero` in the first bltz delay slot, ours
+`move v1,zero`; target has no trailing `move v0,v1`, ours does.
+
+- [s11] Chassis re-measured at dispatch: the banked candidate.c body is 26 / 96 insns on HEAD (the brief again reported 'measurement unavailable'); the ledger floor 26 is correct on the current -mel -msoft-float chassis.
+
+- [s11] tools/fake_ablate.py could not run on candidate.c - the body carries no /* FAKE */ annotation yet (it is a WIP body, not a submission), and the tool exits with 'no FAKE-annotated constructs found'. The equivalent control is banked: the no-borrow form of this exact chassis is 45 / 93 (rejected/s7_plain_noborrow_on_26_chassis_45.c), so the block-2 borrow is worth +19 and masks nothing.
+
+- [s11] A fresh m2c decompile (tmp/grind/func_8002E6B0/s11/m2c.c) reconstructs the function as NESTED IFS, not the goto/end-label chassis, and confirms the target's CSE structure: center_x-arg0[0], center_z-arg0[2], arg3[0]-arg0[0] and arg3[2]-arg0[2] are computed once in block 1 and reused in block 2 (t7, a1, t8, t0), while block 3 recomputes everything against arg1.
+
+- [s11] Nine independently derived C shapes (m2c nested-if, struct object model, u8*+cast object model, named centroid sums, sibling func_800283D0's mixed-exit idiom, four ret-birth placements) all compile to ONE object: score 26 / 96 insns, disassembly md5 754665bc.
+
+- [s11] Target addressing evidence for the object-model question: lw t2,0(a0) / lw t1,8(a0), lw t4,0(a1) / lw t3,8(a1), lw t6,0(a2) / lw t5,8(a2), lw s3,0(a3) / lw s2,8(a3) - a common base with offsets 0 and 8 per argument, which does not discriminate s32* indexing from struct member access.
+
+- [s11] GCC 2.7.2 does not fold a materialised boolean back into a branch: ret = (cc ^ cp) >= 0; if (ret) emits xor/nor/srl then a branch on the result (47-56, 93-95 insns), so the target's delay-slot addu $v0,$zero,$zero is NOT a surviving predicate arm.
+
+- [s11] Forms with the target's exact 94-insn count now exist (y_000100 at 42, y_000001 at 43), but their side-by-side shows sw s5,20(sp) absent - the sixth callee-save is lost whenever the staged (ret = dz) leaves first-operand position.
+
+- [s11] y_001000 (block 2's edge reversed, dz = arg0[2]-arg2[2]) ties 26 with a DISTINCT object - its mfhi/mflo seats and block-3 operand order differ from 754665bc - and is therefore an unsearched permuter basin, banked at rejected/s11_sign_rev_block2_edge_distinct_object_ties_26.c.
+
+- [s11] The residual is unchanged in kind from s10: every 26 body differs from the target by two moves plus the $v0<->$v1 permutation (target 'move v0,zero' in the first bltz delay slot vs ours 'move v1,zero'; ours additionally carries a trailing 'move v0,v1').

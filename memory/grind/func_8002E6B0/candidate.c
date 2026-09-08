@@ -1,3 +1,48 @@
+/* s11 ADDENDUM (2026-09-08, rederive). Body UNCHANGED; re-measured 26 / 96 on
+   HEAD this session (dispatch again said "measurement unavailable"; the ledger
+   floor 26 is correct on the current -mel -msoft-float chassis).
+
+   THIS SESSION DID THE FULL RE-DERIVATION and found the 26 basin is far wider
+   than the ledger recorded. A fresh m2c decompile
+   (tmp/grind/func_8002E6B0/s11/m2c.c) produces a NESTED-IF control-flow shape,
+   not the goto/early-exit chassis this body uses. Installed on the 26 chassis
+   (nested ifs + the block-2 ret staging borrow) it compiles BYTE-IDENTICAL to
+   this body - disassembly md5 754665bc, 96 insns. So do the struct object
+   model, the u8-star-plus-cast object model (the idiom func_8002EA24 uses in
+   this same file), late ret initialisation, ret initialised inside block 1's
+   braces, a mid-block-2 restore, named centroid sum locals, and the sibling
+   func_800283D0 mixed-exit idiom. Nine independently-derived shapes, ONE
+   object. Do not re-spell control flow, ret-birth placement, or the object
+   model: the whole cross-product of those axes is one point in byte space.
+
+   OBJECT-MODEL AXIS CLOSED (the s10 frontier item 3). Target evidence: every
+   argument is read as base+0 and base+8 off its own incoming register
+   (lw t2,0(a0) / lw t1,8(a0); same for a1, a2, a3) - a common base with two
+   offsets, which is what both `s32 *p` indexing and `struct {s32 x,y,z;} *p`
+   member access emit. Measured, not just argued: struct-with-x/y/z and
+   u8-star-plus-cast both tie 26 with the identical object.
+
+   FALSIFIED THIS SESSION - the per-block-predicate reading of the target. The
+   target's `addu $v0,$zero,$zero` sits in the FIRST bltz's delay slot, i.e. the
+   return register is written only on the failing edge. The natural C for that
+   looked like `ret = (cross_center ^ cross_point) >= 0; if (ret) { ... }` with
+   the dead `ret = 1` arm eliminated - and it would need no `ret = 0` restore
+   after the borrow, removing one of the two residual moves. GCC 2.7.2 does not
+   do that: it materialises the boolean (xor/nor/srl) and then branches on it.
+   Eight predicate-chain bodies scored 47-56 at 93-95 insns.
+
+   SIGN-EQUIVALENT REFORMULATION SWEPT (64 bodies, the axis s9's enumerator
+   structurally could not reach because it only permuted COMMUTATIVE operands).
+   Per block, reversing the edge direction (dz = a[2]-b[2]) or reversing the
+   outer subtraction ((dx*..) - (dz*..)) negates BOTH cross products and so
+   leaves the `(cc ^ cp) < 0` test's meaning intact. Histogram 26..63; only two
+   bodies reach 26 - this one and y_001000 (block 2's edge reversed), which is a
+   DISTINCT OBJECT at 26 and is therefore a fresh permuter seed
+   (rejected/s11_sign_rev_block2_edge_distinct_object_ties_26.c). Reversing the
+   outer subtraction in block 2 or block 3 reaches the target's exact 94-insn
+   count but LOSES the sixth callee-save (no sw s5,20(sp)) and scores 42/43:
+   it moves the staged (ret = dz) out of first-operand position, which s9 proved
+   is the single byte-relevant bit in block 2. */
 /* s10 ADDENDUM (2026-09-08, forensics). Body UNCHANGED; re-measured 26 / 96 on
    HEAD this session (the dispatch brief again said "measurement unavailable").
 

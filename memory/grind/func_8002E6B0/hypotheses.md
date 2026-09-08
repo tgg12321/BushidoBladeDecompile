@@ -756,3 +756,109 @@ The target's `move v0,zero` sits in the delay slot of the FIRST `bltz`. MIPS del
 - probe: Both bodies re-scored with tools/sweep_variants.py alongside candidate.c in the s10 scope sweep (sweep_scope.json).
 - result: CONFIRMED unchanged: candidate.c 26/96, s8_first_exit_inline_return0_loses_s5 30/95, s7_plain_noborrow_on_26_chassis (the FAKE-ablated control) 45/93. The borrow is worth +19 and masks no lever; both kills stand on the current -mel -msoft-float chassis.
 - verdict: CONFIRMED
+
+## s11 hypotheses (2026-09-08, rederive)
+
+All measured on: `-mel -msoft-float` chassis, `INCLUDE_ASM` on main, the banked
+s5/s7 candidate.c body (goto exits + block-2 ret staging borrow) unless stated.
+FAKE state: the block-2 variable-reuse borrow present except where "plain" is
+stated. Artifacts: `tmp/grind/func_8002E6B0/s11/`.
+
+### H1 — KILLED (instance). The control-flow SHAPE is a byte-relevant degree of freedom on the 26 chassis.
+**Probe.** Fresh m2c decompile of `asm/funcs/func_8002E6B0.s` yields a nested-if
+shape (`s11/m2c.c`). Installed with the block-2 borrow (t3), plus seven more
+independently derived shapes (u1-u4, u8, w2, w3, w4).
+**Result.** All score 26 / 96 and, where hashed, produce disassembly md5
+754665bc — byte-identical to the banked goto body. The plain (no-borrow) nested
+form is 45/93, exactly the goto chassis's no-borrow control, so the exit form
+contributes nothing on its own either. GCC 2.7.2's jump/cross-jump passes
+normalise the two shapes to one RTL. **Do not re-spell control flow.**
+
+### H2 — KILLED (instance). The four `s32 *` parameters are the wrong object model (s10 frontier item 3).
+**Probe.** (a) Read the target's argument loads; (b) measured a
+`struct V { s32 x, y, z; }` form via in-body casts (t6) and the `u8 *` +
+`*(s32 *)(p + off)` form that the matched sibling func_8002EA24 uses in this
+same file (w1, w4).
+**Result.** The target reads each argument as base+0 / base+8 off its own
+incoming register — addressing that `s32 *` indexing and struct member access
+emit identically, i.e. NOT the stride evidence the frontier required. Both
+object-model forms score 26 / 96 with disassembly md5 754665bc. A by-value
+3-component struct is excluded independently: all four arguments arrive in
+a0..a3. The axis is closed.
+
+### H3 — KILLED (instance, re-audit of the s8 kill on the current chassis).
+**Statement.** ret's birth placement (top / late / inside block 1's braces) or
+the restore's position inside block 2 changes the object.
+**Probe.** u1 (uninit ret, `ret = 0` immediately before the first if — the
+position the target's delay-slot `addu v0,zero,zero` occupies), u2 (mid-block-2
+restore), u3 (both), u4 (`ret = 0` between block 1's two cross products), u7
+(the same late init on the goto chassis).
+**Result.** All 26 / 96, md5 754665bc. s8's instance kill is CONFIRMED on the
+current chassis and additionally on the nested-if chassis.
+
+### H4 — KILLED (instance). The target's delay-slot `addu $v0,$zero,$zero` is the surviving arm of a per-block predicate assignment.
+**Mechanism proposed.** `ret = (cross_center ^ cross_point) >= 0; if (ret) {...}`
+would let jump-optimisation keep the `ret = 0` arm (live at the exit) and delete
+the `ret = 1` arm (ret is overwritten by the next block's predicate), which
+explains a return register born mid-block-1 on the failing edge only — and it
+needs NO `ret = 0` restore after the staging borrow, which would remove one of
+the two residual moves.
+**Probe.** Eight predicate-chain bodies (`sweep_x.json`): nested/goto, with and
+without the borrow, `!ret` / `ret == 0` / ternary spellings, borrow in block 1
+only, borrow in blocks 2+3.
+**Result.** 47-56 at 93-95 insns; nothing near 26. GCC 2.7.2 materialises the
+boolean (xor / nor / srl) and branches on the materialised value instead of
+folding the comparison back into a `bltz`. The reading is wrong.
+
+### H5 — KILLED (instance). A sign-equivalent reformulation of the cross products reaches below 26.
+**Mechanism.** s9's enumerator only permuted commutative operands. Per block,
+reversing the edge direction or the outer subtraction negates BOTH cross
+products, leaving `(cc ^ cp) < 0` unchanged — a spelling axis never measured.
+**Probe.** All 64 combinations (2 bits x 3 blocks), `sweep_y.json`.
+**Result.** Histogram 26..63. Two bodies at 26: the banked spelling and
+`y_001000` (block 2's edge reversed), the latter a DISTINCT object — banked as a
+fresh permuter seed. Reversing the outer subtraction in block 2 or 3 hits the
+target's exact 94-insn count but loses `sw s5,20(sp)` (score 42/43): it moves
+the staged `(ret = dz)` out of first-operand position, s9's single byte-relevant
+bit. Insn-count parity and the sixth callee-save are mutually exclusive on this
+axis.
+
+## [s11] The control-flow SHAPE is a byte-relevant degree of freedom on the 26 chassis: m2c's nested-if reconstruction, spelled with the block-2 ret staging borrow, produces a different object from the banked goto/early-exit body.
+- mechanism: A fresh m2c decompile of asm/funcs/func_8002E6B0.s reconstructs the function as nested ifs (ret=0; if (p1>=0) { if (p2>=0) { ret = ~p3 >>u 31; } } return ret), not the goto+end-label chassis the ledger has used since s3. If GCC 2.7.2's jump/cross-jump passes did NOT normalise the two, the exit form would be an unexplored axis carrying the ret pseudo's live range.
+- probe: tools/sweep_variants.py over t3 (nested + borrow), t1/t2/t4 (nested, inlined conditions / no borrow), u1-u4 and u8 (nested with ret born late, born inside block 1, mid-block-2 restore, ternary inner test), w3 (the mixed-exit idiom the matched sibling func_800283D0 uses), w4 (nested + u8-cast object model); then disassembly md5 of each 26-scoring body against the banked candidate.
+- result: Every one of them scores 26 / 96 insns and hashes to disassembly md5 754665bc - byte-identical to the banked goto body. The plain (no-borrow) nested form is 45/93, exactly the goto chassis's no-borrow control, so the exit form contributes nothing on its own either. Non-neutral bodies on this chassis: m2c's literal statement order with every temp named 53/94, fully-inlined conditions 60/62, block-3-only staging 48/95, borrow in blocks 2+3 34/94.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the s5/s7 candidate.c body; the block-2 variable-reuse staging borrow present in t3/u1-u4/u8/w3/w4 and absent in t2
+
+## [s11] The four s32* parameters are the wrong object model, and a struct or byte-pointer parameter type changes the addressing that feeds the multiplies (s10 frontier item 3).
+- mechanism: Per splat-symbol-names-are-not-evidence the case had to be made from base-register/stride evidence in the target asm. The target reads every argument as base+0 and base+8 off its own incoming register (lw t2,0(a0) / lw t1,8(a0); likewise a1, a2, a3) - a common base with two offsets, which both s32* indexing and struct member access emit identically, so the asm carries no discriminating stride evidence.
+- probe: Two spelled forms measured on the 26 chassis: t6, a struct V { s32 x, y, z; } accessed through in-body casts; and w1/w4, u8* parameters with *(s32 *)(p) / *(s32 *)(p + 8), the idiom the matched sibling func_8002EA24 uses in this same file.
+- result: Both score 26 / 96 with disassembly md5 754665bc, byte-identical to the s32* body. A by-value 3-component struct is excluded independently: all four arguments arrive in a0..a3, which twelve words cannot. The object-model axis is closed with a measurement, not an argument.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the s5/s7 candidate.c body with the block-2 staging borrow present
+
+## [s11] ret's birth placement - declared uninitialised with ret = 0 written just before the first if, or written inside block 1's braces, or the block-2 restore moved mid-block - changes the object (re-audit of the s8 ret-init-placement instance kill, as the KILL RE-AUDIT directive required).
+- mechanism: The target's return register is born mid-block-1: addu $v0,$zero,$zero sits in the first bltz's delay slot, so $v0 is free as block-1 scratch before it, whereas our s32 ret = 0 at function entry gives reg 96 a birth at which record_one_conflict (global.c:1392) IORs hard_regs_live - containing $v0 - into its hard_reg_conflicts. Moving the birth later should drop that conflict edge.
+- probe: u1 (uninit ret, ret = 0 immediately before the first if - the exact source position of the target's delay-slot insn), u2 (mid-block-2 restore), u3 (both), u4 (ret = 0 between block 1's two cross products), u7 (the same late init on the goto chassis rather than the nested one).
+- result: All five score 26 / 96 with disassembly md5 754665bc. s8's instance kill is CONFIRMED on the current chassis and extended to the nested-if chassis. Source-level placement of the ret initialisation does not move reg 96's RTL birth, because GCC sinks the constant store to the edges regardless.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, both the goto and nested-if 26 chassis, block-2 staging borrow present
+
+## [s11] The target's delay-slot addu $v0,$zero,$zero is the surviving arm of a per-block predicate assignment, so spelling each block as ret = (cross_center ^ cross_point) >= 0; if (ret) { ... } reproduces the target's return-register lifetime and removes the restore move.
+- mechanism: Under that source, jump optimisation would keep the ret = 0 arm (live at the function exit) and delete the ret = 1 arm (dead - ret is overwritten by the next block's predicate), which is exactly a bltz with a zero store in its delay slot. It would also make the block-2 staging borrow need NO ret = 0 restore, because block 2 ends by assigning its own predicate to ret - removing one of the two residual moves outright.
+- probe: Eight predicate-chain bodies (sweep_x.json): nested and goto forms, with and without the block-2 borrow, the !ret / ret == 0 / ternary spellings of the exit test, borrow in block 1 only, borrow in blocks 2 and 3.
+- result: 47-56 at 93-95 insns; nothing approaches 26. GCC 2.7.2 materialises the boolean with xor / nor / srl and branches on the materialised value rather than folding the comparison back into a bltz, so the predicate chain costs two extra insns per block instead of saving one. The reading of the delay slot is falsified.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, predicate-chain bodies x1-x8 on the 26 chassis; borrow present in x3-x8, absent in x1/x2
+
+## [s11] A sign-equivalent reformulation of the cross products - reversing a block's edge direction or its outer subtraction order - reaches below 26.
+- mechanism: s9's 1,228-spelling enumeration permuted COMMUTATIVE operands only. Per block, writing dz = a[2] - b[2] instead of b[2] - a[2], or (dx*..) - (dz*..) instead of (dz*..) - (dx*..), negates BOTH cross products, so the (cc ^ cp) < 0 test's meaning is unchanged - a spelling axis the enumerator structurally could not reach, and one that changes which subtraction operand each multiply consumes.
+- probe: All 64 combinations (2 bits x 3 blocks) generated by s11/gen_y.py and swept in one call (sweep_y.json).
+- result: Histogram 26:2 28:2 42:2 43:4 44:2 45:6 47:2 50:6 52:6 58:6 59:8 60:6 61:6 62:2 63:4. Only two bodies reach 26 - the banked spelling and y_001000 (block 2's edge reversed), which is a DISTINCT object at 26 and is banked as a fresh permuter seed. Reversing the OUTER subtraction in block 2 (42) or block 3 (43) reaches the target's exact 94-insn count but loses sw s5,20(sp): it moves the staged (ret = dz) out of first-operand position, s9's single byte-relevant bit in block 2. Insn-count parity and the sixth callee-save are mutually exclusive on this axis.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the 64 y_* bodies on the 26 chassis with the block-2 staging borrow present in every one
