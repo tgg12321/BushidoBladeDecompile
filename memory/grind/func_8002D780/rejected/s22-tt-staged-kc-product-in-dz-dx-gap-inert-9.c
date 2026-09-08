@@ -137,94 +137,6 @@
  * tie into dx's quantity, dx's refs go 3 -> 5 and its death extends to the kp subu:
  * priority 3125 vs dz's 2500, dx wins the seat, emission order untouched. See
  * evidence.md / hypotheses.md s17. */
-/* s19 (2026-09-08, forensics) - body UNCHANGED, floor re-measured 2/202 on HEAD 2c87428f.
- * Two whole-TU instrumented dumps (tools/gcc-2.7.2/cc1, BB2_SUGG_DEBUG/BB2_QTY_DEBUG/
- * BB2_RANK_DEBUG) replaced the s18 frontier's suggestion hypothesis with a complete model of
- * the seat.  tmp/grind/func_8002D780/s19/w_bk (this body) and .../w_tt (the (T,T) chassis).
- *
- * 1. The suggestion pass is NOT the original's mechanism.  Block 7 has ncopysugg=0 nsugg=0 on
- *    all seven of its quantities on both chassis - and so does the MATCHED sibling
- *    func_8002E6B0, which reaches the very same dx-before-dz seat order with no suggestion at
- *    all (blk=1 reg117/reg120, blk=2 reg138/reg141).  In this whole TU a copy suggestion
- *    exists only on block-0 pseudos copied out of the incoming parameter registers
- *    ($a0-$a3, copysugg=4,5,6,7).
- * 2. The seat is a WHOLE-TABLE allocation.  qty_order for block 7 is az, qx, qz, tail, ax
- *    (all 10000/5000 priority, pairwise disjoint, all five reuse $v0), and only then dz and
- *    dx.  On this body dx [10,20] is allocated first and takes $v1, dz [4,16] takes $a0 =
- *    the target's seats.  On the (T,T) chassis dz and dx tie at 2500 (spans 12 and 12),
- *    local-alloc.c:1719 seats dz first, and the two registers exchange.
- * 3. The condition, exactly: correct seats need birth(dx) - birth(dz) > death(dx) - death(dz).
- *    The right-hand side is 4 in every layout measured in this grind, because sched1 sinks
- *    the (pz - z0) subu between the third and fourth multiplies.  The target's own final
- *    instruction order supplies a left-hand side of exactly 4 - a tie - so the order
- *    local-alloc saw when the original was compiled was not the original's final order.
- * Next: make the two DEATHS 2 apart at local-alloc time (the sibling's native shape) rather
- * than trying to move the births.  See evidence.md / hypotheses.md s19. */
-/* s20 (2026-09-08, forensics) - body UNCHANGED, floor re-measured 2/202 on HEAD 01bd10a2.
- * First trace-level attribution of block 7's residual, from BB2_SCHED_DEBUG/BB2_PRIO_DEBUG
- * dumps of the instrumented cc1 (run it as BB2_CC1=tools/gcc-2.7.2/cc1 - buildconfig's
- * build/cc1 is NOT instrumented and silently emits an empty debug stream):
- *  - sched.c schedules each block BACKWARDS; emission order is the reverse of the pick
- *    order, and rank_for_schedule (sched.c:2408-2464) has only three terms - INSN_PRIORITY,
- *    dependence class against last_scheduled_insn, INSN_LUID.
- *  - the az/dx transposition is settled by INSN_LUID at pass-1 clock 40 AND pass-2 clock 47
- *    (both subus priority 1, both class 3), so it is decided by SOURCE ORDER alone and
- *    sched2 cannot repair it.
- *  - a single-use query difference is always emitted immediately before its own multiply:
- *    it becomes ready only when that multiply is scheduled and the multiply unit is then
- *    blocked 11 cycles, so it is the only unblocked filler. That pins
- *    death(dx) - death(dz) = 4 for the target's multiply order.
- * NEW LANDMARK: `q = dx * (pz - z0); kp = dz * (px - x0) - q;` on the (T,T) declaration
- * order (ax, dz, dx, az) is the FIRST form in 20 sessions to hold the target's block-7
- * emission order AND the target's block-7 seats at once (dx qty4 [8,16] got $v1, dz qty1
- * [4,20] got $a0, no tie). It scores 32 because it swaps the two kp multiplies and because
- * the extra `q` pseudo renames the centroid block's global allocation. Banked as
- * rejected/s20-tt-staged-dx-product-target-seats-and-order-kp-mults-swapped-32.c; the two
- * residual causes are s20's frontier. See evidence.md / hypotheses.md s20. */
-/* s21 (2026-09-08, forensics) - body UNCHANGED, floor re-measured 2/202 on HEAD 722aa906
- * (swept as BK_base alongside FF_base 4 and TT_base 9, so the s16 quadrant table reproduces).
- * s21 corrected s20's attribution of the TT_qdx landmark's 26-instruction centroid half and
- * closed the compensation axis it proposed:
- *  - The extra `q` pseudo is NOT the cause. `ax = dx * (pz - z0); kp = (dz * (px - x0)) - ax;`
- *    borrows an already-dead block-7 local, adds no allocno, reaches EXACTLY TT_qdx's block-7
- *    quantity table (dx [8,16] got $v1, dz [4,20] got $a0 = the target's seats) - and still
- *    produces the whole centroid rename. 32/202. Eleven further no-new-pseudo carriers
- *    (kp split against itself, az borrowed, kc split) score 36-42.
- *  - The real mechanism is global_alloc: `;; N regs to allocate:` (the post-qsort allocno
- *    order, global.c:575) permutes the centroid holders, and the ONLY input that moves is
- *    allocno_live_length. From the .lreg dumps, n_refs identical, live_length w_bk/w_tt/w_qdx/
- *    w_ax = 101: 38/38/40/40, 102: 35/34/34/34, 103: 35/35/33/33, 110: 18/19/19/21,
- *    115: 26/26/28/28, 116: 26/26/24/22. Pseudos 115 and 116 (the two query holders) are
- *    EXACTLY TIED at 26 on every chassis that allocates the centroid correctly; allocno_compare
- *    (global.c:635-655) then falls through to the allocno NUMBER (global.c:655). They die at
- *    the two kp multiplies, so every seat fix breaks that tie.
- *  - The birth side cannot compensate: all 56 placements/orders of the px/pz declarations on
- *    the TT_qdx chassis score EXACTLY 32 (byte-inert), and all 24 coordinate-declaration orders
- *    on both carriers score 32-34.
- * NET: block 7's kp multiply order is read by qty_compare_1 (wants dx's product expanded first)
- * and by allocno_compare (wants the target's order, to keep 115/116 tied). Do NOT spend another
- * session on multiply-order spellings or on the outer declaration list. The unspent lever is
- * s17's L2: get a THIRD block-7 computation emitted BETWEEN dz's subu and dx's subu while
- * keeping (T,T)'s ax-before-dz source order - that lengthens dz's span without moving either
- * multiply, and it is what the (F,T) quadrant does natively. See evidence.md / hypotheses.md s21. */
-/* s22 (2026-09-08, escalation) - body UNCHANGED, floor re-measured 2/202 at dispatch HEAD.
- * FAKE re-audit: keep-all 2, drop-1 6 (the sole FAKE, the same-value re-store of `m`, is
- * load-bearing and sits on the sqrt block's pseudo, not on the residual's dz/dx/az).
- * s22 executed the coupled-sibling owner directive and closed the two remaining frontier
- * items with measurements:
- *  - The MATCHED sibling func_8002E6B0's own spelling (src/code6cac_b.c:1332-1364: the two
- *    edge differences named, BOTH the centroid and the query differences inline, in an inner
- *    brace) transplants to EXACTLY 2/202 in all four forms - and dz-before-dx and
- *    dx-before-dz become byte-identical, because with the centroid differences inline the
- *    two named subus no longer bracket a third one and the s16 quadrant bit has nothing to
- *    order. The sibling holds no spelling this chassis lacks.
- *  - L2 (an insn in the dz->dx gap) is exhausted over block 7's whole value set: the six
- *    differences (s15/s16/s18/s21) and now both STAGED PRODUCTS - `s32 p1 = dz * ax;` in the
- *    gap with `kc = p1 - (dx * az);` scores exactly 9, the (T,T) baseline to the byte.
- *  - allocno_compare's n_refs side has no C handle: all four query-holder read-inlining
- *    spellings score exactly 32 on the TT_axcarrier chassis (cse refolds the load).
- * Disposition filed: docs/grind/decisions.md, 2026-09-08 OWNER-ESCALATION ... ROTATED.
- * See evidence.md / hypotheses.md s22. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -273,16 +185,16 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             if ((kc ^ kp) >= 0) {
                 s32 ax = cx - x0;
                 s32 dz = z2 - z0;
-                s32 az = cz - z0;
+                s32 p1 = dz * ax;
                 s32 dx = x2 - x0;
-                kc = (dz * ax) - (dx * az);
+                s32 az = cz - z0;
+                kc = p1 - (dx * az);
                 kp = (dz * (px - x0)) - (dx * (pz - z0));
                 if ((kc ^ kp) >= 0)
                     return 1;
             }
         }
     }
-
     {
         s32 y = *(s32 *)(obj + 0x108);
         s32 sp_var;

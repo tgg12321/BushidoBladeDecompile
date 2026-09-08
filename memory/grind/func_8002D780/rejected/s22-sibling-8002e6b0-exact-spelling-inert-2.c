@@ -207,24 +207,6 @@
  * s17's L2: get a THIRD block-7 computation emitted BETWEEN dz's subu and dx's subu while
  * keeping (T,T)'s ax-before-dz source order - that lengthens dz's span without moving either
  * multiply, and it is what the (F,T) quadrant does natively. See evidence.md / hypotheses.md s21. */
-/* s22 (2026-09-08, escalation) - body UNCHANGED, floor re-measured 2/202 at dispatch HEAD.
- * FAKE re-audit: keep-all 2, drop-1 6 (the sole FAKE, the same-value re-store of `m`, is
- * load-bearing and sits on the sqrt block's pseudo, not on the residual's dz/dx/az).
- * s22 executed the coupled-sibling owner directive and closed the two remaining frontier
- * items with measurements:
- *  - The MATCHED sibling func_8002E6B0's own spelling (src/code6cac_b.c:1332-1364: the two
- *    edge differences named, BOTH the centroid and the query differences inline, in an inner
- *    brace) transplants to EXACTLY 2/202 in all four forms - and dz-before-dx and
- *    dx-before-dz become byte-identical, because with the centroid differences inline the
- *    two named subus no longer bracket a third one and the s16 quadrant bit has nothing to
- *    order. The sibling holds no spelling this chassis lacks.
- *  - L2 (an insn in the dz->dx gap) is exhausted over block 7's whole value set: the six
- *    differences (s15/s16/s18/s21) and now both STAGED PRODUCTS - `s32 p1 = dz * ax;` in the
- *    gap with `kc = p1 - (dx * az);` scores exactly 9, the (T,T) baseline to the byte.
- *  - allocno_compare's n_refs side has no C handle: all four query-holder read-inlining
- *    spellings score exactly 32 on the TT_axcarrier chassis (cse refolds the load).
- * Disposition filed: docs/grind/decisions.md, 2026-09-08 OWNER-ESCALATION ... ROTATED.
- * See evidence.md / hypotheses.md s22. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -271,11 +253,9 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             kc = z2 * cx - x2 * cz;
             kp = z2 * px - x2 * pz;
             if ((kc ^ kp) >= 0) {
-                s32 ax = cx - x0;
                 s32 dz = z2 - z0;
-                s32 az = cz - z0;
                 s32 dx = x2 - x0;
-                kc = (dz * ax) - (dx * az);
+                kc = (dz * (cx - x0)) - (dx * (cz - z0));
                 kp = (dz * (px - x0)) - (dx * (pz - z0));
                 if ((kc ^ kp) >= 0)
                     return 1;

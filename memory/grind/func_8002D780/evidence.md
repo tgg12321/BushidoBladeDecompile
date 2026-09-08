@@ -2320,3 +2320,61 @@ v21.json, v21b.json, v21c.json, pairdiff_TT_axcarrier.txt, w_ax/}.
 - [s21] All 56 px/pz declaration placements on the TT_qdx chassis score exactly 32, confirming at the score level that a load's birth is set by sched1's placement and not by the C declaration position.
 
 - [s21] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate ad958282d982 scores 2 under our cc1 and 46 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
+
+## s22 (2026-09-08, escalation) — chassis re-measured 2/202; owner directive executed; L2 closed
+
+Chassis check at dispatch HEAD (`-mel -msoft-float`), `memory/grind/func_8002D780/candidate.c`
+spliced into `src/code6cac_b.c`: `sandbox func_8002D780 --disable all` ->
+`{"score": 2, "target_insns": 202, "build_insns": 202, "cheat_asm_stripped": 23}`.
+Mandated FAKE re-audit: `python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b
+--candidate memory/grind/func_8002D780/candidate.c` -> 1 FAKE unit (the same-value re-store of
+the local `m`), keep-all **2/202**, drop-1 **6/202**. The sole FAKE is load-bearing and sits on
+the `m`/`lzcr` pseudo in the sqrt block, NOT on the `dz`/`dx`/`az` pseudos where the residual
+is — so no lever in this ledger was measured with a FAKE carrier occupying its target pseudo.
+`python3 tools/scan_hand_coded.py --single func_8002D780` -> **tier=LOW score=1/8** (212 insns);
+only S4 (6 loads in an 8-insn window @ insn 163) fires.
+
+**Owner directive `auto-return: coupled sibling moved after rotation — func_8002E6B0 -> floor 0`
+EXECUTED and measured (this is its first ledger acknowledgement).** The sibling reached
+COMPLETED-C and its matched body is on main at `src/code6cac_b.c:1332-1364`. Its per-edge
+spelling is `{ s32 dz = ...; s32 dx = ...; cross_center = (dz * (cx - x0)) - (dx * (cz - z0));
+cross_point = (dz * (qx) ) - (dx * (qz)); }` — i.e. the two EDGE differences named and BOTH the
+centroid and the query differences left inline, the pair declared in a brace of its own. Four
+transplants of that exact spelling onto this chassis (`tmp/grind/func_8002D780/s22/v22/SIB_*.c`)
+all score **exactly 2/202 at 202 insns**: `SIB_dz_dx`, `SIB_dx_dz`, `SIB_brace` (the sibling's
+own inner-brace scoping) and `SIB_ax_az_kept` (sibling ordering with our named `ax`/`az` kept).
+Notably `SIB_dz_dx` and `SIB_dx_dz` are byte-identical to each other and to the banked chassis:
+once the centroid differences are INLINE, the dz/dx declaration order stops being an input at
+all, because sched1 re-sinks each inline difference to just before its own multiply and the
+two named edge differences no longer bracket a third subu. The sibling therefore carries no
+spelling this chassis does not already have, and the coupled-sibling re-activation trigger is
+now spent.
+
+**L2 (the s21 top frontier item) is closed by exhaustion of block 7's value set.** s18 had
+measured the two query DIFFERENCES (`qx = px - x0`, `qz = pz - z0`) in the dz->dx gap and found
+them exactly inert, because sched1 re-sinks a single-use difference to immediately before its
+consuming multiply. s21's refinement asked for a gap filler whose consumer is the kc/kp
+SUBTRACTION rather than a multiply, so that sink cannot happen. Block 7 computes exactly six
+differences and four products and nothing else, so that refinement has exactly one unmeasured
+instantiation: a STAGED PRODUCT declared between `dz` and `dx`. Measured this session on the
+(T,T) chassis: `L2_p_kc_first` (`s32 p1 = dz * ax;` in the gap, `kc = p1 - (dx * az);`) scores
+**exactly 9 — its chassis baseline to the byte**, i.e. byte-inert exactly as the query
+differences were; `L2_p_kp_first` 30, `L2_p_both` 27, `L2_az_in_gap` exactly 2 (the BK baseline,
+inert), `L2_kc_borrow` 43 at 188 insns (borrowing `kc` as the staged product changes the body
+shape). Every value that exists in block 7 has now been placed in the gap and none of them
+lands there in sched1's output.
+
+**Frontier item 3 (n_refs on the query holders) is closed.** Measured on the TT_axcarrier
+chassis — the one chassis that already holds the target's block-7 seats AND the target's
+block-7 emission order (s21) and whose entire 32-instruction residual is the centroid
+allocno-order rename. All four spellings that change a query holder's C-level reference count
+(inlining the `px` or the `pz` read in test 1 or in test 2 as a direct `*(s32 *)(obj + 0x100)` /
+`*(s32 *)(obj + 0x104)` memory read) score **exactly 32 — AXC_base's score to the byte**. cse
+refolds the redundant load back onto the existing pseudo before regclass counts references, so
+the C level has no handle on `reg_n_refs` here; this reproduces, on a new chassis and for the
+query holders, the same refold s16 measured for `dz`.
+
+Artifacts: `tmp/grind/func_8002D780/s22/` (`base.sh`, `gen_s22.py`, `sweep.sh`, `report.py`,
+`v22/` 16 bodies, `v22.json`, `src_backup.c`).
+
+- [s21] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate 3490eff0b5df scores 2 under our cc1 and 46 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).
