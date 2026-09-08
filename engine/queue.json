@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80042C80",
-      "file": "text1a_c",
-      "distance": 58,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8003F824",
       "file": "config",
       "distance": 61,
@@ -1380,14 +1372,14 @@
     }
   ],
   "counts": {
-    "total": 155,
-    "active": 152,
+    "total": 154,
+    "active": 151,
     "by_status": {
-      "active": 152,
+      "active": 151,
       "foreclosed": 3
     },
     "by_verdict": {
-      "C": 128,
+      "C": 127,
       "ASM-PARTIAL": 24
     }
   }

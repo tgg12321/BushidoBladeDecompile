@@ -1,0 +1,10 @@
+# SELF-VET - func_80042C80
+CONSTRUCTS: none (ordinary C only: s16/s32 local declarations, named product intermediates that are real consumed values, and a live store `a1[2] = sinB;` placed after `cosB_cosC = cosB * cosC;`)
+## T1 semantic purpose: Every statement is a live computation of the 3x3 rotation matrix written to a1[0..8]; every local is written and read; the `a1[2] = sinB;` store is one of the nine required outputs. Nothing is byte-identical-with-or-without: removing any statement changes the function's output. PASS.
+## T2 human-programmer: A programmer building a fixed-point rotation matrix from a sin table naturally names the reused products (sab12 is read twice, cab12 once, etc.) and stores the raw sinB element when it is at hand. The s16 type for table elements mirrors `extern s16 Judge[]`; cosB/cosC as s32 is an ordinary widening choice. The same shape passed the Judge for the sibling func_80042874 (docs/grind/decisions.md:4905). PASS.
+## T3 GCC-internals justification: The mechanism note in candidate.c (combine.c:914-917, reload1.c:2322) is pass ATTRIBUTION recorded for the ledger, not the reason the code exists - the program logic (compute nine matrix entries from six table reads) explains every statement. No lever-named construct, no construct that exists only to steer a pass. PASS.
+## T4 permuter/search provenance: No permuter, no auto-search. Three hand-written forms measured (53 -> 83 -> 0), each derived from reading the target asm load/store shape and the sibling's matched C. PASS.
+## T5 family check: No forbidden family present: no pins, no asm, no volatile (the retired body's `*(volatile u16 *)` cast on Judge is GONE), no dead stores, no dead locals, no pads, no do-while(0), no goto, no casts beyond the `(s16)angX` narrow reads the sibling also carries. PASS.
+## T6 naming-announces-intent: Names are sinA/cosB/sab12/cab12_cosC etc. - they name the value held; no pad/dummy/unused/spill/tmp names. PASS.
+SANCTIONED-FAMILY-CLAIMS: none
+ANNOTATION-CONFORMANCE: n/a - no FAKE construct
