@@ -295,9 +295,9 @@
  "origin": "queue",
  "created": "2026-08-18T16:50:40.473817+00:00",
  "owner_continue_until_session": 23,
- "exhaustion_base": 36,
- "last_unpark_reason": "owner 2026-09-06 foreclosed-bucket review: FORENSICS probe first - build the minimal scratch translation unit holding only the loop-1-exit/loop-2-preheader copy geometry under the exact project flags and read .cse2/.combine dumps to name the protecting context (ledger frontier item 3, marked unspent since s35). Test the pass decision in isolation, not inside the 15-local chassis.",
- "last_unpark_at": "2026-09-06T16:57:06.708297+00:00",
+ "exhaustion_base": 46,
+ "last_unpark_reason": "Newly VISIBLE completed siblings in the same TU (tombstone backfill, commit 0ddc72c8): func_80017D84 \u2014 already named by this ledger's own s45 object-model audit as the source of its 52-byte data model \u2014 plus func_80016E60 and main, all COMPLETED-C in src/ings.c and never read by this ledger. PROBE: read their on-main bodies and transplant their loop-2 preheader / copy-geometry spellings onto the f",
+ "last_unpark_at": "2026-09-08T01:58:36.569292+00:00",
  "kills": [
   {
    "session": 29,
