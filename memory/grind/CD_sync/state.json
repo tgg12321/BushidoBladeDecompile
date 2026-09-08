@@ -779,9 +779,9 @@
  ],
  "origin": "queue",
  "created": "2026-07-07T15:21:29.115668+00:00",
- "exhaustion_base": 116,
- "last_unpark_reason": "owner ruling 2026-09-04 (decisions.md foreclosed-bucket re-evaluation, Ruling A): window RESET; backstop false positive over s116's CONFIRMED lever; probes: CD_datasync s58 CD_alarm-struct transplant onto j1 (addend-resolving scorer), sched_solver+ra_solver on j1/h1 (frontier[1]), fresh-seed permuter from j1/h1. Cross-symbol arithmetic idiom refusal (2026-07-20) + all judge_constraints stand.",
- "last_unpark_at": "2026-09-05T01:14:01.059909+00:00",
+ "exhaustion_base": 125,
+ "last_unpark_reason": "Sibling trigger FIRED. The 2026-09-06 foreclosed-review named 'a CD_ready floor drop' as this item's re-activation trigger; CD_ready reached floor 0 and COMPLETED-C on 2026-09-06 (s88, Judge PASS) and nothing propagated it (the merge path deleted the ledger \u2014 fixed 2026-09-07, commit 0ddc72c8). PROBE: transplant CD_ready's on-main do_timeout window from src/system.c (pp=and-D_800F19C0 alias, do-wh",
+ "last_unpark_at": "2026-09-08T01:39:28.151482+00:00",
  "kills": [
   {
    "session": 108,
