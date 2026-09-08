@@ -1926,3 +1926,118 @@ qty_compare_1 tie would never be reached.
 - [s18] The (T,T) chassis pairdiff (tmp/grind/func_8002D780/s18/pairdiff_TT_base.txt) shows 14 differing instructions that are entirely a dz/dx hard-register exchange plus its cascade - the emission order is already the target's.
 
 - [s18] block_alloc allocates SUGGESTED quantities in a separate loop BEFORE it sorts the rest by length of life (local-alloc.c:1494-1527, ordered by qty_sugg_compare at local-alloc.c:1694). Block 7 currently has no suggested quantity at all - there is no QTYDBG-SUGG line for blk=7 in w_n6/stderr_full.txt, and every block-7 SUGGDBG-QTY line reports ncopysugg=0 nsugg=0. This comparator has never been considered by this grind.
+
+## s19 (forensics, 2026-09-08) - the seat is a whole-table allocation, not a two-quantity comparison
+
+**Chassis re-measured at dispatch.** `sandbox func_8002D780 --disable all` -> {"score": 2,
+"target_insns": 202, "build_insns": 202} with memory/grind/func_8002D780/candidate.c spliced
+into src/code6cac_b.c (HEAD 2c87428f, -mel -msoft-float).  The floor is intact.
+
+**FAKE re-audit (mandated by the brief).** `python3 tools/fake_ablate.py --func func_8002D780
+--file code6cac_b --candidate memory/grind/func_8002D780/candidate.c` -> 1 FAKE unit, keep-all
+2/202, drop-1 6/202.  The single annotated construct (the same-value re-store of `m`) lives in
+the sqrt block and is worth 4 instructions THERE; the block-7 residual is present in both
+ablation states, so every block-7 kill in this ledger is FAKE-independent.
+
+### Frontier item 1 (the suggestion pass) is dead, and the matched sibling says why
+Both chassis were re-dumped with the instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_SUGG_DEBUG /
+BB2_QTY_DEBUG / BB2_RANK_DEBUG / BB2_DBR_DEBUG) - tmp/grind/func_8002D780/s19/w_bk and
+.../w_tt, 12,170 stderr lines each, 1,522 SUGGDBG-QTY lines covering every function in the TU.
+
+  * func_8002D780 block 7 carries `ncopysugg=0 nsugg=0` on all seven pseudo quantities, on
+    BOTH the banked chassis and the (T,T) chassis.
+  * The MATCHED sibling func_8002E6B0 - the same point-in-triangle predicate, COMPLETED-C on
+    main - carries `ncopysugg=0 nsugg=0` on EVERY quantity of its three predicate blocks
+    (blk=1 qty0 reg117 and qty3 reg120; blk=2 qty0 reg138 and qty4 reg141).  Its only
+    suggested quantities are blk=0 qty0-3, regs 72-75, with `copysugg=4,` `5,` `6,` `7,` -
+    the four incoming parameters copied out of $a0-$a3 at function entry.  func_8002D320
+    (also COMPLETED-C) has no suggested quantity anywhere.
+  So the original source did NOT reach the target seats through a hard-register suggestion:
+  the matched sibling reaches exactly the same dx-before-dz seat order with nsugg = 0.  In
+  this whole TU a copy suggestion is created only where a pseudo is copied out of an incoming
+  parameter register in block 0.
+
+### How the matched sibling gets the seat, measured
+func_8002E6B0 blk=1: dz = qty0 reg117 birth 2 death 10 refs 3; dx = qty3 reg120 birth 6
+death 12 refs 3.  Births 4 apart, DEATHS ONLY 2 APART, so the spans are 8 and 6 and
+qty_compare_1 gives dz 3750 against dx 5000 - dx sorts first with no tie to break.  The
+deaths are close together because in the sibling the query differences (arg3[0] - arg0[0],
+arg3[2] - arg0[2]) are common subexpressions across its three tests and cse hoists them into
+block 0, so nothing is interleaved between the two multiplies that kill dz and dx.  In
+func_8002D780 the query differences are unique to test 3, sched1 sinks each one to just
+before its consuming multiply, and the deaths land 4 apart.
+
+### The complete seat model for block 7 (new; supersedes the "dz vs dx" framing)
+Block-7 quantity tables, read off the QTYDBG lines of both dumps (positions are 2 units per
+RTL insn):
+
+  banked chassis (ax, dz, az, dx):   ax q0 [2,6] r2 | dz q1 [4,16] r3 | az q4 [8,12] r2 |
+                                     dx q5 [10,20] r3 | qx q8 [14,16] | qz q11 [18,20] | q14 [26,28]
+    priorities: az/qx/qz/q14 = 10000, ax = 5000, dx = 3000, dz = 2500
+    allocation order (ord=0..6): az, qx, qz, q14, ax -> ALL got $v0 (they are pairwise
+    disjoint, so find_free_reg reuses reg 2 five times); then dx -> $v1 ($v0 blocked by az);
+    then dz -> $a0 ($v0 blocked by ax, $v1 blocked by dx).  TARGET SEATS.
+
+  (T,T) chassis (ax, dz, dx, az):    ax q0 [2,6] r2 | dz q1 [4,16] r3 | dx q4 [8,20] r3 |
+                                     az q5 [10,12] r2 | qx q8 [14,16] | qz q11 [18,20] | q14 [26,28]
+    priorities: az/qx/qz/q14 = 10000, ax = 5000, dz = dx = 2500 (EXACT TIE)
+    allocation order: az, qx, qz, q14, ax -> all $v0; then dz (lower quantity number wins the
+    tie at local-alloc.c:1719) -> $v1; then dx -> $a0.  SEATS REVERSED.
+
+So the seat is not decided by a two-quantity comparison: it is decided by the whole table's
+qty_order plus find_free_reg's $v0 reuse chain.  $v1 is free when the first of dz/dx is
+allocated precisely because all five short quantities are pairwise disjoint and share $v0.
+The model predicts the s16 quadrant trichotomy without a new measurement: (F,F) gives
+dz [2,16] span 14 -> 2142 and dx [10,20] span 10 -> 3000, dx first, seats CORRECT (s16
+recorded "all registers correct, score 4"); (T,F) is the banked chassis; (F,T) is the s14
+sibling-transplant body.  Only (T,T) ties.
+
+### The arithmetic condition, stated exactly
+Correct seats require span(dx) < span(dz), i.e.
+    birth(dx) - birth(dz)  >  death(dx) - death(dz).
+In every layout measured in this grind the right-hand side is 4 (dz dies at the third
+multiply, dx at the fourth, with one query-difference subu between them).  The target's OWN
+final instruction order (asm/funcs/func_8002D780.s:103-121) puts only the first multiply
+between the two subus, i.e. a left-hand side of 4 - an exact tie, which local-alloc.c:1719
+resolves for dz.  Therefore the instruction order local-alloc saw when the original was
+compiled was NOT the original's final instruction order: either a third insn sat between the
+two subus (that is the banked chassis, and sched2 does not restore the target order - RANKDBG
+val=0, sched.c:2464), or the two deaths were 2 apart rather than 4 because the second query
+difference had not yet been sunk between the two multiplies.  The second alternative has
+never been probed and is this session's headline frontier item.
+
+- [s19] Chassis re-measured at dispatch: sandbox func_8002D780 --disable all -> {"score": 2, "target_insns": 202, "build_insns": 202}, candidate.c spliced into src/code6cac_b.c at HEAD 2c87428f (-mel -msoft-float).
+
+- [s19] tools/fake_ablate.py on candidate.c: 1 FAKE unit, keep-all 2/202, drop-1 6/202. The FAKE (same-value re-store of `m`) is in the sqrt block; the block-7 az/dx residual is present with and without it, so the block-7 kill ledger is not FAKE-masked.
+
+- [s19] func_8002D780 block 7 has NO suggested quantity on either chassis: all seven pseudo quantities report ncopysugg=0 nsugg=0 (tmp/grind/func_8002D780/s19/w_bk/stderr_full.txt and w_tt/stderr_full.txt, SUGGDBG-QTY lines for blk=7).
+
+- [s19] The MATCHED sibling func_8002E6B0 also has NO suggestion on any predicate-block quantity (blk=1 qty0 reg117 / qty3 reg120, blk=2 qty0 reg138 / qty4 reg141, all ncopysugg=0 nsugg=0). Its only suggested quantities are blk=0 qty0-3 (regs 72-75, copysugg=4,5,6,7) - the four incoming parameters. func_8002D320 has no suggested quantity anywhere in the function. In this TU a copy suggestion exists only where a pseudo is copied out of an incoming parameter hard register in block 0.
+
+- [s19] func_8002E6B0's blk=1 edge differences are dz reg117 birth 2 death 10 refs 3 and dx reg120 birth 6 death 12 refs 3: births 4 apart, deaths 2 apart, spans 8 and 6, so qty_compare_1 gives 3750 vs 5000 and dx sorts first with no tie. The sibling avoids the tie because its query differences are cross-test common subexpressions that cse hoists into block 0, leaving nothing interleaved between the two multiplies that kill dz and dx.
+
+- [s19] Block-7 allocation order, banked chassis (QTYDBG blk=7, w_bk): ord0 az [8,12], ord1 qx [14,16], ord2 qz [18,20], ord3 q14 [26,28], ord4 ax [2,6] - all five got $v0 - then ord5 dx [10,20] got $v1, ord6 dz [4,16] got $a0. Target seats, and they come from find_free_reg's $v0 reuse chain, not from the dz/dx comparison alone.
+
+- [s19] Block-7 allocation order, (T,T) chassis (QTYDBG blk=7, w_tt): ord0 az [10,12], ord1 qx, ord2 qz, ord3 q14, ord4 ax [2,6] - all five got $v0 - then ord5 dz [4,16] got $v1, ord6 dx [8,20] got $a0. dz and dx tie at 2500 and the quantity-number fallback (local-alloc.c:1719) seats dz first.
+
+- [s19] Correct seats require birth(dx) - birth(dz) > death(dx) - death(dz). The right-hand side is 4 in every layout this grind has measured (one query-difference subu sits between the third and fourth multiplies). The target's own final order supplies a left-hand side of exactly 4, so the instruction order local-alloc saw when the original was compiled cannot have been the original's final order.
+
+- [s19] qty_compare_1's tie-break was re-read directly (tools/gcc-2.7.2/local-alloc.c:1680-1685: `tem = pri2 - pri1; if (tem != 0) return tem; return *q1 - *q2;`) and qty_sugg_compare's suggestion-count ordering at local-alloc.c:1694-1719 - s17's reading of both is correct.
+
+- [s19] Chassis re-measured at dispatch: sandbox func_8002D780 --disable all -> {score 2, target_insns 202, build_insns 202} with memory/grind/func_8002D780/candidate.c spliced into src/code6cac_b.c at HEAD 2c87428f (-mel -msoft-float).
+
+- [s19] func_8002D780 block 7 has no suggested quantity on either chassis: all seven pseudo quantities report ncopysugg=0 nsugg=0 in the SUGGDBG-QTY lines for blk=7 (tmp/grind/func_8002D780/s19/w_bk/stderr_full.txt, w_tt/stderr_full.txt).
+
+- [s19] The matched sibling func_8002E6B0 has no suggestion on any predicate-block quantity (blk=1 qty0 reg117 and qty3 reg120; blk=2 qty0 reg138 and qty4 reg141). Its only suggested quantities are blk=0 qty0-3, regs 72-75, copysugg=4,5,6,7 - the four incoming parameters. func_8002D320 has none anywhere.
+
+- [s19] func_8002E6B0 blk=1: dz reg117 birth 2 death 10 refs 3, dx reg120 birth 6 death 12 refs 3 - births 4 apart, deaths only 2 apart, spans 8 and 6, priorities 3750 vs 5000, so dx sorts first with no tie. Its query differences are cross-test common subexpressions cse hoists into block 0, which is why nothing is interleaved between the two multiplies that kill dz and dx.
+
+- [s19] Block-7 allocation order on the banked chassis (QTYDBG blk=7, w_bk): az, qx, qz, tail, ax all got=2 ($v0); dx [10,20] got=3 ($v1); dz [4,16] got=4 ($a0).
+
+- [s19] Block-7 allocation order on the (T,T) chassis (QTYDBG blk=7, w_tt): the same five short quantities all got=2; dz [4,16] got=3; dx [8,20] got=4. dz and dx tie at 2500 and local-alloc.c:1719 seats the lower quantity number.
+
+- [s19] qty_compare_1's tie-break re-read directly at tools/gcc-2.7.2/local-alloc.c:1680-1685 ('tem = pri2 - pri1; if (tem != 0) return tem; return *q1 - *q2;'), and the suggestion pass's separate qty_sugg_compare ordering at local-alloc.c:1494-1527 - s17's and s18's readings of both are correct.
+
+- [s19] tools/fake_ablate.py on candidate.c: 1 FAKE unit, keep-all 2/202, drop-1 6/202; the ablation cost is inside the sqrt block and the block-7 residual is unaffected.
+
+- [s19] src/code6cac_b.c was restored to its HEAD state after the measurements; the working tree carries no source edits from this session.

@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 18,
- "current_modality": "solver",
+ "session_count": 19,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -111,36 +111,34 @@
    "floor": 2,
    "modality": "solver",
    "headline": "s17's top frontier item is closed at the local_alloc entry gate: block 7's four product pseudos prefer LO_REG and never enter local-alloc, so combine_regs can never raise dx's qty_n_refs; hoisting and"
+  },
+  {
+   "session": 19,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics s19: the block-7 seat is a whole-quantity-table allocation, not a dz/dx comparison - the suggestion frontier is dead (the MATCHED sibling gets the same seats with nsugg=0) and the residual r"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "dx's quantity can be seated ahead of dz's without touching qty_compare_1 at all, by giving dx's quantity a hard-register SUGGESTION that dz's quantity does not have: suggested quantities are allocated in their own pass before the length-of-life sort, so the 2500-vs-2500 tie is never reached.",
-   "mechanism": "block_alloc runs `for (i = 0; i < next_qty; i++) { q = qty_order[i]; if (qty_phys_num_sugg[q] != 0 || qty_phys_num_copy_sugg[q] != 0) qty_phys_reg[q] = find_free_reg (...); else qty_phys_reg[q] = -1; }` (local-alloc.c:1505-1527) with qty_order sorted by qty_sugg_compare (local-alloc.c:1694), and only afterwards re-sorts by qty_compare_1 for the unsuggested remainder. Suggestions are created by combine_regs when exactly one side of a would-be tie is a HARD register (local-alloc.c:1855-1900): may_save_copy (a plain move, or an operand with a must-match-0 constraint) sets qty_phys_copy_sugg, otherwise qty_phys_sugg. Block 7 has no hard-register contact today, which is why nsugg = 0 everywhere in it.",
-   "next_probe": "Grep w_n6/stderr_full.txt for the SUGGDBG-QTY lines of the MATCHED sibling func_8002E6B0's predicate block and of func_8002D320 (both COMPLETED-C, both the same point-in-triangle shape) and check whether their edge-difference quantities carry nsugg/ncopysugg > 0; that says whether the original source put block-7-like values in hard-register contact. Then spell the ordinary-C constructions that create such contact for `x2 - x0` on the (T,T) chassis - the value flowing through a function argument or a return value, or the difference being the operand of an insn whose constraint forces operand 0 - and measure them. Read local-alloc.c:1219-1240 for the must_match_0 detection that decides may_save_copy."
+   "hypothesis": "The residual closes by making dz's and dx's DEATHS 2 apart at local-alloc time rather than 4 - the matched sibling's native geometry - instead of trying to move their births. With deaths 2 apart and births 4 apart, dz spans 12 and dx spans 10, dx is seated first with the emission order of the four subus untouched, and sched2 is then free to refill the third multiply's latency slot with the (pz - z0) subu to reproduce the target's final order.",
+   "mechanism": "qty_compare_1 (local-alloc.c:1680-1685) ranks on floor_log2(refs)*refs*size/(death-birth); with refs equal at 3 the seat is decided purely by span. The deaths land 4 apart only because sched1 sinks the (pz - z0) subu to immediately before its consuming multiply (measured in s17 and s18), placing it between the two multiplies that kill dz and dx. sched1's ready-list order is INSN_PRIORITY, then dependence class against the last scheduled insn, then INSN_LUID (sched.c:2408-2464), so the subu stays ahead of the third multiply only if its priority or its dependence class differs - not if it is merely written earlier in the source, which is exactly why s18's interposition sweep was inert.",
+   "next_probe": "Read the block-7 region of tmp/grind/func_8002D780/s19/w_tt/code6cac_b.sched (and the .sched2/.dbr dumps) for the INSN_PRIORITY of the (pz - z0) subu against the third multiply, and the RANKDBG lines that order them, to see by how much and on which term the subu loses. Then look for ordinary-C shapes that raise that subu's priority or lengthen its dependence chain - the sibling's shape, in which the query difference is a common subexpression shared with an EARLIER test so it is computed in a dominating block, is the reference; check whether any algebraic rewrite of tests 1 and 2 of func_8002D780 (which use the origin vertex and so currently contain no query difference) legitimately produces px - x0 or pz - z0 as a shared subexpression while keeping build_insns at 202."
   },
   {
-   "hypothesis": "L1's remaining realisation is a genuine third C-level reference to `x2 - x0` inside block 7: reg_n_refs[dx] = 4 gives priority floor_log2(4)*4/12*10000 = 6666 against dz's 2500 and wins the seat on the (T,T) chassis with the emission order untouched.",
-   "mechanism": "qty_n_refs for an untied quantity is exactly reg_n_refs of its pseudo (the s18 class kill above), and reg_n_refs counts RTL references, so a third use has to be a real use that survives to local-alloc. Today dx is used twice, in `dx * az` and `dx * (pz - z0)`. An algebraic rewrite of test 3 that legitimately mentions (x2 - x0) a third time - expressing one of the two cross products with a shared edge vector, or reusing the edge difference in the earlier tests - would supply it without a dead construct.",
-   "next_probe": "Work the algebra of the three tests from the matched sibling func_8002E6B0 (src/code6cac_b.c, the three-explicit-vertex form) and look for a spelling in which the edge difference x2 - x0 appears in test 2 as well as twice in test 3, then measure it on the (T,T) chassis. Check first whether such a form keeps build_insns at 202 - every s18 hoist that added or removed a reference moved the instruction count off 202."
+   "hypothesis": "L1 unchanged and now quantified: a genuine third C-level reference to x2 - x0 inside block 7 gives reg_n_refs[dx] = 4 and priority floor_log2(4)*4/12*10000 = 6666 against dz's 2500, which wins the seat on the (T,T) chassis with the emission order untouched.",
+   "mechanism": "qty_n_refs for an untied quantity is exactly reg_n_refs of its pseudo (the s18 class kill at local-alloc.c:471 closed the alternative of absorbing a product pseudo), and reg_n_refs counts RTL references surviving to local-alloc. dx is used twice today, in dx * az and dx * (pz - z0).",
+   "next_probe": "Work the algebra of the three tests against the matched sibling func_8002E6B0 (src/code6cac_b.c:1332-1364) for a spelling in which the edge difference x2 - x0 appears in test 2 as well as twice in test 3; verify build_insns stays at 202 BEFORE scoring, since every s18 hoist that added or removed a reference moved the instruction count off 202."
   },
   {
-   "hypothesis": "The residual is decided before local-alloc: global_alloc, not local-alloc, seats one of the two, because in the original one of dz/dx is not block-local for a reason other than a source-level hoist - it dies in more than one place.",
-   "mechanism": "local-alloc.c:471 also excludes a pseudo with reg_n_deaths != 1, which happens when the value is live out of a conditional inside the block, not only when it is declared in an enclosing scope. s18 measured the declaration-scope realisation (19-42) but not the multiple-death realisation, which needs a control-flow construction inside block 7 rather than a scope change.",
-   "next_probe": "Grep the lreg dump for block-7-adjacent pseudos reported as 'dies in N places' (register 120 in this function is one) and read what source shape produces them; then construct a test-3 spelling in which x2 - x0 or z2 - z0 is defined once and dies on two paths (an early-out on one of the cross products, or the (kc ^ kp) test split into two branches) and measure it on both chassis."
+   "hypothesis": "A fifth GR-class short-lived quantity inside block 7, born within ax's live range [2,6] and dead by dx's birth (8), would be forced out of $v0 into $v1 (ax already holds $v0 across that window), which pushes dz to $a0 while leaving $v1 free for dx to reuse - the target's seats, with dz still allocated first and the 2500 tie left intact.",
+   "mechanism": "find_free_reg hands each quantity the lowest hard register whose current occupant does not overlap it, and the s19 dumps show all five short block-7 quantities sharing $v0 solely because they are pairwise disjoint. Any short quantity overlapping ax must take $v1; if it also dies by position 8 it blocks $v1 for dz [4,16] but not for dx [8,20].",
+   "next_probe": "Enumerate what ordinary-C values could occupy [4,8] in block 7 without changing build_insns from 202 - the candidates are a value consumed by the first multiply or by the dz/dx subus themselves - and check the .lreg dump for any pseudo already living in that window that cse or combine currently folds away. If no byte-neutral occupant exists, record that as the closing measurement for this axis rather than re-running the 24-order sweep, which s15/s16 already exhausted."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 2,
-   "statement": "One of ten spellings of the third (edge) side test makes cc1 emit subu v0,t2,t1 (cx - x0) before subu a0,t0,a3 (z2 - z0), so reorg steals the centroid difference into the test-2 bltz slot as the targe",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body (named cross locals + sibling clobbers), no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "no spelling moved the two-insn residual: inline dz 10, dx-declared-first 10, fresh test-3 locals 10 (all = control); kc-"
-  },
   {
    "session": 2,
    "statement": "A copy of dist in the else arm survives cse on the 10-floor chassis in one of four spellings (u32 copy, s32 copy, copy declared in the outer block, copy used only as the srlv index), materialising the",
@@ -612,6 +610,14 @@
    "measured_on": "HEAD 220ab314 (-mel -msoft-float), both the banked candidate.c chassis and the (T,T) chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local m)",
    "predicate_cite": "",
    "result": "BK_interpose_qx / _qz / _both and BK_named_qxqz_top all exactly 2; TT_interpose_qx / _qz / _both and TT_named_qxqz_top a"
+  },
+  {
+   "session": 19,
+   "statement": "Giving dx's quantity a hard-register SUGGESTION so it is seated in block_alloc's suggestion pass is not the mechanism the original used: the MATCHED sibling func_8002E6B0 reaches the same dx-before-dz",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 2c87428f (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis re-measured 2/202 and the (T,T) chassis tmp/grind/func_8002D780/s19/TT_base.c, both spliced into src/code6cac_b.c; one",
+   "predicate_cite": "",
+   "result": "func_8002D780 blk=7 reports ncopysugg=0 nsugg=0 on all seven pseudo quantities on both chassis. func_8002E6B0's predicat"
   }
  ],
  "ladder_skip": 0,

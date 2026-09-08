@@ -137,6 +137,29 @@
  * tie into dx's quantity, dx's refs go 3 -> 5 and its death extends to the kp subu:
  * priority 3125 vs dz's 2500, dx wins the seat, emission order untouched. See
  * evidence.md / hypotheses.md s17. */
+/* s19 (2026-09-08, forensics) - body UNCHANGED, floor re-measured 2/202 on HEAD 2c87428f.
+ * Two whole-TU instrumented dumps (tools/gcc-2.7.2/cc1, BB2_SUGG_DEBUG/BB2_QTY_DEBUG/
+ * BB2_RANK_DEBUG) replaced the s18 frontier's suggestion hypothesis with a complete model of
+ * the seat.  tmp/grind/func_8002D780/s19/w_bk (this body) and .../w_tt (the (T,T) chassis).
+ *
+ * 1. The suggestion pass is NOT the original's mechanism.  Block 7 has ncopysugg=0 nsugg=0 on
+ *    all seven of its quantities on both chassis - and so does the MATCHED sibling
+ *    func_8002E6B0, which reaches the very same dx-before-dz seat order with no suggestion at
+ *    all (blk=1 reg117/reg120, blk=2 reg138/reg141).  In this whole TU a copy suggestion
+ *    exists only on block-0 pseudos copied out of the incoming parameter registers
+ *    ($a0-$a3, copysugg=4,5,6,7).
+ * 2. The seat is a WHOLE-TABLE allocation.  qty_order for block 7 is az, qx, qz, tail, ax
+ *    (all 10000/5000 priority, pairwise disjoint, all five reuse $v0), and only then dz and
+ *    dx.  On this body dx [10,20] is allocated first and takes $v1, dz [4,16] takes $a0 =
+ *    the target's seats.  On the (T,T) chassis dz and dx tie at 2500 (spans 12 and 12),
+ *    local-alloc.c:1719 seats dz first, and the two registers exchange.
+ * 3. The condition, exactly: correct seats need birth(dx) - birth(dz) > death(dx) - death(dz).
+ *    The right-hand side is 4 in every layout measured in this grind, because sched1 sinks
+ *    the (pz - z0) subu between the third and fourth multiplies.  The target's own final
+ *    instruction order supplies a left-hand side of exactly 4 - a tie - so the order
+ *    local-alloc saw when the original was compiled was not the original's final order.
+ * Next: make the two DEATHS 2 apart at local-alloc time (the sibling's native shape) rather
+ * than trying to move the births.  See evidence.md / hypotheses.md s19. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
