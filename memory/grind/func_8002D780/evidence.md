@@ -2187,3 +2187,134 @@ insns) | TT_qdx_kcinline 42.  Nothing below the banked floor of 2.
 - [s20] The queue's owner directive (auto-return after coupled sibling func_8002E6B0 reached floor 0) is discharged: the sibling's block-0 CSE geometry is the calibration reference for the seat model recorded here, and its block-7 spelling was already transplanted in s14 (rejected/s14-sibling-8002e6b0-transplant-slot-wrong-2.c).
 
 - [s20] src/code6cac_b.c was restored to its HEAD state after the measurements; the working tree carries no source edits from this session.
+
+## s21 (2026-09-08, forensics) — the centroid rename is a global_alloc allocno-ORDER shift driven by allocno_live_length, and it is the mirror image of the block-7 seat fix
+
+Chassis re-measured this session: `BK_base` (memory/grind/func_8002D780/candidate.c, unchanged
+body) = **2/202**, `TT_base` = 9/202, `FF_base` = 4/202 — the s16 quadrant table reproduces
+byte-for-byte, so every conclusion below is on the same chassis the ledger has been using.
+
+OWNER DIRECTIVE (auto-return, coupled sibling func_8002E6B0 -> floor 0) — ACKNOWLEDGED AND
+ALREADY SPENT. The sibling's matched body is src/code6cac_b.c:1332-1364; its test-3 spelling
+(`s32 dz = ...; s32 dx = ...;` with all four differences inline) was transplanted onto this
+chassis in s14 and scores 2/202 with the residual moved to the reorg delay-slot pair
+(tmp/grind/func_8002D780/s14/pairdiff_a_sibling_dz_dx.txt); its allocation data was read again
+in s19 (no suggestions anywhere). Nothing in the sibling's ledger has moved since. The directive
+is recorded here so the audit stops flagging it.
+
+### 1. The no-new-pseudo carrier sweep (13 bodies, tmp/grind/func_8002D780/s21/v21.json)
+
+s20's frontier said the ~26 instructions of TT_qdx's 32 were caused by the EXTRA PSEUDO `q`
+shifting global_alloc's allocno order, and proposed reusing an existing block-7 local as the
+product carrier to remove it. Measured:
+
+| body | score | insns | what it is |
+|---|---|---|---|
+| BK_base | 2 | 202 | banked chassis (control) |
+| FF_base | 4 | 202 | (F,F) quadrant (control) |
+| TT_base | 9 | 202 | (T,T) quadrant (control) |
+| TT_axcarrier | 32 | 202 | `ax = dx * (pz - z0); kp = (dz * (px - x0)) - ax;` |
+| BK_kpself / FF_kpself / TT_kpself | 36 | 202 | `kp = dx * (pz - z0); kp = (dz * (px - x0)) - kp;` |
+| TT_kpself_dz | 36 | 202 | same split, dz product staged (control) |
+| BK_azcarrier / TT_azcarrier | 37 | 202 | `az` borrowed as the carrier |
+| TT_kpself_opswap | 37 | 202 | operands of the staged product swapped |
+| TT_kcself | 38 | 202 | the same split applied to kc |
+| TT_kcself_kpself | 42 | 202 | both |
+
+`kp = dx * (pz - z0); kp = (dz * (px - x0)) - kp;` is the same-variable split-init accumulation
+that s20's `TT_kpsplit_dxfirst` did NOT measure (that body carried an extra negation). It is
+measured here for the first time and is 36 on all three quadrants — the split erases the
+quadrant distinction entirely.
+
+`TT_axcarrier` is the decisive body. Instrumented dump tmp/grind/func_8002D780/s21/w_ax
+(BB2_CC1=tools/gcc-2.7.2/cc1, all six BB2 debug hooks, 103,791 stderr lines):
+`QTYDBG blk=7 ord=4 qty=3 reg1=131 birth=8 death=16 refs=3 got=3` (dx -> $v1) and
+`ord=5 qty=0 reg1=130 birth=4 death=20 refs=3 got=4` (dz -> $a0) — **exactly TT_qdx's
+block-7 quantity table and exactly the target's block-7 seats, reached with no fresh `q`
+pseudo**. And its pairdiff (tmp/grind/func_8002D780/s21/pairdiff_TT_axcarrier.txt) still shows
+the full centroid rename: ours `lw t3,168(s0) / lw t4,184(s0)` vs target `lw t1,168(s0) /
+lw t5,184(s0)`, and 15 further single-register replacements through blocks 5 and 6.
+
+**So s20's attribution was wrong: the rename is not caused by the extra allocno.**
+
+### 2. What actually moves — measured, not inferred
+
+`;; N regs to allocate:` in the .greg dump is global_alloc's post-qsort allocation order
+(global.c:575 -> dump_conflicts). Comparing the three dumps:
+
+    w_bk  : ... 125 126 110 142 103 122 124 136 104 101 105 134 115 116 102 107 121 ...
+    w_tt  : ... 125 126 142 110 103 122 124 136 104 101 105 134 115 116 102 107 121 ...
+    w_qdx : ... 125 126 103 142 110 122 124 133 104 105 101 116 135 102 107 115 121 ...
+    w_ax  : ... 125 126 134 103 141 122 124 110 104 105 116 101 102 107 115 121 ...
+
+The centroid group (101 102 103 104 105 110 115 116) permutes, and 115/116 change places.
+
+The input that moved is `allocno_live_length` and nothing else. From the `.lreg` dumps'
+func_8002D780 section (`Register N used R times across L insns`), n_refs identical everywhere:
+
+| pseudo | refs | w_bk | w_tt | w_qdx | w_ax |
+|---|---|---|---|---|---|
+| 101 | 7 | 38 | 38 | 40 | 40 |
+| 102 | 5 | 35 | 34 | 34 | 34 |
+| 103 | 7 | 35 | 35 | 33 | 33 |
+| 110 | 4 | 18 | 19 | 19 | 21 |
+| 115 | 4 | **26** | **26** | 28 | 28 |
+| 116 | 4 | **26** | **26** | 24 | 22 |
+
+`allocno_compare` (tools/gcc-2.7.2/global.c:635-655) is
+`floor_log2(n_refs) * n_refs / live_length * 10000 * size`, with `return *v1 - *v2` (the
+ALLOCNO NUMBER) as its only tie-break. Registers 115 and 116 are the two query holders; they
+are **exactly TIED at 26/26 on both the banked chassis and the (T,T) chassis**, so the tie-break
+seats them in allocno-number order and the centroid allocation comes out as the target's. Every
+spelling that fixes the block-7 seat moves the two kp multiplies, 115 and 116 die at those two
+multiplies, and the tie breaks 28-vs-24 (fresh carrier) or 28-vs-22 (borrowed carrier) — in the
+direction that swaps them.
+
+This is the first time the 26-instruction half of the TT_qdx residual has been attributed to a
+named pass and a named comparator input.
+
+### 3. The birth-side compensation is inert (104 further bodies)
+
+`live_length = death - birth`, so if the deaths cannot move back, the births can in principle
+move forward by the same amount. Two exhaustive sweeps say they cannot:
+
+* **48 bodies** — all 24 orders of the four coordinate declarations (`x0 x2 z0 z2`) on BOTH
+  carriers (tmp/grind/func_8002D780/s21/v21b.json). QDX: 12 at 32, 12 at 33. AXC: 12 at 32,
+  12 at 34. The only bit that moves anything at all is z0-before-z2 vs z2-before-z0, worth 1-2
+  instructions, and nothing goes below 32.
+* **56 bodies** — every placement of the `px` and `pz` declarations in the outer declaration
+  list, independently, in both relative orders, on the TT_qdx chassis
+  (tmp/grind/func_8002D780/s21/v21c.json). **All 56 score exactly 32**, i.e. the axis is
+  BYTE-inert: the loads' births are set by where sched1 places them, not by where the
+  declaration is written, which is the same result s15 measured for declaration SCOPE.
+
+### 4. Where that leaves the residual
+
+Block 7's fourth-multiply position is now known to be read by TWO independent comparators that
+want opposite things, and it is the only remaining degree of freedom:
+
+* `qty_compare_1` (local-alloc.c:1680-1685) needs `span(dx) < span(dz)`, which needs dx's kp
+  product expanded FIRST — i.e. the two kp multiplies emitted in the reverse of the target's
+  order;
+* `allocno_compare` (global.c:635-655) needs 115 and 116 to stay tied at live_length 26, which
+  needs the two kp multiplies in the TARGET's order, because those two multiplies are where the
+  two query holders die.
+
+Artifacts: tmp/grind/func_8002D780/s21/{gen_s21.py, gen_s21b.py, gen_s21c.py, lenspan.py,
+v21.json, v21b.json, v21c.json, pairdiff_TT_axcarrier.txt, w_ax/}.
+
+- [s21] Chassis re-measured this session: BK_base (the banked candidate body, unchanged) 2/202, FF_base 4/202, TT_base 9/202 - the s16 quadrant table reproduces byte-for-byte on HEAD 722aa906.
+
+- [s21] The owner directive on this queue item (auto-return after coupled sibling func_8002E6B0 reached floor 0) is acknowledged and already spent: the sibling's matched test-3 spelling was transplanted in s14 (2/202, residual moved to the reorg delay-slot pair) and its allocation data re-read in s19; nothing in its ledger has moved since. Recorded in evidence.md so the audit stops flagging it.
+
+- [s21] priority() in tools/gcc-2.7.2/sched.c:1433-1520 sets max_priority = 1 for an insn with no in-block LOG_LINKS, and MIPS ADJUST_COST (tools/gcc-2.7.2/config/mips/mips.h:2946-2948) zeroes the cost of every anti/output dependence - so the az/dx INSN_PRIORITY tie recorded in s20 cannot be broken by an in-block rewrite that leaves both subus reading block-live-in registers.
+
+- [s21] rank_for_schedule's class term (sched.c:2427-2444) classifies both az and dx as class 3 against the multiply they both feed, because insn_cost of a subu->mult data dependence is 1; a class separation would require one of the two values to be produced by a load, which the target's own bytes forbid.
+
+- [s21] TT_axcarrier is the first no-new-pseudo body to reach the target's block-7 seats: QTYDBG blk=7 dx reg131 [8,16] refs 3 got=3, dz reg130 [4,20] refs 3 got=4, identical to the s20 TT_qdx landmark.
+
+- [s21] global_alloc's post-qsort allocno order for func_8002D780 differs between chassis: w_bk '... 125 126 110 142 103 122 124 136 104 101 105 134 115 116 102 107 121 ...' vs w_qdx '... 125 126 103 142 110 122 124 133 104 105 101 116 135 102 107 115 121 ...'.
+
+- [s21] Per-pseudo n_refs is identical on every chassis; only live_length moves (101 38->40, 102 35->34, 103 35->33, 110 18->19->21, 115 26->28, 116 26->24->22), and allocno_compare divides by exactly that quantity.
+
+- [s21] All 56 px/pz declaration placements on the TT_qdx chassis score exactly 32, confirming at the score level that a load's birth is set by sched1's placement and not by the C declaration position.

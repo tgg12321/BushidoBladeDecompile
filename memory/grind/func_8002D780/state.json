@@ -1,7 +1,7 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -123,44 +123,34 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Forensics s20: the first sched.c trace of block 7 (BB2_SCHED_DEBUG/BB2_PRIO_DEBUG) attributes the az/dx transposition to rank_for_schedule's INSN_LUID fall-through in BOTH passes, and a staged dx kp p"
+  },
+  {
+   "session": 21,
+   "floor": 2,
+   "modality": "forensics",
+   "headline": "Forensics s21: the 26-instruction centroid half of the TT_qdx landmark is a global_alloc allocno-order shift driven only by allocno_live_length - the extra pseudo was never the cause - and the two que"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "TT_qdx's 32 is two independent residuals, and the larger one (about 26 instructions) is not a block-7 problem at all: it is a global-alloc rename of the centroid block's six value holders caused purely by the extra q pseudo. If the same span geometry can be produced without adding a pseudo - by reusing an existing block-7 local as the product carrier, or by a spelling that reorders the two kp multiplies without naming either product - the rename disappears and the residual collapses to the kp multiply order alone.",
-   "mechanism": "global_alloc assigns the centroid block's long-lived pseudos in allocno order; one extra GR-class allocno in block 7 shifts that order and renames $t1/$t2, $t4/$t5 and $a2/$a3 throughout blocks 5 and 6. The seat effect in block 7 comes only from WHICH multiply expands last, not from the existence of the carrier.",
-   "next_probe": "Re-dump TT_qdx's .greg and .lreg (tmp/grind/func_8002D780/s20/w_qdx/) and diff the centroid-block allocno list against w_bk to confirm the rename is an allocno-order shift; then sweep spellings that make dx's kp multiply expand first WITHOUT a new pseudo - reusing an existing dead block-7 local as the carrier, borrowing kc before its own use, and inlining the dz product into the subtraction's second operand - and check build_insns stays at 202 and the QTYDBG blk=7 seats stay at dx got=3 / dz got=4 before scoring."
+   "hypothesis": "s17's L2 lever is the one handle left that does not touch either kp multiply: an insn emitted BETWEEN dz's subu and dx's subu lengthens dz's live range, wins qty_compare_1 for dx, and leaves the two query holders' deaths - and therefore the centroid allocation - exactly where TT_base already has them.",
+   "mechanism": "qty_compare_1 (local-alloc.c:1680-1685) compares floor_log2(refs)*refs/(death-birth); dz and dx tie at 2500 in the (T,T) quadrant with spans 12 and 12. One extra insn between the two births makes dz's span 14 (2142) against dx's 12 (2500) with both deaths untouched, so the two kp multiplies never move and pseudos 115/116 stay tied at live_length 26. The (F,T) quadrant already realises this - sched1 emits ax into that gap there - which is exactly why (F,T) scores 2 with the centroid allocation correct.",
+   "next_probe": "Enumerate ordinary-C shapes that put a THIRD block-7 computation into the dz->dx gap while keeping (T,T)'s ax-before-dz source order: a fourth difference whose consumer is the kc subtraction rather than a multiply, a value read by both kc and kp so sched1 cannot sink it to a multiply's latency window, and the kc/kp statement orders that place such a value's insn between the two births. Verify each with QTYDBG blk=7 (dz span must grow while both deaths stay at 16/20) and with the .lreg live_length of 115/116 (both must stay 26) BEFORE scoring."
   },
   {
-   "hypothesis": "The remaining approximately 6 instructions of TT_qdx are the two kp multiplies emitted in the opposite order to the target. Because sched1 pins each single-use query difference immediately before its own multiply, the emitted multiply order equals the EXPANSION order, so the target's order (dz's multiply first) requires dz's multiply to expand first while still dying last - which needs a use of dz after the fourth multiply, or a spelling where the fourth multiply's operand is the one already live.",
-   "mechanism": "Expansion order fixes INSN_LUID, and rank_for_schedule's third term is INSN_LUID; the two multiplies never compare on priority or class because they are on the same function unit and are picked in blocked order. Death position therefore tracks expansion order exactly, which is why staging inverts both the seat and the emitted order together.",
-   "next_probe": "Enumerate the spellings in which kp's SUBTRACTION consumes dz's product last while dz's product is expanded first - a staged carrier for the dz product that is re-read after the dx product (q = dz * (px - x0); ... ; kp = q - dx * (pz - z0); with an intervening real use), and the mirror form in kc - and read QTYDBG blk=7 plus the block-7 emitted order for each before scoring. TT_qdz (score 9) is the measured control for the no-op end of this axis."
+   "hypothesis": "A block-7 shape in which the two kp multiplies sit at SYMMETRIC distances from the end of the block moves both query holders' deaths by the same amount, so their live lengths stay tied at 26 even when the multiply order is reversed - which would keep the centroid allocation while still fixing the block-7 seat.",
+   "mechanism": "live_length(115) - live_length(116) is exactly the signed distance between the two kp multiplies. Swapping them currently moves 115 by +2 and 116 by -2 (fresh carrier) or -4 (borrowed carrier). Any shape that inserts one insn between the two multiplies in one order and removes it in the other would cancel the swing, and allocno_compare (global.c:635-655) would fall back to the allocno-number tie-break that produces the target's centroid.",
+   "next_probe": "From the four instrumented dumps, tabulate the exact block-7 emission index of each kp multiply and of each query holder's last use on TT_base, TT_qdx and TT_axcarrier; then sweep the kc/kp STATEMENT order and the placement of the kc subtraction relative to the kp products (which changes what sits between the two kp multiplies without changing which one is expanded last), reading the .lreg 115/116 live lengths for each before scoring."
   },
   {
-   "hypothesis": "On the banked chassis (correct seats, az emitted before dx) the transposition is settled purely on INSN_LUID because az and dx are both at INSN_PRIORITY 1 and dependence class 3. Any ordinary-C shape that gives az a strictly longer dependence path from the top of block 7 than dx would flip the ready-list order and fix the residual without touching the allocation at all.",
-   "mechanism": "INSN_PRIORITY in this backward scheduler is the depth of an insn from the start of its block; az = cz - z0 and dx = x2 - x0 both read values produced in an earlier block, so both are depth 1. rank_for_schedule returns on the priority term before it ever reaches INSN_LUID, so a single unit of extra depth on az is sufficient.",
-   "next_probe": "Enumerate ordinary-C shapes that make az's operands depend on a value computed inside block 7 while leaving build_insns at 202 - e.g. deriving cz - z0 from a difference already computed in the block via an algebraic identity, or computing az from ax and an edge value - and verify with the PRIODBG/SCHEDDBG dump that az's pass-1 node line reports pri > 1 before scoring. Record the closing measurement for the axis if no byte-neutral shape raises the depth."
+   "hypothesis": "The other side of allocno_compare is n_refs, which has never been probed: if one query holder gains or loses a C-level reference the 26/26 tie is replaced by a priority ordering that could survive the multiply swap.",
+   "mechanism": "allocno_compare's priority is floor_log2(n_refs)*n_refs/live_length. Both query holders currently have n_refs 4. At n_refs 5 the numerator goes 8 -> 10, which is a 25% swing - larger than the 28-vs-24 live_length swing the multiply order produces - so an extra reference on the holder that ends up over-long could restore its position in the allocno order without touching block 7's schedule at all.",
+   "next_probe": "Identify which of pseudos 115 and 116 is px and which is pz from the w_ax RTL dump, then sweep byte-neutral spellings that change one holder's reference count - reading px or pz once more where the value is already in a register (a duplicated read into a branch arm, .claude/rules/split-read-defeats-hoist.md), or inlining one of its existing reads so the count drops to 3 - and check build_insns stays at 202 and the .lreg count actually moved before scoring."
   }
  ],
  "judge_constraints": [],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 2,
-   "statement": "One of six further tail shapes changes reorg's delay-slot fill on the second post-call branch (goto to a shared yes: label, nested == 0 ifs re-measured, truthy if, a result local for the last call, ? ",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "all 10, identical to the control; the seventh shape (a hit = 1 result carrier returned from the early exits) restructure"
-  },
-  {
-   "session": 2,
-   "statement": "Hoisting the p10C setup above the first call shortens the call-3 block enough to change reorg's liveness walk.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
-   "predicate_cite": "",
-   "result": "94 at 200 build insns \u2014 the hoist also changes what the two earlier calls see, so the whole region diverges"
-  },
   {
    "session": 2,
    "statement": "The byte-matched sibling func_8002BC68's staged-u32 sqrt chain (m = (u32)-2; m &= lzcr; sh = 0x16 - m; idx = dist >> sh; ...) transplanted onto this chassis closes part of the LZCS residual.",
@@ -624,6 +614,22 @@
    "measured_on": "HEAD 01bd10a2 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis (re-measured 2/202 this session) and the (T,T) chassis tmp/grind/func_8002D780/s20/TT_base.c, both spliced into src/co",
    "predicate_cite": "",
    "result": "BK_base 2 and TT_base 9 reproduce their chassis exactly. TT_qdz 9 (staging the dz product instead - exactly inert, the c"
+  },
+  {
+   "session": 21,
+   "statement": "Reaching TT_qdx's block-7 effect with a carrier that adds no pseudo - borrowing the dead block-7 local ax or az, or splitting kp against itself - delivers the target's block-7 seats but leaves the cen",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 722aa906 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis re-measured 2/202 this session as BK_base, plus the (T,T) and (F,F) chassis, all spliced into src/code6cac_b.c; one FA",
+   "predicate_cite": "",
+   "result": "Controls reproduce the chassis exactly: BK_base 2/202, FF_base 4/202, TT_base 9/202. TT_axcarrier (ax = dx * (pz - z0); "
+  },
+  {
+   "session": 21,
+   "statement": "The birth side of live_length = death - birth cannot restore the 115/116 tie on this chassis: every placement and both orders of the px and pz declarations are byte-inert at 32, and all 24 orders of t",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 722aa906 (-mel -msoft-float), the TT_qdx chassis (tmp/grind/func_8002D780/s20/v20/TT_qdx.c) and the TT_axcarrier chassis (tmp/grind/func_8002D780/s21/v21/TT_axcarrier.c), both spliced into src/co",
+   "predicate_cite": "",
+   "result": "All 56 px/pz placements score exactly 32 - the axis is byte-inert. The 48 coordinate orders split 12/12 on each carrier:"
   }
  ],
  "ladder_skip": 0,

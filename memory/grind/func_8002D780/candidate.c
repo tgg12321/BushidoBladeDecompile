@@ -181,6 +181,32 @@
  * the extra `q` pseudo renames the centroid block's global allocation. Banked as
  * rejected/s20-tt-staged-dx-product-target-seats-and-order-kp-mults-swapped-32.c; the two
  * residual causes are s20's frontier. See evidence.md / hypotheses.md s20. */
+/* s21 (2026-09-08, forensics) - body UNCHANGED, floor re-measured 2/202 on HEAD 722aa906
+ * (swept as BK_base alongside FF_base 4 and TT_base 9, so the s16 quadrant table reproduces).
+ * s21 corrected s20's attribution of the TT_qdx landmark's 26-instruction centroid half and
+ * closed the compensation axis it proposed:
+ *  - The extra `q` pseudo is NOT the cause. `ax = dx * (pz - z0); kp = (dz * (px - x0)) - ax;`
+ *    borrows an already-dead block-7 local, adds no allocno, reaches EXACTLY TT_qdx's block-7
+ *    quantity table (dx [8,16] got $v1, dz [4,20] got $a0 = the target's seats) - and still
+ *    produces the whole centroid rename. 32/202. Eleven further no-new-pseudo carriers
+ *    (kp split against itself, az borrowed, kc split) score 36-42.
+ *  - The real mechanism is global_alloc: `;; N regs to allocate:` (the post-qsort allocno
+ *    order, global.c:575) permutes the centroid holders, and the ONLY input that moves is
+ *    allocno_live_length. From the .lreg dumps, n_refs identical, live_length w_bk/w_tt/w_qdx/
+ *    w_ax = 101: 38/38/40/40, 102: 35/34/34/34, 103: 35/35/33/33, 110: 18/19/19/21,
+ *    115: 26/26/28/28, 116: 26/26/24/22. Pseudos 115 and 116 (the two query holders) are
+ *    EXACTLY TIED at 26 on every chassis that allocates the centroid correctly; allocno_compare
+ *    (global.c:635-655) then falls through to the allocno NUMBER (global.c:655). They die at
+ *    the two kp multiplies, so every seat fix breaks that tie.
+ *  - The birth side cannot compensate: all 56 placements/orders of the px/pz declarations on
+ *    the TT_qdx chassis score EXACTLY 32 (byte-inert), and all 24 coordinate-declaration orders
+ *    on both carriers score 32-34.
+ * NET: block 7's kp multiply order is read by qty_compare_1 (wants dx's product expanded first)
+ * and by allocno_compare (wants the target's order, to keep 115/116 tied). Do NOT spend another
+ * session on multiply-order spellings or on the outer declaration list. The unspent lever is
+ * s17's L2: get a THIRD block-7 computation emitted BETWEEN dz's subu and dx's subu while
+ * keeping (T,T)'s ax-before-dz source order - that lengthens dz's span without moving either
+ * multiply, and it is what the (F,T) quadrant does natively. See evidence.md / hypotheses.md s21. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
