@@ -314,14 +314,49 @@ def libscan_evidence(a):
     return "libscan-verbatim: %s/%s XDEF %s @ %s" % (e["lib"], e["module"], e["name"], off)
 
 
+# ---------------------------------------------------------------- link map (object symbols)
+# The name a reader of src/ actually sees is the OBJECT-DEFINED symbol (a C definition), not
+# the glabel of a .s file that may no longer be linked. Seventeen libscan-VERIFIED functions
+# were found 2026-09-07 with the glabel corrected but the C definition still carrying the old
+# game name (SpuFree defined as spu_DmaTransfer). Read the map early so every row can
+# compare the two layers.
+MAPOBJ = {}   # ADDR(no 0x, upper) -> [object-defined symbol names]
+_mp0 = J("build", "bb2.map")
+if os.path.exists(_mp0):
+    _MAPDEF0 = re.compile(r"^\s+0x0*([0-9a-f]{8})\s+([A-Za-z_]\w*)\s*$")
+    for ln in open(_mp0, encoding="utf-8", errors="replace"):
+        m = _MAPDEF0.match(ln)
+        if m:
+            MAPOBJ.setdefault(m.group(1).upper(), []).append(m.group(2))
+def map_desync(addr, nm):
+    """Non-auto object symbol at addr that differs from nm (the name the census resolved)."""
+    for n in MAPOBJ.get(addr, []):
+        if not AUTOPAT.match(n) and n != nm:
+            return n
+    return ""
+
+
 # ---------------------------------------------------------------- apiscan (API-restatement)
 # Second evidence source, below libscan: the name RESTATES the VERIFIED library calls the
 # body makes plus the literal device/format strings it passes (docs/naming/apiscan/README.md).
 # Only rows a fresh adversarial verifier graded CONFIRM are consumed. Tier CORROBORATED:
 # body behaviour affirmatively agrees with the name's claim, with a citation.
-apiscan = {}   # ADDR(no 0x, upper) -> dict(name, evidence, note)
-ap = J("docs", "naming", "apiscan", "rename_manifest.csv")
-if os.path.exists(ap):
+apiscan = {}   # ADDR(no 0x, upper) -> dict(name, evidence, note, origin, tier)
+# Verified-manifest sources. Each is hand-curated + adversarially verified; only CONFIRM rows
+# are consumed. Tier follows the evidence class:
+#   apiscan-restatement  CORROBORATED  (name restates VERIFIED library calls + literal strings)
+#   libscan-xref         VERIFIED      (an accepted verbatim module's XREF + the EXE's jal target)
+#   libscan-near         CORROBORATED  (body matches a Sony build except explainable words;
+#                                       owner ruling 2026-09-07, near-tier-ruling-2026-09-07.md)
+#   libscan-desync       (handled by the libscan path below: glabel already Sony, C def is not)
+MANIFESTS = [(J("docs", "naming", "apiscan", "rename_manifest.csv"), "apiscan-restatement", "CORROBORATED"),
+             (J("docs", "naming", "libscan", "near_manifest.csv"), None, None)]
+CLASS_TIER = {"api-restatement": ("apiscan-restatement", "CORROBORATED"),
+              "libscan-xref": ("libscan-xref", "VERIFIED"),
+              "libscan-near": ("libscan-near", "CORROBORATED")}
+for ap, dorigin, dtier in MANIFESTS:
+    if not os.path.exists(ap):
+        continue
     with open(ap, newline="", encoding="utf-8", errors="replace") as fh:
         for r in csv.DictReader(fh):
             if (r.get("verdict") or "").strip().upper() != "CONFIRM":
@@ -329,9 +364,16 @@ if os.path.exists(ap):
             a = (r.get("addr") or "").strip().upper().replace("0X", "")
             if not re.fullmatch(r"[0-9A-F]{8}", a) or not (r.get("proposed_name") or "").strip():
                 continue
+            cls = (r.get("evidence_class") or "").strip()
+            if cls == "libscan-desync":
+                continue
+            origin, tier = CLASS_TIER.get(cls, (dorigin, dtier))
+            if not origin:
+                continue
             apiscan[a] = dict(name=r["proposed_name"].strip(),
                               evidence=(r.get("evidence") or "").strip(),
-                              note=(r.get("verifier_note") or "").strip())
+                              note=(r.get("verifier_note") or "").strip(),
+                              origin=origin, tier=tier)
 
 
 # ---------------------------------------------------------------- queue
@@ -419,8 +461,15 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
     action = "KEEP"
     proposed = ""
 
+    desync = map_desync(addr, nm)
+    if desync:
+        # The linked C definition is named differently from what the census resolved. The
+        # C name is what a reader sees, so it is a live claim: carry it as an alias so a
+        # RENAME/RESET at this address retires it too.
+        semantic_aliases = sorted(set(semantic_aliases) | {desync})
     common = dict(address="0x" + addr, glabel=glabel, current_name=nm,
-                  name_layer=layer, aliases=";".join(sorted(set(semantic_aliases)))[:300],
+                  name_layer=layer + (" [LINK-MAP DESYNC: src defines '%s']" % desync if desync else ""),
+                  aliases=";".join(sorted(set(semantic_aliases)))[:300],
                   insns=info["insns"], src_location=src_def.get(nm, ""),
                   queued="yes" if (nm in queue_funcs or glabel in queue_funcs) else "")
 
@@ -447,7 +496,10 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
                       if norm(nm).endswith(norm(e["name"])) else
                       "CONFLICT: this address also carries an in-binary self-identifying "
                       "string that does NOT match the XDEF name — review before applying")
-        same = (nm == e["name"]) or e["classification"] == "CONFIRM"
+        same = ((nm == e["name"]) or e["classification"] == "CONFIRM") and not desync
+        if desync:
+            ev.append("LINK-MAP DESYNC: the C definition in src/ is named '%s' although the "
+                      "glabel/alias carries the verified name — RENAME retires the C name" % desync)
         rows.append(dict(common, origin="libscan-verbatim", tier="VERIFIED",
                          evidence="; ".join(ev)[:1000],
                          action="KEEP" if same else "RENAME",
@@ -458,11 +510,13 @@ for glabel in sorted(funcs, key=lambda n: funcs[n]["addr"] or "zzz"):
     # AUTO short-circuit for the same reason as libscan: a FILL row is an auto glabel.
     if addr in apiscan:
         e = apiscan[addr]
-        same = (nm == e["name"])
-        ev = ["apiscan-restatement: " + e["evidence"][:600]]
+        same = (nm == e["name"]) and not desync
+        ev = [e["origin"] + ": " + e["evidence"][:600]]
+        if desync:
+            ev.append("LINK-MAP DESYNC: src defines '%s'" % desync)
         if e["note"]:
             ev.append("verifier: " + e["note"][:200])
-        rows.append(dict(common, origin="apiscan-restatement", tier="CORROBORATED",
+        rows.append(dict(common, origin=e["origin"], tier=e["tier"],
                          evidence="; ".join(ev)[:1000],
                          action="KEEP" if same else "RENAME",
                          proposed_name="" if same else e["name"]))
