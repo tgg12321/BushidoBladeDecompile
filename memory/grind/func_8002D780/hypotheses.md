@@ -259,3 +259,147 @@ candidate applied to src/code6cac_b.c, NO FAKE construct present anywhere in the
 - probe: variant p1_no_pun_cast (tmp/grind/func_8002D780/s2/variants8/)
 - result: 10, identical to the control; adopted into candidate.c
 - verdict: CONFIRMED
+
+## [s3] Writing the third func_8002D518 call as `if (... != 0) return 1; return 0;` instead of `return ... != 0;` changes the BLOCK STRUCTURE enough for reorg.c to steal `li v0,1` into the second post-call branch's delay slot.
+- mechanism: all three post-call exits become the same shape, so jump.c's cross-jump merges them differently and the call-3 block no longer sits behind the relocated shared block; reorg.c fill_simple_delay_slots then wins the steal that s1's BB2_DBR_DEBUG trace showed it losing (oppregs bit 2 / $v0 reported live at insn 390)
+- probe: variant c1_third_call_if_form (tmp/grind/func_8002D780/s3/variants/), pairdiff tmp/grind/func_8002D780/s3/pairdiff_d1.txt
+- result: 7 from 10 at 201 insns; the standalone `.L303: li v0,1` block and the `j` over it are both gone -- the entire tail matches the target insn-for-insn
+- verdict: CONFIRMED
+
+## [s3] With the tail at 201 insns, the s2-banked `"r"(&sp_var)` LZCR slot-address operand pays for itself and restores the count to the target's 202.
+- mechanism: an r-constrained address operand materialises the frame-slot address into a pseudo (`addiu v0,sp,16; move t4,v0`) instead of the asm text's hardcoded `$sp`, costing one net insn -- which is exactly the insn the tail change gave back
+- probe: variant d1_c1_plus_slotaddr (tmp/grind/func_8002D780/s3/variants2/)
+- result: 7 at 202 insns; s2 measured the same operand at 203 insns and could not adopt it. Residuals B and C were coupled by the insn count in BOTH directions.
+- verdict: CONFIRMED
+
+## [s3] Writing the third triangle side test as the cross product of two vertex-0-relative vectors (six named difference locals) gives the target's emission order for the first subu pair of the test-3 block.
+- mechanism: declaration order sets INSN_LUID, and sched1's rank_for_schedule (tools/gcc-2.7.2/sched.c) falls through priority and dependence-class to the LUID tie-break for two same-unit subus; the lower-LUID insn of a pair lands first in the block
+- probe: variant e2_full_relative_vectors (tmp/grind/func_8002D780/s3/variants3/), pairdiff tmp/grind/func_8002D780/s3/pairdiff_e2.txt
+- result: 7 = control on score, but `subu v0,t2,t1` (cx - x0) now precedes `subu a0,t0,a3` (z2 - z0) insn-for-insn; the residual moves to the second pair (dx vs az)
+- verdict: CONFIRMED
+
+## [s3] Declaring dx ahead of az fixes residual A's remaining subu-pair order without a register cost.
+- mechanism: the same LUID tie-break; dx at a lower LUID than az should put dx first in the block as the target has it
+- probe: variants f1_ax_dz_dx_az_bx_bz and f3_ax_dx_dz_az_bx_bz (tmp/grind/func_8002D780/s3/variants4/), pairdiffs pairdiff_f1.txt / pairdiff_f3.txt
+- result: both measured 14. The ORDER is fixed -- the whole test-3 block matches the target's emission order -- but dz and dx are permuted between $a0 and $v1 (ours dz to $v1 / dx to $a0; target dz to $a0 / dx to $v1) and the permutation propagates through the mult/mflo chain for 7 insns. Residual A is therefore an allocation residual, not a scheduling one.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body (relative-vector test 3 + if/return-0 tail + &sp_var slot operand), no FAKE constructs present
+
+## [s3] One of six declaration orders / inlinings of the six vertex-0-relative difference locals gives both the target's emission order and the target's dz/dx allocation.
+- mechanism: declaration order drives both the sched1 LUID tie-break and local-alloc's quantity numbering, so a single order might satisfy both at once
+- probe: variants f1/f2/f3/f4/f5/f6 (variants4/) and g1..g5 (variants5/: az inlined, az+bz inlined, az inlined with dx first, the mult terms' operands swapped, az/bz declared last)
+- result: only ax,az,bx,bz,dz,dx (7) and ax,az,dz,dx,bx,bz (7) hold the floor; every other order and every inlining measured 14, the swapped-operand form 22, reassigning cx/cz in place 28, and fully inlining every difference 26/27
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body, no FAKE constructs present
+
+## [s3] A copy of dist survives cse on the 7-floor chassis in one of five further spellings (mag copy at the head of the else arm covering both uses, the same copy in the outer block, asm-input-only, srlv-index-only, u32 copy).
+- mechanism: cse.c make_regs_eqv folds a single-def copy into its source pseudo
+- probe: variants b1..b5 (tmp/grind/func_8002D780/s3/variants6/)
+- result: all 7 = control. Fourteen natural copy spellings are now dead across s1-s3.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body, no FAKE constructs present
+
+## [s3] Fully inlining every difference in the third side test (no dz/dx locals at all), with each product written difference-from-origin first, reproduces the target's test-3 emission order.
+- mechanism: expand_expr emits a binary operation's operands left-to-right, so the emission order is the written order
+- probe: variants a1_expanded_origin_first, a2_expanded_cz_first, a3_dz_local_only, a4_expanded_dz_first_operand (tmp/grind/func_8002D780/s3/variants/)
+- result: 26, 27, 25 and 10 respectively (control 10) -- the fully-inlined forms lose the cse'd dz/dx pseudos and repermute the whole block
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present
+
+## [s3] Giving the call-3 block a real CODE_LABEL from above (`if (f2 == 0) goto last; return 1; last: return f3 != 0;`) changes reorg's liveness walk on the second post-call branch.
+- mechanism: a real CODE_LABEL at the call-3 block head flushes reorg.c mark_target_live_regs' pending-dead $v0
+- probe: variant c4_goto_last_label (tmp/grind/func_8002D780/s3/variants/)
+- result: 10 = control; jump1 deletes the goto and rebuilds the same relocation. The winning structural change was the `return 0` fall-out form, not a label.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present
+
+## Live frontier (for s4) -- 7 insns left, in two groups
+1. **A, 2 insns -- the dz/dx seat, NOT a schedule.** f1/f3 already produce the target's
+   emission order for the entire test-3 block; the only thing wrong is that dz lands in
+   $v1 and dx in $a0 where the target has dz in $a0 and dx in $v1. Next probe:
+   `tools/ra_solver/inverse_compose.py classify` on those two seats against the f1 body
+   (the local-alloc/global.c models are order- and seat-exact and return
+   REACHABLE/FORECLOSED plus a ranked C-lever vector); only spell a form after the
+   solver names one. Do NOT re-sweep declaration orders -- twelve are measured this
+   session, and the two that hold the floor are the two in candidate.c.
+2. **B, 5 insns -- the `dist` copy into $a0.** Fourteen natural copy spellings are dead
+   (s1 H-s1-c, s2 H-s2-j, s3 above); cse.c make_regs_eqv folds every one. Everything
+   else in the sqrt region now matches (LZCR slot addressing, `mflo t8`, `lw 16($sp)`),
+   so this is the LAST thing between the two sqrt blocks -- our `nop` in the beqz delay
+   slot vs the target's `move a0,s1`. Next probe: `tools/ra_solver` on the $a0 seat
+   (inverse_compose.py classify); if that returns FORECLOSED for every natural form,
+   the sibling func_8002D518's FAKE dead-store re-store (src/code6cac_b.c:1244-1265,
+   .claude/rules/dead-store-fake-exception.md) is the sanctioned last resort, and this
+   function's exhaustion ledger is now FOURTEEN measured spellings deep.
+3. **Vetting note for whoever reaches 0.** candidate.c's test 3 declares six fresh
+   once-written locals (ax/az/bx/bz/dx/dz). They are real consumed values with a plain
+   geometric reading (vertex-0-relative vectors) and each appears in the target's own
+   bytes, but a candidate-ready self-vet should either classify them under the
+   named-intermediate family (`.claude/rules/narrow-byte-args-packed-call.md` plus the
+   2026-08-17 clarification in no-new-park-categories.md) and walk its six prongs, or
+   argue them as ordinary C on the strength of the geometry. Decide that BEFORE
+   submitting -- review verdicts are keyed by body, so do not respell after a layer-1
+   verdict.
+
+## [s3] Writing the third func_8002D518 call as `if (... != 0) return 1; return 0;` instead of `return ... != 0;` changes the block structure enough for reorg.c to steal `li v0,1` into the second post-call branch's delay slot.
+- mechanism: All three post-call exits become the same shape, so jump.c's cross-jump merges them differently and the call-3 block no longer sits behind the relocated shared `li v0,1` block; reorg.c fill_simple_delay_slots then wins the steal that s1's BB2_DBR_DEBUG trace showed it losing (oppregs bit 2 / $v0 reported live at insn 390).
+- probe: variant c1_third_call_if_form (tmp/grind/func_8002D780/s3/variants/), scored via tmp/grind/func_8002D780/s3/run.ps1; diff tmp/grind/func_8002D780/s3/pairdiff_d1.txt
+- result: 7 from 10, at 201 build insns. The standalone .L303 li v0,1 block and the j over it are both gone and the whole tail matches the target insn-for-insn. Eleven tail SPELLINGS were dead across s1/s2; this is a block-structure change, which is exactly what the s2 frontier said to attack.
+- verdict: CONFIRMED
+
+## [s3] With the tail landing at 201 insns, the s2-banked "r"(&sp_var) LZCR slot-address operand pays for itself and restores the count to the target's 202.
+- mechanism: An r-constrained address operand makes cc1 materialise the frame-slot address into a pseudo (addiu v0,sp,16; move t4,v0) instead of the asm text's hardcoded $sp, costing one net insn - exactly the insn the tail change gave back.
+- probe: variant d1_c1_plus_slotaddr (tmp/grind/func_8002D780/s3/variants2/)
+- result: 7 at exactly 202 build insns (target_insns 202). s2 measured the same operand at 203 insns and could not adopt it; residuals B and C were coupled by the insn count in BOTH directions.
+- verdict: CONFIRMED
+
+## [s3] Writing the third triangle side test as the cross product of two vertex-0-relative vectors (six named difference locals ax/az/bx/bz/dz/dx) gives the target's emission order for the first subu pair of the test-3 block.
+- mechanism: Declaration order sets INSN_LUID, and sched1's rank_for_schedule (tools/gcc-2.7.2/sched.c) falls through the priority and dependence-class tests to the LUID tie-break for two same-unit subus; the lower-LUID insn of a pair lands first in the block.
+- probe: variant e2_full_relative_vectors (tmp/grind/func_8002D780/s3/variants3/), diff tmp/grind/func_8002D780/s3/pairdiff_e2.txt
+- result: 7 = control on score, but subu v0,t2,t1 (cx - x0) now precedes subu a0,t0,a3 (z2 - z0) insn-for-insn as the target has it; the two-insn residual moves to the second pair (dx vs az). Adopted into candidate.c.
+- verdict: CONFIRMED
+
+## [s3] Declaring dx ahead of az fixes residual A's remaining subu-pair order without a register cost.
+- mechanism: The same sched1 LUID tie-break: dx at a lower LUID than az should put dx first in the block as the target has it.
+- probe: variants f1_ax_dz_dx_az_bx_bz and f3_ax_dx_dz_az_bx_bz (tmp/grind/func_8002D780/s3/variants4/), diffs pairdiff_f1.txt / pairdiff_f3.txt
+- result: Both measured 14. The order IS fixed - the whole test-3 block matches the target's emission order - but dz and dx are permuted between $a0 and $v1 (ours dz->$v1, dx->$a0; target dz->$a0, dx->$v1) and the permutation propagates through the mult/mflo chain for 7 insns. This reclassifies residual A from a scheduling residual to an allocation residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body (relative-vector test 3 + if/return-0 tail + &sp_var slot operand), no FAKE constructs present
+
+## [s3] One of six further declaration orders or inlinings of the six vertex-0-relative difference locals gives both the target's emission order and the target's dz/dx allocation.
+- mechanism: Declaration order drives both the sched1 LUID tie-break and local-alloc's quantity numbering, so a single order might satisfy both at once.
+- probe: variants f1/f2/f3/f4/f5/f6 (variants4/) and g1..g5 (variants5/: az inlined, az+bz inlined, az inlined with dx first, mult operands swapped, az/bz declared last)
+- result: Only ax,az,bx,bz,dz,dx (7) and ax,az,dz,dx,bx,bz (7) hold the floor; every other order and every inlining measured 14, the swapped-operand form 22, reassigning cx/cz in place 28, and fully inlining every difference 26/27. Twelve orders/inlinings measured this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body, no FAKE constructs present
+
+## [s3] A copy of dist survives cse on the 7-floor chassis in one of five further spellings (mag copy at the head of the else arm covering both uses, the same copy in the outer block, asm-input-only, srlv-index-only, u32 copy).
+- mechanism: cse.c make_regs_eqv folds a single-def copy into its source pseudo, so the copy insn dies and flow deletes it.
+- probe: variants b1..b5 (tmp/grind/func_8002D780/s3/variants6/)
+- result: All 7 = control. Fourteen natural copy spellings are now dead across s1-s3; re-measured here because the chassis changed materially (tail + slot operand).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body, no FAKE constructs present
+
+## [s3] Fully inlining every difference in the third side test (no dz/dx locals at all), with each product written difference-from-origin first, reproduces the target's test-3 emission order.
+- mechanism: expand_expr emits a binary operation's operands left-to-right, so emission order follows written order.
+- probe: variants a1_expanded_origin_first, a2_expanded_cz_first, a3_dz_local_only, a4_expanded_dz_first_operand (tmp/grind/func_8002D780/s3/variants/)
+- result: 26, 27, 25 and 10 respectively against a control of 10 - the fully-inlined forms lose the cse'd dz/dx pseudos and repermute the whole block. Banked as rejected/test3-fully-inlined-origin-first-26.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present
+
+## [s3] Giving the call-3 block a real CODE_LABEL from above (if (f2 == 0) goto last; return 1; last: return f3 != 0;) changes reorg's liveness walk on the second post-call branch.
+- mechanism: A real CODE_LABEL at the call-3 block head would flush reorg.c mark_target_live_regs' pending-dead $v0 bit.
+- probe: variant c4_goto_last_label (tmp/grind/func_8002D780/s3/variants/)
+- result: 10 = control; jump1 deletes the goto and rebuilds the same relocation. The structural change that DID work was the return-0 fall-out form, not a label.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present

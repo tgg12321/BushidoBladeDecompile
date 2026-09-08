@@ -1,43 +1,61 @@
-/* func_8002D780 - grind candidate (s2 structural, 2026-09-08). Honest sandbox floor
- * 10/202 (s1 left it at 47/202; measured this session with these exact edits in
- * src/code6cac_b.c: `sandbox func_8002D780 --disable all` -> score 10, build_insns ==
- * target_insns == 202).
+/* func_8002D780 - grind candidate (s3 structural, 2026-09-08). Honest sandbox floor
+ * 7/202 (s2 left it at 10/202). Measured THIS session with these exact edits in
+ * src/code6cac_b.c: `sandbox func_8002D780 --disable all` -> score 7, and
+ * build_insns == target_insns == 202. Diff: tmp/grind/func_8002D780/s3/pairdiff_e2.txt.
  *
- * What moved the floor this session (all ordinary C, no FAKE construct present):
- *  1. 47 -> 23: the two cross products of each triangle side test are computed into
- *     NAMED LOCALS (kc = the centroid-side cross product, kp = the point-side cross
- *     product) instead of being written as one nested expression.  Mechanism: with the
- *     cross products as separate statements, cc1 emits the two multiply pairs as
- *     separate RTL groups, and sched1 (tools/gcc-2.7.2/sched.c) then produces the
- *     target's multiply order in block 5 instead of interleaving the centroid fixups.
- *  2. 23 -> 14: the sign test is written `(kc ^ kp) >= 0` (centroid term first), which
- *     is the operand order the target's three tests use; and kc/kp are REUSED for the
- *     second and third tests rather than being fresh locals per test (fresh locals per
- *     test measured 52 -- see rejected/).
- *  3. 14 -> 10: the LZCS island's clobber list is the sibling footprint
- *     "$12","$13","$14","$15" instead of "$12" alone.  This is the byte-matched
- *     sibling spelling that ships on main for the SAME island in this TU
- *     (func_8002BC68 src/code6cac_b.c:762-767 and func_8002BEA0 :825-830, whose
- *     in-line comment records the 2026-07-28 judge ruling: mentioning $13-$15 in the
- *     RTL is the only route by which reload1.c can pick $24 for the reload-emitted
- *     mflo).  Here it moves our `mflo $t7` (= $15) to the target's `mflo $t8` (= $24)
- *     and takes two further register-permutation insns with it.
- *  4. byte-neutral hygiene: the redundant `(u8 *)` casts on `&D_8008D118` are dropped
- *     (the symbol is already declared `extern u8` at src/code6cac_b.c:279), which
- *     removes the two declaration puns the s2 brief flagged.  Measured identical (10).
+ * What moved the floor this session (all ordinary C; no FAKE construct present):
+ *  1. 10 -> 7, and the whole tail residual (cluster C, 3 insns) CLOSED: the third
+ *     func_8002D518 call is written as a test with an explicit `return 0` fall-out
  *
- * Remaining 10 differing insns (tmp/grind/func_8002D780/s2/pairdiff_g1.txt):
- *  A. 2 insns -- the third (edge) test's delay-slot pick: target fills the test-2 bltz
- *     slot with `subu v0,t2,t1` (cx - x0), we fill it with `subu a0,t0,a3` (z2 - z0).
- *  B. 5 insns -- cluster 2: the target keeps a second pseudo holding `dist` in $a0
- *     (`move a0,s1` in the beqz delay slot) that feeds the LZCS input and the `srlv`,
- *     while $s1 keeps the compare / LUT index / call arguments; and its LZCR frame slot
- *     is addressed as `addiu v0,sp,16; move t4,v0` rather than our `move t4,sp`.
- *  C. 3 insns -- cluster 3: reorg.c will not steal `li v0,1` into the second
- *     post-call branch's slot (see evidence.md s1 for the instrumented trace).
+ *         if (func_8002D518(sqrt_val, dist, p10C, p124) != 0) return 1;
+ *         return 0;
+ *
+ *     instead of `return func_8002D518(...) != 0;`.  All three post-call exits are now
+ *     the same shape, jump.c's cross-jump merges them differently, and reorg.c
+ *     (fill_simple_delay_slots) steals `li v0,1` into the SECOND post-call branch's
+ *     delay slot exactly as the target does -- the standalone `.L303: li v0,1` block
+ *     and the `j` over it are both gone.  s1 and s2 measured eleven tail SPELLINGS
+ *     (nested `== 0`, goto-to-shared-label, truthy if, result local, ternary, `!!`,
+ *     ...) at no change; this one is not a respelling of the tail but a change to the
+ *     BLOCK STRUCTURE, which is what the s2 frontier said to attack.
+ *  2. This alone lands at 201 insns (one short of the target's 202), which finally
+ *     lets the s2-banked LZCR slot-address operand pay for itself: passing
+ *     `"r"(&sp_var)` as a third operand of the LZCS island makes cc1 materialise the
+ *     frame-slot address into a pseudo, reproducing the target's
+ *     `addiu v0,sp,16; move t4,v0` instead of our `move t4,sp` -- and takes the count
+ *     back to exactly 202.  s2 measured that operand at 203 insns and could not adopt
+ *     it; residuals B and C were coupled by the insn count, and (1) is what unlocked it.
+ *  3. Byte-neutral-but-closer: the third triangle side test is written as the cross
+ *     product of two vertex-0-relative vectors, with all six differences as named
+ *     locals (ax/az = centroid relative to vertex 0, bx/bz = the point, dx/dz = the
+ *     0->2 edge).  Score is unchanged at 7, but it moves half of residual A: the
+ *     target's `subu v0,t2,t1` (cx - x0) now precedes `subu a0,t0,a3` (z2 - z0) at the
+ *     top of the test-3 block, matching insn-for-insn.  Declaration ORDER is
+ *     load-bearing here -- see the header note below.
+ *
+ * DO NOT "clean up" the declaration order of ax/az/bx/bz/dz/dx.  Measured this session
+ * (all at 202 insns): ax,az,bx,bz,dz,dx = 7 (this form); ax,az,dz,dx,bx,bz = 7;
+ * ax,dz,dx,az,bx,bz = 14; ax,dx,dz,az,bx,bz = 14; ax,dz,dx,az,bz,bx = 14;
+ * ax,dz,dx,bx,bz,az = 14; dx,ax,dz,az,bx,bz = 14; inlining az and/or bz = 14;
+ * reassigning cx/cz in place = 28; fully inlining every difference = 26/27.
+ *
+ * Remaining 7 differing insns (tmp/grind/func_8002D780/s3/pairdiff_e2.txt):
+ *  A. 2 insns -- the SECOND subu pair of the test-3 block: the target emits
+ *     `subu v1,t5,t1` (dx = x2 - x0) before `subu v0,a2,a3` (az = cz - z0); we emit
+ *     az first.  Declaring dx ahead of az DOES produce the target order (variants
+ *     f1/f3, tmp/grind/func_8002D780/s3/pairdiff_f1.txt) but permutes dz and dx
+ *     between $a0 and $v1, costing 7 -- so residual A is now an ALLOCATION question
+ *     (dz must land in $a0 and dx in $v1 with dx emitted second), not a scheduling one.
+ *  B. 5 insns -- the `dist` copy into $a0 (`move a0,s1` in the beqz delay slot),
+ *     feeding the LZCS island input and the `srlv`, while $s1 keeps the compare, the
+ *     small-path LUT index and the call arguments.  Fourteen natural copy spellings
+ *     are now measured dead across s1/s2/s3; cse.c make_regs_eqv folds every one.
  *
  * The three cop2 blocks are the owner-authorized canonical LZCS/LZCR + mvmva idiom
- * (.claude/rules/cop2-addressing-preamble-cluster.md). */
+ * (.claude/rules/cop2-addressing-preamble-cluster.md); the LZCS island's
+ * "$12","$13","$14","$15" clobber list is the byte-matched sibling spelling that ships
+ * on main for the SAME island in this TU (func_8002BC68 src/code6cac_b.c:762-767,
+ * func_8002BEA0 :825-830, judge ruling 2026-07-28 recorded in-line at :751-758). */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -84,10 +102,14 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             kc = z2 * cx - x2 * cz;
             kp = z2 * px - x2 * pz;
             if ((kc ^ kp) >= 0) {
+                s32 ax = cx - x0;
+                s32 az = cz - z0;
+                s32 bx = px - x0;
+                s32 bz = pz - z0;
                 s32 dz = z2 - z0;
                 s32 dx = x2 - x0;
-                kc = dz * (cx - x0) - dx * (cz - z0);
-                kp = dz * (px - x0) - dx * (pz - z0);
+                kc = dz * ax - dx * az;
+                kp = dz * bx - dx * bz;
                 if ((kc ^ kp) >= 0)
                     return 1;
             }
@@ -113,9 +135,9 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                     "mtc2 $t4, $30\n"
                     "nop\n"
                     "nop\n"
-                    "addu $t4, $sp, $zero\n"
+                    "addu $t4, %2, $zero\n"
                     "swc2 $31, 0($t4)"
-                    : "=m"(sp_var) : "r"(dist) : "$12", "$13", "$14", "$15");
+                    : "=m"(sp_var) : "r"(dist), "r"(&sp_var) : "$12", "$13", "$14", "$15");
                 lzcr = sp_var;
             }
             {
@@ -138,6 +160,7 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
         p10C[1] = -*(s32 *)(obj + 0x104);
         if (func_8002D518(sqrt_val, dist, p10C, p118) != 0) return 1;
 
-        return func_8002D518(sqrt_val, dist, p10C, p124) != 0;
+        if (func_8002D518(sqrt_val, dist, p10C, p124) != 0) return 1;
+        return 0;
     }
 }

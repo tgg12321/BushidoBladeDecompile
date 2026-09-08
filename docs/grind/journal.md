@@ -1866,3 +1866,4 @@
 - 2026-09-08 02:20 func_8003F6D8 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-08 02:45 func_8002D780 s1 [recon] floor=47: recon: honest floor 48 -> 47 (xor operand order); residual attributed to sched1 block-5 multiply order (~38), un-coalesced dist copy into $a0 (~5, sibling func_8002D518's closed residual), and reorg slot fill blocked by $v0 liveness at the call-3 block (3); OBJECT MODEL D_8008D118 MATCHES
 - 2026-09-08 03:00 func_8002D780 s2 [structural] floor=10: Structural: honest floor 47 -> 10/202 — named cross-product locals per side test (-24), centroid term first in the XOR with the locals reused across tests (-9), sibling LZCS clobber footprint $12-$15 (-4).
+- 2026-09-08 03:19 func_8002D780 s3 [structural] floor=7: Floor 10 -> 7/202: the tail residual is CLOSED by an if/return-0 block-structure change, which unlocked the s2-banked LZCR slot operand; residual A is now an allocation question, not a schedule.

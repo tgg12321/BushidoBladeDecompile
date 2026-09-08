@@ -1,7 +1,7 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 2,
+ "session_count": 3,
  "current_modality": "structural",
  "floor_history": [
   {
@@ -15,23 +15,29 @@
    "floor": 10,
    "modality": "structural",
    "headline": "Structural: honest floor 47 -> 10/202 \u2014 named cross-product locals per side test (-24), centroid term first in the XOR with the locals reused across tests (-9), sibling LZCS clobber footprint $12-$15 "
+  },
+  {
+   "session": 3,
+   "floor": 7,
+   "modality": "structural",
+   "headline": "Floor 10 -> 7/202: the tail residual is CLOSED by an if/return-0 block-structure change, which unlocked the s2-banked LZCR slot operand; residual A is now an allocation question, not a schedule."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Residual A (2 insns): the test-3 block's first scheduled insn should be subu v0,t2,t1 (cx - x0), not subu a0,t0,a3 (z2 - z0), so reorg steals the centroid difference into the test-2 bltz slot.",
-   "mechanism": "reorg.c fill_simple_delay_slots takes the first schedulable insn of the fall-through thread; the order is set by sched1 (tools/gcc-2.7.2/sched.c rank_for_schedule) at the top of the test-3 block",
-   "next_probe": "tools/sched_solver inverse on the test-3 block against the target order (order-exact: it returns REACHABLE/FORECLOSED plus the required emission order) before spelling anything else \u2014 ten source spellings are already dead (s2 H-s2-i); also pwsh tools/grinder/dump.ps1 func_8002D780 and read .sched for the two subus' priority and LUID"
+   "hypothesis": "Residual A (2 insns) is a dz/dx seat assignment: f1/f3 already give the target's emission order for the whole test-3 block, and the only remaining error is dz in $v1 / dx in $a0 where the target has dz in $a0 / dx in $v1.",
+   "mechanism": "local-alloc quantity numbering follows the post-sched1 insn order, so the declaration order that fixes the emission order also flips the two seats; this is global.c/local-alloc, not sched.c",
+   "next_probe": "tools/ra_solver/inverse_compose.py classify on the dz and dx seats against the f1 body (memory/grind/func_8002D780/rejected/relvec-dx-before-az-order-right-regs-swapped-14.c) - it returns REACHABLE/FORECLOSED plus a ranked C-lever vector. Do NOT re-sweep declaration orders; twelve are measured in s3 and the two that hold the floor are the two in candidate.c."
   },
   {
-   "hypothesis": "Residual C (3 insns): preventing jump1 from cross-jumping the three return-1 sites into one shared relocated block leaves $v0 dead at the call-3 block entry, so reorg steals li v0,1 into the second post-call branch's slot.",
-   "mechanism": "reorg.c mark_target_live_regs pending-dead flush at CODE_LABELs (tools/gcc-2.7.2/reorg.c:2560-2760); jump.c's cross-jump moves the shared block behind the sltu block so no label flushes the pending-dead $v0",
-   "next_probe": "shapes that change the BLOCK STRUCTURE rather than the tail's C spelling (eleven spellings are dead) \u2014 e.g. a goto target above the calls that gives the call-3 block a real CODE_LABEL; verify each with BB2_DBR_DEBUG=1 via tmp/grind/func_8002D780/s1/dbrdbg.py and read oppregs bit 2 on the insn=381 line"
+   "hypothesis": "Residual B (5 insns) is the second pseudo holding dist in $a0 (move a0,s1 in the beqz delay slot) feeding the LZCS island input and the srlv, while $s1 keeps the compare, the small-path LUT index and the call arguments.",
+   "mechanism": "cse.c make_regs_eqv folds every single-def copy into its source pseudo, so no natural C copy survives to reload; the target compile kept two pseudos",
+   "next_probe": "tools/ra_solver inverse_compose.py classify on the $a0 seat; only if that returns FORECLOSED for every natural form, the sibling func_8002D518's FAKE dead-store re-store (src/code6cac_b.c:1244-1265, .claude/rules/dead-store-fake-exception.md) citing this function's now fourteen-spelling exhaustion ledger."
   },
   {
-   "hypothesis": "Residual B (5 insns): once C lands, the \"r\"(&sp_var) asm operand closes the LZCR slot addressing at 202 insns, leaving only the dist copy into $a0.",
-   "mechanism": "an r-constrained address operand materialises the frame-slot address into a pseudo (confirmed this session at 203 insns); the remaining copy is a global.c coalescing question \u2014 dist stays live across the three calls in $s1 while the copy dies before them",
-   "next_probe": "land C, re-measure the &sp_var operand, then run tools/ra_solver inverse_compose.py classify on the $a0 seat; only if that returns FORECLOSED for every natural form, the sibling func_8002D518's FAKE dead-store re-store (src/code6cac_b.c:1244-1265, .claude/rules/dead-store-fake-exception.md) citing this function's now nine-spelling exhaustion ledger"
+   "hypothesis": "candidate.c's six fresh once-written test-3 locals (ax/az/bx/bz/dx/dz) need a family decision BEFORE any candidate-ready submission, because review verdicts are keyed by body and respelling after a layer-1 verdict is not available.",
+   "mechanism": "The family-selection table routes a fresh once-written once-read local carrying a real consumed value to the named-intermediate family (six prongs, FAKE required); the competing reading is that vertex-0-relative vectors are ordinary geometric C needing no family claim",
+   "next_probe": "grep docs/reference/sotn-construct-index.md for vertex-relative / difference-local precedent, then either write the six-prong named-intermediate self-vet or emit a ruling-request naming both readings - decide before the body is submitted."
   }
  ],
  "judge_constraints": [],
@@ -124,6 +130,46 @@
    "measured_on": "HEAD 25c0188a (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
    "predicate_cite": "",
    "result": "10, byte-neutral against the simpler func_8002D320 spelling the candidate keeps"
+  },
+  {
+   "session": 3,
+   "statement": "Declaring dx ahead of az fixes residual A's remaining subu-pair order without a register cost.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body (relative-vector test 3 + if/return-0 tail + &sp_var slot operand), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Both measured 14. The order IS fixed - the whole test-3 block matches the target's emission order - but dz and dx are pe"
+  },
+  {
+   "session": 3,
+   "statement": "One of six further declaration orders or inlinings of the six vertex-0-relative difference locals gives both the target's emission order and the target's dz/dx allocation.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Only ax,az,bx,bz,dz,dx (7) and ax,az,dz,dx,bx,bz (7) hold the floor; every other order and every inlining measured 14, t"
+  },
+  {
+   "session": 3,
+   "statement": "A copy of dist survives cse on the 7-floor chassis in one of five further spellings (mag copy at the head of the else arm covering both uses, the same copy in the outer block, asm-input-only, srlv-ind",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s3 7-floor body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "All 7 = control. Fourteen natural copy spellings are now dead across s1-s3; re-measured here because the chassis changed"
+  },
+  {
+   "session": 3,
+   "statement": "Fully inlining every difference in the third side test (no dz/dx locals at all), with each product written difference-from-origin first, reproduces the target's test-3 emission order.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "26, 27, 25 and 10 respectively against a control of 10 - the fully-inlined forms lose the cse'd dz/dx pseudos and reperm"
+  },
+  {
+   "session": 3,
+   "statement": "Giving the call-3 block a real CODE_LABEL from above (if (f2 == 0) goto last; return 1; last: return f3 != 0;) changes reorg's liveness walk on the second post-call branch.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 6d8020d9 (-mel -msoft-float), the s2 10-floor body, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "10 = control; jump1 deletes the goto and rebuilds the same relocation. The structural change that DID work was the retur"
   }
  ],
  "ladder_skip": 0,

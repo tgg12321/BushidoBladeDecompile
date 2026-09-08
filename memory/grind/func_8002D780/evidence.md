@@ -172,3 +172,99 @@ byte-neutral here, so the simpler s1/func_8002D320 spelling is kept.
 - [s2] Nine natural spellings of the cluster-2 dist copy are now measured dead across s1 and s2 (plain u32/s32 copies, outer-block declaration, index-only use, pointer reads); cse.c make_regs_eqv folds every one.
 
 - [s2] Eleven tail spellings are now measured dead across s1 and s2 (nested == 0, goto-to-shared-label, truthy if, result local, ternary, !!, result carrier, p10C hoist, ...); the mechanism is jump1's relocation of the shared li v0,1 block, not the tail's C shape, so the next probe should attack the cross-jump rather than the spelling.
+
+## s3 (2026-09-08, structural) — chassis: HEAD main @ 6d8020d9 (-mel -msoft-float), s2 candidate applied
+
+FLOOR 10 -> 7, with build_insns == target_insns == 202. Every number below is a
+`sandbox func_8002D780 --disable all` score measured this session (28 variants in 6
+batches; generators + variant bodies + pairdiffs in tmp/grind/func_8002D780/s3/).
+
+### THE TAIL RESIDUAL (cluster C, 3 insns) IS CLOSED — and it unlocked residual B
+s1 and s2 measured ELEVEN tail SPELLINGS at no change and concluded the mechanism was
+jump1's relocation of the shared `li v0,1` block, not the tail's C shape. That was
+right, and the fix is a BLOCK-STRUCTURE change, not a respelling: write the third
+`func_8002D518` call as a test with an explicit fall-out
+
+    if (func_8002D518(sqrt_val, dist, p10C, p124) != 0) return 1;
+    return 0;
+
+instead of `return func_8002D518(...) != 0;`. All three post-call exits then have the
+same shape, jump.c cross-jumps them differently, and reorg.c fill_simple_delay_slots
+steals `li v0,1` into the SECOND post-call branch's delay slot exactly as the target
+does. The standalone `.L303: li v0,1` block and the `j` over it are both gone.
+Measured 7 at 201 insns (variant c1_third_call_if_form).
+
+201 insns is ONE SHORT of the target's 202 — which is precisely the coupling s2
+predicted. Adding the s2-banked LZCR slot-address operand (`"r"(&sp_var)` as a third
+asm operand of the LZCS island, which reproduces the target's `addiu v0,sp,16;
+move t4,v0` and which s2 measured at 203 insns and could not adopt) takes the count
+back to exactly 202 at the same score 7 (variant d1_c1_plus_slotaddr). Residuals B and
+C were coupled by the insn count in BOTH directions: C had to land before the slot
+operand could be paid for, and the slot operand is what restores the count.
+
+Note the corollary for the next session: our `nop` in the beqz delay slot and the
+target's `move a0,s1` are now the ONLY thing separating the two sqrt blocks; the LZCR
+slot addressing, the `mflo t8`, the `lw 16($sp)` and the whole tail all match.
+
+### Residual A is now an ALLOCATION question, not a scheduling one
+The test-3 block is a 2-D cross product of two vertex-0-relative vectors. Writing it
+that way — six named difference locals, `ax`/`az` = centroid relative to vertex 0,
+`bx`/`bz` = the point, `dx`/`dz` = the 0->2 edge — is byte-neutral on score (7) but
+FIXES the first of the block's two subu-pair order diffs: the target's
+`subu v0,t2,t1` (cx - x0) now precedes `subu a0,t0,a3` (z2 - z0) insn-for-insn
+(variant e2_full_relative_vectors, pairdiff_e2.txt). The residual is the SECOND pair:
+the target emits `subu v1,t5,t1` (dx = x2 - x0) before `subu v0,a2,a3` (az = cz - z0);
+we emit az first.
+
+Declaring dx ahead of az DOES produce the target's order — variants
+f1_ax_dz_dx_az_bx_bz and f3_ax_dx_dz_az_bx_bz both emit dx then az, matching the
+target through the whole test-3 block (pairdiff_f1.txt / pairdiff_f3.txt) — but they
+permute dz and dx between $a0 and $v1 (ours dz->$v1, dx->$a0; target dz->$a0,
+dx->$v1), which costs 7 and takes the mflo/mult chain with it. So the two-insn
+residual A is now precisely: get the target's emission order (dx second) AND the
+target's allocation (dz->$a0, dx->$v1). This is a local-alloc/global.c question and
+the designated tool is tools/ra_solver (inverse_compose.py classify on the dz/dx
+seats), not more source spellings.
+
+Pass attribution for the order itself (cc1 -da, tmp/grind/func_8002D780/dumps/): both
+subus sit in sched1 basic block 7 with priority 1 and identical function units, so
+rank_for_schedule (tools/gcc-2.7.2/sched.c) falls through the priority and dependence-
+class tests to the INSN_LUID tie-break, and schedule_select's "largest potential
+hazard" rule (sched.c:2708-2723, the `;; insn N has a greater potential hazard` line in
+code6cac_b.sched block 7) decides the pair. Empirically the LOWER-LUID insn of the pair
+lands FIRST in the block — which is why declaration order controls the order and why
+it also controls the allocation.
+
+### Residual B: five more copy spellings dead (fourteen total across s1-s3)
+Re-measured on the 7-floor chassis per the chassis-relative-kill rule: a `mag = dist`
+copy at the head of the else arm covering both else-arm uses; the same copy declared in
+the outer block right after `dist`; the copy used only as the asm input; the copy used
+only as the srlv index; and a `u32 mag = (u32)dist` covering both. ALL measured 7 =
+control. cse.c make_regs_eqv folds every one, reproducing s1's H-s1-c and s2's H-s2-j
+on the new chassis.
+
+- [s3] FLOOR 10 -> 7 of 202 (build_insns == target_insns == 202), measured this session with the edits in src/code6cac_b.c before src was restored to its committed INCLUDE_ASM state.
+- [s3] The tail residual (cluster C, 3 insns) is CLOSED by writing the third func_8002D518 call as `if (... != 0) return 1; return 0;` instead of `return ... != 0;` — a block-structure change, not one of the eleven tail spellings s1/s2 killed. reorg.c now steals `li v0,1` into the second post-call branch's slot as the target does.
+- [s3] That change alone lands at 201 insns, which is what finally pays for the s2-banked `"r"(&sp_var)` LZCR slot-address operand (s2 measured it at 203 and could not adopt it): together they are 7 at exactly 202. Residuals B and C were coupled by the insn count in both directions.
+- [s3] Writing test 3 as the cross product of two vertex-0-relative vectors (six named difference locals ax/az/bx/bz/dx/dz) is score-neutral but fixes the FIRST of residual A's two subu-pair order diffs: `subu v0,t2,t1` now precedes `subu a0,t0,a3` insn-for-insn.
+- [s3] Declaration order of those six locals is load-bearing: ax,az,bx,bz,dz,dx = 7 and ax,az,dz,dx,bx,bz = 7; every other order measured, and every form that inlines az and/or bz, measured 14.
+- [s3] Residual A is no longer a scheduling question: f1/f3 (dx declared before az) DO produce the target's emission order for the whole test-3 block, but permute dz and dx between $a0 and $v1 (target dz->$a0, dx->$v1), costing 7. The next probe is tools/ra_solver on those two seats, not more source spellings.
+- [s3] Five more spellings of the residual-B `dist` copy (mag copy in the else arm, in the outer block, asm-input-only, srlv-index-only, u32) all measured 7 = control — fourteen natural copy spellings are now dead across s1-s3; cse.c make_regs_eqv folds every one.
+
+- [s3] [s3] FLOOR 10 -> 7 of 202 with build_insns == target_insns == 202, measured this session with the edits in src/code6cac_b.c (sandbox func_8002D780 --disable all -> score 7) before src was restored to its committed INCLUDE_ASM state.
+
+- [s3] [s3] The tail residual (cluster C, 3 insns, flat since s1) is CLOSED: writing the third func_8002D518 call as `if (... != 0) return 1; return 0;` instead of `return ... != 0;` makes reorg.c steal `li v0,1` into the second post-call branch's slot as the target does. Eleven tail SPELLINGS were dead; the fix was a block-structure change, not a respelling.
+
+- [s3] [s3] That change alone lands at 201 insns, which is what finally pays for the s2-banked "r"(&sp_var) LZCR slot-address operand (s2 measured it at 203 and could not adopt it). Together they are 7 at exactly 202: residuals B and C were coupled by the insn count in both directions.
+
+- [s3] [s3] Writing test 3 as the cross product of two vertex-0-relative vectors (six named difference locals) is score-neutral but fixes the first of residual A's two subu-pair order diffs: subu v0,t2,t1 now precedes subu a0,t0,a3 insn-for-insn.
+
+- [s3] [s3] Declaration order of those six locals is load-bearing: ax,az,bx,bz,dz,dx = 7 and ax,az,dz,dx,bx,bz = 7; every other order measured, and every form inlining az and/or bz, measured 14.
+
+- [s3] [s3] Residual A is no longer a scheduling question: f1/f3 (dx declared before az) DO produce the target's emission order for the whole test-3 block but permute dz and dx between $a0 and $v1 (target dz->$a0, dx->$v1), costing 7. The next probe is tools/ra_solver on those two seats, not more source spellings.
+
+- [s3] [s3] Five more spellings of the residual-B dist copy all measured 7 = control - fourteen natural copy spellings are now dead across s1-s3; cse.c make_regs_eqv folds every one.
+
+- [s3] [s3] Everything else in the sqrt region now matches the target (LZCR slot addressing addiu v0,sp,16 / move t4,v0, mflo t8, lw 16($sp), the whole tail): the only diff left there is our nop in the beqz delay slot vs the target's move a0,s1.
+
+- [s3] [s3] Pass attribution read from cc1 -da (tmp/grind/func_8002D780/dumps/code6cac_b.sched, basic block 7): both test-3 subus carry priority 1 and the same function unit, so rank_for_schedule falls through to the INSN_LUID tie-break and schedule_select's largest-potential-hazard rule (tools/gcc-2.7.2/sched.c:2708-2723) decides the pair; empirically the lower-LUID insn of a pair lands first in the block.
