@@ -25851,3 +25851,7 @@ the frozen family list does this today. (2) A toolchain finding that changes
 or a maspsx/ASPSX fidelity gate that alters pre-reload insn counts in block 7) — either would
 void every chassis-relative kill here and the ledger's re-measurement discipline would re-open
 the function immediately. (3) An owner unpark.
+
+## 2026-09-08 07:43 — func_800393C8 — final call — **PASS**
+
+Pure C, no FAKE annotations, no asm/pins/barriers/pads, no rule/pipeline files touched (diff is src/code6cac_c_mid.c only). Constructs: byte-cursor table walk with literal field offsets (same spelling as the COMPLETED-C sibling func_800395B4 at src/code6cac_c_mid.c:1327), an s16 `cur` temp publishing the next free index to D_800A3714 (ordinary split of store + loop-carried copy, sibling does `D_800A379C = idx + 1; idx = idx + 1`), a u8 `age` byte field, and the `raw = hw << 16; rot = raw >> 16; (u32)raw >> 28` idiom which is the truthful sign-extend + top-nibble extract of the packed rot|mode halfword (target asm/funcs/func_800393C8.s:22-24 is exactly sll 16/sra 16/srl 28). Every construct has a semantic reading and is consumed. Independently verified: candidate.c body == src body; hypotheses.md/evidence.md s1 document the spelling sweep (rejected/ holds the 4 measured losers); state.json has no constraints or bans. Decisive fact: nothing in the body lacks a semantic reading, so no frozen-family membership question arises (ordinary-c-judge-decidable).
