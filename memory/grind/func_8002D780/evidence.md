@@ -2318,3 +2318,5 @@ v21.json, v21b.json, v21c.json, pairdiff_TT_axcarrier.txt, w_ax/}.
 - [s21] Per-pseudo n_refs is identical on every chassis; only live_length moves (101 38->40, 102 35->34, 103 35->33, 110 18->19->21, 115 26->28, 116 26->24->22), and allocno_compare divides by exactly that quantity.
 
 - [s21] All 56 px/pz declaration placements on the TT_qdx chassis score exactly 32, confirming at the score level that a load's birth is set by sched1's placement and not by the C declaration position.
+
+- [s21] CC1PSX SELF-DISPROOF (driver, ruling 2026-09-08): candidate ad958282d982 scores 2 under our cc1 and 46 under the original cc1psx — SOURCE-SIDE: the original compiler is no closer from this source, so the residual is a spelling not yet found (a pure-C preimage exists by construction).

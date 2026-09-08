@@ -639,8 +639,8 @@
  "object_model_audited": 1,
  "escalation_deferrals": 0,
  "cc1psx_check": {
-  "at": "2026-09-08T16:35:27.201870+00:00",
-  "candidate_sha": "c285cf7c83fd",
+  "at": "2026-09-08T21:57:43.249845+00:00",
+  "candidate_sha": "ad958282d982",
   "ours": 2,
   "psx": 46,
   "closer": false,
