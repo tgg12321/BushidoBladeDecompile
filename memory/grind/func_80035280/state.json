@@ -145,5 +145,14 @@
    "headline": "func_800324D0 COMPLETED-C",
    "consumed": null
   }
+ ],
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "46a3a399a189a330",
+   "when": "2026-09-08T05:16:06.260450+00:00",
+   "summary": "final call: Constructs: (a) f=&D_80106A73 alias and base=(u8*)&D_80106A58 typed re-view -> pointer-alias-fake-exception.md, all 4 prerequisites held (exhaustion: rejected/s3-no-f-pointer-*score44, s5/m2.c=50, s5/"
+  }
  ]
 }

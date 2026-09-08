@@ -569,3 +569,42 @@ solver-modality driver; the mechanism is not specific to func_80035280.
 - probe: Read of tools/gcc-2.7.2/loop.c lines 520-540, 690-800, 1520-1640, 2158-2215 and 2989-3060 this session, cross-checked against the s3 .loop dump line 'Insn 137: regno 115 (life 1), move-insn savings 1  moved to 292'. Two further escape routes closed in the same read: loop_has_call is set only by a real CALL_INSN (prescan_loop, loop.c:2202), and the movable is always recorded for a compiler-generated constant temp because the skip test at loop.c:695-701 is satisfied unconditionally by `! REG_USERVAR_P (dest) && ! REG_LOOP_TEST_P (dest)`. The one remaining source-level blocker, may_not_move (loop.c:3038-3044), needs the constant pseudo set in two basic blocks of the loop, and the target's loop 2 is one straight-line basic block.
 - result: The frontier's insn_count claim is now proven from compiler source for all three factors rather than just for threshold, so a later session does not need to re-open savings, lifetime, loop_has_call or movable-creation.
 - verdict: CONFIRMED
+
+### H14
+## [s5] The loop.c:1631 desirability threshold for loop 2 is 58 on the shipped `-msoft-float` chassis, not the 122 banked by s1/s2/s4, so the 0x91A2B3C5 hoist is refused at loop-2 insn_count 59 rather than 123.
+- mechanism: loop.c:532 sets `threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)`. `-msoft-float` (canonical CC_FLAGS since 2026-09-07) marks the 32 FP registers fixed, roughly halving n_non_fixed_regs; the s1/s2 measurement of 122 was taken before that flag was adopted, and s4 re-derived it from loop.c source without re-measuring n_non_fixed_regs. With savings and lifetime both pinned at 1 (s4 H13, still CONFIRMED), the move test reduces to `threshold >= insn_count`.
+- probe: Built the s4 body with N extra real statements inside loop 2 and read the `-dL` dump for the 0x91A2B3C5 movable, N chosen to sweep insn_count. Measured: 55 "moved", 57 "moved", 59 "not desirable", 61/63/71/79/87/103/123 "not desirable". The flip is between 57 and 59, and threshold is even by construction, so threshold = 58 and n_non_fixed_regs = 28. Artifacts tmp/grind/func_80035280/s5/pad{0,1,2,3,4,8,12,16,24,34}.c, probe.sh, last.loop.
+- result: The s4 frontier's "insn_count must reach 123 against a natural ceiling of 62" is void. The required lift was 55 -> 59, four insns, and it is paid for by four ordinary named intermediates that combine folds away. This closed the function.
+- verdict: CONFIRMED
+
+### H15
+## [s5] Staging loop 2's three clock fields and its raw record byte through fresh named intermediates, with the stores interleaved between the assignments, reaches loop-2 insn_count 59 at zero byte cost and takes func_80035280 to distance 0.
+- mechanism: each `u8` intermediate forces a QImode truncation insn at RTL-expansion time that survives cse (it is a distinct pseudo) and is therefore counted by count_loop_regs_set (loop.c:2989) into insn_count, but is folded back into the `sb` by combine, so build_insns is unchanged at 108. `t` (s32) contributes the SImode load temp for the `base[i*8]` read. Total lift 55 -> 59, one insn past threshold 58, so move_movables prints "not desirable" for the 0x91A2B3C5 movable and the lui/ori stays in the loop as the target has it.
+- probe: sandbox func_80035280 --disable all = score 0, target_insns 108 == build_insns 108; verify-oracle build_sha1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa, build_matches true. Body saved to memory/grind/func_80035280/candidate.c and in place at src/code6cac_b.c.
+- result: MATCHED. Self-vet at memory/grind/func_80035280/self_vet.md claims the named-intermediate family (no-new-park-categories.md:214, six prongs checked) for the seven intermediates and the pointer-alias family (pointer-alias-fake-exception.md:5) for `f` and `base`; all four /* FAKE */ annotations are in src.
+- verdict: CONFIRMED
+
+### H16
+## [s5] At loop-2 insn_count 58 -- one insn short of the gate -- fourteen structurally different loop-2 spellings all stay at 29 diffs, so the intermediate COUNT, not the shape, is what closes this function.
+- mechanism: every spelling that stages three (not four) values through fresh intermediates lands on exactly 58 real insns, and move_movables still prints "moved" at 58 because the test is `>=`.
+- probe: measured with tmp/grind/func_80035280/s5/probe.sh -- nested-block u8 intermediates (vK), u8 with an extra block for the record byte (vL), s8 variants (vM, vN), u16 in each of the three positions and in all three (wA-wD), a dest pointer local (wF, yB), an s32+u8 double local on the first field (wE), an index local `j` (yC), a source pointer local `b` (yD), a u8 local for the record byte (yE, zD), and `((s32 *)(base + i*8))[1]` reads (yF). All: insn_count 58, diffs 29, "moved".
+- result: KILLED as a route to 0 -- three intermediates are not enough on this chassis regardless of how they are spelled or typed. A fourth intermediate on the record byte, typed s32 rather than u8 (`s32 t = base[i*8];`), is what supplies the last insn: zD with `u8 id` measures 58/29, zC with `s32 t` measures 59/0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (src/code6cac_b.c, -msoft-float CC_FLAGS, target_insns 108), s4 split-accumulator prologue plus each listed loop-2 spelling, /* FAKE */ constructs present = the inherited f alias, base view, and flags0/1/2 split
+
+### H17
+## [s5] Spelling `&D_80106A58` inline at loop 2's use sites reaches the insn_count gate but creates a second address movable, and recomputing the record pointer inside the loop destroys the $a2 giv.
+- mechanism: each inline `(u8 *)&D_80106A58` is its own address-materialisation movable. When `base` is also kept it hoists separately (loop.c move_movables), so the preheader carries two %hi/%lo pairs instead of the target's one; when `base` is dropped and the pointer is rebuilt from `i * 8` inside the loop, loop.c can no longer form the stride-8 giv and emits `sll`/`addu` per iteration instead of the target's `addiu $a2, $a2, 8`.
+- probe: xA (inline everywhere, no base local) insn_count 61, "not desirable", 113 insns, 39 diffs; xB / xD (base kept, symbol inline for the s32 reads) insn_count 60, "not desirable", 113 insns, 39 diffs; xC (pointer recomputed inside the loop) insn_count 59, "not desirable", 111 insns, 35 diffs, and the instruction diff shows `sll a1,a3,3; addu a1,a1,v0` replacing the giv.
+- result: KILLED as a route to 0. Useful negative: reaching the gate is necessary but not sufficient -- the padding must not disturb the two givs ($a1 stride 4, $a2 stride 8) or the single preheader address materialisation. The named intermediates satisfy that; extra address handles do not.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis (-msoft-float CC_FLAGS, target_insns 108), s4 prologue plus the xA/xB/xC/xD loop-2 spellings, /* FAKE */ constructs present = the inherited f alias and flags0/1/2 split (xA and xC additionally drop the base alias)
+
+### H18
+## [s5] The three constructs inherited from s1/s3 -- the `i = 0;` hoist, the `f = &D_80106A73;` alias, and the flags0/flags1/flags2 split -- are each still load-bearing on the matched body.
+- mechanism: not re-derived this session; each was deleted from the matched body in isolation and the resulting diff count recorded.
+- probe: m1.c folds `i = 0;` back into the for-header -> 2 diffs. m2.c drops `f` and writes `src = &D_80106A73 - 3;` -> 50 diffs. m4.c collapses flags0/1/2 into the single `flags` accumulator -> 44 diffs. cur.c (the shipped body) -> 0 diffs. All via tmp/grind/func_80035280/s5/probe.sh.
+- result: CONFIRMED still load-bearing. The s3/s4 frontier item asking whether the split accumulators and the `i = 0;` hoist could be dropped before submission is answered: no. They are carried into the submission with /* FAKE */ annotations and family claims in self_vet.md.
+- verdict: CONFIRMED

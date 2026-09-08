@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80035280",
-      "file": "code6cac_b",
-      "distance": 15,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "SsUtKeyOffV",
       "file": "main",
       "distance": 30,
@@ -1443,14 +1435,14 @@
     }
   ],
   "counts": {
-    "total": 163,
-    "active": 162,
+    "total": 162,
+    "active": 161,
     "by_status": {
-      "active": 162,
+      "active": 161,
       "foreclosed": 1
     },
     "by_verdict": {
-      "C": 136,
+      "C": 135,
       "ASM-PARTIAL": 26
     }
   }
