@@ -159,5 +159,15 @@
  "ladder_skip": 9,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-08-20T20:23:43.713548+00:00"
+ "created": "2026-08-20T20:23:43.713548+00:00",
+ "sibling_progress": [
+  {
+   "from": "func_8007526C",
+   "floor": 0,
+   "session": 22,
+   "at": "2026-09-08T00:17:28.789444+00:00",
+   "headline": "func_8007526C COMPLETED-C",
+   "consumed": null
+  }
+ ]
 }
