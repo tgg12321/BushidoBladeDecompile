@@ -71,6 +71,22 @@
  * .claude/rules/no-new-park-categories.md.  A candidate-ready session must decide whether
  * the once-read pair needs the named-intermediate FAKE annotation (six prongs) or is
  * ordinary C, and should file a ruling-request if the answer is not clean. */
+/* s15 (2026-09-08, enumerate) - body UNCHANGED, floor re-measured 2/202 on HEAD e3895bb7.
+ * Two exhaustive sweeps ran against this exact chassis and neither found anything below 2:
+ *   - 2,080 in-block spellings of the test-3 region (name/inline x declaration order x
+ *     kc/kp order x commutative operand swaps): 41 at 2, nothing lower. In-tree
+ *     confirmation of the operator's out-of-tree 62,624-spelling class kill.
+ *   - 816 DECLARATION-SCOPE variants (every subset of ax/dz/az/dx hoisted to the enclosing
+ *     block as an uninitialised decl, values still assigned inside block 7, all outer and
+ *     inner orders): 412 at 2, 204 at 4, 204 at 9 - the SAME 2:1:1 trichotomy at every
+ *     hoist level, i.e. declaration scope is inert. An uninitialised decl emits no RTL, so
+ *     the pseudo's birth/quantity order/LUID are still set by the assignment insn
+ *     (local-alloc.c:1708 qty_compare_1). This closes the axis the class-kill memory named
+ *     as the next instrument.
+ * Do NOT re-enumerate the test-3 block or the scope axis. See memory/grind/func_8002D780/
+ * evidence.md and hypotheses.md s15; the remaining region is the outer centroid/test-1
+ * declaration list (16,384 valid orders, marked body at tmp/grind/func_8002D780/s15/
+ * enum_base3.c). */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;

@@ -1539,3 +1539,73 @@ disjoint from the `dz`/`dx`/`az` pseudos of the block-7 residual. The banked sch
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD e3895bb7 (-mel -msoft-float), the ax,dz,dx,az body spliced into src/code6cac_b.c, one FAKE construct present (the m same-value re-store)
+
+
+## s15 (2026-09-08, enumerate)
+
+### H-s15-1 - the in-block spelling space of test 3, re-measured in tree
+- statement: On the current chassis, sweeping the 2,080 distinct spellings of the test-3
+  block (which of ax/dz/az/dx are named vs inlined x every def-before-use declaration order
+  x both kc/kp orders x every commutative operand order on all four products) reaches 2/202
+  at best.
+- mechanism: `tools/spelling_enum.py` enumerates exactly the axes that change block 7's
+  insn order and reference counts; nothing in that space adds a fourth reference to dx or
+  shortens dz's live range, so `qty_compare_1` (local-alloc.c:1708) keeps tying and qsort
+  keeps seating dz first.
+- probe: `tools/spelling_enum.py` on `tmp/grind/func_8002D780/s15/enum_base.c` -> 2,080
+  variants; `tools/sweep_variants.py` in 8 chunks (`enum1_c[0-7].json`); histogram in
+  `hist_enum1.txt`.
+- result: 41 spellings at 2 (including the baseline), 64 at 3, 49 at 4, ... 16 at 41.
+  Nothing below 2. Independently reproduces, on the tree the grinder scores, the operator's
+  out-of-tree 62,624-spelling run at HEAD e1e1b977.
+- verdict: KILLED (instance - this is the 4-local subset measured at HEAD e3895bb7 with the
+  `m` re-store FAKE present; the operator's 62,624-spelling run is the class-scope version)
+
+### H-s15-2 - the declaration-SCOPE axis (the named next instrument)
+- statement: Declaring any subset of the block-7 difference locals ax/dz/az/dx in the
+  ENCLOSING block as uninitialised declarations, with their values still assigned inside
+  block 7, scores 2, 4 or 9 across all 816 combinations of hoist-subset x outer declaration
+  order x inner statement order, with the same 2:1:1 distribution at every hoist level.
+- mechanism: an uninitialised declaration emits no RTL. The pseudo's first reference is the
+  assignment insn inside block 7, so its local-alloc birth (`local-alloc.c:1708`
+  `qty_compare_1`), its quantity-creation order and its sched LUID are all unchanged by
+  where the declaration was written. Declaration scope is not an input to the tie that seats
+  dz before dx.
+- probe: `tmp/grind/func_8002D780/s15/gen_scope.py` -> 816 variants in
+  `tmp/grind/func_8002D780/s15/enum4`, swept in four chunks (`enum4_c[0-3].json`),
+  histogram `hist_enum4.txt`, per-hoist-level breakout in evidence.md.
+- result: 412 at 2, 204 at 4, 204 at 9. Nothing below 2. hoisted-0 {2:12,4:6,9:6} through
+  hoisted-4 {2:288,4:144,9:144} - the same trichotomy, in the same proportion, at every
+  level, i.e. the score depends only on the inner statement order.
+- verdict: KILLED (class - the scope of a local's declaration is not an input to
+  `qty_compare_1`, and the sweep shows the score is a function of the inner statement order
+  alone at every hoist level)
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1708
+
+### Frontier after s15
+The two axes the 2026-09-08 class-kill memory named are now BOTH measured dead (in-block
+spelling; declaration scope). What is left of that memory's list is the OUTER block: the
+centroid/test-1 declaration list (`x0, x2, z0, z2, cx, cz, px, pz, kc, kp`) that feeds block
+7. Its ordering space was counted this session and is 16,384 valid def-before-use orders
+with every name kept (they are all read outside the region, so the inline axis is empty);
+with commutative swaps on the six products it exceeds 900,000. Marked body ready at
+`tmp/grind/func_8002D780/s15/enum_base3.c` with `--keep-inlined
+x0,x2,z0,z2,cx,cz,px,pz,kc,kp`. At the measured ~0.76 s/variant that is ~3.5 h for the
+no-swap set - a full session's work, and the obvious next enumerate-modality dispatch.
+
+## [s15] On the current chassis, sweeping the 2,080 distinct spellings of the test-3 block (which of ax/dz/az/dx are named vs inlined, times every def-before-use declaration order, times both kc/kp orders, times every commutative operand order on all four products) reaches 2/202 at best.
+- mechanism: tools/spelling_enum.py enumerates exactly the axes that change block 7's insn order and reference counts. Nothing in that space adds a fourth reference to dx or shortens dz's live range, so qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708) keeps producing equal priorities for the dz and dx quantities and qsort keeps seating dz first, which costs the two transposed subu insns.
+- probe: tools/spelling_enum.py --candidate tmp/grind/func_8002D780/s15/enum_base.c --max 20000 -> 2,080 variants; tools/sweep_variants.py in 8 chunks via tmp/grind/func_8002D780/s15/sweep_all.ps1; results enum1_c[0-7].json, histogram hist_enum1.txt.
+- result: 41 spellings at 2 (including the baseline), 64 at 3, 49 at 4, 33 at 5, 16 at 6, 65 at 9, then a long tail out to 41. Nothing below 2. This is the in-tree reproduction, on the tree the grinder actually scores, of the operator's out-of-tree 62,624-spelling run at HEAD e1e1b977 (auto-memory func-8002d780-enumeration-class-kill), so that class kill is not an artefact of the out-of-tree scorer.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e3895bb7 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local `m`)
+
+## [s15] Declaring any subset of the block-7 difference locals ax/dz/az/dx in the enclosing block as uninitialised declarations, with their values still assigned inside block 7, scores 2, 4 or 9 across all 816 combinations of hoist-subset times outer declaration order times inner statement order, with the same 2:1:1 distribution at every hoist level, so the scope of a declaration is not an input to the seat that decides this residual.
+- mechanism: An uninitialised declaration emits no RTL. The pseudo's first reference is the assignment insn inside block 7, so its local-alloc birth, the order in which block_alloc creates its quantity, and its sched LUID are all still set by that assignment - none of them move when the declaration is written in an outer block. Declaration scope therefore never reaches qty_compare_1's arithmetic (tools/gcc-2.7.2/local-alloc.c:1708), which is why the score is a function of the inner statement order alone.
+- probe: tmp/grind/func_8002D780/s15/gen_scope.py (session-local generator; tools/ is outside the writable surface, and tools/spelling_enum.py has no scope axis) -> 816 variants in tmp/grind/func_8002D780/s15/enum4, swept in four chunks (enum4_c[0-3].json), histogram hist_enum4.txt, per-hoist-level breakout in evidence.md.
+- result: 412 at 2, 204 at 4, 204 at 9, nothing else and nothing below 2. Broken out by hoist level: hoisted-0 {2:12,4:6,9:6}, hoisted-1 {2:12,4:6,9:6}, hoisted-2 {2:24,4:12,9:12}, hoisted-3 {2:72,4:36,9:36}, hoisted-4 {2:288,4:144,9:144}. The identical 2:1:1 trichotomy at every level is the measurement: moving the declaration changes the score by exactly nothing, and the in-block axis's 24 distinct scores collapse to 3 under hoisting, i.e. the scope axis MERGES spellings rather than opening new ones. This closes the axis the 2026-09-08 class-kill memory named as the concrete next instrument.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD e3895bb7 (-mel -msoft-float), memory/grind/func_8002D780/candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local `m`); all 16 hoist subsets and all outer/inner orders covered, so the axis is measured on its complete domain rather than on a sample
+- predicate_cite: tools/gcc-2.7.2/local-alloc.c:1708
