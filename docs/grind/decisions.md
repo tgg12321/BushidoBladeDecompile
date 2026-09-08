@@ -25670,3 +25670,87 @@ Body is ordinary C throughout: three plain layout typedefs (SPRT prim, sprite he
 ## 2026-09-08 02:20 — func_8003F6D8 — final call — **PASS**
 
 Body is ordinary pure C: a layout typedef (Func8003F6D8Inner, offsets recovered from the asm per evidence.md 'Layout recovered'), two counted for-loops, a per-iteration record offset `off = i * 0xD0 + 8`, and two calls to func_80052A20. No asm, register pins, volatile, dead stores, pads, or FAKE annotations; self_vet CONSTRUCTS: none holds on inspection. Decisive fact: the offset-from-index spelling has a truthful semantic reading (walking 0xD0-byte records after an 8-byte header), so preferring it over a hoisted biv because loop.c reduces it as a DEST_REG giv is sanctioned codegen-effect selection per ordinary-c-judge-decidable, not a cheat. Independently verified: candidate.c equals the src/config.c diff; the diff touches only this function (pre-existing FAKE comments at config.c:324/332 belong to other functions); no judge_constraints or bans in state.json. Full evidence: memory/grind/func_8003F6D8/hypotheses.md H1-H4, evidence.md s1, rejected/ (2 files).
+
+## 2026-09-08 — func_8002D780 — **RESOLVED BY STANDING RULING (2026-07-27): FORECLOSED**
+
+Proof-of-foreclosure record (owner ruling 2026-08-31, `.claude/rules/ordinary-c-judge-decidable.md`).
+This is a record, not a question: nothing is being asked of the owner and nothing waits.
+
+**State.** `src/code6cac_b.c`, cop2/LZCS triangle-and-sphere overlap test, 202 target
+instructions. Honest floor **2/202** with `build_insns == target_insns == 202`, re-measured
+this session at HEAD 4a44c3ce (`-mel -msoft-float`) with
+`memory/grind/func_8002D780/candidate.c` in place. Floor 2 <= 5, so the 2026-07-27 standing
+ruling is the governing disposition.
+
+**The residual, precisely.** Every register in the function is correct and the reorg
+delay-slot fill is correct. The only two differing instructions are an adjacent
+transposition inside block 7:
+
+    ours[96] subu v0,a2,a3 (az)      target[96] subu v1,t5,t1 (dx)
+    ours[97] subu v1,t5,t1 (dx)      target[97] subu v0,a2,a3 (az)
+
+`dx` and `az` are independent subus that both feed the same mult, so their longest-path
+INSN_PRIORITYs and their dependence classes are equal and `rank_for_schedule` falls through
+to INSN_LUID (`tools/gcc-2.7.2/sched.c:2464`). The LUID ordering that would win the tie
+(dx's subu emitted earlier) is the SAME source property that gives dx the earlier live-range
+birth, which restores the local-alloc span tie and inverts the register seats — measured, not
+inferred (s12 variant d5 = 9/202; the span arithmetic is read out of the instrumented cc1's
+BB2_QTY_DEBUG tables at `tmp/grind/func_8002D780/s12/{a1,c1}/stderr_full.txt` against
+`local-alloc.c:1725-1758`). Slot, seat and emission order are three consumers of one
+positional quantity pulling in opposite directions.
+
+**Gate (a) — canonical-asm — FAILS.** `python3 tools/scan_hand_coded.py --single
+func_8002D780` → **tier=LOW, score=1/8**; only S4 (front loads) fires. S1 multu pacing, S2
+empty branch, S3 no-spills (212 insns, 7 spills, 27 distinct regs), S5 cluster (jaccard <
+0.5), S6 BIOS jumptable, S7 unsaved $sN, S8 redundant mask are all negative. Note for the
+record that this function IS an enumerated member of the cop2 materialize-then-copy cluster
+(`.claude/rules/cop2-addressing-preamble-cluster.md:75`), but that grant is unavailable and
+irrelevant here: its mechanical check condition 1 is `sandbox --disable all == 0`, and its own
+load-bearing negative scopes it to the TAIL ISLAND. The three cop2 islands in this body are
+already the authorized canonical LZCS/LZCR + mvmva form and are not where the two residual
+instructions sit.
+
+**Gate (b) — in-hand SOTN-master precedent — FAILS.** There is no closing construct to cite a
+precedent for. Negative census of `docs/reference/sotn-construct-index.md` (1,365 entries at a
+pinned commit): the only scheduling-related classes are `match_comment` (229 codegen-reason
+comments) and `new_var_temp` (20 named RA/sched temporaries) — and the named-temporary shape
+is what this candidate ALREADY uses for `ax`/`dz`/`az`. Zero entries are a construct that
+forces a transposition of two priority-tied, class-tied independent insns. A construct that
+did so would be a scheduling barrier, which is a forbidden family by any spelling and is
+therefore a clean refusal under the 2026-08-24 auto-reject class, not an argument to make here.
+
+**What holds the byte-match.** Nothing does — the function has never reached 0 and there is no
+cheat-asm holding a match. It is committed as `INCLUDE_ASM("asm/funcs", func_8002D780);` on
+main and the candidate lives only in `memory/grind/func_8002D780/`. The candidate carries one
+annotated construct, the same-value re-store of the local `m` (dead-store family,
+`.claude/rules/dead-store-fake-exception.md`, in-TU byte-matched precedent at
+`src/code6cac_b.c:1244-1265`), plus the three cop2 islands.
+
+**Exhaustion.** 13 sessions, 2026-09-08. Modalities spent: recon, structural (x2), permuter,
+synthesis (x2), solver, forensics (x2), rederive (x2), escalation. Floor trajectory
+56 → 48 → 47 → 10 → 7 → **2**, flat at 2 for six consecutive sessions (s5-s13) across five
+distinct modalities. 50 hypotheses banked (44 instance kills, 6 predicate-cited class kills);
+66 rejected forms in `memory/grind/func_8002D780/rejected/`. Permuter total across the two
+campaigns: 55,531 iterations on the s3 7-floor chassis (s4, 12 finds, all measured WORSE than
+control on the engine metric) plus **52,368 iterations this session on the 2-floor chassis with
+ZERO novel finds and nothing at or below the permuter's own base_score of 30** — three
+9-minute fresh-seed windows, harvested with `--stop`, campaign confirmed dead. The RA/scheduler
+solver was run in s7 and typed the sched1 half solvable and the local-alloc half tied on every
+`qty_compare_1` in the reachable set.
+
+**Evidence pointers.** `memory/grind/func_8002D780/evidence.md` (s1-s13),
+`hypotheses.md` (50 entries), `candidate.c` (2/202, header documents every load-bearing line),
+`rejected/` (66), `tmp/grind/func_8002D780/s12/pairdiff_d1.txt` (the two-instruction residual),
+`tmp/grind/func_8002D780/s13/` (permuter rebuild script, campaign log, four scored variants).
+
+**Re-activation triggers.** (1) A class grant covering an insn-positioning construct that can
+sit between two live-range births at sched1 time and be sunk below one of them by sched2 —
+nothing in the frozen family list does this today. (2) A toolchain finding that changes
+`rank_for_schedule`'s tie-break inputs (a `CC_FLAGS` change of the `-mel` / `-msoft-float`
+class, or a maspsx/ASPSX fidelity gate that alters pre-reload insn counts in block 7) — either
+would void every chassis-relative kill here and the ledger re-measurement discipline would
+re-open the function immediately. (3) An owner unpark.
+
+## 2026-09-08 07:26 — func_8002D780 — DISCARDED-SESSION MARKER (driver-stamped)
+
+Text appended above by session s13 of func_8002D780, which the driver DISCARDED as invalid (owner-gated claim rejected: no OWNER-ESCALATION / CANONICAL-ASM GRANT PATH entry in docs/grind/decisions.md names func_8002D780). It is not a ruling and carries no standing; terminal-sounding language in that span is void.
