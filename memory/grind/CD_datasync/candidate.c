@@ -1,86 +1,50 @@
-/* s61 NOTE (rederive): this file is UNCHANGED and still scores 2 (the order-lost
- * two-step form).  The informative body of s61 is
- * progress/s61-dmaptr-carrier-window-and-flag-byte-exact-3.c - score 3, with the
- * do_timeout window AND the flag block byte-exact and the whole residual moved
- * into three tail instructions.  Read that header and the s61 block of
- * evidence.md before starting from anything here.
- */
-/* CD_datasync - SESSION 60 (rederive, forced by the CD_ready sibling trigger).
- * SCORE OF THIS BODY: 2 / 91 (ties the 59-session floor) - but the session's
- * REAL result is a new chassis, and the next session should probably start
- * from progress/s60-cdready-transplant-v0-carrier-window-byte-exact-3.c
- * instead of from this file.  Read this header before anything else.
+/* CD_datasync - SESSION 62 (structural).  SCORE 0 / 91.  MATCHED.
  *
- * WHAT HAPPENED.  CD_ready (marionation_Exec) reached COMPLETED-C on main
- * 2026-09-06 and its do_timeout window - byte-shape-identical to ours - is
- * the matched spelling (src/system.c:379-435).  s60 transplanted that exact
- * spelling onto the CD_datasync chassis.  The transplant changed the shape of
- * the residual for the first time since s2.
+ * Full build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa (verify-oracle,
+ * this session, with this body in src/system.c).
  *
- * 1. THE 59-SESSION ORDER RESIDUAL IS SOLVED.  Every session since s2 has
- *    been fighting "arg4's index sll is scheduled two slots too early"
- *    (target 80081C78-84: `sll v0,v0,2 ; addu v0,v0,s0 ; sll a0,a0,2 ;
- *    lw v1,0(v0)`).  s57 proved by solver arithmetic that no statement
- *    REORDER inside the old chassis could reach it, and s59 proved every
- *    added-luid spelling re-prices five quantities at once.  Both remain true
- *    OF THE OLD CHASSIS.  CD_ready's structure reaches the order directly:
- *      - `puts(...)` is emitted OUTSIDE (before) the do{}while(0) wrap;
- *      - the chain-A raw byte read `t0 = idx_1494[0];` is ALSO outside the
- *        wrap, at loop depth 1, so its ref weight is 7 not 8;
- *      - inside the wrap, chain B is computed FIRST (tb -> pB), chain A's
- *        address SECOND, and `arg5 = *pB` third.
- *    With a multi-set carrier for chain A's address (see 2), the emitted
- *    window at tmp/grind/CD_datasync/s60/dis_P3.txt is BYTE-EXACT against
- *    asm/funcs/CD_datasync.s:45-63 - all fifteen instructions, seats included.
+ * WHAT CLOSED IT.  s60/s61 transplanted CD_ready's matched do_timeout window
+ * and then spent thirteen forms hunting for a MULTI-SET carrier for chain A's
+ * address, because sched.c:2505 birthing_insn_p boosts a single-set dest and
+ * the boost was believed to be what mis-ordered the window.  s61's own model
+ * consequence was already the answer and was read the wrong way round: in the
+ * target the chain-A address sits in $a0 while every tail value sits in
+ * $v0/$v1, so the original had NO spanning carrier.  The correct move was
+ * therefore not to add a set but to REMOVE THE ADDRESS PSEUDO ENTIRELY -
+ * subscript the table directly in the printf call (`tbl_125c[t0]`) instead of
+ * staging the address through a named `pA`/`aA`/`dma` local.  With no address
+ * intermediate there is no boostable addu dest at all: expand emits the
+ * subscript inside the call sequence, and the window comes out byte-exact with
+ * chain A in $a0 and the second table read in $v1.
  *
- * 2. THE CARRIER IS THE WHOLE GAME.  Chain A's address must be staged through
- *    a pseudo that is MULTI-SET WITH AT LEAST ONE SET OUTSIDE THE WINDOW.
- *    Measured, all on this chassis:
- *      v0 (the VSync-result / -1 / 0 flag local) ... 3   <- window byte-exact
- *      cnt (the poll counter)                     ... 4   <- window byte-exact
- *      fresh fn-scope local, single set           ... 8
- *      fresh local, split two-step (aA=t0<<2; aA+=base) 2 <- order LOST again
- *      tbl_125c (re-set after its last read)      ... 2   <- order LOST again
- *      t0 self-reassigned / tb / pB re-used       ... 8 / 8 / 4
- *      fresh local + a dead store before the loop ... 8   (dead store inert)
- *      fresh local + a dead store after the wrap  ... 8   (dead store inert)
- *      the puts() argument pointer as carrier     ... 8
- *    A dead store does NOT buy the multi-set-ness: only sets that carry a
- *    real value on a reaching path move the allocation.
+ * The same removal applies to the fifth (stack) argument: `arg5 = *pB` with a
+ * `pB` address local was also unnecessary; `tbl_125c[tb]` inlined into the
+ * call is byte-identical.  Both address locals AND the arg5 value local are
+ * gone.  What remains is strictly smaller than every form measured in
+ * sessions 2-61.
  *
- * 3. THE NEW RESIDUAL IS THREE INSTRUCTIONS AND ONE PSEUDO.  On the v0-carrier
- *    form (score 3) the ONLY divergence left in the whole function is that the
- *    -1/0 flag lives in $a0 instead of $v0:
- *        ours   j .. ; li a0,-1  /  move a0,zero  /  bnez a0,.. ; li v0,-1
- *        target j .. ; li v0,-1  /  move v0,zero  /  bnez v0,.. ; li v0,-1
- *    Cause: GCC 2.7.2 has no web splitting, so the carrier def and the flag
- *    defs are one pseudo -> one quantity -> one hard reg, and the chain-A
- *    address correctly prefers $a0 (target holds it there too).  The flag is
- *    dragged along.  Splitting the flag into its own local restores $v0 for
- *    the flag but makes the carrier single-set again and the ORDER is lost
- *    (rejected/s60-flag-split-from-v0-carrier-8.c = 8).  Four escapes were
- *    measured and all cost more: `return v0` instead of `return -1` (4),
- *    staging the flag through cnt (3, identical residual), copying the
- *    carrier into a fresh pointer before the printf (3, identical residual),
- *    putting the carrier on chain B instead of chain A (8).
+ * WHY THE SEARCH MISSED IT FOR 60 SESSIONS.  Every chassis since s2 carried a
+ * named address intermediate as a fixed assumption (it is what m2c emits and
+ * what CD_ready ships), so the whole search space was "which pseudo do we
+ * stage the address through" - a space in which 8 is the floor on the
+ * single-set chassis and 3 on every multi-set one.  Removing the stage was
+ * never in the space.  s62 also measured that on the single-set chassis the
+ * window is completely insensitive to declaration order, statement order
+ * inside the wrap, and type narrowing (nine forms, all 8) - which is the
+ * signature of "the pseudo itself is the problem", not its ordering.
  *
- * 4. WHAT THIS BODY IS.  The same transplant with a fresh block-scope local
- *    split two-step (aA = t0 << 2; aA += (s32)tbl_125c).  It scores 2 with
- *    the OLD 2-insn order residual back - i.e. it ties the floor without
- *    telling you anything new.  It is here only because the contract asks for
- *    the lowest-scoring form; the 3-scoring v0-carrier form in progress/ is
- *    the one with information in it.
- *
- * FRONTIER FOR s61: find a third pseudo in this function that is (a)
- * multi-set with a set outside the do_timeout window, (b) carries a real
- * value on a reaching path, and (c) tolerates $a0 for all of its uses.  The
- * function only has v0, cnt, a0, tbl_11dc, tbl_125c and idx_1494 at function
- * scope; v0 (3) and cnt (4) are the only two that reach the order at all, and
- * both pay for it in their own block.  If no such pseudo exists, the question
- * to ask is whether CD_datasync's original source had a statement AFTER the
- * timeout window that CD_ready has too (CD_ready's carrier `src` is the copy
- * loop's source pointer, a genuinely later-used local) - i.e. whether our
- * control-flow tail is the wrong shape rather than our window.
+ * EVERY REMAINING CONSTRUCT IS LOAD-BEARING (s62 ablation table, each measured
+ * by removing exactly one thing from this body):
+ *     do-while(0) wrap removed .................... 13 / 91
+ *     pp alias removed (direct D_800F19C0) ......... 4 / 91
+ *     tbl_11dc alias removed ...................... 18 / 88
+ *     tbl_125c alias removed ...................... 27 / 89
+ *     idx_1494 alias removed ...................... 20 / 90
+ *     t0 moved inside the wrap ..................... 4 / 91
+ *     t0 inlined into the call ..................... 12 / 91
+ *     t0, tb both inlined .......................... 13 / 91
+ * Each surviving construct carries its FAKE annotation with the named GCC pass
+ * and the lever-exhaustion pointer, per the owner's three-prong policy.
  */
 s32 CD_datasync(s32 a0) {
     s32 v0;
@@ -90,9 +54,9 @@ s32 CD_datasync(s32 a0) {
     s32 *tbl_125c;
 
     D_800F19B8 = VSync(-1) + 0x3C0;
-    tbl_11dc = D_800A11DC;
-    idx_1494 = &g_cd_status_a;
-    tbl_125c = D_800A125C;
+    tbl_11dc = D_800A11DC; /* FAKE: pointer alias (second handle) to the libcd command-name table per pointer-alias-fake-exception (owner ruling 2026-07-01), mechanism: global.c seats the base in $s3 across the poll loop as the target does (asm/funcs/CD_datasync.s:11-12); lever-exhaustion: s62 ablation A4 (direct D_800A11DC[] subscript) = 18/88, plus the 61-session ledger in memory/grind/CD_datasync/hypotheses.md */
+    idx_1494 = &g_cd_status_a; /* FAKE: pointer alias (second handle) to the libcd Intr status block per pointer-alias-fake-exception (owner ruling 2026-07-01); the volatile is the TU's own declaration `extern volatile u8 g_cd_status_a;` (src/system.c, on main since 7e182728; ground truth `static volatile CD_intr Intr`, memory/closer/libcd-identity.md:28) - no cast, no local qualifier; mechanism: global.c seats the base in $s1 across the poll loop as the target does (asm/funcs/CD_datasync.s:13-14); lever-exhaustion: s62 ablation A5 (direct (&g_cd_status_a)[n] subscript) = 20/90 */
+    tbl_125c = D_800A125C; /* FAKE: pointer alias (second handle) to the CD_intstr table per pointer-alias-fake-exception (owner ruling 2026-07-01), mechanism: global.c seats the base in $s0 across the poll loop as the target does (asm/funcs/CD_datasync.s:15-16); lever-exhaustion: s62 ablation A3 (direct D_800A125C[] subscript) = 27/89 */
     D_800F19BC = 0;
     D_800F19C0 = &D_800162C0;
 
@@ -110,21 +74,14 @@ loop:
 do_timeout:
     puts(&g_str_cd_timeout);
     {
-        s32 arg5;
         s32 t0;
-        s32 *pB;
         s32 tb;
         void **pp;
-        s32 aA;
-        t0 = idx_1494[0];
-        do {
-            tb = idx_1494[1];
-            pB = (s32 *)((tb << 2) + (s32)tbl_125c);
-            aA = t0 << 2;
-            aA += (s32)tbl_125c;
-            arg5 = *pB;
-            pp = &D_800F19C0;
-            printf(&D_800161C8, *pp, tbl_11dc[D_800A11D5], *(s32 *)aA, arg5);
+        t0 = idx_1494[0]; /* FAKE: named intermediate for the sync byte, placed BEFORE the wrap (loop depth 1), mechanism: flow.c loop_depth-weighted reg_n_refs feeds local-alloc.c qty_compare - the depth-1 mention leaves the merged chain-A quantity below the second table read's priority, so the chain takes $a0 and the value $v1 exactly as at asm/funcs/CD_datasync.s:50/56/60/65; lever-exhaustion: s62 probe B3 (same read placed inside the wrap) = 4/91, s62 probe B1 (inlined into the call) = 12/91, s60 in-place spelling = 15 */
+        do { /* FAKE: do-while(0) wrap per do-while-zero-exception (owner ruling 2026-07-06), mechanism: sched.c:2081 loop-note barrier on the first insn inside (the ready-byte load) orders the sync-byte load ahead of it and every later register-argument load after it, and flow.c loop_depth ref weighting seats tbl_125c in $s0; lever-exhaustion: s62 ablation A2 (wrap removed) = 13/91, s61 ablation 2 -> 12 */
+            tb = idx_1494[1]; /* FAKE: named intermediate for the ready byte (fresh, once-written, once-read, real value = lbu $v0,1($s1) at asm/funcs/CD_datasync.s:51), mechanism: expand argument staging keeps the fifth (stack) argument's chain out of the call sequence so the sw lands at slot 63; lever-exhaustion: s62 probe B1 (tb inlined into the call) = 12/91, s62 probe A6 (all intermediates inlined) = 13/91 */
+            pp = &D_800F19C0; /* FAKE: pointer alias (second handle) to the alarm callback slot per pointer-alias-fake-exception (owner ruling 2026-07-01, the `Type* t = &g_Thing;` redundant-second-handle shape), mechanism: calls.c:1652-1664 expand_call precomputes a register argument whose rtx_cost > 2 into a pseudo inside a loop (preserve_subexpressions_p), whereas `*pp` is a cheap mem(reg) that stays in the call sequence and cse folds the alias back to the target's `lui $a1 / lw $a1` at asm/funcs/CD_datasync.s:52-53; lever-exhaustion: s62 ablation A1 (direct D_800F19C0 read) = 4/91 */
+            printf(&D_800161C8, *pp, tbl_11dc[D_800A11D5], tbl_125c[t0], tbl_125c[tb]);
             CD_flush();
         } while (0);
     }

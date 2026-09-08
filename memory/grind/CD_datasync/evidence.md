@@ -3602,3 +3602,54 @@ sweep and not the permuter.
 - [s61] On the single-set chassis the failure is a SEAT INVERSION, not an ordering failure: chain A takes $v1 and the arg5 value takes $v0 (the inverse of the target's $a0/$v1), plus the sw/lw pair one slot early - a local-alloc qty_compare question the ra_solver models directly.
 
 - [s61] Floor unchanged at 2; 13 forms measured, banked under memory/grind/CD_datasync/rejected/ and progress/. src/system.c was restored to its INCLUDE_ASM state; the tree is clean outside memory/grind/, tmp/ and metrics.
+
+## s62 (structural) - MATCHED 0/91: the address intermediate itself was the residual
+
+- [s62] **CD_datasync MATCHES.** sandbox --disable all = 0/91 and the full clean-driver
+  build SHA1 = 62efab4f73f992798c43e8c730aa43baa10bb4fa (verify-oracle, this session, body
+  in src/system.c). The matching body is saved at memory/grind/CD_datasync/candidate.c and
+  vetted at memory/grind/CD_datasync/self_vet.md.
+- [s62] **WHAT CLOSED IT.** Sessions 2-61 all carried a NAMED ADDRESS INTERMEDIATE for
+  chain A (`pA` / `aA` / `dma` / `src`) as an unexamined chassis assumption, so the search
+  space was always "which pseudo do we stage the address through". Removing the stage
+  entirely - subscripting the table directly inside the printf call, `tbl_125c[t0]` - takes
+  the body from 8 to 0. With no address pseudo there is no boostable addu dest for
+  sched.c:2505 birthing_insn_p to act on at all, so the multi-set-carrier hunt of s60/s61
+  was answering the wrong question. s61's own model consequence ("in the target the chain-A
+  address cannot be the same pseudo as any tail value, so the original did not buy its order
+  with a spanning multi-set carrier") was the correct clue read the wrong way round: the
+  answer was fewer pseudos, not a better-placed second set.
+- [s62] The same removal applies to the fifth (stack) argument. `arg5 = *pB` staged through
+  a `pB` address local is also unnecessary; `tbl_125c[tb]` inlined into the call is
+  byte-identical (0). Both address locals AND the arg5 value local are gone. The matching
+  body is strictly smaller than every form measured in sessions 2-61.
+- [s62] **DIAGNOSTIC THAT SHOULD HAVE POINTED HERE EARLIER.** On the single-set chassis the
+  window is completely insensitive to declaration order (pA first; pA before pB), to
+  statement order inside the wrap (chain A first; arg5 read before chain A), to type
+  narrowing (u8 t0; u8 tb) and to an in-block copy chain - nine distinct forms, eight of
+  them exactly 8/91 with a byte-identical residual. Total insensitivity to every ordering
+  lever is the signature of "the pseudo itself is the problem", not "its ordering is".
+- [s62] The s61 live frontier #2 (an in-block second set from a non-foldable memory load:
+  `pA = pB; arg5 = *pA; pA = &tbl_125c[t0];`) measured 8 - cse copy-propagates pB into the
+  use, the first set dies, and flow's reg_n_sets returns to 1. This closes the last open
+  multi-set-carrier idea; it is moot in any case now that the address pseudo is gone.
+- [s62] The VSync ARGUMENT (the only non-tail $a0 value in the function, `addiu $a0,$zero,-1`
+  at asm/funcs/CD_datasync.s:5 and :28) was tested as chain A's carrier, an angle s61 never
+  reached: function-scope with a single prologue set = 24/94 (the pseudo becomes loop-carried
+  and takes a callee-saved seat); set at the loop head so the range is short = 8/91 (cse
+  const-propagates -1 into both calls, the set dies, single-set again).
+- [s62] **ABLATION TABLE - every construct in the matching body is load-bearing**, each
+  measured by removing exactly one thing: do-while(0) wrap 13/91; pp alias 4/91; tbl_11dc
+  alias 18/88; tbl_125c alias 27/89; idx_1494 alias 20/90; t0 moved inside the wrap 4/91;
+  t0 inlined into the call 12/91; t0 and tb both inlined 13/91. The two structural elements
+  inherited from the CD_ready sibling transplant (s60) that survive into the match are the
+  puts() emitted before the wrap and the `t0 = idx_1494[0]` sync-byte read placed before the
+  wrap at loop depth 1. Moving puts() inside the wrap costs 26/93; reading t0 before puts()
+  costs 27/93.
+- [s62] SIBLING CONSEQUENCE. CD_sync (cpu_side_move_dir_4, floor 2, 125 sessions) shares the
+  byte-shape-identical do_timeout window and, per its own ledger, has been grinding the same
+  "arg4's index sll is two slots early" residual since its s2 with a named address
+  intermediate in every chassis. The s62 finding transfers directly: drop the address
+  intermediate and subscript the table inside the call.
+- [s62] The s59 foreclosure record (docs/grind/decisions.md:22256) is now obsolete - the
+  function matched in pure C under sanctioned families only.

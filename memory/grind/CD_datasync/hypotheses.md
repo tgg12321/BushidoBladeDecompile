@@ -4837,3 +4837,39 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present
+
+## [s62] Removing chain A's named address intermediate entirely - subscripting the table directly inside the printf call - reaches the target window.
+- mechanism: sched.c:2505 birthing_insn_p boosts a single-set dest, and sessions 2-61 tried to defeat the boost by giving that dest a second set. With no named address local there is no separate address pseudo to boost or to seat: expand emits the subscript inside the call sequence and the addu lands where the target has it, with chain A in $a0 and the second table read in $v1.
+- probe: The s60/s61 CD_ready-transplant chassis with `pA` deleted and `tbl_125c[t0]` written directly as printf's fourth argument (W1), and the same with `pB`/`arg5` also deleted and `tbl_125c[tb]` written as the fifth (W3/B2).
+- result: 0/91 for both. Full clean-driver build SHA1 == 62efab4f73f992798c43e8c730aa43baa10bb4fa. This is the match.
+- verdict: CONFIRMED
+
+## [s62] On the single-set chassis the 8-point residual is reachable by an ordering lever - declaration order, statement order inside the wrap, or type narrowing.
+- mechanism: local-alloc qty_compare breaks ties on quantity number, which follows first-reference order, so re-ordering the declarations or the statements should re-price the chain-A and arg5 quantities.
+- probe: Nine forms on the fresh-single-set chassis - pA declared first; pA declared before pB; chain A's address computed before chain B's; arg5 read before chain A's address; the sll hoisted outside the wrap with t0; u8 t0; u8 tb; the in-block copy chain; and the unmodified base.
+- result: 8/91 for eight of the nine with a byte-identical residual (the sll-hoist variant is 9/92). Complete insensitivity to every ordering lever - which is what pointed at the address pseudo itself as the residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s61 fresh-single-set-carrier chassis at 8, with the do-while(0) wrap FAKE and the pp pointer-alias FAKE present
+
+## [s62] A second SET that survives to flow but emits no bytes - an in-block copy from a non-constant memory-derived value - kills the scheduler boost without creating a spanning quantity (s61 live frontier #2).
+- mechanism: reg_n_sets is counted at flow time; s61 only proved that CONSTANT and cross-block copy second sets are folded, so an in-block copy chain from a value cse cannot constant-fold was still open.
+- probe: `pB = &tbl_125c[tb]; pA = pB; arg5 = *pA; pA = &tbl_125c[t0];` - both of pA's sets in-block, the first carrying a real memory-derived value with a real use.
+- result: 8/91, byte-identical to the single-set base. cse copy-propagates pB into the `*pA` use, the first set becomes dead and flow removes it, so reg_n_sets is 1 again.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s61 fresh-single-set-carrier chassis at 8, with the do-while(0) wrap FAKE and the pp pointer-alias FAKE present
+
+## [s62] The VSync argument constant -1 - the only value the target holds in $a0 outside the do_timeout window - is a usable multi-set carrier for chain A's address.
+- mechanism: Every surviving carrier found in s60/s61 had a tail range wanting $v0/$v1, which is why each paid 3-4 in its own block. The VSync argument is materialised in $a0 in two different blocks (asm/funcs/CD_datasync.s:5 and :28), so a carrier merged with it would want $a0 in all of its ranges. Clobbering it in the window is safe because the do_timeout path never reaches the loop head again.
+- probe: `s32 tm; tm = -1; D_800F19B8 = VSync(tm) + 0x3C0; ... loop: v0 = VSync(tm); ... tm = (t0 << 2) + (s32)tbl_125c;` (function-scope, single prologue set), and the variant with `tm = -1;` placed at the loop head so the range does not span the loop.
+- result: 24/94 and 8/91. The function-scope spelling makes tm loop-carried across two calls so it takes a callee-saved seat and costs three extra instructions; the loop-head spelling is const-propagated by cse, the set dies, and the single-set boosted form comes back.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60/s61 CD_ready-transplant chassis, with the do-while(0) wrap FAKE and the pp pointer-alias FAKE present
+
+## [s62] Every construct remaining in the matching body is load-bearing; the match does not depend on any construct that could simply be dropped.
+- mechanism: Each FAKE construct is claimed under a sanctioned family with a lever-exhaustion prong, which requires showing the simpler spelling measurably loses.
+- probe: Single-construct ablation of the 0/91 body - wrap removed; pp alias removed; tbl_11dc alias removed; tbl_125c alias removed; idx_1494 alias removed; t0 moved inside the wrap; t0 inlined; t0 and tb both inlined.
+- result: 13/91, 4/91, 18/88, 27/89, 20/90, 4/91, 12/91, 13/91. No construct is byte-inert.
+- verdict: CONFIRMED

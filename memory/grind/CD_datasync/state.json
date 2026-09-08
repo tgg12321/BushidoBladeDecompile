@@ -903,5 +903,14 @@
    "consumed": 60
   }
  ],
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "2663ab51f480ea84",
+   "when": "2026-09-08T01:39:15.160056+00:00",
+   "summary": "final call: Every no-semantic-purpose construct sits in a frozen family with prerequisites met: four pointer aliases (tbl_11dc, idx_1494, tbl_125c, pp) under pointer-alias-fake-exception (annotated, GCC pass name"
+  }
+ ]
 }
