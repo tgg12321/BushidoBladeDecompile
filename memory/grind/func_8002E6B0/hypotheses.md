@@ -337,3 +337,75 @@
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the 26 body (e7/d2) with its single ret-staging borrow present, decomp-permuter with --stack-diffs
+
+## [s6] SYNTHESIS PASS - merged attack, frontier reset
+
+The ledger's contradiction rule does not fire here: no chassis is marked
+foreclosed, the floor has dropped in each of the last two working sessions
+(40 -> 34 -> 26), and the residual is now TWO instructions plus one consistent
+register permutation. This function is not near exhaustion; it is near a match.
+
+### [s6] The seat is a hard-register CONFLICT, not an allocno priority
+- mechanism: global.c:895-909 `prune_preferences` masks every preference set by `hard_reg_conflicts[allocno]`; global.c:580 dumps the graph after pruning and before allocation. Pseudo 96 (ret) is allocno ord 0 with pri 17368 - allocated FIRST - but its conflict line carries hard reg 2 ($v0) and it has no preference line, so find_reg cannot seat it in $v0 no matter how the C is spelled around refs/live-length/birth-order.
+- probe: `pwsh tools/grinder/dump.ps1 func_8002E6B0` with the 26 body installed; read `tmp/grind/func_8002E6B0/s6/greg_seg.txt` (conflicts + preferences) and `lreg_seg.txt` (the RTL: hard $v0 appears only in insn 236 `(set (reg/i:SI 2 v0) (reg/v:SI 96))` with REG_DEAD on 96, and insn 237 `(use (reg 2))`; no $v0 clobbers anywhere)
+- result: reg 96 conflicts with 2/29/64/66 and has zero preferences; reg 94 and reg 95 conflict with 29 only and both prefer 2/3/4; reg 95 (ord 1) takes $v0. s1's "allocno priority + local-alloc invisibility" explanation of the ret seat is superseded - ret has the HIGHEST priority in this body and still cannot reach $v0.
+- verdict: CONFIRMED
+
+### [s6] The ra_solver forward model reproduces this function well enough for inverse.py's verdict to be trusted
+- mechanism: `simulate.py` replicates allocno_compare + prune_preferences + find_reg; `inverse.py global` searches input perturbations from the SIMULATED baseline
+- probe: `extract.py func_8002E6B0 code6cac_b`; `simulate.py`; `inverse.py global --goal 96->2, 95->3 --depth 2 --top 8`
+- result: sort order MATCHES but dispositions are 11/31, with misses at ord 0/1/2 (96 sim=$a1 dump=$v1, 95 sim=$v1 dump=$v0, 94 sim=$a0 dump=$v1). inverse.py prints the simulated baseline (96='$a1') and then a NEGATIVE RESULT; that negative is about a baseline this function does not have, so it is not a foreclosure of the seat. The s5 frontier's "type the ret seat REACHABLE or FORECLOSED with the solver before any further spelling" is not available on this function until the forward model is fixed for it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the 26 body (base26.c) with its single ret-staging FAKE borrow present; tools/ra_solver at its current commit
+
+### [s6] Some other block-2 or block-3 staging position keeps the sixth callee-save while letting the returned zero survive without a restore insn
+- mechanism: s5 frontier item 2 - the restore exists only because our block 2 clobbers the carrier, so a carrier clobbered late enough (or in block 3, where the final `ret = (cc ^ cp) >= 0;` overwrites it anyway) should need no restore
+- probe: five hand variants measured with sandbox --disable all - p1 (staging in block 2's second product), p2 (staging `center_x - arg0[0]` instead of dz), q3 (both), p3 (staging dx instead of dz), p4 (staging in block 3 only, no restore), p5 (staging in blocks 2 and 3)
+- result: p1 = 26 and p2 = 26 and q3 = 26 but all three are BYTE-IDENTICAL to the base object (md5 921b8948), so they are respellings, not new geometry; p3 = 42; p4 (the only genuinely restore-free staging) = 48; p5 = 34. Every staging that needs no restore also loses the pressure that buys $s5 - the same coupling s5 measured for the restore's position, now measured for the staged VALUE and the staging SITE as well.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, p1/p2/p3/p4/p5/q3 bodies on the 26 chassis, one (p1/p2/p3/p4) or two (q3/p5) variable-reuse staging borrows present
+
+### [s6] The xor operand order at either the first if or the final assignment moves the ret seat off $v1
+- mechanism: the xor operands are pseudos 94/95, the two allocnos that hold the `preferences: 2 3 4` competing for $v0; swapping the operand order changes which of them dies where and could change the pruned preference sets
+- probe: sandbox on q1 (final statement's xor swapped only) and q2 (first if's xor swapped only), then the normalised side-by-side against the assembled target (`tmp/grind/func_8002E6B0/s6/cmp2.sh`)
+- result: both = 26 / 96 with DISTINCT objects (md5 078e7ad4 and 1b1fa1c0 vs the base's 921b8948), and both show the identical residual - ret still in $v1, `move v1,zero` still in the second bltz's delay slot, trailing `move v0,v1` still present. The seat is invariant to xor operand order. Kept as fresh permuter basins at the floor.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, q1/q2 bodies on the 26 chassis, one variable-reuse staging borrow present
+
+## [s6] Live frontier (reset - ranked)
+1. **Find and remove pseudo 96's hard conflict with $v0. This is the whole residual.** Hard $v0 occurs in exactly two insns of the pre-global RTL (the epilogue copy and its `use`), and global.c processes REG_DEAD before mark_reg_store, so the copy alone should not create the conflict - yet nineteen other long-lived pseudos also conflict with reg 2 (and with FIXED reg 29, which `mark_reg_store` skips), which can only come from `hard_regs_live` seeded at block entry (global.c:695-698 + `record_conflicts` at global.c:725). NEXT PROBE: run the instrumented cc1 (`tools/gcc-2.7.2/cc1`) on this body and print `basic_block_live_at_start`'s hard-reg part for each block, or add an env-guarded print in `record_conflicts` / `record_one_conflict`, to learn WHICH block entry marks $v0 live. Then ask the C question: which exit geometry stops flow from carrying $v0 live into those blocks. Do NOT spend more sandbox measurements on spelling until that print exists - s6 measured eight spellings and the seat did not move once.
+2. **A permuter campaign on q1 or q2 - the two DISTINCT objects that tie at 26.** s5 saturated the 26 basin (perm_e, 11,782 iterations, every find semantically broken) but seeded on the base object; q1 and q2 compile to different objects from different source geometries, so they are different neighbourhoods. Use `tmp/grind/func_8002E6B0/s5/mkws.sh` (it carries the current -mel -msoft-float flags). READ EVERY FIND'S SEMANTICS before scoring it - three of this function's permuter bests have been semantically invalid, and both floor drops on record came from hand-repairing one.
+3. **Fix `tools/ra_solver`'s forward model for this function, then re-run the inverse.** simulate.py is 11/31 here and misses at ord 0, so the whole solver suite is currently unusable on func_8002E6B0. The misses are all in the first three allocnos, which are exactly the $v0/$v1/$a0 group - a small, well-bounded discrepancy, and fixing it would type the seat REACHABLE or FORECLOSED instead of leaving it a guess. Lower priority than (1) only because (1) may answer the same question directly.
+
+## [s6] The ret seat in $v1 rather than $v0 is caused by allocno priority (the s1 explanation), so raising ret's refs or live span can move it
+- mechanism: global.c allocno_compare orders allocnos by priority; s1 recorded ret as low-priority and never allocated first. Re-checked against the ALLOCDBG/.greg ground truth for the CURRENT 26 body rather than the s1 chassis.
+- probe: pwsh tools/grinder/dump.ps1 func_8002E6B0 with the 26 body installed in src/code6cac_b.c; read tmp/grind/func_8002E6B0/s6/greg_seg.txt (the ';; 31 regs to allocate' line, the per-allocno conflict lines and preference lines) and lreg_seg.txt (the pre-global RTL); cross-check with tools/ra_solver/extract.py's allocdbg stream.
+- result: SUPERSEDED and replaced by a confirmed mechanism. Pseudo 96 (ret) is allocno ORDER 0, pri 17368, nrefs 11, livelen 19 - it is allocated FIRST, so priority is not the obstacle. Its .greg line reads ';; 96 conflicts: ... 2 29 64 66', i.e. a hard-register conflict with $v0 (reg 2), and it carries NO ';; 96 preferences:' line at all. The two xor operands reg 94 and reg 95 carry no conflict with reg 2 and both carry 'preferences: 2 3 4'; reg 95 (ord 1) takes $v0 and reg 94 takes $a0. The missing preference is a consequence of the conflict: prune_preferences masks every preference set by hard_reg_conflicts (global.c:907-909), deleting the copy preference that set_preference records for the epilogue copy (set (reg/i:SI 2 v0) (reg/v:SI 96)). dump_conflicts runs at global.c:580 - after prune_preferences, before the allocation loop - so these are genuine pre-allocation inputs, not post-assignment fallout.
+- verdict: CONFIRMED
+
+## [s6] The ra_solver forward model reproduces func_8002E6B0 well enough that inverse.py's verdict on the ret seat can be trusted
+- mechanism: simulate.py replicates allocno_compare + prune_preferences + find_reg; inverse.py global searches perturbations of refs / live length / birth order / conflicts / preferences starting from the SIMULATED baseline assignment.
+- probe: tools/ra_solver/extract.py func_8002E6B0 code6cac_b (model built: 31 allocnos, 53 dispositions); tools/ra_solver/simulate.py on that model; tools/ra_solver/inverse.py global with the goal pseudo 96 to reg 2 and pseudo 95 to reg 3, depth 2, top 8. Log: tmp/grind/func_8002E6B0/s6/inverse_global.log
+- result: Sort order MATCHES but dispositions are only 11/31, and the misses start at ord 0: pseudo 96 sim=$a1 vs dump=$v1, pseudo 95 sim=$v1 vs dump=$v0, pseudo 94 sim=$a0 vs dump=$v1. inverse.py therefore prints a baseline the function does not have (96='$a1', 95='$v0') and its NEGATIVE RESULT is a statement about that wrong baseline. The solver route named by the s5 frontier is not usable on this function until the forward model is fixed for it, and the printed FORECLOSED/negative must not be cited as a foreclosure of the ret seat.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, the 26 body (tmp/grind/func_8002E6B0/s6/base26.c) with its single ret-staging variable-reuse FAKE borrow present; tools/ra_solver at its current commit
+
+## [s6] Some other block-2 or block-3 staging position keeps the sixth callee-save while letting the returned zero survive without the ret = 0 restore insn
+- mechanism: The s5 frontier's item 2: the restore exists only because our block 2 clobbers the carrier, whereas the target's $v0 holds 0 untouched across block 2. A carrier clobbered late enough - or clobbered in block 3, where the final ret = (cc ^ cp) >= 0 overwrites it anyway - should need no restore at all.
+- probe: Six hand variants, each one sandbox --disable all measurement on the 26 chassis: p1 (staging moved to block 2's second product), p2 (staging center_x - arg0[0] instead of dz), q3 (both staged values, one restore), p3 (staging dx instead of dz), p4 (staging in block 3 only, genuinely restore-free), p5 (staging in blocks 2 and 3). Objects md5-compared against the base.
+- result: p1 = 26/96, p2 = 26/96 and q3 = 26/96 but all three are BYTE-IDENTICAL to the base object (md5 921b8948a0460d02b617959aacbd2403), so they are respellings and not new geometry. p3 = 42/94. p4 - the only genuinely restore-free staging - = 48/95, i.e. 22 worse. p5 = 34/94. Every staging position that needs no restore also loses the block-1/2 pressure that buys the target's sixth callee-save, which is the same coupling s5 measured for the restore's POSITION, now measured for the staged VALUE and the staging SITE as well. Banked: rejected/s6_stage_dx_not_dz_42.c, rejected/s6_stage_block3_only_no_restore_48.c, rejected/s6_stage_b2_and_b3_34.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, p1/p2/p3/p4/p5/q3 bodies on the 26 chassis, one (p1/p2/p3/p4) or two (q3/p5) variable-reuse staging borrows present
+
+## [s6] The xor operand order at the first if or at the final assignment moves the ret seat off $v1
+- mechanism: The xor operands are pseudos 94 and 95 - the two allocnos that hold the 'preferences: 2 3 4' competing with ret for $v0. Swapping the operand order changes which of them dies where, so it could change the pruned preference sets and hence which allocno wins $v0.
+- probe: sandbox --disable all on q1 (final statement's xor operands swapped only) and q2 (first if's xor operands swapped only), then the normalised objdump side-by-side against the assembled target via tmp/grind/func_8002E6B0/s6/cmp2.sh
+- result: Both measure 26 / 96 and both are DISTINCT objects (md5 078e7ad4 and 1b1fa1c0 vs the base's 921b8948), but the side-by-side residual is identical in both: ret still in $v1, the restore still emits move v1,zero in the second bltz's delay slot, and the trailing move v0,v1 is still present. The seat is invariant to xor operand order. Kept as two fresh permuter basins sitting exactly at the floor: rejected/s6_final_xor_swap_distinct_object_ties_26.c and rejected/s6_first_if_xor_swap_distinct_object_ties_26.c
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: -mel -msoft-float chassis, INCLUDE_ASM on main, q1/q2 bodies on the 26 chassis, one variable-reuse staging borrow present

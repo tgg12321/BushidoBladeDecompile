@@ -1,8 +1,8 @@
 {
  "func": "func_8002E6B0",
  "file": "code6cac_b",
- "session_count": 5,
- "current_modality": "permuter",
+ "session_count": 6,
+ "current_modality": "synthesis",
  "floor_history": [
   {
    "session": 1,
@@ -33,23 +33,29 @@
    "floor": 26,
    "modality": "permuter",
    "headline": "Floor 34 -> 26: staging block 2's dz through the return carrier itself (with a ret=0 restore) holds the target's exact exit shape AND its sixth callee-save at the same time - s4's anti-correlation is "
+  },
+  {
+   "session": 6,
+   "floor": 26,
+   "modality": "synthesis",
+   "headline": "Floor holds at 26; the whole residual is now typed - the ret pseudo (reg 96) is allocno ORDER 0 yet carries a pre-allocation hard conflict with $v0, which prune_preferences uses to strip its $v0 copy "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The ret pseudo can be seated in $v0 rather than $v1, removing the trailing `move v0,v1` and collapsing the {v0,v1,a0,a1,a2} rename against the target",
-   "mechanism": "the 26 body's register MULTISET now matches the target (six callee-saves, s5 present) and the stream is 98 vs 96 insns, so the goal mapper that s1 reported unusable ('goal is not a topological order') should now be well-formed; the seat is a global.c find_reg ordering question, not a spelling question",
-   "next_probe": "tools/ra_solver/extract.py + inverse.py global --goal on the 26 body (memory/grind/func_8002E6B0/candidate.c), then inverse_compose.py classify, to type the ret seat REACHABLE or FORECLOSED before any further spelling. This supersedes the s4 frontier item that named the 34 body - run it on the 26 body."
+   "hypothesis": "Pseudo 96's hard-register conflict with $v0 is created at a basic-block entry (flow believing hard $v0 is live at the start of blocks that reg 96 spans), not by the epilogue copy; removing it is the entire remaining residual",
+   "mechanism": "global_conflicts seeds hard_regs_live from basic_block_live_at_start (global.c:695-698) and immediately calls record_conflicts (global.c:725), which IORs hard_regs_live into hard_reg_conflicts of every allocno live at that point. That path - unlike mark_reg_store, which skips FIXED registers at global.c:1502 - explains why $sp (reg 29) appears in the same conflict lines. Once the conflict is gone, prune_preferences (global.c:907-909) stops deleting reg 96's $v0 copy preference and find_reg seats ret in $v0, which collapses the trailing move v0,v1 and the whole {v0,v1,a0,a1,a2} rename against the target.",
+   "next_probe": "Run the instrumented cc1 (tools/gcc-2.7.2/cc1 - NOT tools/gcc-2.7.2/build/cc1) on this body with an env-guarded print of the hard-register part of basic_block_live_at_start per basic block, or of every (allocno, hard reg) pair recorded by record_conflicts / record_one_conflict, to identify WHICH block entry marks $v0 live. Then ask the C question the answer implies: which exit geometry stops flow carrying $v0 live into those blocks. Do not spend further sandbox measurements on spelling until that print exists - s6 measured eight spellings and the seat did not move once."
   },
   {
-   "hypothesis": "A block-2 value other than dz, staged through ret, keeps the sixth callee-save while letting the returned zero survive block 2 with no restore insn",
-   "mechanism": "the restore exists only because our block 2 clobbers the carrier, whereas the target's $v0 holds 0 untouched across block 2; every spelling that simply DROPS the restore also drops the pressure and the s5 save (measured 45 four ways), so the carrier must be clobbered late enough that its restore merges into an insn the target already has - e.g. staged across the SECOND product only, or staging one of the subtraction operands rather than dz",
-   "next_probe": "enumerate the block-2 staging positions (each of the four subexpressions, each of the two products) as hand variants, screen them with tmp/grind/func_8002E6B0/s3/da.sh + the .lreg/.greg dump for a sixth callee-save AND a surviving zero before spending sandbox measurements, then measure only the survivors"
+   "hypothesis": "A permuter campaign seeded on q1 or q2 - the two ties at 26 that compile to a DIFFERENT object from the base - finds what the base 26 basin could not",
+   "mechanism": "s5's perm_e saturated the 26 basin (11,782 iterations, 9 novel finds, every one semantically broken) but it was seeded on the base object; q1 and q2 are different source geometries that compile to different objects, so their permuter neighbourhoods are different. The standing lesson on this function is that a semantically broken find is a LEAD - both floor drops on record (40 to 34 and 34 to 26) came from hand-repairing one.",
+   "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh (it carries the current -mel -msoft-float flags; the older tools/mar_perm_workspace.sh and the func_800283D0 copy predate soft-float) on memory/grind/func_8002E6B0/rejected/s6_final_xor_swap_distinct_object_ties_26.c and .../s6_first_if_xor_swap_distinct_object_ties_26.c, one fresh-seed window each. Do NOT re-seed the base 26 basin (perm_e) or the 34 basin (s4 perm_c) - both are spent probes on the record. Read every find's SEMANTICS before scoring it."
   },
   {
-   "hypothesis": "A permuter campaign seeded on one of the 26 TIES (a different statement geometry landing on the same object) finds what the 26 basin itself could not",
-   "mechanism": "perm_e saturated the 26 basin and produced only semantically-broken finds, but d2 / e1 / i2 are different source geometries with different permuter neighbourhoods; and the standing lesson on this function is that a broken find is a LEAD - both floor drops on record came from repairing one",
-   "next_probe": "tmp/grind/func_8002E6B0/s5/mkws.sh on rejected/s5_dx_staged_restored_ties_26.c (or the d2/e1 ties in the s5 workspace) for one fresh-seed window; do NOT re-seed the 26 basin (perm_e) or the 34 basin (s4 perm_c) - both are spent probes on the record. Read every find's SEMANTICS and hand-repair it before scoring."
+   "hypothesis": "tools/ra_solver's forward model can be fixed for func_8002E6B0, after which inverse.py can type the ret seat REACHABLE or FORECLOSED",
+   "mechanism": "simulate.py is 11/31 on this function and every miss is concentrated in the first three allocnos (96, 95, 94), which are exactly the $v0/$v1/$a0 group - a small, well-bounded discrepancy in find_reg's pass-0 seed or in the regs_someone_prefers avoidance rather than a wholesale model failure.",
+   "next_probe": "Re-run tools/ra_solver/simulate.py --trace on tmp/ra_solver_work/func_8002E6B0.model.json and compare the pass-0/pass-1 decision for pseudo 96 against the FINDREGDBG stream that extract.py already parses; the dump says $v1, the model says $a1, so the divergence is in which regs the model excludes. Only after the model reproduces ord 0-2 is inverse.py's verdict on this seat worth anything."
   }
  ],
  "judge_constraints": [],
@@ -182,6 +188,30 @@
    "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the 26 body (e7/d2) with its single ret-staging borrow present, decomp-permuter with --stack-diffs",
    "predicate_cite": "",
    "result": "Best find 265, but every sub-base find is the same semantically-broken family the permuter already produced on the other"
+  },
+  {
+   "session": 6,
+   "statement": "The ra_solver forward model reproduces func_8002E6B0 well enough that inverse.py's verdict on the ret seat can be trusted",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, the 26 body (tmp/grind/func_8002E6B0/s6/base26.c) with its single ret-staging variable-reuse FAKE borrow present; tools/ra_solver at its current commit",
+   "predicate_cite": "",
+   "result": "Sort order MATCHES but dispositions are only 11/31, and the misses start at ord 0: pseudo 96 sim=$a1 vs dump=$v1, pseudo"
+  },
+  {
+   "session": 6,
+   "statement": "Some other block-2 or block-3 staging position keeps the sixth callee-save while letting the returned zero survive without the ret = 0 restore insn",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, p1/p2/p3/p4/p5/q3 bodies on the 26 chassis, one (p1/p2/p3/p4) or two (q3/p5) variable-reuse staging borrows present",
+   "predicate_cite": "",
+   "result": "p1 = 26/96, p2 = 26/96 and q3 = 26/96 but all three are BYTE-IDENTICAL to the base object (md5 921b8948a0460d02b617959aa"
+  },
+  {
+   "session": 6,
+   "statement": "The xor operand order at the first if or at the final assignment moves the ret seat off $v1",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, q1/q2 bodies on the 26 chassis, one variable-reuse staging borrow present",
+   "predicate_cite": "",
+   "result": "Both measure 26 / 96 and both are DISTINCT objects (md5 078e7ad4 and 1b1fa1c0 vs the base's 921b8948), but the side-by-s"
   }
  ],
  "ladder_skip": 0,
