@@ -1417,3 +1417,86 @@ exactly the insn that then loses the sched2 LUID tie.
 - [s14] ENUMERATION (operator, 2026-09-08, tools/spelling_enum.py, out-of-tree scorer with the engine metric against build/src/code6cac_b.o at HEAD e1e1b977): test-3 region in fully-named form (ax, dz, dx, az, bx, bz; kc/kp assignments; the if as anchor) -> 3,914 distinct spellings across name/inline x declaration order x kc/kp order, operand order held as candidate.c. Histogram: 981 at floor 2, 488 at 4, 488 at 9, 523 at 29, 488 at 30, 458 at 35, 488 at 37. ZERO below 2. CLASS KILL for that axis set: no naming/ordering of the six differences reaches the target's dx-before-az order without losing the seats. The 62,624-spelling run that adds the commutative operand-swap axis (both products of kc and kp) is running; its histogram will be banked when it completes (partial: 13k scored, best still 2).
 
 - [s14] ROTATION RULING CONTEXT (2026-09-08): this function's foreclosure record (decisions.md 25758) claimed only a class grant or a toolchain change could reopen it. The cc1psx self-disproof (engine cc1psx-check: ours 2/202, original cc1psx 46/202, same az-before-dx order) proves the residual is SOURCE-SIDE. Policy does not block this function; a pure-C preimage exists by construction. Item is now `rotated` and returns automatically (queue drain / toolchain change / sibling movement). Next instruments when it returns: enumerate with a WIDER region (fold the test-2 block and the cx/cz centroid computation into the marked region; try dz/dx declared at function scope vs block scope), and the declaration-scope axis the enumerator does not yet cover.
+
+
+## s14 (rederive, 2026-09-08) - sibling transplant executed; residual re-attributed from sched2 to source order + a local-alloc span tie
+
+**Directive executed.** The queue's auto-return directive (coupled sibling func_8002E6B0 ->
+floor 0, 2026-09-08T18:29) was this session's first probe. func_8002E6B0 is COMPLETED-C on
+main at src/code6cac_b.c:1332-1364 and is the SAME point-in-triangle predicate that
+func_8002D780 inlines with one vertex at the origin: three cross-product sign tests against
+a centroid and a query point. Its matched spelling names the two edge differences per test
+(`s32 dz = argN[2] - argM[2]; s32 dx = argN[0] - argM[0];` inside a brace block) and leaves
+the centroid/query differences inline. Transplanted onto this chassis it scores 2/202 -
+same floor, DIFFERENT residual: the delay-slot pair ax/dz at ours[92:93] instead of the
+block-7 pair az/dx at ours[96:97] (tmp/grind/func_8002D780/s14/pairdiff_a_sibling_dz_dx.txt).
+Both spellings hold every register in the function; they differ only in which of the two
+adjacent transpositions is left over. Banked as
+rejected/s14-sibling-8002e6b0-transplant-slot-wrong-2.c.
+
+**Chassis re-measured.** HEAD e3895bb7 (-mel -msoft-float), candidate.c spliced into
+src/code6cac_b.c: `sandbox func_8002D780 --disable all` -> {"score": 2, "target_insns": 202,
+"build_insns": 202}. The ledger's floor 2 is intact on the current chassis.
+
+**PASS RE-ATTRIBUTION (the s12 header was wrong).** s12 recorded the residual as "a pure
+sched2 ready-list order between two independent subus". The dumps say otherwise:
+
+- sched1 ALREADY emits az before dx. tmp/grind/func_8002D780/s14/w_n1/code6cac_b.sched,
+  func_8002D780 block 7: insn 179 (ax = cx - x0), 182 (dz = z2 - z0), 191 (mult1),
+  185 (az = cz - z0), 188 (dx = x2 - x0), 193 (mult2), 198, 200, 202, 204.
+- sched2 does not move them. RANKDBG in w_n1/stderr_full.txt:
+  `RANKDBG last=193 y=188 cls=3 x=185 cls2=3 val=0` - equal INSN_PRIORITY, equal dependence
+  class against the mult, so rank_for_schedule falls through to `INSN_LUID (tmp) -
+  INSN_LUID (tmp2)` (tools/gcc-2.7.2/sched.c:2464), i.e. to SOURCE ORDER.
+- Therefore the az/dx emission order IS the declaration order, in both scheduler passes.
+
+**The coupling, in exact arithmetic.** local-alloc block-7 quantity tables (BB2_QTY_DEBUG),
+func_8002D780's group identified by pseudo numbers 129-132. Positions are 2 units per RTL
+insn: ax=2, dz=4, mult1=6, [3rd decl]=8, [4th decl]=10, mult2=12, (px-x0)=14, mult3=16,
+(pz-z0)=18, mult4=20.
+
+| body | order | dz (reg130) | dx | seats |
+|---|---|---|---|---|
+| n1 = candidate (ax,dz,az,dx) | az 3rd | birth 4 death 16 refs 3 -> pri 2500, got $a0 | reg132 birth 10 death 20 refs 3 -> pri 3000, got $v1 | CORRECT |
+| n6 (ax,dz,dx,az) = target order | dx 3rd | birth 4 death 16 refs 3 -> pri 2500, got $v1 | reg131 birth 8 death 20 refs 3 -> pri 2500, got $a0 | REVERSED, 9/202 |
+
+qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708-1719) is
+`floor_log2(refs)*refs*size / (death - birth) * 10000` with a suggestion pre-test and NO
+tie-break of its own; on an exact tie qsort leaves the two quantities in quantity-number
+order, and dz's quantity is created first because its definition insn is first. So in the
+target's OWN emission order dz is seated first and takes $v1 while dx takes $a0 - the
+reverse of the target's $a0/$v1. Writing the condition out: dx outranks dz iff
+`pos(dx_def) - pos(dz_def) > pos(mult4) - pos(mult3)`. In the target's asm those are 2
+positions each (asm/funcs/func_8002D780.s:103-117: ax 103, dz 104, mult 105, dx 107,
+az 108, mult 109, px0 111, mult3 113, pz0 115, mult4 117), so the two sides are equal and
+the tie is structural to the target's own instruction sequence.
+
+**The obvious way out is dead: sched1 sinks every difference back to its consumer.** Six
+bodies (tmp/grind/func_8002D780/s14/w2/) name or hoist the kp/kc difference subexpressions
+in the target declaration order, trying to change the birth/death arithmetic: pz0 named,
+px0+pz0 named, px0 named between dz and dx, pz0 named between dz and dx, pz0 in a nested
+brace after kc, and both kp differences named. All six score 9/202, and the dumped block-7
+quadruples are byte identical to the un-hoisted body in all of them (w_n6, w_w2b, w_w2c:
+dz birth 4 death 16 refs 3; dx birth 8 death 20 refs 3). sched1 places each difference
+immediately before its consuming mult regardless of where the C declares it, so the only
+C-visible freedom left in block 7 is the order WITHIN the two pairs (ax,dz) and (dx,az).
+
+**Candidate promoted.** memory/grind/func_8002D780/candidate.c is now the s12 chassis plus
+the sibling's `dx` naming (all four block-7 differences are named once-written CSE locals,
+no duplicated inline `(x2 - x0)`); 2/202, residual unchanged at ours[96:97]. The previous
+body scores the same but duplicates a subexpression, so this one is closer to the sibling's
+matched idiom and strictly easier to defend.
+
+- [s14] Owner directive executed: the queue's auto-return directive (coupled sibling func_8002E6B0 -> floor 0, 2026-09-08T18:29) was this session's first probe, and the transplant is banked as a CONFIRMED hypothesis naming the sibling and its session number.
+
+- [s14] Chassis re-measured on HEAD e3895bb7 (-mel -msoft-float): candidate.c spliced into src/code6cac_b.c gives {"score": 2, "target_insns": 202, "build_insns": 202}. The ledger floor is intact.
+
+- [s14] The two 2/202 spellings are complementary, not redundant: the sibling spelling leaves the delay-slot ax/dz transposition and gets the block-7 pair right; the candidate leaves the block-7 az/dx transposition and gets the delay slot right. Both hold every register in the function.
+
+- [s14] Position map for block 7 (2 units per RTL insn, from the QTYDBG tables): ax=2, dz=4, mult1=6, third decl=8, fourth decl=10, mult2=12, (px-x0)=14, mult3=16, (pz-z0)=18, mult4=20. dz is always born at 4 and dies at 16; dx dies at 20; only dx's birth moves.
+
+- [s14] The coupling stated exactly: dx outranks dz in qty_compare_1 iff pos(dx_def) - pos(dz_def) > pos(mult4) - pos(mult3). In the target's own asm both sides are 2 positions (asm/funcs/func_8002D780.s:103-117: ax 103, dz 104, mult 105, dx 107, az 108, mult 109, px0 111, mult3 113, pz0 115, mult4 117), so on the target's emission order the two quantities tie exactly.
+
+- [s14] qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708-1719) has no tie-break clause of its own - unlike qty_sugg_compare_1, which ends with 'return *q1 - *q2' - so a tie is resolved by qsort's array order, i.e. by quantity number, i.e. by which definition insn comes first.
+
+- [s14] Seven new rejected forms banked (81 total in memory/grind/func_8002D780/rejected/), and candidate.c is replaced by the sibling-aligned four-named-difference body at the same 2/202 with the same residual and no duplicated subexpression.

@@ -1,72 +1,76 @@
-/* func_8002D780 - grind candidate (s12 structural, 2026-09-08).  Honest sandbox floor
+/* func_8002D780 - grind candidate (s14 rederive, 2026-09-08).  Honest sandbox floor
  * 2/202, build_insns == target_insns == 202, measured THIS session with these exact
  * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 2).
  *
- * WHY THIS BODY REPLACES THE s10/s11 ONE AT THE SAME SCORE.  The score is unchanged but
- * the RESIDUAL IS STRICTLY MORE TRACTABLE.  The previous body (kept verbatim as
- * memory/grind/func_8002D780/candidate_alt_s11_dzfirst.c) failed on the ax/dz pair that
- * straddles the DELAY SLOT of `bltz $v0,.L8002D964` -- a reorg.c decision that s11 proved
- * is the same INSN_LUID as the dz/dx register seat and pulls the opposite way.  This body
- * has the delay slot RIGHT, every register in the function RIGHT, and its only two
- * differing instructions are an ordinary adjacent transposition INSIDE block 7:
+ * WHAT CHANGED IN s14.  Two things.  (1) The coupled sibling func_8002E6B0 reached
+ * COMPLETED-C (src/code6cac_b.c:1332-1364) and it is the SAME point-in-triangle predicate
+ * this function inlines with one vertex at the origin; its matched spelling names the two
+ * edge differences per test (`s32 dz = ...; s32 dx = ...;`) and leaves the centroid/query
+ * differences inline.  Transplanting that spelling here scores 2/202 with the residual on
+ * the DELAY-SLOT pair instead of the block-7 pair (tmp/grind/func_8002D780/s14/
+ * pairdiff_a_sibling_dz_dx.txt).  (2) The body below adopts the sibling's `dx` naming on
+ * top of the s12 ax/dz/az chassis, which keeps the s12 residual (strictly the more
+ * tractable of the two) while removing the duplicated inline `(x2 - x0)` subexpression, so
+ * all four block-7 differences are ordinary once-written named CSE locals.
+ *
+ * THE RESIDUAL (unchanged from s12, tmp/grind/func_8002D780/s14/pairdiff_n1_ax_dz_az_dx.txt):
  *
  *   ours[96] subu v0,a2,a3 (az)      target[96] subu v1,t5,t1 (dx)
  *   ours[97] subu v1,t5,t1 (dx)      target[97] subu v0,a2,a3 (az)
- *   === 2 differing instructions ===   (tmp/grind/func_8002D780/s12/pairdiff_d1.txt)
+ *   === 2 differing instructions ===
  *
- * No delay slot is involved any more, so the s11 LUID contradiction is GONE: the last
- * question is a pure sched2 ready-list order between two independent subus that feed the
- * same mult.
+ * Everything else in the function - the test-2 delay slot, every register in every block,
+ * both mult operand orders - is already the target's.
  *
- * HOW THE THREE DECLARATIONS BUY THAT (measured, instrumented-cc1 QTYDBG tables in
- * tmp/grind/func_8002D780/s12/{a1,b1,c1}/stderr_full.txt).  local-alloc.c:1725-1758 ranks
- * block-7 quantities by floor_log2(refs)*refs*size/(death-birth)*10000 and breaks a tie by
- * quantity number (local-alloc.c:1684); whichever of dz/dx is seated FIRST takes $v1 and
- * the other takes $a0, and the target needs dz=$a0 / dx=$v1, i.e. dx seated first.
- *   `s32 ax = cx - x0;`  emits ax's subu FIRST, so reorg's fill_slots_from_thread takes IT
- *                        for the test-2 delay slot instead of dz's subu (target's slot).
- *                        On its own (variant a1) that costs the seats: dz and dx both land
- *                        at refs 3 / span 12 and tie, and the tie seats dz first (score 9,
- *                        rejected/axfirst-slot-right-seats-swapped-9.c).
- *   `s32 dz = z2 - z0;`  keeps the mult operand order `mult $a0,$v0` (dz * ax).
- *   `s32 az = cz - z0;`  is the tie-breaker.  It puts ONE extra RTL insn between dz's
- *                        definition and dx's definition, which lengthens dz's live range to
- *                        14 while leaving dx's at 12 (both endpoints shift together).  dx
- *                        then outranks dz (2500 > 2142), is seated first, takes $v1, and dz
- *                        takes $a0 -- the target's seats.  az is a REAL value consumed by
- *                        the second product; it costs no instruction because the subu it
- *                        names is one the target emits anyway.
- * Hoisting bz or bx instead does NOT work: sched1 sinks them back down to their (later)
- * consumers, so no span shift happens and the score stays 9
- * (rejected/bz-hoist-sinks-back-no-span-shift-9.c, .../bx-...-9.c).
+ * WHY THE FOUR DECLARATIONS ARE IN THIS ORDER (s14 re-attribution; the s12 header's
+ * "sched2 ready-list" story is WRONG and is corrected here from the dumps).  sched1
+ * already emits az before dx (tmp/grind/func_8002D780/s14/w_n1/code6cac_b.sched, insns
+ * 179 ax, 182 dz, 191 mult1, 185 az, 188 dx, 193 mult2) and sched2 does not move them:
+ * rank_for_schedule finds equal INSN_PRIORITY and equal dependence class against the mult
+ * (RANKDBG last=193 y=188 cls=3 x=185 cls2=3 val=0 in w_n1/stderr_full.txt) and falls
+ * through to INSN_LUID (sched.c:2464), i.e. to SOURCE ORDER.  So the emission order of the
+ * az/dx pair is exactly the declaration order.
  *
- * WHAT IS LEFT.  sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class,
- * then INSN_LUID (sched.c:2464).  dx and az are independent, both feed mult2, so their
- * longest-path priorities are equal and the LUID decides -- and az's LUID is lower because
- * the declaration puts it earlier.  Any fix must either raise dx above az on the first two
- * comparisons or find a different zero-cost insn to sit between dz and dx.  tools/sched_solver
- * models both scheduler passes order-exactly and is the right instrument for that question.
+ * And the declaration order is also what buys the register seats, which is the trap.
+ * local-alloc's block-7 quantity table (BB2_QTY_DEBUG, w_n1 vs w_n6/stderr_full.txt):
+ *   this body (az 3rd, dx 4th):  dz reg130 birth 4  death 16 refs 3 -> pri 2500, got $a0
+ *                                dx reg132 birth 10 death 20 refs 3 -> pri 3000, got $v1
+ *   target order (dx 3rd, az 4th): dz birth 4 death 16 -> 2500 ; dx birth 8 death 20 -> 2500
+ * i.e. in the target's OWN emission order the two quantities tie exactly on
+ * qty_compare_1 (local-alloc.c:1708-1719, which has no tie-break of its own), qsort leaves
+ * them in quantity-number order, dz is seated first and takes $v1 while dx takes $a0 - the
+ * reverse of the target, and the score goes 2 -> 9 (rejected/s14-decl-order-dx-before-az-
+ * seats-swapped-9.c).  The `az` declaration sitting between dz's and dx's definitions is
+ * the ONLY thing measured so far that shortens dx's live range enough to break that tie,
+ * and it costs exactly the two instructions above.
+ *
+ * s14 also killed the obvious way out: naming or hoisting the kp/kc difference
+ * subexpressions (px - x0, pz - z0) to change the birth/death arithmetic does nothing at
+ * all, because sched1 sinks every difference back to just before its consuming mult.  Six
+ * spellings, all 9/202, and the dumped block-7 birth/death/refs quadruples are BYTE
+ * IDENTICAL between the plain target-order body and both hoisted bodies (w_n6, w_w2b,
+ * w_w2c: dz 4/16/3, dx 8/20/3 in all three).  See rejected/s14-w2-*.c.
  *
  * The rest of the body is unchanged from s5/s10 and every line of it is load-bearing; see
  * candidate_alt_s5_named_locals.c for the LZCS/LZCR island split, the `m` carrier and the
  * clobber footprint.  Summary of what must not change:
  *  - the two cop2 islands in the sqrt block must stay SPLIT;
  *  - `s32 m = dist;` must be declared BEFORE `s32 lzcr` and re-stored inside the
- *    `dist >= 0` arm (the annotated FAKE construct below; worth 4 insns, s11 ablation);
+ *    `dist >= 0` arm (the annotated FAKE construct below; worth 3 insns, s14 re-ablation);
  *  - the three cop2 blocks are the owner-authorized canonical LZCS/LZCR + mvmva idiom
  *    (.claude/rules/cop2-addressing-preamble-cluster.md).
  *
  * FAMILY NOTE for whoever reaches 0: this body carries one annotated construct, the
  * same-value re-store of the local `m` (dead-store family,
  * .claude/rules/dead-store-fake-exception.md, in-TU byte-matched precedent at
- * src/code6cac_b.c:1244-1265).  It ALSO reintroduces three named difference locals in test
- * 3 (`ax`, `dz`, `az`).  `dz` is written once and read twice (an ordinary CSE variable);
- * `ax` and `az` are written once and read once, which is the named-intermediate shape
- * described in .claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17
- * clarification in .claude/rules/no-new-park-categories.md -- all three hold REAL values
- * that appear in the target bytes, but a candidate-ready session must decide whether the
- * once-read pair needs the named-intermediate FAKE annotation (six prongs) or is ordinary
- * C, and should file a ruling-request if the answer is not clean. */
+ * src/code6cac_b.c:1244-1265).  The four test-3 locals ax, dz, dx, az all hold REAL values
+ * that appear in the target bytes; dz and dx are written once and read twice (ordinary CSE
+ * variables, and exactly the sibling func_8002E6B0's matched spelling), while ax and az are
+ * written once and read once, which is the named-intermediate shape described in
+ * .claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17 clarification in
+ * .claude/rules/no-new-park-categories.md.  A candidate-ready session must decide whether
+ * the once-read pair needs the named-intermediate FAKE annotation (six prongs) or is
+ * ordinary C, and should file a ruling-request if the answer is not clean. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -116,8 +120,9 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
                 s32 ax = cx - x0;
                 s32 dz = z2 - z0;
                 s32 az = cz - z0;
-                kc = dz * ax - (x2 - x0) * az;
-                kp = dz * (px - x0) - (x2 - x0) * (pz - z0);
+                s32 dx = x2 - x0;
+                kc = (dz * ax) - (dx * az);
+                kp = (dz * (px - x0)) - (dx * (pz - z0));
                 if ((kc ^ kp) >= 0)
                     return 1;
             }

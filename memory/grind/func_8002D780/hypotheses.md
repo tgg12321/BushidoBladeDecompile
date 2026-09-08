@@ -1448,3 +1448,94 @@ disjoint from the `dz`/`dx`/`az` pseudos of the block-7 residual. The banked sch
 - probe: python3 tools/fake_ablate.py --func func_8002D780 --file code6cac_b --candidate memory/grind/func_8002D780/candidate.c
 - result: Exactly 1 FAKE unit (candidate.c L142, the same-value re-store of `m`): keep-all = 2/202, drop-1 = 6/202. Load-bearing (worth 4 insns) and located in the sqrt block. The banked scheduler kills stand un-contaminated.
 - verdict: CONFIRMED
+
+
+## s14 (rederive, 2026-09-08)
+
+### CONFIRMED - the func_8002E6B0 s12 matched spelling transplants onto this chassis at the same floor with a different residual
+- **Mechanism.** func_8002E6B0 (COMPLETED-C at its s12, src/code6cac_b.c:1332-1364) is the
+  same three-cross-product point-in-triangle predicate; its matched form names the two edge
+  differences per test and leaves the centroid/query differences inline. Naming dz and dx
+  makes dz's subu the first insn of block 7, which gives dz a 14-unit live range against
+  dx's 12 and seats dx first into $v1 (target seats), but hands the test-2 delay slot to
+  dz's subu instead of ax's.
+- **Probe.** tmp/grind/func_8002D780/s14/w1 sweep on HEAD e3895bb7 plus
+  tools/pairdiff.py: a_sibling (sibling spelling), n1 (this chassis), n6 (target
+  declaration order), z_baseline (banked s12 candidate).
+- **Result.** a_sibling 2/202 with the residual at ours[92:93] (the delay slot);
+  z_baseline and n1 2/202 with the residual at ours[96:97]; n6 9/202. The transplant is
+  banked as rejected/s14-sibling-8002e6b0-transplant-slot-wrong-2.c.
+
+### CONFIRMED - the az/dx emission order is decided by SOURCE ORDER in sched1, not by a sched2 ready-list race
+- **Mechanism.** rank_for_schedule compares INSN_PRIORITY, then the dependence class
+  against the last scheduled insn, then returns INSN_LUID(tmp) - INSN_LUID(tmp2)
+  (tools/gcc-2.7.2/sched.c:2464). For the az/dx pair both earlier terms are equal, so LUID
+  - the original insn order, i.e. the declaration order - decides in BOTH scheduler passes.
+- **Probe.** Instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_RANK_DEBUG/BB2_QTY_DEBUG on
+  the n1 and n6 bodies; read block 7 of code6cac_b.sched and the RANKDBG lines.
+- **Result.** sched1 output for n1 is ax(179), dz(182), mult1(191), az(185), dx(188),
+  mult2(193) - az is already before dx before sched2 ever runs; the only RANKDBG line for
+  the pair is `last=193 y=188 cls=3 x=185 cls2=3 val=0`. This CORRECTS the s12 candidate
+  header, which attributed the residual to sched2.
+
+### KILLED (instance) - naming or hoisting the kp/kc difference subexpressions changes the block-7 live ranges
+- **Mechanism.** The intent was to shorten dx's live range on the target's declaration
+  order (ax, dz, dx, az) by moving kp's two mults adjacent (pz0 hoisted) or by adding an
+  RTL insn between dz's and dx's definitions (px0/pz0 declared between them), so that
+  qty_compare_1's `floor_log2(refs)*refs*size/(death-birth)` favours dx and seats it first
+  into $v1.
+- **Probe.** Six bodies in tmp/grind/func_8002D780/s14/w2 (pz0 named; px0+pz0 named; px0
+  between dz and dx; pz0 between dz and dx; pz0 in a nested brace after kc; both kp
+  differences named) plus the un-hoisted control, scored by
+  tmp/grind/func_8002D780/s14/sweep.ps1, with BB2_QTY_DEBUG dumps for two of them.
+- **Result.** All six 9/202, control 9/202. The dumped block-7 birth/death/refs quadruples
+  are identical in w_n6, w_w2b and w_w2c: dz birth 4 death 16 refs 3, dx birth 8 death 20
+  refs 3. sched1 sinks each difference back to just before its consuming mult, so the C
+  placement is invisible to local-alloc.
+- **kill_scope.** instance.
+- **measured_on.** HEAD e3895bb7 (-mel -msoft-float), the target-declaration-order (n6)
+  block-7 chassis spliced into src/code6cac_b.c, one FAKE construct present (the `m`
+  same-value re-store in the sqrt block, three blocks away).
+- Banked as rejected/s14-w2a..w2f-*-sched1-sinks-difference-9.c.
+
+### KILLED (instance) - declaring dx third and az fourth (the target's own emission order) seats dx before dz
+- **Mechanism.** With az moved out from between dz's and dx's definitions the two
+  quantities have identical refs (3), size (1) and span (12), qty_compare_1
+  (local-alloc.c:1708-1719) returns 0, and qsort leaves them in quantity-number order,
+  which favours dz because its definition insn comes first.
+- **Probe.** n6 body (ax, dz, dx, az) spliced and scored; block-7 QTYDBG table read from
+  tmp/grind/func_8002D780/s14/w_n6/stderr_full.txt.
+- **Result.** 9/202; dz reg130 pri 2500 got $v1, dx reg131 pri 2500 got $a0 - exactly the
+  reverse of the target's $a0/$v1. Re-measured this session on the current chassis; agrees
+  with the s12 finding and now carries the arithmetic.
+- **kill_scope.** instance.
+- **measured_on.** HEAD e3895bb7 (-mel -msoft-float), n6 spliced into src/code6cac_b.c,
+  one FAKE construct present (the `m` same-value re-store).
+
+## [s14] The func_8002E6B0 s12 matched spelling of the shared point-in-triangle predicate, transplanted onto this chassis, holds the floor at 2/202 and relocates the residual from the block-7 az/dx pair to the test-2 delay-slot ax/dz pair
+- mechanism: func_8002E6B0 (COMPLETED-C at its s12, src/code6cac_b.c:1332-1364) is the same three-cross-product predicate this function inlines with one vertex at the origin; its matched form names the two edge differences per test (s32 dz, s32 dx) and leaves the centroid/query differences inline, which makes dz's subu the first insn of block 7, gives dz a 14-unit live range against dx's 12, and seats dx first into $v1 (the target's seats) at the cost of handing the test-2 delay slot to dz's subu instead of ax's
+- probe: the sibling body spliced into src/code6cac_b.c alongside the banked s12 candidate, the sibling-dx-naming hybrid and the target-declaration-order body, scored with tools/wteng.ps1 main sandbox func_8002D780 --disable all via tmp/grind/func_8002D780/s14/sweep.ps1 and pairdiffed with tools/pairdiff.py
+- result: sibling spelling 2/202 with the residual at ours[92:93]; banked candidate and the hybrid 2/202 with the residual at ours[96:97]; target declaration order 9/202. Banked as memory/grind/func_8002D780/rejected/s14-sibling-8002e6b0-transplant-slot-wrong-2.c; the hybrid is promoted to candidate.c
+- verdict: CONFIRMED
+
+## [s14] The emission order of block 7's az/dx pair is decided by source order inside sched1, not by a sched2 ready-list race as the s12 candidate header recorded
+- mechanism: rank_for_schedule compares INSN_PRIORITY, then the dependence class against the last scheduled insn, then returns INSN_LUID(tmp) - INSN_LUID(tmp2) (tools/gcc-2.7.2/sched.c:2464); for this pair both earlier terms are equal, so the original insn order - the declaration order - decides in both scheduler passes
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_RANK_DEBUG and BB2_QTY_DEBUG on the candidate and target-order bodies; read func_8002D780's block 7 in code6cac_b.sched and the RANKDBG lines in stderr_full.txt
+- result: sched1's own output is ax(179), dz(182), mult1(191), az(185), dx(188), mult2(193) - az precedes dx before sched2 runs - and the only RANKDBG line for the pair is 'last=193 y=188 cls=3 x=185 cls2=3 val=0', an exact class tie falling through to LUID. The s12 attribution is corrected in candidate.c's header and in evidence.md
+- verdict: CONFIRMED
+
+## [s14] Naming or hoisting the kp/kc difference subexpressions (px - x0, pz - z0) changes block 7's local-alloc birth/death arithmetic on the target declaration order
+- mechanism: the intent was to shorten dx's live range relative to dz's by making kp's two mults adjacent (pz0 hoisted out) or by adding one RTL insn between dz's and dx's definitions (px0 or pz0 declared between them), so that qty_compare_1's floor_log2(refs)*refs*size/(death-birth) favours dx and seats it first into $v1
+- probe: six bodies in tmp/grind/func_8002D780/s14/w2 (pz0 named; px0+pz0 named; px0 between dz and dx; pz0 between dz and dx; pz0 in a nested brace after kc; both kp differences named) plus the un-hoisted control, scored via sweep.ps1, with BB2_QTY_DEBUG dumps for two of them in tmp/grind/func_8002D780/s14/w_w2b and w_w2c
+- result: all six 9/202 against a 9/202 control, and the dumped block-7 quadruples are identical in all three dumped bodies (dz birth 4 death 16 refs 3; dx birth 8 death 20 refs 3) - sched1 sinks each difference back to just before its consuming mult, so the C placement never reaches local-alloc
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e3895bb7 (-mel -msoft-float), the target-declaration-order (ax,dz,dx,az) block-7 chassis spliced into src/code6cac_b.c, one FAKE construct present (the m same-value re-store in the sqrt block, three blocks away)
+
+## [s14] Declaring dx third and az fourth - the target's own emission order - seats dx before dz in local-alloc on this chassis
+- mechanism: with az no longer sitting between dz's and dx's definitions the two quantities have identical refs (3), size (1) and span (12 units), qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1708-1719) has no tie-break of its own and returns 0, and qsort leaves them in quantity-number order, which favours dz because its definition insn comes first in the block
+- probe: the ax,dz,dx,az body spliced into src/code6cac_b.c and scored, with its block-7 QTYDBG table read from tmp/grind/func_8002D780/s14/w_n6/stderr_full.txt
+- result: 9/202; dz reg130 birth 4 death 16 refs 3 pri 2500 got $v1, dx reg131 birth 8 death 20 refs 3 pri 2500 got $a0 - the reverse of the target's $a0/$v1. Re-measured on the current chassis per the flat-floor kill re-audit; agrees with the s12 finding and now carries the arithmetic
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD e3895bb7 (-mel -msoft-float), the ax,dz,dx,az body spliced into src/code6cac_b.c, one FAKE construct present (the m same-value re-store)

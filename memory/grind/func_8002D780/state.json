@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 13,
- "current_modality": "escalation",
+ "session_count": 14,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -81,13 +81,29 @@
    "floor": 2,
    "modality": "escalation",
    "headline": "Disposition RE-FILED under a heading the driver's owner-gated check can see (OWNER-ESCALATION token + func name on one line); floor re-measured 2/202, both endgame gates re-run and FAIL, FAKE ablation"
+  },
+  {
+   "session": 14,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Sibling transplant executed and the residual re-attributed from sched2 to source order: sched1 already emits az before dx and rank_for_schedule falls through to INSN_LUID, so block 7's emission order "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "sched2 can be made to emit dx before az without moving dx's birth earlier, closing the last two instructions.",
-   "mechanism": "rank_for_schedule ties on INSN_PRIORITY and dependence class and falls through to INSN_LUID (sched.c:2464); the LUID fix is self-cancelling against the local-alloc span that buys the register seats (s12 d5 = 9). A fix needs an asymmetry in the first two comparisons or a post-reload hard-register dependence blocking az until after dx - no ordinary-C spelling for either has been found in 14 sessions.",
-   "next_probe": "Only re-openable under re-activation trigger (1) or (2) in the filed entry: a class grant covering an insn-positioning construct, or a toolchain change to rank_for_schedule's tie-break inputs (CC_FLAGS of the -mel / -msoft-float class, or a maspsx/ASPSX fidelity gate altering pre-reload insn counts in block 7). Either voids every chassis-relative kill here and the ledger's re-measurement discipline re-opens the function."
+   "hypothesis": "dx's block-7 quantity can be given a hard-register suggestion, which routes it through the suggestion list that local_alloc allocates BEFORE the plain priority list, seating it into $v1 ahead of dz regardless of the span tie.",
+   "mechanism": "local-alloc sorts suggested quantities with qty_sugg_compare_1 and allocates them first; qty_phys_num_sugg / qty_phys_num_copy_sugg are set by combine_regs when an insn copies the pseudo to or from a hard register or when input and output must share one. Every block-7 quantity in every body dumped so far has zero suggestions, which is why qty_compare_1's arithmetic has been the whole story - a body in which dx's value is also the source or destination of a hard-register copy would change the allocator's entry point, not its arithmetic.",
+   "next_probe": "Read block_alloc's combine_regs call sites (tools/gcc-2.7.2/local-alloc.c) to enumerate which RTL shapes set a suggestion, then test the ordinary-C spellings that produce them here (returning the dx-bearing expression through the function's own return value path, or letting dx feed the argument set-up of the func_8002D518 calls further down) and re-dump the block-7 QTYDBG table to check for a non-zero sugg column."
+  },
+  {
+   "hypothesis": "A test-1/test-2 respelling changes block 7's quantity NUMBERING without changing its insn order, flipping the qty_compare_1 tie toward dx on the target declaration order.",
+   "mechanism": "on an exact tie the seat is decided by array order, i.e. by the order in which block_alloc creates the quantities. Every body measured so far creates dz's quantity before dx's because dz's definition insn is first. Quantities can also be created by combine_regs merging a pseudo with an earlier one, which would give dx a lower quantity number without moving its definition; the earlier tests feed block 7's entry live set and their spelling has never been swept for that effect.",
+   "next_probe": "Cross the full-sibling-chassis body (tmp/grind/func_8002D780/s14/v2/e_full_sibling_chassis.c, already 2/202, tests 1 and 2 in the sibling's named-dz/dx form) with the ax,dz,dx,az test-3 order, and dump the block-7 QTYDBG table for each to see whether any of them renumbers the dz/dx quantities."
+  },
+  {
+   "hypothesis": "Giving dx a fourth RTL reference lifts it over dz outright, since floor_log2(refs) steps from 1 to 2 at refs=4 and the priority jumps from 3*10000/span to 8*10000/span.",
+   "mechanism": "qty_compare_1's numerator is floor_log2(refs)*refs*size; dx currently has exactly 3 references (its definition plus the kc and kp products) and so does dz, which is why the spans decide. A fourth reference to dx's pseudo would win the seat from ANY declaration order, including the target's - but no ordinary-C spelling of this predicate has a fourth use of (x2 - x0), so the only known constructs that add one are the combine-foldable chain-extender shapes.",
+   "next_probe": "Before spending any FAKE-family reach, exhaust the ordinary-C side: check the .combine dump for whether either kc's or kp's dx product could legitimately be written through a shared subexpression that survives as a second reference, and if nothing ordinary exists, file a ruling-request naming the F1 chain-extender family rather than submitting a body that uses it."
   }
  ],
  "judge_constraints": [],
@@ -500,6 +516,22 @@
    "measured_on": "HEAD 551f3dae (-mel -msoft-float), candidate.c chassis spliced into src/code6cac_b.c, one FAKE construct present (the same-value re-store of the local `m`, ablation-confirmed load-bearing this session",
    "predicate_cite": "",
    "result": "3/202, a regression from the 2/202 control. The first mult's operand order is itself a matched byte, so the swap costs a"
+  },
+  {
+   "session": 14,
+   "statement": "Naming or hoisting the kp/kc difference subexpressions (px - x0, pz - z0) changes block 7's local-alloc birth/death arithmetic on the target declaration order",
+   "kill_scope": "instance",
+   "measured_on": "HEAD e3895bb7 (-mel -msoft-float), the target-declaration-order (ax,dz,dx,az) block-7 chassis spliced into src/code6cac_b.c, one FAKE construct present (the m same-value re-store in the sqrt block, th",
+   "predicate_cite": "",
+   "result": "all six 9/202 against a 9/202 control, and the dumped block-7 quadruples are identical in all three dumped bodies (dz bi"
+  },
+  {
+   "session": 14,
+   "statement": "Declaring dx third and az fourth - the target's own emission order - seats dx before dz in local-alloc on this chassis",
+   "kill_scope": "instance",
+   "measured_on": "HEAD e3895bb7 (-mel -msoft-float), the ax,dz,dx,az body spliced into src/code6cac_b.c, one FAKE construct present (the m same-value re-store)",
+   "predicate_cite": "",
+   "result": "9/202; dz reg130 birth 4 death 16 refs 3 pri 2500 got $v1, dx reg131 birth 8 death 20 refs 3 pri 2500 got $a0 - the reve"
   }
  ],
  "ladder_skip": 0,
@@ -524,7 +556,7 @@
    "session": 12,
    "at": "2026-09-08T18:29:16.501710+00:00",
    "headline": "func_8002E6B0 COMPLETED-C",
-   "consumed": null
+   "consumed": 14
   }
  ],
  "exhaustion_base": 13,

@@ -1895,3 +1895,4 @@
 - 2026-09-08 13:29 func_8002E6B0 COMPLETED-C after 12 sessions (closer: s12 [rederive]).
 - 2026-09-08 13:29 func_8002E6B0 completed — ROTATED SIBLING func_8002D780 (floor 2, src/code6cac_b.c) ΓÇö func_8002E6B0 just reached floor 0; its body on main is an unspent transplant. The driver's `queue auto-return` brings it back on this sibling notice.
 - 2026-09-08 13:29 func_8002D780 AUTO-RETURNED to active — auto-return: coupled sibling moved after rotation — func_8002E6B0 -> floor 0 (2026-09-08T18:29)
+- 2026-09-08 14:04 func_8002D780 s14 [rederive] floor=2: Sibling transplant executed and the residual re-attributed from sched2 to source order: sched1 already emits az before dx and rank_for_schedule falls through to INSN_LUID, so block 7's emission order IS the declaration order - and that same declaration order is what breaks the dz/dx local-alloc span tie, with six hoisting spellings measured inert because sched1 sinks every difference back to its consuming mult.
