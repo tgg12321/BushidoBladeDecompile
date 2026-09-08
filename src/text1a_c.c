@@ -4,6 +4,7 @@
 #include "sound.h"
 #include "game.h"
 #include "code6cac.h"
+#include "gte.h"
 
 
 
@@ -45,7 +46,7 @@ extern void SetDrawMove(s32, s16 *, s32, s32);
 
 extern s32 func_800486FC(s32 *);
 extern s32 g_anim_func_table[];
-extern s16 D_800F62E0;
+extern u8 D_800F62E0[8][0x60];
 
 void func_80042504(s32 *hsv, s32 *rgb) {
     s32 h = hsv[0];
@@ -507,14 +508,38 @@ void func_80042FA0(s32 *a0, s16 *a1) {
     }
 }
 
-typedef struct { s32 f0, f1, f2, f3, f4, f5, f6, f7; } StructCopy32_800430E4;
 extern void func_8004DDB4(s32, s32, s32, s32);
-extern s32 D_800FF610;
+extern MATRIX D_800FF610;
 extern s32 D_800951D8;
 extern s32 D_80095280;
 extern s32 D_80095328;
 extern s32 D_800A3828;
-INCLUDE_ASM("asm/funcs", func_800430E4);
+void func_800430E4(s32 arg0, s32 arg1, s16 arg2, u8 *arg3) {
+    MATRIX *dst = (MATRIX *)0x1F8003A0;
+    s32 t0;
+
+    t0 = *(s32 *)0x1F800008;
+    *(s32 *)0x1F800008 = 3 - t0;
+
+    *dst = D_800FF610;
+
+    D_800A3828 = (s32)D_800F62E0[arg2];
+
+    dst->m[1][0] >>= 1;
+    dst->m[1][1] >>= 1;
+    dst->m[1][2] >>= 1;
+    dst->t[1] >>= 1;
+
+    if (arg3[1] & 1) {
+        *(s32 *)0x1F80001C = (s32)&D_80095280;
+    } else {
+        *(s32 *)0x1F80001C = (s32)&D_800951D8;
+    }
+
+    func_8004DDB4(arg0, arg1, (s32)dst, t0);
+
+    *(s32 *)0x1F80001C = (s32)&D_80095328;
+}
 
 s32 func_80043244(s32 a0) {
     s32 ret;
@@ -1040,13 +1065,12 @@ extern s32 D_800A3678;
 extern s32 D_80101BD0;
 extern s32 D_800A3708;
 extern s32 D_800A370C;
-extern s32 D_800FF610;
 extern s16 D_80095328;
 extern s32 D_80102C00;
 extern void func_80042874(s32 *, s32 *);
 extern void MulMatrix(s32 *, s32 *);
 extern void MulMatrix2(s32 *, s32 *);
-extern void MulMatrix0(s32 *, s32 *, s32 *);
+extern void MulMatrix0(MATRIX *, MATRIX *, MATRIX *);
 extern void camera_InitMatrix(void);
 extern s32 func_8003E2C8(void);
 extern s32 game_GetPlayerCount(void);
@@ -1058,7 +1082,7 @@ void func_80044504(s32 a0) {
     func_80042874(&D_800A3678, s0);
     MulMatrix(s0, (s32 *)(D_800A3708 + 0x18));
     MulMatrix2((s32 *)(D_800A370C + 0x18), s0);
-    MulMatrix0((s32 *)(D_800A370C + 0x18), (s32 *)(D_800A3708 + 0x18), &D_800FF610);
+    MulMatrix0((MATRIX *)(D_800A370C + 0x18), (MATRIX *)(D_800A3708 + 0x18), &D_800FF610);
     if (D_800A36AC & 1) {
         *(s32 *)0x1F800014 = -1;
     } else {
