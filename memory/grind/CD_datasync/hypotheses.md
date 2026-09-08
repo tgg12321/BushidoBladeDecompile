@@ -4770,3 +4770,70 @@ Returned to active under Ruling A; executes via the Ruling D CD_intr aggregate-m
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: the s60 CD_ready-transplant chassis, do{}while(0) wrap FAKE and pp pointer-alias FAKE present
+
+## s61 (rederive) - hypotheses
+
+- H1 (KILLED, instance): a chain-A carrier whose second real set is the tail DMA-control read frees the -1/0 flag back to $v0 and closes the function. Probe: `volatile u32 *dma` staged in the window and re-set in the tail (`dma = D_800A14C0; if (*dma & 0x1000000)`). Result: 3 - window AND flag byte-exact for the first time, but the carrier's tail range takes $a0 where the target has $v0 (3 insns). Measured on the s60 CD_ready-transplant chassis with the do-while(0) wrap FAKE and the pp pointer-alias FAKE present.
+- H2 (KILLED, instance): a second set placed in the SAME block (before the wrap, or as the printf/puts string pointer, or as a base/index split across the wrap) keeps the pseudo local while still defeating the sched boost. Probe: five spellings (puts-pointer 8, format-pointer 11, base-before-wrap 8/8/8). Result: cse folds every constant or copy set, reg_n_sets returns to 1 and the boosted (seat-swapped) window comes back.
+- H3 (KILLED, instance): the multi-set carrier can sit on chain B - whose target seat $v0 matches the tail DMA pointer's seat - leaving chain A single-set. Probe: volatile and plain-u32* carriers, both with a fresh single-set chain-A pointer. Result: 8 / 8 on the s60 transplant chassis; chain A must itself be the multi-set pseudo.
+- H4 (KILLED, instance): one shared pointer variable used for both chains (the symmetric spelling the Sony source most plausibly had) defeats the boost on both addus at no seat cost. Probe: chain-B-first 12, chain-A-first 8, plus a third tail set 12, on the s60 transplant chassis.
+- H5 (KILLED, instance): the carrier's tail range can be split off with a copy so the two live ranges get different hard registers. Probe: `dma = D_800A14C0; q = dma; if (*q & 0x1000000)` - 3, byte-identical to the direct spelling; the allocator coalesces the copy.
+- H6 (KILLED, instance): merging the carrier with the tail STATUS WORD (or the masked flag) instead of the pointer is cheaper because the word's target seat is also $v0. Probe: word 3, mask 4. combine rewrites the carrier's tail set into the AND, so the three divergent insns just move (word to $v1, mask to $v0, AND dest to $a0).
+- H7 (KILLED, instance): the prologue VSync deadline staged through a local is a usable carrier. Probe: `dl = VSync(-1) + 0x3C0; D_800F19B8 = dl;` reused in the window - 6 on the s60 transplant chassis; the prologue range wants $v0 and pays two insns on top of the window's demand.
+- OPEN (s62 frontier): the target's chain-A address is in $a0 while every tail value is in $v0/$v1, so it cannot be a spanning multi-set pseudo; the single-set chassis fails by SEAT INVERSION (chain A $v1, arg5 value $v0) rather than by pure ordering. Classify that inversion with tools/ra_solver inverse_compose.py on rejected/s61-fresh-single-set-carrier-seat-swap-8.c and spell the returned C-lever vector.
+
+## [s61] A chain-A address carrier whose second real set is the tail DMA-control read (dma = D_800A14C0; if (*dma & 0x1000000)) frees the -1/0 flag back to $v0 and closes the function.
+- mechanism: sched.c:2505-2537 birthing_insn_p returns the priority boost only when reg_n_sets[dest]==1, and adjust_priority always reaches that arm because REG_DEAD notes are stripped (sched.c:2552). A second real set in the tail keeps chain A's addu unboosted, giving the target's window order, while the flag stays its own single-set pseudo.
+- probe: volatile u32 *dma staged in the window as chain A's address, re-set in the tail from D_800A14C0 and dereferenced for the 0x1000000 test; sandbox CD_datasync --disable all; objdump diff against asm/funcs/CD_datasync.s.
+- result: 3/91. The window (asm lines 45-63) and the flag block (68-72) are byte-exact for the first time - s60's flag residual is gone - but the carrier's tail live range takes $a0 where the target has $v0: ours lui a0 / lw a0,%lo(D_800A14C0)(a0) / lw v0,0(a0) vs target lui v0 / lw v0,%lo(...)(v0) / lw v0,0(v0). Banked at memory/grind/CD_datasync/progress/s61-dmaptr-carrier-window-and-flag-byte-exact-3.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis at 3, with the do-while(0) wrap FAKE and the pp = &D_800F19C0 pointer-alias FAKE present
+
+## [s61] A second set placed in the SAME block as chain A - the puts() message pointer, the printf format-string pointer, or a base-before-the-wrap plus index-inside split - defeats the scheduler boost while keeping the carrier a block-local quantity.
+- mechanism: reg_n_sets is counted at flow time, so any set surviving cse would suffice; the do-while(0) loop note was expected to keep cse from folding a set placed on the other side of it.
+- probe: Five spellings measured on the s60 transplant chassis: carrier reused as the puts() argument; as the printf format pointer; pA = tbl_125c before the wrap with pA = &pA[t0] inside; the integer spelling of the same split; the s32 spelling.
+- result: 8, 11, 8, 8, 8. cse folds every constant or copy set, including across the loop note, so reg_n_sets returns to 1 and the boosted (seat-swapped) window comes back. The loop note is a scheduler barrier only.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present
+
+## [s61] The multi-set carrier can sit on chain B - whose target seat $v0 equals the tail DMA pointer's target seat - leaving chain A single-set, so the merged quantity is right in both of its ranges.
+- mechanism: If either chain's addu going unboosted were enough for the window order, putting the multi-set-ness where the seats agree would cost nothing.
+- probe: pB declared at function scope as the chain-B address and re-set in the tail from D_800A14C0 (volatile and plain u32* spellings), with a fresh single-set pointer for chain A.
+- result: 8 and 8. The order is lost outright: chain A itself must be the multi-set pseudo.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present
+
+## [s61] One shared pointer variable used once per chain - the symmetric spelling the Sony libcd source most plausibly had - defeats the boost on both address insns at no seat cost.
+- mechanism: Two real sets of one pseudo make reg_n_sets 2 for both chain addresses, so neither addu is boosted and the emission order should follow RTL order.
+- probe: p = &tbl_125c[tb]; arg5 = *p; p = &tbl_125c[t0]; arg4 = *p (chain-B first), the chain-A-first ordering, and a variant adding a third tail set.
+- result: 12, 8, 12. One pseudo cannot hold both chains: the target seats chain B in $v0 and chain A in $a0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present
+
+## [s61] The carrier's two live ranges can be given different hard registers by copying it into a fresh local at the tail use site.
+- mechanism: A copy insn between the two ranges would let the allocator seat the window range in $a0 and the tail range in $v0.
+- probe: dma = D_800A14C0; q = dma; if (*q & 0x1000000) on the DMA-pointer carrier form.
+- result: 3, byte-identical to the direct spelling - the allocator coalesces the copy and both ranges keep one register.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis at 3, wrap FAKE and pp pointer-alias FAKE present
+
+## [s61] Merging the carrier with the tail STATUS WORD or with the masked flag, instead of with the DMA pointer, is cheaper because those values also sit in $v0 in the target.
+- mechanism: Choosing the tail value whose target seat matches the window's demand would leave nothing to pay for.
+- probe: st = *D_800A14C0; if (st & 0x1000000) with st carrying chain A's address in the window; and the masked variant st = *D_800A14C0 & 0x1000000.
+- result: 3 and 4. combine rewrites the carrier's tail set into the AND, so the three divergent insns just move: word to $v1, mask to $v0, AND dest to $a0.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present
+
+## [s61] The prologue VSync deadline staged through a local (dl = VSync(-1) + 0x3C0; D_800F19B8 = dl;) is a usable multi-set carrier for chain A.
+- mechanism: It is a real, non-foldable set in a different block, so it survives cse and kills the boost.
+- probe: dl declared at function scope, set in the prologue and re-set in the window as chain A's address.
+- result: 6 - the prologue range wants $v0 and pays two insns on top of the window's demand.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present

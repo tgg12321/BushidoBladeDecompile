@@ -1,3 +1,10 @@
+/* s61 NOTE (rederive): this file is UNCHANGED and still scores 2 (the order-lost
+ * two-step form).  The informative body of s61 is
+ * progress/s61-dmaptr-carrier-window-and-flag-byte-exact-3.c - score 3, with the
+ * do_timeout window AND the flag block byte-exact and the whole residual moved
+ * into three tail instructions.  Read that header and the s61 block of
+ * evidence.md before starting from anything here.
+ */
 /* CD_datasync - SESSION 60 (rederive, forced by the CD_ready sibling trigger).
  * SCORE OF THIS BODY: 2 / 91 (ties the 59-session floor) - but the session's
  * REAL result is a new chassis, and the next session should probably start

@@ -1,7 +1,7 @@
 {
  "func": "saEft01Init",
  "file": "system",
- "session_count": 60,
+ "session_count": 61,
  "current_modality": "rederive",
  "floor_history": [
   {
@@ -363,23 +363,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "CD_ready sibling transplant makes CD_datasync's do_timeout window BYTE-EXACT (all 15 insns incl. seats) - the 59-session order residual is retired; the remaining residual is 3 insns, one pseudo's hard"
+  },
+  {
+   "session": 61,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Chain-A carrier moved off the -1/0 flag onto the tail DMA-control pointer: the do_timeout window AND the flag block are now both byte-exact (score 3), and the complete carrier price list proves the ta"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The chain-A address carrier and the -1/0 flag can be separated if the function has (or the original source had) a statement AFTER the timeout window that gives the carrier a genuine second set - which is exactly what CD_ready has (its carrier `src` is the byte-copy loop's source pointer).",
-   "mechanism": "The order needs a pseudo that is multi-set with a set outside the window; the seat needs that pseudo's other uses to tolerate $a0. CD_ready satisfies both because its carrier's other uses are in a later copy loop whose pointer is naturally call-clobbered. CD_datasync's tail has no such statement, so every available multi-set pseudo (v0, cnt) has uses that want a different seat.",
-   "next_probe": "Re-examine CD_datasync's tail control flow against the target: does the target's tail (bnez v0 / lw D_800A14C0 / and 0x1000000 / beqz s2 loop) imply a local we are not modelling - e.g. the DMA-control read staged through a pointer that is also the timeout window's chain-A carrier? Start from memory/grind/CD_datasync/progress/s60-cdready-transplant-v0-carrier-window-byte-exact-3.c and vary ONLY the tail, keeping the window frozen."
+   "hypothesis": "The target's window order comes from local-alloc seat assignment, not from the scheduler boost: on the single-set chassis chain A and the arg5 value are seated exactly inverse to the target.",
+   "mechanism": "With a single-set carrier the emitted window keeps the target's shape but swaps $v1 and $v0/$a0 between the chain-A address and the chain-B value; that is qty_compare priority ordering in local-alloc.c, which tools/ra_solver models order- and clock-exactly.",
+   "next_probe": "Run tools/ra_solver inverse_compose.py classify on memory/grind/CD_datasync/rejected/s61-fresh-single-set-carrier-seat-swap-8.c asking for chain A in $a0 and the arg5 value in $v1, and spell the returned C-lever vector."
   },
   {
-   "hypothesis": "The cnt-carrier form (4) may be cheaper to fix than the v0-carrier form (3), because its 4 divergent insns are all in the poll-counter block where the target simply holds cnt in $v1.",
-   "mechanism": "In the cnt-carrier form the window AND the whole tail are byte-exact; only lui/lw/addiu/slt in the counter block use $a0 where the target uses $v1. That is a single quantity's seat in a block with no call and only three live values, which the ra_solver's local-alloc model covers directly.",
-   "next_probe": "Run tools/ra_solver inverse_compose.py classify on the cnt quantity of rejected/s60-cnt-carrier-cnt-block-seat-a0-4.c asking for $v1, and spell the returned C-lever vector; the block is small enough that the solver's verdict should be decisive rather than heuristic."
+   "hypothesis": "A second SET that survives to flow but emits no bytes (a copy the allocator coalesces inside the SAME block) would kill the boost without creating a spanning quantity.",
+   "mechanism": "birthing_insn_p reads reg_n_sets at flow time; a copy insn that reload later coalesces still counts as a set. The s61 copy test only proved coalescing across blocks; an in-block copy chain from a value that cse cannot fold (a memory load) has not been tried.",
+   "next_probe": "Inside the wrap, set the chain-A carrier first from a real load (for example pA = pB;) and then to chain A's address, so both sets are non-constant and in-block; measure against the 3-scoring DMA-pointer form."
   },
   {
-   "hypothesis": "The CD_ready transplant should be propagated to CD_sync (cpu_side_move_dir_4) immediately - it is the third twin of the same libcd do_timeout window, has been at floor 2 for 125 sessions, and its ledger has never seen CD_ready's matched spelling either.",
-   "mechanism": "All three twins share a byte-shape-identical window; CD_ready matched it, CD_datasync's window is now byte-exact under the same transplant, so CD_sync's 2-point residual is very likely the same order artefact with the same fix.",
-   "next_probe": "Outside this function's scope, but the driver should force a rederive on CD_sync with the same directive: transplant CD_ready's on-main window spelling (puts and the chain-A raw read outside the wrap, chain B before chain A) and census the multi-set carriers."
+   "hypothesis": "CD_sync (cpu_side_move_dir_4), the third twin, has never seen either the CD_ready transplant or the s61 carrier census.",
+   "mechanism": "All three twins share a byte-shape-identical do_timeout window; CD_ready matched it and CD_datasync's window plus flag block are now byte-exact under the same transplant with a multi-set carrier.",
+   "next_probe": "Outside this function's scope: the driver should force a rederive on CD_sync transplanting CD_ready's on-main window spelling and censusing its multi-set carriers, exactly as s60/s61 did here."
   }
  ],
  "judge_constraints": [],
@@ -389,62 +395,6 @@
  "last_unpark_reason": "Sibling trigger FIRED (same as CD_sync). CD_ready COMPLETED-C 2026-09-06 at floor 0 (s88, Judge PASS) on the shared do_timeout printf window; nothing propagated it because the merge path deleted the ledger (fixed 2026-09-07, commit 0ddc72c8). This ledger's candidate already carries *pp; UNSPENT is the rest of CD_ready's on-main spelling in src/system.c \u2014 the do-while(0) wrap placement, the tb/pB/a",
  "last_unpark_at": "2026-09-07T19:28:06.615222+00:00",
  "kills": [
-  {
-   "session": 42,
-   "statement": "Hoisting arg2 (D_800F19C0) into a named value local advances its lui/lw pair into target's slots 43/44 on the new m011 chassis, where arg4's chain currently occupies them.",
-   "kill_scope": "instance",
-   "measured_on": "m011 chassis (arg4 and arg5 value locals after puts) with the do{}while(0) FAKE present; 38 whole-function compiles",
-   "predicate_cite": "",
-   "result": "A `void *arg2 = D_800F19C0;` local in any of the three assignment positions is byte-identical to leaving arg2 inline (p2"
-  },
-  {
-   "session": 42,
-   "statement": "Type narrowing - the declared types of the argument locals, the index locals and the hoisted table pointers - is a live structural lever on this window.",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis and m011 chassis, do{}while(0) FAKE present in both; 10 whole-function compiles grouped by md5",
-   "predicate_cite": "",
-   "result": "All seven m011-derived variants are byte-identical to m011 (single md5 1bb8643812d2793ab8a96cf8241c5f86) and all three c"
-  },
-  {
-   "session": 43,
-   "statement": "The s42 kill 'hoisting arg2 (D_800F19C0) into a value local is byte-inert on the m011 chassis' was measured with the do{}while(0) FAKE present, so it must be re-measured with the FAKE ablated before i",
-   "kill_scope": "instance",
-   "measured_on": "m011 chassis (goto loop, arg4+arg5 value locals after puts) measured BOTH with the do{}while(0) FAKE present and with it ablated to a plain brace block; 4 whole-function compiles, md5-classified",
-   "predicate_cite": "",
-   "result": "The kill survives ablation. WITH the FAKE, hoisted == inline byte-for-byte (md5 1bb8643812d2793ab8a96cf8241c5f86, lev 7)"
-  },
-  {
-   "session": 43,
-   "statement": "arg2's emission slot is set by its dependence-chain LENGTH and memory-dependence rather than by its spelling, so an arg2 expression of different chain length advances its lui into target's slot 43 (th",
-   "kill_scope": "instance",
-   "measured_on": "m011 chassis with the do{}while(0) FAKE present; 8 whole-function compiles plus s21 cmp.py window alignments for the baseline and the shortened-chain form",
-   "predicate_cite": "",
-   "result": "*(&D_800F19C0) is byte-identical to m011 (7). The shortened, memory-dependence-free chain (&D_800162C0) scores 9 and its"
-  },
-  {
-   "session": 43,
-   "statement": "Naming the two subscripts as index locals (i4 = idx_1494[0]; i5 = idx_1494[1];) decouples the leaf lbu emission order from the value-assignment order, so the leaf order can be set idx0-first while the",
-   "kill_scope": "instance",
-   "measured_on": "HEAD chassis (goto loop, do{}while(0) FAKE present), 57 whole-function compiles md5-classified against candidate.c and alt_m011",
-   "predicate_cite": "",
-   "result": "Sixteen of the source forms collapse to exactly TWO emitted functions. The eight cells with arg4-local + arg5-local (c00"
-  },
-  {
-   "session": 43,
-   "statement": "Some spelling of arg3, of the format pointer, or of the value locals' declaration SCOPE moves the m011 window without paying arg3's register-pressure cost.",
-   "kill_scope": "instance",
-   "measured_on": "m011 chassis with the do{}while(0) FAKE present; 13 whole-function compiles, md5-classified",
-   "predicate_cite": "",
-   "result": "Eight of the thirteen are byte-identical to alt_m011 (one md5): the pointer-dereference arg3, the arg3 index local assig"
-  },
-  {
-   "session": 44,
-   "statement": "A fourth hoisted base or index pointer consumed by arg4 or by arg5 (never by arg3) supplies the fourth live scratch value target's window needs without paying arg3's leaf-pair displacement (s43 fronti",
-   "kill_scope": "instance",
-   "measured_on": "m011 chassis (goto loop, arg4+arg5 value locals) and m010/candidate.c chassis, do{}while(0) FAKE present in both; 6 whole-function compiles",
-   "predicate_cite": "",
-   "result": "Every variant grows the function from n=82 to n=85 (n=88 for both at once) and scores 18-22 against the 7 floor. The mec"
-  },
   {
    "session": 44,
    "statement": "Keeping a loop value (the VSync deadline, the DMA register pointer) live across the do_timeout block via the surrounding control flow raises window pressure without a new in-block declaration (s43 fro",
@@ -868,6 +818,62 @@
    "measured_on": "the s60 CD_ready-transplant chassis, do{}while(0) wrap FAKE and pp pointer-alias FAKE present",
    "predicate_cite": "",
    "result": "Scores as stated; only v0 (3) and cnt (4) reach the byte-exact window at all, and both pay in their own block. Banked as"
+  },
+  {
+   "session": 61,
+   "statement": "A chain-A address carrier whose second real set is the tail DMA-control read (dma = D_800A14C0; if (*dma & 0x1000000)) frees the -1/0 flag back to $v0 and closes the function.",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis at 3, with the do-while(0) wrap FAKE and the pp = &D_800F19C0 pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "3/91. The window (asm lines 45-63) and the flag block (68-72) are byte-exact for the first time - s60's flag residual is"
+  },
+  {
+   "session": 61,
+   "statement": "A second set placed in the SAME block as chain A - the puts() message pointer, the printf format-string pointer, or a base-before-the-wrap plus index-inside split - defeats the scheduler boost while k",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "8, 11, 8, 8, 8. cse folds every constant or copy set, including across the loop note, so reg_n_sets returns to 1 and the"
+  },
+  {
+   "session": 61,
+   "statement": "The multi-set carrier can sit on chain B - whose target seat $v0 equals the tail DMA pointer's target seat - leaving chain A single-set, so the merged quantity is right in both of its ranges.",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "8 and 8. The order is lost outright: chain A itself must be the multi-set pseudo."
+  },
+  {
+   "session": 61,
+   "statement": "One shared pointer variable used once per chain - the symmetric spelling the Sony libcd source most plausibly had - defeats the boost on both address insns at no seat cost.",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "12, 8, 12. One pseudo cannot hold both chains: the target seats chain B in $v0 and chain A in $a0."
+  },
+  {
+   "session": 61,
+   "statement": "The carrier's two live ranges can be given different hard registers by copying it into a fresh local at the tail use site.",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis at 3, wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "3, byte-identical to the direct spelling - the allocator coalesces the copy and both ranges keep one register."
+  },
+  {
+   "session": 61,
+   "statement": "Merging the carrier with the tail STATUS WORD or with the masked flag, instead of with the DMA pointer, is cheaper because those values also sit in $v0 in the target.",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "3 and 4. combine rewrites the carrier's tail set into the AND, so the three divergent insns just move: word to $v1, mask"
+  },
+  {
+   "session": 61,
+   "statement": "The prologue VSync deadline staged through a local (dl = VSync(-1) + 0x3C0; D_800F19B8 = dl;) is a usable multi-set carrier for chain A.",
+   "kill_scope": "instance",
+   "measured_on": "the s60 CD_ready-transplant chassis, wrap FAKE and pp pointer-alias FAKE present",
+   "predicate_cite": "",
+   "result": "6 - the prologue range wants $v0 and pays two insns on top of the window's demand."
   }
  ],
  "object_model_audited": 58,
