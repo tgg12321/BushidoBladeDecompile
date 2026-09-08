@@ -371,3 +371,71 @@ F3 (fallback for F1): the two-pass reorg route - if the loop-top peel can be
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, p21 body at 21 and r2b body at 20
+
+## [s4] Moving the inner loop's accumulator initialisations into the for-init comma expression, with acc = 0 after inner = 0, drops the floor by one
+- mechanism: the for-init clause is expanded as part of the loop's preheader rather than as ordinary outer-body statements, which moves the emission position of `move acc,zero` past the inner-loop counter's initialisation and into the neighbourhood the target puts it in (target insns 32/33/34 = `move inner,zero` / `sll base,outer,5` / `move acc,zero`)
+- probe: 9 hand variants a1..a9 crossing which of {acc = 0, next = step} sits in the for-init and in what order relative to inner = 0; each spliced over the INCLUDE_ASM line in a pristine src/main.c and measured with sandbox --disable all
+- result: a1 (inner, acc, next) 19, a3 (inner, next, acc) 19, a4 (next outside; inner, acc) 19, a8 (next, inner, acc) 19; a2/a6 (acc first) 20, a5 (acc outside the init clause) 20, a7/a9 (acc before inner) 20. All 74 insns. New floor 19; a1 is the candidate.
+- verdict: CONFIRMED
+
+## [s4] The decomp-permuter's weighted score tracks the engine's honest sandbox distance on this function's residual
+- mechanism: both metrics diff the same two instruction streams, so a lower permuter score (regs x5 + reorderings x60) was expected to imply a lower masked differing-instruction count
+- probe: campaign 1 on the s3 chassis (tmp/perm_p2n, 37,051 iterations, 103 finds, permuter scores 230..580); 38 finds spliced back into src/main.c and measured individually with sandbox --disable all
+- result: no monotone relation. permuter 230 -> sandbox 20; permuter 480 -> sandbox 60; permuter 485 -> sandbox 20; permuter 565 -> sandbox 19 (the two best sandbox results in the whole campaign); permuter 580 (the base) -> sandbox 20. The campaign's own best find is no better than the base on the metric that counts.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, r2b body at floor 20, tmp/perm_p2n campaign 1 (37,051 iters)
+
+## [s4] Naming the LICM-hoisted inner-loop base (base = outer << 5) lets C control whether the sll is emitted before or after move acc,zero
+- mechanism: the target emits `sll base,outer,5` at insn 33 and `move acc,zero` at 34 while we emit them in the opposite order; naming the value makes it an ordinary statement whose position the source can set, instead of a loop.c hoist placed by the preheader builder
+- probe: c1 (for-init: inner, base, acc, next), c2 (next outside; for-init: inner, base, acc), c3 (base as a statement before the for), c4 (for-init: inner, base, next, acc), c5 (for-init: base, inner, acc, next), each with `result = base + inner;`
+- result: c1/c2/c4 = 19 with the identical stream to a1 (byte-neutral); c3/c5 = 20. The sll/move pair never flips - the hoisted sll is placed by the preheader builder regardless of where the named statement sits.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, a1 body at floor 19
+
+## [s4] The pre-loop statement order changed again now that the inner loop's init clause moved
+- mechanism: first-definition order sets pseudo numbers, which are global.c's allocno tie-break and sched1's LUID tie-break, so every loop-shape change invalidates the previous sweep (s2 F3 / s3 frontier item 3)
+- probe: all 24 permutations of `target = pitch; scale = 1 << bit; curve = 0x1000; oct = bit - 12;` regenerated on the a1 base (s4 p00..p23) and measured with sandbox --disable all
+- result: range 19..23; p00 = `target; scale; curve; oct;` (the s2 p21 / s3 q00 order) is still the unique minimum at 19, next best 20. Third consecutive session the same order wins.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, a1 body at floor 19
+
+## [s4] Moving the inner loop's accumulator initialisations into the for-init comma expression, with acc = 0 placed after inner = 0, lowers the honest floor
+- mechanism: the for-init clause is expanded as part of the loop's preheader rather than as ordinary outer-loop-body statements, which moves the emission position of `move acc,zero` past the inner-loop counter's initialisation and into the neighbourhood the target puts it in (target insns 32/33/34 = `move inner,zero` / `sll base,outer,5` / `move acc,zero`)
+- probe: nine hand variants a1..a9 crossing which of {acc = 0, next = step} sits inside the inner for-init and in what order relative to inner = 0; each spliced over the INCLUDE_ASM line of a pristine src/main.c by tmp/grind/_spu_pitch2note/s3/apply.py and measured with `sandbox _spu_pitch2note --disable all`
+- result: a1 (inner, acc, next) 19, a3 (inner, next, acc) 19, a4 (next = step outside; for (inner = 0, acc = 0)) 19, a8 (next, inner, acc) 19; a2 and a6 (acc = 0 first in the clause) 20, a5 (acc = 0 left outside the clause) 20, a7 and a9 (acc = 0 before inner = 0) 20. All nine build 74 insns == 74 target insns. New floor 19; a1 is the candidate. The rule is that acc = 0 must be inside the for-init AND after inner = 0.
+- verdict: CONFIRMED
+
+## [s4] The decomp-permuter's weighted score tracks the engine's honest sandbox distance on this function's register-seat residual, so a campaign can be steered by its own gradient
+- mechanism: both metrics diff the same two instruction streams, so a lower permuter score (regs x5 + reorderings x60) was expected to imply a lower masked differing-instruction count
+- probe: campaign 1 on the s3 chassis (tmp/perm_p2n, 37,051 iterations, 1,105 s, 103 finds, permuter scores 230..580, base 580) plus campaign 2 on the new a1 chassis (tmp/perm_p2n2, 8,845 iterations, 35 finds, base 575); 64 finds in total spliced back into src/main.c and measured individually with `sandbox _spu_pitch2note --disable all`
+- result: no monotone relation in either campaign. Campaign 1: permuter 230 -> sandbox 20; permuter 480 -> sandbox 60; permuter 485 -> sandbox 20; permuter 565 -> sandbox 19 (the two best sandbox results in the whole campaign); permuter 580 (the base) -> sandbox 20. Campaign 2: permuter 380 -> sandbox 20 while permuter 575 -> sandbox 19. Neither campaign's own best find beat the base on the metric that counts. Full table in tmp/grind/_spu_pitch2note/s4/sandbox_measurements.txt.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, r2b body at floor 20 and a1 body at floor 19; campaigns tmp/perm_p2n (37,051 iters) and tmp/perm_p2n2 (8,845 iters)
+
+## [s4] Naming the LICM-hoisted inner-loop base (base = outer << 5) lets the C source decide whether the sll is emitted before or after move acc,zero
+- mechanism: the target emits `sll base,outer,5` at insn 33 and `move acc,zero` at 34 while we emit them in the opposite order; naming the value makes it an ordinary statement whose position the source can set, instead of a loop.c invariant hoisted by the preheader builder
+- probe: c1 (for-init: inner, base, acc, next), c2 (next = step outside; for-init: inner, base, acc), c3 (base as a plain statement before the for), c4 (for-init: inner, base, next, acc), c5 (for-init: base, inner, acc, next), each rewriting the hit block to `result = base + inner;`, measured with sandbox --disable all
+- result: c1, c2 and c4 measure 19 with the stream identical to a1 (byte-neutral); c3 and c5 measure 20. The sll/move pair never flips: the hoisted sll is placed by the preheader builder regardless of where the named statement sits in the source.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, a1 body at floor 19
+
+## [s4] The pre-loop statement order that was optimal on the s3 loop shape stops being optimal now that the inner loop's init clause has moved
+- mechanism: first-definition order sets pseudo numbers, which are global.c's allocno tie-break and sched1's LUID tie-break, so the ledger warns that every loop-shape change invalidates the previous sweep (s2 F3 / s3 frontier item 3)
+- probe: all 24 permutations of `target = pitch; scale = 1 << bit; curve = 0x1000; oct = bit - 12;` regenerated on the a1 base (s4 p00..p23) and measured with sandbox --disable all
+- result: range 19..23; p00 = `target; scale; curve; oct;` (the s2 p21 / s3 q00 order) is still the unique minimum at 19, next best 20. Third consecutive session in which the same order survives a loop-shape change.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, a1 body at floor 19
+
+## [s4] Putting the outer-loop or scan-loop initialisations into their own for-init comma expressions moves the andi/oct order inversion the way the accumulator move did
+- mechanism: the same preheader-expansion mechanism that paid off for the inner loop's acc = 0 should apply to `target = pitch` and `oct = bit - 12` at the outer loop and to `bit = 0` at the scan loop, and the target emits oct at insn 16 and the andi at 21 while we emit the andi at 16 and oct at 20
+- probe: e1 for (outer = 0, target = pitch; ...), e2 for (outer = 0, curve = 0x1000; ...), e3 for (outer = 0, oct = bit - 12; ...), e4 for (shift = 15, bit = 0; shift >= 0; shift--), e5 for (outer = 0, target = pitch, oct = bit - 12; ...), e6 for (target = pitch, outer = 0; ...), all on the a1 base
+- result: e3 is byte-neutral at 19; e1, e4, e5, e6 are 20; e2 is 30. All build 74 insns. The andi/oct inversion does not move - the outer-loop preheader is not the lever the inner-loop preheader was.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, a1 body at floor 19

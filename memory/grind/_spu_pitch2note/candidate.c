@@ -1,28 +1,45 @@
-/* CANDIDATE - _spu_pitch2note (src/main.c)  sandbox --disable all = 20  (s3, 2026-09-08)
+/* CANDIDATE - _spu_pitch2note (src/main.c)  sandbox --disable all = 19  (s4, 2026-09-08)
  * Pure C, no FAKE constructs, 74/74 insns.  The insn MULTISET matches the target;
- * the whole residual is a register-seat permutation plus two sched1 order
- * inversions (see below).
+ * the whole residual is a register-seat permutation plus three sched1 order
+ * inversions.
  *
- * s3 delta over the s2 body (21 -> 20), ONE change:
- *   the upper inner-loop bound is spelled as a SPLIT compound assignment
- *       hi = lower + next;
- *       hi >>= 12;
- *   while the lower bound stays folded (`lo = (lower + acc) >> 12;`).
- *   Splitting BOTH bounds (h4/e2/e3 forms) or only the LOWER one (r2a) measures
- *   21; splitting only the UPPER one is the unique -1.  Same
- *   split-compound-assignment family as the s2 sibling transplant
- *   (`curve *= 0x103B; curve >>= 12;` from the COMPLETED-C sibling _spu_2pitch).
+ * s4 delta over the s3 body (20 -> 19), ONE change: the inner loop's two
+ * accumulator initialisations move into the `for` init clause as a comma
+ * expression,
+ *     for (inner = 0, acc = 0, next = step; inner < 0x20; inner++)
+ * replacing the two separate statements
+ *     acc = 0;
+ *     next = step;
+ *     for (inner = 0; inner < 0x20; inner++)
+ * This is ordinary C (a comma expression in a for-init, the standard way to
+ * seed several loop-carried values).  The lever is discovered, not invented:
+ * the s4 permuter campaign on the s3 chassis produced two finds (output-565-1,
+ * output-565-7) that measured 19 by hoisting `acc = 0;` OUT of the outer loop
+ * -- a SEMANTIC BREAK, since acc must reset every outer iteration -- which
+ * showed that the emission POSITION of `move acc,zero` is worth one point.
+ * The hand sweep a1..a9 then found the legal spelling that reproduces the same
+ * position: `acc = 0` must sit inside the for-init AND after `inner = 0`.
+ *   19: a1 (inner, acc, next), a3 (inner, next, acc), a4 (next=step outside;
+ *       for (inner = 0, acc = 0)), a8 (next, inner, acc)
+ *   20: a2/a6 (acc first), a5 (acc left outside the for-init),
+ *       a7/a9 (acc before inner)
  *
- * The p21 pre-loop statement order (`target; scale; curve; oct;`) was re-swept
- * over all 24 permutations on THIS loop shape (s3 q00..q23, range 20..24) and is
- * still the unique minimum - q00 == p21 == the order below.
+ * The 24-permutation pre-loop statement-order sweep was re-run on THIS loop
+ * shape (s4 p00..p23, range 19..23): `target; scale; curve; oct;` is still the
+ * unique minimum, so the order below is unchanged from s2/s3.
  *
- * RESIDUAL (20) = the same 5-seat RA permutation as s2 plus two order inversions:
- *   pitch-copy $a3 vs $a0, shift $a0 vs $t2, lower $t3 vs $t4, acc $t2 vs $t3,
- *   outer $t4 vs $t2; the (andi target / move outer,zero) pair and the
- *   (addu lo / addu hi) pair are emitted in the opposite order.
- *   ra_solver s2 status: forward model EXACT (21/21), inverse.py depth-2
- *   NEGATIVE for the 6-seat goal and for the single flip shift $v1 -> $t2.
+ * Naming `base = outer << 5` and putting it in the for-init (c1/c2/c4) is
+ * byte-neutral at 19; putting it outside the for-init (c3/c5) costs a point.
+ *
+ * RESIDUAL (19; pairdiff tmp/grind/_spu_pitch2note/s4/a1_pairdiff.txt):
+ *   seats  pitch-copy $a3 vs $a0 | shift $a0 vs $t2 | lower $t3 vs $t4 |
+ *          acc $t2 vs $t3 | outer $t4 vs $t2
+ *   order  ours 'andi a2,a3,0xffff' at 16 and 'oct' at 20; target 'oct' at 16
+ *          and the andi at 21, after 'move outer,zero'
+ *   order  ours emits 'move acc,zero' BEFORE the LICM-hoisted 'sll base,outer,5';
+ *          the target emits the sll first (still one apart, insns 33/34)
+ *   order  ours emits the UPPER bound's addu before the LOWER bound's; the
+ *          target emits the lower first.
  *
  * Prototype s32 (u16, u16, u16); no header prototype exists and no in-EXE caller. */
 s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
@@ -66,9 +83,7 @@ s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
         curve >>= 12;
         upper = scale * curve;
         step = (upper - lower) >> 5;
-        acc = 0;
-        next = step;
-        for (inner = 0; inner < 0x20; inner++) {
+        for (inner = 0, acc = 0, next = step; inner < 0x20; inner++) {
             lo = (lower + acc) >> 12;
             hi = lower + next;
             hi >>= 12;

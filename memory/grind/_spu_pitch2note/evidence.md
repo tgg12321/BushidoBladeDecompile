@@ -273,3 +273,112 @@ RA MODEL RESULT (the s3 frontier):
 - [s3] Sweep harness for the next session: tmp/grind/_spu_pitch2note/s3/apply.py (splices a body file over the INCLUDE_ASM line in a pristine git show HEAD:src/main.c, LF-safe) + sweep.ps1 (applies + sandboxes a list of variant names) + v/*.c (57 measured variants including q00..q23).
 
 - [s3] src/main.c was restored to HEAD at the end of the session; the 20-floor body lives in memory/grind/_spu_pitch2note/candidate.c.
+
+## s4 (2026-09-08, permuter) — floor 20 -> 19
+
+CHASSIS RE-MEASURED FIRST: the inherited s3 candidate re-measured at 20 on HEAD
+before any probe, so the chassis is unchanged from the ledger.
+
+PERMUTER WORKSPACE (new, reusable): tmp/perm_p2n/ built by
+tmp/grind/_spu_pitch2note/s4/mkws.sh.  base.c = the common.h typedefs + the
+candidate body (a SOLO TU, the s2-validated workaround for cc1's segfault on
+the full main.i); compile.sh = the real pipeline with the CURRENT canonical
+flags (-O2 -G0 -funsigned-char -mcpu=3000 -mips1 -mno-abicalls -fno-builtin
+-mel -msoft-float, prologue_fix, maspsx 2.34 with --prefill-label-funcs,
+multu_pad); target.o = prelude_r3k.inc + asm/funcs/_spu_pitch2note.s.  Validated
+at build time: 74 base insns == 74 target insns and the objdump diff reproduces
+the in-tree residual register-for-register.  The two stale helpers
+tools/mar_perm_workspace.sh / tools/mar_perm_compile.sh are NOT usable as-is:
+they predate -mel/-msoft-float and --prefill-label-funcs.
+
+CAMPAIGN 1 (tmp/perm_p2n, label r2b-chassis-s4, -j 8, --stop-on-zero):
+37,051 iterations / 1,105 s / 103 finds; base permuter score 580, best 230.
+No zero.  Harvested and stopped in-session.
+
+CALIBRATION — THE PERMUTER'S SCORE AND THE SANDBOX DISTANCE ARE DECOUPLED HERE.
+38 finds were spliced back into src/main.c and measured with
+`sandbox _spu_pitch2note --disable all`.  The permuter's weighted score
+(regs x5, reorderings x60) ranges 230..580 across those finds while the honest
+sandbox distance ranges 19..60, and the ranking does not agree:
+  permuter 230 -> sandbox 20      permuter 485 -> sandbox 20 (x3)
+  permuter 385 -> sandbox 21/20   permuter 565 -> sandbox 19 (x2)  <- the winners
+  permuter 480 -> sandbox 60      permuter 580 -> sandbox 20 (the base itself)
+So on an RA-seat residual of this shape the permuter cannot be steered by its
+own score: the useful product of a campaign is the POPULATION of structurally
+distinct finds, each of which must be sandbox-measured individually.  A campaign
+that is left to descend its own gradient walks away from the answer.
+
+THE WIN CAME FROM A SEMANTICALLY BROKEN FIND.  output-565-1 and output-565-7
+measured 19 (one below the standing floor) by hoisting `acc = 0;` OUT of the
+outer loop entirely - illegal, because acc must reset to 0 on every outer
+iteration.  What it proved is that the EMISSION POSITION of `move acc,zero` is
+worth exactly one point.  A 9-variant hand sweep (a1..a9) then found the legal
+spelling that reproduces the position: put the accumulator initialisations in
+the inner `for` init clause as a comma expression, with `acc = 0` AFTER
+`inner = 0`.
+  19: a1 `for (inner = 0, acc = 0, next = step; ...)`
+      a3 `for (inner = 0, next = step, acc = 0; ...)`
+      a4 `next = step;  for (inner = 0, acc = 0; ...)`
+      a8 `for (next = step, inner = 0, acc = 0; ...)`
+  20: a2 / a6 (acc = 0 first in the init clause), a5 (acc = 0 left outside the
+      init clause), a7 / a9 (acc = 0 before inner = 0)
+All nine build 74 insns.  a1 is the new candidate.
+
+RE-SWEEPS ON THE NEW (a1) LOOP SHAPE:
+  - pre-loop statement order, all 24 permutations (s4 p00..p23): range 19..23,
+    `target; scale; curve; oct;` still the unique minimum.  Third consecutive
+    session in which this order survives a loop-shape change.
+  - naming `base = outer << 5`: byte-neutral at 19 when it sits INSIDE the
+    for-init (c1 `inner, base, acc, next`; c2 `next` outside; c4 `inner, base,
+    next, acc`); 20 when it sits outside the for-init (c3, c5).  So the LICM
+    hoist of `outer << 5` is not steerable from C on this chassis.
+
+RESIDUAL AT 19 (tmp/grind/_spu_pitch2note/s4/a1_pairdiff.txt, 74/74 insns):
+  seats  pitch-copy $a3 vs $a0 | shift $a0 vs $t2 | lower $t3 vs $t4 |
+         acc $t2 vs $t3 | outer $t4 vs $t2   (unchanged from s3)
+  order  ours `andi a2,a3,0xffff` at 16 and `oct` at 20; target `oct` at 16 and
+         the andi at 21, after `move outer,zero`  (unchanged from s3)
+  order  ours emits `move acc,zero` at 33 then the LICM-hoisted
+         `sll base,outer,5` at 34; the target emits the sll at 33 and
+         `move acc,zero` at 34.  This pair is ONE apart and is the newest,
+         cheapest-looking order residual - the for-init sweep moved acc into
+         this neighbourhood but did not cross the sll.
+  order  ours emits the UPPER bound's addu before the LOWER bound's; the target
+         emits the lower first  (unchanged from s3, provably immune to C order)
+
+- [s4] FLOOR 20 -> 19.  The single change is moving the inner loop's accumulator
+  initialisations into the for-init comma expression with `acc = 0` after
+  `inner = 0`: `for (inner = 0, acc = 0, next = step; inner < 0x20; inner++)`.
+  Ordinary C, no FAKE construct, 74/74 insns.
+- [s4] The permuter's weighted score does NOT track the engine's honest sandbox
+  distance on this function (230 -> 20 while 565 -> 19); a campaign here must be
+  mined as a population of distinct forms, each sandbox-measured, not steered by
+  its own gradient.
+- [s4] A semantically INVALID permuter find can still be the pointer: the 19 was
+  first seen as an illegal hoist of `acc = 0` out of the outer loop, which
+  localised the point to the emission position of `move acc,zero`, and the legal
+  for-init spelling then reproduced it.
+- [s4] Reusable permuter workspace for this function: tmp/perm_p2n (built by
+  tmp/grind/_spu_pitch2note/s4/mkws.sh, solo-TU base + real pipeline compile.sh
+  + validated target.o).  tools/mar_perm_workspace.sh is stale (pre -mel,
+  pre -msoft-float, pre --prefill-label-funcs).
+- [s4] Pre-loop order `target; scale; curve; oct;` survives a third loop-shape
+  change (24 permutations re-measured, 19..23, unique minimum).
+- [s4] Naming `base = outer << 5` is byte-neutral at 19 inside the for-init and
+  costs a point outside it; the LICM hoist of `outer << 5` is not steerable.
+
+- [s4] [s4] FLOOR 20 -> 19. The single change over the s3 candidate is `for (inner = 0, acc = 0, next = step; inner < 0x20; inner++)` replacing the two separate statements `acc = 0; next = step;` before `for (inner = 0; ...)`. Ordinary C (a comma expression in a for-init), no FAKE construct, 74 build insns == 74 target insns.
+
+- [s4] [s4] The lever was discovered, not invented: two campaign-1 finds (output-565-1, output-565-7) measured 19 by hoisting `acc = 0;` OUT of the outer loop entirely - a SEMANTIC BREAK, since acc must reset on every outer iteration - which localised the missing point to the emission POSITION of `move acc,zero`. The a1..a9 hand sweep then found the legal spelling that reproduces that position.
+
+- [s4] [s4] The permuter's weighted score does NOT track the engine's honest sandbox distance on this residual: 230 -> 20, 480 -> 60, 485 -> 20, 565 -> 19, 580 (the base) -> 20 in campaign 1, and 380 -> 20 vs 575 -> 19 in campaign 2. The useful product of a campaign here is the POPULATION of structurally distinct forms, each sandbox-measured; a campaign left to descend its own gradient walks away from the answer.
+
+- [s4] [s4] Reusable permuter workspace for this function: tmp/perm_p2n (built by tmp/grind/_spu_pitch2note/s4/mkws.sh) - solo-TU base.c (the s2-validated workaround for cc1's segfault on the full main.i), a compile.sh carrying the CURRENT canonical flags (-mel -msoft-float, maspsx --prefill-label-funcs, multu_pad), and a target.o validated at build time to reproduce the in-tree residual register-for-register. tools/mar_perm_workspace.sh and tools/mar_perm_compile.sh are STALE (pre -mel, pre -msoft-float, pre --prefill-label-funcs) and must not be copied blind.
+
+- [s4] [s4] Residual at 19 (tmp/grind/_spu_pitch2note/s4/a1_pairdiff.txt, 74/74 insns): the same 5 seats as s3 (pitch-copy $a3 vs $a0, shift $a0 vs $t2, lower $t3 vs $t4, acc $t2 vs $t3, outer $t4 vs $t2) plus three order inversions - (andi target / oct), (move acc,zero / sll base,outer,5, now only ONE insn apart at 33/34), and (addu upper-bound / addu lower-bound).
+
+- [s4] [s4] Pre-loop order `target; scale; curve; oct;` survives a third loop-shape change (24 permutations re-measured on the a1 base, spread 19..23, unique minimum).
+
+- [s4] [s4] Naming `base = outer << 5` is byte-neutral at 19 when it sits inside the for-init and costs a point outside it; the LICM hoist of `outer << 5` is not steerable from C on this chassis.
+
+- [s4] [s4] src/main.c was restored to HEAD at the end of the session; the 19-floor body lives in memory/grind/_spu_pitch2note/candidate.c. Both campaigns were harvested and stopped in-session (tmp/perm_p2n 37,051 iters, tmp/perm_p2n2 8,845 iters, both pid dead, registry clean).
