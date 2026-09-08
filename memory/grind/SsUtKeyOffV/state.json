@@ -1,0 +1,24 @@
+{
+ "func": "SsUtKeyOffV",
+ "file": "main",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T05:16:11.959826+00:00",
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "624c6712f711ebdf",
+   "when": "2026-09-08T05:41:34.128707+00:00",
+   "summary": "final call: Body is plain PsyQ libsnd C: re-entrancy flag bracket, 0..23 voice range check, _svm_cur.voice store, _SsVmKeyOffNow(0), short returns. No casts, locals, gotos, volatile, asm, dead stores, or FAKE ann"
+  }
+ ]
+}

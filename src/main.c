@@ -963,7 +963,20 @@ INCLUDE_ASM("asm/funcs", SsUtKeyOnV);
    splat merged into SsUtKeyOnV. Split out 2026-09-07 (docs/naming/libscan/
    near-tier-ruling-2026-09-07.md; XDEF +0x394, follows a real jr $ra); must stay
    immediately after its former host so the link order reproduces the byte layout. */
-INCLUDE_ASM("asm/funcs", SsUtKeyOffV);
+s16 SsUtKeyOffV(s16 voice) {
+    if (_snd_ev_flag == 1) {
+        return -1;
+    }
+    _snd_ev_flag = 1;
+    if (voice >= 0 && voice < 24) {
+        _svm_cur.voice = voice;
+        _SsVmKeyOffNow(0);
+        _snd_ev_flag = 0;
+        return 0;
+    }
+    _snd_ev_flag = 0;
+    return -1;
+}
 /* kengo:MED  |  am_rmd/AllocBukiRmd  |  259i */
 extern s32 _svm_rattr;
 extern s16 _svm_rattr_plus_0x8;

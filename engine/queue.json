@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "SsUtKeyOffV",
-      "file": "main",
-      "distance": 30,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "note2pitch",
       "file": "main",
       "distance": 49,
@@ -1435,14 +1427,14 @@
     }
   ],
   "counts": {
-    "total": 162,
-    "active": 161,
+    "total": 161,
+    "active": 160,
     "by_status": {
-      "active": 161,
+      "active": 160,
       "foreclosed": 1
     },
     "by_verdict": {
-      "C": 135,
+      "C": 134,
       "ASM-PARTIAL": 26
     }
   }
