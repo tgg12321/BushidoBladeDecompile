@@ -1,0 +1,29 @@
+{
+ "func": "func_8007352C",
+ "file": "text1b",
+ "session_count": 0,
+ "current_modality": null,
+ "floor_history": [],
+ "frontier": [],
+ "judge_constraints": [],
+ "banned_constructs": [
+  "SetSprt((s32)sp, e->x); under extern s32 SetSprt(s32, s16);"
+ ],
+ "kills": [],
+ "ladder_skip": 10,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T06:48:52.568942+00:00",
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Body is ordinary C except one construct: SetSprt((s32)sp, e->x) passes a fabricated second argument to the one-argument libgpu SetSprt (src/gpu.c:427 reads only p; asm/funcs/SetSprt.s never touches $a1) whose only plausible role is binding e->x into $a1 before the call; the worker never measured the honest one-arg form. Next action: Do not commit. Correct the call to the real signature \u2014 `extern void SetSprt(u8 *);` (or `(s32)`) and `SetSprt((s32)sp);` \u2014 and re-measure sandbox --disable all. If it stays 0, the fix is a one-line resubmit (the rest of the body \u2014 u16 "
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "27e54a313d4781d9",
+   "when": "2026-09-08T07:05:16.181095+00:00",
+   "summary": "Body is ordinary C except one construct: SetSprt((s32)sp, e->x) passes a fabricated second argument to the one-argument libgpu SetSprt (src/gpu.c:427 reads only p; asm/funcs/SetSprt.s never touches $a1) whose only plausible role is binding e->x into $a1 before the call; the worker never measured the"
+  }
+ ]
+}

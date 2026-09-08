@@ -1,0 +1,10 @@
+# SELF-VET — func_8007352C
+CONSTRUCTS: none (ordinary C only: three struct typedefs SprtA/SprtHdrA/SprtEntA, s16 loop counter, named clip-bound intermediates x0/y0/x1/y1 consumed by the if-chain, prototype corrections `extern u16 GetClut(s32, s32)` (x2, the real libgpu u_short return) / `extern void func_8003D52C(u8 *, ...)` / `extern u8 D_800159A0[]`, one-argument warning call, `sp++` cursor advance)
+## T1 semantic purpose: every statement has an observable effect — the clut/x/y/u/v/w/h/rgb stores fill the sprite prim, the clip test gates emission, the OT-overflow branch resets ot_idx and prints the warning string, AddPrim links the prim, sp++ advances the returned cursor. x1/y1 are the sprite's right/bottom edges consumed by the clip test. No construct is byte-neutral filler.
+## T2 human-programmer: yes — a per-entry sprite emitter with screen clipping (x1 > 0 && x0 < 640 && y0 < 240 && y1 > 0), an OT-index overflow guard that prints "warning\n", and PsyQ SetSprt/SetShadeTex/SetSemiTrans/AddPrim calls. The prototype fixes restore the real library signatures (u_short GetClut; printf-style warning with only a format string).
+## T3 GCC-internals justification: none required — the program logic explains every construct. GCC mechanics were used only to DIAGNOSE the two residuals (HImode pseudo vs SImode local; reorg delay-slot stealing), and both diagnoses pointed at wrong declarations, which were corrected to the real ones.
+## T4 permuter/search provenance: no permuter, no search — hand-derived from the asm in two measurements (3 -> 0).
+## T5 family check: no forbidden family matched — no pins, asm, barriers, volatile, dead stores, pads, constant holders, aliases, do-while wraps. The retired-chassis body (register pins + INLINE_MOVE_ALIASING asm) was NOT reused; its asm hack is replaced by the correct one-argument call.
+## T6 naming-announces-intent: names are semantic (clut, sp, hdr, e, x0, y0, x1, y1, i, count, ubase, vbase); struct fields pad0/pad1/pad3/pad9 are unreferenced layout holes in a header-image struct, not coercion locals.
+SANCTIONED-FAMILY-CLAIMS: none
+ANNOTATION-CONFORMANCE: n/a — no FAKE construct

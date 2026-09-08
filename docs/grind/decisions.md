@@ -25658,3 +25658,7 @@ The dst-relative RMW lever is ordinary C, but the body rests on two unjustified 
 ## 2026-09-08 01:48 — func_800430E4 — final call — **PASS**
 
 Body bd51289e54a02310 is ordinary C: D_800FF610 typed as gte.h MATRIX (32 bytes; it is MulMatrix0's output in this TU), whole-object copy into the scratchpad slot the callee consumes as a matrix, and field halvings m[1][0..2]/t[1] whose offsets 6/8/10/0x18 are exactly the target's 0x1F8003A6/A8/AA/B8 RMWs; D_800F62E0 declared u8[8][0x60] per sibling evidence I read (src/text1b.c:1171 walks 8 records of 0x60; src/sound.c:329/441 stride 0x60; g_cam_fov_* at +0x18..+0x1C inside record 0) and indexed as an array. Both banned constructs (function-named 8xs32 wrapper cast; s16-scalar +arg2*48 arithmetic) are absent, not respelled — the fix is the declaration-level model layer-1 prescribed. No FAKE, no asm, no rules, no output rewriting; MulMatrix0 prototype change is truthful and byte-neutral (oracle SHA1). Verified candidate.c == src/text1a_c.c lines 511-542. Evidence: evidence.md s2/s3, hypotheses.md H2/H3.
+
+## 2026-09-08 02:05 — func_8007352C — layer-1 review — **FAIL**
+
+Body is ordinary C except one construct: SetSprt((s32)sp, e->x) passes a fabricated second argument to the one-argument libgpu SetSprt (src/gpu.c:427 reads only p; asm/funcs/SetSprt.s never touches $a1) whose only plausible role is binding e->x into $a1 before the call; the worker never measured the honest one-arg form.
