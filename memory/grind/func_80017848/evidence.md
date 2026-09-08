@@ -5583,3 +5583,164 @@ the two arrays it owns, with the evidence sources the directive names.
 - [s48] The seat half fails: objdump shows cell A's promoted value in $v1, hoisted above loop 1, not in $a3 - E-s47-3's $a3 prediction holds only for a short allocno ending just after loop 2, and no real second use produces such a range.
 
 - [s48] Every C-level second use of the loop-2 preheader load is SUBSTITUTIVE rather than additive: it does not add an instruction, it lets cse forward the register equivalence into target's tail re-reads of 0xC(s2) and delete one of them, which is why cell A is one instruction SHORT of target rather than one long.
+
+### E-s49-1 - Floor re-audit + closest-kill re-audit (forensics session)
+- `memory/grind/func_80017848/candidate.c` applied over the HEAD
+  `src/ings.c:820` INCLUDE_ASM anchor: `sandbox --disable all` = **3 at
+  127/127**, scorable, rules_dropped 0 (`s49/sb_BASE.txt`). Floor flat at 3
+  since s9; the chassis has not moved since s48.
+- KILL RE-AUDIT of the newest / structurally closest instance kill (s48 cell A,
+  the named loop-2 base addend whose only extra use is math_Distance3D's first
+  argument): re-measured on this chassis = **17 at 126/127** (`s49/sb_A.txt`),
+  identical to s48. `tools/fake_ablate.py --func func_80017848 --file ings
+  --candidate s49/body_A.c` reports "no FAKE-annotated constructs found;
+  nothing to ablate", so the kill was not measured under a FAKE carrier. The
+  kill stands unchanged.
+- src/ings.c was restored with `git checkout` after every cell; end-of-session
+  dirt is metrics/events.jsonl plus the new rejected/ file.
+
+### E-s49-2 - FRONTIER ITEM 3 CLOSED: reload NEVER revisits an allocation in
+###             func_80017848 - zero spills, zero retry_global_alloc
+- s48's frontier item 3 named reload spill-retry as the one remaining
+  unmodelled surface behind s47's inverse.py negative. Measured with the
+  instrumented cc1's BB2_RELOAD_DEBUG stream over the whole TU
+  (`bash tools/ra_solver/reload_harvest.sh ings`, run under WSL - the Windows
+  Git-Bash shell cannot exec tools/gcc-2.7.2/cc1 ("Exec format error") and
+  silently produces an empty log, which is how this probe first appeared to
+  "pass" with retries=0; always run it through `bash tools/wsl.sh`):
+    RELOADDBG order func=func_80017848 prr=8,9,10,...
+    RELOADDBG  uses=8:0,9:0,...,7:238,6:241,5:244,4:257,2:333,...
+    RELOADDBG  bad_spill_regs: 0 1 2 4 5 6 7 26 27 28 29 30 31
+    RELOADDBG needs func=func_80017848 pass=1 new_bb_needs=0 changed=0
+  and NOTHING else. For func_80017848 the stream carries **zero**
+  `new_spill_reg`, **zero** `spill_hard_reg`, **zero** `kickout` and **zero**
+  `RETRYDBG` (retry_global_alloc) events; reload converges on pass 1 with
+  `changed=0`. The only spill_hard_reg events in the entire ings TU belong to
+  disp_CalcFov and func_80016A8C.
+- CONSEQUENCE: reload cannot be the mechanism that seats (or could re-seat) the
+  loop-2 preheader value. Composed with E-s48-2 (reg 113 carries no copy- and
+  no arithmetic-suggestion, so the suggested-register pass never runs for it)
+  and its SUGGDBG-QTY line (size=1, mode=4 SImode, chgsize=0, so qty_size is
+  not a factor), **all three candidates s47's inverse.py negative listed as
+  "unmodelled" are now individually eliminated**: the solver's negative result
+  for reg 113 -> $a3 is complete on this chassis, not a modelling gap.
+- Artifacts: `s49/ings_BASE.reload.log`, `s49/reload_func80017848.txt`.
+
+### E-s49-3 - FRONTIER ITEM 2 PRICED AND KILLED: the ascending-scan seat model
+###             is calibrated INSIDE this function, and a LOCAL-pass $a3 seat
+###             costs five extra definitions in a two-instruction block
+- s48 left the local-pass route open as "five hard registers live across loop
+  2's preheader is the whole lever". The per-quantity `got` column of
+  `local_extract.py ings --func func_80017848` (`s49/local_extract_BASE.txt`)
+  calibrates the walk without building a cell, in this very function, in the
+  tail block 16:
+    reg142 (birth 36 death 40)  0 earlier-allocated overlapping qtys -> got 2 ($v0)
+    reg140 (birth 28 death 32)  1 (reg88, 16-30)                     -> got 3 ($v1)
+    reg136 (birth 18 death 24)  1 (reg88, 16-30)                     -> got 3 ($v1)
+    reg76  (birth 20 death 40)  2 (reg88 at $v0; reg140/reg136 at $v1,
+                                   so used = {2,3})                  -> got 4 ($a0)
+  i.e. the seat advances EXACTLY one regno per already-allocated overlapping
+  quantity in the same block, which is the ascending scan of
+  local-alloc.c:2249-2255 over the `used` set built from post_mark_life at
+  local-alloc.c:2164-2190. (reg146, live across the math_Distance3D call, gets
+  $s0 = 16 instead - the call-clobbered exclusion; reg128 gets $a1 through the
+  suggested pass, not the scan.)
+- Applying the calibrated walk to blk 13: reg 113 sits at `got=2` with ONE
+  quantity in the block, so reaching $a3 (regno 7) needs FIVE earlier-allocated
+  overlapping quantities there. A block-local quantity exists only if some
+  instruction IN blk 13 defines it and nothing outside the block reads it -
+  a value used in loop 2's body or in the tail spans blocks and becomes a
+  global allocno instead, which is precisely what E-s48-3 measured (cell A's
+  second use made blk 13 vanish from the local table entirely).
+- TARGET'S LOOP-2 PREHEADER CONTAINS EXACTLY TWO ARITHMETIC INSTRUCTIONS
+  (`s49/T.txt` lines 59-61: `addu a3,a0,zero` / `lw a2,16(s2)` /
+  `addu a0,a1,a3`, the middle load belonging to the links pointer), and BASE
+  emits the same two (`lw v0,12(s2)` / `addu a0,a1,v0`). Five additional
+  block-local definitions therefore price at **+5 instructions over target's
+  127** before any seat is even considered. The LOCAL-pass route to $a3 is
+  priced dead on this chassis; the only route left is promotion to a global
+  allocno, which E-s48-3 measured at $v1 / 126 insns.
+- Artifacts: `s49/local_extract_BASE.txt`, `s49/T.txt`.
+
+### E-s49-4 - NEW: cell C is the FIRST form that keeps 127 instructions, promotes
+###             reg 113 out of local-alloc AND materialises a surviving copy in
+###             loop 2's preheader - but the copy is of BASE, not of the record
+###             pointer (5 at 127/127)
+- Cell C (`s49/body_C.c`, banked as
+  `rejected/s49_l2_exit_test_via_named_addend_buys_a_preheader_copy_of_base_not_recordptr_costs_5.c`)
+  is frontier item 1's own next_probe, spelled exactly as the frontier asked:
+  a named local `recs2 = *(u8 **)(ctx + 0xC);` read unconditionally before loop
+  2's guard, used as loop 2's base addend, and given a SECOND use that is
+  consumed strictly inside loop 2 and dead before the link stores - the loop's
+  exit test written `while (i < *(s32 *)(sh2 + (s32)recs2 + 0x20));` instead of
+  `while (i < *(s32 *)(base + 0x20));`. Guard, tail and everything else are BASE.
+- MEASURED: `sandbox --disable all` = **5 at 127/127** (`s49/sb_C.txt`) - two
+  score points worse than BASE but, unlike every previous promoting form, NOT
+  short an instruction.
+- The promotion is dump-proven: `local_extract.py` on cell C's source lists
+  blocks 2,3,7,9,10,12,14,15,16 and **no blk 13** (`s49/local_C.txt`), so the
+  loop-2 preheader value left the local-alloc quantity table exactly as in cell
+  A - but here WITHOUT cse deleting a tail reload, because the second use is an
+  address inside loop 2 that cse folds back to `base` rather than a fresh
+  ctx+0xC consumer in the tail.
+- What the extra score bought (normalised diff `s49/T.txt` vs `s49/B_C.txt`):
+  the recs2 load lands in the slot target fills with `sll zero,zero,0`
+  (so it is instruction-free), and the loop-2 preheader now emits
+      addu a0,a1,a0      ; base = sh2 + recs2
+      lw   a2,16(s2)
+      addu a1,a0,zero    ; COPY, kept alive by the exit test's out-of-block use
+  against target's
+      addu a3,a0,zero    ; COPY of the record pointer
+      lw   a2,16(s2)
+      addu a0,a1,a3      ; base = sh2 + copy
+  i.e. a REAL surviving copy in the right block, in the wrong order and of the
+  wrong value, plus the consequent `lw v0,32(a1)` vs `lw v0,32(a0)` in the exit
+  test. Residual (a) (loop-1 exit tail `addu a0,a3,zero` vs target's
+  `lw a0,12(s2)`) is untouched.
+- MECHANISM (named, and it is the same one BASE already uses for loop 1): a copy
+  survives combine here because its destination has an OUT-OF-BLOCK use - the
+  `can_combine_p` escape s17 enumerated as the out-of-block-use path - which is
+  exactly how BASE buys loop 1's `addu a3,a0,zero` through the `p = q;` read in
+  the exit tail (E-s42-4). Cell C proves the same device works for loop 2 at
+  ZERO instruction cost, whereas loop 1's version costs the tail move that IS
+  residual (a).
+- CONSEQUENCE / sharpened frontier: the device makes a copy of whichever pseudo
+  carries the out-of-block use. Target's copy is of the RECORD POINTER, used
+  ONCE in-block by the base add, with no later reader anywhere in the function
+  (T.txt line 59 defines a3, line 61 is its only reader). Every non-foldable
+  out-of-block use of the record pointer that C can spell lives after the loop
+  nest, and E-s48-3 measured that class as substitutive (it deletes one of
+  target's seven ctx+0xC reloads, 126 insns); every use INSIDE loop 2 is an
+  address that cse folds to `base`, which is why cell C copies base instead.
+  The open question is no longer "can a copy survive in loop 2's preheader" -
+  it is what keeps TARGET's record-pointer pseudo live past the base add when
+  it has no reader at all.
+
+- [s49] E-s49-1: BASE re-audited at 3 (127/127) on the HEAD chassis; s48 cell A re-audited at 17 (126/127) with fake_ablate reporting no FAKE-annotated constructs, so that kill stands.
+- [s49] E-s49-2: BB2_RELOAD_DEBUG over the ings TU shows func_80017848 with zero new_spill_reg, zero spill_hard_reg, zero kickout and zero retry_global_alloc events, converging on reload pass 1 with changed=0. Reload spill-retry - the last surface s47's inverse.py negative listed as unmodelled - is eliminated; the solver negative for reg 113 -> $a3 is complete on this chassis.
+- [s49] E-s49-2 tooling note: tools/ra_solver/reload_harvest.sh (and anything else invoking tools/gcc-2.7.2/cc1) MUST be run through `bash tools/wsl.sh '...'`; the Windows Git-Bash shell reports "Exec format error" on the Linux cc1 and writes an EMPTY log whose retries=0 looks like a real negative.
+- [s49] E-s49-3: local_extract.py's got column calibrates the ascending-scan seat model inside func_80017848 itself - blk 16 shows 0/1/1/2 earlier-allocated overlapping quantities mapping to $v0/$v1/$v1/$a0 for reg142/reg140/reg136/reg76. reg 113 in blk 13 therefore needs FIVE earlier-allocated overlapping quantities to reach $a3, each requiring its own defining instruction in a preheader that target builds from exactly two instructions: the local-pass route prices at +5 insns over 127.
+- [s49] E-s49-4: cell C (loop-2 exit test re-reading the count through the named base addend `recs2` instead of through `base`) = 5 at 127/127 - the first form that both promotes the preheader value out of local-alloc (blk 13 gone from the quantity table) and keeps target's instruction count. Its recs2 load fills target's nop slot and it materialises a REAL surviving preheader copy, but of `base` (`addu a1,a0,zero` after the add) rather than of the record pointer (`addu a3,a0,zero` before it), because cse folds every in-loop use of recs2 back to base.
+- [s49] The copy-survival device is now named and symmetric: a preheader copy survives combine when its destination carries an OUT-OF-BLOCK use. BASE already buys loop 1's copy that way through `p = q;` in the exit tail - which is exactly what costs residual (a) - and cell C buys loop 2's copy the same way at zero instruction cost. The device copies whichever pseudo carries the out-of-block use, and target's copy is of a pseudo with NO reader after the base add.
+
+- [s49] BASE (memory/grind/func_80017848/candidate.c over the HEAD src/ings.c:820 INCLUDE_ASM anchor) = 3 at 127/127, scorable, rules_dropped 0 (s49/sb_BASE.txt); src/ings.c restored with git checkout after every cell.
+
+- [s49] The s48 cell-A kill re-audits identically on this chassis (17 at 126/127, s49/sb_A.txt) and fake_ablate finds no FAKE-annotated construct in it, so the kill was not measured under a FAKE carrier.
+
+- [s49] BB2_RELOAD_DEBUG over the ings TU: func_80017848 carries zero new_spill_reg, zero spill_hard_reg, zero kickout and zero retry_global_alloc events and converges on reload pass 1 with changed=0. Reload never revisits an allocation in this function.
+
+- [s49] With E-s48-2 (no copy- or arithmetic-suggestion for reg 113, qty size=1 mode=4 chgsize=0), all three surfaces s47's inverse.py negative called unmodelled are now individually eliminated - the solver negative for reg 113 -> $a3 is complete on this chassis.
+
+- [s49] TOOLING: tools/ra_solver/reload_harvest.sh (and anything invoking tools/gcc-2.7.2/cc1) must be run through bash tools/wsl.sh; Windows Git-Bash reports 'Exec format error' on the Linux cc1 and writes an EMPTY log whose retries=0 looks like a real negative.
+
+- [s49] local_extract.py's got column calibrates the ascending-scan seat model inside func_80017848 itself: in blk 16, reg142 with 0 earlier-allocated overlapping qtys gets $v0, reg140 and reg136 with 1 each get $v1, and reg76 with 2 distinct earlier seats gets $a0 - one regno per earlier-allocated overlapping quantity.
+
+- [s49] Reg 113 (blk 13, one quantity) therefore needs FIVE earlier-allocated overlapping quantities to reach $a3, each requiring its own defining instruction in a preheader that target builds from exactly two arithmetic instructions: the LOCAL-pass route prices at +5 insns over target's 127.
+
+- [s49] Cell C (loop-2 exit test re-reading the count through the named base addend recs2 instead of through base) = 5 at 127/127 - the first form that both promotes the preheader value out of local-alloc (blk 13 absent from the quantity table, s49/local_C.txt) and keeps target's instruction count.
+
+- [s49] Cell C's recs2 load fills the slot target fills with sll zero,zero,0 (instruction-free) and materialises a REAL surviving preheader copy, addu a1,a0,zero after the base add, against target's addu a3,a0,zero before it.
+
+- [s49] The copy-survival device is now named and symmetric: a preheader copy survives combine when its destination carries an OUT-OF-BLOCK use. BASE already buys loop 1's copy that way through p = q; in the exit tail - which is exactly what costs residual (a) - and cell C buys loop 2's copy the same way at zero instruction cost.
+
+- [s49] The device copies whichever pseudo carries the out-of-block use. cse folds every in-loop use of the record-pointer local back to base, so in-loop readers yield a copy of base; every non-foldable reader of the record pointer lives after the loop nest and is substitutive (E-s48-3, 126 insns). Target's copy is of a pseudo (T.txt line 59 -> line 61) with no reader at all after the base add.

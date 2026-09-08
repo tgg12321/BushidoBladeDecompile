@@ -1164,3 +1164,24 @@ s32 func_80017848(u8 *ctx, s32 arg1, s32 slot_a, s32 slot_b) {
  *       byte-free reader is still the requirement - now sharpened to "promote
  *       the value without giving cse an equivalence it can forward to the tail".
  */
+/* [s49 FORENSICS ADDENDUM - body unchanged, re-audited at 3 (127/127) on the HEAD
+ * chassis (anchor src/ings.c:820).]  Two of s48's three frontier items are closed
+ * with dumps and the third is measured:
+ *  - Reload NEVER revisits an allocation here: BB2_RELOAD_DEBUG shows zero
+ *    new_spill_reg / spill_hard_reg / kickout / retry_global_alloc events for
+ *    func_80017848 and `needs pass=1 changed=0` (E-s49-2).  With E-s48-2 that
+ *    eliminates all three surfaces s47's inverse.py negative called unmodelled,
+ *    so the solver negative for reg 113 -> $a3 is COMPLETE on this chassis.
+ *  - The ascending-scan seat model is calibrated inside this function (blk 16:
+ *    0/1/1/2 earlier-allocated overlapping qtys -> $v0/$v1/$v1/$a0).  A LOCAL-pass
+ *    $a3 seat for reg 113 therefore needs five extra block-local definitions in a
+ *    preheader target builds from two instructions: +5 insns, priced dead (E-s49-3).
+ *  - Cell C (loop-2 exit test re-reading the count through the named base addend)
+ *    = 5 at 127/127 - the FIRST promoting form that is not an instruction short,
+ *    and the first with a real surviving preheader copy.  The copy-survival device
+ *    is an OUT-OF-BLOCK use of the copy's destination (the same can_combine_p
+ *    escape by which this body already buys loop 1's copy via `p = q;`), but it
+ *    copies whichever pseudo carries that use - cse folds in-loop uses of the
+ *    addend back to `base`, so cell C copies base after the add where target
+ *    copies the record pointer before it (E-s49-4).
+ */

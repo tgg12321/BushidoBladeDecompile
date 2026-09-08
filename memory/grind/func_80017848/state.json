@@ -1,7 +1,7 @@
 {
  "func": "func_80017848",
  "file": "ings",
- "session_count": 48,
+ "session_count": 49,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -291,23 +291,29 @@
    "floor": 3,
    "modality": "forensics",
    "headline": "Forensics closes both open solver frontier items: the $v0 seat is an ascending-regno scan artefact (no suggestion, $a3 free but later in scan order), and a real second use DOES promote reg 113 to a gl"
+  },
+  {
+   "session": 49,
+   "floor": 3,
+   "modality": "forensics",
+   "headline": "Forensics closes both remaining solver frontier items with dumps (reload never spills or retries here; the local-pass $a3 seat prices at +5 insns via a walk calibrated inside this function) and finds "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The E-s44-3 byte-free reader requirement is sharper than the ledger has stated it: the reader must promote the preheader load's value out of local-alloc WITHOUT creating a register equivalence cse can forward to target's tail reloads of 0xC(s2). Any reader whose value is dead by the tail satisfies this, and the search should be over reader PLACEMENT (a use that ends before the first tail reload) rather than over reader shape.",
-   "mechanism": "Cell A proved the promotion itself is ordinary C (blk 13 leaves the local table). Its only defect is that the use sits at the first tail reload, so cse's register equivalence survives to it and deletes it. A use that is consumed and dead before the link stores would leave every tail reload intact, because cse's memory table for ctx+0xC is flushed by the stores to *link that precede rec_a/rec_b.",
-   "next_probe": "Build a cell whose second use of the loop-2 addend is consumed strictly INSIDE loop 2's exit block (after the do-while, before the guard's join) - e.g. the loop-2 exit condition re-reading the count through the named local instead of through `base` - so the allocno's death precedes the math_Distance3D argument setup, and score it; then re-run local_extract.py to confirm blk 13 still leaves the local set and objdump the seat."
+   "hypothesis": "Target's loop-2 preheader copy is of a record-pointer pseudo whose only reader is the base add in the same block, so combine should have folded it; the surviving copy is therefore NOT bought by a C-level reader at all, and the next attribution to test is a pass that creates or preserves it without a use - loop.c's move_movables emitting the invariant into the preheader, or flow's stale basic_block_live_at_start keeping the source live (the s44 mechanism), rather than a can_combine_p refusal.",
+   "mechanism": "s17 enumerated seven can_combine_p refusal paths for a use-once same-block copy and priced or excluded all of them; cell C now shows the only device that actually works in C (an out-of-block use) copies the wrong pseudo in the wrong order. If no C-level reader can exist for target's a3, the copy must be produced or preserved by a pass that does not need one.",
+   "next_probe": "Run pwsh tools/grinder/dump.ps1 func_80017848 on BASE and read the .loop and .flow dumps for loop 2's preheader: check whether loop.c classifies the base computation as a movable (loop.c move_movables emitting `set (new_reg) (old_reg)`) and whether basic_block_live_at_start marks the record-pointer pseudo live into loop 2's body. Then build the cell that writes loop 2's base expression INSIDE the loop body (so LICM must hoist it) rather than in the preheader, and score it - LICM hoisting is the one producer of a preheader copy that needs no reader."
   },
   {
-   "hypothesis": "A LOCAL-pass $a3 seat is reachable if loop 2's preheader block carries FOUR additional co-live quantities that sort ahead of reg 113 in qty_compare, since each already-allocated qty in the same block calls post_mark_life and occupies the next ascending free regno.",
-   "mechanism": "local-alloc.c:2249-2255 scans regno ascending and takes the first free one; local-alloc.c:2164-2172 folds regs_live_at (which post_mark_life writes for each qty allocated earlier in the same block) into `used`. Four earlier qtys spanning [2,6) would occupy $v0,$v1,$a0,$a1, leaving $a2 - five would leave $a3. blk 13 currently has exactly one qty, so the count is the whole lever.",
-   "next_probe": "Price the cheapest REAL co-live values available in loop 2's preheader (the guard's count load, sh2, and the loop-1 exit tail's live pointers) by moving their definitions into block 13 and re-running local_extract.py --suggest to read blk 13's qty count and each qty's `got`; the seat should walk $v0 -> $v1 -> $a0 ... one register per added co-live qty, which both validates the model and prices the full distance to $a3."
+   "hypothesis": "Cell C's device applied to loop 1 frees residual (a): if loop 1's exit test carries the out-of-block use that currently buys its copy (instead of the `p = q;` exit-tail read), then `p` can be re-read fresh after loop 1 and the tail becomes target's `lw a0,12(s2)` while loop 1's copy still survives.",
+   "mechanism": "E-s42-4 proved loop 1's copy is bought ENTIRELY by the `p = q;` read, and that read is exactly what makes the tail a move instead of target's reload; cell C shows the exit test can carry the same out-of-block use at zero instruction cost. Moving the purchase from the tail to the exit test should preserve the copy and free the tail.",
+   "next_probe": "Build cell E = BASE with loop 1's exit test rewritten as `while (i < *(s32 *)(sh + (s32)q + 0x1C));` and `p = q;` replaced by `p = *(u8 **)(ctx + 0xC);`, score it, and diff the normalised stream against s49/T.txt to see whether the loop-1 copy survives and the tail becomes a reload; then compose the winner with cell C for loop 2."
   },
   {
-   "hypothesis": "The local-alloc SUGGESTED-REGISTER pass is now measured NOT to touch this value, so the remaining unmodelled surface in inverse.py's negative result is reload spill-retry and qty_size, not suggestions - and only one of those is still unread.",
-   "mechanism": "s47's inverse.py negative named three unmodelled candidates: 'the local-alloc SUGGESTED-REGISTER pass, qty_size for DImode, or reload spill-retry'. E-s48-2 eliminates the first (no suggestion exists for this qty) and the SUGGDBG-QTY line eliminates the second (size=1, mode=4 SImode, chgsize=0). Reload spill-retry is the only one left.",
-   "next_probe": "Run tools/ra_solver/reload_extract.py + inverse_reload.py on the BASE chassis for func_80017848 and check whether reload ever revisits the block-13 assignment (alter_reg / spill-retry), which would be the last modelled route to the seat that has not been read."
+   "hypothesis": "The RA-seat axis for reg 113 is now fully modelled and both of its routes are priced, so the remaining 3-point residual is a COMBINE/copy-survival question, not an allocation question, and further RA-solver work on this function has no unread surface.",
+   "mechanism": "E-s48-2 (no suggestions, qty_size normal), E-s49-2 (no reload spill or retry), and E-s49-3 (local-pass seat priced at +5 insns) together close every route inverse.py listed; E-s48-3 priced the global-allocno route at $v1 / 126 insns.",
+   "next_probe": "Do not re-run inverse.py or reload_extract on this function without a chassis change; spend measurements on the copy-production question in frontier items 1 and 2 instead, and re-open the RA axis only if a new cell changes the block structure of loop 2's preheader (which local_extract.py will show as blk 13 reappearing or gaining quantities)."
   }
  ],
  "judge_constraints": [],
@@ -321,38 +327,6 @@
  "last_unpark_reason": "Newly VISIBLE completed siblings in the same TU (tombstone backfill, commit 0ddc72c8): func_80017D84 \u2014 already named by this ledger's own s45 object-model audit as the source of its 52-byte data model \u2014 plus func_80016E60 and main, all COMPLETED-C in src/ings.c and never read by this ledger. PROBE: read their on-main bodies and transplant their loop-2 preheader / copy-geometry spellings onto the f",
  "last_unpark_at": "2026-09-08T01:58:36.569292+00:00",
  "kills": [
-  {
-   "session": 30,
-   "statement": "Another function in the ings translation units shares this function's link-lookup idiom and can be transplanted as the author's own spelling.",
-   "kill_scope": "instance",
-   "measured_on": "committed HEAD src tree, read-only census, no build",
-   "predicate_cite": "",
-   "result": "The (index << 4) + links + field idiom appears nowhere else in either file - the only hits are this function's own two l"
-  },
-  {
-   "session": 31,
-   "statement": "Cell E's four seat divergences (p $a1->$a0, sh $a0->$a1, copy $v0->$a3, lnk $a1->$a2) are reachable by a modelled perturbation of local-alloc's / global-alloc's inputs, and inverse.py will name the C ",
-   "kill_scope": "instance",
-   "measured_on": "cell-E exact-instruction-stream chassis (rejected/s23_crosses_set_p_reused_as_links_both_loops_exact_insn_stream_costs_14.c over the HEAD src/ings.c:719 INCLUDE_ASM anchor), re-measured this session a",
-   "predicate_cite": "",
-   "result": "The derived goal is EMPTY, so inverse.py cannot be run on this form at all. goal_from_tgt aligns 127 vs 127 with 14 'rep"
-  },
-  {
-   "session": 31,
-   "statement": "There is a spelling of combine escape 2 whose intervening set of p does not extend a value's live range into the loop body - specifically p reused to hold the base itself - which buys both preheader c",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the cell body, floor-3 chassis (candidate re-measured 3 at 127/127 this session), no FAKE constructs",
-   "predicate_cite": "",
-   "result": "L = 12 at 125 build insns, M = 13 at 126 - both UNDERSHOOT the 127-insn target. i3 setting i2's source is not an escape:"
-  },
-  {
-   "session": 31,
-   "statement": "Target's loop-1 exit tail lw a0,12(s2) / sll a1,s4,6 is the re-assignment of the SAME p and sh variables that loop 2 then reuses, so writing both loops against one shared p / sh pair reproduces the ex",
-   "kill_scope": "instance",
-   "measured_on": "HEAD src/ings.c:719 INCLUDE_ASM anchor plus the cell body, floor-3 chassis, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "N1 = 30 at 126 build insns, N2 = 32 at 125. Sharing the pair is roughly a +27 regression and the diff shows why: the loo"
-  },
   {
    "session": 31,
    "statement": "Escape 1 (a downstream second use of loop 2's copy) has an unpriced site inside loop 2's guard's own taken arm, above the copy, that costs less than the banked minimum of 6.",
@@ -800,6 +774,38 @@
    "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s48/body_A.c applied; BASE re-audited at 3 (127/127) in the same session immediately before; no FAKE constructs",
    "predicate_cite": "",
    "result": "HALF TRUE, and the failing half is decisive. The promotion works and is dump-proven: block 13 disappears entirely from l"
+  },
+  {
+   "session": 49,
+   "statement": "KILL RE-AUDIT: the s48 cell-A form (the closest promoting instance kill) still measures 17 at 126/127 on the current chassis, and it was not measured under a FAKE carrier.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s49/body_A.c applied; BASE re-audited at 3 (127/127) immediately before; fake_ablate confirms no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Unchanged. sandbox = 17 at 126 build insns / 127 target insns (s49/sb_A.txt), byte-for-byte the s48 measurement; fake_ab"
+  },
+  {
+   "session": 49,
+   "statement": "Frontier item 3 (s48): reload spill-retry (retry_global_alloc / alter_reg) revisits the block-13 assignment in func_80017848 and is the last modelled route by which the loop-2 preheader value could re",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with memory/grind/func_80017848/candidate.c applied; BASE re-audited at 3 (127/127, scorable, rules_dropped 0); no FAKE constructs; instrumented cc1 tools/gcc-2.",
+   "predicate_cite": "",
+   "result": "FALSE, and it closes the surface completely. For func_80017848 the stream contains only the order line, its uses/bad_spi"
+  },
+  {
+   "session": 49,
+   "statement": "Frontier item 2 (s48): a LOCAL-pass $a3 seat for reg 113 is reachable by giving loop 2's preheader four or five additional co-live quantities that sort ahead of it, since each already-allocated qty in",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with memory/grind/func_80017848/candidate.c applied; BASE re-audited at 3 (127/127); no FAKE constructs; instrumented cc1 quantity table (tools/gcc-2.7.2/cc1) pl",
+   "predicate_cite": "",
+   "result": "The model is CONFIRMED and the lever is KILLED BY PRICE. Block 16 calibrates the walk inside this very function: reg142 "
+  },
+  {
+   "session": 49,
+   "statement": "Frontier item 1 (s48): a second use of the loop-2 base addend that is consumed and dead before the tail's link stores promotes the value out of local-alloc without letting cse forward a register equiv",
+   "kill_scope": "instance",
+   "measured_on": "HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s49/body_C.c applied; BASE re-audited at 3 (127/127) in the same session; no FAKE constructs",
+   "predicate_cite": "",
+   "result": "CONFIRMED as to byte-freedom and promotion, and it produces a genuinely new structure, but it does not close. sandbox = "
   }
  ],
  "escalation_deferrals": 0,
