@@ -1860,3 +1860,4 @@
 - 2026-09-08 01:16 func_800204C0: MERGE REFUSED after judge PASS — 3 unallowlisted inline-asm island(s), no grant door; constraint banked.
 - 2026-09-08 01:23 func_800204C0 JUDGE ESCALATE (ruling request, integration-handoff (REFUSED: no executable remedy in verdict)) — refused + FORECLOSED silently (owner ruling 2026-08-31).
 - 2026-09-08 01:34 func_800430E4: LAYER-1 FAILED a sandbox-0 candidate — The dst-relative RMW lever is ordinary C, but the body rests on two unjustified per-use object-model puns: a fabricated function-named 8xs32 struct cast over the splat scalar D_800FF610 (documented as a MATRIX / struct) and stride-96 pointer arithmetic on the s16 scalar D_800F62E0; the dispatcher flagged both lines and the self-vet justified neither.
+- 2026-09-08 01:48 func_800430E4 COMPLETED-C after 1 sessions (closer: s1 [recon]).

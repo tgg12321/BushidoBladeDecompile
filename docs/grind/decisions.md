@@ -25654,3 +25654,7 @@ WHY NOT FAIL / PASS. FAIL is wrong: no construct is objectionable and no evidenc
 ## 2026-09-08 01:34 — func_800430E4 — layer-1 review — **FAIL**
 
 The dst-relative RMW lever is ordinary C, but the body rests on two unjustified per-use object-model puns: a fabricated function-named 8xs32 struct cast over the splat scalar D_800FF610 (documented as a MATRIX / struct) and stride-96 pointer arithmetic on the s16 scalar D_800F62E0; the dispatcher flagged both lines and the self-vet justified neither.
+
+## 2026-09-08 01:48 — func_800430E4 — final call — **PASS**
+
+Body bd51289e54a02310 is ordinary C: D_800FF610 typed as gte.h MATRIX (32 bytes; it is MulMatrix0's output in this TU), whole-object copy into the scratchpad slot the callee consumes as a matrix, and field halvings m[1][0..2]/t[1] whose offsets 6/8/10/0x18 are exactly the target's 0x1F8003A6/A8/AA/B8 RMWs; D_800F62E0 declared u8[8][0x60] per sibling evidence I read (src/text1b.c:1171 walks 8 records of 0x60; src/sound.c:329/441 stride 0x60; g_cam_fov_* at +0x18..+0x1C inside record 0) and indexed as an array. Both banned constructs (function-named 8xs32 wrapper cast; s16-scalar +arg2*48 arithmetic) are absent, not respelled — the fix is the declaration-level model layer-1 prescribed. No FAKE, no asm, no rules, no output rewriting; MulMatrix0 prototype change is truthful and byte-neutral (oracle SHA1). Verified candidate.c == src/text1a_c.c lines 511-542. Evidence: evidence.md s2/s3, hypotheses.md H2/H3.
