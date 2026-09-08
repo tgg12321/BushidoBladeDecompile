@@ -1829,3 +1829,100 @@ grind.
 - [s17] If the kp product were tied into dx's quantity, dx would have 3 + 2 = 5 references and a death extended to the kp subu (insn 12): priority floor_log2(5)*5/16*10000 = 3125 against dz's 2500, so dx would win the seat with the emission order untouched. That is the only construction found that satisfies L1 arithmetically.
 
 - [s17] 52 new variants measured this session, all at build_insns == target_insns == 202: 24 outer-declaration orders (best 9), 10 kp-difference spellings (six exactly 9, four 32-36), 18 product-naming spellings (eight exactly 9, ten 25-32). Nothing below the banked floor of 2.
+
+## s18 (solver, 2026-09-08) - the s17 frontier read out of the dumps, and two sweeps
+
+Chassis re-measured at dispatch: `sandbox func_8002D780 --disable all` -> 2/202 with
+memory/grind/func_8002D780/candidate.c spliced into src/code6cac_b.c (HEAD 220ab314,
+-mel -msoft-float).  BK_base and TT_base in this session's sweeps reproduce 2 and 9
+exactly, so both chassis are intact.
+
+### The single highest-value unread artefact, read
+s17 left the grind on one question: which quantity absorbs each of block 7's four
+product pseudos, since the block's QTYDBG table shows only seven pseudo quantities for
+eleven pseudos.  The answer is that they are absorbed by NOTHING - they are never
+offered to local-alloc.
+
+  * tmp/grind/func_8002D780/s14/w_n6/code6cac_b.lreg, block-7 pseudo census: registers
+    129-139, exactly eleven.  129/130/131/132/135/137/139 are "GR_REGS or none"; the
+    remaining four - 133, 134, 136, 138 - are "pref LO_REG, else GR_REGS".  Those four
+    are the products of the four multiplies (each MIPS integer product is copied out of
+    LO, so regclass costs LO_REG cheapest).
+  * tools/gcc-2.7.2/local-alloc.c:469-477 is the eligibility gate:
+        if (reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1
+            && (reg_alternate_class (i) == NO_REGS
+                || ! CLASS_LIKELY_SPILLED_P (reg_preferred_class (i))))
+          reg_qty[i] = -2;            /* local-alloc will see it */
+        else
+          reg_qty[i] = -1;            /* global_alloc's problem */
+    CLASS_LIKELY_SPILLED_P defaults to `reg_class_size[CLASS] == 1` (local-alloc.c:77),
+    and LO_REG is a one-register class, so the product pseudos take the else branch.
+  * combine_regs (local-alloc.c:1784) bails on exactly that value:
+    `if (reg_qty[sreg] >= -1 ... ) return 0;` (local-alloc.c:1904).  It also only ever
+    ties the insn's SET DESTINATION into a dying INPUT operand's quantity
+    (block_alloc's operand scan, local-alloc.c:1241-1296, calls
+    combine_regs (r1 = input, r0 = operand 0)), never an input into a destination's.
+  So s17's L1 construction - "tie the kp product into dx's quantity, refs 3 -> 5,
+  priority 3125 vs 2500" - cannot happen for any spelling of the multiply.  The seven
+  quantities in the block-7 table are the whole table, and dx's qty_n_refs is exactly
+  reg_n_refs[dx].
+
+### Sweep A - the block-7 hoist axis (s17 frontier item 2), 22 variants
+gen_s18.py builds each of ax/dz/az/dx hoisted alone into the outer centroid block and
+into the test-2 arm, on BOTH chassis, plus three pair hoists and an all-four hoist.
+Rationale: the same gate at local-alloc.c:471 excludes a pseudo whose live range leaves
+its block, so a hoist is the ordinary-C way to take a difference OUT of block 7's
+quantity table.  Results (tmp/grind/func_8002D780/s18/v18.json): baseline 2, BK_base 2,
+TT_base 9, then TT_outer_dz 19, BK_outer_dz 20, four forms at 21, TT_t2_ax 26,
+TT_outer_ax 27, the dz+ax pairs 32, every az/dx hoist 35-42 (several at 203 insns),
+TT_outer_all 41.  Nothing within 17 of the floor.
+
+### Sweep B - the query differences and source-order interposition, 20 variants
+gen_s18b.py.  Two axes.  (1) s17 frontier item 2's explicit remaining probe: hoist
+qx = px - x0 and qz = pz - z0 out of block 7 - 21 (BK qx), 29-30 (qz), 35 (TT qx), 37
+(both), all at 200-201 insns.  (2) L2 by interposition: write qx and/or qz as named
+locals BETWEEN dz and dx inside block 7, so their subu sits between the two target
+subus in source order and lengthens dz's local-alloc span alone.  Every interposed and
+top-of-block form is byte-identical to its chassis baseline (BK 2, TT 9): sched1
+re-sinks each query difference to immediately before its consuming multiply no matter
+where it is written, exactly as s17 measured for the kp differences.
+
+### The (T,T) chassis, characterised properly for the first time
+tools/pairdiff.py on TT_base (tmp/grind/func_8002D780/s18/pairdiff_TT_base.txt):
+14 differing instructions and NOT ONE of them is a transposition.  ours[93]
+`subu v1,t0,a3` vs target `subu a0,t0,a3` (dz); ours[96] `subu a0,t5,t1` vs target
+`subu v1,t5,t1` (dx); the swap then rides through both mflos, two multiplies and the
+kp subtraction (`subu v1,v1,t1` vs `subu v1,a0,v1`).  So on the (T,T) chassis the
+emission order is already the target's and the ONLY defect is that dz takes $v1 and dx
+takes $a0 where the target has dz = $a0 and dx = $v1.  find_free_reg gives the first
+quantity in qty_order the lowest free general register, so the target requires dx's
+quantity to sort strictly ahead of dz's - one comparison, one direction.
+
+### What the arithmetic now allows, after s18
+dz and dx tie at 2500 in (T,T) and the quantity-number fallback (local-alloc.c:1719)
+seats dz.  L1-by-product-tie is closed above; L1-by-extra-reference needs a genuine
+third C-level use of `x2 - x0` inside block 7; L2-by-source-interposition and
+L3-by-naming/scoping are measured dead.  ONE lever named by the source has never been
+touched: qty_compare_1 is not the only comparator.  block_alloc allocates SUGGESTED
+quantities FIRST, in a separate loop ordered by qty_sugg_compare
+(local-alloc.c:1494-1527), before it ever sorts the rest by length of life.  Block 7
+currently has NO suggested quantity at all (no QTYDBG-SUGG line for blk=7 in
+w_n6/stderr_full.txt).  A suggestion is created by combine_regs when one side of a tie
+is a HARD register (local-alloc.c:1855-1900) - a copy between the pseudo and an
+argument, return-value or otherwise fixed register.  If dx's quantity acquired a
+suggestion and dz's did not, dx would be seated in the suggestion pass and the
+qty_compare_1 tie would never be reached.
+
+- [s18] Chassis re-measured at dispatch: sandbox func_8002D780 --disable all -> {score 2, target_insns 202, build_insns 202} with memory/grind/func_8002D780/candidate.c spliced into src/code6cac_b.c at HEAD 220ab314 (-mel -msoft-float). Both sweeps' base controls (BK_base 2, TT_base 9) reproduce their chassis exactly.
+
+- [s18] Block 7's complete pseudo census (tmp/grind/func_8002D780/s14/w_n6/code6cac_b.lreg) is eleven pseudos, registers 129-139. Seven are 'GR_REGS or none' (129 ax, 130 dz refs 3, 131 dx refs 3, 132 az, 135 px-x0, 137 pz-z0, 139 the xor/kc chain) and four - 133, 134, 136, 138 - are 'pref LO_REG, else GR_REGS'. Those four are the products of the four multiplies.
+
+- [s18] local-alloc.c:471-477 excludes a pseudo from local-alloc when reg_alternate_class != NO_REGS and CLASS_LIKELY_SPILLED_P(reg_preferred_class) is true; CLASS_LIKELY_SPILLED_P defaults to reg_class_size == 1 (local-alloc.c:77) and LO_REG is a one-register class, so all four product pseudos get reg_qty = -1 and are allocated by global_alloc. That is why block 7's QTYDBG table holds only seven pseudo quantities plus eight HI/LO scratch quantities for eleven pseudos.
+
+- [s18] combine_regs (local-alloc.c:1784) ties the SET DESTINATION into a dying INPUT operand's quantity, never the reverse (block_alloc's operand scan calls combine_regs(r1 = input, r0 = operand 0) at local-alloc.c:1293-1295), and it returns 0 immediately when reg_qty[sreg] >= -1 (local-alloc.c:1904). Both facts independently close the s17 L1 construction.
+
+- [s18] 42 new variants measured this session, all bytes-scored against the oracle target. Sweep A (22 hoist forms, tmp/grind/func_8002D780/s18/v18.json): best non-baseline 19. Sweep B (20 query-difference forms, v18b.json): six interposition forms and two naming controls exactly inert at their chassis baselines, eight hoist forms 21-37. Nothing below the banked floor of 2.
+
+- [s18] The (T,T) chassis pairdiff (tmp/grind/func_8002D780/s18/pairdiff_TT_base.txt) shows 14 differing instructions that are entirely a dz/dx hard-register exchange plus its cascade - the emission order is already the target's.
+
+- [s18] block_alloc allocates SUGGESTED quantities in a separate loop BEFORE it sorts the rest by length of life (local-alloc.c:1494-1527, ordered by qty_sugg_compare at local-alloc.c:1694). Block 7 currently has no suggested quantity at all - there is no QTYDBG-SUGG line for blk=7 in w_n6/stderr_full.txt, and every block-7 SUGGDBG-QTY line reports ncopysugg=0 nsugg=0. This comparator has never been considered by this grind.
