@@ -975,3 +975,151 @@ candidate applied to src/code6cac_b.c, NO FAKE construct present anywhere in the
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD c7aa37e7 (-mel -msoft-float), the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## s10 (2026-09-08, rederive) — floor 2, residual relocated
+
+## [s10] Test 3 can be written with NO named difference locals at all and still hold the 2/202 floor, and the resulting body's two residual instructions are a different pair with every register already correct.
+- mechanism: the six differences are ordinary subexpressions; with them inline, RTL expansion creates the same six pseudos but in the operand-evaluation order of the two product expressions, which is what sets INSN_LUID and therefore (s8, sched.c:2408) the emission order of block 7.
+- probe: batch W (tmp/grind/func_8002D780/s10/gen_w.py -> s10/variantsW) scored with tools/sweep_variants.py, then tools/pairdiff.py code6cac_b func_8002D780 on the s5 body, on w2 (fully inline) and on x4 (only dx and az named) via tmp/grind/func_8002D780/s10/showdiff.py.
+- result: CONFIRMED. w2 = 2/202, w3 (edge named only) = 2, w4 (four offsets named) = 2, x4 (dx+az named) = 2 — all with the same diff: ours emits `subu $a0,$t0,$a3` (dz) then `subu $v0,$t2,$t1` (ax) where the target emits ax in the `bltz` delay slot and dz after it. The s5 body's residual is instead the `az`/`dx` transposition. In BOTH bodies all six values are already in the target's registers and all four multiplies match. Consequence for the eventual submission: the six named test-3 locals that s3-s9 flagged as an unresolved named-intermediate-vs-ordinary-C question are unnecessary, and memory/grind/func_8002D780/candidate.c no longer contains them (the s5 body is preserved verbatim as candidate_alt_s5_named_locals.c).
+- verdict: CONFIRMED
+
+## [s10] The dz/dx seat inversion is decided purely by which of the two has the longer local-alloc live range, and evaluating `(z2 - z0)` before `(cx - x0)` is the one-token source lever that decides it.
+- mechanism: qty_compare_1 (local-alloc.c:1725-1758) ranks by floor_log2(refs)*refs*size/(death-birth)*10000 and falls back to quantity number. Moving dz's subu from block-7 index 1 to index 0 changes its span from 12 to 14 without changing its 3 references, dropping its priority from 2500 to 2142 and below dx's 2500.
+- probe: instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SUGG_DEBUG=1 BB2_QTY_DEBUG=1 through tmp/grind/func_8002D780/s10/dumpvar.py on the new body (tag dw2) and on y1, the same body with only the first product's operands flipped (tag dy1, 9/202); compared the blk=7 SUGGDBG-QTY tables.
+- result: CONFIRMED. dw2: dz qty0 birth 2 death 16 refs 3 (span 14, pri 2142), ax qty1 birth 4 death 6 refs 2 (pri 10000), dx qty4 birth 8 death 20 refs 3 (span 12, pri 2500) -> dx seated first onto $v1, the target's seats. dy1: ax qty0 birth 2 death 6 (pri 5000), dz qty1 birth 4 death 16 (span 12, pri 2500), dx qty4 birth 8 death 20 (span 12, pri 2500) -> exact tie, quantity-number fallback seats dz on $v1, seats inverted. Every other row of the two tables (qty2/3 and qty5-14: the four multiply HI/LO scratch pairs and az/bx/bz) is identical, so the ax/dz evaluation order is the ONLY input that differs.
+- verdict: CONFIRMED
+
+## [s10] Flipping the first product's operand order so that ax is evaluated before dz reaches the target's block-7 emission order at no cost.
+- mechanism: RTL expansion evaluates an `A * B` operand pair left to right, so `(cx - x0) * (z2 - z0)` emits ax's subu first, which is the target's order; the s8 class kill says emission order == LUID order for these six subus.
+- probe: y1 (tmp/grind/func_8002D780/s10/variantsY/y1_w2_kc_first_flip.c), a one-token change from the 2-floor body, scored on the sandbox and dumped as tag dy1.
+- result: KILLED. y1 = 9/202. The flip does deliver the target's ax-then-dz emission order, but by moving dz's def from block-7 index 0 to index 1 it restores the exact dz/dx priority tie (both refs 3, span 12, pri 2500) that s7/s9 typed, so the seats invert and the block costs 9 instructions instead of 2. The two effects are the same token: on this block geometry the target's emission order and the target's register seats were not both reachable by any of the 35 spellings measured this session.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s10] Flipping the C operand order of the four multiplications is a seat lever independent of evaluation order.
+- mechanism: the RTL `(mult (reg A) (reg B))` operand order reaches the emitted `mult $rs,$rt`, and local-alloc's combine_regs walks an insn's operands in order, so a flip might change which quantity is examined first.
+- probe: batch Z (tmp/grind/func_8002D780/s10/gen_z.py -> s10/variantsZ), 9 variants: the h1 named-local body with product 1, product 2, both kc products, both dz products, both dx products and all four flipped, plus three spellings that name ax alone and leave the rest inline.
+- result: KILLED. In the ax-first regime a single flip is completely byte-neutral (z4 product-1 flipped = 9, z5 product-2 flipped = 9, z3 = 9, identical to the unflipped h1 body); flipping a PAIR costs 9-13 more (z6 = 18, z2 = 22, z7 = 22) by disturbing which pseudo cse keeps. Naming ax and leaving dz/dx/az/bx/bz inline (z1, z8, z9) lands in the same 9-regime as h1. No spelling in the batch reaches the target's seats with the target's emission order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s5 h1 body and the s10 inline body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s10] Hoisting one of the six test-3 differences into the test-2 arm shortens block 7 and breaks the dz/dx tie without changing the emitted instruction set.
+- mechanism: a value computed in block 6 becomes a multi-block pseudo, is skipped by block_alloc (local-alloc.c:470-478) and no longer occupies a block-7 slot, so every later birth/death index shifts and the two tied spans separate. This is the untried half of the s9 frontier item 2 ("take ax out of the competition").
+- probe: batch B (tmp/grind/func_8002D780/s10/gen_b.py -> s10/variantsB), 8 variants: ax, az, bx, bz, dz, dx and the dz/dx pair each hoisted into the test-2 arm after its two cross products, plus one spelling with ax hoisted ahead of test 2's own arithmetic.
+- result: KILLED, and expensively. b5 (az) = 20 at 203 insns, b2 (dz) = 21, b1 (ax) = 26, b7 = 26, b8 (bx) = 28 at 201, b4 (bz) = 32 at 201, b3 (dx) = 38 at 203, b6 (edge pair) = 39 at 203. Half the batch does not even keep build_insns at 202: a hoisted difference needs a register that lives across test 2's four multiplies, which forces block 6's own allocation to change and adds or drops instructions. The cheapest hoist is 18 instructions worse than doing nothing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s10] Rewriting the triangle tests around translated coordinates — in-place translation of cx/cz/px/pz or of x2/z2, or collapsing the four $v0-hosted offsets into one or two reused temps — reaches the target's block-7 register pattern more directly than six separate locals do.
+- mechanism: the target keeps ax, az, bx and bz all in $v0 and x0/z0/cx/cz/px/pz/x2/z2 all live in $t0-$t5/$a2/$a3 across the whole test region, which reads like one temporary being rewritten four times; in-place translation would make the offsets reuse the pseudos they are computed from.
+- probe: batch W variants w1/w1b (cx -= x0, cz -= z0, px -= x0, pz -= z0), w5/w5b (a single reused `t`), w6 (two reused temps `u`/`v`), and batch X variant x8 (x2 -= x0, z2 -= z0).
+- result: KILLED. w1/w1b = 44, w5/w5b = 41, w6 = 26, x8 = 40, every one at 202 insns. In-place translation destroys the seats outright: the offsets inherit the multi-block pseudos' globally allocated $t2/$a2/$t3/$t4 instead of taking $v0, so all four subus and all four multiplies differ. A single reused temp does produce ONE $v0-hosted pseudo spanning the whole block, but its priority (refs 8 over span 18, pri 13333) puts it first and the dz/dx pair still ties behind it. The target's $v0 reuse is the allocator's doing, not the source's.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s5 h1 body and the s10 inline body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## [s10] The basic-block structure of the three triangle tests is a lever on which insns land in block 7, so a different control-flow spelling can change the block's shape without changing the instruction set.
+- mechanism: frontier item 3 for s11 rests on the possibility that the original source put block 7's fourteen insns into a differently-shaped CFG; jump1 normalises `if`/`goto`/`&&` spellings, but only up to the point where the arms differ.
+- probe: batch C (tmp/grind/func_8002D780/s10/gen_c.py -> s10/variantsC), 5 variants on the s10 inline body: (c1) each test inverted into a `goto sqrt_path` early exit with the tests un-nested, (c2) test 3 written entirely inside its `if` condition with no kc/kp assignment at all, (c3) tests 2 and 3 chained with `&&` using embedded assignments, (c4) the innermost `if` inverted with a `goto` and a bare `return 1`, (c5) fresh `c3`/`p3` locals with inline differences.
+- result: KILLED as a lever, banked as a free degree of freedom. All five score 2/202 with build_insns 202 -- byte-identical output to the candidate. jump1 collapses every one of these spellings onto the same CFG, so control-flow shape in the test region costs nothing and buys nothing. A future probe may therefore pick whichever of these shapes it likes (including c2, which removes the kc/kp assignments from test 3 entirely) without paying for it, but block structure is not the missing input to the dz/dx tie.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)
+
+## Live frontier (for s11) — still 2 insns, but the residual is now a single adjacent-pair emission swap with every register already correct
+
+1. **One extra instruction between dz's definition and dx's definition, deleted after
+   local_alloc.** This is the arithmetic s10 pinned: on the target's emission order dz
+   spans block-7 indices i1->i7 and dx spans i3->i9, six slots each, refs 3 each, hence
+   the tie. One extra insn in the window between dz's def and dx's def — the single slot
+   i2 — makes dz span 14 against dx's 12 and seats dx first, exactly as the s10 body's
+   earlier dz birth does, but WITHOUT costing the ax/dz order. The insn must vanish after
+   local_alloc, so it must be a reg-reg copy removed by jump2's delete_noop_moves
+   (toplev.c:3142). s8's class kill (cse.c:1032) says such a copy cannot survive if both
+   of its definitions sit inside block 7, and s8's batch R priced a cross-block carrier
+   manufactured out of test 2's own arithmetic at +7/+11. What has NOT been tried is a
+   carrier whose second definition sits in the TEST-1 arm or in the outer block (the two
+   blocks that already assign `kc` and `kp`), so that test 2's codegen is untouched.
+   Next probe: on the ax-first (y1) body add a carrier declared in the outer test block,
+   defined once there or in the test-1 arm, and re-assigned inside test 3 from a block-7
+   value that dies at the copy; BEFORE scoring run tmp/grind/func_8002D780/s10/dumpvar.py
+   and require the blk=7 SUGGDBG-QTY table to show dz death 18 (span 14) with dx still
+   birth 8 / death 20 (span 12); only then score, requiring build_insns == 202.
+2. **A decomp-permuter campaign on the s10 chassis.** Inherited unspent since s5, and it
+   has never been this well posed: the residual is now ONE transposition of two adjacent
+   `subu` instructions with every register, every multiply and the whole rest of the
+   function already byte-correct, which is precisely the permuter's statement-reordering
+   move set. Regenerate base.c from the new memory/grind/func_8002D780/candidate.c AND
+   from tmp/grind/func_8002D780/s10/variantsY/y1_w2_kc_first_flip.c into the validated
+   workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild
+   recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with
+   `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and
+   re-score every find on the engine sandbox (s4's finding that the permuter's weighted
+   metric is anti-correlated with the engine's here still applies).
+3. **Re-examine whether block 7 really is fourteen RTL insns in the original compile.**
+   Every kill from s6 onward assumes the target's block 7 holds exactly the fourteen insns
+   we emit, which forces the dz/dx tie and leaves the original's dx-first seat unexplained.
+   The alternative is that the original source put one of the six differences, or some
+   other value, somewhere that changes the block's SHAPE at local-alloc time without
+   changing the final 202 instructions. s10 killed the obvious version (hoisting a
+   difference into the test-2 arm, 20-39). The untried version changes which insns are in
+   which basic block rather than which insns exist: the three side tests written as one
+   `&&`-chained condition, an early-return inversion of each `if`, or the test-2 and
+   test-3 arms merged. Next probe: sweep that block-structure axis and read the .lreg
+   dump's basic-block boundaries, not only the score.
+
+## [s10] Test 3 can be written with no named difference locals at all and still hold the 2/202 floor, and the resulting body's two residual instructions are a different pair with every register already correct.
+- mechanism: The six differences are ordinary subexpressions; inline, RTL expansion creates the same six pseudos but in the operand-evaluation order of the two product expressions, which sets INSN_LUID and therefore (s8, sched.c:2408) block 7's emission order.
+- probe: Batch W (tmp/grind/func_8002D780/s10/gen_w.py -> s10/variantsW) scored with tools/sweep_variants.py, then tools/pairdiff.py code6cac_b func_8002D780 on the s5 body, on w2 (fully inline) and on x4 (only dx and az named) via s10/showdiff.py.
+- result: CONFIRMED. w2 fully inline = 2/202, w3 (only dz/dx named) = 2, w4 (only the four $v0 offsets named) = 2, x4 (only dx and az named) = 2. All four show the SAME diff, and it is not the s5 body's diff: ours emits `subu $a0,$t0,$a3` (dz) then `subu $v0,$t2,$t1` (ax) where the target emits ax in the bltz delay slot at 8002D910 and dz right after; the dx/az pair, all four multiplies and every register assignment already match. The s5 body's residual is instead the az/dx transposition. Consequence: the six named test-3 locals that s3-s9 flagged as needing a named-intermediate-vs-ordinary-C ruling are unnecessary, and the new candidate.c does not contain them, so that family question no longer blocks a candidate-ready submission.
+- verdict: CONFIRMED
+
+## [s10] The dz/dx seat assignment is decided purely by which of the two has the longer local-alloc live range, and evaluating (z2 - z0) before (cx - x0) is the one-token source lever that decides it.
+- mechanism: qty_compare_1 (tools/gcc-2.7.2/local-alloc.c:1725-1758) ranks block-7 quantities by floor_log2(refs)*refs*size/(death-birth)*10000 and falls back to quantity number. Moving dz's subu from block-7 index 1 to index 0 changes its span from 12 to 14 without changing its 3 references, dropping its priority from 2500 to 2142, below dx's 2500.
+- probe: Instrumented cc1 (tools/gcc-2.7.2/cc1) with BB2_SUGG_DEBUG=1 BB2_QTY_DEBUG=1 through tmp/grind/func_8002D780/s10/dumpvar.py on the new body (tag dw2) and on y1, the same body with only the first product's operands flipped (tag dy1, 9/202); compared the blk=7 SUGGDBG-QTY tables.
+- result: CONFIRMED. dw2: dz qty0 birth 2 death 16 refs 3 (span 14, pri 2142), ax qty1 birth 4 death 6 refs 2 (pri 10000), dx qty4 birth 8 death 20 refs 3 (span 12, pri 2500) -> dx seated first onto $v1, the target's seats. dy1: ax qty0 birth 2 death 6 (pri 5000), dz qty1 birth 4 death 16 (span 12, pri 2500), dx qty4 birth 8 death 20 (span 12, pri 2500) -> exact tie, quantity-number fallback seats dz on $v1, seats inverted. Every other row of the two tables (qty2/3 and qty5-14: the four multiply HI/LO scratch pairs and az/bx/bz) is identical, so the ax/dz evaluation order is the ONLY differing input.
+- verdict: CONFIRMED
+
+## [s10] Flipping the first product's operand order so that ax is evaluated before dz reaches the target's block-7 emission order at no cost.
+- mechanism: RTL expansion evaluates an A * B operand pair left to right, so (cx - x0) * (z2 - z0) emits ax's subu first, which is the target's order; the s8 class kill establishes that emission order equals LUID order for these six subus.
+- probe: y1 (tmp/grind/func_8002D780/s10/variantsY/y1_w2_kc_first_flip.c), a one-token change from the 2-floor body, scored on the engine sandbox and dumped as tag dy1.
+- result: KILLED. y1 = 9/202 at 202 insns. The flip does deliver the target's ax-then-dz emission order, but by moving dz's def from block-7 index 0 to index 1 it restores the exact dz/dx priority tie (both refs 3, span 12, pri 2500) that s7/s9 typed, so the seats invert and the block costs 9 instructions instead of 2. Emission order and register seats are driven by the same token: across the 35 spellings measured this session, none reached both.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store in the sqrt block)
+
+## [s10] Flipping the C operand order of the four multiplications is a seat lever independent of evaluation order.
+- mechanism: The RTL (mult (reg A) (reg B)) operand order reaches the emitted mult $rs,$rt, and local-alloc's combine_regs walks an insn's operands in order, so a flip might change which quantity is examined first.
+- probe: Batch Z (tmp/grind/func_8002D780/s10/gen_z.py -> s10/variantsZ), 9 variants: the h1 named-local body with product 1, product 2, both kc products, both dz products, both dx products and all four flipped, plus three spellings naming ax alone with the rest inline.
+- result: KILLED. In the ax-first regime a single flip is byte-neutral (z4 = 9, z5 = 9, z3 = 9, identical to the unflipped h1 body); flipping a pair costs 9-13 more (z6 = 18, z2 = 22, z7 = 22) by disturbing which pseudo cse keeps. Naming ax and leaving dz/dx/az/bx/bz inline (z1, z8, z9) lands in the same 9-regime as h1. No spelling in the batch reaches the target's seats with the target's emission order.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s5 h1 body and the s10 inline body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+## [s10] Hoisting one of the six test-3 differences into the test-2 arm shortens block 7 and breaks the dz/dx tie without changing the emitted instruction set.
+- mechanism: A value computed in block 6 becomes a multi-block pseudo, is skipped by block_alloc (local-alloc.c:470-478) and no longer occupies a block-7 slot, so every later birth/death index shifts and the two tied spans separate. This is the untried half of the s9 frontier item 2.
+- probe: Batch B (tmp/grind/func_8002D780/s10/gen_b.py -> s10/variantsB), 8 variants: ax, az, bx, bz, dz, dx and the dz/dx pair each hoisted into the test-2 arm after its two cross products, plus one spelling with ax hoisted ahead of test 2's own arithmetic.
+- result: KILLED, and expensively. b5 (az) = 20 at 203 insns, b2 (dz) = 21, b1 (ax) = 26, b7 = 26, b8 (bx) = 28 at 201, b4 (bz) = 32 at 201, b3 (dx) = 38 at 203, b6 (edge pair) = 39 at 203. Half the batch does not even keep build_insns at 202: a hoisted difference needs a register living across test 2's four multiplies, which forces block 6's own allocation to change and adds or drops instructions. The cheapest hoist is 18 instructions worse than doing nothing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+## [s10] Rewriting the triangle tests around translated coordinates -- in-place translation of cx/cz/px/pz or of x2/z2, or collapsing the four $v0-hosted offsets into one or two reused temps -- reaches the target's block-7 register pattern more directly than six separate locals do.
+- mechanism: The target keeps ax, az, bx and bz all in $v0 and x0/z0/cx/cz/px/pz/x2/z2 all live in $t0-$t5/$a2/$a3 across the whole test region, which reads like one temporary rewritten four times; in-place translation would make the offsets reuse the pseudos they are computed from.
+- probe: Batch W variants w1/w1b (cx -= x0, cz -= z0, px -= x0, pz -= z0), w5/w5b (a single reused t), w6 (two reused temps u/v), and batch X variant x8 (x2 -= x0, z2 -= z0).
+- result: KILLED. w1/w1b = 44, w5/w5b = 41, w6 = 26, x8 = 40, every one at 202 insns. In-place translation destroys the seats outright: the offsets inherit the multi-block pseudos' globally allocated $t2/$a2/$t3/$t4 instead of taking $v0, so all four subus and all four multiplies differ. A single reused temp does produce one $v0-hosted pseudo spanning the whole block, but its priority (refs 8 over span 18, pri 13333) puts it first and the dz/dx pair still ties behind it. The target's $v0 reuse is the allocator's doing, not the source's.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s5 h1 body and the s10 inline body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)
+
+## [s10] The basic-block structure of the three triangle tests is a lever on which insns land in block 7, so a different control-flow spelling can change the block's shape without changing the instruction set.
+- mechanism: Frontier item 3 rests on the possibility that the original source put block 7's fourteen insns into a differently-shaped CFG; jump1 normalises if/goto/&& spellings, but only up to the point where the arms differ.
+- probe: Batch C (tmp/grind/func_8002D780/s10/gen_c.py -> s10/variantsC), 5 variants on the s10 inline body: each test inverted into a goto-based early exit with the tests un-nested; test 3 written entirely inside its if condition with no kc/kp assignment; tests 2 and 3 chained with && using embedded assignments; the innermost if inverted with a goto and a bare return 1; and fresh c3/p3 locals.
+- result: KILLED as a lever, banked as a free degree of freedom. All five score 2/202 at 202 insns, byte-identical to the candidate. jump1 collapses every one of these spellings onto the same CFG, so control-flow shape in the test region costs nothing and buys nothing. A future probe may pick whichever of these shapes it likes (including the one that removes the kc/kp assignments from test 3 entirely) without paying for it.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)

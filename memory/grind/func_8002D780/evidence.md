@@ -880,3 +880,117 @@ anything born at insn 3 or later conflicts with dx.
 - [s9] Two byte-neutral degrees of freedom at the h1 baseline of 9/202: fresh test-3 cross-product locals (u1) and a named first product (u2); both are available free to future probes.
 
 - [s9] Tooling note for the next session: the BB2_SUGG_DEBUG / BB2_QTY_DEBUG hooks only exist in tools/gcc-2.7.2/cc1, not in engine/buildconfig.py's CC1 (tools/gcc-2.7.2/build/cc1); tmp/grind/func_8002D780/s9/dumpvar.py takes the binary from $BB2_CC1 and writes both the qty trace and the full -da dump set per variant.
+
+## [s10] (2026-09-08, rederive) — floor 2/202, and the residual MOVED
+
+Chassis re-measured at dispatch: HEAD ce1ed95f (-mel -msoft-float), the s5 candidate body
+spliced into src/code6cac_b.c, `sandbox func_8002D780 --disable all` = **2/202**,
+build_insns == target_insns == 202. The ledger's floor 2 stands.
+
+### 1. Test 3 does not need ANY named locals — and without them the residual changes
+
+The mandated rederive produced a body whose third triangle test is two plain inline
+expressions:
+
+    kc = (z2 - z0) * (cx - x0) - (x2 - x0) * (cz - z0);
+    kp = (z2 - z0) * (px - x0) - (x2 - x0) * (pz - z0);
+
+It scores **2/202** — identical to the s5 body with six named difference locals — but
+`tools/pairdiff.py code6cac_b func_8002D780` shows a DIFFERENT residual pair:
+
+  * s5 body (named locals): ours emits `subu $v0,$a2,$a3` (az) then `subu $v1,$t5,$t1`
+    (dx); the target emits dx then az. Residual = the az/dx order.
+  * s10 body (inline): ours emits `subu $a0,$t0,$a3` (dz) then `subu $v0,$t2,$t1` (ax);
+    the target emits ax (in the `bltz` delay slot at 8002D910) then dz. Residual = the
+    ax/dz order. **The dx/az pair, all four mults and every register are already right.**
+
+Both bodies have all six values in the target's registers; only one adjacent pair of
+subus is transposed, and it is a different pair in each. Naming only dz/dx (`w3`), only
+the four $v0-hosted offsets (`w4`), or only dx and az (`x4`) all reproduce the inline
+body's 2/202 and its ax/dz residual. This closes the s3-s9 open question about whether
+the six test-3 difference locals are ordinary C or a named-intermediate family claim:
+they are not needed at all, and the committed candidate no longer has them.
+
+### 2. The dz/dx seat is a LIVE-RANGE-LENGTH question, read out of the allocator
+
+Instrumented cc1 (tools/gcc-2.7.2/cc1, BB2_SUGG_DEBUG=1 BB2_QTY_DEBUG=1 via
+tmp/grind/func_8002D780/s10/dumpvar.py) on the new body (`dw2`) and on the one-token
+variant that flips the first product's operands (`dy1` = `(cx - x0) * (z2 - z0)`, 9/202).
+The blk=7 SUGGDBG-QTY tables are IDENTICAL except for the ax and dz rows:
+
+    body            qty  reg  birth death refs  span  pri = floor_log2(r)*r*size/span*10000
+    s10 (2/202)     0    129    2    16    3     14   2142   <- dz
+                    1    130    4     6    2      2  10000   <- ax
+                    4    132    8    20    3     12   2500   <- dx      -> dx seated first, $v1  (TARGET)
+    y1  (9/202)     0    129    2     6    2      4   5000   <- ax
+                    1    130    4    16    3     12   2500   <- dz
+                    4    132    8    20    3     12   2500   <- dx      -> TIE, qty-number fallback seats dz, $v1  (WRONG)
+
+So the entire seat question is: does dz's live range outlast dx's? Evaluating `(z2 - z0)`
+before `(cx - x0)` puts dz's subu at block-7 index 0 instead of index 1, which lengthens
+dz's range from 12 to 14 and drops its priority under dx's 2500 (local-alloc.c:1725-1758).
+The price is that ax is then emitted second, which is the one insn pair we are short.
+This is the same tie s7/s9 measured, now shown to be one token wide in the source.
+
+### 3. Everything measured this session (all at 202 insns unless noted)
+
+Batch W (tmp/grind/func_8002D780/s10/variantsW, gen_w.py) — structural rewrites:
+  w2 fully inline = 2 · w3 edge named only = 2 · w4 four offsets named = 2 ·
+  w0b h1 named order = 9 · w7 pairwise named = 9 · w6 two reused $v0 temps = 26 ·
+  w5/w5b one reused $v0 temp = 41/41 · w1/w1b in-place translation of cx/cz/px/pz = 44/44.
+Batch X (variantsX, gen_x.py) — operand/eval-order permutations:
+  x4 dx+az named = 2 · x3 edge+ax named = 9 · x5 fresh c3/p3 = 9 · x2 = 17 ·
+  x1 = 18 · x7 named products = 18 · x9 = 19 · x6 kp first = 38 · x8 edge in-place = 40.
+Batch Y (variantsY, gen_y.py) — single-product operand flips off the 2-floor body:
+  y9 control = 2 · y6 = 3 · y7 = 3 · y3 both kc products flipped = 4 ·
+  y2 kc second flipped = 5 · y1 kc first flipped = 9 · y5 = 9 · y8 = 9 · y4 kp first = 16.
+  y3's diff is instructive: ax/dz ORDER correct, all seats correct, and the 4 residual
+  insns are the two mult operand orders plus the az/dx transposition.
+Batch Z (variantsZ, gen_z.py) — eval order decoupled from mult operand order:
+  z1/z3/z4/z5/z8/z9 = 9 · z6 = 18 · z2/z7 = 22. A single mult operand flip is
+  byte-neutral in the ax-first regime; flipping two costs 9-13.
+Batch B (variantsB, gen_b.py) — hoisting one difference into the test-2 arm:
+  b5 az = 20 (203 insns) · b2 dz = 21 · b1 ax = 26 · b7 = 26 · b8 bx = 28 (201) ·
+  b4 bz = 32 (201) · b3 dx = 38 (203) · b6 edge pair = 39 (203).
+
+### 4. Where the last two insns now stand
+
+The target's block 7 is 14 RTL insns: ax(i0) dz(i1) mult1(i2) dx(i3) az(i4) mult2(i5)
+bx(i6) mult3(i7) bz(i8) mult4(i9) kc-sub kp-sub xor branch. On that geometry dz spans
+i1->i7 and dx spans i3->i9 — six insn slots each, refs 3 each, hence the tie. Making dx
+win needs one of exactly three things, and s8/s9/s10 have now priced them all:
+  (a) dz's range longer — only reachable by moving dz's def to i0, which is this body,
+      and which costs the ax/dz order (this session's residual);
+  (b) dx's refs = 4 (pri 6666) — a self-assign emits no RTL (s8), an in-block copy is
+      folded by cse.c:1032 (s8, class), a cross-block carrier cannot merge quantities
+      with a block-local pseudo (s8);
+  (c) one extra insn between dz's def and dx's def that is deleted after local_alloc —
+      it would give dz span 14 against dx's 12 without touching either ref count. The
+      only late deleter is jump2's delete_noop_moves (toplev.c:3142), i.e. a reg-reg
+      copy, and s8's cse class kill says such a copy cannot survive if both of its
+      definitions sit inside block 7.
+
+### 5. Block structure in the test region is free (batch C)
+
+Five control-flow spellings of the three triangle tests — inverted `goto`-based early
+exits, test 3 folded entirely into its own `if` condition, tests 2+3 chained with `&&`
+and embedded assignments, an inverted innermost `if`, and fresh `c3`/`p3` locals — all
+score 2/202 at 202 insns, byte-identical to the candidate (tmp/grind/func_8002D780/s10/
+gen_c.py -> s10/variantsC). jump1 normalises them onto one CFG. Future probes can pick
+whichever shape suits them; block structure is not the missing input to the dz/dx tie.
+
+- [s10] Chassis re-measured at dispatch: HEAD ce1ed95f (-mel -msoft-float), s5 candidate body in src/code6cac_b.c, `sandbox func_8002D780 --disable all` = 2/202 with build_insns == target_insns == 202. The ledger's floor 2 stands; the brief's 'measurement unavailable' is resolved.
+
+- [s10] 39 distinct bodies measured this session across five batches (W, X, Y, Z, B, C), every one recorded in hypotheses.md with its score and insn count.
+
+- [s10] The new candidate (memory/grind/func_8002D780/candidate.c) writes test 3 as two plain inline expressions with NO locals: kc = (z2 - z0) * (cx - x0) - (x2 - x0) * (cz - z0); kp = (z2 - z0) * (px - x0) - (x2 - x0) * (pz - z0). Score 2/202. The s5 six-named-locals body is preserved verbatim as memory/grind/func_8002D780/candidate_alt_s5_named_locals.c and also still scores 2/202.
+
+- [s10] The two bodies have DIFFERENT residual pairs: s5 body = the az/dx subu transposition; s10 body = the ax/dz subu transposition. In both, all six values already sit in the target's registers and all four multiplies match, so the residual is one adjacent-pair emission swap in each.
+
+- [s10] Allocator trace (tmp/grind/func_8002D780/s10/dw2/qty.txt vs s10/dy1/qty.txt): the s10 body gives dz span 14 / pri 2142 against dx span 12 / pri 2500 so dx is seated first onto $v1 (target seats); the one-token ax-first flip gives dz and dx both span 12 / pri 2500, an exact tie that local-alloc.c:1757's quantity-number fallback resolves in dz's favour, inverting the seats.
+
+- [s10] Family footprint of the candidate is now ONE annotated construct: the same-value re-store of the local `m` (dead-store family, .claude/rules/dead-store-fake-exception.md, in-TU byte-matched precedent at src/code6cac_b.c:1244-1265). The six test-3 difference locals that s3-s9 listed as an unresolved named-intermediate question are gone from the body.
+
+- [s10] Block structure in the test region is a free degree of freedom: five distinct control-flow spellings (goto early exits, &&-chained tests with embedded assignments, an inverted inner if, fresh cross-product locals, test 3 folded into its own if condition) all produce byte-identical output at 2/202.
+
+- [s10] Arithmetic of the remaining 2 insns, pinned: the target's block 7 is 14 RTL insns -- ax(i0) dz(i1) mult1(i2) dx(i3) az(i4) mult2(i5) bx(i6) mult3(i7) bz(i8) mult4(i9) kc-sub kp-sub xor branch -- on which dz spans i1->i7 and dx spans i3->i9, six slots and 3 refs each, hence the tie. Making dx win needs dz's range longer (only reachable by moving dz's def to i0, which costs the ax/dz order), or dx's refs = 4 (all three spellings class-killed in s8), or one extra insn between dz's def and dx's def that is deleted after local_alloc.

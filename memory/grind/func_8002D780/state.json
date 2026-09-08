@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 9,
- "current_modality": "forensics",
+ "session_count": 10,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -57,23 +57,29 @@
    "floor": 2,
    "modality": "forensics",
    "headline": "Read local-alloc's own allocation trace: the residual-A seat flip IS reachable by one extra short-lived block-7 quantity (proved in probe u3's QTYDBG trace), but the only live range that outranks dz w"
+  },
+  {
+   "session": 10,
+   "floor": 2,
+   "modality": "rederive",
+   "headline": "Rederive: test 3 needs NO named locals (floor holds at 2/202) and the residual MOVED to the ax/dz pair with every register already correct; the dz/dx seat is now measured to be a live-range-LENGTH que"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The extra block-7 quantity the target needs is a cross-block copy carrier whose copy insn lands at block-7 insn 2 (between ax's subu and dz's subu) with refs 2, birth 4 and death 8, and which is then deleted by jump2's delete_noop_moves so build_insns stays at 202.",
-   "mechanism": "s9 pinned the unique admissible live range (refs 2 / birth 4 / death 8: above dz's 2500, below ax's 5000, conflicting with dz, clear of dx's birth at 8). s8 established that a copy surviving cse needs its second definition in a different basic block, and that jump_optimize is passed noop_moves == 1 only at the jump2 call (toplev.c:3142), i.e. after local_alloc has already counted the quantity.",
-   "next_probe": "Build an `m`-shaped carrier on the h1 order (declared before the test-2 arm, defined once inside that arm from a statement test 2 already needs -- s8 batch R showed manufacturing that definition costs +7/+11 -- and re-assigned inside test 3 from a value that dies at the copy). BEFORE scoring, run tmp/grind/func_8002D780/s9/dumpvar.py with BB2_CC1=tools/gcc-2.7.2/cc1 and confirm in the blk=7 SUGGDBG-QTY table that the new quantity reports birth 4 death 8 refs 2 and that ax still reports birth 2 death 6; only then score, requiring build_insns == 202."
+   "hypothesis": "One extra instruction between dz's definition and dx's definition, deleted after local_alloc, gives dz span 14 against dx's 12 and seats dx first WITHOUT costing the ax/dz emission order.",
+   "mechanism": "On the target's emission order dz spans block-7 indices i1->i7 and dx i3->i9, six slots each, refs 3 each, so qty_compare_1 ties and the quantity-number fallback (local-alloc.c:1757) seats dz. One extra insn in the single slot between the two definitions shifts every later index by 2 for dz but not for dx. The insn must vanish after local_alloc, so it must be a reg-reg copy removed by jump2's delete_noop_moves (toplev.c:3142). s8's cse class kill (cse.c:1032) rules out a copy whose definitions all sit inside block 7, and s8's batch R priced a cross-block carrier manufactured out of test 2's arithmetic at +7/+11 -- but a carrier whose second definition sits in the TEST-1 arm or the outer block, which already assign kc and kp three times between them, has never been tried and leaves test 2's codegen untouched.",
+   "next_probe": "On the ax-first body (tmp/grind/func_8002D780/s10/variantsY/y1_w2_kc_first_flip.c, 9/202) add a carrier declared in the outer test block, defined once there or in the test-1 arm, and re-assigned inside test 3 from a block-7 value that dies at the copy. BEFORE scoring, run tmp/grind/func_8002D780/s10/dumpvar.py with BB2_CC1=tools/gcc-2.7.2/cc1 and require the blk=7 SUGGDBG-QTY table to show dz death 18 (span 14) with dx still birth 8 / death 20 (span 12); only then score, requiring build_insns == 202."
   },
   {
-   "hypothesis": "Removing ax from block_alloc's competition (making it a multi-block pseudo seated by global_alloc) lets the u3-shaped extra quantity take $v0 without displacing anything, so the dz/dx seats flip on the h1 order at no register cost.",
-   "mechanism": "u3 already proves the seat flip; its entire cost is that ax loses $v0 to the new quantity. block_alloc only allocates pseudos whose live range lies inside one basic block (local-alloc.c:470-478), so a multi-block ax is skipped and its seat comes from global.c instead. s6's batch O did exactly this to dz and dx (23-40) but never to ax.",
-   "next_probe": "Carry `ax` (= cx - x0) in a variable that is also live in the test-2 block, on the h1 statement order, with and without the u3-shaped extra value; read the blk=7 SUGGDBG-QTY table first to confirm ax has left the quantity list and that dz/dx are seated $a0/$v1, then score and check build_insns."
+   "hypothesis": "A decomp-permuter campaign on the s10 chassis finds the last two instructions where the s4 campaign on the 7-floor chassis found nothing.",
+   "mechanism": "The residual is now ONE transposition of two adjacent subu instructions with every register, every multiply and the whole rest of the function already byte-correct -- precisely the permuter's statement-reordering and operand-shuffling move set. The s4 campaign's neighbourhood was dominated by residuals B and C, both closed since s5.",
+   "next_probe": "Regenerate base.c from the new memory/grind/func_8002D780/candidate.c AND from s10/variantsY/y1_w2_kc_first_flip.c into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (s4's finding that the permuter's weighted metric is anti-correlated with the engine's here still applies)."
   },
   {
-   "hypothesis": "A decomp-permuter campaign on the 2-floor chassis finds the last two instructions where the s4 campaign on the 7-floor chassis found nothing.",
-   "mechanism": "s7 typed the residual as a local-alloc tie, s8 class-killed the sched1 side, and s9 has now reduced the whole remaining search to introducing one extra short-lived temporary in one block -- which is precisely the permuter's temporary-introduction and statement-reordering move set. The s4 campaign's neighbourhood was dominated by residuals B and C, both now closed.",
-   "next_probe": "Regenerate base.c from memory/grind/func_8002D780/candidate.c AND from the h1 body into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (the s4 finding that the permuter's weighted metric is anti-correlated with the engine's here still applies)."
+   "hypothesis": "Block 7 in the original compile was not the same fourteen RTL insns we emit, so the dz/dx tie the ledger has assumed since s6 never arose there.",
+   "mechanism": "Every kill from s6 onward assumes the target's block 7 holds exactly our fourteen insns, which forces the tie and leaves the original's dx-first seat unexplained. s10 killed the two obvious ways to change the block's contents (hoisting a difference into the test-2 arm, 20-39; five control-flow respellings, all byte-neutral). What remains is a change to what block 7 CONTAINS that keeps the final 202 -- most plausibly one of the sqrt-block or tail values being computed inside the test region, or the centroid divide-by-3 being expressed so that a piece of it lands after the test-2 branch.",
+   "next_probe": "Sweep spellings that move a value across the block-6/block-7 boundary in the OTHER direction from batch B: compute part of the sqrt-block tail (for example the 0x108 load or the p118/p124 base pointers) inside the test-3 arm, and re-express cx/cz as (x0 + x2) / 3 evaluated lazily at their first use in test 3; read the .lreg dump's basic-block boundaries and the blk=7 SUGGDBG-QTY table for each, not only the score."
   }
  ],
  "judge_constraints": [],
@@ -374,6 +380,46 @@
    "measured_on": "HEAD c7aa37e7 (-mel -msoft-float), the s5 h1 body spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
    "predicate_cite": "",
    "result": "KILLED as a lever, banked as a free degree of freedom. u1 = 9/202, identical to the h1 baseline. The two new quantities "
+  },
+  {
+   "session": 10,
+   "statement": "Flipping the first product's operand order so that ax is evaluated before dz reaches the target's block-7 emission order at no cost.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store in the sqrt block)",
+   "predicate_cite": "",
+   "result": "KILLED. y1 = 9/202 at 202 insns. The flip does deliver the target's ax-then-dz emission order, but by moving dz's def fr"
+  },
+  {
+   "session": 10,
+   "statement": "Flipping the C operand order of the four multiplications is a seat lever independent of evaluation order.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ce1ed95f (-mel -msoft-float), the s5 h1 body and the s10 inline body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "KILLED. In the ax-first regime a single flip is byte-neutral (z4 = 9, z5 = 9, z3 = 9, identical to the unflipped h1 body"
+  },
+  {
+   "session": 10,
+   "statement": "Hoisting one of the six test-3 differences into the test-2 arm shortens block 7 and breaks the dz/dx tie without changing the emitted instruction set.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "KILLED, and expensively. b5 (az) = 20 at 203 insns, b2 (dz) = 21, b1 (ax) = 26, b7 = 26, b8 (bx) = 28 at 201, b4 (bz) = "
+  },
+  {
+   "session": 10,
+   "statement": "Rewriting the triangle tests around translated coordinates -- in-place translation of cx/cz/px/pz or of x2/z2, or collapsing the four $v0-hosted offsets into one or two reused temps -- reaches the tar",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ce1ed95f (-mel -msoft-float), the s5 h1 body and the s10 inline body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "KILLED. w1/w1b = 44, w5/w5b = 41, w6 = 26, x8 = 40, every one at 202 insns. In-place translation destroys the seats outr"
+  },
+  {
+   "session": 10,
+   "statement": "The basic-block structure of the three triangle tests is a lever on which insns land in block 7, so a different control-flow spelling can change the block's shape without changing the instruction set.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD ce1ed95f (-mel -msoft-float), the s10 inline test-3 body spliced into src/code6cac_b.c, one FAKE construct present (the m re-store)",
+   "predicate_cite": "",
+   "result": "KILLED as a lever, banked as a free degree of freedom. All five score 2/202 at 202 insns, byte-identical to the candidat"
   }
  ],
  "ladder_skip": 0,
