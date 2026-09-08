@@ -5859,3 +5859,100 @@ transplant surface in the TU.
 - [s50] Owner directive executed: the three completed in-TU siblings were read on main. func_80017D84 (src/ings.c:824-843) confirms the s45 52-byte object model and uses a pointer-increment for-with-break geometry that does NOT fit this target (which recomputes `base + i` in the branch delay slot each iteration). main (src/ings.c:576) supplies the read-a-never-assigned-local idiom used by cell M1c. func_80016E60 (src/ings.c:436) contributes only FAKE do-while(0) / pointer-alias levers, all already measured on this function at s43 (X1-X4 = 6 or 10). No further transplant surface in the TU.
 
 - [s50] tools/grinder/dump.ps1 was not needed this session: the pass attribution (cse EBB boundary at the join) was established directly from the emitted stream, where the target's guard add and preheader add of the same value are provably unshared.
+
+## s51 (2026-09-07, rederive)
+
+- [s51] BASE re-audit: `memory/grind/func_80017848/candidate.c` at the HEAD src/ings.c:820
+  anchor measures **3 at 127/127**, unchanged from s42-s50. `tools/fake_ablate.py --func
+  func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c` reports
+  "no FAKE-annotated constructs found; nothing to ablate" — the banked floor is carried by
+  ordinary C with no FAKE carrier occupying any pseudo, so the s42-s50 instance kills were
+  not measured under a FAKE mask. Mandatory kill re-audit satisfied.
+
+- [s51] Closest-form re-audit: cell **M2** (s50's structurally-exact 127/127 form) re-measures
+  **17 at 127/127** on the HEAD chassis, exactly as s50 recorded. The kill stands.
+
+**E-s51-1 — THE SESSION'S RESULT: M2's 17 was carrying a self-inflicted 7 points. Cell M7 =
+M2 with loop-2's redundant `lnk` local deleted measures 10 at 127/127.** s50's M2 added an
+explicit `lnk = *(u8 **)(ctx + 0x10);` local to loop 2's preheader, which BASE never had
+(BASE reads `*(u8 **)(ctx + 0x10)` inline in loop 2's body). That extra local lengthens lnk's
+live range, lifts its global.c priority above `sh`, and rotates the a1/a2 seats in BOTH loops.
+Deleting it and restoring BASE's inline read drops the score from **17 to 10** with the
+structure untouched: M7 still carries both preheader copies and the loop-1 exit-tail reload at
+127/127. Banked `rejected/s51_M7_loop2_lnk_local_removed_seat_and_call_residual_costs_10.c`.
+This is the first movement on the M-branch since it opened and it retires frontier item 1 of
+s50 ("why does sh seat in a2 and lnk in a1") with a one-line C answer: it was the lnk local,
+not the added q/r allocnos.
+
+**E-s51-2 — the 10 is a TWO-WAY TRADE-OFF, and both halves are 2 points each.** M7 (with the
+pre-guard `q = p;`) and M8 (= M7 with `q = p;` deleted, so q/r are undefined on their skip
+paths) both measure **10 at 127/127**, but their residuals are DISJOINT:
+  * M7/M19 residual: loop-1 preheader is byte-exact (`addu a3,a0,zero / lw a2,16(s2) /
+    addu a0,a1,a3` — correct a3 seat AND correct order), but reorg duplicates
+    `addu v1,zero,zero` (i = 0) into the loop-1 guard's `bltz` delay slot where the target
+    has a nop, and emits a second copy of it ahead of loop-1's preheader (2 points).
+  * M8 residual: the `i = 0` placement is BYTE-EXACT in both loops (target's `blez` delay
+    slot), but the two copy destinations seat in **t0/t1 instead of a3** and loop-1's
+    `lw a2,16(s2)` is emitted before the copy instead of between it and the base add
+    (2 points).
+The mechanism for M8's t0/t1 is that with `q = p;` deleted, `q` (and `r`) have no definition on
+their loop-skip paths, so flow treats them as live-in at function entry, where they conflict
+with the incoming parameter hard registers a0-a3 — leaving t0 as the first free seat in the
+allocation order. The pre-guard `q = p;` removes that entry-liveness and buys the a3 seat, but
+it also changes the block that precedes the loop-1 guard, which is what lets reorg fill the
+`bltz` delay slot. Banked
+`rejected/s51_M8_no_preguard_q_i0_slot_correct_copies_seat_t0t1_costs_10.c`.
+
+**E-s51-3 — the trade-off is not a statement-placement artefact.** Five placements of the two
+statements were measured and every one that keeps the pre-guard `q = p;` reproduces M7's
+residual EXACTLY, and every one that drops it reproduces M8's: M19 (`i = 0;` moved to sit
+between the loop-1 count load and `q = p;`) = 10 with a diff byte-identical to M7's
+(`tmp/grind/func_80017848/s51/B_M19.txt`); P5 (`i = 0;` after `q = p;`) = 10; M20 (`q = p;`
+hoisted above `sh = slot_a << 6;`) = 16; M12 (`q = p;` between sh and `i = 0;`) = 13;
+M17/M18 (`i = 0;` moved INSIDE both guarded blocks with the guards rewritten as
+`if (count > 0)`, which is the target's own `blez`-against-zero shape) = 35 / 27 — that
+rewrite costs an instruction and is dead. The 10 is a property of whether `q` is defined on
+the loop-skip path, not of where the statements sit.
+
+**E-s51-4 — loop-2's copy has no byte-free reader among the target's own tail instructions.**
+Six readers for `r` (loop-2's preheader copy) were measured this session, and every one either
+deletes a reload (dropping to 126 insns) or forces an extra live pseudo through the call block:
+  * P1 — no reader at all (`r` fresh-read, call restored to BASE's form): **4 at 126**; the
+    copy is deleted outright, confirming the copy exists only because of its reader.
+  * N1 — `r` read by math_Distance3D's SECOND argument: **18 at 127**.
+  * N2 — `r` read by `rec_a`'s address add: **25 at 127**.
+  * P2 — loop-2's guard reads `q` and `r = p;` (copy sourced from the post-loop reload):
+    **12 at 126**.
+  * P3 — loop-2's guard reads `q`, `r` a fresh read: **29 at 124**.
+  * P4 — loop-2's guard reads `q`, copy still `r = q;`, call reader kept: **34 at 123**.
+The reason is structural and is now pinned from T.txt: the target reloads `*(u8 **)(ctx + 0xC)`
+SIX times (T.txt lines 14, 28, 52, 77, 94, 104) and every post-loop-2 address add
+(`addu a0,a1,s0` at 79, `addu s0,s0,v0` at 96, `addu s1,s1,v0` at 106) reads one of those fresh
+reloads, never the a3 copy. So the target's loop-2 `addu a3,a0,zero` is dead in the emitted
+stream with NO downstream reader of any kind — the same flow-stale-liveness situation s44
+identified, not a real C-level second use. M7's call-argument reader is therefore the wrong
+shape by construction; it is merely the cheapest wrong shape found so far.
+
+**E-s51-5 — hoisting `r`'s definition out of loop-2's guarded block does not buy a3.** M10
+(`r = q;` moved above loop-2's guard so r is defined on all paths and q dies exactly where r
+is born, which would let them share a3) = **24 at 127**; M13 (M10 + `q = p;` hoisted above
+`i = 0;`) = **24**; M14 (M13 with `r = p;`) = **16 at 124**. Moving the copy out of the
+preheader emits it in the join block ahead of the `blez`, which is not where the target has it.
+
+- [s51] BASE (memory/grind/func_80017848/candidate.c) re-audits at 3 (127 target / 127 build) on the HEAD src/ings.c:820 anchor; the honest floor is unchanged at 3.
+
+- [s51] tools/fake_ablate.py reports NO FAKE-annotated constructs in candidate.c, so every s42-s50 instance kill on this function was measured without a FAKE carrier occupying any pseudo. The mandatory flat-floor kill re-audit is satisfied and found nothing void.
+
+- [s51] Cell M7 (= s50's M2 with loop-2's redundant `lnk` local deleted) = 10 at 127/127 - the M-branch's first movement since it opened at s50, down from 17.
+
+- [s51] M7's loop-1 preheader is BYTE-EXACT (`addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3`), i.e. the correct a3 seat and the correct copy/load/add order, while still carrying loop-2's copy and the loop-1 exit-tail reload.
+
+- [s51] M7 and M8 both score 10 at 127/127 with DISJOINT residuals: M7 wins the a3 seat and loses the `i = 0` delay-slot placement (2 points); M8 wins the `i = 0` placement in both blez delay slots and loses the seats to t0/t1 (2 points). The discriminator is a single statement, the pre-guard `q = p;`.
+
+- [s51] M8's t0/t1 seats are caused by q and r having no definition on their loop-skip paths, which makes flow treat them as live-in at function entry where they conflict with the incoming a0-a3 parameter registers.
+
+- [s51] The target reloads *(u8 **)(ctx + 0xC) six times (T.txt lines 14, 28, 52, 77, 94, 104) and every post-loop-2 address add (`addu a0,a1,s0` at 79, `addu s0,s0,v0` at 96, `addu s1,s1,v0` at 106) reads a FRESH reload, never the a3 copy - so the target's loop-2 `addu a3,a0,zero` has no downstream reader at all in the emitted stream.
+
+- [s51] P1 (M7 with loop-2's copy given no reader) = 4 at 126: the copy is deleted outright, confirming the copy in every M-branch form exists only because of its C-level reader, and that the reader is what costs the remaining points.
+
+- [s51] The remaining M-branch residual after M7 is: loop-2's preheader copy source/dest (3 insns), loop-2's lnk seat (1), the call block's operand and load order (3), plus whichever 2-point half of the M7/M8 trade-off is taken.

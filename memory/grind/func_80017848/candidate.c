@@ -1,3 +1,41 @@
+/* [s51 REDERIVE NOTE - body unchanged, re-audited at 3 (127/127) on the HEAD
+ * chassis (anchor src/ings.c:820); fake_ablate reports NO FAKE constructs in
+ * this body, so every s42-s50 instance kill was measured without a FAKE mask.]
+ * THE M-BRANCH MOVED FOR THE FIRST TIME: 17 -> 10.  s50's cell M2 (the first
+ * form carrying both preheader copies AND the loop-1 exit-tail reload at
+ * 127/127) was carrying 7 self-inflicted points.  M2 had added an explicit
+ * `lnk = *(u8 **)(ctx + 0x10);` local to LOOP 2's preheader, which this body
+ * never had - BASE reads that pointer inline in loop 2's body.  The extra local
+ * lengthens lnk's live range, lifts its global.c priority above `sh`, and
+ * rotates the a1/a2 seats in BOTH loops.  Cell M7 = M2 with that local deleted
+ * measures 10 at 127/127 with the structure otherwise untouched.  That retires
+ * s50's frontier item 1 ("why does sh seat in a2 and lnk in a1") outright: it
+ * was the lnk local, not the added q/r allocnos.
+ *
+ * M7's remaining 10 is a clean TWO-WAY TRADE-OFF worth 2 points on each side,
+ * and the two halves are disjoint:
+ *   - WITH the pre-guard `q = p;` (M7/M19): loop-1's preheader is BYTE-EXACT -
+ *     `addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3`, correct a3 seat and
+ *     correct order - but reorg duplicates `addu v1,zero,zero` (i = 0) into the
+ *     loop-1 guard's `bltz` delay slot where target has a nop.
+ *   - WITHOUT it (M8): the `i = 0` placement is byte-exact in both loops, but
+ *     both copy destinations seat in t0/t1 because `q` and `r` have no
+ *     definition on their loop-skip paths, so flow makes them live-in at entry
+ *     where they conflict with the incoming a0-a3 parameter registers.
+ * Five statement placements were measured; every one keeping `q = p;`
+ * reproduces M7's residual exactly and every one dropping it reproduces M8's,
+ * so this is a liveness fact, not a statement-order artefact.
+ *
+ * The branch's real wall is now pinned from T.txt: the target reloads
+ * *(u8 **)(ctx + 0xC) SIX times (T.txt 14/28/52/77/94/104) and every post-loop-2
+ * address add reads a FRESH reload, never the a3 copy - so loop-2's
+ * `addu a3,a0,zero` has NO downstream reader at all in the target.  Six C-level
+ * readers for it were measured and all cost (P1 no-reader = 4 at 126 - the copy
+ * is simply deleted; N1 = 18, N2 = 25, P2 = 12 at 126, P3 = 29, P4 = 34).
+ * Forms banked as rejected/s51_*.c; M7 is
+ * rejected/s51_M7_loop2_lnk_local_removed_seat_and_call_residual_costs_10.c.
+ * Details: evidence.md/hypotheses.md s51 sections.
+ */
 /* [s50 REDERIVE NOTE - body unchanged, re-audited at 3 (127/127) on the HEAD
  * chassis (anchor src/ings.c:820).]  THE 3-INSN STRUCTURAL RESIDUAL IS SOLVED
  * ON A NEW CHASSIS.  The residual was pinned exactly this session (s50/T.txt vs

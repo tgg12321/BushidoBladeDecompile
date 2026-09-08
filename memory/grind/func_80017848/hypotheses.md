@@ -4632,3 +4632,96 @@ BASE re-audit: 3 at 127/127 on the HEAD chassis (`candidate.c` at the src/ings.c
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s50/body_M4.c applied; BASE re-audited at 3; no FAKE constructs in the form
+
+## s51 (2026-09-07, rederive)
+
+### KILLED (instance)
+- **H-s51-1** — s50's cell M2 re-measures 17 at 127/127 on the HEAD chassis with no FAKE
+  carrier present (fake_ablate: nothing to ablate). Mandatory closest-form kill re-audit; the
+  s50 kill stands unchanged. *measured_on:* HEAD src/ings.c:820 INCLUDE_ASM anchor,
+  `tmp/grind/func_80017848/s51/body_M2.c`; BASE re-audited at 3 (127/127); no FAKE constructs.
+- **H-s51-2** — Deleting the pre-guard `q = p;` from M7 (so `q` and `r` have no definition on
+  their loop-skip paths) makes both preheader copies seat in t0/t1 instead of a3 and moves
+  loop-1's `lw a2,16(s2)` ahead of the copy; the form measures 10 at 127/127, the same score as
+  M7 but with a disjoint residual. *measured_on:* HEAD anchor, `s51/body_M8.c`; BASE 3.
+- **H-s51-3** — Moving `i = 0;` to any position around the pre-guard `q = p;` (M19: between the
+  count load and `q = p;`; P5: after `q = p;`; M12/M20: `q = p;` earlier) does not remove
+  reorg's duplication of `addu v1,zero,zero` into the loop-1 guard's `bltz` delay slot;
+  M19 = 10 with a diff byte-identical to M7's, P5 = 10, M12 = 13, M20 = 16.
+  *measured_on:* HEAD anchor, `s51/body_M19.c` / `body_P5.c` / `body_M12.c` / `body_M20.c`;
+  BASE 3.
+- **H-s51-4** — Writing both loop guards in the target's own `blez`-against-zero shape
+  (`if (count > 0) { i = 0; ... }`) so that `i = 0` sits inside the guarded block costs an
+  instruction: M17 = 35 at 126, M18 = 27 at 128. *measured_on:* HEAD anchor,
+  `s51/body_M17.c` / `body_M18.c`; BASE 3.
+- **H-s51-5** — Six readers for loop-2's preheader copy `r` were measured on the M7 chassis and
+  each one either drops the build below 127 instructions or costs more than the call-argument
+  reader: P1 (no reader) = 4 at 126, N1 (call arg1) = 18, N2 (rec_a's add) = 25, P2 (guard on
+  q, copy from the reload) = 12 at 126, P3 = 29 at 124, P4 = 34 at 123.
+  *measured_on:* HEAD anchor, `s51/body_P1.c`/`N1`/`N2`/`P2`/`P3`/`P4`; BASE 3.
+- **H-s51-6** — Hoisting `r`'s definition above loop-2's guard, so that `r` is defined on all
+  paths and could inherit the a3 seat `q` vacates, emits the copy in the join block ahead of
+  the `blez` instead of in the preheader: M10 = 24, M13 = 24, M14 = 16 at 124.
+  *measured_on:* HEAD anchor, `s51/body_M10.c`/`M13`/`M14`; BASE 3.
+
+### CONFIRMED
+- **H-s51-7** — s50's M2 residual was inflated by a redundant `lnk` local that s50 added to
+  loop 2's preheader (BASE reads `*(u8 **)(ctx + 0x10)` inline in loop 2's body). Deleting it
+  restores BASE's inline read and drops the M-branch from 17 to **10 at 127/127** (cell M7),
+  with loop-1's preheader byte-exact. The a1/a2 seat rotation s50 attributed to the added q/r
+  allocnos was caused by the lnk local's longer live range lifting its global.c priority above
+  `sh`. *measured_on:* HEAD anchor, `s51/body_M7.c`; BASE 3 (127/127).
+
+## [s51] s50's cell M2 measures 17 at 127/127 on the HEAD chassis with no FAKE construct present in the banked candidate.
+- mechanism: Mandatory closest-form kill re-audit for a flat floor: re-apply M2 at the src/ings.c:820 anchor and re-score, then run tools/fake_ablate.py on candidate.c to confirm no FAKE carrier was masking a lever in the s42-s50 measurements.
+- probe: bash tmp/grind/func_80017848/s51/run.sh M2 + sandbox func_80017848 --disable all; tools/fake_ablate.py --func func_80017848 --file ings --candidate memory/grind/func_80017848/candidate.c
+- result: M2 = 17 at 127/127, identical to s50. fake_ablate: 'no FAKE-annotated constructs found in memory/grind/func_80017848/candidate.c; nothing to ablate'. BASE re-audited at 3 (127/127). The s50 kill stands and no banked kill on this function was measured under a FAKE mask.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s51/body_M2.c applied; BASE re-audited at 3 (127/127); no FAKE constructs in the body (fake_ablate confirmed)
+
+## [s51] Deleting the pre-guard `q = p;` from cell M7 makes both preheader copy destinations seat in t0/t1 instead of a3 and moves loop-1's `lw a2,16(s2)` ahead of the copy, scoring 10 at 127/127 with a residual disjoint from M7's.
+- mechanism: With no definition on the loop-skip path, flow.c treats the q/r pseudos as live-in at function entry, where they conflict with the incoming a0-a3 parameter hard registers; global.c's allocation order then hands them t0/t1 as the first free seats.
+- probe: bash tmp/grind/func_80017848/s51/run.sh M8 + sandbox func_80017848 --disable all + normalised objdump diff against tmp/grind/func_80017848/s51/T.txt
+- result: M8 = 10 at 127/127. Its diff shows `addu v1,zero,zero` byte-exact in BOTH blez delay slots (M7's 2-point loss is gone) but `addu t0,a0,zero` / `addu t1,t0,zero` where the target has a3, plus loop-1's lnk load emitted before the copy. Same score as M7, disjoint residual. Banked rejected/s51_M8_no_preguard_q_i0_slot_correct_copies_seat_t0t1_costs_10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s51/body_M8.c applied; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s51] Repositioning `i = 0;` relative to the pre-guard `q = p;` does not stop reorg from duplicating `addu v1,zero,zero` into the loop-1 guard's bltz delay slot: M19 = 10 with a diff byte-identical to M7's, P5 = 10, M12 = 13, M20 = 16.
+- mechanism: The delay-slot fill is decided by the contents of the block preceding the loop-1 guard, which the presence of a pre-guard `q = p;` changes; the statement's textual position inside that block is irrelevant to reorg.c's choice of fill insn.
+- probe: bash tmp/grind/func_80017848/s51/run.sh {M19,P5,M12,M20} + sandbox func_80017848 --disable all; M19's normalised build captured to tmp/grind/func_80017848/s51/B_M19.txt
+- result: M19 = 10 at 127/127 with a normalised diff line-for-line identical to M7's; P5 = 10; M12 = 13; M20 = 16. The 10 is a liveness property (whether q is defined on the loop-skip path), not a statement-order artefact.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s51/body_M19.c, body_P5.c, body_M12.c and body_M20.c applied; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s51] Writing both loop guards in the target's own blez-against-zero shape (`if (count > 0) { i = 0; ... }`), so that `i = 0` sits inside the guarded block, changes the instruction count: M17 = 35 at 126 and M18 = 27 at 128.
+- mechanism: Hoisting the count load out of an `i < count` comparison into a bare `count > 0` test loses the shared comparison pseudo that BASE's guard reuses and re-materialises the count at a different point.
+- probe: bash tmp/grind/func_80017848/s51/run.sh {M17,M18} + sandbox func_80017848 --disable all
+- result: M17 = 35 at 126/127, M18 = 27 at 128/127. Both banked in rejected/. BASE's `i = 0;` before an `i < count` guard already produces the target's delay-slot placement, so this rewrite buys nothing.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s51/body_M17.c and body_M18.c applied; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s51] Six C-level readers for loop-2's preheader copy `r` were measured on the M7 chassis and each either drops the build below 127 instructions or scores worse than the call-argument reader: P1 = 4 at 126, N1 = 18, N2 = 25, P2 = 12 at 126, P3 = 29 at 124, P4 = 34 at 123.
+- mechanism: The target reloads *(u8 **)(ctx + 0xC) six times (T.txt lines 14/28/52/77/94/104) and every post-loop-2 address add reads a fresh reload, never the a3 copy; so any C reader that routes one of those adds through `r` deletes the corresponding reload, and any reader that does not costs an extra live pseudo through the call block.
+- probe: bash tmp/grind/func_80017848/s51/run.sh {P1,P2,P3,P4,N1,N2} + sandbox func_80017848 --disable all
+- result: P1 (no reader at all) = 4 at 126 - the copy is deleted outright, proving the copy in every M-branch form exists only because of its C-level reader. N1 (math_Distance3D arg1) = 18, N2 (rec_a's address add) = 25, P2 (loop-2 guard on q, copy from the post-loop reload) = 12 at 126, P3 = 29 at 124, P4 = 34 at 123. All banked as rejected/s51_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s51/body_P1.c, body_P2.c, body_P3.c, body_P4.c, body_N1.c and body_N2.c applied; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s51] Hoisting `r`'s definition above loop-2's guard, so that r is defined on all paths and could inherit the a3 seat q vacates, emits the copy in the join block ahead of the blez instead of in the preheader: M10 = 24, M13 = 24, M14 = 16 at 124.
+- mechanism: A statement placed before the guard belongs to the join block, which the target reaches from two predecessors and where the target emits nothing; moving the copy there also lengthens r's live range across the guard test.
+- probe: bash tmp/grind/func_80017848/s51/run.sh {M10,M13,M14} + sandbox func_80017848 --disable all
+- result: M10 = 24 at 127/127, M13 = 24 at 127/127, M14 (hoisted r sourced from the post-loop reload) = 16 at 124/127. Banked as rejected/s51_M10_*.c, s51_M13_*.c and s51_M14_*.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD src/ings.c:820 INCLUDE_ASM anchor with tmp/grind/func_80017848/s51/body_M10.c, body_M13.c and body_M14.c applied; BASE re-audited at 3 (127/127); no FAKE constructs
+
+## [s51] s50's M2 residual was inflated by a redundant `lnk` local that s50 added to loop 2's preheader; deleting it and restoring BASE's inline read of *(u8 **)(ctx + 0x10) drops the M-branch from 17 to 10 at 127/127 with loop-1's preheader byte-exact.
+- mechanism: The extra local lengthens lnk's live range across loop 2's preheader, which lifts its global.c allocation priority above `sh` and rotates the a1/a2 seats in BOTH loops; without it the seats revert to the target's a1 = sh, a2 = lnk in loop 1.
+- probe: bash tmp/grind/func_80017848/s51/run.sh M7 + sandbox func_80017848 --disable all + normalised objdump diff against tmp/grind/func_80017848/s51/T.txt
+- result: M7 = 10 at 127/127 (M2 = 17 on the same chassis). Loop-1's preheader is byte-exact: `addu a3,a0,zero / lw a2,16(s2) / addu a0,a1,a3`. This retires s50's frontier item 1 - the seat rotation was the lnk local, not the added q/r allocnos. Banked rejected/s51_M7_loop2_lnk_local_removed_seat_and_call_residual_costs_10.c.
+- verdict: CONFIRMED
