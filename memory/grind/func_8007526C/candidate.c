@@ -76,6 +76,22 @@
  * threshold has a third C-reachable factor nobody had named: `loop_has_call`.  One call in
  * the loop gives threshold 61 -> 58 and reproduces the target's movable set exactly (one
  * hoisted 0xC8, four in-loop constants), at a cost of eleven words.  See evidence.md [s21].
+ *
+ * s22 (2026-09-07, structural) RE-MEASURED THIS BODY at score 13 / build_insns 93 / loop
+ * insn_count 91 on HEAD 121a39b5, and CLOSED the threshold half of the loop.c:1631 gate.
+ * The gate reduces to `threshold >= insn_count` (savings = lifetime = 1 for the four dispatch
+ * constants); threshold is 122 at loop.c:532 and decays by 3 at loop.c:1904 once per MOVED
+ * movable, so the second door -- drive threshold below 91 -- needs ten more moves ahead of the
+ * constants.  Neither source of moves exists.  (a) Duplicating the holder does not work:
+ * splitting `lim` into three locals, one per 0xC8 store site, yields ONE move, because
+ * combine_movables merges same-value movables (loop.c:1283, the survivor's savings goes 1 -> 2)
+ * and marks the loser `done`, which move_movables' guard at loop.c:1585 then skips.
+ * (b) A second distinct invariant value does not exist: naming 0xA in a `step` local leaves the
+ * movable list unchanged, because cse1 folds 0xA into the four `addiu` immediates and
+ * delete_dead_from_cse (cse.c:8684) deletes the holder before loop.c runs.  A constant local
+ * becomes a movable only when its use site needs a REGISTER operand, and of this function's
+ * constants only 0xC8 does (it is an `sh` store source).  Threshold is pinned at 119.
+ * See evidence.md [s22].
  */
 void func_8007526C(void) {
     u8 *base;

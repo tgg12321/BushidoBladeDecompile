@@ -2210,3 +2210,121 @@ e_lim_only_in_inner,f_literal_inner_loop}.{c,loop}, plus dump.py / loopsec.py / 
 - [s21] A real nested loop DOES exist in this function's semantics (case 3's paired 0xC8 resets) and costs four emitted words. Its insn_count contribution is +7 for those four words -- roughly two insn_count per word, the same poor exchange rate every other payload has shown.
 
 - [s21] Movable ORDER inside the main loop is C-controlled: a non-jump statement at the top of the loop body keeps scan_start there, while a switch as the first statement makes loop.c:545 retarget scan_start to expand_case's decision tree and collect the four comparison constants ahead of everything else.
+
+## [s22] 2026-09-07 — structural — the loop.c THRESHOLD sub-axis is now priced to the word
+
+Chassis re-measured at dispatch: `sandbox func_8007526C --disable all` with
+`memory/grind/func_8007526C/candidate.c` applied at src/text1b.c:6660 on HEAD 121a39b5 gives
+**score 13, build_insns 93, target_insns 91**, `.loop` "Loop from 14 to 260: 91 real insns",
+five movables (regno 75 = `lim`, plus the four dispatch constants at life 1 savings 1). No FAKE
+construct is present in candidate.c, so `fake_ablate` is a no-op on it; the mandated kill
+re-audit was instead run on the closest banked instance kill,
+`rejected/arming-dowhile-reuse-exit-test-score4.c`, which **reproduces exactly: score 4,
+build_insns 93**. The chassis has not moved.
+
+### The two ways past loop.c:1631, restated as arithmetic
+
+`move_movables` moves a movable when `already_moved[regno] || (threshold * savings * m->lifetime)
+>= insn_count`. For the four dispatch constants savings = lifetime = 1, so the whole gate is
+`threshold >= insn_count`. `insn_count` is 91. `threshold` starts at
+`(loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs)` = 122 (loop.c:532) and is decremented by 3 at
+loop.c:1904 once per movable that is actually MOVED. `lim` moves first, so the constants are
+judged at 119 >= 91. Two doors:
+
+  (A) raise insn_count to >= 120 with zero net emitted words — the axis s15b/s17/s18/s19 priced
+      (truthful re-spelling tops out at 99; dead payloads are deleted by cse1);
+  (B) drive threshold below 91 — which needs TEN more moves ahead of the constants
+      (122 − 3·11 = 89 < 91), each of which must be word-neutral.
+
+Door (B) had never been measured. s22 measured it from both sides and it is now closed.
+
+### (B1) Duplicating the invariant HOLDER buys no decay — combine_movables merges the copies
+
+`rejected/s22-three-invariant-holders-merge-one-move-score13.c` splits the single `lim` into
+three distinct locals `lim1/lim2/lim3`, each assigned 0xC8 at the loop top, one per 0xC8 store
+site (case 1's `p+0xC`, case 3's `p+8` and `p+0xC`). This is the maximum holder duplication the
+function's semantics allow — there are exactly three 0xC8 stores.
+
+MEASURED: score 13, build_insns 93 — indistinguishable from the baseline. The `.loop` dump
+(artifact `tmp/grind/func_8007526C/s22/loop-a-three-holders.txt`) explains it:
+
+    Loop from 14 to 266: 92 real insns.
+    Insn 19: regno 75 (life 109), move-insn savings 2  moved to 274
+    Insn 25: regno 77 (life 45), done move-insn matches 19
+    Insn 232/238/244/247: regno 126/128/129/130 (life 1), savings 1, moved
+
+Three source holders produce TWO movables (cse1 deleted one outright) and exactly ONE move.
+The second is reported `done ... matches 19`: `combine_movables` recognised the identical
+`(set (reg) (const_int 200))` value, folded its savings into the first
+(`m->savings += m1->savings` at tools/gcc-2.7.2/loop.c:1283 — which is precisely why regno 75
+now prints savings 2 where the baseline prints savings 1) and marked it done, so
+`move_movables`' `if (!m->done ...)` guard at loop.c:1585 skips it and it never reaches the
+`threshold -= 3` at loop.c:1904. **Threshold decay counts DISTINCT INVARIANT VALUES, not holder
+variables.** Note also that this form did raise insn_count 91 -> 92 (the surviving duplicate is
+one extra insn) — but at 92 it also emits its word, so it is on the wrong side of door (A).
+
+### (B2) The function owns exactly ONE C-reachable invariant movable, and it is already moved
+
+If holders cannot multiply decay, the decays must come from additional distinct invariant
+values. `rejected/s22-second-invariant-0xA-folded-by-cse1-score13.c` names the only other
+non-zero literal the function's semantics contain: `step = 0xA;` at the loop top, used at all
+four `+/- 0xA` sites.
+
+MEASURED: score 13, build_insns 93, and the `.loop` dump
+(artifact `tmp/grind/func_8007526C/s22/loop-b-step.txt`) shows `step` is not a movable at all:
+
+    Loop from 14 to 275: 91 real insns.
+    Insn 19: regno 75 (life 63), move-insn savings 1  moved to 283
+    Insn 241/247/253/256: regno 131/133/134/135 (life 1), savings 1, moved
+
+insn_count is unchanged at 91 and the movable list is the baseline's. cse1 constant-propagated
+0xA into the four `addiu` immediates, leaving the holder's set with a zero use count, and
+`delete_dead_from_cse` (tools/gcc-2.7.2/cse.c:8684) deleted it before loop.c ran.
+
+**The rule this establishes.** A named constant local reaches loop.c as a movable only when its
+use site REQUIRES a register operand. Enumerating every constant in this function's semantics:
+
+  | value | use sites | needs a register? | movable? |
+  |---|---|---|---|
+  | 0xC8 | `sh` source at p+8 / p+0xC (3 stores); `slti` bound (2 tests) | YES for the stores — `sh` has no immediate source form | YES (regno 75, moved) |
+  | 0xA  | `addiu` addend at 4 sites | no — 16-bit immediate | no (cse1 folds + deletes) |
+  | 0    | `sh` source at 7 stores; `bgtz`/`blez` bound | no — `$zero` | no |
+  | 1    | `addiu` addend at p+0x10 and at `i++` | no — immediate | no |
+  | 8    | `srl` shift count | no — immediate | no |
+  | 2    | loop bound in `slti`; `i * 2` stride | no — immediate / strength-reduced | no |
+
+So the function owns exactly one invariant movable, threshold decays exactly once, 122 -> 119,
+and it is stuck there. The ten word-neutral decays door (B) needs are not purchasable: even if a
+tenth distinct invariant value could be invented (it cannot, without manufacturing operands —
+already a Judge constraint on this function), each one that DID require a register would emit its
+own hoisted `li` in the pre-header, and the target's pre-header is exactly three words
+(`addu $a2,$zero,$zero` / `addiu $a3,$zero,0xC8` / `lw $a0,%gp_rel(D_800A36A0)`), of which only
+one is a hoist. There is no room.
+
+### What this leaves
+
+Door (B) is closed by measurement. The ledger is therefore down to door (A) — insn_count >= 120
+with zero net emitted words — plus the arming route (moved_once doubling), and s22 notes one
+structural consequence of door (A) that the next session should weigh before spending on it:
+**any payload that emits zero words is, by construction, a payload with no observable effect on
+the function's output, which is exactly what cheat-test T1 asks about.** The admissible form of
+door (A) is not "find a cheaper dead payload" but "re-spell the function's EXISTING semantics so
+loop.c counts >= 120 insns that combine/jump2 later collapse back to the same 91 words". The
+measured ceiling of that re-spelling is still insn_count 99
+(`rejected/truthful-twostep-split-all-sites-insncount99-score26.c`), 21 short.
+
+- [s22] Chassis re-measured at dispatch: candidate.c at src/text1b.c:6660 on HEAD 121a39b5 gives score 13, build_insns 93, target_insns 91; .loop 'Loop from 14 to 260: 91 real insns' with five movables (regno 75 = lim at life 63 savings 1, plus four dispatch constants at life 1 savings 1).
+
+- [s22] The loop.c:1631 gate for the four dispatch constants reduces exactly to `threshold >= insn_count` because savings = lifetime = 1, so there are precisely two doors: raise insn_count to >= 120, or drive threshold below 91.
+
+- [s22] threshold = (loop_has_call ? 1 : 2) * (1 + n_non_fixed_regs) = 122 at loop.c:532, and decays by 3 at loop.c:1904 once per movable actually MOVED. Reaching 90 needs eleven moves; only one happens.
+
+- [s22] combine_movables merges movables that load the same value: the loser is marked done and skipped by move_movables' guard at loop.c:1585, so it never decays threshold, while its savings are folded into the survivor at loop.c:1283 (directly observed: regno 75 savings 1 -> 2 with three holders).
+
+- [s22] cse1 folds a constant into its use site's immediate field whenever the machine has one, and delete_dead_from_cse (cse.c:8684) then deletes the holder: `step = 0xA` never reaches loop.c at all, movable list and insn_count both unchanged.
+
+- [s22] Constant census of the function's semantics against register-operand need: 0xC8 needs a register (sh store source) and IS the one movable; 0xA, +1, 8, 2 all ride immediates; 0 rides $zero. The function owns exactly one C-reachable invariant movable, so threshold is pinned at 119.
+
+- [s22] The target's pre-header is exactly three words (addu $a2,$zero,$zero / addiu $a3,$zero,0xC8 / lw $a0,%gp_rel(D_800A36A0)) of which only one is a loop.c hoist, so even a hypothetical extra register-needing invariant would have nowhere to land.
+
+- [s22] Structural note for door (A): a payload that emits zero words is by construction a payload with no observable effect on the function's output, which is exactly what cheat-test T1 asks about -- so the admissible form of door (A) is re-spelling EXISTING semantics into >= 120 loop-time insns that combine/jump2 collapse back to 91 words, not a cheaper dead payload. The measured ceiling of truthful re-spelling is still insn_count 99 (rejected/truthful-twostep-split-all-sites-insncount99-score26.c), 21 short.

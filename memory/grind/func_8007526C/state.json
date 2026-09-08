@@ -1,8 +1,8 @@
 {
  "func": "func_8007526C",
  "file": "text1b",
- "session_count": 21,
- "current_modality": "rederive",
+ "session_count": 22,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -129,23 +129,29 @@
    "floor": 13,
    "modality": "rederive",
    "headline": "Named loop.c:532's third and last C-reachable threshold factor (loop_has_call -> 58, the exact -msoft-float endpoint, target movable set reproduced) and closed the nested-arming route with two complem"
+  },
+  {
+   "session": 22,
+   "floor": 13,
+   "modality": "structural",
+   "headline": "Threshold half of the loop.c:1631 gate closed by measurement: holder duplication buys no decay (combine_movables merges same-value movables) and 0xA cannot become a second invariant movable (cse1 fold"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "An arming loop placed textually AFTER the main loop is now the only remaining shape that can satisfy all five arming requirements, because a nested one cannot.",
-   "mechanism": "A trailing loop's hoisted insn lands in ITS pre-header, outside the main loop, so the main loop keeps exactly one set of the armed pseudo at its loop top -- first in the movables list, ahead of the dispatch constants, and not a duplicate. s21's two nested forms fail precisely the requirements a trailing loop satisfies.",
-   "next_probe": "Re-open rejected/arming-loop-after-main-score5.c and rejected/arming-dowhile-reuse-exit-test-score4.c on the current chassis and account for their 3 and 4 emitted words one at a time against asm/funcs/func_8007526C.s, asking specifically whether jump2 can cross-jump the trailing loop's back edge and exit test onto the main loop's own back edge at s:99 (the function's single backward branch) rather than whether a cheaper trailing loop can be invented."
+   "hypothesis": "Door (A) is the only surviving loop.c axis, and its admissible form is re-spelling the function's existing semantics so loop.c counts >= 120 insns that later passes collapse back to the same 91 words.",
+   "mechanism": "The function already contains four 'free' insns of this kind: the two `(s16)x <= 0` tests expand to sll/sra/compare/branch at loop.c time and combine merges the sra away, emitting only sll/bgtz. That is +2 loop-time insns for 0 words per site, and it is already inside the 91. The question is how many more such sites the semantics can legitimately supply.",
+   "next_probe": "Enumerate every value-producing expression in the body and, for each, compare its loop-time insn count (from the .loop RTL dump) against its final word count (from the .combine and .jump2 dumps) to get a per-site free-insn budget. Sum it. If the total truthful budget is below 29, door (A) is arithmetically closed and the ledger reduces to the arming route alone -- decide that as a number rather than probing more spellings."
   },
   {
-   "hypothesis": "The five-requirement arming specification is complete, so the arming axis can now be decided rather than searched.",
-   "mechanism": "Requirements: (1) a real loop whose scan_start is a CODE_LABEL (loop.c:570); (2) scanned before the main loop, i.e. nested or textually later (loop.c:435); (3) the armed pseudo's ONLY main-loop set positioned between the loop top and the switch statement (loop.c:706 plus the loop.c:545 scan_start retarget); (4) that set not value-identical to another movable, or move_movables takes the matches path (loop.c:1609); (5) zero emitted words, because the armed configuration is already at build 90 against target 91.",
-   "next_probe": "Enumerate, against the target's 91 words, every position in the emitted stream where a loop back edge could be absorbed for zero net words, and decide requirement (5) as a yes/no rather than probing spellings. If it resolves to no, the arming axis is closed and the ledger is down to insn_count >= 120 with zero words."
+   "hypothesis": "The arming route (moved_once[lim] set by an earlier loop, making insn_count *= 2 at loop.c:1611 for every later movable) is closed by the same T1 admissibility argument that door (A) faces, not by a missing spelling.",
+   "mechanism": "s15b/s21 established that the armed configuration already builds to 90 against target 91, so an arming construct must emit ZERO words; the only arming loops that emit zero words are the ones jump2 deletes because they are provably dead. A construct that emits nothing has no observable effect on the function's output.",
+   "next_probe": "Rather than searching for a cheaper trailing loop, settle the admissibility question directly: file a ruling-request asking whether ANY zero-word construct can clear cheat-test T1, since 'emits no words' and 'has no observable effect' are the same statement. A ruling either closes the arming axis and door (A)'s dead-payload variant in one stroke, or names the carve-out that admits them."
   },
   {
-   "hypothesis": "insn_count >= 120 with zero emitted words remains the only axis with no measured structural obstruction, but every payload so far exchanges roughly two insn_count per emitted word.",
-   "mechanism": "loop.c:1631 reduces to threshold >= insn_count for the four dispatch constants; threshold is 119 after lim moves, so insn_count >= 120 flips them (measured by rejected/w9-minus1-copy-insncount120-build102-score27.c). Dead payloads are deleted by cse1 (cse.c:8684); copy chains are copy-propagated away; aggregate constructors buy +1 each but allocate 8 phantom frame bytes; a real nested loop buys +7 for 4 words.",
-   "next_probe": "Look for RTL that survives cse1 but is deleted by a pass AFTER loop.c -- cse2, combine, flow's no-op-move deletion, or jump2 -- rather than for more payload volume. The concrete candidates are comparisons whose set/branch pair combine merges on MIPS (the <= 0 tests already show combine eating the sra) and stores that cse2 can prove redundant only after loop.c has hoisted their address."
+   "hypothesis": "The four expand_case comparison constants can be made non-movable by being set more than once (may_not_optimize), which is exactly the mechanism that made s20's reused-holder if/else chain reproduce the target's movable set and registers.",
+   "mechanism": "s20 proved a single reused holder local removes all four constant movables and emits the target's exact allocation, failing only on arm-body layout (switch places bodies out of line, if/else inlines them). If the switch's own decision-tree pseudos could be made to share one pseudo, the correct allocation and the correct layout would coincide.",
+   "next_probe": "Read tools/gcc-2.7.2/stmt.c's emit_case_nodes and the MIPS cmp/branch expander to determine WHERE the comparison constant is forced into a pseudo -- tree level (a fresh pseudo per node, unreachable from C) or machine expander (possibly sensitive to the index's promoted mode). If it is the expander, test whether a differently-typed switch index (u8 vs u16 vs s32 selector local) changes the pseudo count in the .loop movable list; if it is emit_case_nodes, mark the route foreclosed and record the file:line."
   }
  ],
  "judge_constraints": [
@@ -573,6 +579,22 @@
    "measured_on": "HEAD 1930c839 chassis 2026-09-07, e_lim_only_in_inner.c and f_literal_inner_loop.c applied at src/text1b.c:6660, pure C, no FAKE construct present",
    "predicate_cite": "",
    "result": "Refuted on both forms, by a second and complementary mechanism. Removing the loop-top statement makes the loop body star"
+  },
+  {
+   "session": 22,
+   "statement": "Duplicating the invariant holder local (splitting `lim` into one local per 0xC8 store site) multiplies loop.c's per-move `threshold -= 3` decay.",
+   "kill_scope": "class",
+   "measured_on": "HEAD 121a39b5 chassis 2026-09-07, a_three_invariant_holders.c applied at src/text1b.c:6660, pure C, no FAKE construct present",
+   "predicate_cite": "tools/gcc-2.7.2/loop.c:1283",
+   "result": "score 13, build_insns 93 -- indistinguishable from the baseline. The .loop dump is the real result: 'Loop from 14 to 266"
+  },
+  {
+   "session": 22,
+   "statement": "Naming the function's second literal 0xA in a loop-top local (`step = 0xA;` used at all four +/- 0xA sites) adds a second invariant movable and a second threshold decay.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD 121a39b5 chassis 2026-09-07, b_step_second_invariant.c applied at src/text1b.c:6660, pure C, no FAKE construct present",
+   "predicate_cite": "",
+   "result": "score 13, build_insns 93, and .loop prints 'Loop from 14 to 275: 91 real insns' with the baseline five movables -- regno"
   }
  ],
  "ladder_skip": 0,

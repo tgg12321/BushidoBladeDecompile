@@ -1789,3 +1789,64 @@ Frontier handed to s22:
 - probe: The f_literal_inner_loop .loop dump, where the inner loop moved the 0xC8 temp ('Insn 127: regno 104 (life 1), move-insn savings 1  moved to 298') and the outer loop then printed 'Insn 76: regno 93 (life 12), move-insn savings 2  moved to 317 / Insn 298: regno 104 (life 11), done move-insn matches 76 ' with no 'halved since already moved' anywhere.
 - result: Confirmed. This adds a fifth requirement to s19's arming specification: the armed pseudo must reach the main loop's desirability block as a movable in its own right, and must not be value-identical to another movable processed first. Writing 0xC8 as a bare literal in two places is enough to collapse the pair and silently disarm the mechanism.
 - verdict: CONFIRMED
+
+## [s22] 2026-09-07 — structural
+
+### KILLED (class) — H-s22-1: duplicating the invariant holder local multiplies loop.c's threshold decay
+- **Mechanism proposed:** `move_movables` decrements `threshold` by 3 for each movable it moves
+  (loop.c:1904). Splitting `lim` into one holder per 0xC8 store site should give three moves and
+  three decays (122 -> 113), pushing the four dispatch constants nearer the 91 insn_count bar.
+- **Probe:** `rejected/s22-three-invariant-holders-merge-one-move-score13.c` (lim1/lim2/lim3,
+  one per store site) applied at src/text1b.c:6660; sandbox + `.loop` dump.
+- **Result:** score 13, build_insns 93 — baseline. `.loop` prints two movables for the three
+  holders and only ONE move: `Insn 25: regno 77 (life 45), done move-insn matches 19`, with the
+  survivor's savings raised from 1 to 2. `combine_movables` merges same-value movables
+  (`m->savings += m1->savings`, loop.c:1283) and marks the loser done, so `move_movables`' guard
+  at loop.c:1585 skips it and it never reaches the `threshold -= 3`. Decay counts distinct
+  invariant VALUES, not holder variables.
+- **kill_scope:** class — **predicate_cite:** tools/gcc-2.7.2/loop.c:1283
+- **measured_on:** HEAD 121a39b5 chassis 2026-09-07, no FAKE construct present in the probe.
+
+### KILLED (instance) — H-s22-2: naming the second literal 0xA in a loop-top local adds a second invariant movable
+- **Mechanism proposed:** if holder duplication cannot buy decays, distinct values must. 0xA is
+  the only other non-zero literal in the function's semantics; a `step = 0xA;` holder at the loop
+  top should be a second movable and a second `threshold -= 3`.
+- **Probe:** `rejected/s22-second-invariant-0xA-folded-by-cse1-score13.c` applied at
+  src/text1b.c:6660; sandbox + `.loop` dump.
+- **Result:** score 13, build_insns 93, `.loop` "Loop from 14 to 275: 91 real insns" and the
+  baseline five movables — `step` is absent from the list entirely. cse1 constant-propagated 0xA
+  into the four `addiu` immediates and `delete_dead_from_cse` (cse.c:8684) removed the now-unused
+  set before loop.c ran. General rule: a constant local reaches loop.c as a movable only when its
+  use site requires a register operand; of this function's constants only 0xC8 does (it is an
+  `sh` store source), which is why the movable set is what it is.
+- **kill_scope:** instance — **measured_on:** HEAD 121a39b5 chassis 2026-09-07,
+  b_step_second_invariant.c applied at src/text1b.c:6660, pure C, no FAKE construct present.
+
+### CONFIRMED — H-s22-3 (mandated kill re-audit): the banked arming instance kill reproduces on the current chassis
+- **Probe:** `rejected/arming-dowhile-reuse-exit-test-score4.c` re-applied on HEAD 121a39b5.
+- **Result:** score 4, build_insns 93 — bit-for-bit the s15b reading. candidate.c carries no FAKE
+  construct, so `fake_ablate` is a no-op against it and the ablation half of the re-audit is
+  vacuous here. The chassis has not moved and no banked measurement needs re-derivation.
+
+## [s22] Duplicating the invariant holder local (splitting `lim` into one local per 0xC8 store site) multiplies loop.c's per-move `threshold -= 3` decay.
+- mechanism: move_movables decrements threshold by 3 for each movable it actually moves (tools/gcc-2.7.2/loop.c:1904). The four dispatch constants are judged by `threshold * savings * lifetime >= insn_count` with savings = lifetime = 1, i.e. `threshold >= 91`; threshold is 122 at loop.c:532 and 119 after `lim` moves. Three holder moves instead of one would take it to 113, and eleven moves would take it to 89 and make all four constants 'not desirable' -- the target's movable set.
+- probe: rejected/s22-three-invariant-holders-merge-one-move-score13.c (lim1/lim2/lim3, each assigned 0xC8 at the loop top, one per 0xC8 store site -- the maximum duplication the function's three 0xC8 stores allow) applied at src/text1b.c:6660; `sandbox func_8007526C --disable all` plus `tools/grinder/dump.ps1` .loop reading.
+- result: score 13, build_insns 93 -- indistinguishable from the baseline. The .loop dump is the real result: 'Loop from 14 to 266: 92 real insns', then 'Insn 19: regno 75 (life 109), move-insn savings 2  moved to 274' followed by 'Insn 25: regno 77 (life 45), done move-insn matches 19'. Three source holders produced two movables (cse1 deleted one outright) and exactly ONE move. combine_movables recognised the identical (set (reg) (const_int 200)) value, accumulated its savings into the survivor (loop.c:1283 -- which is why regno 75 reports savings 2 where the baseline reports savings 1) and marked it done, so move_movables' `if (!m->done ...)` guard at loop.c:1585 skips it and it never reaches the threshold decrement. Threshold decay therefore counts distinct invariant VALUES, not holder variables. The form also raised insn_count 91 -> 92, but the surviving duplicate emits its own word, so it is on the wrong side of the insn_count door too.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD 121a39b5 chassis 2026-09-07, a_three_invariant_holders.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+- predicate_cite: tools/gcc-2.7.2/loop.c:1283
+
+## [s22] Naming the function's second literal 0xA in a loop-top local (`step = 0xA;` used at all four +/- 0xA sites) adds a second invariant movable and a second threshold decay.
+- mechanism: If holder duplication cannot multiply decays, the decays must come from additional DISTINCT invariant values. 0xA is the only other non-zero literal the function's semantics contain, so a named holder for it should appear in loop.c's movable list beside regno 75 and take threshold from 119 to 116.
+- probe: rejected/s22-second-invariant-0xA-folded-by-cse1-score13.c applied at src/text1b.c:6660; sandbox plus .loop dump (artifact tmp/grind/func_8007526C/s22/loop-b-step.txt).
+- result: score 13, build_insns 93, and .loop prints 'Loop from 14 to 275: 91 real insns' with the baseline five movables -- regno 75 for lim and regnos 131/133/134/135 for the dispatch constants. `step` is absent from the movable list entirely and insn_count is unchanged. cse1 constant-propagated 0xA into the four addiu immediates, which left the holder's set with a zero use count, and delete_dead_from_cse (tools/gcc-2.7.2/cse.c:8684) deleted it before loop.c ran. The general rule this measurement establishes: a named constant local survives into loop.c as a movable only when its use site REQUIRES a register operand. Of this function's constants only 0xC8 does -- it is an `sh` store source and sh has no immediate source form; 0xA and the +1 increment ride addiu immediates, 0 rides $zero, 8 is a shift count, 2 is an slti bound and the strength-reduced stride.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD 121a39b5 chassis 2026-09-07, b_step_second_invariant.c applied at src/text1b.c:6660, pure C, no FAKE construct present
+
+## [s22] The banked arming instance kill (rejected/arming-dowhile-reuse-exit-test-score4.c) still measures score 4 / build_insns 93 on the current chassis, so no banked spelling conclusion in this ledger needs re-derivation.
+- mechanism: Mandated kill re-audit. candidate.c and every probe in this session are pure C with no FAKE construct, so tools/fake_ablate.py is a no-op against them and the ablation half of the re-audit is vacuous; the chassis half was run against the closest-to-target banked instance kill.
+- probe: rejected/arming-dowhile-reuse-exit-test-score4.c applied at src/text1b.c:6660 on HEAD 121a39b5; `sandbox func_8007526C --disable all`.
+- result: score 4, build_insns 93 -- bit-for-bit the s15b reading. The baseline candidate.c also re-measured at score 13 / build_insns 93 / target_insns 91 with .loop insn_count 91 and the same five movables. The chassis has not moved since s21.
+- verdict: CONFIRMED
