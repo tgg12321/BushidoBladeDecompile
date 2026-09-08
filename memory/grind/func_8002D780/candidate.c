@@ -1,80 +1,72 @@
-/* s11 (2026-09-08, rederive) ADDENDUM -- read this with the s10 header below.
- * Floor unchanged at 2/202.  Two things changed here:
- *   1. The `m` re-store now CARRIES its /* FAKE *\/ annotation.  The s10 body shipped it
- *      un-annotated, which tools/fake_ablate.py reported as "no FAKE-annotated constructs
- *      found" -- an un-annotated FAKE is an automatic Judge FAIL, so this was a latent
- *      blocker on any future candidate-ready.  Ablation re-measured on this chassis:
- *      dropping the re-store scores 6/202, keeping it scores 2/202 (worth 4 insns), and
- *      the annotation itself is codegen-neutral (annotated body still 2/202).
- *   2. The residual is RE-ATTRIBUTED.  It is NOT a local-alloc decision, as s6-s10
- *      assumed.  It is reorg.c's delay-slot fill for the test-2 exit branch:
- *      `DBRDBG thr insn=175 trial=179 refset=0 setset=0 setneed=0 setsopp=0 trap=0`
- *      -> `WINNER trial=179`.  reorg takes the FIRST insn of the fall-through thread that
- *      clears its five gates, and our first insn is dz's subu.  The target's slot holds
- *      ax's subu, so the target's pre-reorg block 7 began with ax.  See evidence.md [s11]
- *      for why that is contradictory with the seats we already have. */
-/* func_8002D780 - grind candidate (s10 rederive, 2026-09-08).  Honest sandbox floor
+/* func_8002D780 - grind candidate (s12 structural, 2026-09-08).  Honest sandbox floor
  * 2/202, build_insns == target_insns == 202, measured THIS session with these exact
  * edits in src/code6cac_b.c (`sandbox func_8002D780 --disable all` -> 2).
  *
- * WHAT CHANGED IN s10 (read this before touching test 3).  s1-s9 carried a body whose
- * third triangle test declared six named difference locals (ax/az/bx/bz/dz/dx); that
- * body is preserved verbatim as memory/grind/func_8002D780/candidate_alt_s5_named_locals.c
- * and still scores 2.  This body writes test 3 as two PLAIN INLINE EXPRESSIONS with no
- * locals at all and scores the same 2 -- but its two residual instructions are a
- * DIFFERENT pair, and every register in the block is already correct:
+ * WHY THIS BODY REPLACES THE s10/s11 ONE AT THE SAME SCORE.  The score is unchanged but
+ * the RESIDUAL IS STRICTLY MORE TRACTABLE.  The previous body (kept verbatim as
+ * memory/grind/func_8002D780/candidate_alt_s11_dzfirst.c) failed on the ax/dz pair that
+ * straddles the DELAY SLOT of `bltz $v0,.L8002D964` -- a reorg.c decision that s11 proved
+ * is the same INSN_LUID as the dz/dx register seat and pulls the opposite way.  This body
+ * has the delay slot RIGHT, every register in the function RIGHT, and its only two
+ * differing instructions are an ordinary adjacent transposition INSIDE block 7:
  *
- *   old body (named locals)  residual = the `az` / `dx` subu pair emitted in the wrong
- *                            order (ours az first, target dx first).
- *   THIS body               residual = the `ax` / `dz` subu pair emitted in the wrong
- *                            order (ours `subu $a0,$t0,$a3` (dz) then
- *                            `subu $v0,$t2,$t1` (ax); target emits ax in the `bltz`
- *                            delay slot and dz right after).  The `dx`/`az` pair, all
- *                            four mults and every register assignment already match.
- *   Diffs: tmp/grind/func_8002D780/s10/ (tools/pairdiff.py code6cac_b func_8002D780).
+ *   ours[96] subu v0,a2,a3 (az)      target[96] subu v1,t5,t1 (dx)
+ *   ours[97] subu v1,t5,t1 (dx)      target[97] subu v0,a2,a3 (az)
+ *   === 2 differing instructions ===   (tmp/grind/func_8002D780/s12/pairdiff_d1.txt)
  *
- * WHY THIS BODY GETS THE REGISTERS RIGHT (measured, not inferred -- instrumented cc1
- * SUGGDBG-QTY tables in tmp/grind/func_8002D780/s10/dw2/qty.txt vs s10/dy1/qty.txt).
- * local-alloc.c:1725-1758 ranks block-7 quantities by
- * floor_log2(refs)*refs*size/(death-birth)*10000 and breaks a tie by quantity number.
- *   this body : dz = qty0 birth 2 death 16 refs 3  -> span 14, pri 2142
- *               ax = qty1 birth 4 death  6 refs 2  -> span  2, pri 10000
- *               dx = qty4 birth 8 death 20 refs 3  -> span 12, pri 2500
- *               2500 > 2142, so dx is seated first and takes $v1 -- the target's seats.
- *   ax-first  : ax = qty0 birth 2 death  6 refs 2  -> span  4, pri 5000
- *   (variant     dz = qty1 birth 4 death 16 refs 3 -> span 12, pri 2500
- *    y1, 9/202)  dx = qty4 birth 8 death 20 refs 3 -> span 12, pri 2500
- *               dz and dx TIE, the quantity-number fallback seats dz on $v1, and the
- *               seats invert (score 9).  Everything else in the two tables is identical.
- * So evaluating `(z2 - z0)` before `(cx - x0)` is what buys the correct registers: it
- * moves dz's birth one insn earlier, lengthening its live range and dropping its
- * priority below dx's.  Do NOT "tidy" the operand order of the first product.
+ * No delay slot is involved any more, so the s11 LUID contradiction is GONE: the last
+ * question is a pure sched2 ready-list order between two independent subus that feed the
+ * same mult.
  *
- * Measured neighbours (tmp/grind/func_8002D780/s10/variants{W,X,Y,Z,B}, all 202 insns):
- *   naming only dz/dx, or only the four $v0 offsets, or only dx+az = 2 (same residual);
- *   flipping the FIRST product's operands (ax before dz)                       = 9;
- *   flipping the SECOND product's operands                                     = 5;
- *   flipping both                                                              = 4;
- *   flipping kp's first product                                                = 16;
- *   one reused $v0 temp = 41, two = 26, in-place translation of cx/cz/px/pz    = 44;
- *   hoisting any single difference into the test-2 arm                         = 20-39.
+ * HOW THE THREE DECLARATIONS BUY THAT (measured, instrumented-cc1 QTYDBG tables in
+ * tmp/grind/func_8002D780/s12/{a1,b1,c1}/stderr_full.txt).  local-alloc.c:1725-1758 ranks
+ * block-7 quantities by floor_log2(refs)*refs*size/(death-birth)*10000 and breaks a tie by
+ * quantity number (local-alloc.c:1684); whichever of dz/dx is seated FIRST takes $v1 and
+ * the other takes $a0, and the target needs dz=$a0 / dx=$v1, i.e. dx seated first.
+ *   `s32 ax = cx - x0;`  emits ax's subu FIRST, so reorg's fill_slots_from_thread takes IT
+ *                        for the test-2 delay slot instead of dz's subu (target's slot).
+ *                        On its own (variant a1) that costs the seats: dz and dx both land
+ *                        at refs 3 / span 12 and tie, and the tie seats dz first (score 9,
+ *                        rejected/axfirst-slot-right-seats-swapped-9.c).
+ *   `s32 dz = z2 - z0;`  keeps the mult operand order `mult $a0,$v0` (dz * ax).
+ *   `s32 az = cz - z0;`  is the tie-breaker.  It puts ONE extra RTL insn between dz's
+ *                        definition and dx's definition, which lengthens dz's live range to
+ *                        14 while leaving dx's at 12 (both endpoints shift together).  dx
+ *                        then outranks dz (2500 > 2142), is seated first, takes $v1, and dz
+ *                        takes $a0 -- the target's seats.  az is a REAL value consumed by
+ *                        the second product; it costs no instruction because the subu it
+ *                        names is one the target emits anyway.
+ * Hoisting bz or bx instead does NOT work: sched1 sinks them back down to their (later)
+ * consumers, so no span shift happens and the score stays 9
+ * (rejected/bz-hoist-sinks-back-no-span-shift-9.c, .../bx-...-9.c).
  *
- * The rest of the body is unchanged from s5 and every line of it is load-bearing; the
- * s5 header (kept in candidate_alt_s5_named_locals.c) documents the LZCS/LZCR island
- * split, the `m` carrier and the clobber footprint.  Summary of what must not change:
- *  - the two cop2 islands in the sqrt block must stay SPLIT (one asm statement cannot
- *    put `addiu $v0,$sp,0x10` between the mtc2 group and the swc2 group);
+ * WHAT IS LEFT.  sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class,
+ * then INSN_LUID (sched.c:2464).  dx and az are independent, both feed mult2, so their
+ * longest-path priorities are equal and the LUID decides -- and az's LUID is lower because
+ * the declaration puts it earlier.  Any fix must either raise dx above az on the first two
+ * comparisons or find a different zero-cost insn to sit between dz and dx.  tools/sched_solver
+ * models both scheduler passes order-exactly and is the right instrument for that question.
+ *
+ * The rest of the body is unchanged from s5/s10 and every line of it is load-bearing; see
+ * candidate_alt_s5_named_locals.c for the LZCS/LZCR island split, the `m` carrier and the
+ * clobber footprint.  Summary of what must not change:
+ *  - the two cop2 islands in the sqrt block must stay SPLIT;
  *  - `s32 m = dist;` must be declared BEFORE `s32 lzcr` and re-stored inside the
- *    `dist >= 0` arm (the FAKE construct below; worth 4 insns, ablation measured in s9);
+ *    `dist >= 0` arm (the annotated FAKE construct below; worth 4 insns, s11 ablation);
  *  - the three cop2 blocks are the owner-authorized canonical LZCS/LZCR + mvmva idiom
  *    (.claude/rules/cop2-addressing-preamble-cluster.md).
  *
- * FAMILY NOTE for whoever reaches 0: this body now carries exactly ONE annotated
- * construct, the same-value re-store of the local `m` (dead-store family,
+ * FAMILY NOTE for whoever reaches 0: this body carries one annotated construct, the
+ * same-value re-store of the local `m` (dead-store family,
  * .claude/rules/dead-store-fake-exception.md, in-TU byte-matched precedent at
- * src/code6cac_b.c:1244-1265).  The six test-3 difference locals that s3-s9 flagged as
- * needing a named-intermediate-vs-ordinary-C ruling are GONE from this body, so that
- * question no longer stands in the way of a candidate-ready submission. */
+ * src/code6cac_b.c:1244-1265).  It ALSO reintroduces three named difference locals in test
+ * 3 (`ax`, `dz`, `az`).  `dz` is written once and read twice (an ordinary CSE variable);
+ * `ax` and `az` are written once and read once, which is the named-intermediate shape
+ * described in .claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17
+ * clarification in .claude/rules/no-new-park-categories.md -- all three hold REAL values
+ * that appear in the target bytes, but a candidate-ready session must decide whether the
+ * once-read pair needs the named-intermediate FAKE annotation (six prongs) or is ordinary
+ * C, and should file a ruling-request if the answer is not clean. */
 s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
     if (flag == 0) {
         s32 *vin;
@@ -121,8 +113,11 @@ s32 func_8002D780(s32 flag, u8 *obj, s32 *pos, s32 threshold, s32 r_sq) {
             kc = z2 * cx - x2 * cz;
             kp = z2 * px - x2 * pz;
             if ((kc ^ kp) >= 0) {
-                kc = (z2 - z0) * (cx - x0) - (x2 - x0) * (cz - z0);
-                kp = (z2 - z0) * (px - x0) - (x2 - x0) * (pz - z0);
+                s32 ax = cx - x0;
+                s32 dz = z2 - z0;
+                s32 az = cz - z0;
+                kc = dz * ax - (x2 - x0) * az;
+                kp = dz * (px - x0) - (x2 - x0) * (pz - z0);
                 if ((kc ^ kp) >= 0)
                     return 1;
             }

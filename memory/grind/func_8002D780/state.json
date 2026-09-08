@@ -1,8 +1,8 @@
 {
  "func": "func_8002D780",
  "file": "code6cac_b",
- "session_count": 11,
- "current_modality": "rederive",
+ "session_count": 12,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
@@ -69,23 +69,29 @@
    "floor": 2,
    "modality": "rederive",
    "headline": "Residual A re-attributed from local-alloc to reorg.c's delay-slot fill: the ax/dz slot order and the dz/dx seat are the SAME INSN_LUID pulling opposite ways (class kill), the ASPSX pad slack that coul"
+  },
+  {
+   "session": 12,
+   "floor": 2,
+   "modality": "structural",
+   "headline": "Floor holds at 2/202 but the residual moved off the delay slot: the new candidate holds the target's slot AND every register, leaving one adjacent az/dx transposition inside block 7."
   }
  ],
  "frontier": [
   {
-   "hypothesis": "One of dz / dx can be made a GLOBAL (cross-block) quantity - so global.c, not local-alloc's tied qty_compare_1, seats it - by a split that jump2 tail-merges back to 202 insns.",
-   "mechanism": "local-alloc only forms a quantity for a pseudo whose entire live range sits inside one basic block; anything live across a block boundary is left to global_alloc, which ranks by allocno priority and never consults qty_compare_1 or its quantity-number fallback. This is the only escape from the s11 LUID contradiction, because it removes one of the two tied quantities from the tie while leaving its defining subu inside block 7. s11 proved the mechanism moves the seats; what it did not find is a split that costs zero instructions.",
-   "next_probe": "The s11 spelling duplicated the whole kp cross product into both arms and jump2 refused to merge it (+10 insns). Try splits where the duplicated tail is IDENTICAL insn-for-insn in both arms so cross_jump can merge it: e.g. `if (kc < 0) { if (kp < 0) goto hit; } else { if (kp >= 0) goto hit; }` with kp computed ONCE before the split (which keeps only the branch structure split, not the arithmetic), and the mixed goto/return exit form from .claude/rules/cross-jump-store-tail-merge.md. Read the .lreg blk=7 QTYDBG table FIRST and require exactly one of dz/dx to be absent (handed to global_alloc), then score requiring build_insns == 202."
+   "hypothesis": "sched2 can be made to emit `dx` before `az` on the d1 candidate without moving dx's birth earlier, closing the last two instructions.",
+   "mechanism": "sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class, then INSN_LUID (tools/gcc-2.7.2/sched.c:2464). dx and az are independent subus that both feed mult2, so their longest-path priorities and classes are equal and az wins on LUID - which is exactly the property that lengthens dz's live range and buys the target's register seats. The naive fix (give dx the lower LUID) is self-cancelling and measured dead as d5. What is needed is an asymmetry in the first two comparisons, or a post-reload hard-register dependence that blocks az until after dx.",
+   "next_probe": "Run tools/sched_solver on the d1 stream (both passes modelled order- and clock-exactly). Ask it, over the sched1 statement orders reachable from ordinary C spellings of test 3, for the set that simultaneously (a) puts at least one insn between dz's def and dx's def - verified against the .lreg blk=7 QTYDBG table as dz span > dx span - and (b) has a sched2 output equal to the target's block-7 emission order ax, dz, mult1, dx, az, mult2, bx, mult3, bz, mult4, kc, kp, xor, branch. Score only bodies the solver types REACHABLE, and require build_insns == 202."
   },
   {
-   "hypothesis": "An RTL insn born strictly between dz's def and dx's def that disappears between local_alloc and final gives dz span 14 against dx's 12 and seats dx first without costing an instruction.",
-   "mechanism": "Unchanged arithmetic from the s10 frontier, but s11 narrows the deleter. The ASPSX pad route is now closed (both pads sit after dx's birth), so the insn must genuinely vanish. s11 also identified a SECOND late deleter beside jump2's delete_noop_moves: reorg.c's redundant_insn deletion (reorg.c:3439-3462) removes a redundant trial insn outright - but only on insns the thread scan reaches, and the scan stops at the first winner, so it cannot reach block-7 index 2 or 3. That leaves delete_noop_moves, whose cse survival problem s8 class-killed for copies defined wholly inside block 7.",
-   "next_probe": "Only worth spending after the frontier-1 shape is exhausted. If spent, the shape needed is a reg-reg copy whose two definitions straddle the test-2 branch (so cse.c:1032 cannot fold it) and whose block-7 definition lands at index 2 or 3; verify with the .lreg blk=7 QTYDBG table that dz reports span 14 and dx span 12 BEFORE scoring."
+   "hypothesis": "A tie-breaking insn other than `az` sits between dz's def and dx's def at sched1 time yet is placed AFTER dx by sched2.",
+   "mechanism": "Same positional mechanism as `az`, but with an insn whose INSN_PRIORITY is lower than dx's (a longer dependence chain to the end of block 7) or which acquires a WAR/WAW dependence on a hard register written by dx's insn after reload. `az` has equal priority and loses only on LUID; bz and bx have the right chain length on paper but sched1 sinks them before they can serve (s12 kill), so the candidate insn must be needed early and consumed late - a shape that does not exist among the six test-3 differences.",
+   "next_probe": "Only after frontier 1. If spent, enumerate with sched_solver rather than by hand: the s12 measurements show hand-guessing which difference 'stays high' is unreliable (bz and bx both looked equivalent to az on paper and both sank)."
   },
   {
-   "hypothesis": "A decomp-permuter campaign on the s11 chassis finds a body the hand search has not reached.",
-   "mechanism": "The residual is one transposition of two adjacent subus with every register already correct, which is squarely in the permuter's statement-reordering move set, and the s4 campaign ran on a 7-floor chassis dominated by residuals B and C (both closed since s5). s11 lowers the prior for a plain reordering win - the transposition is one LUID whose two consumers pull opposite ways - so any real find would have to arrive via the frontier-1 shape, which is exactly the kind of restructuring the permuter explores blindly.",
-   "next_probe": "Regenerate base.c from memory/grind/func_8002D780/candidate.c into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (s4's finding that the permuter's weighted metric is anti-correlated with the engine's here still applies)."
+   "hypothesis": "A decomp-permuter campaign on the d1 chassis finds the transposition the hand search has not reached.",
+   "mechanism": "The residual is now a single adjacent transposition of two independent statements with every register in the function already correct - the smallest and most permuter-shaped residual this function has ever had, and strictly easier than the s4 campaign (which ran on a 7-floor chassis dominated by residuals B and C) or the s11 framing (a reorg delay-slot decision the permuter cannot address).",
+   "next_probe": "Regenerate base.c from the NEW memory/grind/func_8002D780/candidate.c into the validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles + rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and re-score every find on the engine sandbox (s4's finding that the permuter's weighted metric is anti-correlated with the engine's here still applies)."
   }
  ],
  "judge_constraints": [],
@@ -458,6 +464,38 @@
    "measured_on": "HEAD 4e56c8b9 (-mel -msoft-float), g1/g2 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store)",
    "predicate_cite": "",
    "result": "KILLED as spelled. g1 = 36/212, g2 = 37/212 - jump2 does not cross-jump the duplicated kp arithmetic back together, so t"
+  },
+  {
+   "session": 12,
+   "statement": "A multiply-defined reg-reg copy carrier supplies the free RTL insn between dz's definition and dx's definition, the way `m = dist` supplies one in the sqrt block.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d9de5549 (-mel -msoft-float), b1/b2/b3/b4 spliced into src/code6cac_b.c on the ax-first (a1) chassis, one FAKE construct present (the `m` re-store in the sqrt block)",
+   "predicate_cite": "",
+   "result": "KILLED as spelled. All four score 9/202 at 202 insns, identical to the carrier-free a1 body, and b1's block-7 QTYDBG tab"
+  },
+  {
+   "session": 12,
+   "statement": "Hoisting `bz` or `bx` rather than `az` supplies the tie-breaking insn between dz's definition and dx's definition.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d9de5549 (-mel -msoft-float), d2/d3 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)",
+   "predicate_cite": "",
+   "result": "KILLED. Both score 9/202 at 202 insns, no change from the carrier-free ax-first body. sched1 sinks bz and bx back down t"
+  },
+  {
+   "session": 12,
+   "statement": "Naming `dx` as the third declaration, so the source order is ax, dz, dx, gives dx the lower sched LUID and therefore the target's dx-before-az emission order.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d9de5549 (-mel -msoft-float), d5 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)",
+   "predicate_cite": "",
+   "result": "KILLED, and instructively so: 9/202. Giving dx the lower LUID also gives dx the earlier birth, which restores the dz/dx "
+  },
+  {
+   "session": 12,
+   "statement": "Hoisting `ax` out of block 7 into the test-2 block, so that fill_simple_delay_slots pulls it into the slot from before the branch, reaches the target's slot while leaving the dz-first spans that alrea",
+   "kill_scope": "instance",
+   "measured_on": "HEAD d9de5549 (-mel -msoft-float), a2/a3 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)",
+   "predicate_cite": "",
+   "result": "KILLED. Both score 26/202 at 202 insns. The pairdiff of a3 shows the damage is not in block 7 at all: making ax live acr"
   }
  ],
  "ladder_skip": 0,

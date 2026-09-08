@@ -1137,3 +1137,164 @@ without ever consulting qty_compare_1.
 - [s11] The split-block route that would hand dz/dx to global_alloc is live but expensive as spelled: branching on `kc < 0` between the two cross products moves the seats (reg129 $a0->$v1, reg130 $v0->$a0, reg132 $v1->$t1) but jump2 does not tail-merge the duplicated kp arithmetic, costing 10 machine instructions (36/212 and 37/212).
 
 - [s11] The s10 candidate shipped its `m = dist;` FAKE construct UN-ANNOTATED (fake_ablate.py: 'no FAKE-annotated constructs found'), which would have been an automatic Judge FAIL on any candidate-ready. Fixed this session; the annotation is codegen-neutral (2/202 with and without the comment) and the construct is still worth 4 insns (6/202 when deleted).
+
+## [s12] (2026-09-08, structural) — floor still 2/202, but the RESIDUAL MOVED OFF THE DELAY SLOT
+
+Chassis re-measured at dispatch: HEAD d9de5549 (-mel -msoft-float), the s11 candidate body
+spliced into src/code6cac_b.c, `sandbox func_8002D780 --disable all` = **2/202**,
+build_insns == target_insns == 202. The brief's "measurement unavailable" is resolved and
+the ledger floor 2 stands. (The s11 kill re-audit of the `m` re-store is not repeated: s11
+already ablated it on this same chassis lineage and the annotation is in candidate.c.)
+
+### 0. The s11 contradiction is BROKEN, and the new candidate is the proof
+
+s11 left the function on a two-horned fork: dz-first source order buys the target's register
+SEATS and loses the delay SLOT; ax-first buys the slot and loses the seats. This session
+found a body that takes BOTH horns at once. The new `memory/grind/func_8002D780/candidate.c`
+(variant `d1_az_hoisted`) scores the same 2/202, but:
+
+    ours[92] subu v0,t2,t1 (ax, IN THE SLOT)  target[92] subu v0,t2,t1   <- now MATCHES
+    ours[93] subu a0,t0,a3 (dz, in $a0)       target[93] subu a0,t0,a3   <- now MATCHES
+    ours[96] subu v0,a2,a3 (az)               target[96] subu v1,t5,t1 (dx)
+    ours[97] subu v1,t5,t1 (dx)               target[97] subu v0,a2,a3 (az)
+    === 2 differing instructions ===          (tmp/grind/func_8002D780/s12/pairdiff_d1.txt)
+
+Every register in the whole function is correct, the delay-slot fill is correct, and the two
+remaining instructions are an adjacent transposition of two independent subus that both feed
+`mult $v1,$v0`. **No delay slot is involved any more**, so reorg.c is out of the picture and
+the s11 "slot and seat are the same LUID" contradiction no longer binds. The old dz-first
+body is preserved verbatim as `candidate_alt_s11_dzfirst.c`.
+
+### 1. The three declarations, and exactly what each one buys
+
+Test 3 is now spelled with three named difference locals:
+
+    s32 ax = cx - x0;
+    s32 dz = z2 - z0;
+    s32 az = cz - z0;
+    kc = dz * ax - (x2 - x0) * az;
+    kp = dz * (px - x0) - (x2 - x0) * (pz - z0);
+
+  * `ax` first makes ax's subu the head of block 7, so reorg's `fill_slots_from_thread`
+    takes IT for the test-2 delay slot (the target's slot content) instead of dz's subu.
+  * `dz` named keeps the first product's operand order, so mult1 stays `mult $a0,$v0`.
+  * `az` is the tie-breaker. See section 2.
+
+Measured on its own, `ax` alone (variant a1) = **9/202**, 202 insns
+(rejected/axfirst-slot-right-seats-swapped-9.c): slot correct, dz/dx seats swapped. Adding
+the `dz` name changes nothing (a4 = 9). Adding `az` is what closes the seats.
+
+### 2. The quantity arithmetic, read out of the instrumented cc1 (not inferred)
+
+local-alloc.c:1725-1758 ranks block-7 quantities by
+`floor_log2(refs)*refs*size/(death-birth)*10000`, ties break on quantity number
+(local-alloc.c:1684), and whichever of dz/dx is seated FIRST takes `$v1` while the other
+takes `$a0`. The target needs dz=$a0 / dx=$v1, i.e. **dx must be seated first**.
+
+BB2_QTY_DEBUG / BB2_SUGG_DEBUG tables (tmp/grind/func_8002D780/s12/<tag>/stderr_full.txt),
+block 7, the two quantities that matter:
+
+    variant a1 (ax first, az inline)   dz birth  4 death 16 refs 3 -> span 12, pri 2500
+                                       dx birth  8 death 20 refs 3 -> span 12, pri 2500
+                                       TIE -> qty number seats dz first -> dz $v1, dx $a0
+                                       (allocation order printed: ord5 qty1 got=3,
+                                        ord6 qty4 got=4)                       score 9
+    variant c1 (kp's 2nd product first) dz birth 4 death 20 refs 3 -> span 16, pri 1875
+                                       dx birth  8 death 16 refs 3 -> span  8, pri 3750
+                                       dx seated first -> dx $v1 (got=3), dz $a0 (got=4)
+                                       — the TARGET's seats, on an ax-first body    score 32
+    candidate d1 (az hoisted)          dz span 14 / dx span 12 (dx 2500 > dz 2142)
+                                       dx seated first -> the target's seats        score 2
+
+c1 is the load-bearing measurement: it is the first body in twelve sessions to hold the
+target's delay slot AND the target's dz/dx seats simultaneously, and it proves the span
+model quantitatively. It scores 32 only because reordering kp's two products scrambles six
+emitted instructions; d1 gets the same seats without touching the emission order.
+
+The mechanism of `az` is purely positional: one extra RTL insn placed strictly between dz's
+definition and dx's definition shifts dz's DEATH by +2 while shifting dx's BIRTH and DEATH
+together (span unchanged), so dz's span grows to 14 and dx outranks it. `az` costs no
+instruction because the subu it names is one the target emits anyway — it is simply
+scheduled earlier by sched1 than it is emitted by sched2.
+
+### 3. Hoisting the OTHER differences does not work, and why
+
+  * `bz` hoisted (d2) = 9/202, `bx` hoisted (d3) = 9/202. sched1 sinks both back down to
+    their consumers (mult4 / mult3), so no insn lands between dz and dx and the span tie is
+    unchanged. Only `az` stays high, because its consumer mult2 is the earliest one after
+    the first product.
+  * `dx` named as the third declaration (d5) = 9/202: dx's birth moves EARLIER, which
+    restores the tie from the other side.
+  * `az` + `bz` together (d4) = 2/202 — same residual as d1; `bz` is inert, so the candidate
+    keeps the smaller body.
+
+### 4. The copy-carrier route for a free RTL insn is dead as spelled
+
+s11's frontier 2 asked for "an RTL insn born between dz's def and dx's def that disappears
+between local_alloc and final". Four multiply-defined copy carriers were built on the
+ax-first chassis (`c = x2` / `c = z0` / `c = cz`, def-1 in the outer block or in the test-1
+arm, def-2 at block-7 index 3, the block-7 uses rewritten to read the carrier). All four
+scored 9/202 at 202 insns, and the BB2_QTY_DEBUG table for b1 is byte-identical to a1's:
+the copy is gone before local-alloc. The `m = dist` precedent in the sqrt block does NOT
+generalise — there the carrier's only use is an `__asm__` "r" operand, which cse will not
+substitute through; a carrier whose uses are ordinary arithmetic is always foldable, so cse
+propagates the source and DCE deletes the copy. This closes the copy spelling of that
+frontier.
+
+### 5. What is left, stated precisely for s13
+
+One question, and it is now a pure scheduler question with no allocator or reorg coupling:
+**make sched2 emit dx before az.** sched.c `rank_for_schedule` compares INSN_PRIORITY, then
+dependence class, then `INSN_LUID (tmp) - INSN_LUID (tmp2)` (sched.c:2464). dx and az are
+independent, both feed mult2, so their longest-path priorities are equal and both are in the
+same class; az's LUID is lower because the declaration puts its subu earlier in sched1's
+output, and that is exactly the property that buys the seats. Note the self-cancelling shape
+of the naive fix: any source order that gives dx the lower LUID also gives dx the earlier
+birth and restores the qty tie (measured, d5 = 9).
+
+Two doors that are NOT self-cancelling:
+  (a) an insn other than `az` that sched1 keeps between dz and dx but sched2 places AFTER dx
+      — it needs either a lower INSN_PRIORITY than dx (a longer dependence chain to the
+      block end) or a post-reload hard-register dependence that blocks it. bx and bz were
+      measured and sink instead (section 3), so this needs the solver rather than guessing.
+  (b) `tools/sched_solver` (order- and clock-exact for both passes) run on the d1 stream:
+      ask directly which sched1 statement orders produce dz-span > dx-span AND a sched2
+      output equal to the target's emission order. This is the instrument the residual has
+      finally been reduced to a fit question for.
+
+### 6. Artifacts
+
+  tmp/grind/func_8002D780/s12/variants/   — 17 scored bodies (a*, b*, c*, d*)
+  tmp/grind/func_8002D780/s12/pairdiff_d1.txt — the 2-instruction residual of the candidate
+  tmp/grind/func_8002D780/s12/a1/         — full -da dump set + QTYDBG table, ax-first body
+  tmp/grind/func_8002D780/s12/b1/         — same for the x2 copy carrier (identical table)
+  tmp/grind/func_8002D780/s12/c1/         — same for the product-reordered body (target seats)
+  tmp/grind/func_8002D780/s12/dbg.py      — dump driver (needs BB2_CC1=tools/gcc-2.7.2/cc1)
+  tmp/grind/func_8002D780/s12/score.ps1   — variant scorer
+  tmp/grind/func_8002D780/s12/gen_a.py, gen_b.py, gen_c.py, gen_d.py, bank.py
+
+- [s12] Chassis re-measured at dispatch: HEAD d9de5549 (-mel -msoft-float), s11 candidate body in src/code6cac_b.c, sandbox --disable all = 2/202, build_insns == target_insns == 202.
+- [s12] NEW CANDIDATE (d1_az_hoisted, 2/202): test 3 spelled with `s32 ax = cx - x0; s32 dz = z2 - z0; s32 az = cz - z0;` ahead of the two cross products. It holds the target's delay-slot fill AND every register in the function; the only 2 differing instructions are the adjacent az/dx transposition at indices 96/97. The old dz-first body is candidate_alt_s11_dzfirst.c.
+- [s12] The s11 slot-vs-seat contradiction is broken. `ax` first gives reorg the target's slot insn; `az` hoisted puts one extra RTL insn between dz's def and dx's def, which lengthens dz's live range to 14 against dx's 12, so dx (pri 2500) outranks dz (pri 2142), is seated first and takes $v1, leaving dz $a0 — the target's seats.
+- [s12] Quantitative proof of the span model, from BB2_QTY_DEBUG: a1 (ax first, az inline) has dz span 12 / dx span 12, ties, seats dz first, score 9; c1 (kp's second product evaluated first) has dz span 16 / dx span 8, seats dx first with got=3 for dx and got=4 for dz — the target's seats on an ax-first body — score 32 only because six emitted instructions are reordered.
+- [s12] Hoisting bz or bx instead of az is inert (9/202 each): sched1 sinks them back to their later consumers so no insn lands between dz and dx. Naming dx as the third declaration (d5) is also 9/202 because dx's birth moves earlier and the tie returns.
+- [s12] The multiply-defined COPY carrier route for a free RTL insn is closed: four spellings (c = x2 outer, c = x2 in the test-1 arm, c = z0, c = cz) all score 9/202 at 202 insns and b1's block-7 QTYDBG table is identical to a1's, i.e. the copy is deleted before local-alloc. The `m = dist` precedent does not generalise because m's only use is an __asm__ "r" operand, which cse will not substitute through.
+- [s12] The residual is now a pure sched2 ready-list question: dx and az are independent, both feed mult2, priorities and class are equal, and sched.c:2464 falls to INSN_LUID, where az is lower precisely because that is what buys the seats. Any source order giving dx the lower LUID also gives dx the earlier birth and restores the qty tie (d5, measured).
+
+- [s12] Chassis re-measured at dispatch: HEAD d9de5549 (-mel -msoft-float), the s11 candidate body spliced into src/code6cac_b.c, `sandbox func_8002D780 --disable all` = 2/202 with build_insns == target_insns == 202. The brief's 'measurement unavailable' is resolved and the ledger floor 2 stands.
+
+- [s12] NEW CANDIDATE (variant d1_az_hoisted, 2/202, 202 insns, re-measured with it in place in src/): test 3 spelled as `s32 ax = cx - x0; s32 dz = z2 - z0; s32 az = cz - z0; kc = dz * ax - (x2 - x0) * az; kp = dz * (px - x0) - (x2 - x0) * (pz - z0);`. It holds the target's delay-slot fill and EVERY register in the function; the only two differing instructions are the adjacent az/dx transposition at indices 96/97.
+
+- [s12] The s11 slot-versus-seat contradiction is broken. `ax` first gives reorg the target's slot insn; `az` hoisted puts one extra RTL insn between dz's def and dx's def, lengthening dz's live range to 14 against dx's 12, so dx (pri 2500) outranks dz (pri 2142), is seated first and takes $v1, leaving dz $a0 - the target's seats.
+
+- [s12] Quantitative proof of the span model from BB2_QTY_DEBUG: a1 (ax first, az inline) has dz span 12 / dx span 12, ties, seats dz first, score 9; c1 (kp's second product evaluated first) has dz span 16 / dx span 8, seats dx first with got=3 for dx and got=4 for dz - the target's seats on an ax-first body - and scores 32 only because six emitted instructions are reordered.
+
+- [s12] Hoisting bz or bx instead of az is inert (9/202 each): sched1 sinks them back to their later consumers so no insn lands between dz and dx. Naming dx as the third declaration is also 9/202 because dx's birth moves earlier and the tie returns.
+
+- [s12] The multiply-defined COPY carrier route for a free RTL insn is closed: four spellings (c = x2 in the outer block, c = x2 in the test-1 arm, c = z0, c = cz) all score 9/202 at 202 insns and b1's block-7 QTYDBG table is identical to a1's, i.e. the copy is deleted before local-alloc. The `m = dist` precedent does not generalise because m's only use is an __asm__ "r" operand, which cse will not substitute through.
+
+- [s12] The residual is now a pure sched2 ready-list question with no allocator or reorg coupling: dx and az are independent, both feed mult2, priorities and dependence class are equal, and sched.c:2464 falls to INSN_LUID where az is lower precisely because that is what buys the seats.
+
+- [s12] Tooling note for future sessions: the instrumented cc1 with the BB2_* hooks is tools/gcc-2.7.2/cc1, but engine/buildconfig.py's CC1 points at tools/gcc-2.7.2/build/cc1, so the dump driver must be run with BB2_CC1=tools/gcc-2.7.2/cc1 or it silently produces dumps with no QTYDBG/DBRDBG lines.
+
+- [s12] The new candidate reintroduces three named difference locals in test 3. `dz` is written once and read twice (an ordinary CSE variable); `ax` and `az` are written once and read once, which is the named-intermediate shape in .claude/rules/narrow-byte-args-packed-call.md plus the 2026-08-17 clarification in .claude/rules/no-new-park-categories.md. All three hold real values that appear in the target's bytes. A future candidate-ready session must settle whether the once-read pair needs the named-intermediate FAKE annotation or is ordinary C, and should emit a ruling-request rather than guess.

@@ -1253,3 +1253,144 @@ candidate applied to src/code6cac_b.c, NO FAKE construct present anywhere in the
 - probe: Ran fake_ablate.py on memory/grind/func_8002D780/candidate.c, then hand-built a1_no_m_restore.c (inner `m = dist;` deleted) and a2_annotated_m.c (re-store plus the annotation) and scored both on the sandbox.
 - result: CONFIRMED that the carrier is still load-bearing: fake_ablate.py reported 'no FAKE-annotated constructs found'; a1 = 6/202, a2 = 2/202, candidate = 2/202. The re-store is worth 4 insns on HEAD 4e56c8b9 and the annotation itself is codegen-neutral. a1 banked as rejected/m-restore-ablated-still-load-bearing-6.c; candidate.c now ships the annotation.
 - verdict: CONFIRMED
+
+## [s12] Emitting `ax` first (as a named local at the top of test 3) hands reorg the target's delay-slot insn.
+- mechanism: reorg.c's fill_slots_from_thread takes the first insn of the fall-through thread that clears its five gates, and the head of block 7 is whichever difference the source evaluates first. Declaring `s32 ax = cx - x0;` before the first cross product emits ax's subu at block-7 index 0 while leaving the mult operand order `mult $a0,$v0` (dz * ax) intact, unlike the s10 y1 variant which flipped the product's operands.
+- probe: variant a1_ax_local_in_t3.c scored on the sandbox and dumped with the instrumented cc1 (BB2_QTY_DEBUG/BB2_SUGG_DEBUG/BB2_DBR_DEBUG, tmp/grind/func_8002D780/s12/a1/), then pairdiffed.
+- result: 9/202 at 202 insns. pairdiff shows ours[92] = target[92] = `subu v0,t2,t1` (ax in the slot) — the delay slot is CORRECT for the first time — and the only cluster left is the dz/dx seat swap (ours dz $v1 / dx $a0, target dz $a0 / dx $v1). Banked as rejected/axfirst-slot-right-seats-swapped-9.c.
+- verdict: CONFIRMED
+
+## [s12] On an ax-first body, one extra RTL insn strictly between dz's definition and dx's definition breaks the qty_compare_1 tie in dx's favour and restores the target's seats at zero instruction cost.
+- mechanism: local-alloc.c:1725-1758 ranks by floor_log2(refs)*refs*size/(death-birth)*10000 with a quantity-number tie-break at local-alloc.c:1684. An insn inserted between dz's birth and dx's birth shifts dz's death by +2 (span 12 -> 14) while shifting dx's birth AND death together (span unchanged at 12), so dx's priority 2500 beats dz's 2142, dx is seated first and takes $v1, and dz takes $a0. The insn is free when it is a subu the target emits anyway, merely scheduled earlier by sched1 than it is emitted by sched2.
+- probe: hoisted each of the four remaining test-3 differences to a named local declared immediately after `dz` and scored all of them (d1 az, d2 bz, d3 bx, d4 az+bz, d5 dx), then read the block-7 QTYDBG tables for a1 and c1 to check the span arithmetic against the model.
+- result: CONFIRMED for `az`. d1_az_hoisted = 2/202 at 202 insns with every register in the function correct, the delay slot correct, and the residual reduced to the adjacent az/dx transposition at indices 96/97. d4 (az+bz) = 2/202 with the same residual. d2 = d3 = d5 = 9/202. Saved as memory/grind/func_8002D780/candidate.c; the s11 dz-first body is kept as candidate_alt_s11_dzfirst.c.
+- verdict: CONFIRMED
+
+## [s12] The dz/dx register seat and the ax/dz delay slot are independently controllable, so the s11 "one LUID, two contradictory requirements" fork is not the real wall.
+- mechanism: s11 read the fork off two bodies that differed only in the order of the two subus feeding the first product. The seat is a function of the two quantities' SPANS, not of their birth order as such, and the span is controllable by what sits between the two births — a second, independent degree of freedom that the s11 pair of bodies held constant.
+- probe: variant c1_kp_second_product_first.c (kp's second product evaluated into a named temp before its first) built on the ax-first chassis, scored, and dumped; block-7 QTYDBG table compared against a1's.
+- result: CONFIRMED. c1 gives dz birth 4 death 20 (span 16, pri 1875) and dx birth 8 death 16 (span 8, pri 3750); the printed allocation order is ord5 qty4 (dx) got=3 = $v1 and ord6 qty1 (dz) got=4 = $a0 — the target's seats on a body that also holds the target's delay slot. c1 itself scores 32/202 because reordering kp's two products scrambles six emitted instructions, so it is banked as rejected/kp-products-reordered-seats-right-order-wrong-32.c, but it is the measurement that proves the fork is escapable. d1 then realises the same seats without disturbing the emission order.
+- verdict: CONFIRMED
+
+## [s12] A multiply-defined reg-reg copy carrier can supply the free RTL insn between dz's def and dx's def, the way `m = dist` supplies one in the sqrt block.
+- mechanism: s11's frontier 2 asked for an insn that reaches local_alloc and then disappears; a copy whose two definitions straddle a branch was supposed to survive cse (cse.c cannot form a single-definition equivalence for a multiply-defined pseudo) and then be deleted by jump2's delete_noop_moves once local-alloc's combine_regs gives both pseudos the same hard register.
+- probe: four carriers built on the ax-first chassis and scored — b1 (`s32 c = x2;` in the outer block, `c = x2;` at block-7 index 3, dx read as `c - x0`), b2 (same with def 1 moved into the test-1 arm), b3 (carrier for z0, consumed by az and bz), b4 (carrier for cz, consumed by az) — plus a full instrumented-cc1 dump of b1.
+- result: KILLED as spelled. All four score 9/202 at 202 insns, i.e. identical to the carrier-free a1 body, and b1's block-7 QTYDBG table is byte-identical to a1's (dz birth 4 death 16 refs 3, dx birth 8 death 20 refs 3) — the copy is gone before local-alloc ever sees it. cse propagates the carrier's source into the ordinary-arithmetic use and DCE deletes the now-dead copy. The `m = dist` precedent does not transfer because m's only use is an `__asm__` "r" operand, which cse will not substitute through.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d9de5549 (-mel -msoft-float), b1/b2/b3/b4 spliced into src/code6cac_b.c on the ax-first (a1) chassis, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s12] Hoisting `bz` or `bx` (rather than `az`) supplies the tie-breaking insn between dz's def and dx's def.
+- mechanism: identical positional mechanism to the `az` result — any RTL insn between the two definitions lengthens dz's span without lengthening dx's — so any of the four remaining test-3 differences should serve.
+- probe: d2_bz_hoisted.c and d3_bx_hoisted.c, each declaring the difference as a named local immediately after `dz`, scored on the sandbox.
+- result: KILLED. Both score 9/202 at 202 insns, i.e. no change from the carrier-free ax-first body. sched1 sinks bz and bx back down to their consumers (mult4 and mult3), so neither actually lands between dz's def and dx's def and the span tie is untouched. Only `az` stays high, because its consumer mult2 is the earliest mult after the first product. Banked as rejected/bz-hoist-sinks-back-no-span-shift-9.c and rejected/bx-hoist-sinks-back-no-span-shift-9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d9de5549 (-mel -msoft-float), d2/d3 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s12] Naming `dx` as the third declaration (so the source order is ax, dz, dx) gives dx the lower sched LUID and therefore the target's dx-before-az emission order.
+- mechanism: sched.c rank_for_schedule falls to INSN_LUID (sched.c:2464) for the priority- and class-tied pair dx/az, so putting dx's subu earlier in the source should put it earlier in the emitted stream.
+- probe: d5_dx_last_decl.c (`s32 ax; s32 dz; s32 dx;` then `kc = dz * ax - dx * (cz - z0)`), scored on the sandbox.
+- result: KILLED, and the failure is instructive: 9/202. Giving dx the lower LUID also gives dx the earlier BIRTH, which shortens nothing and restores the dz/dx span tie, so the seats invert again. The emission order and the seat are coupled through the birth position, which is why the fix has to come from an insn placed between the two births rather than from re-ordering the births themselves. Banked as rejected/dx-named-third-span-tie-restored-9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d9de5549 (-mel -msoft-float), d5 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s12] Hoisting `ax` out of block 7 into the test-2 block (so fill_simple_delay_slots pulls it into the slot from before the branch) reaches the target's slot without disturbing the seats.
+- mechanism: reorg tries fill_simple_delay_slots (insns before the branch) before fill_slots_from_thread, so an ax computed in the test-2 block could be moved into the slot while block 7 still begins with dz, preserving the dz-first spans that already give the target's seats.
+- probe: a2_ax_hoist_after_t2.c and a3_ax_hoist_before_t2.c, scored, and a3 pairdiffed.
+- result: KILLED. Both score 26/202 at 202 insns. The pairdiff of a3 shows the damage is not in block 7 at all: making ax live across the test-2 branch adds a global allocno and cascades a register renaming through the whole triangle-test region (`lw t2,168(s0)` for ours against `lw t1,168(s0)` for the target, and so on from index 48 onward). Banked as rejected/ax-hoisted-global-allocno-cascade-26.c. This is the same failure mode s10 recorded for hoisting any single difference into the test-2 arm (20-39).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d9de5549 (-mel -msoft-float), a2/a3 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## Live frontier (for s13) — 2 insns, no delay slot, no allocator: one scheduler tie
+
+1. **Make sched2 emit `dx` before `az` on the d1 candidate without moving dx's birth earlier.**
+   mechanism: sched.c rank_for_schedule compares INSN_PRIORITY, then dependence class, then
+   INSN_LUID (tools/gcc-2.7.2/sched.c:2464). dx and az are independent subus that both feed
+   mult2, so their longest-path priorities are equal and their classes are equal, and az wins
+   on LUID because its declaration puts its subu earlier in sched1's output — which is exactly
+   the property that lengthens dz's live range and buys the target's register seats. The naive
+   fix is self-cancelling and measured dead (d5). What is needed is an asymmetry in the first
+   two comparisons, or a post-reload hard-register dependence that blocks az until after dx.
+   next probe: run tools/sched_solver on the d1 stream (both passes are modelled order- and
+   clock-exactly). Ask it, over the sched1 statement orders reachable from ordinary C spellings
+   of test 3, for the set that simultaneously (a) puts at least one insn between dz's def and
+   dx's def, verified against the .lreg blk=7 QTYDBG table as dz span > dx span, and (b) has a
+   sched2 output equal to the target's block-7 emission order ax, dz, mult1, dx, az, mult2, bx,
+   mult3, bz, mult4, kc, kp, xor, branch. Only score bodies the solver types REACHABLE, and
+   require build_insns == 202.
+
+2. **A tie-breaking insn between dz's def and dx's def that sched2 places AFTER dx.**
+   mechanism: same positional mechanism as `az`, but with an insn whose INSN_PRIORITY is lower
+   than dx's (a longer dependence chain to the end of block 7) or which acquires a WAR/WAW
+   dependence on a hard register written by dx's insn after reload. `az` has equal priority and
+   loses only on LUID; bz and bx have the right chain length on paper but sched1 sinks them
+   before they can serve (s12 kill), so the candidate insn must be needed early and consumed
+   late — a shape that does not exist among the six differences.
+   next probe: only after frontier 1. If spent, enumerate with sched_solver rather than by hand;
+   the s12 measurements show hand-guessing which difference "stays high" is unreliable.
+
+3. **A decomp-permuter campaign on the d1 chassis.**
+   mechanism: the residual is now a single adjacent transposition of two independent
+   statements with every register in the function already correct — the smallest and most
+   permuter-shaped residual this function has ever had, and strictly easier than the s4 campaign
+   (which ran on a 7-floor chassis dominated by residuals B and C) or the s11 framing (which was
+   a reorg delay-slot decision the permuter cannot address).
+   next probe: regenerate base.c from the NEW memory/grind/func_8002D780/candidate.c into the
+   validated workspace tmp/grind/func_8002D780/s4/nonmatchings/func_8002D780 (four hurdles +
+   rebuild recipe in evidence.md [s4]), launch with tools/permuter_campaign.py, wait IN-TURN
+   with `permuter_campaign.py wait --dir <ws>`, harvest with --stop before the turn ends, and
+   re-score every find on the engine sandbox (s4's finding that the permuter's weighted metric
+   is anti-correlated with the engine's here still applies).
+
+## [s12] Emitting `ax` first, as a named local declared at the top of the test-3 block, hands reorg.c's fill_slots_from_thread the target's delay-slot instruction without flipping the first product's mult operand order.
+- mechanism: reorg.c fill_slots_from_thread takes the first insn of the fall-through thread that clears its five gates, and the head of block 7 is whichever difference the source evaluates first. Declaring `s32 ax = cx - x0;` ahead of the first cross product emits ax's subu at block-7 index 0 while `kc = dz * ax - ...` keeps mult1 as `mult $a0,$v0`, unlike the s10 y1 variant which achieved ax-first only by flipping the product's operands.
+- probe: Variant a1_ax_local_in_t3.c scored on the sandbox, dumped with the instrumented cc1 (BB2_CC1=tools/gcc-2.7.2/cc1, BB2_QTY_DEBUG/BB2_SUGG_DEBUG/BB2_DBR_DEBUG) into tmp/grind/func_8002D780/s12/a1/, then pairdiffed.
+- result: 9/202 at 202 insns. pairdiff shows ours[92] == target[92] == `subu v0,t2,t1` (ax in the delay slot) for the first time in twelve sessions; the only remaining cluster is the dz/dx seat swap (ours dz $v1 / dx $a0, target dz $a0 / dx $v1). Banked as rejected/axfirst-slot-right-seats-swapped-9.c.
+- verdict: CONFIRMED
+
+## [s12] On an ax-first body, one extra RTL insn placed strictly between dz's definition and dx's definition breaks the local-alloc qty_compare_1 tie in dx's favour and restores the target's register seats at zero instruction cost.
+- mechanism: local-alloc.c:1725-1758 ranks block-7 quantities by floor_log2(refs)*refs*size/(death-birth)*10000 with a quantity-number tie-break at local-alloc.c:1684; whichever of dz/dx is seated first takes $v1 and the other takes $a0. An insn between the two births shifts dz's death by +2 (span 12 -> 14) while shifting dx's birth and death together (span unchanged at 12), so dx's priority 2500 beats dz's 2142. The insn is free when it is a subu the target emits anyway, merely scheduled earlier by sched1 than it is emitted by sched2.
+- probe: Hoisted each remaining test-3 difference to a named local declared immediately after `dz` and scored all five bodies (d1 az, d2 bz, d3 bx, d4 az+bz, d5 dx); read the block-7 QTYDBG tables of a1 and c1 to check the span arithmetic against the model.
+- result: CONFIRMED for `az`. d1_az_hoisted = 2/202 at 202 insns with every register in the function correct, the delay-slot fill correct, and the residual reduced to the adjacent az/dx transposition at indices 96/97 (tmp/grind/func_8002D780/s12/pairdiff_d1.txt). d4 (az+bz) = 2/202 with the same residual. Saved as memory/grind/func_8002D780/candidate.c; the s11 dz-first body kept as candidate_alt_s11_dzfirst.c.
+- verdict: CONFIRMED
+
+## [s12] The dz/dx register seat and the ax/dz delay-slot fill are independently controllable, because the seat depends on the two quantities' live-range SPANS and the span is set by what sits between the two births, not by the birth order alone.
+- mechanism: s11 read its fork off two bodies that differed only in the order of the two subus feeding the first product, holding the intervening insn count constant. Varying that count is a second degree of freedom on qty_compare_1's divisor.
+- probe: Variant c1_kp_second_product_first.c (kp's second product evaluated into a named temp before its first) built on the ax-first chassis, scored, and dumped; its block-7 QTYDBG table compared against a1's.
+- result: CONFIRMED. c1 gives dz birth 4 death 20 (span 16, pri 1875) and dx birth 8 death 16 (span 8, pri 3750); the printed allocation order is ord5 qty4 (dx) got=3 = $v1 and ord6 qty1 (dz) got=4 = $a0 - the target's seats on a body that also holds the target's delay slot. c1 itself scores 32/202 because reordering kp's two products scrambles six emitted instructions, so it is banked as rejected/kp-products-reordered-seats-right-order-wrong-32.c, but it is the measurement that proves the s11 fork is escapable.
+- verdict: CONFIRMED
+
+## [s12] A multiply-defined reg-reg copy carrier supplies the free RTL insn between dz's definition and dx's definition, the way `m = dist` supplies one in the sqrt block.
+- mechanism: s11's frontier 2 asked for an insn that reaches local_alloc and then disappears. A copy whose two definitions straddle a branch was expected to survive cse (no single-definition equivalence for a multiply-defined pseudo) and then be deleted by jump2's delete_noop_moves once local-alloc's combine_regs gives both pseudos the same hard register.
+- probe: Four carriers built on the ax-first chassis and scored: b1 (`s32 c = x2;` in the outer block, `c = x2;` at block-7 index 3, dx read as `c - x0`), b2 (same with def 1 in the test-1 arm), b3 (carrier for z0, consumed by az and bz), b4 (carrier for cz, consumed by az); plus a full instrumented-cc1 dump of b1.
+- result: KILLED as spelled. All four score 9/202 at 202 insns, identical to the carrier-free a1 body, and b1's block-7 QTYDBG table is byte-identical to a1's (dz birth 4 death 16 refs 3, dx birth 8 death 20 refs 3) - the copy is gone before local-alloc sees it. cse propagates the carrier's source into the ordinary-arithmetic use and DCE deletes the dead copy. The `m = dist` precedent does not transfer because m's only use is an `__asm__` "r" operand, which cse will not substitute through.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d9de5549 (-mel -msoft-float), b1/b2/b3/b4 spliced into src/code6cac_b.c on the ax-first (a1) chassis, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s12] Hoisting `bz` or `bx` rather than `az` supplies the tie-breaking insn between dz's definition and dx's definition.
+- mechanism: Identical positional mechanism to the `az` result - any RTL insn between the two definitions lengthens dz's span without lengthening dx's - so any of the remaining test-3 differences should serve.
+- probe: d2_bz_hoisted.c and d3_bx_hoisted.c, each declaring the difference as a named local immediately after `dz`, scored on the sandbox.
+- result: KILLED. Both score 9/202 at 202 insns, no change from the carrier-free ax-first body. sched1 sinks bz and bx back down to their consumers (mult4 and mult3), so neither lands between dz's def and dx's def and the span tie is untouched. Only `az` stays high, because its consumer mult2 is the earliest mult after the first product. Banked as rejected/bz-hoist-sinks-back-no-span-shift-9.c and rejected/bx-hoist-sinks-back-no-span-shift-9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d9de5549 (-mel -msoft-float), d2/d3 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s12] Naming `dx` as the third declaration, so the source order is ax, dz, dx, gives dx the lower sched LUID and therefore the target's dx-before-az emission order.
+- mechanism: sched.c rank_for_schedule falls to INSN_LUID (sched.c:2464) for the priority- and class-tied pair dx/az, so putting dx's subu earlier in the source should put it earlier in the emitted stream.
+- probe: d5_dx_last_decl.c (`s32 ax; s32 dz; s32 dx;` then `kc = dz * ax - dx * (cz - z0)`), scored on the sandbox.
+- result: KILLED, and instructively so: 9/202. Giving dx the lower LUID also gives dx the earlier birth, which restores the dz/dx span tie and inverts the seats again. The emission order and the seat are coupled through the birth position, which is why the fix has to come from an insn placed BETWEEN the two births rather than from re-ordering the births. Banked as rejected/dx-named-third-span-tie-restored-9.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d9de5549 (-mel -msoft-float), d5 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
+
+## [s12] Hoisting `ax` out of block 7 into the test-2 block, so that fill_simple_delay_slots pulls it into the slot from before the branch, reaches the target's slot while leaving the dz-first spans that already give the target's seats.
+- mechanism: reorg tries fill_simple_delay_slots (insns before the branch) before fill_slots_from_thread, so an ax computed in the test-2 block could be moved into the slot while block 7 still begins with dz.
+- probe: a2_ax_hoist_after_t2.c and a3_ax_hoist_before_t2.c scored on the sandbox; a3 pairdiffed.
+- result: KILLED. Both score 26/202 at 202 insns. The pairdiff of a3 shows the damage is not in block 7 at all: making ax live across the test-2 branch adds a global allocno and cascades a register renaming through the whole triangle-test region from index 48 onward (`lw t2,168(s0)` ours against `lw t1,168(s0)` target). Same failure mode s10 recorded for hoisting any single difference into the test-2 arm (20-39). Banked as rejected/ax-hoisted-global-allocno-cascade-26.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD d9de5549 (-mel -msoft-float), a2/a3 spliced into src/code6cac_b.c, one FAKE construct present (the `m` re-store in the sqrt block)
