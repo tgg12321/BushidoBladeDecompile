@@ -1,0 +1,72 @@
+pass1 block0 picks (backward: first pick = last in program order)
+clk  1 pick  102 pri  2147483491  ready: 102/2147483491/34
+clk  2 pick  100 pri  2130706433  ready: 100/2130706433/33 98/1/32
+clk  3 pick   76 pri          24  ready: 76/24/24 95/13/31 98/1/32
+clk  4 pick   95 pri          13  ready: 95/13/31 98/1/32
+clk  5 pick   98 pri           1  ready: 98/1/32
+clk 15 pick   74 pri  2130706433  ready: 74/2130706433/23 68/2130706433/21
+clk 16 pick   72 pri  2130706433  ready: 72/2130706433/22
+clk 17 pick   47 pri  2130706433  ready: 47/2130706433/17
+clk 18 pick   45 pri  2130706433  ready: 45/2130706433/16
+clk 27 pick   93 pri  2130706433  ready: 93/2130706433/30 85/2130706433/27 68/2130706433/21
+clk 28 pick   91 pri  2130706433  ready: 91/2130706433/29 61/2/19
+clk 29 pick   61 pri           2  ready: 61/2/19
+clk 30 pick   87 pri  2130706433  ready: 87/2130706433/28
+clk 39 pick   85 pri  2130706433  ready: 85/2130706433/27 68/2130706433/21 44/2130706433/15
+clk 40 pick   83 pri  2130706433  ready: 83/2130706433/26
+clk 42 pick   79 pri  2130706433  ready: 79/2130706433/25
+clk 51 pick   68 pri  2130706433  ready: 68/2130706433/21 44/2130706433/15
+clk 52 pick   66 pri  2130706433  ready: 66/2130706433/20 54/2/18
+clk 53 pick   30 pri  2130706433  ready: 30/2130706433/9 54/2/18
+clk 54 pick   28 pri  2130706433  ready: 28/2130706433/8 54/2/18
+clk 55 pick   54 pri           2  ready: 54/2/18
+clk 63 pick   44 pri  2130706433  ready: 44/2130706433/15
+clk 64 pick   41 pri  2130706433  ready: 41/2130706433/14
+clk 65 pick   37 pri  2130706433  ready: 37/2130706433/12
+clk 66 pick   39 pri  2130706433  ready: 39/2130706433/13
+clk 67 pick   35 pri  2130706433  ready: 35/2130706433/11 33/2130706433/10
+clk 68 pick   33 pri  2130706433  ready: 33/2130706433/10
+clk 75 pick   27 pri  2130706433  ready: 27/2130706433/7
+clk 76 pick   24 pri  2130706433  ready: 24/2130706433/4 233/1/6
+clk 77 pick   20 pri  2130706433  ready: 20/2130706433/2 233/1/6
+clk 78 pick   22 pri  2130706433  ready: 22/2130706433/3 233/1/6
+clk 79 pick   18 pri  2130706433  ready: 18/2130706433/1 16/2130706433/0 233/1/6
+clk 80 pick   16 pri  2130706433  ready: 16/2130706433/0 233/1/6
+clk 81 pick  233 pri           1  ready: 233/1/6
+clk 82 pick  232 pri           1  ready: 232/1/5
+nodes:
+16 {'luid': 0, 'unit': 0, 'icost': 2, 'code': 159, 'pri': 1, 'ref': 4, 'grp': 0, 'bmin': 1, 'bmax': 2}
+18 {'luid': 1, 'unit': 0, 'icost': 2, 'code': 159, 'pri': 1, 'ref': 2, 'grp': 0, 'bmin': 1, 'bmax': 2}
+20 {'luid': 2, 'unit': -1, 'icost': 1, 'code': 3, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+22 {'luid': 3, 'unit': 0, 'icost': 2, 'code': 159, 'pri': 1, 'ref': 1, 'grp': 0, 'bmin': 1, 'bmax': 2}
+24 {'luid': 4, 'unit': -1, 'icost': 1, 'code': 3, 'pri': 2, 'ref': 2, 'grp': 0, 'bmin': -1, 'bmax': -1}
+232 {'luid': 5, 'unit': -1, 'icost': 1, 'code': 159, 'pri': 1, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+233 {'luid': 6, 'unit': -1, 'icost': 1, 'code': 96, 'pri': 1, 'ref': 2, 'grp': 0, 'bmin': -1, 'bmax': -1}
+27 {'luid': 7, 'unit': 1, 'icost': 12, 'code': 38, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': 3, 'bmax': 69}
+28 {'luid': 8, 'unit': -1, 'icost': 1, 'code': 191, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+30 {'luid': 9, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 13, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+33 {'luid': 10, 'unit': 0, 'icost': 2, 'code': 159, 'pri': 1, 'ref': 4, 'grp': 0, 'bmin': 1, 'bmax': 2}
+35 {'luid': 11, 'unit': 0, 'icost': 2, 'code': 159, 'pri': 1, 'ref': 2, 'grp': 0, 'bmin': 1, 'bmax': 2}
+37 {'luid': 12, 'unit': -1, 'icost': 1, 'code': 3, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+39 {'luid': 13, 'unit': 0, 'icost': 2, 'code': 159, 'pri': 1, 'ref': 1, 'grp': 0, 'bmin': 1, 'bmax': 2}
+41 {'luid': 14, 'unit': -1, 'icost': 1, 'code': 3, 'pri': 2, 'ref': 2, 'grp': 0, 'bmin': -1, 'bmax': -1}
+44 {'luid': 15, 'unit': 1, 'icost': 12, 'code': 38, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': 3, 'bmax': 69}
+45 {'luid': 16, 'unit': -1, 'icost': 1, 'code': 191, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+47 {'luid': 17, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 13, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+54 {'luid': 18, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 2, 'ref': 2, 'grp': 0, 'bmin': -1, 'bmax': -1}
+61 {'luid': 19, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 2, 'ref': 2, 'grp': 0, 'bmin': -1, 'bmax': -1}
+66 {'luid': 20, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 13, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+68 {'luid': 21, 'unit': 1, 'icost': 12, 'code': 29, 'pri': 13, 'ref': 1, 'grp': 0, 'bmin': 3, 'bmax': 69}
+72 {'luid': 22, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 13, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+74 {'luid': 23, 'unit': 1, 'icost': 12, 'code': 29, 'pri': 13, 'ref': 1, 'grp': 0, 'bmin': 3, 'bmax': 69}
+76 {'luid': 24, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 24, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+79 {'luid': 25, 'unit': 0, 'icost': 2, 'code': 159, 'pri': 1, 'ref': 1, 'grp': 0, 'bmin': 1, 'bmax': 2}
+83 {'luid': 26, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+85 {'luid': 27, 'unit': 1, 'icost': 12, 'code': 29, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': 3, 'bmax': 69}
+87 {'luid': 28, 'unit': 0, 'icost': 2, 'code': 159, 'pri': 1, 'ref': 1, 'grp': 0, 'bmin': 1, 'bmax': 2}
+91 {'luid': 29, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+93 {'luid': 30, 'unit': 1, 'icost': 12, 'code': 29, 'pri': 2, 'ref': 1, 'grp': 0, 'bmin': 3, 'bmax': 69}
+95 {'luid': 31, 'unit': -1, 'icost': 1, 'code': 16, 'pri': 13, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+98 {'luid': 32, 'unit': -1, 'icost': 0, 'code': 159, 'pri': 1, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+100 {'luid': 33, 'unit': -1, 'icost': 1, 'code': 99, 'pri': 24, 'ref': 1, 'grp': 0, 'bmin': -1, 'bmax': -1}
+102 {'luid': 34, 'unit': -1, 'icost': 0, 'code': 221, 'pri': 2147483491, 'ref': 0, 'grp': 0, 'bmin': -1, 'bmax': -1}

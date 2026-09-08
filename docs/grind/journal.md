@@ -1881,3 +1881,4 @@
 - 2026-09-08 07:55 func_80042C80 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-08 08:29 func_8003F824 COMPLETED-C after 1 sessions (closer: s1 [recon]).
 - 2026-09-08 08:35 func_80047BE0 COMPLETED-C after 1 sessions (closer: s1 [recon]).
+- 2026-09-08 09:09 func_8002E6B0 s1 [recon] floor=40: recon: floor 64 -> 40 (v12: block-scoped single-set dz/dx + function-scope cross vars + plain return-0 exits); block-1 order now matches target; residual = seat cascade + reorg delay-slot/exit structure; ret-variable and && families killed with mechanism

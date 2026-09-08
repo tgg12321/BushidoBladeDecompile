@@ -1,0 +1,63 @@
+{
+ "func": "func_8002E6B0",
+ "file": "code6cac_b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 40,
+   "modality": "recon",
+   "headline": "recon: floor 64 -> 40 (v12: block-scoped single-set dz/dx + function-scope cross vars + plain return-0 exits); block-1 order now matches target; residual = seat cascade + reorg delay-slot/exit structu"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "The target's shared `v0 = 0` block sits under a label flow never recorded (created by jump2 cross-jump), so reorg's all-live fallback steals it into slot 1 and redirects both exits to the epilogue; some ordinary exit ordering (nested ifs / which return-0 survives cross-jump) makes our compile take the same path",
+   "mechanism": "reorg.c mark_target_live_regs b == -1 -> SET_HARD_REG_SET; fill_eager_delay_slots fallthrough rejection; redundant_insn + reorg_redirect_jump on the second bltz",
+   "next_probe": "run tools/gcc-2.7.2/cc1 (instrumented) on v12 with BB2_DBR_DEBUG=1 via a tmp .sh replicating tools/grinder/dump.ps1:46-50, read `DBRDBG mtlr target=<uid> block=<b>` for the first bltz's target; rerun with BB2_ALLLIVE_LABEL=<uid> and diff the .s tail vs target; then measure nested-if / reordered return-0 spellings with tmp/grind/func_8002E6B0/s1/measure.ps1"
+  },
+  {
+   "hypothesis": "With the target's exit path, hard $v0 (or the surviving return-0 block's position) excludes $v0 from block 2's local allocation, pushing cc->$a0, cp->$v1, arg2[2]->$t5 and the 4th product to $s5 in one cascade",
+   "mechanism": "local-alloc find_free_reg ascending scan with hard-reg liveness; global.c find_reg on the remaining conflicts",
+   "next_probe": "tools/ra_solver/extract.py func_8002E6B0 code6cac_b + inverse.py global --goal '{\"<cc>\":4,\"<cp>\":3,\"<arg2z>\":13,\"<arg2x>\":14}'; local_extract.py/local_alloc.py code6cac_b for block 2 to see what would have to be live in $v0"
+  },
+  {
+   "hypothesis": "arg2 coordinate seats (target $t6/$t5, ours $t6/$a0) fall out of cc occupying $a0 across every coordinate's live range",
+   "mechanism": "global.c conflict propagation: cc (function-scope) overlaps every coordinate pseudo in all three blocks",
+   "next_probe": "no separate measurement; verify after frontier 1/2 with the RA model's hard_conflicts for the arg2[2] pseudo"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "A result variable initialised to 0 on the main path with goto-end exits (ret-var family) reproduces the target's v0=0 delay slot and epilogue-direct exits, measured on the v3/v7 chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, INCLUDE_ASM on main, v1-v4 and v7 bodies, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "ret lands in $a2/$a1, a `move v0,ret` survives, an extra $s6 save appears; mechanically cannot reach $v0 on this chassis"
+  },
+  {
+   "session": 1,
+   "statement": "&& chains (`ret = t1>=0 && t2>=0 && t3>=0` and `return t1>=0 && ...`) reproduce the target's exit structure, measured on this chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, v8/v9 bodies, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "64 both; tail shape incompatible with target"
+  },
+  {
+   "session": 1,
+   "statement": "cross_center/cross_point as per-block locals (or fully inlined expressions) improve the floor on the block-scoped dz/dx chassis",
+   "kill_scope": "instance",
+   "measured_on": "-mel -msoft-float chassis, v5/v6 bodies, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "worse by 15; cross vars must stay function-scope"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-08T13:35:52.121385+00:00"
+}
