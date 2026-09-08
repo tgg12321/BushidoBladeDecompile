@@ -4,14 +4,6 @@
   "build_failures": [],
   "items": [
     {
-      "func": "func_80047BE0",
-      "file": "sound",
-      "distance": 63,
-      "verdict": "C",
-      "rules": 0,
-      "status": "active"
-    },
-    {
       "func": "func_8002E6B0",
       "file": "code6cac_b",
       "distance": 64,
@@ -1364,14 +1356,14 @@
     }
   ],
   "counts": {
-    "total": 153,
-    "active": 150,
+    "total": 152,
+    "active": 149,
     "by_status": {
-      "active": 150,
+      "active": 149,
       "foreclosed": 3
     },
     "by_verdict": {
-      "C": 126,
+      "C": 125,
       "ASM-PARTIAL": 24
     }
   }
