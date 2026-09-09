@@ -560,3 +560,99 @@ P3. **A fourth permuter seed: a stacked-neutral 176/6 chassis.** All of the s2 n
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s3b chassis == s1/s2 candidate chassis, no FAKE constructs present; campaign workspace tmp/perm_5d554_g7
+
+## [s4] The complete local-spelling space of the a2-site region -- 12 arithmetic forms x 2 cast spellings of the r4 read x 4 insertion points among the tail stores x 2 positions of the s.zero1C store, 168 spellings applied identically to both loop halves -- is quantized to exactly two scores, 6 and 15, both at 176 instructions, and nothing in it scores below the standing floor of 6.
+- mechanism: rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) orders the ready list by INSN_PRIORITY first (sched.c:2418) and only reaches the INSN_LUID tie-break (sched.c:2464) when priority and dependence class are equal. priority() (sched.c:1434, max at sched.c:1499) is the longest dependence path to the block end, so the a2 base insn (addiu a2 -> addu a2,a2,v0 -> sw a2,0x2C -> jal) always outranks the call's argument setup (addiu a0 -> jal) on term 1, for every spelling in which the target's `addiu a2,s4,-K` insn exists at all. Spellings that reassociate the sum so the addiu is not applied to r4 first lose the insn entirely and score 15.
+- probe: generator tmp/grind/func_8005D554/s4/gen1.py -> tmp/grind/func_8005D554/enum1 (168 complete bodies), swept with tools/sweep_variants.py --func func_8005D554 --file text1b --json; histogram in tmp/grind/func_8005D554/s4/sweep1.json.
+- result: 71 spellings at 6/176 (every form whose first written term is the r4-K base), 98 at 15/176 (every random-first or single-expression reassociation). The cast axis and both placement axes are entirely inert: all 8 combinations of a given arithmetic form score identically. The representative dead form was already banked at rejected/rnd-first-a2-accum-scores-15.c in s1.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ f95f6b8a chassis, candidate.c body (176/176, floor 6 re-measured this session), no FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+
+## [s4] The basic block of every movable struct store is byte-fixed: the full power set of relocating {byte28, c24, c20, p1, zero10, one14, ret} into the tail block after the last rand() call, x 2 positions for `i += 1` (256 spellings), yields only 9 forms at the floor, and all nine are the ones that keep zero10, one14 and ret in that order inside the existing tail block.
+- mechanism: Each rand() call is a basic-block boundary, so a store that crosses one leaves the block whose schedule the target fixes; and inside the tail block the three stores sw zero,0x20 / sw s6,0x24 / sw s1,0x1C are emitted in source order because they are independent of the last scheduled insn (class 3 in rank_for_schedule, sched.c:2424-2458) and are therefore separated only by the LUID tie-break at sched.c:2464.
+- probe: generator tmp/grind/func_8005D554/s4/gen2.py -> tmp/grind/func_8005D554/enum2 (256 complete bodies; the all-zero flag set was diffed against candidate.c and is byte-identical, so the generator is faithful), swept with tools/sweep_variants.py; histogram in tmp/grind/func_8005D554/s4/sweep2.json.
+- result: move zero10 alone 6/176 (neutral); move one14 alone 10/176; move ret alone 10/176; move byte28, c24 or c20 alone 10/176 each; move p1 alone 13/176; `i += 1` in either position 6/176; all seven moved 28-30/177. Forms banked at rejected/tail-moved-setup-stores-cross-rand-blocks-scores-30.c and rejected/tail-store-order-transposed-one14-first-scores-10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ f95f6b8a chassis, candidate.c body, no FAKE constructs present
+
+## [s4] Frontier item P3's premise is false as stated: stacking the neutral spellings does NOT produce a different emission order. The full cross product of 5 neutral a0-site arithmetic forms x 5 neutral a2-site arithmetic forms x 4 declaration scopes for a0_offset/a2_offset (function top in either order, top of the do-body, per-half nested braces) x 2 positions of s.zero1C x 4 neutral tail-store move sets -- 800 complete bodies -- scores 6 at 176 instructions in every single case.
+- mechanism: All five surviving arithmetic forms lower to the identical RTL once combine.c folds the constant term into the addiu, and the declaration scope of a non-loop-carried local changes only the pseudo's DECL scope, not its RTL emission order, so INSN_LUID (sched.c:2464) is unchanged. These axes are not weak levers, they are exact no-ops at the byte level.
+- probe: generator tmp/grind/func_8005D554/s4/gen3.py -> tmp/grind/func_8005D554/enum3 (800 complete bodies; identity variant a1_a1_top_zl_m0 diffed byte-identical to candidate.c), swept with tools/sweep_variants.py; histogram in tmp/grind/func_8005D554/s4/sweep3.json (801 rows in a single bucket).
+- result: 800/800 at exactly 6/176. A neutral stacked form is banked at rejected/neutral-stack-a11-arith-perhalf-scope-storemoves-6.c as documentation that the stack is inert. A fourth permuter seed built from this space would start in the SAME basin as the already-spent k0/candidate chassis, so P3 as written is retired; a new permuter seed must differ in BLOCK STRUCTURE (loop form, guard duplication, object model), not in these axes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ f95f6b8a chassis, candidate.c body, no FAKE constructs present
+
+## [s4] FRONTIER (replaces P1-P3, written after 1,224 measured spellings)
+
+F1. **The residual is a LUID problem and only a later-pass re-emission can solve it.** The
+    scheduler reads INSN_PRIORITY before INSN_LUID (sched.c:2418 vs sched.c:2464), and the a2
+    base insn's dependence path to the block end is strictly longer than the argument setup's for
+    every spelling that keeps `addiu a2,s4,-K`. The one bump that could equalise them,
+    adjust_priority's birthing bump (sched.c:2584), is gated on `reg_n_sets[dest] == 1`
+    (birthing_insn_p, sched.c:2526) and both hard argument registers are set at two call sites in
+    this function, so it is unavailable. Therefore the target's order requires
+    LUID(a2 base) > LUID(a0 arg setup), i.e. the arithmetic insn must be RE-EMITTED below the
+    argument setup by a pass that runs after expand. Next probe (forensics modality):
+    `pwsh tools/grinder/dump.ps1 func_8005D554` with
+    rejected/judge-failed-fresh-multiwrite-nv-nw-carrier-scores-0.c applied and again with
+    candidate.c applied; diff the `.cse`, `.combine` and `.flow` dumps around the a2 base insn and
+    name the pass that moved it. Only once the pass is named can a legal C trigger be searched
+    for; blind spelling search of the region is now exhausted.
+
+F2. **Attack the a0/a1 side: make the argument-setup insns birthing.** birthing_insn_p
+    (sched.c:2526) returns nonzero iff the destination register is live and
+    `reg_n_sets[REGNO] == 1`, in which case adjust_priority (sched.c:2584) raises the insn to
+    max_priority -- which would put the arg setup AHEAD of the a2 base without touching the a2
+    base at all. The hard argument registers are set at two `func_80073728` call sites here, so
+    reg_n_sets is 2 and the bump never fires. NOT YET MEASURED: the block's shape when the source
+    has only ONE `func_80073728` call site (both halves funnelled through one call -- e.g. a
+    two-iteration inner loop over the per-half constants, or an if/else that selects the constants
+    and falls into a shared call). That is ordinary C, is structurally plausible for the original
+    given how symmetric the two halves are, and is the only route found so far that raises the arg
+    setup's priority instead of lowering the a2 base's. Next probe: write the single-call-site
+    chassis, measure it, and if the arg setup does move first, check whether that form can still
+    reach 176 instructions.
+
+F3. **Block structure, not local spelling.** Sweeps 1-3 prove the residual is invariant under
+    every local-spelling axis inside the block. The untried structural axes are the loop form
+    itself (the s2 `z3` while + duplicated guard, measured neutral at 6 but NOT inside the enum3
+    space), the `if (i < ...)` guard shape, and the object model of `s` / `D_8009B2E0` (a real
+    struct or array declaration instead of the `p_b2e0 = (u8 *)&D_8009B2E0` pun that the
+    DATA MODEL block flags). Next probe: rebuild the s2 `z3` guard-duplicated-while body on the
+    current chassis and re-run sweep 3's arithmetic x scope cross product on top of it (200
+    spellings) to see whether the score is still invariant once the block structure changes.
+
+## [s4] The complete local-spelling space of the a2-site region -- 12 arithmetic forms x 2 cast spellings of the r4 read x 4 insertion points among the tail stores x 2 positions of the s.zero1C store, 168 complete bodies applied identically to both loop halves -- is quantized to exactly two scores, 6 and 15, both at 176 instructions, and nothing in it scores below the standing floor of 6.
+- mechanism: rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) orders the ready list by INSN_PRIORITY first (sched.c:2418), then by dependence class against last_scheduled_insn, and only then by INSN_LUID ascending (sched.c:2464). priority() (sched.c:1434, max taken at sched.c:1499) is the longest dependence path from the insn to the end of the block, so the a2 base insn (addiu a2,s4,-K -> addu a2,a2,v0 -> sw a2,0x2C(sp) -> jal) strictly outranks the call's argument setup (addiu a0,sp,0x10 -> jal) on term 1, for any spelling in which the target's addiu insn exists at all; the LUID tie-break is therefore never consulted between them. Spellings that reassociate the sum so the constant is not applied to r4 first lose that insn entirely and score 15.
+- probe: Generator tmp/grind/func_8005D554/s4/gen1.py wrote 168 complete function bodies to tmp/grind/func_8005D554/enum1; swept in one call with tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/enum1 --json; histogram banked at tmp/grind/func_8005D554/s4/sweep1.json.
+- result: 71 spellings at 6/176 (every form whose first written term is the r4-K base: base-first split-init, three-way split, `= -K; += r4; += rnd`, `= r4-K; = rnd + a2`), 98 at 15/176 (random-first and single-expression reassociations). The cast axis and both placement axes are entirely inert -- all 8 combinations of a given arithmetic form score identically. The representative dead form was already banked in s1 at rejected/rnd-first-a2-accum-scores-15.c.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ f95f6b8a chassis with memory/grind/func_8005D554/candidate.c applied to src/text1b.c (floor re-measured 6/176 this session); no FAKE constructs present in any variant
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+
+## [s4] Of the 256 spellings that relocate subsets of the seven movable struct stores (byte28, c24, c20, p1, zero10, one14, ret) into the tail block after the last rand() call, crossed with 2 positions for `i += 1`, only 9 sit at the floor of 6/176, and those 9 are precisely the ones that keep zero10, one14 and ret in that relative order inside the existing tail block.
+- mechanism: Each rand() call is a basic-block boundary, so a store that crosses one leaves the block whose schedule the target fixes. Inside the tail block the three stores sw zero,0x20 / sw s6,0x24 / sw s1,0x1C are independent of the last scheduled insn (class 3 in rank_for_schedule, sched.c:2424 onward) and so are separated only by the INSN_LUID tie-break at sched.c:2464, which is source order.
+- probe: Generator tmp/grind/func_8005D554/s4/gen2.py wrote 256 complete bodies to tmp/grind/func_8005D554/enum2 (the all-flags-off variant was diffed byte-identical to candidate.c, proving the generator faithful); swept with tools/sweep_variants.py; histogram at tmp/grind/func_8005D554/s4/sweep2.json.
+- result: Per-axis costs: move zero10 alone 6/176 (neutral); one14 alone 10/176; ret alone 10/176; byte28, c24 or c20 alone 10/176 each; p1 alone 13/176; `i += 1` in either position 6/176; all seven moved 28-30/177. Two facts fall out: the tail store order is byte-fixed and any transposition costs +4, and each setup store's basic block is byte-fixed. Forms banked at rejected/tail-moved-setup-stores-cross-rand-blocks-scores-30.c and rejected/tail-store-order-transposed-one14-first-scores-10.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ f95f6b8a chassis with candidate.c applied to src/text1b.c; no FAKE constructs present in any variant
+
+## [s4] Frontier item P3's premise is false as stated: stacking the neutral spellings does not perturb the emission order. The cross product of 5 neutral a0-site arithmetic forms x 5 neutral a2-site arithmetic forms x 4 declaration scopes for a0_offset/a2_offset (function top in either order, top of the do-body, per-half nested braces) x 2 positions of s.zero1C x 4 neutral tail-store move sets -- 800 complete bodies -- scores 6 at 176 instructions in 800 out of 800 cases.
+- mechanism: The five surviving arithmetic forms lower to identical RTL once combine.c folds the constant term into the addiu, and the declaration scope of a non-loop-carried local changes only the pseudo's DECL scope, not its RTL emission position, so INSN_LUID (sched.c:2464) is unchanged. These axes are exact byte-level no-ops rather than weak levers.
+- probe: Generator tmp/grind/func_8005D554/s4/gen3.py wrote 800 complete bodies to tmp/grind/func_8005D554/enum3 (identity variant a1_a1_top_zl_m0 diffed byte-identical to candidate.c); swept with tools/sweep_variants.py; histogram at tmp/grind/func_8005D554/s4/sweep3.json shows 801 rows collapsing into the single bucket (score 6, 176 insns).
+- result: 800/800 at exactly 6/176. A representative stacked form is banked at rejected/neutral-stack-a11-arith-perhalf-scope-storemoves-6.c as documentation that the stack is inert. A fourth permuter seed built from this space would start in the same basin as the already-spent k0/candidate chassis, so P3 is retired; a new seed must differ in block structure (loop form, guard duplication, object model), not in these axes.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ f95f6b8a chassis with candidate.c applied to src/text1b.c; no FAKE constructs present in any variant
+
+## [s4] The residual is confirmed to be a three-slot rotation of one 4-insn window per loop half and nothing else: an instruction-by-instruction alignment of the candidate's sandbox object against asm/funcs/func_8005D554.s matches all 176 slots except target T88-T91 / ours O88-O91 and target T134-T137 / ours O129-O132.
+- mechanism: The window is the ready-list pick order of {a2 base, a0 argument, a1 argument} inside the block that follows the third rand() call. The target picks addiu a0,sp,0x10 then addu a1,zero,zero then lw v1 then addiu a2,s4,-K; ours picks addiu a2 then addiu a0 then lw v1 then move a1. The lw v1 slot and all three following struct stores (sw zero,0x20 / sw s6,0x24 / sw s1,0x1C) are already byte-aligned in both halves.
+- probe: mipsel-linux-gnu-objdump -d on tmp/sandbox/func_8005D554/text1b.o after a clean `sandbox func_8005D554 --disable all` on the candidate body (score 6, build_insns 176), aligned against the target listing by tmp/grind/func_8005D554/s4/pairdiff.py; disassembly banked at tmp/grind/func_8005D554/s4/ours.dis.
+- result: Confirmed: 176 slots, 6 differing, two identical 3-diff windows. Note for future sessions -- tmp/sandbox/<func>/ holds the LAST object built, so a disassembly taken after a sweep_variants run shows the last VARIANT, not the candidate; re-run sandbox on the candidate before dumping.
+- verdict: CONFIRMED

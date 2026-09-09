@@ -14,6 +14,13 @@
  * Ours emits [addiu a2,s4,-K][addiu a0,sp,16][lw v1,gp][move a1,zero]; the target emits
  * [addiu a0,sp,16][addu a1,zero,zero][lw v1,gp][addiu a2,s4,-K]
  * (asm/funcs/func_8005D554.s:4DEB4-4DEC0).  Everything else in the function matches.
+ *
+ * s4 (enumerate, 2026-09-08, HEAD main @ f95f6b8a): floor RE-MEASURED at 6/176 on this body,
+ * and 1,224 complete spellings were swept around it (tmp/grind/func_8005D554/enum{1,2,3},
+ * histograms in tmp/grind/func_8005D554/s4/sweep{1,2,3}.json).  Nothing scores below 6.  The
+ * a2-arithmetic spelling space is quantized to {6, 15}; the 800-form cross product of every
+ * neutral axis (a0/a2 arithmetic forms x declaration scope x zero1C position x tail-store
+ * moves) is 800/800 at exactly 6/176.  Do not re-sweep those axes: they are byte-level no-ops.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

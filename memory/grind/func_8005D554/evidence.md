@@ -407,3 +407,131 @@ reached. Chassis ledger for permutation: k0/candidate chassis spent (21,569 iter
 - [s3] MECHANISM CORRECTION: the s3 ledger attributed the distance-0 win to reg_n_sets > 1 defeating sched.c:2505 birthing_insn_p. k1_perhalf_acc_hoist writes its accumulator twice at exactly those statement positions (reg_n_sets == 2) and scores 47/178, so that reading is disproven. What separates the FAILed nv/nw forms is a SEPARATE pseudo copied into the accumulator, which implies a later pass folds the copy and re-emits the arithmetic at the copy site - i.e. exactly the LUID condition H7 class-killed as unreachable by any C spelling. H7's class kill is contradicted by measurement and should be treated as re-opened.
 
 - [s3] Full s3b probe table (13 forms, insns and scores) is in memory/grind/func_8005D554/evidence.md under 's3b'; every form is on disk under tmp/grind/func_8005D554/s3/ and the five decisive ones are banked in memory/grind/func_8005D554/rejected/.
+
+## s4 (enumerate) — 2026-09-08, HEAD main @ f95f6b8a, chassis floor re-measured = 6/176
+
+### Chassis re-verification (first act of the session)
+`candidate.c` applied to `src/text1b.c` and measured with
+`sandbox func_8005D554 --disable all`: **score 6, build_insns 176, target_insns 176** — the
+ledger's floor of 6 is intact on the current HEAD chassis, so every s1–s3 spelling conclusion
+remains chassis-valid.
+
+### The residual, re-proven instruction-by-instruction (artifact: s4/ours.dis, s4/pairdiff.py)
+The sandbox object for `candidate.c` was disassembled and aligned against
+`asm/funcs/func_8005D554.s`. The two bodies are identical in all 176 slots except six, which are
+two copies of one 4-slot window (one per loop half). Half 1 (target indices T88–T91 vs ours
+O88–O91):
+
+    slot  target                    ours
+    88    addiu a0, sp, 0x10        addiu a2, s4, -0xC     <- differs
+    89    addu  a1, zero, zero      addiu a0, sp, 0x10     <- differs
+    90    lw    v1, %gp_rel(...)    lw    v1, 0(gp)           identical
+    91    addiu a2, s4, -0xC        move  a1, zero         <- differs
+
+Half 2 is the same window with `-0x19` (target T134–T137 vs ours O129–O132). Everything else —
+prologue, the four `rand` calls and their delay slots, all ten struct stores, both
+`jal func_80073728` sites, the `sw a2, 0x2C(sp)` delay-slot store, the epilogue — is byte-aligned.
+So the function's ENTIRE remaining distance is: our scheduler picks the a2 base insn FIRST out of
+the {a2 base, a0 arg, a1 arg} triple, the target picks it LAST.
+
+### THE EXHAUSTIVE SWEEP (1,224 spellings measured this session; artifacts s4/sweep{1,2,3}.json)
+
+Sweep 1 — `tmp/grind/func_8005D554/enum1`, 168 spellings (generator `s4/gen1.py`).
+Axes: 12 spellings of the a2 arithmetic (split-init base-first, split-init random-first,
+three-way splits, single-expression reassociations, `= -K; += r4; += rnd`, `= r4-K; = rnd + a2`),
+x 2 cast spellings of the `r4` read (`(s32)r4` vs the raw `u32 r4`), x 4 insertion points of the
+a2 statements among the tail stores, x 2 positions of `s.zero1C = a2_offset` — applied identically
+to both halves. Result histogram, ALL at 176 instructions:
+
+    score 6  : 71 spellings   (every form whose FIRST written term is the `r4 - K` base:
+                               a1, a3, a9, a11, a12 — i.e. the `addiu a2,s4,-K` insn survives)
+    score 15 : 98 spellings   (every form whose first written term is the random product, or
+                               that folds the sum into one expression: a2, a4, a5, a6, a7, a8, a10)
+
+The cast axis and BOTH placement axes are completely inert — every one of the 8 (cast x placement
+x zero1C) combinations of a given arithmetic form scores the same. No spelling of the a2
+arithmetic scores below 6.
+
+Sweep 2 — `tmp/grind/func_8005D554/enum2`, 256 spellings (generator `s4/gen2.py`).
+Axis: the full power set of which of the seven movable struct stores
+{`byte28`, `c24`, `c20`, `p1`, `zero10`, `one14`, `ret`} is relocated out of its current
+basic block into the tail block that follows the last `rand()` call, x 2 positions for `i += 1`.
+(`s.p0` is excluded: in half 2 it reads `D_800A3418 & 1` and moving it past a `rand()` changes the
+value.) Result: 9 spellings at 6/176, the rest spread 10..30 (some at 177). Per-axis costs:
+
+    move `zero10` alone           6/176   (neutral — preserves the tail store order)
+    move `one14` alone           10/176   (transposes the tail order to one14,zero10,ret)
+    move `ret` alone             10/176   (transposes to ret,zero10,one14)
+    move `byte28` / `c24` / `c20` 10/176  each (crosses a rand() block boundary)
+    move `p1`                    13/176
+    move `i += 1`                 6/176   (neutral, either position)
+    all seven moved            28-30/177
+
+The only neutral moves are the ones that keep `zero10`,`one14`,`ret` in that order inside the
+existing tail block. Two facts fall out: (a) the tail store order
+`sw zero,0x20 / sw s6,0x24 / sw s1,0x1C` is byte-fixed and any transposition costs +4; (b) every
+setup store's basic block is byte-fixed — pushing `byte28`/`c24`/`c20`/`p1` past a `rand()`
+costs +4 each.
+
+Sweep 3 — `tmp/grind/func_8005D554/enum3`, 800 spellings (generator `s4/gen3.py`).
+The full cross product of every axis that sweeps 1 and 2 found NEUTRAL, stacked:
+5 neutral arithmetic forms for the a0 site x 5 for the a2 site x 4 declaration scopes for
+`a0_offset`/`a2_offset` (function top in either order, top of the `do` body, per-half nested
+`{ }` blocks) x 2 positions of `s.zero1C` x 4 neutral tail-store move sets.
+**Result: all 800 score exactly 6 at 176 instructions.** The score is completely invariant under
+the stacked-neutral space, so frontier item P3's premise ("a stacked-neutral chassis has a
+different emission order") is measurably false for these four axes: they do not perturb the
+emission order at all, they are pure no-ops at the byte level.
+
+### WHY THE REGION IS FLAT — the scheduler predicate, read out of cc1's own source
+`rank_for_schedule` (`tools/gcc-2.7.2/sched.c:2408`) orders the ready list by, in order:
+1. `INSN_PRIORITY` descending (`sched.c:2418`);
+2. dependence class w.r.t. `last_scheduled_insn` (`sched.c:2424-2458`);
+3. `INSN_LUID` ASCENDING — original insn order — as the stable tie-break (`sched.c:2464`).
+
+`priority()` (`sched.c:1434`, the max at `sched.c:1499`) sets `INSN_PRIORITY` to the longest
+dependence path from the insn to the end of the block. For ANY spelling in which the target's
+`addiu a2,s4,-K` exists at all, that insn's path is
+`addiu a2 -> addu a2,a2,v0 -> sw a2,0x2C(sp) -> jal`, strictly longer than the a0/a1 argument
+setup insns' path (`addiu a0 -> jal`). So priority always ranks the a2 base ABOVE the arg setup,
+and the LUID tie-break at `sched.c:2464` is never even consulted between them — the a2 base wins
+on term 1. The one mechanism in cc1 that could raise the arg setups to parity is
+`adjust_priority`'s birthing bump (`sched.c:2584`), but `birthing_insn_p` (`sched.c:2526`) returns
+nonzero only when `reg_n_sets[REGNO(dest)] == 1`, and both hard arg registers are set at two call
+sites in this function, so the bump is unavailable to them. (This also finally settles the s3 /
+s3b dispute about `reg_n_sets`: the flag is real and it lives in `birthing_insn_p`, but it gates
+a bump the arg-setup insns cannot get, not the accumulator's write count.)
+
+The consequence is a structural one, not a spelling one: the target's ordering requires the a2
+base insn to sit BELOW the call's argument setup in the insn stream, and since `expand_call`
+emits the argument setup at the call statement — after every statement that computes the value
+being stored into the struct — no ordinary source-level statement order can put it there. Only a
+LATER pass re-emitting the arithmetic below the arg setup can (frontier P1: the `cse.c`
+re-materialization / `combine.c` copy-fold that the Judge-FAILed `nv`/`nw` bodies triggered).
+That is why 1,224 spellings of the region are quantized to exactly two values.
+
+- [s4] Floor re-measured at 6/176 on HEAD main @ f95f6b8a with candidate.c applied, so every s1-s3 spelling conclusion stays chassis-valid.
+
+- [s4] 1,224 complete function bodies were generated and swept this session (enum1 168, enum2 256, enum3 800). NOTHING scores below 6. The a2-site local spelling space collapses to exactly two values, 6 (any form whose first written term is the `r4 - K` base) and 15 (any random-first or single-expression reassociation); cast spelling, statement placement among the tail stores and the position of the s.zero1C store are all completely inert.
+
+- [s4] The 800-form cross product of EVERY axis that measured neutral (5 a0 arithmetic forms x 5 a2 arithmetic forms x 4 declaration scopes for a0_offset/a2_offset x 2 zero1C positions x 4 tail-store move sets) is 800/800 at exactly 6/176 -- these axes are byte-level no-ops, not weak levers, which retires frontier item P3 (a stacked-neutral permuter seed would start in the already-spent k0 basin).
+
+- [s4] MECHANISM, read out of cc1's own source: rank_for_schedule (sched.c:2408) sorts by INSN_PRIORITY (sched.c:2418), then dependence class, then INSN_LUID ascending (sched.c:2464). priority() (sched.c:1434/1499) is the longest path to the block end, so the a2 base insn (addiu a2 -> addu a2 -> sw a2,0x2C -> jal) ALWAYS outranks the a0/a1 argument setup (addiu a0 -> jal) on term 1 -- the LUID tie-break is never reached between them. adjust_priority's birthing bump (sched.c:2584) could raise the arg setup to max_priority, but birthing_insn_p (sched.c:2526) requires reg_n_sets[dest] == 1 and both hard argument registers are set at TWO func_80073728 call sites here. This is the correct home of the reg_n_sets flag that s3 mis-attributed.
+
+- [s4] Two structural consequences for the next sessions: (a) the target order needs LUID(a2 base) > LUID(a0 arg setup), which no source statement order can give because expand_call emits arg setup at the call -- only a post-expand pass re-emitting the arithmetic can (frontier F1); (b) the untested alternative is to make the ARG SETUP birthing by giving the function a single func_80073728 call site in the source, which is ordinary C and never been measured (frontier F2).
+
+- [s4] Floor re-measured at 6/176 (target_insns 176, build_insns 176) on HEAD main @ f95f6b8a with candidate.c applied, so every s1-s3 spelling conclusion remains chassis-valid.
+
+- [s4] 1,224 complete function bodies were generated and swept this session (enum1 168, enum2 256, enum3 800). Nothing scored below 6.
+
+- [s4] The a2-site local spelling space collapses to exactly two values: 6 for any form whose first written term is the `r4 - K` base, 15 for any random-first or single-expression reassociation. Cast spelling of the r4 read, statement placement among the tail stores and the position of the s.zero1C store are completely inert.
+
+- [s4] The tail store order sw zero,0x20 / sw s6,0x24 / sw s1,0x1C is byte-fixed: transposing any two of them costs +4. Each setup store's basic block is byte-fixed too: pushing byte28, c24 or c20 past a rand() costs +4, and p1 costs +7.
+
+- [s4] The 800-form cross product of every axis that measured neutral is 800/800 at exactly 6/176 -- these axes are byte-level no-ops, which retires the stacked-neutral permuter seed idea (frontier P3).
+
+- [s4] MECHANISM (read out of cc1's own source, not inferred): rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) sorts the ready list by INSN_PRIORITY (sched.c:2418), then dependence class, then INSN_LUID ascending (sched.c:2464). priority() (sched.c:1434, max at sched.c:1499) is the longest dependence path to the block end, so the a2 base insn always outranks the a0/a1 argument setup on term 1 and the LUID tie-break is never reached between them.
+
+- [s4] adjust_priority's birthing bump (sched.c:2584) is the only mechanism in cc1 that could raise the argument setup to parity, and birthing_insn_p (sched.c:2526) gates it on reg_n_sets[REGNO(dest)] == 1. Both hard argument registers are set at TWO func_80073728 call sites in this function, so the bump cannot fire. This is the correct home of the reg_n_sets flag that s3 mis-attributed to sched.c:2505 birthing_insn_p's write-count of the accumulator.
+
+- [s4] Consequence: the target's order requires INSN_LUID(a2 base) > INSN_LUID(a0 argument setup). expand_call emits argument setup at the call statement, i.e. after every statement that computes the value stored into the struct, so no source-level statement order can produce that inequality -- which is exactly why only the Judge-FAILed nv/nw bodies (a copy re-materialized by a post-expand pass) ever reached it, and why 1,224 spellings are quantized to two values.
