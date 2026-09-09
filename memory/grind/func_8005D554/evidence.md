@@ -899,3 +899,134 @@ maximum-LUID legal birth point for insn 211) scores **15/176**.
 - [s7] Structural sweep against the real compiler (tmp/grind/func_8005D554/s7/sweep.json): control 6/176, v1_control 6/176, v3_structptr_mixed 10/176, v4_a2base_born_after_shift 15/176, v2_structptr 43/172.
 
 - [s7] src/text1b.c was left byte-clean (func_8005D554 back to INCLUDE_ASM); the only tracked-file changes from this session are the ledger updates and three new rejected/ forms.
+
+## s8 (rederive, 2026-09-09) — fresh m2c re-derivation, sibling transplant, and the first measured beat of the argument-setup bar
+
+Chassis: HEAD main @ 4297dfd2, candidate.c applied to src/text1b.c. Floor RE-MEASURED
+at **6/176** before any probe (`sandbox func_8005D554 --disable all`, target_insns 176,
+build_insns 176). The chassis is unchanged from s7, so every s7 conclusion is still
+chassis-valid.
+
+### Kill re-audit (mandated: floor flat 3+ sessions)
+`tools/fake_ablate.py --func func_8005D554 --file text1b --candidate memory/grind/func_8005D554/candidate.c`
+reports **no FAKE-annotated constructs in the candidate**, so there is nothing to ablate:
+the banked floor of 6 is an un-carried, un-coerced measurement. The five banked forms that
+sat closest to the target were then re-measured on the current chassis in one sweep and every
+one reproduced its banked score EXACTLY:
+`stores-before-a2-init-neutral-6.c` = 6/176, `a2-init-adjacent-to-plus-eq-neutral-7.c` = 7/176,
+`second-invariant-local-for-r4-scores-8.c` = 8/177, `shared-a2-base-direct-store-scores-10.c` = 10/176,
+`tail-store-order-transposed-one14-first-scores-10.c` = 10/176.
+The instance kills of s2-s7 therefore stand on this chassis; none was a FAKE-masked measurement.
+
+### The residual, re-confirmed instruction by instruction
+Disassembling the sandbox object (`tmp/grind/func_8005D554/s8/ours.txt`) and aligning it against
+`asm/funcs/func_8005D554.s` (`tmp/grind/func_8005D554/s8/cmp.py`) shows the ENTIRE difference is
+two copies of one 4-slot rotation, one per loop half:
+
+    slot  ours                     target
+    88    addiu a2,s4,-12          addiu a0,sp,0x10
+    89    addiu a0,sp,16           addu  a1,zero,zero
+    90    lw    v1,gp(D_800A3418)  lw    v1,gp(D_800A3418)
+    91    move  a1,zero            addiu a2,s4,-0xC
+
+Every other one of the 176 instructions, including all register assignments, is identical.
+
+### Fresh m2c re-derivation (the mandated rederive input)
+`python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax asm/funcs/func_8005D554.s`
+produces a shape materially different from the candidate: no pointer locals, no constant
+holders, one single-assignment temp per RNG step, the base+0xC pointer hoisted into a `sp40`
+local — and, notably, it types the callee as **three-argument**:
+`func_80073728(&sp10, 0, temp_a2)`. m2c infers the third argument because `$a2` is written
+immediately before the `jal` and it cannot prove `$a2` dead; it makes the same (definitely
+spurious) inference for `rand(temp_a0)` in the same block, so the reading is a hypothesis,
+not evidence.
+
+Measured (tmp/grind/func_8005D554/s8/v/, sweep_variants):
+  - `v3_m2c_shape.c` (the m2c body, 2-arg call)                     = **75/176**
+  - `v1_m2c_3arg.c`  (the same body, 3-arg call)                    = **75/176**
+  - `v2_sibling_field_order.c` (m2c body, sibling field order)      = **86/176**
+
+The m2c shape is 69 worse than the candidate — its cost is the setup block (no pointer locals
+means the two `%hi/%lo` bases are re-materialised and the callee-saved seating changes) — but
+the two m2c variants are the important pair: **the third argument is byte-inert**. Re-measured
+on the CANDIDATE chassis (tmp/grind/func_8005D554/s8/v2/) it is inert there too:
+  - `c0_control.c` (candidate verbatim)                             = 6/176
+  - `c1_cand_3arg.c` (candidate + `extern s32 func_80073728();` + `func_80073728((s32)&s, 0, a2_offset)`) = **6/176**
+So GCC 2.7.2 expands the third argument into exactly the insns the struct store already
+produced, and passing the a2 value as a call argument does NOT move its birth position.
+The m2c 3-argument reading is measured out as a lever (it may still be the true signature;
+it simply costs and buys nothing). Note it also required an unprototyped
+`extern s32 func_80073728();` re-declaration at block scope so the 2-argument sibling call in
+func_8005D46C keeps compiling — GCC 2.7.2 accepts that composite without complaint and the
+sibling's bytes are untouched.
+
+### Sibling transplant (func_8005D46C, the MATCHED body 90 lines above ours in src/text1b.c)
+func_8005D46C is the closest possible sibling: same file, same `S46C` struct, same
+`func_80073728` callee, already COMPLETED-C. Its field-store idiom is
+`byte28, p0, p1, c24, c20, zero1C, zero18, zero10, one14, ret` — i.e. it writes `zero1C`
+BEFORE `zero18`, the opposite of our candidate. Transplanted onto our chassis (both offsets
+staged into locals first so the RNG consumption order is preserved):
+  - `c2_cand_sibling_field_order.c` = **28/178**.
+The sibling's field order costs two instructions here because staging both offsets before the
+first store extends both offsets' live ranges across the third `rand` call. The sibling is
+therefore SPENT: its only transferable spelling is measured and it is worse.
+(src/ings.c, the other listed sibling, was already spent at s7 and shares no block with this
+function; its floor-0 body contains no rand-jitter/struct-argument loop.)
+
+### NEW: the argument-setup bar is beatable through the DEPENDENCE GRAPH, not through LUID
+s4 recorded the bar as absolute: "expand_call emits argument setup at the call statement ...
+so no source-level statement order can produce that inequality" (evidence.md:537). That is
+true of statement order. It is NOT true of the dependence graph. Frontier item 2 — never
+measured before this session — asked what happens if the a2 base's operand arrives from a
+LOAD. Measured (tmp/grind/func_8005D554/s8/v3/):
+  - `d1_both_bases_in_local_array.c` (`u32 rb[2]` holding both random bases) = **32/178**
+  - `d2_r4_only_in_local_array.c`    (`u32 rb[1]`, r5 left scalar)           = 6/176 (lever did NOT fire — GCC 2.7.2 keeps a one-element, constant-indexed array in a register, so no load is created and the body is byte-identical to the control)
+  - `d3_struct_block_scope.c`        (`S46C s` declared inside the loop)     = 6/176 (neutral)
+  - `d4_argaddr_first_field.c`       (`(s32)&s.p0` as the first argument)    = 6/176 (neutral)
+  - `d5_bases_read_through_pointer.c`(`*pr4` / `*pr5` aliased reads)         = 61/186
+
+d1 is the finding. Its disassembly emits, in the contested window:
+
+    90  addiu a0,sp,16
+    91  lw    a2,68(sp)          <- the base's operand, now a load
+    92  lw    v1,0(gp)
+    93  move  a1,zero
+    94  sw    zero,32(sp)
+    95  sw    s4,36(sp)
+    96  sw    s1,28(sp)
+    97  addiu a2,a2,-12          <- the base insn, now AFTER the argument setup
+
+The `addiu` that carries the loop-invariant base has moved from slot 88 (before the argument
+setup) to slot 97 (six slots past it). This is the first form in eight sessions in which that
+insn is emitted after the `addiu a0,sp,0x10` / `addu a1,zero,zero` pair. The mechanism is not
+LUID: the base insn is no longer READY at the contested cycle because it now waits on a
+2-cycle load (sched.c:1497 gives a load's consumer insn_cost 2), so the scheduler drains the
+argument setup first. The cost is the load itself (+2 insns, 178) and the overshoot
+(six slots too late, and the insn is re-canonicalised to `addiu a2,a2,-12` instead of
+`addiu a2,s4,-12`). But the direction is right and the bar is not absolute.
+
+### Late-fold spellings of the base (frontier item 1, operand-order direction)
+tmp/grind/func_8005D554/s8/v4/:
+  - `e4_unsigned_base.c` `a2_offset = (s32)(r4 - K)`                                 = 6/176 (neutral)
+  - `e2_jitter_minus_const_minus_r4.c` `jitter - (K - (s32)r4)`                      = 15/176
+  - `e3_sum_then_subtract_const.c` `a2_offset = (s32)r4 + jitter; a2_offset -= K`    = 15/176
+  - `e5_no_local_single_expr.c` `s.zero1C = ((s32)r4 - K) + jitter` (no local at all) = 15/176
+  - `e1_const_minus_jitter.c` `(s32)r4 - (K - jitter)`                               = 54/178
+The {6,15} quantization first reported at s4 holds across all of them: every spelling that
+keeps 176 instructions and moves the base's arithmetic lands on either the control's 6 or the
+reassociated 15. No source-level re-spelling of the SUM changes the schedule; only a change to
+the dependence graph (d1) does.
+
+- [s8] Floor re-measured on the dispatch chassis (HEAD main @ 4297dfd2) at 6/176 with the candidate applied; build_insns == target_insns == 176.
+
+- [s8] The entire residual is two copies of one 4-slot rotation, verified instruction by instruction against asm/funcs/func_8005D554.s: ours emits [addiu a2,s4,-K][addiu a0,sp,16][lw v1,gp][move a1,zero] where the target emits [addiu a0,sp,0x10][addu a1,zero,zero][lw v1,gp][addiu a2,s4,-K]. All 176 instructions including every register assignment are otherwise identical.
+
+- [s8] fake_ablate reports no FAKE-annotated construct in candidate.c, so the banked floor of 6 is an un-carried measurement and every s2-s7 instance kill was measured without a carrier occupying the contested pseudo.
+
+- [s8] All five closest banked rejected forms reproduce their recorded scores exactly on the current chassis (6, 7, 8, 10, 10) - the kill ledger is intact.
+
+- [s8] m2c reads the callee as three-argument; on both the m2c chassis and the candidate chassis adding the third argument is byte-inert (75 vs 75, 6 vs 6), so the reading is not a lever even if it is the true signature.
+
+- [s8] The matched sibling func_8005D46C (src/text1b.c:2659, same S46C struct, same func_80073728 callee) is spent: its field-store order transplants at 28/178.
+
+- [s8] NEW: a load producer for the a2 base moves 'addiu a2,...,-K' from slot 88 (before the call's argument setup) to slot 97 (six slots after it) at 32/178. s4's 'no source-level order can beat the argument setup' bounds statement order only; the dependence graph is a separate, working handle on the same rotation.

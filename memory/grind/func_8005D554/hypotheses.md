@@ -1208,3 +1208,91 @@ R3. **Re-open the `s.zero10` dependence route with a construct that is not an in
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ 8a6f96b1, candidate.c chassis, floor 6/176; no FAKE constructs present.
+
+## [s8] The candidate's floor and the five closest banked forms all reproduce their recorded scores exactly on the current chassis, and `fake_ablate` finds no FAKE construct in the candidate to ablate.
+- mechanism: The mandated kill re-audit exists because an instance kill measured with a FAKE carrier occupying the contested pseudo is not a kill. The candidate carries no `/* FAKE */` construct at all, so no lever in this ledger was ever measured behind one; and the chassis (HEAD main @ 4297dfd2) is byte-identical in behaviour to s7's, so the s2-s7 instance kills stand as recorded.
+- probe: `tools/fake_ablate.py --func func_8005D554 --file text1b --candidate memory/grind/func_8005D554/candidate.c`, then `tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s8/reaudit/` over the five lowest-scoring banked forms.
+- result: ablate reports "no FAKE-annotated constructs found ... nothing to ablate". Sweep: stores-before-a2-init 6/176, a2-init-adjacent-to-plus-eq 7/176, second-invariant-local-for-r4 8/177, shared-a2-base-direct-store 10/176, tail-store-order-transposed 10/176 — every score identical to its banked value. Control floor re-measured 6/176.
+- verdict: CONFIRMED
+
+## [s8] m2c's independent re-derivation types the callee as three-argument (`func_80073728(&sp10, 0, temp_a2)`), but adding that third argument is byte-inert on the candidate chassis: 6/176 with it and 6/176 without.
+- mechanism: m2c infers the third argument from `$a2` being written in the insn before the `jal` with no proof of death — the same inference it makes for the definitely-spurious `rand(temp_a0)` two insns earlier. In GCC 2.7.2 `expand_call` evaluates every argument expression into a pseudo BEFORE emitting the hard-register moves, so an argument whose value the source already computed for a struct store expands to no new insns and to no new birth position: the value is already in a pseudo when the argument list is walked, and the only insn the third argument would add (a move to `$a2`) is coalesced away because local-alloc already seats that pseudo in `$a2`. The reading may still be the true signature of func_80073728; it is simply not a lever on the schedule.
+- probe: `python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax asm/funcs/func_8005D554.s`; then `tools/sweep_variants.py` over tmp/grind/func_8005D554/s8/v/ (m2c body, 2-arg vs 3-arg) and tmp/grind/func_8005D554/s8/v2/ (candidate body, 2-arg vs 3-arg). The 3-arg forms carry a block-scope `extern s32 func_80073728();` so the 2-argument sibling call in func_8005D46C still compiles.
+- result: m2c body 75/176 (2-arg) and 75/176 (3-arg); candidate body 6/176 (control) and 6/176 (3-arg). Forms banked at rejected/m2c-fresh-decompile-shape-scores-75.c and rejected/three-argument-call-reading-inert-scores-6.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4297dfd2, candidate.c chassis and the fresh m2c chassis, floor re-measured 6/176; no FAKE constructs present in any variant.
+
+## [s8] The full m2c re-derivation (single-assignment temps, no pointer locals, no constant holders, hoisted `sp40`) scores 75/176 against the control's 6/176, and the same body with func_8005D46C's field-store order scores 86/176.
+- mechanism: Dropping the `p_b2e0`/`p_b388`/`p_b390` pointer locals forces the two `%hi/%lo` symbol bases to be re-materialised rather than held in `$fp`/`$s7` across the loop, and dropping the `c100`/`c1` holders changes which pseudos survive to local-alloc; the callee-saved seating that the candidate matches byte-for-byte is lost. The opcode multiset is still 176, so this is entirely a register-and-order divergence, not a count divergence — the m2c shape is a strictly worse chassis, not a different-length program.
+- probe: `tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s8/v/`.
+- result: v3_m2c_shape 75/176, v2_sibling_field_order 86/176, v1_m2c_3arg 75/176. Banked at rejected/m2c-fresh-decompile-shape-scores-75.c and rejected/m2c-shape-sibling-field-order-scores-86.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4297dfd2, fresh-m2c chassis, control floor 6/176; no FAKE constructs present.
+
+## [s8] The matched sibling func_8005D46C's field-store order (`zero1C` written before `zero18`) transplanted onto the candidate chassis scores 28/178.
+- mechanism: func_8005D46C writes both offset fields as literal zeros, so its field order is free; ours must consume the second and third `rand` results in a fixed sequence, and writing `zero1C` first forces BOTH offsets to be staged in locals across the third `rand` call. Two extra live values across a call cost a callee-saved seat and two instructions (178 vs 176), and the seating change propagates through the whole loop body.
+- probe: `tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s8/v2/`, variant c2_cand_sibling_field_order.
+- result: 28/178 against the control's 6/176. Banked at rejected/sibling-8005D46C-field-order-scores-28.c. func_8005D46C is now a SPENT sibling: it shares the struct, the callee and the file, and its only transferable spelling is measured and worse.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4297dfd2, candidate.c chassis, floor 6/176; no FAKE constructs present.
+
+## [s8] Making the a2 base insn a data consumer of a LOAD moves it from before the call's argument setup to six slots after it — the first form in eight sessions that emits `addiu a2,...,-K` later than `addiu a0,sp,0x10` / `addu a1,zero,zero`.
+- mechanism: This is the dependence graph, not INSN_LUID. sched.c:1497 gives a load's consumer `insn_cost` 2, so the base insn is not in the ready set at the cycle where the argument setup is chosen; the scheduler drains `a0`, the gp load and `a1` first and only then issues the base. s4's framing (evidence.md:537 — "expand_call emits argument setup at the call statement ... so no source-level statement order can produce that inequality") is correct about statement order and does NOT bound the dependence graph. The cost measured here is the load itself (+2 insns) plus a six-slot overshoot, and the base is re-canonicalised from `addiu a2,s4,-K` to `lw a2,0x44(sp)` + `addiu a2,a2,-K`.
+- probe: `tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s8/v3/` plus a disassembly of the applied d1 build (`tmp/grind/func_8005D554/s8/dis.sh`, `cmp.py 82 100`). Variants: d1 both random bases in `u32 rb[2]`; d2 only r4 in `u32 rb[1]`; d3 `S46C s` at block scope; d4 `(s32)&s.p0` as the first argument; d5 both bases read through pointer locals.
+- result: d1 32/178 with the window order `addiu a0,sp,16 / lw a2,68(sp) / lw v1,0(gp) / move a1,zero / sw zero,32(sp) / sw s4,36(sp) / sw s1,28(sp) / addiu a2,a2,-12`; d2 6/176 (a one-element constant-indexed array is kept in a register by GCC 2.7.2, so the lever does not fire and the body is byte-identical to the control); d3 6/176; d4 6/176; d5 61/186. Banked at rejected/both-bases-in-local-array-load-consumer-scores-32.c and rejected/bases-read-through-pointer-scores-61.c.
+- verdict: CONFIRMED
+
+## [s8] Every source-level re-spelling of the a2 sum that keeps 176 instructions still lands on the s4 quantization {6, 15}; only a dependence-graph change moves the schedule.
+- mechanism: cse and combine canonicalise `r4 - K + jitter` to the same two-insn pair regardless of how the source associates it, so the only thing a re-spelling can change is which of the two insns reads the loop-invariant register — which is the 15-scoring variant — or nothing at all, which is the 6-scoring variant. Forms that break the canonicalisation (`r4 - (K - jitter)`) cost an extra insn instead.
+- probe: `tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s8/v4/`.
+- result: e4 `(s32)(r4 - K)` 6/176; e2 `jitter - (K - (s32)r4)` 15/176; e3 `a2_offset = (s32)r4 + jitter; a2_offset -= K` 15/176; e5 `s.zero1C = ((s32)r4 - K) + jitter` with no local at all 15/176; e1 `(s32)r4 - (K - jitter)` 54/178. Banked at rejected/jitter-minus-const-minus-r4-scores-15.c, rejected/sum-then-subtract-const-scores-15.c, rejected/no-local-single-expr-zero1C-scores-15.c, rejected/base-minus-const-minus-jitter-scores-54.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4297dfd2, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant.
+
+## [s8] The candidate's floor and the five closest banked forms all reproduce their recorded scores exactly on the current chassis, and fake_ablate finds no FAKE construct in the candidate to ablate.
+- mechanism: The mandated kill re-audit exists because an instance kill measured with a FAKE carrier occupying the contested pseudo is not a kill. The candidate carries no /* FAKE */ construct at all, so no lever in this ledger was measured behind one, and the chassis is unchanged from s7.
+- probe: tools/fake_ablate.py --func func_8005D554 --file text1b --candidate memory/grind/func_8005D554/candidate.c, then tools/sweep_variants.py over tmp/grind/func_8005D554/s8/reaudit/ (the five lowest-scoring banked forms).
+- result: ablate: 'no FAKE-annotated constructs found ... nothing to ablate'. Sweep: stores-before-a2-init 6/176, a2-init-adjacent-to-plus-eq 7/176, second-invariant-local-for-r4 8/177, shared-a2-base-direct-store 10/176, tail-store-order-transposed 10/176 - every score identical to its banked value. Control floor re-measured 6/176 with 176/176 instructions.
+- verdict: CONFIRMED
+
+## [s8] m2c's independent re-derivation types the callee as three-argument (func_80073728(&s, 0, a2)), but adding that third argument measures 6/176 on the candidate chassis, the same as the 2-argument control, and 75/176 on the m2c chassis, the same as its own 2-argument control.
+- mechanism: m2c infers the third argument only because $a2 is written in the insn before the jal and it cannot prove $a2 dead - the same inference it makes for the definitely-spurious rand(temp_a0) two insns earlier. GCC 2.7.2 expand_call evaluates every argument expression into a pseudo BEFORE emitting the hard-register moves, so an argument whose value the source already computed for a struct store adds no insn and no new birth position; the move to $a2 is coalesced because local-alloc already seats that pseudo in $a2.
+- probe: python3 tools/m2c/m2c.py --target mipsel-gcc-c --valid-syntax asm/funcs/func_8005D554.s; then tools/sweep_variants.py over tmp/grind/func_8005D554/s8/v/ (m2c body, 2-arg vs 3-arg) and tmp/grind/func_8005D554/s8/v2/ (candidate body, 2-arg vs 3-arg). The 3-arg forms carry a block-scope 'extern s32 func_80073728();' so the 2-argument sibling call in func_8005D46C still compiles.
+- result: m2c body 75/176 (2-arg) and 75/176 (3-arg); candidate body 6/176 (control) and 6/176 (3-arg). Banked at rejected/three-argument-call-reading-inert-scores-6.c. The 3-argument reading may still be the true signature of func_80073728; it is simply not a lever on the schedule.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4297dfd2, candidate.c chassis and the fresh m2c chassis, floor re-measured 6/176; no FAKE constructs present in any variant.
+
+## [s8] The full m2c re-derivation (single-assignment temps, no pointer locals, no constant holders, hoisted sp40 base) scores 75/176 against the control's 6/176, and the same body carrying func_8005D46C's field-store order scores 86/176.
+- mechanism: Dropping the p_b2e0/p_b388/p_b390 pointer locals forces the two %hi/%lo symbol bases to be re-materialised rather than held in $fp/$s7 across the loop, and dropping the c100/c1 holders changes which pseudos survive to local-alloc; the callee-saved seating that the candidate matches byte-for-byte is lost. The opcode multiset stays at 176, so this is a register-and-order divergence, not a count divergence.
+- probe: tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s8/v/
+- result: v3_m2c_shape 75/176, v1_m2c_3arg 75/176, v2_sibling_field_order 86/176. Banked at rejected/m2c-fresh-decompile-shape-scores-75.c and rejected/m2c-shape-sibling-field-order-scores-86.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4297dfd2, fresh-m2c chassis, control floor 6/176; no FAKE constructs present.
+
+## [s8] The matched sibling func_8005D46C's field-store order (zero1C written before zero18) transplanted onto the candidate chassis scores 28/178.
+- mechanism: func_8005D46C writes both offset fields as literal zeros, so its field order is free; ours must consume the second and third rand results in a fixed sequence, so writing zero1C first forces BOTH offsets to be staged in locals across the third rand call. Two extra values live across a call cost a callee-saved seat and two instructions, and the seating change propagates through the whole loop body.
+- probe: tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s8/v2/, variant c2_cand_sibling_field_order.
+- result: 28/178 against the control's 6/176. Banked at rejected/sibling-8005D46C-field-order-scores-28.c. func_8005D46C is now a SPENT sibling: it shares the struct, the callee and the file, and its only transferable spelling is measured and worse.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4297dfd2, candidate.c chassis, floor 6/176; no FAKE constructs present.
+
+## [s8] Making the a2 base insn a data consumer of a LOAD moves it from before the call's argument setup to six slots after it - the first form in eight sessions that emits addiu a2,...,-K later than addiu a0,sp,0x10 and addu a1,zero,zero.
+- mechanism: This is the dependence graph, not INSN_LUID. sched.c:1497 gives a load's consumer insn_cost 2, so the base insn is not in the ready set at the cycle where the argument setup is chosen; the scheduler drains a0, the gp load and a1 first and only then issues the base. s4's framing (evidence.md:537, 'expand_call emits argument setup at the call statement ... so no source-level statement order can produce that inequality') is correct about statement order and does not bound the dependence graph.
+- probe: tools/sweep_variants.py over tmp/grind/func_8005D554/s8/v3/, then applying d1 to src/text1b.c, running sandbox, disassembling the sandbox object (tmp/grind/func_8005D554/s8/dis.sh) and aligning it to asm/funcs/func_8005D554.s (cmp.py 82 100).
+- result: d1 (u32 rb[2] holding both random bases) 32/178, window order 'addiu a0,sp,16 / lw a2,68(sp) / lw v1,0(gp) / move a1,zero / sw zero,32(sp) / sw s4,36(sp) / sw s1,28(sp) / addiu a2,a2,-12' - the base insn six slots past the argument setup, versus the control's slot-88 position before it. Cost: the load itself (+2 insns) and the overshoot; the base is re-canonicalised to lw + addiu a2,a2,-K. d2 (u32 rb[1], r5 left scalar) 6/176 - the lever does not fire, GCC 2.7.2 keeps a one-element constant-indexed array in a register. d3 (S46C s at block scope) 6/176, d4 ((s32)&s.p0 as first argument) 6/176, d5 (bases read through pointer locals) 61/186.
+- verdict: CONFIRMED
+
+## [s8] Every source-level re-spelling of the a2 sum that keeps 176 instructions still lands on the s4 quantization {6, 15} on this chassis.
+- mechanism: cse and combine canonicalise r4 - K + jitter to the same two-insn pair regardless of how the source associates it, so a re-spelling can only change which of the two insns reads the loop-invariant register (the 15-scoring variant) or nothing at all (the 6-scoring variant). Forms that break the canonicalisation, such as r4 - (K - jitter), cost an extra instruction instead.
+- probe: tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s8/v4/
+- result: e4 (s32)(r4 - K) 6/176; e2 jitter - (K - (s32)r4) 15/176; e3 a2_offset = (s32)r4 + jitter then a2_offset -= K 15/176; e5 s.zero1C = ((s32)r4 - K) + jitter with no local at all 15/176; e1 (s32)r4 - (K - jitter) 54/178. Banked at rejected/jitter-minus-const-minus-r4-scores-15.c, rejected/sum-then-subtract-const-scores-15.c, rejected/no-local-single-expr-zero1C-scores-15.c, rejected/base-minus-const-minus-jitter-scores-54.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 4297dfd2, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant.

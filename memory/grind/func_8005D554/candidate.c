@@ -72,6 +72,24 @@
  * dominated by the call's.  The p_b2e0 object-model axis (the last untried structural axis) is
  * also measured out: TU-local struct pointer scores 10/176 (multiset preserved) and 43/172 (full).
  * Do NOT re-derive the priority or class framing; see hypotheses.md s7 and evidence.md s7.
+ *
+ * s8 (rederive, 2026-09-09, HEAD main @ 4297dfd2): floor RE-MEASURED at 6/176 on this body.
+ * The kill re-audit passed: fake_ablate finds NO /* FAKE */ construct in this candidate (so no
+ * banked lever was ever measured behind a carrier), and the five closest banked forms all
+ * reproduce their recorded scores exactly on this chassis.  A fresh m2c decompile was run and
+ * measured: its shape scores 75/176, and its independent THREE-ARGUMENT reading of the callee
+ * (func_80073728(&s, 0, a2)) is byte-INERT here -- 6/176 with the third argument and 6/176
+ * without -- because expand_call evaluates argument expressions into pseudos before emitting
+ * the hard-register moves, so an already-computed value adds no insn and no birth position.
+ * The matched sibling func_8005D46C (same file, same S46C, same callee) is now SPENT: its
+ * field-store order (zero1C before zero18) transplants at 28/178.  THE NEW RESULT: s4's claim
+ * that the argument-setup bar is unbeatable is true only of STATEMENT ORDER.  Giving the a2
+ * base insn a load producer (u32 rb[2] holding both random bases) moves `addiu a2,...,-K` from
+ * BEFORE the argument setup to six slots AFTER it -- the first time in eight sessions that insn
+ * has been emitted late -- at a cost of the load (+2 insns, 32/178) and a six-slot overshoot.
+ * The lever is the dependence graph (sched.c:1497 load-consumer cost 2), not INSN_LUID.
+ * See hypotheses.md s8 and evidence.md s8.  Do NOT re-derive the m2c shape or the sibling
+ * field order; do NOT re-sweep a2-sum re-spellings (still quantized to {6,15}).
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

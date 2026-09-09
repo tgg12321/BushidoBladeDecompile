@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 7,
- "current_modality": "forensics",
+ "session_count": 8,
+ "current_modality": "rederive",
  "floor_history": [
   {
    "session": 1,
@@ -45,23 +45,29 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "Instrumented-cc1 forensics: all three rank_for_schedule criteria measured \u2014 INSN_PRIORITY ties 3/3/3/3 (half 1) and 6/6/6/6 (half 2), the last-scheduled CLASS is 3-vs-3 in all 203 window comparisons, "
+  },
+  {
+   "session": 8,
+   "floor": 6,
+   "modality": "rederive",
+   "headline": "rederive: fresh m2c shape (75) and its 3-arg callee reading (byte-inert at 6) measured out, sibling func_8005D46C spent at 28 - but a load-producer for the a2 base moves that insn PAST the call's argu"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "With priority and class now measured out, the residual is decided solely by INSN_LUID, and the a2 base insn (211/316) must out-LUID the call's argument setup (240/242, 346/348) to win. Statement order cannot do that (s6 class kill, sched.c:2464), but INSN BIRTH POSITION is a different input: an insn created by a LATER pass is placed at that pass's insertion point, not at its source statement's. combine.c places a combined insn at i3's position, so a source form in which 'addiu a2, s4, -K' is MANUFACTURED by combine at an insn position after the argument setup would carry a LUID above 42 without any statement move.",
-   "mechanism": "sched1's INSN_LUIDs are assigned by a linear walk of the insn chain as it stands after flow.c, i.e. after cse/loop/combine have moved and re-created insns. Every session so far has treated the a2 base insn's chain position as fixed by its source statement; it is fixed only for insns that survive from RTL expansion unchanged. The s7 dumps show 211 already present in .flow with the same uid it has in .rtl, i.e. our spelling produces it at expansion \u2014 the untested question is whether any spelling produces it downstream instead.",
-   "next_probe": "Diff tmp/grind/func_8005D554/s7/dumps2/text1b.rtl against .combine for the block-6 region to enumerate which insns combine CREATES and where it places them; then sweep source forms whose a2 base is only materialised late (e.g. the base folded into an expression that combine must re-split, or the constant -K carried on the store's address arithmetic and re-hoisted). Score with tools/sweep_variants.py and confirm the multiset stays at 176 before crediting anything."
+   "hypothesis": "The dependence-delay lever proven by d1 works but overshoots by six slots and pays a load (+2 insns). A delay of exactly one cycle, sourced from an insn already present in the window, would land the base insn on the target's slot 91 at 176 instructions.",
+   "mechanism": "sched.c:1497 makes only a load's consumer cost 2; every other producer in the window costs 1. The overshoot in d1 comes from the 2-cycle load plus the extra lw occupying a ready slot. A 1-cycle producer would delay the base insn by exactly one issue slot - which is the whole distance between slot 88 and the position the target wants - without changing the instruction count.",
+   "next_probe": "Enumerate every insn already emitted in the contested window (the shift chain's srl, the xor, the gp store, the s.zero18 store, the previous half's spilled 0x40(sp) reload) and find a spelling in which the a2 base legally reads one of them. Concretely: route r4 through the SAME expression tree that produces the third rnd's operand (e.g. spell the base as an expression whose operand is the xor result masked to zero-contribution is NOT allowed - it must be a real value), or exploit the half-2-only 0x40(sp) reload the target already performs and check whether half 2 alone rotates. Measure with tools/sweep_variants.py and require build_insns == 176 before crediting anything."
   },
   {
-   "hypothesis": "The a2 base insn's priority would exceed the argument setup's if it were a data consumer of a LOAD (insn_cost 2, sched.c:1497), which is the only mechanism in the pass that produces a priority above the enclosing call's. The cost of forcing that in ordinary C \u2014 letting r4 live in memory across the loop instead of a callee-saved register \u2014 has never been measured.",
-   "mechanism": "insn_cost returns result_ready_cost of the predecessor; only the movsi load pattern yields 2 in this window (measured: 'insn=206 pred=205 kind=0 pred_pri=3 cost=2 contrib=4'). If the base's operand arrived from a load inside the loop, the base insn's priority would be call_priority + 1 and it would win criterion 1 outright, with no LUID involvement at all.",
-   "next_probe": "Sweep forms that force r4 (and/or r5) to be re-read inside the loop rather than hoisted \u2014 a file-scope or struct-member spelling of the two random bases, and an aliased read that loop.c's invariant_p rejects \u2014 and record the instruction-count cost. The prediction is that the rotation flips while the multiset grows; measuring HOW MUCH it grows tells the next session whether any spelling can pay for it."
+   "hypothesis": "Half 1 and half 2 may not need the same lever: the target already spills base_offset to 0x40(sp) and reloads it in half 2 only, so half 2 already contains a load in its window while half 1 does not.",
+   "mechanism": "The residual is 3 slots per half. If a form exists that fixes only half 2 (whose window already has 'lw a3,0x40(sp)' available as a 2-cycle producer), the floor drops from 6 to 3 without touching half 1 - and a 3-floor is a strictly better platform for the next lever than the current symmetric 6.",
+   "next_probe": "Sweep asymmetric forms: apply the d1 array spelling to half 2's base only (keeping half 1's scalar), and separately try making half 2's base read from the same 0x40(sp) slot the target already reloads. Score each and record whether the half-2 rotation flips independently of half 1's - no session has yet measured the two halves as separable."
   },
   {
-   "hypothesis": "s6's statement-permutation kill covered only the eight half-1 statements and explicitly held the loop-top and half-2 statements fixed, but sched1's LUIDs for block 6 are one linear numbering over the whole loop body, so loop-top and half-2 placements shift the LUIDs the tie-break reads.",
-   "mechanism": "sched.c:2464 compares absolute INSN_LUIDs, and every insn in block 6 shares one numbering. Moving statements outside the half-1 window changes the LUID gap between 211 and 240/242 only if it changes how many insns are born between them \u2014 which the loop-top statements cannot do, but a cross-half move (computing half 2's p0/p1 setup before half 1's call) can.",
-   "next_probe": "Extend tmp/grind/func_8005D554/s6/compose.py's permutation space to the loop-top and half-2 statements (its current 420-permutation space deliberately fixed them), express the goal on sched1's OUTPUT position of 211 rather than on the final order, and cross-check any model hit with tools/sweep_variants.py before crediting it."
+   "hypothesis": "Frontier item 1 from s7 (an a2 base insn MANUFACTURED by combine at a late i3 position) is still untested; s8 tested only source-level reassociations, all of which cse/combine re-canonicalise back to the same pair.",
+   "mechanism": "combine.c places a combined insn at i3's position, so the LUID a sched1 tie-break reads is i3's, not the source statement's. The s8 sweep (v4) shows source association cannot reach this; the insn must be one combine CREATES, which requires a source form where the base does not exist as an insn until combine splits or merges something later in the block.",
+   "next_probe": "Diff tmp/grind/func_8005D554/s7/dumps2/text1b.rtl against .combine over the block-6 region to enumerate which insns combine creates and where it places them (this diff has still never been read), then sweep source forms whose a2 base is only materialised by that pass. Confirm build_insns stays 176 before crediting."
   }
  ],
  "judge_constraints": [
@@ -300,6 +306,38 @@
    "measured_on": "HEAD main @ 8a6f96b1, candidate.c chassis, floor 6/176; no FAKE constructs present.",
    "predicate_cite": "",
    "result": "15/176."
+  },
+  {
+   "session": 8,
+   "statement": "m2c's independent re-derivation types the callee as three-argument (func_80073728(&s, 0, a2)), but adding that third argument measures 6/176 on the candidate chassis, the same as the 2-argument contro",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4297dfd2, candidate.c chassis and the fresh m2c chassis, floor re-measured 6/176; no FAKE constructs present in any variant.",
+   "predicate_cite": "",
+   "result": "m2c body 75/176 (2-arg) and 75/176 (3-arg); candidate body 6/176 (control) and 6/176 (3-arg). Banked at rejected/three-a"
+  },
+  {
+   "session": 8,
+   "statement": "The full m2c re-derivation (single-assignment temps, no pointer locals, no constant holders, hoisted sp40 base) scores 75/176 against the control's 6/176, and the same body carrying func_8005D46C's fi",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4297dfd2, fresh-m2c chassis, control floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "v3_m2c_shape 75/176, v1_m2c_3arg 75/176, v2_sibling_field_order 86/176. Banked at rejected/m2c-fresh-decompile-shape-sco"
+  },
+  {
+   "session": 8,
+   "statement": "The matched sibling func_8005D46C's field-store order (zero1C written before zero18) transplanted onto the candidate chassis scores 28/178.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4297dfd2, candidate.c chassis, floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "28/178 against the control's 6/176. Banked at rejected/sibling-8005D46C-field-order-scores-28.c. func_8005D46C is now a "
+  },
+  {
+   "session": 8,
+   "statement": "Every source-level re-spelling of the a2 sum that keeps 176 instructions still lands on the s4 quantization {6, 15} on this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 4297dfd2, candidate.c chassis, floor 6/176; no FAKE constructs present in any variant.",
+   "predicate_cite": "",
+   "result": "e4 (s32)(r4 - K) 6/176; e2 jitter - (K - (s32)r4) 15/176; e3 a2_offset = (s32)r4 + jitter then a2_offset -= K 15/176; e5"
   }
  ],
  "ladder_skip": 0,
