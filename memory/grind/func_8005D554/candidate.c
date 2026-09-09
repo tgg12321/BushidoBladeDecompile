@@ -58,6 +58,20 @@
  * lever has to change the dependence graph or the priorities, not the order.  Confirmed against
  * the compiler: the model-predicted best statement placement measures 6/176 like the control.
  * See hypotheses.md s6 and evidence.md s6.  Do NOT re-sweep statement placements of the a2 base.
+ *
+ * s7 (forensics, 2026-09-09, HEAD main @ 8a6f96b1): floor RE-MEASURED at 6/176 on this body.  The
+ * residual was measured INSIDE the compiler with the instrumented cc1 (tools/gcc-2.7.2/cc1 -- NOT
+ * build/cc1; self-checked byte-identical assembly).  rank_for_schedule has exactly three criteria
+ * and s7 measured all three: (1) INSN_PRIORITY is 3/3/3/3 for the lw, the a2 base and the two
+ * argument-setup insns in half 1 and 6/6/6/6 in half 2 -- a structural tie, because a call forces
+ * an anti-dep from every later register set and insn_cost is 2 only for a load's consumer
+ * (sched.c:1497); (2) the last-scheduled CLASS is 3 vs 3 in all 203 window comparisons
+ * (sched.c:2429); (3) only INSN_LUID is left, and the a2 base's LUID (31) is bounded above by the
+ * s.zero1C store's, while the argument setup sits at 42/43.  Sharing a local to manufacture an
+ * anti-dep is measured inert: half 2's base insn 316 ALREADY carries those anti-deps and they are
+ * dominated by the call's.  The p_b2e0 object-model axis (the last untried structural axis) is
+ * also measured out: TU-local struct pointer scores 10/176 (multiset preserved) and 43/172 (full).
+ * Do NOT re-derive the priority or class framing; see hypotheses.md s7 and evidence.md s7.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

@@ -1125,3 +1125,86 @@ R3. **Re-open the `s.zero10` dependence route with a construct that is not an in
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ 07aadcc3, candidate.c chassis, floor 6/176; model self-check baseline exact for both passes; no FAKE constructs present. This is the dependence-edge axis restricted to the half-1 window at depth 2 with dep atoms only.
+
+## [s7] The instrumented cc1 (tools/gcc-2.7.2/cc1, self-checked byte-identical to the build cc1) reports pass-1 INSN_PRIORITY 3 for all four contested insns in half 1 (205 the lw, 211 the a2 base, 240 `a0 = fp+16`, 242 `a1 = 0`) and 6 for all four of their half-2 counterparts (310, 316, 346, 348). **CONFIRMED.**
+- mechanism: `priority()` (tools/gcc-2.7.2/sched.c:1434) walks LOG_LINKS (an insn's PREDECESSORS) and takes `max(priority(pred) + insn_cost(pred, link, insn) - 1)` (sched.c:1497). A call sets `reg_pending_sets_all` (sched.c:1991/2095/2236), so every register-setting insn after a call in the same block hangs an anti-dependence off that call. `insn_cost` is 1 for every MIPS ALU insn and 2 only for a load's data-dependent consumer, so every post-call non-load-consumer inherits exactly the call's priority.
+- probe: `BB2_PRIO_DEBUG=1 bash tmp/grind/func_8005D554/s7/run_dump.sh` -> `tmp/grind/func_8005D554/s7/prio.log` (45,426 lines); the half-1 region is anchored by the unique line `PRIODBG insn=240 pred=201 kind=14 pred_pri=3 cost=1 contrib=3`, which occurs exactly twice in the whole TU (once per scheduler pass).
+- result: 201=3, 205=3, 206=4, 211=3, 217/220/222=4, 225=4, 228/231/234=3, 237=4, 240=3, 242=3, 244=4; half 2: 306=6, 310=6, 316=6, 331=7, 343=7, 346=6, 348=6, 350=7. The only priority-4 insns in the window are the load's consumers and their downstream.
+- verdict: CONFIRMED
+
+## [s7] The PRIORITY criterion of `rank_for_schedule` cannot be made to separate the a2 base insn from the call's argument-setup insns by any C-level variable reuse: an anti-dependence manufactured by sharing a local always points backward to an insn whose accumulated priority is BELOW the nearest preceding call's, so it is dominated. **KILLED (class).**
+- statement: half-2's a2 base insn 316 already carries exactly the anti-dependences that a C-level borrow manufactures — `pred=225` (priority 4) and `pred=237` (priority 4), because `a2_offset` is one shared pseudo (reg/v 82) across both halves — and both contribute 4 against the `pred=306` call contribution of 6, so 316's priority is 6, identical to 346 (`a0 = fp+16`) and 348 (`a1 = 0`). Sharing the local buys nothing.
+- mechanism: sched.c:1497 takes the MAX over predecessors of `priority(pred) + insn_cost - 1`. Because a call forces an anti-dep from every later register set (sched.c:1991/2095/2236), the nearest preceding call is always a predecessor, and priority accumulates monotonically along the block, so any predecessor EARLIER than that call has a strictly smaller (or equal) priority and contributes no more. The only way to exceed the call's level is `insn_cost == 2`, which sched.c grants only to a load's data-dependent consumer; the a2 base is an `addiu` off a callee-saved loop-invariant and consumes no load.
+- probe: `BB2_PRIO_DEBUG=1` dump, `tmp/grind/func_8005D554/s7/prio.log`, lines for `insn=316` (three predecessor contributions printed: 306 -> 6, 225 -> 4, 237 -> 4) versus `SET insn=346 final_pri=6` and `SET insn=348 final_pri=6`.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 8a6f96b1, memory/grind/func_8005D554/candidate.c applied to src/text1b.c, floor re-measured 6/176 this session; no FAKE constructs present; instrumented cc1 self-checked byte-identical to the build cc1.
+- predicate_cite: tools/gcc-2.7.2/sched.c:1497
+
+## [s7] The CLASS criterion of `rank_for_schedule` never separates the four contested insns: across 203 rank comparisons whose both endpoints carry window uids, the class delta is 0 in every one. **KILLED (class).**
+- statement: every `RANKDBG` line in the window prints `cls=3 ... cls2=3 val=0`, in both scheduler passes and in both loop halves. There is no last-scheduled insn for which any of {the lw, the a2 base, `a0 = fp+16`, `a1 = 0`, the three struct stores} falls out of class 3.
+- mechanism: sched.c:2429 assigns class 3 whenever the candidate is not a LOG_LINK predecessor of `last_scheduled_insn` OR `insn_cost` of that link is 1. Every insn in the window is an ALU insn or a store, all of cost 1, so the `insn_cost == 1` disjunct fires unconditionally. Class 1 or 2 would require the candidate to be a load (cost 2) feeding the last-scheduled insn.
+- probe: `BB2_RANK_DEBUG=1 bash tmp/grind/func_8005D554/s7/run_dump.sh` -> `tmp/grind/func_8005D554/s7/rank.log` (9,689 lines), filtered to comparisons whose `x` and `y` uids both lie in {201,205,206,211,225,228,231,234,237,240,242,244,306,310,316,331,334,337,340,343,346,348,350}.
+- result: 203 comparisons, 0 with a nonzero class delta.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 8a6f96b1, candidate.c chassis, floor 6/176; no FAKE constructs present.
+- predicate_cite: tools/gcc-2.7.2/sched.c:2429
+
+## [s7] The `p_b2e0` declaration-pun object model (s6 frontier item 3 — the last untried STRUCTURAL axis) does not reach below the floor: a TU-local struct-pointer model scores 10/176 in the multiset-preserving form and 43/172 in the full form. **KILLED (instance).**
+- statement: `v3_structptr_mixed` declares `struct EffEnt { u8 a[0xC]; u8 b[0xC]; u8 rest[0x24]; }` at block scope, replaces `p_b2ec`/`base_offset` with `struct EffEnt *e = (struct EffEnt *)&D_8009B2E0 + arg1`, and writes half 2's `s.p0` as `e->b + (D_800A3418 & 1) * 0xC`; it keeps the instruction count at 176 and scores 10 against the control's 6. `v2_structptr` additionally replaces `p_b2e0` (half 1's `s.p0` becomes `e->a`) and scores 43/172 — the typed model folds four instructions out of the setup block, so the multiset no longer matches.
+- mechanism: the typed pointer materialises `base + arg1*0x3C` once as a single pseudo, which removes the separate `stride` add that the byte-pointer model keeps live for half 1's `s.p0`; the setup block's insn count and its LUID sequence both change, and the register allocation follows, but neither change reaches the half-1/half-2 rotation, which is decided entirely by the LUID order of insns born at the call.
+- probe: `tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s7/vars/` -> `tmp/grind/func_8005D554/s7/sweep.json`; forms banked at `rejected/tu-local-struct-pointer-mixed-scores-10.c` and `rejected/tu-local-struct-pointer-object-model-scores-43.c`.
+- result: control 6/176, v3_structptr_mixed 10/176, v2_structptr 43/172.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 8a6f96b1, candidate.c chassis, floor re-measured 6/176; no FAKE constructs present in the control or in either variant.
+
+## [s7] Reassociating the a2 sum so the base subtraction is born after the shift chain (`a2_offset = shifted; a2_offset += (s32)r4 - K;`) — the maximum-LUID legal birth point for insn 211 approached from the operand-order side rather than the statement-order side — scores 15/176. **KILLED (instance).**
+- statement: `v4_a2base_born_after_shift` applies the reassociation in both halves and measures 15/176 against the control's 6/176.
+- mechanism: the reassociation makes the accumulate read the shift result first, so the `addiu` off the loop-invariant is emitted after the shift chain (raising its LUID from 31 towards 37) but is also re-canonicalised as `addu a2, v0, s4` + `addiu a2, a2, -K`, which changes the register-bearing text of the two insns even though the opcode multiset is preserved. It confirms s6's `v3_a2base_last_legal_slot` result (6/176, no gain) from the operand-order direction: LUID 31 -> 37 is irrelevant when the bar is LUID 42.
+- probe: `tools/sweep_variants.py` sweep above; form banked at `rejected/a2base-born-after-shift-chain-scores-15.c`.
+- result: 15/176.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 8a6f96b1, candidate.c chassis, floor 6/176; no FAKE constructs present.
+
+## [s7] The instrumented cc1 (tools/gcc-2.7.2/cc1, self-checked byte-identical assembly to the build cc1) reports pass-1 INSN_PRIORITY 3 for all four contested insns of half 1 (205 the D_800A3418 load, 211 the a2 base addiu, 240 a0 = fp+16, 242 a1 = 0) and 6 for all four of their half-2 counterparts (310, 316, 346, 348); the only priority-4 insns in the window are the load's data consumers and their downstream.
+- mechanism: priority() (tools/gcc-2.7.2/sched.c:1434) walks LOG_LINKS — an insn's PREDECESSORS — and takes max(priority(pred) + insn_cost(pred, link, insn) - 1) at sched.c:1497. A call sets reg_pending_sets_all (sched.c:1991/2095/2236), so every register-setting insn after a call in the same block hangs an anti-dependence off that call; insn_cost is 1 for every MIPS ALU insn and 2 only for a load's data-dependent consumer. Every post-call non-load-consumer therefore inherits exactly the call's priority.
+- probe: BB2_PRIO_DEBUG=1 bash tmp/grind/func_8005D554/s7/run_dump.sh -> tmp/grind/func_8005D554/s7/prio.log (45,426 lines). The half-1 region is anchored by the line 'PRIODBG insn=240 pred=201 kind=14 pred_pri=3 cost=1 contrib=3', which occurs exactly twice in the whole TU (once per scheduler pass). RTL identities cross-checked against tmp/grind/func_8005D554/s7/dumps2/text1b.flow.
+- result: 201=3, 205=3, 206=4, 211=3, 217/220/222=4, 225=4, 228/231/234=3, 237=4, 240=3, 242=3, 244=4; half 2: 306=6, 310=6, 316=6, 331=7, 343=7, 346=6, 348=6, 350=7. This also CORRECTS the s6 ledger's half-2 uid map, which was shifted by one entry: 343 is the s.zero1C store, 346 is a0 = fp+16, 348 is a1 = 0.
+- verdict: CONFIRMED
+
+## [s7] No C-level variable reuse can lift the a2 base insn above the argument-setup insns on the PRIORITY criterion, because an anti-dependence manufactured by sharing a local always points backward to an insn whose accumulated priority is at or below the nearest preceding call's and is therefore dominated by the call's own anti-dependence.
+- mechanism: sched.c:1497 takes the MAX over predecessors of priority(pred) + insn_cost - 1. A call forces an anti-dep from every later register set (sched.c:1991/2095/2236), so the nearest preceding call is always a predecessor, and priority accumulates monotonically along the block. Any predecessor earlier than that call contributes no more than the call does. The only way to exceed the call's level is insn_cost == 2, which sched.c grants only to a load's data-dependent consumer; the a2 base is an addiu off a callee-saved loop invariant and consumes no load.
+- probe: BB2_PRIO_DEBUG dump, tmp/grind/func_8005D554/s7/prio.log. Half-2's a2 base insn 316 ALREADY carries exactly the anti-deps a C-level borrow would manufacture, because a2_offset is one shared pseudo (reg/v 82) across both halves: the log prints 'insn=316 pred=306 ... contrib=6', 'insn=316 pred=225 ... pred_pri=4 contrib=4' and 'insn=316 pred=237 ... pred_pri=4 contrib=4', giving SET insn=316 final_pri=6 — identical to SET insn=346 final_pri=6 and SET insn=348 final_pri=6.
+- result: The borrow's anti-deps contribute 4 against the call's 6 and are discarded by the max. Sharing the local buys zero priority. This kills the one lever the s7 priority measurement initially suggested was open.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 8a6f96b1, memory/grind/func_8005D554/candidate.c applied to src/text1b.c, floor re-measured 6/176 this session; no FAKE constructs present; instrumented cc1 self-checked byte-identical to the build cc1.
+- predicate_cite: tools/gcc-2.7.2/sched.c:1497
+
+## [s7] The last-scheduled CLASS criterion of rank_for_schedule never separates any two insns of the residual window: across all 203 rank comparisons whose two endpoints both carry window uids, in both scheduler passes and both loop halves, the class delta is 0 and both endpoints are class 3.
+- mechanism: sched.c:2429 assigns class 3 whenever the candidate is not a LOG_LINK predecessor of last_scheduled_insn OR insn_cost of that link is 1. Every insn in the window is an ALU insn or a store, all of cost 1, so the insn_cost == 1 disjunct fires unconditionally. Falling to class 1 or 2 would require the candidate to be a load (cost 2) feeding the last-scheduled insn, and the only load in the window (205/310) is not a predecessor of any of the contested insns.
+- probe: BB2_RANK_DEBUG=1 bash tmp/grind/func_8005D554/s7/run_dump.sh -> tmp/grind/func_8005D554/s7/rank.log (9,689 lines), filtered to comparisons whose x and y uids both lie in {201,205,206,211,225,228,231,234,237,240,242,244,306,310,316,331,334,337,340,343,346,348,350}.
+- result: 203 comparisons, 0 with a nonzero class delta — every line reads 'cls=3 ... cls2=3 val=0'. Combined with the priority tie, this leaves INSN_LUID (sched.c:2464) as the sole surviving criterion, exactly as s6's model predicted, but now measured inside the compiler rather than inferred from it.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 8a6f96b1, candidate.c chassis, floor 6/176; no FAKE constructs present; instrumented cc1 self-checked byte-identical to the build cc1.
+- predicate_cite: tools/gcc-2.7.2/sched.c:2429
+
+## [s7] The p_b2e0 declaration-pun object model — s6 frontier item 3, the last untried structural axis — does not score below the control on this chassis: a TU-local struct-pointer model scores 10/176 in the multiset-preserving form and 43/172 in the full form against the control's 6/176.
+- mechanism: The typed pointer materialises base + arg1*0x3C once as a single pseudo, which removes the separate stride add that the byte-pointer model keeps live for half 1's s.p0; the setup block's insn count and LUID sequence both change, and the register allocation follows, but neither change reaches the half-1/half-2 rotation, which is decided entirely by the LUID order of insns born at the call.
+- probe: tools/sweep_variants.py --func func_8005D554 --file text1b --variants tmp/grind/func_8005D554/s7/vars/ -> tmp/grind/func_8005D554/s7/sweep.json. Variants v2_structptr (struct EffEnt { u8 a[0xC]; u8 b[0xC]; u8 rest[0x24]; } declared at block scope, both s.p0 sites written through it) and v3_structptr_mixed (only base_offset replaced, keeping the byte pointer for half 1).
+- result: control 6/176, v1_control 6/176, v3_structptr_mixed 10/176, v2_structptr 43/172. Forms banked at rejected/tu-local-struct-pointer-mixed-scores-10.c and rejected/tu-local-struct-pointer-object-model-scores-43.c. The header route plus integration handoff that this axis would have required is therefore not worth opening.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 8a6f96b1, candidate.c chassis, floor re-measured 6/176; no FAKE constructs present in the control or in either variant.
+
+## [s7] Reassociating the a2 sum so the base subtraction is born after the shift chain (a2_offset = shifted; a2_offset += (s32)r4 - K, applied in both halves) scores 15/176 against the control's 6/176.
+- mechanism: The reassociation makes the accumulate read the shift result first, so the addiu off the loop invariant is emitted after the shift chain, raising its LUID from 31 towards 37, but the pair is re-canonicalised as addu a2,v0,s4 + addiu a2,a2,-K, which changes the register-bearing text of both insns even though the opcode multiset is preserved at 176. It confirms s6's v3_a2base_last_legal_slot result (6/176, no gain) from the operand-order direction rather than the statement-order direction: raising the base's LUID from 31 to 37 is irrelevant when the bar set by the argument setup is 42.
+- probe: tools/sweep_variants.py sweep above (tmp/grind/func_8005D554/s7/sweep.json), variant v4_a2base_born_after_shift; form banked at rejected/a2base-born-after-shift-chain-scores-15.c.
+- result: 15/176.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 8a6f96b1, candidate.c chassis, floor 6/176; no FAKE constructs present.

@@ -781,3 +781,121 @@ depth-2 window search over the same eight statements' insns was launched this se
 - [s6] Four bodies swept against the real compiler: control 6/176, v3_a2base_last_legal_slot 6/176 (the model-predicted maximum LUID placement, byte-level no-op as predicted), v4_base_folded_into_store 15/176, v2_struct_via_pointer 60/179.
 
 - [s6] The pass-2 search shows the rotation is completed by sched2 for free if sched1 emits uid 211 after the three struct stores -- so a lever that changes only sched1's OUTPUT (not the source order) is sufficient; it does not have to reach the final order directly.
+
+## s7 (forensics, 2026-09-09, HEAD main @ 8a6f96b1) — the residual measured inside the compiler: rank_for_schedule's first two criteria are structurally tied, and only INSN_LUID is left
+
+Floor RE-MEASURED at **6/176** with candidate.c applied to src/text1b.c (`sandbox func_8005D554
+--disable all` -> `"score": 6`).
+
+**Tool health.** The instrumented cc1 is `tools/gcc-2.7.2/cc1` (NOT `tools/gcc-2.7.2/build/cc1`,
+which carries no `BB2_*` hooks — confirmed by `grep -ao "BB2_[A-Z_]*"` on both binaries).
+`tmp/grind/func_8005D554/s7/run_dump.sh` pins it explicitly. SELF-CHECK: the assembly the
+instrumented cc1 emits for the whole TU is **byte-identical** to the assembly the build cc1 emits
+(`diff -q s7/dumps/text1b.s s7/dumps2/text1b.s` -> identical), so every number below is a
+measurement of the real build, not of a differently-behaving binary.
+
+**The rank function, in full.** `rank_for_schedule` (tools/gcc-2.7.2/sched.c:2408) decides the
+order of the ready list with exactly three criteria, in order:
+  1. `INSN_PRIORITY (tmp) - INSN_PRIORITY (tmp2)` (sched.c:2418),
+  2. the last-scheduled-insn CLASS (1 = data dep on last scheduled, 2 = anti/output dep,
+     3 = independent-or-latency-1; sched.c:2429),
+  3. `INSN_LUID (tmp) - INSN_LUID (tmp2)` (sched.c:2464).
+Higher priority wins, then higher class wins, then higher LUID wins (the ready array is sorted so
+that the larger-LUID insn is picked first, and GCC 2.7.2 schedules the block bottom-up, so
+picked-first == emitted-last).
+
+**Criterion 1 measured (BB2_PRIO_DEBUG, `s7/prio.log`, 45,426 lines).** Pass-1 priorities for the
+half-1 window, with the derivation each one came from:
+
+| uid | insn (RTL from s7/dumps2/text1b.flow) | priority | why |
+|---|---|---|---|
+| 201 | `jal rand` | 3 | max over its anti-deps on the preceding block insns |
+| 205 | `(set (reg 140) (mem (symbol_ref "D_800A3418")))` | 3 | anti-dep on 201, cost 1 |
+| 206 | `(set (reg 141) (xor (reg 140) (reg 139)))` | **4** | **data dep on the LOAD 205, cost 2** |
+| 211 | `(set (reg/v 82) (plus (reg/v 78) (const_int -12)))` — the a2 base | 3 | anti-dep on 201, cost 1 |
+| 217/220/222 | the shift chain | 4 | inherited from 206 |
+| 225 | `(set (reg/v 82) (plus (reg/v 82) (reg 148)))` | 4 | data dep on 223 |
+| 228/231/234 | the `zero10`/`one14`/`ret` stores | 3 | anti-dep on 201, cost 1 |
+| 237 | `(set (mem (fp+44)) (reg/v 82))` — the `zero1C` store | 4 | data dep on 225 |
+| 240 | `(set (reg 4 a0) (plus (reg 30 $fp) (const_int 16)))` | 3 | anti-dep on 201, cost 1 |
+| 242 | `(set (reg 5 a1) (const_int 0))` | 3 | anti-dep on 201, cost 1 |
+| 244 | `jal func_80073728` | 4 | inherited from 206/208 |
+
+Half 2 is the same shape shifted by the block's accumulated priority (the uid map in the s6 ledger
+is off by one entry: **343 is half-2's `s.zero1C` store, 346 is `a0 = fp+16`, 348 is `a1 = 0`**):
+306 = 6, 310 (the lw) = 6, **316 (the a2 base) = 6**, 331 = 7, **343 = 7**, **346 = 6**, **348 = 6**,
+350 = 7. So in both halves the four contested insns — the load, the a2 base, the `a0` setup and
+the `a1` setup — sit at *exactly the same* priority.
+
+**Why the priority tie is structural.** `priority()` (sched.c:1434) computes
+`prev_priority = priority (x) + insn_cost (x, prev, insn) - 1` (sched.c:1497) over the insn's
+LOG_LINKS, i.e. over its PREDECESSORS, and takes the max. A call sets `reg_pending_sets_all`
+(sched.c:1991/2095/2236), so **every** register-setting insn after a call in the same block gets an
+anti-dependence on that call. `insn_cost` is 1 for every MIPS ALU insn and 2 only for a load's
+data-dependent consumer. Therefore every insn after the last call that is not a load consumer
+inherits *exactly* the call's priority, and the only way to be one higher is to be a data consumer
+of a load. The a2 base is `reg78 - K` where reg78 is the loop-invariant `r4` living in a
+callee-saved register: it has no load predecessor in any spelling that keeps the multiset.
+
+**The variable-reuse route to a priority bump is measured DEAD, not argued dead.** Half-2's a2 base
+insn 316 *already* carries the anti-deps that C-level variable reuse manufactures — `pred=225`
+(pri 4) and `pred=237` (pri 4), because `a2_offset` (pseudo 82) is shared by both halves — and both
+contribute 4, which is dominated by the `pred=306` call contribution of 6. A reused-variable
+anti-dep always points BACKWARD to an insn with a lower accumulated priority than the nearest
+preceding call, so it can never raise an insn above the call's level.
+
+**Criterion 2 measured (BB2_RANK_DEBUG, `s7/rank.log`, 9,689 lines).** Across **203** rank
+comparisons whose two endpoints both carry window uids, the class delta is **0 in every single
+one** (`cls=3 x=... cls2=3 val=0`). The class test at sched.c:2429 assigns class 3 whenever the
+insn is not a LOG_LINK predecessor of `last_scheduled_insn` *or* its cost is 1; every insn in the
+window is an ALU insn or a store with cost 1, so all of them are class 3 against every
+last-scheduled insn that occurs. Class can never separate them.
+
+**What is left.** Criterion 3, `INSN_LUID`, alone. The measured LUIDs are 205=28, 211=31, 240=42,
+242=43, and the target requires 211 to be picked before 240/242, i.e. to hold the LARGEST LUID of
+the four. 240 and 242 are emitted by `expand_call` immediately before the call insn, and the a2
+base must be computed before the `s.zero1C` store that the call reads, so 211's LUID is bounded
+above by 237's. This is the same wall s6 found with its model — s7 confirms it *inside the
+compiler*, and additionally rules out the two criteria that sit ABOVE LUID in the same comparison.
+
+**Structural sweep (`s7/sweep.json` via tools/sweep_variants.py, control 6/176).** Frontier item 3
+is measured out: `v3_structptr_mixed` (a TU-local `struct EffEnt { u8 a[0xC]; u8 b[0xC];
+u8 rest[0x24]; }` pointer replacing `base_offset`, multiset preserved at 176) scores **10/176**;
+`v2_structptr` (the full replacement of the byte-pointer model) scores **43/172** — it loses four
+instructions. `v4_a2base_born_after_shift` (`a2_offset = shifted; a2_offset += (s32)r4 - K;`, the
+maximum-LUID legal birth point for insn 211) scores **15/176**.
+
+- [s7] Floor RE-MEASURED at 6/176 on HEAD main @ 8a6f96b1 with memory/grind/func_8005D554/candidate.c applied to src/text1b.c.
+- [s7] tools/gcc-2.7.2/cc1 (the BB2-instrumented build) emits byte-identical assembly to tools/gcc-2.7.2/build/cc1 for the whole text1b TU, so its dumps describe the real build exactly.
+- [s7] Measured pass-1 INSN_PRIORITY: 205=3, 211=3, 240=3, 242=3 (half 1) and 310=6, 316=6, 346=6, 348=6 (half 2). The four contested insns tie in BOTH halves.
+- [s7] Priority is inherited only from LOG_LINK predecessors via priority(pred) + insn_cost(pred) - 1 (sched.c:1497); insn_cost is 2 only for a load's data-dependent consumer, so the a2 base (an addiu off a callee-saved loop invariant) cannot exceed the priority of the call it hangs off.
+- [s7] Half-2's a2 base insn 316 already carries the variable-reuse anti-deps (pred=225 pri 4, pred=237 pri 4) that a C-level variable borrow would manufacture, and both are dominated by the call anti-dep (pred=306 pri 6). The reused-variable priority lever is measured inert.
+- [s7] Across 203 rank_for_schedule comparisons in the window the class criterion (sched.c:2429) returns delta 0 every time — all endpoints are class 3. Only INSN_LUID (sched.c:2464) is left to decide.
+- [s7] The corrected half-2 uid map: 343 is the s.zero1C store (priority 7), 346 is a0 = fp+16 (6), 348 is a1 = 0 (6). The s6 ledger's half-2 list was shifted by one entry; 316 <-> 211, 331 <-> 225, 343 <-> 237, 346 <-> 240, 348 <-> 242, 350 <-> 244.
+- [s7] Frontier item 3 (the p_b2e0 declaration-pun object model) is MEASURED OUT: a TU-local struct pointer replacing the byte-pointer model scores 43/172 in full form and 10/176 in the mixed form that keeps the multiset — never below the control's 6/176.
+- [s7] Reassociating the a2 sum so the base subtraction is born after the shift chain scores 15/176 — the maximum-LUID legal birth point for insn 211 costs 9 points and still does not reach the target order, matching s6's v3_a2base_last_legal_slot result from the other direction.
+- [s7] src/text1b.c was left byte-clean (func_8005D554 back to INCLUDE_ASM); the only tracked-file change from this session is the three new rejected/ forms.
+
+- [s7] Floor RE-MEASURED at 6/176 on HEAD main @ 8a6f96b1 with memory/grind/func_8005D554/candidate.c applied to src/text1b.c ('sandbox func_8005D554 --disable all' -> "score": 6).
+
+- [s7] TOOL HEALTH: the instrumented cc1 is tools/gcc-2.7.2/cc1, NOT tools/gcc-2.7.2/build/cc1 — 'grep -ao "BB2_[A-Z_]*"' finds 15 hook names in the former and none in the latter, and engine/buildconfig.py:19 points CC1 at build/cc1, so any -da run that does not override CC1 produces NO BB2 diagnostics. tmp/grind/func_8005D554/s7/run_dump.sh pins the instrumented binary.
+
+- [s7] SELF-CHECK: the assembly the instrumented cc1 emits for the whole text1b TU is byte-identical to the assembly the build cc1 emits (diff -q s7/dumps/text1b.s s7/dumps2/text1b.s), so all s7 numbers describe the real build.
+
+- [s7] rank_for_schedule (tools/gcc-2.7.2/sched.c:2408) has exactly three criteria in order: INSN_PRIORITY (sched.c:2418), the last-scheduled-insn CLASS (sched.c:2429), INSN_LUID (sched.c:2464). GCC 2.7.2 schedules the block bottom-up, so picked-first == emitted-last, and the ready array is ordered so the larger-LUID insn is picked first.
+
+- [s7] Measured pass-1 INSN_PRIORITY for the contested insns: half 1 205=3, 211=3, 240=3, 242=3; half 2 310=6, 316=6, 346=6, 348=6. The tie is present in both halves, which is why the residual is exactly two identical 3-insn rotations.
+
+- [s7] The only priority-4 insns in the half-1 window are 206 (the xor, a data consumer of the load 205 at cost 2), 217/220/222 (its shift-chain downstream), 225, 237 and 244. Priority can only be raised by consuming a load; the a2 base is an addiu off the callee-saved loop invariant r4 (reg/v 78) and consumes none.
+
+- [s7] Half-2's a2 base insn 316 already carries the anti-deps that a C-level variable borrow manufactures (pred=225 pri 4, pred=237 pri 4, because a2_offset is the shared pseudo reg/v 82) and both are dominated by the call anti-dep pred=306 pri 6, so its final priority is 6 — identical to the argument-setup insns 346 and 348. The variable-reuse priority lever is measured inert, not argued inert.
+
+- [s7] Across 203 rank_for_schedule comparisons whose both endpoints carry window uids, the class criterion returns delta 0 every time (all endpoints class 3). Only INSN_LUID is left to decide the order of {205, 211, 240, 242}.
+
+- [s7] CORRECTION to the s6 ledger: the half-2 uid list was shifted by one entry. The true map is 306<->201, 310<->205, 316<->211, 331<->225, 343<->237 (the s.zero1C store, priority 7), 346<->240 (a0 = fp+16, priority 6), 348<->242 (a1 = 0, priority 6), 350<->244. RTL identities read from tmp/grind/func_8005D554/s7/dumps2/text1b.flow.
+
+- [s7] RTL identities of the window (s7/dumps2/text1b.flow): 205 = (set (reg 140) (mem (symbol_ref "D_800A3418"))); 211 = (set (reg/v 82) (plus (reg/v 78) (const_int -12))); 225 = (set (reg/v 82) (plus (reg/v 82) (reg 148))); 237 = (set (mem (fp+44)) (reg/v 82)); 240 = (set (reg 4 a0) (plus (reg 30 $fp) (const_int 16))); 242 = (set (reg 5 a1) (const_int 0)); 244 = the func_80073728 call.
+
+- [s7] Structural sweep against the real compiler (tmp/grind/func_8005D554/s7/sweep.json): control 6/176, v1_control 6/176, v3_structptr_mixed 10/176, v4_a2base_born_after_shift 15/176, v2_structptr 43/172.
+
+- [s7] src/text1b.c was left byte-clean (func_8005D554 back to INCLUDE_ASM); the only tracked-file changes from this session are the ledger updates and three new rejected/ forms.

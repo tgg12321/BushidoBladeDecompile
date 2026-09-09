@@ -1,8 +1,8 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 6,
- "current_modality": "solver",
+ "session_count": 7,
+ "current_modality": "forensics",
  "floor_history": [
   {
    "session": 1,
@@ -39,23 +39,29 @@
    "floor": 6,
    "modality": "solver",
    "headline": "Residual typed SCHED (176/176, registers identical, 6 slots reordered); the statement-order axis is closed by predicate sched.c:2464 (0 of 420 dependence-legal permutations through an exact sched1+sch"
+  },
+  {
+   "session": 7,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Instrumented-cc1 forensics: all three rank_for_schedule criteria measured \u2014 INSN_PRIORITY ties 3/3/3/3 (half 1) and 6/6/6/6 (half 2), the last-scheduled CLASS is 3-vs-3 in all 203 window comparisons, "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The pinning edges are the anti/output dependences that uid 240 (a0 = sp+16) and uid 242 (a1 = 0) carry on the preceding rand call, because that call clobbers $a0/$a1. Every dependence-only solution the depth-2 search finds either deletes those two edges or adds an edge forcing 240/242 ahead. The reachable version of that is a source shape in which the a0/a1 argument setup is NOT separated from its call by an intervening call.",
-   "mechanism": "sched.c gives every set of a call-clobbered hard register an unconditional dependence on a preceding call insn. The third rand() call sits between the a0/a1 setup's natural birth point and the func_80073728 call in our RTL. If the a2-site rand() were consumed such that no rand call sits between the two argument-register writes and their call, the pinning edges vanish and the scheduler produces the target rotation with no statement move at all.",
-   "next_probe": "Sweep bodies in which the a2-site `D_800A3418 ^= rand()` is hoisted out of the argument window -- e.g. computing BOTH halves' random draws before the first call, or reassociating so the last rand() precedes the a0_offset statement rather than the a2_offset statement -- and check with tmp/grind/func_8005D554/s6/compose.py (self-checked exact) whether the resulting block still carries deps 240<-201 and 242<-201. Note the multiset must stay at 176; measure with tools/sweep_variants.py before crediting anything."
+   "hypothesis": "With priority and class now measured out, the residual is decided solely by INSN_LUID, and the a2 base insn (211/316) must out-LUID the call's argument setup (240/242, 346/348) to win. Statement order cannot do that (s6 class kill, sched.c:2464), but INSN BIRTH POSITION is a different input: an insn created by a LATER pass is placed at that pass's insertion point, not at its source statement's. combine.c places a combined insn at i3's position, so a source form in which 'addiu a2, s4, -K' is MANUFACTURED by combine at an insn position after the argument setup would carry a LUID above 42 without any statement move.",
+   "mechanism": "sched1's INSN_LUIDs are assigned by a linear walk of the insn chain as it stands after flow.c, i.e. after cse/loop/combine have moved and re-created insns. Every session so far has treated the a2 base insn's chain position as fixed by its source statement; it is fixed only for insns that survive from RTL expansion unchanged. The s7 dumps show 211 already present in .flow with the same uid it has in .rtl, i.e. our spelling produces it at expansion \u2014 the untested question is whether any spelling produces it downstream instead.",
+   "next_probe": "Diff tmp/grind/func_8005D554/s7/dumps2/text1b.rtl against .combine for the block-6 region to enumerate which insns combine CREATES and where it places them; then sweep source forms whose a2 base is only materialised late (e.g. the base folded into an expression that combine must re-split, or the constant -K carried on the store's address arithmetic and re-hoisted). Score with tools/sweep_variants.py and confirm the multiset stays at 176 before crediting anything."
   },
   {
-   "hypothesis": "Because sched2 finishes the rotation for free once sched1 emits uid 211 after the three struct stores, the reachable goal is weaker than the final order: a source change that only perturbs sched1's OUTPUT position of 211 by three slots is enough.",
-   "mechanism": "sched2's INSN_LUIDs are sched1's emission order (measured this session: pass-2 LUIDs 24..41 are exactly sched1's output sequence). The pass-2 depth-1 search hits on 'luid swap 206 <-> 211', 'luid swap 208 <-> 211' and 'luid swap 211 <-> 217' -- all tiny, three-slot moves -- whereas the pass-1 search needs a thirteen-slot move.",
-   "next_probe": "Re-run tmp/grind/func_8005D554/s6/compose.py with the goal expressed on sched1's OUTPUT (211 emitted after 234) instead of on the final order, over a WIDER permutation space than the eight half-1 statements: include the half-2 statements and the loop-top statements, whose LUIDs also feed block 6's tie-breaks. The current 420-permutation space deliberately held everything outside the half-1 window fixed."
+   "hypothesis": "The a2 base insn's priority would exceed the argument setup's if it were a data consumer of a LOAD (insn_cost 2, sched.c:1497), which is the only mechanism in the pass that produces a priority above the enclosing call's. The cost of forcing that in ordinary C \u2014 letting r4 live in memory across the loop instead of a callee-saved register \u2014 has never been measured.",
+   "mechanism": "insn_cost returns result_ready_cost of the predecessor; only the movsi load pattern yields 2 in this window (measured: 'insn=206 pred=205 kind=0 pred_pri=3 cost=2 contrib=4'). If the base's operand arrived from a load inside the loop, the base insn's priority would be call_priority + 1 and it would win criterion 1 outright, with no LUID involvement at all.",
+   "next_probe": "Sweep forms that force r4 (and/or r5) to be re-read inside the loop rather than hoisted \u2014 a file-scope or struct-member spelling of the two random bases, and an aliased read that loop.c's invariant_p rejects \u2014 and record the instruction-count cost. The prediction is that the rotation flips while the multiset grows; measuring HOW MUCH it grows tells the next session whether any spelling can pay for it."
   },
   {
-   "hypothesis": "The object model at the p_b2e0 = (u8 *)&D_8009B2E0 declaration pun remains the last untried STRUCTURAL axis and is the only measured route to a DIFFERENT insn multiset in the setup block, which is what would change the priorities the tie-break reads.",
-   "mechanism": "A base pointer to a real struct type with a member for the +0xC sub-object keeps the stride in s0 and base+0xC+stride in the frame slot the way the byte-pointer model does, while changing which insns exist in the setup block -- and therefore both the dependence graph and the LUID sequence. The typed-ARRAY spelling was killed at 21 by H3 because array indexing re-derives idx*60 + base per use; a pointer-to-struct does not.",
-   "next_probe": "Declare the struct TU-locally in src/text1b.c purely to MEASURE (a TU-local aggregate is excluded by the aggregate-merge family's header-canonical prong, so it cannot be submitted as-is) and sweep it against the candidate. Only if it scores below 6 is the header route plus integration handoff worth opening."
+   "hypothesis": "s6's statement-permutation kill covered only the eight half-1 statements and explicitly held the loop-top and half-2 statements fixed, but sched1's LUIDs for block 6 are one linear numbering over the whole loop body, so loop-top and half-2 placements shift the LUIDs the tie-break reads.",
+   "mechanism": "sched.c:2464 compares absolute INSN_LUIDs, and every insn in block 6 shares one numbering. Moving statements outside the half-1 window changes the LUID gap between 211 and 240/242 only if it changes how many insns are born between them \u2014 which the loop-top statements cannot do, but a cross-half move (computing half 2's p0/p1 setup before half 1's call) can.",
+   "next_probe": "Extend tmp/grind/func_8005D554/s6/compose.py's permutation space to the loop-top and half-2 statements (its current 420-permutation space deliberately fixed them), express the goal on sched1's OUTPUT position of 211 rather than on the final order, and cross-check any model hit with tools/sweep_variants.py before crediting it."
   }
  ],
  "judge_constraints": [
@@ -262,6 +268,38 @@
    "measured_on": "HEAD main @ 07aadcc3, candidate.c chassis, floor 6/176; model self-check baseline exact for both passes; no FAKE constructs present. This is the dependence-edge axis restricted to the half-1 window at",
    "predicate_cite": "",
    "result": "30 dep-only hits: 24 add_dep+add_dep, 4 add_dep+del_dep, 1 del_dep+add_dep, 1 del_dep+del_dep (the last being exactly de"
+  },
+  {
+   "session": 7,
+   "statement": "No C-level variable reuse can lift the a2 base insn above the argument-setup insns on the PRIORITY criterion, because an anti-dependence manufactured by sharing a local always points backward to an in",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 8a6f96b1, memory/grind/func_8005D554/candidate.c applied to src/text1b.c, floor re-measured 6/176 this session; no FAKE constructs present; instrumented cc1 self-checked byte-identical to ",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:1497",
+   "result": "The borrow's anti-deps contribute 4 against the call's 6 and are discarded by the max. Sharing the local buys zero prior"
+  },
+  {
+   "session": 7,
+   "statement": "The last-scheduled CLASS criterion of rank_for_schedule never separates any two insns of the residual window: across all 203 rank comparisons whose two endpoints both carry window uids, in both schedu",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 8a6f96b1, candidate.c chassis, floor 6/176; no FAKE constructs present; instrumented cc1 self-checked byte-identical to the build cc1.",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2429",
+   "result": "203 comparisons, 0 with a nonzero class delta \u2014 every line reads 'cls=3 ... cls2=3 val=0'. Combined with the priority ti"
+  },
+  {
+   "session": 7,
+   "statement": "The p_b2e0 declaration-pun object model \u2014 s6 frontier item 3, the last untried structural axis \u2014 does not score below the control on this chassis: a TU-local struct-pointer model scores 10/176 in the ",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 8a6f96b1, candidate.c chassis, floor re-measured 6/176; no FAKE constructs present in the control or in either variant.",
+   "predicate_cite": "",
+   "result": "control 6/176, v1_control 6/176, v3_structptr_mixed 10/176, v2_structptr 43/172. Forms banked at rejected/tu-local-struc"
+  },
+  {
+   "session": 7,
+   "statement": "Reassociating the a2 sum so the base subtraction is born after the shift chain (a2_offset = shifted; a2_offset += (s32)r4 - K, applied in both halves) scores 15/176 against the control's 6/176.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 8a6f96b1, candidate.c chassis, floor 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "15/176."
   }
  ],
  "ladder_skip": 0,
