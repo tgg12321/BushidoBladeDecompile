@@ -128,3 +128,184 @@ F3. **Confirm sched2 replays the fixed sched1 order.** Once a form changes the s
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: s1 candidate chassis, no FAKE constructs
+
+## s2 (structural) — measured
+
+### H7 — The a2-site `r4 - K` insn can be born AFTER the call's arg-register loads (frontier F1). **KILLED (class).**
+- statement: no C spelling can make the a2-site `a2 = r4 - K` insn carry an INSN_LUID greater
+  than the `a1 = 0` arg-load's, because `expand_call` emits nothing between
+  `load_register_parameters` and the call except `emit_queue`, and the only insns `emit_queue`
+  can flush are `expand_increment`'s queued post-inc/dec insns, whose destination is the
+  incremented variable and whose result is by construction NOT the value the enclosing
+  expression yields — whereas the a2 residual insn's result is consumed by the `addu` that
+  follows it in the same iteration.
+- mechanism: `tools/gcc-2.7.2/calls.c:1909-1910` (`emit_queue` is the only thing between the
+  arg loads and the call); `tools/gcc-2.7.2/expr.c:8641` (`enqueue_insn (op0, GEN_FCN (icode)
+  (op0, op0, op1))` — the sole enqueue site, destination == op0); `expr.c:402-418`
+  (`protect_from_queue` returns the pre-increment copy as the expression value);
+  `tools/gcc-2.7.2/sched.c:2464` (the LUID tie-break that makes the LUID the deciding quantity).
+- kill_scope: class. predicate_cite: tools/gcc-2.7.2/expr.c:8641
+- measured_on: s1/s2 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4,
+  int-order p0), no FAKE constructs; sandbox confirmations v1/v2/v3/v4 (6/15/15/15) plus s1's
+  exact sched_solver model runs (s1/mutate_out.txt).
+- result: additionally, the arithmetic forbids the queued-post-decrement shape independently —
+  the two a2 sites need `r4 - 0xC` and `r4 - 0x19` off a loop-invariant `r4`, a delta of 13
+  with a per-iteration reset, which is not a monotone increment chain. F1 is retired from the
+  frontier.
+
+### H8 — F2's `reg_n_sets == 1` LAUNCH-birth precondition is reachable without adding instructions. **KILLED (instance).**
+- statement: on the s2 chassis the three measured spellings that give the `r4 - K` value its
+  own once-written carrier — per-site fresh locals feeding an accumulator (`v5_fresh_singleset`),
+  per-site fresh locals whose sum is stored straight into `s.zero1C` (`w1_singleset_direct`),
+  or accumulating in the address-taken struct field itself (`w4_field_accum`) — compiles to
+  178 instructions instead of 176 and scores 54.
+- mechanism: sched.c:2505 `birthing_insn_p` needs `reg_n_sets == 1` on the set register; the
+  candidate's split-init writes `a2_offset` four times. Introducing a once-written carrier
+  makes GCC keep an extra pseudo/memory copy that neither combine nor the allocator removes.
+- kill_scope: instance. measured_on: s2 chassis == s1 candidate chassis, no FAKE constructs.
+  Forms: `rejected/fresh-singleset-a2-base-adds-2-insns-scores-54.c`,
+  `rejected/accumulate-in-zero1C-field-adds-2-insns-scores-54.c`.
+- result: F2's first prong is unaffordable at 176/176 before its second prong (a dependence of
+  the `s.zero10 = 0` store on the init) is even reachable. F2 drops off the frontier as a
+  C-spelling route.
+
+### H9 — The a2 accumulation must stay split into `= r4 - K` then `+= rnd`. **CONFIRMED (re-confirmed on s2).**
+- statement: any single-expression spelling of the a2 sum (`((s32)r4 - K) + rnd`,
+  `rnd + ((s32)r4 - K)`) or any spelling that moves the `- K` into the `+=` operand
+  (`a2_offset = rnd; a2_offset += (s32)r4 - K;`) scores 15 instead of 6.
+- mechanism: fold reassociates `(r4 - K) + rnd` into `r4 + (rnd - K)`, destroying the
+  target's standalone `addiu a2,s4,-K`.
+- probe: sandbox on s2/v2, v3, v4 — all 15/176. Forms:
+  `rejected/unsplit-a2-sum-reassociates-scores-15.c`, `rejected/rnd-first-a2-accum-scores-15.c`.
+
+### H10 — A structural lever (declaration order, block scoping, type narrowing, extra split, store order) moves the last-6 residual. **KILLED (instance).**
+- statement: on the s2 chassis eleven structural spellings all score exactly 6 with 176
+  instructions — three-way split of the a2 accumulation, `a2_offset` declared before
+  `a0_offset`, `a2_offset` declared first of all locals, `r4`/`r5` declared `s32` instead of
+  `u32`, `a2_offset` typed `u32`, distinct accumulators per a2 site, the `s.zero1C` store moved
+  ahead of the `zero10/one14/ret` group, offset locals moved to do-while block scope, and a
+  nested block per loop half with its own offset locals.
+- mechanism: none of these changes the relative emission order of the a2 init and the arg
+  loads within the block, which is the only quantity the clock-64 LUID tie reads.
+- kill_scope: instance. measured_on: s2 chassis == s1 candidate chassis, no FAKE constructs.
+  Forms in `tmp/grind/func_8005D554/s2/` (v1, v6, v7, w3, w5, w6, x1, x2, x3); table in
+  evidence.md s2.
+- result: the structural modality is measured out on this residual. `w2_shared_direct`
+  (one shared base var, sum stored straight into the field) is the only non-neutral non-fatal
+  data point at 10.
+
+### H11 — Sibling `main` (src/ings.c, COMPLETED-C) carries a transplantable spelling. **KILLED (instance).**
+- statement: src/ings.c contains no reference to D_800A326C, D_800A3418, D_8009B2E0 or
+  func_80073728, so it shares no block, global or callee with func_8005D554 and has no
+  spelling to transplant.
+- kill_scope: instance. measured_on: HEAD main @ 8d3c3235 working tree, grep over src/ings.c.
+
+## Frontier after s2 (F1 and F2 are retired; see H7/H8)
+
+G1. **Re-derive the loop-body statement order from the target's scheduling constraints rather
+    than from our current chassis.** Everything at 176/176 with only a 3-insn rotation left in
+    each half means the whole rest of the function is right; the target must place the a2 init
+    later for a reason our RTL does not reproduce, and since it cannot be LUID (H7) or a
+    LAUNCH birth (H8) it must be a *dependence* our version lacks or *has* spuriously. Next
+    probe: run `tools/sched_solver` extract/simulate on the current candidate and diff the
+    pass-1 dependence lists (not just priorities) for uids 211/240/242/205 against what the
+    target order requires; look specifically for an anti-dependence our a2 pseudo carries
+    because it is written four times (H8 says removing the multi-write costs insns, but the
+    solver can say whether the anti-dep is what forces the early pick).
+
+G2. **Attack the register assignment of the a2 pseudo instead of the schedule.** The target
+    computes the value in `a2` (caller-saved, dead across nothing) and stores it in the call's
+    delay slot; if our pseudo lands in a different hard register the dependence graph around
+    the arg loads changes. Next probe: read `.greg`/`.lreg` (`pwsh tools/grinder/dump.ps1
+    func_8005D554`) for the a2 pseudo's assignment on the candidate and compare with the
+    target's `a2`; if ours is not `a2`, find the C-level lever that changes the allocno
+    ordering (the `p_b2ec` / `p_b390 = p_b388 + 2` refs-count technique from s1 is the
+    in-family precedent for this function).
+
+G3. **`rederive` modality: re-open the loop chassis itself.** Every s1/s2 probe kept the
+    guard-in-i + do-while chassis inherited from the 2026-08-05 WIP. That chassis was chosen
+    because it produces the target's 120-byte frame, but the frame is now settled and other
+    loop shapes were never re-measured on the soft-float chassis. Next probe: re-measure a
+    `for`-loop and a `while`-loop chassis with the same body and check both the frame and the
+    12-insn residual — this does NOT evade H7 (the arg loads are emitted
+    last whatever the loop shape); its value is that a different loop shape changes the
+    block's dependence graph and register pressure, which is what G1/G2 are after.
+
+### H12 — The a2 pseudo is seated in a different hard register than the target (frontier G2). **KILLED (instance).**
+- statement: on the s2 chassis the candidate's residual region uses exactly the target's
+  registers — `$6`/a2 for the offset, `$20`/s4 for r4, `$4`/a0, `$5`/a1, `$3`/v1, `$22`/s6,
+  `$17`/s1 — so no register-allocation difference remains anywhere in the function.
+- mechanism: none needed; the cc1 `.s` dump and the target asm agree operand for operand.
+- probe: `pwsh tools/grinder/dump.ps1 func_8005D554`, compared
+  `tmp/grind/func_8005D554/dumps/text1b.s` (body lines 134-147) against
+  `asm/funcs/func_8005D554.s:93-107`.
+- kill_scope: instance. measured_on: s2 chassis == s1 candidate chassis, no FAKE constructs.
+- result: G2 is retired before it was spent. The last 6 is a pure emission-order residual.
+
+### H13 — The target's `addiu a2,s4,-K` sits after the arg loads because it is a THIRD call argument. **KILLED (class).**
+- statement: func_80073728 never reads `$a2` as an incoming argument — the only `$a2`
+  references in its body are `mflo $a2` (writes), so its ABI arity is (a0, a1) and no C
+  spelling can route the offset through a third parameter to get its insn emitted by
+  `load_register_parameters`.
+- mechanism: MIPS o32 argument registers are a0-a3 in order; an unread `$a2` at function entry
+  means the parameter does not exist.
+- probe: `grep -n '\$a2' asm/funcs/func_80073728.s` -> only :194 and :235, both `mflo`.
+- kill_scope: class. predicate_cite: asm/funcs/func_80073728.s:194
+- measured_on: HEAD main @ 8d3c3235, the shipped callee body; independent of our chassis and
+  of any FAKE construct.
+
+## [s2] No C spelling can make the a2-site 'a2 = r4 - K' insn carry an INSN_LUID greater than the 'a1 = 0' arg-load's, because expand_call emits nothing between load_register_parameters and the call except emit_queue, and the only insns emit_queue can flush are expand_increment's queued post-inc/dec insns, whose destination is the incremented variable and whose result is by construction not the value the enclosing expression yields, while the a2 residual insn's result is consumed by the addu two insns later in the same iteration.
+- mechanism: tools/gcc-2.7.2/calls.c:1909-1910 (emit_queue is the only thing between the arg loads and the call); tools/gcc-2.7.2/expr.c:8641 (enqueue_insn (op0, GEN_FCN (icode) (op0, op0, op1)) is the sole enqueue site, destination == op0); tools/gcc-2.7.2/expr.c:402-418 (protect_from_queue returns the pre-increment copy as the expression value); tools/gcc-2.7.2/sched.c:2464 (the LUID tie-break at the sched1 clock-64 pick that makes the LUID the deciding quantity).
+- probe: Read the GCC 2.7.2 sources at the three sites above; sandbox-measured the four a2 accumulation spellings that move the '- K' toward the call (v1_three_split 6, v2_rnd_first 15, v3_unsplit_kfirst 15, v4_unsplit_rndfirst 15), on top of s1's exact sched_solver mutation runs (s1/mutate_out.txt) which showed init luid 31/36.5/42.5 give our order and 43.5 gives the target's.
+- result: Frontier item F1 is retired. Additionally the arithmetic forbids the queued-post-decrement shape independently: the two a2 sites need r4 - 0xC and r4 - 0x19 off a loop-invariant r4, a delta of 13 with a per-iteration reset, which is not a monotone increment chain.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: s1/s2 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs present
+- predicate_cite: tools/gcc-2.7.2/expr.c:8641
+
+## [s2] On the s2 chassis the three measured spellings that give the r4 - K value its own once-written carrier - per-site fresh locals feeding an accumulator (v5_fresh_singleset), per-site fresh locals whose sum is stored straight into s.zero1C (w1_singleset_direct), and accumulating in the address-taken struct field itself (w4_field_accum) - each compile to 178 instructions instead of 176 and score 54.
+- mechanism: sched.c:2505 birthing_insn_p needs reg_n_sets == 1 on the set register for LAUNCH priority; the candidate's split-init writes a2_offset four times. Introducing a once-written carrier makes GCC keep an extra pseudo/memory copy that neither combine nor the allocator removes, and s is address-taken so the struct field cannot live in a register.
+- probe: sandbox func_8005D554 --disable all on tmp/grind/func_8005D554/s2/{v5_fresh_singleset.c,w1_singleset_direct.c,w4_field_accum.c}: 54/178, 54/178, 54/178.
+- result: Frontier item F2's first prong (reg_n_sets == 1) costs +2 instructions before its second prong (a dependence of the s.zero10 = 0 store on the init) is even reachable, so F2 drops off the frontier as a C-spelling route. Forms banked in rejected/.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s2 chassis == s1 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs present
+
+## [s2] On the s2 chassis eleven structural spellings each score exactly 6 with 176 instructions: three-way split of the a2 accumulation, a2_offset declared before a0_offset, a2_offset declared first of all locals, r4/r5 declared s32 instead of u32, a2_offset typed u32, distinct accumulators per a2 site, the s.zero1C store moved ahead of the zero10/one14/ret group, offset locals moved to do-while block scope, and a nested block per loop half with its own offset locals.
+- mechanism: None of these changes the relative emission order of the a2 init and the arg-register loads within the scheduling block, which is the only quantity the sched1 clock-64 LUID tie reads.
+- probe: sandbox func_8005D554 --disable all on tmp/grind/func_8005D554/s2/{v1_three_split,v6_declorder,v7_r4_signed,w3_distinct_split,w5_store_order,w6_decl_first,x1_blockscope,x2_perhalf_blocks,x3_a2_unsigned}.c - all 6/176; full table in evidence.md s2.
+- result: The structural modality is measured out on this residual. w2_shared_direct (one shared base var, sum stored straight into the field) at 10/176 is the only non-neutral non-fatal data point.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s2 chassis == s1 candidate chassis, no FAKE constructs present
+
+## [s2] Any single-expression spelling of the a2 sum, or any spelling that moves the '- K' into the '+=' operand, scores 15 instead of 6 on the s2 chassis because fold reassociates (r4 - K) + rnd into r4 + (rnd - K) and destroys the target's standalone addiu a2,s4,-K.
+- mechanism: GCC 2.7.2 fold reassociation of PLUS(MINUS(reg, const), reg); the split-init accumulation form is what keeps the constant subtraction as its own insn.
+- probe: sandbox on s2/v2_rnd_first.c, s2/v3_unsplit_kfirst.c, s2/v4_unsplit_rndfirst.c - 15/176 each.
+- result: Re-confirms on this chassis that the split-init accumulation is load-bearing for the a2 sites; both forms banked in rejected/.
+- verdict: CONFIRMED
+
+## [s2] The candidate's hard-register assignment in the residual region is identical to the target's: $6/a2 for the offset, $20/s4 for r4, $4/a0, $5/a1, $3/v1, $22/s6, $17/s1, so no register-allocation difference remains in this function.
+- mechanism: None needed - the cc1 .s dump and the shipped target asm agree operand for operand across the whole residual window.
+- probe: pwsh tools/grinder/dump.ps1 func_8005D554, then compared tmp/grind/func_8005D554/dumps/text1b.s (func body lines 134-147) against asm/funcs/func_8005D554.s:93-107.
+- result: Frontier item G2 (attack the a2 pseudo's seat) is retired before being spent; the last 6 is a pure emission-order residual, not an RA residual.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: s2 chassis == s1 candidate chassis, no FAKE constructs present
+
+## [s2] func_80073728 never reads $a2 as an incoming argument - the only $a2 references in its shipped body are mflo writes - so its ABI arity is (a0, a1) and the offset cannot be routed through a third parameter to get its insn emitted by load_register_parameters.
+- mechanism: MIPS o32 passes arguments in a0-a3 in order; an argument register that is never read before being written at function entry is not a parameter.
+- probe: grep -n '\$a2' asm/funcs/func_80073728.s -> only :194 and :235, both mflo $a2. Consistent with extern s32 func_80073728(s32, s32); at src/text1b.c:2642 and every other call site in the file.
+- result: Kills the reading that the target's addiu a2,s4,-K sits after the a0/a1 loads because it is a third argument; a2 is a scratch seat for the offset pseudo in both builds.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 8d3c3235, the shipped callee body; independent of our chassis and of any FAKE construct
+- predicate_cite: asm/funcs/func_80073728.s:194
+
+## [s2] Sibling main in src/ings.c (COMPLETED-C, floor 0) carries a spelling transplantable onto this chassis.
+- mechanism: The sibling sweep named it because its ledger names func_8005D554, not because of shared code.
+- probe: grep -n 'D_800A326C|D_800A3418|D_8009B2E0|func_80073728' src/ings.c -> zero hits.
+- result: src/ings.c shares no global, callee or block with func_8005D554; there is nothing to transplant. Recorded so no later session re-opens the sibling.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 8d3c3235 working tree, source grep

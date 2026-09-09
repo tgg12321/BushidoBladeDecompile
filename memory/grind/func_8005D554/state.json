@@ -1,31 +1,37 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 1,
- "current_modality": "recon",
+ "session_count": 2,
+ "current_modality": "structural",
  "floor_history": [
   {
    "session": 1,
    "floor": 6,
    "modality": "recon",
    "headline": "recon: retired body 65 -> recovered WIP score-8 form transfers at 7 on soft-float -> int-typed stride+base sum gives 6; last 6 = sched1 LUID tie between the a2-site init and the call arg loads, proven"
+  },
+  {
+   "session": 2,
+   "floor": 6,
+   "modality": "structural",
+   "headline": "Floor holds at 6 (176/176, RA byte-identical to target); 16 structural spellings measured, both banked frontier routes F1 and F2 retired with mechanism cites, residual is a pure 3-insn emission-order "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "Spell the a2-site offset so its r4 - K insn is emitted AFTER the call's arg-register loads in pre-sched1 RTL (only emit_queue-flushed post-inc/dec side effects or in-call-expression evaluation land there)",
-   "mechanism": "sched.c:2464 LUID tie-break at the sched1 clock-64 pick; calls.c:1910 emit_queue runs after the arg loads; exact model: init luid > 43 -> target in both halves",
-   "next_probe": "measure 2-3 spellings (queued post-decrement of a pointer local, offset computed inside the call's second-argument expression yielding 0) with sandbox, then extract.py text1b + simulate.py --pass 1/2 to confirm the LUID moved; watch that the -0x19/-0x32 sites use the same shape"
+   "hypothesis": "Our pre-sched1 dependence graph around uids 211 (a2 init), 240 (a0 load), 242 (a1 load) and 205 (the lw) differs from what the target's order requires - most plausibly an anti-dependence our a2 pseudo carries because split-init writes it four times.",
+   "mechanism": "sched1 rank_for_schedule (tools/gcc-2.7.2/sched.c:2464) only reaches the INSN_LUID tie-break when priority and class are equal and the insn is READY; a dependence that delays 211's readiness past clocks 66-67, or one that removes 242/240 from the clock-64 ready set, reproduces the target order without needing luid(211) > 43. s1 already showed 'LAUNCH(211) + 228 depends on 211' hits the target in both halves, so the dependence axis is live even though the LAUNCH prong (H8) is not affordable.",
+   "next_probe": "Run tools/sched_solver extract.py text1b + simulate.py --func func_8005D554 --pass 1 on the current candidate and dump the full dependence LISTS (not just priorities) for uids 205/211/240/242; then enumerate, in the exact model, which single added or removed dependence flips the clock-64 pick, and only then look for a C spelling that produces exactly that dependence at 176 insns."
   },
   {
-   "hypothesis": "A single-set birth init (LAUNCH priority) whose consumers include the s.zero10 = 0 store reproduces the target order",
-   "mechanism": "sched.c:2505 birthing_insn_p needs reg_n_sets == 1; the store dependence delays the init's readiness to clock 64; exact model launch_dep228 -> target both halves",
-   "next_probe": "look for a natural spelling where the zero store reads or aliases the init (e.g. struct-copy / BLKmode initialization of the zero fields) before considering any FAKE-gated named intermediate; measure with sandbox + simulate.py"
+   "hypothesis": "The loop chassis itself (guard-in-i + do-while, inherited unchanged from the 2026-08-05 WIP) is not the target's, and a different loop shape changes the block's dependence graph and register pressure enough to move the residual.",
+   "mechanism": "The chassis was selected on the pre-soft-float chassis for the frame +16 (jump.c duplicate_loop_exit_test phantom slot); the frame is now settled at 120 == target, so the shape was never re-justified on this chassis. Note this does NOT evade the H7 class kill - the arg loads are emitted last whatever the loop shape - its value is the dependence/pressure change.",
+   "next_probe": "Re-measure a for-loop chassis and a while-loop chassis with the identical body (and with/without the guard duplicated into the loop variable), checking BOTH the frame size and the 12-insn residual; if any keeps frame 120 and changes the residual shape, re-run pairdiff and the pass-1 simulation on it."
   },
   {
-   "hypothesis": "sched2 replays whichever sched1 order F1/F2 produce",
-   "mechanism": "pass-2 priorities are all 3 for the four insns; ties are pure LUID",
-   "next_probe": "after any sched1-changing form, run extract.py text1b and simulate.py --func func_8005D554 --pass 2 before trusting the sandbox delta"
+   "hypothesis": "r4 (the loop-invariant (D_800A3418 * 0xDC) >> 0xF computed before the loop) is not the carrier the target subtracts from, and a different but semantically identical source expression for the a2 base lands its insn elsewhere in the RTL stream.",
+   "mechanism": "The target's addiu a2,s4,-K reads s4 which our build also assigns to r4, so any alternative must be arithmetically identical; but the RTL position of the subtraction is fixed by which tree node expand walks it from, and s1/s2 only ever spelled it as a subtraction off a plain local.",
+   "next_probe": "Enumerate arithmetically identical spellings of the a2 base that expand from a different tree shape - e.g. r4 held in a second invariant local written once before the loop, the subtraction expressed as an addition of a negative constant, or the base carried as a pointer displacement - and measure each with sandbox; any that keeps 176/176 and moves the addiu is worth a pass-1 simulation."
   }
  ],
  "judge_constraints": [],
@@ -62,6 +68,54 @@
    "measured_on": "s1 candidate chassis, no FAKE constructs",
    "predicate_cite": "",
    "result": "12"
+  },
+  {
+   "session": 2,
+   "statement": "No C spelling can make the a2-site 'a2 = r4 - K' insn carry an INSN_LUID greater than the 'a1 = 0' arg-load's, because expand_call emits nothing between load_register_parameters and the call except em",
+   "kill_scope": "class",
+   "measured_on": "s1/s2 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs present",
+   "predicate_cite": "tools/gcc-2.7.2/expr.c:8641",
+   "result": "Frontier item F1 is retired. Additionally the arithmetic forbids the queued-post-decrement shape independently: the two "
+  },
+  {
+   "session": 2,
+   "statement": "On the s2 chassis the three measured spellings that give the r4 - K value its own once-written carrier - per-site fresh locals feeding an accumulator (v5_fresh_singleset), per-site fresh locals whose ",
+   "kill_scope": "instance",
+   "measured_on": "s2 chassis == s1 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Frontier item F2's first prong (reg_n_sets == 1) costs +2 instructions before its second prong (a dependence of the s.ze"
+  },
+  {
+   "session": 2,
+   "statement": "On the s2 chassis eleven structural spellings each score exactly 6 with 176 instructions: three-way split of the a2 accumulation, a2_offset declared before a0_offset, a2_offset declared first of all l",
+   "kill_scope": "instance",
+   "measured_on": "s2 chassis == s1 candidate chassis, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "The structural modality is measured out on this residual. w2_shared_direct (one shared base var, sum stored straight int"
+  },
+  {
+   "session": 2,
+   "statement": "The candidate's hard-register assignment in the residual region is identical to the target's: $6/a2 for the offset, $20/s4 for r4, $4/a0, $5/a1, $3/v1, $22/s6, $17/s1, so no register-allocation differ",
+   "kill_scope": "instance",
+   "measured_on": "s2 chassis == s1 candidate chassis, no FAKE constructs present",
+   "predicate_cite": "",
+   "result": "Frontier item G2 (attack the a2 pseudo's seat) is retired before being spent; the last 6 is a pure emission-order residu"
+  },
+  {
+   "session": 2,
+   "statement": "func_80073728 never reads $a2 as an incoming argument - the only $a2 references in its shipped body are mflo writes - so its ABI arity is (a0, a1) and the offset cannot be routed through a third param",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 8d3c3235, the shipped callee body; independent of our chassis and of any FAKE construct",
+   "predicate_cite": "asm/funcs/func_80073728.s:194",
+   "result": "Kills the reading that the target's addiu a2,s4,-K sits after the a0/a1 loads because it is a third argument; a2 is a sc"
+  },
+  {
+   "session": 2,
+   "statement": "Sibling main in src/ings.c (COMPLETED-C, floor 0) carries a spelling transplantable onto this chassis.",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 8d3c3235 working tree, source grep",
+   "predicate_cite": "",
+   "result": "src/ings.c shares no global, callee or block with func_8005D554; there is nothing to transplant. Recorded so no later se"
   }
  ],
  "ladder_skip": 0,
