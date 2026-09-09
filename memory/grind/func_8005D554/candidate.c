@@ -395,6 +395,25 @@
  * four genuine memory reads that all cost +2 instructions per half at 14/180.  Do NOT re-derive the
  * priority, class or store-order framing, and do NOT re-sweep foldable dependence spellings.  See
  * hypotheses.md s20 and evidence.md s20.
+ *
+ * s21 (forensics, 2026-09-09, HEAD main @ 764b2eb1): floor RE-MEASURED at 6/176 on this body.
+ * Two class kills and one instance kill, all read out of the instrumented cc1
+ * (tmp/grind/func_8005D554/s21/).  (a) RELOAD IS LIVE here -- it creates uids 398/401/404 (a
+ * pre-header spill of base_offset to sp+64, a split s.p1 store, and a reload of sp+64 into $a3 in
+ * half 2) and globally spills $a3, so s20's "no reload insn" branch is refuted -- but none of the
+ * three lands in the half-1 window.  (b) sched2 is an IDENTITY on that window: it picks
+ * 63:234 64:231 65:228 66:242 67:205 68:240 69:211, strict descending LUID, zero SELBEST
+ * deviations, because its LUIDs are a linear scan of the post-sched1 chain (sched.c:2198) and the
+ * last rank term is the LUID tie-break (sched.c:2464).  (c) The ready-clock route is closed by a
+ * chain inequality: dependents(240)=dependents(242)={244} so they are released at clock(call)+1=52,
+ * while the base reaches the call only through the accumulate and the s.zero1C store, so it is
+ * released at clock(call)+3=55 -- the base is NEVER ready at a clock where the argument moves are
+ * not (sched.c:2627).  (d) s12's third-argument call form produces RTL identical to the control
+ * UID for UID and LUID for LUID: the a2 argument move is coalesced away before sched1.
+ * Net: the base is ready from clock 55 and must lose clocks 55-60 to the boosted multiply chain,
+ * 61-63 to the stores' potential_hazard, and win clock 64 against 242 (luid 43) and 240 (luid 42).
+ * LUID is the ONLY rank term left, and expand_call is the only insn-creation site that emits after
+ * the argument moves.  See hypotheses.md H51-H54 and evidence.md s21.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

@@ -2206,3 +2206,113 @@ own pattern, and `addiu a2,s4,-0xC` has no MEM.
 - [s20] 10 spellings measured for the base-to-s.zero10-store dependence edge (tmp/grind/func_8005D554/s20/enumA, enumA.json): the six foldable spellings are byte-identical to the dependence-free boost control at 8/176; the four surviving memory reads all cost +2 instructions per half at 14/180.
 
 - [s20] V4 (s.zero10 = b1 followed by s.zero10 = 0) builds 176 instructions, so GCC 2.7.2 deletes the same-address dead store to the addressable local struct before sched1 - the output-dependence direction of the H49 edge dies exactly like the data direction.
+
+## s21 (forensics, 2026-09-09, HEAD main @ 764b2eb1)
+
+Floor RE-MEASURED at 6/176 on candidate.c (`tmp/grind/func_8005D554/s21/reaudit.json`).
+Kill re-audit passes for an ELEVENTH consecutive session: `tools/fake_ablate.py` finds no
+FAKE-annotated construct in s18's `G1_gap1_both.c` and that form re-measures 8/176 exactly as
+banked.  s19's `dep2/A_gap2_depstore.c` chassis re-measures 23/177 and s12's third-argument form
+re-measures 6/176, both as banked.
+
+### 1. RELOAD IS LIVE ON THIS FUNCTION — the frontier's "no reload insn" branch is refuted
+
+`-da` dumps with `BB2_RELOAD_DEBUG=1` + `BB2_ALLOC_DEBUG=1`
+(`tmp/grind/func_8005D554/s21/dumps/ctrl/`, extract in `s21/reload_created_insns.txt` and
+`s21/ctrl_alloc_reload.txt`).  Diffing the func_8005D554 insn chain of `text1b.sched` against
+`text1b.greg` shows reload CREATES three insns and deletes one:
+
+| new uid | insn | where |
+|---|---|---|
+| 398 | `(set (mem:SI (sp+64)) (reg:SI 2 v0))` | loop PRE-HEADER — spill of the `base_offset` pseudo |
+| 401 | `(set (mem/s:SI (sp+20)) (reg:SI 7 a3))` | loop half 2 — the store half of a split `s.p1 = p_b390` |
+| 404 | `(set (reg:SI 7 a3) (mem:SI (sp+64)))` | loop half 2 — reload of `base_offset` for insn 270 |
+
+`RELOADDBG` shows why: global alloc leaves pseudos 119 (`base_offset`, nrefs=2, livelen=1,
+pri=20000, allocno order 1 — the SECOND-highest-priority allocno and it still fails), 89 and 86
+with `hardreg=-1`, and reload then does `spill_hard_reg regno=7 class=1 global=1` on both of its
+passes, i.e. `$a3` is globally spilled to serve as the reload register.  So this function is
+genuinely register-pressure-bound and reload's insn-creation site is REACHABLE — but all three
+created insns sit in the pre-header and in loop half 2.  None is in the half-1 window.
+
+### 2. CLASS KILL — sched2 cannot produce the four-insn rotation; it is an identity here
+
+Pass-2 trace of block 6 (`s21/ctrl_sched2_block6.txt`).  The whole half-1 window is picked in
+strict descending-LUID order with ZERO `SELBEST` deviations:
+
+    PICK 63:234(luid31) 64:231(30) 65:228(29) 66:242(28) 67:205(27) 68:240(26) 69:211(25)
+
+(the only `SELBEST` lines anywhere in sched2's block 6 are clocks 45/46/47 for the half-2 stores
+249/252/255 and clock 93 for insn 140).  sched2 assigns `INSN_LUID` by a linear scan of the
+post-sched1 insn chain (`tools/gcc-2.7.2/sched.c:2198`), and `rank_for_schedule`'s final term is
+the LUID tie-break (`tools/gcc-2.7.2/sched.c:2464`).  Because sched1's emission already put 211
+first in the chain, 211 gets the LOWEST LUID of the window and is picked LAST — reproducing
+sched1's order exactly.  For sched2 to emit the base after the argument moves, the chain entering
+sched2 would have to already carry that order.  The reload-insertion route into sched2 is
+therefore closed for this window: reload's three insns are outside it, and even inside it a
+reload insn could only add an insn, never invert the 211-vs-240/242 LUID relation.
+
+### 3. CLASS KILL — the ready-clock route (s20 frontier item 1) is closed by a chain inequality
+
+`schedule_insn` releases a predecessor into the ready list only when its `INSN_REF_COUNT` hits 0,
+at `clock + insn_cost` (`tools/gcc-2.7.2/sched.c:2622-2650`, the gate at `sched.c:2627`).  The
+measured dependence lists (`s21/ctrl_sched1_block6.txt`) are:
+
+    dependents(240) = {244}          dependents(242) = {244}
+    dependents(211) = {225}          dependents(225) = {237,244}      dependents(237) = {244}
+
+With `clock(244) = 51` this gives, measured: ready(240) = ready(242) = 52, clock(237) = 52,
+clock(225) = 54, ready(211) = 55.  In general ready(240) = ready(242) = clock(call) + 1 while
+ready(base) >= clock(call) + 3 — and the minimum is +2 even if the accumulate is removed, because
+the base still has to reach the call through the `s.zero1C` store, which the call depends on.
+So in ANY chassis where the a2 offset is stored into the struct before the call, the base becomes
+ready STRICTLY LATER than the two argument moves.  Consequence: at every clock at which 240/242
+are not yet ready, the base is not ready either — delaying the argument-setup insns past clock 64
+can never leave the base as the sole pri-3 candidate.  s20 frontier item 1's stated mechanism is
+measured out in both directions.
+
+### 4. The third-argument form creates NO insn — RTL insn-for-insn identical to the control
+
+s12's `func_80073728((s32)&s, 0, a2_offset)` form (rejected/three-argument-call-reading-inert-
+scores-6.c) re-measures 6/176, and its sched1 trace (`s21/dumps/t3/`) is identical to the control
+UID for UID, LUID for LUID and clock for clock (nodes 205..258 at LUIDs 28..49; picks
+61:234 62:231 63:228 64:242 65:205 66:240 67:211).  The a2 argument move is coalesced away before
+sched1 because the a2_offset pseudo is already allocated to `$a2`, so no argument-move insn with a
+LUID above 240/242 is created.  Passing an already-in-a2 value as a third argument is a complete
+no-op at the RTL level, not merely at the byte level.
+
+### 5. What the target's own emission order forces (the sharpened residual)
+
+Both halves emit, in order: [the four contested insns] [the three struct stores] [206 217 219 220
+222 223] [225 accumulate] [208] [237] [call].  Reverse-reading the pick clocks, that fixes
+clock(225) = 54 and therefore ready(211) = 55 in any chassis that reproduces the surrounding
+order.  The base is thus READY for nine cycles before the decisive clock 64 and must nonetheless
+lose every one of clocks 55-63 and win at 64:
+
+  * clocks 55-60 it loses to the max_priority-boosted multiply chain (`adjust_priority`);
+  * clocks 61-63 it loses to the three stores by `potential_hazard` (sched.c:2717, unit 0);
+  * at clock 64 only 242 (luid 43) and 240 (luid 42) remain and the LUID tie-break decides.
+
+Giving the base the birth boost (s18's G1 chassis, re-dumped this session as
+`s21/g1_sched1_block6.txt`) makes it win as soon as it is ready — it is picked at clock 60, i.e.
+emitted AFTER the store group: that is exactly the +2 overshoot that scores 8/176.  So the only
+surviving rank term is LUID: the base insn must be emitted after `expand_call`'s two argument
+moves in the pre-sched chain (LUID > 43).
+
+- [s21] Floor re-measured 6/176 on HEAD main @ 764b2eb1 with candidate.c applied; the body re-measures 6/176 again with the new s21 header paragraph in place (tmp/grind/func_8005D554/s21/final_cand). src/ and include/ left byte-clean at session end.
+
+- [s21] Kill re-audit passes for an ELEVENTH consecutive session: tools/fake_ablate.py finds no FAKE-annotated construct in s18's G1_gap1_both.c and that form re-measures 8/176 as banked. s19's dep2/A_gap2_depstore.c re-measures 23/177 and s12's third-argument form re-measures 6/176, both as banked.
+
+- [s21] RELOAD IS LIVE on func_8005D554: reload creates uids 398 (spill of base_offset to sp+64 in the pre-header), 401 (store half of a split s.p1 = p_b390 in half 2) and 404 (reload of sp+64 into $a3 in half 2), deletes uid 133, and does spill_hard_reg regno=7 class=1 global=1 on both of its passes.
+
+- [s21] ALLOCDBG: global alloc leaves three pseudos unallocated on this function - 119 (base_offset, nrefs=2, livelen=1, pri=20000, allocno order 1), 89 and 86 - so the function is genuinely register-pressure-bound and $a3 serves as the global spill register.
+
+- [s21] sched2 block 6 picks the half-1 window in strict descending-LUID order (63:234 64:231 65:228 66:242 67:205 68:240 69:211) with zero SELBEST deviations; sched2's only non-trivial picks in block 6 are clocks 45/46/47 and 93.
+
+- [s21] Measured release clocks in sched1 block 6: clock(call 244)=51, ready(240)=ready(242)=52, clock(237)=52, clock(225)=54, ready(211)=55. dependents(240)=dependents(242)={244}; dependents(211)={225}; dependents(225)={237,244}; dependents(237)={244}.
+
+- [s21] The a2 base is READY from clock 55 and must lose nine consecutive clocks before the decisive one: clocks 55-60 to the max_priority-boosted multiply chain, clocks 61-63 to the three struct stores' potential_hazard (unit 0), and then win clock 64 against 242 (luid 43) and 240 (luid 42) on the LUID tie-break alone.
+
+- [s21] s18's G1 boost chassis re-dumped (s21/g1_sched1_block6.txt): the boosted base carrier is picked at clock 60, i.e. BEFORE the store group, so it is emitted after the stores - the +2 overshoot that scores 8/176. The birth boost makes the base win as soon as it is ready, which is nine cycles too early.
+
+- [s21] s12's third-argument form is RTL-identical to the control (same UIDs, same LUIDs 28..49, same picks), so a CSE-shared third argument creates no expand_call argument-move insn.

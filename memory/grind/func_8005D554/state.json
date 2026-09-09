@@ -1,7 +1,7 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 20,
+ "session_count": 21,
  "current_modality": "forensics",
  "floor_history": [
   {
@@ -123,22 +123,28 @@
    "floor": 6,
    "modality": "forensics",
    "headline": "sched1's decisive clock-64 pick traced input-by-input in the instrumented cc1: the store block leads by potential_hazard (not LUID, correcting s9/s17), priority and last-scheduled class are class-kill"
+  },
+  {
+   "session": 21,
+   "floor": 6,
+   "modality": "forensics",
+   "headline": "Reload is live on this function (3 created insns, $a3 globally spilled) but not in the half-1 window; sched2 is a strict descending-LUID identity there, and the argument-move ready-clock route is clos"
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The two call-argument setup insns 240/242 are ready from clock 55 onward and only win because they sit at the front of the pri-3 group once the stores are gone; if their READY CLOCK could be pushed past 64 the base would be the sole pri-3 candidate at clock 64 and would be picked without any change to priority, class or LUID.",
-   "mechanism": "In a backward list scheduler an insn enters the ready list when its last successor has been scheduled, at clock(successor) + insn_cost(insn -> successor). The only successor of 240 and 242 is the CALL_INSN 244, and insn_cost from an addiu or a constant move is 1, so they arrive one cycle after the call is picked. A third call argument whose value is produced by a load would give that argument move a result_ready_cost of 2 and, more importantly, changes which insns 244 depends on and when the argument moves are released - s12 measured only the SCORE of a genuine third argument (17/178, the value materialised as a separate addiu a2,a3,-12), never the ready-clock trace.",
-   "next_probe": "Re-run s12's genuine third-argument form (the local function-pointer cast that bypasses the file-scope 2-parameter prototype at src/text1b.c:2642) on BOTH the control and the s18 G1 boost chassis under BB2_SCHED_DEBUG=1, and read the SCHEDDBG 'ready was' lines at clocks 60-67 rather than the score: record the clock at which 240/242 enter the ready list and whether any argument spelling delays them past the base. Gate every variant on build_insns == 176 before disassembling the 0x3594 window."
+   "hypothesis": "LUID is the only rank term left that can make the a2 base beat insn 242 at clock 64, and expand_call is the only insn-creation site that emits after the two argument moves; a third argument that is the BASE value and is NOT CSE-shared with the value stored to s.zero1C would force expand_call to emit addiu a2,s4,-K itself at LUID 44.",
+   "mechanism": "expand_call emits the hard-register argument moves after every argument pseudo is computed, which is why 240/242 hold LUIDs 42/43 and no earlier statement can out-LUID them (s19's 102 unspellable depth-1 vectors). An argument whose value is not already seated in the destination hard register forces a real move insn at the highest LUID in the block. H54 shows the CSE-shared spelling is a complete no-op, so the variant must keep the base pseudo distinct from the stored offset.",
+   "next_probe": "Build call forms where the third argument expression is the base ((s32)r4 - K) while s.zero1C is fed by an expression GCC will not CSE into the same pseudo, dump each under BB2_SCHED_DEBUG=1 and read the node LUIDs of the argument moves BEFORE looking at the score; gate every variant on build_insns == 176 and reject any that adds a move insn."
   },
   {
-   "hypothesis": "RELOAD remains the one insn-creation site never probed on this function: it runs after sched1 and its insertions receive fresh LUIDs for sched2, which is the only pass that can give the a2 base a LUID higher than the argument moves' (the condition s9 reduced the whole residual to).",
-   "mechanism": "sched2 recomputes INSN_LUID from the post-reload insn chain. s9 measured sched2 as a no-op here because its LUIDs already equal the sched1 emission order, but that was measured without any reload insertion in the window. A reload-inserted copy or reload of the base value would be placed at its use site with a fresh LUID, changing the sched2 ready-list order in the window.",
-   "next_probe": "Capture BB2_RELOAD_DEBUG=1 plus the .greg/.lreg dumps for the control and for s18's G1 boost chassis, identify whether any reload insn is generated inside the loop body at all, and if so read the sched2 SCHEDDBG trace of the half-1 window to see whether the four-insn rotation is decided there rather than in sched1. If no reload insn exists in the block, record that as a class kill of the reload creation site with the greg dump as evidence."
+   "hypothesis": "Which struct field carries which value decides the LUID order inside the half-1 store group (228/231/234, all pri 3 / unit 0), and therefore which insn occupies clock 63 and what the base faces at clock 64 - an axis distinct from the statement-placement axis s6 closed.",
+   "mechanism": "schedule_select prefers the largest potential_hazard, which selects the unit-0 stores as a block; inside that block rank_for_schedule falls through to the LUID tie-break, so the store written first in source is picked last (clock 63). Changing the group's membership or its internal LUID order changes the clock at which the group empties and hence the state of the ready list at the decisive clock.",
+   "next_probe": "Sweep the source order and membership of the s.zero10 / s.one14 / s.ret stores and the position of the s.zero1C store as a GROUP axis (not as a2-base placement), gating on build_insns == 176, and read the sched1 PICK clocks 61-64 for each rather than only the score."
   },
   {
-   "hypothesis": "(carried) The object model of D_8009B2E0 / D_8009B388 is still the last untried non-spelling axis: a header-canonical aggregate declaration for the 0x3C-stride particle-template table has never been measured on this function, and candidate.c still carries the declaration pun p_b2e0 = (u8 *)&D_8009B2E0.",
-   "mechanism": "Which callee-saved register holds which loop base is decided by allocno priority, driven by reg_n_refs; a different declared object model changes the number of references to the pointer locals, and therefore the seats, without changing any statement in the a2 chain.",
+   "hypothesis": "(carried) The object model of D_8009B2E0 and the pair D_8009B388/D_8009B390 is still the last untried non-spelling axis; candidate.c still carries the declaration pun p_b2e0 = (u8 *)&D_8009B2E0.",
+   "mechanism": "Which callee-saved register holds which loop base is decided by allocno priority driven by reg_n_refs; a different declared object model changes the number of references to the pointer locals - and this session showed the function is register-pressure-bound (three pseudos unallocated, $a3 globally spilled), so the object model has real leverage over the allocation.",
    "next_probe": "Enumerate header-canonical aggregate declarations for the 0x3C-stride table at D_8009B2E0 and the pair D_8009B388/D_8009B390 (aggregate-merge prong (a) satisfied by the 0x3C stride and the p_b2ec + stride addressing), applied through an integration handoff for the header edit, and sweep the loop's pointer-local spellings against each; gate on build_insns == 176."
   }
  ],
@@ -147,30 +153,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 4,
-   "statement": "The complete local-spelling space of the a2-site region -- 12 arithmetic forms x 2 cast spellings of the r4 read x 4 insertion points among the tail stores x 2 positions of the s.zero1C store, 168 com",
-   "kill_scope": "class",
-   "measured_on": "HEAD main @ f95f6b8a chassis with memory/grind/func_8005D554/candidate.c applied to src/text1b.c (floor re-measured 6/176 this session); no FAKE constructs present in any variant",
-   "predicate_cite": "tools/gcc-2.7.2/sched.c:2464",
-   "result": "71 spellings at 6/176 (every form whose first written term is the r4-K base: base-first split-init, three-way split, `= "
-  },
-  {
-   "session": 4,
-   "statement": "Of the 256 spellings that relocate subsets of the seven movable struct stores (byte28, c24, c20, p1, zero10, one14, ret) into the tail block after the last rand() call, crossed with 2 positions for `i",
-   "kill_scope": "instance",
-   "measured_on": "HEAD main @ f95f6b8a chassis with candidate.c applied to src/text1b.c; no FAKE constructs present in any variant",
-   "predicate_cite": "",
-   "result": "Per-axis costs: move zero10 alone 6/176 (neutral); one14 alone 10/176; ret alone 10/176; byte28, c24 or c20 alone 10/176"
-  },
-  {
-   "session": 4,
-   "statement": "Frontier item P3's premise is false as stated: stacking the neutral spellings does not perturb the emission order. The cross product of 5 neutral a0-site arithmetic forms x 5 neutral a2-site arithmeti",
-   "kill_scope": "instance",
-   "measured_on": "HEAD main @ f95f6b8a chassis with candidate.c applied to src/text1b.c; no FAKE constructs present in any variant",
-   "predicate_cite": "",
-   "result": "800/800 at exactly 6/176. A representative stacked form is banked at rejected/neutral-stack-a11-arith-perhalf-scope-stor"
-  },
   {
    "session": 5,
    "statement": "On the current candidate chassis the 4-local chassis (separate a0a/a2a and a0b/a2b offset locals per loop half) measures 6/176, and the three early-birth placements measured on top of it (base at the ",
@@ -626,6 +608,30 @@
    "measured_on": "HEAD main @ 7a5fbffb, s19 dep2/A_gap2_depstore.c boost chassis with fresh written-once b1/b2 at gap 1-2, control V0_ctl re-measured 8/176; no FAKE constructs present.",
    "predicate_cite": "",
    "result": "V0_ctl (no edge) 8/176; V1 s.zero10 = b1 & 0 8/176; V2 s.zero10 = b1 - b1 8/176; V3 s.zero10 = b1 * 0 8/176; V4 s.zero10"
+  },
+  {
+   "session": 21,
+   "statement": "On the half-1 window sched2 picks every insn in strict descending-LUID order with no SELBEST deviation, reproducing the sched1 emission order as an identity, so sched2 is not the pass that decides the",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 764b2eb1, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2464",
+   "result": "PICK 63:234(luid31) 64:231(30) 65:228(29) 66:242(28) 67:205(27) 68:240(26) 69:211(25) - descending LUID throughout. The "
+  },
+  {
+   "session": 21,
+   "statement": "Delaying the two call-argument setup insns past clock 64 cannot leave the a2 base as the sole pri-3 candidate, because in every chassis that stores the a2 offset into the struct before the call the ba",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 764b2eb1, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2627",
+   "result": "Measured clock(244)=51, ready(240)=ready(242)=52, clock(237)=52, clock(225)=54, ready(211)=55. The base is released thre"
+  },
+  {
+   "session": 21,
+   "statement": "s12's third-argument call form, whose third argument is the already-computed a2_offset, creates no argument-move insn at all and leaves the sched1 graph identical to the control UID for UID and LUID f",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 764b2eb1, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "Score re-measures 6/176. Nodes 205..258 carry LUIDs 28..49 exactly as in the control, and the window picks are identical"
   }
  ],
  "ladder_skip": 0,

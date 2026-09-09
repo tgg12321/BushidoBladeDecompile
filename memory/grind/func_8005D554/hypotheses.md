@@ -2473,3 +2473,90 @@ S3. (carried) The object model of D_8009B2E0 / D_8009B388 — a header-canonical
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ 7a5fbffb, s19 dep2/A_gap2_depstore.c boost chassis with fresh written-once b1/b2 at gap 1-2, control V0_ctl re-measured 8/176; no FAKE constructs present.
+
+## s21 (forensics, 2026-09-09, HEAD main @ 764b2eb1) — H51..H54
+
+**H51 — CONFIRMED. Reload's insn-creation site is reachable on this function, but not inside the
+half-1 window.**  Probe: `-da` dumps with `BB2_RELOAD_DEBUG=1`/`BB2_ALLOC_DEBUG=1`, diffing the
+func_8005D554 insn chain of `text1b.sched` against `text1b.greg`.  Result: reload creates uids 398
+(spill of the `base_offset` pseudo to sp+64 in the pre-header), 401 (the store half of a split
+`s.p1 = p_b390`, half 2) and 404 (reload of sp+64 into `$a3`, half 2), and deletes uid 133.
+`RELOADDBG` shows `spill_hard_reg regno=7 global=1` on both reload passes and three pseudos
+(119/89/86) left unallocated by global alloc.  s20 frontier item 2's "if no reload insn exists,
+record a class kill of the reload creation site" branch does not apply — the site is live.
+
+**H52 — KILLED (class, predicate `tools/gcc-2.7.2/sched.c:2464`).  sched2 reproduces sched1's
+half-1 emission order as an identity, so it cannot be the pass that decides the four-insn
+rotation.**  Probe: the pass-2 trace of block 6.  The window is picked in strict descending-LUID
+order (63:234 64:231 65:228 66:242 67:205 68:240 69:211) with no `SELBEST` deviation anywhere in
+the window; sched2's LUIDs come from a linear scan of the post-sched1 chain (`sched.c:2198`) and
+the last rank term is the LUID tie-break (`sched.c:2464`), so the pass can only preserve the
+incoming order in a group that is uniform in priority, unit and class.  Measured on HEAD main @
+764b2eb1, candidate.c chassis (control re-measured 6/176), no FAKE constructs present.
+
+**H53 — KILLED (class, predicate `tools/gcc-2.7.2/sched.c:2627`).  Delaying the two argument-setup
+insns past the decisive clock cannot leave the a2 base as the sole candidate, because the base is
+released strictly later than they are.**  Probe: the measured dependence lists — dependents(240) =
+dependents(242) = {244}, dependents(211) = {225}, dependents(225) = {237,244}, dependents(237) =
+{244} — plus the release rule at `sched.c:2622-2650`, where a predecessor enters the ready list at
+`clock + insn_cost` only once its `INSN_REF_COUNT` reaches 0.  Measured: ready(240) = ready(242) =
+clock(244)+1 = 52 and ready(211) = clock(225)+1 = 55.  Structurally ready(base) >= clock(call)+2
+in any chassis that stores the a2 offset into the struct before the call (the store is a
+predecessor of the call), so the base can never be ready at a clock where the argument moves are
+not.  Measured on HEAD main @ 764b2eb1, candidate.c chassis (control re-measured 6/176), no FAKE
+constructs present.
+
+**H54 — KILLED (instance).  s12's third-argument call form creates no argument-move insn at all,
+so it cannot lift the base's LUID above the a0/a1 moves.**  Probe: full `-da` + SCHEDDBG dump of
+`rejected/three-argument-call-reading-inert-scores-6.c`.  Result: RTL identical to the control UID
+for UID and LUID for LUID (205..258 at LUIDs 28..49) and clock for clock (64:242 65:205 66:240
+67:211); score re-measures 6/176.  The a2 argument move is coalesced before sched1 because the
+a2_offset pseudo is already seated in `$a2`.  Measured on HEAD main @ 764b2eb1, candidate.c
+chassis, no FAKE constructs present.
+
+### s21 frontier
+1. LUID is the only rank term left, and `expand_call` is the only insn-creation site that emits
+   after the two argument moves.  The untried spelling: a call form in which the a2 BASE value
+   (not the accumulated offset) is the third argument AND is not CSE-shared with the value stored
+   to `s.zero1C`, so that `expand_call` must emit `addiu a2,s4,-K` itself at LUID 44.  Gate every
+   variant on build_insns == 176 first; H54 shows a CSE-shared third argument is a complete no-op.
+2. The half-1 store group (228/231/234, all pri 3 / unit 0) is what occupies clocks 61-63 and it
+   is ordered among itself by descending LUID.  Which struct field carries which value therefore
+   decides which store sits at clock 63 and hence which insn faces the base at 64.  Sweep the
+   assignment order of `s.zero10` / `s.one14` / `s.ret` (and the position of the `s.zero1C` store)
+   as a group-membership axis rather than as a statement-placement axis — s6 closed statement
+   ORDER of the a2 base, not the store group's LUID assignment.
+3. (carried) The object model of D_8009B2E0 / D_8009B388-B390 is still the last untried
+   non-spelling axis; candidate.c still carries the declaration pun `p_b2e0 = (u8 *)&D_8009B2E0`.
+
+## [s21] Reload's insn-creation site is reachable on func_8005D554: reload creates three insns and globally spills $a3, but all three created insns sit in the loop pre-header and in loop half 2, none in the half-1 window.
+- mechanism: global_alloc leaves pseudos 119 (base_offset), 89 and 86 with hardreg=-1; reload then runs spill_hard_reg regno=7 class=1 global=1 on both passes and emits a spill store, a split-store half and a reload load. Diffing the func_8005D554 insn chain of text1b.sched against text1b.greg exposes the created UIDs directly.
+- probe: -da dumps of src/text1b.c with the instrumented cc1 under BB2_RELOAD_DEBUG=1 and BB2_ALLOC_DEBUG=1 (tmp/grind/func_8005D554/s21/dumps/ctrl), then a UID set-difference between the .sched and .greg chains of the function (s21/uids.py, output s21/reload_created_insns.txt).
+- result: NEW uids 398 (set (mem sp+64) v0) in the pre-header, 401 (set (mem/s sp+20) a3) in half 2, 404 (set a3 (mem sp+64)) in half 2; uid 133 deleted. RELOADDBG: needs GR_REGS n=1 on both passes, new_spill_reg regno=7, spill_hard_reg global=1. ALLOCDBG: pseudo 119 is allocno order 1 with pri=20000 and still gets hardreg=-1. s20 frontier item 2's 'no reload insn exists' branch is refuted; the site is live but outside the contested window.
+- verdict: CONFIRMED
+
+## [s21] On the half-1 window sched2 picks every insn in strict descending-LUID order with no SELBEST deviation, reproducing the sched1 emission order as an identity, so sched2 is not the pass that decides the four-insn rotation.
+- mechanism: sched2 assigns INSN_LUID by a linear scan of the post-sched1 insn chain (sched.c:2198). Within a group uniform in priority, function unit and last-scheduled class, rank_for_schedule falls through to the INSN_LUID tie-break (sched.c:2464), which re-derives the incoming chain order exactly.
+- probe: Pass-2 SCHEDDBG trace of block 6 in tmp/grind/func_8005D554/s21/dumps/ctrl/sched.log, extracted to s21/ctrl_sched2_block6.txt.
+- result: PICK 63:234(luid31) 64:231(30) 65:228(29) 66:242(28) 67:205(27) 68:240(26) 69:211(25) - descending LUID throughout. The only SELBEST lines in sched2's block 6 are clocks 45/46/47 (half-2 stores 249/252/255) and clock 93 (insn 140); none is in the half-1 window. For sched2 to emit the base after the argument moves, the chain entering sched2 would have to already carry that order.
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 764b2eb1, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.
+- predicate_cite: tools/gcc-2.7.2/sched.c:2464
+
+## [s21] Delaying the two call-argument setup insns past clock 64 cannot leave the a2 base as the sole pri-3 candidate, because in every chassis that stores the a2 offset into the struct before the call the base is released into the ready list strictly later than those two insns are.
+- mechanism: schedule_insn releases a predecessor into the ready list at clock + insn_cost only once its INSN_REF_COUNT reaches zero (sched.c:2622-2650, gate at sched.c:2627). The measured dependence lists give dependents(240)=dependents(242)={244} and dependents(211)={225}, dependents(225)={237,244}, dependents(237)={244}, so ready(arg moves)=clock(call)+1 while ready(base)>=clock(call)+2 even with the accumulate removed, because the s.zero1C store is itself a predecessor of the call.
+- probe: Dependence lists and PICK clocks of sched1 block 6 for the control chassis (tmp/grind/func_8005D554/s21/ctrl_sched1_block6.txt), read against the release loop in tools/gcc-2.7.2/sched.c.
+- result: Measured clock(244)=51, ready(240)=ready(242)=52, clock(237)=52, clock(225)=54, ready(211)=55. The base is released three cycles after the argument moves, so at every clock at which 240/242 are not yet ready the base is not ready either. s20 frontier item 1's mechanism is measured out in both directions (delaying the argument moves, and delaying the base).
+- verdict: KILLED
+- kill_scope: class
+- measured_on: HEAD main @ 764b2eb1, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.
+- predicate_cite: tools/gcc-2.7.2/sched.c:2627
+
+## [s21] s12's third-argument call form, whose third argument is the already-computed a2_offset, creates no argument-move insn at all and leaves the sched1 graph identical to the control UID for UID and LUID for LUID.
+- mechanism: The a2_offset pseudo is already seated in $a2 by local alloc, so expand_call's move into the third argument register is a self-move and is coalesced away before sched1; no insn with a LUID above the a0/a1 argument moves is created.
+- probe: Full -da + SCHEDDBG dump of memory/grind/func_8005D554/rejected/three-argument-call-reading-inert-scores-6.c (tmp/grind/func_8005D554/s21/dumps/t3) plus a re-measure in the s21 reaudit sweep.
+- result: Score re-measures 6/176. Nodes 205..258 carry LUIDs 28..49 exactly as in the control, and the window picks are identical: 61:234 62:231 63:228 64:242 65:205 66:240 67:211. Passing an already-in-a2 value as a third argument is a no-op at the RTL level, not merely at the byte level.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ 764b2eb1, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; no FAKE constructs present.
