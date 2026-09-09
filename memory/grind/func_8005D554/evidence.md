@@ -1653,3 +1653,122 @@ and 41/176 on the base-last chain.
 - [s15] Staging the multiply-shift through the dead existing local a0_offset adds no instruction (176) and scores 23 whether the base statement precedes or follows it - an independent replication of s6's statement-placement closure (sched.c:2464).
 
 - [s15] A second distinct spelling sits exactly at the floor: a2_offset = (s32)r4; a2_offset -= K; a2_offset += ((u32)(D_800A3418 * M) >> 0xF); measures 6/176, byte-identical to the control.
+
+## s16 (enumerate, 2026-09-09, HEAD main @ 07f3c383)
+
+Floor RE-MEASURED at 6/176 on candidate.c. 44 new spellings measured in two sweeps.
+Artifacts: tmp/grind/func_8005D554/s16/{gen.py,genB.py,dis.sh}, enumA/ (36 forms),
+enumB/ (8 forms), reaudit/ (3 banked forms), sweepA.json, sweepB.json, final/.
+
+### Kill re-audit (mandated, floor flat)
+`tools/fake_ablate.py --func func_8005D554 --file text1b --candidate
+memory/grind/func_8005D554/rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c`
+prints "no FAKE-annotated constructs found ...; nothing to ablate". Re-measured on this
+chassis: that form 6/176, a2-base-built-copy-sub-acc 6/176,
+a2-base-last-association-combine-moves-const-off-s4 15/176 - all exactly as banked. This
+is the seventh consecutive session in which the re-audit passes.
+
+### Round A - the base-carrier axis (36 forms, sweepA.json)
+Shapes: S0 control; S1 base-last plain; S2 base-last via the dead existing local a0_offset;
+S3 same with the operands of the final add swapped; S4 base-first via a0_offset; S5 the sum
+folded into the s.zero1C store; S6 via v0; S7 via v3; S8 stores hoisted above the whole chain;
+S9 the base staged into ret after the s.ret store; S10 copy-then-subtract into a0_offset;
+S11 a0_offset carries the base and a2_offset is accumulated onto it; S12 cast-free base.
+Each crossed with {both halves, half 1 only, half 2 only}.
+
+Histogram: 6 (1 form), 8 (2), 12 (1), 15 (3), 16 (8), 19 (12), 21 (2), 22 (2), 26 (2),
+33 (1), 37 (2), 43 (2). Nothing below 6. Every form except the four single-half v0/v3
+borrows builds exactly 176 instructions.
+
+Disassembly (tmp/sandbox/func_8005D554/text1b.o, half-1 window):
+  control  S0_both  0x3594 addiu a2,s4,-12 / 0x3598 addiu a0,sp,16 / 0x359c lw v1,0(gp) /
+                    0x35a0 move a1,zero / 0x35a4-0x35ac the three sw
+  S2_both  16/176   IDENTICAL window - the constant stays on s4 (addiu a2,s4,-12 at 0x3594)
+                    and the base is still first. The 10 extra points come from the a0_offset
+                    chain being reseated (0x3564 addiu a2,s5,-25 instead of addiu a0,s5,-25)
+                    and the final add becoming addu v0,v0,a2 instead of addu a2,a2,v0.
+  S6_both  15/176   window byte-identical to the control at 0x3564-0x35bc; the 15 points are
+                    entirely outside the window (v0's pre-loop live range changes allocation).
+  S11_both 12/176   best new form; window again the control's rotation at 0x3594.
+  S1_both  15/176   (s15's form, re-measured) base at 0x35C4 as addiu v0,v0,-12 with the
+                    constant folded onto the multiply result.
+
+The decisive comparison is S1 vs S2. s15 recorded "no spelling produced both the late base
+instruction and the constant attached to s4" and left that as an open frontier. It is now
+closed, and closed in the negative direction: the late emission in S1 was never a scheduling
+result. combine folds the constant onto the multiply result, which makes the surviving
+addiu a data DEPENDENT of the seven-insn multiply-shift chain, and dependence alone drags it
+past the argument setup. Blocking the fold - which a multi-set carrier does, because combine
+will not substitute through a pseudo with REG_N_SETS above 1 - restores an independent insn
+whose only predecessor is the jal anti-dependence, and it goes straight back to slot 1. The
+two properties are one axis, not two.
+
+### Round B - the LICM escape for a single-set carrier (8 forms, sweepB.json)
+s13 established that a fresh single-set carrier for the invariant (s32)r4 - K is a loop.c
+movable and is hoisted; s14 read loop.c:695-700's three-way OR and failed to falsify
+disjunct C on four forms. Reading reg_in_basic_block_p end to end (loop.c:1062-1098) gives
+two falsifiers s14 did not use:
+  - loop.c:1068  `if (regno_first_uid[regno] != INSN_UID (insn)) return 0;` - ANY earlier
+    reference to the carrier in the function falsifies C outright;
+  - loop.c:1093  the forward scan returns 0 as soon as it reaches a CODE_LABEL or BARRIER
+    before the carrier's last recorded use.
+And maybe_never (which falsifies A) is set at loop.c:930 by the first CODE_LABEL or
+JUMP_INSN the loop scan passes.
+
+Half 2's p0 selection is the loop body's only real conditional. Splitting it into two ifs
+around the base's set puts one label on each side:
+    odd = D_800A3418 & 1;
+    if (odd) s.p0 = (void *)((u8 *)base_offset + 0xC);
+    ... two rand calls and the a0_offset chain ...
+    base2 = (s32)r4 - 0x19;
+    if (!odd) s.p0 = (void *)base_offset;
+    a2_offset = base2 + ((u32)(D_800A3418 * 0x32) >> 0xF);
+This is ordinary, semantics-preserving C (odd is read before either rand call perturbs
+D_800A3418) and it WORKS as a LICM escape: base2 is single-set and is not hoisted. The
+disassembly shows addiu a0,s5,-25 at 0x365c - inside the loop, in the delay slot of the
+second branch.
+
+But the escape is self-defeating. schedule_insns runs per basic block (sched.c:4937), and
+the two labels put the base and its multiply chain in a region that is not the call's block.
+The half-2 window collapses to 0x367c addu a2,a0,v0 / 0x3680 addiu a0,sp,16 / 0x3684 move
+a1,zero / 0x3688-0x3690 the three sw - the base is already spent before the argument setup,
+which is the side the control already has (s11 item 3 reached the same wall from the
+basic-block-split direction). 66/178.
+
+Carrier identity is again invisible: the identical shape with the multi-set a0_offset as the
+carrier (B6) scores exactly 66/178 too, so whatever LAUNCH boost (sched.c:2505/2584) the
+single-set carrier earns is not observable through a block boundary.
+
+Controls in the same sweep:
+  B3 base2 before both ifs (C false, A true)      38/179
+  B4 base2 after both ifs (A false, C true)       38/179
+  B5 base2 after a plain if/else join             38/179
+  B7 two ifs, control a2 chain                    53/177
+  B8 plain if/else, control a2 chain              53/177
+B7 == B8 says the split-into-two-ifs spelling is free relative to the conditional itself;
+the conditional chassis costs exactly one instruction, reproducing s11 item 3's 53/177.
+
+The other C-falsifier (loop.c:1068, an earlier reference to the carrier) would require a
+single-set local to be READ before it is written on the first iteration. That is not a
+semantics-preserving spelling of this function, so it is not an available route.
+
+### What s16 leaves standing
+The clock-64 pick is unchanged and all four of its terms remain closed (s9, s10, s12, s13).
+What s16 removes is the last two candidate levers that did not go through that pick:
+combine-reassociation placement (round A) and the single-set LAUNCH boost (round B). Both
+are now measured, and both are structurally incompatible with keeping the base in the call's
+basic block with the constant on s4.
+
+- [s16] Floor re-measured 6/176 on candidate.c at HEAD main @ 07f3c383; candidate.c compiles cleanly after the s16 header append (re-swept at 6/176 from tmp/grind/func_8005D554/s16/final/).
+
+- [s16] 44 new spellings measured this session: 36 in tmp/grind/func_8005D554/s16/enumA (sweepA.json) and 8 in s16/enumB (sweepB.json). Round-A histogram: 6 (1), 8 (2), 12 (1), 15 (3), 16 (8), 19 (12), 21 (2), 22 (2), 26 (2), 33 (1), 37 (2), 43 (2). Nothing scores below 6 and every round-A form except the four single-half v0/v3 borrows builds exactly 176 instructions.
+
+- [s16] Target window for reference (asm/funcs/func_8005D554.s 4DEB4-4DECC): addiu a0,sp,0x10 / addu a1,zero,zero / lw v1,%gp_rel(D_800A3418) / addiu a2,s4,-0xC / sw zero / sw s6 / sw s1. Control emits addiu a2,s4,-12 / addiu a0,sp,16 / lw v1 / move a1,zero / the three sw at 0x3594-0x35ac.
+
+- [s16] S2_both (base staged through the dead multi-set a0_offset, base statement after the multiply chain) is the first form measured in this ledger that keeps the target's operand form addiu a2,s4,-12 while the base sits in window slot 1 - proving the constant-on-s4 property and the late-emission property are the two ends of one axis, not two independent axes.
+
+- [s16] S6_both (v0 borrow) emits the half-1 window byte-identically to the control at 0x3564-0x35bc yet scores 15/176, so the v0/v3 borrow is a pure register-pressure tax paid outside the window.
+
+- [s16] reg_in_basic_block_p (loop.c:1062-1098) has two falsifiers s14 did not use: regno_first_uid mismatch at loop.c:1068 and a CODE_LABEL/BARRIER reached between set and last use at loop.c:1093. The second is reachable in ordinary C by splitting half 2's p0 if/else into two ifs around the base's set, and it does defeat the LICM hoist for a single-set carrier - measured, disassembled, 66/178.
+
+- [s16] The conditional chassis for half 2's p0 selection costs exactly one instruction whether spelled as an if/else (B8, 53/177) or as two separate ifs (B7, 53/177), independently reproducing s11 item 3.

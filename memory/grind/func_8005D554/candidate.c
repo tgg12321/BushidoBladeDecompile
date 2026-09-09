@@ -285,6 +285,59 @@
  *   control, so the copy/subtract pair is folded back by combine.
  * Do NOT re-sweep the a2 expression's naming space, the base-last association, or multiply-shift
  * staging through an existing local.  See hypotheses.md s15 and evidence.md s15.
+ *
+ * s16 (enumerate, 2026-09-09, HEAD main @ 07f3c383): floor RE-MEASURED at 6/176 on this body; the
+ * kill re-audit passes for a SEVENTH session -- fake_ablate finds no FAKE-annotated construct in
+ * rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c, and that form plus
+ * rejected/a2-base-built-copy-sub-acc-byte-inert-scores-6.c and
+ * rejected/a2-base-last-association-combine-moves-const-off-s4-scores-15.c all reproduce their
+ * banked scores exactly (6/176, 6/176, 15/176).  44 further spellings measured in two sweeps
+ * (tmp/grind/func_8005D554/s16/enumA 36 forms, histogram s16/sweepA.json; s16/enumB 8 forms,
+ * s16/sweepB.json).  Score histogram round A: 6 (1), 8 (2), 12 (1), 15 (3), 16 (8), 19 (12),
+ * 21 (2), 22 (2), 26 (2), 33 (1), 37 (2), 43 (2).  Nothing below 6.  Three results:
+ *   (1) THE CARRIER AXIS SEPARATES THE TWO PROPERTIES s15 COULD NOT CO-PRODUCE, AND STILL LOSES.
+ *       s15 showed the base-last association emits the base late but lets combine move the
+ *       constant off s4.  Giving the base its own MULTI-SET carrier -- the dead existing local
+ *       a0_offset, reused after its s.zero18 store -- blocks that reassociation, because combine
+ *       will not substitute through a pseudo with REG_N_SETS above 1: the emitted insn is
+ *       addiu a2,s4,-12 with the constant on s4, exactly the target's operand form, and the build
+ *       stays at 176 instructions with no LICM hoist (a0_offset has four sets, so it is not a
+ *       loop.c movable).  But the base is STILL emitted in window slot 1, ahead of
+ *       addiu a0,sp,0x10 / lw / move a1 -- disassembled at 0x3594 in S2_both, byte-for-byte the
+ *       control rotation.  So base-last emission in s15 was never a scheduling win at all; it was
+ *       pure dependence on the multiply chain, which is exactly what the reassociation created.
+ *       Across all 36 round-A forms (carrier in {none, a0_offset, v0, v3, ret} x association in
+ *       {base-first, base-last, sum-folded-into-the-store, carrier-accumulates} x base statement
+ *       position x half-1-only / half-2-only / both) NO form emitted addiu <reg>,s4,-K after the
+ *       argument setup while keeping 176 instructions.  Best of the new forms: 12/176
+ *       (a0_offset carries the base and a2_offset is accumulated onto it, S11_both).
+ *   (2) The v0 borrow is a pure register-pressure tax, not a codegen lever: S6_both emits the
+ *       half-1 window byte-identically to the control at 0x3564-0x35bc yet scores 15, and the
+ *       single-half v0/v3 borrows cost an instruction each (43/178, 37/178).
+ *   (3) THE LICM ESCAPE FOR A SINGLE-SET BASE CARRIER IS REACHABLE, AND IT IS SELF-DEFEATING.
+ *       loop.c:695-700 is a three-way OR and s14 could not falsify disjunct C.  Reading
+ *       reg_in_basic_block_p end to end (loop.c:1062-1098) gives two falsifiers s14 did not use:
+ *       an earlier reference to the carrier anywhere in the function (loop.c:1068), and a
+ *       CODE_LABEL reached between the set and the carrier's last use (loop.c:1093).  Half 2's
+ *       p0 selection is the loop's only real conditional; SPLITTING it into two ifs around the
+ *       base's set (odd = D_800A3418 and 1; if (odd) s.p0 = ...; ... base2 = (s32)r4 - 0x19;
+ *       if (!odd) s.p0 = ...; a2_offset = base2 + m;) puts one label before the set, which
+ *       falsifies A through maybe_never (loop.c:930), and one label between the set and its use,
+ *       which falsifies C.  IT WORKS: base2 is single-set and is NOT hoisted -- the disassembly
+ *       shows addiu a0,s5,-25 at 0x365c, inside the loop, in the second branch's delay slot.
+ *       But the same two labels split the loop body into separate basic blocks, and
+ *       schedule_insns is per-block (sched.c:4937), so the base and the multiply chain end up in
+ *       a predecessor region of the call's block: the emitted window collapses to
+ *       [addu a2,a0,v0][addiu a0,sp,0x10][move a1,zero][sw][sw][sw] at 0x367c-0x3690 with the
+ *       base already spent.  66/178.  The carrier IDENTITY is invisible here too -- the same
+ *       shape with the multi-set a0_offset scores the identical 66/178.  Falsifying C by the
+ *       other route (an earlier USE of the carrier in the loop, loop.c:1068 plus
+ *       loop_reg_used_before_p) would need a single-set local to be READ before it is written on
+ *       the first iteration, which is not a semantics-preserving spelling of this function.
+ *       The plain conditional chassis costs exactly one instruction whether it is spelled as an
+ *       if/else or as two ifs (both 53/177), reproducing s11 item 3.
+ * Do NOT re-sweep the base-carrier axis (identity, association, position), the v0/v3 borrow, or
+ * the split-p0-if LICM escape.  See hypotheses.md s16 and evidence.md s16.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);

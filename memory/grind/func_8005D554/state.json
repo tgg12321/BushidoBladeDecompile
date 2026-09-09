@@ -1,7 +1,7 @@
 {
  "func": "func_8005D554",
  "file": "text1b",
- "session_count": 15,
+ "session_count": 16,
  "current_modality": "enumerate",
  "floor_history": [
   {
@@ -93,23 +93,29 @@
    "floor": 6,
    "modality": "enumerate",
    "headline": "61 spellings swept (best 6, 2 at the floor): the a2 expression's naming space is closed by LICM as a class (44/48 forms hoist and build 153 insns), and the base-last association is the first form in 1"
+  },
+  {
+   "session": 16,
+   "floor": 6,
+   "modality": "enumerate",
+   "headline": "44 spellings swept (best 6): the a2-base carrier axis separates s15's two properties and still emits the base first, and the LICM escape for a single-set carrier is reachable but forces a basic-block "
   }
  ],
  "frontier": [
   {
-   "hypothesis": "The target's window needs BOTH halves of what s15 measured separately: the a2 base emitted after the multiply chain (base-last, which wins the target's slot 1) AND the constant still attached to s4. The only thing separating them is combine's reassociation of (plus m (plus r4 -K)) into (plus (plus m -K) r4), which fires because the r4 - K value has exactly one use.",
-   "mechanism": "combine.c folds a constant across a nested plus when the inner sum is single-use; a second, genuinely consumed use of the same r4 - K value in the same half would leave the inner sum multi-use and force it to be materialised on its own, in its late position, as addiu <dest>,s4,-K. This is the one term the 61-form sweep never varied - every form used the base value exactly once.",
-   "next_probe": "Enumerate spellings in which half 1's (s32)r4 - 0xC value has a second real consumer inside the same half (for example the half-2 base spelled as that value minus 0xD, or the s.zero1C store reading it twice through the accumulate), combined with the base-last association; gate each variant on build_insns == 176, and for every variant that stays at 176 disassemble the 0x3594 window and check specifically for addiu <reg>,s4,-0xC emitted AFTER addiu a0,sp,0x10. s13 already measured the cross-half carrier at 31/178, so the second use must live inside the half, not span the third rand call."
+   "hypothesis": "The INSN_PRIORITY route is open again and has never been measured at 176 instructions. s12 retired priority levers on an overshoot argument that s14 refuted (the target picks the three struct stores at clocks 61-63 and the base at 64, and the banked score-0 body boosts the base to max_priority, picks it at 61, and still reaches the target because a later pass completes the rotation). Every priority attempt so far (s8's u32 rb[2] load producer, 32/178) paid extra instructions.",
+   "mechanism": "priority(insn) = max over LOG_LINKS of priority(pred) + insn_cost - 1, and insn_cost is 2 exactly for a load's data consumer (sched.c:1497). The four contested window insns all draw priority 3 from the same predecessor, the third jal rand (s15 PRIODBG capture). Making the a2 base a consumer of an insn that is already in the block at zero added cost is the only way to reach 4 without an instruction, and the base must stay in the CALL's basic block, which round B shows any label-based route forfeits.",
+   "next_probe": "Enumerate spellings in which the base's addiu takes an operand that is already a data consumer of the in-block gp load or of the third rand's return value while remaining arithmetically equal to (s32)r4 - K - for example rewriting r4's pre-loop definition so that the loop reads it through a value the window already produces. Gate every variant on build_insns == 176, then capture BB2_PRIO_DEBUG=1 for each survivor and check whether insn 211's contrib line changes from cost=1 to cost=2, and disassemble the 0x3594 window for the a0,a1,lw,base order."
   },
   {
-   "hypothesis": "The a2 base can reach INSN_PRIORITY 4 without adding an instruction only by becoming a data consumer of the in-block gp load, and the one value in the window that is both loaded and semantically usable in the base is D_800A3418 itself - so a spelling in which the base's addiu takes a loaded operand and the multiply chain takes the invariant one may swap the two chains' depths at zero instruction cost.",
-   "mechanism": "priority(insn) = max over LOG_LINKS of priority(pred) + insn_cost - 1, and insn_cost is 2 exactly for a load's data consumer (sched.c:1497), which is why insns 206/208 reach 4 while 211 stays at 3. Making 211 a consumer of 205 lifts it to 4 and it then outranks 240/242 on the first rank_for_schedule criterion, before the class and LUID terms are ever reached.",
-   "next_probe": "Enumerate re-associations of a2_offset = (s32)r4 - K + ((u32)(D_800A3418 * M) >> 0xF) in which the addiu that survives combine reads the loaded D_800A3418-derived value rather than s4 - and check each against the target's operand order at 4DEC0/4DEE8 - then capture BB2_PRIO_DEBUG=1 for any variant that stays at 176 and confirm whether insn 211's contrib line changes from cost=1 to cost=2. Note s12's overshoot argument is retired by s14, so a priority-4 base is not disqualified in advance."
+   "hypothesis": "count_loop_regs_set marks a reg may_not_move (loop.c:3038-3043) when it is set in two different basic blocks inside the loop or when it is used between two sets in the same block, and scan_loop then skips the insn entirely at loop.c:649 - a hoist escape that does NOT require a label between the set and its use, unlike the loop.c:1093 route round B measured. The open question is whether any spelling reaches may_not_move while leaving reg_n_sets at 1 by sched1, which is birthing_insn_p's precondition (sched.c:2505).",
+   "mechanism": "may_not_move as written always accompanies at least two sets of the carrier, so reg_n_sets is 2 at sched1 unless a later pass erases one. combine erases a set only when it is a redundant copy - which is exactly the fresh multi-write carrier shape the Judge FAILed on 2026-09-08. The untested part is whether an EXISTING loop local (a0_offset, a2_offset, ret, i) already has, or can be given by ordinary restructuring rather than by an invented redundant store, a set that combine erases.",
+   "next_probe": "Instrument rather than guess: compile the control and the banked score-0 body with the instrumented cc1 (tools/gcc-2.7.2/cc1) under BB2_SCHED_DEBUG=1 and dump reg_n_sets for every loop local at sched1 entry, then enumerate ordinary-C restructurings of the existing locals (not invented stores) that raise a local's loop-time set count while leaving one set after combine. If no such restructuring exists without an invented redundant store, emit a ruling-request asking whether an EXISTING multi-set local qualifies under staged-value-reused-variable, since the Judge's constraint names only FRESH invented locals."
   },
   {
-   "hypothesis": "Because a per-half named local for ANY sub-expression of the a2 chain is LICM-hoisted (s15, 44/48 forms at 153 insns), while a2_offset itself survives only because it is written twice per half, the multi-set requirement is a property of the CARRIER, not of the expression - so an existing loop local that is already multi-set for its own real reasons could carry the base without inventing a carrier and without triggering the hoist.",
-   "mechanism": "loop.c:705 accepts a movable only when n_times_set for the destination is 1; a local that is genuinely written twice per iteration for its own purpose is never a movable, and after combine collapses its redundant sets it can still reach sched1 with reg_n_sets 1, which is the birthing_insn_p (sched.c:2505) precondition for the LAUNCH boost. The Judge's constraint bans INVENTED multi-write carriers, not existing ones.",
-   "next_probe": "Inventory the loop's existing multi-set locals (a0_offset, a2_offset, ret, i, and the loop-scope pointers) and enumerate, for each, a form in which the a2 base value is produced into that local at a point where the local's own live range has already ended within the same half - s13 measured the cross-rand-call cases at 30/178 and 31/178, so restrict the enumeration to intra-half positions after the local's last real read, gate on build_insns == 176, and disassemble every 176-instruction survivor."
+   "hypothesis": "The object model of D_8009B2E0 / D_8009B388 is the last untried non-spelling axis. The declaration-pun scan flags candidate.c's p_b2e0 = (u8 *)&D_8009B2E0; and s7 measured a TU-local struct pointer at 10/176 (multiset preserved) and 43/172 (full), but a HEADER-CANONICAL aggregate declaration - the sanctioned fix at the declaration site - has never been measured on this function.",
+   "mechanism": "The a2 base is addiu a2,s4,-K where s4 holds the loop-invariant r4. Which callee-saved register holds which loop base is decided by allocno priority, which is driven by reg_n_refs, and a different declared object model changes the number of references to the pointer locals - and therefore the seats - without changing any statement in the a2 chain. s7's TU-local form scored 10/176, the closest any non-a2 axis has come.",
+   "next_probe": "Enumerate header-canonical aggregate declarations for the 0x3C-stride particle-template table at D_8009B2E0 and the pair D_8009B388/D_8009B390 (aggregate-merge family prong (a) needs base-register or stride evidence, which the 0x3C stride and the p_b2ec + stride addressing supply), applied via an integration handoff for the header edit, and sweep the loop's pointer-local spellings against each. Gate on build_insns == 176 and disassemble the 0x3594 window for every survivor."
   }
  ],
  "judge_constraints": [
@@ -117,22 +123,6 @@
  ],
  "banned_constructs": [],
  "kills": [
-  {
-   "session": 1,
-   "statement": "Merging a0_offset and a2_offset into one local on the s1 candidate scores 12",
-   "kill_scope": "instance",
-   "measured_on": "s1 candidate chassis, no FAKE constructs",
-   "predicate_cite": "",
-   "result": "12"
-  },
-  {
-   "session": 2,
-   "statement": "No C spelling can make the a2-site 'a2 = r4 - K' insn carry an INSN_LUID greater than the 'a1 = 0' arg-load's, because expand_call emits nothing between load_register_parameters and the call except em",
-   "kill_scope": "class",
-   "measured_on": "s1/s2 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs present",
-   "predicate_cite": "tools/gcc-2.7.2/expr.c:8641",
-   "result": "Frontier item F1 is retired. Additionally the arithmetic forbids the queued-post-decrement shape independently: the two "
-  },
   {
    "session": 2,
    "statement": "On the s2 chassis the three measured spellings that give the r4 - K value its own once-written carrier - per-site fresh locals feeding an accumulator (v5_fresh_singleset), per-site fresh locals whose ",
@@ -596,6 +586,22 @@
    "measured_on": "HEAD main @ 36291a08, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
    "predicate_cite": "",
    "result": "32/176 and 41/176. Banked at rejected/zero10-one14-ret-stores-hoisted-above-a2-chain-scores-32.c"
+  },
+  {
+   "session": 16,
+   "statement": "Staging the a2 base through a MULTI-SET existing local (the dead a0_offset, or v0, or v3, or ret) keeps addiu a2,s4,-K with the constant on s4 at 176 instructions but still emits the base in window sl",
+   "kill_scope": "instance",
+   "measured_on": "HEAD main @ 07f3c383, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "",
+   "result": "Histogram 6 (1), 8 (2), 12 (1), 15 (3), 16 (8), 19 (12), 21 (2), 22 (2), 26 (2), 33 (1), 37 (2), 43 (2); nothing below 6"
+  },
+  {
+   "session": 16,
+   "statement": "Every C spelling that falsifies both loop.c guard disjuncts A and C for a single-set a2-base carrier places a CODE_LABEL between the carrier's set and its use, which puts the base outside the call's b",
+   "kill_scope": "class",
+   "measured_on": "HEAD main @ 07f3c383, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.",
+   "predicate_cite": "loop.c:1093",
+   "result": "B1 66/178 - the escape is REAL (base2 is single-set and is not hoisted; addiu a0,s5,-25 is emitted at 0x365c inside the "
   }
  ],
  "ladder_skip": 0,
