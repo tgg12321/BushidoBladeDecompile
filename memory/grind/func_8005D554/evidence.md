@@ -1772,3 +1772,89 @@ basic block with the constant on s4.
 - [s16] reg_in_basic_block_p (loop.c:1062-1098) has two falsifiers s14 did not use: regno_first_uid mismatch at loop.c:1068 and a CODE_LABEL/BARRIER reached between set and last use at loop.c:1093. The second is reachable in ordinary C by splitting half 2's p0 if/else into two ifs around the base's set, and it does defeat the LICM hoist for a single-set carrier - measured, disassembled, 66/178.
 
 - [s16] The conditional chassis for half 2's p0 selection costs exactly one instruction whether spelled as an if/else (B8, 53/177) or as two separate ifs (B7, 53/177), independently reproducing s11 item 3.
+
+## s17 (enumerate, 2026-09-09, HEAD main @ fa84454f) — the existing-local borrow quadrant, swept
+
+Floor RE-MEASURED at 6/176 on candidate.c. Kill re-audit passes for an EIGHTH session:
+`fake_ablate.py` finds no FAKE-annotated construct in the closest banked forms, and both
+`rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c` (6/176) and s16's best
+`enumA/S11_both.c` (12/176) reproduce their banked scores exactly on this chassis
+(tmp/grind/func_8005D554/s17/reaudit.json).
+
+### What was swept and why
+
+The Judge's 2026-09-08 constraint bans a FRESH invented local written more than once as a
+staging carrier for the a2-site base `(s32)r4 - K`, and explicitly leaves the EXISTING-local
+borrow quadrant open. s13 and s16 had probed only two points of that quadrant (v0/v3 with the
+`carrier = ret` second write, 63/178 and 30-31/178). s17 swept the whole quadrant
+systematically, 66 complete spellings in two rounds, every one gated on `build_insns`:
+
+Round A (36 forms, tmp/grind/func_8005D554/s17/enumA, histogram s17/enumA.json) — the score-0
+body's shape reproduced with an EXISTING dead local in place of the fresh `nv`/`nw`:
+carrier pair in {(arg0,arg1), (arg1,arg0), (v0,v3), (v3,v0), (arg1,v3), (arg0,v0)} x
+combine-deletable second write in {`c = ret; s.ret = c;`, `c = c1; s.one14 = c;`,
+`c = 0; s.zero10 = c;`} x base-set position in {early (before the `s.zero18` store, i.e. the
+score-0 slot, spanning the third rand call), ctrl (the control slot, after the third rand)}.
+Score histogram: 21 (6 forms), 23 (3), 28 (4), 30 (3), 40 (2), 43 (2), 50 (4), 55 (2), 60 (1),
+61 (4), 63 (5). Nothing below 6.
+
+Round B (30 forms, s17/enumB, histogram s17/enumB.json) — base set pinned at the CONTROL slot
+(no live range across the third rand) while varying how the value is consumed and where the
+second write sits: carrier pair in {(v0,v3), (arg0,arg1)} x consumption shape in
+{copy+accumulate, single sum `a2_offset = c + m`, multiply-first `a2_offset = m; a2_offset += c`,
+direct store `s.zero1C = c + m`, carrier self-accumulate `c += m; a2_offset = c`} x second-write
+position in {after the a2 use (`s.ret`), before it (`s.c20`), before it (`s.p1`)}.
+Score histogram: 19 (2), 21 (13), 26 (2), 28 (9), 40 (4). Nothing below 6.
+
+### The three results
+
+1. THE EARLY-BIRTH SLOT COSTS AT LEAST +2 INSTRUCTIONS FOR EVERY EXISTING LOCAL, 18/18 FORMS.
+   Every round-A `early` variant builds 178 or 179 instructions (scores 43-63) — never 176.
+   The birthing_insn_p slot (sched.c:2505) requires the carrier's own SET to survive combine as
+   the base insn, which requires the set to sit before the third `rand` call; the value then
+   lives across that call and the allocator pays for it. This generalises s13's "+2 for every
+   existing loop local" from the two loop locals it measured (a0_offset, a2_offset) to the two
+   parameters and the two preheader temporaries as well: arg0/arg1 pay +3 (179), v0/v3 pay +2
+   (178), mixed pairs pay +2 or +3. Banked:
+   rejected/param-borrow-early-birth-slot-costs-three-insns-scores-50.c.
+
+2. THE COMBINE-DELETABLE SECOND WRITE IS BYTE-INERT IN BOTH VALUE AND POSITION.
+   For a fixed carrier pair and base-set position, the `ret`, `one14` and `zero10` restages score
+   IDENTICALLY in every round-A cell (e.g. all three v0/v3 ctrl forms score 21/176; all three
+   arg1/v3 early forms score 55, 55, 60). Round B adds two EARLIER anchor positions (`s.c20`,
+   `s.p1`, both ahead of the a2 chain) and they too are inert (21/176 for every v0/v3
+   copyacc/sum/macc/direct form regardless of which of the three anchors carries the write).
+   So the second write is doing nothing here beyond raising `n_times_set` at loop.c time — its
+   value, its anchor field and its side of the a2 chain are all invisible to the emitted bytes.
+
+3. AT THE CONTROL SLOT THE CONSUMPTION SHAPE IS INERT TOO, AND THE BASE IS MERELY RESEATED.
+   All fifteen v0/v3 round-B forms score 19-21/176 and the disassembled half-1 window of
+   `B_..._ret_ctrl` at 0x3594 is `addiu a3,s4,-12 / addiu a0,sp,16 / lw v1,gp / move a1,zero` —
+   the CONTROL rotation verbatim, with the base merely reseated from a2 to a3. The mechanism is
+   visible in the shape: with the base set at the control slot, combine folds the copy into the
+   accumulate, so the surviving base insn's dest is `a2_offset` again (four sets) and
+   birthing_insn_p sees reg_n_sets != 1. Whether the value is spelled as a copy+accumulate, a
+   single sum, a multiply-first accumulate, a direct store into `s.zero1C`, or a carrier
+   self-accumulate makes no difference to the emitted bytes. Banked:
+   rejected/existing-local-borrow-ctrl-position-base-reseated-a3-scores-21.c and
+   rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c (the best new form, 19/176).
+
+### Reading of the quadrant after s17
+
+The existing-local borrow quadrant has exactly two cells and both are now measured across every
+carrier the function contains: put the carrier's set EARLY and you get the birth boost but pay
++2/+3 instructions; put it at the control slot and you stay at 176 instructions but combine
+erases the carrier and you get the control rotation plus a register-seat tax. No spelling of an
+existing-local borrow reaches 176 instructions AND a surviving single-set base insn.
+
+- [s17] Kill re-audit (eighth consecutive session): fake_ablate finds no FAKE-annotated construct in candidate.c or in rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c; that form re-measures 6/176 and s16's best form re-measures 12/176, both matching their banked scores (tmp/grind/func_8005D554/s17/reaudit.json).
+
+- [s17] 66 complete spellings measured this session; combined score histogram 19 (2), 21 (19), 23 (3), 26 (2), 28 (13), 30 (3), 40 (6), 43 (2), 50 (4), 55 (2), 60 (1), 61 (4), 63 (5). Nothing at or below the 6/176 floor.
+
+- [s17] The existing-local borrow quadrant has exactly two cells and both are now measured across every local this function contains that is dead inside the loop: the early slot buys the birthing_insn_p boost but costs +2 or +3 instructions (18/18 forms at 178/179), and the control slot keeps 176 instructions but lets combine erase the carrier, restoring the control rotation with only a register-seat tax.
+
+- [s17] Read end to end this session: rank_for_schedule (sched.c:2408-2464) and schedule_select (sched.c:2659-2730). schedule_select picks, within a maximal equal-priority group, the insn with the LARGEST potential_hazard; all four contested window insns are MIPS arith with insn_unit -1 and potential_hazard 0, so best_insn stays at index 0 and the ready list's sort order alone decides - which is why the residual reduces to INSN_PRIORITY, then last-scheduled class, then INSN_LUID, exactly as s9/s10 measured.
+
+- [s17] loop.c:695-760 read end to end: a candidate with n_times_set == 2 is STILL a movable when consec_sets_invariant_p holds for both sets, so a two-set carrier escapes LICM only because its second set is variant (the accumulate) or is the restage - the escape does not follow from the set count alone.
+
+- [s17] src/ and include/ are unmodified at end of session; candidate.c re-measures 6/176 with the new s17 header paragraph in place (tmp/grind/func_8005D554/s17/final.json).

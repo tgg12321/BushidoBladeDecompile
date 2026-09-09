@@ -2078,3 +2078,85 @@ movable.
 - kill_scope: class
 - measured_on: HEAD main @ 07f3c383, candidate.c chassis, control floor re-measured 6/176; no FAKE constructs present.
 - predicate_cite: loop.c:1093
+
+## s17 (enumerate, 2026-09-09, HEAD main @ fa84454f) — H40-H42
+
+Chassis: candidate.c, control re-measured 6/176. No FAKE constructs present in the control or in
+either of the two re-audited banked forms (fake_ablate reports none). 66 spellings measured.
+
+**H40 — KILLED (instance).** *Statement:* Borrowing an existing dead local (arg0, arg1, v0, v3,
+or a mixed pair) as the a2 base carrier in the score-0 body's early slot — the set placed before
+the `s.zero18` store, so it spans the third `rand` call — builds 178 or 179 instructions in all
+18 measured forms and scores 43-63, never 176.
+*Mechanism:* birthing_insn_p (sched.c:2505) only boosts an insn whose SET survives combine with
+`reg_n_sets == 1`; that requires the carrier's own set to be the base insn, which requires the
+set to precede the third rand. The resulting live range crosses a call, so the allocator adds
+the spill/copy pair that s13 measured for a0_offset and a2_offset. s17 extends that measurement
+from the two loop locals to the two parameters and the two preheader temporaries.
+*Measured on:* HEAD main @ fa84454f, candidate.c chassis, control 6/176, no FAKE constructs.
+*Probe:* tmp/grind/func_8005D554/s17/gen.py -> enumA (36 forms), swept with sweep_variants.
+
+**H41 — KILLED (instance).** *Statement:* The combine-deletable second write that raises the
+borrowed carrier's loop-time set count is byte-inert in this function in both its value and its
+position: the `ret`, `one14`, `zero10`, `c20` and `p1` restages all produce identical scores for
+a given carrier pair and base-set position, across 33 measured forms.
+*Mechanism:* the second write exists only to make loop.c's `n_times_set` 2 (loop.c:705) and is
+deleted by combine before sched1, so it contributes no insn and no dependence; only the carrier's
+identity and the base set's position reach the emitted bytes.
+*Measured on:* HEAD main @ fa84454f, candidate.c chassis, control 6/176, no FAKE constructs.
+*Probe:* enumA (3 second-write values x 12 carrier/position cells) + enumB (3 anchor positions x
+10 carrier/shape cells).
+
+**H42 — KILLED (instance).** *Statement:* With the borrowed carrier's base set at the control
+slot (after the third rand), the shape in which a2_offset consumes it — copy+accumulate, a single
+sum, a multiply-first accumulate, a direct store into `s.zero1C`, or a carrier self-accumulate —
+is byte-inert: all fifteen v0/v3 forms score 19-21 at 176 instructions and the half-1 window at
+0x3594 disassembles to the control rotation with the base reseated from a2 to a3.
+*Mechanism:* at the control slot combine folds the carrier copy into the accumulate, so the
+surviving base insn's dest is `a2_offset` again (four sets) and birthing_insn_p's
+`reg_n_sets == 1` precondition fails; what is left is a pure register-seat tax from extending the
+borrowed local's live range.
+*Measured on:* HEAD main @ fa84454f, candidate.c chassis, control 6/176, no FAKE constructs.
+*Probe:* tmp/grind/func_8005D554/s17/genB.py -> enumB (30 forms), plus the 0x3594 disassembly of
+B_v0v3_ret_ctrl (tmp/grind/func_8005D554/s17/dis.sh).
+
+### Frontier after s17
+
+R1. The carrier's second loop-time set has never been supplied by RESTRUCTURING an existing
+    multi-set local's own real chain — every form measured so far (fresh nv/nw, and all of s17's
+    borrows) adds a redundant restage statement. `a0_offset` already has two real sets per half
+    (`= (s32)r5 - K` and `+= m`); the untested question is whether an ordinary-C restructuring of
+    that chain can leave the a2 base as a2_offset's ONLY surviving set at sched1 without adding
+    a statement. Probe: enumerate rewrites of the a0/a2 chains as a single shared accumulator
+    whose per-half sets are all real values, gate on build_insns == 176, and capture
+    BB2_SCHED_DEBUG=1 ADJPRI lines for the base insn to see whether birth flips to 1.
+R2. (unchanged) Header-canonical aggregate declaration for the 0x3C-stride particle-template
+    table at D_8009B2E0 and the pair D_8009B388/D_8009B390 — the last untried non-spelling axis.
+    Needs an integration handoff for the header edit.
+R3. (unchanged) INSN_PRIORITY 4 for the base insn at 176 instructions: make the base a data
+    consumer of an insn already present in the block at zero added cost (sched.c:1497 gives
+    insn_cost 2 only to a load's consumer).
+
+## [s17] Borrowing an existing dead local (arg0, arg1, v0, v3, or a mixed pair) as the a2 base carrier in the score-0 body's early slot - the set placed before the s.zero18 store, so it spans the third rand call - builds 178 or 179 instructions in all 18 measured forms and scores 43-63, never 176.
+- mechanism: birthing_insn_p (sched.c:2505) only boosts an insn whose SET survives combine with reg_n_sets == 1; that requires the carrier's own set to BE the base insn, which requires the set to precede the third rand call. The resulting live range crosses a call, so the allocator adds the copy/spill pair s13 measured for a0_offset and a2_offset. s17 extends that measurement from the two loop locals to the two parameters and the two preheader temporaries, i.e. to every local this function contains that is dead inside the loop.
+- probe: tmp/grind/func_8005D554/s17/gen.py generated 36 forms (6 carrier pairs x 3 combine-deletable second writes x 2 base-set positions) into s17/enumA; swept with tools/sweep_variants.py, histogram s17/enumA.json. Every early-position cell built 178 or 179 instructions.
+- result: Round A histogram 21 (6 forms), 23 (3), 28 (4), 30 (3), 40 (2), 43 (2), 50 (4), 55 (2), 60 (1), 61 (4), 63 (5). All 18 early-position forms build 178/179. arg0/arg1 pay +3, v0/v3 pay +2, mixed pairs +2 or +3. Representative banked at rejected/param-borrow-early-birth-slot-costs-three-insns-scores-50.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ fa84454f, memory/grind/func_8005D554/candidate.c chassis, control re-measured 6/176; fake_ablate reports no FAKE-annotated construct in the control or in either re-audited banked form.
+
+## [s17] The combine-deletable second write that raises a borrowed carrier's loop-time set count is byte-inert in this function in both its value and its position: the ret, one14, zero10, c20 and p1 restages produce identical scores for a given carrier pair and base-set position across 33 measured forms.
+- mechanism: The second write exists only to make loop.c's n_times_set equal 2 so the invariant base is not accepted as a movable (loop.c:705), and combine deletes it before sched1 because it is a redundant copy into a store. It therefore contributes no instruction and no dependence edge; only the carrier's identity and the base set's position reach the emitted bytes.
+- probe: enumA crossed 3 second-write values over 12 carrier/position cells; enumB crossed 3 anchor positions (s.ret after the a2 chain, s.c20 and s.p1 both ahead of it) over 10 carrier/shape cells. Histograms s17/enumA.json and s17/enumB.json.
+- result: Identical scores within every cell - all three v0/v3 ctrl forms score 21/176; the arg0/arg1 ret_ctrl and zero10_ctrl forms both score 40/179; and the two earlier anchors reproduce the s.ret score exactly for every v0/v3 round-B shape (21/176).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ fa84454f, candidate.c chassis, control re-measured 6/176; no FAKE constructs present.
+
+## [s17] With the borrowed carrier's base set at the control slot (after the third rand), the shape in which a2_offset consumes it - copy+accumulate, a single sum, a multiply-first accumulate, a direct store into s.zero1C, or a carrier self-accumulate - is byte-inert: all fifteen v0/v3 forms score 19-21 at 176 instructions and the half-1 window at 0x3594 disassembles to the control rotation with the base reseated from a2 to a3.
+- mechanism: At the control slot combine folds the carrier copy into the accumulate, so the surviving base insn's dest is a2_offset again (four sets) and birthing_insn_p's reg_n_sets == 1 precondition fails. What remains is a pure register-seat tax from extending the borrowed local's live range into the loop.
+- probe: tmp/grind/func_8005D554/s17/genB.py generated 30 forms (2 carrier pairs x 5 consumption shapes x 3 second-write anchors) into s17/enumB; swept with sweep_variants.py (histogram s17/enumB.json) and the best cell disassembled with s17/dis.sh.
+- result: Round B histogram 19 (2 forms), 21 (13), 26 (2), 28 (9), 40 (4). Disassembly of B_v0v3_ret_ctrl at 0x3594: addiu a3,s4,-12 / addiu a0,sp,16 / lw v1,gp / move a1,zero - the control rotation verbatim. Best new form overall 19/176, banked at rejected/existing-local-borrow-selfacc-c20-restage-scores-19.c; the 21/176 representative at rejected/existing-local-borrow-ctrl-position-base-reseated-a3-scores-21.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD main @ fa84454f, candidate.c chassis, control re-measured 6/176; no FAKE constructs present.

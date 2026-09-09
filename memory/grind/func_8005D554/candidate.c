@@ -338,6 +338,35 @@
  *       if/else or as two ifs (both 53/177), reproducing s11 item 3.
  * Do NOT re-sweep the base-carrier axis (identity, association, position), the v0/v3 borrow, or
  * the split-p0-if LICM escape.  See hypotheses.md s16 and evidence.md s16.
+ *
+ * s17 (enumerate, 2026-09-09, HEAD main @ fa84454f): floor RE-MEASURED at 6/176 on this body; the
+ * kill re-audit passes for an EIGHTH session (fake_ablate finds no FAKE-annotated construct, and
+ * rejected/a2-statements-at-maximal-pre-call-birth-point-scores-6.c plus s16's best form both
+ * reproduce their banked scores, 6/176 and 12/176).  THE EXISTING-LOCAL BORROW QUADRANT -- the one
+ * the Judge left open when it FAILed the fresh nv/nw carrier -- IS NOW SWEPT AND FLAT.  66 further
+ * spellings measured (tmp/grind/func_8005D554/s17/enumA 36 forms, enumB 30 forms; histograms in
+ * s17/enumA.json and s17/enumB.json).  Round A histogram: 21 (6), 23 (3), 28 (4), 30 (3), 40 (2),
+ * 43 (2), 50 (4), 55 (2), 60 (1), 61 (4), 63 (5).  Round B: 19 (2), 21 (13), 26 (2), 28 (9),
+ * 40 (4).  Nothing below 6.  Three results:
+ *   (1) The score-0 body's EARLY-birth slot -- the base set placed before the s.zero18 store, so it
+ *       spans the third rand call -- costs at least +2 instructions for EVERY existing local:
+ *       18/18 forms build 178 or 179, never 176.  arg0/arg1 pay +3, v0/v3 pay +2.  That extends
+ *       s13's "+2 for every existing loop local" to the two parameters and the two preheader
+ *       temporaries, so the whole carrier population of this function is now measured.
+ *   (2) The combine-deletable second write is byte-inert in VALUE and in POSITION.  ret, one14,
+ *       zero10, c20 and p1 restages score identically in every carrier/position cell (33 forms).
+ *       It exists only to raise loop.c's n_times_set (loop.c:705) and combine erases it before
+ *       sched1, so it contributes no insn and no dependence.
+ *   (3) At the CONTROL slot (base set after the third rand) the consumption shape is inert too:
+ *       copy+accumulate, single sum, multiply-first accumulate, direct store into s.zero1C and
+ *       carrier self-accumulate all score 19-21 at 176 instructions, and the half-1 window at
+ *       0x3594 disassembles to the CONTROL rotation with the base merely reseated from a2 to a3.
+ *       Combine folds the carrier copy into the accumulate, so the surviving base insn's dest is
+ *       a2_offset again (four sets) and birthing_insn_p's reg_n_sets == 1 precondition fails.
+ * So the quadrant has exactly two cells and both are dead: early gives the birth boost and costs
+ * instructions; control keeps 176 instructions and loses the carrier to combine.  Do NOT re-sweep
+ * existing-local borrows, restage values/positions, or a2_offset consumption shapes.  See
+ * hypotheses.md H40-H42 and frontier R1-R3.
  */
 s32 func_8005D554(s32 arg0, s32 arg1) {
     extern s32 rand(void);
