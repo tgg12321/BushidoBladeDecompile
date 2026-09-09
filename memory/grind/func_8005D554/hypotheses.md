@@ -309,3 +309,110 @@ G3. **`rederive` modality: re-open the loop chassis itself.** Every s1/s2 probe 
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD main @ 8d3c3235 working tree, source grep
+
+## s3 (permuter) — measured. FLOOR 6 -> 0.
+
+### H12 — Random permutation of the s1/s2 candidate chassis closes the residual. **KILLED (instance).**
+- statement: a decomp-permuter campaign seeded on the s1/s2 candidate chassis ran 21,569
+  iterations with 8 jobs and produced zero output directories.
+- mechanism: the candidate's block is already 176/176 with target-identical register
+  allocation, so almost every random mutation the permuter can express either changes the
+  instruction count or is codegen-neutral; the residual needs a specific two-part edit
+  (statement hoist + a second write of the carrier) that random single-site mutation on
+  this chassis did not reach.
+- kill_scope: instance. measured_on: s1/s2 candidate chassis, no FAKE constructs;
+  `tmp/perm_5d554` campaign telemetry (metrics/events.jsonl, label s3-candidate-chassis).
+
+### H13 — Re-seeding a structurally different chassis makes the basin yield. **CONFIRMED.**
+- statement: the same permuter configuration seeded on the `z3` chassis (the loop guard
+  duplicated outside the loop AND used as a `while` test, floor-equivalent at 6/176 but
+  with a different setup-block emission order) produced a find at ~413 s / 14,701
+  iterations: permuter score 310 -> 160, sandbox 6 -> 3 at 176 instructions.
+- probe: `tmp/perm_5d554_z3/output-160-1/source.c`, sandbox-measured as
+  `tmp/grind/func_8005D554/s3/f1_perm160.c` = 3.
+- result: the find closed loop half 1 only; hand-mirroring it to half 2 closes the
+  function (H15). The chassis-rule discipline (permute a structurally different chassis
+  rather than re-seeding a banked one) is what produced this.
+
+### H14 — Frontier item 2: a different loop chassis moves the residual. **KILLED (instance).**
+- statement: on this chassis a plain `while` loop, a `for` loop, and a `for` loop with the
+  increment in the increment slot all compile to 174 instructions and score 25, because
+  they lose the jump.c `duplicate_loop_exit_test` phantom frame slot; the only loop shape
+  that keeps 176/176 is one whose guard is duplicated (do-while, or `while` with the guard
+  also written outside), and that shape scores 6 — the same residual as the do-while.
+- kill_scope: instance. measured_on: s1/s2 candidate chassis body, no FAKE constructs.
+  Forms: `rejected/while-chassis-without-duplicated-guard-scores-25.c`, plus s3/z2, s3/z4.
+- result: the guard-duplicated `while` (z3) is not a floor improvement but IS a
+  structurally different emission order, and it is the seed that made the permuter yield.
+
+### H15 — The last-6 residual closes with a fresh per-half staging carrier that is written twice. **CONFIRMED (6 -> 0).**
+- statement: giving each loop half a fresh local that receives the a2-site base
+  `(s32)r4 - K` at the position between `a0_offset += ...` and `s.zero18 = a0_offset;`,
+  and that is written a second time in the same half with another real, immediately-read
+  value (`nv = ret; s.ret = nv;` in the saved candidate, or `nv = 0; s.zero10 = nv;`),
+  produces honest sandbox distance **0** at 176/176 instructions.
+- mechanism: `tools/gcc-2.7.2/sched.c:2505` `birthing_insn_p` gives a single-set pseudo's
+  defining insn LAUNCH priority; the second write makes `reg_n_sets > 1`, so the base insn
+  keeps ordinary priority and the clock-64 ready-set tie at `sched.c:2464` resolves the
+  way the target's does. The statement position supplies the INSN_LUID the tie needs, and
+  the second write is what stops GCC from keeping the extra pseudo copy that costs the +2
+  instructions H8 measured.
+- probe: `sandbox func_8005D554 --disable all` on `s3/g23_stage_ret.c`, `s3/g17_perhalf_base.c`
+  and `s3/g5_cross_reuse.c` — all 0/176. Full ablation table in evidence.md s3.
+
+### H16 — The closing carrier can be an EXISTING local (the sanctioned staged-value quadrant). **KILLED (instance).**
+- statement: every measured spelling that borrows a local the function already has —
+  `v0` and `v3` (dead after the prologue) in both the per-half and the cross-half layout,
+  `a0_offset` after its `s.zero18` store, and `a2_offset` itself reused for the `s.zero10`
+  store — compiles to 178 instructions and scores 35/61/63/31; and every spelling that
+  keeps the fresh carrier single-set (one carrier per value, base and zero in separate
+  once-written locals, one shared carrier for all four a0/a2 sites) also compiles to 178.
+- mechanism: the borrow sites that are legal (i.e. where the borrowed variable's previous
+  value is dead) are all AFTER the `s.zero18 = a0_offset;` store, and the position between
+  `a0_offset += ...` and that store — the only position that supplies the needed LUID — is
+  a point where every existing local is either live or loop-carried.
+- kill_scope: instance. measured_on: s1/s2 candidate chassis, no FAKE constructs. Forms:
+  `rejected/borrow-existing-v0v3-carriers-scores-63.c`,
+  `rejected/borrow-a0offset-after-zero18-store-scores-35.c`,
+  `rejected/a2offset-reused-for-zero10-scores-31.c`,
+  `rejected/base-and-zero-in-separate-locals-scores-54.c`,
+  `rejected/single-staged-base-for-all-four-sites-scores-35.c`,
+  `rejected/fresh-per-half-base-no-second-write-scores-54.c`,
+  `rejected/plain-a2-base-reorder-adds-2-insns-scores-31.c`.
+- result: this is exactly why the session returns `ruling-request` rather than
+  `candidate-ready` — `staged-value-reused-variable.md` bound 2 excludes an INVENTED
+  carrier, and the only carriers that close the function are invented.
+
+### H17 — Frontier item 3: a different source expression for the a2 base moves its insn. **KILLED (instance).**
+- statement: `(s32)r4 + -K` and `(s32)(r4 - K)` both score 6/176 (neutral); carrying the
+  base as a `u8 *` walked by `- K`, or holding `(s32)r4` in a second loop-invariant local,
+  both score 8 at 177 instructions.
+- kill_scope: instance. measured_on: s1/s2 candidate chassis, no FAKE constructs.
+  Forms: `rejected/second-invariant-local-for-r4-scores-8.c`, s3/y2, y3, y4.
+
+### H18 — The closing carrier can be the existing `ret` local (staged-value bound 2 satisfied). **KILLED (instance).**
+- statement: on the s3 candidate chassis, the three measured spellings that borrow the
+  function's existing `ret` local as the a2-base carrier — hoisting `s.ret = ret;` to sit
+  (a) immediately before `ret = (s32)r4 - K` at the required position, (b) above the
+  a0-site `D_800A3418 ^= rand()`, or (c) to the top of each loop half — score 33 (176, 175
+  and 175 instructions respectively).
+- mechanism: `ret` is the ONLY existing local whose previous value is dead at the required
+  staging position (between `a0_offset += ...` and `s.zero18 = a0_offset;`) once its
+  `s.ret` store is hoisted; every other local there is loop-carried (`i`, `stride`, `c100`,
+  `c1`, `r4`, `r5`, `p_b2e0`, `p_b2ec`, `p_b388`, `p_b390`, `base_offset`) or live
+  (`a0_offset`). Notably `ret` does NOT pay the +2-instruction penalty that the `v0`/`v3`
+  and `a0_offset` borrows pay (h1 compiles at 176 == target), so the multi-set/priority
+  mechanism is satisfied by the borrow; the residual 33 is entirely the displaced
+  `s.ret` store, whose target position is fixed between the `one14` and `zero1C` stores
+  (asm/funcs/func_8005D554.s:91-109, s2 evidence).
+- kill_scope: instance. measured_on: s3 candidate chassis (= candidate.c with the fresh
+  `nv`/`nw` carriers replaced by `ret`), no FAKE constructs present.
+  Form: `rejected/borrow-ret-hoisted-sret-store-scores-33.c`; probes
+  `tmp/grind/func_8005D554/s3/h1_ret_carrier.c`, `h2_ret_carrier_early.c`, `h4_ret_carrier_top.c`.
+- result: taken with H16, every existing local that is dead or can be made dead at the
+  required staging position has now been measured on this chassis, and none reaches 0.
+  The only measured spellings at 0 use a FRESH (invented) multi-set carrier, which
+  `staged-value-reused-variable.md` bound 2 places outside that family while
+  `defeat-licm-hoist-var-reuse.md` (whose shipped `s32 tmp;` shape is exactly ours, see
+  src/code6cac_c2.c:1360-1365) is scoped to the loop.c hoist mechanism, not sched.c's
+  `birthing_insn_p`. Hence the s3 `ruling-request`.

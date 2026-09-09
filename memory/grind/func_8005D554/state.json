@@ -34,7 +34,9 @@
    "next_probe": "Enumerate arithmetically identical spellings of the a2 base that expand from a different tree shape - e.g. r4 held in a second invariant local written once before the loop, the subtraction expressed as an addition of a negative constant, or the base carried as a pointer displacement - and measure each with sandbox; any that keeps 176/176 and moves the addiu is worth a pass-1 simulation."
   }
  ],
- "judge_constraints": [],
+ "judge_constraints": [
+  "No fresh (invented) local may be written more than once to act as a staging carrier for the a2-site base `(s32)r4 - K` or for any other value in this function, under any name; the existing-local borrow quadrant (staged-value-reused-variable, all six bounds) and the alternate-chassis route (frontier item 2, e.g. the z3 guard-duplicated while) remain open."
+ ],
  "banned_constructs": [],
  "kills": [
   {

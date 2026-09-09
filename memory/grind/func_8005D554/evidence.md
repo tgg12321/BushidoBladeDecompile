@@ -223,3 +223,109 @@ constructs present. Score 6 == the floor (no change), lower is better; none went
 - [s2] Register allocation is byte-identical to the target across the residual window ($6/$20/$4/$5/$3/$22/$17), so nothing is left but sched1 emission order.
 
 - [s2] func_80073728's ABI arity is (a0, a1): $a2 appears only as mflo destinations at asm/funcs/func_80073728.s:194 and :235.
+
+## s3 (2026-09-08, permuter) — chassis: HEAD main @ 1ddb0a8c, cc1 -mel -msoft-float, 0 rules
+
+**HONEST FLOOR 6 -> 0.** `sandbox func_8005D554 --disable all` prints `"score": 0,
+"build_insns": 176` for `tmp/grind/func_8005D554/s3/g23_stage_ret.c` (now
+`memory/grind/func_8005D554/candidate.c`). The form is NOT submitted this session: its
+closing construct is a ruling-request (see hypotheses.md H16).
+
+### Permuter workspaces built this session (both faithful to the full-TU build)
+
+`tmp/perm_5d554/` (s1/s2 candidate chassis) and `tmp/perm_5d554_z3/` (the z3
+guard+while chassis). Each is a STANDALONE base.c (typedef prelude + the function only)
+compiled with the exact Makefile pipeline for `text1b` — `cc1 -O2 -G0 -funsigned-char
+-quiet -mcpu=3000 -mips1 -mno-abicalls -fno-builtin -w -mel -msoft-float | prologue_fix |
+maspsx (MASPSX_FLAGS incl. --prefill-label-funcs) | multu_pad | as`. Fidelity proven:
+`objdump -d base.o` vs `target.o` differs in exactly the 12 known residual instructions
+plus the `addiu a3,a3,8` vs `addiu a3,a3,0` relocation-addend line that `engine/score.py`
+masks. Standalone compilation is therefore a valid permuter context for this function —
+no full-TU wrapper is needed (contrast `tools/mar_perm_workspace.sh`).
+
+Both campaigns carried the un-maskable `a3` addend line, so permuter base_score was 310
+for a sandbox distance of 6; permuter scores here are NOT comparable to sandbox scores.
+
+- **Campaign 1** (`--label s3-candidate-chassis`, -j 8, 676 s): **21,569 iterations, 0
+  finds**. The s1/s2 candidate chassis is a dead basin for random search.
+- **Campaign 2** (`--label s3-z3-guard-while-chassis`, -j 8, ~1100 s): **30,885
+  iterations, 1 find** — `tmp/perm_5d554_z3/output-160-1/` (permuter score 310 -> 160),
+  found at ~413 s. Sandbox-measured: **3** at 176 insns. Its two mutations were
+  (a) `new_var = ((s32) r4) - 0xC;` hoisted to sit between `a0_offset += ...` and
+  `s.zero18 = a0_offset;` in loop half 1, with `a2_offset = new_var;` after the rand call,
+  and (b) `new_var = 0; ... s.zero10 = new_var;` in loop half 2. Reseeding a structurally
+  different chassis is what produced the find — the same random search on the original
+  chassis produced nothing in 21k iterations.
+
+### The closing lever, isolated by hand ablation (13 forms, all `sandbox --disable all`)
+
+| form | score | insns | note |
+|---|---|---|---|
+| `base.c` (= s2 candidate) | 6 | 176 | floor at session start |
+| `f1_perm160.c` (the raw permuter find) | **3** | 176 | half the residual closed |
+| `g1_hoist_h1` / `g2_hoist_h2` (fresh carrier, one half, single-set) | 37 | 178 | |
+| `g3_hoist_both_samevar` (one carrier, both halves, base only) | 31 | 178 | |
+| `g4_hoist_both_distinct` (two carriers, base only) | 54 | 178 | |
+| `g7_reorder_only` / `g8_reorder_h1` (move `a2_offset = r4-K` earlier, no carrier) | 31 | 178 | plain reorder is NOT enough |
+| `g13_a2_reuse_zero` (`a2_offset` itself reused for the zero10 store) | 31 | 178 | |
+| `g14_reuse_only` (zero10 via `a2_offset`, no hoist) | 6 | 176 | neutral |
+| `g15_staged_base` (one `base` staged for all four a0/a2 sites) | 35 | 178 | |
+| `g16_single_base` (one carrier, base + zero, both halves) | 31 | 178 | |
+| `g18_four_locals` (base and zero in SEPARATE once-written locals) | 54 | 178 | |
+| `g19_shared_zero` (per-half base locals + one shared zero local) | 54 | 178 | |
+| `g20`/`g21_borrow_a0off` (borrow `a0_offset` AFTER its zero18 store) | 35 | 178 | position is load-bearing |
+| `g22_perhalf_v0v3` (borrow the existing dead `v0`/`v3`) | 63 | 178 | |
+| `g6_borrow_v0v3` (cross-half layout, existing `v0`/`v3`) | 61 | 178 | |
+| `g5_cross_reuse` (two fresh carriers, base in one half + zero in the other) | **0** | 176 | match |
+| `g17_perhalf_base` (two fresh carriers, base + zero within the same half) | **0** | 176 | match |
+| `g23_stage_ret` (two fresh carriers, base + `ret`, within the same half) | **0** | 176 | match, no constant staging — the saved candidate |
+
+Read together these price the lever exactly: the closing form needs, per loop half, a
+carrier that (i) is a FRESH local — every existing-local borrow measured 178 — that (ii)
+receives the a2 base `(s32)r4 - K` at the position between `a0_offset += ...` and
+`s.zero18 = a0_offset;` (moving it anywhere later, or storing it through `a2_offset`
+itself, is 178), and (iii) is written a SECOND time in the same block with another real,
+immediately-consumed value. Any spelling that leaves the carrier single-set costs exactly
++2 instructions, which is the same `reg_n_sets == 1` price s2 measured for H8. The second
+write does not have to be a constant: `nv = ret; s.ret = nv;` (`g23`) matches identically
+to `nv = 0; s.zero10 = nv;` (`g17`), so the construct stages two real values and contains
+no dead code at all.
+
+### Frontier items 2 and 3 measured out
+
+- Loop chassis (frontier item 2): `z1_while` (plain `while`, guard not duplicated) 25/174,
+  `z2_for` 25/174, `z4_for_incslot` 25/174 — all lose the jump.c phantom slot and drop to
+  174 instructions. `z3_guard_while` (guard duplicated outside AND as the `while` test)
+  is **6/176**, i.e. floor-equivalent to the do-while but with a genuinely different
+  emission order in the setup block (`li s3,256` and the `&D_8009B2E0` lui/addiu hoisted
+  ahead of the first `lw v1,0(gp)`; objdump diff in `s3/z3.o` vs `s3/base_sb.o`). That
+  structural difference is what made campaign 2 productive where campaign 1 was not.
+- a2-base source expression (frontier item 3): `y2_neg_add` (`(s32)r4 + -0xC`) 6/176 and
+  `y3_unsigned_sub` (`(s32)(r4 - 0xC)`) 6/176 are neutral; `y4_ptr_disp` (base carried as
+  a `u8 *` walked by `- 0xC`) 8/177 and `y5_second_inv` (a second loop-invariant local
+  holding `(s32)r4`) 8/177 both cost an instruction. Re-spelling the subtraction does not
+  move the `addiu`; only the carrier's set-count and the statement position do.
+- `y1_direct_b390` (`p_b390 = &D_8009B390;` instead of `p_b388 + 2`) is **43/174** — the
+  `p_b388 + 2` spelling is load-bearing for `p_b388`'s ref count exactly as s1 recorded,
+  and the resulting `addiu a3,a3,8` vs the target's `%lo(D_8009B390)` is a masked
+  relocation addend, not a real residual.
+
+- [s3] HONEST FLOOR 6 -> 0: memory/grind/func_8005D554/candidate.c (= s3/g23_stage_ret.c) scores 0 at 176/176 on HEAD main @ 1ddb0a8c. Not submitted — the closing construct is a ruling-request (fresh multi-set staging carrier).
+- [s3] Permuter campaign 1 on the s1/s2 candidate chassis: 21,569 iterations, 0 finds (tmp/perm_5d554). Campaign 2 on the z3 guard+while chassis: 30,885 iterations, 1 find at permuter score 160 = sandbox 3 (tmp/perm_5d554_z3/output-160-1).
+- [s3] A STANDALONE permuter workspace (typedef prelude + the function only, exact text1b pipeline flags) is byte-faithful to the full-TU build for this function; no full-TU wrapper is needed.
+- [s3] The closing lever: per loop half, a FRESH local that receives `(s32)r4 - K` between `a0_offset += ...` and `s.zero18 = a0_offset;` and is written a second time with another real, immediately-consumed value. Existing-local borrows (v0/v3, a0_offset, a2_offset) all measure 178; single-set carriers all measure 178.
+- [s3] Frontier item 2 (loop chassis): while/for without the duplicated guard are 25/174; the guard-duplicated while (z3) is 6/176 with a different setup emission order. Frontier item 3 (a2-base source expression): neutral (6) or +1 insn (8); killed.
+
+- [s3] The `ret`-borrow probes (h1/h2/h4) all score 33. `ret` is the only existing local
+  whose value can be made dead at the required staging position, and borrowing it compiles
+  at 176 instructions (h1) — i.e. an existing-local borrow CAN satisfy the +2-free
+  requirement, unlike the v0/v3/a0_offset borrows. What kills it is that freeing `ret`
+  requires hoisting the `s.ret` struct store out of the target's fixed store slot
+  (between the one14 and zero1C stores), which costs 33. Forms:
+  `rejected/borrow-ret-hoisted-sret-store-scores-33.c`, probe log
+  `tmp/grind/func_8005D554/s3/probe_log.txt`.
+- [s3] Existing-local carrier space at the required staging position is now fully
+  enumerated on this chassis: `a0_offset` (live there), `v0`/`v3` (dead; 61-63 at 178),
+  `a2_offset` (31 at 178), `ret` (33 at 175-176), and the remaining locals
+  (`i`, `stride`, `c100`, `c1`, `r4`, `r5`, `p_b2e0`, `p_b2ec`, `p_b388`, `p_b390`,
+  `base_offset`) are loop-carried and cannot legally be overwritten there.
