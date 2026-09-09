@@ -9,10 +9,24 @@
   "Land the candidate.c body (K2 form, no loop_bottom label; K2.o == J.o) with the include/code6cac.h + undefined_syms_auto.txt + named_syms.txt patch; the driver's candidate-ready sandbox-0 gate (tools/grinder/grind.ps1:621) will discard the landing until engine/score.py _symtab() also resolves asm/data dlabel addresses -- that engine fix is the OPERATOR's prerequisite (engine/ is session-denylisted; keep `engine test` green), never a session edit and never a build-output rewrite.",
   "integration-handoff EXECUTED (pipeline, 2026-09-08): scope grant: func_800335D8 include/code6cac.h undefined_syms_auto.txt named_syms.txt. Land the banked form through the normal gates; the widened paths are scope-checked AND staged."
  ],
- "banned_constructs": [],
+ "banned_constructs": [
+  "extern s16 D_800A3750[4]; (src/code6cac_b.c:20, TU-local) alongside the unchanged extern s16 D_800A3756; (include/code6cac.h:144) and func_80033510's `s16 *p1 = &D_800A3756; ... p1--` walk (src/code6cac_b.c:3012-3017)"
+ ],
  "kills": [],
- "ladder_skip": 0,
+ "ladder_skip": 11,
  "pending_fixup": null,
  "origin": "queue",
- "created": "2026-09-09T00:19:59.490089+00:00"
+ "created": "2026-09-09T00:19:59.490089+00:00",
+ "reviewer_history": [
+  "LAYER-1 CHEAT-REVIEWER FAIL: Body logic, casts, goto dispatch, the two LeafThreshold merges and the D_80107850[i].x argument all verify clean against asm/funcs/func_800335D8.s and the data bytes; the ONE defect is `extern s16 D_800A3750[4];` (TU-local, src/code6cac_b.c:20), which overlaps the still-live per-word scalar `extern s16 D_800A3756;` (include/code6cac.h:144, used by func_80033510 at src/code6cac_b.c:3012 as `s16 *p1 = &D_800A3756;`) -- two C handles to storage 0x800A3756, an incomplete aggregate merge the self-vet misfiled as a single-scalar widening and never disclosed. Next action:"
+ ],
+ "review_ledger": [
+  {
+   "layer": "layer1",
+   "verdict": "FAIL",
+   "hash": "210c28dc869f88ce",
+   "when": "2026-09-09T01:27:10.262262+00:00",
+   "summary": "Body logic, casts, goto dispatch, the two LeafThreshold merges and the D_80107850[i].x argument all verify clean against asm/funcs/func_800335D8.s and the data bytes; the ONE defect is `extern s16 D_800A3750[4];` (TU-local, src/code6cac_b.c:20), which overlaps the still-live per-word scalar `extern "
+  }
+ ]
 }

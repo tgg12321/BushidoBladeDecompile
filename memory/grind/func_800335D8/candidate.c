@@ -1,34 +1,36 @@
-/* func_800335D8 -- BANKED CANDIDATE (grind s1, 2026-09-08). BYTES PROVEN, integration surface pending.
+/* func_800335D8 -- CANDIDATE (grind s2, 2026-09-08). sandbox --disable all = 0 (176/176), oracle SHA1 proven.
  *
- * Measured this session (chassis: -mel -msoft-float, tools/gcc-2.7.2/build/cc1):
- *   sandbox --disable all = 6 (176/176 insns) -- ALL SIX points are a scorer artifact, see below.
- *   verify-oracle --rebuild --allow-dirty with this body + the declaration changes below applied:
- *   build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle (tmp/grind/func_800335D8/s1/verify_oracle_J_full.txt).
- *   Reference-normalized diff vs target (tmp/grind/func_800335D8/s1/sdiffbodyI3.txt): the only lines that differ are
- *   the three lui/lbu pairs reading the second byte of a threshold pair, which cc1 emits as %hi/%lo(D_8008EBFC+1) /
- *   %hi/%lo(D_8008EA44+1) while the splat asm spells them %hi/%lo(D_8008EBFD) / (D_8008EA45). They link to the same
- *   words (the oracle build proves it); engine/score.py cannot resolve them because D_8008EBFC / D_8008EA44 are defined
- *   only as dlabels in asm/data/7D920.data.s, which is not in cfg.LD_SYM_FILES (score.py _symtab), so the pair stays raw.
+ * Measured THIS session (chassis: -mel -msoft-float, tools/gcc-2.7.2/build/cc1), edits in place in src/ +
+ * include/code6cac.h + undefined_syms_auto.txt + named_syms.txt (the integration-handoff scope grant, 2026-09-08):
+ *   sandbox func_800335D8 --disable all = 0, 176/176 insns, rules_dropped 0   (tmp/grind/func_800335D8/s2/sandbox_K3_nocast.txt)
+ *   verify-oracle --rebuild --allow-dirty: ok true, build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle
+ *                                                                              (tmp/grind/func_800335D8/s2/verify_oracle_K3_full.txt)
  *
- * REQUIRED DECLARATION CHANGES (exact patch: tmp/grind/func_800335D8/s1/integration_surfaces.patch):
- *   include/code6cac.h : replace `extern u8 D_8008EA44; extern u8 D_8008EA45;` with
- *                        typedef struct { u8 a; u8 b; } LeafThreshold;  extern LeafThreshold D_8008EA44[5];
- *                        replace `extern u8 D_8008EBF4; extern u8 D_8008EBFC; extern u8 D_8008EBFD;` with
- *                        extern u8 D_8008EBF4[6];  extern LeafThreshold D_8008EBFC[6];
- *   src/code6cac_b.c   : TU externs become `extern u8 D_8008E914[][8]; extern s32 D_8008EA00[][4]; extern s16 D_800A3750[4];`
- *   undefined_syms_auto.txt : delete `D_8008EA45 = 0x8008EA45;` (line 37) and `D_8008EBFD = 0x8008EBFD;` (line 42)
- *   named_syms.txt          : delete the g_leaf_action_threshold_b (0x8008EBFD) and g_threshold_lookup_EA45 rows
- *   (aggregate-merge prong (c): no C consumer of D_8008EBFD / D_8008EA45 exists; no other asm/funcs/*.s references them.)
+ * What closed the s1 "scorer floor" of 6: engine/score.py _symtab() resolves %hi/%lo pairs only through the three
+ * ld symbol files (undefined_funcs_auto.txt, undefined_syms_auto.txt, named_syms.txt). cc1 spells the second byte of a
+ * threshold record as %lo(D_8008EBFC+1) / %lo(D_8008EA44+1); the splat asm spells it %lo(D_8008EBFD) / (D_8008EA45).
+ * Both link to the same word (oracle SHA1), but the scorer could not see it because the record BASE symbols existed
+ * only as dlabels in asm/data/7D920.data.s. Adding the base symbols' address rows to undefined_syms_auto.txt
+ * (D_8008EA44 = 0x8008EA44; and D_8008EBFC = 0x8008EBFC; -- the same address the dlabel already defines, the same
+ * "row + dlabel" coexistence D_8008EBFD / D_800A3918 / D_80107850 already have) lets the scorer link both spellings to
+ * @lo(0xebfd) / @lo(0xea45): 6 -> 0. Ablation this session (rows removed, nothing else changed): 6 again
+ * (s2/sandbox_K2_no_base_rows.txt). The per-word rows D_8008EA45 / D_8008EBFD STAY, each suffixed with the prong (c)
+ * amendment-2026-09-03 alias comment ("alias of <base>+1; retire with func_800335D8"): asm/funcs/func_800335D8.s
+ * (the sandbox's reference side, assembled into build/src/code6cac_b.o) is their only referrer; no C names them.
  *
- * Object model (evidence in memory/grind/func_800335D8/evidence.md, OBJECT MODEL entry): the original binary reads
- * D_8008EBFC[cat*2] and D_8008EBFD[cat*2] at the same index, i.e. a 6-entry table of 2-byte {a,b} threshold records
- * (rodata 8008EBFC: 2E 5C 2E 62 2E 62 2E 2E 32 62 2E 62); D_8008EA44/45 is the same 2-byte record shape for types 2..6
- * (8008EA44: 06 09 0F 0F 0A 0D 0A 0A 05 0F). D_8008EBF4 is a 6-entry u8 table of base action ids padded to the next word.
- * D_8008E914 is a per-stage row of 4 {type,param} byte pairs (8-byte stride, indexed by D_800A36A4); D_8008EA00 is the
- * 16-byte-stride record table passed to func_800325E0 (census); D_800A3750 is the 4-entry s16 per-slot counter buffer
- * (loop bound base+8).
+ * s2 body change vs the s1-banked K2: (s32 *)&D_80107850[i] -> &D_80107850[i].x at the three func_800325E0 calls
+ * (the callee takes s32 * to a 3-word position; this passes the record's first coordinate without a cast).
+ * Byte-identical: sandbox 0 both ways, oracle SHA1 both ways (s2/verify_oracle_K2_rows_full.txt, s2/verify_oracle_K3_full.txt).
  *
- * No FAKE constructs, no inline asm, no dead locals. */
+ * DECLARATIONS (in place; identical to tmp/grind/func_800335D8/s1/integration_surfaces.patch except the sym rows):
+ *   include/code6cac.h : typedef struct { u8 a; u8 b; } LeafThreshold;  extern LeafThreshold D_8008EA44[5];
+ *                        extern u8 D_8008EBF4[6];  extern LeafThreshold D_8008EBFC[6];   (D_8008EA45 / D_8008EBFD decls removed)
+ *   src/code6cac_b.c   : extern u8 D_8008E914[][8]; extern s32 D_8008EA00[][4]; extern s16 D_800A3750[4];
+ *   named_syms.txt     : g_leaf_action_threshold_b (0x8008EBFD) and g_threshold_lookup_EA45 rows removed
+ *   undefined_syms_auto.txt : + D_8008EA44 / D_8008EBFC base rows; D_8008EA45 / D_8008EBFD kept with the alias suffix.
+ *
+ * Object model: see memory/grind/func_800335D8/evidence.md (OBJECT MODEL entry, s1). No FAKE constructs, no inline asm,
+ * no dead locals. */
 void func_800335D8(void) {
     s32 i;
     u8 *tbl = D_8008E914[D_800A36A4];
@@ -39,11 +41,11 @@ void func_800335D8(void) {
             u8 cur = D_800A3918[i];
 
             if (cur == 1) {
-                func_800325E0(D_8008EBF4[cat], (s32 *)&D_80107850[i]);
+                func_800325E0(D_8008EBF4[cat], &D_80107850[i].x);
             } else if (cur == D_8008EBFC[cat].a) {
-                func_800325E0(D_8008EBF4[cat] + 1, (s32 *)&D_80107850[i]);
+                func_800325E0(D_8008EBF4[cat] + 1, &D_80107850[i].x);
             } else if (cur == D_8008EBFC[cat].b) {
-                func_800325E0(D_8008EBF4[cat] + 2, (s32 *)&D_80107850[i]);
+                func_800325E0(D_8008EBF4[cat] + 2, &D_80107850[i].x);
             }
 
             {

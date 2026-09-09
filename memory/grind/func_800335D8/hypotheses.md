@@ -25,10 +25,32 @@ KILLED (all kill_scope=instance; chassis -mel -msoft-float, pair-struct decls ap
 - K1 fully structured if/else dispatch with the default call duplicated into both arms: 19, 173 insns.
 - D2 `(s32)` casts on the pointer compares: -1 each but cosmetic; superseded by the index forms.
 
-FRONTIER
+FRONTIER (s1, now spent -- see s2)
 1. Land the banked form via the aggregate-merge integration surface (include/code6cac.h, undefined_syms_auto.txt,
    named_syms.txt, TU externs) -- bytes already proven by full-build SHA1; needs the Judge/driver to accept
    verify-oracle as the byte proof because the sandbox cannot reach 0 on this reference (scorer gap).
 2. If a scorer-visible 0 is required first: engine/score.py `_symtab()` must also learn dlabel addresses from
    asm/data/7D920.data.s (or build/bb2.map). Not a session surface.
 3. Nothing else is open: 176/176 insns, every register and emission order matches target.
+
+## s2 (2026-09-08, recon) -- floor 6 (scorer artifact, s1) -> 0 (sandbox AND oracle SHA1, edits in place)
+
+CONFIRMED
+6. The s1 "+6 scorer floor" was a symbol-TABLE gap, not an engine-code gap: adding the merged aggregates' BASE
+   address rows (`D_8008EA44 = 0x8008EA44;`, `D_8008EBFC = 0x8008EBFC;`) to undefined_syms_auto.txt -- an in-scope
+   splat-symbol-config declaration of the same address the dlabel defines -- lets score.py `_resolve_named_pair`
+   normalise the C side's `%lo(D_8008EBFC+1)` and the reference's `%lo(D_8008EBFD)` to the same @lo(0xebfd) token.
+   6 -> 0; ablation (base rows removed, nothing else changed) 0 -> 6; oracle SHA1 unchanged either way. The per-word
+   rows stay with the prong (c) amendment-2026-09-03 alias suffix while asm/funcs/func_800335D8.s (their only
+   referrer, the sandbox reference side) exists. This retires s1 frontier items 1 and 2 without touching engine/.
+7. `&D_80107850[i].x` == `(s32 *)&D_80107850[i]` byte-for-byte (K3 vs K2: sandbox 0 / oracle SHA1 for both). K3 is
+   the banked body and the body in src/ (removes the brief's auto-scan use-site-cast flag with ordinary C).
+8. Sibling transplant (func_80033550 s17 body on main; func_800325E0 s1 canonical body on main): the shared
+   declarations `D_800A3918[6]` / `LeafPos D_80107850[6]` and the `D_80107850[i]` record spelling were already the
+   candidate's spelling; measured inside the 0.
+
+KILLED: none this session (K2-with-cast is byte-identical, not disproven -- nothing added to rejected/).
+
+FRONTIER: none -- candidate-ready (sandbox 0 this session, edits in place in src/ + the granted integration surfaces).
+Post-landing housekeeping for the OPERATOR (not a session surface): once asm/funcs/func_800335D8.s is retired the
+`D_8008EA45` / `D_8008EBFD` alias rows in undefined_syms_auto.txt can go (their suffix says so).

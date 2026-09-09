@@ -39,6 +39,7 @@ our `%hi/%lo(D_8008EBFC+1)` pairs, while the target side's `D_8008EBFD` (undefin
 (tmp/grind/func_800335D8/s1/sdiffbodyI3.txt shows exactly those 6 lines and nothing else). The linked words are
 identical: verify-oracle --rebuild --allow-dirty with the merge applied = SHA1 62efab4f73f992798c43e8c730aa43baa10bb4fa
 == oracle (s1/verify_oracle_J_full.txt); the restored tree rebuilt clean afterwards (s1/verify_oracle_restore_full.txt).
+[s2 note: CLOSED without an engine edit -- see the s2 entry below.]
 
 CHASSIS: -msoft-float halves loop.c's LICM threshold (n_non_fixed_regs 60 -> 28; with-call threshold 61 -> 29).
 The retired brief's two "spurious hoists" (li s5,1 and la D_800A391E in loop 1) are gone at HEAD: loop 1
@@ -67,3 +68,45 @@ LOOP SHAPES (all measured, s1/diffbody*.txt / sdiffbody*.txt):
 
 CANONICAL: verdict C (pure-C distance 47 at session start with body A; asm_insns 0). No hand-coded signals
 (retired brief: tier LOW 0/8).
+
+## s2 (2026-09-08, recon) -- chassis: -mel -msoft-float, canonical cc1 tools/gcc-2.7.2/build/cc1
+
+BASELINE: the function was INCLUDE_ASM at HEAD (src/code6cac_b.c:3043) with the s1 integration patch NOT applied
+(the ledger + scope grant were committed in 6f22a368, the code was not), which is why the driver's chassis check
+printed "measurement unavailable". With the s1 patch (tmp/grind/func_800335D8/s1/integration_surfaces.patch, CRLF ->
+converted to LF as s2/integration_surfaces.lf.patch before `git apply`) + the K2 body applied: canonical verdict C,
+asm_insns 0, total 176, distance 0.
+
+SCORER GAP CLOSED WITHOUT AN ENGINE EDIT (measured): engine/score.py `_symtab()` (score.py:80-93) is NAME-keyed and
+reads cfg.LD_SYM_FILES only. The C side emits `%hi/%lo(D_8008EBFC+1)` and `(D_8008EA44+1)`; the reference side
+(asm/funcs/func_800335D8.s assembled into build/src/code6cac_b.o, engine/sandbox.py:72) emits `%hi/%lo(D_8008EBFD)` /
+`(D_8008EA45)`. `_resolve_named_pair` (score.py:109) needs BOTH names in the table to normalise both spellings to
+the same @lo(0xebfd) / @lo(0xea45) tokens. Fix INSIDE the scope grant: undefined_syms_auto.txt gains
+`D_8008EA44 = 0x8008EA44;` (line 37) and `D_8008EBFC = 0x8008EBFC;` (line 43) -- the addresses the
+asm/data/7D920.data.s dlabels (lines 2705, 3057) already define, so the linker-script assignment and the object
+definition agree (the same "row + dlabel" coexistence D_8008EBFD, D_800A3918 and D_80107850 already have:
+undefined_syms_auto.txt:44/268/991 + their dlabels). The per-word rows D_8008EA45 (line 38) and D_8008EBFD (line 44)
+are KEPT with the prong (c) amendment-2026-09-03 suffix (`/* alias of <base>+1; retire with func_800335D8 ... */`,
+.claude/rules/no-new-park-categories.md:252) because asm/funcs/func_800335D8.s is their ONLY referrer
+(`grep -rl` over asm/funcs: one file) and the sandbox reference object is assembled from it; no C code names them
+(header decls removed; named_syms.txt g_leaf_action_threshold_b / g_threshold_lookup_EA45 rows removed).
+  - K2 body + base rows: sandbox 0, 176/176, rules_dropped 0                  (s2/sandbox_K2_rows.txt)
+  - K2 body, base rows removed, nothing else changed: sandbox 6 (ABLATION)     (s2/sandbox_K2_no_base_rows.txt)
+  - verify-oracle --rebuild --allow-dirty, K2 + rows: ok true,
+    build_sha1 62efab4f73f992798c43e8c730aa43baa10bb4fa == oracle             (s2/verify_oracle_K2_rows_full.txt)
+
+BODY K3 (final, in src/ and candidate.c): the brief's auto-scan flagged `(s32 *)&D_80107850[i]` (3 call sites) as a
+use-site pun. The callee func_800325E0(s32, s32 *) (src/code6cac_b.c:2676, canonical-asm sibling) reads a 3-word
+position through its pointer; LeafPos is `{s32 x, y, z}` (include/code6cac.h:487-491). Respelled as
+`&D_80107850[i].x` (no cast) -- the record's first coordinate. Byte-identical: sandbox 0, 176/176
+(s2/sandbox_K3_nocast.txt); verify-oracle --rebuild --allow-dirty ok true, SHA1 == oracle (s2/verify_oracle_K3_full.txt).
+
+SIBLINGS (contract): func_80033550 (COMPLETED-C, on main at src/code6cac_b.c:3033-3041) and func_800325E0
+(COMPLETED-INLINE-ASM-CANONICAL, src/code6cac_b.c:2676) have no memory/grind ledgers left (closed and removed);
+their candidates are the bodies on main. Blocks shared with func_80033550: the declarations `extern u8 D_800A3918[6]`
+/ `extern LeafPos D_80107850[6]` and the `D_80107850[i]` record indexing -- this candidate uses exactly that spelling
+in loop 1, measured inside the 0. Block shared with func_800325E0: its `s32 *` position parameter -- K3 passes
+`&D_80107850[i].x`.
+
+LINE ENDINGS: all four edited build inputs (src/code6cac_b.c, include/code6cac.h, undefined_syms_auto.txt,
+named_syms.txt) verified LF-only (`grep -c $'\r'` = 0) after every edit.
