@@ -439,3 +439,47 @@ F3 (fallback for F1): the two-pass reorg route - if the loop-top peel can be
 - verdict: KILLED
 - kill_scope: instance
 - measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, a1 body at floor 19
+
+## [s5] One counter variable driving BOTH the scan loop and the outer loop reproduces the target's shared $t2 seat and collapses the whole 5-seat residual
+- mechanism: the target's disassembly holds the scan counter and the outer counter in the same register ($t2 receives `li 15`, is decremented through the scan loop, and is then zeroed for the outer loop). One C variable for both loops gives local-alloc a single quantity to seat instead of two competing ones, and the rest of the allocation follows into the target's assignment.
+- probe: m2 (delete the scan counter's declaration, drive both loops from the outer counter's variable) and m1 (the mirror: delete the outer counter's declaration, drive both from the scan counter's slot), applied to the a1 body and measured with sandbox --disable all
+- result: m2 = 7 (from 19); m1 = 19. 74 insns in both. At 7 the pairdiff shows EVERY register matching; only three order inversions remain (andi/oct/outer-init 3-cycle, sll/move acc pair, addu upper/lower pair). The declaration slot that survives is load-bearing.
+- verdict: CONFIRMED
+
+## [s5] Naming the scan-loop test's shifted value into an existing dead local is worth one point, and specifically into the outer-loop counter
+- mechanism: the extra def/ref lands in the outer counter's quantity, which changes local-alloc's suggestion scan and frees $t4 for the lower bound; a fresh local mints a new quantity instead and does not move the seat
+- probe: k1 (outer counter as the carrier), k2 (fresh local `probe`), k3 (the `& 1` folded in), k5 (inner), k6 (result), k7 (lower), k8 (acc), each on four chassis (a1, x1, x7, x8); the pointer was permuter find tmp/perm_p2n_x7/output-570-3
+- result: k1 = 18 on all four chassis; k2 = k3 = k6 = 19; k7 = 20; k5/k8 = 33/32. The construct is superseded in the final body by the shared-counter form, which removes it.
+- verdict: CONFIRMED
+
+## [s5] Reusing a LIVE variable as the upper-bound carrier (the permuter's own 18) has a legal equivalent among the dead locals
+- mechanism: the campaign's 18-scoring finds on the x8 chassis wrote `outer = lower + next; hi = outer;` inside the inner loop, clobbering the live outer counter; the hypothesis was that any dead u32 local would give the same refcount effect
+- probe: g1 (upper), g2 (shift), g3 (bit), g4 (quot), g5 (rem), g6 (note), g7 (fine), g8 (scale), h1 (upper, shift folded), j1/j2 (lo reused as the high-bound carrier), j3 (search retyped u32), j4, j5, on the x8 and a1 chassis
+- result: no legal carrier reaches 18. g1/h1 = 19 (byte-neutral), g8 = 23, j5 = 21, j1/j2 = 34, j4 = 35, j3 = 43/44 at 78 insns, and every s32-typed carrier (g2/g3/g4) costs 5 insns because the unsigned shift becomes arithmetic. The seat flip belonged to the outer counter's quantity, which the shared-counter form then obtained legally.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, a1 body at floor 19 and x8 body at floor 19
+
+## [s5] Moving the outer-loop body's remaining assignments (lower, upper, step, curve) into the inner loop's for-init comma expression is a live lever
+- mechanism: s4's frontier item 3 — the for-init clause is expanded in the loop preheader rather than as ordinary body statements, and the s4 sweep showed the winning positions are narrow
+- probe: f1 (step into the init before acc), f2 (step after acc), f3 (upper + step), f4 (all four incl. the curve update), f6 (curve update onward), on the a1 body
+- result: f1/f2/f3 byte-neutral at 19; f4 and f6 = 31 because folding `curve *= 0x103B; curve >>= 12;` back into one expression undoes the s2 sibling transplant. The lever is inert for these statements — the point s4 found belonged to the accumulator init alone.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, a1 body at floor 19
+
+## [s5] Every order-sweep conclusion banked in s2/s3/s4 survives the loop-shape change to the shared-counter (m2) chassis
+- mechanism: the ledger's standing warning is that first-definition order sets pseudo numbers (global.c allocno tie-break, sched1 LUID tie-break), so each sweep is chassis-relative; three sessions of stable results had made the pre-loop order look settled
+- probe: the 24-permutation pre-loop order sweep re-run on m2 (q00..q23); `target = pitch` into the outer for-init (t1/t2/t3) on five bases; the lo/hi bound spellings (L1..L6) and the accumulator-init placements (A2..A8, B1..B6) on the resulting bases
+- result: all three flipped. Pre-loop order range 6..8 with `oct` FIRST as the new minimum (the three-session winner `target; scale; curve; oct;` is 7). `target = pitch` in the outer for-init is 4 vs 6 as a statement (s4 measured the same move as a LOSS, 20 vs 19). Splitting BOTH bounds with the low bound's add first (L6) is 2, fixing the addu inversion that s2/s3/s4 recorded as immune to source order. Accumulator-init placement is inert on this shape (all 6 variants tie the base).
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, m2 body at floor 7 and t1q04 body at floor 4
+
+## [s5] The (move acc,zero / sll base,outer,5) inversion is not steerable from C
+- mechanism: s4's c1..c5 probes concluded that the sll is placed by loop.c's preheader builder regardless of where a named `base = outer << 5` sits in the source, so the pair could only be broken by a scheduler-input change
+- probe: C1..C4 on the L6 body (named base in four positions), D1/D2 (arithmetic spellings of the hit value), D3 (acc seeded from next), B1..B6 (accumulator-init placements)
+- result: FALSE on this chassis. C1 (`for (inner = 0, base = outer << 5, acc = 0, next = step; ...)` with `result = base + inner`) = 0 — the match. C2/C3/C4 = 2, D1 = 2, D2 = 3. The identical construct measured byte-neutral on the s4 chassis; "not steerable" was a chassis-relative instance result, not a property of loop.c.
+- verdict: KILLED
+- kill_scope: instance
+- measured_on: HEAD chassis 2026-09-08 (-mel -msoft-float), no FAKE constructs, L6 body at floor 2 (the kill is of the s4 NON-steerability claim; the probe that killed it is the matching form)

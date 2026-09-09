@@ -382,3 +382,59 @@ RESIDUAL AT 19 (tmp/grind/_spu_pitch2note/s4/a1_pairdiff.txt, 74/74 insns):
 - [s4] [s4] Naming `base = outer << 5` is byte-neutral at 19 when it sits inside the for-init and costs a point outside it; the LICM hoist of `outer << 5` is not steerable from C on this chassis.
 
 - [s4] [s4] src/main.c was restored to HEAD at the end of the session; the 19-floor body lives in memory/grind/_spu_pitch2note/candidate.c. Both campaigns were harvested and stopped in-session (tmp/perm_p2n 37,051 iters, tmp/perm_p2n2 8,845 iters, both pid dead, registry clean).
+
+## s5 (2026-09-08, permuter modality) — MATCH.  Floor 19 -> 18 -> 7 -> 6 -> 4 -> 2 -> 0
+
+- [s5] `sandbox _spu_pitch2note --disable all` = 0 (74/74 insns) AND
+  `verify-oracle` = `build_matches: true` with the pure-C body in src/main.c.
+  Final body: memory/grind/_spu_pitch2note/candidate.c (= tmp/grind/_spu_pitch2note/s5/b_E4.c).
+- [s5] THE UNLOCK: the target holds the scan-loop counter and the outer-loop
+  counter in the SAME register ($t2: `li t2,15` / `addiu t2,t2,-1` in the scan
+  loop, `move t2,zero` at the outer-loop init).  Spelling that in C — ONE
+  counter variable driving both loops — collapsed the entire 5-seat residual
+  that four sessions had recorded as the immovable core (pitch-copy $a3 vs $a0,
+  shift $a0 vs $t2, lower $t3 vs $t4, acc $t2 vs $t3, outer $t4 vs $t2): after
+  m2 every register in the function matches and only order inversions remain.
+  Floor 19 -> 7 in one edit.  The DECLARATION SLOT matters: keeping the outer
+  counter's slot and deleting the scan counter's (m2) is 7; the mirror (m1,
+  keeping the scan slot) is 19.
+- [s5] The pointer to it was a permuter find, not a hypothesis: campaign s5-x7
+  (tmp/perm_p2n_x7/output-570-3) named the scan test's shifted value into the
+  outer counter (`outer = search >> shift; if (!(outer & 1))`) — legal, because
+  the outer counter is dead before its own loop — and measured 18.  Hand-vetted
+  as k1 on four chassis (a1/x1/x7/x8): 18 on all four.  A FRESH local for the
+  same intermediate (k2) is 19, `result` (k6) 19, `lower` (k7) 20, `inner`/`acc`
+  (k5/k8) 33/32 — so the point belonged to the outer counter's QUANTITY, which
+  is what made the shared-counter hypothesis obvious on the pairdiff.
+- [s5] Every order sweep this project had banked was invalidated by the new
+  loop shape and had to be re-run — and all three flipped:
+    * pre-loop statement order (q00..q23 on m2, range 6..8): `oct` must come
+      FIRST now (q04/q18/q20/q21 = 6).  The `target; scale; curve; oct;` order
+      that had won three consecutive sessions measures 7 here.
+    * `target = pitch` in the outer for-init (t1) = 4 vs 6 as a plain statement.
+      s4 had measured the same move at 20 vs 19 (i.e. a LOSS) on the old shape.
+    * the (addu upper / addu lower) inversion, recorded in s2/s3/s4 as immune to
+      source order, is fixed by splitting BOTH bounds with the low bound's add
+      first (L6) = 2.  s3 had measured the lower-bound split (r2a) as a loss.
+- [s5] The last inversion (`move acc,zero` before the LICM-hoisted
+  `sll base,outer,5`), which s4 priced as the cheapest remaining residual and
+  measured NOT steerable, IS steerable on the m2 shape: naming the base index in
+  the inner for-init (C1, `base = outer << 5` first after `inner = 0`) = 0.  The
+  identical construct on the s4 chassis was byte-neutral at 19.  The lesson the
+  ledger should carry: "not steerable" verdicts are chassis-relative in the
+  strongest sense — this one was false one chassis later.
+- [s5] Simplest-known-form cleanups, all measured byte-neutral at 0 (so the
+  simplest lands, per .claude/rules/ordinary-c-judge-decidable.md Ruling 4):
+  the shared counter renamed `i` (E2), `base = i * 32` for `i << 5` (E3), and
+  the `target` copy dropped entirely in favour of comparing `pitch` directly
+  (E4).  `target = pitch` as a plain pre-loop statement is 2 (E1), so the copy
+  had to be in the outer for-init or absent.
+- [s5] Campaign telemetry: six campaigns, all harvested and stopped in-session.
+  Chassis seeds x8/x7/x5 (17,693 / 17,655 / 17,643 iters), then k1a1/k1x8/k1x7
+  on the 18-floor chassis, then m2 (13,871) and L6 (7,171, --stop-on-zero).  The
+  useful product was again the POPULATION, not the gradient: the two x8 finds
+  that scored 18 are semantically broken (they clobber the live outer counter as
+  a bound carrier) and are banked in rejected/; the ONE find that mattered
+  (x7 output-570-3) had permuter score 570 out of a 365..575 spread — i.e. near
+  the WORST of its own campaign, re-confirming s4's kill of permuter-score
+  steering on this function.

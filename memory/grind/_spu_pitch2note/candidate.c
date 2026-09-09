@@ -1,55 +1,61 @@
-/* CANDIDATE - _spu_pitch2note (src/main.c)  sandbox --disable all = 19  (s4, 2026-09-08)
- * Pure C, no FAKE constructs, 74/74 insns.  The insn MULTISET matches the target;
- * the whole residual is a register-seat permutation plus three sched1 order
- * inversions.
+/* CANDIDATE - _spu_pitch2note (src/main.c)   MATCH.  sandbox --disable all = 0,
+ * 74/74 insns, and `verify-oracle` reports build_matches: true (full-link SHA1
+ * == 62efab4f73f992798c43e8c730aa43baa10bb4fa) with this body in src/main.c.
+ * s5 (2026-09-08, permuter modality).  Pure C: zero asm, zero pins, zero FAKE
+ * constructs, zero volatile, zero dead code.
  *
- * s4 delta over the s3 body (20 -> 19), ONE change: the inner loop's two
- * accumulator initialisations move into the `for` init clause as a comma
- * expression,
- *     for (inner = 0, acc = 0, next = step; inner < 0x20; inner++)
- * replacing the two separate statements
- *     acc = 0;
- *     next = step;
- *     for (inner = 0; inner < 0x20; inner++)
- * This is ordinary C (a comma expression in a for-init, the standard way to
- * seed several loop-carried values).  The lever is discovered, not invented:
- * the s4 permuter campaign on the s3 chassis produced two finds (output-565-1,
- * output-565-7) that measured 19 by hoisting `acc = 0;` OUT of the outer loop
- * -- a SEMANTIC BREAK, since acc must reset every outer iteration -- which
- * showed that the emission POSITION of `move acc,zero` is worth one point.
- * The hand sweep a1..a9 then found the legal spelling that reproduces the same
- * position: `acc = 0` must sit inside the for-init AND after `inner = 0`.
- *   19: a1 (inner, acc, next), a3 (inner, next, acc), a4 (next=step outside;
- *       for (inner = 0, acc = 0)), a8 (next, inner, acc)
- *   20: a2/a6 (acc first), a5 (acc left outside the for-init),
- *       a7/a9 (acc before inner)
+ * s5 took the floor 19 -> 18 -> 7 -> 6 -> 4 -> 2 -> 0 in six measured steps.
+ * The chain, in order:
+ *  1. 19 -> 18.  A campaign find on the x7 chassis (tmp/perm_p2n_x7/
+ *     output-570-3) named the scan-loop test's shifted value into the (dead,
+ *     not yet initialised) outer-loop counter.  Reproduced by hand as k1 on
+ *     four chassis (a1/x1/x7/x8): all 18.  A FRESH local for the same
+ *     intermediate (k2) or any other dead local (k5..k8) is 19 or worse, so the
+ *     point belonged to the outer counter's quantity, not to the split.
+ *  2. 18 -> 7.  The pairdiff of the 18 showed the target holding `shift` and
+ *     `outer` in the SAME register ($t2: `li t2,15` ... `addiu t2,t2,-1` ...
+ *     `move t2,zero`).  Spelling that in C - ONE counter variable driving both
+ *     the 16-bit scan loop and the 0x30-iteration outer loop, declared in the
+ *     outer counter's slot (m2; the mirror decl slot m1 is 19) - collapsed the
+ *     whole 5-seat residual: every register in the function now matches.
+ *  3. 7 -> 6.  Pre-loop statement order re-swept on the new shape (q00..q23,
+ *     range 6..8): `oct` must come FIRST now (q04/q18/q20/q21 all 6); the
+ *     `target; scale; curve; oct;` order that won three sessions running on the
+ *     old shape is 7.
+ *  4. 6 -> 4.  `target = pitch` moved into the outer loop's for-init
+ *     (t1: `for (outer = 0, target = pitch; ...)`), which puts the `andi
+ *     a2,a0,0xffff` after `move outer,zero` exactly as the target does.
+ *  5. 4 -> 2.  Both inner-loop bounds split into add-then-shift with the LOW
+ *     bound's add first (L6: `lo = lower + acc; hi = lower + next; lo >>= 12;
+ *     hi >>= 12;`), which fixes the (addu upper / addu lower) inversion that
+ *     three sessions had recorded as immune to source order.
+ *  6. 2 -> 0.  Naming the inner loop's base index in the for-init (C1:
+ *     `base = i * 32`, `result = base + inner`) puts the sll before the
+ *     accumulator's `move ...,zero` - the last inversion, the one s4's frontier
+ *     had priced as the cheapest remaining residual.
  *
- * The 24-permutation pre-loop statement-order sweep was re-run on THIS loop
- * shape (s4 p00..p23, range 19..23): `target; scale; curve; oct;` is still the
- * unique minimum, so the order below is unchanged from s2/s3.
+ * Cleanups measured byte-neutral at 0 afterwards, so the SIMPLEST known form is
+ * the one that lands (ordinary-c-judge-decidable Ruling 4): the shared counter
+ * renamed `i` (E2), `base = i * 32` instead of `i << 5` (E3), and `target`
+ * dropped entirely in favour of comparing `pitch` directly (E4, this body).
+ * `target = pitch` as a plain pre-loop statement instead is 2 (E1), so the copy
+ * had to either sit in the outer for-init or not exist at all.
  *
- * Naming `base = outer << 5` and putting it in the for-init (c1/c2/c4) is
- * byte-neutral at 19; putting it outside the for-init (c3/c5) costs a point.
+ * Every construct here has a truthful semantic reading: one counter variable
+ * reused by two sequential loops (idiomatic C, and one variable FEWER than the
+ * s4 body), a loop-invariant base index computed in the inner loop's init
+ * clause next to the other three per-entry seed values, split add/shift
+ * statements, and the pre-existing `goto found` mixed exit form.  No FAKE
+ * annotation is claimed because no construct is a no-semantic-purpose device.
  *
- * RESIDUAL (19; pairdiff tmp/grind/_spu_pitch2note/s4/a1_pairdiff.txt):
- *   seats  pitch-copy $a3 vs $a0 | shift $a0 vs $t2 | lower $t3 vs $t4 |
- *          acc $t2 vs $t3 | outer $t4 vs $t2
- *   order  ours 'andi a2,a3,0xffff' at 16 and 'oct' at 20; target 'oct' at 16
- *          and the andi at 21, after 'move outer,zero'
- *   order  ours emits 'move acc,zero' BEFORE the LICM-hoisted 'sll base,outer,5';
- *          the target emits the sll first (still one apart, insns 33/34)
- *   order  ours emits the UPPER bound's addu before the LOWER bound's; the
- *          target emits the lower first.
- *
- * Prototype s32 (u16, u16, u16); no header prototype exists and no in-EXE caller. */
+ * Prototype s32 (u16, u16, u16); no header prototype exists and no in-EXE
+ * caller (unchanged from s1). */
 s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
     u16 search;
     s32 bit;
-    s32 shift;
     s32 oct;
     s32 scale;
     u32 curve;
-    u32 target;
     u32 lower;
     u32 upper;
     u32 step;
@@ -57,7 +63,8 @@ s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
     u32 next;
     u32 lo;
     u32 hi;
-    s32 outer;
+    s32 base;
+    s32 i;
     s32 inner;
     s32 result;
     s32 quot;
@@ -67,28 +74,28 @@ s32 _spu_pitch2note(u16 cen_note, u16 cen_fine, u16 pitch) {
 
     search = ~pitch;
     bit = 0;
-    for (shift = 15; shift >= 0; shift--) {
-        if (!((search >> shift) & 1)) {
-            bit = shift;
+    for (i = 15; i >= 0; i--) {
+        if (!((search >> i) & 1)) {
+            bit = i;
             break;
         }
     }
-    target = pitch;
+    oct = bit - 12;
     scale = 1 << bit;
     curve = 0x1000;
-    oct = bit - 12;
-    for (outer = 0; outer < 0x30; outer++) {
+    for (i = 0; i < 0x30; i++) {
         lower = scale * curve;
         curve *= 0x103B;
         curve >>= 12;
         upper = scale * curve;
         step = (upper - lower) >> 5;
-        for (inner = 0, acc = 0, next = step; inner < 0x20; inner++) {
-            lo = (lower + acc) >> 12;
+        for (inner = 0, base = i * 32, acc = 0, next = step; inner < 0x20; inner++) {
+            lo = lower + acc;
             hi = lower + next;
+            lo >>= 12;
             hi >>= 12;
-            if (target >= lo && target < hi) {
-                result = (outer << 5) + inner;
+            if (pitch >= lo && pitch < hi) {
+                result = base + inner;
                 goto found;
             }
             next += step;

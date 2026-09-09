@@ -175,5 +175,14 @@
  "origin": "queue",
  "created": "2026-09-08T22:13:40.153191+00:00",
  "object_model_audited": 1,
- "escalation_deferrals": 0
+ "escalation_deferrals": 0,
+ "review_ledger": [
+  {
+   "layer": "judge",
+   "verdict": "PASS",
+   "hash": "2c466b20ae9a189a",
+   "when": "2026-09-09T00:19:53.505851+00:00",
+   "summary": "final call: Ordinary pure C: two loops over a shared counter `i`, explicit loop-carried accumulators (acc/next), bounds split add-then-shift, a `goto found` search exit, and the `curve *= 0x103B; curve >>= 12;` s"
+  }
+ ]
 }
