@@ -1,0 +1,72 @@
+{
+ "func": "func_8005D554",
+ "file": "text1b",
+ "session_count": 1,
+ "current_modality": "recon",
+ "floor_history": [
+  {
+   "session": 1,
+   "floor": 6,
+   "modality": "recon",
+   "headline": "recon: retired body 65 -> recovered WIP score-8 form transfers at 7 on soft-float -> int-typed stride+base sum gives 6; last 6 = sched1 LUID tie between the a2-site init and the call arg loads, proven"
+  }
+ ],
+ "frontier": [
+  {
+   "hypothesis": "Spell the a2-site offset so its r4 - K insn is emitted AFTER the call's arg-register loads in pre-sched1 RTL (only emit_queue-flushed post-inc/dec side effects or in-call-expression evaluation land there)",
+   "mechanism": "sched.c:2464 LUID tie-break at the sched1 clock-64 pick; calls.c:1910 emit_queue runs after the arg loads; exact model: init luid > 43 -> target in both halves",
+   "next_probe": "measure 2-3 spellings (queued post-decrement of a pointer local, offset computed inside the call's second-argument expression yielding 0) with sandbox, then extract.py text1b + simulate.py --pass 1/2 to confirm the LUID moved; watch that the -0x19/-0x32 sites use the same shape"
+  },
+  {
+   "hypothesis": "A single-set birth init (LAUNCH priority) whose consumers include the s.zero10 = 0 store reproduces the target order",
+   "mechanism": "sched.c:2505 birthing_insn_p needs reg_n_sets == 1; the store dependence delays the init's readiness to clock 64; exact model launch_dep228 -> target both halves",
+   "next_probe": "look for a natural spelling where the zero store reads or aliases the init (e.g. struct-copy / BLKmode initialization of the zero fields) before considering any FAKE-gated named intermediate; measure with sandbox + simulate.py"
+  },
+  {
+   "hypothesis": "sched2 replays whichever sched1 order F1/F2 produce",
+   "mechanism": "pass-2 priorities are all 3 for the four insns; ties are pure LUID",
+   "next_probe": "after any sched1-changing form, run extract.py text1b and simulate.py --func func_8005D554 --pass 2 before trusting the sandbox delta"
+  }
+ ],
+ "judge_constraints": [],
+ "banned_constructs": [],
+ "kills": [
+  {
+   "session": 1,
+   "statement": "Declaring D_8009B2E0 as a typed 0x3C-stride struct array and indexing &D_8009B2E0[idx] / .sub[D_800A3418 & 1] on the s1 candidate scores 21",
+   "kill_scope": "instance",
+   "measured_on": "s1 candidate chassis (guard-in-i, p_b2ec, p_b390 = p_b388 + 2, split-init x4, int-order p0), no FAKE constructs",
+   "predicate_cite": "",
+   "result": "21 vs 6; OBJECT MODEL entry banked (MISMATCH measured 21)"
+  },
+  {
+   "session": 1,
+   "statement": "Every placement of the a2-site init statement between the a2-feeding D_800A3418 ^= rand() and the call fails the predicate luid(init) > luid(a1 = 0) that sched1 rank_for_schedule requires at the clock",
+   "kill_scope": "class",
+   "measured_on": "sched_solver pass-1 model of the s1 candidate (text1b parity=True) plus sandbox on the s1 candidate chassis, no FAKE constructs",
+   "predicate_cite": "tools/gcc-2.7.2/sched.c:2464",
+   "result": "statement moves inside the span are inert; only an init born after the arg loads (F1) or a LAUNCH birth that the s.zero1"
+  },
+  {
+   "session": 1,
+   "statement": "Moving the s.zero10/one14/ret stores above the a2-site D_800A3418 ^= rand() on the s1 candidate scores 32",
+   "kill_scope": "instance",
+   "measured_on": "s1 candidate chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "32"
+  },
+  {
+   "session": 1,
+   "statement": "Merging a0_offset and a2_offset into one local on the s1 candidate scores 12",
+   "kill_scope": "instance",
+   "measured_on": "s1 candidate chassis, no FAKE constructs",
+   "predicate_cite": "",
+   "result": "12"
+  }
+ ],
+ "ladder_skip": 0,
+ "pending_fixup": null,
+ "origin": "queue",
+ "created": "2026-09-09T01:42:36.995090+00:00",
+ "object_model_audited": 1
+}
